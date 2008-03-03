@@ -7,7 +7,7 @@
         <!--                   		0             1             2             3 -->
         <param name="AxisMap"> 		0             1             2             3	</param>
         <param name="Encoder">     -182.044      -182.044      -182.044      -182.044	</param>
-        <param name="Zeros">       -184          -315           19.2         -187	</param>
+        <param name="Zeros">       -174          -328           10.2         -187	</param> 
         <param name="TorqueId">     0x0C          0x0C          0x0C          0x0C	</param>
         <param name="TorqueChan">	0             1             2             3	</param>
         <param name="TorqueMax"> 	8             8             8             8	</param>
