@@ -145,6 +145,9 @@ This file can be edited at src/myModule/main.cpp.
 #include <stdio.h>
 #include <fcntl.h>
 
+#include <canProtocolLib/iCubCanProtocol.h>
+#include <canProtocolLib/iCubCanProto_types.h>
+
 YARP_DECLARE_DEVICES(icubmod)
 
 GtkWidget *window     = NULL;
@@ -262,40 +265,40 @@ static GtkTreeModel * refresh_board_list_model (void)
     {
         switch (downloader.board_list[i].type)
         {
-        case BOARD_TYPE_DSP:
+        case icubCanProto_boardType__dsp:
             strcpy(board_type, "RM OLD (DSP)");
             break;
-        case BOARD_TYPE_PIC:
+        case icubCanProto_boardType__pic:
             strcpy(board_type, "MPH (PIC)");
             break;
-        case BOARD_TYPE_2DC:
+        case icubCanProto_boardType__2dc:
             strcpy(board_type, "RM 2DC (DSP)");
             break;
-        case BOARD_TYPE_4DC:
+        case icubCanProto_boardType__4dc:
             strcpy(board_type, "RM 4DC (DSP)");
             break;
-        case BOARD_TYPE_BLL:
+        case icubCanProto_boardType__bll:
             strcpy(board_type, "RM BLL (DSP)");
             break;
-        case BOARD_TYPE_SKIN:
+        case icubCanProto_boardType__skin:
             strcpy(board_type, "SKIN (DSPIC)");
             break;
-        case BOARD_TYPE_STRAIN:
+        case icubCanProto_boardType__strain:
             strcpy(board_type, "STRAIN (DSPIC)");
             break;
-        case BOARD_TYPE_MAIS:
+        case icubCanProto_boardType__mais:
             strcpy(board_type, "MAIS (DSPIC)");
             break;
-        case BOARD_TYPE_2FOC:
+        case icubCanProto_boardType__2foc:
             strcpy(board_type, "2FOC (DSPIC)");
             break;
-        case BOARD_TYPE_6SG:
+        case icubCanProto_boardType__6sg:
             strcpy(board_type, "6SG (DSPIC)");
             break;
-        case BOARD_TYPE_JOG:
+        case icubCanProto_boardType__jog:
             strcpy(board_type, "JOG (DSPIC)");
             break;
-        case BOARD_UNKNOWN:
+        case icubCanProto_boardType__unknown:
 
         default:
             strcpy(board_type, "UNKNOWN");
@@ -826,7 +829,7 @@ bool load_calibration (char* filename)
     for (i=0; i<downloader.board_list_size; i++)
     {
         if (downloader.board_list[i].status==BOARD_RUNNING &&
-            (downloader.board_list[i].type==BOARD_TYPE_STRAIN || downloader.board_list[i].type==BOARD_TYPE_6SG) &&
+            (downloader.board_list[i].type==icubCanProto_boardType__strain || downloader.board_list[i].type==icubCanProto_boardType__6sg) &&
             downloader.board_list[i].selected==true)
             {
                 selected = i;
@@ -933,7 +936,7 @@ static int download_click (GtkButton *button,    gpointer   user_data)
     */
 
     //indentify download type from the type of the selected boards
-    int download_type = BOARD_UNKNOWN;
+    int download_type = icubCanProto_boardType__unknown;
     bool download_eeprom =false;
     for (i=0; i<downloader.board_list_size; i++)
     {
@@ -1196,7 +1199,7 @@ bool validate_calibration ()
     for (i=0; i<downloader.board_list_size; i++)
     {
         if (downloader.board_list[i].status==BOARD_RUNNING &&
-            (downloader.board_list[i].type==BOARD_TYPE_STRAIN || downloader.board_list[i].type==BOARD_TYPE_6SG) &&
+            (downloader.board_list[i].type==icubCanProto_boardType__strain || downloader.board_list[i].type==icubCanProto_boardType__6sg) &&
             downloader.board_list[i].selected==true)
             {
                 count++;
@@ -1211,7 +1214,7 @@ bool validate_calibration ()
 //*********************************************************************************
 bool validate_selection (int wanted_type)
 {
-    int first_type = BOARD_UNKNOWN;
+    int first_type = icubCanProto_boardType__unknown;
     bool something_selected=false;
     int i=0;
     for (i=0; i<downloader.board_list_size; i++)

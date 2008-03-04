@@ -3,42 +3,15 @@
 # CopyPolicy: Released under the terms of the GNU GPL v2.0.
 
 
-IF (ICUB_CONTROLWRAPPER_WIP)
-   PREPARE_DEVICE(canmotioncontrol TYPE CanBusMotionControl
-		INCLUDE CanBusMotionControlwip.h 
-		WRAPPER controlboard)
+PREPARE_DEVICE(canmotioncontrol TYPE CanBusMotionControl
+    INCLUDE CanBusMotionControl.h
+    WRAPPER controlboard)
 
-   if (ICUB_CANPROTOCOL_STRICT)
-       add_definitions(-DICUB_CANPROTOCOL_STRICT)
-   endif()
+if (ENABLE_icubmod_canmotioncontrol)
 
-   if (ICUB_CANMASKS_STRICT_FILTER)
-       add_definitions(-DICUB_CANMASKS_STRICT_FILTER)
-   endif()
-   
-   if (ICUB_USE_INTERFACEGUI)
-       add_definitions(-D_USE_INTERFACEGUI)
-   endif (ICUB_USE_INTERFACEGUI)
+if(ICUB_HAS_icub_firmware_shared)
+    set(FIRMWARE_SHARED_INC         ${icub_firmware_shared_canProtocolLib_INCLUDE_DIR})
 
-   ADD_DEFINITIONS(-D_REENTRANT)
-
-   INCLUDE_DIRECTORIES(${CMAKE_CURRENT_SOURCE_DIR}/../motionControlLib/
-                       ${ACE_INCLUDE_DIRS} ${iCubDev_INCLUDE_DIRS} ${YARP_INCLUDE_DIRS})
-
-   SET(folder_source CanBusMotionControlwip.cpp ThreadTable2.cpp ThreadPool2.cpp)
-   SET(folder_header CanBusMotionControlwip.h ThreadTable2.h ThreadPool2.h)
-
-   SOURCE_GROUP("Source Files" FILES ${folder_source})
-   SOURCE_GROUP("Header Files" FILES ${folder_header})
-
-   yarp_add_plugin(canmotioncontrol ${folder_source} ${folder_header})
-   TARGET_LINK_LIBRARIES(canmotioncontrol ${ACE_LIBRARIES} iCubDev ${YARP_LIBRARIES})
-  
-   icub_export_library(canmotioncontrol)
-else()
-   PREPARE_DEVICE(canmotioncontrol TYPE CanBusMotionControl
-		INCLUDE CanBusMotionControl.h 
-		WRAPPER controlboard)
 
    if (ICUB_CANPROTOCOL_STRICT)
        add_definitions(-DICUB_CANPROTOCOL_STRICT)
@@ -55,7 +28,9 @@ else()
    ADD_DEFINITIONS(-D_REENTRANT)
 
    INCLUDE_DIRECTORIES(${CMAKE_CURRENT_SOURCE_DIR}/../motionControlLib/
-                       ${ACE_INCLUDE_DIRS} ${iCubDev_INCLUDE_DIRS} ${YARP_INCLUDE_DIRS})
+                       ${ACE_INCLUDE_DIRS} ${iCubDev_INCLUDE_DIRS} ${YARP_INCLUDE_DIRS}
+                       ${FIRMWARE_SHARED_INC}
+                       )
 
    SET(folder_source CanBusMotionControl.cpp ThreadTable2.cpp ThreadPool2.cpp)
    SET(folder_header CanBusMotionControl.h ThreadTable2.h ThreadPool2.h)
@@ -65,10 +40,18 @@ else()
 
    yarp_add_plugin(canmotioncontrol ${folder_source} ${folder_header})
    TARGET_LINK_LIBRARIES(canmotioncontrol ${ACE_LIBRARIES} iCubDev ${YARP_LIBRARIES})
-  
+
    icub_export_library(canmotioncontrol)
-ENDIF () 
 
+else(ICUB_HAS_icub_firmware_shared)
+  message(ERROR " canBusMotionControl: cannot find icub_firmware_shared library, turn off device
+  embObj library can now be found in the icub-firmware-shared package that
+  can be downloaded from here:
+  .
+       https://github.com/robotology/icub-firmware-shared
+  .    ")
+endif(ICUB_HAS_icub_firmware_shared)
 
+endif (ENABLE_icubmod_canmotioncontrol)
 
 

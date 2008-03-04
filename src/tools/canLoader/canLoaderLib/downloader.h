@@ -14,6 +14,7 @@
 #include <yarp/dev/CanBusInterface.h>
 
 #include <fstream>
+#include "stdint.h"
 
 //*****************************************************************/
 
@@ -53,36 +54,9 @@ public:
 #define SPRS_TYPE_4 '4'
 #define SPRS_TYPE_7 '7'
 
-#define ID_CMD         0x07
 #define ID_MASTER      0x00
 #define ID_BROADCAST   0x0F
 
-#define BOARD_TYPE_DSP    0x00
-#define BOARD_TYPE_PIC    0x01
-#define BOARD_TYPE_2DC    0x02
-#define BOARD_TYPE_4DC    0x03
-#define BOARD_TYPE_BLL    0x04
-#define BOARD_TYPE_SKIN   0x05
-#define BOARD_TYPE_STRAIN 0x06
-#define BOARD_TYPE_MAIS   0x07
-#define BOARD_TYPE_2FOC   0x08
-#define BOARD_TYPE_6SG    0x09
-#define BOARD_TYPE_JOG    0x0A
-#define BOARD_UNKNOWN     0xFF
-
-
-#define CMD_BOARD 	   0x00
-#define CMD_ADDRESS    0x01
-#define CMD_START	   0x02
-#define CMD_DATA	   0x03
-#define CMD_END	       0x04
-#define CMD_ERR	       0x05
-#define CMD_BROADCAST  0xFF
-
-#define CAN_SET_BOARD_ID	50
-#define CAN_GET_BOARD_ID	51
-#define CAN_GET_ADDITIONAL_INFO		12
-#define CAN_SET_ADDITIONAL_INFO		13
 
 //*****************************************************************/
 

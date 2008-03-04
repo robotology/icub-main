@@ -594,24 +594,38 @@ bool embObjAnalogSensor::init()
     _fId.ep = eoprot_endpoint_analogsensors;
 
     // configure the remote board to regularly send some variables
-    eOmn_ropsigcfg_command_t  theramofropsigcfgassign = {0};    // the ram of the command
-    eOmn_ropsigcfg_command_t  *ropsigcfgassign;                 // pointer to the ram. we use thei variable
-    eOprotID32_t protoid_ropsigcfgassign;                       // the id 
-    eOropSIGcfg_t             sigcfg = {0};                     // struct for the single element to be signalled
-    EOarray                   *array;                           // array containing nvids to be signalled. it must point to the ram
 
+#define NEW_MN_COMMANDS
 
+#if     defined(EOPROT_USE_MN_VERSION_1_0)
 
-    ropsigcfgassign = &theramofropsigcfgassign;
+    eOmn_ropsigcfg_command_t cmdconfig  = {0};  
+    eOropSIGcfg_t sigcfg                = {0};  
+    eOprotID32_t IDcmdconfig            = eoprot_ID_get(eoprot_endpoint_management, eoprot_entity_mn_comm, 0, eoprot_tag_mn_comm_cmmnds_ropsigcfg);
+    EOarray *array                      = eo_array_New(NUMOFROPSIGCFG, sizeof(eOropSIGcfg_t), &cmdconfig.array); 
 
-    array = eo_array_New(NUMOFROPSIGCFG, sizeof(eOropSIGcfg_t), &ropsigcfgassign->array);   // it uses memory from &ropsigcfgassign->array. it sets capacity, itemsize, and then it clears it. 
-    ropsigcfgassign->cmmnd      = ropsigcfg_cmd_append;
-    ropsigcfgassign->plustime   = 0;
-    ropsigcfgassign->plussign   = 0;
-    ropsigcfgassign->filler01   = 0;
-    ropsigcfgassign->signature  = 0;    
-       
-    protoid_ropsigcfgassign = eoprot_ID_get(eoprot_endpoint_management, eoprot_entity_mn_comm, 0, eoprot_tag_mn_comm_cmmnds_ropsigcfg );
+    cmdconfig.cmmnd                 = ropsigcfg_cmd_append;
+    cmdconfig.plustime              = 0;
+    cmdconfig.plussign              = 0;
+    cmdconfig.filler01              = 0;
+    cmdconfig.signature             = eo_rop_SIGNATUREdummy;  
+
+#else
+
+    eOmn_cmd_config_t cmdconfig     = {0};
+    eOropSIGcfg_t sigcfg            = {0};
+    eOprotID32_t IDcmdconfig        = eoprot_ID_get(eoprot_endpoint_management, eoprot_entity_mn_comm, 0, eoprot_tag_mn_comm_cmmnds_command_config);
+    uint16_t targetcapacity         = (sizeof(cmdconfig.array)-sizeof(eOarray_head_t)) / sizeof(eOropSIGcfg_t);
+    EOarray *array                  = eo_array_New(targetcapacity, sizeof(eOropSIGcfg_t), cmdconfig.array);
+
+    cmdconfig.opcpar.opc            = eomn_opc_config_REGROPs_append;
+    cmdconfig.opcpar.plustime       = 0;
+    cmdconfig.opcpar.plussign       = 0;
+    cmdconfig.opcpar.dummy01        = 0;
+    cmdconfig.opcpar.signature      = eo_rop_SIGNATUREdummy;
+
+#endif     
+
 
     // now we prepare the sigcfg we want to configure on the remote board
     eOprotID32_t protoid = eo_prot_ID32dummy;
@@ -652,7 +666,7 @@ bool embObjAnalogSensor::init()
     }
 
     // send message to configure the spontaneous signalling in the remote board
-    if( !res->addSetMessage(protoid_ropsigcfgassign, (uint8_t *) ropsigcfgassign) )
+    if( !res->addSetMessage(IDcmdconfig, (uint8_t *) &cmdconfig) )
     {
         yError() << "while setting rop sig cfg";
         return false;

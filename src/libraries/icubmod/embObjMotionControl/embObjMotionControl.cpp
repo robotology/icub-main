@@ -288,6 +288,8 @@ embObjMotionControl::embObjMotionControl() :
     NVnumber          = 0;
 
     useRawEncoderData = false;
+    _pwmIsLimited     = false;
+
 }
 
 embObjMotionControl::~embObjMotionControl()
@@ -379,12 +381,33 @@ bool embObjMotionControl::open(yarp::os::Searchable &config)
         {
             useRawEncoderData = use_raw.asBool();
             if(useRawEncoderData)
-                yWarning() << "eo MotionControl using raw data from encoders! Be careful. \n" <<
-                              "\t  DO NOT USE OR CALIBRATE THE ROBOT IN THIS CONFIGURATION! See 'useRawEncoderData' param in config file";
+            {
+                yWarning() << "embObjBusMotionControl using raw data from encoders! Be careful  See 'useRawEncoderData' param in config file";
+                yWarning() << "DO NOT USE OR CALIBRATE THE ROBOT IN THIS CONFIGURATION!";
+                yWarning() << "CHECK IF THE FAULT BUTTON IS PRESSED and press ENTER to continue";
+                getchar();
+            }
         }
     }
 
-//    yWarning() << "useRawEncoderData is " << useRawEncoderData;
+    // Check useRawEncoderData = do not use calibration data!
+    Value use_limitedPWM = config.findGroup("GENERAL").find("useLimitedPWM");
+    if(use_limitedPWM.isNull())
+    {
+        _pwmIsLimited = false;
+    }
+    else
+    {
+        if(!use_limitedPWM.isBool())
+        {
+            _pwmIsLimited = false;
+        }
+        else
+        {
+            _pwmIsLimited = use_limitedPWM.asBool();
+        }
+    }
+
 
     // Saving User Friendly Id
     memset(_fId.name, 0x00, sizeof(_fId.name));
@@ -502,10 +525,10 @@ bool embObjMotionControl::isEpManagedByBoard()
 }
 
 
-bool embObjMotionControl::parsePosPidsGroup_OldFormat(Bottle& pidsGroup, int njoints, Pid myPid[])
+bool embObjMotionControl::parsePosPidsGroup_OldFormat(Bottle& pidsGroup, Pid myPid[])
 {
     int j=0;
-    for(j=0;j<njoints;j++)
+    for(j=0; j<_njoints; j++)
     {
         char tmp[80];
         sprintf(tmp, "Pid%d", j);
@@ -530,10 +553,10 @@ bool embObjMotionControl::parsePosPidsGroup_OldFormat(Bottle& pidsGroup, int njo
     return true;
 }
 
-bool embObjMotionControl::parseTrqPidsGroup_OldFormat(Bottle& pidsGroup, int njoints, Pid myPid[])
+bool embObjMotionControl::parseTrqPidsGroup_OldFormat(Bottle& pidsGroup, Pid myPid[])
 {
     int j=0;
-    for(j=0;j<njoints;j++)
+    for(j=0; j<_njoints; j++)
     {
         char tmp[80];
         sprintf(tmp, "TPid%d", j);
@@ -557,19 +580,48 @@ bool embObjMotionControl::parseTrqPidsGroup_OldFormat(Bottle& pidsGroup, int njo
     }
     return true;
 }
-bool embObjMotionControl::parsePidsGroup_NewFormat(Bottle& pidsGroup, int njoints, Pid myPid[])
+bool embObjMotionControl::parsePidsGroup_NewFormat(Bottle& pidsGroup, Pid myPid[])
 {
     int j=0;
     Bottle xtmp;
-    xtmp = pidsGroup.findGroup("kp");          if (xtmp.isNull()) return false; for (j=0;j<njoints;j++) myPid[j].kp = xtmp.get(j+1).asDouble();
-    xtmp = pidsGroup.findGroup("kd");          if (xtmp.isNull()) return false; for (j=0;j<njoints;j++) myPid[j].kd = xtmp.get(j+1).asDouble();
-    xtmp = pidsGroup.findGroup("ki");          if (xtmp.isNull()) return false; for (j=0;j<njoints;j++) myPid[j].ki = xtmp.get(j+1).asDouble();
-    xtmp = pidsGroup.findGroup("maxInt");      if (xtmp.isNull()) return false; for (j=0;j<njoints;j++) myPid[j].max_int = xtmp.get(j+1).asDouble();
-    xtmp = pidsGroup.findGroup("maxPwm");      if (xtmp.isNull()) return false; for (j=0;j<njoints;j++) myPid[j].max_output = xtmp.get(j+1).asDouble();
-    xtmp = pidsGroup.findGroup("shift");       if (xtmp.isNull()) return false; for (j=0;j<njoints;j++) myPid[j].scale = xtmp.get(j+1).asDouble();
-    xtmp = pidsGroup.findGroup("ko");          if (xtmp.isNull()) return false; for (j=0;j<njoints;j++) myPid[j].offset = xtmp.get(j+1).asDouble();
-    xtmp = pidsGroup.findGroup("stictionUp");  if (xtmp.isNull()) return false; for (j=0;j<njoints;j++) myPid[j].stiction_up_val = xtmp.get(j+1).asDouble();
-    xtmp = pidsGroup.findGroup("stictionDwn"); if (xtmp.isNull()) return false; for (j=0;j<njoints;j++) myPid[j].stiction_down_val = xtmp.get(j+1).asDouble();
+    if (!extractGroup(pidsGroup, xtmp, "kp", "Pid kp parameter", _njoints))           return false; for (j=0; j<_njoints; j++) myPid[j].kp = xtmp.get(j+1).asDouble();
+    if (!extractGroup(pidsGroup, xtmp, "kd", "Pid kd parameter", _njoints))           return false; for (j=0; j<_njoints; j++) myPid[j].kd = xtmp.get(j+1).asDouble();
+    if (!extractGroup(pidsGroup, xtmp, "ki", "Pid kp parameter", _njoints))           return false; for (j=0; j<_njoints; j++) myPid[j].ki = xtmp.get(j+1).asDouble();
+    if (!extractGroup(pidsGroup, xtmp, "maxInt", "Pid maxInt parameter", _njoints))   return false; for (j=0; j<_njoints; j++) myPid[j].max_int = xtmp.get(j+1).asDouble();
+    if (!extractGroup(pidsGroup, xtmp, "maxPwm", "Pid maxPwm parameter", _njoints))   return false; for (j=0; j<_njoints; j++) myPid[j].max_output = xtmp.get(j+1).asDouble();
+    if (!extractGroup(pidsGroup, xtmp, "shift", "Pid shift parameter", _njoints))     return false; for (j=0; j<_njoints; j++) myPid[j].scale = xtmp.get(j+1).asDouble();
+    if (!extractGroup(pidsGroup, xtmp, "ko", "Pid ko parameter", _njoints))           return false; for (j=0; j<_njoints; j++) myPid[j].offset = xtmp.get(j+1).asDouble();
+    if (!extractGroup(pidsGroup, xtmp, "stictionUp", "Pid stictionUp", _njoints))     return false; for (j=0; j<_njoints; j++) myPid[j].stiction_up_val = xtmp.get(j+1).asDouble();
+    if (!extractGroup(pidsGroup, xtmp, "stictionDwn", "Pid stictionDwn", _njoints))   return false; for (j=0; j<_njoints; j++) myPid[j].stiction_down_val = xtmp.get(j+1).asDouble();
+
+    //optional PWM limit
+    if(_pwmIsLimited)
+    {   // check for value in the file
+        if (!extractGroup(pidsGroup, xtmp, "limPwm", "Limited PWD", _njoints))
+        {
+            yError() << "The PID parameter limPwm was requested but was not correctly set in the configuration file, please fill it.";
+            return false;
+        }
+
+        fprintf(stderr,  "embObjMotionControl using LIMITED PWM!! \n");
+        for (j=0; j<_njoints; j++) myPid[j].max_output = xtmp.get(j+1).asDouble();
+    }
+
+    //optional kff
+    xtmp = pidsGroup.findGroup("kff");
+    if (!xtmp.isNull())
+    {
+        if(xtmp.size() != _njoints+1)
+        {
+            printf("Found Pid kff parameter, but with icorrect number of entries, expected %d, got %d\n", _njoints, xtmp.size() -1);
+            return false;
+        }
+        for (j=0; j<_njoints; j++) myPid[j].kff = xtmp.get(j+1).asDouble();
+    }
+    else
+    {
+         for (j=0; j<_njoints; j++) myPid[j].kff = 0;
+    }
     return true;
 }
 
@@ -695,7 +747,7 @@ bool embObjMotionControl::fromConfig(yarp::os::Searchable &config)
         if (posPidsGroup.isNull()==false)
         {
            yDebug()<< "Position Pids section found, new format";
-           if (!parsePidsGroup_NewFormat (posPidsGroup, _njoints, _pids))
+           if (!parsePidsGroup_NewFormat (posPidsGroup, _pids))
            {
                yError() << "Position Pids section: error detected in parameters syntax";
                return false;
@@ -711,7 +763,7 @@ bool embObjMotionControl::fromConfig(yarp::os::Searchable &config)
             if (posPidsGroup2.isNull()==false)
             {
                 yDebug() << "Position Pids section found, old format";
-                parsePosPidsGroup_OldFormat (posPidsGroup2, _njoints, _pids);
+                parsePosPidsGroup_OldFormat (posPidsGroup2, _pids);
             }
             else
             {
@@ -719,7 +771,6 @@ bool embObjMotionControl::fromConfig(yarp::os::Searchable &config)
                 return false;
             }
         }
-
     }
 
 
@@ -730,7 +781,7 @@ bool embObjMotionControl::fromConfig(yarp::os::Searchable &config)
         if (trqPidsGroup.isNull()==false)
         {
            yDebug()<<"Torque Pids section found, new format";
-           if (!parsePidsGroup_NewFormat (trqPidsGroup, _njoints, _tpids))
+           if (!parsePidsGroup_NewFormat (trqPidsGroup, _tpids))
            {
                yError() << "Torque Pids section: error detected in parameters syntax";
                return false;
@@ -747,7 +798,7 @@ bool embObjMotionControl::fromConfig(yarp::os::Searchable &config)
             if (trqPidsGroup2.isNull()==false)
             {
                 yDebug() << "Torque Pids section found, old format";
-                if(!parseTrqPidsGroup_OldFormat (trqPidsGroup2, _njoints, _tpids))
+                if(!parseTrqPidsGroup_OldFormat (trqPidsGroup2, _tpids))
                 {
                      yError() << "Torque Pids section: error detected in parameters syntax";
                      return false;
@@ -948,21 +999,10 @@ bool embObjMotionControl::fromConfig(yarp::os::Searchable &config)
 
 bool embObjMotionControl::init()
 {
-    eOmn_ropsigcfg_command_t 	*ropsigcfgassign;
-    EOarray                     *array;
-    eOropSIGcfg_t               sigcfg;
+
     int                         old = 0;
     eOprotID32_t                protid;
 
-#ifdef _SETPOINT_TEST_
-    eoy_sys_Initialise(NULL, NULL, NULL);
-    int j, i;
-    //init mutex
-    for(j=0, i =0; j<  _njoints; j++, i++)
-    {
-        j_debug_data[i].mutex = Semaphore(1);
-    }
-#endif
 
 
 
@@ -1003,43 +1043,38 @@ bool embObjMotionControl::init()
     //    fortunately the struct eOmn_ropsigcfg_command_t has field array as its first. thus the two pointers are the same.
     // the correct method is to build a struct eOmn_ropsigcfg_command_t, initialise it properly and then pass it to the function.    
 
-    #define NEWMODE
-    
-    #if     defined(NEWMODE)
-    
-    
-    eOmn_ropsigcfg_command_t 	theropsigcfgassigncommand;      // the ram to use.
-    
-    eOprotID32_t protid_ropsigcfgassign = eoprot_ID_get(eoprot_endpoint_management, eoprot_entity_mn_comm, 0, eoprot_tag_mn_comm_cmmnds_ropsigcfg);     // the id
-    
-    ropsigcfgassign = &theropsigcfgassigncommand;    
-    array           = eo_array_New(NUMOFROPSIGCFG, sizeof(eOropSIGcfg_t), &ropsigcfgassign->array);   // it uses memory from &ropsigcfgassign->array. it sets capacity, itemsize. it clears it. 
-    ropsigcfgassign->cmmnd      = ropsigcfg_cmd_append;
-    ropsigcfgassign->plustime   = 0;
-    ropsigcfgassign->plussign   = 0;
-    ropsigcfgassign->filler01   = 0;
-    ropsigcfgassign->signature  = 0;
-    
-    // ok, now we can fill array
-    
-    #else
-    
-    eOprotID32_t protid_ropsigcfgassign = eoprot_ID_get(eoprot_endpoint_management, eoprot_entity_mn_comm, 0, eoprot_tag_mn_comm_cmmnds_ropsigcfg);
+#define NEWMODE
 
 
-    EOnv *nvRoot_ropsigcfgassign;
-    EOnv nv_ropsigcfgassign;
-    nvRoot_ropsigcfgassign = res->getNVhandler(protid_ropsigcfgassign, &nv_ropsigcfgassign);
 
+#if     defined(EOPROT_USE_MN_VERSION_1_0)
 
-    ropsigcfgassign = (eOmn_ropsigcfg_command_t*) nvRoot_ropsigcfgassign->ram;
-    array = (EOarray*) &ropsigcfgassign->array;
-    eo_array_Reset(array);
-    array->head.capacity = NUMOFROPSIGCFG;
-    array->head.itemsize = sizeof(eOropSIGcfg_t);
-    ropsigcfgassign->cmmnd = ropsigcfg_cmd_append;
+    eOmn_ropsigcfg_command_t cmdconfig  = {0};  
+    eOropSIGcfg_t sigcfg                = {0};  
+    eOprotID32_t IDcmdconfig            = eoprot_ID_get(eoprot_endpoint_management, eoprot_entity_mn_comm, 0, eoprot_tag_mn_comm_cmmnds_ropsigcfg);
+    EOarray *array                      = eo_array_New(NUMOFROPSIGCFG, sizeof(eOropSIGcfg_t), &cmdconfig.array); 
 
-    #endif
+    cmdconfig.cmmnd                 = ropsigcfg_cmd_append;
+    cmdconfig.plustime              = 0;
+    cmdconfig.plussign              = 0;
+    cmdconfig.filler01              = 0;
+    cmdconfig.signature             = eo_rop_SIGNATUREdummy;  
+
+#else
+
+    eOmn_cmd_config_t cmdconfig     = {0};
+    eOropSIGcfg_t sigcfg            = {0};
+    eOprotID32_t IDcmdconfig        = eoprot_ID_get(eoprot_endpoint_management, eoprot_entity_mn_comm, 0, eoprot_tag_mn_comm_cmmnds_command_config);
+    uint16_t targetcapacity         = (sizeof(cmdconfig.array)-sizeof(eOarray_head_t)) / sizeof(eOropSIGcfg_t);
+    EOarray *array                  = eo_array_New(targetcapacity, sizeof(eOropSIGcfg_t), cmdconfig.array);
+
+    cmdconfig.opcpar.opc            = eomn_opc_config_REGROPs_append;
+    cmdconfig.opcpar.plustime       = 0;
+    cmdconfig.opcpar.plussign       = 0;
+    cmdconfig.opcpar.dummy01        = 0;
+    cmdconfig.opcpar.signature      = eo_rop_SIGNATUREdummy;       
+
+#endif    
 
 
 
@@ -1090,7 +1125,7 @@ bool embObjMotionControl::init()
             break;
         }
 
-        protid = eoprot_ID_get(eoprot_endpoint_motioncontrol, eoprot_entity_mc_motor, j, eoprot_tag_mc_motor_status);
+        protid = eoprot_ID_get(eoprot_endpoint_motioncontrol, eoprot_entity_mc_motor, j, eoprot_tag_mc_motor_status_basic);
         //    printf("\nmotorNVindex_jstatus nvid = %d (0x%04X)", nvid, nvid);
 
         if(eobool_false == eoprot_id_isvalid(featIdBoardNum2nvBoardNum(_fId.boardNum), protid))
@@ -1117,7 +1152,7 @@ bool embObjMotionControl::init()
             // A ropsigcfg vector can hold at max NUMOFROPSIGCFG (21) value. If more are needed, send another package,
             // so wait some time to let ethManager send this package and then start again.
             // yDebug() << "Maximun number of variables reached in the ropSigCfg array, splitting it in two pieces";
-            if(!res->addSetMessage(protid_ropsigcfgassign, (uint8_t *) ropsigcfgassign)) // marco.accame: instead of ropsigcfgassign there was array
+            if(!res->addSetMessage(IDcmdconfig, (uint8_t *) &cmdconfig)) // marco.accame: instead of ropsigcfgassign there was array
             {
                 yError() << "while setting rop sig cfg";
             }
@@ -1132,7 +1167,7 @@ bool embObjMotionControl::init()
 #if     defined(NEWMODE)   
     if(0 != eo_array_Size(array))
     {   // there are still ropsigcfg to send
-        if( !res->addSetMessage(protid_ropsigcfgassign, (uint8_t *) ropsigcfgassign) )
+        if( !res->addSetMessage(IDcmdconfig, (uint8_t *) &cmdconfig) )
         {
             yError() << "while setting rop sig cfg";
         }    
@@ -2535,10 +2570,46 @@ bool embObjMotionControl::getDebugParameterRaw(int j, unsigned int index, double
 bool embObjMotionControl::setDebugParameterRaw(int j, unsigned int index, double value)   { }
 bool embObjMotionControl::setDebugReferencePositionRaw(int j, double value)         { }
 bool embObjMotionControl::getDebugReferencePositionRaw(int j, double* value)        { }
-bool embObjMotionControl::getRotorPositionRaw         (int j, double* value)        { }
-bool embObjMotionControl::getRotorPositionsRaw        (double* value)               { }
-bool embObjMotionControl::getRotorSpeedRaw            (int j, double* value)        { }
-bool embObjMotionControl::getRotorSpeedsRaw           (double* value)               { }
+
+bool embObjMotionControl::getRotorPositionRaw         (int j, double* value)
+{
+    eOprotID32_t protid = eoprot_ID_get(eoprot_endpoint_motioncontrol, eoprot_entity_mc_motor, j, eoprot_tag_mc_motor_status_basic);
+    uint16_t size;
+    eOmc_motor_status_basic_t  tmpMotorStatus;
+    bool ret = res->readBufferedValue(protid, (uint8_t *)&tmpMotorStatus, &size);
+
+    *value = (double) tmpMotorStatus.position;
+    return true;
+}
+
+bool embObjMotionControl::getRotorPositionsRaw        (double* value)
+{
+    bool ret = true;
+    for(int j=0; j< _joints; j++)
+        ret = getRotorPositionRaw(j, &value[j]) && ret;
+
+    return ret;
+}
+
+bool embObjMotionControl::getRotorSpeedRaw            (int j, double* value)
+{
+    eOprotID32_t protid = eoprot_ID_get(eoprot_endpoint_motioncontrol, eoprot_entity_mc_motor, j, eoprot_tag_mc_motor_status_basic);
+    uint16_t size;
+    eOmc_motor_status_basic_t  tmpMotorStatus;
+    bool ret = res->readBufferedValue(protid, (uint8_t *)&tmpMotorStatus, &size);
+
+    *value = (double) tmpMotorStatus.velocity;
+    return true;
+}
+
+bool embObjMotionControl::getRotorSpeedsRaw           (double* value)
+{
+    bool ret = true;
+     for(int j=0; j< _joints; j++)
+         ret = getRotorSpeedRaw(j, &value[j]) && ret;
+
+     return ret;
+}
 bool embObjMotionControl::getRotorAccelerationRaw     (int j, double* value)        { }
 bool embObjMotionControl::getRotorAccelerationsRaw    (double* value)               { }
 bool embObjMotionControl::getJointPositionRaw         (int j, double* value)        { }
@@ -2641,9 +2712,9 @@ bool embObjMotionControl::updateMeasure(yarp::sig::Vector &fTorques)
     return ret;
 }
 
-bool embObjMotionControl::updateMeasure(int j, double &fTorque)
+bool embObjMotionControl::updateMeasure(int userLevel_jointNumber, double &fTorque)
 {
-
+    int j = _axisMap[userLevel_jointNumber];
 	double NEWTON2SCALE=32767.0/_maxTorque[j];
 
 	eOmeas_torque_t meas_torque = 0;
@@ -2684,7 +2755,7 @@ bool embObjMotionControl::setTorqueModeRaw()
 
 bool embObjMotionControl::getTorqueRaw(int j, double *t)
 {
-    double NEWTON2SCALE=32768.0/_maxTorque[j];
+    double NEWTON2SCALE=32767.0/_maxTorque[j];
     eOmeas_torque_t meas_torque;
     uint16_t size;
     eOprotID32_t protoid = eoprot_ID_get(eoprot_endpoint_motioncontrol, eoprot_entity_mc_joint, j, eoprot_tag_mc_joint_inputs_externallymeasuredtorque);

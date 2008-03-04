@@ -29,7 +29,7 @@
 namespace yarp {
     namespace dev
     {
-        class parametricCalibrator;
+        class parametricCalibratorEth;
     }
 }
 
@@ -43,18 +43,18 @@ namespace yarp {
  * 
  * A calibrator interface implementation for the Arm of the robot iCub.
  */
-class yarp::dev::parametricCalibrator : public ICalibrator, public DeviceDriver
+class yarp::dev::parametricCalibratorEth : public ICalibrator, public DeviceDriver
 {
 public:
     /**
      * Default constructor.
      */
-    parametricCalibrator();
+    parametricCalibratorEth();
 
     /**
      * Destructor.
      */
-    ~parametricCalibrator();
+    ~parametricCalibratorEth();
 
     /**
      * Calibrate method. Call this to calibrate the complete device.

@@ -124,7 +124,7 @@ int can_string_generic::add_string(void* can_packet)
 	for (j=0 ; j<len-2; j++)
 		data[string_id].text_buffer[j+offset*6]=candata[j+2];
 
-	if (candata[0]==CAN_BCAST_PRINT + 128)
+	if (candata[0]==ICUBCANPROTO_PER_MC_MSG__PRINT + 128)
 	{
 		data[string_id].maybe_last_part = true;	
 		data[string_id].expected_length=offset*6+len-2;

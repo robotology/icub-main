@@ -31,7 +31,6 @@ using namespace iCub::contrib;
 
 int main(int argc, char *argv[]) {
 
-
     Network yarp;
 
     //resource finder initialization. 

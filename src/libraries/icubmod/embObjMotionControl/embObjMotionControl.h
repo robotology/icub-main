@@ -157,7 +157,7 @@ struct SpeedEstimationParameters
     }
 };
 
-#undef IMPLEMENT_DEBUG_INTERFACE
+#define IMPLEMENT_DEBUG_INTERFACE
 
 #ifdef _SETPOINT_TEST_
 typedef struct
@@ -252,7 +252,8 @@ private:
     ImpedanceParameters *_impedance_params;     /** impedance parameters */
     eOmc_impedance_t *_cacheImpedance;			/* cache impedance value to split up the 2 sets */
 
-    bool          useRawEncoderData;
+    bool         useRawEncoderData;
+    bool        _pwmIsLimited;                         /** set to true if pwm is limited */
 
     //debug purpose
     
@@ -298,9 +299,9 @@ private:
     bool configure_mais(void);
     bool dealloc();
     bool isEpManagedByBoard();
-    bool parsePosPidsGroup_OldFormat(Bottle& pidsGroup, int njoints, Pid myPid[]);
-    bool parseTrqPidsGroup_OldFormat(Bottle& pidsGroup, int njoints, Pid myPid[]);
-    bool parsePidsGroup_NewFormat(Bottle& pidsGroup, int njoints, Pid myPid[]);
+    bool parsePosPidsGroup_OldFormat(Bottle& pidsGroup, Pid myPid[]);
+    bool parseTrqPidsGroup_OldFormat(Bottle& pidsGroup, Pid myPid[]);
+    bool parsePidsGroup_NewFormat(Bottle& pidsGroup, Pid myPid[]);
 
 public:
     embObjMotionControl();

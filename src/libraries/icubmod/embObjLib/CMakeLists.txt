@@ -8,6 +8,8 @@ SET(PROJECTNAME ethResources)
 PROJECT(${PROJECTNAME})
 
 
+
+
 # defined in porting.h  -- update: now seems that the porting file doen not exists anymore....
 
 # marco.accame: to activate new mode of eoprot configuration: 
@@ -29,12 +31,20 @@ endif(ICUB_EOPROT_DEFINED_BY_XML)
 
 
 if(ICUB_COMPILE_EMBOBJ_LIBRARY)
+
+if(NOT ICUB_HAS_icub_firmware_shared)
+  message(ERROR " embObj: cannot find icub_firmware_shared library, turn off device embObjDevices
+  embObj library can now be found in the icub-firmware-shared package that
+  can be downloaded from here:
+  .
+       https://github.com/robotology/icub-firmware-shared
+  .    ")
+else(NOT ICUB_HAS_icub_firmware_shared)
+
 #--------------------------------------------------------#
 # download embObjlib from firmware repository
 include(updateSVNrepository.cmake)
 #--------------------------------------------------------#
-
-
 
 #--------------------------------------------------------#
 # using embObjLib.conf to define PATH VARIABLES
@@ -247,6 +257,8 @@ add_library(${PROJECTNAME} ${embobj_source} ${embobj_header})
 TARGET_LINK_LIBRARIES(${PROJECTNAME} debugStream ${YARP_LIBRARIES} ${ACE_LIBRARIES} )  
 
 icub_export_library(${PROJECTNAME})
+
+endif(NOT ICUB_HAS_icub_firmware_shared)
 
 endif(ICUB_COMPILE_EMBOBJ_LIBRARY)
 

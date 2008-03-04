@@ -9,7 +9,12 @@ if((NOT APPLE) OR ICUB_ICUBINTERFACE_EXPERIMENTAL) #compilation enabled by defau
     add_subdirectory(robotInterface)
 endif()
 
-add_subdirectory(iCubInterface)
+if(${icub_firmware_shared_FOUND})
+    message(STATUS " +++ adding iCubInterface")
+    add_subdirectory(iCubInterface)
+else()
+    message(STATUS " icub-firmware-shared library was not found, disabling iCubInterface")
+endif()
 add_subdirectory(emotionInterface)
 
 

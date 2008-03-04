@@ -59,7 +59,7 @@ class iCub::contrib::EmotionInterfaceModule : public RFModule,
 private:
 
     // input command port
-	Port _inputPort;
+    Port _inputPort;
 
     // output command port         
     BufferedPort<Bottle>                _outputPort;
@@ -92,6 +92,7 @@ public:
     virtual bool close();
     virtual bool interruptModule();
     virtual bool updateModule();
+    virtual double getPeriod();
     virtual bool respond(const Bottle &command,Bottle &reply);
 
     // interface functions

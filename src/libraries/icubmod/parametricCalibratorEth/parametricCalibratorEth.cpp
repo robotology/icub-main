@@ -9,7 +9,7 @@
 #include <yarp/os/Time.h>
 #include <yarp/dev/PolyDriver.h>
 
-#include "parametricCalibratorwip.h"
+#include "parametricCalibratorEth.h"
 #include <math.h>
 
 #include "Debug.h"
@@ -46,7 +46,7 @@ static bool extractGroup(Bottle &input, Bottle &out, const std::string &key1, co
     return true;
 }
 
-parametricCalibrator::parametricCalibrator() :
+parametricCalibratorEth::parametricCalibratorEth() :
     type(NULL),
     param1(NULL),
     param2(NULL),
@@ -68,13 +68,13 @@ parametricCalibrator::parametricCalibrator() :
 {
 }
 
-parametricCalibrator::~parametricCalibrator()
+parametricCalibratorEth::~parametricCalibratorEth()
 {
     yTrace();
     close();
 }
 
-bool parametricCalibrator::open(yarp::os::Searchable& config)
+bool parametricCalibratorEth::open(yarp::os::Searchable& config)
 {
     yTrace();
     Property p;
@@ -246,7 +246,7 @@ bool parametricCalibrator::open(yarp::os::Searchable& config)
     return true;
 }
 
-bool parametricCalibrator::close ()
+bool parametricCalibratorEth::close ()
 {
     yTrace();
     if (type != NULL) {
@@ -309,9 +309,9 @@ bool parametricCalibrator::close ()
     return true;
 }
 
-bool parametricCalibrator::calibrate(DeviceDriver *dd)
+bool parametricCalibratorEth::calibrate(DeviceDriver *dd)
 {
-    yDebug() << deviceName << "Entering parametricCalibrator::calibrate()";
+    yDebug() << deviceName << "Entering parametricCalibratorEth::calibrate()";
     yTrace();
     abortCalib  = false; //set true in quitCalibrate function  (called on ctrl +c signal )
     int  setOfJoint_idx = 0;
@@ -479,6 +479,8 @@ bool parametricCalibrator::calibrate(DeviceDriver *dd)
                 type[*lit] != 2 &&
                 type[*lit] != 4 )
             {
+                iAmps->enableAmp((*lit));
+                iPids->enablePid((*lit));
                 iControlMode->setPositionMode((*lit));
             }
         }
@@ -553,13 +555,13 @@ bool parametricCalibrator::calibrate(DeviceDriver *dd)
     return isCalibrated;
 }
 
-void parametricCalibrator::calibrateJoint(int joint)
+void parametricCalibratorEth::calibrateJoint(int joint)
 {
     yTrace() <<  deviceName  << ": Calling calibrateJoint on joint "<< joint << " with params: " << type[joint] << param1[joint] << param2[joint] << param3[joint];
     iCalibrate->calibrate2(joint, type[joint], param1[joint], param2[joint], param3[joint]);
 }
 
-bool parametricCalibrator::checkCalibrateJointEnded(std::list<int> set)
+bool parametricCalibratorEth::checkCalibrateJointEnded(std::list<int> set)
 {
     int timeout = 0;
     bool calibration_ok = false;
@@ -598,7 +600,7 @@ bool parametricCalibrator::checkCalibrateJointEnded(std::list<int> set)
 }
 
 
-void parametricCalibrator::goToZero(int j)
+void parametricCalibratorEth::goToZero(int j)
 {
     if (abortCalib) return;
 //    yDebug() <<  deviceName  << ": Sending positionMove to joint" << j << " (desired pos: " << zeroPos[j] << "desired speed: " << zeroVel[j] <<" )";
@@ -606,7 +608,7 @@ void parametricCalibrator::goToZero(int j)
     iPosition->positionMove(j, zeroPos[j]);
 }
 
-bool parametricCalibrator::checkGoneToZero(int j)
+bool parametricCalibratorEth::checkGoneToZero(int j)
 {
 // wait.
     bool ok = false;
@@ -629,7 +631,7 @@ bool parametricCalibrator::checkGoneToZero(int j)
     return ok;
 }
 
-bool parametricCalibrator::checkGoneToZeroThreshold(int j)
+bool parametricCalibratorEth::checkGoneToZeroThreshold(int j)
 {
     // wait.
     bool finished = false;
@@ -670,7 +672,7 @@ bool parametricCalibrator::checkGoneToZeroThreshold(int j)
     return finished;
 }
 
-bool parametricCalibrator::park(DeviceDriver *dd, bool wait)
+bool parametricCalibratorEth::park(DeviceDriver *dd, bool wait)
 {
     yTrace();
     int nj=0;
@@ -759,14 +761,14 @@ bool parametricCalibrator::park(DeviceDriver *dd, bool wait)
     return true;
 }
 
-bool parametricCalibrator::quitCalibrate()
+bool parametricCalibratorEth::quitCalibrate()
 {
 //    yTrace() << deviceName.c_str() << ": Quitting calibrate\n";
     abortCalib = true;
     return true;
 }
 
-bool parametricCalibrator::quitPark()
+bool parametricCalibratorEth::quitPark()
 {
 //    yTrace() << deviceName.c_str() << ": Quitting parking\n";
     abortParking=true;

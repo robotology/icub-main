@@ -12,11 +12,9 @@
 #include <yarp/os/ResourceFinder.h>
 
 EmotionInterfaceModule::EmotionInterfaceModule(){
-
 }
 
 EmotionInterfaceModule::~EmotionInterfaceModule(){
-   
 }
 
 bool EmotionInterfaceModule::configure(ResourceFinder& config){
@@ -25,7 +23,7 @@ bool EmotionInterfaceModule::configure(ResourceFinder& config){
     int i;
 
     ConstString modName = config.find("name").asString();
-	setName(modName.c_str());
+    setName(modName.c_str());
 
     _lasttime = Time::now();
     if (config.check("help","if present, display usage message")) {
@@ -134,7 +132,7 @@ bool EmotionInterfaceModule::configure(ResourceFinder& config){
     }
     
       // open  ports
-	  
+      
     _inputPort.open(getName("/in")); 
     _outputPort.open(getName("/out"));
     
@@ -146,8 +144,8 @@ bool EmotionInterfaceModule::configure(ResourceFinder& config){
 
 bool EmotionInterfaceModule::close(){
     
-	_inputPort.close();
-	_outputPort.close();
+    _inputPort.close();
+    _outputPort.close();
     
     if (_emotion_table != NULL)
     {
@@ -165,7 +163,6 @@ bool EmotionInterfaceModule::interruptModule(){
     return true;
 }
 
-
 bool EmotionInterfaceModule::updateModule(){
     double curtime;
     int expr;
@@ -180,10 +177,12 @@ bool EmotionInterfaceModule::updateModule(){
            setAll(cmd);
         }
     }
-    Time::delay(0.1);
     return true;
 }
 
+double EmotionInterfaceModule::getPeriod(){
+    return 1.0;
+}
 
 bool EmotionInterfaceModule::respond(const Bottle &command,Bottle &reply){
         
@@ -252,7 +251,7 @@ bool EmotionInterfaceModule::respond(const Bottle &command,Bottle &reply){
                 break;
             }
             break;
-		    default:
+            default:
                 cout << "received an unknown request after a VOCAB_GET" << endl;
                 break;
             }
@@ -274,7 +273,7 @@ bool EmotionInterfaceModule::respond(const Bottle &command,Bottle &reply){
         reply.addVocab(EMOTION_VOCAB_OK);
 
     return ok;
-} 	
+}   
 
 //get the index in _emotions_table of a emotion name
 int EmotionInterfaceModule::getIndex(const ConstString cmd)
@@ -302,7 +301,7 @@ bool EmotionInterfaceModule::writePort(const char* cmd)
     btmp.clear();
     btmp.addString(cmd);
     _outputPort.write(true);
-	Time::delay(0.001);
+    Time::delay(0.001);
     return true;
 }
 

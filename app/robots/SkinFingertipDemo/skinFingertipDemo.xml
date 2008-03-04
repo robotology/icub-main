@@ -1,0 +1,25 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<robot name="SkinFingertipDemo" prefix="SkinFingertipDemo">
+    <!-- SKIN -->
+    <devices file="wrappers/skin/fingertip_wrapper.xml" />
+    <devices file="hardware/skin/fingertip.xml" />
+
+    <!--
+    <devices file="wrappers/skin/left_arm_skin_wrapper.xml" />
+    <devices file="wrappers/skin/right_arm_skin_wrapper.xml" />  
+    <devices file="wrappers/skin/torso_skin_wrapper.xml" />  
+    <devices file="hardware/skin/left_arm.xml" />
+    <devices file="hardware/skin/right_arm.xml" />  
+    <devices file="hardware/skin/torso.xml" />  
+    -->
+
+    <!-- MTX INERTIAL SENSOR & SKIN INERTIAL SENSOR-->
+    <!-- 
+    <devices file="hardware/inertial.xml" />
+    <devices file="wrappers/skin/left_hand_inertial_wrapper.xml" />  
+    <devices file="wrappers/skin/right_hand_inertial_wrapper.xml" />  
+    <devices file="hardware/skin/left_hand_inertial_mtb.xml" />  
+    <devices file="hardware/skin/right_hand_inertial_mtb.xml" />  
+    -->
+</robot> 
+
