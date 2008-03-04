@@ -8,7 +8,7 @@
                              <!--   0             1             2                           logical axis number (ControlBoardWrapper) -->
 	<param name="AxisMap">          2             0             1           </param>   <!-- hardware axis number  (EMS) -->
         <param name="Encoder">   	182.044       182.044       182.044     </param>
-        <param name="Zeros">     	180.00        180.00        180.00      </param>
+        <param name="Zeros">     	180.00        179.00        180.00      </param>
         <param name="TorqueId">  	0x0C          0x0C          0x0C  	</param>
         <param name="TorqueChan">	0             1             2		</param>
         <param name="TorqueMax"> 	18            18            18		</param>
