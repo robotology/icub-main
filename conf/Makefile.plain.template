@@ -1,0 +1,59 @@
+# Makefile.plain.template, general purpose makefile definitions for the RobotCub project.
+# Copyright (C) 2005 Giorgio Metta, LIRA-Lab
+# RobotCub Consortium, European Commission FP6 Project IST-004370
+# email:   giorgio.metta@robotcub.org
+# website: www.robotcub.org
+# 
+# Permission is granted to copy, distribute, and/or modify this program 
+# under the terms of the GNU General Public License, version 2 or any later
+# version published by the Free Software Foundation. A copy of the license can be 
+# found at http://www.robotcub.org/icub/license/gpl.txt
+# 
+# 
+# This program is distributed in the hope that it will be useful, but WITHOUT ANY
+# WARRANTY; without even the implied warranty of MERCHANTABILITY or FITNESS FOR A 
+# PARTICULAR PURPOSE. See the GNU General Public License for more details.
+#
+# $Id: Makefile.plain.template,v 1.1 2005/07/08 14:20:29 pasa Exp $
+#
+
+include $(ICUB_ROOT)/conf/Makefile.def
+
+#
+# must have permission to write to this directory.
+#
+ifndef ICUB_INSTALL
+ICUB_INSTALL = /usr/local
+endif
+
+SUBDIRS += 
+
+#
+# compile only. recursive. result of compilation is local
+#
+default:
+	@for d in $(SUBDIRS) ; do \
+		test -d $$d && ( cd $$d ; $(MAKE) ) ; done
+
+#
+# sysinstall. install system wide. ICUB_INSTALL must be defined.
+#
+sysinstall:
+	@for d in $(SUBDIRS) ; do \
+		test -d $$d && ( cd $$d ; $(MAKE) sysinstall ) ; done
+
+#
+# install. install iCub wide. Used to compile multiple modules
+#  together when developing code.
+#
+install:
+	@for d in $(SUBDIRS) ; do \
+		test -d $$d && ( cd $$d ; $(MAKE) install ) ; done
+
+#
+# recursive clean.
+#
+clean:
+	@for d in $(SUBDIRS) ; do \
+		test -d $$d && ( cd $$d ; $(MAKE) clean ) ; done
+

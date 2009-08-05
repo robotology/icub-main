@@ -1,0 +1,32 @@
+#
+# Find the ARTOOLKITPLUS includes and library
+#
+# This module defines
+# ARTOOLKITPLUS_INCLUDE_DIR
+# ARTOOLKITPLUS_LIBRARIES, the libraries to link against to use ARTOOLKITPLUS.
+# ARTOOLKITPLUS_FOUND, If false, do not try to use ARTOOLKITPLUS.
+# Requires and environment variable ARTKP_DIR pointing to the root of the package
+# This has only been tested in windows :-(
+# Right now this is only including the basics ...
+
+
+FIND_PATH(ARTOOLKITPLUS_INCLUDE_DIR ARToolKitPlus/ar.h $ENV{ARTKP}/include )
+
+IF(WIN32)
+   FIND_LIBRARY(ARTOOLKITPLUS_LIBRARIES ARToolKitPlus.lib $ENV{ARTKP}/lib/win32 )
+ELSE(WIN32)
+   FIND_LIBRARY(ARTOOLKITPLUS_LIBRARIES ARToolKitPlus $ENV{ARTKP}/lib )
+ENDIF(WIN32)
+  
+SET(ARTOOLKITPLUS_FOUND FALSE)
+
+IF(ARTOOLKITPLUS_INCLUDE_DIR)
+  IF(ARTOOLKITPLUS_LIBRARIES)
+     SET(ARTOOLKITPLUS_FOUND TRUE)
+  ENDIF(ARTOOLKITPLUS_LIBRARIES)
+ENDIF(ARTOOLKITPLUS_INCLUDE_DIR)
+
+MARK_AS_ADVANCED(
+  ARTOOLKITPLUS_LIBRARIES
+)
+

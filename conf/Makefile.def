@@ -1,0 +1,61 @@
+# Makefile.template, general purpose makefile definitions for the RobotCub project.
+# Copyright (C) 2005 Giorgio Metta, LIRA-Lab
+# RobotCub Consortium, European Commission FP6 Project IST-004370
+# email:   giorgio.metta@robotcub.org
+# website: www.robotcub.org
+# 
+# Permission is granted to copy, distribute, and/or modify this program 
+# under the terms of the GNU General Public License, version 2 or any later
+# version published by the Free Software Foundation. A copy of the license can be 
+# found at http://www.robotcub.org/icub/license/gpl.txt
+# 
+# 
+# This program is distributed in the hope that it will be useful, but WITHOUT ANY
+# WARRANTY; without even the implied warranty of MERCHANTABILITY or FITNESS FOR A 
+# PARTICULAR PURPOSE. See the GNU General Public License for more details.
+#
+# $Id: Makefile.def,v 1.1 2005/07/08 14:20:29 pasa Exp $
+#
+
+ifeq ($(shell uname),Linux)
+
+	SYSDIR = linux
+	EXTRA_OPTS = $(ICUB_DEBUG) -fexceptions -pipe -Wpointer-arith -Wno-uninitialized 
+	CC = g++
+	CC1 = gcc
+	CDEFS = $(EXTRA_OPTS) -D__LINUX__ -DICUB_OS_CONFIG=LINUX -I/usr/include/g++/ -I$(ICUB_ROOT)/include/
+	# got this from ACE compile.	
+	CDEFS += -DACE_NDEBUG -DACE_USE_RCSID=0
+	CDEFS += -DACE_HAS_EXCEPTIONS -D__ACE_INLINE__ -DACE_HAS_ACE_TOKEN -DACE_HAS_ACE_SVCCONF -DACE_AS_STATIC_LIBS 
+	CFAST = -O3
+	LIBADD = -lpthread -ldl
+
+else
+    ifeq ($(shell uname),Darwin)
+
+        SYSDIR = darwin
+        EXTRA_OPTS = $(ICUB_DEBUG)  -pipe -Wpointer-arith -Wno-long-double -mcpu=G3 -mtune=G4 
+        CC = g++
+        CC1 = gcc
+        CDEFS = $(EXTRA_OPTS) -D__DARWIN__ -DICUB_OS_CONFIG=DARWIN -I/usr/include/gcc/darwin/default/c++/ -I$(ICUB_ROOT)/include/
+        # got this from ACE compile.
+        CDEFS += -DACE_NDEBUG -DACE_USE_RCSID=0
+        CDEFS += -DACE_HAS_EXCEPTIONS -D__ACE_INLINE__ -DACE_HAS_ACE_TOKEN -DACE_HAS_ACE_SVCCONF -DACE_AS_STATIC_LIBS
+        CFAST = -O2
+        LIBADD = -lpthread -ldl
+
+	ARFLAGS = -sr
+    endif
+endif
+
+OS=$(SYSDIR)
+
+ICUBSYSINC = -I$(ICUB_ROOT)/include/$(SYSDIR)
+
+# this only works on certain shells (or at least it seems to fail on qnx sh).
+ifndef MYCODELIB
+  MYCODELIB = $(notdir $(patsubst %/src, %, $(PWD)))
+endif
+
+CP=cp
+
