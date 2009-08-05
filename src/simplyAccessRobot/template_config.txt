@@ -1,0 +1,114 @@
+// #############################################################################
+//
+// This is the configuration file for a simple access to any robot running under 
+// YARP and using its perception ( at the current stage I removed access to the 
+// encoder values - so currently vision only ).
+//
+// IMPORTANT: also works with files and without any robot. just take a dump and 
+// use that offline.
+//
+// For questions write to bucko@liralab.it
+//
+// #############################################################################
+
+// *****************************************************************************
+//
+//                             Execution settings
+//
+// *****************************************************************************
+
+// can be "robot" or "file"
+[EXECUTION]
+Source				robot
+Stereovision			off
+
+// Robot mode settings
+[DATASOURCES]
+Robot_cam1 			/icub/cam/left
+Robot_cam2 			/icub/cam/right
+
+[OUTPORTS]
+viewer1_out_port 		/icub/viewer1/left
+viewer2_out_port 		/icub/viewer2/right
+
+tracker_pos_left_out_port	/icub/trackerPosLeft
+tracker_pos_right_out_port	/icub/trackerPosRight
+
+[NOF_EXECUTIONS]
+Nof_loops 			1
+
+// *****************************************************************************
+//
+//                  Recording and Display settings
+//
+// *****************************************************************************
+
+[RECORDING]
+Rec_perception 			off
+Rec_results 			off
+Rec_stats 			off
+
+[DISPLAY]
+display 			on
+
+// *****************************************************************************
+//
+//                  I/O settings (files and locations)
+//
+// *****************************************************************************
+
+[STATS]
+FileOut_stat 			../dump/statistics.txt
+
+[RESULT_LOC]
+viewer1_record_dir 		D:/MyRepository/Imagesource/markerTracker/5/left/
+viewer2_record_dir 		D:/MyRepository/Imagesource/markerTracker/5/right/
+
+
+// *****************************************************************************
+//
+//                              Parameter settings
+//
+// *****************************************************************************
+			
+
+// #############################################################################
+//
+// This is the configuration part for the simpleAccessRobot module 
+// when you use in in file mode.
+//
+// For questions write to bucko@liralab.it
+//
+// #############################################################################
+
+// *****************************************************************************
+//
+//                            Dump locations & settings
+//
+// *****************************************************************************
+
+// 
+[SOURCE]
+CamDump2Use_left 		DUMP001
+CamDump2Use_right 		DUMP002
+
+[DUMP001]
+dump_DIR 			D:/MyRepository/Imagesource/markerTracker/5/left/
+// image frames
+dump_NAME 			left_eye_
+dump_ENDING 			.ppm
+dump_NUMLEN 			5
+dump_ZEROFILLING 		off
+dump_MINFILENUM 		0
+dump_MAXFILENUM 		368
+
+[DUMP002]
+dump_DIR 			D:/MyRepository/Imagesource/markerTracker/5/right/
+// image frames
+dump_NAME 			right_eye_
+dump_ENDING 			.ppm
+dump_NUMLEN 			5
+dump_ZEROFILLING 		off
+dump_MINFILENUM 		0
+dump_MAXFILENUM 		368
+
