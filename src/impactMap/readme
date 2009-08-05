@@ -1,0 +1,15 @@
+impactMap
+author: Chris McCarthy (cdmcc@rsise.anu.edu.au)
+
+*** work in progress - not intended for use as yet ***
+
+Predicts impact point about a single camera from the optical flow.
+
+Currently runs with no command line options.  Just run ./impactMap, and
+connect the impactMap/imageIn port to the framegrabber.
+
+Video output can be read from impactMap/imageOut.
+
+Options and documentation to come.
+
+All questions to Chris McCarthy (cdmcc@rsise.anu.edu.au)
