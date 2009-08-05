@@ -1,0 +1,117 @@
+// #############################################################################
+//
+// This is the configuration file for the markerTracker
+//
+// For questions write to bucko@liralab.it
+//
+// P.Fitzpatrick & M. Bucko
+//
+// #############################################################################
+
+// *****************************************************************************
+//
+//                             Execution settings
+//
+// *****************************************************************************
+
+// can be "robot" or "file"
+[EXECUTION]
+Source				file
+Stereovision			off
+
+// Robot mode settings
+[DATASOURCES]
+Robot_cam1 			/james/cam/left
+Robot_cam2 			/james/cam/right
+
+[OUTPORTS]
+viewer1_out_port 		/james/viewer1/left
+viewer2_out_port 		/james/viewer2/right
+
+tracker_pos_left_out_port	/james/trackerPosLeft
+tracker_pos_right_out_port	/james/trackerPosRight
+
+[NOF_EXECUTIONS]
+Nof_loops 			1
+
+// *****************************************************************************
+//
+//                  Recording and Display settings
+//
+// *****************************************************************************
+
+[RECORDING]
+Rec_perception 			off
+Rec_results 			off
+Rec_stats 			off
+Rec_steps			off
+
+[DISPLAY]
+display 			on
+
+// *****************************************************************************
+//
+//                  I/O settings (files and locations)
+//
+// Note: for the execution of the module in "file mode" there is an other 
+//       configuration file called "configFM.txt" where the source dumps'
+//       location are set.
+//
+// *****************************************************************************
+
+[STATS]
+FileOut_stat 			../dump/statistics.txt
+
+[RESULT_LOC]
+viewer1_record_dir 		../dump/4/left/
+viewer2_record_dir 		../dump/4/right/
+
+
+// *****************************************************************************
+//
+//                              Parameter settings
+//
+// *****************************************************************************
+
+[BUFFER]
+BufferSize 			20				
+
+// #############################################################################
+//
+// This is the configuration part for the hand localization and detection module 
+// (halode) when you use in in file mode.
+//
+// For questions write to bucko@liralab.it
+//
+// #############################################################################
+
+// *****************************************************************************
+//
+//                            Dump locations & settings
+//
+// *****************************************************************************
+
+// 
+[SOURCE]
+CamDump2Use_left 		DUMP001
+CamDump2Use_right 		DUMP002
+
+[DUMP001]
+dump_DIR 			D:/MyRepository/Imagesource/markerTracker/4/left/
+// image frames
+dump_NAME 			left_eye_
+dump_ENDING 			.ppm
+dump_NUMLEN 			5
+dump_ZEROFILLING 		off
+dump_MINFILENUM 		0
+dump_MAXFILENUM 		399
+
+[DUMP002]
+dump_DIR 			D:/MyRepository/Imagesource/markerTracker/4/right/
+// image frames
+dump_NAME 			right_eye_
+dump_ENDING 			.ppm
+dump_NUMLEN 			5
+dump_ZEROFILLING 		off
+dump_MINFILENUM 		0
+dump_MAXFILENUM 		399
