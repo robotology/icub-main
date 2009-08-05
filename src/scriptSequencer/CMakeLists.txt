@@ -1,0 +1,16 @@
+SET(PROJECTNAME scriptSequencer)
+
+PROJECT(${PROJECTNAME})
+
+FIND_PACKAGE(YARP)
+FIND_PACKAGE(ICUB)
+
+SET(folder_source main.cpp)
+
+SOURCE_GROUP("Source Files" FILES ${folder_source})
+
+ADD_EXECUTABLE(${PROJECTNAME} ${folder_source})
+INSTALL(TARGETS ${PROJECTNAME} DESTINATION ${ICUB_DIR}/bin)
+
+
+
