@@ -1,0 +1,18 @@
+#the number of patterns to be recognized
+3
+
+#pattern 1
+hiro
+patt.hiro 
+80.0
+
+#pattern 2
+pessoa
+patt.kanji
+80.0
+
+#pattern 3
+ponto
+patt.sample1
+80.0
+
