@@ -1,0 +1,75 @@
+<application>
+  <name>LogPolarModule starter</name>
+  <dependencies>
+    <port>/icub01</port>
+    <port>/rea</port>
+  </dependencies>
+  <module>
+    <name>yarpview</name>
+    <parameters>--name /rea/view0 --x 0 --y 10 --synch</parameters>
+    <node>rea</node>
+    <tag>view0</tag>
+  </module>
+  <module>
+    <name>yarpview</name>
+    <parameters>--name /rea/view1 --x 320 --y 10 --synch</parameters>
+    <node>rea</node>
+    <tag>view1</tag>
+  </module>
+  <module>
+    <name>yarpview</name>
+    <parameters>--name /rea/view2 --x 640 --y 10 --synch</parameters>
+    <node>rea</node>
+    <tag>view2</tag>
+  </module>
+  <module>
+    <name>BMLInterface</name>
+    <parameters></parameters>
+    <node>rea</node>
+    <stdio>rea</stdio>
+    <tag>interface</tag>
+  </module>
+  <module>
+    <name>BMLEngine</name>
+    <parameters></parameters>
+    <node>rea</node>
+    <stdio>rea</stdio>
+    <tag>engine</tag>
+  </module>
+  <connection>
+    <output>/rea/BMLInterface/out</output>
+    <input>/rea/BMLEngine/inCmd</input>
+    <protocol>tcp</protocol>
+  </connection>
+  <connection>
+    <output>/rea/BMLEngine/out0</output>
+    <input>/rea/view0</input>
+    <protocol>tcp</protocol>
+  </connection>
+  <connection>
+    <output>/rea/BMLEngine/out1</output>
+    <input>/rea/view1</input>
+    <protocol>tcp</protocol>
+  </connection>
+  <connection>
+    <output>/rea/BMLEngine/out2</output>
+    <input>/rea/view2</input>
+    <protocol>tcp</protocol>
+  </connection>
+  <connection>
+    <output>/rea/BMLEngine/out0</output>
+    <input>/rea/BMLInterface/inLayer0</input>
+    <protocol>tcp</protocol>
+  </connection>
+  <connection>
+    <output>/rea/BMLEngine/out1</output>
+    <input>/rea/BMLInterface/inLayer1</input>
+    <protocol>tcp</protocol>
+  </connection>
+  <connection>
+    <output>/rea/BMLEngine/out2</output>
+    <input>/rea/BMLInterface/inLayer2</input>
+    <protocol>tcp</protocol>
+  </connection>
+</application>
+

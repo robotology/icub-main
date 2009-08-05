@@ -1,0 +1,329 @@
+bool BMLEngine::updateModule() {
+
+	getImage();
+
+	Bottle *bot=portCmd.read(false);
+	if(bot!=NULL){
+		string *commandTOT=new string(bot->toString().c_str());
+		printf("Bottle  is: %s\n",commandTOT->c_str());
+		SIZE_T parOpen=commandTOT->find("(");
+		
+		string command=commandTOT->substr(0,parOpen-1);
+		string option=commandTOT->substr(parOpen+1,commandTOT->size()-parOpen);
+		
+		
+		SIZE_T parPos1=option.find("(");
+		SIZE_T parPos2=option.find(")");
+		SIZE_T spacePos=option.find(" ");
+		string optionName1,optionValue1,optionName2, optionValue2;
+		if(spacePos!=string::npos){
+			optionName1=option.substr(parPos1+1,spacePos-parPos1);
+			optionValue1= option.substr(spacePos+1,parPos2-spacePos-1);
+			SIZE_T dim=option.size();
+			option=option.substr(parPos2+2,dim-2-parPos2);
+
+			parPos1=option.find("(");
+			if(parPos1!=string::npos){
+				parPos2=option.find(")");
+				spacePos=option.find(" ");
+				optionName2=option.substr(parPos1+1,spacePos-parPos1);
+				optionValue2= option.substr(spacePos+1,parPos2-spacePos-1);
+				option=option.substr(parPos2,option.size()-parPos2);
+			}
+		
+			//string name=option.substr(1,spacePos-1);
+			//string value=option.substr(spacePos+1,option.size()-spacePos);
+		}
+
+		printf("command: |%s| \n",command.c_str());
+		printf("option: |%s| \n",option.c_str());
+		printf("name1: |%s| \n",optionName1.c_str());
+		printf("value1: |%s| \n",optionValue1.c_str());
+		
+
+		if(!strcmp(command.c_str(),"EvolveFreely")){
+			printf("ExecuteFreely \n");
+			runFreely=true;
+			runClamped=false;
+		}
+		if(!strcmp(command.c_str(),"EvolveClamped")){
+			printf("ExecuteClamped \n");
+			runFreely=false;
+			runClamped=true;
+		}
+		if(!strcmp(command.c_str(),"Stop")){
+			printf("ExecuteStop \n");
+			runFreely=false;
+			runClamped=false;
+		}
+		else if(!strcmp(command.c_str(),"ClampLayer")){
+			printf("ClampLayer \n");
+			clampLayer(currentLayer);
+		}
+		else if((!strcmp(command.c_str(),"Learn")))
+			printf("Learn \n");
+		else if(!strcmp(command.c_str(),"Save")){
+			printf("save Configuration \n");
+			this->mb->saveConfiguration();
+		}
+		else if((!strcmp(command.c_str(),"Load"))){
+			printf("loadConfiguration \n");
+			this->loadConfiguration("configuration.ini");
+		}
+		else if((!strcmp(command.c_str(),"AddLayer"))){
+			printf("addLayer \n");
+			int valueRow=atoi(optionValue1.c_str());
+			int valueCol=atoi(optionValue2.c_str());
+			this->addLayer(countLayer,valueRow,valueCol);
+			countLayer++;
+		}
+		else if((!strcmp(command.c_str(),"CurrentLayer"))){
+			
+			int valueLayer=atoi(optionValue1.c_str());
+			printf("CurrentUnit %d \n",valueLayer);
+			//int valueCol=atoi(optionValue2.c_str());
+			this->setCurrentLayer(valueLayer);
+		}	
+	}	
+
+	count=(count+1)%40;
+	//cout<<count;
+	//cout<<".";		
+	list<Unit>::iterator iter;
+	list<Unit>::iterator iter2;
+
+	//extract every unit present in the BoltzmannMachine
+	//int psb;
+	IppiSize srcsize={320,240};
+	
+	
+	int k=0;
+	if((enableDraw)&&((unsigned int)mb!=0xcccccccc)){
+		img.resize(320,240);
+		//img2->resize(320,240);
+		img_tmp.resize(320,240);
+		int countLayer=-1;
+		//for(iterE=mb->elementList.begin(); iterE!=mb->elementList.end();iterE++){	//iterE=mb->elementList.begin();
+
+			
+
+			//Layer layer=iterE->second;
+			int totUnits;
+			int countUnit=0;
+			int ycount=-1;
+			string layerName("");
+			string layerName_pr("");
+			for(iter=mb->_unitList.begin(); iter!=mb->_unitList.end();iter++){
+				//countUnit++;
+				ct = ((countUnit%10)-1)*24;
+				
+				//printf("unit name:%s,%d \n",iter->getName().c_str(),iter->getState());
+				size_t posR=iter->getName().find('R');
+				layerName=iter->getName().substr(0,posR-0);
+				//printf("layer name:%s \n",layerName.c_str());
+				
+				if(strcmp(layerName_pr.c_str(),layerName.c_str())){
+					//count the number of element in the row
+					bool end_loop=false;
+					totUnits=-1;
+					iter2=iter;
+					//count the number of units
+					for(;!end_loop;iter2++){
+						size_t posR=iter2->getName().find('R');
+						size_t posU=iter2->getName().find('U');
+						string number_str=iter2->getName().substr(posR+1,posU-posR-1);
+						int number=atoi(number_str.c_str());
+						if(number!=0){
+							end_loop=true;
+						}
+						totUnits++;
+					}
+					printf("totUnits: %d of layer %s",totUnits, layerName.c_str());
+					//printf("countUnits: %d", totUnits);
+					//printf("Change!");
+					//exit condition
+					if(strcmp(layerName_pr.c_str(),"")){
+						string countLayer_str=layerName_pr.substr(1,1);
+						countLayer=atoi(countLayer_str.c_str());
+						//printf("number Layer %d \n",countLayer);
+						// output the image
+						//ippiCopy_8u_C1R(red_tmp,psb,im_tmp[0],psb,srcsize);
+						//ippiCopy_8u_C1R(green_tmp,psb,im_tmp[1],psb,srcsize);
+						//ippiCopy_8u_C1R(blue_tmp,psb,im_tmp[2],psb,srcsize);
+						im_tmp[0]=red_tmp;
+						im_tmp[1]=green_tmp;
+						im_tmp[2]=blue_tmp;
+						
+
+						//ippiCopy_8u_C1R(green_tmp,psb,im_tmp[1],psb,srcsize);
+						//ippiCopy_8u_C1R(blue_tmp,psb,im_tmp[2],psb,srcsize);
+						//ippiCopy_8u_C1R(red_tmp,psb,img2->getPixelAddress(0,0),320,srcsize);
+						
+						// output the image
+						if(countLayer==0){
+							ippiCopy_8u_P3C3R(im_tmp,psb,img2->getPixelAddress(0,0),320*3,srcsize);
+							port0.prepare() = *img2;
+							//if((unsigned int)ptr_inputImage2!=0xcccccccc)
+							//	port0.prepare()= *ptr_inputImage2;
+							port0.write();
+						}
+						else if(countLayer==1){
+							ippiCopy_8u_P3C3R(im_tmp,psb,img2->getPixelAddress(0,0),320*3,srcsize);
+							port1.prepare() = *img2;
+							port1.write();
+						}
+						else if(countLayer==2){
+							ippiCopy_8u_P3C3R(im_tmp,psb,img0->getPixelAddress(0,0),320*3,srcsize);
+							port2.prepare() = *img2;
+							port2.write();
+						}
+						else if(countLayer==3){
+							ippiCopy_8u_P3C3R(im_tmp,psb,img0->getPixelAddress(0,0),320*3,srcsize);
+							port3.prepare() = *img2;
+							port3.write();
+						}
+					}
+
+					/*ippiFree(red_tmp);
+					ippiFree(green_tmp);
+					ippiFree(blue_tmp);
+					red_tmp= ippiMalloc_8u_C1(320,240,&psb);
+					blue_tmp= ippiMalloc_8u_C1(320,240,&psb);
+					green_tmp= ippiMalloc_8u_C1(320,240,&psb);*/
+					for(int i=0;i<320*240;i++){
+						red_tmp[i]=255;
+						blue_tmp[i]=255;
+						green_tmp[i]=255;
+					}
+					
+					layerName_pr.assign(layerName);
+					countUnit=0;
+					ycount=0;
+				} // close if(strcmp(layerName_pr.c_str(),layerName.c_str()))
+				
+				printf("totUnits: %d of layer %s",totUnits, layerName.c_str());
+				
+
+				if(countUnit%totUnits==0){
+					ycount++;
+				}
+
+				if(iter->getState()){
+					for(int x=0;x<scaleFactorX;x++)
+						for(int y=0;y<scaleFactorY;y++){
+							red_tmp[(countUnit%totUnits)*scaleFactorX+x+(ycount*scaleFactorY+y)*320]=255;
+							blue_tmp[(countUnit%totUnits)*scaleFactorX+x+(ycount*scaleFactorY+y)*320]=0;
+							green_tmp[(countUnit%totUnits)*scaleFactorX+x+(ycount*scaleFactorY+y)*320]=0;
+						}
+				}
+				else{
+					for(int x=0;x<scaleFactorX;x++)
+						for(int y=0;y<scaleFactorY;y++){
+							red_tmp[(countUnit%totUnits)*scaleFactorX+x+(ycount*scaleFactorY+y)*320]=0;
+							blue_tmp[(countUnit%totUnits)*scaleFactorX+x+(ycount*scaleFactorY+y)*320]=0;
+							green_tmp[(countUnit%totUnits)*scaleFactorX+x+(ycount*scaleFactorY+y)*320]=0;
+						}
+				}
+				countUnit++;
+			} // close  for(iter=mb->_unitList.begin(); iter!=mb->_unitList.end();iter++)
+			
+
+
+			string countLayer_str=layerName.substr(1,1);
+			countLayer=atoi(countLayer_str.c_str());
+			//printf("number Layer %d \n",countLayer);
+			// output the image
+			//ippiCopy_8u_C1R(red_tmp,psb,im_tmp[0],psb,srcsize);
+			//ippiCopy_8u_C1R(green_tmp,psb,im_tmp[1],psb,srcsize);
+			//ippiCopy_8u_C1R(blue_tmp,psb,im_tmp[2],psb,srcsize);
+			im_tmp[0]=red_tmp;
+			im_tmp[1]=green_tmp;
+			im_tmp[2]=blue_tmp;
+
+			//ippiCopy_8u_C1R(green_tmp,psb,im_tmp[1],psb,srcsize);
+			//ippiCopy_8u_C1R(blue_tmp,psb,im_tmp[2],psb,srcsize);
+			//ippiCopy_8u_C1R(red_tmp,psb,img2->getPixelAddress(0,0),320,srcsize);
+			ippiCopy_8u_P3C3R(im_tmp,psb,img2->getPixelAddress(0,0),320*3,srcsize);
+			// output the image
+			if(countLayer==0){
+				port0.prepare() = *img2;
+				//if((unsigned int)ptr_inputImage2!=0xcccccccc)
+				//	port0.prepare()= *ptr_inputImage2;
+				port0.write();
+			}
+			else if(countLayer==1){
+				port1.prepare() = *img2;
+				port1.write();
+			}
+			else if(countLayer==2){
+				port2.prepare() = *img2;
+				port2.write();
+			}
+			else if(countLayer==3){
+				port3.prepare() = *img2;
+				port3.write();
+			}
+
+			/*ippiFree(red_tmp);
+			ippiFree(green_tmp);
+			ippiFree(blue_tmp);
+			red_tmp= ippiMalloc_8u_C1(320,240,&psb);
+			blue_tmp= ippiMalloc_8u_C1(320,240,&psb);
+			green_tmp= ippiMalloc_8u_C1(320,240,&psb);*/
+			for(int i=0;i<320*240;i++){
+				red_tmp[i]=255;
+				blue_tmp[i]=255;
+				green_tmp[i]=255;
+			}
+
+			layerName_pr.assign(layerName);
+			countUnit=0;
+			ycount=0;
+		//}
+	}
+	
+	
+
+
+	//---------------------EVOLVE the Boltzmann Machine
+	if(runFreely){
+		mb->evolveFreely(2,1);
+		count++;
+	}
+	else if(runClamped){
+		mb->evolveClamped(2,1);
+		count++;
+	}
+	if((count>10)&&(count<20)){
+		//mb->evolveFreely(2);
+	}
+	if(count==20){
+			enableDraw=true;
+			//equilibrium of the freely mode or clamped mode
+			//it is now possible of set the probability either of freely mode or clamped modo
+			if(runFreely){
+				mb->setProbabilityFreely();
+				count=0;
+			}
+			else if(runClamped){
+				mb->setProbabilityClamped();
+				count=0;
+			}
+			//mb->setProbabilityFreely();
+	}
+
+	if((count>20)&&(count<30)){
+		//mb->evolveClamped(2);
+	}
+	if(count==30){
+		//equilibrium of clampled mode
+		//it is now possible of set the probability of clamped mode
+		//mb->setProbabilityClamped();
+		//LEARNING COMMAND
+		//mb->learn();
+	}
+	if((count>30)&&(count<40)){
+		//run freely with input layer clamped
+	}
+    return true;
+}
