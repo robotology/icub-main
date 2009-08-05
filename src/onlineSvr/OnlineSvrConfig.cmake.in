@@ -1,0 +1,2 @@
+SET(OnlineSvr_INCLUDE_DIRS @OnlineSvr_INCLUDE_DIRS@)
+SET(OnlineSvr_LIBRARIES @OnlineSvr_LIBRARIES@)
