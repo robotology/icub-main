@@ -1,0 +1,63 @@
+
+/**
+ * @ingroup icub_module
+ *
+ * \defgroup icub_bremen_learner learner
+ *
+
+An online SVM learning module of some sort by Francesco Orabona (bremen).
+
+Some notes from paulfitz on using this module.
+I'm not the author, so this information may not be accurate.
+
+To get information on command line options:
+\verbatim
+  ./learner
+\endverbatim
+
+It will start up if you supply "dom" "cod" and "ex" numbers:
+\verbatim
+  ./learner --dom 1 --cod 1 --ex 200
+\endverbatim
+
+ - The "dom" number controls how many input variables there are.
+ - The "cod" number controls how many output variables there are.
+ - The "ex" number seems to control how many samples are stored, or 
+something related to this.  If it is small, the learner is very
+stupid, that's all I know.
+
+When the program is running, type "quit" to stop, "help" for information 
+on commands.
+ - [clr] : resets learner
+ - [c] 42.2 : changes "c" value - read code to see what c is.
+
+I added a simple learner_tester program that will send numbers to
+a learner and show the results.  Basically, send vectors of 
+length dom+cod to train, and vectors of length dom to test.
+
+
+  \dot
+  digraph module_bremen_learner_example {
+      graph [ rankdir = "LR" ];
+      edge [arrowhead="open", style="solid"];
+      node [shape=ellipse];
+      subgraph cluster_salience {
+       color = "black"; style = "solid";
+       label = "learner module";
+        "/learner/i:vec";
+        "/learner/o:vec";
+        "/learner/i:bot";
+      }
+      "/learner/o:vec" -> "get predictions here"
+      "training and testing" -> "/learner/i:vec"
+      "commands (e.g. reset)" -> "/learner/i:bot"
+  \enddot
+
+\see iCub::contrib::LearnerModule
+
+\author Francesco Orabona
+
+ *
+ */
+
+
