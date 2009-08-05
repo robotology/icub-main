@@ -1,0 +1,33 @@
+<application>
+  <name>BIControlGaze starter</name>
+  <dependencies>
+    <port>/icub02</port>
+    <port>/rea</port>
+  </dependencies>
+  <module>
+    <name>yarpview</name>
+    <parameters>--name /rea/view0 --x 0 --y 10 --synch</parameters>
+    <node>rea</node>
+    <tag>view0</tag>
+  </module>
+  <module>
+    <name>BIControlGazeInterface</name>
+    <parameters></parameters>
+    <node>rea</node>
+    <stdio>rea</stdio>
+    <tag>interface</tag>
+  </module>
+  <module>
+    <name>BIControlGazeEngine</name>
+    <parameters>--file E:\work\iCub\src\BIControlGaze\icub_yaheadcontrol.ini</parameters>
+    <node>rea</node>
+    <stdio>rea</stdio>
+    <tag>engine</tag>
+  </module>
+  <connection>
+    <output>/rea/BIControlGazeInterface/out</output>
+    <input>/rea/BIControlGazeEngine/inCmd</input>
+    <protocol>tcp</protocol>
+  </connection>
+</application>
+
