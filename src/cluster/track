@@ -1,0 +1,33 @@
+#!/bin/bash
+
+op="start"
+
+# call program with "stop" or "stopmore" as argument to shut things down
+if [ ! "k$1" = "k" ]; then
+	op=$1
+fi
+
+if [ "$1" = "start" ] || [ "$1" = "stop" ] || [ "$1" = "stopmore" ]; then
+
+  if [ ! "$1" = "start" ]; then
+    yarp terminate /icub/tracker/quit
+    sleep 2
+  fi
+
+  ./yarprun $op nike trackerview yarpview --name /icub/tracker/view --x 620 --y 50
+  ./yarprun $op hercules tracker tracker --vvv --name /icub/tracker 
+
+else
+
+  protocol="mcast"
+  if [ ! "$op" = "connect" ]; then
+    protocol=""
+  fi
+
+  yarp $op /icub/left/cam /icub/tracker/img $protocol
+  yarp $op /icub/tracker/img /icub/tracker/view $protocol
+  yarp $op /icub/tracker/pos /icub/target
+
+fi
+
+

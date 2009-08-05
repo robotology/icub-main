@@ -1,0 +1,35 @@
+#!/bin/bash
+
+op="start"
+
+# call program with "stop" or "stopmore" as argument to shut things down
+if [ ! "k$1" = "k" ]; then
+	op=$1
+fi
+
+if [ "$1" = "start" ] || [ "$1" = "stop" ] || [ "$1" = "stopmore" ]; then
+
+  if [ "$1" = "stop" ] || [ "$1" = "stopmore" ]; then
+    yarp terminate /icub/right/cam/quit
+    yarp terminate /icub/left/cam/quit
+    sleep 2
+  fi
+
+  ./yarprun $op nike camera1 yarpview --name /icub/view1 --x 0 --y 50
+  ./yarprun $op nike camera2 yarpview --name /icub/view2 --x 310 --y 50
+  ./yarprun $op perseus grab1 yarpdev --device dragonfly --d 0 --width 640 --height 480 --name /icub/right/cam 
+  ./yarprun $op perseus grab2 yarpdev --device dragonfly --d 1 --width 160 --height 120 --name /icub/left/cam 
+
+else
+
+  protocol="mcast"
+  if [ ! "$op" = "connect" ]; then
+    protocol=""
+  fi
+
+  yarp $op /icub/left/cam /icub/view1 $protocol
+  yarp $op /icub/right/cam /icub/view2 $protocol
+
+fi
+
+

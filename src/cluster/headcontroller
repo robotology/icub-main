@@ -1,0 +1,33 @@
+#!/bin/bash
+
+op="start"
+
+# call program with "stop" or "stopmore" as argument to shut things down
+if [ ! "k$1" = "k" ]; then
+	op=$1
+fi
+
+if [ "$1" = "start" ] || [ "$1" = "stop" ] || [ "$1" = "stopmore" ]; then
+
+  if [ "$1" = "stop" ] || [ "$1" = "stopmore" ]; then
+    yarp terminate /controller_v1/quit
+    yarp terminate /simple_headcontrol/quit
+    sleep 2
+  fi
+
+  ./yarprun $op perseus controller1 controller_v1 --file icub.ini
+  sleep 1
+  ./yarprun $op perseus feedback simple_headcontrol --robot icub
+
+else
+
+  protocol="mcast"
+  if [ ! "$op" = "connect" ]; then
+    protocol=""
+  fi
+
+  echo "Nothing to connect"
+
+fi
+
+
