@@ -1,0 +1,11 @@
+INSTALL.vcproj.cmake
+ZERO_CHECK.vcproj.cmake
+camshift.sln
+ALL_BUILD.vcproj
+camshift.vcproj
+INSTALL.vcproj
+ZERO_CHECK.vcproj
+camshift.vcproj.VISBOOK.Vislab.user
+ALL_BUILD.vcproj.cmake
+camshift.vcproj.cmake
+cmake_install.cmake
