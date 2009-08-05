@@ -1,0 +1,33 @@
+PROJECT(cvBlobs)
+
+FIND_PACKAGE(ICUB REQUIRED)
+FIND_PACKAGE(YARP REQUIRED)
+FIND_PACKAGE(OpenCV REQUIRED)
+
+
+SET(PROJECT_NAME cvBlobs)
+
+SET(cvBlobs_SRCS
+    Blob.cpp
+	BlobResult.cpp
+	BlobExtraction.cpp
+)
+
+INCLUDE_DIRECTORIES(
+    ${PROJECT_SOURCE_DIR}
+    ${OPENCV_INCLUDE_DIR}
+)
+
+LINK_LIBRARIES(
+    ${OPENCV_LIBRARIES}
+)
+
+ADD_LIBRARY(cvBlobs
+    ${cvBlobs_SRCS}
+)
+
+INSTALL_TARGETS(/lib cvBlobs)
+
+
+
+ 
