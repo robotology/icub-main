@@ -1,0 +1,74 @@
+/**
+*
+* \page application_documentation Application Documentation
+
+This is a template you can use to document an application (a bunch of scripts
+in a directory in ICUB_ROOT/app, which instatiate and run a set of modules
+to produce a meaningful behavior of the robot).
+
+Replace "exampleApplication" with the name of your application.
+
+Look here to see the documentation produced by this code
+once it is parsed by Doxygen: \ref exampleApplication\endref
+
+\verbatim
+/**
+*
+@ingroup icub_applications
+\defgroup icub_exampleApplication exampleApplication
+
+Place here a short description of the application. This will appear in the list 
+of the applications.
+
+\section intro_sec Description
+This application does not exist for real, it is just a template to be used
+as a guideline for writing good documentation.
+
+Place here a description of the applciation. You might want to use a list as in:
+
+The application does:
+-	this
+-	that
+-	...
+
+\section dep_sec Dependencies
+List here a list of applications that are assumed to be up and running. For example
+your application could assume iCubInterface and the attention system are running.
+
+Example:
+
+This module assumes \ref icub_exampleModule "exampleModule" is already running.
+
+\section modules_sec Instantiated Modules
+List here the modules that are instantiated by this application. This is useful to 
+browse the documentation of other modules. Example:
+- \ref icub_exampleModule "exampleModule"
+
+\section parameters_sec Parameters
+Provide a comprehensive list of parameters and describe how they affect the behavior
+of the application. These paramters are usually located in ./config.sh.
+
+\section config_sec Configuration Files
+Provide a comprehensive list of the configuration files. Usually located in ./conf. 
+Link each file with the relative module it configures (in this way it should be possible
+to look up the documentation).
+ 
+\section example_sec How to run the application
+Explain what script runs the application, with the relative parameters.
+./app start: start the application
+./app stop: stop the application
+ 
+\author your_name
+
+Copyright (C) 2008 RobotCub Consortium
+
+CopyPolicy: Released under the terms of the GNU GPL v2.0.
+
+
+This file can be edited at \in app/exampleApplication/doc.dox
+**/
+
+\endverbatim
+
+*
+*/

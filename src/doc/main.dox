@@ -1,0 +1,49 @@
+
+/**
+  * \mainpage iCub Software Repository Documentation
+
+\image html icub_small.gif "Welcome to my brain!"
+
+This is a collection of documentation extracted from
+the iCub software repository.  
+Its intended audience is developers within the RobotCub
+consortium.  This is not an official publication; 
+it is updated by an automatic process that at any
+moment might be inaccurate, out of date, or downright
+broken.  Enjoy!  Topics:
+
+ - \ref icub_module \endref - a list of documented modules
+ - \ref icub_applications \endref - a list of documented applications 
+   (collections of modules)
+ - \ref icub_tutorials \endref - a set of tutorials to learn how to use the software
+ - Programmer's checklist:
+  - \ref compile_status \endref - check if your code is compiling on a test server
+  - \ref copyright_and_license \endref - have you declared your authorship, and rights granted?
+  - \ref coding_standards \endref - some tips on how to organize your code
+  - \ref cmake_usage \endref - some tips on how to make your code compilable
+  - \ref module_standards \endref - some tips on how to make our modules act similarly
+  - \ref module_documentation \endref - a template for documenting modules
+  - \ref application_documentation \endref - a template for documenting applications
+ - Reference material:
+  - The <a href="http://www.robotcub.org/">RobotCub Website</a>.
+  - The <a href="http://eris.liralab.it/wiki/Main_Page">RobotCub Wiki</a>.
+  - <a href="http://eris.liralab.it/wiki/ICub_YARP_module_specifications">Module Specifications</A>.
+  - Getting the software from <a href="http://eris.liralab.it/wiki/Getting_RobotCub">CVS</a>.
+  - Our software architecture, <a href="http://yarp0.sourceforge.net/">YARP</a>.
+
+This documentation is developed by scanning all source code 
+in $ICUB_DIR/src. If your comments or classes are not showing up, try 
+running:
+
+\verbatim
+  doxygen conf/Doxyfile.txt
+\endverbatim
+
+locally on your repository, to figure out what's going on.
+The output can be browsed at doc/html/index.html.
+
+This page can be edited at $ICUB_DIR/src/doc/main.dox.
+
+*
+*/
+

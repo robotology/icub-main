@@ -1,0 +1,34 @@
+
+/**
+ * \defgroup icub_module iCub modules
+ *
+
+This is a list of iCub modules.  
+These are programs in the $ICUB_ROOT/src directory.
+To add your own module to this list,
+just add a comment like the following anywhere in your source
+code (replacing "your_module_name" with your module name):
+\verbatim
+  /**
+   * @ingroup icub_module
+   *
+   * \defgroup icub_your_module_name your_module_name
+   *
+   * Give an explanation of your module here, and tips on getting
+   * more information.
+   *
+   * \see RelevantClass
+   *
+   * \author Arthur McAuthor 
+   *
+   */
+\endverbatim
+
+For convenience, try to keep the module name the same
+as the directory it is placed in.  If you've a good reason
+to do something different, of course you can do that too.
+
+(This page can be edited at $ICUB_ROOT/src/doc/groups.dox)
+
+ *
+ */

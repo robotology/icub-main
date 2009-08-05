@@ -1,0 +1,130 @@
+
+/**
+  * \page module_standards Module standards
+
+Here are some expectations we have of how modules (here assumed to be a
+single executable) should behave:
+
+ - The name of any ports created by a module can be controlled
+   via configuration.
+
+ - Ideally, a command-line option of "--name /PORT/NAME" should cause
+   the module to use "/PORT/NAME" as a stem for all port names.
+
+ - Robot name. If you connect automatically to the robot, make sure 
+   the name of the ports to which you connect to can be changed from
+   the command line. This will make it possible to switch from using the
+   simulator (whose ports are prefixed with /icubSim/...) to the real 
+   robot (whose ports are prefixed with /icub/...). Usually this is 
+   achieved with a --robot parameter.
+
+ - Configuration can, at a minimum, be changed by changing configuration
+   files.  Ideally, the configuration file the module reads can
+   be specified as a command line option. Make sure you use and understand
+   the ResourceFinder class. Configuration of your module should pass through
+   this class.
+
+@section module_standards_helper Helper implementation.
+
+You are free to implement the above behavior any way you like.
+There is a helper class that meets all these requirements
+(and more) - the yarp::os::Module helper class:
+
+\note This documentation is out date and will probably be replaced soon.
+
+\code
+#include <yarp/os/all.h>
+using namespace yarp::os;
+class MyModule : public Module {
+private:
+    Port myPort1;
+    Port myPort2;
+public:
+    virtual bool open(Searchable& config) {
+	myPort1.open(getName()); // will be /default/name (unless overridden)
+	myPort2.open(getName("copy")); // will be /default/name/copy ( " " )
+        return true;
+    }
+};
+
+int main(int argc, char *argv[]) {
+    Network yarp;
+    MyModule module;
+    module.setName("/default/name");
+    return module.runModule(argc,argv);
+}
+\endcode
+
+It is convenient if modules can also shut down cleanly.
+For console programs, it is useful if modules close cleanly
+either when "^C" is hit, or "quit" is typed, or a quit message
+is received on a port.  With the yarp::os::Module helper class,
+console input is implemented by the runModule() by default.
+Messages sent to a special dedicated port or an existing port 
+can be processed for the "quit" message by adding a line like
+the following to the open() method:
+\code
+attach(myPort1); // process input to this port
+\endcode
+
+Ideally, input on the console and input from such ports will
+be processed in the same way and have the same capabilities.
+For the yarp::os::Module, these messages are processed by overridding
+the yarp::os::Module::respond() method.
+
+Modules are free to start as many threads as they need.
+For yarp::os::Module, the overridden method yarp::os::Module::updateModule()
+will be called from the main control thread until it returns false.
+After that a clean shutdown will be initiated.
+
+To achieve clean shutdown, two methods yarp::os::Module::interruptModule()
+and yarp::os::Module::close() should be overridden.  The interruptModule()
+method will be called when it is desired that updateModule() finish up.
+When it has indeed finished, close() will be called.  Suitable 
+method bodies for our MyModule class would be:
+\code
+virtual bool interruptModule() {
+    myPort1.interrupt();
+    myPort2.interrupt();
+    return true;
+}
+virtual bool close() {
+    myPort1.close();
+    myPort2.close();
+    return true;
+}
+\endcode
+
+For the module to actually do anything, it should start or stop threads.
+See yarp classes Thread and RateThread for doing this. You can start and stop 
+threads in the open and close methods of the Module class. 
+
+If you need to monitor threads or perform other periodic activities you can also 
+override the yarp::os::Module::updateModule() method (but see notes below).  This method 
+gets called repeatedly until it returns false, at which point the whole module shuts 
+down, so it is useful as the main thread:
+
+For example assuming your module started a WorkingThread:
+
+\code
+    virtual bool updateModule() {
+	   printf("Module is running");
+	   printf("Working thread ran:%d times"),  WorkingThread.getIterations());
+         return true;
+    }
+\endcode
+
+Important notes:
+ - updateModule() is not meant to run code with precise timing. If you are writing
+a control loop or an algorithm that require precise scheduling we strongly advise that you 
+use the RateThread class instead.
+
+ - We also suggest that you do not use the Module class to implement directly your algorithms. 
+See the Module as a simple container that simplifies the management of parameters and messages 
+to your executable. Implement algorithms in separate threads monitored by the Module. 
+
+This page can be edited at src/doc/module_standards.dox.
+
+*
+*/
+

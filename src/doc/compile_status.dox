@@ -1,0 +1,41 @@
+
+/**
+  * \page compile_status Compile status
+
+You can monitor which iCub modules are currently compiling at:
+
+ - <a href="http://eris.liralab.it/iCub/dox/report-etch/">The Linux/gcc compile status report on Debian etch</A>
+ - <a href="http://eris.liralab.it/iCub/dox/report-lenny">The Linux/gcc compile status report on Debian lenny</A>
+ - <a href="http://eris.liralab.it/iCub/dox/report-ubuntu">The Linux/gcc compile status report on Ubuntu intrepid</A>
+ - <a href="http://eris.liralab.it/iCub/dox/report-msvc8/">The Windows/MSVC8 status report</A>
+
+
+Failure to compile can be for a very trivial reasons, and is
+not necessarily a reflection of code quality.
+
+Some tips for developers:
+
+ - The Linux compile often catches problems with uppercase/lowercase
+   that don't show up on Windows.  For example, you need to use
+   FIND_LIBRARY(OpenCV) rather than FIND_LIBRARY(OPENCV).
+   And you'll need to capitalize your include files consistently.
+
+ - If you wish a module omitted from testing, add a file "omit.txt" to
+   its directory.  The file can contain anything you like.
+
+  - For how to properly create or link to libraries within the 
+    repository, see \ref cmake_usage \endref
+
+ - If you need software installed, please send email to
+   robotcub-hackers.  The current list of packages you can rely on 
+   being present is listed at the end of the compile report for each
+   platform.
+
+ - Don't forget environment variables. See the manual for more informations
+   on this.
+
+This page can be edited at src/doc/compile_status.dox.
+
+*
+*/
+
