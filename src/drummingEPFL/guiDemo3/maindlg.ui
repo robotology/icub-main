@@ -1,0 +1,1389 @@
+<!DOCTYPE UI><UI version="3.3" stdsetdef="1">
+<class>mainDlg</class>
+<widget class="QWidget">
+    <property name="name">
+        <cstring>mainDlg</cstring>
+    </property>
+    <property name="geometry">
+        <rect>
+            <x>0</x>
+            <y>0</y>
+            <width>1020</width>
+            <height>728</height>
+        </rect>
+    </property>
+    <property name="maximumSize">
+        <size>
+            <width>32767</width>
+            <height>32767</height>
+        </size>
+    </property>
+    <property name="palette">
+        <palette>
+            <active>
+                <color>
+                    <red>0</red>
+                    <green>0</green>
+                    <blue>0</blue>
+                </color>
+                <color>
+                    <red>244</red>
+                    <green>244</green>
+                    <blue>244</blue>
+                </color>
+                <color>
+                    <red>255</red>
+                    <green>255</green>
+                    <blue>255</blue>
+                </color>
+                <color>
+                    <red>249</red>
+                    <green>249</green>
+                    <blue>249</blue>
+                </color>
+                <color>
+                    <red>122</red>
+                    <green>122</green>
+                    <blue>122</blue>
+                </color>
+                <color>
+                    <red>162</red>
+                    <green>162</green>
+                    <blue>162</blue>
+                </color>
+                <color>
+                    <red>0</red>
+                    <green>0</green>
+                    <blue>0</blue>
+                </color>
+                <color>
+                    <red>255</red>
+                    <green>255</green>
+                    <blue>255</blue>
+                </color>
+                <color>
+                    <red>0</red>
+                    <green>0</green>
+                    <blue>0</blue>
+                </color>
+                <color>
+                    <red>255</red>
+                    <green>255</green>
+                    <blue>255</blue>
+                </color>
+                <color>
+                    <red>238</red>
+                    <green>238</green>
+                    <blue>238</blue>
+                </color>
+                <color>
+                    <red>0</red>
+                    <green>0</green>
+                    <blue>0</blue>
+                </color>
+                <color>
+                    <red>0</red>
+                    <green>0</green>
+                    <blue>128</blue>
+                </color>
+                <color>
+                    <red>255</red>
+                    <green>255</green>
+                    <blue>255</blue>
+                </color>
+                <color>
+                    <red>0</red>
+                    <green>0</green>
+                    <blue>0</blue>
+                </color>
+                <color>
+                    <red>0</red>
+                    <green>0</green>
+                    <blue>0</blue>
+                </color>
+            </active>
+            <disabled>
+                <color>
+                    <red>128</red>
+                    <green>128</green>
+                    <blue>128</blue>
+                </color>
+                <color>
+                    <red>244</red>
+                    <green>244</green>
+                    <blue>244</blue>
+                </color>
+                <color>
+                    <red>255</red>
+                    <green>255</green>
+                    <blue>255</blue>
+                </color>
+                <color>
+                    <red>255</red>
+                    <green>255</green>
+                    <blue>255</blue>
+                </color>
+                <color>
+                    <red>122</red>
+                    <green>122</green>
+                    <blue>122</blue>
+                </color>
+                <color>
+                    <red>162</red>
+                    <green>162</green>
+                    <blue>162</blue>
+                </color>
+                <color>
+                    <red>128</red>
+                    <green>128</green>
+                    <blue>128</blue>
+                </color>
+                <color>
+                    <red>255</red>
+                    <green>255</green>
+                    <blue>255</blue>
+                </color>
+                <color>
+                    <red>128</red>
+                    <green>128</green>
+                    <blue>128</blue>
+                </color>
+                <color>
+                    <red>255</red>
+                    <green>255</green>
+                    <blue>255</blue>
+                </color>
+                <color>
+                    <red>238</red>
+                    <green>238</green>
+                    <blue>238</blue>
+                </color>
+                <color>
+                    <red>0</red>
+                    <green>0</green>
+                    <blue>0</blue>
+                </color>
+                <color>
+                    <red>0</red>
+                    <green>0</green>
+                    <blue>128</blue>
+                </color>
+                <color>
+                    <red>255</red>
+                    <green>255</green>
+                    <blue>255</blue>
+                </color>
+                <color>
+                    <red>83</red>
+                    <green>83</green>
+                    <blue>120</blue>
+                </color>
+                <color>
+                    <red>0</red>
+                    <green>64</green>
+                    <blue>0</blue>
+                </color>
+            </disabled>
+            <inactive>
+                <color>
+                    <red>0</red>
+                    <green>0</green>
+                    <blue>0</blue>
+                </color>
+                <color>
+                    <red>244</red>
+                    <green>244</green>
+                    <blue>244</blue>
+                </color>
+                <color>
+                    <red>255</red>
+                    <green>255</green>
+                    <blue>255</blue>
+                </color>
+                <color>
+                    <red>255</red>
+                    <green>255</green>
+                    <blue>255</blue>
+                </color>
+                <color>
+                    <red>122</red>
+                    <green>122</green>
+                    <blue>122</blue>
+                </color>
+                <color>
+                    <red>162</red>
+                    <green>162</green>
+                    <blue>162</blue>
+                </color>
+                <color>
+                    <red>0</red>
+                    <green>0</green>
+                    <blue>0</blue>
+                </color>
+                <color>
+                    <red>255</red>
+                    <green>255</green>
+                    <blue>255</blue>
+                </color>
+                <color>
+                    <red>0</red>
+                    <green>0</green>
+                    <blue>0</blue>
+                </color>
+                <color>
+                    <red>255</red>
+                    <green>255</green>
+                    <blue>255</blue>
+                </color>
+                <color>
+                    <red>238</red>
+                    <green>238</green>
+                    <blue>238</blue>
+                </color>
+                <color>
+                    <red>0</red>
+                    <green>0</green>
+                    <blue>0</blue>
+                </color>
+                <color>
+                    <red>0</red>
+                    <green>0</green>
+                    <blue>128</blue>
+                </color>
+                <color>
+                    <red>255</red>
+                    <green>255</green>
+                    <blue>255</blue>
+                </color>
+                <color>
+                    <red>83</red>
+                    <green>83</green>
+                    <blue>120</blue>
+                </color>
+                <color>
+                    <red>0</red>
+                    <green>64</green>
+                    <blue>0</blue>
+                </color>
+            </inactive>
+        </palette>
+    </property>
+    <property name="caption">
+        <string>Drumming iCub</string>
+    </property>
+    <widget class="QPushButton">
+        <property name="name">
+            <cstring>closeButton</cstring>
+        </property>
+        <property name="geometry">
+            <rect>
+                <x>360</x>
+                <y>620</y>
+                <width>250</width>
+                <height>80</height>
+            </rect>
+        </property>
+        <property name="font">
+            <font>
+                <pointsize>16</pointsize>
+                <bold>1</bold>
+            </font>
+        </property>
+        <property name="text">
+            <string>Close</string>
+        </property>
+    </widget>
+    <widget class="QLabel">
+        <property name="name">
+            <cstring>pixmapLabel1</cstring>
+        </property>
+        <property name="geometry">
+            <rect>
+                <x>10</x>
+                <y>620</y>
+                <width>204</width>
+                <height>98</height>
+            </rect>
+        </property>
+        <property name="scaledContents">
+            <bool>true</bool>
+        </property>
+    </widget>
+    <widget class="QGroupBox">
+        <property name="name">
+            <cstring>simpleGroupBox</cstring>
+        </property>
+        <property name="geometry">
+            <rect>
+                <x>10</x>
+                <y>10</y>
+                <width>550</width>
+                <height>370</height>
+            </rect>
+        </property>
+        <property name="font">
+            <font>
+                <pointsize>12</pointsize>
+                <bold>1</bold>
+            </font>
+        </property>
+        <property name="title">
+            <string>Custom play</string>
+        </property>
+        <property name="alignment">
+            <set>AlignHCenter</set>
+        </property>
+        <widget class="QPushButton">
+            <property name="name">
+                <cstring>customStopPushButton</cstring>
+            </property>
+            <property name="geometry">
+                <rect>
+                    <x>390</x>
+                    <y>270</y>
+                    <width>131</width>
+                    <height>50</height>
+                </rect>
+            </property>
+            <property name="font">
+                <font>
+                    <family>Tahoma</family>
+                </font>
+            </property>
+            <property name="text">
+                <string>Stop</string>
+            </property>
+        </widget>
+        <widget class="QGroupBox">
+            <property name="name">
+                <cstring>rightArmBox</cstring>
+            </property>
+            <property name="geometry">
+                <rect>
+                    <x>190</x>
+                    <y>30</y>
+                    <width>170</width>
+                    <height>140</height>
+                </rect>
+            </property>
+            <property name="font">
+                <font>
+                    <pointsize>10</pointsize>
+                </font>
+            </property>
+            <property name="title">
+                <string>Right Arm</string>
+            </property>
+            <property name="alignment">
+                <set>AlignTop|AlignHCenter</set>
+            </property>
+            <widget class="QPushButton">
+                <property name="name">
+                    <cstring>rarmButton4</cstring>
+                </property>
+                <property name="geometry">
+                    <rect>
+                        <x>50</x>
+                        <y>80</y>
+                        <width>70</width>
+                        <height>30</height>
+                    </rect>
+                </property>
+                <property name="paletteBackgroundColor">
+                    <color>
+                        <red>254</red>
+                        <green>7</green>
+                        <blue>19</blue>
+                    </color>
+                </property>
+                <property name="font">
+                    <font>
+                        <family>Tahoma</family>
+                    </font>
+                </property>
+                <property name="text">
+                    <string>Hold</string>
+                </property>
+            </widget>
+            <widget class="QPushButton">
+                <property name="name">
+                    <cstring>rarmButton2</cstring>
+                </property>
+                <property name="geometry">
+                    <rect>
+                        <x>70</x>
+                        <y>30</y>
+                        <width>30</width>
+                        <height>30</height>
+                    </rect>
+                </property>
+                <property name="text">
+                    <string></string>
+                </property>
+            </widget>
+            <widget class="QPushButton">
+                <property name="name">
+                    <cstring>rarmButton1</cstring>
+                </property>
+                <property name="geometry">
+                    <rect>
+                        <x>20</x>
+                        <y>30</y>
+                        <width>30</width>
+                        <height>30</height>
+                    </rect>
+                </property>
+                <property name="text">
+                    <string></string>
+                </property>
+            </widget>
+            <widget class="QPushButton">
+                <property name="name">
+                    <cstring>rarmButton3</cstring>
+                </property>
+                <property name="geometry">
+                    <rect>
+                        <x>120</x>
+                        <y>30</y>
+                        <width>30</width>
+                        <height>30</height>
+                    </rect>
+                </property>
+                <property name="text">
+                    <string></string>
+                </property>
+            </widget>
+        </widget>
+        <widget class="QGroupBox">
+            <property name="name">
+                <cstring>leftArmBox</cstring>
+            </property>
+            <property name="enabled">
+                <bool>true</bool>
+            </property>
+            <property name="geometry">
+                <rect>
+                    <x>10</x>
+                    <y>30</y>
+                    <width>170</width>
+                    <height>140</height>
+                </rect>
+            </property>
+            <property name="font">
+                <font>
+                    <pointsize>10</pointsize>
+                </font>
+            </property>
+            <property name="title">
+                <string>Left Arm</string>
+            </property>
+            <property name="alignment">
+                <set>AlignTop|AlignHCenter</set>
+            </property>
+            <widget class="QPushButton">
+                <property name="name">
+                    <cstring>larmButton3</cstring>
+                </property>
+                <property name="geometry">
+                    <rect>
+                        <x>120</x>
+                        <y>30</y>
+                        <width>30</width>
+                        <height>30</height>
+                    </rect>
+                </property>
+                <property name="text">
+                    <string></string>
+                </property>
+            </widget>
+            <widget class="QPushButton">
+                <property name="name">
+                    <cstring>larmButton1</cstring>
+                </property>
+                <property name="enabled">
+                    <bool>true</bool>
+                </property>
+                <property name="geometry">
+                    <rect>
+                        <x>20</x>
+                        <y>30</y>
+                        <width>30</width>
+                        <height>30</height>
+                    </rect>
+                </property>
+                <property name="text">
+                    <string></string>
+                </property>
+            </widget>
+            <widget class="QPushButton">
+                <property name="name">
+                    <cstring>larmButton2</cstring>
+                </property>
+                <property name="geometry">
+                    <rect>
+                        <x>70</x>
+                        <y>30</y>
+                        <width>30</width>
+                        <height>30</height>
+                    </rect>
+                </property>
+                <property name="text">
+                    <string></string>
+                </property>
+            </widget>
+            <widget class="QPushButton">
+                <property name="name">
+                    <cstring>larmButton4</cstring>
+                </property>
+                <property name="geometry">
+                    <rect>
+                        <x>50</x>
+                        <y>80</y>
+                        <width>70</width>
+                        <height>30</height>
+                    </rect>
+                </property>
+                <property name="paletteBackgroundColor">
+                    <color>
+                        <red>254</red>
+                        <green>7</green>
+                        <blue>19</blue>
+                    </color>
+                </property>
+                <property name="font">
+                    <font>
+                        <family>Tahoma</family>
+                    </font>
+                </property>
+                <property name="text">
+                    <string>Hold</string>
+                </property>
+            </widget>
+        </widget>
+        <widget class="QGroupBox">
+            <property name="name">
+                <cstring>rightLegBox</cstring>
+            </property>
+            <property name="geometry">
+                <rect>
+                    <x>190</x>
+                    <y>190</y>
+                    <width>170</width>
+                    <height>140</height>
+                </rect>
+            </property>
+            <property name="font">
+                <font>
+                    <pointsize>10</pointsize>
+                </font>
+            </property>
+            <property name="title">
+                <string>Right Leg</string>
+            </property>
+            <property name="alignment">
+                <set>AlignTop|AlignHCenter</set>
+            </property>
+            <widget class="QPushButton">
+                <property name="name">
+                    <cstring>rlegButton4</cstring>
+                </property>
+                <property name="geometry">
+                    <rect>
+                        <x>50</x>
+                        <y>80</y>
+                        <width>70</width>
+                        <height>30</height>
+                    </rect>
+                </property>
+                <property name="paletteBackgroundColor">
+                    <color>
+                        <red>254</red>
+                        <green>7</green>
+                        <blue>19</blue>
+                    </color>
+                </property>
+                <property name="font">
+                    <font>
+                        <family>Tahoma</family>
+                    </font>
+                </property>
+                <property name="text">
+                    <string>Hold</string>
+                </property>
+            </widget>
+            <widget class="QPushButton">
+                <property name="name">
+                    <cstring>rlegButton1</cstring>
+                </property>
+                <property name="geometry">
+                    <rect>
+                        <x>70</x>
+                        <y>30</y>
+                        <width>30</width>
+                        <height>30</height>
+                    </rect>
+                </property>
+                <property name="text">
+                    <string></string>
+                </property>
+            </widget>
+        </widget>
+        <widget class="QPushButton">
+            <property name="name">
+                <cstring>customPlayPushButton</cstring>
+            </property>
+            <property name="geometry">
+                <rect>
+                    <x>390</x>
+                    <y>210</y>
+                    <width>131</width>
+                    <height>50</height>
+                </rect>
+            </property>
+            <property name="font">
+                <font>
+                    <family>Tahoma</family>
+                </font>
+            </property>
+            <property name="text">
+                <string>Play!</string>
+            </property>
+        </widget>
+        <widget class="QGroupBox">
+            <property name="name">
+                <cstring>leftLegBox</cstring>
+            </property>
+            <property name="geometry">
+                <rect>
+                    <x>10</x>
+                    <y>190</y>
+                    <width>170</width>
+                    <height>140</height>
+                </rect>
+            </property>
+            <property name="font">
+                <font>
+                    <pointsize>10</pointsize>
+                </font>
+            </property>
+            <property name="title">
+                <string>Left Leg</string>
+            </property>
+            <property name="alignment">
+                <set>AlignTop|AlignHCenter</set>
+            </property>
+            <widget class="QPushButton">
+                <property name="name">
+                    <cstring>llegButton4</cstring>
+                </property>
+                <property name="geometry">
+                    <rect>
+                        <x>50</x>
+                        <y>80</y>
+                        <width>70</width>
+                        <height>30</height>
+                    </rect>
+                </property>
+                <property name="paletteBackgroundColor">
+                    <color>
+                        <red>255</red>
+                        <green>0</green>
+                        <blue>0</blue>
+                    </color>
+                </property>
+                <property name="font">
+                    <font>
+                        <family>Tahoma</family>
+                    </font>
+                </property>
+                <property name="text">
+                    <string>Hold</string>
+                </property>
+            </widget>
+            <widget class="QPushButton">
+                <property name="name">
+                    <cstring>llegButton1</cstring>
+                </property>
+                <property name="geometry">
+                    <rect>
+                        <x>70</x>
+                        <y>30</y>
+                        <width>30</width>
+                        <height>30</height>
+                    </rect>
+                </property>
+                <property name="text">
+                    <string></string>
+                </property>
+            </widget>
+        </widget>
+        <widget class="QGroupBox">
+            <property name="name">
+                <cstring>headBox</cstring>
+            </property>
+            <property name="geometry">
+                <rect>
+                    <x>370</x>
+                    <y>30</y>
+                    <width>170</width>
+                    <height>140</height>
+                </rect>
+            </property>
+            <property name="font">
+                <font>
+                    <pointsize>10</pointsize>
+                </font>
+            </property>
+            <property name="title">
+                <string>Head</string>
+            </property>
+            <property name="alignment">
+                <set>AlignTop|AlignHCenter</set>
+            </property>
+            <widget class="QPushButton">
+                <property name="name">
+                    <cstring>headButton3</cstring>
+                </property>
+                <property name="geometry">
+                    <rect>
+                        <x>120</x>
+                        <y>30</y>
+                        <width>30</width>
+                        <height>30</height>
+                    </rect>
+                </property>
+                <property name="text">
+                    <string></string>
+                </property>
+            </widget>
+            <widget class="QPushButton">
+                <property name="name">
+                    <cstring>headButton4</cstring>
+                </property>
+                <property name="geometry">
+                    <rect>
+                        <x>50</x>
+                        <y>80</y>
+                        <width>70</width>
+                        <height>30</height>
+                    </rect>
+                </property>
+                <property name="paletteBackgroundColor">
+                    <color>
+                        <red>254</red>
+                        <green>7</green>
+                        <blue>19</blue>
+                    </color>
+                </property>
+                <property name="font">
+                    <font>
+                        <family>Tahoma</family>
+                    </font>
+                </property>
+                <property name="text">
+                    <string>Hold</string>
+                </property>
+            </widget>
+            <widget class="QPushButton">
+                <property name="name">
+                    <cstring>headButton1</cstring>
+                </property>
+                <property name="geometry">
+                    <rect>
+                        <x>20</x>
+                        <y>30</y>
+                        <width>30</width>
+                        <height>30</height>
+                    </rect>
+                </property>
+                <property name="text">
+                    <string></string>
+                </property>
+            </widget>
+            <widget class="QPushButton">
+                <property name="name">
+                    <cstring>headButton2</cstring>
+                </property>
+                <property name="geometry">
+                    <rect>
+                        <x>70</x>
+                        <y>30</y>
+                        <width>30</width>
+                        <height>30</height>
+                    </rect>
+                </property>
+                <property name="text">
+                    <string></string>
+                </property>
+            </widget>
+        </widget>
+    </widget>
+    <widget class="QFrame">
+        <property name="name">
+            <cstring>frame3</cstring>
+        </property>
+        <property name="geometry">
+            <rect>
+                <x>80</x>
+                <y>400</y>
+                <width>840</width>
+                <height>210</height>
+            </rect>
+        </property>
+        <property name="frameShape">
+            <enum>StyledPanel</enum>
+        </property>
+        <property name="frameShadow">
+            <enum>Raised</enum>
+        </property>
+        <widget class="QGroupBox">
+            <property name="name">
+                <cstring>freqGroupBox</cstring>
+            </property>
+            <property name="geometry">
+                <rect>
+                    <x>20</x>
+                    <y>70</y>
+                    <width>300</width>
+                    <height>70</height>
+                </rect>
+            </property>
+            <property name="title">
+                <string></string>
+            </property>
+            <widget class="QLabel">
+                <property name="name">
+                    <cstring>freqLabel</cstring>
+                </property>
+                <property name="geometry">
+                    <rect>
+                        <x>10</x>
+                        <y>10</y>
+                        <width>280</width>
+                        <height>20</height>
+                    </rect>
+                </property>
+                <property name="font">
+                    <font>
+                        <family>Tahoma</family>
+                        <pointsize>12</pointsize>
+                        <bold>1</bold>
+                    </font>
+                </property>
+                <property name="text">
+                    <string>Tempo 0.5Hz</string>
+                </property>
+                <property name="alignment">
+                    <set>WordBreak|AlignCenter</set>
+                </property>
+            </widget>
+            <widget class="QSlider">
+                <property name="name">
+                    <cstring>freqSlider</cstring>
+                </property>
+                <property name="geometry">
+                    <rect>
+                        <x>20</x>
+                        <y>30</y>
+                        <width>260</width>
+                        <height>24</height>
+                    </rect>
+                </property>
+                <property name="maxValue">
+                    <number>150</number>
+                </property>
+                <property name="lineStep">
+                    <number>10</number>
+                </property>
+                <property name="value">
+                    <number>50</number>
+                </property>
+                <property name="orientation">
+                    <enum>Horizontal</enum>
+                </property>
+            </widget>
+        </widget>
+        <widget class="QGroupBox">
+            <property name="name">
+                <cstring>phaseGroupBox</cstring>
+            </property>
+            <property name="geometry">
+                <rect>
+                    <x>350</x>
+                    <y>10</y>
+                    <width>360</width>
+                    <height>190</height>
+                </rect>
+            </property>
+            <property name="font">
+                <font>
+                    <family>Tahoma</family>
+                    <pointsize>12</pointsize>
+                    <bold>1</bold>
+                </font>
+            </property>
+            <property name="title">
+                <string>Coordination</string>
+            </property>
+            <widget class="QLabel">
+                <property name="name">
+                    <cstring>legsLabel</cstring>
+                </property>
+                <property name="geometry">
+                    <rect>
+                        <x>10</x>
+                        <y>90</y>
+                        <width>140</width>
+                        <height>23</height>
+                    </rect>
+                </property>
+                <property name="text">
+                    <string>Legs 0.0</string>
+                </property>
+                <property name="alignment">
+                    <set>WordBreak|AlignCenter</set>
+                </property>
+            </widget>
+            <widget class="QLabel">
+                <property name="name">
+                    <cstring>armlegLabel</cstring>
+                </property>
+                <property name="geometry">
+                    <rect>
+                        <x>10</x>
+                        <y>140</y>
+                        <width>140</width>
+                        <height>23</height>
+                    </rect>
+                </property>
+                <property name="text">
+                    <string>Arm-Leg 0.0</string>
+                </property>
+                <property name="alignment">
+                    <set>WordBreak|AlignCenter</set>
+                </property>
+            </widget>
+            <widget class="QSlider">
+                <property name="name">
+                    <cstring>armsSlider</cstring>
+                </property>
+                <property name="geometry">
+                    <rect>
+                        <x>170</x>
+                        <y>40</y>
+                        <width>170</width>
+                        <height>24</height>
+                    </rect>
+                </property>
+                <property name="maxValue">
+                    <number>100</number>
+                </property>
+                <property name="value">
+                    <number>50</number>
+                </property>
+                <property name="orientation">
+                    <enum>Horizontal</enum>
+                </property>
+            </widget>
+            <widget class="QSlider">
+                <property name="name">
+                    <cstring>legsSlider</cstring>
+                </property>
+                <property name="geometry">
+                    <rect>
+                        <x>170</x>
+                        <y>90</y>
+                        <width>170</width>
+                        <height>24</height>
+                    </rect>
+                </property>
+                <property name="maxValue">
+                    <number>100</number>
+                </property>
+                <property name="value">
+                    <number>50</number>
+                </property>
+                <property name="orientation">
+                    <enum>Horizontal</enum>
+                </property>
+            </widget>
+            <widget class="QSlider">
+                <property name="name">
+                    <cstring>armlegSlider</cstring>
+                </property>
+                <property name="geometry">
+                    <rect>
+                        <x>170</x>
+                        <y>140</y>
+                        <width>170</width>
+                        <height>24</height>
+                    </rect>
+                </property>
+                <property name="maxValue">
+                    <number>100</number>
+                </property>
+                <property name="value">
+                    <number>50</number>
+                </property>
+                <property name="orientation">
+                    <enum>Horizontal</enum>
+                </property>
+            </widget>
+            <widget class="QLabel">
+                <property name="name">
+                    <cstring>armsLabel</cstring>
+                </property>
+                <property name="geometry">
+                    <rect>
+                        <x>10</x>
+                        <y>40</y>
+                        <width>140</width>
+                        <height>23</height>
+                    </rect>
+                </property>
+                <property name="text">
+                    <string>Arms 0.0</string>
+                </property>
+                <property name="alignment">
+                    <set>WordBreak|AlignCenter</set>
+                </property>
+            </widget>
+        </widget>
+    </widget>
+    <widget class="QLabel">
+        <property name="name">
+            <cstring>pixmapLabel1_2</cstring>
+        </property>
+        <property name="geometry">
+            <rect>
+                <x>830</x>
+                <y>620</y>
+                <width>160</width>
+                <height>98</height>
+            </rect>
+        </property>
+        <property name="scaledContents">
+            <bool>true</bool>
+        </property>
+    </widget>
+    <widget class="QGroupBox">
+        <property name="name">
+            <cstring>partitionGroupBox</cstring>
+        </property>
+        <property name="geometry">
+            <rect>
+                <x>590</x>
+                <y>10</y>
+                <width>420</width>
+                <height>370</height>
+            </rect>
+        </property>
+        <property name="font">
+            <font>
+                <pointsize>12</pointsize>
+                <bold>1</bold>
+            </font>
+        </property>
+        <property name="title">
+            <string>Scores</string>
+        </property>
+        <property name="alignment">
+            <set>AlignHCenter</set>
+        </property>
+        <widget class="QPushButton">
+            <property name="name">
+                <cstring>partitionStopPushButton</cstring>
+            </property>
+            <property name="geometry">
+                <rect>
+                    <x>260</x>
+                    <y>190</y>
+                    <width>131</width>
+                    <height>51</height>
+                </rect>
+            </property>
+            <property name="font">
+                <font>
+                    <family>Tahoma</family>
+                </font>
+            </property>
+            <property name="text">
+                <string>Stop</string>
+            </property>
+        </widget>
+        <widget class="QPushButton">
+            <property name="name">
+                <cstring>partitionPushButton</cstring>
+            </property>
+            <property name="geometry">
+                <rect>
+                    <x>260</x>
+                    <y>90</y>
+                    <width>131</width>
+                    <height>50</height>
+                </rect>
+            </property>
+            <property name="font">
+                <font>
+                    <family>Tahoma</family>
+                </font>
+            </property>
+            <property name="text">
+                <string>Play!</string>
+            </property>
+        </widget>
+        <widget class="QListBox">
+            <property name="name">
+                <cstring>partitionListBox</cstring>
+            </property>
+            <property name="geometry">
+                <rect>
+                    <x>30</x>
+                    <y>40</y>
+                    <width>200</width>
+                    <height>250</height>
+                </rect>
+            </property>
+        </widget>
+    </widget>
+</widget>
+<connections>
+    <connection>
+        <sender>freqSlider</sender>
+        <signal>valueChanged(int)</signal>
+        <receiver>mainDlg</receiver>
+        <slot>freqSlider_valueChanged(int)</slot>
+    </connection>
+    <connection>
+        <sender>partitionPushButton</sender>
+        <signal>clicked()</signal>
+        <receiver>mainDlg</receiver>
+        <slot>paritionPushButton_clicked()</slot>
+    </connection>
+    <connection>
+        <sender>freqSlider</sender>
+        <signal>sliderReleased()</signal>
+        <receiver>mainDlg</receiver>
+        <slot>freqSlider_sliderReleased()</slot>
+    </connection>
+    <connection>
+        <sender>partitionStopPushButton</sender>
+        <signal>clicked()</signal>
+        <receiver>mainDlg</receiver>
+        <slot>partitionStopPushButton_clicked()</slot>
+    </connection>
+    <connection>
+        <sender>customStopPushButton</sender>
+        <signal>clicked()</signal>
+        <receiver>mainDlg</receiver>
+        <slot>customStopPushButton_clicked()</slot>
+    </connection>
+    <connection>
+        <sender>armsSlider</sender>
+        <signal>valueChanged(int)</signal>
+        <receiver>mainDlg</receiver>
+        <slot>armsSlider_valueChanged(int)</slot>
+    </connection>
+    <connection>
+        <sender>armsSlider</sender>
+        <signal>sliderReleased()</signal>
+        <receiver>mainDlg</receiver>
+        <slot>armsSlider_sliderReleased()</slot>
+    </connection>
+    <connection>
+        <sender>legsSlider</sender>
+        <signal>valueChanged(int)</signal>
+        <receiver>mainDlg</receiver>
+        <slot>legsSlider_valueChanged(int)</slot>
+    </connection>
+    <connection>
+        <sender>legsSlider</sender>
+        <signal>sliderReleased()</signal>
+        <receiver>mainDlg</receiver>
+        <slot>legsSlider_sliderReleased()</slot>
+    </connection>
+    <connection>
+        <sender>armlegSlider</sender>
+        <signal>valueChanged(int)</signal>
+        <receiver>mainDlg</receiver>
+        <slot>armlegSlider_valueChanged(int)</slot>
+    </connection>
+    <connection>
+        <sender>armlegSlider</sender>
+        <signal>sliderReleased()</signal>
+        <receiver>mainDlg</receiver>
+        <slot>armlegSlider_sliderReleased()</slot>
+    </connection>
+    <connection>
+        <sender>larmButton1</sender>
+        <signal>clicked()</signal>
+        <receiver>mainDlg</receiver>
+        <slot>larmButton1_clicked()</slot>
+    </connection>
+    <connection>
+        <sender>larmButton2</sender>
+        <signal>clicked()</signal>
+        <receiver>mainDlg</receiver>
+        <slot>larmButton2_clicked()</slot>
+    </connection>
+    <connection>
+        <sender>larmButton3</sender>
+        <signal>clicked()</signal>
+        <receiver>mainDlg</receiver>
+        <slot>larmButton3_clicked()</slot>
+    </connection>
+    <connection>
+        <sender>larmButton4</sender>
+        <signal>clicked()</signal>
+        <receiver>mainDlg</receiver>
+        <slot>larmButton4_clicked()</slot>
+    </connection>
+    <connection>
+        <sender>rarmButton1</sender>
+        <signal>clicked()</signal>
+        <receiver>mainDlg</receiver>
+        <slot>rarmButton1_clicked()</slot>
+    </connection>
+    <connection>
+        <sender>rarmButton2</sender>
+        <signal>clicked()</signal>
+        <receiver>mainDlg</receiver>
+        <slot>rarmButton2_clicked()</slot>
+    </connection>
+    <connection>
+        <sender>rarmButton3</sender>
+        <signal>clicked()</signal>
+        <receiver>mainDlg</receiver>
+        <slot>rarmButton3_clicked()</slot>
+    </connection>
+    <connection>
+        <sender>rarmButton4</sender>
+        <signal>clicked()</signal>
+        <receiver>mainDlg</receiver>
+        <slot>rarmButton4_clicked()</slot>
+    </connection>
+    <connection>
+        <sender>llegButton1</sender>
+        <signal>clicked()</signal>
+        <receiver>mainDlg</receiver>
+        <slot>llegButton1_clicked()</slot>
+    </connection>
+    <connection>
+        <sender>llegButton4</sender>
+        <signal>clicked()</signal>
+        <receiver>mainDlg</receiver>
+        <slot>llegButton4_clicked()</slot>
+    </connection>
+    <connection>
+        <sender>rlegButton1</sender>
+        <signal>clicked()</signal>
+        <receiver>mainDlg</receiver>
+        <slot>rlegButton1_clicked()</slot>
+    </connection>
+    <connection>
+        <sender>rlegButton4</sender>
+        <signal>clicked()</signal>
+        <receiver>mainDlg</receiver>
+        <slot>rlegButton4_clicked()</slot>
+    </connection>
+    <connection>
+        <sender>customPlayPushButton</sender>
+        <signal>clicked()</signal>
+        <receiver>mainDlg</receiver>
+        <slot>customPlayPushButton_clicked()</slot>
+    </connection>
+    <connection>
+        <sender>closeButton</sender>
+        <signal>clicked()</signal>
+        <receiver>mainDlg</receiver>
+        <slot>closeButton_clicked()</slot>
+    </connection>
+    <connection>
+        <sender>headButton1</sender>
+        <signal>clicked()</signal>
+        <receiver>mainDlg</receiver>
+        <slot>headButton1_clicked()</slot>
+    </connection>
+    <connection>
+        <sender>headButton2</sender>
+        <signal>clicked()</signal>
+        <receiver>mainDlg</receiver>
+        <slot>headButton2_clicked()</slot>
+    </connection>
+    <connection>
+        <sender>headButton3</sender>
+        <signal>clicked()</signal>
+        <receiver>mainDlg</receiver>
+        <slot>headButton3_clicked()</slot>
+    </connection>
+    <connection>
+        <sender>headButton4</sender>
+        <signal>clicked()</signal>
+        <receiver>mainDlg</receiver>
+        <slot>headButton4_clicked()</slot>
+    </connection>
+</connections>
+<includes>
+    <include location="global" impldecl="in declaration">vector</include>
+    <include location="global" impldecl="in declaration">yarp/os/all.h</include>
+    <include location="global" impldecl="in declaration">string</include>
+    <include location="local" impldecl="in implementation">maindlg.ui.h</include>
+</includes>
+<forwards>
+    <forward>using namespace std;</forward>
+    <forward>using namespace yarp::os;</forward>
+</forwards>
+<variables>
+    <variable>int customBeat[5];</variable>
+    <variable>bool usedPart[5];</variable>
+    <variable>BufferedPort&lt;Bottle&gt; partitionsPort[5];</variable>
+    <variable access="private">double currentTempo;</variable>
+    <variable access="private">double currentPhase[4];</variable>
+    <variable access="private">vector&lt;double&gt; currentPartition[11];</variable>
+    <variable>BufferedPort&lt;Bottle&gt; phasePort[5];</variable>
+    <variable access="public">int ScoreSize;</variable>
+    <variable>BufferedPort&lt;Bottle&gt; interactivePort;</variable>
+    <variable access="public">int nbparts;</variable>
+</variables>
+<slots>
+    <slot access="protected">init()</slot>
+    <slot>freqSlider_valueChanged( int val )</slot>
+    <slot>paritionPushButton_clicked()</slot>
+    <slot>freqSlider_sliderReleased()</slot>
+    <slot>partitionStopPushButton_clicked()</slot>
+    <slot>customStopPushButton_clicked()</slot>
+    <slot>armsSlider_valueChanged( int val )</slot>
+    <slot>armsSlider_sliderReleased()</slot>
+    <slot>legsSlider_valueChanged( int val )</slot>
+    <slot>legsSlider_sliderReleased()</slot>
+    <slot>armlegSlider_valueChanged( int val )</slot>
+    <slot>armlegSlider_sliderReleased()</slot>
+    <slot>generate_and_playCustom( int i )</slot>
+    <slot>larmButton1_clicked()</slot>
+    <slot>larmButton2_clicked()</slot>
+    <slot>larmButton3_clicked()</slot>
+    <slot>larmButton4_clicked()</slot>
+    <slot>rarmButton1_clicked()</slot>
+    <slot>rarmButton2_clicked()</slot>
+    <slot>rarmButton3_clicked()</slot>
+    <slot>rarmButton4_clicked()</slot>
+    <slot>headButton1_clicked()</slot>
+    <slot>headButton2_clicked()</slot>
+    <slot>headButton3_clicked()</slot>
+    <slot>headButton4_clicked()</slot>
+    <slot>llegButton1_clicked()</slot>
+    <slot>llegButton4_clicked()</slot>
+    <slot>rlegButton1_clicked()</slot>
+    <slot>rlegButton4_clicked()</slot>
+    <slot>closeButton_clicked()</slot>
+    <slot>customPlayPushButton_clicked()</slot>
+</slots>
+<functions>
+    <function access="private" specifier="non virtual">updatePartitionFolder()</function>
+    <function access="private" specifier="non virtual">sendPartitions()</function>
+    <function access="private" specifier="non virtual">stopPartition()</function>
+    <function access="private" specifier="non virtual">sendParameters()</function>
+</functions>
+<pixmapinproject/>
+<layoutdefaults spacing="6" margin="20"/>
+</UI>
