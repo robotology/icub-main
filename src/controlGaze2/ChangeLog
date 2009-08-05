@@ -1,0 +1,4 @@
+2008-09-12  Jonas Ruesch <jruesch@isr.ist.utl.pt>
+
+	* _status_port write uncommented (!) (required for attentionSelection)
+	
