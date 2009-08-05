@@ -1,0 +1,40 @@
+
+installation instructions are in INSTALL.
+
+license and copyright information is in COPYING.
+
+=====================================================================
+
+Note to developers:
+
+For those of you developing in this repository, we'd like to ask you
+one favor: please keep the global iCub project compilable by "newbies"
+at all times.  In other words, if someone checks out iCub CVS, runs
+cmake, and then compiles, everything should work okay.
+
+What you can do without worrying:
+
++ Do anything you like for modules not listed in
+$ICUB_DIR/src/CMakeLists.txt.  For example, feel free to place new
+modules in $ICUB_DIR/src that aren't yet well tested, are currently
+broken, came to you in a deranged dream, etc.
+
+What we'd ask you to do to be polite to newcomers:
+
++ Don't add a module to the list in $ICUB_DIR/src/CMakeLists.txt until
+you know it compiles on machines other than your own.  Check both
+Windows and Linux.  If you don't have experience with Linux, you can
+(at the time of writing anyway) just check that the module shows up
+"green" on the compile status report:
+
+  http://eris.liralab.it/iCub/dox/report/
+
++ If you're not certain a module will compile, but would still like
+the convenience of having it in the global project, consider using the
+"ICUB_TEST" conditional variable (see its use in
+$ICUB_DIR/src/CMakeLists.txt), or add your own.
+
+Thanks for your understanding.
+
+--paulfitz
+
