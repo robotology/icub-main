@@ -1,0 +1,69 @@
+/*
+ * Copyright (C) 2007-2009 Arjan Gijsberts @ Italian Institute of Technology
+ * CopyPolicy: Released under the terms of the GNU GPL v2.0.
+ *
+ * Implementation for the fixed size transformer interface.
+ *
+ */
+
+#include "iCub/IFixedSizeTransformer.h"
+#include <stdexcept>
+#include <sstream>
+
+
+namespace iCub {
+namespace contrib {
+namespace learningmachine {
+
+void IFixedSizeTransformer::transform(const Vector& input, Vector& output) {
+    ITransformer::transform(input, output);
+    output.resize(this->getCoDomainSize());
+    this->validateDomainSizes(input, output);
+}
+
+void IFixedSizeTransformer::validateDomainSizes(const Vector& input, const Vector& output) {
+    if(!this->checkDomainSize(input)) {
+        throw std::runtime_error("Input sample has invalid dimensionality");
+    }
+    if(!this->checkCoDomainSize(output)) {
+        throw std::runtime_error("Output sample has invalid dimensionality");
+    }
+}
+
+bool IFixedSizeTransformer::configure(Searchable& config) {
+    bool success = false;
+    // set the domain size (int)
+    if(config.find("dom").isInt()) {
+        this->setDomainSize(config.find("dom").asInt());
+        success = true;
+    }
+    // set the codomain size (int)
+    if(config.find("cod").isInt()) {
+        this->setCoDomainSize(config.find("cod").asInt());
+        success = true;
+    }
+
+    return success;
+}
+
+
+std::string IFixedSizeTransformer::getStats() {
+    std::ostringstream buffer;
+    buffer << this->ITransformer::getStats();
+    buffer << "Domain size: " << this->getDomainSize() << ", ";
+    buffer << "Codomain size: " << this->getCoDomainSize() << std::endl;
+    return buffer.str();
+}
+
+std::string IFixedSizeTransformer::getConfigHelp() {
+    std::ostringstream buffer;
+    buffer << this->ITransformer::getConfigHelp();
+    buffer << "  dom size              Domain size" << std::endl;
+    buffer << "  cod size              Codomain size" << std::endl;
+    return buffer.str();
+}
+
+
+} // learningmachine
+} // contrib
+} // iCub

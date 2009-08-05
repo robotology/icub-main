@@ -1,0 +1,375 @@
+LearningMachine: YARP modules for Machine Learning
+
+1. Introduction
+
+The goal of the LearningMachine modules is to have a unified interface for 
+machine learning algorithms. Obviously, there are many problems in robotics 
+that can be approached using machine learning. Instead of everybody integrating 
+one particular approach in their code, we'd rather moduralize the learning 
+method and provide a single interface. This has as advantage that people can 
+easily switch to another learning algorithm and that they already have a pool
+of algorithms from which to choose.
+
+
+1.1 Overview
+
+The application of (supervised) learning algorithms can usually be subdivided in 
+preprocessing, training and predicting. Preprocessing is a transformation of the 
+data in a format that facilitates training. A well-known example is to scale all 
+input columns to have zero mean and unit standard deviation. The next phase, 
+training, can be considered the core of machine learning. In this phase an 
+algorithm constructs a function that is modeled after the input data. In other 
+words, this function should replicate the model that has generated the training 
+data. This function is then used for prediction, in which an output is computed 
+for unknown input samples.
+
+
+1.2 Restrictions
+
+The LearningMachine set of modules has been particularly designed for 
+supervised regression problems, such as estimating robot kinematics of dynamics. 
+Although the interface itself is flexible, most algorithms construct an
+R^m -> R^n mapping, where m and n are fixed a priori.
+
+
+2. Implementation Details
+
+This section lists some details regarding the implementation of all the modules 
+and how to use them. Another good way to way to get to grips with the modules is 
+to first run the executables with the help parameter (e.g. './train --help'). 
+This will give you an overview of the important parameters that you can set. 
+Then, if you successfully started the executable, type 'help' to see an overview 
+of runtime commands.
+
+2.1 Train Module
+
+The train module is used to train an algorithm on a set of input samples. On 
+startup, the module expects a parameter specifying the algorithm to use. The 
+algorithms supported so far are the Least Squares Support Vector Machine (LSSVM) 
+and linear Regularized Least Squares (RLS). For instance, we can start the 
+training module with the LSSVM algorithm using './train --machine LSSVM' (make 
+sure yarp server is running). Commonly, we prefer to specify the domain size 
+(input) and codomain size (output) directly with './train --machine LSSVM --dom
+4 --cod 6'.
+
+On startup, the module opens 4 ports:
+
+a) Port /[prefix]/predict:io to predict samples. On incoming vectors it replies 
+   with the prediction.
+b) Port /[prefix]/cmd:i to send commands to the module. This is basically a port 
+   that does the same as the terminal and is used for remote administration.
+c) Port /[prefix]/model:o to send the constructed model to a remote prediction 
+   module.
+d) Port /[prefix]/train:i for receiving incoming training samples.
+
+(the port prefix [prefix] can be changed using --port, by default it is 'train')
+
+Again, when running the module the command 'help' gives a listing of all 
+available commands. The most important ones are:
+
+*) train: explicitly instructs the algorithm to train on the available data. 
+   This command is only useful for batch learning algorithms, which store 
+   incoming samples in a buffer until the train command is issued.
+*) stat: shows a detailed overview of statistics and such of the machine.
+*) set key val: is used to set configuration parameters of the machine. The help 
+   listing also gives a listing of all configurable parameters for the selected 
+   machine. For example, the regularization parameter C for LSSVM can be set 
+   using the command 'set c 10'. The command 'stat' can be used to verify that 
+   the parameter has indeed changed.
+*) load/save fname: These commands can be used to load/save machines from/to 
+   files.
+
+
+2.2 Predict Module
+
+The predict module is a module dedicated to predictions. In most situations, 
+this module is not needed and it suffices to use the train module for 
+predictions as well. However, in particular situations it may be desirable to 
+separate training and predicting in modules and possibly to distribute them over 
+dedicated machines.
+
+The predict module works much like the a restricted variant of the train module 
+and, in fact, the latter is a proper subclass of the former. On startup, the 
+predict module opens 3 ports:
+
+a) Port /predict/model:i to receive incoming models from a train module.
+b) Port /predict/predict:io to predict incoming samples, like the train module.
+c) Port /predict/cmd:i to send commands to the module, like the train module.
+
+Besides receiving a model from a train module, the model may also be read from 
+a file using the 'load' command. Since the predict module does not necessarily 
+initialize a machine by itself (it receives the model from a file or from the 
+train module), the executable can be started without any parameters.
+
+
+2.3 Transform Module
+
+The transform module is used for various kinds of preprocessing. The most common 
+use is to scale input columns within a certain range, e.g. [-1,1] or zero mean 
+and unit standard deviation. The transform module is thus placed in between the 
+'source' of the samples (e.g. sensors) and the learning algorithm.
+
+On startup, the transform module opens 5 ports:
+
+a) Port /transform/train:i for incoming training samples.
+b) Port /transform/train:o for outgoing training samples, thus to the train
+   module or, alternatively, to another transform module.
+c) Port /transform/predict:io for incoming predict samples.
+d) Port /transform/predict_relay:io for outgoing predict samples. The predict
+   samples are relayed to the next ports and multiple transformers can thus be 
+   stacked.
+e) Port /transform/cmd:i to receive commands.
+
+The implemented types of transformers are 'Scaler' and 'RandomFeature'. The 
+scaler is a R^m -> R^m transformation that performs a linear operation on each 
+input column. There are three different types of linear operations, namely:
+
+a) Standardizer: Standardizes a column to have zero mean and unit standard 
+   deviation. The desired mean and standard deviation are configurable.
+b) Normalizer: Scales a column to be within the range [-1, 1]. The desired 
+   output range is configurable.
+c) Fixed: Scales a column from a given input range to a desired output range. 
+   Lower and upper bounds of both the input and output rang are fully 
+   configurable.
+
+Note that the Standardizer and the Normalizer are data-driven and thus first 
+need to be fed data before they can be used to transform training data. The 
+Fixed scaler is _not_ data-driven and is thus particularly useful for online 
+learning. In certain robotics problems the extrema of the input data are known 
+are priori (e.g. joint limits) or can be guessed rather precisely.
+
+By default, the Scaler transformer starts without any transformation on the 
+input columns (cf. the 'stat' command). Setting a scaler to a column is done 
+using the 'set type' command. An example demonstrating the functionality of the 
+three types of scalers is:
+
+--------------------------------------------------------------------------------
+set type 1 Standardizer
+"Setting configuration option succeeded"
+set config 1 mean 1
+"Setting configuration option succeeded"
+set config 1 std 2
+"Setting configuration option succeeded"
+
+set type 2 Normalizer
+"Setting configuration option succeeded"
+set config 2 lower -2 
+"Setting configuration option succeeded"
+set config 2 upper 3
+"Setting configuration option succeeded"
+
+set type 3 Fixed
+"Setting configuration option succeeded"
+set config 3 lowerin -20
+"Setting configuration option succeeded"
+set config 3 upperin 40
+"Setting configuration option succeeded"
+set config 3 lowerout -1     
+"Setting configuration option succeeded"
+set config 3 upperout 2
+"Setting configuration option succeeded"
+--------------------------------------------------------------------------------
+
+Note that an index must be specified for both the 'set type' and the 
+'set config' commands. This can either be an integer index (starting from 1) or 
+alternatively the keyword 'all'. In the latter case the command operates on all
+input columns.
+
+The RandomFeature preprocessor is a completely different kind of preprocessor. 
+Here the goal is to transform the samples from R^m -> R^n (where usually n >> m) 
+such their dot product approximates the RBF kernel. The idea is that non-linear 
+problems can then be successfully solved using a linear model, without the 
+overhead of a kernel expansion. See the following paper for more information:
+
+Random Features for Large-Scale Kernel Machines, Ali Rahimi, Ben Recht, in 
+  Neural Information Processing Systems (NIPS) 2007.
+
+
+2.4 Test Module
+
+The test module is not really part of machine learning approach, but it is very 
+useful nonetheless. This module can be used to read a dataset from a file and 
+then to pass this data to a train and/or predict module. The executable has to 
+be started supplying the filename of a dataset. The format of datasets that are 
+supported is simply whitespace separated columns and one sample per column. 
+Lines starting with a '#' are ignored.
+
+Besides supplying the filename, it is also highly adviseable to supply the 
+columns that are the inputs and those that are outputs. These are specified 
+using the string representation (per Bottle) of a list of integers. An example:
+
+--------------------------------------------------------------------------------
+./test --datafile dataset/dynamics.dat --inputs "(1 2 3 4)" 
+--outputs "(13 14 15 16 17 18)"
+--------------------------------------------------------------------------------
+
+Once started, the test module can be used to:
+a) Send training samples using the 'train n' command, where n is an optional 
+   integer parameter specifying the number of samples to send to the training 
+   port. The default value for n is 1.
+b) Send prediction samples using the 'predict n' command. The parameter n 
+   behaves identically as for the 'train' command.
+c) Skip samples using the 'skip n' command. The parameter n behaves identically 
+   as for the 'train' command.
+d) Reset the dataset to the beginning using the 'reset' command.
+e) Open another dataset using the 'open fname' command.
+
+3. Examples
+
+Below we put everything together and demonstrate the usage of all modules in an 
+example setting.
+
+Before running the example, make sure that a YARP server is running. Further, 
+for simplicity here we assume the default prefix when possible. The problem 
+we are considering is to predict forces and torques of a robot arm from four
+joint angles. The dataset (dataset/dynamics_example_2000.dat) has the following 
+layout:
+
+Col:
+01-04 Joint Angles 1-4
+05-08 Joint Velocities 1-4 (ignored)
+09-12 Joint Accelerations 1-4 (ignored)
+13-15 Forces x,y,z
+16-18 Torques x,y,z
+
+
+3.1 Batch LSSVM Example
+
+Here we will apply LSSVM to the learning problem, while using standardized 
+inputs.
+
+Step 1. 
+Start the train module with LSSVM, configured with a domain size of 4 and 
+codomain size of 6. 
+
+(train)-------------------------------------------------------------------------
+./train --machine LSSVM --dom 4 --cod 6
+--------------------------------------------------------------------------------
+
+Step 2.
+Start the transform module with Scaler, for an input dimension of 4 and set 
+the ports to which it will connect.
+(transform)---------------------------------------------------------------------
+./transform --transformer Scaler --trainport /train/train:i 
+--predictport /train/predict:io --dom 4
+--------------------------------------------------------------------------------
+
+Step 3.
+Configure the transform module, setting the Standardizer for all input columns.
+(transform)---------------------------------------------------------------------
+set type all Standardizer
+"Setting configuration option succeeded"
+--------------------------------------------------------------------------------
+
+Step 4.
+Configure the machine. Further, put the machine on pause, because we will first 
+standardize the inputs.
+(train)-------------------------------------------------------------------------
+set c 16
+"Setting configuration option succeeded"
+set gamma 0.25
+"Setting configuration option succeeded"
+pause
+"Sample stream to machine disabled."
+--------------------------------------------------------------------------------
+
+Step 5.
+Start the test module, specifying the dataset and input and output columns. Make 
+sure to specify the ports of the transformer!
+(test)--------------------------------------------------------------------------
+./test --datafile dataset/dynamics_example_2000.dat 
+--trainport /transform/train:i --predictport /transform/predict:io 
+--inputs "(1 2 3 4)" --outputs "(13 14 15 16 17 18)"
+--------------------------------------------------------------------------------
+
+Step 6.
+Then, feed 1000 training samples. 
+(test)--------------------------------------------------------------------------
+train 1000
+"Done!"
+--------------------------------------------------------------------------------
+
+Step 7.
+Disable data-driven updates of the scalers.
+(transform)---------------------------------------------------------------------
+set config all update
+"Setting configuration option succeeded"
+--------------------------------------------------------------------------------
+
+Step 8.
+Enable training samples for the machine.
+(train)-------------------------------------------------------------------------
+continue
+"Sample stream to machine enabled."
+--------------------------------------------------------------------------------
+
+Step 9.
+Reset the dataset and feed 1000 training samples.
+(test)--------------------------------------------------------------------------
+reset
+"Dataset reset to beginning"
+train 1000
+"Done!"
+--------------------------------------------------------------------------------
+
+Step 10.
+Train the machine.
+(train)-------------------------------------------------------------------------
+train
+"Training completed." "The model has been written to the port."
+--------------------------------------------------------------------------------
+
+Step 11.
+Predict 1000 samples.
+(test)--------------------------------------------------------------------------
+predict 1000
+"MSE: [0.558763,0.563746,0.202745,0.0157734,0.0127241,0.00232176]"
+--------------------------------------------------------------------------------
+
+Although not explicitly mentioned, it is adviseable to verify the parameter 
+configuration commands using the 'stat' method. This applies to both the train
+module and the transform module.
+
+
+4. Notes
+
+4.1 Connecting Ports
+Rather than connecting all ports manually, all modules allow the connecting 
+ports to be specified as startup. If the target port is registered on the YARP 
+server, then the connection is automatically made. 
+
+4.2 Initialization and Configuration
+Specifying executable parameters can be rather cumbersome. Note that all modules 
+support a '--file filename' parameter that can be used to read out startup 
+parameters from a file.
+
+Although that helps for the initialization parameters, it cannot be used for 
+runtime configuration. For the latter, please check the 'sendCmd' application 
+in the iCub repository. SendCmd is a little program that reads a file line by 
+line and sends each line to a port. This is particularly useful if used with the
+command ports.
+
+4.3 Data-driven Transformers
+As mentioned previously, the data-driven transformers need to be fed data, so 
+that they can tune their parameters based on the statistics/extreme found in the
+input data. During this phase, it is better not to do any training on that data, 
+as the data is not reliable anymore after the scaler changes settings. For this
+purpose, the train module has a command 'pause', which blocks all incoming 
+training samples to the train module. Training can be restarted using 
+'continue'.
+
+4.4 Creating Datasets
+When collecting data from a robot, it is often very useful to store the data in 
+a file, so that it can be used for offline training or experimentation. The 
+LearningMachine makes this very easy by starting the train module using the 
+Recorder machine (i.e. './train --machine Recorder'). See runtime help for
+configuration options.
+
+4.5 CMake Options
+The USE_LSSVMATLAS option in CMake can be used to build another implementation 
+of LSSVM, which has been based on the efficient Atlas library for linear 
+algebra. Although that implementation is much more efficient and extensive, it 
+is tricky to get it running on a machine. It's use is therefore discouraged and 
+only advanced users that really need the extra performance or functionality 
+should try to build it. The module is located in the directory 'lssvm' in the 
+iCub repository. It depends on Atlas and the Boost Numerics bindings.

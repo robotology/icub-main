@@ -1,0 +1,6 @@
+* Implement Events and EventListeners, e.g. for error reports etc.
+* Create templated MultiLearner<Base> for machines that learn R^n -> R
+* Modify Scaler to use updated specifier 'all', as for the Machine Learners (done)
+* Implement 'savetofile' and 'loadfromfile' for machines (done)
+* Create library with only MachinePortable for usage in other packages
+* Create library with all modules for extensions in other packages
