@@ -1,0 +1,205 @@
+/**
+ * @ingroup icub_module
+ *
+ * \defgroup icub_primatevision PrimateVision
+ *
+ * \brief A framework for realtime synthesis of visual competencies in the primate visual cortex. 
+ * 
+ * Based on observations of biology and designed for flexibility, robustness, and application to many tasks. Thus far, dorsal competencies only. 
+ *
+ * For running the PrimateVision applications see \ref icub_applications_primatevision.
+ *
+ * \author Andrew Dankers
+ *
+
+<h2> Dependencies </h2>
+
+The PrimateVision framework depende upon the following packages: <br>
+libqt4-dev freeglut3-dev libace-dev meschach-dev libcv1.1<br><br>
+For debian-esque operating systems, simply use 'apt-get install <package>' to fulfill the dependencies. The depth processing server also depends upon libCV version > 1.1pre . At the time I write this, the debian repositories do not provide libcv1.1pre, so you can install it manually by obtaining the tarball from sourcefourge. If you don't want it, you'll have to comment out utils/depth, depthflowserver, and nzdfserver in the primateVision project CMakeLists.txt file.
+<br><br>
+The code has been updated to QT4 compatibility. It is no longer is compatible with QT3!  Install libqt4-dev. 
+<br><br>
+You definitely need IPP, it is easy to get. It facilitates MMX/SSE pipelining in image processing. Acquire it from Intel freely:<a href="http://www.intel.com/cd/software/products/asmo-na/eng/302910.htm" class='external text' title="http://www.intel.com/cd/software/products/asmo-na/eng/302910.htm" rel="nofollow">[http://www.intel.com/cd/software/products/asmo-na/eng/302910.htm</a>]. Choose the "Free Non-Commercial Download for Linux*". Once installed, make sure the primateVision framework can access it by adding the following symlinks as root (cmake 'find' script to come!):
+</p>
+<pre>
+ln -s /opt/intel/ipp/5.3.2.068/em64t/include/ /opt/intel/ipp/include      #or whatever version number and arch you obtained!
+ln -s /opt/intel/ipp/5.3.2.068/em64t/sharedlib/ /opt/intel/ipp/sharedlib  #or whatever version number and arch you obtained!
+</pre>
+<p>if you installed the 64-bit IPP version also run:
+
+</p>
+<pre>
+ln -s /opt/intel/ipp/5.3.2.068/em64t/sharedlib/libippiem64t.so /opt/intel/ipp/sharedlib/libippi.so 
+ln -s /opt/intel/ipp/5.3.2.068/em64t/sharedlib/libippcvem64t.so /opt/intel/ipp/sharedlib/libippcv.so 
+ln -s /opt/intel/ipp/5.3.2.068/em64t/sharedlib/libippccem64t.so /opt/intel/ipp/sharedlib/libippcc.so 
+</pre>
+<p>as i think they forgot to add it to the 64-bit install script (32-bit install script makes these links automatically).
+</p>
+
+
+
+<h2> Compilation </h2>
+<p><b>Preparation</b>
+</p><p>First, add the following (or similar) to your .bashrc to automatically set paths and environment variables.  This is very cool if you have a processing network with both 32 and 64 bit processors, and keep all your source and binaries on a shared NFS.  The point is that when you update and run the code on multiple machines and multiple architectures, you don't have to check in and out your changes, as all computers share the same source folder. When you type 'make install', it will put the binaries in the appropriate places for you to execute (make sure to 'make clean' and remove cmake caches before you change to a PC with a different architecture though! You can use my "cleancmake" script to achieve this. see below) Anyway, I recommend adding the following to .bashrc:
+</p>
+
+<pre>
+export CVS_RSH=ssh
+export QT_INCLUDE_DIR=/usr/include/qt4
+export YARP_ROOT=${HOME}/src/yarp2
+export ICUB_DIR=${HOME}/src/iCub
+export YARP_DIR=${HOME}/src/yarp2
+export YARP_BIN=${HOME}/src/yarp2/bin
+export ICUB_ROOT=${HOME}/src/iCub
+export ICUB_BIN=${HOME}/src/iCub/bin
+export PV_BIN=${HOME}/src/iCub/src/primateVision/bin
+export PV_LIB=${HOME}/src/iCub/src/primateVision/lib
+
+echo YARP_ROOT:   ${YARP_ROOT}
+echo YARP_DIR:    ${YARP_DIR}
+echo ICUB_ROOT:   ${ICUB_ROOT}
+echo ICUB_DIR:    ${ICUB_DIR}
+
+export LD_LIBRARY_PATH=${LD_LIBRARY_PATH}:/opt/intel/ipp/sharedlib:${PV_LIB}:${YARP_DIR}/lib
+export PATH=${PV_BIN}:${YARP_BIN}:${ICUB_BIN}:${HOME}/scripts:$PATH
+</pre>
+<p>Now to build it:
+</p><p><br />
+<b>Base Compilation</b>
+</p><p>Run "cmake ." in the .../iCub/src/primateVision directory.  
+Then run "make" in the same directory.
+</p><p>This will automatically build the devel content that is required by several of the primateVision servers.
+</p><p>If you added path setting to your .bashrc file like I recommended, run "make install" in the same directory to automatically place executables in ".../iCub/src/primateVision/bin_32" or ".../iCub/src/primateVision/bin_64" appropriately (and make sure these directories have been created manually!).  Then, if you also add PV_BIN to your $PATH in .bashrc like suggested above, you can easily execute the programs regardless of current directory.
+</p><p><br />
+
+<p>If you get an error "warning: libavcodec.so.51, needed by /home/andrew/src/yarp2_build64/lib/libyarpmod.so, not found", you can make a simlink to fix it:
+<pre>
+ln -s /usr/lib/libavcodec.so.52 /usr/lib/libavcodec.so.51
+</pre>
+It's caused by a static library specification by the yarp build process and your version of the library is too new. The above hack works fine.
+</p>
+
+<p><b>A CMake Clean-up script</b>
+</p><p>Put this in a file called something like "cleancmake", and add it to your path (I keep scripts in $HOME/scripts, a path that you may have noticed we added to the .bashrc file above.):
+</p>
+<pre>
+
+#/usr/bin/sh
+ 
+find . -name &quot;CMakeSystemConfig.cmake&quot; -exec rm {} \;
+find . -name &quot;cmake*&quot; -exec rm {} \;
+find . -name &quot;config.*&quot; -exec rm {} \;
+find . -name &quot;CMakeCache.txt&quot; -exec rm {} \;
+find . -name &quot;CMakeCCompiler.cmake&quot; -exec rm {} \;
+find . -name &quot;CMakeCXXCompiler.cmake&quot; -exec rm {} \;
+find . -name &quot;CMakeOutput.log&quot; -exec rm {} \;
+find . -name &quot;CMakeSystem.cmake&quot; -exec rm {} \;
+find . -name &quot;CMakeTmp&quot; -exec rm -rf {} \;
+find . -name &quot;CMakeErrors.log&quot; -exec rm  {} \;
+find . -name &quot;CMakeError.log&quot; -exec rm  {} \;
+
+</pre>
+
+
+<h2> Runtime configuration of the PrimateVision Modules</h2>
+<p> IMPORTANT: Make sure you look at the config files in primateVision/config and set paths to the location of your code! i.e, replace '/home/andrew'/.. with the appropriate paths in the config files for the servers you run!
+
+Other programs are related to primate-inspired spatial perception, segmentation, fixation, and attention - largely dorsal competencies. As these competencies operate on an active stereo platform, calibration and online rectification is first required and is provided by the RecServer.
+
+<h2> Probing the PrimateVision modules to obtain parameters </h2>
+All primateVision servers can be probed to ontain the processed image widths, memory width of output images, etc. All servers should be probed by clients to establish the types and sizes of recieved data!
+
+
+
+<h2>PrimateVision Modules</h2>
+
+<p><b>RecServer</b>
+</p><p>To run the synthetic primate vision servers and clients, first start a recserver:
+</p>
+<pre>
+&gt; recserver
+</pre>
+<p>The default configuration file for the recserver is located in iCub/src/primateVision/config/rec.cfg along with all other server configuration files. You can specify an alternate configuration file for any server as follows:
+</p>
+<pre>
+&gt; recserver -c myconfigfile.cfg
+</pre>
+<p>The recserver calibrates images coming from /icub/cam/left and /icub/cam/right, using encoder data obtained from /icub/head/rpc:i. It also implements pixel/angle - based absolute and relative gaze position control. The barrel recrification calibration parameters are obtained from the results of the MATLAB Standard Camera Calibration ToolBox.  The recserver configuration file points to the output parameter file from the calibration. Calibration parameters, head status, and calibrated images are provided to clients.
+
+
+
+</p><p><b>RecClients</b>
+
+</p><p>Once you get the recserver running, you can run a basic recclient:
+</p>
+<pre>
+&gt; recclient
+</pre>
+<p>This will display mosaiced, barrel and epipolar rectified images.  If the motion flag in the recserver config file was enabled upon launching the recserver, the recclient will also move the cameras sinudoidally.  The recclient can also display and save raw images, barrel rectified images, and epipolar rectified images - to do this, edit the appropriate #define statement at the top of the recclient main.cc (recserver/recclient/main.cc).
+</p><p>A more interesting client of the recserver is the egosphere2 program.  It is a client, so does not require configuration.  Once a recserver is running, display the egosphere by simply typing:
+</p>
+<pre>
+&gt; egosphere2
+</pre>
+<p>NB: The egosphere uses openGL hardware support.  If you receive white images, try adding the following to /etc/X11/xorg.conf in the appropriate sections:
+</p>
+<pre>
+Section &quot;Module&quot;
+
+    Load           &quot;glx&quot;
+EndSection
+</pre>
+<pre>
+Section &quot;Device&quot;
+        Option          &quot;DRI&quot; &quot;off&quot;
+EndSection
+
+</pre>
+
+
+<p><b>Cue Processing Servers</b>
+</p><p>All cue processing servers are clients of the recserver, or clients of clients of the recserver. They all have default configuration files located in the primateVision/config directory.<br />
+</p><p>For example:
+</p><p><i>ycsserver</i> - intensity uniqueness (start one for each camera).<br />
+<i>colcsserver</i> - colour chrominance uniqueness and colour hunt (start one for each camera).<br />
+<i>flowserver</i> - head-stabilised x and y optical flow, and flow saliency for both left and right cameras.<br />
+
+<i>depthflowserver</i> - depth and depthflow (movement in the depth direction) server.<br />
+<i>ocsserver</i> - phase processing server providing orientation uniqueness, phase congruency edges, corners and symmetry, orientation responses to individual orientations, etc (start one for each camera).<br />
+<i>iorserver</i> - inhibition-of-return processing (start one for each camera). A client of the flowserver, so start a recserver, then flowserver, then the iorserver.<br />
+<i>tsbserver</i> - attentional task-dependent spatial bias server (start one for each camera).<br />
+<i>attentionserver</i> - a client of all cue processing servers that manages calculation of the attentional fixation point.<br />
+
+<i>zdfserver</i> - segmentation and tracking of the object at the fixation point.
+</p><p><br />
+<b>Cue Processing Clients</b>
+</p><p>All of the above servers have test clients that display server output remotely.  They are located in subdirectories within the server directory, as per the recserver/recclient (eg: ycsserver/ycsclient).
+</p><p><br />
+<b>Other Clients</b>
+</p><p><i>svogrid</i> - Space-Variant Occupancy Grid; a client of the flowserver, depthflowserver, and recserver. Spatial representation.<br />
+<i>attentionclient</i> - a client of the attentionserver and mrfzdfserver that moves gaze to the server-calculated fixation point, and segments and tracks the object or visual surface located there.
+
+</p><p><b>Other Servers</b>
+</p><p>Some other servers are under development and reside in the devel repository parallel to the iCub repository.  E.g., sptmpzdfserver.
+</p>
+<h2> PrimateVision Demos </h2>
+<p>For the time being, my demos reside on my old webpage:
+</p><p><a href="http://rsise.anu.edu.au/~andrew" class='external text' title="http://rsise.anu.edu.au/~andrew" rel="nofollow">[http://rsise.anu.edu.au/~andrew</a>]
+</p><p>Click on 'demos'.
+</p>
+
+
+ *
+ * This file can be edited at \in src/primateVision/doc.dox
+ */
+
+
+
+
+
+
+
+
+
+

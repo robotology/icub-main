@@ -1,0 +1,14 @@
+/**
+ * @ingroup icub_primatevision_utils
+ *
+ * \defgroup icub_primatevision_utils_sptmpmmx SpTmp_MMX
+ *
+ * 
+ * A class that processes provides various MMX-optimised processing functions such as optical flow and depth mapping.
+ *
+ *
+ * \author Andrew Dankers
+ *
+ *
+ * This file can be edited at \in src/primateVision/utils/sptmp_MMX/doc.dox
+ */

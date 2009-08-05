@@ -1,0 +1,22 @@
+ADD_DEFINITIONS(-DQT_THREAD_SUPPORT -O3)
+
+
+INCLUDE_DIRECTORIES(
+	)
+LINK_DIRECTORIES(
+	)
+
+
+ADD_LIBRARY(	timing
+		SHARED
+		timing.cc
+		)
+
+TARGET_LINK_LIBRARIES(	timing
+			)
+
+
+# install targets
+INSTALL_TARGETS(${LIB_DIR} 
+  timing
+  )

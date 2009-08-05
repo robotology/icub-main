@@ -1,0 +1,15 @@
+/**
+ * @ingroup icub_applications
+ *
+ * \defgroup icub_applications_primatevision PrimateVision Applications
+ *
+ * \brief A framework for realtime synthesis of visual competencies in the primate visual cortex. Thus far, dorsal competencies only. Various applications and task usages configurable.
+ *
+ * For running the application see \ref icub_primatevision_app
+ *
+ * \author Andrew Dankers
+ *
+ *
+ * This file can be edited at \in src/primateVision/applications.dox
+ */
+

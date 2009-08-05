@@ -1,0 +1,29 @@
+
+ipp -> opencv mapping
+
+
+OK
+
+... timing
+... mmx
+... configfile
+... mfexample
+
+
+NOT OK
+
+
+... centsur
+... recserver
+... zdfserver
+... convert_rgb
+... convert_yuv
+... display
+... mosaic
+... multiclass
+... multiframeviewer
+... depth
+... mrfzdf
+... rectify
+... recclient
+... zdfclient

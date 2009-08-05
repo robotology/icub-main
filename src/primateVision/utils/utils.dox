@@ -1,0 +1,14 @@
+/**
+ * @ingroup icub_primatevision
+ *
+ * \defgroup icub_primatevision_utils PrimateVision_Utilities
+ *
+ * \brief A set of custom utility functions/libraries used by the PrimateVision framework.
+ *
+ *
+ *
+ * \author Andrew Dankers
+ *
+ *
+ * This file can be edited at \in src/primateVision/utils/utils.dox
+ */
