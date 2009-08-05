@@ -1,0 +1,535 @@
+!_TAG_FILE_FORMAT	2	/extended format; --format=1 will not append ;" to lines/
+!_TAG_FILE_SORTED	1	/0=unsorted, 1=sorted, 2=foldcase/
+!_TAG_PROGRAM_AUTHOR	Darren Hiebert	/dhiebert@users.sourceforge.net/
+!_TAG_PROGRAM_NAME	Exuberant Ctags	//
+!_TAG_PROGRAM_URL	http://ctags.sourceforge.net	/official site/
+!_TAG_PROGRAM_VERSION	5.5.4	//
+!_TAG_REVISION_NAME	MCHPTags	//
+!_TAG_REVISION_VERSION	6.0.1	//
+ABSTRACT_CONTROL_MODEL::0x02	D:\PICs\ControlBoard\system\usb\class\cdc\cdc.h	71;"	d	line:71
+ABSTRACT_STATE::0x01	D:\PICs\ControlBoard\system\usb\class\cdc\cdc.h	85;"	d	line:85
+ADDRESS_STATE::5	D:\PICs\ControlBoard\system\usb\usbmmap.h	62;"	d	line:62
+ADR	D:\PICs\ControlBoard\system\usb\usbmmap.h	123;"	m	line:123	struct:_BDT::<anonymous>
+ADRH	D:\PICs\ControlBoard\system\usb\usbmmap.h	117;"	m	line:117	struct:_BDT::<anonymous>
+ADRL	D:\PICs\ControlBoard\system\usb\usbmmap.h	116;"	m	line:116	struct:_BDT::<anonymous>
+ADR_PENDING_STATE::4	D:\PICs\ControlBoard\system\usb\usbmmap.h	61;"	d	line:61
+ATTACHED_STATE::1	D:\PICs\ControlBoard\system\usb\usbmmap.h	58;"	d	line:58
+Actuate	D:\PICs\ControlBoard\user\user.c	386;"	f	line:386	signature:(void)
+Actuate	D:\PICs\ControlBoard\user\user.c	71;"	p	line:71	file:	signature:(void)
+BAUD_115200::2	D:\PICs\ControlBoard\usart_int.h	8;"	d	line:8
+BAUD_9600::1	D:\PICs\ControlBoard\usart_int.h	7;"	d	line:7
+BC8	D:\PICs\ControlBoard\system\usb\usbmmap.h	84;"	m	line:84	struct:_BD_STAT::<anonymous>
+BC8	D:\PICs\ControlBoard\system\usb\usbmmap.h	94;"	m	line:94	struct:_BD_STAT::<anonymous>
+BC9	D:\PICs\ControlBoard\system\usb\usbmmap.h	85;"	m	line:85	struct:_BD_STAT::<anonymous>
+BC9	D:\PICs\ControlBoard\system\usb\usbmmap.h	95;"	m	line:95	struct:_BD_STAT::<anonymous>
+BDT	D:\PICs\ControlBoard\system\usb\usbmmap.h	125;"	t	line:125
+BD_STAT	D:\PICs\ControlBoard\system\usb\usbmmap.h	108;"	t	line:108
+BOOL	D:\PICs\ControlBoard\system\typedefs.h	150;"	t	line:150
+BSTALL	D:\PICs\ControlBoard\system\usb\usbmmap.h	86;"	m	line:86	struct:_BD_STAT::<anonymous>
+BYTE	D:\PICs\ControlBoard\system\typedefs.h	58;"	t	line:58
+Byte0	D:\PICs\ControlBoard\system\typedefs.h	103;"	m	line:103	struct:_DWORD::<anonymous>
+Byte0	D:\PICs\ControlBoard\system\typedefs.h	70;"	m	line:70	struct:_WORD::<anonymous>
+Byte1	D:\PICs\ControlBoard\system\typedefs.h	104;"	m	line:104	struct:_DWORD::<anonymous>
+Byte1	D:\PICs\ControlBoard\system\typedefs.h	71;"	m	line:71	struct:_WORD::<anonymous>
+Byte2	D:\PICs\ControlBoard\system\typedefs.h	105;"	m	line:105	struct:_DWORD::<anonymous>
+Byte3	D:\PICs\ControlBoard\system\typedefs.h	106;"	m	line:106	struct:_DWORD::<anonymous>
+CARRIER_CONTROL	D:\PICs\ControlBoard\system\usb\class\cdc\cdc.h	284;"	m	line:284	struct:_CONTROL_SIGNAL_BITMAP::<anonymous>
+CDCInitEP	D:\PICs\ControlBoard\system\usb\class\cdc\cdc.c	169;"	f	line:169	signature:(void)
+CDCInitEP	D:\PICs\ControlBoard\system\usb\class\cdc\cdc.h	339;"	p	line:339	signature:(void)
+CDCTxService	D:\PICs\ControlBoard\system\usb\class\cdc\cdc.c	448;"	f	line:448	signature:(void)
+CDCTxService	D:\PICs\ControlBoard\system\usb\class\cdc\cdc.h	343;"	p	line:343	signature:(void)
+CDC_BULK_BD_IN::ep3Bi	D:\PICs\ControlBoard\autofiles\usbcfg.h	77;"	d	line:77
+CDC_BULK_BD_OUT::ep3Bo	D:\PICs\ControlBoard\autofiles\usbcfg.h	75;"	d	line:75
+CDC_BULK_IN_EP_SIZE::64	D:\PICs\ControlBoard\autofiles\usbcfg.h	78;"	d	line:78
+CDC_BULK_OUT_EP_SIZE::64	D:\PICs\ControlBoard\autofiles\usbcfg.h	76;"	d	line:76
+CDC_COMM_INTF_ID::0x00	D:\PICs\ControlBoard\autofiles\usbcfg.h	68;"	d	line:68
+CDC_COMM_UEP::UEP2	D:\PICs\ControlBoard\autofiles\usbcfg.h	69;"	d	line:69
+CDC_DATA_INTF_ID::0x01	D:\PICs\ControlBoard\autofiles\usbcfg.h	73;"	d	line:73
+CDC_DATA_UEP::UEP3	D:\PICs\ControlBoard\autofiles\usbcfg.h	74;"	d	line:74
+CDC_DEVICE::0x02	D:\PICs\ControlBoard\system\usb\class\cdc\cdc.h	65;"	d	line:65
+CDC_H	D:\PICs\ControlBoard\system\usb\class\cdc\cdc.h	37;"	d	line:37
+CDC_INT_BD_IN::ep2Bi	D:\PICs\ControlBoard\autofiles\usbcfg.h	70;"	d	line:70
+CDC_INT_EP_SIZE::8	D:\PICs\ControlBoard\autofiles\usbcfg.h	71;"	d	line:71
+CDC_TX_BUSY::1	D:\PICs\ControlBoard\system\usb\class\cdc\cdc.h	108;"	d	line:108
+CDC_TX_BUSY_ZLP::2	D:\PICs\ControlBoard\system\usb\class\cdc\cdc.h	109;"	d	line:109
+CDC_TX_COMPLETING::3	D:\PICs\ControlBoard\system\usb\class\cdc\cdc.h	110;"	d	line:110
+CDC_TX_READY::0	D:\PICs\ControlBoard\system\usb\class\cdc\cdc.h	107;"	d	line:107
+CFG01::romstruct\	D:\PICs\ControlBoard\autofiles\usbdsc.h	54;"	d	line:54
+CLEAR_COMM_FEATURE::0x04	D:\PICs\ControlBoard\system\usb\class\cdc\cdc.h	49;"	d	line:49
+COMM_INTF::0x02	D:\PICs\ControlBoard\system\usb\class\cdc\cdc.h	68;"	d	line:68
+CONFIGURED_STATE::6	D:\PICs\ControlBoard\system\usb\usbmmap.h	63;"	d	line:63
+CONTROL_SIGNAL_BITMAP	D:\PICs\ControlBoard\system\usb\class\cdc\cdc.h	286;"	t	line:286
+COUNTRY_SETTING::0x02	D:\PICs\ControlBoard\system\usb\class\cdc\cdc.h	86;"	d	line:86
+CS_ENDPOINT::0x25	D:\PICs\ControlBoard\system\usb\class\cdc\cdc.h	91;"	d	line:91
+CS_INTERFACE::0x24	D:\PICs\ControlBoard\system\usb\class\cdc\cdc.h	90;"	d	line:90
+ClassReqHandler	D:\PICs\ControlBoard\autofiles\usbdsc.c	263;"	v	line:263
+ClearArray	D:\PICs\ControlBoard\system\usb\usbdrv\usbdrv.c	575;"	f	line:575	signature:(byte* startAdr,byte count)
+Cnt	D:\PICs\ControlBoard\system\usb\usbmmap.h	115;"	m	line:115	struct:_BDT::<anonymous>
+CtrlTrfData	D:\PICs\ControlBoard\system\usb\usbmmap.c	269;"	v	line:269
+DATA_INTF::0x0A	D:\PICs\ControlBoard\system\usb\class\cdc\cdc.h	78;"	d	line:78
+DEFAULT_STATE::3	D:\PICs\ControlBoard\system\usb\usbmmap.h	60;"	d	line:60
+DETACHED_STATE::0	D:\PICs\ControlBoard\system\usb\usbmmap.h	57;"	d	line:57
+DSC_FN_ACM::0x02	D:\PICs\ControlBoard\system\usb\class\cdc\cdc.h	96;"	d	line:96
+DSC_FN_CALL_MGT::0x01	D:\PICs\ControlBoard\system\usb\class\cdc\cdc.h	95;"	d	line:95
+DSC_FN_COUNTRY_SELECTION::0x07	D:\PICs\ControlBoard\system\usb\class\cdc\cdc.h	101;"	d	line:101
+DSC_FN_DLM::0x03	D:\PICs\ControlBoard\system\usb\class\cdc\cdc.h	97;"	d	line:97
+DSC_FN_HEADER::0x00	D:\PICs\ControlBoard\system\usb\class\cdc\cdc.h	94;"	d	line:94
+DSC_FN_RPT_CAPABILITIES::0x05	D:\PICs\ControlBoard\system\usb\class\cdc\cdc.h	99;"	d	line:99
+DSC_FN_TELEPHONE_RINGER::0x04	D:\PICs\ControlBoard\system\usb\class\cdc\cdc.h	98;"	d	line:98
+DSC_FN_TEL_OP_MODES::0x08	D:\PICs\ControlBoard\system\usb\class\cdc\cdc.h	102;"	d	line:102
+DSC_FN_UNION::0x06	D:\PICs\ControlBoard\system\usb\class\cdc\cdc.h	100;"	d	line:100
+DSC_FN_USB_TERMINAL::0x09	D:\PICs\ControlBoard\system\usb\class\cdc\cdc.h	103;"	d	line:103
+DTE_PRESENT	D:\PICs\ControlBoard\system\usb\class\cdc\cdc.h	283;"	m	line:283	struct:_CONTROL_SIGNAL_BITMAP::<anonymous>
+DTS	D:\PICs\ControlBoard\system\usb\usbmmap.h	90;"	m	line:90	struct:_BD_STAT::<anonymous>
+DTSEN	D:\PICs\ControlBoard\system\usb\usbmmap.h	87;"	m	line:87	struct:_BD_STAT::<anonymous>
+DWORD	D:\PICs\ControlBoard\system\typedefs.h	117;"	t	line:117
+EEPROM_READ	D:\PICs\ControlBoard\user\user.c	585;"	f	line:585	signature:(unsigned char EEEnd)
+EEPROM_READ	D:\PICs\ControlBoard\user\user.c	74;"	p	line:74	file:	signature:(unsigned char)
+EEPROM_WRITE	D:\PICs\ControlBoard\user\user.c	595;"	f	line:595	signature:(unsigned char EEEnd, unsigned char dataEE)
+EEPROM_WRITE	D:\PICs\ControlBoard\user\user.c	75;"	p	line:75	file:	signature:(unsigned char, unsigned char)
+EP00_IN::(0x00<<3)|(IN<<2)	D:\PICs\ControlBoard\system\usb\usbdrv\usbdrv.h	82;"	d	line:82
+EP00_OUT::(0x00<<3)|(OUT<<2)	D:\PICs\ControlBoard\system\usb\usbdrv\usbdrv.h	81;"	d	line:81
+EP01_IN::(0x01<<3)|(IN<<2)	D:\PICs\ControlBoard\system\usb\usbdrv\usbdrv.h	84;"	d	line:84
+EP01_OUT::(0x01<<3)|(OUT<<2)	D:\PICs\ControlBoard\system\usb\usbdrv\usbdrv.h	83;"	d	line:83
+EP02_IN::(0x02<<3)|(IN<<2)	D:\PICs\ControlBoard\system\usb\usbdrv\usbdrv.h	86;"	d	line:86
+EP02_OUT::(0x02<<3)|(OUT<<2)	D:\PICs\ControlBoard\system\usb\usbdrv\usbdrv.h	85;"	d	line:85
+EP03_IN::(0x03<<3)|(IN<<2)	D:\PICs\ControlBoard\system\usb\usbdrv\usbdrv.h	88;"	d	line:88
+EP03_OUT::(0x03<<3)|(OUT<<2)	D:\PICs\ControlBoard\system\usb\usbdrv\usbdrv.h	87;"	d	line:87
+EP04_IN::(0x04<<3)|(IN<<2)	D:\PICs\ControlBoard\system\usb\usbdrv\usbdrv.h	90;"	d	line:90
+EP04_OUT::(0x04<<3)|(OUT<<2)	D:\PICs\ControlBoard\system\usb\usbdrv\usbdrv.h	89;"	d	line:89
+EP05_IN::(0x05<<3)|(IN<<2)	D:\PICs\ControlBoard\system\usb\usbdrv\usbdrv.h	92;"	d	line:92
+EP05_OUT::(0x05<<3)|(OUT<<2)	D:\PICs\ControlBoard\system\usb\usbdrv\usbdrv.h	91;"	d	line:91
+EP06_IN::(0x06<<3)|(IN<<2)	D:\PICs\ControlBoard\system\usb\usbdrv\usbdrv.h	94;"	d	line:94
+EP06_OUT::(0x06<<3)|(OUT<<2)	D:\PICs\ControlBoard\system\usb\usbdrv\usbdrv.h	93;"	d	line:93
+EP07_IN::(0x07<<3)|(IN<<2)	D:\PICs\ControlBoard\system\usb\usbdrv\usbdrv.h	96;"	d	line:96
+EP07_OUT::(0x07<<3)|(OUT<<2)	D:\PICs\ControlBoard\system\usb\usbdrv\usbdrv.h	95;"	d	line:95
+EP08_IN::(0x08<<3)|(IN<<2)	D:\PICs\ControlBoard\system\usb\usbdrv\usbdrv.h	98;"	d	line:98
+EP08_OUT::(0x08<<3)|(OUT<<2)	D:\PICs\ControlBoard\system\usb\usbdrv\usbdrv.h	97;"	d	line:97
+EP09_IN::(0x09<<3)|(IN<<2)	D:\PICs\ControlBoard\system\usb\usbdrv\usbdrv.h	100;"	d	line:100
+EP09_OUT::(0x09<<3)|(OUT<<2)	D:\PICs\ControlBoard\system\usb\usbdrv\usbdrv.h	99;"	d	line:99
+EP0_BUFF_SIZE::8	D:\PICs\ControlBoard\autofiles\usbcfg.h	38;"	d	line:38
+EP10_IN::(0x0A<<3)|(IN<<2)	D:\PICs\ControlBoard\system\usb\usbdrv\usbdrv.h	102;"	d	line:102
+EP10_OUT::(0x0A<<3)|(OUT<<2)	D:\PICs\ControlBoard\system\usb\usbdrv\usbdrv.h	101;"	d	line:101
+EP11_IN::(0x0B<<3)|(IN<<2)	D:\PICs\ControlBoard\system\usb\usbdrv\usbdrv.h	104;"	d	line:104
+EP11_OUT::(0x0B<<3)|(OUT<<2)	D:\PICs\ControlBoard\system\usb\usbdrv\usbdrv.h	103;"	d	line:103
+EP12_IN::(0x0C<<3)|(IN<<2)	D:\PICs\ControlBoard\system\usb\usbdrv\usbdrv.h	106;"	d	line:106
+EP12_OUT::(0x0C<<3)|(OUT<<2)	D:\PICs\ControlBoard\system\usb\usbdrv\usbdrv.h	105;"	d	line:105
+EP13_IN::(0x0D<<3)|(IN<<2)	D:\PICs\ControlBoard\system\usb\usbdrv\usbdrv.h	108;"	d	line:108
+EP13_OUT::(0x0D<<3)|(OUT<<2)	D:\PICs\ControlBoard\system\usb\usbdrv\usbdrv.h	107;"	d	line:107
+EP14_IN::(0x0E<<3)|(IN<<2)	D:\PICs\ControlBoard\system\usb\usbdrv\usbdrv.h	110;"	d	line:110
+EP14_OUT::(0x0E<<3)|(OUT<<2)	D:\PICs\ControlBoard\system\usb\usbdrv\usbdrv.h	109;"	d	line:109
+EP15_IN::(0x0F<<3)|(IN<<2)	D:\PICs\ControlBoard\system\usb\usbdrv\usbdrv.h	112;"	d	line:112
+EP15_OUT::(0x0F<<3)|(OUT<<2)	D:\PICs\ControlBoard\system\usb\usbdrv\usbdrv.h	111;"	d	line:111
+EP_CTRL::0x06	D:\PICs\ControlBoard\system\usb\usbdrv\usbdrv.h	59;"	d	line:59
+EP_IN::0x0A	D:\PICs\ControlBoard\system\usb\usbdrv\usbdrv.h	61;"	d	line:61
+EP_OUT::0x0C	D:\PICs\ControlBoard\system\usb\usbdrv\usbdrv.h	60;"	d	line:60
+EP_OUT_IN::0x0E	D:\PICs\ControlBoard\system\usb\usbdrv\usbdrv.h	62;"	d	line:62
+FAIL::FALSE	D:\PICs\ControlBoard\system\typedefs.h	153;"	d	line:153
+FALSE	D:\PICs\ControlBoard\system\typedefs.h	150;"	e	line:150	enum:_BOOL
+FirstLetter	D:\PICs\ControlBoard\user\user.c	237;"	f	line:237	signature:(void)
+FirstLetter	D:\PICs\ControlBoard\user\user.c	68;"	p	line:68	file:	signature:(void)
+GET_COMM_FEATURE::0x03	D:\PICs\ControlBoard\system\usb\class\cdc\cdc.h	48;"	d	line:48
+GET_ENCAPSULATED_RESPONSE::0x01	D:\PICs\ControlBoard\system\usb\class\cdc\cdc.h	46;"	d	line:46
+GET_LINE_CODING::0x21	D:\PICs\ControlBoard\system\usb\class\cdc\cdc.h	51;"	d	line:51
+HSHK_EN::0x10	D:\PICs\ControlBoard\system\usb\usbdrv\usbdrv.h	63;"	d	line:63
+HighB	D:\PICs\ControlBoard\system\typedefs.h	76;"	m	line:76	struct:_WORD::<anonymous>
+IN::1	D:\PICs\ControlBoard\system\usb\usbdrv\usbdrv.h	76;"	d	line:76
+INCDIS	D:\PICs\ControlBoard\system\usb\usbmmap.h	88;"	m	line:88	struct:_BD_STAT::<anonymous>
+INPUT_PIN::1	D:\PICs\ControlBoard\io_cfg.h	44;"	d	line:44
+IO_CFG_H	D:\PICs\ControlBoard\io_cfg.h	38;"	d	line:38
+InitializeSystem	D:\PICs\ControlBoard\main.c	28;"	p	line:28	file:	signature:(void)
+InitializeSystem	D:\PICs\ControlBoard\main.c	47;"	f	line:47	file:	signature:(void)
+InterruptHandlerHigh	D:\PICs\ControlBoard\user\user.c	541;"	f	line:541
+InterruptHandlerHigh	D:\PICs\ControlBoard\user\user.c	66;"	p	line:66	file:	signature:(void)
+InterruptVectorHigh	D:\PICs\ControlBoard\user\user.c	527;"	f	line:527	signature:(void)
+KEN	D:\PICs\ControlBoard\system\usb\usbmmap.h	89;"	m	line:89	struct:_BD_STAT::<anonymous>
+LINE_CODING	D:\PICs\ControlBoard\system\usb\class\cdc\cdc.h	276;"	t	line:276
+LINE_CODING_LENGTH::0x07	D:\PICs\ControlBoard\system\usb\class\cdc\cdc.h	261;"	d	line:261
+LOWER_LSB::(a)((a).v[0])	D:\PICs\ControlBoard\system\typedefs.h	118;"	d	line:118
+LOWER_MSB::(a)((a).v[1])	D:\PICs\ControlBoard\system\typedefs.h	119;"	d	line:119
+LSB::(a)((a).v[0])	D:\PICs\ControlBoard\system\typedefs.h	83;"	d	line:83
+Left_Y	D:\PICs\ControlBoard\user\user.c	51;"	v	line:51	file:
+LowB	D:\PICs\ControlBoard\system\typedefs.h	75;"	m	line:75	struct:_WORD::<anonymous>
+MAX_EP_NUMBER::3	D:\PICs\ControlBoard\autofiles\usbcfg.h	80;"	d	line:80
+MAX_NUM_INT::1	D:\PICs\ControlBoard\autofiles\usbcfg.h	39;"	d	line:39
+MODE_PP::_PPBM0	D:\PICs\ControlBoard\autofiles\usbcfg.h	42;"	d	line:42
+MSB::(a)((a).v[1])	D:\PICs\ControlBoard\system\typedefs.h	84;"	d	line:84
+MUID_CDC::3	D:\PICs\ControlBoard\autofiles\usbcfg.h	59;"	d	line:59
+MUID_HID::2	D:\PICs\ControlBoard\autofiles\usbcfg.h	58;"	d	line:58
+MUID_MSD::4	D:\PICs\ControlBoard\autofiles\usbcfg.h	60;"	d	line:60
+MUID_NULL::0	D:\PICs\ControlBoard\autofiles\usbcfg.h	56;"	d	line:56
+MUID_USB9::1	D:\PICs\ControlBoard\autofiles\usbcfg.h	57;"	d	line:57
+MaxPWM	D:\PICs\ControlBoard\user\user.c	61;"	v	line:61
+MinPWM	D:\PICs\ControlBoard\user\user.c	62;"	v	line:62
+MouthH	D:\PICs\ControlBoard\user\user.c	51;"	v	line:51	file:
+MouthL	D:\PICs\ControlBoard\user\user.c	51;"	v	line:51	file:
+N1Char	D:\PICs\ControlBoard\user\user.c	50;"	v	line:50	file:
+N2Char	D:\PICs\ControlBoard\user\user.c	50;"	v	line:50	file:
+N3Char	D:\PICs\ControlBoard\user\user.c	50;"	v	line:50	file:
+NChar	D:\PICs\ControlBoard\user\user.c	45;"	v	line:45	file:
+NETWORK_CONNECTION::0x00	D:\PICs\ControlBoard\system\usb\class\cdc\cdc.h	59;"	d	line:59
+NO_PROTOCOL::0x00	D:\PICs\ControlBoard\system\usb\class\cdc\cdc.h	81;"	d	line:81
+Ncar	D:\PICs\ControlBoard\user\user.c	44;"	v	line:44	file:
+OK::TRUE	D:\PICs\ControlBoard\system\typedefs.h	152;"	d	line:152
+OUT::0	D:\PICs\ControlBoard\system\usb\usbdrv\usbdrv.h	75;"	d	line:75
+OUTPUT_PIN::0	D:\PICs\ControlBoard\io_cfg.h	45;"	d	line:45
+PIC_EP_DIR_MASK::0b00000100	D:\PICs\ControlBoard\system\usb\usbdrv\usbdrv.h	79;"	d	line:79
+PIC_EP_NUM_MASK::0b01111000	D:\PICs\ControlBoard\system\usb\usbdrv\usbdrv.h	78;"	d	line:78
+PID	D:\PICs\ControlBoard\system\usb\usbmmap.h	105;"	m	line:105	struct:_BD_STAT::<anonymous>
+PID0	D:\PICs\ControlBoard\system\usb\usbmmap.h	96;"	m	line:96	struct:_BD_STAT::<anonymous>
+PID1	D:\PICs\ControlBoard\system\usb\usbmmap.h	97;"	m	line:97	struct:_BD_STAT::<anonymous>
+PID2	D:\PICs\ControlBoard\system\usb\usbmmap.h	98;"	m	line:98	struct:_BD_STAT::<anonymous>
+PID3	D:\PICs\ControlBoard\system\usb\usbmmap.h	99;"	m	line:99	struct:_BD_STAT::<anonymous>
+POINTER	D:\PICs\ControlBoard\system\typedefs.h	148;"	t	line:148
+PORTAaux	D:\PICs\ControlBoard\user\user.c	389;"	l	line:389
+PORTBaux	D:\PICs\ControlBoard\user\user.c	389;"	l	line:389
+POWERED_STATE::2	D:\PICs\ControlBoard\system\usb\usbmmap.h	59;"	d	line:59
+ProcessIO	D:\PICs\ControlBoard\user\user.c	152;"	f	line:152	signature:(void)
+Pwm_count	D:\PICs\ControlBoard\user\user.c	57;"	v	line:57	file:
+RESPONSE_AVAILABLE::0x01	D:\PICs\ControlBoard\system\usb\class\cdc\cdc.h	60;"	d	line:60
+RemoteWakeup	D:\PICs\ControlBoard\system\usb\usbmmap.h	75;"	m	line:75	struct:_USB_DEVICE_STATUS::<anonymous>
+Right_Y	D:\PICs\ControlBoard\user\user.c	51;"	v	line:51	file:
+SEND_BREAK::0x23	D:\PICs\ControlBoard\system\usb\class\cdc\cdc.h	53;"	d	line:53
+SEND_ENCAPSULATED_COMMAND::0x00	D:\PICs\ControlBoard\system\usb\class\cdc\cdc.h	45;"	d	line:45
+SERIAL_STATE::0x20	D:\PICs\ControlBoard\system\usb\class\cdc\cdc.h	61;"	d	line:61
+SET_COMM_FEATURE::0x02	D:\PICs\ControlBoard\system\usb\class\cdc\cdc.h	47;"	d	line:47
+SET_CONTROL_LINE_STATE::0x22	D:\PICs\ControlBoard\system\usb\class\cdc\cdc.h	52;"	d	line:52
+SET_LINE_CODING::0x20	D:\PICs\ControlBoard\system\usb\class\cdc\cdc.h	50;"	d	line:50
+SLetter	D:\PICs\ControlBoard\user\user.c	55;"	v	line:55	file:
+SecondLetter	D:\PICs\ControlBoard\user\user.c	323;"	f	line:323	signature:(void)
+SecondLetter	D:\PICs\ControlBoard\user\user.c	69;"	p	line:69	file:	signature:(void)
+ServoH	D:\PICs\ControlBoard\user\user.c	51;"	v	line:51	file:
+ServoL	D:\PICs\ControlBoard\user\user.c	51;"	v	line:51	file:
+Servo_PWM	D:\PICs\ControlBoard\user\user.c	58;"	v	line:58	file:
+SetupPkt	D:\PICs\ControlBoard\system\usb\usbmmap.c	268;"	v	line:268
+Stat	D:\PICs\ControlBoard\system\usb\usbmmap.h	114;"	m	line:114	struct:_BDT::<anonymous>
+State	D:\PICs\ControlBoard\user\user.c	154;"	l	line:154	file:
+TMR0fim	D:\PICs\ControlBoard\timerzero.c	4;"	v	line:4
+TRUE	D:\PICs\ControlBoard\system\typedefs.h	150;"	e	line:150	enum:_BOOL
+TYPEDEFS_H	D:\PICs\ControlBoard\system\typedefs.h	38;"	d	line:38
+ThirdLetter	D:\PICs\ControlBoard\user\user.c	354;"	f	line:354	signature:(void)
+ThirdLetter	D:\PICs\ControlBoard\user\user.c	70;"	p	line:70	file:	signature:(void)
+UCFG_VAL::	D:\PICs\ControlBoard\autofiles\usbcfg.h	43;"	d	line:43
+UOWN	D:\PICs\ControlBoard\system\usb\usbmmap.h	101;"	m	line:101	struct:_BD_STAT::<anonymous>
+UOWN	D:\PICs\ControlBoard\system\usb\usbmmap.h	91;"	m	line:91	struct:_BD_STAT::<anonymous>
+UPPER_LSB::(a)((a).v[2])	D:\PICs\ControlBoard\system\typedefs.h	120;"	d	line:120
+UPPER_MSB::(a)((a).v[3])	D:\PICs\ControlBoard\system\typedefs.h	121;"	d	line:121
+USART_BAUD::0x68	D:\PICs\ControlBoard\usart_int.h	1;"	d	line:1
+USART_BUFFER_SIZE::16	D:\PICs\ControlBoard\usart_int.h	2;"	d	line:2
+USART_NOTOK::0	D:\PICs\ControlBoard\usart_int.h	4;"	d	line:4
+USART_OK::1	D:\PICs\ControlBoard\usart_int.h	5;"	d	line:5
+USARTopen	D:\PICs\ControlBoard\usart_int.c	17;"	f	line:17	signature:(unsigned char bd)
+USARTopen	D:\PICs\ControlBoard\usart_int.h	10;"	p	line:10	signature:(unsigned char bd)
+USARTreadNbytesToRAM	D:\PICs\ControlBoard\usart_int.c	132;"	f	line:132	signature:(char *st, unsigned char cnt)
+USARTreadNbytesToRAM	D:\PICs\ControlBoard\usart_int.h	16;"	p	line:16	signature:(char *st, unsigned char cnt)
+USARTreadToRAM	D:\PICs\ControlBoard\usart_int.c	119;"	f	line:119	signature:(char *st)
+USARTreadToRAM	D:\PICs\ControlBoard\usart_int.h	15;"	p	line:15	signature:(char *st)
+USARTwriteFromRAM	D:\PICs\ControlBoard\usart_int.c	91;"	f	line:91	signature:(char * st)
+USARTwriteFromRAM	D:\PICs\ControlBoard\usart_int.h	13;"	p	line:13	signature:(char * st)
+USARTwriteFromROM	D:\PICs\ControlBoard\usart_int.c	105;"	f	line:105	signature:(const rom char * st)
+USARTwriteFromROM	D:\PICs\ControlBoard\usart_int.h	14;"	p	line:14	signature:(const rom char * st)
+USARTwriteNbytesFromRAM	D:\PICs\ControlBoard\usart_int.c	63;"	f	line:63	signature:(char * st, char count)
+USARTwriteNbytesFromRAM	D:\PICs\ControlBoard\usart_int.h	11;"	p	line:11	signature:(char * st, char count)
+USARTwriteNbytesFromROM	D:\PICs\ControlBoard\usart_int.c	77;"	f	line:77	signature:(const rom char * st, char count)
+USARTwriteNbytesFromROM	D:\PICs\ControlBoard\usart_int.h	12;"	p	line:12	signature:(const rom char * st, char count)
+USBCFG_H	D:\PICs\ControlBoard\autofiles\usbcfg.h	35;"	d	line:35
+USBCheckBusStatus	D:\PICs\ControlBoard\system\usb\usbdrv\usbdrv.c	76;"	f	line:76	signature:(void)
+USBCheckCDCRequest	D:\PICs\ControlBoard\system\usb\class\cdc\cdc.c	88;"	f	line:88	signature:(void)
+USBCheckCDCRequest	D:\PICs\ControlBoard\system\usb\class\cdc\cdc.h	338;"	p	line:338	signature:(void)
+USBCheckStdRequest	D:\PICs\ControlBoard\system\usb\usb9\usb9.c	70;"	f	line:70	signature:(void)
+USBCtrlEPService	D:\PICs\ControlBoard\system\usb\usbctrltrf\usbctrltrf.c	78;"	f	line:78	signature:(void)
+USBCtrlEPServiceComplete	D:\PICs\ControlBoard\system\usb\usbctrltrf\usbctrltrf.c	382;"	f	line:382	signature:(void)
+USBCtrlTrfInHandler	D:\PICs\ControlBoard\system\usb\usbctrltrf\usbctrltrf.c	221;"	f	line:221	signature:(void)
+USBCtrlTrfInHandler	D:\PICs\ControlBoard\system\usb\usbctrltrf\usbctrltrf.c	54;"	p	line:54	file:	signature:(void)
+USBCtrlTrfOutHandler	D:\PICs\ControlBoard\system\usb\usbctrltrf\usbctrltrf.c	176;"	f	line:176	signature:(void)
+USBCtrlTrfOutHandler	D:\PICs\ControlBoard\system\usb\usbctrltrf\usbctrltrf.c	53;"	p	line:53	file:	signature:(void)
+USBCtrlTrfRxService	D:\PICs\ControlBoard\system\usb\usbctrltrf\usbctrltrf.c	330;"	f	line:330	signature:(void)
+USBCtrlTrfSetupHandler	D:\PICs\ControlBoard\system\usb\usbctrltrf\usbctrltrf.c	133;"	f	line:133	signature:(void)
+USBCtrlTrfSetupHandler	D:\PICs\ControlBoard\system\usb\usbctrltrf\usbctrltrf.c	52;"	p	line:52	file:	signature:(void)
+USBCtrlTrfTxService	D:\PICs\ControlBoard\system\usb\usbctrltrf\usbctrltrf.c	260;"	f	line:260	signature:(void)
+USBDRV_H	D:\PICs\ControlBoard\system\usb\usbdrv\usbdrv.h	38;"	d	line:38
+USBDSC_H	D:\PICs\ControlBoard\autofiles\usbdsc.h	40;"	d	line:40
+USBDriverService	D:\PICs\ControlBoard\system\usb\usbdrv\usbdrv.c	215;"	f	line:215	signature:(void)
+USBErrorHandler	D:\PICs\ControlBoard\system\usb\usbdrv\usbdrv.c	524;"	f	line:524	signature:(void)
+USBErrorHandler	D:\PICs\ControlBoard\system\usb\usbdrv\usbdrv.c	56;"	p	line:56	file:	signature:(void)
+USBMMAP_H	D:\PICs\ControlBoard\system\usb\usbmmap.h	38;"	d	line:38
+USBModuleDisable	D:\PICs\ControlBoard\system\usb\usbdrv\usbdrv.c	161;"	f	line:161	signature:(void)
+USBModuleDisable	D:\PICs\ControlBoard\system\usb\usbdrv\usbdrv.c	48;"	p	line:48	file:	signature:(void)
+USBModuleEnable	D:\PICs\ControlBoard\system\usb\usbdrv\usbdrv.c	135;"	f	line:135	signature:(void)
+USBModuleEnable	D:\PICs\ControlBoard\system\usb\usbdrv\usbdrv.c	47;"	p	line:47	file:	signature:(void)
+USBPrepareForNextSetupTrf	D:\PICs\ControlBoard\system\usb\usbctrltrf\usbctrltrf.c	490;"	f	line:490	signature:(void)
+USBProtocolResetHandler	D:\PICs\ControlBoard\system\usb\usbdrv\usbdrv.c	53;"	p	line:53	file:	signature:(void)
+USBProtocolResetHandler	D:\PICs\ControlBoard\system\usb\usbdrv\usbdrv.c	551;"	f	line:551	signature:(void)
+USBRemoteWakeup	D:\PICs\ControlBoard\system\usb\usbdrv\usbdrv.c	404;"	f	line:404	signature:(void)
+USBSoftDetach	D:\PICs\ControlBoard\system\usb\usbdrv\usbdrv.c	192;"	f	line:192	signature:(void)
+USBStallHandler	D:\PICs\ControlBoard\system\usb\usbdrv\usbdrv.c	488;"	f	line:488	signature:(void)
+USBStallHandler	D:\PICs\ControlBoard\system\usb\usbdrv\usbdrv.c	55;"	p	line:55	file:	signature:(void)
+USBStdFeatureReqHandler	D:\PICs\ControlBoard\system\usb\usb9\usb9.c	275;"	f	line:275	signature:(void)
+USBStdFeatureReqHandler	D:\PICs\ControlBoard\system\usb\usb9\usb9.c	50;"	p	line:50	file:	signature:(void)
+USBStdGetDscHandler	D:\PICs\ControlBoard\system\usb\usb9\usb9.c	136;"	f	line:136	signature:(void)
+USBStdGetDscHandler	D:\PICs\ControlBoard\system\usb\usb9\usb9.c	47;"	p	line:47	file:	signature:(void)
+USBStdGetStatusHandler	D:\PICs\ControlBoard\system\usb\usb9\usb9.c	218;"	f	line:218	signature:(void)
+USBStdGetStatusHandler	D:\PICs\ControlBoard\system\usb\usb9\usb9.c	49;"	p	line:49	file:	signature:(void)
+USBStdSetCfgHandler	D:\PICs\ControlBoard\system\usb\usb9\usb9.c	180;"	f	line:180	signature:(void)
+USBStdSetCfgHandler	D:\PICs\ControlBoard\system\usb\usb9\usb9.c	48;"	p	line:48	file:	signature:(void)
+USBSuspend	D:\PICs\ControlBoard\system\usb\usbdrv\usbdrv.c	297;"	f	line:297	signature:(void)
+USBSuspend	D:\PICs\ControlBoard\system\usb\usbdrv\usbdrv.c	50;"	p	line:50	file:	signature:(void)
+USBTasks	D:\PICs\ControlBoard\main.c	29;"	p	line:29	file:	signature:(void)
+USBTasks	D:\PICs\ControlBoard\main.c	58;"	f	line:58	signature:(void)
+USBWakeFromSuspend	D:\PICs\ControlBoard\system\usb\usbdrv\usbdrv.c	355;"	f	line:355	signature:(void)
+USBWakeFromSuspend	D:\PICs\ControlBoard\system\usb\usbdrv\usbdrv.c	51;"	p	line:51	file:	signature:(void)
+USB_BUS_ATTACHED::1	D:\PICs\ControlBoard\system\usb\usbdrv\usbdrv.c	82;"	d	line:82	file:
+USB_BUS_DETACHED::0	D:\PICs\ControlBoard\system\usb\usbdrv\usbdrv.c	83;"	d	line:83	file:
+USB_CDC_ACM_FN_DSC	D:\PICs\ControlBoard\system\usb\class\cdc\cdc.h	307;"	t	line:307
+USB_CDC_CALL_MGT_FN_DSC	D:\PICs\ControlBoard\system\usb\class\cdc\cdc.h	327;"	t	line:327
+USB_CDC_HEADER_FN_DSC	D:\PICs\ControlBoard\system\usb\class\cdc\cdc.h	298;"	t	line:298
+USB_CDC_UNION_FN_DSC	D:\PICs\ControlBoard\system\usb\class\cdc\cdc.h	317;"	t	line:317
+USB_CD_Ptr	D:\PICs\ControlBoard\autofiles\usbdsc.c	260;"	v	line:260
+USB_DEVICE_STATUS	D:\PICs\ControlBoard\system\usb\usbmmap.h	78;"	t	line:78
+USB_H	D:\PICs\ControlBoard\system\usb\usb.h	37;"	d	line:37
+USB_SD_Ptr	D:\PICs\ControlBoard\autofiles\usbdsc.c	261;"	v	line:261
+USB_SOF_Handler	D:\PICs\ControlBoard\system\usb\usbdrv\usbdrv.c	445;"	f	line:445	signature:(void)
+USB_SOF_Handler	D:\PICs\ControlBoard\system\usb\usbdrv\usbdrv.c	54;"	p	line:54	file:	signature:(void)
+USB_USE_CDC	D:\PICs\ControlBoard\autofiles\usbcfg.h	49;"	d	line:49
+UserInit	D:\PICs\ControlBoard\user\user.c	84;"	f	line:84	signature:(void)
+V25TER::0x01	D:\PICs\ControlBoard\system\usb\class\cdc\cdc.h	74;"	d	line:74
+WORD	D:\PICs\ControlBoard\system\typedefs.h	82;"	t	line:82
+Word0	D:\PICs\ControlBoard\system\typedefs.h	110;"	m	line:110	struct:_DWORD::<anonymous>
+Word1	D:\PICs\ControlBoard\system\typedefs.h	111;"	m	line:111	struct:_DWORD::<anonymous>
+WriteUSB	D:\PICs\ControlBoard\user\user.c	72;"	p	line:72	file:	signature:(unsigned char)
+_BDT	D:\PICs\ControlBoard\system\usb\usbmmap.h	110;"	u	line:110
+_BD_STAT	D:\PICs\ControlBoard\system\usb\usbmmap.h	80;"	u	line:80
+_BOOL	D:\PICs\ControlBoard\system\typedefs.h	150;"	g	line:150
+_BSTALL::0x04	D:\PICs\ControlBoard\system\usb\usbmmap.h	46;"	d	line:46
+_BYTE	D:\PICs\ControlBoard\system\typedefs.h	44;"	u	line:44
+_CONTROL_SIGNAL_BITMAP	D:\PICs\ControlBoard\system\usb\class\cdc\cdc.h	278;"	u	line:278
+_DAT0::0x00	D:\PICs\ControlBoard\system\usb\usbmmap.h	50;"	d	line:50
+_DAT1::0x40	D:\PICs\ControlBoard\system\usb\usbmmap.h	51;"	d	line:51
+_DTSEN::0x08	D:\PICs\ControlBoard\system\usb\usbmmap.h	47;"	d	line:47
+_DTSMASK::0x40	D:\PICs\ControlBoard\system\usb\usbmmap.h	52;"	d	line:52
+_DWORD	D:\PICs\ControlBoard\system\typedefs.h	86;"	u	line:86
+_FS::0x04	D:\PICs\ControlBoard\system\usb\usbdrv\usbdrv.h	51;"	d	line:51
+_INCDIS::0x10	D:\PICs\ControlBoard\system\usb\usbmmap.h	48;"	d	line:48
+_KEN::0x20	D:\PICs\ControlBoard\system\usb\usbmmap.h	49;"	d	line:49
+_LINE_CODING	D:\PICs\ControlBoard\system\usb\class\cdc\cdc.h	263;"	u	line:263
+_LS::0x00	D:\PICs\ControlBoard\system\usb\usbdrv\usbdrv.h	50;"	d	line:50
+_OEMON::0x40	D:\PICs\ControlBoard\system\usb\usbdrv\usbdrv.h	55;"	d	line:55
+_POINTER	D:\PICs\ControlBoard\system\typedefs.h	125;"	u	line:125
+_PPBM0::0x00	D:\PICs\ControlBoard\system\usb\usbdrv\usbdrv.h	47;"	d	line:47
+_PPBM1::0x01	D:\PICs\ControlBoard\system\usb\usbdrv\usbdrv.h	48;"	d	line:48
+_PPBM2::0x02	D:\PICs\ControlBoard\system\usb\usbdrv\usbdrv.h	49;"	d	line:49
+_PUEN::0x10	D:\PICs\ControlBoard\system\usb\usbdrv\usbdrv.h	54;"	d	line:54
+_RAM::0	D:\PICs\ControlBoard\system\usb\usbmmap.h	66;"	d	line:66
+_ROM::1	D:\PICs\ControlBoard\system\usb\usbmmap.h	67;"	d	line:67
+_TREXT::0x08	D:\PICs\ControlBoard\system\usb\usbdrv\usbdrv.h	53;"	d	line:53
+_TRINT::0x00	D:\PICs\ControlBoard\system\usb\usbdrv\usbdrv.h	52;"	d	line:52
+_UCPU::0x00	D:\PICs\ControlBoard\system\usb\usbmmap.h	54;"	d	line:54
+_USB_CDC_ACM_FN_DSC	D:\PICs\ControlBoard\system\usb\class\cdc\cdc.h	301;"	s	line:301
+_USB_CDC_CALL_MGT_FN_DSC	D:\PICs\ControlBoard\system\usb\class\cdc\cdc.h	320;"	s	line:320
+_USB_CDC_HEADER_FN_DSC	D:\PICs\ControlBoard\system\usb\class\cdc\cdc.h	292;"	s	line:292
+_USB_CDC_UNION_FN_DSC	D:\PICs\ControlBoard\system\usb\class\cdc\cdc.h	310;"	s	line:310
+_USB_DEVICE_STATUS	D:\PICs\ControlBoard\system\usb\usbmmap.h	70;"	u	line:70
+_USIE::0x80	D:\PICs\ControlBoard\system\usb\usbmmap.h	53;"	d	line:53
+_UTEYE::0x80	D:\PICs\ControlBoard\system\usb\usbdrv\usbdrv.h	56;"	d	line:56
+_WORD	D:\PICs\ControlBoard\system\typedefs.h	60;"	u	line:60
+_byte	D:\PICs\ControlBoard\system\typedefs.h	46;"	m	line:46	union:_BYTE
+_byte	D:\PICs\ControlBoard\system\usb\class\cdc\cdc.h	267;"	m	line:267	struct:_LINE_CODING::<anonymous>
+_byte	D:\PICs\ControlBoard\system\usb\class\cdc\cdc.h	280;"	m	line:280	union:_CONTROL_SIGNAL_BITMAP
+_byte	D:\PICs\ControlBoard\system\usb\usbmmap.h	72;"	m	line:72	union:_USB_DEVICE_STATUS
+_byte	D:\PICs\ControlBoard\system\usb\usbmmap.h	82;"	m	line:82	union:_BD_STAT
+_dword	D:\PICs\ControlBoard\system\typedefs.h	88;"	m	line:88	union:_DWORD
+_word	D:\PICs\ControlBoard\system\typedefs.h	133;"	m	line:133	union:_POINTER
+_word	D:\PICs\ControlBoard\system\typedefs.h	62;"	m	line:62	union:_WORD
+auxsum	D:\PICs\ControlBoard\user\user.c	388;"	l	line:388
+auxvar	D:\PICs\ControlBoard\user\user.c	391;"	l	line:391
+b0	D:\PICs\ControlBoard\system\typedefs.h	49;"	m	line:49	struct:_BYTE::<anonymous>
+b1	D:\PICs\ControlBoard\system\typedefs.h	50;"	m	line:50	struct:_BYTE::<anonymous>
+b2	D:\PICs\ControlBoard\system\typedefs.h	51;"	m	line:51	struct:_BYTE::<anonymous>
+b3	D:\PICs\ControlBoard\system\typedefs.h	52;"	m	line:52	struct:_BYTE::<anonymous>
+b4	D:\PICs\ControlBoard\system\typedefs.h	53;"	m	line:53	struct:_BYTE::<anonymous>
+b5	D:\PICs\ControlBoard\system\typedefs.h	54;"	m	line:54	struct:_BYTE::<anonymous>
+b6	D:\PICs\ControlBoard\system\typedefs.h	55;"	m	line:55	struct:_BYTE::<anonymous>
+b7	D:\PICs\ControlBoard\system\typedefs.h	56;"	m	line:56	struct:_BYTE::<anonymous>
+bCharFormat	D:\PICs\ControlBoard\system\usb\class\cdc\cdc.h	272;"	m	line:272	struct:_LINE_CODING::<anonymous>
+bDataBits	D:\PICs\ControlBoard\system\usb\class\cdc\cdc.h	274;"	m	line:274	struct:_LINE_CODING::<anonymous>
+bDataInterface	D:\PICs\ControlBoard\system\usb\class\cdc\cdc.h	326;"	m	line:326	struct:_USB_CDC_CALL_MGT_FN_DSC
+bDscSubType	D:\PICs\ControlBoard\system\usb\class\cdc\cdc.h	296;"	m	line:296	struct:_USB_CDC_HEADER_FN_DSC
+bDscSubType	D:\PICs\ControlBoard\system\usb\class\cdc\cdc.h	305;"	m	line:305	struct:_USB_CDC_ACM_FN_DSC
+bDscSubType	D:\PICs\ControlBoard\system\usb\class\cdc\cdc.h	314;"	m	line:314	struct:_USB_CDC_UNION_FN_DSC
+bDscSubType	D:\PICs\ControlBoard\system\usb\class\cdc\cdc.h	324;"	m	line:324	struct:_USB_CDC_CALL_MGT_FN_DSC
+bDscType	D:\PICs\ControlBoard\autofiles\usbdsc.c	247;"	m	line:247	file:
+bDscType	D:\PICs\ControlBoard\autofiles\usbdsc.c	250;"	m	line:250	file:
+bDscType	D:\PICs\ControlBoard\autofiles\usbdsc.c	255;"	m	line:255	file:
+bDscType	D:\PICs\ControlBoard\system\usb\class\cdc\cdc.h	295;"	m	line:295	struct:_USB_CDC_HEADER_FN_DSC
+bDscType	D:\PICs\ControlBoard\system\usb\class\cdc\cdc.h	304;"	m	line:304	struct:_USB_CDC_ACM_FN_DSC
+bDscType	D:\PICs\ControlBoard\system\usb\class\cdc\cdc.h	313;"	m	line:313	struct:_USB_CDC_UNION_FN_DSC
+bDscType	D:\PICs\ControlBoard\system\usb\class\cdc\cdc.h	323;"	m	line:323	struct:_USB_CDC_CALL_MGT_FN_DSC
+bFNLength	D:\PICs\ControlBoard\system\usb\class\cdc\cdc.h	294;"	m	line:294	struct:_USB_CDC_HEADER_FN_DSC
+bFNLength	D:\PICs\ControlBoard\system\usb\class\cdc\cdc.h	303;"	m	line:303	struct:_USB_CDC_ACM_FN_DSC
+bFNLength	D:\PICs\ControlBoard\system\usb\class\cdc\cdc.h	312;"	m	line:312	struct:_USB_CDC_UNION_FN_DSC
+bFNLength	D:\PICs\ControlBoard\system\usb\class\cdc\cdc.h	322;"	m	line:322	struct:_USB_CDC_CALL_MGT_FN_DSC
+bHigh	D:\PICs\ControlBoard\system\typedefs.h	130;"	m	line:130	struct:_POINTER::<anonymous>
+bLength	D:\PICs\ControlBoard\autofiles\usbdsc.c	247;"	m	line:247	file:
+bLength	D:\PICs\ControlBoard\autofiles\usbdsc.c	250;"	m	line:250	file:
+bLength	D:\PICs\ControlBoard\autofiles\usbdsc.c	255;"	m	line:255	file:
+bLow	D:\PICs\ControlBoard\system\typedefs.h	129;"	m	line:129	struct:_POINTER::<anonymous>
+bMasterIntf	D:\PICs\ControlBoard\system\usb\class\cdc\cdc.h	315;"	m	line:315	struct:_USB_CDC_UNION_FN_DSC
+bParityType	D:\PICs\ControlBoard\system\usb\class\cdc\cdc.h	273;"	m	line:273	struct:_LINE_CODING::<anonymous>
+bRam	D:\PICs\ControlBoard\system\typedefs.h	137;"	m	line:137	union:_POINTER
+bRom	D:\PICs\ControlBoard\system\typedefs.h	142;"	m	line:142	union:_POINTER
+bSaveIntf0	D:\PICs\ControlBoard\system\usb\class\cdc\cdc.h	316;"	m	line:316	struct:_USB_CDC_UNION_FN_DSC
+baud	D:\PICs\ControlBoard\usart_int.c	20;"	l	line:20
+baudrateUSART	D:\PICs\ControlBoard\usart_int.c	12;"	v	line:12
+bcdCDC	D:\PICs\ControlBoard\system\usb\class\cdc\cdc.h	297;"	m	line:297	struct:_USB_CDC_HEADER_FN_DSC
+bconf1	D:\PICs\ControlBoard\usart_int.c	20;"	l	line:20
+bconf2	D:\PICs\ControlBoard\usart_int.c	20;"	l	line:20
+bitsaux	D:\PICs\ControlBoard\user\user.c	390;"	l	line:390
+bitsaux1	D:\PICs\ControlBoard\user\user.c	390;"	l	line:390
+bitsaux2	D:\PICs\ControlBoard\user\user.c	390;"	l	line:390
+bmCapabilities	D:\PICs\ControlBoard\system\usb\class\cdc\cdc.h	306;"	m	line:306	struct:_USB_CDC_ACM_FN_DSC
+bmCapabilities	D:\PICs\ControlBoard\system\usb\class\cdc\cdc.h	325;"	m	line:325	struct:_USB_CDC_CALL_MGT_FN_DSC
+buffUSARTenvio	D:\PICs\ControlBoard\usart_int.c	6;"	v	line:6
+buffUSARTrecep	D:\PICs\ControlBoard\usart_int.c	7;"	v	line:7
+buffUSBinput	D:\PICs\ControlBoard\user\user.c	28;"	v	line:28
+byte	D:\PICs\ControlBoard\system\typedefs.h	40;"	t	line:40
+byte0	D:\PICs\ControlBoard\system\typedefs.h	65;"	m	line:65	struct:_WORD::<anonymous>
+byte0	D:\PICs\ControlBoard\system\typedefs.h	91;"	m	line:91	struct:_DWORD::<anonymous>
+byte1	D:\PICs\ControlBoard\system\typedefs.h	66;"	m	line:66	struct:_WORD::<anonymous>
+byte1	D:\PICs\ControlBoard\system\typedefs.h	92;"	m	line:92	struct:_DWORD::<anonymous>
+byte2	D:\PICs\ControlBoard\system\typedefs.h	93;"	m	line:93	struct:_DWORD::<anonymous>
+byte3	D:\PICs\ControlBoard\system\typedefs.h	94;"	m	line:94	struct:_DWORD::<anonymous>
+byte_count	D:\PICs\ControlBoard\user\user.c	41;"	v	line:41
+byte_to_read	D:\PICs\ControlBoard\system\usb\usbctrltrf\usbctrltrf.c	332;"	l	line:332
+byte_to_send	D:\PICs\ControlBoard\system\usb\class\cdc\cdc.c	450;"	l	line:450
+byte_to_send	D:\PICs\ControlBoard\system\usb\usbctrltrf\usbctrltrf.c	262;"	l	line:262
+cd01	D:\PICs\ControlBoard\autofiles\usbdsc.h	55;"	v	line:55
+cdc_acm_fn_i01a00	D:\PICs\ControlBoard\autofiles\usbdsc.h	58;"	v	line:58
+cdc_call_mgt_fn_i01a00	D:\PICs\ControlBoard\autofiles\usbdsc.h	60;"	v	line:60
+cdc_data_rx	D:\PICs\ControlBoard\system\usb\usbmmap.c	279;"	v	line:279
+cdc_data_tx	D:\PICs\ControlBoard\system\usb\usbmmap.c	280;"	v	line:280
+cdc_header_fn_i01a00	D:\PICs\ControlBoard\autofiles\usbdsc.h	57;"	v	line:57
+cdc_mem_type	D:\PICs\ControlBoard\system\usb\class\cdc\cdc.c	52;"	v	line:52
+cdc_notice	D:\PICs\ControlBoard\system\usb\usbmmap.c	278;"	v	line:278
+cdc_rx_len	D:\PICs\ControlBoard\system\usb\class\cdc\cdc.c	46;"	v	line:46
+cdc_trf_state	D:\PICs\ControlBoard\system\usb\class\cdc\cdc.c	48;"	v	line:48
+cdc_tx_len	D:\PICs\ControlBoard\system\usb\class\cdc\cdc.c	51;"	v	line:51
+cdc_union_fn_i01a00	D:\PICs\ControlBoard\autofiles\usbdsc.h	59;"	v	line:59
+char_H	D:\PICs\ControlBoard\user\user.c	54;"	v	line:54	file:
+char_L	D:\PICs\ControlBoard\user\user.c	54;"	v	line:54	file:
+control_signal_bitmap	D:\PICs\ControlBoard\system\usb\class\cdc\cdc.c	55;"	v	line:55
+counUSARTenvio	D:\PICs\ControlBoard\usart_int.c	8;"	v	line:8
+counUSARTrecep	D:\PICs\ControlBoard\usart_int.c	10;"	v	line:10
+counUSBinput	D:\PICs\ControlBoard\user\user.c	29;"	v	line:29
+count	D:\PICs\ControlBoard\usart_int.c	121;"	l	line:121
+count	D:\PICs\ControlBoard\usart_int.c	134;"	l	line:134
+ctrl_trf_mem	D:\PICs\ControlBoard\system\usb\usbmmap.h	76;"	m	line:76	struct:_USB_DEVICE_STATUS::<anonymous>
+ctrl_trf_session_owner	D:\PICs\ControlBoard\system\usb\usbctrltrf\usbctrltrf.c	45;"	v	line:45
+ctrl_trf_state	D:\PICs\ControlBoard\system\usb\usbctrltrf\usbctrltrf.c	44;"	v	line:44
+data	D:\PICs\ControlBoard\user\user.c	30;"	v	line:30	file:
+debug	D:\PICs\ControlBoard\user\user.c	37;"	v	line:37
+delay_count	D:\PICs\ControlBoard\system\usb\usbdrv\usbdrv.c	406;"	l	line:406	file:
+device_dsc	D:\PICs\ControlBoard\autofiles\usbdsc.c	180;"	v	line:180
+dummy_encapsulated_cmd_response	D:\PICs\ControlBoard\system\usb\class\cdc\cdc.c	64;"	v	line:64
+dummy_length::0x08	D:\PICs\ControlBoard\system\usb\class\cdc\cdc.c	63;"	d	line:63	file:
+dwDTERate	D:\PICs\ControlBoard\system\usb\class\cdc\cdc.h	271;"	m	line:271	struct:_LINE_CODING::<anonymous>
+dword	D:\PICs\ControlBoard\system\typedefs.h	42;"	t	line:42
+eeprom_value	D:\PICs\ControlBoard\user\user.c	239;"	l	line:239
+ep02i_i01a00	D:\PICs\ControlBoard\autofiles\usbdsc.h	61;"	v	line:61
+ep03i_i02a00	D:\PICs\ControlBoard\autofiles\usbdsc.h	64;"	v	line:64
+ep03o_i02a00	D:\PICs\ControlBoard\autofiles\usbdsc.h	63;"	v	line:63
+ep0Bi	D:\PICs\ControlBoard\system\usb\usbmmap.c	175;"	v	line:175
+ep0Bo	D:\PICs\ControlBoard\system\usb\usbmmap.c	174;"	v	line:174
+ep10Bi	D:\PICs\ControlBoard\system\usb\usbmmap.c	225;"	v	line:225
+ep10Bo	D:\PICs\ControlBoard\system\usb\usbmmap.c	224;"	v	line:224
+ep11Bi	D:\PICs\ControlBoard\system\usb\usbmmap.c	230;"	v	line:230
+ep11Bo	D:\PICs\ControlBoard\system\usb\usbmmap.c	229;"	v	line:229
+ep12Bi	D:\PICs\ControlBoard\system\usb\usbmmap.c	235;"	v	line:235
+ep12Bo	D:\PICs\ControlBoard\system\usb\usbmmap.c	234;"	v	line:234
+ep13Bi	D:\PICs\ControlBoard\system\usb\usbmmap.c	240;"	v	line:240
+ep13Bo	D:\PICs\ControlBoard\system\usb\usbmmap.c	239;"	v	line:239
+ep14Bi	D:\PICs\ControlBoard\system\usb\usbmmap.c	245;"	v	line:245
+ep14Bo	D:\PICs\ControlBoard\system\usb\usbmmap.c	244;"	v	line:244
+ep15Bi	D:\PICs\ControlBoard\system\usb\usbmmap.c	250;"	v	line:250
+ep15Bo	D:\PICs\ControlBoard\system\usb\usbmmap.c	249;"	v	line:249
+ep1Bi	D:\PICs\ControlBoard\system\usb\usbmmap.c	180;"	v	line:180
+ep1Bo	D:\PICs\ControlBoard\system\usb\usbmmap.c	179;"	v	line:179
+ep2Bi	D:\PICs\ControlBoard\system\usb\usbmmap.c	185;"	v	line:185
+ep2Bo	D:\PICs\ControlBoard\system\usb\usbmmap.c	184;"	v	line:184
+ep3Bi	D:\PICs\ControlBoard\system\usb\usbmmap.c	190;"	v	line:190
+ep3Bo	D:\PICs\ControlBoard\system\usb\usbmmap.c	189;"	v	line:189
+ep4Bi	D:\PICs\ControlBoard\system\usb\usbmmap.c	195;"	v	line:195
+ep4Bo	D:\PICs\ControlBoard\system\usb\usbmmap.c	194;"	v	line:194
+ep5Bi	D:\PICs\ControlBoard\system\usb\usbmmap.c	200;"	v	line:200
+ep5Bo	D:\PICs\ControlBoard\system\usb\usbmmap.c	199;"	v	line:199
+ep6Bi	D:\PICs\ControlBoard\system\usb\usbmmap.c	205;"	v	line:205
+ep6Bo	D:\PICs\ControlBoard\system\usb\usbmmap.c	204;"	v	line:204
+ep7Bi	D:\PICs\ControlBoard\system\usb\usbmmap.c	210;"	v	line:210
+ep7Bo	D:\PICs\ControlBoard\system\usb\usbmmap.c	209;"	v	line:209
+ep8Bi	D:\PICs\ControlBoard\system\usb\usbmmap.c	215;"	v	line:215
+ep8Bo	D:\PICs\ControlBoard\system\usb\usbmmap.c	214;"	v	line:214
+ep9Bi	D:\PICs\ControlBoard\system\usb\usbmmap.c	220;"	v	line:220
+ep9Bo	D:\PICs\ControlBoard\system\usb\usbmmap.c	219;"	v	line:219
+espera_x10ms	D:\PICs\ControlBoard\timerzero.c	6;"	f	line:6	signature:(unsigned char x10ms)
+espera_x10ms	D:\PICs\ControlBoard\timerzero.h	1;"	p	line:1	signature:(unsigned char x10ms)
+getsUSBUSART	D:\PICs\ControlBoard\system\usb\class\cdc\cdc.c	239;"	f	line:239	signature:(char *buffer, byte len)
+getsUSBUSART	D:\PICs\ControlBoard\system\usb\class\cdc\cdc.h	340;"	p	line:340	signature:(char *buffer, byte len)
+i	D:\PICs\ControlBoard\system\usb\usbctrltrf\usbctrltrf.c	135;"	l	line:135
+i	D:\PICs\ControlBoard\usart_int.c	19;"	l	line:19
+i	D:\PICs\ControlBoard\user\user.c	156;"	l	line:156
+i	D:\PICs\ControlBoard\user\user.c	86;"	l	line:86
+i01a00	D:\PICs\ControlBoard\autofiles\usbdsc.h	56;"	v	line:56
+i02a00	D:\PICs\ControlBoard\autofiles\usbdsc.h	62;"	v	line:62
+j	D:\PICs\ControlBoard\user\user.c	156;"	l	line:156
+kt	D:\PICs\ControlBoard\user\user.c	155;"	l	line:155	file:
+lastcounUSART_recep	D:\PICs\ControlBoard\usart_int.c	14;"	v	line:14
+len	D:\PICs\ControlBoard\system\usb\class\cdc\cdc.c	298;"	l	line:298
+len	D:\PICs\ControlBoard\system\usb\class\cdc\cdc.c	379;"	l	line:379
+line_coding	D:\PICs\ControlBoard\system\usb\class\cdc\cdc.c	54;"	v	line:54
+mCDCGetRxLength::cdc_rx_len	D:\PICs\ControlBoard\system\usb\class\cdc\cdc.h	186;"	d	line:186
+mCDCUsartRxIsBusy::CDC_BULK_BD_OUT.Stat.UOWN	D:\PICs\ControlBoard\system\usb\class\cdc\cdc.h	148;"	d	line:148
+mCDCUsartTxIsBusy::CDC_BULK_BD_IN.Stat.UOWN	D:\PICs\ControlBoard\system\usb\class\cdc\cdc.h	167;"	d	line:167
+mInitializeUSBDriver::{UCFG=UCFG_VAL;\	D:\PICs\ControlBoard\system\usb\usbdrv\usbdrv.h	135;"	d	line:135
+mUSBUSARTIsTxTrfReady::(cdc_trf_state==CDC_TX_READY)	D:\PICs\ControlBoard\system\usb\class\cdc\cdc.h	129;"	d	line:129
+mUSBUSARTTxRam::(pData,len)\	D:\PICs\ControlBoard\system\usb\class\cdc\cdc.h	215;"	d	line:215
+mUSBUSARTTxRom::(pData,len)\	D:\PICs\ControlBoard\system\usb\class\cdc\cdc.h	250;"	d	line:250
+main	D:\PICs\ControlBoard\main.c	34;"	f	line:34	signature:(void)
+output_buffer	D:\PICs\ControlBoard\user\user.c	31;"	v	line:31
+pCDCDst	D:\PICs\ControlBoard\system\usb\class\cdc\cdc.c	50;"	v	line:50
+pCDCSrc	D:\PICs\ControlBoard\system\usb\class\cdc\cdc.c	49;"	v	line:49
+pDst	D:\PICs\ControlBoard\system\usb\usbctrltrf\usbctrltrf.c	48;"	v	line:48
+pFunc	D:\PICs\ControlBoard\system\typedefs.h	123;"	t	line:123
+pSrc	D:\PICs\ControlBoard\system\usb\usbctrltrf\usbctrltrf.c	47;"	v	line:47
+posiUSARTenvio	D:\PICs\ControlBoard\usart_int.c	9;"	v	line:9
+posiUSARTrecep	D:\PICs\ControlBoard\usart_int.c	11;"	v	line:11
+putrsUSBUSART	D:\PICs\ControlBoard\system\usb\class\cdc\cdc.c	377;"	f	line:377	signature:(const rom char *data)
+putrsUSBUSART	D:\PICs\ControlBoard\system\usb\class\cdc\cdc.h	341;"	p	line:341	signature:(const rom char *data)
+putsUSBUSART	D:\PICs\ControlBoard\system\usb\class\cdc\cdc.c	296;"	f	line:296	signature:(char *data)
+putsUSBUSART	D:\PICs\ControlBoard\system\usb\class\cdc\cdc.h	342;"	p	line:342	signature:(char *data)
+sd000	D:\PICs\ControlBoard\autofiles\usbdsc.c	247;"	v	line:247
+sd001	D:\PICs\ControlBoard\autofiles\usbdsc.c	250;"	v	line:250
+sd002	D:\PICs\ControlBoard\autofiles\usbdsc.c	255;"	v	line:255
+self_power::1	D:\PICs\ControlBoard\io_cfg.h	61;"	d	line:61
+self_power::PORTAbits.RA2	D:\PICs\ControlBoard\io_cfg.h	59;"	d	line:59
+string	D:\PICs\ControlBoard\autofiles\usbdsc.c	247;"	m	line:247	file:
+string	D:\PICs\ControlBoard\autofiles\usbdsc.c	250;"	m	line:250	file:
+string	D:\PICs\ControlBoard\autofiles\usbdsc.c	255;"	m	line:255	file:
+t	D:\PICs\ControlBoard\timerzero.c	8;"	l	line:8
+time_count	D:\PICs\ControlBoard\user\user.c	59;"	v	line:59	file:
+tris_self_power::TRISAbits.TRISA2	D:\PICs\ControlBoard\io_cfg.h	56;"	d	line:56
+tris_usb_bus_sense::TRISAbits.TRISA1	D:\PICs\ControlBoard\io_cfg.h	48;"	d	line:48
+usb_active_cfg	D:\PICs\ControlBoard\system\usb\usbmmap.c	159;"	v	line:159
+usb_alt_intf	D:\PICs\ControlBoard\system\usb\usbmmap.c	160;"	v	line:160
+usb_bus_sense::1	D:\PICs\ControlBoard\io_cfg.h	53;"	d	line:53
+usb_bus_sense::PORTAbits.RA1	D:\PICs\ControlBoard\io_cfg.h	51;"	d	line:51
+usb_device_state	D:\PICs\ControlBoard\system\usb\usbmmap.c	157;"	v	line:157
+usb_in_count	D:\PICs\ControlBoard\user\user.c	34;"	v	line:34
+usb_out_ready	D:\PICs\ControlBoard\user\user.c	35;"	v	line:35
+usb_stat	D:\PICs\ControlBoard\system\usb\usbmmap.c	158;"	v	line:158
+v	D:\PICs\ControlBoard\system\typedefs.h	115;"	m	line:115	struct:_DWORD::<anonymous>
+v	D:\PICs\ControlBoard\system\typedefs.h	80;"	m	line:80	struct:_WORD::<anonymous>
+wCount	D:\PICs\ControlBoard\system\usb\usbctrltrf\usbctrltrf.c	49;"	v	line:49
+wRam	D:\PICs\ControlBoard\system\typedefs.h	139;"	m	line:139	union:_POINTER
+wRom	D:\PICs\ControlBoard\system\typedefs.h	143;"	m	line:143	union:_POINTER
+word	D:\PICs\ControlBoard\system\typedefs.h	41;"	t	line:41
+word0	D:\PICs\ControlBoard\system\typedefs.h	98;"	m	line:98	struct:_DWORD::<anonymous>
+word1	D:\PICs\ControlBoard\system\typedefs.h	99;"	m	line:99	struct:_DWORD::<anonymous>

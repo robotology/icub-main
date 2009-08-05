@@ -1,0 +1,61 @@
+
+; Windows USB CDC ACM Setup File
+; Copyright (c) 2000 Microsoft Corporation
+; Copyright (C) 2004 Microchip Technology Inc.
+
+[Version] 
+Signature="$Windows NT$" 
+Class=Ports
+ClassGuid={4D36E978-E325-11CE-BFC1-08002BE10318} 
+Provider=%MCHP% 
+LayoutFile=layout.inf
+DriverVer=08/17/2001,5.1.2600.0
+
+[Manufacturer] 
+%MFGNAME%=DeviceList
+
+[DestinationDirs] 
+DefaultDestDir=12 
+
+[SourceDisksFiles]
+
+[SourceDisksNames]
+
+[DeviceList] 
+%DESCRIPTION%=DriverInstall, USB\VID_04D8&PID_000A 
+
+;------------------------------------------------------------------------------
+;  Windows 2000/XP Sections
+;------------------------------------------------------------------------------
+
+[DriverInstall.nt] 
+CopyFiles=DriverCopyFiles
+AddReg=DriverInstall.nt.AddReg 
+
+[DriverCopyFiles]
+usbser.sys,,,0x20
+
+[DriverInstall.nt.AddReg] 
+HKR,,DevLoader,,*ntkern 
+HKR,,NTMPDriver,,usbser.sys 
+HKR,,EnumPropPages32,,"MsPorts.dll,SerialPortPropPageProvider" 
+
+[DriverInstall.nt.Services] 
+AddService=usbser, 0x00000002, DriverService
+
+[DriverService] 
+DisplayName=%SERVICE% 
+ServiceType=1
+StartType=3
+ErrorControl=1
+ServiceBinary=%12%\usbser.sys 
+
+;------------------------------------------------------------------------------
+;  String Definitions
+;------------------------------------------------------------------------------
+
+[Strings] 
+MCHP="IdMind - Engenharia de Sistemas, Lda."
+MFGNAME="IdMind - Engenharia de Sistemas, Lda."
+DESCRIPTION="Communications Port" 
+SERVICE="Placa central de controlo"
