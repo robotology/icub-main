@@ -1,0 +1,36 @@
+<application>
+<name>LogPolarModule starter</name>
+<dependencies>
+  <port>/icub01</port>
+  <port>/icub/cam/right</port>
+  <port>/rea</port>
+</dependencies>
+<module>
+  <name>yarpview</name>
+  <parameters>--name /rea/viewIn --x 0 --y 10 --synch</parameters>
+  <node>rea</node>
+  <tag>viewIn</tag>
+</module>
+<module>
+  <name>yarpview</name>
+  <parameters>--name /rea/viewOut --x 320 --y 10 --synch</parameters>
+  <node>rea</node>
+  <tag>viewOut</tag>
+</module>
+<connection>
+  <output>/icub/cam/right</output>
+  <input>/rea/viewIn</input>
+  <protocol>tcp</protocol>
+</connection>
+<connection>
+  <output>/icub/cam/right</output>
+  <input>/rea/LogPolar/in</input>
+  <protocol>tcp</protocol>
+</connection>
+<connection>
+  <output>/rea/LogPolar/out</output>
+  <input>/rea/viewOut</input>
+  <protocol>tcp</protocol>
+</connection>
+</application>
+
