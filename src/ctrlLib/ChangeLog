@@ -1,0 +1,36 @@
+
+2009-07-29 Ugo Pattacini <ugo.pattacini@iit.it>
+	   * ctrlMath:
+         - SE3inv() added to invert 4 by 4 rototranslational matrix
+           (about 5 times faster than pinv())
+
+2009-07-05 Ugo Pattacini <ugo.pattacini@iit.it>
+	   * trajectoryGenerator:
+         - removed MinJerkGenVelCtrl class
+         - MinJerkGen class modified
+
+2009-06-25 Ugo Pattacini <ugo.pattacini@iit.it>
+	   * All modules: "using namespace" removed from within header files
+
+2009-05-19 Ugo Pattacini <ugo.pattacini@iit.it>
+	   * trajectoryGenerator: bug fix
+
+2009-04-22 Ugo Pattacini <ugo.pattacini@iit.it>
+	   * adaptWinPolyEstimator: bug fix
+
+2009-04-04 Ugo Pattacini <ugo.pattacini@iit.it>
+	   * Added classes for functions encoding
+
+2009-04-03 Ugo Pattacini <ugo.pattacini@iit.it>
+	   * Added classes for trajectory generation
+
+2009-04-02 Ugo Pattacini <ugo.pattacini@iit.it>
+	   * Added reset() methods to PIDs classes
+
+2009-03-29 Ugo Pattacini <ugo.pattacini@iit.it>
+	   * Added seriesPID class
+
+2009-03-17 Ugo Pattacini <ugo.pattacini@iit.it>
+	   * Added anti-windup to parallelPID
+
+
