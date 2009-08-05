@@ -1,0 +1,17 @@
+
+paulfitz's installation notes (unofficial)
+=============================
+
+This module seems to depend on "KDL", the orocos kinematics and 
+dynamics library.
+
+Downloaded this from:
+  http://www.orocos.org/kdl
+
+Built via CMake.  Turned out to depend in turn on 
+  boost/graph/adjacency_list.hpp
+Installed this using package libboost-graph-dev on debian.
+
+Placed build location in environment variable "KDL_DIR".
+
+Built module via CMake.
