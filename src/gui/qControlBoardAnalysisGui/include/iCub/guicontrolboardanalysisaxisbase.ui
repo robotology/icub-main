@@ -1,0 +1,269 @@
+<!DOCTYPE UI><UI version="3.3" stdsetdef="1">
+<class>GuiControlboardAnalysisAxisBase</class>
+<widget class="QWidget">
+    <property name="name">
+        <cstring>GuiControlboardAnalysisAxisBase</cstring>
+    </property>
+    <property name="geometry">
+        <rect>
+            <x>0</x>
+            <y>0</y>
+            <width>566</width>
+            <height>295</height>
+        </rect>
+    </property>
+    <property name="caption">
+        <string>Axis xy</string>
+    </property>
+    <hbox>
+        <property name="name">
+            <cstring>unnamed</cstring>
+        </property>
+        <widget class="QGroupBox">
+            <property name="name">
+                <cstring>gbxAxis</cstring>
+            </property>
+            <property name="title">
+                <string>Axis xy</string>
+            </property>
+            <hbox>
+                <property name="name">
+                    <cstring>unnamed</cstring>
+                </property>
+                <widget class="QFrame">
+                    <property name="name">
+                        <cstring>frame7</cstring>
+                    </property>
+                    <property name="maximumSize">
+                        <size>
+                            <width>160</width>
+                            <height>32767</height>
+                        </size>
+                    </property>
+                    <property name="frameShape">
+                        <enum>StyledPanel</enum>
+                    </property>
+                    <property name="frameShadow">
+                        <enum>Raised</enum>
+                    </property>
+                    <grid>
+                        <property name="name">
+                            <cstring>unnamed</cstring>
+                        </property>
+                        <spacer row="6" column="0">
+                            <property name="name">
+                                <cstring>spacer9</cstring>
+                            </property>
+                            <property name="orientation">
+                                <enum>Vertical</enum>
+                            </property>
+                            <property name="sizeType">
+                                <enum>Expanding</enum>
+                            </property>
+                            <property name="sizeHint">
+                                <size>
+                                    <width>21</width>
+                                    <height>31</height>
+                                </size>
+                            </property>
+                        </spacer>
+                        <spacer row="6" column="1">
+                            <property name="name">
+                                <cstring>spacer9_2</cstring>
+                            </property>
+                            <property name="orientation">
+                                <enum>Vertical</enum>
+                            </property>
+                            <property name="sizeType">
+                                <enum>Expanding</enum>
+                            </property>
+                            <property name="sizeHint">
+                                <size>
+                                    <width>21</width>
+                                    <height>30</height>
+                                </size>
+                            </property>
+                        </spacer>
+                        <widget class="QCheckBox" row="3" column="0">
+                            <property name="name">
+                                <cstring>chbAcc</cstring>
+                            </property>
+                            <property name="text">
+                                <string>acceleration</string>
+                            </property>
+                        </widget>
+                        <widget class="QCheckBox" row="4" column="0">
+                            <property name="name">
+                                <cstring>chbErr</cstring>
+                            </property>
+                            <property name="text">
+                                <string>error</string>
+                            </property>
+                        </widget>
+                        <widget class="QCheckBox" row="5" column="0">
+                            <property name="name">
+                                <cstring>chbOut</cstring>
+                            </property>
+                            <property name="text">
+                                <string>output</string>
+                            </property>
+                        </widget>
+                        <widget class="QLineEdit" row="2" column="1">
+                            <property name="name">
+                                <cstring>lneScaleVel</cstring>
+                            </property>
+                        </widget>
+                        <widget class="QLineEdit" row="1" column="1">
+                            <property name="name">
+                                <cstring>lneScalePos</cstring>
+                            </property>
+                        </widget>
+                        <widget class="QLineEdit" row="3" column="1">
+                            <property name="name">
+                                <cstring>lneScaleAcc</cstring>
+                            </property>
+                        </widget>
+                        <widget class="QLineEdit" row="4" column="1">
+                            <property name="name">
+                                <cstring>lneScaleErr</cstring>
+                            </property>
+                        </widget>
+                        <widget class="QLineEdit" row="5" column="1">
+                            <property name="name">
+                                <cstring>lneScaleOut</cstring>
+                            </property>
+                        </widget>
+                        <widget class="QCheckBox" row="2" column="0">
+                            <property name="name">
+                                <cstring>chbVel</cstring>
+                            </property>
+                            <property name="text">
+                                <string>velocity</string>
+                            </property>
+                        </widget>
+                        <widget class="QCheckBox" row="1" column="0">
+                            <property name="name">
+                                <cstring>chbPos</cstring>
+                            </property>
+                            <property name="text">
+                                <string>position</string>
+                            </property>
+                        </widget>
+                        <widget class="QLabel" row="0" column="0">
+                            <property name="name">
+                                <cstring>textLabel1</cstring>
+                            </property>
+                            <property name="text">
+                                <string>view:</string>
+                            </property>
+                        </widget>
+                        <widget class="QLabel" row="0" column="1">
+                            <property name="name">
+                                <cstring>textLabel1_2</cstring>
+                            </property>
+                            <property name="text">
+                                <string>scale:</string>
+                            </property>
+                        </widget>
+                    </grid>
+                </widget>
+                <widget class="QFrame">
+                    <property name="name">
+                        <cstring>frmMain</cstring>
+                    </property>
+                    <property name="minimumSize">
+                        <size>
+                            <width>230</width>
+                            <height>0</height>
+                        </size>
+                    </property>
+                    <property name="frameShape">
+                        <enum>StyledPanel</enum>
+                    </property>
+                    <property name="frameShadow">
+                        <enum>Raised</enum>
+                    </property>
+                </widget>
+            </hbox>
+        </widget>
+    </hbox>
+</widget>
+<connections>
+    <connection>
+        <sender>chbVel</sender>
+        <signal>stateChanged(int)</signal>
+        <receiver>GuiControlboardAnalysisAxisBase</receiver>
+        <slot>chbVel_stateChanged(int)</slot>
+    </connection>
+    <connection>
+        <sender>chbAcc</sender>
+        <signal>stateChanged(int)</signal>
+        <receiver>GuiControlboardAnalysisAxisBase</receiver>
+        <slot>chbAcc_stateChanged(int)</slot>
+    </connection>
+    <connection>
+        <sender>chbErr</sender>
+        <signal>stateChanged(int)</signal>
+        <receiver>GuiControlboardAnalysisAxisBase</receiver>
+        <slot>chbErr_stateChanged(int)</slot>
+    </connection>
+    <connection>
+        <sender>chbOut</sender>
+        <signal>stateChanged(int)</signal>
+        <receiver>GuiControlboardAnalysisAxisBase</receiver>
+        <slot>chbOut_stateChanged(int)</slot>
+    </connection>
+    <connection>
+        <sender>chbPos</sender>
+        <signal>stateChanged(int)</signal>
+        <receiver>GuiControlboardAnalysisAxisBase</receiver>
+        <slot>chbPos_stateChanged(int)</slot>
+    </connection>
+    <connection>
+        <sender>lneScalePos</sender>
+        <signal>returnPressed()</signal>
+        <receiver>GuiControlboardAnalysisAxisBase</receiver>
+        <slot>lneScalePos_returnPressed()</slot>
+    </connection>
+    <connection>
+        <sender>lneScaleVel</sender>
+        <signal>returnPressed()</signal>
+        <receiver>GuiControlboardAnalysisAxisBase</receiver>
+        <slot>lneScaleVel_returnPressed()</slot>
+    </connection>
+    <connection>
+        <sender>lneScaleAcc</sender>
+        <signal>returnPressed()</signal>
+        <receiver>GuiControlboardAnalysisAxisBase</receiver>
+        <slot>lneScaleAcc_returnPressed()</slot>
+    </connection>
+    <connection>
+        <sender>lneScaleErr</sender>
+        <signal>returnPressed()</signal>
+        <receiver>GuiControlboardAnalysisAxisBase</receiver>
+        <slot>lneScaleErr_returnPressed()</slot>
+    </connection>
+    <connection>
+        <sender>lneScaleOut</sender>
+        <signal>returnPressed()</signal>
+        <receiver>GuiControlboardAnalysisAxisBase</receiver>
+        <slot>lneScaleOut_returnPressed()</slot>
+    </connection>
+</connections>
+<includes>
+    <include location="local" impldecl="in implementation">guicontrolboardanalysisaxisbase.ui.h</include>
+</includes>
+<slots>
+    <slot>chbVel_stateChanged( int )</slot>
+    <slot>chbAcc_stateChanged( int )</slot>
+    <slot>chbErr_stateChanged( int )</slot>
+    <slot>chbPos_stateChanged( int )</slot>
+    <slot>chbOut_stateChanged( int )</slot>
+    <slot>lneScalePos_returnPressed()</slot>
+    <slot>lneScaleVel_returnPressed()</slot>
+    <slot>lneScaleAcc_returnPressed()</slot>
+    <slot>lneScaleErr_returnPressed()</slot>
+    <slot>lneScaleOut_returnPressed()</slot>
+</slots>
+<layoutdefaults spacing="6" margin="11"/>
+</UI>

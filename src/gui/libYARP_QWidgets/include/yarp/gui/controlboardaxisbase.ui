@@ -1,0 +1,664 @@
+<!DOCTYPE UI><UI version="3.3" stdsetdef="1">
+<class>ControlboardAxisBase</class>
+<widget class="QWidget">
+    <property name="name">
+        <cstring>ControlboardAxisBase</cstring>
+    </property>
+    <property name="geometry">
+        <rect>
+            <x>0</x>
+            <y>0</y>
+            <width>922</width>
+            <height>403</height>
+        </rect>
+    </property>
+    <property name="caption">
+        <string>Axis xy</string>
+    </property>
+    <vbox>
+        <property name="name">
+            <cstring>unnamed</cstring>
+        </property>
+        <widget class="QGroupBox">
+            <property name="name">
+                <cstring>gbxAxis</cstring>
+            </property>
+            <property name="title">
+                <string>Axis xy</string>
+            </property>
+            <grid>
+                <property name="name">
+                    <cstring>unnamed</cstring>
+                </property>
+                <widget class="QButtonGroup" row="0" column="0">
+                    <property name="name">
+                        <cstring>buttonGroup1</cstring>
+                    </property>
+                    <property name="maximumSize">
+                        <size>
+                            <width>90</width>
+                            <height>32767</height>
+                        </size>
+                    </property>
+                    <property name="title">
+                        <string>Mode</string>
+                    </property>
+                    <grid>
+                        <property name="name">
+                            <cstring>unnamed</cstring>
+                        </property>
+                        <widget class="QRadioButton" row="1" column="0">
+                            <property name="name">
+                                <cstring>rbtVel</cstring>
+                            </property>
+                            <property name="text">
+                                <string>velocity</string>
+                            </property>
+                        </widget>
+                        <widget class="QRadioButton" row="0" column="0">
+                            <property name="name">
+                                <cstring>rbtPos</cstring>
+                            </property>
+                            <property name="text">
+                                <string>position</string>
+                            </property>
+                        </widget>
+                    </grid>
+                </widget>
+                <widget class="QPushButton" row="0" column="6">
+                    <property name="name">
+                        <cstring>btnStop</cstring>
+                    </property>
+                    <property name="minimumSize">
+                        <size>
+                            <width>0</width>
+                            <height>0</height>
+                        </size>
+                    </property>
+                    <property name="maximumSize">
+                        <size>
+                            <width>40</width>
+                            <height>40</height>
+                        </size>
+                    </property>
+                    <property name="paletteForegroundColor">
+                        <color>
+                            <red>255</red>
+                            <green>255</green>
+                            <blue>255</blue>
+                        </color>
+                    </property>
+                    <property name="paletteBackgroundColor">
+                        <color>
+                            <red>238</red>
+                            <green>6</green>
+                            <blue>25</blue>
+                        </color>
+                    </property>
+                    <property name="text">
+                        <string>STOP</string>
+                    </property>
+                </widget>
+                <widget class="QGroupBox" row="0" column="1">
+                    <property name="name">
+                        <cstring>groupBox6</cstring>
+                    </property>
+                    <property name="title">
+                        <string>Position</string>
+                    </property>
+                    <grid>
+                        <property name="name">
+                            <cstring>unnamed</cstring>
+                        </property>
+                        <widget class="QPushButton" row="0" column="0">
+                            <property name="name">
+                                <cstring>btnMinus</cstring>
+                            </property>
+                            <property name="minimumSize">
+                                <size>
+                                    <width>0</width>
+                                    <height>0</height>
+                                </size>
+                            </property>
+                            <property name="maximumSize">
+                                <size>
+                                    <width>20</width>
+                                    <height>32767</height>
+                                </size>
+                            </property>
+                            <property name="text">
+                                <string>-</string>
+                            </property>
+                        </widget>
+                        <widget class="QPushButton" row="0" column="4">
+                            <property name="name">
+                                <cstring>btnPlus</cstring>
+                            </property>
+                            <property name="maximumSize">
+                                <size>
+                                    <width>20</width>
+                                    <height>32767</height>
+                                </size>
+                            </property>
+                            <property name="text">
+                                <string>+</string>
+                            </property>
+                        </widget>
+                        <widget class="QSlider" row="0" column="1" rowspan="1" colspan="3">
+                            <property name="name">
+                                <cstring>sldPosAbsolute</cstring>
+                            </property>
+                            <property name="sizePolicy">
+                                <sizepolicy>
+                                    <hsizetype>7</hsizetype>
+                                    <vsizetype>0</vsizetype>
+                                    <horstretch>3</horstretch>
+                                    <verstretch>0</verstretch>
+                                </sizepolicy>
+                            </property>
+                            <property name="minimumSize">
+                                <size>
+                                    <width>100</width>
+                                    <height>0</height>
+                                </size>
+                            </property>
+                            <property name="minValue">
+                                <number>-25</number>
+                            </property>
+                            <property name="maxValue">
+                                <number>24</number>
+                            </property>
+                            <property name="lineStep">
+                                <number>1</number>
+                            </property>
+                            <property name="pageStep">
+                                <number>1</number>
+                            </property>
+                            <property name="tracking">
+                                <bool>true</bool>
+                            </property>
+                            <property name="orientation">
+                                <enum>Horizontal</enum>
+                            </property>
+                        </widget>
+                        <widget class="QLineEdit" row="1" column="2">
+                            <property name="name">
+                                <cstring>lnePosAbsolute</cstring>
+                            </property>
+                            <property name="maximumSize">
+                                <size>
+                                    <width>50</width>
+                                    <height>20</height>
+                                </size>
+                            </property>
+                            <property name="frameShape">
+                                <enum>LineEditPanel</enum>
+                            </property>
+                            <property name="frameShadow">
+                                <enum>Sunken</enum>
+                            </property>
+                        </widget>
+                        <spacer row="1" column="0" rowspan="1" colspan="2">
+                            <property name="name">
+                                <cstring>spacer3</cstring>
+                            </property>
+                            <property name="orientation">
+                                <enum>Horizontal</enum>
+                            </property>
+                            <property name="sizeType">
+                                <enum>Expanding</enum>
+                            </property>
+                            <property name="sizeHint">
+                                <size>
+                                    <width>81</width>
+                                    <height>20</height>
+                                </size>
+                            </property>
+                        </spacer>
+                        <spacer row="1" column="3" rowspan="1" colspan="2">
+                            <property name="name">
+                                <cstring>spacer2</cstring>
+                            </property>
+                            <property name="orientation">
+                                <enum>Horizontal</enum>
+                            </property>
+                            <property name="sizeType">
+                                <enum>Expanding</enum>
+                            </property>
+                            <property name="sizeHint">
+                                <size>
+                                    <width>81</width>
+                                    <height>20</height>
+                                </size>
+                            </property>
+                        </spacer>
+                    </grid>
+                </widget>
+                <widget class="QGroupBox" row="0" column="3">
+                    <property name="name">
+                        <cstring>groupBox5</cstring>
+                    </property>
+                    <property name="sizePolicy">
+                        <sizepolicy>
+                            <hsizetype>1</hsizetype>
+                            <vsizetype>1</vsizetype>
+                            <horstretch>0</horstretch>
+                            <verstretch>0</verstretch>
+                        </sizepolicy>
+                    </property>
+                    <property name="maximumSize">
+                        <size>
+                            <width>210</width>
+                            <height>32767</height>
+                        </size>
+                    </property>
+                    <property name="title">
+                        <string>Control</string>
+                    </property>
+                    <grid>
+                        <property name="name">
+                            <cstring>unnamed</cstring>
+                        </property>
+                        <widget class="QLineEdit" row="0" column="0">
+                            <property name="name">
+                                <cstring>lneCtrlP</cstring>
+                            </property>
+                            <property name="maximumSize">
+                                <size>
+                                    <width>25</width>
+                                    <height>32767</height>
+                                </size>
+                            </property>
+                        </widget>
+                        <widget class="QLineEdit" row="0" column="2">
+                            <property name="name">
+                                <cstring>lneCtrlD</cstring>
+                            </property>
+                            <property name="maximumSize">
+                                <size>
+                                    <width>25</width>
+                                    <height>32767</height>
+                                </size>
+                            </property>
+                        </widget>
+                        <widget class="QLineEdit" row="0" column="1">
+                            <property name="name">
+                                <cstring>lneCtrlI</cstring>
+                            </property>
+                            <property name="maximumSize">
+                                <size>
+                                    <width>25</width>
+                                    <height>32767</height>
+                                </size>
+                            </property>
+                        </widget>
+                        <widget class="QLabel" row="1" column="0">
+                            <property name="name">
+                                <cstring>textLabel1</cstring>
+                            </property>
+                            <property name="text">
+                                <string>&lt;p align="center"&gt;p&lt;/p&gt;</string>
+                            </property>
+                        </widget>
+                        <widget class="QLabel" row="1" column="1">
+                            <property name="name">
+                                <cstring>textLabel1_3</cstring>
+                            </property>
+                            <property name="minimumSize">
+                                <size>
+                                    <width>0</width>
+                                    <height>0</height>
+                                </size>
+                            </property>
+                            <property name="maximumSize">
+                                <size>
+                                    <width>32767</width>
+                                    <height>32767</height>
+                                </size>
+                            </property>
+                            <property name="text">
+                                <string>&lt;p align="center"&gt;i&lt;/p&gt;</string>
+                            </property>
+                        </widget>
+                        <widget class="QLabel" row="1" column="2">
+                            <property name="name">
+                                <cstring>textLabel1_2</cstring>
+                            </property>
+                            <property name="text">
+                                <string>&lt;p align="center"&gt;d&lt;/p&gt;</string>
+                            </property>
+                        </widget>
+                        <widget class="QLineEdit" row="1" column="4">
+                            <property name="name">
+                                <cstring>lneCtrlAcc</cstring>
+                            </property>
+                            <property name="minimumSize">
+                                <size>
+                                    <width>40</width>
+                                    <height>0</height>
+                                </size>
+                            </property>
+                            <property name="maximumSize">
+                                <size>
+                                    <width>40</width>
+                                    <height>32767</height>
+                                </size>
+                            </property>
+                        </widget>
+                        <widget class="QLineEdit" row="0" column="4">
+                            <property name="name">
+                                <cstring>lneCtrlVel</cstring>
+                            </property>
+                            <property name="minimumSize">
+                                <size>
+                                    <width>40</width>
+                                    <height>0</height>
+                                </size>
+                            </property>
+                            <property name="maximumSize">
+                                <size>
+                                    <width>40</width>
+                                    <height>32767</height>
+                                </size>
+                            </property>
+                        </widget>
+                        <widget class="QLabel" row="0" column="3">
+                            <property name="name">
+                                <cstring>textLabel1_2_2</cstring>
+                            </property>
+                            <property name="minimumSize">
+                                <size>
+                                    <width>50</width>
+                                    <height>0</height>
+                                </size>
+                            </property>
+                            <property name="maximumSize">
+                                <size>
+                                    <width>50</width>
+                                    <height>32767</height>
+                                </size>
+                            </property>
+                            <property name="text">
+                                <string>&lt;p align="center"&gt;ref. vel.&lt;/p&gt;</string>
+                            </property>
+                        </widget>
+                        <widget class="QLabel" row="1" column="3">
+                            <property name="name">
+                                <cstring>textLabel1_2_2_2</cstring>
+                            </property>
+                            <property name="minimumSize">
+                                <size>
+                                    <width>50</width>
+                                    <height>0</height>
+                                </size>
+                            </property>
+                            <property name="maximumSize">
+                                <size>
+                                    <width>50</width>
+                                    <height>32767</height>
+                                </size>
+                            </property>
+                            <property name="text">
+                                <string>&lt;p align="center"&gt;ref. acc.&lt;/p&gt;</string>
+                            </property>
+                        </widget>
+                    </grid>
+                </widget>
+                <widget class="QGroupBox" row="0" column="4">
+                    <property name="name">
+                        <cstring>groupBox7_2</cstring>
+                    </property>
+                    <property name="maximumSize">
+                        <size>
+                            <width>95</width>
+                            <height>32767</height>
+                        </size>
+                    </property>
+                    <property name="title">
+                        <string>Limits</string>
+                    </property>
+                    <grid>
+                        <property name="name">
+                            <cstring>unnamed</cstring>
+                        </property>
+                        <widget class="QLineEdit" row="1" column="1">
+                            <property name="name">
+                                <cstring>lneMax</cstring>
+                            </property>
+                            <property name="minimumSize">
+                                <size>
+                                    <width>40</width>
+                                    <height>0</height>
+                                </size>
+                            </property>
+                            <property name="maximumSize">
+                                <size>
+                                    <width>40</width>
+                                    <height>20</height>
+                                </size>
+                            </property>
+                        </widget>
+                        <widget class="QLabel" row="1" column="0">
+                            <property name="name">
+                                <cstring>textLabel3_2_2</cstring>
+                            </property>
+                            <property name="text">
+                                <string>max</string>
+                            </property>
+                        </widget>
+                        <widget class="QLabel" row="0" column="0">
+                            <property name="name">
+                                <cstring>textLabel3_2</cstring>
+                            </property>
+                            <property name="text">
+                                <string>min</string>
+                            </property>
+                        </widget>
+                        <widget class="QLineEdit" row="0" column="1">
+                            <property name="name">
+                                <cstring>lneMin</cstring>
+                            </property>
+                            <property name="minimumSize">
+                                <size>
+                                    <width>40</width>
+                                    <height>0</height>
+                                </size>
+                            </property>
+                            <property name="maximumSize">
+                                <size>
+                                    <width>40</width>
+                                    <height>20</height>
+                                </size>
+                            </property>
+                        </widget>
+                    </grid>
+                </widget>
+                <widget class="QGroupBox" row="0" column="2">
+                    <property name="name">
+                        <cstring>groupBox7</cstring>
+                    </property>
+                    <property name="maximumSize">
+                        <size>
+                            <width>70</width>
+                            <height>32767</height>
+                        </size>
+                    </property>
+                    <property name="title">
+                        <string>Velocity</string>
+                    </property>
+                    <vbox>
+                        <property name="name">
+                            <cstring>unnamed</cstring>
+                        </property>
+                        <widget class="QLineEdit">
+                            <property name="name">
+                                <cstring>lneSpeed</cstring>
+                            </property>
+                            <property name="maximumSize">
+                                <size>
+                                    <width>40</width>
+                                    <height>20</height>
+                                </size>
+                            </property>
+                        </widget>
+                    </vbox>
+                </widget>
+                <widget class="QGroupBox" row="0" column="5">
+                    <property name="name">
+                        <cstring>groupBox7_3</cstring>
+                    </property>
+                    <property name="maximumSize">
+                        <size>
+                            <width>70</width>
+                            <height>32767</height>
+                        </size>
+                    </property>
+                    <property name="title">
+                        <string>Amplifier</string>
+                    </property>
+                    <grid>
+                        <property name="name">
+                            <cstring>unnamed</cstring>
+                        </property>
+                        <widget class="QCheckBox" row="0" column="0">
+                            <property name="name">
+                                <cstring>chbAmp</cstring>
+                            </property>
+                            <property name="text">
+                                <string>on</string>
+                            </property>
+                        </widget>
+                    </grid>
+                </widget>
+            </grid>
+        </widget>
+    </vbox>
+</widget>
+<connections>
+    <connection>
+        <sender>rbtPos</sender>
+        <signal>toggled(bool)</signal>
+        <receiver>ControlboardAxisBase</receiver>
+        <slot>rbtPos_toggled(bool)</slot>
+    </connection>
+    <connection>
+        <sender>rbtVel</sender>
+        <signal>toggled(bool)</signal>
+        <receiver>ControlboardAxisBase</receiver>
+        <slot>rbtVel_toggled(bool)</slot>
+    </connection>
+    <connection>
+        <sender>lnePosAbsolute</sender>
+        <signal>returnPressed()</signal>
+        <receiver>ControlboardAxisBase</receiver>
+        <slot>lnePosAbsolute_returnPressed()</slot>
+    </connection>
+    <connection>
+        <sender>lneSpeed</sender>
+        <signal>returnPressed()</signal>
+        <receiver>ControlboardAxisBase</receiver>
+        <slot>lneSpeed_returnPressed()</slot>
+    </connection>
+    <connection>
+        <sender>btnStop</sender>
+        <signal>clicked()</signal>
+        <receiver>ControlboardAxisBase</receiver>
+        <slot>btnStop_clicked()</slot>
+    </connection>
+    <connection>
+        <sender>btnPlus</sender>
+        <signal>clicked()</signal>
+        <receiver>ControlboardAxisBase</receiver>
+        <slot>btnPlus_clicked()</slot>
+    </connection>
+    <connection>
+        <sender>btnMinus</sender>
+        <signal>clicked()</signal>
+        <receiver>ControlboardAxisBase</receiver>
+        <slot>btnMinus_clicked()</slot>
+    </connection>
+    <connection>
+        <sender>sldPosAbsolute</sender>
+        <signal>valueChanged(int)</signal>
+        <receiver>ControlboardAxisBase</receiver>
+        <slot>sldPosAbsolute_valueChanged(int)</slot>
+    </connection>
+    <connection>
+        <sender>lneMin</sender>
+        <signal>returnPressed()</signal>
+        <receiver>ControlboardAxisBase</receiver>
+        <slot>lneMin_returnPressed()</slot>
+    </connection>
+    <connection>
+        <sender>lneMax</sender>
+        <signal>returnPressed()</signal>
+        <receiver>ControlboardAxisBase</receiver>
+        <slot>lneMax_returnPressed()</slot>
+    </connection>
+    <connection>
+        <sender>lneCtrlD</sender>
+        <signal>returnPressed()</signal>
+        <receiver>ControlboardAxisBase</receiver>
+        <slot>lneCtrlD_returnPressed()</slot>
+    </connection>
+    <connection>
+        <sender>lneCtrlI</sender>
+        <signal>returnPressed()</signal>
+        <receiver>ControlboardAxisBase</receiver>
+        <slot>lneCtrlI_returnPressed()</slot>
+    </connection>
+    <connection>
+        <sender>lneCtrlP</sender>
+        <signal>returnPressed()</signal>
+        <receiver>ControlboardAxisBase</receiver>
+        <slot>lneCtrlP_returnPressed()</slot>
+    </connection>
+    <connection>
+        <sender>lneCtrlVel</sender>
+        <signal>returnPressed()</signal>
+        <receiver>ControlboardAxisBase</receiver>
+        <slot>lneCtrlVel_returnPressed()</slot>
+    </connection>
+    <connection>
+        <sender>lneCtrlAcc</sender>
+        <signal>returnPressed()</signal>
+        <receiver>ControlboardAxisBase</receiver>
+        <slot>lneCtrlAcc_returnPressed()</slot>
+    </connection>
+    <connection>
+        <sender>chbAmp</sender>
+        <signal>toggled(bool)</signal>
+        <receiver>ControlboardAxisBase</receiver>
+        <slot>chbAmp_toggled(bool)</slot>
+    </connection>
+    <connection>
+        <sender>sldPosAbsolute</sender>
+        <signal>sliderReleased()</signal>
+        <receiver>ControlboardAxisBase</receiver>
+        <slot>sldPosAbsolute_sliderReleased()</slot>
+    </connection>
+</connections>
+<slots>
+    <slot>rbtVel_clicked()</slot>
+    <slot>rbtPos_clicked()</slot>
+    <slot>rbtPos_toggled( bool )</slot>
+    <slot>rbtVel_toggled( bool )</slot>
+    <slot>lnePosAbsolute_returnPressed()</slot>
+    <slot>lneSpeed_returnPressed()</slot>
+    <slot>btnStop_clicked()</slot>
+    <slot>sldPosRelative_valueChanged( int )</slot>
+    <slot>btnPlus_clicked()</slot>
+    <slot>btnMinus_clicked()</slot>
+    <slot>sldPosAbsolute_valueChanged( int )</slot>
+    <slot>lneMin_returnPressed()</slot>
+    <slot>lneMax_returnPressed()</slot>
+    <slot>lneCtrlD_returnPressed()</slot>
+    <slot>lneCtrlI_returnPressed()</slot>
+    <slot>lneCtrlP_returnPressed()</slot>
+    <slot>lneCtrlVel_returnPressed()</slot>
+    <slot>lneCtrlAcc_returnPressed()</slot>
+    <slot>chbAmp_toggled( bool )</slot>
+    <slot>sldPosAbsolute_sliderReleased()</slot>
+</slots>
+<layoutdefaults spacing="6" margin="11"/>
+</UI>

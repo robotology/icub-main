@@ -1,0 +1,26 @@
+<!DOCTYPE UI><UI version="3.3" stdsetdef="1">
+<class>QViewerBase</class>
+<widget class="QWidget">
+    <property name="name">
+        <cstring>QViewerBase</cstring>
+    </property>
+    <property name="geometry">
+        <rect>
+            <x>0</x>
+            <y>0</y>
+            <width>248</width>
+            <height>361</height>
+        </rect>
+    </property>
+    <property name="caption">
+        <string>QYarpView</string>
+    </property>
+</widget>
+<slots>
+    <slot>btnQuit_clicked()</slot>
+    <slot>lneThreshold_returnPressed()</slot>
+    <slot>lneBlur_returnPressed()</slot>
+    <slot>lneTmpBlur_returnPressed()</slot>
+</slots>
+<layoutdefaults spacing="6" margin="11"/>
+</UI>

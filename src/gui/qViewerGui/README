@@ -1,0 +1,20 @@
+
+This module is deprecated.
+The same functionality is available through the applicationGui module called like:
+$>applicationGui --MODULE_CONFIGURATION --guiWidget viewer --guiDisplayName test_name --VIEWER remote /test_input
+
+or using a configuration file
+$>applicationGui --file /filepath/config.ini
+
+config.ini:
+
+MODULE_CONFIGURATION
+
+name /guiViewer
+
+guiDisplayName	Viewer
+guiWidget	viewer
+
+[VIEWER]
+remote /camCalib/image
+click /camCalib/click

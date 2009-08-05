@@ -1,0 +1,110 @@
+<!DOCTYPE UI><UI version="3.3" stdsetdef="1">
+<class>QWidgetRPCBase</class>
+<widget class="QWidget">
+    <property name="name">
+        <cstring>QWidgetRPCBase</cstring>
+    </property>
+    <property name="geometry">
+        <rect>
+            <x>0</x>
+            <y>0</y>
+            <width>604</width>
+            <height>471</height>
+        </rect>
+    </property>
+    <property name="caption">
+        <string>Yarp RPC</string>
+    </property>
+    <property name="focusPolicy">
+        <enum>StrongFocus</enum>
+    </property>
+    <vbox>
+        <property name="name">
+            <cstring>unnamed</cstring>
+        </property>
+        <widget class="QTextEdit">
+            <property name="name">
+                <cstring>txeResponse</cstring>
+            </property>
+            <property name="readOnly">
+                <bool>true</bool>
+            </property>
+        </widget>
+        <widget class="QFrame">
+            <property name="name">
+                <cstring>frmRPC</cstring>
+            </property>
+            <property name="frameShape">
+                <enum>NoFrame</enum>
+            </property>
+            <property name="frameShadow">
+                <enum>Plain</enum>
+            </property>
+            <hbox>
+                <property name="name">
+                    <cstring>unnamed</cstring>
+                </property>
+                <widget class="QLineEdit">
+                    <property name="name">
+                        <cstring>lneStdin</cstring>
+                    </property>
+                    <property name="focusPolicy">
+                        <enum>ClickFocus</enum>
+                    </property>
+                    <property name="frameShape">
+                        <enum>LineEditPanel</enum>
+                    </property>
+                    <property name="frameShadow">
+                        <enum>Sunken</enum>
+                    </property>
+                </widget>
+                <widget class="QPushButton">
+                    <property name="name">
+                        <cstring>btnStdin</cstring>
+                    </property>
+                    <property name="maximumSize">
+                        <size>
+                            <width>50</width>
+                            <height>32767</height>
+                        </size>
+                    </property>
+                    <property name="text">
+                        <string>send</string>
+                    </property>
+                </widget>
+            </hbox>
+        </widget>
+        <widget class="QGroupBox">
+            <property name="name">
+                <cstring>grbConnection</cstring>
+            </property>
+            <property name="title">
+                <string>RPC Connection</string>
+            </property>
+        </widget>
+    </vbox>
+</widget>
+<connections>
+    <connection>
+        <sender>lneStdin</sender>
+        <signal>returnPressed()</signal>
+        <receiver>QWidgetRPCBase</receiver>
+        <slot>lneStdin_returnPressed()</slot>
+    </connection>
+    <connection>
+        <sender>btnStdin</sender>
+        <signal>clicked()</signal>
+        <receiver>QWidgetRPCBase</receiver>
+        <slot>btnStdin_clicked()</slot>
+    </connection>
+</connections>
+<includes>
+    <include location="local" impldecl="in implementation">qwidgetrpcbase.ui.h</include>
+</includes>
+<slots>
+    <slot>lneStdin_returnPressed()</slot>
+    <slot>btnStdin_pressed()</slot>
+    <slot>btnStdin_clicked()</slot>
+</slots>
+<layoutdefaults spacing="6" margin="11"/>
+</UI>

@@ -1,0 +1,41 @@
+<!DOCTYPE UI><UI version="3.3" stdsetdef="1">
+<class>QWidgetControlboardBase</class>
+<widget class="QWidget">
+    <property name="name">
+        <cstring>QWidgetControlboardBase</cstring>
+    </property>
+    <property name="geometry">
+        <rect>
+            <x>0</x>
+            <y>0</y>
+            <width>827</width>
+            <height>411</height>
+        </rect>
+    </property>
+    <property name="caption">
+        <string>Remote Control Board Interface</string>
+    </property>
+    <vbox>
+        <property name="name">
+            <cstring>unnamed</cstring>
+        </property>
+        <widget class="QFrame">
+            <property name="name">
+                <cstring>frmMain</cstring>
+            </property>
+            <property name="frameShape">
+                <enum>NoFrame</enum>
+            </property>
+            <property name="frameShadow">
+                <enum>Raised</enum>
+            </property>
+        </widget>
+    </vbox>
+</widget>
+<slots>
+    <slot>btnApply_clicked()</slot>
+    <slot>btnQuit_clicked()</slot>
+    <slot>btnAbout_clicked()</slot>
+</slots>
+<layoutdefaults spacing="6" margin="11"/>
+</UI>

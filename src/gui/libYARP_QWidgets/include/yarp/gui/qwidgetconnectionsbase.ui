@@ -1,0 +1,139 @@
+<!DOCTYPE UI><UI version="3.3" stdsetdef="1">
+<class>QWidgetConnectionsBase</class>
+<widget class="QWidget">
+    <property name="name">
+        <cstring>QWidgetConnectionsBase</cstring>
+    </property>
+    <property name="geometry">
+        <rect>
+            <x>0</x>
+            <y>0</y>
+            <width>381</width>
+            <height>418</height>
+        </rect>
+    </property>
+    <property name="caption">
+        <string>Yarp Connections</string>
+    </property>
+    <vbox>
+        <property name="name">
+            <cstring>unnamed</cstring>
+        </property>
+        <widget class="QLabel">
+            <property name="name">
+                <cstring>textLabel1</cstring>
+            </property>
+            <property name="maximumSize">
+                <size>
+                    <width>32767</width>
+                    <height>25</height>
+                </size>
+            </property>
+            <property name="text">
+                <string>Connections</string>
+            </property>
+        </widget>
+        <widget class="QFrame">
+            <property name="name">
+                <cstring>frmConnections</cstring>
+            </property>
+            <property name="frameShape">
+                <enum>NoFrame</enum>
+            </property>
+            <property name="frameShadow">
+                <enum>Plain</enum>
+            </property>
+        </widget>
+        <widget class="QFrame">
+            <property name="name">
+                <cstring>frame10</cstring>
+            </property>
+            <property name="maximumSize">
+                <size>
+                    <width>32767</width>
+                    <height>45</height>
+                </size>
+            </property>
+            <property name="frameShape">
+                <enum>NoFrame</enum>
+            </property>
+            <property name="frameShadow">
+                <enum>Plain</enum>
+            </property>
+            <hbox>
+                <property name="name">
+                    <cstring>unnamed</cstring>
+                </property>
+                <widget class="QPushButton">
+                    <property name="name">
+                        <cstring>btnDisconnectAll</cstring>
+                    </property>
+                    <property name="text">
+                        <string>Disconnect All</string>
+                    </property>
+                </widget>
+                <widget class="QPushButton">
+                    <property name="name">
+                        <cstring>btnConnectAll</cstring>
+                    </property>
+                    <property name="text">
+                        <string>Connect All</string>
+                    </property>
+                </widget>
+                <widget class="QPushButton">
+                    <property name="name">
+                        <cstring>btnRemoveConnection</cstring>
+                    </property>
+                    <property name="text">
+                        <string>Remove Connection</string>
+                    </property>
+                </widget>
+                <widget class="QPushButton">
+                    <property name="name">
+                        <cstring>btnAddConnection</cstring>
+                    </property>
+                    <property name="text">
+                        <string>Add Connection</string>
+                    </property>
+                </widget>
+            </hbox>
+        </widget>
+    </vbox>
+</widget>
+<connections>
+    <connection>
+        <sender>btnDisconnectAll</sender>
+        <signal>clicked()</signal>
+        <receiver>QWidgetConnectionsBase</receiver>
+        <slot>btnDisconnectAll_clicked()</slot>
+    </connection>
+    <connection>
+        <sender>btnConnectAll</sender>
+        <signal>clicked()</signal>
+        <receiver>QWidgetConnectionsBase</receiver>
+        <slot>btnConnectAll_clicked()</slot>
+    </connection>
+    <connection>
+        <sender>btnRemoveConnection</sender>
+        <signal>clicked()</signal>
+        <receiver>QWidgetConnectionsBase</receiver>
+        <slot>btnRemoveConnection_clicked()</slot>
+    </connection>
+    <connection>
+        <sender>btnAddConnection</sender>
+        <signal>clicked()</signal>
+        <receiver>QWidgetConnectionsBase</receiver>
+        <slot>btnAddConnection_clicked()</slot>
+    </connection>
+</connections>
+<includes>
+    <include location="local" impldecl="in implementation">qwidgetconnectionsbase.ui.h</include>
+</includes>
+<slots>
+    <slot>btnDisconnectAll_clicked()</slot>
+    <slot>btnConnectAll_clicked()</slot>
+    <slot>btnRemoveConnection_clicked()</slot>
+    <slot>btnAddConnection_clicked()</slot>
+</slots>
+<layoutdefaults spacing="3" margin="3"/>
+</UI>

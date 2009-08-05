@@ -1,0 +1,75 @@
+<!DOCTYPE UI><UI version="3.3" stdsetdef="1">
+<class>GuiSalienceFilterBase</class>
+<includes>
+    <include location="local" impldecl="in implementation">guisaliencefilterbase.ui.h</include>
+</includes>
+<widget class="QWidget">
+    <property name="name">
+        <cstring>GuiSalienceFilterBase</cstring>
+    </property>
+    <property name="geometry">
+        <rect>
+            <x>0</x>
+            <y>0</y>
+            <width>217</width>
+            <height>38</height>
+        </rect>
+    </property>
+    <property name="caption">
+        <string>frmFilter</string>
+    </property>
+    <hbox>
+        <property name="name">
+            <cstring>unnamed</cstring>
+        </property>
+        <widget class="QLabel">
+            <property name="name">
+                <cstring>lblIndex</cstring>
+            </property>
+            <property name="minimumSize">
+                <size>
+                    <width>40</width>
+                    <height>0</height>
+                </size>
+            </property>
+            <property name="text">
+                <string>index</string>
+            </property>
+        </widget>
+        <widget class="QSlider">
+            <property name="name">
+                <cstring>sldWeight</cstring>
+            </property>
+            <property name="orientation">
+                <enum>Horizontal</enum>
+            </property>
+        </widget>
+        <widget class="QLabel">
+            <property name="name">
+                <cstring>lblWeight</cstring>
+            </property>
+            <property name="minimumSize">
+                <size>
+                    <width>40</width>
+                    <height>0</height>
+                </size>
+            </property>
+            <property name="text">
+                <string>weight</string>
+            </property>
+        </widget>
+    </hbox>
+</widget>
+<connections>
+    <connection>
+        <sender>sldWeight</sender>
+        <signal>sliderReleased()</signal>
+        <receiver>GuiSalienceFilterBase</receiver>
+        <slot>sldWeight_sliderReleased()</slot>
+    </connection>
+</connections>
+<slots>
+    <slot>sldWeight_sliderReleased()</slot>
+</slots>
+<layoutdefaults spacing="6" margin="11"/>
+</UI>

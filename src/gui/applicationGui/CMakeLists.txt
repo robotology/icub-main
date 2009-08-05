@@ -1,0 +1,55 @@
+SET(KEYWORD "applicationGui")
+PROJECT(${KEYWORD})
+
+FIND_PACKAGE(ICUB REQUIRED)
+FIND_PACKAGE(YARP REQUIRED)
+FIND_PACKAGE(Qt3 REQUIRED)
+FIND_PACKAGE(YARPQWIDGETS REQUIRED)
+FIND_PACKAGE(ICUBQWIDGETS REQUIRED)
+FIND_PACKAGE(SALIENCELIB REQUIRED)
+
+# Search for source code.
+FILE(GLOB folder_source src/*.cpp src/*.cc src/*.c)
+FILE(GLOB folder_header include/iCub/*.h)
+SOURCE_GROUP("Source Files" FILES ${folder_source})
+SOURCE_GROUP("Header Files" FILES ${folder_header})
+
+INCLUDE_DIRECTORIES(
+    ${PROJECT_SOURCE_DIR}
+    ${PROJECT_SOURCE_DIR}/include
+    ${QT_INCLUDE_DIR}
+    ${YARPQWIDGETS_INCLUDE_DIRS}
+    ${ICUBQWIDGETS_INCLUDE_DIRS}
+    ${SALIENCELIB_INCLUDE_DIRS}
+)
+
+ADD_DEFINITIONS(
+    ${QT_DEFINITIONS}
+)
+
+IF(WIN32)
+    ADD_DEFINITIONS(-D_WIN32_WINNT=0x0400)
+ENDIF(WIN32)
+
+### applicationGui ###
+SET(applicationGui_SRCS
+   ${folder_source}
+   ${folder_header}
+)
+
+LINK_LIBRARIES(
+    ${QT_LIBRARIES}
+    ${YARPQWIDGETS_LIBRARIES}
+    ${ICUBQWIDGETS_LIBRARIES}
+    ${SALIENCELIB_LIBRARIES}
+)
+    
+ADD_EXECUTABLE(${KEYWORD}
+   ${applicationGui_SRCS}
+)
+           
+INSTALL_TARGETS(/bin ${KEYWORD})
+
+
+
+

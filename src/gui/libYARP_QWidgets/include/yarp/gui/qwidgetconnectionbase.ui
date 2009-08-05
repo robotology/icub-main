@@ -1,0 +1,181 @@
+<!DOCTYPE UI><UI version="3.3" stdsetdef="1">
+<class>QWidgetConnectionBase</class>
+<widget class="QWidget">
+    <property name="name">
+        <cstring>QWidgetConnectionBase</cstring>
+    </property>
+    <property name="geometry">
+        <rect>
+            <x>0</x>
+            <y>0</y>
+            <width>236</width>
+            <height>46</height>
+        </rect>
+    </property>
+    <property name="caption">
+        <string>Connection</string>
+    </property>
+    <hbox>
+        <property name="name">
+            <cstring>unnamed</cstring>
+        </property>
+        <widget class="QPushButton">
+            <property name="name">
+                <cstring>btnSource</cstring>
+            </property>
+            <property name="maximumSize">
+                <size>
+                    <width>30</width>
+                    <height>32767</height>
+                </size>
+            </property>
+            <property name="text">
+                <string>OK</string>
+            </property>
+        </widget>
+        <widget class="QLineEdit">
+            <property name="name">
+                <cstring>txeSource</cstring>
+            </property>
+            <property name="sizePolicy">
+                <sizepolicy>
+                    <hsizetype>5</hsizetype>
+                    <vsizetype>0</vsizetype>
+                    <horstretch>0</horstretch>
+                    <verstretch>0</verstretch>
+                </sizepolicy>
+            </property>
+            <property name="minimumSize">
+                <size>
+                    <width>0</width>
+                    <height>20</height>
+                </size>
+            </property>
+            <property name="frameShape">
+                <enum>LineEditPanel</enum>
+            </property>
+            <property name="frameShadow">
+                <enum>Sunken</enum>
+            </property>
+            <property name="text">
+                <string>/source</string>
+            </property>
+            <property name="readOnly">
+                <bool>false</bool>
+            </property>
+            <property name="toolTip" stdset="0">
+                <string>source port (press enter to disconnect and connect again)</string>
+            </property>
+        </widget>
+        <widget class="QPushButton">
+            <property name="name">
+                <cstring>btnConnect</cstring>
+            </property>
+            <property name="maximumSize">
+                <size>
+                    <width>30</width>
+                    <height>32767</height>
+                </size>
+            </property>
+            <property name="text">
+                <string>&gt;&gt;</string>
+            </property>
+            <property name="toolTip" stdset="0">
+                <string>connect/disconnect</string>
+            </property>
+        </widget>
+        <widget class="QLineEdit">
+            <property name="name">
+                <cstring>txeTarget</cstring>
+            </property>
+            <property name="sizePolicy">
+                <sizepolicy>
+                    <hsizetype>5</hsizetype>
+                    <vsizetype>0</vsizetype>
+                    <horstretch>0</horstretch>
+                    <verstretch>0</verstretch>
+                </sizepolicy>
+            </property>
+            <property name="minimumSize">
+                <size>
+                    <width>0</width>
+                    <height>20</height>
+                </size>
+            </property>
+            <property name="frameShape">
+                <enum>LineEditPanel</enum>
+            </property>
+            <property name="frameShadow">
+                <enum>Sunken</enum>
+            </property>
+            <property name="text">
+                <string>/target</string>
+            </property>
+            <property name="readOnly">
+                <bool>true</bool>
+            </property>
+            <property name="toolTip" stdset="0">
+                <string>target port (press enter to disconnect and connect again)</string>
+            </property>
+        </widget>
+        <widget class="QPushButton">
+            <property name="name">
+                <cstring>btnTarget</cstring>
+            </property>
+            <property name="maximumSize">
+                <size>
+                    <width>30</width>
+                    <height>32767</height>
+                </size>
+            </property>
+            <property name="text">
+                <string>OK</string>
+            </property>
+        </widget>
+    </hbox>
+</widget>
+<connections>
+    <connection>
+        <sender>btnConnect</sender>
+        <signal>pressed()</signal>
+        <receiver>QWidgetConnectionBase</receiver>
+        <slot>btnConnect_pressed()</slot>
+    </connection>
+    <connection>
+        <sender>txeTarget</sender>
+        <signal>returnPressed()</signal>
+        <receiver>QWidgetConnectionBase</receiver>
+        <slot>txeTarget_returnPressed()</slot>
+    </connection>
+    <connection>
+        <sender>txeSource</sender>
+        <signal>returnPressed()</signal>
+        <receiver>QWidgetConnectionBase</receiver>
+        <slot>txeSource_returnPressed()</slot>
+    </connection>
+    <connection>
+        <sender>btnSource</sender>
+        <signal>clicked()</signal>
+        <receiver>QWidgetConnectionBase</receiver>
+        <slot>btnSource_clicked()</slot>
+    </connection>
+    <connection>
+        <sender>btnTarget</sender>
+        <signal>clicked()</signal>
+        <receiver>QWidgetConnectionBase</receiver>
+        <slot>btnTarget_clicked()</slot>
+    </connection>
+</connections>
+<includes>
+    <include location="local" impldecl="in implementation">qwidgetconnectionbase.ui.h</include>
+</includes>
+<slots>
+    <slot>btnConnect_pressed()</slot>
+    <slot>btnCheckConnection_pressed()</slot>
+    <slot>txeTarget_returnPressed()</slot>
+    <slot>txeSource_returnPressed()</slot>
+    <slot>btnSource_clicked()</slot>
+    <slot>btnTarget_clicked()</slot>
+</slots>
+<layoutdefaults spacing="6" margin="11"/>
+</UI>

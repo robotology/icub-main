@@ -1,0 +1,59 @@
+<!DOCTYPE UI><UI version="3.3" stdsetdef="1">
+<class>QWidgetOutputBase</class>
+<widget class="QWidget">
+    <property name="name">
+        <cstring>QWidgetOutputBase</cstring>
+    </property>
+    <property name="geometry">
+        <rect>
+            <x>0</x>
+            <y>0</y>
+            <width>657</width>
+            <height>268</height>
+        </rect>
+    </property>
+    <property name="caption">
+        <string>Output</string>
+    </property>
+    <vbox>
+        <property name="name">
+            <cstring>unnamed</cstring>
+        </property>
+        <widget class="QTextEdit">
+            <property name="name">
+                <cstring>txeStdout</cstring>
+            </property>
+            <property name="textFormat">
+                <enum>LogText</enum>
+            </property>
+            <property name="wrapColumnOrWidth">
+                <number>631</number>
+            </property>
+            <property name="readOnly">
+                <bool>true</bool>
+            </property>
+            <property name="undoRedoEnabled">
+                <bool>false</bool>
+            </property>
+            <property name="toolTip" stdset="0">
+                <string>stdout</string>
+            </property>
+        </widget>
+        <widget class="QGroupBox">
+            <property name="name">
+                <cstring>grbCon</cstring>
+            </property>
+            <property name="title">
+                <string>Output Connection</string>
+            </property>
+        </widget>
+    </vbox>
+</widget>
+<includes>
+    <include location="local" impldecl="in implementation">qwidgetoutputbase.ui.h</include>
+</includes>
+<slots>
+    <slot>lneStdin_returnPressed()</slot>
+</slots>
+<layoutdefaults spacing="6" margin="11"/>
+</UI>
