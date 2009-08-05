@@ -1,0 +1,57 @@
+/**
+@ingroup  icub_applications
+\defgroup icub_dumpControlBoardData dumpControlboardData
+
+This is the application used to launch different processes to dump
+control board data to files (positions, velocities, accelerations,
+voltages, currents, tracking errors).
+
+
+\section dep_sec Dependencies
+Assumes \ref icub_iCubInterface is running.
+
+\section int_sec Instantiated Modules
+- \ref icub_controlBoardDumper 
+
+- \ref dataDumper
+
+\section parameters_sec Parameters
+
+See below.
+
+
+\section howto How to run the Application
+\code
+./app start: start the application, run all modules and viewers
+./app connect: connect all modules and viewers (starts dumping)
+./app stop: stop the application, shut down all modules
+\endcode
+
+\section config How to config the application
+
+In case you want to personalize this dumper application you mainly need to edit the 
+configuration files (conf/config.sh and conf/config-nodes.sh) and single parts configuration files
+(e.g. conf/icubHead.ini). 
+<ul>
+<li> The config.sh file describes the part to be dumped (variable $PARTS_TO_DUMP). 
+<li> The config-nodes.sh file describes the machines where the single modules 
+(\ref icub_controlBoardDumper and \ref dataDumper) will be executed. In particular,
+the $NODE_DUMPERS variable defines the machines where data will be dumped 
+(usally in the directory $NODE_DUMPERS:/tmp/icub/dataDumper).
+<li> The icubHead.ini file is the file used by the \ref icub_controlBoardDumper to 
+dump the head joints (see similar files for the other robot parts). This file
+can be used to define the joints to be dumped, the sampling time and the type
+of data to be dumped (see the \ref icub_controlBoardDumper details).
+</ul>
+ 
+
+\author Francesco Nori
+
+Copyright (C) 2008 RobotCub Consortium
+
+CopyPolicy: Released under the terms of the GNU GPL v2.0.
+
+This file can be edited at app/attentionDistributed/doc.dox
+**/
+
+

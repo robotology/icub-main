@@ -1,0 +1,82 @@
+/**
+@ingroup  icub_applications
+
+\defgroup icub_faceExpressions faceExpressions
+
+Start the face expression.
+
+\section intro_sec Description
+
+Contains scripts to run the face expressions. At the moment only runs locally.
+
+\section dep_sec Dependencies
+None.
+
+\section modules_sec Instantiated Modules
+- emotionInterface
+
+\section parameters_sec Parameters
+
+\code
+./scripts/
+\endcode
+
+\section config_sec Configuration Files
+
+\code
+./scripts/config.sh: contains parameters to configure the application
+\endcode
+
+\code
+./conf/emotions.ini: parameters passed to the emotionInterface module.
+./conf/serialport.ini: parameters passed to the serial device.
+\endcode
+
+\section example_sec How to run the application
+
+Starts the application:
+
+On the pc104:
+\code
+./emotions.sh: starts and connects all modules
+\endcode
+
+Now from any machine you can rpc to the port "/icub/face/emotions/in" 
+and send high level commands.
+
+\code
+set mou <cmd>   -  set an expression in the mouth subsystem
+set eli <cmd>   -  set an expression in the eye-lids subsystem
+set leb <cmd>   -  set an expression in the left eyebrow subsystem
+set reb <cmd>   -  set an expression in the right eyebrow subsystem
+set all <cmd>   -  set an expression in the whole system
+\endcode
+
+The several <cmd> are described in file emotions.ini (see below). You can define your own.
+
+
+You can also send raw commands to the low level driver.
+
+\code
+set raw S04
+set raw L03
+set raw R05
+set raw M04
+\endcode
+
+Alternatively you can run:
+
+\code
+./cycle.sh: demonstates the face expressions, cycle randomly through a set of expressions.
+\endcode
+ 
+\author Lorenzo Natale and Alex Bernardino
+
+Copyright (C) 2008 RobotCub Consortium
+
+CopyPolicy: Released under the terms of the GNU GPL v2.0.
+
+
+This file can be edited at \in app/faceExpressions/doc.dox
+
+*/

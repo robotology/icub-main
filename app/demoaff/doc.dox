@@ -1,0 +1,68 @@
+/**
+ * @ingroup icub_applications
+ *
+ * \defgroup icub_demoaff_app demoaff 
+
+ *
+ * \brief  Demo of affordance usage
+ 
+In this demo we illustrate the use of affordances in simple imitation games. It is an example of how to use self-learned models of the world to interpret others actions and interact with them.
+
+This application consists of a number of scripts and configuration files that are used to start and stop a number of interconnecting processes. 
+
+\section demoaff Introduction
+
+Affordances relate robot's actions, object properties and the effects of the actions executed upon the objects. The core of the affordances is a Bayesian network that captures the previous robot experience. By using this network it is possible to infere based on the effects the best action to replicate them or to select the most appropriate object that will provide similar results. The image hereunder illustrates a simple affordance network implemented in this demo. 
+
+\image html BN.jpg
+
+Details on how to learn this networks and how to use it can be found in \link http://www.robotcub.net/index.php/robotcub/more_information/deliverables/ RobotCub Deliverables \endlink and papers:
+
+ - D4.1 : Experiments on Affordances
+ \link http://www.robotcub.org/index.php/robotcub/content/download/1039/3660/file/RC_IST_AB_Deliverable_D4.1.pdf D4.1pdf
+ \endlink
+ - IEEE Transactions on robotics - Learning object affordances: from sensory-motor coordination to imitation,
+(ref: L. Montesano, M. Lopes, A. Bernadino, J. Santos-Victor (2008) Learning object affordances: from sensory-motor coordination to imitation, \e IEEE Transactions \e on Robotics )
+
+
+\section dep_sec Dependencies
+-# When connecting to a physical robot:
+  - This module assumes \ref icub_iCubInterface "iCubInterface" is already running.
+  - Assumes that the right camera has been started. The low-res camera device is sufficient, but high-res allows to better object tracking.
+-# It has not been tested in the simulator:
+
+- It depends on the following libraries:
+-# opencv
+-# pnl
+
+\section modules_sec Instantiated Modules
+List here the modules that are instantiated by this application:
+- \ref icub_demoAfford "Affordances module"
+- \ref icub_artoolkittracker "ARTtoolkit" 
+- \ref icub_camshiftplus "Camshitplus" 
+- \ref icub_camCalib "camCalib "
+
+\section Parameters
+The script does not require any parameters.
+
+\section Configuration Files
+Configuration files are located in the ICUB_ROOT/conf folder.
+
+ 
+\section example_sec How to run the application
+
+This should be done by the run_demoaff.sh script.
+ 
+For further details, see the wiki description  \link http://eris.liralab.it/wiki/DemoAff demoaff
+ \endlink
+
+\author Luis Montesano and Manuel Lopes
+
+Copyright (C) 2008 RobotCub Consortium
+
+CopyPolicy: Released under the terms of the GNU GPL v2.0.
+
+This file can be edited at \in app/demoaff/doc.dox
+ *
+ */
+

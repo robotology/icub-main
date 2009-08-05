@@ -1,0 +1,47 @@
+/**
+@ingroup  icub_applications
+\defgroup icub_crossPowerSpectrumVergenceApplication crossPowerSpectrumVergence
+
+Starts the crossPowerSpectrumVergence module.
+
+\section intro_sec Description
+Run the \ref icub_crossPowerSpectrumVergence "crossPowerSpectrumVergence" module and viewers.
+
+\section dep_sec Dependencies
+Assumes the cameras are running.
+
+\section int_sec Instantiated Modules
+- \ref icub_crossPowerSpectrumVergence "crossPowerSpectrumVergence".
+
+\section parameters_sec Parameters
+
+Parameters are grouped in:
+\code
+./scripts/config.sh
+\endcode
+
+This includes the machines on which the processes will be started (viewers 
+and crossPowerSpectrumVergence module will start on different machines), 
+and port names.
+
+\section config_sec Configuration Files
+
+./conf/crossPowerSpectrumVergence.ini: see \ref icub_crossPowerSpectrumVergence "crossPowerSpectrumVergence".
+
+\section starting Starting the application
+
+\code
+./scripts/app.sh start/stop: start/stop the application
+./scripts/app.sh connect/disconnect: connect/disconnect the application
+\endcode
+
+\author Lorenzo Natale
+
+Copyright (C) 2008 RobotCub Consortium
+
+CopyPolicy: Released under the terms of the GNU GPL v2.0.
+
+This file can be edited at app/crossPowerSpectrumVergence/doc.dox
+**/
+
+

@@ -1,0 +1,21 @@
+/**
+@ingroup  icub_applications
+\defgroup icub_default default
+
+Place here default configuration files 
+and scripts.
+
+This is not a real application but rather a container for 
+scripts and configuration files that are shared by most 
+applications in normal circumstances.
+
+Default here means configuration files and scripts that you 
+can use if you do not have particular requirements. For 
+example in ./conf you have configuration files for motor 
+control boards to operate the robot or script to start the 
+frame grabbers with standard parameters.
+
+At the moment this directory is empty, files that should be here 
+are instead in directories specific to each robot.
+
+*/

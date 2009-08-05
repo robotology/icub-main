@@ -1,0 +1,76 @@
+<application>
+    <name>Face Tracker Demo</name>
+
+    <dependencies>
+      <port>/icub/cam/left</port>
+      <port>/icub/cam/right</port>
+      <port>/icub/right_arm/state:o</port> 
+    </dependencies> 
+
+    <module>
+      <name>faceTracker</name>
+      <node>icub12</node>
+      <stdio>icub12</stdio>
+      <tag>tracker</tag> 
+    </module> 
+    <module>
+      <name>iKinArmCtrl</name>
+      <parameters>--onlyXYZ</parameters> 
+      <node>icub10</node>
+      <stdio>icub12</stdio>
+      <tag>armCtrl</tag>
+    </module> 
+    <module>
+      <name>iKinGazeCtrl</name>
+      <node>icub10</node>
+      <stdio>icub12</stdio>
+      <tag>gazeCtrl</tag> 
+    </module> 
+    <module>
+      <name>yarpview</name>
+      <parameters>--name /viewLeft</parameters> 
+      <node>icub12</node>
+      <tag>viewer_left</tag>
+    </module> 
+    <module>
+      <name>yarpview</name>
+      <parameters>--name /viewRight</parameters> 
+      <node>icub12</node>
+      <tag>viewer_right</tag> 
+    </module> 
+
+    <connection>
+      <from>/icub/cam/left</from>
+      <to>/faceTracker/left:i</to>
+    </connection>
+    <connection>
+      <from>/icub/cam/right</from>
+      <to>/faceTracker/right:i</to>
+    </connection> 
+    <connection>
+      <from>/iKinGazeCtrl/head/x:o</from>
+      <to>/faceTracker/lookingat:i</to>
+    </connection> 
+    <connection>
+      <from>/faceTracker/gazeat:o</from>
+      <to>/iKinGazeCtrl/head/xd:i</to>
+    </connection> 
+    <connection>
+      <from>/faceTracker/pixel:o</from>
+      <to>/iKinGazeCtrl/head/pixel:i</to>
+    </connection> 
+    <connection>
+      <from>/faceTracker/reach:o</from>
+      <to>/iKinArmCtrl/right_arm/xd:i</to>
+    </connection> 
+    <connection>
+      <from>/faceTracker/left:o</from>
+      <to>/viewLeft</to>
+    </connection> 
+    <connection>
+      <from>/faceTracker/right:o</from>
+      <to>/viewRight</to> 
+    </connection> 
+
+</application>
+

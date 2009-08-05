@@ -1,0 +1,23 @@
+[POSITION0] 
+jointPositions -0.20  10 0.20 0.09 -0.02 0.38
+jointVelocities 10.00 10.00 10.00 10.00 10.00 10.00
+timing 4.00 
+[POSITION1] 
+jointPositions -0.20 10 0.11 0.62 -0.02 0.38 
+jointVelocities 10.00 10.00 10.00 10.00 10.00 10.00
+timing 4.00 
+[POSITION2] 
+jointPositions   90   -0.54  0.02   0.0 -0.02 0.38 
+jointVelocities 10.00 10.00 10.00 36.00 10.00 10.00
+timing 4.00 
+[POSITION3] 
+jointPositions   35.0  35.0   0.0   0.0   0.0   0.0
+jointVelocities 36.00 10.00 10.00 36.00 10.00 10.00
+timing 4.00 
+[POSITION4] 
+jointPositions   90.0  0.0    0.0 -90.0   0.0   0.0
+jointVelocities 10.00 10.00 10.00 10.00 10.00 10.00
+timing 0.10 
+[DIMENSIONS]
+numberOfPoses 5
+numberOfJoints 6

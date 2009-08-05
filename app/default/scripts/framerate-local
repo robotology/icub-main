@@ -1,0 +1,21 @@
+#!/bin/bash -l
+
+source ./config.sh
+
+PROT=mcast
+
+case "$1" in
+	stop)
+ 		killall framerate
+  		;;
+  	start)
+ 		command="framerate --local /fr$RANDOM --remote /testgrabber1 --prot $PROT"
+  		bash -c "$command &"
+		command="framerate --local /fr$RANDOM --remote /testgrabber2 --prot $PROT"
+		bash -c "$command &"
+
+  		;;
+	*)
+  		echo "stop, start, connect"
+  		;;
+esac

@@ -1,0 +1,35 @@
+<application>
+  <name>controlBoardDumper</name>
+  <dependencies>
+    <port>/icub02</port>
+  </dependencies>
+  <module>
+    <name>dataDumper</name>
+    <parameters>--name /icub/headDump/getEncoders</parameters>
+    <node>ironYarprun</node>
+    <tag>dataDumperHeadEncs</tag>
+  </module>
+  <module>
+    <name>dataDumper</name>
+    <parameters>--name /icub/headDump/getEncoderSpeeds</parameters>
+    <node>ironYarprun</node>
+    <tag>dataDumperHeadEncs</tag>
+  </module>
+  <module>
+    <name>controlBoardDumper</name>
+    <parameters>--from icubHead.ini</parameters>
+    <node>ironYarprun</node>
+    <stdio>ironYarprun</stdio>
+    <tag>controlBoardDumperHead</tag>
+  </module>
+  <connection>
+    <output>/icub/controlBoardDumper/head/getEncoders</output>
+    <input>/icub/headDump/getEncoders</input>
+    <protocol>mcast</protocol>
+  </connection>
+  <connection>
+    <output>/icub/controlBoardDumper/head/getEncoderSpeeds</output>
+    <input>/icub/headDump/getEncoderSpeeds</input>
+    <protocol>mcast</protocol>
+  </connection>
+</application>

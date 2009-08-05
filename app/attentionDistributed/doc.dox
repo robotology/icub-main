@@ -1,0 +1,85 @@
+/**
+@ingroup  icub_applications
+\defgroup icub_attentionDistributed attentionDistributed
+
+This is the application used to run the attention system, distributed 
+across a cluster of computers.
+
+\section intro_sec Description
+Run the attention system.
+
+\section dep_sec Dependencies
+Assumes \ref icub_iCubInterface is running, and that the head is instantiated.
+
+\section int_sec Instantiated Modules
+- \ref icub_camCalib "camCalib"
+
+- \ref icub_salience "salience"
+
+- \ref icub_egoSphere "egoSphere"
+
+- \ref icub_attentionSelection "attentionSelection"
+
+- \ref icub_controlGaze2 "controlGaze2"
+
+\section parameters_sec Parameters
+
+See below.
+
+\section config_sec Configuration Files
+
+The application directory is assumed to contain a certain sub-folder structure. 
+Currently a ./conf folder is required.
+
+File: /app/attentionDistributed/config.sh
+
+config.sh contains all information required by the module start scripts and the yarp connect script. 
+
+Global application values are:
+
+- Name of the robot
+
+- Portnames of the robot (controlboards, image grabbers, etc.)
+
+- Absolute path to the module binaries (no trailing slash) (this path might need to be changed depending on the operation system used; windows uses the /bin/debug folder for compiled binaries whereas Linux uses the /bin folder)
+
+- Absolute path to the application directory (no trailing slash)
+
+For robot devices config.sh contains:
+
+- Device parameters or the configuration file used by the device driver
+
+For every module config.sh contains:
+
+- Name of the executable
+
+- Config file to use
+
+- Name of the module (base portname to use)
+
+- All portnames opened by this module
+
+Configuration of the devices running on the iCub are defined in config.sh or in the configuration file specified. 
+The controlboard is currently assumed to be located in iCub/conf .
+
+All configuration options (except portnames) are contained in the according configuration file in 
+the local ./conf folder.
+
+\section howto How to run the Application
+\code
+./app start: start the application, run all modules and viewers
+./app connect: connect all modules and viewers
+./app disconnect: disconnect all modules and viewers
+./app stop: stop the application, shut down all modules
+\endcode
+
+\author Lorenzo Natale
+
+Copyright (C) 2008 RobotCub Consortium
+
+CopyPolicy: Released under the terms of the GNU GPL v2.0.
+
+This file can be edited at app/attentionDistributed/doc.dox
+**/
+
+

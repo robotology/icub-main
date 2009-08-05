@@ -1,0 +1,34 @@
+This directory is meant to contain iCub application setups.
+Each subdirectory is thought to be a bundle of scripts and
+Draft structure for starting an iCub application:
+Contains configuration files and scripts required to start/stop a bunch of 
+interacting yarp modules.
+
+Suggestions:
+Each application contains:
+*config.sh : A file which defines variables/configuration options
+ of the application. This might be port names of the robot to connect to.
+ You might also want to add a mechanism to specify which modules are run
+ on which yarp-run-server.
+ *yarp_run_xy.sh : Are the scripts to start the yarp run servers (Each of this
+ scripts has to be executed manually on each destination hmachine).
+*app.sh : This is the actual start/stop script it works similar to a /etc/init
+ script. Call it like: $>app.sh [start|connect|disconnect|stop]
+ (This script might use scripts from the scripts directory)
+*conf directory : Meant to contain the module configuration not specified by the
+ application configuration (the usual module configuration *.ini files). These
+ files probably want to include configuration files from the global iCub/conf
+ directory (not tested).
+*scripts directory: Meant to contain the start/stop/connect/disconnect and other
+ necessary scripts
+
+Premises:
+* If you are using windows you might want to use winbash to run the scripts
+* A yarp name server is assumed to be running
+* Executables are assumed to be in the PATH (environment variable) on all machines
+* The environment variable ICUB_ROOT is assumed to point to the iCub root directory containing
+  the /app (and probably /conf and /scripts) directories.
+  Caution on Windows: Currently ICUB_ROOT has to contain '/' only no '\' in order to work with 
+  yarp run and winbash. Note: currently most scripts are using ICUB_DIR instead of ICUB_ROOT. In practice this is not a problem as ICUB_DIR=ICUB_ROOT, but in general using ICUB_ROOT is more appropriate to get the location of sources (ICUB_DIR might point elsewhere).
+  
+Please (cc) any suggestions to ruesch@ifi.uzh.ch  

@@ -1,0 +1,64 @@
+<application>
+<name>auto-associative memory demo</name>
+
+<dependencies>
+   <port>/icub/cam/left</port>
+</dependencies>
+
+<module>
+   <name>yarpview</name>
+   <parameters>--name /input_image --x 0 --y 10 --synch</parameters>
+   <node>icub1</node>
+   <tag>input_image</tag>
+</module>
+
+<module>
+   <name>yarpview</name>
+   <parameters>--name /recalled_image --x 320 --y 10 --synch</parameters>
+   <node>icub1</node>
+   <tag>recalled_image</tag>
+</module>
+
+<module>
+   <name>autoAssociativeMemory</name>
+   <parameters></parameters>
+   <node>icub1</node>
+   <tag>aam</tag>
+</module>
+
+<module>
+   <name>demoAAM</name>
+   <parameters></parameters>
+   <node>icub1</node>
+   <tag>aamDriver</tag>
+</module>
+
+
+<connection>
+  <from>/icub/cam/left</from>
+  <to>/input_image</to>
+  <protocol>tcp</protocol>
+</connection>
+ 
+<connection>
+   <from>/icub/cam/left</from>
+   <to>/aam/image:i</to>
+   <protocol>tcp</protocol>
+</connection>
+
+
+<connection>
+   <from>/aam/image:o</from>
+   <to>/recalled_image</to>
+   <protocol>tcp</protocol>
+ </connection>
+
+
+<connection>
+   <from>/aamdriver/threshold:o</from>
+   <to>/aam/threshold:i</to>
+   <protocol>tcp</protocol>
+</connection>
+
+ 
+</application>

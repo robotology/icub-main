@@ -1,0 +1,64 @@
+/**
+@ingroup  icub_applications
+\defgroup icub_drummingEPFL drummingEPFL
+Drumming demo.
+
+\section intro_sec Description
+Runs the drumming application (drummingEPFL). It can control the four limbs and the head. 
+
+\section dep_sec Dependencies
+Assumes \ref icub_iCubInterface "iCubInterface" is running, and that the parts you want to control are instantiated.
+
+For each active part, an corresponding \ref icub_velocityControl "velocityControl" module should be running. 
+
+To enable the acoustic feedback, \ref icub_midiDrum "midiDrum" should be also running. 
+
+\section int_sec Instantiated Modules
+- \ref icub_GeneralClock "GeneralClock"
+- \ref icub_DrumGenerator "DrumGenerator" (for each of the controlled part)
+- \ref icub_DrumManager "DrumManager"
+- \ref icub_guiDemo "guiDemo"
+
+\section parameters_sec Parameters
+
+The script does not require any parameters. 
+
+\section config_sec Configuration Files
+
+Configuration files are located in the /config folder. 
+
+The files of type limbConfig.ini contain the information about the different limbs: number of dofs, joint limits, ... and also about the topology of the network of oscillator (i.e. the coupling between them). 
+
+The files of type limbTarget.ini contain the information about the drums the limb can reach (i.e. the target joint angles to reach them and the number of the drum for the feedback loop - see \ref icub_midiDrum "midiDrum").  
+
+There are also .csv files located in the guiDemo3 folder that corresponds to predefined scores (see \ref icub_guiDemo "guiDemo"). You can specify which drum has to be beaten (1,2 or 3), the frequency and phase shift between the limbs. 
+
+\section example_sec How to run the application
+
+On the iCub PC104, run:
+- ./low_level.sh start 
+
+It will launch the \ref icub_velocityControl "velocityControl", the \ref icub_GeneralClock "GeneralClock" and the \ref icub_DrumGenerator "DrumGenerator" modules. 
+
+On your PC, run:
+- ./high_level.sh start
+
+It will launch the \ref icub_DrumManager "DrumManager" and the \ref icub_guiDemo "guiDemo" modules. You have to edit this script if you do not want to control all the limbs and the head (you only need to comment the \ref icub_velocityControl "velocityControl" and \ref icub_DrumGenerator "DrumGenerator" you do not want to use)
+
+You can stop the DrumManager and the guiDemo by pressing the close button on the gui. You can also use
+- ./high_level.sh stop
+and 
+- ./low_level.sh stop
+
+If you want to run the application without sending commands to the robot, you can turn the value of DEBUG to one in the file \in $ICUB_ROOT/src/drummingEPFL/DrumGenerator/DrumGenerator.cpp and use the following script:
+- ./debug_low_level.sh start
+ 
+
+\author Sarah Degallier
+
+Copyright (C) 2008 RobotCub Consortium
+
+CopyPolicy: Released under the terms of the GNU GPL v2.0.
+
+This file can be edited at \in app/drummingEpfl
+**/

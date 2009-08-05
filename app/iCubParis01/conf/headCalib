@@ -1,0 +1,9 @@
+[CALIBRATION]
+//                  0          1        2         3          4          5            
+CalibrationType     0          0        0         0          0          0            
+Calibration1    500.0	  1000.0    900.0     300.0      633.0      633.0          
+Calibration2     20.0	    20.0     20.0     -20.0       20.0       20.0           
+Calibration3      0.0	     0.0      0.0       0.0        0.0        0.0          
+PositionZero      0.0        0.0      0.0       0.0        0.0        0.0          
+VelocityZero     10.0       10.0     10.0      10.0       10.0       10.0           
+

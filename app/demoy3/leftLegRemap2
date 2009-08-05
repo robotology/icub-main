@@ -1,0 +1,51 @@
+[POSITION0] 
+jointPositions -0.20  0 0.20 0.09 -0.02 0.38
+jointVelocities 10.00 10.00 10.00 10.00 10.00 10.00
+timing 4.00 
+[POSITION1] 
+jointPositions -0.20  0 0.20 0.09 -0.02 0.38
+jointVelocities 10.00 10.00 10.00 10.00 10.00 10.00
+timing 4.00 
+[POSITION2] 
+jointPositions -0.20  0 0.20 0.09 -0.02 0.38
+jointVelocities 10.00 10.00 10.00 10.00 10.00 10.00
+timing 4.00 
+[POSITION3] 
+jointPositions -0.20  0 0.20 0.09 -0.02 0.38
+jointVelocities 10.00 10.00 10.00 10.00 10.00 10.00
+timing 4.00 
+[POSITION4] 
+jointPositions -0.20  0 0.20 0.09 -0.02 0.38
+jointVelocities 10.00 10.00 10.00 10.00 10.00 10.00
+timing 4.00 
+[POSITION5] 
+jointPositions -0.20  0 0.20 0.09 -0.02 0.38
+jointVelocities 10.00 10.00 10.00 10.00 10.00 10.00
+timing 4.00 
+[POSITION6] 
+jointPositions -0.20  0 0.20 0.09 -0.02 0.38
+jointVelocities 10.00 10.00 10.00 10.00 10.00 10.00
+timing 4.00 
+[POSITION7] 
+jointPositions -0.20  0 0.20 0.09 -0.02 0.38
+jointVelocities 10.00 10.00 10.00 10.00 10.00 10.00
+timing 4.00 
+[POSITION8] 
+jointPositions -0.20  0 0.20 0.09 -0.02 0.38
+jointVelocities 10.00 10.00 10.00 10.00 10.00 10.00
+timing 4.00 
+[POSITION9] 
+jointPositions -0.20  0 0.20 0.09 -0.02 0.38
+jointVelocities 10.00 10.00 10.00 10.00 10.00 10.00
+timing 4.00 
+[POSITION10] 
+jointPositions -0.20  0 0.20 0.09 -0.02 0.38
+jointVelocities 10.00 10.00 10.00 10.00 10.00 10.00
+timing 4.00 
+[POSITION11] 
+jointPositions -0.20  0 0.20 0.09 -0.02 0.38
+jointVelocities 10.00 10.00 10.00 10.00 10.00 10.00
+timing 4.00 
+[DIMENSIONS]
+numberOfPoses 12
+numberOfJoints 6

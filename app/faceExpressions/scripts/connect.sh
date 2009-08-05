@@ -1,0 +1,1 @@
+yarp connect /icub/face/emotions/out /icub/face/raw/in

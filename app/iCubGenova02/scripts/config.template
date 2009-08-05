@@ -1,0 +1,14 @@
+#!/bin/sh
+
+NAME_ROBOT=icub
+
+NODE_CAMERAS=/pc104
+NODE_VIEWERS=/icub3
+
+NAME_SOURCE_IMAGE_RIGHT=/icub/cam/right
+NAME_SOURCE_IMAGE_LEFT=/icub/cam/left
+
+VIEWERS_PORT_LEFT=/icub/view/left
+VIEWERS_PORT_RIGHT=/icub/view/right
+VIEWERS_PROTOCOL=mcast
+

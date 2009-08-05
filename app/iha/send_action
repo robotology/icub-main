@@ -1,0 +1,4 @@
+#!/bin/bash
+source ./config_ports.sh
+
+echo $1 | yarp rpc  $CONTROLLER_ACTION_CMD 

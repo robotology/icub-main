@@ -1,0 +1,8 @@
+[CALIBRATION]
+//Joint             0	   1 	     2       3        4          5    
+CalibrationType     3      3         3       3        3        	 3   
+Calibration1   2047.0 2047.0    2047.0  2047.0     2047       2047   
+Calibration2      4.0    4.0       4.0     4.0      4.0        4.0   
+Calibration3   2756.2 2856.3     796.3   364.0   1332.0     1558.0 
+PositionZero      0.0    0.0       0.0     0.0      0.0        0.0     
+VelocityZero      4.0    4.0       4.0     4.0      4.0        4.0     

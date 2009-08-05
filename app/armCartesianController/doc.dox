@@ -1,0 +1,66 @@
+/**
+@ingroup  icub_applications
+
+\defgroup icub_armCartesianController armCartesianController
+
+Set of modules for controlling the robot in cartesian space.
+
+\section intro_sec Description
+
+This application contains scripts to run the modules which compute 
+direct and inverse kinematics. 
+
+Warning: this documentation is work in progress.
+
+\section dep_sec Dependencies
+
+Assumes \ref icub_iCubInterface "iCubInterface" is already running and 
+the part you want to control is instantited (e.g. right or left arm).
+
+\section modules_sec Instantiated Modules
+- \ref iKinArmCtrl "iKinArmCtrl"
+
+\section parameters_sec Parameters
+
+None.
+
+\section config_sec Configuration Files
+
+None.
+ 
+\section example_sec How to run the application
+
+As first thing, launch the server:
+\code
+./yarp_run.sh
+\endcode
+
+To launch the application, just type the following:
+\code
+./app.sh start arm
+\endcode
+where the parameter \e arm can be one of { right, left }.
+The chosen type is then saved within a file for a further reference.
+
+Then issue one of the following:
+ 
+\code
+./app.sh connect:    connect the controller to the robot
+./app.sh disconnect: disconnect the controller from the robot
+./app.sh stop:       stop the controller
+\endcode
+
+Once connected the controller provides the yarp port "xd" as input for the target pose given 
+as a vector of seven components: x y z cartesian position (meters) + the orientation (radians)
+in axis/angle representation (i.e. ax ay az theta).
+
+\author Ugo Pattacini
+
+Copyright (C) 2008 RobotCub Consortium
+
+CopyPolicy: Released under the terms of the GNU GPL v2.0.
+
+
+This file can be edited at \in app/armCartesianController/doc.dox
+
+*/

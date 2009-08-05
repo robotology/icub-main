@@ -1,0 +1,7 @@
+USER=icub
+NAMESPACE=/root
+
+#important: node names do not have '/'
+NODE_NAMESERVER=icubsrv
+CLUSTERS="icubsrv pc104"
+

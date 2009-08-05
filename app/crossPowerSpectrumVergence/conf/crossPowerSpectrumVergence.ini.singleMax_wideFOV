@@ -1,0 +1,7 @@
+std_dev                         25
+threshold                       20
+filter_radius                    2
+number_of_maxima                 1
+non_maxima_suppression_radius    5
+
+

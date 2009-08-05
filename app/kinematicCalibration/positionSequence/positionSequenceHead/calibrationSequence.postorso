@@ -1,0 +1,91 @@
+[POSITION0] 
+jointPositions   0.0 0.0 0.0 
+jointVelocities 10.00 10.00 10.00 
+timing 6.00 
+[POSITION1] 
+jointPositions -46.2036   -3.3936   34.3926
+jointVelocities 10.00 10.00 10.00 
+timing 6.00 
+[POSITION2] 
+jointPositions 32.3525   15.7759   -9.9316
+jointVelocities 10.00 10.00 10.00 
+timing 6.00 
+[POSITION3] 
+jointPositions 18.5798   -8.3868   50.7065
+jointVelocities 10.00 10.00 10.00 
+timing 6.00 
+[POSITION4] 
+jointPositions -3.2229   24.1147   20.8095
+jointVelocities 10.00 10.00 10.00 
+timing 6.00 
+[POSITION5] 
+jointPositions -44.8962  -14.7286    7.5617	
+jointVelocities 10.00 10.00 10.00 
+timing 6.00 
+[POSITION6] 
+jointPositions -20.0953   15.9563   67.0427
+jointVelocities 10.00 10.00 10.00 
+timing 6.00 
+[POSITION7] 
+jointPositions -39.3414   -4.4128   58.0958
+jointVelocities 10.00 10.00 10.00 
+timing 6.00 
+[POSITION8] 
+jointPositions -16.4546    1.4329   63.9244	
+jointVelocities 10.00 10.00 10.00 
+timing 6.00 
+[POSITION9] 
+jointPositions -5.2650    3.1870   45.4800
+jointVelocities 10.00 10.00 10.00 
+timing 6.00 
+timing 6.00 
+[POSITION10] 
+jointPositions 10.11 15.56 51.25 
+jointVelocities 10.00 10.00 10.00 
+timing 4.00 
+[POSITION11] 
+jointPositions -34.63 -23.47 -0.80 
+jointVelocities 10.00 10.00 10.00 
+timing 4.00 
+[POSITION12] 
+jointPositions -22.68 -19.25 43.78 
+jointVelocities 10.00 10.00 10.00 
+timing 4.00 
+[POSITION13] 
+jointPositions -34.81 -24.17 54.94 
+jointVelocities 10.00 10.00 10.00 
+timing 4.00 
+[POSITION14] 
+jointPositions 0.71 -1.40 56.26 
+jointVelocities 10.00 10.00 10.00 
+timing 4.00 
+[POSITION15] 
+jointPositions -33.31 14.25 45.71 
+jointVelocities 10.00 10.00 10.00 
+timing 4.00 
+[POSITION16] 
+jointPositions 49.32 -16.87 45.36 
+jointVelocities 10.00 10.00 10.00 
+timing 4.00 
+[POSITION17] 
+jointPositions 50.38 -17.67 28.57 
+jointVelocities 10.00 10.00 10.00 
+timing 4.00 
+[POSITION18] 
+jointPositions 37.28 -16.26 31.56 
+jointVelocities 10.00 10.00 10.00 
+timing 4.00 
+[POSITION19] 
+jointPositions 6.07 24.62 16.88 
+jointVelocities 10.00 10.00 10.00 
+timing 4.00 
+[POSITION20] 
+jointPositions 0.18 -0.35 -9.67 
+jointVelocities 10.00 10.00 10.00 
+timing 4.00 
+[POSITION21] 
+jointPositions -31.6256   23.6146   -5.0394
+jointVelocities 10.00 10.00 10.00 
+[DIMENSIONS]
+numberOfPoses 22
+numberOfJoints 3

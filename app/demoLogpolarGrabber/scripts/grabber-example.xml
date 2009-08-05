@@ -1,0 +1,65 @@
+<application>
+<name>Test grabbers</name>
+<dependencies>
+      <port>/root</port>
+</dependencies>
+   <module>
+      <name>icubmoddev</name>
+      <parameters>--device logpolargrabber --width 160 --height 120 --framerate 33 --subdevice test_grabber</parameters>
+      <!-- static_grabber filename C:\Users\pasa\Repository\_cvs\iCub\src\modules\staticgrabber\test.ppm -->
+      <node>tamon-ten</node>
+	  <stdio>tamon-ten</stdio>
+	  <tag>logpolar-grabber</tag>
+   </module>
+   <module>
+      <name>yarpview</name>
+      <parameters>--name /view1 --x 0 --y 50 --synch</parameters>
+      <node>tamon-ten</node>
+	  <tag>view1</tag>
+   </module>
+   <module>
+      <name>yarpview</name>
+      <parameters>--name /view2 --x 320 --y 50 --synch</parameters>
+      <node>tamon-ten</node>
+      <tag>view2</tag>
+   </module>
+   <module>
+      <name>yarpview</name>
+      <parameters>--name /view3 --x 640 --y 50 --synch</parameters>
+      <node>tamon-ten</node>
+      <tag>view3</tag>
+   </module>
+   <module>
+      <name>logpolarRemapper</name>
+      <parameters>--name remapper --remote /grabber --width 480</parameters>
+      <node>tamon-ten</node>
+      <stdio>tamon-ten</stdio>
+      <tag>remapper</tag>
+   </module>
+   <module>
+      <name>yarpview</name>
+      <parameters>--name /view4 --x 960 --y 50 --synch</parameters>
+      <node>tamon-ten</node>
+      <tag>view4</tag>
+   </module>
+<connection>
+  <output>/grabber</output>
+  <input>/view1</input>
+  <protocol>tcp</protocol>
+</connection>
+<connection>
+  <output>/grabber/logpolar</output>
+  <input>/view2</input>
+  <protocol>tcp</protocol>
+</connection>
+<connection>
+  <output>/grabber/fovea</output>
+  <input>/view3</input>
+  <protocol>tcp</protocol>
+</connection>
+<connection>
+  <output>/remapper:out</output>
+  <input>/view4</input>
+  <protocol>tcp</protocol>
+</connection>
+</application>

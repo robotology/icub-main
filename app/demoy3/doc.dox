@@ -1,0 +1,35 @@
+/**
+@ingroup  icub_applications
+\defgroup appdemos demoy3
+
+Configuration files for iCubDemoY3.
+
+\section intro_sec Description
+Just stores configuration files for the iCubDemoY3 module. 
+The module does not require scripts, see \ref icubdemoy3 "iCubDemoY3" 
+for more information.
+
+\section dep_sec Dependencies
+Assumes iCubInterface is running, and that all parts are instantiated.
+
+\section int_sec Instantiated Modules
+- \ref icubdemoy3 "iCubDemoY3"
+
+\section parameters_sec Parameters
+None.
+
+\section config_sec Configuration Files
+./fullBody.txt: yoga demo. Performs a full movement of the body.
+
+./handDOF.txt: shows the degrees of freedom of the hands. It opens the hand and closes each joint.
+
+See also \ref icubdemoy3 "iCubDemoY3"
+
+\author Lorenzo Natale
+
+Copyright (C) 2008 RobotCub Consortium
+
+CopyPolicy: Released under the terms of the GNU GPL v2.0.
+
+This file can be edited at \in app/demoy3/doc.dox
+**/

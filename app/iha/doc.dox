@@ -1,0 +1,150 @@
+/**
+ * @ingroup icub_applications
+ *
+ * \defgroup icub_iha iha 
+
+ *
+ * \brief  Interaction History Architecture (IHA) Application
+ 
+In this architecture a metric space of experiences accumulated over ontogeny related using informational measures is used to direct future experiences.
+
+This application consists of a number of scripts and configuration files that are used to start and stop a number of interconnecting processes.  See \ref icub_iha_module.
+
+\section iha_intro Introduction
+
+An interaction history is a collection of past "experiences" of a robot that can be used to generate future action based on its new experiences. At the heart of the architecture is a "metric space of experiences" where an experience can be compared with any other in terms of their informational-theoretic relationships. This comparison is a metric and so experiences can be "placed" in a space with distances relative to each other.
+
+The Interaction History Architecture selects those experiences from the history that are "closest" to the current experience. Then it chooses one of those experiences and the action that was executed in the past just after that experience, and executes that action. The choice is determined by proximity in the metric space as well as the subjective value of the experience in relation to the reward received in the past.
+
+\image html IHAArchitectureV5.jpg
+
+The architecture also includes mechanisms for "forgetting" and formation of proto-typical experiences. The first simply deletes those experiences with low subjective value, and the second merges together experiences based on their proximity in the space. 
+
+You can find out more about the architecture and existing experiments in the following 
+\link http://www.robotcub.net/index.php/robotcub/more_information/deliverables/ RobotCub Deliverables
+\endlink and papers:
+ - D6.4 : A description of the latest Interaction History Architecture along with experimental details of the peekaboo experiment on KasparII
+ \link http://www.robotcub.net/index.php/robotcub/content/download/1144/4009/file/d6.4.pdf D6.4pdf
+ \endlink
+ - D6.2 : Sec 3 and App C/D discuss scalability issues and T-Maze experiment (
+ \link http://www.robotcub.net/index.php/robotcub/content/download/1060/3735/file/RC_UNIHER_KD_Deliverable_D6.2.pdf D6.2.pdf (Appendices D and E)
+ \endlink )
+ - Adaptive Behaviour Journal article - description of IHA and research on Aibo (Ball path prediction and Peekaboo). Available as
+ \link http://www.robotcub.net/index.php/robotcub/content/download/1060/3735/file/RC_UNIHER_KD_Deliverable_D6.2.pdf D6.2.pdf (Appendix C)
+ \endlink (ref: N.A. Mirza, C.L. Nehaniv, K. Dautenhahn, R. teBoekhorst (2007) Grounded Sensorimotor Interaction Histories in an Information Theoretic Metric Space for Robot Ontogeny, \e Adaptive \e Behaviour, SAGE Publications. \b 15 (2) pp 167-187 )
+ - Also N.A. Mirza PhD Thesis
+
+\section iha_process_flow Process Flow
+
+The Interaction History Architecture consists of a number of interoperating processes implemented as modules (deriving from yarp::os::Module class). Their relationship is described (for the iCub) in the following diagram.
+
+\image html IHAFlow_iCub_800.jpg
+
+\section dep_sec Dependencies
+-# When connecting to a physical robot:
+  - This module assumes \ref icub_iCubInterface "iCubInterface" is already running.
+    - note: <em> at time of writing this is the version contained in iCubInterface2, at some point this will be merged into the main code.</em>
+  - Assumes that the cameras have been started. The low-res camera device is sufficient.
+  - Also assumes that the facedevice.sh script has been started on the PC104 to provide the raw interface for the facial expressions.
+-# When connecting to the simulator:
+  - The simulator should be started with the head, arms and hands activated along with the fixed_hip and cameras.
+  - The facial_expressions simulator module should also be started and connected.
+
+\section modules_sec Instantiated Modules
+List here the modules that are instantiated by this application:
+- \ref icub_iha_ExperienceMetricSpace Experience Metric Space Module (IHA)
+- \ref icub_iha_ActionSelection Action Selection (IHA)
+- \ref icub_iha_IcubControl iCub Control Module (IHA)
+- \ref icub_iha_IhaFaceDetect Face Detection (IHA)
+- \ref icub_iha_Dynamics Motivation Dynamics (IHA)
+- \ref icub_iha_SensorMotorInterface Sensor Motor Interface (IHA)
+- \ref icub_iha_SoundSensor Sound Sensor (IHA)
+- \ref icub_iha_StatusMonitor Status Monitor (IHA)
+
+\section parameters_sec Parameters
+Application parameters are contained in the files config_ports.sh and config_machines.sh
+
+\b config_ports.sh 
+- contains name of the various robot ports (including cameras) and the name sof the module in/out ports
+
+\b config_machines.sh
+- contains a list of all the machines available for running processes along with a mapping of processors to machines.  The machine LOCAL is special: if processes are started on local they do not use the \c yarp \c run service.
+
+\section config_sec Configuration Files
+
+- \ref icub_iha_IcubControl iCub Control Module (IHA)
+ - conf/ihaIcubControl.ini
+- \ref icub_iha_ActionSelection Action Selection (IHA)
+ - conf/ihaActionSelection.ini
+ - conf/iha_actiondefs.ini         
+- \ref icub_iha_ExperienceMetricSpace Experience Metric Space Module (IHA)
+ - conf/ihaExperienceMetricSpace.ini
+- \ref icub_iha_IhaFaceDetect Face Detection (IHA)
+ - conf/ihaIhaFaceDetect.ini
+- \ref icub_iha_Dynamics Motivation Dynamics (IHA)
+ - conf/ihaMotivationDynamics.ini
+- \ref icub_iha_SensorMotorInterface Sensor Motor Interface (IHA)
+ - conf/ihaSensorMotorInterface.ini
+- \ref icub_iha_SoundSensor Sound Sensor (IHA)
+ - conf/ihaSoundSensor.ini
+- \ref icub_iha_StatusMonitor Status Monitor (IHA)
+ - conf/ihaStatusMonitor.ini
+- Sensors File Writer
+ - conf/ihaSensorsFileWriter.ini
+
+ 
+\section example_sec How to run the application
+ 
+<b> GENERAL NOTES ON USAGE </b>
+
+-#  To start and stop the system you only really need to use the "numbered scripts"
+ s follows
+  - 10_run_supporting.sh
+  - 20_connect_supporting.sh
+  - 30_run_and_connect_iha_processes.sh
+  - 40_run_controller.sh
+  - 70_stop_controller.sh
+  - 80_stop_iha_processes.sh
+  - 90_stop_supporting.sh
+-#  To run different processes on different machines, change the processor map in 
+      config_machines.sh
+-#  The recommended way to stop individual processes is to use the modular scripts
+      e.g. facedetector.sh stop
+	  In extreme cases there is also usually a kill option. 
+-#  There are two config scripts containing variables. The first is the machine 
+      mapping script config_machines.sh, the other, config_ports.sh, holds all the port 
+	  names so things can be connected easily in different scripts.
+
+<b> SCRIPT STRUCTURE </b>
+
+<i> start_stop_utils.sh </i>
+
+  This script provides functions to start and stop individual modules or processes 
+  on the local or remote machines. 
+
+  You can choose to start locally or remotely, with logging or without and also you can 
+  choose to start the process in its own spawned xterm
+
+<i> Init scripts </i>
+
+  These scripts are named for the processes the look after, e.g. viewers.sh
+  They always take a parameter e.g. [start|stop|kill|connect]
+
+
+<i> High-level scripts </i>
+
+  These just simplify the process of starting and stopping the system as you 
+  can just start the scripts in order of number (and stop in order) without having to know
+  or remember what should be started first.  They consist of lists of init scripts.
+
+
+\author Naeem Assif Mirza
+
+Copyright (C) 2008 RobotCub Consortium
+
+CopyPolicy: Released under the terms of the GNU GPL v2.0.
+
+This file can be edited at \in app/iha/doc.dox
+ *
+ */
+

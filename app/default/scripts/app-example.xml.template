@@ -1,0 +1,43 @@
+<application>
+<name>Test grabbers</name>
+<dependencies>
+      <port>/root</port>
+</dependencies>
+<module>
+      <name>yarpdev</name>
+      <parameters>--device grabber --subdevice test_grabber --name /test1</parameters>
+	  <node>icub3</node>
+	  <stdio>icub11</stdio>
+	<tag>test-grabber1</tag>
+   </module>
+   <module>
+      <name>yarpdev</name>
+      <parameters>--device grabber --subdevice test_grabber --name /test2</parameters>
+	  <node>icub3</node>
+	  <stdio>icub11</stdio>
+	<tag>test-grabber2</tag>
+   </module>
+   <module>
+      <name>yarpview</name>
+      <parameters>--name /view1 --x 0 --y 10 --synch</parameters>
+      <node>icub11</node>
+	<tag>view1</tag>
+   </module>
+   <module>
+      <name>yarpview</name>
+      <parameters>--name /view2 --x 320 --y 10 --synch</parameters>
+      <node>icub11</node>
+	<tag>view2</tag>
+   </module>
+<connection>
+  <output>/test1</output>
+  <input>/view1</input>
+  <protocol>tcp</protocol>
+</connection>
+<connection>
+  <output>/test2</output>
+  <input>/view2</input>
+  <protocol>tcp</protocol>
+</connection>
+</application>
+

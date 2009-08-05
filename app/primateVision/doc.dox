@@ -1,0 +1,109 @@
+/**
+@ingroup  icub_applications
+\defgroup primateVision primateVision
+
+This application simulates the primate dorsal stream.
+
+\section intro_sec Description
+Series of interdependent servers providing primate dorsal competencies:
+
+- egocentric rectification
+
+- egocentric spatiotemporal perception
+
+- coordinated stereo fixation
+
+- active-dynamic attention including dynamic inhibition of return, saliency, spatial bias.
+
+\section dep_sec Dependencies
+Assumes \ref icub_iCubInterface (headinstantiated) and \ref icub_dragonfly servers are runnin.
+
+\section int_sec Instantiated Modules
+- \ref primateVision_recserver "recserver"
+
+- \ref primateVision_ycsserver "ycsserver"
+
+- \ref primateVision_colcsserver "colcsserver"
+
+- \ref primateVision_ocsserver "ocsserver"
+
+- \ref primateVision_flowserver "flowserver"
+
+- \ref primateVision_depthflowserver "depthflowserver"
+
+- \ref primateVision_salserver "salserver"
+
+- \ref primateVision_iorserver "iorserver"
+
+- \ref primateVision_tsbserver "tsbserver"
+
+- \ref primateVision_zdfserver "zdfserver"
+
+- \ref primateVision_egosphere2 "egosphere2"
+
+- \ref primateVision_svogrid "svogrid"
+
+- \ref primateVision_recclient "recclient"
+
+- \ref primateVision_ycsclient "ycsclient"
+
+- \ref primateVision_colcsclient "colcsclient"
+
+- \ref primateVision_ocsclient "ocsclient"
+
+- \ref primateVision_flowclient "flowclient"
+
+- \ref primateVision_depthflowclient "depthflowclient"
+
+- \ref primateVision_salclient "salclient"
+
+- \ref primateVision_iorclient "iorclient"
+
+- \ref primateVision_tsbclient "tsbclient"
+
+- \ref primateVision_zdfclient "zdfclient"
+
+- \ref primateVision_attnclient_mono "attnclient_mono"
+
+- \ref primateVision_attnclient_stereo "attnclient_stereo"
+
+- various additional utility modules, such as center-surround processing, canny edge detection, colour ocnversion, timing, etc.
+
+
+\section parameters_sec Parameters
+Scripts do not have parameters. The next section describe how to modify the parameters
+of each module.
+
+\section config_sec Configuration Files
+
+config files for all servers are located in the repository at $ICUB_DIR/src/primateVision/config
+
+you can specify alternate config files at server start-up by using "-c FILE".
+
+
+\section example_sec How to run the application
+
+\subsection starting Starting the application
+
+- Start left and right dragonfly servers and icubInterface2. 
+
+- Start the recserver. 
+
+- You can start direct recserver clients (egosphere2, recclient).
+
+- Start any of: tsbserver, ycsserver, colcsserver, ocsserver, flowserver, (these use left camera config file by default, but you can specify to use the right manually by typing "ycsserver -c $ICUB_DIR/src/primateVision/config/ycsL.cfg", for example), depthflowserver(stereo), zdfserver (stereo).
+
+- Start dependent clients (eg, "ycsclient l", "svogrid"), or dependent servers (eg, salserver, iorserver, where for example sal server depends on above input servers as configured in salL.cfg).
+
+-Start any attention clients.
+
+
+
+\author Andrew Dankers
+
+Copyright (C) 2008
+
+This file is located at app/primateVision/doc.dox
+**/
+
+
