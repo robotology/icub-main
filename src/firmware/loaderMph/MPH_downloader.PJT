@@ -1,0 +1,51 @@
+[PROJECT]
+Target=MPH_downloader.HEX
+Development_Mode=2
+Processor=0x8448
+ToolSuite=CCS
+
+[Directories]
+Include=
+Library=
+LinkerScript=
+
+[Target Data]
+FileList=MPH_downloader.c;
+BuildTool=C-COMPILER
+OptionString=+FH
+AdditionalOptionString=
+BuildRequired=1
+
+[MPH_downloader.c]
+Type=4
+Path=
+FileList=
+BuildTool=
+OptionString=
+AdditionalOptionString=
+
+[mru-list]
+1=C:\Usr\MARCOC~1\Progetti\DIST\PIC\MPHDOW~1\MPH_DO~1.C
+
+[Windows]
+0=0000 C:\Usr\MARCOC~1\Progetti\DIST\PIC\MPHDOW~1\MPH_DO~1.C 0 0 796 451 3 0
+
+[Opened Files]
+1=C:\Users\pasa\Repository\yarp_winnt\src\libYARP_dev\mph\can_loader\MPH_downloader.c
+2=
+3=
+[debugram]
+autoread=1
+[debugeedata]
+autoread=1
+[debugbreak]
+count=0
+[pcwdebug]
+watchcol0=75
+[debugwatch]
+count=0
+[debugexpr]
+expr=
+sideeffects=0
+[debugperif]
+selected=Analog/Digital Conv

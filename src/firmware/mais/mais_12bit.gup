@@ -1,0 +1,9 @@
+ADVANCED
+0
+1
+Interface 0
+Esd USB-CAN driver:Device 0, Baudrate 1000, ID len 11, 0x0 -> 0xfff
+N
+94619 4095 0
+Red 0 2 0xffff 0x15c 3 0xfff0 S16LE 0 1  ADC0_ch0
+Interface 0

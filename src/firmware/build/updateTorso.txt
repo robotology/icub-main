@@ -1,0 +1,6 @@
+// torso
+pcan 0 5 2BLL.1.54.out.S
+pcan 0 6 2BLL.1.52.out.S
+
+
+

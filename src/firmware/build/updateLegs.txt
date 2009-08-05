@@ -1,0 +1,7 @@
+// legs
+pcan 3 5  2BLL.1.51.out.S
+pcan 3 6  2BLL.1.51.out.S
+pcan 3 7  2BLL.1.51.out.S
+pcan 3 8  2BLL.1.51.out.S
+pcan 3 9  2BLL.1.51.out.S
+pcan 3 10 2BLL.1.51.out.S

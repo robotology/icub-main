@@ -1,0 +1,1631 @@
+/*
+** Linker Script for 30f4013
+*/
+
+OUTPUT_ARCH("30f4013")
+EXTERN(__resetPRI)
+EXTERN(__resetALT)
+
+
+/*
+** Memory Regions
+*/
+MEMORY
+{
+  data  (a!xr) : ORIGIN = 0x800,    LENGTH = 2048
+  program (xr) : ORIGIN = 0x6D80,    LENGTH = ((16K * 2) - 0x6D80)
+  reset        : ORIGIN = 0,        LENGTH = (4)
+  ivt          : ORIGIN = 0x04,     LENGTH = (62 * 2)
+  aivt         : ORIGIN = 0x84,     LENGTH = (62 * 2)
+  __FOSC       : ORIGIN = 0xF80000, LENGTH = (2)
+  __FWDT       : ORIGIN = 0xF80002, LENGTH = (2)
+  __FBORPOR    : ORIGIN = 0xF80004, LENGTH = (2)
+  __CONFIG4    : ORIGIN = 0xF80006, LENGTH = (2)
+  __CONFIG5    : ORIGIN = 0xF80008, LENGTH = (2)
+  __FGS        : ORIGIN = 0xF8000A, LENGTH = (2)
+  __FICD       : ORIGIN = 0xF8000C, LENGTH = (2)
+  __FUID0      : ORIGIN = 0x8005C0, LENGTH = (2)
+  __FUID1      : ORIGIN = 0x8005C2, LENGTH = (2)
+  __FUID2      : ORIGIN = 0x8005C4, LENGTH = (2)
+  __FUID3      : ORIGIN = 0x8005C6, LENGTH = (2)
+  eedata       : ORIGIN = 0x7FFC00, LENGTH = (1024)
+}
+__NO_HANDLES = 1;          /* Suppress handles on this device  */
+
+
+/*
+** Config Word Addresses
+*/
+__FOSC        = 0xF80000;
+__FWDT        = 0xF80002;
+__FBORPOR     = 0xF80004;
+__CONFIG4     = 0xF80006;
+__CONFIG5     = 0xF80008;
+__FGS         = 0xF8000A;
+__FICD        = 0xF8000C;
+__FUID0       = 0x8005C0;
+__FUID1       = 0x8005C2;
+__FUID2       = 0x8005C4;
+__FUID3       = 0x8005C6;
+
+
+/*
+** Base Memory Addresses - Program Memory
+*/
+__RESET_BASE  = 0;        /* Reset Instruction                */
+__IVT_BASE    = 0x04;     /* Interrupt Vector Table           */
+__AIVT_BASE   = 0x84;     /* Alternate Interrupt Vector Table */
+__CODE_BASE   = 0x100;    /* Handles, User Code, Library Code */
+
+
+/*
+** Base Memory Addresses - Data Memory
+*/
+__SFR_BASE    = 0;        /* Memory-mapped SFRs                 */
+__DATA_BASE   = 0x800;    /* X and General Purpose Data Memory  */
+__YDATA_BASE  = 0x0C00;   /* Y Data Memory for DSP Instructions */
+
+
+/*
+** ==================== Section Map ======================
+*/
+
+SECTIONS
+{
+
+  /*
+  ** ================== Program Memory =====================
+  */
+
+  /*
+  ** Reset Instruction
+  */
+  .reset __RESET_BASE :
+  {
+        SHORT(ABSOLUTE(__reset));
+        SHORT(0x04);
+        SHORT((ABSOLUTE(__reset) >> 16) & 0x7F);
+        SHORT(0);
+  } >reset
+
+
+  /*
+  ** Interrupt Vector Tables
+  **
+  ** The primary and alternate tables are loaded
+  ** here, between sections .reset and .text.
+  ** Vector table source code appears below.
+  */
+
+  /*
+  ** User Code and Library Code
+  **
+  ** This section must not be assigned to __CODE_BASE,
+  ** because CodeGuard(tm) sections may be located there.
+  */
+  .text :
+  {
+        *(.init);
+        *(.handle);
+        *(.libc) *(.libm) *(.libdsp);  /* keep together in this order */
+        *(.lib*);
+        *(.text);
+  } >program
+
+  /*
+  ** User-Defined Section in Program Memory
+  **
+  ** note: can specify an address using
+  **       the following syntax:
+  **
+  **       usercode 0x1234 :
+  **         {
+  **           *(usercode);
+  **         } >program
+  */
+  usercode :
+  {
+        *(usercode);
+  } >program
+
+
+  /*
+  ** ================ Configuration Memory ================
+  */
+
+
+  /*
+  ** Configuration Fuses
+  */
+  __FOSC :
+  { *(__FOSC.sec) } >__FOSC
+  __FWDT :
+  { *(__FWDT.sec) } >__FWDT
+  __FBORPOR :
+  { *(__FBORPOR.sec) } >__FBORPOR
+  __CONFIG4 :
+  { *(__CONFIG4.sec) } >__CONFIG4
+  __CONFIG5 :
+  { *(__CONFIG5.sec) } >__CONFIG5
+  __FGS :
+  { *(__FGS.sec) } >__FGS
+  __FICD :
+  { *(__FICD.sec) } >__FICD
+  __FUID0 :
+  { *(__FUID0.sec) } >__FUID0
+  __FUID1 :
+  { *(__FUID1.sec) } >__FUID1
+  __FUID2 :
+  { *(__FUID2.sec) } >__FUID2
+  __FUID3 :
+  { *(__FUID3.sec) } >__FUID3
+
+
+  /*
+  ** User-Defined Section in Data Flash Memory
+  **
+  ** note: can specify an address using
+  **       the following syntax:
+  **
+  **       user_eedata 0x7FFC00 :
+  **         {
+  **           *(user_eedata);
+  **         } >eedata
+  */
+  user_eedata :
+  {
+        *(user_eedata);
+  } >eedata
+
+
+  /*
+  ** ==================== Data Memory ===================
+  */
+
+  /* 
+  ** ICD Debug Exec
+  **
+  ** This section provides optional storage for
+  ** the ICD2 debugger. Define a global symbol
+  ** named __ICD2RAM to enable ICD2. This section
+  ** must be loaded at data address 0x800.
+  */ 
+  .icd __DATA_BASE (NOLOAD): 
+  { 
+    . += (DEFINED (__ICD2RAM) ? 0x50 : 0 ); 
+  } > data 
+
+
+  /*
+  ** User-Defined Section in Data Memory
+  **
+  ** note: can specify an address using
+  **       the following syntax:
+  **
+  **       userdata 0x1234 :
+  **         {
+  **           *(userdata);
+  **         } >data
+  */
+  userdata :
+  {
+        *(userdata);
+  } >data
+
+
+  /*
+  ** ===================== Debug Info ====================
+  */
+
+  .comment        0 : { *(.comment) }
+
+  /*
+  ** DWARF-2
+  */
+  .debug_info     0 : { *(.debug_info) *(.gnu.linkonce.wi.*) }
+  .debug_abbrev   0 : { *(.debug_abbrev) }
+  .debug_line     0 : { *(.debug_line) }
+  .debug_frame    0 : { *(.debug_frame) }
+  .debug_str      0 : { *(.debug_str) }
+  .debug_loc      0 : { *(.debug_loc) }
+  .debug_macinfo  0 : { *(.debug_macinfo) }
+  .debug_pubnames 0 : { *(.debug_pubnames) }
+  .debug_ranges   0 : { *(.debug_ranges) }
+  .debug_aranges  0 : { *(.debug_aranges) }
+
+} /* SECTIONS */
+
+/*
+** ================= End of Section Map ================
+*/
+/*
+** Section Map for Interrupt Vector Tables
+*/
+SECTIONS
+{
+
+/*
+** Primary Interrupt Vector Table
+*/
+.ivt __IVT_BASE :
+  {
+    LONG(DEFINED(__ReservedTrap0)  ? ABSOLUTE(__ReservedTrap0)  :
+         ABSOLUTE(__DefaultInterrupt));
+    LONG(DEFINED(__OscillatorFail) ? ABSOLUTE(__OscillatorFail) :
+         ABSOLUTE(__DefaultInterrupt));
+    LONG(DEFINED(__AddressError)   ? ABSOLUTE(__AddressError)   :
+         ABSOLUTE(__DefaultInterrupt));
+    LONG(DEFINED(__StackError)     ? ABSOLUTE(__StackError)     :
+         ABSOLUTE(__DefaultInterrupt));
+    LONG(DEFINED(__MathError)      ? ABSOLUTE(__MathError)      :
+         ABSOLUTE(__DefaultInterrupt));
+    LONG(DEFINED(__ReservedTrap5)  ? ABSOLUTE(__ReservedTrap5)  :
+         ABSOLUTE(__DefaultInterrupt));
+    LONG(DEFINED(__ReservedTrap6)  ? ABSOLUTE(__ReservedTrap6)  :
+         ABSOLUTE(__DefaultInterrupt));
+    LONG(DEFINED(__ReservedTrap7)  ? ABSOLUTE(__ReservedTrap7)  :
+         ABSOLUTE(__DefaultInterrupt));
+    LONG(DEFINED(__INT0Interrupt)  ? ABSOLUTE(__INT0Interrupt)  :
+         ABSOLUTE(__DefaultInterrupt));
+    LONG(DEFINED(__IC1Interrupt)   ? ABSOLUTE(__IC1Interrupt)   :
+         ABSOLUTE(__DefaultInterrupt));
+    LONG(DEFINED(__OC1Interrupt)   ? ABSOLUTE(__OC1Interrupt)   :
+         ABSOLUTE(__DefaultInterrupt));
+    LONG(DEFINED(__T1Interrupt)    ? ABSOLUTE(__T1Interrupt)    :
+         ABSOLUTE(__DefaultInterrupt));
+    LONG(DEFINED(__IC2Interrupt)   ? ABSOLUTE(__IC2Interrupt)   :
+         ABSOLUTE(__DefaultInterrupt));
+    LONG(DEFINED(__OC2Interrupt)   ? ABSOLUTE(__OC2Interrupt)   :
+         ABSOLUTE(__DefaultInterrupt));
+    LONG(DEFINED(__T2Interrupt)    ? ABSOLUTE(__T2Interrupt)    :
+         ABSOLUTE(__DefaultInterrupt));
+    LONG(DEFINED(__T3Interrupt)    ? ABSOLUTE(__T3Interrupt)    :
+         ABSOLUTE(__DefaultInterrupt));
+    LONG(DEFINED(__SPI1Interrupt)  ? ABSOLUTE(__SPI1Interrupt)  :
+         ABSOLUTE(__DefaultInterrupt));
+    LONG(DEFINED(__U1RXInterrupt)  ? ABSOLUTE(__U1RXInterrupt)  :
+         ABSOLUTE(__DefaultInterrupt));
+    LONG(DEFINED(__U1TXInterrupt)  ? ABSOLUTE(__U1TXInterrupt)  :
+         ABSOLUTE(__DefaultInterrupt));
+    LONG(DEFINED(__ADCInterrupt)   ? ABSOLUTE(__ADCInterrupt)   :
+         ABSOLUTE(__DefaultInterrupt));
+    LONG(DEFINED(__NVMInterrupt)   ? ABSOLUTE(__NVMInterrupt)   :
+         ABSOLUTE(__DefaultInterrupt));
+    LONG(DEFINED(__SI2CInterrupt)  ? ABSOLUTE(__SI2CInterrupt)  :
+         ABSOLUTE(__DefaultInterrupt));
+    LONG(DEFINED(__MI2CInterrupt)  ? ABSOLUTE(__MI2CInterrupt)  :
+         ABSOLUTE(__DefaultInterrupt));
+    LONG(DEFINED(__CNInterrupt)    ? ABSOLUTE(__CNInterrupt)    :
+         ABSOLUTE(__DefaultInterrupt));
+    LONG(DEFINED(__INT1Interrupt)  ? ABSOLUTE(__INT1Interrupt)  :
+         ABSOLUTE(__DefaultInterrupt));
+    LONG(DEFINED(__IC7Interrupt)   ? ABSOLUTE(__IC7Interrupt)   :
+         ABSOLUTE(__DefaultInterrupt));
+    LONG(DEFINED(__IC8Interrupt)   ? ABSOLUTE(__IC8Interrupt)   :
+         ABSOLUTE(__DefaultInterrupt));
+    LONG(DEFINED(__OC3Interrupt)   ? ABSOLUTE(__OC3Interrupt)   :
+         ABSOLUTE(__DefaultInterrupt));
+    LONG(DEFINED(__OC4Interrupt)   ? ABSOLUTE(__OC4Interrupt)   :
+         ABSOLUTE(__DefaultInterrupt));
+    LONG(DEFINED(__T4Interrupt)    ? ABSOLUTE(__T4Interrupt)    :
+         ABSOLUTE(__DefaultInterrupt));
+    LONG(DEFINED(__T5Interrupt)    ? ABSOLUTE(__T5Interrupt)    :
+         ABSOLUTE(__DefaultInterrupt));
+    LONG(DEFINED(__INT2Interrupt)  ? ABSOLUTE(__INT2Interrupt)  :
+         ABSOLUTE(__DefaultInterrupt));
+    LONG(DEFINED(__U2RXInterrupt)  ? ABSOLUTE(__U2RXInterrupt)  :
+         ABSOLUTE(__DefaultInterrupt));
+    LONG(DEFINED(__U2TXInterrupt)  ? ABSOLUTE(__U2TXInterrupt)  :
+         ABSOLUTE(__DefaultInterrupt));
+    LONG(DEFINED(__SPI2Interrupt)  ? ABSOLUTE(__SPI2Interrupt)  :
+         ABSOLUTE(__DefaultInterrupt));
+    LONG(DEFINED(__C1Interrupt)    ? ABSOLUTE(__C1Interrupt)    :
+         ABSOLUTE(__DefaultInterrupt));
+    LONG(DEFINED(__IC3Interrupt)   ? ABSOLUTE(__IC3Interrupt)   :
+         ABSOLUTE(__DefaultInterrupt));
+    LONG(DEFINED(__IC4Interrupt)   ? ABSOLUTE(__IC4Interrupt)   :
+         ABSOLUTE(__DefaultInterrupt));
+    LONG(DEFINED(__IC5Interrupt)   ? ABSOLUTE(__IC5Interrupt)   :
+         ABSOLUTE(__DefaultInterrupt));
+    LONG(DEFINED(__IC6Interrupt)   ? ABSOLUTE(__IC6Interrupt)   :
+         ABSOLUTE(__DefaultInterrupt));
+    LONG(DEFINED(__OC5Interrupt)   ? ABSOLUTE(__OC5Interrupt)   :
+         ABSOLUTE(__DefaultInterrupt));
+    LONG(DEFINED(__OC6Interrupt)   ? ABSOLUTE(__OC6Interrupt)   :
+         ABSOLUTE(__DefaultInterrupt));
+    LONG(DEFINED(__OC7Interrupt)   ? ABSOLUTE(__OC7Interrupt)   :
+         ABSOLUTE(__DefaultInterrupt));
+    LONG(DEFINED(__OC8Interrupt)   ? ABSOLUTE(__OC8Interrupt)   :
+         ABSOLUTE(__DefaultInterrupt));
+    LONG(DEFINED(__INT3Interrupt)  ? ABSOLUTE(__INT3Interrupt)  :
+         ABSOLUTE(__DefaultInterrupt));
+    LONG(DEFINED(__INT4Interrupt)  ? ABSOLUTE(__INT4Interrupt)  :
+         ABSOLUTE(__DefaultInterrupt));
+    LONG(DEFINED(__C2Interrupt)    ? ABSOLUTE(__C2Interrupt)    :
+         ABSOLUTE(__DefaultInterrupt));
+    LONG(DEFINED(__PWMInterrupt)   ? ABSOLUTE(__PWMInterrupt)   :
+         ABSOLUTE(__DefaultInterrupt));
+    LONG(DEFINED(__QEIInterrupt)   ? ABSOLUTE(__QEIInterrupt)   :
+         ABSOLUTE(__DefaultInterrupt));
+    LONG(DEFINED(__DCIInterrupt)   ? ABSOLUTE(__DCIInterrupt)   :
+         ABSOLUTE(__DefaultInterrupt));
+    LONG(DEFINED(__LVDInterrupt)   ? ABSOLUTE(__LVDInterrupt)   :
+         ABSOLUTE(__DefaultInterrupt));
+    LONG(DEFINED(__FLTAInterrupt)  ? ABSOLUTE(__FLTAInterrupt)  :
+         ABSOLUTE(__DefaultInterrupt));
+    LONG(DEFINED(__FLTBInterrupt)  ? ABSOLUTE(__FLTBInterrupt)  :
+         ABSOLUTE(__DefaultInterrupt));
+    LONG(DEFINED(__Interrupt45)    ? ABSOLUTE(__Interrupt45)    :
+         ABSOLUTE(__DefaultInterrupt));
+    LONG(DEFINED(__Interrupt46)    ? ABSOLUTE(__Interrupt46)    :
+         ABSOLUTE(__DefaultInterrupt));
+    LONG(DEFINED(__Interrupt47)    ? ABSOLUTE(__Interrupt47)    :
+         ABSOLUTE(__DefaultInterrupt));
+    LONG(DEFINED(__Interrupt48)    ? ABSOLUTE(__Interrupt48)    :
+         ABSOLUTE(__DefaultInterrupt));
+    LONG(DEFINED(__Interrupt49)    ? ABSOLUTE(__Interrupt49)    :
+         ABSOLUTE(__DefaultInterrupt));
+    LONG(DEFINED(__Interrupt50)    ? ABSOLUTE(__Interrupt50)    :
+         ABSOLUTE(__DefaultInterrupt));
+    LONG(DEFINED(__Interrupt51)    ? ABSOLUTE(__Interrupt51)    :
+         ABSOLUTE(__DefaultInterrupt));
+    LONG(DEFINED(__Interrupt52)    ? ABSOLUTE(__Interrupt52)    :
+         ABSOLUTE(__DefaultInterrupt));
+    LONG(DEFINED(__Interrupt53)    ? ABSOLUTE(__Interrupt53)    :
+         ABSOLUTE(__DefaultInterrupt));
+  } >ivt
+
+
+/*
+** Alternate Interrupt Vector Table
+*/
+.aivt __AIVT_BASE :
+  {
+    LONG(DEFINED(__AltReservedTrap0)  ? ABSOLUTE(__AltReservedTrap0)  :
+        (DEFINED(__ReservedTrap0)     ? ABSOLUTE(__ReservedTrap0)     :
+         ABSOLUTE(__DefaultInterrupt)));
+    LONG(DEFINED(__AltOscillatorFail) ? ABSOLUTE(__AltOscillatorFail) :
+        (DEFINED(__OscillatorFail)    ? ABSOLUTE(__OscillatorFail)    :
+         ABSOLUTE(__DefaultInterrupt)));
+    LONG(DEFINED(__AltAddressError)   ? ABSOLUTE(__AltAddressError)   :
+        (DEFINED(__AddressError)      ? ABSOLUTE(__AddressError)      :
+         ABSOLUTE(__DefaultInterrupt)));
+    LONG(DEFINED(__AltStackError)     ? ABSOLUTE(__AltStackError)     :
+        (DEFINED(__StackError)        ? ABSOLUTE(__StackError)        :
+         ABSOLUTE(__DefaultInterrupt)));
+    LONG(DEFINED(__AltMathError)      ? ABSOLUTE(__AltMathError)      :
+        (DEFINED(__MathError)         ? ABSOLUTE(__MathError)         :
+         ABSOLUTE(__DefaultInterrupt)));
+    LONG(DEFINED(__AltReservedTrap5)  ? ABSOLUTE(__AltReservedTrap5)  :
+        (DEFINED(__ReservedTrap5)     ? ABSOLUTE(__ReservedTrap5)     :
+         ABSOLUTE(__DefaultInterrupt)));
+    LONG(DEFINED(__AltReservedTrap6)  ? ABSOLUTE(__AltReservedTrap6)  :
+        (DEFINED(__ReservedTrap6)     ? ABSOLUTE(__ReservedTrap6)     :
+         ABSOLUTE(__DefaultInterrupt)));
+    LONG(DEFINED(__AltReservedTrap7)  ? ABSOLUTE(__AltReservedTrap7)  :
+        (DEFINED(__ReservedTrap7)     ? ABSOLUTE(__ReservedTrap7)     :
+         ABSOLUTE(__DefaultInterrupt)));
+    LONG(DEFINED(__AltINT0Interrupt)  ? ABSOLUTE(__AltINT0Interrupt)  :
+        (DEFINED(__INT0Interrupt)     ? ABSOLUTE(__INT0Interrupt)     :
+         ABSOLUTE(__DefaultInterrupt)));
+    LONG(DEFINED(__AltIC1Interrupt)   ? ABSOLUTE(__AltIC1Interrupt)   :
+        (DEFINED(__IC1Interrupt)      ? ABSOLUTE(__IC1Interrupt)      :
+         ABSOLUTE(__DefaultInterrupt)));
+    LONG(DEFINED(__AltOC1Interrupt)   ? ABSOLUTE(__AltOC1Interrupt)   :
+        (DEFINED(__OC1Interrupt)      ? ABSOLUTE(__OC1Interrupt)      :
+         ABSOLUTE(__DefaultInterrupt)));
+    LONG(DEFINED(__AltT1Interrupt)    ? ABSOLUTE(__AltT1Interrupt)    :
+        (DEFINED(__T1Interrupt)       ? ABSOLUTE(__T1Interrupt)       :
+         ABSOLUTE(__DefaultInterrupt)));
+    LONG(DEFINED(__AltIC2Interrupt)   ? ABSOLUTE(__AltIC2Interrupt)   :
+        (DEFINED(__IC2Interrupt)      ? ABSOLUTE(__IC2Interrupt)      :
+         ABSOLUTE(__DefaultInterrupt)));
+    LONG(DEFINED(__AltOC2Interrupt)   ? ABSOLUTE(__AltOC2Interrupt)   :
+        (DEFINED(__OC2Interrupt)      ? ABSOLUTE(__OC2Interrupt)      :
+         ABSOLUTE(__DefaultInterrupt)));
+    LONG(DEFINED(__AltT2Interrupt)    ? ABSOLUTE(__AltT2Interrupt)    :
+        (DEFINED(__T2Interrupt)       ? ABSOLUTE(__T2Interrupt)       :
+         ABSOLUTE(__DefaultInterrupt)));
+    LONG(DEFINED(__AltT3Interrupt)    ? ABSOLUTE(__AltT3Interrupt)    :
+        (DEFINED(__T3Interrupt)       ? ABSOLUTE(__T3Interrupt)       :
+         ABSOLUTE(__DefaultInterrupt)));
+    LONG(DEFINED(__AltSPI1Interrupt)  ? ABSOLUTE(__AltSPI1Interrupt)  :
+        (DEFINED(__SPI1Interrupt)     ? ABSOLUTE(__SPI1Interrupt)     :
+         ABSOLUTE(__DefaultInterrupt)));
+    LONG(DEFINED(__AltU1RXInterrupt)  ? ABSOLUTE(__AltU1RXInterrupt)  :
+        (DEFINED(__U1RXInterrupt)     ? ABSOLUTE(__U1RXInterrupt)     :
+         ABSOLUTE(__DefaultInterrupt)));
+    LONG(DEFINED(__AltU1TXInterrupt)  ? ABSOLUTE(__AltU1TXInterrupt)  :
+        (DEFINED(__U1TXInterrupt)     ? ABSOLUTE(__U1TXInterrupt)     :
+         ABSOLUTE(__DefaultInterrupt)));
+    LONG(DEFINED(__AltADCInterrupt)   ? ABSOLUTE(__AltADCInterrupt)   :
+        (DEFINED(__ADCInterrupt)      ? ABSOLUTE(__ADCInterrupt)      :
+         ABSOLUTE(__DefaultInterrupt)));
+    LONG(DEFINED(__AltNVMInterrupt)   ? ABSOLUTE(__AltNVMInterrupt)   :
+        (DEFINED(__NVMInterrupt)      ? ABSOLUTE(__NVMInterrupt)      :
+         ABSOLUTE(__DefaultInterrupt)));
+    LONG(DEFINED(__AltSI2CInterrupt)  ? ABSOLUTE(__AltSI2CInterrupt)  :
+        (DEFINED(__SI2CInterrupt)     ? ABSOLUTE(__SI2CInterrupt)     :
+         ABSOLUTE(__DefaultInterrupt)));
+    LONG(DEFINED(__AltMI2CInterrupt)  ? ABSOLUTE(__AltMI2CInterrupt)  :
+        (DEFINED(__MI2CInterrupt)     ? ABSOLUTE(__MI2CInterrupt)     :
+         ABSOLUTE(__DefaultInterrupt)));
+    LONG(DEFINED(__AltCNInterrupt)    ? ABSOLUTE(__AltCNInterrupt)    :
+        (DEFINED(__CNInterrupt)       ? ABSOLUTE(__CNInterrupt)       :
+         ABSOLUTE(__DefaultInterrupt)));
+    LONG(DEFINED(__AltINT1Interrupt)  ? ABSOLUTE(__AltINT1Interrupt)  :
+        (DEFINED(__INT1Interrupt)     ? ABSOLUTE(__INT1Interrupt)     :
+         ABSOLUTE(__DefaultInterrupt)));
+    LONG(DEFINED(__AltIC7Interrupt)   ? ABSOLUTE(__AltIC7Interrupt)   :
+        (DEFINED(__IC7Interrupt)      ? ABSOLUTE(__IC7Interrupt)      :
+         ABSOLUTE(__DefaultInterrupt)));
+    LONG(DEFINED(__AltIC8Interrupt)   ? ABSOLUTE(__AltIC8Interrupt)   :
+        (DEFINED(__IC8Interrupt)      ? ABSOLUTE(__IC8Interrupt)      :
+         ABSOLUTE(__DefaultInterrupt)));
+    LONG(DEFINED(__AltOC3Interrupt)   ? ABSOLUTE(__AltOC3Interrupt)   :
+        (DEFINED(__OC3Interrupt)      ? ABSOLUTE(__OC3Interrupt)      :
+         ABSOLUTE(__DefaultInterrupt)));
+    LONG(DEFINED(__AltOC4Interrupt)   ? ABSOLUTE(__AltOC4Interrupt)   :
+        (DEFINED(__OC4Interrupt)      ? ABSOLUTE(__OC4Interrupt)      :
+         ABSOLUTE(__DefaultInterrupt)));
+    LONG(DEFINED(__AltT4Interrupt)    ? ABSOLUTE(__AltT4Interrupt)    :
+        (DEFINED(__T4Interrupt)       ? ABSOLUTE(__T4Interrupt)       :
+         ABSOLUTE(__DefaultInterrupt)));
+    LONG(DEFINED(__AltT5Interrupt)    ? ABSOLUTE(__AltT5Interrupt)    :
+        (DEFINED(__T5Interrupt)       ? ABSOLUTE(__T5Interrupt)       :
+         ABSOLUTE(__DefaultInterrupt)));
+    LONG(DEFINED(__AltINT2Interrupt)  ? ABSOLUTE(__AltINT2Interrupt)  :
+        (DEFINED(__INT2Interrupt)     ? ABSOLUTE(__INT2Interrupt)     :
+         ABSOLUTE(__DefaultInterrupt)));
+    LONG(DEFINED(__AltU2RXInterrupt)  ? ABSOLUTE(__AltU2RXInterrupt)  :
+        (DEFINED(__U2RXInterrupt)     ? ABSOLUTE(__U2RXInterrupt)     :
+         ABSOLUTE(__DefaultInterrupt)));
+    LONG(DEFINED(__AltU2TXInterrupt)  ? ABSOLUTE(__AltU2TXInterrupt)  :
+        (DEFINED(__U2TXInterrupt)     ? ABSOLUTE(__U2TXInterrupt)     :
+         ABSOLUTE(__DefaultInterrupt)));
+    LONG(DEFINED(__AltSPI2Interrupt)  ? ABSOLUTE(__AltSPI2Interrupt)  :
+        (DEFINED(__SPI2Interrupt)     ? ABSOLUTE(__SPI2Interrupt)     :
+         ABSOLUTE(__DefaultInterrupt)));
+    LONG(DEFINED(__AltC1Interrupt)    ? ABSOLUTE(__AltC1Interrupt)    :
+        (DEFINED(__C1Interrupt)       ? ABSOLUTE(__C1Interrupt)       :
+         ABSOLUTE(__DefaultInterrupt)));
+    LONG(DEFINED(__AltIC3Interrupt)   ? ABSOLUTE(__AltIC3Interrupt)   :
+        (DEFINED(__IC3Interrupt)      ? ABSOLUTE(__IC3Interrupt)      :
+         ABSOLUTE(__DefaultInterrupt)));
+    LONG(DEFINED(__AltIC4Interrupt)   ? ABSOLUTE(__AltIC4Interrupt)   :
+        (DEFINED(__IC4Interrupt)      ? ABSOLUTE(__IC4Interrupt)      :
+         ABSOLUTE(__DefaultInterrupt)));
+    LONG(DEFINED(__AltIC5Interrupt)   ? ABSOLUTE(__AltIC5Interrupt)   :
+        (DEFINED(__IC5Interrupt)      ? ABSOLUTE(__IC5Interrupt)      :
+         ABSOLUTE(__DefaultInterrupt)));
+    LONG(DEFINED(__AltIC6Interrupt)   ? ABSOLUTE(__AltIC6Interrupt)   :
+        (DEFINED(__IC6Interrupt)      ? ABSOLUTE(__IC6Interrupt)      :
+         ABSOLUTE(__DefaultInterrupt)));
+    LONG(DEFINED(__AltOC5Interrupt)   ? ABSOLUTE(__AltOC5Interrupt)   :
+        (DEFINED(__OC5Interrupt)      ? ABSOLUTE(__OC5Interrupt)      :
+         ABSOLUTE(__DefaultInterrupt)));
+    LONG(DEFINED(__AltOC6Interrupt)   ? ABSOLUTE(__AltOC6Interrupt)   :
+        (DEFINED(__OC6Interrupt)      ? ABSOLUTE(__OC6Interrupt)      :
+         ABSOLUTE(__DefaultInterrupt)));
+    LONG(DEFINED(__AltOC7Interrupt)   ? ABSOLUTE(__AltOC7Interrupt)   :
+        (DEFINED(__OC7Interrupt)      ? ABSOLUTE(__OC7Interrupt)      :
+         ABSOLUTE(__DefaultInterrupt)));
+    LONG(DEFINED(__AltOC8Interrupt)   ? ABSOLUTE(__AltOC8Interrupt)   :
+        (DEFINED(__OC8Interrupt)      ? ABSOLUTE(__OC8Interrupt)      :
+         ABSOLUTE(__DefaultInterrupt)));
+    LONG(DEFINED(__AltINT3Interrupt)  ? ABSOLUTE(__AltINT3Interrupt)  :
+        (DEFINED(__INT3Interrupt)     ? ABSOLUTE(__INT3Interrupt)     :
+         ABSOLUTE(__DefaultInterrupt)));
+    LONG(DEFINED(__AltINT4Interrupt)  ? ABSOLUTE(__AltINT4Interrupt)  :
+        (DEFINED(__INT4Interrupt)     ? ABSOLUTE(__INT4Interrupt)     :
+         ABSOLUTE(__DefaultInterrupt)));
+    LONG(DEFINED(__AltC2Interrupt)    ? ABSOLUTE(__AltC2Interrupt)    :
+        (DEFINED(__C2Interrupt)       ? ABSOLUTE(__C2Interrupt)       :
+         ABSOLUTE(__DefaultInterrupt)));
+    LONG(DEFINED(__AltPWMInterrupt)   ? ABSOLUTE(__AltPWMInterrupt)   :
+        (DEFINED(__PWMInterrupt)      ? ABSOLUTE(__PWMInterrupt)      :
+         ABSOLUTE(__DefaultInterrupt)));
+    LONG(DEFINED(__AltQEIInterrupt)   ? ABSOLUTE(__AltQEIInterrupt)   :
+        (DEFINED(__QEIInterrupt)      ? ABSOLUTE(__QEIInterrupt)      :
+         ABSOLUTE(__DefaultInterrupt)));
+    LONG(DEFINED(__AltDCIInterrupt)   ? ABSOLUTE(__AltDCIInterrupt)   :
+        (DEFINED(__DCIInterrupt)      ? ABSOLUTE(__DCIInterrupt)      :
+         ABSOLUTE(__DefaultInterrupt)));
+    LONG(DEFINED(__AltLVDInterrupt)   ? ABSOLUTE(__AltLVDInterrupt)   :
+        (DEFINED(__LVDInterrupt)      ? ABSOLUTE(__LVDInterrupt)      :
+         ABSOLUTE(__DefaultInterrupt)));
+    LONG(DEFINED(__AltFLTAInterrupt)  ? ABSOLUTE(__AltFLTAInterrupt)  :
+        (DEFINED(__FLTAInterrupt)     ? ABSOLUTE(__FLTAInterrupt)     :
+         ABSOLUTE(__DefaultInterrupt)));
+    LONG(DEFINED(__AltFLTBInterrupt)  ? ABSOLUTE(__AltFLTBInterrupt)  :
+        (DEFINED(__FLTBInterrupt)     ? ABSOLUTE(__FLTBInterrupt)     :
+         ABSOLUTE(__DefaultInterrupt)));
+    LONG(DEFINED(__AltInterrupt45)    ? ABSOLUTE(__AltInterrupt45)    :
+        (DEFINED(__Interrupt45)       ? ABSOLUTE(__Interrupt45)       :
+         ABSOLUTE(__DefaultInterrupt)));
+    LONG(DEFINED(__AltInterrupt46)    ? ABSOLUTE(__AltInterrupt46)    :
+        (DEFINED(__Interrupt46)       ? ABSOLUTE(__Interrupt46)       :
+         ABSOLUTE(__DefaultInterrupt)));
+    LONG(DEFINED(__AltInterrupt47)    ? ABSOLUTE(__AltInterrupt47)    :
+        (DEFINED(__Interrupt47)       ? ABSOLUTE(__Interrupt47)       :
+         ABSOLUTE(__DefaultInterrupt)));
+    LONG(DEFINED(__AltInterrupt48)    ? ABSOLUTE(__AltInterrupt48)    :
+        (DEFINED(__Interrupt48)       ? ABSOLUTE(__Interrupt48)       :
+         ABSOLUTE(__DefaultInterrupt)));
+    LONG(DEFINED(__AltInterrupt49)    ? ABSOLUTE(__AltInterrupt49)    :
+        (DEFINED(__Interrupt49)       ? ABSOLUTE(__Interrupt49)       :
+         ABSOLUTE(__DefaultInterrupt)));
+    LONG(DEFINED(__AltInterrupt50)    ? ABSOLUTE(__AltInterrupt50)    :
+        (DEFINED(__Interrupt50)       ? ABSOLUTE(__Interrupt50)       :
+         ABSOLUTE(__DefaultInterrupt)));
+    LONG(DEFINED(__AltInterrupt51)    ? ABSOLUTE(__AltInterrupt51)    :
+        (DEFINED(__Interrupt51)       ? ABSOLUTE(__Interrupt51)       :
+         ABSOLUTE(__DefaultInterrupt)));
+    LONG(DEFINED(__AltInterrupt52)    ? ABSOLUTE(__AltInterrupt52)    :
+        (DEFINED(__Interrupt52)       ? ABSOLUTE(__Interrupt52)       :
+         ABSOLUTE(__DefaultInterrupt)));
+    LONG(DEFINED(__AltInterrupt53)    ? ABSOLUTE(__AltInterrupt53)    :
+        (DEFINED(__Interrupt53)       ? ABSOLUTE(__Interrupt53)       :
+         ABSOLUTE(__DefaultInterrupt)));
+  } >aivt
+
+} /* SECTIONS */
+
+
+/* File Description | Notes:
+** =========================
+** 1] This file maps special function register(SFR) names used in the datasheet
+**   to memory locations in the PIC30Fxxxx device. The memory locations are
+**    byte addresses. The PIC30Fxxxx is a family of byte addressable devices.
+** 2] The register names used in this file are taken to match the
+**    PIC30Fxxxx data sheets as closely as possible.
+** 3] SFR address definitions are listed in the ascending order of memory
+**    addresses and are grouped based on the module they belong to. For e.g.,
+**    WREG10 is listed before ACCAL, and the Core SFRs are grouped
+**    separately, prior to the Interrupt Controller SFRs or the General
+**    Purpose Timer SFRs.
+** 4] SFR names exactly match names in the device specific C "header" file
+**    and the Assembly "include" file. Any changes to names in one of these
+**    files, calls for similar changes in the other two.
+**
+* Revision History:
+** =================
+**-------------------------------------------------------------------------
+**Rev:   Date:        Details:                                    Who:
+**-------------------------------------------------------------------------
+**1.0   11/29/01     Device linker provides from superset       h vasuki
+**1.1   13 Dec 2001   Added PMD registers + some changes          -do-
+**1.2   02 Dec 2002  CAN buffer correction                        -do-
+**1.3   13 Feb 2003  ADCSSLBits/ADPCFGBits Address correction     -do-
+**1.4   05 May 2003  Initial release of linker scripts for rev    -do-
+**                   B silicon with changes in CAN section
+**1.6   25 Nov 2003  CAN2 SFR bytes additions                   h vasuki
+**1.6a  24 May 2004  Added OSCTUN register                        -do-
+**1.7   30 Jul 2004  ADCBUF0-ADCBUFF Address Correction         h vasuki
+**1.7a  17 Dec 2004  CAN TXERRCNT Address Correction            h vasuki
+**
+**-------------------------------------------------------------------------
+**
+**
+***************************************/
+
+
+/*=========================================================================
+**       Register Definitions
+** (Core and Peripheral Registers in Data Space)
+**==========================================================================
+**
+**==========================================================================
+**
+**       dsPIC Core Register Definitions
+**
+**=========================================================================*/;
+_WREG0 = 0x0000;
+WREG0 = 0x0000;
+_WREG1 = 0x0002;
+WREG1 = 0x0002;
+_WREG2 = 0x0004;
+WREG2 = 0x0004;
+_WREG3 = 0x0006;
+WREG3 = 0x0006;
+_WREG4 = 0x0008;
+WREG4 = 0x0008;
+_WREG5 = 0x000A;
+WREG5 = 0x000A;
+_WREG6 = 0x000C;
+WREG6 = 0x000C;
+_WREG7 = 0x000E;
+WREG7 = 0x000E;
+_WREG8 = 0x0010;
+WREG8 = 0x0010;
+_WREG9 = 0x0012;
+WREG9 = 0x0012;
+_WREG10 = 0x0014;
+WREG10 = 0x0014;
+_WREG11 = 0x0016;
+WREG11 = 0x0016;
+_WREG12 = 0x0018;
+WREG12 = 0x0018;
+_WREG13 = 0x001A;
+WREG13 = 0x001A;
+_WREG14 = 0x001C;
+WREG14 = 0x001C;
+_WREG15 = 0x001E;
+WREG15 = 0x001E;
+_SPLIM = 0x0020;
+SPLIM = 0x0020;
+_ACCAL = 0x0022;
+ACCAL = 0x0022;
+_ACCAH = 0x0024;
+ACCAH = 0x0024;
+_ACCAU = 0x0026;
+ACCAU = 0x0026;
+_ACCBL = 0x0028;
+ACCBL = 0x0028;
+_ACCBH = 0x002A;
+ACCBH = 0x002A;
+_ACCBU = 0x002C;
+ACCBU = 0x002C;
+_PCL = 0x002E;
+PCL = 0x002E;
+_PCH = 0x0030;
+PCH = 0x0030;
+_TBLPAG = 0x0032;
+TBLPAG = 0x0032;
+_PSVPAG = 0x0034;
+PSVPAG = 0x0034;
+_RCOUNT = 0x0036;
+RCOUNT = 0x0036;
+_DCOUNT = 0x0038;
+DCOUNT = 0x0038;
+_DOSTARTL = 0x003A;
+DOSTARTL = 0x003A;
+_DOSTARTH = 0x003C;
+DOSTARTH = 0x003C;
+_DOENDL = 0x003E;
+DOENDL = 0x003E;
+_DOENDH = 0x0040;
+DOENDH = 0x0040;
+_SR = 0x0042;
+SR = 0x0042;
+_CORCON = 0x0044;
+CORCON = 0x0044;
+_MODCON = 0x0046;
+MODCON = 0x0046;
+_XMODSRT = 0x0048;
+XMODSRT = 0x0048;
+_XMODEND = 0x004A;
+XMODEND = 0x004A;
+_YMODSRT = 0x004C;
+YMODSRT = 0x004C;
+_YMODEND = 0x004E;
+YMODEND = 0x004E;
+_XBREV = 0x0050;
+XBREV = 0x0050;
+_DISICNT = 0x0052;
+DISICNT = 0x0052;
+
+
+
+/*==========================================================================
+**
+**           Interrupt Controller Register Definitions
+**
+==========================================================================*/;
+_INTCON1 = 0x0080;
+INTCON1 = 0x0080;
+_INTCON2 = 0x0082;
+INTCON2 = 0x0082;
+_IFS0 = 0x0084;
+IFS0 = 0x0084;
+_IFS1 = 0x0086;
+IFS1 = 0x0086;
+_IFS2 = 0x0088;
+IFS2 = 0x0088;
+_IEC0 = 0x008C;
+IEC0 = 0x008C;
+_IEC1 = 0x008E;
+IEC1 = 0x008E;
+_IEC2 = 0x0090;
+IEC2 = 0x0090;
+_IPC0 = 0x0094;
+IPC0 = 0x0094;
+_IPC1 = 0x0096;
+IPC1 = 0x0096;
+_IPC2 = 0x0098;
+IPC2 = 0x0098;
+_IPC3 = 0x009A;
+IPC3 = 0x009A;
+_IPC4 = 0x009C;
+IPC4 = 0x009C;
+_IPC5 = 0x009E;
+IPC5 = 0x009E;
+_IPC6 = 0x00A0;
+IPC6 = 0x00A0;
+_IPC10 = 0x00A8;
+IPC10 = 0x00A8;
+ INTTREG = 0x00B0;
+_INTTREG = 0x00B0;
+
+
+/*==========================================================================
+**
+**      Input Change Notification Module Register Definitions
+**
+===========================================================================*/;
+_CNEN1 = 0x00C0;
+CNEN1 = 0x00C0;
+_CNEN2 = 0x00C2;
+CNEN2 = 0x00C2;
+_CNPU1 = 0x00C4;
+CNPU1 = 0x00C4;
+_CNPU2 = 0x00C6;
+CNPU2 = 0x00C6;
+
+
+
+/*=========================================================================
+**
+**       Peripheral Register Definitions
+**
+===========================================================================*/
+/*=========================================================================
+**
+**       Timer  Module Register Definitions
+**
+===========================================================================*/
+/*--------------Timer 1 Module---------------------------------------------*/;
+_TMR1 = 0x0100;
+TMR1 = 0x0100;
+_PR1 = 0x0102;
+PR1 = 0x0102;
+_T1CON = 0x0104;
+T1CON = 0x0104;
+
+/*--------------Timer2/3 Module--------------------------------------------*/;
+_TMR2 = 0x0106;
+TMR2 = 0x0106;
+_TMR3HLD = 0x0108 ;
+TMR3HLD = 0x0108 ;
+_TMR3 = 0x010A;
+TMR3 = 0x010A;
+_PR2 = 0x010C;
+PR2 = 0x010C;
+_PR3 = 0x010E;
+PR3 = 0x010E;
+_T2CON = 0x0110;
+T2CON = 0x0110;
+_T3CON = 0x0112;
+T3CON = 0x0112;
+
+/*------------- Timer4/5 Module---------------------------------------------*/;
+_TMR4 = 0x0114;
+TMR4 = 0x0114;
+_TMR5HLD = 0x0116;
+TMR5HLD = 0x0116;
+_TMR5 = 0x0118;
+TMR5 = 0x0118;
+_PR4 = 0x011A;
+PR4 = 0x011A;
+_PR5 = 0x011C;
+PR5 = 0x011C;
+_T4CON = 0x011E;
+T4CON = 0x011E;
+_T5CON = 0x0120;
+T5CON = 0x0120;
+
+
+
+/*=========================================================================
+**
+**       Input Capture Module Register Definitions
+**
+=========================================================================*/;
+_IC1BUF = 0x0140;
+IC1BUF = 0x0140;
+_IC1CON = 0x0142;
+IC1CON = 0x0142;
+_IC2BUF = 0x0144;
+IC2BUF = 0x0144;
+_IC2CON = 0x0146;
+IC2CON = 0x0146;
+_IC7BUF = 0x0158;
+IC7BUF = 0x0158;
+_IC7CON = 0x015A;
+IC7CON = 0x015A;
+_IC8BUF = 0x015C;
+IC8BUF = 0x015C;
+_IC8CON = 0x015E;
+IC8CON = 0x015E;
+
+
+/*==========================================================================
+**
+**       Output Compare Module Register Definitions
+**
+===========================================================================*/;
+_OC1RS = 0x0180;
+OC1RS = 0x0180;
+_OC1R = 0x0182;
+OC1R = 0x0182;
+_OC1CON = 0x0184;
+OC1CON = 0x0184;
+_OC2RS = 0x0186;
+OC2RS = 0x0186;
+_OC2R = 0x0188;
+OC2R = 0x0188;
+_OC2CON = 0x018A;
+OC2CON = 0x018A;
+_OC3RS = 0x018C;
+OC3RS = 0x018C;
+_OC3R = 0x018E;
+OC3R = 0x018E;
+_OC3CON = 0x0190;
+OC3CON = 0x0190;
+_OC4RS = 0x0192;
+OC4RS = 0x0192;
+_OC4R = 0x0194;
+OC4R = 0x0194;
+_OC4CON = 0x0196;
+OC4CON = 0x0196;
+
+
+
+/*=========================================================================
+**
+**       Inter-Integrated Circuit(I2C) Module Register Definitions
+**
+==========================================================================*/;
+_I2CRCV = 0x0200;
+I2CRCV = 0x0200;
+_I2CTRN = 0x0202;
+I2CTRN = 0x0202;
+_I2CBRG = 0x0204;
+I2CBRG = 0x0204;
+_I2CCON = 0x0206;
+I2CCON = 0x0206;
+_I2CSTAT = 0x0208;
+I2CSTAT = 0x0208;
+_I2CADD = 0x020A;
+I2CADD = 0x020A;
+
+/*==========================================================================
+**
+**          Universal Asynchronous Receiver TransmitterUART Module
+**                           Register Definitions
+**
+==========================================================================*/
+/*------------------UART 1 Module-----------------------------------------*/;
+_U1MODE = 0x020C;
+U1MODE = 0x020C;
+_U1STA = 0x020E;
+U1STA = 0x020E;
+_U1TXREG = 0x0210;
+U1TXREG = 0x0210;
+_U1RXREG = 0x0212;
+U1RXREG = 0x0212;
+_U1BRG = 0x0214;
+U1BRG = 0x0214;
+
+/*------------------UART 2 Module-----------------------------------------*/;
+_U2MODE = 0x0216;
+U2MODE = 0x0216;
+_U2STA = 0x0218;
+U2STA = 0x0218;
+_U2TXREG = 0x021A;
+U2TXREG = 0x021A;
+_U2RXREG = 0x021C;
+U2RXREG = 0x021C;
+_U2BRG = 0x021E;
+U2BRG = 0x021E;
+
+/*==========================================================================
+**
+**       Serial Peripheral Interface(SPI) Module Register Definitions
+**
+==========================================================================*/
+/*-----------------SPI 1 Module-------------------------------------------*/;
+_SPI1STAT = 0x0220;
+SPI1STAT = 0x0220;
+_SPI1CON = 0x0222;
+SPI1CON = 0x0222;
+_SPI1BUF = 0x0224;
+SPI1BUF = 0x0224;
+
+
+
+/*==========================================================================
+**
+**     CODEC/Data Converter Interface(DCI) Module Register Definitions
+**
+==========================================================================*/;
+_DCICON1 = 0x0240;
+DCICON1 = 0x0240;
+_DCICON2 = 0x0242;
+DCICON2 = 0x0242;
+_DCICON3 = 0x0244;
+DCICON3 = 0x0244;
+_DCISTAT = 0x0246;
+DCISTAT = 0x0246;
+_TSCON = 0x0248;
+TSCON = 0x0248;
+_RSCON = 0x024C;
+RSCON = 0x024C;
+_RXBUF0 = 0x0250;
+RXBUF0 = 0x0250;
+_RXBUF1 = 0x0252;
+RXBUF1 = 0x0252;
+_RXBUF2 = 0x0254;
+RXBUF2 = 0x0254;
+_RXBUF3 = 0x0256;
+RXBUF3 = 0x0256;
+_TXBUF0 = 0x0258;
+TXBUF0 = 0x0258;
+_TXBUF1 = 0x025A;
+TXBUF1 = 0x025A;
+_TXBUF2 = 0x025C;
+TXBUF2 = 0x025C;
+_TXBUF3 = 0x025E;
+TXBUF3 = 0x025E;
+
+
+/*==========================================================================
+**
+**     12-bit A/D Converter 100 Ksps Module Register Definitions
+**
+==========================================================================*/;
+ ADCBUF0 = 0x0280;
+_ADCBUF0 = 0x0280;
+ ADCBUF1 = 0x0282;
+_ADCBUF1 = 0x0282;
+ ADCBUF2 = 0x0284;
+_ADCBUF2 = 0x0284;
+ ADCBUF3 = 0x0286;
+_ADCBUF3 = 0x0286;
+ ADCBUF4 = 0x0288;
+_ADCBUF4 = 0x0288;
+ ADCBUF5 = 0x028A;
+_ADCBUF5 = 0x028A;
+ ADCBUF6 = 0x028C;
+_ADCBUF6 = 0x028C;
+ ADCBUF7 = 0x028E;
+_ADCBUF7 = 0x028E;
+ ADCBUF8 = 0x0290;
+_ADCBUF8 = 0x0290;
+ ADCBUF9 = 0x0292;
+_ADCBUF9 = 0x0292;
+ ADCBUFA = 0x0294;
+_ADCBUFA = 0x0294;
+ ADCBUFB = 0x0296;
+_ADCBUFB = 0x0296;
+ ADCBUFC = 0x0298;
+_ADCBUFC = 0x0298;
+ ADCBUFD = 0x029A;
+_ADCBUFD = 0x029A;
+ ADCBUFE = 0x029C;
+_ADCBUFE = 0x029C;
+ ADCBUFF = 0x029E;
+_ADCBUFF = 0x029E;
+_ADCON1 = 0x02A0;
+ADCON1 = 0x02A0;
+_ADCON2 = 0x02A2;
+ADCON2 = 0x02A2;
+_ADCON3 = 0x02A4;
+ADCON3 = 0x02A4;
+_ADCHS = 0x02A6;
+ADCHS = 0x02A6;
+_ADPCFG = 0x02A8;
+ADPCFG = 0x02A8;
+_ADCSSL = 0x02AA;
+ADCSSL = 0x02AA;
+
+
+
+/*==========================================================================
+**
+**    General Purpose I/O Port Register Definitions
+**
+==========================================================================*/;
+_TRISA = 0x02C0;
+TRISA = 0x02C0;
+_PORTA = 0x02C2;
+PORTA = 0x02C2;
+_LATA = 0x02C4;
+LATA = 0x02C4;
+_TRISB = 0x02C6;
+TRISB = 0x02C6;
+_PORTB = 0x02C8;
+PORTB = 0x02C8;
+_LATB = 0x02CA;
+LATB = 0x02CA;
+_TRISC = 0x02CC;
+TRISC = 0x02CC;
+_PORTC = 0x02CE;
+PORTC = 0x02CE;
+_LATC = 0x02D0;
+LATC = 0x02D0;
+_TRISD = 0x02D2;
+TRISD = 0x02D2;
+_PORTD = 0x02D4;
+PORTD = 0x02D4;
+_LATD = 0x02D6;
+LATD = 0x02D6;
+_TRISF = 0x02DE;
+TRISF = 0x02DE;
+_PORTF = 0x02E0;
+PORTF = 0x02E0;
+_LATF = 0x02E2;
+LATF = 0x02E2;
+
+
+/*==========================================================================
+**
+**       Controller Area Network Module Register Definitions
+**       (for CAN Modules 1 and 2)
+==========================================================================*/
+
+/*==========================================================================
+**
+**               CAN1 register definitions
+**
+==========================================================================*/
+C1RXF0SID = 0x0300;
+_C1RXF0SID = 0x0300;
+C1RXF0EIDH = 0x0302;
+_C1RXF0EIDH = 0x0302;
+C1RXF0EIDL = 0x0304;
+_C1RXF0EIDL = 0x0304;
+C1RXF1SID = 0x0308;
+_C1RXF1SID = 0x0308;
+C1RXF1EIDH = 0x030A;
+_C1RXF1EIDH = 0x030A;
+C1RXF1EIDL = 0x030C;
+_C1RXF1EIDL = 0x030C;
+C1RXF2SID = 0x0310;
+_C1RXF2SID = 0x0310;
+C1RXF2EIDH = 0x0312;
+_C1RXF2EIDH = 0x0312;
+C1RXF2EIDL = 0x0314;
+_C1RXF2EIDL = 0x0314;
+C1RXF3SID = 0x0318;
+_C1RXF3SID = 0x0318;
+C1RXF3EIDH = 0x031A;
+_C1RXF3EIDH = 0x031A;
+C1RXF3EIDL = 0x031C;
+_C1RXF3EIDL = 0x031C;
+C1RXF4SID = 0x0320;
+_C1RXF4SID = 0x0320;
+C1RXF4EIDH = 0x0322;
+_C1RXF4EIDH = 0x0322;
+C1RXF4EIDL = 0x0324;
+_C1RXF4EIDL = 0x0324;
+C1RXF5SID = 0x0328;
+_C1RXF5SID = 0x0328;
+C1RXF5EIDH = 0x032A;
+_C1RXF5EIDH = 0x032A;
+C1RXF5EIDL = 0x032C;
+_C1RXF5EIDL = 0x032C;
+C1RXM0SID = 0x0330;
+_C1RXM0SID = 0x0330;
+C1RXM0EIDH = 0x0332;
+_C1RXM0EIDH = 0x0332;
+C1RXM0EIDL = 0x0334;
+_C1RXM0EIDL = 0x0334;
+C1RXM1SID = 0x0338;
+_C1RXM1SID = 0x0338;
+C1RXM1EIDH = 0x033A;
+_C1RXM1EIDH = 0x033A;
+C1RXM1EIDL = 0x033C;
+_C1RXM1EIDL = 0x033C;
+C1TX2SID = 0x0340;
+_C1TX2SID = 0x0340;
+C1TX2EID = 0x0342;
+_C1TX2EID = 0x0342;
+C1TX2DLC = 0x0344;
+_C1TX2DLC = 0x0344;
+C1TX2B1 = 0x0346;
+_C1TX2B1 = 0x0346;
+C1TX2B2 = 0x0348;
+_C1TX2B2 = 0x0348;
+C1TX2B3 = 0x034A;
+_C1TX2B3 = 0x034A;
+C1TX2B4 = 0x034C;
+_C1TX2B4 = 0x034C;
+C1TX2CON = 0x034E;
+_C1TX2CON = 0x034E;
+C1TX1SID = 0x0350;
+_C1TX1SID = 0x0350;
+C1TX1EID = 0x0352;
+_C1TX1EID = 0x0352;
+C1TX1DLC = 0x0354;
+_C1TX1DLC = 0x0354;
+C1TX1B1 = 0x0356;
+_C1TX1B1 = 0x0356;
+C1TX1B2 = 0x0358;
+_C1TX1B2 = 0x0358;
+C1TX1B3 = 0x035A;
+_C1TX1B3 = 0x035A;
+C1TX1B4 = 0x035C;
+_C1TX1B4 = 0x035C;
+C1TX1CON = 0x035E;
+_C1TX1CON = 0x035E;
+C1TX0SID = 0x0360;
+_C1TX0SID = 0x0360;
+C1TX0EID = 0x0362;
+_C1TX0EID = 0x0362;
+C1TX0DLC = 0x0364;
+_C1TX0DLC = 0x0364;
+C1TX0B1 = 0x0366;
+_C1TX0B1 = 0x0366;
+C1TX0B2 = 0x0368;
+_C1TX0B2 = 0x0368;
+C1TX0B3 = 0x036A;
+_C1TX0B3 = 0x036A;
+C1TX0B4 = 0x036C;
+_C1TX0B4 = 0x036C;
+C1TX0CON = 0x036E;
+_C1TX0CON = 0x036E;
+C1RX1SID = 0x0370;
+_C1RX1SID = 0x0370;
+C1RX1EID = 0x0372;
+_C1RX1EID = 0x0372;
+C1RX1DLC = 0x0374;
+_C1RX1DLC = 0x0374;
+C1RX1B1 = 0x0376;
+_C1RX1B1 = 0x0376;
+C1RX1B2 = 0x0378;
+_C1RX1B2 = 0x0378;
+C1RX1B3 = 0x037A;
+_C1RX1B3 = 0x037A;
+C1RX1B4 = 0x037C;
+_C1RX1B4 = 0x037C;
+C1RX1CON = 0x037E;
+_C1RX1CON = 0x037E;
+C1RX0SID = 0x0380;
+_C1RX0SID = 0x0380;
+C1RX0EID = 0x0382;
+_C1RX0EID = 0x0382;
+C1RX0DLC = 0x0384;
+_C1RX0DLC = 0x0384;
+C1RX0B1 = 0x0386;
+_C1RX0B1 = 0x0386;
+C1RX0B2 = 0x0388;
+_C1RX0B2 = 0x0388;
+C1RX0B3 = 0x038A;
+_C1RX0B3 = 0x038A;
+C1RX0B4 = 0x038C;
+_C1RX0B4 = 0x038C;
+C1RX0CON = 0x038E;
+_C1RX0CON = 0x038E;
+C1CTRL = 0x0390;
+_C1CTRL = 0x0390;
+C1CFG1 = 0x0392;
+_C1CFG1 = 0x0392;
+C1CFG2 = 0x0394;
+_C1CFG2 = 0x0394;
+C1INTF = 0x0396;
+_C1INTF = 0x0396;
+C1INTE = 0x0398;
+_C1INTE = 0x0398;
+C1EC = 0x039A;
+_C1EC = 0x039A;
+C1RERRCNT = 0x039A;
+_C1RERRCNT = 0x039A;
+C1TERRCNT = 0x039B;
+_C1TERRCNT = 0x039B;
+
+/*==========================================================================
+**
+**    System Integration Block Registers
+**
+==========================================================================*/;
+_RCON = 0x0740;
+RCON = 0x0740;
+_OSCCON = 0x0742;
+OSCCON = 0x0742;
+ OSCTUN = 0x744;
+_OSCTUN = 0x744;
+OSCCONL = OSCCON;
+_OSCCONL = OSCCON;
+OSCCONH = OSCCON + 1;
+_OSCCONH = OSCCON + 1;
+
+
+/*==========================================================================
+**
+**    Non Volatile Memory Registers
+**
+==========================================================================*/;
+_NVMCON = 0x0760;
+NVMCON = 0x0760;
+_NVMADR = 0x0762;
+NVMADR = 0x0762;
+_NVMADRU = 0x0764;
+NVMADRU = 0x0764;
+_NVMKEY = 0x0766;
+NVMKEY = 0x0766;
+
+/*==========================================================================
+**
+**   Peripheral Module Disable Registers
+**
+==========================================================================*/;
+_PMD1 = 0x0770;
+PMD1 = 0x0770;
+_PMD2 = 0x0772;
+PMD2 = 0x0772;
+_PMD3 = 0x0774;
+PMD3 = 0x0774;
+/*
+**End of SFR Definitions required for both C and Assembly files
+*/
+
+
+/*=========================================================================
+**
+**Start of Additional SFR Definitions that are required specifically
+**for the C header file.
+**
+==========================================================================*/;
+_ACCA = 0x0022;
+ACCA = 0x0022;
+_ACCB = 0x0028;
+ACCB = 0x0028;
+_SRbits = 0x0042;
+SRbits = 0x0042;
+_CORCONbits = 0x0044;
+CORCONbits = 0x0044;
+_MODCONbits = 0x0046;
+MODCONbits = 0x0046;
+_XBREVbits = 0x0050;
+XBREVbits = 0x0050;
+_DISICNTbits = 0x0052;
+DISICNTbits = 0x0052;
+_INTCON1bits = 0x0080;
+INTCON1bits = 0x0080;
+_INTCON2bits = 0x0082;
+INTCON2bits = 0x0082;
+_IFS0bits = 0x0084;
+IFS0bits = 0x0084;
+_IFS1bits = 0x0086;
+IFS1bits = 0x0086;
+_IFS2bits = 0x0088;
+IFS2bits = 0x0088;
+_IEC0bits = 0x008C;
+IEC0bits = 0x008C;
+_IEC1bits = 0x008E;
+IEC1bits = 0x008E;
+_IEC2bits = 0x0090;
+IEC2bits = 0x0090;
+_IPC0bits = 0x0094;
+IPC0bits = 0x0094;
+_IPC1bits = 0x0096;
+IPC1bits = 0x0096;
+_IPC2bits = 0x0098;
+IPC2bits = 0x0098;
+_IPC3bits = 0x009A;
+IPC3bits = 0x009A;
+_IPC4bits = 0x009C;
+IPC4bits = 0x009C;
+_IPC5bits = 0x009E;
+IPC5bits = 0x009E;
+_IPC6bits = 0x00A0;
+IPC6bits = 0x00A0;
+_IPC10bits = 0x00A8;
+IPC10bits = 0x00A8;
+ INTTREGbits = 0x00B0;
+_INTTREGbits = 0x00B0;
+_CNEN1bits = 0x00C0;
+CNEN1bits = 0x00C0;
+_CNEN2bits = 0x00C2;
+CNEN2bits = 0x00C2;
+_CNPU1bits = 0x00C4;
+CNPU1bits = 0x00C4;
+_CNPU2bits = 0x00C6;
+CNPU2bits = 0x00C6;
+_T1CONbits = 0x0104;
+T1CONbits = 0x0104;
+_T2CONbits = 0x0110;
+T2CONbits = 0x0110;
+_T3CONbits = 0x0112;
+T3CONbits = 0x0112;
+_T4CONbits = 0x011E;
+T4CONbits = 0x011E;
+_T5CONbits = 0x0120;
+T5CONbits = 0x0120;
+_IC1CONbits = 0x0142;
+IC1CONbits = 0x0142;
+_IC2CONbits = 0x0146;
+IC2CONbits = 0x0146;
+_IC7CONbits = 0x015A;
+IC7CONbits = 0x015A;
+_IC8CONbits = 0x015E;
+IC8CONbits = 0x015E;
+_OC1CONbits = 0x0184;
+OC1CONbits = 0x0184;
+_OC2CONbits = 0x018A;
+OC2CONbits = 0x018A;
+_OC3CONbits = 0x0190;
+OC3CONbits = 0x0190;
+_OC4CONbits = 0x0196;
+OC4CONbits = 0x0196;
+_I2CRCVbits = 0x0200;
+I2CRCVbits = 0x0200;
+_I2CTRNbits = 0x0202;
+I2CTRNbits = 0x0202;
+_I2CBRGbits = 0x0204;
+I2CBRGbits = 0x0204;
+_I2CCONbits = 0x0206;
+I2CCONbits = 0x0206;
+_I2CSTATbits = 0x0208;
+I2CSTATbits = 0x0208;
+_I2CADDbits = 0x020A;
+I2CADDbits = 0x020A;
+_U1MODEbits = 0x020C;
+U1MODEbits = 0x020C;
+_U1STAbits = 0x020E;
+U1STAbits = 0x020E;
+_U1TXREGbits = 0x0210;
+U1TXREGbits = 0x0210;
+_U1RXREGbits = 0x0212;
+U1RXREGbits = 0x0212;
+_U2MODEbits = 0x0216;
+U2MODEbits = 0x0216;
+_U2STAbits = 0x0218;
+U2STAbits = 0x0218;
+_U2TXREGbits = 0x021A;
+U2TXREGbits = 0x021A;
+_U2RXREGbits = 0x021C;
+U2RXREGbits = 0x021C;
+_SPI1STATbits = 0x0220;
+SPI1STATbits = 0x0220;
+_SPI1CONbits = 0x0222;
+SPI1CONbits = 0x0222;
+_DCICON1bits = 0x0240;
+DCICON1bits = 0x0240;
+_DCICON2bits = 0x0242;
+DCICON2bits = 0x0242;
+_DCICON3bits = 0x0244;
+DCICON3bits = 0x0244;
+_DCISTATbits = 0x0246;
+DCISTATbits = 0x0246;
+_TSCONbits = 0x0248;
+TSCONbits = 0x0248;
+_RSCONbits = 0x024C;
+RSCONbits = 0x024C;
+_ADCON1bits = 0x02A0;
+ADCON1bits = 0x02A0;
+_ADCON2bits = 0x02A2;
+ADCON2bits = 0x02A2;
+_ADCON3bits = 0x02A4;
+ADCON3bits = 0x02A4;
+_ADCHSbits = 0x02A6;
+ADCHSbits = 0x02A6;
+_ADPCFGbits = 0x02A8;
+ADPCFGbits = 0x02A8;
+_ADCSSLbits = 0x02AA;
+ADCSSLbits = 0x02AA;
+_TRISAbits = 0x02C0;
+TRISAbits = 0x02C0;
+_PORTAbits = 0x02C2;
+PORTAbits = 0x02C2;
+_LATAbits = 0x02C4;
+LATAbits = 0x02C4;
+_TRISBbits = 0x02C6;
+TRISBbits = 0x02C6;
+_PORTBbits = 0x02C8;
+PORTBbits = 0x02C8;
+_LATBbits = 0x02CA;
+LATBbits = 0x02CA;
+_TRISCbits = 0x02CC;
+TRISCbits = 0x02CC;
+_PORTCbits = 0x02CE;
+PORTCbits = 0x02CE;
+_LATCbits = 0x02D0;
+LATCbits = 0x02D0;
+_TRISDbits = 0x02D2;
+TRISDbits = 0x02D2;
+_PORTDbits = 0x02D4;
+PORTDbits = 0x02D4;
+_LATDbits = 0x02D6;
+LATDbits = 0x02D6;
+_TRISFbits = 0x02DE;
+TRISFbits = 0x02DE;
+_PORTFbits = 0x02E0;
+PORTFbits = 0x02E0;
+_LATFbits = 0x02E2;
+LATFbits = 0x02E2;
+ C1RXF0SIDbits = 0x0300;
+_C1RXF0SIDbits = 0x0300;
+ C1RXF0EIDHbits = 0x0302;
+_C1RXF0EIDHbits = 0x0302;
+ C1RXF0EIDLbits = 0x0304;
+_C1RXF0EIDLbits = 0x0304;
+ C1RXF1SIDbits = 0x0308;
+_C1RXF1SIDbits = 0x0308;
+ C1RXF1EIDHbits = 0x030A;
+_C1RXF1EIDHbits = 0x030A;
+ C1RXF1EIDLbits = 0x030C;
+_C1RXF1EIDLbits = 0x030C;
+ C1RXF2SIDbits = 0x0310;
+_C1RXF2SIDbits = 0x0310;
+ C1RXF2EIDHbits = 0x0312;
+_C1RXF2EIDHbits = 0x0312;
+ C1RXF2EIDLbits = 0x0314;
+_C1RXF2EIDLbits = 0x0314;
+ C1RXF3SIDbits = 0x0318;
+_C1RXF3SIDbits = 0x0318;
+ C1RXF3EIDHbits = 0x031A;
+_C1RXF3EIDHbits = 0x031A;
+ C1RXF3EIDLbits = 0x031C;
+_C1RXF3EIDLbits = 0x031C;
+ C1RXF4SIDbits = 0x0320;
+_C1RXF4SIDbits = 0x0320;
+ C1RXF4EIDHbits = 0x0322;
+_C1RXF4EIDHbits = 0x0322;
+ C1RXF4EIDLbits = 0x0324;
+_C1RXF4EIDLbits = 0x0324;
+ C1RXF5SIDbits = 0x0328;
+_C1RXF5SIDbits = 0x0328;
+ C1RXF5EIDHbits = 0x032A;
+_C1RXF5EIDHbits = 0x032A;
+ C1RXF5EIDLbits = 0x032C;
+_C1RXF5EIDLbits = 0x032C;
+ C1RXM0SIDbits = 0x0330;
+_C1RXM0SIDbits = 0x0330;
+ C1RXM0EIDHbits = 0x0332;
+_C1RXM0EIDHbits = 0x0332;
+ C1RXM0EIDLbits = 0x0334;
+_C1RXM0EIDLbits = 0x0334;
+ C1RXM1SIDbits = 0x0338;
+_C1RXM1SIDbits = 0x0338;
+ C1RXM1EIDHbits = 0x033A;
+_C1RXM1EIDHbits = 0x033A;
+ C1RXM1EIDLbits = 0x033C;
+_C1RXM1EIDLbits = 0x033C;
+ C1TX2SIDbits = 0x0340;
+_C1TX2SIDbits = 0x0340;
+ C1TX2EIDbits = 0x0342;
+_C1TX2EIDbits = 0x0342;
+ C1TX2DLCbits = 0x0344;
+_C1TX2DLCbits = 0x0344;
+ C1TX2B1bits = 0x0346;
+_C1TX2B1bits = 0x0346;
+ C1TX2B2bits = 0x0348;
+_C1TX2B2bits = 0x0348;
+ C1TX2B3bits = 0x034A;
+_C1TX2B3bits = 0x034A;
+ C1TX2B4bits = 0x034C;
+_C1TX2B4bits = 0x034C;
+ C1TX2CONbits = 0x034E;
+_C1TX2CONbits = 0x034E;
+ C1TX1SIDbits = 0x0350;
+_C1TX1SIDbits = 0x0350;
+ C1TX1EIDbits = 0x0352;
+_C1TX1EIDbits = 0x0352;
+ C1TX1DLCbits = 0x0354;
+_C1TX1DLCbits = 0x0354;
+ C1TX1B1bits = 0x0356;
+_C1TX1B1bits = 0x0356;
+ C1TX1B2bits = 0x0358;
+_C1TX1B2bits = 0x0358;
+ C1TX1B3bits = 0x035A;
+_C1TX1B3bits = 0x035A;
+ C1TX1B4bits = 0x035C;
+_C1TX1B4bits = 0x035C;
+ C1TX1CONbits = 0x035E;
+_C1TX1CONbits = 0x035E;
+ C1TX0SIDbits = 0x0360;
+_C1TX0SIDbits = 0x0360;
+ C1TX0EIDbits = 0x0362;
+_C1TX0EIDbits = 0x0362;
+ C1TX0DLCbits = 0x0364;
+_C1TX0DLCbits = 0x0364;
+ C1TX0B1bits = 0x0366;
+_C1TX0B1bits = 0x0366;
+ C1TX0B2bits = 0x0368;
+_C1TX0B2bits = 0x0368;
+ C1TX0B3bits = 0x036A;
+_C1TX0B3bits = 0x036A;
+ C1TX0B4bits = 0x036C;
+_C1TX0B4bits = 0x036C;
+ C1TX0CONbits = 0x036E;
+_C1TX0CONbits = 0x036E;
+ C1RX1SIDbits = 0x0370;
+_C1RX1SIDbits = 0x0370;
+ C1RX1EIDbits = 0x0372;
+_C1RX1EIDbits = 0x0372;
+ C1RX1DLCbits = 0x0374;
+_C1RX1DLCbits = 0x0374;
+ C1RX1B1bits = 0x0376;
+_C1RX1B1bits = 0x0376;
+ C1RX1B2bits = 0x0378;
+_C1RX1B2bits = 0x0378;
+ C1RX1B3bits = 0x037A;
+_C1RX1B3bits = 0x037A;
+ C1RX1B4bits = 0x037C;
+_C1RX1B4bits = 0x037C;
+ C1RX1CONbits = 0x037E;
+_C1RX1CONbits = 0x037E;
+ C1RX0SIDbits = 0x0380;
+_C1RX0SIDbits = 0x0380;
+ C1RX0EIDbits = 0x0382;
+_C1RX0EIDbits = 0x0382;
+ C1RX0DLCbits = 0x0384;
+_C1RX0DLCbits = 0x0384;
+ C1RX0B1bits = 0x0386;
+_C1RX0B1bits = 0x0386;
+ C1RX0B2bits = 0x0388;
+_C1RX0B2bits = 0x0388;
+ C1RX0B3bits = 0x038A;
+_C1RX0B3bits = 0x038A;
+ C1RX0B4bits = 0x038C;
+_C1RX0B4bits = 0x038C;
+ C1RX0CONbits = 0x038E;
+_C1RX0CONbits = 0x038E;
+ C1CTRLbits = 0x0390;
+_C1CTRLbits = 0x0390;
+ C1CFG1bits = 0x0392;
+_C1CFG1bits = 0x0392;
+ C1CFG2bits = 0x0394;
+_C1CFG2bits = 0x0394;
+ C1INTFbits = 0x0396;
+_C1INTFbits = 0x0396;
+ C1INTEbits = 0x0398;
+_C1INTEbits = 0x0398;
+ C1ECbits = 0x039A;
+_C1ECbits = 0x039A;
+
+_RCONbits = 0x0740;
+RCONbits = 0x0740;
+_OSCCONbits = 0x742;
+OSCCONbits = 0x742;
+ OSCTUNbits = 0x744;
+_OSCTUNbits = 0x744;
+_NVMCONbits = 0x0760;
+NVMCONbits = 0x0760;
+_PMD1bits = 0x0770;
+PMD1bits = 0x0770;
+_PMD2bits = 0x0772;
+PMD2bits = 0x0772;
+_PMD3bits = 0x0774;
+PMD3bits = 0x0774;
+/*
+**end of SFR definitions required for C header
+*/
+
+/* SFR base address definitions for various peripherals */
+
+IC1 = 0x0140;
+_IC1 = 0x0140;
+IC2 = 0x0144;
+_IC2 = 0x0144;
+IC3 = 0x0148;
+_IC3 = 0x0148;
+IC4 = 0x014C;
+_IC4 = 0x014C;
+
+OC1 = 0x0180;
+_OC1 = 0x0180;
+OC2 = 0x0186;
+_OC2 = 0x0186;
+OC3 = 0x018C;
+_OC3 = 0x018C;
+OC4 = 0x0192;
+_OC4 = 0x0192;
+
+UART1 = 0x020C;
+_UART1 = 0x020C;
+UART2 = 0x0216;
+_UART2 = 0x0216;
+
+SPI1 = 0x0220;
+_SPI1 = 0x0220;
+
+CAN1 = 0x0300;
+_CAN1 = 0x0300;
+
+/*=========================================================================
+**end of SFR definitions required in Data Space
+*========================================================================*/
+

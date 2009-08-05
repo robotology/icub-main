@@ -1,0 +1,37 @@
+ADVANCED
+0
+1
+Interface 0
+Esd USB-CAN driver:Device 0, Baudrate 1000, ID len 11, 0x0 -> 0xfff
+N
+94619 3460 3420
+Red 0 2 0xffff 0x3ec 2 0xffff S16LE 0 1  ADC0_ch0
+Interface 0
+Blue 0 2 0xffff 0x3ec 4 0xffff S16LE 0 1  ADC0_ch1
+Interface 0
+Green 0 2 0xffff 0x3ec 6 0xffff S16LE 0 1  ADC0_ch2
+Interface 0
+Red 0 2 0xffff 0x3ec 8 0xffff S16LE 0 1  ADC1_ch0
+Interface 0
+Blue 0 2 0xffff 0x3ed 2 0xffff S16LE 0 1  ADC1_ch1
+Interface 0
+Green 0 2 0xffff 0x3ed 4 0xffff S16LE 0 1  ADC1_ch2
+Interface 0
+Red 0 2 0xffff 0x3ed 6 0xffff S16LE 0 1  ADC2_ch0
+Interface 0
+Blue 0 2 0xffff 0x3ed 8 0xffff S16LE 0 1  ADC2_ch1
+Interface 0
+Green 0 2 0xffff 0x3ee 2 0xffff S16LE 0 1  ADC2_ch2
+Interface 0
+Red 0 2 0xffff 0x3ee 4 0xffff S16LE 0 1  ADC3_ch0
+Interface 0
+Blue 0 2 0xffff 0x3ee 6 0xffff S16LE 0 1  ADC3_ch1
+Interface 0
+Green 0 2 0xffff 0x3ee 8 0xffff S16LE 0 1  ADC3_ch2
+Interface 0
+Red 0 2 0xffff 0x3ef 2 0xffff S16LE 0 1  ADC4_ch0
+Interface 0
+Blue 0 2 0xffff 0x3ef 4 0xffff S16LE 0 1  ADC4_ch1
+Interface 0
+Green 0 2 0xffff 0x3ef 6 0xffff S16LE 0 1  ADC4_ch2
+Interface 0
