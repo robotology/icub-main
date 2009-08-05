@@ -1,0 +1,24 @@
+#!/bin/bash
+xterm -T "reaching" -e "./reaching_module --file conf/config_reaching_right_arm.ini --name /micha; read XXX" & 
+xterm -T "simulator" -e "./simulator conf/icub_right_arm_safe.xml conf/icub_right_arm4_shape.xml; read XXX" &
+#xterm -T "transfo" -e "./head_transfo_module --structure conf/icub_head.xml --name /micha/FoR; read XXX" &
+#xterm -T "perception" -e "./perception_module --structure bodies/icub_right_arm4_struct.xml --delay 0.2" &
+#xterm -T "body schema" -e "./body_schema_module --structure bodies/icub_right_arm4_struct.xml --frequency 10 --threshold 500" &
+sleep 1
+yarp connect /micha/vc_command:o /simulator/angles:i udp
+#yarp connect /micha/target:i /simulator/target:i tcp
+yarp connect /simulator/target:o /micha/target:i tcp
+#yarp connect vision0:o /micha/FoR/position:i tcp
+#yarp connect /icub/head/state:o /micha/FoR/head:i tcp
+#yarp connect /micha/FoR/position:o /micha/target:i tcp
+#yarp connect /micha/FoR/position:o /simulator/target:i tcp
+
+#yarp connect /vc_command/out /efferent/in udp
+#yarp connect /proprioception/out proprioception/in udp
+#yarp connect /vision/out /vision/in udp
+#yarp connect /bodyschema/out /bodyschema/in tcp
+
+# for remote hosts try 
+#xterm -e "ssh localhost bash -c './body_schema_module --structure bodies/icub_right_arm4_struct.xml --frequency 20;read XXX'" &
+# but first rsa keys must be exchanged
+# -hold option can also be useful

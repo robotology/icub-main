@@ -1,0 +1,80 @@
+<Body>
+<Shape>
+   <Name> r_sfe </Name>
+   <Type> Capsule </Type>
+   <Params> 
+     <Position> 0 0 0 </Position>
+     <Radius> 30 </Radius> 
+     <Axis> -107.75 0  0 </Axis>
+   </Params>
+ </Shape>
+<Shape>
+   <Name> r_shr </Name>
+   <Type> Capsule </Type>
+   <Params> 
+     <Position> 0 0 0 </Position>
+     <Radius> 30 </Radius> 
+     <Axis> 0 -152.28 0 </Axis>
+   </Params>
+ </Shape>
+<Shape>
+   <Name> r_fr </Name>
+   <Type> Capsule </Type>
+   <Params>
+     <Position> 0 0 0 </Position> 
+     <Radius> 30 </Radius> 
+     <Axis> 0 -137.3 0 </Axis>
+   </Params>
+ </Shape>
+<Shape>
+   <Name> r_wrist2 </Name>
+   <Type> Parallelipiped </Type>
+   <Params>
+     <Position> 0 0 -30 </Position> 
+     <Size> 10 -100.3 60 </Size>
+   </Params>
+ </Shape>
+<Shape>
+   <Name> neck_tilt </Name>
+   <Type> Capsule </Type>
+   <Params>
+     <Position> 0 0 0 </Position> 
+     <Radius> 20 </Radius> 
+   </Params>
+ </Shape>
+<Shape>
+   <Name> neck_swing </Name>
+   <Type> Capsule </Type>
+   <Params>
+     <Position> 0 0 0 </Position> 
+     <Radius> 20 </Radius> 
+   </Params>
+ </Shape>
+<Shape>
+   <Name> neck_pan </Name>
+   <Type> Capsule </Type>
+   <Params>
+     <Position> 0 0 0 </Position> 
+     <Radius> 20 </Radius> 
+   </Params>
+ </Shape>
+<Shape>
+   <Name> eyes </Name>
+   <Type> Capsule </Type>
+   <Params>
+     <Position> 34 0 0 </Position> 
+     <Radius> 20 </Radius> 
+     <Axis> -68 0 0 </Axis>
+   </Params>
+ </Shape>
+<Shape>
+   <Name> gaze </Name>
+   <Type> Sphere </Type>
+   <Params>
+     <Position> 0 0 60 </Position> 
+     <Radius> 20 </Radius> 
+   </Params>
+ </Shape>
+
+
+</Body>

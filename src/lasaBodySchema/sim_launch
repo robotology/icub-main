@@ -1,0 +1,20 @@
+#!/bin/bash
+
+xterm -T "reaching head" -e "./reaching_module --file conf/config_reaching_head.ini --name /head --simulation" &
+
+xterm -T "reaching arm" -e "./reaching_module --file conf/config_reaching_right_arm.ini --name /arm --orientation 1 --simulation > tests/reaching/orient.txt" &
+
+
+xterm -T "simulator" -e "./simulator conf/icub_head_right_arm_tree.xml conf/icub_head_right_arm_shape.xml --nomapping" &
+
+
+sleep 4
+
+
+yarp connect /arm/vc_command:o /simulator/arm:i
+yarp connect /head/vc_command:o /simulator/head:i
+yarp connect  /arm/target:i /simulator/target:i
+yarp connect  /arm/target:i /head/target:i
+
+yarp connect /simulator/cmd:o arm/cmd:i
+yarp connect /simulator/cmd:o head/cmd:i

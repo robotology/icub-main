@@ -1,0 +1,22 @@
+You can try this to see if it works:
+
+./reaching_module --structure conf/icub_right_arm4_struct.xml
+
+
+on another terminal 
+
+./simulator conf/icub_right_arm4_shape.xml conf/icub_right_arm4_shape.xml 
+
+
+and then manually connect the ports:
+
+
+'/vc_command/out'to '/simulator/angles/in'
+'target/in' to '/simulator/target/in'
+
+
+If you want to test if the oritentation is working properly, use
+
+./reaching_module --structure conf/icub_right_arm4_struct.xml --orientation 1
+
+instead.

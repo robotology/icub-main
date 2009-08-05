@@ -1,0 +1,192 @@
+#!/bin/bash
+
+#xterm -T "reaching head" -e "./reaching_module --file conf/config_reaching_head.ini --name /head" &
+
+#xterm -T "reaching arm" -e "./reaching_module --file conf/config_reaching_right_arm.ini --name /arm" &
+
+
+#xterm -T "robot" -e "./perception_module --file conf/config_perception_module.ini --name /robot" &
+
+#xterm -T "simulator" -e "./simulator conf/icub_head_right_arm_tree.xml conf/icub_head_right_arm_shape.xml --nomapping" &
+
+#xterm -T "head2body" -e "./head_transfo_module --file conf/config_head2body.ini --name /transfo" &
+
+#xterm -T "body schema" -e "./body_schema_module --file conf/config_body_schema.ini --name /body_schema; read XXX" &
+
+#xterm -T "logger" -e "./logger --file conf/config_logger.ini --name /micha/logger" &
+
+sleep 4
+
+## for simulator checking
+
+# xterm -T "simulator" -e "./simulator conf/icub_head_right_arm_tree.xml conf/icub_head_right_arm_shape.xml --nomapping" &
+# sleep 2
+# yarp connect /icub/right_arm/state:o /simulator/arm:i
+# yarp connect /icub/head/state:o /simulator/head:i
+
+# ##for arm simulated movement
+
+# xterm -T "simulator" -e "./simulator conf/icub_head_right_arm_tree.xml conf/icub_head_right_arm_shape.xml --nomapping" &
+# xterm -T "reaching arm" -e "./reaching_module --file conf/config_reaching_right_arm.ini --name /arm" &
+# xterm -T "head2body" -e "./head_transfo_module --file conf/config_head2body.ini --name /micha/transfo" &
+
+# sleep 3
+
+# yarp connect /arm/vc_command:o /simulator/arm:i
+# yarp connect /icub/head/state:o /simulator/head:i
+# yarp connect /icub/head/state:o /micha/transfo/proprio_head:i
+# yarp connect /micha/vision0:o /micha/transfo/position:i
+# yarp connect /micha/transfo/position:o /simulator/target:i 
+# yarp connect /micha/transfo/position:o /arm/target:i
+# yarp connect /simulator/cmd:o /micha/transfo/cmd:i
+# yarp connect /simulator/cmd:o /arm/cmd:i
+
+
+# ##for arm simulated movement with head tracking
+# xterm -e "ssh -l icub 10.0.0.41 \"cd /usr/local/src/robot/iCub/src/lasaBodySchema;./reaching_module --file conf/config_reaching_head.ini --name /micha/head; read XXX\"" &
+# xterm -T "reaching arm" -e "./reaching_module --file conf/config_reaching_right_arm.ini --name /arm" &
+# xterm -T "head2body" -e "./head_transfo_module --file conf/config_head2body.ini --name /micha/transfo" &
+# xterm -T "simulator" -e "./simulator conf/icub_head_right_arm_tree.xml conf/icub_head_right_arm_shape.xml --nomapping" &
+
+# sleep 3
+
+
+# yarp connect /arm/vc_command:o /simulator/arm:i
+# yarp connect /icub/head/state:o /simulator/head:i
+# yarp connect /icub/head/state:o /micha/transfo/proprio_head:i
+# yarp connect /micha/vision0:o /micha/transfo/position:i
+# yarp connect /micha/transfo/position:o /simulator/target:i 
+# yarp connect /micha/transfo/position:o /arm/target:i
+# yarp connect /micha/transfo/position:o /micha/head/target:i
+# yarp connect /simulator/cmd:o /micha/transfo/cmd:i
+# yarp connect /simulator/cmd:o /arm/cmd:i
+# yarp connect /simulator/cmd:o /micha/head/cmd:i
+
+# ##for arm real movement target from simulator (useful for gain tuning)
+
+# xterm -T "reaching arm" -e "./reaching_module --file conf/config_reaching_right_arm.ini --name /arm" &
+# xterm -T "simulator" -e "./simulator conf/icub_head_right_arm_tree.xml conf/icub_head_right_arm_shape.xml" &
+
+# sleep 3
+
+
+# yarp connect /arm/vc_command:o /simulator/arm:i
+# yarp connect /simulator/target:o /arm/target:i
+# yarp connect /simulator/cmd:o /arm/cmd:i
+
+
+##for arm real movement with head tracking (the real thing, but without adaptation)
+
+# xterm -e "ssh -l icub 10.0.0.41 \"cd /usr/local/src/robot/iCub/src/lasaBodySchema;./reaching_module --file conf/config_reaching_head.ini --name /micha/head; read XXX\"" &
+# xterm -T "reaching arm" -e "./reaching_module --file conf/config_reaching_right_arm.ini --name /arm" &
+# xterm -T "head2body" -e "./head_transfo_module --file conf/config_head2body.ini --name /micha/transfo" &
+# xterm -T "simulator" -e "./simulator conf/icub_head_right_arm_tree.xml conf/icub_head_right_arm_shape.xml --nomapping" &
+
+# sleep 3
+
+
+# yarp connect /icub/right_arm/state:o /simulator/arm:i
+# yarp connect /icub/head/state:o /simulator/head:i
+# yarp connect /icub/head/state:o /micha/transfo/proprio_head:i
+# yarp connect /micha/vision0:o /micha/transfo/position:i
+# yarp connect /micha/transfo/position:o /simulator/target:i 
+# yarp connect /micha/transfo/position:o /arm/target:i
+# yarp connect /micha/transfo/position:o /micha/head/target:i
+# yarp connect /simulator/target:o /arm/target:i
+# yarp connect /simulator/cmd:o /micha/transfo/cmd:i
+# yarp connect /simulator/cmd:o /arm/cmd:i
+# yarp connect /simulator/cmd:o /micha/head/cmd:i
+
+
+
+#for arm real movement with head tracking and data recording
+
+# this is how i tested it, but it's not portable,
+#xterm -e "ssh -l icub 10.0.0.41 \"cd /usr/local/src/robot/iCub/src/lasaBodySchema;./reaching_module --file conf/config_reaching_head.ini --name /micha/head\"" &
+# here is how it should be, but i don't know how it works with the input files. They are probably not copied, so one should maybe give absolute paths
+yarp run  --on icub-b1 --as reaching_head --cmd "./reaching_module --file conf/config_reaching_head.ini --name /micha/head"
+
+
+#xterm -geometry +800+400 -e "ssh -l icub 10.0.0.42 \"cd /usr/local/src/robot/iCub/src/lasaBodySchema;./body_schema_module --file conf/config_body_schema.ini --name /body_schema\"" &
+##  same thing as above. 
+
+yarp run --on icub-b2 --as body_schema --cmd "./body_schema_module --file conf/config_body_schema.ini --name /body_schema"
+
+xterm -T "reaching arm" -e "./reaching_module --file conf/config_reaching_right_arm.ini --name /arm" &
+xterm -T "head2body" -e "./head_transfo_module --file conf/config_head2body.ini --name /micha/transfo" &
+xterm -T "simulator" -e "./simulator conf/icub_head_right_arm_tree.xml conf/icub_head_right_arm_shape.xml --nomapping" &
+
+sleep 3
+
+
+yarp connect /icub/right_arm/state:o /simulator/arm:i
+yarp connect /icub/head/state:o /simulator/head:i
+
+# transfo input
+yarp connect /icub/head/state:o /micha/transfo/proprio_head:i
+yarp connect /micha/vision0:o /micha/transfo/position:i
+
+#transfo output
+yarp connect /micha/transfo/position:o /simulator/target:i 
+yarp connect /micha/transfo/position:o /arm/target:i
+yarp connect /micha/transfo/position:o /micha/head/target:i
+
+# body schema input
+yarp connect /micha/vision1:o /body_schema/vision:i
+yarp connect /vFlow/visualRotation:o /body_schema/visual_rotation:i
+yarp connect /icub/head/state:o /body_schema/proprioception_head:i
+yarp connect /icub/right_arm/state:o /body_schema/proprioception_arm:i
+
+# body schema output
+yarp connect /body_schema/body_schema:o /simulator/body_schema:i
+yarp connect /body_schema/body_schema:o /micha/head/body_schema:i
+yarp connect /body_schema/body_schema:o /arm/body_schema:i
+yarp connect /body_schema/body_schema:o /micha/transfo/body_schema:i
+
+# quit command broadcasting
+yarp connect /simulator/cmd:o /micha/transfo/cmd:i
+yarp connect /simulator/cmd:o /arm/cmd:i
+yarp connect /simulator/cmd:o /micha/head/cmd:i
+yarp connect /simulator/cmd:o /body_schema/cmd:i
+
+#for head tracking and data recording arm reaching is launched afterwards
+
+# xterm -e "ssh -l icub 10.0.0.41 \"cd /usr/local/src/robot/iCub/src/lasaBodySchema;./reaching_module --file conf/config_reaching_head.ini --name /micha/head\"" &
+# xterm -geometry +800+400 -e "ssh -l icub 10.0.0.42 \"cd /usr/local/src/robot/iCub/src/lasaBodySchema;./body_schema_module --file conf/config_body_schema.ini --name /body_schema\"" &
+# xterm -T "reaching arm" -e "./reaching_module --file conf/config_reaching_right_arm.ini --name /arm" &
+# xterm -T "head2body" -e "./head_transfo_module --file conf/config_head2body.ini --name /micha/transfo" &
+# xterm -T "simulator" -e "./simulator conf/icub_head_right_arm_tree.xml conf/icub_head_right_arm_shape.xml --nomapping" &
+
+# sleep 3
+
+
+# yarp connect /icub/right_arm/state:o /simulator/arm:i
+# yarp connect /icub/head/state:o /simulator/head:i
+
+# # transfo input
+# yarp connect /icub/head/state:o /micha/transfo/proprio_head:i
+# yarp connect /micha/vision0:o /micha/transfo/position:i
+
+# #transfo output
+# yarp connect /micha/transfo/position:o /simulator/target:i 
+# yarp connect /micha/transfo/position:o /micha/head/target:i
+
+# # body schema input
+# yarp connect /micha/vision1:o /body_schema/vision:i
+# yarp connect /vFlow/visualRotation:o /body_schema/visual_rotation:i
+# yarp connect /icub/head/state:o /body_schema/proprioception_head:i
+# yarp connect /icub/right_arm/state:o /body_schema/proprioception_arm:i
+
+# # body schema output
+# yarp connect /body_schema/body_schema:o /simulator/body_schema:i
+# yarp connect /body_schema/body_schema:o /micha/head/body_schema:i
+# yarp connect /body_schema/body_schema:o /arm/body_schema:i
+# yarp connect /body_schema/body_schema:o /micha/transfo/body_schema:i
+
+# yarp connect /simulator/target:o /arm/target:i
+
+# yarp connect /simulator/cmd:o /micha/transfo/cmd:i
+# yarp connect /simulator/cmd:o /micha/head/cmd:i
+# yarp connect /simulator/cmd:o /body_schema/cmd:i
+# yarp connect /simulator/cmd:o /arm/cmd:i
+
