@@ -1,0 +1,5 @@
+xterm -T "tracking" -e "./stereoVisualTracker --name /micha --file conf/stereovision.ini; read XXX" & 
+sleep 3
+yarp connect /icub/cam/right micha/image0:i
+sleep 3
+yarp connect /icub/cam/left /micha/image1:i
