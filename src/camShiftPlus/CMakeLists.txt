@@ -1,0 +1,34 @@
+PROJECT(camshiftplus)
+
+SET(YARP_DIR "$ENV{YARP_ROOT}" CACHE LOCATION "where is yarp?")
+
+
+
+FIND_PACKAGE(ICUB)
+
+FIND_PACKAGE(YARP)
+
+FIND_PACKAGE(OpenCV)
+
+
+
+FILE(GLOB folder_header *.h)
+
+FILE(GLOB folder_source *.cpp)
+
+
+
+INCLUDE_DIRECTORIES(${OPENCV_INCLUDE_DIR})
+
+INCLUDE_DIRECTORIES(${CMAKE_SOURCE_DIR})
+
+LINK_LIBRARIES(${OPENCV_LIBRARIES})
+
+
+
+
+
+ADD_EXECUTABLE(camshiftplus ${folder_source} ${folder_header})
+
+
+
