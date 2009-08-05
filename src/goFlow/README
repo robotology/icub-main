@@ -1,0 +1,18 @@
+goFlow - "go with the Flow"
+---------------------------
+Developer: Chris McCarthy (Australian National University)
+Current Status:  Not yet ready for use (or working correctly). 
+
+"goFlow" is intended to be a multi-purpose optical flow engine, to support a 
+wide range of tasks using optical flow.  The intention is to provide easy to
+use "one call does all" functions, as well as a more flexible interface
+allowing modifations to the choice of flow method, pre-filters and other
+parameters.
+
+First priority is to implement Lucas-Kanade and Horn-Schunck.  Access to the
+openCV functions will also be included.
+ 
+Please note that "goFlow" is still under development and not yet ready for use.
+
+Questions can be directed to Chris McCarthy (Chris.McCarthy@anu.edu.au) 
+
