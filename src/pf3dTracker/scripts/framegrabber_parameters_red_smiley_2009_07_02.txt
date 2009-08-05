@@ -1,0 +1,8 @@
+[set] [bri] 0
+[set] [shar] 0.5
+[set] [whit] 0.648 0.474
+[set] [hue] 0.482
+[set] [saturation] 0.826
+[set] [gamm] 0.400
+[set] [shut] 0.592
+[set] [gain] 0.305
