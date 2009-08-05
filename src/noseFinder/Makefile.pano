@@ -1,0 +1,48 @@
+
+IMGS = $(patsubst %.ppm, %.jpg, $(wildcard *.ppm))
+KEYS = $(patsubst %.ppm, %.key, $(wildcard *.ppm))
+PANS = $(patsubst %.seq, %.pto, $(wildcard *.seq))
+SUMS = $(patsubst %.seq, %.sum, $(wildcard *.seq))
+
+TABLE = all.tab
+ZERO = all.zero
+
+default: $(IMGS) $(KEYS) $(PANS) $(SUMS) $(TABLE) $(ZERO)
+
+%.jpg: %.ppm
+	convert $< $@
+
+%.key: %.jpg
+	generatekeys $< $@ 640
+
+%.pto: %.seq
+	autopano output.pto.tmp `cat $<`
+	sed "s/ v180/ v30/" < output.pto.tmp > hacked.pto.tmp
+	autooptimiser hacked.pto.tmp -o $@
+	nona -o $*.view.jpg $@
+	rm -f output.pto.tmp hacked.pto.tmp
+
+%.sum: %.pto
+	echo `cat $< | egrep "^i " | sed "s/.* r//" | sed "s/ .*//"` > $@
+
+$(TABLE): $(SUMS)
+	echo -n >> $@.tmp; \
+	for f in $^; do \
+          echo $$f; \
+	  base=`basename $$f .sum`; \
+	  x=`cat $$base.tilt`; \
+	  y=`cat $$f | sed "s/.* //g"`; \
+	  echo $$x $$y >> $@.tmp; \
+        done; \
+	cat $@.tmp | sort -n | tee $@; \
+	rm -f $@.tmp
+
+$(ZERO): $(TABLE)
+	( \
+		echo "d=load('$(TABLE)')"; \
+		echo "r=panoplot(d(:,2),d(:,1),1)"; \
+		echo "id=fopen('$(ZERO)','w')"; \
+		echo "fprintf(id,'%g\n',r(2)/10)"; \
+	) | octave2.9
+	echo The zero tilt point may be `cat $(ZERO)`
+
