@@ -1,0 +1,113 @@
+Microsoft Developer Studio Workspace File, Format Version 6.00
+# WARNING: DO NOT EDIT OR DELETE THIS WORKSPACE FILE!
+
+###############################################################################
+
+Project: "bench"=.\bench.dsp - Package Owner=<4>
+
+Package=<5>
+{{{
+}}}
+
+Package=<4>
+{{{
+    Begin Project Dependency
+    Project_Dep_Name newmat
+    End Project Dependency
+    Begin Project Dependency
+    Project_Dep_Name roboop
+    End Project Dependency
+}}}
+
+###############################################################################
+
+Project: "demo"=.\demo.dsp - Package Owner=<4>
+
+Package=<5>
+{{{
+}}}
+
+Package=<4>
+{{{
+    Begin Project Dependency
+    Project_Dep_Name newmat
+    End Project Dependency
+    Begin Project Dependency
+    Project_Dep_Name roboop
+    End Project Dependency
+}}}
+
+###############################################################################
+
+Project: "demo_2dof_pd"=.\demo_2dof_pd.dsp - Package Owner=<4>
+
+Package=<5>
+{{{
+}}}
+
+Package=<4>
+{{{
+    Begin Project Dependency
+    Project_Dep_Name newmat
+    End Project Dependency
+    Begin Project Dependency
+    Project_Dep_Name roboop
+    End Project Dependency
+}}}
+
+###############################################################################
+
+Project: "newmat"=.\newmat.dsp - Package Owner=<4>
+
+Package=<5>
+{{{
+}}}
+
+Package=<4>
+{{{
+}}}
+
+###############################################################################
+
+Project: "roboop"=.\roboop.dsp - Package Owner=<4>
+
+Package=<5>
+{{{
+}}}
+
+Package=<4>
+{{{
+}}}
+
+###############################################################################
+
+Project: "rtest"=.\rtest.dsp - Package Owner=<4>
+
+Package=<5>
+{{{
+}}}
+
+Package=<4>
+{{{
+    Begin Project Dependency
+    Project_Dep_Name newmat
+    End Project Dependency
+    Begin Project Dependency
+    Project_Dep_Name roboop
+    End Project Dependency
+}}}
+
+###############################################################################
+
+Global:
+
+Package=<5>
+{{{
+}}}
+
+Package=<3>
+{{{
+}}}
+
+###############################################################################
+

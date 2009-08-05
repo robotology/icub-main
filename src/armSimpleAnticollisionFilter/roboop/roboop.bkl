@@ -1,0 +1,94 @@
+<?xml version="1.0"?>
+<!-- ROBOOP bakefile $Id: roboop.bkl,v 1.1 2007/07/24 16:03:09 amaldo Exp $ -->
+
+<makefile>
+  <include file="presets/simple.bkl"/>
+
+  <template id="roboop_opt">
+    <include>./source</include>
+    <include>./newmat</include>
+    <threading>multi</threading>
+    <if cond="PLATFORM_WIN32">
+      <define>_STANDARD_</define>
+      <if cond="COMPILER=='bcc'">
+        <debug-info>on</debug-info>
+      </if>
+      <if cond="COMPILER=='vc'">
+        <sys-lib>user32</sys-lib>
+      </if>
+    </if>
+  </template>
+
+  <template id="roboop_lib">
+    <library>roboop</library>
+    <library>newmat</library>
+  </template>
+
+  <exe id="demo" template="simple,roboop_opt,roboop_lib">
+    <sources>source/demo.cpp</sources>
+  </exe>
+
+  <exe id="bench" template="simple,roboop_opt,roboop_lib">
+    <sources>source/bench.cpp</sources>
+  </exe>
+
+  <exe id="rtest" template="simple,roboop_opt,roboop_lib">
+    <sources>source/rtest.cpp</sources>
+  </exe>
+
+  <exe id="demo_2dof_pd" template="simple,roboop_opt,roboop_lib">
+    <sources>source/demo_2dof_pd.cpp</sources>
+  </exe>
+
+  <lib id="roboop" template="simple,roboop_opt">
+    <libname>roboop</libname>
+    <sources>source/gnugraph.cpp
+	source/comp_dq.cpp
+	source/comp_dqp.cpp
+	source/delta_t.cpp
+	source/dynamics.cpp
+	source/homogen.cpp
+	source/kinemat.cpp
+	source/robot.cpp
+	source/sensitiv.cpp
+	source/utils.cpp
+	source/quaternion.cpp
+	source/config.cpp
+	source/trajectory.cpp
+	source/clik.cpp
+	source/controller.cpp
+	source/invkine.cpp
+	source/control_select.cpp
+	source/dynamics_sim.cpp
+	source/stewart.cpp</sources>
+   </lib>
+
+  <lib id="newmat" template="simple,roboop_opt">
+    <libname>newmat</libname>
+    <sources>newmat/bandmat.cpp
+	newmat/cholesky.cpp
+	newmat/evalue.cpp
+	newmat/fft.cpp
+	newmat/hholder.cpp
+	newmat/jacobi.cpp
+	newmat/myexcept.cpp
+	newmat/newmat1.cpp
+	newmat/newmat2.cpp
+	newmat/newmat3.cpp
+	newmat/newmat4.cpp
+	newmat/newmat5.cpp
+	newmat/newmat6.cpp
+	newmat/newmat7.cpp
+	newmat/newmat8.cpp
+	newmat/newmat9.cpp
+	newmat/newmatex.cpp
+	newmat/newmatnl.cpp
+	newmat/newmatrm.cpp
+	newmat/solution.cpp
+	newmat/sort.cpp
+	newmat/submat.cpp
+	newmat/svd.cpp
+	newmat/newfft.cpp
+	newmat/nm_misc.cpp</sources>
+  </lib>
+</makefile>

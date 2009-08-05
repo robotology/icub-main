@@ -1,0 +1,264 @@
+# Roboop Makefile for Borland C++ 
+# $Id: makefile.bc5,v 1.1 2007/07/24 16:03:09 amaldo Exp $
+#
+
+
+#
+# Borland C++ tools
+#
+CC   = bcc32 
+LINK = TLink32
+AR   = TLib
+
+#
+# Options (Remove the -Dbool_LIB for Borland C++ 4.52 and older)
+#
+CFLAGS = -tWM -R -v -a -vi -H- -Inewmat;source -D_STANDARD_
+
+#
+# Implicit rules
+#
+.cpp.obj:
+  $(CC)  $(CFLAGS) -tWR -c -o$@ $<
+
+#
+# Dependency List
+#
+deproboop = \
+   demo.exe\
+   demo_2dof_pd.exe\
+   bench.exe\
+   rtest.exe
+
+roboop : $(deproboop)
+  echo MakeNode 
+
+depdemodexe = \
+   roboop.lib\
+   newmat.lib\
+   source\demo.cpp
+
+demo.exe : $(depdemodexe) source\utils.h source\robot.h source\gnugraph.h source\quaternion.h
+    $(CC)  $(CFLAGS) -e$@ source\demo.cpp roboop.lib newmat.lib
+
+deproboopdlib = \
+   gnugraph.obj\
+   comp_dq.obj\
+   comp_dqp.obj\
+   delta_t.obj\
+   dynamics.obj\
+   homogen.obj\
+   invkine.obj\
+   kinemat.obj\
+   robot.obj\
+   sensitiv.obj\
+   utils.obj\
+   config.obj\
+   quaternion.obj\
+   trajectory.obj\
+   controller.obj\
+   control_select.obj\
+   dynamics_sim.obj\
+   clik.obj\
+   stewart.obj
+
+
+roboop.lib : $(deproboopdlib)
+  $(AR) /P128 $< @&&|
+ -+gnugraph.obj &
+-+comp_dq.obj &
+-+comp_dqp.obj &
+-+delta_t.obj &
+-+dynamics.obj &
+-+homogen.obj &
+-+invkine.obj &
+-+kinemat.obj &
+-+robot.obj &
+-+sensitiv.obj &
+-+utils.obj &
+-+config.obj &
+-+quaternion.obj &
+-+trajectory.obj &
+-+controller.obj &
+-+control_select.obj &
+-+dynamics_sim.obj &
+-+clik.obj &
+-+stewart.obj
+|
+
+control_select.obj: source/control_select.cpp source/control_select.h
+
+controller.obj: source/controller.cpp source/controller.h
+
+dynamics_sim.obj: source/dynamics_sim.cpp source/dynamics_sim.h
+
+trajectory.obj: source/trajectory.cpp source/trajectory.h
+
+clik.obj :  source/clik.cpp source/clik.h source/utils.h source/robot.h
+
+gnugraph.obj :  source\gnugraph.cpp source\gnugraph.h source\utils.h source\robot.h
+
+comp_dq.obj :  source\comp_dq.cpp source\utils.h source\robot.h
+
+comp_dqp.obj :  source\comp_dqp.cpp source\utils.h source\robot.h
+
+delta_t.obj :  source\delta_t.cpp source\utils.h source\robot.h
+
+dynamics.obj :  source\dynamics.cpp source\utils.h source\robot.h
+
+homogen.obj :  source\homogen.cpp source\utils.h source\robot.h
+
+invkine.obj :  source\invkine.cpp source\utils.h source\robot.h
+
+kinemat.obj :  source\kinemat.cpp source\utils.h source\robot.h
+
+robot.obj :  source\robot.cpp source\utils.h source\robot.h
+
+sensitiv.obj :  source\sensitiv.cpp source\utils.h source\robot.h
+
+utils.obj :  source\utils.cpp source\utils.h source\robot.h
+
+config.obj : source\config.cpp source\config.h
+
+quaternion.obj :  source\quaternion.cpp source\utils.h source\robot.h source\quaternion.h
+
+stewart.obj :  source\stewart.cpp source\stewart.h source\utils.h
+
+depnewmatdlib = \
+   bandmat.obj\
+   cholesky.obj\
+   evalue.obj\
+   fft.obj\
+   newfft.obj\
+   hholder.obj\
+   jacobi.obj\
+   myexcept.obj\
+   newmat1.obj\
+   newmat2.obj\
+   newmat3.obj\
+   newmat4.obj\
+   newmat5.obj\
+   newmat6.obj\
+   newmat7.obj\
+   newmat8.obj\
+   newmat9.obj\
+   newmatex.obj\
+   newmatnl.obj\
+   newmatrm.obj\
+   nm_misc.obj\
+   solution.obj\
+   sort.obj\
+   submat.obj\
+   svd.obj
+
+newmat.lib : $(depnewmatdlib)
+  $(AR) /P64 $< @&&|
+ -+bandmat.obj &
+-+cholesky.obj &
+-+evalue.obj &
+-+fft.obj &
+-+newfft.obj &
+-+hholder.obj &
+-+jacobi.obj &
+-+myexcept.obj &
+-+newmat1.obj &
+-+newmat2.obj &
+-+newmat3.obj &
+-+newmat4.obj &
+-+newmat5.obj &
+-+newmat6.obj &
+-+newmat7.obj &
+-+newmat8.obj &
+-+newmat9.obj &
+-+newmatex.obj &
+-+newmatnl.obj &
+-+newmatrm.obj &
+-+nm_misc.obj &
+-+solution.obj &
+-+sort.obj &
+-+submat.obj &
+-+svd.obj
+|
+
+bandmat.obj :  newmat\bandmat.cpp
+
+cholesky.obj :  newmat\cholesky.cpp
+
+evalue.obj :  newmat\evalue.cpp
+
+fft.obj :  newmat\fft.cpp
+
+newfft.obj :  newmat\newfft.cpp
+
+hholder.obj :  newmat\hholder.cpp
+
+jacobi.obj :  newmat\jacobi.cpp
+
+myexcept.obj :  newmat\myexcept.cpp
+
+newmat1.obj :  newmat\newmat1.cpp
+
+newmat2.obj :  newmat\newmat2.cpp
+
+newmat3.obj :  newmat\newmat3.cpp
+
+newmat4.obj :  newmat\newmat4.cpp
+
+newmat5.obj :  newmat\newmat5.cpp
+
+newmat6.obj :  newmat\newmat6.cpp
+
+newmat7.obj :  newmat\newmat7.cpp
+
+newmat8.obj :  newmat\newmat8.cpp
+
+newmat9.obj :  newmat\newmat9.cpp
+
+newmatex.obj :  newmat\newmatex.cpp
+
+newmatnl.obj :  newmat\newmatnl.cpp
+
+newmatrm.obj :  newmat\newmatrm.cpp
+
+nm_misc.obj :  newmat\nm_misc.cpp
+
+solution.obj :  newmat\solution.cpp
+
+sort.obj :  newmat\sort.cpp
+
+submat.obj :  newmat\submat.cpp
+
+svd.obj :  newmat\svd.cpp
+
+depbenchdexe = \
+   newmat.lib\
+   roboop.lib\
+   source\bench.cpp
+
+bench.exe : $(depbenchdexe) source\utils.h source\robot.h
+    $(CC)  $(CFLAGS) -e$@ source\bench.cpp newmat.lib roboop.lib
+
+deprtestdexe = \
+   newmat.lib\
+   roboop.lib\
+   source\rtest.cpp
+
+rtest.exe : $(deprtestdexe) source\utils.h source\robot.h source\quaternion.h
+    $(CC)  $(CFLAGS) -e$@ source\rtest.cpp newmat.lib roboop.lib
+
+depdemo_2dof_pddexe = \
+   newmat.lib\
+   roboop.lib\
+   source\demo_2dof_pd.cpp
+
+demo_2dof_pd.exe : $(depdemo_2dof_pddexe) source\utils.h source\robot.h source\quaternion.h
+    $(CC)  $(CFLAGS) -e$@ source\demo_2dof_pd.cpp newmat.lib roboop.lib
+
+clean:
+  del *.obj
+  del *.lib
+
+veryclean: clean
+  del *.exe
+
+

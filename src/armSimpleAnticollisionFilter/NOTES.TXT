@@ -1,0 +1,27 @@
+No longer updated. 
+
+Right now, roboop is integrated. (Should be moved to some contrib directory, 
+or simply installed locally by the people who want to use this module)
+
+--------
+
+
+paulfitz's installation notes (unofficial, there may be better ways)
+=============================
+
+This module depends on the "roboop" library.
+
+This was downloaded from:
+  http://www.cours.polymtl.ca/roboop/
+
+It was built using cmake.
+
+The location of the unpacked directory was placed in the environment 
+variable "ROBOOP_DIR".
+
+A link to "$ROBOOP_DIR/source" was made at "$ROBOOP_DIR/roboop" to
+match the modules expectations about names of header files.
+
+The current module then successfully built with cmake.
+
+

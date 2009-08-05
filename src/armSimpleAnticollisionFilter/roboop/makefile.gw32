@@ -1,0 +1,162 @@
+# Roboop Makefile for GNU g++
+# $Id: makefile.gw32,v 1.1 2007/07/24 16:03:09 amaldo Exp $
+
+CC = g++
+
+# uncomment the -fno-const-strings in the next line for gcc 2.95.2
+# edit the following to reflect the location of boost include files
+BOOST_INCLUDE_DIR=/usr/include/boost-1_33_1
+CFLAGS = -O -I $(BOOST_INCLUDE_DIR) -I ./source -I ./newmat -Wall -fno-pcc-struct-return #-fno-const-strings
+LIBS = -L./ -lroboop -lnewmat -lm 
+AR = ar
+RANLIB = ranlib
+
+%.o : source/%.cpp
+	$(CC) -c $(CFLAGS) -o $@ $<
+
+%.o : newmat/%.cpp
+	$(CC) -c $(CFLAGS) -o $@ $<
+
+All: rtest demo bench demo_2dof_pd libnewmat.a libroboop.a
+
+Deprtest =  rtest.o libroboop.a libnewmat.a
+rtest : $(Deprtest)
+	$(CC) $< -o $@ $(LIBS)
+rtest.o :  source/rtest.cpp source/utils.h source/robot.h
+
+Depdemo_2dof_pd =  demo_2dof_pd.o libroboop.a libnewmat.a
+demo_2dof_pd : $(Depdemo_2dof_pd)
+	$(CC) $< -o $@ $(LIBS)
+demo_2dof_pd.o :  source/demo_2dof_pd.cpp source/utils.h source/robot.h
+
+Depdemo    = demo.o libroboop.a libnewmat.a
+demo: $(Depdemo)
+	$(CC) $< -o  $@ $(LIBS)
+demo.o :  source/demo.cpp source/quaternion.h source/gnugraph.h source/utils.h source/robot.h
+
+Deprobooplib = \
+   gnugraph.o   comp_dq.o   comp_dqp.o   delta_t.o \
+   dynamics.o   homogen.o   kinemat.o    robot.o   \
+   sensitiv.o   utils.o     quaternion.o config.o  \
+   trajectory.o clik.o      controller.o invkine.o \
+   control_select.o dynamics_sim.o stewart.o
+
+libroboop.a : $(Deprobooplib)
+	rm -f $@
+	$(AR) rc $@ $(Deprobooplib)
+	$(RANLIB) $@
+
+controller.o: source/controller.cpp source/controller.h
+
+control_select.o: source/control_select.cpp source/control_select.h
+
+dynamics_sim.o: source/dynamics_sim.cpp source/dynamics_sim.h
+
+trajectory.o: source/trajectory.cpp source/trajectory.h
+
+clik.o :  source/clik.cpp source/clik.h source/utils.h source/robot.h
+
+robot.o :  source/robot.cpp source/utils.h source/robot.h
+
+config.o : source/config.cpp source/config.h
+
+quaternion.o : source/quaternion.cpp source/quaternion.h
+
+gnugraph.o :  source/gnugraph.cpp source/gnugraph.h source/utils.h source/robot.h
+
+comp_dq.o :  source/comp_dq.cpp source/utils.h source/robot.h
+
+comp_dqp.o :  source/comp_dqp.cpp source/utils.h source/robot.h
+
+delta_t.o :  source/delta_t.cpp source/utils.h source/robot.h
+
+dynamics.o :  source/dynamics.cpp source/utils.h source/robot.h
+
+homogen.o :  source/homogen.cpp source/utils.h source/robot.h
+
+invkine.o :  source/invkine.cpp source/utils.h source/robot.h
+
+kinemat.o :  source/kinemat.cpp source/utils.h source/robot.h
+
+sensitiv.o :  source/sensitiv.cpp source/utils.h source/robot.h
+
+utils.o :  source/utils.cpp source/utils.h source/robot.h
+
+stewart.o :  source/stewart.cpp source/stewart.h source/utils.h
+
+Depnewmatlib = \
+   bandmat.o    cholesky.o   evalue.o     fft.o\
+   hholder.o    jacobi.o     myexcept.o   newmat1.o\
+   newmat2.o    newmat3.o    newmat4.o    newmat5.o\
+   newmat6.o    newmat7.o    newmat8.o    newmat9.o\
+   newmatex.o   newmatnl.o   newmatrm.o   solution.o\
+   sort.o       submat.o     svd.o        newfft.o\
+   nm_misc.o
+
+libnewmat.a: $(Depnewmatlib)
+	rm -f $@
+	$(AR) rc $@ $(Depnewmatlib)
+	$(RANLIB) $@
+
+bandmat.o :  newmat/bandmat.cpp
+
+cholesky.o :  newmat/cholesky.cpp
+
+evalue.o :  newmat/evalue.cpp
+
+fft.o :  newmat/fft.cpp
+
+newfft.o :  newmat/newfft.cpp
+
+hholder.o :  newmat/hholder.cpp
+
+jacobi.o :  newmat/jacobi.cpp
+
+myexcept.o :  newmat/myexcept.cpp
+
+newmat1.o :  newmat/newmat1.cpp
+
+newmat2.o :  newmat/newmat2.cpp
+
+newmat3.o :  newmat/newmat3.cpp
+
+newmat4.o :  newmat/newmat4.cpp
+
+newmat5.o :  newmat/newmat5.cpp
+
+newmat6.o :  newmat/newmat6.cpp
+
+newmat7.o :  newmat/newmat7.cpp
+
+newmat8.o :  newmat/newmat8.cpp
+
+newmat9.o :  newmat/newmat9.cpp
+
+newmatex.o :  newmat/newmatex.cpp
+
+newmatnl.o :  newmat/newmatnl.cpp
+
+newmatrm.o :  newmat/newmatrm.cpp
+
+nm_misc.o :  newmat/nm_misc.cpp
+
+solution.o :  newmat/solution.cpp
+
+sort.o :  newmat/sort.cpp
+
+submat.o :  newmat/submat.cpp
+
+svd.o :  newmat/svd.cpp
+
+Depbench =  bench.o libroboop.a libnewmat.a
+
+bench : $(Depbench)
+	$(CC) $< -o $@ $(LIBS)
+
+bench.o :  source/bench.cpp source/utils.h source/robot.h
+
+clean:
+	rm *.o *.a
+
+veryclean: clean
+	rm rtest.exe bench.exe demo.exe demo_2dof_pd.exe

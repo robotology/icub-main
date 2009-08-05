@@ -1,0 +1,26 @@
+/// \ingroup rbd_common
+///@{
+
+/// \file _rbd_com.dox Description of rbd_common.
+///
+/// \page rbd_common RBD common library.
+///These are classes and functions and define statements that used by many
+///of my C++ libraries.
+///
+///Currently these are in files "include.h", "myexcept.h", "myexcept.cpp".
+///
+///The file "include.h" sets options appropriate
+///for different compilers and user requirements.
+///
+///The files "myexcept.h" and "myexcept.cpp" contain my exception classes and
+///and the code for simulating exceptions with compilers that do not support
+///exceptions.
+
+
+
+///@}
+
+
+
+
+
