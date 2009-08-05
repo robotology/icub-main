@@ -1,0 +1,159 @@
+Library {
+  Name			  "RT"
+  Version		  4.00
+  LibraryLinkDisplay	  "none"
+  CovSaveName		  "covdata"
+  CovNameIncrementing	  off
+  CovHtmlReporting	  on
+  BlockNameDataTip	  off
+  BlockParametersDataTip  off
+  BlockDescriptionStringDataTip	off
+  ToolBar		  off
+  StatusBar		  off
+  BrowserShowLibraryLinks off
+  BrowserLookUnderMasks	  off
+  Created		  "Sat Mar 22 01:17:21 2003"
+  UpdateHistory		  "UpdateHistoryNever"
+  ModifiedByFormat	  "%<Auto>"
+  LastModifiedBy	  "leo"
+  ModifiedDateFormat	  "%<Auto>"
+  LastModifiedDate	  "Sat Mar 22 01:17:51 2003"
+  ModelVersionFormat	  "1.%<AutoIncrement:2>"
+  ConfigurationManager	  "none"
+  SimParamPage		  "Solver"
+  AlgebraicLoopMsg	  "warning"
+  MinStepSizeMsg	  "warning"
+  UnconnectedInputMsg	  "warning"
+  UnconnectedOutputMsg	  "warning"
+  UnconnectedLineMsg	  "warning"
+  InheritedTsInSrcMsg	  "warning"
+  SingleTaskRateTransMsg  "none"
+  MultiTaskRateTransMsg	  "error"
+  IntegerOverflowMsg	  "warning"
+  CheckForMatrixSingularity "none"
+  UnnecessaryDatatypeConvMsg "none"
+  Int32ToFloatConvMsg	  "warning"
+  SignalLabelMismatchMsg  "none"
+  LinearizationMsg	  "none"
+  VectorMatrixConversionMsg "none"
+  SfunCompatibilityCheckMsg "none"
+  BlockPriorityViolationMsg "warning"
+  ArrayBoundsChecking	  "none"
+  ConsistencyChecking	  "none"
+  Profile		  off
+  SimulationMode	  "normal"
+  RTWRetainRTWFile	  off
+  RTWMakeCommand	  "make_rtw"
+  RTWGenerateCodeOnly	  off
+  TLCProfiler		  off
+  TLCDebug		  off
+  TLCCoverage		  off
+  ExtModeMexFile	  "ext_comm"
+  ExtModeBatchMode	  off
+  ExtModeTrigType	  "manual"
+  ExtModeTrigMode	  "normal"
+  ExtModeTrigPort	  "1"
+  ExtModeTrigElement	  "any"
+  ExtModeTrigDuration	  1000
+  ExtModeTrigHoldOff	  0
+  ExtModeTrigDelay	  0
+  ExtModeTrigDirection	  "rising"
+  ExtModeTrigLevel	  0
+  ExtModeArchiveMode	  "off"
+  ExtModeAutoIncOneShot	  off
+  ExtModeIncDirWhenArm	  off
+  ExtModeAddSuffixToVar	  off
+  ExtModeWriteAllDataToWs off
+  ExtModeArmWhenConnect	  on
+  ExtModeLogAll		  on
+  BlockDefaults {
+    Orientation		    "right"
+    ForegroundColor	    "black"
+    BackgroundColor	    "white"
+    DropShadow		    off
+    NamePlacement	    "normal"
+    FontName		    "Helvetica"
+    FontSize		    10
+    FontWeight		    "normal"
+    FontAngle		    "normal"
+    ShowName		    on
+  }
+  AnnotationDefaults {
+    HorizontalAlignment	    "center"
+    VerticalAlignment	    "middle"
+    ForegroundColor	    "black"
+    BackgroundColor	    "white"
+    DropShadow		    off
+    FontName		    "Helvetica"
+    FontSize		    10
+    FontWeight		    "normal"
+    FontAngle		    "normal"
+  }
+  LineDefaults {
+    FontName		    "Helvetica"
+    FontSize		    9
+    FontWeight		    "normal"
+    FontAngle		    "normal"
+  }
+  System {
+    Name		    "RT"
+    Location		    [92, 342, 275, 468]
+    Open		    on
+    ModelBrowserVisibility  off
+    ModelBrowserWidth	    200
+    ScreenColor		    "automatic"
+    PaperOrientation	    "landscape"
+    PaperPositionMode	    "auto"
+    PaperType		    "usletter"
+    PaperUnits		    "inches"
+    ZoomFactor		    "100"
+    AutoZoom		    on
+    ReportName		    "simulink-default.rpt"
+    Block {
+      BlockType		      "S-Function"
+      Name		      "Timer Function"
+      Ports		      [0, 1]
+      Position		      [65, 36, 120, 74]
+      BackgroundColor	      "lightBlue"
+      FunctionName	      "RTBlock"
+      Parameters	      "step,priority,ThPriority"
+      PortCounts	      "[]"
+      SFunctionModules	      "''"
+      MaskType		      "RTBlock"
+      MaskDescription	      "Real Time Block: Set the characteristics of a r"
+"eal-time simulation. The settings of the simulation are selectable using the "
+"block panel. The parameters are:\n\n- Timeout: in milliseconds, defines the t"
+"emporization with which Simulink requires to the Operating System the availab"
+"ility of resources for the execution of the simulation step. The value should"
+" be fixed equal to the simulation step of Simulink (the timestep);\n\n- Prior"
+"ity Class: defines the class of task priority required, that can be one of th"
+"e following values:\n-- IDLE PRIORITY: Low priority, typical of an idle proce"
+"ss (priority less than normal)\n-- NORMAL PRIORITY: Typical priority of a typ"
+"ical windows application;\n-- HIGH PRIORITY: Typical priority of a relevant a"
+"pplication, that needs more resources of a normal application;\n-- REAL-TIME "
+"PRIORITY: Exclusive priority of a unique process that needs all the resources"
+" of the operating system.\n\n- Thread Priority: defines the class of task pri"
+"ority required, that can be one of the following values:\n-- IDLE : The threa"
+"d should run when the main process is inactive.\n-- LOWEST : The thread runs "
+"with a minimal respect of the temporization;\n-- NORMAL : The thread runs wit"
+"h the same priority of the main process;\n-- HIGH : The thread runs with the "
+"major priority respect to the main process;\n-- REAL-TIME : The process runs "
+"when the simulation thread is in idle state."
+      MaskPromptString	      "Timestep (ms)|Priority|Thread Priority"
+      MaskStyleString	      "edit,popup(IDLE|NORMAL|HIGH|REAL-TIME),popup(ID"
+"LE|LOWEST|NORMAL|HIGHEST|TIME CRITICAL)"
+      MaskTunableValueString  "on,on,on"
+      MaskCallbackString      "||"
+      MaskEnableString	      "on,on,on"
+      MaskVisibilityString    "on,on,on"
+      MaskToolTipString	      "on,on,on"
+      MaskVariables	      "step=@1;priority=@2;ThPriority=@3;"
+      MaskIconFrame	      on
+      MaskIconOpaque	      on
+      MaskIconRotate	      "none"
+      MaskIconUnits	      "autoscale"
+      MaskValueString	      "50|HIGH|TIME CRITICAL"
+      MaskVariableAliases     ",,"
+    }
+  }
+}
