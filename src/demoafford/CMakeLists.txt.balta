@@ -1,0 +1,41 @@
+
+SET(KEYWORD "demoAff")
+
+# Start a project.
+PROJECT(${KEYWORD})
+
+SET(YARP_DIR "$ENV{YARP_ROOT}" CACHE LOCATION "where is yarp?")
+SET(SVN "/home/luis/vislab")
+
+FIND_PACKAGE(ICUB)
+FIND_PACKAGE(YARP REQUIRED)
+FIND_PACKAGE(GSL REQUIRED)
+#FIND_PACKAGE(OPENCV)
+
+
+FILE(GLOB folder_header ./include/iCub/*.h ${SVN}/app/baltazar/visualservoing_yarp/ArmActuator.h  ${SVN}/app/baltazar/visualservoing_yarp/HandActuator.h ${SVN}/app/baltazar/visualservoing_yarp/grasp.h ${SVN}/lib/kinematics/*.h )
+FILE(GLOB folder_source ./src/*.cpp ${SVN}/app/baltazar/visualservoing_yarp/ArmActuator.cpp  ${SVN}/app/baltazar/visualservoing_yarp/HandActuator.cpp ${SVN}/app/baltazar/visualservoing_yarp/grasp.cpp ${SVN}/lib/kinematics/kinpronator.cpp)
+SOURCE_GROUP("Source Files" FILES ${folder_source})
+SOURCE_GROUP("Header Files" FILES ${folder_header})
+
+INCLUDE_DIRECTORIES(./include)
+
+
+INCLUDE_DIRECTORIES(${CMAKE_SOURCE_DIR})
+INCLUDE_DIRECTORIES(${ICUB_DIR}/src/kinematics/include)
+INCLUDE_DIRECTORIES(${GSL_INCLUDE_DIR})
+INCLUDE_DIRECTORIES(${SVN}/lib/kinematics)
+
+INCLUDE_DIRECTORIES(${SVN}/app/baltazar/visualservoing_yarp)
+INCLUDE_DIRECTORIES(${SVN}/ext/PNL/cxcore/cxcore/include)
+INCLUDE_DIRECTORIES(${SVN}/ext/PNL/c_pgmtk/src/include)
+INCLUDE_DIRECTORIES(${SVN}/ext/PNL/c_pgmtk/include)
+
+
+LINK_LIBRARIES(${ICUB_DIR}/lib/libkinematics.a)
+#LINK_LIBRARIES(${OPENCV_LIBRARIES})
+LINK_LIBRARIES(${GSL_LIBRARIES})
+LINK_LIBRARIES(${GSLCBLAS_LIBRARIES})
+
+ADD_EXECUTABLE(demoAff ${folder_source} ${folder_header})
+TARGET_LINK_LIBRARIES(demoAff ${SVN}/ext/PNL/c_pgmtk/src/.libs/libpnl.so ${SVN}/ext/PNL/cxcore/cxcore/src/libcxcore.a)
