@@ -1,0 +1,20 @@
+SET(NESTED_BUILD TRUE)
+
+ADD_SUBDIRECTORY(debug)
+ADD_SUBDIRECTORY(actions)
+
+SET(EXTRAS_SOUND FALSE CACHE BOOL "Sound Server")
+
+IF(EXTRAS_SOUND)
+	ADD_SUBDIRECTORY(sound)
+ENDIF(EXTRAS_SOUND)
+
+ADD_SUBDIRECTORY(motivation_dynamics)
+ADD_SUBDIRECTORY(icub_control)
+ADD_SUBDIRECTORY(sensor_motor_interface)
+ADD_SUBDIRECTORY(experience_metric_space)
+ADD_SUBDIRECTORY(action_selection)
+ADD_SUBDIRECTORY(iha_face_detect)
+ADD_SUBDIRECTORY(status_monitor)
+ADD_SUBDIRECTORY(rw_utils)
+ADD_SUBDIRECTORY(face_tracker)

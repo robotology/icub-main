@@ -1,0 +1,100 @@
+/**
+ * @ingroup icub_module
+ *
+ * \defgroup icub_iha_module Interaction History Architecture (IHA) Modules
+ *
+ * \brief In this architecture a metric space of experiences accumulated over ontogeny related using informational measures is used to direct future experiences.
+
+For running the application see \ref icub_iha_app
+
+\author Naeem Assif Mirza
+
+Copyright (C) 2008 RobotCub Consortium
+
+CopyPolicy: Released under the terms of the GNU GPL v2.0.
+
+This file can be edited at \in src/interactionHistory/doc.dox
+ *
+ */
+
+/**
+
+\page iha_configured_actions Actions configured in the IHA
+
+\section iha_actions_intro Configured Actions for the Interaction History Architecture
+
+See \link icub_iha_module Interaction History Architecture \endlink
+
+The following table shows the configured actions available on the iCub implementation of the Peekaboo game using the IHA.  
+These are configured using Sequence files.  \see iCub::iha::Actions
+
+\par Movement Actions
+<TABLE>
+<TR> <TD> \b Number </TD> <TD> \b Action </TD> <TD> \b Description </TD> </TR>
+<TR>
+<TD> 3 </TD><TD> HL </TD><TD> Head Left </TD>
+</TR>
+<TR>
+<TD> 4 </TD><TD> HR </TD><TD> Head Right </TD>
+</TR>
+<TR>
+<TD> 6 </TD><TD> HID </TD><TD> Hide Head with Hands </TD>
+</TR>
+<TR>
+<TD> 8 </TD><TD> RAU </TD><TD> Right Arm Up </TD>
+</TR>
+<TR>
+<TD> 9 </TD><TD> LAU </TD><TD> Left Arm Up </TD>
+</TR>
+<TR>
+<TD> 12 </TD><TD> RAW </TD><TD> Wave Right Arm </TD>
+</TR>
+<TR>
+<TD> 13 </TD><TD> LAW </TD><TD> Wave Left Arm </TD>
+</TR>
+<TR>
+<TD> 14 </TD><TD> TR </TD><TD> "Think" Right raise right arm to chin and look right </TD>
+</TR>
+<TR>
+<TD> 15 </TD><TD> TL </TD><TD> "Think" Left raise left arm to chin </TD>
+</TR>
+</TABLE>
+
+\par Facial Expressions
+<TABLE>
+<TR> <TD> \b Number </TD> <TD> \b Action </TD> <TD> \b Description </TD> </TR>
+<TR>
+<TD> 1 </TD><TD> Smi </TD><TD> Smile </TD>
+</TR>
+<TR>
+<TD> 2 </TD><TD> Neu </TD><TD> Neutral </TD>
+</TR>
+<TR>
+<TD> 16 </TD><TD> Frn </TD><TD> Frown </TD>
+</TR>
+</TABLE>
+
+\par Resetting Actions
+<TABLE>
+<TR> <TD> \b Number </TD> <TD> \b Action </TD> <TD> \b Description </TD> </TR>
+<TR>
+<TD> 0 </TD><TD> Rst </TD><TD> All motors to resting position </TD>
+</TR>
+<TR>
+<TD> 7 </TD><TD> NA </TD><TD> No Action </TD>
+</TR>
+<TR>
+<TD> 5 </TD><TD> HF </TD><TD> Head to forward position </TD>
+</TR>
+<TR>
+<TD> 10 </TD><TD> RAD </TD><TD> Right Arm Down </TD>
+</TR>
+<TR>
+<TD> 11 </TD><TD> LAD </TD><TD> Left Arm Down </TD>
+</TR>
+</TABLE>
+
+*/
+
+
+
