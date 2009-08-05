@@ -1,0 +1,36 @@
+PROJECT(ballTracker)
+SET(YARP_DIR "$ENV{YARP_ROOT}" CACHE LOCATION "where is yarp?")
+
+FIND_PACKAGE(YARP)
+#MESSAGE(${YARP_DIR})
+FIND_PACKAGE(OpenCV)
+#INCLUDE(/usr/src/yarp/yarp2-james/conf/FindOpenCV.cmake)
+
+# include ipl
+# SET(IPL_INCLUDE_DIR "$ENV{IPL_ROOT}/include") 
+# SET(IPL_LIBRARY "$ENV{IPL_ROOT}/lib/msvc/ipl.lib") 
+
+FILE(GLOB folder_source *.cpp)
+FILE(GLOB folder_header *.h)
+SOURCE_GROUP("Source Files" FILES ${folder_source})
+SOURCE_GROUP("Header Files" FILES ${folder_header})
+
+INCLUDE_DIRECTORIES(${OPENCV_INCLUDE_DIR})
+INCLUDE_DIRECTORIES(${CMAKE_SOURCE_DIR})
+LINK_LIBRARIES(${OPENCV_LIBRARIES})
+
+# INCLUDE_DIRECTORIES(${CMAKE_SOURCE_DIR} ${IPL_INCLUDE_DIR})
+# LINK_LIBRARIES(${IPL_LIBRARY})
+
+# old include opencv
+# SET(OPENCV_INCLUDE_DIR "$ENV{OPENCV_ROOT}/cv/include")
+# SET(OPENCV_INCLUDE_DIR ${OPENCV_INCLUDE_DIR} "$ENV{OPENCV_ROOT}/otherlibs/highgui")
+
+# SET(OPENCV_LIBRARY "$ENV{OPENCV_ROOT}/lib/cv.lib")
+# SET(OPENCV_LIBRARY "${OPENCV_LIBRARY}" "$ENV{OPENCV_ROOT}/lib/highgui.lib")
+
+# INCLUDE_DIRECTORIES(${CMAKE_SOURCE_DIR} ${OPENCV_INCLUDE_DIR})
+# LINK_LIBRARIES(${OPENCV_LIBRARY})
+
+ADD_EXECUTABLE(ballTracker ${folder_source} ${folder_header})
+INSTALL_TARGETS(/bin ballTracker) 
