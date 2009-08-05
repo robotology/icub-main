@@ -1,0 +1,3 @@
+yarp connect /ball/left/slave/pos/o /james/armfb/hand/left/i
+yarp connect /ball/right/slave/pos/o /james/armfb/hand/right/i
+yarp connect /james/tracker/state/o /james/armfb/fixation/i

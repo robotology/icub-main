@@ -1,0 +1,4 @@
+yarp disconnect /ball/left/slave/pos/o /james/armfb/hand/left/i
+yarp disconnect /ball/right/slave/pos/o /james/armfb/hand/right/i
+
+yarp disconnect /james/tracker/state/o /james/armfb/fixation/i
