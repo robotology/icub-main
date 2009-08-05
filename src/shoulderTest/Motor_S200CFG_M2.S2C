@@ -1,0 +1,42 @@
+Drive--S200_Base_Unit 
+FileVersion 3 
+DriveModel S2063_90Vdc_6/18Arms 
+ActiveCMDUnits Torque/Current
+ARF0             = 194.304000                                        Hz             
+ARF1             = 971.520000                                        Hz             
+BatFDis          = Disable                                                          
+CmdF0            = 1457.280000                                       Hz             
+CmdGain          = 0.049971                                          Arms/%         
+CmdOffset        = -50.000000                                        %              
+CmdSrc           = PWM_Input                                                        
+Command          = 0.000000                                          Arms           
+CommMode         = SetupS2-2                                                        
+CommOff          = 0.000000                                          degree         
+DInp1Pol         = Normal                                                           
+DInp2Pol         = Normal                                                           
+DInp3Pol         = Normal                                                           
+DInp4Pol         = Normal                                                           
+DM1Map           = VelFB_2288_RPM/V                                                 
+DM2Map           = IFB_15.25_Arms/V                                                 
+DPoles           = 8                                                 Poles          
+EncOut           = 500                                                              
+EnInhibitCCW     = Off                                                              
+EnInhibitCW      = Off                                                              
+FltDiag          = Off                                                              
+GearIn           = 5000.000000                                                      
+GearOut          = 256.000000                                                       
+HSInp1Pol        = Normal                                                           
+I2TF0            = 0.000324                                          Hz             
+I2TTrip          = 6.020000                                          Arms           
+ILmtMinus        = 100.000000                                        %              
+ILmtPlus         = 100.000000                                        %              
+ITMode           = IT_trip_faults_drive                                             
+KIP              = 4.951600                                          V/A(Nom)       
+KPP              = 6.070000                                          Hz             
+KVFF             = 0.000000                                          %              
+KVI              = 4.909000                                          Hz             
+KVP              = 0.064000                                          Arms/rad/sec   
+OpMode           = Torque/Current                                                   
+PosCmdSrc        = Step-Dir                                                         
+SelSFDParam      = Drive                                                            
+SFDSpan          = Span                                                             
