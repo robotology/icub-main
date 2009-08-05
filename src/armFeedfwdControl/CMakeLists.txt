@@ -1,0 +1,23 @@
+PROJECT(arm_feedfwd_control)
+
+FIND_PACKAGE(ICUB)
+FIND_PACKAGE(YARP)
+
+FILE(GLOB folder_source *.cpp)
+FILE(GLOB folder_header *.h)
+SOURCE_GROUP("Source Files" FILES ${folder_source})
+SOURCE_GROUP("Header Files" FILES ${folder_header})
+
+FIND_PACKAGE(YARPMATH)
+FIND_PACKAGE(RFWR)
+
+
+LINK_LIBRARIES(${YARPMATH_LIBRARIES})
+LINK_LIBRARIES(${RFWR_LIBRARIES})
+
+INCLUDE_DIRECTORIES(${YARPMATH_INCLUDE_DIRS})
+INCLUDE_DIRECTORIES(${RFWR_INCLUDE_DIRS})
+
+ADD_EXECUTABLE(arm_feedfwd_control ${folder_source} ${folder_header})
+
+
