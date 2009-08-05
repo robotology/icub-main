@@ -1,0 +1,5 @@
+PROJECT(canLoader20)
+
+ADD_SUBDIRECTORY(canLoader)
+ADD_SUBDIRECTORY(canLoaderLib)
+

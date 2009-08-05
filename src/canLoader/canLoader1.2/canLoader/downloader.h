@@ -1,0 +1,100 @@
+#ifndef DOWNLOADER_H
+#define DOWNLOADER_H
+
+//#include <ace/OS.h>
+#include <ace/SString.h>
+//#include <ace/containers.h> 
+#include <ace/streams.h>
+#include "driver.h"
+
+//*****************************************************************/
+
+struct sBoard
+{
+public:
+ int  pid;
+ int  type;
+ int  version;
+ int  release;
+ int  build;
+ int  status;
+ bool selected;
+ char add_info [50];
+};
+
+//*****************************************************************/
+
+#define BOARD_RUNNING       0
+#define BOARD_WAITING       1
+#define BOARD_WAITING_ACK   2
+#define BOARD_DOWNLOADING   3
+#define BOARD_OK            4
+#define BOARD_ERR           5
+
+#define SPRS_TYPE_0 '0'
+#define SPRS_TYPE_3 '3'    
+#define SPRS_TYPE_7 '7'
+
+#define ID_CMD         0x07
+#define ID_MASTER      0x00
+#define ID_BROADCAST   0x0F
+
+#define BOARD_TYPE_DSP 0x00
+#define BOARD_TYPE_PIC 0x01
+#define BOARD_TYPE_2DC 0x02
+#define BOARD_TYPE_4DC 0x03
+#define BOARD_TYPE_BLL 0x04
+
+#define CMD_BOARD 	   0x00
+#define CMD_ADDRESS    0x01
+#define CMD_START	   0x02
+#define CMD_DATA	   0x03
+#define CMD_END	       0x04
+#define CMD_ERR	       0x05
+#define CMD_BROADCAST  0xFF
+
+#define CAN_SET_BOARD_ID	50
+#define CAN_GET_BOARD_ID	51
+#define CAN_GET_ADDITIONAL_INFO		12
+#define CAN_SET_ADDITIONAL_INFO		13
+
+//*****************************************************************/
+
+void drv_sleep (unsigned long int time);
+
+//*****************************************************************/
+class cDownloader
+{
+cDriver* m_candriver;
+
+private:
+int download_motorola_line(char* line, int len, int board_pid);
+int build_id(int source, int dest);
+int get_src_from_id (int id);
+int get_dst_from_id (int id);
+int verify_ack(int command, CMSG* rx_message, int read_messages);
+
+public:
+sBoard* board_list;
+int     board_list_size;
+int     progress;
+int     file_length;
+fstream filestr;
+
+bool    connected;
+int initdriver(can_parameters_type* params);
+int stopdriver();
+
+int initschede();
+int startscheda(int board_pid);
+int stopscheda(int board_pid);
+int download_file(int board_pid);
+int open_file(ACE_CString file);
+int change_card_address(int target_id, int new_id);
+int change_board_info  (int target_id, char* board_info);
+int get_board_info	   (int target_id, char* board_info);
+
+cDownloader();
+};
+
+#endif
