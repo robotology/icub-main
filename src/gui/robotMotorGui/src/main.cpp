@@ -1,7 +1,7 @@
 /*
  * Copyright (C) 2007 Francesco Nori (iron@liralab.it)
  * CopyPolicy: Released under the terms of the GNU GPL v2.0.
- *
+ *  
  */
 
 /**
