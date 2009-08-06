@@ -9,7 +9,7 @@
 #include <cassert>
 #include <sstream>
 
-#include <gsl/gsl_math.h>
+#include <math.h>
 
 #include <yarp/math/Rand.h>
 
