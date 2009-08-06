@@ -24,6 +24,9 @@ INCLUDE(${PROJECT_SOURCE_DIR}/ICUBConfig.cmake)
 
 SET(BUILD_IN_ROOT TRUE CACHE BOOL "Do you want to build libs and bins in $ICUB_ROOT/lib and $ICUB_ROOT/bin?")
 SET(USE_ICUB_MOD FALSE CACHE BOOL "Use separated icub_mod lib")
+IF (USE_ICUB_MOD)
+  SET(USE_INTERNAL_MODULES FALSE CACHE BOOL "Enable search for proprietary driver modules")
+ENDIF (USE_ICUB_MOD)
 SET(COMPILE_NEW_FRAMEGRABBERGUI TRUE CACHE BOOL "Compile new framegrabbergui")
 SET(EXPERIMENTAL_APP_INSTALL FALSE CACHE BOOL "Install scripts and config files (experimental)")
 
