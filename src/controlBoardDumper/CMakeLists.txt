@@ -10,5 +10,5 @@ SOURCE_GROUP("Source Files" FILES ${folder_source})
 SOURCE_GROUP("Header Files" FILES ${folder_header})
 
 ADD_EXECUTABLE(controlBoardDumper ${folder_source} ${folder_header})
-INSTALL(TARGETS controlBoardDumper DESTINATION ${ICUB_DIR}/bin)
+INSTALL(TARGETS controlBoardDumper DESTINATION bin)
 

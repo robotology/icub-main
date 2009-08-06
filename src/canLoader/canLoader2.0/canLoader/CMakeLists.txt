@@ -43,7 +43,7 @@ IF (GtkPlus_FOUND)
 	ADD_EXECUTABLE(canLoader20 ${folder_source} ${folder_header})
 
 	#INSTALL_TARGETS(/bin canLoader20) 
-	INSTALL(TARGETS canLoader20 DESTINATION ${ICUB_DIR}/bin)
+	INSTALL(TARGETS canLoader20 DESTINATION bin)
 ELSE (GTKPlus_FOUND)
     MESSAGE(ERROR "gtk+ not found, won't compile canLoader20")
 ENDIF (GtkPlus_FOUND)

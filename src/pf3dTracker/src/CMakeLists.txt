@@ -12,7 +12,7 @@ target_link_libraries(pf3dTracker pf3dTrackerLib pf3dTrackerSupportLib ${OPENCV_
 add_executable(trackerExpressions trackerExpressionsMain.cpp)
 target_link_libraries(trackerExpressions trackerExpressionsLib ${OPENCV_LIBRARIES} ${IKIN_LIBRARIES})
 
-install(TARGETS leftEyeToRoot DESTINATION ${ICUB_DIR}/bin)
-install(TARGETS pf3dTracker DESTINATION ${ICUB_DIR}/bin)
-install(TARGETS trackerExpressions DESTINATION ${ICUB_DIR}/bin)
+install(TARGETS leftEyeToRoot DESTINATION bin)
+install(TARGETS pf3dTracker DESTINATION bin)
+install(TARGETS trackerExpressions DESTINATION bin)
 
