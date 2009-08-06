@@ -1,0 +1,14 @@
+/**
+*
+* \defgroup icub_hardware_modules iCub hardware modules
+*
+* $ICUB_ROOT/src/modules stores hardware modules
+* needed to run the robot. These modules usually
+* wrap vendor's device drivers to provide a standard
+* interfaces.
+*
+* Documentation for each module goes in each 
+* directory.
+*
+* This file can be edited at \in src/modules/doc.dox
+*/
