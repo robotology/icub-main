@@ -264,7 +264,8 @@ public:
 
 	void Refresh()
 	{
-		if (m_bInactive) return;        
+		if (m_bInactive) return;
+        
         bool bON=pFG->getActiveDC1394(DC1394_FEATURE_WHITE_BALANCE);
 		bool bAuto=pFG->getModeDC1394(DC1394_FEATURE_WHITE_BALANCE);
 
@@ -714,7 +715,8 @@ protected:
 		setISOSpeedDC1394(m_MenuISO.get_active_row_number());
 		setOperationModeDC1394(m_MenuOpMode.get_active_row_number());
 		setColorCodingDC1394(m_ColorCodingLut[m_MenuColorCoding.get_active_row_number()]);
-        //setBytesPerPacketDC1394((unsigned int)m_bpp.get_value());
+
+        //setBytesPerPacketDC1394((unsigned int)m_bpp.get_value());
         setFormat7WindowDC1394((unsigned int)m_xdim.get_value(),(unsigned int)m_ydim.get_value());
 	}
     */
