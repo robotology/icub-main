@@ -1,0 +1,41 @@
+
+Certain of the files included here are derived from GNUSPEECH.
+They are marked as such, and have the copyright and license 
+information given below.
+
+Copyright and license information for GNUSPEECH retrieved from:
+  http://cvs.savannah.gnu.org/viewcvs/gnuspeech/
+  Thu Mar 22 14:37:38 CET 2007
+
+*********************************************************************
+
+Copyright 1991, 1992, 1993, 1994, 1995, 1996, 2001 and 2002 David
+R. Hill, Leonard Manzara and Craig Schock
+
+The software and documentation is provided under the terms of the GNU
+General Public License (GNU GPL) and/or the GNU Free Documentation
+License, as appropriate.  Copies of these license terms are included
+as separate files herewith (gpl.txt and fdl.txt) and may also be
+viewed on the Free Software Foundation (FSF/GNU) website at:
+
+       http://www.gnu.org
+
+Basically, the licenses permit free use, including modification and
+distribution, providing the modified and/or distributed software is
+released under the same GPL and/or FDL terms, including provision of
+all source code.  Names of original authors must be preserved.
+
+The software and documentation was originally developed for Trillium
+Sound Research Inc. for the NeXT Computers and operating systems.
+With the exception of the material in the "papers" directory, wherever
+a copyright notice for Trillium Sound Research Inc. or its contractors
+and/or employees appears, this should be read as "Copyright David
+R. Hill, Leonard Manzara and Craig Schock" with the appropriate
+date(s) since, by unanimous agreement of the shareholders at the time
+of dissolution of the company, the software and documentation was
+released under the terms of the GPL/FDL under the copyright control of
+the three principals as above.
+
+The software and documentation is provided "as is" with no warranty of
+fitness for any purpose.  By using any of the material, you agree to
+be bound by the terms of the GPL, FDL and this notice/agreement.
