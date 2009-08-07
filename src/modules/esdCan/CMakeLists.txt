@@ -8,12 +8,12 @@ IF (NOT SKIP_ecan)
   FIND_PACKAGE(YARP REQUIRED)
   
   IF(WIN32 AND NOT CYGWIN)
-    FIND_PATH(inc_esdapi ntcan.h PATHS ${CMAKE_CURRENT_SOURCE_DIR}/../esdCanAPi/winnt/include)
+    FIND_PATH(inc_esdapi ntcan.h PATHS ${CMAKE_CURRENT_SOURCE_DIR}/../esdCanApi/winnt/include)
 	
-    FIND_LIBRARY(lib_esdapi ntcan ${CMAKE_CURRENT_SOURCE_DIR}/../esdCanAPi/winnt/lib)
+    FIND_LIBRARY(lib_esdapi ntcan ${CMAKE_CURRENT_SOURCE_DIR}/../esdCanApi/winnt/lib)
   ELSE(WIN32 AND NOT CYGWIN)
-    FIND_PATH(inc_esdapi ntcan.h PATHS ${CMAKE_CURRENT_SOURCE_DIR}/../esdCanAPi/linux/include)
-    FIND_LIBRARY(lib_esdapi ntcan ${CMAKE_CURRENT_SOURCE_DIR}/../esdCanAPi/linux/lib)
+    FIND_PATH(inc_esdapi ntcan.h PATHS ${CMAKE_CURRENT_SOURCE_DIR}/../esdCanApi/linux/include)
+    FIND_LIBRARY(lib_esdapi ntcan ${CMAKE_CURRENT_SOURCE_DIR}/../esdCanApi/linux/lib)
   ENDIF(WIN32 AND NOT CYGWIN)
 
   IF(inc_esdapi AND lib_esdapi)
