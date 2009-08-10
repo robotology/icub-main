@@ -11,8 +11,8 @@ rm -f should_report.txt
 (
 # all this needs the "timeout" and "realpath" command
 
-std_timeout 600 cvs -q update -Pd > cvslog.txt
-cat cvslog.txt | grep -v "cvs update" | egrep -v "^\? " | egrep -v "^M " > cvslog2.txt
+std_timeout 600 svn update > svnlog.txt
+cat svnlog.txt | grep -v "svn update" | egrep -v "^\? " | egrep -v "^M " > svnlog2.txt
 
 SOURCE=$PWD
 echo Working in directory $SOURCE | tee should_report.txt
