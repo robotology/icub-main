@@ -30,7 +30,9 @@ gboolean timer_func (gpointer data);
 void save_click (GtkButton *button,	gpointer   user_data)
 {
 	STOP_TIMER
+	drv_sleep (1000);
 	downloader.strain_save_to_eeprom(downloader.board_list[selected].pid);
+	drv_sleep (1000);
 	START_TIMER
 }
 
