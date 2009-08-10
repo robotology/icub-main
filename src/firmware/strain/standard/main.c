@@ -57,7 +57,7 @@
 #define BOARD_TYPE_MAIS    0x07
 
 #define MAIS_VERSION       0x01
-#define STRAIN_VERSION     0x01
+#define STRAIN_VERSION     0x02
 #define MAIS_RELEASE       0x01
 #define STRAIN_RELEASE     0x01
 
