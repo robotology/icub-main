@@ -2032,7 +2032,7 @@ int main(void)
   // Cofigure CAN filter
   SetBoardCanFilter();
 
-  unsigned int SID = (CAN_MSG_CLASS_POLLING) | ((BoardConfig.EE_CAN_BoardAddress)<<4) | (CAN_CMD_TORQUE_VECTOR) ;
+  unsigned int SID = (CAN_MSG_CLASS_POLLING) | ((BoardConfig.EE_CAN_BoardAddress)<<4) | (0) ;
   unsigned char TorqueData[6]={0,0,0,0,0,0}; 
 
  if(RCONbits.POR!=0)   TorqueData[0]=1;
