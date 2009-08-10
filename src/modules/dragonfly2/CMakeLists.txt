@@ -45,7 +45,7 @@ IF(NOT SKIP_dragonfly2)
 	ADD_LIBRARY(dragonfly2 ${SYS}/DragonflyDeviceDriver2.cpp  common/DragonflyDeviceDriver2.h ${EXTRA_SOURCES})  
 
   ELSE (OK)
-	MESSAGE(SEND_ERROR "missing libraries required by dragonfly2 module, turn off module or install missing libraries")
+	MESSAGE(SEND_ERROR "dragonfly2 module: missing libraries install them or disable module from the list")
   ENDIF (OK)
 
 ENDIF(NOT SKIP_dragonfly2)
