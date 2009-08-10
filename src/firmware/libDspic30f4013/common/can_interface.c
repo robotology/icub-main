@@ -12,6 +12,7 @@
 #include "utils.h"
 
 extern char filter_enable;
+extern char can_enable;
 extern char mux_enable;
 extern char muxed_chans;
 extern char CAN_ACK_EVERY_MESSAGE;
@@ -435,10 +436,14 @@ void ParseCommand() //, unsigned int SID)
 			{
 	          if(msg->CAN_Per_Msg_PayLoad[1] < 6)
 	          {
-				Txdata[0] = CAN_CMD_GET_CH_ADC; 
-				Txdata[1] = msg->CAN_Per_Msg_PayLoad[1];  
+			    Txdata[0] = CAN_CMD_GET_CH_ADC; 
+			    Txdata[1] = msg->CAN_Per_Msg_PayLoad[1];  
+			    Txdata[2] = (BoardConfig.EE_AN_ChannelValue[msg->CAN_Per_Msg_PayLoad[1]]+0x7FFF) >> 8; 
+		   	    Txdata[3] = (BoardConfig.EE_AN_ChannelValue[msg->CAN_Per_Msg_PayLoad[1]]+0x7FFF) & 0xFF; 
+				/*
 				Txdata[2] = BoardConfig.EE_AN_ChannelValue[msg->CAN_Per_Msg_PayLoad[1]] >> 8; 
 				Txdata[3] = BoardConfig.EE_AN_ChannelValue[msg->CAN_Per_Msg_PayLoad[1]] & 0xFF; 
+				*/
 				datalen=4;	            
 	          }
 			}
@@ -504,6 +509,18 @@ void ParseCommand() //, unsigned int SID)
 				  //
 				  // STRAIN
 				  //
+			      i = msg->CAN_Per_Msg_PayLoad[2]<<8 | msg->CAN_Per_Msg_PayLoad[3];
+			      j = msg->CAN_Per_Msg_PayLoad[1];
+			      if ( (j >= 0) && (j <= 5 ))
+			      {
+			        //SetDACGetADC(PDM_NORMAL, i, &tmp);   //if not commented offset becomes effective immediately
+			        BoardConfig.EE_AN_ChannelOffset[j]=i;
+			      }
+			      else 
+			      {
+			        EEnqueue(ERR_CAN_PARAMETERS_INVALID);
+			        return; 
+			     }
 		#endif
 				  datalen=0;
 		     }
@@ -513,18 +530,22 @@ void ParseCommand() //, unsigned int SID)
 		    {
 		      if(msg->CAN_Per_Msg_PayLoad[1]==0)
 		      { 
+				can_enable=1;
 		        EnableIntT2;
 		        EnableIntT1;
+	        	EnableIntT3;
 		        // ConfigIntTimer2(T2_INT_PRIOR_1 & T2_INT_ON);
 		      }
 		      else if (msg->CAN_Per_Msg_PayLoad[1]==1)
 		      {
+				can_enable=0;
 				DisableIntT2; 
 				EnableIntT3;
 		        // ConfigIntTimer2(T2_INT_PRIOR_1 & T2_INT_OFF);
 		      }
 		      else 
 		      {
+				can_enable=0;
 		        DisableIntT1;
 		        DisableIntT2;
 		        DisableIntT3;
