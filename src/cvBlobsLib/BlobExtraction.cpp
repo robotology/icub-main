@@ -107,7 +107,7 @@ bool BlobAnalysis(	IplImage* inputImage,
 			return false;
 
 		// comprova que la m�cara tingui les mateixes dimensions que la imatge
-		if( !CV_ARE_SIZES_EQ(inputImage, maskImage ) )
+		if( inputImage->width != maskImage->width || inputImage->height != maskImage->height )
 		{
 			return false;
 		}

@@ -1,4 +1,7 @@
 
+#include <cv.h>
+#include <highgui.h>
+
 #include <ace/OS.h>
 #include <yarp/os/Network.h>
 #include <yarp/os/RFModule.h>
@@ -9,9 +12,6 @@
 #include <yarp/sig/Vector.h>
 #include <yarp/sig/Image.h>
 #include <yarp/sig/ImageFile.h>
-
-#include <cv.h>
-#include <highgui.h>
 
 #include <iostream>
 #include <iomanip>

@@ -128,6 +128,11 @@ So, now, have a look inside the directory ./example
 This file can be edited at \in src/dataDumper/main.cpp.
 */ 
 
+#ifdef ADD_VIDEO
+    #include <cv.h>
+    #include <highgui.h>
+#endif
+
 #include <ace/OS.h>
 #include <ace/Log_Msg.h>
 #include <yarp/os/Network.h>
@@ -140,11 +145,6 @@ This file can be edited at \in src/dataDumper/main.cpp.
 #include <yarp/sig/Vector.h>
 #include <yarp/sig/Image.h>
 #include <yarp/sig/ImageFile.h>
-
-#ifdef ADD_VIDEO
-    #include <cv.h>
-    #include <highgui.h>
-#endif
 
 #include <stdio.h>
 #include <fstream>
