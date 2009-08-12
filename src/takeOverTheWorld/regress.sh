@@ -5,7 +5,7 @@ if [ "k$ICUB_ROOT" = "k" ]; then
     standard_args="$standard_args --ICUB_ROOT $PWD/../.."
 fi
 
-cmd="../../bin/takeOverTheWorld $standard_args"
+cmd="$ICUB_DIR/bin/takeOverTheWorld $standard_args"
 
 function comment {
     echo "==========================================================="

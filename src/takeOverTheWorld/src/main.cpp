@@ -49,6 +49,8 @@ int main(int argc, char *argv[]) {
     {
         cout<<"Sorry can't find robot name"<<endl;
         return -1;
+    } else {
+        cout<<"Robot name is " << name.c_str()<<endl;
     }
     if (weapon=="")
     {
