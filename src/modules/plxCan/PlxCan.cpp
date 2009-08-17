@@ -111,7 +111,7 @@ bool PlxCan::open(yarp::os::Searchable &par)
     fprintf(stderr ,"TxQueueSize=%d RxQueueSize=%d\n", txTimeout, rxTimeout);
     fprintf(stderr ,"Warning, ignoring TxQueueSize and RxQueueSize\n");
 
-    int res = plxCanOpen (netId, 0, txQueueSize, rxQueueSize, txTimeout, rxTimeout, handle);
+    int res = plxCanOpen (netId, txQueueSize, rxQueueSize, txTimeout, rxTimeout, handle);
     if (res != NTCAN_SUCCESS)
     {
         fprintf(stderr, "PlxCan::open() returning false\n");
