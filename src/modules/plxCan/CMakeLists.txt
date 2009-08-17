@@ -6,9 +6,9 @@ ENDIF (COMPILE_DEVICE_LIBRARY)
 
 IF (NOT SKIP_pcan)
   FIND_PACKAGE(YARP REQUIRED)
-  FIND_PATH(inc_plxapi PexApi.h PATHS ${CMAKE_CURRENT_SOURCE_DIR}/../plxCanApi/Include)
+  FIND_PATH(inc_plxapi PexApi.h PATHS ${CMAKE_CURRENT_SOURCE_DIR}/../plxCanApi/linux/include)
 
-  FIND_LIBRARY(lib_plxapi PlxApi ${CMAKE_CURRENT_SOURCE_DIR}/../plxCanApi/Linux/PlxApi/Library)
+  FIND_LIBRARY(lib_plxapi PlxApi ${CMAKE_CURRENT_SOURCE_DIR}/../plxCanApi/linux/lib)
 
   IF(inc_plxapi AND lib_plxapi)
     INCLUDE_DIRECTORIES(${CMAKE_CURRENT_SOURCE_DIR})
