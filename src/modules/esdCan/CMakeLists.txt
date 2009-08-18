@@ -6,23 +6,15 @@ ENDIF (COMPILE_DEVICE_LIBRARY)
 
 IF (NOT SKIP_ecan)
   FIND_PACKAGE(YARP REQUIRED)
+  FIND_PACKAGE(ESDCANAPI)
   
-  IF(WIN32 AND NOT CYGWIN)
-    FIND_PATH(inc_esdapi ntcan.h PATHS ${CMAKE_CURRENT_SOURCE_DIR}/../esdCanApi/winnt/include)
-	
-    FIND_LIBRARY(lib_esdapi ntcan ${CMAKE_CURRENT_SOURCE_DIR}/../esdCanApi/winnt/lib)
-  ELSE(WIN32 AND NOT CYGWIN)
-    FIND_PATH(inc_esdapi ntcan.h PATHS ${CMAKE_CURRENT_SOURCE_DIR}/../esdCanApi/linux/include)
-    FIND_LIBRARY(lib_esdapi ntcan ${CMAKE_CURRENT_SOURCE_DIR}/../esdCanApi/linux/lib)
-  ENDIF(WIN32 AND NOT CYGWIN)
-
-  IF(inc_esdapi AND lib_esdapi)
+  IF(NOT ESDCANAPI_FOUND)
+    MESSAGE(SEND_ERROR "ecan: cannot find plxcanapi, turn off device")
+  ELSE(NOT ESDCANAPI_FOUND)
     INCLUDE_DIRECTORIES(${CMAKE_CURRENT_SOURCE_DIR})
-    INCLUDE_DIRECTORIES(${inc_esdapi})
-    LINK_LIBRARIES(${lib_esdapi})
-
+    INCLUDE_DIRECTORIES(${ESDCANAPI_INC_DIRS})
+    LINK_LIBRARIES(${ESDCANAPI_LIB})
     ADD_LIBRARY(esdCan EsdCan.cpp EsdCan.h)
-  ELSE (inc_esdapi AND lib_esdapi)
-    MESSAGE(SEND_ERROR "Cannot find ntcan lib, check esdCanApi installation instructions")
-  ENDIF (inc_esdapi AND lib_esdapi)
+  ENDIF(NOT ESDCANAPI_FOUND)
+
 ENDIF (NOT SKIP_ecan)
