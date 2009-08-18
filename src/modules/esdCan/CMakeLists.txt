@@ -9,7 +9,7 @@ IF (NOT SKIP_ecan)
   FIND_PACKAGE(ESDCANAPI)
   
   IF(NOT ESDCANAPI_FOUND)
-    MESSAGE(SEND_ERROR "ecan: cannot find plxcanapi, turn off device")
+    MESSAGE(SEND_ERROR "ecan: cannot find esdcan api, turn off device")
   ELSE(NOT ESDCANAPI_FOUND)
     INCLUDE_DIRECTORIES(${CMAKE_CURRENT_SOURCE_DIR})
     INCLUDE_DIRECTORIES(${ESDCANAPI_INC_DIRS})
