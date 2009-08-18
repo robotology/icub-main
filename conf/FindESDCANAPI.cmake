@@ -1,0 +1,28 @@
+# Created:
+# ESDCANAPI_INC_DIRS   - Directories to include to use esdcan api
+# ESDCANAPI_LIB        - Default library to link against to use the esdcan API
+# ESDCANAPI_FOUND      - If false, don't try to use esdcan API
+
+IF(NOT ESDCANAPI_FOUND)
+    SET(ESDCANAPI_DIR $ENV{ESDCANAPI_DIR} CACHE PATH "Path to ESDCANAPI")
+    SET(ESDCANAPI_INC_DIRS ${ESDCANAPI_DIR}/include)
+    
+    IF(WIN32)
+       FIND_LIBRARY(ESDCANAPI_LIB ntcan ${ESDCANAPI_DIR}/winnt NO_DEFAULT_PATH)    
+    ELSE(WIN32)  
+       FIND_LIBRARY(ESDCANAPI_LIB ntcan ${ESDCANAPI_DIR}/lib32 ${ESDCANAPI_DIR}/lib64)    
+    ENDIF(WIN32)
+    
+    IF(ESDCANAPI_LIB)
+       SET(ESDCANAPI_FOUND TRUE)
+    ELSE(ESDCANAPI_LIB)
+       SET(ESDCANAPI_FOUND FALSE)
+       SET(ESDCANAPI_INC_DIRS)
+       SET(ESDCANAPI_LIB )
+    ENDIF(ESDCANAPI_LIB)
+
+ENDIF(NOT ESDCANAPI_FOUND)
+
+
+
+
