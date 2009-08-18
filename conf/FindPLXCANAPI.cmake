@@ -10,7 +10,7 @@ IF(NOT PLXCANAPI_FOUND)
     IF(WIN32)
        #sorry not available in windows
     ELSE(WIN32)  
-       FIND_LIBRARY(PLXCANAPI_LIB plxcan ${PLXCANAPI_DIR}/lib NO_DEFAULT_PATH)    
+       FIND_LIBRARY(PLXCANAPI_LIB PlxApi ${PLXCANAPI_DIR}/lib NO_DEFAULT_PATH)    
     ENDIF(WIN32)
     
     IF(PLXCANAPI_LIB)
