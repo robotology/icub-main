@@ -97,11 +97,17 @@
  *
  *  Input ports
  *
+ *  - /aam
+ *    this port is attached to the terminal so that you can type in commands and receive replies.
+ *    At present, it only implements the 'quit' command; everything else is simply echoed back.
+ *    Note that the name of this port mirrors whatever is provided by the --name parameter value
  *  - /aam/image:i
  *  - /aam/threshold:i
  *
  * Output ports
  *
+ *  - /aam
+ *    see above
  *  - /aam/image:o
  *  - /aam/value:o
  *
