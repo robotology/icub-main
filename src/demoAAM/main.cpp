@@ -1,3 +1,10 @@
+// Audit Trail 
+
+// Changed the context path from "demoAAM" to "demoAAM/conf" as you need to specify the full sub-path to .ini file 
+// David Vernon 13/8/09
+
+ 
+
 #include <yarp/os/all.h>
 #include <yarp/os/ResourceFinder.h>
 #include <yarp/sig/all.h>
@@ -75,7 +82,8 @@ public:
 								  "Initialization file (string)").asString();
 
 		ConstString context = initialBottle.check("context",
-						    Value("demoAAM"),
+//						    Value("demoAAM"),
+						    Value("demoAAM/conf"),           // need to specify the full sub-path to ini file DV 13/8/09
 						    "Context (string)").asString();
 
 		// create and initialize resource finder
@@ -90,7 +98,8 @@ public:
 		// parse parameters or assign default values (append to getName=="/aam")
 		portOutName = botConfig.check("portThresholdOut",
 		                              Value(getName("threshold:o")),
-		                              "Output threshold port (string)").asString();        int period = botConfig.check("period",
+		                              "Output threshold port (string)").asString();
+		int period = botConfig.check("period",
                                      Value(1000),
                                      "period (milliseconds)").asInt();
         double threshold = botConfig.check("threshold",
