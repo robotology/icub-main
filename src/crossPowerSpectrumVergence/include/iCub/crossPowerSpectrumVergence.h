@@ -145,17 +145,17 @@
  *    At present, it only implements the 'quit' command; everything else is simply echoed back.
  *    Note that the name of this port mirrors whatever is provided by the --name parameter value
 
- *  - /left_camera:i
- *  - /right_camera:i
+ *  - /crossPowerSpectrumVergence/left_camera:i
+ *  - /crossPowerSpectrumVergence/right_camera:i
  *
  * Output ports
  *
- * - /crossPowerSpectrumVergence
- * - /left_image:o
- * - /right_image:o
- * - /cross-power_spectrum:o
- * - /filtered_cross-power_spectrum:o
- * - /vergence_disparity:o
+ * - /crossPowerSpectrumVergence/crossPowerSpectrumVergence
+ * - /crossPowerSpectrumVergence/left_image:o
+ * - /crossPowerSpectrumVergence/right_image:o
+ * - /crossPowerSpectrumVergence/cross-power_spectrum:o
+ * - /crossPowerSpectrumVergence/filtered_cross-power_spectrum:o
+ * - /crossPowerSpectrumVergence/vergence_disparity:o
  *
  * \section in_files_sec Input Data Files
  * None
