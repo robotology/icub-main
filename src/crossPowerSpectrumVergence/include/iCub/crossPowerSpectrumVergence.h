@@ -312,3 +312,4 @@ public:
 };
 
 #endif // __ICUB_CROSSPOWERSPECTRUMVERGENCE_MODULE_H__
+//empty line to make gcc happy
