@@ -2,8 +2,9 @@
 
 /* 
  * Copyright (C) 2009 RobotCub Consortium, European Commission FP6 Project IST-004370
- * Authors: Alberto Bietti, Logan Niehaus, Giovanni Saponaro 
- * email:   <firstname.secondname>@robotcub.org
+ * Authors: Alberto Bietti, Logan Niehaus, Giovanni Saponaro
+ * Maintained by David Vernon
+ * email:   <david.vernon>@robotcub.org
  * website: www.robotcub.org
  * Permission is granted to copy, distribute, and/or modify this program
  * under the terms of the GNU General Public License, version 2 or any
@@ -19,71 +20,142 @@
  */
 
 /**
-*
-* @ingroup icub_module
-* \defgroup icub_autoAssociativeMemory autoAssociativeMemory
-*
-* description of the module goes here ....
-*
-*
-* \section lib_sec Libraries
-* YARP.
-*
-* \section parameters_sec Parameters
-* 
-* --file autoAssociativeMemory.ini: specifies parameter file
-*
-* \section portsa_sec Ports Accessed
-* 
-* - /icub/cam/left
-*                      
-* \section portsc_sec Ports Created
-*
-*  Input ports
-*
-*  - /aam/image:i
-*  - /aam/threshold:i
-*
-* Output ports
-*
-*  - /aam/image:o
-*  - /aam/value:o
-*
-* \section in_files_sec Input Data Files
-* None
-*
-* \section out_data_sec Output Data Files
-* None
-*
-* \section conf_file_sec Configuration Files
-* None
-* 
-* \section tested_os_sec Tested OS
-* Linux
-*
-* \section example_sec Example Instantiation of the Module
-* autoAssociativeMemory --file autoAssociativeMemory.ini
-*
-* \author Alberto Bietti, Logan Niehaus, Gionvanni Saponaro
-* 
-* Copyright (C) 2009 RobotCub Consortium
-* 
-* CopyPolicy: Released under the terms of the GNU GPL v2.0.
-* 
-*This file can be edited at src/autoAssociativeMemory/src/autoAssociativeMemoryModule.cpp.
+ *
+ * @ingroup icub_module
+ * \defgroup icub_autoAssociativeMemory autoAssociativeMemory
+ *
+ * The auto-associative memory (AAM) module - autoAssociativeMemory - effects the following functionality: 
+ *
+ * - when an image is presented to the memory, it attempts to recall that image; 
+ * - if a previously-stored image matches the presented image sufficiently well, the stored image is recalled; 
+ * - if no previously-stored image matches sufficiently well, the presented image is stored; 
+ * 
+ * Since images are streamed continuously, processing an image (i.e. reading it from the input port and attempting to recall it from the memory) 
+ * is triggered by the presence of the threshold value on the input port. The next image to be read and stored/recalled is only processed 
+ * when a new threshold is written to that port. 
+ * 
+ * 
+ * The AAM has the following inputs: 
+ * 
+ * - an input image 
+ * - a match threshold t, 0 ? t ? 1; stored images which equal or exceed the threshold are recalled (if more than one image exceeds the threshold, the image with the highest match is recalled) 
+ * 
+ *
+ * The AAM has the following outputs: 
+ * 
+ * - an output image 
+ * - a tuple containing an image id. number and a match value r, 0 ? r ? 1. These are type integer and double respectively. * * 
+ *
+ * \section lib_sec Libraries
+ * YARP.
+ *
+ * \section parameters_sec Parameters
+ * Command Line Parameters 
+ *
+ * The following key-value pairs can be specified as command-line parameters by prefixing -- to the key 
+ * (e.g. --from file.ini. The value part can be changed to suit your needs; the default values are shown below. 
+ * 
+ * - from autoAssociativeMemory.ini       specifies the configuration file
+ * - context autoAssociativeMemory/conf   specifies the sub-path from $ICUB_ROOT/icub/app to the configuration file
+ * - name /aam                            specifies the name of the module (used to form the stem of module port names)
+ * - robot /icub                          specifies the name of the robot (used to form the root of robot port names)*
+ *
+ *
+ * Configuration File Parameters 
+ *
+ * The following key-value pairs can be specified as parameters in the configuration file 
+ * (they can also be specified as command-line parameters if you so wish). 
+ * The value part can be changed to suit your needs; the default values are shown below. 
+ * 
+ * - portImageIn         image:i
+ * - portThresholdIn     threshold:i
+ * - portImageOut        image:o
+ * - portValueOut        value:o
+ * - database            defaultDatabase
+ * - path                ~/iCub/app/autoAssociativeMemory
+ * - threshold           0.6
+ * 
+ * The database parameter specifies the name of the directory in which the database of images is stored. 
+ * This directory must be created before running the module. 
+ * 
+ * The path parameter specifies the full path to the database directory. 
+ * This is where the where the database of image files is stored. 
+ * 
+ * For example, if the configuration file autoAssociativeMemory.ini is located in C:/iCub/app/demoAAM/conf 
+ * and the database is C:/iCub/app/demoAAM/defaultDatabase then 
+ *
+ * - autoAssociativeMemory module must be invoked with --context demoAAM/conf 
+ * - autoAssociativeMemory.ini must contain path C:/iCub/app/demoAAM
+ * - the directory C:/iCub/app/demoAAM/defaultDatabase must exist. 
+ *
+ *
+ * \section portsa_sec Ports Accessed
+ * 
+ * None
+ *                      
+ * \section portsc_sec Ports Created
+ *
+ *  Input ports
+ *
+ *  - /aam/image:i
+ *  - /aam/threshold:i
+ *
+ * Output ports
+ *
+ *  - /aam/image:o
+ *  - /aam/value:o
+ *
+ * The functional specification only names the ports to be used to communicate with the module 
+ * but doesn't say anything about the data transmitted on the ports. This is defined by the following code. 
+ *
+ *
+ * I/O Port Types & Naming   
+ *
+ * - BufferedPort<ImageOf<PixelRgb> > portImageIn;
+ * - BufferedPort<Bottle>             portThresholdIn;        //Double Threshold 
+ * - BufferedPort<ImageOf<PixelRgb> > portImageOut;
+ * - BufferedPort<Bottle>             portIdMatchValuesOut;   //Int image_id, Double match_value
+ *
+ *
+ * \section in_files_sec Input Data Files
+ * defaultDatabase  (see above)
+ *
+ * \section out_data_sec Output Data Files
+ * None
+ *
+ * \section conf_file_sec Configuration Files
+ * autoAssociativeMemory.ini (see above)
+ * 
+ * \section tested_os_sec Tested OS
+ * Linux and Windows
+ *
+ * \section example_sec Example Instantiation of the Module
+ * autoAssociativeMemory --context autoAssociativeMemory/conf  --from autoAssociativeMemory.ini
+ *
+ * \author Alberto Bietti, Logan Niehaus, Gionvanni Saponaro, David Vernon
+ * 
+ * Copyright (C) 2009 RobotCub Consortium
+ * 
+ * CopyPolicy: Released under the terms of the GNU GPL v2.0.
+ * 
+ * This file can be edited at src/autoAssociativeMemory/src/autoAssociativeMemoryModule.cpp.
 **/
- 
+  
 /*
-Audit Trail
------------
-
-22/07/09  Started work on development 
-
-25/07/09  Finished work on algorithm and modularization of the code
-
-27/07/09  Began documentation and evaluation of standards compliance
-
-*/ 
+ * Audit Trail
+ * -----------
+ *
+ * 22/07/09  Started work on development 
+ * 
+ * 25/07/09  Finished work on algorithm and modularization of the code
+ * 
+ * 27/07/09  Began documentation and evaluation of standards compliance
+ * 
+ * 16/08/09  Migrated to RFModule class and implemented necessary changes to ensure compliance with iCub standards 
+ * (see http://eris.liralab.it/wiki/ICub_Documentation_Standards)
+ * David Vernon   
+ *
+ */ 
 
 
 #ifndef __ICUB_AAM_MODULE_H__
@@ -93,7 +165,7 @@ Audit Trail
 
 //yarp
 #include <yarp/os/all.h>
-#include <yarp/os/ResourceFinder.h>
+#include <yarp/os/RFModule.h>
 #include <yarp/sig/all.h>
 
 //system
@@ -177,7 +249,7 @@ public:
         to recall images from stored memories. For more information on this spec,
         see the Wiki.
 */
-class AutoAssociativeMemoryModule : public Module
+class AutoAssociativeMemoryModule : public RFModule
 {
 private:
     // port names
@@ -200,11 +272,16 @@ private:
     ImageOf<PixelRgb>* _outputImg;
     double _matchResult;
   
+	//a port to handle messages
+    Port handlerPort; 
+
 public:
-    virtual bool open(Searchable &config);
+	virtual bool configure(yarp::os::ResourceFinder &rf);
     virtual bool updateModule();
     virtual bool interruptModule();
     virtual bool close();
+	virtual double getPeriod();
+	virtual bool respond(const Bottle& command, Bottle& reply);
 };
 
 #endif // __ICUB_AAM_MODULE_H__

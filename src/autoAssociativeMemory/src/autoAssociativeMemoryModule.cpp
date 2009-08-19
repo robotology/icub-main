@@ -18,6 +18,32 @@
  * Public License for more details
  */
 
+/* Audit Trail 
+ * -----------
+ *
+ * Migrated to RFModule class and implemented necessary changes to ensure compliance with iCub standards 
+ * (see http://eris.liralab.it/wiki/ICub_Documentation_Standards)
+ * David Vernon 16/08/09 
+ *
+ * Changed the way the database context is handled:
+ * it used to be the concatenation of the path parameter and the context parameter
+ * however, at present, there is no way to find out the context if it is not set explicitly as a parameter, 
+ * either in the config file on the command line, such as would be the case when using the default configuration
+ * In addition, the current policy is for the context to be $ICUB_ROOT/app/moduleName/conf and this means that
+ * the database directory would be under the conf directory and this doesn't make much sense.
+ * Consequently, the path parameter is now redefined to be the full path to the database directory
+ * and can, therefore, be located anywhere you like (specifically, it doesn't have to be located in the iCub repository)
+ * David Vernon 18/08/09
+ *
+ * Fixed problem with automatic prefixing of module name to port names
+ * it is now  getName(rf.check("portImageIn", Value("image:i"), "Input image port (string)").asString());
+ * instead of rf.check("portImageIn", Value(getName("image:i")), "Input image port (string)").asString();
+ * as the latter only prefixed the default value, not the parameter value
+ * David Vernon 19/08/09
+ */
+
+ 
+
 // iCub
 #include <iCub/autoAssociativeMemoryModule.h>
 
@@ -93,6 +119,8 @@ void HistMatchData::loadDatabase()
     else
         databaseFolder = databaseContext + "/" + databaseName;
 
+    // cout << "autoAssociativeMemory: trying to read from " << (databaseFolder + "/" + databaseName).c_str() << endl;
+
     ifstream datafile((databaseFolder + "/" + databaseName).c_str());
     if (datafile.is_open()) {
         while (!datafile.eof()) {  //open the file and read in each line
@@ -105,6 +133,9 @@ void HistMatchData::loadDatabase()
             imgs.push_back(yarpImg);
         }
     }
+	else {
+		cout << "autoAssociativeMemory: unable to open " << (databaseFolder + "/" + databaseName).c_str() << endl;
+	}
 }
     
 ThresholdReceiver::ThresholdReceiver(HistMatchData* d, BufferedPort<ImageOf<PixelRgb> >* iPortIn, BufferedPort<ImageOf<PixelRgb> >* iPort, BufferedPort<Bottle>* mPort) : data(d), imgPortIn(iPortIn), imgPort(iPort), matchPort(mPort) { }
@@ -219,11 +250,18 @@ void ThresholdReceiver::onRead(Bottle& t)
     
     
         //write it out to the proper database
+
         string databasefolder = data->getDatabaseContext() + "/" + data->getDatabaseName();
         cvCvtColor(img.getIplImage(), currImg, CV_RGB2BGR);  //opencv stores images as BGR
+
+		// cout << "autoAssociativeMemory: trying to save to " << (databasefolder + "/" + oss.str()).c_str() << endl;
+
         cvSaveImage((databasefolder + "/" + oss.str()).c_str(), currImg);
         
         ofstream of;
+
+	    // cout << "autoAssociativeMemory: trying to save to " << (databasefolder + "/" + data->getDatabaseName()).c_str() << endl;
+
         of.open((databasefolder + "/" + data->getDatabaseName()).c_str(),ios::app);
         of << oss.str() << endl;
         of.close();
@@ -238,61 +276,80 @@ void ThresholdReceiver::onRead(Bottle& t)
 
 /** AAM Module open. This is inherited from the module class. 
 */
-bool AutoAssociativeMemoryModule::open(Searchable &config)
+bool AutoAssociativeMemoryModule::configure(yarp::os::ResourceFinder &rf)
 {
-    // read options from command line
-    Bottle initialBottle(config.toString().c_str());
-    
-    // if autoAssociativeMemory.ini exists, then load it
-    ConstString initializationFile = initialBottle.check("from",
-						       Value("autoAssociativeMemory.ini"),
-						       "Initialization file (string)").asString();
-    
-    ConstString context = initialBottle.check("context",
-					    Value("autoAssociativeMemory"),
-					    "Context (string)").asString();
+    // attach a port to the module
+    // so that messages received from the port are redirected
+    // to the respond method
 
-    // create and initialize resource finder
-    ResourceFinder rf;
-    rf.setDefaultContext(context.c_str());
-    rf.setDefaultConfigFile(initializationFile.c_str());
-    rf.configure("ICUB_ROOT", 0, NULL);
+    handlerPort.open(getName()); 
+    attach(handlerPort);   
 
-    // pass configuration over to bottle
-    Bottle botConfig(rf.toString().c_str());
+    // attach to terminal so that text typed at the console
+    // is redirected to the respond method
 
-    // parse parameters or assign default values (append to getName=="/aam")
-    _namePortImageIn = botConfig.check("portImageIn",
-				     Value(getName("image:i")),
-				     "Input image port (string)").asString();
-    _namePortThresholdIn = botConfig.check("portThresholdIn",
-					 Value(getName("threshold:i")),
-					 "Input threshold port (string)").asString();
-    _namePortImageOut = botConfig.check("portImageOut",
-				      Value(getName("image:o")),
-				      "Output image port (string)").asString();
-    _namePortValueOut = botConfig.check("portValueOut",
-				      Value(getName("value:o")),
-				      "Output value port (string)").asString();
-
-    string databaseName = botConfig.check("database",
-					Value("defaultDatabase"),
-					"Database name (string)").asString().c_str();
-    string path = botConfig.check("path",
-				Value("~/iCub/app/"),
-				"complete path to context").asString().c_str();
-    double thr = botConfig.check("threshold",
-                               Value(0.6),
-                               "initial threshold value (double)").asDouble();
-				   
-    data.setThreshold(thr);
+    attachTerminal();     //attach to terminal
   
-    string ctxt = path;
-    ctxt += context.c_str();
-    data.setDatabaseContext(ctxt);
-    cout << "context: " << ctxt << endl;
-    data.setDatabaseName(databaseName);
-    cout << "databaseName: " << databaseName << endl;
+    // parse parameters or assign default values (append to getName=="/aam")
+
+    _namePortImageIn     = getName(
+                           rf.check("portImageIn",
+				           Value("image:i"),
+				           "Input image port (string)").asString()
+                           );
+
+    _namePortThresholdIn = getName(
+                           rf.check("portThresholdIn",
+					       Value("threshold:i"),
+					       "Input threshold port (string)").asString()
+                           );
+
+    _namePortImageOut    = getName(
+                           rf.check("portImageOut",
+				           Value("image:o"),
+				           "Output image port (string)").asString()
+                           );
+
+    _namePortValueOut    = getName(
+                           rf.check("portValueOut",
+				           Value("value:o"),
+				           "Output value port (string)").asString()
+                           );
+
+    string databaseName  = rf.check("database",
+					       Value("defaultDatabase"),
+					       "Database name (string)").asString().c_str();
+
+    string path          = rf.check("path",
+				           Value("~/iCub/app/autoAssociativeMemory"),
+    			           "complete path to context").asString().c_str(); 
+
+    double thr           = rf.check("threshold",
+                           Value(0.6),
+                           "initial threshold value (double)").asDouble();
+				   
+    // printf("autoAssociativeMemory: parameters are \n%s\n%s\n%s\n%s\n%s\n%s\n%f\n\n",
+    //       _namePortImageIn.c_str(),_namePortThresholdIn.c_str(), _namePortImageOut.c_str(), _namePortValueOut.c_str(), databaseName.c_str(), path.c_str(), thr);
+    
+    data.setThreshold(thr);
+   
+
+    /* Changed the way the database context is handled:
+     * it used to be the concatenation of the path parameter and the context parameter
+     * however, at present, there is no way to find out the context if it is not set explicitly as a parameter, 
+     * either in the config file on the command line, such as would be the case when using the default configuration
+     * In addition, the current policy is for the context to be $ICUB_ROOT/app/moduleName/conf and this means that
+     * the database directory would be under the conf directory and this doesn't make much sense.
+     * Consequently, the path parameter is now redefined to be the full path to the database directory
+     * and can, therefore, be located anywhere you like (specifically, it doesn't have to be located in the iCub repository)
+     */
+
+    data.setDatabaseContext(path);
+    //std::cout << "autoAssociativeMemory: databaseContext " << path.c_str() << endl << endl;
+    
+	data.setDatabaseName(databaseName);
+    //std::cout << "autoAssociativeMemory: databaseName    " << databaseName.c_str() << endl << endl;
+    
     data.loadDatabase();
 
     // create AAM ports
@@ -340,4 +397,36 @@ bool AutoAssociativeMemoryModule::close()
     //Network::fini();
     
     return true;
+}
+
+
+//module periodicity (seconds), called implicitly by module
+
+double AutoAssociativeMemoryModule::getPeriod()
+
+{
+    return 0.1; //module periodicity (seconds)
+}
+
+// Message handler. 
+// This allows other modules or a user to send commands to the module (in bottles)
+// This functionality is not yet used but it may come in useful later on
+// if/when we wish to change the parameters of the module at run time
+// For now, just echo all received messages.
+
+bool AutoAssociativeMemoryModule::respond(const Bottle& command, Bottle& reply) 
+{
+    // Message handler. Just echo all received messages.
+	
+    cout<<"Got something, echo is on"<<endl;
+    if (command.get(0).asString()=="quit")
+        return false;     
+    else
+        // do something and then reply
+        reply=command;
+    return true;
+
+	  
+ 
+
 }

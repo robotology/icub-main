@@ -19,7 +19,7 @@
  */
 
 // yarp
-#include <yarp/os/Module.h>
+#include <yarp/os/RFModule.h>
 #include <yarp/os/Network.h>
 
 // iCub
@@ -34,6 +34,21 @@ int main(int argc, char *argv[])
     Network network;
 
     AutoAssociativeMemoryModule moduleID;	// instantiate module
-    moduleID.setName("/aam");				// set default name (port prefix) of module
-    return moduleID.runModule(argc,argv);	// execute module
+    moduleID.setName("/aam");				// set default name of module 
+	                                        // port names will have this string prefixed
+	                                        // overridden by --name parameter
+ 
+    // prepare and configure the resource finder
+
+    ResourceFinder rf;
+    rf.setVerbose(true);
+    rf.setDefaultConfigFile("autoAssociativeMemory.ini");       //overridden by --from parameter
+    rf.setDefaultContext("autoAssociativeMemory/conf");         //overridden by --context parameter
+    rf.configure("ICUB_ROOT", argc, argv);
+
+    moduleID.configure(rf); 
+
+    moduleID.runModule();
+
+    return 0;
 }
