@@ -180,6 +180,19 @@ void zero_changed (GtkButton *button,	gpointer ch_p)
 { 
 	calibration_value = (unsigned int) (gtk_range_get_value (GTK_RANGE(slider_zero)));
 }
+
+//*********************************************************************************
+void matrix_changed (GtkEntry *entry,	gpointer index)
+{ 
+	int i=*(int*)index;
+	int ri=i/100;
+	int ci=i%100;
+	const gchar* temp2 = gtk_entry_get_text (GTK_ENTRY (edit_matrix[ri][ci]));
+	//const gchar* temp2 = gtk_entry_get_text (GTK_ENTRY (entry));
+	sscanf (temp2,"%x",&matrix[ri][ci]);
+	downloader.strain_set_matrix_rc(downloader.board_list[selected].pid,ri,ci,matrix[ri][ci]);
+}
+
 //*********************************************************************************
 void calibrate_click (GtkButton *button,	gpointer   user_data)
 { 
@@ -363,7 +376,7 @@ void calibrate_click (GtkButton *button,	gpointer   user_data)
 	g_signal_connect (slider_gain[4], "value-changed", G_CALLBACK (slider_changed),&ch[4]);
 	g_signal_connect (slider_gain[5], "value-changed", G_CALLBACK (slider_changed),&ch[5]);
 	g_signal_connect (slider_zero, "value-changed", G_CALLBACK (zero_changed),NULL);
-
+	
 	gtk_fixed_put(GTK_FIXED(fixed),auto_button,c[1]-20,r[5]+40);
 	gtk_fixed_put(GTK_FIXED(fixed),slider_zero,c[1]-20,r[5]+100);
 	gtk_fixed_put(GTK_FIXED(fixed),save_button,c[2]+10,r[5]+50);
@@ -374,6 +387,14 @@ void calibrate_click (GtkButton *button,	gpointer   user_data)
 	STOP_TIMER
 	START_TIMER	
 	timer_func (NULL);
+
+	int index[36];
+	for (ri=0;ri<6;ri++)
+	for (ci=0;ci<6;ci++)
+		{
+			index[ri*6+ci]=ri*100+ci;
+			g_signal_connect(edit_matrix[ri][ci], "changed", G_CALLBACK (matrix_changed),&index[ri*6+ci]);
+		}
 
 	gtk_widget_show_all (fixed);
 	//gtk_window_set_resizable(GTK_WINDOW(calib_window),false);
