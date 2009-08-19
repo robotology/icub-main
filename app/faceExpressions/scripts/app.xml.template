@@ -6,13 +6,13 @@
 <module>
       <name>yarpdev</name>
       <parameters>--name /icub/face/raw --device serial --subdevice serialport --file /usr/local/src/robot/iCub/app/faceExpressions/conf/serialport.ini</parameters>
-	  <node>pc104-icub01</node>
+	  <node>pc104</node>
 	<tag>face_device</tag>
    </module>
    <module>
       <name>emotionInterface</name>
       <parameters>--name /icub/face/emotions --file /usr/local/src/robot/iCub/app/faceExpressions/conf/emotions.ini</parameters>
-      <node>pc104-icub01</node>
+      <node>pc104</node>
 	<tag>emotions_interface</tag>
    </module>
 <connection>
