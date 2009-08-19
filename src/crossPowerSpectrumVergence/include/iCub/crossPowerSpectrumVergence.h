@@ -140,11 +140,17 @@
  *
  *  Input ports
  *
+ *  - /crossPowerSpectrumVergence
+ *    this port is attached to the terminal so that you can type in commands and receive replies.
+ *    At present, it only implements the 'quit' command; everything else is simply echoed back.
+ *    Note that the name of this port mirrors whatever is provided by the --name parameter value
+
  *  - /left_camera:i
  *  - /right_camera:i
  *
  * Output ports
  *
+ * - /crossPowerSpectrumVergence
  * - /left_image:o
  * - /right_image:o
  * - /cross-power_spectrum:o
