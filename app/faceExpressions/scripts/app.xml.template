@@ -1,8 +1,5 @@
 <application>
 <name>Face</name>
-<dependencies>
-      <port>/icub01</port>
-</dependencies>
 <module>
       <name>yarpdev</name>
       <parameters>--name /icub/face/raw --device serial --subdevice serialport --file /usr/local/src/robot/iCub/app/faceExpressions/conf/serialport.ini</parameters>
