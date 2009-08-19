@@ -21,7 +21,7 @@
 
 <module>
    <name>autoAssociativeMemory</name>
-   <parameters></parameters>
+   <parameters>--context demoAAM/conf</parameters>
    <node>icub1</node>
    <tag>aam</tag>
 </module>
