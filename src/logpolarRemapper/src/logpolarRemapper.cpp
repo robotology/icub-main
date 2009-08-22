@@ -12,43 +12,43 @@
 @ingroup icub_module
 \defgroup icub_logpolarRemapper logpolarRemapper
 
-This is a simple module that connects to the logpolar grabber and reconstruct 
+This is a simple module that connects to the logpolar grabber (ServerLogpolarGrabber) and reconstruct 
 the logpolar image to cartesian.
 
 \section intro_sec Description
 This is a test and simple module that connects to a ServerLogpolarGrabber, reads
 the logpolar stream from the server, remaps it to cartesian using the ClientLogpolarGrabber
 class (client side of the device). It uses the RFModule to implement the standard
-module.
-
-It creates also ports for rpc commands (to the module) and rpc commands (to implement
+module. It creates also ports for rpc commands (to the module) and rpc commands (to implement
 the remote interfaces).
 
 \section lib_sec Libraries
 The logpolarRemapper depends on the iCubDev, icubmod and logPolar libraries.
 
 \section parameters_sec Parameters
---width the width of the reconstructed image. This need not be the original image size.
---height the height of the reconstructed image.
---name the name of the module. This is used to create port names (e.g. name:rpc, name:out).
---remote the name of the remote grabber ports to connect to (e.g. /grabber).
- 
+\code
+ --width: the width of the reconstructed image. This need not be the original image size.
+ --height: the height of the reconstructed image.
+ --name: the name of the module. This is used to create port names (e.g. /name:rpc, /name:out).
+ --remote: the name of the remote grabber ports to connect to (e.g. /grabber).
+\endcode
+
 \section portsa_sec Ports Accessed
 If the remote grabber base name is "grabber" then logpolarRemapper connects to:
-/grabber
-/grabber/logpolar
-/grabber/fovea
+ - /grabber
+ - /grabber/logpolar
+ - /grabber/fovea
 
 \section portsc_sec Ports Created
 Input ports names are constructed from the "name" parameter, assuming this is set to "remapper", they are:
-/remapper: stream of incoming cartesian images (not used by the current implementation).
-/remapper/logpolar: stream of incoming logpolar images.
-/remapper/fovea: stream of incoming foveal images (not used by the current implementation).
-/remapper:rpc: the module port which receives the rpc module messages (e.g. quit).
+ - /remapper: stream of incoming cartesian images (not used by the current implementation).
+ - /remapper/logpolar: stream of incoming logpolar images.
+ - /remapper/fovea: stream of incoming foveal images (not used by the current implementation).
+ - /remapper:rpc: the module port which receives the rpc module messages (e.g. quit).
     - [quit]: quit the module (exit).
 
 Output ports names are also constructed from the "name" parameter, assuming this is set to "remapper", they are:
-/remapper:out: stream of reconstructed images of size "width" and "height" (module parameters).
+ - /remapper:out: stream of reconstructed images of size "width" and "height" (module parameters).
 
 \section in_files_sec Input Data Files
 No input data files.
@@ -69,7 +69,8 @@ logpolarRemapper --name remapper --remote /grabber --width 480
 Copyright (C) 2008 RobotCub Consortium
 CopyPolicy: Released under the terms of the GNU GPL v2.0.
 This file can be edited at src/logpolarRemapper/logpolarRemapper.cpp.
-**/
+
+*/
 
 // default.
 #include <stdio.h>
