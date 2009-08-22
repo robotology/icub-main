@@ -7,7 +7,13 @@
  *
  */
 
-// LATER: multithreading.
+/**
+ * @file ClientLogpolarFrameGrabber.h
+ * @brief A client device driver that connects to the corresponding ServerLogpolarFrameGrabber exporing the IFrameGrabberImage 
+ * interface with the ability of obtaining standard, logpolar and foveal images.
+ *
+ */
+
 
 #ifndef _YARP2_CLIENTLOGPOLARFRAMEGRABBER_
 #define _YARP2_CLIENTLOGPOLARFRAMEGRABBER_
@@ -27,10 +33,12 @@ namespace yarp{
 #define NSEMA ((yarp::os::Semaphore&)nmutex)
 
 /**
- * @ingroup dev_impl_wrapper
+ * @ingroup logpolar
  *
  * Connect to a ServerLogpolarFrameGrabber.  See ServerLogpolarFrameGrabber for
- * the network protocol used.
+ * details of the network protocol in use. This class defines and implements the client side of a 
+ * frame grabber in logpolar image format. This is a the client side of a network wrapper of any device 
+ * providing the IFrameGrabberImage and IFrameGrabberControls interfaces.
  *
  */
 class yarp::dev::ClientLogpolarFrameGrabber : 
@@ -75,13 +83,14 @@ public:
     virtual bool open(yarp::os::Searchable& config);
 
     /**
+     * Close the device driver.
      * @return true iff the operation is successful.
      */
     virtual bool close();
 
     // implement ILogpolarFrameGrabberImage.
     /**
-     * get the number of eccentricities.
+     * Get the number of eccentricities.
      * @return the number of eccentricities of the logpolar image.
      */
     virtual int necc(void) const {
@@ -92,7 +101,7 @@ public:
     }
 
     /**
-     * get the number of angles.
+     * Get the number of angles.
      * @return the number of angles of the logpolar image.
      */
     virtual int nang(void) const {
@@ -103,7 +112,7 @@ public:
     }
 
     /**
-     * get the fovea size (in pixels).
+     * Get the fovea size (in pixels).
      * @return the size of the foveal image (square).
      */
     virtual int fovea(void) const {
@@ -114,7 +123,7 @@ public:
     }
 
     /**
-     * get the overlap between receptive fields.
+     * Get the overlap between receptive fields.
      * @return the size of the overlap (double).
      */
     virtual double overlap(void) const {
@@ -125,7 +134,7 @@ public:
     }
 
     /**
-     * get the logpolar image.
+     * Get the logpolar image.
      * @param image is the RGB image containing the logpolar subsampled image.
      * @return true iff successful.
      */
@@ -141,7 +150,7 @@ public:
     }
 
     /**
-     * get the foveal image (a small part of the centre of the image in full resolution).
+     * Get the foveal image (a small part of the centre of the image in full resolution).
      * @param image is the RGB image containing the foveal image.
      * @return true iff successful.
      */
@@ -158,7 +167,7 @@ public:
 
     // implement ILogpolarAPI.
     /**
-     * alloc the lookup tables and stores them in memory.
+     * Alloc the lookup tables and stores them in memory.
      * @param necc is the number of eccentricities of the logpolar image.
      * @param nang is the number of angles of the logpolar image.
      * @param w is the width of the original rectangular image.
@@ -169,13 +178,13 @@ public:
     virtual bool allocLookupTables (int necc, int nang, int w, int h, double overlap);
 
     /**
-     * free the lookup tables from memory.
+     * Free the lookup tables from memory.
      * @return true iff successful.
      */
     virtual bool freeLookupTables ();
 
     /**
-     * converts an image from rectangular to logpolar.
+     * Converts an image from rectangular to logpolar.
      * @param lp is the logpolar image (destination).
      * @param cart is the cartesian image (source data).
      * @return true iff successful. Beware that tables must be
@@ -185,7 +194,7 @@ public:
                                 const yarp::sig::ImageOf<yarp::sig::PixelRgb>& cart);
 
     /**
-     * converts an image from logpolar to cartesian (rectangular).
+     * Converts an image from logpolar to cartesian (rectangular).
      * @param cart is the cartesian image (destination).
      * @param lp is the logpolar image (source).
      * @return true iff successful. Beware that tables must be

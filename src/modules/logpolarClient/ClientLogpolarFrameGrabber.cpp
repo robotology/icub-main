@@ -7,6 +7,15 @@
  *
  */
 
+/**
+ * @file ClientLogpolarFrameGrabber.cpp
+ * @brief Implementation of the network wrapper device driver for the logpolar subsampling of images.
+ *
+ * @cond
+ *
+ * @author Giorgio Metta
+ */
+
 #include <stdio.h>
 #include <memory.h>
 
@@ -279,4 +288,7 @@ bool ClientLogpolarFrameGrabber::logpolarToCart(ImageOf<PixelRgb>& cart, const I
     return ok;
 }
 
+/**
+ * @endcond
+ */
 

@@ -7,6 +7,15 @@
  *
  */
 
+/**
+ * @file ServerLogpolarFrameGrabber.cpp
+ * @brief Implementation of the network wrapper device driver for the logpolar subsampling of images.
+ *
+ * @cond
+ *
+ * @author Giorgio Metta
+ */
+
 #include <stdio.h>
 #include <memory.h>
 
@@ -1093,4 +1102,6 @@ bool FovealImageFormatter::subsampleFovea(yarp::sig::ImageOf<yarp::sig::PixelRgb
     return true;
 }
 
-
+/**
+ * @endcond
+ */

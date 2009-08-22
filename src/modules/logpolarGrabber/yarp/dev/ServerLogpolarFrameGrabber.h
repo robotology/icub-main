@@ -7,7 +7,31 @@
  *
  */
 
-// LATER: multithreading.
+/**
+ * @file ServerLogpolarFrameGrabber.h
+ * @brief A device driver that wraps logpolar sampling around a grabber device exporing the IFrameGrabberImage 
+ * interface and a number of ports with standard, logpolar and foveal images.
+ *
+ * 
+ * @defgroup logpolar logpolar drivers
+ * @ingroup icub_hardware_modules
+ *
+ * Classes that define and implement a frame grabber in logpolar image format. This is a
+ * network wrapper of any device providing the IFrameGrabberImage and IFrameGrabberControls
+ * interfaces.
+ *
+ * The network interface is built on multiple Ports (logpolar and foveal).
+ * Images are streamed out from those Ports -- RemoteFrameGrabber
+ * uses these streams to provide the IFrameGrabberImage/ILogpolarFrameGrabberImage 
+ * interfaces.
+ * The IFrameGrabberControls and ILogpolarFrameGrabberControls functionality are 
+ * provided via RPC.
+ * 
+ * @section dep_sec Dependencies 
+ * - the logPolar library 
+ *
+ * @author Giorgio Metta
+ */
 
 #ifndef __YARPSERVERLOGPOLARFRAMEGRABBER__
 #define __YARPSERVERLOGPOLARFRAMEGRABBER__
@@ -40,7 +64,9 @@ namespace yarp {
 }
 
 /**
- * base class with format method. Pass this as F argument to the ImageFormatter template.
+ * @ingroup logpolar
+ *
+ * A template base class with format method. Pass this as F argument to the ImageFormatter template.
  */
 template <class T>
 class yarp::dev::BaseFormatter {
@@ -49,74 +75,73 @@ public:
      * The format method takes a raw buffer image and formats according to the
      * code provided in the format method.
      *
-     * @param buffer, is the raw input buffer, e.g. bayer pattern image.
-     * @param formatted, is the output image of type T.
-     * @return true, iff the call is successful.
+     * @param buffer is the raw input buffer, e.g. an rgb image.
+     * @param formatted is the output image of type T.
+     * @return true iff the call is successful.
      */
     virtual bool format(const T& buffer, T& formatted) { return false; }
 };
 
 /**
- * customization to the standard image formatter (rectangular).
+ * @ingroup logpolar
+ *
+ * Customization to the standard image formatter to provide a rectangular subsampled image.
  */
 class yarp::dev::StdImageFormatter : public yarp::dev::BaseFormatter<yarp::sig::ImageOf<yarp::sig::PixelRgb> > {
-protected:
-//    yarp::sig::ImageOf<yarp::sig::PixelRgb> temporary;
-
 public:
     /**
      * The format method takes a raw buffer image and formats according to the
      * code provided in the format method.
      *
-     * @param buffer, is the raw input buffer, e.g. bayer pattern image.
-     * @param formatted, is the output image of type T.
-     * @return true, iff the call is successful.
+     * @param buffer is the raw input buffer, e.g. bayer pattern image.
+     * @param formatted is the output image of type T.
+     * @return true iff the call is successful.
      */
     virtual bool format(const yarp::sig::ImageOf<yarp::sig::PixelRgb>& buffer, 
                         yarp::sig::ImageOf<yarp::sig::PixelRgb>& formatted);
 };
 
 /**
- * customization to the logpolar image formatter.
+ * @ingroup logpolar
+ *
+ * Customization of the standard image formatter to provide a logpolar subsampled image output.
  */
 class yarp::dev::LogpolarImageFormatter : public yarp::dev::BaseFormatter<yarp::sig::ImageOf<yarp::sig::PixelRgb> > {
 protected:
-//    yarp::sig::ImageOf<yarp::sig::PixelMono> temporary;
-
 public:
     /**
      * The format method takes a raw buffer image and formats according to the
      * code provided in the format method.
      *
-     * @param buffer, is the raw input buffer, e.g. bayer pattern image.
-     * @param formatted, is the output image of type T.
-     * @return true, iff the call is successful.
+     * @param buffer is the raw input buffer, e.g. bayer pattern image.
+     * @param formatted is the output image of type T.
+     * @return true iff the call is successful.
      */
     virtual bool format(const yarp::sig::ImageOf<yarp::sig::PixelRgb>& buffer, 
                         yarp::sig::ImageOf<yarp::sig::PixelRgb>& formatted);
 };
 
 /**
- * customization to the foveal image formatter.
+ * @ingroup logpolar
+ * 
+ * Customization of the standard formatter to provide a foveal image output (full res cartesian image of the fovea).
  */
 class yarp::dev::FovealImageFormatter : public yarp::dev::BaseFormatter<yarp::sig::ImageOf<yarp::sig::PixelRgb> > {
 protected:
-//    yarp::sig::ImageOf<yarp::sig::PixelMono> temporary;
-
 public:
     /**
      * The format method takes a raw buffer image and formats according to the
      * code provided in the format method.
      *
-     * @param buffer, is the raw input buffer, e.g. bayer pattern image.
-     * @param formatted, is the output image of type T.
-     * @return true, iff the call is successful.
+     * @param buffer is the raw input buffer, e.g. bayer pattern image.
+     * @param formatted is the output image of type T.
+     * @return true iff the call is successful.
      */
     virtual bool format(const yarp::sig::ImageOf<yarp::sig::PixelRgb>& buffer, 
                         yarp::sig::ImageOf<yarp::sig::PixelRgb>& formatted);
 
     /**
-     * get the fovea from the raw full-res buffer.
+     * Get the fovea from the raw full-res buffer.
      * @param dst is the destination image (Yarp image).
      * @param src is the source image buffer.
      * @return true iff successful.
@@ -126,7 +151,10 @@ public:
 };
 
 /**
- * a flexible image formatter template.
+ * @ingroup logpolar
+ *
+ * A flexible image formatter template class. This takes raw images as input, formats them
+ * formats and writes them to an output port.
  */
 template <class T, class F>
 class yarp::dev::ImageFormatter : public yarp::os::Port {
@@ -195,8 +223,8 @@ public:
      * This method calls format to process the image buffer and then 
      * sends the result across the network using the internal Port object.
      *
-     * @param buffer, is the raw input buffer, e.g. bayer pattern image.
-     * @return true, iff the call is successful.
+     * @param buffer is the raw input buffer, e.g. bayer pattern image.
+     * @return true iff the call is successful.
      */
     virtual bool process(const T& buffer) {
         yarp::os::Stamp stamp;
@@ -226,7 +254,7 @@ public:
 
 
 /**
- * @ingroup dev_impl_wrapper
+ * @ingroup logpolar
  *
  * Export a frame grabber in logpolar image format to the network.  
  * Provides the IFrameGrabberImage, IFrameGrabberControls, 
@@ -242,13 +270,10 @@ public:
  *
  * Here's a command-line example:
  * \verbatim
- [terminal A] icubmoddev --device test_grabber --width 8 --height 8 --name /grabber --framerate 30
- [terminal B] yarp read /read
- [terminal C] yarp connect /grabber /read
- [terminal C] echo "[get] [gain]" | yarp rpc /grabber
+ [terminal A] icubmoddev --device logpolargrabber --width 320 --height 240 --framerate 33 --subdevice test_grabber
+ [terminal B] yarpview --name /view1 --x 0 --y 50 --synch
+ [terminal C] yarp connect /grabber\logpolar /view1
  \endverbatim
- *
- * LATER: fix the example here!
  *
  * The yarpdev line starts a TestFrameGrabber wrapped in a ServerLogpolarFrameGrabber.
  * Parameters are:
@@ -259,9 +284,9 @@ public:
  * supported by the device. Notice that the maximum frame rate is determined by
  * the device.
  * 
- * After the "yarp connect" line, image descriptions will show up in 
- * terminal B (you could view them with the yarpview application).
- * The "yarp rpc" command should query the gain (0.0 for the test grabber).
+ * After the "yarp connect" line, images will show up in the yarpview window.
+ *
+ * The "yarp rpc" command can be used to query the parameters of the test_grabber.
  *
  * <TABLE>
  * <TR><TD> Command (text form) </TD><TD> Response </TD><TD> Code equivalent </TD></TR>
@@ -351,7 +376,7 @@ public:
     /**
      * Implement the respond method from the DeviceResponder base class.
      * @param command, the request to the device arriving from the port attached to the responder.
-     * @param reply, the reply message to the request.
+     * @param reply the reply message to the request.
      * @return true iff the message was recognized ok.
      */
     virtual bool respond(const yarp::os::Bottle& command, yarp::os::Bottle& reply);
@@ -365,20 +390,20 @@ public:
     // is sampled to logpolar and/or copied without extra processing.
 
     /**
-     * get the last image from the acquisition buffer.
+     * Get the last image from the acquisition buffer.
      * @param image is filled with the last acquired buffer in Rgb format.
      * @return true iff the operation is successful.
      */
     virtual bool getImage(yarp::sig::ImageOf<yarp::sig::PixelRgb>& image);
     
     /**
-     * get the height of the acquired buffer (number of rows) in pixels.
+     * Get the height of the acquired buffer (number of rows) in pixels.
      * @return the height of the image in pixels.
      */
     virtual int height() const;
 
     /**
-     * get the width of the acquired buffer (number of rows) in pixels.
+     * Get the width of the acquired buffer (number of rows) in pixels.
      * @return the width of the image in pixels.
      */
     virtual int width() const;
@@ -386,28 +411,28 @@ public:
     // the IFrameGrabberControls interface (set methods).
 
     /**
-     * set the brightness parameter of the acquisition device.
+     * Set the brightness parameter of the acquisition device.
      * @param v is a double whose range depends on the specific camera device.
      * @return true iff the operation is successful.
      */
 	virtual bool setBrightness(double v);
 
     /**
-     * set the exposure parameter of the acquisition device.
+     * Set the exposure parameter of the acquisition device.
      * @param v is a double whose range depends on the specific camera device.
      * @return true iff the operation is successful.
      */
     virtual bool setExposure(double v);
 
     /**
-     * set the sharpness parameter of the acquisition device.
+     * Set the sharpness parameter of the acquisition device.
      * @param v is a double whose range depends on the specific camera device.
      * @return true iff the operation is successful.
      */
 	virtual bool setSharpness(double v);
 
     /**
-     * set the white balance parameters of the acquisition device.
+     * Set the white balance parameters of the acquisition device.
      * @param blue is a double value which controls the amount of blue in the image.
      * @param red is a double value which controls the amount of red in the image.
      * @return true iff the operation is successful.
@@ -415,42 +440,42 @@ public:
 	virtual bool setWhiteBalance(double blue, double red);
 
     /**
-     * set the hue parameter of the acquisition device.
+     * Set the hue parameter of the acquisition device.
      * @param v is a double value which changes the hue in the image.
      * @return true iff the operation is successful.
      */
 	virtual bool setHue(double v);
 
     /**
-     * set the saturation (color) parameter of the acquisition device.
+     * Set the saturation (color) parameter of the acquisition device.
      * @param v is a double value which changes the color saturation in the image.
      * @return true iff the operation is successful.
      */
 	virtual bool setSaturation(double v);
 
     /**
-     * set the gamma value (color correction) parameter of the acquisition device.
+     * Set the gamma value (color correction) parameter of the acquisition device.
      * @param v is a double value which changes the gamma of the image.
      * @return true iff the operation is successful.
      */
 	virtual bool setGamma(double v);
 
     /**
-     * set the shutter parameter of the acquisition device.
+     * Set the shutter parameter of the acquisition device.
      * @param v is a double value whose range depends on the specific device.
      * @return true iff the operation is successful.
      */
     virtual bool setShutter(double v);
 
     /**
-     * set the acquisition amplifier gain of the device.
+     * Set the acquisition amplifier gain of the device.
      * @param v is a double value whose range depends on the specific device.
      * @return true iff the operation is successful.
      */
     virtual bool setGain(double v);
 
     /**
-     * set the iris parameter of the acquisition device.
+     * Set the iris parameter of the acquisition device.
      * @param v is a double value whose range depends on the specifics of the device.
      * @return true iff the operation is successful.
      */
@@ -459,25 +484,25 @@ public:
     // the IFrameGrabberControls interface (get methods).
 
     /**
-     * get the brightness control value of the acquisition device.
+     * Get the brightness control value of the acquisition device.
      * @return the brightness value if successful, 0 otherwise.
      */
 	virtual double getBrightness();
 
     /**
-     * get the exposure control value of the camera acquisition device.
+     * Get the exposure control value of the camera acquisition device.
      * @return the exposure value if successful, 0 otherwise.
      */
 	virtual double getExposure();
 
     /**
-     * get the sharpness control value of the camera acquisition device.
+     * Get the sharpness control value of the camera acquisition device.
      * @return the sharpness value if successful, 0 otherwise.
      */
 	virtual double getSharpness();
 
     /**
-     * get the white balance control values of the camera acquisition device.
+     * Get the white balance control values of the camera acquisition device.
      * @param blue is a double precision number containing the current blue balance value.
      * @param red is a double precision number containing the current red balance value.
      * @return true iff successful.
@@ -485,37 +510,37 @@ public:
     virtual bool getWhiteBalance(double &blue, double &red);
 
     /**
-     * get the hue (color) control value of the camera acquisition device.
+     * Get the hue (color) control value of the camera acquisition device.
      * @return the value of the hue if successful, 0 otherwise.
      */
 	virtual double getHue();
 
     /**
-     * get the saturation (color) control value of the camera acquisition device.
+     * Get the saturation (color) control value of the camera acquisition device.
      * @return the value of the saturation if successful, 0 otherwise.
      */
 	virtual double getSaturation();
 
     /**
-     * get the gamma compensation control value of the camera acquisition device.
+     * Get the gamma compensation control value of the camera acquisition device.
      * @return the value of the gamma compensation if successful, 0 otherwise.
      */
 	virtual double getGamma();
 
     /**
-     * get the shutter control value of the camera acquisition device.
+     * Get the shutter control value of the camera acquisition device.
      * @return the value of the shutter if successful, 0 otherwise.
      */
     virtual double getShutter();
 
     /**
-     * get the amplifier gain value of the camera acquisition device.
+     * Get the amplifier gain value of the camera acquisition device.
      * @return the value of the amplifier gain if successful, 0 otherwise.
      */
     virtual double getGain();
 
     /**
-     * get the iris control value of the camera acquisition device.
+     * Get the iris control value of the camera acquisition device.
      * @return the value of the iris value if successful, 0 otherwise.
      */
     virtual double getIris();
@@ -529,38 +554,38 @@ public:
     // implementation of the ILogpolarFrameGrabberImage interface.
 
     /**
-     * get the number of eccentricities.
+     * Get the number of eccentricities.
      * @return the number of eccentricities of the logpolar image.
      */
     virtual int necc(void) const;
 
     /**
-     * get the number of angles.
+     * Get the number of angles.
      * @return the number of angles of the logpolar image.
      */
     virtual int nang(void) const;
 
     /**
-     * get the fovea size (in pixels).
+     * Get the fovea size (in pixels).
      * @return the size of the foveal image (square).
      */
     virtual int fovea(void) const;
 
     /**
-     * get the overlap between receptive fields.
+     * Get the overlap between receptive fields.
      * @return the size of the overlap (double).
      */
     virtual double overlap(void) const;
 
     /**
-     * get the logpolar image.
+     * Get the logpolar image.
      * @param image is the RGB image containing the logpolar subsampled image.
      * @return true iff successful.
      */
     virtual bool getLogpolarImage(yarp::sig::ImageOf<yarp::sig::PixelRgb>& image);
 
     /**
-     * get the foveal image (a small part of the centre of the image in full resolution).
+     * Get the foveal image (a small part of the centre of the image in full resolution).
      * @param image is the RGB image containing the foveal image.
      * @return true iff successful.
      */
@@ -569,7 +594,7 @@ public:
     // implementation of the ILogpolarAPI interface.
 
     /**
-     * alloc the lookup tables and stores them in memory.
+     * Alloc the lookup tables and stores them in memory.
      * @param necc is the number of eccentricities of the logpolar image.
      * @param nang is the number of angles of the logpolar image.
      * @param w is the width of the original rectangular image.
@@ -580,13 +605,13 @@ public:
     virtual bool allocLookupTables (int necc, int nang, int w, int h, double overlap);
 
     /**
-     * free the lookup tables from memory.
+     * Free the lookup tables from memory.
      * @return true iff successful.
      */
     virtual bool freeLookupTables ();
 
     /**
-     * converts an image from rectangular to logpolar.
+     * Converts an image from rectangular to logpolar.
      * @param lp is the logpolar image (destination).
      * @param cart is the cartesian image (source data).
      * @return true iff successful. Beware that tables must be
@@ -596,7 +621,7 @@ public:
                                 const yarp::sig::ImageOf<yarp::sig::PixelRgb>& cart);
 
     /**
-     * converts an image from logpolar to cartesian (rectangular).
+     * Converts an image from logpolar to cartesian (rectangular).
      * @param cart is the cartesian image (destination).
      * @param lp is the logpolar image (source).
      * @return true iff successful. Beware that tables must be
