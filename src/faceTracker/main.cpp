@@ -1,8 +1,6 @@
 
-#include <cv.h>
-#include <highgui.h>
+//#include <ace/OS.h>
 
-#include <ace/OS.h>
 #include <yarp/os/Network.h>
 #include <yarp/os/RFModule.h>
 #include <yarp/os/Semaphore.h>
@@ -13,9 +11,14 @@
 #include <yarp/sig/Image.h>
 #include <yarp/sig/ImageFile.h>
 
+// Giorgio: moved after ace/yarp inclusion, issues on Windows.
+#include <cv.h>
+#include <highgui.h>
+
 #include <iostream>
 #include <iomanip>
 #include <string>
+#include <time.h>
 
 #include "facedet.h"
                               
