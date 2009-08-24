@@ -5,7 +5,7 @@
 </dependencies>
    <module>
       <name>icubmoddev</name>
-	      <parameters>--device logpolargrabber --width 320 --height 240 --framerate 33 --subdevice test_grabber</parameters>
+	      <parameters>--device logpolargrabber --width 320 --height 240 --framerate 33 --subdevice test_grabber --mode [ball]</parameters>
       <!-- static_grabber filename C:\Users\pasa\Repository\_cvs\iCub\src\modules\staticgrabber\test.ppm -->
       <node>tamon-ten</node>
 	  <stdio>tamon-ten</stdio>
@@ -31,7 +31,6 @@
    </module>
    <module>
       <name>logpolarRemapper</name>
-      <parameters>--name remapper --remote /grabber --width 480</parameters>
       <node>tamon-ten</node>
       <stdio>tamon-ten</stdio>
       <tag>remapper</tag>
