@@ -2,6 +2,10 @@
 
 // Changed the context path from "demoAAM" to "demoAAM/conf" as you need to specify the full sub-path to .ini file 
 // David Vernon 13/8/09
+//
+// Changed to new convention for handling port names and module name
+// (module name has no / prefix and port names _always_ have / prefix)
+// David Vernon 26/08/09  
 
  
 
@@ -15,6 +19,15 @@ using namespace std;
 using namespace yarp;
 using namespace yarp::os;
 using namespace yarp::sig;
+
+bool replaceDoubleSlash(string &str) {
+   string::size_type loc;
+   if ((loc=str.find("//",0))!=string::npos) {
+      str.erase(loc+1,1);
+      return true;
+   }
+   return false;
+} 
 
 class Sender : public RateThread
 {
@@ -33,7 +46,7 @@ public:
 	virtual bool threadInit()
 	{
 		port_out= new BufferedPort<Bottle>();
-		port_out->open(portName);
+		port_out->open(portName.c_str());
 		cout << "Starting Driver at " << period << " ms" << endl;
 		return true;
 	}
@@ -72,7 +85,8 @@ public:
 
 	virtual bool open(Searchable &config)
 	{
-	
+	    string tempPortOutName;
+
 		// read options from command line
 		Bottle initialBottle(config.toString().c_str());
 
@@ -82,7 +96,6 @@ public:
 								  "Initialization file (string)").asString();
 
 		ConstString context = initialBottle.check("context",
-//						    Value("demoAAM"),
 						    Value("demoAAM/conf"),           // need to specify the full sub-path to ini file DV 13/8/09
 						    "Context (string)").asString();
 
@@ -96,9 +109,13 @@ public:
 		Bottle botConfig(rf.toString().c_str());
 
 		// parse parameters or assign default values (append to getName=="/aam")
-		portOutName = botConfig.check("portThresholdOut",
-		                              Value(getName("threshold:o")),
+		tempPortOutName = "/";
+        tempPortOutName += botConfig.check("portThresholdOut",
+		                              Value(getName("/threshold:o")),
 		                              "Output threshold port (string)").asString();
+        replaceDoubleSlash(tempPortOutName);     // temporary fix until behaviour of getName() is changed
+        portOutName = tempPortOutName.c_str();
+
 		int period = botConfig.check("period",
                                      Value(1000),
                                      "period (milliseconds)").asInt();
@@ -106,7 +123,7 @@ public:
                                            Value(0.6),
                                            "threshold (double)").asDouble();
 
-		portOut = new Sender(portOutName, period, threshold);
+		portOut = new Sender((ConstString)portOutName, period, threshold);
 		portOut->start();
 
 		return true;
@@ -131,7 +148,8 @@ int main(int argc, char *argv[])
 
 	AAMDemoModule mod;
 	
-	mod.setName("/aamdriver");
+	mod.setName("aamdriver");
 
 	return mod.runModule(argc,argv);
 }
+
