@@ -1,24 +1,5 @@
 // -*- mode:C++; tab-width:4; c-basic-offset:4; indent-tabs-mode:nil -*-
 
-/* 
- * Copyright (C) 2009 RobotCub Consortium, European Commission FP6 Project IST-004370
- * Authors: Alberto Bietti, Logan Niehaus, Giovanni Saponaro
- * Maintained by David Vernon
- * email:   <david.vernon>@robotcub.org
- * website: www.robotcub.org
- * Permission is granted to copy, distribute, and/or modify this program
- * under the terms of the GNU General Public License, version 2 or any
- * later version published by the Free Software Foundation.
- *
- * A copy of the license can be found at
- * http://www.robotcub.org/icub/license/gpl.txt
- *
- * This program is distributed in the hope that it will be useful, but
- * WITHOUT ANY WARRANTY; without even the implied warranty of
- * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the GNU General
- * Public License for more details
- */
-
 /**
  *
  * @ingroup icub_module
@@ -47,6 +28,7 @@
  * - a tuple containing an image id. number and a match value r, 0 ? r ? 1. These are type integer and double respectively. * * 
  *
  * \section lib_sec Libraries
+ *
  * YARP.
  *
  * \section parameters_sec Parameters
@@ -55,10 +37,14 @@
  * The following key-value pairs can be specified as command-line parameters by prefixing -- to the key 
  * (e.g. --from file.ini. The value part can be changed to suit your needs; the default values are shown below. 
  * 
- * - from autoAssociativeMemory.ini       specifies the configuration file
- * - context autoAssociativeMemory/conf   specifies the sub-path from $ICUB_ROOT/icub/app to the configuration file
- * - name /aam                            specifies the name of the module (used to form the stem of module port names)
- * - robot /icub                          specifies the name of the robot (used to form the root of robot port names)*
+ * - from autoAssociativeMemory.ini       
+ *   specifies the configuration file
+ * - context autoAssociativeMemory/conf   
+ *   specifies the sub-path from $ICUB_ROOT/icub/app to the configuration file
+ * - name aam                             
+ *   specifies the name of the module (used to form the stem of module port names)
+ * - robot icub                           
+ *   specifies the name of the robot (used to form the root of robot port names)
  *
  *
  * Configuration File Parameters 
@@ -67,10 +53,10 @@
  * (they can also be specified as command-line parameters if you so wish). 
  * The value part can be changed to suit your needs; the default values are shown below. 
  * 
- * - portImageIn         image:i
- * - portThresholdIn     threshold:i
- * - portImageOut        image:o
- * - portValueOut        value:o
+ * - portImageIn         /image:i
+ * - portThresholdIn     /threshold:i
+ * - portImageOut        /image:o
+ * - portValueOut        /value:o
  * - database            defaultDatabase
  * - path                ~/iCub/app/autoAssociativeMemory
  * - threshold           0.6
@@ -85,7 +71,7 @@
  * and the database is C:/iCub/app/demoAAM/defaultDatabase then 
  *
  * - autoAssociativeMemory module must be invoked with --context demoAAM/conf 
- * - autoAssociativeMemory.ini must contain path C:/iCub/app/demoAAM
+ * - autoAssociativeMemory.ini must contain "path C:/iCub/app/demoAAM"
  * - the directory C:/iCub/app/demoAAM/defaultDatabase must exist. 
  *
  *
@@ -98,9 +84,11 @@
  *  Input ports
  *
  *  - /aam
- *    this port is attached to the terminal so that you can type in commands and receive replies.
- *    At present, it only implements the 'quit' command; everything else is simply echoed back.
- *    Note that the name of this port mirrors whatever is provided by the --name parameter value
+ *    This port is used to change the parameters of the module at run time or stop the module
+ *    This functionality is not yet used but it may come in useful later on
+ *    if/when we wish to change the parameters of the module at run time
+ *    For now, just echo all received messages.
+ *
  *  - /aam/image:i
  *  - /aam/threshold:i
  *
@@ -124,18 +112,23 @@
  *
  *
  * \section in_files_sec Input Data Files
+ *
  * defaultDatabase  (see above)
  *
  * \section out_data_sec Output Data Files
+ *
  * None
  *
  * \section conf_file_sec Configuration Files
+ *
  * autoAssociativeMemory.ini (see above)
  * 
  * \section tested_os_sec Tested OS
+ *
  * Linux and Windows
  *
  * \section example_sec Example Instantiation of the Module
+ *
  * autoAssociativeMemory --context autoAssociativeMemory/conf  --from autoAssociativeMemory.ini
  *
  * \author Alberto Bietti, Logan Niehaus, Gionvanni Saponaro, David Vernon
@@ -144,7 +137,7 @@
  * 
  * CopyPolicy: Released under the terms of the GNU GPL v2.0.
  * 
- * This file can be edited at src/autoAssociativeMemory/src/autoAssociativeMemoryModule.cpp.
+ * This file can be edited at src/autoAssociativeMemory/include/iCub/autoAssociativeMemoryModule.h
 **/
   
 /*
@@ -152,16 +145,33 @@
  * -----------
  *
  * 22/07/09  Started work on development 
- * 
  * 25/07/09  Finished work on algorithm and modularization of the code
- * 
  * 27/07/09  Began documentation and evaluation of standards compliance
- * 
  * 16/08/09  Migrated to RFModule class and implemented necessary changes to ensure compliance with iCub standards 
- * (see http://eris.liralab.it/wiki/ICub_Documentation_Standards)
+ * 26/08/09  Completed compliance with standards and changed to new convention for handling port names
+ *           (module name has no / prefix and port names _always_ have / prefix)
  * David Vernon   
  *
  */ 
+
+/* 
+ * Copyright (C) 2009 RobotCub Consortium, European Commission FP6 Project IST-004370
+ * Authors: Alberto Bietti, Logan Niehaus, Giovanni Saponaro
+ * Maintained by David Vernon
+ * email:   <david.vernon>@robotcub.org
+ * website: www.robotcub.org
+ * Permission is granted to copy, distribute, and/or modify this program
+ * under the terms of the GNU General Public License, version 2 or any
+ * later version published by the Free Software Foundation.
+ *
+ * A copy of the license can be found at
+ * http://www.robotcub.org/icub/license/gpl.txt
+ *
+ * This program is distributed in the hope that it will be useful, but
+ * WITHOUT ANY WARRANTY; without even the implied warranty of
+ * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the GNU General
+ * Public License for more details
+ */
 
 
 #ifndef __ICUB_AAM_MODULE_H__
@@ -191,22 +201,21 @@ using namespace yarp::os;
 using namespace yarp::sig;
 
 /*
-    Histogram Matching data holder class. Stores information that will be used by the HistMatch implementation of the AAM. 
-
-*/
+ * Histogram Matching data holder class. Stores information that will be used by the HistMatch implementation of the AAM. 
+ */
 
 class HistMatchData
 {
 private:
     std::vector<ImageOf<PixelRgb> > imgs; //image database (see AAM specification)
-    double threshold; //threshold (see AAM specification)
-    double matchValue;    //returned match value (see AAM specification)
-    string databaseName;  //name of the database folder in which memory images will be stored
-    string databaseContext;   //database context
+    double threshold;                     //threshold (see AAM specification)
+    double matchValue;                    //returned match value (see AAM specification)
+    string databaseName;                  //name of the database folder in which memory images will be stored
+    string databaseContext;               //database context
 
 public:
-    Semaphore thrMutex;   //threshold semaphore
-    Semaphore imgMutex;   //image semaphore
+    Semaphore thrMutex;                   //threshold semaphore
+    Semaphore imgMutex;                   //image semaphore
 
     /** HistMatchData constructor */  
     HistMatchData();
@@ -230,7 +239,7 @@ public:
 
 /** 
     Threshold Receiver class. Important for non-blocking callback functionality of the module
-*/
+ */
 class ThresholdReceiver : public BufferedPort<Bottle>
 {
 private:
@@ -254,15 +263,18 @@ public:
         This particular implementation uses color histogram intersection methods
         to recall images from stored memories. For more information on this spec,
         see the Wiki.
-*/
+ */
 class AutoAssociativeMemoryModule : public RFModule
 {
 private:
-    // port names
-    ConstString _namePortImageIn;
-    ConstString _namePortThresholdIn;
-    ConstString _namePortImageOut;
-    ConstString _namePortValueOut;
+    // port names ... changed from ConstString to string DV 26/8/2009
+    string _namePortImageIn;
+    string _namePortThresholdIn;
+    string _namePortImageOut;
+    string _namePortValueOut;
+    string _nameHandlerPort;
+
+    string moduleName;
 
     HistMatchData data;
 
@@ -291,3 +303,5 @@ public:
 };
 
 #endif // __ICUB_AAM_MODULE_H__
+//empty line to make gcc happy
+

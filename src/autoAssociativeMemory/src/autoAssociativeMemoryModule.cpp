@@ -40,12 +40,28 @@
  * instead of rf.check("portImageIn", Value(getName("image:i")), "Input image port (string)").asString();
  * as the latter only prefixed the default value, not the parameter value
  * David Vernon 19/08/09
+ *
+ * Completed compliance with standards and changed to new convention for handling port names and module name
+ * (module name has no / prefix and port names _always_ have / prefix)
+ * David Vernon 26/08/09  
+ *
  */
 
  
 
 // iCub
 #include <iCub/autoAssociativeMemoryModule.h>
+
+
+bool replaceDoubleSlash(string &str) {
+   string::size_type loc;
+   if ((loc=str.find("//",0))!=string::npos) {
+      str.erase(loc+1,1);
+      return true;
+   }
+   return false;
+} 
+
 
 //HistMatchData constructor
 HistMatchData::HistMatchData()
@@ -278,41 +294,47 @@ void ThresholdReceiver::onRead(Bottle& t)
 */
 bool AutoAssociativeMemoryModule::configure(yarp::os::ResourceFinder &rf)
 {
-    // attach a port to the module
-    // so that messages received from the port are redirected
-    // to the respond method
+    /* get the module name which will form the stem of all module port names */
 
-    handlerPort.open(getName()); 
-    attach(handlerPort);   
+    moduleName            = rf.check("name", 
+                            Value("aam"), 
+                            "module name (string)").asString(); 
 
-    // attach to terminal so that text typed at the console
-    // is redirected to the respond method
+    /*
+     * before continuing, set the module name before getting any other parameters, 
+     * specifically the port names which are dependent on the module name
+     */
+   
+    setName(moduleName.c_str());
 
-    attachTerminal();     //attach to terminal
   
     // parse parameters or assign default values (append to getName=="/aam")
 
-    _namePortImageIn     = getName(
+    _namePortImageIn     = "/";
+    _namePortImageIn    += getName(
                            rf.check("portImageIn",
-				           Value("image:i"),
+				           Value("/image:i"),
 				           "Input image port (string)").asString()
                            );
 
-    _namePortThresholdIn = getName(
+    _namePortThresholdIn = "/";
+    _namePortThresholdIn+= getName(
                            rf.check("portThresholdIn",
-					       Value("threshold:i"),
+					       Value("/threshold:i"),
 					       "Input threshold port (string)").asString()
                            );
 
-    _namePortImageOut    = getName(
+    _namePortImageOut    = "/";
+    _namePortImageOut   += getName(
                            rf.check("portImageOut",
-				           Value("image:o"),
+				           Value("/image:o"),
 				           "Output image port (string)").asString()
                            );
 
-    _namePortValueOut    = getName(
+    _namePortValueOut    = "/";
+    _namePortValueOut   += getName(
                            rf.check("portValueOut",
-				           Value("value:o"),
+				           Value("/value:o"),
 				           "Output value port (string)").asString()
                            );
 
@@ -328,6 +350,12 @@ bool AutoAssociativeMemoryModule::configure(yarp::os::ResourceFinder &rf)
                            Value(0.6),
                            "initial threshold value (double)").asDouble();
 				   
+    replaceDoubleSlash(_namePortImageIn);     // temporary fix until behaviour of getName() is changed
+    replaceDoubleSlash(_namePortThresholdIn); // ibid.
+    replaceDoubleSlash(_namePortImageOut);    // ibid.
+    replaceDoubleSlash(_namePortValueOut);    // ibid.
+
+
     // printf("autoAssociativeMemory: parameters are \n%s\n%s\n%s\n%s\n%s\n%s\n%f\n\n",
     //       _namePortImageIn.c_str(),_namePortThresholdIn.c_str(), _namePortImageOut.c_str(), _namePortValueOut.c_str(), databaseName.c_str(), path.c_str(), thr);
     
@@ -357,10 +385,22 @@ bool AutoAssociativeMemoryModule::configure(yarp::os::ResourceFinder &rf)
 
     _portThresholdIn->useCallback();
 
-    _portImageIn.open(_namePortImageIn);
-    _portThresholdIn->open(_namePortThresholdIn);
-    _portImageOut.open(_namePortImageOut);
-    _portValueOut.open(_namePortValueOut);
+    _portImageIn.open(_namePortImageIn.c_str());
+    _portThresholdIn->open(_namePortThresholdIn.c_str());
+    _portImageOut.open(_namePortImageOut.c_str());
+    _portValueOut.open(_namePortValueOut.c_str());
+
+    // attach a port to the module
+    // so that messages received from the port are redirected
+    // to the respond method
+   
+    _nameHandlerPort =  "/";
+    _nameHandlerPort += getName();          
+ 
+    handlerPort.open(_nameHandlerPort.c_str());  
+ 
+    attach(handlerPort);   
+    attachTerminal();     //attach to terminal
 	
     return true;
 }

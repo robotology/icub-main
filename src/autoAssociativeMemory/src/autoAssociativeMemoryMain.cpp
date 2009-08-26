@@ -18,27 +18,27 @@
  * Public License for more details
  */
 
-// yarp
+/* yarp */
 #include <yarp/os/RFModule.h>
 #include <yarp/os/Network.h>
 
-// iCub
+/* iCub */
 #include <iCub/autoAssociativeMemoryModule.h>
 
 using namespace yarp::os;
 
 int main(int argc, char *argv[])
 {
-    // create a specific Network object, rather than using Network::init().
-    // this way, automatic cleanup by the means of Network::fini() will be smoother
+    /* 
+     * create a specific Network object, rather than using Network::init().
+     * this way, automatic cleanup by the means of Network::fini() will be smoother
+     */
+
     Network network;
 
     AutoAssociativeMemoryModule moduleID;	// instantiate module
-    moduleID.setName("/aam");				// set default name of module 
-	                                        // port names will have this string prefixed
-	                                        // overridden by --name parameter
  
-    // prepare and configure the resource finder
+    /* prepare and configure the resource finder */
 
     ResourceFinder rf;
     rf.setVerbose(true);
@@ -46,9 +46,9 @@ int main(int argc, char *argv[])
     rf.setDefaultContext("autoAssociativeMemory/conf");         //overridden by --context parameter
     rf.configure("ICUB_ROOT", argc, argv);
 
-    moduleID.configure(rf); 
+    /* run the module: runModule() calls configure first and, if successful, it then runs */
 
-    moduleID.runModule();
+    moduleID.runModule(rf);
 
     return 0;
 }
