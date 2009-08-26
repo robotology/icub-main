@@ -282,12 +282,12 @@ bool  CrossPowerSpectrumVergence::interruptModule()
 bool  CrossPowerSpectrumVergence::respond(const Bottle& command, Bottle& reply) 
 /* ------------------------------------------------------------------------- */
 {
-   string helpMessage =  getName() + " commands are: \n" +  
-                         "help \n" + "quit \n" + 
-                         "set std <n> ... set the standard deviation \n" +
-                         "set max <n> ... set the number of maxima to detect \n" +
-                         "set thr <n> ... set the threshold \n" + 
-                         "(where <n> is an integer number) \n";
+   ConstString helpMessage = getName() + " commands are: \n" +  
+                             "help \n" + "quit \n" + 
+                             "set std <n> ... set the standard deviation \n" +
+                             "set max <n> ... set the number of maxima to detect \n" +
+                             "set thr <n> ... set the threshold \n" + 
+                             "(where <n> is an integer number) \n";
  
    reply.clear(); 
    if (command.get(0).asString()=="quit") {
@@ -330,13 +330,13 @@ double  CrossPowerSpectrumVergence::getPeriod()
 }
  
 
-WorkThread::WorkThread(BufferedPort<ImageOf<PixelRgb>> *imageIn1,  
-                       BufferedPort<ImageOf<PixelRgb>> *imageIn2,   
-                       BufferedPort<ImageOf<PixelRgb>> *imageOut1,  
-                       BufferedPort<ImageOf<PixelRgb>> *imageOut2, 
-                       BufferedPort<ImageOf<PixelRgb>> *imageOut3,  
-                       BufferedPort<ImageOf<PixelRgb>> *imageOut4,  
-                       BufferedPort<Vector>            *vergenceOut5, 
+WorkThread::WorkThread(BufferedPort<ImageOf<PixelRgb> > *imageIn1,  
+                       BufferedPort<ImageOf<PixelRgb> > *imageIn2,   
+                       BufferedPort<ImageOf<PixelRgb> > *imageOut1,  
+                       BufferedPort<ImageOf<PixelRgb> > *imageOut2, 
+                       BufferedPort<ImageOf<PixelRgb> > *imageOut3,  
+                       BufferedPort<ImageOf<PixelRgb> > *imageOut4,  
+                       BufferedPort<Vector>             *vergenceOut5, 
                        int *thresh,                             
                        int *filterRadius,                 
                        int *numMaxima,

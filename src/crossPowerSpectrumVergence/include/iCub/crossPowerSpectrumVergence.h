@@ -284,13 +284,13 @@ private:
  	    
     /* thread parameters: they are all pointers so that they refer to the original variables in the crossPowerSpectrumVergence */
 
-    BufferedPort<ImageOf<PixelRgb>> *portIn1;  // ports for acquiring and sending images
-    BufferedPort<ImageOf<PixelRgb>> *portIn2;  //  
-    BufferedPort<ImageOf<PixelRgb>> *portOut1; //
-    BufferedPort<ImageOf<PixelRgb>> *portOut2; //
-    BufferedPort<ImageOf<PixelRgb>> *portOut3; //
-    BufferedPort<ImageOf<PixelRgb>> *portOut4; //
-    BufferedPort<Vector>            *portOut5; // port for sending servo data to controlGaze
+    BufferedPort<ImageOf<PixelRgb> > *portIn1;  // ports for acquiring and sending images
+    BufferedPort<ImageOf<PixelRgb> > *portIn2;  //  
+    BufferedPort<ImageOf<PixelRgb> > *portOut1; //
+    BufferedPort<ImageOf<PixelRgb> > *portOut2; //
+    BufferedPort<ImageOf<PixelRgb> > *portOut3; //
+    BufferedPort<ImageOf<PixelRgb> > *portOut4; //
+    BufferedPort<Vector>             *portOut5; // port for sending servo data to controlGaze
 
     int *threshold;                            // % of maximum value
     int *filter_radius;                        // pixels
@@ -302,13 +302,13 @@ public:
 
     /* class methods  */
 
-   WorkThread(BufferedPort<ImageOf<PixelRgb>> *imageIn1,  
-              BufferedPort<ImageOf<PixelRgb>> *imageIn2,   
-              BufferedPort<ImageOf<PixelRgb>> *imageOut1,  
-              BufferedPort<ImageOf<PixelRgb>> *imageOut2, 
-              BufferedPort<ImageOf<PixelRgb>> *imageOut3,  
-              BufferedPort<ImageOf<PixelRgb>> *imageOut4,  
-              BufferedPort<Vector>            *vergenceOut5, 
+   WorkThread(BufferedPort<ImageOf<PixelRgb> > *imageIn1,  
+              BufferedPort<ImageOf<PixelRgb> > *imageIn2,   
+              BufferedPort<ImageOf<PixelRgb> > *imageOut1,  
+              BufferedPort<ImageOf<PixelRgb> > *imageOut2, 
+              BufferedPort<ImageOf<PixelRgb> > *imageOut3,  
+              BufferedPort<ImageOf<PixelRgb> > *imageOut4,  
+              BufferedPort<Vector>             *vergenceOut5, 
               int *thresh,                             
               int *filterRadius,                 
               int *numMaxima,
@@ -332,14 +332,14 @@ private:
 
     /* ports */
 
-    BufferedPort<ImageOf<PixelRgb>> portIn1;  // ports for acquiring and sending images
-    BufferedPort<ImageOf<PixelRgb>> portIn2;  //  
-    BufferedPort<ImageOf<PixelRgb>> portOut1; //
-    BufferedPort<ImageOf<PixelRgb>> portOut2; //
-    BufferedPort<ImageOf<PixelRgb>> portOut3; //
-    BufferedPort<ImageOf<PixelRgb>> portOut4; //
-    BufferedPort<Vector>            portOut5; // port for sending servo data to controlGaze
-    Port handlerPort;                         // port to handle messages
+    BufferedPort<ImageOf<PixelRgb> > portIn1;  // ports for acquiring and sending images
+    BufferedPort<ImageOf<PixelRgb> > portIn2;  //  
+    BufferedPort<ImageOf<PixelRgb> > portOut1; //
+    BufferedPort<ImageOf<PixelRgb> > portOut2; //
+    BufferedPort<ImageOf<PixelRgb> > portOut3; //
+    BufferedPort<ImageOf<PixelRgb> > portOut4; //
+    BufferedPort<Vector>             portOut5; // port for sending servo data to controlGaze
+    Port handlerPort;                          // port to handle messages
 
     /* module parameters */
 
