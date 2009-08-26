@@ -1,21 +1,3 @@
-/* 
- * Copyright (C) 2009 RobotCub Consortium, European Commission FP6 Project IST-004370
- * Authors: David Vernon
- * email:   david@vernon.eu
- * website: www.robotcub.org & www.vernon.eu
- * Permission is granted to copy, distribute, and/or modify this program
- * under the terms of the GNU General Public License, version 2 or any
- * later version published by the Free Software Foundation.
- *
- * A copy of the license can be found at
- * http://www.robotcub.org/icub/license/gpl.txt
- *
- * This program is distributed in the hope that it will be useful, but
- * WITHOUT ANY WARRANTY; without even the implied warranty of
- * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the GNU General
- * Public License for more details
- */
-
 /**
  *
  * @ingroup icub_module
@@ -65,10 +47,12 @@
  *
  *
  * \section lib_sec Libraries
+ * 
  * YARP.
  *
  *
  * \section parameters_sec Parameters
+ * 
  * Command Line Parameters 
  *
  * The following key-value pairs can be specified as command-line parameters by prefixing -- to the key 
@@ -76,8 +60,8 @@
  * 
  * - from crossPowerSpectrumVergence.ini       specifies the configuration file
  * - context crossPowerSpectrumVergence/conf   specifies the sub-path from $ICUB_ROOT/icub/app to the configuration file
- * - name /crossPowerSpectrumVergence          specifies the name of the module (used to form the stem of module port names)
- * - robot /icub                               specifies the name of the robot (used to form the root of robot port names)*
+ * - name crossPowerSpectrumVergence           specifies the name of the module (used to form the stem of module port names)
+ * - robot icub                                specifies the name of the robot (used to form the root of robot port names)*
  *
  *
  * Configuration File Parameters 
@@ -102,19 +86,19 @@
  *
  * Port names
  *
- * - left_camera                      left_camera:i
+ * - left_camera                      /left_camera:i
  *   Input from the left camera
- * - right_camera                     right_camera:i
+ * - right_camera                     /right_camera:i
  *   Input from the right camera
- * - left_output                      left_image:o
+ * - left_output                      /left_image:o
  *   Output of the Gaussian-apodized image from the left camera
- * - right_output                     right_image:o
+ * - right_output                     /right_image:o
  *   Output of the Gaussian-apodized image from the right camera
- * - cross-power_spectrum             cross-power_spectrum:o
+ * - cross-power_spectrum             /cross-power_spectrum:o
  *   Output of the raw cross-power spectrum image
- * - filtered_cross-power_spectrum    filtered_cross-power_spectrum:o
+ * - filtered_cross-power_spectrum    /filtered_cross-power_spectrum:o
  *   Output of the filtered cross-power spectrum with maxima enhancement, non-maxima suppression, and cross-hairs showing selected maxima 
- * - vergence_disparity               vergence_disparity:o 
+ * - vergence_disparity               /vergence_disparity:o 
  *   The disparity, in normalized coordinates (-1,+1), of the object closest to the head
  *
  *
@@ -141,10 +125,20 @@
  *  Input ports
  *
  *  - /crossPowerSpectrumVergence
- *    this port is attached to the terminal so that you can type in commands and receive replies.
- *    At present, it only implements the 'quit' command; everything else is simply echoed back.
+ *    This port is used to change the parameters of the module at run time or stop the module
+ *    The following commands are available
+ * 
+ *    help
+ *    quit
+ *    set std <n>   ... set the standard deviation 
+ *    set max <n>   ... set the number of maxima to detect
+ *    set thr <n>   ... set the threshold for detection
+ *    (where <n> is an integer number)
+ *
  *    Note that the name of this port mirrors whatever is provided by the --name parameter value
-
+ *    The port is attached to the terminal so that you can type in commands and receive replies.
+ *    You can also connect to it using yarp rpc /crossPowerSpectrumVergence 
+ *
  *  - /crossPowerSpectrumVergence/left_camera:i
  *  - /crossPowerSpectrumVergence/right_camera:i
  *
@@ -161,42 +155,67 @@
  * None
  *
  * \section out_data_sec Output Data Files
+ *
  * None
  *
  * \section conf_file_sec Configuration Files
+ *
  * crossPowerSpectrumVergence.ini
  * 
  * \section tested_os_sec Tested OS
+ *
  * Linux and Windows
  *
  * \section example_sec Example Instantiation of the Module
+ *
  * crossPowerSpectrumVergence  --context crossPowerSpectrumVergence/conf  --from crossPowerSpectrumVergence.ini
  *
  * \author 
+ *
  * David Vernon
  * 
  * Copyright (C) 2009 RobotCub Consortium
  * 
  * CopyPolicy: Released under the terms of the GNU GPL v2.0.
  * 
- * This file can be edited at src/crossPowerSpectrumVergence/src/crossPowerSpectrumVergence.cpp.
+ * This file can be edited at src/crossPowerSpectrumVergence/include/iCub/crossPowerSpectrumVergence.h
+ *
 **/
 
-/*
-Audit Trail
------------
+/* 
+ * Copyright (C) 2009 RobotCub Consortium, European Commission FP6 Project IST-004370
+ * Authors: David Vernon
+ * email:   david@vernon.eu
+ * website: www.robotcub.org 
+ * Permission is granted to copy, distribute, and/or modify this program
+ * under the terms of the GNU General Public License, version 2 or any
+ * later version published by the Free Software Foundation.
+ *
+ * A copy of the license can be found at
+ * http://www.robotcub.org/icub/license/gpl.txt
+ *
+ * This program is distributed in the hope that it will be useful, but
+ * WITHOUT ANY WARRANTY; without even the implied warranty of
+ * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the GNU General
+ * Public License for more details
+ */
 
-18/07/07  Started work on the development of a YARP version of this module   DV
-30/07/09  Migrated to the RFModule class to allow use of the resource finder DV
-17/08/09  Amended to comply with iCub Software Development Guidelines        DV
-*/ 
+
+/*
+ * Audit Trail
+ * -----------
+ * 18/07/07  Started work on the development of a YARP version of this module   DV
+ * 30/07/09  Migrated to the RFModule class to allow use of the resource finder DV
+ * 17/08/09  Amended to comply with iCub Software Development Guidelines        DV
+ * 24/08/09  Implemented Thread-based execution                                 DV
+ * 25/08/09  Implemented run-time modification of parameters using portHandler  DV
+ */ 
 
 #ifndef __ICUB_CROSSPOWERSPECTRUMVERGENCE_MODULE_H__
 #define __ICUB_CROSSPOWERSPECTRUMVERGENCE_MODULE_H__
 
 
-// System includes
-// ------------------------------------------------------------------------
+/* System includes */
 
 #include <assert.h>
 #include <stdio.h>
@@ -205,34 +224,37 @@ Audit Trail
 #include <stdlib.h>
 #include <math.h>
 #include <time.h>
-  
+#include <string>
+#include <iostream>
 
-// YARP includes
-// ------------------------------------------------------------------------
+/* YARP includes */
 
 #include <ace/config.h>
 #include <yarp/sig/all.h>
 #include <yarp/os/all.h>
 #include <yarp/os/RFModule.h>
 #include <yarp/os/Network.h>
+#include <yarp/os/Thread.h>
 
+using namespace std;
 using namespace yarp::os;
 using namespace yarp::sig;
 using namespace yarp::sig::draw;
 
 
-// fourierVision includes
-// ------------------------------------------------------------------------
+/* fourierVision includes */
 
 #include "iCub/fourierVision.h"
   
 
-class CrossPowerSpectrumVergence: public RFModule
-
+class WorkThread : public Thread
 {
 private:
-    // class variables
-	
+
+    /* class variables */
+  
+    int debug;
+
     eyecub_image   *image1;
     eyecub_image   *image2;
     eyecub_image   *image_a;
@@ -259,47 +281,97 @@ private:
     ImageOf<PixelRgb> *imgIn2;
   
     maxima_data_type maxima[10];
- 	
-    int debug;
+ 	    
+    /* thread parameters: they are all pointers so that they refer to the original variables in the crossPowerSpectrumVergence */
 
-    //  ports for acquiring and sending images
+    BufferedPort<ImageOf<PixelRgb>> *portIn1;  // ports for acquiring and sending images
+    BufferedPort<ImageOf<PixelRgb>> *portIn2;  //  
+    BufferedPort<ImageOf<PixelRgb>> *portOut1; //
+    BufferedPort<ImageOf<PixelRgb>> *portOut2; //
+    BufferedPort<ImageOf<PixelRgb>> *portOut3; //
+    BufferedPort<ImageOf<PixelRgb>> *portOut4; //
+    BufferedPort<Vector>            *portOut5; // port for sending servo data to controlGaze
 
-    BufferedPort<ImageOf<PixelRgb> > portIn1; 
-    BufferedPort<ImageOf<PixelRgb> > portIn2; 
-    BufferedPort<ImageOf<PixelRgb> > portOut1; 
-    BufferedPort<ImageOf<PixelRgb> > portOut2;
-    BufferedPort<ImageOf<PixelRgb> > portOut3; 
-    BufferedPort<ImageOf<PixelRgb> > portOut4; 
+    int *threshold;                            // % of maximum value
+    int *filter_radius;                        // pixels
+    int *number_of_maxima;                     // cardinal number
+    int *non_maxima_suppression_radius;        // pixels
+    int *std_dev;                              // % of image width
 
-    // port for sending servo data to controlGaze
-
-    BufferedPort<Vector> portOut5;
-
-    //a port to handle messages
-
-    Port handlerPort; 
-
-    // module arguments
-
-    int threshold;                          // % of maximum value
-    int filter_radius;                      // pixels
-    int number_of_maxima;                   // cardinal number
-    int non_maxima_suppression_radius;      // pixles
-    int std_dev;                            // % of image width
-
-    // port names
-
-    ConstString leftCameraPortName;
-    ConstString rightCameraPortName;
-    ConstString leftImagePortName; 
-    ConstString rightImagePortName;
-    ConstString crossPowerSpectrumPortName; 
-    ConstString filteredCrossPowerSpectrumPortName;
-    ConstString vergenceDisparityPortName; 
-          
 public:
 
-    // class methods
+    /* class methods  */
+
+   WorkThread(BufferedPort<ImageOf<PixelRgb>> *imageIn1,  
+              BufferedPort<ImageOf<PixelRgb>> *imageIn2,   
+              BufferedPort<ImageOf<PixelRgb>> *imageOut1,  
+              BufferedPort<ImageOf<PixelRgb>> *imageOut2, 
+              BufferedPort<ImageOf<PixelRgb>> *imageOut3,  
+              BufferedPort<ImageOf<PixelRgb>> *imageOut4,  
+              BufferedPort<Vector>            *vergenceOut5, 
+              int *thresh,                             
+              int *filterRadius,                 
+              int *numMaxima,
+              int *suppressionRadius, 
+              int *stdDev);
+
+   bool threadInit();     
+   void threadRelease();
+   void run(); 
+};
+
+
+class CrossPowerSpectrumVergence: public RFModule
+
+{
+private:
+    
+    /* class variables  */
+ 
+    int debug;
+
+    /* ports */
+
+    BufferedPort<ImageOf<PixelRgb>> portIn1;  // ports for acquiring and sending images
+    BufferedPort<ImageOf<PixelRgb>> portIn2;  //  
+    BufferedPort<ImageOf<PixelRgb>> portOut1; //
+    BufferedPort<ImageOf<PixelRgb>> portOut2; //
+    BufferedPort<ImageOf<PixelRgb>> portOut3; //
+    BufferedPort<ImageOf<PixelRgb>> portOut4; //
+    BufferedPort<Vector>            portOut5; // port for sending servo data to controlGaze
+    Port handlerPort;                         // port to handle messages
+
+    /* module parameters */
+
+    int threshold;                            // % of maximum value
+    int filter_radius;                        // pixels
+    int number_of_maxima;                     // cardinal number
+    int non_maxima_suppression_radius;        // pixels
+    int std_dev;                              // % of image width
+
+    /* module name */
+
+    string moduleName;
+
+    /* port names */
+
+    string leftCameraPortName;
+    string rightCameraPortName;
+    string leftImagePortName; 
+    string rightImagePortName;
+    string crossPowerSpectrumPortName; 
+    string filteredCrossPowerSpectrumPortName;
+    string vergenceDisparityPortName; 
+    string handlerPortName; 
+          
+
+    /* pointer to a new thread to be created and started in configure() and stopped in close() */
+
+    WorkThread *crossPowerSpectrumVergenceThread;
+ 
+ public:
+
+    /* class methods */
 
     CrossPowerSpectrumVergence();
     ~CrossPowerSpectrumVergence();
@@ -311,5 +383,8 @@ public:
     bool updateModule();
 };
 
+
 #endif // __ICUB_CROSSPOWERSPECTRUMVERGENCE_MODULE_H__
-//empty line to make gcc happy
+/* empty line to make gcc happy */
+
+

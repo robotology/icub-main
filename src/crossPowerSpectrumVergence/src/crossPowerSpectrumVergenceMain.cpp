@@ -25,24 +25,22 @@ Audit Trail
 17/08/09  Amended to comply with iCub Software Development Guidelines        DV
 */ 
  
-// crossPowerSpectrum includes
-// ------------------------------------------------------------------------
+/* crossPowerSpectrum includes */
 
 #include "iCub/crossPowerSpectrumVergence.h"
 
  
 int main(int argc, char *argv[]) {
 
-    //initialize yarp network
+    /* initialize yarp network */
 
     Network yarp;
 
-    //create the module
+    /* create the module */
 
     CrossPowerSpectrumVergence module;
-    module.setName("/crossPowerSpectrumVergence"); // set default name of module
 
-    // prepare and configure the resource finder
+    /* prepare and configure the resource finder */
 
     ResourceFinder rf;
     rf.setVerbose(true);
@@ -50,13 +48,11 @@ int main(int argc, char *argv[]) {
     rf.setDefaultContext("crossPowerSpectrumVergence/conf");  // the default path will now be $ICUB_ROOT/app/crossPowerSpectrumVergence/conf              
     rf.configure("ICUB_ROOT", argc, argv);
 
-    // configure the module 
+    /* run the module: runModule() calls configure first and, if successful, it then runs */
 
-    module.configure(rf);
-
-    // run the module
-
-    return module.runModule();
+    return module.runModule(rf);
 }
 
- 
+/* empty line to make gcc happy */
+
+
