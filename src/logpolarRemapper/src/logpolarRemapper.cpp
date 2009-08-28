@@ -8,6 +8,12 @@
  */
 
 /**
+ * @file logpolarRemapper.cpp
+ * @brief Test module of the logpolarGrabber using the ClientLogpolarGrabber class to connect
+ * to a remote ServerLogpolarGrabber device driver.
+ */
+
+/**
  *
 @ingroup icub_module
 \defgroup icub_logpolarRemapper logpolarRemapper
@@ -66,11 +72,18 @@ Linux and Windows.
 logpolarRemapper --name remapper --remote /grabber --width 480
 
 \author Giorgio Metta
+
 Copyright (C) 2008 RobotCub Consortium
+
 CopyPolicy: Released under the terms of the GNU GPL v2.0.
+
 This file can be edited at src/logpolarRemapper/logpolarRemapper.cpp.
 
 */
+
+/**
+ * cond
+ */
 
 // default.
 #include <stdio.h>
@@ -138,6 +151,7 @@ public:
     bool configure(const ResourceFinder& rf) {
         remote = ((ResourceFinder&)rf).find("remote").asString();
 
+        // LATER: can use the rf.getName() here instead of searching again.
         ConstString name = ((ResourceFinder&)rf).find("name").asString();
         local = "/";
         local += ((name != "") ? name : defaultname);
@@ -304,6 +318,7 @@ public:
             handlerPort.open(tmp.c_str());
         }
 
+        // LATER: call setName here (though not needed in this specific application).
         attach(handlerPort);
 
         // optional, attach to terminal if you want that text typed at the console
@@ -338,11 +353,14 @@ public:
 
 /*
  * A simple module that receives logpolar image and reconvert to cartesian
- * using the ClientLogpolarFrameGrabber driver.
+ * using the ClientLogpolarFrameGrabber driver. There's no robot name in 
+ * this module.
  *
  * params:
  * --remote <string>
  * --name <string>
+ * --width <int>
+ * --height <int>
  *
  */
 int main (int argc, char *argv[]) {
@@ -356,6 +374,8 @@ int main (int argc, char *argv[]) {
 
     // prepare and configure the resource finder.
     ResourceFinder rf;
+    rf.setDefaultConfigFile("logpolarRemapper.ini");
+    rf.setDefaultContext("logpolarRemapper/conf");
     rf.configure("ICUB_ROOT", argc, argv);
     rf.setVerbose(true);
  
@@ -367,5 +387,9 @@ int main (int argc, char *argv[]) {
     fprintf(stdout, "Main returning\n");
     return 0;
 }
+
+/**
+ * endcond
+ */
 
 
