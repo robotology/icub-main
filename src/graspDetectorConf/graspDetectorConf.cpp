@@ -128,7 +128,7 @@ void graspDetector::buildPattern()
     Vector b(N_DATA);
     for (i = 0; i < index.size(); i++)
         for (j = 0; j < N_DATA; j++)
-            Q(i,j) = D(index(i),j);
+            Q(i,j) = D((int) index(i),j);
 
     for (j = 0; j < N_DATA; j++)
         b(j) = 1;
@@ -144,7 +144,7 @@ void graspDetector::buildPattern()
 
     span.zero();
     for (i = 0; i < index.size(); i++)
-        span(index(i)) = lambda(i);
+        span((int) index(i)) = lambda(i);
 
     collect = 0;
 }
