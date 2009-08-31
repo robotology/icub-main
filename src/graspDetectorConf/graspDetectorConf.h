@@ -32,28 +32,18 @@ using namespace yarp;
 class graspDetector: public RateThread
 {
 public:
-    graspDetector(PolyDriver*, BufferedPort<Bottle>*, int );
+    graspDetector(BufferedPort<Bottle>*, int );
     ~graspDetector();
     bool threadInit();
     void stop();
     void run();
-    bool startMovement(double, double, int);
-    void startCollect(Bottle);
+    bool startCollect(Bottle);
     void stopCollect();
-    bool endedMovement(Vector &s);
+    bool endedMovement();
     void buildPattern();
     bool getPattern(Vector&, double&, double&);
     
 private:
-    PolyDriver *Arm_dd;
-	
-    IPositionControl *pos;
-    IVelocityControl *vel;
-    IEncoders *enc;
-    IPidControl *pid;
-    IAmplifierControl *amp;
-    IControlLimits *lim;
-
     int joint;
     int nJoints;
     int collect;

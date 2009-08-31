@@ -1,24 +1,8 @@
 // -*- mode:C++; tab-width:4; c-basic-offset:4; indent-tabs-mode:nil -*-
 #include "graspDetectorConf.h"
 
-graspDetector::graspDetector(PolyDriver *Arm_d, BufferedPort<Bottle> *p, int rate): RateThread(rate)
+graspDetector::graspDetector(BufferedPort<Bottle> *p, int rate): RateThread(rate)
 {
-    // open ports
-    Arm_dd=Arm_d;
-
-    bool ok;
-    ok  = Arm_dd->view(pos);
-    ok &= Arm_dd->view(vel);
-    ok &= Arm_dd->view(enc);
-    ok &= Arm_dd->view(pid);
-    ok &= Arm_dd->view(amp);
-    ok &= Arm_dd->view(lim);
-  
-    if (!ok)
-        ACE_OS::printf("Problems acquiring arm interfaces\n");
-    else
-        ACE_OS::printf("Control board arm was accessed succesfully!\n");
-
     collect = 0;
     analogPort = p;
 }
@@ -31,16 +15,8 @@ bool graspDetector::threadInit()
     return 1;
 }
 
-bool graspDetector::startMovement(double p, double v, int j)
+bool graspDetector::startCollect(Bottle analogIndex)
 {
-    joint = j;
-    bool ok = pos->setRefSpeed(j, v);
-    ok &= pos->positionMove(j, p);
-    //if(ok)
-    //    fprintf(stderr, "Starting a movement \n");       
-    //else
-    //    fprintf(stderr, "Unable to move \n");       
-
     lastBottle= analogPort->read(true);
     if(lastBottle!=NULL)
         nJoints =lastBottle->size();             
@@ -50,17 +26,14 @@ bool graspDetector::startMovement(double p, double v, int j)
     //    fprintf(stderr, "Getting something with size %d \n", nJoints);       
     D.resize(nJoints, N_DATA);
     span.resize(nJoints);
-    return ok;
-}
 
-void graspDetector::startCollect(Bottle analogIndex)
-{
     index.resize(analogIndex.size());
     for (int i = 0; i < index.size(); i++)
         index(i) = analogIndex.get(i).asDouble();
     collect = 1;
     collectCounter = 0;    
     D.zero();
+    return true;
     //fprintf(stderr, "Vector of indeces is: %s\n", index.toString().c_str());
 }
 
@@ -69,32 +42,16 @@ void graspDetector::stopCollect()
     collect = 0;
 }
 
-bool graspDetector::endedMovement(Vector &spanned)
+bool graspDetector::endedMovement()
 {
     if(collect!=0)
-        {
-            bool done;
-            pos->checkMotionDone(joint, &done);
-            if (done)
-                pos->positionMove(joint, 0);
-            return false;
-        }   
+        return false;
     else
-        {
-            spanned.resize(index.size());
-            for (int i = 0; i < index.size(); i++)
-                {
-                    spanned(i) = span((int) index(i));
-                    //fprintf(stderr, "Retrieved: s(%d)=%f\n", (int) index(i), span((int) index(i)));
-                }
-            return true;
-        }
+        return true;
 }
 
 void graspDetector::stop()
 {
-    fprintf(stderr, "Closing device driver \n");
-    Arm_dd->close();
     fprintf(stderr, "Interrupting the input port \n");
     analogPort->interrupt();
     fprintf(stderr, "Closing the input port \n");

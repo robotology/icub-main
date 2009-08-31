@@ -6,7 +6,7 @@
  * \defgroup icub_graspDetectorConf graspDetectorConf
  *
  * A basic module for configuring the 
- * \ref graspDetector module.
+ * \ref icub_graspDetector module.
  *
  * \section intro_sec Description
  * 
@@ -34,12 +34,15 @@
  * (--part) specifies the used part (e.g. --part left_arm).
  * The other parameters specify for each finger the:
  * <ul>
+ * <li> "name": the analog sensors port name
+ * <li> "rate": the rate of the thread reading the analog sensors
  * <li> "joint": index of the finger joint to be moved
  * <li> "posture": the position where the joint should be moved
  * <li> "analogs": the indeces of the analog sensors corrsponsing to the given joint
  * </ul>
  * All the parameters are specified 
- * according to the yarp resourceFinder. They can be specified in a file
+ * according to the yarp resourceFinder (with default context graspDetector). 
+ * They can be specified in a file
  * graspDetectorConf.ini with the following structure:
  *
  * \code
@@ -73,11 +76,11 @@
  * \endcode
  *
  * \section portsa_sec Ports Accessed
- * For each part initalized (e.g. right_arm):
+ * For each part initalized (e.g. left_arm):
  * <ul>
- * <li> /icub/right_arm/rpc:i 
- * <li> /icub/right_arm/command:i
- * <li> /icub/right_arm/state:o
+ * <li> /icub/left_arm/rpc:i 
+ * <li> /icub/left_arm/command:i
+ * <li> /icub/left_arm/state:o
  * </ul>
  * The port specified in the initialization file:
  * <ul>
@@ -91,10 +94,19 @@
  * <li> /icub/graspDetectorConf/left_arm/rpc:o
  * <li> /icub/graspDetectorConf/left_arm/state:i 
  * </ul>
- * The port for reading the analog sensors:
+ * For each finger a port for reading the analog sensors:
  * <ul>
- * <li> analogPortName/graspDetectorConf/right_arm
+ * <li> analogPortName/graspDetectorConf/finger0/right_arm
+ * <li> ...
+ * <li> analogPortName/graspDetectorConf/fingerN/right_arm
  * </ul>
+ * \section out_sec Output
+ * For the initalized part (e.g. left_arm):
+ * a configuration file left_armGraspDetector.ini to be used by the 
+ * \ref icub_graspDetector. The file is stored in the directory
+ * $ICUB_ROOT/app/graspDetector so that it will be automatically 
+ * available to the \ref icub_graspDetector module by simplify 
+ * specifying the --from left_armGraspDetector.ini configuration option.
  * \author Francesco Nori
  *
  * Copyright (C) 2008 RobotCub Consortium
@@ -107,7 +119,7 @@
 
 #include "graspDetectorConf.h"
 //ACE
-#include <ace/OS.h>
+#include <ace/OS.h> 
 #include <ace/Log_Msg.h>
 //YARP
 #include <yarp/os/Bottle.h>
@@ -217,14 +229,16 @@ class graspDetectModule: public RFModule
 private:
     FILE * pFile;
     int nFingers;
-    graspDetector *cg;
+    graspDetector **gd;
 
     int *joint; 
     double *posture; 
     Bottle *analogs; 
 
     PolyDriver ddArm;
-    BufferedPort<Bottle> analogInputPort;
+    IPositionControl *ipos;
+
+    BufferedPort<Bottle> *analogInputPort;
 public:
 
     graspDetectModule() { }
@@ -266,22 +280,15 @@ public:
 
         //opening the output file
         char outputFileName[1024];
-        sprintf(outputFileName, "%sGraspDetector.ini", part.asString().c_str());
+        sprintf(outputFileName, "%s/app/graspDetector/%sGraspDetector.ini", ACE_OS::getenv("ICUB_ROOT"), part.asString().c_str());
+        //fprintf(stderr, "Opening the output file: %s...", outputFileName);
         pFile = fopen (outputFileName,"w");
+        //fprintf(stderr, "ok!\n");
 
         //write params to output file
+        //fprintf(stderr, "Initializing the file...");
         initFile(robot, part, analogInput);
-
-        //connect to analog input port
-        ACE_OS::sprintf(&name[0], "%s/graspDetectorConf/%s", analogInput.asString().c_str(), part.asString().c_str());
-        analogInputPort.open(name.c_str());
-        if(Network::connect(analogInput.asString().c_str(), name.c_str()))
-            fprintf(stderr, "Input connection to analog was successfull\n");
-        else
-            {
-                fprintf(stderr, "Connection to %s  was NOT successfull\n", analogInput.asString().c_str());
-                return false;
-            }
+        //fprintf(stderr, "ok\n", outputFileName);
 
         // get command file options
         if (!getNumberFingers(options, nFingers))
@@ -320,7 +327,6 @@ public:
         }
 
 
-        IPositionControl *ipos;
         int nJnts;
         if (ddArm.view(ipos))
             {
@@ -333,8 +339,24 @@ public:
                 return false;
             }
     
-        fprintf(stderr, "Creating the thread \n");
-        cg = new graspDetector(&ddArm, &analogInputPort, rate);
+        gd = new graspDetector*[nFingers];
+        analogInputPort = new BufferedPort<Bottle>[nFingers];
+        fprintf(stderr, "Creating the threads \n");
+        for(int i=0; i < nFingers; i++)
+            {
+                //connect to analog input port
+                ACE_OS::sprintf(&name[0], "%s/graspDetectorConf/finger%d/%s", analogInput.asString().c_str(), i, part.asString().c_str());
+                analogInputPort[i].open(name.c_str());
+                if(Network::connect(analogInput.asString().c_str(), name.c_str()))
+                    fprintf(stderr, "Input connection to analog was successfull\n");
+                else
+                    {
+                        fprintf(stderr, "Connection to %s  was NOT successfull\n", analogInput.asString().c_str());
+                        return false;
+                    }
+
+                gd[i] = new graspDetector(&analogInputPort[i], rate);
+            }
         return true;
     }
 
@@ -365,51 +387,58 @@ public:
         //Start the checker
         fprintf(stderr, "Starting the module with nFingers: %d\n", nFingers);
         Time::delay(1);
-        cg->start();
+        for(int i=0; i < nFingers; i++)
+            gd[i]->start();
+        
+        //fprintf(stderr, "Moving j%d to %f\n", joint[i], posture[i]);
         for(int i=0; i < nFingers; i++)
             {
-                //fprintf(stderr, "Moving j%d to %f\n", joint[i], posture[i]);
-                double tStart = Time::now();
-                if (cg->startMovement(posture[i], 30, joint[i]))
-                    {
-                        fprintf(stderr, "Starting the thread \n");
-                        cg->startCollect(analogs[i]);
-                        Vector s;
-                        while(!cg->endedMovement(s))
-                            {
-                                //fprintf(stderr, "Waiting for data to be acquired...\n");
-                                Time::delay(1);
-                            }
-                        cg->stopCollect();
+                bool ok = ipos->setRefSpeed(joint[i], 30);
+                ok &= ipos->positionMove(joint[i], posture[i]);
 
-                        //retrieving patter description
-                        Vector lambda;
-                        double min, max;
-                        cg->getPattern(lambda, min, max);
-
-                        //printing the results
-                        ACE_OS::printf("Spanned vector space was: %s, min=%f, max=%f\n", lambda.toString().c_str(), min, max);
-                        dumpPatternToFile(lambda, min, max, i);
-                    }
-                else
-                    {
-                        ACE_OS::printf("Unable to start the movements\n");
-                        return false;
-                    }
-                //fprintf(stderr, "Time diff is: %f\n", Time::now()-tStart);
+                while(!gd[i]->startCollect(analogs[i]))
+                    fprintf(stderr, "Thread %d for analog data...\n", i);
             }
+            
+        for(int i=0; i < nFingers; i++)
+            while(!gd[i]->endedMovement())
+                {
+                    //fprintf(stderr, "Waiting for data to be acquired...\n");
+                    Time::delay(1);
+                }
+        
+        for(int i=0; i < nFingers; i++)
+            gd[i]->stopCollect();
+
+        for(int i=0; i < nFingers; i++)
+            {        
+                //retrieving patter description
+                Vector lambda;
+                double min, max;
+                gd[i]->getPattern(lambda, min, max);
+
+                //printing the results
+                ACE_OS::printf("Spanned vector space was: %s, min=%f, max=%f\n", lambda.toString().c_str(), min, max);
+                dumpPatternToFile(lambda, min, max, i);
+            }   
+        //fprintf(stderr, "Time diff is: %f\n", Time::now()-tStart);
         return true;
     }
 
     virtual bool close()
     {
+
+        fprintf(stderr, "Closing device driver \n");
+        ddArm.close();
+    
         fprintf(stderr, "Closing file\n");
         fclose (pFile);
 
         fprintf(stderr, "Stopping the grasp detector\n");
-        cg->stop();
+        for (int i = 0; i < nFingers; i++)
+            gd[i]->stop();
         fprintf(stderr, "Deleting graspDectorConf class\n");
-        delete cg;
+        delete[] gd;
 
         delete[] joint;
         delete[] posture;
@@ -425,7 +454,7 @@ int main(int argc, char *argv[])
     ResourceFinder rf;
 
     rf.setVerbose(true);
-    rf.setDefaultContext("graspDetectorConf");
+    rf.setDefaultContext("graspDetector");
     rf.setDefaultConfigFile("graspDetectorConf.ini");
     if(!rf.configure("ICUB_ROOT", argc, argv))
         {
