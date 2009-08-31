@@ -313,7 +313,7 @@ public:
             }
 
         //starting the thread for processing the hand status (i.e. all fingers status)
-        gd = new graspDetector(nFingers, fd, 1000);
+        gd = new graspDetector(nFingers, fd, 100);
 
         return true;
     }
