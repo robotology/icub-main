@@ -390,14 +390,15 @@ public:
         for(int i=0; i < nFingers; i++)
             gd[i]->start();
         
+        fprintf(stderr, "Collecting analog data...\n");
         //fprintf(stderr, "Moving j%d to %f\n", joint[i], posture[i]);
         for(int i=0; i < nFingers; i++)
             {
-                bool ok = ipos->setRefSpeed(joint[i], 30);
-                ok &= ipos->positionMove(joint[i], posture[i]);
+                //bool ok = ipos->setRefSpeed(joint[i], 30);
+                //ok &= ipos->positionMove(joint[i], posture[i]);
 
                 while(!gd[i]->startCollect(analogs[i]))
-                    fprintf(stderr, "Thread %d for analog data...\n", i);
+                    fprintf(stderr, "Thread %d waiting for analog data...\n", i);
             }
             
         for(int i=0; i < nFingers; i++)
@@ -407,9 +408,11 @@ public:
                     Time::delay(1);
                 }
         
+        fprintf(stderr, "Stopping collecting analog data...\n");
         for(int i=0; i < nFingers; i++)
             gd[i]->stopCollect();
 
+        fprintf(stderr, "Analyzing analog data...\n");
         for(int i=0; i < nFingers; i++)
             {        
                 //retrieving patter description

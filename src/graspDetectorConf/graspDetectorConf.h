@@ -27,7 +27,7 @@ using namespace yarp::os;
 using namespace yarp;
 
 #define PI 3.14
-#define N_DATA 300
+#define N_DATA 3000
 
 class graspDetector: public RateThread
 {
