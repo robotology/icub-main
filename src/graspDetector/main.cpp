@@ -6,7 +6,8 @@
  * \defgroup icub_graspDetector graspDetector
  *
  * A basic module for detecting a successfull grasp by using 
- * the Hall effect sensors integrated in the hand.
+ * the Hall effect sensors integrated in the hand. This module
+ * has to be configured by a \ref icub_graspDetectorConf module.
  *
  * \section intro_sec Description
  * 
@@ -20,8 +21,9 @@
  *
  * If the model is not satisfied a grasp action is assumed to
  * be performed. The model is described in the configuration 
- * file (graspDetector.ini) and can be computed by using the
- * module \ref graspDetectorConf .
+ * file (partGraspDetector.ini where part can be either
+ * right_arm or left_arm) which can be created by using the
+ * module \ref icub_graspDetectorConf .
  * 
  *
  * \section libraries_sec Libraries
@@ -36,13 +38,16 @@
  * (--part) specifies the used part (e.g. --part left_arm).
  * The other parameters specify for each finger the:
  * <ul>
+ * <li> "name": the analog sensors port name
+ * <li> "rate": the rate of the thread reading the analog sensors
  * <li> "joint": index of the finger joint to be moved
  * <li> "analogs": the indeces of the analog sensors corrsponsing to the given joint
  * <li> "lambda", "min", "max": model description corresponding to the given joint
  * </ul>
  * All the parameters are specified 
- * according to the yarp resourceFinder. They can be specified in a file
- * graspDetectorConf.ini with the following structure:
+ * according to the yarp resourceFinder (with default context graspDetector). 
+ * All parameters can be specified in a file left_armGraspDetector.ini 
+ * (or right_armGraspDetector.ini) with the following structure:
  *
  * \code
  *
@@ -89,9 +94,11 @@
  * </ul>
  *
  * \section portsc_sec Ports Created
- * The port for reading the analog sensors:
+ * For each finger, a port for reading the analog sensors:
  * <ul>
- * <li> analogPortName/graspDetector/right_arm
+ * <li> analogPortName/graspDetectorConf/finger0/right_arm
+ * <li> ...
+ * <li> analogPortName/graspDetectorConf/fingerN/right_arm
  * </ul>
  * \author Francesco Nori
  *
@@ -228,14 +235,15 @@ class graspDetectModule: public RFModule
 {
 private:
     int nFingers;
-    graspDetector **gd;
+    fingerDetector **fd;
+    graspDetector *gd;
 
     double *max; 
     double *min; 
     Bottle *analogs; 
     Bottle *lambda; 
 
-    BufferedPort<Bottle> analogInputPort;
+    BufferedPort<Bottle> *analogInputPort;
 public:
 
     graspDetectModule() { }
@@ -252,9 +260,9 @@ public:
             return false;
         }
 
-        fprintf(stderr, "Initializing network\n");
+        fprintf(stderr, "Initializing network...");
         Network::init();
-        Time::turboBoost();
+        fprintf(stderr, "ok\n");
     
         yarp::String name((size_t)1024);
         Value& robot = options.find("robot");
@@ -262,20 +270,26 @@ public:
         Value& analogInput = options.find("name");
         int rate = options.find("rate").asInt();
 
-        //connect to analog input port
-        ACE_OS::sprintf(&name[0], "%s/graspDetectorConf/%s", analogInput.asString().c_str(), part.asString().c_str());
-        analogInputPort.open(name.c_str());
-        if(Network::connect(analogInput.asString().c_str(), name.c_str()))
-            fprintf(stderr, "Input connection to analog was successfull\n");
-        else
-            {
-                fprintf(stderr, "Connection to %s  was NOT successfull\n", analogInput.asString().c_str());
-                return false;
-            }
-
         // get command file options
         if (!getNumberFingers(options, nFingers))
             return false;
+
+        //connect to analog input ports
+        analogInputPort = new BufferedPort<Bottle>[nFingers];
+        for (int i = 0; i < nFingers; i++)
+            {
+                ACE_OS::sprintf(&name[0], "%s/fingerDetectorConf/finger%d/%s", analogInput.asString().c_str(), i, part.asString().c_str());
+                //fprintf(stderr, "Trying to open port %s\n", name.c_str());
+                analogInputPort[i].open(name.c_str());
+                //fprintf(stderr, "Port %s opened correctly\n", name.c_str());
+                if(Network::connect(analogInput.asString().c_str(), name.c_str()))
+                    fprintf(stderr, "Input connection to analog was successfull\n");
+                else
+                    {
+                        fprintf(stderr, "Connection to %s  was NOT successfull\n", analogInput.asString().c_str());
+                        return false;
+                    }
+            }
 
         min = new double[nFingers];
         max = new double[nFingers];
@@ -288,33 +302,45 @@ public:
         //for(int i=0; i < nFingers; i++)
         //    fprintf(stderr, "Moving j%d to %d\n", (int) min[i], (int) posture[i]);
         
-        gd = new graspDetector*[nFingers];
+        //starting the threads for detecting the finger status
+        fd = new fingerDetector*[nFingers];
         for(int i=0; i < nFingers; i++)
             {
-                fprintf(stderr, "Creating the threads %d\n", i);
-                gd[i] = new graspDetector(&analogInputPort, rate);
-                gd[i]->setIndex(analogs[i]);
-                gd[i]->setModel(lambda[i], min[i], max[i]);
-            }        
+                //fprintf(stderr, "Creating the threads %d\n", i);
+                fd[i] = new fingerDetector(&analogInputPort[i], rate);
+                fd[i]->setIndex(analogs[i]);
+                fd[i]->setModel(lambda[i], min[i], max[i]);
+            }
+
+        //starting the thread for processing the hand status (i.e. all fingers status)
+        gd = new graspDetector(nFingers, fd, 1000);
+
         return true;
     }
 
     virtual bool updateModule()
     {
         static bool first = true;
-        for(int i=0; i < nFingers; i++)
-            if (first)
-                gd[i]->start();
+        if (first)
+            {
+                for(int i=0; i < nFingers; i++)
+                    fd[i]->start();
+                gd->start();
+            }
         first = false;
+        return true;
     }
 
     virtual bool close()
     {
         fprintf(stderr, "Stopping the grasp detectors\n");
         for(int i=0; i < nFingers; i++)
-            gd[i]->stop();
+            fd[i]->stop();
+        gd->stop();
+            
         fprintf(stderr, "Deleting grapsDetect class\n");
-        delete[] gd;
+        delete[] fd;
+        delete gd;
 
         delete[] min;
         delete[] max;
@@ -332,7 +358,6 @@ int main(int argc, char *argv[])
 
     rf.setVerbose(true);
     rf.setDefaultContext("graspDetector");
-    rf.setDefaultConfigFile("graspDetector.ini");
     if(!rf.configure("ICUB_ROOT", argc, argv))
         {
             fprintf(stderr, "Problems in instantiating the module. Closing \n");
