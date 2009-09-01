@@ -86,7 +86,7 @@ cpgs::cpgs(int nbDOFs, int nbLIMBs){
   //********fixed parameters********* 
 
   //equation
-  a = 5.0; //rate of convergence of the rhythmic system
+  a = 2.0; //rate of convergence of the rhythmic system
   b = 5.0;//rate of convergence of the discrete system
   m_off = -5.0; //value to turn of the oscillations 
   m_on = 1.0; // value to turn on the oscillations

@@ -525,7 +525,7 @@ bool generatorThread::init(Searchable &s)
 	}
 	else
 	{
-		options.fromConfigFile(("../config/" + partName + "Config.ini").c_str());
+		options.fromConfigFile(("../../Crawling/config/" + partName + "Config.ini").c_str());
 	}
 
 	cout << "Config : " << options.toString() <<endl;

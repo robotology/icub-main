@@ -13,15 +13,15 @@ bool CrawlManagerModule::updateModule()
         return false;
 
     cout << "Please specify the task" << endl;
-    cout << "1 - Go to init pos" << endl;
-    cout << "2 - Crawl" << endl;
-    cout << "3 - Faster" << endl;
-    cout << "4 - Slower" << endl;
-    cout << "5 - Turn right" << endl;
-    cout << "6 - Turn left" << endl;
-    cout << "7 - Sit" << endl;
-    cout << "8 - On all fours" << endl; 
-    cout << "9 - Stop the module" << endl;
+    cout << "(1) Go to init pos" << endl;
+    cout << "(2) Crawl" << endl;
+    cout << "(3) Faster" << endl;
+    cout << "(4) Slower" << endl;
+    cout << "(5) Turn right" << endl;
+    cout << "(6) Turn left" << endl;
+    //cout << "(7) Sit" << endl;
+    //cout << "(8) On all fours" << endl; 
+    //cout <<"9 Stop the module" << endl;
     
     return true;
 }
@@ -104,66 +104,66 @@ bool CrawlManagerModule::respond(const Bottle &command, Bottle &reply)
             reply.addString("turning left");
             break;
             
-        case 7:
-            reply.addString("sitting");            
-            for(int k=0;k<nbPosSit;k++)
-            {
-                vector<vector<double> > temp_param;
-                vector<double> temp_ampl, temp_target;
+        //case 7:
+            //reply.addString("sitting");            
+            //for(int k=0;k<nbPosSit;k++)
+            //{
+                //vector<vector<double> > temp_param;
+                //vector<double> temp_ampl, temp_target;
                 
-                for(int i=0;i<nbParts;i++)
-                {                    
-                    for(int j=0; j<nbDOFs[i]; j++)
-                    {
-                     temp_ampl.push_back(sit_parameters[i][2*j][k]);
-                     temp_target.push_back(sit_parameters[i][2*j+1][k]);
-                    }
-                    temp_param.push_back(temp_ampl);
-                    temp_param.push_back(temp_target);
+                //for(int i=0;i<nbParts;i++)
+                //{                    
+                    //for(int j=0; j<nbDOFs[i]; j++)
+                    //{
+                     //temp_ampl.push_back(sit_parameters[i][2*j][k]);
+                     //temp_target.push_back(sit_parameters[i][2*j+1][k]);
+                    //}
+                    //temp_param.push_back(temp_ampl);
+                    //temp_param.push_back(temp_target);
                                              
-                    if(connected_part[i]) sendCommand(i, temp_param);  
+                    //if(connected_part[i]) sendCommand(i, temp_param);  
                     
-                    temp_ampl.clear();
-                    temp_target.clear(); 
-                }         
-                Time::delay(1.5);
-            }
-            break;
+                    //temp_ampl.clear();
+                    //temp_target.clear(); 
+                //}         
+                //Time::delay(1.5);
+            //}
+            //break;
             
-        case 8:
-            reply.addString("going on all fours TEST");         
-            for(int k=0;k<nbPosUnsit;k++)
-            {
-                vector<vector<double> > temp_param2;
-                vector<double> temp_ampl2, temp_target2;
-                for(int i=0;i<nbParts;i++)
-                {                    
-                    for(int j=0; j<nbDOFs[i]; j++)
-                    {
-                        int l=2*j+1;
-                     temp_ampl2.push_back(unsit_parameters[i][2*j][k]);
-                     temp_target2.push_back(unsit_parameters[i][2*j+1][k]);
-                    }
-                    temp_param2.push_back(temp_ampl2);
-                    temp_param2.push_back(temp_target2);
+        //case 8:
+            //reply.addString("going on all fours TEST");         
+            //for(int k=0;k<nbPosUnsit;k++)
+            //{
+                //vector<vector<double> > temp_param2;
+                //vector<double> temp_ampl2, temp_target2;
+                //for(int i=0;i<nbParts;i++)
+                //{                    
+                    //for(int j=0; j<nbDOFs[i]; j++)
+                    //{
+                        //int l=2*j+1;
+                     //temp_ampl2.push_back(unsit_parameters[i][2*j][k]);
+                     //temp_target2.push_back(unsit_parameters[i][2*j+1][k]);
+                    //}
+                    //temp_param2.push_back(temp_ampl2);
+                    //temp_param2.push_back(temp_target2);
       
-                    if(connected_part[i]) sendCommand(i, temp_param2);
+                    //if(connected_part[i]) sendCommand(i, temp_param2);
 
-                    temp_ampl2.clear();
-                    temp_target2.clear(); 
-                }         
-                Time::delay(5.0);
-            }
-            break;
+                    //temp_ampl2.clear();
+                    //temp_target2.clear(); 
+                //}         
+                //Time::delay(5.0);
+            //}
+            //break;
             
-        case 9:
-            reply.addString("stopping");
-            //om_stance=-1;
-            //for(int i=0;i<nbParts;i++)
-                //if(connected_part[i]) sendCommand(i, crawl_parameters);
-            interruptModule();
-            close();
-            break;
+        //case 9:
+            //reply.addString("stopping");
+            ////om_stance=-1;
+            ////for(int i=0;i<nbParts;i++)
+                ////if(connected_part[i]) sendCommand(i, crawl_parameters);
+            //interruptModule();
+            //close();
+            //break;
             
         default:
             break;
@@ -185,7 +185,7 @@ bool CrawlManagerModule::open(Searchable &s)
 	}
 	else
 	{
-		options.fromConfigFile("../config/managerConfig.ini");
+		options.fromConfigFile("../../Crawling/config/managerConfig.ini");
 	}
 
 	cout << "Config : " << options.toString() <<endl;
@@ -395,13 +395,10 @@ bool CrawlManagerModule::open(Searchable &s)
 	    return false;
       }
 
-    getSequence(sit_parameters, "Sit", nbPosSit);
-    getSequence(unsit_parameters, "Unsit", nbPosUnsit);
+    //getSequence(sit_parameters, "Sit", nbPosSit);
+    //getSequence(unsit_parameters, "Unsit", nbPosUnsit);
     
     myIK = new IKManager;
-    
-    crawl_parameters[0][0]=myIK->getArmAmplitude(crawl_parameters, scaleLeg);//left arm
-    crawl_parameters[2][0]=crawl_parameters[0][0]; //right arm
 
     return true;
 
