@@ -1,0 +1,56 @@
+<application>
+<name>Crawling (EPFL)</name>
+
+        <dependencies>
+                <port>/icub/torso/state:o</port>
+                <port>/icub/head/state:o</port>
+                <port>/icub/right_arm/state:o</port>
+                <port>/icub/left_arm/state:o</port>
+                <port>/icub/right_leg/state:o</port>
+                <port>/icub/left_leg/state:o</port>
+        </dependencies>
+    
+        <module>
+                <name>velocityControl</name>
+                <parameters>--name icub --part left_arm --period 50</parameters>
+                <node>janine</node>
+                <tag>velLeftArm</tag>
+        </module>
+        
+        <module>
+                <name>velocityControl</name>
+                <parameters>--robot icub --part right_arm --period 50</parameters>
+                <node>janine</node> 
+                <tag>velRightArm</tag>
+        </module>
+        
+        <module>
+                <name>velocityControl</name>
+                <parameters>--robot icub --part left_leg --period 50</parameters>
+                <node>janine</node>
+                <tag>velLeftLeg</tag>
+        </module>
+   
+        <module>
+                <name>velocityControl</name>
+                <parameters>--robot icub --part right_leg --period 50</parameters>
+                <node>janine</node>
+                <tag>velRightLeg</tag>
+        </module> 
+          
+        <module>
+                <name>velocityControl</name>
+                <parameters>--robot icub --part head --period 50</parameters>
+                <node>janine</node>
+                <tag>velHead</tag>
+        </module>
+        
+        <module>
+                <name>velocityControl</name>
+                <parameters>--name icub --part torso --period 50</parameters>
+                <node>janine</node>
+                <tag>velTorso</tag>
+        </module>
+   
+
+</application>
