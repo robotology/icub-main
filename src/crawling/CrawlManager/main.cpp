@@ -38,7 +38,7 @@ int main(int argc, char *argv[])
 {
     Network yarp;
 
-    //create and run the Drum generator module
+    //create and run the Crawl generator module
     CrawlManagerModule mod;
   
     return mod.runModule(argc,argv);

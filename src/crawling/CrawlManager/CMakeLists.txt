@@ -2,27 +2,25 @@ SET(KEYWORD "CrawlManager")
 
 PROJECT(${KEYWORD})
 
-FIND_PACKAGE(YARP REQUIRED)
+FIND_PACKAGE(YARP)
+FIND_PACKAGE(ICUB)
 
-#INCLUDE_DIRECTORIES(
-#	$ENV{WEBOTS_HOME}/include
-#)
+FIND_PACKAGE(CTRLLIB REQUIRED)
+INCLUDE_DIRECTORIES($(CTRLLIB_INCLUDE_DIRS))
 
-# Search for source code.
+FIND_PACKAGE(IKIN REQUIRED)
+INCLUDE_DIRECTORIES(${IKIN_INCLUDE_DIRS})
+
+IF(NOT IPOPT_FOUND)
+   MESSAGE(FATAL_ERROR "IPOPT is strictly required!")
+ENDIF(NOT IPOPT_FOUND)
+
 FILE(GLOB folder_source *.cpp)
 FILE(GLOB folder_header *.h)
 SOURCE_GROUP("Source Files" FILES ${folder_source})
 SOURCE_GROUP("Header Files" FILES ${folder_header})
 
-#LINK_LIBRARIES(
-#    ${KINEMATICS_LIBRARIES}
-#    ${GSL_LIBRARIES}
-#    ${GSLCBLAS_LIBRARIES}
-#    ${EGOSPHERELIB_LIBRARIES}
-#)
-
-# Set up our main executable.
-IF (folder_source)
+IF(folder_source)
     ADD_EXECUTABLE(${KEYWORD} 
         ${folder_source} 
         ${folder_header}
@@ -31,5 +29,8 @@ ELSE (folder_source)
     MESSAGE(FATAL_ERROR "No source code files found. Please add something")
 ENDIF (folder_source)
 
-#INSTALL_TARGETS(/bin ${KEYWORD})
+SOURCE_GROUP("Source Files" FILES ${folder_source})
+
+TARGET_LINK_LIBRARIES(${KEYWORD} ${IKIN_LIBRARIES})
+INSTALL(TARGETS ${KEYWORD} DESTINATION ${ICUB_DIR}/bin)
 

@@ -11,10 +11,14 @@
 #include <yarp/String.h>
 
 #include <stdio.h>
+#include <iostream>
 #include "cpgs.h"
+#include "CrawlInvKin.h"
 
 using namespace yarp::os;
 using namespace yarp::dev;
+
+using namespace std;
 
 #define LIMIT_TOL 2.0 //conservative limit tolerance in degrees
 #define MAX_FREQUENCY 1.5 //in Hz
@@ -32,12 +36,15 @@ class generatorThread : public yarp::os::RateThread
 
     bool init(Searchable &s);
     void getParameters();
+    
  private:
+ 
     double period; //in second
 
     yarp::String partName;
 
     int nbDOFs;
+    int nbLIMBs;
     int *jointMapping;
     double *y_cpgs;
     double *states;
@@ -51,18 +58,23 @@ class generatorThread : public yarp::os::RateThread
     double lastBeat_time;
     bool previous_quadrant[2]; //used to calculate the new beat
     int beat;
+    
     cpgs *myCpg;
     PolyDriver *ddPart;
     IEncoders *PartEncoders;
+    IKManager *myIK;
 
     BufferedPort<Bottle> vcControl_port, vcFastCommand_port;
-    BufferedPort<Bottle> parameters_port, check_motion_port;
-    //BufferedPort<Bottle> clock_port, sound_port;
+    BufferedPort<Bottle> parameters_port; //check_motion_port;
     BufferedPort<Bottle> other_part_port[3], current_state_port;
+    BufferedPort<Bottle> contact_port;
+    
     
     bool other_part_connected[3];
-    yarp::String other_part_name[3];
+    ConstString other_part_name[3];
     
+    ConstString robot;
+   
     bool current_action;
 
     FILE *target_file, *parameters_file, *encoder_file, *feedback_file;
@@ -71,8 +83,12 @@ class generatorThread : public yarp::os::RateThread
     bool sendFastJointCommand();
     void checkJointLimits();
     bool getEncoders();
+    //bool sendEncoders();
     bool getOtherLimbStatus();
+    void getContactInformation();
     void connectToOtherLimbs();
+    void disconnectPorts();
+    //bool getQuadrant();
 };
 
 class CrawlGeneratorModule : public Module
@@ -80,7 +96,7 @@ class CrawlGeneratorModule : public Module
  private:        
     generatorThread *theThread;
     yarp::String partName;
-
+    
  public:
     virtual bool close();
     virtual bool open(yarp::os::Searchable &s);

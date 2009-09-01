@@ -3,8 +3,10 @@
 #include "CrawlGeneratorModule.h"
 #include <ace/OS.h>
 
-#define DEBUG 1
+#define DEBUG 0
 
+#define SGN(a) (a<0 ? -1 : 1)
+#define ABS(a) (a<0 ? -a : a)
 
 //#include <ppEventDebugger.h>
 
@@ -14,7 +16,8 @@ generatorThread::generatorThread(int period) : RateThread(period)
 }
 
 generatorThread::~generatorThread()
-{}
+{   
+}
 
 void generatorThread::checkJointLimits()
 {
@@ -22,37 +25,109 @@ void generatorThread::checkJointLimits()
         {
             if(states[i] > joint_limit_up[i] - LIMIT_TOL)
                 {
-                    ACE_OS::printf("warning exceeded pos %f to joint %d, cutting to %f\n",
-                                   states[i],i,joint_limit_up[i]-LIMIT_TOL);
+                    //ACE_OS::printf("warning exceeded pos %f to joint %d, cutting to %f\n",
+                    //               states[i],i,joint_limit_up[i]-LIMIT_TOL);
                     states[i] = joint_limit_up[i] - LIMIT_TOL;
                 }
             else
                 if(states[i] < joint_limit_down[i] + LIMIT_TOL)
                     {
-                        ACE_OS::printf("warning exceeded pos %f to joint %d, cutting to %f\n",
-                                       states[i],i,joint_limit_down[i]+LIMIT_TOL);
+                        //ACE_OS::printf("warning exceeded pos %f to joint %d, cutting to %f\n",
+                        //              states[i],i,joint_limit_down[i]+LIMIT_TOL);
                         states[i] = joint_limit_down[i] + LIMIT_TOL;
                     }
         }
 }
 
+//bool generatorThread::sendEncoders()
+//{
+    ////cout << "Sending encoders: " ;
+    //Bottle& effCopy = check_motion_port.prepare();
+
+    //effCopy.clear();
+
+    //for(int i=0;i<nbDOFs;i++)
+        //{
+            //effCopy.addDouble(M_PI*encoders[i]/180);
+            ////cout << i << ") " << M_PI*encoders[i]/180 << " ";
+        //}
+    ////cout << endl;
+    //check_motion_port.write(true);
+    //return true;
+    
+//}
+
+//bool generatorThread::getQuadrant()
+//{
+    ////check if init quadrant
+    //if((y_cpgs[2]-y_cpgs[0] >0.0) && (y_cpgs[3]>0.0))
+        //previous_quadrant[1] = true;
+
+    ////check if in previous quadrant y< && x>0
+    //if((y_cpgs[2]-y_cpgs[0] <0.0) && (y_cpgs[3]<0.0))
+    //{
+        //if(previous_quadrant[1])
+        //{
+            //previous_quadrant[0] = true;
+            //previous_quadrant[1] = false;
+        //}       
+    //}
+
+    //if((y_cpgs[2]-y_cpgs[0] >0.0) && (y_cpgs[3]<0.0))
+    //{
+        //if(previous_quadrant[0])
+        //{
+            //previous_quadrant[0] = false;
+            //return true;
+        //}
+    //}
+    
+    //return false;
+//}
+
 bool generatorThread::getEncoders()
 {
-    for(int i=0;i<nbDOFs;i++)
+    //cout << "getting encoders ";
+
+    int nj;
+    PartEncoders->getAxes(&nj);
+    double *tmp_enc = new double[nj];
+
+    if(PartEncoders->getEncoders(tmp_enc))
         {
-            if(!PartEncoders->getEncoder(jointMapping[i],&(encoders[i])))
-                return false;
-
-            fprintf(encoder_file,"%f ",encoders[i]);
+            fprintf(encoder_file,"%f ",Time::now()-original_time);
+            for(int i=0;i<nbDOFs;i++)
+                {
+                    //cout << "getting encoders2 ";
+                    /*if(!PartEncoders->getEncoder(jointMapping[i],&(encoders[i])))
+                      {
+                      cout << "there was an error" << endl;
+                      return false;
+                      }
+                    */
+                    encoders[i] = tmp_enc[jointMapping[i]];
+                    //cout << "finishing2"<< endl;
+                    
+                    fprintf(encoder_file,"%f ",encoders[i]);
+                }
+            fprintf(encoder_file,"\n");
         }
-    fprintf(encoder_file,"\n");
+    else
+        {
+            cout << "there was an error getting the encoders" << endl;
+            delete[] tmp_enc;
+            return false;
+        }
+    delete[] tmp_enc;
 
+    //cout << "finish" << endl;
     return true;
 }
 
 
 bool generatorThread::sendFastJointCommand()   
 {
+    //cout << "sending fast command ";
     checkJointLimits();
     Bottle& cmd = vcFastCommand_port.prepare();
 
@@ -65,7 +140,7 @@ bool generatorThread::sendFastJointCommand()
         }
 
     vcFastCommand_port.write(true);
-
+    //cout << "finish " << endl;
     return true;
 }
 
@@ -73,43 +148,67 @@ bool generatorThread::sendFastJointCommand()
 
 void generatorThread::getParameters()
 {
+    //cout << "getting param ";
     Bottle *command = parameters_port.read(false);
     if(command!=NULL)
         if(command->size() >=2*nbDOFs+2)
             {
-                for (int i=0; i<2*nbDOFs; i++)
-                    {
-                        myCpg->parameters[i]= command->get(i).asDouble();
-                        fprintf(parameters_file,"%f \t", myCpg->parameters[i]);
-                    }
+                double params[2*nbDOFs];
+                for (int i=0; i<2*nbDOFs; i++)  
+                    params[i] = command->get(i).asDouble();
 
+                for (int i=0; i<nbDOFs; i++)
+                {
+                    if(params[2*i]!=-1.0)
+                    {
+                        //myCpg->ampl[i]=params[2*i];
+                        myCpg->parameters[2*i]=1.0;
+                    }
+                    else
+                        myCpg->parameters[2*i]=params[2*i];
+                        
+                    myCpg->parameters[2*i+1]=params[2*i+1];
+                }  
+                
+                for (int i=0; i<2*nbDOFs; i++)
+                    fprintf(parameters_file,"%f \t", myCpg->parameters[i]);
+                    
+                //myCpg->printInternalVariables();
+                            
                 double freq = command->get(2*nbDOFs).asDouble();
 
                 if(freq < MAX_FREQUENCY)
-                    myCpg->om_stance = freq*2*3.1415;
+                    myCpg->om_stance = freq;
                 else
                     ACE_OS::printf("trying to set a too high st freq %f\n",freq);
 
                 freq = command->get(2*nbDOFs+1).asDouble();
                 if(freq < MAX_FREQUENCY)
-                    myCpg->om_swing = freq*2*3.1415;
+                    myCpg->om_swing = freq;
                 else
                     ACE_OS::printf("trying to set a too high sw freq %f\n",freq);
-
-
+            
                 fprintf(parameters_file,"%f %f ",myCpg->om_stance,myCpg->om_swing);
                 fprintf(parameters_file,"%f \n",Time::now()/*-original_time*/);
                 fflush(parameters_file);
+                
+                
+                printf("RECEIVING COMMANDS FROM THE MANAGER FOR PART %s\n", partName.c_str());
+
+                y_cpgs[4*nbDOFs+2*3]=0.0;
+
                 current_action = true;
             }
         else
             ACE_OS::printf("warning, manager sending crappy values\n");
+    //cout << "finish" << endl;
 }
 
 
 bool generatorThread::getOtherLimbStatus()
 {
-    for(int i=0;i<3;i++)
+    //cout << "getting other limb ";
+    for(int i=0;i<nbLIMBs;i++)
         if(other_part_connected[i])
             {
                 Bottle *btl = other_part_port[i].read(false);
@@ -122,15 +221,43 @@ bool generatorThread::getOtherLimbStatus()
 
     Bottle &bot = current_state_port.prepare();
     bot.clear();
-    bot.addDouble(y_cpgs[2]);
+    bot.addDouble(y_cpgs[2]-y_cpgs[0]);
     bot.addDouble(y_cpgs[3]);
     current_state_port.write();
+    //cout << "finish" << endl;
 	return true;
 }
 
+void generatorThread::getContactInformation()
+{
+    char tmp1[255], tmp2[255];
+    
+    sprintf(tmp1,"/feedback/%s/contact",partName.c_str());
+    sprintf(tmp2,"/%s/contacts_in",partName.c_str());
+    if(Network::isConnected(tmp1,tmp2))
+    {
+        myCpg->feedback_on = 1;
+        Bottle *btl = contact_port.read(false);
+        if(btl!=NULL)
+        {
+            myCpg->contact[0] = btl->get(0).asDouble();
+            myCpg->contact[1] = btl->get(1).asDouble();
+        }
+        ACE_OS::printf("Part %s receiving feedback: %f %f\n", 
+            partName.c_str(), myCpg->contact[0],myCpg->contact[1]);
+        ACE_OS::fprintf(feedback_file, "%f %f %f \n", Time::now()-original_time, myCpg->contact[0],myCpg->contact[1]);        
+    }
+    else
+    {
+        myCpg->feedback_on = 0;
+        //ACE_OS::printf("Part %s NOT receiving feedback\n", partName.c_str());
+    }
+}
+
+
 void generatorThread::connectToOtherLimbs()
 {
-    for(int i=0;i<3;i++)
+    for(int i=0;i<nbLIMBs;i++)
         {
             if(!other_part_connected[i])
                 {
@@ -139,6 +266,7 @@ void generatorThread::connectToOtherLimbs()
                     Contact query = Network::queryName(tmp1);
                     if(query.isValid())
                         {
+                            cout << "port " << tmp1 << " found open" << endl;
                             char tmp2[255];
                             sprintf(tmp2,"/%s/cpg_status/%s/in",partName.c_str(),other_part_name[i].c_str());
                             bool ok = other_part_port[i].open(tmp2);
@@ -151,7 +279,7 @@ void generatorThread::connectToOtherLimbs()
                                         {
                                             other_part_connected[i] = true;
                                             myCpg->external_coupling[i] = myCpg->next_external_coupling[i];
-                                            myCpg->printInternalVariables();
+                                            //myCpg->printInternalVariables();
                                         }
                                 }
                             else
@@ -159,9 +287,9 @@ void generatorThread::connectToOtherLimbs()
                                     ACE_OS::printf("error in opening %s\n",tmp2);
                                 }
                         }
+                    Time::delay(0.1);
                 }
         }
-    Time::delay(0.5);
 }
 
 void generatorThread::run()
@@ -169,8 +297,8 @@ void generatorThread::run()
     //time0=time0+command_step;
     static double time_now=Time::now();
 
-    if( Time::now() - time_now >0.1)
-        fprintf(stderr,"Warning time too big\n");
+   // if(Time::now() - time_now >0.03 && current_action)
+     //   fprintf(stderr,"Warning time too big\n");
 
     time_now = Time::now();
 
@@ -183,42 +311,52 @@ void generatorThread::run()
     ///we get encoders
 
     if(!getEncoders())
-        {
-            ACE_OS::printf("Error getting encoders positions\n");
-            this->stop();
-            return;
-        }
+    {
+        ACE_OS::printf("Error getting encoders positions\n");
+        //this->stop();
+        //return;
+    }
+        
+    //sendEncoders();
 
 #endif
 
-    //we get potential new parameters
-    getParameters();
-
     //we get the states of the other limbs and send our current status
     if(current_action)
-        getOtherLimbStatus();
+        {
+            getOtherLimbStatus();
+            
+            if(myCpg->feedbackable)
+                getContactInformation();
+            
+            //integrate the system
+            int inner_steps = (int)((period+time_residue)/myCpg->get_dt());
+            
+            for(int j=0; j<inner_steps; j++)
+                myCpg->integrate_step(y_cpgs,states);
+        }
     else
         connectToOtherLimbs();
 
+    //we get potential new parameters
+    //if(getQuadrant()) 
+    //if(myCpg->feedback_on)
+    //{
+        //if(myCpg->contact==0) getParameters();
+    //}
+    //else
+    getParameters();
+        
     if(myCpg->om_stance<0)
         {
             ACE_OS::printf("Task is finished\n");
+            this->threadRelease();
             this->stop();
             return;
         }
 
  
-    //integrate the system
-    int inner_steps = (int)((period+time_residue)/myCpg->get_dt());
-
-    for(int j=0; j<inner_steps; j++)
-        myCpg->integrate_step(y_cpgs,states);
-
-    if(partName=="left_arm" || partName=="right_arm")
-        {
-            states[3] = 10.0 + 50.0*exp(-4.0*(y_cpgs[3]+1.0)*(y_cpgs[3]+1.0));
-        }
-
+   
 
     ///we update of the previous states
 
@@ -229,7 +367,7 @@ void generatorThread::run()
         }
 
     ///save time stamp
-    fprintf(target_file,"%f \n",Time::now()/*-original_time*/);
+    fprintf(target_file,"%f \n",time_now/*-original_time*/);
 
 
 #if !DEBUG  
@@ -244,7 +382,6 @@ void generatorThread::run()
         }
     /////////////////////////////////////////////////
 #endif
-
   
     double timef=Time::now();
     double d=timef - time_now;
@@ -258,15 +395,54 @@ void generatorThread::run()
 bool generatorThread::threadInit()
 {
     fprintf(stderr, "%s thread init\n", partName.c_str());
-    // Bottle& cmd = vcControl_port.prepare();
-    //  cmd.clear();
-    //  cmd.addVocab(Vocab::encode("run"));
-    //  vcControl_port.write(true);
-    
     return true;
 }
 
 
+void generatorThread::disconnectPorts()
+{
+    char tmp1[255],tmp2[255];
+
+#if !DEBUG
+    
+    sprintf(tmp1,"/%s/vcControl",partName.c_str());
+    sprintf(tmp2,"/icub/vc/%s/input",partName.c_str());
+    if(Network::isConnected(tmp1,tmp2))
+        Network::disconnect(tmp1,tmp2);
+    vcControl_port.close();
+
+    sprintf(tmp1,"/%s/vcFastCommand",partName.c_str());
+    sprintf(tmp2,"/icub/vc/%s/fastCommand",partName.c_str());
+    if(Network::isConnected(tmp1,tmp2))
+        Network::disconnect(tmp1,tmp2);
+    vcFastCommand_port.close();
+
+#endif
+
+    if(myCpg->feedbackable)
+    {
+        sprintf(tmp1,"/feedback/%s/contact",partName.c_str());
+        sprintf(tmp2,"/%s/contacts_in",partName.c_str());
+        if(Network::isConnected(tmp1,tmp2))
+            Network::disconnect(tmp1,tmp2);
+        contact_port.close();
+    }
+
+    parameters_port.close();
+    //check_motion_port.close();
+
+    current_state_port.close();
+    
+    for(int i=0;i<nbLIMBs;i++)
+        if(other_part_connected[i])
+                {
+                    sprintf(tmp1,"/%s/cpg_status/out",other_part_name[i].c_str());
+                    sprintf(tmp2,"/%s/cpg_status/%s/in",partName.c_str(),other_part_name[i].c_str());
+                    if(Network::isConnected(tmp1,tmp2))
+                        Network::disconnect(tmp1,tmp2);
+                    other_part_port[i].close();
+                }
+}
 
 void generatorThread::threadRelease()
 {
@@ -279,7 +455,6 @@ void generatorThread::threadRelease()
 
     for(int i=0;i<nbDOFs;i++)
         {
-
             Bottle& cmd = vcControl_port.prepare();
             cmd.clear();
             cmd.addVocab(Vocab::encode("gain"));
@@ -293,8 +468,12 @@ void generatorThread::threadRelease()
 
 #endif
 
-    delete ddPart;
+    disconnectPorts();
 
+#if !DEBUG
+    delete ddPart;
+#endif
+    
     delete[] y_cpgs;
     delete[] states;
     delete[] previous_states;
@@ -306,6 +485,7 @@ void generatorThread::threadRelease()
     delete[] initPos;
 
     delete myCpg;
+    delete myIK;
 
     fclose(target_file);
     fclose(parameters_file);
@@ -317,22 +497,46 @@ void generatorThread::threadRelease()
 
 bool generatorThread::init(Searchable &s)
 {
-    Property options(s.toString());
+    Property arguments(s.toString());
     Time::turboBoost();
 
     current_action = false;
+    previous_quadrant[0]= true;
+    previous_quadrant[1]= true;
+    
+    myIK = new IKManager;
 
     //////getting part to interface with
-    if(options.check("part"))
-        {
-            partName = options.find("part").asString().c_str();
-            ACE_OS::printf("module taking care of part %s\n",partName.c_str());
-        }
+    Property options;
+    if(arguments.check("part"))
+    {
+        partName = arguments.find("part").asString().c_str();
+        ACE_OS::printf("module taking care of part %s\n\n",partName.c_str());
+    }
     else
-        {
-            ACE_OS::printf("Please specify part to control (e.g. --part head)\n");
-            return false;
-        }
+    {
+        ACE_OS::printf("Please specify part to control (e.g. --part head)\n");
+        return false;
+    }
+    
+    if(arguments.check("file"))
+	{
+		options.fromConfigFile(arguments.find("file").asString().c_str());
+	}
+	else
+	{
+		options.fromConfigFile(("../config/" + partName + "Config.ini").c_str());
+	}
+
+	cout << "Config : " << options.toString() <<endl;
+	if(options.check("robot"))
+	{
+		robot = options.find("robot").asString();
+	}
+    else
+    {
+		robot = "icub";
+    }
 
   
     char tmp1[255],tmp2[255];
@@ -364,6 +568,7 @@ bool generatorThread::init(Searchable &s)
 
     ddOptions.put("local",tmp1);
     ddOptions.put("remote",tmp2);
+    ddOptions.put("carrier","udp");
 
     ddPart = new PolyDriver(ddOptions);
 
@@ -438,16 +643,6 @@ bool generatorThread::init(Searchable &s)
             return false;
         }
 
-    ////////////opening check motion port to send status
-    sprintf(tmp2,"/%s/check_motion/out",partName.c_str());
-    ok= check_motion_port.open(tmp2); 
-
-    if(!ok)
-        {
-            ACE_OS::printf("Failed to open port to check motion of part %s \n",partName.c_str());
-            return false;
-        }
-
     ////////////////////////////////////////////////////////////////
     //////////Opening port to send current CPG state ///////////////
     ////////////////////////////////////////////////////////////////
@@ -473,10 +668,42 @@ bool generatorThread::init(Searchable &s)
             ACE_OS::printf("Please specify the nbDOFs of part%s\n",partName.c_str());
             return false;
         }
+        
+    if(options.check("nbLIMBs"))
+        nbLIMBs = options.find("nbLIMBs").asInt();
+    else
+        {
+            ACE_OS::printf("Please specify the nbLIMBs coupled with part%s\n",partName.c_str());
+            return false;
+        }
 
     ///we create the CPG
-    myCpg = new cpgs(nbDOFs);
+    ACE_OS::printf("nb limbs is %d\n", nbLIMBs);
+    fflush(stdout);
+    myCpg = new cpgs(nbDOFs, nbLIMBs);
+    fflush(stdout);
     
+    myCpg->partName = this->partName;
+        
+    //////////////opening feedback ports if applicable
+    
+    if(partName =="head" || partName =="torso")
+    {
+        myCpg->feedbackable=0; //no feedback
+        ACE_OS::printf("No feedback for part %s\n", partName.c_str());
+    }
+    else
+    {
+        myCpg->feedbackable=1; //feedback
+        sprintf(tmp1,"/%s/contacts_in", partName.c_str());
+        if(!contact_port.open(tmp1))
+        {
+            ACE_OS::printf("Cannot open contact receiving port of %s\n",partName.c_str());
+            return false;
+        }
+    }
+
+
     /// getting the initial position
     if(options.check("init_pos"))
         {
@@ -495,7 +722,7 @@ bool generatorThread::init(Searchable &s)
             for(int i=0; i<nbDOFs; i++)
                 {
                     initPos[i]=pos.get(i+1).asDouble();
-                    myCpg->parameters[2*i]=initPos[i]/180.0*3.1415;
+                    myCpg->parameters[2*i+1]=initPos[i]/180.0*3.1415;
                     //myCpg->next_parameters[2*i]=initPos[i]/180.0*3.1415;
                     ACE_OS::printf("setting init pos %f joint %d\n",initPos[i],i);
                 }
@@ -505,7 +732,7 @@ bool generatorThread::init(Searchable &s)
         ACE_OS::printf("Warning no initial positions found\n");
 
 
-    ///getting the amplitude of oscillations (Warning these should never be close to 0!!
+    ///getting the amplitude of oscillations -> Warning these should never be close to 0!!
     //otherwise the integration of the ODEs will diverge!
 
     if(options.check("amplitudes"))
@@ -535,6 +762,7 @@ bool generatorThread::init(Searchable &s)
                     else
                         myCpg->ampl[i] = ampl;
                 }
+                
         }
     else
         {
@@ -542,7 +770,11 @@ bool generatorThread::init(Searchable &s)
             for(int i=0;i<nbDOFs;i++)
                 myCpg->ampl[i]=0.1;
         }
- 
+     
+     //if(partName=="left_arm" || partName=="right_arm")
+     //{
+         //myCpg->ampl[0]=myIK->getArmAmplitude(initPos, myCpg->ampl[0]);
+     //}   
 
     ///getting the joint mapping
     if(options.check("joint_mapping"))
@@ -693,13 +925,13 @@ bool generatorThread::init(Searchable &s)
         }
 
     ///we create the vectors
-
-    y_cpgs = new double[nbDOFs*4+2*3+1];
+    fflush(stdout);
+    y_cpgs = new double[nbDOFs*4+2*nbLIMBs+1]; //4 states per internal dof + 2 per coupled dof + 1 go command
     states = new double[nbDOFs];
     previous_states = new double[nbDOFs];
     encoders = new double[nbDOFs];
 
-    for(int i=0;i<4*nbDOFs+7;i++)
+    for(int i=0;i<4*nbDOFs+2*nbLIMBs+1;i++)
         y_cpgs[i] = 0.0;
 
 #if DEBUG
@@ -714,14 +946,20 @@ bool generatorThread::init(Searchable &s)
 
             y_cpgs[4*i+2]=0.0/180.0*3.1415/myCpg->ampl[i];
 
-            y_cpgs[4*i+3]=0.01;
+            y_cpgs[4*i+3]=0.0;
         }
 #else
-    if(!getEncoders())
+    double watchdog = Time::now();
+    double now = watchdog;
+    while(!getEncoders())
         {
-            ACE_OS::printf("error getting encoders, part %s\n",partName.c_str());
-
-            return false;
+            now = Time::now();
+            if(now-watchdog>1.0)
+                {
+                    ACE_OS::printf("error getting encoders, part %s\n",partName.c_str());
+                    
+                    return false;
+                }
         }
 
     for(int i=0; i< nbDOFs; i++)
@@ -736,13 +974,13 @@ bool generatorThread::init(Searchable &s)
 
             y_cpgs[4*i+2]=encoders[i]/180.0*3.1415/myCpg->ampl[i];
 
-            y_cpgs[4*i+3]=0.01;
+            y_cpgs[4*i+3]=0.0;
         }
 
 #endif
 
     //the go command
-    y_cpgs[nbDOFs*4+6]=0.0;
+    y_cpgs[nbDOFs*4+2*nbLIMBs]=0.0;
     
 
     ////we get the frequencies
@@ -789,12 +1027,12 @@ bool generatorThread::init(Searchable &s)
             Bottle& tmpBot = options.findGroup("External_coupling");
             Bottle& tmpBot2 = tmpBot.findGroup("parts");
             Bottle& tmpBot3 = tmpBot.findGroup("coupling");
-            if(tmpBot2.isNull() || tmpBot2.size()<4 || tmpBot3.isNull() || tmpBot3.size()<4)
+            if(tmpBot2.isNull() || tmpBot2.size()<nbLIMBs+1 || tmpBot3.isNull() || tmpBot3.size()<nbLIMBs+1)
                 {
                     ACE_OS::printf("Please specify external coupling for part %s\n",partName.c_str());
-            return false;
+                    return false;
                 }
-            for(int i=0;i<3;i++)
+            for(int i=0;i<nbLIMBs;i++)
                 {
                     other_part_connected[i] = false;
                     other_part_name[i] = tmpBot2.get(i+1).asString();
@@ -807,6 +1045,7 @@ bool generatorThread::init(Searchable &s)
             ACE_OS::printf("Please specify external coupling for part %s\n",partName.c_str());
             return false;
         }
+
 
     //we get the internal coupling parameters
 
@@ -824,7 +1063,7 @@ bool generatorThread::init(Searchable &s)
                     ///coupling strength
                     Bottle& tmpBot2 = tmpBot.findGroup("strength");
 
-                    if(tmpBot2.isNull() || tmpBot2.size()<nbDOFs+2)
+                    if(tmpBot2.isNull() || tmpBot2.size()<nbDOFs+1)
                         ACE_OS::printf("No coupl. strength info for joint %d, part %s\n",i,partName.c_str());
                     else
                         for(int j=0;j<nbDOFs;j++)
@@ -836,7 +1075,7 @@ bool generatorThread::init(Searchable &s)
 
                     Bottle& tmpBot3 = tmpBot.findGroup("phase");
 
-                    if(tmpBot3.isNull() || tmpBot3.size()<nbDOFs+2)
+                    if(tmpBot3.isNull() || tmpBot3.size()<nbDOFs+1)
                         ACE_OS::printf("No coupl. phase info for joint %d, part %s\n",i,partName.c_str());
                     else
                         for(int j=0;j<nbDOFs;j++)
@@ -890,10 +1129,8 @@ bool CrawlGeneratorModule::updateModule()
 }
 
 
-
 bool CrawlGeneratorModule::close()
-{
-    fprintf(stderr, "%s module closing\n", partName.c_str());
+{    
     theThread->stop();
     delete theThread;
     fprintf(stderr, "%s module closed\n", partName.c_str());
@@ -920,9 +1157,14 @@ bool CrawlGeneratorModule::open(yarp::os::Searchable &s)
   
     theThread = new generatorThread(period);
     if(!theThread->init(s))
+    {
+        ACE_OS::printf("Failed to initialize the thread\n");
+        fflush(stdout);
         return false;
+    }
 
     theThread->start();
+    
     return true;
 
 }
