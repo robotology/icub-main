@@ -95,7 +95,7 @@
  *    please see the documentation of open() method.
  *  
  *  
- * \b "/<solverName>/out" stream out a bottle containing the 
+ * \b "/<solverName>/out" streams out a bottle containing the 
  *    result of optimization instance. The format is ([xd]
  *    (...)) ([x] (...)) ([q] (...)) as following:
  *  
