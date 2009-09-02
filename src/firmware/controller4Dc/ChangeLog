@@ -1,6 +1,8 @@
 2009-24-June  Francesco Nori <francesco.nori@iit.t>
+* Current build 24. iron: integral discretization problem removed
+	
+2009-24-June  Francesco Nori <francesco.nori@iit.t>
 * Current build 23. iron: removed encoder drift on 0x0120
-
 
 2009-24-June  Francesco Nori <francesco.nori@iit.t>
 * Current build 22. iron: watch dog time on MAIS increased

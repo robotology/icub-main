@@ -544,8 +544,8 @@ Int32 compute_pid2(byte j)
 #else 
 
 	_integral[j] = _integral[j] + IntegralError;
-	
 	IntegralPortion = _integral[j];
+	
 	if (IntegralPortion>=0)
 	{
 		IntegralPortion = (IntegralPortion >> _kr[j]); // integral reduction 
