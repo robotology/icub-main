@@ -284,20 +284,6 @@ Int32 compute_pid2(byte j)
 	/* Integral */
 	IntegralError = ( (Int32) _error[j]) * ((Int32) _ki[j]);
 
-	if (IntegralError>=0)
-	{
-		IntegralError = IntegralError >> (_kr[j]); // integral reduction 
-	}
-	else
-	{
-		IntegralError = -(-IntegralError >> (_kr[j])); // integral reduction 
-	}
-	
-	if (IntegralError > MAX_16)
-		IntegralError = (Int32) MAX_16;
-	if (IntegralError < MIN_16) 
-		IntegralError = (Int32) MIN_16;
-
 #if VERSION == 0x0116
 
 	_integral_current[j] = L_add(_integral_current[j], IntegralError);
@@ -308,8 +294,36 @@ Int32 compute_pid2(byte j)
 
 #else
 
-	_integral[j] = L_add(_integral[j], IntegralError);
+	_integral[j] = _integral[j] + IntegralError;
 	IntegralPortion = _integral[j];
+
+	if (IntegralPortion>=0)
+	{
+		IntegralPortion = IntegralPortion >> (_kr[j]); // integral reduction 
+	}
+	else
+	{
+		IntegralPortion = -(-IntegralPortion >> (_kr[j])); // integral reduction 
+	}
+	
+	if (IntegralPortion > MAX_16)
+		IntegralPortion = (Int32) MAX_16;
+	if (IntegralPortion < MIN_16) 
+		IntegralPortion = (Int32) MIN_16;
+	
+	/* Accumulator saturation */
+	if (IntegralPortion >= _integral_limit[j])
+	{
+		IntegralPortion = _integral_limit[j];
+		_integral[j] =  _integral_limit[j];
+	}		
+	else
+		if (IntegralPortion < - (_integral_limit[j]))
+		{
+			IntegralPortion = - (_integral_limit[j]);
+			_integral[j] = (-_integral_limit[j]);
+		}
+
 
 	_pd[j] = L_add(ProportionalPortion, DerivativePortion);
 	PIDoutput = L_add(_pd[j], IntegralPortion);
