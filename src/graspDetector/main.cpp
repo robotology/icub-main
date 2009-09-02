@@ -358,6 +358,7 @@ int main(int argc, char *argv[])
 
     rf.setVerbose(true);
     rf.setDefaultContext("graspDetector");
+    rf.setDefaultConfigFile("left_armGraspDetector.ini");
     if(!rf.configure("ICUB_ROOT", argc, argv))
         {
             fprintf(stderr, "Problems in instantiating the module. Closing \n");
