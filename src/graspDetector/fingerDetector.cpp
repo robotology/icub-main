@@ -56,7 +56,7 @@ void fingerDetector::run()
     
     double res;
     res = dot(lambda,analogs) - 1;
-    if (res < 1.2*min || res > 1.2*max)
+    if (res < 1.1*min || res > 1.1*max)
         //fprintf(stderr, "Model: %s\n min=%f, max=%f and res=%f\n", lambda.toString().c_str(), min, max, res);
         status = true;   //true if grasping (model not respected) 
     else
