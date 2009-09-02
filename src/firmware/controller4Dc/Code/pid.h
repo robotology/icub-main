@@ -244,6 +244,10 @@ extern float _filt_pid[JN] ;			// filtered pid control
     	if ( _ki[j] != 0) \
 		{ \
     		_integral[j] =  ((Int32) _pid_limit[j]) - _pd[j]; \
+    		if(_integral[j]>0)\
+    			_integral[j] = L_shl(_integral[j],_kr[j]);\
+    		else\
+    			_integral[j] = -L_shl(-_integral[j],_kr[j]);\
 		} \
 	} \
 	else \
@@ -253,21 +257,13 @@ extern float _filt_pid[JN] ;			// filtered pid control
 			if ( _ki[j] != 0) \
 			{ \
 	    		_integral[j] =  ((Int32) (-_pid_limit[j])) - _pd[j]; \
+	    		if(_integral[j]>0)\
+    				_integral[j] = L_shl(_integral[j],_kr[j]);\
+    			else\
+    				_integral[j] = -L_shl(-_integral[j],_kr[j]);\
 			} \
 		} \
 	}\
-	/* Accumulator saturation */ \
-	if (_integral[j] >= (Int32)_integral_limit[j]) \
-    { \
-		_integral[j] = (Int32) _integral_limit[j]; \
-	} \
-	else \
-	{ \
-		if (_integral[j] < - ((Int32)_integral_limit[j])) \
-		{ \
-			_integral[j] = - ((Int32)_integral_limit[j]); \
-		} \
-	} \
 	/* Control saturation */ \
 	if (PID > (Int32) _pid_limit[j]) \
     	_pid[j] = _pid_limit[j]; \

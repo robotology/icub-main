@@ -293,10 +293,10 @@ Int32 compute_pid2(byte j)
 	PIDoutput = L_add(_pd_current[j], IntegralPortion);
 
 #else
-
+	
 	_integral[j] = _integral[j] + IntegralError;
 	IntegralPortion = _integral[j];
-
+		
 	if (IntegralPortion>=0)
 	{
 		IntegralPortion = IntegralPortion >> (_kr[j]); // integral reduction 
@@ -315,13 +315,13 @@ Int32 compute_pid2(byte j)
 	if (IntegralPortion >= _integral_limit[j])
 	{
 		IntegralPortion = _integral_limit[j];
-		_integral[j] =  _integral_limit[j];
+		_integral[j] =  (_integral_limit[j] << (_kr[j]));
 	}		
 	else
 		if (IntegralPortion < - (_integral_limit[j]))
 		{
 			IntegralPortion = - (_integral_limit[j]);
-			_integral[j] = (-_integral_limit[j]);
+			_integral[j] = -(_integral_limit[j] << (_kr[j]));
 		}
 
 
