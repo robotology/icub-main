@@ -280,7 +280,7 @@ public:
 
         //opening the output file
         char outputFileName[1024];
-        sprintf(outputFileName, "%s/app/graspDetector/%sGraspDetector.ini", ACE_OS::getenv("ICUB_ROOT"), part.asString().c_str());
+        sprintf(outputFileName, "%s/app/graspDetector/conf/%sGraspDetector.ini", ACE_OS::getenv("ICUB_ROOT"), part.asString().c_str());
         //fprintf(stderr, "Opening the output file: %s...", outputFileName);
         pFile = fopen (outputFileName,"w");
         //fprintf(stderr, "ok!\n");
