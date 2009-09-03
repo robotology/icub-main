@@ -38,7 +38,7 @@ private:
     double max;
     
 public:
-    bool status; //true if grasping (model not respected) 
+    double status; //true if grasping (model not respected) 
 };
 
 
