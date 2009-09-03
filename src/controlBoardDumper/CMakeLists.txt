@@ -1,3 +1,4 @@
+
 PROJECT(controlBoardDumper)
 SET(YARP_DIR "$ENV{YARP_ROOT}" CACHE LOCATION "where is yarp?")
 

@@ -112,6 +112,9 @@
 #include "controlBoardDumper.h"
 #include <yarp/os/ResourceFinder.h>
 #include <yarp/os/Module.h>
+
+#define NUMBER_OF_AVAILABLE_DATA_TO_DUMP 6
+
 //
 void getRate(Property p, int &r)
 {
@@ -186,6 +189,19 @@ int getNumberDataToDump(Property p, int &n)
 
 int getDataToDump(Property p, ConstString *listOfData, int n)
 {
+
+    ConstString availableDataToDump[NUMBER_OF_AVAILABLE_DATA_TO_DUMP];
+
+    int j;
+
+    availableDataToDump[0] = ConstString("getEncoders");
+    availableDataToDump[1] = ConstString("getEncoderSpeeds");
+    availableDataToDump[2] = ConstString("getEncoderAccelerations");
+    availableDataToDump[3] = ConstString("getErrors");
+    availableDataToDump[4] = ConstString("getOutputs");
+    availableDataToDump[5] = ConstString("getCurrents");
+
+
     if (!p.check("dataToDump"))
         {
             fprintf(stderr, "Missing option 'dataToDump' in given config file\n");
@@ -197,10 +213,20 @@ int getDataToDump(Property p, ConstString *listOfData, int n)
     for (int i = 0; i < n; i++)
     {
         listOfData[i] = pList->get(i).toString();
-        //fprintf(stderr, "%s ", listOfData[i].c_str());
+	for(j = 0; j< NUMBER_OF_AVAILABLE_DATA_TO_DUMP; j++)
+	{
+		if(listOfData[i] == (availableDataToDump[j]))
+				break;
+	}
+	if(j == NUMBER_OF_AVAILABLE_DATA_TO_DUMP)
+	{
+		fprintf(stderr, "Illegal values for 'dataToDump': %s does not exist!\n",listOfData[i].c_str());
+		return 0;
+	}	
     }
-    return 1;
+   return 1;
 }
+
 
 class DumpModule: public Module
 {
@@ -426,6 +452,7 @@ public:
                                 }
                             else
                                 fprintf(stderr, "Problems getting the time stamp interfaces \n");
+                               
                             myDumper[i].setGetter(&myGetCurrs);
                         }
             }
