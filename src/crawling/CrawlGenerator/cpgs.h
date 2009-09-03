@@ -46,6 +46,9 @@ public:
 	
 	yarp::String partName;
 	
+        
+    double turnAngle;//angle of rotation of the torso roll
+    
     bool feedbackable; //has this part a feedback? (head, torso: no)
     bool feedback_on; //if feedbackable, is the feedback information available
     double contact[2];//touch sensor information  for on arm (leg) and the other

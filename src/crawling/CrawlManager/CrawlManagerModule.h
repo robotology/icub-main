@@ -15,7 +15,14 @@ using namespace yarp::dev;
 #include <iostream>
 #include <vector>
 
-#include "CrawlInvKin.h"
+#define LEFT_ARM 1
+#define RIGHT_ARM -1
+
+#define NOT_SET -1
+#define INIT_POS 0
+#define CRAWL 1
+#define TURN_LEFT 2
+#define TURN_RIGHT 3
 
 using namespace std;
 
@@ -26,28 +33,26 @@ class CrawlManagerModule : public Module
    static const int nbParts = 6;
    
    BufferedPort<Bottle> parts_port[nbParts];
+   BufferedPort<Bottle> check_port[nbParts];
    bool connected_part[nbParts];
 
+   int STATE;
 
    double om_swing,om_stance;
 
-   IKManager *myIK;
-   
    vector<double> closedLoop;
 
    vector<vector<vector<double> > > unsit_parameters, sit_parameters;
-   vector<vector<double> > init_parameters, crawl_parameters, crawl_init_parameters;
+   vector<vector<double> > init_parameters, crawl_parameters;
+   vector<vector<double> > crawl_left_parameters, crawl_right_parameters;
    vector<vector<double> > encoders;
 
    ConstString part_names[nbParts];
 
    int com;
-   
+   Property options;
+	   
    int nbDOFs[nbParts];
-
-   double left_turn, right_turn;
-   
-   Property opt;
 
    int nbPosSit;
    int nbPosUnsit;
@@ -58,6 +63,7 @@ class CrawlManagerModule : public Module
 
    bool getSequence(vector<vector<vector<double> > > parameters, ConstString task, int& nbPos);
    void sendCommand(int i, vector<vector<double> > params);
+   int getSwingingArm();
 
  public:
 

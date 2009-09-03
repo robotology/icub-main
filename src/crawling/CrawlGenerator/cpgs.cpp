@@ -105,6 +105,10 @@ cpgs::cpgs(int nbDOFs, int nbLIMBs){
   for(int i=0;i<nbDOFs;i++)
     ampl[i]=0.1;
     
+  //turning angle (torso roll joint, used to compute amplitudes)  
+  turnAngle = 0;
+  
+  //feedback auxiliary variables  
   feedbackable=0; 
   feedback_on=0; 
   contact[0]=0.0;
@@ -153,7 +157,7 @@ void cpgs::integrate_step(double *y, double *at_states)
      {
         if(y[3]<0.0)
         {
-            g[3] += y[3];
+            g[3] -= y[3];
             g[1] -= y[3];
         }
         
@@ -276,7 +280,7 @@ void cpgs::integrate_step(double *y, double *at_states)
 
 void cpgs::printInternalVariables()
 {
-  
+
   ACE_OS::printf("nbDOFs %d, cpgs_size %d, controlled param %d\n",
 		 nbDOFs,cpgs_size,controlled_param);
   ACE_OS::printf("a %f, b %f, m_off %f, m_on %f, b_go %f, u_go %f, dt %f\n",

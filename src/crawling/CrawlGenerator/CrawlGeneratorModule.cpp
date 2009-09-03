@@ -39,6 +39,17 @@ void generatorThread::checkJointLimits()
         }
 }
 
+void generatorThread::sendStatusForManager()
+{
+    Bottle& cmd =check_status_port.prepare();
+
+    cmd.clear();
+    cmd.addDouble(y_cpgs[3]);
+
+    check_status_port.write(false);
+    
+}
+
 //bool generatorThread::sendEncoders()
 //{
     ////cout << "Sending encoders: " ;
@@ -151,7 +162,7 @@ void generatorThread::getParameters()
     //cout << "getting param ";
     Bottle *command = parameters_port.read(false);
     if(command!=NULL)
-        if(command->size() >=2*nbDOFs+2)
+        if(command->size() >=2*nbDOFs+3)
             {
                 double params[2*nbDOFs];
                 for (int i=0; i<2*nbDOFs; i++)  
@@ -187,8 +198,21 @@ void generatorThread::getParameters()
                     myCpg->om_swing = freq;
                 else
                     ACE_OS::printf("trying to set a too high sw freq %f\n",freq);
+                    
+                double angle = command->get(2*nbDOFs+2).asDouble();
+                if(angle < MAX_TURN_ANGLE)
+                    if(angle > -MAX_TURN_ANGLE)
+                        myCpg->turnAngle=angle;
+                    else
+                        ACE_OS::printf("turning angle %f too small\n", angle);
+                else
+                    ACE_OS::printf("turning angle %f too big\n", angle);
+                  
+                
+                //myCpg->ampl[0]= myIK->getTurnParams(myCpg->turnAngle, ampl, side, limb);
+                myIK->getTurnParams(myCpg->turnAngle, amplit, side, limb);
             
-                fprintf(parameters_file,"%f %f ",myCpg->om_stance,myCpg->om_swing);
+                fprintf(parameters_file,"%f %f %f",myCpg->om_stance,myCpg->om_swing, myCpg->turnAngle);
                 fprintf(parameters_file,"%f \n",Time::now()/*-original_time*/);
                 fflush(parameters_file);
                 
@@ -325,15 +349,17 @@ void generatorThread::run()
     if(current_action)
         {
             getOtherLimbStatus();
-            
-            if(myCpg->feedbackable)
-                getContactInformation();
+                        
+            //if(myCpg->feedbackable)
+                //getContactInformation();
             
             //integrate the system
             int inner_steps = (int)((period+time_residue)/myCpg->get_dt());
             
             for(int j=0; j<inner_steps; j++)
                 myCpg->integrate_step(y_cpgs,states);
+                
+            sendStatusForManager();    
         }
     else
         connectToOtherLimbs();
@@ -508,10 +534,22 @@ bool generatorThread::init(Searchable &s)
 
     //////getting part to interface with
     Property options;
+    
+    side = 0;
+    limb=0;
+    
     if(arguments.check("part"))
     {
         partName = arguments.find("part").asString().c_str();
         ACE_OS::printf("module taking care of part %s\n\n",partName.c_str());
+        if(partName=="left_arm" || partName=="left_leg")
+            side = LEFT;
+        if(partName=="right_arm" || partName=="right_leg")
+            side = RIGHT;
+        if(partName=="left_arm" || partName=="right_arm")
+            limb = ARM;
+        if(partName=="left_leg" || partName=="right_leg")
+            limb = LEG;
     }
     else
     {
@@ -527,9 +565,8 @@ bool generatorThread::init(Searchable &s)
 	{
 		options.fromConfigFile(("../../Crawling/config/" + partName + "Config.ini").c_str());
 	}
-
-	cout << "Config : " << options.toString() <<endl;
-	if(options.check("robot"))
+	
+    if(options.check("robot"))
 	{
 		robot = options.find("robot").asString();
 	}
@@ -642,6 +679,14 @@ bool generatorThread::init(Searchable &s)
             ACE_OS::printf("Failed to open port to get parameters of part %s \n",partName.c_str());
             return false;
         }
+        
+    sprintf(tmp1,"/%s/status_for_manager/out",partName.c_str());
+    ok=check_status_port.open(tmp1);
+  
+    if(!ok)
+    {
+     ACE_OS::printf("Warning cannot open status port for the manager, part %s\n",partName.c_str());
+    }  
 
     ////////////////////////////////////////////////////////////////
     //////////Opening port to send current CPG state ///////////////
@@ -770,12 +815,15 @@ bool generatorThread::init(Searchable &s)
             for(int i=0;i<nbDOFs;i++)
                 myCpg->ampl[i]=0.1;
         }
+        
+    amplit=myCpg->ampl[0];
      
-     //if(partName=="left_arm" || partName=="right_arm")
-     //{
-         //myCpg->ampl[0]=myIK->getArmAmplitude(initPos, myCpg->ampl[0]);
-     //}   
+     if(partName=="left_arm" || partName=="right_arm")
+     {
+         myCpg->ampl[0]=myIK->getArmAmplitude(initPos, myCpg->ampl[0]);
+     }   
 
+    ACE_OS::printf("amplitude is %f\n", myCpg->ampl[0]);
     ///getting the joint mapping
     if(options.check("joint_mapping"))
         {
@@ -942,11 +990,11 @@ bool generatorThread::init(Searchable &s)
 
             y_cpgs[4*i]=0.0/180.0*3.1415/myCpg->ampl[i];
 
-            y_cpgs[4*i+1]=0.0;
+            y_cpgs[4*i+1]=0.01;
 
             y_cpgs[4*i+2]=0.0/180.0*3.1415/myCpg->ampl[i];
 
-            y_cpgs[4*i+3]=0.0;
+            y_cpgs[4*i+3]=0.01;
         }
 #else
     double watchdog = Time::now();

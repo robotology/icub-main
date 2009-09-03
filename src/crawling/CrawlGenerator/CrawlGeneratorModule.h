@@ -17,12 +17,17 @@
 
 using namespace yarp::os;
 using namespace yarp::dev;
-
 using namespace std;
 
 #define LIMIT_TOL 2.0 //conservative limit tolerance in degrees
 #define MAX_FREQUENCY 1.5 //in Hz
+#define MAX_TURN_ANGLE 0.3 //in radians 
 
+#define LEFT 1
+#define RIGHT 2
+
+#define ARM 1
+#define LEG 2
 
 class generatorThread : public yarp::os::RateThread
 {
@@ -56,16 +61,19 @@ class generatorThread : public yarp::os::RateThread
     double original_time;
     double theoretical_time;
     double lastBeat_time;
+    double amplit;
     bool previous_quadrant[2]; //used to calculate the new beat
     int beat;
     
+    int side, limb;
+
     cpgs *myCpg;
     PolyDriver *ddPart;
     IEncoders *PartEncoders;
     IKManager *myIK;
 
     BufferedPort<Bottle> vcControl_port, vcFastCommand_port;
-    BufferedPort<Bottle> parameters_port; //check_motion_port;
+    BufferedPort<Bottle> parameters_port, check_status_port;
     BufferedPort<Bottle> other_part_port[3], current_state_port;
     BufferedPort<Bottle> contact_port;
     
@@ -88,6 +96,7 @@ class generatorThread : public yarp::os::RateThread
     void getContactInformation();
     void connectToOtherLimbs();
     void disconnectPorts();
+    void sendStatusForManager();
     //bool getQuadrant();
 };
 

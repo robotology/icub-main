@@ -21,7 +21,7 @@ bool CrawlManagerModule::updateModule()
     cout << "(6) Turn left" << endl;
     //cout << "(7) Sit" << endl;
     //cout << "(8) On all fours" << endl; 
-    //cout <<"9 Stop the module" << endl;
+    //cout <<"(9) Stop the module" << endl;
     
     return true;
 }
@@ -34,137 +34,112 @@ bool CrawlManagerModule::respond(const Bottle &command, Bottle &reply)
    switch(com)
     {   
         case 1:
+            
+            if(STATE==CRAWL)
+            {
+                int side=0;
+                while(side==0) side=getSwingingArm();
+                
+                if(side==LEFT_ARM)
+                {
+                    for(int i=0;i<nbParts;i++)
+                        if(connected_part[i]) sendCommand(i, crawl_left_parameters);
+                    Time::delay(1.0);
+                }
+                
+                if(side==RIGHT_ARM)
+                {
+                    for(int i=0;i<nbParts;i++)
+                        if(connected_part[i]) sendCommand(i, crawl_right_parameters);
+                    Time::delay(1.0);
+                }
+            }
+            
             for(int i=0;i<nbParts;i++)
                 if(connected_part[i]) sendCommand(i, init_parameters);
+            
             reply.addString("going to init pos");
+            STATE = INIT_POS;
+            
             break;
             
-        case 2:
-            crawl_parameters[9][1]=crawl_init_parameters[9][1]; //reset point torso roll
+        case 2:                
+
+            if(STATE!=CRAWL)
+            {
+                for(int i=0;i<nbParts;i++)
+                    if(connected_part[i]) sendCommand(i, crawl_right_parameters);
+                Time::delay(1.0);
+            }
+            
             for(int i=0;i<nbParts;i++)
                 if(connected_part[i]) sendCommand(i, crawl_parameters);
+            
             reply.addString("crawling");
+            STATE = CRAWL;
+            
             break;
                 
         case 3:
+            
+            if(STATE!=CRAWL)
+            {
+                for(int i=0;i<nbParts;i++)
+                    if(connected_part[i]) sendCommand(i, crawl_right_parameters);
+                Time::delay(0.2);
+            }
+            
             om_stance+=0.05;
+            
             for(int i=0;i<nbParts;i++)
                 if(connected_part[i]) sendCommand(i, crawl_parameters);
+            
             reply.addString("crawling faster");
+            STATE = CRAWL;
+            
             break;
             
         case 4:
+            
+            if(STATE!=CRAWL)
+            {
+                for(int i=0;i<nbParts;i++)
+                    if(connected_part[i]) sendCommand(i, crawl_right_parameters);
+                Time::delay(0.2);
+            }
             om_stance-=0.05;
+            
             for(int i=0;i<nbParts;i++)
                 if(connected_part[i]) sendCommand(i, crawl_parameters);
+            
             reply.addString("crawling slower");
+            STATE = CRAWL;
+            
             break;
-
             
         case 5: 
-        
-            turnAngle-=0.1; //this could be turn into an incremental def of the turning angle
+            
+            turnAngle-=0.1; 
             crawl_parameters[9][1]=turnAngle; 
-            turnParams = myIK->getTurnParams(crawl_parameters, scaleLeg);
-            
-            printf("turn Params delta: %f R: %f\n", turnParams[0], turnParams[1]); 
-            
-            crawl_parameters[0][0]= scaleLeg*(turnParams[1]-myIK->dShoulder); //left shoulder pitch amplitude
-            crawl_parameters[2][0]= scaleLeg*(turnParams[1]+myIK->dShoulder); // right shoulder pitch amplitude
-            crawl_parameters[4][0]= scaleLeg*(turnParams[1]-myIK->dHip); //left hip pitch amplitude
-            crawl_parameters[6][0]= scaleLeg*(turnParams[1]+myIK->dHip); //right hip pitch amplitude
-            
-            //crawl_parameters[1][2] = crawl_init_parameters[1][2]+turnParams[0]; //left shoulder roll target
-            //crawl_parameters[3][2] = crawl_init_parameters[3][2]-turnParams[0]; //right shoulder roll target
-            
 
             for(int i=0;i<nbParts;i++)
                 if(connected_part[i]) sendCommand(i, crawl_parameters);
+            
             reply.addString("turning right");
+            
             break;
             
         case 6:
         
-            turnAngle+=0.1; //this could be turn into an incremental def of the turning angle
+            turnAngle+=0.1;
             crawl_parameters[9][1]=turnAngle; 
-            turnParams = myIK->getTurnParams(crawl_parameters, scaleLeg);
-            
-            printf("turn Params angle: %f delta: %f R: %f\n", turnAngle, turnParams[0], turnParams[1]); 
-            
-            crawl_parameters[0][0]= scaleLeg*(turnParams[1]+myIK->dShoulder); //left shoulder pitch amplitude
-            crawl_parameters[2][0]= scaleLeg*(turnParams[1]-myIK->dShoulder); // right shoulder pitch amplitude
-            crawl_parameters[4][0]= scaleLeg*(turnParams[1]+myIK->dHip); //left hip pitch amplitude
-            crawl_parameters[6][0]= scaleLeg*(turnParams[1]-myIK->dHip); //right hip pitch amplitude
-            
-            //crawl_parameters[1][2] = crawl_init_parameters[1][2]-turnParams[0]; //left shoulder roll target
-            //crawl_parameters[3][2] = crawl_init_parameters[3][2]+turnParams[0]; //right shoulder roll target
             
             for(int i=0;i<nbParts;i++)
                 if(connected_part[i]) sendCommand(i, crawl_parameters);
             reply.addString("turning left");
+            
             break;
-            
-        //case 7:
-            //reply.addString("sitting");            
-            //for(int k=0;k<nbPosSit;k++)
-            //{
-                //vector<vector<double> > temp_param;
-                //vector<double> temp_ampl, temp_target;
-                
-                //for(int i=0;i<nbParts;i++)
-                //{                    
-                    //for(int j=0; j<nbDOFs[i]; j++)
-                    //{
-                     //temp_ampl.push_back(sit_parameters[i][2*j][k]);
-                     //temp_target.push_back(sit_parameters[i][2*j+1][k]);
-                    //}
-                    //temp_param.push_back(temp_ampl);
-                    //temp_param.push_back(temp_target);
-                                             
-                    //if(connected_part[i]) sendCommand(i, temp_param);  
-                    
-                    //temp_ampl.clear();
-                    //temp_target.clear(); 
-                //}         
-                //Time::delay(1.5);
-            //}
-            //break;
-            
-        //case 8:
-            //reply.addString("going on all fours TEST");         
-            //for(int k=0;k<nbPosUnsit;k++)
-            //{
-                //vector<vector<double> > temp_param2;
-                //vector<double> temp_ampl2, temp_target2;
-                //for(int i=0;i<nbParts;i++)
-                //{                    
-                    //for(int j=0; j<nbDOFs[i]; j++)
-                    //{
-                        //int l=2*j+1;
-                     //temp_ampl2.push_back(unsit_parameters[i][2*j][k]);
-                     //temp_target2.push_back(unsit_parameters[i][2*j+1][k]);
-                    //}
-                    //temp_param2.push_back(temp_ampl2);
-                    //temp_param2.push_back(temp_target2);
-      
-                    //if(connected_part[i]) sendCommand(i, temp_param2);
-
-                    //temp_ampl2.clear();
-                    //temp_target2.clear(); 
-                //}         
-                //Time::delay(5.0);
-            //}
-            //break;
-            
-        //case 9:
-            //reply.addString("stopping");
-            ////om_stance=-1;
-            ////for(int i=0;i<nbParts;i++)
-                ////if(connected_part[i]) sendCommand(i, crawl_parameters);
-            //interruptModule();
-            //close();
-            //break;
-            
+                        
         default:
             break;
             
@@ -177,8 +152,7 @@ bool CrawlManagerModule::respond(const Bottle &command, Bottle &reply)
 bool CrawlManagerModule::open(Searchable &s)
 {
     Property arguments(s.toString());
-    Property options;
-	
+    
     if(arguments.check("file"))
 	{
 		options.fromConfigFile(arguments.find("file").asString().c_str());
@@ -187,8 +161,9 @@ bool CrawlManagerModule::open(Searchable &s)
 	{
 		options.fromConfigFile("../../Crawling/config/managerConfig.ini");
 	}
-
-	cout << "Config : " << options.toString() <<endl;
+    
+    options.toString();
+    
     Time::turboBoost();
 
     part_names[0]="left_arm";
@@ -198,26 +173,16 @@ bool CrawlManagerModule::open(Searchable &s)
     part_names[4]="torso";
     part_names[5]="head";
     
+    STATE = NOT_SET;
+    
     vector<double> crawl_ampl;
     vector<double> crawl_target;
     vector<double> init_ampl;
     vector<double> init_target;
-    
-    left_turn=1;
-    right_turn=1;
-    
+
+    turnAngle=0;
     nbPosSit=0;
     nbPosUnsit=0;
-    
-    turnParams.push_back(0); //delta angle shoulder yaw for turning
-    turnParams.push_back(1); //radius of rotation
-     
-    closedLoop.push_back(-1); //distance left arm right leg x
-    closedLoop.push_back(-1); //distance left arm right leg y
-    closedLoop.push_back(-1); //distance left arm right leg z
-    closedLoop.push_back(-1); //distance right arm left leg x
-    closedLoop.push_back(-1); //distance right arm left leg y
-    closedLoop.push_back(-1); //distance right arm left leg z
 
     for(int i=0;i<nbParts;i++)
         {
@@ -236,17 +201,33 @@ bool CrawlManagerModule::open(Searchable &s)
                     sprintf(tmp2,"/manager/%s/out",part_names[i].c_str());
                     bool ok = parts_port[i].open(tmp2);
                     if(!ok)
-                        {
-                            ACE_OS::printf("unable to open %s\n",tmp2);
-                            return false;
-                        }
+                    {
+                        ACE_OS::printf("unable to open %s\n",tmp2);
+                        return false;
+                    }
                     ok = Network::connect(tmp2,tmp1);
                     if(!ok)
-                        {
-                            ACE_OS::printf("unable to connect %s with %s\n",tmp2,tmp1);
-                            return false;
-                        }
+                    {
+                        ACE_OS::printf("unable to connect %s with %s\n",tmp2,tmp1);
+                        return false;
+                    }
+                    
                     connected_part[i] = true;
+                    
+                    sprintf(tmp1, "/manager/%s/status/in", part_names[i].c_str());
+                    sprintf(tmp2, "/%s/status_for_manager/out", part_names[i].c_str());
+                    ok = check_port[i].open(tmp1);
+                    if(!ok)
+                    {
+                        ACE_OS::printf("unable to open %s\n",tmp1);
+                        return false;
+                    }
+                    ok = Network::connect(tmp2,tmp1);
+                    if(!ok)
+                    { 
+                        ACE_OS::printf("unable to connect %s with %s\n",tmp2,tmp1);
+                        return false;
+                    }
                 }
             else
 				{
@@ -270,22 +251,62 @@ bool CrawlManagerModule::open(Searchable &s)
                     Bottle& bot2 = bot.findGroup("mu_crawl");
                     Bottle& bot3 = bot.findGroup("setPoints_crawl");
                     if(bot2.isNull() || bot3.isNull() || bot2.size()<nbDOFs[i]+1 || bot3.size()<nbDOFs[i]+1)
-                        {
-                            ACE_OS::printf("please specify crawl config for %s\n",part_names[i].c_str());
-                            return false;
-                        }
+                    {
+                        ACE_OS::printf("please specify crawl config for %s\n",part_names[i].c_str());
+                        return false;
+                    }
                         
                     for(int j=0;j<nbDOFs[i];j++)
-                        {
-                            crawl_ampl.push_back(bot2.get(j+1).asDouble());
-                            crawl_target.push_back(bot3.get(j+1).asDouble());
-                        }
+                    {
+                        crawl_ampl.push_back(bot2.get(j+1).asDouble());
+                        crawl_target.push_back(bot3.get(j+1).asDouble());
+                    }
 
                     crawl_parameters.push_back(crawl_ampl);
                     crawl_parameters.push_back(crawl_target);
+                    
+                    crawl_ampl.clear();
+                    crawl_target.clear();
+                    
+                    Bottle& bot6 = bot.findGroup("mu_left_crawl");
+                    Bottle& bot7 = bot.findGroup("setPoints_left_crawl");
+                    if(bot6.isNull() || bot7.isNull() || bot6.size()<nbDOFs[i]+1 || bot7.size()<nbDOFs[i]+1)
+                    {
+                        ACE_OS::printf("please specify init crawl config for %s\n",part_names[i].c_str());
+                        return false;
+                    }
+                        
+                    for(int j=0;j<nbDOFs[i];j++)
+                    {
+                        crawl_ampl.push_back(bot6.get(j+1).asDouble());
+                        crawl_target.push_back(bot7.get(j+1).asDouble());
+                    }
 
-                    crawl_init_parameters.push_back(crawl_ampl);
-                    crawl_init_parameters.push_back(crawl_target);
+                    crawl_left_parameters.push_back(crawl_ampl);
+                    crawl_left_parameters.push_back(crawl_target);
+                    
+                    crawl_ampl.clear();
+                    crawl_target.clear();
+                    
+                    Bottle& bot8 = bot.findGroup("mu_right_crawl");
+                    Bottle& bot9 = bot.findGroup("setPoints_right_crawl");
+                    if(bot8.isNull() || bot9.isNull() || bot8.size()<nbDOFs[i]+1 || bot9.size()<nbDOFs[i]+1)
+                    {
+                        ACE_OS::printf("please specify init crawl config for %s\n",part_names[i].c_str());
+                        return false;
+                    }
+                        
+                    for(int j=0;j<nbDOFs[i];j++)
+                    {
+                        crawl_ampl.push_back(bot8.get(j+1).asDouble());
+                        crawl_target.push_back(bot9.get(j+1).asDouble());
+                    }
+
+                    crawl_right_parameters.push_back(crawl_ampl);
+                    crawl_right_parameters.push_back(crawl_target);
+                                                            
+                    crawl_ampl.clear();
+                    crawl_target.clear();
 
                     Bottle& bot4 = bot.findGroup("mu_init");
                     Bottle& bot5 = bot.findGroup("setPoints_init");
@@ -301,9 +322,7 @@ bool CrawlManagerModule::open(Searchable &s)
                         }
                     init_parameters.push_back(init_ampl); 
                     init_parameters.push_back(init_target); 
-                    
-                    crawl_ampl.clear();
-                    crawl_target.clear();
+
                     init_ampl.clear();
                     init_target.clear();  
                 
@@ -314,7 +333,25 @@ bool CrawlManagerModule::open(Searchable &s)
                     printf(")\ntargets (");
                     for(int j=0; j<nbDOFs[i]; j++) 
                         printf("%f ", crawl_parameters[2*i+1][j]);
-                    printf(")\n", om_stance, om_swing);  
+                    printf(")\n", om_stance, om_swing); 
+                    
+                    ACE_OS::printf("crawl left parameters for part %s\n", part_names[i].c_str());
+                    printf("amplitudes ( ");
+                    for(int j=0; j<nbDOFs[i]; j++) 
+                        printf("%f ", crawl_left_parameters[2*i][j]);
+                    printf(")\ntargets (");
+                    for(int j=0; j<nbDOFs[i]; j++) 
+                        printf("%f ", crawl_left_parameters[2*i+1][j]);
+                    printf(")\n", om_stance, om_swing);   
+                    
+                    ACE_OS::printf("crawl right parameters for part %s\n", part_names[i].c_str());
+                    printf("amplitudes ( ");
+                    for(int j=0; j<nbDOFs[i]; j++) 
+                        printf("%f ", crawl_right_parameters[2*i][j]);
+                    printf(")\ntargets (");
+                    for(int j=0; j<nbDOFs[i]; j++) 
+                        printf("%f ", crawl_right_parameters[2*i+1][j]);
+                    printf(")\n", om_stance, om_swing);   
                     
                     ACE_OS::printf("init parameters for part %s\n", part_names[i].c_str());
                     printf("amplitudes ( ");
@@ -394,12 +431,7 @@ bool CrawlManagerModule::open(Searchable &s)
 	    ACE_OS::printf("Please specify amplitude for legs for manager\n");
 	    return false;
       }
-
-    //getSequence(sit_parameters, "Sit", nbPosSit);
-    //getSequence(unsit_parameters, "Unsit", nbPosUnsit);
-    
-    myIK = new IKManager;
-
+      
     return true;
 
 }
@@ -414,10 +446,10 @@ bool CrawlManagerModule::getSequence(vector<vector<vector<double> > > parameters
     for(int	i=0;i<nbParts;i++)
     {
         sprintf(partName,"%s_%s", task.c_str(), part_names[i].c_str());
-        if (opt.check(partName))
+        if (options.check(partName))
         {
             ACE_OS::printf("\n%s\n", part_names[i].c_str());
-            Bottle &botPart = opt.findGroup(partName);
+            Bottle &botPart = options.findGroup(partName);
             
             char strIndex[2]; // 1 to 99 parts.
 
@@ -465,6 +497,34 @@ bool CrawlManagerModule::getSequence(vector<vector<vector<double> > > parameters
     return true;
 }
 
+int CrawlManagerModule::getSwingingArm()
+{    
+    int side=0;
+    double y_speed[4];
+    bool swing[4]={false,false,false,false};
+    
+    for(int i=0; i<4; i++)
+    {
+        Bottle *command = check_port[i].read(false);
+        if(command!=NULL)
+        {
+            ACE_OS::printf("getting info from the generators\n");
+            y_speed[i] = command->get(0).asDouble();
+            y_speed[i]>0.0 ? swing[i] = false : swing[i] = true;
+        }
+        else ACE_OS::printf("no info\n");
+        //Time::delay(0.1);
+    }
+    
+    ACE_OS::printf("y_speed %f %f %f %f\n", 
+                            y_speed[0], y_speed[1], y_speed[2], y_speed[3]);
+    
+    if(swing[0] || swing[3] || !swing[1] ||!swing[2]) side = LEFT_ARM;
+    if(!swing[0] || !swing[3] || swing[1] ||swing[2]) side = RIGHT_ARM;
+
+    return side;
+}
+
 void CrawlManagerModule::sendCommand(int i, vector<vector<double> > params)
 {
     Bottle& paramBot = parts_port[i].prepare();
@@ -476,6 +536,7 @@ void CrawlManagerModule::sendCommand(int i, vector<vector<double> > params)
     }
     paramBot.addDouble(om_stance);
     paramBot.addDouble(om_swing);
+    paramBot.addDouble(turnAngle);
     parts_port[i].write();
                             
     #if DEBUG
@@ -499,6 +560,8 @@ double CrawlManagerModule::getPeriod()
  
 bool CrawlManagerModule::close()
 {
+    for(int i=0;i<6;i++)
+        if(connected_part[i]==true) parts_port[i].close();
     fprintf(stderr, "crawl manager module closing...");
     return true;
 }
