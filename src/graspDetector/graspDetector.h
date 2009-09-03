@@ -13,6 +13,7 @@ class graspDetector: public RateThread
     bool threadInit();
     void stop();
     void run();
+    int *s;
 
  private:
     int nFingers;

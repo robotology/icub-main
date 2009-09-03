@@ -5,10 +5,13 @@ graspDetector::graspDetector(int n, fingerDetector **fingDet, int rate): RateThr
 {
     nFingers = n;
     fd = fingDet;
+    s = new int[nFingers];
 }
 
 graspDetector::~graspDetector()
-{    }
+{    
+    delete[] s;
+}
 
 bool graspDetector::threadInit()
 {
@@ -17,10 +20,23 @@ bool graspDetector::threadInit()
 
 void graspDetector::run()
 {
-  fprintf(stderr, "Current grasp status is: ");
-  for(int i=0; i < nFingers; i++)
-    fprintf(stderr, " %d", (int) fd[i]->status);
-  fprintf(stderr, "\n");
+    for(int i=0; i < nFingers; i++)
+        s[i] =  (int) fd[i]->status;
+    
+    bool print = false;
+    for(int i=0; i < nFingers; i++)
+        print = print || (s[i]!=0);
+            
+    if (print)
+        {
+            fprintf(stderr, "Following fingers are grasping: ");
+            
+            for(int i=0; i < nFingers; i++)    
+                if (s[i]!=0)
+                    fprintf(stderr, "finger%d ", i);
+            
+            fprintf(stderr, "\n");
+        }
 }
 
 void graspDetector::stop()
