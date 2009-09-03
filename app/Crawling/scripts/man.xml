@@ -1,0 +1,77 @@
+<application>
+<name>Crawling (EPFL)</name>
+
+        <dependencies>
+                <port>/left_arm/parameters/in</port>
+                <port>/right_arm/parameters/in</port>
+                <port>/left_leg/parameters/in</port>
+                <port>/right_leg/parameters/in</port>
+                <port>/head/parameters/in</port>
+                <port>/torso/parameters/in</port>
+                <port>/left_arm/status_for_manager/out</port>
+                <port>/right_arm/status_for_manager/out</port>
+                <port>/left_leg/status_for_manager/out</port>
+                <port>/right_leg/status_for_manager/out</port>
+                <port>/head/status_for_manager/out</port>
+                <port>/torso/status_for_manager/out</port>
+        </dependencies>
+    
+ 
+        <module>
+                <name>CrawlManager</name>
+                <parameters> </parameters>
+                <stdio>janine</stdio>
+                <node>janine</node>
+                <tag>crawlManager</tag>
+        </module>
+ 
+        <connection>
+                <from>/manager/left_arm/out</from>
+                <to>/left_arm/parameters/in</to>
+                <protocol>tcp</protocol>
+        </connection>  
+        
+        <connection>
+                <from>/manager/right_arm/out</from>
+                <to>/right_arm/parameters/in</to>
+                <protocol>tcp</protocol>
+        </connection>    
+        
+        <connection>
+                <from>/manager/left_leg/out</from>
+                <to>/left_leg/parameters/in</to>
+                <protocol>tcp</protocol>
+        </connection> 
+        
+        <connection>
+                <from>/manager/right_leg/out</from>
+                <to>/right_leg/parameters/in</to>
+                <protocol>tcp</protocol>
+        </connection> 
+        
+        <connection>
+                <from>/left_arm/status_for_manager/out</from>
+                <to>/manager/left_arm/status/in</to>
+                <protocol>tcp</protocol>
+        </connection>  
+        
+        <connection>
+                <from>/right_arm/status_for_manager/out</from>
+                <to>/manager/right_arm/status/in</to>
+                <protocol>tcp</protocol>
+        </connection>
+        
+        <connection>
+                <from>/left_leg/status_for_manager/out</from>
+                <to>/manager/left_leg/status/in</to>
+                <protocol>tcp</protocol>
+        </connection>  
+        
+        <connection>
+                <from>/right_leg/status_for_manager/out</from>
+                <to>/manager/right_leg/status/in</to>
+                <protocol>tcp</protocol>
+        </connection>    
+ 
+
+</application>

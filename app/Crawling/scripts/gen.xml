@@ -1,70 +1,63 @@
 <application>
-<name>Crawling (EPFL)</name>
+<name>CrawlingGen (EPFL)</name>
 
         <dependencies>
-                <port>/icub/torso/state:o</port>
-                <port>/icub/head/state:o</port>
-                <port>/icub/right_arm/state:o</port>
-                <port>/icub/left_arm/state:o</port>
-                <port>/icub/right_leg/state:o</port>
-                <port>/icub/left_leg/state:o</port>
+                <port>/icub/vc/left_leg/fastCommand</port>
+                <port>/icub/vc/left_arm/fastCommand</port>
+                <port>/icub/vc/right_leg/fastCommand</port>
+                <port>/icub/vc/right_arm/fastCommand</port>
+                <port>/icub/vc/torso/fastCommand</port>
+                <port>/icub/vc/head/fastCommand</port> 
         </dependencies>
-    
+        
         <module>
                 <name>CrawlGeneratorModule</name>
-                <parameters>--name icub --part left_arm --file ../config/left_armConfig.ini</parameters>
+                <parameters>--part left_arm</parameters>
                 <node>janine</node>
                 <tag>genLeftArm</tag>
         </module>
         
         <module>
                 <name>CrawlGeneratorModule</name>
-                <parameters>--name icub --part right_arm --file ../config/right_armConfig.ini</parameters>
+                <parameters>--part right_arm</parameters>
                 <node>janine</node>
                 <tag>genRightArm</tag>
         </module>
         
         <module>
                 <name>CrawlGeneratorModule</name>
-                <parameters>--name icub --part left_leg --file ../config/left_legConfig.ini</parameters>
+                <parameters>--part left_leg</parameters>
                 <node>janine</node>
                 <tag>genLeftLeg</tag>
         </module>
         
         <module>
                 <name>CrawlGeneratorModule</name>
-                <parameters>--name icub --part right_leg --file ../config/right_legConfig.ini</parameters>
+                <parameters>--part right_leg</parameters>
                 <node>janine</node>
                 <tag>genRightLeg</tag>
         </module>
         
-         <module>
+        <module>
                 <name>CrawlGeneratorModule</name>
-                <parameters>--name icub --part torso --file ../config/torsoConfig.ini</parameters>
-                <node>janine</node>
-                <tag>genTorso</tag>
-        </module>
-        
-                <module>
-                <name>CrawlGeneratorModule</name>
-                <parameters>--name icub --part head --file ../config/headConfig.ini</parameters>
+                <parameters>--part head</parameters>
                 <node>janine</node>
                 <tag>genHead</tag>
         </module>
-
+        
         <module>
-                <name>CrawlManager</name>
-                <parameters>--file ../config/managerConfig.ini</parameters>
-                <stdio>janine</stdio>
+                <name>CrawlGeneratorModule</name>
+                <parameters>--part torso</parameters>
                 <node>janine</node>
-                <tag>crawlManager</tag>
+                <tag>genTorso</tag>
         </module>
 
-        <connection>
+
+       <!-- <connection>
                 <from>/left_arm/vcControl</from>
                 <to>/icub/vc/left_arm/input</to>
                 <protocol>tcp</protocol>
-        </connection>
+        </connection> -->
         
         <connection>
                 <from>/left_arm/vcFastCommand</from>
@@ -72,11 +65,13 @@
                 <protocol>tcp</protocol>
         </connection>
         
+<!--
         <connection>
                 <from>/right_arm/vcControl</from>
                 <to>/icub/vc/right_arm/input</to>
                 <protocol>tcp</protocol>
         </connection>
+-->
         
         <connection>
                 <from>/right_arm/vcFastCommand</from>
@@ -84,23 +79,27 @@
                 <protocol>tcp</protocol>
         </connection>
         
+<!--
         <connection>
                 <from>/right_leg/vcControl</from>
                 <to>/icub/vc/right_leg/input</to>
                 <protocol>tcp</protocol>
         </connection>
         
+-->
         <connection>
                 <from>/right_leg/vcFastCommand</from>
                 <to>/icub/vc/right_leg/fastCommand</to>
                 <protocol>tcp</protocol>
         </connection>
         
+<!--
         <connection>
                 <from>/left_leg/vcControl</from>
                 <to>/icub/vc/left_leg/input</to>
                 <protocol>tcp</protocol>
         </connection>
+-->
         
         <connection>
                 <from>/left_leg/vcFastCommand</from>
@@ -108,11 +107,13 @@
                 <protocol>tcp</protocol>
         </connection>
         
+<!--
         <connection>
                 <from>/torso/vcControl</from>
                 <to>/icub/vc/torso/input</to>
                 <protocol>tcp</protocol>
         </connection>
+-->
         
         <connection>
                 <from>/torso/vcFastCommand</from>
@@ -120,11 +121,13 @@
                 <protocol>tcp</protocol>
         </connection>
         
+<!--
         <connection>
                 <from>/head/vcControl</from>
                 <to>/icub/vc/head/input</to>
                 <protocol>tcp</protocol>
         </connection>
+-->
         
         <connection>
                 <from>/head/vcFastCommand</from>
@@ -132,100 +135,82 @@
                 <protocol>tcp</protocol>
         </connection>
         
+<!--
         <connection>
                 <from>/left_arm/cpg_status/out</from>
                 <to>/right_arm/cpg_status/in</to>
                 <protocol>tcp</protocol>
         </connection>
         
-        <connection>
-                <from>/left_arm/cpg_status/out</from>
-                <to>/right_leg/cpg_status/in</to>
-                <protocol>tcp</protocol>
-        </connection>
-        
-        <connection>
-                <from>/left_arm/cpg_status/out</from>
-                <to>/left_leg/cpg_status/in</to>
-                <protocol>tcp</protocol>
-        </connection>
-        
-        <connection>
-                <from>/right_arm/cpg_status/out</from>
-                <to>/left_arm/cpg_status/in</to>
-                <protocol>tcp</protocol>
-        </connection>
-        
-        <connection>
-                <from>/right_arm/cpg_status/out</from>
-                <to>/right_leg/cpg_status/in</to>
-                <protocol>tcp</protocol>
-        </connection>
-        
-        <connection>
-                <from>/right_arm/cpg_status/out</from>
-                <to>/left_leg/cpg_status/in</to>
-                <protocol>tcp</protocol>
-        </connection>
-        
-        <connection>
-                <from>/left_leg/cpg_status/out</from>
-                <to>/left_arm/cpg_status/in</to>
-                <protocol>tcp</protocol>
-        </connection>
-        
-        <connection>
-                <from>/left_leg/cpg_status/out</from>
-                <to>/right_leg/cpg_status/in</to>
-                <protocol>tcp</protocol>
-        </connection>
-        
-        <connection>
-                <from>/left_leg/cpg_status/out</from>
-                <to>/right_arm/cpg_status/in</to>
-                <protocol>tcp</protocol>
-        </connection>
-        
-        <connection>
-                <from>/right_leg/cpg_status/out</from>
-                <to>/left_arm/cpg_status/in</to>
-                <protocol>tcp</protocol>
-        </connection>
-        
-        <connection>
-                <from>/right_leg/cpg_status/out</from>
-                <to>/left_leg/cpg_status/in</to>
-                <protocol>tcp</protocol>
-        </connection>
-        
-        <connection>
-                <from>/right_leg/cpg_status/out</from>
-                <to>/right_arm/cpg_status/in</to>
-                <protocol>tcp</protocol>
-        </connection>    
-        
-        <connection>
-                <from>/manager/left_arm/out</from>
-                <to>/left_arm/parameters/in</to>
-                <protocol>tcp</protocol>
-        </connection>  
-        
-        <connection>
-                <from>/manager/right_arm/out</from>
-                <to>/right_arm/parameters/in</to>
-                <protocol>tcp</protocol>
-        </connection>    
-        
-        <connection>
-                <from>/manager/left_leg/out</from>
-                <to>/left_leg/parameters/in</to>
-                <protocol>tcp</protocol>
-        </connection> 
-        
-        <connection>
-                <from>/manager/right_leg/out</from>
-                <to>/right_leg/parameters/in</to>
-                <protocol>tcp</protocol>
-        </connection> 
 
+
+        <connection>
+                <from>/left_arm/cpg_status/out</from>
+                <to>/right_leg/cpg_status/in</to>
+                <protocol>tcp</protocol>
+        </connection>
+        
+
+        <connection>
+                <from>/left_arm/cpg_status/out</from>
+                <to>/left_leg/cpg_status/in</to>
+                <protocol>tcp</protocol>
+        </connection>
+        
+        <connection>
+                <from>/right_arm/cpg_status/out</from>
+                <to>/left_arm/cpg_status/in</to>
+                <protocol>tcp</protocol>
+        </connection>
+        
+        <connection>
+                <from>/right_arm/cpg_status/out</from>
+                <to>/right_leg/cpg_status/in</to>
+                <protocol>tcp</protocol>
+        </connection>
+        
+        <connection>
+                <from>/right_arm/cpg_status/out</from>
+                <to>/left_leg/cpg_status/in</to>
+                <protocol>tcp</protocol>
+        </connection>
+        
+        <connection>
+                <from>/left_leg/cpg_status/out</from>
+                <to>/left_arm/cpg_status/in</to>
+                <protocol>tcp</protocol>
+        </connection>
+        
+        <connection>
+                <from>/left_leg/cpg_status/out</from>
+                <to>/right_leg/cpg_status/in</to>
+                <protocol>tcp</protocol>
+        </connection>
+        
+        <connection>
+                <from>/left_leg/cpg_status/out</from>
+                <to>/right_arm/cpg_status/in</to>
+                <protocol>tcp</protocol>
+        </connection>
+        
+        <connection>
+                <from>/right_leg/cpg_status/out</from>
+                <to>/left_arm/cpg_status/in</to>
+                <protocol>tcp</protocol>
+        </connection>
+        
+        <connection>
+                <from>/right_leg/cpg_status/out</from>
+                <to>/left_leg/cpg_status/in</to>
+                <protocol>tcp</protocol>
+        </connection>
+        
+        <connection>
+                <from>/right_leg/cpg_status/out</from>
+                <to>/right_arm/cpg_status/in</to>
+                <protocol>tcp</protocol>
+        </connection>    
+-->
+        
+        
 </application>
