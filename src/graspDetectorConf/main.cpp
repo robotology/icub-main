@@ -457,7 +457,7 @@ int main(int argc, char *argv[])
     ResourceFinder rf;
 
     rf.setVerbose(true);
-    rf.setDefaultContext("graspDetector");
+    rf.setDefaultContext("graspDetector/conf");
     rf.setDefaultConfigFile("graspDetectorConf.ini");
     if(!rf.configure("ICUB_ROOT", argc, argv))
         {
