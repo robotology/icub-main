@@ -157,8 +157,8 @@ void cpgs::integrate_step(double *y, double *at_states)
      {
         if(y[3]<0.0)
         {
-            g[3] -= y[3];
-            g[1] -= y[3];
+            g[3] -= 1.5*y[3];
+            g[1] -= 2*y[3];
         }
         
       //g[3] += (40.0*exp(-4.0*(y[3]+1.0)*(y[3]+1.0)))/180*3.14/ampl[3];
@@ -169,7 +169,7 @@ void cpgs::integrate_step(double *y, double *at_states)
      {
          if(y[3]<0.0)
          {
-            g[1] += 2.5*y[3];//(30.0*exp(-4.0*(y[3]+1.0)*(y[3]+1.0)))/180*3.14/ampl[1];
+            g[1] -= 2.5*y[3];//(30.0*exp(-4.0*(y[3]+1.0)*(y[3]+1.0)))/180*3.14/ampl[1];
          }
      }
 

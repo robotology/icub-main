@@ -65,12 +65,12 @@ bool CrawlManagerModule::respond(const Bottle &command, Bottle &reply)
             
         case 2:                
 
-            if(STATE!=CRAWL)
-            {
-                for(int i=0;i<nbParts;i++)
-                    if(connected_part[i]) sendCommand(i, crawl_right_parameters);
-                Time::delay(1.0);
-            }
+            //if(STATE!=CRAWL)
+            //{
+                //for(int i=0;i<nbParts;i++)
+                    //if(connected_part[i]) sendCommand(i, crawl_right_parameters);
+                //Time::delay(1.0);
+            //}
             
             for(int i=0;i<nbParts;i++)
                 if(connected_part[i]) sendCommand(i, crawl_parameters);
