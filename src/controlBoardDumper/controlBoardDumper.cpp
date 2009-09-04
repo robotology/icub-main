@@ -111,7 +111,7 @@ void controlBoardDumper::run()
 	  else
 	    {
             //stmp.update();
-            stmp=Stamp(0,-1);
+            stmp=Stamp(-1,0.0);
 	      port->setEnvelope(stmp);
 	    }
 	}
