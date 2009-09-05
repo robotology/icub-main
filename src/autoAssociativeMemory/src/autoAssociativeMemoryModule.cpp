@@ -53,15 +53,6 @@
 #include <iCub/autoAssociativeMemoryModule.h>
 
 
-bool replaceDoubleSlash(string &str) {
-   string::size_type loc;
-   if ((loc=str.find("//",0))!=string::npos) {
-      str.erase(loc+1,1);
-      return true;
-   }
-   return false;
-} 
-
 
 //HistMatchData constructor
 HistMatchData::HistMatchData()
@@ -349,12 +340,6 @@ bool AutoAssociativeMemoryModule::configure(yarp::os::ResourceFinder &rf)
     double thr           = rf.check("threshold",
                            Value(0.6),
                            "initial threshold value (double)").asDouble();
-				   
-    replaceDoubleSlash(_namePortImageIn);     // temporary fix until behaviour of getName() is changed
-    replaceDoubleSlash(_namePortThresholdIn); // ibid.
-    replaceDoubleSlash(_namePortImageOut);    // ibid.
-    replaceDoubleSlash(_namePortValueOut);    // ibid.
-
 
     // printf("autoAssociativeMemory: parameters are \n%s\n%s\n%s\n%s\n%s\n%s\n%f\n\n",
     //       _namePortImageIn.c_str(),_namePortThresholdIn.c_str(), _namePortImageOut.c_str(), _namePortValueOut.c_str(), databaseName.c_str(), path.c_str(), thr);
