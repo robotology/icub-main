@@ -30,15 +30,6 @@
 #include "iCub/crossPowerSpectrumVergence.h"
 
 
-bool eraseDoubleSlash(string &str) {
-   string::size_type loc;
-   if ((loc=str.find("//",0))!=string::npos) {
-      str.erase(loc+1,1);
-      return true;
-   }
-   return false;
-}
-
 
 CrossPowerSpectrumVergence::CrossPowerSpectrumVergence()
 /* -------------------------------------------------- */
@@ -155,20 +146,6 @@ bool  CrossPowerSpectrumVergence::configure(yarp::os::ResourceFinder &rf)
                                          Value("/vergence_disparity:o"), 
                                          "vergence disparity output (string)").asString()
                                          );
-    
-    /* 
-     * temporary fix:  
-     * getName() adds in a spurious / between the module name and the port name
-     * so we remove it
-     */
-
-    eraseDoubleSlash(leftCameraPortName);
-    eraseDoubleSlash(rightCameraPortName);
-    eraseDoubleSlash(leftImagePortName);
-    eraseDoubleSlash(rightImagePortName);
-    eraseDoubleSlash(crossPowerSpectrumPortName);
-    eraseDoubleSlash(filteredCrossPowerSpectrumPortName);
-    eraseDoubleSlash(vergenceDisparityPortName);
 
     if (debug) {
        printf("crossPowerSpectrumVergence: module name is %s\n",moduleName.c_str());
