@@ -44,7 +44,8 @@ void generatorThread::sendStatusForManager()
     Bottle& cmd =check_status_port.prepare();
 
     cmd.clear();
-    cmd.addDouble(y_cpgs[3]);
+    for(int i=nbDOFs;i++)
+        cmd.addDouble(y_cpgs[4*i+3]);
 
     check_status_port.write(false);
     
