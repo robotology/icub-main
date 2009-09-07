@@ -21,7 +21,7 @@ using namespace std;
 
 #define LIMIT_TOL 2.0 //conservative limit tolerance in degrees
 #define MAX_FREQUENCY 1.5 //in Hz
-#define MAX_TURN_ANGLE 0.3 //in radians 
+#define MAX_TURN_ANGLE 0.7 //in radians 
 
 #define LEFT 1
 #define RIGHT 2
@@ -62,7 +62,7 @@ class generatorThread : public yarp::os::RateThread
     double theoretical_time;
     double lastBeat_time;
     double amplit;
-    bool previous_quadrant[2]; //used to calculate the new beat
+    int previous_quadrant;
     int beat;
     
     int side, limb;
@@ -97,7 +97,7 @@ class generatorThread : public yarp::os::RateThread
     void connectToOtherLimbs();
     void disconnectPorts();
     void sendStatusForManager();
-    //bool getQuadrant();
+    bool getQuadrant();
 };
 
 class CrawlGeneratorModule : public Module
