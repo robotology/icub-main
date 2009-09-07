@@ -1,0 +1,37 @@
+<application>
+<name>Right Camera Calibration</name>
+
+<dependencies>
+   <port>/icub/cam/right</port>
+</dependencies>
+
+
+<module>
+   <name>camCalibConf</name>
+   <parameters>--name /camCalibConf --file C:/iCub/app/cameraCalibration/conf/icubEyes.ini --group CAMERA_CALIBRATION_CONFIGURATION_RIGHT</parameters>
+   <node>icub1</node>
+   <tag>camCalibConf</tag>
+</module>
+ 
+<module>
+   <name>yarpview</name>
+   <parameters>--name /right_image --x 0 --y 0 --synch</parameters>
+   <node>icub1</node>
+   <tag>left_image</tag>
+</module>
+
+<connection>
+  <from>/icub/cam/right</from>
+  <to>/camCalibConf/image</to>
+  <protocol>tcp</protocol>
+</connection>
+ 
+
+<connection>
+  <from>/camCalibConf/image</from>
+  <to>/right_image</to>
+  <protocol>tcp</protocol>
+</connection>
+    
+
+</application>
