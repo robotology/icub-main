@@ -28,7 +28,7 @@ broken.  Enjoy!  Topics:
   - The <a href="http://www.robotcub.org/">RobotCub Website</a>.
   - The <a href="http://eris.liralab.it/wiki/Main_Page">RobotCub Wiki</a>.
   - <a href="http://eris.liralab.it/wiki/ICub_YARP_module_specifications">Module Specifications</A>.
-  - Getting the software from <a href="http://eris.liralab.it/wiki/Getting_the_iCub_software_svn">CVS</a>.
+  - Getting the software from <a href="http://eris.liralab.it/wiki/Getting_the_iCub_software_svn">SVN</a>.
   - Our software architecture, <a href="http://yarp0.sourceforge.net/">YARP</a>.
 
 This documentation is developed by scanning all source code 
