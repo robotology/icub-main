@@ -251,16 +251,16 @@ bool CrawlManagerModule::respond(const Bottle &command, Bottle &reply)
 		case REACH_COMMAND:
 		{
 			Bottle *reachingCommand = command.get(1).asList();
-			ACE_OS::printf("command : %s\n",reachingCommand->toString());
-			string reachingPart = reachingCommand->get(0).asString();
-			ACE_OS::printf( "REACHING WITH PART %s\n", reachingPart);
+			ACE_OS::printf("command : %s\n",reachingCommand->toString().c_str());
+			ConstString reachingPart = reachingCommand->get(0).asString();
+			ACE_OS::printf( "REACHING WITH PART %s\n", reachingPart.c_str());
 
 			vector<vector<double> > reach_parameters;
 			for(int i=0;i<nbParts;i++)
 			{
 				if(connected_part[i])
 				{
-					string currentPart = part_names[i];
+					ConstString currentPart = part_names[i];
 					if(part_names[i] == ConstString(reachingPart.c_str())/* == currentPart*/)
 					{
 						vector<double> amplitude;
