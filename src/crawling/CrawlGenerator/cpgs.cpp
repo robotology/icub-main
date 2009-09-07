@@ -151,32 +151,36 @@ void cpgs::integrate_step(double *y, double *at_states)
    {
       m[i]= parameters[2*i];
       g[i]= parameters[2*i+1]/ampl[i];
+    
    }
-
-   if(m[0]>0.0)
+   
+   if(partName=="torso" || fabs(turnAngle)>0.01)
    {
-	if(partName=="left_arm" || partName=="right_arm")
-	 {
-		if(y[3]<0.0)
-		{
-			g[3] -= 1.5*y[3];
-			g[1] -= y[3];
-		}
-	    
-	  //g[3] += (40.0*exp(-4.0*(y[3]+1.0)*(y[3]+1.0)))/180*3.14/ampl[3];
-	   //g[1] += (15.0*exp(-4.0*(y[3]+1.0)*(y[3]+1.0)))/180*3.14/ampl[1];
-	 }
-
-	 if(partName=="left_leg" || partName=="right_leg")
-	 {
-		 if(y[3]<0.0)
-		 {
-			g[1] -= 2.5*y[3];//(30.0*exp(-4.0*(y[3]+1.0)*(y[3]+1.0)))/180*3.14/ampl[1];
-		 }
-	 }
+       g[1]=turnAngle;
    }
 
+    if(m[0]>0.0)
+    {
+        if(partName=="left_arm" || partName=="right_arm")
+        {
+            if(y[3]<0.0)
+            {
+                g[3] -= 1.5*y[3];
+                g[1] -= y[3];
+            }
+        
+      //g[3] += (40.0*exp(-4.0*(y[3]+1.0)*(y[3]+1.0)))/180*3.14/ampl[3];
+       //g[1] += (15.0*exp(-4.0*(y[3]+1.0)*(y[3]+1.0)))/180*3.14/ampl[1];
+        }
 
+    if(partName=="left_leg" || partName=="right_leg")
+        {
+            if(y[3]<0.0)
+            {
+                g[1] -= 2.5*y[3];//(30.0*exp(-4.0*(y[3]+1.0)*(y[3]+1.0)))/180*3.14/ampl[1];
+            }
+        }
+    }
 
 
 
@@ -188,7 +192,7 @@ void cpgs::integrate_step(double *y, double *at_states)
    for(int i=0;i<nbLIMBs;i++)
      r[nbDOFs+i]=y[4*nbDOFs+2*i]*y[4*nbDOFs+2*i] + y[4*nbDOFs+2*i+1]*y[4*nbDOFs+2*i+1];
 
-   ///go Command
+   //go Command
    dydt[cpgs_size-1]=b_go*(u_go-y[cpgs_size-1]);
 
 
@@ -198,7 +202,7 @@ void cpgs::integrate_step(double *y, double *at_states)
   ////internal dynamics
   for(int i =0;i<nbDOFs;i++)
     {
-      ///discrete system
+      //discrete system
       dydt[i*4] = y[cpgs_size-1]*y[cpgs_size-1]*y[cpgs_size-1]*y[cpgs_size-1]*y[i*4+1];
       dydt[i*4+1] = u_go*u_go*u_go*u_go*b * (b/4.0 * (g[i] - y[i*4]) - y[i*4+1]);
 
@@ -207,7 +211,7 @@ void cpgs::integrate_step(double *y, double *at_states)
       dydt[i*4+3] = a * (m[i]-r[i]) * y[i*4+3] + omega* (y[i*4+2]-y[i*4]);
    }
 
-  ///internal couplings
+  //internal couplings
   for(int i = 0;i<nbDOFs;i++)
     for(int j=0;j<nbDOFs;j++)
     {	    
@@ -215,7 +219,7 @@ void cpgs::integrate_step(double *y, double *at_states)
 	    dydt[i*4+3] +=  epsilon[i][j]*(sin(theta[i][j])*(y[4*j+2]-y[4*j]) + cos(theta[i][j])*y[4*j+3]);
     }
 
-  ///external coupling
+  //external coupling
   for(int i=0;i<nbLIMBs;i++)
     dydt[3] += external_coupling[i]*y[4*nbDOFs+2*i+1];
 

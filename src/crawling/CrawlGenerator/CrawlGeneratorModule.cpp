@@ -43,15 +43,9 @@ void generatorThread::sendStatusForManager()
 {
     Bottle& cmd =check_status_port.prepare();
 
-	cmd.clear();
-	for(int i=0; i<nbDOFs ; ++i)
-	{
-		cmd.addDouble(y_cpgs[4*i+3]);
-	}
-	//for(int i=0; i<nbDOFs ; ++i)
-	//{
-	//	cmd.addDouble(y_cpgs[4*i+2]);
-	//}
+    cmd.clear();
+    for(int i=0; i<nbDOFs;i++)
+        cmd.addDouble(y_cpgs[4*i+3]);
 
     check_status_port.write(false);
     
@@ -75,33 +69,27 @@ void generatorThread::sendStatusForManager()
     
 //}
 
-//bool generatorThread::getQuadrant()
-//{
-    ////check if init quadrant
-    //if((y_cpgs[2]-y_cpgs[0] >0.0) && (y_cpgs[3]>0.0))
-        //previous_quadrant[1] = true;
+/**
+When there is a rhythmic movement, we want to change the parameters
+at a secure moment, namely not during a transition from swing to stance 
+ * */
+bool generatorThread::getQuadrant()
+{
+   if(myCpg->parameters[0]<0.0) //no rhythmic movement, so we don't care
+        return true;
+   
+   if(y_cpgs[3]<0.0 && (y_cpgs[2]-y_cpgs[0])>0.0) //in quadrant III 
+        previous_quadrant = 1;
 
-    ////check if in previous quadrant y< && x>0
-    //if((y_cpgs[2]-y_cpgs[0] <0.0) && (y_cpgs[3]<0.0))
-    //{
-        //if(previous_quadrant[1])
-        //{
-            //previous_quadrant[0] = true;
-            //previous_quadrant[1] = false;
-        //}       
-    //}
-
-    //if((y_cpgs[2]-y_cpgs[0] >0.0) && (y_cpgs[3]<0.0))
-    //{
-        //if(previous_quadrant[0])
-        //{
-            //previous_quadrant[0] = false;
-            //return true;
-        //}
-    //}
+   if(previous_quadrant==1 && y_cpgs[3]<0.0 && (y_cpgs[2]-y_cpgs[0])<0.0) //in quadrant IV
+   {
+       previous_quadrant = 0; 
+       return true;
+   }
     
-    //return false;
-//}
+   return false;
+ 
+}
 
 bool generatorThread::getEncoders()
 {
@@ -113,7 +101,7 @@ bool generatorThread::getEncoders()
 
     if(PartEncoders->getEncoders(tmp_enc))
         {
-            fprintf(encoder_file,"%f ",Time::now()-original_time);
+            fprintf(encoder_file,"%f ",Time::now());
             for(int i=0;i<nbDOFs;i++)
                 {
                     //cout << "getting encoders2 ";
@@ -171,22 +159,20 @@ void generatorThread::getParameters()
     if(command!=NULL)
         if(command->size() >=2*nbDOFs+3)
             {
-                double *params = new double[2*nbDOFs];
+                vector<double> params;
                 for (int i=0; i<2*nbDOFs; i++)  
-                    params[i] = command->get(i).asDouble();
-
-                for (int i=0; i<nbDOFs; i++)
-                {
-                    if(params[2*i]!=-1.0)
+                    params.push_back(command->get(i).asDouble());
+                
+                int discrete=0;
+                for(int i=0; i<nbDOFs; i++)
+                    if(myCpg->parameters[2*i+1]!=params[2*i+1])
                     {
-                        //myCpg->ampl[i]=params[2*i];
-                        myCpg->parameters[2*i]=1.0;
+                        discrete++;
+                        printf("discrete movement %d\n", discrete);
                     }
-                    else
-                        myCpg->parameters[2*i]=params[2*i];
-                        
-                    myCpg->parameters[2*i+1]=params[2*i+1];
-                }  
+                
+                for (int i=0; i<2*nbDOFs; i++)  
+                    myCpg->parameters[i] = params[i];
                 
                 for (int i=0; i<2*nbDOFs; i++)
                     fprintf(parameters_file,"%f \t", myCpg->parameters[i]);
@@ -225,8 +211,8 @@ void generatorThread::getParameters()
                 
                 
                 printf("RECEIVING COMMANDS FROM THE MANAGER FOR PART %s\n", partName.c_str());
-
-                y_cpgs[4*nbDOFs+2*3]=0.0;
+                
+                if(discrete>0) y_cpgs[4*nbDOFs+2*3]=0.0;
 
                 current_action = true;
             }
@@ -371,14 +357,8 @@ void generatorThread::run()
     else
         connectToOtherLimbs();
 
-    //we get potential new parameters
-    //if(getQuadrant()) 
-    //if(myCpg->feedback_on)
-    //{
-        //if(myCpg->contact==0) getParameters();
-    //}
-    //else
-    getParameters();
+    //if(getQuadrant())
+        getParameters();
         
     if(myCpg->om_stance<0)
         {
@@ -392,15 +372,19 @@ void generatorThread::run()
    
 
     ///we update of the previous states
+    
+    ///save time stamp
+    fprintf(target_file,"%f ",time_now);
 
     for(int i=0; i<nbDOFs; i++)
         {
             previous_states[i]=states[i];
             fprintf(target_file,"%f \t", states[i]);
         }
+    fprintf(target_file,"\n");
+    fflush(target_file);
 
-    ///save time stamp
-    fprintf(target_file,"%f \n",time_now/*-original_time*/);
+
 
 
 #if !DEBUG  
@@ -534,8 +518,7 @@ bool generatorThread::init(Searchable &s)
     Time::turboBoost();
 
     current_action = false;
-    previous_quadrant[0]= true;
-    previous_quadrant[1]= true;
+    previous_quadrant= 0;
     
     myIK = new IKManager;
 
