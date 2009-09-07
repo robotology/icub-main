@@ -11,22 +11,24 @@
  * \section intro_sec Description
  * 
  * This modules computes a description of the 
- * hand joints positions when moving without interacting with
- * an object. The following model is fitted to the available
- * data:
+ * fingers joints positions when moving without interacting with
+ * an object. The following linear model is fitted to each finger positions:
  *
  * <ul>
- * <li> lambda_0 q_0 + lambda_1 q_1 + ... + lambda_N q_N = 1 
+ * <li>  
+ * q = q_0 + q_1 \cdot t \quad t \in [t_min, t_max]
  * </ul>
  *
- * where q_i represent the hand joints positions and where
- * the lambda_i are estimated via a least square optimization.
+ * where \f$ \frac{q}{t} \f$ represents the finger joints positions and where
+ * the parameters q_0 and q_1 are estimated via a least
+ * square optimization.
  *
  * \section libraries_sec Libraries
  * This module requires the GSL and yarp math libraries.
  * 
  * \section hardware_sec Hardware
- * The module requires the hand analog joints positions measurement (MAIS board).
+ * The module requires the hand analog joints positions 
+ * measurement (MAIS board).
  *
  * \section parameters_sec Parameters
  * The module requires some parameters. The first one (--robot)
@@ -38,7 +40,8 @@
  * <li> "rate": the rate of the thread reading the analog sensors
  * <li> "joint": index of the finger joint to be moved
  * <li> "posture": the position where the joint should be moved
- * <li> "analogs": the indeces of the analog sensors corrsponsing to the given joint
+ * <li> "analogs": the indeces of the analog sensors corresponsing 
+ * to the given joint. 
  * </ul>
  * All the parameters are specified 
  * according to the yarp resourceFinder (with default context graspDetector). 
@@ -113,7 +116,7 @@
  *
  * CopyPolicy: Released under the terms of the GNU GPL v2.0.
  *
- * This file can be edited at src/graspDetector/main.cpp.
+ * This file can be edited at src/graspDetectorConf/main.cpp.
  */
 
 
@@ -229,7 +232,7 @@ class graspDetectModule: public RFModule
 private:
     FILE * pFile;
     int nFingers;
-    graspDetector **gd;
+    graspDetectorConf **gd;
 
     int *joint; 
     double *posture; 
@@ -339,7 +342,7 @@ public:
                 return false;
             }
     
-        gd = new graspDetector*[nFingers];
+        gd = new graspDetectorConf*[nFingers];
         analogInputPort = new BufferedPort<Bottle>[nFingers];
         fprintf(stderr, "Creating the threads \n");
         for(int i=0; i < nFingers; i++)
@@ -355,7 +358,7 @@ public:
                         return false;
                     }
 
-                gd[i] = new graspDetector(&analogInputPort[i], rate);
+                gd[i] = new graspDetectorConf(&analogInputPort[i], rate);
             }
         return true;
     }

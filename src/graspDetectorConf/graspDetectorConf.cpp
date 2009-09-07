@@ -1,21 +1,21 @@
 // -*- mode:C++; tab-width:4; c-basic-offset:4; indent-tabs-mode:nil -*-
 #include "graspDetectorConf.h"
 
-graspDetector::graspDetector(BufferedPort<Bottle> *p, int rate): RateThread(rate)
+graspDetectorConf::graspDetectorConf(BufferedPort<Bottle> *p, int rate): RateThread(rate)
 {
     collect = 0;
     analogPort = p;
 }
 
-graspDetector::~graspDetector()
+graspDetectorConf::~graspDetectorConf()
 {    }
 
-bool graspDetector::threadInit()
+bool graspDetectorConf::threadInit()
 {
     return 1;
 }
 
-bool graspDetector::startCollect(Bottle analogIndex)
+bool graspDetectorConf::startCollect(Bottle analogIndex)
 {
     lastBottle= analogPort->read(true);
     if(lastBottle!=NULL)
@@ -37,12 +37,12 @@ bool graspDetector::startCollect(Bottle analogIndex)
     //fprintf(stderr, "Vector of indeces is: %s\n", index.toString().c_str());
 }
 
-void graspDetector::stopCollect()
+void graspDetectorConf::stopCollect()
 {
     collect = 0;
 }
 
-bool graspDetector::endedMovement()
+bool graspDetectorConf::endedMovement()
 {
     if(collect!=0)
         return false;
@@ -50,7 +50,7 @@ bool graspDetector::endedMovement()
         return true;
 }
 
-void graspDetector::stop()
+void graspDetectorConf::stop()
 {
     fprintf(stderr, "Interrupting the input port \n");
     analogPort->interrupt();
@@ -64,7 +64,7 @@ void graspDetector::stop()
  * the data matrix D.
  */
 
-void graspDetector::buildPattern()
+void graspDetectorConf::buildPattern()
 {
     
     //Mean value is t
@@ -106,7 +106,7 @@ void graspDetector::buildPattern()
     collect = 0;
 }
 
-bool graspDetector::getPattern(Vector &l, double &m, double &M)
+bool graspDetectorConf::getPattern(Vector &l, double &m, double &M)
 {
     m = minError;
     M = maxError;
@@ -114,7 +114,7 @@ bool graspDetector::getPattern(Vector &l, double &m, double &M)
 }
     
 
-void graspDetector::run()
+void graspDetectorConf::run()
 {
     //ACE_OS::printf("Entering the main thread\n");
     if (collect!=0)
