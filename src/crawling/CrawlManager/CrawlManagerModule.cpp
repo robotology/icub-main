@@ -121,12 +121,12 @@ bool CrawlManagerModule::respond(const Bottle &command, Bottle &reply)
                 }
             }
 
-            /*if(STATE!=CRAWL)
+            if(STATE!=CRAWL)
             {
                 for(int i=0;i<nbParts;i++)
                     if(connected_part[i]) sendCommand(i, crawl_right_parameters);
                 Time::delay(1.0);
-            }*/
+            }
             
             for(int i=0;i<nbParts;i++)
                 if(connected_part[i]) sendCommand(i, crawl_parameters);
@@ -255,6 +255,13 @@ bool CrawlManagerModule::respond(const Bottle &command, Bottle &reply)
 			ConstString reachingPart = reachingCommand->get(0).asString();
 			ACE_OS::printf( "REACHING WITH PART %s\n", reachingPart.c_str());
 
+			if(STATE!=CRAWL)
+            {
+                for(int i=0;i<nbParts;i++)
+                    if(connected_part[i]) sendCommand(i, crawl_right_parameters);
+                Time::delay(1.0);
+            }
+
 			vector<vector<double> > reach_parameters;
 			for(int i=0;i<nbParts;i++)
 			{
@@ -283,7 +290,6 @@ bool CrawlManagerModule::respond(const Bottle &command, Bottle &reply)
 					sendCommand(i, reach_parameters);
 				}
 			}
-            break;
 
             reply.addString("reaching\n");
 
