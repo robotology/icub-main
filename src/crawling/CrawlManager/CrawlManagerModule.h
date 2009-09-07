@@ -24,6 +24,10 @@ using namespace yarp::dev;
 #define TURN_LEFT 2
 #define TURN_RIGHT 3
 
+#define TURN_INDENT 0.05
+#define STANCE_INDENT 0.05
+
+
 using namespace std;
 
 class CrawlManagerModule : public Module

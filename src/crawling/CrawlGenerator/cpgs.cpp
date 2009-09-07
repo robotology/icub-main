@@ -153,26 +153,28 @@ void cpgs::integrate_step(double *y, double *at_states)
       g[i]= parameters[2*i+1]/ampl[i];
    }
 
-   if(partName=="left_arm" || partName=="right_arm")
-     {
-        if(y[3]<0.0)
+    if(m[0]>0.0)
+    {
+        if(partName=="left_arm" || partName=="right_arm")
         {
-            g[3] -= 1.5*y[3];
-            g[1] -= 2*y[3];
-        }
+            if(y[3]<0.0)
+            {
+                g[3] -= 1.5*y[3];
+                g[1] -= y[3];
+            }
         
       //g[3] += (40.0*exp(-4.0*(y[3]+1.0)*(y[3]+1.0)))/180*3.14/ampl[3];
        //g[1] += (15.0*exp(-4.0*(y[3]+1.0)*(y[3]+1.0)))/180*3.14/ampl[1];
-     }
+        }
 
-   if(partName=="left_leg" || partName=="right_leg")
-     {
-         if(y[3]<0.0)
-         {
-            g[1] -= 2.5*y[3];//(30.0*exp(-4.0*(y[3]+1.0)*(y[3]+1.0)))/180*3.14/ampl[1];
-         }
-     }
-
+    if(partName=="left_leg" || partName=="right_leg")
+        {
+            if(y[3]<0.0)
+            {
+                g[1] -= 2.5*y[3];//(30.0*exp(-4.0*(y[3]+1.0)*(y[3]+1.0)))/180*3.14/ampl[1];
+            }
+        }
+    }
 
 
 

@@ -21,7 +21,7 @@ bool CrawlManagerModule::updateModule()
     cout << "(6) Turn left" << endl;
     //cout << "(7) Sit" << endl;
     //cout << "(8) On all fours" << endl; 
-    //cout <<"(9) Stop the module" << endl;
+    cout <<"(9) EMERGENCY STOP" << endl;
     
     return true;
 }
@@ -34,6 +34,30 @@ bool CrawlManagerModule::respond(const Bottle &command, Bottle &reply)
    switch(com)
     {   
         case 1:
+        
+            if(turnAngle < -0.001)
+            {
+                while(turnAngle < -0.001)
+                {
+                    turnAngle+=TURN_INDENT;
+                    crawl_parameters[9][1]=turnAngle;
+                    for(int i=0;i<nbParts;i++)
+                        if(connected_part[i]) sendCommand(i, crawl_parameters);
+                    Time::delay(1.0);
+                }
+            }
+            
+            if(turnAngle > 0.001)
+            {
+                while(turnAngle > 0.001)
+                {
+                    turnAngle-=TURN_INDENT;
+                    crawl_parameters[9][1]=turnAngle;
+                    for(int i=0;i<nbParts;i++)
+                        if(connected_part[i]) sendCommand(i, crawl_parameters);
+                    Time::delay(1.0);
+                }
+            }
             
             if(STATE==CRAWL)
             {
@@ -59,11 +83,36 @@ bool CrawlManagerModule::respond(const Bottle &command, Bottle &reply)
                 if(connected_part[i]) sendCommand(i, init_parameters);
             
             reply.addString("going to init pos");
+            om_stance = om_swing;
             STATE = INIT_POS;
             
             break;
             
-        case 2:                
+        case 2:  
+        
+            if(turnAngle < -0.001)
+            {
+                while(turnAngle < -0.001)
+                {
+                    turnAngle+=TURN_INDENT;
+                    crawl_parameters[9][1]=turnAngle;
+                    for(int i=0;i<nbParts;i++)
+                        if(connected_part[i]) sendCommand(i, crawl_parameters);
+                    Time::delay(1.0);
+                }
+            }
+            
+            if(turnAngle > 0.001)
+            {
+                while(turnAngle > 0.001)
+                {
+                    turnAngle-=TURN_INDENT;
+                    crawl_parameters[9][1]=turnAngle;
+                    for(int i=0;i<nbParts;i++)
+                        if(connected_part[i]) sendCommand(i, crawl_parameters);
+                    Time::delay(1.0);
+                }
+            }
 
             //if(STATE!=CRAWL)
             //{
@@ -89,7 +138,7 @@ bool CrawlManagerModule::respond(const Bottle &command, Bottle &reply)
                 Time::delay(0.2);
             }
             
-            om_stance+=0.05;
+            om_stance+=STANCE_INDENT;
             
             for(int i=0;i<nbParts;i++)
                 if(connected_part[i]) sendCommand(i, crawl_parameters);
@@ -107,7 +156,7 @@ bool CrawlManagerModule::respond(const Bottle &command, Bottle &reply)
                     if(connected_part[i]) sendCommand(i, crawl_right_parameters);
                 Time::delay(0.2);
             }
-            om_stance-=0.05;
+            om_stance-=STANCE_INDENT;
             
             for(int i=0;i<nbParts;i++)
                 if(connected_part[i]) sendCommand(i, crawl_parameters);
@@ -119,7 +168,7 @@ bool CrawlManagerModule::respond(const Bottle &command, Bottle &reply)
             
         case 5: 
             
-            turnAngle-=0.1; 
+            turnAngle-=TURN_INDENT; 
             crawl_parameters[9][1]=turnAngle; 
 
             for(int i=0;i<nbParts;i++)
@@ -131,12 +180,24 @@ bool CrawlManagerModule::respond(const Bottle &command, Bottle &reply)
             
         case 6:
         
-            turnAngle+=0.1;
+            turnAngle+=TURN_INDENT;
             crawl_parameters[9][1]=turnAngle; 
             
             for(int i=0;i<nbParts;i++)
                 if(connected_part[i]) sendCommand(i, crawl_parameters);
             reply.addString("turning left");
+            
+            break;
+            
+        case 9:
+                
+            crawl_left_parameters[9][1]=turnAngle; 
+            
+            for(int i=0;i<nbParts;i++)
+                if(connected_part[i]) sendCommand(i, crawl_left_parameters);
+            reply.addString("EMERGENCY STOP");
+            
+            crawl_left_parameters[9][1]=0.0;
             
             break;
                         
@@ -549,7 +610,7 @@ void CrawlManagerModule::sendCommand(int i, vector<vector<double> > params)
     for(int j=0; j<nbDOFs[i]; j++) 
         printf("%f ", params[2*i+1][j]);
         
-    printf(")\n om_stance %f, om_swing %f\n\n", om_stance, om_swing);  
+    printf(")\n om_stance %f, om_swing %f, turnAngle %f\n\n", om_stance, om_swing, turnAngle);  
     #endif                         
 }
 

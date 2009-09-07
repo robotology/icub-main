@@ -199,7 +199,7 @@ void generatorThread::getParameters()
                 
                 printf("RECEIVING COMMANDS FROM THE MANAGER FOR PART %s\n", partName.c_str());
 
-                y_cpgs[4*nbDOFs+2*3]=0.0;
+                //y_cpgs[4*nbDOFs+2*3]=0.0;
 
                 current_action = true;
             }
@@ -361,13 +361,15 @@ void generatorThread::run()
     ///we update of the previous states
     
     ///save time stamp
-    fprintf(target_file,"%f \n",time_now);
+    fprintf(target_file,"%f ",time_now);
 
     for(int i=0; i<nbDOFs; i++)
         {
             previous_states[i]=states[i];
             fprintf(target_file,"%f \t", states[i]);
         }
+    fprintf(target_file,"\n");
+    fflush(target_file);
 
 
 
