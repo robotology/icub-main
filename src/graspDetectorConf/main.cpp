@@ -14,13 +14,10 @@
  * fingers joints positions when moving without interacting with
  * an object. The following linear model is fitted to each finger positions:
  *
- * <ul>
- * <li>  
- * q = q_0 + q_1 \cdot t \quad t \in [t_min, t_max]
- * </ul>
+ * \f[ q = q_0 + q_1, t \in [t_{min}, t_{max}] \f]
  *
- * where \f$ \frac{q}{t} \f$ represents the finger joints positions and where
- * the parameters q_0 and q_1 are estimated via a least
+ * where \f$ q \f$ represents the finger joints positions and where
+ * the parameters \f$ q_0 \f$ and \f$ q_1 \f$ are estimated via a least
  * square optimization.
  *
  * \section libraries_sec Libraries
