@@ -10,12 +10,36 @@
 
 
 EventDispatcher::EventDispatcher() {
-    initAttributes();
 }
 
-EventDispatcher::~EventDispatcher() { }
-
-
-void EventDispatcher::initAttributes() {
+EventDispatcher::~EventDispatcher() {
+    this->clear();
 }
 
+
+void EventDispatcher::removeListener(int idx) {
+    std::list<EventListener*>::iterator it = this->listeners.begin();
+    std::advance(it, idx);
+    delete *it;
+    this->listeners.erase(it);
+}
+
+EventListener* EventDispatcher::getListener(int idx) {
+    std::list<EventListener*>::iterator it = this->listeners.begin();
+    std::advance(it, idx);
+    return *it;
+}
+
+void EventDispatcher::clear() {
+    // remove from front while the list is not empty
+    while(this->hasListener()) {
+        this->removeListener(0);
+    }
+}
+
+void EventDispatcher::raise(Event& event) {
+    std::list<EventListener*>::iterator it;
+    for(it = listeners.begin(); it != listeners.end(); it++) {
+        e.visit(**it);
+    }
+}
