@@ -6,7 +6,28 @@
  * \defgroup icub_graspDetectorConf graspDetectorConf
  *
  * A basic module for configuring the 
- * \ref icub_graspDetector module.
+ * \ref icub_graspDetector module. 
+ *
+ * \section intro_use How to use the module
+ * 
+ * The module can be used by simply launching it with a suitable configuration
+ * file which is automatically located by the resource finder class. For example,
+ * in order to instantiate a graspDetectorConf for the left_arm you need to
+ * simply launch:
+ *
+ * \code
+ * graspDetectorConf --from left_armGraspDetectorConf.ini
+ * \endcode
+ * 
+ * The module creates (as an output) a file left_armGraspDetector.ini 
+ * required by the \ref icub_graspDetector module. The module requires
+ * the user to perform some free hand movements while the module is running.
+ * These free hand movements can be performed by using the \ref icub_robotMotorGui
+ * gui or by launching the \ref icubdemoy3 module as follows:
+ * \code
+ * iCubDemoY3 --positions handDOFMais.txt
+ * \endcode
+ * while being sure that the hands are moving freely.
  *
  * \section intro_sec Description
  * 
