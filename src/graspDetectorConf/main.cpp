@@ -14,11 +14,11 @@
  * fingers joints positions when moving without interacting with
  * an object. The following linear model is fitted to each finger positions:
  *
- * \f[ q = q_0 + q_1, t \in [t_{min}, t_{max}] \f]
+ * \f[ q = q_0 + q_1 \cdot t, \qquad t \in [t_{min}, t_{max}] \f]
  *
  * where \f$ q \f$ represents the finger joints positions and where
  * the parameters \f$ q_0 \f$ and \f$ q_1 \f$ are estimated via a least
- * square optimization.
+ * square optimization (see also the documentation of \ref icub_graspDetectorConfClasses).
  *
  * \section libraries_sec Libraries
  * This module requires the GSL and yarp math libraries.
