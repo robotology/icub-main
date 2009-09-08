@@ -21,7 +21,7 @@ using namespace std;
 
 #define LIMIT_TOL 2.0 //conservative limit tolerance in degrees
 #define MAX_FREQUENCY 1.5 //in Hz
-#define MAX_TURN_ANGLE 0.7 //in radians 
+#define MAX_TURN_ANGLE 0.52 //in radians 
 
 #define LEFT 1
 #define RIGHT 2

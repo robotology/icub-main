@@ -20,8 +20,6 @@
 #include <ace/OS.h>
 using namespace std;
 
-
-
 cpgs::cpgs(int nbDOFs, int nbLIMBs){
 
   this->nbDOFs = nbDOFs;
@@ -154,9 +152,9 @@ void cpgs::integrate_step(double *y, double *at_states)
     
    }
    
-   if(partName=="torso" || fabs(turnAngle)>0.01)
+   if(partName=="torso" && fabs(turnAngle)>0.01)
    {
-       g[1]=turnAngle;
+       g[1]=turnAngle/ampl[1];  //torso joint for turning
    }
 
     if(m[0]>0.0)
@@ -165,19 +163,16 @@ void cpgs::integrate_step(double *y, double *at_states)
         {
             if(y[3]<0.0)
             {
-                g[3] -= 1.5*y[3];
+                g[3] -= 2.0*y[3];
                 g[1] -= y[3];
             }
-        
-      //g[3] += (40.0*exp(-4.0*(y[3]+1.0)*(y[3]+1.0)))/180*3.14/ampl[3];
-       //g[1] += (15.0*exp(-4.0*(y[3]+1.0)*(y[3]+1.0)))/180*3.14/ampl[1];
         }
 
     if(partName=="left_leg" || partName=="right_leg")
         {
             if(y[3]<0.0)
             {
-                g[1] -= 2.5*y[3];//(30.0*exp(-4.0*(y[3]+1.0)*(y[3]+1.0)))/180*3.14/ampl[1];
+                g[1] -= 2.5*y[3];
             }
         }
     }

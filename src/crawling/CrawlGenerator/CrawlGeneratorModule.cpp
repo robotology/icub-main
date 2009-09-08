@@ -357,10 +357,10 @@ void generatorThread::run()
     else
         connectToOtherLimbs();
 
-    //if(getQuadrant())
+    if(getQuadrant())
         getParameters();
         
-    if(myCpg->om_stance<0)
+    if(myCpg->om_stance<0.0)
         {
             ACE_OS::printf("Task is finished\n");
             this->threadRelease();

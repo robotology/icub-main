@@ -19,12 +19,12 @@ bool CrawlManagerModule::updateModule()
     cout << "(4) Slower" << endl;
     cout << "(5) Turn right" << endl;
     cout << "(6) Turn left" << endl;
-    //cout << "(7) Sit" << endl;
-    //cout << "(8) On all fours" << endl; 
     cout <<"(9) EMERGENCY STOP" << endl;
     
     return true;
 }
+
+///This function switches between behaviors: 
 
 bool CrawlManagerModule::respond(const Bottle &command, Bottle &reply)
 {
@@ -33,34 +33,38 @@ bool CrawlManagerModule::respond(const Bottle &command, Bottle &reply)
   
    switch(com)
     {   
-        case 1:
+        case 1: /// - on all fours
         
-            if(turnAngle < -0.001)
-            {
-                while(turnAngle < -0.001)
-                {
-                    turnAngle+=TURN_INDENT;
-                    crawl_parameters[9][1]=turnAngle;
-                    for(int i=0;i<nbParts;i++)
-                        if(connected_part[i]) sendCommand(i, crawl_parameters);
-                    Time::delay(1.0);
-                }
-            }
-            
-            if(turnAngle > 0.001)
-            {
-                while(turnAngle > 0.001)
-                {
-                    turnAngle-=TURN_INDENT;
-                    crawl_parameters[9][1]=turnAngle;
-                    for(int i=0;i<nbParts;i++)
-                        if(connected_part[i]) sendCommand(i, crawl_parameters);
-                    Time::delay(1.0);
-                }
-            }
-            
+            //if the robot crawls, we need to check if it safe before going on all fours
             if(STATE==CRAWL)
             {
+                //if it turns (turnAngle!=0), it should go back to the initial position while crawling
+                if(turnAngle < -0.001)
+                {
+                    while(turnAngle < -0.001)
+                    {
+                        turnAngle+=TURN_INDENT;
+                        crawl_parameters[9][1]=turnAngle;
+                        for(int i=0;i<nbParts;i++)
+                            if(connected_part[i]) sendCommand(i, crawl_parameters);
+                        Time::delay(1.0);
+                    }
+                }
+                
+                if(turnAngle > 0.001)
+                {
+                    while(turnAngle > 0.001)
+                    {
+                        turnAngle-=TURN_INDENT;
+                        crawl_parameters[9][1]=turnAngle;
+                        for(int i=0;i<nbParts;i++)
+                            if(connected_part[i]) sendCommand(i, crawl_parameters);
+                        Time::delay(1.0);
+                    }
+                }
+                
+                //the robot first goes to an intermediate position before going on all fours
+                //the swinging arm is lifted and then put on the ground                    
                 int side=0;
                 while(side==0) side=getSwingingArm();
                 
@@ -68,17 +72,19 @@ bool CrawlManagerModule::respond(const Bottle &command, Bottle &reply)
                 {
                     for(int i=0;i<nbParts;i++)
                         if(connected_part[i]) sendCommand(i, crawl_left_parameters);
-                    Time::delay(1.0);
+                    Time::delay(5.0);
                 }
                 
                 if(side==RIGHT_ARM)
                 {
                     for(int i=0;i<nbParts;i++)
                         if(connected_part[i]) sendCommand(i, crawl_right_parameters);
-                    Time::delay(1.0);
+                    Time::delay(5.0);
                 }
             }
             
+            //we can now send the init position
+            //the stance frequency om_stance is reinitialized            
             for(int i=0;i<nbParts;i++)
 			{
                 if(connected_part[i])
@@ -89,45 +95,50 @@ bool CrawlManagerModule::respond(const Bottle &command, Bottle &reply)
 			}
 
             reply.addString("going to init pos");
-
-            //om_stance = om_swing;
             STATE = INIT_POS;
             
             break;
             
-        case 2:  
+        case 2:  ///- crawl (straight)
         
-            if(turnAngle < -0.001)
+            //if the robot is turning, we incrementally go back to crawling straight first (turnAngle=0)
+            if(STATE==CRAWL)
             {
-                while(turnAngle < -0.001)
+                if(turnAngle < -0.001)
                 {
-                    turnAngle+=TURN_INDENT;
-                    crawl_parameters[9][1]=turnAngle;
-                    for(int i=0;i<nbParts;i++)
-                        if(connected_part[i]) sendCommand(i, crawl_parameters);
-                    Time::delay(1.0);
+                    while(turnAngle < -0.001)
+                    {
+                        turnAngle+=TURN_INDENT;
+                        crawl_parameters[9][1]=turnAngle;
+                        for(int i=0;i<nbParts;i++)
+                            if(connected_part[i]) sendCommand(i, crawl_parameters);
+                        Time::delay(1.0);
+                    }
                 }
-            }
             
-            if(turnAngle > 0.001)
-            {
-                while(turnAngle > 0.001)
+                if(turnAngle > 0.001)
                 {
-                    turnAngle-=TURN_INDENT;
-                    crawl_parameters[9][1]=turnAngle;
-                    for(int i=0;i<nbParts;i++)
-                        if(connected_part[i]) sendCommand(i, crawl_parameters);
-                    Time::delay(1.0);
+                    while(turnAngle > 0.001)
+                    {
+                        turnAngle-=TURN_INDENT;
+                        crawl_parameters[9][1]=turnAngle;
+                        for(int i=0;i<nbParts;i++)
+                            if(connected_part[i]) sendCommand(i, crawl_parameters);
+                        Time::delay(1.0);
+                    }
                 }
             }
 
+            //if the robot is not crawling, we go first to an intermediate position
             if(STATE!=CRAWL)
             {
                 for(int i=0;i<nbParts;i++)
                     if(connected_part[i]) sendCommand(i, crawl_right_parameters);
-                Time::delay(1.0);
+                turnAngle=0;
+                Time::delay(5.0);
             }
             
+            //we can now send the normal crawling parameters
             for(int i=0;i<nbParts;i++)
                 if(connected_part[i]) sendCommand(i, crawl_parameters);
             
@@ -136,8 +147,9 @@ bool CrawlManagerModule::respond(const Bottle &command, Bottle &reply)
             
             break;
                 
-        case 3:
+        case 3: ///- crawl faster
             
+            //if the robot is not crawling, we go first to an intermediate position
             if(STATE!=CRAWL)
             {
                 for(int i=0;i<nbParts;i++)
@@ -145,7 +157,7 @@ bool CrawlManagerModule::respond(const Bottle &command, Bottle &reply)
                 Time::delay(0.2);
             }
             
-            
+            //we incrementally increase om stance 
             for(int i=0;i<nbParts;i++)
 			{
                 if(connected_part[i])
@@ -160,8 +172,9 @@ bool CrawlManagerModule::respond(const Bottle &command, Bottle &reply)
             
             break;
             
-        case 4:
+        case 4:///- crawl slower
             
+            //if the robot is not crawling, we go first to an intermediate position
             if(STATE!=CRAWL)
             {
                 for(int i=0;i<nbParts;i++)
@@ -169,6 +182,7 @@ bool CrawlManagerModule::respond(const Bottle &command, Bottle &reply)
                 Time::delay(0.2);
             }
             
+            //we incrementally decrease om_stance
             for(int i=0;i<nbParts;i++)
 			{
 				om_stance[i]-=0.05;
@@ -180,17 +194,19 @@ bool CrawlManagerModule::respond(const Bottle &command, Bottle &reply)
             
             break;
             
-        case 5: 
+        case 5: ///- turn to the right
             
+            //if the robot is not crawling, we go first to an intermediate position
 			if(STATE!=CRAWL)
             {
                 for(int i=0;i<nbParts;i++)
                     if(connected_part[i]) sendCommand(i, crawl_right_parameters);
                 Time::delay(0.2);
             }
-
-            turnAngle-=0.1; 
-            crawl_parameters[9][1]=turnAngle; 
+            
+            //we decrease the turnAngle (negative angle = turn to the right)
+            turnAngle-=TURN_INDENT; 
+            crawl_parameters[9][1]=turnAngle; //set point torso roll
 
             for(int i=0;i<nbParts;i++)
                 if(connected_part[i]) sendCommand(i, crawl_parameters);
@@ -200,8 +216,9 @@ bool CrawlManagerModule::respond(const Bottle &command, Bottle &reply)
             
             break;
             
-        case 6:
+        case 6:///- turn to the left
         
+            //if the robot is not crawling, we go first to an intermediate position
 			if(STATE!=CRAWL)
             {
                 for(int i=0;i<nbParts;i++)
@@ -209,8 +226,9 @@ bool CrawlManagerModule::respond(const Bottle &command, Bottle &reply)
                 Time::delay(0.2);
             }
 
-            turnAngle+=0.1;
-            crawl_parameters[9][1]=turnAngle; 
+            //we increase the turnAngle (positive angle = turn to the left)
+            turnAngle+=TURN_INDENT;
+            crawl_parameters[9][1]=turnAngle; //set point torso roll
             
             for(int i=0;i<nbParts;i++)
                 if(connected_part[i]) sendCommand(i, crawl_parameters);
@@ -221,26 +239,12 @@ bool CrawlManagerModule::respond(const Bottle &command, Bottle &reply)
 
 
 		//=========START added by Seb=========
-		case SEB_TURN_COMMAND:
+		case SEB_TURN_COMMAND: ///- turn to avoid obstacles 
         {
             double angle = command.get(1).asDouble();
             cout << "angle : " << angle << endl;
 
             crawl_parameters[9][1]=angle; //set point torso roll
-            //if(angle<0)//turn right
-            //{
-            //    crawl_parameters[0][0]=1.9*crawl_init_parameters[0][0]; //amplitude sh pitch left arm
-            //    crawl_parameters[4][0]=1.9*crawl_init_parameters[4][0]; //amplitude hip pitch left leg
-            //    crawl_parameters[2][0]=0.5*crawl_init_parameters[2][0]; //amplitude sh pitch right arm
-            //    crawl_parameters[6][0]=0.5*crawl_init_parameters[6][0]; //amplitude hip pitch right leg
-            //}
-            //else
-            //{
-            //    crawl_parameters[0][0]=0.5*crawl_init_parameters[0][0]; //amplitude sh pitch left arm
-            //    crawl_parameters[4][0]=0.5*crawl_init_parameters[4][0]; //amplitude hip pitch left leg
-            //    crawl_parameters[2][0]=1.9*crawl_init_parameters[2][0]; //amplitude sh pitch right arm
-            //    crawl_parameters[6][0]=1.9*crawl_init_parameters[6][0]; //amplitude hip pitch right leg
-            //}
             
             for(int i=0;i<nbParts;i++)
                 if(connected_part[i]) sendCommand(i, crawl_parameters);
@@ -248,7 +252,8 @@ bool CrawlManagerModule::respond(const Bottle &command, Bottle &reply)
 
             break;
         }
-		case REACH_COMMAND:
+        
+		case REACH_COMMAND: ///- reach for a mark on the ground
 		{
 			Bottle *reachingCommand = command.get(1).asList();
 			ACE_OS::printf("command : %s\n",reachingCommand->toString().c_str());
@@ -297,12 +302,32 @@ bool CrawlManagerModule::respond(const Bottle &command, Bottle &reply)
 		}                
 		//=========END added by Seb=========
 
-		case 9:
+		case 9: /// - emergency stop  (will stop the module)
                 
             crawl_left_parameters[9][1]=turnAngle; 
             
-            for(int i=0;i<nbParts;i++)
-                if(connected_part[i]) sendCommand(i, crawl_left_parameters);
+            //if the robot is not crawling, we go to an intermediate position
+            //otherwise, we do nothing
+            if(STATE==CRAWL)
+            {
+                int side=0;
+                while(side==0) side=getSwingingArm();
+                
+                if(side==LEFT_ARM)
+                {
+                    for(int i=0;i<nbParts;i++)
+                        if(connected_part[i]) sendCommand(i, crawl_left_parameters);
+                    Time::delay(1.0);
+                }
+                
+                if(side==RIGHT_ARM)
+                {
+                    for(int i=0;i<nbParts;i++)
+                        if(connected_part[i]) sendCommand(i, crawl_right_parameters);
+                    Time::delay(1.0);
+                }
+            }
+            
             reply.addString("EMERGENCY STOP");
             
             crawl_left_parameters[9][1]=0.0;
@@ -322,6 +347,7 @@ bool CrawlManagerModule::open(Searchable &s)
 {
     Property arguments(s.toString());
     
+    //we get the config file
     if(arguments.check("file"))
 	{
 		options.fromConfigFile(arguments.find("file").asString().c_str());
@@ -334,7 +360,7 @@ bool CrawlManagerModule::open(Searchable &s)
     options.toString();
     
     Time::turboBoost();
-
+    
     part_names[0]="left_arm";
     part_names[1]="right_arm";
     part_names[2]="left_leg";
@@ -342,26 +368,22 @@ bool CrawlManagerModule::open(Searchable &s)
     part_names[4]="torso";
     part_names[5]="head";
     
-    STATE = NOT_SET;
+    STATE = NOT_SET;    
+    turnAngle=0;
     
     vector<double> crawl_ampl;
     vector<double> crawl_target;
     vector<double> init_ampl;
     vector<double> init_target;
 
-    turnAngle=0;
-    nbPosSit=0;
-    nbPosUnsit=0;
-
+    //we connect to the ports
     for(int i=0;i<nbParts;i++)
-    {
-        scale[i]=0.1; //setting scaling parameters     
-                    
+    {                      
         char tmp1[255],tmp2[255];
         sprintf(tmp1,"/%s/parameters/in",part_names[i].c_str());
 
         /////////////////////////////////////////////////////
-        ///check if the part is active and connect///////////
+        // check if the part is active and connect///////////
         /////////////////////////////////////////////////////
         Contact query = Network::queryName(tmp1);
         if(query.isValid())
@@ -380,8 +402,8 @@ bool CrawlManagerModule::open(Searchable &s)
                 ACE_OS::printf("unable to connect %s with %s\n",tmp2,tmp1);
                 return false;
             }
-            
-            connected_part[i] = true;
+                    
+            connected_part[i] = true; //the part i is connected
             
             sprintf(tmp1, "/manager/%s/status/in", part_names[i].c_str());
             sprintf(tmp2, "/%s/status_for_manager/out", part_names[i].c_str());
@@ -407,7 +429,7 @@ bool CrawlManagerModule::open(Searchable &s)
 		}
 			  
             
-        ///////we get
+        ///////we get the parameters from the config files
         if(options.check(part_names[i].c_str()))
         {
             Bottle& bot = options.findGroup(part_names[i].c_str());
@@ -541,48 +563,6 @@ bool CrawlManagerModule::open(Searchable &s)
         }
     }
     
-                        
-    ////we get the frequencies
-    /*if(options.check("omStance"))
-        {
-			Bottle& tmpBot = options.findGroup("omStance");
-			if(tmpBot.size()==2)
-	  		{
-	    		om_stance = tmpBot.get(1).asDouble();
-	  		}
-			else
-	  		{
-	    	ACE_OS::printf("Please specify omStance for manager\n");
-	    	return false;
-	  		}
-      	}
-    else
-      {
-	    ACE_OS::printf("Please specify omStance for manager\n");
-	    return false;
-      }
-    
-    if(options.check("omSwing"))
-      {
-	    Bottle& tmpBot = options.findGroup("omSwing");
-	    if(tmpBot.size()==2)
-	    {
-	        om_swing = tmpBot.get(1).asDouble();
-	    }
-	    else
-	    {
-	        ACE_OS::printf("Please specify omSwing for manager\n");
-	        return false;
-	    }
-      }
-    else
-      {
-	    ACE_OS::printf("Please specify omSwing for manager\n");
-	    return false;
-      }*/
-      
-
-
 	//=========START added by Seb=========
 	commandPort.open(COMMAND_PORT_NAME);
     if(!(attach(commandPort,true)))
@@ -596,67 +576,8 @@ bool CrawlManagerModule::open(Searchable &s)
 
 }
 
-
-bool CrawlManagerModule::getSequence(vector<vector<vector<double> > > parameters, ConstString task, int& nbPos)
-{
-    ACE_OS::printf("\nSequence for %s...\n", task.c_str());
-    vector<vector<vector<double> > > vec;
-    
-    char partName[255];
-    for(int	i=0;i<nbParts;i++)
-    {
-        sprintf(partName,"%s_%s", task.c_str(), part_names[i].c_str());
-        if (options.check(partName))
-        {
-            ACE_OS::printf("\n%s\n", part_names[i].c_str());
-            Bottle &botPart = options.findGroup(partName);
-            
-            char strIndex[2]; // 1 to 99 parts.
-
-            vector<vector<double> > joints;
-            
-            for(int j=0; j<nbDOFs[i]; j++)
-            { 
-                sprintf(strIndex,"%d",j);
-                Bottle &botJoint = botPart.findGroup(strIndex);
-                if(j==0) nbPos=botJoint.size()-2;
-
-                vector<double> positions;
-                vector<double> amplitudes;
-                
-                if(botJoint.isNull())
-                {
-                    ACE_OS::printf("Please specify the positions for %s \n", task.c_str());
-                    return false;
-                }
-
-                for(int k=0; k<nbPos; k++)
-                {
-                    amplitudes.push_back(-1); //no oscillations
-                    positions.push_back(botJoint.get(k+2).asDouble());
-                    ACE_OS::printf("%f ", positions[k]);
-                }
-                
-                ACE_OS::printf("\n");
-                
-                joints.push_back(amplitudes);
-                joints.push_back(positions);                                
-            }
-        
-            vec.push_back(joints); 
-        }  
-        
-        else 
-        {
-            ACE_OS::printf("WARNING: No sequence found for task %s\n\n", task.c_str());
-            return false;
-        }
-    }    
-    parameters.swap(vec);  
-    
-    return true;
-}
-
+///This function returns which arm is in the swinging phase according to the cpgs info 
+///(1= left arm, -1= right arm, 0= no info or not applicable)
 int CrawlManagerModule::getSwingingArm()
 {    
     int side=0;
@@ -673,7 +594,6 @@ int CrawlManagerModule::getSwingingArm()
             y_speed[i]>0.0 ? swing[i] = false : swing[i] = true;
         }
         else ACE_OS::printf("no info\n");
-        //Time::delay(0.1);
     }
     
     ACE_OS::printf("y_speed %f %f %f %f\n", 
@@ -682,9 +602,10 @@ int CrawlManagerModule::getSwingingArm()
     if(swing[0] || swing[3] || !swing[1] ||!swing[2]) side = LEFT_ARM;
     if(!swing[0] || !swing[3] || swing[1] ||swing[2]) side = RIGHT_ARM;
 
-    return side;
+    return side; 
 }
 
+///This functions sends the command parameters to the different generators
 void CrawlManagerModule::sendCommand(int i, vector<vector<double> > params)
 {
     Bottle& paramBot = parts_port[i].prepare();
@@ -709,7 +630,7 @@ void CrawlManagerModule::sendCommand(int i, vector<vector<double> > params)
     for(int j=0; j<nbDOFs[i]; j++) 
         printf("%f ", params[2*i+1][j]);
         
-    printf(")\n om_stance %f, om_swing %f\n\n", om_stance[i], om_swing[i]);  
+    printf(")\n om_stance %f, om_swing %f, turnAngle %f\n\n", om_stance[i], om_swing[i], turnAngle);  
     #endif                         
 }
 
@@ -723,15 +644,6 @@ bool CrawlManagerModule::close()
     for(int i=0;i<6;i++)
         if(connected_part[i]==true) parts_port[i].close();
     fprintf(stderr, "crawl manager module closing...");
-    return true;
-}
-
-bool CrawlManagerModule::interruptModule()
-{
-    for(int i=0;i<6;i++){
-        if(connected_part[i]==true){
-            parts_port[i].interrupt();}}
-    fprintf(stderr, "interrupting module...");
     return true;
 }
 
