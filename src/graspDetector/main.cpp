@@ -15,7 +15,7 @@
  * sensors joints satisfy the following linear model when freely 
  * moving (not grasping any object):
  *
- * \f[ q = q_0 + q_1, t \in [t_{min}, t_{max}], \f]
+ * \f[ q = q_0 + q_1 \cdot t, \quad \quad t \in [t_{min}, t_{max}], \f]
  *
  * where \f$ q \f$ represents the finger joints positions.
  * If the model is not satisfied a grasp action is assumed to
