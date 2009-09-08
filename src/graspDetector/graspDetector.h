@@ -8,7 +8,7 @@ using namespace yarp::os;
 class graspDetector: public RateThread
 {
  public:
-    graspDetector(int, fingerDetector **, int );
+    graspDetector(int, fingerDetector **, Port *, int );
     ~graspDetector();
     bool threadInit();
     void stop();
@@ -18,4 +18,5 @@ class graspDetector: public RateThread
  private:
     int nFingers;
     fingerDetector  **fd;
+    Port *sp;
 };

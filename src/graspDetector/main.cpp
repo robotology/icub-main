@@ -12,15 +12,15 @@
  * \section intro_sec Description
  * 
  * This modules assumes that the hand Hall effect 
- * sensors joints satisfy the following model when freely 
+ * sensors joints satisfy the following linear model when freely 
  * moving (not grasping any object):
  *
- * <ul>
- * <li> lambda_0 q_0 + lambda_1 q_1 + ... + lambda_N q_N = 1 
- * </ul>
+ * \f[ q = q_0 + q_1, t \in [t_{min}, t_{max}], \f]
  *
+ * where \f$ q \f$ represents the finger joints positions.
  * If the model is not satisfied a grasp action is assumed to
- * be performed. The model is described in the configuration 
+ * be performed. The model (\f$ q_0, q_1, t_{max}, t_{min} \f$)
+ *  is described in the configuration 
  * file (partGraspDetector.ini where part can be either
  * right_arm or left_arm) which can be created by using the
  * module \ref icub_graspDetectorConf .
@@ -42,12 +42,23 @@
  * <li> "rate": the rate of the thread reading the analog sensors
  * <li> "joint": index of the finger joint to be moved
  * <li> "analogs": the indeces of the analog sensors corrsponsing to the given joint
- * <li> "lambda", "min", "max": model description corresponding to the given joint
+ * <li> "q0", "q1", "minT", "maxT": model description (\f$ q_0, q_1, t_{min}, t_{max} \f$)
+ * <li> "min", "max": the maximum and minimum distance from the model
  * </ul>
- * All the parameters are specified 
- * according to the yarp resourceFinder (with default context graspDetector). 
- * All parameters can be specified in a file left_armGraspDetector.ini 
- * (or right_armGraspDetector.ini) with the following structure:
+ * All the parameters can be specified 
+ * according to the yarp resourceFinder (with default context graspDetector).
+ * Typically this module is launched as:
+ * \code
+ * graspDetector --from left_armGraspDetector.ini
+ * \endcode
+ * or:
+ * \code
+ * graspDetector --from right_armGraspDetector.ini
+ * \endcode
+ * where the configuration files (e.g.: left_armGraspDetector.ini) are 
+ * created and stored in the suitable directory ($ICUB_ROOT/app/graspDetector/conf) 
+ * by the \ref icub_graspDetectorConf module.
+ * Configuration files have the following structure:
  *
  * \code
  *
@@ -65,11 +76,17 @@
  *
  * analogs     (a00 ... a0M)     //indeces of the analog sensors linked to j0
  * 
- * lambda     (l00 ... l0M)     //coefficients of the model linked to j0
+ * q0     (q0_00 ... q0_0M)     //coefficients of the model linked to j0
+ *
+ * q1     (q1_00 ... q1_0M)     //coefficients of the model linked to j0
  *
  * min        m0                //min deviation from the model
  *
  * max        M0                //max deviation from the model
+ *
+ * minT        t0                //minT
+ *
+ * maxT        T0                //maxT
  * .
  * .
  * .
@@ -79,11 +96,17 @@
  *
  * analogs     (aN0 ... aNM)     //indeces of the analog sensors linked to jN
  * 
- * lambda     (lN0 ... lNM)     //coefficients of the model linked to jN
+ * q0     (q0_N0 ... q0_lNM)     //coefficients of the model linked to jN
+ * 
+ * q1     (q1_N0 ... q1_lNM)     //coefficients of the model linked to jN
  *
  * min        mN                //min deviation from the model
  *
  * max        MN                //max deviation from the model
+ *
+ * minT        tN                //min deviation from the model
+ *
+ * maxT        TN                //max deviation from the model
  *
  * \endcode
  *
@@ -94,11 +117,24 @@
  * </ul>
  *
  * \section portsc_sec Ports Created
- * For each finger, a port for reading the analog sensors:
+ * A port named:
  * <ul>
- * <li> analogPortName/graspDetectorConf/finger0/right_arm
+ * <li> analogPortName/graspDetector/status:o
+ * </ul>
+ * which reports for each finger the current grasp status.
+ * The port will contain a bottle which contains a double 
+ * for each finger. Finger status will be 0.0 if the finger
+ * is not contacting anything (model is satisfied). Finger
+ * status will be differnt from zero if the model is not 
+ * satisfied (either \f$ t \notin [t_{min}, t_{max}], \f$ or 
+ * deviation from the model bigger than the deviation specified
+ * in the configuration file 
+ * \f$ \left| q - q^{*} \right|  \notin [q_{min}, q_{max}] \f$).
+ * Moreover, for each finger, a port for reading the analog sensors:
+ * <ul>
+ * <li> analogPortName/graspDetector/finger0/right_arm
  * <li> ...
- * <li> analogPortName/graspDetectorConf/fingerN/right_arm
+ * <li> analogPortName/graspDetector/fingerN/right_arm
  * </ul>
  * \author Francesco Nori
  *
@@ -156,7 +192,7 @@ bool getNumberFingers(Property p, int &n)
         }   
 }
 
-bool getParamFingers(Property p, double* a, double* b, Bottle *h, Bottle *l, int n)
+bool getParamFingers(Property p, Bottle *h, double* a, double* b, Bottle *q0, Bottle *q1, double *minT, double *maxT, int n)
 {
     yarp::String s((size_t)1024);
     for (int i=0; i<n; i++)
@@ -207,24 +243,67 @@ bool getParamFingers(Property p, double* a, double* b, Bottle *h, Bottle *l, int
                     return false;
                 }
 
-            xtmp = p.findGroup(&s[0]).findGroup("lambda");
-            if (!p.findGroup(&s[0]).findGroup("lambda").isNull()) 
+            xtmp = p.findGroup(&s[0]).findGroup("q0");
+            if (!p.findGroup(&s[0]).findGroup("q0").isNull()) 
                 {
-                    xtmp = p.findGroup(&s[0]).findGroup("lambda");
+                    xtmp = p.findGroup(&s[0]).findGroup("q0");
                     Bottle *bot;
                     if (xtmp.get(1).isList())
                         {
                             bot = xtmp.get(1).asList();
                             //fprintf(stderr, "%s", b->toString().c_str());
                         }
-                    l[i] = *bot;
+                    q0[i] = *bot;
                 }
             else
                 {
-                    fprintf(stderr, "Wrong number of 'lambda' params");
+                    fprintf(stderr, "Wrong number of 'q0' params");
                     return false;
                 }
 
+            xtmp = p.findGroup(&s[0]).findGroup("q1");
+            if (!p.findGroup(&s[0]).findGroup("q1").isNull()) 
+                {
+                    xtmp = p.findGroup(&s[0]).findGroup("q1");
+                    Bottle *bot;
+                    if (xtmp.get(1).isList())
+                        {
+                            bot = xtmp.get(1).asList();
+                            //fprintf(stderr, "%s", b->toString().c_str());
+                        }
+                    q1[i] = *bot;
+                }
+            else
+                {
+                    fprintf(stderr, "Wrong number of 'q1' params");
+                    return false;
+                }
+
+            xtmp = p.findGroup(&s[0]).findGroup("maxT");
+            //fprintf(stderr, "min is: %s @ cycle %d\n", xtmp.toString().c_str(), i);
+            if (!p.findGroup(s.c_str()).findGroup("maxT").isNull()) 
+                {
+                    xtmp = p.findGroup(&s[0]).findGroup("maxT");
+                    maxT[i] = xtmp.get(1).asDouble();
+                }
+            else
+                {
+                    fprintf(stderr, "Wrong number of 'maxT' params");
+                    return false;
+                }
+
+            xtmp = p.findGroup(&s[0]).findGroup("minT");
+            //fprintf(stderr, "min is: %s @ cycle %d\n", xtmp.toString().c_str(), i);
+            if (!p.findGroup(s.c_str()).findGroup("minT").isNull()) 
+                {
+                    xtmp = p.findGroup(&s[0]).findGroup("minT");
+                    minT[i] = xtmp.get(1).asDouble();
+                }
+            else
+                {
+                    fprintf(stderr, "Wrong number of 'minT' params");
+                    return false;
+                }
         }
     //for(int j=0; j < n; j++)
     //    fprintf(stderr, "Position j%d to %f\n", a[j], b[j]);
@@ -240,10 +319,14 @@ private:
 
     double *max; 
     double *min; 
+    double *maxT; 
+    double *minT; 
     Bottle *analogs; 
-    Bottle *lambda; 
+    Bottle *q0; 
+    Bottle *q1; 
 
     BufferedPort<Bottle> *analogInputPort;
+    Port statusPort;
 public:
 
     graspDetectModule() { }
@@ -278,7 +361,7 @@ public:
         analogInputPort = new BufferedPort<Bottle>[nFingers];
         for (int i = 0; i < nFingers; i++)
             {
-                ACE_OS::sprintf(&name[0], "%s/fingerDetectorConf/finger%d/%s", analogInput.asString().c_str(), i, part.asString().c_str());
+                ACE_OS::sprintf(&name[0], "%s/fingerDetector/finger%d/%s", analogInput.asString().c_str(), i, part.asString().c_str());
                 //fprintf(stderr, "Trying to open port %s\n", name.c_str());
                 analogInputPort[i].open(name.c_str());
                 //fprintf(stderr, "Port %s opened correctly\n", name.c_str());
@@ -291,11 +374,14 @@ public:
                     }
             }
 
-        min = new double[nFingers];
-        max = new double[nFingers];
+        min  = new double[nFingers];
+        max  = new double[nFingers];
+        minT = new double[nFingers];
+        maxT = new double[nFingers];
         analogs = new Bottle[nFingers];
-        lambda = new Bottle[nFingers];
-        if (!getParamFingers(options, min, max, analogs, lambda, nFingers))
+        q0 = new Bottle[nFingers];
+        q1 = new Bottle[nFingers];
+        if (!getParamFingers(options, analogs, min, max, q0, q1, minT, maxT, nFingers))
             return false;
         else
             fprintf(stderr, "Get param fingers was succefull!\n");
@@ -309,11 +395,13 @@ public:
                 //fprintf(stderr, "Creating the threads %d\n", i);
                 fd[i] = new fingerDetector(&analogInputPort[i], rate);
                 fd[i]->setIndex(analogs[i]);
-                fd[i]->setModel(lambda[i], min[i], max[i]);
+                fd[i]->setModel(q0[i], q1[i], min[i], max[i], minT[i], maxT[i]);
             }
 
         //starting the thread for processing the hand status (i.e. all fingers status)
-        gd = new graspDetector(nFingers, fd, 100);
+        ACE_OS::sprintf(&name[0], "%s/fingerDetector/status:o", analogInput.asString().c_str());
+        statusPort.open(name.c_str());
+        gd = new graspDetector(nFingers, fd, &statusPort, 100);
 
         return true;
     }
@@ -344,8 +432,14 @@ public:
 
         delete[] min;
         delete[] max;
+        delete[] minT;
+        delete[] maxT;
         delete[] analogs;
-        delete[] lambda;
+        delete[] q0;
+        delete[] q1;
+
+        fprintf(stderr, "Closing the staus port\n");
+        statusPort.close();
 
         Network::fini();
         return 0;

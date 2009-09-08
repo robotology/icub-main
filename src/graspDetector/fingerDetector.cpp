@@ -31,13 +31,18 @@ void fingerDetector::setIndex(Bottle b)
         index(i) = b.get(i).asDouble();
 }
 
-void fingerDetector::setModel(Bottle b, double m, double M)
+void fingerDetector::setModel(Bottle q_0, Bottle q_1, double m, double M, double t, double T)
 {
-    lambda.resize(b.size());
-    for(int i =0; i<b.size(); i++)
-        lambda(i) = b.get(i).asDouble();
+    q0.resize(q_0.size());
+    q1.resize(q_1.size());
+    for(int i =0; i < q_0.size(); i++)
+        q0(i) = q_0.get(i).asDouble();
+    for(int i =0; i < q_1.size(); i++)
+        q1(i) = q_1.get(i).asDouble();
     min = m;
     max = M;
+    minT = t;
+    maxT = T;
 }
 
 void fingerDetector::run()
@@ -53,16 +58,29 @@ void fingerDetector::run()
                 analogs(i)=lastBottle->get((int) index(i)).asDouble();
         }
     //fprintf(stderr, "Reading: %s\n", analogs.toString().c_str());
-    
-    double res;
-    res = dot(lambda,analogs) - 1;
-    if (res < 1.1*min || res > 1.1*max)
+   
+    double n = q1.size(); 
+    Vector q(n);
+    Vector qStar(n);
+    Vector dq(n);
+    Vector tStar(1);
+    Matrix Q1(n,1);
+
+    for (int i = 0; i < n ; i++)
         {
-            if (res < 1.1*min)
-                status = -res + 1.1*min;   //true if grasping (model not respected)
-            else
-                status = res - 1.1*max;
+            Q1(i,0) = q1(i);
+            q(i) = analogs(i);
         }
+    tStar = pinv(Q1)*(q-q0);
+    qStar = q0 + q1 * tStar(0);
+    dq = q - qStar;
+
+    double res = 0;
+    for (int i = 0; i < n ; i++)
+        res += sqrt(dq(i)*dq(i));
+
+    if (res > max || tStar(0) < minT || tStar(0) > maxT)
+        status = res - max;
     else
         status = 0.0;  //false if not grasping (model respected)
 }  

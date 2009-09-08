@@ -6,6 +6,7 @@
 #include <yarp/os/Bottle.h>
 #include <yarp/os/Time.h>
 
+#include <math.h>
 #include <yarp/math/Math.h>
 #include <yarp/math/SVD.h>
 
@@ -26,17 +27,19 @@ public:
     ~fingerDetector();
     bool threadInit();
     void setIndex(Bottle);
-    void setModel(Bottle, double, double);
+    void setModel(Bottle, Bottle, double, double, double, double);
     void stop();
     void run();
     
 private:
     BufferedPort<Bottle> *analogPort;
     Vector index;
-    Vector lambda;
+    Vector q0;
+    Vector q1;
     double min;
     double max;
-    
+    double minT;
+    double maxT;
 public:
     double status; //true if grasping (model not respected) 
 };
