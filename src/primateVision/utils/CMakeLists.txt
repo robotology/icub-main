@@ -11,9 +11,9 @@ SUBDIRS(display
 	convert_bitdepth
 	centsur
 	rectify
-#	depth
+	depth
 	flow
-#	depthflow
+	depthflow
 	lgphase
         multiclass
         mmx
