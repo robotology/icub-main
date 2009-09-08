@@ -25,7 +25,6 @@ bool graspDetectorConf::startCollect(Bottle analogIndex)
 
     //    fprintf(stderr, "Getting something with size %d \n", nJoints);       
     D.resize(nJoints, N_DATA);
-    span.resize(nJoints);
 
     index.resize(analogIndex.size());
     for (int i = 0; i < index.size(); i++)
@@ -59,58 +58,94 @@ void graspDetectorConf::stop()
     fprintf(stderr, "Grasp detector closed \n");
 }
 
-/*
- * Builds a description of the data contained in
- * the data matrix D.
- */
-
 void graspDetectorConf::buildPattern()
-{
-    
-    //Mean value is t
-    //for (int j = 0; j < nJoints; j++)
-    //    D(j,0) = 0;
-    //ACE_OS::printf("Matrix D is:\n%s\n", D.getRow(1).toString().c_str());
-    //Matrix V(nJoints,nJoints);
-    //Vector S(nJoints);
-    //Matrix U(N_DATA, N_DATA);
-    //SVD(D.transposed(), U, S, V);
-    //ACE_OS::printf("Vector S is: %s\n", S.toString().c_str());
-    //ACE_OS::printf("Confidence on spanned space is: %f\n", S(0)/S(1));
-    //ACE_OS::printf("Spanned space is: %s\n", V.getCol(0).toString().c_str());
-    //span = V.getCol(0);
-    
+{    
     int i,j;
-    Matrix  Q(index.size(), N_DATA);
+    int n=index.size();
+
+    Vector tmp;
+    Matrix  Q(2, N_DATA);
     Vector b(N_DATA);
-    for (i = 0; i < index.size(); i++)
-        for (j = 0; j < N_DATA; j++)
-            Q(i,j) = D((int) index(i),j);
 
+    q0.resize(n);
+    q1.resize(n);
+
+    Vector lambda;
+
+    q0(0) = 0;
+    q1(0) = 1;
+    for (i = 1; i < n ; i++)
+        {
+            for (j = 0; j < N_DATA; j++)
+                {
+                    Q(0,j) = D((int) index(0),j);
+                    Q(1,j) = D((int) index(i),j);
+                    b(j) = 1;
+                }
+
+            Matrix QTpinv = pinv(Q.transposed(), 1e-5);
+
+            lambda = QTpinv*b;
+            //tmp = Q.transposed()*lambda - b;
+            //for (j = 0; j < N_DATA; j++)
+            //    fprintf(stderr, "pinv(QT): %s\n", QTpinv.getCol(j).toString().c_str());       
+            //fprintf(stderr, "b: %s\n", b.toString().c_str());       
+            ///fprintf(stderr, "lambda: %s\n", lambda.toString().c_str());       
+            //fprintf(stderr, "tmp: %s\n", tmp.toString().c_str());       
+            double k_i1 = lambda(0);
+            double k_ii = lambda(1);
+            q0(i) =     1/k_ii;
+            q1(i) = -k_i1/k_ii;
+        }
+    //fprintf(stderr, "q0: %s\n", q0.toString().c_str());
+    //fprintf(stderr, "q1: %s\n\n", q1.toString().c_str());       
+
+
+    Vector tStar, q, dq, res;
+    tStar.resize(N_DATA);
+    res.resize(N_DATA);
+    q.resize(n);
+    dq.resize(n);
+    Matrix Q1(n,1);
+    Matrix QStar(n,N_DATA);
+    for (i = 0; i < n ; i++)
+        Q1(i,0) = q1(i);
+
+    //fprintf(stderr, "Q1: %s\n", Q1.toString().c_str());        
     for (j = 0; j < N_DATA; j++)
-        b(j) = 1;
+        {
+            for (i = 0; i < n ; i++)
+                q(i) = D((int) index(i),j);
+            tmp = pinv(Q1)*(q-q0);
+            tStar(j) = tmp(0); 
+            
+            for (i = 0; i < n ; i++)
+                {
+                    QStar(i,j) = q0(i) + q1(i) * tStar(j);
+                    dq(i) = QStar(i,j) - q(i);
+                }
+            //fprintf(stderr, "dq: %s\n", dq.toString().c_str());        
 
-    lambda = pinv(Q.transposed())*b;
-    //ACE_OS::printf("Space is: %s\n", lambda.toString().c_str());
-    Vector res;
-    res = Q.transposed() * lambda - b;
-    //ACE_OS::printf("Residuals are: %s\n", res.toString().c_str());
-    gsl_vector_minmax((const gsl_vector *) res.getGslVector(), &minError, &maxError);
-
-    //ACE_OS::printf("Error statistics are: max=%f, min=%f\n", maxError, minError);
-
-    span.zero();
-    for (i = 0; i < index.size(); i++)
-        span((int) index(i)) = lambda(i);
-
+            res(j)=0;
+            for (i = 0; i < n ; i++)
+                res(j) += sqrt(dq(i)*dq(i));
+        }
+    
+    //fprintf(stderr, "tStar: %s\n", tStar.toString().c_str());        
+    //fprintf(stderr, "res: %s\n", res.toString().c_str());        
+    gsl_vector_minmax((const gsl_vector *) res.getGslVector(), &minError, &maxError);    
+    gsl_vector_minmax((const gsl_vector *) tStar.getGslVector(), &minT, &maxT);    
     collect = 0;
 }
 
-bool graspDetectorConf::getPattern(Vector &l, double &m, double &M)
+bool graspDetectorConf::getPattern(Vector &q_0, Vector &q_1, double &m, double &M, double &t, double &T)
 {
+    t = minT;
+    T = maxT;
     m = minError;
     M = maxError;
-    l = lambda;
+    q_0 = q0;
+    q_1 = q1;
 }
     
 

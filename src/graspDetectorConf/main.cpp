@@ -10,7 +10,7 @@
  *
  * \section intro_sec Description
  * 
- * This modules computes a description of the 
+ * This module computes a description of the 
  * fingers joints positions when moving without interacting with
  * an object. The following linear model is fitted to each finger positions:
  *
@@ -360,7 +360,7 @@ public:
         return true;
     }
 
-    void dumpPatternToFile(Vector l, double m, double M, int i)
+    void dumpPatternToFile(Vector q0, Vector q1, double m, double M, double t, double T, int i)
     {
         char string[1024];
         ACE_OS::sprintf(string, "[FINGER%d]\n", i);
@@ -372,10 +372,16 @@ public:
         ACE_OS::sprintf(string, "analogs\t(%s)\n", analogs[i].toString().c_str());
         fputs (string,pFile);
 
-        ACE_OS::sprintf(string, "lambda\t(%s)\n", l.toString().c_str());
+        ACE_OS::sprintf(string, "q0\t(%s)\n", q0.toString().c_str());
+        fputs (string,pFile);
+
+        ACE_OS::sprintf(string, "q1\t(%s)\n", q1.toString().c_str());
         fputs (string,pFile);
 
         ACE_OS::sprintf(string, "min\t%.2f\nmax\t%.2f\n", m, M);
+        fputs (string,pFile);
+
+        ACE_OS::sprintf(string, "minT\t%.2f\nmaxT\t%.2f\n", t, T);
         fputs (string,pFile);
 
         ACE_OS::sprintf(string, "\n", i);
@@ -416,13 +422,14 @@ public:
         for(int i=0; i < nFingers; i++)
             {        
                 //retrieving patter description
-                Vector lambda;
-                double min, max;
-                gd[i]->getPattern(lambda, min, max);
+                Vector q0, q1;
+                double minD, maxD;
+                double minT, maxT;
+                gd[i]->getPattern(q0, q1, minD, maxD, minT, maxT);
 
                 //printing the results
-                ACE_OS::printf("Spanned vector space was: %s, min=%f, max=%f\n", lambda.toString().c_str(), min, max);
-                dumpPatternToFile(lambda, min, max, i);
+                ACE_OS::printf("Spanned vector space was:\n q0=%s\n q1=%s\n min=%f, max=%f\n", q0.toString().c_str(), q1.toString().c_str(), minD, maxD);
+                dumpPatternToFile(q0, q1, minD, maxD, minT, maxT, i);
             }   
         //fprintf(stderr, "Time diff is: %f\n", Time::now()-tStart);
         return true;
