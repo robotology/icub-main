@@ -1,26 +1,21 @@
-#include "EventDispatcher.h"
+/*
+ * Copyright (C) 2007-2009 Arjan Gijsberts @ Italian Institute of Technology
+ * CopyPolicy: Released under the terms of the GNU GPL v2.0.
+ *
+ * Implementation for the event dispatcher.
+ *
+ */
 
-// Constructors/Destructors
-//  
+#include "iCub/EventDispatcher.h"
 
-EventDispatcher::EventDispatcher ( ) {
-initAttributes();
+
+EventDispatcher::EventDispatcher() {
+    initAttributes();
 }
 
-EventDispatcher::~EventDispatcher ( ) { }
-
-//  
-// Methods
-//  
+EventDispatcher::~EventDispatcher() { }
 
 
-// Accessor methods
-//  
-
-
-// Other methods
-//  
-
-void EventDispatcher::initAttributes ( ) {
+void EventDispatcher::initAttributes() {
 }
 

@@ -2,7 +2,7 @@
  * Copyright (C) 2007-2009 Arjan Gijsberts @ Italian Institute of Technology
  * CopyPolicy: Released under the terms of the GNU GPL v2.0.
  *
- * Abstract base class for all modules in this .
+ * Abstract base class for all MachineLearner modules.
  *
  */
 

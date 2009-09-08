@@ -27,6 +27,7 @@ ENDIF (NOT ICUB_FOUND)
 SET(MODULE_SRC src/IMachineLearnerModule.cpp)
 SET(MACHINE_SRC src/IFixedSizeLearner.cpp src/MachinePortable.cpp src/DatasetRecorder.cpp src/DummyLearner.cpp src/LSSVMLearner.cpp src/RLSLearner.cpp)
 SET(TRANSFORMER_SRC src/ITransformer.cpp src/IFixedSizeTransformer.cpp src/ScaleTransformer.cpp src/IScaler.cpp src/Standardizer.cpp src/Normalizer.cpp src/FixedRangeScaler.cpp src/RandomFeature.cpp)
+#SET(EVENT_SRC
 
 # Declare groups of source and header files -- makes things pretty in MSVC.
 #SOURCE_GROUP("Source Files" FILES ${folder_source})

@@ -1,115 +1,47 @@
+/*
+ * Copyright (C) 2007-2009 Arjan Gijsberts @ Italian Institute of Technology
+ * CopyPolicy: Released under the terms of the GNU GPL v2.0.
+ *
+ * The standard train event class.
+ *
+ */
+ 
+#ifndef __ICUB_TRAINEVENT__
+#define __ICUB_TRAINEVENT__
 
-#ifndef TRAINEVENT_H
-#define TRAINEVENT_H
-#include "Event.h"
+#include "iCub/Event.h"
 
 #include <string>
 
 /**
   * class TrainEvent
-  * 
+  *
   */
 
-class TrainEvent : virtual public Event
-{
+class TrainEvent : virtual public Event {
 public:
-
-    // Constructors/Destructors
-    //  
-
-
     /**
      * Empty Constructor
      */
-    TrainEvent ( );
+    TrainEvent();
 
     /**
      * Empty Destructor
      */
-    virtual ~TrainEvent ( );
+    virtual ~TrainEvent();
 
-    // Static Public attributes
-    //  
-
-    // Public attributes
-    //  
-
-
-    // Public attribute accessor methods
-    //  
-
-
-    // Public attribute accessor methods
-    //  
-
-
-
-    /**
-     * @param  listener
+    /*
+     * Inherited from Event.
      */
-    void visit (EventListener listener )
-    {
+    void visit(EventListener listener) {
     }
 
-
-    /**
-     * @return string
+    /*
+     * Inherited from Event.
      */
-    string toString ( )
-    {
+    std::string toString() {
     }
-
-protected:
-
-    // Static Protected attributes
-    //  
-
-    // Protected attributes
-    //  
-
-public:
-
-
-    // Protected attribute accessor methods
-    //  
-
-protected:
-
-public:
-
-
-    // Protected attribute accessor methods
-    //  
-
-protected:
-
-
-private:
-
-    // Static Private attributes
-    //  
-
-    // Private attributes
-    //  
-
-public:
-
-
-    // Private attribute accessor methods
-    //  
-
-private:
-
-public:
-
-
-    // Private attribute accessor methods
-    //  
-
-private:
-
-
 
 };
 
-#endif // TRAINEVENT_H
+#endif

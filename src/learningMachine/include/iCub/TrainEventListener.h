@@ -1,107 +1,42 @@
+/*
+ * Copyright (C) 2007-2009 Arjan Gijsberts @ Italian Institute of Technology
+ * CopyPolicy: Released under the terms of the GNU GPL v2.0.
+ *
+ * The standard event listener class for predict events.
+ *
+ */
 
-#ifndef TRAINEVENTLISTENER_H
-#define TRAINEVENTLISTENER_H
-#include "EventListener.h"
+#ifndef __ICUB_TRAINEVENTLISTENER__
+#define __ICUB_TRAINEVENTLISTENER__
 
-#include <string>
+#include "iCub/EventListener.h"
 
 /**
   * class TrainEventListener
-  * 
+  *
   */
 
-class TrainEventListener : virtual public EventListener
-{
+class TrainEventListener : virtual public EventListener {
+protected:
+
 public:
-
-    // Constructors/Destructors
-    //  
-
 
     /**
      * Empty Constructor
      */
-    TrainEventListener ( );
+    TrainEventListener();
 
     /**
      * Empty Destructor
      */
-    virtual ~TrainEventListener ( );
+    virtual ~TrainEventListener();
 
-    // Static Public attributes
-    //  
-
-    // Public attributes
-    //  
-
-
-    // Public attribute accessor methods
-    //  
-
-
-    // Public attribute accessor methods
-    //  
-
-
-
-    /**
-     * @param  e
+    /*
+     * Inherited from EventListener.
      */
-    void handle (TrainEvent e )
-    {
+    void handle(TrainEvent e) {
     }
-
-protected:
-
-    // Static Protected attributes
-    //  
-
-    // Protected attributes
-    //  
-
-public:
-
-
-    // Protected attribute accessor methods
-    //  
-
-protected:
-
-public:
-
-
-    // Protected attribute accessor methods
-    //  
-
-protected:
-
-
-private:
-
-    // Static Private attributes
-    //  
-
-    // Private attributes
-    //  
-
-public:
-
-
-    // Private attribute accessor methods
-    //  
-
-private:
-
-public:
-
-
-    // Private attribute accessor methods
-    //  
-
-private:
-
-
 
 };
 
-#endif // TRAINEVENTLISTENER_H
+#endif

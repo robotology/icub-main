@@ -1,107 +1,44 @@
+/*
+ * Copyright (C) 2007-2009 Arjan Gijsberts @ Italian Institute of Technology
+ * CopyPolicy: Released under the terms of the GNU GPL v2.0.
+ *
+ * The standard event listener class for predict events.
+ *
+ */
 
-#ifndef PREDICTEVENTLISTENER_H
-#define PREDICTEVENTLISTENER_H
-#include "EventListener.h"
+#ifndef __ICUB_PREDICTEVENTLISTENER__
+#define __ICUB_PREDICTEVENTLISTENER__
 
-#include <string>
+#include "iCub/EventListener.h"
+
 
 /**
   * class PredictEventListener
-  * 
+  *
   */
 
-class PredictEventListener : virtual public EventListener
-{
+class PredictEventListener : virtual public EventListener {
+protected:
+
 public:
-
-    // Constructors/Destructors
-    //  
-
-
     /**
      * Empty Constructor
      */
-    PredictEventListener ( );
+    PredictEventListener();
 
     /**
      * Empty Destructor
      */
-    virtual ~PredictEventListener ( );
-
-    // Static Public attributes
-    //  
-
-    // Public attributes
-    //  
+    virtual ~PredictEventListener();
 
 
-    // Public attribute accessor methods
-    //  
-
-
-    // Public attribute accessor methods
-    //  
-
-
-
-    /**
-     * @param  e
+    /*
+     * Inherited from EventListener.
      */
-    void handle (PredictEvent e )
-    {
+    void handle(PredictEvent e) {
     }
-
-protected:
-
-    // Static Protected attributes
-    //  
-
-    // Protected attributes
-    //  
-
-public:
-
-
-    // Protected attribute accessor methods
-    //  
-
-protected:
-
-public:
-
-
-    // Protected attribute accessor methods
-    //  
-
-protected:
-
-
-private:
-
-    // Static Private attributes
-    //  
-
-    // Private attributes
-    //  
-
-public:
-
-
-    // Private attribute accessor methods
-    //  
-
-private:
-
-public:
-
-
-    // Private attribute accessor methods
-    //  
-
-private:
-
 
 
 };
 
-#endif // PREDICTEVENTLISTENER_H
+#endif

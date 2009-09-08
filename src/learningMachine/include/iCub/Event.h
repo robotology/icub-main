@@ -1,35 +1,33 @@
+/*
+ * Copyright (C) 2007-2009 Arjan Gijsberts @ Italian Institute of Technology
+ * CopyPolicy: Released under the terms of the GNU GPL v2.0.
+ *
+ * The abstract event class.
+ *
+ */
 
-#ifndef EVENT_H
-#define EVENT_H
+#ifndef __ICUB_EVENT__
+#define __ICUB_EVENT__
 
 #include <string>
 
 /**
   * class Event
-  * 
+  *
   */
 
-class Event
-{
+class Event {
+protected:
+
+
 public:
-
-
-    // Public attribute accessor methods
-    //  
-
-
-    // Public attribute accessor methods
-    //  
-
 
 
     /**
      * Returns a string representation of the Event.
      * @return string
      */
-    virtual string toString ( )
-    {
-    }
+    virtual std::string toString() = 0;
 
 
     /**
@@ -38,49 +36,9 @@ public:
      * this to work, child classes need to implement this function.
      * @param  listener
      */
-    virtual void visit (EventListener listener )
-    {
-    }
-
-protected:
-
-public:
-
-
-    // Protected attribute accessor methods
-    //  
-
-protected:
-
-public:
-
-
-    // Protected attribute accessor methods
-    //  
-
-protected:
-
-
-private:
-
-public:
-
-
-    // Private attribute accessor methods
-    //  
-
-private:
-
-public:
-
-
-    // Private attribute accessor methods
-    //  
-
-private:
-
+    virtual void visit(EventListener listener) = 0;
 
 
 };
 
-#endif // EVENT_H
+#endif

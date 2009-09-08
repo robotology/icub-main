@@ -1,66 +1,54 @@
+/*
+ * Copyright (C) 2007-2009 Arjan Gijsberts @ Italian Institute of Technology
+ * CopyPolicy: Released under the terms of the GNU GPL v2.0.
+ *
+ * The event dispatching class.
+ *
+ */
 
-#ifndef EVENTDISPATCHER_H
-#define EVENTDISPATCHER_H
+#ifndef __ICUB_EVENTDISPATCHER__
+#define __ICUB_EVENTDISPATCHER__
 
-#include <string>
-#include vector
+#include <list>
 
+#include "iCub/EventListener.h"
 
 
 /**
   * class EventDispatcher
-  * 
+  *
   */
 
-class EventDispatcher
-{
+class EventDispatcher {
+private:
+    std::list<EventListener> listeners;
+
 public:
-
-    // Constructors/Destructors
-    //  
-
-
     /**
      * Empty Constructor
      */
-    EventDispatcher ( );
+    EventDispatcher();
 
     /**
      * Empty Destructor
      */
-    virtual ~EventDispatcher ( );
-
-    // Static Public attributes
-    //  
-
-    // Public attributes
-    //  
-
-
-    // Public attribute accessor methods
-    //  
-
-
-    // Public attribute accessor methods
-    //  
-
-
+    virtual ~EventDispatcher();
 
     /**
      * Adds an EventListener to the list.
      * @param  listener The EventListener that is to be add.
      */
-    void addListener (EventListener listener )
-    {
+    virtual void addListener(EventListener& listener) {
+        this->listeners.push_back(listener);
     }
 
 
     /**
      * Removes an EventListener from the list.
-     * @param  idx The index for the EventListener that is to be removed.
+     * @param  idx The index of the EventListener that is to be removed.
      */
-    void removeListener (int idx )
-    {
+    virtual void removeListener(int idx) {
+        this->listeners.erase(this->listeners.begin() + idx);
     }
 
 
@@ -69,8 +57,8 @@ public:
      * @return EventListener
      * @param  idx The index of the EventListener.
      */
-    EventListener getListener (int idx )
-    {
+    virtual EventListener getListener(int idx) {
+        return
     }
 
 
@@ -79,90 +67,34 @@ public:
      * EventListener.
      * @param  event The Event instance that is to be raised.
      */
-    void raise (Event event )
-    {
+    virtual void raise(Event& event) {
     }
 
 
     /**
      * @return bool
      */
-    bool hasListener ( )
-    {
+    virtual bool hasListener() {
+        return (this->listeners.size() > 0);
     }
-
-protected:
-
-    // Static Protected attributes
-    //  
-
-    // Protected attributes
-    //  
-
-public:
-
-
-    // Protected attribute accessor methods
-    //  
-
-protected:
-
-public:
-
-
-    // Protected attribute accessor methods
-    //  
-
-protected:
-
-
-private:
-
-    // Static Private attributes
-    //  
-
-    // Private attributes
-    //  
-
-    // A container for the list of EventListeners.
-    vector<EventListener> listeners;
-public:
-
-
-    // Private attribute accessor methods
-    //  
-
-private:
-
-public:
-
-
-    // Private attribute accessor methods
-    //  
-
 
     /**
      * Set the value of listeners
      * A container for the list of EventListeners.
      * @param new_var the new value of listeners
      */
-    void setListeners ( vector<EventListener> new_var )     {
-            listeners = new_var;
-    }
+    /*void setListeners(std::list<EventListener> new_var) {
+        listeners = new_var;
+    }*/
 
     /**
      * Get the value of listeners
      * A container for the list of EventListeners.
      * @return the value of listeners
      */
-    vector<EventListener> getListeners ( )     {
+    /*std::list<EventListener> getListeners() {
         return listeners;
-    }
-private:
-
-
-    void initAttributes ( ) ;
-
+    }*/
 };
 
-#endif // EVENTDISPATCHER_H
+#endif

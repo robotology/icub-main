@@ -1,23 +1,17 @@
-#include "TrainEvent.h"
+/*
+ * Copyright (C) 2007-2009 Arjan Gijsberts @ Italian Institute of Technology
+ * CopyPolicy: Released under the terms of the GNU GPL v2.0.
+ *
+ * Implementation for train events.
+ *
+ */
 
-// Constructors/Destructors
-//  
+#include "iCub/TrainEvent.h"
 
-TrainEvent::TrainEvent ( ) {
+
+TrainEvent::TrainEvent() {
 }
 
-TrainEvent::~TrainEvent ( ) { }
-
-//  
-// Methods
-//  
-
-
-// Accessor methods
-//  
-
-
-// Other methods
-//  
+TrainEvent::~TrainEvent() { }
 
 
