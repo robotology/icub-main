@@ -9,6 +9,19 @@
  * the Hall effect sensors integrated in the hand. This module
  * has to be configured by a \ref icub_graspDetectorConf module.
  *
+ * \section intro_use How to use the module
+ * 
+ * Simply launch:
+ *
+ * \code
+ * graspDetector --from left_armGraspDetector.ini
+ * \endcode
+ * 
+ * NOTE: the configuration file is automatically searched in the
+ * $ICUB_ROOT/app/graspDetector/conf directory. This file should
+ * have been already created in the correct location by the 
+ * \ref icub_graspDetectorConf module.
+ * 
  * \section intro_sec Description
  * 
  * This modules assumes that the hand Hall effect 
