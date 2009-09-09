@@ -41,6 +41,9 @@
  * the parameters \f$ q_0 \f$ and \f$ q_1 \f$ are estimated via a least
  * square optimization (see also the documentation of \ref icub_graspDetectorConfClasses).
  *
+ * \image html graspDetector.jpg
+ * \image latex graspDetector.eps "An example of linear fitting on finger data sensors" width=15cm
+ * 
  * \section libraries_sec Libraries
  * This module requires the GSL and yarp math libraries.
  * 
