@@ -1,0 +1,2082 @@
+%!PS-Adobe-3.0 EPSF-3.0
+%%Creator: MATLAB, The Mathworks, Inc. Version 7.3.0.298 (R2006b). Operating System: Linux 2.6.27-14-generic #1 SMP Tue Jul 7 19:39:09 UTC 2009 i686.
+%%Title: /home/iron/home/myMatlab/iCub/fingerGraspDetector/example.eps
+%%CreationDate: 09/09/2009  17:36:15
+%%DocumentNeededFonts: Helvetica
+%%DocumentProcessColors: Cyan Magenta Yellow Black
+%%LanguageLevel: 2
+%%Pages: 1
+%%BoundingBox:  -205   133   818   657
+%%EndComments
+
+%%BeginProlog
+% MathWorks dictionary
+/MathWorks 160 dict begin
+% definition operators
+/bdef {bind def} bind def
+/ldef {load def} bind def
+/xdef {exch def} bdef
+/xstore {exch store} bdef
+% operator abbreviations
+/c  /clip ldef
+/cc /concat ldef
+/cp /closepath ldef
+/gr /grestore ldef
+/gs /gsave ldef
+/mt /moveto ldef
+/np /newpath ldef
+/cm /currentmatrix ldef
+/sm /setmatrix ldef
+/rm /rmoveto ldef
+/rl /rlineto ldef
+/s {show newpath} bdef
+/sc {setcmykcolor} bdef
+/sr /setrgbcolor ldef
+/sg /setgray ldef
+/w /setlinewidth ldef
+/j /setlinejoin ldef
+/cap /setlinecap ldef
+/rc {rectclip} bdef
+/rf {rectfill} bdef
+% page state control
+/pgsv () def
+/bpage {/pgsv save def} bdef
+/epage {pgsv restore} bdef
+/bplot /gsave ldef
+/eplot {stroke grestore} bdef
+% orientation switch
+/portraitMode 0 def /landscapeMode 1 def /rotateMode 2 def
+% coordinate system mappings
+/dpi2point 0 def
+% font control
+/FontSize 0 def
+/FMS {/FontSize xstore findfont [FontSize 0 0 FontSize neg 0 0]
+  makefont setfont} bdef
+/reencode {exch dup where {pop load} {pop StandardEncoding} ifelse
+  exch dup 3 1 roll findfont dup length dict begin
+  { 1 index /FID ne {def}{pop pop} ifelse } forall
+  /Encoding exch def currentdict end definefont pop} bdef
+/isroman {findfont /CharStrings get /Agrave known} bdef
+/FMSR {3 1 roll 1 index dup isroman {reencode} {pop pop} ifelse
+  exch FMS} bdef
+/csm {1 dpi2point div -1 dpi2point div scale neg translate
+ dup landscapeMode eq {pop -90 rotate}
+  {rotateMode eq {90 rotate} if} ifelse} bdef
+% line types: solid, dotted, dashed, dotdash
+/SO { [] 0 setdash } bdef
+/DO { [.5 dpi2point mul 4 dpi2point mul] 0 setdash } bdef
+/DA { [6 dpi2point mul] 0 setdash } bdef
+/DD { [.5 dpi2point mul 4 dpi2point mul 6 dpi2point mul 4
+  dpi2point mul] 0 setdash } bdef
+% macros for lines and objects
+/L {lineto stroke} bdef
+/MP {3 1 roll moveto 1 sub {rlineto} repeat} bdef
+/AP {{rlineto} repeat} bdef
+/PDlw -1 def
+/W {/PDlw currentlinewidth def setlinewidth} def
+/PP {closepath eofill} bdef
+/DP {closepath stroke} bdef
+/MR {4 -2 roll moveto dup  0 exch rlineto exch 0 rlineto
+  neg 0 exch rlineto closepath} bdef
+/FR {MR stroke} bdef
+/PR {MR fill} bdef
+/L1i {{currentfile picstr readhexstring pop} image} bdef
+/tMatrix matrix def
+/MakeOval {newpath tMatrix currentmatrix pop translate scale
+0 0 1 0 360 arc tMatrix setmatrix} bdef
+/FO {MakeOval stroke} bdef
+/PO {MakeOval fill} bdef
+/PD {currentlinewidth 2 div 0 360 arc fill
+   PDlw -1 eq not {PDlw w /PDlw -1 def} if} def
+/FA {newpath tMatrix currentmatrix pop translate scale
+  0 0 1 5 -2 roll arc tMatrix setmatrix stroke} bdef
+/PA {newpath tMatrix currentmatrix pop	translate 0 0 moveto scale
+  0 0 1 5 -2 roll arc closepath tMatrix setmatrix fill} bdef
+/FAn {newpath tMatrix currentmatrix pop translate scale
+  0 0 1 5 -2 roll arcn tMatrix setmatrix stroke} bdef
+/PAn {newpath tMatrix currentmatrix pop translate 0 0 moveto scale
+  0 0 1 5 -2 roll arcn closepath tMatrix setmatrix fill} bdef
+/vradius 0 def /hradius 0 def /lry 0 def
+/lrx 0 def /uly 0 def /ulx 0 def /rad 0 def
+/MRR {/vradius xdef /hradius xdef /lry xdef /lrx xdef /uly xdef
+  /ulx xdef newpath tMatrix currentmatrix pop ulx hradius add uly
+  vradius add translate hradius vradius scale 0 0 1 180 270 arc 
+  tMatrix setmatrix lrx hradius sub uly vradius add translate
+  hradius vradius scale 0 0 1 270 360 arc tMatrix setmatrix
+  lrx hradius sub lry vradius sub translate hradius vradius scale
+  0 0 1 0 90 arc tMatrix setmatrix ulx hradius add lry vradius sub
+  translate hradius vradius scale 0 0 1 90 180 arc tMatrix setmatrix
+  closepath} bdef
+/FRR {MRR stroke } bdef
+/PRR {MRR fill } bdef
+/MlrRR {/lry xdef /lrx xdef /uly xdef /ulx xdef /rad lry uly sub 2 div def
+  newpath tMatrix currentmatrix pop ulx rad add uly rad add translate
+  rad rad scale 0 0 1 90 270 arc tMatrix setmatrix lrx rad sub lry rad
+  sub translate rad rad scale 0 0 1 270 90 arc tMatrix setmatrix
+  closepath} bdef
+/FlrRR {MlrRR stroke } bdef
+/PlrRR {MlrRR fill } bdef
+/MtbRR {/lry xdef /lrx xdef /uly xdef /ulx xdef /rad lrx ulx sub 2 div def
+  newpath tMatrix currentmatrix pop ulx rad add uly rad add translate
+  rad rad scale 0 0 1 180 360 arc tMatrix setmatrix lrx rad sub lry rad
+  sub translate rad rad scale 0 0 1 0 180 arc tMatrix setmatrix
+  closepath} bdef
+/FtbRR {MtbRR stroke } bdef
+/PtbRR {MtbRR fill } bdef
+/stri 6 array def /dtri 6 array def
+/smat 6 array def /dmat 6 array def
+/tmat1 6 array def /tmat2 6 array def /dif 3 array def
+/asub {/ind2 exch def /ind1 exch def dup dup
+  ind1 get exch ind2 get sub exch } bdef
+/tri_to_matrix {
+  2 0 asub 3 1 asub 4 0 asub 5 1 asub
+  dup 0 get exch 1 get 7 -1 roll astore } bdef
+/compute_transform {
+  dmat dtri tri_to_matrix tmat1 invertmatrix 
+  smat stri tri_to_matrix tmat2 concatmatrix } bdef
+/ds {stri astore pop} bdef
+/dt {dtri astore pop} bdef
+/db {2 copy /cols xdef /rows xdef mul dup 3 mul string
+  currentfile 
+  3 index 0 eq {/ASCIIHexDecode filter}
+  {/ASCII85Decode filter 3 index 2 eq {/RunLengthDecode filter} if }
+  ifelse exch readstring pop
+  dup 0 3 index getinterval /rbmap xdef
+  dup 2 index dup getinterval /gbmap xdef
+  1 index dup 2 mul exch getinterval /bbmap xdef pop pop}bdef
+/it {gs np dtri aload pop moveto lineto lineto cp c
+  cols rows 8 compute_transform 
+  rbmap gbmap bbmap true 3 colorimage gr}bdef
+/il {newpath moveto lineto stroke}bdef
+currentdict end def
+%%EndProlog
+
+%%BeginSetup
+MathWorks begin
+
+0 cap
+
+end
+%%EndSetup
+
+%%Page: 1 1
+%%BeginPageSetup
+%%PageBoundingBox:  -205   133   818   657
+MathWorks begin
+bpage
+%%EndPageSetup
+
+%%BeginObject: obj1
+bplot
+
+/dpi2point 12 def
+portraitMode -2460 7884 csm
+
+    0     0 12287  6279 rc
+86 dict begin %Colortable dictionary
+/c0 { 0.000000 0.000000 0.000000 sr} bdef
+/c1 { 1.000000 1.000000 1.000000 sr} bdef
+/c2 { 0.900000 0.000000 0.000000 sr} bdef
+/c3 { 0.000000 0.820000 0.000000 sr} bdef
+/c4 { 0.000000 0.000000 0.800000 sr} bdef
+/c5 { 0.910000 0.820000 0.320000 sr} bdef
+/c6 { 1.000000 0.260000 0.820000 sr} bdef
+/c7 { 0.000000 0.820000 0.820000 sr} bdef
+c0
+1 j
+1 sg
+   0    0 12288 6280 rf
+6 w
+0 5117 6488 0 0 -5117 3114 5588 4 MP
+PP
+-6488 0 0 5117 6488 0 0 -5117 3114 5588 5 MP stroke
+4 w
+DO
+0 sg
+3149 5588 mt 3149  471 L
+3149  471 mt 3149  471 L
+4181 5588 mt 4181  471 L
+4181  471 mt 4181  471 L
+5213 5588 mt 5213  471 L
+5213  471 mt 5213  471 L
+6245 5588 mt 6245  471 L
+6245  471 mt 6245  471 L
+7277 5588 mt 7277  471 L
+7277  471 mt 7277  471 L
+8309 5588 mt 8309  471 L
+8309  471 mt 8309  471 L
+9341 5588 mt 9341  471 L
+9341  471 mt 9341  471 L
+3114 5280 mt 9602 5280 L
+9602 5280 mt 9602 5280 L
+3114 4248 mt 9602 4248 L
+9602 4248 mt 9602 4248 L
+3114 3216 mt 9602 3216 L
+9602 3216 mt 9602 3216 L
+3114 2184 mt 9602 2184 L
+9602 2184 mt 9602 2184 L
+3114 1152 mt 9602 1152 L
+9602 1152 mt 9602 1152 L
+SO
+6 w
+3114 5588 mt 9602 5588 L
+3114 5588 mt 3114  471 L
+3149 5588 mt 3149 5523 L
+%%IncludeResource: font Helvetica
+/Helvetica /ISOLatin1Encoding 120 FMSR
+
+3116 5733 mt 
+(0) s
+4181 5588 mt 4181 5523 L
+4115 5733 mt 
+(50) s
+5213 5588 mt 5213 5523 L
+5113 5733 mt 
+(100) s
+6245 5588 mt 6245 5523 L
+6145 5733 mt 
+(150) s
+7277 5588 mt 7277 5523 L
+7177 5733 mt 
+(200) s
+8309 5588 mt 8309 5523 L
+8209 5733 mt 
+(250) s
+9341 5588 mt 9341 5523 L
+9241 5733 mt 
+(300) s
+3114 5280 mt 3179 5280 L
+3014 5324 mt 
+(0) s
+3114 4248 mt 3179 4248 L
+2947 4292 mt 
+(50) s
+3114 3216 mt 3179 3216 L
+2880 3260 mt 
+(100) s
+3114 2184 mt 3179 2184 L
+2880 2228 mt 
+(150) s
+3114 1152 mt 3179 1152 L
+2880 1196 mt 
+(200) s
+gs 3114 471 6489 5118 rc
+/c8 { 0.000000 1.000000 0.000000 sr} bdef
+c8
+12 8 8412 532 2 MP stroke
+12 8 8412 532 2 MP stroke
+12 8 8412 532 2 MP stroke
+12 8 8412 532 2 MP stroke
+12 8 8412 532 2 MP stroke
+12 8 8412 532 2 MP stroke
+12 8 8412 532 2 MP stroke
+12 8 8412 532 2 MP stroke
+12 8 8412 532 2 MP stroke
+12 8 8412 532 2 MP stroke
+12 8 8412 532 2 MP stroke
+12 8 8412 532 2 MP stroke
+12 8 8412 532 2 MP stroke
+12 8 8412 532 2 MP stroke
+12 8 8412 532 2 MP stroke
+12 8 8412 532 2 MP stroke
+12 8 8412 532 2 MP stroke
+12 8 8412 532 2 MP stroke
+12 8 8412 532 2 MP stroke
+12 8 8412 532 2 MP stroke
+12 8 8412 532 2 MP stroke
+12 8 8412 532 2 MP stroke
+12 8 8412 532 2 MP stroke
+12 8 8412 532 2 MP stroke
+12 8 8412 532 2 MP stroke
+12 8 8412 532 2 MP stroke
+12 8 8412 532 2 MP stroke
+12 8 8412 532 2 MP stroke
+12 8 8412 532 2 MP stroke
+12 8 8412 532 2 MP stroke
+12 8 8412 532 2 MP stroke
+12 8 8412 532 2 MP stroke
+12 8 8412 532 2 MP stroke
+12 8 8412 532 2 MP stroke
+12 8 8412 532 2 MP stroke
+12 8 8412 532 2 MP stroke
+12 8 8412 532 2 MP stroke
+12 8 8412 532 2 MP stroke
+12 8 8412 532 2 MP stroke
+12 8 8412 532 2 MP stroke
+12 8 8412 532 2 MP stroke
+12 8 8412 532 2 MP stroke
+12 8 8412 532 2 MP stroke
+12 8 8412 532 2 MP stroke
+12 8 8412 532 2 MP stroke
+12 8 8412 532 2 MP stroke
+12 8 8412 532 2 MP stroke
+12 8 8412 532 2 MP stroke
+12 8 8412 532 2 MP stroke
+12 8 8412 532 2 MP stroke
+12 8 8412 532 2 MP stroke
+12 8 8412 532 2 MP stroke
+12 8 8412 532 2 MP stroke
+12 8 8412 532 2 MP stroke
+12 8 8412 532 2 MP stroke
+12 8 8412 532 2 MP stroke
+12 8 8412 532 2 MP stroke
+12 8 8412 532 2 MP stroke
+12 8 8412 532 2 MP stroke
+12 8 8412 532 2 MP stroke
+12 8 8412 532 2 MP stroke
+12 8 8412 532 2 MP stroke
+12 8 8412 532 2 MP stroke
+12 8 8412 532 2 MP stroke
+12 8 8412 532 2 MP stroke
+12 8 8412 532 2 MP stroke
+12 8 8412 532 2 MP stroke
+12 8 8412 532 2 MP stroke
+12 8 8412 532 2 MP stroke
+12 8 8412 532 2 MP stroke
+12 8 8412 532 2 MP stroke
+12 8 8412 532 2 MP stroke
+12 8 8412 532 2 MP stroke
+12 8 8412 532 2 MP stroke
+12 8 8412 532 2 MP stroke
+12 8 8412 532 2 MP stroke
+12 8 8412 532 2 MP stroke
+12 8 8412 532 2 MP stroke
+12 8 8412 532 2 MP stroke
+12 8 8412 532 2 MP stroke
+12 8 8412 532 2 MP stroke
+12 8 8412 532 2 MP stroke
+12 8 8412 532 2 MP stroke
+12 8 8412 532 2 MP stroke
+12 8 8412 532 2 MP stroke
+12 8 8412 532 2 MP stroke
+12 8 8412 532 2 MP stroke
+12 8 8412 532 2 MP stroke
+12 8 8412 532 2 MP stroke
+12 8 8412 532 2 MP stroke
+12 8 8412 532 2 MP stroke
+12 8 8412 532 2 MP stroke
+12 8 8412 532 2 MP stroke
+12 8 8412 532 2 MP stroke
+12 8 8412 532 2 MP stroke
+12 8 8412 532 2 MP stroke
+12 8 8412 532 2 MP stroke
+12 8 8412 532 2 MP stroke
+12 8 8412 532 2 MP stroke
+12 8 8412 532 2 MP stroke
+12 8 8412 532 2 MP stroke
+12 8 8412 532 2 MP stroke
+12 8 8412 532 2 MP stroke
+12 8 8412 532 2 MP stroke
+12 8 8412 532 2 MP stroke
+12 8 8412 532 2 MP stroke
+12 8 8412 532 2 MP stroke
+12 8 8412 532 2 MP stroke
+12 8 8412 532 2 MP stroke
+12 8 8412 532 2 MP stroke
+12 8 8412 532 2 MP stroke
+12 8 8412 532 2 MP stroke
+12 8 8412 532 2 MP stroke
+12 8 8412 532 2 MP stroke
+12 8 8412 532 2 MP stroke
+12 8 8412 532 2 MP stroke
+12 8 8412 532 2 MP stroke
+12 8 8412 532 2 MP stroke
+12 8 8412 532 2 MP stroke
+12 8 8412 532 2 MP stroke
+12 8 8412 532 2 MP stroke
+12 8 8412 532 2 MP stroke
+12 8 8412 532 2 MP stroke
+12 8 8412 532 2 MP stroke
+12 8 8412 532 2 MP stroke
+12 8 8412 532 2 MP stroke
+12 8 8412 532 2 MP stroke
+12 8 8412 532 2 MP stroke
+12 8 8412 532 2 MP stroke
+12 8 8412 532 2 MP stroke
+12 8 8412 532 2 MP stroke
+12 8 8412 532 2 MP stroke
+12 8 8412 532 2 MP stroke
+12 8 8412 532 2 MP stroke
+12 8 8412 532 2 MP stroke
+12 8 8412 532 2 MP stroke
+12 8 8412 532 2 MP stroke
+12 8 8412 532 2 MP stroke
+12 8 8412 532 2 MP stroke
+12 8 8412 532 2 MP stroke
+12 8 8412 532 2 MP stroke
+12 8 8412 532 2 MP stroke
+12 8 8412 532 2 MP stroke
+12 8 8412 532 2 MP stroke
+12 8 8412 532 2 MP stroke
+12 8 8412 532 2 MP stroke
+12 8 8412 532 2 MP stroke
+12 8 8412 532 2 MP stroke
+12 8 8412 532 2 MP stroke
+12 8 8412 532 2 MP stroke
+12 8 8412 532 2 MP stroke
+12 8 8412 532 2 MP stroke
+12 8 8412 532 2 MP stroke
+12 8 8412 532 2 MP stroke
+12 8 8412 532 2 MP stroke
+12 8 8412 532 2 MP stroke
+12 8 8412 532 2 MP stroke
+12 8 8412 532 2 MP stroke
+12 8 8412 532 2 MP stroke
+12 8 8412 532 2 MP stroke
+12 8 8412 532 2 MP stroke
+12 8 8412 532 2 MP stroke
+12 8 8412 532 2 MP stroke
+12 8 8412 532 2 MP stroke
+12 8 8412 532 2 MP stroke
+12 8 8412 532 2 MP stroke
+12 8 8412 532 2 MP stroke
+12 8 8412 532 2 MP stroke
+12 8 8412 532 2 MP stroke
+12 8 8412 532 2 MP stroke
+12 8 8412 532 2 MP stroke
+12 8 8412 532 2 MP stroke
+12 8 8412 532 2 MP stroke
+12 8 8412 532 2 MP stroke
+12 8 8412 532 2 MP stroke
+12 8 8412 532 2 MP stroke
+12 8 8412 532 2 MP stroke
+12 8 8412 532 2 MP stroke
+12 8 8412 532 2 MP stroke
+12 8 8412 532 2 MP stroke
+12 8 8412 532 2 MP stroke
+12 8 8412 532 2 MP stroke
+12 8 8412 532 2 MP stroke
+12 8 8412 532 2 MP stroke
+12 8 8412 532 2 MP stroke
+12 8 8412 532 2 MP stroke
+12 8 8412 532 2 MP stroke
+12 8 8412 532 2 MP stroke
+12 8 8412 532 2 MP stroke
+12 8 8412 532 2 MP stroke
+12 8 8412 532 2 MP stroke
+12 8 8412 532 2 MP stroke
+12 8 8412 532 2 MP stroke
+12 8 8412 532 2 MP stroke
+12 8 8412 532 2 MP stroke
+12 8 8412 532 2 MP stroke
+12 8 8412 532 2 MP stroke
+12 8 8412 532 2 MP stroke
+12 8 8412 532 2 MP stroke
+12 8 8412 532 2 MP stroke
+12 8 8412 532 2 MP stroke
+12 8 8412 532 2 MP stroke
+12 8 8412 532 2 MP stroke
+12 8 8412 532 2 MP stroke
+12 8 8412 532 2 MP stroke
+12 8 8412 532 2 MP stroke
+12 8 8412 532 2 MP stroke
+12 8 8412 532 2 MP stroke
+12 8 8412 532 2 MP stroke
+12 8 8412 532 2 MP stroke
+12 8 8412 532 2 MP stroke
+12 8 8412 532 2 MP stroke
+12 8 8412 532 2 MP stroke
+12 8 8412 532 2 MP stroke
+12 8 8412 532 2 MP stroke
+12 8 8412 532 2 MP stroke
+12 8 8412 532 2 MP stroke
+12 8 8412 532 2 MP stroke
+12 8 8412 532 2 MP stroke
+12 8 8412 532 2 MP stroke
+12 8 8412 532 2 MP stroke
+12 8 8412 532 2 MP stroke
+12 8 8412 532 2 MP stroke
+12 8 8412 532 2 MP stroke
+12 8 8412 532 2 MP stroke
+12 8 8412 532 2 MP stroke
+12 8 8412 532 2 MP stroke
+12 8 8412 532 2 MP stroke
+12 8 8412 532 2 MP stroke
+12 8 8412 532 2 MP stroke
+12 8 8412 532 2 MP stroke
+12 8 8412 532 2 MP stroke
+12 8 8412 532 2 MP stroke
+12 8 8412 532 2 MP stroke
+12 8 8412 532 2 MP stroke
+12 8 8412 532 2 MP stroke
+12 8 8412 532 2 MP stroke
+12 8 8412 532 2 MP stroke
+12 8 8412 532 2 MP stroke
+12 8 8412 532 2 MP stroke
+12 8 8412 532 2 MP stroke
+12 8 8412 532 2 MP stroke
+12 8 8412 532 2 MP stroke
+12 8 8412 532 2 MP stroke
+12 8 8412 532 2 MP stroke
+12 8 8412 532 2 MP stroke
+12 8 8412 532 2 MP stroke
+12 8 8412 532 2 MP stroke
+12 8 8412 532 2 MP stroke
+12 8 8412 532 2 MP stroke
+12 8 8412 532 2 MP stroke
+12 8 8412 532 2 MP stroke
+12 8 8412 532 2 MP stroke
+12 8 8412 532 2 MP stroke
+12 8 8412 532 2 MP stroke
+12 8 8412 532 2 MP stroke
+12 8 8412 532 2 MP stroke
+12 8 8412 532 2 MP stroke
+12 8 8412 532 2 MP stroke
+12 8 8412 532 2 MP stroke
+12 8 8412 532 2 MP stroke
+12 8 8412 532 2 MP stroke
+12 8 8412 532 2 MP stroke
+12 8 8412 532 2 MP stroke
+12 8 8412 532 2 MP stroke
+12 8 8412 532 2 MP stroke
+12 8 8412 532 2 MP stroke
+12 8 8412 532 2 MP stroke
+12 8 8412 532 2 MP stroke
+12 8 8412 532 2 MP stroke
+12 8 8412 532 2 MP stroke
+12 8 8412 532 2 MP stroke
+12 8 8412 532 2 MP stroke
+12 8 8412 532 2 MP stroke
+12 8 8412 532 2 MP stroke
+12 8 8412 532 2 MP stroke
+12 8 8412 532 2 MP stroke
+12 8 8412 532 2 MP stroke
+12 8 8412 532 2 MP stroke
+12 8 8412 532 2 MP stroke
+12 8 8412 532 2 MP stroke
+12 8 8412 532 2 MP stroke
+12 8 8412 532 2 MP stroke
+12 8 8412 532 2 MP stroke
+12 8 8412 532 2 MP stroke
+12 8 8412 532 2 MP stroke
+12 8 8412 532 2 MP stroke
+12 8 8412 532 2 MP stroke
+12 8 8412 532 2 MP stroke
+12 8 8412 532 2 MP stroke
+12 8 8412 532 2 MP stroke
+12 8 8412 532 2 MP stroke
+12 8 8412 532 2 MP stroke
+12 8 8412 532 2 MP stroke
+12 8 8412 532 2 MP stroke
+12 8 8412 532 2 MP stroke
+12 8 8412 532 2 MP stroke
+12 8 8412 532 2 MP stroke
+12 8 8412 532 2 MP stroke
+12 8 8412 532 2 MP stroke
+12 8 8412 532 2 MP stroke
+12 8 8412 532 2 MP stroke
+12 8 8412 532 2 MP stroke
+12 8 8412 532 2 MP stroke
+12 8 8412 532 2 MP stroke
+12 8 8412 532 2 MP stroke
+12 8 8412 532 2 MP stroke
+12 8 8412 532 2 MP stroke
+12 8 8412 532 2 MP stroke
+12 8 8412 532 2 MP stroke
+12 8 8412 532 2 MP stroke
+12 8 8412 532 2 MP stroke
+12 8 8412 532 2 MP stroke
+12 8 8412 532 2 MP stroke
+12 8 8412 532 2 MP stroke
+12 8 8412 532 2 MP stroke
+12 8 8412 532 2 MP stroke
+12 8 8412 532 2 MP stroke
+12 8 8412 532 2 MP stroke
+12 8 8412 532 2 MP stroke
+12 8 8412 532 2 MP stroke
+12 8 8412 532 2 MP stroke
+12 8 8412 532 2 MP stroke
+12 8 8412 532 2 MP stroke
+12 8 8412 532 2 MP stroke
+12 8 8412 532 2 MP stroke
+12 8 8412 532 2 MP stroke
+12 8 8412 532 2 MP stroke
+12 8 8412 532 2 MP stroke
+12 8 8412 532 2 MP stroke
+12 8 8412 532 2 MP stroke
+12 8 8412 532 2 MP stroke
+12 8 8412 532 2 MP stroke
+12 8 8412 532 2 MP stroke
+12 8 8412 532 2 MP stroke
+12 8 8412 532 2 MP stroke
+12 8 8412 532 2 MP stroke
+12 8 8412 532 2 MP stroke
+12 8 8412 532 2 MP stroke
+12 8 8412 532 2 MP stroke
+12 8 8412 532 2 MP stroke
+12 8 8412 532 2 MP stroke
+12 8 8412 532 2 MP stroke
+12 8 8412 532 2 MP stroke
+12 8 8412 532 2 MP stroke
+12 8 8412 532 2 MP stroke
+12 8 8412 532 2 MP stroke
+12 8 8412 532 2 MP stroke
+12 8 8412 532 2 MP stroke
+12 8 8412 532 2 MP stroke
+12 8 8412 532 2 MP stroke
+12 8 8412 532 2 MP stroke
+12 8 8412 532 2 MP stroke
+12 8 8412 532 2 MP stroke
+12 8 8412 532 2 MP stroke
+12 8 8412 532 2 MP stroke
+12 8 8412 532 2 MP stroke
+12 8 8412 532 2 MP stroke
+12 8 8412 532 2 MP stroke
+12 8 8412 532 2 MP stroke
+12 8 8412 532 2 MP stroke
+12 8 8412 532 2 MP stroke
+12 8 8412 532 2 MP stroke
+12 8 8412 532 2 MP stroke
+12 8 8412 532 2 MP stroke
+12 8 8412 532 2 MP stroke
+12 8 8412 532 2 MP stroke
+12 8 8412 532 2 MP stroke
+12 8 8412 532 2 MP stroke
+12 8 8412 532 2 MP stroke
+12 8 8412 532 2 MP stroke
+12 8 8412 532 2 MP stroke
+12 8 8412 532 2 MP stroke
+12 8 8412 532 2 MP stroke
+12 8 8412 532 2 MP stroke
+12 8 8412 532 2 MP stroke
+12 8 8412 532 2 MP stroke
+12 8 8412 532 2 MP stroke
+12 8 8412 532 2 MP stroke
+12 8 8412 532 2 MP stroke
+12 8 8412 532 2 MP stroke
+12 8 8412 532 2 MP stroke
+12 8 8412 532 2 MP stroke
+12 8 8412 532 2 MP stroke
+12 8 8412 532 2 MP stroke
+12 8 8412 532 2 MP stroke
+12 8 8412 532 2 MP stroke
+12 8 8412 532 2 MP stroke
+12 8 8412 532 2 MP stroke
+12 8 8412 532 2 MP stroke
+12 8 8412 532 2 MP stroke
+12 8 8412 532 2 MP stroke
+12 8 8412 532 2 MP stroke
+12 8 8412 532 2 MP stroke
+12 8 8412 532 2 MP stroke
+12 8 8412 532 2 MP stroke
+12 8 8412 532 2 MP stroke
+12 8 8412 532 2 MP stroke
+12 8 8412 532 2 MP stroke
+12 8 8412 532 2 MP stroke
+12 8 8412 532 2 MP stroke
+12 8 8412 532 2 MP stroke
+12 8 8412 532 2 MP stroke
+12 8 8412 532 2 MP stroke
+12 8 8412 532 2 MP stroke
+12 8 8412 532 2 MP stroke
+12 8 8412 532 2 MP stroke
+12 8 8412 532 2 MP stroke
+12 8 8412 532 2 MP stroke
+12 8 8412 532 2 MP stroke
+12 8 8412 532 2 MP stroke
+12 8 8412 532 2 MP stroke
+12 8 8412 532 2 MP stroke
+12 8 8412 532 2 MP stroke
+12 8 8412 532 2 MP stroke
+12 8 8412 532 2 MP stroke
+12 8 8412 532 2 MP stroke
+12 8 8412 532 2 MP stroke
+12 8 8412 532 2 MP stroke
+12 8 8412 532 2 MP stroke
+12 8 8412 532 2 MP stroke
+12 8 8412 532 2 MP stroke
+12 8 8412 532 2 MP stroke
+12 8 8412 532 2 MP stroke
+12 8 8412 532 2 MP stroke
+12 8 8412 532 2 MP stroke
+12 8 8412 532 2 MP stroke
+12 8 8412 532 2 MP stroke
+12 8 8412 532 2 MP stroke
+12 8 8412 532 2 MP stroke
+12 8 8412 532 2 MP stroke
+12 8 8412 532 2 MP stroke
+12 8 8412 532 2 MP stroke
+12 8 8412 532 2 MP stroke
+12 8 8412 532 2 MP stroke
+12 8 8412 532 2 MP stroke
+12 8 8412 532 2 MP stroke
+12 8 8412 532 2 MP stroke
+12 8 8412 532 2 MP stroke
+12 8 8412 532 2 MP stroke
+12 8 8412 532 2 MP stroke
+12 8 8412 532 2 MP stroke
+12 8 8412 532 2 MP stroke
+12 8 8412 532 2 MP stroke
+12 8 8412 532 2 MP stroke
+12 8 8412 532 2 MP stroke
+12 8 8412 532 2 MP stroke
+12 8 8412 532 2 MP stroke
+12 8 8412 532 2 MP stroke
+12 8 8412 532 2 MP stroke
+12 8 8412 532 2 MP stroke
+12 8 8412 532 2 MP stroke
+12 8 8412 532 2 MP stroke
+12 8 8412 532 2 MP stroke
+12 8 8412 532 2 MP stroke
+12 8 8412 532 2 MP stroke
+12 8 8412 532 2 MP stroke
+12 8 8412 532 2 MP stroke
+12 8 8412 532 2 MP stroke
+12 8 8412 532 2 MP stroke
+12 8 8412 532 2 MP stroke
+12 8 8412 532 2 MP stroke
+12 8 8412 532 2 MP stroke
+12 8 8412 532 2 MP stroke
+12 8 8412 532 2 MP stroke
+12 8 8412 532 2 MP stroke
+12 8 8412 532 2 MP stroke
+12 8 8412 532 2 MP stroke
+12 8 8412 532 2 MP stroke
+12 8 8412 532 2 MP stroke
+12 8 8412 532 2 MP stroke
+12 8 8412 532 2 MP stroke
+12 8 8412 532 2 MP stroke
+12 8 8412 532 2 MP stroke
+12 8 8412 532 2 MP stroke
+12 8 8412 532 2 MP stroke
+12 8 8412 532 2 MP stroke
+12 8 8412 532 2 MP stroke
+12 8 8412 532 2 MP stroke
+12 8 8412 532 2 MP stroke
+12 8 8412 532 2 MP stroke
+12 8 8412 532 2 MP stroke
+12 8 8412 532 2 MP stroke
+12 8 8412 532 2 MP stroke
+12 8 8412 532 2 MP stroke
+12 8 8412 532 2 MP stroke
+12 8 8412 532 2 MP stroke
+12 8 8412 532 2 MP stroke
+12 8 8412 532 2 MP stroke
+12 8 8412 532 2 MP stroke
+12 8 8412 532 2 MP stroke
+12 8 8412 532 2 MP stroke
+12 8 8412 532 2 MP stroke
+12 8 8412 532 2 MP stroke
+12 8 8412 532 2 MP stroke
+12 8 8412 532 2 MP stroke
+12 8 8412 532 2 MP stroke
+12 8 8412 532 2 MP stroke
+12 8 8412 532 2 MP stroke
+12 8 8412 532 2 MP stroke
+12 8 8412 532 2 MP stroke
+12 8 8412 532 2 MP stroke
+12 8 8412 532 2 MP stroke
+12 8 8412 532 2 MP stroke
+12 8 8412 532 2 MP stroke
+12 8 8412 532 2 MP stroke
+12 8 8412 532 2 MP stroke
+12 8 8412 532 2 MP stroke
+12 8 8412 532 2 MP stroke
+12 8 8412 532 2 MP stroke
+12 8 8412 532 2 MP stroke
+12 8 8412 532 2 MP stroke
+12 8 8412 532 2 MP stroke
+12 8 8412 532 2 MP stroke
+12 8 8412 532 2 MP stroke
+12 8 8412 532 2 MP stroke
+12 8 8412 532 2 MP stroke
+12 8 8412 532 2 MP stroke
+12 8 8412 532 2 MP stroke
+12 8 8412 532 2 MP stroke
+12 8 8412 532 2 MP stroke
+12 8 8412 532 2 MP stroke
+12 8 8412 532 2 MP stroke
+12 8 8412 532 2 MP stroke
+12 8 8412 532 2 MP stroke
+12 8 8412 532 2 MP stroke
+-8 -6 8412 574 2 MP stroke
+-18 -13 8412 594 2 MP stroke
+-27 -20 8412 615 2 MP stroke
+-37 -27 8412 636 2 MP stroke
+-57 -41 8412 677 2 MP stroke
+-76 -54 8412 718 2 MP stroke
+-96 -69 8412 760 2 MP stroke
+-125 -88 8412 821 2 MP stroke
+-144 -103 8412 863 2 MP stroke
+-164 -117 8412 904 2 MP stroke
+-203 -145 8412 987 2 MP stroke
+-232 -165 8412 1049 2 MP stroke
+-252 -179 8412 1090 2 MP stroke
+-268 -190 8392 1152 2 MP stroke
+-270 -191 8351 1214 2 MP stroke
+-248 -176 8289 1255 2 MP stroke
+-193 -137 8206 1255 2 MP stroke
+-161 -115 8144 1276 2 MP stroke
+-163 -116 8103 1338 2 MP stroke
+-169 -120 8082 1379 2 MP stroke
+-194 -137 8062 1461 2 MP stroke
+-192 -136 8000 1544 2 MP stroke
+-156 -111 7917 1585 2 MP stroke
+-111 -79 7834 1606 2 MP stroke
+-76 -54 7752 1647 2 MP stroke
+-74 -52 7690 1730 2 MP stroke
+-85 -60 7649 1812 2 MP stroke
+-106 -76 7607 1916 2 MP stroke
+-118 -84 7566 1998 2 MP stroke
+-115 -82 7504 2081 2 MP stroke
+-90 -64 7422 2143 2 MP stroke
+-78 -56 7360 2205 2 MP stroke
+-62 -44 7277 2287 2 MP stroke
+-83 -59 7236 2390 2 MP stroke
+-81 -58 7174 2473 2 MP stroke
+-103 -73 7133 2576 2 MP stroke
+-114 -81 7091 2659 2 MP stroke
+-121 -86 7029 2762 2 MP stroke
+-106 -74 6947 2844 2 MP stroke
+-94 -66 6885 2906 2 MP stroke
+-91 -65 6823 2989 2 MP stroke
+-99 -70 6761 3092 2 MP stroke
+-120 -85 6720 3195 2 MP stroke
+-128 -91 6658 3299 2 MP stroke
+-149 -106 6617 3402 2 MP stroke
+-160 -113 6575 3484 2 MP stroke
+-168 -120 6513 3588 2 MP stroke
+-199 -141 6472 3711 2 MP stroke
+-197 -140 6410 3794 2 MP stroke
+-218 -154 6369 3897 2 MP stroke
+-226 -160 6307 4000 2 MP stroke
+-223 -158 6245 4083 2 MP stroke
+-225 -160 6204 4145 2 MP stroke
+-256 -182 6162 4269 2 MP stroke
+-277 -197 6121 4372 2 MP stroke
+-299 -212 6080 4475 2 MP stroke
+-320 -227 6039 4578 2 MP stroke
+-331 -235 5997 4661 2 MP stroke
+-329 -234 5935 4744 2 MP stroke
+-350 -249 5894 4847 2 MP stroke
+-375 -266 5873 4929 2 MP stroke
+-397 -282 5832 5033 2 MP stroke
+-409 -290 5791 5115 2 MP stroke
+-387 -274 5729 5156 2 MP stroke
+-277 -196 5564 5156 2 MP stroke
+-195 -138 5440 5156 2 MP stroke
+-139 -99 5357 5156 2 MP stroke
+-85 -60 5275 5156 2 MP stroke
+-16 -11 5172 5156 2 MP stroke
+-2 -1 5151 5156 2 MP stroke
+66 48 5048 5156 2 MP stroke
+149 106 4924 5156 2 MP stroke
+190 135 4862 5156 2 MP stroke
+231 164 4800 5156 2 MP stroke
+272 194 4738 5156 2 MP stroke
+328 233 4655 5156 2 MP stroke
+368 262 4594 5156 2 MP stroke
+409 291 4532 5156 2 MP stroke
+437 311 4490 5156 2 MP stroke
+441 313 4470 5177 2 MP stroke
+479 340 4428 5156 2 MP stroke
+496 352 4387 5177 2 MP stroke
+510 362 4366 5177 2 MP stroke
+537 381 4325 5177 2 MP stroke
+537 381 4325 5177 2 MP stroke
+550 391 4305 5177 2 MP stroke
+564 401 4284 5177 2 MP stroke
+579 411 4263 5177 2 MP stroke
+579 411 4263 5177 2 MP stroke
+579 411 4263 5177 2 MP stroke
+579 411 4263 5177 2 MP stroke
+579 411 4263 5177 2 MP stroke
+579 411 4263 5177 2 MP stroke
+579 411 4263 5177 2 MP stroke
+579 411 4263 5177 2 MP stroke
+579 411 4263 5177 2 MP stroke
+579 411 4263 5177 2 MP stroke
+579 411 4263 5177 2 MP stroke
+579 411 4263 5177 2 MP stroke
+579 411 4263 5177 2 MP stroke
+579 411 4263 5177 2 MP stroke
+579 411 4263 5177 2 MP stroke
+579 411 4263 5177 2 MP stroke
+579 411 4263 5177 2 MP stroke
+579 411 4263 5177 2 MP stroke
+579 411 4263 5177 2 MP stroke
+564 401 4284 5177 2 MP stroke
+523 372 4346 5177 2 MP stroke
+469 333 4428 5177 2 MP stroke
+413 294 4511 5177 2 MP stroke
+386 274 4552 5177 2 MP stroke
+368 262 4594 5156 2 MP stroke
+328 233 4655 5156 2 MP stroke
+286 203 4717 5156 2 MP stroke
+255 180 4779 5136 2 MP stroke
+223 159 4841 5115 2 MP stroke
+178 126 4924 5095 2 MP stroke
+170 121 4965 5053 2 MP stroke
+162 115 5006 5012 2 MP stroke
+187 133 5027 4929 2 MP stroke
+175 125 5089 4867 2 MP stroke
+139 99 5172 4826 2 MP stroke
+95 67 5254 4806 2 MP stroke
+73 52 5316 4764 2 MP stroke
+71 50 5378 4682 2 MP stroke
+68 49 5440 4599 2 MP stroke
+56 40 5502 4537 2 MP stroke
+31 22 5584 4475 2 MP stroke
+19 14 5646 4413 2 MP stroke
+7 5 5708 4351 2 MP stroke
+-19 -13 5791 4289 2 MP stroke
+-11 -8 5853 4186 2 MP stroke
+-36 -26 5935 4124 2 MP stroke
+-39 -28 5997 4042 2 MP stroke
+-41 -29 6059 3959 2 MP stroke
+-57 -41 6142 3877 2 MP stroke
+-73 -52 6224 3794 2 MP stroke
+-99 -70 6307 3732 2 MP stroke
+-91 -65 6369 3629 2 MP stroke
+-84 -60 6431 3526 2 MP stroke
+-84 -60 6534 3381 2 MP stroke
+-79 -56 6555 3340 2 MP stroke
+-69 -49 6658 3175 2 MP stroke
+-63 -45 6678 3133 2 MP stroke
+-64 -45 6782 2989 2 MP stroke
+-89 -63 6864 2927 2 MP stroke
+-106 -74 6947 2844 2 MP stroke
+-111 -79 7029 2741 2 MP stroke
+-147 -104 7112 2700 2 MP stroke
+-154 -109 7195 2597 2 MP stroke
+-145 -104 7256 2494 2 MP stroke
+-157 -112 7318 2432 2 MP stroke
+-150 -106 7380 2328 2 MP stroke
+-166 -118 7463 2246 2 MP stroke
+-201 -143 7545 2205 2 MP stroke
+-217 -154 7628 2122 2 MP stroke
+-244 -173 7711 2060 2 MP stroke
+-256 -181 7773 1998 2 MP stroke
+-247 -176 7834 1895 2 MP stroke
+-246 -174 7876 1833 2 MP stroke
+-271 -193 7958 1771 2 MP stroke
+-283 -201 8020 1709 2 MP stroke
+-305 -217 8082 1668 2 MP stroke
+-317 -225 8144 1606 2 MP stroke
+-319 -226 8206 1523 2 MP stroke
+-327 -232 8247 1482 2 MP stroke
+-326 -231 8289 1420 2 MP stroke
+-310 -220 8309 1358 2 MP stroke
+-285 -203 8330 1276 2 MP stroke
+-293 -207 8371 1234 2 MP stroke
+-310 -221 8412 1214 2 MP stroke
+-271 -193 8412 1131 2 MP stroke
+-222 -158 8412 1028 2 MP stroke
+-193 -137 8412 966 2 MP stroke
+-164 -117 8412 904 2 MP stroke
+-135 -96 8412 842 2 MP stroke
+-105 -75 8412 780 2 MP stroke
+-86 -61 8412 739 2 MP stroke
+-76 -54 8412 718 2 MP stroke
+-47 -33 8412 656 2 MP stroke
+-37 -27 8412 636 2 MP stroke
+-18 -13 8412 594 2 MP stroke
+-8 -6 8412 574 2 MP stroke
+2 1 8412 553 2 MP stroke
+12 8 8412 532 2 MP stroke
+21 15 8412 512 2 MP stroke
+21 15 8412 512 2 MP stroke
+21 15 8412 512 2 MP stroke
+31 22 8412 491 2 MP stroke
+31 22 8412 491 2 MP stroke
+31 22 8412 491 2 MP stroke
+41 28 8412 471 2 MP stroke
+31 22 8412 491 2 MP stroke
+31 22 8412 491 2 MP stroke
+31 22 8412 491 2 MP stroke
+41 28 8412 471 2 MP stroke
+41 28 8412 471 2 MP stroke
+41 28 8412 471 2 MP stroke
+31 22 8412 491 2 MP stroke
+41 28 8412 471 2 MP stroke
+31 22 8412 491 2 MP stroke
+31 22 8412 491 2 MP stroke
+41 28 8412 471 2 MP stroke
+31 22 8412 491 2 MP stroke
+41 28 8412 471 2 MP stroke
+31 22 8412 491 2 MP stroke
+31 22 8412 491 2 MP stroke
+31 22 8412 491 2 MP stroke
+31 22 8412 491 2 MP stroke
+31 22 8412 491 2 MP stroke
+31 22 8412 491 2 MP stroke
+31 22 8412 491 2 MP stroke
+31 22 8412 491 2 MP stroke
+31 22 8412 491 2 MP stroke
+31 22 8412 491 2 MP stroke
+31 22 8412 491 2 MP stroke
+31 22 8412 491 2 MP stroke
+31 22 8412 491 2 MP stroke
+21 15 8412 512 2 MP stroke
+21 15 8412 512 2 MP stroke
+12 8 8412 532 2 MP stroke
+12 8 8412 532 2 MP stroke
+12 8 8412 532 2 MP stroke
+12 8 8412 532 2 MP stroke
+12 8 8412 532 2 MP stroke
+12 8 8412 532 2 MP stroke
+12 8 8412 532 2 MP stroke
+12 8 8412 532 2 MP stroke
+12 8 8412 532 2 MP stroke
+12 8 8412 532 2 MP stroke
+12 8 8412 532 2 MP stroke
+12 8 8412 532 2 MP stroke
+12 8 8412 532 2 MP stroke
+12 8 8412 532 2 MP stroke
+12 8 8412 532 2 MP stroke
+12 8 8412 532 2 MP stroke
+12 8 8412 532 2 MP stroke
+12 8 8412 532 2 MP stroke
+12 8 8412 532 2 MP stroke
+12 8 8412 532 2 MP stroke
+12 8 8412 532 2 MP stroke
+12 8 8412 532 2 MP stroke
+12 8 8412 532 2 MP stroke
+12 8 8412 532 2 MP stroke
+12 8 8412 532 2 MP stroke
+12 8 8412 532 2 MP stroke
+12 8 8412 532 2 MP stroke
+12 8 8412 532 2 MP stroke
+12 8 8412 532 2 MP stroke
+12 8 8412 532 2 MP stroke
+12 8 8412 532 2 MP stroke
+12 8 8412 532 2 MP stroke
+12 8 8412 532 2 MP stroke
+12 8 8412 532 2 MP stroke
+12 8 8412 532 2 MP stroke
+12 8 8412 532 2 MP stroke
+12 8 8412 532 2 MP stroke
+12 8 8412 532 2 MP stroke
+12 8 8412 532 2 MP stroke
+12 8 8412 532 2 MP stroke
+12 8 8412 532 2 MP stroke
+12 8 8412 532 2 MP stroke
+12 8 8412 532 2 MP stroke
+12 8 8412 532 2 MP stroke
+12 8 8412 532 2 MP stroke
+12 8 8412 532 2 MP stroke
+12 8 8412 532 2 MP stroke
+12 8 8412 532 2 MP stroke
+12 8 8412 532 2 MP stroke
+12 8 8412 532 2 MP stroke
+12 8 8412 532 2 MP stroke
+12 8 8412 532 2 MP stroke
+12 8 8412 532 2 MP stroke
+12 8 8412 532 2 MP stroke
+12 8 8412 532 2 MP stroke
+12 8 8412 532 2 MP stroke
+12 8 8412 532 2 MP stroke
+12 8 8412 532 2 MP stroke
+21 15 8412 512 2 MP stroke
+12 8 8412 532 2 MP stroke
+12 8 8412 532 2 MP stroke
+12 8 8412 532 2 MP stroke
+21 15 8412 512 2 MP stroke
+12 8 8412 532 2 MP stroke
+12 8 8412 532 2 MP stroke
+12 8 8412 532 2 MP stroke
+12 8 8412 532 2 MP stroke
+12 8 8412 532 2 MP stroke
+12 8 8412 532 2 MP stroke
+12 8 8412 532 2 MP stroke
+12 8 8412 532 2 MP stroke
+12 8 8412 532 2 MP stroke
+12 8 8412 532 2 MP stroke
+12 8 8412 532 2 MP stroke
+12 8 8412 532 2 MP stroke
+12 8 8412 532 2 MP stroke
+12 8 8412 532 2 MP stroke
+12 8 8412 532 2 MP stroke
+12 8 8412 532 2 MP stroke
+12 8 8412 532 2 MP stroke
+12 8 8412 532 2 MP stroke
+12 8 8412 532 2 MP stroke
+12 8 8412 532 2 MP stroke
+12 8 8412 532 2 MP stroke
+12 8 8412 532 2 MP stroke
+12 8 8412 532 2 MP stroke
+12 8 8412 532 2 MP stroke
+12 8 8412 532 2 MP stroke
+12 8 8412 532 2 MP stroke
+12 8 8412 532 2 MP stroke
+12 8 8412 532 2 MP stroke
+12 8 8412 532 2 MP stroke
+12 8 8412 532 2 MP stroke
+12 8 8412 532 2 MP stroke
+12 8 8412 532 2 MP stroke
+12 8 8412 532 2 MP stroke
+12 8 8412 532 2 MP stroke
+12 8 8412 532 2 MP stroke
+12 8 8412 532 2 MP stroke
+12 8 8412 532 2 MP stroke
+12 8 8412 532 2 MP stroke
+12 8 8412 532 2 MP stroke
+12 8 8412 532 2 MP stroke
+12 8 8412 532 2 MP stroke
+12 8 8412 532 2 MP stroke
+12 8 8412 532 2 MP stroke
+12 8 8412 532 2 MP stroke
+12 8 8412 532 2 MP stroke
+12 8 8412 532 2 MP stroke
+12 8 8412 532 2 MP stroke
+12 8 8412 532 2 MP stroke
+12 8 8412 532 2 MP stroke
+12 8 8412 532 2 MP stroke
+12 8 8412 532 2 MP stroke
+12 8 8412 532 2 MP stroke
+12 8 8412 532 2 MP stroke
+12 8 8412 532 2 MP stroke
+12 8 8412 532 2 MP stroke
+12 8 8412 532 2 MP stroke
+12 8 8412 532 2 MP stroke
+12 8 8412 532 2 MP stroke
+12 8 8412 532 2 MP stroke
+12 8 8412 532 2 MP stroke
+12 8 8412 532 2 MP stroke
+12 8 8412 532 2 MP stroke
+12 8 8412 532 2 MP stroke
+12 8 8412 532 2 MP stroke
+12 8 8412 532 2 MP stroke
+12 8 8412 532 2 MP stroke
+12 8 8412 532 2 MP stroke
+12 8 8412 532 2 MP stroke
+12 8 8412 532 2 MP stroke
+12 8 8412 532 2 MP stroke
+12 8 8412 532 2 MP stroke
+12 8 8412 532 2 MP stroke
+12 8 8412 532 2 MP stroke
+12 8 8412 532 2 MP stroke
+12 8 8412 532 2 MP stroke
+12 8 8412 532 2 MP stroke
+12 8 8412 532 2 MP stroke
+12 8 8412 532 2 MP stroke
+12 8 8412 532 2 MP stroke
+12 8 8412 532 2 MP stroke
+12 8 8412 532 2 MP stroke
+12 8 8412 532 2 MP stroke
+12 8 8412 532 2 MP stroke
+12 8 8412 532 2 MP stroke
+12 8 8412 532 2 MP stroke
+12 8 8412 532 2 MP stroke
+12 8 8412 532 2 MP stroke
+12 8 8412 532 2 MP stroke
+12 8 8412 532 2 MP stroke
+12 8 8412 532 2 MP stroke
+12 8 8412 532 2 MP stroke
+12 8 8412 532 2 MP stroke
+12 8 8412 532 2 MP stroke
+12 8 8412 532 2 MP stroke
+12 8 8412 532 2 MP stroke
+12 8 8412 532 2 MP stroke
+12 8 8412 532 2 MP stroke
+12 8 8412 532 2 MP stroke
+12 8 8412 532 2 MP stroke
+12 8 8412 532 2 MP stroke
+12 8 8412 532 2 MP stroke
+12 8 8412 532 2 MP stroke
+12 8 8412 532 2 MP stroke
+12 8 8412 532 2 MP stroke
+12 8 8412 532 2 MP stroke
+12 8 8412 532 2 MP stroke
+12 8 8412 532 2 MP stroke
+12 8 8412 532 2 MP stroke
+12 8 8412 532 2 MP stroke
+12 8 8412 532 2 MP stroke
+12 8 8412 532 2 MP stroke
+12 8 8412 532 2 MP stroke
+12 8 8412 532 2 MP stroke
+12 8 8412 532 2 MP stroke
+12 8 8412 532 2 MP stroke
+12 8 8412 532 2 MP stroke
+12 8 8412 532 2 MP stroke
+12 8 8412 532 2 MP stroke
+12 8 8412 532 2 MP stroke
+12 8 8412 532 2 MP stroke
+12 8 8412 532 2 MP stroke
+12 8 8412 532 2 MP stroke
+12 8 8412 532 2 MP stroke
+12 8 8412 532 2 MP stroke
+12 8 8412 532 2 MP stroke
+12 8 8412 532 2 MP stroke
+12 8 8412 532 2 MP stroke
+12 8 8412 532 2 MP stroke
+12 8 8412 532 2 MP stroke
+12 8 8412 532 2 MP stroke
+12 8 8412 532 2 MP stroke
+12 8 8412 532 2 MP stroke
+12 8 8412 532 2 MP stroke
+12 8 8412 532 2 MP stroke
+12 8 8412 532 2 MP stroke
+12 8 8412 532 2 MP stroke
+12 8 8412 532 2 MP stroke
+12 8 8412 532 2 MP stroke
+12 8 8412 532 2 MP stroke
+12 8 8412 532 2 MP stroke
+12 8 8412 532 2 MP stroke
+12 8 8412 532 2 MP stroke
+12 8 8412 532 2 MP stroke
+12 8 8412 532 2 MP stroke
+12 8 8412 532 2 MP stroke
+12 8 8412 532 2 MP stroke
+12 8 8412 532 2 MP stroke
+12 8 8412 532 2 MP stroke
+12 8 8412 532 2 MP stroke
+12 8 8412 532 2 MP stroke
+12 8 8412 532 2 MP stroke
+12 8 8412 532 2 MP stroke
+12 8 8412 532 2 MP stroke
+12 8 8412 532 2 MP stroke
+12 8 8412 532 2 MP stroke
+12 8 8412 532 2 MP stroke
+12 8 8412 532 2 MP stroke
+12 8 8412 532 2 MP stroke
+12 8 8412 532 2 MP stroke
+12 8 8412 532 2 MP stroke
+12 8 8412 532 2 MP stroke
+12 8 8412 532 2 MP stroke
+12 8 8412 532 2 MP stroke
+12 8 8412 532 2 MP stroke
+12 8 8412 532 2 MP stroke
+12 8 8412 532 2 MP stroke
+12 8 8412 532 2 MP stroke
+12 8 8412 532 2 MP stroke
+12 8 8412 532 2 MP stroke
+12 8 8412 532 2 MP stroke
+12 8 8412 532 2 MP stroke
+12 8 8412 532 2 MP stroke
+12 8 8412 532 2 MP stroke
+12 8 8412 532 2 MP stroke
+12 8 8412 532 2 MP stroke
+12 8 8412 532 2 MP stroke
+12 8 8412 532 2 MP stroke
+12 8 8412 532 2 MP stroke
+12 8 8412 532 2 MP stroke
+12 8 8412 532 2 MP stroke
+12 8 8412 532 2 MP stroke
+12 8 8412 532 2 MP stroke
+12 8 8412 532 2 MP stroke
+12 8 8412 532 2 MP stroke
+12 8 8412 532 2 MP stroke
+12 8 8412 532 2 MP stroke
+12 8 8412 532 2 MP stroke
+12 8 8412 532 2 MP stroke
+12 8 8412 532 2 MP stroke
+12 8 8412 532 2 MP stroke
+12 8 8412 532 2 MP stroke
+12 8 8412 532 2 MP stroke
+12 8 8412 532 2 MP stroke
+12 8 8412 532 2 MP stroke
+12 8 8412 532 2 MP stroke
+12 8 8412 532 2 MP stroke
+12 8 8412 532 2 MP stroke
+12 8 8412 532 2 MP stroke
+12 8 8412 532 2 MP stroke
+12 8 8412 532 2 MP stroke
+12 8 8412 532 2 MP stroke
+12 8 8412 532 2 MP stroke
+12 8 8412 532 2 MP stroke
+12 8 8412 532 2 MP stroke
+12 8 8412 532 2 MP stroke
+12 8 8412 532 2 MP stroke
+12 8 8412 532 2 MP stroke
+12 8 8412 532 2 MP stroke
+21 15 8412 512 2 MP stroke
+12 8 8412 532 2 MP stroke
+12 8 8412 532 2 MP stroke
+12 8 8412 532 2 MP stroke
+12 8 8412 532 2 MP stroke
+12 8 8412 532 2 MP stroke
+12 8 8412 532 2 MP stroke
+12 8 8412 532 2 MP stroke
+12 8 8412 532 2 MP stroke
+12 8 8412 532 2 MP stroke
+12 8 8412 532 2 MP stroke
+12 8 8412 532 2 MP stroke
+12 8 8412 532 2 MP stroke
+12 8 8412 532 2 MP stroke
+12 8 8412 532 2 MP stroke
+12 8 8412 532 2 MP stroke
+12 8 8412 532 2 MP stroke
+12 8 8412 532 2 MP stroke
+12 8 8412 532 2 MP stroke
+12 8 8412 532 2 MP stroke
+12 8 8412 532 2 MP stroke
+12 8 8412 532 2 MP stroke
+12 8 8412 532 2 MP stroke
+12 8 8412 532 2 MP stroke
+12 8 8412 532 2 MP stroke
+12 8 8412 532 2 MP stroke
+12 8 8412 532 2 MP stroke
+12 8 8412 532 2 MP stroke
+12 8 8412 532 2 MP stroke
+12 8 8412 532 2 MP stroke
+12 8 8412 532 2 MP stroke
+12 8 8412 532 2 MP stroke
+12 8 8412 532 2 MP stroke
+12 8 8412 532 2 MP stroke
+12 8 8412 532 2 MP stroke
+12 8 8412 532 2 MP stroke
+12 8 8412 532 2 MP stroke
+12 8 8412 532 2 MP stroke
+12 8 8412 532 2 MP stroke
+12 8 8412 532 2 MP stroke
+12 8 8412 532 2 MP stroke
+12 8 8412 532 2 MP stroke
+12 8 8412 532 2 MP stroke
+12 8 8412 532 2 MP stroke
+12 8 8412 532 2 MP stroke
+12 8 8412 532 2 MP stroke
+12 8 8412 532 2 MP stroke
+12 8 8412 532 2 MP stroke
+12 8 8412 532 2 MP stroke
+12 8 8412 532 2 MP stroke
+12 8 8412 532 2 MP stroke
+12 8 8412 532 2 MP stroke
+12 8 8412 532 2 MP stroke
+12 8 8412 532 2 MP stroke
+12 8 8412 532 2 MP stroke
+12 8 8412 532 2 MP stroke
+12 8 8412 532 2 MP stroke
+12 8 8412 532 2 MP stroke
+12 8 8412 532 2 MP stroke
+12 8 8412 532 2 MP stroke
+12 8 8412 532 2 MP stroke
+12 8 8412 532 2 MP stroke
+12 8 8412 532 2 MP stroke
+12 8 8412 532 2 MP stroke
+12 8 8412 532 2 MP stroke
+12 8 8412 532 2 MP stroke
+12 8 8412 532 2 MP stroke
+12 8 8412 532 2 MP stroke
+12 8 8412 532 2 MP stroke
+12 8 8412 532 2 MP stroke
+12 8 8412 532 2 MP stroke
+12 8 8412 532 2 MP stroke
+12 8 8412 532 2 MP stroke
+12 8 8412 532 2 MP stroke
+12 8 8412 532 2 MP stroke
+12 8 8412 532 2 MP stroke
+12 8 8412 532 2 MP stroke
+12 8 8412 532 2 MP stroke
+12 8 8412 532 2 MP stroke
+12 8 8412 532 2 MP stroke
+12 8 8412 532 2 MP stroke
+12 8 8412 532 2 MP stroke
+12 8 8412 532 2 MP stroke
+12 8 8412 532 2 MP stroke
+12 8 8412 532 2 MP stroke
+12 8 8412 532 2 MP stroke
+12 8 8412 532 2 MP stroke
+12 8 8412 532 2 MP stroke
+12 8 8412 532 2 MP stroke
+12 8 8412 532 2 MP stroke
+12 8 8412 532 2 MP stroke
+12 8 8412 532 2 MP stroke
+12 8 8412 532 2 MP stroke
+12 8 8412 532 2 MP stroke
+12 8 8412 532 2 MP stroke
+12 8 8412 532 2 MP stroke
+12 8 8412 532 2 MP stroke
+12 8 8412 532 2 MP stroke
+12 8 8412 532 2 MP stroke
+12 8 8412 532 2 MP stroke
+12 8 8412 532 2 MP stroke
+12 8 8412 532 2 MP stroke
+12 8 8412 532 2 MP stroke
+12 8 8412 532 2 MP stroke
+12 8 8412 532 2 MP stroke
+12 8 8412 532 2 MP stroke
+12 8 8412 532 2 MP stroke
+12 8 8412 532 2 MP stroke
+12 8 8412 532 2 MP stroke
+12 8 8412 532 2 MP stroke
+12 8 8412 532 2 MP stroke
+12 8 8412 532 2 MP stroke
+12 8 8412 532 2 MP stroke
+12 8 8412 532 2 MP stroke
+12 8 8412 532 2 MP stroke
+12 8 8412 532 2 MP stroke
+12 8 8412 532 2 MP stroke
+12 8 8412 532 2 MP stroke
+12 8 8412 532 2 MP stroke
+12 8 8412 532 2 MP stroke
+12 8 8412 532 2 MP stroke
+12 8 8412 532 2 MP stroke
+12 8 8412 532 2 MP stroke
+12 8 8412 532 2 MP stroke
+12 8 8412 532 2 MP stroke
+12 8 8412 532 2 MP stroke
+12 8 8412 532 2 MP stroke
+12 8 8412 532 2 MP stroke
+12 8 8412 532 2 MP stroke
+12 8 8412 532 2 MP stroke
+12 8 8412 532 2 MP stroke
+12 8 8412 532 2 MP stroke
+12 8 8412 532 2 MP stroke
+12 8 8412 532 2 MP stroke
+12 8 8412 532 2 MP stroke
+12 8 8412 532 2 MP stroke
+12 8 8412 532 2 MP stroke
+12 8 8412 532 2 MP stroke
+12 8 8412 532 2 MP stroke
+12 8 8412 532 2 MP stroke
+12 8 8412 532 2 MP stroke
+12 8 8412 532 2 MP stroke
+12 8 8412 532 2 MP stroke
+12 8 8412 532 2 MP stroke
+12 8 8412 532 2 MP stroke
+12 8 8412 532 2 MP stroke
+12 8 8412 532 2 MP stroke
+12 8 8412 532 2 MP stroke
+12 8 8412 532 2 MP stroke
+12 8 8412 532 2 MP stroke
+12 8 8412 532 2 MP stroke
+12 8 8412 532 2 MP stroke
+12 8 8412 532 2 MP stroke
+12 8 8412 532 2 MP stroke
+12 8 8412 532 2 MP stroke
+12 8 8412 532 2 MP stroke
+12 8 8412 532 2 MP stroke
+12 8 8412 532 2 MP stroke
+12 8 8412 532 2 MP stroke
+12 8 8412 532 2 MP stroke
+12 8 8412 532 2 MP stroke
+12 8 8412 532 2 MP stroke
+12 8 8412 532 2 MP stroke
+12 8 8412 532 2 MP stroke
+12 8 8412 532 2 MP stroke
+12 8 8412 532 2 MP stroke
+12 8 8412 532 2 MP stroke
+12 8 8412 532 2 MP stroke
+12 8 8412 532 2 MP stroke
+12 8 8412 532 2 MP stroke
+12 8 8412 532 2 MP stroke
+12 8 8412 532 2 MP stroke
+12 8 8412 532 2 MP stroke
+12 8 8412 532 2 MP stroke
+12 8 8412 532 2 MP stroke
+12 8 8412 532 2 MP stroke
+12 8 8412 532 2 MP stroke
+12 8 8412 532 2 MP stroke
+12 8 8412 532 2 MP stroke
+12 8 8412 532 2 MP stroke
+12 8 8412 532 2 MP stroke
+12 8 8412 532 2 MP stroke
+12 8 8412 532 2 MP stroke
+12 8 8412 532 2 MP stroke
+12 8 8412 532 2 MP stroke
+12 8 8412 532 2 MP stroke
+12 8 8412 532 2 MP stroke
+12 8 8412 532 2 MP stroke
+12 8 8412 532 2 MP stroke
+12 8 8412 532 2 MP stroke
+12 8 8412 532 2 MP stroke
+12 8 8412 532 2 MP stroke
+12 8 8412 532 2 MP stroke
+12 8 8412 532 2 MP stroke
+12 8 8412 532 2 MP stroke
+12 8 8412 532 2 MP stroke
+12 8 8412 532 2 MP stroke
+12 8 8412 532 2 MP stroke
+12 8 8412 532 2 MP stroke
+12 8 8412 532 2 MP stroke
+12 8 8412 532 2 MP stroke
+12 8 8412 532 2 MP stroke
+12 8 8412 532 2 MP stroke
+12 8 8412 532 2 MP stroke
+12 8 8412 532 2 MP stroke
+12 8 8412 532 2 MP stroke
+12 8 8412 532 2 MP stroke
+12 8 8412 532 2 MP stroke
+12 8 8412 532 2 MP stroke
+12 8 8412 532 2 MP stroke
+12 8 8412 532 2 MP stroke
+12 8 8412 532 2 MP stroke
+12 8 8412 532 2 MP stroke
+12 8 8412 532 2 MP stroke
+12 8 8412 532 2 MP stroke
+12 8 8412 532 2 MP stroke
+12 8 8412 532 2 MP stroke
+12 8 8412 532 2 MP stroke
+12 8 8412 532 2 MP stroke
+12 8 8412 532 2 MP stroke
+12 8 8412 532 2 MP stroke
+12 8 8412 532 2 MP stroke
+12 8 8412 532 2 MP stroke
+12 8 8412 532 2 MP stroke
+12 8 8412 532 2 MP stroke
+12 8 8412 532 2 MP stroke
+12 8 8412 532 2 MP stroke
+12 8 8412 532 2 MP stroke
+12 8 8412 532 2 MP stroke
+12 8 8412 532 2 MP stroke
+12 8 8412 532 2 MP stroke
+12 8 8412 532 2 MP stroke
+12 8 8412 532 2 MP stroke
+12 8 8412 532 2 MP stroke
+12 8 8412 532 2 MP stroke
+12 8 8412 532 2 MP stroke
+12 8 8412 532 2 MP stroke
+12 8 8412 532 2 MP stroke
+12 8 8412 532 2 MP stroke
+12 8 8412 532 2 MP stroke
+12 8 8412 532 2 MP stroke
+12 8 8412 532 2 MP stroke
+12 8 8412 532 2 MP stroke
+12 8 8412 532 2 MP stroke
+12 8 8412 532 2 MP stroke
+12 8 8412 532 2 MP stroke
+12 8 8412 532 2 MP stroke
+12 8 8412 532 2 MP stroke
+12 8 8412 532 2 MP stroke
+12 8 8412 532 2 MP stroke
+12 8 8412 532 2 MP stroke
+12 8 8412 532 2 MP stroke
+12 8 8412 532 2 MP stroke
+12 8 8412 532 2 MP stroke
+12 8 8412 532 2 MP stroke
+12 8 8412 532 2 MP stroke
+12 8 8412 532 2 MP stroke
+12 8 8412 532 2 MP stroke
+12 8 8412 532 2 MP stroke
+12 8 8412 532 2 MP stroke
+12 8 8412 532 2 MP stroke
+12 8 8412 532 2 MP stroke
+12 8 8412 532 2 MP stroke
+12 8 8412 532 2 MP stroke
+12 8 8412 532 2 MP stroke
+12 8 8412 532 2 MP stroke
+12 8 8412 532 2 MP stroke
+12 8 8412 532 2 MP stroke
+12 8 8412 532 2 MP stroke
+12 8 8412 532 2 MP stroke
+12 8 8412 532 2 MP stroke
+12 8 8412 532 2 MP stroke
+12 8 8412 532 2 MP stroke
+12 8 8412 532 2 MP stroke
+12 8 8412 532 2 MP stroke
+12 8 8412 532 2 MP stroke
+12 8 8412 532 2 MP stroke
+12 8 8412 532 2 MP stroke
+12 8 8412 532 2 MP stroke
+12 8 8412 532 2 MP stroke
+12 8 8412 532 2 MP stroke
+12 8 8412 532 2 MP stroke
+12 8 8412 532 2 MP stroke
+12 8 8412 532 2 MP stroke
+12 8 8412 532 2 MP stroke
+12 8 8412 532 2 MP stroke
+12 8 8412 532 2 MP stroke
+12 8 8412 532 2 MP stroke
+12 8 8412 532 2 MP stroke
+21 15 8412 512 2 MP stroke
+21 15 8412 512 2 MP stroke
+21 15 8412 512 2 MP stroke
+12 8 8412 532 2 MP stroke
+12 8 8412 532 2 MP stroke
+12 8 8412 532 2 MP stroke
+12 8 8412 532 2 MP stroke
+12 8 8412 532 2 MP stroke
+12 8 8412 532 2 MP stroke
+12 8 8412 532 2 MP stroke
+12 8 8412 532 2 MP stroke
+21 15 8412 512 2 MP stroke
+12 8 8412 532 2 MP stroke
+12 8 8412 532 2 MP stroke
+12 8 8412 532 2 MP stroke
+12 8 8412 532 2 MP stroke
+12 8 8412 532 2 MP stroke
+12 8 8412 532 2 MP stroke
+12 8 8412 532 2 MP stroke
+12 8 8412 532 2 MP stroke
+2 1 8412 553 2 MP stroke
+2 1 8412 553 2 MP stroke
+-8 -6 8412 574 2 MP stroke
+-18 -13 8412 594 2 MP stroke
+-47 -33 8412 656 2 MP stroke
+-57 -41 8412 677 2 MP stroke
+-76 -54 8412 718 2 MP stroke
+-105 -75 8412 780 2 MP stroke
+-125 -88 8412 821 2 MP stroke
+-154 -109 8412 883 2 MP stroke
+-164 -117 8412 904 2 MP stroke
+-193 -137 8412 966 2 MP stroke
+-232 -165 8412 1049 2 MP stroke
+-261 -185 8412 1110 2 MP stroke
+-258 -183 8392 1131 2 MP stroke
+-273 -194 8371 1193 2 MP stroke
+-275 -195 8330 1255 2 MP stroke
+-244 -173 8268 1276 2 MP stroke
+-171 -121 8144 1296 2 MP stroke
+-149 -106 8082 1338 2 MP stroke
+-147 -104 8020 1420 2 MP stroke
+-149 -106 7979 1482 2 MP stroke
+-161 -114 7938 1565 2 MP stroke
+-135 -96 7855 1627 2 MP stroke
+36 w
+/c9 { 1.000000 0.000000 0.000000 sr} bdef
+c9
+3611 -5089 4842 5588 2 MP stroke
+6 w
+gr
+
+c9
+gs 4190 398 4296 4853 rc
+24 W
+/c10 { 0.000000 0.000000 1.000000 sr} bdef
+c10
+8412 532 PD
+24 W
+8412 574 PD
+24 W
+8412 594 PD
+24 W
+8412 615 PD
+24 W
+8412 636 PD
+24 W
+8412 677 PD
+24 W
+8412 718 PD
+24 W
+8412 760 PD
+24 W
+8412 821 PD
+24 W
+8412 863 PD
+24 W
+8412 904 PD
+24 W
+8412 987 PD
+24 W
+8412 1049 PD
+24 W
+8412 1090 PD
+24 W
+8392 1152 PD
+24 W
+8351 1214 PD
+24 W
+8289 1255 PD
+24 W
+8206 1255 PD
+24 W
+8144 1276 PD
+24 W
+8103 1338 PD
+24 W
+8082 1379 PD
+24 W
+8062 1461 PD
+24 W
+8000 1544 PD
+24 W
+7917 1585 PD
+24 W
+7834 1606 PD
+24 W
+7752 1647 PD
+24 W
+7690 1730 PD
+24 W
+7649 1812 PD
+24 W
+7607 1916 PD
+24 W
+7566 1998 PD
+24 W
+7504 2081 PD
+24 W
+7422 2143 PD
+24 W
+7360 2205 PD
+24 W
+7277 2287 PD
+24 W
+7236 2390 PD
+24 W
+7174 2473 PD
+24 W
+7133 2576 PD
+24 W
+7091 2659 PD
+24 W
+7029 2762 PD
+24 W
+6947 2844 PD
+24 W
+6885 2906 PD
+24 W
+6823 2989 PD
+24 W
+6761 3092 PD
+24 W
+6720 3195 PD
+24 W
+6658 3299 PD
+24 W
+6617 3402 PD
+24 W
+6575 3484 PD
+24 W
+6513 3588 PD
+24 W
+6472 3711 PD
+24 W
+6410 3794 PD
+24 W
+6369 3897 PD
+24 W
+6307 4000 PD
+24 W
+6245 4083 PD
+24 W
+6204 4145 PD
+24 W
+6162 4269 PD
+24 W
+6121 4372 PD
+24 W
+6080 4475 PD
+24 W
+6039 4578 PD
+24 W
+5997 4661 PD
+24 W
+5935 4744 PD
+24 W
+5894 4847 PD
+24 W
+5873 4929 PD
+24 W
+5832 5033 PD
+24 W
+5791 5115 PD
+24 W
+5729 5156 PD
+24 W
+5564 5156 PD
+24 W
+5440 5156 PD
+24 W
+5357 5156 PD
+24 W
+5275 5156 PD
+24 W
+5172 5156 PD
+24 W
+5151 5156 PD
+24 W
+5048 5156 PD
+24 W
+4924 5156 PD
+24 W
+4862 5156 PD
+24 W
+4800 5156 PD
+24 W
+4738 5156 PD
+24 W
+4655 5156 PD
+24 W
+4594 5156 PD
+24 W
+4532 5156 PD
+24 W
+4490 5156 PD
+24 W
+4470 5177 PD
+24 W
+4428 5156 PD
+24 W
+4387 5177 PD
+24 W
+4366 5177 PD
+24 W
+4325 5177 PD
+24 W
+4305 5177 PD
+24 W
+4284 5177 PD
+24 W
+4263 5177 PD
+24 W
+4284 5177 PD
+24 W
+4346 5177 PD
+24 W
+4428 5177 PD
+24 W
+4511 5177 PD
+24 W
+4552 5177 PD
+24 W
+4594 5156 PD
+24 W
+4655 5156 PD
+24 W
+4717 5156 PD
+24 W
+4779 5136 PD
+24 W
+4841 5115 PD
+24 W
+4924 5095 PD
+24 W
+4965 5053 PD
+24 W
+5006 5012 PD
+24 W
+5027 4929 PD
+24 W
+5089 4867 PD
+24 W
+5172 4826 PD
+24 W
+5254 4806 PD
+24 W
+5316 4764 PD
+24 W
+5378 4682 PD
+24 W
+5440 4599 PD
+24 W
+5502 4537 PD
+24 W
+5584 4475 PD
+24 W
+5646 4413 PD
+24 W
+5708 4351 PD
+24 W
+5791 4289 PD
+24 W
+5853 4186 PD
+24 W
+5935 4124 PD
+24 W
+5997 4042 PD
+24 W
+6059 3959 PD
+24 W
+6142 3877 PD
+24 W
+6224 3794 PD
+24 W
+6307 3732 PD
+24 W
+6369 3629 PD
+24 W
+6431 3526 PD
+24 W
+6534 3381 PD
+24 W
+6555 3340 PD
+24 W
+6658 3175 PD
+24 W
+6678 3133 PD
+24 W
+6782 2989 PD
+24 W
+6864 2927 PD
+24 W
+6947 2844 PD
+24 W
+7029 2741 PD
+24 W
+7112 2700 PD
+24 W
+7195 2597 PD
+24 W
+7256 2494 PD
+24 W
+7318 2432 PD
+24 W
+7380 2328 PD
+24 W
+7463 2246 PD
+24 W
+7545 2205 PD
+24 W
+7628 2122 PD
+24 W
+7711 2060 PD
+24 W
+7773 1998 PD
+24 W
+7834 1895 PD
+24 W
+7876 1833 PD
+24 W
+7958 1771 PD
+24 W
+8020 1709 PD
+24 W
+8082 1668 PD
+24 W
+8144 1606 PD
+24 W
+8206 1523 PD
+24 W
+8247 1482 PD
+24 W
+8289 1420 PD
+24 W
+8309 1358 PD
+24 W
+8330 1276 PD
+24 W
+8371 1234 PD
+24 W
+8412 1214 PD
+24 W
+8412 1131 PD
+24 W
+8412 1028 PD
+24 W
+8412 966 PD
+24 W
+8412 904 PD
+24 W
+8412 842 PD
+24 W
+8412 780 PD
+24 W
+8412 739 PD
+24 W
+8412 718 PD
+24 W
+8412 656 PD
+24 W
+8412 636 PD
+24 W
+8412 594 PD
+24 W
+8412 574 PD
+24 W
+8412 553 PD
+24 W
+8412 532 PD
+24 W
+8412 512 PD
+24 W
+8412 491 PD
+24 W
+8412 471 PD
+24 W
+8412 491 PD
+24 W
+8412 471 PD
+24 W
+8412 491 PD
+24 W
+8412 471 PD
+24 W
+8412 491 PD
+24 W
+8412 471 PD
+24 W
+8412 491 PD
+24 W
+8412 471 PD
+24 W
+8412 491 PD
+24 W
+8412 512 PD
+24 W
+8412 532 PD
+24 W
+8412 512 PD
+24 W
+8412 532 PD
+24 W
+8412 512 PD
+24 W
+8412 532 PD
+24 W
+8412 512 PD
+24 W
+8412 532 PD
+24 W
+8412 512 PD
+24 W
+8412 532 PD
+24 W
+8412 512 PD
+24 W
+8412 532 PD
+24 W
+8412 553 PD
+24 W
+8412 574 PD
+24 W
+8412 594 PD
+24 W
+8412 656 PD
+24 W
+8412 677 PD
+24 W
+8412 718 PD
+24 W
+8412 780 PD
+24 W
+8412 821 PD
+24 W
+8412 883 PD
+24 W
+8412 904 PD
+24 W
+8412 966 PD
+24 W
+8412 1049 PD
+24 W
+8412 1110 PD
+24 W
+8392 1131 PD
+24 W
+8371 1193 PD
+24 W
+8330 1255 PD
+24 W
+8268 1276 PD
+24 W
+8144 1296 PD
+24 W
+8082 1338 PD
+24 W
+8020 1420 PD
+24 W
+7979 1482 PD
+24 W
+7938 1565 PD
+24 W
+7855 1627 PD
+gr
+
+c10
+gs 3114 471 6489 5118 rc
+gr
+
+0 sg
+%%IncludeResource: font Helvetica
+/Helvetica /ISOLatin1Encoding 216 FMSR
+
+5967 5947 mt 
+(q1 [deg]) s
+2777 3390 mt  -90 rotate
+(q2[deg]) s
+90 rotate
+
+end %%Color Dict
+
+eplot
+%%EndObject
+
+epage
+end
+
+showpage
+
+%%Trailer
+%%EOF
