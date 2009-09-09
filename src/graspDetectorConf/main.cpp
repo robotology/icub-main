@@ -40,7 +40,15 @@
  * where \f$ q \f$ represents the finger joints positions and where
  * the parameters \f$ q_0 \f$ and \f$ q_1 \f$ are estimated via a least
  * square optimization (see also the documentation of \ref icub_graspDetectorConfClasses).
- *
+ * Even if the linear model might seem a little bit too restrictive, it can
+ * be shown that it is a good model for the coupled fingers behaviour (due to
+ * the presence of linear springs coupling the joints).
+ * The following picture shows that this indeed the case. As an example, we 
+ * consider the two distal joints of the thumb. The two joints 
+ * (here \f$ q = [q1, q2] \f$ ) are represented by blue dots. Clearly, they 
+ * they roughly lie on a linear manifold, here represented by the red line. 
+ * Distances from this manifold are represented with green lines.
+ * 
  * \image html graspDetector.jpg
  * \image latex graspDetector.eps "An example of linear fitting on finger data sensors" width=15cm
  * 
