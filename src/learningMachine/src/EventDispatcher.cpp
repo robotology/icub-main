@@ -27,6 +27,10 @@ void EventDispatcher::removeListener(int idx) {
     this->listeners.erase(it);
 }
 
+void EventDispatcher::removeListener(EventListener* listener) {
+    
+}
+
 EventListener* EventDispatcher::getListener(int idx) {
     std::list<EventListener*>::iterator it = this->listeners.begin();
     std::advance(it, idx);
