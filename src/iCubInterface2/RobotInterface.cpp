@@ -126,10 +126,10 @@ void RobotInterface::park(bool wait)
     isParking=false;
 }    
 
-bool RobotInterface::initialize(Property& options)
+bool RobotInterface::initialize(const std::string &file)
 {
-  	ACE_OS::fprintf(stderr, "Going to initialize the robot with a file\n");
-
+    ACE_OS::fprintf(stderr, "Going to initialize the robot with a file\n");
+#if 0
     // LATER: to be replaced with a yarpish function.
     const char *conf = ACE_OS::getenv("ICUB_ROOT");
 
@@ -138,16 +138,14 @@ bool RobotInterface::initialize(Property& options)
 		ACE_OS::printf("defined to point at the configuration files under $ICUB_ROOT/conf\n");
 		return false;
 	}
+#endif
   
-	yarp::String filename((size_t)1024);
-	yarp::String portname((size_t)1024);
-
-    Value& inifile= options.find("file");
+    std::string portname;
  
     Property robotOptions;
-    ACE_OS::sprintf (&filename[0], "%s/conf/%s", conf, inifile.asString().c_str());
-	ACE_OS::fprintf(stderr, "Read robot description from %s\n", filename.c_str());
-	robotOptions.fromConfigFile(filename.c_str());
+ //   ACE_OS::sprintf (&filename[0], "%s/conf/%s", conf, inifile.asString().c_str());
+	ACE_OS::fprintf(stderr, "Read robot description from %s\n", file.c_str());
+	robotOptions.fromConfigFile(file.c_str());
 
     if (robotOptions.findGroup("GENERAL").check("automaticIds"))
         {

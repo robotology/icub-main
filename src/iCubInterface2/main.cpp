@@ -81,8 +81,28 @@ None
  
 \section conf_file_sec Configuration Files
 
- The module requires a description of the robot through the parameter 
---file or --config.
+ The module requires a description of the robot. This file descriptor is specified with the 
+ parameter --config <CONFIG_FILE>.
+
+ Since September 2009 iCubInterface uses the ResourceFinder to locate the file descriptor. 
+ Please make sure you understand how this works. 
+
+ In short you have the following options:
+
+  - Run as iCubInterface --config <CONFIG_FILE>: loads parameters from CONFIG_FILE. CONFIG_FILE is 
+  searched following the ResourceFinder policy, app/$ICUB_ROBOTNAME/conf (if the enviornment 
+  variable $ICUB_ROBOTNAME exists)and app/default/conf
+  
+  - Run without parameters: search for a file iCubInterface.ini in app/$ICUB_ROBOTNAME/app 
+  (if the enviornment variable $ICUB_ROBOTNAME exists) or app/default/conf. Where iCubInterface.ini
+  is a file that contains the line "config CONFIG_FILE"
+
+  You can prevent default behaviors in the following way:
+  - Run as iCubInterface --config <CONFIG_FILE_WITHFULLPATH>: if CONFIG_FILE_WITHFULLPATH has
+  full path to a valid file (as in ./iCubSafe.ini), this is used in place of the defaults
+  - Run as iCubInterface --from <OTHER_CONFIG>: prevents the RF from using iCubInterface.ini in 
+  app/$ICUB_ROBOTNAME/conf or app/deafult/conf
+
 The file consists in a few sections:
 \code
 [GENERAL]
@@ -229,6 +249,7 @@ This file can be edited at src/iCubInterface2/main.cpp.
 #include <yarp/os/Bottle.h>
 #include <yarp/os/Time.h> 
 #include <yarp/os/Terminator.h>
+#include <yarp/os/ResourceFinder.h>
 
 #ifdef USE_ICUB_MOD
 #include "drivers.h"
@@ -279,46 +300,87 @@ int main(int argc, char *argv[])
     yarp::dev::DriverCollection dev;
     #endif
     
-    Property p;
+ //   Property p;
 
-    p.fromCommand(argc, argv);   
+ //   p.fromCommand(argc, argv);   
 
     ACE_OS::signal(SIGINT, (ACE_SignalHandler) handler);
     ACE_OS::signal(SIGTERM, (ACE_SignalHandler) handler);
 
-    if (!p.check("robot") && !p.check("file") && !p.check("config"))
-    {
-        ACE_OS::printf("Mandatory parameters:\n");
-        ACE_OS::printf("--file <CONFIG_FILE>  read robot config file CONFIG_FILE\n");
-        ACE_OS::printf("Note: this files are searched in $ICUB_ROOT/conf (obsolete)\n");
-        ACE_OS::printf("--config <CONFIG_FILE> full path to robot config file\n");
-        ACE_OS::printf("-Examples:\n");
-        ACE_OS::printf("%s --file icub.ini (obsolete, not standard)\n", argv[0]);
-        ACE_OS::printf("%s --config $ICUB_ROOT/app/default/conf/icub.ini\n)", argv[0]);
-        return -1;
-    }
+ //   if (!p.check("robot") && !p.check("file") && !p.check("config"))
+ //   {
+  //      ACE_OS::printf("Mandatory parameters:\n");
+  //      ACE_OS::printf("--file <CONFIG_FILE>  read robot config file CONFIG_FILE\n");
+   //     ACE_OS::printf("Note: this files are searched in $ICUB_ROOT/conf (obsolete)\n");
+   //     ACE_OS::printf("--config <CONFIG_FILE> full path to robot config file\n");
+    //    ACE_OS::printf("-Examples:\n");
+    //    ACE_OS::printf("%s --file icub.ini (obsolete, not standard)\n", argv[0]);
+   //     ACE_OS::printf("%s --config $ICUB_ROOT/app/default/conf/icub.ini\n)", argv[0]);
+    //    return -1;
+   // }
     
   	Time::turboBoost();  
-    Property robotOptions;
-    
+
+    //for compatibility with old usage of iCubInterface, the use of the ResourceFinder
+    //here is merely functional and should NOT be taken as an example
+    ResourceFinder rf;
+    rf.setVerbose();
+    rf.setDefaultConfigFile("iCubInterface.ini");
+    rf.configure("ICUB_ROOT", argc, argv);
+    ConstString configFile=rf.findFile("config");
+
+    std::string filename;
     bool remap=false;
-    String filename;
-    if (p.check("config"))
+    if (configFile!="")
     {
-        Value& inifile= p.find("config");
-        filename=inifile.asString().c_str();
+        configFile=rf.findFile("config");
+        filename=configFile.c_str();
         remap=true;
     }
     else
     {
-        Value& inifile= p.find("file");
-        const char *conf = ACE_OS::getenv("ICUB_ROOT");
-        filename+=conf;
-        filename+="/conf/";
-        filename+=inifile.asString().c_str();
-        ACE_OS::fprintf(stderr, "Read robot description from %s\n", filename.c_str());
+        configFile=rf.find("file").asString();
+        if (configFile!="")
+        {
+            const char *conf = ACE_OS::getenv("ICUB_ROOT");
+            filename+=conf;
+            filename+="/conf/";
+            filename+=configFile.c_str();
+            printf("Read robot description from %s\n", filename.c_str());
+        }
+        else
+        {
+            printf("\n");
+            printf("Error: iCubInterface was not able to find a valid configuration file ");
+            printf("(since September 2009 we changed a bit how iCubInterface locates configuratrion files).\n");
+            printf("== Old possibilities:\n");
+            printf("--config <CONFIG_FILE> read config file CONFIG_FILE.\n iCubInterface now ");
+            printf("uses the ResourceFinder class to search for CONFIG_FILE. ");
+            printf("Make sure you understand how the ResourceFinder works. In particular ");
+            printf("you most likely need to set the ICUB_ROBOTNAME environment variable ");
+            printf("to tell the RF to add app/$ICUB_ROBOTNAME/conf to the search path.\n");
+            printf("--file <CONFIG_FILE> read config file from $ICUB_ROOT/conf: old style ");
+            printf("initialization method, obsolete. Still here for compatibility reasons\n");
+            printf("== New possibilities:\n");
+            printf("Place a file called iCubInterface.ini in app/$ICUB_ROBOTNAME/conf that contains ");
+            printf("the line \"config icubSafe.ini\" (or anything of your choice), and run iCubInterface ");
+            printf("without parameters\n");
+            printf("== Preventing default behaviors:\n");
+            printf("Use full path in <CONFIG_FILE> (e.g. --config ./iCubSafe.ini)\n");
+            printf("Use --from: change config file (e.g. --from iCubInterfaceCustom.ini\n");
+            return -1;
+        }
     }
+  //      ACE_OS::printf("--file <CONFIG_FILE>  read robot config file CONFIG_FILE\n");
+   //     ACE_OS::printf("Note: this files are searched in $ICUB_ROOT/conf (obsolete)\n");
+   //     ACE_OS::printf("--config <CONFIG_FILE> full path to robot config file\n");
+    //    ACE_OS::printf("-Examples:\n");
+    //    ACE_OS::printf("%s --file icub.ini (obsolete, not standard)\n", argv[0]);
+   //     ACE_OS::printf("%s --config $ICUB_ROOT/app/default/conf/icub.ini\n)", argv[0]);
+    //    return -1;
+        
 
+    Property robotOptions;
     bool ok=robotOptions.fromConfigFile(filename.c_str());
     if (!ok) 
     {
@@ -359,7 +421,7 @@ int main(int argc, char *argv[])
     }
     ri=i; //set pointer to RobotInterface object (used in the handlers above)
      
-    ok = i->initialize(p); 
+    ok = i->initialize(filename); 
     if (!ok)
         return 0;
 

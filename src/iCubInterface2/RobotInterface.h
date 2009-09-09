@@ -78,11 +78,11 @@ public:
 
     /**
     * Initializes all robot devices. Reads list of devices to be initialized 
-    * in the file specfied in 'options'.
-    * @param options contains name of config file
+    * in the file specfied in 'file'.
+    * @param full path to config file
     * @return true/false on success failure
     */
-    bool initialize(yarp::os::Property& options);
+    bool initialize(const std::string &file);
  
     /**
     * Closes all robot devices.

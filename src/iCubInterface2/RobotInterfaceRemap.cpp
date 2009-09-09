@@ -134,19 +134,17 @@ void RobotInterfaceRemap::calibrate(bool wait)
     isCalibrating=false;
 }    
 
-bool RobotInterfaceRemap::initialize(yarp::os::Property &options)
+bool RobotInterfaceRemap::initialize(const std::string &inifile)
 {
-
     std::string filename;
     std::string portname;
 
-    std::string inifile=options.find("config").asString().c_str();
     std::string PATH;
 
     PATH=extractPath(inifile.c_str());
 
     Property robotOptions;
-    fprintf(stderr, "Read robot description from %s\n", inifile.c_str());
+    printf("Read robot description from %s\n", inifile.c_str());
     robotOptions.fromConfigFile(inifile.c_str());
 
     if (robotOptions.findGroup("GENERAL").check("automaticIds"))
@@ -209,7 +207,7 @@ bool RobotInterfaceRemap::initialize(yarp::os::Property &options)
 
 }
 
-bool RobotInterfaceRemap::initialize10(std::string &inifile)
+bool RobotInterfaceRemap::initialize10(const std::string &inifile)
 {
     ACE_OS::fprintf(stderr, "Going to initialize the robot with a file\n");
 
@@ -347,7 +345,7 @@ bool RobotInterfaceRemap::initialize10(std::string &inifile)
     return true;
 }
 
-bool RobotInterfaceRemap::initialize20(std::string &inifile)
+bool RobotInterfaceRemap::initialize20(const std::string &inifile)
 {
     ACE_OS::fprintf(stderr, "Initialization from file, new version 2.0\n");
 

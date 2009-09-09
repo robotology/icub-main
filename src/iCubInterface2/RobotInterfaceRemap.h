@@ -322,10 +322,10 @@ public:
     * Initializes all robot devices. Depending on the
     * format of the configuration file call initialize10()
     * or initialize20().
-    * @param options contains name of config file
+    * @param full path to config file
     * @return true/false on success failure
     */
-    bool initialize(yarp::os::Property& options);
+    bool initialize(const std::string &file);
 
     /**
     * Initializes all robot devices. Reads list of devices to be initialized 
@@ -333,15 +333,13 @@ public:
     * @param options contains name of config file
     * @return true/false on success failure
     */
-    bool initialize10(std::string &inifile);
+    bool initialize10(const std::string &inifile);
 
     /**
     * Initializes all robot devices. Reads list of devices to be initialized 
-    * in the file specfied in 'options'. New version for icub 2.0.
-    * @param options contains name of config file
-    * @return true/false on success failure
+    * in the file specfied in 'inifile'. New version for icub 2.0.
     */
-    bool initialize20(std::string &inifile);
+    bool initialize20(const std::string &inifile);
 
     /**
     * Instantiate a device which controls a can network. 

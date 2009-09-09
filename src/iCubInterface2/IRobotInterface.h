@@ -5,11 +5,13 @@
 
 #include <yarp/os/Property.h>
 
+#include <string>
+
 class IRobotInterface
 {
 public:
     virtual ~IRobotInterface(){};
-    virtual bool initialize(yarp::os::Property& options)=0;
+    virtual bool initialize(const std::string &file)=0;
 
     /**
     * Closes all robot devices.
