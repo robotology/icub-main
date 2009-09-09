@@ -10,6 +10,7 @@
 #define __ICUB_PREDICTEVENTLISTENER__
 
 #include "iCub/EventListener.h"
+#include "iCub/PredictEvent.h"
 
 
 /**
@@ -22,12 +23,12 @@ protected:
 
 public:
     /**
-     * Empty Constructor
+     * Constructor
      */
     PredictEventListener();
 
     /**
-     * Empty Destructor
+     * Destructor
      */
     virtual ~PredictEventListener();
 
@@ -35,7 +36,7 @@ public:
     /*
      * Inherited from EventListener.
      */
-    void handle(PredictEvent e) {
+    void handle(PredictEvent& e) {
     }
 
 

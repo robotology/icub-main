@@ -9,37 +9,43 @@
 #ifndef __ICUB_TRAINEVENT__
 #define __ICUB_TRAINEVENT__
 
-#include "iCub/Event.h"
-
 #include <string>
 
+#include "iCub/Event.h"
+
 /**
-  * class TrainEvent
-  *
-  */
+ * A TrainEvent is raised when the machine handles a training sample. It 
+ * contains the input, and predicted and actual output vectors.
+ *
+ * \see iCub::contrib::learningmachine::Event
+ *
+ * \author Arjan Gijsberts
+ */
 
 class TrainEvent : virtual public Event {
 public:
     /**
-     * Empty Constructor
+     * Constructor
      */
     TrainEvent();
 
     /**
-     * Empty Destructor
+     * Destructor
      */
     virtual ~TrainEvent();
 
     /*
      * Inherited from Event.
      */
-    void visit(EventListener listener) {
+    virtual void visit(EventListener& listener) {
+        listener.handle(*this);
     }
 
     /*
      * Inherited from Event.
      */
     std::string toString() {
+        return std::string("TrainEvent.toString()");
     }
 
 };

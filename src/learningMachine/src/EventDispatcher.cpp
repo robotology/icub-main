@@ -6,6 +6,8 @@
  *
  */
 
+#include <cassert>
+
 #include "iCub/EventDispatcher.h"
 
 
@@ -18,6 +20,7 @@ EventDispatcher::~EventDispatcher() {
 
 
 void EventDispatcher::removeListener(int idx) {
+    assert(idx >= 0 && idx < this->listeners.size());
     std::list<EventListener*>::iterator it = this->listeners.begin();
     std::advance(it, idx);
     delete *it;
@@ -32,7 +35,7 @@ EventListener* EventDispatcher::getListener(int idx) {
 
 void EventDispatcher::clear() {
     // remove from front while the list is not empty
-    while(this->hasListener()) {
+    while(this->hasListeners()) {
         this->removeListener(0);
     }
 }

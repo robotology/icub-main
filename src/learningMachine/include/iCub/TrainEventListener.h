@@ -10,11 +10,12 @@
 #define __ICUB_TRAINEVENTLISTENER__
 
 #include "iCub/EventListener.h"
+#include "iCub/TrainEvent.h"
 
 /**
-  * class TrainEventListener
-  *
-  */
+ * class TrainEventListener
+ *
+ */
 
 class TrainEventListener : virtual public EventListener {
 protected:
@@ -22,19 +23,19 @@ protected:
 public:
 
     /**
-     * Empty Constructor
+     * Constructor
      */
     TrainEventListener();
 
     /**
-     * Empty Destructor
+     * Destructor
      */
     virtual ~TrainEventListener();
 
     /*
      * Inherited from EventListener.
      */
-    void handle(TrainEvent e) {
+    void handle(TrainEvent& e) {
     }
 
 };

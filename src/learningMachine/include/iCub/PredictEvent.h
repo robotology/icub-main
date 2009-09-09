@@ -9,40 +9,45 @@
 #ifndef __ICUB_PREDICTEVENT__
 #define __ICUB_PREDICTEVENT__
 
-#include "iCub/Event.h"
-
 #include <string>
 
+#include "iCub/Event.h"
+
 /**
-  * class PredictEvent
-  *
-  */
+ * A PredictEvent is raised when the machine makes a prediction. It contains 
+ * the input and predicted output vectors.
+ *
+ * \see iCub::contrib::learningmachine::Event
+ * 
+ * \author Arjan Gijsberts
+ */
 
 class PredictEvent : virtual public Event {
 protected:
 
 public:
     /**
-     * Empty Constructor
+     * Constructor
      */
     PredictEvent();
 
     /**
-     * Empty Destructor
+     * Destructor
      */
     virtual ~PredictEvent();
 
     /*
      * Inherited from Event.
      */
-    void visit(EventListener listener) {
+    virtual void visit(EventListener& listener) {
+        listener.handle(*this);
     }
-
 
     /*
      * Inherited from Event.
      */
     virtual std::string toString() {
+        return std::string("TrainEvent.toString()");
     }
 
 

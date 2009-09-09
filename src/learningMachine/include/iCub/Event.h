@@ -11,10 +11,13 @@
 
 #include <string>
 
+#include "iCub/EventListener.h"
+
 /**
-  * class Event
-  *
-  */
+ * The abstract base class for all Event types.
+ *
+ * \author Arjan Gijsberts
+ */
 
 class Event {
 protected:
@@ -31,12 +34,12 @@ public:
 
 
     /**
-     * Causes the Event to visit an EventListener. This double dispatch strategy allows
-     * for determination of runtime types of both the Event and the EventListener. For
-     * this to work, child classes need to implement this function.
+     * Causes the Event to visit an EventListener. This method is part of the 
+     * double dispatch mechanism. Child classes _need_ to override this 
+     * function.
      * @param  listener
      */
-    virtual void visit(EventListener listener) = 0;
+    virtual void visit(EventListener& listener) = 0;
 
 
 };

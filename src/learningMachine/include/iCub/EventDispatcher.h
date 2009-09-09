@@ -18,10 +18,11 @@
  * The EventDispatcher manages the relation between the various instances of 
  * EventListeners and Events. It allows Events to get raised and dispatches 
  * these to the registered EventListeners. Internally, the EventDispatcher uses 
- * a double dispatching mechanism.
+ * a double dispatching mechanism that allows extension of both EventListeners 
+ * and Events.
  *
  * \see iCub::contrib::learningmachine::EventListener
- * \see iCub::contrib::learningmachine::EventListener
+ * \see iCub::contrib::learningmachine::Event
  *
  * \author Arjan Gijsberts
  *
@@ -44,7 +45,7 @@ public:
 
     /**
      * Adds an EventListener to the list. Note that the EventDispatcher takes
-     * over responsibility of the pointer and thus its deconstruction.
+     * over responsibility of the pointer and its deconstruction.
      * @param  listener The EventListener that is to be add.
      */
     virtual void addListener(EventListener* listener) {
@@ -59,47 +60,31 @@ public:
 
     /**
      * Returns the EventListener at a specified index.
-     * @return EventListener
+     * @return the EventListener
      * @param  idx The index of the EventListener.
      */
     virtual EventListener* getListener(int idx);
     
     /**
-     * Clears all the EventListeners.
+     * Clears all the EventListeners from the EventDispatcher.
      */
     virtual void clear();
 
     /**
      * Raises an Event, causing this Event to be dispatched to each registered
-     * EventListener.
+     * EventListener. Note that a double dispatching mechanism is used to 
+     * determine the proper runtime types of both the Event and the 
+     * EventListener using dynamic binding.
      * @param  event The Event instance that is to be raised.
      */
     virtual void raise(Event& event);
 
     /**
-     * @return bool
+     * @return true if there are one of more registered EventListeners.
      */
-    virtual bool hasListener() {
+    virtual bool hasListeners() {
         return (!this->listeners.empty());
     }
-
-    /**
-     * Set the value of listeners
-     * A container for the list of EventListeners.
-     * @param new_var the new value of listeners
-     */
-    /*void setListeners(std::list<EventListener> new_var) {
-        listeners = new_var;
-    }*/
-
-    /**
-     * Get the value of listeners
-     * A container for the list of EventListeners.
-     * @return the value of listeners
-     */
-    /*std::list<EventListener> getListeners() {
-        return listeners;
-    }*/
 };
 
 #endif
