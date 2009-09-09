@@ -99,7 +99,7 @@ None
 
   You can prevent default behaviors in the following way:
   - Run as iCubInterface --config <CONFIG_FILE_WITHFULLPATH>: if CONFIG_FILE_WITHFULLPATH has
-  full path to a valid file (as in ./iCubSafe.ini), this is used in place of the defaults
+  full path to a valid file (as in ./icubSafe.ini), this is used in place of the defaults
   - Run as iCubInterface --from <OTHER_CONFIG>: prevents the RF from using iCubInterface.ini in 
   app/$ICUB_ROBOTNAME/conf or app/deafult/conf
 
@@ -366,7 +366,7 @@ int main(int argc, char *argv[])
             printf("the line \"config icubSafe.ini\" (or anything of your choice), and run iCubInterface ");
             printf("without parameters\n");
             printf("== Preventing default behaviors:\n");
-            printf("Use full path in <CONFIG_FILE> (e.g. --config ./iCubSafe.ini)\n");
+            printf("Use full path in <CONFIG_FILE> (e.g. --config ./icubSafe.ini)\n");
             printf("Use --from: change config file (e.g. --from iCubInterfaceCustom.ini\n");
             return -1;
         }
