@@ -101,7 +101,7 @@ None
   - Run as iCubInterface --config <CONFIG_FILE_WITHFULLPATH>: if CONFIG_FILE_WITHFULLPATH has
   full path to a valid file (as in ./icubSafe.ini), this is used in place of the defaults
   - Run as iCubInterface --from <OTHER_CONFIG>: prevents the RF from using iCubInterface.ini in 
-  app/$ICUB_ROBOTNAME/conf or app/deafult/conf
+  app/$ICUB_ROBOTNAME/conf or app/default/conf
 
 The file consists in a few sections:
 \code
