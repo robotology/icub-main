@@ -360,14 +360,14 @@ int main(int argc, char *argv[])
             printf("you most likely need to set the ICUB_ROBOTNAME environment variable ");
             printf("to tell the RF to add app/$ICUB_ROBOTNAME/conf to the search path.\n");
             printf("--file <CONFIG_FILE> read config file from $ICUB_ROOT/conf: old style ");
-            printf("initialization method, obsolete. Still here for compatibility reasons\n");
+            printf("initialization method, obsolete. Still here for compatibility reasons.\n");
             printf("== New possibilities:\n");
             printf("Place a file called iCubInterface.ini in app/$ICUB_ROBOTNAME/conf that contains ");
             printf("the line \"config icubSafe.ini\" (or anything of your choice), and run iCubInterface ");
-            printf("without parameters\n");
+            printf("without parameters\n.");
             printf("== Preventing default behaviors:\n");
-            printf("Use full path in <CONFIG_FILE> (e.g. --config ./icubSafe.ini)\n");
-            printf("Use --from: change config file (e.g. --from iCubInterfaceCustom.ini\n");
+            printf("Use full path in <CONFIG_FILE> (e.g. --config ./icubSafe.ini).\n");
+            printf("Use --from: change config file (e.g. --from iCubInterfaceCustom.ini).\n");
             return -1;
         }
     }
