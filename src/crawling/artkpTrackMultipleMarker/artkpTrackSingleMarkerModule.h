@@ -53,7 +53,9 @@ using namespace yarp::dev;
 
 #define GREEN_MARKER_ID 76
 #define RED_MARKER_ID 3
-
+#define EPSILON_POS 0.01
+#define MIN_COUNTER_VALID 3
+#define MAX_AGE 30
 
 class MyLogger : public ARToolKitPlus::Logger
 {
@@ -100,6 +102,15 @@ private:
 	string eyeName;
 	string ThreeDPosPort;
 
+	struct PositionValid
+	{
+		sig::Vector position;
+		int counter;
+		int age;
+		string color;
+	};
+	vector<PositionValid> positionsBuffer;
+
 public:
     //cCoordFrames myFrames;
 
@@ -113,7 +124,8 @@ public:
 	sig::Vector GetJointAngles(string partName);
 	PolyDriver *CreatePolyDriver(string partName);
 	sig::Matrix GetTransformationMatrix();
-
+	void ValidatePosition( sig::Vector &position, string color);
+	void SendValidPosition(void);
 
 };
 

@@ -218,6 +218,11 @@ bool ARTKPTrackSingleMarkerModule::updateModule()
 	ImageOf<PixelRgb> &yrpImgOut = _viewPort.prepare();
 	yrpImgOut = *yrpImgIn;
 
+	Bottle &visionPosBottle = _coordsPort.prepare();
+	Bottle &rootPosBottle = threeDPosPort.prepare();
+	visionPosBottle.clear();
+	rootPosBottle.clear();
+
 	if(conf > 0.3) // 30 percent confidence
 	{
 		//Bottle &coords = _coordsPort.prepare();
@@ -226,10 +231,15 @@ bool ARTKPTrackSingleMarkerModule::updateModule()
 		//Bottle &targetPos = _targetPosPort.prepare();
 		//targetPos.clear();
 
-		Bottle &threeDPosBottle = threeDPosPort.prepare();
-		threeDPosBottle.clear();
-
 		sig::Matrix transformationMatrix = GetTransformationMatrix();
+
+		Bottle matrix = _targetPosPort.prepare();
+		cout << "transformation matrix : " << transformationMatrix.toString() << endl;
+		string strMatrix = transformationMatrix.toString();
+		matrix.addString(strMatrix.c_str());
+		_targetPosPort.write();
+
+		//cout << "Transformation matrix : " << transformationMatrix.toString() << endl;
 
 		for(int i=0; i<marker_num; ++i)
 		{
@@ -307,6 +317,26 @@ bool ARTKPTrackSingleMarkerModule::updateModule()
 			visionPosition[1] = _transf[1][3];
 			visionPosition[2] = _transf[2][3];
 
+			
+			string patchColor = "???";
+			if(marker_info[i].id == RED_MARKER_ID)
+			{
+				patchColor = "red";
+			}
+			else if (marker_info[i].id == GREEN_MARKER_ID)
+			{
+				patchColor = "green";
+			}
+
+			//if(marker_info[i].id == RED_MARKER_ID)
+			//{
+			//	markerBottle.addString("red");
+			//}
+			//else if(marker_info[i].id == GREEN_MARKER_ID)
+			//{
+			//	markerBottle.addString("green");
+			//}
+		
 			//Bottle markerBottle;
 			//markerBottle.addDouble(visionPosition[0]);
 			//markerBottle.addDouble(visionPosition[1]);
@@ -321,30 +351,33 @@ bool ARTKPTrackSingleMarkerModule::updateModule()
 			//}
 			//threeDPosBottle.addList() = markerBottle;
 
+			Bottle markerBottleVision;
+			markerBottleVision.clear();
+			markerBottleVision.addDouble(visionPosition[0]);
+			markerBottleVision.addDouble(visionPosition[1]);
+			markerBottleVision.addDouble(visionPosition[2]);
+			markerBottleVision.addString(patchColor.c_str());
+			visionPosBottle.addList() = markerBottleVision;
+
+
 			sig::Vector rootPosition = VisionPositionToRootPosition(visionPosition, transformationMatrix);
 
-			Bottle markerBottle;
-			markerBottle.addDouble(rootPosition[0]);
-			markerBottle.addDouble(rootPosition[1]);
-			markerBottle.addDouble(rootPosition[2]);
-			if(marker_info[i].id == RED_MARKER_ID)
-			{
-				markerBottle.addString("red");
-			}
-			else if(marker_info[i].id == GREEN_MARKER_ID)
-			{
-				markerBottle.addString("green");
-			}
-			else
-			{
-				continue;
-			}
-			threeDPosBottle.addList() = markerBottle;
+
+			Bottle markerBottleRoot;
+			markerBottleRoot.addDouble(rootPosition[0]);
+			markerBottleRoot.addDouble(rootPosition[1]);
+			markerBottleRoot.addDouble(rootPosition[2]);
+			markerBottleRoot.addString(patchColor.c_str());
+			rootPosBottle.addList() = markerBottleRoot;
+			//ValidatePosition(rootPosition, patchColor);
 		}
 
+		//SendValidPosition();
+		_coordsPort.write();
+		threeDPosPort.write();
 		//_coordsPort.write();
 		//_targetPosPort.write();
-		threeDPosPort.write();
+		
 	}
 		
 	_viewPort.write();
@@ -388,11 +421,18 @@ sig::Vector ARTKPTrackSingleMarkerModule::VisionPositionToRootPosition(sig::Vect
 	visionPosition.resize(4);
 	visionPosition[3] = 1;
 
+	//cout << "vision position : " << visionPosition.toString() << endl;
+
+
 	sig::Vector rootPosition; 
 	rootPosition=transformationMatrix * visionPosition;
 
+	//cout << "root position before : " << rootPosition.toString() << endl;
 
 	rootPosition.resize(3);
+
+	//cout << "root position after : " << rootPosition.toString() << endl;
+
 	return (rootPosition);
 }
 
@@ -481,12 +521,14 @@ sig::Matrix ARTKPTrackSingleMarkerModule::GetTransformationMatrix()
 	chainEyeL.releaseLink(0);
 	chainEyeL.releaseLink(1);
 	chainEyeL.releaseLink(2);
+	chainEyeL.releaseLink(3);
+	chainEyeL.releaseLink(4);
 
 	sig::Vector head = GetJointAngles("head");
 	sig::Vector torso = GetJointAngles("torso");
 
 	//cout << "Joints Angles torso : " << torso.toString() << endl;
-	//cout << "Joints Angles head : " << head.toString() << endl;
+	cout << "Joints Angles head : " << head.toString() << endl;
 
 	
 	//get data and convert from degrees to radians
@@ -550,4 +592,79 @@ sig::Matrix ARTKPTrackSingleMarkerModule::GetTransformationMatrix()
 
 
     return chainEyeL.getH(allAngles);
+}
+
+
+void ARTKPTrackSingleMarkerModule::ValidatePosition( sig::Vector &position, string color)
+{
+	bool found = false;
+	for(unsigned int i=0; i<positionsBuffer.size(); ++i)
+	{
+		if(color != positionsBuffer[i].color)
+		{
+			continue;
+		}
+		sig::Vector &currentPosition = positionsBuffer[i].position;
+		sig::Vector distVec = position - currentPosition;
+		double distance2 = distVec[0]*distVec[0] + distVec[1]*distVec[1] + distVec[1]*distVec[1];
+		//cout << "This position : " << position.toString() << endl;
+		//cout << "distance : " << distance2 << endl;
+		if(distance2 < EPSILON_POS)
+		{
+			positionsBuffer[i].counter++;
+			found = true;
+			break;
+		}
+	}
+
+
+	for(unsigned int i=0; i<positionsBuffer.size(); ++i)
+	{
+		if(positionsBuffer[i].age > MAX_AGE)
+		{
+			positionsBuffer.erase(positionsBuffer.begin() + i);
+		}
+		else
+		{
+			positionsBuffer[i].age++;
+		}
+	}
+
+
+	if(!found)
+	{
+		PositionValid newPosition;
+		newPosition.color = color;
+		newPosition.counter = 0;
+		newPosition.age = 0;
+		newPosition.position = position;
+		positionsBuffer.push_back(newPosition);
+		//cout << "\n ==== added new position : " << newPosition.position.toString() << "====" << endl;
+	}
+}
+
+void ARTKPTrackSingleMarkerModule::SendValidPosition(void)
+{
+	Bottle &threeDPosBottle = threeDPosPort.prepare();
+	threeDPosBottle.clear();
+	bool dataToSend = false;
+	for(unsigned int i=0; i<positionsBuffer.size(); ++i)
+	{
+		if(positionsBuffer[i].counter > MIN_COUNTER_VALID)
+		{
+			Bottle markerBottle;
+			markerBottle.addDouble(positionsBuffer[i].position[0]);
+			markerBottle.addDouble(positionsBuffer[i].position[1]);
+			markerBottle.addDouble(positionsBuffer[i].position[2]);
+			markerBottle.addString(positionsBuffer[i].color.c_str());
+			threeDPosBottle.addList() = markerBottle;
+			positionsBuffer.erase(positionsBuffer.begin() + i);
+			i--;
+			dataToSend = true;
+		}
+	}
+	if(dataToSend)
+	{
+		threeDPosPort.write();
+	}
 }
