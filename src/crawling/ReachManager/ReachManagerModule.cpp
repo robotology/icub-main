@@ -24,17 +24,6 @@ ReachManagerModule::ReachManagerModule()
 
 ReachManagerModule::~ReachManagerModule(void)
 {
-	CloseIKSolver("left");
-	CloseIKSolver("right");
-	inPort.close();
-    inPort.close();
-	delete iKinPorts["left"];
-	delete iKinPorts["right"];
-	if(parameters["pos_vel_cont"].asInt())
-	{
-		ClosePositionControl("left");
-		ClosePositionControl("right");
-	}
 }
 
 bool ReachManagerModule::open(Searchable& config)
@@ -49,6 +38,11 @@ bool ReachManagerModule::open(Searchable& config)
 	parameters["solver_name"] = GetValueFromConfig(config, "solver_name");
 	parameters["enabled_arm"] = GetValueFromConfig(config, "enabled_arm");
 	parameters["pos_vel_cont"] = GetValueFromConfig(config, "pos_vel_cont");
+	parameters["min_reach_dist"] = GetValueFromConfig(config, "min_reach_dist");
+	cout << "min reach dist : " << parameters["min_reach_dist"].asDouble() << endl;
+	parameters["reach_mode_dist"] = GetValueFromConfig(config, "reach_mode_dist");
+	cout << "reach mode dist : " << parameters["reach_mode_dist"].asDouble() << endl;
+
 	
 	inPort.open(parameters["input_port"].asString().c_str());
 	outPort.open(parameters["output_port"].asString().c_str());
@@ -67,10 +61,26 @@ bool ReachManagerModule::open(Searchable& config)
 	return true;
 }
 
+
+bool ReachManagerModule::close()
+{
+	CloseIKSolver("left");
+	CloseIKSolver("right");
+	inPort.close();
+    inPort.close();
+	delete iKinPorts["left"];
+	delete iKinPorts["right"];
+	if(parameters["pos_vel_cont"].asInt())
+	{
+		ClosePositionControl("left");
+		ClosePositionControl("right");
+	}
+	return true;
+}
+
+
 bool ReachManagerModule::updateModule(void)
 {
-	cout << "MAIN MODULE LOOP"<<endl;
-
     Vector xd(7);
 	Bottle *visionBottle = inPort.read();
 	double minDistanceSQR = 999999;
@@ -100,6 +110,10 @@ bool ReachManagerModule::updateModule(void)
 
 		if(distanceSQR<minDistanceSQR)
 		{
+			if(position[0]>-parameters["min_reach_dist"].asDouble())
+			{
+				continue;
+			}
 			xd[0] = position[0];
 			xd[1] = position[1];
 			xd[2] = position[2];
@@ -138,14 +152,33 @@ bool ReachManagerModule::updateModule(void)
 	xd[4] = leftOrientation[1];
 	xd[5] = leftOrientation[2];
 	xd[6] = leftOrientation[3];
+
 	Vector resultQ = Solve(xd, ((string)parameters["enabled_arm"].toString()), bestArm);
+	
+	lastPosition = xd;
+
+	cout << "distance : " << sqrt(minDistanceSQR) << endl;
+	cout << "min distance : " << parameters["reach_mode_dist"].asDouble() << endl;
+	if(minDistanceSQR<pow(parameters["reach_mode_dist"].asDouble(),2))
+	{
+		double headPitchAngle = -atan((xd[2]-L)/xd[0]);
+		double headYawAngle = atan((xd[1]+0.1)/xd[0]);
+		cout << "Head angle pitch : " << headPitchAngle << endl;
+		cout << "Head angle Yaw : " << headYawAngle << endl;
+		Bottle &outBottle = outPort.prepare();
+		outBottle.clear();
+		outBottle.addInt(55);
+		outBottle.addDouble(headPitchAngle);
+		outBottle.addDouble(headYawAngle);
+		outPort.write();
+	}
 
 	if(bestArm == "none")
 	{
 		return true;
 	}
 
-	cout << "result : " << resultQ.toString();
+	//cout << "result : " << resultQ.toString();
 
 	if(parameters["pos_vel_cont"].asInt())
 	{
@@ -454,25 +487,23 @@ Vector ReachManagerModule::Solve(const sig::Vector &xd, string partName, string 
 
 		
 		double deltaNorm2 = delta[0]*delta[0] + delta[1]*delta[1] + delta[2]*delta[2];
-		if(deltaNorm2>(pow(parameters["max_error"].asDouble(),2)))
-		{
-			resultPart = "none";
-			return resultQ;
-		}
-	
 		cout << "error : " << sqrt(deltaNorm2) << endl;
 		cout << "xd      =" << xdBottle->toString()<<endl;
 		cout << "x       =" << xBottle->toString()<<endl;
 		cout << "q [rad] =" << qBottle->toString()<<endl;
 		cout << endl;
 
+		if(deltaNorm2>(pow(parameters["max_error"].asDouble(),2)))
+		{
+			resultPart = "none";
+			return resultQ;
+		}
+	
 		for(int i =0; i<7; ++i)
 			resultQ[i] = qBottle->get(i).asDouble();
 	}
 
-	cout << "MAX ERROR " << parameters["max_error"].asDouble() << endl;
-
-	lastPosition = xd;
+	//cout << "MAX ERROR " << parameters["max_error"].asDouble() << endl;
 
 	return resultQ;
 }

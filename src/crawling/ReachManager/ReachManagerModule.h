@@ -9,6 +9,7 @@ using namespace iKin;
 
 #define MODULE_PERIOD 0.0
 #define MIN_DIFFERENCE 0.0
+#define L 0.36
 #define MODULE_NAME "ReachManagerModule"
 
 class ReachManagerModule :
@@ -28,6 +29,7 @@ public:
     virtual bool updateModule();
 	virtual double getPeriod();
 	virtual bool open(Searchable& config);
+	virtual bool close();
 
 
 protected:
