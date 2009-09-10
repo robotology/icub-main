@@ -152,7 +152,8 @@ void generatorThread::getParameters()
                 
                 myCpg->ampl[0]= myIK->getTurnParams(myCpg->turnAngle, amplit, side, limb);
                 //myIK->getTurnParams(myCpg->turnAngle, amplit, side, limb);
-            
+                
+
                 fprintf(parameters_file,"%f %f %f",myCpg->om_stance,myCpg->om_swing, myCpg->turnAngle);
                 fprintf(parameters_file,"%f \n",Time::now()/*-original_time*/);
                 fflush(parameters_file);
@@ -299,8 +300,8 @@ void generatorThread::run()
         }
     else //try to connect to other limbs
         connectToOtherLimbs();
-    
-    //change parameters    
+        
+    //get and set the new parameters if received by the manager
     getParameters();
         
     //stop the module if the om_stance sent my the manager is negative     
@@ -387,14 +388,16 @@ void generatorThread::disconnectPorts()
     current_state_port.close();
     
     for(int i=0;i<nbLIMBs;i++)
-        if(other_part_connected[i])
-                {
+    {
+        //if(other_part_connected[i])
+                //{
                     sprintf(tmp1,"/%s/cpg_status/out",other_part_name[i].c_str());
                     sprintf(tmp2,"/%s/cpg_status/%s/in",partName.c_str(),other_part_name[i].c_str());
                     if(Network::isConnected(tmp1,tmp2))
                         Network::disconnect(tmp1,tmp2);
                     other_part_port[i].close();
-                }
+                //}
+    }
 }
 
 void generatorThread::threadRelease()
