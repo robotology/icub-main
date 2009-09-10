@@ -18,7 +18,7 @@ generatorThread::generatorThread(int period) : RateThread(period)
 generatorThread::~generatorThread()
 {   
 }
-
+///this function checks if the joint limits are respected and adapt the commands if needed
 void generatorThread::checkJointLimits()
 {
     for(int i=0;i<nbDOFs;i++)
@@ -39,6 +39,7 @@ void generatorThread::checkJointLimits()
         }
 }
 
+///this function sends the speed component of the rhythmic system to the manager
 void generatorThread::sendStatusForManager()
 {
     Bottle& cmd =check_status_port.prepare();
@@ -51,28 +52,8 @@ void generatorThread::sendStatusForManager()
     
 }
 
-//bool generatorThread::sendEncoders()
-//{
-    ////cout << "Sending encoders: " ;
-    //Bottle& effCopy = check_motion_port.prepare();
-
-    //effCopy.clear();
-
-    //for(int i=0;i<nbDOFs;i++)
-        //{
-            //effCopy.addDouble(M_PI*encoders[i]/180);
-            ////cout << i << ") " << M_PI*encoders[i]/180 << " ";
-        //}
-    ////cout << endl;
-    //check_motion_port.write(true);
-    //return true;
-    
-//}
-
-/**
-When there is a rhythmic movement, we want to change the parameters
-at a secure moment, namely not during a transition from swing to stance 
- * */
+///check if we are in an appropriate quadrant to change the parameters (i.e. if the limb is swinging)
+///nothing happens if there is no rhythmic movement
 bool generatorThread::getQuadrant()
 {
    if(myCpg->parameters[0]<0.0) //no rhythmic movement, so we don't care
@@ -91,10 +72,9 @@ bool generatorThread::getQuadrant()
  
 }
 
+///we get the encoders
 bool generatorThread::getEncoders()
 {
-    //cout << "getting encoders ";
-
     int nj;
     PartEncoders->getAxes(&nj);
     double *tmp_enc = new double[nj];
@@ -104,16 +84,7 @@ bool generatorThread::getEncoders()
             fprintf(encoder_file,"%f ",Time::now());
             for(int i=0;i<nbDOFs;i++)
                 {
-                    //cout << "getting encoders2 ";
-                    /*if(!PartEncoders->getEncoder(jointMapping[i],&(encoders[i])))
-                      {
-                      cout << "there was an error" << endl;
-                      return false;
-                      }
-                    */
                     encoders[i] = tmp_enc[jointMapping[i]];
-                    //cout << "finishing2"<< endl;
-                    
                     fprintf(encoder_file,"%f ",encoders[i]);
                 }
             fprintf(encoder_file,"\n");
@@ -126,14 +97,12 @@ bool generatorThread::getEncoders()
         }
     delete[] tmp_enc;
 
-    //cout << "finish" << endl;
     return true;
 }
 
-
+/// sends the command the velocity controllers
 bool generatorThread::sendFastJointCommand()   
 {
-    //cout << "sending fast command ";
     checkJointLimits();
     Bottle& cmd = vcFastCommand_port.prepare();
 
@@ -146,12 +115,11 @@ bool generatorThread::sendFastJointCommand()
         }
 
     vcFastCommand_port.write(true);
-    //cout << "finish " << endl;
+
     return true;
 }
 
-//read the parameters coming from the manager and update the cpg myCpg
-
+///read the parameters coming from the manager and update those of the cpgs class
 void generatorThread::getParameters()
 {
     //cout << "getting param ";
@@ -222,9 +190,10 @@ void generatorThread::getParameters()
 }
 
 
+/// get other limbs rhythmic states for the coupling with the other limbs
+/// only for the legs and the arms
 bool generatorThread::getOtherLimbStatus()
 {
-    //cout << "getting other limb ";
     for(int i=0;i<nbLIMBs;i++)
         if(other_part_connected[i])
             {
@@ -241,10 +210,12 @@ bool generatorThread::getOtherLimbStatus()
     bot.addDouble(y_cpgs[2]-y_cpgs[0]);
     bot.addDouble(y_cpgs[3]);
     current_state_port.write();
-    //cout << "finish" << endl;
+
 	return true;
 }
 
+///when the feedback is on, get the needed contact info 
+/// not used for the head and torso
 void generatorThread::getContactInformation()
 {
     char tmp1[255], tmp2[255];
@@ -267,11 +238,11 @@ void generatorThread::getContactInformation()
     else
     {
         myCpg->feedback_on = 0;
-        //ACE_OS::printf("Part %s NOT receiving feedback\n", partName.c_str());
     }
 }
 
-
+/// continuously tries to connect to other limbs (arms and legs) until successful
+/// this is used to transfer the status info for the external couplings
 void generatorThread::connectToOtherLimbs()
 {
     for(int i=0;i<nbLIMBs;i++)
@@ -311,11 +282,8 @@ void generatorThread::connectToOtherLimbs()
 
 void generatorThread::run()
 {
-    //time0=time0+command_step;
-    static double time_now=Time::now();
 
-   // if(Time::now() - time_now >0.03 && current_action)
-     //   fprintf(stderr,"Warning time too big\n");
+    static double time_now=Time::now();
 
     time_now = Time::now();
 
@@ -325,41 +293,38 @@ void generatorThread::run()
 
 #if !DEBUG
 
-    ///we get encoders
-
+    //we get encoders
     if(!getEncoders())
     {
         ACE_OS::printf("Error getting encoders positions\n");
-        //this->stop();
-        //return;
     }
-        
-    //sendEncoders();
-
 #endif
 
     //we get the states of the other limbs and send our current status
     if(current_action)
         {
             getOtherLimbStatus();
-                        
+            
+            //if not torso or head, we try to get the information
             //if(myCpg->feedbackable)
                 //getContactInformation();
             
             //integrate the system
             int inner_steps = (int)((period+time_residue)/myCpg->get_dt());
-            
             for(int j=0; j<inner_steps; j++)
                 myCpg->integrate_step(y_cpgs,states);
                 
+            //we send the current status of the cpgs to the higher instance    
             sendStatusForManager();    
         }
-    else
+    else //try to connect to other limbs
         connectToOtherLimbs();
-
+        
+    //if it's safe to change parameters, change them
     if(getQuadrant())
         getParameters();
         
+    //stop the module if the om_stance sent my the manager is negative     
     if(myCpg->om_stance<0.0)
         {
             ACE_OS::printf("Task is finished\n");
@@ -368,12 +333,8 @@ void generatorThread::run()
             return;
         }
 
- 
-   
-
-    ///we update of the previous states
-    
-    ///save time stamp
+    //we update of the previous states    
+    //save time stamp and print
     fprintf(target_file,"%f ",time_now);
 
     for(int i=0; i<nbDOFs; i++)
@@ -383,9 +344,6 @@ void generatorThread::run()
         }
     fprintf(target_file,"\n");
     fflush(target_file);
-
-
-
 
 #if !DEBUG  
 
@@ -400,6 +358,7 @@ void generatorThread::run()
     /////////////////////////////////////////////////
 #endif
   
+   //we print the loop time
     double timef=Time::now();
     double d=timef - time_now;
 
@@ -446,8 +405,6 @@ void generatorThread::disconnectPorts()
     }
 
     parameters_port.close();
-    //check_motion_port.close();
-
     current_state_port.close();
     
     for(int i=0;i<nbLIMBs;i++)
@@ -464,7 +421,7 @@ void generatorThread::disconnectPorts()
 void generatorThread::threadRelease()
 {
     fprintf(stderr, "%s thread releasing\n", partName.c_str());
-    ///we stop the vcControl
+    //we stop the vcControl
 
 #if !DEBUG
 
@@ -522,11 +479,11 @@ bool generatorThread::init(Searchable &s)
     
     myIK = new IKManager;
 
-    //////getting part to interface with
+    //getting part to interface with
     Property options;
     
     side = 0;
-    limb=0;
+    limb = 0;
     
     if(arguments.check("part"))
     {
