@@ -69,8 +69,8 @@ class CrawlManagerModule : public Module
 
 		void InitPosition(void);
 		void Crawl(double desiredTurnAngle=0,double omstanceIncrement=0);
-		void Turn(double angle=0);
-		void Reach(double position[]);
+		void Reach(Bottle *reachingCommand);
+		void HeadControl(double pitchAngle, double yawAngle);
    
     public:
         virtual bool close();

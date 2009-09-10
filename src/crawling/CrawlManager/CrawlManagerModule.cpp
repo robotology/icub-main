@@ -78,34 +78,12 @@ bool CrawlManagerModule::respond(const Bottle &command, Bottle &reply)
             break;
 
 
-		//=========START added by Seb=========
 		case SEB_TURN_COMMAND: ///- turn to avoid obstacles 
         {
             double angle = command.get(1).asDouble();
             cout << "angle : " << angle << endl;
 
-			if(angle < turnAngle)
-			{
-				while(turnAngle > angle)
-                {
-                    turnAngle-=TURN_INDENT;
-                    crawl_parameters[9][1]=turnAngle;
-                    for(int i=0;i<nbParts;i++)
-                        if(connected_part[i]) sendCommand(i, crawl_parameters);
-                    Time::delay(0.2);
-                }
-			}
-			else if(angle > turnAngle)
-			{
-				while(turnAngle < angle)
-                {
-                    turnAngle+=TURN_INDENT;
-                    crawl_parameters[9][1]=turnAngle;
-                    for(int i=0;i<nbParts;i++)
-                        if(connected_part[i]) sendCommand(i, crawl_parameters);
-                    Time::delay(0.2);
-                }
-			}
+			Crawl(angle);
             
 			reply.addString("turning\n");
 			STATE = CRAWL;
@@ -118,114 +96,14 @@ bool CrawlManagerModule::respond(const Bottle &command, Bottle &reply)
 			double pitchAngle = command.get(1).asDouble();
 			double yawAngle = command.get(2).asDouble();
 
-			vector<vector<double> > head_parameters;
-			int headIndex;
-			for(int i=0;i<nbParts;i++)
-			{
-				if(connected_part[i])
-				{
-					ConstString currentPart = part_names[i];
-					if(part_names[i] == "head"/* == currentPart*/)
-					{
-						headIndex = i;
-						vector<double> amplitude;
-						vector<double> offset;
-						amplitude.push_back(-1);
-						offset.push_back(pitchAngle);
-
-						amplitude.push_back(-1);
-						offset.push_back(0);
-
-						amplitude.push_back(-1);
-						offset.push_back(yawAngle);
-
-						for(int j=3; j<nbDOFs[i]; ++j)
-						{
-							amplitude.push_back(-1);
-							offset.push_back(0.0);
-						}
-						head_parameters.push_back(amplitude);
-						head_parameters.push_back(offset);
-					}
-					else
-					{
-						vector<double> amplitude;
-						vector<double> offset;
-						head_parameters.push_back(init_parameters[2*i]);
-						head_parameters.push_back(init_parameters[2*i+1]);
-					}
-				}
-			}
-			sendCommand(headIndex, head_parameters);
+			HeadControl(pitchAngle, yawAngle);
+			
 			break;
 		}
         
 		case REACH_COMMAND: ///- reach for a mark on the ground
 		{
-			Bottle *reachingCommand = command.get(1).asList();
-			ACE_OS::printf("command : %s\n",reachingCommand->toString().c_str());
-			ConstString reachingPart = reachingCommand->get(0).asString();
-			ACE_OS::printf( "REACHING WITH PART %s\n", reachingPart.c_str());
-
-			if(STATE!=CRAWL)
-            {
-				if(reachingPart == "left_arm")
-				{
-					for(int i=0;i<nbParts;i++)
-					{
-						if(part_names[i] == "head")
-						{
-							continue;
-						}
-						if(connected_part[i]) sendCommand(i, crawl_left_parameters);
-					}
-				}
-				else if(reachingPart == "right_arm")
-				{
-					for(int i=0;i<nbParts;i++)
-					{
-						if(part_names[i] == "head")
-						{
-							continue;
-						}
-						if(connected_part[i]) sendCommand(i, crawl_right_parameters);
-					}
-				}
-                Time::delay(2.0);
-            }
-
-			vector<vector<double> > reach_parameters;
-			for(int i=0;i<nbParts;i++)
-			{
-				if(part_names[i] == "head")
-				{
-					continue;
-				}
-				if(connected_part[i])
-				{
-					ConstString currentPart = part_names[i];
-					if(part_names[i] == ConstString(reachingPart.c_str())/* == currentPart*/)
-					{
-						vector<double> amplitude;
-						vector<double> offset;
-						for(int j=0; j<nbDOFs[i]; ++j)
-						{
-							amplitude.push_back(-1);
-							offset.push_back(reachingCommand->get(j+1).asDouble());
-						}
-						reach_parameters.push_back(amplitude);
-						reach_parameters.push_back(offset);
-					}
-					else
-					{
-						vector<double> amplitude;
-						vector<double> offset;
-						reach_parameters.push_back(init_parameters[2*i]);
-						reach_parameters.push_back(init_parameters[2*i+1]);
-					}
-					sendCommand(i, reach_parameters);
-				}
-			}
+			Reach(command.get(1).asList());	
 
             reply.addString("reaching\n");
 			STATE = REACH;
@@ -725,6 +603,112 @@ void CrawlManagerModule::Crawl(double desiredTurnAngle, double stanceIncrement)
     STATE = CRAWL;
 }
 
-void CrawlManagerModule::Turn(double angle)
+void CrawlManagerModule::Reach(Bottle *reachingCommand)
 {
+	ACE_OS::printf("command : %s\n",reachingCommand->toString().c_str());
+	ConstString reachingPart = reachingCommand->get(0).asString();
+	ACE_OS::printf( "REACHING WITH PART %s\n", reachingPart.c_str());
+
+	if(STATE!=CRAWL)
+    {
+		if(reachingPart == "left_arm")
+		{
+			for(int i=0;i<nbParts;i++)
+			{
+				if(part_names[i] == "head")
+				{
+					continue;
+				}
+				if(connected_part[i]) sendCommand(i, crawl_left_parameters);
+			}
+		}
+		else if(reachingPart == "right_arm")
+		{
+			for(int i=0;i<nbParts;i++)
+			{
+				if(part_names[i] == "head")
+				{
+					continue;
+				}
+				if(connected_part[i]) sendCommand(i, crawl_right_parameters);
+			}
+		}
+        Time::delay(2.0);
+    }
+
+	vector<vector<double> > reach_parameters;
+	for(int i=0;i<nbParts;i++)
+	{
+		if(part_names[i] == "head")
+		{
+			continue;
+		}
+		if(connected_part[i])
+		{
+			ConstString currentPart = part_names[i];
+			if(part_names[i] == ConstString(reachingPart.c_str())/* == currentPart*/)
+			{
+				vector<double> amplitude;
+				vector<double> offset;
+				for(int j=0; j<nbDOFs[i]; ++j)
+				{
+					amplitude.push_back(-1);
+					offset.push_back(reachingCommand->get(j+1).asDouble());
+				}
+				reach_parameters.push_back(amplitude);
+				reach_parameters.push_back(offset);
+			}
+			else
+			{
+				vector<double> amplitude;
+				vector<double> offset;
+				reach_parameters.push_back(init_parameters[2*i]);
+				reach_parameters.push_back(init_parameters[2*i+1]);
+			}
+			sendCommand(i, reach_parameters);
+		}
+	}
+}
+
+void CrawlManagerModule::HeadControl(double pitchAngle, double yawAngle)
+{
+	vector<vector<double> > head_parameters;
+	int headIndex;
+	for(int i=0;i<nbParts;i++)
+	{
+		if(connected_part[i])
+		{
+			ConstString currentPart = part_names[i];
+			if(part_names[i] == "head"/* == currentPart*/)
+			{
+				headIndex = i;
+				vector<double> amplitude;
+				vector<double> offset;
+				amplitude.push_back(-1);
+				offset.push_back(pitchAngle);
+
+				amplitude.push_back(-1);
+				offset.push_back(0);
+
+				amplitude.push_back(-1);
+				offset.push_back(yawAngle);
+
+				for(int j=3; j<nbDOFs[i]; ++j)
+				{
+					amplitude.push_back(-1);
+					offset.push_back(0.0);
+				}
+				head_parameters.push_back(amplitude);
+				head_parameters.push_back(offset);
+			}
+			else
+			{
+				vector<double> amplitude;
+				vector<double> offset;
+				head_parameters.push_back(init_parameters[2*i]);
+				head_parameters.push_back(init_parameters[2*i+1]);
+			}
+		}
+	}
+	sendCommand(headIndex, head_parameters);
 }
