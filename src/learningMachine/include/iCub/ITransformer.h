@@ -100,7 +100,7 @@ public:
     }
 
     /**
-     * Set the name of this machine learning technique.
+     * Set the name of this transformer.
      *
      * @param name the new name
      */

@@ -27,12 +27,12 @@ void EventDispatcher::removeListener(int idx) {
     this->listeners.erase(it);
 }
 
-void EventDispatcher::removeListener(EventListener* listener) {
+void EventDispatcher::removeListener(IEventListener* listener) {
     
 }
 
-EventListener* EventDispatcher::getListener(int idx) {
-    std::list<EventListener*>::iterator it = this->listeners.begin();
+IEventListener* EventDispatcher::getListener(int idx) {
+    std::list<IEventListener*>::iterator it = this->listeners.begin();
     std::advance(it, idx);
     return *it;
 }
@@ -44,8 +44,8 @@ void EventDispatcher::clear() {
     }
 }
 
-void EventDispatcher::raise(Event& event) {
-    std::list<EventListener*>::iterator it;
+void EventDispatcher::raise(IEvent& event) {
+    std::list<IEventListener*>::iterator it;
     for(it = listeners.begin(); it != listeners.end(); it++) {
         e.visit(**it);
     }

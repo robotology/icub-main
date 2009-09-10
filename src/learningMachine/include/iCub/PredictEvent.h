@@ -11,18 +11,18 @@
 
 #include <string>
 
-#include "iCub/Event.h"
+#include "iCub/IEvent.h"
 
 /**
  * A PredictEvent is raised when the machine makes a prediction. It contains 
  * the input and predicted output vectors.
  *
- * \see iCub::contrib::learningmachine::Event
+ * \see iCub::contrib::learningmachine::IEvent
  * 
  * \author Arjan Gijsberts
  */
 
-class PredictEvent : virtual public Event {
+class PredictEvent : virtual public IEvent {
 protected:
 
 public:
@@ -39,7 +39,7 @@ public:
     /*
      * Inherited from Event.
      */
-    virtual void visit(EventListener& listener) {
+    virtual void visit(IEventListener& listener) {
         listener.handle(*this);
     }
 

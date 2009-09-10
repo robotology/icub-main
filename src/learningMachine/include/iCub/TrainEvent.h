@@ -11,18 +11,18 @@
 
 #include <string>
 
-#include "iCub/Event.h"
+#include "iCub/IEvent.h"
 
 /**
  * A TrainEvent is raised when the machine handles a training sample. It 
  * contains the input, and predicted and actual output vectors.
  *
- * \see iCub::contrib::learningmachine::Event
+ * \see iCub::contrib::learningmachine::IEvent
  *
  * \author Arjan Gijsberts
  */
 
-class TrainEvent : virtual public Event {
+class TrainEvent : virtual public IEvent {
 public:
     /**
      * Constructor
@@ -37,7 +37,7 @@ public:
     /*
      * Inherited from Event.
      */
-    virtual void visit(EventListener& listener) {
+    virtual void visit(IEventListener& listener) {
         listener.handle(*this);
     }
 

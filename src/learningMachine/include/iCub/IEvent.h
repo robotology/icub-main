@@ -11,7 +11,7 @@
 
 #include <string>
 
-#include "iCub/EventListener.h"
+#include "iCub/IEventListener.h"
 
 /**
  * The abstract base class for all Event types.
@@ -19,7 +19,7 @@
  * \author Arjan Gijsberts
  */
 
-class Event {
+class IEvent {
 protected:
 
 
@@ -39,7 +39,7 @@ public:
      * function.
      * @param  listener
      */
-    virtual void visit(EventListener& listener) = 0;
+    virtual void visit(IEventListener& listener) = 0;
 
 
 };

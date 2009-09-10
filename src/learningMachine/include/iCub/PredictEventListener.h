@@ -9,16 +9,18 @@
 #ifndef __ICUB_PREDICTEVENTLISTENER__
 #define __ICUB_PREDICTEVENTLISTENER__
 
-#include "iCub/EventListener.h"
+#include "iCub/IEventListener.h"
 #include "iCub/PredictEvent.h"
 
 
 /**
-  * class PredictEventListener
-  *
-  */
+ * 
+ * \see iCub::contrib::learningmachine::IEventListener
+ * 
+ * \author Arjan Gijsberts
+ */
 
-class PredictEventListener : virtual public EventListener {
+class PredictEventListener : virtual public IEventListener {
 protected:
 
 public:

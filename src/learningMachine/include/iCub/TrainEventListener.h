@@ -9,12 +9,14 @@
 #ifndef __ICUB_TRAINEVENTLISTENER__
 #define __ICUB_TRAINEVENTLISTENER__
 
-#include "iCub/EventListener.h"
+#include "iCub/IEventListener.h"
 #include "iCub/TrainEvent.h"
 
 /**
- * class TrainEventListener
- *
+ * 
+ * \see iCub::contrib::learningmachine::IEventListener
+ * 
+ * \author Arjan Gijsberts
  */
 
 class TrainEventListener : virtual public EventListener {
