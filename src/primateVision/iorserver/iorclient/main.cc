@@ -91,12 +91,17 @@ int main( int argc, char **argv )
   iCub::contrib::primateVision::Display *d_ior = new iCub::contrib::primateVision::Display(srcsize,psb,D_8U,"IOR "+input);
 
   
+  int frame=0;
 
   while (1){
     inBot_ior = inPort_ior.read();
     if (inBot_ior!=NULL){
       ior = (Ipp8u*) inBot_ior->get(0).asBlob();
       d_ior->display(ior);
+
+      frame++;
+      d_ior->save(ior,"ior"+input+QString::number(frame)+".jpg"); 
+      
     }
     else{
       printf("No Input\n");

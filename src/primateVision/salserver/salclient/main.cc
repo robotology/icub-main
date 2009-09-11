@@ -91,11 +91,18 @@ int main( int argc, char **argv )
   iCub::contrib::primateVision::Display *d_s = new iCub::contrib::primateVision::Display(srcsize,psb,D_8U_NN,"SAL "+input);
 
   
+  int frame=0;
+
   while (1){
     inBot = inPort.read();
     if(inBot!=NULL){
       s = (Ipp8u*) inBot->get(0).asBlob();
       d_s->display(s);
+
+      frame++;
+      d_s->save(s,"sal"+input+QString::number(frame)+".jpg"); 
+      
+
     }
     else{
       printf("No Input\n");

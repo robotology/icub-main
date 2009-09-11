@@ -12,11 +12,13 @@ INCLUDE_DIRECTORIES(
 	${PROJECT_SOURCE_DIR}/flowserver 
 	${PROJECT_SOURCE_DIR}/utils/timing
 	${PROJECT_SOURCE_DIR}/utils/convert_bitdepth
+	${PROJECT_SOURCE_DIR}/utils/norm
 	) 
 
 LINK_DIRECTORIES(
 	${PROJECT_SOURCE_DIR}/utils/timing
 	${PROJECT_SOURCE_DIR}/utils/convert_bitdepth
+	${PROJECT_SOURCE_DIR}/utils/norm
 	)
 
 ADD_EXECUTABLE( iorserver
@@ -26,10 +28,11 @@ ADD_EXECUTABLE( iorserver
 
 TARGET_LINK_LIBRARIES(iorserver 
 	ippi
-        Qt3Support
-        QtCore
+    Qt3Support
+    QtCore
 	timing
 	convert_bitdepth
+	norm
 	)
 
 # install targets

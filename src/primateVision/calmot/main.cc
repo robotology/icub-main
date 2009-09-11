@@ -169,9 +169,9 @@ int main( int argc, char **argv )
     d_y->display(rec_im_y);
     
     if (frames%15==0){
-      motion_request.content().pix_xl = des_xl*2;
-      motion_request.content().pix_xr = des_xr*2;
-      motion_request.content().pix_y  = des_y*2;
+      motion_request.content().pix_xl = des_xl;
+      motion_request.content().pix_xr = des_xr;
+      motion_request.content().pix_y  = des_y;
       outPort_mot.write(motion_request);
       //swap direction for next time!:
       des_x  = -des_x;

@@ -87,6 +87,8 @@ void iCub::contrib::primateVision::ZDFServer::run(){
   int max_spread                   = prop.findGroup("ZDFTRACK").find("MAX_SPREAD").asInt();
   int max_wait                     = prop.findGroup("ZDFTRACK").find("RETURN_HOME").asInt();
   bool motion                      = (bool) prop.findGroup("ZDFTRACK").find("MOTION").asInt();
+  bool track_lock                  = (bool) prop.findGroup("ZDFTRACK").find("TRACK_LOCK").asInt();
+
 
   bool return_home = false;
   if (max_wait!=0){return_home = true;}
@@ -295,6 +297,8 @@ void iCub::contrib::primateVision::ZDFServer::run(){
 
   int tl_x=0,tl_y=0;
   int del_x=0,del_y=0;
+  int waiting = 0;
+  bool track = false;
 
 
   //TCREATE
@@ -334,11 +338,13 @@ void iCub::contrib::primateVision::ZDFServer::run(){
 	  //this also prevents tracking motion:
 	  tl_x = 0;
 	  tl_y = 0;
+	  track = false;
 	}
 	else{ 
 	  //this initiates tracking motion if non-zero:
 	  tl_x = sx - trsize.width/2;
 	  tl_y = sy - trsize.height/2;
+	  track = true;
 	}
 	//Make left (LEAD) Fovea:
 	ippiCopy_8u_C1R(&rec_im_ly[(pos_y+tl_y)*psb_in + pos_x+tl_x],psb_in,fov_l,psb_m,msize);
@@ -453,7 +459,7 @@ void iCub::contrib::primateVision::ZDFServer::run(){
 	
 		
 
-
+	printf("area:%d spread:%d cogx:%d cogy:%d\n",area,spread,cog_x,cog_y);
 
 	//update template to CoG whenever nice segmentation and CoG near zero:
 	//if (area>=min_area && area<=max_area && spread<=max_spread && 
@@ -474,25 +480,71 @@ void iCub::contrib::primateVision::ZDFServer::run(){
 	  printf("UPDATING TEMPLATE..  area:%d spread:%d\n",area,spread);
 	  ippiCopy_8u_C1R(&fov_l[tmp_x + tmp_y*psb_m],
 			  psb_m,temp,psb_t,tsize);
+	  waiting=0;
+	}
+	else{
+	  waiting++;
 	}
 	
 	
 	
 
 	if (motion){
-	  //*********************************
-	  //ALWAYS MOVE TO REDUCE VIRTUAL VERGE SHIFT AND TRACK OFFSET TO ZERO:
-	  motion_request.content().pix_xl = (int) (((double)tl_x)*track_gain);
-	  motion_request.content().pix_xr = (int) (((double)tl_x)*track_gain + ((double)del_x)*verg_gain);
-	  motion_request.content().pix_y  = (int) (((double)tl_y)*track_gain);
-	  motion_request.content().relative = true; //relative move.
-	  motion_request.content().suspend  = 0; 
-	  outPort_mot.write(motion_request);
-	  //*********************************	  
+
+	  if(waiting>=max_wait && return_home){
+	    printf("Returning home! (waiting %d >= max_wait %d)\n",waiting,max_wait);
+	    //re-initalise:
+	    motion_request.content().pix_y  = 0;
+	    motion_request.content().pix_xl = 40;
+	    motion_request.content().pix_xr = -40;
+	    motion_request.content().deg_r  = 0.0;
+	    motion_request.content().deg_p  = 0.0;
+	    motion_request.content().deg_y  = 0.0;
+	    motion_request.content().relative = false; //absolute initial pos.
+	    motion_request.content().suspend  = 50;
+	    motion_request.content().lockto  = NO_LOCK;
+	    motion_request.content().unlock = true;
+	    //send:
+	    outPort_mot.write(motion_request);
+	    waiting = 0;
+	  }
+
+	  else{
+
+	    //*********************************
+	    //ALWAYS MOVE TO REDUCE VIRTUAL VERGE SHIFT AND TRACK OFFSET TO ZERO:
+	    motion_request.content().pix_xl = (int) (((double)tl_x)*track_gain);
+	    motion_request.content().pix_xr = (int) (((double)tl_x)*track_gain + ((double)del_x)*verg_gain);
+	    motion_request.content().pix_y  = (int) (((double)tl_y)*track_gain);
+	    motion_request.content().relative = true; //relative move.
+	    motion_request.content().suspend  = 0; 
+	    
+	    
+	    //while tracking success, lock motion control to the ZDF server only.  Otherwise, unlock 
+	    //so that attentional saccades can occur.
+	    if (track_lock && track){
+	      //lock to ZDF:
+	      motion_request.content().lockto = ZDF_LOCK; // can only call if presently no lock
+	      motion_request.content().unlock = false;
+	      printf("ZDFServer: ZDF_LOCK\n");
+	    }
+	    else{
+	      //unlock:
+	      motion_request.content().lockto = ZDF_LOCK; // ZDF has unlock permission.
+	      motion_request.content().unlock = true;
+	    }
+	    
+	    outPort_mot.write(motion_request);
+	    //*********************************	  
+	  }
 	}
 	
-	
 	 
+
+
+
+
+
 
 
 	

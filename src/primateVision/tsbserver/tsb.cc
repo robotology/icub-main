@@ -110,13 +110,17 @@ void iCub::contrib::primateVision::TSBServer::run(){
 
   //Static TSB:
 
-  //make TSB gauss:
-  for (int y=0;y<mos_height;y++){ 
-    for (int x=0;x<mos_width;x++){
-      radius_tsb[y*mos_width+x] = sqrt((float) (x-mos_width/2)*(x-mos_width/2) + (y-mos_height/2)*(y-mos_height/2) );
-      tsb[y*mos_width+x] = exp(-(radius_tsb[y*mos_width+x]*radius_tsb[y*mos_width+x])/(2.0*sigma_tsb*sigma_tsb));
-    }
-  } 
+  if (sigma_tsb!=0.0){
+    
+    //make TSB gauss:
+    for (int y=0;y<mos_height;y++){ 
+      for (int x=0;x<mos_width;x++){
+	radius_tsb[y*mos_width+x] = sqrt((float) (x-mos_width/2)*(x-mos_width/2) + (y-mos_height/2)*(y-mos_height/2) );
+	tsb[y*mos_width+x] = exp(-(radius_tsb[y*mos_width+x]*radius_tsb[y*mos_width+x])/(2.0*sigma_tsb*sigma_tsb));
+      }
+    } 
+ 
+  }
 
 
 

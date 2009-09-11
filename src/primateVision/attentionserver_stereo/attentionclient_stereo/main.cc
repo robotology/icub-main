@@ -107,6 +107,10 @@ int main( int argc, char **argv )
   int tx_l,tx_r,ty_l,ty_r;
   int win_l,win_r;
 
+  bool got_l=false;
+  bool got_r=false;
+  int frame=0;
+
   while (1){
     
 
@@ -136,7 +140,7 @@ int main( int argc, char **argv )
       }
       
 
-      d_l->display(al);
+      got_l=true;
 
 
     }
@@ -164,10 +168,26 @@ int main( int argc, char **argv )
       }
       
 
-      d_r->display(ar);
-
+      got_r=true;
       
     }
+
+
+    if (got_l && got_r){
+
+        //display:
+        d_l->display(al);
+        d_r->display(ar);
+
+        //save:
+        frame++;
+        d_l->save(al,"attnl"+QString::number(frame)+".jpg");
+        d_r->save(ar,"attnr"+QString::number(frame)+".jpg");
+
+        got_l=false;
+        got_r=false;
+    }
+
     
   }
   

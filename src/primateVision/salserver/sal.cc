@@ -211,26 +211,18 @@ void iCub::contrib::primateVision::SalServer::run(){
 
 
 
-    inBot_ccs = inPort_ccs.read(false);
+    inBot_fcs = inPort_fcs.read(false); 
     inBot_ycs = inPort_ycs.read(false);
     inBot_ocs = inPort_ocs.read(false);
     inBot_edg = inPort_edg.read(false);
     inBot_cor = inPort_cor.read(false);
     inBot_sym = inPort_sym.read(false);
-    inBot_fcs = inPort_fcs.read();
+    inBot_ccs = inPort_ccs.read();
 
 
     //we wait for all cues so that saliency is not skewed in
     //favour of the fastest server, or by the most recent update!
     //only add each server result to saliency once.
-
-    if (!got_fcs && inBot_fcs!=NULL){
-      sal_in = (Ipp8u*) inBot_fcs->get(0).asBlob();
-      ippiConvert_8u32f_C1R(sal_in,psb_in,tmp_32f,psb_32f,srcsize); 
-      ippiMulC_32f_C1IR((Ipp32f)gain_fcs,tmp_32f,psb_32f,srcsize); 
-      ippiAdd_32f_C1IR(tmp_32f,psb_32f,sal,psb_32f,srcsize);  
-      got_fcs=true; 
-     }
 
     if (!got_ccs && inBot_ccs!=NULL){
       sal_in = (Ipp8u*) inBot_ccs->get(0).asBlob();
@@ -238,6 +230,14 @@ void iCub::contrib::primateVision::SalServer::run(){
       ippiMulC_32f_C1IR((Ipp32f)gain_ccs,tmp_32f,psb_32f,srcsize); 
       ippiAdd_32f_C1IR(tmp_32f,psb_32f,sal,psb_32f,srcsize);  
       got_ccs=true; 
+     }
+
+    if (!got_fcs && inBot_fcs!=NULL){
+      sal_in = (Ipp8u*) inBot_fcs->get(0).asBlob();
+      ippiConvert_8u32f_C1R(sal_in,psb_in,tmp_32f,psb_32f,srcsize); 
+      ippiMulC_32f_C1IR((Ipp32f)gain_fcs,tmp_32f,psb_32f,srcsize); 
+      ippiAdd_32f_C1IR(tmp_32f,psb_32f,sal,psb_32f,srcsize);  
+      got_fcs=true; 
      }
 
     if (!got_ycs && inBot_ycs!=NULL){
@@ -283,55 +283,55 @@ void iCub::contrib::primateVision::SalServer::run(){
 
     //Do we have all EXPECTED maps?:
     if ( got_ocs &&
-	 got_edg &&
-	 got_cor &&
-	 got_sym &&
-	 got_fcs &&
-	 got_ccs &&
-	 got_ycs ){
-      
-      //prepare output:
-      conv_32f_to_8u(sal,psb_32f,sal_out,psb,srcsize);
-    
-      //send it on its way:
-      Bottle& tmpBot = outPort_sal.prepare();
-      tmpBot.clear();
-      tmpBot.add(Value::makeBlob( sal_out, psb*srcsize.height));
-      outPort_sal.write();
-
-      //reset checkers:
-      got_ocs = !input_ocs;
-      got_edg = !input_edg;
-      got_cor = !input_cor;
-      got_sym = !input_sym;
-      got_ccs = !input_ccs;
-      got_ycs = !input_ycs;
-      got_fcs = !input_fcs;
-
-      //set sal to 0.0:
-      ippiSet_32f_C1R(0.0,sal,psb_32f,srcsize); 
-
+         got_edg &&
+         got_cor &&
+         got_sym &&
+         got_fcs &&
+         got_ccs &&
+         got_ycs ){
+        
+        //prepare output:
+        conv_32f_to_8u(sal,psb_32f,sal_out,psb,srcsize);
+        
+        //send it on its way:
+        Bottle& tmpBot = outPort_sal.prepare();
+        tmpBot.clear();
+        tmpBot.add(Value::makeBlob( sal_out, psb*srcsize.height));
+        outPort_sal.write();
+        
+        //reset checkers:
+        got_ocs = !input_ocs;
+        got_edg = !input_edg;
+        got_cor = !input_cor;
+        got_sym = !input_sym;
+        got_ccs = !input_ccs;
+        got_ycs = !input_ycs;
+        got_fcs = !input_fcs;
+        
+        //set sal to 0.0:
+        ippiSet_32f_C1R(0.0,sal,psb_32f,srcsize); 
+        
     }
     else if (inBot_ocs == NULL && 
-	     inBot_edg == NULL && 
-	     inBot_cor == NULL && 
-	     inBot_sym == NULL && 
-	     inBot_ccs == NULL && 
-	     inBot_ycs == NULL &&
-	     inBot_fcs == NULL )
-      {
-	printf("No Input\n");
-	usleep(5000);//don't blow out port
-      }
-
+             inBot_edg == NULL && 
+             inBot_cor == NULL && 
+             inBot_sym == NULL && 
+             inBot_ccs == NULL && 
+             inBot_ycs == NULL &&
+             inBot_fcs == NULL )
+        {
+            printf("No Input\n");
+            usleep(5000);//don't blow out port
+        }
+    
     TSTOP
-
-  }
-
+        
+        }
+  
   //never here..
   TEND
-
-}
+      
+      }
 
 
 

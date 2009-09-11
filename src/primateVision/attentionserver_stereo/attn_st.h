@@ -56,7 +56,7 @@ namespace iCub {
 	 * @param yoff Vertical offset between left and right images.
 	 * @return Cross-check success.
 	 */
-	bool crosscheck(Ipp8u*ar,int x_r,int y_r,Ipp8u*al,int psb,int*x_l,int yoff);
+	bool crosscheck(Ipp8u*ar,int x_r,int y_r,Ipp8u*al,int*x_l,int yoff,int psb);
 	
 	//X-CHECK STUFF:
 	Ipp32f*xres;
