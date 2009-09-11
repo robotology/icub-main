@@ -6,10 +6,6 @@
  *
  */
 
-#include <yarp/os/Module.h>
-#include <yarp/sig/Vector.h>
-#include <yarp/IOException.h>
-
 #include <algorithm>
 #include <string>
 #include <vector>
@@ -18,6 +14,9 @@
 #include <fstream>
 #include <stdexcept>
 
+#include <yarp/os/Module.h>
+#include <yarp/sig/Vector.h>
+#include <yarp/IOException.h>
 
 using namespace yarp::os;
 using namespace yarp::sig;

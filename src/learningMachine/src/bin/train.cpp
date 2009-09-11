@@ -6,21 +6,23 @@
  *
  */
 
-#include "iCub/TrainModule.h"
-#include "iCub/MachineCatalogue.h"
-
 #include <iostream>
 #include <string>
+
+#include "iCub/TrainModule.h"
+//#include "iCub/MachineCatalogue.h"
+#include "iCub/Support.h"
 
 using namespace iCub::contrib::learningmachine;
 
 int main (int argc, char* argv[]) {
     Network yarp;
+    Support support;
 
-    TrainModule module;
+    TrainModule module(&support);
     try {
         // initialize catalogue of machine factory
-        registerMachines();
+        //registerMachines();
 
         module.runModule(argc,argv);
     } catch(const std::exception& e) {

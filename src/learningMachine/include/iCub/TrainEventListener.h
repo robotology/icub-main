@@ -19,7 +19,7 @@
  * \author Arjan Gijsberts
  */
 
-class TrainEventListener : virtual public EventListener {
+class TrainEventListener : virtual public IEventListener {
 protected:
 
 public:

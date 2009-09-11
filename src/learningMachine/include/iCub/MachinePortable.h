@@ -11,7 +11,8 @@
 
 #include <yarp/os/Portable.h>
 #include <iCub/IMachineLearner.h>
-#include <iCub/MachineFactory.h>
+#include <iCub/Support.h>
+//#include <iCub/MachineFactory.h>
 #include <stdexcept>
 
 
@@ -36,6 +37,11 @@ namespace learningmachine {
 class MachinePortable : public Portable {
 private:
     /**
+     * An instance of the base Support class.
+     */
+    Support* support;
+
+    /**
      * A pointer to the actual machine implementation.
      */
     IMachineLearner* machine;
@@ -51,7 +57,8 @@ public:
      *
      * @param m The initial wrapped learning machine
      */
-    MachinePortable(IMachineLearner* m = (IMachineLearner*) 0) : machine(m) {
+    MachinePortable(Support* support, IMachineLearner* m = (IMachineLearner*) 0) : machine(m) {
+        this->support = support;
     }
 
     /**
@@ -60,7 +67,7 @@ public:
      * @param machineName The name specifier for the wrapped learning machine
      */
     MachinePortable(std::string& machineName) {
-        this->machine = MachineFactory::instance().create(machineName);
+        this->machine = this->support->getMachineFactory().create(machineName);
     }
 
     /**

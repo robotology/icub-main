@@ -10,7 +10,8 @@
 #include <string>
 
 #include "iCub/TransformModule.h"
-#include "iCub/TransformerCatalogue.h"
+//#include "iCub/TransformerCatalogue.h"
+#include "iCub/Support.h"
 
 using namespace iCub::contrib::learningmachine;
 
@@ -19,7 +20,7 @@ int main (int argc, char* argv[]) {
 
     TransformModule module;
     try {
-        registerTransformers();
+        //registerTransformers();
 
         module.runModule(argc,argv);
     } catch(const std::exception& e) {

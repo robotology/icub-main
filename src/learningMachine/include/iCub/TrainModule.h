@@ -62,7 +62,6 @@ public:
 };
 
 
-
 /**
  * A module for training.
  * The module can contain any iCub::contrib::IMachineLearner
@@ -115,8 +114,9 @@ public:
      * Constructor.
      *
      * @param pp the default prefix used for the ports.
+     * @param support an instance of the Support class.
      */
-    TrainModule(std::string pp = "train") : PredictModule(pp) {
+    TrainModule(Support* support, std::string pp = "train") : PredictModule(support, pp) {
     }
 
     /**

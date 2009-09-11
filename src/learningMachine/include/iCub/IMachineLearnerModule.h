@@ -10,10 +10,12 @@
 #ifndef __ICUB_IMACHINELEARNERMODULE__
 #define __ICUB_IMACHINELEARNERMODULE__
 
+#include <iostream>
+
 #include <yarp/os/Module.h>
 #include <yarp/os/Searchable.h>
 
-#include <iostream>
+#include "iCub/Support.h"
 
 
 using namespace yarp::os;
@@ -24,7 +26,7 @@ namespace learningmachine {
 
 /**
  * An abstract base module for the machine learning YARP interface. This 
- * abstract  * class contains base functionality that is shared by 
+ * abstract class contains base functionality that is shared by 
  * PredictModule, TrainModule and TransformModule.
  *
  * \see iCub::contrib::learningmachine::IMachineLearner
@@ -36,10 +38,14 @@ namespace learningmachine {
 class IMachineLearnerModule : public Module {
 protected:
     /**
+     * An instance of the base Support class.
+     */
+    Support* support;
+     
+    /**
      * An input port for commands.
      */
     BufferedPort<Bottle> cmd_in;
-
 
     /**
      * A prefix path for the ports that will be registered.
@@ -76,7 +82,8 @@ public:
      *
      * @param pp the default prefix used for the ports.
      */
-    IMachineLearnerModule(std::string pp = "learn") : portPrefix(pp) {
+    IMachineLearnerModule(Support* support, std::string pp) : portPrefix(pp) {
+        this->support = support;
     }
 
     /**

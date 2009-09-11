@@ -251,7 +251,7 @@ public:
      *
      * @param pp the default prefix used for the ports.
      */
-    TransformModule(std::string pp = "transform") : IMachineLearnerModule(pp) {
+    TransformModule(Support* support, std::string pp = "transform") : IMachineLearnerModule(support, pp) {
         this->transformer = (ITransformer*) 0;
     }
     
