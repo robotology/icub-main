@@ -1,10 +1,6 @@
 #include "recmot.h"
 
 
-#define NO_LOCK  0
-#define ZDF_LOCK 1
-#define ATN_LOCK 2
-
 
 iCub::contrib::primateVision::RecHandleMotionRequest::RecHandleMotionRequest(int period):
   RateThread(period)
@@ -50,7 +46,7 @@ void iCub::contrib::primateVision::RecHandleMotionRequest::run(){
 
     if (suspend>0){
       suspend--;
-      printf("suspended.\n");
+      printf("RecServer: Suspended %d.\n",suspend);
     }
     
 

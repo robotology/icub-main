@@ -22,6 +22,7 @@
 #define NO_LOCK  0
 #define ZDF_LOCK 1
 #define ATN_LOCK 2
+#define MARY_LOCK 3
 
 
 using namespace yarp::sig;
