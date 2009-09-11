@@ -186,34 +186,36 @@ void iCub::contrib::primateVision::RecServer::run()
   double scale = 1.0;
   QImage *qim_l,*qim_r;
   ImageOf<PixelBgr> *imgl,*imgr;
+  IppiSize insize;
+  IppiRect inroi;
   if (!fake){
     imgl = pcl.read(); //blocking buffered
-    //get scale factor to reduce to 320x240:
+    insize.width = imgl->width();
+    insize.height = imgl->height();
+    inroi.x=0;
+    inroi.y=0;
+    inroi.width=imgl->width();
+    inroi.height=imgl->height();
+    //get scale factor to reduce to widthxheight:
     scale  = ((double)width)/imgl->width();
+    printf("RecServer: Received input image dimensions: (%d,%d)\n",imgl->width(), imgl->height());
+    printf("RecServer: Scaling to image dimensions: (%d,%d). Scale factor %f\n",width, height,scale);
   }
   else {
     printf("RecServer: Loading fake left image: %s\n",fake_im_l.c_str());
-    //qim_l = new QImage((char*)fake_im_l.c_str(),"JPEG");
-    qim_l = new QImage("/home/andrew/src/iCub/src/primateVision/recserver/caml.jpg","JPEG");
+    qim_l = new QImage((char*)fake_im_l.c_str(),"JPEG");
     printf("RecServer: Loading fake right image: %s\n",fake_im_r.c_str());
-    //qim_r = new QImage((char*)fake_im_r.c_str(),"JPEG");
-    qim_r = new QImage("/home/andrew/src/iCub/src/primateVision/recserver/camr.jpg","JPEG");
+    qim_r = new QImage((char*)fake_im_r.c_str(),"JPEG");
     width  = qim_r->width();
     height = qim_r->height();
+    scale = 1.0;
+    printf("RecServer: Fake image dimensions: (%d,%d).\n",width,height);
   }
-  printf("RecServer: Received input image dimensions: (%d,%d)\n",imgl->width(), imgl->height());
-  printf("RecServer: Scaling to image dimensions: (%d,%d). Scale factor %f\n",width, height,scale);
+
   IppiSize srcsize;
   srcsize.width = width;
   srcsize.height = height;
-  IppiSize insize;
-  insize.width = imgl->width();
-  insize.height = imgl->height();
-  IppiRect inroi;
-  inroi.x=0;
-  inroi.y=0;
-  inroi.width=imgl->width();
-  inroi.height=imgl->height();
+
 
   int mos_width = 3*width;
   int mos_height = 3*height;
@@ -394,17 +396,24 @@ void iCub::contrib::primateVision::RecServer::run()
       
       if (!fake){
 
-	//L: scale to width,height:
-	ippiResize_8u_C3R(imgl->getPixelAddress(0,0),insize,imgl->width()*3,
-			  inroi,
-			  colourl_in,psb3_in,srcsize,
-			  scale,
-			  scale,
-			  IPPI_INTER_NN);
+	if (scale==1.0){
+	  //L: convert directly to RGBA:
+	  ippiCopy_8u_C3AC4R(imgl->getPixelAddress(0,0),imgl->width()*3,colourl,psb4,srcsize);
+	}
+	else{
+	  //L: scale to width,height:
+	  ippiResize_8u_C3R(imgl->getPixelAddress(0,0),insize,imgl->width()*3,
+			    inroi,
+			    colourl_in,psb3_in,srcsize,
+			    scale,
+			    scale,
+			    IPPI_INTER_CUBIC);
+	  
+	  //L: convert to RGBA:
+	  ippiCopy_8u_C3AC4R(colourl_in,psb3_in,colourl,psb4,srcsize);
+	}
 
-	//L: convert to RGBA:
-	ippiCopy_8u_C3AC4R(colourl_in,psb3_in,colourl,psb4,srcsize);
-     }
+      }
       else{
 	colourl=qim_l->bits();
       }
@@ -494,16 +503,23 @@ void iCub::contrib::primateVision::RecServer::run()
       
       if (!fake){
 
-	//R: scale to width,height:
-	ippiResize_8u_C3R(imgr->getPixelAddress(0,0),insize,imgr->width()*3,
-			  inroi,
-			  colourr_in,psb3_in,srcsize,
-			  scale,
-			  scale,
-			  IPPI_INTER_NN);
+	if (scale==1.0){
+	  //R: convert directly to RGBA:
+	  ippiCopy_8u_C3AC4R(imgr->getPixelAddress(0,0),imgr->width()*3,colourr,psb4,srcsize);
+	}
+	else{
+	  //R: scale to width,height:
+	  ippiResize_8u_C3R(imgr->getPixelAddress(0,0),insize,imgr->width()*3,
+			    inroi,
+			    colourr_in,psb3_in,srcsize,
+			    scale,
+			    scale,
+			    IPPI_INTER_CUBIC);
+	  
+	  //R: convert to RGBA:
+	  ippiCopy_8u_C3AC4R(colourr_in,psb3_in,colourr,psb4,srcsize);
+	}
 
-	//R: convert to RGBA:
-	ippiCopy_8u_C3AC4R(colourr_in,psb3_in,colourr,psb4,srcsize);
       }
       else{
 	colourr=qim_r->bits();
