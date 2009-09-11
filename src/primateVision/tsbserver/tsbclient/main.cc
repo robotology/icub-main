@@ -91,12 +91,18 @@ int main( int argc, char **argv )
   iCub::contrib::primateVision::Display *d_y = new iCub::contrib::primateVision::Display(srcsize,psb,D_8U_NN,"TSB "+input);
 
   
+  int frame=0;
+
   while (1){
 
     inBot_y = inPort_y.read();
     if (inBot_y!=NULL){
       y = (Ipp8u*) inBot_y->get(0).asBlob();
       d_y->display(y);
+
+      frame++;
+      d_y->save(y,"tsb"+input+QString::number(frame)+".jpg"); 
+      
     }
     
     else{
