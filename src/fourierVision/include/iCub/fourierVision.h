@@ -320,6 +320,33 @@ int  enhance_local_maxima_by_filtering(float *source_image, int half_kernel_size
 void mask_image (eyecub_image *input_image, eyecub_image *mask_image,  eyecub_image *output_image, double threshold);
 void colour_histogram (eyecub_image *input_image, eyecub_hs_histogram *hs);
 void gaussianApodization (eyecub_image *input_image, float std_dev, eyecub_image *output_image);
+void rectify(eyecub_image *input_image_left, eyecub_image *input_image_right, 
+             float fx_left,  float fy_left,  float px_left,  float py_left,  float theta_y_left,
+             float fx_right, float fy_right, float px_right, float py_right, float theta_y_right,
+             eyecub_image *output_image_left,  eyecub_image *output_image_right);
+
+/*** Numerical Recipes in C prototypes ***/
+
+#define TINY 1.0e-20
+#define NR_END 1
+#define FREE_ARG char*
+#define REAL float
+
+void gaussj(float **a, int n, float **b, int m);
+void nrerror(char error_text[]);
+int *ivector(long nl, long nh);
+void free_ivector(int *v, long nl, long nh);
+REAL *vector(long nl, long nh);
+void free_vector(REAL *v, long nl, long nh);
+REAL **matrix(long nrl, long nrh, long ncl, long nch);
+void free_matrix(REAL **m, long nrl, long nrh, long ncl, long nch);
+REAL ***f3tensor(long nrl, long nrh, long ncl, long nch, long ndl, long ndh);
+void free_f3tensor(REAL ***t, long nrl, long nrh, long ncl, long nch, long ndl, long ndh);
+void print_matrix(REAL **m, long nrl, long nrh, long ncl, long nch);
+void print_vector(REAL *v, long nrl, long nrh);
+void fourn(REAL data[], unsigned  long nn[], int ndim, int isign);
+void rlft3(REAL ***data, REAL **speq, unsigned long nn1, unsigned long nn2, unsigned long nn3, int isign);
+void gaussj(float **a, int n, float **b, int m);
 
 
 /* Include file for binary image blob analysis (or connectivity analysis)    */

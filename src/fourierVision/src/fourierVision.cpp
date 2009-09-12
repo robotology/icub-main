@@ -3304,11 +3304,6 @@ void cross_power_spectrum (eyecub_image *input_image_1, eyecub_image *input_imag
    int  i, j;
   
    char debug, dump_debug_image;
-
-   struct portable_timeb_ tb; // time buffer
-   long int s1, s2;
-	long int ms1, ms2;
-	int time = FALSE;
    
 #define PIX(f,width,i,j)   (*((f) + ( (j) * (width) )  + (i) ))
 
@@ -3323,8 +3318,6 @@ void cross_power_spectrum (eyecub_image *input_image_1, eyecub_image *input_imag
 
    if (input_image_1 != NULL) {
 	   
-	   if (time) {portable_ftime(&tb); s1=tb.time; ms1=tb.millitm;}
-
       input_image_1->get_size(&w,&h);
       d = input_image_1->get_image_mode();
    
@@ -3378,19 +3371,8 @@ void cross_power_spectrum (eyecub_image *input_image_1, eyecub_image *input_imag
          }
       }
 
-	   if (time) {portable_ftime(&tb); s2=tb.time; ms2=tb.millitm; printf("alloc    %4d\n",(s2*1000+ms2)-(s1*1000+ms1));}
-      
-
-	   if (time) {portable_ftime(&tb); s1=tb.time; ms1=tb.millitm;}
- 
-	   fft(input1, ri1, ii1, width, height,1);
+	  fft(input1, ri1, ii1, width, height,1);
       fft(input2, ri2, ii2, width, height,1); 
-
-	   if (time) {portable_ftime(&tb); s2=tb.time; ms2=tb.millitm; printf("cps: fft 1    %4d\n",(s2*1000+ms2)-(s1*1000+ms1));}
- 
-
-   
-	   if (time) {portable_ftime(&tb); s1=tb.time; ms1=tb.millitm;}
 
       /* now compute the cross power spectrum */
  
@@ -3414,19 +3396,9 @@ void cross_power_spectrum (eyecub_image *input_image_1, eyecub_image *input_imag
 		  }
 	   }
 
-	   if (time) {portable_ftime(&tb); s2=tb.time; ms2=tb.millitm; printf("cps: cps      %4d\n",(s2*1000+ms2)-(s1*1000+ms1));}
-
-
       /* inverse FFT */
-
-	   
-	   if (time) {portable_ftime(&tb); s1=tb.time; ms1=tb.millitm;}
  
       fft(output1, ro1, io1, width,height,-1);
-
-	   if (time) {portable_ftime(&tb); s2=tb.time; ms2=tb.millitm; printf("cps: fft 2    %4d\n",(s2*1000+ms2)-(s1*1000+ms1));}
- 
-
 
       /* swap quadrants to get origin at width/2, height/2 */
 
@@ -3453,18 +3425,11 @@ void cross_power_spectrum (eyecub_image *input_image_1, eyecub_image *input_imag
         //dump_float_image(output1, width, height);
 	   }
  
-  
-  
-	   if (time) {portable_ftime(&tb); s1=tb.time; ms1=tb.millitm;}
-
-
      /* transfer the processed image to the output images */
 
      if (output_image != NULL)
 	    output_image->write(output1); 
-
-	   
-	  if (time) {portable_ftime(&tb); s2=tb.time; ms2=tb.millitm; printf("cps: free     %4d\n",(s2*1000+ms2)-(s1*1000+ms1));}
+ 
    }
      
    if (debug) printf("Leaving cross_power_spectrum\n\n");
@@ -4091,7 +4056,7 @@ int plot_field(eyecub_image *f_mag, eyecub_image *f_phase,
 	*plot_image = new eyecub_image(width,height,GREYSCALE_IMAGE,NULL, NULL,EYECUB_FLOAT);
 
 
-   /* Now draw NR_vectors for all non-zero points in the magnitude image */
+   /* Now draw vectors for all non-zero points in the magnitude image */
 
 
    for (i=0; i<width; i++) {
@@ -5396,6 +5361,668 @@ void gaussianApodization (eyecub_image *input_image, float std_dev, eyecub_image
    
 }
 
+
+/****************************************************************
+* 
+*  Routine Name: rectify
+* 
+*  Purpose: rectify an image by computing and applying a spatial transformation derived from 
+*  the intrinsic and extrinsic parameters of the camera
+*
+*  The approach is based on two principal papers:
+*
+*  A. Dankers, N. Barnes, and A. Zelinsky, 2004.  Active Vision - Rectification and Depth Mapping, 
+*  Proc. 2004 Australian Conference on Robotics and Automation. 
+*
+*  A. Fusiello, E. Trucco, and A. Verri, 2000.  A Compact Algorithms for rectification of stereo pairs, 
+*  Machine Vision and Applications, Vol. 12, pp. 16-22.
+*
+*
+*  Input:  input_image_left     - pointer to eyecub images to be rectified
+*          input_image_right
+*
+*                                 intrinsic camera parameters for the left camera:
+*          fx_left              - float giving the x component of the focal length 
+*          fy_left              - float giving the y component of the focal length 
+*          px_left              - float giving the x coordinate of the principal point 
+*          py_left              - float giving the y coordinate of the principal point 
+*                                 extrinsic camera parameter for the left camera:
+*          theta_y_left         - float: rotation of the camera about the Y axis relative to the gaze direction
+*                                 i.e. relative to the version angle NOT relative to the absolute Y zero direction
+*
+*                                 intrinsic camera parameters for the right camera:
+*          fx_right             - float giving the x component of the focal length 
+*          fy_right             - float giving the y component of the focal length 
+*          px_right             - float giving the x coordinate of the principal point 
+*          py_right             - float giving the y coordinate of the principal point 
+*                                 extrinsic camera parameter for the right camera:
+*          theta_y_right        - float: rotation of the camera about the Y axis relative to the gaze direction
+*                                 i.e. relative to the version angle NOT relative to the absolute Y zero direction
+*
+*  Output: output_image_left    - pointer to rectified eyecub images
+*          output_image_right
+*
+*  Written By: David Vernon
+*  Date:       September 11, 2009
+* 
+****************************************************************/
+
+void rectify(eyecub_image *input_image_left, eyecub_image *input_image_right, 
+             float fx_left,  float fy_left,  float px_left,  float py_left,  float theta_y_left,
+             float fx_right, float fy_right, float px_right, float py_right, float theta_y_right,
+             eyecub_image *output_image_left,  eyecub_image *output_image_right)
+
+{
+   bool debug;
+   int width,  height,  depth;
+   int width1, height1, depth1;
+   int i, j, k;
+   int ii, jj;
+   int i_prime, j_prime;
+   float x_offset, y_offset;
+   float x, y;
+   unsigned char  pixel_value;
+   unsigned char p1, p2, p3, p4;
+   float x_frac, y_frac;
+
+
+   static float theta_y_left_radians = 0;
+   static float theta_y_right_radians = 0;
+
+   float tx_left = -10;   // arbitrary camera translation parameters 
+   float ty_left = 0;
+   float tz_left = 0;
+
+   float tx_right = 10;
+   float ty_right = 0;
+   float tz_right = 0;
+
+   float temp1, temp2;
+
+   float **A_L;
+   float **A_R;
+   float **A_N;
+   float **B;
+   float **I;
+   float **Rt_o;
+   float **Rt_n;     
+   float **P_o;
+   float **P_n;
+   float **Q_o;
+   float **QI_o_L;
+   float **QI_o_R;
+   float **Q_n_L;
+   float **Q_n_R;
+   float *p_i;
+   float *p_o;
+
+   static float **T_L = NULL;
+   static float **T_R = NULL;
+
+ 
+   A_L     = matrix(1,3,1,3);
+   A_R     = matrix(1,3,1,3);
+   A_N     = matrix(1,3,1,3);
+   Rt_o    = matrix(1,3,1,4);
+   Rt_n    = matrix(1,3,1,4); 
+   P_o     = matrix(1,3,1,4);
+   P_n     = matrix(1,3,1,4);
+   Q_o     = matrix(1,3,1,3);
+   B       = matrix(1,3,1,1);
+   QI_o_L  = matrix(1,3,1,3);
+   QI_o_R  = matrix(1,3,1,3);
+   Q_n_L   = matrix(1,3,1,3);
+   Q_n_R   = matrix(1,3,1,3);
+   I       = matrix(1,3,1,3);
+   p_i     = vector(1,3);
+   p_o     = vector(1,3);
+
+   if (T_L == NULL) T_L     = matrix(1,3,1,3);
+   if (T_R == NULL) T_R     = matrix(1,3,1,3);
+
+
+   /* set debug flags */
+
+   debug = false;
+
+   if (debug) {
+      printf("rectify: left intrinsic parameters  %4.1f, %4.1f, %4.1f, %4.1f\n",fx_left,  fy_left,  px_left,  py_left);  
+      printf("rectify: right intrinsic parameters %4.1f, %4.1f, %4.1f, %4.1f\n",fx_right, fy_right, px_right, py_right);  
+      printf("rectify: left and right angles      %4.1f, %4.1f\n",              theta_y_left, theta_y_right);  
+   }
+   
+   if (input_image_left == NULL || input_image_right == NULL || output_image_left == NULL || output_image_right == NULL) {
+      printf("rectify: one or more input and output images note provided; quitting.\n");
+      return;  // images don't exist ... quit
+   }
+
+   /* input data is intensity image */
+
+   input_image_left->get_size(&width,&height);
+   depth = input_image_left->get_image_mode();
+
+   input_image_right->get_size(&width1,&height1);
+   depth1 = input_image_right->get_image_mode();
+
+   if (width!=width1 || height!=height1 || depth!=depth1) {
+      printf("rectify: images provided are a different size; quitting.\n");
+      return;   // sizes aren't identical ... quit
+   }                 
+
+   /*
+    * convert angles to radians and negate since the angle required is from current to world FoR, 
+    * not vice versa as is specified by the vergence angle from which these angles are derived 
+    */
+
+   temp1 = -(theta_y_left  / (float) 180.0) * (float) 3.14159;
+   temp2 = -(theta_y_right  / (float) 180.0) * (float) 3.14159;
+
+   if ((fabs(theta_y_left_radians  - temp1) > 0.01) ||
+       (fabs(theta_y_right_radians - temp2) > 0.01)   ) {
+
+      /* new angles so we have to recompute the transformation */
+
+      theta_y_left_radians  = -(theta_y_left  / (float) 180.0) * (float) 3.14159;
+      theta_y_right_radians = -(theta_y_right / (float) 180.0) * (float) 3.14159;
+ 
+      /*
+       * LEFT CAMERA
+       * old PPM
+       */
+   
+      /* intrinsic camera parameter matrix A */
+
+      for (i=1;i<=3;i++) {
+         for (j=1;j<=3;j++) {
+           A_L[i][j] = 0;
+         }
+      }
+      A_L[1][1] = fx_left;
+      A_L[2][2] = fy_left;
+      A_L[1][3] = px_left;
+      A_L[2][3] = py_left;
+      A_L[3][3] = 1;  
+
+      /* old extrinsic camera parameter matrix [R t] */
+
+      Rt_o[1][1] = cos(theta_y_left_radians);
+      Rt_o[1][2] = 0;
+      Rt_o[1][3] = sin(theta_y_left_radians);
+      Rt_o[1][4] = tx_left;  
+      Rt_o[2][1] = 0;
+      Rt_o[2][2] = 1;
+      Rt_o[2][3] = 0;
+      Rt_o[2][4] = ty_left;
+      Rt_o[3][1] = -sin(theta_y_left_radians);
+      Rt_o[3][2] = 0;
+      Rt_o[3][3] = cos(theta_y_left_radians);
+      Rt_o[3][4] = tz_left;
+ 
+
+      /* old perspective projection matrix (PPM) P_o = A x Rt_o */
+
+      for (i=1;i<=3;i++) {
+         for (j=1;j<=4;j++) {
+            P_o[i][j]=0.0;
+            for (k=1;k<=3;k++)
+               P_o[i][j] += (A_L[i][k]*Rt_o[k][j]);
+         }
+      }
+
+      if (debug) {
+         printf("\nrectify: P_o left \n");
+         print_matrix(P_o,1,3,1,4);
+         printf(" \n");
+      } 
+
+
+      /* Q_o = left 3x3 of P_o */
+
+      for (i=1;i<=3;i++) {
+         for (j=1;j<=3;j++) {
+            Q_o[i][j] =P_o[i][j];
+            QI_o_L[i][j]=Q_o[i][j]; // to be overwritten by gaussj() when determining the inverse
+         }
+      }
+
+      /* QI_o ... inverse of Q_o */
+
+      for (i=1;i<=3;i++) B[i][1] = 1;   // dummy RHS vector
+     
+      gaussj(QI_o_L,3,B,1);             // QI_o = Q_o on input, and inverse of Q_o on output
+
+
+      /*
+       * RIGHT CAMERA
+       * old PPM
+       */
+   
+      /* intrinsic camera parameter matrix A */
+
+      for (i=1;i<=3;i++) {
+         for (j=1;j<=3;j++) {
+            A_R[i][j] = 0;
+         }
+      }
+      A_R[1][1] = fx_right;
+      A_R[2][2] = fy_right;
+      A_R[1][3] = px_right;
+      A_R[2][3] = py_right;
+      A_R[3][3] = 1;  
+
+      /* old extrinsic camera parameter matrix [R t] */
+
+      Rt_o[1][1] = cos(theta_y_right_radians);
+      Rt_o[1][2] = 0;
+      Rt_o[1][3] = sin(theta_y_right_radians);
+      Rt_o[1][4] = tx_right;    
+      Rt_o[2][1] = 0;
+      Rt_o[2][2] = 1;
+      Rt_o[2][3] = 0;
+      Rt_o[2][4] = ty_right;
+      Rt_o[3][1] = -sin(theta_y_right_radians);
+      Rt_o[3][2] = 0;
+      Rt_o[3][3] = cos(theta_y_right_radians);
+      Rt_o[3][4] = tz_right;
+    
+      /* old perspective projection matrix (PPM) P_o = A x Rt_o */
+
+      for (i=1;i<=3;i++) {
+         for (j=1;j<=4;j++) {
+            P_o[i][j]=0.0;
+            for (k=1;k<=3;k++)
+               P_o[i][j] += (A_R[i][k]*Rt_o[k][j]);
+         }
+      }
+ 
+      if (debug) {
+         printf("\nrectify: P_o right \n");
+         print_matrix(P_o,1,3,1,4);
+         printf(" \n");
+      } 
+
+
+      /* Q_o = left 3x3 of P_o */
+
+      for (i=1;i<=3;i++) {
+         for (j=1;j<=3;j++) {
+            Q_o[i][j] =P_o[i][j];
+            QI_o_R[i][j]=Q_o[i][j]; // to be overwritten by gaussj() when determining the inverse
+         }
+      }
+
+      
+      /* QI_o ... inverse of Q_o */
+
+      for (i=1;i<=3;i++) B[i][1] = 1; // dummy RHS vector
+  
+      gaussj(QI_o_R,3,B,1);             // QI_o = Q_o on input, and inverse of Q_o on output
+
+ 
+      /*
+       * LEFT CAMERA
+       * new PPM
+       */
+   
+      /* 
+       * intrinsic camera parameter matrix A 
+       * using the same (average) intrinsic parameter matrix satisfies the requirement  
+       * that conjugate points must have the same vertical coordinate
+       */
+   
+      for (i=1;i<=3;i++) {
+         for (j=1;j<=3;j++) {
+            A_N[i][j] = (A_L[i][j] + A_R[i][j])/2;  
+         }
+      }
+
+      Rt_n[1][1] = 1;
+      Rt_n[1][2] = 0;
+      Rt_n[1][3] = 0;
+      Rt_n[1][4] = 0;
+      Rt_n[2][1] = 0;
+      Rt_n[2][2] = 1;
+      Rt_n[2][3] = 0;
+      Rt_n[2][4] = 0;
+      Rt_n[3][1] = 0;
+      Rt_n[3][2] = 0;
+      Rt_n[3][3] = 1;
+      Rt_n[3][4] = 1;
+
+      if (debug) {
+         printf("rectify: Rt_n left \n");
+         print_matrix(Rt_n,1,3,1,4);
+      }
+
+      /* P_n = A x Rt_n */
+
+      for (i=1;i<=3;i++) {
+         for (j=1;j<=4;j++) {
+            P_n[i][j]=0.0;
+            for (k=1;k<=3;k++)
+               P_n[i][j] += (A_N[i][k]*Rt_n[k][j]);
+         }
+      }
+
+   
+      /* Q_n = left 3x3 of P_n */
+
+      for (i=1;i<=3;i++) {
+         for (j=1;j<=3;j++) {
+            Q_n_L[i][j]=P_n[i][j];
+         }
+      }
+
+      /* T = Q_n * QI_o */
+
+      for (i=1;i<=3;i++) {
+         for (j=1;j<=3;j++) {
+            T_L[i][j]=0.0;
+            for (k=1;k<=3;k++)
+               T_L[i][j] += (Q_n_L[i][k]*QI_o_L[k][j]);
+         }
+      }
+
+      /* 
+       * however, it is easier to build the output image by pixel filling; 
+       * this means we really need a transformation mapping the rectified image back to the old image
+       * we comput this by inverting the transformation
+       */
+
+      /* Invert T_L in place */
+
+      for (i=1;i<=3;i++) B[i][1] = 1;   // dummy RHS vector
+  
+      gaussj(T_L,3,B,1);                // T on input, and inverse of T on output
+
+      if (debug) {
+         printf("rectify: transformation mapping left rectified image to old image\n");
+         print_matrix(T_L,1,3,1,3);
+      }
+
+
+      /*
+       * RIGHT CAMERA
+       * new PPM
+       */
+   
+      /* 
+       * intrinsic camera parameter matrix A ... same as LEFT camera
+       */
+   
+
+      /* new extrinsic camera parameter matrix [R t] */
+ 
+      /* R is the same as the LEFT camera */
+
+      /* P_n = A x Rt_n */
+
+      for (i=1;i<=3;i++) {
+         for (j=1;j<=4;j++) {
+            P_n[i][j]=0.0;
+            for (k=1;k<=3;k++)
+               P_n[i][j] += (A_N[i][k]*Rt_n[k][j]);
+         }
+      }
+
+   
+      /* Q_n = left 3x3 of P_n */
+
+      for (i=1;i<=3;i++) {
+         for (j=1;j<=3;j++) {
+            Q_n_R[i][j]=P_n[i][j];
+         }
+      }
+
+      /* T = Q_n * QI_o */
+
+      for (i=1;i<=3;i++) {
+         for (j=1;j<=3;j++) {
+            T_R[i][j]=0.0;
+            for (k=1;k<=3;k++)
+               T_R[i][j] += (Q_n_R[i][k]*QI_o_R[k][j]);
+         }
+      }
+
+      /* Invert T_R in place */
+
+      for (i=1;i<=3;i++) B[i][1] = 1;   // dummy RHS vector
+  
+      gaussj(T_R,3,B,1);                // T on input, and inverse of T on output
+
+      if (debug) {
+         printf("rectify: transformation mapping right rectified image to old image\n");
+         print_matrix(T_R,1,3,1,3);
+      }
+   }
+
+   /* Apply the transformation to the LEFT image */
+
+   /* first, compute the transformation of the principal point */
+
+   p_i[1] = px_left;
+   p_i[2] = py_left;
+   p_i[3] = 1;
+
+   if (debug) {
+      printf("rectify: px_left, py_left \n");
+      print_vector(p_i,1,3);
+   }
+
+   for (i=1;i<=3;i++) {
+      p_o[i] = 0.0;
+      for (j=1;j<=3;j++) {
+         p_o[i] += (T_L[i][j]*p_i[j]);
+      }
+   }
+
+   if (debug) {
+      printf("rectify: px'_left, py'_right \n");
+      print_vector(p_o,1,3);
+   }
+
+   /* 
+    * Compute x and y offsets as the difference between the coordinate of the old principal point 
+    * and the point to which it maps.
+    * These offsets are then used to shift all transformed points  so that the position of the principal point is unchanged
+    * in the original and rectified image
+    */
+
+   x_offset = p_i[1] - p_o[1];
+   y_offset = p_i[2] - p_o[2];
+
+   if (debug) printf("rectify: left x and y offsets are %f %f\n", x_offset, y_offset);
+
+   /* initialize output, i.e. rectified, image */
+
+   for (i=0; i<width; i++) {
+      for (j=0; j<height; j++) {
+         for (k=0; k<depth; k++) {
+            output_image_left->put_pixel(i,j, (unsigned char) 0,k);
+         }
+      }
+   }
+
+   for (i=0; i<width; i++) {
+      for (j=0; j<height; j++) {
+
+         p_i[1] = (float) i;
+         p_i[2] = (float) j;
+         p_i[3] = 1;
+   
+         for (ii=1;ii<=3;ii++) {
+            p_o[ii] = 0.0;
+            for (jj=1;jj<=3;jj++) {
+               p_o[ii] += (T_L[ii][jj]*p_i[jj]);
+            }
+         }
+
+         x = (p_o[1] / p_o[3]) + x_offset;  // remember to normalize coordinates 
+         y = (p_o[2] / p_o[3]) + y_offset;
+
+         i_prime = (int) (x);   
+         j_prime = (int) (y);   
+
+         x_frac = x - (float) i_prime;
+         y_frac = y - (float) j_prime;
+
+         if (((i_prime > 0) && (i_prime < width-1)) && ((j_prime > 0) && (j_prime < height-1))) {
+            for (k=0; k<depth; k++) {
+             
+               input_image_left->get_pixel(i_prime,j_prime,    &p1, k);
+               input_image_left->get_pixel(i_prime,j_prime+1,  &p2, k);
+               input_image_left->get_pixel(i_prime+1,j_prime,  &p3, k);
+               input_image_left->get_pixel(i_prime+1,j_prime+1,&p4, k);
+               x_frac = x - i_prime;
+               y_frac = y - j_prime;
+
+               pixel_value = (unsigned char) (                        // bilinear interpolation
+                                              ((p3-p1)*x_frac) +
+                                              ((p2-p1)*y_frac) + 
+                                              ((p4+p1-p3-p2)*x_frac*y_frac) +
+                                               (p1)
+                                              );
+           
+               output_image_left->put_pixel(i,j, pixel_value,k);
+            }
+         }
+      }
+   }
+ 
+
+    
+   /* Apply the transformation to the RIGHT image */
+
+   /* first, compute the transformation of the principal point */
+
+   p_i[1] = px_right;
+   p_i[2] = py_right;
+   p_i[3] = 1;
+
+   if (debug) {
+      printf("rectify: px_right, py_right \n");
+      print_vector(p_i,1,3);
+   }
+
+   for (i=1;i<=3;i++) {
+      p_o[i] = 0.0;
+      for (j=1;j<=3;j++) {
+         p_o[i] += (T_R[i][j]*p_i[j]);
+      }
+   }
+
+   if (debug) {
+      printf("rectify: px'_right, py'_right \n");
+      print_vector(p_o,1,3);
+   }
+
+   /* 
+    * Compute x and y offsets as the difference between the coordinate of the old principal point 
+    * and the point to which it maps.
+    * These offsets are then used to shift all transformed points  so that the position of the principal point is unchanged
+    * in the original and rectified image
+    */
+
+   x_offset = p_i[1] - p_o[1];
+   y_offset = p_i[2] - p_o[2];
+
+   if (debug) printf("rectify: right x and y offsets are %f %f\n", x_offset, y_offset);
+
+   /* initialize output, i.e. rectified, image */
+
+   for (i=0; i<width; i++) {
+      for (j=0; j<height; j++) {
+         for (k=0; k<depth; k++) {
+            output_image_right->put_pixel(i,j, (unsigned char) 0,k);
+         }
+      }
+   }
+
+   for (i=0; i<width; i++) {
+      for (j=0; j<height; j++) {
+
+         p_i[1] = (float) i;
+         p_i[2] = (float) j;
+         p_i[3] = 1;
+   
+         for (ii=1;ii<=3;ii++) {
+            p_o[ii] = 0.0;
+            for (jj=1;jj<=3;jj++) {
+               p_o[ii] += (T_R[ii][jj]*p_i[jj]);
+            }
+         }
+
+
+         /* 
+          * normalize coordinates 
+          * and shift the right image to compensate for the difference in the coordinates of the principal points 
+          */
+         
+         x = (p_o[1] / p_o[3]) + x_offset + (px_right - px_left);  
+         y = (p_o[2] / p_o[3]) + y_offset + (py_right - py_left);  
+
+         i_prime = (int) (x);   
+         j_prime = (int) (y);   
+
+         x_frac = x - (float) i_prime;
+         y_frac = y - (float) j_prime;
+
+         if (((i_prime > 0) && (i_prime < width-1)) && ((j_prime > 0) && (j_prime < height-1))) {
+            for (k=0; k<depth; k++) {
+             
+               input_image_right->get_pixel(i_prime,j_prime,    &p1, k);
+               input_image_right->get_pixel(i_prime,j_prime+1,  &p2, k);
+               input_image_right->get_pixel(i_prime+1,j_prime,  &p3, k);
+               input_image_right->get_pixel(i_prime+1,j_prime+1,&p4, k);
+               x_frac = x - i_prime;
+               y_frac = y - j_prime;
+
+               pixel_value = (unsigned char) (                        // bilinear interpolation
+                                              ((p3-p1)*x_frac) +
+                                              ((p2-p1)*y_frac) + 
+                                              ((p4+p1-p3-p2)*x_frac*y_frac) +
+                                               (p1)
+                                              );
+           
+               output_image_right->put_pixel(i,j, pixel_value,k);
+            }
+         }
+      }
+   }
+
+
+   free_matrix(A_L,1,3,1,3);
+   free_matrix(A_R,1,3,1,3);
+   free_matrix(A_N,1,3,1,3);
+   free_matrix(Rt_o,1,3,1,4);
+   free_matrix(Rt_n,1,3,1,4); 
+   free_matrix(P_o,1,3,1,4);
+   free_matrix(P_n,1,3,1,4);
+   free_matrix(Q_o,1,3,1,3);
+   free_matrix(B,1,3,1,1);
+   free_matrix(QI_o_L,1,3,1,3);
+   free_matrix(QI_o_R,1,3,1,3);
+   free_matrix(Q_n_L,1,3,1,3);
+   free_matrix(Q_n_R,1,3,1,3);
+   free_matrix(I,1,3,1,3);
+   free_vector(p_i,1,3);
+   free_vector(p_o,1,3);
+
+   
+   /* don't free the transformation matrices ... we may use them again next time */
+
+   //free_matrix(T_L,1,3,1,3);
+   //free_matrix(T_R,1,3,1,3);
+
+   if (debug) printf("rectify: leaving ...\n");
+
+   return;
+   
+}
+ 
+
+
+
  
 /*****************************************************************************/
 /*                                                                           */
@@ -6327,11 +6954,6 @@ Press, Teukolsky, Vetterling, and Flannery
 ----------------------------------------------------------*/
 
 
-#define TINY 1.0e-20
-#define NR_END 1
-#define FREE_ARG char*
-#define REAL float
-#define SWAP(a,b) tempr=(a);(a)=(b);(b)=tempr;
 
 /* nrerror - numerical recipies standard error handler */
 
@@ -6346,45 +6968,45 @@ void nrerror(char error_text[])
 }
 
 
-/* iNR_vector - allocate a int NR_vector with subscript range v[nl..nh] */
+/* ivector - allocate a int vector with subscript range v[nl..nh] */
 
-int *iNR_vector(long nl, long nh) {
+int *ivector(long nl, long nh) {
 
    int *v;
 
    v = (int *) malloc ((size_t) ((nh-nl+1+NR_END)*sizeof(int)));
-   if (!v) nrerror("allocation failure in iNR_vector()");
+   if (!v) nrerror("allocation failure in ivector()");
    return v-nl+NR_END;
 }
 
 
 
 
-/* free_iNR_vector - free a float NR_vector allocated with NR_vector() */
+/* free_ivector - free a float vector allocated with vector() */
 
-void free_iNR_vector(int *v, long nl, long nh) {
+void free_ivector(int *v, long nl, long nh) {
 
    free((FREE_ARG) (v+nl-NR_END));
 }
 
 
-/* NR_vector - allocate a float NR_vector with subscript range v[nl..nh] */
+/* vector - allocate a float vector with subscript range v[nl..nh] */
 
-REAL *NR_vector(long nl, long nh) {
+REAL *vector(long nl, long nh) {
 
    REAL *v;
 
    v = (REAL *) malloc ((size_t) ((nh-nl+1+NR_END)*sizeof(REAL)));
-   if (!v) nrerror("allocation failure in NR_vector()");
+   if (!v) nrerror("allocation failure in vector()");
    return v-nl+NR_END;
 }
 
 
 
 
-/* free_NR_vector - free a float NR_vector allocated with NR_vector() */
+/* free_vector - free a float vector allocated with vector() */
 
-void free_NR_vector(REAL *v, long nl, long nh) {
+void free_vector(REAL *v, long nl, long nh) {
 
    free((FREE_ARG) (v+nl-NR_END));
 }
@@ -6494,32 +7116,34 @@ void print_matrix(REAL **m, long nrl, long nrh, long ncl, long nch) {
 
   int i,j;
    
-  printf(" ---------------\n");
+  //printf(" ---------------\n");
   for (i=nrl; i<=nrh; i++) {
      for (j=ncl; j<= nch; j++) {
        printf("%f  ", m[i][j]);
      }
      printf("\n");
    }
-  printf(" ---------------\n");
+  //printf(" ---------------\n");
 
 }
 
 
-/* print_NR_vector*/
+/* print_vector*/
 
-void print_NR_vector(REAL *v, long nrl, long nrh) {
+void print_vector(REAL *v, long nrl, long nrh) {
 
   int i;
    
-  printf(" ---------------\n");
+  //printf(" ---------------\n");
   for (i=nrl; i<=nrh; i++) {
      printf("%f  ", v[i]);
   }
-  printf(" ---------------\n");
+  printf("\n");
+  //printf(" ---------------\n");
 
 }
 
+#define SWAP(a,b) tempr=(a);(a)=(b);(b)=tempr;
 
 void fourn(REAL data[], unsigned  long nn[], int ndim, int isign)
 
@@ -6600,6 +7224,7 @@ void fourn(REAL data[], unsigned  long nn[], int ndim, int isign)
    }
 }
 
+#undef SWAP
 
 void rlft3(REAL ***data, REAL **speq, unsigned long nn1, unsigned long nn2, unsigned long nn3, int 
 isign)
@@ -6616,9 +7241,6 @@ isign)
 /* and speq.  The dimensions nn1, nn2, nn3 must always be integer powers of 2               */
 
 {
-
-   void fourn(REAL data[], unsigned long nn[], int ndim, int isign);
-   void nrerror(char error_text[]);
    unsigned long i1, i2, i3, j1, j2, j3, nn[4], ii3;
    double theta, wi, wpi, wpr, wr, wtemp;
    REAL c1, c2, h1r, h1i, h2r, h2i;
@@ -6685,8 +7307,63 @@ isign)
    if (isign == -1)
      fourn(&data[1][1][1]-1,nn,3,isign);
 }
-     
- 
+  
+#define SWAP(a,b) {temp=(a);(a)=(b);(b)=temp;}
+
+ void gaussj(float **a, int n, float **b, int m)
+{
+	int *indxc,*indxr,*ipiv;
+	int i,icol,irow,j,k,l,ll;
+	float big,dum,pivinv,temp;
+
+	indxc=ivector(1,n);
+	indxr=ivector(1,n);
+	ipiv=ivector(1,n);
+	for (j=1;j<=n;j++) ipiv[j]=0;
+	for (i=1;i<=n;i++) {
+		big=0.0;
+		for (j=1;j<=n;j++)
+			if (ipiv[j] != 1)
+				for (k=1;k<=n;k++) {
+					if (ipiv[k] == 0) {
+						if (fabs(a[j][k]) >= big) {
+							big=fabs(a[j][k]);
+							irow=j;
+							icol=k;
+						}
+					}
+				}
+		++(ipiv[icol]);
+		if (irow != icol) {
+			for (l=1;l<=n;l++) SWAP(a[irow][l],a[icol][l])
+			for (l=1;l<=m;l++) SWAP(b[irow][l],b[icol][l])
+		}
+		indxr[i]=irow;
+		indxc[i]=icol;
+		if (a[icol][icol] == 0.0) nrerror("gaussj: Singular Matrix");
+		pivinv=(float)1.0/a[icol][icol];
+		a[icol][icol]=1.0;
+		for (l=1;l<=n;l++) a[icol][l] *= pivinv;
+		for (l=1;l<=m;l++) b[icol][l] *= pivinv;
+		for (ll=1;ll<=n;ll++)
+			if (ll != icol) {
+				dum=a[ll][icol];
+				a[ll][icol]=0.0;
+				for (l=1;l<=n;l++) a[ll][l] -= a[icol][l]*dum;
+				for (l=1;l<=m;l++) b[ll][l] -= b[icol][l]*dum;
+			}
+	}
+	for (l=n;l>=1;l--) {
+		if (indxr[l] != indxc[l])
+			for (k=1;k<=n;k++)
+				SWAP(a[k][indxr[l]],a[k][indxc[l]]);
+	}
+	free_ivector(ipiv,1,n);
+	free_ivector(indxr,1,n);
+	free_ivector(indxc,1,n);
+}
+
+#undef SWAP
 
 /* 
 
@@ -6696,7 +7373,7 @@ isign)
   Numerical Recipes in C.
 
   Since the NR routines use a different array representation, the input/output
-  images have to be mapped into temporary NR NR_vector/matrix/tensor arrays
+  images have to be mapped into temporary NR vector/matrix/tensor arrays
 
   Parameters passed:
 
@@ -6716,27 +7393,12 @@ isign)
 void fft(float *image, float *real, float *imaginary, int width, int height, 
       int direction) {
 
-   void rlft3(REAL ***data, REAL **speq, unsigned long nn1, unsigned long nn2,
-           unsigned long nn3, int isign);
-   void nrerror(char error_text[]);
-   REAL *NR_vector(long nl, long nh);
-   void free_NR_vector(REAL *v, long nl, long nh);
-   REAL **matrix(long nrl, long nrh, long ncl, long nch);
-   void free_matrix(REAL **m, long nrl, long nrh, long ncl, long nch);
-   REAL ***f3tensor(long nrl, long nrh, long ncl, long nch, long ndl, long ndh);
-   void free_f3tensor(REAL ***t, long nrl, long nrh, long ncl, long nch, 
-      long ndl, long ndh);
-
-
    REAL ***data, **speq;
    int i, j, w2, h2;
    double a, b;
    int debug=FALSE;
 
    float  *mag;
-
-
-
    w2 = width/2;
    h2 = height/2;
 
@@ -6934,5 +7596,8 @@ void fft(float *image, float *real, float *imaginary, int width, int height,
 
 
 }
+ 
 /* -library_code_end */
-
+ 
+ 
+ 
