@@ -1,0 +1,88 @@
+<application>
+<name>Epipolar Rectification of Left and Right Images</name>
+
+<dependencies>
+   <port>/icub/cam/left</port>
+   <port>/icub/cam/right</port>
+   <port>/icub/head/rpc:i</port>
+</dependencies>
+
+<module>
+   <name>rectification</name>
+   <parameters>--configCamera iCubEyes.ini</parameters>
+   <node>icub1</node>
+   <tag>rectification</tag>
+</module>
+
+<module>
+   <name>yarpview</name>
+   <parameters>--name /leftInputImage --x 000 --y 0 --w 320 --h 318 </parameters>
+   <node>icub1</node>
+   <tag>left_image</tag>
+</module>
+
+<module>
+   <name>yarpview</name>
+   <parameters>--name /rightInputImage --x 340 --y 0 --w 320 --h 318 </parameters>
+   <node>icub1</node>
+   <tag>right_image</tag>
+</module>
+
+<module>
+   <name>yarpview</name>
+   <parameters>--name /leftRectifiedImage --x 680 --y 0 --w 320 --h 318 --synch</parameters>
+   <node>icub1</node>
+   <tag>left_rectified_image</tag>
+</module>
+
+<module>
+   <name>yarpview</name>
+   <parameters>--name /rightRectifiedImage --x 1020 --y 0 --w 320 --h 318 --synch</parameters>
+   <node>icub1</node>
+   <tag>right_rectified_image</tag>
+</module>
+
+
+<connection>
+  <from>/icub/cam/left</from>
+  <to>/rectification/leftImage:i</to>
+  <protocol>tcp</protocol>
+</connection>
+
+<connection>
+  <from>/icub/cam/left</from>
+  <to>/leftInputImage</to>
+  <protocol>tcp</protocol>
+</connection>
+
+<connection>
+  <from>/icub/cam/right</from>
+  <to>/rectification/rightImage:i</to>
+  <protocol>tcp</protocol>
+</connection>
+
+<connection>
+  <from>/icub/cam/right</from>
+  <to>/rightInputImage</to>
+  <protocol>tcp</protocol>
+</connection>
+
+<connection>
+  <from>/rectification/leftImage:o</from>
+  <to>/leftRectifiedImage</to>
+  <protocol>tcp</protocol>
+</connection>
+
+<connection>
+  <from>/rectification/rightImage:o</from>
+  <to>/rightRectifiedImage</to>
+  <protocol>tcp</protocol>
+</connection>
+
+<connection>
+  <from>/icub/head/state:o</from>
+  <to>/rectification/head</to>
+  <protocol>tcp</protocol>
+</connection>
+
+</application>
