@@ -20,7 +20,8 @@
 /*
  * Audit Trail
  * -----------
- * 26/07/07  First version validated   DV
+ * 26/08/09  First version validated   DV
+ * 12/09/09  Added functionality to read additional configuration file DV
  */ 
 
 #include "iCub/myModule.h"

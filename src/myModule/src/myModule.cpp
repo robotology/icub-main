@@ -20,7 +20,8 @@
 /*
  * Audit Trail
  * -----------
- * 26/07/07  First version validated   DV
+ * 26/08/09  First version validated   DV
+ * 12/09/09  Added functionality to read additional configuration file DV
  */ 
 
 /* 
@@ -71,6 +72,30 @@ bool MyModule::configure(yarp::os::ResourceFinder &rf)
                            "Robot name (string)").asString();
 
    robotPortName         = "/" + robotName + "/head";
+
+   /* 
+    * get the cameraConfig file and read the required parameter values cx, cy 
+    * in both the groups [CAMERA_CALIBRATION_LEFT] and [CAMERA_CALIBRATION_RIGHT]
+    */
+
+   cameraConfigFilename  = rf.check("cameraConfig", 
+                           Value("icubEyes.ini"), 
+                           "camera configuration filename (string)").asString();
+
+   cameraConfigFilename = (rf.findFile(cameraConfigFilename.c_str())).c_str();
+
+   Property cameraProperties;
+
+   if (cameraProperties.fromConfigFile(cameraConfigFilename.c_str()) == false) {
+      cout << "myModule: unable to read camera configuration file" << cameraConfigFilename;
+      return 0;
+   }
+   else {
+      cxLeft  = (float) cameraProperties.findGroup("CAMERA_CALIBRATION_LEFT").check("cx", Value(160.0), "cx left").asDouble();
+      cyLeft  = (float) cameraProperties.findGroup("CAMERA_CALIBRATION_LEFT").check("cy", Value(120.0), "cy left").asDouble();
+      cxRight = (float) cameraProperties.findGroup("CAMERA_CALIBRATION_RIGHT").check("cx", Value(160.0), "cx right").asDouble();
+      cyRight = (float) cameraProperties.findGroup("CAMERA_CALIBRATION_RIGHT").check("cy", Value(120.0), "cy right").asDouble();
+   }
 
 
    /* get the name of the input and output ports, automatically prefixing the module name by using getName() */

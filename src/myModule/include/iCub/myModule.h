@@ -109,6 +109,7 @@
  * \section conf_file_sec Configuration Files
  *
  * myModule.ini  in $ICUB_ROOT/icub/app/myModule/conf
+ * icubEyes.ini  in $ICUB_ROOT/icub/app/myModule/conf
  * 
  * \section tested_os_sec Tested OS
  *
@@ -151,7 +152,8 @@
 /*
  * Audit Trail
  * -----------
- * 26/07/07  First version validated   DV
+ * 26/08/09  First version validated   DV
+ * 12/09/09  Added functionality to read additional configuration file DV
  */ 
 
 
@@ -208,8 +210,12 @@ class MyModule:public RFModule
    string inputPortName;
    string outputPortName;  
    string handlerPortName;
+   string cameraConfigFilename;
+   float  fxLeft,  fyLeft;          // focal length
+   float  fxRight, fyRight;         // focal length
+   float  cxLeft,  cyLeft;          // coordinates of the principal point
+   float  cxRight, cyRight;         // coordinates of the principal point
    int thresholdValue;
-
 
    /* class variables */
 
