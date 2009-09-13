@@ -55,6 +55,10 @@
  *   specifies the input port name (this string will be prefixed by /myModule/ 
  *   or whatever else is specifed by the name parameter
  *
+ * - cameraConfig icubEyes.ini
+ *   specifies the camera configuration file containing the intrinsic parameters of
+ *   the left and right cameras
+ *
  * - threshold 7             
  *   specifies the threshold value
  *
