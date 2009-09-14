@@ -76,11 +76,26 @@ void fingerDetector::run()
     dq = q - qStar;
 
     double res = 0;
+    double q1N = 0;
     for (int i = 0; i < n ; i++)
-        res += sqrt(dq(i)*dq(i));
+        {
+            res += sqrt(dq(i)*dq(i));
+            q1N += sqrt(q1(i)*q1(i));
+        }
 
-    if (res > max || tStar(0) < minT || tStar(0) > maxT)
+
+    if (tStar(0) > maxT && res < max)
+        status = (tStar(0) - maxT) * q1N;
+    if (tStar(0) > maxT && res > max)
+        status = (tStar(0) - maxT) * q1N + (res - max);
+
+    if (tStar(0) < minT && res < max)
+        status = (minT - tStar(0)) * q1N;
+    if (tStar(0) < minT && res > max)
+        status = (minT - tStar(0)) * q1N + (res - max);
+
+    if ( tStar(0) > minT && tStar(0) < maxT && res < max)
+        status = 0.0;
+    if ( tStar(0) > minT && tStar(0) < maxT && res > max)
         status = res - max;
-    else
-        status = 0.0;  //false if not grasping (model respected)
 }  

@@ -138,11 +138,13 @@
  * The port will contain a bottle which contains a double 
  * for each finger. Finger status will be 0.0 if the finger
  * is not contacting anything (model is satisfied). Finger
- * status will be differnt from zero if the model is not 
+ * status will be different from zero if the model is not 
  * satisfied (either \f$ t \notin [t_{min}, t_{max}], \f$ or 
  * deviation from the model bigger than the deviation specified
  * in the configuration file 
  * \f$ \left| q - q^{*} \right|  \notin [q_{min}, q_{max}] \f$).
+ * The value of status will correspond in this case to the distance
+ * from the (previously acquired) model.
  * Moreover, for each finger, a port for reading the analog sensors:
  * <ul>
  * <li> analogPortName/graspDetector/finger0/right_arm
