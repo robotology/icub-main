@@ -59,7 +59,7 @@ void fingerDetector::run()
         }
     //fprintf(stderr, "Reading: %s\n", analogs.toString().c_str());
    
-    double n = q1.size(); 
+    int n = q1.size(); 
     Vector q(n);
     Vector qStar(n);
     Vector dq(n);
