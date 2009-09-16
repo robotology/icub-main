@@ -11,6 +11,7 @@
 <node>cortex3</node>
 <node>cortex4</node>
 <node>cortex5</node>
+<node>cortex6</node>
 <node>icubsrv</node>
 </cluster>
 
