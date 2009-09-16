@@ -24,7 +24,6 @@ SET (ODE_SYSTEM_LIBS_FOUND FALSE)
 SET (ODE_FOUND FALSE)
 
 IF (MSVC)
-
 	#Static libs
   FIND_LIBRARY(ODE_MAIN_STATIC_DB ode "${ODE_DIR}/lib/debuglib")
   FIND_LIBRARY(ODE_MAIN_STATIC_RE ode "${ODE_DIR}/lib/releaselib")
@@ -32,20 +31,27 @@ IF (MSVC)
   FIND_LIBRARY(ODE_MAIN_LIBRARY_RE ode "${ODE_DIR}/lib/releasedll")
 
   IF (NOT ODE_FOUND)
-  FIND_LIBRARY(ODE_MAIN_STATIC_DB ode_singled "${ODE_DIR}/lib/debugsinglelib")
-  FIND_LIBRARY(ODE_MAIN_STATIC_RE ode_single "${ODE_DIR}/lib/releasesinglelib")
-  FIND_LIBRARY(ODE_MAIN_LIBRARY_DB ode_singled "${ODE_DIR}/lib/debugsingledll")
-  FIND_LIBRARY(ODE_MAIN_LIBRARY_RE ode_single "${ODE_DIR}/lib/releasesingledll")
+  IF (USE_ODE_DOUBLE)
+	UNSET (ODE_MAIN_STATIC_DB CACHE)
+	UNSET (ODE_MAIN_STATIC_RE CACHE)
+	UNSET (ODE_MAIN_LIBRARY_DB CACHE)
+	UNSET (ODE_MAIN_LIBRARY_RE CACHE)
+	FIND_LIBRARY(ODE_MAIN_STATIC_DB ode_doubled "${ODE_DIR}/lib/debugdoublelib")
+	FIND_LIBRARY(ODE_MAIN_STATIC_RE ode_double "${ODE_DIR}/lib/releasedoublelib")
+	FIND_LIBRARY(ODE_MAIN_LIBRARY_DB ode_doubled "${ODE_DIR}/lib/debugdoubledll")
+	FIND_LIBRARY(ODE_MAIN_LIBRARY_RE ode_double "${ODE_DIR}/lib/releasedoubledll") 
+  ELSE (USE_ODE_DOUBLE)
+	UNSET (ODE_MAIN_STATIC_DB CACHE)
+	UNSET (ODE_MAIN_STATIC_RE CACHE)
+	UNSET (ODE_MAIN_LIBRARY_DB CACHE)
+	UNSET (ODE_MAIN_LIBRARY_RE CACHE)
+	FIND_LIBRARY(ODE_MAIN_STATIC_DB ode_singled "${ODE_DIR}/lib/debugsinglelib")
+	FIND_LIBRARY(ODE_MAIN_STATIC_RE ode_single "${ODE_DIR}/lib/releasesinglelib")
+	FIND_LIBRARY(ODE_MAIN_LIBRARY_DB ode_singled "${ODE_DIR}/lib/debugsingledll")
+	FIND_LIBRARY(ODE_MAIN_LIBRARY_RE ode_single "${ODE_DIR}/lib/releasesingledll")
+  ENDIF (USE_ODE_DOUBLE)
   ENDIF (NOT ODE_FOUND)
-  
-  IF (NOT ODE_FOUND)
-  FIND_LIBRARY(ODE_MAIN_STATIC_DB ode_doubled "${ODE_DIR}/lib/debugdoublelib")
-  FIND_LIBRARY(ODE_MAIN_STATIC_RE ode_double "${ODE_DIR}/lib/releasedoublelib")
-  FIND_LIBRARY(ODE_MAIN_LIBRARY_DB ode_doubled "${ODE_DIR}/lib/debugdoubledll")
-  FIND_LIBRARY(ODE_MAIN_LIBRARY_RE ode_double "${ODE_DIR}/lib/releasedoubledll")
-  ENDIF (NOT ODE_FOUND)
-  
-  
+ 
   MARK_AS_ADVANCED(ODE_MAIN_STATIC_DB 
                    ODE_MAIN_STATIC_RE)
   MARK_AS_ADVANCED(ODE_MAIN_LIBRARY_DB 
