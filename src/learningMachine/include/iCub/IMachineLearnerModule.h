@@ -32,16 +32,12 @@ namespace learningmachine {
  * \see iCub::contrib::learningmachine::IMachineLearner
  * \see iCub::contrib::learningmachine::TrainModule
  * \see iCub::contrib::learningmachine::PredictModule
+ * \see iCub::contrib::learningmachine::TransformerModule
  *
  * \author Arjan Gijsberts
  */
 class IMachineLearnerModule : public Module {
 protected:
-    /**
-     * An instance of the base Support class.
-     */
-    Support* support;
-     
     /**
      * An input port for commands.
      */
@@ -82,8 +78,7 @@ public:
      *
      * @param pp the default prefix used for the ports.
      */
-    IMachineLearnerModule(Support* support, std::string pp) : portPrefix(pp) {
-        this->support = support;
+    IMachineLearnerModule(std::string pp) : portPrefix(pp) {
     }
 
     /**

@@ -6,7 +6,7 @@
  * ITransformer. 
  */
 
-#include "iCub/TransformModule.h"
+#include "iCub/TransformerModule.h"
 #include <yarp/IOException.h>
 #include <stdexcept>
 
@@ -14,7 +14,7 @@ namespace iCub {
 namespace contrib {
 namespace learningmachine {
 
-void TransformModule::exitWithHelp(std::string error) {
+void TransformerModule::exitWithHelp(std::string error) {
     int errorCode = 0;
     if(error != "") {
         std::cout << "Error: " << error << std::endl;
@@ -30,7 +30,7 @@ void TransformModule::exitWithHelp(std::string error) {
 }
 
 
-void TransformModule::registerAllPorts() {
+void TransformerModule::registerAllPorts() {
     //this->registerPort(this->model_out, "/" + this->portPrefix + "/model:o");
 
     this->registerPort(this->train_in, "/" + this->portPrefix + "/train:i");
@@ -48,7 +48,7 @@ void TransformModule::registerAllPorts() {
     this->registerPort(this->cmd_in, "/" + this->portPrefix + "/cmd:i");
 }
 
-void TransformModule::unregisterAllPorts() {
+void TransformerModule::unregisterAllPorts() {
     this->cmd_in.close();
     this->train_in.close();
     this->train_out.close();
@@ -56,7 +56,7 @@ void TransformModule::unregisterAllPorts() {
     this->predict_relay_inout.close();
 }
 
-bool TransformModule::interruptModule() {
+bool TransformerModule::interruptModule() {
     cmd_in.interrupt();
     train_in.interrupt();
     train_out.interrupt();

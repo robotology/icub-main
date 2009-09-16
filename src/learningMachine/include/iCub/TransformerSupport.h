@@ -11,19 +11,8 @@
 
 #include <string>
 
-#include "iCub/IMachineLearner.h"
 #include "iCub/ITransformer.h"
 #include "iCub/IScaler.h"
-//#include "iCub/IEventListener.h"
-
-// machines
-#include "iCub/DummyLearner.h"
-#include "iCub/RLSLearner.h"
-#include "iCub/LSSVMLearner.h"
-#include "iCub/DatasetRecorder.h"
-#ifdef BUILD_LSSVMATLAS // build only if we explicitly want to
-#include "iCub/LSSVMAtlasLearner.h"
-#endif
 
 // transformers
 #include "iCub/ScaleTransformer.h"
@@ -40,25 +29,19 @@ namespace learningmachine {
 
 
 /**
- * The Support class provides a unified access point to all FactoryT instances 
- * and other global type of objects. This avoids the need for a singleton 
- * pattern. 
+ * The TransformerSupport class provides a unified access point to all 
+ * transformer related FactoryT instances and shares the common base provided 
+ * by the general Support class.
  *
  * \author Arjan Gijsberts
  *
  */
 
-typedef FactoryT<std::string, IMachineLearner> MachineFactory;
 typedef FactoryT<std::string, ITransformer> TransformerFactory;
 typedef FactoryT<std::string, IScaler> ScalerFactory;
 
-class Support {
+class TransformerSupport : virtual public Support {
 protected:
-    /**
-     * The IMachineLearner factory.
-     */
-    MachineFactory machineFactory;
-
     /**
      * The ITransformer factory.
      */
@@ -76,9 +59,8 @@ public:
      * @param init indicates whether the factories should be filled with the
      * default list of objects
      */
-    Support(bool init = true) {
+    TransformerSupport(bool init = true) : Support() {
         if(init) {
-            this->initMachines();
             this->initTransformers();
             this->initScalers();
         }
@@ -87,20 +69,7 @@ public:
     /**
      * Destructor.
      */
-    ~Support() {}
-    
-    /**
-     * Fills the IMachineLearner factory with a default set of objects.
-     */
-    void initMachines() {
-        this->getMachineFactory().registerPrototype(new DummyLearner());
-        this->getMachineFactory().registerPrototype(new RLSLearner());
-        this->getMachineFactory().registerPrototype(new LSSVMLearner());
-#ifdef BUILD_LSSVMATLAS
-        this->getMachineFactory().registerPrototype(new LSSVMAtlasLearner());
-#endif
-        this->getMachineFactory().registerPrototype(new DatasetRecorder());
-    }
+    ~TransformerSupport() {}
     
     /**
      * Fills the ITransformer factory with a default set of objects.
@@ -118,15 +87,6 @@ public:
         this->getScalerFactory().registerPrototype(new Standardizer);
         this->getScalerFactory().registerPrototype(new Normalizer);
         this->getScalerFactory().registerPrototype(new FixedRangeScaler);
-    }
-    
-    /**
-     * Asks the Support class to return a reference to the machine factory.
-     *
-     * @return a reference to the machine factory.
-     */
-    MachineFactory& getMachineFactory() {
-        return this->machineFactory;
     }
     
     /**

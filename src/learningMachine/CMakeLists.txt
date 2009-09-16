@@ -40,10 +40,8 @@ IF(USE_LSSVMATLAS)
     ADD_DEFINITIONS(-DBUILD_LSSVMATLAS)
 ENDIF(USE_LSSVMATLAS)
 
-#FIXME, now we need transformer_src and machine_src for both train_exec and predict_exec
-
-ADD_EXECUTABLE(${TRAIN_EXEC} ${MODULE_SRC} ${MACHINE_SRC} ${TRANSFORMER_SRC} src/TrainModule.cpp src/PredictModule.cpp src/bin/train.cpp)
-ADD_EXECUTABLE(${PREDICT_EXEC} ${MODULE_SRC} ${MACHINE_SRC} ${TRANSFORMER_SRC} src/PredictModule.cpp src/bin/predict.cpp)
+ADD_EXECUTABLE(${TRAIN_EXEC} ${MODULE_SRC} ${MACHINE_SRC} src/TrainModule.cpp src/PredictModule.cpp src/bin/train.cpp)
+ADD_EXECUTABLE(${PREDICT_EXEC} ${MODULE_SRC} ${MACHINE_SRC} src/PredictModule.cpp src/bin/predict.cpp)
 ADD_EXECUTABLE(${TRANSFORM_EXEC} ${MODULE_SRC} ${TRANSFORMER_SRC} src/TransformModule.cpp src/bin/transform.cpp)
 ADD_EXECUTABLE(${TEST_EXEC} src/bin/test.cpp)
 

@@ -40,7 +40,7 @@ namespace learningmachine {
 
 typedef FactoryT<std::string, IMachineLearner> MachineFactory;
 
-class MachineSupport : private Support {
+class MachineSupport : virtual public Support {
 protected:
     /**
      * The IMachineLearner factory.

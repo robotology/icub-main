@@ -11,14 +11,15 @@
 
 #include "iCub/TransformModule.h"
 //#include "iCub/TransformerCatalogue.h"
-#include "iCub/Support.h"
+#include "iCub/TransformerSupport.h"
 
 using namespace iCub::contrib::learningmachine;
 
 int main (int argc, char* argv[]) {
     Network yarp;
+    TransformerSupport
 
-    TransformModule module;
+    TransformerModule module;
     try {
         //registerTransformers();
 
