@@ -40,7 +40,7 @@ private:
 
 public:
 
-	Sender(ConstString& name, int _period, double _threshold) : portName(name), RateThread(_period), period(_period), threshold(_threshold)
+	Sender(const ConstString& name, int _period, double _threshold) : portName(name), RateThread(_period), period(_period), threshold(_threshold)
 	{ }
 
 	virtual bool threadInit()
