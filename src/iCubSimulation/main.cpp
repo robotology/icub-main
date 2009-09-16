@@ -411,9 +411,11 @@ public:
 							double x = command.get(3).asDouble();
 							double y = command.get(4).asDouble();
 							double z = command.get(5).asDouble();
+							odeinit.mutex.wait();
 							dBodySetPosition(bid,x,y,z);
 							dBodySetLinearVel (bid, 0.0, 0.0, 0.0);
 							dBodySetAngularVel (bid, 0.0, 0.0, 0.0);
+							odeinit.mutex.post();
 						}
 						if (setBody==2){
 							unsigned int N = command.get(3).asInt();
@@ -422,9 +424,11 @@ public:
 								double x = command.get(4).asDouble();
 								double y = command.get(5).asDouble();
 								double z = command.get(6).asDouble();
+								odeinit.mutex.wait();
 								dBodySetPosition(odeinit._wrld->obj[N-1].boxbody,x,y,z);
 								dBodySetLinearVel (odeinit._wrld->obj[N-1].boxbody, 0.0, 0.0, 0.0);
 								dBodySetAngularVel (odeinit._wrld->obj[N-1].boxbody, 0.0, 0.0, 0.0);
+								odeinit.mutex.post();
 							}
 						}
 						if (setBody==5){
@@ -434,7 +438,9 @@ public:
 								double x = command.get(4).asDouble();
 								double y = command.get(5).asDouble();
 								double z = command.get(6).asDouble();
+								odeinit.mutex.wait();
 								dGeomSetPosition(odeinit._wrld->s_obj[N-1].geom[0],x,y,z);
+								odeinit.mutex.post();
 							}
 						}
 						if (setBody==6){
@@ -444,9 +450,11 @@ public:
 								double x = command.get(4).asDouble();
 								double y = command.get(5).asDouble();
 								double z = command.get(6).asDouble();
+								odeinit.mutex.wait();
 								dBodySetPosition(odeinit._wrld->cyl_obj[N-1].cylbody,x,y,z);
 								dBodySetLinearVel (odeinit._wrld->cyl_obj[N-1].cylbody, 0.0, 0.0, 0.0);
 								dBodySetAngularVel (odeinit._wrld->cyl_obj[N-1].cylbody, 0.0, 0.0, 0.0);
+								odeinit.mutex.post();
 							}
 						}
 						if (setBody==7){
@@ -456,7 +464,9 @@ public:
 								double x = command.get(4).asDouble();
 								double y = command.get(5).asDouble();
 								double z = command.get(6).asDouble();
+								odeinit.mutex.wait();
 								dGeomSetPosition(odeinit._wrld->s_cyl_obj[N-1].cylgeom[0],x,y,z);
+								odeinit.mutex.post();
 							}
 						}
 						reply.fromString("ok");
@@ -511,11 +521,13 @@ public:
 							double R = command.get(9).asDouble();
 							double G = command.get(10).asDouble();
 							double B = command.get(11).asDouble();
+							odeinit.mutex.wait();
 							odeinit._wrld->s_obj[i].geom[0] = dCreateBox (odeinit.space,odeinit._wrld->s_obj[i].size[0],odeinit._wrld->s_obj[i].size[1],odeinit._wrld->s_obj[i].size[2]);
 							dGeomSetPosition(odeinit._wrld->s_obj[i].geom[0],x,y,z);
 							odeinit._wrld->s_color[i][0] = R;
 							odeinit._wrld->s_color[i][1] = G;
 							odeinit._wrld->s_color[i][2] = B;
+							odeinit.mutex.post();
 						}
 						if (setBody==6){
 							//cyl with gravity
@@ -561,12 +573,13 @@ public:
 							double R = command.get(8).asDouble(); // colour R
 							double G = command.get(9).asDouble();// colour G
 							double B = command.get(10).asDouble();// colour B
-
+							odeinit.mutex.wait();
 							odeinit._wrld->s_cyl_obj[i].cylgeom[0] = dCreateCylinder (odeinit.space,odeinit._wrld->s_cyl_obj[i].radius,odeinit._wrld->s_cyl_obj[i].lenght);
 							dGeomSetPosition(odeinit._wrld->s_cyl_obj[i].cylgeom[0],x,y,z);
 							odeinit._wrld->s_color1[i][0] = R;
 							odeinit._wrld->s_color1[i][1] = G;
 							odeinit._wrld->s_color1[i][2] = B;
+							odeinit.mutex.post();
 						}
 
 							reply.fromString("ok");

@@ -293,43 +293,7 @@ public:
 			}
 		}
 	}
-	//static void nearCallback (void *data, dGeomID o1, dGeomID o2)
-	//{
-	//	int i,n;
-	//	// only collide things with the ground
-	//	dBodyID b1 = dGeomGetBody(o1);
-	//	dBodyID b2 = dGeomGetBody(o2);
-	//	if (b1 && b2 && dAreConnectedExcluding (b1,b2,dJointTypeContact)) return;
-	//	const int N = 10;
-	//	dContact contact[N];
-	//	n = dCollide (o1,o2,N,&contact[0].geom,sizeof(dContact));
-	//	if (n > 0) 
-	//	{
-	//		//system("PAUSE");//for testing of the object dropping
-	//		for (i=0; i<n; i++) 
-	//		{
-	//			contact[i].surface.mode = dContactSlip1| dContactSlip2| dContactApprox1; 
-	//				//0;//dContactSlip1 | dContactSlip2 |
-	//				//dContactSoftERP | dContactSoftCFM | dContactApprox1 ;
-	//			//friction
-	//			contact[i].surface.mu = dEpsilon;
-	//			contact[i].surface.mu2 = 0;
-	//			//slips
-	//			contact[i].surface.slip1 = 0.001;
-	//			contact[i].surface.slip2 = 0.001;
-	//			//error correction //good for tweaking trimesh collisions
-	//			//contact[i].surface.soft_erp = 0.8;
-	//			//contact[i].surface.soft_cfm = 0.01;
-	//			dMatrix3 RI;
-	//			dRSetIdentity (RI);
 
-	//			dJointID c = dJointCreateContact (odeinit.world,odeinit.contactgroup,&contact[i]);
-	//			dJointAttach (c, dGeomGetBody(contact[i].geom.g1), dGeomGetBody(contact[i].geom.g2));
-	//		//	glPushMatrix();LDEsetM(dGeomGetPosition(contact[i].geom),dGeomGetRotation(contact[i].geom));
-	//		//	DrawBox(0.02,0.02,0.02,false,false);glPopMatrix();
-	//		}
-	//	}
-	//}
 	static void nearCallback (void *data, dGeomID o1, dGeomID o2){
 		assert(o1);
 		assert(o2);
@@ -625,8 +589,9 @@ public:
 		//static dReal OldLinearVel[3], LinearVel[3], LinearAccel[3];
 		//startTimeODE = clock();
 
-		dSpaceCollide(odeinit.space,0,&nearCallback);
+		
 		odeinit.mutex.wait();
+		dSpaceCollide(odeinit.space,0,&nearCallback);
 		dWorldStep(odeinit.world,0.01); // TIMESTEP
 		odeinit.mutex.post();
 
