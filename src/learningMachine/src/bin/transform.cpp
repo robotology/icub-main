@@ -17,9 +17,9 @@ using namespace iCub::contrib::learningmachine;
 
 int main (int argc, char* argv[]) {
     Network yarp;
-    TransformerSupport
+    TransformerSupport support;
 
-    TransformerModule module;
+    TransformModule module(&support);
     try {
         //registerTransformers();
 

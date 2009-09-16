@@ -10,7 +10,7 @@
 #define __ICUB_TRANSFORMMODULE__
 
 #include "iCub/IMachineLearnerModule.h"
-#include "iCub/TransformerFactory.h"
+#include "iCub/TransformerSupport.h"
 
 using namespace yarp::os;
 using namespace yarp::sig;
@@ -196,6 +196,11 @@ public:
 class TransformModule : public IMachineLearnerModule {
 private:
     /**
+     * An instance of the TransformerSupport class.
+     */
+    TransformerSupport* support;
+
+    /**
      * A pointer to a transformer.
      */
     ITransformer* transformer;
@@ -251,7 +256,8 @@ public:
      *
      * @param pp the default prefix used for the ports.
      */
-    TransformModule(Support* support, std::string pp = "transform") : IMachineLearnerModule(support, pp) {
+    TransformModule(TransformerSupport* support, std::string pp = "transform") : IMachineLearnerModule(pp) {
+        this->support = support;
         this->transformer = (ITransformer*) 0;
     }
     

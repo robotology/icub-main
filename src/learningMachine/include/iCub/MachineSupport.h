@@ -13,6 +13,7 @@
 
 #include "iCub/Support.h"
 #include "iCub/IMachineLearner.h"
+#include "iCub/FactoryT.h"
 
 // machines
 #include "iCub/DummyLearner.h"
@@ -66,6 +67,16 @@ public:
     ~MachineSupport() {}
     
     /**
+     * Asks the MachineSupport class to return a reference to the machine 
+     * factory.
+     *
+     * @return a reference to the machine factory.
+     */
+    MachineFactory& getMachineFactory() {
+        return this->machineFactory;
+    }
+
+    /**
      * Fills the IMachineLearner factory with a default set of objects.
      */
     void initMachines() {
@@ -76,15 +87,6 @@ public:
         this->getMachineFactory().registerPrototype(new LSSVMAtlasLearner());
 #endif
         this->getMachineFactory().registerPrototype(new DatasetRecorder());
-    }
-    
-    /**
-     * Asks the Support class to return a reference to the machine factory.
-     *
-     * @return a reference to the machine factory.
-     */
-    MachineFactory& getMachineFactory() {
-        return this->machineFactory;
     }
 };
 

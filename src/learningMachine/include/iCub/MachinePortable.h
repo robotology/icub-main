@@ -9,11 +9,12 @@
 #ifndef __ICUB_MACHINEPORTABLE__
 #define __ICUB_MACHINEPORTABLE__
 
-#include <yarp/os/Portable.h>
-#include <iCub/IMachineLearner.h>
-#include <iCub/Support.h>
-//#include <iCub/MachineFactory.h>
 #include <stdexcept>
+
+#include <yarp/os/Portable.h>
+
+#include "iCub/IMachineLearner.h"
+#include "iCub/MachineSupport.h"
 
 
 namespace iCub {
@@ -37,9 +38,9 @@ namespace learningmachine {
 class MachinePortable : public Portable {
 private:
     /**
-     * An instance of the base Support class.
+     * An instance of the MachineSupport class.
      */
-    Support* support;
+    MachineSupport* support;
 
     /**
      * A pointer to the actual machine implementation.
@@ -57,7 +58,7 @@ public:
      *
      * @param m The initial wrapped learning machine
      */
-    MachinePortable(Support* support, IMachineLearner* m = (IMachineLearner*) 0) : machine(m) {
+    MachinePortable(MachineSupport* support, IMachineLearner* m = (IMachineLearner*) 0) : machine(m) {
         this->support = support;
     }
 

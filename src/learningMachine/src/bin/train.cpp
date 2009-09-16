@@ -11,13 +11,13 @@
 
 #include "iCub/TrainModule.h"
 //#include "iCub/MachineCatalogue.h"
-#include "iCub/Support.h"
+#include "iCub/MachineSupport.h"
 
 using namespace iCub::contrib::learningmachine;
 
 int main (int argc, char* argv[]) {
     Network yarp;
-    Support support;
+    MachineSupport support;
 
     TrainModule module(&support);
     try {

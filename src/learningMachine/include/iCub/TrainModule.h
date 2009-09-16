@@ -116,7 +116,7 @@ public:
      * @param pp the default prefix used for the ports.
      * @param support an instance of the Support class.
      */
-    TrainModule(Support* support, std::string pp = "train") : PredictModule(support, pp) {
+    TrainModule(MachineSupport* support, std::string pp = "train") : PredictModule(support, pp) {
     }
 
     /**

@@ -6,7 +6,7 @@
  * ITransformer. 
  */
 
-#include "iCub/TransformerModule.h"
+#include "iCub/TransformModule.h"
 #include <yarp/IOException.h>
 #include <stdexcept>
 
@@ -14,7 +14,7 @@ namespace iCub {
 namespace contrib {
 namespace learningmachine {
 
-void TransformerModule::exitWithHelp(std::string error) {
+void TransformModule::exitWithHelp(std::string error) {
     int errorCode = 0;
     if(error != "") {
         std::cout << "Error: " << error << std::endl;
@@ -30,7 +30,7 @@ void TransformerModule::exitWithHelp(std::string error) {
 }
 
 
-void TransformerModule::registerAllPorts() {
+void TransformModule::registerAllPorts() {
     //this->registerPort(this->model_out, "/" + this->portPrefix + "/model:o");
 
     this->registerPort(this->train_in, "/" + this->portPrefix + "/train:i");
@@ -48,7 +48,7 @@ void TransformerModule::registerAllPorts() {
     this->registerPort(this->cmd_in, "/" + this->portPrefix + "/cmd:i");
 }
 
-void TransformerModule::unregisterAllPorts() {
+void TransformModule::unregisterAllPorts() {
     this->cmd_in.close();
     this->train_in.close();
     this->train_out.close();
@@ -56,7 +56,7 @@ void TransformerModule::unregisterAllPorts() {
     this->predict_relay_inout.close();
 }
 
-bool TransformerModule::interruptModule() {
+bool TransformModule::interruptModule() {
     cmd_in.interrupt();
     train_in.interrupt();
     train_out.interrupt();
@@ -91,7 +91,7 @@ bool TransformModule::open(Searchable& opt) {
     }
     
     // construct transformer
-    this->transformer = TransformerFactory::instance().create(transformerName);
+    this->transformer = this->support->getTransformerFactory().create(transformerName);
 
     // send configuration options to the transformer
     this->getTransformer()->configure(opt);

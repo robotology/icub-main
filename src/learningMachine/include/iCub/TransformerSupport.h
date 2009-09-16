@@ -6,13 +6,15 @@
  *
  */
 
-#ifndef __ICUB_SUPPORT__
-#define __ICUB_SUPPORT__
+#ifndef __ICUB_TRANSFORMERSUPPORT__
+#define __ICUB_TRANSFORMERSUPPORT__
 
 #include <string>
 
+#include "iCub/Support.h"
 #include "iCub/ITransformer.h"
 #include "iCub/IScaler.h"
+#include "iCub/FactoryT.h"
 
 // transformers
 #include "iCub/ScaleTransformer.h"
@@ -26,7 +28,6 @@
 namespace iCub {
 namespace contrib {
 namespace learningmachine {
-
 
 /**
  * The TransformerSupport class provides a unified access point to all 
@@ -59,7 +60,7 @@ public:
      * @param init indicates whether the factories should be filled with the
      * default list of objects
      */
-    TransformerSupport(bool init = true) : Support() {
+    TransformerSupport(bool init = true) {
         if(init) {
             this->initTransformers();
             this->initScalers();
@@ -76,7 +77,7 @@ public:
      */
     void initTransformers() {
         // register transformers
-        this->getTransformerFactory().registerPrototype(new ScaleTransformer);
+        this->getTransformerFactory().registerPrototype(new ScaleTransformer(this));
         this->getTransformerFactory().registerPrototype(new RandomFeature);
     }
     

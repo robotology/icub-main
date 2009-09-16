@@ -13,12 +13,7 @@
 
 #include "iCub/IFixedSizeTransformer.h"
 #include "iCub/IScaler.h"
-#include "iCub/TransformerFactory.h"
-
-//#include <yarp/sig/Vector.h>
-//#include <yarp/os/Portable.h>
-//#include <yarp/os/IConfig.h>
-//#include <yarp/os/Value.h>
+#include "iCub/TransformerSupport.h"
 
 using namespace yarp::os;
 using namespace yarp::sig;
@@ -27,6 +22,7 @@ namespace iCub {
 namespace contrib {
 namespace learningmachine {
 
+class TransformerSupport;
 
 /**
  * The ScaleTransformer is a ITransformer that supports element-based scaling
@@ -54,6 +50,11 @@ namespace learningmachine {
  */
 class ScaleTransformer : public IFixedSizeTransformer {
 private:
+    /**
+     * An instance of the TransformerSupport class.
+     */
+    TransformerSupport* support;
+     
     /**
      * The vector of IScaler objects.
      */
@@ -100,7 +101,7 @@ public:
      * @param name name for the 
      * @param size initial size of the vector
      */
-    ScaleTransformer(std::string name = "Scaler", int size = 1);
+    ScaleTransformer(TransformerSupport* support, std::string name = "Scaler", int size = 1);
 
     /**
      * Destructor.
@@ -119,7 +120,7 @@ public:
      * Inherited from ITransformer.
      */
     virtual ITransformer* create() {
-        return new ScaleTransformer();
+        return new ScaleTransformer(this->support);
     }
 
     /*

@@ -16,7 +16,7 @@ using namespace iCub::contrib::learningmachine;
 
 int main (int argc, char* argv[]) {
     Network yarp;
-    Support support;
+    MachineSupport support;
 
     PredictModule module(&support);
     try {

@@ -177,6 +177,7 @@ public:
      * @param pp the default prefix used for the ports.
      */
     PredictModule(MachineSupport* support, std::string pp = "predict") : IMachineLearnerModule(pp) {
+        this->support = support;
         this->machinePortable = new MachinePortable(support);
     }
 
