@@ -77,7 +77,7 @@ public:
      */
     void initTransformers() {
         // register transformers
-        this->getTransformerFactory().registerPrototype(new ScaleTransformer(this));
+        this->getTransformerFactory().registerPrototype(new ScaleTransformer);
         this->getTransformerFactory().registerPrototype(new RandomFeature);
     }
     
