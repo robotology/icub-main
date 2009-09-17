@@ -15,8 +15,6 @@
 #include <yarp/os/Module.h>
 #include <yarp/os/Searchable.h>
 
-#include "iCub/Support.h"
-
 
 using namespace yarp::os;
 

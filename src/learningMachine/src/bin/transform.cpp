@@ -10,18 +10,16 @@
 #include <string>
 
 #include "iCub/TransformModule.h"
-//#include "iCub/TransformerCatalogue.h"
-#include "iCub/TransformerSupport.h"
+#include "iCub/TransformerCatalogue.h"
 
 using namespace iCub::contrib::learningmachine;
 
 int main (int argc, char* argv[]) {
     Network yarp;
-    TransformerSupport support;
 
-    TransformModule module(&support);
+    TransformModule module;
     try {
-        //registerTransformers();
+        registerTransformers();
 
         module.runModule(argc,argv);
     } catch(const std::exception& e) {

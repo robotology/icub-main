@@ -9,19 +9,17 @@
 #include <string>
 
 #include "iCub/PredictModule.h"
-//#include "iCub/MachineCatalogue.h"
-#include "iCub/Support.h"
+#include "iCub/MachineCatalogue.h"
 
 using namespace iCub::contrib::learningmachine;
 
 int main (int argc, char* argv[]) {
     Network yarp;
-    MachineSupport support;
 
-    PredictModule module(&support);
+    PredictModule module;
     try {
         // initialize catalogue of machine factory
-        //registerMachines();
+        registerMachines();
 
         module.runModule(argc,argv);
         //module.attachTerminal();

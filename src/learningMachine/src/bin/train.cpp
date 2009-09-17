@@ -10,19 +10,17 @@
 #include <string>
 
 #include "iCub/TrainModule.h"
-//#include "iCub/MachineCatalogue.h"
-#include "iCub/MachineSupport.h"
+#include "iCub/MachineCatalogue.h"
 
 using namespace iCub::contrib::learningmachine;
 
 int main (int argc, char* argv[]) {
     Network yarp;
-    MachineSupport support;
 
-    TrainModule module(&support);
+    TrainModule module;
     try {
         // initialize catalogue of machine factory
-        //registerMachines();
+        registerMachines();
 
         module.runModule(argc,argv);
     } catch(const std::exception& e) {

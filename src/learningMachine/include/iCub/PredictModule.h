@@ -130,10 +130,6 @@ public:
  */
 class PredictModule : public IMachineLearnerModule {
 protected:
-    /**
-     * An instance of the MachineSupport class.
-     */
-    MachineSupport* support;
 
     /**
      * Buffered port for the incoming samples and corresponding replies.
@@ -176,9 +172,8 @@ public:
      *
      * @param pp the default prefix used for the ports.
      */
-    PredictModule(MachineSupport* support, std::string pp = "predict") : IMachineLearnerModule(pp) {
-        this->support = support;
-        this->machinePortable = new MachinePortable(support);
+    PredictModule(std::string pp = "predict") : IMachineLearnerModule(pp) {
+        this->machinePortable = new MachinePortable();
     }
 
     /**

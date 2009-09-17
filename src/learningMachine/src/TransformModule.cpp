@@ -6,9 +6,12 @@
  * ITransformer. 
  */
 
-#include "iCub/TransformModule.h"
-#include <yarp/IOException.h>
 #include <stdexcept>
+
+#include <yarp/IOException.h>
+
+#include "iCub/TransformerFactory.h"
+#include "iCub/TransformModule.h"
 
 namespace iCub {
 namespace contrib {
@@ -91,7 +94,7 @@ bool TransformModule::open(Searchable& opt) {
     }
     
     // construct transformer
-    this->transformer = this->support->getTransformerFactory().create(transformerName);
+    this->transformer = TransformerFactory::instance().create(transformerName);
 
     // send configuration options to the transformer
     this->getTransformer()->configure(opt);

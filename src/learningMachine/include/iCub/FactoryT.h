@@ -52,10 +52,10 @@ public:
      *
      * @return the singleton factory instance
      */
-    /*static FactoryT<K, T>& instance() {
+    static FactoryT<K, T>& instance() {
         static FactoryT<K, T> instance;
         return instance;
-    }*/
+    }
 
     /**
      * The default destructor of the Factory template. This destructor takes 

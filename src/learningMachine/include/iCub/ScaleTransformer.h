@@ -13,7 +13,7 @@
 
 #include "iCub/IFixedSizeTransformer.h"
 #include "iCub/IScaler.h"
-#include "iCub/TransformerSupport.h"
+#include "iCub/TransformerFactory.h"
 
 using namespace yarp::os;
 using namespace yarp::sig;
@@ -50,11 +50,6 @@ class TransformerSupport;
  */
 class ScaleTransformer : public IFixedSizeTransformer {
 private:
-    /**
-     * An instance of the TransformerSupport class.
-     */
-    TransformerSupport* support;
-     
     /**
      * The vector of IScaler objects.
      */
@@ -101,7 +96,7 @@ public:
      * @param name name for the 
      * @param size initial size of the vector
      */
-    ScaleTransformer(TransformerSupport* support, std::string name = "Scaler", int size = 1);
+    ScaleTransformer(std::string name = "Scaler", int size = 1);
 
     /**
      * Destructor.
@@ -120,7 +115,7 @@ public:
      * Inherited from ITransformer.
      */
     virtual ITransformer* create() {
-        return new ScaleTransformer(this->support);
+        return new ScaleTransformer();
     }
 
     /*

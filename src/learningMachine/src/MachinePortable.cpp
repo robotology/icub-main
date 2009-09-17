@@ -55,7 +55,7 @@ bool MachinePortable::read(ConnectionReader& connection) {
     Bottle nameBottle;
     nameBottle.read(connection);
     std::string name = nameBottle.get(0).asString().c_str();
-    this->machine = this->support->getMachineFactory().create(name);
+    this->machine = MachineFactory::instance().create(name);
     if(this->machine == (IMachineLearner *) 0) {
         return false;
     }
@@ -90,7 +90,7 @@ bool MachinePortable::readFromFile(std::string filename) {
     std::string name;
     stream >> name;
 
-    this->machine = this->support->getMachineFactory().create(name);
+    this->machine = MachineFactory::instance().create(name);
     std::stringstream strstr;
     //stream.get(str, '\0');
     strstr << stream.rdbuf();
