@@ -371,7 +371,7 @@ Solver::Solver(PolyDriver *_drvTorso, PolyDriver *_drvHead, exchangeData *_commD
     alignNeckCnt=0;
 
     // latch torso joints
-    fbTorso_old=fbTorso;
+    fbTorsoOld.push_front(fbTorso);
 }
 
 
@@ -440,9 +440,11 @@ void Solver::setStart()
 
     // update input port
     port_xd->set_xd(fp);
-
+    
+    // clear the buffer
+    fbTorsoOld.clear();
     // latch torso joints
-    fbTorso_old=fbTorso;
+    fbTorsoOld.push_front(fbTorso);
 }
 
 
@@ -528,7 +530,14 @@ void Solver::run()
         updateTorsoBlockedJoints(chainEyeL,fbTorso);
         updateTorsoBlockedJoints(chainEyeR,fbTorso);
 
-        movedTorso=norm(fbTorso-fbTorso_old)>1.0*(M_PI/180.0);
+        if (fbTorsoOld.size()>NECKSOLVER_MOVEDTORSOQUEUSIZE)
+        {
+            movedTorso=norm(fbTorso-fbTorsoOld.back())>1.0*(M_PI/180.0);
+            fbTorsoOld.pop_back();
+        }
+
+        // latch torso joints
+        fbTorsoOld.push_front(fbTorso);
     }
     else
         fbHead=commData->get_q();
@@ -574,9 +583,6 @@ void Solver::run()
 
         alignNeckCnt=0;
     }
-
-    // latch torso joints
-    fbTorso_old=fbTorso;
 }
 
 

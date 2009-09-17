@@ -13,12 +13,16 @@
 
 #include <iCub/pids.h>
 
+#include <deque>
+
 #include "gazeNlp.h"
 #include "utils.h"
 #include "localizer.h"
 
 #define EYEPINVREFGEN_GAIN              10.0
 #define NECKSOLVER_ACTIVATIONANGLE      20.0
+#define NECKSOLVER_ACTIVATIONANGLE      20.0
+#define NECKSOLVER_MOVEDTORSOQUEUSIZE   5
 
 using namespace std;
 using namespace yarp;
@@ -120,7 +124,8 @@ protected:
     Vector fbHead;
     Vector neckPos;
     Vector gazePos;
-    Vector fbTorso_old;
+
+    deque<Vector> fbTorsoOld;
 
     unsigned int alignNeckCnt;
 
