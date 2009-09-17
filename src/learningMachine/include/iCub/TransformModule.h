@@ -9,9 +9,6 @@
 #ifndef __ICUB_TRANSFORMMODULE__
 #define __ICUB_TRANSFORMMODULE__
 
-#include <cassert>
-#include <stdexcept>
-
 #include "iCub/IMachineLearnerModule.h"
 #include "iCub/ITransformer.h"
 
@@ -44,7 +41,8 @@ public:
      *
      * @param mp a pointer to a transformer.
      */
-    ITransformProcessor(ITransformer* t = (ITransformer*) 0) : transformer(t) { }
+    ITransformProcessor(ITransformer* t = (ITransformer*) 0) : transformer(t) {
+    }
     
     /**
      * Mutator for the transformer.
@@ -78,36 +76,17 @@ public:
  *
  */
 class TransformPredictProcessor : public ITransformProcessor, public PortReader {
+protected:
+    /**
+     * The relay port.
+     */
     Port* predict_relay_inout;
+    
 public:    
     /*
      * Inherited from PortReader.
      */
-    virtual bool read(ConnectionReader& connection) {
-        assert(this->getTransformer() != (ITransformer*) 0);
-        assert(this->getOutputPort() != (Port*) 0);
-
-        Vector input, prediction;
-        bool ok = input.read(connection);
-        if(!ok) {
-            return false;
-        }
-        try {
-            Vector trans_input;
-            this->getTransformer()->transform(input, trans_input);
-            this->getOutputPort()->write(trans_input, prediction);
-        } catch(const std::exception& e) {
-            std::cerr << "Error: " << e.what() << std::endl;
-            return false;
-        }
-
-        ConnectionWriter* replier = connection.getWriter();
-        if(replier != (ConnectionWriter*) 0) {
-            prediction.write(*replier);
-        }
-
-        return true;
-    }
+    virtual bool read(ConnectionReader& connection);
 
     /**
      * Mutator for the prediction output port.
@@ -149,20 +128,7 @@ public:
     /*
      * Inherited from TypedReaderCallback.
      */
-    virtual void onRead(PortablePair<Vector,Vector>& input) {
-        assert(this->getTransformer() != (ITransformer*) 0);
-        assert(this->getOutputPort() != (BufferedPort<PortablePair<Vector,Vector> >*) 0);
-        try {
-            PortablePair<Vector,Vector>& output = this->getOutputPort()->prepare();
-            this->getTransformer()->transform(input.head, output.head);
-            output.body = input.body;
-            this->getOutputPort()->writeStrict();
-        } catch(const std::exception& e) {
-            std::cerr << "Error: " << e.what() << std::endl;
-        }
-        
-        return;
-    }
+    virtual void onRead(PortablePair<Vector,Vector>& input);
 
     /**
      * Mutator for the training output port.
@@ -273,11 +239,6 @@ public:
     /*
      * Inherited from IMachineLearnerModule.
      */
-    //virtual bool updateModule();
-
-    /*
-     * Inherited from IMachineLearnerModule.
-     */
     virtual bool interruptModule();
 
     /*
@@ -290,12 +251,7 @@ public:
      *
      * @return a pointer to the transformer
      */
-    virtual ITransformer* getTransformer() {
-        if(this->transformer == (ITransformer*) 0) {
-            throw std::runtime_error("Attempt to retrieve inexistent transformer!");
-        }
-        return this->transformer;
-    }
+    virtual ITransformer* getTransformer();
 
 };
 

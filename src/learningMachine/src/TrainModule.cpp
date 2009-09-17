@@ -6,14 +6,31 @@
  *
  */
 
-#include "iCub/TrainModule.h"
-#include <yarp/IOException.h>
 #include <stdexcept>
+#include <cassert>
+
+#include <yarp/IOException.h>
+
+#include "iCub/TrainModule.h"
 
 
 namespace iCub {
 namespace contrib {
 namespace learningmachine {
+
+void TrainProcessor::onRead(PortablePair<Vector,Vector>& sample) {
+    assert(this->getMachine() != (IMachineLearner *) 0);
+    if(this->enabled) {
+        try {
+            this->getMachine()->feedSample(sample.head, sample.body);
+        } catch(const std::exception& e) {
+            std::cerr << "Error: " << e.what() << std::endl;
+        }
+    }
+    
+    return;
+}
+
 
 void TrainModule::exitWithHelp(std::string error) {
     int errorCode = 0;

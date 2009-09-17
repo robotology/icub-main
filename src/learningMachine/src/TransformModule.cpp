@@ -7,6 +7,7 @@
  */
 
 #include <stdexcept>
+#include <cassert>
 
 #include <yarp/IOException.h>
 
@@ -16,6 +17,50 @@
 namespace iCub {
 namespace contrib {
 namespace learningmachine {
+
+bool TransformPredictProcessor::read(ConnectionReader& connection) {
+    assert(this->getTransformer() != (ITransformer*) 0);
+    assert(this->getOutputPort() != (Port*) 0);
+
+    Vector input, prediction;
+    bool ok = input.read(connection);
+    if(!ok) {
+        return false;
+    }
+
+    try {
+        Vector trans_input;
+        this->getTransformer()->transform(input, trans_input);
+        this->getOutputPort()->write(trans_input, prediction);
+    } catch(const std::exception& e) {
+        std::cerr << "Error: " << e.what() << std::endl;
+        return false;
+    }
+
+    ConnectionWriter* replier = connection.getWriter();
+    if(replier != (ConnectionWriter*) 0) {
+        prediction.write(*replier);
+    }
+
+    return true;
+}
+
+
+void TransformTrainProcessor::onRead(PortablePair<Vector,Vector>& input) {
+    assert(this->getTransformer() != (ITransformer*) 0);
+    assert(this->getOutputPort() != (BufferedPort<PortablePair<Vector,Vector> >*) 0);
+    try {
+        PortablePair<Vector,Vector>& output = this->getOutputPort()->prepare();
+        this->getTransformer()->transform(input.head, output.head);
+        output.body = input.body;
+        this->getOutputPort()->writeStrict();
+    } catch(const std::exception& e) {
+        std::cerr << "Error: " << e.what() << std::endl;
+    }
+    
+    return;
+}
+
 
 void TransformModule::exitWithHelp(std::string error) {
     int errorCode = 0;
@@ -204,13 +249,12 @@ bool TransformModule::respond(const Bottle& cmd, Bottle& reply) {
     return success;
 }
 
-/*
-bool TransformModule::updateModule() {
-    bool ok = true;
-    return ok;
-}*/
-
-
+ITransformer* TransformModule::getTransformer() {
+    if(this->transformer == (ITransformer*) 0) {
+        throw std::runtime_error("Attempt to retrieve inexistent transformer!");
+    }
+    return this->transformer;
+}
 
 } // learningmachine
 } // contrib

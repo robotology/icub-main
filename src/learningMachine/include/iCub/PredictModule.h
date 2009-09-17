@@ -12,7 +12,6 @@
 #include "iCub/IMachineLearnerModule.h"
 #include "iCub/MachinePortable.h"
 #include "iCub/MachineFactory.h"
-#include <cassert>
 
 using namespace yarp::os;
 using namespace yarp::sig;
@@ -91,28 +90,7 @@ public:
     /*
      * Inherited from PortReader.
      */
-    virtual bool read(ConnectionReader& connection) {
-        assert(this->getMachine() != (IMachineLearner *) 0);
-        Vector input, prediction;
-        bool ok = input.read(connection);
-        if(!ok) {
-            return false;
-        }
-        try {
-            prediction = this->getMachine()->predict(input);
-        } catch(const std::exception& e) {
-            std::cerr << "Error: " << e.what() << std::endl;
-            return false;
-        }
-
-        ConnectionWriter* replier = connection.getWriter();
-        if(replier != (ConnectionWriter*) 0) {
-            prediction.write(*replier);
-        }
-
-        return true;
-    }
-
+    virtual bool read(ConnectionReader& connection);
 };
 
 

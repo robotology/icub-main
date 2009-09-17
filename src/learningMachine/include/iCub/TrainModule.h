@@ -46,18 +46,7 @@ public:
     /*
      * Inherited from TypedReaderCallback.
      */
-    virtual void onRead(PortablePair<Vector,Vector>& sample) {
-        assert(this->getMachine() != (IMachineLearner *) 0);
-        if(this->enabled) {
-            try {
-                this->getMachine()->feedSample(sample.head, sample.body);
-            } catch(const std::exception& e) {
-                std::cerr << "Error: " << e.what() << std::endl;
-            }
-        }
-        
-        return;
-    }
+    virtual void onRead(PortablePair<Vector,Vector>& sample);
 
 };
 

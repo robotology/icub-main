@@ -6,14 +6,38 @@
  *
  */
 
+#include <stdexcept>
+#include <cassert>
+
+#include <yarp/IOException.h>
 
 #include "iCub/PredictModule.h"
-#include <yarp/IOException.h>
-#include <stdexcept>
 
 namespace iCub {
 namespace contrib {
 namespace learningmachine {
+
+bool PredictProcessor::read(ConnectionReader& connection) {
+    assert(this->getMachine() != (IMachineLearner *) 0);
+    Vector input, prediction;
+    bool ok = input.read(connection);
+    if(!ok) {
+        return false;
+    }
+    try {
+        prediction = this->getMachine()->predict(input);
+    } catch(const std::exception& e) {
+        std::cerr << "Error: " << e.what() << std::endl;
+        return false;
+    }
+
+    ConnectionWriter* replier = connection.getWriter();
+    if(replier != (ConnectionWriter*) 0) {
+        prediction.write(*replier);
+    }
+    return true;
+}
+
 
 void PredictModule::exitWithHelp(std::string error) {
     int errorCode = 0;
