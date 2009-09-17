@@ -753,7 +753,9 @@ public:
         }
     }
 
-    virtual bool close()
+    // use detachTerminal() instead of close()
+    // since attachTerminal has been called
+    virtual bool detachTerminal()
     {
         rpcPort.interrupt();
         rpcPort.close();
