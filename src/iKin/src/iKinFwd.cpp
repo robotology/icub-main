@@ -1268,7 +1268,7 @@ void iCubArm::_allocate_limb(const string &_type)
         linkList[9]=new iKinLink(    0.0625,   -0.016,       0.0,               0.0, -20.0*M_PI/180.0,  40.0*M_PI/180.0);
     }
 
-    for (unsigned int i=0; i<10; i++)
+    for (unsigned int i=0; i<linkList.size(); i++)
         *this << *linkList[i];
 
     blockLink(0,0.0);
@@ -1335,7 +1335,7 @@ void iCubLeg::_allocate_limb(const string &_type)
         linkList[5]=new iKinLink(-0.041,     0.0,       0.0,       0.0,  -24.0*M_PI/180.0,  24.0*M_PI/180.0);
     }
 
-    for (unsigned int i=0; i<6; i++)
+    for (unsigned int i=0; i<linkList.size(); i++)
         *this << *linkList[i];
 }
 
@@ -1397,7 +1397,7 @@ void iCubEye::_allocate_limb(const string &_type)
         linkList[7]=new iKinLink(     0.0,    0.0,  M_PI/2.0, -M_PI/2.0, -50.0*M_PI/180.0, 50.0*M_PI/180.0);
     }
 
-    for (unsigned int i=0; i<8; i++)
+    for (unsigned int i=0; i<linkList.size(); i++)
         *this << *linkList[i];
 
     blockLink(0,0.0);
