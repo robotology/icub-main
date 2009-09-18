@@ -11,7 +11,7 @@
                 <name>pf3dTracker</name>
                 <parameters>--from 
                         pf3dTracker_iCubGenova01_left.ini</parameters>
-                <node>icub11</node>
+                <node>icub-b1</node>
                 <tag>PF3DTracker_tracker</tag>
         </module>
    
@@ -32,7 +32,7 @@
         <module>
                 <name>yarpview</name>
                 <parameters>--name /PF3DTracker_viewer --x 320 --y 0</parameters>
-                <node>icub3</node>
+                <node>icub14</node>
                 <tag>PF3DTracker_viewer</tag>
         </module>
   
