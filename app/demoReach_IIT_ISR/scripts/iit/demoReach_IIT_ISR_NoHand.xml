@@ -10,7 +10,7 @@
         <module>
                 <name>pf3dTracker</name>
                 <parameters>--from 
-                        pf3dTracker_iCubGenova02_left.ini</parameters>
+                        pf3dTracker_iCubGenova01_left.ini</parameters>
                 <node>icub11</node>
                 <tag>PF3DTracker_tracker</tag>
         </module>
