@@ -37,6 +37,9 @@
 #include <cv.h>
 #include <highgui.h>
 
+#define learnRate 2.0
+#define momentum 0.9
+
 using namespace nnfw;
 using namespace iCub::contrib::primateVision;
 using namespace yarp;
@@ -54,7 +57,6 @@ BackPropagationAlgo* learnNet;
 BaseNeuralNet* net;
 double pixelValNorm[10001][50];
 int numInputs, numOutputs, numHiddens;
-double learnRate, momentum;
 
 int main( int argc, char **argv )
 {
@@ -98,7 +100,6 @@ int main( int argc, char **argv )
   // setting up images for opencv
   segImg = cvCreateImage(cvSize(320, 240, IPL_DEPTH_8U, 1); // manually
     
-
   net = loadXML( "data/learnedModel.xml" ); //load the saved model
 
   const ClusterVec& cl = net->clusters();  //configure the NN clusters
