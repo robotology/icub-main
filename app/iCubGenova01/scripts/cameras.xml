@@ -18,36 +18,36 @@
    <module>
       <name>yarpview</name>
       <parameters>--name /icub/view/left --x 0 --y 0 --synch</parameters>
-      <node>icub3</node>
+      <node>icub14</node>
 	<tag>viewleft</tag>
    </module>
    <module>
       <name>yarpview</name>
       <parameters>--name /icub/view/right --x 320 --y 0 --synch</parameters>
-      <node>icub3</node>
+      <node>icub14</node>
 	<tag>viewright</tag>
    </module>
    <module>
       <name>frameGrabberGui2</name>
 	  <parameters>--local /icub/fggui/left --remote /icub/cam/left --x 0 --y 350 --width 350 --height 500</parameters>
 	  <tag>fggui_left</tag>
-	  <node>icub3</node>
+	  <node>icub14</node>
    </module>
    <module>
       <name>frameGrabberGui2</name>
 	  <parameters>--local /icub/fggui/right --remote /icub/cam/right --x 320 --y 350 --width 350 --height 500</parameters>
 	  <tag>fggui_right</tag>
-	  <node>icub3</node>
+	  <node>icub14</node>
    </module>
 <connection>
   <output>/icub/cam/left</output>
   <input>/icub/view/left</input>
-  <protocol>tcp</protocol>
+  <protocol>udp</protocol>
 </connection>
 <connection>
   <output>/icub/cam/right</output>
   <input>/icub/view/right</input>
-  <protocol>tcp</protocol>
+  <protocol>udp</protocol>
 </connection>
 </application>
 
