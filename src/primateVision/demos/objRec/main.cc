@@ -53,7 +53,8 @@ DotLinker *in2hid, *hid2out, *in2out;
 BackPropagationAlgo* learnNet; 
 BaseNeuralNet* net;
 double pixelValNorm[10001][50];
-
+int numInputs, numOutputs, numHiddens;
+double learnRate, momentum;
 
 int main( int argc, char **argv )
 {

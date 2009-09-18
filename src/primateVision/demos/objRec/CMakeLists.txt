@@ -6,6 +6,7 @@
 ADD_DEFINITIONS(-O3 -Wno-deprecated -D_LINUX -DQT_THREAD_SUPPORT -DQT3_SUPPORT)
 
 INCLUDE_DIRECTORIES(
+	/usr/local/include/nnfw
 	${PROJECT_SOURCE_DIR}/utils/display 
 	${PROJECT_SOURCE_DIR}/utils/multiFrameViewer
 	${PROJECT_SOURCE_DIR}/zdfserver
@@ -27,9 +28,8 @@ TARGET_LINK_LIBRARIES(objRec
 	display
 	ippi
 	pthread
+	/usr/local/lib/libnnfw.a
 	)
 
 # install targets
-INSTALL_TARGETS(${BIN_DIR} 
-  objRec
-  )
+#INSTALL_TARGETS(${BIN_DIR} objRec )
