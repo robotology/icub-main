@@ -2,6 +2,9 @@
  * Client of zdfserver.  
  * 
  * Query if ZDF DOG output is classified.
+ * Perhaps only query when cog close to origin.
+ * Hence, perhaps re-instantiate drift towards CoG 
+ * in ZDFServer?
  * If so, send commands to draw it in iCubSIM
  *
  */ 
@@ -81,10 +84,8 @@ int main( int argc, char **argv )
       //CLASSIFY:
       printf("CHECKING CLASSIFICATION...\n");
       
-      //replace with classification code:
-      sleep(1);
-
-
+      //add classification code:
+ 
 
 
       //OUTPUT DISPLAY TO SIM:
