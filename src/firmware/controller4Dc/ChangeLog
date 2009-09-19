@@ -1,33 +1,55 @@
-2009-24-June  Francesco Nori <francesco.nori@iit.t>
-* Current build 24. iron: integral discretization problem removed
+2008-02-05  Lorenzo Natale  <nat@liralab.t> 
+	* Started ChangeLog, please report here a brief summary  	
+       of changes made to the firmware. Keep track of the build 	
+       number, and if possible add a list of the files you  	modified. 	
+       * Current build 1.  	
+
+2008-02-05  Nori Fracesco  <iron@liralab.t> 	
+      * Bug on calibration fixed
+ 	* Current build 2.	
+
+
+2008-02-07  Nori Fracesco  <iron@liralab.t>
+ 	* Bug on encoders (failing to count with high speed)
+  	fixed by changing a filter in the library
+ 	* Current build 3.   
+
+2008-06-06  Francesco Nori  <iron@liralab.t> 	
+      * New version 0x0120 has been added for controlling 	
+	ring and little fingers with the Hall effect sensors. 	
+      * Current build 6.  
+
+2008-Jul-01  Francesco Nori  <iron@liralab.t> 	
+      * New version 0x0120 had a bug on a casting from 
+	Int32 to Int16. Fixed 	
+	* Current build 7.  	
+
+
+2008-23-July  Francesco Nori  <francesco.nori@iit.t>
+	* New check_in_position now return true when the trajectory generation
+	is ended.
+	* Current build 9.
+
+2008-30-July  Francesco Nori  <francesco.nori@iit.t>
+	* Bug on velShift fixed.
+	* Current build 10
+
+2008-30-July  Francesco Nori  <francesco.nori@iit.t>
+	* Removed modality handle hard stops.
+	* Current build 11
+
+2008-30-August  Francesco Nori  <francesco.nori@iit.t>
+	* check_in_position now return false when _control_mode[jnt] != MODE_POSITION
+	* Current build 12
+
+2008-30-August  Francesco Nori  <francesco.nori@iit.t>
+	* Library updated
+	* Current build 13
+
+2008-30-August  Francesco Nori  <francesco.nori@iit.t>
+	* Board status error on external fault fixed
+	* Current build 14
 	
-2009-24-June  Francesco Nori <francesco.nori@iit.t>
-* Current build 23. iron: removed encoder drift on 0x0120
-
-2009-24-June  Francesco Nori <francesco.nori@iit.t>
-* Current build 22. iron: watch dog time on MAIS increased
-
-
-2009-24-June  Francesco Nori <francesco.nori@iit.t>
-* Current build 20. iron: encoder and hall check removed in version 0x0128 and 0x0130 (since it was impossible to tune the parameters).
-
-2009-10-June  Maggiali Marco <marco.maggiali@iit.t>
-* Current build 19. maggia: encoder and hall check for avoiding  losing of  the tendons in firmware version 1.20 1.21 1.28 and 1.30
-
-2009-10-June  Maggiali Marco <marco.maggiali@iit.t>
-* Current build 18. I have add new versions for reading the hall sensors in the hand from the MAIS: 1.21, 1.28 and 1.30 
-                    Nothing is changed in the other versions
-
-2009-24-April  Maggiali Marco <marco.maggiali@iit.t>
-* Current build 17. I have removed in the last two byte of the BCAST message the _received_pid variable
-
-
-
-2009-25-March  Maggiali Marco <marco.maggiali@iit.t>
-Added control for the receiving of the PID values before enabling the PWM.
-* Current build 16. The last two byte of the BCAST message are used for the _received_pid variables:
-
-
 2008-20-October  Francesco Nori  <francesco.nori@iit.t>
 	* A few line in calibration.c are conditionally compiled if
 	* DEBUG is defined.
@@ -35,53 +57,46 @@ Added control for the receiving of the PID values before enabling the PWM.
 	* moved inside the limits
 	* Current build 15
 
-2008-30-August  Francesco Nori  <francesco.nori@iit.t>
-	* Board status error on external fault fixed
-	* Current build 14
+2009-25-March  Maggiali Marco <marco.maggiali@iit.t>
+Added control for the receiving of the PID values before enabling the PWM.
+* Current build 16. The last two byte of the BCAST message are used for the _received_pid variables:
+	
+2009-24-April  Maggiali Marco <marco.maggiali@iit.t>
+* Current build 17. I have removed in the last two byte of the BCAST message the _received_pid variable
+
+2009-10-June  Maggiali Marco <marco.maggiali@iit.t>
+* Current build 18. I have add new versions for reading the hall sensors in the hand from the MAIS: 1.21, 1.28 and 1.30 
+                    Nothing is changed in the other versions
+
+2009-10-June  Maggiali Marco <marco.maggiali@iit.t>
+* Current build 19. maggia: encoder and hall check for avoiding  losing of  the tendons in firmware version 1.20 1.21 1.28 and 1.30
+
+2009-24-June  Francesco Nori <francesco.nori@iit.t>
+* Current build 20. iron: encoder and hall check removed in version 0x0128 and 0x0130 (since it was impossible to tune the parameters).
+
+2009-24-June  Francesco Nori <francesco.nori@iit.t>
+* Current build 22. iron: watch dog time on MAIS increased
+
+2009-24-June  Francesco Nori <francesco.nori@iit.t>
+* Current build 23. iron: removed encoder drift on 0x0120	
+	
+2009-24-June  Francesco Nori <francesco.nori@iit.t>
+* Current build 24. iron: integral discretization problem removed
+	
 
 
-2008-30-August  Francesco Nori  <francesco.nori@iit.t>
-	* Library updated
-	* Current build 13
 
 
-2008-30-August  Francesco Nori  <francesco.nori@iit.t>
-	* check_in_position now return false when _control_mode[jnt] != MODE_POSITION
-	* Current build 12
 
-2008-30-July  Francesco Nori  <francesco.nori@iit.t>
-	* Removed modality handle hard stops.
-	* Current build 11
 
-2008-30-July  Francesco Nori  <francesco.nori@iit.t>
-	* Bug on velShift fixed.
-	* Current build 10
 
-2008-23-July  Francesco Nori  <francesco.nori@iit.t>
-	* New check_in_position now return true when the trajectory generation
-	is ended.
-	* Current build 9.
 
-2008-Jul-01  Francesco Nori  <iron@liralab.t> 	
-      * New version 0x0120 had a bug on a casting from 
-	Int32 to Int16. Fixed 	
-	* Current build 7.  
-2008-06-06  Francesco Nori  <iron@liralab.t> 	
-      * New version 0x0120 has been added for controlling 	
-	ring and little fingers with the Hall effect sensors. 	
-      * Current build 6.  
 
-2008-02-07  Nori Fracesco  <iron@liralab.t>
- 	* Bug on encoders (failing to count with high speed)
-  	fixed by changing a filter in the library
- 	* Current build 3.   
 
-2008-02-05  Nori Fracesco  <iron@liralab.t> 	
-      * Bug on calibration fixed
- 	* Current build 2.   
 
-2008-02-05  Lorenzo Natale  <nat@liralab.t> 
-	* Started ChangeLog, please report here a brief summary  	
-       of changes made to the firmware. Keep track of the build 	
-       number, and if possible add a list of the files you  	modified. 	
-       * Current build 1.  	
+
+
+
+
+
+
