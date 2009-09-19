@@ -118,8 +118,7 @@ yarp connect /grabber /example
  
 the acquisition will start. 
  
-By pressing CTRL+C or writing 'quit' in the console the 
-acquisition will be terminated. 
+By pressing CTRL+C the acquisition is terminated.
  
 So, now, have a look inside the directory ./example 
 
