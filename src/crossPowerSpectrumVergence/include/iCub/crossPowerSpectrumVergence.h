@@ -255,12 +255,12 @@ private:
   
     int debug;
 
-    eyecub_image   *image1;
-    eyecub_image   *image2;
-    eyecub_image   *image_a;
-    eyecub_image   *image_b;
-    eyecub_image   *image_c;
-    eyecub_image   *image_d;
+    DVimage   *image1;
+    DVimage   *image2;
+    DVimage   *image_a;
+    DVimage   *image_b;
+    DVimage   *image_c;
+    DVimage   *image_d;
 
     int width;
     int height;

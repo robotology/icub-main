@@ -328,10 +328,10 @@ bool RectificationThread::threadInit()
 
     /* create the input images of the correct resolution  */
 
-    leftInput      = new eyecub_image(width, height, depth);
-    rightInput     = new eyecub_image(width, height, depth);
-    leftRectified  = new eyecub_image(width, height, depth);
-    rightRectified = new eyecub_image(width, height, depth);
+    leftInput      = new DVimage(width, height, depth);
+    rightInput     = new DVimage(width, height, depth);
+    leftRectified  = new DVimage(width, height, depth);
+    rightRectified = new DVimage(width, height, depth);
 
     return true;
 }

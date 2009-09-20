@@ -364,8 +364,8 @@ bool WorkThread::threadInit()
 
     /* create the input images of the correct resolution  */
 
-    image1 = new eyecub_image(width, height, depth);
-    image2 = new eyecub_image(width, height, depth);
+    image1 = new DVimage(width, height, depth);
+    image2 = new DVimage(width, height, depth);
 
     if (width == 1024 && height == 768) {
         image_size = 256; // 512
@@ -383,10 +383,10 @@ bool WorkThread::threadInit()
    
     sigma = (float) image_size * (float) (*std_dev) / 100; 
 
-    image_a = new eyecub_image(image_size, image_size, GREYSCALE_IMAGE, NULL, NULL, EYECUB_INT);
-    image_b = new eyecub_image(image_size, image_size, GREYSCALE_IMAGE, NULL, NULL, EYECUB_INT);
-    image_c = new eyecub_image(image_size, image_size, GREYSCALE_IMAGE, NULL, NULL, EYECUB_FLOAT);
-    image_d = new eyecub_image(image_size, image_size, GREYSCALE_IMAGE, NULL, NULL, EYECUB_FLOAT);
+    image_a = new DVimage(image_size, image_size, GREYSCALE_IMAGE, NULL, NULL, DVINT);
+    image_b = new DVimage(image_size, image_size, GREYSCALE_IMAGE, NULL, NULL, DVINT);
+    image_c = new DVimage(image_size, image_size, GREYSCALE_IMAGE, NULL, NULL, DVFLOAT);
+    image_d = new DVimage(image_size, image_size, GREYSCALE_IMAGE, NULL, NULL, DVFLOAT);
 
     return true;
 }

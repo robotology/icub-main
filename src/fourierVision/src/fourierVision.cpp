@@ -96,10 +96,8 @@ static void portable_ftime(struct portable_timeb_ *data) {
 
 eyecub classes method definitions
  
-
-	   eyecub_camera
-	   eyecub_image
-      eyecub_hs_histogram
+	   DVimage
+       DVhs_histogram
 
 
 
@@ -108,21 +106,21 @@ eyecub classes method definitions
 
 /*---------------------------------------------------------------------------------------------*
 
-class eyecub_image methods
+class DVimage methods
 
 *----------------------------------------------------------------------------------------------*/
 
 	// constructor
 
-	eyecub_image::eyecub_image(int w, int h, int mode, unsigned char *image, char *description, int type) {
+	DVimage::DVimage(int w, int h, int mode, unsigned char *image, char *description, int type) {
 
 		  width = w;
         height = h;
         colour_mode = mode; // 1 => GREYSCALE_IMAGE  3 => COLOUR_IMAGE 
-        image_type = type;  // EYECUB_FLOAT or EYECUB_INT 
+        image_type = type;  // DVFLOAT or DVINT 
 
 		  if (w>0 && h>0)
-			  if (type == EYECUB_INT)
+			  if (type == DVINT)
 			    idata = new unsigned char[w*h*mode];
 			  else
 			    fdata = new float[w*h*mode];
@@ -131,9 +129,9 @@ class eyecub_image methods
 			  
 			  // no image passed as argument; initialize the image
 			  
-			  //printf("eyecub_image constructor: creating image data %d %d %d\n",h,w,mode);
+			  //printf("DVimage constructor: creating image data %d %d %d\n",h,w,mode);
 
-			  if (type == EYECUB_INT) {
+			  if (type == DVINT) {
 				  for (int i=0; i<w*h*mode; i++)
 					 *(idata+i) = 0;
 			  }
@@ -146,11 +144,11 @@ class eyecub_image methods
 		  
 		     // the image data has been passed as an argument so copy the data
 
-			  if (type == EYECUB_INT) {		// image argument and type of eyecub_image are the same
+			  if (type == DVINT) {		// image argument and type of DVimage are the same
 				  for (int i=0; i<w*h*mode; i++)
 					  *(idata+i) = *(image+i);       
 			  }
-			  else {                     // image argument is unsigned char but type is EYECUB_FLOAT so need to convert
+			  else {                     // image argument is unsigned char but type is DVFLOAT so need to convert
 				  for (int i=0; i<w*h*mode; i++)
 					  *(fdata+i) = (float)(*(image+i));
 			  }
@@ -175,9 +173,9 @@ class eyecub_image methods
 	 
 
 
-	eyecub_image::~eyecub_image() {
+	DVimage::~DVimage() {
 		delete [] annotation;
-		if (image_type == EYECUB_INT) {
+		if (image_type == DVINT) {
 			if (width>0 && height>0) delete [] idata;
 		}
 		else {
@@ -186,41 +184,41 @@ class eyecub_image methods
 	}
 
 
-	void eyecub_image::get_size(int *w, int *h) {
+	void DVimage::get_size(int *w, int *h) {
 		*w = width;
 		*h = height;
 	}
 
 
-	int eyecub_image::get_image_mode() {
+	int DVimage::get_image_mode() {
 		return(colour_mode);
 	}
 
 
-	void eyecub_image::set_image_mode(int mode) {
+	void DVimage::set_image_mode(int mode) {
 		colour_mode = mode;   // needs to be completed
 		                 // if we change the colour mode, need to either computer
 		                 // greyscale or create other colour bands
 	}
 
 
-   int eyecub_image::get_image_type() {
+   int DVimage::get_image_type() {
 		return(image_type);
 	}
 
 
 	// read data from entire image
 
-	void eyecub_image::read(unsigned char *image) {
+	void DVimage::read(unsigned char *image) {
 
 		if (image != NULL) {
-			if (image_type == EYECUB_INT) {
+			if (image_type == DVINT) {
 				int j;
 				j=width*height*colour_mode;
 				for (int i=0; i<j; i++)
 					*(image+i) = *(idata+i);
 			}
-			else { // image_type == EYECUB_FLOAT  // may lose data due to casting
+			else { // image_type == DVFLOAT  // may lose data due to casting
 				int j;
 				j=width*height*colour_mode;
 				for (int i=0; i<j; i++)
@@ -229,16 +227,16 @@ class eyecub_image methods
 		}
 	}
 
-	void eyecub_image::read(float *image) {
+	void DVimage::read(float *image) {
 
 		if (image != NULL) {
-			if (image_type == EYECUB_INT) {
+			if (image_type == DVINT) {
 				int j;
 				j=width*height*colour_mode;
 				for (int i=0; i<j; i++)
 					*(image+i) = (float) *(idata+i);
 			}
-			else { // image_type == EYECUB_FLOAT
+			else { // image_type == DVFLOAT
 				int j;
 				j=width*height*colour_mode;
 				for (int i=0; i<j; i++)
@@ -252,17 +250,17 @@ class eyecub_image methods
 
 	  // write data to entire image
 
-	  void eyecub_image::write(unsigned char *image) {
-		  //printf("eyecub_image::write - %d %d %d\n",width, height, colour_mode);
+	  void DVimage::write(unsigned char *image) {
+		  //printf("DVimage::write - %d %d %d\n",width, height, colour_mode);
 
 		  if (image != NULL) {
-			  if (image_type == EYECUB_INT) {  // unsigned char to unsigned char ... straight copy
+			  if (image_type == DVINT) {  // unsigned char to unsigned char ... straight copy
 			      int j;
 				   j=width*height*colour_mode;
 				   for (int i=0; i<j; i++)
 				      *(idata+i) = *(image+i);
 			  }
-			  else { // image_type == EYECUB_FLOAT; unsigned char to float ... simple cast
+			  else { // image_type == DVFLOAT; unsigned char to float ... simple cast
 
 			      int j;
 				   j=width*height*colour_mode;
@@ -273,18 +271,18 @@ class eyecub_image methods
 	  }
 
 
-	  void eyecub_image::write(float *image) {
-		  //printf("eyecub_image::write - %d %d %d\n",width, height, colour_mode);
+	  void DVimage::write(float *image) {
+		  //printf("DVimage::write - %d %d %d\n",width, height, colour_mode);
 
 		  if (image != NULL) {
-			  if (image_type == EYECUB_INT) {  // float to unsigned char ...  dangerous as the cast wmay cause loss of data
+			  if (image_type == DVINT) {  // float to unsigned char ...  dangerous as the cast wmay cause loss of data
 
 				  int j;
 				   j=width*height*colour_mode;
 				   for (int i=0; i<j; i++)
 				      *(idata+i) = (unsigned char) *(image+i);
 			  }
-			  else { // image_type == EYECUB_FLOAT; float to float ... straight copy
+			  else { // image_type == DVFLOAT; float to float ... straight copy
 
 			      int j;
 				   j=width*height*colour_mode;
@@ -299,8 +297,8 @@ class eyecub_image methods
 	  // note that the byte number needs to be specified if the mode is COLOUR_IMAGE
 	  // (it defaults to byte 0, i.e. the first byte)
 
-	  void eyecub_image::get_pixel(int x, int y, unsigned char *value, int byte_number) {
-		  if (image_type == EYECUB_INT) { 
+	  void DVimage::get_pixel(int x, int y, unsigned char *value, int byte_number) {
+		  if (image_type == DVINT) { 
 			*value = (*(idata+(y*width*colour_mode + x*colour_mode + byte_number)));
 		  }
 		  else {
@@ -308,8 +306,8 @@ class eyecub_image methods
 		  }
 	  }
 
-	  void eyecub_image::get_pixel(int x, int y, float *value, int byte_number) {
-		  if (image_type == EYECUB_INT) { 
+	  void DVimage::get_pixel(int x, int y, float *value, int byte_number) {
+		  if (image_type == DVINT) { 
 			*value = (float)(*(idata+(y*width*colour_mode + x*colour_mode + byte_number)));
 		  }
 		  else {
@@ -322,10 +320,10 @@ class eyecub_image methods
 	  // note that the byte number needs to be specified if the mode is COLOUR_IMAGE
 	  // (it defaults to byte 0, i.e. the first byte)
 
-	  void eyecub_image::put_pixel(int x, int y, unsigned char value, int byte_number) {
+	  void DVimage::put_pixel(int x, int y, unsigned char value, int byte_number) {
 
-		  //printf("eyecub_image::put_pixel(%d, %d, %d, %d) colour mode %d\n", x, y, value, byte_number, colour_mode);
-		  if (image_type == EYECUB_INT) { 
+		  //printf("DVimage::put_pixel(%d, %d, %d, %d) colour mode %d\n", x, y, value, byte_number, colour_mode);
+		  if (image_type == DVINT) { 
 			*(idata+(y*width*colour_mode + x*colour_mode + byte_number))=value;
 		  }
 		  else {
@@ -333,10 +331,10 @@ class eyecub_image methods
 		  }
 	  }
 
-	  void eyecub_image::put_pixel(int x, int y, float value, int byte_number) {
+	  void DVimage::put_pixel(int x, int y, float value, int byte_number) {
 
-		  //printf("eyecub_image::put_pixel(%d, %d, %f, %d) colour mode %d\n", x, y, value, byte_number, colour_mode);
-		  if (image_type == EYECUB_INT) { 
+		  //printf("DVimage::put_pixel(%d, %d, %f, %d) colour mode %d\n", x, y, value, byte_number, colour_mode);
+		  if (image_type == DVINT) { 
 			*(idata+(y*width*colour_mode + x*colour_mode + byte_number))=(unsigned char)value;
 		  }
 		  else {
@@ -346,14 +344,14 @@ class eyecub_image methods
 
 	  // return pointer to the image annotation string
  
-	  char *eyecub_image::read_annotation() {
+	  char *DVimage::read_annotation() {
         return(annotation);
 	  }
 
 	  
 	  // write a string to the image annotation
 
-	  void eyecub_image::write_annotation(char *description) {
+	  void DVimage::write_annotation(char *description) {
         if (annotation != NULL)
 			  delete [] annotation;
 		   annotation = new char[strlen(description)+1];
@@ -363,16 +361,16 @@ class eyecub_image methods
 
 	  // initialize entire image to zero
 
-	  void eyecub_image::initialize() {
-		  //printf("eyecub_image::initialize\n");
+	  void DVimage::initialize() {
+		  //printf("DVimage::initialize\n");
 
-			  if (image_type == EYECUB_INT) {  // unsigned char to unsigned char ... straight copy
+			  if (image_type == DVINT) {  // unsigned char to unsigned char ... straight copy
 			      int j;
 				   j=width*height*colour_mode;
 				   for (int i=0; i<j; i++)
 				      *(idata+i) = 0;
 			  }
-			  else { // image_type == EYECUB_FLOAT; unsigned char to float ... simple cast
+			  else { // image_type == DVFLOAT; unsigned char to float ... simple cast
 
 			      int j;
 				   j=width*height*colour_mode;
@@ -386,8 +384,8 @@ class eyecub_image methods
 	  // constrast stretch an image in place; minimum and maximum values will be 0 and 255 after invoking this method
 
 
-	  void eyecub_image::contrast_stretch() {
-		  //printf("eyecub_image::contrast_stretch\n");
+	  void DVimage::contrast_stretch() {
+		  //printf("DVimage::contrast_stretch\n");
 
 		  float min, max;
 		  int i, j;
@@ -400,13 +398,13 @@ class eyecub_image methods
 
 		  j=width*height*colour_mode;
  
-		  if (image_type == EYECUB_INT) {  //  
+		  if (image_type == DVINT) {  //  
 	       for (i=0; i<j; i++){
 		      if ((float) *(idata+i) > max) max = (float) *(idata+i);
 	         if ((float) *(idata+i) < min) min = (float) *(idata+i);
 			 }
 		  }
-		  else { // image_type == EYECUB_FLOAT 
+		  else { // image_type == DVFLOAT 
 	       for (i=0; i<j; i++){
 		      if (*(fdata+i) > max) max = *(fdata+i);
 	         if (*(fdata+i) < min) min = *(fdata+i);
@@ -414,12 +412,12 @@ class eyecub_image methods
 		  }
 
 		  		  
-		  if (image_type == EYECUB_INT) {  //  
+		  if (image_type == DVINT) {  //  
 	       for (i=0; i<j; i++){
 		      *(idata+i)  = (unsigned char) (255 * (( (float)(*(idata+i)) - min)/(max-min)));
 			 }
 		  }
-		  else { // image_type == EYECUB_FLOAT 
+		  else { // image_type == DVFLOAT 
 	       for (i=0; i<j; i++){
 		      *(fdata+i)  = (255 * (( (*(fdata+i)) - min)/(max-min)));
 			 }
@@ -429,13 +427,13 @@ class eyecub_image methods
 
 /*---------------------------------------------------------------------------------------------*
 
-class eyecub_hs_histogram methods
+class DVhs_histogram methods
 
 *----------------------------------------------------------------------------------------------*/
  
 // constructor
 
-eyecub_hs_histogram::eyecub_hs_histogram(int h, int s) {
+DVhs_histogram::DVhs_histogram(int h, int s) {
 
    hue_dimension = h;
    saturation_dimension = s;
@@ -452,33 +450,33 @@ eyecub_hs_histogram::eyecub_hs_histogram(int h, int s) {
 
 // destructor
 
-eyecub_hs_histogram::~eyecub_hs_histogram() {
+DVhs_histogram::~DVhs_histogram() {
 
    if (hue_dimension>0 && saturation_dimension>0) delete [] data;
 }
 
 
-void eyecub_hs_histogram::get_dimensions(int *h, int *s) {
+void DVhs_histogram::get_dimensions(int *h, int *s) {
    *h = hue_dimension;
    *s = saturation_dimension;
 }
  	  	  
 
 
-void eyecub_hs_histogram::get_bin(int h, int s, int *value) {
+void DVhs_histogram::get_bin(int h, int s, int *value) {
 
    *value = (*(data+(s*hue_dimension + h)));
  
 }
 
  
-void eyecub_hs_histogram::put_bin(int h, int s, int value) {
+void DVhs_histogram::put_bin(int h, int s, int value) {
 
    *(data+(s*hue_dimension + h))=value;
 }
 
  
-void eyecub_hs_histogram::increment_bin(int h, int s) {
+void DVhs_histogram::increment_bin(int h, int s) {
 
    *(data+(s*hue_dimension + h)) += 1;
 }
@@ -486,7 +484,7 @@ void eyecub_hs_histogram::increment_bin(int h, int s) {
  
  // initialize histogram to zero
 
-void eyecub_hs_histogram::initialize() {
+void DVhs_histogram::initialize() {
  
    int j;
    j=hue_dimension*saturation_dimension;
@@ -532,8 +530,8 @@ Stereo Segmentation Code
 *
 ****************************************************************/
  
-void optical_flow (eyecub_image *image1, eyecub_image *image2, int window_size, int sampling_period, float sigma, 
-                   eyecub_image *flow_magnitude, eyecub_image *flow_phase)
+void optical_flow (DVimage *image1, DVimage *image2, int window_size, int sampling_period, float sigma, 
+                   DVimage *flow_magnitude, DVimage *flow_phase)
 {
 
    int i, j;
@@ -545,13 +543,13 @@ void optical_flow (eyecub_image *image1, eyecub_image *image2, int window_size, 
    int p, q;
    char debug, dump_debug_image;
     
-   eyecub_image *padded_image1 = NULL;
-   eyecub_image *padded_image2 = NULL;
-   eyecub_image *window1       = NULL;
-   eyecub_image *window2       = NULL;
-   eyecub_image *cps           = NULL;
-   eyecub_image *enhanced_cps  = NULL;
-   eyecub_image *gaussian      = NULL;
+   DVimage *padded_image1 = NULL;
+   DVimage *padded_image2 = NULL;
+   DVimage *window1       = NULL;
+   DVimage *window2       = NULL;
+   DVimage *cps           = NULL;
+   DVimage *enhanced_cps  = NULL;
+   DVimage *gaussian      = NULL;
   
    int filter_radius = 1;
    int number_of_maxima = 2;
@@ -574,14 +572,14 @@ void optical_flow (eyecub_image *image1, eyecub_image *image2, int window_size, 
 
    image1->get_size(&width,&height);
 
-   padded_image1 = new eyecub_image(width+window_size/2,height+window_size/2,GREYSCALE_IMAGE,NULL,NULL,EYECUB_INT);
-   padded_image2 = new eyecub_image(width+window_size/2,height+window_size/2,GREYSCALE_IMAGE,NULL,NULL,EYECUB_INT);
+   padded_image1 = new DVimage(width+window_size/2,height+window_size/2,GREYSCALE_IMAGE,NULL,NULL,DVINT);
+   padded_image2 = new DVimage(width+window_size/2,height+window_size/2,GREYSCALE_IMAGE,NULL,NULL,DVINT);
 
-   window1       = new eyecub_image(window_size,window_size,GREYSCALE_IMAGE,NULL,NULL,EYECUB_INT);
-   window2       = new eyecub_image(window_size,window_size,GREYSCALE_IMAGE,NULL,NULL,EYECUB_INT);
-   cps           = new eyecub_image(window_size,window_size,GREYSCALE_IMAGE,NULL,NULL,EYECUB_FLOAT);
-   enhanced_cps  = new eyecub_image(window_size,window_size,GREYSCALE_IMAGE,NULL,NULL,EYECUB_FLOAT);
-   gaussian      = new eyecub_image(window_size,window_size,GREYSCALE_IMAGE,NULL,NULL,EYECUB_FLOAT);
+   window1       = new DVimage(window_size,window_size,GREYSCALE_IMAGE,NULL,NULL,DVINT);
+   window2       = new DVimage(window_size,window_size,GREYSCALE_IMAGE,NULL,NULL,DVINT);
+   cps           = new DVimage(window_size,window_size,GREYSCALE_IMAGE,NULL,NULL,DVFLOAT);
+   enhanced_cps  = new DVimage(window_size,window_size,GREYSCALE_IMAGE,NULL,NULL,DVFLOAT);
+   gaussian      = new DVimage(window_size,window_size,GREYSCALE_IMAGE,NULL,NULL,DVFLOAT);
  
 
    /* Generate a normalized 2D circular Gaussian image                   */
@@ -777,8 +775,8 @@ Motion Segmentation Code
 *
 ****************************************************************/
  
-void image_difference (eyecub_image *image1, eyecub_image *image2, int threshold,
-               eyecub_image *output_image)
+void image_difference (DVimage *image1, DVimage *image2, int threshold,
+               DVimage *output_image)
 {
    int i, j;
    int width, height, depth; 
@@ -787,8 +785,8 @@ void image_difference (eyecub_image *image1, eyecub_image *image2, int threshold
    unsigned char pixel_value2;
    char debug, dump_debug_image;
     
-   eyecub_image *window1     = NULL;
-   eyecub_image *window2     = NULL;
+   DVimage *window1     = NULL;
+   DVimage *window2     = NULL;
    
  
  
@@ -1002,8 +1000,8 @@ void rgb2hsi(unsigned char red, unsigned char green, unsigned char blue, float *
 ****************************************************************/
  
 
-void colour_segmentation (eyecub_image *input_image, float hue, float saturation, float hue_range, float saturation_range,
-                    eyecub_image *output_image)
+void colour_segmentation (DVimage *input_image, float hue, float saturation, float hue_range, float saturation_range,
+                    DVimage *output_image)
 {
    int width, height, depth; 
    unsigned char r, g, b;
@@ -1105,7 +1103,7 @@ void colour_segmentation (eyecub_image *input_image, float hue, float saturation
 ****************************************************************/
  
 
-void colour_histogram (eyecub_image *input_image, eyecub_hs_histogram *hs)
+void colour_histogram (DVimage *input_image, DVhs_histogram *hs)
 {
    int width, height, depth; 
    unsigned char r, g, b;
@@ -1208,7 +1206,7 @@ void colour_histogram (eyecub_image *input_image, eyecub_hs_histogram *hs)
 ****************************************************************/
  
 
-void dilation (eyecub_image *input_image, int radius, eyecub_image *output_image)
+void dilation (DVimage *input_image, int radius, DVimage *output_image)
 {
    int width, height, depth; 
    unsigned char r, g, b;
@@ -1332,7 +1330,7 @@ void dilation (eyecub_image *input_image, int radius, eyecub_image *output_image
 ****************************************************************/
  
 
-void erosion (eyecub_image *input_image, int radius, eyecub_image *output_image)
+void erosion (DVimage *input_image, int radius, DVimage *output_image)
 {
    int width, height, depth; 
    unsigned char r, g, b, r1, g1, b1;
@@ -1466,7 +1464,7 @@ void erosion (eyecub_image *input_image, int radius, eyecub_image *output_image)
 ****************************************************************/
  
 
-void log_polar_transform  (eyecub_image *input_image, eyecub_image *output_image, int direction)
+void log_polar_transform  (DVimage *input_image, DVimage *output_image, int direction)
 {
 
    // we make these static as we don't want to recompute the lookup tables for each image
@@ -1524,11 +1522,11 @@ void log_polar_transform  (eyecub_image *input_image, eyecub_image *output_image
 
 		 // only compute the look-up tables once for a given input and output image size
 
-		 if (!(xSize == min(width_in,height_in) && nEcc == height_out && nAng == width_out && buffer != NULL && colorLP != NULL && c2lTable != NULL)) {
+		 if (!(xSize == _min(width_in,height_in) && nEcc == height_out && nAng == width_out && buffer != NULL && colorLP != NULL && c2lTable != NULL)) {
 	      
 		    if (debug) printf("log_polar_transform: computing lookup tables \n");  
 
-			xSize = min(width_in, height_in);
+			xSize = _min(width_in, height_in);
 		    ySize = xSize;
 	        nEcc = height_out;  // dimension of the log-polar image
             nAng = width_out;  
@@ -1603,13 +1601,13 @@ void log_polar_transform  (eyecub_image *input_image, eyecub_image *output_image
 
          // only compute the look-up tables once for a given input and output image size
 
-		 if (!(xSize == min(width_out,height_out) && nEcc == height_in && nAng == width_in && colorBRem != NULL && l2cTable != NULL)) {
+		 if (!(xSize == _min(width_out,height_out) && nEcc == height_in && nAng == width_in && colorBRem != NULL && l2cTable != NULL)) {
 	      
 		    if (debug) printf("log_polar_transform: computing lookup tables \n");  
 
 	        nEcc = height_in;   // dimension of the log-polar image
             nAng = width_in;   
-	        xSize = min(width_out, height_out);
+	        xSize = _min(width_out, height_out);
 		    ySize = xSize;
             logIndex = RCgetLogIndex (nAng);
             cartSize = xSize; 
@@ -1706,16 +1704,16 @@ Fourier Vision Code
 *****************************************************************/
 
 void single_sensor_stereo(
-                  eyecub_image *input_image,
-                  eyecub_image **disparity_image, 
-                  eyecub_image **ncc_image,
+                  DVimage *input_image,
+                  DVimage **disparity_image, 
+                  DVimage **ncc_image,
                   int window_size, 
                   int sampling_period,
 					   int calibrate_flag)
 					   
 {
-   eyecub_image *disparity_magnitude=NULL;
-   eyecub_image *disparity_confidence=NULL;
+   DVimage *disparity_magnitude=NULL;
+   DVimage *disparity_confidence=NULL;
 
    int  width, height; 
    int  interference_area;
@@ -1749,8 +1747,8 @@ void single_sensor_stereo(
 
    input_image->get_size(&width,&height);
 
-   disparity_magnitude = new eyecub_image(width,height,GREYSCALE_IMAGE,NULL,NULL,EYECUB_FLOAT);
-   disparity_confidence = new eyecub_image(width,height,GREYSCALE_IMAGE,NULL,NULL,EYECUB_FLOAT);
+   disparity_magnitude = new DVimage(width,height,GREYSCALE_IMAGE,NULL,NULL,DVFLOAT);
+   disparity_confidence = new DVimage(width,height,GREYSCALE_IMAGE,NULL,NULL,DVFLOAT);
   
    i_image =  (unsigned char *) malloc(sizeof(unsigned char) * width * height);
    d_image =  (unsigned char *) malloc(sizeof(unsigned char) * window_size * window_size *2);
@@ -2176,10 +2174,10 @@ for (i=0; i<width; i++) {
 ****************************************************************/
  
 
-void fourier_segmentation_old (eyecub_image *input_image_1, 
-                           eyecub_image *input_image_2,
-                           eyecub_image *output_image_1, eyecub_image *output_image_2,
-                           eyecub_image *fourier_output_image_1, eyecub_image *fourier_output_image_2, 
+void fourier_segmentation_old (DVimage *input_image_1, 
+                           DVimage *input_image_2,
+                           DVimage *output_image_1, DVimage *output_image_2,
+                           DVimage *fourier_output_image_1, DVimage *fourier_output_image_2, 
                            double threshold,
                            int filter_radius,
                            int non_maxima_suppression_radius,
@@ -2231,9 +2229,9 @@ double log_magnitude(double a_r, double a_i);
    float  max1, max2;
  
 
-   eyecub_image *image_cps1;
-   eyecub_image *image_cps2;
-   eyecub_image *temp_image;
+   DVimage *image_cps1;
+   DVimage *image_cps2;
+   DVimage *temp_image;
 
    maxima_data_type maxima[10];
 
@@ -2331,8 +2329,8 @@ double log_magnitude(double a_r, double a_i);
    // identify phase changes
 
  
-   image_cps1 = new eyecub_image(width,height,GREYSCALE_IMAGE, NULL, NULL, EYECUB_FLOAT);
-   image_cps2 = new eyecub_image(width,height,GREYSCALE_IMAGE, NULL, NULL, EYECUB_FLOAT);
+   image_cps1 = new DVimage(width,height,GREYSCALE_IMAGE, NULL, NULL, DVFLOAT);
+   image_cps2 = new DVimage(width,height,GREYSCALE_IMAGE, NULL, NULL, DVFLOAT);
 
    cross_power_spectrum (input_image_2, input_image_1, image_cps1);  
 
@@ -2497,7 +2495,7 @@ double log_magnitude(double a_r, double a_i);
 
    if (max2 > max1 * (min_max_threshold/100)) { // parameter value is a percentage so convert first
 
-      temp_image = new eyecub_image(width,height,GREYSCALE_IMAGE, NULL, NULL, EYECUB_FLOAT);
+      temp_image = new DVimage(width,height,GREYSCALE_IMAGE, NULL, NULL, DVFLOAT);
  
       temp_image->write(output1); 
       temp_image->contrast_stretch();
@@ -2853,10 +2851,10 @@ double log_magnitude(double a_r, double a_i);
 ****************************************************************/
  
 
-void fourier_segmentation (eyecub_image *input_image_1, 
-                           eyecub_image *input_image_2,
-                           eyecub_image *output_image_1, eyecub_image *output_image_2,
-                           eyecub_image *fourier_output_image_1, eyecub_image *fourier_output_image_2, 
+void fourier_segmentation (DVimage *input_image_1, 
+                           DVimage *input_image_2,
+                           DVimage *output_image_1, DVimage *output_image_2,
+                           DVimage *fourier_output_image_1, DVimage *fourier_output_image_2, 
                            double threshold,
                            int filter_radius,
                            int non_maxima_suppression_radius,
@@ -2908,9 +2906,9 @@ double log_magnitude(double a_r, double a_i);
    float  max1, max2;
  
 
-   eyecub_image *image_cps1;
-   eyecub_image *image_cps2;
-   eyecub_image *temp_image;
+   DVimage *image_cps1;
+   DVimage *image_cps2;
+   DVimage *temp_image;
 
    maxima_data_type maxima[10];
 
@@ -3008,8 +3006,8 @@ double log_magnitude(double a_r, double a_i);
    // identify phase changes
 
  
-   image_cps1 = new eyecub_image(width,height,GREYSCALE_IMAGE, NULL, NULL, EYECUB_FLOAT);
-   image_cps2 = new eyecub_image(width,height,GREYSCALE_IMAGE, NULL, NULL, EYECUB_FLOAT);
+   image_cps1 = new DVimage(width,height,GREYSCALE_IMAGE, NULL, NULL, DVFLOAT);
+   image_cps2 = new DVimage(width,height,GREYSCALE_IMAGE, NULL, NULL, DVFLOAT);
 
    cross_power_spectrum (input_image_2, input_image_1, image_cps1);  
 
@@ -3174,7 +3172,7 @@ double log_magnitude(double a_r, double a_i);
 
    if (max2 > max1 * (min_max_threshold/100)) { // parameter value is a percentage so convert first
 
-      temp_image = new eyecub_image(width,height,GREYSCALE_IMAGE, NULL, NULL, EYECUB_FLOAT);
+      temp_image = new DVimage(width,height,GREYSCALE_IMAGE, NULL, NULL, DVFLOAT);
  
       temp_image->write(output1); 
       temp_image->contrast_stretch();
@@ -3280,7 +3278,7 @@ double log_magnitude(double a_r, double a_i);
 ****************************************************************/
  
 
-void cross_power_spectrum (eyecub_image *input_image_1, eyecub_image *input_image_2, eyecub_image *output_image)
+void cross_power_spectrum (DVimage *input_image_1, DVimage *input_image_2, DVimage *output_image)
 {
    static int   width = 0;
    static int   height = 0;
@@ -3466,7 +3464,7 @@ void cross_power_spectrum (eyecub_image *input_image_1, eyecub_image *input_imag
 ****************************************************************/
  
 
-void find_maxima (eyecub_image *input_image, int number_of_maxima_required, int non_maxima_suppression_radius, maxima_data_type maxima[])
+void find_maxima (DVimage *input_image, int number_of_maxima_required, int non_maxima_suppression_radius, maxima_data_type maxima[])
 {
    int height;
    int width;
@@ -4003,8 +4001,8 @@ void sort_fourier_components
 * Modifications: Added arrow heads.  D.V. 9/1/97
 ****************************************************************/
  
-int plot_field(eyecub_image *f_mag, eyecub_image *f_phase, 
-            eyecub_image **plot_image, 
+int plot_field(DVimage *f_mag, DVimage *f_phase, 
+            DVimage **plot_image, 
 				float scale_factor,
             int colour)
  
@@ -4053,7 +4051,7 @@ int plot_field(eyecub_image *f_mag, eyecub_image *f_phase,
 		delete *plot_image;
       *plot_image = NULL;
 	}
-	*plot_image = new eyecub_image(width,height,GREYSCALE_IMAGE,NULL, NULL,EYECUB_FLOAT);
+	*plot_image = new DVimage(width,height,GREYSCALE_IMAGE,NULL, NULL,DVFLOAT);
 
 
    /* Now draw vectors for all non-zero points in the magnitude image */
@@ -4405,7 +4403,7 @@ void int_draw_line(unsigned char *image, int width, int height, int usx1,int usy
 *                 DV 12/12/00
 ****************************************************************/
  
-int interpolate(eyecub_image *sampled_image, eyecub_image **interpolated_image)
+int interpolate(DVimage *sampled_image, DVimage **interpolated_image)
 
 {
    int width, height;  
@@ -4447,7 +4445,7 @@ int interpolate(eyecub_image *sampled_image, eyecub_image **interpolated_image)
 		delete *interpolated_image;
       *interpolated_image = NULL;
 	}
-	*interpolated_image = new eyecub_image(width,height,GREYSCALE_IMAGE,NULL, NULL, EYECUB_FLOAT);
+	*interpolated_image = new DVimage(width,height,GREYSCALE_IMAGE,NULL, NULL, DVFLOAT);
 
 
    /* initialize output */
@@ -4545,7 +4543,7 @@ int interpolate(eyecub_image *sampled_image, eyecub_image **interpolated_image)
      }
    }
 
-   /* transfer the processed image to the output eyecub_image */
+   /* transfer the processed image to the output DVimage */
  
    (*interpolated_image)->write(f2);
 
@@ -4583,12 +4581,12 @@ int interpolate(eyecub_image *sampled_image, eyecub_image **interpolated_image)
 ****************************************************************/
  
 
-void mask_image (eyecub_image *input_image, eyecub_image *mask_image, eyecub_image *output_image, double threshold)
+void mask_image (DVimage *input_image, DVimage *mask_image, DVimage *output_image, double threshold)
 {
  
    int width, height, depth_in, depth_out; 
  
-   eyecub_image *gradient_image;
+   DVimage *gradient_image;
    double temp, temp1, temp2, max;   
    int  i, j;
    int scale;
@@ -4604,7 +4602,7 @@ void mask_image (eyecub_image *input_image, eyecub_image *mask_image, eyecub_ima
       depth_in  = input_image->get_image_mode();
       depth_out = output_image->get_image_mode();
 
-      gradient_image = new eyecub_image(width, height, GREYSCALE_IMAGE, NULL, NULL, EYECUB_FLOAT);
+      gradient_image = new DVimage(width, height, GREYSCALE_IMAGE, NULL, NULL, DVFLOAT);
 
 
       // printf("width %d, height %d depth %d\n",width, height, depth);
@@ -4753,8 +4751,8 @@ void mask_image (eyecub_image *input_image, eyecub_image *mask_image, eyecub_ima
 ****************************************************************/
  
 
-void enhance_local_maxima (eyecub_image *input_image, int half_kernel_size,
-                     eyecub_image *output_image)
+void enhance_local_maxima (DVimage *input_image, int half_kernel_size,
+                     DVimage *output_image)
 {
    int width, height; 
    float *input=NULL;
@@ -5255,12 +5253,12 @@ int enhance_local_maxima_by_suppression(float *source_image, float *maxima_image
 *
 ****************************************************************/
  
-void gaussianApodization (eyecub_image *input_image, float std_dev, eyecub_image *output_image)
+void gaussianApodization (DVimage *input_image, float std_dev, DVimage *output_image)
 {
 
    static int width=0, height=0, depth=0;   // static to allow us to avoid recomputing gaussian image
    static float sigma=0;                    // when multiple calls are made with the same arguments
-   static eyecub_image *gaussian = NULL;    // 
+   static DVimage *gaussian = NULL;    // 
 
    char debug;
    int w, h, d;
@@ -5306,7 +5304,7 @@ void gaussianApodization (eyecub_image *input_image, float std_dev, eyecub_image
       if (gaussian != NULL)
          delete gaussian;
 
-      gaussian = new eyecub_image(width,height,GREYSCALE_IMAGE,NULL,NULL,EYECUB_FLOAT);
+      gaussian = new DVimage(width,height,GREYSCALE_IMAGE,NULL,NULL,DVFLOAT);
  
       /* Generate a normalized 2D circular Gaussian image                       */
       /* with size nxm pixels, centred at pixel n/2, m/2, and centre value of 1 */
@@ -5407,10 +5405,10 @@ void gaussianApodization (eyecub_image *input_image, float std_dev, eyecub_image
 * 
 ****************************************************************/
 
-void rectify(eyecub_image *input_image_left, eyecub_image *input_image_right, 
+void rectify(DVimage *input_image_left, DVimage *input_image_right, 
              float fx_left,  float fy_left,  float px_left,  float py_left,  float theta_y_left,
              float fx_right, float fy_right, float px_right, float py_right, float theta_y_right,
-             eyecub_image *output_image_left,  eyecub_image *output_image_right)
+             DVimage *output_image_left,  DVimage *output_image_right)
 
 {
    bool debug;

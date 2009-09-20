@@ -257,10 +257,10 @@ private:
    ImageOf<PixelRgb> *leftImage;
    ImageOf<PixelRgb> *rightImage;
    Vector            *encoderPositions;
-   eyecub_image      *leftInput;
-   eyecub_image      *rightInput;
-   eyecub_image      *leftRectified;
-   eyecub_image      *rightRectified;
+   DVimage           *leftInput;
+   DVimage           *rightInput;
+   DVimage           *leftRectified;
+   DVimage           *rightRectified;
 
    bool debug;
   	    
