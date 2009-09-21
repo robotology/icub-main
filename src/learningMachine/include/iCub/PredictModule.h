@@ -11,7 +11,7 @@
 
 #include "iCub/IMachineLearnerModule.h"
 #include "iCub/MachinePortable.h"
-#include "iCub/MachineFactory.h"
+
 
 using namespace yarp::os;
 using namespace yarp::sig;

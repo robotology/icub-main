@@ -12,6 +12,8 @@
 #include <yarp/IOException.h>
 
 #include "iCub/TrainModule.h"
+#include "iCub/EventDispatcher.h"
+#include "iCub/EventListenerFactory.h"
 
 
 namespace iCub {
@@ -23,6 +25,16 @@ void TrainProcessor::onRead(PortablePair<Vector,Vector>& sample) {
     if(this->enabled) {
         try {
             this->getMachine()->feedSample(sample.head, sample.body);
+            
+            // Event Code
+            if(EventDispatcher::instance().hasListeners()) {
+                std::cout << "Hello world!" << std::endl;
+                Vector prediction = this->getMachine()->predict(sample.head);
+                TrainEvent te(sample.head, sample.body, prediction);
+                EventDispatcher::instance().raise(te);
+            }
+            // Event Code
+
         } catch(const std::exception& e) {
             std::cerr << "Error: " << e.what() << std::endl;
         }
@@ -123,6 +135,9 @@ bool TrainModule::open(Searchable& opt) {
 
     // attach to the incoming command port
     this->attach(cmd_in);
+    
+    // NOTE TO SELF: temporary code
+    EventDispatcher::instance().addListener(EventListenerFactory::instance().create("train"));
 
     return true;
 }

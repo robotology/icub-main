@@ -14,7 +14,6 @@
 #include <yarp/os/Portable.h>
 
 #include "iCub/IMachineLearner.h"
-#include "iCub/MachineFactory.h"
 
 
 namespace iCub {
@@ -42,11 +41,6 @@ private:
      */
     IMachineLearner* machine;
 
-    /**
-     * The factory for creating machines.
-     */
-    MachineFactory* factory;
-
 public:
     /**
      * Constructor.
@@ -61,9 +55,7 @@ public:
      *
      * @param machineName The name specifier for the wrapped learning machine
      */
-    MachinePortable(std::string& machineName) {
-        this->machine = MachineFactory::instance().create(machineName);
-    }
+    MachinePortable(std::string& machineName);
 
     /**
      * Destructor.
@@ -107,7 +99,7 @@ public:
     /**
      * Returns true iff this wrapping object contains an actual machine.
      *
-     * @return true if there is a wrapped machine
+     * @return true iff there is a wrapped machine
      */
     bool hasMachine() {
         return (this->machine != (IMachineLearner*) 0);

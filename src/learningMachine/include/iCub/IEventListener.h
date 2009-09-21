@@ -81,16 +81,16 @@ public:
     virtual IEventListener* create() = 0;
 
     /**
-     * Retrieve the name of this EventListener.
+     * Retrieve the name of this IEventListener.
      *
-     * @return the name of this EventListener
+     * @return the name of this IEventListener
      */
     std::string getName() const {
         return this->name;
     }
 
     /**
-     * Set the name of this EventListener.
+     * Set the name of this IEventListener.
      *
      * @param name the new name
      */

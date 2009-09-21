@@ -11,8 +11,12 @@
 
 #include <string>
 
+#include <yarp/sig/Vector.h>
+
 #include "iCub/IEvent.h"
 #include "iCub/IEventListener.h"
+
+using namespace yarp::sig;
 
 namespace iCub {
 namespace contrib {
@@ -30,11 +34,15 @@ class IEventListener;
  */
 
 class TrainEvent : virtual public IEvent {
+protected:
+    Vector input;
+    Vector desired;
+    Vector predicted;
 public:
     /**
      * Constructor
      */
-    TrainEvent();
+    TrainEvent(Vector input, Vector desired, Vector predicted);
 
     /**
      * Destructor
@@ -49,9 +57,7 @@ public:
     /*
      * Inherited from IEvent.
      */
-    std::string toString() {
-        return std::string("TrainEvent.toString()");
-    }
+    std::string toString();
 
 };
 

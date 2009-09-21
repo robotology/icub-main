@@ -14,10 +14,17 @@
 #include <yarp/os/Bottle.h>
 
 #include "iCub/MachinePortable.h"
+#include "iCub/MachineFactory.h"
+
 
 namespace iCub {
 namespace contrib {
 namespace learningmachine {
+
+MachinePortable::MachinePortable(std::string& machineName) {
+    this->machine = MachineFactory::instance().create(machineName);
+}
+
 
 bool MachinePortable::write(ConnectionWriter& connection) {
     // return false directly if there is no machine. If not, we end up

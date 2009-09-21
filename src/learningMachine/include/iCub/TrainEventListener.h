@@ -9,6 +9,8 @@
 #ifndef __ICUB_TRAINEVENTLISTENER__
 #define __ICUB_TRAINEVENTLISTENER__
 
+#include <iostream>
+
 #include "iCub/IEventListener.h"
 #include "iCub/TrainEvent.h"
 
@@ -42,6 +44,7 @@ public:
      * Inherited from EventListener.
      */
     void handle(TrainEvent& e) {
+        std::cout << e.toString() << std::endl;
     }
 
     /*

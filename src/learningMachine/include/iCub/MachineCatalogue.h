@@ -11,6 +11,8 @@
 #ifndef __ICUB_MACHINECATALOGUE__
 #define __ICUB_MACHINECATALOGUE__
 
+#include "iCub/MachineFactory.h"
+
 #include "iCub/DummyLearner.h"
 #include "iCub/RLSLearner.h"
 #include "iCub/LSSVMLearner.h"
