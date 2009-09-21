@@ -44,7 +44,7 @@
   
         <module>
                 <name>iKinArmCtrl</name>
-                <parameters>--part left_arm</parameters>                
+                <parameters>--part left_arm --DOF8</parameters>                
                 <node>icub-b4</node>
                 <tag>armCtrl</tag>
         </module>
