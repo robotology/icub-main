@@ -11,21 +11,21 @@
         <module>
                 <name>pf3dTracker</name>
                 <parameters>--from pf3dTracker_iCubGenova01_left.ini</parameters>
-                <node>icub-b1</node>
+                <node>icub-b7</node>
                 <tag>PF3DTracker_tracker</tag>
         </module>
    
         <module>
                 <name>leftEyeToRoot</name>
                 <parameters>--inputHeadPort /l2rBall/headIn --inputTorsoPort /l2rBall/torsoIn --inputBallPositionPort /l2rBall/posIn --outputBallPositionPort /l2rBall/posOut</parameters>
-                <node>icub-b1</node>
+                <node>icub-b7</node>
                 <tag>l2rBall</tag>
         </module>
 
         <module>
                 <name>demoReachManager_IIT_ISR</name>
                 <parameters>--part left_arm --DOF8</parameters>
-                <node>icub-b2</node>
+                <node>icub-b8</node>
                 <tag>manager</tag>
         </module>
 
@@ -38,14 +38,14 @@
   
         <module>
                 <name>iKinGazeCtrl</name>
-                <node>icub-b3</node>
+                <node>icub-b9</node>
                 <tag>gazeCtrl</tag>
         </module>
   
         <module>
                 <name>iKinArmCtrl</name>
                 <parameters>--part left_arm --DOF8</parameters>                
-                <node>icub-b4</node>
+                <node>icub-b10</node>
                 <tag>armCtrl</tag>
         </module>
 
