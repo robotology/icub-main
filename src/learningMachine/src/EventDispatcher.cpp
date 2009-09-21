@@ -10,6 +10,10 @@
 
 #include "iCub/EventDispatcher.h"
 
+namespace iCub {
+namespace contrib {
+namespace learningmachine {
+
 
 EventDispatcher::EventDispatcher() {
 }
@@ -21,14 +25,15 @@ EventDispatcher::~EventDispatcher() {
 
 void EventDispatcher::removeListener(int idx) {
     assert(idx >= 0 && idx < this->listeners.size());
-    std::list<EventListener*>::iterator it = this->listeners.begin();
+    std::list<IEventListener*>::iterator it = this->listeners.begin();
     std::advance(it, idx);
     delete *it;
     this->listeners.erase(it);
 }
 
 void EventDispatcher::removeListener(IEventListener* listener) {
-    
+    this->listeners.remove(listener);
+    //delete listener;
 }
 
 IEventListener* EventDispatcher::getListener(int idx) {
@@ -47,6 +52,11 @@ void EventDispatcher::clear() {
 void EventDispatcher::raise(IEvent& event) {
     std::list<IEventListener*>::iterator it;
     for(it = listeners.begin(); it != listeners.end(); it++) {
-        e.visit(**it);
+        event.visit(**it);
     }
 }
+
+} // learningmachine
+} // contrib
+} // iCub
+

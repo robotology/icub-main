@@ -8,9 +8,16 @@
 
 #include "iCub/TrainEventListener.h"
 
-TrainEventListener::TrainEventListener() {
+namespace iCub {
+namespace contrib {
+namespace learningmachine {
+
+TrainEventListener::TrainEventListener(std::string name) : IEventListener(name) {
 }
 
-TrainEventListener::~TrainEventListener() { }
+TrainEventListener::~TrainEventListener() {
+}
 
-
+} // learningmachine
+} // contrib
+} // iCub

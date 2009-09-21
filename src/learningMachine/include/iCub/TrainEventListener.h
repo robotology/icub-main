@@ -12,6 +12,10 @@
 #include "iCub/IEventListener.h"
 #include "iCub/TrainEvent.h"
 
+namespace iCub {
+namespace contrib {
+namespace learningmachine {
+
 /**
  * 
  * \see iCub::contrib::learningmachine::IEventListener
@@ -27,7 +31,7 @@ public:
     /**
      * Constructor
      */
-    TrainEventListener();
+    TrainEventListener(std::string name = "train");
 
     /**
      * Destructor
@@ -40,6 +44,17 @@ public:
     void handle(TrainEvent& e) {
     }
 
+    /*
+     * Inherited from IEventListener.
+     */
+    IEventListener* create() {
+        return new TrainEventListener(this->getName());
+    }
+
 };
+
+} // learningmachine
+} // contrib
+} // iCub
 
 #endif

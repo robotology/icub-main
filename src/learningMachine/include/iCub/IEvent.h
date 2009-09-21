@@ -11,13 +11,19 @@
 
 #include <string>
 
-#include "iCub/IEventListener.h"
+//#include "iCub/IEventListener.h"
+
+namespace iCub {
+namespace contrib {
+namespace learningmachine {
 
 /**
  * The abstract base class for all Event types.
  *
  * \author Arjan Gijsberts
  */
+// forward declaration to solve circular reference
+class IEventListener;
 
 class IEvent {
 protected:
@@ -43,5 +49,9 @@ public:
 
 
 };
+
+} // learningmachine
+} // contrib
+} // iCub
 
 #endif

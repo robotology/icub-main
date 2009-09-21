@@ -8,9 +8,21 @@
 
 #include "iCub/PredictEvent.h"
 
+namespace iCub {
+namespace contrib {
+namespace learningmachine {
+
 
 PredictEvent::PredictEvent() {
 }
 
-PredictEvent::~PredictEvent() { }
+PredictEvent::~PredictEvent() {
+}
 
+void PredictEvent::visit(IEventListener& listener) {
+    listener.handle(*this);
+}
+
+} // learningmachine
+} // contrib
+} // iCub

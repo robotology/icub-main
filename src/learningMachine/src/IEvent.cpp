@@ -8,3 +8,10 @@
 
 #include "iCub/IEvent.h"
 
+namespace iCub {
+namespace contrib {
+namespace learningmachine {
+
+} // learningmachine
+} // contrib
+} // iCub

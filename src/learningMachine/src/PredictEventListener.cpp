@@ -8,10 +8,17 @@
 
 #include "iCub/PredictEventListener.h"
 
+namespace iCub {
+namespace contrib {
+namespace learningmachine {
 
-PredictEventListener::PredictEventListener() {
+
+PredictEventListener::PredictEventListener(std::string name) : IEventListener(name) {
 }
 
-PredictEventListener::~PredictEventListener() { }
+PredictEventListener::~PredictEventListener() {
+}
 
-
+} // learningmachine
+} // contrib
+} // iCub

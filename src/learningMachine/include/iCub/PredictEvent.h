@@ -12,6 +12,12 @@
 #include <string>
 
 #include "iCub/IEvent.h"
+#include "iCub/IEventListener.h"
+
+namespace iCub {
+namespace contrib {
+namespace learningmachine {
+
 
 /**
  * A PredictEvent is raised when the machine makes a prediction. It contains 
@@ -21,6 +27,8 @@
  * 
  * \author Arjan Gijsberts
  */
+
+class IEventListener;
 
 class PredictEvent : virtual public IEvent {
 protected:
@@ -37,14 +45,12 @@ public:
     virtual ~PredictEvent();
 
     /*
-     * Inherited from Event.
+     * Inherited from IEvent.
      */
-    virtual void visit(IEventListener& listener) {
-        listener.handle(*this);
-    }
+    virtual void visit(IEventListener& listener);
 
     /*
-     * Inherited from Event.
+     * Inherited from IEvent.
      */
     virtual std::string toString() {
         return std::string("TrainEvent.toString()");
@@ -52,5 +58,9 @@ public:
 
 
 };
+
+} // learningmachine
+} // contrib
+} // iCub
 
 #endif

@@ -13,6 +13,10 @@
 
 #include "iCub/IEventListener.h"
 
+namespace iCub {
+namespace contrib {
+namespace learningmachine {
+
 
 /**
  * The EventDispatcher manages the relation between the various instances of 
@@ -30,6 +34,9 @@
 
 class EventDispatcher {
 private:
+    /**
+     * The list of IEventListeners.
+     */
     std::list<IEventListener*> listeners;
 
 public:
@@ -42,6 +49,22 @@ public:
      * Empty Destructor
      */
     virtual ~EventDispatcher();
+
+    /**
+     * An instance retrieval method that follows the Singleton pattern.
+     *
+     * Note that this implementation should not be considered thread safe and 
+     * that problems may arise. However, due to the nature of the expected use 
+     * this will not be likely to result in problems.
+     *
+     * See http://www.oaklib.org/docs/oak/singleton.html for more information.
+     *
+     * @return the singleton factory instance
+     */
+    static EventDispatcher& instance() {
+        static EventDispatcher instance;
+        return instance;
+    }
 
     /**
      * Adds an IEventListener to the list. Note that the EventDispatcher takes
@@ -57,6 +80,14 @@ public:
      * @param  idx The index of the IEventListener that is to be removed.
      */
     virtual void removeListener(int idx);
+    
+    /**
+     * Removes an IEventListener from the list. This does _not_ delete the 
+     * object itself. As the caller has access to the pointer, it can take 
+     * responsibility for the proper destruction of the object.
+     * @param  listener The IEventListener instance that is to be removed.
+     */
+    virtual void removeListener(IEventListener* listener);
 
     /**
      * Returns the IEventListener at a specified index.
@@ -86,5 +117,9 @@ public:
         return (!this->listeners.empty());
     }
 };
+
+} // learningmachine
+} // contrib
+} // iCub
 
 #endif

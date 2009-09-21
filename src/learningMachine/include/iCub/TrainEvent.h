@@ -12,6 +12,13 @@
 #include <string>
 
 #include "iCub/IEvent.h"
+#include "iCub/IEventListener.h"
+
+namespace iCub {
+namespace contrib {
+namespace learningmachine {
+
+class IEventListener;
 
 /**
  * A TrainEvent is raised when the machine handles a training sample. It 
@@ -35,19 +42,21 @@ public:
     virtual ~TrainEvent();
 
     /*
-     * Inherited from Event.
+     * Inherited from IEvent.
      */
-    virtual void visit(IEventListener& listener) {
-        listener.handle(*this);
-    }
+    virtual void visit(IEventListener& listener);
 
     /*
-     * Inherited from Event.
+     * Inherited from IEvent.
      */
     std::string toString() {
         return std::string("TrainEvent.toString()");
     }
 
 };
+
+} // learningmachine
+} // contrib
+} // iCub
 
 #endif

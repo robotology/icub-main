@@ -15,6 +15,12 @@
 #include "iCub/TrainEvent.h"
 #include "iCub/PredictEvent.h"
 
+using namespace yarp::os;
+
+namespace iCub {
+namespace contrib {
+namespace learningmachine {
+
 /**
  * The abstract base class for EventListener handlers. Due to technical 
  * limitations of C++, this base class needs to implement an empty, virtual 
@@ -22,6 +28,9 @@
  *
  * \author Arjan Gijsberts
  */
+class IEvent;
+class TrainEvent;
+class PredictEvent;
 
 class IEventListener : virtual public IConfig {
 protected:
@@ -36,10 +45,7 @@ public:
      *
      * @param name the name under which this EventListener will be registered
      */
-    IEventListener(std::string name) {
-        this->setName(name);
-        this->sampleCount = 0;
-    }
+    IEventListener(std::string name);
 
     /**
      * Destructor.
@@ -50,7 +56,7 @@ public:
      * Default handler for any Event, which means the Event is ignored.
      * @param  e The Event.
      */
-    virtual void handle(Event& e) {
+    virtual void handle(IEvent& e) {
     }
 
     /**
@@ -66,6 +72,13 @@ public:
      */
     virtual void handle(PredictEvent& e) {
     }
+
+    /**
+     * Asks the event listener to return a new object of its type.
+     *
+     * @return a fresh instance of the current class
+     */
+    virtual IEventListener* create() = 0;
 
     /**
      * Retrieve the name of this EventListener.
@@ -87,5 +100,9 @@ public:
 
 
 };
+
+} // learningmachine
+} // contrib
+} // iCub
 
 #endif

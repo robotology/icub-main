@@ -8,4 +8,15 @@
 
 #include "iCub/IEventListener.h"
 
+namespace iCub {
+namespace contrib {
+namespace learningmachine {
+
+IEventListener::IEventListener(std::string name) {
+    this->setName(name);
+}
+
+} // learningmachine
+} // contrib
+} // iCub
 

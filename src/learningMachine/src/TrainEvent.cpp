@@ -8,10 +8,20 @@
 
 #include "iCub/TrainEvent.h"
 
+namespace iCub {
+namespace contrib {
+namespace learningmachine {
 
 TrainEvent::TrainEvent() {
 }
 
-TrainEvent::~TrainEvent() { }
+TrainEvent::~TrainEvent() {
+}
 
+void TrainEvent::visit(IEventListener& listener) {
+    listener.handle(*this);
+}
 
+} // learningmachine
+} // contrib
+} // iCub

@@ -12,6 +12,10 @@
 #include "iCub/IEventListener.h"
 #include "iCub/PredictEvent.h"
 
+namespace iCub {
+namespace contrib {
+namespace learningmachine {
+
 
 /**
  * 
@@ -27,7 +31,7 @@ public:
     /**
      * Constructor
      */
-    PredictEventListener();
+    PredictEventListener(std::string name = "predict");
 
     /**
      * Destructor
@@ -41,7 +45,17 @@ public:
     void handle(PredictEvent& e) {
     }
 
+    /*
+     * Inherited from IEventListener.
+     */
+    IEventListener* create() {
+        return new PredictEventListener(this->getName());
+    }
 
 };
+
+} // learningmachine
+} // contrib
+} // iCub
 
 #endif
