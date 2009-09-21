@@ -20,8 +20,8 @@
 #include "localizer.h"
 
 #define EYEPINVREFGEN_GAIN              10.0
-#define NECKSOLVER_ACTIVATIONANGLE      20.0
-#define NECKSOLVER_ACTIVATIONANGLE      20.0
+#define NECKSOLVER_ACTIVATIONANGLE_TRA  20.0
+#define NECKSOLVER_ACTIVATIONANGLE_SAG  5.0
 #define NECKSOLVER_MOVEDTORSOQUEUSIZE   5
 
 using namespace std;
@@ -136,7 +136,7 @@ public:
 
     // Returns a measure of neck angle required to reach the target
     void   updateAngles();
-    double neckTargetRotAngle(const Vector &xd);
+    Vector neckTargetRotAngles(const Vector &xd);
     void   setStart();
 
     virtual bool threadInit();

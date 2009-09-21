@@ -387,8 +387,8 @@ void Solver::updateAngles()
 
 
 /************************************************************************/
-double Solver::neckTargetRotAngle(const Vector &xd)
-{
+Vector Solver::neckTargetRotAngles(const Vector &xd)
+{    
     Matrix H=chainNeck->getH();
 
     for (unsigned int i=0; i<3; i++)
@@ -396,18 +396,22 @@ double Solver::neckTargetRotAngle(const Vector &xd)
 
     H(3,3)=0.0;
 
-    // distance of target from the head
-    double d1=norm(H,3);
+    // projection on the transverse and sagittal planes
+    double x=dot(H,0,H,3);
+    double y=dot(H,1,H,3);
+    double z=dot(H,2,H,3);
 
-    if (d1)
-    {
-        // distance of target from the straight-ahead line
-        double d2=norm(cross(H,2,H,3));
+    Vector res(2);
+    res[0]=atan2(x,z);
+    res[1]=atan2(y,z);
 
-        return asin(d2/d1);
-    }
-    else
-        return 0.0;
+    if (res[0]<0.0)
+        res[0]=-res[0];
+
+    if (res[1]<0.0)
+        res[1]=-res[1];
+
+    return res;
 }
 
 
@@ -548,12 +552,14 @@ void Solver::run()
     updateNeckBlockedJoints(chainEyeR,fbHead);
     chainNeck->setAng(neckPos);
 
-    double theta=neckTargetRotAngle(xd);
+    Vector theta=neckTargetRotAngles(xd);
 
     if (norm(xd-xdOld)>1e-6 || movedTorso)
     {
         // call the solver for neck (only if necessary)        
-        if (theta>NECKSOLVER_ACTIVATIONANGLE*(M_PI/180.0) || movedTorso)
+        if (movedTorso ||
+            theta[0]>NECKSOLVER_ACTIVATIONANGLE_TRA*(M_PI/180.0) ||
+            theta[1]>NECKSOLVER_ACTIVATIONANGLE_SAG*(M_PI/180.0))
         {
             //invNeck->solve(neckPos,xd,NULL,NULL,neckCallbackObj);
             neckPos=invNeck->solve(neckPos,xd);
@@ -567,11 +573,12 @@ void Solver::run()
         xdOld=xd;
     }
 
-    if (theta>1.0*(M_PI/180.0) && theta<NECKSOLVER_ACTIVATIONANGLE*(M_PI/180.0))
+    if (theta[0]>1.0*(M_PI/180.0) && theta[0]<NECKSOLVER_ACTIVATIONANGLE_TRA*(M_PI/180.0) ||
+        theta[1]>1.0*(M_PI/180.0) && theta[1]<NECKSOLVER_ACTIVATIONANGLE_SAG*(M_PI/180.0))
         alignNeckCnt++;
 
     // re-align neck after a timeout
-    if (alignNeckCnt>3.0/Ts)
+    if (alignNeckCnt>2.0/Ts)
     {
         //invNeck->solve(neckPos,xd,NULL,NULL,neckCallbackObj);
         neckPos=invNeck->solve(neckPos,xd);
