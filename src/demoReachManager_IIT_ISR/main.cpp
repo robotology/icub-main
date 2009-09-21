@@ -16,7 +16,7 @@
 #include <string>
 
 #define TARGET_X_OFFSET         0.000
-#define TARGET_Y_OFFSET         0.030
+#define TARGET_Y_OFFSET         0.150
 #define TARGET_Z_OFFSET         0.000
 
 #define ORIENT_LEFT_X           -0.064485
