@@ -402,8 +402,8 @@ Vector Solver::neckTargetRotAngles(const Vector &xd)
     double z=dot(H,2,H,3);
 
     Vector res(2);
-    res[0]=atan2(x,z);
-    res[1]=atan2(y,z);
+    res[0]=atan2(x,-z);
+    res[1]=atan2(y,-z);
 
     if (res[0]<0.0)
         res[0]=-res[0];
