@@ -94,9 +94,20 @@ Matrix alignJointsBounds(iKinChain *chain, IControlLimits *limTorso, IControlLim
     {   
         limHead->getLimits(i,&min,&max);
 
+        // limit eye's tilt due to eyelids
+        if (i==3)
+        {
+            if (min<-28.0)
+                min=-28.0;
+
+            if (max>12.0)
+                max=12.0;
+        }
+
         lim(i,0)=(M_PI/180.0)*min;
         lim(i,1)=(M_PI/180.0)*max;
 
+        // just one eye's got only 5 dofs
         if (i<5)
         {
             (*chain)[3+i].setMin(lim(i,0));
