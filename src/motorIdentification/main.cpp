@@ -44,8 +44,7 @@
  *
  * \code
  *
- * InputSignalFile	OneHourChirpTWOJOINTS.dat		//file where
- * signal is read from 
+ * InputSignalFile	OneHourChirpTWOJOINTS.dat	//file where signals are read from 
  *
  * rate			5			   	//sampling time (in [ms]) of the input signal
  *
