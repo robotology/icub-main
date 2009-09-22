@@ -97,13 +97,16 @@ public:
       
       fname=string(getenv("ICUB_DIR"))+string("/src/primateVision/config/rec.cfg");
       
-
-      printf("Using config file: %s\n",fname.c_str());
-
       if (options.check("config"))
 	fname=options.find("config").asString();
+
+      printf("RecServer: Using config file: %s\n",fname.c_str());
       
-      r = new RecServer(&fname);
+      if (options.check("sim"))
+	printf("RecServer: Connecting to iCub Simulator.\n");
+
+	
+      r = new RecServer(&fname,options.check("sim"));
       
       
     

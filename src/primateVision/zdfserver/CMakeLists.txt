@@ -46,14 +46,22 @@ TARGET_LINK_LIBRARIES(zdfserver
 ADD_EXECUTABLE( zdfreset
 		zdfreset.cc
 		)
-ADD_EXECUTABLE( setzero
+TARGET_LINK_LIBRARIES(zdfreset
+	Qt3Support
+        QtCore
+	)
+
+ADD_EXECUTABLE( recreset
 		setzero.cc
 		)
-
+TARGET_LINK_LIBRARIES(recreset
+	Qt3Support
+        QtCore
+	)
 
 # install targets
 INSTALL_TARGETS(${BIN_DIR} 
   zdfserver
   zdfreset
-  setzero
+  recreset
   )

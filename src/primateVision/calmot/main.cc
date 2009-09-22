@@ -43,7 +43,6 @@
 #include <stdio.h>
 #include <string>
 #include <iostream>
-#include <stdlib.h>
 #include <qapplication.h>
 
 //MY INCLUDES
@@ -55,33 +54,44 @@
 #define GREY  0.3
 #define WHITE 0.99
 
-
-
 #define PIX 50
 
 
-using namespace std;
 using namespace iCub::contrib::primateVision;
-
-
 
 int main( int argc, char **argv )
 {
 
   QApplication a(argc, argv);
 
-  if (argc!=2){
-    printf("usage: %s [l,r]\n\n",argv[0]);
+  if (argc==1){
+    printf("usage: %s [l,r] [sim]\n\n",argv[0]);
     exit(0);
   }
-  QString input = argv[1];
+
+  QString arg1 = argv[1];
+  QString arg2 = argv[2];
+
+  QString cam;
+  if (arg1=="l" || arg2=="l"){
+    cam = "l";
+  }
+  if (arg1=="r" || arg2=="r"){
+    cam = "r";
+  }
+
+  QString sim;
+  if (arg1=="sim" || arg2=="sim"){
+    sim = "Sim";
+  }
+
 
 
   //probe recserver:
   Port inPort_s;
-  inPort_s.open("/calmot/input/serv_params");
-  Network::connect("/calmot/input/serv_params", "/recserver/output/serv_params");
-  Network::connect("/recserver/output/serv_params", "/calmot/input/serv_params");
+  inPort_s.open("/calmot"+sim+"/input/serv_params");
+  Network::connect("/calmot"+sim+"/input/serv_params","/recserver"+sim+"/output/serv_params");
+  Network::connect("/recserver"+sim+"/output/serv_params","/calmot"+sim+"/input/serv_params");
   BinPortable<RecServerParams> server_response; 
   Bottle empty;
   inPort_s.write(empty,server_response);
@@ -91,13 +101,13 @@ int main( int argc, char **argv )
   //for image input:
   BufferedPort<Bottle> inPort_y;
   Bottle *inBot_y;
-  if (input == "l"){
-    inPort_y.open("/calmot/input/rec_y");
-    Network::connect("/recserver/output/left_ye" , "/calmot/input/rec_y");
+  if (cam == "l"){
+    inPort_y.open("/calmot"+sim+"/input/rec_y");
+    Network::connect("/recserver"+sim+"/output/left_ye" , "/calmot"+sim+"/input/rec_y");
   }
   else {
-    inPort_y.open("/calmot/input/rec_y");
-    Network::connect("/recserver/output/right_ye" , "/calmot/input/rec_y");
+    inPort_y.open("/calmot"+sim+"/input/rec_y");
+    Network::connect("/recserver"+sim+"/output/right_ye" , "/calmot"+sim+"/input/rec_y");
   }
   Ipp8u* rec_im_y;
   
@@ -105,9 +115,9 @@ int main( int argc, char **argv )
 
   //REQUEST MOTION LIKE THIS!
   Port outPort_mot;
-  outPort_mot.open("/calmot/output/mot");
-  Network::connect("/calmot/output/mot", "/recserver/input/motion");
-  Network::connect("/recserver/input/motion", "/calmot/output/mot");
+  outPort_mot.open("/calmot"+sim+"/output/mot");
+  Network::connect("/calmot"+sim+"/output/mot", "/recserver"+sim+"/input/motion");
+  Network::connect("/recserver"+sim+"/input/motion", "/calmot"+sim+"/output/mot");
   BinPortable<RecMotionRequest> motion_request;
   sleep(1);
 
@@ -144,7 +154,7 @@ int main( int argc, char **argv )
 
   des_y  = PIX;
   des_x  = PIX;
-  if (input == "l"){
+  if (cam == "l"){
     des_xl = des_x;
     des_xr = 0;
   }

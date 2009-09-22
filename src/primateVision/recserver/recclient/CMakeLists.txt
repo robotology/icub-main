@@ -27,9 +27,8 @@ TARGET_LINK_LIBRARIES(recclient
         QtGui
 	display
 	mosaic
-	pthread
-	
-)
+	pthread	
+	)
 
 # install targets
 INSTALL_TARGETS(${BIN_DIR} 

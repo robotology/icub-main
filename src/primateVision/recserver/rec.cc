@@ -27,11 +27,11 @@ using namespace std;
 
 
 
-iCub::contrib::primateVision::RecServer::RecServer(string *cfg_)
+iCub::contrib::primateVision::RecServer::RecServer(string *cfg_, bool sim_)
 {
   
   cfg=cfg_;
-  
+  realOrSim = sim_;
   start();
   
 }
@@ -62,15 +62,15 @@ void iCub::contrib::primateVision::RecServer::run()
   double toff_r = prop.findGroup("REC").find("CAM_R_TILT_OFFSET").asDouble();
   int width = prop.findGroup("REC").find("WIDTH").asInt();
   int height = prop.findGroup("REC").find("HEIGHT").asInt();
-  int realOrSim =  prop.findGroup("REC").find("REAL0_SIM1").asInt();
   bool motion = (bool) prop.findGroup("REC").find("MOTION").asInt();
 
   if (motion) {
     printf("RecServer: Motion control enabled.\n");
   }
   
+
   std::string sim;
-  if (realOrSim == 1){
+  if (realOrSim){
     printf("RecServer: Connecting to iCub Simulator.\n");
     sim = "Sim";
   }
@@ -84,7 +84,7 @@ void iCub::contrib::primateVision::RecServer::run()
   IVelocityControl *vel;
   PolyDriver *recDevice;
   options.put("device", "remote_controlboard");
-  if (realOrSim == 1){
+  if (realOrSim){
     options.put("local",  "/recserverSim/rcb_client"); 
     options.put("remote", "/icubSim/head");
   }

@@ -37,6 +37,7 @@
 
 #include <stdio.h>
 #include <string>
+#include <qstring.h>
 #include <iostream>
 
 //MY INCLUDES
@@ -48,11 +49,18 @@ using namespace iCub::contrib::primateVision;
 int main( int argc, char **argv )
 {
 
+  QString arg = argv[1];
+  QString sim;
+  if (arg=="sim"){
+    sim = "Sim";
+  }
+
+
   //CONTACT RECSERVER:
   Port inPort_s;
   inPort_s.open("/zdfreset/input/serv_params");     // Give it a name on the network.
-  Network::connect("/zdfreset/input/serv_params", "/recserver/output/serv_params");
-  Network::connect("/recserver/output/serv_params", "/zdfreset/input/serv_params");
+  Network::connect("/zdfreset/input/serv_params", "/recserver"+sim+"/output/serv_params");
+  Network::connect("/recserver"+sim+"/output/serv_params", "/zdfreset/input/serv_params");
   BinPortable<RecServerParams> server_response; 
   Bottle empty;
   inPort_s.write(empty,server_response);
@@ -62,8 +70,8 @@ int main( int argc, char **argv )
   //ACCESS MOTION LIKE THIS!
   Port outPort_mot;
   outPort_mot.open("/zdfreset/output/mot");     // Give it a name on the network.
-  Network::connect("/zdfreset/output/mot", "/recserver/input/motion");
-  Network::connect("/recserver/input/motion", "/zdfreset/output/mot");
+  Network::connect("/zdfreset/output/mot", "/recserver"+sim+"/input/motion");
+  Network::connect("/recserver"+sim+"/input/motion", "/zdfreset/output/mot");
   BinPortable<RecMotionRequest> motion_request;
 
   //initalise:

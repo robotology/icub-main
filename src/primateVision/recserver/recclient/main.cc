@@ -56,7 +56,7 @@
 #define SHOW_Y_IMS_BRECT 0
 #define SHOW_UV_IMS 0
 
-
+ 
 using namespace iCub::contrib::primateVision;
 
 int main( int argc, char **argv )

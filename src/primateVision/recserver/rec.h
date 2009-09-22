@@ -40,8 +40,9 @@ namespace iCub {
 	
 	/** Constructor.
 	 * @param c A string referencing the config file.
+	 * @param s Simulator connect flag. Defaults to real robot.
 	 */
-	RecServer(string *c);
+	RecServer(string *c, bool s);
 	
 	/** Destructor.
 	 */
@@ -57,6 +58,7 @@ namespace iCub {
 	
       private:
 	string *cfg; /**< A string referencing the config file. */
+	bool realOrSim; /**< Simulator connect flag. Defaults to real robot. */
 	RecHandleMotionRequest *motion_handler; /**< Handler class for motion requests arriving on motion request port. */
 	
       };
