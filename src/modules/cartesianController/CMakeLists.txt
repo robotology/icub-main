@@ -1,6 +1,8 @@
 IF (COMPILE_DEVICE_LIBRARY)
-  PREPARE_DEVICE(cartesiancontrollerserver TYPE ServerCartesianController INCLUDE ServerCartesianController.h)
-  PREPARE_DEVICE(cartesiancontrollerclient TYPE ClientCartesianController INCLUDE ClientCartesianController.h)
+  PREPARE_DEVICE(cartesiancontrollerserver TYPE ServerCartesianController
+                                           INCLUDE ServerCartesianController.h WRAPPER cartesiancontrollerclient)
+  PREPARE_DEVICE(cartesiancontrollerclient TYPE ClientCartesianController 
+                                           INCLUDE ClientCartesianController.h WRAPPER cartesiancontrollerclient)
 ENDIF (COMPILE_DEVICE_LIBRARY)
 
 IF (NOT SKIP_cartesiancontrollerserver OR NOT SKIP_cartesiancontrollerclient)
