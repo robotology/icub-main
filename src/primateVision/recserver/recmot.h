@@ -80,6 +80,9 @@ namespace iCub {
 	double vor_d_rol;
 	double vor_d_pan;
 	double vor_d_tlt;
+
+	BufferedPort<BinPortable<RecMotionRequest> > *inPort_mot; /**< Yarp port for receiving motion requests. */
+	BufferedPort<yarp::sig::Vector> *inPort_inertial;
 	
 	
 	
@@ -90,13 +93,11 @@ namespace iCub {
 	int suspend;      /**< Suspend period (in loop cycles). */
 	int locked_to;    /**< Command acceptance locking. */
 	BinPortable<RecMotionRequest> *rmq; /**< Motion request container received over port. */
-	BufferedPort<BinPortable<RecMotionRequest> > inPort_mot; /**< Yarp port for receiving motion requests. */
-	
+
 	//VOR stuff:
 	Vector *gyro;
 	double vor_vels[3];
 	double gyro_vel[3];
-	BufferedPort<yarp::sig::Vector> *inertial;
 
       };
 

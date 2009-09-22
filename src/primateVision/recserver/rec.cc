@@ -10,6 +10,7 @@
 #include <stdio.h>
 #include <iostream>
 #include <qimage.h>
+#include <qstring.h>
 #include <ipp.h>
 
 //MY INCLUDES
@@ -59,57 +60,55 @@ void iCub::contrib::primateVision::RecServer::run()
   string crfl = prop.findGroup("REC").find("CALIB_RESULTS_FILE_L").asString().c_str();
   string crfr = prop.findGroup("REC").find("CALIB_RESULTS_FILE_R").asString().c_str();
   double toff_r = prop.findGroup("REC").find("CAM_R_TILT_OFFSET").asDouble();
-  bool motion = (bool) prop.findGroup("REC").find("MOTION").asInt();
-  bool fake = (bool) prop.findGroup("REC").find("FAKE").asInt();
-  string fake_im_l = prop.findGroup("REC").find("FAKE_IM_L").asString().c_str();
-  string fake_im_r = prop.findGroup("REC").find("FAKE_IM_R").asString().c_str();
   int width = prop.findGroup("REC").find("WIDTH").asInt();
   int height = prop.findGroup("REC").find("HEIGHT").asInt();
-  
-  if (fake) {
-    printf("\nRecServer: Faking images and encoder data.\n");
-  }
-  
+  int realOrSim =  prop.findGroup("REC").find("REAL0_SIM1").asInt();
+  bool motion = (bool) prop.findGroup("REC").find("MOTION").asInt();
+
   if (motion) {
-    printf("\nRecServer: Motion control enabled.\n");
+    printf("RecServer: Motion control enabled.\n");
   }
   
-  
+  std::string sim;
+  if (realOrSim == 1){
+    printf("RecServer: Connecting to iCub Simulator.\n");
+    sim = "Sim";
+  }
+  else{
+    sim = "";
+  }
+
   
   Property options;
+  IEncoders *enc;
+  IVelocityControl *vel;
+  PolyDriver *recDevice;
   options.put("device", "remote_controlboard");
-  options.put("local",  "/recserver/rcb_client"); 
-  options.put("remote", "/icub/head");            
-  PolyDriver recDevice(options);
-  if (!recDevice.isValid() && !fake) {
+  if (realOrSim == 1){
+    options.put("local",  "/recserverSim/rcb_client"); 
+    options.put("remote", "/icubSim/head");
+  }
+  else{
+    options.put("local",  "/recserver/rcb_client"); 
+    options.put("remote", "/icub/head");
+  }
+  
+  recDevice = new PolyDriver(options);
+  if (!recDevice->isValid()) {
     printf("RecServer: PolyDriver device not available.\n");
   }
-  IVelocityControl *vel;
-  IEncoders *enc;
-  recDevice.view(vel);
-  recDevice.view(enc);
-  if ( (vel==NULL || enc==NULL) && !fake){     
-    recDevice.close();
-    printf("RecServer: No real head found. Faking a head.\n");
-    fake = true;
+  recDevice->view(vel);
+  recDevice->view(enc);
+  if (vel==NULL || enc==NULL){     
+    recDevice->close();
+    printf("RecServer: No robot found.\n");
   }
-  
-  
+    
   //for initial vel,acc,pos:
   double vec_enc[6];
   double vec_enc_tmp[6];
-  if (!fake){    
-    enc->getEncoders(vec_enc);
-  }
-  else{
-    //fake it:
-    vec_enc[0] = 0.0;    
-    vec_enc[1] = 0.0;    
-    vec_enc[2] = 0.0;    
-    vec_enc[3] = 0.0;    
-    vec_enc[4] = 0.0;    
-    vec_enc[5] = 0.0;    
-  }
+  enc->getEncoders(vec_enc);
+
   double ref_accs[6];
   ref_accs[0] = 1000000000.0;
   ref_accs[1] = 1000000000.0;
@@ -128,7 +127,14 @@ void iCub::contrib::primateVision::RecServer::run()
   double old_t_deg=0.0,old_l_deg=0.0,old_r_deg=0.0;
   bool do_l,do_r;
 
- 
+  //to read inertial port:
+  BufferedPort<yarp::sig::Vector> inPort_inertial;
+  inPort_inertial.open(("/recserver"+sim+"/input/inertial").c_str());
+  Network::connect(("/icub"+sim+"/inertial").c_str() , ("/recserver"+sim+"/input/inertial").c_str());
+
+  //incoming motion commands:
+  BufferedPort<BinPortable<RecMotionRequest> > inPort_mot; 
+  inPort_mot.open( ("/recserver"+sim+"/input/motion").c_str());
 
 
 
@@ -160,27 +166,29 @@ void iCub::contrib::primateVision::RecServer::run()
   BufferedPort<Bottle> outPort_rve;
 
   //Open the ports:
-  outPort_s.open(  "/recserver/output/serv_params");
-  outPort_p.open(  "/recserver/output/rec_params");
-  outPort_lyb.open("/recserver/output/left_yb" );
-  outPort_lub.open("/recserver/output/left_ub" );
-  outPort_lvb.open("/recserver/output/left_vb" );
-  outPort_ryb.open("/recserver/output/right_yb");
-  outPort_rub.open("/recserver/output/right_ub");
-  outPort_rvb.open("/recserver/output/right_vb");
-  outPort_lye.open("/recserver/output/left_ye" );
-  outPort_lue.open("/recserver/output/left_ue" );
-  outPort_lve.open("/recserver/output/left_ve" );
-  outPort_rye.open("/recserver/output/right_ye");
-  outPort_rue.open("/recserver/output/right_ue");
-  outPort_rve.open("/recserver/output/right_ve");
+  outPort_s.open(  ("/recserver"+sim+"/output/serv_params").c_str());
+  outPort_p.open(  ("/recserver"+sim+"/output/rec_params").c_str());
+  outPort_lyb.open(("/recserver"+sim+"/output/left_yb").c_str() );
+  outPort_lub.open(("/recserver"+sim+"/output/left_ub").c_str() );
+  outPort_lvb.open(("/recserver"+sim+"/output/left_vb").c_str() );
+  outPort_ryb.open(("/recserver"+sim+"/output/right_yb").c_str());
+  outPort_rub.open(("/recserver"+sim+"/output/right_ub").c_str());
+  outPort_rvb.open(("/recserver"+sim+"/output/right_vb").c_str());
+  outPort_lye.open(("/recserver"+sim+"/output/left_ye").c_str() );
+  outPort_lue.open(("/recserver"+sim+"/output/left_ue").c_str() );
+  outPort_lve.open(("/recserver"+sim+"/output/left_ve").c_str() );
+  outPort_rye.open(("/recserver"+sim+"/output/right_ye").c_str());
+  outPort_rue.open(("/recserver"+sim+"/output/right_ue").c_str());
+  outPort_rve.open(("/recserver"+sim+"/output/right_ve").c_str());
 
-  if (!fake){
-    pcl.open("/recserver/input/image/left");
-    pcr.open("/recserver/input/image/right");
-    Network::connect("/icub/cam/left" , "/recserver/input/image/left");
-    Network::connect("/icub/cam/right" ,"/recserver/input/image/right");
-  }
+  pcl.open(("/recserver"+sim+"/input/image/left").c_str());
+  pcr.open(("/recserver"+sim+"/input/image/right").c_str());
+  Network::connect(("/icub"+sim+"/cam/left").c_str() , ("/recserver"+sim+"/input/image/left").c_str());
+  Network::connect(("/icub"+sim+"/cam/right").c_str() ,("/recserver"+sim+"/input/image/right").c_str());
+  
+
+
+
 
   //Get first RGB image to establish width, height:
   double scale = 1.0;
@@ -188,29 +196,17 @@ void iCub::contrib::primateVision::RecServer::run()
   ImageOf<PixelBgr> *imgl,*imgr;
   IppiSize insize;
   IppiRect inroi;
-  if (!fake){
-    imgl = pcl.read(); //blocking buffered
-    insize.width = imgl->width();
-    insize.height = imgl->height();
-    inroi.x=0;
-    inroi.y=0;
-    inroi.width=imgl->width();
-    inroi.height=imgl->height();
-    //get scale factor to reduce to widthxheight:
-    scale  = ((double)width)/imgl->width();
-    printf("RecServer: Received input image dimensions: (%d,%d)\n",imgl->width(), imgl->height());
-    printf("RecServer: Scaling to image dimensions: (%d,%d). Scale factor %f\n",width, height,scale);
-  }
-  else {
-    printf("RecServer: Loading fake left image: %s\n",fake_im_l.c_str());
-    qim_l = new QImage((char*)fake_im_l.c_str(),"JPEG");
-    printf("RecServer: Loading fake right image: %s\n",fake_im_r.c_str());
-    qim_r = new QImage((char*)fake_im_r.c_str(),"JPEG");
-    width  = qim_r->width();
-    height = qim_r->height();
-    scale = 1.0;
-    printf("RecServer: Fake image dimensions: (%d,%d).\n",width,height);
-  }
+  imgl = pcl.read(); //blocking buffered
+  insize.width = imgl->width();
+  insize.height = imgl->height();
+  inroi.x=0;
+  inroi.y=0;
+  inroi.width=imgl->width();
+  inroi.height=imgl->height();
+  //get scale factor to reduce to widthxheight:
+  scale  = ((double)width)/imgl->width();
+  printf("RecServer: Received input image dimensions: (%d,%d)\n",imgl->width(), imgl->height());
+  printf("RecServer: Scaling to image dimensions: (%d,%d). Scale factor %f\n",width, height,scale);
 
   IppiSize srcsize;
   srcsize.width = width;
@@ -269,10 +265,11 @@ void iCub::contrib::primateVision::RecServer::run()
   motion_handler->vor_d_pan = prop.findGroup("VOR").find("D_PAN").asDouble();
   motion_handler->vor_d_tlt = prop.findGroup("VOR").find("D_TLT").asDouble();
   motion_handler->motion    = motion;
-  motion_handler->fake      = fake;
   motion_handler->enc       = vec_enc;
   motion_handler->vel       = vel;
   motion_handler->encs      = enc;
+  motion_handler->inPort_mot  = &inPort_mot;
+  motion_handler->inPort_inertial  = &inPort_inertial;
 
   motion_handler->start();
 
@@ -293,7 +290,7 @@ void iCub::contrib::primateVision::RecServer::run()
 
 
     
-  if (motion && !fake){         
+  if (motion){         
     //SET REF ACC:
     vel->setRefAccelerations(ref_accs);
     //set initial desired positions to current pos:
@@ -302,18 +299,7 @@ void iCub::contrib::primateVision::RecServer::run()
       desired_angles[i] = vec_enc[i];
     }
   }
-
-  if (fake){
-    //set fake angles to initial desired angles (0.0):
-    for (int i=0;i<6;i++){
-      vec_enc[i] = desired_angles[i];
-    }
-  }
   
-  
-
-
-
 
 
 
@@ -339,19 +325,16 @@ void iCub::contrib::primateVision::RecServer::run()
 
     
    
-    if (!fake){
-      //REQUEST IMAGES:
-      imgr = pcr.read(false); //non-blocking
-      imgl = pcl.read(false); //non-blocking
-      
-      //get encoder data:
-      if (enc->getEncoders(vec_enc_tmp)){
-	for (int i=0;i<6;i++){
-	  vec_enc[i] = vec_enc_tmp[i];
-	}
-      }    
-    }   
+    //REQUEST IMAGES:
+    imgr = pcr.read(false); //non-blocking
+    imgl = pcl.read(false); //non-blocking
     
+    //get encoder data:
+    if (enc->getEncoders(vec_enc_tmp)){
+      for (int i=0;i<6;i++){
+	vec_enc[i] = vec_enc_tmp[i];
+      }
+    }    
 
 
  
@@ -382,7 +365,7 @@ void iCub::contrib::primateVision::RecServer::run()
     //RECTIFY IMAGES IF READY:
  
     //LEFT:
-    if (fake || imgl!=NULL){
+    if (imgl!=NULL){
 
       //see if geometry has changed:
       do_l = true;
@@ -394,29 +377,23 @@ void iCub::contrib::primateVision::RecServer::run()
       old_l_deg = l_deg;
       old_t_deg = t_deg;
       
-      if (!fake){
-
-	if (scale==1.0){
-	  //L: convert directly to RGBA:
-	  ippiCopy_8u_C3AC4R(imgl->getPixelAddress(0,0),imgl->width()*3,colourl,psb4,srcsize);
-	}
-	else{
-	  //L: scale to width,height:
-	  ippiResize_8u_C3R(imgl->getPixelAddress(0,0),insize,imgl->width()*3,
-			    inroi,
-			    colourl_in,psb3_in,srcsize,
-			    scale,
-			    scale,
-			    IPPI_INTER_CUBIC);
-	  
-	  //L: convert to RGBA:
-	  ippiCopy_8u_C3AC4R(colourl_in,psb3_in,colourl,psb4,srcsize);
-	}
-
+      if (scale==1.0){
+	//L: convert directly to RGBA:
+	ippiCopy_8u_C3AC4R(imgl->getPixelAddress(0,0),imgl->width()*3,colourl,psb4,srcsize);
       }
       else{
-	colourl=qim_l->bits();
+	//L: scale to width,height:
+	ippiResize_8u_C3R(imgl->getPixelAddress(0,0),insize,imgl->width()*3,
+			  inroi,
+			  colourl_in,psb3_in,srcsize,
+			  scale,
+			  scale,
+			  IPPI_INTER_CUBIC);
+	
+	//L: convert to RGBA:
+	ippiCopy_8u_C3AC4R(colourl_in,psb3_in,colourl,psb4,srcsize);
       }
+      
       //convert to Y,U,V image channels:
       c_rgb2yuv_l->proc(colourl,psb4);
       
@@ -489,7 +466,7 @@ void iCub::contrib::primateVision::RecServer::run()
    
     
     //RIGHT:
-    if (fake || imgr!=NULL){
+    if (imgr!=NULL){
 
       //see if geometry has changed:
       do_r = true;
@@ -501,34 +478,28 @@ void iCub::contrib::primateVision::RecServer::run()
       old_r_deg = r_deg;
       old_t_deg = t_deg;
       
-      if (!fake){
-
-	if (scale==1.0){
-	  //R: convert directly to RGBA:
-	  ippiCopy_8u_C3AC4R(imgr->getPixelAddress(0,0),imgr->width()*3,colourr,psb4,srcsize);
-	}
-	else{
-	  //R: scale to width,height:
-	  ippiResize_8u_C3R(imgr->getPixelAddress(0,0),insize,imgr->width()*3,
-			    inroi,
-			    colourr_in,psb3_in,srcsize,
-			    scale,
-			    scale,
-			    IPPI_INTER_CUBIC);
-	  
-	  //R: convert to RGBA:
-	  ippiCopy_8u_C3AC4R(colourr_in,psb3_in,colourr,psb4,srcsize);
-	}
-
+      if (scale==1.0){
+	//R: convert directly to RGBA:
+	ippiCopy_8u_C3AC4R(imgr->getPixelAddress(0,0),imgr->width()*3,colourr,psb4,srcsize);
       }
       else{
-	colourr=qim_r->bits();
-      }     
+	//R: scale to width,height:
+	ippiResize_8u_C3R(imgr->getPixelAddress(0,0),insize,imgr->width()*3,
+			  inroi,
+			  colourr_in,psb3_in,srcsize,
+			  scale,
+			  scale,
+			  IPPI_INTER_CUBIC);
+	
+	//R: convert to RGBA:
+	ippiCopy_8u_C3AC4R(colourr_in,psb3_in,colourr,psb4,srcsize);
+      }
+      
       //convert to Y,U,V image channels:
       c_rgb2yuv_r->proc(colourr,psb4);
       
-
-
+      
+      
       //CALC AND SEND RECTIFIED IMAGES IMMEDIATELY!
 
       //update output params to attach to ims:
@@ -600,7 +571,7 @@ void iCub::contrib::primateVision::RecServer::run()
 
 
     //prevent port saturation:
-    if ( !fake && imgr==NULL && imgl==NULL){
+    if (imgr==NULL && imgl==NULL){
       printf("No Input\n");
       usleep(5000); //dont blow out port
     }

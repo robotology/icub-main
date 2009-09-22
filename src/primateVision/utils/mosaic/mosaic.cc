@@ -50,6 +50,16 @@ void iCub::contrib::primateVision::Mosaic::display(void *im,int ixl,int iyl)
 }
 
 
+void iCub::contrib::primateVision::Mosaic::save(void *im,QString name)
+{
+
+  convert(im);
+
+  qim->save(name,"JPEG",100);
+
+}
+
+
 
 iCub::contrib::primateVision::Mosaic::~Mosaic()
 {

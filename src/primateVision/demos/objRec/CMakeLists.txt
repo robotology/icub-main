@@ -6,7 +6,7 @@
 ADD_DEFINITIONS(-O3 -Wno-deprecated -D_LINUX -DQT_THREAD_SUPPORT -DQT3_SUPPORT)
 
 INCLUDE_DIRECTORIES(
-	/usr/include/opencv
+	/usr/local/include/opencv
 	/usr/local/include/nnfw
 	${PROJECT_SOURCE_DIR}/utils/display 
 	${PROJECT_SOURCE_DIR}/utils/multiFrameViewer
@@ -23,17 +23,17 @@ ADD_EXECUTABLE( objRec
 		)
 
 TARGET_LINK_LIBRARIES(objRec
+	/usr/local/lib64/libnnfw.a
+	/usr/local/lib/libcv.so
+	/usr/local/lib/libcvaux.so
+	/usr/local/lib/libcxcore.so
+	/usr/local/lib/libhighgui.so
         Qt3Support
         QtCore
         QtGui
 	display
 	ippi
 	pthread
-	/usr/local/lib/libnnfw.a
-	/usr/lib/libcv.so
-	/usr/lib/libcvaux.so
-	/usr/lib/libcxcore.so
-	/usr/lib/libhighgui.so
 	)
 
 # install targets

@@ -5,7 +5,6 @@
 iCub::contrib::primateVision::RecHandleMotionRequest::RecHandleMotionRequest(int period):
   RateThread(period)
 {
-  inPort_mot.open( "/recserver/input/motion"   );
   angles[0]=0.0;
   angles[1]=0.0;
   angles[2]=0.0;
@@ -14,13 +13,6 @@ iCub::contrib::primateVision::RecHandleMotionRequest::RecHandleMotionRequest(int
   angles[5]=0.0;
   suspend = 0;
   locked_to = NO_LOCK;
-
-
-
-   //to read inertial port:
-  inertial = new BufferedPort<yarp::sig::Vector>;
-  inertial->open("/recserver/input/inertial");
-  Network::connect("/icub/inertial" , "/recserver/input/inertial");
 
   vor_vels[0]=0.0; 
   vor_vels[1]=0.0; 
@@ -53,7 +45,7 @@ void iCub::contrib::primateVision::RecHandleMotionRequest::run(){
 
 
     //incorporate motion requests:
-    rmq = inPort_mot.read(false);
+    rmq = inPort_mot->read(false);
     //skip updating desired target pos for "suspend" * period:
     if (rmq!=NULL && suspend==0){
       
@@ -114,7 +106,7 @@ void iCub::contrib::primateVision::RecHandleMotionRequest::run(){
     if (vor_on){
 
       //get gyro accelleration data:
-      gyro = inertial->read(false); //false = non-blocking
+      gyro = inPort_inertial->read(false); //false = non-blocking
       if (gyro!=NULL){
 	
 	//printf("RecServer: VOR Data.\n");

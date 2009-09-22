@@ -70,6 +70,11 @@ namespace iCub {
 	 */
 	void display(void* im,int x, int y);
 
+	/** Method to write image to JPEG format file.
+	 * @param name Filename, eg: 'myim.jpg'.
+	 */
+	void save(void* im,QString name);
+
 	/** Access to the underlying  multiFrameViewer object (QT4 display window widget).
 	 * @return viewer Pointer to multiFrameViewer object.
 	 */

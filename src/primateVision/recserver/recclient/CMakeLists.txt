@@ -30,20 +30,8 @@ TARGET_LINK_LIBRARIES(recclient
 	pthread
 	
 )
-ADD_EXECUTABLE( recclient_motion
-		main_mot.cc
-		)
-
-TARGET_LINK_LIBRARIES(recclient_motion
-        Qt3Support
-        QtCore
-	display
-	mosaic
-	pthread
-	)
 
 # install targets
 INSTALL_TARGETS(${BIN_DIR} 
   recclient
-  recclient_motion
   )

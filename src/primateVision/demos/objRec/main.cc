@@ -8,7 +8,6 @@
  * If so, send commands to draw it in iCubSIM
  *
  */ 
-
 #include <stdio.h>
 #include <stdlib.h>
 #include <string>
@@ -28,11 +27,6 @@
 #include "backpropagationalgo.h"
 #include "random.h"
 #include <algorithm>
-//YARP INCLUDES
-#include <yarp/dev/all.h>
-#include <yarp/os/all.h>
-#include <yarp/sig/all.h>
-#include <yarp/dev/all.h>
 //OPENCV INCLUDES
 #include <cv.h>
 #include <highgui.h>
@@ -41,11 +35,9 @@
 #define momentum 0.9
 
 using namespace nnfw;
+using namespace std;
+
 using namespace iCub::contrib::primateVision;
-using namespace yarp;
-using namespace yarp::sig;
-using namespace yarp::dev;
-using namespace yarp::os;
 
 void loadNet();
 void extractPixels(IplImage* img);
@@ -56,11 +48,12 @@ DotLinker *in2hid, *hid2out, *in2out;
 BackPropagationAlgo* learnNet; 
 BaseNeuralNet* net;
 double pixelValNorm[10001][50];
-int numInputs, numOutputs, numHiddens;
+int numInputs, numOutputs, numHiddens, inc;
+IplImage* segImg = 0;
+IplImage* temp = 0;
 
 int main( int argc, char **argv )
 {
-
   QApplication *a = new QApplication(argc, argv);
 
   //probe ZDFServer:
@@ -98,7 +91,7 @@ int main( int argc, char **argv )
   //Network::connect("/vtikha/target", "/icubSim/world"); //connect the output target to the simulator FOR NOW THIS CAN BE DONE MANUALLY
 
   // setting up images for opencv
-  segImg = cvCreateImage(cvSize(320, 240, IPL_DEPTH_8U, 1); // manually
+  segImg = cvCreateImage(cvSize(320, 240), IPL_DEPTH_8U, 1); // manually
     
   net = loadXML( "data/learnedModel.xml" ); //load the saved model
 
@@ -108,14 +101,19 @@ int main( int argc, char **argv )
     cl[i]->outputs().zeroing();                                
   }
   
-  loadNet();//configures the net
+
+
+  loadNet();//configures the neural network
   
 
-  printf("begin..\n");
 
+
+
+  printf("begin..\n");
   //main event loop:
   while (1){
     
+
     inBot_seg_dog = inPort_seg_dog.read(false);
     
 
@@ -125,43 +123,51 @@ int main( int argc, char **argv )
       //DISPLAY:
       d_seg_dog->display(zdf_im_seg_dog);
 
+
+
+      //******************
+
       //CLASSIFY:
       printf("CHECKING CLASSIFICATION...\n");
       
-	  ippiCopy_8u_C1(zdf_im_seg_dog, psb, (Ipp8u*)segImg->imageData, m_psb, msize);
-	  //get the image
-	  temp = cvCreateImage(cvSize(30,30), 8, 3 );
-	  cvResize(segImg, temp,CV_INTER_LINEAR);
-	  extractPixels(temp);
+      //put image in openCV container:
+      ippiCopy_8u_C1R(zdf_im_seg_dog, m_psb, (Ipp8u*)segImg->imageData, m_psb, msize);
+      //resize to 30x30:
+      temp = cvCreateImage(cvSize(30,30), 8, 1 );
+      cvResize(segImg, temp,CV_INTER_LINEAR);
 
-	  //run the NN
-	  RealVec outputs(out->numNeurons());
-	  for (int input = 0; input< (int)in->numNeurons(); input++ )
-	  	in->setInput( input, pixelValNorm[input][0] ); 
-
-	  net->step();
-	  outputs = out->outputs();      
-
-	  cout << outputs[0] << " " << endl;
-	  
-	  //OUTPUT DISPLAY TO SIM:
-	  //if (outputs[0] < THRESHOLD )
-		//label = 1....
-	  
-	  /*int label = 0;
-	  Bottle& bot = _targetPort.prepare();
-	  bot.clear();
-	  bot.addString ("world");
-	  bot.addString ("mk");
-	  bot.addString ("labl");
-	  bot.addDouble( nnfw::Random::flatReal ((Real) 0.01, (Real) 0.8));
-	  bot.addDouble( nnfw::Random::flatReal ((Real) -2.0, (Real) 2.0));
-	  bot.addDouble( nnfw::Random::flatReal ((Real) 0.0, (Real) 2.0));
-	  bot.addDouble( nnfw::Random::flatReal ((Real) 0.2, (Real) 2.0));
-	  */
-	
-	  //bot.addInt(label);
-	  //_targetPort.write();	
+      //set image as inputs to NN:
+      extractPixels(temp);
+      
+      //run the NN:
+      RealVec outputs(out->numNeurons());
+      for (int input = 0; input< (int)in->numNeurons(); input++ )
+	in->setInput( input, pixelValNorm[input][0] ); 
+      
+      net->step();
+      outputs = out->outputs();
+      cout << outputs[0] << " " << endl;
+      
+      //OUTPUT DISPLAY TO SIM:
+      //if (outputs[0] < THRESHOLD )
+      //label = 1....
+      
+      /*int label = 0;
+	Bottle& bot = _targetPort.prepare();
+	bot.clear();
+	bot.addString ("world");
+	bot.addString ("mk");
+	bot.addString ("labl");
+	bot.addDouble( nnfw::Random::flatReal ((Real) 0.01, (Real) 0.8));
+	bot.addDouble( nnfw::Random::flatReal ((Real) -2.0, (Real) 2.0));
+	bot.addDouble( nnfw::Random::flatReal ((Real) 0.0, (Real) 2.0));
+	bot.addDouble( nnfw::Random::flatReal ((Real) 0.2, (Real) 2.0));
+      */
+      
+      //bot.addInt(label);
+      //_targetPort.write();	
+      
+      //**************************************
       
 
 
@@ -170,7 +176,7 @@ int main( int argc, char **argv )
 
    
     if (inBot_seg_dog==NULL){
-      printf("No Input\n");
+     // printf("No Input\n");
       usleep(5000);// don't blow out port
     }
    
@@ -179,44 +185,44 @@ int main( int argc, char **argv )
 }
 
 void loadNet(){
-	//load the net
-	
-	in = (BiasedCluster*)net->getByName("in");
-	out = (BiasedCluster*)net->getByName("out");
-	numInputs = in->numNeurons();
-	numOutputs = out->numNeurons();
-	hid = (BiasedCluster*)net->getByName("hid");
-	in2hid = (DotLinker*)net->getByName("in2hid");
-	hid2out = (DotLinker*)net->getByName("hid2out");
-	numHiddens = hid->numNeurons();
-	//reverse the order	
-	UpdatableVec rev_ord(net->order().size());
-	rev_ord.assign_reverse(net->order());
-    learnNet = new BackPropagationAlgo (net, rev_ord, learnRate);
-	learnNet->enableMomentum();
-	learnNet->setMomentum(momentum);
+  //load the net
+  
+  in = (BiasedCluster*)net->getByName("in");
+  out = (BiasedCluster*)net->getByName("out");
+  numInputs = in->numNeurons();
+  numOutputs = out->numNeurons();
+  hid = (BiasedCluster*)net->getByName("hid");
+  in2hid = (DotLinker*)net->getByName("in2hid");
+  hid2out = (DotLinker*)net->getByName("hid2out");
+  numHiddens = hid->numNeurons();
+  //reverse the order	
+  UpdatableVec rev_ord(net->order().size());
+  rev_ord.assign_reverse(net->order());
+  learnNet = new BackPropagationAlgo (net, rev_ord, learnRate);
+  learnNet->enableMomentum();
+  learnNet->setMomentum(momentum);
 }
 
 void extractPixels(IplImage* img){
+  
+  int height,width;
+  char path[100] ;
+  cout << "\nLOADING image\n"<< endl;
+  
+  CvScalar s;
+  for (int i=0; i<img->height; i++){
+    for (int j=0; j<img->width; j++){	
 
-  	IplImage* gray = 0; 
-	int height,width;
-	char path[100] ;
-	cout << "\nLOADING image\n"<< endl;
+      //get the (i,j) pixel intensity
+      s=cvGet2D(img,i,j); 
 
-	gray = cvCreateImage(cvGetSize(img), 8, 1 );
-	cvCvtColor(img,gray,CV_BGR2GRAY); 
-
-	CvScalar s;
-	for (int i=0; i<img->height; i++){
-		for (int j=0; j<img->width; j++){	
-			s=cvGet2D(gray,i,j); // get the (i,j) pixel value
-			pixelValNorm[inc][0] = s.val[0]/255;		
-			//printf("intensity = %lf  %d\n", pixelValNorm[inc][0], inc);
-			inc ++;
-		}
-	}
-	inc = 0;
+      //convert to range 0.0->1.0:
+      pixelValNorm[inc][0] = s.val[0]/255;		
+      //printf("intensity = %lf  %d\n", pixelValNorm[inc][0], inc);
+      inc ++;
+    }
+  }
+  inc = 0;
 }
 
 
