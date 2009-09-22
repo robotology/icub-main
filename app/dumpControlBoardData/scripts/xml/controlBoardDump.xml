@@ -1,26 +1,32 @@
 <application>
   <name>controlBoardDumper</name>
   <dependencies>
-    <port>/icub02</port>
+    <port>/icub01</port>
   </dependencies>
   <module>
     <name>dataDumper</name>
     <parameters>--name /icub/headDump/getEncoders</parameters>
-    <node>ironYarprun</node>
-    <tag>dataDumperHeadEncs</tag>
+    <node>iron</node>
+    <tag>dumpHeadEncs</tag>
   </module>
   <module>
     <name>dataDumper</name>
-    <parameters>--name /icub/headDump/getEncoderSpeeds</parameters>
-    <node>ironYarprun</node>
-    <tag>dataDumperHeadEncs</tag>
+    <parameters>--name /icub/headDump/getErrors</parameters>
+    <node>iron</node>
+    <tag>dumpHeadErrs</tag>
+  </module>
+  <module>
+    <name>dataDumper</name>
+    <parameters>--name /icub/headDump/getOutputs</parameters>
+    <node>iron</node>
+    <tag>dumpHeadOuts</tag>
   </module>
   <module>
     <name>controlBoardDumper</name>
     <parameters>--from icubHead.ini</parameters>
-    <node>ironYarprun</node>
-    <stdio>ironYarprun</stdio>
-    <tag>controlBoardDumperHead</tag>
+    <node>pc104</node>
+    <stdio>iron</stdio>
+    <tag>ctrlDumpHead</tag>
   </module>
   <connection>
     <output>/icub/controlBoardDumper/head/getEncoders</output>
@@ -28,8 +34,13 @@
     <protocol>mcast</protocol>
   </connection>
   <connection>
-    <output>/icub/controlBoardDumper/head/getEncoderSpeeds</output>
-    <input>/icub/headDump/getEncoderSpeeds</input>
+    <output>/icub/controlBoardDumper/head/getErrors</output>
+    <input>/icub/headDump/getErrors</input>
+    <protocol>mcast</protocol>
+  </connection>
+  <connection>
+    <output>/icub/controlBoardDumper/head/getOutputs</output>
+    <input>/icub/headDump/getOutputs</input>
     <protocol>mcast</protocol>
   </connection>
 </application>
