@@ -190,7 +190,12 @@ ENDIF (ARTOOLKITPLUS_FOUND)
   # these modules will only be compiled by automated
   # compilation scripts
   IF (COMPILE_FOR_TESTING)
-#  	ADD_SUBDIRECTORY(...)
+    ADD_SUBDIRECTORY(rectification)
+    ADD_SUBDIRECTORY(logPolarTransform)
+    ADD_SUBDIRECTORY(myModule)
+    ADD_SUBDIRECTORY(imageSource)
+    ADD_SUBDIRECTORY(autoAssociativeMemory)
+    ADD_SUBDIRECTORY(demoAAM)
   ENDIF(COMPILE_FOR_TESTING)
 
 IF(OPENCV_FOUND AND IPOPT_FOUND)
