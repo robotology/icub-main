@@ -1,0 +1,17 @@
+This provides a a proxy class iCubLimbIF which serves as an interface to the
+iCub limbs through YARP. Follow the following steps to make your own iCub limb
+module in IQR:
+
+1) cmake and compile in the subdirectory yarpIFlib to create the library
+2) set the environment variable YARPIFLIB_DIR and YARPIFLIB_INCLUDE_DIRS to
+the path of the above subdirectory
+3) compile your own module (for any limb) as shown in the example provided in
+subdirectory iqrNeckModule
+
+
+<< Caution: avoid setting the joints directly! The example should serve just
+as a proof of concept >>
+
+-----have fun
+
+Zenon Mathews & Ugo Pattacini 23 Sep 2009
