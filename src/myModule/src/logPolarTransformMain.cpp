@@ -20,11 +20,10 @@
 /*
  * Audit Trail
  * -----------
- * 26/08/09  First version validated   DV
- * 12/09/09  Added functionality to read additional configuration file DV
+ * 20/09/09  Began development   DV
  */ 
 
-#include "iCub/myModule.h"
+#include "iCub/logPolarTransform.h"
 
 int main(int argc, char * argv[])
 {
@@ -34,19 +33,19 @@ int main(int argc, char * argv[])
 
    /* create your module */
 
-   MyModule myModule; 
+   LogPolarTransform logPolarTransform; 
 
    /* prepare and configure the resource finder */
 
    ResourceFinder rf;
    rf.setVerbose(true);
-   rf.setDefaultConfigFile("myModule.ini"); //overridden by --from parameter
-   rf.setDefaultContext("myModule/conf");   //overridden by --context parameter
+   rf.setDefaultConfigFile("logPolarTransform.ini"); //overridden by --from parameter
+   rf.setDefaultContext("logPolarTransform/conf");   //overridden by --context parameter
    rf.configure("ICUB_ROOT", argc, argv);
  
    /* run the module: runModule() calls configure first and, if successful, it then runs */
 
-   myModule.runModule(rf);
+   logPolarTransform.runModule(rf);
 
    return 0;
 }
