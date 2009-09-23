@@ -13,7 +13,6 @@
 
 #include "iCub/TrainModule.h"
 #include "iCub/EventDispatcher.h"
-#include "iCub/EventListenerFactory.h"
 
 
 namespace iCub {
@@ -137,7 +136,7 @@ bool TrainModule::open(Searchable& opt) {
     this->attach(cmd_in);
     
     // NOTE TO SELF: temporary code
-    EventDispatcher::instance().addListener(EventListenerFactory::instance().create("train"));
+    //EventDispatcher::instance().addListener(EventListenerFactory::instance().create("train"));
 
     return true;
 }
@@ -264,7 +263,7 @@ bool TrainModule::respond(const Bottle& cmd, Bottle& reply) {
 
             case VOCAB4('e','v','e','n'): // event
                 { // prevent identifier initialization to cross borders of case
-                success = EventDispatcher::instance().respond(cmd, reply);
+                success = this->dmanager.respond(cmd.tail(), reply);
                 break;
                 }
 
@@ -280,23 +279,7 @@ bool TrainModule::respond(const Bottle& cmd, Bottle& reply) {
 
     return success;
 }
-/*
-bool TrainModule::updateModule() {
-    bool ok = true;
 
-    // read an example
-    if(this->train_in.read(true) != NULL) {
-        PortablePair<Vector,Vector> sample = *this->train_in.lastRead();
-        try {
-            this->getMachine()->feedSample(sample.head, sample.body);
-        } catch(const std::exception& e) {
-            std::cerr << "Error: " << e.what() << std::endl;
-            ok = true;
-        }
-    }
-    return ok;
-}
-*/
 
 
 } // learningmachine

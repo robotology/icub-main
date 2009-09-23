@@ -11,8 +11,6 @@
 
 #include <list>
 
-#include <yarp/os/Bottle.h>
-
 #include "iCub/IEventListener.h"
 
 namespace iCub {
@@ -113,19 +111,23 @@ public:
     virtual void raise(IEvent& event);
     
     /**
-     * Respond to a command or configuration message.
-     * @param command the message received
-     * @param reply the response you wish to make
-     * @return true if there was no critical failure
+     * Counts the number of registered listeners.
+     *
+     * @return the number of registered listeners
      */
-    virtual bool respond(const Bottle& command, Bottle& reply);
-
+    virtual int listenerCount() {
+        return this->listeners.size();
+    }
+    
     /**
+     * Tells whether there are listeners for events.
+     *
      * @return true if there are one of more registered IEventListeners.
      */
     virtual bool hasListeners() {
         return (!this->listeners.empty());
     }
+    
 };
 
 } // learningmachine

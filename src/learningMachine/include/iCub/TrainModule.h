@@ -39,6 +39,11 @@ public:
     TrainProcessor() : enabled(true) {
     }
 
+    /**
+     * Enables or disables processing of training samples.
+     *
+     * @param val the desired state
+     */
     virtual void setEnabled(bool val) {
         this->enabled = val;
     }

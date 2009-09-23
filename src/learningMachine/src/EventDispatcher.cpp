@@ -52,16 +52,12 @@ void EventDispatcher::clear() {
 void EventDispatcher::raise(IEvent& event) {
     std::list<IEventListener*>::iterator it;
     for(it = listeners.begin(); it != listeners.end(); it++) {
-        event.visit(**it);
+        if((*it)->isEnabled()) {
+            event.visit(**it);
+        }
     }
 }
 
-bool EventDispatcher::respond(const Bottle& command, Bottle& reply) {
-    bool success = true;
-    reply.addString("Event dispatcher received");
-    
-    return success;
-}
 
 } // learningmachine
 } // contrib

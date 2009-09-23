@@ -15,6 +15,8 @@
 #include <yarp/os/Module.h>
 #include <yarp/os/Searchable.h>
 
+#include "iCub/DispatcherManager.h"
+
 
 using namespace yarp::os;
 
@@ -45,6 +47,11 @@ protected:
      * A prefix path for the ports that will be registered.
      */
     std::string portPrefix;
+    
+    /**
+     * An instance of the DispatchManager to configure event listeners.
+     */
+    DispatcherManager dmanager;
 
     /**
      * Register a port with a given name.

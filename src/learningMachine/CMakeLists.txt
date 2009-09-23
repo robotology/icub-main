@@ -25,7 +25,7 @@ ENDIF (NOT ICUB_FOUND)
 
 # Source code Groups
 SET(MODULE_SRC src/IMachineLearnerModule.cpp)
-SET(EVENT_SRC src/EventDispatcher.cpp src/IEvent.cpp src/IEventListener.cpp src/PredictEvent.cpp src/PredictEventListener.cpp src/TrainEvent.cpp src/TrainEventListener.cpp)
+SET(EVENT_SRC src/DispatcherManager.cpp src/EventDispatcher.cpp src/IEvent.cpp src/IEventListener.cpp src/PredictEvent.cpp src/PredictEventListener.cpp src/TrainEvent.cpp src/TrainEventListener.cpp)
 SET(MACHINE_SRC src/IFixedSizeLearner.cpp src/MachinePortable.cpp src/DatasetRecorder.cpp src/DummyLearner.cpp src/LSSVMLearner.cpp src/RLSLearner.cpp)
 SET(TRANSFORMER_SRC src/ITransformer.cpp src/IFixedSizeTransformer.cpp src/ScaleTransformer.cpp src/IScaler.cpp src/Standardizer.cpp src/Normalizer.cpp src/FixedRangeScaler.cpp src/RandomFeature.cpp)
 #SET(EVENT_SRC
@@ -42,8 +42,8 @@ IF(USE_LSSVMATLAS)
 ENDIF(USE_LSSVMATLAS)
 
 ADD_EXECUTABLE(${TRAIN_EXEC} ${MODULE_SRC} ${MACHINE_SRC} ${EVENT_SRC} src/TrainModule.cpp src/PredictModule.cpp src/bin/train.cpp)
-ADD_EXECUTABLE(${PREDICT_EXEC} ${MODULE_SRC} ${MACHINE_SRC} src/PredictModule.cpp src/bin/predict.cpp)
-ADD_EXECUTABLE(${TRANSFORM_EXEC} ${MODULE_SRC} ${TRANSFORMER_SRC} src/TransformModule.cpp src/bin/transform.cpp)
+ADD_EXECUTABLE(${PREDICT_EXEC} ${MODULE_SRC} ${MACHINE_SRC} ${EVENT_SRC} src/PredictModule.cpp src/bin/predict.cpp)
+ADD_EXECUTABLE(${TRANSFORM_EXEC} ${MODULE_SRC} ${TRANSFORMER_SRC} ${EVENT_SRC} src/TransformModule.cpp src/bin/transform.cpp)
 ADD_EXECUTABLE(${TEST_EXEC} src/bin/test.cpp)
 
 

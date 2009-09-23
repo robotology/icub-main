@@ -39,6 +39,11 @@ protected:
      */
     std::string name;
 
+    /**
+     * Boolean switch to disable or enable event the listener.
+     */
+    bool enabled;
+
 public:
     /**
      * Constructor.
@@ -98,6 +103,28 @@ public:
         this->name = name;
     }
 
+    /**
+     * Tells whether dispatching of events is enabled.
+     *
+     * @return  true if dispatching is enabled.
+     */
+    virtual bool isEnabled() {
+        return this->enabled;
+    }
+
+    /**
+     * Enables or disables dispatching of events.
+     *
+     * @param val the desired state
+     */
+    virtual void setEnabled(bool val) {
+        this->enabled = val;
+    }
+
+    /*
+     * Inherited from IConfig.
+     */
+    virtual bool configure(Searchable& config);
 
 };
 

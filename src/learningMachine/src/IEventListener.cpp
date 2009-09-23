@@ -14,6 +14,25 @@ namespace learningmachine {
 
 IEventListener::IEventListener(std::string name) {
     this->setName(name);
+    this->setEnabled(true);
+}
+
+bool IEventListener::configure(Searchable& config) {
+    bool success = false;
+
+    // enable
+    if(!config.findGroup("enable").isNull()) {
+        this->setEnabled(true);
+        success = true;
+    }
+
+    // disable
+    if(!config.findGroup("disable").isNull()) {
+        this->setEnabled(false);
+        success = true;
+    }
+
+    return success;
 }
 
 } // learningmachine
