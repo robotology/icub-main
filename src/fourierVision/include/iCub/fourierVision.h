@@ -320,6 +320,7 @@ int  enhance_local_maxima_by_filtering(float *source_image, int half_kernel_size
 void mask_image (DVimage *input_image, DVimage *mask_image,  DVimage *output_image, double threshold);
 void colour_histogram (DVimage *input_image, DVhs_histogram *hs);
 void gaussianApodization (DVimage *input_image, float std_dev, DVimage *output_image);
+void log_polar_transform (DVimage *input_image, DVimage *output_image, int direction, double overlap);
 void rectify(DVimage *input_image_left, DVimage *input_image_right, 
              float fx_left,  float fy_left,  float px_left,  float py_left,  float theta_y_left,
              float fx_right, float fy_right, float px_right, float py_right, float theta_y_right,

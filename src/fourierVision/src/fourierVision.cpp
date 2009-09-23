@@ -1448,23 +1448,25 @@ void erosion (DVimage *input_image, int radius, DVimage *output_image)
 *  Routine Name: log_polar_transform - compute the Log-Polar transform
 *            in both forward (Cartesian to Log-Polar) and backward (Log-Polar to Cartesian) directions
 *            
-*       Input: input    - pointer to eyecub intensity image 
-*            direction - int, either CARTESIAN2LOGPOLAR or LOGPOLAR2CARTESIAN
+*    Input: input     - pointer to eyecub intensity image 
+*           direction - int, either CARTESIAN2LOGPOLAR or LOGPOLAR2CARTESIAN
+*           overlap   - float, overlap of receptive fields.
 *
-*      Output: output   - pointer to eyecub intensity image  
+*    Output: output   - pointer to eyecub intensity image  
 *                     NB it is assumed that this image exists 
 *                     The dimensions of the output log-polar / Cartesian image will be extracted directly from this image
 *
 *   Written By: David Vernon
-*        Date: July 25, 2006
+*   Date: July 25, 2006
+*
+*   Amended to pass overlap as a parameter. DV September 20, 2009
 *
 *   Note: this function is just an interface to the University of Genoa Log-Polar routines
 *   and made available by the RobotCub project (www.robotcub.org)
 *
 ****************************************************************/
- 
 
-void log_polar_transform  (DVimage *input_image, DVimage *output_image, int direction)
+void log_polar_transform  (DVimage *input_image, DVimage *output_image, int direction, double overlap)
 {
 
    // we make these static as we don't want to recompute the lookup tables for each image
@@ -1478,7 +1480,7 @@ void log_polar_transform  (DVimage *input_image, DVimage *output_image, int dire
 
    static int    nEcc; 
    static int    nAng;  
-   static double overlap;
+   //static double overlap;
    static int    xSize, ySize;
    static double scaleFact;
    static double logIndex;
