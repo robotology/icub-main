@@ -186,6 +186,13 @@ ENDIF (ARTOOLKITPLUS_FOUND)
     ADD_SUBDIRECTORY(cylGuard)
   ENDIF(GSL_FOUND AND IPOPT_FOUND)
 
+  # add here modules you want to test for compilation
+  # these modules will only be compiled by automated
+  # compilation scripts
+  IF (COMPILE_FOR_TESTING)
+#  	ADD_SUBDIRECTORY(...)
+  ENDIF(COMPILE_FOR_TESTING)
+
 IF(OPENCV_FOUND AND IPOPT_FOUND)
     ADD_SUBDIRECTORY(pf3dTracker)
 ENDIF(OPENCV_FOUND AND IPOPT_FOUND)
