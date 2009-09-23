@@ -1,0 +1,314 @@
+/* 
+ * Copyright (C) 2009 RobotCub Consortium, European Commission FP6 Project IST-004370
+ * Authors: David Vernon
+ * email:   david@vernon.eu
+ * website: www.robotcub.org 
+ * Permission is granted to copy, distribute, and/or modify this program
+ * under the terms of the GNU General Public License, version 2 or any
+ * later version published by the Free Software Foundation.
+ *
+ * A copy of the license can be found at
+ * http://www.robotcub.org/icub/license/gpl.txt
+ *
+ * This program is distributed in the hope that it will be useful, but
+ * WITHOUT ANY WARRANTY; without even the implied warranty of
+ * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the GNU General
+ * Public License for more details
+ */
+
+
+/*
+ * Audit Trail
+ * -----------
+ * 21/09/09  First version validated   DV
+ */ 
+
+/* 
+ * Configure method. Receive a previously initialized
+ * resource finder object. Use it to configure your module.
+ * If you are migrating from the old Module, this is the 
+ *  equivalent of the "open" method.
+ */
+
+#include "iCub/imageSource.h"
+
+
+bool ImageSource::configure(yarp::os::ResourceFinder &rf)
+{    
+
+   debug = false;
+   
+   /* Process all parameters from both command-line and .ini file */
+
+   /* get the module name which will form the stem of all module port names */
+
+   moduleName            = rf.check("name", 
+                           Value("imageSource"), 
+                           "module name (string)").asString();
+
+   /*
+    * before continuing, set the module name before getting any other parameters, 
+    * specifically the port names which are dependent on the module name
+    */
+   
+   setName(moduleName.c_str());
+
+   /* now, get the rest of the parameters */
+
+   /* 
+    * get the imageFilename
+    */
+
+   imageFilename  = rf.check("imageFile", 
+                             Value("image.bmp"), 
+                             "image filename (string)").asString();
+
+   imageFilename = (rf.findFile(imageFilename.c_str())).c_str();
+
+   /* get the complete name of the output port */
+
+   outputPortName        = rf.check("outputPort", 
+                           Value("/image:o"),
+                           "Output image port (string)").asString();
+
+   /* get the width, height, and standard deviation values */
+
+   width                 = rf.check("width",
+                           Value(320),
+                           "Key value (int)").asInt();
+
+   height                = rf.check("height",
+                           Value(240),
+                           "Key value (int)").asInt();
+
+   noiseLevel            = rf.check("noise",
+                           Value(20),
+                           "Key value (int)").asInt();
+
+   if (debug) {
+      cout << "imageSource::configure: image file name  " << imageFilename << endl;
+      cout << "imageSource::configure: output port name " << outputPortName << endl;
+      cout << "imageSource::configure: width            " << width << endl;
+      cout << "imageSource::configure: height           " << height << endl;
+      cout << "imageSource::configure: noise level      " << noiseLevel << endl;
+   }
+
+   /* do all initialization here */
+     
+   /* open ports  */ 
+       
+   if (!imageOut.open(outputPortName.c_str())) {
+      cout << "imageSource::configure" << ": unable to open port " << outputPortName << endl;
+      return false;  // unable to open; let RFModule know so that it won't run
+   }
+
+   /*
+    * attach a port of the same name as the module (prefixed with a /) to the module
+    * so that messages received from the port are redirected to the respond method
+    */
+
+   handlerPortName =  "/";
+   handlerPortName += getName();         // use getName() rather than a literal 
+ 
+   if (!handlerPort.open(handlerPortName.c_str())) {           
+      cout << getName() << ": Unable to open port " << handlerPortName << endl;  
+      return false;
+   }
+
+   attach(handlerPort);                  // attach to port
+ 
+   attachTerminal();                     // attach to terminal
+
+
+   /* create the thread and pass pointers to the module parameters */
+
+   cout << "imageSource::configure: calling Thread constructor"   << endl;
+
+   imageSourceThread = new ImageSourceThread(&imageOut, &imageFilename, &width, &height, &noiseLevel);
+
+   cout << "imageSource::configure: returning from Thread constructor"   << endl;
+
+   /* now start the thread to do the work */
+
+   imageSourceThread->start(); // this calls threadInit() and it if returns true, it then calls run()
+
+   return true ;      // let the RFModule know everything went well
+                      // so that it will then run the module
+}
+
+
+bool ImageSource::interruptModule()
+{
+   imageOut.interrupt();
+   handlerPort.interrupt();
+
+   return true;
+}
+
+
+bool ImageSource::close()
+{
+   imageOut.close();
+   handlerPort.close();
+
+   /* stop the thread */
+
+   imageSourceThread->stop();
+
+   return true;
+}
+
+
+bool ImageSource::respond(const Bottle& command, Bottle& reply) 
+{
+  string helpMessage =  getName() + " commands are: \n" +  
+                        "help \n" + 
+                        "quit \n" + 
+                        "set noise <n> ... set the noise level \n" + 
+                        "(where <n> is an integer number in the range 0-255) \n";
+
+  reply.clear(); 
+
+  if (command.get(0).asString()=="quit") {
+       reply.addString("quitting");
+       return false;     
+   }
+   else if (command.get(0).asString()=="help") {
+      cout << helpMessage;
+      reply.addString("ok");
+   }
+   else if (command.get(0).asString()=="set") {
+      if (command.get(1).asString()=="noise") {
+         noiseLevel = command.get(2).asInt(); // set parameter value
+         reply.addString("ok");
+      }
+   }
+   return true;
+}
+
+
+/* Called periodically every getPeriod() seconds */
+
+bool ImageSource::updateModule()
+{
+   return true;
+}
+
+
+
+double ImageSource::getPeriod()
+{
+   /* module periodicity (seconds), called implicitly by imageSource */
+    
+   return 0.1;
+}
+
+ImageSourceThread::ImageSourceThread(BufferedPort<ImageOf<PixelRgb>> *imageOut, 
+                                     string *imageFilename, int *width, int *height, int *noiseLevel)
+{
+   debug = false;
+
+   imagePortOut   = imageOut;
+   imageFilenameValue = imageFilename;
+   widthValue = width;
+   heightValue = height;
+   noiseValue = noiseLevel;
+      
+   
+   if (debug) {
+      cout << "ImageSourceThread: image file name  " << *imageFilenameValue << endl;
+      cout << "ImageSourceThread: width            " << *widthValue << endl;
+      cout << "ImageSourceThread: height           " << *heightValue << endl;
+      cout << "ImageSourceThread: noise level      " << *noiseValue << endl;
+   }
+
+
+}
+
+bool ImageSourceThread::threadInit() 
+{
+   /* open the image file and create an image */
+   
+   if (debug) {
+      cout << "ImageSourceThread::threadInit: image file name  " << imageFilenameValue->c_str() << endl;
+   }
+
+  
+   if (yarp::sig::file::read(inputImage, imageFilenameValue->c_str())) {
+      cout << "ImageSourceThread::threadInit: input image read completed" << endl;
+   }
+   else {
+      cout << "ImageSourceThread::threadInit: unable to read image file" << endl;
+   }
+
+   return true;
+}
+
+void ImageSourceThread::run(){
+
+   if (debug) {
+      cout << "ImageSourceThread::run: width " << *widthValue << endl;
+      cout << "ImageSourceThread::run: height" << *heightValue << endl;
+      cout << "ImageSourceThread::run: noise " << *noiseValue << endl;
+   }
+
+
+   /* 
+    * copy the image data from file
+    */ 
+
+   double noise;
+
+
+   /* Generate a new random seed */
+   srand(10000);
+
+   while (isStopping() != true) { // the thread continues to run until isStopping() returns true
+ 
+      if (false) cout << "imageSourceThread::run: standard deviation value is " << *noiseValue << endl;
+      
+      ImageOf<PixelRgb> &outputImage = imagePortOut->prepare();
+      outputImage.resize(*widthValue, *heightValue);
+      
+      for (x=0; x<outputImage.width(); x++) {
+         for (y=0; y<outputImage.height(); y++) {
+ 
+            noise = ((float)rand() / (float)(RAND_MAX + 1));  // 0-1
+            noise = 2 * (noise - 0.5);                        // -1 - +1
+            noise = noise * (*noiseValue);                    // -noiseValue - +noiseValue
+
+            rgbPixel = inputImage((int)(x * ((float)inputImage.width()/(float)outputImage.width())), 
+                                  (int)(y * ((float)inputImage.height()/(float)outputImage.height())));
+
+            if (((double) rgbPixel.r + noise) < 0)   
+               rgbPixel.r = 0; 
+            else if (((double) rgbPixel.r + noise) > 255) 
+               rgbPixel.r = 255; 
+            else 
+               rgbPixel.r = (unsigned char) (rgbPixel.r + noise);
+
+            if (((double) rgbPixel.g + noise) < 0)   
+               rgbPixel.g = 0; 
+            else if (((double) rgbPixel.g + noise) > 255) 
+               rgbPixel.g = 255; 
+            else 
+               rgbPixel.g = (unsigned char) (rgbPixel.g + noise);
+
+            if (((double) rgbPixel.b + noise) < 0)   
+               rgbPixel.b = 0; 
+            else if (((double) rgbPixel.b + noise) > 255) 
+               rgbPixel.b = 255; 
+            else 
+               rgbPixel.b = (unsigned char) (rgbPixel.b + noise);
+           
+            outputImage(x,y) = rgbPixel;
+         }
+      }
+      imagePortOut->write();
+   }
+}
+
+void ImageSourceThread::threadRelease() 
+{
+   /* delete dynamically created data-structures */
+}
