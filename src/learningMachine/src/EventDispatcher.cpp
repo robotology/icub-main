@@ -56,6 +56,13 @@ void EventDispatcher::raise(IEvent& event) {
     }
 }
 
+bool EventDispatcher::respond(const Bottle& command, Bottle& reply) {
+    bool success = true;
+    reply.addString("Event dispatcher received");
+    
+    return success;
+}
+
 } // learningmachine
 } // contrib
 } // iCub

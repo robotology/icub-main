@@ -164,6 +164,7 @@ bool TrainModule::respond(const Bottle& cmd, Bottle& reply) {
                 reply.addString("  set key val           Sets a configuration option for the machine");
                 reply.addString("  load fname            Loads a machine from a file");
                 reply.addString("  save fname            Saves the current machine to a file");
+                reply.addString("  event [cmd ...]       Sends commands to event dispatcher (see: event help)");
                 reply.addString(this->getMachine()->getConfigHelp().c_str());
                 success = true;
                 break;
@@ -258,6 +259,12 @@ bool TrainModule::respond(const Bottle& cmd, Bottle& reply) {
                 }
                 reply.addString(replymsg.c_str());
                 success = true;
+                break;
+                }
+
+            case VOCAB4('e','v','e','n'): // event
+                { // prevent identifier initialization to cross borders of case
+                success = EventDispatcher::instance().respond(cmd, reply);
                 break;
                 }
 

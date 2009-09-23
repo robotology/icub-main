@@ -11,6 +11,8 @@
 
 #include <list>
 
+#include <yarp/os/Bottle.h>
+
 #include "iCub/IEventListener.h"
 
 namespace iCub {
@@ -109,6 +111,14 @@ public:
      * @param  event The IEvent instance that is to be raised.
      */
     virtual void raise(IEvent& event);
+    
+    /**
+     * Respond to a command or configuration message.
+     * @param command the message received
+     * @param reply the response you wish to make
+     * @return true if there was no critical failure
+     */
+    virtual bool respond(const Bottle& command, Bottle& reply);
 
     /**
      * @return true if there are one of more registered IEventListeners.
