@@ -1,0 +1,27 @@
+<application>
+<name>File-based image source streaming to port</name>
+
+<dependencies>
+</dependencies>
+
+<module>
+   <name>imageSource</name>
+   <parameters></parameters>
+   <node>icub1</node>
+   <tag>imageSource</tag>
+</module>
+
+<module>
+   <name>yarpview</name>
+   <parameters>--name /leftInputImage --x 000 --y 0 --w 320 --h 318 </parameters>
+   <node>icub1</node>
+   <tag>left_image</tag>
+</module>
+
+<connection>
+  <from>/icub/cam/left</from>
+  <to>/leftInputImage</to>
+  <protocol>tcp</protocol>
+</connection>
+
+</application>
