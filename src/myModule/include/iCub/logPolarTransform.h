@@ -1,21 +1,13 @@
 /** 
  * @ingroup icub_module
  *
- * \defgroup icub_myModule myModule
+ * \defgroup icub_logPolarTransform logPolarTransform
  *
- * This is a simple example to illustrate a module that is compliant with iCub Software Standards, addressing:
- *
- * - configuration
- * - graceful shut-down
- * - thread-based execution
- * - run-time user interaction
- * - documentation and coding standards
- *
- * Functionally, the module just converts an input image to a binary image based on the supplied threshold
- *
- * A complete tutorial for this example is available on the iCub wiki at 
- * http://eris.liralab.it/wiki/Summary_of_iCub_Software_Development_Guidelines
- *
+ * Perform a log-polar transform on an input image and generate a transformed output image.
+ * The direction of the transform, from Cartesian to log-polar or vice versa, is specified by a flag in the configuration file.
+ * The default direction is Cartesian to log-polar.
+ * The parameters of the transform, i.e. the number of angles, the number of rings, and the overlap of the receptive fields are specified in the configuration file.
+ * The default number of angles and rings is 252 and 152, respectively.  The default overlap is 0.5.
  * 
  * \section lib_sec Libraries
  *
@@ -28,18 +20,14 @@
  * The following key-value pairs can be specified as command-line parameters by prefixing -- to the key 
  * (e.g. --from file.ini. The value part can be changed to suit your needs; the default values are shown below. 
  *
- * - from myModule.ini       
+ * - from logPolarTransform.ini       
  *   specifies the configuration file
  *
- * - context myModule/conf   
+ * - context LogPolarTransform/conf   
  *   specifies the sub-path from $ICUB_ROOT/icub/app to the configuration file
  *
- * - name myModule          
+ * - name LogPolarTransform          
  *   specifies the name of the module (used to form the stem of module port names)  
- *
- * - robot icub             
- *   specifies the name of the robot (used to form the root of robot port names)
- *
  *
  * Configuration File Parameters
  *
@@ -47,20 +35,35 @@
  * (they can also be specified as command-line parameters if you so wish). 
  * The value part can be changed to suit your needs; the default values are shown below. 
  *   
- * - myInputPort /image:i     
- *   specifies the input port name (this string will be prefixed by /myModule/ 
+ * - imageInputPort /image:i     
+ *   specifies the input port name (this string will be prefixed by /LogPolarTransform/ 
  *   or whatever else is specifed by the name parameter
  *
- * - myOutputPort /image:o     
- *   specifies the input port name (this string will be prefixed by /myModule/ 
+ * - imageOutputPort /image:o     
+ *   specifies the input port name (this string will be prefixed by /LogPolarTransform/ 
  *   or whatever else is specifed by the name parameter
  *
- * - cameraConfig icubEyes.ini
- *   specifies the camera configuration file containing the intrinsic parameters of
- *   the left and right cameras
+ * - direction CARTESIAN2LOGPOLAR
+ *   specifies the direction of the tranform; the alternative direction is LOGPOLAR2CARTESIAN
+ *   
+ * - angles 252             
+ *   specifies the number of receptive fields per ring (i.e. the number of samples in the theta/angular dimension); 
+ *   required for CARTESIAN2LOGPOLAR transform direction
  *
- * - threshold 7             
- *   specifies the threshold value
+ * - rings 152             
+ *   specifies the number of rings (i.e. the number of samples in the r dimension);
+ *   required for CARTESIAN2LOGPOLAR transform direction
+ *
+ * - xsize 320             
+ *   specifies the number of samples in the X dimension; 
+ *   required for LOGPOLAR2CARTESIAN transform direction
+ *
+ * - ysize 240             
+ *   specifies the number samples in the Y dimension; 
+ *   required for LOGPOLAR2CARTESIAN transform direction
+ *
+ * - overlap 0.5             
+ *   specifies the relative overlap of each receptive field
  *
  * 
  * \section portsa_sec Ports Accessed
@@ -71,36 +74,36 @@
  *
  *  Input ports
  *
- *  - /myModule
+ *  - /logPolarTransform
  *    This port is used to change the parameters of the module at run time or stop the module
  *    The following commands are available
  * 
  *    help
  *    quit
- *    set thr <n>   ... set the threshold for binary segmentation of the input RGB image
- *    (where <n> is an integer number)
+ *    set overlap <n>   ... set the overlap of the receptive fields
+ *    (where <n> is an real number)
  *
  *    Note that the name of this port mirrors whatever is provided by the --name parameter value
  *    The port is attached to the terminal so that you can type in commands and receive replies.
- *    The port can be used by other modules but also interactively by a user through the yarp rpc directive, viz.: yarp rpc /myModule
+ *    The port can be used by other modules but also interactively by a user through the yarp rpc directive, viz.: yarp rpc /LogPolarTransform
  *    This opens a connection from a terminal to the port and allows the user to then type in commands and receive replies.
  *       
- *  - /myModule/image:i
+ *  - /logPolarTransform/image:i
  *
  * Output ports
  *
- *  - /myModule
+ *  - /logPolarTransform
  *    see above
  *
- *  - /myModule/image:o
+ *  - /logPolarTransform/image:o
  *
  * Port types 
  *
  * The functional specification only names the ports to be used to communicate with the module 
  * but doesn't say anything about the data transmitted on the ports. This is defined by the following code. 
  *
- * - BufferedPort<ImageOf<PixelRgb> >   myInputPort;     
- * - BufferedPort<ImageOf<PixelRgb> >   myOutputPort;       
+ * - BufferedPort<ImageOf<PixelRgb> >   imageInputPort;     
+ * - BufferedPort<ImageOf<PixelRgb> >   imageOutputPort;       
  *
  * \section in_files_sec Input Data Files
  *
@@ -112,8 +115,7 @@
  *
  * \section conf_file_sec Configuration Files
  *
- * myModule.ini  in $ICUB_ROOT/icub/app/myModule/conf
- * icubEyes.ini  in $ICUB_ROOT/icub/app/myModule/conf
+ * logPolarTransform.ini  in $ICUB_ROOT/icub/app/logPolarTransform/conf
  * 
  * \section tested_os_sec Tested OS
  *
@@ -121,7 +123,8 @@
  *
  * \section example_sec Example Instantiation of the Module
  * 
- * myModule --name myModule --context myModule/conf --from myModule.ini --robot icub
+ * logPolarTransform --name logPolarTransform --context logPolarTransform/conf --from lp2cart.ini  
+ * logPolarTransform --name logPolarTransform --context logPolarTransform/conf --from cart2lp.ini  
  *
  * \author David Vernon
  * 
@@ -129,7 +132,7 @@
  * 
  * CopyPolicy: Released under the terms of the GNU GPL v2.0.
  * 
- * This file can be edited at src/myModule/src/myModule.h
+ * This file can be edited at src/logPolarTransform/src/logPolarTransform.h
  * 
  */
 
@@ -156,13 +159,12 @@
 /*
  * Audit Trail
  * -----------
- * 26/08/09  First version validated   DV
- * 12/09/09  Added functionality to read additional configuration file DV
+ * 20/09/09  Began development  DV
  */ 
 
 
-#ifndef __ICUB_MYMODULE_MODULE_H__
-#define __ICUB_MYMODULE_MODULE_H__
+#ifndef __ICUB_LOGPOLARTRANSFORM_MODULE_H__
+#define __ICUB_LOGPOLARTRANSFORM_MODULE_H__
 
 #include <iostream>
 #include <string>
@@ -176,60 +178,86 @@
 using namespace std;
 using namespace yarp::os; 
 using namespace yarp::sig;
-  
-class MyThread : public Thread
+
+/* fourierVision includes */
+
+#include "iCub/fourierVision.h"
+
+
+/* Log-Polar includes */
+
+#include "iCub/RC_DIST_FB_logpolar_mapper.h"
+
+
+
+
+class LogPolarTransformThread : public Thread
 {
 private:
 
    /* class variables */
 
-   int      x, y;
+   int debug;
+   unsigned char pixel_value;
+   int width, height, depth;
+   int x, y;
    PixelRgb rgbPixel;
    ImageOf<PixelRgb> *image;
+   DVimage *cartesian;
+   DVimage *logpolar;
   	    
-   /* thread parameters: they are pointers so that they refer to the original variables in myModule */
+   /* thread parameters: they are pointers so that they refer to the original variables in LogPolarTransform */
 
    BufferedPort<ImageOf<PixelRgb>> *imagePortIn;
    BufferedPort<ImageOf<PixelRgb>> *imagePortOut;   
-   int *thresholdValue;     
+   int *directionValue;     
+   int *anglesValue;     
+   int *ringsValue;   
+   int *xSizeValue;
+   int *ySizeValue;
+   double *overlapValue;     
 
 public:
 
    /* class methods */
 
-   MyThread(BufferedPort<ImageOf<PixelRgb>> *imageIn,  BufferedPort<ImageOf<PixelRgb>> *imageOut, int *threshold );
+   LogPolarTransformThread(BufferedPort<ImageOf<PixelRgb>> *imageIn,  BufferedPort<ImageOf<PixelRgb>> *imageOut, 
+                           int *direction, int *x, int *y, int *angles, int  *rings, double *overlap);
    bool threadInit();     
    void threadRelease();
    void run(); 
 };
 
 
-class MyModule:public RFModule
+class LogPolarTransform:public RFModule
 {
+
+   int debug;
+
    /* module parameters */
 
    string moduleName;
-   string robotName; 
    string robotPortName;  
    string inputPortName;
    string outputPortName;  
    string handlerPortName;
-   string cameraConfigFilename;
-   float  fxLeft,  fyLeft;          // focal length
-   float  fxRight, fyRight;         // focal length
-   float  cxLeft,  cyLeft;          // coordinates of the principal point
-   float  cxRight, cyRight;         // coordinates of the principal point
-   int thresholdValue;
+   string transformDirection;
+   int    direction;                // direction of transform
+   int    numberOfAngles;           // theta samples
+   int    numberOfRings;            // r samples
+   int    xSize;                    // x samples
+   int    ySize;                    // y samples
+   double  overlap;                 // overlap of receptive fields
 
    /* class variables */
 
-   BufferedPort<ImageOf<PixelRgb> > imageIn;      //example input port
-   BufferedPort<ImageOf<PixelRgb> > imageOut;     //example output port
-   Port handlerPort;      //a port to handle messages 
+   BufferedPort<ImageOf<PixelRgb> > imageIn;      // input port
+   BufferedPort<ImageOf<PixelRgb> > imageOut;     // output port
+   Port handlerPort;                              //a port to handle messages 
 
    /* pointer to a new thread to be created and started in configure() and stopped in close() */
 
-   MyThread *myThread;
+   LogPolarTransformThread *logPolarTransformThread;
 
 
 public:
@@ -243,6 +271,6 @@ public:
 };
 
 
-#endif // __ICUB_MYMODULE_MODULE_H__
+#endif // __ICUB_LOGPOLARTRANSFORM_MODULE_H__
 //empty line to make gcc happy
 
