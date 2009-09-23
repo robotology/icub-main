@@ -8,14 +8,15 @@ SET(KEYWORD "rectification")
 
 PROJECT(${KEYWORD})
 
-
-#added to allow libraries to be linked
-#comment out before commiting this to the repository for 
-#a global build  DV 6/9/09
-SET(LOGPOLAR_DIR "${ICUB_DIR}/src/logPolar")
-SET(FOURIERVISION_DIR "${ICUB_DIR}/src/fourierVision")
-SET(FOURIERVISION_LIBRARIES "${ICUB_DIR}/lib/Release/fourierVision.lib")
-SET(LOGPOLAR_LIBRARIES "${ICUB_DIR}/lib/Release/logPolar.lib")
+# The following directives are required to allow libraries to be linked
+# when running Cmake directly against this CMakeLists.txt file
+# Comment out if the make / solution file is built using a global build  
+# i.e. if this module is included in $(ICUB_DIR)/src/CmakeLists.txt
+# DV 23/9/09
+#SET(LOGPOLAR_DIR "${ICUB_DIR}/src/logPolar")
+#SET(FOURIERVISION_DIR "${ICUB_DIR}/src/fourierVision")
+#SET(FOURIERVISION_LIBRARIES "${ICUB_DIR}/lib/Release/fourierVision.lib")
+#SET(LOGPOLAR_LIBRARIES "${ICUB_DIR}/lib/Release/logPolar.lib")
 
 FIND_PACKAGE(ICUB)
 FIND_PACKAGE(YARP REQUIRED)
