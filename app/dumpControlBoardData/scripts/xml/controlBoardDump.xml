@@ -6,26 +6,26 @@
   <module>
     <name>dataDumper</name>
     <parameters>--name /icub/headDump/getEncoders</parameters>
-    <node>iron</node>
+    <node>icub10</node>
     <tag>dumpHeadEncs</tag>
   </module>
   <module>
     <name>dataDumper</name>
     <parameters>--name /icub/headDump/getErrors</parameters>
-    <node>iron</node>
+    <node>icub10</node>
     <tag>dumpHeadErrs</tag>
   </module>
   <module>
     <name>dataDumper</name>
     <parameters>--name /icub/headDump/getOutputs</parameters>
-    <node>iron</node>
+    <node>icub10</node>
     <tag>dumpHeadOuts</tag>
   </module>
   <module>
     <name>controlBoardDumper</name>
     <parameters>--from icubHead.ini</parameters>
     <node>pc104</node>
-    <stdio>iron</stdio>
+    <stdio>icub10</stdio>
     <tag>ctrlDumpHead</tag>
   </module>
   <connection>

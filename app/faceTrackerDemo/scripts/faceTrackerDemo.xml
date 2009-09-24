@@ -9,33 +9,33 @@
 
     <module>
       <name>faceTracker</name>
-      <node>icub12</node>
-      <stdio>icub12</stdio>
+      <node>icub-b1</node>
+      <stdio>icub14</stdio>
       <tag>tracker</tag> 
     </module> 
     <module>
       <name>iKinArmCtrl</name>
       <parameters>--onlyXYZ</parameters> 
-      <node>icub10</node>
-      <stdio>icub12</stdio>
+      <node>icub-b2</node>
+      <stdio>icub14</stdio>
       <tag>armCtrl</tag>
     </module> 
     <module>
       <name>iKinGazeCtrl</name>
-      <node>icub10</node>
-      <stdio>icub12</stdio>
+      <node>icub-b3</node>
+      <stdio>icub14</stdio>
       <tag>gazeCtrl</tag> 
     </module> 
     <module>
       <name>yarpview</name>
       <parameters>--name /viewLeft</parameters> 
-      <node>icub12</node>
+      <node>icub14</node>
       <tag>viewer_left</tag>
     </module> 
     <module>
       <name>yarpview</name>
       <parameters>--name /viewRight</parameters> 
-      <node>icub12</node>
+      <node>icub14</node>
       <tag>viewer_right</tag> 
     </module> 
 
