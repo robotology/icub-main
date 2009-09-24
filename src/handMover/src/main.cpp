@@ -20,10 +20,10 @@ using namespace yarp::os;
 
 /**
  * @ingroup icub_module
- *
+ * \defgroup icub_handMover handMover
  *
  * \author Vislab
- *
+ * 
  */
 
 int main(int argc, char *argv[]) {
