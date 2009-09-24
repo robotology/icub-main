@@ -31,7 +31,7 @@
         <module>
                 <name>yarpview</name>
                 <parameters>--name /PF3DTracker_viewer --x 320 --y 0</parameters>
-                <node>icub14</node>
+                <node>icub10</node>
                 <tag>PF3DTracker_viewer</tag>
         </module>
   
