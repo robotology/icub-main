@@ -721,8 +721,7 @@ bool CommandsHelper2::respond(const yarp::os::Bottle& cmd,
                 {
                     double v;
                     int j = cmd.get(2).asInt();
-                    Bottle& b = *(cmd.get(3).asList());
-                    v=b.get(0).asDouble();
+                    v=cmd.get(3).asDouble();
                     ok = pid->setOffset(j, v);
                 }
                 break;
