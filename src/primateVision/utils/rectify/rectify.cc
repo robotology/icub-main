@@ -112,17 +112,15 @@ iCub::contrib::primateVision::Rectify::Rectify(char* crf,IppiSize ss_,double t_o
   }
   else{
     printf("Rectify: Not applying barrel rectification.\n");
-    fc1 =1.0;
-    fc2 =1.0;
-    cc1 =1.0;
-    cc2 =1.0;
-    
-    A->me[0][0] = fc1; A->me[0][1] = 0.0; A->me[0][2] = cc1;
-    A->me[1][0] = 0.0; A->me[1][1] = fc2; A->me[1][2] = cc2; 
-    A->me[2][0] = 0.0; A->me[2][1]= 0.0;  A->me[2][2]=  1.0;
+    fc1 =300.0;
+    fc2 =300.0;
+    cc1 =width/2.0;
+    cc2 =height/2.0;
   }
-  
-  
+
+  A->me[0][0] = fc1; A->me[0][1] = 0.0; A->me[0][2] = cc1;
+  A->me[1][0] = 0.0; A->me[1][1] = fc2; A->me[1][2] = cc2; 
+  A->me[2][0] = 0.0; A->me[2][1]= 0.0;  A->me[2][2]=  1.0;
 }
 
 
