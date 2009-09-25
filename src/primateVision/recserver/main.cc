@@ -102,11 +102,7 @@ public:
 
       printf("RecServer: Using config file: %s\n",fname.c_str());
       
-      if (options.check("sim"))
-	printf("RecServer: Connecting to iCub Simulator.\n");
-
-	
-      r = new RecServer(&fname,options.check("sim"));
+      r = new RecServer(&fname);
       
       
     

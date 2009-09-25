@@ -27,13 +27,10 @@ using namespace std;
 
 
 
-iCub::contrib::primateVision::RecServer::RecServer(string *cfg_, bool sim_)
+iCub::contrib::primateVision::RecServer::RecServer(string *cfg_)
 {
-  
   cfg=cfg_;
-  realOrSim = sim_;
   start();
-  
 }
 
 
@@ -45,15 +42,12 @@ iCub::contrib::primateVision::RecServer::~RecServer()
 
 void iCub::contrib::primateVision::RecServer::exit(){
   motion_handler->stop(); 
-  
 }
 
 
 
 void iCub::contrib::primateVision::RecServer::run()
 {
-  
-  
   
   Property prop;
   prop.fromConfigFile(cfg->c_str());
@@ -63,8 +57,7 @@ void iCub::contrib::primateVision::RecServer::run()
   int width = prop.findGroup("REC").find("WIDTH").asInt();
   int height = prop.findGroup("REC").find("HEIGHT").asInt();
   bool motion = (bool) prop.findGroup("REC").find("MOTION").asInt();
-
-
+  bool realOrSim = (bool) prop.findGroup("REC").find("REAL0_SIM1").asInt();
 
   bool do_bar_l = true;
   bool do_bar_r = true;
@@ -77,7 +70,6 @@ void iCub::contrib::primateVision::RecServer::run()
     printf("RecServer: Not barrel rectifying RIGHT\n");
   }
 
-
   std::string sim;
   if (realOrSim){
     printf("RecServer: Connecting to iCub Simulator.\n");
@@ -86,7 +78,6 @@ void iCub::contrib::primateVision::RecServer::run()
   else{
     sim = "";
   }
-
   
   Property options;
   IEncoders *enc;
@@ -266,17 +257,17 @@ void iCub::contrib::primateVision::RecServer::run()
   motion_handler->k_vel_roll  = prop.findGroup("REC").find("KVEL_ROLL").asDouble();
   motion_handler->k_vel_pitch = prop.findGroup("REC").find("KVEL_PITCH").asDouble();
   motion_handler->k_vel_yaw   = prop.findGroup("REC").find("KVEL_YAW").asDouble();
-  motion_handler->vor_on    = (bool) prop.findGroup("VOR").find("VOR_ON").asInt();
-  motion_handler->vor_k_rol = prop.findGroup("VOR").find("K_ROL").asDouble();
-  motion_handler->vor_k_pan = prop.findGroup("VOR").find("K_PAN").asDouble();
-  motion_handler->vor_k_tlt = prop.findGroup("VOR").find("K_TLT").asDouble();
-  motion_handler->vor_d_rol = prop.findGroup("VOR").find("D_ROL").asDouble();
-  motion_handler->vor_d_pan = prop.findGroup("VOR").find("D_PAN").asDouble();
-  motion_handler->vor_d_tlt = prop.findGroup("VOR").find("D_TLT").asDouble();
-  motion_handler->motion    = motion;
-  motion_handler->enc       = vec_enc;
-  motion_handler->vel       = vel;
-  motion_handler->encs      = enc;
+  motion_handler->vor_on      = (bool) prop.findGroup("VOR").find("VOR_ON").asInt();
+  motion_handler->vor_k_rol   = prop.findGroup("VOR").find("K_ROL").asDouble();
+  motion_handler->vor_k_pan   = prop.findGroup("VOR").find("K_PAN").asDouble();
+  motion_handler->vor_k_tlt   = prop.findGroup("VOR").find("K_TLT").asDouble();
+  motion_handler->vor_d_rol   = prop.findGroup("VOR").find("D_ROL").asDouble();
+  motion_handler->vor_d_pan   = prop.findGroup("VOR").find("D_PAN").asDouble();
+  motion_handler->vor_d_tlt   = prop.findGroup("VOR").find("D_TLT").asDouble();
+  motion_handler->motion      = motion;
+  motion_handler->enc         = vec_enc;
+  motion_handler->vel         = vel;
+  motion_handler->encs        = enc;
   motion_handler->inPort_mot  = &inPort_mot;
   motion_handler->inPort_inertial  = &inPort_inertial;
 
