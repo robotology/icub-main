@@ -12,6 +12,8 @@
 #include <yarp/os/Bottle.h>
 
 #include "iCub/EventDispatcher.h"
+#include "iCub/EventListenerFactory.h"
+
 
 namespace iCub {
 namespace contrib {
@@ -30,6 +32,15 @@ namespace learningmachine {
 
 class DispatcherManager {
 private:
+    /**
+     * Cached pointer to instance of EventDispatcher.
+     */
+    EventDispatcher* dispatcher;
+    
+    /**
+     * Cached pointer to instance of EventListenerFactory.
+     */
+    EventListenerFactory* factory;
 
 public:
     /**

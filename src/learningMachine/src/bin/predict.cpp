@@ -5,11 +5,13 @@
  * Executable for the Predict Module
  *
  */
+
 #include <iostream>
 #include <string>
 
 #include "iCub/PredictModule.h"
 #include "iCub/MachineCatalogue.h"
+#include "iCub/EventListenerCatalogue.h"
 
 using namespace iCub::contrib::learningmachine;
 
@@ -20,6 +22,9 @@ int main (int argc, char* argv[]) {
     try {
         // initialize catalogue of machine factory
         registerMachines();
+        
+        // initialize catalogue of event listeners
+        registerEventListeners();
 
         module.runModule(argc,argv);
         //module.attachTerminal();

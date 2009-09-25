@@ -11,6 +11,7 @@
 
 #include "iCub/TransformModule.h"
 #include "iCub/TransformerCatalogue.h"
+#include "iCub/EventListenerCatalogue.h"
 
 using namespace iCub::contrib::learningmachine;
 
@@ -19,7 +20,11 @@ int main (int argc, char* argv[]) {
 
     TransformModule module;
     try {
+        // initialize catalogue of transformers
         registerTransformers();
+
+        // initialize catalogue of event listeners
+        registerEventListeners();
 
         module.runModule(argc,argv);
     } catch(const std::exception& e) {

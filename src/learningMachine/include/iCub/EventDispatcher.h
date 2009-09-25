@@ -115,7 +115,7 @@ public:
      *
      * @return the number of registered listeners
      */
-    virtual int listenerCount() {
+    virtual int countListeners() {
         return this->listeners.size();
     }
     

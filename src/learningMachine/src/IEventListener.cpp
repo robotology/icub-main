@@ -6,7 +6,10 @@
  *
  */
 
+#include <yarp/os/Bottle.h>
+
 #include "iCub/IEventListener.h"
+#include "iCub/EventListenerFactory.h"
 
 namespace iCub {
 namespace contrib {

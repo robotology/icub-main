@@ -81,8 +81,9 @@ void LSSVMAtlasLearner::setKernelAt(int index, std::string kernel) {
     if(index < this->machines.size()) {
         delete this->machines[index]->getKernel();
         this->machines[index]->setKernel(Kernel::fromString(kernel));
+    } else {
+        throw std::runtime_error("Index out of bounds!");
     }
-    // NOTE TO SELF: throw exception in else clause
 }
 
 void LSSVMAtlasLearner::setCAll(double c) {
@@ -94,8 +95,9 @@ void LSSVMAtlasLearner::setCAll(double c) {
 void LSSVMAtlasLearner::setCAt(int index, double c) {
     if(index < this->machines.size()) {
         this->machines[index]->setC(c);
+    } else {
+        throw std::runtime_error("Index out of bounds!");
     }
-    // NOTE TO SELF: throw exception in else clause
 }
 
 

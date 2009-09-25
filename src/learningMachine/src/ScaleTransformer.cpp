@@ -182,7 +182,7 @@ bool ScaleTransformer::configure(Searchable &config) {
         Bottle list = config.findGroup("config").tail();
         property.addList() = list.tail();
         //std::cout << "property: " << property.toString() << std::endl;
-        if(list.get(0).isInt()) {
+        if(list.get(0).isInt() && list.get(0).asInt() >= 1 && list.get(0).asInt() <= this->scalers.size()) {
             // format: set config idx key val
             int i = list.get(0).asInt() - 1;
             //std::cout << "property on " << i << " to " << property.toString() << std::endl;
@@ -194,6 +194,7 @@ bool ScaleTransformer::configure(Searchable &config) {
                 success |= this->scalers[i]->configure(property);
             }
         } else {
+            throw std::runtime_error("Illegal index!");
         }
     }
 

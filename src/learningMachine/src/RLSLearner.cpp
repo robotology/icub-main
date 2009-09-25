@@ -68,6 +68,8 @@ void RLSLearner::setLambdaAt(int index, double l) {
     if(index < this->machines.size()) {
         this->machines[index]->setLambda(l);
         this->machines[index]->reset();
+    } else {
+        throw std::runtime_error("Index out of bounds!");
     }
 }
 
