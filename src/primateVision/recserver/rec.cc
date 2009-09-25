@@ -64,10 +64,19 @@ void iCub::contrib::primateVision::RecServer::run()
   int height = prop.findGroup("REC").find("HEIGHT").asInt();
   bool motion = (bool) prop.findGroup("REC").find("MOTION").asInt();
 
-  if (motion) {
-    printf("RecServer: Motion control enabled.\n");
+
+
+  bool do_bar_l = true;
+  bool do_bar_r = true;
+  if (crfl == "none"){
+    do_bar_l = false;
+    printf("RecServer: Not barrel rectifying LEFT\n");
   }
-  
+  if (crfr == "none"){
+    do_bar_r = false;
+    printf("RecServer: Not barrel rectifying RIGHT\n");
+  }
+
 
   std::string sim;
   if (realOrSim){
@@ -414,23 +423,31 @@ void iCub::contrib::primateVision::RecServer::run()
       rec_res_params.head_p = -vec_enc[0];
       rec_res_params.head_y = -vec_enc[2];
       
-
+      
       //BARREL RECTIFIED IMS + PARAMS:
-      rl->barrel_rect(c_rgb2yuv_l->get_y(),c_rgb2yuv_l->get_psb(),yl_brect,psb);
+      if (do_bar_l){
+	rl->barrel_rect(c_rgb2yuv_l->get_y(),c_rgb2yuv_l->get_psb(),yl_brect,psb);
+	rl->barrel_rect(c_rgb2yuv_l->get_u(),c_rgb2yuv_l->get_psb(),ul_brect,psb);
+	rl->barrel_rect(c_rgb2yuv_l->get_v(),c_rgb2yuv_l->get_psb(),vl_brect,psb);
+      }
+      else{
+	ippiCopy_8u_C1R(c_rgb2yuv_l->get_y(),c_rgb2yuv_l->get_psb(),yl_brect,psb,srcsize);
+	ippiCopy_8u_C1R(c_rgb2yuv_l->get_u(),c_rgb2yuv_l->get_psb(),ul_brect,psb,srcsize);
+	ippiCopy_8u_C1R(c_rgb2yuv_l->get_v(),c_rgb2yuv_l->get_psb(),vl_brect,psb,srcsize);
+      }
+      
       Bottle& outBot_lyb = outPort_lyb.prepare();
       outBot_lyb.clear();
       outBot_lyb.add(Value::makeBlob(yl_brect, psb*height));
       outBot_lyb.add(Value::makeBlob(&rec_res_params,sizeof(RecResultParams)));
       outPort_lyb.write();
       
-      rl->barrel_rect(c_rgb2yuv_l->get_u(),c_rgb2yuv_l->get_psb(),ul_brect,psb);
       Bottle& outBot_lub = outPort_lub.prepare();
       outBot_lub.clear();
       outBot_lub.add(Value::makeBlob(ul_brect, psb*height));
       outBot_lub.add(Value::makeBlob(&rec_res_params,sizeof(RecResultParams)));
       outPort_lub.write();
       
-      rl->barrel_rect(c_rgb2yuv_l->get_v(),c_rgb2yuv_l->get_psb(),vl_brect,psb);
       Bottle& outBot_lvb = outPort_lvb.prepare();
       outBot_lvb.clear();
       outBot_lvb.add(Value::makeBlob(vl_brect, psb*height));
@@ -517,21 +534,29 @@ void iCub::contrib::primateVision::RecServer::run()
 
 
       //BARREL RECTIFIED IMS + PARAMS:
-      rr->barrel_rect(c_rgb2yuv_r->get_y(),c_rgb2yuv_r->get_psb(),yr_brect,psb);
+      if (do_bar_r){
+	rr->barrel_rect(c_rgb2yuv_r->get_y(),c_rgb2yuv_r->get_psb(),yr_brect,psb);
+	rr->barrel_rect(c_rgb2yuv_r->get_u(),c_rgb2yuv_r->get_psb(),ur_brect,psb);
+	rr->barrel_rect(c_rgb2yuv_r->get_v(),c_rgb2yuv_r->get_psb(),vr_brect,psb);
+      }
+      else{
+	ippiCopy_8u_C1R(c_rgb2yuv_r->get_y(),c_rgb2yuv_r->get_psb(),yr_brect,psb,srcsize);
+	ippiCopy_8u_C1R(c_rgb2yuv_r->get_u(),c_rgb2yuv_r->get_psb(),ur_brect,psb,srcsize);
+	ippiCopy_8u_C1R(c_rgb2yuv_r->get_v(),c_rgb2yuv_r->get_psb(),vr_brect,psb,srcsize);
+      }
+      
       Bottle& outBot_ryb = outPort_ryb.prepare();
       outBot_ryb.clear();
       outBot_ryb.add(Value::makeBlob(yr_brect, psb*height));
       outBot_ryb.add(Value::makeBlob(&rec_res_params,sizeof(RecResultParams)));
       outPort_ryb.write();
  
-      rr->barrel_rect(c_rgb2yuv_r->get_u(),c_rgb2yuv_r->get_psb(),ur_brect,psb);
       Bottle& outBot_rub = outPort_rub.prepare();
       outBot_rub.clear();
       outBot_rub.add(Value::makeBlob(ur_brect, psb*height));
       outBot_rub.add(Value::makeBlob(&rec_res_params,sizeof(RecResultParams)));
       outPort_rub.write();
       
-      rr->barrel_rect(c_rgb2yuv_r->get_v(),c_rgb2yuv_r->get_psb(),vr_brect,psb);
       Bottle& outBot_rvb = outPort_rvb.prepare();
       outBot_rvb.clear();
       outBot_rvb.add(Value::makeBlob(vr_brect, psb*height));

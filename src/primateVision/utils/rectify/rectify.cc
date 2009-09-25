@@ -4,7 +4,7 @@
  */
 
 #include <stdio.h>
-#include <string.h>
+#include <string>
 #include <stdlib.h>
 #include <math.h>
 
@@ -51,67 +51,78 @@ iCub::contrib::primateVision::Rectify::Rectify(char* crf,IppiSize ss_,double t_o
 
 
 
-
+  
   //load intrinsic parameters from matlab file:
   char str [80];
-  printf("Loading A from intrinsic params file: %s\n",crf);
-  FILE* f = fopen(crf, "r");
-  //get to data:
-  fscanf(f,"%s",str);
-  while (strcmp(str,"length:")!=0){
+  FILE *f;
+  int psb_buf;
+  
+  
+  if (std::string("none") != crf){
+    printf("Rectify: Loading A from intrinsic params file: %s\n",crf);
+    f=fopen(crf, "r");
+    
+    //get to data:
     fscanf(f,"%s",str);
-  } 
-  for (int i=0;i<3;i++){fscanf(f,"%s",str);}
-  fscanf(f,"%f",&fc1);
-  fscanf(f,"%s",str);
-  fscanf(f,"%f",&fc2);
-  for (int i=0;i<7;i++){fscanf(f,"%s",str);}
-  fscanf(f,"%f",&cc1);
-  fscanf(f,"%s",str);
-  fscanf(f,"%f",&cc2);
-  for (int i=0;i<13;i++){fscanf(f,"%s",str);}
-  fscanf(f,"%f",&kc1);
-  fscanf(f,"%s",str);
-  fscanf(f,"%f",&kc2);
-  fscanf(f,"%s",str);
-  fscanf(f,"%f",&pc1);
-  fscanf(f,"%s",str);
-  fscanf(f,"%f",&pc2);
-  fclose(f);
-
-  A->me[0][0] = fc1; A->me[0][1] = 0.0; A->me[0][2] = cc1;
-  A->me[1][0] = 0.0; A->me[1][1] = fc2; A->me[1][2] = cc2; 
-  A->me[2][0] = 0.0; A->me[2][1]= 0.0;  A->me[2][2]=  1.0;
-
-
-
-  //BAREL RECT PREPARATION:
-  //A few different ways implemented.. to compare speed and output quality.
-
+    while (strcmp(str,"length:")!=0){
+      fscanf(f,"%s",str);
+    } 
+    for (int i=0;i<3;i++){fscanf(f,"%s",str);}
+    fscanf(f,"%f",&fc1);
+    fscanf(f,"%s",str);
+    fscanf(f,"%f",&fc2);
+    for (int i=0;i<7;i++){fscanf(f,"%s",str);}
+    fscanf(f,"%f",&cc1);
+    fscanf(f,"%s",str);
+    fscanf(f,"%f",&cc2);
+    for (int i=0;i<13;i++){fscanf(f,"%s",str);}
+    fscanf(f,"%f",&kc1);
+    fscanf(f,"%s",str);
+    fscanf(f,"%f",&kc2);
+    fscanf(f,"%s",str);
+    fscanf(f,"%f",&pc1);
+    fscanf(f,"%s",str);
+    fscanf(f,"%f",&pc2);
+    fclose(f);
+    
+    //BAREL RECT PREPARATION:
+    //A few different ways implemented.. to compare speed and output quality.
+    
 #if IPP_RADIAL
-  //prepare for direct UndistortRadial without look-up table:
-  //fast, but perhaps not continuous:
-  int psb_buf;
-  ippiUndistortGetSize (srcsize, &buflen);
-  buffer = ippiMalloc_8u_C1(buflen,1,&psb_buf);
+    //prepare for direct UndistortRadial without look-up table:
+    //fast, but perhaps not continuous:
+    ippiUndistortGetSize (srcsize, &buflen);
+    buffer = ippiMalloc_8u_C1(buflen,1,&psb_buf);
 #endif
-
-  //OR     
-
+    
+    //OR     
+    
 #if IPP_RADIAL_TANGENTIAL
-  //prepare ippi-made look-up table including radial AND tangential rectification
-  //for use with ippiRemap:
-  //probably slower, but may give more continuous result!
-  ippiUndistortGetSize (srcsize, &buflen);
-  int psb_buf;
-  buffer = ippiMalloc_8u_C1(buflen,1,&psb_buf);
-  xMap = ippiMalloc_32f_C1(srcroi.width, srcsize.height, &xStep);    
-  yMap = ippiMalloc_32f_C1(srcroi.width, srcsize.height, &yStep);
-  ippiCreateMapCameraUndistort_32f_C1R (xMap, xStep, yMap, yStep, srcsize,
-                                    fc1, fc2, cc1, cc2, kc1, kc2, pc1, pc2, buffer);
+    //prepare ippi-made look-up table including radial AND tangential rectification
+    //for use with ippiRemap:
+    //probably slower, but may give more continuous result!
+    ippiUndistortGetSize (srcsize, &buflen);
+    buffer = ippiMalloc_8u_C1(buflen,1,&psb_buf);
+    xMap = ippiMalloc_32f_C1(srcroi.width, srcsize.height, &xStep);    
+    yMap = ippiMalloc_32f_C1(srcroi.width, srcsize.height, &yStep);
+    ippiCreateMapCameraUndistort_32f_C1R (xMap, xStep, yMap, yStep, srcsize,
+					  fc1, fc2, cc1, cc2, kc1, kc2, pc1, pc2, buffer);
 #endif
- 
 
+  }
+  else{
+    printf("Rectify: Not applying barrel rectification.\n");
+    fc1 =1.0;
+    fc2 =1.0;
+    cc1 =1.0;
+    cc2 =1.0;
+    
+    A->me[0][0] = fc1; A->me[0][1] = 0.0; A->me[0][2] = cc1;
+    A->me[1][0] = 0.0; A->me[1][1] = fc2; A->me[1][2] = cc2; 
+    A->me[2][0] = 0.0; A->me[2][1]= 0.0;  A->me[2][2]=  1.0;
+  }
+  
+  
 }
 
 
