@@ -1,3 +1,5 @@
+#!/usr/bin/python
+
 ##Copyright (C) 2009 RobotCub Consortium, European Commission FP6 Project IST-004370
 ##Author Lorenzo Natale
 ##email:   <lorenzo.natale>@robotcub.org
@@ -13,8 +15,6 @@
 ##WITHOUT ANY WARRANTY; without even the implied warranty of
 ##MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the GNU General
 ##Public License for more details
-
-#!/usr/bin/python
 
 import xml.dom.minidom
 import subprocess
