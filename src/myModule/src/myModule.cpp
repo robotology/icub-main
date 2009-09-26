@@ -185,7 +185,8 @@ bool MyModule::close()
 
 bool MyModule::respond(const Bottle& command, Bottle& reply) 
 {
-  string helpMessage =  getName() + " commands are: \n" +  
+  string helpMessage =  string(getName().c_str()) + 
+                        " commands are: \n" +  
                         "help \n" + 
                         "quit \n" + 
                         "set thr <n> ... set the threshold \n" + 
@@ -227,7 +228,7 @@ double MyModule::getPeriod()
    return 0.1;
 }
 
-MyThread::MyThread(BufferedPort<ImageOf<PixelRgb>> *imageIn, BufferedPort<ImageOf<PixelRgb>> *imageOut, int *threshold)
+MyThread::MyThread(BufferedPort<ImageOf<PixelRgb> > *imageIn, BufferedPort<ImageOf<PixelRgb> > *imageOut, int *threshold)
 {
    imagePortIn    = imageIn;
    imagePortOut   = imageOut;

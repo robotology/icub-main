@@ -190,15 +190,15 @@ private:
   	    
    /* thread parameters: they are pointers so that they refer to the original variables in myModule */
 
-   BufferedPort<ImageOf<PixelRgb>> *imagePortIn;
-   BufferedPort<ImageOf<PixelRgb>> *imagePortOut;   
+   BufferedPort<ImageOf<PixelRgb> > *imagePortIn;
+   BufferedPort<ImageOf<PixelRgb> > *imagePortOut;   
    int *thresholdValue;     
 
 public:
 
    /* class methods */
 
-   MyThread(BufferedPort<ImageOf<PixelRgb>> *imageIn,  BufferedPort<ImageOf<PixelRgb>> *imageOut, int *threshold );
+   MyThread(BufferedPort<ImageOf<PixelRgb> > *imageIn,  BufferedPort<ImageOf<PixelRgb> > *imageOut, int *threshold );
    bool threadInit();     
    void threadRelease();
    void run(); 
