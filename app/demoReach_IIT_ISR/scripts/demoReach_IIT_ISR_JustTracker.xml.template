@@ -1,17 +1,17 @@
 <application>
-<name>Joint Reaching Demo (IIT+ISR) Just Tracking </name>
+<name>Joint Reaching Demo (IIT+ISR) Just Tracker </name>
         <dependencies>
                 <port>/icub/camcalib/left/out</port>
         </dependencies>
         <module>
                 <name>pf3dTracker</name>
-                <node>cortex1</node>
+                <node>pwrNode1</node>
                 <tag>PF3DTracker_tracker</tag>
         </module>
         <module>
                 <name>yarpview</name>
                 <parameters>--name /PF3DTracker_viewer --x 320 --y 0</parameters>
-                <node>chico3</node>
+                <node>console</node>
                 <tag>PF3DTracker_viewer</tag>
         </module>
         <connection>
