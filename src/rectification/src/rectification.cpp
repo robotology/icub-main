@@ -243,7 +243,8 @@ bool Rectification::close()
 
 bool Rectification::respond(const Bottle& command, Bottle& reply) 
 {
-  string helpMessage =  getName() + " commands are: \n" +  
+  string helpMessage =  string(getName().c_str()) + 
+                        " commands are: \n" +  
                         "help \n" + 
                         "quit \n" + 
                         "(where <n> is an integer number) \n";
@@ -278,10 +279,10 @@ double Rectification::getPeriod()
    return 0.1;
 }
 
-RectificationThread::RectificationThread(BufferedPort<ImageOf<PixelRgb>> *leftImageIn, 
-                                         BufferedPort<ImageOf<PixelRgb>> *rightImageIn,
-                                         BufferedPort<ImageOf<PixelRgb>> *leftImageOut, 
-                                         BufferedPort<ImageOf<PixelRgb>> *rightImageOut,
+RectificationThread::RectificationThread(BufferedPort<ImageOf<PixelRgb> > *leftImageIn, 
+                                         BufferedPort<ImageOf<PixelRgb> > *rightImageIn,
+                                         BufferedPort<ImageOf<PixelRgb> > *leftImageOut, 
+                                         BufferedPort<ImageOf<PixelRgb> > *rightImageOut,
                                          BufferedPort<Vector>            *robotPortInOut,
                                          float *fxLeftValue,  float *fyLeftValue, 
                                          float *cxLeftValue,  float *cyLeftValue, 

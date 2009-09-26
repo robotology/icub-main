@@ -266,10 +266,10 @@ private:
   	    
    /* thread parameters: they are pointers so that they refer to the original variables in rectification */
 
-   BufferedPort<ImageOf<PixelRgb>> *leftImagePortIn;
-   BufferedPort<ImageOf<PixelRgb>> *rightImagePortIn;
-   BufferedPort<ImageOf<PixelRgb>> *leftImagePortOut;
-   BufferedPort<ImageOf<PixelRgb>> *rightImagePortOut;   
+   BufferedPort<ImageOf<PixelRgb> > *leftImagePortIn;
+   BufferedPort<ImageOf<PixelRgb> > *rightImagePortIn;
+   BufferedPort<ImageOf<PixelRgb> > *leftImagePortOut;
+   BufferedPort<ImageOf<PixelRgb> > *rightImagePortOut;   
    BufferedPort<Vector>            *robotPort;
 
    float *fxLeft,  *fyLeft;          // focal length
@@ -281,10 +281,10 @@ public:
 
    /* class methods */
 
-   RectificationThread(BufferedPort<ImageOf<PixelRgb>> *leftImageIn, 
-                       BufferedPort<ImageOf<PixelRgb>> *rightImageIn,
-                       BufferedPort<ImageOf<PixelRgb>> *leftImageOut, 
-                       BufferedPort<ImageOf<PixelRgb>> *rightImageOut,
+   RectificationThread(BufferedPort<ImageOf<PixelRgb> > *leftImageIn, 
+                       BufferedPort<ImageOf<PixelRgb> > *rightImageIn,
+                       BufferedPort<ImageOf<PixelRgb> > *leftImageOut, 
+                       BufferedPort<ImageOf<PixelRgb> > *rightImageOut,
                        BufferedPort<Vector>            *robotPort,
                        float *fxLeftValue,  float *fyLeftValue, 
                        float *cxLeftValue,  float *cyLeftValue, 
