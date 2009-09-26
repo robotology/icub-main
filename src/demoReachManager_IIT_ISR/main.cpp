@@ -14,20 +14,6 @@
 #include <iostream>
 #include <iomanip>
 #include <string>
-
-#define TARGET_X_OFFSET         0.000
-#define TARGET_Y_OFFSET         0.150
-#define TARGET_Z_OFFSET         0.000
-
-#define ORIENT_LEFT_X           -0.064485
-#define ORIENT_LEFT_Y           0.707066
-#define ORIENT_LEFT_Z           -0.704201 
-#define ORIENT_LEFT_R           3.140572
-
-#define ORIENT_RIGHT_X          -0.012968
-#define ORIENT_RIGHT_Y          -0.721210
-#define ORIENT_RIGHT_Z          0.692595
-#define ORIENT_RIGHT_R          2.917075
                                                              
 using namespace std;
 using namespace yarp;
@@ -40,14 +26,18 @@ using namespace yarp::math;
 class managerThread : public RateThread
 {
 protected:
+    ResourceFinder &rf;
+
     string name;
+    string robot;
     string part;
 
     BufferedPort<Vector> *inportTrackTarget;
     BufferedPort<Vector> *outportCmdHead;
     BufferedPort<Vector> *outportCmdHand;
 
-    IEncoders *encs;
+    PolyDriver *drvTorso;
+    IEncoders  *encTorso;
 
     Vector targetPos;
     Vector targetOffset;
@@ -60,12 +50,11 @@ protected:
     bool goHand;
 
     double Ts;
-
-    int slot;
+    int    slot;
 
 public:
-    managerThread(const string &_name, unsigned int period, PolyDriver *drv, const string &_part) : 
-                  RateThread(period), name(_name), part(_part)
+    managerThread(const string &_name, ResourceFinder &_rf, unsigned int period) : 
+                  RateThread(period), name(_name), rf(_rf)
     {
         Ts=getRate()/1000.0;
         slot=0;
@@ -77,36 +66,80 @@ public:
 
         targetPos=0.0;
 
-        targetOffset[0]=TARGET_X_OFFSET;
-        targetOffset[2]=TARGET_Z_OFFSET;
-
-        if (part=="left_arm")
-        {    
-            targetOffset[1]=-TARGET_Y_OFFSET;
-            handOrient[0]=ORIENT_LEFT_X;
-            handOrient[1]=ORIENT_LEFT_Y;
-            handOrient[2]=ORIENT_LEFT_Z;
-            handOrient[3]=ORIENT_LEFT_R;
-        }
-        else
-        {    
-            targetOffset[1]=TARGET_Y_OFFSET;
-            handOrient[0]=ORIENT_RIGHT_X;
-            handOrient[1]=ORIENT_RIGHT_Y;
-            handOrient[2]=ORIENT_RIGHT_Z;
-            handOrient[3]=ORIENT_RIGHT_R;
-        }
-
         R=Rx=Ry=Rz=eye(3,3);
 
         targetNew=false;
         goHand=false;
 
-        drv->view(encs);
+        drvTorso=NULL;
     }
 
     virtual bool threadInit()
     {
+        Bottle &bGeneral=rf.findGroup("general");
+        if (bGeneral.isNull())
+        {
+            cout<<"general part is missing!"<<endl;
+            return false;
+        }
+
+        robot=bGeneral.check("robot",Value("icub")).asString();
+        part=bGeneral.check("part",Value("left_arm")).asString();
+
+        Bottle &bPart=rf.findGroup(part.c_str());
+        if (bPart.isNull())
+        {
+            cout<<part<<" part is missing!"<<endl;
+            return false;
+        }
+
+        if (bPart.check("offset"))
+        {
+            Bottle &bOffset=bPart.findGroup("offset");
+            if (bOffset.size()-1==3)
+                for (int i=0; i<bOffset.size()-1; i++)
+                    targetOffset[i]=bOffset.get(1+i).asDouble();
+            else
+            {
+                cout<<"option size != 3"<<endl;
+                return false;
+            }
+        }
+        else
+        {
+            cout<<"offset option is missing!"<<endl;
+            return false;
+        }
+        
+        if (bPart.check("orientation"))
+        {
+            Bottle &bOrientation=bPart.findGroup("orientation");
+            if (bOrientation.size()-1==4)
+                for (int i=0; i<bOrientation.size()-1; i++)
+                    handOrient[i]=bOrientation.get(1+i).asDouble();
+            else
+            {
+                cout<<"option size != 4"<<endl;
+                return false;
+            }
+        }
+        else
+        {
+            cout<<"orientation option is missing!"<<endl;
+            return false;
+        }
+
+        string slash="/";
+        Property optTorso("(device remote_controlboard)");
+        optTorso.put("remote",(slash+robot+"/torso").c_str());
+        optTorso.put("local",(name+"/torso").c_str());
+
+        drvTorso=new PolyDriver(optTorso);
+        if (!drvTorso->isValid())
+            return false;
+
+        drvTorso->view(encTorso);
+
         inportTrackTarget=new BufferedPort<Vector>;
         outportCmdHead   =new BufferedPort<Vector>;
         outportCmdHand   =new BufferedPort<Vector>;
@@ -129,7 +162,7 @@ public:
 
         targetNew=false;
 
-        if (++slot>=10)
+        if (++slot>=4)
             slot=0;
     }
 
@@ -146,11 +179,14 @@ public:
         delete inportTrackTarget;
         delete outportCmdHead;
         delete outportCmdHand;
+
+        if (drvTorso)
+            delete drvTorso;
     }
 
     void getSensorData()
     {
-        if (encs->getEncoders(torso.data()))
+        if (encTorso->getEncoders(torso.data()))
             R=rotx(torso[1])*roty(-torso[2])*rotz(-torso[0]);
 
         if (Vector *targetPosNew=inportTrackTarget->read(false))
@@ -240,8 +276,7 @@ public:
 class managerModule: public RFModule
 {
 protected:
-    managerThread *thr;
-    PolyDriver    *drv;
+    managerThread *thr;    
     Port           rpcPort;
 
 public:
@@ -251,20 +286,21 @@ public:
     {
         Time::turboBoost();
 
-        Property opt;
-        opt.put("device","remote_controlboard");
-        opt.put("remote","/icub/torso");
-        opt.put("local",getName("torso"));
+        int period;
 
-        drv=new PolyDriver(opt);
-
-        if (!drv->isValid())
+        Bottle &general=rf.findGroup("general");
+        if (!general.isNull())
+            period=rf.check("period",Value((int)10)).asInt();
+        else
+        {
+            cout<<"general part is missing!"<<endl;
             return false;
+        }
 
-        thr=new managerThread(getName().c_str(),10,drv,
-                              rf.check("part",Value("left_arm")).asString().c_str());
+        thr=new managerThread(getName().c_str(),rf,period);
 
-        thr->start();
+        if (!thr->start())
+            return false;
 
         rpcPort.open(getName("rpc"));
         attach(rpcPort);
@@ -279,8 +315,6 @@ public:
 
         thr->stop();
         delete thr;
-
-        delete drv;
 
         return true;
     }
@@ -299,6 +333,8 @@ int main(int argc, char *argv[])
 
     ResourceFinder rf;
     rf.setVerbose(true);
+    rf.setDefaultContext("demoReach_IIT_ISR/conf");
+    rf.setDefaultConfigFile("config.ini");
     rf.configure("ICUB_ROOT",argc,argv);
 
     managerModule mod;
