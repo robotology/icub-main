@@ -86,8 +86,9 @@ None.
 The configuration file passed through the option \e --config 
 should contain the fields required to reconstruct the 
 rototranslation matrices which align the kinematic eye axis with
-optical axis. Refer to \ref alignKin2Cam "alignKin2Cam" for more
-information. 
+optical axis.
+ 
+Example 
  
 \code 
 [LEFT]

@@ -147,10 +147,12 @@ None.
  
 \section conf_file_sec Configuration Files
 The configuration file passed through the option \e --config 
-should contain the fields required to reconstruct the 
-rototranslation matrixes which align the kinematic eye axis with 
-optical axis. Refer to \ref alignKin2Cam "alignKin2Cam" for more
-information. 
+should contain the fields required to reconstruct the virtual 
+links (given in terms of lenght,offset,twist,joint parameters) 
+which are appended to the eye kinematic in order to achieve the 
+alignment with the optical axes. 
+ 
+Example: 
  
 \code 
 [LEFT]

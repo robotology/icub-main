@@ -42,8 +42,6 @@
   * virtual links (given in terms of lenght,offset,twist,joint
   * parameters) which are appended to the eye kinematic in order
   * to achieve the alignment with the optical axes.
-  * Refer to \ref alignKin2Cam "alignKin2Cam" for more
-  * information.
   * 
   * By adding the option --kalman the 3D output position is
   * filtered with a Kalman state estimator.
