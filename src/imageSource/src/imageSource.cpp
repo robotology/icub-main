@@ -275,9 +275,9 @@ void ImageSourceThread::run(){
       for (x=0; x<outputImage.width(); x++) {
          for (y=0; y<outputImage.height(); y++) {
  
-            noise = ((float)rand() / (float)(RAND_MAX + 1));  // 0-1
-            noise = 2 * (noise - 0.5);                        // -1 - +1
-            noise = noise * (*noiseValue);                    // -noiseValue - +noiseValue
+            noise = ((float)rand() / (float)(RAND_MAX));          // 0-1
+            noise = 2 * (noise - 0.5);                            // -1 - +1
+            noise = noise * (*noiseValue);                        // -noiseValue - +noiseValue
 
             rgbPixel = inputImage((int)(x * ((float)inputImage.width()/(float)outputImage.width())), 
                                   (int)(y * ((float)inputImage.height()/(float)outputImage.height())));
