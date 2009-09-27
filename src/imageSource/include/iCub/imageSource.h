@@ -40,6 +40,10 @@
  * - imageFile image.ppm
  *   specifies the image filename
  *
+ * - frequency 10             
+ *   specifies the number of images to be streamed per second.  
+ *   A low frequency avoids this module hogging the CPU; this is important if you are streaming several images
+ *
  * - width 320             
  *   specifies the width of the image to be streamed.  
  *   The image read from the file is rescaled if necessary.
@@ -150,12 +154,14 @@
 
 #include <iostream>
 #include <string>
+#include <cstdlib>
 
 #include <yarp/sig/all.h>
 #include <yarp/os/all.h>
 #include <yarp/os/RFModule.h>
 #include <yarp/os/Network.h>
-#include <yarp/os/Thread.h>
+#include <yarp/os/RateThread.h>
+#include <yarp/os/Time.h>
  
 using namespace std;
 using namespace yarp::os; 
@@ -164,7 +170,7 @@ using namespace yarp::sig::file;
   
 
 
-class ImageSourceThread : public Thread
+class ImageSourceThread : public RateThread
 {
 private:
 
@@ -180,7 +186,7 @@ private:
 
    /* thread parameters: they are pointers so that they refer to the original variables in imageSource */
 
-   BufferedPort<ImageOf<PixelRgb>> *imagePortOut;   
+   BufferedPort<ImageOf<PixelRgb> > *imagePortOut;   
    int *widthValue;     
    int *heightValue;     
    int *noiseValue;  
@@ -190,7 +196,7 @@ public:
 
    /* class methods */
 
-   ImageSourceThread(BufferedPort<ImageOf<PixelRgb>> *imageOut, string *imageFilename, int *width, int *height, int *noise);
+   ImageSourceThread(BufferedPort<ImageOf<PixelRgb> > *imageOut, string *imageFilename,  int period, int *width, int *height, int *noise);
    bool threadInit();     
    void threadRelease();
    void run(); 
@@ -210,6 +216,7 @@ class ImageSource:public RFModule
    string outputPortName;  
    string handlerPortName;
    string imageFilename;
+   int    frequency;
    int    width;
    int    height;
    int    noiseLevel;

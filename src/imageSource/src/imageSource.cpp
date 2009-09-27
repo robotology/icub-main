@@ -71,7 +71,11 @@ bool ImageSource::configure(yarp::os::ResourceFinder &rf)
                            Value("/image:o"),
                            "Output image port (string)").asString();
 
-   /* get the width, height, and standard deviation values */
+   /* get the frequency, width, height, and standard deviation values */
+
+   frequency             = rf.check("frequency",
+                           Value(10),
+                           "Key value (int)").asInt();
 
    width                 = rf.check("width",
                            Value(320),
@@ -88,6 +92,7 @@ bool ImageSource::configure(yarp::os::ResourceFinder &rf)
    if (debug) {
       cout << "imageSource::configure: image file name  " << imageFilename << endl;
       cout << "imageSource::configure: output port name " << outputPortName << endl;
+      cout << "imageSource::configure: frequency        " << frequency << endl;
       cout << "imageSource::configure: width            " << width << endl;
       cout << "imageSource::configure: height           " << height << endl;
       cout << "imageSource::configure: noise level      " << noiseLevel << endl;
@@ -124,7 +129,7 @@ bool ImageSource::configure(yarp::os::ResourceFinder &rf)
 
    cout << "imageSource::configure: calling Thread constructor"   << endl;
 
-   imageSourceThread = new ImageSourceThread(&imageOut, &imageFilename, &width, &height, &noiseLevel);
+   imageSourceThread = new ImageSourceThread(&imageOut, &imageFilename, (int)(1000 / frequency), &width, &height, &noiseLevel);
 
    cout << "imageSource::configure: returning from Thread constructor"   << endl;
 
@@ -161,7 +166,8 @@ bool ImageSource::close()
 
 bool ImageSource::respond(const Bottle& command, Bottle& reply) 
 {
-  string helpMessage =  getName() + " commands are: \n" +  
+  string helpMessage =  string(getName().c_str()) + 
+                        " commands are: \n" +  
                         "help \n" + 
                         "quit \n" + 
                         "set noise <n> ... set the noise level \n" + 
@@ -203,11 +209,11 @@ double ImageSource::getPeriod()
    return 0.1;
 }
 
-ImageSourceThread::ImageSourceThread(BufferedPort<ImageOf<PixelRgb>> *imageOut, 
-                                     string *imageFilename, int *width, int *height, int *noiseLevel)
+ 
+ImageSourceThread::ImageSourceThread(BufferedPort<ImageOf<PixelRgb> > *imageOut, 
+                                     string *imageFilename, int period, int *width, int *height, int *noiseLevel) : RateThread(period)
 {
    debug = false;
-
    imagePortOut   = imageOut;
    imageFilenameValue = imageFilename;
    widthValue = width;
@@ -221,8 +227,6 @@ ImageSourceThread::ImageSourceThread(BufferedPort<ImageOf<PixelRgb>> *imageOut,
       cout << "ImageSourceThread: height           " << *heightValue << endl;
       cout << "ImageSourceThread: noise level      " << *noiseValue << endl;
    }
-
-
 }
 
 bool ImageSourceThread::threadInit() 
@@ -261,10 +265,8 @@ void ImageSourceThread::run(){
 
 
    /* Generate a new random seed */
-   srand(10000);
+   srand((int)(1000*yarp::os::Time::now()));
 
-   while (isStopping() != true) { // the thread continues to run until isStopping() returns true
- 
       if (false) cout << "imageSourceThread::run: standard deviation value is " << *noiseValue << endl;
       
       ImageOf<PixelRgb> &outputImage = imagePortOut->prepare();
@@ -305,7 +307,7 @@ void ImageSourceThread::run(){
          }
       }
       imagePortOut->write();
-   }
+
 }
 
 void ImageSourceThread::threadRelease() 
