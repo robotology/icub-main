@@ -48,7 +48,7 @@ IF (folder_source)
         ${folder_source} 
         ${folder_header}
     )
-  INSTALL_TARGETS(/bin ${KEYWORD})
+    INSTALL_TARGETS(/bin ${KEYWORD})
 ELSE (folder_source)
     MESSAGE(STATUS "No source code files found. Please add something")
 ENDIF (folder_source)
