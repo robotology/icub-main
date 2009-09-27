@@ -30,8 +30,6 @@ SOURCE_GROUP("Header Files" FILES ${folder_header})
 LINK_LIBRARIES(
 	${FOURIERVISION_LIBRARIES}
 	${LOGPOLAR_LIBRARIES}
-#      ${PROJECT_SOURCE_DIR}/../fourierVision/lib/fourierVision.lib
-#      ${ICUB_DIR}/src/logPolar/lib/winnt/lib_iCub_logpolard.lib
 )
 
 
@@ -41,9 +39,10 @@ IF (folder_source)
         ${folder_source} 
         ${folder_header}
     )
+    INSTALL_TARGETS(/bin ${KEYWORD})
 ELSE (folder_source)
     MESSAGE(FATAL_ERROR "No source code files found. Please add something")
 ENDIF (folder_source)
 
-INSTALL_TARGETS(/bin ${KEYWORD})
+
 
