@@ -20,7 +20,7 @@
 
 <module>
    <name>logPolarTransform</name>
-   <parameters>--name inverseLogPolarTransform --imageInputPort /inverse:i --imageOutputPort /inverse:o --direction LOGPOLAR2CARTESIAN</parameters>
+   <parameters>--name inverseLogPolarTransform  --direction LOGPOLAR2CARTESIAN</parameters>
    <node>icub1</node>
    <tag>inverseLogPolarTransform</tag>
 </module>
@@ -66,12 +66,12 @@
 
 <connection>
   <from>/logPolarTransform/image:o</from>
-  <to>/inverseLogPolarTransform/inverse:i</to>
+  <to>/inverseLogPolarTransform/image:i</to>
   <protocol>tcp</protocol>
 </connection>
 
 <connection>
-  <from>/inverseLogPolarTransform/inverse:o</from>
+  <from>/inverseLogPolarTransform/image:o</from>
   <to>/cartesianImage</to>
   <protocol>tcp</protocol>
 </connection>

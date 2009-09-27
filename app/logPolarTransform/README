@@ -1,0 +1,30 @@
+This application demonstates the use of the logPolarTransform module. 
+ 
+The application computes the forward Cartesian-to-log-polar transform 
+and then performs the inverse log-polar-to-Cartesian transform.  
+Please refer to the logPolar module documentation for details on the
+various module parameters.
+
+The xml application description is contained in logPolarTransform.xml.template. 
+Edit this file to suit your own platform.  The only change that should be 
+necessary is to replace the node name (/icub1 in the template).
+
+It uses the imageSource module to stream an image from a file to 
+provide the image data. This allows the application to be run without 
+having to be physically connected to the iCub cameras.  Random noise is 
+added to each image to differentiate between frames.  The imageSource
+module streams the images to /icub/cam/left so that you can adapt the 
+template to read from the cameras simply by removing the image source module.
+
+Note that the application launches two instatiations of logPolarTransform.
+The first, implementing the forward transform, uses the default parameters.
+However, the second, implementing the inverse transform, needs to rename
+the module in order to avoid port name conflicts.  Since both modules 
+read the same configuration file, logPolarTransform.ini, in /conf,
+the second module also has a command-line parameter to specify the 
+(inverse) direction of the transform.
+
+David Vernon
+27/9/2009
+
+
