@@ -1,0 +1,34 @@
+myModule.xml.template
+
+This application demonstates the use of the myModule module. 
+This is a simple example to illustrate a module that is compliant with
+iCub Software Standards, addressing:
+
+- configuration
+- graceful shut-down
+- thread-based execution
+- run-time user interaction
+- documentation and coding standards
+
+Functionally, the module just converts an input image to a binary image based on 
+the supplied threshold.
+
+Please refer to the logPolar module documentation for details on the
+various module parameters:
+http://eris.liralab.it/iCub/dox/html/group__icub__myModule.html
+
+A complete tutorial for this example is available on the iCub wiki at 
+http://eris.liralab.it/wiki/Summary_of_iCub_Software_Development_Guidelines
+
+Edit the xml.template file to suit your own platform.  The only change that should be 
+necessary is to replace the node name (icub1 in the template).
+
+You should also make sure that the port dependencies are satisfied.
+Note that the application has one port dependency:
+
+/icub/cam/left 
+
+which stream images from the left iCub camera.
+
+David Vernon
+28/9/2009

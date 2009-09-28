@@ -1,0 +1,20 @@
+imageSource.xml.template
+
+This application demonstates the use of the imageSource module which 
+streams an image from a file to a port. This allows the application to be run 
+without having to be physically connected to the iCub cameras.  Random noise is 
+added to each image to differentiate between frames. In this application, 
+the imageSource module streams the images to /icub/cam/left so that you can adapt the 
+application to read from the cameras simply by removing the imageSource module.
+The image file is provided in the $ICUB_ROOT/app/imageSource/conf directory
+along with the imageSource.ini configuration file.
+
+Please refer to the imageSource module documentation for further details on the 
+module parameters: http://eris.liralab.it/iCub/dox/html/group__icub__imageSource.html
+
+Edit the xml.template file to suit your own platform.  The only change that should be 
+necessary is to replace the node name (icub1 in the template).
+
+David Vernon
+28/9/2009
+

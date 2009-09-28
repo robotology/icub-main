@@ -4,7 +4,7 @@
 <dependencies>
    <port>/icub/cam/left</port>
    <port>/icub/cam/right</port>
-   <port>/icub/head/rpc:i</port>
+   <port>/icub/head/state:o</port>
 </dependencies>
 
 <module>
