@@ -180,10 +180,11 @@ bool LogPolarTransform::close()
 
 bool LogPolarTransform::respond(const Bottle& command, Bottle& reply) 
 {
-  string helpMessage =  getName() + " commands are: \n" +  
+  string helpMessage =  string(getName().c_str()) + 
+                        " commands are: \n" +  
                         "help \n" + 
                         "quit \n" + 
-                        "set overlap <n> ... set the threshold \n" + 
+                        "set overlap <n> ... set the overlap of the receptive fields \n" + 
                         "(where <n> is an real number) \n";
 
   reply.clear(); 
