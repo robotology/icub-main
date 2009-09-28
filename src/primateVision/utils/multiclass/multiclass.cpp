@@ -145,18 +145,24 @@ int iCub::contrib::primateVision::MultiClass::prior_intensity_smoothness(Coord p
   if (label == nlabel) {penalty = 0;}
 
 
-
+  //Otherwise, if hypothesized different:
   else{
-    //Otherwise, if hypothesized different:
-    
+
+    //Always prefer continuous soloutions,
+    //so immediately penalise hypothetical solutions involving
+    //neighbours in different classes, this will help reduce segmented area:
+    penalty = params->smoothness_penalty_base;
+
     //INTENSITY SMOOTHNESS:
     int d_I = im[p.x + psb_in*p.y] - im[np.x + psb_in*np.y];
     double sigma = 2.0*params->smoothness_3sigmaon2/3.0;
     double p_int_edge = 1.0 - exp(-(d_I*d_I)/(2.0*sigma*sigma));
     
-    //if it's likely that it's an intensity edge, 
-    //return less penalty
-    penalty = (int) (params->smoothness_penalty*(1.0-p_int_edge));
+    //If it's likely that it's an intensity edge, 
+    //return less additional penalty.
+    //if it's not much of an edge, return 
+    //more additional penalty:
+    penalty += (int) (params->smoothness_penalty*(1.0-p_int_edge));
   }
  
 

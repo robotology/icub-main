@@ -18,18 +18,20 @@
 #include "zdf.h"
 
 
-#define RANK0_NDT1 1
+//use NDT or RANK comparision?
+#define RANK0_NDT1 1 
 
+//NDT:
 #define NDTX     1
 #define NDTY     1
-#define NDTSIZE  8
-#define NDTEQ    0
+#define NDTSIZE  4 //4 or 8
+#define NDTEQ    1 //0
 
-
+//RANK:
 #define RANKX    1 //2
 #define RANKY    1
 #define RANKSIZE 9 //15
-//RANKSISE = (RANKX*2+1)*(RANKY*2+1) //15 for (2,1) :)
+//RANKSISE = (RANKX*2+1)*(RANKY*2+1) //e.g., 15 for (2,1) :)
 
 
 #define MAX(a,b) ((a) < (b) ? (b) : (a))
@@ -45,7 +47,7 @@ iCub::contrib::primateVision::ZDFServer::ZDFServer(string*c_)
   cfg = c_;
   
   start();
-
+  
 }
 
 iCub::contrib::primateVision::ZDFServer::~ZDFServer()
@@ -56,39 +58,38 @@ iCub::contrib::primateVision::ZDFServer::~ZDFServer()
 
 void iCub::contrib::primateVision::ZDFServer::run(){
   
-
+  
   Property prop; 
   prop.fromConfigFile(cfg->c_str());
-
+  
   struct MultiClass::Parameters params;
   params.iter_max                  = prop.findGroup("ZDF").find("MAX_ITERATIONS").asInt();
   params.randomize_every_iteration = prop.findGroup("ZDF").find("RANDOMIZE_EVERY_ITER").asInt();
+  params.smoothness_penalty_base   = prop.findGroup("ZDF").find("SMOOTHNESS_PENALTY_BASE").asInt();
   params.smoothness_penalty        = prop.findGroup("ZDF").find("SMOOTHNESS_PENALTY").asInt();
   params.data_penalty              = prop.findGroup("ZDF").find("DATA_PENALTY").asInt();
   params.smoothness_3sigmaon2      = prop.findGroup("ZDF").find("SMOOTHNESS_3SIGMAON2").asInt();
 
-  int nclasses                     = 2; //zd, not_zd
-  int m_size                       = prop.findGroup("ZDF").find("M_SIZE").asInt(); //(square)
-  int bland_dog_thresh             = prop.findGroup("ZDF").find("BLAND_DOG_THRESH").asInt();
-  double bland_prob                = prop.findGroup("ZDF").find("BLAND_PROB").asDouble();
+  int nclasses         = 2; //zd, not_zd
+  int m_size           = prop.findGroup("ZDF").find("M_SIZE").asInt(); //(square)
+  int bland_dog_thresh = prop.findGroup("ZDF").find("BLAND_DOG_THRESH").asInt();
+  double bland_prob    = prop.findGroup("ZDF").find("BLAND_PROB").asDouble();
 
-  int t_size                       = prop.findGroup("ZDFTRACK").find("T_SIZE").asInt();
-  int t_lock                       = prop.findGroup("ZDFTRACK").find("T_LOCK").asInt();
-  int v_lock_lr                    = prop.findGroup("ZDFTRACK").find("V_LOCK_LR").asInt();
-  int v_lock_ud                    = prop.findGroup("ZDFTRACK").find("V_LOCK_UD").asInt();
-
-  Ipp32f shift_sim_t               = prop.findGroup("ZDFTRACK").find("TRACK_SIM").asDouble();
-  Ipp32f shift_sim_v               = prop.findGroup("ZDFTRACK").find("VERGE_SIM").asDouble();
-  double verg_gain                 = prop.findGroup("ZDFTRACK").find("VERGE_GAIN").asDouble();
-  double track_gain                = prop.findGroup("ZDFTRACK").find("TRACK_GAIN").asDouble();
-
-  int min_area                     = prop.findGroup("ZDFTRACK").find("MIN_AREA").asInt();
-  int max_area                     = prop.findGroup("ZDFTRACK").find("MAX_AREA").asInt();
-  int max_spread                   = prop.findGroup("ZDFTRACK").find("MAX_SPREAD").asInt();
-  int max_wait                     = prop.findGroup("ZDFTRACK").find("RETURN_HOME").asInt();
-  bool motion                      = (bool) prop.findGroup("ZDFTRACK").find("MOTION").asInt();
-  bool track_lock                  = (bool) prop.findGroup("ZDFTRACK").find("TRACK_LOCK").asInt();
-
+  int t_size           = prop.findGroup("ZDFTRACK").find("T_SIZE").asInt();
+  int t_lock           = prop.findGroup("ZDFTRACK").find("T_LOCK").asInt();
+  int v_lock_lr        = prop.findGroup("ZDFTRACK").find("V_LOCK_LR").asInt();
+  int v_lock_ud        = prop.findGroup("ZDFTRACK").find("V_LOCK_UD").asInt();
+  Ipp32f shift_sim_t   = prop.findGroup("ZDFTRACK").find("TRACK_SIM").asDouble();
+  Ipp32f shift_sim_v   = prop.findGroup("ZDFTRACK").find("VERGE_SIM").asDouble();
+  double verg_gain     = prop.findGroup("ZDFTRACK").find("VERGE_GAIN").asDouble();
+  double track_gain    = prop.findGroup("ZDFTRACK").find("TRACK_GAIN").asDouble();
+  int min_area         = prop.findGroup("ZDFTRACK").find("MIN_AREA").asInt();
+  int max_area         = prop.findGroup("ZDFTRACK").find("MAX_AREA").asInt();
+  int max_spread       = prop.findGroup("ZDFTRACK").find("MAX_SPREAD").asInt();
+  int max_wait         = prop.findGroup("ZDFTRACK").find("RETURN_HOME").asInt();
+  bool motion          = (bool) prop.findGroup("ZDFTRACK").find("MOTION").asInt();
+  bool track_lock      = (bool) prop.findGroup("ZDFTRACK").find("TRACK_LOCK").asInt();
+  int radial_penalty   =  prop.findGroup("ZDF").find("RADIAL_PENALTY").asInt();
 
   bool return_home = false;
   if (max_wait!=0){return_home = true;}
@@ -110,16 +111,16 @@ void iCub::contrib::primateVision::ZDFServer::run(){
   inPort_ly.open("/zdfserver/input/rec_ly");     
   Network::connect("/recserver/output/left_ye" , "/zdfserver/input/rec_ly");
   Bottle *inBot_ly;
-
+  
   BufferedPort<Bottle> inPort_ry; 
   inPort_ry.open("/zdfserver/input/rec_ry");     
   Network::connect("/recserver/output/right_ye" , "/zdfserver/input/rec_ry");
   Bottle *inBot_ry;
-
+  
   RecResultParams* rec_res;
   int dpix_y=0;
-
-
+  
+  
 
 
 
@@ -167,7 +168,7 @@ void iCub::contrib::primateVision::ZDFServer::run(){
   int ndt2[NDTSIZE];
   int rank1[RANKSIZE];
   int rank2[RANKSIZE];
-  Ipp32f cmp_res;
+  double cmp_res;
   int koffsetx;
   int koffsety;
   if (RANK0_NDT1==0){
@@ -193,6 +194,10 @@ void iCub::contrib::primateVision::ZDFServer::run(){
   Ipp8u *zd_prob_8u = ippiMalloc_8u_C1(msize.width,msize.height, &psb_m);
   Ipp8u *o_prob_8u  = ippiMalloc_8u_C1(msize.width,msize.height, &psb_m);
   Ipp8u **p_prob    = (Ipp8u**) malloc(sizeof(Ipp8u*)*nclasses);
+
+  ippiSet_8u_C1R(0,zd_prob_8u,psb_m,msize);
+  ippiSet_8u_C1R(0,o_prob_8u,psb_m,msize);
+
   p_prob[0] = o_prob_8u;
   p_prob[1] = zd_prob_8u;
 
@@ -216,7 +221,7 @@ void iCub::contrib::primateVision::ZDFServer::run(){
   //Server params:
   BufferedPort<Bottle> outPort_s;
   outPort_s.open("/zdfserver/output/serv_params");
-
+  
   //Motion output
   Port outPort_mot;
   outPort_mot.open("/zdfserver/output/mot");     // Give it a name on the network.
@@ -228,8 +233,8 @@ void iCub::contrib::primateVision::ZDFServer::run(){
   if (motion){
     //initalise:
     motion_request.content().pix_y  = 0;
-    motion_request.content().pix_xl = 40;
-    motion_request.content().pix_xr = -40;
+    motion_request.content().pix_xl = 35;
+    motion_request.content().pix_xr = -35;
     motion_request.content().deg_r  = 0.0;
     motion_request.content().deg_p  = 0.0;
     motion_request.content().deg_y  = 0.0;
@@ -237,45 +242,36 @@ void iCub::contrib::primateVision::ZDFServer::run(){
     motion_request.content().suspend  = 0;
     motion_request.content().lockto  = NO_LOCK;
     motion_request.content().unlock = true;
-    //reset:
-    //outPort_mot.write(motion_request);
+    //send:
+    //outPort_mot.write(motion_request); //don't send :)
   }
 
   // Make port for res_mask output:
   BufferedPort<Bottle> outPort_res_mask;
   outPort_res_mask.open("/zdfserver/output/res_mask");
-
   // Make port for res_prob output:
   BufferedPort<Bottle> outPort_res_prob;
   outPort_res_prob.open("/zdfserver/output/res_prob");
-
   // Make a port for left im fovea
   BufferedPort<Bottle> outPort_fov_l;
   outPort_fov_l.open("/zdfserver/output/fov_l");
-
   // Make a port for right im fovea
   BufferedPort<Bottle> outPort_fov_r;
   outPort_fov_r.open("/zdfserver/output/fov_r");
-
   BufferedPort<Bottle> outPort_temp;
   outPort_temp.open("/zdfserver/output/template");
-
   // Make a port for seg im
   BufferedPort<Bottle> outPort_seg_im;
   outPort_seg_im.open("/zdfserver/output/seg_im");
-
   // Make a port for seg dog
   BufferedPort<Bottle> outPort_seg_dog;
   outPort_seg_dog.open("/zdfserver/output/seg_dog");
-
   // Make a port for YARPVIEW DISPLAY
   BufferedPort<ImageOf<PixelMono> > outPort_yarpimg;
   outPort_yarpimg.open("/zdfserver/output/yarpimg");
-
   // Make a port for rec l
   BufferedPort<Bottle> outPort_rec_l;
   outPort_rec_l.open("/zdfserver/output/rec_l");
-
   // Make a port for rec r
   BufferedPort<Bottle> outPort_rec_r;
   outPort_rec_r.open("/zdfserver/output/rec_r");
@@ -299,6 +295,13 @@ void iCub::contrib::primateVision::ZDFServer::run(){
   int del_x=0,del_y=0;
   int waiting = 0;
   bool track = false;
+  int rad_pen,max_rad_pen;
+  double r;
+  double rmax = sqrt((msize.width/2.0)*(msize.width/2.0) 
+		     +(msize.height/2.0)*(msize.height/2.0));
+
+
+
 
 
   //TCREATE
@@ -313,7 +316,7 @@ void iCub::contrib::primateVision::ZDFServer::run(){
       
       inBot_ly = inPort_ly.read(false);
       inBot_ry = inPort_ry.read();
-    
+      
       if (inBot_ly!=NULL &&
 	  inBot_ry!=NULL ){
 	
@@ -322,8 +325,6 @@ void iCub::contrib::primateVision::ZDFServer::run(){
 	rec_res = (RecResultParams*) inBot_ry->get(1).asBlob();
    	dpix_y = rec_res->ly-rec_res->ry;
 	
-	
-
 
 	//**************************
 	//find template in left image:
@@ -384,7 +385,7 @@ void iCub::contrib::primateVision::ZDFServer::run(){
 
 
 
-	//we have foveas, aligned if possible.
+	//we have foveas, aligned when possible.
 	//always do segmentation
 
 
@@ -403,35 +404,56 @@ void iCub::contrib::primateVision::ZDFServer::run(){
 	  c.y=j;
 	  for (int i=koffsetx;i<msize.width-koffsetx-1;i++){
 	    c.x=i;
-	    
-	    //if  textured: 
+	   
+	    //if either l or r textured at this retinal location: 
 	    if (dl->get_dog_onoff()[i + j*dl->get_psb()] >= bland_dog_thresh ||
 		dr->get_dog_onoff()[i + j*dr->get_psb()] >= bland_dog_thresh ){
 	      
 	      if (RANK0_NDT1==0){
 		//use RANK:
-		get_rank(c,fov_l,psb_m,rank1);
-		get_rank(c,fov_r,psb_m,rank2);
+		//get_rank(c,fov_l,psb_m,rank1);
+		//get_rank(c,fov_r,psb_m,rank2);
+		get_rank(c,dl->get_dog_onoff(),dl->get_psb(),rank1);
+		get_rank(c,dr->get_dog_onoff(),dr->get_psb(),rank2);
 		cmp_res = cmp_rank(rank1,rank2);
 	      }
 	      else{ 
 		//use NDT:
-		get_ndt(c,fov_l,psb_m,ndt1);
-		get_ndt(c,fov_r,psb_m,ndt2);
+		//get_ndt(c,fov_l,psb_m,ndt1);
+		//get_ndt(c,fov_r,psb_m,ndt2);
+		get_ndt(c,dl->get_dog_onoff(),dl->get_psb(),ndt1);
+		get_ndt(c,dr->get_dog_onoff(),dr->get_psb(),ndt2);
 		cmp_res = cmp_ndt(ndt1,ndt2);
+
 	      }
 	      zd_prob_8u[j*psb_m+i] = (int)(cmp_res*255.0);
 	      
 	    }
 	    else{
-	      //untextured, so set to bland prob:
+	      //untextured, so set to bland prob (ZD):
 	      zd_prob_8u[j*psb_m+i] = (int)(bland_prob*255.0);
 	    } 
-	    //manufacture NZD prob:
+
+	    //RADIAL PENALTY:
+	    //The further from the origin, less likely it's ZD, so reduce zd_prob radially:
+	    //current radius:
+	    r = sqrt((c.x-msize.width/2.0)*(c.x-msize.width/2.0)+(c.y-msize.height/2.0)*(c.y-msize.height/2.0));
+	    rad_pen =  (int) ( (r/rmax)*radial_penalty );
+	    max_rad_pen = zd_prob_8u[j*psb_m+i];
+	    if(max_rad_pen < rad_pen) {
+	      rad_pen=max_rad_pen;
+	    }
+	    //apply radial penalty
+	    zd_prob_8u[j*psb_m+i]-= rad_pen;
+	    
+	    //OTHER:
+	    //manufacture NZD prob (other):
 	    o_prob_8u[psb_m*j+i] = 255 - zd_prob_8u[psb_m*j+i];
 	  }
 	}
 	
+	
+
 	
 	//DO MRF OPTIMISATION!!:
 	m->proc(fov_l,p_prob); //provide edge map and probability map
@@ -439,9 +461,11 @@ void iCub::contrib::primateVision::ZDFServer::run(){
 	ippiCopy_8u_C1R(m->get_class(),m->get_psb(),out,psb_m,msize);
 	//evaluate result:
 	getAreaCoGSpread(out,psb_m,msize, &area,&cog_x,&cog_y,&spread); 	
-	
+	printf("area:%d spread:%d cogx:%d cogy:%d\n",area,spread,cog_x,cog_y);	
 
 	
+
+
 	//we have mask and image  (out)   [0/255].
 	//construct masked image  (fov_l) [0..255]:
 	for (int j=0;j<msize.height;j++){
@@ -459,30 +483,19 @@ void iCub::contrib::primateVision::ZDFServer::run(){
 	
 		
 
-	printf("area:%d spread:%d cogx:%d cogy:%d\n",area,spread,cog_x,cog_y);
-
-	//update template to CoG whenever nice segmentation and CoG near zero:
-	//if (area>=min_area && area<=max_area && spread<=max_spread && 
-	//abs(cog_x)<=20 && abs(cog_y)<=20){
-	//printf("UPDATING TEMPLATE..  area:%d spread:%d\n",area,spread);
-	//ippiCopy_8u_C1R(&seg[cog_x + tmp_x + (tmp_y + cog_y)*psb_m],
-	//		psb_m,temp,psb_t,tsize);
-	//} 
-
-
-	//update template to seg image centre if nice segmentation
-	//and centre of fovea on segmented surface. 
-	//and seg cog near centre of retina.Otherwise, keep
-	//previous template.
-	if (area>=min_area && area<=max_area && spread<=max_spread && 
-	    out[tmp_y*psb_m+tmp_x]!=0 ){
-	      //&&	    abs(cog_x)<=20 && abs(cog_y)<=20){
+	//if nice segmentation
+	//and centre of fovea on segmented surface
+	//update template to seg image centre
+	//Otherwise, keep previous template.
+	if (area>=min_area && area<=max_area && spread<=max_spread
+	    && out[tmp_y*psb_m+tmp_x]!=0 ){
 	  printf("UPDATING TEMPLATE..  area:%d spread:%d\n",area,spread);
 	  ippiCopy_8u_C1R(&fov_l[tmp_x + tmp_y*psb_m],
 			  psb_m,temp,psb_t,tsize);
 	  waiting=0;
 	}
 	else{
+	  //keep previous template.
 	  waiting++;
 	}
 	
@@ -495,8 +508,8 @@ void iCub::contrib::primateVision::ZDFServer::run(){
 	    printf("Returning home! (waiting %d >= max_wait %d)\n",waiting,max_wait);
 	    //re-initalise:
 	    motion_request.content().pix_y  = 0;
-	    motion_request.content().pix_xl = 40;
-	    motion_request.content().pix_xr = -40;
+	    motion_request.content().pix_xl = 35;
+	    motion_request.content().pix_xr = -35;
 	    motion_request.content().deg_r  = 0.0;
 	    motion_request.content().deg_p  = 0.0;
 	    motion_request.content().deg_y  = 0.0;
@@ -519,18 +532,18 @@ void iCub::contrib::primateVision::ZDFServer::run(){
 	    motion_request.content().relative = true; //relative move.
 	    motion_request.content().suspend  = 0; 
 	    
-	    
-	    //while tracking success, lock motion control to the ZDF server only.  Otherwise, unlock 
+	    //If target locking requesteg, while tracking success, 
+	    //lock motion control to the ZDF server only.  Otherwise, unlock 
 	    //so that attentional saccades can occur.
 	    if (track_lock && track){
 	      //lock to ZDF:
-	      motion_request.content().lockto = ZDF_LOCK; // can only call if presently no lock
+	      motion_request.content().lockto = ZDF_LOCK; //can only call if presently no other lock
 	      motion_request.content().unlock = false;
-	      printf("ZDFServer: ZDF_LOCK\n");
+	      printf("ZDFServer: ZDF_LOCK requested.\n");
 	    }
 	    else{
 	      //unlock:
-	      motion_request.content().lockto = ZDF_LOCK; // ZDF has unlock permission.
+	      motion_request.content().lockto = ZDF_LOCK; //If locked to ZDFServer,  only ZDFServer can unlock
 	      motion_request.content().unlock = true;
 	    }
 	    
@@ -539,17 +552,8 @@ void iCub::contrib::primateVision::ZDFServer::run(){
 	  }
 	}
 	
-	 
 
 
-
-
-
-
-
-	
-	
-	
 	
 	
 	//SEND RESULT IMS

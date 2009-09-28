@@ -49,6 +49,7 @@ namespace iCub {
 	  bool randomize_every_iteration;
 	  
 	  int smoothness_penalty;
+	  int smoothness_penalty_base;
 	  int smoothness_3sigmaon2;
 	  int data_penalty;
 	};
