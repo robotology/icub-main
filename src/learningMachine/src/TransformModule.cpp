@@ -81,19 +81,19 @@ void TransformModule::exitWithHelp(std::string error) {
 void TransformModule::registerAllPorts() {
     //this->registerPort(this->model_out, "/" + this->portPrefix + "/model:o");
 
-    this->registerPort(this->train_in, "/" + this->portPrefix + "/train:i");
+    this->registerPort(this->train_in, this->portPrefix + "/train:i");
     this->train_in.setStrict();
 
-    this->registerPort(this->train_out, "/" + this->portPrefix + "/train:o");
+    this->registerPort(this->train_out, this->portPrefix + "/train:o");
     this->train_out.setStrict();
 
-    this->registerPort(this->predict_inout, "/" + this->portPrefix + "/predict:io");
+    this->registerPort(this->predict_inout, this->portPrefix + "/predict:io");
     this->predict_inout.setStrict();
 
-    this->registerPort(this->predict_relay_inout, "/" + this->portPrefix + "/predict_relay:io");
+    this->registerPort(this->predict_relay_inout, this->portPrefix + "/predict_relay:io");
     //this->predict_relay_inout.setStrict();
 
-    this->registerPort(this->cmd_in, "/" + this->portPrefix + "/cmd:i");
+    this->registerPort(this->cmd_in, this->portPrefix + "/cmd:i");
 }
 
 void TransformModule::unregisterAllPorts() {

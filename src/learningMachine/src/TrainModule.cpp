@@ -27,7 +27,6 @@ void TrainProcessor::onRead(PortablePair<Vector,Vector>& sample) {
             
             // Event Code
             if(EventDispatcher::instance().hasListeners()) {
-                std::cout << "Hello world!" << std::endl;
                 Vector prediction = this->getMachine()->predict(sample.head);
                 TrainEvent te(sample.head, sample.body, prediction);
                 EventDispatcher::instance().raise(te);
@@ -60,12 +59,12 @@ void TrainModule::exitWithHelp(std::string error) {
 void TrainModule::registerAllPorts() {
     // ports from PredictModule, without model:i
     //this->registerPort(this->model_in, "/" + this->portPrefix + "/model:i");
-    this->registerPort(this->predict_inout, "/" + this->portPrefix + "/predict:io");
+    this->registerPort(this->predict_inout, this->portPrefix + "/predict:io");
     this->predict_inout.setStrict();
-    this->registerPort(this->cmd_in, "/" + this->portPrefix + "/cmd:i");
+    this->registerPort(this->cmd_in, this->portPrefix + "/cmd:i");
 
-    this->registerPort(this->model_out, "/" + this->portPrefix + "/model:o");
-    this->registerPort(this->train_in, "/" + this->portPrefix + "/train:i");
+    this->registerPort(this->model_out, this->portPrefix + "/model:o");
+    this->registerPort(this->train_in, this->portPrefix + "/train:i");
     this->train_in.setStrict();
 }
 

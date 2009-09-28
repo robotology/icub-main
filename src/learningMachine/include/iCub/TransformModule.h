@@ -220,7 +220,7 @@ public:
      *
      * @param pp the default prefix used for the ports.
      */
-    TransformModule(std::string pp = "transform") : IMachineLearnerModule(pp) {
+    TransformModule(std::string pp = "/lm/transform") : IMachineLearnerModule(pp) {
         this->transformer = (ITransformer*) 0;
     }
     

@@ -11,6 +11,8 @@
 
 #include <iostream>
 
+#include <yarp/os/Port.h>
+
 #include "iCub/IEventListener.h"
 #include "iCub/TrainEvent.h"
 
@@ -27,6 +29,17 @@ namespace learningmachine {
 
 class TrainEventListener : virtual public IEventListener {
 protected:
+    /**
+     * The outgoing port for train events.
+     */
+    Port port;
+    
+    /**
+     * Resets the port and opens it at the specified name.
+     *
+     * @param portName the name of the port
+     */
+    void resetPort(std::string portName);
 
 public:
 
@@ -43,9 +56,12 @@ public:
     /*
      * Inherited from EventListener.
      */
-    void handle(TrainEvent& e) {
-        std::cout << e.toString() << std::endl;
-    }
+    void handle(TrainEvent& e);
+
+    /*
+     * Inherited from IConfig.
+     */
+    virtual bool configure(Searchable& config);
 
     /*
      * Inherited from IEventListener.

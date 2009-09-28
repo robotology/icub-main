@@ -53,10 +53,10 @@ void PredictModule::exitWithHelp(std::string error) {
 }
 
 void PredictModule::registerAllPorts() {
-    this->registerPort(this->model_in, "/" + this->portPrefix + "/model:i");
-    this->registerPort(this->predict_inout, "/" + this->portPrefix + "/predict:io");
+    this->registerPort(this->model_in, this->portPrefix + "/model:i");
+    this->registerPort(this->predict_inout, this->portPrefix + "/predict:io");
     this->predict_inout.setStrict();
-    this->registerPort(this->cmd_in, "/" + this->portPrefix + "/cmd:i");
+    this->registerPort(this->cmd_in, this->portPrefix + "/cmd:i");
 }
 
 void PredictModule::unregisterAllPorts() {

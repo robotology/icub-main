@@ -33,12 +33,12 @@ namespace learningmachine {
 class DispatcherManager {
 private:
     /**
-     * Cached pointer to instance of EventDispatcher.
+     * Cached pointer to (singleton) instance of EventDispatcher.
      */
     EventDispatcher* dispatcher;
     
     /**
-     * Cached pointer to instance of EventListenerFactory.
+     * Cached pointer to (singleton) instance of EventListenerFactory.
      */
     EventListenerFactory* factory;
 
