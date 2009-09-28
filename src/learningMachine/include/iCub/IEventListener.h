@@ -102,6 +102,11 @@ public:
     void setName(std::string name) {
         this->name = name;
     }
+    
+    /**
+     * Starts the IEventListener.
+     */
+    virtual void start() {}
 
     /**
      * Tells whether dispatching of events is enabled.

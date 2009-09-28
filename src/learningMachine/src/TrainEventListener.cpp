@@ -18,18 +18,21 @@ namespace learningmachine {
 
 
 TrainEventListener::TrainEventListener(std::string name) : IEventListener(name) {
-    //this->resetPort("/lm/event/train:o");
+    this->portName.assign("/lm/event/train:o");
 }
 
 TrainEventListener::~TrainEventListener() {
-}
-
-void TrainEventListener::resetPort(std::string name) {
     this->port.interrupt();
     this->port.close();
-    if (port.open(name.c_str()) != true) {
+}
+
+void TrainEventListener::resetPort(std::string portName) {
+    this->port.interrupt();
+    this->port.close();
+    if (port.open(portName.c_str()) != true) {
         std::string msg("could not register port ");
-        msg+=name;
+        std::cout << msg << std::endl;
+        msg+=portName;
         throw std::runtime_error(msg);
     }
 }
@@ -43,7 +46,8 @@ bool TrainEventListener::configure(Searchable& config) {
 
     // enable
     if(!config.findGroup("port").isNull()) {
-        this->resetPort(config.findGroup("port").get(0).asString().c_str());
+        this->resetPort(config.findGroup("port").get(1).asString().c_str());
+        success = true;
     }
 
     return success;

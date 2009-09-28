@@ -10,6 +10,7 @@
 #define __ICUB_TRAINEVENTLISTENER__
 
 #include <iostream>
+#include <string>
 
 #include <yarp/os/Port.h>
 
@@ -35,6 +36,11 @@ protected:
     Port port;
     
     /**
+     * The name for the outgoing port.
+     */
+    std::string portName;
+    
+    /**
      * Resets the port and opens it at the specified name.
      *
      * @param portName the name of the port
@@ -54,7 +60,7 @@ public:
     virtual ~TrainEventListener();
 
     /*
-     * Inherited from EventListener.
+     * Inherited from IEventListener.
      */
     void handle(TrainEvent& e);
 
@@ -62,6 +68,20 @@ public:
      * Inherited from IConfig.
      */
     virtual bool configure(Searchable& config);
+
+    /*
+     * Inherited from IEventListener.
+     */
+    virtual void start() {
+        this->resetPort(this->portName);
+    }
+
+    /*
+     * Inherited from IEventListener.
+     */
+    virtual std::string getInfo() { 
+        return this->IEventListener::getInfo() + " [port: " + this->port.where().toString().c_str() + "]"; 
+    }
 
     /*
      * Inherited from IEventListener.
