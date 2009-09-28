@@ -18,7 +18,7 @@ namespace learningmachine {
 
 
 TrainEventListener::TrainEventListener(std::string name) : IEventListener(name) {
-    this->resetPort("/lm/event/train:o");
+    //this->resetPort("/lm/event/train:o");
 }
 
 TrainEventListener::~TrainEventListener() {

@@ -45,9 +45,9 @@ void DatasetRecorder::feedSample(const Vector& input, const Vector& output) {
 }
 
 
-std::string DatasetRecorder::getStats() {
+std::string DatasetRecorder::getInfo() {
     std::ostringstream buffer;
-    buffer << this->IMachineLearner::getStats();
+    buffer << this->IMachineLearner::getInfo();
     buffer << "Filename: " << this->filename << std::endl;
     buffer << "Precision: " << this->precision << std::endl;
     buffer << "Sample Count: " << this->sampleCount << std::endl;

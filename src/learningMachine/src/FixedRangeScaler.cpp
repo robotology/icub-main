@@ -29,9 +29,9 @@ void FixedRangeScaler::updateScales() {
     this->offset = this->getLowerBoundIn() - (this->getLowerBoundOut() * this->scale);
 }
 
-std::string FixedRangeScaler::getStats() {
+std::string FixedRangeScaler::getInfo() {
     std::ostringstream buffer;
-    buffer << this->IScaler::getStats() << ", ";
+    buffer << this->IScaler::getInfo() << ", ";
     buffer << "In Bounds: [" << this->getLowerBoundIn() << "," << this->getUpperBoundIn() << "], ";
     buffer << "Out Bounds: [" << this->getLowerBoundOut() << "," << this->getUpperBoundOut() << "]";
     return buffer.str();

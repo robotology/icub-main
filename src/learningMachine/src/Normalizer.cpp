@@ -40,9 +40,9 @@ void Normalizer::update(double val) {
     }
 }
 
-std::string Normalizer::getStats() {
+std::string Normalizer::getInfo() {
     std::ostringstream buffer;
-    buffer << this->IScaler::getStats() << ", ";
+    buffer << this->IScaler::getInfo() << ", ";
     buffer << "Bounds: [" << this->getLowerBound() << "," << this->getUpperBound() << "], ";
     buffer << "Sample Extrema: [" << this->lowest << "," << this->highest << "]";
     return buffer.str();

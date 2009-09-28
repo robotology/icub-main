@@ -134,7 +134,7 @@ public:
     /*
      * Inherited from IMachineLearner.
      */
-    virtual std::string getStats();
+    virtual std::string getInfo();
 
     /*
      * Inherited from IMachineLearner.

@@ -60,7 +60,7 @@ public:
         return this->name;
     }
     
-    virtual std::string getStats() {
+    virtual std::string getInfo() {
         return this->getName();
     }
 };
@@ -115,9 +115,9 @@ public:
         return buffer.str();
     }
 
-    virtual std::string getStats() {
+    virtual std::string getInfo() {
         std::ostringstream buffer;
-        buffer << this->Kernel::getStats();
+        buffer << this->Kernel::getInfo();
         buffer << " gamma: " << this->getGamma();
         return buffer.str();
     }
@@ -215,7 +215,7 @@ public:
     /*
      * Inherited from IMachineLearner.
      */
-    virtual std::string getStats();
+    virtual std::string getInfo();
 
     /*
      * Inherited from IMachineLearner.

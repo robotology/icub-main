@@ -206,11 +206,12 @@ bool TransformModule::respond(const Bottle& cmd, Bottle& reply) {
                 success = true;
                 break;
 
+            case VOCAB4('i','n','f','o'): // information
             case VOCAB4('s','t','a','t'): // print statistics
                 { // prevent identifier initialization to cross borders of case
                 reply.add(Value::makeVocab("help"));
-                reply.addString("Transformer Stats: ");
-                reply.addString(this->getTransformer()->getStats().c_str());
+                reply.addString("Transformer Information: ");
+                reply.addString(this->getTransformer()->getInfo().c_str());
                 success = true;
                 break;
                 }

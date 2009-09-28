@@ -107,7 +107,7 @@ public:
      *
      * @return the statistics of the machine
      */
-    virtual std::string getStats();
+    virtual std::string getInfo();
 
     /**
      * Retrieve the name of this scaler.

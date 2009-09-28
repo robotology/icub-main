@@ -148,12 +148,12 @@ public:
     }
     
     /**
-     * Asks the learning machine to return a string containing statistics on 
+     * Asks the learning machine to return a string containing information on 
      * its operation so far.
      *
-     * @return the statistics of the machine
+     * @return the information on the machine
      */
-    virtual std::string getStats() { 
+    virtual std::string getInfo() { 
         return std::string("Type: ") + this->getName() + std::string("\n"); 
     }
 

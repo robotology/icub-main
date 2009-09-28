@@ -200,11 +200,12 @@ bool TrainModule::respond(const Bottle& cmd, Bottle& reply) {
                 success = true;
                 break;
 
+            case VOCAB4('i','n','f','o'): // information
             case VOCAB4('s','t','a','t'): // statistics
                 { // prevent identifier initialization to cross borders of case
                 reply.add(Value::makeVocab("help"));
-                reply.addString("Machine Stats: ");
-                reply.addString(this->getMachine()->getStats().c_str());
+                reply.addString("Machine Information: ");
+                reply.addString(this->getMachine()->getInfo().c_str());
                 success = true;
                 break;
                 }

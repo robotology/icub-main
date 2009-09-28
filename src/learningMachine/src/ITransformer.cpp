@@ -14,7 +14,7 @@ namespace iCub {
 namespace contrib {
 namespace learningmachine {
 
-std::string ITransformer::getStats() {
+std::string ITransformer::getInfo() {
     std::ostringstream buffer;
     buffer << "Type: " << this->getName() << ", ";
     buffer << "Sample Count: " << this->sampleCount << std::endl;

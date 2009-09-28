@@ -66,9 +66,9 @@ void IFixedSizeLearner::readBottle(Bottle& bot) {
     this->setDomainSize(bot.pop().asInt());
 }
 
-std::string IFixedSizeLearner::getStats() {
+std::string IFixedSizeLearner::getInfo() {
     std::ostringstream buffer;
-    buffer << this->IMachineLearner::getStats();
+    buffer << this->IMachineLearner::getInfo();
     buffer << "Domain size: " << this->getDomainSize() << std::endl;
     buffer << "Codomain size: " << this->getCoDomainSize() << std::endl;
     return buffer.str();

@@ -195,9 +195,9 @@ IMachineLearner* LSSVMAtlasLearner::create() {
     return new LSSVMAtlasLearner(this->getName(), this->machines.size(), this->defaultType, this->defaultKernel);
 }
 
-std::string LSSVMAtlasLearner::getStats() {
+std::string LSSVMAtlasLearner::getInfo() {
     std::ostringstream buffer;
-    buffer << this->IFixedSizeLearner::getStats();
+    buffer << this->IFixedSizeLearner::getInfo();
     buffer << "Machines: " << std::endl;
     for(int i = 0; i < this->machines.size(); i++) {
         buffer << "  [" << (i + 1) << "] ";

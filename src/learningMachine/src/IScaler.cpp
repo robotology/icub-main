@@ -21,7 +21,7 @@ namespace contrib {
 namespace learningmachine {
 
 
-std::string IScaler::getStats() {
+std::string IScaler::getInfo() {
     std::ostringstream buffer;
     buffer << "Type: " << this->getName() << ", ";
     buffer << "Offset: " << this->offset << ", ";

@@ -81,7 +81,7 @@ public:
      *
      * @return the statistics of the transformer
      */
-    virtual std::string getStats();
+    virtual std::string getInfo();
 
     /**
      * Forget everything and start over.

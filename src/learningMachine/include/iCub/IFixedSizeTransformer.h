@@ -117,7 +117,7 @@ public:
     /*
      * Inherited from ITransformer.
      */
-    virtual std::string getStats();
+    virtual std::string getInfo();
 
     /*
      * Inherited from ITransformer.

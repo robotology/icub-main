@@ -131,9 +131,9 @@ public:
     /*
      * Inherited from IMachineLearner.
      */
-    std::string getStats() {
+    std::string getInfo() {
         std::ostringstream buffer;
-        buffer << this->IFixedSizeLearner::getStats();
+        buffer << this->IFixedSizeLearner::getInfo();
         buffer << "Training Samples: " << this->sampleCount << std::endl;
         buffer << "Training Iterations: " << this->trainCount << std::endl;
         buffer << "Collected Samples: " << this->inputs.size() << std::endl;

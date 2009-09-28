@@ -43,9 +43,9 @@ void Standardizer::update(double val) {
     this->offset = (this->runningMean - this->mean) * this->scale;
 }
 
-std::string Standardizer::getStats() {
+std::string Standardizer::getInfo() {
     std::ostringstream buffer;
-    buffer << this->IScaler::getStats() << ", ";
+    buffer << this->IScaler::getInfo() << ", ";
     buffer << "Input Stats: " << this->runningMean << " +/- " << this->runningStd << ", ";
     buffer << "Desired: " << this->getDesiredMean() << " +/- " << this->getDesiredStd();
     return buffer.str();

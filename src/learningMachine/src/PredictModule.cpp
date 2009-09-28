@@ -137,11 +137,12 @@ bool PredictModule::respond(const Bottle& cmd, Bottle& reply) {
                 success = true;
                 break;
 
+            case VOCAB4('i','n','f','o'): // information
             case VOCAB4('s','t','a','t'): // print statistics
                 {
                 reply.addVocab(Vocab::encode("help"));
-                reply.addString("Machine Stats: ");
-                reply.addString(this->getMachine()->getStats().c_str());
+                reply.addString("Machine Information: ");
+                reply.addString(this->getMachine()->getInfo().c_str());
                 success = true;
                 break;
                 }

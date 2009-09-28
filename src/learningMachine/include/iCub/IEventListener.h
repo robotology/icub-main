@@ -130,10 +130,10 @@ public:
      * Asks the event listener to return a string containing information on 
      * its configuration so far.
      *
-     * @return the statistics of the machine
+     * @return the information on the IEventListener
      */
     virtual std::string getInfo() { 
-        return std::string("Type: ") + this->getName() + std::string("\n"); 
+        return this->getName() + (this->isEnabled() ? " (enabled)" : " (disabled)"); 
     }
 
 };

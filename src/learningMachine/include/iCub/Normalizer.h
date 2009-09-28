@@ -76,7 +76,7 @@ protected:
     /*
      * Inherited from IScaler
      */
-    virtual std::string getStats();
+    virtual std::string getInfo();
 
     /*
      * Inherited from IConfig.

@@ -114,9 +114,9 @@ IMachineLearner* RLSLearner::create() {
     return new RLSLearner(this->getName(), this->machines.size());
 }
 
-std::string RLSLearner::getStats() {
+std::string RLSLearner::getInfo() {
     std::ostringstream buffer;
-    buffer << this->IFixedSizeLearner::getStats();
+    buffer << this->IFixedSizeLearner::getInfo();
     buffer << "Sample Count: " << this->sampleCount << std::endl;
     buffer << "Machines: " << std::endl;
     for(int i = 0; i < this->machines.size(); i++) {

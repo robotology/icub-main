@@ -47,9 +47,9 @@ bool IFixedSizeTransformer::configure(Searchable& config) {
 }
 
 
-std::string IFixedSizeTransformer::getStats() {
+std::string IFixedSizeTransformer::getInfo() {
     std::ostringstream buffer;
-    buffer << this->ITransformer::getStats();
+    buffer << this->ITransformer::getInfo();
     buffer << "Domain size: " << this->getDomainSize() << ", ";
     buffer << "Codomain size: " << this->getCoDomainSize() << std::endl;
     return buffer.str();

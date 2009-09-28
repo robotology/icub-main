@@ -108,19 +108,19 @@ bool DispatcherManager::respond(const Bottle& cmd, Bottle& reply) {
                 break;
                 }
 
+            case VOCAB4('i','n','f','o'): // information
             case VOCAB4('s','t','a','t'): // statistics
             case VOCAB4('l','i','s','t'): // list
                 { // prevent identifier initialization to cross borders of case
                 reply.add(Value::makeVocab("help"));
                 std::ostringstream buffer;
-                buffer << "Event Manager Statistics (" << this->dispatcher->countListeners() << " listeners)";
+                buffer << "Event Manager Information (" << this->dispatcher->countListeners() << " listeners)";
                 reply.addString(buffer.str().c_str());
                 IEventListener* curlistener;
                 for(int i = 0; i < this->dispatcher->countListeners(); i++) {
                     curlistener = this->dispatcher->getListener(i);
                     buffer.str(""); // why isn't there a proper reset method?
-                    buffer << "  [" << (i + 1) << "] " << curlistener->getName();
-                    buffer << (curlistener->isEnabled() ? " (enabled)" : " (disabled)");
+                    buffer << "  [" << (i + 1) << "] " << curlistener->getInfo();
                     reply.addString(buffer.str().c_str());
                 }
                 

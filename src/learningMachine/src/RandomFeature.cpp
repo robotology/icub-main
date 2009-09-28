@@ -84,10 +84,10 @@ void RandomFeature::reset() {
     }
 }
 
-std::string RandomFeature::getStats() {
+std::string RandomFeature::getInfo() {
     
     std::ostringstream buffer;
-    buffer << this->IFixedSizeTransformer::getStats();
+    buffer << this->IFixedSizeTransformer::getInfo();
     buffer << " gamma: " << this->gamma;
     return buffer.str();
 }

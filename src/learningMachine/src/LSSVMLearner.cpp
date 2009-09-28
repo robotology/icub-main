@@ -136,13 +136,13 @@ IMachineLearner* LSSVMLearner::create() {
     return new LSSVMLearner(this->getName());
 }
 
-std::string LSSVMLearner::getStats() {
+std::string LSSVMLearner::getInfo() {
     std::ostringstream buffer;
-    buffer << this->IFixedSizeLearner::getStats();
+    buffer << this->IFixedSizeLearner::getInfo();
     buffer << "C: " << this->getC() << " | ";
     buffer << "Collected Samples: " << this->inputs.size() << " | ";
     buffer << "Training Samples: " << this->alphas.rows() << " | ";
-    buffer << "Kernel: " << this->kernel->getStats() << std::endl;
+    buffer << "Kernel: " << this->kernel->getInfo() << std::endl;
     buffer << "LOO: " << this->LOO.toString() << std::endl;
     return buffer.str();
 }

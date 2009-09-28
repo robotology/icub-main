@@ -108,7 +108,7 @@ public:
     /*
      * Inherited from IMachineLearner.
      */
-    std::string getStats();
+    std::string getInfo();
 
     /*
      * Inherited from IMachineLearner.

@@ -104,15 +104,15 @@ void ScaleTransformer::reset() {
     this->deleteAll(this->getDomainSize());
 }
 
-std::string ScaleTransformer::getStats() {
+std::string ScaleTransformer::getInfo() {
     
     std::ostringstream buffer;
-    buffer << this->IFixedSizeTransformer::getStats();
+    buffer << this->IFixedSizeTransformer::getInfo();
     buffer << "Scalers:" << std::endl;
     for(int i = 0; i < this->scalers.size(); i++) {
         buffer << "  [" << (i + 1) << "] ";
         if(!this->isEmptyScaler(i)) {
-            buffer << this->scalers[i]->getStats();
+            buffer << this->scalers[i]->getInfo();
         } else {
             buffer << "null";
         }
