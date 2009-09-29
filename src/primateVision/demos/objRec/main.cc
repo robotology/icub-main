@@ -93,7 +93,7 @@ int main( int argc, char **argv )
   // setting up images for opencv
   segImg = cvCreateImage(cvSize(320, 240), IPL_DEPTH_8U, 1); // manually
     
-  net = loadXML( "data/learnedModel.xml" ); //load the saved model
+  net = loadXML( "/home/andrew/src/iCub/src/primateVision/demos/objRec/data/learnedModel.xml" ); //load the saved model
 
   const ClusterVec& cl = net->clusters();  //configure the NN clusters
   for( nnfw::u_int i=0; i<cl.size(); i++ ){                
@@ -108,7 +108,7 @@ int main( int argc, char **argv )
 
 
 
-
+  int k=0;
   printf("begin..\n");
   //main event loop:
   while (1){
@@ -122,6 +122,8 @@ int main( int argc, char **argv )
 
       //DISPLAY:
       d_seg_dog->display(zdf_im_seg_dog);
+      d_seg_dog->save(zdf_im_seg_dog,"bottle"+QString::number(k)+".jpg");
+      k++;
 
 
 

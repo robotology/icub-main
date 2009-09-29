@@ -24,7 +24,7 @@
 //NDT:
 #define NDTX     1
 #define NDTY     1
-#define NDTSIZE  4 //4 or 8
+#define NDTSIZE  8 //4 or 8
 #define NDTEQ    1 //0
 
 //RANK:
@@ -233,8 +233,8 @@ void iCub::contrib::primateVision::ZDFServer::run(){
   if (motion){
     //initalise:
     motion_request.content().pix_y  = 0;
-    motion_request.content().pix_xl = 35;
-    motion_request.content().pix_xr = -35;
+    motion_request.content().pix_xl = 30;
+    motion_request.content().pix_xr = -30;
     motion_request.content().deg_r  = 0.0;
     motion_request.content().deg_p  = 0.0;
     motion_request.content().deg_y  = 0.0;
@@ -487,10 +487,9 @@ void iCub::contrib::primateVision::ZDFServer::run(){
 	//and centre of fovea on segmented surface
 	//update template to seg image centre
 	//Otherwise, keep previous template.
-	if (area>=min_area && area<=max_area && spread<=max_spread
-	    && out[tmp_y*psb_m+tmp_x]!=0 ){
+	if (area>=min_area && area<=max_area && spread<=max_spread){
 	  printf("UPDATING TEMPLATE..  area:%d spread:%d\n",area,spread);
-	  ippiCopy_8u_C1R(&fov_l[tmp_x + tmp_y*psb_m],
+	  ippiCopy_8u_C1R(&fov_l[(tmp_x+cog_x/3) + (tmp_y+cog_y/3)*psb_m],
 			  psb_m,temp,psb_t,tsize);
 	  waiting=0;
 	}
