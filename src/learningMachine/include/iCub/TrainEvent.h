@@ -58,6 +58,18 @@ public:
      * Inherited from IEvent.
      */
     std::string toString();
+    
+    Vector& getInput() {
+        return this->input;
+    }
+
+    Vector& getDesired() {
+        return this->desired;
+    }
+
+    Vector& getPredicted() {
+        return this->predicted;
+    }
 
 };
 

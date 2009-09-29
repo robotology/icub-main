@@ -9,13 +9,16 @@
 #ifndef __ICUB_TRAINEVENTLISTENER__
 #define __ICUB_TRAINEVENTLISTENER__
 
-#include <iostream>
 #include <string>
 
 #include <yarp/os/Port.h>
+#include <yarp/sig/Vector.h>
 
 #include "iCub/IEventListener.h"
 #include "iCub/TrainEvent.h"
+
+using namespace yarp::sig;
+using namespace yarp::os;
 
 namespace iCub {
 namespace contrib {
@@ -36,23 +39,23 @@ protected:
     Port port;
     
     /**
-     * The name for the outgoing port.
-     */
-    std::string portName;
-    
-    /**
      * Resets the port and opens it at the specified name.
      *
      * @param portName the name of the port
      */
     void resetPort(std::string portName);
+    
+    void vectorToBottle(const Vector& vec, Bottle& bot) {
+        for(int i = 0; i < vec.size(); i++) 
+            bot.addDouble(vec[i]);
+    }
 
 public:
 
     /**
      * Constructor
      */
-    TrainEventListener(std::string name = "train");
+    TrainEventListener(std::string name = "Train");
 
     /**
      * Destructor
@@ -73,7 +76,7 @@ public:
      * Inherited from IEventListener.
      */
     virtual void start() {
-        this->resetPort(this->portName);
+        this->resetPort("");
     }
 
     /*

@@ -7,8 +7,11 @@
  */
 
 #include <stdexcept>
+#include <sstream>
+#include <iostream>
 
 #include <yarp/os/Bottle.h>
+#include <yarp/os/Network.h>
 
 #include "iCub/TrainEventListener.h"
 
@@ -18,7 +21,6 @@ namespace learningmachine {
 
 
 TrainEventListener::TrainEventListener(std::string name) : IEventListener(name) {
-    this->portName.assign("/lm/event/train:o");
 }
 
 TrainEventListener::~TrainEventListener() {
@@ -27,18 +29,37 @@ TrainEventListener::~TrainEventListener() {
 }
 
 void TrainEventListener::resetPort(std::string portName) {
-    this->port.interrupt();
-    this->port.close();
-    if (port.open(portName.c_str()) != true) {
-        std::string msg("could not register port ");
-        std::cout << msg << std::endl;
-        msg+=portName;
-        throw std::runtime_error(msg);
+    // if empty portName, find first available standardly prefixed port
+    std::ostringstream buffer;
+    if(portName.empty()) {
+        int i = 1;
+        do {
+            // standard prefix + i
+            buffer.str(""); // clear buffer
+            buffer << "/lm/event/train" << i++;
+        } while(Network::queryName(buffer.str().c_str()).isValid());
+        portName = buffer.str();
+    }
+    
+    // check availability of new port
+    if(Network::queryName(portName.c_str()).isValid()) {
+        throw std::runtime_error(std::string("port already registered"));
+    } else {
+        this->port.interrupt();
+        this->port.close();
+        if (port.open(portName.c_str()) != true) {
+            throw std::runtime_error(std::string("could not register port"));
+        }
     }
 }
 
 void TrainEventListener::handle(TrainEvent& e) {
-    std::cout << e.toString() << std::endl;
+    Bottle b;
+    this->vectorToBottle(e.getInput(), b.addList());
+    this->vectorToBottle(e.getDesired(), b.addList());
+    this->vectorToBottle(e.getPredicted(), b.addList());
+    std::cout << "Writing bottle: " << b.toString().c_str() << std::endl;
+    this->port.write(b);
 }
 
 bool TrainEventListener::configure(Searchable& config) {
@@ -46,8 +67,8 @@ bool TrainEventListener::configure(Searchable& config) {
 
     // enable
     if(!config.findGroup("port").isNull()) {
-        this->resetPort(config.findGroup("port").get(1).asString().c_str());
         success = true;
+        this->resetPort(config.findGroup("port").get(1).asString().c_str());
     }
 
     return success;

@@ -9,6 +9,10 @@
 #ifndef __ICUB_PREDICTEVENTLISTENER__
 #define __ICUB_PREDICTEVENTLISTENER__
 
+#include <string>
+
+#include <yarp/os/Port.h>
+
 #include "iCub/IEventListener.h"
 #include "iCub/PredictEvent.h"
 
@@ -26,23 +30,51 @@ namespace learningmachine {
 
 class PredictEventListener : virtual public IEventListener {
 protected:
+    /**
+     * The outgoing port for train events.
+     */
+    Port port;
+    
+    /**
+     * Resets the port and opens it at the specified name.
+     *
+     * @param portName the name of the port
+     */
+    void resetPort(std::string portName);
 
 public:
     /**
      * Constructor
      */
-    PredictEventListener(std::string name = "predict");
+    PredictEventListener(std::string name = "Predict");
 
     /**
      * Destructor
      */
     virtual ~PredictEventListener();
 
+    /*
+     * Inherited from IEventListener.
+     */
+    void handle(TrainEvent& e);
 
     /*
-     * Inherited from EventListener.
+     * Inherited from IConfig.
      */
-    void handle(PredictEvent& e) {
+    virtual bool configure(Searchable& config);
+
+    /*
+     * Inherited from IEventListener.
+     */
+    virtual void start() {
+        this->resetPort("");
+    }
+
+    /*
+     * Inherited from IEventListener.
+     */
+    virtual std::string getInfo() { 
+        return this->IEventListener::getInfo() + " [port: " + this->port.where().toString().c_str() + "]"; 
     }
 
     /*
