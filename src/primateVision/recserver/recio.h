@@ -46,13 +46,13 @@ namespace iCub {
 	/** Constructor. */
 	RecServerParams() {
 	  listTag = BOTTLE_TAG_LIST + BOTTLE_TAG_INT;
-	  lenTag = 6;
+	  lenTag = 9;
 	}
 	/** Converstion to string of parameters for printing. */
 	string toString(){
 	  char buffer[50];
-	  sprintf(buffer, "%d %d %d %d %d %d",
-		  width,height,psb,mos_width,mos_height,focus);
+	  sprintf(buffer, "%d %d %d %d %d %d %f %f %f",
+		  width,height,psb,mos_width,mos_height,focus,baseline,pix2degX,pix2degY);
 	  return buffer;
 	}
 	int listTag;
@@ -65,6 +65,9 @@ namespace iCub {
 	int mos_height; /**< Server mosaic height. */
 	int psb; /**< Step width (in bytes) through image data. */
 	int focus; /**< Stores camera focus (in pixels). */
+	double baseline; /**< Head baseline (in meters). */
+	double pix2degX; /**< Conversion factor pixels to degrees X. */
+	double pix2degY; /**< Conversion factor pixels to degrees Y. */
 	//
 	
       } PACKED_FOR_NET;
@@ -82,13 +85,13 @@ namespace iCub {
 	/** Constructor. */
 	RecResultParams() {
 	  listTag = BOTTLE_TAG_LIST + BOTTLE_TAG_INT;
-	  lenTag = 11;
+	  lenTag = 14;
 	}
 	/** Converstion to string of parameters for printing. */
 	string toString(){
 	  char buffer[50];
-	  sprintf(buffer, "%d %d %d %d %f %f %f %f %f %f %f",
-		  lx,rx,ly,ry,deg_lx,deg_rx,deg_ly,deg_ry,head_r,head_p,head_y);
+	  sprintf(buffer, "%d %d %d %d %f %f %f %f %f %f %f %f %f",
+		  lx,rx,ly,ry,deg_lx,deg_rx,deg_ly,deg_ry,head_r,head_p,head_y,gaze3D_x,gaze3D_y,gaze3D_z);
 	  return buffer;
 	}
 	int listTag;
@@ -106,6 +109,9 @@ namespace iCub {
 	double head_r; /**< Current head roll angle reported by neck roll encoder. */
 	double head_p; /**< Current head pitch angle reported by neck pitch encoder. */
 	double head_y; /**< Current head yaw angle reported by neck yaw encoder. */
+	double gaze3D_x; /**< Estimate of 3D gaze point x, relative to head. */
+	double gaze3D_y; /**< Estimate of 3D gaze point y, relative to head. */
+	double gaze3D_z; /**< Estimate of 3D gaze point z, relative to head. */
 	//
 	
       } PACKED_FOR_NET;

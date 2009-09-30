@@ -34,6 +34,8 @@
 #define learnRate 2.0
 #define momentum 0.9
 
+#define SAVE 0
+
 using namespace nnfw;
 using namespace std;
 
@@ -76,15 +78,16 @@ int main( int argc, char **argv )
   IppiSize msize={m_size,m_size};
   IppiSize osize={320,240};
 
-  BufferedPort<Bottle> inPort_seg_dog;      // Create a port
-  inPort_seg_dog.open("/objRec/input/seg_dog");     // Give it a name on the network.
+  BufferedPort<Bottle> inPort_seg_dog; 
+  inPort_seg_dog.open("/objRec/input/seg_dog"); 
   Network::connect("/zdfserver/output/seg_dog" , "/objRec/input/seg_dog");
   Bottle *inBot_seg_dog;
   Ipp8u  *zdf_im_seg_dog;
 
   iCub::contrib::primateVision::Display *d_seg_dog  = new iCub::contrib::primateVision::Display(msize,m_psb,D_8U,"ZDF_SEG_DOG");
 
-  // setting up NN
+
+  // set up NN
   int seed =time(0);
   nnfw::Random::setSeed( seed); // initialise it with a random seed
   BufferedPort <Bottle> _targetPort;// create port that will connect with the simulator
@@ -109,6 +112,8 @@ int main( int argc, char **argv )
 
 
   int k=0;
+  double posX=0.0,posY=0.0,posZ=0.0;
+
   printf("begin..\n");
   //main event loop:
   while (1){
@@ -119,10 +124,16 @@ int main( int argc, char **argv )
 
     if (inBot_seg_dog!=NULL){
       zdf_im_seg_dog = (Ipp8u*) inBot_seg_dog->get(0).asBlob();
+      posX = inBot_seg_dog->get(1).asDouble();
+      posY = inBot_seg_dog->get(2).asDouble();
+      posZ = inBot_seg_dog->get(3).asDouble();
 
       //DISPLAY:
+      printf("(%f,%f,%f)\n",posX,posY,posZ);
       d_seg_dog->display(zdf_im_seg_dog);
+#if SAVE
       d_seg_dog->save(zdf_im_seg_dog,"bottle"+QString::number(k)+".jpg");
+#endif
       k++;
 
 

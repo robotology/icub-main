@@ -601,6 +601,11 @@ void iCub::contrib::primateVision::ZDFServer::run(){
 	Bottle& tmpBot_seg_dog = outPort_seg_dog.prepare();
 	tmpBot_seg_dog.clear();
 	tmpBot_seg_dog.add(Value::makeBlob( seg_dog, psb_m*m_size));
+	//target pos.. DOES NOT TAKE INTO ACCOUNT VIRTUAL SHIFT!!
+	//use rsp.pix2deg(S)!!!
+	tmpBot_seg_dog.addDouble(rec_res->gaze3D_x);
+	tmpBot_seg_dog.addDouble(rec_res->gaze3D_y);
+	tmpBot_seg_dog.addDouble(rec_res->gaze3D_z);
 	outPort_seg_dog.write();
 
 	//A yarpview compatible output port:

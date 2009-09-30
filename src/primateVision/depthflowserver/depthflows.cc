@@ -41,7 +41,6 @@ void iCub::contrib::primateVision::DepthflowServer::run(){
   int test_depth  = prop.findGroup("DEPTHFLOWS").find("TEST_DEPTH").asInt();
   int range       = prop.findGroup("DEPTHFLOWS").find("RANGE").asInt();
   int offset      = prop.findGroup("DEPTHFLOWS").find("OFFSET").asInt();
-  double baseline = prop.findGroup("DEPTHFLOWS").find("BASELINE").asDouble();
   int filterSize  = prop.findGroup("DEPTHFLOWS").find("FILTERSIZE").asInt();
   int filterCap   = prop.findGroup("DEPTHFLOWS").find("FILTERCAP").asInt();
   int windowSize  = prop.findGroup("DEPTHFLOWS").find("WINDOWSIZE").asInt();
@@ -64,6 +63,8 @@ void iCub::contrib::primateVision::DepthflowServer::run(){
   srcsize.width = rsp.width;
   srcsize.height = rsp.height;
   int psb_in = rsp.psb;
+  double baseline = rsp.baseline;
+
 
   RecResultParams *rec_res_l; 
   RecResultParams *rec_res_r; 
