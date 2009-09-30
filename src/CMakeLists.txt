@@ -173,7 +173,22 @@ ENDIF (ARTOOLKITPLUS_FOUND)
   ADD_SUBDIRECTORY(crossPowerSpectrumVergence)
   ADD_SUBDIRECTORY(fourierVision)
   ADD_SUBDIRECTORY(logPolar)
+  ADD_SUBDIRECTORY(rectification)
+
+  # cognitive architecture modules
+  ADD_SUBDIRECTORY(logPolarTransform)
+  ADD_SUBDIRECTORY(autoAssociativeMemory)
+  ADD_SUBDIRECTORY(demoAAM)
+
+  # utility modules
+  ADD_SUBDIRECTORY(imageSource)
+
+  # example module that is compliant with iCub configuration, coding, and documentation standards
+  ADD_SUBDIRECTORY(myModule)
+
+  # optical flow modules
   #ADD_SUBDIRECTORY(optFlow) //does not compile on LINUX yet
+
 
   # Kinematic library
   IF(GSL_FOUND AND IPOPT_FOUND)
@@ -189,12 +204,7 @@ ENDIF (ARTOOLKITPLUS_FOUND)
   # these modules will only be compiled by automated
   # compilation scripts
   IF (COMPILE_FOR_TESTING)
-    ADD_SUBDIRECTORY(rectification)
-    ADD_SUBDIRECTORY(logPolarTransform)
-    ADD_SUBDIRECTORY(myModule)
-    ADD_SUBDIRECTORY(imageSource)
-    ADD_SUBDIRECTORY(autoAssociativeMemory)
-    ADD_SUBDIRECTORY(demoAAM)
+
   ENDIF(COMPILE_FOR_TESTING)
 
 IF(OPENCV_FOUND AND IPOPT_FOUND)

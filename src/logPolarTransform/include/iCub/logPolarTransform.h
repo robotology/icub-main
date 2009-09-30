@@ -15,54 +15,54 @@
  *
  * \section parameters_sec Parameters
  * 
- * Command-line Parameters
+ * <b>Command-line Parameters</b>
  * 
- * The following key-value pairs can be specified as command-line parameters by prefixing -- to the key 
- * (e.g. --from file.ini. The value part can be changed to suit your needs; the default values are shown below. 
+ * The following key-value pairs can be specified as command-line parameters by prefixing \c -- to the key 
+ * (e.g. \c --from file.ini). The value part can be changed to suit your needs; the default values are shown below. 
  *
- * - from logPolarTransform.ini       
+ * - \c from \c logPolarTransform.ini   \n    
  *   specifies the configuration file
  *
- * - context LogPolarTransform/conf   
- *   specifies the sub-path from $ICUB_ROOT/icub/app to the configuration file
+ * - \c context \c LogPolarTransform/conf  \n
+ *   specifies the sub-path from \c $ICUB_ROOT/app to the configuration file
  *
- * - name LogPolarTransform          
+ * - \c name \c LogPolarTransform  \n        
  *   specifies the name of the module (used to form the stem of module port names)  
  *
- * Configuration File Parameters
+ * <b>Configuration File Parameters</b>
  *
  * The following key-value pairs can be specified as parameters in the configuration file 
  * (they can also be specified as command-line parameters if you so wish). 
  * The value part can be changed to suit your needs; the default values are shown below. 
  *   
- * - imageInputPort /image:i     
- *   specifies the input port name (this string will be prefixed by /LogPolarTransform/ 
+ * - \c imageInputPort \c /image:i   \n
+ *   specifies the input port name (this string will be prefixed by \c /LogPolarTransform
  *   or whatever else is specifed by the name parameter
  *
- * - imageOutputPort /image:o     
- *   specifies the input port name (this string will be prefixed by /LogPolarTransform/ 
+ * - \c imageOutputPort \c /image:o \n    
+ *   specifies the input port name (this string will be prefixed by \c /LogPolarTransform
  *   or whatever else is specifed by the name parameter
  *
- * - direction CARTESIAN2LOGPOLAR
+ * - \c direction \c CARTESIAN2LOGPOLAR \n
  *   specifies the direction of the tranform; the alternative direction is LOGPOLAR2CARTESIAN
  *   
- * - angles 252             
+ * - \c angles \c 252  \n           
  *   specifies the number of receptive fields per ring (i.e. the number of samples in the theta/angular dimension); 
  *   required for CARTESIAN2LOGPOLAR transform direction
  *
- * - rings 152             
+ * - \c rings \c 152 \n            
  *   specifies the number of rings (i.e. the number of samples in the r dimension);
  *   required for CARTESIAN2LOGPOLAR transform direction
  *
- * - xsize 320             
+ * - \c xsize \c 320 \n            
  *   specifies the number of samples in the X dimension; 
  *   required for LOGPOLAR2CARTESIAN transform direction
  *
- * - ysize 240             
+ * - \c ysize \c 240  \n          
  *   specifies the number samples in the Y dimension; 
  *   required for LOGPOLAR2CARTESIAN transform direction
  *
- * - overlap 0.5             
+ * - \c overlap \c 0.5     \n        
  *   specifies the relative overlap of each receptive field
  *
  * 
@@ -72,38 +72,38 @@
  *                      
  * \section portsc_sec Ports Created
  *
- *  Input ports
+ *  <b>Input ports</b>
  *
- *  - /logPolarTransform
+ *  - \c /logPolarTransform \n
  *    This port is used to change the parameters of the module at run time or stop the module
  *    The following commands are available
  * 
- *    help
- *    quit
+ *    help \n
+ *    quit \n
  *    set overlap <n>   ... set the overlap of the receptive fields
  *    (where <n> is an real number)
  *
- *    Note that the name of this port mirrors whatever is provided by the --name parameter value
+ *    Note that the name of this port mirrors whatever is provided by the \c  --name \c parameter \c value
  *    The port is attached to the terminal so that you can type in commands and receive replies.
  *    The port can be used by other modules but also interactively by a user through the yarp rpc directive, viz.: yarp rpc /LogPolarTransform
  *    This opens a connection from a terminal to the port and allows the user to then type in commands and receive replies.
  *       
  *  - /logPolarTransform/image:i
  *
- * Output ports
+ * <b>Output ports</b>
  *
- *  - /logPolarTransform
+ *  - \c /logPolarTransform
  *    see above
  *
- *  - /logPolarTransform/image:o
+ *  - \c /logPolarTransform/image:o
  *
- * Port types 
+ * <b>Port types </b>
  *
  * The functional specification only names the ports to be used to communicate with the module 
  * but doesn't say anything about the data transmitted on the ports. This is defined by the following code. 
  *
- * - BufferedPort<ImageOf<PixelRgb> >   imageInputPort;     
- * - BufferedPort<ImageOf<PixelRgb> >   imageOutputPort;       
+ * - \c BufferedPort<ImageOf<PixelRgb> >   \c imageInputPort;     
+ * - \c BufferedPort<ImageOf<PixelRgb> >   \c imageOutputPort;       
  *
  * \section in_files_sec Input Data Files
  *
@@ -115,7 +115,7 @@
  *
  * \section conf_file_sec Configuration Files
  *
- * logPolarTransform.ini  in $ICUB_ROOT/icub/app/logPolarTransform/conf
+ * \c logPolarTransform.ini  in \c $ICUB_ROOT/app/logPolarTransform/conf
  * 
  * \section tested_os_sec Tested OS
  *
@@ -123,16 +123,18 @@
  *
  * \section example_sec Example Instantiation of the Module
  * 
- * logPolarTransform --name logPolarTransform --context logPolarTransform/conf --from lp2cart.ini  
- * logPolarTransform --name logPolarTransform --context logPolarTransform/conf --from cart2lp.ini  
+ * <tt>logPolarTransform --name logPolarTransform --context logPolarTransform/conf --from lp2cart.ini  </tt>
+ * <tt>logPolarTransform --name logPolarTransform --context logPolarTransform/conf --from cart2lp.ini  </tt>
  *
- * \author David Vernon
+ * \author 
+ *
+ * David Vernon
  * 
  * Copyright (C) 2009 RobotCub Consortium
  * 
  * CopyPolicy: Released under the terms of the GNU GPL v2.0.
  * 
- * This file can be edited at src/logPolarTransform/src/logPolarTransform.h
+ * This file can be edited at $ICUB_ROOT/src/logPolarTransform/include/iCub/logPolarTransform.h
  * 
  */
 

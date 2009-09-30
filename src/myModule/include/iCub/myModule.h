@@ -25,41 +25,41 @@
  * 
  * Command-line Parameters
  * 
- * The following key-value pairs can be specified as command-line parameters by prefixing -- to the key 
- * (e.g. --from file.ini. The value part can be changed to suit your needs; the default values are shown below. 
+ * The following key-value pairs can be specified as command-line parameters by prefixing \c -- to the key 
+ * (e.g. \c --from file.ini. The value part can be changed to suit your needs; the default values are shown below. 
  *
- * - from myModule.ini       
+ * - \c from \c myModule.ini \n 
  *   specifies the configuration file
  *
- * - context myModule/conf   
- *   specifies the sub-path from $ICUB_ROOT/icub/app to the configuration file
+ * - \c context \c myModule/conf \n
+ *   specifies the sub-path from \c $ICUB_ROOT/icub/app to the configuration file
  *
- * - name myModule          
+ * - \c name \c myModule \n   
  *   specifies the name of the module (used to form the stem of module port names)  
  *
- * - robot icub             
+ * - \c robot \c icub \n          
  *   specifies the name of the robot (used to form the root of robot port names)
  *
  *
- * Configuration File Parameters
+ * <b> Configuration File Parameters </b>
  *
  * The following key-value pairs can be specified as parameters in the configuration file 
  * (they can also be specified as command-line parameters if you so wish). 
  * The value part can be changed to suit your needs; the default values are shown below. 
  *   
- * - myInputPort /image:i     
- *   specifies the input port name (this string will be prefixed by /myModule/ 
+ * - \c myInputPort \c /image:i \n    
+ *   specifies the input port name (this string will be prefixed by \c /myModule 
  *   or whatever else is specifed by the name parameter
  *
- * - myOutputPort /image:o     
- *   specifies the output port name (this string will be prefixed by /myModule/ 
+ * - \c myOutputPort \c /image:o \n  
+ *   specifies the output port name (this string will be prefixed by \c /myModule 
  *   or whatever else is specifed by the name parameter
  *
- * - cameraConfig icubEyes.ini
+ * - \c cameraConfig \c icubEyes.ini \n
  *   specifies the camera configuration file containing the intrinsic parameters of
  *   the left and right cameras
  *
- * - threshold 7             
+ * - \c threshold \c 7 \n           
  *   specifies the threshold value
  *
  * 
@@ -69,38 +69,38 @@
  *                      
  * \section portsc_sec Ports Created
  *
- *  Input ports
+ *  <b>Input ports</b>
  *
- *  - /myModule
- *    This port is used to change the parameters of the module at run time or stop the module
+ *  - \c /myModule \n
+ *    This port is used to change the parameters of the module at run time or stop the module. \n
  *    The following commands are available
  * 
- *    help
- *    quit
- *    set thr <n>   ... set the threshold for binary segmentation of the input RGB image
+ *    help \n
+ *    quit \n
+ *    set thr <n>   ... set the threshold for binary segmentation of the input RGB image 
  *    (where <n> is an integer number)
  *
- *    Note that the name of this port mirrors whatever is provided by the --name parameter value
+ *    Note that the name of this port mirrors whatever is provided by the \c --name parameter value
  *    The port is attached to the terminal so that you can type in commands and receive replies.
- *    The port can be used by other modules but also interactively by a user through the yarp rpc directive, viz.: yarp rpc /myModule
+ *    The port can be used by other modules but also interactively by a user through the yarp rpc directive, viz.: \c yarp \c rpc \c /myModule
  *    This opens a connection from a terminal to the port and allows the user to then type in commands and receive replies.
  *       
- *  - /myModule/image:i
+ *  - \c /myModule/image:i \n
  *
- * Output ports
+ * <b>Output ports</b>
  *
- *  - /myModule
+ *  - \c /myModule \n
  *    see above
  *
- *  - /myModule/image:o
+ *  - \c /myModule/image:o \n
  *
- * Port types 
+ * <b>Port types </b>
  *
  * The functional specification only names the ports to be used to communicate with the module 
  * but doesn't say anything about the data transmitted on the ports. This is defined by the following code. 
  *
- * - BufferedPort<ImageOf<PixelRgb> >   myInputPort;     
- * - BufferedPort<ImageOf<PixelRgb> >   myOutputPort;       
+ * BufferedPort<ImageOf<PixelRgb> >   myInputPort; \n 
+ * BufferedPort<ImageOf<PixelRgb> >   myOutputPort;       
  *
  * \section in_files_sec Input Data Files
  *
@@ -112,8 +112,8 @@
  *
  * \section conf_file_sec Configuration Files
  *
- * myModule.ini  in $ICUB_ROOT/icub/app/myModule/conf
- * icubEyes.ini  in $ICUB_ROOT/icub/app/myModule/conf
+ * \c myModule.ini  in \c $ICUB_ROOT/app/myModule/conf \n
+ * \c icubEyes.ini  in \c $ICUB_ROOT/app/myModule/conf
  * 
  * \section tested_os_sec Tested OS
  *
@@ -121,15 +121,17 @@
  *
  * \section example_sec Example Instantiation of the Module
  * 
- * myModule --name myModule --context myModule/conf --from myModule.ini --robot icub
+ * <tt>myModule --name myModule --context myModule/conf --from myModule.ini --robot icub</tt>
  *
- * \author David Vernon
+ * \author 
+ * 
+ * David Vernon
  * 
  * Copyright (C) 2009 RobotCub Consortium
  * 
  * CopyPolicy: Released under the terms of the GNU GPL v2.0.
  * 
- * This file can be edited at src/myModule/src/myModule.h
+ * This file can be edited at \c $ICUB_ROOT/src/myModule/include/iCub/myModule.h
  * 
  */
 

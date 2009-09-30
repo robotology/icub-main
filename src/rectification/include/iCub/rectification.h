@@ -12,11 +12,9 @@
  * with respect to the left image to compensate for differences in the positions of the principal points
  * in the left and right images.  
  * 
- * References.
- *
+ * References.\n
  * A. Dankers, N. Barnes, and A. Zelinsky, 2004.  Active Vision - Rectification and Depth Mapping, 
- * Proc. 2004 Australian Conference on Robotics and Automation. 
- *
+ * Proc. 2004 Australian Conference on Robotics and Automation. \n
  * A. Fusiello, E. Trucco, and A. Verri, 2000.  A Compact Algorithms for rectification of stereo pairs, 
  * Machine Vision and Applications, Vol. 12, pp. 16-22.
  *
@@ -27,119 +25,117 @@
  *
  * \section parameters_sec Parameters
  * 
- * Command-line Parameters
+ * Command-line \verbatim Parameters \endverbatim
  * 
- * The following key-value pairs can be specified as command-line parameters by prefixing -- to the key 
- * (e.g. --from file.ini. The value part can be changed to suit your needs; the default values are shown below. 
+ * The following key-value pairs can be specified as command-line parameters by prefixing \c -- to the key 
+ * (e.g. \c --from \c file.ini ). The value part can be changed to suit your needs; the default values are shown below. 
  *
- * - from rectification.ini       
+ * - \c from \c rectification.ini       \n
  *   specifies the configuration file
  *
- * - context rectification/conf   
- *   specifies the sub-path from $ICUB_ROOT/icub/app to the configuration file
+ * - \c context \c rectification/conf  \n 
+ *   specifies the sub-path from \c $ICUB_ROOT/icub/app to the configuration file
  *
- * - name rectification          
+ * - \c name \c rectification \n         
  *   specifies the name of the module (used to form the stem of module port names)  
  *
- * - robot icub             
+ * - \c robot \c icub  \n           
  *   specifies the name of the robot (used to form the root of robot port names)
  *
- * - cameraConfig iCubEyes.ini
+ * - \c cameraConfig \c iCubEyes.ini \n
  *
  *   This is a file with at least the intrinsic camera parameters for the left and right cameras,
- *   listed under to group headings [CAMERA_CALIBRATION_LEFT] and [CAMERA_CALIBRATION_RIGHT]
- *   The parameters that are required for rectification are fx, fy, cx, cy
+ *   listed under to group headings \c [CAMERA_CALIBRATION_LEFT] and \c [CAMERA_CALIBRATION_RIGHT]
+ *   The parameters that are required for rectification are \c fx, \c fy, \c cx, \c cy
  *
- *   [CAMERA_CALIBRATION_LEFT]
+ *   \c [CAMERA_CALIBRATION_LEFT]
  *   
- *   w 320
- *   h 240
- *   fx 225.131
- *   fy 226.75
- *   cx 174.222
- *   cy 141.757
- *   k1 -0.37542
- *   k2 0.165345
- *   p1 -0.000305031
- *   p2 0.00148445 
+ *   \c w \c 320 \n
+ *   \c h \c 240 \n
+ *   \c fx \c 225.131 \n
+ *   \c fy \c 226.75 \n
+ *   \c cx \c 174.222 \n
+ *   \c cy \c 141.757 \n
+ *   \c k1 \c -0.37542 \n
+ *   \c k2 \c 0.165345 \n
+ *   \c p1 \c -0.000305031 \n
+ *   \c p2\c  0.00148445 \n
  *   
- *   [CAMERA_CALIBRATION_RIGHT]
+ *   \c [CAMERA_CALIBRATION_RIGHT]
  * 
- *   w 320
- *   h 240
- *   fx 225.904
- *   fy 227.041
- *   cx 157.858
- *   cy 113.51
- *   k1 -0.377318
- *   k2 0.155149
- *   p1 -0.000726514
- *   p2 0.000317338
+ *   \c w \c 320 \n
+ *   \c h \c 240 \n
+ *   \c fx \c 225.904 \n
+ *   \c fy \c 227.041 \n
+ *   \c cx \c 157.858 \n
+ *   \c cy \c 113.51 \n
+ *   \c k1 \c -0.377318 \n
+ *   \c k2 \c 0.155149 \n
+ *   \c p1 \c -0.000726514 \n
+ *   \c p2 \c 0.000317338 \n
  * 
  * 
  * Module Configuration File Parameters
  *
- * The following key-value pairs can be specified as parameters in the configuration file e.g. rectification.ini 
+ * The following key-value pairs can be specified as parameters in the configuration file e.g. \c rectification.ini 
  * (they can also be specified as command-line parameters if you so wish). 
  * The value part can be changed to suit your needs; the default values are shown below. 
  *   
- * - leftImageInPort /leftImage:i     
- *   specifies the input port name (this string will be prefixed by /rectification/ 
- *   or whatever else is specifed by the name parameter
+ * - \c leftImageInPort \c /leftImage:i \n  
+ *   specifies the input port name 
  *
- * - rightImageInPort /rightImage:i     
- *   specifies the input port name (this string will be prefixed by /rectification/ 
- *   or whatever else is specifed by the name parameter
+ * - \c rightImageInPort \c /rightImage:i   \n  
+ *   specifies the input port name  
  *
- * - leftImageOutPort /leftImage:o    
- *   specifies the output port name (this string will be prefixed by /rectification/ 
- *   or whatever else is specifed by the name parameter
- *
- * - rightImageOutPort /rightImage:o     
- *   specifies the input port name (this string will be prefixed by /rectification/ 
- *   or whatever else is specifed by the name parameter
- *
- * - headPort /head     
- *   specifies the input port name (this string will be prefixed by /rectification/ 
- *   or whatever else is specifed by the name parameter
+ * - \c headPort \c /head:i   \n  
+ *   specifies the input port name for the head encoder values  
  * 
+ * - \c leftImageOutPort \c /leftImage:o   \n 
+ *   specifies the output port name for the left rectified image  
+ *
+ * - \c rightImageOutPort \c /rightImage:o   \n  
+ *   specifies the output port name for the right rectified image  
+ *
+ * All these port names will be prefixed by \c /rectification or whatever else is specifed by the name parameter.
+ *
  * \section portsa_sec Ports Accessed
  * 
- * - /icub/head/state:o
+ * - \c /icub/head/state:o \n
  *   This port is used to get the version and vergence angles (in degrees) from which 
  *   the azimuth (horizontal) angle of the left and right cameras can be derived.
+ *   It must be connect to the head input port (\c /rectification/head ) by the application.
  *                      
  * \section portsc_sec Ports Created
  *
  *  Input ports
  *
- * - /rectification
+ * - \c /rectification \n
  *   This port is used to change the parameters of the module at run time or stop the module
  *   The following commands are available
  * 
- *   help
+ *   help \n
  *   quit
  *
- *   Note that the name of this port mirrors whatever is provided by the --name parameter value
+ *   Note that the name of this port mirrors whatever is provided by the \c --name parameter value
  *   The port is attached to the terminal so that you can type in commands and receive replies.
- *   The port can be used by other modules but also interactively by a user through the yarp rpc directive, viz.: yarp rpc /rectification
+ *   The port can be used by other modules but also interactively by a user through the yarp rpc directive, viz.: \c yarp \c rpc \c /rectification
  *   This opens a connection from a terminal to the port and allows the user to then type in commands and receive replies.
  *       
- * - /rectification/leftImage:i 
+ * - \c /rectification/leftImage:i 
  *
- * - /rectification/rightImage:i
+ * - \c /rectification/rightImage:i
  *
- * - /rectification/head
- *   This port needs to be connected to /icub/head/state:o to get the version and vergence values
+ * - \c /rectification/head:i \n
+ *   This port needs to be connected to \c /icub/head/state:o to get the version and vergence values.
  *
  * Output ports
  *
- * - /rectification
+ * - \c /rectification \n
  *   see above
  *
- * - /rectification/leftImage:o 
+ * - \c /rectification/leftImage:o 
  *
- * - /rectification/rightImage:o
+ * - \c /rectification/rightImage:o
  *
  *
  * Port types 
@@ -147,11 +143,11 @@
  * The functional specification only names the ports to be used to communicate with the module 
  * but doesn't say anything about the data transmitted on the ports. This is defined by the following code. 
  *
- * - BufferedPort<ImageOf<PixelRgb> >   leftImageInPort;     
- * - BufferedPort<ImageOf<PixelRgb> >   rightImageInPort; 
- * - BufferedPort<ImageOf<PixelRgb> >   leftImageOutPort; 
- * - BufferedPort<ImageOf<PixelRgb> >   rightImageOutPort; 
- * - BufferedPort<Vector>               headPort;
+ * \c BufferedPort<ImageOf<PixelRgb> >   \c leftImageInPort;     \n
+ * \c BufferedPort<ImageOf<PixelRgb> >   \c rightImageInPort;    \n
+ * \c BufferedPort<ImageOf<PixelRgb> >   \c leftImageOutPort;    \n
+ * \c BufferedPort<ImageOf<PixelRgb> >   \c rightImageOutPort;   \n
+ * \c BufferedPort<Vector>               \c headPort;            \n
  *
  * \section in_files_sec Input Data Files
  *
@@ -163,8 +159,8 @@
  *
  * \section conf_file_sec Configuration Files
  *
- * rectification.ini  in $ICUB_ROOT/icub/app/rectification/conf
- * icubEyes.ini       in $ICUB_ROOT/icub/app/rectification/conf
+ * \c rectification.ini  in \c $ICUB_ROOT/app/rectification/conf \n
+ * \c icubEyes.ini       in \c $ICUB_ROOT/app/rectification/conf
  * 
  * \section tested_os_sec Tested OS
  *
@@ -172,15 +168,17 @@
  *
  * \section example_sec Example Instantiation of the Module
  * 
- * rectification --name rectification --context rectification/conf --from rectification.ini --robot icub  --configCamera icubEyes.ini
+ * <tt>rectification --name rectification --context rectification/conf --from rectification.ini --robot icub  --configCamera icubEyes.ini</tt>
  *
- * \author David Vernon
+ * \author 
+ *
+ * David Vernon
  * 
  * Copyright (C) 2009 RobotCub Consortium
  * 
  * CopyPolicy: Released under the terms of the GNU GPL v2.0.
  * 
- * This file can be edited at src/rectification/src/rectification.h
+ * This file can be edited at \c $ICUB_ROOT/src/rectification/include/iCub/rectification.h
  * 
  */
 

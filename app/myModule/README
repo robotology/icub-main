@@ -13,7 +13,7 @@ iCub Software Standards, addressing:
 Functionally, the module just converts an input image to a binary image based on 
 the supplied threshold.
 
-Please refer to the logPolar module documentation for details on the
+Please refer to the myModule module documentation for details on the
 various module parameters:
 http://eris.liralab.it/iCub/dox/html/group__icub__myModule.html
 
@@ -31,4 +31,4 @@ Note that the application has one port dependency:
 which stream images from the left iCub camera.
 
 David Vernon
-28/9/2009
+29/9/2009

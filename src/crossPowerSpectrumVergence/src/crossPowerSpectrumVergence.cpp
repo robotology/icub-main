@@ -22,7 +22,6 @@
  * 18/07/07  Started work on the development of a YARP version of this module   DV
  * 30/07/09  Migrated to the RFModule class to allow use of the resource finder DV
  * 17/08/09  Amended to comply with iCub Software Development Guidelines        DV
- * 24/08/09  Implemented Thread-based execution                                 DV
  */ 
  
 /* crossPowerSpectrum includes */

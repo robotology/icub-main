@@ -13,46 +13,46 @@
  *
  * \section parameters_sec Parameters
  * 
- * Command-line Parameters
+ * <b>Command-line Parameters</b>
  * 
  * The following key-value pairs can be specified as command-line parameters by prefixing -- to the key 
- * (e.g. --from file.ini. The value part can be changed to suit your needs; the default values are shown below. 
+ * (e.g. \c --from file.ini . The value part can be changed to suit your needs; the default values are shown below. 
  *
- * - from imageSource.ini       
- *   specifies the configuration file
+ * - \c from \c imageSource.ini \n     
+ *   The configuration file
  *
- * - context imageSource/conf   
- *   specifies the sub-path from $ICUB_ROOT/icub/app to the configuration file
+ * - \c context \c imageSource/conf \n
+ *   The sub-path from \c $ICUB_ROOT/icub/app to the configuration file
  *
- * - name imageSource          
- *   specifies the name of the module (used to form the stem of module port names)  
+ * - \c name \c imageSource \n
+ *   The name of the module (used to form the stem of module port names)  
  *
  *
- * Configuration File Parameters
+ * <b>Configuration File Parameters</b>
  *
  * The following key-value pairs can be specified as parameters in the configuration file 
  * (they can also be specified as command-line parameters if you so wish). 
  * The value part can be changed to suit your needs; the default values are shown below. 
  *   
- * - outputPort /image:o     
- *   specifies the complete output port name to which the image should be streamed
+ * - \c outputPort \c /image:o  \n  
+ *   The complete output port name to which the image should be streamed
  *
- * - imageFile image.ppm
+ * - \c imageFile \c image.ppm \n
  *   specifies the image filename
  *
- * - frequency 10             
+ * - \c frequency \c 10 \n         
  *   specifies the number of images to be streamed per second.  
  *   A low frequency avoids this module hogging the CPU; this is important if you are streaming several images
  *
- * - width 320             
+ * - \c width \c 320 \n           
  *   specifies the width of the image to be streamed.  
  *   The image read from the file is rescaled if necessary.
  *
- * - height 240             
+ * - \c height \c 240 \n           
  *   specifies the height of the image to be streamed.  
  *   The image read from the file is rescaled if necessary.
  *
- * - noise 20
+ * - \c noise \c 20 \n
  *   specifies the random noise level
  * 
  * \section portsa_sec Ports Accessed
@@ -61,40 +61,40 @@
  *                      
  * \section portsc_sec Ports Created
  *
- *  Input ports
+ *  <b>Input ports</b>
  *
- *  - /imageSource
- *    This port is used to change the parameters of the module at run time or stop the module
+ *  - \c /imageSource \n
+ *    This port is used to change the parameters of the module at run time or stop the module.
  *    The following commands are available
  * 
- *    help
- *    quit
+ *    help \n
+ *    quit \n
  *    set noise <n>   ... set the random noise level
- *    (where <n> is an integer number in the range 0-255)
+ *    (where <n> is an integer number in the range 0-255).
  *
- *    Note that the name of this port mirrors whatever is provided by the --name parameter value
+ *    Note that the name of this port mirrors whatever is provided by the \c --name parameter value
  *    The port is attached to the terminal so that you can type in commands and receive replies.
- *    The port can be used by other modules but also interactively by a user through the yarp rpc directive, viz.: yarp rpc /imageSource
+ *    The port can be used by other modules but also interactively by a user through the yarp rpc directive, viz.: \c yarp \c rpc \c /imageSource
  *    This opens a connection from a terminal to the port and allows the user to then type in commands and receive replies.
  *       
  *
- * Output ports
+ * <b>Output ports</b>
  *
- *  - /imageSource
+ *  - \c /imageSource \n
  *    see above
  *
- *  - /image:o
+ *  - \c /image:o
  *
- * Port types 
+ * <b>Port types </b>
  *
  * The functional specification only names the ports to be used to communicate with the module 
  * but doesn't say anything about the data transmitted on the ports. This is defined by the following code. 
  *
- * - BufferedPort<ImageOf<PixelRgb> >   outputPort;       
+ * - \c BufferedPort<ImageOf<PixelRgb> >   \c outputPort;       
  *
  * \section in_files_sec Input Data Files
  *
- * image.ppm, or whatever is specified as a argument for the --imageFile key-value. 
+ * image.ppm, or whatever is specified as a argument for the \c --imageFile \c key-value. 
  *
  * \section out_data_sec Output Data Files
  *
@@ -102,7 +102,7 @@
  *
  * \section conf_file_sec Configuration Files
  *
- * imageSource.ini  in $ICUB_ROOT/icub/app/imageSource/conf
+ * \c imageSource.ini  in \c $ICUB_ROOT/app/imageSource/conf
  * 
  * \section tested_os_sec Tested OS
  *
@@ -110,7 +110,7 @@
  *
  * \section example_sec Example Instantiation of the Module
  * 
- * imageSource --name imageSource --context imageSource/conf --from imageSource.ini 
+ * <tt>imageSource --name imageSource --context imageSource/conf --from imageSource.ini </tt>
  *
  * \author David Vernon
  * 

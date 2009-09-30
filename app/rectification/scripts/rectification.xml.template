@@ -81,7 +81,7 @@
 
 <connection>
   <from>/icub/head/state:o</from>
-  <to>/rectification/head</to>
+  <to>/rectification/head:i</to>
   <protocol>tcp</protocol>
 </connection>
 

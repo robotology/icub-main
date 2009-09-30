@@ -8,8 +8,7 @@
  *
  *
  * \section intro_sec Description
- * Determine the relative shift required to register one or more regions 
- * in two input images using the cross-power spectrum.
+ * Determine the relative shift required to register one or more regions in two input images using the cross-power spectrum.
  *
  * The cross-power spectrum of two images is defined as
  *
@@ -32,18 +31,22 @@
  *
  * The possibilities are: 
  *
- * 1 choose the largest maximum (number 0); 
+ * 1 choose the largest maximum (number 0); \n
  *   this is probably going to correspond to the object that occupies 
  *   the largest amount of the field of view (or largest energy in the image)
  *
- * 2 choose the maximum that is closest to the centre;
+ * 2 choose the maximum that is closest to the centre; \n
  *   the corresponds to the object that is closest to the current fixation distance
  *
- * 3 choose the maximum that is furthest to the LEFT of the cross-power spectrum; 
+ * 3 choose the maximum that is furthest to the LEFT of the cross-power spectrum; \n
  *   this corresponds to the object that is closest to the cameras
  *
  *
  * Option 3 is the only option currently implemented.
+ *
+ * The module outputs the disparity of the selected region, effectively the position of the corresponding maximum, 
+ * in normalized coordinates (-1, +1).  Typically, this output will be connected to the /dis port of the 
+ * controlGaze2 module (e.g. /icub/controlgaze/dis)
  *
  *
  * \section lib_sec Libraries
@@ -53,67 +56,83 @@
  *
  * \section parameters_sec Parameters
  * 
- * Command Line Parameters 
+ * <b>Command Line Parameters</b>
  *
- * The following key-value pairs can be specified as command-line parameters by prefixing -- to the key 
- * (e.g. --from file.ini. The value part can be changed to suit your needs; the default values are shown below. 
+ * The following key-value pairs can be specified as command-line parameters by prefixing \c -- to the key 
+ * (e.g. \c --from file.ini . The value part can be changed to suit your needs; the default values are shown below. 
  * 
- * - from crossPowerSpectrumVergence.ini       specifies the configuration file
- * - context crossPowerSpectrumVergence/conf   specifies the sub-path from $ICUB_ROOT/icub/app to the configuration file
- * - name crossPowerSpectrumVergence           specifies the name of the module (used to form the stem of module port names)
- * - robot icub                                specifies the name of the robot (used to form the root of robot port names)*
+ * - \c from \c crossPowerSpectrumVergence.ini \n
+ *   specifies the configuration file 
+ * 
+ * - \c context \c crossPowerSpectrumVergence/conf \n
+ *   specifies the sub-path from $ICUB_ROOT/icub/app to the configuration file
+ * 
+ * - \c name \c crossPowerSpectrumVergence \n
+ *   specifies the name of the module (used to form the stem of module port names)
  *
  *
- * Configuration File Parameters 
+ * <b>Configuration File Parameters</b>
  *
  * The following key-value pairs can be specified as parameters in the configuration file 
  * (they can also be specified as command-line parameters if you so wish). 
  * The value part can be changed to suit your needs; the default values are shown below. 
  * 
  * 
- * - std_dev                         20
+ * - \c std_dev                         \c 20 \n
  *   Standard deviation of the Gaussian mask used to apodize the input images; 
- *   the apodized images are s output to /left_image:o and /right_image:o
- * - number_of_maxima                 2   
- *   Number of local maxima (i.e. image regions a given disparity or depth) to consider in the final selection (typical value 2)
- * - threshold                       20   
- *   Threshold for detection of maxima: integer % of global maximum (typical value 20)
- * - filter_radius                    2   
- *   Radius in pixels of filter used to amplify local maxima (typical value 2)
- * - non_maxima_suppression_radius    5   
- *   Radius in pixels of the non-maxima suppression filter (typical value 2)
+ *   the apodized images are output to \c /left_image:o and \c /right_image:o
+ *
+ * - \c number_of_maxima                 \c 2 \n 
+ *   Number of local maxima (i.e. image regions a given disparity or depth) to consider in the final selection.
+ * 
+ * - \c threshold                       \c 20 \n
+ *   Threshold for detection of maxima: integer % of global maximum.
+ * 
+ * - \c filter_radius                    \c 2 \n 
+ *   Radius in pixels of filter used to amplify local maxima.
+ * 
+ * - \c non_maxima_suppression_radius    \c 5 \n
+ *   Radius in pixels of the non-maxima suppression filter.
  *
  *
- * Port names
+ * <b>Port names</b>
  *
- * - left_camera                      /left_camera:i
+ * - \c left_camera                      \c /left_camera:i \n
  *   Input from the left camera
- * - right_camera                     /right_camera:i
+ * 
+ * - \c right_camera                     \c /right_camera:i \n 
  *   Input from the right camera
- * - left_output                      /left_image:o
- *   Output of the Gaussian-apodized image from the left camera
- * - right_output                     /right_image:o
+ * 
+ * - \c left_output                      \c /left_image:o \n 
+ *   Output of the Gaussian-apodized image from the left camera 
+ * 
+ * - \c right_output                     \c /right_image:o \n 
  *   Output of the Gaussian-apodized image from the right camera
- * - cross-power_spectrum             /cross-power_spectrum:o
+ * 
+ * - \c cross-power_spectrum             \c /cross-power_spectrum:o \n 
  *   Output of the raw cross-power spectrum image
- * - filtered_cross-power_spectrum    /filtered_cross-power_spectrum:o
+ * 
+ * - \c filtered_cross-power_spectrum    \c /filtered_cross-power_spectrum:o \n 
  *   Output of the filtered cross-power spectrum with maxima enhancement, non-maxima suppression, and cross-hairs showing selected maxima 
- * - vergence_disparity               /vergence_disparity:o 
- *   The disparity, in normalized coordinates (-1,+1), of the object closest to the head
  *
+ * - \c vergence_disparity               \c /vergence_disparity:o  \n
+ *   The disparity, in normalized coordinates (-1,+1), of the object closest to the head.
+ *   Typically, this will be connected to the /dis port of the controlGaze2 module (e.g. /icub/controlgaze/dis)
  *
- * Port types 
+ * All these port names will be prefixed by \c /rectification or whatever else is specifed by the name parameter.
+ *
+ * <b>Port types</b>
  *
  * The functional specification only names the ports to be used to communicate with the module 
  * but doesn't say anything about the data transmitted on the ports. This is defined by the following code. 
  *
- * - BufferedPort<ImageOf<PixelRgb> >   left_camera        
- * - BufferedPort<ImageOf<PixelRgb> >   right_camera
- * - BufferedPort<ImageOf<PixelRgb> >   left_output        
- * - BufferedPort<ImageOf<PixelRgb> >   right_output         
- * - BufferedPort<ImageOf<PixelRgb> >   cross-power_spectrum        
- * - BufferedPort<ImageOf<PixelRgb> >   filtered_cross-power_spectrum        
- * - BufferedPort<Vector>               vergence_disparity;         
+ * \c BufferedPort<ImageOf<PixelRgb> >   left_camera     \n   
+ * \c BufferedPort<ImageOf<PixelRgb> >   right_camera    \n
+ * \c BufferedPort<ImageOf<PixelRgb> >   left_output     \n 
+ * \c BufferedPort<ImageOf<PixelRgb> >   right_output    \n   
+ * \c BufferedPort<ImageOf<PixelRgb> >   cross-power_spectrum \n       
+ * \c BufferedPort<ImageOf<PixelRgb> >   filtered_cross-power_spectrum \n        
+ * \c BufferedPort<Vector>               vergence_disparity;         
  *         
  * 
  * \section portsa_sec Ports Accessed
@@ -122,34 +141,40 @@
  *                      
  * \section portsc_sec Ports Created
  *
- *  Input ports
+ *  <b>Input ports</b>
  *
- *  - /crossPowerSpectrumVergence
- *    This port is used to change the parameters of the module at run time or stop the module
+ *  - \c /crossPowerSpectrumVergence \n
+ *    This port is used to change the parameters of the module at run time or stop the module.
  *    The following commands are available
  * 
- *    help
- *    quit
- *    set std <n>   ... set the standard deviation 
- *    set max <n>   ... set the number of maxima to detect
- *    set thr <n>   ... set the threshold for detection
+ *    help \n
+ *    quit \n
+ *    set std <n>   ... set the standard deviation \n 
+ *    set max <n>   ... set the number of maxima to detect \n
+ *    set thr <n>   ... set the threshold for detection \n
  *    (where <n> is an integer number)
  *
- *    Note that the name of this port mirrors whatever is provided by the --name parameter value
+ *    Note that the name of this port mirrors whatever is provided by the \c --name \c parameter \c value .
  *    The port is attached to the terminal so that you can type in commands and receive replies.
- *    You can also connect to it using yarp rpc /crossPowerSpectrumVergence 
+ *    You can also connect to it using \c yarp \c rpc \c /crossPowerSpectrumVergence 
  *
- *  - /crossPowerSpectrumVergence/left_camera:i
- *  - /crossPowerSpectrumVergence/right_camera:i
+ *  - \c /crossPowerSpectrumVergence/left_camera:i
+ * 
+ *  - \c /crossPowerSpectrumVergence/right_camera:i
  *
- * Output ports
+ * <b>Output ports</b>
  *
- * - /crossPowerSpectrumVergence/crossPowerSpectrumVergence
- * - /crossPowerSpectrumVergence/left_image:o
- * - /crossPowerSpectrumVergence/right_image:o
- * - /crossPowerSpectrumVergence/cross-power_spectrum:o
- * - /crossPowerSpectrumVergence/filtered_cross-power_spectrum:o
- * - /crossPowerSpectrumVergence/vergence_disparity:o
+ * - \c /crossPowerSpectrumVergence/crossPowerSpectrumVergence
+ * 
+ * - \c /crossPowerSpectrumVergence/left_image:o
+ * 
+ * - \c /crossPowerSpectrumVergence/right_image:o
+ * 
+ * - \c /crossPowerSpectrumVergence/cross-power_spectrum:o
+ *
+ * - \c /crossPowerSpectrumVergence/filtered_cross-power_spectrum:o
+ *
+ * - \c /crossPowerSpectrumVergence/vergence_disparity:o
  *
  * \section in_files_sec Input Data Files
  * None
@@ -160,7 +185,7 @@
  *
  * \section conf_file_sec Configuration Files
  *
- * crossPowerSpectrumVergence.ini
+ * \c crossPowerSpectrumVergence.ini
  * 
  * \section tested_os_sec Tested OS
  *
@@ -168,7 +193,7 @@
  *
  * \section example_sec Example Instantiation of the Module
  *
- * crossPowerSpectrumVergence  --context crossPowerSpectrumVergence/conf  --from crossPowerSpectrumVergence.ini
+ * <tt>crossPowerSpectrumVergence  --context crossPowerSpectrumVergence/conf  --from crossPowerSpectrumVergence.ini </tt>
  *
  * \author 
  *
@@ -178,7 +203,7 @@
  * 
  * CopyPolicy: Released under the terms of the GNU GPL v2.0.
  * 
- * This file can be edited at src/crossPowerSpectrumVergence/include/iCub/crossPowerSpectrumVergence.h
+ * This file can be edited at \c $ICUB_ROOT/src/crossPowerSpectrumVergence/include/iCub/crossPowerSpectrumVergence.h
  *
 **/
 
@@ -246,7 +271,6 @@ using namespace yarp::sig::draw;
 
 #include "iCub/fourierVision.h"
   
-
 class WorkThread : public Thread
 {
 private:

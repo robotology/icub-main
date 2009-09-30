@@ -130,7 +130,7 @@ bool Rectification::configure(yarp::os::ResourceFinder &rf)
    robotPortName         = "/";
    robotPortName        += getName(
                            rf.check("headPort", 
-                           Value("/head"),
+                           Value("/head:i"),
                            "Robot head encoder state port (string)").asString()
                            );
 

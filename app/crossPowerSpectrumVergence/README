@@ -4,9 +4,12 @@ This application demonstates the use of the crossPowerSpectrumVergence module.
  
 The crossPowerSpectrumVergence module takes images from the left and right 
 cameras, computes the vergence angle required so that the principal rays of the 
-two iCub camera intersect on a region of interest in the scent.  It then
-outputs this angle to the controlGaze2 module which effects the motor control 
-on the iCub head. Please refer to the crossPowerSpectrumVergence module documentation 
+two iCub camera intersect on a region of interest in the scene.  
+The module outputs the disparity of the selected region, effectively the position 
+of the corresponding maximum, in normalized coordinates (-1, +1).  Typically, this 
+output will be connected to the /dis port of the controlGaze2 module (e.g. /icub/controlgaze/dis)
+The controlGaze2 module which effects the motor control on the iCub head.
+Please refer to the crossPowerSpectrumVergence module documentation 
 for details on the various module parameters:
 http://eris.liralab.it/iCub/dox/html/group__icub__crossPowerSpectrumVergence.html
 
@@ -23,12 +26,16 @@ There is a sample application to do this camera calibration in
 $ICUB_ROOT/app/cameraCalibration.
 
 You should also make sure that the port dependencies are satisfied.
-Note that the application has two port dependencies:
+Note that the application has three port dependencies:
 
 /icub/cam/left 
 /icub/cam/right 
+/icub/head/state:o 
 
-which stream images from the iCub cameras.
+The first two stream images from the iCub cameras.
+The third is used stream the state of the encoders and is used by the rectification
+module to extract the extrinsic parameters of the cameras and, specificially, 
+to compute the current vergence of the cameras.
 
 The crossPowerSpectrumVergence.ini configuration file specifies several
 parameters that are required to effect stable vergence control.
