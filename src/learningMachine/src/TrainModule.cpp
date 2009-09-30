@@ -13,7 +13,7 @@
 
 #include "iCub/TrainModule.h"
 #include "iCub/EventDispatcher.h"
-
+#include "iCub/TrainEvent.h"
 
 namespace iCub {
 namespace contrib {
@@ -23,8 +23,6 @@ void TrainProcessor::onRead(PortablePair<Vector,Vector>& sample) {
     assert(this->getMachine() != (IMachineLearner *) 0);
     if(this->enabled) {
         try {
-            this->getMachine()->feedSample(sample.head, sample.body);
-            
             // Event Code
             if(EventDispatcher::instance().hasListeners()) {
                 Vector prediction = this->getMachine()->predict(sample.head);
@@ -32,6 +30,8 @@ void TrainProcessor::onRead(PortablePair<Vector,Vector>& sample) {
                 EventDispatcher::instance().raise(te);
             }
             // Event Code
+
+            this->getMachine()->feedSample(sample.head, sample.body);
 
         } catch(const std::exception& e) {
             std::cerr << "Error: " << e.what() << std::endl;

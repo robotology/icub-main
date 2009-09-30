@@ -52,8 +52,11 @@ void PredictEventListener::resetPort(std::string portName) {
     }
 }
 
-void PredictEventListener::handle(TrainEvent& e) {
-    //std::cout << e.toString() << std::endl;
+void PredictEventListener::handle(PredictEvent& e) {
+    Bottle b;
+    this->vectorToBottle(e.getInput(), b.addList());
+    this->vectorToBottle(e.getPredicted(), b.addList());
+    this->port.write(b);
 }
 
 bool PredictEventListener::configure(Searchable& config) {

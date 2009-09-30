@@ -29,7 +29,7 @@ void TrainEvent::visit(IEventListener& listener) {
 
 std::string TrainEvent::toString() {
     std::ostringstream buffer;
-    buffer << "Input: " << this->input.toString() << "; " << "  Desired: " << this->desired.toString() << "; " << "  Predicted: " << this->predicted.toString();
+    buffer << "Input: [" << this->input.toString() << "; " << "]  Desired: [" << this->desired.toString() << "; " << "]  Predicted: [" << this->predicted.toString() << "]";
     return buffer.str();
 }
 

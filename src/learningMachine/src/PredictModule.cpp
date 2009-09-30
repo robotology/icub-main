@@ -12,6 +12,8 @@
 #include <yarp/IOException.h>
 
 #include "iCub/PredictModule.h"
+#include "iCub/EventDispatcher.h"
+#include "iCub/PredictEvent.h"
 
 namespace iCub {
 namespace contrib {
@@ -26,6 +28,13 @@ bool PredictProcessor::read(ConnectionReader& connection) {
     }
     try {
         prediction = this->getMachine()->predict(input);
+
+        // Event Code
+        if(EventDispatcher::instance().hasListeners()) {
+            PredictEvent pe(input, prediction);
+            EventDispatcher::instance().raise(pe);
+        }
+        // Event Code
     } catch(const std::exception& e) {
         std::cerr << "Error: " << e.what() << std::endl;
         return false;

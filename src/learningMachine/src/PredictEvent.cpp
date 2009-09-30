@@ -6,6 +6,8 @@
  *
  */
 
+#include <sstream>
+
 #include "iCub/PredictEvent.h"
 
 namespace iCub {
@@ -13,7 +15,9 @@ namespace contrib {
 namespace learningmachine {
 
 
-PredictEvent::PredictEvent() {
+PredictEvent::PredictEvent(Vector input, Vector predicted) {
+    this->input = input;
+    this->predicted = predicted;
 }
 
 PredictEvent::~PredictEvent() {
@@ -22,6 +26,13 @@ PredictEvent::~PredictEvent() {
 void PredictEvent::visit(IEventListener& listener) {
     listener.handle(*this);
 }
+
+std::string PredictEvent::toString() {
+    std::ostringstream buffer;
+    buffer << "Input: [" << this->input.toString() << "]  Predicted: [" << this->predicted.toString() << "]";
+    return buffer.str();
+}
+
 
 } // learningmachine
 } // contrib

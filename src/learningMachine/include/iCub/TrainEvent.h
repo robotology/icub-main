@@ -35,12 +35,28 @@ class IEventListener;
 
 class TrainEvent : virtual public IEvent {
 protected:
+    /**
+     * Vector of inputs.
+     */
     Vector input;
+    
+    /**
+     * Vector of desired outputs.
+     */
     Vector desired;
+    
+    /**
+     * Vector of predicted outputs.
+     */
     Vector predicted;
+
 public:
     /**
      * Constructor
+     *
+     * @param input the vector of inputs
+     * @param desired the vector of desired outputs
+     * @param predicted the vector of predicted outputs
      */
     TrainEvent(Vector input, Vector desired, Vector predicted);
 
@@ -59,14 +75,26 @@ public:
      */
     std::string toString();
     
+    /**
+     * Accessor for the vector of inputs.
+     * @return a reference to the registered vector of inputs
+     */
     Vector& getInput() {
         return this->input;
     }
 
+    /**
+     * Accessor for the vector of inputs.
+     * @return a reference to the registered vector of inputs
+     */
     Vector& getDesired() {
         return this->desired;
     }
 
+    /**
+     * Accessor for the vector of inputs.
+     * @return a reference to the registered vector of inputs
+     */
     Vector& getPredicted() {
         return this->predicted;
     }

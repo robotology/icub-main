@@ -58,7 +58,6 @@ void TrainEventListener::handle(TrainEvent& e) {
     this->vectorToBottle(e.getInput(), b.addList());
     this->vectorToBottle(e.getDesired(), b.addList());
     this->vectorToBottle(e.getPredicted(), b.addList());
-    std::cout << "Writing bottle: " << b.toString().c_str() << std::endl;
     this->port.write(b);
 }
 

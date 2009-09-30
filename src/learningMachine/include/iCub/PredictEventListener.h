@@ -42,6 +42,11 @@ protected:
      */
     void resetPort(std::string portName);
 
+    void vectorToBottle(const Vector& vec, Bottle& bot) {
+        for(int i = 0; i < vec.size(); i++) 
+            bot.addDouble(vec[i]);
+    }
+
 public:
     /**
      * Constructor
@@ -56,7 +61,7 @@ public:
     /*
      * Inherited from IEventListener.
      */
-    void handle(TrainEvent& e);
+    void handle(PredictEvent& e);
 
     /*
      * Inherited from IConfig.
