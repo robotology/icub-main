@@ -142,7 +142,10 @@ protected:
     CartesianSolver *slv;
 
 public:
-    SolverModule() { }
+    SolverModule()
+    {
+        slv=NULL;
+    }
 
     virtual bool configure(ResourceFinder &rf)
     {                
@@ -187,7 +190,8 @@ public:
 
     virtual bool close()
     {
-        delete slv;
+        if (slv!=NULL)
+            delete slv;
 
         return true;
     }
