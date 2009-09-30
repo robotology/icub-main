@@ -282,8 +282,12 @@ static void handler (int) {
     }
 
     if (ct>3)
-        fprintf(stderr, "iCubInterface is already shutting down, this might take a while. If the application does not close you might have to kill it manually.\n");
-
+        fprintf(stderr, "iCubInterface is already shutting down, this might take a while\n");
+    if (ct>5)
+        {
+            fprintf(stderr, "Seriously killing the application\n");
+            exit(-1);
+        }
 }
 
 int main(int argc, char *argv[]) 
