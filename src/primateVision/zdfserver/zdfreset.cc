@@ -76,8 +76,8 @@ int main( int argc, char **argv )
 
   //initalise:
   motion_request.content().pix_y  = 0;
-  motion_request.content().pix_xl = 35;
-  motion_request.content().pix_xr = -35;
+  motion_request.content().pix_xl = 25;
+  motion_request.content().pix_xr = -25;
   motion_request.content().deg_r = 0.0;
   motion_request.content().deg_p = 0.0;
   motion_request.content().deg_y = 0.0;

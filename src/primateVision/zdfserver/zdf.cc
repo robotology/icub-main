@@ -25,12 +25,12 @@
 #define NDTX     1
 #define NDTY     1
 #define NDTSIZE  8 //4 or 8
-#define NDTEQ    1 //0
+#define NDTEQ    3 //0
 
 //RANK:
-#define RANKX    1 //2
+#define RANKX    1 //1 or 2
 #define RANKY    1
-#define RANKSIZE 9 //15
+#define RANKSIZE 9 //9 or 15
 //RANKSISE = (RANKX*2+1)*(RANKY*2+1) //e.g., 15 for (2,1) :)
 
 
@@ -69,8 +69,7 @@ void iCub::contrib::primateVision::ZDFServer::run(){
   params.smoothness_penalty        = prop.findGroup("ZDF").find("SMOOTHNESS_PENALTY").asInt();
   params.data_penalty              = prop.findGroup("ZDF").find("DATA_PENALTY").asInt();
   params.smoothness_3sigmaon2      = prop.findGroup("ZDF").find("SMOOTHNESS_3SIGMAON2").asInt();
-
-  int nclasses         = 2; //zd, not_zd
+  int radial_penalty   = prop.findGroup("ZDF").find("RADIAL_PENALTY").asInt();
   int m_size           = prop.findGroup("ZDF").find("M_SIZE").asInt(); //(square)
   int bland_dog_thresh = prop.findGroup("ZDF").find("BLAND_DOG_THRESH").asInt();
   double bland_prob    = prop.findGroup("ZDF").find("BLAND_PROB").asDouble();
@@ -89,8 +88,8 @@ void iCub::contrib::primateVision::ZDFServer::run(){
   int max_wait         = prop.findGroup("ZDFTRACK").find("RETURN_HOME").asInt();
   bool motion          = (bool) prop.findGroup("ZDFTRACK").find("MOTION").asInt();
   bool track_lock      = (bool) prop.findGroup("ZDFTRACK").find("TRACK_LOCK").asInt();
-  int radial_penalty   =  prop.findGroup("ZDF").find("RADIAL_PENALTY").asInt();
 
+  int nclasses         = 2; //zd, not_zd
   bool return_home = false;
   if (max_wait!=0){return_home = true;}
 
@@ -152,10 +151,10 @@ void iCub::contrib::primateVision::ZDFServer::run(){
   int sx,sy;
   Ipp32f max_v;
   Ipp32f max_t;
-  int pos_x = (srcsize.width  - msize.width)/2;
-  int pos_y = (srcsize.height - msize.height)/2;
-  int tmp_x = (msize.width  - tsize.width)/2;
-  int tmp_y = (msize.height - tsize.height)/2;
+  int mid_x = (srcsize.width  - msize.width)/2;
+  int mid_y = (srcsize.height - msize.height)/2;
+  int mid_x_m = (msize.width  - tsize.width)/2;
+  int mid_y_m = (msize.height - tsize.height)/2;
   int area;
   int cog_x = 0;
   int cog_y = 0;
@@ -233,8 +232,8 @@ void iCub::contrib::primateVision::ZDFServer::run(){
   if (motion){
     //initalise:
     motion_request.content().pix_y  = 0;
-    motion_request.content().pix_xl = 30;
-    motion_request.content().pix_xr = -30;
+    motion_request.content().pix_xl = 25;
+    motion_request.content().pix_xr = -25;
     motion_request.content().deg_r  = 0.0;
     motion_request.content().deg_p  = 0.0;
     motion_request.content().deg_y  = 0.0;
@@ -302,7 +301,7 @@ void iCub::contrib::primateVision::ZDFServer::run(){
 
   bool update = false;
 
-
+  bool acquire = false;
 
   //TCREATE
 
@@ -325,8 +324,18 @@ void iCub::contrib::primateVision::ZDFServer::run(){
 	rec_res = (RecResultParams*) inBot_ry->get(1).asBlob();
    	dpix_y = rec_res->ly-rec_res->ry;
 	
+	
+	if (acquire){
+	  ippiCopy_8u_C1R(&rec_im_ly[((srcsize.height-tisize.height)/2)*psb_in +
+				     (srcsize.width-tisize.width)/2],
+			  psb_in,temp,psb_t,tsize);	  
+	}
+
+
+
 
 	//**************************
+	//MAKE LEFT (LEAD) FOVEA
 	//find template in left image:
 	ippiCrossCorrValid_NormLevel_8u32f_C1R(&rec_im_ly[((srcsize.height-tisize.height)/2)*psb_in +
 							  (srcsize.width-tisize.width)/2],
@@ -347,19 +356,18 @@ void iCub::contrib::primateVision::ZDFServer::run(){
 	  tl_y = sy - trsize.height/2;
 	  track = true;
 	}
-	//Make left (LEAD) Fovea:
-	ippiCopy_8u_C1R(&rec_im_ly[(pos_y+tl_y)*psb_in + pos_x+tl_x],psb_in,fov_l,psb_m,msize);
-	
-	
+	ippiCopy_8u_C1R(&rec_im_ly[(mid_y+tl_y)*psb_in + mid_x+tl_x],psb_in,fov_l,psb_m,msize);
+		
 	
 
 	
 	//**************************
-	//always align right (TRAILING) fovea with left fovea:
+	//MAKE RIGHT (TRAILING) FOVEA
+	//always align right fovea with left fovea:
 	ippiCrossCorrValid_NormLevel_8u32f_C1R(&rec_im_ry[((srcsize.height-visize.height)/2+dpix_y)*psb_in +
 							  (srcsize.width-visize.width)/2],
 					       psb_in,visize,
-					       &fov_l[tmp_y*psb_m + tmp_x],
+					       &fov_l[mid_y_m*psb_m + mid_x_m],
 					       psb_m,tsize,
 					       res_v, psb_resv);  
 	ippiMaxIndx_32f_C1R(res_v,psb_resv,vrsize,&max_t,&sx,&sy);
@@ -372,12 +380,11 @@ void iCub::contrib::primateVision::ZDFServer::run(){
 	else{ 
 	  //stereo alignment found!!
 	  //this initiates verge motion if non-zero:
-	  del_x = sx-vrsize.width/2;
-	  del_y = sy-vrsize.height/2;
+	  del_x = sx - vrsize.width/2;
+	  del_y = sy - vrsize.height/2;
 	}
 	//Right (TRAILING) Fovea from centre:
-	ippiCopy_8u_C1R(&rec_im_ry[(pos_y+del_y+dpix_y)*psb_in+pos_x+del_x],psb_in,fov_r,psb_m,msize);
-
+	ippiCopy_8u_C1R(&rec_im_ry[(mid_y+del_y+dpix_y+del_y)*psb_in + mid_x+del_x],psb_in,fov_r,psb_m,msize);
 
 
 
@@ -385,6 +392,7 @@ void iCub::contrib::primateVision::ZDFServer::run(){
 
 	//we have foveas, aligned when possible.
 	//always do segmentation
+
 
 
 
@@ -409,18 +417,18 @@ void iCub::contrib::primateVision::ZDFServer::run(){
 	      
 	      if (RANK0_NDT1==0){
 		//use RANK:
-		//get_rank(c,fov_l,psb_m,rank1);
-		//get_rank(c,fov_r,psb_m,rank2);
-		get_rank(c,dl->get_dog_onoff(),dl->get_psb(),rank1);
-		get_rank(c,dr->get_dog_onoff(),dr->get_psb(),rank2);
+		get_rank(c,fov_l,psb_m,rank1);
+		get_rank(c,fov_r,psb_m,rank2);
+		//get_rank(c,dl->get_dog_onoff(),dl->get_psb(),rank1);
+		//get_rank(c,dr->get_dog_onoff(),dr->get_psb(),rank2);
 		cmp_res = cmp_rank(rank1,rank2);
 	      }
 	      else{ 
 		//use NDT:
-		//get_ndt(c,fov_l,psb_m,ndt1);
-		//get_ndt(c,fov_r,psb_m,ndt2);
-		get_ndt(c,dl->get_dog_onoff(),dl->get_psb(),ndt1);
-		get_ndt(c,dr->get_dog_onoff(),dr->get_psb(),ndt2);
+		get_ndt(c,fov_l,psb_m,ndt1);
+		get_ndt(c,fov_r,psb_m,ndt2);
+		//get_ndt(c,dl->get_dog_onoff(),dl->get_psb(),ndt1);
+		//get_ndt(c,dr->get_dog_onoff(),dr->get_psb(),ndt2);
 		cmp_res = cmp_ndt(ndt1,ndt2);
 
 	      }
@@ -482,17 +490,34 @@ void iCub::contrib::primateVision::ZDFServer::run(){
 
 	//If nice segmentation:
 	if (area>=min_area && area<=max_area && spread<=max_spread){
-	  //update template to seg image centre
+	  //update template towards segmentation CoG
 	  printf("area:%d spread:%d cogx:%d cogy:%d - UPDATING TEMPLATE\n",area,spread,cog_x,cog_y);
-	  cog_x = 0;
-	  cog_y = 0;
-	  ippiCopy_8u_C1R(&fov_l[(tmp_x+cog_x) + 
-				 (tmp_y+cog_y)*psb_m],
-			  psb_m,temp,psb_t,tsize);
+	  if (cog_x>1){
+	   cog_x = 1;
+	  }
+	  else if (cog_x<-1){
+	    cog_x = -1;
+	  }
+	  else{ cog_x = 0;}
+
+	  if (cog_y>1){
+	   cog_y = 1;
+	  }
+	  else if (cog_y<-1){
+	    cog_y = -1;
+	  }
+	  else{ cog_y = 0;}
+
+	  ippiCopy_8u_C1R(&fov_l[(mid_x_m+cog_x) + 
+				 (mid_y_m+cog_y)*psb_m],
+			  psb_m,temp_l,psb_t,tsize);
+	  ippiCopy_8u_C1R(&fov_r[(mid_x_m+cog_x) + 
+				 (mid_y_m+cog_y)*psb_m],
+			  psb_m,temp_r,psb_t,tsize);
 	  waiting=0;
 	  update = true;
 	}
-	//Otherwise, keep previous template.
+	//Otherwise, just keep previous template.
 	else{
 	  printf("area:%d spread:%d cogx:%d cogy:%d\n",area,spread,cog_x,cog_y);	
 	  waiting++;
@@ -505,11 +530,11 @@ void iCub::contrib::primateVision::ZDFServer::run(){
 	if (motion){
 
 	  if(waiting>=max_wait && return_home){
-	    printf("Returning home! (waiting %d >= max_wait %d)\n",waiting,max_wait);
+	    printf("Returning home! (waiting:%d >= max_wait:%d)\n",waiting,max_wait);
 	    //re-initalise:
 	    motion_request.content().pix_y  = 0;
-	    motion_request.content().pix_xl = 35;
-	    motion_request.content().pix_xr = -35;
+	    motion_request.content().pix_xl = 25;
+	    motion_request.content().pix_xr = -25;
 	    motion_request.content().deg_r  = 0.0;
 	    motion_request.content().deg_p  = 0.0;
 	    motion_request.content().deg_y  = 0.0;
