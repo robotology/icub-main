@@ -300,7 +300,7 @@ void iCub::contrib::primateVision::ZDFServer::run(){
   double rmax = sqrt((msize.width/2.0)*(msize.width/2.0) 
 		     +(msize.height/2.0)*(msize.height/2.0));
 
-
+  bool update = false;
 
 
 
@@ -368,17 +368,15 @@ void iCub::contrib::primateVision::ZDFServer::run(){
 	  //this prevents verge motion:
 	  del_x = 0;
 	  del_y = 0;
-	  //Right (TRAILING) Fovea from centre:
-	  ippiCopy_8u_C1R(&rec_im_ry[(pos_y+del_y+dpix_y)*psb_in+pos_x+del_x],psb_in,fov_r,psb_m,msize);
 	}
 	else{ 
 	  //stereo alignment found!!
 	  //this initiates verge motion if non-zero:
 	  del_x = sx-vrsize.width/2;
 	  del_y = sy-vrsize.height/2;
-	  //Right (TRAILING) fovea  aligned with left: 
-	  ippiCopy_8u_C1R(&rec_im_ry[(pos_y+del_y+dpix_y)*psb_in+pos_x+del_x],psb_in,fov_r,psb_m,msize);
 	}
+	//Right (TRAILING) Fovea from centre:
+	ippiCopy_8u_C1R(&rec_im_ry[(pos_y+del_y+dpix_y)*psb_in+pos_x+del_x],psb_in,fov_r,psb_m,msize);
 
 
 
@@ -400,9 +398,9 @@ void iCub::contrib::primateVision::ZDFServer::run(){
 	//**************************
 	//SPATIAL ZD probability map from fov_l and fov_r:
 	//perform RANK or NDT kernel comparison:		
-	for (int j=koffsety;j<=msize.height-koffsety-1;j++){
+	for (int j=koffsety;j<msize.height-koffsety;j++){
 	  c.y=j;
-	  for (int i=koffsetx;i<msize.width-koffsetx-1;i++){
+	  for (int i=koffsetx;i<msize.width-koffsetx;i++){
 	    c.x=i;
 	   
 	    //if either l or r textured at this retinal location: 
@@ -461,7 +459,6 @@ void iCub::contrib::primateVision::ZDFServer::run(){
 	ippiCopy_8u_C1R(m->get_class(),m->get_psb(),out,psb_m,msize);
 	//evaluate result:
 	getAreaCoGSpread(out,psb_m,msize, &area,&cog_x,&cog_y,&spread); 	
-	printf("area:%d spread:%d cogx:%d cogy:%d\n",area,spread,cog_x,cog_y);	
 
 	
 
@@ -488,14 +485,19 @@ void iCub::contrib::primateVision::ZDFServer::run(){
 	//update template to seg image centre
 	//Otherwise, keep previous template.
 	if (area>=min_area && area<=max_area && spread<=max_spread){
-	  printf("UPDATING TEMPLATE..  area:%d spread:%d\n",area,spread);
-	  ippiCopy_8u_C1R(&fov_l[(tmp_x+cog_x/3) + (tmp_y+cog_y/3)*psb_m],
+	  printf("area:%d spread:%d cogx:%d cogy:%d - UPDATING TEMPLATE\n",area,spread,cog_x,cog_y);
+	  cog_x = 0;
+	  cog_y = 0;
+	  ippiCopy_8u_C1R(&fov_l[(tmp_x+cog_x) + (tmp_y+cog_y)*psb_m],
 			  psb_m,temp,psb_t,tsize);
 	  waiting=0;
+	  update = true;
 	}
 	else{
 	  //keep previous template.
+	  printf("area:%d spread:%d cogx:%d cogy:%d\n",area,spread,cog_x,cog_y,cog_x,cog_y);	
 	  waiting++;
+	  update = false;
 	}
 	
 	
@@ -559,8 +561,10 @@ void iCub::contrib::primateVision::ZDFServer::run(){
 	Bottle& tmpBot_res_mask = outPort_res_mask.prepare();
 	tmpBot_res_mask.clear();
 	tmpBot_res_mask.add(Value::makeBlob( out, psb_m*m_size));
-	//tmpBot_res_mask.addInt(area);
-	//tmpBot_res_mask.addInt(track);
+	tmpBot_res_mask.addDouble(rec_res->gaze3D_x);
+	tmpBot_res_mask.addDouble(rec_res->gaze3D_y);
+	tmpBot_res_mask.addDouble(rec_res->gaze3D_z);
+	tmpBot_res_mask.addInt((int)update);
 	outPort_res_mask.write();
 	
 	Bottle& tmpBot_res_prob = outPort_res_prob.prepare();
@@ -606,6 +610,7 @@ void iCub::contrib::primateVision::ZDFServer::run(){
 	tmpBot_seg_dog.addDouble(rec_res->gaze3D_x);
 	tmpBot_seg_dog.addDouble(rec_res->gaze3D_y);
 	tmpBot_seg_dog.addDouble(rec_res->gaze3D_z);
+	tmpBot_seg_dog.addInt((int)update);
 	outPort_seg_dog.write();
 
 	//A yarpview compatible output port:
