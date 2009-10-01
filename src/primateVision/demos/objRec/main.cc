@@ -1,13 +1,13 @@
 /**
  * Client of zdfserver.  
  * 
- * Query if ZDF DOG output is classified.
- * Perhaps only query when cog close to origin.
- * Hence, perhaps re-instantiate drift towards CoG 
- * in ZDFServer?
- * If so, send commands to draw it in iCubSIM
+ * Classify ZDF DOG output.
+ * If confident, send commands to recognised objects in iCubSIM
  *
  */ 
+//OPENCV INCLUDES
+#include <cv.h>
+#include <highgui.h>
 #include <stdio.h>
 #include <stdlib.h>
 #include <string>
@@ -27,32 +27,34 @@
 #include "backpropagationalgo.h"
 #include "random.h"
 #include <algorithm>
-//OPENCV INCLUDES
-#include <cv.h>
-#include <highgui.h>
+
 
 #define learnRate 2.0
 #define momentum 0.9
 
 #define SAVE 0
+#define THRESHOLD 0.8
 
 using namespace nnfw;
 using namespace std;
-
 using namespace iCub::contrib::primateVision;
 
+//NN Functions
 void loadNet();
 void extractPixels(IplImage* img);
 
-//NN parameters
+//NN Parameters
 BiasedCluster *in, *hid, *out;
 DotLinker *in2hid, *hid2out, *in2out;
 BackPropagationAlgo* learnNet; 
 BaseNeuralNet* net;
-double pixelValNorm[10001][50];
+double pixelValNorm[3000][50];
 int numInputs, numOutputs, numHiddens, inc;
 IplImage* segImg = 0;
 IplImage* temp = 0;
+
+
+
 
 int main( int argc, char **argv )
 {
@@ -68,134 +70,154 @@ int main( int argc, char **argv )
   inPort_s.write(empty,server_response);
   ZDFServerParams zsp = server_response.content();
   std::cout << "ZDFServer Probe Response: " << zsp.toString() << std::endl;
- 
   int m_size = zsp.m_size;
   int m_psb  = zsp.m_psb;
-  int t_size = zsp.t_size;
-  int t_psb  = zsp.t_psb;
-
-  IppiSize tsize={t_size,t_size};
   IppiSize msize={m_size,m_size};
-  IppiSize osize={320,240};
 
+  //Get DOG output from ZDF Server:
   BufferedPort<Bottle> inPort_seg_dog; 
   inPort_seg_dog.open("/objRec/input/seg_dog"); 
   Network::connect("/zdfserver/output/seg_dog" , "/objRec/input/seg_dog");
   Bottle *inBot_seg_dog;
   Ipp8u  *zdf_im_seg_dog;
 
+  //Display ZDF DOG output that will be classified:
   iCub::contrib::primateVision::Display *d_seg_dog  = new iCub::contrib::primateVision::Display(msize,m_psb,D_8U,"ZDF_SEG_DOG");
+
+
 
 
   // set up NN
   int seed =time(0);
-  nnfw::Random::setSeed( seed); // initialise it with a random seed
-  BufferedPort <Bottle> _targetPort;// create port that will connect with the simulator
-  //Network::connect("/vtikha/target", "/icubSim/world"); //connect the output target to the simulator FOR NOW THIS CAN BE DONE MANUALLY
-
-  // setting up images for opencv
-  segImg = cvCreateImage(cvSize(320, 240), IPL_DEPTH_8U, 1); // manually
-    
+  nnfw::Random::setSeed(seed); // initialise the network with a random seed
   net = loadXML( "/home/andrew/src/iCub/src/primateVision/demos/objRec/data/learnedModel.xml" ); //load the saved model
-
   const ClusterVec& cl = net->clusters();  //configure the NN clusters
   for( nnfw::u_int i=0; i<cl.size(); i++ ){                
     cl[i]->inputs().zeroing();
     cl[i]->outputs().zeroing();                                
   }
-  
-
-
   loadNet();//configures the neural network
-  
+ 
+  //BufferedPort <Bottle> _targetPort;// create port that will connect with the simulator
+  //Network::connect("/vtikha/target", "/icubSim/world"); //connect the output target to the simulator FOR NOW THIS CAN BE DONE MANUALLY
 
 
+
+
+  //used to convert dog img to opencv:
+  segImg = cvCreateImage(cvSize(msize.width, msize.height), IPL_DEPTH_8U, 1);
+  //for resizing to 50x50:
+  temp = cvCreateImage(cvSize(50,50), IPL_DEPTH_8U , 1 );
 
   int k=0;
   double posX=0.0,posY=0.0,posZ=0.0;
+  bool update = false;
+
+
 
   printf("begin..\n");
   //main event loop:
   while (1){
     
 
+    //get data from zdf server:
     inBot_seg_dog = inPort_seg_dog.read(false);
-    
-
     if (inBot_seg_dog!=NULL){
       zdf_im_seg_dog = (Ipp8u*) inBot_seg_dog->get(0).asBlob();
       posX = inBot_seg_dog->get(1).asDouble();
       posY = inBot_seg_dog->get(2).asDouble();
       posZ = inBot_seg_dog->get(3).asDouble();
+      update = (bool) inBot_seg_dog->get(4).asInt();
 
+
+
+      //only classify if we know it's a nice segmentation:
+
+      if (update){
+	printf("UPDATE\n");
+	//put image in openCV container
+	ippiCopy_8u_C1R( zdf_im_seg_dog, m_psb, (Ipp8u*)segImg->imageData, segImg->widthStep, msize);   
+	//resize to 50x50:
+	cvResize(segImg, temp, CV_INTER_LINEAR);
+	
+
+	cvSaveImage("shit.jpg", temp);
+	
+
+
+	//**************************************
+	//CLASSIFY:
+	//set image as inputs to NN:
+	extractPixels(temp);
+	//run the NN:
+	RealVec outputs(out->numNeurons());
+	
+	for (int input = 0; input< (int)in->numNeurons(); input++ )
+	  in->setInput( input, pixelValNorm[input][0] ); 
+	
+	net->step();
+	outputs = out->outputs();	
+	cout << outputs[0] << endl;
+
+	if (outputs[0] > THRESHOLD){
+	  printf("BOTTLE\n");
+	}
+	else if (outputs[0] < (1.0-THRESHOLD) ){
+	  printf("FAGS\n");	
+	}
+	else{
+	  printf("NOT SURE\n");
+	}
+
+	printf("Location: (%f,%f,%f)\n",posX,posY,posZ);
+	
+	
+
+	//OUTPUT DISPLAY TO SIM:
+	//if (outputs[0] < THRESHOLD )
+	//label = 1....
+   
+	/*int label = 0;
+	  Bottle& bot = _targetPort.prepare();
+	  bot.clear();
+	  bot.addString ("world");
+	  bot.addString ("mk");
+	  bot.addString ("labl");
+	  bot.addDouble( nnfw::Random::flatReal ((Real) 0.01, (Real) 0.8));
+	  bot.addDouble( nnfw::Random::flatReal ((Real) -2.0, (Real) 2.0));
+	  bot.addDouble( nnfw::Random::flatReal ((Real) 0.0, (Real) 2.0));
+	  bot.addDouble( nnfw::Random::flatReal ((Real) 0.2, (Real) 2.0));
+	*/
+	
+	//bot.addInt(label);
+	//_targetPort.write();	
+	//**************************************
+ 
+      } //update
+      
+      
+      //always:
       //DISPLAY:
-      printf("(%f,%f,%f)\n",posX,posY,posZ);
       d_seg_dog->display(zdf_im_seg_dog);
 #if SAVE
-      d_seg_dog->save(zdf_im_seg_dog,"bottle"+QString::number(k)+".jpg");
+      d_seg_dog->save(zdf_im_seg_dog,"im"+QString::number(k)+".jpg");
 #endif
       k++;
-
-
-
-      //******************
-
-      //CLASSIFY:
-      printf("CHECKING CLASSIFICATION...\n");
-      
-      //put image in openCV container:
-      ippiCopy_8u_C1R(zdf_im_seg_dog, m_psb, (Ipp8u*)segImg->imageData, m_psb, msize);
-      //resize to 30x30:
-      temp = cvCreateImage(cvSize(30,30), 8, 1 );
-      cvResize(segImg, temp,CV_INTER_LINEAR);
-
-      //set image as inputs to NN:
-      extractPixels(temp);
-      
-      //run the NN:
-      RealVec outputs(out->numNeurons());
-      for (int input = 0; input< (int)in->numNeurons(); input++ )
-	in->setInput( input, pixelValNorm[input][0] ); 
-      
-      net->step();
-      outputs = out->outputs();
-      cout << outputs[0] << " " << endl;
-      
-      //OUTPUT DISPLAY TO SIM:
-      //if (outputs[0] < THRESHOLD )
-      //label = 1....
-      
-      /*int label = 0;
-	Bottle& bot = _targetPort.prepare();
-	bot.clear();
-	bot.addString ("world");
-	bot.addString ("mk");
-	bot.addString ("labl");
-	bot.addDouble( nnfw::Random::flatReal ((Real) 0.01, (Real) 0.8));
-	bot.addDouble( nnfw::Random::flatReal ((Real) -2.0, (Real) 2.0));
-	bot.addDouble( nnfw::Random::flatReal ((Real) 0.0, (Real) 2.0));
-	bot.addDouble( nnfw::Random::flatReal ((Real) 0.2, (Real) 2.0));
-      */
-      
-      //bot.addInt(label);
-      //_targetPort.write();	
-      
-      //**************************************
-      
-
-
-      printf("DONE.\n");
     }
-
-   
     if (inBot_seg_dog==NULL){
-     // printf("No Input\n");
+      // printf("No Input\n");
       usleep(5000);// don't blow out port
     }
-   
-  }
+
+  } //while
+
+
+
   //never here! 
 }
+
+
+
 
 void loadNet(){
   //load the net
@@ -216,26 +238,25 @@ void loadNet(){
   learnNet->setMomentum(momentum);
 }
 
+
 void extractPixels(IplImage* img){
-  
+
   int height,width;
   char path[100] ;
-  cout << "\nLOADING image\n"<< endl;
-  
   CvScalar s;
   for (int i=0; i<img->height; i++){
     for (int j=0; j<img->width; j++){	
 
       //get the (i,j) pixel intensity
       s=cvGet2D(img,i,j); 
-
       //convert to range 0.0->1.0:
       pixelValNorm[inc][0] = s.val[0]/255;		
-      //printf("intensity = %lf  %d\n", pixelValNorm[inc][0], inc);
+     // printf("intensity = %lf  %d\n", pixelValNorm[inc][0], inc);
       inc ++;
     }
   }
   inc = 0;
+printf("finished extracting pixels\n");
 }
 
 

@@ -480,22 +480,21 @@ void iCub::contrib::primateVision::ZDFServer::run(){
 	
 		
 
-	//if nice segmentation
-	//and centre of fovea on segmented surface
-	//update template to seg image centre
-	//Otherwise, keep previous template.
+	//If nice segmentation:
 	if (area>=min_area && area<=max_area && spread<=max_spread){
+	  //update template to seg image centre
 	  printf("area:%d spread:%d cogx:%d cogy:%d - UPDATING TEMPLATE\n",area,spread,cog_x,cog_y);
 	  cog_x = 0;
 	  cog_y = 0;
-	  ippiCopy_8u_C1R(&fov_l[(tmp_x+cog_x) + (tmp_y+cog_y)*psb_m],
+	  ippiCopy_8u_C1R(&fov_l[(tmp_x+cog_x) + 
+				 (tmp_y+cog_y)*psb_m],
 			  psb_m,temp,psb_t,tsize);
 	  waiting=0;
 	  update = true;
 	}
+	//Otherwise, keep previous template.
 	else{
-	  //keep previous template.
-	  printf("area:%d spread:%d cogx:%d cogy:%d\n",area,spread,cog_x,cog_y,cog_x,cog_y);	
+	  printf("area:%d spread:%d cogx:%d cogy:%d\n",area,spread,cog_x,cog_y);	
 	  waiting++;
 	  update = false;
 	}
