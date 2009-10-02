@@ -19,18 +19,18 @@
 
 
 //use NDT or RANK comparision?
-#define RANK0_NDT1 1 
+#define RANK0_NDT1 1 //0 (NDT FASTER and RANK a little too sensitive)
 
 //NDT:
 #define NDTX     1
 #define NDTY     1
-#define NDTSIZE  8 //4 or 8
-#define NDTEQ    3 //0
+#define NDTSIZE  4 //4 or 8: 4
+#define NDTEQ    0 //0
 
 //RANK:
-#define RANKX    1 //1 or 2
-#define RANKY    1
-#define RANKSIZE 9 //9 or 15
+#define RANKY    1 //1 or 2: 1
+#define RANKX    1  //1 or 2: 1
+#define RANKSIZE 9  //9 or 25: 9
 //RANKSISE = (RANKX*2+1)*(RANKY*2+1) //e.g., 15 for (2,1) :)
 
 
@@ -431,7 +431,7 @@ void iCub::contrib::primateVision::ZDFServer::run(){
 	      
 	    }
 	    else{
-	      //untextured, so set to bland prob (ZD):
+	      //untextured in both l & r, so set to bland prob (ZD):
 	      zd_prob_8u[j*psb_m+i] = (int)(bland_prob*255.0);
 	    } 
 
@@ -457,7 +457,7 @@ void iCub::contrib::primateVision::ZDFServer::run(){
 
 	
 	//DO MRF OPTIMISATION!!:
-	m->proc(fov_l,p_prob); //provide edge map and probability map
+	m->proc(fov_r,p_prob); //provide edge map and probability map
 	//cache for distribution:
 	ippiCopy_8u_C1R(m->get_class(),m->get_psb(),out,psb_m,msize);
 	//evaluate result:
@@ -475,8 +475,8 @@ void iCub::contrib::primateVision::ZDFServer::run(){
 	      seg_dog[j*psb_m + i]=0;
 	    }
 	    else{
-	      seg_dog[j*psb_m + i] = dl->get_dog_onoff()[j*psb_m + i];
-	      seg_im[j*psb_m + i] = fov_l[j*psb_m + i];
+	      seg_dog[j*psb_m + i] = dr->get_dog_onoff()[j*psb_m + i];
+	      seg_im[j*psb_m + i] = fov_r[j*psb_m + i];
 	    }
 	  }
 	}
@@ -488,11 +488,16 @@ void iCub::contrib::primateVision::ZDFServer::run(){
 	  //update templates towards segmentation CoG:
 	  printf("area:%d spread:%d cogx:%d cogy:%d - UPDATING TEMPLATE\n",area,spread,cog_x,cog_y);
 	  
-	  ippiCopy_8u_C1R(&fov_l[(mid_x_m+cog_x/2) + 
-				 (mid_y_m+cog_y/2)*psb_m],
+	  if (cog_x>0){cog_x=1;}  //take sign to drift template towards cog of segmentation
+	  if (cog_x<0){cog_x=-1;} //only want to DRIFT there cos a jump would otherwise be 
+	  if (cog_y>0){cog_y=1;}  //induced by a sudden increase in seg area.
+	  if (cog_y<0){cog_y=-1;}
+	  
+	  ippiCopy_8u_C1R(&fov_l[(mid_x_m+cog_x) + 
+				 (mid_y_m+cog_y)*psb_m],
 			  psb_m,temp_l,psb_t,tsize);
-	  ippiCopy_8u_C1R(&fov_r[(mid_x_m+cog_x/2) + 
-				 (mid_y_m+cog_y/2)*psb_m],
+	  ippiCopy_8u_C1R(&fov_r[(mid_x_m+cog_x) + 
+				 (mid_y_m+cog_y)*psb_m],
 			  psb_m,temp_r,psb_t,tsize);
 	  waiting=0;
 	  update = true;
@@ -507,7 +512,7 @@ void iCub::contrib::primateVision::ZDFServer::run(){
 	
 	
 	if(waiting>=max_wait){
-	  printf("Acquire requested! (waiting:%d >= max_wait:%d)\n",waiting,max_wait);
+	  printf("Acquiring new target (waiting:%d >= max_wait:%d)\n",waiting,max_wait);
 	  acquire = true;
 	  waiting = 0;
 	  if (motion && return_home){
@@ -533,7 +538,7 @@ void iCub::contrib::primateVision::ZDFServer::run(){
 	    //ALWAYS MOVE TO REDUCE VIRTUAL VERGE SHIFT AND TRACK OFFSET TO ZERO:
 	    motion_request.content().pix_xl = (int) (((double)tl_x)*track_gain);
 	    motion_request.content().pix_xr = (int) (((double)tr_x)*track_gain);
-	    motion_request.content().pix_y  = (int) (((double)tl_y)*track_gain);
+	    motion_request.content().pix_y  = (int) (((double)(tl_y+tr_y)/2.0)*track_gain);
 	    motion_request.content().relative = true; //relative move.
 	    motion_request.content().suspend  = 0; 
 	    
@@ -562,25 +567,7 @@ void iCub::contrib::primateVision::ZDFServer::run(){
 	
 	
 	//SEND RESULT IMS
-	Bottle& tmpBot_res_mask = outPort_res_mask.prepare();
-	tmpBot_res_mask.clear();
-	tmpBot_res_mask.add(Value::makeBlob( out, psb_m*m_size));
-	tmpBot_res_mask.addDouble(rec_res->gaze3D_x);
-	tmpBot_res_mask.addDouble(rec_res->gaze3D_y);
-	tmpBot_res_mask.addDouble(rec_res->gaze3D_z);
-	tmpBot_res_mask.addInt((int)update);
-	outPort_res_mask.write();
-	
-	Bottle& tmpBot_res_prob = outPort_res_prob.prepare();
-	tmpBot_res_prob.clear();
-	tmpBot_res_prob.add(Value::makeBlob( zd_prob_8u, psb_m*m_size));
-	outPort_res_prob.write();
-	
-	Bottle& tmpBot_fov_l = outPort_fov_l.prepare();
-	tmpBot_fov_l.clear();
-	tmpBot_fov_l.add(Value::makeBlob( fov_l, psb_m*m_size));
-	outPort_fov_l.write();
-	
+#if 0
 	Bottle& tmpBot_rec_l = outPort_rec_l.prepare();
 	tmpBot_rec_l.clear();
 	tmpBot_rec_l.add(Value::makeBlob( rec_im_ly, psb_in*srcsize.height));
@@ -591,6 +578,25 @@ void iCub::contrib::primateVision::ZDFServer::run(){
 	tmpBot_rec_r.add(Value::makeBlob( rec_im_ry, psb_in*srcsize.height));
 	outPort_rec_r.write();
 
+	Bottle& tmpBot_res_mask = outPort_res_mask.prepare();
+	tmpBot_res_mask.clear();
+	tmpBot_res_mask.add(Value::makeBlob( out, psb_m*m_size));
+	tmpBot_res_mask.addDouble(rec_res->gaze3D_x);
+	tmpBot_res_mask.addDouble(rec_res->gaze3D_y);
+	tmpBot_res_mask.addDouble(rec_res->gaze3D_z);
+	tmpBot_res_mask.addInt((int)update);
+	outPort_res_mask.write();
+#endif	
+	Bottle& tmpBot_res_prob = outPort_res_prob.prepare();
+	tmpBot_res_prob.clear();
+	tmpBot_res_prob.add(Value::makeBlob( zd_prob_8u, psb_m*m_size));
+	outPort_res_prob.write();
+	
+	Bottle& tmpBot_fov_l = outPort_fov_l.prepare();
+	tmpBot_fov_l.clear();
+	tmpBot_fov_l.add(Value::makeBlob( fov_r, psb_m*m_size));
+	outPort_fov_l.write();
+	
 	Bottle& tmpBot_fov_r = outPort_fov_r.prepare();
 	tmpBot_fov_r.clear();
 	tmpBot_fov_r.add(Value::makeBlob( fov_r, psb_m*m_size));
@@ -598,7 +604,7 @@ void iCub::contrib::primateVision::ZDFServer::run(){
 
 	Bottle& tmpBot_temp = outPort_temp.prepare();
 	tmpBot_temp.clear();
-	tmpBot_temp.add(Value::makeBlob( temp_l, psb_t*t_size));
+	tmpBot_temp.add(Value::makeBlob( temp_r, psb_t*t_size));
 	outPort_temp.write();
 
 	Bottle& tmpBot_seg_im = outPort_seg_im.prepare();

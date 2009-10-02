@@ -98,8 +98,9 @@ int main( int argc, char **argv )
   }
   loadNet();//configures the neural network
  
-  //BufferedPort <Bottle> _targetPort;// create port that will connect with the simulator
-  //Network::connect("/vtikha/target", "/icubSim/world"); //connect the output target to the simulator FOR NOW THIS CAN BE DONE MANUALLY
+  BufferedPort<Bottle> simPort;// create port that will connect with the simulator
+  simPort.open("/objRec/output/sim"); 
+  Network::connect("/objRec/output/sim", "/icubSim/world"); //connect the output target to the simulator FOR NOW THIS CAN BE DONE MANUALLY
 
 
 
@@ -113,7 +114,9 @@ int main( int argc, char **argv )
   double posX=0.0,posY=0.0,posZ=0.0;
   bool update = false;
 
-
+  const char *label;
+  const char *oldLabel;
+  oldLabel = "unknown";
 
   printf("begin..\n");
   //main event loop:
@@ -134,16 +137,11 @@ int main( int argc, char **argv )
       //only classify if we know it's a nice segmentation:
 
       if (update){
-	printf("UPDATE\n");
 	//put image in openCV container
 	ippiCopy_8u_C1R( zdf_im_seg_dog, m_psb, (Ipp8u*)segImg->imageData, segImg->widthStep, msize);   
 	//resize to 50x50:
 	cvResize(segImg, temp, CV_INTER_LINEAR);
 	
-
-	cvSaveImage("shit.jpg", temp);
-	
-
 
 	//**************************************
 	//CLASSIFY:
@@ -159,39 +157,34 @@ int main( int argc, char **argv )
 	outputs = out->outputs();	
 	cout << outputs[0] << endl;
 
+	label = "unknown";
 	if (outputs[0] > THRESHOLD){
-	  printf("BOTTLE\n");
+	  label = "bottle";
 	}
 	else if (outputs[0] < (1.0-THRESHOLD) ){
-	  printf("FAGS\n");	
-	}
-	else{
-	  printf("NOT SURE\n");
+	  label = "fags";
 	}
 
-	printf("Location: (%f,%f,%f)\n",posX,posY,posZ);
-	
-	
-
-	//OUTPUT DISPLAY TO SIM:
-	//if (outputs[0] < THRESHOLD )
-	//label = 1....
-   
-	/*int label = 0;
-	  Bottle& bot = _targetPort.prepare();
+	printf("%s, location: (%f,%f,%f)\n",label,posX,posY,posZ);
+		
+	if (oldLabel!=label){
+	  printf("UPDATING WORLD\n");
+	  //OUTPUT DISPLAY TO SIM:
+	  Bottle& bot = simPort.prepare();
 	  bot.clear();
 	  bot.addString ("world");
 	  bot.addString ("mk");
 	  bot.addString ("labl");
-	  bot.addDouble( nnfw::Random::flatReal ((Real) 0.01, (Real) 0.8));
-	  bot.addDouble( nnfw::Random::flatReal ((Real) -2.0, (Real) 2.0));
-	  bot.addDouble( nnfw::Random::flatReal ((Real) 0.0, (Real) 2.0));
-	  bot.addDouble( nnfw::Random::flatReal ((Real) 0.2, (Real) 2.0));
-	*/
-	
-	//bot.addInt(label);
-	//_targetPort.write();	
-	//**************************************
+	  bot.addDouble(0.025);//size
+	  bot.addDouble( nnfw::Random::flatReal ((Real) 0.0, (Real) 1.0));//x
+	  bot.addDouble( nnfw::Random::flatReal ((Real) 0.0, (Real) 1.0));//y
+	  bot.addDouble( nnfw::Random::flatReal ((Real) 0.0, (Real) 1.0));//z
+	  bot.addString(label);
+	  simPort.write();	
+	  //**************************************
+	  oldLabel=label;
+	}
+
  
       } //update
       
