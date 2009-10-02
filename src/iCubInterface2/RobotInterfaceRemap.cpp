@@ -269,6 +269,7 @@ bool RobotInterfaceRemap::initCart(const::string &file)
     if (valid)
     {
         CartesianController *cart=new CartesianController;
+        options.put("device", "cartesiancontrollerserver");
         if (cart->driver.open(options))
             {
                 cart->driver.view(cart->iwrapper);
