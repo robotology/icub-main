@@ -1,5 +1,15 @@
 // -*- mode:C++; tab-width:4; c-basic-offset:4; indent-tabs-mode:nil -*-
 
+/**
+* \author Lorenzo Natale
+*
+* Copyright (C) 2008 RobotCub Consortium
+*
+* CopyPolicy: Released under the terms of the GNU GPL v2.0.
+*
+* This file can be edited at src/iCubInterface2/main.cpp.
+*/ 
+
 #include "IRobotInterface.h"
 
 #include <yarp/os/Network.h>
@@ -273,7 +283,11 @@ public:
     RobotPartEntry();
     ~RobotPartEntry();
 
-    yarp::dev::IMultipleWrapper    *wrapper;
+    bool open(yarp::os::Property &p);
+    void close();
+
+    yarp::dev::PolyDriver driver;
+    yarp::dev::IMultipleWrapper *iwrapper;
     std::string         id;
     RobotNetwork        networks;
 
@@ -293,11 +307,39 @@ public:
     RobotPartEntry *find(const std::string &pName);
 };
 
+class CartesianController
+{
+public:
+    yarp::dev::PolyDriver driver;
+    yarp::dev::IMultipleWrapper *iwrapper;
+
+    void close()
+    {
+        if (iwrapper)
+            iwrapper->detachAll();
+
+        driver.close();
+    }
+    
+    CartesianController()
+    {
+        iwrapper=0;
+    }
+    ~CartesianController()
+    {
+        close();
+    }
+};
+
+typedef std::list<CartesianController *>::iterator CartesianControllersIt;
+typedef std::list<CartesianController *> CartesianControllers;
+
 class RobotInterfaceRemap: public IRobotInterface
 {
 protected:
     RobotNetwork  networks;
     RobotParts    parts;
+    CartesianControllers cartesianControllers;
 
     bool initialized;
     bool isParking;
@@ -326,6 +368,16 @@ public:
     * @return true/false on success failure
     */
     bool initialize(const std::string &file);
+
+    /**
+    * Initialize a cartesian controller.
+    */
+    bool initCart(const std::string &file);
+
+    /**
+    * Finalize cartesian controllers
+    */
+    bool fnitCart();
 
     /**
     * Initializes all robot devices. Reads list of devices to be initialized 

@@ -257,6 +257,7 @@ This file can be edited at src/iCubInterface2/main.cpp.
 
 #include "RobotInterface.h" 
 #include "RobotInterfaceRemap.h"
+#include "ControlBoardWrapper2.h"
 
 using namespace yarp::os;
 using namespace yarp::dev;  
@@ -303,7 +304,11 @@ int main(int argc, char *argv[])
     #ifdef USE_ICUB_MOD
     yarp::dev::DriverCollection dev;
     #endif
-    
+
+    //add local driver to factory
+    yarp::dev::Drivers::factory().add(new DriverCreatorOf<ControlBoardWrapper2>("controlboardwrapper2",
+                                                                      "",
+                                                                      "ControlBoardWrapper2"));
  //   Property p;
 
  //   p.fromCommand(argc, argv);   
@@ -332,6 +337,8 @@ int main(int argc, char *argv[])
     rf.setDefaultConfigFile("iCubInterface.ini");
     rf.configure("ICUB_ROOT", argc, argv);
     ConstString configFile=rf.findFile("config");
+    ConstString cartRightArm=rf.findFile("cartRightArm");
+    ConstString cartLeftArm=rf.findFile("cartLeftArm");
 
     std::string filename;
     bool remap=false;
@@ -431,6 +438,22 @@ int main(int argc, char *argv[])
 
     char c = 0;    
     ACE_OS::printf("Driver instantiated and running (silently)\n");
+
+    ACE_OS::printf("Checking if you have requested instantiation of cartesian controller\n");
+    bool someCartesian=false;
+    if (cartRightArm!="")
+    {
+        i->initCart(cartRightArm.c_str());
+    }
+    if (cartLeftArm!="")
+    {
+        i->initCart(cartLeftArm.c_str());
+    }
+    if (!someCartesian)
+    {
+       ACE_OS::printf("Nothing found\n");
+    }
+
     while (!terminee.mustQuit()&&!terminated) 
     {
         Time::delay(2); 
@@ -438,6 +461,11 @@ int main(int argc, char *argv[])
 
 	ACE_OS::printf("Received a quit message\n");
     
+    if (someCartesian)
+    {
+        i->fnitCart();
+    }
+
     i->park(); //default behavior is blocking (safer)
     i->finalize();  
     ri=0;  //tell signal handler interface is not longer valid (do this before you destroy i ;)

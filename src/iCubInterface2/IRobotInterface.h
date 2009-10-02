@@ -12,6 +12,10 @@ class IRobotInterface
 public:
     virtual ~IRobotInterface(){};
     virtual bool initialize(const std::string &file)=0;
+    virtual bool initCart(const std::string &file)
+        {return true;}
+    virtual bool fnitCart()
+        {return true;}
 
     /**
     * Closes all robot devices.

@@ -3,6 +3,8 @@
 #include "RobotInterfaceRemap.h"
 #include "extractPath.h"
 
+#include <sstream>
+
 #include <yarp/os/Thread.h>
 
 #include "ControlBoardWrapper.h"
@@ -12,8 +14,6 @@ using namespace yarp::dev;
 using namespace yarp::os;
 using namespace yarp;
 using namespace std;
-
-
 
 inline void printNoDeviceFound(const char *str)
 {
@@ -39,12 +39,35 @@ RobotNetworkEntry *RobotNetwork::find(const string &id)
 
 RobotPartEntry::RobotPartEntry()
 {
-    wrapper=0;
+    iwrapper=0;
 }
 
 RobotPartEntry::~RobotPartEntry()
 {
+    close();
+}
 
+bool RobotPartEntry::open(Property &p)
+{
+    driver.open(p);
+    if (!driver.isValid())
+        return false;
+
+    driver.view(iwrapper);
+
+    if (iwrapper)
+        return true;
+    else
+        return false;
+}
+
+void RobotPartEntry::close()
+{
+    if (driver.isValid())
+    {
+        iwrapper=0;
+        driver.close();
+    }
 }
 
 RobotPartEntry *RobotParts::find(const string &pName)
@@ -207,6 +230,69 @@ bool RobotInterfaceRemap::initialize(const std::string &inifile)
 
 }
 
+bool RobotInterfaceRemap::initCart(const::string &file)
+{
+    Property options;
+    options.fromConfigFile(file.c_str());
+
+    int nDrivers=options.findGroup("GENERAL").find("NumberOfDrivers").asInt();
+
+    std::cout<<"Initializing controller with parts: ";
+    yarp::dev::PolyDriverList plist;
+    bool valid=true;
+    for(int k=0; k<nDrivers; k++)
+    {
+        std::string drGroup;
+        std::ostringstream tmpStr;
+        tmpStr << k;
+        drGroup=std::string("DRIVER_").append(tmpStr.str());
+        std::string part=options.findGroup(drGroup.c_str()).find("Key").asString().c_str();
+
+        std::cout<<part;
+        std::cout<<",";
+    
+        RobotPartEntry *robPart=parts.find(part);
+        if (!robPart)
+        {
+             plist.push(&robPart->driver, part.c_str());
+        }        
+        else
+        {
+            valid=false;
+        }
+    }
+    
+    std::cout<<"\n";
+    
+    if (valid)
+    {
+        CartesianController *cart=new CartesianController;
+        cart->driver.open(options);
+        cart->driver.view(cart->iwrapper);
+        cart->iwrapper->attachAll(plist);
+        cartesianControllers.push_back(cart);
+    }
+    else
+    {   
+        std::cerr<<"Sorry, could not detect all devices required by controller\n";
+        return false;
+    }
+    
+    return true;
+}
+
+bool RobotInterfaceRemap::fnitCart()
+{
+    CartesianControllersIt it=cartesianControllers.begin();
+
+    while(it!=cartesianControllers.end())
+    {
+        (*it)->close();
+        it++;
+    }
+    return true;
+}
+
 bool RobotInterfaceRemap::initialize10(const std::string &inifile)
 {
     ACE_OS::fprintf(stderr, "Going to initialize the robot with a file\n");
@@ -242,7 +328,7 @@ bool RobotInterfaceRemap::initialize10(const std::string &inifile)
     for(n=0;n<nnets;n++)
     {
         std::string netid=nets.get(n).asString().c_str();
-         RobotNetworkEntry *netEntry;
+        RobotNetworkEntry *netEntry;
         if (robotOptions.check(netid.c_str()))
         {
             netEntry=new RobotNetworkEntry;
@@ -276,13 +362,11 @@ bool RobotInterfaceRemap::initialize10(const std::string &inifile)
                         RobotPartEntry *partEntry=new RobotPartEntry;
                         partEntry->id=partsList->get(p).asString().c_str();
 
-                        ControlBoardWrapper *wp=new ControlBoardWrapper;
-                        if (wp->open(tmpProp))
+                        if (partEntry->open(tmpProp))
                         {
                             PolyDriverList p;
                             p.push(&netEntry->driver, "");
-                            wp->attachAll(p);
-                            partEntry->wrapper=wp;
+                            partEntry->iwrapper->attachAll(p);
                             parts.push_back(partEntry);
                         }
                     }
@@ -306,17 +390,14 @@ bool RobotInterfaceRemap::initialize10(const std::string &inifile)
                     //std::cout<<tmpProp.toString()<<endl;
                     RobotPartEntry *partEntry=new RobotPartEntry;
                     partEntry->id=netid;
-                    ControlBoardWrapper *wp=new ControlBoardWrapper;
-
-                    if (wp->open(tmpProp))
-                    {
-                        PolyDriverList p;
-                        p.push(&netEntry->driver, netEntry->id.c_str());
-                        wp->attachAll(p);
-
-                        partEntry->wrapper=wp;
-                        parts.push_back(partEntry);
-                    }
+ 
+                    if (partEntry->open(tmpProp))
+                        {
+                            PolyDriverList p;
+                            p.push(&netEntry->driver, netEntry->id.c_str());
+                            partEntry->iwrapper->attachAll(p);
+                            parts.push_back(partEntry);
+                        }
                 }
             }
         }
@@ -456,16 +537,11 @@ bool RobotInterfaceRemap::initialize20(const std::string &inifile)
         //std::cout<<tmpProp.toString();
         //std::cout<<endl;
 
-        ControlBoardWrapper2 *wp=new ControlBoardWrapper2;
-
-        if (!wp->open(tmpProp))
+        if (!tmp->open(tmpProp))
         {
-            delete wp;
             partit++;
             continue;
         }
-
-        tmp->wrapper=wp;
 
         RobotNetworkIt netIt=tmp->networks.begin();
 
@@ -488,7 +564,7 @@ bool RobotInterfaceRemap::initialize20(const std::string &inifile)
             netIt++;
         }
 
-        tmp->wrapper->attachAll(polylist);
+        tmp->iwrapper->attachAll(polylist);
 
         std::cout<<endl;
         partit++;
@@ -690,10 +766,10 @@ bool RobotInterfaceRemap::finalize()
         // std::cerr<<"Detaching "<<tmpPart->id<<endl;
 
         // std::cerr<<"Done detaching " << tmpPart->id<<endl;
-        if (tmpPart->wrapper!=0)
+        if (tmpPart->iwrapper!=0)
         {
-            tmpPart->wrapper->detachAll();
-            delete tmpPart->wrapper;
+            tmpPart->iwrapper->detachAll();
+            tmpPart->close();
         }
 
         delete tmpPart;
