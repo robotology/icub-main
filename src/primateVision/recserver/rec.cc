@@ -51,13 +51,13 @@ void iCub::contrib::primateVision::RecServer::run()
   
   Property prop;
   prop.fromConfigFile(cfg->c_str());
-  string crfl = prop.findGroup("REC").find("CALIB_RESULTS_FILE_L").asString().c_str();
-  string crfr = prop.findGroup("REC").find("CALIB_RESULTS_FILE_R").asString().c_str();
-  double toff_r = prop.findGroup("REC").find("CAM_R_TILT_OFFSET").asDouble();
-  int width = prop.findGroup("REC").find("WIDTH").asInt();
-  int height = prop.findGroup("REC").find("HEIGHT").asInt();
-  bool motion = (bool) prop.findGroup("REC").find("MOTION").asInt();
-  bool realOrSim = (bool) prop.findGroup("REC").find("REAL0_SIM1").asInt();
+  string crfl     = prop.findGroup("REC").find("CALIB_RESULTS_FILE_L").asString().c_str();
+  string crfr     = prop.findGroup("REC").find("CALIB_RESULTS_FILE_R").asString().c_str();
+  double toff_r   = prop.findGroup("REC").find("CAM_R_TILT_OFFSET").asDouble();
+  int width       = prop.findGroup("REC").find("WIDTH").asInt();
+  int height      = prop.findGroup("REC").find("HEIGHT").asInt();
+  bool motion     = (bool) prop.findGroup("REC").find("MOTION").asInt();
+  bool realOrSim  = (bool) prop.findGroup("REC").find("REAL0_SIM1").asInt();
   double baseline = prop.findGroup("REC").find("BASELINE").asDouble();
 
   bool do_bar_l = true;
@@ -250,13 +250,13 @@ void iCub::contrib::primateVision::RecServer::run()
 
   // Make Handler for motion requests:
   motion_handler = new RecHandleMotionRequest(5);
-  motion_handler->pix2degx    = prop.findGroup("REC").find("PIX2DEGX").asDouble();
-  motion_handler->pix2degy    = prop.findGroup("REC").find("PIX2DEGY").asDouble();
+  motion_handler->pix2degx    = prop.findGroup("REC").find("IPP_PIX2DEGX").asDouble();
+  motion_handler->pix2degy    = prop.findGroup("REC").find("IPP_PIX2DEGY").asDouble();
   motion_handler->k_vel_verg  = prop.findGroup("REC").find("KVEL_VERG").asDouble();
   motion_handler->k_vel_vers  = prop.findGroup("REC").find("KVEL_VERS").asDouble();
   motion_handler->k_vel_tilt  = prop.findGroup("REC").find("KVEL_TILT").asDouble();
   motion_handler->k_vel_roll  = prop.findGroup("REC").find("KVEL_ROLL").asDouble();
-  motion_handler->k_vel_pitch = prop.findGroup("REC").find("KVEL_PITCH").asDouble();
+  motion_handler->k_vel_pitch = prop.findGroup("REC").find("KVEL_IPP_PITCH").asDouble();
   motion_handler->k_vel_yaw   = prop.findGroup("REC").find("KVEL_YAW").asDouble();
   motion_handler->vor_on      = (bool) prop.findGroup("VOR").find("VOR_ON").asInt();
   motion_handler->vor_k_rol   = prop.findGroup("VOR").find("K_ROL").asDouble();
@@ -285,8 +285,8 @@ void iCub::contrib::primateVision::RecServer::run()
   rsp.psb=psb;
   rsp.focus=focus;
   rsp.baseline = baseline;
-  rsp.pix2degX = prop.findGroup("REC").find("PIX2DEGX").asDouble();
-  rsp.pix2degY = prop.findGroup("REC").find("PIX2DEGY").asDouble();
+  rsp.pix2degX = prop.findGroup("REC").find("IPP_PIX2DEGX").asDouble();
+  rsp.pix2degY = prop.findGroup("REC").find("IPP_PIX2DEGY").asDouble();
   //Replier:
   RecReplyParamProbe server_replier;
   server_replier.reply=rsp;
@@ -307,7 +307,7 @@ void iCub::contrib::primateVision::RecServer::run()
 
 
 
-
+  double z_=0.1;
 
   //create a timer:
   TCREATE
@@ -349,7 +349,7 @@ void iCub::contrib::primateVision::RecServer::run()
     r_deg = (version_deg - vergence_deg);
 
     
-    //send rec params (leave for TSBServer!):
+    //send rec params (leave here for TSBServer!):
     rec_res_params.lx = rl->get_ix();
     rec_res_params.rx = rr->get_ix();
     rec_res_params.ly = rl->get_iy();
@@ -361,10 +361,13 @@ void iCub::contrib::primateVision::RecServer::run()
     rec_res_params.head_r = -vec_enc[1];
     rec_res_params.head_p = -vec_enc[0];
     rec_res_params.head_y = -vec_enc[2];
-    //3D target pos: WRONG!!!!!!!
-    rec_res_params.gaze3D_x = ((baseline/2.0)*(tan(90.0-r_deg)-tan(90.0+l_deg)))/(tan(90.0-r_deg)+tan(90.0+l_deg));
-    rec_res_params.gaze3D_z = tan(90.0-r_deg)/(baseline/2.0-rec_res_params.gaze3D_x);
-    rec_res_params.gaze3D_y = rec_res_params.gaze3D_z * tan(t_deg);
+    //3D target pos:
+    rec_res_params.gaze3D_x = ((baseline/2.0)*(tan(IPP_PI/2.0-r_deg*IPP_PI/180.0)-tan(IPP_PI/2.0+l_deg*IPP_PI/180.0)))/(tan(IPP_PI/2.0-r_deg*IPP_PI/180.0)+tan(IPP_PI/2.0+l_deg*IPP_PI/180.0));
+    z_ = tan(IPP_PI/2.0-r_deg*IPP_PI/180.0)*(baseline/2.0-rec_res_params.gaze3D_x);
+    rec_res_params.gaze3D_z = cos(t_deg*IPP_PI/180.0)*z_;
+    rec_res_params.gaze3D_y = tan(t_deg*IPP_PI/180.0)*z_;
+    //printf("%f %f %f\n",rec_res_params.gaze3D_x,rec_res_params.gaze3D_y,rec_res_params.gaze3D_z);
+
     //send:
     outPort_p.prepare().content() = rec_res_params;
     outPort_p.write();
@@ -423,10 +426,12 @@ void iCub::contrib::primateVision::RecServer::run()
       rec_res_params.head_p = -vec_enc[0];
       rec_res_params.head_y = -vec_enc[2];
       //3D target pos:
-      rec_res_params.gaze3D_x = ((baseline/2.0)*(tan(90.0-r_deg)-tan(90.0+l_deg)))/(tan(90.0-r_deg)+tan(90.0+l_deg));
-      rec_res_params.gaze3D_z = tan(90.0-r_deg)/(baseline/2.0-rec_res_params.gaze3D_x);
-      rec_res_params.gaze3D_y = rec_res_params.gaze3D_z * tan(t_deg);     
-      
+      rec_res_params.gaze3D_x = ((baseline/2.0)*(tan(IPP_PI/2.0-r_deg*IPP_PI/180.0)-tan(IPP_PI/2.0+l_deg*IPP_PI/180.0)))/(tan(IPP_PI/2.0-r_deg*IPP_PI/180.0)+tan(IPP_PI/2.0+l_deg*IPP_PI/180.0));
+      z_ = tan(IPP_PI/2.0-r_deg*IPP_PI/180.0)*(baseline/2.0-rec_res_params.gaze3D_x);
+      rec_res_params.gaze3D_z = cos(t_deg*IPP_PI/180.0)*z_;
+      rec_res_params.gaze3D_y = tan(t_deg*IPP_PI/180.0)*z_;
+ 
+
       //BARREL RECTIFIED IMS + PARAMS:
       if (do_bar_l){
 	rl->barrel_rect(c_rgb2yuv_l->get_y(),c_rgb2yuv_l->get_psb(),yl_brect,psb);
@@ -457,7 +462,7 @@ void iCub::contrib::primateVision::RecServer::run()
       outBot_lvb.add(Value::makeBlob(&rec_res_params,sizeof(RecResultParams)));
       outPort_lvb.write();
 
-      //EPIPOLAR RECTIFIED IMS + PARAMS
+      //EIPP_PIPOLAR RECTIFIED IMS + PARAMS
       rl->epipolar_rect(yl_brect,psb,yl_eprect,psb);
       Bottle& outBot_lye = outPort_lye.prepare();
       outBot_lye.clear();
@@ -534,12 +539,11 @@ void iCub::contrib::primateVision::RecServer::run()
       rec_res_params.head_r = -vec_enc[1];
       rec_res_params.head_p = -vec_enc[0];
       rec_res_params.head_y = -vec_enc[2];
-      //3D target pos: WRONG!!!!!!!
-      rec_res_params.gaze3D_x = ((baseline/2.0)*(tan(90.0-r_deg)-tan(90.0+l_deg)))/(tan(90.0-r_deg)+tan(90.0+l_deg));
-      rec_res_params.gaze3D_z = tan(90.0-r_deg)/(baseline/2.0-rec_res_params.gaze3D_x);
-      rec_res_params.gaze3D_y = rec_res_params.gaze3D_z * tan(t_deg);
-
-
+      //3D target pos:
+      rec_res_params.gaze3D_x = ((baseline/2.0)*(tan(IPP_PI/2.0-r_deg*IPP_PI/180.0)-tan(IPP_PI/2.0+l_deg*IPP_PI/180.0)))/(tan(IPP_PI/2.0-r_deg*IPP_PI/180.0)+tan(IPP_PI/2.0+l_deg*IPP_PI/180.0));
+      z_ = tan(IPP_PI/2.0-r_deg*IPP_PI/180.0)*(baseline/2.0-rec_res_params.gaze3D_x);
+      rec_res_params.gaze3D_z = cos(t_deg*IPP_PI/180.0)*z_;
+      rec_res_params.gaze3D_y = tan(t_deg*IPP_PI/180.0)*z_;
 
       //BARREL RECTIFIED IMS + PARAMS:
       if (do_bar_r){
@@ -572,7 +576,7 @@ void iCub::contrib::primateVision::RecServer::run()
       outPort_rvb.write();
       
 
-      //EPIPOLAR RECTIFIED IMS + PARAMS
+      //EIPP_PIPOLAR RECTIFIED IMS + PARAMS
       rr->epipolar_rect(yr_brect,psb,yr_eprect,psb);
       Bottle& outBot_rye = outPort_rye.prepare();
       outBot_rye.clear();
