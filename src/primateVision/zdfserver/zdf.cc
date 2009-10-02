@@ -24,7 +24,7 @@
 //NDT:
 #define NDTX     1
 #define NDTY     1
-#define NDTSIZE  4 //4 or 8
+#define NDTSIZE  8 //4 or 8
 #define NDTEQ    3 //0
 
 //RANK:
