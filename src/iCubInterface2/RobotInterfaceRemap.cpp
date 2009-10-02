@@ -76,10 +76,12 @@ RobotPartEntry *RobotParts::find(const string &pName)
     for(;it!=end(); it++)
     {
         if ((*it)->id==pName)
-            return (*it);
+            {
+                return (*it);
+            }
     }
 
-    return false;
+    return 0;
 }
 
 
@@ -252,7 +254,7 @@ bool RobotInterfaceRemap::initCart(const::string &file)
         std::cout<<",";
     
         RobotPartEntry *robPart=parts.find(part);
-        if (!robPart)
+        if (robPart)
         {
              plist.push(&robPart->driver, part.c_str());
         }        
@@ -267,10 +269,17 @@ bool RobotInterfaceRemap::initCart(const::string &file)
     if (valid)
     {
         CartesianController *cart=new CartesianController;
-        cart->driver.open(options);
-        cart->driver.view(cart->iwrapper);
-        cart->iwrapper->attachAll(plist);
-        cartesianControllers.push_back(cart);
+        if (cart->driver.open(options))
+            {
+                cart->driver.view(cart->iwrapper);
+                cart->iwrapper->attachAll(plist);
+                cartesianControllers.push_back(cart);
+            }
+        else
+            {
+                std::cerr<<"Sorry, could not open cartesian controller\n";
+                return false;
+            }
     }
     else
     {   
@@ -530,6 +539,7 @@ bool RobotInterfaceRemap::initialize20(const std::string &inifile)
         prefix+="/";
         prefix+=tmp->id.c_str();
         tmpProp.put("name", prefix.c_str());
+        tmpProp.put("device", "controlboardwrapper2");
 
         //open wrapper
         std::cout<<"Opening wrapper for " << tmp->id << endl;

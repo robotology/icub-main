@@ -306,9 +306,9 @@ int main(int argc, char *argv[])
     #endif
 
     //add local driver to factory
-    yarp::dev::Drivers::factory().add(new DriverCreatorOf<ControlBoardWrapper2>("controlboardwrapper2",
-                                                                      "",
-                                                                      "ControlBoardWrapper2"));
+    yarp::dev::Drivers::factory().add(new DriverCreatorOf<ControlBoardWrapper2>
+                                      ("controlboardwrapper2",
+                                       "", "ControlBoardWrapper2"));
  //   Property p;
 
  //   p.fromCommand(argc, argv);   
