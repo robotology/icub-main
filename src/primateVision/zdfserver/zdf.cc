@@ -222,8 +222,8 @@ void iCub::contrib::primateVision::ZDFServer::run(){
   if (motion){
     //initalise:
     motion_request.content().pix_y  = 0;
-    motion_request.content().pix_xl = 25;
-    motion_request.content().pix_xr = -25;
+    motion_request.content().pix_xl = 20;
+    motion_request.content().pix_xr = -20;
     motion_request.content().deg_r  = 0.0;
     motion_request.content().deg_p  = 0.0;
     motion_request.content().deg_y  = 0.0;
@@ -519,8 +519,8 @@ void iCub::contrib::primateVision::ZDFServer::run(){
 	    printf("Returning home!\n");
 	    //re-initalise:
 	    motion_request.content().pix_y  = 0;
-	    motion_request.content().pix_xl = 25;
-	    motion_request.content().pix_xr = -25;
+	    motion_request.content().pix_xl = 20;
+	    motion_request.content().pix_xr = -20;
 	    motion_request.content().deg_r  = 0.0;
 	    motion_request.content().deg_p  = 0.0;
 	    motion_request.content().deg_y  = 0.0;
