@@ -43,8 +43,9 @@ namespace iCub {
       public:
 	/** Constructor.
 	 * @param period The command cycle period.
+	 * @param cfg Config file containing RecMot configs.
 	 */
-	RecHandleMotionRequest(int period);
+	RecHandleMotionRequest(int period, string *cfg);
 	/** Processing events occurring once every period.
 	 */
 	virtual void run();
@@ -67,7 +68,6 @@ namespace iCub {
 	double k_vel_pitch;    /**< Proportional velocity gain. */
 	double k_vel_yaw;    /**< Proportional velocity gain. */
 	bool   motion;   /**< Motion enable flag. */
-	bool   fake;     /**< Fake/real Recserver flag. */
 	double *enc;     /**< Pointer to encoder status. */
 	double enc_tmp[6];/**< Encoder status cache. */
 	IVelocityControl *vel; /**< Pointer velocity controller ports. */

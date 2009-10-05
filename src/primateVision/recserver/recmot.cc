@@ -1,10 +1,30 @@
 #include "recmot.h"
+#include <yarp/os/Property.h>
 
 
-
-iCub::contrib::primateVision::RecHandleMotionRequest::RecHandleMotionRequest(int period):
+iCub::contrib::primateVision::RecHandleMotionRequest::RecHandleMotionRequest(int period, string *cfg):
   RateThread(period)
 {
+
+ Property prop;
+ prop.fromConfigFile(cfg->c_str());
+ pix2degx    = prop.findGroup("RECMOT").find("PIX2DEGX").asDouble();
+ pix2degy    = prop.findGroup("RECMOT").find("PIX2DEGY").asDouble();
+ k_vel_verg  = prop.findGroup("RECMOT").find("KVEL_VERG").asDouble();
+ k_vel_vers  = prop.findGroup("RECMOT").find("KVEL_VERS").asDouble();
+ k_vel_tilt  = prop.findGroup("RECMOT").find("KVEL_TILT").asDouble();
+ k_vel_roll  = prop.findGroup("RECMOT").find("KVEL_ROLL").asDouble();
+ k_vel_pitch = prop.findGroup("RECMOT").find("KVEL_IPP_PITCH").asDouble();
+ k_vel_yaw   = prop.findGroup("RECMOT").find("KVEL_YAW").asDouble();
+ vor_on      = (bool) prop.findGroup("VOR").find("VOR_ON").asInt();
+ vor_k_rol   = prop.findGroup("RECMOT").find("K_ROL").asDouble();
+ vor_k_pan   = prop.findGroup("RECMOT").find("K_PAN").asDouble();
+ vor_k_tlt   = prop.findGroup("RECMOT").find("K_TLT").asDouble();
+ vor_d_rol   = prop.findGroup("RECMOT").find("D_ROL").asDouble();
+ vor_d_pan   = prop.findGroup("RECMOT").find("D_PAN").asDouble();
+ vor_d_tlt   = prop.findGroup("RECMOT").find("D_TLT").asDouble();
+
+
   angles[0]=0.0;
   angles[1]=0.0;
   angles[2]=0.0;
@@ -25,7 +45,6 @@ iCub::contrib::primateVision::RecHandleMotionRequest::RecHandleMotionRequest(int
   gyro_vel[1] = 0.0;
   gyro_vel[2] = 0.0;
 
- 
 }
 
 
@@ -41,27 +60,26 @@ void iCub::contrib::primateVision::RecHandleMotionRequest::run(){
       printf("RecServer: Suspended %d.\n",suspend);
     }
     
-
-
-
     //incorporate motion requests:
     rmq = inPort_mot->read(false);
     //skip updating desired target pos for "suspend" * period:
     if (rmq!=NULL && suspend==0){
       
       if (locked_to!=NO_LOCK){
-	printf("locked to: %d\n",locked_to);
+	printf("RecServer: Locked to: %d\n",locked_to);
       }
 
       if (locked_to == rmq->content().lockto || locked_to == NO_LOCK){
 	//accept command..
-	//printf("acting.\n");
 	angles[0] = rmq->content().deg_p;                
 	angles[1] = rmq->content().deg_r;                
 	angles[2] = rmq->content().deg_y;                
 	angles[3] = -rmq->content().pix_y*pix2degy;      
 	angles[4] = (rmq->content().pix_xl+rmq->content().pix_xr)*pix2degx/2.0;
 	angles[5] = (rmq->content().pix_xl-rmq->content().pix_xr)*pix2degx/2.0;
+	//printf("RecServer: Motion command received: (%d,%d,%d)\n",
+	//rmq->content().pix_xl,rmq->content().pix_xr,rmq->content().pix_y);
+	//printf("RecServer: Motion command forwarded: (%f,%f,%f)\n",angles[3],angles[4],angles[5]);
 	relative  = rmq->content().relative;
 	suspend   = rmq->content().suspend;
 	locked_to = rmq->content().lockto;
@@ -69,31 +87,14 @@ void iCub::contrib::primateVision::RecHandleMotionRequest::run(){
 	  locked_to = NO_LOCK;
 	}
 	
-	if (!fake){	
-	  if (relative){//relative move requested:
-	    //convert to absolute:
-	    for (int i=0;i<6;i++){
-	      angles[i] += enc[i];
-	    }
-	  }
-	  if(angles[5]<0.0){
-	    angles[5]=0.0;
+	if (relative){//relative move requested:
+	  //convert to absolute:
+	  for (int i=0;i<6;i++){
+	    angles[i] += enc[i];
 	  }
 	}
-
-	//fake:
-	else {//if (fake){      
-	  if (relative){//relative move requested:
-	    //convert to absolute:
-	    for (int i=0;i<6;i++){
-	      enc[i] += angles[i]; 
-	    }
-	  }
-	  else{
-	    for (int i=0;i<6;i++){
-	      enc[i] = angles[i]; 
-	    }
-	  }
+	if(angles[5]<0.0){
+	  angles[5]=0.0;
 	}
 	
 
@@ -154,38 +155,31 @@ void iCub::contrib::primateVision::RecHandleMotionRequest::run(){
 
 
     
-
-    //motion command:
-    if (!fake){
-
-
-      //get encoder data:
-      if (encs->getEncoders(enc_tmp)){
-	for (int i=0;i<6;i++){
-	  enc[i] = enc_tmp[i];
-	}
+    //get encoder data:
+    if (encs->getEncoders(enc_tmp)){
+      for (int i=0;i<6;i++){
+	enc[i] = enc_tmp[i];
       }
-  
-      vels[0] = k_vel_pitch*(angles[0]-enc[0]);
-      vels[1] = k_vel_roll*(angles[1]-enc[1]);
-      vels[2] = k_vel_yaw*(angles[2]-enc[2]);
-      vels[3] = k_vel_tilt*(angles[3]-enc[3]);
-      vels[4] = k_vel_vers*(angles[4]-enc[4]);
-      vels[5] = k_vel_verg*(angles[5]-enc[5]);
-
-      //incorporate VOR corrections:
-      if (vor_on){
-	vels[1] += vor_vels[0];  //head roll
-	vels[3] += vor_vels[1];  //eye tilt
-	vels[4] += vor_vels[2];  //eye pan
-      }
-
-
-      //send!
-      vel->velocityMove(vels);
     }
-   
-
+    
+    vels[0] = k_vel_pitch*(angles[0]-enc[0]);
+    vels[1] = k_vel_roll*(angles[1]-enc[1]);
+    vels[2] = k_vel_yaw*(angles[2]-enc[2]);
+    vels[3] = k_vel_tilt*(angles[3]-enc[3]);
+    vels[4] = k_vel_vers*(angles[4]-enc[4]);
+    vels[5] = k_vel_verg*(angles[5]-enc[5]);
+    
+    //incorporate VOR corrections:
+    if (vor_on){
+      vels[1] += vor_vels[0];  //head roll
+      vels[3] += vor_vels[1];  //eye tilt
+      vels[4] += vor_vels[2];  //eye pan
+    }
+    
+    
+    //send!
+    //printf("RecServer: Move (%f,%f,%f)\n", vels[3],vels[4],vels[5]);
+    vel->velocityMove(vels);
 
  
   }

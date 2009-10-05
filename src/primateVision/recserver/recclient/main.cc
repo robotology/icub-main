@@ -71,16 +71,19 @@ int main( int argc, char **argv )
   QString sim;
   if (arg1=="sim" || arg2=="sim" || arg3=="sim"){
     sim = "Sim";
+    printf("RecClient: Connecting to iCubSim\n");
   }
 
   bool mot=false;
   if (arg1=="motion" || arg2=="motion" || arg3=="motion"){
     mot = true;
+    printf("RecClient: Motion test enabled.\n");
   }
 
   bool save=false;
   if (arg1=="save" || arg2=="save" || arg3=="save"){
     save = true;
+    printf("RecClient: Saving images.\n");
   }
 
 
@@ -210,7 +213,11 @@ int main( int argc, char **argv )
 #endif
 
 
+
   int k=0;
+
+
+
 
   while (1){
 
@@ -219,6 +226,10 @@ int main( int argc, char **argv )
       motion_request.content().pix_xl = (int) 200.0*sin(((double)k)/100.0);
       motion_request.content().pix_xr = (int) 200.0*sin(((double)k)/100.0);
       motion_request.content().pix_y  = (int) 150.0*sin(((double)k)/80.0);
+      printf("RecClient: Moving (%d,%d,%d)\n",
+	     motion_request.content().pix_xl,
+	     motion_request.content().pix_xr,
+	     motion_request.content().pix_y);
       outPort_mot.write(motion_request);
     }
     k++;

@@ -76,9 +76,7 @@ void iCub::contrib::primateVision::RecServer::run()
     printf("RecServer: Connecting to iCub Simulator.\n");
     sim = "Sim";
   }
-  else{
-    sim = "";
-  }
+
   
   Property options;
   IEncoders *enc;
@@ -249,29 +247,13 @@ void iCub::contrib::primateVision::RecServer::run()
 
 
   // Make Handler for motion requests:
-  motion_handler = new RecHandleMotionRequest(5);
-  motion_handler->pix2degx    = prop.findGroup("REC").find("IPP_PIX2DEGX").asDouble();
-  motion_handler->pix2degy    = prop.findGroup("REC").find("IPP_PIX2DEGY").asDouble();
-  motion_handler->k_vel_verg  = prop.findGroup("REC").find("KVEL_VERG").asDouble();
-  motion_handler->k_vel_vers  = prop.findGroup("REC").find("KVEL_VERS").asDouble();
-  motion_handler->k_vel_tilt  = prop.findGroup("REC").find("KVEL_TILT").asDouble();
-  motion_handler->k_vel_roll  = prop.findGroup("REC").find("KVEL_ROLL").asDouble();
-  motion_handler->k_vel_pitch = prop.findGroup("REC").find("KVEL_IPP_PITCH").asDouble();
-  motion_handler->k_vel_yaw   = prop.findGroup("REC").find("KVEL_YAW").asDouble();
-  motion_handler->vor_on      = (bool) prop.findGroup("VOR").find("VOR_ON").asInt();
-  motion_handler->vor_k_rol   = prop.findGroup("VOR").find("K_ROL").asDouble();
-  motion_handler->vor_k_pan   = prop.findGroup("VOR").find("K_PAN").asDouble();
-  motion_handler->vor_k_tlt   = prop.findGroup("VOR").find("K_TLT").asDouble();
-  motion_handler->vor_d_rol   = prop.findGroup("VOR").find("D_ROL").asDouble();
-  motion_handler->vor_d_pan   = prop.findGroup("VOR").find("D_PAN").asDouble();
-  motion_handler->vor_d_tlt   = prop.findGroup("VOR").find("D_TLT").asDouble();
-  motion_handler->motion      = motion;
-  motion_handler->enc         = vec_enc;
-  motion_handler->vel         = vel;
-  motion_handler->encs        = enc;
-  motion_handler->inPort_mot  = &inPort_mot;
-  motion_handler->inPort_inertial  = &inPort_inertial;
-
+  motion_handler = new RecHandleMotionRequest(5,cfg);
+  motion_handler->motion          = motion;
+  motion_handler->enc             = vec_enc;
+  motion_handler->vel             = vel;
+  motion_handler->encs            = enc;
+  motion_handler->inPort_mot      = &inPort_mot;
+  motion_handler->inPort_inertial = &inPort_inertial;
   motion_handler->start();
 
 
@@ -285,8 +267,8 @@ void iCub::contrib::primateVision::RecServer::run()
   rsp.psb=psb;
   rsp.focus=focus;
   rsp.baseline = baseline;
-  rsp.pix2degX = prop.findGroup("REC").find("IPP_PIX2DEGX").asDouble();
-  rsp.pix2degY = prop.findGroup("REC").find("IPP_PIX2DEGY").asDouble();
+  rsp.pix2degX = prop.findGroup("REC").find("PIX2DEGX").asDouble();
+  rsp.pix2degY = prop.findGroup("REC").find("PIX2DEGY").asDouble();
   //Replier:
   RecReplyParamProbe server_replier;
   server_replier.reply=rsp;
@@ -323,10 +305,6 @@ void iCub::contrib::primateVision::RecServer::run()
 
     TSTART
       
-      
-
-    
-
     
    
     //REQUEST IMAGES:
