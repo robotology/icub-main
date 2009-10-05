@@ -70,11 +70,11 @@ available commands. The most important ones are:
 *) train: explicitly instructs the algorithm to train on the available data. 
    This command is only useful for batch learning algorithms, which store 
    incoming samples in a buffer until the train command is issued.
-*) stat: shows a detailed overview of statistics and such of the machine.
+*) info: shows a detailed overview of information on the machine.
 *) set key val: is used to set configuration parameters of the machine. The help 
    listing also gives a listing of all configurable parameters for the selected 
    machine. For example, the regularization parameter C for LSSVM can be set 
-   using the command 'set c 10'. The command 'stat' can be used to verify that 
+   using the command 'set c 10'. The command 'info' can be used to verify that 
    the parameter has indeed changed.
 *) load/save fname: These commands can be used to load/save machines from/to 
    files.
@@ -139,7 +139,7 @@ learning. In certain robotics problems the extrema of the input data are known
 are priori (e.g. joint limits) or can be guessed rather precisely.
 
 By default, the Scaler transformer starts without any transformation on the 
-input columns (cf. the 'stat' command). Setting a scaler to a column is done 
+input columns (cf. the 'info' command). Setting a scaler to a column is done 
 using the 'set type' command. An example demonstrating the functionality of the 
 three types of scalers is:
 
@@ -184,8 +184,56 @@ overhead of a kernel expansion. See the following paper for more information:
 Random Features for Large-Scale Kernel Machines, Ali Rahimi, Ben Recht, in 
   Neural Information Processing Systems (NIPS) 2007.
 
+2.4 Event Listeners
 
-2.4 Test Module
+In many situations it is desirable to monitor the various components of the 
+system during runtime. An event mechanism has been integrated for exactly this 
+purpose. Certain key operations, thus far limited to either training on a 
+sample or predicting a sample, raise an event. The user can implement dedicated 
+listeners for one or more of these events.
+
+One particuraly useful application of this mechanism is for online learning 
+methods. Each arriving training sample an event is raised that contains the 
+input vector, the desired output vector and the predicted output vector. The 
+related train event listener puts these three vectors on a port, allowing 
+external programs to monitor in real-time the prediction performance of the 
+machine (e.g. by means of a plot). Obviously, users may wish to implement their 
+own specialized event listeners.
+
+In order to enable the operation of an event listener, it has to be registered 
+with the central event dispatcher. The event dispatcher and event listeners 
+can be managed from directly from the command interface of the modules using the 
+initial 'event' keyword. An example demonstrating adding a train event listener 
+for train events is:
+
+--------------------------------------------------------------------------------
+event info
+help
+Event Manager Information (0 listeners)
+
+event add Train
+yarp: Port /lm/event/train1 active at tcp://10.255.36.192:10132
+"Successfully added listener(s)"
+
+event info
+help
+Event Manager Information (1 listeners)
+  [1] Train (enabled) [port: tcp://lm/event/train1]
+
+event set 1 port /foo/bar
+yarp: Port /foo/bar active at tcp://10.255.36.192:10132
+"Setting configuration option succeeded"
+
+event info
+help
+Event Manager Information (1 listeners)
+  [1] Train (enabled) [port: tcp://foo/bar]
+--------------------------------------------------------------------------------
+
+Please see 'event help' for an overview of all commands.
+
+
+2.5 Test Module
 
 The test module is not really part of machine learning approach, but it is very 
 useful nonetheless. This module can be used to read a dataset from a file and 
@@ -327,7 +375,7 @@ predict 1000
 --------------------------------------------------------------------------------
 
 Although not explicitly mentioned, it is adviseable to verify the parameter 
-configuration commands using the 'stat' method. This applies to both the train
+configuration commands using the 'info' method. This applies to both the train
 module and the transform module.
 
 

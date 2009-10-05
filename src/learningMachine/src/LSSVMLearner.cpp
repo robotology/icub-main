@@ -60,13 +60,6 @@ void LSSVMLearner::train() {
     }
     K(K.rows() - 1, K.cols() - 1) = 0.;
     
-/*
-void cblas_dtrsm(const enum CBLAS_ORDER Order, const enum CBLAS_SIDE Side,
-                 const enum CBLAS_UPLO Uplo, const enum CBLAS_TRANSPOSE TransA,
-                 const enum CBLAS_DIAG Diag, const int M, const int N,
-                 const double alpha, const double *A, const int lda,
-                 double *B, const int ldb);
-*/
     // invert kernel matrix
     Matrix Kinv = luinv(K);
     
@@ -94,8 +87,6 @@ void cblas_dtrsm(const enum CBLAS_ORDER Order, const enum CBLAS_SIDE Side,
         this->LOO(i) /= alphas_i.size();
     }
 
-    //std::cout << "bias: " << this->bias.toString() << std::endl;
-    //std::cout << "alphas: " << this->alphas.toString() << std::endl;
 }
 
 Vector LSSVMLearner::predict(const Vector& input) {
@@ -111,16 +102,6 @@ Vector LSSVMLearner::predict(const Vector& input) {
         k(i) = this->kernel->evaluate(this->inputs[i], input);
     }
     
-    /*Vector outputs = zeros(this->getCoDomainSize());
-    for(int i = 0; i < outputs.size(); i++) {
-        Vector alphas_i = this->alphas.getCol(i);
-        for(int j = 0; j < alphas_i.size(); j++) {
-            outputs(i) += k(j) * alphas_i(j);
-        }
-        outputs(i) += this->bias(i);
-    }
-    return outputs;*/
-
     return (this->alphas.transposed() * k) + this->bias;
 }
 
