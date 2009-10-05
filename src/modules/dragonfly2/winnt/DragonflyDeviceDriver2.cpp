@@ -24,7 +24,7 @@ using namespace yarp::os;
 // FlyCam Includes
 //=============================================================================
 
-#include "../dragonflyApi/winnt/include/pgrflycapture.h"
+#include "pgrflycapture.h"
 
 const int _sizeX=640;
 const int _sizeY=480;
