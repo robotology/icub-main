@@ -444,10 +444,12 @@ int main(int argc, char *argv[])
     if (cartRightArm!="")
     {
         i->initCart(cartRightArm.c_str());
+        someCartesian=true;
     }
     if (cartLeftArm!="")
     {
         i->initCart(cartLeftArm.c_str());
+        someCartesian=true;
     }
     if (!someCartesian)
     {
