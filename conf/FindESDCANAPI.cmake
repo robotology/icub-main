@@ -5,10 +5,20 @@
 
 IF(NOT ESDCANAPI_FOUND)
     SET(ESDCANAPI_DIR $ENV{ESDCANAPI_DIR} CACHE PATH "Path to ESDCANAPI")
-
     
     IF(WIN32)
-       FIND_LIBRARY(ESDCANAPI_LIB ntcan ${ESDCANAPI_DIR}/winnt NO_DEFAULT_PATH)    
+	#we look for the lib, give priority to ESDCANAPI_DIR which should point to 
+	#the correct place, but also look in other locations. CAnSdkDir should be set
+	#by the installer.
+	FIND_LIBRARY(ESDCANAPI_LIB ntcan ${ESDCANAPI_DIR}/develop/vc
+						   ${CanSdkDir}/develop/vc
+						   "C:/Program Files/CAN/develop/vc" 
+						   ${ESDCANAPI_DIR}/winnt
+						   NO_DEFAULT_PATH)
+
+	FIND_PATH(ESDCANAPI_INC_DIRS ntcan.h ${ESDCANAPI_DIR}/include
+						   ${CanSdkDir}/include
+						   "C:/Program Files/CAN/include")
     ELSE(WIN32)  
        FIND_LIBRARY(ESDCANAPI_LIB ntcan ${ESDCANAPI_DIR}/lib32 ${ESDCANAPI_DIR}/lib64)    
        SET(ESDCANAPI_INC_DIRS ${ESDCANAPI_DIR}/lib32)
