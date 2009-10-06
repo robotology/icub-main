@@ -183,6 +183,12 @@ int main( int argc, char **argv )
 	  simPort.write();	
 	  //**************************************
 	  oldLabel=label;
+
+#if SAVE
+	  k++;
+	  d_seg_dog->save(zdf_im_seg_dog,"im"+QString::number(k)+".jpg");
+#endif
+
 	}
 
  
@@ -192,10 +198,6 @@ int main( int argc, char **argv )
       //always:
       //DISPLAY:
       d_seg_dog->display(zdf_im_seg_dog);
-#if SAVE
-      d_seg_dog->save(zdf_im_seg_dog,"im"+QString::number(k)+".jpg");
-#endif
-      k++;
     }
     if (inBot_seg_dog==NULL){
       // printf("No Input\n");
