@@ -26,6 +26,7 @@ SET(CMAKE_INSTALL_PREFIX ${PROJECT_SOURCE_DIR})
 
 
 SUBDIRS(
+        armExtractor
 	utils 
 	svogrid
 	egoSphere2

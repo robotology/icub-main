@@ -37,7 +37,7 @@ int main(int argc, char *argv[])
   QApplication *qa = new QApplication( argc, argv );
 
   //get config file parameters:
-  string fname = string(getenv("DEVEL_ROOT")+string("/src/primateVision/nzdf/nzdf.cfg"));
+  string fname = string(getenv("ICUB_DIR")+string("/src/primateVision/armExtractor/armX.cfg"));
 
   for (int i=1;i<argc;i++) {
     if ((strcmp(argv[i],"--configfile")==0)||(strcmp(argv[i],"-c")==0)) {
@@ -89,9 +89,9 @@ int main(int argc, char *argv[])
 
 
   //load input:
- QImage *qcaml = new QImage((string(getenv("ICUB_DIR"))+string("/../devel/src/primateVision/nzdf/caml.jpg")).c_str(),"JPEG");
- QImage *qcamr = new QImage((string(getenv("ICUB_DIR"))+string("/../devel/src/primateVision/nzdf/camr.jpg")).c_str(),"JPEG");
- QImage *qsim = new QImage((string(getenv("ICUB_DIR"))+string("/../devel/src/primateVision/nzdf/siml.jpg")).c_str(),"JPEG");
+ QImage *qcaml = new QImage((string(getenv("ICUB_DIR"))+string("/src/primateVision/armExtractor/caml.jpg")).c_str(),"JPEG");
+ QImage *qcamr = new QImage((string(getenv("ICUB_DIR"))+string("/src/primateVision/armExtractor/camr.jpg")).c_str(),"JPEG");
+ QImage *qsim = new QImage((string(getenv("ICUB_DIR"))+string("/src/primateVision/armExtractor/siml.jpg")).c_str(),"JPEG");
 
 
 
