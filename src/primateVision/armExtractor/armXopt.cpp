@@ -4,14 +4,23 @@
 #include <time.h>
 #include <math.h>
 #include "energy.h"
-
 #include "armXopt.h"
 
 
-#define RANKX  2 //1,2
-#define RANKY  1
-#define RANKSIZE 15 //9,15
-//RANKSISE = (RANKX*2+1)*(RANKY*2+1) //15 for (2,1) :)
+//use NDT or RANK comparision?
+#define RANK0_NDT1 1 //0 (NDT FASTER)
+
+//NDT:
+#define NDTX     1
+#define NDTY     1
+#define NDTSIZE  4 //4 or 8: 4
+#define NDTEQ    0 //0
+
+//RANK:
+#define RANKY    1 //1 or 2: 1
+#define RANKX    1  //1 or 2: 1
+#define RANKSIZE 9  //9 or 25: 9
+//RANKSISE = (RANKX*2+1)*(RANKY*2+1) //e.g., 15 for (2,1) :)
 
 #define DRANGE    16
 #define MIN_TEX   10
@@ -44,69 +53,11 @@ iCub::contrib::primateVision::ArmXOpt::ArmXOpt(IppiSize im_size_, int psb_in_, P
 
 }
 
+
 iCub::contrib::primateVision::ArmXOpt::~ArmXOpt()
 {
 
 }
-
-
-double iCub::contrib::primateVision::ArmXOpt::cmp_rank(int*l1, int*l2)
-{ 
-  int n1 = 0; //number of non-ties for x
-  int n2 = 0; //number of non-ties for y
-  int is = 0;
-  
-  int a1,a2,aa;
-  
-  double tau;//,svar,z,prob;
-
-  for(int j=0;j<RANKSIZE;j++) {
-    for(int k=j+1;k<RANKSIZE;k++) {
-      a1 = l1[j] - l1[k];
-      a2 = l2[j] - l2[k];
-      aa = a1*a2;
-      if(aa) {
-	++n1;
-	++n2;
-  	
-	aa > 0 ? ++is : --is;
-	
-      } else {
-	if(a1) ++n1;
-	if(a2) ++n2;
-      }
-    }
-  }
-  
-  tau = (is) / (sqrt(n1) * sqrt(n2));
-  // svar = (4.0 * n + 10.0) / (9.0 * n * (n - 1.0));
-  // z = tau / sqrt(svar);
-  // prob = erfcc(abs(z) / 1.4142136);
-
-  if (tau < 0.0){tau=0.0;}
-
-  return tau;
-}
-
-
-void* iCub::contrib::primateVision::ArmXOpt::create_list(Coord c,Ipp8u *im, int w, int*list)
-{
-  Coord n;
-  int i = 0;
-
-  for (int x=-RANKX;x<=RANKX;x++){
-    for (int y=-RANKY;y<=RANKY;y++){
-      
-      n = c+Coord(x,y);
-      list[i] = im[n.y*w + n.x];
-      i++;
-
-    }
-  }
-
-}
-
-
 
 
 void iCub::contrib::primateVision::ArmXOpt::clear()
@@ -190,28 +141,6 @@ void iCub::contrib::primateVision::ArmXOpt::proc(Ipp8u* im_l_,Ipp8u* im_r_,Ipp8u
   delete buf;
 }
 
-bool iCub::contrib::primateVision::ArmXOpt::is_tex(int*lst){
-
-  int max=0;
-  int min=999;
-
-  for (int i=0;i<RANKSIZE;i++){
-    min = MIN(min,lst[i]);
-    max = MAX(max,lst[i]);
-  }
-
-
-  if ((max-min)>=MIN_TEX){
-    return true;
-  }
-  else {
-    return false;
-  }
-
-}
-
-
-
 
 int iCub::contrib::primateVision::ArmXOpt::likelihood(Coord c, int label)
 {
@@ -225,31 +154,51 @@ int iCub::contrib::primateVision::ArmXOpt::likelihood(Coord c, int label)
  
 
   //GET DISPARITY:
+
   //int d_L = im_d[c.x + psb_in*c.y]-DRANGE;
   //(dist from zd)
 
-  int listl[RANKSIZE];
-  int listr[RANKSIZE];
+  //RANK/NDT TRANSFORM:
+  int ndt1[NDTSIZE];
+  int ndt2[NDTSIZE];
+  int rank1[RANKSIZE];
+  int rank2[RANKSIZE];
+  double cmp_res;
+  int koffsetx;
+  int koffsety;
+  if (RANK0_NDT1==0){
+    koffsetx=RANKX;
+    koffsety=RANKY;
+  }
+  else{
+    koffsetx=NDTX;
+    koffsety=NDTY;
+  }
+
   Coord cr;  
   double p_tmp;
   double p_d_c = 0.0;
   int d_c;
   //check all possible disparities of site c:
-  //if textured
-  if (dog_l[c.x + c.y*psb_in] >= params->bland_dog_thresh){
-    //if within frame
-    if (c.x-RANKX>=0 && c.x+RANKX<im_size.width  &&
-	c.y-RANKY>=0 && c.y+RANKY<im_size.height ){
-      create_list(c,im_l,psb_in,listl);
+  //if within frame
+  if (c.x-koffsetx>=0 && c.x+koffsetx<im_size.width  &&
+      c.y-koffsety>=0 && c.y+koffsety<im_size.height ){
+    //if textured
+    if (dog_l[c.x + c.y*psb_in] >= params->bland_dog_thresh){
+      get_ndt(c,im_l,psb_in,ndt1);
+      //get_rank(c,im_l,psb_in,rank1);
       for (int i=0;i<=2*DRANGE;i++){
 	cr.x = c.x+i-DRANGE;
 	cr.y = c.y;
 	//if within frame  
-	if (dog_r[cr.x + cr.y*psb_in] >= params->bland_dog_thresh){
-	  if (cr.x-RANKX>=0 && cr.x+RANKX<im_size.width  &&
-	      cr.y-RANKY>=0 && cr.y+RANKY<im_size.height ){
-	    create_list(cr,im_r,psb_in,listr);
-	    p_tmp = cmp_rank(listl,listr);
+	if (cr.x-koffsetx>=0 && cr.x+koffsetx<im_size.width  &&
+	    cr.y-koffsety>=0 && cr.y+koffsety<im_size.height ){
+	  //if textured
+	  if (dog_r[cr.x + cr.y*psb_in] >= params->bland_dog_thresh){
+	    get_ndt(cr,im_r,psb_in,ndt2);
+	    //get_rank(c,im_r,psb_in,rank2);
+	    p_tmp = cmp_ndt(ndt1,ndt2);
+	    //p_tmp = cmp_rank(rank1,rank2);
 	    if (p_tmp>p_d_c){
 	      p_d_c = p_tmp;
 	      d_c = i-DRANGE;
@@ -260,6 +209,7 @@ int iCub::contrib::primateVision::ArmXOpt::likelihood(Coord c, int label)
     }
   }
   
+
   //Radius:
   double rmax = sqrt((im_size.width/2.0)*(im_size.width/2.0) 
 		     +(im_size.height/2.0)*(im_size.height/2.0));
@@ -286,7 +236,6 @@ int iCub::contrib::primateVision::ArmXOpt::likelihood(Coord c, int label)
       penalty += (int)round( ((double)params->nzd_dmap_data_penalty) * ((double)abs(d_c))/DRANGE );
     }
 
-
     //RADIAL penalty:
     //The furthar away from origin, bigger the penalty up to rad_penalty:
     penalty += (int)round(((double)params->rad_data_penalty) * r/rmax);
@@ -302,13 +251,9 @@ int iCub::contrib::primateVision::ArmXOpt::likelihood(Coord c, int label)
   }
 
   
-  
-  
-  
   //else penalties associated with labelling it !nzd:  
   else{ //BLACK!
     
-
     //ZD penalty:
     //The more likely it's at exactly zd, the more zd penalty:
     if (d_c==0 && p_d_c>0.5){
@@ -324,8 +269,6 @@ int iCub::contrib::primateVision::ArmXOpt::likelihood(Coord c, int label)
       penalty += params->nnzd_dmap_fg_data_penalty;
       penalty += (int)round(((double)params->nnzd_dmap_data_penalty) * (1.0-((double)abs(d_c))/DRANGE));
     }
-
-
 
     //RADIAL penalty:
     //The closer to the origin, the bigger the penalty up to radial_penalty:
@@ -382,25 +325,44 @@ int iCub::contrib::primateVision::ArmXOpt::prior_smoothness(Coord p, Coord np, i
       //penalty if they are both at similar disparity (no disparity shift):
       //we already know they are not smooth in intensity, textured!
       double p_tmp;
-      int listl[RANKSIZE];
-      int listr[RANKSIZE];
+      int ndt1[NDTSIZE];
+      int ndt2[NDTSIZE];
+      int rank1[RANKSIZE];
+      int rank2[RANKSIZE];
+      int koffsetx;
+      int koffsety;
+      if (RANK0_NDT1==0){
+	koffsetx=RANKX;
+	koffsety=RANKY;
+      }
+      else{
+	koffsetx=NDTX;
+	koffsety=NDTY;
+      }
       Coord pr;
       
       double p_d_p = 0.0;
       int d_p;
       //check all possible disparities of pixel p:
-      if (dog_l[p.x + p.y*psb_in] >= params->bland_dog_thresh){
-	if (p.x-RANKX>=0 && p.x+RANKX<im_size.width  &&
-	    p.y-RANKY>=0 && p.y+RANKY<im_size.height ){
-	  create_list(p,im_l,psb_in,listl);
+      //if within frame:
+      if (p.x-koffsetx>=0 && p.x+koffsetx<im_size.width  &&
+	  p.y-koffsety>=0 && p.y+koffsety<im_size.height ){
+	//if textured:
+	if (dog_l[p.x + p.y*psb_in] >= params->bland_dog_thresh){
+	  get_ndt(p,im_l,psb_in,ndt1);
+	  //get_rank(p,im_l,psb_in,rank1);
 	  for (int i=0;i<=2*DRANGE;i++){
 	    pr.x = p.x+i-DRANGE;
 	    pr.y = p.y;
-	    if (dog_r[pr.x + pr.y*psb_in] >= params->bland_dog_thresh){
-	      if (pr.x-RANKX>=0 && pr.x+RANKX<im_size.width  &&
-		  pr.y-RANKY>=0 && pr.y+RANKY<im_size.height ){
-		create_list(pr,im_r,psb_in,listr);
-		p_tmp = cmp_rank(listl,listr);
+	    //if within frame:
+	    if (pr.x-koffsetx>=0 && pr.x+koffsetx<im_size.width  &&
+		pr.y-koffsety>=0 && pr.y+koffsety<im_size.height ){
+	      //if textured:
+	      if (dog_r[pr.x + pr.y*psb_in] >= params->bland_dog_thresh){
+		get_ndt(pr,im_r,psb_in,ndt2);
+		//get_rank(pr,im_r,psb_in,rank2);
+		p_tmp = cmp_ndt(ndt1,ndt2);
+		//p_tmp = cmp_rank(rank1,rank2);
 		if (p_tmp>p_d_p){
 		  p_d_p = p_tmp; 
 		  d_p = i-DRANGE;
@@ -414,18 +376,25 @@ int iCub::contrib::primateVision::ArmXOpt::prior_smoothness(Coord p, Coord np, i
       double p_d_np = 0.0;
       int d_np;
       //check all possible disparities of pixel np:
-      if (dog_l[np.x + np.y*psb_in] >= params->bland_dog_thresh){
-	if (np.x-RANKX>=0 && np.x+RANKX<im_size.width  &&
-	    np.y-RANKY>=0 && np.y+RANKY<im_size.height ){
-	  create_list(np,im_l,psb_in,listl);
+      //if within frame:
+      if (np.x-koffsetx>=0 && np.x+koffsetx<im_size.width  &&
+	  np.y-koffsety>=0 && np.y+koffsety<im_size.height ){
+	//if textured:
+	if (dog_l[np.x + np.y*psb_in] >= params->bland_dog_thresh){
+	  get_ndt(np,im_l,psb_in,ndt1);
+	  //get_rank(np,im_l,psb_in,rank1);
 	  for (int i=0;i<=2*DRANGE;i++){
 	    pr.x = np.x+i-DRANGE;
 	    pr.y = np.y;
-	    if (dog_r[pr.x + pr.y*psb_in] >= params->bland_dog_thresh){
-	      if (pr.x-RANKX>=0 && pr.x+RANKX<im_size.width  &&
-		  pr.y-RANKY>=0 && pr.y+RANKY<im_size.height ){
-		create_list(pr,im_r,psb_in,listr);
-		p_tmp = cmp_rank(listl,listr);
+	    //if within frame:
+	    if (pr.x-koffsetx>=0 && pr.x+koffsetx<im_size.width  &&
+		pr.y-koffsety>=0 && pr.y+koffsety<im_size.height ){
+	      //if textured:
+	      if (dog_r[pr.x + pr.y*psb_in] >= params->bland_dog_thresh){
+		get_ndt(pr,im_r,psb_in,ndt2);
+		//get_rank(pr,im_r,psb_in,rank2);
+		p_tmp = cmp_ndt(ndt1,ndt2);
+		//p_tmp = cmp_rank(rank1,rank2);
 		if (p_tmp>p_d_np){
 		  p_d_np = p_tmp; 
 		  d_np = i-DRANGE;
@@ -606,3 +575,162 @@ void iCub::contrib::primateVision::ArmXOpt::expand(int a)
   delete e;
   
 }
+
+
+void iCub::contrib::primateVision::ArmXOpt::get_ndt(Coord c,Ipp8u * im, int w, int*list)
+{
+
+  Coord n;
+
+  int ndt_ind = 0;
+  n = c+Coord(1,0);     
+  if (abs(im[n.y*w + n.x]-im[c.y*w + c.x])<=NDTEQ)
+    list[ndt_ind]= 0;
+  else if (im[n.y*w + n.x]-im[c.y*w + c.x]>NDTEQ)
+    list[ndt_ind]= 1;
+  else
+    list[ndt_ind]= -1;  
+
+  ndt_ind++;
+  n = c+Coord(0,1);
+  if (abs(im[n.y*w + n.x]-im[c.y*w + c.x])<=NDTEQ)
+    list[ndt_ind]= 0;
+  else if (im[n.y*w + n.x]-im[c.y*w + c.x]>NDTEQ)
+    list[ndt_ind]= 1;
+  else
+    list[ndt_ind]= -1;
+
+  ndt_ind++;
+  n = c+Coord(-1,0);
+  if (abs(im[n.y*w + n.x]-im[c.y*w + c.x])<=NDTEQ)
+    list[ndt_ind]= 0;
+  else if (im[n.y*w + n.x]-im[c.y*w + c.x]>NDTEQ)
+    list[ndt_ind]= 1;
+  else
+    list[ndt_ind]= -1;
+
+  ndt_ind++;
+  n = c+Coord(0,-1);
+  if (abs(im[n.y*w + n.x]-im[c.y*w + c.x])<=NDTEQ)
+    list[ndt_ind]= 0;
+  else if (im[n.y*w + n.x]-im[c.y*w + c.x]>NDTEQ)
+    list[ndt_ind]= 1;
+  else
+    list[ndt_ind]= -1;
+  
+
+  if (NDTSIZE>4){
+
+    //diagonals:
+    ndt_ind++;
+    n = c+Coord(1,1);     
+    if (abs(im[n.y*w + n.x]-im[c.y*w + c.x])<=NDTEQ)
+      list[ndt_ind]= 0;
+    else if (im[n.y*w + n.x]-im[c.y*w + c.x]>NDTEQ)
+      list[ndt_ind]= 1;
+    else
+      list[ndt_ind]= -1;  
+
+    ndt_ind++;
+    n = c+Coord(1,-1);
+    if (abs(im[n.y*w + n.x]-im[c.y*w + c.x])<=NDTEQ)
+      list[ndt_ind]= 0;
+    else if (im[n.y*w + n.x]-im[c.y*w + c.x]>NDTEQ)
+      list[ndt_ind]= 1;
+    else
+      list[ndt_ind]= -1;
+
+    ndt_ind++;
+    n = c+Coord(-1,1);
+    if (abs(im[n.y*w + n.x]-im[c.y*w + c.x])<=NDTEQ)
+      list[ndt_ind]= 0;
+    else if (im[n.y*w + n.x]-im[c.y*w + c.x]>NDTEQ)
+      list[ndt_ind]= 1;
+    else
+      list[ndt_ind]= -1;
+
+    ndt_ind++;
+    n = c+Coord(-1,-1);
+    if (abs(im[n.y*w + n.x]-im[c.y*w + c.x])<=NDTEQ)
+      list[ndt_ind]= 0;
+    else if (im[n.y*w + n.x]-im[c.y*w + c.x]>NDTEQ)
+      list[ndt_ind]= 1;
+    else
+      list[ndt_ind]= -1;
+  }
+  
+}
+
+double iCub::contrib::primateVision::ArmXOpt::cmp_ndt(int*ndt_l, int*ndt_r)
+{
+
+  int s=0;
+
+  for (int count=0;count<NDTSIZE;count++){
+    if(ndt_l[count]==ndt_r[count]){
+      s++;
+    }
+  }
+
+  return ((double)s)/((double)NDTSIZE);
+
+}
+
+
+void iCub::contrib::primateVision::ArmXOpt::get_rank(Coord c,Ipp8u *im, int w, int*list)
+{
+  Coord n;
+  int i = 0;
+
+  for (int x=-RANKX;x<=RANKX;x++){
+    for (int y=-RANKY;y<=RANKY;y++){
+      
+      n = c+Coord(x,y);
+      list[i] = im[n.y*w + n.x];
+      i++;
+
+    }
+  }
+
+}
+
+double iCub::contrib::primateVision::ArmXOpt::cmp_rank(int*l1, int*l2)
+{ 
+  int n1 = 0; //number of non-ties for x
+  int n2 = 0; //number of non-ties for y
+  int is = 0;
+  
+  int a1,a2,aa;
+  
+  double tau;//,svar,z,prob;
+
+  for(int j=0;j<RANKSIZE;j++) {
+    for(int k=j+1;k<RANKSIZE;k++) {
+      a1 = l1[j] - l1[k];
+      a2 = l2[j] - l2[k];
+      aa = a1*a2;
+      if(aa) {
+	++n1;
+	++n2;
+  	
+	aa > 0 ? ++is : --is;
+	
+      } else {
+	if(a1) ++n1;
+	if(a2) ++n2;
+      }
+    }
+  }
+  
+  tau = (is) / (sqrt(n1) * sqrt(n2));
+  // svar = (4.0 * n + 10.0) / (9.0 * n * (n - 1.0));
+  // z = tau / sqrt(svar);
+  // prob = erfcc(abs(z) / 1.4142136);
+
+  if (tau < 0.0){tau=0.0;}
+
+  return tau;
+}
+
+
+

@@ -87,9 +87,35 @@ namespace iCub {
 	int compute_energy();
 	void clear();
 	void expand(int a);/* computes the minimum a-expansion configuration */
-	void* create_list(Coord c,Ipp8u *im, int w, int*list);
-	bool is_tex(int*list);
+
+	void get_rank(Coord c,Ipp8u *im, int w, int*list);
+
+	/** A method to compare two rank lists.
+	 * @param l1 Rank transform list 1.
+	 * @param l2 Rank transform list 2.
+	 * @return Probablistic similarity of l1 and l2.
+	 */
 	double cmp_rank(int*l1, int*l2);
+	
+
+
+	/** A method to populate a list encoding the NDT transform.
+	 * @param c Image coordinates.
+	 * @param im Pointer to image data.
+	 * @param w Step in bytes through input image.
+	 * @param list Pointer to list to be populated with NDT transform.
+	 */
+	void get_ndt(Coord c,Ipp8u *im, int w, int*list);
+
+	/** A method to compare two NDT lists.
+	 * @param l1 NDT transform list 1.
+	 * @param l2 NDT transform list 2.
+	 * @return Probablistic similarity of l1 and l2.
+	 */
+	double cmp_ndt(int*l1, int*l2);
+	
+
+
 	void generate_permutation(int *buf, int n);
 	
 	int nmaps;

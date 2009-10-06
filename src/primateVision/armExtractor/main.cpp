@@ -276,12 +276,13 @@ int main(int argc, char *argv[])
 
   }
   else{ 
-    csx = -15;//sx - trsize.width/2 + spix_x;
-    csy = 25;//sy - trsize.height/2 + spix_y;
-    cs_ok = false;
+    //if not found automatically, fudge for now!
+    csx = -15; //sx - trsize.width/2 + spix_x;
+    csy = 25; //sy - trsize.height/2 + spix_y;
+    cs_ok = true; //cs_ok = false;
     printf("CSIM NOT CONFIDENT %d %d.\n",csx,csy);
   }
-  //construct fov_r:
+  //construct fov_sim:
   ippiCopy_8u_C1R(&cis->get_y()[(pos_y+csy)*cis->get_psb() + pos_x+csx],cis->get_psb(),fov_sim,psb_m,msize);
   
   
@@ -290,8 +291,8 @@ int main(int argc, char *argv[])
   
   
   
-  //if we have both fovea images aligned to template.	  
-  if (cl_ok && cr_ok){
+  //if we have all images aligned	  
+  if (cl_ok && cr_ok && cs_ok){
     
     
     //get Disp:
@@ -303,7 +304,6 @@ int main(int argc, char *argv[])
     dr->proc(fov_r,psb_m);
     ippiCopy_8u_C1R(dl->get_dog_onoff(),d->get_psb(),dog_l,psb_m,msize);
     ippiCopy_8u_C1R(dr->get_dog_onoff(),d->get_psb(),dog_r,psb_m,msize);
-    
     
     
     //blur sim image:
