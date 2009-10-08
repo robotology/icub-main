@@ -37,4 +37,4 @@ TARGET_LINK_LIBRARIES(objRec
 	)
 
 # install targets
-#INSTALL_TARGETS(${BIN_DIR} objRec )
+INSTALL_TARGETS(${BIN_DIR} objRec )

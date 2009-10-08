@@ -22,4 +22,4 @@ TARGET_LINK_LIBRARIES(objMan
 	)
 
 # install targets
-#INSTALL_TARGETS(${BIN_DIR} objMan )
+INSTALL_TARGETS(${BIN_DIR} objMan )
