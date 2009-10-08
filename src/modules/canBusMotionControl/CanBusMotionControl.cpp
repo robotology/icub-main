@@ -944,7 +944,6 @@ bool CanBusResources::writePacket ()
     res=iCanBus->canWrite(_writeBuffer, _writeMessages, &sent);
     if (!res)
     {
-        fprintf(stderr, "Warning: canWrite returned false");
         return false;
     }
 
