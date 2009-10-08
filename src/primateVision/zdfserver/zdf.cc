@@ -586,7 +586,13 @@ void iCub::contrib::primateVision::ZDFServer::run(){
 	tmpBot_res_mask.addDouble(rec_res->gaze3D_z);
 	tmpBot_res_mask.addInt((int)update);
 	outPort_res_mask.write();
+
+	Bottle& tmpBot_temp = outPort_temp.prepare();
+	tmpBot_temp.clear();
+	tmpBot_temp.add(Value::makeBlob( temp_r, psb_t*t_size));
+	outPort_temp.write();
 #endif	
+
 	Bottle& tmpBot_res_prob = outPort_res_prob.prepare();
 	tmpBot_res_prob.clear();
 	tmpBot_res_prob.add(Value::makeBlob( zd_prob_8u, psb_m*m_size));
@@ -601,11 +607,6 @@ void iCub::contrib::primateVision::ZDFServer::run(){
 	tmpBot_fov_r.clear();
 	tmpBot_fov_r.add(Value::makeBlob( fov_r, psb_m*m_size));
 	outPort_fov_r.write();
-
-	Bottle& tmpBot_temp = outPort_temp.prepare();
-	tmpBot_temp.clear();
-	tmpBot_temp.add(Value::makeBlob( temp_r, psb_t*t_size));
-	outPort_temp.write();
 
 	Bottle& tmpBot_seg_im = outPort_seg_im.prepare();
 	tmpBot_seg_im.clear();

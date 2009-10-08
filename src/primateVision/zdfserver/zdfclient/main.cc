@@ -119,11 +119,11 @@ int main( int argc, char **argv )
   Bottle *inBot_fov_r;
   Ipp8u  *zdf_im_fov_r;
 
-  BufferedPort<Bottle> inPort_temp;
-  inPort_temp.open("/zdfclient/input/template");
-  Network::connect("/zdfserver/output/template" , "/zdfclient/input/template");
-  Bottle *inBot_temp;
-  Ipp8u  *zdf_im_temp;
+  //BufferedPort<Bottle> inPort_temp;
+  //inPort_temp.open("/zdfclient/input/template");
+  //Network::connect("/zdfserver/output/template" , "/zdfclient/input/template");
+  //Bottle *inBot_temp;
+  //Ipp8u  *zdf_im_temp;
 
   BufferedPort<Bottle> inPort_seg_im;      // Create a port
   inPort_seg_im.open("/zdfclient/input/seg_im");     // Give it a name on the network.
@@ -146,7 +146,7 @@ int main( int argc, char **argv )
   iCub::contrib::primateVision::Display *d_fov_r    = new iCub::contrib::primateVision::Display(msize,m_psb,D_8U,"ZDF_FOV_R");
   iCub::contrib::primateVision::Display *d_seg_im   = new iCub::contrib::primateVision::Display(msize,m_psb,D_8U,"ZDF_SEG_IM");
   //iCub::contrib::primateVision::Display *d_seg_dog  = new iCub::contrib::primateVision::Display(msize,m_psb,D_8U,"ZDF_SEG_DOG");
-  iCub::contrib::primateVision::Display *d_temp     = new iCub::contrib::primateVision::Display(tsize,t_psb,D_8U_NN,"ZDF_TEMPLATE");
+  //iCub::contrib::primateVision::Display *d_temp     = new iCub::contrib::primateVision::Display(tsize,t_psb,D_8U_NN,"ZDF_TEMPLATE");
   iCub::contrib::primateVision::Display *d_res_prob = new iCub::contrib::primateVision::Display(msize,m_psb,D_8U,"ZDF_RES_PROB");
 
 
@@ -164,10 +164,10 @@ int main( int argc, char **argv )
     //inBot_rec_l = inPort_rec_l.read(false);
     //inBot_rec_r = inPort_rec_r.read(false);
     inBot_fov_r = inPort_fov_r.read(false);
-    inBot_seg_im = inPort_seg_im.read(false);
+    inBot_seg_im = inPort_seg_im.read();
     //inBot_seg_dog = inPort_seg_dog.read(false);
     //inBot_res_mask = inPort_res_mask.read(false);
-    inBot_temp  = inPort_temp.read();
+    //inBot_temp  = inPort_temp.read();
 
 
     //if (inBot_res_mask!=NULL){
@@ -208,10 +208,10 @@ int main( int argc, char **argv )
     //  d_seg_dog->display(zdf_im_seg_dog);
     //  //d_seg_dog->save(zdf_im_seg_dog,"seg_dog"+QString::number(k)+".jpg");
     // }
-    if (inBot_temp!=NULL){
-      zdf_im_temp = (Ipp8u*) inBot_temp->get(0).asBlob();
-      d_temp->display(zdf_im_temp);
-    }
+    //if (inBot_temp!=NULL){
+    //  zdf_im_temp = (Ipp8u*) inBot_temp->get(0).asBlob();
+    //  d_temp->display(zdf_im_temp);
+    //}
     
     if (//inBot_res_mask==NULL &&
 	inBot_res_prob==NULL &&
@@ -220,7 +220,7 @@ int main( int argc, char **argv )
 	//inBot_rec_r==NULL &&
 	inBot_seg_im==NULL &&
 	//inBot_seg_dog==NULL &&
-	inBot_temp==NULL &&
+	//inBot_temp==NULL &&
 	inBot_fov_r==NULL ){
       printf("No Input\n");
       usleep(5000);// don't blow out port
