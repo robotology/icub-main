@@ -144,10 +144,11 @@ int main( int argc, char **argv )
   //iCub::contrib::primateVision::Display *d_rec_l    = new iCub::contrib::primateVision::Display(osize,320,D_8U,"ZDF_REC_L");
   //iCub::contrib::primateVision::Display *d_rec_r    = new iCub::contrib::primateVision::Display(osize,320,D_8U,"ZDF_REC_R");
   iCub::contrib::primateVision::Display *d_fov_r    = new iCub::contrib::primateVision::Display(msize,m_psb,D_8U,"ZDF_FOV_R");
+  iCub::contrib::primateVision::Display *d_res_prob = new iCub::contrib::primateVision::Display(msize,m_psb,D_8U,"ZDF_RES_PROB");
   iCub::contrib::primateVision::Display *d_seg_im   = new iCub::contrib::primateVision::Display(msize,m_psb,D_8U,"ZDF_SEG_IM");
   //iCub::contrib::primateVision::Display *d_seg_dog  = new iCub::contrib::primateVision::Display(msize,m_psb,D_8U,"ZDF_SEG_DOG");
   //iCub::contrib::primateVision::Display *d_temp     = new iCub::contrib::primateVision::Display(tsize,t_psb,D_8U_NN,"ZDF_TEMPLATE");
-  iCub::contrib::primateVision::Display *d_res_prob = new iCub::contrib::primateVision::Display(msize,m_psb,D_8U,"ZDF_RES_PROB");
+ 
 
 
   printf("begin..\n");
