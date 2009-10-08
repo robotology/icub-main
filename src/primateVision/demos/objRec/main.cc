@@ -155,15 +155,19 @@ int main( int argc, char **argv )
 	
 	net->step();
 	outputs = out->outputs();	
-	cout << outputs[0] << endl;
+	cout << outputs[0] << " " <<  outputs[1] << " " << outputs[2] << endl;
 
 	label = "unknown";
 	if (outputs[0] > THRESHOLD){
 	  label = "bottle";
 	}
-	else if (outputs[0] < (1.0-THRESHOLD) ){
+	else if (outputs[1] > THRESHOLD){
 	  label = "fags";
 	}
+	else if (outputs[2] > THRESHOLD){
+	  label = "coke";
+	}
+
 
 	printf("%s, location: (%f,%f,%f)\n",label,posX,posY,posZ);
 		
