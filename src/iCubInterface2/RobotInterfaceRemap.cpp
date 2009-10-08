@@ -544,11 +544,6 @@ bool RobotInterfaceRemap::initialize20(const std::string &inifile)
         prefix+="/";
         prefix+=tmp->id.c_str();
         tmpProp.put("name", prefix.c_str());
-
-        
-
-
-
         //open wrapper
         std::cout<<"Opening wrapper for " << tmp->id << endl;
         //std::cout<<"Parameter list:"<<endl;
