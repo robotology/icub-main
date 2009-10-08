@@ -363,6 +363,7 @@ bool RobotInterfaceRemap::initialize10(const std::string &inifile)
                     {
                         Property tmpProp;
                         tmpProp.fromString(robotOptions.findGroup(partsList->get(p).asString()).toString());
+                        tmpProp.put("device", "controlboardwrapper2");
                         std::string prefix=robotName;
                         prefix+="/";
                         prefix+=partsList->get(p).asString();
@@ -397,6 +398,7 @@ bool RobotInterfaceRemap::initialize10(const std::string &inifile)
                     ///
 
                     tmpProp.put("name", prefix.c_str());
+                    tmpProp.put("device", "controlboardwrapper2");
                     //std::cout<<tmpProp.toString()<<endl;
                     RobotPartEntry *partEntry=new RobotPartEntry;
                     partEntry->id=netid;
@@ -535,12 +537,17 @@ bool RobotInterfaceRemap::initialize20(const std::string &inifile)
         //copy parameters verbatim from relative section
         tmpProp.fromString(robotOptions.findGroup(tmp->id.c_str()).toString());
 
+        //add device name
+        tmpProp.put("device", "controlboardwrapper2");
         //append robot name
         std::string prefix=robotName;
         prefix+="/";
         prefix+=tmp->id.c_str();
         tmpProp.put("name", prefix.c_str());
-        tmpProp.put("device", "controlboardwrapper2");
+
+        
+
+
 
         //open wrapper
         std::cout<<"Opening wrapper for " << tmp->id << endl;
