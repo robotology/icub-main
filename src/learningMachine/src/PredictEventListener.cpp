@@ -35,7 +35,7 @@ void PredictEventListener::resetPort(std::string portName) {
         do {
             // standard prefix + i
             buffer.str(""); // clear buffer
-            buffer << "/lm/event/predict" << i++;
+            buffer << "/lm/event/predict" << i++ << ":o";
         } while(Network::queryName(buffer.str().c_str()).isValid());
         portName = buffer.str();
     }
