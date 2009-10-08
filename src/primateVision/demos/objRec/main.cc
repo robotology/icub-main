@@ -1,10 +1,10 @@
 /**
- * Client of zdfserver.  
- * 
- * Classify ZDF DOG output.
- * If confident, send commands to recognised objects in iCubSIM
+ * Client of zdfserver.  Classifies ZDF DOG output. 
+ * Outputs localised classifications (primarily for the objMan module).
  *
  */ 
+
+
 //OPENCV INCLUDES
 #include <cv.h>
 #include <highgui.h>
@@ -13,10 +13,12 @@
 #include <string>
 #include <iostream>
 #include <qapplication.h>
+
 //MY INCLUDES
-#include <display.h>
 //client of:
 #include <zdfio.h>
+#include <display.h>
+
 //NNFW includes
 #include "nnfw.h"
 #include "biasedcluster.h"
@@ -33,11 +35,19 @@
 #define momentum 0.9
 
 #define SAVE 0
+#define DISPLAY 0
+
+
+
 #define THRESHOLD 0.8
+
+
 
 using namespace nnfw;
 using namespace std;
 using namespace iCub::contrib::primateVision;
+
+
 
 //NN Functions
 void loadNet();
@@ -58,7 +68,10 @@ IplImage* temp = 0;
 
 int main( int argc, char **argv )
 {
+
+#if DISPLAY || SAVE
   QApplication *a = new QApplication(argc, argv);
+#endif
 
   //probe ZDFServer:
   Port inPort_s;
@@ -74,16 +87,20 @@ int main( int argc, char **argv )
   int m_psb  = zsp.m_psb;
   IppiSize msize={m_size,m_size};
 
-  //Get DOG output from ZDF Server:
+
+  //Port to get DOG output from ZDF Server:
   BufferedPort<Bottle> inPort_seg_dog; 
   inPort_seg_dog.open("/objRec/input/seg_dog"); 
   Network::connect("/zdfserver/output/seg_dog" , "/objRec/input/seg_dog");
   Bottle *inBot_seg_dog;
   Ipp8u  *zdf_im_seg_dog;
 
+
+
+#if DISPLAY || SAVE
   //Display ZDF DOG output that will be classified:
   iCub::contrib::primateVision::Display *d_seg_dog  = new iCub::contrib::primateVision::Display(msize,m_psb,D_8U,"ZDF_SEG_DOG");
-
+#endif
 
 
 
@@ -98,11 +115,8 @@ int main( int argc, char **argv )
   }
   loadNet();//configures the neural network
  
-  BufferedPort<Bottle> simPort;// create port that will connect with the simulator
-  simPort.open("/objRec/output/sim"); 
-  Network::connect("/objRec/output/sim", "/icubSim/world"); //connect the output target to the simulator FOR NOW THIS CAN BE DONE MANUALLY
-
-
+  BufferedPort<Bottle> objPort;// create port that will connect with the simulator
+  objPort.open("/objRec/output/obj"); 
 
 
   //used to convert dog img to opencv:
@@ -113,10 +127,11 @@ int main( int argc, char **argv )
   int k=0;
   double posX=0.0,posY=0.0,posZ=0.0;
   bool update = false;
-
   const char *label;
-  const char *oldLabel;
-  oldLabel = "unknown";
+	double radius=0.03;
+
+
+
 
   printf("begin..\n");
   //main event loop:
@@ -133,8 +148,8 @@ int main( int argc, char **argv )
       update = (bool) inBot_seg_dog->get(4).asInt();
 
 
-
-      //only classify if we know it's a nice segmentation:
+      //only classify if we get an updated segmentation
+      //(if we know it's a nice segmentation):
 
       if (update){
 	//put image in openCV container
@@ -169,39 +184,30 @@ int main( int argc, char **argv )
 	}
 
 
-	printf("%s, location: (%f,%f,%f)\n",label,posX,posY,posZ);
-		
-	if (oldLabel!=label){
-	  printf("UPDATING WORLD\n");
-	  //OUTPUT DISPLAY TO SIM:
-	  Bottle& bot = simPort.prepare();
+  	printf("%s %f (%f,%f,%f)\n",label,radius,posX,posY,posZ);
+		//SEND!
+	  Bottle& bot = objPort.prepare();
 	  bot.clear();
-	  bot.addString ("world");
-	  bot.addString ("mk");
-	  bot.addString ("labl");
-	  bot.addDouble(0.025);//size
-	  bot.addDouble( nnfw::Random::flatReal ((Real) 0.0, (Real) 1.0));//x
-	  bot.addDouble( nnfw::Random::flatReal ((Real) 0.0, (Real) 1.0));//y
-	  bot.addDouble( nnfw::Random::flatReal ((Real) 0.0, (Real) 1.0));//z
+	  bot.addDouble(radius);
+	  bot.addDouble(posX);
+	  bot.addDouble(posY);
+	  bot.addDouble(posZ);
 	  bot.addString(label);
-	  simPort.write();	
-	  //**************************************
-	  oldLabel=label;
+	  objPort.write();	
 
 #if SAVE
 	  k++;
 	  d_seg_dog->save(zdf_im_seg_dog,"im"+QString::number(k)+".jpg");
 #endif
 
-	}
-
- 
-      } //update
+      }//update
       
       
-      //always:
-      //DISPLAY:
+#if DISPLAY
       d_seg_dog->display(zdf_im_seg_dog);
+#endif
+
+
     }
     if (inBot_seg_dog==NULL){
       // printf("No Input\n");
@@ -214,6 +220,9 @@ int main( int argc, char **argv )
 
   //never here! 
 }
+
+
+
 
 
 
