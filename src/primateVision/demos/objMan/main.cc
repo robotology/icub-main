@@ -76,7 +76,7 @@ int main( int argc, char **argv )
     if (inBot_obj!=NULL){
       
       newRadius = inBot_obj->get(0).asDouble();
-      newPosX   = inBot_obj->get(1).asDouble();
+      newPosX   = -inBot_obj->get(1).asDouble();
       newPosY   = -inBot_obj->get(2).asDouble() + 0.928; //height of head offset
       newPosZ   = inBot_obj->get(3).asDouble();
       newLabel  = inBot_obj->get(4).asString();
