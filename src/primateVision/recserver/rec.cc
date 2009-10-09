@@ -267,8 +267,8 @@ void iCub::contrib::primateVision::RecServer::run()
   rsp.psb=psb;
   rsp.focus=focus;
   rsp.baseline = baseline;
-  rsp.pix2degX = prop.findGroup("REC").find("PIX2DEGX").asDouble();
-  rsp.pix2degY = prop.findGroup("REC").find("PIX2DEGY").asDouble();
+  rsp.pix2degX = prop.findGroup("RECMOT").find("PIX2DEGX").asDouble();
+  rsp.pix2degY = prop.findGroup("RECMOT").find("PIX2DEGY").asDouble();
   //Replier:
   RecReplyParamProbe server_replier;
   server_replier.reply=rsp;

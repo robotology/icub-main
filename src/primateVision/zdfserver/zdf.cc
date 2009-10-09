@@ -288,6 +288,7 @@ void iCub::contrib::primateVision::ZDFServer::run(){
   double r;
   double rmax = sqrt((msize.width/2.0)*(msize.width/2.0) 
 		     +(msize.height/2.0)*(msize.height/2.0));
+  double r_deg,l_deg,t_deg,posx,posy,posz,z_;
 
   bool update = false;
   bool acquire = true;
@@ -616,14 +617,28 @@ void iCub::contrib::primateVision::ZDFServer::run(){
 	Bottle& tmpBot_seg_dog = outPort_seg_dog.prepare();
 	tmpBot_seg_dog.clear();
 	tmpBot_seg_dog.add(Value::makeBlob( seg_dog, psb_m*m_size));
-	//target pos.. DOES NOT TAKE INTO ACCOUNT VIRTUAL SHIFT!!
-	//use rsp.pix2deg(S)!!!
-	tmpBot_seg_dog.addDouble(rec_res->gaze3D_x);
-	tmpBot_seg_dog.addDouble(rec_res->gaze3D_y);
-	tmpBot_seg_dog.addDouble(rec_res->gaze3D_z);
+	//target pos.. ADD VIRTUAL SHIFT TO ANGLES:
+	r_deg = rec_res->deg_rx - rsp.pix2degX*tr_x;
+	l_deg = rec_res->deg_lx - rsp.pix2degX*tl_x;
+	t_deg = rec_res->deg_ly + rsp.pix2degY*(tl_y+tr_y)/2.0;
+
+	//printf("r:%f + %f   l:%f + %f   t:%f + %f  px:%f py:%f\n",
+	//       rec_res->deg_rx,-rsp.pix2degX*tr_x, 
+	//       rec_res->deg_lx,-rsp.pix2degX*tl_x,
+	//       rec_res->deg_ly,rsp.pix2degY*(tl_y+tr_y)/2.0,
+	//       rsp.pix2degX,rsp.pix2degY);
+
+	//CONVERT to 3D target pos:
+	posx = ((rsp.baseline/2.0)*(tan(IPP_PI/2.0-r_deg*IPP_PI/180.0)-tan(IPP_PI/2.0+l_deg*IPP_PI/180.0)))/(tan(IPP_PI/2.0-r_deg*IPP_PI/180.0)+tan(IPP_PI/2.0+l_deg*IPP_PI/180.0));
+	z_ = tan(IPP_PI/2.0-r_deg*IPP_PI/180.0)*(rsp.baseline/2.0-posx);
+	posz = cos(t_deg*IPP_PI/180.0)*z_;
+	posy = tan(t_deg*IPP_PI/180.0)*z_;
+	tmpBot_seg_dog.addDouble(posx);
+	tmpBot_seg_dog.addDouble(posy);
+	tmpBot_seg_dog.addDouble(posz);
 	tmpBot_seg_dog.addInt((int)update);
 	outPort_seg_dog.write();
-
+ 
 	//A yarpview compatible output port:
 	//norm to 255 for display:
 	normValI_8u(255,out,psb_m,msize);
