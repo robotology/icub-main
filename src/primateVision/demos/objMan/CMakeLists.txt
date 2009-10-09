@@ -18,7 +18,7 @@ ADD_EXECUTABLE( objMan
 		)
 
 TARGET_LINK_LIBRARIES(objMan
-
+	ippi
 	)
 
 # install targets

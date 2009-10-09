@@ -35,7 +35,7 @@
 #define momentum 0.9
 
 #define SAVE 0
-#define DISPLAY 0
+#define DISPLAY 1
 
 
 
@@ -68,11 +68,11 @@ IplImage* temp = 0;
 
 int main( int argc, char **argv )
 {
-
+  
 #if DISPLAY || SAVE
   QApplication *a = new QApplication(argc, argv);
 #endif
-
+  
   //probe ZDFServer:
   Port inPort_s;
   inPort_s.open("/objRec/input/serv_params"); 
@@ -86,24 +86,33 @@ int main( int argc, char **argv )
   int m_size = zsp.m_size;
   int m_psb  = zsp.m_psb;
   IppiSize msize={m_size,m_size};
-
-
+  
+  
   //Port to get DOG output from ZDF Server:
   BufferedPort<Bottle> inPort_seg_dog; 
   inPort_seg_dog.open("/objRec/input/seg_dog"); 
   Network::connect("/zdfserver/output/seg_dog" , "/objRec/input/seg_dog");
   Bottle *inBot_seg_dog;
   Ipp8u  *zdf_im_seg_dog;
+  
 
-
-
+  //Port to get SEG IM output from ZDF Server:
+  BufferedPort<Bottle> inPort_seg_im; 
+  inPort_seg_im.open("/objRec/input/seg_im"); 
+  Network::connect("/zdfserver/output/seg_im" , "/objRec/input/seg_im");
+  Bottle *inBot_seg_im;
+  int psb_im;
+  //we will cache this input:
+  Ipp8u  *zdf_im_seg = ippiMalloc_8u_C1(m_size,m_size,&psb_im);
+  
+  
 #if DISPLAY || SAVE
   //Display ZDF DOG output that will be classified:
   iCub::contrib::primateVision::Display *d_seg_dog  = new iCub::contrib::primateVision::Display(msize,m_psb,D_8U,"ZDF_SEG_DOG");
 #endif
-
-
-
+   
+  
+  
   // set up NN
   int seed =time(0);
   nnfw::Random::setSeed(seed); // initialise the network with a random seed
@@ -114,50 +123,53 @@ int main( int argc, char **argv )
     cl[i]->outputs().zeroing();                                
   }
   loadNet();//configures the neural network
- 
+  
   BufferedPort<Bottle> objPort;// create port that will connect with the simulator
   objPort.open("/objRec/output/obj"); 
-
-
+  
+  
   //used to convert dog img to opencv:
   segImg = cvCreateImage(cvSize(msize.width, msize.height), IPL_DEPTH_8U, 1);
   //for resizing to 50x50:
   temp = cvCreateImage(cvSize(50,50), IPL_DEPTH_8U , 1 );
-
+  
   int k=0;
   double posX=0.0,posY=0.0,posZ=0.0;
   bool update = false;
   const char *label;
-	double radius=0.03;
-
-
-
-
+  double radius=0.03;
+  
+  
+  
+  
   printf("begin..\n");
   //main event loop:
   while (1){
     
-
-    //get data from zdf server:
-    inBot_seg_dog = inPort_seg_dog.read(false);
+    
+    //get data from zdf server
+    inBot_seg_im = inPort_seg_im.read(false);
+    inBot_seg_dog = inPort_seg_dog.read(); //blocking
+    
+    
+    //classify on seg_dog:
     if (inBot_seg_dog!=NULL){
       zdf_im_seg_dog = (Ipp8u*) inBot_seg_dog->get(0).asBlob();
       posX = inBot_seg_dog->get(1).asDouble();
       posY = inBot_seg_dog->get(2).asDouble();
       posZ = inBot_seg_dog->get(3).asDouble();
       update = (bool) inBot_seg_dog->get(4).asInt();
-
-
+      
       //only classify if we get an updated segmentation
       //(if we know it's a nice segmentation):
-
       if (update){
+	
 	//put image in openCV container
 	ippiCopy_8u_C1R( zdf_im_seg_dog, m_psb, (Ipp8u*)segImg->imageData, segImg->widthStep, msize);   
 	//resize to 50x50:
 	cvResize(segImg, temp, CV_INTER_LINEAR);
 	
-
+	
 	//**************************************
 	//CLASSIFY:
 	//set image as inputs to NN:
@@ -171,7 +183,7 @@ int main( int argc, char **argv )
 	net->step();
 	outputs = out->outputs();	
 	cout << outputs[0] << " " <<  outputs[1] << " " << outputs[2] << endl;
-
+	
 	label = "unknown";
 	if (outputs[0] > THRESHOLD){
 	  label = "bottle";
@@ -182,42 +194,49 @@ int main( int argc, char **argv )
 	else if (outputs[2] > THRESHOLD){
 	  label = "coke";
 	}
-
-
   	printf("%s %f (%f,%f,%f)\n",label,radius,posX,posY,posZ);
-		//SEND!
-	  Bottle& bot = objPort.prepare();
-	  bot.clear();
-	  bot.addDouble(radius);
-	  bot.addDouble(posX);
-	  bot.addDouble(posY);
-	  bot.addDouble(posZ);
-	  bot.addString(label);
-	  objPort.write();	
+	//**************************************
+
+	
+	//seg_im should have arrived by now:
+	if (inBot_seg_im!=NULL){
+	  //copy to safe memory for send:
+	  ippiCopy_8u_C1R((Ipp8u*) inBot_seg_im->get(0).asBlob(),m_psb,zdf_im_seg,psb_im,msize);
+	}
+
+
+	//SEND!
+	Bottle& bot = objPort.prepare();
+	bot.clear();
+	bot.addDouble(radius);
+	bot.addDouble(posX);
+	bot.addDouble(posY);
+	bot.addDouble(posZ);
+	bot.addString(label);
+	bot.add(Value::makeBlob(zdf_im_seg,psb_im*msize.height));
+	objPort.write();	
 
 #if SAVE
-	  k++;
-	  d_seg_dog->save(zdf_im_seg_dog,"im"+QString::number(k)+".jpg");
+	k++;
+	d_seg_dog->save(zdf_im_seg_dog,"im"+QString::number(k)+".jpg");
 #endif
-
+	
       }//update
       
       
 #if DISPLAY
       d_seg_dog->display(zdf_im_seg_dog);
 #endif
-
-
-    }
-    if (inBot_seg_dog==NULL){
+      
+      
+    }//data
+    else{
       // printf("No Input\n");
       usleep(5000);// don't blow out port
     }
-
+    
   } //while
-
-
-
+  
   //never here! 
 }
 
