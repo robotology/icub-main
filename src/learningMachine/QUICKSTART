@@ -289,7 +289,6 @@ inputs.
 Step 1. 
 Start the train module with LSSVM, configured with a domain size of 4 and 
 codomain size of 6. 
-
 (train)-------------------------------------------------------------------------
 ./train --machine LSSVM --dom 4 --cod 6
 --------------------------------------------------------------------------------
@@ -378,6 +377,71 @@ Although not explicitly mentioned, it is adviseable to verify the parameter
 configuration commands using the 'info' method. This applies to both the train
 module and the transform module.
 
+3.2 Online RLS Example with Double Preprocessing
+
+A more elaborate example is to use iterative RLS in an online setting with 
+input scaling and Random Feature preprocessing. The inputs are scaled using a 
+predefined fixed input range. The training performance is monitored using the 
+train event listener. Also for this example we use the robot dynamics dataset, 
+but now we use all 12 inputs (position, velocity and accelerations for four 
+joints).
+
+Step 1.
+Start the train module with RLS, configured with a domain size of 250 and 
+codomain size of 6. In this example, 250 is the output dimensionality of the 
+Random Feature preprocessor.
+(train)-------------------------------------------------------------------------
+./train --machine RLS --dom 250 --cod 6
+--------------------------------------------------------------------------------
+
+Step 4.
+Configure the machine. Further, put the machine on pause, because we will first 
+standardize the inputs.
+(train)-------------------------------------------------------------------------
+set c 16
+"Setting configuration option succeeded"
+set gamma 0.25
+"Setting configuration option succeeded"
+pause
+"Sample stream to machine disabled."
+--------------------------------------------------------------------------------
+
+Step .
+Start the transform module with RandomFeature, for an input dimension of 12 and 
+output dimension of 250. Further, we set a non-default port prefix to and 
+define the ports to which it will connect.
+(transform_rf)------------------------------------------------------------------
+./transform --port /lm/transform_rf --transformer RandomFeature 
+--trainport /lm/train/train:i --predictport /lm/train/predict:io 
+--dom 12 --cod 250
+--------------------------------------------------------------------------------
+
+Step .
+Configure the latter transform module by setting the gamma value.
+(transform_rf)------------------------------------------------------------------
+set gamma 0.2
+"Setting configuration option succeeded"
+--------------------------------------------------------------------------------
+
+Step .
+Start the transform module with Scaler, for an input dimension of 12. Also now 
+we set a non-default port prefix to and define the connecting ports.
+(transform_scale)---------------------------------------------------------------
+./transform --port /lm/transform_scale --transformer Scaler 
+--trainport /lm/transform_rf/train:i --predictport /lm/transform_rf/predict:io 
+--dom 12
+--------------------------------------------------------------------------------
+
+Step .
+Configure the scaler transform module by setting all types to Fixed and 
+configuring the bounds.
+(transform_scale)---------------------------------------------------------------
+
+--------------------------------------------------------------------------------
+
+
+(transform)---------------------------------------------------------------------
+(test)--------------------------------------------------------------------------
 
 4. Notes
 
