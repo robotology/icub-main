@@ -8,6 +8,7 @@
 
 #include <cfloat>
 #include <sstream>
+#include <iostream>
 
 #include <yarp/os/Value.h>
 
@@ -45,7 +46,7 @@ bool FixedRangeScaler::configure(Searchable& config) {
         this->setLowerBoundIn(config.find("lowerin").asDouble());
         success = true;
     }
-    // set the expected incoming bound (double)
+    // set the expected incoming upper bound (double)
     if(config.find("upperin").isDouble() || config.find("upperin").isInt()) {
         this->setUpperBoundIn(config.find("upperin").asDouble());
         success = true;
@@ -62,6 +63,32 @@ bool FixedRangeScaler::configure(Searchable& config) {
         success = true;
     }
 
+    if(!config.findGroup("in").isNull()) {
+        Bottle& bot = config.findGroup("in");
+        if(bot.size() == 3 && (bot.get(1).isInt() || bot.get(1).isDouble()) && 
+           (bot.get(2).isInt() || bot.get(2).isDouble())) {
+
+            this->setLowerBoundIn(bot.get(1).asDouble());
+            this->setUpperBoundIn(bot.get(2).asDouble());
+            success = true;
+        }
+    }
+
+    if(!config.findGroup("out").isNull()) {
+        std::cout << "out: " << config.findGroup("out").toString() << std::endl;
+        Bottle& bot = config.findGroup("out");
+        if(bot.size() == 3 && (bot.get(1).isInt() || bot.get(1).isDouble()) && 
+           (bot.get(2).isInt() || bot.get(2).isDouble())) {
+
+            this->setLowerBoundOut(bot.get(1).asDouble());
+            this->setUpperBoundOut(bot.get(2).asDouble());
+            success = true;
+        }
+    }
+
+    // set the desired outgoing upper bound (double)
+    //std::cout << config.toString() << std::endl;
+    
     return success;
 }
 
