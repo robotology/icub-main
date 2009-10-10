@@ -2,7 +2,7 @@
  * Copyright (C) 2007-2009 Arjan Gijsberts @ Italian Institute of Technology
  * CopyPolicy: Released under the terms of the GNU GPL v2.0.
  *
- * The standard event listener class for predict events.
+ * The standard event listener class for train events.
  *
  */
 
@@ -11,10 +11,9 @@
 
 #include <string>
 
-#include <yarp/os/Port.h>
 #include <yarp/sig/Vector.h>
 
-#include "iCub/IEventListener.h"
+#include "iCub/IPortEventListener.h"
 #include "iCub/TrainEvent.h"
 
 using namespace yarp::sig;
@@ -31,60 +30,24 @@ namespace learningmachine {
  * \author Arjan Gijsberts
  */
 
-class TrainEventListener : virtual public IEventListener {
+class TrainEventListener : virtual public IPortEventListener {
 protected:
-    /**
-     * The outgoing port for train events.
-     */
-    Port port;
-    
-    /**
-     * Resets the port and opens it at the specified name.
-     *
-     * @param portName the name of the port
-     */
-    void resetPort(std::string portName);
-    
     void vectorToBottle(const Vector& vec, Bottle& bot) {
         for(int i = 0; i < vec.size(); i++) 
             bot.addDouble(vec[i]);
     }
 
 public:
-
     /**
      * Constructor
      */
-    TrainEventListener(std::string name = "Train");
-
-    /**
-     * Destructor
-     */
-    virtual ~TrainEventListener();
+    TrainEventListener(std::string name = "Train", std::string pp = "/lm/event/train") 
+      : IPortEventListener(name, pp) {}
 
     /*
      * Inherited from IEventListener.
      */
     void handle(TrainEvent& e);
-
-    /*
-     * Inherited from IConfig.
-     */
-    virtual bool configure(Searchable& config);
-
-    /*
-     * Inherited from IEventListener.
-     */
-    virtual void start() {
-        this->resetPort("");
-    }
-
-    /*
-     * Inherited from IEventListener.
-     */
-    virtual std::string getInfo() { 
-        return this->IEventListener::getInfo() + " [port: " + this->port.where().toString().c_str() + "]"; 
-    }
 
     /*
      * Inherited from IEventListener.

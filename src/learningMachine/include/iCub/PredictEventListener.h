@@ -11,9 +11,9 @@
 
 #include <string>
 
-#include <yarp/os/Port.h>
+#include <yarp/sig/Vector.h>
 
-#include "iCub/IEventListener.h"
+#include "iCub/IPortEventListener.h"
 #include "iCub/PredictEvent.h"
 
 namespace iCub {
@@ -28,20 +28,8 @@ namespace learningmachine {
  * \author Arjan Gijsberts
  */
 
-class PredictEventListener : virtual public IEventListener {
+class PredictEventListener : virtual public IPortEventListener {
 protected:
-    /**
-     * The outgoing port for train events.
-     */
-    Port port;
-    
-    /**
-     * Resets the port and opens it at the specified name.
-     *
-     * @param portName the name of the port
-     */
-    void resetPort(std::string portName);
-
     void vectorToBottle(const Vector& vec, Bottle& bot) {
         for(int i = 0; i < vec.size(); i++) 
             bot.addDouble(vec[i]);
@@ -51,36 +39,12 @@ public:
     /**
      * Constructor
      */
-    PredictEventListener(std::string name = "Predict");
-
-    /**
-     * Destructor
-     */
-    virtual ~PredictEventListener();
+    PredictEventListener(std::string name = "Predict", std::string pp = "/lm/event/predict") : IPortEventListener(name, pp) { }
 
     /*
      * Inherited from IEventListener.
      */
     void handle(PredictEvent& e);
-
-    /*
-     * Inherited from IConfig.
-     */
-    virtual bool configure(Searchable& config);
-
-    /*
-     * Inherited from IEventListener.
-     */
-    virtual void start() {
-        this->resetPort("");
-    }
-
-    /*
-     * Inherited from IEventListener.
-     */
-    virtual std::string getInfo() { 
-        return this->IEventListener::getInfo() + " [port: " + this->port.where().toString().c_str() + "]"; 
-    }
 
     /*
      * Inherited from IEventListener.

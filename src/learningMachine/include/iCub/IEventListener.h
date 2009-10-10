@@ -6,8 +6,8 @@
  *
  */
 
-#ifndef __ICUB_EVENTLISTENER__
-#define __ICUB_EVENTLISTENER__
+#ifndef __ICUB_IEVENTLISTENER__
+#define __ICUB_IEVENTLISTENER__
 
 #include <yarp/os/IConfig.h>
 
@@ -50,6 +50,7 @@ public:
      *
      * @param name the name under which this EventListener will be registered
      */
+    // does not compile without the default value, although we never use it
     IEventListener(std::string name);
 
     /**

@@ -25,7 +25,7 @@ ENDIF (NOT ICUB_FOUND)
 
 # Source code Groups
 SET(MODULE_SRC src/IMachineLearnerModule.cpp)
-SET(EVENT_SRC src/DispatcherManager.cpp src/EventDispatcher.cpp src/IEvent.cpp src/IEventListener.cpp src/PredictEvent.cpp src/PredictEventListener.cpp src/TrainEvent.cpp src/TrainEventListener.cpp)
+SET(EVENT_SRC src/DispatcherManager.cpp src/EventDispatcher.cpp src/IEvent.cpp src/IEventListener.cpp src/IPortEventListener.cpp src/PredictEvent.cpp src/PredictEventListener.cpp src/TrainEvent.cpp src/TrainEventListener.cpp)
 SET(MACHINE_SRC src/IFixedSizeLearner.cpp src/MachinePortable.cpp src/DatasetRecorder.cpp src/DummyLearner.cpp src/LSSVMLearner.cpp src/RLSLearner.cpp)
 SET(TRANSFORMER_SRC src/ITransformer.cpp src/IFixedSizeTransformer.cpp src/ScaleTransformer.cpp src/IScaler.cpp src/Standardizer.cpp src/Normalizer.cpp src/FixedRangeScaler.cpp src/RandomFeature.cpp)
 #SET(EVENT_SRC
