@@ -1,1 +1,0 @@
-python C:\iCub\app\default\scripts\manager.py %1
