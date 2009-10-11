@@ -25,7 +25,7 @@
  *
  * \section parameters_sec Parameters
  * 
- * Command-line \verbatim Parameters \endverbatim
+ * <b>Command-line Parameters</b>
  * 
  * The following key-value pairs can be specified as command-line parameters by prefixing \c -- to the key 
  * (e.g. \c --from \c file.ini ). The value part can be changed to suit your needs; the default values are shown below. 
@@ -75,7 +75,7 @@
  *   \c p2 \c 0.000317338 \n
  * 
  * 
- * Module Configuration File Parameters
+ * <b>Module Configuration File Parameters</b>
  *
  * The following key-value pairs can be specified as parameters in the configuration file e.g. \c rectification.ini 
  * (they can also be specified as command-line parameters if you so wish). 
@@ -107,14 +107,14 @@
  *                      
  * \section portsc_sec Ports Created
  *
- *  Input ports
+ * <b>Input ports</b>
  *
  * - \c /rectification \n
  *   This port is used to change the parameters of the module at run time or stop the module
  *   The following commands are available
  * 
- *   help \n
- *   quit
+ *   \c help \n
+ *   \c quit
  *
  *   Note that the name of this port mirrors whatever is provided by the \c --name parameter value
  *   The port is attached to the terminal so that you can type in commands and receive replies.
@@ -128,7 +128,7 @@
  * - \c /rectification/head:i \n
  *   This port needs to be connected to \c /icub/head/state:o to get the version and vergence values.
  *
- * Output ports
+ * <b>Output ports</b>
  *
  * - \c /rectification \n
  *   see above
@@ -138,7 +138,7 @@
  * - \c /rectification/rightImage:o
  *
  *
- * Port types 
+ * <b>Port types </b>
  *
  * The functional specification only names the ports to be used to communicate with the module 
  * but doesn't say anything about the data transmitted on the ports. This is defined by the following code. 
