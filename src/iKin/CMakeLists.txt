@@ -16,8 +16,9 @@ IF(ADD_IPOPT)
    ENDIF(NOT IPOPT_FOUND)
 ENDIF(ADD_IPOPT)
 
-SET(folder_source src/iKinFwd.cpp src/iKinInv.cpp)
-SET(folder_header include/iCub/iKinFwd.h include/iCub/iKinInv.h)
+SET(folder_source src/iKinFwd.cpp src/iKinInv.cpp src/iKinHlp.cpp)
+SET(folder_header include/iCub/iKinFwd.h include/iCub/iKinInv.h
+                  include/iCub/iKinVocabs.h include/iCub/iKinHlp.h)
 
 IF(IPOPT_FOUND)
    SET(folder_source ${folder_source} src/iKinIpOpt.cpp src/iKinSlv.cpp)

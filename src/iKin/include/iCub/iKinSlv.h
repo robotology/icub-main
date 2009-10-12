@@ -115,8 +115,8 @@
  *
  */ 
 
-#ifndef __IKINISLV_H__
-#define __IKINISLV_H__
+#ifndef __IKINSLV_H__
+#define __IKINSLV_H__
 
 #include <yarp/os/BufferedPort.h>
 #include <yarp/os/RateThread.h>
@@ -126,11 +126,12 @@
 #include <yarp/dev/ControlBoardInterfaces.h>
 #include <yarp/dev/PolyDriver.h>
 
+#include <iCub/iKinHlp.h>
 #include <iCub/iKinIpOpt.h>
-#include <iCub/iKinVocabs.h>
 
 #include <string>
 #include <deque>
+
 
 namespace iKin
 {
@@ -142,13 +143,6 @@ namespace iKin
     class  ArmCartesianSolver;
     class  LegCartesianSolver;
 }
-
-
-using namespace std;
-using namespace yarp;
-using namespace yarp::os;
-using namespace yarp::dev;
-using namespace yarp::sig;
 
 
 class iKin::RpcProcessor : public yarp::os::PortReader
@@ -209,12 +203,12 @@ public:
 
 struct iKin::PartDescriptor
 {
-    iKinLimb             *lmb;
-    iKinChain            *chn;
-    iKinLinIneqConstr    *cns;
-    std::deque<Property>  prp;
-    std::deque<bool>      rvs;
-    int                   num;
+    iKinLimb                      *lmb;
+    iKinChain                     *chn;
+    iKinLinIneqConstr             *cns;
+    std::deque<yarp::os::Property> prp;
+    std::deque<bool>               rvs;
+    int                            num;
 };
 
 
@@ -223,7 +217,8 @@ struct iKin::PartDescriptor
 *
 * Abstract class defining the core of on-line solvers.
 */
-class iKin::CartesianSolver : public yarp::os::RateThread
+class iKin::CartesianSolver : public yarp::os::RateThread,
+                              public iKin::CartesianHelper
 {
 protected:
     PartDescriptor                        *prt;
@@ -281,13 +276,11 @@ protected:
     void   waitDOFHandling();
     void   postDOFHandling();
     void   fillDOFInfo(yarp::os::Bottle &reply);
-    double getNorm(const yarp::sig::Vector &v, const string &typ);
+    double getNorm(const yarp::sig::Vector &v, const std::string &typ);
     bool   respond(const yarp::os::Bottle &command, yarp::os::Bottle &reply);
     void   send(const yarp::sig::Vector &xd);
     void   send(const yarp::sig::Vector &xd, const yarp::sig::Vector &x, const yarp::sig::Vector &q);
-    void   printInfo(yarp::sig::Vector &xd, yarp::sig::Vector &x, yarp::sig::Vector &q, const double t);
-
-    static void addVectorOption(yarp::os::Bottle &b, const int vcb, const yarp::sig::Vector &v);
+    void   printInfo(yarp::sig::Vector &xd, yarp::sig::Vector &x, yarp::sig::Vector &q, const double t);    
 
     virtual bool threadInit();
     virtual void afterStart(bool);
@@ -369,62 +362,6 @@ public:
     * @return true/false if successful/failed
     */
     virtual bool open(yarp::os::Searchable &options);
-
-    /**
-    * Appends to a bottle all data needed to command a target.
-    * @param b is the bottle where to append the data.
-    * @param xd is the target [7-components vector].
-    */
-    static void addTargetOption(yarp::os::Bottle &b, const yarp::sig::Vector &xd);
-
-    /**
-    * Appends to a bottle all data needed to reconfigure chain's 
-    * dof. 
-    * @param b is the bottle where to append the data.
-    * @param dof is the vector of new chain's dof configuration. 
-    */
-    static void addDOFOption(yarp::os::Bottle &b, const yarp::sig::Vector &dof);
-
-    /**
-    * Appends to a bottle all data needed to change the pose mode.
-    * @param b is the bottle where to append the data.
-    * @param pose is the new pose mode. 
-    *  IKINCTRL_POSE_FULL => complete pose control.
-    *  IKINCTRL_POSE_XYZ  => translational part of pose controlled. 
-    */
-    static void addPoseOption(yarp::os::Bottle &b, const unsigned int pose);
-
-    /**
-    * Appends to a bottle all data needed to change the tracking 
-    * mode. 
-    * @param b is the bottle where to append the data.
-    * @param tracking true to enable tracking mode. 
-    */
-    static void addModeOption(yarp::os::Bottle &b, const bool tracking);
-
-    /**
-    * Retrieves commanded target data from a bottle.
-    * @param b is the bottle containing the data to be retrieved.
-    * @return a pointer to the sub-bottle containing the retrieved 
-    *         data.
-    */
-    static Bottle *getTargetOption(yarp::os::Bottle &b);
-
-    /**
-    * Retrieves the end-effector pose data.
-    * @param b is the bottle containing the data to be retrieved.
-    * @return a pointer to the sub-bottle containing the retrieved 
-    *         data.
-    */
-    static Bottle *getEndEffectorPoseOption(yarp::os::Bottle &b);
-
-    /**
-    * Retrieves the joints configuration data.
-    * @param b is the bottle containing the data to be retrieved.
-    * @return a pointer to the sub-bottle containing the retrieved 
-    *         data.
-    */
-    static Bottle *getJointsOption(yarp::os::Bottle &b);
 
     /**
     * Stop the solver and dispose it. Called by destructor.

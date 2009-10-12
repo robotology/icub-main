@@ -11,6 +11,7 @@
 #include <stdio.h>
 
 #include <iCub/iKinVocabs.h>
+#include <iCub/iKinHlp.h>
 
 #include "CommonCartesianController.h"
 #include "ServerCartesianController.h"
@@ -580,7 +581,7 @@ bool ServerCartesianController::getTarget(Vector &_xdes, Vector &_qdes)
     {
         if (b1->check(Vocab::decode(IKINSLV_VOCAB_OPT_X)))
         {
-            Bottle *b2=CartesianSolver::getEndEffectorPoseOption(*b1);
+            Bottle *b2=CartesianHelper::getEndEffectorPoseOption(*b1);
             int l1=b2->size();
             int l2=7;
             int len=l1<l2 ? l1 : l2;
@@ -591,7 +592,7 @@ bool ServerCartesianController::getTarget(Vector &_xdes, Vector &_qdes)
 
         if (b1->check(Vocab::decode(IKINSLV_VOCAB_OPT_Q)))
         {
-            Bottle *b2=CartesianSolver::getJointsOption(*b1);
+            Bottle *b2=CartesianHelper::getJointsOption(*b1);
             int l1=b2->size();
             int l2=chain->getDOF();
             int len=l1<l2 ? l1 : l2;
@@ -690,7 +691,7 @@ void ServerCartesianController::run()
                 // switch the solver status to one shot mode
                 Bottle &b=portSlvOut->prepare();
                 b.clear();
-                CartesianSolver::addModeOption(b,false);
+                CartesianHelper::addModeOption(b,false);
                 portSlvOut->write();
             }
         }
@@ -1120,16 +1121,16 @@ bool ServerCartesianController::goTo(unsigned int _ctrlPose, const Vector &xd)
         b.clear();
     
         // xd part
-        CartesianSolver::addTargetOption(b,xd);
+        CartesianHelper::addTargetOption(b,xd);
         // pose part
-        CartesianSolver::addPoseOption(b,ctrlPose);
+        CartesianHelper::addPoseOption(b,ctrlPose);
         // always put solver in continuous mode
         // before commanding a new desired pose
         // in order to compensate for movements
         // of uncontrolled joints
         // correct solver status will be reinstated
         // accordingly at the end of trajectory
-        CartesianSolver::addModeOption(b,true);
+        CartesianHelper::addModeOption(b,true);
     
         portSlvOut->write();        
     
@@ -1147,7 +1148,7 @@ bool ServerCartesianController::setTrackingMode(const bool f)
     {
         Bottle &b=portSlvOut->prepare();
         b.clear();
-        CartesianSolver::addModeOption(b,trackingMode=f);
+        CartesianHelper::addModeOption(b,trackingMode=f);
         portSlvOut->write();
 
         return true;

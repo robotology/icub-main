@@ -4,6 +4,8 @@
 #include <yarp/os/Port.h>
 #include <yarp/sig/Vector.h>
 
+#include <iCub/iKinVocabs.h>
+#include <iCub/iKinHlp.h>
 #include <iCub/iKinSlv.h>
 
 #include <iostream>
@@ -121,9 +123,9 @@ int main()
     out.write(cmd);
     in.wait(reply);
 
-    cout<<"xd      ="<<CartesianSolver::getTargetOption(reply)->toString()<<endl;
-    cout<<"x       ="<<CartesianSolver::getEndEffectorPoseOption(reply)->toString()<<endl;
-    cout<<"q [rad] ="<<CartesianSolver::getJointsOption(reply)->toString()<<endl;
+    cout<<"xd      ="<<CartesianHelper::getTargetOption(reply)->toString()<<endl;
+    cout<<"x       ="<<CartesianHelper::getEndEffectorPoseOption(reply)->toString()<<endl;
+    cout<<"q [rad] ="<<CartesianHelper::getJointsOption(reply)->toString()<<endl;
     cout<<endl;
 
     // ask the same but with torso enabled
@@ -134,9 +136,9 @@ int main()
     out.write(cmd);
     in.wait(reply);
 
-    cout<<"xd      ="<<CartesianSolver::getTargetOption(reply)->toString()<<endl;
-    cout<<"x       ="<<CartesianSolver::getEndEffectorPoseOption(reply)->toString()<<endl;
-    cout<<"q [rad] ="<<CartesianSolver::getJointsOption(reply)->toString()<<endl;
+    cout<<"xd      ="<<CartesianHelper::getTargetOption(reply)->toString()<<endl;
+    cout<<"x       ="<<CartesianHelper::getEndEffectorPoseOption(reply)->toString()<<endl;
+    cout<<"q [rad] ="<<CartesianHelper::getJointsOption(reply)->toString()<<endl;
     cout<<endl;
 
     // close up

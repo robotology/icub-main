@@ -4,6 +4,8 @@
 #ifndef __COMMONCARTESIANCONTROLLER_H__
 #define __COMMONCARTESIANCONTROLLER_H__
 
+#include <yarp/os/Vocab.h>
+
 #define IKINCARTCTRL_VOCAB_CMD_GET          VOCAB3('g','e','t')
 #define IKINCARTCTRL_VOCAB_CMD_SET          VOCAB3('s','e','t')
 #define IKINCARTCTRL_VOCAB_CMD_GO           VOCAB2('g','o')
