@@ -137,9 +137,9 @@ void ServerCartesianController::init()
     executingTraj=false;
     motionDone   =true;
 
-    maxPartJoints=0;
-
+    connectCnt=0;
     ctrlPose=IKINCTRL_POSE_FULL;
+    maxPartJoints=0;
     trajTime=1.0;
 
     // request high resolution scheduling
@@ -659,53 +659,61 @@ void ServerCartesianController::afterStart(bool s)
 /************************************************************************/
 void ServerCartesianController::run()
 {    
-    // begin of critical code
-    mutex->wait();
-
-    // get the current target pose
-    if (getTarget(xdes,qdes))
-        executingTraj=true; // onset of new trajectory
-
-    // read the feedback
-    getFeedback(fb);
-    ctrl->set_q(fb);
-    
-    if (executingTraj || trackingMode)
+    if (connected)
     {
-        // limb control loop
-        ctrl->iterate(xdes,qdes);
-
-        // send joints velocities to the robot [deg/s]
-        sendVelocity((180.0/M_PI)*ctrl->get_qdot());
-
-        // handle the end-trajectory event
-        if (ctrl->isInTarget())
+        // begin of critical code
+        mutex->wait();
+    
+        // get the current target pose
+        if (getTarget(xdes,qdes))
+            executingTraj=true; // onset of new trajectory
+    
+        // read the feedback
+        getFeedback(fb);
+        ctrl->set_q(fb);
+        
+        if (executingTraj || trackingMode)
         {
-            executingTraj=false;
-            motionDone   =true;
-
-            if (!trackingMode)
+            // limb control loop
+            ctrl->iterate(xdes,qdes);
+    
+            // send joints velocities to the robot [deg/s]
+            sendVelocity((180.0/M_PI)*ctrl->get_qdot());
+    
+            // handle the end-trajectory event
+            if (ctrl->isInTarget())
             {
-                stopLimbVel();
-
-                // switch the solver status to one shot mode
-                Bottle &b=portSlvOut->prepare();
-                b.clear();
-                CartesianHelper::addModeOption(b,false);
-                portSlvOut->write();
+                executingTraj=false;
+                motionDone   =true;
+    
+                if (!trackingMode)
+                {
+                    stopLimbVel();
+    
+                    // switch the solver status to one shot mode
+                    Bottle &b=portSlvOut->prepare();
+                    b.clear();
+                    CartesianHelper::addModeOption(b,false);
+                    portSlvOut->write();
+                }
             }
         }
+    
+        // streams out the end-effector pose
+        portState->prepare()=chain->EndEffPose();
+        portState->setEnvelope(*txInfo);
+        portState->write();
+    
+        txInfo->update();
+    
+        // end of critical code
+        mutex->post();
     }
-
-    // streams out the end-effector pose
-    portState->prepare()=chain->EndEffPose();
-    portState->setEnvelope(*txInfo);
-    portState->write();
-
-    txInfo->update();
-
-    // end of critical code
-    mutex->post();
+    else if ((++connectCnt)*getRate()>1e3)
+    {
+        connectToSolver();
+        connectCnt=0;
+    }
 }
 
 
@@ -1014,15 +1022,15 @@ bool ServerCartesianController::attachAll(const PolyDriverList &p)
     }
 
     // create controller
-    newController();
-
-    start();
+    newController();    
 
     // this line shall be put before any
     // call to attached-dependent methods
     attached=true;
 
     connectToSolver();
+
+    start();
 
     return true;
 }

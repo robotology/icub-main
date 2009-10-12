@@ -84,6 +84,7 @@ protected:
     void *lJnt;
     void *lRmp;
 
+    unsigned int connectCnt;
     unsigned int ctrlPose;
     int          maxPartJoints;
     double       trajTime;
