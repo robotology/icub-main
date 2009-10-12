@@ -157,7 +157,9 @@ ENDIF (ARTOOLKITPLUS_FOUND)
 
   IF (GSL_FOUND)
     ADD_SUBDIRECTORY(kinematics) 
-    ADD_SUBDIRECTORY(ctrlLib)    
+    ADD_SUBDIRECTORY(ctrlLib)
+    ADD_SUBDIRECTORY(iKin)
+    ADD_SUBDIRECTORY(iKinHead)
     ADD_SUBDIRECTORY(velocityObserver)  
     ADD_SUBDIRECTORY(scriptSequencer)
     ADD_SUBDIRECTORY(demoReachManager_IIT_ISR)
@@ -190,13 +192,10 @@ ENDIF (ARTOOLKITPLUS_FOUND)
   #ADD_SUBDIRECTORY(optFlow) //does not compile on LINUX yet
 
 
-  # Kinematic library
-  IF(GSL_FOUND AND IPOPT_FOUND)
-    ADD_SUBDIRECTORY(iKin)
+  IF(GSL_FOUND AND IPOPT_FOUND)    
     ADD_SUBDIRECTORY(iKinCartesianSolver)
     ADD_SUBDIRECTORY(iKinArmCtrl)
-    ADD_SUBDIRECTORY(iKinGazeCtrl)
-    ADD_SUBDIRECTORY(iKinHead)
+    ADD_SUBDIRECTORY(iKinGazeCtrl)    
     ADD_SUBDIRECTORY(cylGuard)
   ENDIF(GSL_FOUND AND IPOPT_FOUND)
 
