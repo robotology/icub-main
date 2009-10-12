@@ -34,7 +34,7 @@ namespace learningmachine {
 
 class IEventListener;
 
-class PredictEvent : virtual public IEvent {
+class PredictEvent : public IEvent {
 protected:
     /**
      * Vector of inputs.

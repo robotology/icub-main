@@ -16,9 +16,6 @@
 #include "iCub/IPortEventListener.h"
 #include "iCub/TrainEvent.h"
 
-using namespace yarp::sig;
-using namespace yarp::os;
-
 namespace iCub {
 namespace contrib {
 namespace learningmachine {
@@ -30,7 +27,7 @@ namespace learningmachine {
  * \author Arjan Gijsberts
  */
 
-class TrainEventListener : virtual public IPortEventListener {
+class TrainEventListener : public IPortEventListener {
 protected:
     void vectorToBottle(const Vector& vec, Bottle& bot) {
         for(int i = 0; i < vec.size(); i++) 

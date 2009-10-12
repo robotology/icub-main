@@ -28,7 +28,7 @@ namespace learningmachine {
  * \author Arjan Gijsberts
  */
 
-class PredictEventListener : virtual public IPortEventListener {
+class PredictEventListener : public IPortEventListener {
 protected:
     void vectorToBottle(const Vector& vec, Bottle& bot) {
         for(int i = 0; i < vec.size(); i++) 

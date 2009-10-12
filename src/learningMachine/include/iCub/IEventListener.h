@@ -32,7 +32,7 @@ class IEvent;
 class TrainEvent;
 class PredictEvent;
 
-class IEventListener : virtual public IConfig {
+class IEventListener : public IConfig {
 protected:
     /**
      * The name of this type of EventListener.

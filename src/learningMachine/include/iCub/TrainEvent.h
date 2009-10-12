@@ -33,7 +33,7 @@ class IEventListener;
  * \author Arjan Gijsberts
  */
 
-class TrainEvent : virtual public IEvent {
+class TrainEvent : public IEvent {
 protected:
     /**
      * Vector of inputs.

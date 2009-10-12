@@ -30,7 +30,7 @@ namespace learningmachine {
  * \author Arjan Gijsberts
  */
 
-class IPortEventListener : virtual public IEventListener {
+class IPortEventListener : public IEventListener {
 protected:
     /**
      * The outgoing port for the events.
