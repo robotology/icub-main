@@ -363,12 +363,12 @@ bool RobotInterfaceRemap::initialize10(const std::string &inifile)
                     {
                         Property tmpProp;
                         tmpProp.fromString(robotOptions.findGroup(partsList->get(p).asString()).toString());
-                        tmpProp.put("device", "controlboardwrapper2");
+                        tmpProp.put("device", "controlboardwrapper");
                         std::string prefix=robotName;
                         prefix+="/";
                         prefix+=partsList->get(p).asString();
                         tmpProp.put("name", prefix.c_str());
-                        //std::cout<<tmpProp.toString()<<endl;
+                        std::cout<<"-->"<<tmpProp.toString()<<endl;
 
                         RobotPartEntry *partEntry=new RobotPartEntry;
                         partEntry->id=partsList->get(p).asString().c_str();
@@ -398,8 +398,8 @@ bool RobotInterfaceRemap::initialize10(const std::string &inifile)
                     ///
 
                     tmpProp.put("name", prefix.c_str());
-                    tmpProp.put("device", "controlboardwrapper2");
-                    //std::cout<<tmpProp.toString()<<endl;
+                    tmpProp.put("device", "controlboardwrapper");
+                    std::cout<<"--> " << tmpProp.toString()<<endl;
                     RobotPartEntry *partEntry=new RobotPartEntry;
                     partEntry->id=netid;
  

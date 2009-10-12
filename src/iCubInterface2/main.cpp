@@ -258,6 +258,7 @@ This file can be edited at src/iCubInterface2/main.cpp.
 #include "RobotInterface.h" 
 #include "RobotInterfaceRemap.h"
 #include "ControlBoardWrapper2.h"
+#include "ControlBoardWrapper.h"
 
 using namespace yarp::os;
 using namespace yarp::dev;  
@@ -309,7 +310,12 @@ int main(int argc, char *argv[])
     yarp::dev::Drivers::factory().add(new DriverCreatorOf<ControlBoardWrapper2>
                                       ("controlboardwrapper2",
                                        "", "ControlBoardWrapper2"));
- //   Property p;
+
+    yarp::dev::Drivers::factory().add(new DriverCreatorOf<ControlBoardWrapper>
+                                      ("controlboardwrapper",
+                                       "", "ControlBoardWrapper"));
+
+    //   Property p;
 
  //   p.fromCommand(argc, argv);   
 
