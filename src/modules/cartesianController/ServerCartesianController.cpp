@@ -10,7 +10,7 @@
 
 #include <stdio.h>
 
-#include <iCub/iKinSlv.h>
+#include <iCub/iKinVocabs.h>
 
 #include "CommonCartesianController.h"
 #include "ServerCartesianController.h"
