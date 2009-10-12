@@ -1290,6 +1290,7 @@ void CanBusMotionControl::handleBroadcasts()
                             }
                     }
                     break;
+
 #if 0
                 case CAN_BCAST_TORQUE:
                     {
@@ -1306,6 +1307,7 @@ void CanBusMotionControl::handleBroadcasts()
                             }
                     }
 #endif
+
                 case CAN_BCAST_PID_VAL:
                     r._bcastRecvBuffer[j]._pid_value = *((short *)(data));
                     r._bcastRecvBuffer[j]._update_v = before;
