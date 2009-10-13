@@ -58,7 +58,7 @@ public:
      * @param name the name under which this EventListener will be registered
      * @param pp the standard prefix for opening the ports
      */
-    IPortEventListener(std::string name, std::string pp = "a") : IEventListener(name), portPrefix(pp) { }
+    IPortEventListener(std::string name, std::string pp) : IEventListener(name), portPrefix(pp) { }
 
     /**
      * Destructor.
