@@ -207,6 +207,9 @@
  * -----------
  * 01/09/09  Began development      DV
  * 12/09/09  Finished development   DV
+ * 12/10/09  Added code to write the vergence angles to a file rectification.log
+ *           This is conditional upon the value of the debug flag in RectificationThread::threadInit() 
+ *           The values are also written to the console.  DV
  */ 
 
 

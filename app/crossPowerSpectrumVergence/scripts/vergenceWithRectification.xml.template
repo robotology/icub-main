@@ -1,0 +1,123 @@
+<application>
+<name>Test crossPowerSpectrumVergence</name>
+
+<dependencies>
+   <port>/icub/cam/left</port>
+   <port>/icub/cam/right</port>
+   <port>/icub/head/state:o</port>
+</dependencies>
+
+<module>
+   <name>rectification</name>
+   <parameters>--configCamera iCubEyes.ini</parameters>
+   <node>icub1</node>
+   <tag>rectification</tag>
+</module>
+
+<module>
+   <name>crossPowerSpectrumVergence</name>
+   <parameters></parameters>
+   <node>icub1</node>
+   <tag>crossPowerSpectrumVergence</tag>
+</module>
+
+
+<module>
+   <name>controlGaze2</name>
+   <parameters>--configCamera icubEyes.ini --name /icub/controlGaze --file C:/iCub/app/crossPowerSpectrumVergence/conf/icubControlGaze2.ini --appPath C:/iCub/app/crossPowerSpectrumVergence --motorboard /icub/head</parameters>
+   <node>icub1</node>
+   <tag>controlGaze2</tag>
+</module>
+
+
+<module>
+   <name>yarpview</name>
+   <parameters>--name /left_image --x 000 --y 0 --synch</parameters>
+   <node>icub1</node>
+   <tag>left_image</tag>
+</module>
+
+<module>
+   <name>yarpview</name>
+   <parameters>--name /right_image --x 350 --y 0 --synch</parameters>
+   <node>icub1</node>
+   <tag>right_image</tag>
+</module>
+
+<module>
+   <name>yarpview</name>
+   <parameters>--name /cross-power_spectrum --x 700 --y 0 --synch</parameters>
+   <node>icub1</node>
+   <tag>spectrum</tag>
+</module>
+
+ 
+<module>
+   <name>yarpview</name>
+   <parameters>--name /filtered-cross-power_spectrum --x 1050 --y 0 --synch</parameters>
+   <node>icub1</node>
+   <tag>filtered_spectrum</tag>
+</module>
+
+
+<connection>
+  <from>/icub/cam/left</from>
+  <to>/rectification/leftImage:i</to>
+  <protocol>tcp</protocol>
+</connection>
+
+<connection>
+  <from>/icub/cam/right</from>
+  <to>/rectification/rightImage:i</to>
+  <protocol>tcp</protocol>
+</connection>
+
+<connection>
+  <from>/icub/head/state:o</from>
+  <to>/rectification/head:i</to>
+  <protocol>tcp</protocol>
+</connection>
+
+<connection>
+  <from>/rectification/leftImage:o</from>
+  <to>/crossPowerSpectrumVergence/left_camera:i</to>
+  <protocol>tcp</protocol>
+</connection>
+ 
+<connection>
+  <from>/rectification/rightImage:o</from>
+  <to>/crossPowerSpectrumVergence/right_camera:i</to>
+  <protocol>tcp</protocol>
+</connection>
+
+<connection>
+  <from>/crossPowerSpectrumVergence/left_image:o</from>
+  <to>/left_image</to>
+  <protocol>tcp</protocol>
+</connection>
+ 
+<connection>
+  <from>/crossPowerSpectrumVergence/right_image:o </from>
+  <to>/right_image</to>
+  <protocol>tcp</protocol>
+</connection>
+
+<connection>
+  <from>/crossPowerSpectrumVergence/cross-power_spectrum:o</from>
+  <to>/cross-power_spectrum</to>
+  <protocol>tcp</protocol>
+</connection>
+
+<connection>
+  <from>/crossPowerSpectrumVergence/filtered_cross-power_spectrum:o</from>
+  <to>/filtered-cross-power_spectrum</to>
+  <protocol>tcp</protocol>
+</connection>
+
+<connection>
+  <from>/crossPowerSpectrumVergence/vergence_disparity:o</from>
+  <to>/icub/controlGaze/dis</to>
+  <protocol>tcp</protocol>
+</connection>
+
+</application>

@@ -20,7 +20,10 @@
 /*
  * Audit Trail
  * -----------
- * 01/09/09  Started development   DV
+ * 01/09/09  Started development.  DV
+ * 12/10/09  Added code to write the vergence angles to a file rectification.log
+ *           This is conditional upon the value of the debug flag in RectificationThread::threadInit(), line 311
+ *           The values are also written to the console.  DV
  */ 
 
 /* 
@@ -34,7 +37,7 @@
 
 
 Rectification::Rectification() {
-   debug = true;
+   debug = false;
 }
 
 bool Rectification::configure(yarp::os::ResourceFinder &rf)
@@ -342,13 +345,24 @@ void RectificationThread::run(){
    /* 
     * rectify the two images 
     */ 
-   
+      
    unsigned char pixel_value;
+
+   FILE *fp_out;  // encoder values log file for testing ... this code is not executed during normal operation
 
    if (debug) {
       printf("rectificationThread: parameters are\n%4.1f\n%4.1f\n%4.1f\n%4.1f\n%4.1f\n%4.1f\n%4.1f\n%4.1f\n\n",
          *fxLeft,*fyLeft,*cxLeft,*cyLeft,*fxRight,*fyRight,*cxRight,*cyRight);
    }
+
+   /* log encoder values during tests ... this code is not executed during normal operation */
+
+   if (debug) {
+      if ((fp_out = fopen("rectification.log","w")) == 0) {
+	     printf("rectificationThread: can't open output rectification.log\n");
+     }
+   }
+
 
    while (isStopping() != true) { // the thread continues to run until isStopping() returns true
  
@@ -382,7 +396,11 @@ void RectificationThread::run(){
       } while (encoderPositions == NULL);
 
       vergence = (float) encoderPositions->data()[5]; // get the vergence angle
-      if (debug) cout << "rectificationThread: vergence angle is " << vergence << endl;
+
+      if (debug) {
+         cout << "rectificationThread: vergence angle is " << vergence << endl;
+         if (fp_out != NULL) fprintf(fp_out,"Vergence angle is %f\n",vergence);
+      }
 
       leftCameraAngle = vergence / 2;
       rightCameraAngle = -vergence / 2;
@@ -392,7 +410,9 @@ void RectificationThread::run(){
        * ==================================================================
        */
 
-      if (debug) cout << "rectificationThread: grabbing images " << endl;
+      if (false && debug) cout << "rectificationThread: grabbing images " << endl;
+
+
 
       do {
          leftImage = leftImagePortIn->read(true);
@@ -428,7 +448,7 @@ void RectificationThread::run(){
        * ===================================== 
        */
 
-      if (debug) cout << "rectificationThread: performing rectification " << endl;
+      if (false && debug) cout << "rectificationThread: performing rectification " << endl;
 
       rectify(leftInput, rightInput,
               *fxLeft, *fyLeft, *cxLeft, *cyLeft, leftCameraAngle, 
@@ -442,7 +462,7 @@ void RectificationThread::run(){
        * ========================================================== 
        */
 
-      if (debug) cout << "rectificationThread: sending images " << endl;
+      if (false && debug) cout << "rectificationThread: sending images " << endl;
 
       ImageOf<PixelRgb> &rectifiedLeftImage  = leftImagePortOut->prepare();
       ImageOf<PixelRgb> &rectifiedRightImage = rightImagePortOut->prepare();
@@ -466,6 +486,10 @@ void RectificationThread::run(){
 
       leftImagePortOut->write();
       rightImagePortOut->write();
+   }
+
+   if (debug) {
+      if (fp_out != NULL) fclose(fp_out);
    }
 }
 

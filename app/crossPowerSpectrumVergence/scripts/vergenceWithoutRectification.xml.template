@@ -1,5 +1,5 @@
 <application>
-<name>Test crossPowerSpectrumVergence</name>
+<name>crossPowerSpectrumVergence with NO rectification</name>
 
 <dependencies>
    <port>/icub/cam/left</port>
