@@ -212,7 +212,7 @@ int main( int argc, char **argv )
 	  }
 	}
 	
-  	printf("%s:%f (%f,%f,%f)\n",label,bestval,radius,posX,posY,posZ);
+  	printf("ObjRec: %s:%f (%f,%f,%f)\n",label,bestval,radius,posX,posY,posZ);
 	//**************************************
 
 
@@ -303,7 +303,7 @@ void extractPixels(IplImage* img){
     }
   }
   inc = 0;
-printf("finished extracting pixels\n");
+
 }
 
 

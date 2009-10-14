@@ -77,7 +77,7 @@ int main( int argc, char **argv )
   
   
   
-  printf("begin..\n");
+  printf("ObjMan: begin..\n");
   //main event loop:
   while (1){
     
@@ -115,8 +115,8 @@ int main( int argc, char **argv )
 	  objList[k].y = v[1];
 	  objList[k].z = v[2];
 	  //print out diff between measurement and Kalman filtered output:
-	  printf("Object %d:%s (%f) - Measured: (%f,%f,%f)  Kalman: (%f,%f,%f)\n", 
-		 k+1,objList[k].label.c_str(),objList[k].val,
+	  printf("ObjMan: Object:%s (%f) - Measured: (%f,%f,%f)  Kalman: (%f,%f,%f)\n", 
+		 objList[k].label.c_str(),objList[k].val,
 		 newPosX,newPosY,newPosZ,
 		 v[0],v[1],v[2]);
 	  //cache image:
@@ -163,7 +163,7 @@ int main( int argc, char **argv )
 	  numObjs++;	
 	}
 	else{
-	  printf("DATABASE FULL!!\n");
+	  printf("ObjMan: DATABASE FULL\n");
 	}
       }
       
