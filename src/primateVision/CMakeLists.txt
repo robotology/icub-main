@@ -7,6 +7,7 @@ PROJECT(primateVision)
 
 FIND_PACKAGE(YARP)
 FIND_PACKAGE(OpenCV)
+FIND_PACKAGE(ICUB)
 
 INCLUDE_DIRECTORIES(/opt/intel/ipp/include
                     $ENV{QT_INCLUDE_DIR}

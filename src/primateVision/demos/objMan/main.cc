@@ -16,29 +16,40 @@
 //IPP
 #include <ippi.h>
 
-#define MAX_OBJS 20
+//for filters:
+#include "kal.h"
+
+
+#define MAX_OBJS 40
 #define MIN_DIST 0.5 //meters!
+
 
 using namespace yarp::sig;
 using namespace yarp::os;
 using namespace yarp::dev;
 using namespace std;
-
+using namespace ctrl;
 
 struct obj{
   string label;
   double x;
   double y;
   double z;
+  double val;
   double radius;
   Ipp8u *image;
+  kal *kalman;
 };
 
-obj objList[MAX_OBJS];
+
+
 
 
 int main( int argc, char **argv )
 {
+
+
+  obj objList[MAX_OBJS];
   
   //Port to get object postion and label:
   BufferedPort<Bottle> inPort_obj; 
@@ -56,7 +67,7 @@ int main( int argc, char **argv )
   outPort_yarpimg.open("/objMan/output/yarpimg");
   Network::connect("/objMan/output/yarpimg", "/icubSim/texture"); 
 
-  double newRadius,newPosX,newPosY,newPosZ;
+  double newRadius,newPosX,newPosY,newPosZ,newVal;
   string newLabel;
   Ipp8u*newImage;
   IppiSize imsize={100,100};
@@ -75,12 +86,13 @@ int main( int argc, char **argv )
     inBot_obj = inPort_obj.read(); //blocking
     if (inBot_obj!=NULL){
       
-      newRadius = inBot_obj->get(0).asDouble();
-      newPosX   = -inBot_obj->get(1).asDouble();
-      newPosY   = -inBot_obj->get(2).asDouble() + 0.928; //height of head offset
-      newPosZ   = inBot_obj->get(3).asDouble();
-      newLabel  = inBot_obj->get(4).asString();
-      newImage  = (Ipp8u*) inBot_obj->get(5).asBlob();
+      newRadius =  inBot_obj->get(0).asDouble();
+      newVal    =  inBot_obj->get(1).asDouble();
+      newPosX   = -inBot_obj->get(2).asDouble();
+      newPosY   = -inBot_obj->get(3).asDouble() + 0.928; //height of head offset
+      newPosZ   =  inBot_obj->get(4).asDouble();
+      newLabel  =  inBot_obj->get(5).asString();
+      newImage  = (Ipp8u*) inBot_obj->get(6).asBlob();
 
       //Check if it is similar to an existing label at similar pos, we move the object.
       handled = false;
@@ -95,12 +107,19 @@ int main( int argc, char **argv )
 	    //ADD ME****
 	    ){
 	  //not new object, so just update pos,radius,image of this object:	
-	  objList[k].x = newPosX;
-	  objList[k].y = newPosY;
-	  objList[k].z = newPosZ;
-	  //KALMAN FILTER THIS POSITION!
-	  //ADD ME*****
 	  objList[k].radius = newRadius;
+	  objList[k].val = newVal;
+	  //KALMAN FILTER POSITION:
+	  Vector v = objList[k].kalman->update(newPosX,newPosY,newPosZ);
+	  objList[k].x = v[0];
+	  objList[k].y = v[1];
+	  objList[k].z = v[2];
+	  //print out diff between measurement and Kalman filtered output:
+	  printf("Object %d:%s (%f) - Measured: (%f,%f,%f)  Kalman: (%f,%f,%f)\n", 
+		 k+1,objList[k].label.c_str(),objList[k].val,
+		 newPosX,newPosY,newPosZ,
+		 v[0],v[1],v[2]);
+	  //cache image:
 	  ippiCopy_8u_C1R(newImage,psb,objList[k].image,psb,imsize); //overwrite image
 	  handled = true;
 	  break; //eject the for loop
@@ -110,14 +129,16 @@ int main( int argc, char **argv )
       if (!handled){
 	//we have a new object!
 	if (numObjs<MAX_OBJS){
-	  objList[numObjs].label = newLabel;
-	  objList[numObjs].x = newPosX;
-	  objList[numObjs].y = newPosY;
-	  objList[numObjs].z = newPosZ;
+	  objList[numObjs].label  = newLabel;
+	  objList[numObjs].x      = newPosX;
+	  objList[numObjs].y      = newPosY;
+	  objList[numObjs].z      = newPosZ;
 	  objList[numObjs].radius = newRadius;
-	  objList[numObjs].image = ippiMalloc_8u_C1(100,100,&psb); //malloc
+	  objList[numObjs].val    = newVal;
+	  objList[numObjs].image  = ippiMalloc_8u_C1(100,100,&psb); //malloc
+	  objList[numObjs].kalman = new kal();  //spawn a Kalman filter with default settings
 	  ippiCopy_8u_C1R(newImage,psb,objList[numObjs].image,psb,imsize); //copy in
-	  
+
 	  //draw in sim immediately.  
 	  Bottle& bot = simPort.prepare();
 	  bot.clear();

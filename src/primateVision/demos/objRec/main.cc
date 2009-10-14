@@ -39,8 +39,8 @@
 
 
 
-#define THRESHOLD 0.8
-
+#define THRESHOLD 0.7
+#define MAX_UNKNOWNS 50
 
 
 using namespace nnfw;
@@ -137,7 +137,9 @@ int main( int argc, char **argv )
   double posX=0.0,posY=0.0,posZ=0.0;
   bool update = false;
   const char *label;
-  double radius=0.03;
+  double bestval = 0.0;
+  double radius = 0.03;
+  int unknowns = 0;
   
   
   
@@ -158,11 +160,12 @@ int main( int argc, char **argv )
       posX = inBot_seg_dog->get(1).asDouble();
       posY = inBot_seg_dog->get(2).asDouble();
       posZ = inBot_seg_dog->get(3).asDouble();
-      update = (bool) inBot_seg_dog->get(4).asInt();
+      update = (bool) inBot_seg_dog->get(4).asInt(); //if a template has been updated because of a 'nice' segmentation.
       
-      //only classify if we get an updated segmentation
-      //(if we know it's a nice segmentation):
-      if (update){
+
+      //only classify if we get a 'nice' updated segmentation:
+      //if (update){
+      if (true){ //always send pos and attempt classification!
 	
 	//put image in openCV container
 	ippiCopy_8u_C1R( zdf_im_seg_dog, m_psb, (Ipp8u*)segImg->imageData, segImg->widthStep, msize);   
@@ -176,26 +179,42 @@ int main( int argc, char **argv )
 	extractPixels(temp);
 	//run the NN:
 	RealVec outputs(out->numNeurons());
-	
 	for (int input = 0; input< (int)in->numNeurons(); input++ )
 	  in->setInput( input, pixelValNorm[input][0] ); 
-	
 	net->step();
+	//get outputs:
 	outputs = out->outputs();	
 	cout << outputs[0] << " " <<  outputs[1] << " " << outputs[2] << endl;
 	
-	label = "unknown";
-	if (outputs[0] > THRESHOLD){
+	
+	//latch label from previous classification.
+	//Then...
+	bestval = 0.0;
+
+	if (outputs[0] > bestval){
 	  label = "bottle";
+	  bestval = outputs[0];
 	}
-	else if (outputs[1] > THRESHOLD){
+	if (outputs[1] > bestval){
 	  label = "fags";
+	  bestval = outputs[1];
 	}
-	else if (outputs[2] > THRESHOLD){
+	if (outputs[2] > bestval ){
 	  label = "coke";
+	  bestval = outputs[2];
 	}
-  	printf("%s %f (%f,%f,%f)\n",label,radius,posX,posY,posZ);
+	if (bestval<THRESHOLD){
+	  //only revert to 'unknown' if we've had lost of low-conf classifications.
+	  unknowns++;
+	  if (unknowns>=MAX_UNKNOWNS){
+	    label = "unknown";
+	    unknowns = 0;
+	  }
+	}
+	
+  	printf("%s:%f (%f,%f,%f)\n",label,bestval,radius,posX,posY,posZ);
 	//**************************************
+
 
 	
 	//seg_im should have arrived by now:
@@ -204,11 +223,11 @@ int main( int argc, char **argv )
 	  ippiCopy_8u_C1R((Ipp8u*) inBot_seg_im->get(0).asBlob(),m_psb,zdf_im_seg,psb_im,msize);
 	}
 
-
 	//SEND!
 	Bottle& bot = objPort.prepare();
 	bot.clear();
 	bot.addDouble(radius);
+	bot.addDouble(bestval);
 	bot.addDouble(posX);
 	bot.addDouble(posY);
 	bot.addDouble(posZ);
@@ -225,6 +244,7 @@ int main( int argc, char **argv )
       
       
 #if DISPLAY
+      //always display:
       d_seg_dog->display(zdf_im_seg_dog);
 #endif
       
