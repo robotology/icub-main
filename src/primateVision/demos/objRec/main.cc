@@ -144,7 +144,7 @@ int main( int argc, char **argv )
   
   
   
-  printf("begin..\n");
+  printf("ObjRec: begin..\n");
   //main event loop:
   while (1){
     

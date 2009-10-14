@@ -167,7 +167,9 @@ int main( int argc, char **argv )
 	}
       }
       
-      //now loop over all numObjs in database and update positions in sim!:
+
+
+      //Always loop over all numObjs in database and update positions in sim!:
       for (int k=0;k<numObjs;k++){
 	Bottle& bot = simPort.prepare();
 	bot.clear();
@@ -189,12 +191,13 @@ int main( int argc, char **argv )
 	outPort_yarpimg.write();
       }
       
-
       printf("ObjMan: %d Objects in Database\n",numObjs);
       
       
     }//if received
     
+
+
   } //while
 
   //never here! 
