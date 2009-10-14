@@ -179,8 +179,10 @@ ENDIF (ARTOOLKITPLUS_FOUND)
 
   # cognitive architecture modules
   ADD_SUBDIRECTORY(logPolarTransform)
-  ADD_SUBDIRECTORY(autoAssociativeMemory)
   ADD_SUBDIRECTORY(demoAAM)
+  IF (OPENCV_FOUND)
+     ADD_SUBDIRECTORY(autoAssociativeMemory)
+  ENDIF (OPENCV_FOUND)
 
   # utility modules
   ADD_SUBDIRECTORY(imageSource)
