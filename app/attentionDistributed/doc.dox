@@ -67,10 +67,7 @@ the local ./conf folder.
 
 \section howto How to run the Application
 \code
-./app start: start the application, run all modules and viewers
-./app connect: connect all modules and viewers
-./app disconnect: disconnect all modules and viewers
-./app stop: stop the application, shut down all modules
+Customize and run ./scripts/appConfig-visual.xml.template
 \endcode
 
 \author Lorenzo Natale
