@@ -296,11 +296,11 @@ bool ImageProcessModule::outPorts(){
 	this->portGr->write();
 	this->portBy->write();
 	//printf("Entered in outPorts \n");
-	if((unsigned int)currentProcessor->redPlane!=0xcdcdcdcd)
+	//if((unsigned int)currentProcessor->redPlane!=0xcdcdcdcd)
 		this->portRedPlane->prepare()=*(this->currentProcessor->redPlane);
-	if((unsigned int)currentProcessor->greenPlane!=0xcdcdcdcd)
+	//if((unsigned int)currentProcessor->greenPlane!=0xcdcdcdcd)
 		this->portGreenPlane->prepare()=*(this->currentProcessor->greenPlane);
-	if((unsigned int)currentProcessor->bluePlane!=0xcdcdcdcd)
+	//if((unsigned int)currentProcessor->bluePlane!=0xcdcdcdcd)
 		this->portBluePlane->prepare()=*(this->currentProcessor->bluePlane);
 	//printf("After prepares \n");
 	this->portRedPlane->write();
