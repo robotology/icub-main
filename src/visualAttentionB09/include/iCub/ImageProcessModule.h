@@ -80,15 +80,15 @@ public:
 	void setUp();
 	//---attributes
 	// Output Point Ports
-	yarp::os::BufferedPort<ImageOf<PixelRgb>> *_pOutPort; //output port for the first Processor result
-	yarp::os::BufferedPort<ImageOf<PixelRgb>> *_pOutPort2; //output port for the first Processor result
-	yarp::os::BufferedPort<ImageOf<PixelRgb>> *_pOutPort3; //output port for the first Processor result
-	yarp::os::BufferedPort<ImageOf<PixelMono>> *portRg; //output port for R+G- Color Opponency Image
-	yarp::os::BufferedPort<ImageOf<PixelMono>> *portGr; //output port for G+R- Color Opponency Image
-	yarp::os::BufferedPort<ImageOf<PixelMono>> *portBy; //output port for B+Y- Color Opponency Image
-	yarp::os::BufferedPort<ImageOf<PixelMono>> *portRedPlane; //output port for R+G- Color Opponency Image
-	yarp::os::BufferedPort<ImageOf<PixelMono>> *portGreenPlane; //output port for G+R- Color Opponency Image
-	yarp::os::BufferedPort<ImageOf<PixelMono>> *portBluePlane; //output port for B+Y- Color Opponency Image
+	yarp::os::BufferedPort<ImageOf<PixelRgb> > *_pOutPort; //output port for the first Processor result
+	yarp::os::BufferedPort<ImageOf<PixelRgb> > *_pOutPort2; //output port for the first Processor result
+	yarp::os::BufferedPort<ImageOf<PixelRgb> > *_pOutPort3; //output port for the first Processor result
+	yarp::os::BufferedPort<ImageOf<PixelMono> > *portRg; //output port for R+G- Color Opponency Image
+	yarp::os::BufferedPort<ImageOf<PixelMono> > *portGr; //output port for G+R- Color Opponency Image
+	yarp::os::BufferedPort<ImageOf<PixelMono> > *portBy; //output port for B+Y- Color Opponency Image
+	yarp::os::BufferedPort<ImageOf<PixelMono> > *portRedPlane; //output port for R+G- Color Opponency Image
+	yarp::os::BufferedPort<ImageOf<PixelMono> > *portGreenPlane; //output port for G+R- Color Opponency Image
+	yarp::os::BufferedPort<ImageOf<PixelMono> > *portBluePlane; //output port for B+Y- Color Opponency Image
 	// Output Bottle Container
 	yarp::os::Bottle _outBottle;
 	ImageProcessor *processor1;
