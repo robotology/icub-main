@@ -950,14 +950,14 @@ GtkWidget* ImageProcessModule::createMainWindow(void)
 	// A checkbutton to control whether the value is displayed or not 
     buttonCheck = gtk_check_button_new_with_label("InputImage1-->");
     gtk_toggle_button_set_active (GTK_TOGGLE_BUTTON (buttonCheck), FALSE);
-    g_signal_connect ((const)G_OBJECT (buttonCheck), "toggled",G_CALLBACK (cb_draw_value), "InputImage1");
+    g_signal_connect (G_OBJECT (buttonCheck), "toggled",G_CALLBACK (cb_draw_value), (const)"InputImage1");
     gtk_box_pack_start (GTK_BOX (box4), buttonCheck, TRUE, TRUE, 0);
     gtk_widget_show (buttonCheck);
 
 	// A checkbutton to control whether the value is displayed or not 
     buttonCheck = gtk_check_button_new_with_label("Green1-->");
     gtk_toggle_button_set_active (GTK_TOGGLE_BUTTON (buttonCheck), FALSE);
-    g_signal_connect ((const)G_OBJECT (buttonCheck), "toggled",G_CALLBACK (cb_draw_value), "Green1");
+    g_signal_connect (G_OBJECT (buttonCheck), "toggled",G_CALLBACK (cb_draw_value), "Green1");
     gtk_box_pack_start (GTK_BOX (box4), buttonCheck, TRUE, TRUE, 0);
     gtk_widget_show (buttonCheck);
 
