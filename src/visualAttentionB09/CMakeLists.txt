@@ -7,7 +7,6 @@ FIND_PACKAGE(YARP REQUIRED)
 FIND_PACKAGE(OpenCV REQUIRED)
 FIND_PACKAGE(ODE REQUIRED)
 FIND_PACKAGE(IPP REQUIRED)
-FIND_PACKAGE(CVBLOBS REQUIRED)
 
 #FIND_PACKAGE(QT)
 
@@ -28,18 +27,19 @@ INCLUDE_DIRECTORIES(${GTKPLUS_INCLUDE_DIR})
 #search for includes
 INCLUDE_DIRECTORIES(
     ${PROJECT_SOURCE_DIR}/include
-    ${CVBLOBS_INCLUDE_DIRS}
     ${OPENCV_INCLUDE_DIR}    
     ${ODE_INCLUDE_DIRS}	
-    ${IPP_INCLUDE_DIRS}
+    ${IPP_INCLUDE_DIR}
+	 
+    #/opt/intel/ipp/6.1.1.042/em64t/include
     #---linux    
     #$ENV{QT_INCLUDE_DIR}/include
     #$ENV{QT_INCLUDE_DIR}/include/Qt
-                                #$ENV{QT_INCLUDE_DIR}/include/Qt3Support 
+    #$ENV{QT_INCLUDE_DIR}/include/Qt3Support 
     #--windows
     $ENV{QT_INCLUDE_DIR}
 )
-
+MESSAGE(" Find IPP Include directory at ${IPP_INCLUDE_DIR}")
 
 # Search for source code.
 FILE(GLOB folder_source src/*.cpp src/*.cc src/*.c)
@@ -54,7 +54,7 @@ SET(ImageProcessModuleSRC
 
 LINK_DIRECTORIES(
     ${ICUB_SOURCE_DIR}
-    ${CVBLOBS_SOURCE_DIRS}	
+    #/opt/intel/ipp/sharedlib	
 )
 
 #LINK_LIBRARIES(debug "$ENV{ICUB_ROOT}/lib/debug/cvBlobs.lib" 
@@ -62,11 +62,12 @@ LINK_DIRECTORIES(
 
 LINK_LIBRARIES(
     ${OPENCV_LIBRARIES}
-    ${CVBLOBS_LIBRARIES}
     ${ODE_LIBRARIES}
     ${IDL_LIBRARIES}
-    ${IPP_LIBRARIES}	 	
+    ${IPP_LIBRARIES} 
+     #ippi	
 )
+MESSAGE(" Find IPP Libraries at ${IPP_LIBRARIES}")
 
 # Set up our main executable.
 IF (folder_source)
@@ -84,6 +85,6 @@ ADD_LIBRARY(ImageProcessModule
     ${folder_header}
 )
 
-INSTALL_TARGETS(/lib ImageProcessModule)
+INSTALL_TARGETS(/lib ${KEYWORD})
 INSTALL_TARGETS(/bin ${KEYWORD})
 

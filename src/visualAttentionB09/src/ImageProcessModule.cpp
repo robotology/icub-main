@@ -731,7 +731,7 @@ GtkWidget* ImageProcessModule::createMenubar(void)
     gtk_signal_connect( GTK_OBJECT(fileSingleItem), "toggled", GTK_SIGNAL_FUNC(menuFileSingle_CB), mainWindow);
     fileSetItem = gtk_check_menu_item_new_with_label ("Save a set of images..");
     gtk_menu_append( GTK_MENU(fileMenu), fileSetItem);
-//    gtk_signal_connect( GTK_OBJECT(fileSetItem), "toggled", GTK_SIGNAL_FUNC(menuFileSet_CB), mainWindow);
+   gtk_signal_connect( GTK_OBJECT(fileSetItem), "toggled", GTK_SIGNAL_FUNC(menuFileSet_CB), mainWindow);
     menuSeparator = gtk_separator_menu_item_new();
     gtk_menu_append( GTK_MENU(fileMenu), menuSeparator);
     fileQuitItem = gtk_menu_item_new_with_label ("Quit");
@@ -957,7 +957,7 @@ GtkWidget* ImageProcessModule::createMainWindow(void)
 	// A checkbutton to control whether the value is displayed or not 
     buttonCheck = gtk_check_button_new_with_label("Green1-->");
     gtk_toggle_button_set_active (GTK_TOGGLE_BUTTON (buttonCheck), FALSE);
-	char *data="Green1";
+    char *data = "Green1";
     g_signal_connect (G_OBJECT (buttonCheck), "toggled",G_CALLBACK (cb_draw_value), data);
     gtk_box_pack_start (GTK_BOX (box4), buttonCheck, TRUE, TRUE, 0);
     gtk_widget_show (buttonCheck);

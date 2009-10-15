@@ -39,10 +39,10 @@ RM = /usr/bin/cmake -E remove -f
 CMAKE_EDIT_COMMAND = /usr/bin/ccmake
 
 # The top-level source directory on which CMake was run.
-CMAKE_SOURCE_DIR = /home/francesco/workLinux/iCub/src/visualAttentionB09
+CMAKE_SOURCE_DIR = /home/rea/work/iCub/src/visualAttentionB09
 
 # The top-level build directory on which CMake was run.
-CMAKE_BINARY_DIR = /home/francesco/workLinux/iCub/src/visualAttentionB09
+CMAKE_BINARY_DIR = /home/rea/work/iCub/src/visualAttentionB09
 
 #=============================================================================
 # Targets provided globally by CMake.
@@ -91,7 +91,7 @@ install/strip/fast: install/strip
 
 # Special rule for the target list_install_components
 list_install_components:
-	@$(CMAKE_COMMAND) -E cmake_echo_color --switch=$(COLOR) --cyan "Only default component available"
+	@$(CMAKE_COMMAND) -E cmake_echo_color --switch=$(COLOR) --cyan "Available install components are: \"Unspecified\""
 .PHONY : list_install_components
 
 # Special rule for the target list_install_components
@@ -110,9 +110,9 @@ rebuild_cache/fast: rebuild_cache
 
 # The main all target
 all: cmake_check_build_system
-	$(CMAKE_COMMAND) -E cmake_progress_start /home/francesco/workLinux/iCub/src/visualAttentionB09/CMakeFiles /home/francesco/workLinux/iCub/src/visualAttentionB09/CMakeFiles/progress.make
+	$(CMAKE_COMMAND) -E cmake_progress_start /home/rea/work/iCub/src/visualAttentionB09/CMakeFiles /home/rea/work/iCub/src/visualAttentionB09/CMakeFiles/progress.make
 	$(MAKE) -f CMakeFiles/Makefile2 all
-	$(CMAKE_COMMAND) -E cmake_progress_start /home/francesco/workLinux/iCub/src/visualAttentionB09/CMakeFiles 0
+	$(CMAKE_COMMAND) -E cmake_progress_start /home/rea/work/iCub/src/visualAttentionB09/CMakeFiles 0
 .PHONY : all
 
 # The main clean target
@@ -164,21 +164,6 @@ visualAttentionB09: cmake_check_build_system
 visualAttentionB09/fast:
 	$(MAKE) -f CMakeFiles/visualAttentionB09.dir/build.make CMakeFiles/visualAttentionB09.dir/build
 .PHONY : visualAttentionB09/fast
-
-# target to build an object file
-src/FakeFrameGrabber.o:
-	$(MAKE) -f CMakeFiles/visualAttentionB09.dir/build.make CMakeFiles/visualAttentionB09.dir/src/FakeFrameGrabber.o
-.PHONY : src/FakeFrameGrabber.o
-
-# target to preprocess a source file
-src/FakeFrameGrabber.i:
-	$(MAKE) -f CMakeFiles/visualAttentionB09.dir/build.make CMakeFiles/visualAttentionB09.dir/src/FakeFrameGrabber.i
-.PHONY : src/FakeFrameGrabber.i
-
-# target to generate assembly for a file
-src/FakeFrameGrabber.s:
-	$(MAKE) -f CMakeFiles/visualAttentionB09.dir/build.make CMakeFiles/visualAttentionB09.dir/src/FakeFrameGrabber.s
-.PHONY : src/FakeFrameGrabber.s
 
 # target to build an object file
 src/ImageProcessModule.o:
@@ -244,6 +229,66 @@ src/LogPolarModule.s:
 .PHONY : src/LogPolarModule.s
 
 # target to build an object file
+src/YARPImgRecv.o:
+	$(MAKE) -f CMakeFiles/visualAttentionB09.dir/build.make CMakeFiles/visualAttentionB09.dir/src/YARPImgRecv.o
+.PHONY : src/YARPImgRecv.o
+
+# target to preprocess a source file
+src/YARPImgRecv.i:
+	$(MAKE) -f CMakeFiles/visualAttentionB09.dir/build.make CMakeFiles/visualAttentionB09.dir/src/YARPImgRecv.i
+.PHONY : src/YARPImgRecv.i
+
+# target to generate assembly for a file
+src/YARPImgRecv.s:
+	$(MAKE) -f CMakeFiles/visualAttentionB09.dir/build.make CMakeFiles/visualAttentionB09.dir/src/YARPImgRecv.s
+.PHONY : src/YARPImgRecv.s
+
+# target to build an object file
+src/YarpImage2Pixbuf.o:
+	$(MAKE) -f CMakeFiles/visualAttentionB09.dir/build.make CMakeFiles/visualAttentionB09.dir/src/YarpImage2Pixbuf.o
+.PHONY : src/YarpImage2Pixbuf.o
+
+# target to preprocess a source file
+src/YarpImage2Pixbuf.i:
+	$(MAKE) -f CMakeFiles/visualAttentionB09.dir/build.make CMakeFiles/visualAttentionB09.dir/src/YarpImage2Pixbuf.i
+.PHONY : src/YarpImage2Pixbuf.i
+
+# target to generate assembly for a file
+src/YarpImage2Pixbuf.s:
+	$(MAKE) -f CMakeFiles/visualAttentionB09.dir/build.make CMakeFiles/visualAttentionB09.dir/src/YarpImage2Pixbuf.s
+.PHONY : src/YarpImage2Pixbuf.s
+
+# target to build an object file
+src/canny.o:
+	$(MAKE) -f CMakeFiles/visualAttentionB09.dir/build.make CMakeFiles/visualAttentionB09.dir/src/canny.o
+.PHONY : src/canny.o
+
+# target to preprocess a source file
+src/canny.i:
+	$(MAKE) -f CMakeFiles/visualAttentionB09.dir/build.make CMakeFiles/visualAttentionB09.dir/src/canny.i
+.PHONY : src/canny.i
+
+# target to generate assembly for a file
+src/canny.s:
+	$(MAKE) -f CMakeFiles/visualAttentionB09.dir/build.make CMakeFiles/visualAttentionB09.dir/src/canny.s
+.PHONY : src/canny.s
+
+# target to build an object file
+src/convert_bitdepth.o:
+	$(MAKE) -f CMakeFiles/visualAttentionB09.dir/build.make CMakeFiles/visualAttentionB09.dir/src/convert_bitdepth.o
+.PHONY : src/convert_bitdepth.o
+
+# target to preprocess a source file
+src/convert_bitdepth.i:
+	$(MAKE) -f CMakeFiles/visualAttentionB09.dir/build.make CMakeFiles/visualAttentionB09.dir/src/convert_bitdepth.i
+.PHONY : src/convert_bitdepth.i
+
+# target to generate assembly for a file
+src/convert_bitdepth.s:
+	$(MAKE) -f CMakeFiles/visualAttentionB09.dir/build.make CMakeFiles/visualAttentionB09.dir/src/convert_bitdepth.s
+.PHONY : src/convert_bitdepth.s
+
+# target to build an object file
 src/main.o:
 	$(MAKE) -f CMakeFiles/visualAttentionB09.dir/build.make CMakeFiles/visualAttentionB09.dir/src/main.o
 .PHONY : src/main.o
@@ -272,9 +317,6 @@ help:
 	@echo "... list_install_components"
 	@echo "... rebuild_cache"
 	@echo "... visualAttentionB09"
-	@echo "... src/FakeFrameGrabber.o"
-	@echo "... src/FakeFrameGrabber.i"
-	@echo "... src/FakeFrameGrabber.s"
 	@echo "... src/ImageProcessModule.o"
 	@echo "... src/ImageProcessModule.i"
 	@echo "... src/ImageProcessModule.s"
@@ -287,6 +329,18 @@ help:
 	@echo "... src/LogPolarModule.o"
 	@echo "... src/LogPolarModule.i"
 	@echo "... src/LogPolarModule.s"
+	@echo "... src/YARPImgRecv.o"
+	@echo "... src/YARPImgRecv.i"
+	@echo "... src/YARPImgRecv.s"
+	@echo "... src/YarpImage2Pixbuf.o"
+	@echo "... src/YarpImage2Pixbuf.i"
+	@echo "... src/YarpImage2Pixbuf.s"
+	@echo "... src/canny.o"
+	@echo "... src/canny.i"
+	@echo "... src/canny.s"
+	@echo "... src/convert_bitdepth.o"
+	@echo "... src/convert_bitdepth.i"
+	@echo "... src/convert_bitdepth.s"
 	@echo "... src/main.o"
 	@echo "... src/main.i"
 	@echo "... src/main.s"
