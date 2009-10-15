@@ -838,10 +838,10 @@ ImageOf<PixelMono>* ImageProcessor::findEdgesBlueOpponency(){
 	//redGreenEdges=new ImageOf<PixelMono>;
 	
 	//redGreenEdges->resize(width,height);
-	if((unsigned int)blueYellowEdges==0xcdcdcdcd){
+	//if(blueYellowEdges==0xcdcdcdcd){
 		blueYellowEdges=new ImageOf<PixelMono>;
 		blueYellowEdges->resize(width,height);
-	}
+	//}
 
 	//conv_32f_to_8u(outputBlueYellow32,psb32,greenRedEdges->getPixelAddress(0,0),width,srcsize);
 
@@ -1169,10 +1169,10 @@ ImageOf<PixelMono>* ImageProcessor::findEdgesGreenOpponency(){
 	//redGreenEdges=new ImageOf<PixelMono>;
 	
 	//redGreenEdges->resize(width,height);
-	if((unsigned int)greenRedEdges==0xcdcdcdcd){
+	//if((unsigned int)greenRedEdges==0xcdcdcdcd){
 		greenRedEdges=new ImageOf<PixelMono>;
 		greenRedEdges->resize(width,height);
-	}
+	//}
 
 	//convesion back to 8u
 	//conv_32f_to_8u(outputGreenRed32,psb32,greenRedEdges->getPixelAddress(0,0),width,srcsize);
@@ -1455,10 +1455,10 @@ Ipp8u src[3*3]={1,4,1,
 	//4. thresholding the images
 	//redGreenEdges=new ImageOf<PixelMono>;
 	//redGreenEdges->resize(width,height);
-	if((unsigned int)redGreenEdges==0xcdcdcdcd){
+	//if((unsigned int)redGreenEdges==0xcdcdcdcd){
 		redGreenEdges=new ImageOf<PixelMono>;
 		redGreenEdges->resize(width,height);
-	}
+	//}
 
 	//convesion back to 8u
 	//conv_32f_to_8u(outputRedGreen32B,psb32,outputRedGreen,psb,srcsize);
@@ -1762,12 +1762,12 @@ ImageOf<PixelRgb>* ImageProcessor::process (ImageOf<PixelRgb> *src){
  */
 ImageOf<PixelMono>* ImageProcessor::getRedPlane(ImageOf<PixelRgb>* inputImage,ImageOf<PixelMono>* tmp)
 {
-	if((unsigned char)inputImage==0xffffffff){
+	/*if((unsigned char)inputImage==0xffffffff){
 		return NULL;
 	}
 	else{
 		//printf("inputImage: 0x%08x \n",inputImage);
-	}
+	}*/
 	unsigned char c = 0;
     int x, y, z;
     int Offset;
@@ -1799,12 +1799,12 @@ ImageOf<PixelMono>* ImageProcessor::getRedPlane(ImageOf<PixelRgb>* inputImage,Im
  * load the green plane from ImageOf<PixelRgb>
  */
 ImageOf<PixelMono>* ImageProcessor::getGreenPlane(ImageOf<PixelRgb>* inputImage,ImageOf<PixelMono>* tmp){
-	if((unsigned char)inputImage==0xffffffff){
+	/*if((unsigned char)inputImage==0xffffffff){
 		return NULL;
 	}
 	else{
 		//printf("inputImage: 0x%08x \n",inputImage->getPixelAddress(0,0));
-	}
+	}*/
 	unsigned char c = 0;
     int x, y, z;
     int Offset;
@@ -1836,12 +1836,12 @@ ImageOf<PixelMono>* ImageProcessor::getGreenPlane(ImageOf<PixelRgb>* inputImage,
  * load the blue plane from ImageOf<PixelRgb>
  */
 ImageOf<PixelMono>* ImageProcessor::getBluePlane(ImageOf<PixelRgb>* inputImage,ImageOf<PixelMono>* tmp){
-	if((unsigned char)inputImage==0xffffffff){
+	/*if((unsigned char)inputImage==0xffffffff){
 		return NULL;
 	}
 	else{
 		//printf("inputImage: 0x%08x \n",inputImage);
-	}
+	}*/
 	unsigned char c = 0;
     int x, y, z;
     int Offset;
@@ -2133,10 +2133,10 @@ ImageOf<PixelMono>* ImageProcessor::combineMax(){
 
 	int i=0,r=0,c=0;
 	
-	if((unsigned int)edgesOutput==0xcdcdcdcd){
+	//if((unsigned int)edgesOutput==0xcdcdcdcd){
 		edgesOutput=new ImageOf<PixelMono>;
 		edgesOutput->resize(width,height);
-	}
+	//}
 	
 	
 	/*unsigned char* pointerRed=edgesOutput->getRawImage();

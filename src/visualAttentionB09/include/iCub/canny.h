@@ -32,8 +32,8 @@ class CANNY
   Ipp8u *buf_h,*buf_v,*pbuf;
   IppiSize isize;
   Ipp8u *edge_map;
-  float thresholdU;
-  float thresholdL;
+  double thresholdU;
+  double thresholdL;
 
 };
 
