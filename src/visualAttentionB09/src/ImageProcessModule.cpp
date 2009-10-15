@@ -948,39 +948,39 @@ GtkWidget* ImageProcessModule::createMainWindow(void)
 	//-----Check Buttons
 	box4=  gtk_vbox_new (FALSE, 0);
 	// A checkbutton to control whether the value is displayed or not 
-    buttonCheck = gtk_check_button_new_with_label("InputImage1-->");
+    /*buttonCheck = gtk_check_button_new_with_label("InputImage1-->");
     gtk_toggle_button_set_active (GTK_TOGGLE_BUTTON (buttonCheck), FALSE);
     g_signal_connect (G_OBJECT (buttonCheck), "toggled",G_CALLBACK (cb_draw_value), (const)"InputImage1");
     gtk_box_pack_start (GTK_BOX (box4), buttonCheck, TRUE, TRUE, 0);
-    gtk_widget_show (buttonCheck);
+    gtk_widget_show (buttonCheck);*/
 
 	// A checkbutton to control whether the value is displayed or not 
-    buttonCheck = gtk_check_button_new_with_label("Green1-->");
+    /*buttonCheck = gtk_check_button_new_with_label("Green1-->");
     gtk_toggle_button_set_active (GTK_TOGGLE_BUTTON (buttonCheck), FALSE);
     g_signal_connect (G_OBJECT (buttonCheck), "toggled",G_CALLBACK (cb_draw_value), "Green1");
     gtk_box_pack_start (GTK_BOX (box4), buttonCheck, TRUE, TRUE, 0);
-    gtk_widget_show (buttonCheck);
+    gtk_widget_show (buttonCheck);*/
 
 	// A checkbutton to control whether the value is displayed or not 
-    buttonCheck = gtk_check_button_new_with_label("Red1-->");
+    /*buttonCheck = gtk_check_button_new_with_label("Red1-->");
     gtk_toggle_button_set_active (GTK_TOGGLE_BUTTON (buttonCheck), TRUE);
     g_signal_connect (G_OBJECT (buttonCheck), "toggled",G_CALLBACK (cb_draw_value), "Red1");
     gtk_box_pack_start (GTK_BOX (box4), buttonCheck, TRUE, TRUE, 0);
-    gtk_widget_show (buttonCheck);
+    gtk_widget_show (buttonCheck);*/
 
 	// A checkbutton to control whether the value is displayed or not 
-    buttonCheck = gtk_check_button_new_with_label("Blue1-->");
+    /*buttonCheck = gtk_check_button_new_with_label("Blue1-->");
     gtk_toggle_button_set_active (GTK_TOGGLE_BUTTON (buttonCheck), FALSE);
     g_signal_connect (G_OBJECT (buttonCheck), "toggled",G_CALLBACK (cb_draw_value), "Blue1");
     gtk_box_pack_start (GTK_BOX (box4), buttonCheck, TRUE, TRUE, 0);
-    gtk_widget_show (buttonCheck);
+    gtk_widget_show (buttonCheck);*/
 
 	// A checkbutton to control whether the value is displayed or not 
-    buttonCheck = gtk_check_button_new_with_label("Yellow1-->");
+    /*buttonCheck = gtk_check_button_new_with_label("Yellow1-->");
     gtk_toggle_button_set_active (GTK_TOGGLE_BUTTON (buttonCheck), FALSE);
     g_signal_connect (G_OBJECT (buttonCheck), "toggled",G_CALLBACK (cb_draw_value), "Yellow1");
     gtk_box_pack_start (GTK_BOX (box4), buttonCheck, TRUE, TRUE, 0);
-    gtk_widget_show (buttonCheck);
+    gtk_widget_show (buttonCheck);*/
 
 	gtk_box_pack_start (GTK_BOX (box3), box4, TRUE, TRUE, 0);
     gtk_widget_show (box4);
