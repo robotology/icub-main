@@ -1,13 +1,14 @@
 // -*- mode:C++; tab-width:4; c-basic-offset:4; indent-tabs-mode:nil -*-
 #include <iCub/Connection.h>
-#include <conio.h>
+//#include <conio.h>
 #define MEAN_WEIGHT 1 //-->check the variable in layer.cpp
 
 /**
 *default constructor
 */
 Connection::Connection(){
-	double value=double(rand())/RAND_MAX;
+	//double value=double(rand())/RAND_MAX;
+	double value=0.1;
 	double weight_rnd=((value-0.5)*MEAN_WEIGHT);
 	this->weight=weight_rnd;
 }
