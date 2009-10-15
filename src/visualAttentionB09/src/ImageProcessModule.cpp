@@ -234,9 +234,9 @@ bool ImageProcessModule::openPorts(){
 	if (true)
         {
 		
-            _pOutPort = new yarp::os::BufferedPort<ImageOf<PixelRgb>>;
-			_pOutPort2 = new yarp::os::BufferedPort<ImageOf<PixelRgb>>;
-			_pOutPort3 = new yarp::os::BufferedPort<ImageOf<PixelRgb>>;
+            _pOutPort = new yarp::os::BufferedPort<ImageOf<PixelRgb> >;
+			_pOutPort2 = new yarp::os::BufferedPort<ImageOf<PixelRgb> >;
+			_pOutPort3 = new yarp::os::BufferedPort<ImageOf<PixelRgb> >;
             g_print("Registering port %s on network %s...\n", "/rea/ImageProcessor/out","dafult");
 			g_print("Registering port %s on network %s...\n", "/rea/ImageProcessor/out2","dafult");
 			g_print("Registering port %s on network %s...\n", "/rea/ImageProcessor/out3","dafult");
