@@ -1,5 +1,6 @@
 SET(KEYWORD "visualAttentionB09")
 
+
 PROJECT(${KEYWORD})
 
 FIND_PACKAGE(ICUB)
@@ -7,7 +8,6 @@ FIND_PACKAGE(YARP REQUIRED)
 FIND_PACKAGE(OpenCV REQUIRED)
 FIND_PACKAGE(ODE REQUIRED)
 FIND_PACKAGE(IPP REQUIRED)
-
 #FIND_PACKAGE(QT)
 
 #---------------------------------------
@@ -29,8 +29,7 @@ INCLUDE_DIRECTORIES(
     ${PROJECT_SOURCE_DIR}/include
     ${OPENCV_INCLUDE_DIR}    
     ${ODE_INCLUDE_DIRS}	
-    ${IPP_INCLUDE_DIR}
-	 
+    ${IPP_INCLUDE_DIR}	 
     #/opt/intel/ipp/6.1.1.042/em64t/include
     #---linux    
     #$ENV{QT_INCLUDE_DIR}/include
@@ -39,7 +38,10 @@ INCLUDE_DIRECTORIES(
     #--windows
     $ENV{QT_INCLUDE_DIR}
 )
-MESSAGE(" Find IPP Include directory at ${IPP_INCLUDE_DIR}")
+
+IF(NOT IPP_INCLUDE_DIR)
+	MESSAGE(ERROR "No IPP_INCLUDE_DIR found. Please check it out")	
+ENDIF(NOT IPP_INCLUDE_DIR)
 
 # Search for source code.
 FILE(GLOB folder_source src/*.cpp src/*.cc src/*.c)
@@ -65,9 +67,8 @@ LINK_LIBRARIES(
     ${ODE_LIBRARIES}
     ${IDL_LIBRARIES}
     ${IPP_LIBRARIES} 
-     #ippi	
+    #ippi	
 )
-MESSAGE(" Find IPP Libraries at ${IPP_LIBRARIES}")
 
 # Set up our main executable.
 IF (folder_source)
