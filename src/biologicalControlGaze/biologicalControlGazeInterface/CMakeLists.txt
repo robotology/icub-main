@@ -1,4 +1,4 @@
-SET(KEYWORD "BIControlGazeInterface")
+SET(KEYWORD "biologicalControlGazeInterface")
 
 PROJECT(${KEYWORD})
 
