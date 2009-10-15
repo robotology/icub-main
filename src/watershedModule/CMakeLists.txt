@@ -1,4 +1,4 @@
-SET(KEYWORD "WatershedModule")
+SET(KEYWORD "watershedModule")
 
 PROJECT(${KEYWORD})
 
