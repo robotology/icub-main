@@ -189,8 +189,8 @@ void iCub::contrib::primateVision::ZDFServer::run(){
   p_prob[1] = zd_prob_8u;
 
   //templates:
-  Ipp8u *temp_l      = ippiMalloc_8u_C1(tsize.width,tsize.height, &psb_t);
-  Ipp8u *temp_r       = ippiMalloc_8u_C1(tsize.width,tsize.height, &psb_t);
+  Ipp8u *temp_l     = ippiMalloc_8u_C1(tsize.width,tsize.height, &psb_t);
+  Ipp8u *temp_r     = ippiMalloc_8u_C1(tsize.width,tsize.height, &psb_t);
 
   //input:
   Ipp8u *rec_im_ly;
@@ -235,48 +235,25 @@ void iCub::contrib::primateVision::ZDFServer::run(){
     //outPort_mot.write(motion_request); //don't send :)
   }
 
-  // Make port for res_mask output:
-  BufferedPort<Bottle> outPort_res_mask;
-  outPort_res_mask.open("/zdfserver/output/res_mask");
-  // Make port for res_prob output:
-  BufferedPort<Bottle> outPort_res_prob;
-  outPort_res_prob.open("/zdfserver/output/res_prob");
-  // Make a port for left im fovea
-  BufferedPort<Bottle> outPort_fov_l;
-  outPort_fov_l.open("/zdfserver/output/fov_l");
-  // Make a port for right im fovea
-  BufferedPort<Bottle> outPort_fov_r;
-  outPort_fov_r.open("/zdfserver/output/fov_r");
-  BufferedPort<Bottle> outPort_temp;
-  outPort_temp.open("/zdfserver/output/template");
-  // Make a port for seg im
-  BufferedPort<Bottle> outPort_seg_im;
-  outPort_seg_im.open("/zdfserver/output/seg_im");
-  // Make a port for seg dog
-  BufferedPort<Bottle> outPort_seg_dog;
-  outPort_seg_dog.open("/zdfserver/output/seg_dog");
-  // Make a port for YARPVIEW DISPLAY
-  BufferedPort<ImageOf<PixelMono> > outPort_yarpimg;
-  outPort_yarpimg.open("/zdfserver/output/yarpimg");
-  // Make a port for rec l
-  BufferedPort<Bottle> outPort_rec_l;
-  outPort_rec_l.open("/zdfserver/output/rec_l");
-  // Make a port for rec r
-  BufferedPort<Bottle> outPort_rec_r;
-  outPort_rec_r.open("/zdfserver/output/rec_r");
-
 
   // Make replier for server param probes on params port:
   //Set Replied Params:
   ZDFServerParams zsp;
   zsp.m_size=m_size;
-  zsp.m_psb=psb_m;
-  zsp.t_size=t_size;
-  zsp.t_psb=psb_t;
   //Replier:
   ZDFReplyParamProbe replier;
   replier.reply=zsp;
   outPort_s.setReplier(replier); 
+
+
+  //make a port for live tuning from zdfclient:
+  BufferedPort<ZDFServerTuneData > outPort_tune; 
+  outPort_tune.open("/zdfserver/output/tune"); 
+
+  //make a port for using live output:
+  BufferedPort<ZDFServerData > outPort_data; 
+  outPort_data.open("/zdfserver/output/data"); 
+
 
 
 
@@ -567,88 +544,40 @@ void iCub::contrib::primateVision::ZDFServer::run(){
 
 	
 	
-	//SEND RESULT IMS
-#if 0
-	Bottle& tmpBot_rec_l = outPort_rec_l.prepare();
-	tmpBot_rec_l.clear();
-	tmpBot_rec_l.add(Value::makeBlob( rec_im_ly, psb_in*srcsize.height));
-	outPort_rec_l.write();
-
-	Bottle& tmpBot_rec_r = outPort_rec_r.prepare();
-	tmpBot_rec_r.clear();
-	tmpBot_rec_r.add(Value::makeBlob( rec_im_ry, psb_in*srcsize.height));
-	outPort_rec_r.write();
-
-	Bottle& tmpBot_res_mask = outPort_res_mask.prepare();
-	tmpBot_res_mask.clear();
-	tmpBot_res_mask.add(Value::makeBlob( out, psb_m*m_size));
-	tmpBot_res_mask.addDouble(rec_res->gaze3D_x);
-	tmpBot_res_mask.addDouble(rec_res->gaze3D_y);
-	tmpBot_res_mask.addDouble(rec_res->gaze3D_z);
-	tmpBot_res_mask.addInt((int)update);
-	outPort_res_mask.write();
-
-	Bottle& tmpBot_temp = outPort_temp.prepare();
-	tmpBot_temp.clear();
-	tmpBot_temp.add(Value::makeBlob( temp_r, psb_t*t_size));
-	outPort_temp.write();
-#endif	
-
-	Bottle& tmpBot_res_prob = outPort_res_prob.prepare();
-	tmpBot_res_prob.clear();
-	tmpBot_res_prob.add(Value::makeBlob( zd_prob_8u, psb_m*m_size));
-	outPort_res_prob.write();
-	
-	Bottle& tmpBot_fov_l = outPort_fov_l.prepare();
-	tmpBot_fov_l.clear();
-	tmpBot_fov_l.add(Value::makeBlob( fov_r, psb_m*m_size));
-	outPort_fov_l.write();
-	
-	Bottle& tmpBot_fov_r = outPort_fov_r.prepare();
-	tmpBot_fov_r.clear();
-	tmpBot_fov_r.add(Value::makeBlob( fov_r, psb_m*m_size));
-	outPort_fov_r.write();
-
-	Bottle& tmpBot_seg_im = outPort_seg_im.prepare();
-	tmpBot_seg_im.clear();
-	tmpBot_seg_im.add(Value::makeBlob( seg_im, psb_m*m_size));
-	outPort_seg_im.write();
-
-	Bottle& tmpBot_seg_dog = outPort_seg_dog.prepare();
-	tmpBot_seg_dog.clear();
-	tmpBot_seg_dog.add(Value::makeBlob( seg_dog, psb_m*m_size));
 	//target pos.. ADD VIRTUAL SHIFT TO ANGLES:
 	r_deg = rec_res->deg_rx - rsp.pix2degX*tr_x;
 	l_deg = rec_res->deg_lx - rsp.pix2degX*tl_x;
 	t_deg = rec_res->deg_ly + rsp.pix2degY*(tl_y+tr_y)/2.0;
-
-	//printf("r:%f + %f   l:%f + %f   t:%f + %f  px:%f py:%f\n",
-	//       rec_res->deg_rx,-rsp.pix2degX*tr_x, 
-	//       rec_res->deg_lx,-rsp.pix2degX*tl_x,
-	//       rec_res->deg_ly,rsp.pix2degY*(tl_y+tr_y)/2.0,
-	//       rsp.pix2degX,rsp.pix2degY);
-
 	//CONVERT to 3D target pos:
 	posx = ((rsp.baseline/2.0)*(tan(IPP_PI/2.0-r_deg*IPP_PI/180.0)-tan(IPP_PI/2.0+l_deg*IPP_PI/180.0)))/(tan(IPP_PI/2.0-r_deg*IPP_PI/180.0)+tan(IPP_PI/2.0+l_deg*IPP_PI/180.0));
 	z_ = tan(IPP_PI/2.0-r_deg*IPP_PI/180.0)*(rsp.baseline/2.0-posx);
 	posz = cos(t_deg*IPP_PI/180.0)*z_;
 	posy = tan(t_deg*IPP_PI/180.0)*z_;
-	tmpBot_seg_dog.addDouble(posx);
-	tmpBot_seg_dog.addDouble(posy);
-	tmpBot_seg_dog.addDouble(posz);
-	tmpBot_seg_dog.addInt((int)update);
-	outPort_seg_dog.write();
- 
-	//A yarpview compatible output port:
-	//norm to 255 for display:
-	normValI_8u(255,out,psb_m,msize);
-	ImageOf<PixelMono>& tmp_yarpimg = outPort_yarpimg.prepare();
-	tmp_yarpimg.resize(m_size,m_size);
-	for (int y=0;y<m_size;y++){
-	  memcpy(tmp_yarpimg.getRowArray()[y],&seg_im[y*psb_m],m_size);
-	}
-	outPort_yarpimg.write();
-	
+
+
+	//OUTPUT
+	//tuning port:
+	ZDFServerTuneData& zdfTuneData = outPort_tune.prepare();
+	zdfTuneData.resize(m_size,m_size);
+	ippiCopy_8u_C1R(zd_prob_8u,psb_m,(Ipp8u*)zdfTuneData.prob.getRawImage(), zdfTuneData.prob.getRowSize(), msize);
+	ippiCopy_8u_C1R(seg_im,psb_m,    (Ipp8u*)zdfTuneData.tex.getRawImage(),  zdfTuneData.tex.getRowSize(),  msize);
+	ippiCopy_8u_C1R(fov_l,psb_m,     (Ipp8u*)zdfTuneData.left.getRawImage(), zdfTuneData.left.getRowSize(), msize);
+	ippiCopy_8u_C1R(fov_r,psb_m,     (Ipp8u*)zdfTuneData.right.getRawImage(),zdfTuneData.right.getRowSize(),msize);
+	//send:
+	outPort_tune.write();
+
+	//result port:
+	ZDFServerData& zdfData = outPort_data.prepare();
+	zdfData.resize(m_size,m_size);
+	ippiCopy_8u_C1R(seg_im, psb_m,(Ipp8u*)zdfData.tex.getRawImage(),zdfData.tex.getRowSize(),msize);
+	ippiCopy_8u_C1R(seg_dog,psb_m,(Ipp8u*)zdfData.dog.getRawImage(),zdfData.dog.getRowSize(),msize);
+	zdfData.x = posx;
+	zdfData.y = posy;
+	zdfData.z = posz;
+	zdfData.mos_x = 0; //*****GET THESE FROM REC AND ADD VIRTUAL OFFSETS!!
+	zdfData.mos_y = 0; 
+	//send:
+	outPort_data.write();	
 	
       }
       else if (inBot_ly==NULL &&

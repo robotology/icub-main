@@ -70,6 +70,8 @@ int main(int argc, char **argv)
   //clean up and exit
   //  delete greyq;
   delete colourq;
+  delete mfv1;
+  delete mfv2;
   return a->exec();
 }
 

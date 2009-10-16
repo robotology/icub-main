@@ -1,5 +1,4 @@
 #include "recmot.h"
-#include <yarp/os/Property.h>
 
 
 iCub::contrib::primateVision::RecHandleMotionRequest::RecHandleMotionRequest(int period, string *cfg):

@@ -1,57 +1,93 @@
+/**
+ * \ingoup icub_primatevision_demos_objman
+ */
+
+ /*
+ * Copyright (C) 2003-2008 Andrew Dankers. All rights reserved.
+ * 
+ */
+
+
+#ifndef REC_KAL_H
+#define REC_KAL_H
+
 #include <iCub/kalman.h>
 #include <yarp/math/Math.h>
+#include <yarp/os/RateThread.h>
+#include <yarp/os/BinPortable.h>
+
 
 using namespace ctrl;
+using namespace yarp;
 using namespace yarp::math;
 using namespace yarp::os;
 using namespace yarp::sig;
+using namespace yarp::dev;
 using namespace std;
 
-class kal
-{
-  
- public:
 
-  kal(double proc_noise_cov=0.04, double meas_noise_cov=0.08){
-    
-    kalA=eye(3,3);		// the state is 3d pos
-    kalH=eye(3,3);		// 3d pos is measured
-    
-    kalQ=proc_noise_cov*eye(3,3);		// Process noise covariance
-    kalR=meas_noise_cov*eye(3,3);		// Measurement noise covariance
-    
-    //initial pos:
-    kalx0.resize(3); kalx0=0.0;
-    kalP0=10*eye(3,3);
-    
-    kalPos=new Kalman(kalA,kalH,kalQ,kalR);
-    kalPos->init(kalx0,kalx0,kalP0);
-    
-  }
-  
-  ~kal(){
-    delete kalPos;
-  }
-   
 
-  Vector update(double x,double y,double z){
-    
-    //input next measurements: 
-    kalx0(0)=x;
-    kalx0(1)=y;
-    kalx0(2)=z;
-    
-    estX=kalPos->filt(kalx0);
+namespace iCub {
+  namespace contrib {
+    namespace primateVision {
 
-    return estX;
+      /** 
+       * A Kalman filter wrapper.
+       *
+       */
+
+
+      class kal : public RateThread
+      {
+	
+      public:
+	/** Constructor.
+	 * @param period The command cycle period.
+	 * @param X_ Initial x.
+	 * @param Y_ Initial y.
+	 * @param Z_ Initial z.
+	 */
+	kal(int period,double X_=0.0,double Y_=0.0,double Z_=0.0,double proc_noise_cov=0.04, double meas_noise_cov=0.08);
+	~kal(){
+	  delete kalPos;
+	}
+
+	/** Update after measurement.
+	 * @param x_ Measurement x.
+	 * @param y_ Measurement y.
+	 * @param z_ Measurement z.
+	 * @return Returns Kalman filtered Vector of 3D position.
+	 */
+	Vector update(double x_,double y_,double z_);
+	
+	/** Processing events occurring once every period.
+	 */
+	virtual void run{
+	  done = false;
+	  estX=kalPos->filt(kalx0);
+	  done = true;
+	}
+	/** RateThread initialiser.
+	 */
+	virtual bool threadInit(){return true;}
+	//virtual void afterStart(bool s);
+	
+	/** Clean-up.
+	 */
+	virtual void threadRelease(){ ;}
+	
+	
+      private:
+	Matrix kalA,kalH,kalQ,kalR;
+	Matrix kalP0;
+	Vector kalx0;
+	Kalman* kalPos;
+	Vector estX;
+	bool done;
+	
+      };
+      
+    }
   }
-  
-  
- private:
-  Matrix kalA,kalH,kalQ,kalR;
-  Matrix kalP0;
-  Vector kalx0;
-  Kalman* kalPos;
-  Vector estX;
-  
-};
+}
+#endif
