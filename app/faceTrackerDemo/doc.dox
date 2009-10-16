@@ -1,0 +1,43 @@
+/**
+@ingroup  icub_applications
+\defgroup icub_faceTrackerDemo faceTrackerDemo
+
+This is the application used to run the Face Tracker demo.
+
+\section intro_sec Description
+The Haar detector of OpenCV library is used to find a face
+in front of the robot. Once a face is detected the application
+commands the head to keep on gazing at it and the right arm to point
+at the current face location.
+While no face is currently tracked the gaze is commanded to
+move randomly around. 
+
+\section dep_sec Dependencies
+Assumes \ref icub_iCubInterface is running, and that the head and
+the right arm are instantiated.
+
+\section int_sec Instantiated Modules
+- \ref faceTracker "faceTracker"
+
+- \ref iKinGazeCtrl "iKinGazeCtrl"
+
+- \ref iKinArmCtrl "iKinArmCtrl"
+
+\section config_sec Configuration Files
+The file ./conf/haarcascade_frontalface_default.xml is used to provide
+the haar descriptor for the face detection algorithm.
+
+\section howto How to run the Application
+Customize the file ./scripts/faceTrackerDemo.xml.template for your specific platform
+and launch it.
+
+\author Ugo Pattacini
+
+Copyright (C) 2009 RobotCub Consortium
+
+CopyPolicy: Released under the terms of the GNU GPL v2.0.
+
+This file can be edited at app/faceTrackerDemo/doc.dox
+**/
+
+

@@ -1,5 +1,88 @@
+/** 
+\defgroup faceTracker faceTracker 
+ 
+@ingroup icub_module  
+ 
+A face tracker based on the Haar detector.
 
-//#include <ace/OS.h>
+Copyright (C) 2009 RobotCub Consortium
+ 
+Author: Ugo Pattacini 
+
+CopyPolicy: Released under the terms of the GNU GPL v2.0.
+
+\section intro_sec Description
+ 
+This module uses the OpenCV Haar detector in order to find a 
+face in front of the robot. Once detected it sends out data to 
+control the head motion for tracking through the iKinGazeCtrl 
+module and also to move the hand to point at the gazing location
+through the iKinArmCtrl module. 
+ 
+The robot will gaze around until it will find a face and then it 
+will remain on the last detected face (even in presence of more 
+than one face). 
+ 
+\note A video on iCub tracking a face can be seen at
+      http://eris.liralab.it/misc/icubvideos/faceTracker.avi
+
+\section lib_sec Libraries 
+- YARP libraries. 
+- OpenCV libraries 
+
+\section parameters_sec Parameters
+--descriptor \e fileName 
+- The parameter \e fileName identifies the description file for 
+  the Haar detector. 
+ 
+\section portsa_sec Ports Accessed
+ 
+/icub/cam/left 
+/icub/cam/right 
+/iKinGazeCtrl/head/x:o 
+
+\section portsc_sec Ports Created 
+ 
+- \e /faceTracker/left:i receives the image from the left 
+  camera.
+ 
+- \e /faceTracker/right:i receives the image from the right 
+  camera.
+ 
+- \e /faceTracker/lookingat:i receives the actual 3-d component 
+  of the fixation point from the iKinGazeCtrl module.
+ 
+- \e /faceTracker/gazeat:o sends out the target 3-d component of
+  the new fixation point (to be connected to the iKinGazeCtrl
+  module).
+ 
+- \e /faceTracker/pixel:o sends out the target 4-d component of 
+  the face cog position within the image planes (to be connected
+  to the iKinGazeCtrl module for tracking purpose).
+ 
+- \e /faceTracker/reach:o sends out the target 3-d component of 
+  the new fixation point (to be connected to the iKinArmCtrl
+  module for reaching purpose).
+ 
+- \e /faceTracker/left:o sends out the image acquired from the 
+  left camera with a superimposed rectangle which identifies the
+  detected face (to be connected to a viewer).
+
+- \e /faceTracker/right:o sends out the image acquired from the 
+  right camera with a superimposed rectangle which identifies
+  the detected face (to be connected to a viewer).
+ 
+\section in_files_sec Input Data Files
+The description file for the Haar detector.
+
+\section out_data_sec Output Data Files 
+None. 
+
+\section tested_os_sec Tested OS
+Windows, Linux
+
+\author Ugo Pattacini
+*/ 
 
 #include <yarp/os/Network.h>
 #include <yarp/os/RFModule.h>
@@ -11,7 +94,6 @@
 #include <yarp/sig/Image.h>
 #include <yarp/sig/ImageFile.h>
 
-// Giorgio: moved after ace/yarp inclusion, issues on Windows.
 #include <cv.h>
 #include <highgui.h>
 
