@@ -188,8 +188,8 @@ Random Features for Large-Scale Kernel Machines, Ali Rahimi, Ben Recht, in
 
 In many situations it is desirable to monitor the various components of the 
 system during runtime. An event mechanism has been integrated for exactly this 
-purpose. Certain key operations, thus far limited to either training on a 
-sample or predicting a sample, raise an event. The user can implement dedicated 
+purpose. Certain key operations, thus far limited to either training on a sample 
+or predicting a sample, raise an event. The user can implement dedicated 
 listeners for one or more of these events.
 
 One particuraly useful application of this mechanism is for online learning 
@@ -377,6 +377,7 @@ Although not explicitly mentioned, it is adviseable to verify the parameter
 configuration commands using the 'info' method. This applies to both the train
 module and the transform module.
 
+
 3.2 Online RLS Example with Double Preprocessing
 
 A more elaborate example is to use iterative RLS in an online setting with 
@@ -394,19 +395,14 @@ Random Feature preprocessor.
 ./train --machine RLS --dom 250 --cod 6
 --------------------------------------------------------------------------------
 
-Step 4.
-Configure the machine. Further, put the machine on pause, because we will first 
-standardize the inputs.
+Step 2.
+Configure the machine, for this example we set lambda to 0.2 for all outputs. 
 (train)-------------------------------------------------------------------------
-set c 16
+set lambda all 0.2
 "Setting configuration option succeeded"
-set gamma 0.25
-"Setting configuration option succeeded"
-pause
-"Sample stream to machine disabled."
 --------------------------------------------------------------------------------
 
-Step .
+Step 3.
 Start the transform module with RandomFeature, for an input dimension of 12 and 
 output dimension of 250. Further, we set a non-default port prefix to and 
 define the ports to which it will connect.
@@ -416,14 +412,14 @@ define the ports to which it will connect.
 --dom 12 --cod 250
 --------------------------------------------------------------------------------
 
-Step .
+Step 4.
 Configure the latter transform module by setting the gamma value.
 (transform_rf)------------------------------------------------------------------
 set gamma 0.2
 "Setting configuration option succeeded"
 --------------------------------------------------------------------------------
 
-Step .
+Step 5.
 Start the transform module with Scaler, for an input dimension of 12. Also now 
 we set a non-default port prefix to and define the connecting ports.
 (transform_scale)---------------------------------------------------------------
@@ -432,16 +428,80 @@ we set a non-default port prefix to and define the connecting ports.
 --dom 12
 --------------------------------------------------------------------------------
 
-Step .
+Step 6.
 Configure the scaler transform module by setting all types to Fixed and 
-configuring the bounds.
+configuring the bounds. For convience it is advised to read the commands from a 
+file and send them to the command port. Among others, the sendCmd module in the 
+iCub repository can be used to this effect.
 (transform_scale)---------------------------------------------------------------
+set type all Fixed
+"Setting configuration option succeeded"
+set config 1 in 50 150
+"Setting configuration option succeeded"
+set config 2 in -100 60
+"Setting configuration option succeeded"
+set config 3 in -60 30
+"Setting configuration option succeeded"
+set config 4 in 10 70
+"Setting configuration option succeeded"
+set config 5 in -50 50
+"Setting configuration option succeeded"
+set config 6 in -50 50
+"Setting configuration option succeeded"
+set config 7 in -50 50
+"Setting configuration option succeeded"
+set config 8 in -50 50
+"Setting configuration option succeeded"
+set config 9 in -200 200
+"Setting configuration option succeeded"
+set config 10 in -200 200
+"Setting configuration option succeeded"
+set config 11 in -200 200
+"Setting configuration option succeeded"
+set config 12 in -200 200
+"Setting configuration option succeeded"
+--------------------------------------------------------------------------------
 
+Step 7.
+Enable the train event listener for the machine.
+(train)-------------------------------------------------------------------------
+event add Train
+yarp: Port /lm/event/train1:o active at tcp://10.255.36.192:10019
+"Successfully added listener(s)"
+--------------------------------------------------------------------------------
+
+Step 8.
+As a demonstration of the functioning of the event listener, we connect a yarp 
+reader to the corresponding port. In real applications, one would connect a 
+plotting or logging application.
+(read)--------------------------------------------------------------------------
+yarp read /foo:i /lm/event/train1:o
+--------------------------------------------------------------------------------
+
+Step 9.
+Start the test module, specifying the dataset and input and output columns. Make 
+sure to specify the correct ports of the transformer!
+(test)--------------------------------------------------------------------------
+./test --datafile dataset/dynamics_example_2000.dat 
+--trainport /lm/transform_scale/train:i 
+--predictport /lm/transform_scale/predict:io 
+--inputs "(1 2 3 4 5 6 7 8 9 10 11 12)" --outputs "(13 14 15 16 17 18)"
+--------------------------------------------------------------------------------
+
+Step 9.
+Send 2000 online training samples. 
+(test)--------------------------------------------------------------------------
+predict 1000
+"MSE: [0.558763,0.563746,0.202745,0.0157734,0.0127241,0.00232176]"
 --------------------------------------------------------------------------------
 
 
+
+
+(train)-------------------------------------------------------------------------
 (transform)---------------------------------------------------------------------
 (test)--------------------------------------------------------------------------
+--------------------------------------------------------------------------------
 
 4. Notes
 
