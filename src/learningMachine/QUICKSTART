@@ -1,14 +1,18 @@
-LearningMachine: YARP modules for Machine Learning
+            ____________________________________________________
+           /                                                    \
+           | LearningMachine: YARP modules for Machine Learning |
+           \____________________________________________________/
 
-1. Introduction
 
-The goal of the LearningMachine modules is to have a unified interface for 
-machine learning algorithms. Obviously, there are many problems in robotics 
-that can be approached using machine learning. Instead of everybody integrating 
-one particular approach in their code, we'd rather moduralize the learning 
-method and provide a single interface. This has as advantage that people can 
-easily switch to another learning algorithm and that they already have a pool
-of algorithms from which to choose.
+1. INTRODUCTION
+
+Many problems in robotics that can be approached using machine learning. The 
+goal of the LearningMachine modules is to provide a unified interface for 
+machine learning algorithms. Instead of having everybody integrate one 
+particular algorithm in their code, we'd rather moduralize the learning method 
+and provide a single standardized interface. This has as advantage that people 
+can easily switch to another learning algorithm and that there is a pool of 
+algorithms from which to choose.
 
 
 1.1 Overview
@@ -32,7 +36,8 @@ Although the interface itself is flexible, most algorithms construct an
 R^m -> R^n mapping, where m and n are fixed a priori.
 
 
-2. Implementation Details
+
+2. IMPLEMENTATION DETAILS
 
 This section lists some details regarding the implementation of all the modules 
 and how to use them. Another good way to way to get to grips with the modules is 
@@ -54,15 +59,16 @@ sure yarp server is running). Commonly, we prefer to specify the domain size
 
 On startup, the module opens 4 ports:
 
-a) Port /[prefix]/predict:io to predict samples. On incoming vectors it replies 
+a) Port [prefix]/predict:io to predict samples. On incoming vectors it replies 
    with the prediction.
-b) Port /[prefix]/cmd:i to send commands to the module. This is basically a port 
+b) Port [prefix]/cmd:i to send commands to the module. This is basically a port 
    that does the same as the terminal and is used for remote administration.
-c) Port /[prefix]/model:o to send the constructed model to a remote prediction 
+c) Port [prefix]/model:o to send the constructed model to a remote prediction 
    module.
-d) Port /[prefix]/train:i for receiving incoming training samples.
+d) Port [prefix]/train:i for receiving incoming training samples.
 
-(the port prefix [prefix] can be changed using --port, by default it is 'train')
+(the port prefix [prefix] can be changed using --port, by default it is 
+'/lm/train')
 
 Again, when running the module the command 'help' gives a listing of all 
 available commands. The most important ones are:
@@ -92,9 +98,12 @@ The predict module works much like the a restricted variant of the train module
 and, in fact, the latter is a proper subclass of the former. On startup, the 
 predict module opens 3 ports:
 
-a) Port /predict/model:i to receive incoming models from a train module.
-b) Port /predict/predict:io to predict incoming samples, like the train module.
-c) Port /predict/cmd:i to send commands to the module, like the train module.
+a) Port [prefix]/model:i to receive incoming models from a train module.
+b) Port [prefix]/predict:io to predict incoming samples, like the train module.
+c) Port [prefix]/cmd:i to send commands to the module, like the train module.
+
+(the port prefix [prefix] can be changed using --port, by default it is 
+'/lm/predict')
 
 Besides receiving a model from a train module, the model may also be read from 
 a file using the 'load' command. Since the predict module does not necessarily 
@@ -111,14 +120,17 @@ and unit standard deviation. The transform module is thus placed in between the
 
 On startup, the transform module opens 5 ports:
 
-a) Port /transform/train:i for incoming training samples.
-b) Port /transform/train:o for outgoing training samples, thus to the train
+a) Port [prefix]/train:i for incoming training samples.
+b) Port [prefix]/train:o for outgoing training samples, thus to the train
    module or, alternatively, to another transform module.
-c) Port /transform/predict:io for incoming predict samples.
-d) Port /transform/predict_relay:io for outgoing predict samples. The predict
+c) Port [prefix]/predict:io for incoming predict samples.
+d) Port [prefix]/predict_relay:io for outgoing predict samples. The predict
    samples are relayed to the next ports and multiple transformers can thus be 
    stacked.
-e) Port /transform/cmd:i to receive commands.
+e) Port [prefix]/cmd:i to receive commands.
+
+(the port prefix [prefix] can be changed using --port, by default it is 
+'/lm/predict')
 
 The implemented types of transformers are 'Scaler' and 'RandomFeature'. The 
 scaler is a R^m -> R^m transformation that performs a linear operation on each 
@@ -168,6 +180,8 @@ set config 3 lowerout -1
 "Setting configuration option succeeded"
 set config 3 upperout 2
 "Setting configuration option succeeded"
+set config 3 in -20 40
+"Setting configuration option succeeded"
 --------------------------------------------------------------------------------
 
 Note that an index must be specified for both the 'set type' and the 
@@ -183,6 +197,7 @@ overhead of a kernel expansion. See the following paper for more information:
 
 Random Features for Large-Scale Kernel Machines, Ali Rahimi, Ben Recht, in 
   Neural Information Processing Systems (NIPS) 2007.
+
 
 2.4 Event Listeners
 
@@ -262,12 +277,14 @@ c) Skip samples using the 'skip n' command. The parameter n behaves identically
 d) Reset the dataset to the beginning using the 'reset' command.
 e) Open another dataset using the 'open fname' command.
 
-3. Examples
 
-Below we put everything together and demonstrate the usage of all modules in an 
-example setting.
 
-Before running the example, make sure that a YARP server is running. Further, 
+3. EXAMPLES
+
+Below we put everything together and demonstrate the usage of all modules in  
+example settings that are representative for real-life usage.
+
+Before running either example, make sure that a YARP server is running. Further, 
 for simplicity here we assume the default prefix when possible. The problem 
 we are considering is to predict forces and torques of a robot arm from four
 joint angles. The dataset (dataset/dynamics_example_2000.dat) has the following 
@@ -275,8 +292,8 @@ layout:
 
 Col:
 01-04 Joint Angles 1-4
-05-08 Joint Velocities 1-4 (ignored)
-09-12 Joint Accelerations 1-4 (ignored)
+05-08 Joint Velocities 1-4
+09-12 Joint Accelerations 1-4
 13-15 Forces x,y,z
 16-18 Torques x,y,z
 
@@ -378,7 +395,7 @@ configuration commands using the 'info' method. This applies to both the train
 module and the transform module.
 
 
-3.2 Online RLS Example with Double Preprocessing
+3.2 Online RLS Example with Input Scaling and Random Feature Preprocessing
 
 A more elaborate example is to use iterative RLS in an online setting with 
 input scaling and Random Feature preprocessing. The inputs are scaled using a 
@@ -431,8 +448,7 @@ we set a non-default port prefix to and define the connecting ports.
 Step 6.
 Configure the scaler transform module by setting all types to Fixed and 
 configuring the bounds. For convience it is advised to read the commands from a 
-file and send them to the command port. Among others, the sendCmd module in the 
-iCub repository can be used to this effect.
+file and send them to the command port, cf. note 4.2. 
 (transform_scale)---------------------------------------------------------------
 set type all Fixed
 "Setting configuration option succeeded"
@@ -488,27 +504,22 @@ sure to specify the correct ports of the transformer!
 --inputs "(1 2 3 4 5 6 7 8 9 10 11 12)" --outputs "(13 14 15 16 17 18)"
 --------------------------------------------------------------------------------
 
-Step 9.
+Step 10.
 Send 2000 online training samples. 
 (test)--------------------------------------------------------------------------
-predict 1000
-"MSE: [0.558763,0.563746,0.202745,0.0157734,0.0127241,0.00232176]"
+train 2000
 --------------------------------------------------------------------------------
 
 
 
-
-(train)-------------------------------------------------------------------------
-(transform)---------------------------------------------------------------------
-(test)--------------------------------------------------------------------------
---------------------------------------------------------------------------------
-
-4. Notes
+4. NOTES
 
 4.1 Connecting Ports
 Rather than connecting all ports manually, all modules allow the connecting 
-ports to be specified as startup. If the target port is registered on the YARP 
-server, then the connection is automatically made. 
+ports to be specified at startup. If the target port is registered on the YARP 
+server, then the connection is automatically made. Further, in simple 
+configurations it may very well be possible to rely on the default names of the 
+ports.
 
 4.2 Initialization and Configuration
 Specifying executable parameters can be rather cumbersome. Note that all modules 
@@ -525,7 +536,7 @@ command ports.
 As mentioned previously, the data-driven transformers need to be fed data, so 
 that they can tune their parameters based on the statistics/extreme found in the
 input data. During this phase, it is better not to do any training on that data, 
-as the data is not reliable anymore after the scaler changes settings. For this
+as the model is not reliable anymore after the scaler changes settings. For this
 purpose, the train module has a command 'pause', which blocks all incoming 
 training samples to the train module. Training can be restarted using 
 'continue'.
