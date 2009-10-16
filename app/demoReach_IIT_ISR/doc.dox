@@ -1,0 +1,59 @@
+/**
+@ingroup  icub_applications
+\defgroup icub_demoReach_IIT_ISR demoReach_IIT_ISR
+
+The Joint Reaching application developed by IIT and ISR.
+
+\section intro_sec Description
+This application launches all the required modules in order to detect and track
+the 3-d position of a target within the image plane applying the particle filter 
+algorithm along with the controllers to move the head accordingly and the arm to
+reach for the object.
+
+\section dep_sec Dependencies
+Assumes \ref icub_iCubInterface is running.
+
+\section int_sec Instantiated Modules
+- \ref pf3dTracker "pf3dTracker"
+
+- \ref leftEyeToRoot "leftEyeToRoot"
+
+- \ref demoReachManager_IIT_ISR "demoReachManager_IIT_ISR"
+
+- \ref iKinGazeCtrl "iKinGazeCtrl"
+
+- \ref iKinArmCtrl "iKinArmCtrl"
+
+\section config_sec Configuration Files
+The file ./conf/config.ini contains the initialization parameters for the 
+demoReachManager_IIT_ISR module.
+
+\section howto How to run the Application
+Customize the file ./scripts/*.template for your specific platform
+before launching them.
+
+- ./scripts/demoReach_IIT_ISR_JustTracker.xml.template
+  activates only the particle filter on the left eye.
+
+- ./scripts/demoReach_IIT_ISR_BothEyes.xml.template
+  launches two instances of the particle filter one for each eye, as
+  well as the head controller and a bunch of dumpers in order to save
+  on the disk all the collected target position while tracking.
+
+- ./scripts/demoReach_IIT_ISR_NoHand.xml.template
+  activates the particle filter on the left eye and the head controller.
+
+- ./scripts/demoReach_IIT_ISR_RightHand.xml.template
+  activates the particle filter on the left eye, the head controller and
+  the right arm controller for the reaching part.
+
+\author Ugo Pattacini and Matteo Taiana
+
+Copyright (C) 2009 RobotCub Consortium
+
+CopyPolicy: Released under the terms of the GNU GPL v2.0.
+
+This file can be edited at app/faceTrackerDemo/doc.dox
+**/
+
+

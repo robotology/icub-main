@@ -1,3 +1,78 @@
+/** 
+\defgroup demoReachManager_IIT_ISR demoReachManager_IIT_ISR
+ 
+@ingroup icub_module  
+ 
+The manager module for the Joint Reaching Demo developed by IIT 
+and ISR. 
+
+Copyright (C) 2009 RobotCub Consortium
+ 
+Author: Ugo Pattacini 
+
+CopyPolicy: Released under the terms of the GNU GPL v2.0.
+
+\section intro_sec Description
+This module collects the 3-d object positions estimated by the 
+particle filter and sends data to the head and arm controllers 
+in order to gaze at and reach for the target. 
+ 
+\note A video on iCub performing grasp-priming can be seen at
+      http://eris.liralab.it/misc/icubvideos/reaching_IIT_ISR.wmv
+
+\section lib_sec Libraries 
+- YARP libraries. 
+
+\section parameters_sec Parameters
+None. 
+ 
+\section portsa_sec Ports Accessed
+iCubInterface is supposed to be running. 
+ 
+\section portsc_sec Ports Created 
+ 
+- \e /demoReachManager_IIT_ISR/trackTarget:i receives the 3-d 
+  position to track.
+ 
+- \e /demoReachManager_IIT_ISR/cmdHead:o sends out commands to 
+  the iKinGazeCtrl module in order to control the gaze.
+ 
+- \e /demoReachManager_IIT_ISR/cmdHand:o sends out commands to 
+  the iKinArmCtrl module in order to control the arm for the
+  reaching.
+ 
+\section in_files_sec Input Data Files
+None.
+
+\section out_data_sec Output Data Files 
+None. 
+ 
+\section conf_file_sec Configuration Files
+The configuration file passed through the option \e --from
+should look like as follows:
+ 
+\code 
+[general] 
+robot	icub            // the robot name 
+part	right_arm       // the arm under control
+period  10              // the thread period
+
+[left_arm]
+// the offset [m] to be added to the desired position 
+offset		0.0 -0.13 0.0 
+// the hand orientation [rad] given in axis-angle representation
+orientation 0.064485 0.707066 0.704201 3.140572 
+
+[right_arm]
+offset		0.0 0.13 0.0
+orientation	-0.012968 -0.721210 0.692595 2.917075 
+\endcode 
+
+\section tested_os_sec Tested OS
+Windows, Linux
+
+\author Ugo Pattacini
+*/ 
 
 #include <yarp/os/Network.h>
 #include <yarp/os/RFModule.h>

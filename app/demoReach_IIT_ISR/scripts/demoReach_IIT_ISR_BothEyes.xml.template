@@ -30,7 +30,6 @@
 
         <module>
                 <name>demoReachManager_IIT_ISR</name>
-                <parameters>--part right_arm</parameters>
                 <node>pwrNode3</node>
                 <tag>manager</tag>
         </module>
