@@ -1,5 +1,6 @@
 #include <iCub/BMLEngine.h>
-#include <conio.h>
+#include <string.h>
+//#include <conio.h>
 
 #define T_TOUCH 1000
 #define COOLING_RATE 4
