@@ -1,7 +1,12 @@
 #include "kal.h"
+#include <stdio.h>
+#include <iostream>
+#include <sys/time.h>
 
 
-iCub::contrib::primateVision::Kal(int period,double X_,double Y_,double Z_,double proc_noise_cov, double meas_noise_cov):
+using namespace std;
+
+iCub::contrib::primateVision::Kal::Kal(int period,double X_,double Y_,double Z_,double proc_noise_cov, double meas_noise_cov):
   RateThread(period)
 {
   
@@ -26,7 +31,7 @@ iCub::contrib::primateVision::Kal(int period,double X_,double Y_,double Z_,doubl
   done = true;
 }
 
-Vector iCub::contrib::primateVision::update(double x_,double y_,double z_){
+Vector iCub::contrib::primateVision::Kal::update(double x_,double y_,double z_){
   //latch on these input measurements: 
   kalx0(0)=x_;
   kalx0(1)=y_;

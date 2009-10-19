@@ -155,7 +155,7 @@ void iCub::contrib::primateVision::ObjManServer::run()
     
     printf("ObjManServer: %d Objects in Database\n",numObjs+1);
     //send entire list of objects to clients:
-    outPort_objList.write(objList);
+    outPort_objList.write(*objList);
     
 
 

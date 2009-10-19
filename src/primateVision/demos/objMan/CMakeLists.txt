@@ -19,6 +19,7 @@ LINK_DIRECTORIES(
 ADD_EXECUTABLE( objManServer
 		main.cc 
 		objMan.cc
+		kal.cc
 		)
 
 TARGET_LINK_LIBRARIES(objManServer
