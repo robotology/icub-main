@@ -30,11 +30,11 @@ See \ref iKinSlv "Cartesian Solver" for documentation.
 - allow to specify a different path where to search the 
   configuration file in the form of \e
   $ICUB_ROOT/app/<directory>. Directory default value is \e
-  default/conf.
+  cartesianSolver/conf.
  
 --from \e file [optional]
 - allow to specify a different configuration file from the 
-  default one which is \e icub_iKinCartesianSolver.ini.
+  default one which is \e cartesianSolver.ini.
  
 \section portsa_sec Ports Accessed
  
@@ -210,8 +210,8 @@ int main(int argc, char *argv[])
 
     ResourceFinder rf;
     rf.setVerbose(true);
-    rf.setDefaultContext("default/conf");
-    rf.setDefaultConfigFile("icub_iKinCartesianSolver.ini");
+    rf.setDefaultContext("cartesianSolver/conf");
+    rf.setDefaultConfigFile("cartesianSolver.ini");
     rf.configure("ICUB_ROOT",argc,argv);
 
     SolverModule mod;

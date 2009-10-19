@@ -1,0 +1,40 @@
+/**
+@ingroup  icub_applications
+\defgroup icub_cartesianSolver cartesianSolver
+
+The Cartesian Solvers Launcher.
+
+\section intro_sec Description
+This application allows the user to launch instances of the iKinCartesianSolver
+on a specific machine belonging to the cluster.
+
+\section dep_sec Dependencies
+Assumes \ref icub_iCubInterface is running.
+
+\section int_sec Instantiated Modules
+- \ref iKinCartesianSolver "iKinCartesianSolver"
+
+\section config_sec Configuration Files
+The file ./conf/cartesianSolver.ini contains the solvers initialization parameters.
+
+\section howto How to run the Application
+Customize the file ./scripts/*.template for your specific platform
+before launching them.
+
+- ./scripts/cartesianSolver.xml.template
+  launches solvers for the following parts:
+  right_arm
+  left_arm
+  right_leg
+  left_leg
+
+\author Ugo Pattacini
+
+Copyright (C) 2009 RobotCub Consortium
+
+CopyPolicy: Released under the terms of the GNU GPL v2.0.
+
+This file can be edited at app/faceTrackerDemo/doc.dox
+**/
+
+
