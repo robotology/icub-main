@@ -40,30 +40,30 @@ using namespace yarp::sig::draw;
 
 class BMLInterface : public Module {
 private:
-    BufferedPort<ImageOf<PixelRgb>> port_in; // a port for reading the edge image 
-	BufferedPort<ImageOf<PixelRgb>> portRedPlane; // a port for reading the input Image of the Red Plane
-	BufferedPort<ImageOf<PixelRgb>> portGreenPlane; // a port for reading the input Image of the Green Plane
-	BufferedPort<ImageOf<PixelRgb>> portBluePlane; // a port for reading the input Image of the Blue Plane 
+    BufferedPort<ImageOf<PixelRgb> > port_in; // a port for reading the edge image 
+	BufferedPort<ImageOf<PixelRgb> > portRedPlane; // a port for reading the input Image of the Red Plane
+	BufferedPort<ImageOf<PixelRgb> > portGreenPlane; // a port for reading the input Image of the Green Plane
+	BufferedPort<ImageOf<PixelRgb> > portBluePlane; // a port for reading the input Image of the Blue Plane 
 	/**
 	*a port for reading the R+G- colour opponency Image
 	*/
-	BufferedPort<ImageOf<PixelRgb>> portRG; // 
+	BufferedPort<ImageOf<PixelRgb> > portRG; // 
 	/**
 	* a port for reading the G+R- colour opponency Image
 	*/
-	BufferedPort<ImageOf<PixelRgb>> portGR; 
+	BufferedPort<ImageOf<PixelRgb> > portGR; 
 	/**
 	*a port for reading the B+Y- colour opponency Image
 	*/
-	BufferedPort<ImageOf<PixelRgb>> portBY; //  
+	BufferedPort<ImageOf<PixelRgb> > portBY; //  
 	/**
 	*port where the processed image is buffered out
 	*/
-	BufferedPort<ImageOf<PixelRgb>> port_out; 
+	BufferedPort<ImageOf<PixelRgb> > port_out; 
 	/**
 	*port where the image of the found blob is put
 	*/
-	BufferedPort<ImageOf<PixelBgr>> port_Blobs; 
+	BufferedPort<ImageOf<PixelBgr> > port_Blobs; 
 
 	
 	
@@ -116,7 +116,7 @@ public:
 	* Output Port for commands
 	*/
 	yarp::os::BufferedPort<yarp::os::Bottle> *_pOutPort;
-	yarp::os::BufferedPort<ImageOf<PixelRgb>> *_pOutPort2;
+	yarp::os::BufferedPort<ImageOf<PixelRgb> > *_pOutPort2;
 	/**
 	* command that is send throgh the command port
 	*/
