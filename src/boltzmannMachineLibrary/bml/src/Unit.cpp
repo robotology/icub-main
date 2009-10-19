@@ -1,6 +1,7 @@
 // -*- mode:C++; tab-width:4; c-basic-offset:4; indent-tabs-mode:nil -
 #include <iCub/Unit.h>
-#include <conio.h>
+//#include <conio.h>
+
 
 /**
 *default constructor
@@ -23,11 +24,12 @@ Unit::Unit(std::string name){
 	this->connectionChanged=true;
 	this->evolveBinary=true;
 	this->evolveStochastic=true;
-	yarp::os::Random *rnd=new Random();
-	yarp::math::Rand *rndGenerator=new Rand;
-	double value=double(rand())/RAND_MAX;
-	rndGenerator->init(2);
-	rndGenerator->scalar(0,1);
+	//yarp::os::Random *rnd=new Random();
+	//yarp::math::Rand *rndGenerator=new Rand;
+	//double value=double(rand())/RAND_MAX;
+	double value=1;
+	//rndGenerator->init(2);
+	//rndGenerator->scalar(0,1);
 	state=(int)ceil(value-0.8);
 	//state=0;
 	//cout<<"RnDGenerator"<<rndGenerator->scalar()<<endl;
@@ -48,9 +50,10 @@ Unit::Unit(std::string name,int state){
 	this->connectionChanged=true;
 	this->evolveBinary=true;
 	this->evolveStochastic=true;
-	yarp::os::Random *rnd=new Random();
+	//yarp::os::Random *rnd=new Random();
 	yarp::math::Rand *rndGenerator=new Rand;
-	double value=double(rand())/RAND_MAX;
+	//double value=double(rand())/RAND_MAX;
+	double value=0.01;
 	//rndGenerator->init(value);
 	state=state;
 	//cout<<"RnDGenerator"<<rndGenerator->scalar()<<endl;

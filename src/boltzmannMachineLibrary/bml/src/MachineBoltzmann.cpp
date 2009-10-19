@@ -1,6 +1,7 @@
 // -*- mode:C++; tab-width:4; c-basic-offset:4; indent-tabs-mode:nil -*-
 #include <iCub/MachineBoltzmann.h>
-#include <conio.h>
+//#include <conio.h>
+
 
 #define MEAN_WEIGHT 50 //-->check the variable in layer.cpp
 #define BIAS 1300
@@ -68,7 +69,7 @@ void MachineBoltzmann::addLayer(Layer layer){
 	countElements++;
 }
 
-Layer MachineBoltzmann::getLayer(int name){ 
+int MachineBoltzmann::getLayer(int name){ 
 	//Layer layer=elementList.find("L1");
 	return NULL;
 }
@@ -123,8 +124,10 @@ void MachineBoltzmann::interconnectLayers(){
 				int k=0;
 				for(iterU2=iterE2->second.unitList.begin(); iterU2!=iterE2->second.unitList.end();iterU2++){					
 					//cout<<"k:"<<k;
-					double value=double(rand())/RAND_MAX;
+					//double value=double(rand())/RAND_MAX;
+					double value=1;
 					double weight_rnd=(value)*MEAN_WEIGHT;
+					
 					//iterU1->second.addConnectionWeight(1,weight_rnd);
 					string name("C");
 					name.append(iterU1->second.getName());
@@ -223,7 +226,8 @@ void MachineBoltzmann::interconnectLayer(int layerNumber){
 			//add the new connection from already present units to new units
 			for(iterU2=iterE2->second.unitList.begin(); iterU2!=iterE2->second.unitList.end();iterU2++){								
 				//insertion of the connectio
-				double value=double(rand())/RAND_MAX;
+				//double value=double(rand())/RAND_MAX;
+				double value=1;
 				int weight_rnd=(int)((value)*MEAN_WEIGHT);
 				//iterU1->second.addConnectionWeight(1,weight_rnd);
 				string name("C");
@@ -250,7 +254,8 @@ void MachineBoltzmann::interconnectLayer(int layerNumber){
 		if(iterC1==_connectionList.end()){
 			for(iterU2=iterE2->second.unitList.begin(); iterU2!=iterE2->second.unitList.end();iterU2++){								
 				//insertion of the connectio
-				double value=double(rand())/RAND_MAX;
+				//double value=double(rand())/RAND_MAX;
+				double value=1;
 				int weight_rnd=(int)((value)*MEAN_WEIGHT);
 				//iterU1->second.addConnectionWeight(1,weight_rnd);
 				string name("C");
@@ -274,7 +279,8 @@ void MachineBoltzmann::interconnectLayer(int layerNumber){
 		_unitList.push_back(iterU2->second);
 		for(iterE1=elementList.begin(); iterE1!=elementList.end();iterE1++){
 			for(iterU1=iterE1->second.unitList.begin(); iterU1!=iterE1->second.unitList.end();iterU1++){
-				double value=double(rand())/RAND_MAX;
+				//double value=double(rand())/RAND_MAX;
+				double value=1;
 				int weight_rnd=(int)((value)*MEAN_WEIGHT);
 				//iterU1->second.addConnectionWeight(1,weight_rnd);
 				string name("C");

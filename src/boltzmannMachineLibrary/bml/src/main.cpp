@@ -1,7 +1,8 @@
 #include <iCub/MachineBoltzmann.h>
-#include <conio.h>
+//#include <conio.h>
 
 #define SAVE
+
 
 
 /**
@@ -35,7 +36,7 @@ int main(int argc, char *argv[]) {
 		mb->setProbabilityClamped();
 	}
 	mb->learn();
-	getch();
+	//getch();
 #endif
 	
 	return 0;

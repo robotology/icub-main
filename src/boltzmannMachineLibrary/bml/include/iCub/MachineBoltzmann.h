@@ -3,12 +3,14 @@
 #ifndef _MACHINEBOLTZMANN_H_
 #define _MACHINEBOLTZMANN_H_
 
+
 #include <iCub/Connection.h>
 #include <iCub/Unit.h>
 #include <iCub/Row.h>
 #include <iCub/Layer.h>
 #include <iCub/Element.h>
 
+#include <stdlib.h>
 #include <iostream>
 #include <list>
 #include <map>
@@ -63,7 +65,7 @@ public:
 	* return a Layer to the Boltzmann Machine
 	* @param name name of the layer to be returned
 	*/
-	Layer getLayer(int name); 
+	int getLayer(int name); 
 	/**
 	* returns the temperature of the Boltzmann Machine
 	*/
@@ -86,7 +88,7 @@ public:
 	*creates the Connections between the layers passed as parameter with the already present layers
 	* @param layerNumber the reference to the allocated layer that has to be interconnected
 	*/
-	void MachineBoltzmann::interconnectLayer(int layerNumber);
+	void interconnectLayer(int layerNumber);
 	/**
 	* Add a connection to the connectionList
 	* @param connection reference to the connection to be added
