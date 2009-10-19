@@ -19,7 +19,7 @@
 //within Project Include
 //#include <iCub/BMLEngine.h>
 #include <iCub/MachineBoltzmann.h>
-#include <iCub/YarpImgRecv.h>
+#include <iCub/YARPImgRecv.h>
 #include <string>
 
 
