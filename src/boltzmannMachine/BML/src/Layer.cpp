@@ -68,7 +68,8 @@ void Layer::interConnectUnits(){
 			name.append(iterI->second.getName());
 			name.append(iterJ->second.getName());
 			printf("connection name %s",name.c_str());
-			double value=double(rand())/RAND_MAX;
+			//double value=double(rand())/RAND_MAX;
+			double value=1;
 			double weight_rnd=(value)*MEAN_WEIGHT;
 			addConnection(name,weight_rnd);
 		}
