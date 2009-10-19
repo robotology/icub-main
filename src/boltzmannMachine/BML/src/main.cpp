@@ -1,4 +1,4 @@
-#include <iCub/machineboltzmann.h>
+#include <iCub/MachineBoltzmann.h>
 //#include <conio.h>
 
 #define SAVE
