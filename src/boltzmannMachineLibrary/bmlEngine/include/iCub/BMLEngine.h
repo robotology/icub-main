@@ -62,7 +62,7 @@ private:
 	*/
 	BufferedPort<yarp::os::Bottle> portCmd;
 
-	BufferedPort<ImageOf<PixelMono>> port_plane; 
+	BufferedPort<ImageOf<PixelMono> > port_plane; 
 	/** 
 	* counter for the update step
 	*/
@@ -176,7 +176,7 @@ public:
 	* @param the number of the columns in the layer
 	* @param the number of rows in the layer
 	*/
-	void BMLEngine::addLayer(int number,int colDimension, int rowDimension);
+	void addLayer(int number,int colDimension, int rowDimension);
 	/** 
 	* function that clamp a Layer mapping an image onto it
 	* param layerNumber reference to the layer name
