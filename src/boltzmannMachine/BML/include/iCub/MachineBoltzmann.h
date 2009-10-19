@@ -9,6 +9,7 @@
 #include <iCub/Layer.h>
 #include <iCub/Element.h>
 
+#include <stdlib.h>
 #include <iostream>
 #include <list>
 #include <map>
@@ -63,7 +64,7 @@ public:
 	* return a Layer to the Boltzmann Machine
 	* @param name name of the layer to be returned
 	*/
-	Layer getLayer(int name); 
+	int getLayer(int name); 
 	/**
 	* returns the temperature of the Boltzmann Machine
 	*/

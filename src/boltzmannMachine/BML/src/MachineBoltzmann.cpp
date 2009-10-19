@@ -68,7 +68,7 @@ void MachineBoltzmann::addLayer(Layer layer){
 	countElements++;
 }
 
-Layer MachineBoltzmann::getLayer(int name){ 
+int MachineBoltzmann::getLayer(int name){ 
 	//Layer layer=elementList.find("L1");
 	return NULL;
 }
