@@ -3,6 +3,7 @@
 //#include <conio.h>
 #define MEAN_WEIGHT 1 //-->check the variable in layer.cpp
 
+
 /**
 *default constructor
 */

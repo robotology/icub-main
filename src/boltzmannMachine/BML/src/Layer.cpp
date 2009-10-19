@@ -2,6 +2,7 @@
 //#include <conio.h>
 #include <iCub/Layer.h>
 
+
 #define MEAN_WEIGHT 50
 
 //default constructor

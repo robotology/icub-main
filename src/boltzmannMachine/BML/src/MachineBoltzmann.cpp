@@ -2,6 +2,7 @@
 #include <iCub/MachineBoltzmann.h>
 //#include <conio.h>
 
+
 #define MEAN_WEIGHT 50 //-->check the variable in layer.cpp
 #define BIAS 1300
 #define T_PARAM 2000
