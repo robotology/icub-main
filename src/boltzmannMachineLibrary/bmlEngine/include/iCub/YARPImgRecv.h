@@ -13,9 +13,9 @@
 #if !defined(AFX_YARPIMGRECV_H__2654CA92_2656_48E0_9A91_F6CD59F11AC4__INCLUDED_)
 #define AFX_YARPIMGRECV_H__2654CA92_2656_48E0_9A91_F6CD59F11AC4__INCLUDED_
 
-#if _MSC_VER > 1000
+/*#if _MSC_VER > 1000
 #pragma once
-#endif // _MSC_VER > 1000
+#endif // _MSC_VER > 1000*/
 
 //=============================================================================
 // YARP Includes - General
