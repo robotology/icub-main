@@ -57,9 +57,9 @@ private:
     Port cmdPort;
     int ct;
 	Property options;	//options of the connection
-	float maxAdj;
-	float minAdj;
-	float stepAdj;
+	double maxAdj;
+	double minAdj;
+	double stepAdj;
 public:
 	bool open(Searchable& config); //open the port
     bool interruptModule(); // try to interrupt any communications or resource usage

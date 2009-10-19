@@ -352,9 +352,9 @@ void ImageProcessor::colourOpponency(ImageOf<PixelRgb> *src){
 	ippiFree(bluePlane_ippi32);
 	ippiFree(greenPlane_ippi32);
 	
-	ippsFree(pBufferBlue);
-	ippsFree(pBufferRed);
-	ippsFree(pBufferGreen);
+	//ippsFree(pBufferBlue);
+	//ippsFree(pBufferRed);
+	//ippsFree(pBufferGreen);
 	
 	
 	
