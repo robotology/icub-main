@@ -282,7 +282,7 @@ void SolverCallback::exec(Vector xd, Vector q)
 CartesianSolver::CartesianSolver(const string &_slvName) : RateThread(CARTSLV_DEFAULT_PER)
 {          
     // initialization
-    slvName=_slvName;      
+    slvName=_slvName;
     configured=false;
     closed=false;
     verbosity=false;

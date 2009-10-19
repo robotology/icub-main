@@ -57,7 +57,7 @@ Here's how the configuration file will look like:
 \code 
 [left_arm]
 robot       icub
-name        CartesianSolver/left_arm
+name        cartesianSolver/left_arm
 type        left
 period      20
 dof         (0 0 0 1 1 1 1 1 1 1)
@@ -71,7 +71,7 @@ interPoints off
  
 [right_arm]
 robot       icub
-name        CartesianSolver/right_arm
+name        cartesianSolver/right_arm
 type        right
 period      20
 dof         (0 0 0 1 1 1 1 1 1 1)
@@ -85,7 +85,7 @@ interPoints off
 
 [left_leg]
 robot       icub
-name        CartesianSolver/left_leg
+name        cartesianSolver/left_leg
 type        left
 period      20
 dof         (1 1 1 1 1 1)
@@ -99,7 +99,7 @@ interPoints off
 
 [right_leg]
 robot       icub
-name        CartesianSolver/right_leg
+name        cartesianSolver/right_leg
 type        right
 period      20
 dof         (1 1 1 1 1 1)
@@ -168,7 +168,7 @@ public:
         }
 
         if (group.check("name"))
-            slvName=group.find("name").asString();            
+            slvName=group.find("name").asString();
         else
         {
             cout<<"Error: name option is missing"<<endl;
