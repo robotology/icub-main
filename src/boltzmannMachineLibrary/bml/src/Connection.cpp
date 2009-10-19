@@ -111,7 +111,7 @@ void Connection::setName(std::string name){
 std::string Connection::toString(){
 	//_____
 	char number[3];
-	int n=sprintf(number,"%d",this->weight);
+	int n=sprintf(number,"%f",this->weight);
 	std::string w_str(number,n);
 	//_____
 	if(this->getName()!="")
