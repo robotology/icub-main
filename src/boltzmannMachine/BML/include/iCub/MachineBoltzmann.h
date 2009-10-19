@@ -86,7 +86,7 @@ public:
 	*creates the Connections between the layers passed as parameter with the already present layers
 	* @param layerNumber the reference to the allocated layer that has to be interconnected
 	*/
-	void MachineBoltzmann::interconnectLayer(int layerNumber);
+	void interconnectLayer(int layerNumber);
 	/**
 	* Add a connection to the connectionList
 	* @param connection reference to the connection to be added
