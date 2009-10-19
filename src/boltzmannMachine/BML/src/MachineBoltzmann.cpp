@@ -279,7 +279,7 @@ void MachineBoltzmann::interconnectLayer(int layerNumber){
 		for(iterE1=elementList.begin(); iterE1!=elementList.end();iterE1++){
 			for(iterU1=iterE1->second.unitList.begin(); iterU1!=iterE1->second.unitList.end();iterU1++){
 				//double value=double(rand())/RAND_MAX;
-				value=1;
+				double value=1;
 				int weight_rnd=(int)((value)*MEAN_WEIGHT);
 				//iterU1->second.addConnectionWeight(1,weight_rnd);
 				string name("C");
