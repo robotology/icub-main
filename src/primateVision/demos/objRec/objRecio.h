@@ -76,20 +76,22 @@ namespace iCub {
 	/** Converstion to string of parameters for printing. */
 	string toString(){
 	  char buffer[50];
-	  sprintf(buffer, "%f %f %f %d %d %f %f %s",
-		  x,y,z,mos_x,mos_y,radius,confidence,label.c_str());
+	  sprintf(buffer, "%f %f %f %d %d &d &d %f %f %s",
+		  x,y,z,mos_xl,mos_yl,mos_xr,mos_yr,radius,confidence,label.c_str());
 	  return buffer;
 	}
 	
 	bool write(ConnectionWriter& con){
 	  con.appendInt(BOTTLE_TAG_LIST);
-	  con.appendInt(9);
+	  con.appendInt(11);
 	  tex.write(con);
 	  con.appendDouble(x);
 	  con.appendDouble(y);
 	  con.appendDouble(z);
-	  con.appendInt(mos_x);
-	  con.appendInt(mos_y);
+	  con.appendInt(mos_xl);
+	  con.appendInt(mos_yl);
+	  con.appendInt(mos_xr);
+	  con.appendInt(mos_yr);
 	  con.appendDouble(radius);
 	  con.appendDouble(confidence);
 	  con.appendString(label.c_str());
@@ -103,15 +105,17 @@ namespace iCub {
 	  con.convertTextMode();
 	  int header=con.expectInt();
 	  int len = con.expectInt();
-	  if (header != BOTTLE_TAG_LIST || len!=9){
+	  if (header != BOTTLE_TAG_LIST || len!=11){
 	    return false;
 	  }
 	  tex.read(con);
 	  x = con.expectDouble();
 	  y = con.expectDouble();
 	  z = con.expectDouble();
-	  mos_x = con.expectInt();
-	  mos_y = con.expectInt();
+	  mos_xl = con.expectInt();
+	  mos_yl = con.expectInt();
+	  mos_xr = con.expectInt();
+	  mos_yr = con.expectInt();
 	  radius = con.expectDouble();
 	  confidence = con.expectDouble();
 	  label = con.expectText();
@@ -122,8 +126,10 @@ namespace iCub {
 	double x;
 	double y;
 	double z;
-	int mos_x;
-	int mos_y;
+	int mos_xl;
+	int mos_yl;
+	int mos_xr;
+	int mos_yr;
 	string label;
 	double radius;
 	double confidence;

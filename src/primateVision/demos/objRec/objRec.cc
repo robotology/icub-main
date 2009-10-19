@@ -186,8 +186,10 @@ void iCub::contrib::primateVision::ObjRecServer::run()
     objData.x = zdfData->x;
     objData.y = zdfData->y;
     objData.z = zdfData->z;
-    objData.mos_x = zdfData->mos_x;
-    objData.mos_y = zdfData->mos_y;
+    objData.mos_xl = zdfData->mos_xl;
+    objData.mos_yl = zdfData->mos_yl;
+    objData.mos_xr = zdfData->mos_xr;
+    objData.mos_yr = zdfData->mos_yr;
     //send:
     outPort_objData.write();
     

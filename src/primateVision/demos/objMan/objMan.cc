@@ -108,8 +108,10 @@ void iCub::contrib::primateVision::ObjManServer::run()
 	//not new object, so update params only:
 	objList->get(k)->radius     = newObjData->radius;
 	objList->get(k)->confidence = newObjData->confidence;
-	objList->get(k)->mos_x      = newObjData->mos_x;
-	objList->get(k)->mos_y      = newObjData->mos_y;
+	objList->get(k)->mos_xl     = newObjData->mos_xl;
+	objList->get(k)->mos_yl     = newObjData->mos_yl;
+	objList->get(k)->mos_xr     = newObjData->mos_xr;
+	objList->get(k)->mos_yr     = newObjData->mos_yr;
 	//KALMAN FILTER POSITION:
 	Vector v = kalList->get(k)->update(newPosX,newPosY,newPosZ);
 	objList->get(k)->x = v[0];
@@ -137,8 +139,10 @@ void iCub::contrib::primateVision::ObjManServer::run()
       ippiCopy_8u_C1R((Ipp8u*) newObjData->tex.getRawImage(),newObjData->tex.getRowSize(),
 			obj->tex.getRawImage(),obj->tex.getRowSize(),imsize); 
       obj->label      = newObjData->label;
-      obj->mos_x      = newObjData->mos_x;
-      obj->mos_y      = newObjData->mos_y;
+      obj->mos_xl     = newObjData->mos_xl;
+      obj->mos_yl     = newObjData->mos_yl;
+      obj->mos_xr     = newObjData->mos_xr;
+      obj->mos_yr     = newObjData->mos_yr;
       obj->radius     = newObjData->radius;
       obj->confidence = newObjData->confidence;
       obj->x          = newPosX;
