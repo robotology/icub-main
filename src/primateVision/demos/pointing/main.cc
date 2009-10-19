@@ -55,9 +55,9 @@ int main( int argc, char **argv )
 
 
   int match_width,match_height,match_psb;
-  match_width  = zsp.m_size;
-  match_height = zsp.m_size;
-  match_psb    = zsp.m_psb;
+  match_width  = zsp.width;
+  match_height = zsp.height;
+  match_psb    = zsp.psb;
 
   IppiSize msize;
   msize.width  = match_width;

@@ -1,5 +1,5 @@
 /**
- * \ingroup icub_primatevision_zdfserver
+ * \ingroup icub_primatevision_demos_objrec
  */
 
 /*
@@ -7,8 +7,8 @@
  * 
  */
 
-#ifndef ZDFIO_H
-#define ZDFIO_H
+#ifndef OBJRECIO_H
+#define OBJRECIO_H
 
 //YARP2 INCLUDES
 #include <yarp/os/all.h>
@@ -26,22 +26,24 @@ namespace iCub {
     namespace primateVision {
 
 
+       
+      
       //STATIC SERVER CONFIG OUTPUT:
 #include <yarp/os/begin_pack_for_net.h>
       /** A container class for handling ZDFServer parameters
        *  sent over port in response to paramProbe.
        */
-      class ZDFServerParams {
+      class ObjRecServerParams {
       public:
 	/** Constructor. */
-	ZDFServerParams() {
+	ObjRecServerParams() {
 	  listTag = BOTTLE_TAG_LIST + BOTTLE_TAG_INT;
-	  lenTag = 3;
+	  lenTag = 4;
 	}
 	/** Converstion to string of parameters for printing. */
 	string toString(){
 	  char buffer[50];
-	  sprintf(buffer, "%d %d %d",width,height,psb);
+	  sprintf(buffer, "%d %d %d %d",width,height,psb,nclasses);
 	  return buffer;
 	}
 	int listTag;
@@ -50,7 +52,8 @@ namespace iCub {
 	//this Server's Response Params:
 	int width; /**< Server image output width. */
 	int height; /**< Server image output height. */
-	int psb; /**< Server step in bytes through output image. */
+	int psb;  /**< Server step in bytes through output image. */
+	int nclasses; /**< Server num known classes. */
 	//
 	
       } PACKED_FOR_NET;
@@ -60,36 +63,36 @@ namespace iCub {
 
       //ONLINE PROC OUTPUT:
       /** A container class for handling online calculated 
-       *  zdf output sent over ports.
+       *  ObjRecServer output sent over ports.
        */
-      class ZDFServerData : public Portable{
+      class ObjRecServerData : public Portable{
       public:
 	/** Constructor. */
-	ZDFServerData() {
+	ObjRecServerData() {
 	}
 	void resize(int w,int h){
-	  dog.resize(w,h);
 	  tex.resize(w,h);
 	}
 	/** Converstion to string of parameters for printing. */
 	string toString(){
 	  char buffer[50];
-	  sprintf(buffer, "%f %f %f %d %d %d",
-		  x,y,z,mos_x,mos_y,(int)update);
+	  sprintf(buffer, "%f %f %f %d %d %f %f %s",
+		  x,y,z,mos_x,mos_y,radius,confidence,label.c_str());
 	  return buffer;
 	}
 	
 	bool write(ConnectionWriter& con){
 	  con.appendInt(BOTTLE_TAG_LIST);
-	  con.appendInt(8);
-	  dog.write(con);
+	  con.appendInt(9);
 	  tex.write(con);
 	  con.appendDouble(x);
 	  con.appendDouble(y);
 	  con.appendDouble(z);
 	  con.appendInt(mos_x);
 	  con.appendInt(mos_y);
-	  con.appendInt((int) update);
+	  con.appendDouble(radius);
+	  con.appendDouble(confidence);
+	  con.appendString(label.c_str());
 	  return true;
 	}
 	bool read(ConnectionReader& con){
@@ -100,82 +103,35 @@ namespace iCub {
 	  con.convertTextMode();
 	  int header=con.expectInt();
 	  int len = con.expectInt();
-	  if (header != BOTTLE_TAG_LIST || len!=8){
+	  if (header != BOTTLE_TAG_LIST || len!=9){
 	    return false;
 	  }
-	  dog.read(con);
 	  tex.read(con);
 	  x = con.expectDouble();
 	  y = con.expectDouble();
 	  z = con.expectDouble();
 	  mos_x = con.expectInt();
 	  mos_y = con.expectInt();
-	  update = (bool) con.expectInt();
+	  radius = con.expectDouble();
+	  confidence = con.expectDouble();
+	  label = con.expectText();
 	  return true;
 	}
 
-	//ZDFServer Results:
+	//ObjRecServer Results:
 	double x;
 	double y;
 	double z;
 	int mos_x;
 	int mos_y;
-	bool update;
-	ImageOf<PixelMono> dog;
+	string label;
+	double radius;
+	double confidence;
 	ImageOf<PixelMono> tex;
       };
 
 
-      //ONLINE TUNING OUTPUT:
-      /** A container class for handling images 
-       *  sent to zdfclient for tuning.
-       */
-      class ZDFServerTuneData : public Portable {
-      public:
-	/** Constructor. */
-	ZDFServerTuneData()  {
-
-	}
-	void resize(int w,int h){
-	  prob.resize(w,h);
-	  tex.resize(w,h);
-	  left.resize(w,h);
-	  right.resize(w,h);
-	}
-	bool write(ConnectionWriter& con){
-	  con.appendInt(BOTTLE_TAG_LIST);
-	  con.appendInt(4);
-	  prob.write(con);
-	  tex.write(con);
-	  left.write(con);
-	  right.write(con);
-	  return true;
-	}
-	bool read(ConnectionReader& con){
-	  if (!con.isValid()) {
-	    return false;
-	  }
-
-	  con.convertTextMode();
-	  int header = con.expectInt();
-	  int len = con.expectInt();
-	  if (header != BOTTLE_TAG_LIST || len!=4){
-	    return false;
-	  }
-	  prob.read(con);
-	  tex.read(con);
-	  left.read(con);
-	  right.read(con);
-	  return true;
-	}
-	
-	//ZDFServer tuning stuff:
-	ImageOf<PixelMono> prob;
-	ImageOf<PixelMono> tex;
-	ImageOf<PixelMono> left;
-	ImageOf<PixelMono> right;
-      };
-
+     
     }
   }
 }

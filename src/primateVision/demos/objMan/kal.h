@@ -37,7 +37,7 @@ namespace iCub {
        */
 
 
-      class kal : public RateThread
+      class Kal : public RateThread
       {
 	
       public:
@@ -47,8 +47,8 @@ namespace iCub {
 	 * @param Y_ Initial y.
 	 * @param Z_ Initial z.
 	 */
-	kal(int period,double X_=0.0,double Y_=0.0,double Z_=0.0,double proc_noise_cov=0.04, double meas_noise_cov=0.08);
-	~kal(){
+	Kal(int period,double X_=0.0,double Y_=0.0,double Z_=0.0,double proc_noise_cov=0.04, double meas_noise_cov=0.08);
+	~Kal(){
 	  delete kalPos;
 	}
 
@@ -62,7 +62,7 @@ namespace iCub {
 	
 	/** Processing events occurring once every period.
 	 */
-	virtual void run{
+	virtual void run(){
 	  done = false;
 	  estX=kalPos->filt(kalx0);
 	  done = true;

@@ -59,9 +59,10 @@ int main( int argc, char **argv )
   inPort_p.write(empty,response);
   ZDFServerParams zsp = response.content();
   std::cout << "ZDFServer Probe Response: " << zsp.toString() << std::endl; 
-  int m_size = zsp.m_size;
+  int width = zsp.width;
+  int height = zsp.height;
 
-  IppiSize msize={m_size,m_size};
+  IppiSize msize={width,height};
 
   BufferedPort<ZDFServerTuneData > inPort_tune;  
   inPort_tune.open("/zdfclient/input/zdfdata");
@@ -71,10 +72,11 @@ int main( int argc, char **argv )
 
 
   //memory space for display images:
-  QImage*qim1 = new QImage(m_size, m_size, 8, 256); 
-  QImage*qim2 = new QImage(m_size, m_size, 8, 256); 
-  QImage*qim3 = new QImage(m_size, m_size, 8, 256); 
-  QImage*qim4 = new QImage(m_size, m_size, 8, 256); 
+
+  QImage*qim1 = new QImage(width, height, 8, 256); 
+  QImage*qim2 = new QImage(width, height, 8, 256); 
+  QImage*qim3 = new QImage(width, height, 8, 256); 
+  QImage*qim4 = new QImage(width, height, 8, 256); 
   //set to grey:
   for(unsigned int ui=0;ui<256;ui++) //set to B&W
     {
@@ -85,10 +87,10 @@ int main( int argc, char **argv )
     }    
 
   QImage *qims[4]={qim1,qim2,qim3,qim4};
-  int locations[4*2]={0,0,m_size,0,0,m_size,m_size,m_size};
+  int locations[4*2]={0,0,width,0,0,height,width,height};
 
   //setup viewer:
-  multiFrameViewer *mfv = new multiFrameViewer(m_size*2,m_size*2);
+  multiFrameViewer *mfv = new multiFrameViewer(width*2,height*2);
   mfv->setCaption("ZDFClient");
   mfv->show();
 
@@ -101,10 +103,10 @@ int main( int argc, char **argv )
     zdfData = inPort_tune.read(); //blocking
 
     //copy data into QImages for multiFrameViewer display:
-    ippiCopy_8u_C1R((Ipp8u*)zdfData->tex.getRawImage(),zdfData->tex.getRowSize(),qim4->bits(),m_size,msize);
-    ippiCopy_8u_C1R((Ipp8u*)zdfData->prob.getRawImage(),zdfData->prob.getRowSize(),qim3->bits(),m_size,msize);
-    ippiCopy_8u_C1R((Ipp8u*)zdfData->left.getRawImage(),zdfData->left.getRowSize(),qim1->bits(),m_size,msize);
-    ippiCopy_8u_C1R((Ipp8u*)zdfData->right.getRawImage(),zdfData->right.getRowSize(),qim2->bits(),m_size,msize);
+    ippiCopy_8u_C1R((Ipp8u*)zdfData->tex.getRawImage(),zdfData->tex.getRowSize(),qim4->bits(),qim4->width(),msize);
+    ippiCopy_8u_C1R((Ipp8u*)zdfData->prob.getRawImage(),zdfData->prob.getRowSize(),qim3->bits(),qim3->width(),msize);
+    ippiCopy_8u_C1R((Ipp8u*)zdfData->left.getRawImage(),zdfData->left.getRowSize(),qim1->bits(),qim1->width(),msize);
+    ippiCopy_8u_C1R((Ipp8u*)zdfData->right.getRawImage(),zdfData->right.getRowSize(),qim2->bits(),qim2->width(),msize);
     
     //display:
     mfv->showViews(4,qims,locations);

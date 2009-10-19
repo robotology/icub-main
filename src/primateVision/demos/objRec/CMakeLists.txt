@@ -5,6 +5,8 @@
 
 ADD_DEFINITIONS(-O3 -Wno-deprecated -D_LINUX -DQT_THREAD_SUPPORT -DQT3_SUPPORT)
 
+SUBDIRS(objRecClient)
+
 INCLUDE_DIRECTORIES(
 	/usr/local/include/opencv
 	/usr/local/include/nnfw

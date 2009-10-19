@@ -1,7 +1,7 @@
 #include "kal.h"
 
 
-iCub::contrib::primateVision::kal(int period,double X_,double Y_,double Z_,double proc_noise_cov, double meas_noise_cov):
+iCub::contrib::primateVision::Kal(int period,double X_,double Y_,double Z_,double proc_noise_cov, double meas_noise_cov):
   RateThread(period)
 {
   
@@ -12,7 +12,12 @@ iCub::contrib::primateVision::kal(int period,double X_,double Y_,double Z_,doubl
   kalR=meas_noise_cov*eye(3,3); // Measurement noise covariance
   
   //initial pos:
-  kalx0.resize(3); kalx0=0.0;
+  kalx0.resize(3); 
+  //kalx0=0.0;
+  kalx0(0)=X_;
+  kalx0(1)=Y_;
+  kalx0(2)=Z_;
+ 
   kalP0=10*eye(3,3);
   
   kalPos=new Kalman(kalA,kalH,kalQ,kalR);

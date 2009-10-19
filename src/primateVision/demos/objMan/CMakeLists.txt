@@ -5,23 +5,29 @@
 
 ADD_DEFINITIONS(-O3 -Wno-deprecated -D_LINUX -DQT_THREAD_SUPPORT -DQT3_SUPPORT)
 
+SUBDIRS(objManClient)
+
 INCLUDE_DIRECTORIES(
   $ENV{ICUB_DIR}/src/ctrlLib/include/
+  ${PROJECT_SOURCE_DIR}/demos/objRec/
 	)
 
 LINK_DIRECTORIES(
  $ENV{ICUB_DIR}/lib
 	)
 
-ADD_EXECUTABLE( objMan
+ADD_EXECUTABLE( objManServer
 		main.cc 
+		objMan.cc
 		)
 
-TARGET_LINK_LIBRARIES(objMan
+TARGET_LINK_LIBRARIES(objManServer
 	ippi
 	pthread
         ctrlLib
+	Qt3Support
+        QtCore
 	)
 
 # install targets
-INSTALL_TARGETS(${BIN_DIR} objMan )
+INSTALL_TARGETS(${BIN_DIR} objManServer )

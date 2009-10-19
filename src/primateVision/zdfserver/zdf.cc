@@ -236,10 +236,18 @@ void iCub::contrib::primateVision::ZDFServer::run(){
   }
 
 
+
+
+
+
   // Make replier for server param probes on params port:
   //Set Replied Params:
   ZDFServerParams zsp;
-  zsp.m_size=m_size;
+  ImageOf<PixelMono> foo;
+  foo.resize(msize.width,msize.height);
+  zsp.width  = msize.width;
+  zsp.height = msize.height;
+  zsp.psb = foo.getRowSize();
   //Replier:
   ZDFReplyParamProbe replier;
   replier.reply=zsp;
@@ -555,31 +563,54 @@ void iCub::contrib::primateVision::ZDFServer::run(){
 	posy = tan(t_deg*IPP_PI/180.0)*z_;
 
 
+
+
+
 	//OUTPUT
-	//tuning port:
-	ZDFServerTuneData& zdfTuneData = outPort_tune.prepare();
-	zdfTuneData.resize(m_size,m_size);
-	ippiCopy_8u_C1R(zd_prob_8u,psb_m,(Ipp8u*)zdfTuneData.prob.getRawImage(), zdfTuneData.prob.getRowSize(), msize);
-	ippiCopy_8u_C1R(seg_im,psb_m,    (Ipp8u*)zdfTuneData.tex.getRawImage(),  zdfTuneData.tex.getRowSize(),  msize);
-	ippiCopy_8u_C1R(fov_l,psb_m,     (Ipp8u*)zdfTuneData.left.getRawImage(), zdfTuneData.left.getRowSize(), msize);
-	ippiCopy_8u_C1R(fov_r,psb_m,     (Ipp8u*)zdfTuneData.right.getRawImage(),zdfTuneData.right.getRowSize(),msize);
-	//send:
-	outPort_tune.write();
 
 	//result port:
+	//SEND as portable <ZDFServerData>:
 	ZDFServerData& zdfData = outPort_data.prepare();
-	zdfData.resize(m_size,m_size);
-	ippiCopy_8u_C1R(seg_im, psb_m,(Ipp8u*)zdfData.tex.getRawImage(),zdfData.tex.getRowSize(),msize);
-	ippiCopy_8u_C1R(seg_dog,psb_m,(Ipp8u*)zdfData.dog.getRawImage(),zdfData.dog.getRowSize(),msize);
+	zdfData.resize(msize.width,msize.height);
+	ippiCopy_8u_C1R(seg_im,psb_m,
+			(Ipp8u*)zdfData.tex.getRawImage(),zdfData.tex.getRowSize(),
+			msize);
+	ippiCopy_8u_C1R(seg_dog,psb_m,
+			(Ipp8u*)zdfData.dog.getRawImage(),zdfData.dog.getRowSize(),
+			msize);
 	zdfData.x = posx;
 	zdfData.y = posy;
 	zdfData.z = posz;
 	zdfData.mos_x = 0; //*****GET THESE FROM REC AND ADD VIRTUAL OFFSETS!!
-	zdfData.mos_y = 0; 
+	zdfData.mos_y = 0;
+	zdfData.update = update;
 	//send:
 	outPort_data.write();	
+
+
+	//tuning port:
+	//SEND as portable <ZDFServerTuneData>:
+	ZDFServerTuneData& zdfTuneData = outPort_tune.prepare();
+	zdfTuneData.resize(msize.width,msize.height);
+	ippiCopy_8u_C1R(zd_prob_8u,psb_m,
+			(Ipp8u*)zdfTuneData.prob.getRawImage(),zdfTuneData.prob.getRowSize(),
+			msize);
+	ippiCopy_8u_C1R(seg_im,psb_m,
+			(Ipp8u*)zdfTuneData.tex.getRawImage(),zdfTuneData.tex.getRowSize(),
+			msize);
+	ippiCopy_8u_C1R(fov_l,psb_m,
+			(Ipp8u*)zdfTuneData.left.getRawImage(),zdfTuneData.left.getRowSize(),
+			msize);
+	ippiCopy_8u_C1R(fov_r,psb_m,
+			(Ipp8u*)zdfTuneData.right.getRawImage(),zdfTuneData.right.getRowSize(),
+			msize);
+	//send:
+	outPort_tune.write();
 	
-      }
+
+
+
+      }//if data
       else if (inBot_ly==NULL &&
 	       inBot_ry==NULL ){
 	printf("No Input\n");
