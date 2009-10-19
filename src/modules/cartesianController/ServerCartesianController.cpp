@@ -499,7 +499,11 @@ void ServerCartesianController::alignJointsBounds()
             command.addInt(i);
 
             // send command to solver and wait for reply
-            portSlvRpc->write(command,reply);
+            if (!portSlvRpc->write(command,reply))
+            {
+                fprintf(stdout,"%s error: unable to get reply from solver!\n",slvName.c_str());
+                return;
+            }
 
             if (reply.get(0).asVocab()==IKINSLV_VOCAB_REP_ACK)
             {
@@ -1268,7 +1272,12 @@ bool ServerCartesianController::setDOF(const Vector &newDof, Vector &curDof)
             dof.addDouble(newDof[i]);
     
         // send command to solver and wait for reply
-        portSlvRpc->write(command,reply);        
+        if (!portSlvRpc->write(command,reply))
+        {
+            fprintf(stdout,"%s error: unable to get reply from solver!\n",slvName.c_str());
+            mutex->post();
+            return false;
+        }
     
         // update chain's links
         // skip the first ack/nack vocab
@@ -1328,7 +1337,11 @@ bool ServerCartesianController::setLimits(int axis, const double min, const doub
         command.addDouble(max);
 
         // send command to solver and wait for reply
-        portSlvRpc->write(command,reply);
+        if (!portSlvRpc->write(command,reply))
+        {
+            fprintf(stdout,"%s error: unable to get reply from solver!\n",slvName.c_str());
+            return false;
+        }
 
         if (reply.get(0).asVocab()==IKINSLV_VOCAB_REP_ACK)
         {
