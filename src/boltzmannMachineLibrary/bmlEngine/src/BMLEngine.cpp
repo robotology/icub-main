@@ -185,20 +185,20 @@ bool BMLEngine::updateModule() {
 	if(bot!=NULL){
 		string *commandTOT=new string(bot->toString().c_str());
 		printf("Bottle  is: %s\n",commandTOT->c_str());
-		SIZE_T parOpen=commandTOT->find("(");
+		unsigned int parOpen=commandTOT->find("(");
 		
 		string command=commandTOT->substr(0,parOpen-1);
 		string option=commandTOT->substr(parOpen+1,commandTOT->size()-parOpen);
 		
 		
-		SIZE_T parPos1=option.find("(");
-		SIZE_T parPos2=option.find(")");
-		SIZE_T spacePos=option.find(" ");
+		unsigned int  parPos1=option.find("(");
+		unsigned int parPos2=option.find(")");
+		unsigned int spacePos=option.find(" ");
 		string optionName1,optionValue1,optionName2, optionValue2;
 		if(spacePos!=string::npos){
 			optionName1=option.substr(parPos1+1,spacePos-parPos1);
 			optionValue1= option.substr(spacePos+1,parPos2-spacePos-1);
-			SIZE_T dim=option.size();
+			unsigned int dim=option.size();
 			option=option.substr(parPos2+2,dim-2-parPos2);
 
 			parPos1=option.find("(");
@@ -267,7 +267,7 @@ bool BMLEngine::updateModule() {
 			printf("ClampPattern \n");
 			printf("OptionValue1 %s \n" , optionValue1.c_str() );
 			int bit;
-			size_t comma_pos=optionValue1.find(",");
+			unsigned int comma_pos=optionValue1.find(",");
 			string bit_str=optionValue1.substr(1,comma_pos-1);
 			bit=atoi(bit_str.c_str());
 			printf("bit_str %d \n", bit);
@@ -289,7 +289,7 @@ bool BMLEngine::updateModule() {
 			bool end_loop=false;
 			for(iter=mb->_unitList.begin(); !end_loop;iter++){
 				printf("unit name:%s,%d \n",iter->getName().c_str(),iter->getState());
-				size_t posR=iter->getName().find('R');
+				unsigned int posR=iter->getName().find('R');
 				string layerName=iter->getName().substr(1,posR-1);
 				int layerNumber=2;
 				printf("layer name:%s where as looking for %d \n",layerName.c_str(), layerNumber);
@@ -371,7 +371,7 @@ bool BMLEngine::updateModule() {
 			bool end_loop=false;
 			for(iter=mb->_unitList.begin(); !end_loop;iter++){
 				printf("unit name:%s,%d \n",iter->getName().c_str(),iter->getState());
-				size_t posR=iter->getName().find('R');
+				unsigned int posR=iter->getName().find('R');
 				string layerName=iter->getName().substr(1,posR-1);
 				int layerNumber=2;
 				printf("layer name:%s where as looking for %d \n",layerName.c_str(), layerNumber);
@@ -468,7 +468,7 @@ bool BMLEngine::updateModule() {
 	
 	
 	int k=0;
-	if((enableDraw)&&((unsigned int)mb!=0xcccccccc)){
+	if(enableDraw){
 		img.resize(320,240);
 		//img2->resize(320,240);
 		img_tmp.resize(320,240);
@@ -488,7 +488,7 @@ bool BMLEngine::updateModule() {
 				ct = ((countUnit%10)-1)*24;
 				
 				//printf("unit name:%s,%d \n",iter->getName().c_str(),iter->getState());
-				size_t posR=iter->getName().find('R');
+				unsigned int posR=iter->getName().find('R');
 				layerName=iter->getName().substr(0,posR-0);
 				//printf("layer name:%s \n",layerName.c_str());
 				
@@ -503,8 +503,8 @@ bool BMLEngine::updateModule() {
 							totUnits++;
 							break;
 						}
-						size_t posR=iter2->getName().find('R');
-						size_t posU=iter2->getName().find('U');
+						unsigned int posR=iter2->getName().find('R');
+						unsigned int posU=iter2->getName().find('U');
 						string number_str=iter2->getName().substr(posR+1,posU-posR-1);
 						int number=atoi(number_str.c_str());
 						if(number!=0){
@@ -799,8 +799,8 @@ void BMLEngine::clampLayer(int layerNumber){
 	im_tmp[1]=ippiMalloc_8u_C1(320,240,&psb);
 	im_tmp[2]=ippiMalloc_8u_C1(320,240,&psb);
 	
-	if((unsigned int)ptr_inputImage==0xcccccccc)
-		return;
+	//if((unsigned int)ptr_inputImage==0xcccccccc)
+	//	return;
 	ippiCopy_8u_C3P3R(this->ptr_inputImage->getPixelAddress(0,0),320*3,im_tmp,psb,srcsize);
 	ippiCopy_8u_C1R(im_tmp[0],psb,im_tmp_red,psb,srcsize);
 	ippiCopy_8u_C1R(im_tmp[1],psb,im_tmp_green,psb,srcsize);
@@ -838,7 +838,7 @@ void BMLEngine::clampLayer(int layerNumber){
 	bool end_loop=false;
 	for(iter=mb->_unitList.begin(); !end_loop;iter++){
 				printf("unit name:%s,%d \n",iter->getName().c_str(),iter->getState());
-				size_t posR=iter->getName().find('R');
+				unsigned int posR=iter->getName().find('R');
 				layerName=iter->getName().substr(1,posR-1);
 				printf("layer name:%s where as looking for %d \n",layerName.c_str(), layerNumber);
 				int extractNumber=atoi(layerName.c_str());
@@ -857,8 +857,8 @@ void BMLEngine::clampLayer(int layerNumber){
 		totUnits=0;
 		printf("Counting number of units and number of rows");
 		for(;((!end_loop)&&(iter2!=mb->_unitList.end()));iter2++){
-			size_t posR=iter2->getName().find('R');
-			size_t posU=iter2->getName().find('U');
+			unsigned int posR=iter2->getName().find('R');
+			unsigned int posU=iter2->getName().find('U');
 			string number_str=iter2->getName().substr(posR+1,posU-posR-1);
 			int number=atoi(number_str.c_str());
 			if(number!=previous_number){
@@ -873,7 +873,7 @@ void BMLEngine::clampLayer(int layerNumber){
 			break;
 	}
 	printf("countUnits: %d", totUnits);
-	size_t posR=iter2->getName().find('R');
+	unsigned int posR=iter2->getName().find('R');
 	layerName=iter2->getName().substr(1,posR-1);
 	printf("layer name:%s \n",layerName.c_str());
 	int extractNumber=atoi(layerName.c_str());
