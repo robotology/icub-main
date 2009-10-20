@@ -1,5 +1,4 @@
 #include <iCub/BIControlGazeEngine.h>
-#include <conio.h>
 
 //
 static BIControlGazeEngine *engineModule;
@@ -150,22 +149,21 @@ bool BIControlGazeEngine::updateModule() {
 	if(bot!=NULL){
 		string *commandTOT=new string(bot->toString().c_str());
 		printf("Bottle  is: %s\n",commandTOT->c_str());
-		SIZE_T parOpen=commandTOT->find("(");
+		unsigned int parOpen=commandTOT->find("(");
 		
 		string command=commandTOT->substr(0,parOpen-1);
 		string option=commandTOT->substr(parOpen+1,commandTOT->size()-parOpen);
 		
 		
-		SIZE_T parPos1=option.find("(");
-		SIZE_T parPos2=option.find(")");
-		SIZE_T spacePos=option.find(" ");
+		unsigned int parPos1=option.find("(");
+		unsigned int parPos2=option.find(")");
+		unsigned int spacePos=option.find(" ");
 		string optionName1,optionValue1,optionName2, optionValue2;
 		if(spacePos!=string::npos){
 			optionName1=option.substr(parPos1+1,spacePos-parPos1);
 			optionValue1= option.substr(spacePos+1,parPos2-spacePos-1);
-			SIZE_T dim=option.size();
+			unsigned int dim=option.size();
 			option=option.substr(parPos2+2,dim-2-parPos2);
-
 			parPos1=option.find("(");
 			if(parPos1!=string::npos){
 				parPos2=option.find(")");
