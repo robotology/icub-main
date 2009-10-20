@@ -67,23 +67,30 @@ int main( int argc, char **argv )
   QString arg1 = argv[1];
   QString arg2 = argv[2];
   QString arg3 = argv[3];
+  QString arg4 = argv[4];
 
   QString sim;
-  if (arg1=="sim" || arg2=="sim" || arg3=="sim"){
+  if (arg1=="sim" || arg2=="sim" || arg3=="sim" || arg4=="sim"){
     sim = "Sim";
     printf("RecClient: Connecting to iCubSim\n");
   }
 
   bool mot=false;
-  if (arg1=="motion" || arg2=="motion" || arg3=="motion"){
+  if (arg1=="motion" || arg2=="motion" || arg3=="motion" || arg4=="motion"){
     mot = true;
     printf("RecClient: Motion test enabled.\n");
   }
 
   bool save=false;
-  if (arg1=="save" || arg2=="save" || arg3=="save"){
+  if (arg1=="save" || arg2=="save" || arg3=="save" || arg4=="save"){
     save = true;
     printf("RecClient: Saving images.\n");
+  }
+
+  bool clear=false;
+  if (arg1=="clear" || arg2=="clear" || arg3=="clear" || arg4=="clear"){
+    clear = true;
+    printf("RecClient: Clearing mosaic background.\n");
   }
 
 
@@ -210,6 +217,15 @@ int main( int argc, char **argv )
   IppiSize mossize = {rsp.mos_width,rsp.mos_height};
   Mosaic *ml = new Mosaic(mossize,srcsize,psb,D_8U_NN,"REC CLIENT TEST L");
   Mosaic *mr = new Mosaic(mossize,srcsize,psb,D_8U_NN,"REC CLIENT TEST R");
+  if (clear){
+    ml->setAutoClear(true);
+    mr->setAutoClear(true);
+  }
+  else{
+    ml->setAutoClear(false);
+    mr->setAutoClear(false);
+  }
+
 #endif
 
 

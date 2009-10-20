@@ -9,7 +9,7 @@
 #include <convert_bitdepth.h>
 
 
-iCub::contrib::primateVision::Mosaic::Mosaic(IppiSize vsize_,IppiSize isize_, int psb_i_,int type_, QString qs,bool autoclear)
+iCub::contrib::primateVision::Mosaic::Mosaic(IppiSize vsize_,IppiSize isize_, int psb_i_,int type_, QString qs)
 {
   isize.width=isize_.width;
   isize.height=isize_.height;
@@ -31,7 +31,6 @@ iCub::contrib::primateVision::Mosaic::Mosaic(IppiSize vsize_,IppiSize isize_, in
   viewer = new multiFrameViewer(vsize.width, vsize.height);
   viewer->setCaption(qs);
   viewer->setFixedSize(vsize.width, vsize.height);
-  viewer->setAutoClear(autoclear);
   viewer->show();
 
 }

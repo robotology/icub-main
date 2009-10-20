@@ -60,8 +60,10 @@ int main( int argc, char **argv )
   
 
   //display mosaics:
-  Mosaic *ml = new Mosaic(mossize,srcsize,psb,D_8U_NN,"ObjManClient L",false);
-  Mosaic *mr = new Mosaic(mossize,srcsize,psb,D_8U_NN,"ObjManClient R",false);
+  Mosaic *ml = new Mosaic(mossize,srcsize,psb,D_8U_NN,"ObjManClient L");
+  Mosaic *mr = new Mosaic(mossize,srcsize,psb,D_8U_NN,"ObjManClient R");
+  ml->setAutoClear(false); //don't clear display
+  mr->setAutoClear(false);
 
 
   printf("ObjManClient: begin..\n");
@@ -73,10 +75,6 @@ int main( int argc, char **argv )
     objList = inPort_objList.read(); //blocking
     
     //draw all sent objects in the mosaic: 
-    
-    ml->clear();
-    mr->clear();
-     
     for (int i=0;i<objList->size();i++){
       //draw ith object in left and right mosaics: 
       ml->display(objList->get(i)->tex.getRawImage(),

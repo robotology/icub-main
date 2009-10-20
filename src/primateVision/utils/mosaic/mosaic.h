@@ -59,7 +59,7 @@ namespace iCub {
 	 * @param type Type of image to be displayed.
 	 * @param title The title of the display window.
 	 */
-	Mosaic(IppiSize mossize,IppiSize imsize, int psb,int type, QString title,bool autoClear=true);
+	Mosaic(IppiSize mossize,IppiSize imsize, int psb,int type, QString title);
 
 	/** Destructor.
 	 */
@@ -77,8 +77,8 @@ namespace iCub {
 
 	/** Method to clear buffer if manual clearing selected.
 	 */
-	void clear(){
-	  viewer->clear();
+	void setAutoClear(bool ac){
+	  viewer->setAutoClear(ac);
 	}
 
 	/** Access to the underlying  multiFrameViewer object (QT4 display window widget).

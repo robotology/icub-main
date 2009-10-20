@@ -59,7 +59,6 @@ namespace iCub {
 	 */
 	void showViews(int numviews, QImage **images, int *locations);
 	
-	void clear(){ ;};
 	void setAutoClear(bool ac){autoclear = ac;};
 
 	public slots:
