@@ -1,8 +1,8 @@
 <application>
-  <name>VisualAttention Starter</name>
+  <name>VisualAttention Starter</name> 
   <dependencies>
     <port>/rea/LogPolar/out</port>
-    <port>/rea</port>
+    <port>/icub01</port>
   </dependencies>
   <module>
     <name>yarpview</name>

@@ -29,7 +29,7 @@ INCLUDE_DIRECTORIES(
     ${PROJECT_SOURCE_DIR}/include
     ${OPENCV_INCLUDE_DIR}    
     ${ODE_INCLUDE_DIRS}	
-    ${IPP_INCLUDE_DIR}	 
+    ${IPP_INCLUDE_DIRS}	 
     #/opt/intel/ipp/6.1.1.042/em64t/include
     #---linux    
     #$ENV{QT_INCLUDE_DIR}/include
@@ -39,9 +39,9 @@ INCLUDE_DIRECTORIES(
     $ENV{QT_INCLUDE_DIR}
 )
 
-IF(NOT IPP_INCLUDE_DIR)
-	MESSAGE(ERROR "No IPP_INCLUDE_DIR found. Please check it out")	
-ENDIF(NOT IPP_INCLUDE_DIR)
+IF(NOT IPP_INCLUDE_DIRS)
+	MESSAGE(ERROR ": No IPP_INCLUDE_DIR found. Please check it out")	
+ENDIF(NOT IPP_INCLUDE_DIRS)
 
 # Search for source code.
 FILE(GLOB folder_source src/*.cpp src/*.cc src/*.c)
