@@ -189,10 +189,6 @@ public:
 
     virtual bool threadInit()
     {
-        inputPort=new rxPort(chn--);
-        inputPort->useCallback();
-        inputPort->open((portName+":i").c_str());
-
     #ifdef WIN32
         int retstatus;
         if (!(ep=engOpenSingleUse(NULL,NULL,&retstatus)))
@@ -214,6 +210,7 @@ public:
         if (!checkScope(ep))
         {
             cerr << "Unable to locate MATLAB scripts" << endl;
+            engClose(ep);
             return false;
         }
 
@@ -222,17 +219,23 @@ public:
         if (!(mlValStrip=mxCreateDoubleMatrix(NStrip,1,mxREAL)))
         {
             cerr << "Unable to create mxMatrix" << endl;
+            engClose(ep);
             return false;
         }
 
         if (!(mlValSpectr=mxCreateDoubleMatrix(NSpectr,1,mxREAL)))
         {
             cerr << "Unable to create mxMatrix" << endl;
+            engClose(ep);
             return false;
         }
 
         ptrStrip =(double*)mxGetPr(mlValStrip);
         ptrSpectr=(double*)mxGetPr(mlValSpectr);
+
+        inputPort=new rxPort(chn--);
+        inputPort->useCallback();
+        inputPort->open((portName+":i").c_str());
 
         cout << "Starting main thread..." << endl;
 
@@ -340,12 +343,16 @@ public:
         else
             visibility="off";
 
+        thread=new GatewayThread(portName,chn,Fs,width,Nfft,visibility);
+        if (!thread->start())
+        {
+            delete thread;
+            return false;
+        }
+
         string rpcPortName=portName+"/rpc";
         rpcPort.open(rpcPortName.c_str());
         attach(rpcPort);
-
-        thread=new GatewayThread(portName,chn,Fs,width,Nfft,visibility);
-        thread->start();
 
         return true;
     }
@@ -353,10 +360,10 @@ public:
     virtual bool close()
     {
         thread->stop();
-        rpcPort.interrupt();
-        rpcPort.close();
+        delete thread;
 
-        delete thread;        
+        rpcPort.interrupt();
+        rpcPort.close();        
 
         return true;
     }

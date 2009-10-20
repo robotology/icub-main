@@ -211,7 +211,10 @@ public:
 
         drvTorso=new PolyDriver(optTorso);
         if (!drvTorso->isValid())
+        {
+            delete drvTorso;    
             return false;
+        }
 
         drvTorso->view(encTorso);
 
@@ -373,9 +376,11 @@ public:
         }
 
         thr=new managerThread(getName().c_str(),rf,period);
-
         if (!thr->start())
+        {
+            delete thr;    
             return false;
+        }
 
         rpcPort.open(getName("rpc"));
         attach(rpcPort);

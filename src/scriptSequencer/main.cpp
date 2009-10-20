@@ -425,6 +425,12 @@ public:
         else
             connected=false;
 
+        if (!connected)
+        {    
+            delete drv;
+            drv=NULL;
+        }
+
         return connected;
     }
 

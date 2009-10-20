@@ -253,15 +253,6 @@ public:
 
     virtual bool threadInit()
     {
-        port_q=new rxPort(dim);
-        port_q->useCallback();
-        string n1=portName+"/q:i";
-        port_q->open(n1.c_str());
-
-        port_xd=new BufferedPort<Vector>();
-        string n2=portName+"/xd:o";
-        port_xd->open(n2.c_str());
-
     #ifdef WIN32
         int retstatus;
         if (!(ep=engOpenSingleUse(NULL,NULL,&retstatus)))
@@ -304,26 +295,39 @@ public:
         else
         {
             cerr << "Unable to create mxMatrix" << endl;
+            engClose(ep);
             return false;
         }
 
         if (!runViewer(ep))
         {
             cerr << "Unable to locate MATLAB script" << endl;
+            engClose(ep);
             return false;
         }
 
         if (!(mlBuffer=mxCreateDoubleMatrix(N,dim+1,mxREAL)))
         {
             cerr << "Unable to create mxMatrix" << endl;
+            engClose(ep);
             return false;
         }
 
         if (!(mlIdx=mxCreateDoubleScalar(idx)))
         {
             cerr << "Unable to create mxMatrix" << endl;
+            engClose(ep);
             return false;
         }
+
+        port_q=new rxPort(dim);
+        port_q->useCallback();
+        string n1=portName+"/q:i";
+        port_q->open(n1.c_str());
+
+        port_xd=new BufferedPort<Vector>();
+        string n2=portName+"/xd:o";
+        port_xd->open(n2.c_str());
 
         cout << "Starting main thread..." << endl;
 
@@ -443,12 +447,16 @@ public:
         else
             visibility="off";
 
+        thread=new GatewayThread(20,portName,configFile,visibility);
+        if (!thread->start())
+        {
+            delete thread;
+            return false;
+        }
+
         string rpcPortName=portName+"/rpc";
         rpcPort.open(rpcPortName.c_str());
         attach(rpcPort);
-
-        thread=new GatewayThread(20,portName,configFile,visibility);
-        thread->start();
 
         return true;
     }
@@ -456,10 +464,10 @@ public:
     virtual bool close()
     {
         thread->stop();
-        rpcPort.interrupt();
-        rpcPort.close();
-
         delete thread;
+
+        rpcPort.interrupt();
+        rpcPort.close();        
 
         return true;
     }

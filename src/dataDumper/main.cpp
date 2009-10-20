@@ -366,7 +366,12 @@ public:
         if (saveData)
         {
             fout.open(logFile);
-            return fout.is_open();
+            bool ret=fout.is_open();
+
+            if (!ret)
+                cout << "unable to open file" << endl;
+
+            return ret;
         }
         else
             return true;
@@ -577,6 +582,14 @@ public:
         q=new DumpQueue();
         t=new DumpThread(*q,dirName,100,saveData,videoOn);
 
+        if (!t->start())
+        {
+            delete t;
+            delete q;
+
+            return false;
+        }
+
         if (T==vect)
         {
             p_vect=new DumpPort<Vector>(*q,dwnsample,rxTime);
@@ -589,8 +602,6 @@ public:
             p_image->useCallback();
             p_image->open(portName);
         }
-
-        t->start();
 
         char rpcPortName[255];
         strcpy(rpcPortName,portName);

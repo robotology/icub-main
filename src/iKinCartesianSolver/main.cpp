@@ -185,7 +185,13 @@ public:
             return false;
         }
 
-        return slv->open(group);
+        if (slv->open(group))
+            return true;
+        else
+        {    
+            delete slv;
+            return false;
+        }
     }
 
     virtual bool close()

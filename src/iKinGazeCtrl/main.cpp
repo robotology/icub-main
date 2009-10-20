@@ -312,6 +312,10 @@ public:
             if (!drvTorso->isValid() || !drvHead->isValid())
             {
                 cout << "Device drivers not available!" << endl;
+
+                delete drvTorso;
+                delete drvHead;
+
                 return false;
             }
         }

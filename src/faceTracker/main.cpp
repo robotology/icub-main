@@ -472,7 +472,11 @@ public:
         Time::turboBoost();
 
         thr=new trackThread("/faceTracker",rf,20);
-        thr->start();
+        if (!thr->start())
+        {
+            delete thr;
+            return false;
+        }
 
         return true;
     }
