@@ -740,6 +740,8 @@ bool ServerCartesianController::open(Searchable &config)
     if (optGeneral.isNull())
     {
         fprintf(stdout,"GENERAL group is missing\n");
+        close();
+
         return false;
     }
 
@@ -751,6 +753,8 @@ bool ServerCartesianController::open(Searchable &config)
     else
     {
         fprintf(stdout,"SolverNameToConnect option is missing\n");
+        close();
+
         return false;
     }
 
@@ -762,12 +766,16 @@ bool ServerCartesianController::open(Searchable &config)
         {
             fprintf(stdout,"Try to instantiate an unknown kinematic part\n");
             fprintf(stdout,"Available parts are: arm, leg\n");
+            close();
+
             return false;
         }
     }
     else
     {
         fprintf(stdout,"KinematicPart option is missing\n");
+        close();
+
         return false;
     }
 
@@ -779,12 +787,16 @@ bool ServerCartesianController::open(Searchable &config)
         {
             fprintf(stdout,"Try to instantiate an unknown kinematic type\n");
             fprintf(stdout,"Available types are: left, right\n");
+            close();
+
             return false;
         }
     }
     else
     {
         fprintf(stdout,"KinematicType option is missing\n");
+        close();
+
         return false;
     }
 
@@ -793,12 +805,16 @@ bool ServerCartesianController::open(Searchable &config)
         if (!(numDrv=optGeneral.find("NumberOfDrivers").asInt()))
         {
             fprintf(stdout,"NumberOfDrivers shall be positive\n");
+            close();
+
             return false;
         }
     }
     else
     {
         fprintf(stdout,"NumberOfDrivers option is missing\n");
+        close();
+
         return false;
     }
 
@@ -828,6 +844,8 @@ bool ServerCartesianController::open(Searchable &config)
         if (optDrv.isNull())
         {
             fprintf(stdout,"%s group is missing\n",entry);
+            close();
+
             return false;
         }
 
@@ -840,6 +858,8 @@ bool ServerCartesianController::open(Searchable &config)
         else
         {
             fprintf(stdout,"Key option is missing\n");
+            close();
+
             return false;
         }
 
@@ -855,12 +875,16 @@ bool ServerCartesianController::open(Searchable &config)
             {
                 fprintf(stdout,"Try to select an unknown mapping order\n");
                 fprintf(stdout,"Available orders are: direct, reversed\n");
+                close();
+
                 return false;
             }
         }
         else
         {
             fprintf(stdout,"JointsOrder option is missing\n");
+            close();
+
             return false;
         }
 

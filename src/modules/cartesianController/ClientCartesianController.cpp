@@ -85,6 +85,8 @@ bool ClientCartesianController::open(Searchable &config)
         if (!portRpc->write(command,reply))
         {
             fprintf(stdout,"Error: unable to get reply from server!\n");
+            close();
+
             return false;
         }
     
@@ -94,6 +96,7 @@ bool ClientCartesianController::open(Searchable &config)
                     return true;
 
         fprintf(stdout,"Error: unable to connect to solver!\n");
+        close();
 
         return false;
     }
