@@ -14,16 +14,12 @@
  */
 
 /*
- * Copyright (C) 2003-2008 Andrew Dankers. All rights reserved.
+ * Copyright (C) 2003-2009 Andrew Dankers. All rights reserved.
  * 
  */
 
-/*      multiFrameViewer:  Andrew Dankers 2003
-***********************************************************************
-Viewer for up to 8 equal sized QImages (why would you want more? Your 
-monitor aint big enough!). Common Width ane height of each image is 
-passed in "width" and "height", funnily enough.
-**********************************************************************/
+
+
 #ifndef MFV_H
 #define MFV_H
 
@@ -63,6 +59,9 @@ namespace iCub {
 	 */
 	void showViews(int numviews, QImage **images, int *locations);
 	
+	void clear(){ ;};
+	void setAutoClear(bool ac){autoclear = ac;};
+
 	public slots:
 	
 	protected:
@@ -72,6 +71,7 @@ namespace iCub {
 	int numviews;
 	QImage **viewframes;
 	int * locations;
+	bool autoclear;
 	
       };
 

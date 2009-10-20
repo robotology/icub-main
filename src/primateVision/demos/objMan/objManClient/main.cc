@@ -51,31 +51,33 @@ int main( int argc, char **argv )
   mossize.width = mos_width;
   mossize.height = mos_height;
 
-  int numObjs;
 
   //Port to get online object list:
   BufferedPort<ObjManServerList> inPort_objList; 
-  inPort_objList.open("/objManServer/output/objList"); 
+  inPort_objList.open("/objManClient/input/objList"); 
   Network::connect("/objManServer/output/objList" , "/objManClient/input/objList");
   ObjManServerList *objList;
   
 
   //display mosaics:
-  Mosaic *ml = new Mosaic(mossize,srcsize,psb,D_8U_NN,"ObjManClient L");
-  Mosaic *mr = new Mosaic(mossize,srcsize,psb,D_8U_NN,"ObjManClient R");
+  Mosaic *ml = new Mosaic(mossize,srcsize,psb,D_8U_NN,"ObjManClient L",false);
+  Mosaic *mr = new Mosaic(mossize,srcsize,psb,D_8U_NN,"ObjManClient R",false);
 
 
   printf("ObjManClient: begin..\n");
   //main event loop:
   while (1){
     
-    
+  
     //get data from objMan server:
     objList = inPort_objList.read(); //blocking
     
-    //draw all sent objects in the mosaic:      
-    numObjs = objList->size();
-    for (int i=0;i<numObjs;i++){
+    //draw all sent objects in the mosaic: 
+    
+    ml->clear();
+    mr->clear();
+     
+    for (int i=0;i<objList->size();i++){
       //draw ith object in left and right mosaics: 
       ml->display(objList->get(i)->tex.getRawImage(),
 		  objList->get(i)->mos_xl,objList->get(i)->mos_yl);

@@ -101,11 +101,9 @@ namespace iCub {
 	  clear();
 	}
 	
-	int add(Kal* data) {
+	void add(Kal* data) {
 	  //NOTE: KalmanList takes responsibility over pointer
-	  int position = list.size();
 	  list.push_back(data);
-	  return position;
 	}
 
 	Kal* get(int i) {

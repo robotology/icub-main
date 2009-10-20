@@ -11,6 +11,7 @@
 #ifndef REC_KAL_H
 #define REC_KAL_H
 
+#include <stdio.h>
 #include <iCub/kalman.h>
 #include <yarp/math/Math.h>
 #include <yarp/os/RateThread.h>
@@ -34,8 +35,6 @@ namespace iCub {
        * A Kalman filter wrapper.
        *
        */
-
-
       class Kal : public RateThread
       {
 	
@@ -45,11 +44,10 @@ namespace iCub {
 	 * @param X_ Initial x.
 	 * @param Y_ Initial y.
 	 * @param Z_ Initial z.
+	 * @param proc_noise_cov Process noise covariance estimate.
+	 * @param meas_noise_cov Measurement noise covariance estimate.
 	 */
-	Kal(int period,double X_=0.0,double Y_=0.0,double Z_=0.0,double proc_noise_cov=0.04, double meas_noise_cov=0.08);
-	~Kal(){
-	  delete kalPos;
-	}
+	Kal(int period,double X_,double Y_,double Z_,double proc_noise_cov, double meas_noise_cov);
 
 	/** Update after measurement.
 	 * @param x_ Measurement x.
@@ -61,11 +59,7 @@ namespace iCub {
 	
 	/** Processing events occurring once every period.
 	 */
-	virtual void run(){
-	  done = false;
-	  estX=kalPos->filt(kalx0);
-	  done = true;
-	}
+	virtual void run();
 	/** RateThread initialiser.
 	 */
 	virtual bool threadInit(){return true;}
@@ -73,7 +67,7 @@ namespace iCub {
 	
 	/** Clean-up.
 	 */
-	virtual void threadRelease(){ ;}
+	virtual void threadRelease(){delete kalPos;}
 	
 	
       private:

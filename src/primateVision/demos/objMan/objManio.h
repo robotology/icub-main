@@ -41,7 +41,7 @@ namespace iCub {
 	/** Converstion to string of parameters for printing. */
 	string toString(){
 	  char buffer[50];
-	  sprintf(buffer, "%d %d %d &d %d %d",width,height,mos_width,mos_height,psb,nclasses);
+	  sprintf(buffer, "%d %d %d %d %d %d",width,height,mos_width,mos_height,psb,nclasses);
 	  return buffer;
 	}
 	int listTag;
@@ -77,11 +77,9 @@ namespace iCub {
 	  clear();
 	}
 	
-	int add(ObjRecServerData* data) {
+	void add(ObjRecServerData* obj_) {
 	  //NOTE: ObjManServerList takes responsibility over pointer
-	  int position = list.size();
-	  list.push_back(data);
-	  return position;
+	  list.push_back(obj_);
 	}
 
 	ObjRecServerData* get(int i) {

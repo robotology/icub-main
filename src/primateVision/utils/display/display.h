@@ -78,6 +78,7 @@ namespace iCub {
 	 * @return viewer Pointer to multiFrameViewer object.
 	 */
 	multiFrameViewer * getpviewer(){return viewer;}
+	//QPainter* getQPainter(){return viewer->getQPainter();}
 	
       private:
 	QImage* p_8u(Ipp8u*im);

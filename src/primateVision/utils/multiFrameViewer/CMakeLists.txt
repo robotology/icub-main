@@ -9,21 +9,34 @@ ADD_CUSTOM_COMMAND(  OUTPUT mmultiFrameViewer.cc
                      COMMAND moc-qt4 multiFrameViewer.h -o mmultiFrameViewer.cc
                      DEPENDS multiFrameViewer.h multiFrameViewer.cc)
 
+
 ADD_EXECUTABLE( mfexample 
 		mfexample.cc
 		multiFrameViewer.cc 
 		mmultiFrameViewer.cc 
 		)
+
 TARGET_LINK_LIBRARIES( mfexample 
-                        Qt3Support
+                        Qt3Support 
                         QtCore
-                        QtGui)
+                        QtGui
+			timing
+			)
 
 ADD_LIBRARY( multiframeviewer
              SHARED
 	     multiFrameViewer.cc
 	     mmultiFrameViewer.cc 
 	    )
+INCLUDE_DIRECTORIES(
+	${PROJECT_SOURCE_DIR}/utils/timing
+	)
+LINK_DIRECTORIES(
+	${PROJECT_SOURCE_DIR}/utils/timing
+	)
+TARGET_LINK_LIBRARIES( multiframeviewer
+  timing
+)
 
 
 # install targets

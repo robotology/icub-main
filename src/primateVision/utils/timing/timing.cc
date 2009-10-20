@@ -44,10 +44,8 @@
  */
 
 
-#include <stdio.h>
-#include <iostream>
-#include <math.h>
-#include <sys/time.h>
+#include "timing.h"
+
 
 using namespace std;
 

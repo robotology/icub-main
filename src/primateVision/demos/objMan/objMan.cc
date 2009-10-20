@@ -43,8 +43,8 @@ void iCub::contrib::primateVision::ObjManServer::run()
 
 
 
-  ObjManServerList *objList;
-  KalmanList *kalList; 
+  ObjManServerList *objList = new ObjManServerList();
+  KalmanList *kalList = new KalmanList(); 
 
 
   //Probe objRec server:
@@ -69,13 +69,31 @@ void iCub::contrib::primateVision::ObjManServer::run()
   Network::connect("/objRecServer/output/objData" , "/objManServer/input/objData");
   ObjRecServerData *newObjData;
  
+
+  //make server probe replier:
+  //Server params:
+  BufferedPort<Bottle> outPort_s;
+  outPort_s.open("/objManServer/output/serv_params");
+  ObjManServerParams osp;
+  osp.width = width;
+  osp.height = height;
+  osp.mos_width = rsp.mos_width;
+  osp.mos_height = rsp.mos_height;
+  osp.nclasses = rsp.nclasses;
+  osp.psb = psb_in;
+  //Replier:
+  ObjManServerReplyParamProbe server_replier;
+  server_replier.reply=osp;
+  outPort_s.setReplier(server_replier); 
+
+
   //create port to output objList:
   Port outPort_objList;
   outPort_objList.open("/objManServer/output/objList"); 
+  
 
 
   double newPosX,newPosY,newPosZ;
-  int numObjs = 0;
   bool handled;
   
 
@@ -84,6 +102,9 @@ void iCub::contrib::primateVision::ObjManServer::run()
   //main event loop:
   while (1){
     
+
+    printf("ObjManServer: %d Objects in Database\n",objList->size());
+
     
     //get data from objRec server:
     newObjData = inPort_objData.read(); //blocking
@@ -93,12 +114,13 @@ void iCub::contrib::primateVision::ObjManServer::run()
     newPosY = -newObjData->y + 0.928; //offset by head height
     newPosZ =  newObjData->z;
 
+
     //Check if it is similar to an existing label at a similar pos:
     handled = false;
-    for (int k=0;k<numObjs;k++){
-      //if label exists	
+    for (int k=0;k<objList->size();k++){
+      //if object exists	
       if (objList->get(k)->label == newObjData->label &&
-	  //AND Malhonobis dist. is low:
+	  //IF same label at same pos (Malhonobis dist. is low):
 	  sqrt( (newPosX-objList->get(k)->x)*(newPosX-objList->get(k)->x)+
 		(newPosY-objList->get(k)->y)*(newPosY-objList->get(k)->y)+
 		(newPosZ-objList->get(k)->z)*(newPosZ-objList->get(k)->z) ) < MIN_DIST
@@ -112,16 +134,17 @@ void iCub::contrib::primateVision::ObjManServer::run()
 	objList->get(k)->mos_yl     = newObjData->mos_yl;
 	objList->get(k)->mos_xr     = newObjData->mos_xr;
 	objList->get(k)->mos_yr     = newObjData->mos_yr;
-	//KALMAN FILTER POSITION:
+	//KALMAN FILTER THE POSITION:
 	Vector v = kalList->get(k)->update(newPosX,newPosY,newPosZ);
 	objList->get(k)->x = v[0];
 	objList->get(k)->y = v[1];
 	objList->get(k)->z = v[2];
+
 	//print out diff between measurement and Kalman filtered output:
-	printf("ObjManServer: Object:%s (%f) - Measured: (%f,%f,%f)  Kalman: (%f,%f,%f)\n", 
+	printf("ObjManServer: Update: %s (%f) - Measured: (%f,%f,%f)  Kalman: (%f,%f,%f)\n", 
 	       objList->get(k)->label.c_str(),objList->get(k)->confidence,
 	       newPosX,newPosY,newPosZ,
-	       v[0],v[1],v[2]);
+	       objList->get(k)->x,objList->get(k)->y,objList->get(k)->z);
 	//update image:
 	ippiCopy_8u_C1R((Ipp8u*) newObjData->tex.getRawImage(),newObjData->tex.getRowSize(),
 			objList->get(k)->tex.getRawImage(),objList->get(k)->tex.getRowSize(),imsize); 
@@ -130,14 +153,17 @@ void iCub::contrib::primateVision::ObjManServer::run()
       }
     }
     
+
     if (!handled){
-      //Create temporary holder:
+      //create temporary holder:
       ObjRecServerData* obj = new ObjRecServerData();
       //malloc im space:
       obj->resize(width, height);
       //copy in new image:
+      printf("ObjManServer: New: %s (%f) - Measured: (%f,%f,%f)\n", 
+	     newObjData->label.c_str(),newObjData->confidence,newPosX,newPosY,newPosZ);
       ippiCopy_8u_C1R((Ipp8u*) newObjData->tex.getRawImage(),newObjData->tex.getRowSize(),
-			obj->tex.getRawImage(),obj->tex.getRowSize(),imsize); 
+		      obj->tex.getRawImage(),obj->tex.getRowSize(),imsize); 
       obj->label      = newObjData->label;
       obj->mos_xl     = newObjData->mos_xl;
       obj->mos_yl     = newObjData->mos_yl;
@@ -148,20 +174,19 @@ void iCub::contrib::primateVision::ObjManServer::run()
       obj->x          = newPosX;
       obj->y          = newPosY;
       obj->z          = newPosZ;
-      //push this temporary object onto list:
-      numObjs = objList->add(obj); //increments object counter
+      //push this temporary object onto objList:
+      objList->add(obj);
 
       //spawn a Kalman filter with default settings:
-      Kal*kalman = new Kal(newPosX,newPosY,newPosZ);
-      numObjs = kalList->add(kalman);
+      Kal*kalman = new Kal(10,newPosX,newPosY,newPosZ,0.04,0.08);
+      //push this temporary object onto kalList:
+      kalList->add(kalman);
+
     }
     
-    
-    printf("ObjManServer: %d Objects in Database\n",numObjs+1);
     //send entire list of objects to clients:
     outPort_objList.write(*objList);
     
-
 
   } //while
 

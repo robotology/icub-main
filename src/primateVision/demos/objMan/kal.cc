@@ -29,6 +29,8 @@ iCub::contrib::primateVision::Kal::Kal(int period,double X_,double Y_,double Z_,
   kalPos->init(kalx0,kalx0,kalP0);
   
   done = true;
+
+  this->start();
 }
 
 Vector iCub::contrib::primateVision::Kal::update(double x_,double y_,double z_){
@@ -36,10 +38,18 @@ Vector iCub::contrib::primateVision::Kal::update(double x_,double y_,double z_){
   kalx0(0)=x_;
   kalx0(1)=y_;
   kalx0(2)=z_; 
-  //wait for an update:
+  //wait for an update before returning result:
   while(!done){
     usleep(1000);
   }
   
   return estX;
 }
+
+
+void iCub::contrib::primateVision::Kal::run(){
+  done = false;
+  estX=kalPos->filt(kalx0);
+  done = true;
+}
+	
