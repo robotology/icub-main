@@ -939,7 +939,7 @@ bool ServerCartesianController::attachAll(const PolyDriverList &p)
     drivers=p;
     int nd=drivers.size();
 
-    fprintf(stdout,"***** Attaching drivers to cartesian controller %s*****\n",ctrlName.c_str());
+    fprintf(stdout,"***** Attaching drivers to cartesian controller %s *****\n",ctrlName.c_str());
     fprintf(stdout,"Received list of %d driver(s)\n",nd);
 
     if (nd!=numDrv)
