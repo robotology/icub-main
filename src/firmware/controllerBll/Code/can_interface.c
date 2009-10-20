@@ -635,20 +635,10 @@ void can_send_broadcast(void)
 		{
 			_canmsg.CAN_data[0] |=0x20;	
 		}
+	
 		//Control Mode axes 0
-				//Control Mode axes 1
-		if (_control_mode[0]==0)
-		{
-			_canmsg.CAN_data[1]= MODE_IDLE;	
-		}
-		if (_control_mode[0]&0x03)
-		{
-			_canmsg.CAN_data[1]= MODE_CONTROLLED; 			
-		}
-		if (_control_mode[0]>0x03)
-		{
-			_canmsg.CAN_data[1]= MODE_CALIB; 		
-		}
+		_canmsg.CAN_data[1]= _control_mode[0];	
+		
 		//  - - - PWM CHANNEL B (axis 1) - - -
 		_fault[1] = getReg (PWMB_PMFSA);
 		setReg(PWMB_PMFSA,	0x55);
@@ -679,18 +669,8 @@ void can_send_broadcast(void)
 		}
 		#endif
 		//Control Mode axes 1
-		if (_control_mode[1]==0)
-		{
-			_canmsg.CAN_data[3]= MODE_IDLE; //		
-		}
-		if (_control_mode[1]&0x03)
-		{
-			_canmsg.CAN_data[3]= MODE_CONTROLLED;
-		}
-		if (_control_mode[1]>0x03)
-		{
-			_canmsg.CAN_data[3]= MODE_CALIB;			
-		}	
+		_canmsg.CAN_data[3]= _control_mode[1]; 		
+		
 		//CANBUS ERRORS
 		_canmsg.CAN_data[4] = getCanStatus();
 		//MAIN LOOP overflow

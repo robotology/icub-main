@@ -198,14 +198,14 @@ Int32 compute_pwm(byte j)
 	
 	switch (_control_mode[j]) 
 	{ 
-	#if VERSION == 0x0173 || VERSION == 0x0174 
+#if VERSION == 0x0173 || VERSION == 0x0174 
 	case MODE_POSITION:
 	case MODE_VELOCITY:
 	case MODE_CALIB_ABS_POS_SENS:
 		compute_desired(j);
 		PWMOUT = compute_pid2(j);
 		PWMOUT = PWMOUT + _ko[j];
-		_pd[j] = _pd[j] + _ko[j];
+		_pd[j] = _pd[j] + _ko[j];    
 		break;
 	case MODE_TORQUE: 
 		PWMOUT = compute_pid_torque(j, strain_val);
@@ -225,7 +225,7 @@ Int32 compute_pwm(byte j)
 		_pd_torque[j] = _pd_torque[j] + _ko_torque[j];
 		break;	
 	
-	#elif VERSION == 0x0170 || VERSION == 0x0171 || VERSION == 0x0172
+#elif VERSION == 0x0170 || VERSION == 0x0171 || VERSION == 0x0172
 	case MODE_POSITION: 
 	case MODE_VELOCITY: 
 	case MODE_CALIB_ABS_POS_SENS:
@@ -267,7 +267,7 @@ Int32 compute_pwm(byte j)
 	
 	break; 
 		
-	#elif VERSION == 0x0156
+#elif VERSION == 0x0156
 	case MODE_POSITION: 
 	case MODE_VELOCITY: 
 	case MODE_CALIB_ABS_POS_SENS: 
@@ -276,8 +276,8 @@ Int32 compute_pwm(byte j)
 		ENFORCE_CURRENT_LIMITS(j, IOUT); 
 		PWMOUT = compute_current_pid(j); 		
 		break;
-
-	#else
+	
+#else
 	case MODE_POSITION:
 	case MODE_VELOCITY:
 	case MODE_CALIB_ABS_POS_SENS:
@@ -285,7 +285,11 @@ Int32 compute_pwm(byte j)
 		PWMOUT = compute_pid2(j);
 		PWMOUT = PWMOUT + _ko[j];
 		_pd[j] = _pd[j] + _ko[j];
-		break;
+	break;
+	case MODE_OPENLOOP:
+		PWMOUT = _ko[j];
+	break;
+	
 	#endif
 	
 	case MODE_CALIB_HARD_STOPS:

@@ -37,7 +37,7 @@
 byte	_board_ID = 16;	
 char    _additional_info [32];
 UInt8    mainLoopOVF=0;
-word    _build_number = 30;
+word    _build_number = 31;
 int     _countBoardStatus =0;
 Int16   _flash_version=0; 
 UInt8   BUS_OFF=false;
@@ -113,7 +113,7 @@ void main(void)
 	//Int32 windSizeVel=50;
 	Int32 positionWindow[35][JN]; //max window size: 254
 	Int32 velocityWindow[55][JN]; //max window size: 254
-		
+  	UInt16 _safeband[JN];	//it is a value for reducing the JOINT limit of 2*_safeband [tick encoder]
 #ifdef TEMPERATURE_SENSOR
 	byte   TempSensCount1 = 0;
 	UInt32 TempSensCount2 = 0;
@@ -258,13 +258,17 @@ void main(void)
     _max_real_position[0]=Filter_Bit(4095);
 	
 #endif//	AS1_printStringEx ("\r\n");
-	//
+	
+	
+	
+	
 	//////////////////////////////////////
 	
 	/* initialize speed and acceleration to zero (useful later on) */
 	for (i=0; i<JN; i++) _position_old[i] = 0;
 	for (i=0; i<JN; i++) _speed[i] = 0;
 	for (i=0; i<JN; i++) _accel[i] = 0;
+	for (i=0; i<JN; i++) _safeband[i] =57; //57 ticks => 5 gradi di AEA.
 	
 	/* reset the recursive windows for storage of position and velocity data */
 	/* (for velocity and position estimates) */
@@ -280,7 +284,6 @@ void main(void)
 		}	
 	}
 	
-	
 	//set_relative_position_abs_ssi(1,get_absolute_real_position_abs_ssi(1));
 	/* main control loop */
 	for(_counter = 0;; _counter ++) 
@@ -290,8 +293,7 @@ void main(void)
 		while (_wait);
 		_count=0;
 		led3_off
-//		serial_interface();
- 
+		
 // BUS_OFF check
 		if (getCanBusOffstatus() )
 		{
@@ -301,6 +303,7 @@ void main(void)
 		else
 			led1_on
 
+// READING CAN MESSAGES
 		can_interface();
 		
 		
@@ -352,14 +355,14 @@ void main(void)
 					_pad_enabled[i] = false;
 					PWM_outputPadDisable(i);
 			#ifdef DEBUG_CAN_MSG
-		    //	can_printf("ABS error %d",i);	
+		    	can_printf("ABS error %d",i);	
 			#endif
 		   }	
 					
 		}  
 #endif
 	
-#if (VERSION ==0x0154) 
+#if (VERSION ==0x0154) || (VERSION ==0x0155)
 
 		   if (get_error_abs_ssi(0)==ERR_ABS_SSI)
 		   {
@@ -419,7 +422,7 @@ void main(void)
 		
 					
 		/* in position? */
-#if VERSION != 0x0154
+#if (VERSION != 0x0154) && (VERSION != 0x0155)
 		for (i=0; i<JN; i++) _in_position[i] = check_in_position(i); 
 #else
 		_in_position[0] = check_in_position(0);
@@ -428,8 +431,76 @@ void main(void)
 		/* in reference configuration for calibration? */
 		//for (i=0; i<JN; i++) check_in_position_calib(i); 
 	
+//******************************************* POSITION LIMIT CHECK ***************************/
+	/* check for position in range */
+ 		for (i=0; i<JN; i++)
+ 		{
+ 			if (_control_mode[i] == MODE_POSITION)
+ 			{
+ 	     		if  (_position[i] > (_max_position[i]-_safeband[i]) ||  (_position[i] < (_min_position[i]+_safeband[i])))   
+	 			{			
+					_ko[i]=0;   //remove the PWM offset if it is out of limits 
+					#ifdef DEBUG_CONTROL_MODE
+					can_printf("OUT of LIMITS ax:%d", i);	
+					#endif
+					if  (_position[i] > (_max_position[i]-_safeband[i]))
+					_desired[i] = (_max_position[i]-(_safeband[i]<<1)); //if it is out of limit it goes a littlebit far from the limits 
+					else 
+			    	_desired[i] = (_min_position[i]+(_safeband[i]<<1)); //if it is out of limit it goes a littlebit far from the limits 
 			
-		/* computes controls */
+					_integral[i] = 0; 
+					_set_point[i] = _desired[i];
+					init_trajectory (i, _desired[i], _desired[i], 1); 
+	 			} 
+ 			}
+ 			if (_control_mode[i] == MODE_OPENLOOP)
+ 			{
+	 			if  (_position[i] > (_max_position[i]-_safeband[i]) ||  (_position[i] < (_min_position[i]+_safeband[i])))   
+	 			{			
+	 				_control_mode[i] = MODE_POSITION; //	
+					_ko[i]=0;  //remove the PWM offset if it is out of limits
+					if  (_position[i] > (_max_position[i]-_safeband[i]))
+					_desired[i] = (_max_position[i]-(_safeband[i]<<1)); //if it is out of limit it goes a littlebit far from the limits 
+					else 
+			    	_desired[i] = (_min_position[i]+(_safeband[i]<<1)); //if it is out of limit it goes a littlebit far from the limits 
+			
+					_integral[i] = 0; 
+					_set_point[i] = _desired[i];
+					init_trajectory (i, _desired[i], _desired[i], 1); 
+					
+					#ifdef DEBUG_CONTROL_MODE
+					can_printf("MODE CHANGED TO POSITION, OUT of LIMITS ax:%d", i);	
+	 			    #endif 
+	 			} 				
+ 			}
+ 			
+ 			//************************** TO BE CHANGED!!!! 	*******************************/		
+            #ifdef TORQUE_CNTRL
+ 
+ 			if (_control_mode[i] == MODE_TORQUE ||
+			 	_control_mode[i] == MODE_IMPEDANCE)
+ 			{
+	 			if  (_position[i] > _max_position[i] ||
+	 			     _position[i] < _min_position[i])   
+	 			{			
+					PWMoutput[i] = 0;
+					TrqLimitCount++;
+					if (TrqLimitCount>=500)
+					{
+					#ifdef DEBUG_CONTROL_MODE
+						can_printf("MODE TORQUE OUT LIMITS ax:%d", i);	
+						TrqLimitCount=0;
+				    #endif 
+					}
+	 			} 				
+ 			}
+			#endif		
+ 		}
+
+
+
+//******************************************* COMPUTES CONTROLS ***************************/
+		
 		for (i=0; i<JN; i++) _debug1[i] = PWMoutput[i] = compute_pwm(i);
 
 //		decouple PWM	
@@ -463,36 +534,6 @@ void main(void)
 	
 #endif			
 
-
-	/* check for position in range */
-#ifdef TORQUE_CNTRL
- 		for (i=0; i<JN; i++)
- 		{
- 			if (_control_mode[i] == MODE_TORQUE ||
-			 	_control_mode[i] == MODE_IMPEDANCE)
- 			{
-	 			if  (_position[i] > _max_position[i] ||
-	 			     _position[i] < _min_position[i])   
-	 			{
-	 				
-	/*
-	 				_control_mode[i] = MODE_IDLE;	
-					_pad_enabled[i] = false;
-					PWM_outputPadDisable(i);
-	*/
-					PWMoutput[i] = 0;
-					TrqLimitCount++;
-					if (TrqLimitCount>=500)
-					{
-						can_printf("OUT LIMITS ax:%d", i);	
-						TrqLimitCount=0;
-					}
-	 			} 				
- 			}
- 		}
-#endif
-	
-	
 #ifdef TORQUE_CNTRL	
 		/* PWM filtering */
 		for (i=0; i<JN; i++) 
@@ -502,7 +543,8 @@ void main(void)
 				PWMoutput[i] = lpf_ord1_3hz (PWMoutput[i], i);	
 		}
 #endif
-                
+
+//******************************************* SATURATES CONTROLS ***************************/                
 		/* saturates controls if necessary */
 		for (i=0; i<JN; i++)
 		{

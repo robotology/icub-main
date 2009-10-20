@@ -193,8 +193,9 @@ extern char    _additional_info [32];
 	byte value = 0; \
 	if (CAN_LEN == 2) \
 	{ \
+		can_printf("CONTROL MODE SETTED"); \
 		value = (CAN_DATA[1]); \
-		if (value>=0 && value <=4) _control_mode[axis] = value; \
+		if (value>=0 && value <=0x50) _control_mode[axis] = value; \
 		_general_board_error = ERROR_NONE; \
 		_desired_torque[axis]=0; \
 		_desired[axis] = _position[axis]; \
