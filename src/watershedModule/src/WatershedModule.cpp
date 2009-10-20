@@ -1168,7 +1168,7 @@ bool WatershedModule::openPorts(){
                     g_print("ERROR: Port registration failed.\nQuitting, sorry.\n");
                     return false;
                 }
-			_pOutPort2 = new yarp::os::BufferedPort<ImageOf<PixelRgb>>;
+			_pOutPort2 = new yarp::os::BufferedPort<ImageOf<PixelRgb> >;
             g_print("Registering port %s on network %s...\n", "/rea/Watershed/outBlobs","default");
             ok = _pOutPort2->open("/rea/Watershed/outBlobs");
             if  (ok)
