@@ -1,6 +1,5 @@
 // -*- mode:C++; tab-width:4; c-basic-offset:4; indent-tabs-mode:nil -*-
 
-#include <conio.h>
 
 /**
  * @ingroup icub_module
@@ -106,11 +105,11 @@ public:
 	/**
 	* constructor of the thread
 	*/
-	TrackerThread::TrackerThread(Property &op);
+	TrackerThread(Property &op);
 	/**
 	* destructor of the thread
 	*/
-	TrackerThread::~TrackerThread();
+	~TrackerThread();
 	/**
 	*	initialization of the thread 
 	*/

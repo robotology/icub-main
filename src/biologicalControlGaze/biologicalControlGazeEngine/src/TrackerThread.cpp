@@ -34,7 +34,7 @@ bool TrackerThread::threadInit()
         {
             printf("Device not available.  Here are the known devices:\n");
             printf("%s", Drivers::factory().toString().c_str());
-			getch();
+			
             return false;
         }
 

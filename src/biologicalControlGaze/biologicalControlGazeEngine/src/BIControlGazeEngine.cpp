@@ -128,7 +128,6 @@ bool  BIControlGazeEngine::interruptModule() {
 bool BIControlGazeEngine::close() {
 		port.close();
 		port2.close();
-		getch();
 		return true;
 	}
 
