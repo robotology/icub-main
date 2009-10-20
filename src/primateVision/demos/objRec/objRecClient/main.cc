@@ -18,6 +18,7 @@
 //for display:
 #include <qapplication.h>
 #include <mosaic.h>
+#include <display.h>
 #include <objRecio.h>
 
 using namespace std;
@@ -28,6 +29,18 @@ int main( int argc, char **argv )
 
   QApplication a(argc, argv);
 
+
+  QString arg1 = argv[1];
+  QString arg2 = argv[2];
+
+  bool mos = false;
+  if (arg1=="mosaic" || arg1=="mos" || arg2=="mosaic" || arg2=="mos"){
+    mos = true;
+  }
+  bool save = false;
+  if (arg1=="save" || arg2=="save"){
+    save = true;
+  }
 
   //get objRec server params:
   Port inPort_s;
@@ -57,25 +70,53 @@ int main( int argc, char **argv )
   Network::connect("/objRecServer/output/objData" , "/objRecClient/input/objData");
   ObjRecServerData *objData;
   
+  //display:
+  Mosaic *ml;
+  Mosaic *mr;
+  iCub::contrib::primateVision::Display * dl;
+  iCub::contrib::primateVision::Display * dr;
 
-  //display mosaics:
-  Mosaic *ml = new Mosaic(mossize,srcsize,psb,D_8U_NN,"ObjRecClient L");
-  Mosaic *mr = new Mosaic(mossize,srcsize,psb,D_8U_NN,"ObjRecClient R");
+  if (mos){
+    ml = new Mosaic(mossize,srcsize,psb,D_8U_NN,"ObjRecClient L");
+    mr = new Mosaic(mossize,srcsize,psb,D_8U_NN,"ObjRecClient R");
+  }
+  else{
+    dl = new iCub::contrib::primateVision::Display(srcsize,psb,D_8U_NN,"ObjRecClient L");
+    dr = new iCub::contrib::primateVision::Display(srcsize,psb,D_8U_NN,"ObjRecClient R");
+  }
+
+
+  int k=0;
+
 
 
   printf("ObjRecClient: begin..\n");
   //main event loop:
   while (1){
     
+    k++;
     
     //get data from objMan server:
     objData = inPort_objData.read(); //blocking
     
-    //draw object in left and right mosaics: 
-    ml->display(objData->tex.getRawImage(),
-		objData->mos_xl,objData->mos_yl);
-    mr->display(objData->tex.getRawImage(),
-		objData->mos_xr,objData->mos_yr);
+    if (mos){
+      //draw object in left and right mosaics: 
+      ml->display(objData->tex.getRawImage(),
+		  objData->mos_xl,objData->mos_yl);
+      mr->display(objData->tex.getRawImage(),
+		  objData->mos_xr,objData->mos_yr);
+      if (save){
+	ml->save(objData->tex.getRawImage(),"objrec"+QString::number(k)+".jpg");
+      }
+    }
+    else{
+      dl->display(objData->tex.getRawImage());
+      dr->display(objData->tex.getRawImage());
+      if (save){
+	dl->save(objData->tex.getRawImage(),"objrec"+QString::number(k)+".jpg");
+      }
+    }
+
     printf("ObjRecClient: %s\n",objData->toString().c_str());
     
   } //while
