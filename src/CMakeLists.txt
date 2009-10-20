@@ -201,6 +201,11 @@ ENDIF (ARTOOLKITPLUS_FOUND)
     ADD_SUBDIRECTORY(cylGuard)
   ENDIF(GSL_FOUND AND IPOPT_FOUND)
 
+  # modules using the ICartesianControl interface
+  IF(NOT SKIP_cartesiancontrollerclient)
+    ADD_SUBDIRECTORY(iKinArmCtrlIF)
+  ENDIF(NOT SKIP_cartesiancontrollerclient)
+
   # add here modules you want to test for compilation
   # these modules will only be compiled by automated
   # compilation scripts
