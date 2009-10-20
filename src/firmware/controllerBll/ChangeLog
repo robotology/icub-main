@@ -76,5 +76,9 @@
 	
 2009-31-July  Marco Randazzo <marco.randazzo@iit.it>
 	* Fixed GetControlMode message on 2BLL / 4DC.
+
+2009-20-October  Marco Maggiali <marco.maggiali@iit.it>
+	* Added MODE_OPENLOOP =0x50. TO BE TESTED 
+	* Current build 31.	
 	
 	
