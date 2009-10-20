@@ -5,8 +5,6 @@
 
 #define DEBUG 0
 
-//#include <ppEventDebugger.h>
-
 generatorThread::generatorThread(int period) : RateThread(period)
 {
     this->period = ((double)period)/1000.0;
@@ -77,11 +75,14 @@ void generatorThread::getParameters()
     if(command!=NULL)
         if(command->size() >=2*nbDOFs+2)
             {
+                ACE_OS::printf("Receiving parameters for part %s:\n ", partName.c_str());
                 for (int i=0; i<2*nbDOFs; i++)
                     {
                         myManager->next_parameters[i]= command->get(i).asDouble();
                         fprintf(parameters_file,"%f \t", myManager->next_parameters[i]);
+                        ACE_OS::printf("%f \t", myManager->next_parameters[i]);
                     }
+                ACE_OS::printf("\n");
 
                 double freq = command->get(2*nbDOFs).asDouble();
 
@@ -95,7 +96,9 @@ void generatorThread::getParameters()
                 if(phase != myManager->next_theta)
                     lastBeat_time = lastBeat_time+(myManager->next_theta-phase)/(2*3.14*myManager->next_nu);
 
-                myManager->next_theta=phase;              
+                myManager->next_theta=phase;       
+                
+                ACE_OS::printf("freq and phase: %4.2f %4.2f\n", myManager->next_nu, phase);       
 
                 fprintf(parameters_file,"%f %f ",myManager->next_nu,phase);
                 fprintf(parameters_file,"%f \n",Time::now()/*-original_time*/);
@@ -122,20 +125,7 @@ void generatorThread::getHit()
                                     if(NoteID == notes[i])
                                         {
                                             myManager->drumHit=1;
-                                            myManager->stuckCounter=0;
-                                            /*                                          static bool initialized=false;
-                                            static ppEventDebugger debugger;
-                                            if (!initialized)
-                                                {
-                                                    debugger.open(0x378);
-                                                    initialized=true;
-                                                }
-                                            
-                                            debugger.set();
-                                            debugger.set();
-                                            debugger.set();
-                                            debugger.reset();*/
-                                            
+                                            myManager->stuckCounter=0;                                           
                                             fprintf(feedback_file, "%f \n", Time::now()/*-original_time*/);
                                             ACE_OS::printf("FEEDBACK ENABLED FOR PART %s\n", partName.c_str()); 
                                         }
@@ -383,6 +373,11 @@ void generatorThread::threadRelease()
 {
     fprintf(stderr, "%s thread releasing\n", partName.c_str());
     ///we stop the vcControl
+    
+    fclose(target_file);
+    fclose(parameters_file);
+    fclose(encoder_file);
+    fclose(feedback_file);
 
 #if !DEBUG
 
@@ -401,9 +396,18 @@ void generatorThread::threadRelease()
 
             Time::delay(0.1);
         }
+        
+        
+    vcControl_port.close();
+    vcFastCommand_port.close();
 
 #endif
 
+    parameters_port.close(); 
+    check_motion_port.close(); 
+    sound_port.close();
+    clock_port.close();
+    
     delete ddPart;
 
     delete[] y_cpgs;
@@ -417,11 +421,6 @@ void generatorThread::threadRelease()
     delete[] initPos;
 
     delete myManager;
-
-    fclose(target_file);
-    fclose(parameters_file);
-    fclose(encoder_file);
-    fclose(feedback_file);
 
     fprintf(stderr, "%s thread released\n", partName.c_str());
 }
@@ -600,9 +599,9 @@ bool generatorThread::init(Searchable &s)
     ok&= Network::connect(tmp2,tmp1,"udp");
 
     if(!ok)
-        {
-            ACE_OS::printf("Warning cannot connect to external clock part %s\n",partName.c_str());
-        }
+    {
+        ACE_OS::printf("Warning cannot connect to external clock part %s\n",partName.c_str());
+    }
 
     external_clock = ok;
 

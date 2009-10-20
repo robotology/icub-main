@@ -1,17 +1,8 @@
-clear all
 
-part='right_arm';
+function debug_traj(part)
 
 target =load(sprintf('%s_target_position.dat',part));
 t=1:length(target(:,1));
-
-encoders=load(sprintf('%s_encoders.dat',part));
-rt=1:length(encoders(:,1));
-
-feed_manager=load('../DrumManager/feedback_time.dat');
-
-
-feed_generator=load(sprintf('%s_feedback.dat',part));
 
 figure(1)
 plot(t, target(:,1), rt, encoders(:,1), t, target(:,4), rt, encoders(:,4))

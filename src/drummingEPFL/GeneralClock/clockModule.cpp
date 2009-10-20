@@ -15,66 +15,66 @@ clockThread::~clockThread()
 //read the parameters coming from the manager and update the cpg myManager
 void clockThread::getParameters()
 {
-  Bottle *bot = manager_port.read(false);
-  if(bot!=NULL)
+    Bottle *bot = manager_port.read(false);
+    if(bot!=NULL)
     {
-      double freq = bot->get(0).asDouble();
-      if(freq < MAX_FREQUENCY)
-	nu = freq;
+        double freq = bot->get(0).asDouble();
+        if(freq < MAX_FREQUENCY)
+        nu = freq;
     }
-  //ACE_OS::printf("frequency is %f\n", nu);
 }
 
 void clockThread::run()
 {
-  double time_now = Time::now();
-  double time_residue = time_now - original_time - theoretical_time;
-  getParameters();
-  
-  theoretical_time += period + time_residue;
-
-  //check if we must stop
-  if(nu<0)
-    {
-      ACE_OS::printf("Task is finished\n");
-      this->stop();
-      return;
-   }
-
-  ///check the current beat
-  if(time_now-lastBeat_time > 1.0/nu)
-    {
-      ACE_OS::printf("current beat: %d\n",beat);
-      beat++;
-      lastBeat_time = time_now;
+    double time_now = Time::now();
+    double time_residue = time_now - original_time - theoretical_time;
+    getParameters();
       
-      ///send the beat
-      Bottle& output = beat_port.prepare();
-      output.clear();
-      output.addInt(beat);
-      beat_port.write();
-    }
+    theoretical_time += period + time_residue;
 
-  ///integrate the system
-  double pi = 3.1415;
-  int inner_steps = (int)((period+time_residue)/dt);
-  for(int i=0;i<inner_steps;i++)
+      //check if we must stop
+    if(nu<0)
     {
-      double r2 = current_state[0]*current_state[0] + current_state[1]*current_state[1];
-      double dx = a*(m_on-r2)*current_state[0] - 2*pi*nu * current_state[1];
-      double dy = a*(m_on-r2)*current_state[1] + 2*pi*nu * current_state[0];
-      current_state[0] += dx*dt;
-      current_state[1] += dy*dt;
+        ACE_OS::printf("Task is finished\n");
+        this->stop();
+        return;
     }
 
-  fprintf(debug_file,"%f %f %f\n",current_state[0],current_state[1],Time::now());
+    ///check the current beat
+    if(time_now-lastBeat_time > 1.0/nu)
+    {
+        ACE_OS::printf("current beat: %d\n",beat);
+        beat++;
+        lastBeat_time = time_now;
+          
+        ///send the beat
+        Bottle& output = beat_port.prepare();
+        output.clear();
+        output.addInt(beat);
+        beat_port.write();
+    }
 
-  ////send the command
-  Bottle &bot = clock_port.prepare();
-  bot.clear();
-  bot.addDouble(current_state[0]);
-  bot.addDouble(current_state[1]);
-  clock_port.write();
+    ///integrate the system
+    double pi = 3.1415;
+    int inner_steps = (int)((period+time_residue)/dt);
+    for(int i=0;i<inner_steps;i++)
+    {
+        double r2 = current_state[0]*current_state[0] + current_state[1]*current_state[1];
+        double dx = a*(m_on-r2)*current_state[0] - 2*pi*nu * current_state[1];
+        double dy = a*(m_on-r2)*current_state[1] + 2*pi*nu * current_state[0];
+        current_state[0] += dx*dt;
+        current_state[1] += dy*dt;
+    }
+
+    fprintf(debug_file,"%f %f %f\n",current_state[0],current_state[1],Time::now());
+
+    ////send the command
+    Bottle &bot = clock_port.prepare();
+    bot.clear();
+    bot.addDouble(current_state[0]);
+    bot.addDouble(current_state[1]);
+    clock_port.write();
+    
 }
 
 bool clockThread::threadInit()
@@ -86,6 +86,7 @@ void clockThread::threadRelease()
 {
     clock_port.close();
     manager_port.close();
+    beat_port.close();
 
     fclose(debug_file);
 }

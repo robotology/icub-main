@@ -14,6 +14,7 @@
 #include <fstream>
 #include <sstream>
 #include <qdir.h>
+#include <cstdlib>
 
 using namespace std;
 
@@ -29,6 +30,11 @@ void mainDlg::init()
         this->currentPhase[i] = 0.0;
          
     //we open commnunication ports
+    bool ok= Network::checkNetwork();
+    if(!ok)
+    {
+	exit(-1);
+    }
     Network::init();
     
     interactivePort.open("/interactive/out");
@@ -193,7 +199,7 @@ void mainDlg::sendPartitions()
                 {    
                     Bottle &bot = partitionsPort[i].prepare();
                     bot.clear();
-                    cout << "sending score part " << i << ":";
+                    cout << "sending score part " << i << ":   ";
                     for(int k=0;k<ScoreSize;k++)
                         {
                             bot.addInt((int)currentPartition[i][k]);
@@ -204,7 +210,7 @@ void mainDlg::sendPartitions()
 	    
                     Bottle &bot2 = phasePort[i].prepare();
                     bot2.clear();
-                    cout << "sending phase shift information for part " << i <<":";
+		    cout << "sending phase shift information for part " << i <<":    ";
                     for(int k=0; k<ScoreSize;k++)
                         {
                             bot2.addDouble(currentPartition[i+6][k]);
@@ -217,7 +223,7 @@ void mainDlg::sendPartitions()
     
     Bottle& bot = interactivePort.prepare();
     bot.clear();
-    cout << "sending frequency:";
+    cout << "sending frequency:  ";
     for(int k=0; k<ScoreSize;k++)
         {
             bot.addDouble(currentPartition[5][k]);
@@ -266,7 +272,9 @@ void mainDlg::customStopPushButton_clicked()
     headButton1->setPaletteBackgroundColor(white);
     headButton2->setPaletteBackgroundColor(white);
     headButton3->setPaletteBackgroundColor(white);
-    headButton4->setPaletteBackgroundColor(red);
+    headButton4->setPaletteBackgroundColor(white);
+    headButton5->setPaletteBackgroundColor(red);
+    headButton6->setPaletteBackgroundColor(white);
     
     for(int i=0;i<nbparts;i++)
     {
@@ -483,6 +491,8 @@ void mainDlg::headButton1_clicked()
     headButton2->setPaletteBackgroundColor(white);
     headButton3->setPaletteBackgroundColor(white);
     headButton4->setPaletteBackgroundColor(white);
+    headButton5->setPaletteBackgroundColor(white);
+    headButton6->setPaletteBackgroundColor(white);
     customBeat[4] = 1;
     generate_and_playCustom(4);
 }
@@ -496,6 +506,8 @@ void mainDlg::headButton2_clicked()
     headButton2->setPaletteBackgroundColor(red);
     headButton3->setPaletteBackgroundColor(white);
     headButton4->setPaletteBackgroundColor(white);
+    headButton5->setPaletteBackgroundColor(white);
+    headButton6->setPaletteBackgroundColor(white);
     customBeat[4] = 2;
     generate_and_playCustom(4);
 }
@@ -509,10 +521,11 @@ void mainDlg::headButton3_clicked()
     headButton2->setPaletteBackgroundColor(white);
     headButton3->setPaletteBackgroundColor(red);
     headButton4->setPaletteBackgroundColor(white);
+    headButton5->setPaletteBackgroundColor(white);
+    headButton6->setPaletteBackgroundColor(white);
     customBeat[4] = 3;
     generate_and_playCustom(4);
 }
-
 
 void mainDlg::headButton4_clicked()
 {
@@ -522,7 +535,39 @@ void mainDlg::headButton4_clicked()
     headButton2->setPaletteBackgroundColor(white);
     headButton3->setPaletteBackgroundColor(white);
     headButton4->setPaletteBackgroundColor(red);
+    headButton5->setPaletteBackgroundColor(white);
+    headButton6->setPaletteBackgroundColor(white);
+    customBeat[4] = 4;
+    generate_and_playCustom(4);
+}
+
+
+void mainDlg::headButton5_clicked()
+{
+    QColor white(255,255,255);
+    QColor red(255,0,0);
+    headButton1->setPaletteBackgroundColor(white);
+    headButton2->setPaletteBackgroundColor(white);
+    headButton3->setPaletteBackgroundColor(white);
+    headButton4->setPaletteBackgroundColor(white);
+    headButton5->setPaletteBackgroundColor(red);
+    headButton6->setPaletteBackgroundColor(white);
     customBeat[4] = 0;
+    generate_and_playCustom(4);
+}
+
+void mainDlg::headButton6_clicked()
+{
+    QColor white(255,255,255);
+    QColor red(255,0,0);
+    QColor blue(0,0,255);
+    headButton1->setPaletteBackgroundColor(white);
+    headButton2->setPaletteBackgroundColor(white);
+    headButton3->setPaletteBackgroundColor(white);
+    headButton4->setPaletteBackgroundColor(white);
+    headButton5->setPaletteBackgroundColor(red);
+    headButton6->setPaletteBackgroundColor(blue);
+    customBeat[4] = 5;
     generate_and_playCustom(4);
 }
 
@@ -570,6 +615,8 @@ void mainDlg::rlegButton4_clicked()
 
 void mainDlg::closeButton_clicked()
 { 
+    QColor red(255,0,0);
+    closeButton->setPaletteBackgroundColor(red);
     Bottle& bot = interactivePort.prepare();
     bot.clear();
     for(int i=0; i<ScoreSize;i++)
