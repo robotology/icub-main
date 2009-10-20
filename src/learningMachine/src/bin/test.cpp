@@ -178,7 +178,7 @@ private:
 
     Dataset dataset;
 
-    std::ofstream stream;
+    int frequency; // in Hz
 
     void registerPort(Contactable& port, std::string name) {
         if (port.open(name.c_str()) != true) {
@@ -222,6 +222,7 @@ public:
         std::cout << "--inputs (idx1, ..)    List of indices to use as inputs" << std::endl;
         std::cout << "--outputs (idx1, ..)   List of indices to use as outputs" << std::endl;
         std::cout << "--port pfx             Prefix for registering the ports" << std::endl;
+        std::cout << "--frequency f          Sampling frequency in Hz" << std::endl;
         exit(errorCode);
     }
 
@@ -274,11 +275,6 @@ public:
             // add message here if necessary (since it is obligatory)
         }
 
-        // check for filename of the output file
-        if(opt.check("outputfile", val)) {
-            this->stream.open(val->asString());
-        }
-
         // check for the columns of the dataset that should be used for inputs
         if(opt.check("inputs", val)) {
             // if it's a list, 
@@ -309,6 +305,12 @@ public:
             this->dataset.addOutputColumn(2);
         }
 
+        // check for port specifier: portSuffix
+        if(opt.check("frequency", val)) {
+            this->frequency = val->asInt();
+        } else {
+            this->frequency = 0;
+        }
 
         this->printConfig();
 
@@ -321,15 +323,12 @@ public:
         PortablePair<Vector,Vector>& sample = this->train_out.prepare();
         sample.head = input;
         sample.body = output;
-        //std::cout << "Sending sample " + printVector(sample.head) + " => " + printVector(sample.body) << std::endl;
         this->train_out.writeStrict();
     }
 
     Vector sendPredictSample(Vector input) {
         Vector prediction;
-        //std::cout << "Predicting: " << printVector(input) << std::endl;
         this->predict_inout.write(input, prediction);
-        //std::cout << "Done: " << printVector(prediction) << std::endl;
         return prediction;
     }
 
@@ -349,6 +348,7 @@ public:
                     reply.addString("  skip [n]              Skip samples");
                     reply.addString("  reset                 Reset dataset");
                     reply.addString("  open fname            Opens a datafile");
+                    reply.addString("  freq f                Sampling frequency in Hertz (0 for disabled)");
                     break;
 
                 case VOCAB4('s','k','i','p'): // skip some training sample(s)
@@ -378,9 +378,11 @@ public:
 
                     for(int i = 0; i < noSamples; i++) {
                         std::pair<Vector,Vector> sample = this->dataset.getNextSample();
-                        //std::string reply_str = "Sending sample " + printVector(sample.first) + " => " + printVector(sample.second);
                         this->sendTrainSample(sample.first, sample.second);
-                        //reply.addString(reply_str.c_str());
+
+                        // sleep
+                        if(this->frequency > 0)
+                            yarp::os::Time::delay(1. / this->frequency);
                     }
                     reply.addString("Done!");
 
@@ -405,27 +407,8 @@ public:
                     // make predictions and keep track of errors (MSE)
                     for(int i = 0; i < noSamples; i++) {
                         std::pair<Vector,Vector> sample = this->dataset.getNextSample();
-                        //std::string reply_str = "Predicting sample " + printVector(sample.first) + " => " + printVector(sample.second);
                         Vector prediction = this->sendPredictSample(sample.first);
-                        //reply_str += " => (" + printVector(prediction) + ")";
-                        //reply.addString(reply_str.c_str());
                         
-                        if(this->stream.is_open()) {
-                            for(int i = 0; i < sample.first.size(); i++) {
-                                this->stream << sample.first(i) << " ";
-                            }
-                            this->stream << "  ";
-                            for(int i = 0; i < sample.second.size(); i++) {
-                                this->stream << sample.second(i) << " ";
-                            }
-                            this->stream << "  ";
-                            for(int i = 0; i < prediction.size(); i++) {
-                                this->stream << prediction(i) << " ";
-                            }
-                            this->stream << std::endl;
-                        }
-
-
                         if(prediction.size() != sample.second.size()) {
                             std::string msg("incoming prediction has incorrect dimension");
                             throw std::runtime_error(msg);
@@ -434,6 +417,10 @@ public:
                             double dist = sample.second[j] - prediction[j];
                             error[j] += (dist * dist);
                         }
+
+                        // sleep
+                        if(this->frequency > 0)
+                            yarp::os::Time::delay(1. / this->frequency);
                     }
 
                     // take mean of cumulated errors
@@ -457,47 +444,21 @@ public:
 
                 case VOCAB4('r','e','s','e'):
                 case VOCAB3('r','s','t'):
-                    // NOTE TO SELF: possibly set the machine to a null pointer for prediction
                     success = true;
                     this->dataset.reset();
                     reply.addString("Dataset reset to beginning");
                     break;
 
-/*
-                case VOCAB4('t','r','a','n'): // test the transformer
+                case VOCAB4('f','r','e','q'): // set sampling frequency
                     {
-                    int noSamples = 1;
-                    if(cmd.get(1).isInt()) {
-                        noSamples = cmd.get(1).asInt();
+                    if(cmd.size() > 1 && cmd.get(1).isInt()) {
+                        success = true;
+                        this->frequency = cmd.get(1).asInt();
+	                    reply.addString((std::string("Current frequency: ") + cmd.get(1).toString().c_str()).c_str());
                     }
-
-                    // get a sample to determine (real) domain and codomain size
-                    std::pair<Vector, Vector> sample = this->dataset.getNextSample();
-                    TransformerVector trans(sample.first.size());
-                    trans.setAll("Standardizer");
-                    std::cout << trans.getStats().c_str() << std::endl;
-                    trans.feedSample(sample.first);
-                    std::string reply_str = "Feeding sample " + printVector(sample.first) + " => " + printVector(sample.second);
-                    std::cout << reply_str << std::endl;
-
-                    for(int i = 1; i < noSamples; i++) {
-                        sample = this->dataset.getNextSample();
-                        reply_str = "Feeding sample " + printVector(sample.first) + " => " + printVector(sample.second);
-                        std::cout << reply_str << std::endl;
-                        trans.feedSample(sample.first);
-                    }
-                    reply.addString(trans.getStats().c_str());
-
-                    for(int i = 0; i < noSamples; i++) {
-                        sample = this->dataset.getNextSample();
-                        reply_str = "Testing sample " + printVector(sample.first) + " => " + printVector(trans.transform(sample.first));
-                        std::cout << reply_str << std::endl;
-                    }
-
-                    success = true;
                     break;
                     }
-*/
+
                 case VOCAB3('s','e','t'): // set some configuration options
                     // implement some options
                     break;
@@ -524,9 +485,6 @@ public:
 
     bool close() {
         this->unregisterAllPorts();
-        if(this->stream.is_open()) {
-            this->stream.close();
-        }
         return true;
     }
 
