@@ -64,25 +64,24 @@ int main( int argc, char **argv )
   mossize.width = mos_width;
   mossize.height = mos_height;
 
+
   //Port to get online object data:
   BufferedPort<ObjRecServerData> inPort_objData; 
-  inPort_objData.open("/objRecServer/output/objData"); 
+  inPort_objData.open("/objRecClient/input/objData"); 
   Network::connect("/objRecServer/output/objData" , "/objRecClient/input/objData");
   ObjRecServerData *objData;
   
-  //display:
+  //Display:
   Mosaic *ml;
   Mosaic *mr;
-  iCub::contrib::primateVision::Display * dl;
-  iCub::contrib::primateVision::Display * dr;
+  iCub::contrib::primateVision::Display *disp;
 
   if (mos){
     ml = new Mosaic(mossize,srcsize,psb,D_8U_NN,"ObjRecClient L");
     mr = new Mosaic(mossize,srcsize,psb,D_8U_NN,"ObjRecClient R");
   }
   else{
-    dl = new iCub::contrib::primateVision::Display(srcsize,psb,D_8U_NN,"ObjRecClient L");
-    dr = new iCub::contrib::primateVision::Display(srcsize,psb,D_8U_NN,"ObjRecClient R");
+    disp = new iCub::contrib::primateVision::Display(srcsize,psb,D_8U_NN,"ObjRecClient");
   }
 
 
@@ -99,26 +98,26 @@ int main( int argc, char **argv )
     //get data from objMan server:
     objData = inPort_objData.read(); //blocking
     
+ 
     if (mos){
       //draw object in left and right mosaics: 
-      ml->display(objData->tex.getRawImage(),
+      ml->display((Ipp8u*)objData->tex.getRawImage(),
 		  objData->mos_xl,objData->mos_yl);
-      mr->display(objData->tex.getRawImage(),
+      mr->display((Ipp8u*)objData->tex.getRawImage(),
 		  objData->mos_xr,objData->mos_yr);
       if (save){
-	ml->save(objData->tex.getRawImage(),"objrec"+QString::number(k)+".jpg");
+	ml->save((Ipp8u*)objData->tex.getRawImage(),"objrec"+QString::number(k)+".jpg");
       }
     }
     else{
-      dl->display(objData->tex.getRawImage());
-      dr->display(objData->tex.getRawImage());
+      disp->display((Ipp8u*)objData->tex.getRawImage());
       if (save){
-	dl->save(objData->tex.getRawImage(),"objrec"+QString::number(k)+".jpg");
+	disp->save((Ipp8u*)objData->tex.getRawImage(),"objrec"+QString::number(k)+".jpg");
       }
     }
 
-    printf("ObjRecClient: %s\n",objData->toString().c_str());
-    
+    std::cout << "ObjRecClient: " << objData->toString() << std::endl;
+  
   } //while
   
   //never here! 

@@ -61,35 +61,30 @@ void iCub::contrib::primateVision::ObjRecServer::run()
   //To get data from zdfserver:
   BufferedPort<ZDFServerData > inPort_zdfdata;  
   inPort_zdfdata.open("/objRecServer/input/zdfdata");
-  Network::connect("/objRecServer/output/data" , "/objRecServer/input/zdfdata");
+  Network::connect("/zdfserver/output/data" , "/objRecServer/input/zdfdata");
   ZDFServerData *zdfData;
  
 
-  // set up NN
+  //set up NN:
+  //initialise the network with a random see
   int seed =time(0);
-  nnfw::Random::setSeed(seed); // initialise the network with a random seed
-  net = loadXML( "/home/andrew/src/iCub/src/primateVision/demos/objRec/data/learnedModel.xml" ); //load the saved model
+  nnfw::Random::setSeed(seed); 
+  //load the saved model
+  net = loadXML( "/home/andrew/src/iCub/src/primateVision/demos/objRec/data/learnedModel.xml" ); 
   const ClusterVec& cl = net->clusters();  //configure the NN clusters
   for( nnfw::u_int i=0; i<cl.size(); i++ ){                
     cl[i]->inputs().zeroing();
     cl[i]->outputs().zeroing();                                
   }
-  loadNet();//configures the neural network
+  //configure network
+  loadNet();
   
-
-
-  //make online output port:
-  BufferedPort<ObjRecServerData> outPort_objData; 
-  outPort_objData.open("/objRecServer/output/objData"); 
-  
-  
-  //used to convert dog img to opencv:
-  segImg = cvCreateImage(cvSize(msize.width, msize.height), IPL_DEPTH_8U, 1);
-  //resizing for NN query:
+  //For resizing befor NN query:
   temp = cvCreateImage(cvSize(NN_WIDTH,NN_HEIGHT), IPL_DEPTH_8U , 1 );
   
 
   const char *label;
+  const char *oldlabel;
   double bestval = 0.0;
   double radius = 0.03;
   int unknowns = 0;
@@ -113,6 +108,12 @@ void iCub::contrib::primateVision::ObjRecServer::run()
   outPort_s.setReplier(server_replier); 
 
 
+  //make online output port:
+  BufferedPort<ObjRecServerData> outPort_objData; 
+  outPort_objData.open("/objRecServer/output/objData"); 
+  
+  
+
 
 
 
@@ -120,7 +121,6 @@ void iCub::contrib::primateVision::ObjRecServer::run()
   printf("ObjRecServer: begin..\n");
   //main event loop:
   while (1){
-    
     
     //get data from zdf server
     zdfData = inPort_zdfdata.read(); //blocking
@@ -139,14 +139,12 @@ void iCub::contrib::primateVision::ObjRecServer::run()
     for (int input = 0; input< (int)in->numNeurons(); input++ )
       in->setInput( input, pixelValNorm[input][0] ); 
     net->step();
-    //get outputs:
+
+
+    //get best output:
     outputs = out->outputs();	
-    cout << outputs[0] << " " <<  outputs[1] << " " << outputs[2] << endl;
-        
-    //latch label from previous classification.
-    //Then...
-    bestval = 0.0;
-    
+    bestval = 0.0;    
+    oldlabel = label;
     if (outputs[0] > bestval){
       label = "bottle";
       bestval = outputs[0];
@@ -159,16 +157,24 @@ void iCub::contrib::primateVision::ObjRecServer::run()
       label = "coke";
       bestval = outputs[2];
     }
+
+    //if not very sure (unknown)
     if (bestval<threshold){
-      //only revert to 'unknown' if we've had lost of low-conf classifications.
+      //revert to previous label.
+      label = oldlabel;
+      //only pass 'unknown' if we've had lots of low-conf classifications.
       unknowns++;
       if (unknowns>=max_unknowns){
 	label = "unknown";
-	unknowns = 0;
       }
     }
+    else{
+      //classification was strong
+      unknowns = 0;
+    }
+
     
-    printf("ObjRecServer: %s:%f (%f,%f,%f)\n",label,bestval,zdfData->x,zdfData->y,zdfData->z);
+    printf("ObjRecServer: (%f,%f,%f):%f %s \n",zdfData->x,zdfData->y,zdfData->z,bestval,label);
     //**************************************
     
     
@@ -176,7 +182,6 @@ void iCub::contrib::primateVision::ObjRecServer::run()
 
     //OUTPUT
 
-    
     //SEND as portable <ObjRecServerData>:
     ObjRecServerData& objData = outPort_objData.prepare();
     objData.resize(width,height);
@@ -242,7 +247,7 @@ void iCub::contrib::primateVision::ObjRecServer::extractPixels(IplImage* img){
       s=cvGet2D(img,i,j); 
       //convert to range 0.0->1.0:
       pixelValNorm[inc][0] = s.val[0]/255;		
-     // printf("intensity = %lf  %d\n", pixelValNorm[inc][0], inc);
+      //printf("intensity = %lf  %d\n", pixelValNorm[inc][0], inc);
       inc ++;
     }
   }

@@ -122,7 +122,7 @@ int main( int argc, char **argv )
     
     if (save){
       k++;
-      qim4->save("im"+QString::number(k)+".jpg","JPEG",100);
+      qim4->save("tex"+QString::number(k)+".jpg","JPEG",100);
     }
 
     //display:

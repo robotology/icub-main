@@ -67,7 +67,8 @@ namespace iCub {
       class ZDFServerData : public Portable{
       public:
 	/** Constructor. */
-	ZDFServerData() {
+	ZDFServerData(){
+
 	}
 	void resize(int w,int h){
 	  dog.resize(w,h);
@@ -102,7 +103,7 @@ namespace iCub {
 	  }
 
 	  con.convertTextMode();
-	  int header=con.expectInt();
+	  int header = con.expectInt();
 	  int len = con.expectInt();
 	  if (header != BOTTLE_TAG_LIST || len!=10){
 	    return false;
@@ -141,7 +142,7 @@ namespace iCub {
       class ZDFServerTuneData : public Portable {
       public:
 	/** Constructor. */
-	ZDFServerTuneData()  {
+	ZDFServerTuneData(){
 
 	}
 	void resize(int w,int h){

@@ -77,8 +77,8 @@ namespace iCub {
 	}
 	/** Converstion to string of parameters for printing. */
 	string toString(){
-	  char buffer[50];
-	  sprintf(buffer, "%f %f %f %d %d &d &d %f %f %s",
+	  char buffer[100];
+	  sprintf(buffer, "%f %f %f %d %d %d %d %f %f %s",
 		  x,y,z,mos_xl,mos_yl,mos_xr,mos_yr,radius,confidence,label.c_str());
 	  return buffer;
 	}

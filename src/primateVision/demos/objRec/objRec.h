@@ -75,7 +75,6 @@ namespace iCub {
 	BaseNeuralNet* net;
 	double pixelValNorm[3000][50];
 	int numInputs, numOutputs, numHiddens, inc;
-	IplImage* segImg;
 	IplImage* temp;
 	double momentum;
 	double learnRate;
