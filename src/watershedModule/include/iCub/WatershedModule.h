@@ -20,7 +20,7 @@
 //=============================================================================
 // YARPImgRecv Includes 
 //=============================================================================
-#include <iCub/yarpImage2Pixbuf.h>
+#include <iCub/YarpImage2Pixbuf.h>
 #include <iCub/YARPImgRecv.h>
 
 //within Project Include
