@@ -40,6 +40,8 @@
 //MY INCLUDES
 #include <zdfio.h>
 #include <multiFrameViewer.h>
+#include <mosaic.h>
+
 
 using namespace iCub::contrib::primateVision;
 
@@ -49,6 +51,13 @@ int main( int argc, char **argv )
 {
 
   QApplication *a = new QApplication(argc, argv);
+
+  QString arg1 = argv[1];
+  bool save = false;
+  if (arg1=="save"){
+    save = true;
+  }
+
 
   Port inPort_p;
   inPort_p.open("/zdfclient/input/serv_params");   
@@ -61,8 +70,8 @@ int main( int argc, char **argv )
   std::cout << "ZDFServer Probe Response: " << zsp.toString() << std::endl; 
   int width = zsp.width;
   int height = zsp.height;
-
   IppiSize msize={width,height};
+
 
   BufferedPort<ZDFServerTuneData > inPort_tune;  
   inPort_tune.open("/zdfclient/input/zdfdata");
@@ -96,7 +105,10 @@ int main( int argc, char **argv )
 
 
 
-  printf("begin..\n");
+  int k = 0;
+
+
+  printf("ZDFClient: begin..\n");
   while (1){
 
     //get input:
@@ -108,6 +120,11 @@ int main( int argc, char **argv )
     ippiCopy_8u_C1R((Ipp8u*)zdfData->left.getRawImage(),zdfData->left.getRowSize(),qim1->bits(),qim1->width(),msize);
     ippiCopy_8u_C1R((Ipp8u*)zdfData->right.getRawImage(),zdfData->right.getRowSize(),qim2->bits(),qim2->width(),msize);
     
+    if (save){
+      k++;
+      qim4->save("im"+QString::number(k)+".jpg","JPEG",100);
+    }
+
     //display:
     mfv->showViews(4,qims,locations);
     
