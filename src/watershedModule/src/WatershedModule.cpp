@@ -1332,63 +1332,63 @@ GtkWidget* WatershedModule::createMainWindow(void)
 	/* A checkbutton to control whether the value is displayed or not */
     buttonCheckGreen = gtk_check_button_new_with_label("<--GreenPlane");
     gtk_toggle_button_set_active (GTK_TOGGLE_BUTTON (buttonCheckGreen), FALSE);
-    g_signal_connect (G_OBJECT (buttonCheckGreen), "toggled",G_CALLBACK (cb_draw_value), "GreenPlane");
+    g_signal_connect (G_OBJECT (buttonCheckGreen), "toggled",G_CALLBACK (cb_draw_value), (gpointer) "GreenPlane");
     gtk_box_pack_start (GTK_BOX (boxButtons), buttonCheckGreen, TRUE, TRUE, 0);
     gtk_widget_show (buttonCheckGreen);
 
 	/* A checkbutton to control whether the value is displayed or not */
     buttonCheck = gtk_check_button_new_with_label("<--RedPlane");
     gtk_toggle_button_set_active (GTK_TOGGLE_BUTTON (buttonCheck), FALSE);
-    g_signal_connect (G_OBJECT (buttonCheck), "toggled",G_CALLBACK (cb_draw_value), "RedPlane");
+    g_signal_connect (G_OBJECT (buttonCheck), "toggled",G_CALLBACK (cb_draw_value), (gpointer) "RedPlane");
     gtk_box_pack_start (GTK_BOX (boxButtons), buttonCheck, TRUE, TRUE, 0);
     gtk_widget_show (buttonCheck);
 
 	/* A checkbutton to control whether the value is displayed or not */
     buttonCheck = gtk_check_button_new_with_label("<--BluePlane");
     gtk_toggle_button_set_active (GTK_TOGGLE_BUTTON (buttonCheck), FALSE);
-    g_signal_connect (G_OBJECT (buttonCheck), "toggled",G_CALLBACK (cb_draw_value), "BluePlane");
+    g_signal_connect (G_OBJECT (buttonCheck), "toggled",G_CALLBACK (cb_draw_value), (gpointer) "BluePlane");
     gtk_box_pack_start (GTK_BOX (boxButtons), buttonCheck, TRUE, TRUE, 0);
     gtk_widget_show (buttonCheck);
 
 	/* A checkbutton to control whether the value is displayed or not */
     buttonCheck = gtk_check_button_new_with_label("<--RGImage");
     gtk_toggle_button_set_active (GTK_TOGGLE_BUTTON (buttonCheck), FALSE);
-    g_signal_connect (G_OBJECT (buttonCheck), "toggled",G_CALLBACK (cb_draw_value), "<--RGImage");
+    g_signal_connect (G_OBJECT (buttonCheck), "toggled",G_CALLBACK (cb_draw_value),(gpointer) "<--RGImage");
     gtk_box_pack_start (GTK_BOX (boxButtons), buttonCheck, TRUE, TRUE, 0);
     gtk_widget_show (buttonCheck);
 
 	/* A checkbutton to control whether the value is displayed or not */
     buttonCheck = gtk_check_button_new_with_label("<--GRImage");
     gtk_toggle_button_set_active (GTK_TOGGLE_BUTTON (buttonCheck), FALSE);
-    g_signal_connect (G_OBJECT (buttonCheck), "toggled",G_CALLBACK (cb_draw_value), "<--GRImage");
+    g_signal_connect (G_OBJECT (buttonCheck), "toggled",G_CALLBACK (cb_draw_value),(gpointer) "<--GRImage");
     gtk_box_pack_start (GTK_BOX (boxButtons), buttonCheck, TRUE, TRUE, 0);
     gtk_widget_show (buttonCheck);
 
 	/* A checkbutton to control whether the value is displayed or not */
     buttonCheck = gtk_check_button_new_with_label("<--BYImage");
     gtk_toggle_button_set_active (GTK_TOGGLE_BUTTON (buttonCheck), FALSE);
-    g_signal_connect (G_OBJECT (buttonCheck), "toggled",G_CALLBACK (cb_draw_value), "<--BYImage");
+    g_signal_connect (G_OBJECT (buttonCheck), "toggled",G_CALLBACK (cb_draw_value), (gpointer) "<--BYImage");
     gtk_box_pack_start (GTK_BOX (boxButtons), buttonCheck, TRUE, TRUE, 0);
     gtk_widget_show (buttonCheck);
 	
 	/* A checkbutton to control whether the value is displayed or not */
     buttonCheck = gtk_check_button_new_with_label("<--WatershedRain");
     gtk_toggle_button_set_active (GTK_TOGGLE_BUTTON (buttonCheck), FALSE);
-    g_signal_connect (G_OBJECT (buttonCheck), "toggled",G_CALLBACK (cb_draw_value), "<--WatershedRain");
+    g_signal_connect (G_OBJECT (buttonCheck), "toggled",G_CALLBACK (cb_draw_value), (gpointer) "<--WatershedRain");
     gtk_box_pack_start (GTK_BOX (boxButtons), buttonCheck, TRUE, TRUE, 0);
     gtk_widget_show (buttonCheck);
 
 	/* A checkbutton to control whether the value is displayed or not */
     buttonCheck = gtk_check_button_new_with_label("<--MeanColorsImage");
     gtk_toggle_button_set_active (GTK_TOGGLE_BUTTON (buttonCheck), FALSE);
-    g_signal_connect (G_OBJECT (buttonCheck), "toggled",G_CALLBACK (cb_draw_value), "<--MeanColorsImage");
+    g_signal_connect (G_OBJECT (buttonCheck), "toggled",G_CALLBACK (cb_draw_value),(gpointer) "<--MeanColorsImage");
     gtk_box_pack_start (GTK_BOX (boxButtons), buttonCheck, TRUE, TRUE, 0);
     gtk_widget_show (buttonCheck);
 
 	/* A checkbutton to control whether the value is displayed or not */
     buttonCheck = gtk_check_button_new_with_label("<--Blue1");
     gtk_toggle_button_set_active (GTK_TOGGLE_BUTTON (buttonCheck), FALSE);
-    g_signal_connect (G_OBJECT (buttonCheck), "toggled",G_CALLBACK (cb_draw_value), "<--Blue1");
+    g_signal_connect (G_OBJECT (buttonCheck), "toggled",G_CALLBACK (cb_draw_value), (gpointer) "<--Blue1");
     gtk_box_pack_start (GTK_BOX (boxButtons), buttonCheck, TRUE, TRUE, 0);
     gtk_widget_show (buttonCheck);
 	
@@ -1460,21 +1460,21 @@ GtkWidget* WatershedModule::createMainWindow(void)
 	/* A checkbutton to control whether the value is displayed or not */
     buttonCheck = gtk_check_button_new_with_label("Green1-->");
     gtk_toggle_button_set_active (GTK_TOGGLE_BUTTON (buttonCheck), FALSE);
-    g_signal_connect (G_OBJECT (buttonCheck), "toggled",G_CALLBACK (cb_draw_value), "Green1");
+    g_signal_connect (G_OBJECT (buttonCheck), "toggled",G_CALLBACK (cb_draw_value),(gpointer) "Green1");
     gtk_box_pack_start (GTK_BOX (box4), buttonCheck, TRUE, TRUE, 0);
     gtk_widget_show (buttonCheck);
 
 	/* A checkbutton to control whether the value is displayed or not */
     buttonCheck = gtk_check_button_new_with_label("Red1-->");
     gtk_toggle_button_set_active (GTK_TOGGLE_BUTTON (buttonCheck), TRUE);
-    g_signal_connect (G_OBJECT (buttonCheck), "toggled",G_CALLBACK (cb_draw_value), "Red1");
+    g_signal_connect (G_OBJECT (buttonCheck), "toggled",G_CALLBACK (cb_draw_value), (gpointer) "Red1");
     gtk_box_pack_start (GTK_BOX (box4), buttonCheck, TRUE, TRUE, 0);
     gtk_widget_show (buttonCheck);
 
 	/* A checkbutton to control whether the value is displayed or not */
     buttonCheck = gtk_check_button_new_with_label("Blue1-->");
     gtk_toggle_button_set_active (GTK_TOGGLE_BUTTON (buttonCheck), FALSE);
-    g_signal_connect (G_OBJECT (buttonCheck), "toggled",G_CALLBACK (cb_draw_value), "Blue1");
+    g_signal_connect (G_OBJECT (buttonCheck), "toggled",G_CALLBACK (cb_draw_value), (gpointer) "Blue1");
     gtk_box_pack_start (GTK_BOX (box4), buttonCheck, TRUE, TRUE, 0);
     gtk_widget_show (buttonCheck);
 
@@ -1486,21 +1486,21 @@ GtkWidget* WatershedModule::createMainWindow(void)
 	/* A checkbutton to control whether the value is displayed or not */
     buttonCheck = gtk_check_button_new_with_label("ColourOpponency1-->");
     gtk_toggle_button_set_active (GTK_TOGGLE_BUTTON (buttonCheck), FALSE);
-    g_signal_connect (G_OBJECT (buttonCheck), "toggled",G_CALLBACK (cb_draw_value), "ColourOpponency11");
+    g_signal_connect (G_OBJECT (buttonCheck), "toggled",G_CALLBACK (cb_draw_value), (gpointer)"ColourOpponency11");
     gtk_box_pack_start (GTK_BOX (box4), buttonCheck, TRUE, TRUE, 0);
     gtk_widget_show (buttonCheck);
 
 	/* A checkbutton to control whether the value is displayed or not */
     buttonCheck = gtk_check_button_new_with_label("FindEdges1-->");
     gtk_toggle_button_set_active (GTK_TOGGLE_BUTTON (buttonCheck), FALSE);
-    g_signal_connect (G_OBJECT (buttonCheck), "toggled",G_CALLBACK (cb_draw_value), "FindEdges1");
+    g_signal_connect (G_OBJECT (buttonCheck), "toggled",G_CALLBACK (cb_draw_value),(gpointer) "FindEdges1");
     gtk_box_pack_start (GTK_BOX (box4), buttonCheck, TRUE, TRUE, 0);
     gtk_widget_show (buttonCheck);
 
 	/* A checkbutton to control whether the value is displayed or not */
     buttonCheck = gtk_check_button_new_with_label("Normalize1-->");
     gtk_toggle_button_set_active (GTK_TOGGLE_BUTTON (buttonCheck), FALSE);
-    g_signal_connect (G_OBJECT (buttonCheck), "toggled",G_CALLBACK (cb_draw_value), "Normalize1");
+    g_signal_connect (G_OBJECT (buttonCheck), "toggled",G_CALLBACK (cb_draw_value),(gpointer) "Normalize1");
     gtk_box_pack_start (GTK_BOX (box4), buttonCheck, TRUE, TRUE, 0);
     gtk_widget_show (buttonCheck);
 
@@ -1562,49 +1562,49 @@ GtkWidget* WatershedModule::createMainWindow(void)
 	/* A checkbutton to control whether the value is displayed or not */
     buttonCheck = gtk_check_button_new_with_label("Watershed1-->");
     gtk_toggle_button_set_active (GTK_TOGGLE_BUTTON (buttonCheck), FALSE);
-    g_signal_connect (G_OBJECT (buttonCheck), "toggled",G_CALLBACK (cb_draw_value), "Watershed1");
+    g_signal_connect (G_OBJECT (buttonCheck), "toggled",G_CALLBACK (cb_draw_value),(gpointer) "Watershed1");
     gtk_box_pack_start (GTK_BOX (box4), buttonCheck, TRUE, TRUE, 0);
     gtk_widget_show (buttonCheck);
 	
 	/* A checkbutton to control whether the value is displayed or not */
     buttonCheck = gtk_check_button_new_with_label("Tagged1-->");
     gtk_toggle_button_set_active (GTK_TOGGLE_BUTTON (buttonCheck), FALSE);
-    g_signal_connect (G_OBJECT (buttonCheck), "toggled",G_CALLBACK (cb_draw_value), "Tagged1");
+    g_signal_connect (G_OBJECT (buttonCheck), "toggled",G_CALLBACK (cb_draw_value),(gpointer) "Tagged1");
     gtk_box_pack_start (GTK_BOX (box4), buttonCheck, TRUE, TRUE, 0);
     gtk_widget_show (buttonCheck);
 
 	/* A checkbutton to control whether the value is displayed or not */
     buttonCheck = gtk_check_button_new_with_label("BlobList1-->");
     gtk_toggle_button_set_active (GTK_TOGGLE_BUTTON (buttonCheck), FALSE);
-    g_signal_connect (G_OBJECT (buttonCheck), "toggled",G_CALLBACK (cb_draw_value), "BlobList1");
+    g_signal_connect (G_OBJECT (buttonCheck), "toggled",G_CALLBACK (cb_draw_value),(gpointer) "BlobList1");
     gtk_box_pack_start (GTK_BOX (box4), buttonCheck, TRUE, TRUE, 0);
     gtk_widget_show (buttonCheck);
 
 	/* A checkbutton to control whether the value is displayed or not */
     buttonCheck = gtk_check_button_new_with_label("ContrastLP1-->");
     gtk_toggle_button_set_active (GTK_TOGGLE_BUTTON (buttonCheck), FALSE);
-    g_signal_connect (G_OBJECT (buttonCheck), "toggled",G_CALLBACK (cb_draw_value), "ContrastLP1");
+    g_signal_connect (G_OBJECT (buttonCheck), "toggled",G_CALLBACK (cb_draw_value),(gpointer) "ContrastLP1");
     gtk_box_pack_start (GTK_BOX (box4), buttonCheck, TRUE, TRUE, 0);
     gtk_widget_show (buttonCheck);
 
 	/* A checkbutton to control whether the value is displayed or not */
     buttonCheck = gtk_check_button_new_with_label("MeanColoursLP1-->");
     gtk_toggle_button_set_active (GTK_TOGGLE_BUTTON (buttonCheck), TRUE);
-    g_signal_connect (G_OBJECT (buttonCheck), "toggled",G_CALLBACK (cb_draw_value), "MeanColoursLP1");
+    g_signal_connect (G_OBJECT (buttonCheck), "toggled",G_CALLBACK (cb_draw_value),(gpointer) "MeanColoursLP1");
     gtk_box_pack_start (GTK_BOX (box4), buttonCheck, TRUE, TRUE, 0);
     gtk_widget_show (buttonCheck);
 
 	/* A checkbutton to control whether the value is displayed or not */
     buttonCheck = gtk_check_button_new_with_label("FoveaBlob1-->");
     gtk_toggle_button_set_active (GTK_TOGGLE_BUTTON (buttonCheck), FALSE);
-    g_signal_connect (G_OBJECT (buttonCheck), "toggled",G_CALLBACK (cb_draw_value), "FoveaBlob1");
+    g_signal_connect (G_OBJECT (buttonCheck), "toggled",G_CALLBACK (cb_draw_value),(gpointer) "FoveaBlob1");
     gtk_box_pack_start (GTK_BOX (box4), buttonCheck, TRUE, TRUE, 0);
     gtk_widget_show (buttonCheck);
 
 	/* A checkbutton to control whether the value is displayed or not */
     buttonCheck = gtk_check_button_new_with_label("ColorVQ1-->");
     gtk_toggle_button_set_active (GTK_TOGGLE_BUTTON (buttonCheck), FALSE);
-    g_signal_connect (G_OBJECT (buttonCheck), "toggled",G_CALLBACK (cb_draw_value), "ColorVQ1");
+    g_signal_connect (G_OBJECT (buttonCheck), "toggled",G_CALLBACK (cb_draw_value),(gpointer) "ColorVQ1");
     gtk_box_pack_start (GTK_BOX (box4), buttonCheck, TRUE, TRUE, 0);
     gtk_widget_show (buttonCheck);
 
@@ -1706,21 +1706,21 @@ GtkWidget* WatershedModule::createMainWindow(void)
 	/* A checkbutton to control whether the value is displayed or not */
     buttonCheck = gtk_check_button_new_with_label("Green1-->");
     gtk_toggle_button_set_active (GTK_TOGGLE_BUTTON (buttonCheck), FALSE);
-    g_signal_connect (G_OBJECT (buttonCheck), "toggled",G_CALLBACK (cb_draw_value), "Green1");
+    g_signal_connect (G_OBJECT (buttonCheck), "toggled",G_CALLBACK (cb_draw_value),(gpointer) "Green1");
     gtk_box_pack_start (GTK_BOX (box4), buttonCheck, TRUE, TRUE, 0);
     gtk_widget_show (buttonCheck);
 
 	/* A checkbutton to control whether the value is displayed or not */
     buttonCheck = gtk_check_button_new_with_label("Red1-->");
     gtk_toggle_button_set_active (GTK_TOGGLE_BUTTON (buttonCheck), TRUE);
-    g_signal_connect (G_OBJECT (buttonCheck), "toggled",G_CALLBACK (cb_draw_value), "Red1");
+    g_signal_connect (G_OBJECT (buttonCheck), "toggled",G_CALLBACK (cb_draw_value),(gpointer) "Red1");
     gtk_box_pack_start (GTK_BOX (box4), buttonCheck, TRUE, TRUE, 0);
     gtk_widget_show (buttonCheck);
 
 	/* A checkbutton to control whether the value is displayed or not */
     buttonCheck = gtk_check_button_new_with_label("Blue1-->");
     gtk_toggle_button_set_active (GTK_TOGGLE_BUTTON (buttonCheck), FALSE);
-    g_signal_connect (G_OBJECT (buttonCheck), "toggled",G_CALLBACK (cb_draw_value), "Blue1");
+    g_signal_connect (G_OBJECT (buttonCheck), "toggled",G_CALLBACK (cb_draw_value),(gpointer) "Blue1");
     gtk_box_pack_start (GTK_BOX (box4), buttonCheck, TRUE, TRUE, 0);
     gtk_widget_show (buttonCheck);
 
@@ -1732,21 +1732,21 @@ GtkWidget* WatershedModule::createMainWindow(void)
 	/* A checkbutton to control whether the value is displayed or not */
     buttonCheck = gtk_check_button_new_with_label("ColourOpponency1-->");
     gtk_toggle_button_set_active (GTK_TOGGLE_BUTTON (buttonCheck), FALSE);
-    g_signal_connect (G_OBJECT (buttonCheck), "toggled",G_CALLBACK (cb_draw_value), "ColourOpponency11");
+    g_signal_connect (G_OBJECT (buttonCheck), "toggled",G_CALLBACK (cb_draw_value),(gpointer) "ColourOpponency11");
     gtk_box_pack_start (GTK_BOX (box4), buttonCheck, TRUE, TRUE, 0);
     gtk_widget_show (buttonCheck);
 
 	/* A checkbutton to control whether the value is displayed or not */
     buttonCheck = gtk_check_button_new_with_label("MeanColoursLP1-->");
     gtk_toggle_button_set_active (GTK_TOGGLE_BUTTON (buttonCheck), FALSE);
-    g_signal_connect (G_OBJECT (buttonCheck), "toggled",G_CALLBACK (cb_draw_value), "MeanColoursLP1");
+    g_signal_connect (G_OBJECT (buttonCheck), "toggled",G_CALLBACK (cb_draw_value),(gpointer) "MeanColoursLP1");
     gtk_box_pack_start (GTK_BOX (box4), buttonCheck, TRUE, TRUE, 0);
     gtk_widget_show (buttonCheck);
 
 	/* A checkbutton to control whether the value is displayed or not */
     buttonCheck = gtk_check_button_new_with_label("Normalize1-->");
     gtk_toggle_button_set_active (GTK_TOGGLE_BUTTON (buttonCheck), FALSE);
-    g_signal_connect (G_OBJECT (buttonCheck), "toggled",G_CALLBACK (cb_draw_value), "Normalize1");
+    g_signal_connect (G_OBJECT (buttonCheck), "toggled",G_CALLBACK (cb_draw_value),(gpointer) "Normalize1");
     gtk_box_pack_start (GTK_BOX (box4), buttonCheck, TRUE, TRUE, 0);
     gtk_widget_show (buttonCheck);
 
@@ -1873,21 +1873,21 @@ GtkWidget* WatershedModule::createMainWindow(void)
 	/* A checkbutton to control whether the value is displayed or not */
     buttonCheck = gtk_check_button_new_with_label("ContrastLP2-->");
     gtk_toggle_button_set_active (GTK_TOGGLE_BUTTON (buttonCheck), FALSE);
-    g_signal_connect (G_OBJECT (buttonCheck), "toggled",G_CALLBACK (cb_draw_value), "ContrastLP2");
+    g_signal_connect (G_OBJECT (buttonCheck), "toggled",G_CALLBACK (cb_draw_value),(gpointer) "ContrastLP2");
     gtk_box_pack_start (GTK_BOX (box4), buttonCheck, TRUE, TRUE, 0);
     gtk_widget_show (buttonCheck);
 
 	/* A checkbutton to control whether the value is displayed or not */
     buttonCheck = gtk_check_button_new_with_label("MeanColoursLP2-->");
     gtk_toggle_button_set_active (GTK_TOGGLE_BUTTON (buttonCheck), FALSE);
-    g_signal_connect (G_OBJECT (buttonCheck), "toggled",G_CALLBACK (cb_draw_value), "MeanColoursLP2");
+    g_signal_connect (G_OBJECT (buttonCheck), "toggled",G_CALLBACK (cb_draw_value),(gpointer) "MeanColoursLP2");
     gtk_box_pack_start (GTK_BOX (box4), buttonCheck, TRUE, TRUE, 0);
     gtk_widget_show (buttonCheck);
 
 	/* A checkbutton to control whether the value is displayed or not */
     buttonCheck = gtk_check_button_new_with_label("Normalize1-->");
     gtk_toggle_button_set_active (GTK_TOGGLE_BUTTON (buttonCheck), FALSE);
-    g_signal_connect (G_OBJECT (buttonCheck), "toggled",G_CALLBACK (cb_draw_value), "Normalize1");
+    g_signal_connect (G_OBJECT (buttonCheck), "toggled",G_CALLBACK (cb_draw_value),(gpointer) "Normalize1");
     gtk_box_pack_start (GTK_BOX (box4), buttonCheck, TRUE, TRUE, 0);
     gtk_widget_show (buttonCheck);
 
@@ -1972,21 +1972,21 @@ GtkWidget* WatershedModule::createMainWindow(void)
 	/* A checkbutton to control whether the value is displayed or not */
     buttonCheck = gtk_check_button_new_with_label("Green1-->");
     gtk_toggle_button_set_active (GTK_TOGGLE_BUTTON (buttonCheck), FALSE);
-    g_signal_connect (G_OBJECT (buttonCheck), "toggled",G_CALLBACK (cb_draw_value), "Green1");
+    g_signal_connect (G_OBJECT (buttonCheck), "toggled",G_CALLBACK (cb_draw_value),(gpointer) "Green1");
     gtk_box_pack_start (GTK_BOX (box4), buttonCheck, TRUE, TRUE, 0);
     gtk_widget_show (buttonCheck);
 
 	/* A checkbutton to control whether the value is displayed or not */
     buttonCheck = gtk_check_button_new_with_label("Red1-->");
     gtk_toggle_button_set_active (GTK_TOGGLE_BUTTON (buttonCheck), TRUE);
-    g_signal_connect (G_OBJECT (buttonCheck), "toggled",G_CALLBACK (cb_draw_value), "Red1");
+    g_signal_connect (G_OBJECT (buttonCheck), "toggled",G_CALLBACK (cb_draw_value),(gpointer) "Red1");
     gtk_box_pack_start (GTK_BOX (box4), buttonCheck, TRUE, TRUE, 0);
     gtk_widget_show (buttonCheck);
 
 	/* A checkbutton to control whether the value is displayed or not */
     buttonCheck = gtk_check_button_new_with_label("Blue1-->");
     gtk_toggle_button_set_active (GTK_TOGGLE_BUTTON (buttonCheck), FALSE);
-    g_signal_connect (G_OBJECT (buttonCheck), "toggled",G_CALLBACK (cb_draw_value), "Blue1");
+    g_signal_connect (G_OBJECT (buttonCheck), "toggled",G_CALLBACK (cb_draw_value),(gpointer) "Blue1");
     gtk_box_pack_start (GTK_BOX (box4), buttonCheck, TRUE, TRUE, 0);
     gtk_widget_show (buttonCheck);
 
@@ -1998,21 +1998,21 @@ GtkWidget* WatershedModule::createMainWindow(void)
 	/* A checkbutton to control whether the value is displayed or not */
     buttonCheck = gtk_check_button_new_with_label("ColourOpponency1-->");
     gtk_toggle_button_set_active (GTK_TOGGLE_BUTTON (buttonCheck), FALSE);
-    g_signal_connect (G_OBJECT (buttonCheck), "toggled",G_CALLBACK (cb_draw_value), "ColourOpponency11");
+    g_signal_connect (G_OBJECT (buttonCheck), "toggled",G_CALLBACK (cb_draw_value),(gpointer) "ColourOpponency11");
     gtk_box_pack_start (GTK_BOX (box4), buttonCheck, TRUE, TRUE, 0);
     gtk_widget_show (buttonCheck);
 
 	/* A checkbutton to control whether the value is displayed or not */
     buttonCheck = gtk_check_button_new_with_label("FindEdges1-->");
     gtk_toggle_button_set_active (GTK_TOGGLE_BUTTON (buttonCheck), FALSE);
-    g_signal_connect (G_OBJECT (buttonCheck), "toggled",G_CALLBACK (cb_draw_value), "FindEdges1");
+    g_signal_connect (G_OBJECT (buttonCheck), "toggled",G_CALLBACK (cb_draw_value),(gpointer) "FindEdges1");
     gtk_box_pack_start (GTK_BOX (box4), buttonCheck, TRUE, TRUE, 0);
     gtk_widget_show (buttonCheck);
 
 	/* A checkbutton to control whether the value is displayed or not */
     buttonCheck = gtk_check_button_new_with_label("Normalize1-->");
     gtk_toggle_button_set_active (GTK_TOGGLE_BUTTON (buttonCheck), FALSE);
-    g_signal_connect (G_OBJECT (buttonCheck), "toggled",G_CALLBACK (cb_draw_value), "Normalize1");
+    g_signal_connect (G_OBJECT (buttonCheck), "toggled",G_CALLBACK (cb_draw_value),(gpointer) "Normalize1");
     gtk_box_pack_start (GTK_BOX (box4), buttonCheck, TRUE, TRUE, 0);
     gtk_widget_show (buttonCheck);
 
@@ -2140,21 +2140,21 @@ GtkWidget* WatershedModule::createMainWindow(void)
 	/* A checkbutton to control whether the value is displayed or not */
     buttonCheck = gtk_check_button_new_with_label("ContrastLP3-->");
     gtk_toggle_button_set_active (GTK_TOGGLE_BUTTON (buttonCheck), FALSE);
-    g_signal_connect (G_OBJECT (buttonCheck), "toggled",G_CALLBACK (cb_draw_value), "ContrastLP3");
+    g_signal_connect (G_OBJECT (buttonCheck), "toggled",G_CALLBACK (cb_draw_value),(gpointer) "ContrastLP3");
     gtk_box_pack_start (GTK_BOX (box4), buttonCheck, TRUE, TRUE, 0);
     gtk_widget_show (buttonCheck);
 
 	/* A checkbutton to control whether the value is displayed or not */
     buttonCheck = gtk_check_button_new_with_label("MeanColoursLP3-->");
     gtk_toggle_button_set_active (GTK_TOGGLE_BUTTON (buttonCheck), FALSE);
-    g_signal_connect (G_OBJECT (buttonCheck), "toggled",G_CALLBACK (cb_draw_value), "MeanColoursLP3");
+    g_signal_connect (G_OBJECT (buttonCheck), "toggled",G_CALLBACK (cb_draw_value),(gpointer) "MeanColoursLP3");
     gtk_box_pack_start (GTK_BOX (box4), buttonCheck, TRUE, TRUE, 0);
     gtk_widget_show (buttonCheck);
 
 	/* A checkbutton to control whether the value is displayed or not */
     buttonCheck = gtk_check_button_new_with_label("Normalize1-->");
     gtk_toggle_button_set_active (GTK_TOGGLE_BUTTON (buttonCheck), FALSE);
-    g_signal_connect (G_OBJECT (buttonCheck), "toggled",G_CALLBACK (cb_draw_value), "Normalize1");
+    g_signal_connect (G_OBJECT (buttonCheck), "toggled",G_CALLBACK (cb_draw_value),(gpointer) "Normalize1");
     gtk_box_pack_start (GTK_BOX (box4), buttonCheck, TRUE, TRUE, 0);
     gtk_widget_show (buttonCheck);
 
