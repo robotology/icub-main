@@ -2097,7 +2097,8 @@ ImageOf<PixelMono>*  ImageProcessor::LShiftC ( ImageOf<PixelMono> *src1){
 	shift[3]=ippiMalloc_8u_C1(10,1,&psb2);
 	//image type conversion
 	//appling the operator on the image
-	ippiLShiftC_8u_C1R(im_in, psb,(Ipp32u) *shift, im_out, psb, size);
+	Ipp32u* shift32= (Ipp32u*) shift;
+	ippiLShiftC_8u_C1R(im_in, psb,*shift32, im_out, psb, size);
 	ippiCopy_8u_C1R(im_out,psb,outputImage->getPixelAddress(0,0),width,size);
 	return outputImage;
 }
