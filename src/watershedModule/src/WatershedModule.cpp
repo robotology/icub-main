@@ -501,10 +501,10 @@ static gint expose_CB (GtkWidget *widget, GdkEventExpose *event, gpointer data)
 					conversion=true;
 				}
 				else if(wModule->blobList_flag){
-					if((unsigned int)wModule->blobList!=0xcdcdcdcd){
+					//if((unsigned int)wModule->blobList!=0xcdcdcdcd){
 						ippiCopy_8u_C1R((unsigned char*)wModule->blobList,320,_outputImage->getPixelAddress(0,0),320,srcsize);
 						conversion=true;
-					}
+					//}
 				}
 				else if(wModule->colorVQ_flag){
 					wModule->salience->DrawVQColor(*wModule->salience->colorVQ_img,*wModule->tagged);
