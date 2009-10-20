@@ -247,6 +247,8 @@ void iCub::contrib::primateVision::ZDFServer::run(){
   foo.resize(msize.width,msize.height);
   zsp.width  = msize.width;
   zsp.height = msize.height;
+  zsp.mos_width  = rsp.mos_width;
+  zsp.mos_height = rsp.mos_height;
   zsp.psb = foo.getRowSize();
   //Replier:
   ZDFReplyParamProbe replier;

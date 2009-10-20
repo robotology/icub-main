@@ -11,8 +11,10 @@
 #include <qthread.h>
 #include <ipp.h>
 #include <string>
+#include <vector>
 //MY INCLUDES
 #include "objManio.h"
+#include "kal.h"
 
 
 using namespace std;
@@ -82,6 +84,49 @@ namespace iCub {
 	ObjManServerParams reply;
       };
           
+
+
+
+     //KALMANLIST IS A LIST OF "N" KALMAN FILTERS.
+      //IT IS SENT IN ENTIRITY EACH TIME (for now):
+      class KalmanList {
+      private:
+	std::vector<Kal*> list;
+
+      public:	
+	KalmanList() {
+
+	}
+	~KalmanList() {
+	  clear();
+	}
+	
+	int add(Kal* data) {
+	  //NOTE: KalmanList takes responsibility over pointer
+	  int position = list.size();
+	  list.push_back(data);
+	  return position;
+	}
+
+	Kal* get(int i) {
+	  return list[i];
+	}
+
+	int size() {
+	  return list.size();
+	}
+
+	void clear() {
+	  for(int i = 0; i < list.size(); i++) {
+	    delete list[i];
+	  }
+	  list.clear();
+	}
+	      
+      };
+
+
+
     }
   }
 }

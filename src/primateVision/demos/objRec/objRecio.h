@@ -38,12 +38,12 @@ namespace iCub {
 	/** Constructor. */
 	ObjRecServerParams() {
 	  listTag = BOTTLE_TAG_LIST + BOTTLE_TAG_INT;
-	  lenTag = 4;
+	  lenTag = 6;
 	}
 	/** Converstion to string of parameters for printing. */
 	string toString(){
 	  char buffer[50];
-	  sprintf(buffer, "%d %d %d %d",width,height,psb,nclasses);
+	  sprintf(buffer, "%d %d %d %d %d %d",width,height,mos_width,mos_height,psb,nclasses);
 	  return buffer;
 	}
 	int listTag;
@@ -52,6 +52,8 @@ namespace iCub {
 	//this Server's Response Params:
 	int width; /**< Server image output width. */
 	int height; /**< Server image output height. */
+	int mos_width; /**< Mosaic width forwarded from RecServer. */
+	int mos_height;/**< Mosaic height forwarded from RecServer. */
 	int psb;  /**< Server step in bytes through output image. */
 	int nclasses; /**< Server num known classes. */
 	//

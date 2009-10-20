@@ -103,6 +103,8 @@ void iCub::contrib::primateVision::ObjRecServer::run()
   ObjRecServerParams rsp;
   rsp.width = width;
   rsp.height = height;
+  rsp.mos_width = zsp.mos_width;
+  rsp.mos_height = zsp.mos_height;
   rsp.nclasses = NCLASSES;
   rsp.psb = psb;
   //Replier:

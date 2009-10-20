@@ -13,7 +13,6 @@
 //YARP2 INCLUDES
 #include <vector>
 #include <objRecio.h>
-#include "kal.h"
 
 using namespace yarp::sig;
 using namespace yarp::os;
@@ -37,12 +36,12 @@ namespace iCub {
 	/** Constructor. */
 	ObjManServerParams() {
 	  listTag = BOTTLE_TAG_LIST + BOTTLE_TAG_INT;
-	  lenTag = 4;
+	  lenTag = 6;
 	}
 	/** Converstion to string of parameters for printing. */
 	string toString(){
 	  char buffer[50];
-	  sprintf(buffer, "%d %d %d &d",width,height,psb,nclasses);
+	  sprintf(buffer, "%d %d %d &d %d %d",width,height,mos_width,mos_height,psb,nclasses);
 	  return buffer;
 	}
 	int listTag;
@@ -51,6 +50,8 @@ namespace iCub {
 	//this Server's Response Params:
 	int width; /**< Server image width. */
 	int height;/**< Server image height. */
+	int mos_width; /**< Mosaic width forwarded from RecServer. */
+	int mos_height;/**< Mosaic height forwarded from RecServer. */
 	int psb;   /**< Step width (in bytes) through image data. */
 	int nclasses; /**< Number of classes ObjMan server knows about. */
 	//
@@ -94,6 +95,10 @@ namespace iCub {
 	  list.clear();
 	}
 	
+	int size(){
+	  return list.size();
+	}
+
 	bool write(ConnectionWriter& con) {
 	  con.appendInt(BOTTLE_TAG_LIST);
 	  con.appendInt(list.size());
@@ -122,43 +127,6 @@ namespace iCub {
 	  return true;
 	}
       
-      };
-
-
-
-
-      //KALMANLIST IS A LIST OF "N" KALMAN FILTERS.
-      //IT IS SENT IN ENTIRITY EACH TIME (for now):
-      class KalmanList {
-      private:
-	std::vector<Kal*> list;
-
-      public:	
-	KalmanList() {
-
-	}
-	~KalmanList() {
-	  clear();
-	}
-	
-	int add(Kal* data) {
-	  //NOTE: KalmanList takes responsibility over pointer
-	  int position = list.size();
-	  list.push_back(data);
-	  return position;
-	}
-
-	Kal* get(int i) {
-	  return list[i];
-	}
-
-	void clear() {
-	  for(int i = 0; i < list.size(); i++) {
-	    delete list[i];
-	  }
-	  list.clear();
-	}
-	      
       };
 
 
