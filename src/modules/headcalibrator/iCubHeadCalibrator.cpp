@@ -214,21 +214,21 @@ bool iCubHeadCalibrator::calibrate(DeviceDriver *dd)
     }
 
 	bool x;
+
+    /////////////////////////////////////
+	//enable all joints                //
+    /////////////////////////////////////
+
+    for (k = 0; k < nj; k++) 
+    {
+        iAmps->enableAmp(k);
+        iPids->enablePid(k);
+    }
     /////////////////////////////////////
 	//calibrate the first set of joints//
     /////////////////////////////////////
 	int firstSetOfJoints[] = {0, 2, 4, 6, 7, 8}; //and joint 5
 	int secondSetOfJoints[] = {1, 3};
-    for (k = 0; k < 6; k++) 
-    {
-        if (firstSetOfJoints[k]<nj)
-            {
-                iAmps->enableAmp(firstSetOfJoints[k]);
-                iPids->enablePid(firstSetOfJoints[k]);
-            }
-    }
-    iAmps->enableAmp(5);
-    iPids->enablePid(5);
 	for (k =0; k < 6; k++)
         if (firstSetOfJoints[k]<nj)
             calibrateJoint(firstSetOfJoints[k]);
@@ -245,15 +245,6 @@ bool iCubHeadCalibrator::calibrate(DeviceDriver *dd)
         calibrateJoint(5);
         x = checkCalibrateJointEnded(5);
         ret = ret && x;
-    }
-
-    for (k = 0; k < 2; k++) 
-    {
-        if (secondSetOfJoints[k]<nj)
-            {
-                iAmps->enableAmp(secondSetOfJoints[k]);
-                iPids->enablePid(secondSetOfJoints[k]);
-            }
     }
 
 	for (k = 0; k < 6; k++)
