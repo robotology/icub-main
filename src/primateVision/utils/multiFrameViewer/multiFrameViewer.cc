@@ -32,17 +32,18 @@ void iCub::contrib::primateVision::multiFrameViewer::showViews(int numviews_, QI
   viewframes = viewframes_;
   numviews = numviews_;
 
-  if (autoclear){
-    //clear background:
-    repaint();
+  if (!autoclear){
+    //THIS IS FOR the 'MOSAIC' CLASS TO LEAVE BACKGROUND
+    //ACCROSS AUGMENTATION. ONLY WORKS ON 1 IMAGE:
+
+    //print only the new info in first image rectangle
+    //without removing (old) content elsewhere: 
+    repaint(locations[0],locations[1],viewframes[0]->width(),viewframes[0]->height());
   }
   else{
-    //print only the new info, without removing old content: 
-    for (int i = 0;i<numviews;i++){
-      repaint(locations[i*2],locations[i*2+1],viewframes[i]->width(),viewframes[i]->height());
-    }
+    //clear background and repaint all images:
+    repaint();
   }
-  
 
 }
 

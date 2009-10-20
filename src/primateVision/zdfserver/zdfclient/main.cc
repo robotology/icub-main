@@ -40,7 +40,6 @@
 //MY INCLUDES
 #include <zdfio.h>
 #include <multiFrameViewer.h>
-#include <mosaic.h>
 
 
 using namespace iCub::contrib::primateVision;

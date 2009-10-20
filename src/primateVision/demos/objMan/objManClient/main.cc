@@ -17,8 +17,14 @@
 
 //for display:
 #include <qapplication.h>
-#include <mosaic.h>
 #include <objManio.h>
+#include <ippi.h>
+#include <multiFrameViewer.h>
+
+
+
+#define MAX_OBJS 100
+
 
 using namespace std;
 using namespace iCub::contrib::primateVision;
@@ -59,27 +65,52 @@ int main( int argc, char **argv )
   ObjManServerList *objList;
   
 
-  //display mosaics:
-  Mosaic *ml = new Mosaic(mossize,srcsize,psb,D_8U_NN,"ObjManClient L");
-  //Mosaic *mr = new Mosaic(mossize,srcsize,psb,D_8U_NN,"ObjManClient R");
+  //setup viewer:
+  multiFrameViewer *mfv = new multiFrameViewer(mos_width,mos_height);
+  mfv->setCaption("ObjManClient");
+  mfv->show();
+
+
+
+  int locations[MAX_OBJS*2];
+  QImage *qims[MAX_OBJS];
+  for (int i=0;i<MAX_OBJS;i++) {
+    qims[i] = new QImage(width, height, 8, 256);
+    for(unsigned int ui=0;ui<256;ui++){
+      qims[i]->setColor(ui,(ui|(ui<<8)|(ui<<16)|0xff000000));
+    }    
+  }
+
+
+
 
   printf("ObjManClient: begin..\n");
   //main event loop:
   while (1){
     
-  
-    //get data from objMan server:
+    //get data from objManServer:
     objList = inPort_objList.read(); //blocking
     
-    //draw all sent objects in the mosaic: 
-    for (int i=0;i<objList->size();i++){
-      //send ith object to mosaics: 
-      ml->display(objList->get(i)->tex.getRawImage(),
-		  objList->get(i)->mos_xl,objList->get(i)->mos_yl);
-      //mr->display(objList->get(i)->tex.getRawImage(),
-      //	  objList->get(i)->mos_xr,objList->get(i)->mos_yr);
+
+    if (objList->size()<=MAX_OBJS){
+
+      //copy data into QImages for multiFrameViewer display:
+      for (int i=objList->size()-1;i>=0;i--){ //inverted order looks nicer for display
+	ippiCopy_8u_C1R((Ipp8u*)objList->get(i)->tex.getRawImage(),
+			objList->get(i)->tex.getRowSize(),
+			qims[i]->bits(),qims[i]->width(),srcsize);
+	locations[i*2]   = objList->get(i)->mos_xl + mos_width/2 - width/2;
+	locations[i*2+1] = objList->get(i)->mos_yl + mos_height/2 - height/2;
+      }
+      
+      //display:
+      mfv->showViews(objList->size(),(QImage**) qims,(int*) locations);
+
     }
-    
+    else{
+      printf("too many objects!!\n");
+    }
+
 
   } //while
 
