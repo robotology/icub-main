@@ -71,7 +71,7 @@ private:
 	*/
 	BufferedPort<yarp::os::Bottle> portCmd;
 
-	BufferedPort<ImageOf<PixelMono>> port_plane; 
+	BufferedPort<ImageOf<PixelMono> > port_plane; 
 	/** 
 	* counter for the update step
 	*/

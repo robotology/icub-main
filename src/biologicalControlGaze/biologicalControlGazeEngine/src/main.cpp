@@ -2,7 +2,7 @@
 #include <iCub/MachineBoltzmann.h>
 #include <iCub/BIControlGazeEngine.h>
 #include <iostream>
-#include <conio.h>
+//#include <conio.h>
 #include <yarp/os/all.h>
 #include <yarp/sig/all.h>
 

@@ -114,31 +114,31 @@ public:
 	/**
 	*	initialization of the thread 
 	*/
-	bool TrackerThread::threadInit();
+	bool threadInit();
 	/**
 	* active loop of the thread
 	*/
-	void TrackerThread::run();
+	void run();
 	/**
 	*	releases the thread
     */
-	void TrackerThread::threadRelease();
+	void threadRelease();
 	/**
 	* set the left vector for the gaze motion
 	* @param a first component of the 3dimensional vector
 	* @param b second component of the 3dimensional vector
 	* @param c third component of the 3dimensional vector
 	*/
-	void TrackerThread::setLeftVector(double a, double b, double c);
+	void setLeftVector(double a, double b, double c);
 	/**
 	*	set the vector right for the gaze motion
 	* @param a first component of the 3dimensional vector
 	* @param b second component of the 3dimensional vector
 	* @param c third component of the 3dimensional vector
 	*/
-	void TrackerThread::setRightVector(double a, double b, double c);
+	void setRightVector(double a, double b, double c);
 	/**
 	*	reset the motion vector
 	*/
-	void TrackerThread::resetVector();
+	void resetVector();
 };
