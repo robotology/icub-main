@@ -1574,7 +1574,7 @@ bool BIControlGazeInterface::openPorts(){
                     g_print("ERROR: Port registration failed.\nQuitting, sorry.\n");
                     return false;
                 }
-			_pOutPort2 = new yarp::os::BufferedPort<ImageOf<PixelRgb>>;
+			_pOutPort2 = new yarp::os::BufferedPort<ImageOf<PixelRgb> >;
             g_print("Registering port %s on network %s...\n", "/rea/BIControlGazeInterface/out","dafult");
             ok = _pOutPort2->open("/rea/BIControlGazeInterface/outBlobs");
             if  (ok)
@@ -1753,70 +1753,70 @@ GtkWidget* BIControlGazeInterface::createMainWindow(void)
 	/* A checkbutton to control whether the value is displayed or not */
     buttonCheckGreen = gtk_check_button_new_with_label("inputImage");
     gtk_toggle_button_set_active (GTK_TOGGLE_BUTTON (buttonCheckGreen), FALSE);
-    g_signal_connect (G_OBJECT (buttonCheckGreen), "toggled",G_CALLBACK (cb_draw_value), "inputImage");
+    g_signal_connect (G_OBJECT (buttonCheckGreen), "toggled",G_CALLBACK (cb_draw_value), (gpointer) "inputImage");
     gtk_box_pack_start (GTK_BOX (boxButtons), buttonCheckGreen, TRUE, TRUE, 0);
     gtk_widget_show (buttonCheckGreen);
 	
 	/* A checkbutton to control whether the value is displayed or not */
     buttonCheckGreen = gtk_check_button_new_with_label("Layer0");
     gtk_toggle_button_set_active (GTK_TOGGLE_BUTTON (buttonCheckGreen), FALSE);
-    g_signal_connect (G_OBJECT (buttonCheckGreen), "toggled",G_CALLBACK (cb_draw_value), "Layer0");
+    g_signal_connect (G_OBJECT (buttonCheckGreen), "toggled",G_CALLBACK (cb_draw_value), (gpointer) "Layer0");
     gtk_box_pack_start (GTK_BOX (boxButtons), buttonCheckGreen, TRUE, TRUE, 0);
     gtk_widget_show (buttonCheckGreen);
 
 	/* A checkbutton to control whether the value is displayed or not */
     buttonCheck = gtk_check_button_new_with_label("Layer1");
     gtk_toggle_button_set_active (GTK_TOGGLE_BUTTON (buttonCheck), FALSE);
-    g_signal_connect (G_OBJECT (buttonCheck), "toggled",G_CALLBACK (cb_draw_value), "Layer1");
+    g_signal_connect (G_OBJECT (buttonCheck), "toggled",G_CALLBACK (cb_draw_value), (gpointer) "Layer1");
     gtk_box_pack_start (GTK_BOX (boxButtons), buttonCheck, TRUE, TRUE, 0);
     gtk_widget_show (buttonCheck);
 
 	/* A checkbutton to control whether the value is displayed or not */
     buttonCheck = gtk_check_button_new_with_label("Layer2");
     gtk_toggle_button_set_active (GTK_TOGGLE_BUTTON (buttonCheck), FALSE);
-    g_signal_connect (G_OBJECT (buttonCheck), "toggled",G_CALLBACK (cb_draw_value), "Layer2");
+    g_signal_connect (G_OBJECT (buttonCheck), "toggled",G_CALLBACK (cb_draw_value), (gpointer) "Layer2");
     gtk_box_pack_start (GTK_BOX (boxButtons), buttonCheck, TRUE, TRUE, 0);
     gtk_widget_show (buttonCheck);
 
 	/* A checkbutton to control whether the value is displayed or not */
     buttonCheck = gtk_check_button_new_with_label("Layer3");
     gtk_toggle_button_set_active (GTK_TOGGLE_BUTTON (buttonCheck), FALSE);
-    g_signal_connect (G_OBJECT (buttonCheck), "toggled",G_CALLBACK (cb_draw_value), "Layer3");
+    g_signal_connect (G_OBJECT (buttonCheck), "toggled",G_CALLBACK (cb_draw_value), (gpointer) "Layer3");
     gtk_box_pack_start (GTK_BOX (boxButtons), buttonCheck, TRUE, TRUE, 0);
     gtk_widget_show (buttonCheck);
 
 	/* A checkbutton to control whether the value is displayed or not */
     buttonCheck = gtk_check_button_new_with_label("Layer4");
     gtk_toggle_button_set_active (GTK_TOGGLE_BUTTON (buttonCheck), FALSE);
-    g_signal_connect (G_OBJECT (buttonCheck), "toggled",G_CALLBACK (cb_draw_value), "Layer4");
+    g_signal_connect (G_OBJECT (buttonCheck), "toggled",G_CALLBACK (cb_draw_value),(gpointer) "Layer4");
     gtk_box_pack_start (GTK_BOX (boxButtons), buttonCheck, TRUE, TRUE, 0);
     gtk_widget_show (buttonCheck);
 
 	/* A checkbutton to control whether the value is displayed or not */
     buttonCheck = gtk_check_button_new_with_label("Layer5");
     gtk_toggle_button_set_active (GTK_TOGGLE_BUTTON (buttonCheck), FALSE);
-    g_signal_connect (G_OBJECT (buttonCheck), "toggled",G_CALLBACK (cb_draw_value), "Layer5");
+    g_signal_connect (G_OBJECT (buttonCheck), "toggled",G_CALLBACK (cb_draw_value),  (gpointer) "Layer5");
     gtk_box_pack_start (GTK_BOX (boxButtons), buttonCheck, TRUE, TRUE, 0);
     gtk_widget_show (buttonCheck);
 	
 	/* A checkbutton to control whether the value is displayed or not */
     buttonCheck = gtk_check_button_new_with_label("Layer6");
     gtk_toggle_button_set_active (GTK_TOGGLE_BUTTON (buttonCheck), FALSE);
-    g_signal_connect (G_OBJECT (buttonCheck), "toggled",G_CALLBACK (cb_draw_value), "Layer6");
+    g_signal_connect (G_OBJECT (buttonCheck), "toggled",G_CALLBACK (cb_draw_value), (gpointer) "Layer6");
     gtk_box_pack_start (GTK_BOX (boxButtons), buttonCheck, TRUE, TRUE, 0);
     gtk_widget_show (buttonCheck);
 
 	/* A checkbutton to control whether the value is displayed or not */
     buttonCheck = gtk_check_button_new_with_label("Layer7");
     gtk_toggle_button_set_active (GTK_TOGGLE_BUTTON (buttonCheck), FALSE);
-    g_signal_connect (G_OBJECT (buttonCheck), "toggled",G_CALLBACK (cb_draw_value), "Layer7");
+    g_signal_connect (G_OBJECT (buttonCheck), "toggled",G_CALLBACK (cb_draw_value), (gpointer) "Layer7");
     gtk_box_pack_start (GTK_BOX (boxButtons), buttonCheck, TRUE, TRUE, 0);
     gtk_widget_show (buttonCheck);
 
 	/* A checkbutton to control whether the value is displayed or not */
     buttonCheck = gtk_check_button_new_with_label("Layer8");
     gtk_toggle_button_set_active (GTK_TOGGLE_BUTTON (buttonCheck), FALSE);
-    g_signal_connect (G_OBJECT (buttonCheck), "toggled",G_CALLBACK (cb_draw_value), "Layer8");
+    g_signal_connect (G_OBJECT (buttonCheck), "toggled",G_CALLBACK (cb_draw_value), (gpointer) "Layer8");
     gtk_box_pack_start (GTK_BOX (boxButtons), buttonCheck, TRUE, TRUE, 0);
     gtk_widget_show (buttonCheck);
 	
@@ -2396,42 +2396,42 @@ GtkWidget* BIControlGazeInterface::createMainWindow(void)
 	/* A checkbutton to control whether the value is displayed or not */
     buttonCheck = gtk_check_button_new_with_label("SelectLayer0-->");
     gtk_toggle_button_set_active (GTK_TOGGLE_BUTTON (buttonCheck), FALSE);
-    g_signal_connect (G_OBJECT (buttonCheck), "toggled",G_CALLBACK (cb_draw_value), "SelectLayer0-->");
+    g_signal_connect (G_OBJECT (buttonCheck), "toggled",G_CALLBACK (cb_draw_value), (gpointer) "SelectLayer0-->");
     gtk_box_pack_start (GTK_BOX (box4), buttonCheck, TRUE, TRUE, 0);
     gtk_widget_show (buttonCheck);
 
 	/* A checkbutton to control whether the value is displayed or not */
     buttonCheck = gtk_check_button_new_with_label("SelectLayer1-->");
     gtk_toggle_button_set_active (GTK_TOGGLE_BUTTON (buttonCheck), FALSE);
-    g_signal_connect (G_OBJECT (buttonCheck), "toggled",G_CALLBACK (cb_draw_value), "SelectLayer1-->");
+    g_signal_connect (G_OBJECT (buttonCheck), "toggled",G_CALLBACK (cb_draw_value), (gpointer) "SelectLayer1-->");
     gtk_box_pack_start (GTK_BOX (box4), buttonCheck, TRUE, TRUE, 0);
     gtk_widget_show (buttonCheck);
 
 	/* A checkbutton to control whether the value is displayed or not */
     buttonCheck = gtk_check_button_new_with_label("SelectLayer2-->");
     gtk_toggle_button_set_active (GTK_TOGGLE_BUTTON (buttonCheck), TRUE);
-    g_signal_connect (G_OBJECT (buttonCheck), "toggled",G_CALLBACK (cb_draw_value), "SelectLayer2-->");
+    g_signal_connect (G_OBJECT (buttonCheck), "toggled",G_CALLBACK (cb_draw_value), (gpointer) "SelectLayer2-->");
     gtk_box_pack_start (GTK_BOX (box4), buttonCheck, TRUE, TRUE, 0);
     gtk_widget_show (buttonCheck);
 
 	/* A checkbutton to control whether the value is displayed or not */
     buttonCheck = gtk_check_button_new_with_label("SelectLayer3-->");
     gtk_toggle_button_set_active (GTK_TOGGLE_BUTTON (buttonCheck), FALSE);
-    g_signal_connect (G_OBJECT (buttonCheck), "toggled",G_CALLBACK (cb_draw_value), "SelectLayer3-->");
+    g_signal_connect (G_OBJECT (buttonCheck), "toggled",G_CALLBACK (cb_draw_value), (gpointer) "SelectLayer3-->");
     gtk_box_pack_start (GTK_BOX (box4), buttonCheck, TRUE, TRUE, 0);
     gtk_widget_show (buttonCheck);
 
 	/* A checkbutton to control whether the value is displayed or not */
     buttonCheck = gtk_check_button_new_with_label("SelectLayer4-->");
     gtk_toggle_button_set_active (GTK_TOGGLE_BUTTON (buttonCheck), FALSE);
-    g_signal_connect (G_OBJECT (buttonCheck), "toggled",G_CALLBACK (cb_draw_value), "SelectLayer4-->");
+    g_signal_connect (G_OBJECT (buttonCheck), "toggled",G_CALLBACK (cb_draw_value), (gpointer) "SelectLayer4-->");
     gtk_box_pack_start (GTK_BOX (box4), buttonCheck, TRUE, TRUE, 0);
     gtk_widget_show (buttonCheck);
 
 	/* A checkbutton to control whether the value is displayed or not */
     buttonCheck = gtk_check_button_new_with_label("SelectLayer5-->");
     gtk_toggle_button_set_active (GTK_TOGGLE_BUTTON (buttonCheck), FALSE);
-    g_signal_connect (G_OBJECT (buttonCheck), "toggled",G_CALLBACK (cb_draw_value), "SelectLayer5-->");
+    g_signal_connect (G_OBJECT (buttonCheck), "toggled",G_CALLBACK (cb_draw_value), (gpointer) "SelectLayer5-->");
     gtk_box_pack_start (GTK_BOX (box4), buttonCheck, TRUE, TRUE, 0);
     gtk_widget_show (buttonCheck);
 
@@ -2442,7 +2442,7 @@ GtkWidget* BIControlGazeInterface::createMainWindow(void)
 	/* A checkbutton to control whether the value is displayed or not */
     buttonCheck = gtk_check_button_new_with_label("Normalize1-->");
     gtk_toggle_button_set_active (GTK_TOGGLE_BUTTON (buttonCheck), FALSE);
-    g_signal_connect (G_OBJECT (buttonCheck), "toggled",G_CALLBACK (cb_draw_value), "Normalize1");
+    g_signal_connect (G_OBJECT (buttonCheck), "toggled",G_CALLBACK (cb_draw_value), (gpointer) "Normalize1");
     gtk_box_pack_start (GTK_BOX (box4), buttonCheck, TRUE, TRUE, 0);
     gtk_widget_show (buttonCheck);
 
@@ -2598,21 +2598,21 @@ GtkWidget* BIControlGazeInterface::createMainWindow(void)
 	/* A checkbutton to control whether the value is displayed or not */
     buttonCheck = gtk_check_button_new_with_label("ContrastLP2-->");
     gtk_toggle_button_set_active (GTK_TOGGLE_BUTTON (buttonCheck), FALSE);
-    g_signal_connect (G_OBJECT (buttonCheck), "toggled",G_CALLBACK (cb_draw_value), "ContrastLP2");
+    g_signal_connect (G_OBJECT (buttonCheck), "toggled",G_CALLBACK (cb_draw_value), (gpointer) "ContrastLP2");
     gtk_box_pack_start (GTK_BOX (box4), buttonCheck, TRUE, TRUE, 0);
     gtk_widget_show (buttonCheck);
 
 	/* A checkbutton to control whether the value is displayed or not */
     buttonCheck = gtk_check_button_new_with_label("MeanColoursLP2-->");
     gtk_toggle_button_set_active (GTK_TOGGLE_BUTTON (buttonCheck), FALSE);
-    g_signal_connect (G_OBJECT (buttonCheck), "toggled",G_CALLBACK (cb_draw_value), "MeanColoursLP2");
+    g_signal_connect (G_OBJECT (buttonCheck), "toggled",G_CALLBACK (cb_draw_value), (gpointer) "MeanColoursLP2");
     gtk_box_pack_start (GTK_BOX (box4), buttonCheck, TRUE, TRUE, 0);
     gtk_widget_show (buttonCheck);
 
 	/* A checkbutton to control whether the value is displayed or not */
     buttonCheck = gtk_check_button_new_with_label("Normalize1-->");
     gtk_toggle_button_set_active (GTK_TOGGLE_BUTTON (buttonCheck), FALSE);
-    g_signal_connect (G_OBJECT (buttonCheck), "toggled",G_CALLBACK (cb_draw_value), "Normalize1");
+    g_signal_connect (G_OBJECT (buttonCheck), "toggled",G_CALLBACK (cb_draw_value), (gpointer) "Normalize1");
     gtk_box_pack_start (GTK_BOX (box4), buttonCheck, TRUE, TRUE, 0);
     gtk_widget_show (buttonCheck);
 
@@ -2697,21 +2697,21 @@ GtkWidget* BIControlGazeInterface::createMainWindow(void)
 	/* A checkbutton to control whether the value is displayed or not */
     buttonCheck = gtk_check_button_new_with_label("Green1-->");
     gtk_toggle_button_set_active (GTK_TOGGLE_BUTTON (buttonCheck), FALSE);
-    g_signal_connect (G_OBJECT (buttonCheck), "toggled",G_CALLBACK (cb_draw_value), "Green1");
+    g_signal_connect (G_OBJECT (buttonCheck), "toggled",G_CALLBACK (cb_draw_value), (gpointer) "Green1");
     gtk_box_pack_start (GTK_BOX (box4), buttonCheck, TRUE, TRUE, 0);
     gtk_widget_show (buttonCheck);
 
 	/* A checkbutton to control whether the value is displayed or not */
     buttonCheck = gtk_check_button_new_with_label("Red1-->");
     gtk_toggle_button_set_active (GTK_TOGGLE_BUTTON (buttonCheck), TRUE);
-    g_signal_connect (G_OBJECT (buttonCheck), "toggled",G_CALLBACK (cb_draw_value), "Red1");
+    g_signal_connect (G_OBJECT (buttonCheck), "toggled",G_CALLBACK (cb_draw_value), (gpointer) "Red1");
     gtk_box_pack_start (GTK_BOX (box4), buttonCheck, TRUE, TRUE, 0);
     gtk_widget_show (buttonCheck);
 
 	/* A checkbutton to control whether the value is displayed or not */
     buttonCheck = gtk_check_button_new_with_label("Blue1-->");
     gtk_toggle_button_set_active (GTK_TOGGLE_BUTTON (buttonCheck), FALSE);
-    g_signal_connect (G_OBJECT (buttonCheck), "toggled",G_CALLBACK (cb_draw_value), "Blue1");
+    g_signal_connect (G_OBJECT (buttonCheck), "toggled",G_CALLBACK (cb_draw_value), (gpointer) "Blue1");
     gtk_box_pack_start (GTK_BOX (box4), buttonCheck, TRUE, TRUE, 0);
     gtk_widget_show (buttonCheck);
 
@@ -2723,21 +2723,21 @@ GtkWidget* BIControlGazeInterface::createMainWindow(void)
 	/* A checkbutton to control whether the value is displayed or not */
     buttonCheck = gtk_check_button_new_with_label("ColourOpponency1-->");
     gtk_toggle_button_set_active (GTK_TOGGLE_BUTTON (buttonCheck), FALSE);
-    g_signal_connect (G_OBJECT (buttonCheck), "toggled",G_CALLBACK (cb_draw_value), "ColourOpponency11");
+    g_signal_connect (G_OBJECT (buttonCheck), "toggled",G_CALLBACK (cb_draw_value), (gpointer) "ColourOpponency11");
     gtk_box_pack_start (GTK_BOX (box4), buttonCheck, TRUE, TRUE, 0);
     gtk_widget_show (buttonCheck);
 
 	/* A checkbutton to control whether the value is displayed or not */
     buttonCheck = gtk_check_button_new_with_label("FindEdges1-->");
     gtk_toggle_button_set_active (GTK_TOGGLE_BUTTON (buttonCheck), FALSE);
-    g_signal_connect (G_OBJECT (buttonCheck), "toggled",G_CALLBACK (cb_draw_value), "FindEdges1");
+    g_signal_connect (G_OBJECT (buttonCheck), "toggled",G_CALLBACK (cb_draw_value), (gpointer) "FindEdges1");
     gtk_box_pack_start (GTK_BOX (box4), buttonCheck, TRUE, TRUE, 0);
     gtk_widget_show (buttonCheck);
 
 	/* A checkbutton to control whether the value is displayed or not */
     buttonCheck = gtk_check_button_new_with_label("Normalize1-->");
     gtk_toggle_button_set_active (GTK_TOGGLE_BUTTON (buttonCheck), FALSE);
-    g_signal_connect (G_OBJECT (buttonCheck), "toggled",G_CALLBACK (cb_draw_value), "Normalize1");
+    g_signal_connect (G_OBJECT (buttonCheck), "toggled",G_CALLBACK (cb_draw_value), (gpointer) "Normalize1");
     gtk_box_pack_start (GTK_BOX (box4), buttonCheck, TRUE, TRUE, 0);
     gtk_widget_show (buttonCheck);
 
@@ -2865,21 +2865,21 @@ GtkWidget* BIControlGazeInterface::createMainWindow(void)
 	/* A checkbutton to control whether the value is displayed or not */
     buttonCheck = gtk_check_button_new_with_label("ContrastLP3-->");
     gtk_toggle_button_set_active (GTK_TOGGLE_BUTTON (buttonCheck), FALSE);
-    g_signal_connect (G_OBJECT (buttonCheck), "toggled",G_CALLBACK (cb_draw_value), "ContrastLP3");
+    g_signal_connect (G_OBJECT (buttonCheck), "toggled",G_CALLBACK (cb_draw_value),(gpointer) "ContrastLP3");
     gtk_box_pack_start (GTK_BOX (box4), buttonCheck, TRUE, TRUE, 0);
     gtk_widget_show (buttonCheck);
 
 	/* A checkbutton to control whether the value is displayed or not */
     buttonCheck = gtk_check_button_new_with_label("MeanColoursLP3-->");
     gtk_toggle_button_set_active (GTK_TOGGLE_BUTTON (buttonCheck), FALSE);
-    g_signal_connect (G_OBJECT (buttonCheck), "toggled",G_CALLBACK (cb_draw_value), "MeanColoursLP3");
+    g_signal_connect (G_OBJECT (buttonCheck), "toggled",G_CALLBACK (cb_draw_value), (gpointer) "MeanColoursLP3");
     gtk_box_pack_start (GTK_BOX (box4), buttonCheck, TRUE, TRUE, 0);
     gtk_widget_show (buttonCheck);
 
 	/* A checkbutton to control whether the value is displayed or not */
     buttonCheck = gtk_check_button_new_with_label("Normalize1-->");
     gtk_toggle_button_set_active (GTK_TOGGLE_BUTTON (buttonCheck), FALSE);
-    g_signal_connect (G_OBJECT (buttonCheck), "toggled",G_CALLBACK (cb_draw_value), "Normalize1");
+    g_signal_connect (G_OBJECT (buttonCheck), "toggled",G_CALLBACK (cb_draw_value), (gpointer) "Normalize1");
     gtk_box_pack_start (GTK_BOX (box4), buttonCheck, TRUE, TRUE, 0);
     gtk_widget_show (buttonCheck);
 

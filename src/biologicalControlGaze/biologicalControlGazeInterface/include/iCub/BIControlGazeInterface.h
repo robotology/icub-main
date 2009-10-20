@@ -44,12 +44,12 @@ private:
 	/**
 	* a port for reading an input image
 	*/
-    BufferedPort<ImageOf<PixelRgb>> port_in; // 
+    BufferedPort<ImageOf<PixelRgb> > port_in; // 
 	
 	/**
 	*port where the processed image is buffered out
 	*/
-	BufferedPort<ImageOf<PixelRgb>> port_out; 
+	BufferedPort<ImageOf<PixelRgb> > port_out; 
 	
 	/**
 	* port dedicated to the command communication to the actual computation module
@@ -110,7 +110,7 @@ public:
 	//--- atributes ---
 	// Output Point Port
 	yarp::os::BufferedPort<yarp::os::Bottle> *_pOutPort;
-	yarp::os::BufferedPort<ImageOf<PixelRgb>> *_pOutPort2;
+	yarp::os::BufferedPort<ImageOf<PixelRgb> > *_pOutPort2;
 	/** 
 	* string where the command that has to be sent is stored
 	*/
