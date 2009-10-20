@@ -270,7 +270,6 @@ void ImageProcessor::colourOpponency(ImageOf<PixelRgb> *src){
 	ippiConvert_8u32f_C1R(greenPlane_ippi,psb,greenPlane_ippi32,psb2,srcsize);
 	ippiConvert_8u32f_C1R(bluePlane_ippi,psb,bluePlane_ippi32,psb2,srcsize);
 	ippiConvert_8u32f_C1R(redPlane_ippi,psb,redPlane_ippi32,psb2,srcsize);
-	
 
 	
 	int pBufferSize;
@@ -352,9 +351,9 @@ void ImageProcessor::colourOpponency(ImageOf<PixelRgb> *src){
 	ippiFree(bluePlane_ippi32);
 	ippiFree(greenPlane_ippi32);
 	
-	//ippsFree(pBufferBlue);
-	//ippsFree(pBufferRed);
-	//ippsFree(pBufferGreen);
+	ippsFree(pBufferBlue);
+	ippsFree(pBufferRed);
+	ippsFree(pBufferGreen);
 	
 	
 	
