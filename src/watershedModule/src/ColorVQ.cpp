@@ -97,37 +97,37 @@ void ColorVQ::DominantQuantization(ImageOf<PixelBgr> &src, ImageOf<PixelBgr> &ds
 			unsigned char og=src(c,r).g;
 			unsigned char ob=src(c,r).b;
 
-			if ( 0.25*255<or && or<0.75*255 &&
-				 0.25*255<og && og<0.75*255 &&
-				 0.25*255<ob && ob<0.75*255) {
+			if ( (0.25*255<or) && (or<0.75*255) &&
+				 (0.25*255<og) && (og<0.75*255) &&
+				 (0.25*255<ob) && (ob<0.75*255) ){
 				int dr=abs(or-og)+abs(or-ob);
 				int dg=abs(or-og)+abs(og-ob);
 				int db=abs(og-ob)+abs(ob-or);
 
-				if (dr>dg+t && dr>db+t) {
-					if (or>og && or>ob)
+				if ((dr>dg+t) && (dr>db+t)) {
+					if ((or>og) && (or>ob))
 						qr=255;
-					else if (or<og && or<ob)
+					else if ((or<og) && (or<ob))
 						qr=0;
 					else
 						qr=127;
 				} else
 					qr=127;
 				
-				if (dg>dr+t && dg>db+t) {
-					if (og>or && og>ob)
+				if ((dg>dr+t) && (dg>db+t)) {
+					if ((og>or) && (og>ob))
 						qg=255;
-					else if (og<or && og<ob)
+					else if ((og<or) && (og<ob))
 						qg=0;
 					else
 						qg=127;
 				} else
 					qg=127;
 
-				if (db>dg+t && db>dr+t) {
-					if (ob>og && ob>or)
+				if ((db>dg+t) && (db>dr+t)) {
+					if ((ob>og) && (ob>or))
 						qb=255;
-					else if (ob<og && ob<or)
+					else if ((ob<og) && (ob<or))
 						qb=0;
 					else
 						qb=127;
@@ -162,37 +162,37 @@ void ColorVQ::DominantQuantization(PixelBgr src, PixelBgr &dst, unsigned char t)
 	unsigned char og=src.g;
 	unsigned char ob=src.b;
 
-	if ( 0.25*255<or && or<0.75*255 &&
-		 0.25*255<og && og<0.75*255 &&
-		 0.25*255<ob && ob<0.75*255) {
+	if ( (0.25*255<or) && (or<0.75*255) &&
+		 (0.25*255<og) && (og<0.75*255) &&
+		 (0.25*255<ob) && (ob<0.75*255)) {
 		int dr=abs(or-og)+abs(or-ob);
 		int dg=abs(or-og)+abs(og-ob);
 		int db=abs(og-ob)+abs(ob-or);
 
-		if (dr>dg+t && dr>db+t) {
-			if (or>og && or>ob)
+		if ((dr>dg+t) && (dr>db+t)) {
+			if ((or>og) && (or>ob))
 				qr=255;
-			else if (or<og && or<ob)
+			else if ((or<og) && (or<ob))
 				qr=0;
 			else
 				qr=127;
 		} else
 			qr=127;
 		
-		if (dg>dr+t && dg>db+t) {
-			if (og>or && og>ob)
+		if ((dg>dr+t) && (dg>db+t)) {
+			if ((og>or) && (og>ob))
 				qg=255;
-			else if (og<or && og<ob)
+			else if ((og<or) && (og<ob))
 				qg=0;
 			else
 				qg=127;
 		} else
 			qg=127;
 
-		if (db>dg+t && db>dr+t) {
-			if (ob>og && ob>or)
+		if ((db>dg+t) && (db>dr+t)){
+			if ((ob>og) && (ob>or))
 				qb=255;
-			else if (ob<og && ob<or)
+			else if ((ob<og) && (ob<or))
 				qb=0;
 			else
 				qb=127;
