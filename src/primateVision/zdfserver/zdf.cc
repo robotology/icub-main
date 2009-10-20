@@ -582,10 +582,10 @@ void iCub::contrib::primateVision::ZDFServer::run(){
 	zdfData.x = posx;
 	zdfData.y = posy;
 	zdfData.z = posz;
-	zdfData.mos_xl = rec_res->lx+(rsp.width  - zsp.width)/2  + tl_x; 
-	zdfData.mos_yl = rec_res->ly+(rsp.height - zsp.height)/2 + tl_y;
-	zdfData.mos_xr = rec_res->rx+(rsp.width  - zsp.width)/2  + tr_x;
-	zdfData.mos_yr = rec_res->ry+(rsp.height - zsp.height)/2 + tr_y;	
+	zdfData.mos_xl = rec_res->lx + tl_x;
+	zdfData.mos_yl = rec_res->ly + tl_y;
+	zdfData.mos_xr = rec_res->rx + tr_x;
+	zdfData.mos_yr = rec_res->ry + tr_y + dpix_y;
 	zdfData.update = update;
 	//send:
 	outPort_data.write();	

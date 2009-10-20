@@ -8,7 +8,7 @@
 #include <zdfio.h>
 #include "objRec.h"
 
-#define NCLASSES 3
+#define NCLASSES 4
 #define NN_WIDTH 50
 #define NN_HEIGHT 50
 
@@ -114,7 +114,7 @@ void iCub::contrib::primateVision::ObjRecServer::run()
   
   
 
-
+  label = "unknown";
 
 
   
@@ -174,7 +174,9 @@ void iCub::contrib::primateVision::ObjRecServer::run()
     }
 
     
-    printf("ObjRecServer: (%f,%f,%f):%f %s \n",zdfData->x,zdfData->y,zdfData->z,bestval,label);
+    printf("ObjRecServer: Mos:[%d,%d][%d,%d] 3D:(%f,%f,%f):%f %s \n",
+	   zdfData->mos_xl,zdfData->mos_yl,zdfData->mos_xr,zdfData->mos_yr,
+	   zdfData->x,zdfData->y,zdfData->z,bestval,label);
     //**************************************
     
     

@@ -61,10 +61,7 @@ int main( int argc, char **argv )
 
   //display mosaics:
   Mosaic *ml = new Mosaic(mossize,srcsize,psb,D_8U_NN,"ObjManClient L");
-  Mosaic *mr = new Mosaic(mossize,srcsize,psb,D_8U_NN,"ObjManClient R");
-  ml->setAutoClear(false); //don't clear display
-  mr->setAutoClear(false);
-
+  //Mosaic *mr = new Mosaic(mossize,srcsize,psb,D_8U_NN,"ObjManClient R");
 
   printf("ObjManClient: begin..\n");
   //main event loop:
@@ -76,11 +73,11 @@ int main( int argc, char **argv )
     
     //draw all sent objects in the mosaic: 
     for (int i=0;i<objList->size();i++){
-      //draw ith object in left and right mosaics: 
+      //send ith object to mosaics: 
       ml->display(objList->get(i)->tex.getRawImage(),
 		  objList->get(i)->mos_xl,objList->get(i)->mos_yl);
-      mr->display(objList->get(i)->tex.getRawImage(),
-		  objList->get(i)->mos_xr,objList->get(i)->mos_yr);
+      //mr->display(objList->get(i)->tex.getRawImage(),
+      //	  objList->get(i)->mos_xr,objList->get(i)->mos_yr);
     }
     
 

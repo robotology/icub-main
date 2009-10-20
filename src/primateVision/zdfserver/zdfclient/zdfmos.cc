@@ -77,7 +77,7 @@ int main( int argc, char **argv )
 
   //display:
   Mosaic *ml = new Mosaic(mossize,msize,psb,D_8U_NN,"ZDFClientMos L");
-  Mosaic *mr = new Mosaic(mossize,msize,psb,D_8U_NN,"ZDFClientMos R");
+  //  Mosaic *mr = new Mosaic(mossize,msize,psb,D_8U_NN,"ZDFClientMos R");
 
 
 
@@ -88,11 +88,11 @@ int main( int argc, char **argv )
     //get input:
     zdfData = inPort_data.read(); //blocking
 
-    //draw object in left and right mosaics: 
+    //draw object in mosaics: 
     ml->display(zdfData->tex.getRawImage(),
 		zdfData->mos_xl,zdfData->mos_yl);
-    mr->display(zdfData->tex.getRawImage(),
-		zdfData->mos_xr,zdfData->mos_yr);
+    //mr->display(zdfData->tex.getRawImage(),
+    //		zdfData->mos_xr,zdfData->mos_yr);
     
   }
   

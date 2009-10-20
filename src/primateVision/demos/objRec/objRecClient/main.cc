@@ -73,12 +73,12 @@ int main( int argc, char **argv )
   
   //Display:
   Mosaic *ml;
-  Mosaic *mr;
+  //Mosaic *mr;
   iCub::contrib::primateVision::Display *disp;
 
   if (mos){
     ml = new Mosaic(mossize,srcsize,psb,D_8U_NN,"ObjRecClient L");
-    mr = new Mosaic(mossize,srcsize,psb,D_8U_NN,"ObjRecClient R");
+    //mr = new Mosaic(mossize,srcsize,psb,D_8U_NN,"ObjRecClient R");
   }
   else{
     disp = new iCub::contrib::primateVision::Display(srcsize,psb,D_8U_NN,"ObjRecClient");
@@ -103,8 +103,8 @@ int main( int argc, char **argv )
       //draw object in left and right mosaics: 
       ml->display((Ipp8u*)objData->tex.getRawImage(),
 		  objData->mos_xl,objData->mos_yl);
-      mr->display((Ipp8u*)objData->tex.getRawImage(),
-		  objData->mos_xr,objData->mos_yr);
+      //mr->display((Ipp8u*)objData->tex.getRawImage(),
+      //	  objData->mos_xr,objData->mos_yr);
       if (save){
 	ml->save((Ipp8u*)objData->tex.getRawImage(),"objrec"+QString::number(k)+".jpg");
       }
