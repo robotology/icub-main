@@ -202,6 +202,14 @@ public:
         return true;
     }
 
+    virtual void afterStart(bool s)
+    {
+        if (s)
+            cout << "Thread started successfully" << endl;
+        else
+            cout << "Thread did not start" << endl;
+    }
+
     virtual void run()
     {
         if (Bottle *b=port_xd.read(false))
