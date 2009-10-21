@@ -474,9 +474,10 @@ static gint timeout_CB (gpointer data){
 			gtk_widget_queue_draw (da);
             //            if (_savingSet)
             //                saveCurrentFrame();
+			//send the images on the outports
+			imageProcessModule->outPorts();
     }
-	//send the images on the outports
-	imageProcessModule->outPorts();
+	
 	return TRUE;
 }
 

@@ -826,7 +826,7 @@ ImageOf<PixelMono>* ImageProcessor::findEdgesBlueOpponency(){
 #endif
 #ifdef OPENCVSOBEL
 	IppiSize msksize={3,3};
-	if( blueYellow_flag)
+	if(blueYellow_flag)
 		cvSobel(blueYellow_yarp->getIplImage(),cvImage,1,1,3);
 	else
 		cvImage=new IplImage();
@@ -1661,6 +1661,8 @@ ImageOf<PixelRgb>* ImageProcessor::process (ImageOf<PixelRgb> *src){
 		image_out->resize(width,height);
 	}*/
 	
+	int image_tmp_flag=0;
+
 	if(this->redPlane_flag){
 		if(this->colourOpponency_flag){
 			this->colourOpponency(src);
@@ -1746,10 +1748,10 @@ ImageOf<PixelRgb>* ImageProcessor::process (ImageOf<PixelRgb> *src){
 	}
 	
 	//-----------
-	if(image_tmp==NULL){
+	/*if(inputImage_flag==0){
 		printf("process:image_tmp NULL");
 		return NULL;
-	}
+	}*/
 	
 	if(this->inputImage_flag){
 		ippiCopy_8u_C3R(src->getPixelAddress(0,0),width*3,image_out->getPixelAddress(0,0),width*3,srcsize);
