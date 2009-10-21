@@ -96,8 +96,8 @@ namespace iCub {
 	 */	
 	Ipp32f* get_maxAn_32f(){return maxAn;}
 
-	/** Access to 32f magnitude of orientation energy image for a particular scale.
-	 * @return Returns pointer to 32f combined real orientation energy components over all scales.
+	/** Access to 32f magnitude of orientation energy over all scales.
+	 * @return Returns pointer to 32f magnitude of orientation energy over all scales.
 	 * @param s scale.
 	 */
 	Ipp32f* get_A_EO_32f(int scale){return A_E0[scale];}
