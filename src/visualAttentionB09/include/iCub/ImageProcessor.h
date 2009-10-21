@@ -140,7 +140,8 @@ class ImageProcessor
 		ImageOf<PixelMono> *greenPlane; //temp images necessary for planes extraction
 		ImageOf<PixelMono> *yellowPlane; //temp images necessary for planes extraction
 		
-		IplImage *cvImage; //tmp IPLImage necessary for edge detection
+		IplImage *cvImage16; //tmp IPLImage necessary for edge detection
+		IplImage *cvImage8;
 		Ipp8u* im_out;
 		
 		

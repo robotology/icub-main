@@ -100,7 +100,8 @@ ImageProcessor::ImageProcessor(){
 	outputImage=new ImageOf<PixelMono>;
 	outputImage->resize(320,240);
 
-	cvImage= cvCreateImage(cvSize(320,240),IPL_DEPTH_8U,1);
+	cvImage16= cvCreateImage(cvSize(320,240),IPL_DEPTH_16U,1);
+	cvImage8= cvCreateImage(cvSize(320,240),IPL_DEPTH_8U,1);
 
 	this->cannyOperator=new CANNY(srcsize);
 	
@@ -834,10 +835,11 @@ ImageOf<PixelMono>* ImageProcessor::findEdgesBlueOpponency(){
 	IppiSize msksize={3,3};
 	printf("OPENCV SOBEL Find Edges Blue Opponency \n");
 	if((blueYellow_flag)&&(canProcess_flag))
-		cvSobel(blueYellow_yarp->getIplImage(),cvImage,1,1,3);
+		cvSobel(blueYellow_yarp->getIplImage(),cvImage16,1,1,3);
 	else
-		cvImage=new IplImage();
-	ippiCopy_8u_C1R((unsigned char*)cvImage->imageData,width,outputBlueYellow2,psb,srcsize);
+		cvImage8=cvCreateImage(cvSize(320,240),IPL_DEPTH_8U,1);
+
+	ippiCopy_8u_C1R((unsigned char*)cvImage8->imageData,width,outputBlueYellow2,psb,srcsize);
 	Ipp8u src[3*3]={1,4,1,
 					4,20,4,
 					1,4,1};
@@ -1169,10 +1171,10 @@ ImageOf<PixelMono>* ImageProcessor::findEdgesGreenOpponency(){
 	IppiSize msksize={3,3};
 	printf("OPENCV SOBEL Find Edges Green Opponency \n");
 	if((greenRed_flag)&&(canProcess_flag))
-		cvSobel(greenRed_yarp->getIplImage(),cvImage,1,1,3);
+		cvSobel(greenRed_yarp->getIplImage(),cvImage16,1,1,3);
 	else
-		cvImage=new IplImage();
-	ippiCopy_8u_C1R((unsigned char*)cvImage->imageData,width,outputGreenRed2,psb,srcsize);
+		cvImage8=cvCreateImage(cvSize(320,240),IPL_DEPTH_8U,1);
+	ippiCopy_8u_C1R((unsigned char*)cvImage8->imageData,width,outputGreenRed2,psb,srcsize);
 	Ipp8u src[3*3]={1,4,1,
 					4,20,4,
 					1,4,1};
@@ -1459,11 +1461,14 @@ ImageOf<PixelMono>* ImageProcessor::findEdgesRedOpponency(){
 #ifdef OPENCVSOBEL
 	IppiSize msksize={3,3};
 	printf("OPENCV SOBEL Find Edges Red Opponency \n");
-	if((redGreen_flag)&&(canProcess_flag))
-		cvSobel(redGreen_yarp->getIplImage(),cvImage,1,1,3);
+	if((redGreen_flag)&&(canProcess_flag)){
+		IplImage* redGreen=(IplImage*)redGreen_yarp->getIplImage();
+		cvSobel(redGreen,cvImage16,1,1,3);
+		cvConvertScale(cvImage16,cvImage8);
+	}
 	else
-		cvImage=new IplImage();
-	ippiCopy_8u_C1R((unsigned char*)cvImage->imageData,width,outputRedGreen2,psb,srcsize);
+		cvImage8=cvCreateImage(cvSize(320,240),IPL_DEPTH_8U,1);
+	ippiCopy_8u_C1R((unsigned char*)cvImage8->imageData,width,outputRedGreen2,psb,srcsize);
     Ipp8u src[3*3]={1,4,1,
 					4,20,4,
 					1,4,1};
