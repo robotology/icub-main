@@ -100,7 +100,7 @@ ImageProcessor::ImageProcessor(){
 	outputImage=new ImageOf<PixelMono>;
 	outputImage->resize(320,240);
 
-	cvImage16= cvCreateImage(cvSize(320,240),IPL_DEPTH_16U,1);
+	cvImage16= cvCreateImage(cvSize(320,240),IPL_DEPTH_16S,1);
 	cvImage8= cvCreateImage(cvSize(320,240),IPL_DEPTH_8U,1);
 
 	this->cannyOperator=new CANNY(srcsize);
