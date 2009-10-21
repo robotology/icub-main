@@ -406,6 +406,7 @@ static gint expose_CB (GtkWidget *widget, GdkEventExpose *event, gpointer data)
 
 						pixels = gdk_pixbuf_get_pixels (scaledFrame);
 						rowstride = gdk_pixbuf_get_rowstride(scaledFrame);
+						printf("got pixels from the scaledFrame \n");
 						gdk_draw_rgb_image (widget->window,
 											widget->style->black_gc,
 											event->area.x, event->area.y,
@@ -414,6 +415,7 @@ static gint expose_CB (GtkWidget *widget, GdkEventExpose *event, gpointer data)
 											pixels,
 											rowstride);
 						g_object_unref(scaledFrame);
+						printf("drawn rgb image \n");
 				
 					}
 				else
