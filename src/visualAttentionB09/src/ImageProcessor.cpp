@@ -832,6 +832,7 @@ ImageOf<PixelMono>* ImageProcessor::findEdgesBlueOpponency(){
 #endif
 #ifdef OPENCVSOBEL
 	IppiSize msksize={3,3};
+	printf("OPENCV SOBEL Find Edges Blue Opponency \n");
 	if((blueYellow_flag)&&(canProcess_flag))
 		cvSobel(blueYellow_yarp->getIplImage(),cvImage,1,1,3);
 	else
@@ -1166,6 +1167,7 @@ ImageOf<PixelMono>* ImageProcessor::findEdgesGreenOpponency(){
 
 #ifdef OPENCVSOBEL
 	IppiSize msksize={3,3};
+	printf("OPENCV SOBEL Find Edges Green Opponency \n");
 	if((greenRed_flag)&&(canProcess_flag))
 		cvSobel(greenRed_yarp->getIplImage(),cvImage,1,1,3);
 	else
@@ -1456,6 +1458,7 @@ ImageOf<PixelMono>* ImageProcessor::findEdgesRedOpponency(){
 
 #ifdef OPENCVSOBEL
 	IppiSize msksize={3,3};
+	printf("OPENCV SOBEL Find Edges Red Opponency \n");
 	if((redGreen_flag)&&(canProcess_flag))
 		cvSobel(redGreen_yarp->getIplImage(),cvImage,1,1,3);
 	else
