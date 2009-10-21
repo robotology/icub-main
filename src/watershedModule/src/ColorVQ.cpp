@@ -93,19 +93,19 @@ void ColorVQ::DominantQuantization(ImageOf<PixelBgr> &src, ImageOf<PixelBgr> &ds
 		for (int c=0; c<width; c++) {
 			unsigned int qr,qg,qb;
 			
-			unsigned char or=src(c,r).r;
-			unsigned char og=src(c,r).g;
-			unsigned char ob=src(c,r).b;
+			unsigned char ored=src(c,r).r;
+			unsigned char ogreen=src(c,r).g;
+			unsigned char oblue=src(c,r).b;
 
-			if ( (0.25*255<or) && (or<0.75*255) && (0.25*255<og) && (og<0.75*255) &&  (0.25*255<ob) && (ob<0.75*255) ){
-				int dr=abs(or-og)+abs(or-ob);
-				int dg=abs(or-og)+abs(og-ob);
-				int db=abs(og-ob)+abs(ob-or);
+			if ( (0.25*255<ored) && (ored<0.75*255) && (0.25*255<ogreen) && (ogreen<0.75*255) &&  (0.25*255<oblue) && (oblue<0.75*255) ){
+				int dr=abs(ored-ogreen)+abs(ored-oblue);
+				int dg=abs(ored-ogreen)+abs(ogreen-oblue);
+				int db=abs(ogreen-oblue)+abs(oblue-ored);
 
 				if ((dr>dg+t) && (dr>db+t)) {
-					if ((or>og) && (or>ob))
+					if ((ored>ogreen) && (ored>oblue))
 						qr=255;
-					else if ((or<og) && (or<ob))
+					else if ((ored<ogreen) && (ored<oblue))
 						qr=0;
 					else
 						qr=127;
@@ -113,9 +113,9 @@ void ColorVQ::DominantQuantization(ImageOf<PixelBgr> &src, ImageOf<PixelBgr> &ds
 					qr=127;
 				
 				if ((dg>dr+t) && (dg>db+t)) {
-					if ((og>or) && (og>ob))
+					if ((ogreen>ored) && (ogreen>oblue))
 						qg=255;
-					else if ((og<or) && (og<ob))
+					else if ((ogreen<ored) && (ogreen<oblue))
 						qg=0;
 					else
 						qg=127;
@@ -123,25 +123,25 @@ void ColorVQ::DominantQuantization(ImageOf<PixelBgr> &src, ImageOf<PixelBgr> &ds
 					qg=127;
 
 				if ((db>dg+t) && (db>dr+t)) {
-					if ((ob>og) && (ob>or))
+					if ((oblue>ogreen) && (oblue>ored))
 						qb=255;
-					else if ((ob<og) && (ob<or))
+					else if ((oblue<ogreen) && (oblue<ored))
 						qb=0;
 					else
 						qb=127;
 				} else
 					qb=127;
 			} else {
-				if (or>0.75*255) qr=255;
-				else if (or<0.25*255) qr=0;
+				if (ored>0.75*255) qr=255;
+				else if (ored<0.25*255) qr=0;
 				else qr=127;
 
-				if (og>0.75*255) qg=255;
-				else if (og<0.25*255) qg=0;
+				if (ogreen>0.75*255) qg=255;
+				else if (ogreen<0.25*255) qg=0;
 				else qg=127;
 
-				if (ob>0.75*255) qb=255;
-				else if (ob<0.25*255) qb=0;
+				if (oblue>0.75*255) qb=255;
+				else if (oblue<0.25*255) qb=0;
 				else qb=127;
 			}
 			
@@ -156,21 +156,21 @@ void ColorVQ::DominantQuantization(PixelBgr src, PixelBgr &dst, unsigned char t)
 {
 	unsigned int qr,qg,qb;
 	
-	unsigned char or=src.r;
-	unsigned char og=src.g;
-	unsigned char ob=src.b;
+	unsigned char ored=src.r;
+	unsigned char ogreen=src.g;
+	unsigned char oblue=src.b;
 
-	if ( (0.25*255<or) && (or<0.75*255) &&
-		 (0.25*255<og) && (og<0.75*255) &&
-		 (0.25*255<ob) && (ob<0.75*255)) {
-		int dr=abs(or-og)+abs(or-ob);
-		int dg=abs(or-og)+abs(og-ob);
-		int db=abs(og-ob)+abs(ob-or);
+	if ( (0.25*255<ored) && (ored<0.75*255) &&
+		 (0.25*255<ogreen) && (ogreen<0.75*255) &&
+		 (0.25*255<oblue) && (oblue<0.75*255)) {
+		int dr=abs(ored-ogreen)+abs(ored-oblue);
+		int dg=abs(ored-ogreen)+abs(ogreen-oblue);
+		int db=abs(ogreen-oblue)+abs(oblue-ored);
 
 		if ((dr>dg+t) && (dr>db+t)) {
-			if ((or>og) && (or>ob))
+			if ((ored>ogreen) && (ored>oblue))
 				qr=255;
-			else if ((or<og) && (or<ob))
+			else if ((ored<ogreen) && (ored<oblue))
 				qr=0;
 			else
 				qr=127;
@@ -178,9 +178,9 @@ void ColorVQ::DominantQuantization(PixelBgr src, PixelBgr &dst, unsigned char t)
 			qr=127;
 		
 		if ((dg>dr+t) && (dg>db+t)) {
-			if ((og>or) && (og>ob))
+			if ((ogreen>ored) && (ogreen>oblue))
 				qg=255;
-			else if ((og<or) && (og<ob))
+			else if ((ogreen<ored) && (ogreen<oblue))
 				qg=0;
 			else
 				qg=127;
@@ -188,25 +188,25 @@ void ColorVQ::DominantQuantization(PixelBgr src, PixelBgr &dst, unsigned char t)
 			qg=127;
 
 		if ((db>dg+t) && (db>dr+t)){
-			if ((ob>og) && (ob>or))
+			if ((oblue>ogreen) && (oblue>ored))
 				qb=255;
-			else if ((ob<og) && (ob<or))
+			else if ((oblue<ogreen) && (oblue<ored))
 				qb=0;
 			else
 				qb=127;
 		} else
 			qb=127;
 	} else {
-		if (or>0.75*255) qr=255;
-		else if (or<0.25*255) qr=0;
+		if (ored>0.75*255) qr=255;
+		else if (ored<0.25*255) qr=0;
 		else qr=127;
 
-		if (og>0.75*255) qg=255;
-		else if (og<0.25*255) qg=0;
+		if (ogreen>0.75*255) qg=255;
+		else if (ogreen<0.25*255) qg=0;
 		else qg=127;
 
-		if (ob>0.75*255) qb=255;
-		else if (ob<0.25*255) qb=0;
+		if (oblue>0.75*255) qb=255;
+		else if (oblue<0.25*255) qb=0;
 		else qb=127;
 	}
 	
