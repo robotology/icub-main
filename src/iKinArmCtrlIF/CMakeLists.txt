@@ -4,8 +4,10 @@ PROJECT(${PROJECTNAME})
 FIND_PACKAGE(YARP)
 FIND_PACKAGE(ICUB)
 
-FIND_PACKAGE(icubmod)
-IMPORT_DEVICES(${ICUB_DIR}/src/${PROJECTNAME}/drivers.h icubmod)
+IF(USE_ICUB_MOD)
+	FIND_PACKAGE(icubmod)
+	IMPORT_DEVICES(${ICUB_DIR}/src/${PROJECTNAME}/drivers.h icubmod)
+ENDIF(USE_ICUB_MOD)
 
 SET(folder_header drivers.h)
 SET(folder_source main.cpp)
