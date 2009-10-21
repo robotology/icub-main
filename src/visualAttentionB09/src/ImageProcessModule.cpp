@@ -375,6 +375,10 @@ static gint expose_CB (GtkWidget *widget, GdkEventExpose *event, gpointer data)
 					return false;
 				}
 				_outputImage=imageProcessModule->currentProcessor->process(&_inputImg); //findEdges(&_inputImg,1,0);
+				if(_outputImage==NULL){
+					return FALSE;
+				}
+
 				_semaphore.wait();
 				bool result=yarpImage2Pixbuf(_outputImage, frame);
 				imageWidth = _inputImg.width();
@@ -482,7 +486,7 @@ static gint timeout_CB (gpointer data){
 			gtk_widget_queue_draw (da);
 			
 
-
+			imageProcessModule->currentProcessor->canProcess_flag=1;
 			imageProcessModule->processor1->canProcess_flag=1;
 			imageProcessModule->processor2->canProcess_flag=1;
 			imageProcessModule->processor3->canProcess_flag=1;

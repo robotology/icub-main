@@ -1669,7 +1669,9 @@ ImageOf<PixelRgb>* ImageProcessor::process (ImageOf<PixelRgb> *src){
 	
 	//int image_tmp_flag=0;
 
-	if(canProcess_flag){
+	if(canProcess_flag==0){
+		return NULL;
+	}
 
 		if(this->redPlane_flag){
 			if(this->colourOpponency_flag){
@@ -1752,7 +1754,7 @@ ImageOf<PixelRgb>* ImageProcessor::process (ImageOf<PixelRgb> *src){
 				ippiCopy_8u_C1R(yellowPlane->getPixelAddress(0,0),320,image_tmp->getPixelAddress(0,0),320,srcsize);
 		}
 
-	}
+	
 
 	if(this->normalize_flag){
 		image_tmp=this->normalize(image_tmp);
