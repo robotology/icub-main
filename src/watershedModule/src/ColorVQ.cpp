@@ -97,9 +97,7 @@ void ColorVQ::DominantQuantization(ImageOf<PixelBgr> &src, ImageOf<PixelBgr> &ds
 			unsigned char og=src(c,r).g;
 			unsigned char ob=src(c,r).b;
 
-			if ( (0.25*255<or) && (or<0.75*255) &&
-				 (0.25*255<og) && (og<0.75*255) &&
-				 (0.25*255<ob) && (ob<0.75*255) ){
+			if ( (0.25*255<or) && (or<0.75*255) && (0.25*255<og) && (og<0.75*255) &&  (0.25*255<ob) && (ob<0.75*255) ){
 				int dr=abs(or-og)+abs(or-ob);
 				int dg=abs(or-og)+abs(og-ob);
 				int db=abs(og-ob)+abs(ob-or);
