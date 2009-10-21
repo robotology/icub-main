@@ -13,6 +13,8 @@
 ImageProcessor::ImageProcessor(){
 	this->inImage=NULL;
 	portImage=NULL;
+
+	canProcess_flag=0;
 	inputImage_flag=0;
 	redPlane_flag=1;
 	bluePlane_flag=0;
@@ -25,7 +27,7 @@ ImageProcessor::ImageProcessor(){
 	colourOpponency_flag=1;
 	findEdges_flag=1;
 	normalize_flag=0;
-	combineMax_flag=1;
+	combineMax_flag=0;
 	width=320;
 	height=240;
 	int psb;
@@ -414,6 +416,10 @@ void ImageProcessor::colourOpponency(ImageOf<PixelRgb> *src){
 	/*blueYellow_yarp=bluePlane;
 	redGreen_yarp=bluePlane;
 	greenRed_yarp=bluePlane;*/
+
+	this->blueYellow_flag=1;
+	this->redGreen_flag=1;
+	this->greenRed_flag=1;
 }
 
 /*function that gets the 3 images in the colourOpponency space R+G-,G+R-,B+Y-
@@ -826,7 +832,7 @@ ImageOf<PixelMono>* ImageProcessor::findEdgesBlueOpponency(){
 #endif
 #ifdef OPENCVSOBEL
 	IppiSize msksize={3,3};
-	if(blueYellow_flag)
+	if((blueYellow_flag)&&(canProcess_flag))
 		cvSobel(blueYellow_yarp->getIplImage(),cvImage,1,1,3);
 	else
 		cvImage=new IplImage();
@@ -1160,7 +1166,7 @@ ImageOf<PixelMono>* ImageProcessor::findEdgesGreenOpponency(){
 
 #ifdef OPENCVSOBEL
 	IppiSize msksize={3,3};
-	if(greenRed_flag)
+	if((greenRed_flag)&&(canProcess_flag))
 		cvSobel(greenRed_yarp->getIplImage(),cvImage,1,1,3);
 	else
 		cvImage=new IplImage();
@@ -1450,7 +1456,7 @@ ImageOf<PixelMono>* ImageProcessor::findEdgesRedOpponency(){
 
 #ifdef OPENCVSOBEL
 	IppiSize msksize={3,3};
-	if(redGreen_flag)
+	if((redGreen_flag)&&(canProcess_flag))
 		cvSobel(redGreen_yarp->getIplImage(),cvImage,1,1,3);
 	else
 		cvImage=new IplImage();
@@ -1661,86 +1667,91 @@ ImageOf<PixelRgb>* ImageProcessor::process (ImageOf<PixelRgb> *src){
 		image_out->resize(width,height);
 	}*/
 	
-	int image_tmp_flag=0;
+	//int image_tmp_flag=0;
 
-	if(this->redPlane_flag){
-		if(this->colourOpponency_flag){
-			this->colourOpponency(src);
-			if(this->findEdges_flag){
-				if(this->combineMax_flag){
-					image_tmp=this->combineMax();
+	if(canProcess_flag){
+
+		if(this->redPlane_flag){
+			if(this->colourOpponency_flag){
+				this->colourOpponency(src);
+				if(this->findEdges_flag){
+					if(this->combineMax_flag){
+						image_tmp=this->combineMax();
+					}
+					else{
+						image_tmp=this->findEdgesRedOpponency();
+					}
 				}
-				else{
+				else
+					image_tmp=this->redGreen_yarp;
+			}
+			else{
+				this->colourOpponency(src);
+				if(this->findEdges_flag){
 					image_tmp=this->findEdgesRedOpponency();
 				}
+				else{
+					//image_tmp=this->getRedPlane(src);
+					image_tmp=redPlane;
+				}
+					
 			}
-			else
-				image_tmp=this->redGreen_yarp;
 		}
-		else{
-			this->colourOpponency(src);
-			if(this->findEdges_flag){
-				image_tmp=this->findEdgesRedOpponency();
+		else if(bluePlane_flag)
+			if(this->colourOpponency_flag){
+				this->colourOpponency(src);
+				
+				if(this->findEdges_flag){
+					if(this->combineMax_flag){
+						image_tmp=this->combineMax();
+					}
+					else{
+						image_tmp=this->findEdgesBlueOpponency();
+					}
+				}
+				else
+					image_tmp=this->blueYellow_yarp;
 			}
 			else{
-				//image_tmp=this->getRedPlane(src);
-				image_tmp=redPlane;
-			}
-				
-		}
-	}
-	else if(bluePlane_flag)
-		if(this->colourOpponency_flag){
-			this->colourOpponency(src);
-			if(this->findEdges_flag){
-				if(this->combineMax_flag){
-					image_tmp=this->combineMax();
-				}
-				else{
+				this->colourOpponency(src);
+				if(this->findEdges_flag){
 					image_tmp=this->findEdgesBlueOpponency();
 				}
+				else{
+					//image_tmp=this->getBluePlane(src);
+					image_tmp=bluePlane;
+				}
 			}
-			else
-				image_tmp=this->blueYellow_yarp;
-		}
-		else{
-			this->colourOpponency(src);
-			if(this->findEdges_flag){
-				image_tmp=this->findEdgesBlueOpponency();
+		else if(greenPlane_flag)
+			if(this->colourOpponency_flag){
+				this->colourOpponency(src);
+				if(this->findEdges_flag){
+					if(this->combineMax_flag){
+						image_tmp=this->combineMax();
+					}
+					else{
+						image_tmp=this->findEdgesGreenOpponency();
+					}
+				}
+				else
+					image_tmp=this->greenRed_yarp;
+
 			}
 			else{
-				//image_tmp=this->getBluePlane(src);
-				image_tmp=bluePlane;
-			}
-		}
-	else if(greenPlane_flag)
-		if(this->colourOpponency_flag){
-			this->colourOpponency(src);
-			if(this->findEdges_flag){
-				if(this->combineMax_flag){
-					image_tmp=this->combineMax();
-				}
-				else{
+				this->colourOpponency(src);
+				if(this->findEdges_flag){
 					image_tmp=this->findEdgesGreenOpponency();
 				}
+				else{
+					//image_tmp=this->getGreenPlane(src);
+					image_tmp=greenPlane;
+				}
 			}
-			else
-				image_tmp=this->greenRed_yarp;
+		else if(this->yellowPlane_flag){
+				this->colourOpponency(src);
+				ippiCopy_8u_C1R(yellowPlane->getPixelAddress(0,0),320,image_tmp->getPixelAddress(0,0),320,srcsize);
+		}
 
-		}
-		else{
-			this->colourOpponency(src);
-			if(this->findEdges_flag){
-				image_tmp=this->findEdgesGreenOpponency();
-			}
-			else{
-				//image_tmp=this->getGreenPlane(src);
-				image_tmp=greenPlane;
-			}
-		}
-	else if(this->yellowPlane_flag){
-			this->colourOpponency(src);
-			ippiCopy_8u_C1R(yellowPlane->getPixelAddress(0,0),320,image_tmp->getPixelAddress(0,0),320,srcsize);
 	}
 
 	if(this->normalize_flag){

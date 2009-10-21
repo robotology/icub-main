@@ -146,6 +146,7 @@ class ImageProcessor
 		
 		CANNY *cannyOperator; //--- CANNY Operator
 		
+		
 		int inputImage_flag;  //--- processor flag
 		int redPlane_flag; //--- processor flag
 		int greenPlane_flag; //--- processor flag
@@ -155,6 +156,7 @@ class ImageProcessor
 		int findEdges_flag; //--- processor flag
 		int normalize_flag; //--- processor flag
 		int combineMax_flag; //--- processor flag
+		int canProcess_flag; //--flag that allows the processing when all the inputs are ready
 		
 		int blueYellow_flag;
 		int redGreen_flag;

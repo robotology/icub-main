@@ -16,7 +16,7 @@ static GdkPixbuf *frame = NULL;
 // Image Receiver
 static YARPImgRecv *ptr_imgRecv;
 // Image to Display
-static yarp::sig::ImageOf<yarp::sig::PixelRgb> *ptr_inputImg;
+static yarp::sig::ImageOf<yarp::sig::PixelRgb> *ptr_inputImg=0;
 // Semaphore
 static yarp::os::Semaphore *ptr_semaphore;
 // Timeout ID
@@ -32,6 +32,7 @@ static ImageProcessModule *imageProcessModule;
 
 bool ImageProcessModule::open(Searchable& config) {
     ct = 0;
+	
 	maxAdj=200.0;
 	minAdj=0.0;
 	stepAdj=0.01;
@@ -276,36 +277,42 @@ bool ImageProcessModule::openPorts(){
 
 bool ImageProcessModule::outPorts(){
 	bool ret = false;
-	//printf("Entered in outPorts \n");
-	this->_pOutPort->prepare()=*(this->processor1->portImage);
-	this->_pOutPort2->prepare()=*(this->processor2->portImage);
-	this->_pOutPort3->prepare()=*(this->processor3->portImage);
-	//printf("After prepares \n");
-	this->_pOutPort->write();
-	this->_pOutPort2->write();
-	this->_pOutPort3->write();
-	//printf("Entered in outPorts \n");
-	//if(currentProcessor->redGreen_yarp!=0xcdcdcdcd)
+	if((processor1->canProcess_flag)&&(processor2->canProcess_flag)&&(processor3->canProcess_flag))
+	{
+		//printf("Entered in outPorts \n");
+		this->_pOutPort->prepare()=*(this->processor1->portImage);
+		this->_pOutPort2->prepare()=*(this->processor2->portImage);
+		this->_pOutPort3->prepare()=*(this->processor3->portImage);
+		//printf("After prepares \n");
+		this->_pOutPort->write();
+		this->_pOutPort2->write();
+		this->_pOutPort3->write();
+		//printf("Entered in outPorts \n");
+	}
+	if((currentProcessor->blueYellow_flag)&&(currentProcessor->redGreen_flag)&&(currentProcessor->greenRed_flag)){
+		//if(currentProcessor->redGreen_yarp!=0xcdcdcdcd)
 		this->portRg->prepare()=*(this->currentProcessor->redGreen_yarp);
-	//if((unsigned int)currentProcessor->greenRed_yarp!=0xcdcdcdcd)
+		//if((unsigned int)currentProcessor->greenRed_yarp!=0xcdcdcdcd)
 		this->portGr->prepare()=*(this->currentProcessor->greenRed_yarp);
-	//if((unsigned int)currentProcessor->blueYellow_yarp!=0xcdcdcdcd)
+		//if((unsigned int)currentProcessor->blueYellow_yarp!=0xcdcdcdcd)
 		this->portBy->prepare()=*(this->currentProcessor->blueYellow_yarp);
-	//printf("After prepares \n");
-	this->portRg->write();
-	this->portGr->write();
-	this->portBy->write();
-	//printf("Entered in outPorts \n");
-	//if((unsigned int)currentProcessor->redPlane!=0xcdcdcdcd)
+		//printf("After prepares \n");
+		this->portRg->write();
+		this->portGr->write();
+		this->portBy->write();
+		//printf("Entered in outPorts \n");
+		//if((unsigned int)currentProcessor->redPlane!=0xcdcdcdcd)
 		this->portRedPlane->prepare()=*(this->currentProcessor->redPlane);
-	//if((unsigned int)currentProcessor->greenPlane!=0xcdcdcdcd)
+		//if((unsigned int)currentProcessor->greenPlane!=0xcdcdcdcd)
 		this->portGreenPlane->prepare()=*(this->currentProcessor->greenPlane);
-	//if((unsigned int)currentProcessor->bluePlane!=0xcdcdcdcd)
+		//if((unsigned int)currentProcessor->bluePlane!=0xcdcdcdcd)
 		this->portBluePlane->prepare()=*(this->currentProcessor->bluePlane);
-	//printf("After prepares \n");
-	this->portRedPlane->write();
-	this->portGreenPlane->write();
-	this->portBluePlane->write();
+		//printf("After prepares \n");
+		this->portRedPlane->write();
+		this->portGreenPlane->write();
+		this->portBluePlane->write();
+	}
+	
 	return ret;
 }
 void ImageProcessModule::setAdjs(){
@@ -365,6 +372,7 @@ static gint expose_CB (GtkWidget *widget, GdkEventExpose *event, gpointer data)
 				}
 				if(&_inputImg==NULL){
 					printf("expose_CB:_inputImg NULL");
+					return false;
 				}
 				_outputImage=imageProcessModule->currentProcessor->process(&_inputImg); //findEdges(&_inputImg,1,0);
 				_semaphore.wait();
@@ -472,12 +480,19 @@ static gint timeout_CB (gpointer data){
             //            }
             //            _frameN++;
 			gtk_widget_queue_draw (da);
+			
+
+
+			imageProcessModule->processor1->canProcess_flag=1;
+			imageProcessModule->processor2->canProcess_flag=1;
+			imageProcessModule->processor3->canProcess_flag=1;
+
             //            if (_savingSet)
             //                saveCurrentFrame();
-			//send the images on the outports
-			imageProcessModule->outPorts();
+			
     }
-	
+	//send the images on the outports
+	imageProcessModule->outPorts();
 	return TRUE;
 }
 

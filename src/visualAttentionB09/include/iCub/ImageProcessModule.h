@@ -95,6 +95,7 @@ public:
 	ImageProcessor *processor2;
 	ImageProcessor *processor3;
 	ImageProcessor *currentProcessor;
+	
 };
 
 #endif //_IMAGEPROCESSMODULE_H_
