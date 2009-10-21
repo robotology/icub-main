@@ -155,6 +155,12 @@ class ImageProcessor
 		int findEdges_flag; //--- processor flag
 		int normalize_flag; //--- processor flag
 		int combineMax_flag; //--- processor flag
+		
+		int blueYellow_flag;
+		int redGreen_flag;
+		int greenRed_flag;
+
+
 		//---
 		Ipp32s src0[9];
 		Ipp32s src1[9];

@@ -18,6 +18,10 @@ ImageProcessor::ImageProcessor(){
 	bluePlane_flag=0;
 	greenPlane_flag=0;
 	yellowPlane_flag=0;
+	blueYellow_flag=0;
+	greenRed_flag=0;
+	redGreen_flag=0;
+
 	colourOpponency_flag=1;
 	findEdges_flag=1;
 	normalize_flag=0;
@@ -138,6 +142,10 @@ ImageProcessor::ImageProcessor(ImageOf<PixelRgb>* inputImage){
 	redPlane_flag=1;
 	bluePlane_flag=0;
 	greenPlane_flag=0;
+	blueYellow_flag=0;
+	greenRed_flag=0;
+	redGreen_flag=0;
+
 	colourOpponency_flag=0;
 	findEdges_flag=0;
 	normalize_flag=0;
@@ -818,7 +826,10 @@ ImageOf<PixelMono>* ImageProcessor::findEdgesBlueOpponency(){
 #endif
 #ifdef OPENCVSOBEL
 	IppiSize msksize={3,3};
-	cvSobel(blueYellow_yarp->getIplImage(),cvImage,1,1,3);
+	if( blueYellow_flag)
+		cvSobel(blueYellow_yarp->getIplImage(),cvImage,1,1,3);
+	else
+		cvImage=new IplImage();
 	ippiCopy_8u_C1R((unsigned char*)cvImage->imageData,width,outputBlueYellow2,psb,srcsize);
 	Ipp8u src[3*3]={1,4,1,
 					4,20,4,
@@ -1149,7 +1160,10 @@ ImageOf<PixelMono>* ImageProcessor::findEdgesGreenOpponency(){
 
 #ifdef OPENCVSOBEL
 	IppiSize msksize={3,3};
-	cvSobel(greenRed_yarp->getIplImage(),cvImage,1,1,3);
+	if(greenRed_flag)
+		cvSobel(greenRed_yarp->getIplImage(),cvImage,1,1,3);
+	else
+		cvImage=new IplImage();
 	ippiCopy_8u_C1R((unsigned char*)cvImage->imageData,width,outputGreenRed2,psb,srcsize);
 	Ipp8u src[3*3]={1,4,1,
 					4,20,4,
@@ -1436,9 +1450,12 @@ ImageOf<PixelMono>* ImageProcessor::findEdgesRedOpponency(){
 
 #ifdef OPENCVSOBEL
 	IppiSize msksize={3,3};
-	cvSobel(redGreen_yarp->getIplImage(),cvImage,1,1,3);
+	if(redGreen_flag)
+		cvSobel(redGreen_yarp->getIplImage(),cvImage,1,1,3);
+	else
+		cvImage=new IplImage();
 	ippiCopy_8u_C1R((unsigned char*)cvImage->imageData,width,outputRedGreen2,psb,srcsize);
-Ipp8u src[3*3]={1,4,1,
+    Ipp8u src[3*3]={1,4,1,
 					4,20,4,
 					1,4,1};
 	ippiConvValid_8u_C1R(outputRedGreen2,psb,srcsize,src,3,msksize,&outputRedGreen[1 + width*1],psb,1);
