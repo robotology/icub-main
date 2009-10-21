@@ -292,6 +292,7 @@ static void handler (int) {
         }
 }
 
+#undef main
 int main(int argc, char *argv[]) 
 {
     Network yarp; //initialize network, this goes before everything
