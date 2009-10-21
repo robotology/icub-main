@@ -30,10 +30,11 @@ bool yarpImage2Pixbuf(yarp::sig::ImageOf<yarp::sig::PixelRgb> *sourceImg,
 	printf("destination size in memory: %d \n",dst_size_in_memory);
 	src_line_size = sourceImg->getRowSize(); //GetAllocatedLineSize();
 	src_data = (char *) sourceImg->getRawImage(); //GetRawBuffer();
-
+	printf("got raw image from sourceImage \n");
 	if ( src_line_size == rowstride)
         {
             memcpy(dst_data, src_data, dst_size_in_memory);
+			printf("just copy src_data into dst_data \n");
         }
 	else
         {
@@ -44,7 +45,7 @@ bool yarpImage2Pixbuf(yarp::sig::ImageOf<yarp::sig::PixelRgb> *sourceImg,
                     memcpy(p_dst, p_src, (n_channels*width));
                 }
         }
-
+	printf("end of Image2PixBuffer \n");
 	return true;
 }
 
