@@ -492,7 +492,7 @@ static gint timeout_CB (gpointer data){
 			
     }
 	//send the images on the outports
-	imageProcessModule->outPorts();
+	//imageProcessModule->outPorts();
 	return TRUE;
 }
 
