@@ -166,12 +166,11 @@ public:
     /**
      * Constructor.
      *
-     * @param name the name under which this type of learner will be registered
      * @param size the initial codomain size
      * @param type specifier for the type of LSSVM (Cholesky, Reference or Partial)
      * @param kernel configuration specifier for the initial type of kernel
      */
-    LSSVMAtlasLearner(std::string name = "LSSVMAtlas", int size = 1, int type = LSSVMAtlasLearner::FULL, std::string kernel = "1:1");
+    LSSVMAtlasLearner(int size = 1, int type = LSSVMAtlasLearner::FULL, std::string kernel = "1:1");
 
     /**
      * Destructor.

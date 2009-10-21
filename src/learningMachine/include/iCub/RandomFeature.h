@@ -59,10 +59,9 @@ public:
     /**
      * Constructor.
      *
-     * @param name name for the transformer
      * @param size initial size of the vector
      */
-    RandomFeature(std::string name = "RandomFeature", double g = 1.);
+    RandomFeature(double g = 1.);
 
     /**
      * Destructor.

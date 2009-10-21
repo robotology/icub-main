@@ -47,11 +47,9 @@ protected:
 public:
     /**
      * Constructor.
-     *
-     * @param name the name under which this EventListener will be registered
      */
     // does not compile without the default value, although we never use it
-    IEventListener(std::string name);
+    IEventListener();
 
     /**
      * Destructor.

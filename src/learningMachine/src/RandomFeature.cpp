@@ -26,7 +26,8 @@ namespace iCub {
 namespace contrib {
 namespace learningmachine {
 
-RandomFeature::RandomFeature(std::string name, double g) : IFixedSizeTransformer(name) {
+RandomFeature::RandomFeature(double g) {
+    this->setName("RandomFeature");
     // will initiate reset automatically
     this->setGamma(g);
 }

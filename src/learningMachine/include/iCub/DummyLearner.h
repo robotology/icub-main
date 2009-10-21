@@ -60,10 +60,9 @@ private:
 public:
     /**
      * Constructor.
-     *
-     * @param name the name under which this type of learner will be registered
      */
-    DummyLearner(std::string name = "Dummy") : IFixedSizeLearner(name) {
+    DummyLearner() {
+        this->setName("Dummy");
         inputs.resize(0);
         outputs.resize(0);
         this->sampleCount = 0;

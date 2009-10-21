@@ -17,7 +17,8 @@ namespace iCub {
 namespace contrib {
 namespace learningmachine {
 
-RLSLearner::RLSLearner(std::string name, int size) : IFixedSizeLearner(name) {
+RLSLearner::RLSLearner(int size) {
+    this->setName("RLS");
     this->sampleCount = 0;
     this->initAll(size);
 }
@@ -111,7 +112,7 @@ void RLSLearner::reset() {
 }
 
 IMachineLearner* RLSLearner::create() {
-    return new RLSLearner(this->getName(), this->machines.size());
+    return new RLSLearner(this->machines.size());
 }
 
 std::string RLSLearner::getInfo() {

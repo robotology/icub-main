@@ -37,9 +37,12 @@ protected:
 public:
     /**
      * Constructor
+     *
+     * @param pp default port prefix
      */
-    TrainEventListener(std::string name = "Train", std::string pp = "/lm/event/train") 
-      : IPortEventListener(name, pp) {}
+    TrainEventListener(std::string pp = "/lm/event/train") : IPortEventListener(pp) {
+        this->setName("Train");
+      }
 
     /*
      * Inherited from IEventListener.

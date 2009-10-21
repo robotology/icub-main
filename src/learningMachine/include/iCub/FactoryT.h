@@ -77,6 +77,11 @@ public:
      */
     void registerPrototype(T* prototype) {
         assert(prototype != (T*) 0);
+
+        if(prototype->getName() == "") {
+            throw std::runtime_error("Cannot register prototype with empty key; please specify a unique key.");
+        }
+
         if(this->map.find(prototype->getName()) != this->map.end()) {
             std::ostringstream buffer;
             buffer << "Prototype '" << prototype->getName() << "' has already been registered; please specify a unique key.";

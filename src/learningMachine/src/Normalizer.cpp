@@ -17,7 +17,8 @@ namespace iCub {
 namespace contrib {
 namespace learningmachine {
 
-Normalizer::Normalizer(std::string name, double l, double u) : IScaler(name) {
+Normalizer::Normalizer(double l, double u) {
+    this->setName("Normalizer");
     this->lowest = DBL_MAX;
     this->highest = -DBL_MAX;
     this->setLowerBound(l);

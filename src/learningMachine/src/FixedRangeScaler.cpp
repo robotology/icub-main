@@ -18,7 +18,8 @@ namespace iCub {
 namespace contrib {
 namespace learningmachine {
 
-FixedRangeScaler::FixedRangeScaler(std::string name, double li, double ui, double lo, double uo) : IScaler(name) {
+FixedRangeScaler::FixedRangeScaler(double li, double ui, double lo, double uo) {
+    this->setName("Fixed");
     this->setLowerBoundIn(li);
     this->setUpperBoundIn(ui);
     this->setLowerBoundOut(lo);

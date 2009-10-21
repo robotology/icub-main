@@ -17,7 +17,8 @@ namespace iCub {
 namespace contrib {
 namespace learningmachine {
 
-Standardizer::Standardizer(std::string name, double m, double s) : IScaler(name) { 
+Standardizer::Standardizer(double m, double s) { 
+    this->setName("Standardizer");
     this->noSamples = 0;
     this->runningMean = 0.;
     this->runningStd = 0.;

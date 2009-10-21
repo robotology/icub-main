@@ -60,11 +60,10 @@ public:
     /**
      * Constructor.
      *
-     * @param name the name under which this type of transformer will be registered
      * @param l the initial lower bound
      * @param u the initial upper bound
      */
-    FixedRangeScaler(std::string name = "Fixed", double li = -1., double ui = 1., double lo = -1., double uo = 1.);
+    FixedRangeScaler(double li = -1., double ui = 1., double lo = -1., double uo = 1.);
 
 protected:
     /*

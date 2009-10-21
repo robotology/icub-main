@@ -93,10 +93,9 @@ public:
     /**
      * Constructor.
      *
-     * @param name name for the 
      * @param size initial size of the vector
      */
-    ScaleTransformer(std::string name = "Scaler", int size = 1);
+    ScaleTransformer(int size = 1);
 
     /**
      * Destructor.

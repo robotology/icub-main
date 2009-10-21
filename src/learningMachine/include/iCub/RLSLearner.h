@@ -199,10 +199,9 @@ public:
     /**
      * Constructor.
      *
-     * @param name the name under which this type of learner will be registered
      * @param size the initial codomain size
      */
-    RLSLearner(std::string name = "RLS", int size = 1);
+    RLSLearner(int size = 1);
 
     /**
      * Destructor.

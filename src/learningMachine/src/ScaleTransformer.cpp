@@ -18,7 +18,8 @@ namespace iCub {
 namespace contrib {
 namespace learningmachine {
 
-ScaleTransformer::ScaleTransformer(std::string name, int size) : IFixedSizeTransformer (name) {
+ScaleTransformer::ScaleTransformer(int size) {
+    this->setName("Scaler");
     this->deleteAll(size);
 }
 

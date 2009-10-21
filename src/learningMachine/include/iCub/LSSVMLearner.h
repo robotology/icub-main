@@ -177,10 +177,8 @@ private:
 public:
     /**
      * Constructor.
-     *
-     * @param name the name under which this type of learner will be registered
      */
-    LSSVMLearner(std::string name = "LSSVM");
+    LSSVMLearner();
 
     /**
      * Destructor.

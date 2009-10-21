@@ -15,8 +15,8 @@ namespace iCub {
 namespace contrib {
 namespace learningmachine {
 
-IEventListener::IEventListener(std::string name) {
-    this->setName(name);
+IEventListener::IEventListener() {
+    this->setName("");
     this->setEnabled(true);
 }
 

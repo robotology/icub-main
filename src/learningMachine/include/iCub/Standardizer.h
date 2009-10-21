@@ -68,9 +68,10 @@ public:
     /**
      * Constructor.
      *
-     * @param name the name under which this type of transformer will be registered
+     * @param m desired output mean
+     * @param s desired output standard deviation
      */
-    Standardizer(std::string name = "Standardizer", double m = 0., double s = 1.);
+    Standardizer(double m = 0., double s = 1.);
 
     /*
      * Inherited from IScaler

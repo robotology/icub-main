@@ -38,8 +38,12 @@ protected:
 public:
     /**
      * Constructor
+     *
+     * @param pp default port prefix
      */
-    PredictEventListener(std::string name = "Predict", std::string pp = "/lm/event/predict") : IPortEventListener(name, pp) { }
+    PredictEventListener(std::string pp = "/lm/event/predict") : IPortEventListener(pp) { 
+        this->setName("Predict");
+    }
 
     /*
      * Inherited from IEventListener.

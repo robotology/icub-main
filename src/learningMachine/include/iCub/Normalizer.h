@@ -61,11 +61,10 @@ public:
     /**
      * Constructor.
      *
-     * @param name the name under which this type of transformer will be registered
      * @param l the initial lower bound
      * @param u the initial upper bound
      */
-    Normalizer(std::string name = "Normalizer", double l = -1, double u = 1);
+    Normalizer(double l = -1, double u = 1);
 
 protected:
     /*

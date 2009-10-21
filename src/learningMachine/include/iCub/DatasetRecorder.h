@@ -58,10 +58,9 @@ private:
 public:
     /**
      * Constructor.
-     *
-     * @param name the name under which this type of learner will be registered
      */
-    DatasetRecorder(std::string name = "Recorder") : IMachineLearner(name) {
+    DatasetRecorder() {
+        this->setName("Recorder");
         this->filename = "dataset.dat";
         this->precision = 8;
         this->sampleCount = 0;

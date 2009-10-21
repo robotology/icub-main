@@ -85,12 +85,11 @@ public:
     /**
      * Constructor.
      *
-     * @param name the name under which this type of learner will be registered
      * @param dSize the initial domain size
      * @param cdSize the initial codomain size
      */
-    IFixedSizeLearner(std::string name, int dSize = 1, int cdSize = 1) 
-        : IMachineLearner(name), domainSize(dSize), coDomainSize(cdSize) {
+    IFixedSizeLearner(int dSize = 1, int cdSize = 1) 
+        : domainSize(dSize), coDomainSize(cdSize) {
     }
 
     /*

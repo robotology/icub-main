@@ -53,12 +53,12 @@ public:
     /**
      * Constructor.
      *
-     * @param n the name under which this scaler will be registered
      * @param s the scale for the linear transformation
      * @param o the offset for the linear transformation
      */
-    IScaler(std::string n, double s = 1., double o = 0.) : 
-        name(n), scale(s), offset(o), updateEnabled(true) {}
+    IScaler(double s = 1., double o = 0.) : scale(s), offset(o), updateEnabled(true) {
+        this->setName("");
+    }
 
     /**
      * Destructor.

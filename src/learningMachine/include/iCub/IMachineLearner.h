@@ -79,11 +79,9 @@ protected:
 public:
     /**
      * Constructor.
-     *
-     * @param name the name using which this machine learner will be registered
      */
-    IMachineLearner(std::string name) {
-        this->setName(name);
+    IMachineLearner() {
+        this->setName("");
     }
 
     /**

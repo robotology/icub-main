@@ -52,11 +52,9 @@ protected:
 public:
     /**
      * Constructor.
-     *
-     * @param name the name under which this transformer will be registered
      */
-    ITransformer(std::string name) {
-        this->setName(name);
+    ITransformer() {
+        this->setName("");
         this->sampleCount = 0;
     }
 

@@ -20,7 +20,8 @@ namespace iCub {
 namespace contrib {
 namespace learningmachine {
 
-LSSVMLearner::LSSVMLearner(std::string name) : IFixedSizeLearner(name) {
+LSSVMLearner::LSSVMLearner() {
+    this->setName("LSSVM");
     this->kernel = new RBFKernel();
     this->setC(1.0);
 }
@@ -114,7 +115,7 @@ void LSSVMLearner::reset() {
 }
 
 IMachineLearner* LSSVMLearner::create() {
-    return new LSSVMLearner(this->getName());
+    return new LSSVMLearner();
 }
 
 std::string LSSVMLearner::getInfo() {

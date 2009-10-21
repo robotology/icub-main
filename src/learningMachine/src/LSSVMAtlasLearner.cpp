@@ -19,13 +19,14 @@ namespace learningmachine {
 
 bool LSSVMAtlasLearner::kernelsRegistered = false;
 
-LSSVMAtlasLearner::LSSVMAtlasLearner(std::string name, int size, int type, std::string kernel) : IFixedSizeLearner(name) {
+LSSVMAtlasLearner::LSSVMAtlasLearner(int size, int type, std::string kernel) {
+    this->setName("LSSVMAtlas");
     this->defaultType = type;
     this->defaultKernel = kernel;
     this->sampleCount = 0;
     if(!LSSVMAtlasLearner::kernelsRegistered) {
-        LSSVMAtlasLearner::kernelsRegistered = true;
         liblssvm::registerKernels();
+        LSSVMAtlasLearner::kernelsRegistered = true;
     }
 
     this->initAll(size);
@@ -192,7 +193,7 @@ void LSSVMAtlasLearner::reset() {
 }
 
 IMachineLearner* LSSVMAtlasLearner::create() {
-    return new LSSVMAtlasLearner(this->getName(), this->machines.size(), this->defaultType, this->defaultKernel);
+    return new LSSVMAtlasLearner(this->machines.size(), this->defaultType, this->defaultKernel);
 }
 
 std::string LSSVMAtlasLearner::getInfo() {
