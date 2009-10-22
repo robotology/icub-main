@@ -2,7 +2,7 @@
   <name>Watershed Module starter</name>
   <dependencies>
     <port>/rea/ImageProcessor/out</port>
-    <port>/rea</port>
+    <port>/icub01</port>
   </dependencies>
   <module>
     <name>yarpview</name>
