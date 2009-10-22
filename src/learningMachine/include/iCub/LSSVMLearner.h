@@ -270,6 +270,15 @@ public:
     virtual double getC() {
         return this->C;
     }
+
+    /**
+     * Accessor for the kernel.
+     *
+     * @returns the kernel
+     */
+    virtual RBFKernel* getKernel() {
+        return this->kernel;
+    }
 };
 
 } // learningmachine

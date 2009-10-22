@@ -179,7 +179,7 @@ void RLSLearner::setCoDomainSize(int size) {
 bool RLSLearner::configure(Searchable& config) {
     bool success = this->IFixedSizeLearner::configure(config);
 
-    // format: set lambda (KernelConfig1 .. KernelConfig)
+    // format: set lambda (lambda1 .. lambdan)
     if(config.find("lambda").isList()) {
         Bottle* transList = config.find("lambda").asList();
         for(int i = 0; i < transList->size(); i++) {
