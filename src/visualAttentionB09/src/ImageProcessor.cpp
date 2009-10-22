@@ -1779,6 +1779,7 @@ ImageOf<PixelRgb>* ImageProcessor::process (ImageOf<PixelRgb> *src){
 	}
 	else{
 		int psb;
+		printf("runs the code for multiplexing 1 channel to 4 \n");
 		im_out = ippiMalloc_8u_C1(width,height,&psb);
 		Ipp8u* im_tmp[3];
 		//two copies in order to have 2 conversions
