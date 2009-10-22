@@ -17,19 +17,18 @@
 
 #define TWOPI 6.2831853071795862
 
-// NOTE TO SELF: remove ASAP
-//#include <iostream>
-
 using namespace yarp::math;
 
 namespace iCub {
 namespace contrib {
 namespace learningmachine {
 
-RandomFeature::RandomFeature(double g) {
+RandomFeature::RandomFeature(int dom, int cod, double gamma) {
     this->setName("RandomFeature");
+    this->setDomainSize(dom);
+    this->setCoDomainSize(cod);
     // will initiate reset automatically
-    this->setGamma(g);
+    this->setGamma(gamma);
 }
 
 RandomFeature::~RandomFeature() {

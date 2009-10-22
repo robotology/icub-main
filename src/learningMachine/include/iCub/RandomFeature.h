@@ -59,9 +59,11 @@ public:
     /**
      * Constructor.
      *
-     * @param size initial size of the vector
+     * @param dom initial domain size
+     * @param cod initial codomain size
+     * @param g initial value for \gamma
      */
-    RandomFeature(double g = 1.);
+    RandomFeature(int dom = 1, int cod = 1, double gamma = 1.);
 
     /**
      * Destructor.

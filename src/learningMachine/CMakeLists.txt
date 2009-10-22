@@ -16,16 +16,78 @@ FIND_PACKAGE(YARP)
 
 FIND_PACKAGE(ICUB QUIET)
 IF (NOT ICUB_FOUND)
-   MESSAGE (STATUS "ICUB repository not found; assuming distributed build.")
-   MESSAGE (STATUS "If this is not what you want, set ICUB_DIR variable.")
+    MESSAGE (STATUS "ICUB repository not found; assuming distributed build.")
+    MESSAGE (STATUS "If this is not what you want, set ICUB_DIR variable.")
 ENDIF (NOT ICUB_FOUND)
 
 # Source code Groups
-SET(LM_MODULE_SRC src/IMachineLearnerModule.cpp)
-SET(LM_EVENT_SRC src/DispatcherManager.cpp src/EventDispatcher.cpp src/IEvent.cpp src/IEventListener.cpp src/IPortEventListener.cpp src/PredictEvent.cpp src/PredictEventListener.cpp src/TrainEvent.cpp src/TrainEventListener.cpp)
-SET(LM_MACHINE_SRC src/IFixedSizeLearner.cpp src/MachinePortable.cpp src/DatasetRecorder.cpp src/DummyLearner.cpp src/LSSVMLearner.cpp src/RLSLearner.cpp)
-SET(LM_TRANSFORMER_SRC src/ITransformer.cpp src/IFixedSizeTransformer.cpp src/ScaleTransformer.cpp src/IScaler.cpp src/Standardizer.cpp src/Normalizer.cpp src/FixedRangeScaler.cpp src/RandomFeature.cpp)
-FILE(GLOB LM_HEADER include/iCub/*.h)
+SET(LM_MODULE_SRC 
+    src/IMachineLearnerModule.cpp )
+SET(LM_EVENT_SRC 
+    src/DispatcherManager.cpp
+    src/EventDispatcher.cpp 
+    src/IEvent.cpp
+    src/IEventListener.cpp 
+    src/IPortEventListener.cpp
+    src/PredictEvent.cpp 
+    src/PredictEventListener.cpp
+    src/TrainEvent.cpp 
+    src/TrainEventListener.cpp )
+SET(LM_MACHINE_SRC 
+    src/DatasetRecorder.cpp
+    src/DummyLearner.cpp 
+    src/IFixedSizeLearner.cpp
+    src/LSSVMLearner.cpp
+    src/MachinePortable.cpp 
+    src/RLSLearner.cpp )
+SET(LM_TRANSFORMER_SRC 
+    src/FixedRangeScaler.cpp 
+    src/IFixedSizeTransformer.cpp 
+    src/IScaler.cpp 
+    src/ITransformer.cpp 
+    src/Normalizer.cpp 
+    src/RandomFeature.cpp
+    src/ScaleTransformer.cpp 
+    src/Standardizer.cpp )
+SET(LM_HEADER 
+    include/iCub/DatasetRecorder.h
+    include/iCub/DispatcherManager.h
+    include/iCub/DummyLearner.h
+    include/iCub/EventDispatcher.h
+    include/iCub/EventListenerCatalogue.h
+    include/iCub/EventListenerFactory.h
+    include/iCub/FactoryT.h
+    include/iCub/FixedRangeScaler.h
+    include/iCub/IEvent.h
+    include/iCub/IEventListener.h
+    include/iCub/IFixedSizeLearner.h
+    include/iCub/IFixedSizeTransformer.h
+    include/iCub/IMachineLearner.h
+    include/iCub/IMachineLearnerModule.h
+    include/iCub/IPortEventListener.h
+    include/iCub/IScaler.h
+    include/iCub/ITransformer.h
+    include/iCub/LSSVMAtlasLearner.h
+    include/iCub/LSSVMLearner.h
+    include/iCub/MachineCatalogue.h
+    include/iCub/MachineFactory.h
+    include/iCub/MachinePortable.h
+    include/iCub/MultiLearnerT.h
+    include/iCub/Normalizer.h
+    include/iCub/PortableTriple.h
+    include/iCub/PredictEvent.h
+    include/iCub/PredictEventListener.h
+    include/iCub/PredictModule.h
+    include/iCub/RandomFeature.h
+    include/iCub/RLSLearner.h
+    include/iCub/ScaleTransformer.h
+    include/iCub/Standardizer.h
+    include/iCub/TrainEvent.h
+    include/iCub/TrainEventListener.h
+    include/iCub/TrainModule.h
+    include/iCub/TransformerCatalogue.h
+    include/iCub/TransformerFactory.h
+    include/iCub/TransformModule.h )
 
 # Declare groups of source and header files -- makes things pretty in MSVC.
 #SOURCE_GROUP("Source Files" FILES ${folder_source})
@@ -57,15 +119,11 @@ IF(USE_LSSVMATLAS)
     SET(LSSVM_DIR "../lssvm")
     FIND_PACKAGE(LSSVM REQUIRED)
     INCLUDE("${LSSVM_DIR}/LSSVMLibraryDepends.cmake")
-    #SET(LSSVM_LIB_DEPENDS ${lssvm_LIB_DEPENDS})
     TARGET_LINK_LIBRARIES(${LM_TRAIN_EXEC} ${LSSVM_LIBRARIES})
     TARGET_LINK_LIBRARIES(${LM_PREDICT_EXEC} ${LSSVM_LIBRARIES})
     TARGET_LINK_LIBRARIES(${LM_TRAIN_EXEC} ${LSSVM_LIB_DEPENDS})
     TARGET_LINK_LIBRARIES(${LM_PREDICT_EXEC} ${LSSVM_LIB_DEPENDS})
     INCLUDE_DIRECTORIES(${LSSVM_INCLUDE_DIRS})
-    #MESSAGE (STATUS "Libraries: ${LSSVM_LIBRARIES}")
-    #MESSAGE (STATUS "Depends: ${LSSVM_LIB_DEPENDS}")
-    #MESSAGE (STATUS "Include: ${LSSVM_INCLUDE_DIRS}")
 ENDIF(USE_LSSVMATLAS)
 
 

@@ -93,22 +93,14 @@ public:
     /**
      * Constructor.
      *
-     * @param size initial size of the vector
+     * @param dom initial domain/codomain size
      */
-    ScaleTransformer(int size = 1);
+    ScaleTransformer(int dom = 1);
 
     /**
      * Destructor.
      */
     ~ScaleTransformer();
-
-    /**
-     * Feeds a single sample into the scaler, so that it can use this sample
-     * to learn the appropriate offset and scale.
-     *
-     * @param value the sample value
-     */
-    //virtual void feedSample(const Vector& in);
 
     /*
      * Inherited from ITransformer.

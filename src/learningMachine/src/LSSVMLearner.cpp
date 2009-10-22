@@ -9,7 +9,6 @@
 #include <cassert>
 #include <sstream>
 //#include <stdexcept>
-#include <iostream>
 
 #include <yarp/math/SVD.h>
 
@@ -20,10 +19,14 @@ namespace iCub {
 namespace contrib {
 namespace learningmachine {
 
-LSSVMLearner::LSSVMLearner() {
+LSSVMLearner::LSSVMLearner(int dom, int cod, double c) {
     this->setName("LSSVM");
     this->kernel = new RBFKernel();
-    this->setC(1.0);
+    // make sure to not use initialization list to constructor of base for 
+    // domain and codomain size, as it will not use overloaded mutators
+    this->setDomainSize(dom);
+    this->setCoDomainSize(cod);
+    this->setC(c);
 }
 
 LSSVMLearner::~LSSVMLearner() {

@@ -17,10 +17,15 @@ namespace iCub {
 namespace contrib {
 namespace learningmachine {
 
-RLSLearner::RLSLearner(int size) {
+RLSLearner::RLSLearner(int dom, int cod, double lambda) {
     this->setName("RLS");
     this->sampleCount = 0;
-    this->initAll(size);
+    // make sure to not use initialization list to constructor of base for 
+    // domain and codomain size, as it will not use overloaded mutators
+    this->setDomainSize(dom);
+    // slightly inefficient to use mutators, as we are initializing twice
+    this->setCoDomainSize(cod);
+    this->setLambdaAll(lambda);
 }
 
 RLSLearner::~RLSLearner() {

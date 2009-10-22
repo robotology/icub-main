@@ -21,7 +21,6 @@
 #ifndef __ICUB_RLSLEARNER__
 #define __ICUB_RLSLEARNER__
 
-#include <iostream>
 #include <string>
 #include <vector>
 #include <sstream>
@@ -174,21 +173,6 @@ private:
     void initAll(int size);
 
     /**
-     * Sets the regularization parameter lambda of all machines to a specified value.
-     *
-     * @param l the desired value.
-     */
-    void setLambdaAll(double l);
-
-    /**
-     * Sets the regularization parameter lambda of the machine at a given index to a specified value.
-     *
-     * @param index the index of the element.
-     * @param l the desired value.
-     */
-    void setLambdaAt(int index, double l);
-
-    /**
      * Creates a new machine according to the currently stored type specifier.
      *
      * @return a machine of the desired type.
@@ -199,9 +183,11 @@ public:
     /**
      * Constructor.
      *
-     * @param size the initial codomain size
+     * @param dom initial domain size
+     * @param cod initial codomain size
+     * @param lambda initial value for regularization parameter \lambda
      */
-    RLSLearner(int size = 1);
+    RLSLearner(int dom = 1, int cod = 1, double lambda = 1.0);
 
     /**
      * Destructor.
@@ -262,6 +248,21 @@ public:
      * Inherited from IFixedSizeLearner.
      */
     void setCoDomainSize(int size);
+
+    /**
+     * Sets the regularization parameter lambda of all machines to a specified value.
+     *
+     * @param l the desired value.
+     */
+    void setLambdaAll(double l);
+
+    /**
+     * Sets the regularization parameter lambda of the machine at a given index to a specified value.
+     *
+     * @param index the index of the element.
+     * @param l the desired value.
+     */
+    void setLambdaAt(int index, double l);
 
     /*
      * Inherited from IConfig.

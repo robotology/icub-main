@@ -45,7 +45,7 @@ class Kernel : public IConfig {
 private:
     std::string name;
 public:
-    Kernel(std::string name) {
+    Kernel(std::string name = "") {
         this->name = name;
     }
 
@@ -60,6 +60,10 @@ public:
         return this->name;
     }
     
+    virtual void setName(std::string n) {
+        this->name = n;
+    }
+    
     virtual std::string getInfo() {
         return this->getName();
     }
@@ -69,7 +73,7 @@ class RBFKernel : public Kernel {
 private:
     double gamma;
 public:
-    RBFKernel(std::string name = "RBF", double gamma = 1.0) : Kernel(name), gamma(gamma) {
+    RBFKernel(double gamma = 1.0) : Kernel("RBF"), gamma(gamma) {
     }
     
     ~RBFKernel() {}
@@ -177,8 +181,12 @@ private:
 public:
     /**
      * Constructor.
+     *
+     * @param dom initial domain size
+     * @param cod initial codomain size
+     * @param c initial value for regularization parameter C
      */
-    LSSVMLearner();
+    LSSVMLearner(int dom = 1, int cod = 1, double c = 1.0);
 
     /**
      * Destructor.

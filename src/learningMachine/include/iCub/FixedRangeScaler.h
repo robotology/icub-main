@@ -60,8 +60,10 @@ public:
     /**
      * Constructor.
      *
-     * @param l the initial lower bound
-     * @param u the initial upper bound
+     * @param li the initial lower input bound
+     * @param ui the initial upper input bound
+     * @param lo the initial lower output bound
+     * @param uo the initial upper output bound
      */
     FixedRangeScaler(double li = -1., double ui = 1., double lo = -1., double uo = 1.);
 

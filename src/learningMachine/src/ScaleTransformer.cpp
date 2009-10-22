@@ -11,16 +11,13 @@
 
 #include "iCub/ScaleTransformer.h"
 
-// NOTE TO SELF: remove ASAP
-#include <iostream>
-
 namespace iCub {
 namespace contrib {
 namespace learningmachine {
 
-ScaleTransformer::ScaleTransformer(int size) {
+ScaleTransformer::ScaleTransformer(int dom) {
     this->setName("Scaler");
-    this->deleteAll(size);
+    this->setDomainSize(dom);
 }
 
 ScaleTransformer::~ScaleTransformer() {
@@ -134,12 +131,6 @@ std::string ScaleTransformer::getConfigHelp() {
 bool ScaleTransformer::configure(Searchable &config) {
     bool success = this->IFixedSizeTransformer::configure(config);
 
-    // format: set type ScalerName
-/*    if(config.find("type").isString()) {
-        this->setAll(config.find("type").asString().c_str());
-        success = true;
-    }*/
-
     // format: set type (ScalerName ScalerName)
     if(config.find("type").isList()) {
         Bottle* scaleList = config.find("type").asList();
@@ -165,17 +156,6 @@ bool ScaleTransformer::configure(Searchable &config) {
             success = true;
         }
     }
-    
-    // format: set type 1 ScalerName
-/*    if(!config.findGroup("type").isNull()) {
-        //success = true;
-        Bottle list = config.findGroup("type").tail();
-        if(list.get(0).isInt() && list.get(1).isString()) {
-            // shift index, since internal numbering in vector starts at 0, the user starts at 1
-            this->setAt(list.get(0).asInt() - 1, list.get(1).asString().c_str());
-            success = true;
-        }
-    }*/
     
     // format: set config idx|all key val
     if(!config.findGroup("config").isNull()) {

@@ -8,7 +8,6 @@
 
 #include <cfloat>
 #include <sstream>
-#include <iostream>
 
 #include <yarp/os/Value.h>
 
@@ -27,7 +26,8 @@ FixedRangeScaler::FixedRangeScaler(double li, double ui, double lo, double uo) {
 }
 
 void FixedRangeScaler::updateScales() {
-    this->scale = (this->getUpperBoundIn() - this->getLowerBoundIn()) / (this->getUpperBoundOut() - this->getLowerBoundOut());
+    this->scale = (this->getUpperBoundIn() - this->getLowerBoundIn()) / 
+                  (this->getUpperBoundOut() - this->getLowerBoundOut());
     this->offset = this->getLowerBoundIn() - (this->getLowerBoundOut() * this->scale);
 }
 
@@ -76,7 +76,6 @@ bool FixedRangeScaler::configure(Searchable& config) {
     }
 
     if(!config.findGroup("out").isNull()) {
-        std::cout << "out: " << config.findGroup("out").toString() << std::endl;
         Bottle& bot = config.findGroup("out");
         if(bot.size() == 3 && (bot.get(1).isInt() || bot.get(1).isDouble()) && 
            (bot.get(2).isInt() || bot.get(2).isDouble())) {

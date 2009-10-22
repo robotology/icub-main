@@ -61,12 +61,14 @@ public:
     /**
      * Constructor.
      */
-    DummyLearner() {
+    DummyLearner(int dom = 1, int cod = 1) {
         this->setName("Dummy");
         inputs.resize(0);
         outputs.resize(0);
         this->sampleCount = 0;
         this->trainCount = 0;
+        this->setDomainSize(dom);
+        this->setCoDomainSize(cod);
     }
 
     /**

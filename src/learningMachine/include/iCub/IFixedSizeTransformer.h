@@ -73,11 +73,11 @@ public:
     /**
      * Constructor.
      *
-     * @param dSize the initial domain size
-     * @param cdSize the initial codomain size
+     * @param dom the initial domain size
+     * @param cod the initial codomain size
      */
-    IFixedSizeTransformer(int dSize = 1, int cdSize = 1) 
-        : domainSize(dSize), coDomainSize(cdSize) {
+    IFixedSizeTransformer(int dom = 1, int cod = 1) 
+        : domainSize(dom), coDomainSize(cod) {
     }
 
     /*
