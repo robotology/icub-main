@@ -449,6 +449,8 @@ static gint expose_CB (GtkWidget *widget, GdkEventExpose *event, gpointer data)
 		}
 	
 	}
+
+	//imageProcessModule->currentProcessor->canProcess_flag=0;
 	
 	return TRUE;
 }

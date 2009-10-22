@@ -24,8 +24,8 @@ ImageProcessor::ImageProcessor(){
 	greenRed_flag=0;
 	redGreen_flag=0;
 
-	colourOpponency_flag=1;
-	findEdges_flag=1;
+	colourOpponency_flag=0;
+	findEdges_flag=0;
 	normalize_flag=0;
 	combineMax_flag=0;
 	width=320;
@@ -214,7 +214,7 @@ void ImageProcessor::colourOpponency(ImageOf<PixelRgb> *src){
 	int psb;
 	int psb4;
 	
-	printf("ColourOpponency before getBluePlane \n");
+	printf("ColourOpponency, getBluePlane \n");
 	//1.get the red,blue and green planes
 	printf("tmp: 0x%08x\n", tmp);
 	this->getBluePlane(src,tmp);	
@@ -222,11 +222,13 @@ void ImageProcessor::colourOpponency(ImageOf<PixelRgb> *src){
 	ippiCopy_8u_C1R(tmp->getPixelAddress(0,0),width,bluePlane->getPixelAddress(0,0),width,srcsize);
 	printf("bluePlane2: 0x%08x\n", bluePlane);
 
+	printf("ColourOpponency, getRedPlane \n");
 	this->getRedPlane(src,tmp);
 	//printf("tmp: 0x%08x\n", tmp);
 	ippiCopy_8u_C1R(tmp->getPixelAddress(0,0),width,redPlane->getPixelAddress(0,0),width,srcsize);
 	//printf("redPlane2: 0x%08x\n", redPlane);
 
+	printf("ColourOpponency, getGreenPlane \n");
 	this->getGreenPlane(src,tmp);
 	//printf("tmp: 0x%08x\n", tmp);
 	ippiCopy_8u_C1R(tmp->getPixelAddress(0,0),width,greenPlane->getPixelAddress(0,0),width,srcsize);
@@ -1833,11 +1835,11 @@ ImageOf<PixelMono>* ImageProcessor::getRedPlane(ImageOf<PixelRgb>* inputImage,Im
 	Ipp8u* plane=ippiMalloc_8u_C1(width,height,&psb);
 	ippiCopy_8u_C1R(shift[0],psb,plane,width,srcsize);
 	ippiCopy_8u_C3P3R(inputImage->getPixelAddress(0,0),width*3,shift,psb,srcsize);
-	ippiCopy_8u_C1R(plane,psb,tmp->getPixelAddress(0,0),width,srcsize);
+	ippiCopy_8u_C1R(shift[0],psb,tmp->getPixelAddress(0,0),width,srcsize);
 	ippiFree(shift[0]);
 	ippiFree(shift[1]);
 	ippiFree(shift[2]);
-	return NULL;
+	return outputImage;
 }
 
 /*
@@ -1872,11 +1874,11 @@ ImageOf<PixelMono>* ImageProcessor::getGreenPlane(ImageOf<PixelRgb>* inputImage,
 	Ipp8u* plane=ippiMalloc_8u_C1(width,height,&psb);
 	ippiCopy_8u_C1R(shift[1],psb,plane,width,srcsize);
 	ippiCopy_8u_C3P3R(inputImage->getPixelAddress(0,0),width*3,shift,psb,srcsize);
-	ippiCopy_8u_C1R(plane,psb,tmp->getPixelAddress(0,0),width,srcsize);
+	ippiCopy_8u_C1R(shift[1],psb,tmp->getPixelAddress(0,0),width,srcsize);
 	ippiFree(shift[0]);
 	ippiFree(shift[1]);
 	ippiFree(shift[2]);
-	return NULL;
+	return outputImage;
 }
 
 /*
@@ -1911,15 +1913,15 @@ ImageOf<PixelMono>* ImageProcessor::getBluePlane(ImageOf<PixelRgb>* inputImage,I
 	shift[2]=ippiMalloc_8u_C1(width,height,&psb);
 	Ipp8u* plane=ippiMalloc_8u_C1(width,height,&psb);
 	ippiCopy_8u_C1R(shift[2],psb,plane,width,srcsize);
-	printf("Before copy in getBluePlane \n");
+	printf("in getBluePlane \n");
 	ippiCopy_8u_C3P3R(inputImage->getPixelAddress(0,0),width*3,shift,psb,srcsize);
 	printf("Middle in getBluePlane \n");
-	ippiCopy_8u_C1R(plane,psb,tmp->getPixelAddress(0,0),width,srcsize);
+	ippiCopy_8u_C1R(shift[2],psb,tmp->getPixelAddress(0,0),width,srcsize);
 	printf("After copy in getBluePlane \n");
 	ippiFree(shift[0]);
 	ippiFree(shift[1]);
 	ippiFree(shift[2]);
-	return NULL;
+	return outputImage;
 }
 
 /*
