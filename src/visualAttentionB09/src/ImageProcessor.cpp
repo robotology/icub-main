@@ -158,7 +158,8 @@ ImageProcessor::ImageProcessor(ImageOf<PixelRgb>* inputImage){
 	
 	portImage=new ImageOf<PixelRgb>;
 	this->portImage->resize(320,240);
-
+	tmp=new ImageOf<PixelMono>;
+	tmp->resize(320,240);
 	redGreen_yarp=new ImageOf<PixelMono>;
 	redGreen_yarp->resize(320,240);
 	greenRed_yarp=new ImageOf<PixelMono>;
@@ -215,10 +216,11 @@ void ImageProcessor::colourOpponency(ImageOf<PixelRgb> *src){
 	
 	printf("ColourOpponency before getBluePlane \n");
 	//1.get the red,blue and green planes
+	printf("tmp: 0x%08x\n", tmp);
 	this->getBluePlane(src,tmp);	
-	//printf("tmp: 0x%08x\n", tmp);
+	printf("tmp: 0x%08x\n", tmp);
 	ippiCopy_8u_C1R(tmp->getPixelAddress(0,0),width,bluePlane->getPixelAddress(0,0),width,srcsize);
-	//printf("bluePlane2: 0x%08x\n", bluePlane);
+	printf("bluePlane2: 0x%08x\n", bluePlane);
 
 	this->getRedPlane(src,tmp);
 	//printf("tmp: 0x%08x\n", tmp);
@@ -1904,6 +1906,7 @@ ImageOf<PixelMono>* ImageProcessor::getBluePlane(ImageOf<PixelRgb>* inputImage,I
 	shift[2]=ippiMalloc_8u_C1(width,height,&psb);
 	printf("Before copy in getBluePlane \n");
 	ippiCopy_8u_C3P3R(inputImage->getPixelAddress(0,0),width*3,shift,psb,srcsize);
+	printf("Middle in getBluePlane \n");
 	ippiCopy_8u_C1R(shift[2],psb,tmp->getPixelAddress(0,0),width,srcsize);
 	printf("After copy in getBluePlane \n");
 	ippiFree(shift[0]);
