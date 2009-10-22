@@ -213,7 +213,7 @@ void ImageProcessor::colourOpponency(ImageOf<PixelRgb> *src){
 	int psb;
 	int psb4;
 	
-	
+	printf("ColourOpponency before getBluePlane \n");
 	//1.get the red,blue and green planes
 	this->getBluePlane(src,tmp);	
 	//printf("tmp: 0x%08x\n", tmp);
@@ -1902,8 +1902,10 @@ ImageOf<PixelMono>* ImageProcessor::getBluePlane(ImageOf<PixelRgb>* inputImage,I
 	shift[0]=ippiMalloc_8u_C1(width,height,&psb); 
 	shift[1]=ippiMalloc_8u_C1(width,height,&psb);
 	shift[2]=ippiMalloc_8u_C1(width,height,&psb);
+	printf("Before copy in getBluePlane \n");
 	ippiCopy_8u_C3P3R(inputImage->getPixelAddress(0,0),width*3,shift,psb,srcsize);
 	ippiCopy_8u_C1R(shift[2],psb,tmp->getPixelAddress(0,0),width,srcsize);
+	printf("After copy in getBluePlane \n");
 	ippiFree(shift[0]);
 	ippiFree(shift[1]);
 	ippiFree(shift[2]);
