@@ -1792,6 +1792,7 @@ ImageOf<PixelRgb>* ImageProcessor::process (ImageOf<PixelRgb> *src){
 		im_tmp[2]=im_out;
 		//the second transforms the 4-channel image into colorImage for yarp
 		ippiCopy_8u_P3C3R(im_tmp,psb,image_out->getPixelAddress(0,0),width*3,srcsize);
+		printf("copied to the portImage \n");
 		this->portImage=image_out;
 		ippiFree(im_out);
 		ippiFree(im_tmp);
