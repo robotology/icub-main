@@ -222,8 +222,9 @@ void ImageProcessor::colourOpponency(ImageOf<PixelRgb> *src){
 	//printf("tmp: 0x%08x\n", tmp);
 	this->getBluePlane(src,tmp);	
 	printf("tmp: 0x%08x\n", tmp);
-	ippiCopy_8u_C1R(tmp->getPixelAddress(0,0),width,bluePlane->getPixelAddress(0,0),width,srcsize);
 	printf("bluePlane: 0x%08x\n", bluePlane);
+	ippiCopy_8u_C1R(tmp->getPixelAddress(0,0),width,bluePlane->getPixelAddress(0,0),width,srcsize);
+	
 
 	printf("ColourOpponency, getRedPlane \n");
 	this->getRedPlane(src,tmp);
