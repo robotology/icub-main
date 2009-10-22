@@ -1904,15 +1904,17 @@ ImageOf<PixelMono>* ImageProcessor::getBluePlane(ImageOf<PixelRgb>* inputImage,I
 	shift[0]=ippiMalloc_8u_C1(width,height,&psb); 
 	shift[1]=ippiMalloc_8u_C1(width,height,&psb);
 	shift[2]=ippiMalloc_8u_C1(width,height,&psb);
+	Ipp8u* plane=ippiMalloc_8u_C1(width,height,&psb);
+	ippiCopy_8u_C1R(shift[2],psb,plane,width,srcsize);
 	printf("Before copy in getBluePlane \n");
 	ippiCopy_8u_C3P3R(inputImage->getPixelAddress(0,0),width*3,shift,psb,srcsize);
 	printf("Middle in getBluePlane \n");
-	ippiCopy_8u_C1R(shift[2],psb,tmp->getPixelAddress(0,0),width,srcsize);
+	ippiCopy_8u_C1R(plane,psb,tmp->getPixelAddress(0,0),width,srcsize);
 	printf("After copy in getBluePlane \n");
 	ippiFree(shift[0]);
 	ippiFree(shift[1]);
 	ippiFree(shift[2]);
-	return outputImage;
+	return tmp;
 }
 
 /*
