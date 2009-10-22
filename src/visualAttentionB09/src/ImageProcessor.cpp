@@ -177,6 +177,9 @@ void ImageProcessor::colourOpponency(ImageOf<PixelRgb> *src){
 	int width=src->width();
 	int height=src->height();
 	IppiSize srcsize ={320,240};
+
+	tmp=new ImageOf<PixelMono>;
+	tmp->resize(320,240);
 	
 	/*if((unsigned int)bluePlane==0xcdcdcdcd){
 		bluePlane=new ImageOf<PixelMono>;
@@ -216,23 +219,23 @@ void ImageProcessor::colourOpponency(ImageOf<PixelRgb> *src){
 	
 	printf("ColourOpponency, getBluePlane \n");
 	//1.get the red,blue and green planes
-	printf("tmp: 0x%08x\n", tmp);
+	//printf("tmp: 0x%08x\n", tmp);
 	this->getBluePlane(src,tmp);	
-	printf("tmp: 0x%08x\n", tmp);
+	//printf("tmp: 0x%08x\n", tmp);
 	ippiCopy_8u_C1R(tmp->getPixelAddress(0,0),width,bluePlane->getPixelAddress(0,0),width,srcsize);
-	printf("bluePlane2: 0x%08x\n", bluePlane);
+	printf("bluePlane: 0x%08x\n", bluePlane);
 
 	printf("ColourOpponency, getRedPlane \n");
 	this->getRedPlane(src,tmp);
 	//printf("tmp: 0x%08x\n", tmp);
 	ippiCopy_8u_C1R(tmp->getPixelAddress(0,0),width,redPlane->getPixelAddress(0,0),width,srcsize);
-	//printf("redPlane2: 0x%08x\n", redPlane);
+	printf("redPlane: 0x%08x\n", redPlane);
 
 	printf("ColourOpponency, getGreenPlane \n");
 	this->getGreenPlane(src,tmp);
 	//printf("tmp: 0x%08x\n", tmp);
 	ippiCopy_8u_C1R(tmp->getPixelAddress(0,0),width,greenPlane->getPixelAddress(0,0),width,srcsize);
-	//printf("greenPlane2: 0x%08x\n", greenPlane);
+	printf("greenPlane: 0x%08x\n", greenPlane);
 	
 
 	//2.1 shifts the 3 planes by one pixel on the right 
