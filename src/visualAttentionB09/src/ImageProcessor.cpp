@@ -1829,12 +1829,14 @@ ImageOf<PixelMono>* ImageProcessor::getRedPlane(ImageOf<PixelRgb>* inputImage,Im
 	shift[0]=ippiMalloc_8u_C1(width,height,&psb); 
 	shift[1]=ippiMalloc_8u_C1(width,height,&psb);
 	shift[2]=ippiMalloc_8u_C1(width,height,&psb);
+	Ipp8u* plane=ippiMalloc_8u_C1(width,height,&psb);
+	ippiCopy_8u_C1R(shift[0],psb,plane,width,srcsize);
 	ippiCopy_8u_C3P3R(inputImage->getPixelAddress(0,0),width*3,shift,psb,srcsize);
-	ippiCopy_8u_C1R(shift[0],psb,tmp->getPixelAddress(0,0),width,srcsize);
+	ippiCopy_8u_C1R(plane,psb,tmp->getPixelAddress(0,0),width,srcsize);
 	ippiFree(shift[0]);
 	ippiFree(shift[1]);
 	ippiFree(shift[2]);
-	return outputImage;
+	return NULL;
 }
 
 /*
@@ -1866,12 +1868,14 @@ ImageOf<PixelMono>* ImageProcessor::getGreenPlane(ImageOf<PixelRgb>* inputImage,
 	shift[0]=ippiMalloc_8u_C1(width,height,&psb); 
 	shift[1]=ippiMalloc_8u_C1(width,height,&psb);
 	shift[2]=ippiMalloc_8u_C1(width,height,&psb);
+	Ipp8u* plane=ippiMalloc_8u_C1(width,height,&psb);
+	ippiCopy_8u_C1R(shift[1],psb,plane,width,srcsize);
 	ippiCopy_8u_C3P3R(inputImage->getPixelAddress(0,0),width*3,shift,psb,srcsize);
-	ippiCopy_8u_C1R(shift[1],psb,tmp->getPixelAddress(0,0),width,srcsize);
+	ippiCopy_8u_C1R(plane,psb,tmp->getPixelAddress(0,0),width,srcsize);
 	ippiFree(shift[0]);
 	ippiFree(shift[1]);
 	ippiFree(shift[2]);
-	return outputImage;
+	return NULL;
 }
 
 /*
@@ -1905,16 +1909,16 @@ ImageOf<PixelMono>* ImageProcessor::getBluePlane(ImageOf<PixelRgb>* inputImage,I
 	shift[1]=ippiMalloc_8u_C1(width,height,&psb);
 	shift[2]=ippiMalloc_8u_C1(width,height,&psb);
 	Ipp8u* plane=ippiMalloc_8u_C1(width,height,&psb);
-	//ippiCopy_8u_C1R(shift[2],psb,plane,width,srcsize);
+	ippiCopy_8u_C1R(shift[2],psb,plane,width,srcsize);
 	printf("Before copy in getBluePlane \n");
 	ippiCopy_8u_C3P3R(inputImage->getPixelAddress(0,0),width*3,shift,psb,srcsize);
 	printf("Middle in getBluePlane \n");
-	ippiCopy_8u_C1R(shift[2],psb,plane,width,srcsize);
+	ippiCopy_8u_C1R(plane,psb,tmp->getPixelAddress(0,0),width,srcsize);
 	printf("After copy in getBluePlane \n");
 	ippiFree(shift[0]);
 	ippiFree(shift[1]);
 	ippiFree(shift[2]);
-	return tmp;
+	return NULL;
 }
 
 /*
