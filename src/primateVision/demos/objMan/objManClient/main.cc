@@ -101,6 +101,18 @@ int main( int argc, char **argv )
 			qims[i]->bits(),qims[i]->width(),srcsize);
 	locations[i*2]   = objList->get(i)->mos_xl + mos_width/2 - width/2;
 	locations[i*2+1] = objList->get(i)->mos_yl + mos_height/2 - height/2;
+
+
+	//THIS IS HOW YOUR CLIENTS CAN ACCESS THE OBJECT MANAGER DATA:
+	//objList->size()         //num of objs in list (int)
+	//objList->get(i)->label  //ith object label (string)
+	//objList->get(i)->tex    //ith object image (yarp img)
+	//objList->get(i)->x      //3D coords of ith object for Sim display (floats)
+	//objList->get(i)->y
+	//objList->get(i)->z
+	//objList->get(i)->mos_xl //2D mosaic position of ith object for mosaic clients (ints)
+	//objList->get(i)->mos_xr //
+
       }
       
       //display:
