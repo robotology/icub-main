@@ -55,7 +55,7 @@ public:
      *
      * @param machineName The name specifier for the wrapped learning machine
      */
-    MachinePortable(std::string& machineName);
+    MachinePortable(std::string machineName);
 
     /**
      * Destructor.

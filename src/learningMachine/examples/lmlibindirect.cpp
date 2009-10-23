@@ -2,7 +2,7 @@
  * Copyright (C) 2007-2009 Arjan Gijsberts @ Italian Institute of Technology
  * CopyPolicy: Released under the terms of the GNU GPL v2.0.
  *
- * Example code how to use the learningMachine library in a indirect manner.
+ * Example code how to use the learningMachine library in an indirect manner.
  */
 #include <iostream>
 #include <math.h>
@@ -12,12 +12,12 @@
 #include <yarp/os/Property.h>
 #include <yarp/math/Rand.h>
 
-#define MIN(a, b)  (a > b) ? a : b
+#define MIN(a, b)   ((a < b) ? a : b)
 
-#define NO_TRAIN   1000
-#define NO_TEST    1000
-#define NOISE_MIN -0.05
-#define NOISE_MAX  0.05
+#define NO_TRAIN    1000
+#define NO_TEST     1000
+#define NOISE_MIN  -0.05
+#define NOISE_MAX   0.05
 
 
 using namespace iCub::contrib::learningmachine;
@@ -39,12 +39,7 @@ double sin2d(double x1, double x2) {
 }
 
 void elementProd(const Vector& v1, Vector& v2) {
-  std::cout << "v1: " << v1.size() << std::endl;
- 
-  std::cout << "v2: " << v2.size() << std::endl;
-  std::cout << "MIN(v1.size(), v2.size()): " << MIN(v1.size(), v2.size()) << std::endl;
   for(int i = 0; i < MIN(v1.size(), v2.size()); i++) {
-    std::cout << "i: " << i << std::endl;
     v2[i] = v1[i] * v2[i];
   }
 }
@@ -83,60 +78,74 @@ std::pair<Vector, Vector> createSample() {
  */
 
 int main(int argc, char** argv) {
+  Vector trainMSE(2);
+  Vector testMSE(2);
+  Vector noise_min(2);
+  Vector noise_max(2);
+
   std::cout << "LearningMachine library example (indirect)" << std::endl;
 
+  // create Regularized Least Squares learner
   IMachineLearner* rls = new RLSLearner();
-  Property p("(dom 250) (cod 2) (lambda (2.0 3.0))");
+  Property p("(dom 250) (cod 2) (lambda (0.5 0.01))");
   rls->configure(p);
   std::cout << "Learner:" << std::endl << rls->getInfo() << std::endl;
   
+  // create Random Feature transformer
   ITransformer* rf = new RandomFeature();
-  p.fromString("(dom 2) (cod 250) (gamma 1.0)", true);
+  p.fromString("(dom 2) (cod 250) (gamma 16.0)", true);
   rf->configure(p);
   std::cout << "Transformer:" << std::endl << rf->getInfo() << std::endl;
 
+
   // create and feed training samples
-  Vector noise_min(2);
   noise_min = NOISE_MIN;
-  Vector noise_max(2);
   noise_max = NOISE_MAX;
-  Vector MSE(2);
-  MSE = 0.0;
+
+  trainMSE = 0.0;
   for(int i = 0; i < NO_TRAIN; i++) {
+    // create a new training sample
     std::pair<Vector, Vector> sample = createSample();
 
-    // add some noise for training
-    Vector input = sample.first + Rand::vector(noise_min, noise_max);
-    rf->transform(input, sample.first);
+    // add some noise to output for training
+    Vector noisyOutput = sample.second + Rand::vector(noise_min, noise_max);
+    
+    // transform input using RF
+    Vector transInput;
+    rf->transform(sample.first, transInput);
 
-    // training errors based just on input
-    Vector prediction = rls->predict(sample.first);
-
+    // make prediction before feeding full sample
+    Vector prediction = rls->predict(transInput);
     Vector diff = prediction - sample.second;
     elementProd(diff, diff);
-    MSE = MSE + diff;
+    trainMSE = trainMSE + diff;
 
-    // train on complete sample
-    rls->feedSample(sample.first, sample.second);
+    // train on complete sample with noisy output
+    rls->feedSample(transInput, noisyOutput);
   }
-  MSE = elementDiv(MSE, NO_TRAIN);
-  std::cout << "Train MSE: " << MSE.toString() << std::endl;
-/*  
-  // train the machine on the data (it's a batch machine!)
-  lssvm->train();
-  
-  // feed test samples
-  double MSE = 0.;
+  trainMSE = elementDiv(trainMSE, NO_TRAIN);
+  std::cout << "Train MSE: " << trainMSE.toString() << std::endl;
+
+  // predict test samples
+  testMSE = 0.;
   for(int i = 0; i < NO_TEST; i++) {
-    std::pair<Vector, Vector> sample = createSample(INPUT_MIN, INPUT_MAX);
-    sample.first[0] = scaler->transform(sample.first[0]);
-    Vector prediction = lssvm->predict(sample.first);
-    double diff = sample.second[0] - prediction[0];
-    MSE += diff * diff;
+    // create a new testing sample
+    std::pair<Vector, Vector> sample = createSample();
+
+    // transform input using RF
+    Vector transInput;
+    rf->transform(sample.first, transInput);
+
+    // make prediction
+    Vector prediction = rls->predict(transInput);
+    Vector diff = prediction - sample.second;
+    elementProd(diff, diff);
+    //std::cout << "Sample: " << sample.input << 
+    testMSE = testMSE + diff;
   }
-  MSE /= NO_TEST;
-  std::cout << "MSE on test data after " << NO_TEST << " samples: " << MSE << std::endl;
-*/
+  testMSE = elementDiv(testMSE, NO_TEST);
+  std::cout << "Test MSE: " << testMSE.toString() << std::endl;
+
   delete rls;
   delete rf;
 }
