@@ -18,7 +18,7 @@ LINK_DIRECTORIES(
   
 	)
 
-ADD_EXECUTABLE( eslog
+ADD_EXECUTABLE( es
 		main.cc
 		world3d.cc
 		pointfilter.cc 		
@@ -26,7 +26,7 @@ ADD_EXECUTABLE( eslog
 		proc.cc
 		)
 
-TARGET_LINK_LIBRARIES(eslog
+TARGET_LINK_LIBRARIES(es
 	ippi
 	glut
         Qt3Support
@@ -38,5 +38,5 @@ TARGET_LINK_LIBRARIES(eslog
 
 # install targets
 INSTALL_TARGETS(${BIN_DIR} 
-  eslog
+  es
 )

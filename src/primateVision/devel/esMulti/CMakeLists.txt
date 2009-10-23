@@ -19,7 +19,7 @@ INCLUDE_DIRECTORIES(
 LINK_DIRECTORIES(
 	)
 
-ADD_EXECUTABLE( eslogMulti
+ADD_EXECUTABLE( esMulti
 		main.cc
 		world3d.cc
  		mworld3d.cc
@@ -27,7 +27,7 @@ ADD_EXECUTABLE( eslogMulti
 		pointfilter.cc
 		)
 
-TARGET_LINK_LIBRARIES(eslogMulti
+TARGET_LINK_LIBRARIES(esMulti
 	ippi
 	glut
         Qt3Support
@@ -39,5 +39,5 @@ TARGET_LINK_LIBRARIES(eslogMulti
 
 # install targets
 INSTALL_TARGETS(${BIN_DIR} 
-  eslogMulti
+  esMulti
 )

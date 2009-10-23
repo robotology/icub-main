@@ -20,7 +20,7 @@ int main( int argc, char **argv )
 
 
 
-  string fname=string("prova.jpg");
+  string fname=string("/home/andrew/src/iCub/src/primateVision/devel/es/prova.jpg");
 
   for (int i=1;i<argc;i++) {
     if ((strcmp(argv[i],"--imagefile")==0)||(strcmp(argv[i],"-i")==0)) {

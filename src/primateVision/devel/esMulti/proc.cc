@@ -42,7 +42,7 @@ void PROC::run()
   //NEW CODE. IMAGE LOADED FROM A FILE -> Ipp8u *dest_im is not used in this case, only with cameras
 
   //Creating image with black transparent border
-  QImage *start_im = new QImage("left.jpg","JPEG");
+  QImage *start_im = new QImage("/home/andrew/src/iCub/src/primateVision/devel/esMulti/left.jpg","JPEG");
 
   IppiSize srcsize, destsize;
   srcsize.width = start_im->width();
@@ -67,7 +67,7 @@ void PROC::run()
     {
       disp_im->setColor(ui,qRgb(ui,ui,ui));
     }
-    disp_im->load("disp_graph.jpg","JPEG");
+    disp_im->load("/home/andrew/src/iCub/src/primateVision/devel/esMulti/disp_graph.jpg","JPEG");
 
   
   //Constant image. Set once
