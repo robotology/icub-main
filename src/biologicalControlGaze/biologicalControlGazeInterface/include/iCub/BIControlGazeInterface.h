@@ -99,8 +99,18 @@ public:
 	/**
 	* set the images to the output ports
 	*/
-	bool outPorts(); //
+	bool outPorts(); 
+	/**
+	* close all the ports activated when the module starts
+	*/
+	bool closePorts(); 
+	/**
+	* set all the components of the window up
+	*/
 	void setUp();
+	/**
+	* creates all the objects in the window
+	*/
 	void createObjects();
 	/** 
 	* istantiate the port and open them
@@ -175,14 +185,6 @@ public:
 	*/
 	ImageOf<PixelRgb> *image_out; //
 	//---------- FLAGS -------------------------------
-	/**
-	* flag that indicates the control box stopEvolution is active
-	*/
-	bool stopEvolution_flag;
-	/**
-	* flag that indicates the control box EvolveClamped is active
-	*/
-	bool evolveClamped_flag;
 	/**
 	* flag that indicates the control box inputImage is active
 	*/

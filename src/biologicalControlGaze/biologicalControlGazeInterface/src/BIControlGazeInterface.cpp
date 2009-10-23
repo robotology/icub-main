@@ -188,18 +188,7 @@ BIControlGazeInterface::BIControlGazeInterface(){
 }
 
 
-bool BIControlGazeInterface::open(Searchable& config) {
-    //ct = 0;
-    port_in.open(getName("in"));
-	//ConstString portName2 = options.check("name",Value("/worker2")).asString();
-	port_out.open(getName("out"));
-	//port_Blobs.open(getName("outBlobs"));
-    cmdPort.open(getName("cmd")); // optional command port
-    attach(cmdPort); // cmdPort will work just like terminal
 
-	
-    return true;
-}
 
 // try to interrupt any communications or resource usage
 bool BIControlGazeInterface::interruptModule() {
@@ -211,6 +200,8 @@ bool BIControlGazeInterface::interruptModule() {
 bool BIControlGazeInterface::close() {
 		port_in.close();
 		port_out.close();
+		cmdPort.close();
+		closePorts();
 		return true;
 	}
 
@@ -367,12 +358,12 @@ static void callback( GtkWidget *widget,gpointer   data ){
 	if(!strcmp((char *)data,"Execute")){
 		printf("Execute");
 		string _command;
-		if(wModule->runFreely_flag)
+		/*if(wModule->runFreely_flag)
 			_command.assign("ExecuteFreely");
 		else if(wModule->runClamped_flag)
 			_command.assign("ExecuteClamped");
 		else if(wModule->stopEvolution_flag)
-			_command.assign("ExecuteStop");
+			_command.assign("ExecuteStop");*/
 		wModule->command->assign(_command); 
 	}
 	else if(!strcmp((char *)data,"Eyes:stop")){
@@ -989,7 +980,7 @@ static void cb_draw_value( GtkToggleButton *button )
 		else
 			wModule->runFreely_flag=false;
 	}
-	else if(!strcmp(button->button.label_text,"EvolveClamped-->")){
+	/*else if(!strcmp(button->button.label_text,"EvolveClamped-->")){
 		if(button->active)
 			wModule->runClamped_flag=true;
 		else
@@ -1000,7 +991,7 @@ static void cb_draw_value( GtkToggleButton *button )
 			wModule->stopEvolution_flag=true;
 		else
 			wModule->stopEvolution_flag=false;
-	}
+	}*/
 	else if(!strcmp(button->button.label_text,"Blue2-->")){
 		if(button->active){
 			//imageProcessModule->processor2->redPlane_flag=0;
@@ -1590,6 +1581,37 @@ bool BIControlGazeInterface::openPorts(){
 	return true;
 }
 
+bool BIControlGazeInterface::closePorts(){
+	bool ret = false;
+	//int res = 0;
+	// Closing Port(s)
+    //reduce verbosity --paulfitz
+	g_print("Closing port %s on network %s...\n", "/rea/BIControlGazeInterface/in","default");
+	ret = _imgRecv.Disconnect();//("/rea/BIControlGazeInterface/in","default");
+	
+	//--------
+	ret = _imgRecvLayer0.Disconnect();//("/rea/BIControlGazeInterface/inLayer0","default");
+	ret = _imgRecvLayer1.Disconnect();//("/rea/BIControlGazeInterface/inLayer1","default");
+	ret = _imgRecvLayer2.Disconnect();//("/rea/BIControlGazeInterface/inLayer2","default");
+	//--------
+	ret = _imgRecvLayer3.Disconnect();//("/rea/BIControlGazeInterface/inLayer3","default");
+	ret = _imgRecvLayer4.Disconnect();//("/rea/BIControlGazeInterface/inLayer4","default");
+	ret = _imgRecvLayer5.Disconnect();//("/rea/BIControlGazeInterface/inLayer5","default");
+	ret = _imgRecvLayer6.Disconnect();//("/rea/BIControlGazeInterface/inLayer6","default");
+	ret = _imgRecvLayer7.Disconnect();//("/rea/BIControlGazeInterface/inLayer7","default");
+	ret = _imgRecvLayer8.Disconnect();//("/rea/BIControlGazeInterface/inLayer8","default");
+	//-------------
+	if (true)
+        {		
+            g_print("Closing port %s on network %s...\n", "/rea/BIControlGazeInterface/out","dafult");
+            _pOutPort->close();//("/rea/BIControlGazeInterface/out");
+            
+			g_print("Closing port %s on network %s...\n", "/rea/BIControlGazeInterface/out","dafult");
+            _pOutPort2->close();//("/rea/BIControlGazeInterface/outBlobs");
+         }
+	return true;
+}
+
 void BIControlGazeInterface::setUp()
 {
 	if (true)
@@ -1688,6 +1710,9 @@ GtkWidget* BIControlGazeInterface::createMainWindow(void)
     gtk_window_set_title (GTK_WINDOW (window), "Boltmann Machine Graphical Interface");
 	gtk_window_set_default_size(GTK_WINDOW (window), 320, 700); 
 	gtk_window_set_resizable (GTK_WINDOW (window), TRUE);
+	g_signal_connect (G_OBJECT (window), "destroy",
+                      G_CALLBACK (gtk_main_quit),
+                      NULL);
     
 	// When the window is given the "delete_event" signal (this is given
 	// by the window manager, usually by the "close" option, or on the
@@ -2948,6 +2973,42 @@ GtkWidget* BIControlGazeInterface::createMainWindow(void)
 }
 
 
+bool BIControlGazeInterface::open(Searchable& config) {
+    //ct = 0;
+    //port_in.open(getName("in"));
+	//ConstString portName2 = options.check("name",Value("/worker2")).asString();
+	//port_out.open(getName("out"));
+	//port_Blobs.open(getName("outBlobs"));
+    cmdPort.open(getName("cmd")); // optional command port
+    attach(cmdPort); // cmdPort will work just like terminal
+
+	// create a new window
+	this->createObjects();
+	this->setUp();
+    mainWindow = this->createMainWindow();
+	// Non Modal Dialogs
+#if GTK_CHECK_VERSION(2,6,0)
+	loadDialog= createLoadDialog();
+	saveSingleDialog = createSaveSingleDialog();
+	saveSetDialog = createSaveSetDialog();
+#else
+    printf("Functionality omitted for older GTK version\n");
+#endif
+
+	// Shows all widgets in main Window
+    gtk_widget_show_all (mainWindow);
+	gtk_window_move(GTK_WINDOW(mainWindow), 10,10);
+	// All GTK applications must have a gtk_main(). Control ends here
+	// and waits for an event to occur (like a key press or
+	// mouse event).
+
+	gtk_main ();
+	gtk_widget_destroy(mainWindow);
+    yarp::os::Network::fini();
+
+    return true;
+}
+
 
 
 
@@ -2973,29 +3034,7 @@ int main(int argc, char *argv[]) {
 	// from the command line and are returned to the application.
     gtk_init (&argc, &argv);
 
-	// create a new window
-	module->createObjects();
-	module->setUp();
-    mainWindow = module->createMainWindow();
-		// Non Modal Dialogs
-#if GTK_CHECK_VERSION(2,6,0)
-	loadDialog= createLoadDialog();
-	saveSingleDialog = createSaveSingleDialog();
-	saveSetDialog = createSaveSetDialog();
-#else
-    printf("Functionality omitted for older GTK version\n");
-#endif
-
-	// Shows all widgets in main Window
-    gtk_widget_show_all (mainWindow);
-	gtk_window_move(GTK_WINDOW(mainWindow), 10,10);
-	// All GTK applications must have a gtk_main(). Control ends here
-	// and waits for an event to occur (like a key press or
-	// mouse event).
-
-	gtk_main ();
-
-    yarp::os::Network::fini();
+	
 	// Get command line options
 	//Property options;
 	//options.fromCommand(argc,argv);
@@ -3003,8 +3042,8 @@ int main(int argc, char *argv[]) {
 	
 
 
-    //return module.runModule(argc,argv);
-	return 0;
+    return module->runModule(argc,argv);
+	//return 0;
 }
 
 /*#ifdef WIN32
