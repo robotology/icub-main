@@ -137,6 +137,10 @@ public:
 	*/
 	bool openPorts();
 	/**
+	* close additional ports
+	*/
+	bool closePorts();
+	/**
 	* draws all the modules
 	*/
 	void drawAllBlobs(bool stable);

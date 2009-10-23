@@ -266,7 +266,7 @@ bool WatershedModule::close() {
 	* port where the image of the found blob is put
 	*/
 	port_Blobs.close(); //
-
+	closePorts();
 	return true;
 	}
 
@@ -1220,6 +1220,34 @@ bool WatershedModule::openPorts(){
 
 	return true;
 }
+
+bool WatershedModule::closePorts(){
+	bool ret = false;
+	//int res = 0;
+	// Registering Port(s)
+    //reduce verbosity --paulfitz
+	g_print("Closing port %s on network %s...\n", "/rea/Watershed/in","default");
+	ret = _imgRecv.Disconnect();
+	//--------
+	ret = _imgRecvRed.Disconnect(); //("/rea/Watershed/inRed","default");
+	ret = _imgRecvGreen.Disconnect();//("/rea/Watershed/inGreen","default");
+	ret = _imgRecvBlue.Disconnect(); //("/rea/Watershed/inBlue","default");
+	//--------
+	ret = _imgRecvRG.Disconnect();//("/rea/Watershed/inRG","default");
+	ret = _imgRecvGR.Disconnect();//("/rea/Watershed/inGR","default");
+	ret = _imgRecvBY.Disconnect();//("/rea/Watershed/inBY","default");
+	//-------------
+	if (true)
+        {		
+			_pOutPort->close();
+            g_print("Closing port %s on network %s...\n", "/rea/Watershed/out","default");
+			_pOutPort2->close();
+            g_print("Closing port %s on network %s...\n", "/rea/Watershed/outBlobs","default");
+        }
+
+	return true;
+}
+
 
 void WatershedModule::setUp()
 {
