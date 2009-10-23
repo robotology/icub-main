@@ -30,6 +30,8 @@
 
 AnimationView::AnimationView(QWidget* parent) : QGLWidget(parent)
 {
+    m_bInitialized=false;
+
     // fake glut initialization
     int args=1;
     // make sure the "iCubimator" string is not const char*
@@ -143,6 +145,8 @@ void AnimationView::initializeGL()
 
     glLightfv(GL_LIGHT0,GL_POSITION,position0);
     glLightfv(GL_LIGHT1,GL_POSITION,position1);
+    
+    m_bInitialized=true;
 }
 
 void AnimationView::draw()
@@ -364,9 +368,11 @@ void AnimationView::resetCamera()
 // handle widget resizes
 void AnimationView::resizeEvent(QResizeEvent* newSize)
 {
+    if (!m_bInitialized) return;
+
     int w=newSize->size().width();
     int h=newSize->size().height();
-
+    
     // reset coordinates
     glMatrixMode(GL_PROJECTION);
     glLoadIdentity();

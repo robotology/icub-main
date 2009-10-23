@@ -79,6 +79,8 @@ class AnimationView : public QGLWidget
     bool leftMouseButton;
     char modifier;
 
+    bool m_bInitialized;
+
     QTimer mTimer;
     BVH* pBVH;
 
