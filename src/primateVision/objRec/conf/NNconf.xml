@@ -1,0 +1,50 @@
+<nnfw version="1.0">
+    <neuralnet>
+        <!-- The Input Layer of the Network -->
+        <cluster name="in" type="BiasedCluster" size="1225" >
+            <outfunction type="SigmoidFunction">
+                <lambda>1.0</lambda>
+            </outfunction>
+            <!-- Randomize the values of biases in the range specified -->
+            <randomize min="-1.0" max="+1.0" />
+        </cluster>
+
+        <!-- The Hidden Layer of the Network -->
+        <cluster name="hid" type="BiasedCluster" size="20 ">
+            <outfunction type="SigmoidFunction">
+                <lambda>1.0</lambda>
+            </outfunction>
+            <!-- Randomize the values of biases in the range specified -->
+            <randomize min="-1.0" max="+1.0" />
+        </cluster>
+
+        <!-- The Output Layer of the Network -->
+        <cluster name="out" type="BiasedCluster" size="1" >
+            <outfunction type="SigmoidFunction">
+                <lambda>1.0</lambda>
+            </outfunction>
+            <!-- Randomize the values of biases in the range specified -->
+            <randomize min="-1.0" max="+1.0" />
+        </cluster>
+    
+        <!-- Full Connection from Input to Hidden -->
+        <linker name="in2hid" type="DotLinker" from="in" to="hid">
+            <!-- Randomize the values of weights in the range specified -->
+            <randomize min="-1.0" max="+1.0" />
+        </linker>
+
+        <!-- Full Connection from Hidden to Ouput -->
+        <linker name="hid2out" type="DotLinker" from="hid" to="out">
+            <!-- Randomize the values of weights in the range specified -->
+            <randomize min="-1.0" max="+1.0" />
+        </linker>
+
+        <!-- Specify which are the Input layers -->
+        <inputs> in </inputs>
+        <!-- Specify which are the Output layers -->
+        <outputs> out </outputs>
+        <!-- Specify the update order during spreading of the net -->
+        <order> in in2hid hid hid2out out </order>
+    </neuralnet>
+</nnfw>
+
