@@ -1,5 +1,5 @@
 SUBDIRS(
-  iCubSimulator_objMan
+  iCubSimulationObjMan
   es
   esMulti
   body
