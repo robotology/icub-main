@@ -39,7 +39,7 @@ bool ImageProcessModule::open(Searchable& config) {
 	//processor1=new ImageProcessor();
 	//processor2=new ImageProcessor();
 	//processor3=new ImageProcessor();
-	currentProcessor=NULL;
+	//currentProcessor=NULL;
     port.open(getName());
     //ConstString portName2 = options.check("name",Value("/worker2")).asString();
     port2.open(getName("edges"));
@@ -47,6 +47,28 @@ bool ImageProcessModule::open(Searchable& config) {
     cmdPort.open(getName("cmd")); // optional command port
     attach(cmdPort); // cmdPort will work just like terminal
 	//this->createMainWindow();
+
+	// create a new window
+	this->createObjects();
+	this->setUp();
+	this->setAdjs();
+    mainWindow = this->createMainWindow();
+	
+
+	// Shows all widgets in main Window
+    gtk_widget_show_all (mainWindow);
+	gtk_window_move(GTK_WINDOW(mainWindow), 10,10);
+	// All GTK applications must have a gtk_main(). Control ends here
+	// and waits for an event to occur (like a key press or
+	// mouse event).
+
+	gtk_main ();
+
+	gtk_widget_destroy(mainWindow);
+
+    yarp::os::Network::fini();
+
+	
     return true;
 }
 
@@ -62,6 +84,12 @@ bool ImageProcessModule::close() {
 	port.close();
 	port2.close();
 	port_plane.close();
+	cmdPort.close();
+	this->closePorts();
+	currentProcessor->~ImageProcessor();
+	delete processor1;
+	delete processor2;
+	delete processor3;
 	return true;
 	}
 
@@ -145,6 +173,19 @@ void ImageProcessModule::createObjects() {
 //-------------------------------------------------
 // Service Fuctions
 //-------------------------------------------------
+
+void cleanExit(){
+	/*g_source_remove (timeout_ID);
+	timeout_ID = 0;
+	//closePorts();
+	if (_options.saveOnExit != 0)
+		saveOptFile(_options.fileName);
+	if (frame)
+		g_object_unref(frame);*/
+	// Exit from application
+	gtk_main_quit ();
+    //deleteObjects();
+}
 
 static GtkWidget *xpm_label_box( gchar     *xpm_filename,
                                  gchar     *label_text )
@@ -239,21 +280,21 @@ bool ImageProcessModule::openPorts(){
             _pOutPort = new yarp::os::BufferedPort<ImageOf<PixelRgb> >;
 			_pOutPort2 = new yarp::os::BufferedPort<ImageOf<PixelRgb> >;
 			_pOutPort3 = new yarp::os::BufferedPort<ImageOf<PixelRgb> >;
-            g_print("Registering port %s on network %s...\n", "/rea/ImageProcessor/out","dafult");
-			g_print("Registering port %s on network %s...\n", "/rea/ImageProcessor/out2","dafult");
-			g_print("Registering port %s on network %s...\n", "/rea/ImageProcessor/out3","dafult");
+            g_print("Registering port %s on network %s...\n", "/rea/ImageProcessor/out","default");
+			g_print("Registering port %s on network %s...\n", "/rea/ImageProcessor/out2","default");
+			g_print("Registering port %s on network %s...\n", "/rea/ImageProcessor/out3","default");
 			portRg = new yarp::os::BufferedPort<ImageOf<PixelMono> >;
 			portGr = new yarp::os::BufferedPort<ImageOf<PixelMono> >;
 			portBy = new yarp::os::BufferedPort<ImageOf<PixelMono> >;
-            g_print("Registering port %s on network %s...\n", "/rea/ImageProcessor/outRG","dafult");
-			g_print("Registering port %s on network %s...\n", "/rea/ImageProcessor/outGR","dafult");
-			g_print("Registering port %s on network %s...\n", "/rea/ImageProcessor/outBY","dafult");
+            g_print("Registering port %s on network %s...\n", "/rea/ImageProcessor/outRG","default");
+			g_print("Registering port %s on network %s...\n", "/rea/ImageProcessor/outGR","default");
+			g_print("Registering port %s on network %s...\n", "/rea/ImageProcessor/outBY","default");
 			portRedPlane = new yarp::os::BufferedPort<ImageOf<PixelMono> >;
 			portGreenPlane = new yarp::os::BufferedPort<ImageOf<PixelMono> >;
 			portBluePlane = new yarp::os::BufferedPort<ImageOf<PixelMono> >;
-            g_print("Registering port %s on network %s...\n", "/rea/ImageProcessor/outRed","dafult");
-			g_print("Registering port %s on network %s...\n", "/rea/ImageProcessor/outGreen","dafult");
-			g_print("Registering port %s on network %s...\n", "/rea/ImageProcessor/outBlue","dafult");
+            g_print("Registering port %s on network %s...\n", "/rea/ImageProcessor/outRed","default");
+			g_print("Registering port %s on network %s...\n", "/rea/ImageProcessor/outGreen","default");
+			g_print("Registering port %s on network %s...\n", "/rea/ImageProcessor/outBlue","default");
             bool ok = _pOutPort->open("/rea/ImageProcessor/out");
 			ok = _pOutPort2->open("/rea/ImageProcessor/out2");
 			ok = _pOutPort3->open("/rea/ImageProcessor/out3");
@@ -316,6 +357,56 @@ bool ImageProcessModule::outPorts(){
 	
 	return ret;
 }
+
+bool ImageProcessModule::closePorts(){
+	bool ret = false;
+	//int res = 0;
+	// Closing Port(s)
+    //reduce verbosity --paulfitz
+	
+	if (true)
+        {
+		
+            /*_pOutPort;
+			_pOutPort2 = new yarp::os::BufferedPort<ImageOf<PixelRgb>>;
+			_pOutPort3 = new yarp::os::BufferedPort<ImageOf<PixelRgb>>;*/
+			
+			
+            g_print("Closing port %s on network %s...\n", "/rea/ImageProcessor/in","default");
+			_imgRecv.Disconnect();
+			g_print("Closing port %s on network %s...\n", "/rea/ImageProcessor/out","dafult");
+			g_print("Closing port %s on network %s...\n", "/rea/ImageProcessor/out2","dafult");
+			g_print("Closing port %s on network %s...\n", "/rea/ImageProcessor/out3","dafult");
+			_pOutPort->close(); //->open("/rea/ImageProcessor/out");
+			_pOutPort2->close(); //open("/rea/ImageProcessor/out2");
+			_pOutPort3->close(); //open("/rea/ImageProcessor/out3");
+			g_print("Closing port %s on network %s...\n", "/rea/ImageProcessor/outRG","dafult");
+			g_print("Closing port %s on network %s...\n", "/rea/ImageProcessor/outGR","dafult");
+			g_print("Closing port %s on network %s...\n", "/rea/ImageProcessor/outBY","dafult");
+			portRg->close(); //open("/rea/ImageProcessor/outRG");
+			portGr->close(); //open("/rea/ImageProcessor/outGR");
+			portBy->close(); //open("/rea/ImageProcessor/outBY");
+            g_print("Closing port %s on network %s...\n", "/rea/ImageProcessor/outRed","dafult");
+			g_print("Closing port %s on network %s...\n", "/rea/ImageProcessor/outGreen","dafult");
+			g_print("Closing port %s on network %s...\n", "/rea/ImageProcessor/outBlue","dafult");
+			portRedPlane->close(); //open("/rea/ImageProcessor/outRed");
+			portGreenPlane->close(); //open("/rea/ImageProcessor/outGreen");
+			portBluePlane->close(); //open("/rea/ImageProcessor/outBlue");*/
+
+            if(true)
+                g_print("All ports closed succeed!\n");
+            else 
+                {
+                    g_print("ERROR: Ports closing failed.\nQuitting, sorry.\n");
+                    return false;
+                }
+
+        }
+
+	return true;
+}
+
+
 void ImageProcessModule::setAdjs(){
 	maxAdj=400.0;
 	minAdj=0.0;
@@ -352,7 +443,11 @@ static void callback( GtkWidget *widget,gpointer   data ){
 	}
 }
 
-
+static gint menuFileQuit_CB(GtkWidget *widget, gpointer data)
+{
+	cleanExit();
+	return TRUE;
+}
 
 static gint expose_CB (GtkWidget *widget, GdkEventExpose *event, gpointer data)
 {
@@ -499,7 +594,7 @@ static gint timeout_CB (gpointer data){
 			
     }
 	//send the images on the outports
-	//imageProcessModule->outPorts();
+	imageProcessModule->outPorts();
 	return TRUE;
 }
 
@@ -761,7 +856,7 @@ GtkWidget* ImageProcessModule::createMenubar(void)
     gtk_menu_append( GTK_MENU(fileMenu), menuSeparator);
     fileQuitItem = gtk_menu_item_new_with_label ("Quit");
     gtk_menu_append( GTK_MENU(fileMenu), fileQuitItem);
-    //gtk_signal_connect( GTK_OBJECT(fileQuitItem), "activate", GTK_SIGNAL_FUNC(menuFileQuit_CB), mainWindow);
+    gtk_signal_connect( GTK_OBJECT(fileQuitItem), "activate", GTK_SIGNAL_FUNC(menuFileQuit_CB), mainWindow);
     // Submenu: Image  
     /*imageMenu = gtk_menu_new();
     imageSizeItem = gtk_menu_item_new_with_label ("Original size");
@@ -836,6 +931,10 @@ GtkWidget* ImageProcessModule::createMainWindow(void)
     gtk_window_set_title (GTK_WINDOW (window), "Image Processing Module");
 	gtk_window_set_default_size(GTK_WINDOW (window), 320, 700); 
 	gtk_window_set_resizable (GTK_WINDOW (window), TRUE);
+	g_signal_connect (G_OBJECT (window), "destroy",
+                      G_CALLBACK (gtk_main_quit),
+                      NULL);
+
     
 	// When the window is given the "delete_event" signal (this is given
 	// by the window manager, usually by the "close" option, or on the

@@ -92,6 +92,7 @@ class ImageProcessor
 	
 	public:
 		ImageProcessor();//default constructor
+		~ImageProcessor();//default destructor
 		ImageProcessor ( ImageOf<PixelRgb>* inputImage );//constructor
 		ImageOf<PixelMono>* combineMax(); //combines the 3 edge images saving the maximum value for every pixel 
 		ImageOf<PixelMono>* findEdges (); //the output image is the edged image of the input image along the axes x and y

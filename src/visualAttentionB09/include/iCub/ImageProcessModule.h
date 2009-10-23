@@ -63,7 +63,7 @@ private:
 public:
 	bool open(Searchable& config); //open the port
     bool interruptModule(); // try to interrupt any communications or resource usage
-	bool close(); //closes all the ports
+	bool close(); //closes the modules and all its components
 	bool updateModule(); //active control of the Module
 	void setOptions(Property options); //set the attribute options of class Property
 	GtkWidget* createMainWindow(); //create the main Window
@@ -76,6 +76,7 @@ public:
 	//gint timeout_CB (gpointer data);
 	//bool getImage();
 	bool openPorts();
+	bool closePorts();
 	bool outPorts();
 	void setUp();
 	//---attributes
