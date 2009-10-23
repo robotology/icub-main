@@ -9,13 +9,13 @@ INCLUDE_DIRECTORIES(
 	${PROJECT_SOURCE_DIR}/utils/mosaic
 	${PROJECT_SOURCE_DIR}/utils/display
 	${PROJECT_SOURCE_DIR}/utils/multiFrameViewer
-	${PROJECT_SOURCE_DIR}/demos/objRec
+	${PROJECT_SOURCE_DIR}/objRec
 	)
 
 LINK_DIRECTORIES(
 	${PROJECT_SOURCE_DIR}/utils/mosaic
 	${PROJECT_SOURCE_DIR}/utils/display
-	${PROJECT_SOURCE_DIR}/demos/objRec
+	${PROJECT_SOURCE_DIR}/objRec
 	)
 
 ADD_EXECUTABLE( objRecClient

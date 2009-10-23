@@ -9,7 +9,7 @@ SUBDIRS(objManClient)
 
 INCLUDE_DIRECTORIES(
   $ENV{ICUB_DIR}/src/ctrlLib/include/
-  ${PROJECT_SOURCE_DIR}/demos/objRec/
+  ${PROJECT_SOURCE_DIR}/objRec/
 	)
 
 LINK_DIRECTORIES(
