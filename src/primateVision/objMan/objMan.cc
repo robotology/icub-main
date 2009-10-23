@@ -12,7 +12,7 @@
 #include "kal.h"
 
 
-#define MIN_DIST 0.5 //meters!
+#define MIN_DIST 20 //pixels
 
 using namespace std;
 using namespace iCub::contrib::primateVision;
@@ -93,7 +93,7 @@ void iCub::contrib::primateVision::ObjManServer::run()
   
 
 
-  double newPosX,newPosY,newPosZ;
+  double newPosX,newPosY,newPosZ,newMosXL,newMosXR,newMosYL,newMosYR;
   bool handled;
   
 
@@ -113,19 +113,26 @@ void iCub::contrib::primateVision::ObjManServer::run()
     newPosX = -newObjData->x;
     newPosY = -newObjData->y + 0.928; //offset by head height
     newPosZ =  newObjData->z;
-
+    newMosXL = newObjData->mos_xl;
+    newMosYL = newObjData->mos_yl;
+    newMosXR = newObjData->mos_xr;
+    newMosYR = newObjData->mos_yr;
 
     //Check if it is similar to an existing label at a similar pos:
     handled = false;
     for (int k=0;k<objList->size();k++){
       //if object exists	
-      if (objList->get(k)->label == newObjData->label &&
-	  //IF same label at same pos (Malhonobis dist. is low):
-	  sqrt( (newPosX-objList->get(k)->x)*(newPosX-objList->get(k)->x)+
-		(newPosY-objList->get(k)->y)*(newPosY-objList->get(k)->y)+
-		(newPosZ-objList->get(k)->z)*(newPosZ-objList->get(k)->z) ) < MIN_DIST
-	  //AND OBJECTS LOOK SIMILAR:
-	  //ADD ME****SHOULD REALLY ONLY DO THIS!
+      if (//if label same
+	  objList->get(k)->label == newObjData->label 
+	  &&
+	  //AND IF same label at same left and right mosaic pos (Malhonobis dist. is low):
+	  sqrt( (newMosXL-objList->get(k)->mos_xl)*(newMosXL-objList->get(k)->mos_xl)+
+		(newMosYL-objList->get(k)->mos_yl)*(newMosYL-objList->get(k)->mos_yl)) < MIN_DIST
+	  &&
+	  sqrt( (newMosXR-objList->get(k)->mos_xr)*(newMosXR-objList->get(k)->mos_xr)+
+		(newMosYR-objList->get(k)->mos_yr)*(newMosYR-objList->get(k)->mos_yr)) < MIN_DIST
+	  //AND IF OBJECTS VISUALLY SIMILAR:
+	  //ADD ME****SHOULD REALLY DO THIS!
 	  ){
 	//not new object, so update params only:
 	objList->get(k)->radius     = newObjData->radius;
