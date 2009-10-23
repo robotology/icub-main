@@ -22,27 +22,12 @@ int main(int argc, char *argv[]) {
 	// from the command line and are returned to the application.
     gtk_init (&argc, &argv);
 
-	// create a new window
-	module->createObjects();
-	module->setUp();
-    mainWindow = module->createMainWindow();
 	
-
-	// Shows all widgets in main Window
-    gtk_widget_show_all (mainWindow);
-	gtk_window_move(GTK_WINDOW(mainWindow), 10,10);
-	// All GTK applications must have a gtk_main(). Control ends here
-	// and waits for an event to occur (like a key press or
-	// mouse event).
-
-	gtk_main ();
-
-    yarp::os::Network::fini();
 	// Get command line options
 	//Property options;
 	//options.fromCommand(argc,argv);
 	//module.setOptions(options);
 
-    //return module.runModule(argc,argv);
-	return 0;
+    return module->runModule(argc,argv);
+	//return 0;
 }

@@ -160,20 +160,36 @@ WatershedModule::WatershedModule(){
 
 bool WatershedModule::open(Searchable& config) {
     //ct = 0;
-    port_in.open(getName("in"));
+    //port_in.open(getName("in"));
 	//ConstString portName2 = options.check("name",Value("/worker2")).asString();
-	port_out.open(getName("out"));
-	port_Blobs.open(getName("outBlobs"));
+	//port_out.open(getName("out"));
+	//port_Blobs.open(getName("outBlobs"));
     cmdPort.open(getName("cmd")); // optional command port
     attach(cmdPort); // cmdPort will work just like terminal
 
+	// create a new window
+	this->createObjects();
+	this->setUp();
+    mainWindow = this->createMainWindow();
+	
+
+	// Shows all widgets in main Window
+    gtk_widget_show_all (mainWindow);
+	gtk_window_move(GTK_WINDOW(mainWindow), 10,10);
+	// All GTK applications must have a gtk_main(). Control ends here
+	// and waits for an event to occur (like a key press or
+	// mouse event).
+
+	gtk_main ();
+	gtk_widget_destroy(mainWindow);
+    yarp::os::Network::fini();
 	
     return true;
 }
 
 // try to interrupt any communications or resource usage
 bool WatershedModule::interruptModule() {
-    	/**
+    /**
 	* a port for reading the edge image 
 	*/
 		port_in.interrupt(); // 
@@ -208,13 +224,13 @@ bool WatershedModule::interruptModule() {
 	/**
 	* port where the image of the found blob is put
 	*/
-		port_Blobs.interrupt(); //
+	port_Blobs.interrupt(); //
     return true;
 }
 
 bool WatershedModule::close() {
 		
-		/**
+	/**
 	* a port for reading the edge image 
 	*/
 		port_in.close(); // 
@@ -249,9 +265,9 @@ bool WatershedModule::close() {
 	/**
 	* port where the image of the found blob is put
 	*/
-		port_Blobs.close(); //
+	port_Blobs.close(); //
 
-		return true;
+	return true;
 	}
 
 void WatershedModule::setOptions(yarp::os::Property opt){
@@ -441,6 +457,20 @@ static void callback( GtkWidget *widget,gpointer   data ){
 	}
 	
 }
+
+void cleanExit(){
+	/*g_source_remove (timeout_ID);
+	timeout_ID = 0;
+	//closePorts();
+	if (_options.saveOnExit != 0)
+		saveOptFile(_options.fileName);
+	if (frame)
+		g_object_unref(frame);*/
+	// Exit from application
+	gtk_main_quit ();
+    //deleteObjects();
+}
+
 
 static gint expose_CB (GtkWidget *widget, GdkEventExpose *event, gpointer data)
 {
@@ -914,6 +944,11 @@ bool getImage(){
 }
 
 
+static gint menuFileQuit_CB(GtkWidget *widget, gpointer data)
+{
+	cleanExit();
+	return TRUE;
+}
 
 static gint menuFileSingle_CB(GtkWidget *widget, GdkEventExpose *event, gpointer data)
 {
@@ -1002,7 +1037,7 @@ GtkWidget* WatershedModule::createMenubar(void)
     gtk_menu_append( GTK_MENU(fileMenu), menuSeparator);
     fileQuitItem = gtk_menu_item_new_with_label ("Quit");
     gtk_menu_append( GTK_MENU(fileMenu), fileQuitItem);
-    //gtk_signal_connect( GTK_OBJECT(fileQuitItem), "activate", GTK_SIGNAL_FUNC(menuFileQuit_CB), mainWindow);
+    gtk_signal_connect( GTK_OBJECT(fileQuitItem), "activate", GTK_SIGNAL_FUNC(menuFileQuit_CB), mainWindow);
     // Submenu: Image  
     /*imageMenu = gtk_menu_new();
     imageSizeItem = gtk_menu_item_new_with_label ("Original size");
@@ -1046,6 +1081,8 @@ GtkWidget* WatershedModule::createMenubar(void)
 //-------------------------------------------------
 // Service Fuctions
 //-------------------------------------------------
+
+
 
 void WatershedModule::createObjects() {
     ptr_imgRecv = new YARPImgRecv;
@@ -1267,6 +1304,10 @@ GtkWidget* WatershedModule::createMainWindow(void)
     gtk_window_set_title (GTK_WINDOW (window), "Watershed and Saliency Module");
 	gtk_window_set_default_size(GTK_WINDOW (window), 320, 700); 
 	gtk_window_set_resizable (GTK_WINDOW (window), TRUE);
+	g_signal_connect (G_OBJECT (window), "destroy",
+                      G_CALLBACK (gtk_main_quit),
+                      NULL);
+
     
 	// When the window is given the "delete_event" signal (this is given
 	// by the window manager, usually by the "close" option, or on the
