@@ -24,8 +24,138 @@ ImageProcessor::ImageProcessor(){
 	greenRed_flag=0;
 	redGreen_flag=0;
 
-	colourOpponency_flag=0;
-	findEdges_flag=0;
+	colourOpponency_flag=1;
+	findEdges_flag=1;
+	normalize_flag=0;
+	combineMax_flag=0;
+	width=320;
+	height=240;
+	int psb;
+	IppiSize srcsize={320,240};
+
+	portImage=new ImageOf<PixelRgb>;
+	this->portImage->resize(320,240);
+
+	edges_yarp=new ImageOf<PixelMono>;
+	edges_yarp->resize(320,240);
+
+	redPlane=new ImageOf<PixelMono>;
+	redPlane->resize(320,240);
+	greenPlane=new ImageOf<PixelMono>;
+	greenPlane->resize(320,240);
+	bluePlane=new ImageOf<PixelMono>;
+	bluePlane->resize(320,240);
+	yellowPlane=new ImageOf<PixelMono>;
+	yellowPlane->resize(320,240);
+
+	redPlane_tmp=new ImageOf<PixelMono>;
+	redPlane_tmp->resize(320,240);
+	greenPlane_tmp=new ImageOf<PixelMono>;
+	greenPlane_tmp->resize(320,240);
+	bluePlane_tmp=new ImageOf<PixelMono>;
+	bluePlane_tmp->resize(320,240);
+	
+	
+	red_yarp=new ImageOf<PixelMono>;
+	red_yarp->resize(320,240);
+	green_yarp=new ImageOf<PixelMono>;
+	green_yarp->resize(320,240);
+	blue_yarp=new ImageOf<PixelMono>;
+	blue_yarp->resize(320,240);
+
+	redGreenEdges_yarp=new ImageOf<PixelMono>;
+	redGreenEdges_yarp->resize(320,240);
+	greenRedEdges_yarp=new ImageOf<PixelMono>;
+	greenRedEdges_yarp->resize(320,240);
+	blueYellowEdges_yarp=new ImageOf<PixelMono>;
+	blueYellowEdges_yarp->resize(320,240);
+
+	edgesBlue=new ImageOf<PixelMono>;
+	//edgesBlue->resize(width,height);
+	edgesRed=new ImageOf<PixelMono>;
+	//edgesRed->resize(width,height);
+	edgesGreen=new ImageOf<PixelMono>;
+	//edgesGreen->resize(width,height);
+
+	redGreen_ippi = ippiMalloc_8u_C1(width,height,&psb);
+	greenRed_ippi = ippiMalloc_8u_C1(width,height,&psb);
+	blueYellow_ippi = ippiMalloc_8u_C1(width,height,&psb);
+	bluePlane_ippi = ippiMalloc_8u_C1(width,height,&psb);
+	redPlane_ippi = ippiMalloc_8u_C1(width,height,&psb);
+	greenPlane_ippi = ippiMalloc_8u_C1(width,height,&psb);
+
+	redGreen_yarp=new ImageOf<PixelMono>;
+	redGreen_yarp->resize(320,240);
+	greenRed_yarp=new ImageOf<PixelMono>;
+	greenRed_yarp->resize(320,240);
+	blueYellow_yarp=new ImageOf<PixelMono>;
+	blueYellow_yarp->resize(320,240);
+
+	tmp=new ImageOf<PixelMono>;
+	tmp->resize(320,240);
+	image_out=new ImageOf<PixelRgb>;
+	image_out->resize(320,240);
+	image_tmp=new ImageOf<PixelMono>;
+	image_tmp->resize(320,240);
+	outputImage=new ImageOf<PixelMono>;
+	outputImage->resize(320,240);
+
+	cvImage16= cvCreateImage(cvSize(320,240),IPL_DEPTH_16S,1);
+	cvImage8= cvCreateImage(cvSize(320,240),IPL_DEPTH_8U,1);
+
+	this->cannyOperator=new CANNY(srcsize);
+	
+	src0[0]= 1;src0[1]= 2;src0[2]=1;
+	src0[3]= 0;src0[4]= 0;src0[5]=0;
+	src0[6]=-1;src0[7]=-2;src0[8]=1;
+	
+	src1[0]=2;src1[1]= 1;src1[2]= 0;
+	src1[3]=1;src1[4]= 0;src1[5]=-1;
+	src1[6]=0;src1[7]=-1;src1[8]=-2;	
+
+	src2[0]=1;src2[1]=0;src2[2]=-1;
+	src2[3]=2;src2[4]=0;src2[5]=-2;
+	src2[6]=1;src2[7]=0,src2[8]=-1;
+
+	src3[0]=0;src3[1]=-1;src3[2]=-2;
+	src3[3]=1;src3[4]= 0;src3[5]=-1;
+	src3[6]=2;src3[7]= 1,src3[8]= 0;
+
+	src4[0]=-1;src4[1]=-2;src4[2]=-1;
+	src4[3]= 0;src4[4]= 0;src4[5]= 0;
+	src4[6]= 1;src4[7]= 2;src4[8]= 1;
+
+	src5[0]=-2;src5[1]=-1;src5[2]=0;
+	src5[3]=-1;src5[4]= 0;src5[5]=1;
+	src5[6]= 0;src5[7]= 1;src5[8]=2;
+
+	src6[0]=-1;src6[1]=0;src6[2]=1;
+	src6[3]=-2;src6[4]=0;src6[5]=2;
+	src6[6]=-1;src6[5]=0;src6[8]=1;
+
+	src7[0]= 0;src7[1]= 1;src7[2]=2;
+	src7[3]=-1;src7[4]= 0;src7[5]=1;
+	src7[6]=-2;src7[7]=-1;src7[8]=0;
+		
+}
+
+ImageProcessor::~ImageProcessor(){
+    printf("Destructor ")
+	this->inImage=NULL;
+	portImage=NULL;
+
+	canProcess_flag=0;
+	inputImage_flag=0;
+	redPlane_flag=1;
+	bluePlane_flag=0;
+	greenPlane_flag=0;
+	yellowPlane_flag=0;
+	blueYellow_flag=0;
+	greenRed_flag=0;
+	redGreen_flag=0;
+
+	colourOpponency_flag=1;
+	findEdges_flag=1;
 	normalize_flag=0;
 	combineMax_flag=0;
 	width=320;
@@ -219,11 +349,11 @@ void ImageProcessor::colourOpponency(ImageOf<PixelRgb> *src){
 	
 	printf("ColourOpponency, getBluePlane \n");
 	//1.get the red,blue and green planes
-	//printf("tmp: 0x%08x\n", tmp);
+	printf("src: 0x%08x\n", src);
 	this->getBluePlane(src,tmp);	
 	printf("tmp: 0x%08x\n", tmp);
-	printf("bluePlane: 0x%08x\n", bluePlane);
 	ippiCopy_8u_C1R(tmp->getPixelAddress(0,0),width,bluePlane->getPixelAddress(0,0),width,srcsize);
+    printf("bluePlane: 0x%08x\n", bluePlane);
 	
 
 	printf("ColourOpponency, getRedPlane \n");
@@ -1689,10 +1819,13 @@ ImageOf<PixelRgb>* ImageProcessor::process (ImageOf<PixelRgb> *src){
 		return NULL;
 	}
 
+    
 		if(this->redPlane_flag){
 			if(this->colourOpponency_flag){
+                printf("runs colourOpponency");
 				this->colourOpponency(src);
 				if(this->findEdges_flag){
+                    printf("runs findsEdges");
 					if(this->combineMax_flag){
 						image_tmp=this->combineMax();
 					}
@@ -1770,11 +1903,11 @@ ImageOf<PixelRgb>* ImageProcessor::process (ImageOf<PixelRgb> *src){
 				ippiCopy_8u_C1R(yellowPlane->getPixelAddress(0,0),320,image_tmp->getPixelAddress(0,0),320,srcsize);
 		}
 
-	
+    printf("image_tmp: 0x%08x\n", image_tmp);	
 
-	if(this->normalize_flag){
+	/*if(this->normalize_flag){
 		image_tmp=this->normalize(image_tmp);
-	}
+	}*/
 	
 	//-----------
 	/*if(inputImage_flag==0){
@@ -1790,19 +1923,28 @@ ImageOf<PixelRgb>* ImageProcessor::process (ImageOf<PixelRgb> *src){
 		printf("runs the code for multiplexing 1 channel to 4 \n");
 		im_out = ippiMalloc_8u_C1(width,height,&psb);
 		Ipp8u* im_tmp[3];
+        im_tmp[0]=ippiMalloc_8u_C1(width,height,&psb);
+        im_tmp[1]=ippiMalloc_8u_C1(width,height,&psb);
+        im_tmp[2]=ippiMalloc_8u_C1(width,height,&psb);
 		//two copies in order to have 2 conversions
 		//the first transform the yarp mono into a 4-channel image
+        printf("image_tmp: 0x%08x\n", image_tmp);
 		ippiCopy_8u_C1R(image_tmp->getPixelAddress(0,0), width,im_out,psb,srcsize);
-		im_tmp[0]=im_out;
-		im_tmp[1]=im_out;
-		im_tmp[2]=im_out;
+        ippiCopy_8u_C1R(im_out,psb,im_tmp[0],psb,srcsize);
+        ippiCopy_8u_C1R(im_out,psb,im_tmp[1],psb,srcsize); 
+        ippiCopy_8u_C1R(im_out,psb,im_tmp[2],psb,srcsize);
+		//im_tmp[0]=im_out;
+		//im_tmp[1]=im_out;
+		//im_tmp[2]=im_out;
 		//the second transforms the 4-channel image into colorImage for yarp
-		ippiCopy_8u_P3C3R(im_tmp,psb,image_out->getPixelAddress(0,0),width*3,srcsize);
+		ippiCopy_8u_P3C3R(im_tmp,psb,image_out->getPixelAddress(0,0),width*3,srcsize); 
+        //ippiCopy_8u_C3R(src->getPixelAddress(0,0),width*3,image_out->getPixelAddress(0,0),width*3,srcsize);
 		printf("copied to the portImage \n");
-		this->portImage=image_out;
-		ippiFree(im_out);
-		ippiFree(im_tmp);
+		//this->portImage=image_out;
+		//ippiFree(im_out);
+		//ippiFree(im_tmp);
 	}
+    printf("image_out: 0x%08x\n", image_out);
 	return image_out;
 }
 

@@ -189,6 +189,7 @@ bool getImage(){
 	_semaphore.wait();
 	ret = _imgRecv.GetLastImage(&_inputImg);
 	_semaphore.post();
+    printf("Acquired a new image for _imgRecv /n ");
 	
 	//imageProcessModule->processor1->inImage=&_inputImg;
 	//imageProcessModule->processor2->inImage=&_inputImg;
@@ -375,6 +376,7 @@ static gint expose_CB (GtkWidget *widget, GdkEventExpose *event, gpointer data)
 					return false;
 				}
 				_outputImage=imageProcessModule->currentProcessor->process(&_inputImg); //findEdges(&_inputImg,1,0);
+                printf("_outputImage: 0x%08x\n", _outputImage);
 				if(_outputImage==NULL){
 					return FALSE;
 				}
@@ -449,8 +451,6 @@ static gint expose_CB (GtkWidget *widget, GdkEventExpose *event, gpointer data)
 		}
 	
 	}
-
-	//imageProcessModule->currentProcessor->canProcess_flag=0;
 	
 	return TRUE;
 }
@@ -485,6 +485,7 @@ static gint timeout_CB (gpointer data){
             //                    frame = gdk_pixbuf_new (GDK_COLORSPACE_RGB, FALSE, 8, imageWidth, imageHeight);
             //            }
             //            _frameN++;
+            
 			gtk_widget_queue_draw (da);
 			
 
