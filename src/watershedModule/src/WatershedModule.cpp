@@ -266,6 +266,7 @@ bool WatershedModule::close() {
 	* port where the image of the found blob is put
 	*/
 	port_Blobs.close(); //
+	cmdPort.close();
 	closePorts();
 	return true;
 	}
