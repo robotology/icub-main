@@ -28,5 +28,5 @@ FILE(GLOB folder_header *.h)
 ADD_EXECUTABLE(iCub_SIM_objMan ${folder_source} ${folder_header})
 
 # install targets
-INSTALL_TARGETS(${BIN_DIR} iCub_SIM_objMan )
+INSTALL_TARGETS(iCub_SIM_objMan ${PROJECTNAME} RUNTIME DESTINATION bin)
 
