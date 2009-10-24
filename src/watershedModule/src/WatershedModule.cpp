@@ -339,11 +339,15 @@ void rain(){
 		wModule->max_tag=wModule->wOperator->apply(*_outputImage,_tagged);
 		printf("MAX_TAG=%d",wModule->max_tag);
 		bool ret=getPlanes();
-		if(ret==false)
+		if(ret==false){
 			printf("No Planes! \n");
+			//return;
+		}
 		ret=getOpponencies();
-		if(ret==false)
+		if(ret==false){
 			printf("No Opponency! \n");
+			//return;
+		}
 		int psb32s;
 		IppiSize srcsize={320,240};
 		Ipp32s* _inputImgRGS32=ippiMalloc_32s_C1(320,240,&psb32s);
@@ -486,11 +490,15 @@ static gint expose_CB (GtkWidget *widget, GdkEventExpose *event, gpointer data)
 				IppiSize srcsize={320,240};
 				
 				bool ret=getPlanes();
-				if(ret==false)
+				if(ret==false){
 					printf("No Planes! \n");
+					//return FALSE;
+				}
 				ret=getOpponencies();
-				if(ret==false)
+				if(ret==false){
 					printf("No Opponency! \n");
+					//return FALSE;
+				}
 				//=new yarp::sig::ImageOf<yarp::sig::PixelRgb>;
 				//_outputImage->resize(320,240);
 				bool conversion=true;
@@ -2309,7 +2317,6 @@ void SalienceOperator::drawFoveaBlob(ImageOf<PixelMono>& id, ImageOf<PixelInt>& 
 void WatershedModule::drawAllBlobs(bool stable)
 {
 	salience->ComputeSalienceAll(this->max_tag,this->max_tag);
-
 
 	PixelBgr varFoveaBlob = salience->varBlob(*tagged, *wModule->ptr_inputRG, *wModule->ptr_inputGR, *wModule->ptr_inputBY, 1);
 
