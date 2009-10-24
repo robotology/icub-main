@@ -187,9 +187,6 @@ BIControlGazeInterface::BIControlGazeInterface(){
 	this->rowDim=10;
 }
 
-
-
-
 // try to interrupt any communications or resource usage
 bool BIControlGazeInterface::interruptModule() {
     port_in.interrupt();
@@ -212,7 +209,6 @@ void BIControlGazeInterface::setOptions(yarp::os::Property opt){
 bool BIControlGazeInterface::updateModule() {    
     return true;
 }
-
 
 bool getLayers(){
 	bool ret = true;
