@@ -1857,7 +1857,7 @@ ImageOf<PixelRgb>* ImageProcessor::process (ImageOf<PixelRgb> *src){
 		ippiCopy_8u_P3C3R(im_tmp,psb,image_out->getPixelAddress(0,0),width*3,srcsize); 
         //ippiCopy_8u_C3R(src->getPixelAddress(0,0),width*3,image_out->getPixelAddress(0,0),width*3,srcsize);
 		printf("copied to the portImage \n");
-		//this->portImage=image_out;
+		this->portImage=image_out;
 		//ippiFree(im_out);
 		//ippiFree(im_tmp);
 	}
