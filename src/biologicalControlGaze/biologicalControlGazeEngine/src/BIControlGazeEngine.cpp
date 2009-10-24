@@ -150,6 +150,7 @@ bool BIControlGazeEngine::updateModule() {
 		string *commandTOT=new string(bot->toString().c_str());
 		printf("Bottle  is: %s\n",commandTOT->c_str());
 		unsigned int parOpen=commandTOT->find("(");
+		printf("parOpen: %d \n",parOpen);
 		
 		string command=commandTOT->substr(0,parOpen-1);
 		string option=commandTOT->substr(parOpen+1,commandTOT->size()-parOpen);
