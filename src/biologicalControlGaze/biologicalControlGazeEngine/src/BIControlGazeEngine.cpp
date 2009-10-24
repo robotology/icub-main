@@ -148,34 +148,41 @@ bool BIControlGazeEngine::updateModule() {
 	Bottle *bot=portCmd.read(false);
 	if(bot!=NULL){
 		string *commandTOT=new string(bot->toString().c_str());
+		string command,option;
+		string optionName1,optionValue1,optionName2, optionValue2;
 		printf("Bottle  is: %s\n",commandTOT->c_str());
 		unsigned int parOpen=commandTOT->find("(");
 		printf("parOpen: %d \n",parOpen);
-		
-		string command=commandTOT->substr(0,parOpen-1);
-		string option=commandTOT->substr(parOpen+1,commandTOT->size()-parOpen);
-		
-		
-		unsigned int parPos1=option.find("(");
-		unsigned int parPos2=option.find(")");
-		unsigned int spacePos=option.find(" ");
-		string optionName1,optionValue1,optionName2, optionValue2;
-		if(spacePos!=string::npos){
-			optionName1=option.substr(parPos1+1,spacePos-parPos1);
-			optionValue1= option.substr(spacePos+1,parPos2-spacePos-1);
-			unsigned int dim=option.size();
-			option=option.substr(parPos2+2,dim-2-parPos2);
-			parPos1=option.find("(");
-			if(parPos1!=string::npos){
-				parPos2=option.find(")");
-				spacePos=option.find(" ");
-				optionName2=option.substr(parPos1+1,spacePos-parPos1);
-				optionValue2= option.substr(spacePos+1,parPos2-spacePos-1);
-				option=option.substr(parPos2,option.size()-parPos2);
+		if(parOpen==-1){
+			command=commandTOT->substr(0,commandTOT->size());
+		}
+		else
+		{	
+		    command=commandTOT->substr(0,parOpen-1);
+			option=commandTOT->substr(parOpen+1,commandTOT->size()-parOpen);
+			
+			
+			unsigned int parPos1=option.find("(");
+			unsigned int parPos2=option.find(")");
+			unsigned int spacePos=option.find(" ");
+			
+			if(spacePos!=string::npos){
+				optionName1=option.substr(parPos1+1,spacePos-parPos1);
+				optionValue1= option.substr(spacePos+1,parPos2-spacePos-1);
+				unsigned int dim=option.size();
+				option=option.substr(parPos2+2,dim-2-parPos2);
+				parPos1=option.find("(");
+				if(parPos1!=string::npos){
+					parPos2=option.find(")");
+					spacePos=option.find(" ");
+					optionName2=option.substr(parPos1+1,spacePos-parPos1);
+					optionValue2= option.substr(spacePos+1,parPos2-spacePos-1);
+					option=option.substr(parPos2,option.size()-parPos2);
+				}
+			
+				//string name=option.substr(1,spacePos-1);
+				//string value=option.substr(spacePos+1,option.size()-spacePos);
 			}
-		
-			//string name=option.substr(1,spacePos-1);
-			//string value=option.substr(spacePos+1,option.size()-spacePos);
 		}
 
 		printf("command: |%s| \n",command.c_str());
