@@ -1703,7 +1703,7 @@ GtkWidget* BIControlGazeInterface::createMainWindow(void)
 	
     //gtk_init (&argc, &argv);
 	window = gtk_window_new (GTK_WINDOW_TOPLEVEL);
-    gtk_window_set_title (GTK_WINDOW (window), "Boltmann Machine Graphical Interface");
+    gtk_window_set_title (GTK_WINDOW (window), "Boltzmann Machine Graphical Interface");
 	gtk_window_set_default_size(GTK_WINDOW (window), 320, 700); 
 	gtk_window_set_resizable (GTK_WINDOW (window), TRUE);
 	g_signal_connect (G_OBJECT (window), "destroy",
