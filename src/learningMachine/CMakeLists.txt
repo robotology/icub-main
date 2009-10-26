@@ -38,7 +38,7 @@ SET(LM_MACHINE_SRC
     src/DummyLearner.cpp 
     src/IFixedSizeLearner.cpp
     src/LSSVMLearner.cpp
-    src/MachinePortable.cpp 
+#    src/MachinePortable.cpp 
     src/RLSLearner.cpp )
 SET(LM_TRANSFORMER_SRC 
     src/FixedRangeScaler.cpp 

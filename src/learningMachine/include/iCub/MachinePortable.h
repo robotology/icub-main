@@ -2,17 +2,14 @@
  * Copyright (C) 2007-2009 Arjan Gijsberts @ Italian Institute of Technology
  * CopyPolicy: Released under the terms of the GNU GPL v2.0.
  *
- * Machine factory class for creating types of IMachineLearner objects.
+ * Convenience header to define MachinePortable type.
  *
  */
 
 #ifndef __ICUB_MACHINEPORTABLE__
 #define __ICUB_MACHINEPORTABLE__
 
-#include <stdexcept>
-
-#include <yarp/os/Portable.h>
-
+#include "iCub/PortableT.h"
 #include "iCub/IMachineLearner.h"
 
 
@@ -20,6 +17,8 @@ namespace iCub {
 namespace contrib {
 namespace learningmachine {
 
+typedef PortableT<IMachineLearner> MachinePortable;
+#if 0
 /**
  *
  * A portable class for learning machines. This class can be used to send
@@ -34,7 +33,7 @@ namespace learningmachine {
  *
  */
 
-class MachinePortable : public Portable {
+class MachinePortable : public PortableT<IMachineLearner> {
 private:
     /**
      * A pointer to the actual machine implementation.
@@ -122,7 +121,7 @@ public:
     }
 
 };
-
+#endif
 } // learningmachine
 } // contrib
 } // iCub

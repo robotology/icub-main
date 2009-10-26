@@ -11,7 +11,7 @@
 #ifndef __ICUB_MACHINECATALOGUE__
 #define __ICUB_MACHINECATALOGUE__
 
-#include "iCub/MachineFactory.h"
+#include "iCub/IMachineLearner.h"
 
 #include "iCub/DummyLearner.h"
 #include "iCub/RLSLearner.h"
@@ -27,13 +27,13 @@ namespace contrib {
 namespace learningmachine {
 
 void registerMachines() {
-    MachineFactory::instance().registerPrototype(new DummyLearner());
-    MachineFactory::instance().registerPrototype(new RLSLearner());
-    MachineFactory::instance().registerPrototype(new LSSVMLearner());
+    FactoryT<std::string, IMachineLearner>::instance().registerPrototype(new DummyLearner());
+    FactoryT<std::string, IMachineLearner>::instance().registerPrototype(new RLSLearner());
+    FactoryT<std::string, IMachineLearner>::instance().registerPrototype(new LSSVMLearner());
 #ifdef BUILD_LSSVMATLAS
-    MachineFactory::instance().registerPrototype(new LSSVMAtlasLearner());
+    FactoryT<std::string, IMachineLearner>::instance().registerPrototype(new LSSVMAtlasLearner());
 #endif
-    MachineFactory::instance().registerPrototype(new DatasetRecorder());
+    FactoryT<std::string, IMachineLearner>::instance().registerPrototype(new DatasetRecorder());
 }
 
 } // learningmachine

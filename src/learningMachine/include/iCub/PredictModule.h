@@ -69,7 +69,7 @@ public:
      * @return a pointer to the actual machine
      */
     virtual IMachineLearner* getMachine() {
-        return this->machinePortable->getMachine();
+        return this->getMachinePortable()->getWrapped();
     }
 };
 
@@ -180,7 +180,7 @@ public:
      */
     virtual bool close() {
         IMachineLearnerModule::close();
-        if(this->machinePortable->hasMachine()) {
+        if(this->getMachinePortable()->hasWrapped()) {
             return this->getMachine()->close();
         } else {
             return true;
@@ -193,7 +193,7 @@ public:
      * @return a pointer to the actual machine
      */
     virtual IMachineLearner* getMachine() {
-        return this->machinePortable->getMachine();
+        return this->machinePortable->getWrapped();
     }
 
     /**

@@ -10,10 +10,9 @@
 #define __ICUB_TRANSFORMMODULE__
 
 #include "iCub/IMachineLearnerModule.h"
-#include "iCub/ITransformer.h"
+#include "iCub/TransformerPortable.h"
 
 using namespace yarp::os;
-//using namespace yarp::sig;
 
 namespace iCub {
 namespace contrib {
@@ -31,9 +30,9 @@ namespace learningmachine {
 class ITransformProcessor {
 protected:
     /**
-     * A pointer to a transformer.
+     * A pointer to a portable transformer.
      */
-    ITransformer* transformer;
+    TransformerPortable* transformerPortable;
 
 public:
     /**
@@ -41,25 +40,34 @@ public:
      *
      * @param mp a pointer to a transformer.
      */
-    ITransformProcessor(ITransformer* t = (ITransformer*) 0) : transformer(t) {
+    ITransformProcessor(TransformerPortable* tp = (TransformerPortable*) 0) : transformerPortable(tp) {
     }
     
     /**
-     * Mutator for the transformer.
+     * Mutator for the transformer portable.
      *
-     * @param t a pointer to a transformer.
+     * @param tp a pointer to a transformer portable.
      */
-    virtual void setTransformer(ITransformer* t) {
-        this->transformer = t;
+    virtual void setTransformerPortable(TransformerPortable* tp) {
+        this->machinePortable = mp;
     }
     
+    /**
+     * Retrieve the transformer portable wrapper.
+     *
+     * @return a pointer to the transformer portable
+     */
+    virtual TransformerPortable* getTransformerPortable() {
+        return this->transformerPortable;
+    }
+
     /**
      * Retrieve the transformer.
      *
      * @return a pointer to the transformer.
      */
     virtual ITransformer* getTransformer() {
-        return this->transformer;
+        return this->getTransformerPortable()->getWrapped();
     }
 };
 
@@ -165,9 +173,9 @@ public:
 class TransformModule : public IMachineLearnerModule {
 private:
     /**
-     * A pointer to a transformer.
+     * A pointer to a concrete wrapper around a transformer.
      */
-    ITransformer* transformer;
+    TransformerPortable* transformerPortable;
 
     /**
      * Buffered port for the incoming training samples (input and output).
