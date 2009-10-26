@@ -13,6 +13,7 @@
 
 #include <yarp/sig/Vector.h>
 #include <yarp/sig/Matrix.h>
+#include <yarp/os/Bottle.h>
 #include <yarp/math/Math.h>
 
 #include "iCub/IFixedSizeTransformer.h"
@@ -30,7 +31,7 @@ namespace learningmachine {
 
 
 /**
- * Temporary implementation of Random Feature preprocessing.
+ * Implementation of Random Feature preprocessing.
  *
  * See:
  * Random Features for Large-Scale Kernel Machines. Ali Rahimi and Ben Recht. 
@@ -41,7 +42,7 @@ namespace learningmachine {
  */
 
 class RandomFeature : public IFixedSizeTransformer {
-private:
+protected:
     /**
      * Gamma parameter, analoguous to same parameter in RBF kernel.
      */
@@ -54,6 +55,16 @@ private:
      * Bias vector b.
      */
     Vector b;
+
+    /*
+     * Inherited from ITransformer.
+     */
+    virtual void writeBottle(Bottle& bot);
+
+    /*
+     * Inherited from ITransformer.
+     */
+    virtual void readBottle(Bottle& bot);
 
 public:
     /**

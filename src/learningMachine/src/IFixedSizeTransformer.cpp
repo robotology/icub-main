@@ -46,6 +46,16 @@ bool IFixedSizeTransformer::configure(Searchable& config) {
     return success;
 }
 
+void IFixedSizeTransformer::writeBottle(Bottle& bot) {
+    bot.addInt(this->getDomainSize());
+    bot.addInt(this->getCoDomainSize());
+}
+
+void IFixedSizeTransformer::readBottle(Bottle& bot) {
+    this->setCoDomainSize(bot.pop().asInt());
+    this->setDomainSize(bot.pop().asInt());
+}
+
 
 std::string IFixedSizeTransformer::getInfo() {
     std::ostringstream buffer;

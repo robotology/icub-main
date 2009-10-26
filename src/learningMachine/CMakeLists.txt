@@ -38,13 +38,11 @@ SET(LM_MACHINE_SRC
     src/DummyLearner.cpp 
     src/IFixedSizeLearner.cpp
     src/LSSVMLearner.cpp
-#    src/MachinePortable.cpp 
     src/RLSLearner.cpp )
 SET(LM_TRANSFORMER_SRC 
     src/FixedRangeScaler.cpp 
     src/IFixedSizeTransformer.cpp 
     src/IScaler.cpp 
-    src/ITransformer.cpp 
     src/Normalizer.cpp 
     src/RandomFeature.cpp
     src/ScaleTransformer.cpp 
@@ -70,11 +68,10 @@ SET(LM_HEADER
     include/iCub/LSSVMAtlasLearner.h
     include/iCub/LSSVMLearner.h
     include/iCub/MachineCatalogue.h
-    include/iCub/MachineFactory.h
     include/iCub/MachinePortable.h
-    include/iCub/MultiLearnerT.h
+#    include/iCub/MultiLearnerT.h
     include/iCub/Normalizer.h
-    include/iCub/PortableTriple.h
+    include/iCub/PortableT.h
     include/iCub/PredictEvent.h
     include/iCub/PredictEventListener.h
     include/iCub/PredictModule.h
@@ -86,7 +83,7 @@ SET(LM_HEADER
     include/iCub/TrainEventListener.h
     include/iCub/TrainModule.h
     include/iCub/TransformerCatalogue.h
-    include/iCub/TransformerFactory.h
+    include/iCub/TransformerPortable.h
     include/iCub/TransformModule.h )
 
 # Declare groups of source and header files -- makes things pretty in MSVC.

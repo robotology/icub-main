@@ -11,7 +11,6 @@
 
 #include <yarp/IOException.h>
 
-#include "iCub/TransformerFactory.h"
 #include "iCub/TransformModule.h"
 
 namespace iCub {
@@ -139,18 +138,18 @@ bool TransformModule::open(Searchable& opt) {
     }
     
     // construct transformer
-    this->transformer = TransformerFactory::instance().create(transformerName);
+    this->getTransformerPortable()->setWrapped(transformerName);
 
     // send configuration options to the transformer
     this->getTransformer()->configure(opt);
 
     // add processor for incoming data (training samples)
-    this->trainProcessor.setTransformer(this->transformer);
+    this->trainProcessor.setTransformerPortable(this->getTransformerPortable());
     this->trainProcessor.setOutputPort(&this->train_out);
     this->train_in.useCallback(trainProcessor);
 
     // add replier for incoming data (prediction requests)
-    this->predictProcessor.setTransformer(this->transformer);
+    this->predictProcessor.setTransformerPortable(this->getTransformerPortable());
     this->predictProcessor.setOutputPort(&this->predict_relay_inout);
     this->predict_inout.setReplier(this->predictProcessor);
 
@@ -248,13 +247,6 @@ bool TransformModule::respond(const Bottle& cmd, Bottle& reply) {
     }
 
     return success;
-}
-
-ITransformer* TransformModule::getTransformer() {
-    if(this->transformer == (ITransformer*) 0) {
-        throw std::runtime_error("Attempt to retrieve inexistent transformer!");
-    }
-    return this->transformer;
 }
 
 } // learningmachine

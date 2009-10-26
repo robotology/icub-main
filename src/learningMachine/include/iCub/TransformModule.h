@@ -49,7 +49,7 @@ public:
      * @param tp a pointer to a transformer portable.
      */
     virtual void setTransformerPortable(TransformerPortable* tp) {
-        this->machinePortable = mp;
+        this->transformerPortable = tp;
     }
     
     /**
@@ -229,14 +229,14 @@ public:
      * @param pp the default prefix used for the ports.
      */
     TransformModule(std::string pp = "/lm/transform") : IMachineLearnerModule(pp) {
-        this->transformer = (ITransformer*) 0;
+        this->transformerPortable = new TransformerPortable();
     }
     
     /**
      * Destructor.
      */
     ~TransformModule() {
-        delete(this->transformer);
+        delete(this->transformerPortable);
     }
 
     /*
@@ -259,7 +259,19 @@ public:
      *
      * @return a pointer to the transformer
      */
-    virtual ITransformer* getTransformer();
+    virtual ITransformer* getTransformer() {
+        return this->getTransformerPortable()->getWrapped();
+    }
+
+
+    /**
+     * Retrieve the transformer portable.
+     *
+     * @return a pointer to the transformer portable
+     */
+    virtual TransformerPortable* getTransformerPortable() {
+        return this->transformerPortable;
+    }
 
 };
 

@@ -13,7 +13,6 @@
 
 #include "iCub/IFixedSizeTransformer.h"
 #include "iCub/IScaler.h"
-#include "iCub/TransformerFactory.h"
 
 using namespace yarp::os;
 using namespace yarp::sig;

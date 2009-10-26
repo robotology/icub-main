@@ -117,7 +117,7 @@ public:
 	    Bottle nameBottle;
 	    nameBottle.read(connection);
 	    std::string name = nameBottle.get(0).asString().c_str();
-	    this->wrapped = FactoryT<std::string, T>::instance().create(name);
+	    this->setWrapped(name);
 	    if(this->wrapped == (T *) 0) {
 	        return false;
 	    }
@@ -140,7 +140,7 @@ public:
 	        throw std::runtime_error(std::string("Could not open file '") + filename + "'");
 	    }
 
-	    stream << this->getWrapped()->getName().c_str() << std::endl;
+	    stream << this->getWrapped()->getName() << std::endl;
 	    stream << this->getWrapped()->toString();
 
 	    stream.close();
@@ -158,13 +158,13 @@ public:
 	    std::ifstream stream(filename.c_str());
 
 	    if(!stream.is_open()) {
-        	throw std::runtime_error(std::string("Could not open file '") + filename + "'");
+            throw std::runtime_error(std::string("Could not open file '") + filename + "'");
 	    }
 
 	    std::string name;
 	    stream >> name;
 
-	    this->wrapped = FactoryT<std::string, T>::instance().create(name);
+	    this->setWrapped(name);
 	    std::stringstream strstr;
 	    strstr << stream.rdbuf();
 	    this->getWrapped()->fromString(strstr.str());

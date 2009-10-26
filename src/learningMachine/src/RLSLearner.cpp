@@ -10,7 +10,7 @@
 #include "iCub/RLSLearner.h"
 #include <cassert>
 //#include <sstream>
-//#include <stdexcept>
+#include <stdexcept>
 #include <iostream>
 
 namespace iCub {
@@ -141,6 +141,8 @@ std::string RLSLearner::getConfigHelp() {
 }
 
 void RLSLearner::writeBottle(Bottle& bot) {
+	throw std::runtime_error("RLSLearner::writeBottle not yet implemented.");
+
     for(int i = 0; i < this->getCoDomainSize(); i++) {
         std::ostringstream oStream;
         //this->machines[i]->save(oStream);
@@ -152,6 +154,8 @@ void RLSLearner::writeBottle(Bottle& bot) {
 }
 
 void RLSLearner::readBottle(Bottle& bot) {
+	throw std::runtime_error("RLSLearner::readBottle not yet implemented.");
+
     // make sure to call the superclass's method
     this->IFixedSizeLearner::readBottle(bot);
     this->sampleCount = bot.pop().asInt();

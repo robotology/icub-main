@@ -193,7 +193,7 @@ public:
      * @return a pointer to the actual machine
      */
     virtual IMachineLearner* getMachine() {
-        return this->machinePortable->getWrapped();
+        return this->getMachinePortable()->getWrapped();
     }
 
     /**

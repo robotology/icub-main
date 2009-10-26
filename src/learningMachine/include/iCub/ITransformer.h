@@ -14,6 +14,7 @@
 #include <yarp/os/Bottle.h>
 
 #include <string>
+#include <sstream>
 
 using namespace yarp::os;
 using namespace yarp::sig;
@@ -36,7 +37,7 @@ namespace learningmachine {
  *
  */
 
-class ITransformer : public IConfig {
+class ITransformer : public IConfig, public Portable {
 protected:
     /**
      * The name of this type of transformer.
@@ -48,6 +49,23 @@ protected:
      */
     int sampleCount;
     
+    /**
+     * Writes a serialization of the transformer into a bottle. This method is 
+     * internally referenced by the write method. Typically, subclasses should
+     * override this method instead of overriding the write method directly.
+     *
+     * @param bot the bottle containing the transformer serialization
+     */
+    virtual void writeBottle(Bottle& bot) = 0;
+
+    /**
+     * Unserializes a transformer from a bottle. This method is internally 
+     * referenced by the read method. Typically, subclasses should override this 
+     * method instead of overriding the read method directly.
+     *
+     * @param bot the bottle
+     */
+    virtual void readBottle(Bottle& bot) = 0;
 
 public:
     /**
@@ -79,7 +97,12 @@ public:
      *
      * @return the statistics of the transformer
      */
-    virtual std::string getInfo();
+    virtual std::string getInfo() {
+	    std::ostringstream buffer;
+	    buffer << "Type: " << this->getName() << ", ";
+    	buffer << "Sample Count: " << this->sampleCount << std::endl;
+	    return buffer.str();
+    }
 
     /**
      * Forget everything and start over.
@@ -128,6 +151,48 @@ public:
      * Inherited from IConfig.
      */
     virtual bool configure(Searchable& config) { return true; }
+
+    /*
+     * Inherited from Portable.
+     */
+    bool write(ConnectionWriter& connection) {
+        Bottle model;
+        this->writeBottle(model);
+        model.write(connection);
+        return true;
+    }
+
+    /*
+     * Inherited from Portable.
+     */
+    bool read(ConnectionReader& connection) {
+        Bottle model;
+        model.read(connection);
+        this->readBottle(model);
+        return true;
+    }
+
+    /**
+     * Asks the transformer to return a string serialization.
+     *
+     * @return a string serialization of the machine
+     */
+    virtual std::string toString() {
+        Bottle model;
+        this->writeBottle(model);
+        return model.toString().c_str();
+    }
+
+    /**
+     * Asks the transformer to initialize from a string serialization.
+     *
+     * @return true on succes
+     */
+    virtual bool fromString(const std::string& str) {
+        Bottle model(str.c_str()); 
+        this->readBottle(model);
+        return true;
+    }
 
 };
 

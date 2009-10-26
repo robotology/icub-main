@@ -22,3 +22,6 @@ typedef PortableT<ITransformer> TransformerPortable;
 } // learningmachine
 } // contrib
 } // iCub
+
+#endif
+

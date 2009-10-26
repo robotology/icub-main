@@ -69,6 +69,16 @@ protected:
      */
     void validateDomainSizes(const Vector& input, const Vector& output);
 
+    /*
+     * Inherited from ITransformer.
+     */
+    virtual void writeBottle(Bottle& bot);
+
+    /*
+     * Inherited from ITransformer.
+     */
+    virtual void readBottle(Bottle& bot);
+
 public:
     /**
      * Constructor.

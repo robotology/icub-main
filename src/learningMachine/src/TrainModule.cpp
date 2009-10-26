@@ -110,22 +110,18 @@ bool TrainModule::open(Searchable& opt) {
         this->exitWithHelp("no machine type specified");
     }
 
-    // delete previously created machine
-    delete(this->machinePortable);
-    this->machinePortable = (MachinePortable*) 0;
-
     // construct new machine
-    this->machinePortable = new MachinePortable(machineName);
+    this->getMachinePortable()->setWrapped(machineName);
 
     // send configuration options to the machine
     this->getMachine()->configure(opt);
 
     // add replier for incoming data (prediction requests)
-    this->predictProcessor.setMachinePortable(this->machinePortable);
+    this->predictProcessor.setMachinePortable(this->getMachinePortable());
     this->predict_inout.setReplier(this->predictProcessor);
 
     // add processor for incoming data (training samples)
-    this->trainProcessor.setMachinePortable(this->machinePortable);
+    this->trainProcessor.setMachinePortable(this->getMachinePortable());
     this->train_in.useCallback(trainProcessor);
 
     // register ports before connecting
@@ -134,9 +130,6 @@ bool TrainModule::open(Searchable& opt) {
     // attach to the incoming command port
     this->attach(cmd_in);
     
-    // NOTE TO SELF: temporary code
-    //EventDispatcher::instance().addListener(EventListenerFactory::instance().create("train"));
-
     return true;
 }
 

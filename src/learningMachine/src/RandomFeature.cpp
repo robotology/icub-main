@@ -47,11 +47,6 @@ void RandomFeature::transform(const Vector& input, Vector& output) {
     return;
 }
 
-/*void RandomFeature::setDomainSize(int size) {
-    // domain size and codomain have to be equally sized
-    this->IFixedSizeTransformer::setDomainSize(size);
-}*/
-
 void RandomFeature::setCoDomainSize(int size) {
     // call method in base class
     this->IFixedSizeTransformer::setCoDomainSize(size);
@@ -84,8 +79,53 @@ void RandomFeature::reset() {
     }
 }
 
-std::string RandomFeature::getInfo() {
+void RandomFeature::writeBottle(Bottle& bot) {
+    bot.addDouble(this->getGamma());
+
+    // write bias b
+    for(int i = 0; i < this->b.size(); i++) {
+        bot.addDouble(this->b(i));    
+    }
+    bot.addInt(this->b.size());
+
+    // write matrix W
+    for(int r = 0; r < this->W.rows(); r++) {
+        for(int c = 0; c < this->W.cols(); c++) {
+            bot.addDouble(this->W(r, c));
+        }
+    }
+    bot.addInt(this->W.rows());
+    bot.addInt(this->W.cols());
     
+    // make sure to call the superclass's method
+    this->IFixedSizeTransformer::writeBottle(bot);
+}
+
+void RandomFeature::readBottle(Bottle& bot) {
+    // make sure to call the superclass's method
+    this->IFixedSizeTransformer::readBottle(bot);
+    
+    // read matrix W
+    this->W.resize(bot.pop().asInt(), bot.pop().asInt());
+    for(int r = this->W.rows() - 1; r >= 0; r--) {
+        for(int c = this->W.cols() - 1; c >= 0; c--) {
+            this->W(r, c) = bot.pop().asDouble();
+        }
+    }
+
+    // read bias
+    this->b.resize(bot.pop().asInt());
+    for(int i = this->b.size() - 1; i >= 0; i--) {
+        this->b(i) = bot.pop().asDouble();
+    }
+
+    // do _not_ use public accessor, as it resets the matrix
+    this->gamma = bot.pop().asDouble();
+}
+
+
+
+std::string RandomFeature::getInfo() {
     std::ostringstream buffer;
     buffer << this->IFixedSizeTransformer::getInfo();
     buffer << " gamma: " << this->gamma;

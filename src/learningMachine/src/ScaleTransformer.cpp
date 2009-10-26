@@ -10,6 +10,7 @@
 #include <sstream>
 
 #include "iCub/ScaleTransformer.h"
+#include "iCub/FactoryT.h"
 
 namespace iCub {
 namespace contrib {
@@ -44,7 +45,7 @@ void ScaleTransformer::setAt(int index, std::string type) {
         // the magic keyword null specifies that no scaler object will be created
         // this is useful to disable the scaler with minimal overhead
         if(type != "null") {
-            this->scalers[index] = ScalerFactory::instance().create(type);
+            this->scalers[index] = FactoryT<std::string, IScaler>::instance().create(type);
         }
     } else {
         throw std::runtime_error("Index for scaler out of bounds!");
