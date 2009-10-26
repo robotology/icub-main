@@ -7,13 +7,10 @@
  */
 
 
-//#include <cassert>
 #include <sstream>
 
-// NOTE TO SELF: remove ASAP
-#include <iostream>
-
 #include <yarp/os/Bottle.h>
+
 #include "iCub/IScaler.h"
 
 namespace iCub {

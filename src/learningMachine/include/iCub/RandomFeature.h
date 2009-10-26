@@ -9,18 +9,12 @@
 #ifndef __ICUB_RANDOMFEATURE__
 #define __ICUB_RANDOMFEATURE__
 
-#include <vector>
-
 #include <yarp/sig/Vector.h>
 #include <yarp/sig/Matrix.h>
 #include <yarp/os/Bottle.h>
 #include <yarp/math/Math.h>
 
 #include "iCub/IFixedSizeTransformer.h"
-
-//#include <yarp/os/Portable.h>
-//#include <yarp/os/IConfig.h>
-//#include <yarp/os/Value.h>
 
 using namespace yarp::os;
 using namespace yarp::sig;

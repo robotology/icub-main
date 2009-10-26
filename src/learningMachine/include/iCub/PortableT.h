@@ -49,14 +49,16 @@ public:
     /**
      * Constructor.
      *
-     * @param w The initial wrapped object
+     * @param w initial wrapped object
      */
-    PortableT(T* w = (T*) 0) : wrapped(w) { }
+    PortableT(T* w = (T*) 0) {
+        this->setWrapped(w);
+    }
 
     /**
      * Constructor.
      *
-     * @param name The name specifier for the wrapped object
+     * @param name name specifier of the wrapped object
      */
     PortableT(std::string name) {
         this->setWrapped(name);

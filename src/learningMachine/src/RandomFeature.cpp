@@ -2,13 +2,12 @@
  * Copyright (C) 2007-2009 Arjan Gijsberts @ Italian Institute of Technology
  * CopyPolicy: Released under the terms of the GNU GPL v2.0.
  *
- * *TEMPORARY* Implementation of the Random Feature transformer.
+ * Implementation of the Random Feature transformer.
  *
  */
 
 #include <cassert>
 #include <sstream>
-
 #include <math.h>
 
 #include <yarp/math/Rand.h>

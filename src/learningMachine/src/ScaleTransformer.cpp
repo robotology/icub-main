@@ -39,7 +39,7 @@ void ScaleTransformer::deleteAll(int size) {
 }
 
 void ScaleTransformer::setAt(int index, std::string type) {
-    if(index < this->scalers.size()) {
+    if(index >= 0 && index < this->scalers.size()) {
         delete this->scalers[index];
         this->scalers[index] = (IScaler *) 0;
         // the magic keyword null specifies that no scaler object will be created
@@ -78,7 +78,7 @@ void ScaleTransformer::transform(const Vector& input, Vector& output) {
     for(int i = 0; i < output.size(); i++) {
         // only transform the sample if the scaler is actually set
         if(!this->isEmptyScaler(i)) {
-            output(i) = this->scalers[i]->transform(input(i));
+            output(i) = this->getAt(i)->transform(input(i));
         } else {
             output(i) = input(i);
         }
@@ -129,6 +129,34 @@ std::string ScaleTransformer::getConfigHelp() {
     return buffer.str();
 }
 
+void ScaleTransformer::writeBottle(Bottle& bot) {
+    // write all scalers
+    for(int i = 0; i < this->getDomainSize(); i++) {
+        if(this->isEmptyScaler(i)) {
+            bot.addString("null");
+        } else {
+            bot.addString(this->getAt(i)->getName().c_str());
+            this->getAt(i)->writeBottle(bot);
+        }
+    }
+    
+    // make sure to call the superclass's method
+    this->IFixedSizeTransformer::writeBottle(bot);
+}
+
+void ScaleTransformer::readBottle(Bottle& bot) {
+    // make sure to call the superclass's method (will reset transformer)
+    this->IFixedSizeTransformer::readBottle(bot);
+
+    // read all scalers in reverse order
+    for(int i = this->getDomainSize() - 1; i >= 0; i++) {
+        this->setAt(i, bot.pop().asString().c_str());
+        if(!this->isEmptyScaler(i)) {
+            this->getAt(i)->readBottle(bot);
+        }
+    }
+}
+
 bool ScaleTransformer::configure(Searchable &config) {
     bool success = this->IFixedSizeTransformer::configure(config);
 
@@ -164,16 +192,16 @@ bool ScaleTransformer::configure(Searchable &config) {
         Bottle list = config.findGroup("config").tail();
         property.addList() = list.tail();
         //std::cout << "property: " << property.toString() << std::endl;
-        if(list.get(0).isInt() && list.get(0).asInt() >= 1 && list.get(0).asInt() <= this->scalers.size()) {
+        if(list.get(0).isInt()) {
             // format: set config idx key val
             int i = list.get(0).asInt() - 1;
             //std::cout << "property on " << i << " to " << property.toString() << std::endl;
-            success = this->scalers[i]->configure(property);
+            success = this->getAt(i)->configure(property);
         } else if(list.get(0).asString() == "all") {
             // format: set config all key val
             //std::cout << "property on all to " << property.toString() << std::endl;
             for(int i = 0; i < this->scalers.size(); i++) {
-                success |= this->scalers[i]->configure(property);
+                success |= this->getAt(i)->configure(property);
             }
         } else {
             throw std::runtime_error("Illegal index!");

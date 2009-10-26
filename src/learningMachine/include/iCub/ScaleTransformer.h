@@ -10,6 +10,7 @@
 #define __ICUB_SCALETRANSFORMER__
 
 #include <vector>
+#include <stdexcept>
 
 #include "iCub/IFixedSizeTransformer.h"
 #include "iCub/IScaler.h"
@@ -75,6 +76,19 @@ private:
     void setAt(int index, std::string type);
 
     /**
+     * Returns a pointer to the scaler at a certain position.
+     *
+     * @param index the index of the scaler
+     */
+    IScaler* getAt(int index) {
+        if(index >= 0 && index < this->scalers.size()) {
+            return this->scalers[index];
+        } else {
+            throw std::runtime_error("Index for scaler out of bounds!");
+        }
+    }
+
+    /**
      * Checks whether the scaler on a certain position is an empty scaler 
      * ('null').
      *
@@ -87,6 +101,16 @@ private:
      * Sets all scalers to a given type.
      */
     void setAll(std::string type);
+
+    /*
+     * Inherited from ITransformer.
+     */
+    virtual void writeBottle(Bottle& bot);
+
+    /*
+     * Inherited from ITransformer.
+     */
+    virtual void readBottle(Bottle& bot);
 
 public:
     /**

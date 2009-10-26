@@ -48,6 +48,19 @@ protected:
      */
     bool updateEnabled;
 
+    /**
+     * Writes a serialization of the scaler into a bottle. 
+     *
+     * @param bot the bottle 
+     */
+    //virtual void writeBottle(Bottle& bot) = 0;
+
+    /**
+     * Unserializes a scaler from a bottle. 
+     *
+     * @param bot the bottle
+     */
+    //virtual void readBottle(Bottle& bot) = 0;
 
 public:
     /**

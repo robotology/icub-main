@@ -278,6 +278,56 @@ d) Reset the dataset to the beginning using the 'reset' command.
 e) Open another dataset using the 'open fname' command.
 
 
+2.6 LearningMachine Library
+
+The prospected use of the Learning Machine code is as a set of YARP modules. 
+However, in certain situations it may be desirable to actually integrate a 
+learning algorithm or transformer directly in another application. The most 
+obvious reason why one may want to do so is to avoid any communication delays 
+caused by the YARP layer.
+
+During the configuration step it is therefore possible to enable the compilation 
+of a library that includes learning algorithms and transformers. Other projects 
+can use this library and the LearningMachine header files to easily integrate 
+the core parts of the modules in their own code. There are three distinct ways 
+in which this can done, explained in the next three subsections. To see each 
+way in action, please see the related examples in the 'examples' subdirectory.
+
+2.6.1 Direct Inclusion
+
+The easiest and least powerful way is to act directly on an instance of the 
+desired subtypes. The configuration of this instances is done using the member 
+functions of the specific type. Although this strategy may initially seem 
+sufficient, it mitigates the actual philosophy of having a generalized 
+interface for learning algorithms and transformers (cf. Section 1).
+
+2.6.2 Indirect Inclusion through the Abstract Base Class
+
+A better strategy is to interface with the desired subtype indirectly using the 
+abstract base classes. In this case, configuration cannot be done directly 
+using member functions, as each subtype will have different configurable 
+parameters and thus different functions. Instead, configuration is done by 
+sending Property instances to the configure method (cf. the YARP IConfig class).
+This strategy already guarantees that changing to another subtype only involves 
+a reasonably small amount of changes in your program. Changing to another 
+subtype will, however, require a recompilation of the program. Further, features 
+such as serialization to file or network are not supported without additional
+code.
+
+2.6.3 Indirect Inclusion through the Portable Wrapper
+
+The most powerful way of using the library is to interface with all subtypes 
+through the portable wrapper. Internally, the LearningMachine YARP modules 
+interface with the learning algorithms and transformers through the portable 
+wrapper.
+
+Also in this case, configuration of the instances is done using Property 
+instances. However, the added benefit of the portable wrapper is that it 
+supports serialization of the instances either to a file or over the network. 
+Further, the portable wrapper can be used to instantiate objects dynamically 
+during runtime based on a string identifier. 
+
+
 
 3. EXAMPLES
 
@@ -549,10 +599,24 @@ Recorder machine (i.e. './train --machine Recorder'). See runtime help for
 configuration options.
 
 4.5 CMake Options
-The USE_LSSVMATLAS option in CMake can be used to build another implementation 
-of LSSVM, which has been based on the efficient Atlas library for linear 
-algebra. Although that implementation is much more efficient and extensive, it 
-is tricky to get it running on a machine. It's use is therefore discouraged and 
-only advanced users that really need the extra performance or functionality 
-should try to build it. The module is located in the directory 'lssvm' in the 
-iCub repository. It depends on Atlas and the Boost Numerics bindings.
+The CREATE_LM_LIBRARY option in CMake is used to indicate that a library 
+containing the core components of the LearningMachine module has to be created. 
+This library was described in more detail in Section 2.6. 
+
+Additionally, the USE_LSSVMATLAS option can be used to build another 
+implementation of LSSVM, which has been based on the efficient Atlas library for 
+linear algebra. Although that implementation is much more efficient and 
+extensive, it is tricky to get it running on a machine. It's use is therefore 
+discouraged and only advanced users that really need the extra performance or 
+functionality should try to build it. The module is located in the directory 
+'lssvm' in the iCub repository. It depends on Atlas and the Boost Numerics 
+bindings.
+
+4.6 Portable Wrapper
+The addition of a portable wrapper may at first seem unnecessary. Nonetheless, 
+it is justified by the fact that abstract base classes (i.e. classes with pure 
+virtual members) cannot be used for YARP BufferedPorts. Additionally, it is 
+good practice to separate away the responsiblity of object construction from 
+the interfaces, keeping the latter as 'clean' as possible. The portable wrapper 
+functions thus as concrete class for BufferedPorts and handles object creation
+(i.e. the calls to the corresponding Factories).
