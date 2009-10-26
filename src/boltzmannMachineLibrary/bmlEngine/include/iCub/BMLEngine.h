@@ -141,10 +141,16 @@ public:
 	* uses a bottle to comunicate a command to the module linked on 
 	*/
 	bool outCommandPort();
+	bool closePortImage();
+	bool openPortImage();
 	/**
 	* open the port necessary to send commands
 	*/
 	void openCommandPort();
+	/**
+	* close the port necessary to send commands
+	*/
+	void closeCommandPort();
 	/** 
 	* set the attribute options of class Property
 	*/

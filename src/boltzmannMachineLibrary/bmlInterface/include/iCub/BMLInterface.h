@@ -106,22 +106,42 @@ public:
 	/**
 	* set the images to the output ports
 	*/
-	bool outPorts(); //
+	bool outPorts();
+	/**
+	* set all the components up
+	*/
 	void setUp();
+	/**
+	* create all the necessary objects
+	*/
 	void createObjects();
+	/**
+	* open all the ports and all the YARP image receivers 
+	* on the dedicated ports
+	*/
 	bool openPorts();
+	/**
+	* close all the ports and all the YARP image receivers 
+	*/
+	bool closePorts();
+
 	void drawAllBlobs(bool stable);
 	//--- atributes ---
 	/**
-	* Output Port for commands
+	* Output Port for commands 
 	*/
 	yarp::os::BufferedPort<yarp::os::Bottle> *_pOutPort;
+	/**
+	* Output Port for commands 
+	*/
 	yarp::os::BufferedPort<ImageOf<PixelRgb> > *_pOutPort2;
 	/**
 	* command that is send throgh the command port
 	*/
 	string *command;
-	// Output Bottle Container
+	/**
+	* Output Bottle Container
+	*/
 	yarp::os::Bottle _outBottle;
 
 	/**
@@ -279,9 +299,18 @@ public:
 	*/
 	bool clampLayer_flag;
 
-	//----------- checkButtons ---------------------
-	GtkWidget *buttonCheckGreen,*buttonCheckRed,*buttonCheckBlue;
-
+	/**
+	*  checkButton Green 
+	*/
+	GtkWidget *buttonCheckGreen;
+	/**
+	*  checkButton Red 
+	*/
+	GtkWidget *buttonCheckRed;
+	/**
+	*  checkButton Blue 
+	*/
+	GtkWidget *buttonCheckBlue;
 	/**
 	*bottle containing the option of the command
 	*/

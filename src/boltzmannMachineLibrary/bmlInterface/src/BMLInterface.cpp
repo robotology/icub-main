@@ -193,18 +193,7 @@ BMLInterface::BMLInterface(){
 }
 
 
-bool BMLInterface::open(Searchable& config) {
-    //ct = 0;
-    port_in.open(getName("in"));
-	//ConstString portName2 = options.check("name",Value("/worker2")).asString();
-	port_out.open(getName("out"));
-	port_Blobs.open(getName("outBlobs"));
-    cmdPort.open(getName("cmd")); // optional command port
-    attach(cmdPort); // cmdPort will work just like terminal
 
-	
-    return true;
-}
 
 // try to interrupt any communications or resource usage
 bool BMLInterface::interruptModule() {
@@ -216,6 +205,7 @@ bool BMLInterface::interruptModule() {
 bool BMLInterface::close() {
 		port_in.close();
 		port_out.close();
+		closePorts();
 		return true;
 	}
 
@@ -1525,6 +1515,37 @@ bool BMLInterface::openPorts(){
 	return true;
 }
 
+bool BMLInterface::closePorts(){
+	bool ret = false;
+	//int res = 0;
+	// Registering Port(s)
+    //reduce verbosity --paulfitz
+	g_print("Closing port %s on network %s...\n", "/rea/BMLInterface/in","default");
+	_imgRecv.Disconnect();//("/rea/BMLInterface/in","default");
+	//--------
+	ret = _imgRecvLayer0.Disconnect();//("/rea/BMLInterface/inLayer0","default");
+	ret = _imgRecvLayer1.Disconnect();//("/rea/BMLInterface/inLayer1","default");
+	ret = _imgRecvLayer2.Disconnect();//("/rea/BMLInterface/inLayer2","default");
+	//--------
+	ret = _imgRecvLayer3.Disconnect();//("/rea/BMLInterface/inLayer3","default");
+	ret = _imgRecvLayer4.Disconnect();//("/rea/BMLInterface/inLayer4","default");
+	ret = _imgRecvLayer5.Disconnect();//("/rea/BMLInterface/inLayer5","default");
+	ret = _imgRecvLayer6.Disconnect();//("/rea/BMLInterface/inLayer6","default");
+	ret = _imgRecvLayer7.Disconnect();//("/rea/BMLInterface/inLayer7","default");
+	ret = _imgRecvLayer8.Disconnect();//("/rea/BMLInterface/inLayer8","default");
+	//-------------
+	if (true)
+        {		
+            //_pOutPort = new yarp::os::BufferedPort<yarp::os::Bottle>;
+            g_print("Closing port %s on network %s...\n", "/rea/BMLInterface/out","dafult");
+            _pOutPort->close();//open("/rea/BMLInterface/out");
+			//_pOutPort2 = new yarp::os::BufferedPort<ImageOf<PixelRgb> >;
+            g_print("Closing port %s on network %s...\n", "/rea/BMLInterface/out","dafult");
+            _pOutPort2->close();//open("/rea/BMLInterface/outBlobs");
+        }
+	return true;
+}
+
 void BMLInterface::setUp()
 {
 	if (true)
@@ -1623,6 +1644,9 @@ GtkWidget* BMLInterface::createMainWindow(void)
     gtk_window_set_title (GTK_WINDOW (window), "Boltmann Machine Graphical Interface");
 	gtk_window_set_default_size(GTK_WINDOW (window), 320, 700); 
 	gtk_window_set_resizable (GTK_WINDOW (window), TRUE);
+	g_signal_connect (G_OBJECT (window), "destroy",
+                      G_CALLBACK (gtk_main_quit),
+                      NULL);
     
 	// When the window is given the "delete_event" signal (this is given
 	// by the window manager, usually by the "close" option, or on the
@@ -2741,7 +2765,41 @@ GtkWidget* BMLInterface::createMainWindow(void)
 
 
 //static GtkWidget *mainWindow = NULL;
+bool BMLInterface::open(Searchable& config) {
+    //ct = 0;
+    //port_in.open(getName("in"));
+	//ConstString portName2 = options.check("name",Value("/worker2")).asString();
+	//port_out.open(getName("out"));
+	//port_Blobs.open(getName("outBlobs"));
+    //cmdPort.open(getName("cmd")); // optional command port
+    //attach(cmdPort); // cmdPort will work just like terminal
 
+	// create a new window
+	this->createObjects();
+	this->setUp();
+    mainWindow = this->createMainWindow();
+		// Non Modal Dialogs
+#if GTK_CHECK_VERSION(2,6,0)
+	loadDialog= createLoadDialog();
+	saveSingleDialog = createSaveSingleDialog();
+	saveSetDialog = createSaveSetDialog();
+#else
+    printf("Functionality omitted for older GTK version\n");
+#endif
+
+	// Shows all widgets in main Window
+    gtk_widget_show_all (mainWindow);
+	gtk_window_move(GTK_WINDOW(mainWindow), 10,10);
+	// All GTK applications must have a gtk_main(). Control ends here
+	// and waits for an event to occur (like a key press or
+	// mouse event).
+
+	gtk_main ();
+	gtk_widget_destroy(mainWindow);
+    yarp::os::Network::fini();
+	this->close();
+    return false;
+}
 
 
 
@@ -2762,29 +2820,7 @@ int main(int argc, char *argv[]) {
 	// from the command line and are returned to the application.
     gtk_init (&argc, &argv);
 
-	// create a new window
-	module->createObjects();
-	module->setUp();
-    mainWindow = module->createMainWindow();
-		// Non Modal Dialogs
-#if GTK_CHECK_VERSION(2,6,0)
-	loadDialog= createLoadDialog();
-	saveSingleDialog = createSaveSingleDialog();
-	saveSetDialog = createSaveSetDialog();
-#else
-    printf("Functionality omitted for older GTK version\n");
-#endif
-
-	// Shows all widgets in main Window
-    gtk_widget_show_all (mainWindow);
-	gtk_window_move(GTK_WINDOW(mainWindow), 10,10);
-	// All GTK applications must have a gtk_main(). Control ends here
-	// and waits for an event to occur (like a key press or
-	// mouse event).
-
-	gtk_main ();
-
-    yarp::os::Network::fini();
+	
 	// Get command line options
 	//Property options;
 	//options.fromCommand(argc,argv);
@@ -2792,8 +2828,8 @@ int main(int argc, char *argv[]) {
 	
 
 
-    //return module.runModule(argc,argv);
-	return 0;
+    return module->runModule(argc,argv);
+	//return 0;
 }
 
 /*#ifdef WIN32

@@ -794,6 +794,9 @@ void MachineBoltzmann::saveConfiguration(){
 
 	//MATRIX representation of the CONNECTIONS
 	int k=0; //initialise the counter of rows
+	if(elementList.begin()==NULL){
+		return;
+	}
 	for(iterE1=elementList.begin(); iterE1!=elementList.end();iterE1++){
 		for(iterU1=iterE1->second.unitList.begin(); iterU1!=iterE1->second.unitList.end();iterU1++){
 			//Iteration over the rows of the matrix

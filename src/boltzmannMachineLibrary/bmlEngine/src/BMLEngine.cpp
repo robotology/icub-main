@@ -33,10 +33,16 @@ void BMLEngine::openCommandPort(){
         }
 }
 
+void BMLEngine::closeCommandPort(){
+	//_pOutPort = new yarp::os::BufferedPort<yarp::os::Bottle>;
+    printf("Closing port %s on network %s...\n", "/rea/BMLEngine/outCommand","dafult");
+    _pOutPort->close();//("/rea/BMLEngine/outCommand");
+}
+
 /**
 * function that opens the port where the inputImage is read
 */
-bool openPortImage(){
+bool BMLEngine::openPortImage(){
 	bool ret = false;
 	//int res = 0;
 	// Registering Port(s)
@@ -53,6 +59,19 @@ bool openPortImage(){
             printf("ERROR: Port registration failed.\nQuitting, sorry.\n");
             return false;
 	}
+}
+
+/**
+* function that opens the port where the inputImage is read
+*/
+bool  BMLEngine::closePortImage(){
+	bool ret = true;
+	//int res = 0;
+	// Registering Port(s)
+    //reduce verbosity --paulfitz
+	printf("Closing port %s on network %s...\n", "/rea/BMLEngine/inputImage","default");
+	_imgRecv.Disconnect();//("/rea/BMLEngine/inputImage","default");
+	return ret;
 }
 
 
@@ -161,8 +180,13 @@ bool  BMLEngine::interruptModule() {
 bool BMLEngine::close() {
 		port.close();
 		port2.close();
-		mb->saveConfiguration();
-		
+		port0.close();//(getName("out0"));
+		port1.close();//(getName("out1"));
+        port2.close();//(getName("out2")); 
+		portCmd.close();//(getName("inCmd"));
+		closePortImage();
+		closeCommandPort();
+		//mb->saveConfiguration();		
 		return true;
 	}
 
@@ -184,36 +208,43 @@ bool BMLEngine::updateModule() {
 	Bottle *bot=portCmd.read(false);
 	if(bot!=NULL){
 		string *commandTOT=new string(bot->toString().c_str());
+		string command,option;
+		string optionName1,optionValue1,optionName2, optionValue2;
 		printf("Bottle  is: %s\n",commandTOT->c_str());
 		unsigned int parOpen=commandTOT->find("(");
-		
-		string command=commandTOT->substr(0,parOpen-1);
-		string option=commandTOT->substr(parOpen+1,commandTOT->size()-parOpen);
-		
-		
-		unsigned int  parPos1=option.find("(");
-		unsigned int parPos2=option.find(")");
-		unsigned int spacePos=option.find(" ");
-		string optionName1,optionValue1,optionName2, optionValue2;
-		if(spacePos!=string::npos){
-			optionName1=option.substr(parPos1+1,spacePos-parPos1);
-			optionValue1= option.substr(spacePos+1,parPos2-spacePos-1);
-			unsigned int dim=option.size();
-			option=option.substr(parPos2+2,dim-2-parPos2);
-
-			parPos1=option.find("(");
-			if(parPos1!=string::npos){
-				parPos2=option.find(")");
-				spacePos=option.find(" ");
-				optionName2=option.substr(parPos1+1,spacePos-parPos1);
-				optionValue2= option.substr(spacePos+1,parPos2-spacePos-1);
-				option=option.substr(parPos2,option.size()-parPos2);
-			}
-		
-			//string name=option.substr(1,spacePos-1);
-			//string value=option.substr(spacePos+1,option.size()-spacePos);
+		if(parOpen=-1){
+			printf("Simple command \n ");
+			command=commandTOT->substr(0,commandTOT->size());
 		}
+		else
+		{
+			command=commandTOT->substr(0,parOpen-1);
+			option=commandTOT->substr(parOpen+1,commandTOT->size()-parOpen);
+			
+			
+			unsigned int  parPos1=option.find("(");
+			unsigned int parPos2=option.find(")");
+			unsigned int spacePos=option.find(" ");
+			
+			if(spacePos!=string::npos){
+				optionName1=option.substr(parPos1+1,spacePos-parPos1);
+				optionValue1= option.substr(spacePos+1,parPos2-spacePos-1);
+				unsigned int dim=option.size();
+				option=option.substr(parPos2+2,dim-2-parPos2);
 
+				parPos1=option.find("(");
+				if(parPos1!=string::npos){
+					parPos2=option.find(")");
+					spacePos=option.find(" ");
+					optionName2=option.substr(parPos1+1,spacePos-parPos1);
+					optionValue2= option.substr(spacePos+1,parPos2-spacePos-1);
+					option=option.substr(parPos2,option.size()-parPos2);
+				}
+			
+				//string name=option.substr(1,spacePos-1);
+				//string value=option.substr(spacePos+1,option.size()-spacePos);
+			}
+		}
 		printf("command: |%s| \n",command.c_str());
 		printf("option: |%s| \n",option.c_str());
 		printf("name1: |%s| \n",optionName1.c_str());
@@ -287,6 +318,9 @@ bool BMLEngine::updateModule() {
 			list<Unit>::iterator iter;
 			int totUnits=6;
 			bool end_loop=false;
+			if(mb->_unitList.begin==NULL){
+				return true;
+			}
 			for(iter=mb->_unitList.begin(); !end_loop;iter++){
 				printf("unit name:%s,%d \n",iter->getName().c_str(),iter->getState());
 				unsigned int posR=iter->getName().find('R');
@@ -483,6 +517,8 @@ bool BMLEngine::updateModule() {
 			int ycount=-1;
 			string layerName("");
 			string layerName_pr("");
+			if(mb->_unitList.begin==NULL)
+				return true;
 			for(iter=mb->_unitList.begin(); iter!=mb->_unitList.end();iter++){
 				//countUnit++;
 				ct = ((countUnit%10)-1)*24;

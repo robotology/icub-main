@@ -29,6 +29,9 @@ int main(int argc, char *argv[]) {
 
     BMLEngine module;
     module.setName("/rea/BMLEngine");
-    return module.runModule(argc,argv);
+	bool ret=module.runModule(argc,argv);
+	if(!ret)
+		module.close();
+	return ret;
 	//return 0;
 }
