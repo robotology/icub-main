@@ -210,15 +210,11 @@ public:
         // set tracking mode
         arm->setTrackingMode(false);
 
+        // init variables
+        arm->getPose(xd,od);
+
         // open ports
         port_xd.open((localName+"/xd:i").c_str());
-
-        // init variables
-        xd.resize(3);
-        xd=0.0;
-
-        od.resize(4);
-        od=0.0;
 
         return true;
     }
