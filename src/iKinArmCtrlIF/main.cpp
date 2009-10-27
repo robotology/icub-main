@@ -94,6 +94,7 @@ Windows, Linux
 #include <yarp/os/BufferedPort.h>
 #include <yarp/os/Time.h>
 #include <yarp/sig/Vector.h>
+#include <yarp/math/Math.h>
 
 #include <yarp/dev/ControlBoardInterfaces.h>
 #include <yarp/dev/CartesianControl.h>
@@ -106,13 +107,15 @@ Windows, Linux
 #include <iomanip>
 #include <string>
 
-#define MAX_TORSO_PITCH     30.0
+#define MAX_TORSO_PITCH     30.0    // [deg]
+#define PRINT_STATUS_PER    1.0     // [s]
 
 using namespace std;
 using namespace yarp;
 using namespace yarp::os;
 using namespace yarp::dev;
 using namespace yarp::sig;
+using namespace yarp::math;
 
 
 class CtrlThread: public RateThread
@@ -126,6 +129,11 @@ protected:
     bool ctrlCompletePose;
     string remoteName;
     string localName;
+
+    Vector xd;
+    Vector od;
+
+    double t0;
 
 public:
     CtrlThread(unsigned int _period, ResourceFinder &_rf,
@@ -205,6 +213,13 @@ public:
         // open ports
         port_xd.open((localName+"/xd:i").c_str());
 
+        // init variables
+        xd.resize(3);
+        xd=0.0;
+
+        od.resize(4);
+        od=0.0;
+
         return true;
     }
 
@@ -214,6 +229,8 @@ public:
             cout << "Thread started successfully" << endl;
         else
             cout << "Thread did not start" << endl;
+
+        t0=Time::now();
     }
 
     virtual void run()
@@ -221,9 +238,7 @@ public:
         if (Bottle *b=port_xd.read(false))
         {    
             if (b->size()>=3)
-            {
-                Vector xd(3), od(4);
-
+            {                
                 for (int i=0; i<3; i++)
                     xd[i]=b->get(i).asDouble();
 
@@ -239,6 +254,8 @@ public:
                     arm->goToPosition(xd);
             }
         }
+
+        printStatus();
     }
 
     virtual void threadRelease()
@@ -257,6 +274,34 @@ public:
 
         arm->getLimits(axis,&min,&max);
         arm->setLimits(axis,min,MAX_TORSO_PITCH);
+    }
+
+    void printStatus()
+    {
+        double t=Time::now();
+
+        if (t-t0>=PRINT_STATUS_PER)
+        {
+            Vector x,o;
+
+            arm->getPose(x,o);
+            Vector ex=xd-x;
+
+            cout << "xd       = " << xd.toString() << endl;
+            cout << "x        = " << x.toString()  << endl;
+            cout << "norm(ex) = " << ex.toString() << endl;
+
+            if (ctrlCompletePose)
+            {
+                Vector eo=od-o;
+
+                cout << "od       = " << od.toString() << endl;
+                cout << "o        = " << o.toString()  << endl;
+                cout << "norm(eo) = " << eo.toString() << endl;
+            }
+
+            t0=t;
+        }
     }
 };
 
