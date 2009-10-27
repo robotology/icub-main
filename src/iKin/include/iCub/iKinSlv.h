@@ -175,7 +175,7 @@ protected:
 
 public:
     InputPort(CartesianSolver *_slv);
-    void    reset_xd(const yarp::sig::Vector &_xd);
+    void reset_xd(const yarp::sig::Vector &_xd);
     yarp::sig::Vector &get_dof() { return dof;      }
     yarp::sig::Vector &get_xd()  { return xd;       }
     int  &get_pose()             { return pose;     }
