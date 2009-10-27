@@ -226,9 +226,9 @@ public:
     virtual void afterStart(bool s)
     {
         if (s)
-            cout << "Thread started successfully" << endl;
+            cout<<"Thread started successfully"<<endl;
         else
-            cout << "Thread did not start" << endl;
+            cout<<"Thread did not start"<<endl;
 
         t0=Time::now();
     }
@@ -287,18 +287,20 @@ public:
             arm->getPose(x,o);
             Vector ex=xd-x;
 
-            cout << "xd       = " << xd.toString() << endl;
-            cout << "x        = " << x.toString()  << endl;
-            cout << "norm(ex) = " << ex.toString() << endl;
+            cout<< "xd       = "<<xd.toString()<<endl;
+            cout<< "x        = "<<x.toString() <<endl;
+            cout<< "norm(ex) = "<<ex.toString()<<endl;
 
             if (ctrlCompletePose)
             {
                 Vector eo=od-o;
 
-                cout << "od       = " << od.toString() << endl;
-                cout << "o        = " << o.toString()  << endl;
-                cout << "norm(eo) = " << eo.toString() << endl;
+                cout<< "od       = "<< od.toString()<<endl;
+                cout<< "o        = "<< o.toString() <<endl;
+                cout<< "norm(eo) = "<< eo.toString()<<endl;
             }
+
+            cout<<endl;
 
             t0=t;
         }
