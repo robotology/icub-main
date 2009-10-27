@@ -323,7 +323,7 @@ void CartesianSolver::alignJointsBounds()
 
         for (int j=0; j<jnt[i]; j++)
         {               
-            lim[i]->getLimits(j,&min,&max);
+            lim[i]->getLimits(rmp[i][j],&min,&max);
 
             cout<<"joint #"<<cnt<<": ["<<min<<", "<<max<<"] deg"<<endl;
         
@@ -347,7 +347,7 @@ bool CartesianSolver::setLimits(int axis, double min, double max)
             {
                 double curMin, curMax;
 
-                lim[i]->getLimits(j,&curMin,&curMax);
+                lim[i]->getLimits(rmp[i][j],&curMin,&curMax);
 
                 if (min>=curMin && max<=curMax)
                 {
