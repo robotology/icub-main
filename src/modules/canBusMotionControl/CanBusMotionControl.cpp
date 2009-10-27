@@ -409,6 +409,72 @@ void AnalogEncoders::handleAnalog(void *canbus)
                                 data[7+k]=buff[k];
                         }
                         break;
+                    case 0xA:
+                        {} //skip these, they are not for us
+                        break;
+                    case 0xB:
+                        {} //skip these, they are not for us
+                        break;
+                    default:
+                        fprintf(stderr, "%s [%d] Warning, got unexpected class 0x3 msg(s)\n");
+                        break;
+                    }
+                }
+            }
+    }
+
+    mutex.post();
+}
+
+
+void SixAxisTorqueSensor::handleTorque(void *canbus)
+{
+    CanBusResources& r = RES (canbus);
+
+    double before=Time::now();
+    unsigned int i=0;
+    const int _networkN=r._networkN;
+
+    mutex.wait();
+
+    for (i = 0; i < r._readMessages; i++)
+    {
+        unsigned int len=0;
+        unsigned int id=0;
+        unsigned char *buff=0;
+        CanMessage& m = r._readBuffer[i];
+        buff=m.getData();
+        id=m.getId();
+        len=m.getLen();
+        
+        const char type=((id&0x700)>>8);
+        const char boardId=((id&0x0f0)>>4);
+        if (type==0x03)
+     //       if (boardId==0x0E)
+            {
+                const char groupId=(id&0x00f);
+                int baseIndex=0;
+                {
+                    switch (groupId)
+                    {
+                    case 0xA:
+                        {
+                            for(int k=0;k<=3;k++)
+                                forces[k]=((short(buff[k]))<<16)+buff[k+1];
+                        }
+                        break;
+                    case 0xB:
+                        {
+                            for(int k=0;k<=3;k++)
+                                torques[k]=((short(buff[k]))<<16)+buff[k+1];
+                        }
+                        break;
+                    case 0xC:
+                        {} //skip these, they are not for us
+                        break;
+                    case 0xD:
+                        {} //skip these, they are not for us
+                        break;
                     default:
                         fprintf(stderr, "%s [%d] Warning, got unexpected class 0x3 msg(s)\n");
                         break;
@@ -1142,6 +1208,11 @@ bool CanBusMotionControl::open (Searchable &config)
     RateThread::start();
 
     _opened = true;
+
+#ifdef __ENABLE_TORQUE__
+    //add here initialization
+#endif __ENABLE_TORQUE__
+
     DEBUG("CanBusMotionControl::open returned true\n");
     return true;
 }
@@ -1154,6 +1225,11 @@ bool CanBusMotionControl::close (void)
     //fprintf(stderr, "CanBusMotionControl::close\n");
 
     if (_opened) {
+
+        #ifdef __ENABLE_TORQUE__
+        //stop force/torque broadcast
+        #endif __ENABLE_TORQUE__
+
         // disable the controller, pid controller & pwm off
         int i;
         for (i = 0; i < d._njoints; i++) {
@@ -1618,6 +1694,9 @@ void CanBusMotionControl:: run()
 
     handleBroadcasts();
     analogEncoders.handleAnalog(system_resources);
+#ifdef __ENABLE_TORQUE__
+    sixAxisSensor.handleTorque(system_resources);
+#endif
 
     //
     // handle class 0 messages - polling messages.

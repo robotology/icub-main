@@ -141,6 +141,7 @@ public:
     { return _size; }
 };
 
+
 #include <yarp/os/Semaphore.h>
 class AnalogEncoders: public yarp::dev::IGenericSensor
 {
@@ -154,6 +155,33 @@ public:
     virtual bool read(yarp::sig::Vector &out);
     virtual bool getChannels(int *nc);
     virtual bool calibrate(int ch, double v);
+};
+
+class SixAxisTorqueSensor
+{
+private:
+    int torques[3];
+    int forces[3];
+    yarp::os::Semaphore mutex;
+
+public:
+    void handleTorque(void *);
+
+    inline int getTorque(int i)
+    {   
+        mutex.wait();
+        int ret=torques[i]; 
+        mutex.post();
+        return ret;
+    }
+
+    inline int getForce(int i)
+    {   
+        mutex.wait();
+        int ret=forces[i]; 
+        mutex.post();
+        return ret;
+    }
 };
 
 class yarp::dev::CanBusMotionControl:public DeviceDriver,
@@ -196,6 +224,7 @@ private:
     os::Stamp stampEncoders;
 
     AnalogEncoders analogEncoders;
+    SixAxisTorqueSensor sixAxisSensor;
 
     yarp::os::ConstString canDevName;
 
