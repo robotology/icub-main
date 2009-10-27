@@ -64,7 +64,7 @@ bool CrawlManagerModule::respond(const Bottle &command, Bottle &reply)
         case 5: ///- turn to the right
             
 			//Crawl(-MAX_TURN_ANGLE);
-			Crawl(turnAngle - TURN_INDENT);
+			Crawl(turnAngle-TURN_INDENT, 0);
             reply.addString("turning right");
             
             break;
@@ -72,7 +72,7 @@ bool CrawlManagerModule::respond(const Bottle &command, Bottle &reply)
         case 6:///- turn to the left
 
 			//Crawl(MAX_TURN_ANGLE);
-            Crawl(turnAngle + TURN_INDENT);
+            Crawl(turnAngle+TURN_INDENT,0);
             reply.addString("turning left");
             
             break;
@@ -534,10 +534,13 @@ void CrawlManagerModule::Crawl(double desiredTurnAngle, double stanceIncrement)
 	if(desiredTurnAngle > MAX_TURN_ANGLE)
 	{
 		desiredTurnAngle = MAX_TURN_ANGLE;
+        ACE_OS::printf("Already at MAX TURN ANGLE %d\n", MAX_TURN_ANGLE);  
 	}
 	else if(desiredTurnAngle < -MAX_TURN_ANGLE)
 	{
 		desiredTurnAngle = -MAX_TURN_ANGLE;
+        ACE_OS::printf("Already at MIN TURN ANGLE %d\n", -MAX_TURN_ANGLE);  
+
 	}
 
 	//We have the robot turn incrementally to the desired turn angle.
@@ -545,7 +548,7 @@ void CrawlManagerModule::Crawl(double desiredTurnAngle, double stanceIncrement)
 	{
 		if(turnAngle < desiredTurnAngle)
 		{
-			while(turnAngle <  desiredTurnAngle - TURN_INDENT)
+			while(turnAngle <  desiredTurnAngle-TURN_INDENT/2)
 			{
 				turnAngle+=TURN_INDENT;
 				crawl_parameters[9][1]=turnAngle;
@@ -563,7 +566,7 @@ void CrawlManagerModule::Crawl(double desiredTurnAngle, double stanceIncrement)
     
 		if(turnAngle > desiredTurnAngle)
 		{
-			while(turnAngle > desiredTurnAngle + TURN_INDENT)
+			while(turnAngle > desiredTurnAngle+TURN_INDENT/2)
 			{
 				turnAngle-=TURN_INDENT;
 				crawl_parameters[9][1]=turnAngle;
@@ -596,7 +599,8 @@ void CrawlManagerModule::Crawl(double desiredTurnAngle, double stanceIncrement)
     for(int i=0;i<nbParts;i++)
         if(connected_part[i]) 
 		{
-			om_stance[i]+=stanceIncrement;
+            if(part_names[i]!="head") om_stance[i]+=stanceIncrement;
+            
 			sendCommand(i, crawl_parameters);
 		}
     

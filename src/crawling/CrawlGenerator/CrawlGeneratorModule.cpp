@@ -467,6 +467,7 @@ bool generatorThread::init(Searchable &s)
     if(arguments.check("part"))
     {
         partName = arguments.find("part").asString().c_str();
+    
         ACE_OS::printf("module taking care of part %s\n\n",partName.c_str());
         if(partName=="left_arm" || partName=="left_leg")
             side = LEFT;

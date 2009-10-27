@@ -17,8 +17,6 @@
  */
 
 
-
-
 #include <yarp/os/Network.h>
 #include <yarp/os/Property.h>
 #include <yarp/os/Time.h>

@@ -107,6 +107,9 @@ void generatorThread::getParameters()
     if(command!=NULL)
         if(command->size() >=2*nbDOFs+3)
             {
+                                                
+                printf("RECEIVING COMMANDS FROM THE MANAGER FOR PART %s\n", partName.c_str());
+                
                 vector<double> params;
                 for (int i=0; i<2*nbDOFs; i++)  
                     params.push_back(command->get(i).asDouble());
@@ -157,9 +160,7 @@ void generatorThread::getParameters()
                 fprintf(parameters_file,"%f %f %f",myCpg->om_stance,myCpg->om_swing, myCpg->turnAngle);
                 fprintf(parameters_file,"%f \n",Time::now()/*-original_time*/);
                 fflush(parameters_file);
-                
-                
-                printf("RECEIVING COMMANDS FROM THE MANAGER FOR PART %s\n", partName.c_str());
+
                 
                 if(discrete>0) y_cpgs[4*nbDOFs+2*3]=0.0;
 
@@ -747,10 +748,10 @@ bool generatorThread::init(Searchable &s)
         
     amplit=myCpg->ampl[0];
      
-     if(partName=="left_arm" || partName=="right_arm")
-     {
-         myCpg->ampl[0]=myIK->getArmAmplitude(initPos, myCpg->ampl[0]);
-     }   
+     //if(partName=="left_arm" || partName=="right_arm")
+     //{
+         //myCpg->ampl[0]=myIK->getArmAmplitude(initPos, myCpg->ampl[0]);
+     //}   
 
     ACE_OS::printf("amplitude is %f\n", myCpg->ampl[0]);
     ///getting the joint mapping
@@ -919,11 +920,11 @@ bool generatorThread::init(Searchable &s)
 
             y_cpgs[4*i]=0.0/180.0*3.1415/myCpg->ampl[i];
 
-            y_cpgs[4*i+1]=0.01;
+            y_cpgs[4*i+1]=0.0;
 
             y_cpgs[4*i+2]=0.0/180.0*3.1415/myCpg->ampl[i];
 
-            y_cpgs[4*i+3]=0.01;
+            y_cpgs[4*i+3]=0.0;
         }
 #else
     double watchdog = Time::now();

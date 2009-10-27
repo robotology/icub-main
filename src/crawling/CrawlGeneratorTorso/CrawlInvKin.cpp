@@ -42,7 +42,7 @@ double IKManager::getArmAmplitude(double* positions, double leg_amplitude)
     
     
 
-    Vector pose_q, pose_x0;
+    Vector pose_q, pose_x0, pose_x1;
 
     armChain=leftArm->asChain();    
     for(int i=0; i<4; i++)
@@ -54,16 +54,17 @@ double IKManager::getArmAmplitude(double* positions, double leg_amplitude)
     pose_q.push_back(0.1);
 
     armChain->setAng(pose_q);
-    pose_x0=armChain->Pose(5);
+    pose_x0=armChain->Pose(3);
+    pose_x1=armChain->Pose(7);
     double armLength2=0;
-    for(int i=0;i<3;i++) armLength2+=pose_x0[i]*pose_x0[i];
+    for(int i=0;i<3;i++) armLength2+=(pose_x0[i]-pose_x1[i])*(pose_x0[i]-pose_x1[i]);
     double armLength=sqrt(armLength2);
     
     //d=sqrt(l2-(L-r)2) r= long jambe, L=longueur bras, l=longueur torse 
     double d= sqrt(DShoulder*DShoulder-(armLength-legLength)*(armLength-legLength));
     //(x,y)=(legLength*cos(leg_amplitude/2),-d+sin(leg_amplitude/2)))
     double x=legLength*cos(leg_amplitude/2);
-    double y=-d+legLength*sin(leg_amplitude/2);
+    double y=d-legLength*sin(leg_amplitude/2);
     double m=sqrt(x*x+y*y);
     double h=(armLength*armLength+legLength*legLength-m*m)/(2*DShoulder);
     double phi=acos(h/m);
