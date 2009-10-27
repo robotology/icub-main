@@ -101,6 +101,8 @@ Windows, Linux
 #include <yarp/dev/Wrapper.h>
 #include <yarp/dev/PolyDriver.h>
 
+#include <gsl/gsl_math.h>
+
 #include "drivers.h"
 
 #include <iostream>
@@ -211,7 +213,9 @@ public:
         arm->setTrackingMode(false);
 
         // init variables
-        arm->getPose(xd,od);
+        while (true)
+            if (arm->getPose(xd,od))
+                break;
 
         // open ports
         port_xd.open((localName+"/xd:i").c_str());
@@ -263,6 +267,11 @@ public:
         port_xd.close();
     }
 
+    double norm(const Vector &v)
+    {
+        return sqrt(dot(v,v));
+    }
+
     void limitTorsoPitch()
     {
         int axis=0; // pitch joint
@@ -281,19 +290,19 @@ public:
             Vector x,o;
 
             arm->getPose(x,o);
-            Vector ex=xd-x;
+            double ex=norm(xd-x);
 
             cout<< "xd       = "<<xd.toString()<<endl;
             cout<< "x        = "<<x.toString() <<endl;
-            cout<< "norm(ex) = "<<ex.toString()<<endl;
+            cout<< "norm(ex) = "<<ex           <<endl;
 
             if (ctrlCompletePose)
             {
-                Vector eo=od-o;
+                double eo=norm(od-o);
 
-                cout<< "od       = "<< od.toString()<<endl;
-                cout<< "o        = "<< o.toString() <<endl;
-                cout<< "norm(eo) = "<< eo.toString()<<endl;
+                cout<< "od       = "<<od.toString()<<endl;
+                cout<< "o        = "<<o.toString() <<endl;
+                cout<< "norm(eo) = "<<eo           <<endl;
             }
 
             cout<<endl;
