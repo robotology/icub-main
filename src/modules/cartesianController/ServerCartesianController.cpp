@@ -1430,7 +1430,7 @@ bool ServerCartesianController::stopControl(const bool f)
         stopLimbVel();
     
         if (f)
-            setTrackingMode(true);
+            setTrackingMode(false);
     
         return true;
     }
