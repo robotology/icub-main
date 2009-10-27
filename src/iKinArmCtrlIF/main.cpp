@@ -106,6 +106,8 @@ Windows, Linux
 #include <iomanip>
 #include <string>
 
+#define MAX_TORSO_PITCH     30.0
+
 using namespace std;
 using namespace yarp;
 using namespace yarp::os;
@@ -168,6 +170,8 @@ public:
             newDof[0]=1;
             newDof[1]=1;
             newDof[2]=1;
+
+            limitTorsoPitch();
         }
         else if (rf.check("DOF9"))
         {    
@@ -175,6 +179,8 @@ public:
             newDof[0]=1;
             newDof[1]=0;
             newDof[2]=1;
+
+            limitTorsoPitch();
         }
         else if (rf.check("DOF8"))
         {                
@@ -242,6 +248,15 @@ public:
 
         port_xd.interrupt();
         port_xd.close();
+    }
+
+    void limitTorsoPitch()
+    {
+        int axis=0; // pitch joint
+        double min, max;
+
+        arm->getLimits(axis,&min,&max);
+        arm->setLimits(axis,min,MAX_TORSO_PITCH);
     }
 };
 
