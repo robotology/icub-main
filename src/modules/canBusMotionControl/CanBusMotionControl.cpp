@@ -439,6 +439,9 @@ void SixAxisTorqueSensor::handleTorque(void *canbus)
 
     mutex.wait();
 
+    unsigned int countT=0;
+    unsigned int countF=0;
+
     for (i = 0; i < r._readMessages; i++)
     {
         unsigned int len=0;
@@ -452,7 +455,7 @@ void SixAxisTorqueSensor::handleTorque(void *canbus)
         const char type=((id&0x700)>>8);
         const char boardId=((id&0x0f0)>>4);
         if (type==0x03)
-     //       if (boardId==0x0E)
+            if (boardId==0x0d)
             {
                 const char groupId=(id&0x00f);
                 int baseIndex=0;
@@ -463,12 +466,14 @@ void SixAxisTorqueSensor::handleTorque(void *canbus)
                         {
                             for(int k=0;k<=3;k++)
                                 forces[k]=((short(buff[k]))<<16)+buff[k+1];
+                            countF++;
                         }
                         break;
                     case 0xB:
                         {
                             for(int k=0;k<=3;k++)
                                 torques[k]=((short(buff[k]))<<16)+buff[k+1];
+                            countT++;
                         }
                         break;
                     case 0xC:
@@ -485,6 +490,8 @@ void SixAxisTorqueSensor::handleTorque(void *canbus)
             }
     }
 
+    if (countT>0)
+        fprintf(stderr, "Received %u torque msgs %u force msgs\n", countT, countF);
     mutex.post();
 }
 
@@ -1204,23 +1211,24 @@ bool CanBusMotionControl::open (Searchable &config)
         disableAmp(i);
     }
 
+#ifdef __ENABLE_TORQUE__
+    _mutex.wait();
+    res.startPacket();
+    res._writeBuffer[0].setId(0x20d);     //polling to board id 13
+    res._writeBuffer[0].getData()[0]=0x07; //type of message
+    res._writeBuffer[0].getData()[1]=0x00; //start transmission
+    res._writeBuffer[0].setLen(2);
+    res._writeMessages++;
+    res.writePacket();
+    _mutex.post();
+#endif
+
     threadPool = new ThreadPool2(res.iBufferFactory);
 
     RateThread::setRate(p._polling_interval);
     RateThread::start();
 
     _opened = true;
-
-#ifdef __ENABLE_TORQUE__
-    _mutex.wait();
-    res.startPacket();
-    res._writeBuffer[0].setId(0x205);     //polling to board id 5
-    res._writeBuffer[0].getData()[0]=0x07; //type of message
-    res._writeBuffer[0].getData()[1]=0x00; //start transmission
-    res._writeBuffer[0].setLen(2);
-    res.writePacket();
-    _mutex.post();
-#endif
 
     DEBUG("CanBusMotionControl::open returned true\n");
     return true;
@@ -1237,10 +1245,11 @@ bool CanBusMotionControl::close (void)
 #ifdef __ENABLE_TORQUE__
         _mutex.wait();
         res.startPacket();
-        res._writeBuffer[0].setId(0x205);     //polling to board 5
+        res._writeBuffer[0].setId(0x20d);     //polling to board id c
         res._writeBuffer[0].getData()[0]=0x07; //type of message
         res._writeBuffer[0].getData()[1]=0x01; //stop transmission
         res._writeBuffer[0].setLen(2);
+        res._writeMessages++;
         res.writePacket();
         _mutex.post();
 #endif 
