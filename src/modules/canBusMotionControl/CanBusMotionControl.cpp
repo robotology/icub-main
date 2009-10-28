@@ -53,6 +53,8 @@ using namespace yarp;
 using namespace yarp::os;
 using namespace yarp::dev;
 
+//#define __ENABLE_TORQUE__
+
 inline void PRINT_CAN_MESSAGE(const char *str, CanMessage &m)
 {
 #ifdef CANBUSMC_DEBUG
@@ -1210,8 +1212,15 @@ bool CanBusMotionControl::open (Searchable &config)
     _opened = true;
 
 #ifdef __ENABLE_TORQUE__
-    //add here initialization
-#endif __ENABLE_TORQUE__
+    _mutex.wait();
+    res.startPacket();
+    res._writeBuffer[0].setId(0x205);     //polling to board id 5
+    res._writeBuffer[0].getData()[0]=0x07; //type of message
+    res._writeBuffer[0].getData()[1]=0x00; //start transmission
+    res._writeBuffer[0].setLen(2);
+    res.writePacket();
+    _mutex.post();
+#endif
 
     DEBUG("CanBusMotionControl::open returned true\n");
     return true;
@@ -1220,28 +1229,34 @@ bool CanBusMotionControl::open (Searchable &config)
 
 bool CanBusMotionControl::close (void)
 {
-    CanBusResources& d = RES(system_resources);
+    CanBusResources& res = RES(system_resources);
 
     //fprintf(stderr, "CanBusMotionControl::close\n");
 
     if (_opened) {
-
-        #ifdef __ENABLE_TORQUE__
-        //stop force/torque broadcast
-        #endif __ENABLE_TORQUE__
+#ifdef __ENABLE_TORQUE__
+        _mutex.wait();
+        res.startPacket();
+        res._writeBuffer[0].setId(0x205);     //polling to board 5
+        res._writeBuffer[0].getData()[0]=0x07; //type of message
+        res._writeBuffer[0].getData()[1]=0x01; //stop transmission
+        res._writeBuffer[0].setLen(2);
+        res.writePacket();
+        _mutex.post();
+#endif 
 
         // disable the controller, pid controller & pwm off
         int i;
-        for (i = 0; i < d._njoints; i++) {
-                    disablePid(i);
-                    disableAmp(i);
+        for (i = 0; i < res._njoints; i++) {
+            disablePid(i);
+            disableAmp(i);
         }
 
         if (isRunning())
         {
             /// default initialization for this device driver.
             int i;
-            for(i = 0; i < d.getJoints(); i++)
+            for(i = 0; i < res.getJoints(); i++)
                 setBCastMessages(i, double(0x00));
         }
 
@@ -1269,7 +1284,7 @@ bool CanBusMotionControl::close (void)
     checkAndDestroy<double> (_ref_accs);
 	checkAndDestroy<double> (_ref_torques);
 
-    int ret = d.uninitialize ();
+    int ret = res.uninitialize ();
     _opened = false;
 
     return ret;
