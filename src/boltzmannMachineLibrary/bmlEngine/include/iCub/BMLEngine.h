@@ -17,9 +17,9 @@
 #include <ipp.h>
 
 //within Project Include
-//#include <iCub/BMLEngine.h>
 #include <iCub/MachineBoltzmann.h>
 #include <iCub/YARPImgRecv.h>
+#include <iCub/imageThread.h>
 #include <string>
 
 
@@ -61,7 +61,25 @@ private:
 	* port where the commands are vehiculated from controller to engine
 	*/
 	BufferedPort<yarp::os::Bottle> portCmd;
-
+	/**
+	* thread that produces the image of the 0 layer
+	*/
+	imageThread* layer0Image;
+	/**
+	* thread that produces the image of the 1 layer
+	*/
+	imageThread* layer1Image;
+	/**
+	* thread that produces the image of the 2 layer
+	*/
+	imageThread* layer2Image;
+	/**
+	* thread that produces the image of the 3 layer
+	*/
+	imageThread* layer3Image;
+	/**
+	* plane for the port
+	*/
 	BufferedPort<ImageOf<PixelMono> > port_plane; 
 	/** 
 	* counter for the update step
@@ -87,10 +105,21 @@ private:
 	* sinchronized with the number of layer active
 	*/
 	int currentLayer;
-
-	int count;  /**counter incremented inside the updateModule**/
+	/**
+	*counter incremented inside the updateModule
+	*/
+	int count;  
+	/**
+	* iterator for the elements
+	*/
 	map<std::string,Layer>::iterator iterE;
+	/**
+	* interator for units
+	*/
 	map<std::string,Unit>::iterator iterU;
+	/**
+	* iterator for the units
+	*/
 	map<std::string,Connection>::iterator iterC;
 	ImageOf<PixelRgb> img_tmp; //=new ImageOf<PixelRgb>;
 	ImageOf<PixelRgb> img; //=new ImageOf<PixelRgb>;
@@ -108,11 +137,22 @@ private:
 	* flag that regulates the execution of the clamped mode
 	*/
 	bool runClamped;
-
+	/**
+	* temporary red plane of the image
+	*/
 	Ipp8u *red_tmp;
+	/**
+	* temporary blue plane of the image
+	*/
 	Ipp8u *blue_tmp;
+	/**
+	* temporary green plane of the image
+	*/
 	Ipp8u *green_tmp;
 	Ipp8u *im_out;
+	/**
+	* temporary image composition of planes
+	*/
 	Ipp8u* im_tmp[3];
 	Ipp8u* im_tmp_tmp;
 	int psb;
@@ -141,7 +181,13 @@ public:
 	* uses a bottle to comunicate a command to the module linked on 
 	*/
 	bool outCommandPort();
+	/**
+	* closes port image
+	*/
 	bool closePortImage();
+	/**
+	* opens port Image
+	*/
 	bool openPortImage();
 	/**
 	* open the port necessary to send commands

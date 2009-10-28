@@ -1,4 +1,4 @@
-SET(KEYWORD "BMLEngine")
+SET(KEYWORD "bmlEngine")
 
 PROJECT(${KEYWORD})
 

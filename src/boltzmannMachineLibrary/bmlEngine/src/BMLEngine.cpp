@@ -1,6 +1,6 @@
 #include <iCub/BMLEngine.h>
 #include <string.h>
-//#include <conio.h>
+
 
 #define T_TOUCH 1000
 #define COOLING_RATE 4
@@ -124,7 +124,7 @@ bool BMLEngine::open(Searchable& config) {
 		scaleFactorX=5;
 		scaleFactorY=10;
 		clampingThreshold=1;
-		countLayer=2;
+		countLayer=0;
 		currentLayer=0;
 		
 		createObjects();
@@ -147,6 +147,7 @@ bool BMLEngine::open(Searchable& config) {
 		ptr_inputImage2->resize(320,240);
 
 		//setting of the flags
+		enableDraw=false;
 		runFreely=false;
 		runClamped=false;
 		probClamped_flag=false;
@@ -212,7 +213,7 @@ bool BMLEngine::updateModule() {
 		string optionName1,optionValue1,optionName2, optionValue2;
 		printf("Bottle  is: %s\n",commandTOT->c_str());
 		unsigned int parOpen=commandTOT->find("(");
-		if(parOpen=-1){
+		if(parOpen==-1){
 			printf("Simple command \n ");
 			command=commandTOT->substr(0,commandTOT->size());
 		}
@@ -478,7 +479,7 @@ bool BMLEngine::updateModule() {
 			printf("addLayer \n");
 			int valueRow=atoi(optionValue1.c_str());
 			int valueCol=atoi(optionValue2.c_str());
-			this->addLayer(countLayer,valueRow+2,valueCol+2);
+			addLayer(countLayer,valueRow+2,valueCol+2);
 			countLayer++;
 		}
 		else if((!strcmp(command.c_str(),"CurrentLayer"))){
@@ -502,6 +503,7 @@ bool BMLEngine::updateModule() {
 	
 	
 	int k=0;
+	/*
 	if(enableDraw){
 		img.resize(320,240);
 		//img2->resize(320,240);
@@ -517,8 +519,7 @@ bool BMLEngine::updateModule() {
 			int ycount=-1;
 			string layerName("");
 			string layerName_pr("");
-			if(mb->_unitList.begin==NULL)
-				return true;
+			
 			for(iter=mb->_unitList.begin(); iter!=mb->_unitList.end();iter++){
 				//countUnit++;
 				ct = ((countUnit%10)-1)*24;
@@ -551,7 +552,7 @@ bool BMLEngine::updateModule() {
 					//printf("totUnits: %d of layer %s \n",totUnits, layerName.c_str());
 					//printf("countUnits: %d", totUnits);
 					//printf("Change!");
-					//exit condition
+					//_______  EXIT CONDITION _________________
 					if(strcmp(layerName_pr.c_str(),"")){
 						string countLayer_str=layerName_pr.substr(1,1);
 						countLayer=atoi(countLayer_str.c_str());
@@ -594,12 +595,10 @@ bool BMLEngine::updateModule() {
 						}
 					}
 
-					/*ippiFree(red_tmp);
-					ippiFree(green_tmp);
-					ippiFree(blue_tmp);
-					red_tmp= ippiMalloc_8u_C1(320,240,&psb);
-					blue_tmp= ippiMalloc_8u_C1(320,240,&psb);
-					green_tmp= ippiMalloc_8u_C1(320,240,&psb);*/
+
+					//_______
+					
+					
 					for(int i=0;i<320*240;i++){
 						red_tmp[i]=255;
 						blue_tmp[i]=255;
@@ -618,21 +617,22 @@ bool BMLEngine::updateModule() {
 				if(countUnit%totUnits==0){
 					ycount++;
 				}
-
+				
+				//produces the image binary image
 				if(iter->getState()){
 					for(int x=0;x<scaleFactorX;x++)
 						for(int y=0;y<scaleFactorY;y++){
 							red_tmp[(countUnit%totUnits)*scaleFactorX+x+(ycount*scaleFactorY+y)*320]=255;
-							blue_tmp[(countUnit%totUnits)*scaleFactorX+x+(ycount*scaleFactorY+y)*320]=0;
-							green_tmp[(countUnit%totUnits)*scaleFactorX+x+(ycount*scaleFactorY+y)*320]=0;
+							blue_tmp[(countUnit%totUnits)*scaleFactorX+x+(ycount*scaleFactorY+y)*320]=255;
+							green_tmp[(countUnit%totUnits)*scaleFactorX+x+(ycount*scaleFactorY+y)*320]=255;
 						}
 				}
 				else{
 					for(int x=0;x<scaleFactorX;x++)
 						for(int y=0;y<scaleFactorY;y++){
-							red_tmp[(countUnit%totUnits)*scaleFactorX+x+(ycount*scaleFactorY+y)*320]=0;
-							blue_tmp[(countUnit%totUnits)*scaleFactorX+x+(ycount*scaleFactorY+y)*320]=0;
-							green_tmp[(countUnit%totUnits)*scaleFactorX+x+(ycount*scaleFactorY+y)*320]=0;
+							red_tmp[(countUnit%totUnits)*scaleFactorX+x+(ycount*scaleFactorY+y)*320]=50;
+							blue_tmp[(countUnit%totUnits)*scaleFactorX+x+(ycount*scaleFactorY+y)*320]=50;
+							green_tmp[(countUnit%totUnits)*scaleFactorX+x+(ycount*scaleFactorY+y)*320]=50;
 						}
 				}
 				countUnit++;
@@ -677,12 +677,7 @@ bool BMLEngine::updateModule() {
 				port3.write();
 			}
 
-			/*ippiFree(red_tmp);
-			ippiFree(green_tmp);
-			ippiFree(blue_tmp);
-			red_tmp= ippiMalloc_8u_C1(320,240,&psb);
-			blue_tmp= ippiMalloc_8u_C1(320,240,&psb);
-			green_tmp= ippiMalloc_8u_C1(320,240,&psb);*/
+		
 			for(int i=0;i<320*240;i++){
 				red_tmp[i]=255;
 				blue_tmp[i]=255;
@@ -694,6 +689,8 @@ bool BMLEngine::updateModule() {
 			ycount=0;
 		//}
 	}
+
+	*/
 	
 	
 
@@ -789,7 +786,7 @@ void BMLEngine::loadConfiguration(string filename){
 	pFile = fopen (fileName.c_str(),"r");
 	if(pFile==NULL){
 		cout<<"Creating the Boltzmann Machine from scratch "<<endl;
-		mb=new MachineBoltzmann(2);
+		mb=new MachineBoltzmann();
 	}
 	else{
 		cout<<"Loading the Boltzmann Machine from file"<<endl;
@@ -798,8 +795,10 @@ void BMLEngine::loadConfiguration(string filename){
 		cout<<"Loading configuration from file"<<endl;
 		mb->loadConfiguration();
 	}	
+	
 	//cout<<"Number of allocated elements:"<< mb->getCountElements()<<endl;
-	enableDraw=true;
+	if(this->countLayer>0)
+		enableDraw=true;
 	
 }
 
@@ -813,7 +812,19 @@ void BMLEngine::addLayer(int number,int colDimension, int rowDimension){
 	Layer *layer=new Layer(layerName,colDimension,rowDimension);
 	mb->addLayer(*layer);
 	mb->migrateLayer(*layer);
-	mb->interconnectLayer(number);
+	//mb->interconnectLayer(number);
+	enableDraw=true;
+	// allocate the relative thread
+	if(number==0){
+		layer0Image=new imageThread(50,"out00");
+		layer0Image->setLayer(layer);
+		layer0Image->start();
+	}
+	else if(number==1){
+		layer1Image=new imageThread(50,"out11");
+		layer1Image->setLayer(layer);
+		layer1Image->start();
+	}
 }
 
 void BMLEngine::clampLayer(int layerNumber){
