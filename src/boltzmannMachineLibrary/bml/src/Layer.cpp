@@ -62,7 +62,7 @@ int Layer::getCol(){
 }
 
 /**
-* function that creates the connection within the layer
+* function that creates connections within the layer
 */
 void Layer::interConnectUnits(){
 	map<std::string,Unit>::iterator iterI,findI;

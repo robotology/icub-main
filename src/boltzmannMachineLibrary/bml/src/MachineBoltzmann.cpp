@@ -132,7 +132,7 @@ void MachineBoltzmann::interconnectLayers(){
 					string name("C");
 					name.append(iterU1->second.getName());
 					name.append(iterU2->second.getName());
-					printf("connection name %s",name.c_str());
+					printf("connection name in interconnectlayers %s",name.c_str());
 					Connection *c=new Connection(name,weight_rnd);
 					this->addConnection2Matrix(*c);
 					//creates two lists of the same lenght of the connection list
