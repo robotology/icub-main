@@ -175,7 +175,7 @@ public:
     /**
      * Asks the transformer to return a string serialization.
      *
-     * @return a string serialization of the machine
+     * @return a string serialization of the transformer
      */
     virtual std::string toString() {
         Bottle model;

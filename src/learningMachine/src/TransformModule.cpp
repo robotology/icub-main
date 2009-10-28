@@ -112,8 +112,6 @@ bool TransformModule::interruptModule() {
     return true;
 }
 
-
-
 bool TransformModule::open(Searchable& opt) {
     // read for the general specifiers:
     Value* val;
@@ -230,6 +228,36 @@ bool TransformModule::respond(const Bottle& cmd, Bottle& reply) {
                     replymsg += "succeeded";
                 } else {
                     replymsg += "failed; please check key and value type.";
+                }
+                reply.addString(replymsg.c_str());
+                success = true;
+                break;
+                }
+
+            case VOCAB4('l','o','a','d'): // load
+                { // prevent identifier initialization to cross borders of case
+                reply.add(Value::makeVocab("help"));
+                std::string replymsg = std::string("Loading transformer from '") + cmd.get(1).asString().c_str() + "'... " ;
+                if(!cmd.get(1).isString()) {
+                    replymsg += "failed";
+                } else {
+                    this->getTransformerPortable()->readFromFile(cmd.get(1).asString().c_str());
+                    replymsg += "succeeded";
+                }
+                reply.addString(replymsg.c_str());
+                success = true;
+                break;
+                }
+
+            case VOCAB4('s','a','v','e'): // save
+                { // prevent identifier initialization to cross borders of case
+                reply.add(Value::makeVocab("help"));
+                std::string replymsg = std::string("Saving transformer to '") + cmd.get(1).asString().c_str() + "'... " ;
+                if(!cmd.get(1).isString()) {
+                    replymsg += "failed";
+                } else {
+                    this->getTransformerPortable()->writeToFile(cmd.get(1).asString().c_str());
+                    replymsg += "succeeded";
                 }
                 reply.addString(replymsg.c_str());
                 success = true;

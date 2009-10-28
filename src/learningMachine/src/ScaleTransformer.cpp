@@ -135,8 +135,8 @@ void ScaleTransformer::writeBottle(Bottle& bot) {
         if(this->isEmptyScaler(i)) {
             bot.addString("null");
         } else {
+            bot.addString(this->getAt(i)->toString().c_str());
             bot.addString(this->getAt(i)->getName().c_str());
-            this->getAt(i)->writeBottle(bot);
         }
     }
     
@@ -149,10 +149,10 @@ void ScaleTransformer::readBottle(Bottle& bot) {
     this->IFixedSizeTransformer::readBottle(bot);
 
     // read all scalers in reverse order
-    for(int i = this->getDomainSize() - 1; i >= 0; i++) {
+    for(int i = this->getDomainSize() - 1; i >= 0; i--) {
         this->setAt(i, bot.pop().asString().c_str());
         if(!this->isEmptyScaler(i)) {
-            this->getAt(i)->readBottle(bot);
+            this->getAt(i)->fromString(bot.pop().asString().c_str());
         }
     }
 }
@@ -191,17 +191,18 @@ bool ScaleTransformer::configure(Searchable &config) {
         Bottle property;
         Bottle list = config.findGroup("config").tail();
         property.addList() = list.tail();
-        //std::cout << "property: " << property.toString() << std::endl;
         if(list.get(0).isInt()) {
             // format: set config idx key val
             int i = list.get(0).asInt() - 1;
-            //std::cout << "property on " << i << " to " << property.toString() << std::endl;
-            success = this->getAt(i)->configure(property);
+            if(!this->isEmptyScaler(i)) {
+                success = this->getAt(i)->configure(property);
+            }
         } else if(list.get(0).asString() == "all") {
             // format: set config all key val
-            //std::cout << "property on all to " << property.toString() << std::endl;
             for(int i = 0; i < this->scalers.size(); i++) {
-                success |= this->getAt(i)->configure(property);
+                if(!this->isEmptyScaler(i)) {
+                    success |= this->getAt(i)->configure(property);
+                }
             }
         } else {
             throw std::runtime_error("Illegal index!");

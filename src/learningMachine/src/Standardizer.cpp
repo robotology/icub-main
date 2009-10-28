@@ -50,7 +50,30 @@ std::string Standardizer::getInfo() {
     buffer << "Input Stats: " << this->runningMean << " +/- " << this->runningStd << ", ";
     buffer << "Desired: " << this->getDesiredMean() << " +/- " << this->getDesiredStd();
     return buffer.str();
+}
 
+void Standardizer::writeBottle(Bottle& bot) {
+    bot.addInt(this->noSamples);
+    bot.addDouble(this->squaredErrors);
+    bot.addDouble(this->mean);
+    bot.addDouble(this->std);
+    bot.addDouble(this->runningMean);
+    bot.addDouble(this->runningStd);
+
+    // make sure to call the superclass's method
+    this->IScaler::writeBottle(bot);
+}
+
+void Standardizer::readBottle(Bottle& bot) {
+    // make sure to call the superclass's method (will reset transformer)
+    this->IScaler::readBottle(bot);
+    
+    this->runningStd = bot.pop().asDouble();
+    this->runningMean = bot.pop().asDouble();
+    this->std = bot.pop().asDouble();
+    this->mean = bot.pop().asDouble();
+    this->squaredErrors = bot.pop().asDouble();
+    this->noSamples = bot.pop().asInt();
 }
 
 bool Standardizer::configure(Searchable& config) {

@@ -53,14 +53,14 @@ protected:
      *
      * @param bot the bottle 
      */
-    //virtual void writeBottle(Bottle& bot) = 0;
+    virtual void writeBottle(Bottle& bot);
 
     /**
      * Unserializes a scaler from a bottle. 
      *
      * @param bot the bottle
      */
-    //virtual void readBottle(Bottle& bot) = 0;
+    virtual void readBottle(Bottle& bot);
 
 public:
     /**
@@ -93,14 +93,7 @@ public:
      * @param val the sample
      * @return the resulting, transformed sample
      */
-    virtual double transform(double val) {
-        // update scaler if enabled
-        if(this->updateEnabled) {
-            this->update(val);
-        }
-        // check for division by zero
-        return (fabs(this->scale) < 1.e-20) ? (val - this->offset) : (val - this->offset) / this->scale;
-    }
+    virtual double transform(double val);
 
     /**
      * Untransforms a single sample value according to the state of the 
@@ -157,10 +150,26 @@ public:
      */
     virtual IScaler* create() = 0;
 
+    /**
+     * Asks the scaler to return a string serialization.
+     *
+     * @return a string serialization of the scaler
+     */
+    virtual std::string toString();
+
+    /**
+     * Asks the scaler to initialize from a string serialization.
+     *
+     * @return true on succes
+     */
+    virtual bool fromString(const std::string& str);
+
     /*
      * Inherited from IConfig.
      */
     virtual bool configure(Searchable& config);
+
+
 };
 
 } // learningmachine

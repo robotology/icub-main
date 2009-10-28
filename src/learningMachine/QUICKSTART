@@ -620,3 +620,18 @@ good practice to separate away the responsiblity of object construction from
 the interfaces, keeping the latter as 'clean' as possible. The portable wrapper 
 functions thus as concrete class for BufferedPorts and handles object creation
 (i.e. the calls to the corresponding Factories).
+
+4.7 Serializing Objects
+Serialization of objects in the LearningMachine framework is internally done 
+using YARP Bottles. Each object has writeBottle() and readBottle() functions for 
+this purpose. These Bottles may pass trough the inheritance tree and it is 
+therefore not known a priori at which position an object may find or write its 
+serialization. This is solved by using the Bottle as a stack, with each object 
+in pushing and popping values on and off the stack.
+
+This way of serializing objects has two consequences. Firstly, objects must call
+the related method of its base class(es). Secondly, this method of the base 
+class(es) _must_ be called before reading any configuration in the derived 
+class, such that the base can initialize parameters on which the derived class 
+may depend. Given the workings of a stack, this also means that writing into 
+the Bottle is done in reverse order.

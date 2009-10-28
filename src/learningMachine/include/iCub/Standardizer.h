@@ -33,7 +33,7 @@ namespace learningmachine {
  */
 
 class Standardizer : public IScaler {
-private:
+protected:
     /**
      * The number of samples that have been received so far.
      */
@@ -64,6 +64,16 @@ private:
      */
     double runningStd;
 
+    /*
+     * Inherited from IScaler
+     */
+    virtual void writeBottle(Bottle& bot);
+
+    /*
+     * Inherited from IScaler
+     */
+    virtual void readBottle(Bottle& bot);
+
 public:
     /**
      * Constructor.
@@ -92,7 +102,7 @@ public:
      * Inherited from IScaler
      */
     IScaler* create() {
-        return new Standardizer();
+        return new Standardizer(*this);
     }
     
     /**

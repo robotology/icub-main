@@ -29,7 +29,7 @@ namespace learningmachine {
  *
  */
 class FixedRangeScaler : public IScaler {
-private:
+protected:
     /**
      * The desired lower bound for the output range.
      */
@@ -56,6 +56,16 @@ private:
      */
     void updateScales();
 
+    /*
+     * Inherited from IScaler
+     */
+    virtual void writeBottle(Bottle& bot);
+
+    /*
+     * Inherited from IScaler
+     */
+    virtual void readBottle(Bottle& bot);
+
 public:
     /**
      * Constructor.
@@ -66,12 +76,6 @@ public:
      * @param uo the initial upper output bound
      */
     FixedRangeScaler(double li = -1., double ui = 1., double lo = -1., double uo = 1.);
-
-protected:
-    /*
-     * Inherited from IScaler.
-     */
-    //virtual void update(double val);
 
     /*
      * Inherited from IScaler

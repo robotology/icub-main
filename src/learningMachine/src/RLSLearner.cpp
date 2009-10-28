@@ -71,9 +71,14 @@ void RLSLearner::setLambdaAll(double l) {
 }
 
 void RLSLearner::setLambdaAt(int index, double l) {
-    if(index < this->machines.size()) {
-        this->machines[index]->setLambda(l);
-        this->machines[index]->reset();
+    RLS* machine = this->getAt(index);
+    machine->setLambda(l);
+    machine->reset();
+}
+
+RLS* RLSLearner::getAt(int index) {
+    if(index >= 0 && index < this->machines.size()) {
+        return this->machines[index];
     } else {
         throw std::runtime_error("Index out of bounds!");
     }
@@ -141,12 +146,8 @@ std::string RLSLearner::getConfigHelp() {
 }
 
 void RLSLearner::writeBottle(Bottle& bot) {
-	throw std::runtime_error("RLSLearner::writeBottle not yet implemented.");
-
     for(int i = 0; i < this->getCoDomainSize(); i++) {
-        std::ostringstream oStream;
-        //this->machines[i]->save(oStream);
-        bot.addString(oStream.str().c_str());
+        bot.addString(this->getAt(i)->toString().c_str());
     }
     bot.addInt(this->sampleCount);
     // make sure to call the superclass's method
@@ -154,14 +155,11 @@ void RLSLearner::writeBottle(Bottle& bot) {
 }
 
 void RLSLearner::readBottle(Bottle& bot) {
-	throw std::runtime_error("RLSLearner::readBottle not yet implemented.");
-
     // make sure to call the superclass's method
     this->IFixedSizeLearner::readBottle(bot);
     this->sampleCount = bot.pop().asInt();
     for(int i = this->getCoDomainSize() - 1; i >=0 ; i--) {
-        std::istringstream iStream(bot.pop().asString().c_str());
-        //this->machines[i]->load(iStream);
+        this->getAt(i)->fromString(bot.pop().asString().c_str());
     }
 }
 

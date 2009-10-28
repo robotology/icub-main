@@ -39,6 +39,27 @@ std::string FixedRangeScaler::getInfo() {
     return buffer.str();
 }
 
+void FixedRangeScaler::writeBottle(Bottle& bot) {
+    bot.addDouble(this->lowerBoundOut);
+    bot.addDouble(this->upperBoundOut);
+    bot.addDouble(this->lowerBoundIn);
+    bot.addDouble(this->upperBoundIn);
+
+    // make sure to call the superclass's method
+    this->IScaler::writeBottle(bot);
+}
+
+void FixedRangeScaler::readBottle(Bottle& bot) {
+    // make sure to call the superclass's method (will reset transformer)
+    this->IScaler::readBottle(bot);
+    
+    this->upperBoundIn = bot.pop().asDouble();
+    this->lowerBoundIn = bot.pop().asDouble();
+    this->upperBoundOut = bot.pop().asDouble();
+    this->lowerBoundOut = bot.pop().asDouble();
+}
+
+
 bool FixedRangeScaler::configure(Searchable& config) {
     bool success = this->IScaler::configure(config);
 

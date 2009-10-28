@@ -49,6 +49,26 @@ std::string Normalizer::getInfo() {
     return buffer.str();
 }
 
+void Normalizer::writeBottle(Bottle& bot) {
+    bot.addDouble(this->lowerBound);
+    bot.addDouble(this->upperBound);
+    bot.addDouble(this->lowest);
+    bot.addDouble(this->highest);
+
+    // make sure to call the superclass's method
+    this->IScaler::writeBottle(bot);
+}
+
+void Normalizer::readBottle(Bottle& bot) {
+    // make sure to call the superclass's method (will reset transformer)
+    this->IScaler::readBottle(bot);
+    
+    this->highest = bot.pop().asDouble();
+    this->lowest = bot.pop().asDouble();
+    this->upperBound = bot.pop().asDouble();
+    this->lowerBound = bot.pop().asDouble();
+}
+
 bool Normalizer::configure(Searchable& config) {
     bool success = this->IScaler::configure(config);
 

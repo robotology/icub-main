@@ -73,7 +73,15 @@ private:
      * Number of inputs.
      */
     int n;
-  
+
+    void writeBottle(Bottle& bot) {
+        // TO IMPLEMENT
+    }
+
+    void readBottle(Bottle& bot) {
+        // TO IMPLEMENT
+    }
+
 public:
     RLS(int n = 1.) {
         this->lambda = 1.0;
@@ -96,14 +104,10 @@ public:
   
     void update(const Vector& x, double y) {
         this->b = this->b + x * y;
-        //std::cout << "b:" << this->b.toString() << std::endl;
         
         Vector Aix = this->Ai * x;
-        //std::cout << "Aix:" << Aix.toString() << std::endl;
         Vector xAi = x * this->Ai;
-        //std::cout << "xAi:" << xAi.toString() << std::endl;
         double s = 1.0 / (1.0 + dot(xAi, x));
-        //std::cout << "s:" << s << std::endl;
         // in python: self.Ai -= (numpy.outer(s * Aix, xAi))
         // in C++, however... :(
         for(int i = 0; i < this->Ai.rows(); i++) {
@@ -112,11 +116,8 @@ public:
                 this->Ai(i, j) -= sAixi * xAi(j);
             }
         }
-        //std::cout << "Ai:" << Ai.toString() << std::endl;
 
         this->w = this->Ai * this->b;
-        //std::cout << "w:" << this->w.toString() << std::endl;
-        //std::cout << std::endl << std::endl;
     }
     
     void setLambda(double l) {
@@ -125,6 +126,28 @@ public:
       
     double getLambda() {
         return this->lambda;
+    }
+
+    /**
+     * Asks the RLS to return a string serialization.
+     *
+     * @return a string serialization of the scaler
+     */
+    virtual std::string toString() {
+        Bottle model;
+        this->writeBottle(model);
+        return model.toString().c_str();
+    }
+
+    /**
+     * Asks the RLS to initialize from a string serialization.
+     *
+     * @return true on succes
+     */
+    virtual bool fromString(const std::string& str) {
+        Bottle model(str.c_str()); 
+        this->readBottle(model);
+        return true;
     }
 };
 
@@ -203,6 +226,13 @@ public:
      * Inherited from IMachineLearner.
      */
     virtual void train();
+
+    /**
+     * Returns a pointer to the RLS at a certain position.
+     *
+     * @param index the index of the scaler
+     */
+    RLS* getAt(int index);
 
     /*
      * Inherited from IMachineLearner.

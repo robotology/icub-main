@@ -17,6 +17,15 @@ namespace iCub {
 namespace contrib {
 namespace learningmachine {
 
+double IScaler::transform(double val) {
+    // update scaler if enabled
+    if(this->updateEnabled) {
+        this->update(val);
+    }
+    // check for division by zero
+    return (fabs(this->scale) < 1.e-20) ? (val - this->offset) : (val - this->offset) / this->scale;
+}
+
 
 std::string IScaler::getInfo() {
     std::ostringstream buffer;
@@ -25,6 +34,30 @@ std::string IScaler::getInfo() {
     buffer << "Scale: " << this->scale << ", ";
     buffer << "Update: " << (this->updateEnabled ? "enabled" : "disabled");
     return buffer.str();
+}
+
+std::string IScaler::toString() {
+    Bottle model;
+    this->writeBottle(model);
+    return model.toString().c_str();
+}
+
+bool IScaler::fromString(const std::string& str) {
+    Bottle model(str.c_str()); 
+    this->readBottle(model);
+    return true;
+}
+
+void IScaler::writeBottle(Bottle& bot) {
+    bot.addDouble(this->offset);
+    bot.addDouble(this->scale);
+    bot.addInt((this->updateEnabled ? 1 : 0));
+}
+
+void IScaler::readBottle(Bottle& bot) {
+    this->updateEnabled = (bot.pop().asInt() == 1);
+    this->scale = bot.pop().asDouble();
+    this->offset = bot.pop().asDouble();
 }
 
 bool IScaler::configure(Searchable& config) {

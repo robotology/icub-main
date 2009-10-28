@@ -30,7 +30,7 @@ namespace learningmachine {
  *
  */
 class Normalizer : public IScaler {
-private:
+protected:
     /**
      * The desired lower bound for the normalization range.
      */
@@ -51,11 +51,15 @@ private:
      */
     double highest;
 
-    /**
-     * Performs an update routine that recalculates the desired scale and
-     * offset according to the desired range and actual sample range.
+    /*
+     * Inherited from IScaler
      */
-    //void update();
+    virtual void writeBottle(Bottle& bot);
+
+    /*
+     * Inherited from IScaler
+     */
+    virtual void readBottle(Bottle& bot);
 
 public:
     /**
@@ -66,7 +70,6 @@ public:
      */
     Normalizer(double l = -1, double u = 1);
 
-protected:
     /*
      * Inherited from IScaler.
      */
