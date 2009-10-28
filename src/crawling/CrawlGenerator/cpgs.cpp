@@ -146,12 +146,36 @@ void cpgs::integrate_step(double *y, double *at_states)
 
 	//************ getting open parameters******************
 
+<<<<<<< .mine
+    if(m[0]>0.0)
+    {
+        if(partName=="left_arm" || partName=="right_arm")
+        {
+            if(y[3]<0.0)
+            {
+                g[3] -= 2.0*y[3];
+                g[1] -= 0.5*y[3];
+            }
+        }
+=======
 	for(int i=0; i<nbDOFs;i++)
 	{
 		m[i]= parameters[2*i];
 		g[i]= parameters[2*i+1]/ampl[i];
+>>>>>>> .r1229
 
+<<<<<<< .mine
+    if(partName=="left_leg" || partName=="right_leg")
+        {
+            if(y[3]<0.0)
+            {
+                g[1] -= 2.5*y[3];
+            }
+        }
+    }
+=======
 	}
+>>>>>>> .r1229
 
 	if(partName=="torso" && fabs(turnAngle)>0.01)
 	{

@@ -744,13 +744,13 @@ bool generatorThread::init(Searchable &s)
 	///getting the amplitude of oscillations -> Warning these should never be close to 0!!
 	//otherwise the integration of the ODEs will diverge!
 
-	if(options.check("amplitudes"))
+	if(options.check("scales"))
 	{
-		Bottle& amp=options.findGroup("amplitudes");
+		Bottle& amp=options.findGroup("scales");
 
 		if(amp.size()!=nbDOFs+1)
 		{
-			ACE_OS::printf("Incorrect nb of amplitudes part %s\n",partName.c_str());
+			ACE_OS::printf("Incorrect nb of scales part %s\n",partName.c_str());
 			return false;
 		}
 
@@ -758,13 +758,13 @@ bool generatorThread::init(Searchable &s)
 		{
 			double ampl = amp.get(i+1).asDouble();
 
-			if((fabs(ampl)<0.1) || (fabs(ampl) > 1.0))
+			if((fabs(ampl)<0.1) || (fabs(ampl) > 10.0))
 			{
 				ACE_OS::printf("warning ampl of joint %d exceeds limits\n",i);
 				if (ampl>0.0)
-					ampl=0.1;
+					ampl= 1;
 				else
-					ampl=-0.1;
+					ampl=-1;
 
 				myCpg->ampl[i] =ampl;
 			}
@@ -777,17 +777,9 @@ bool generatorThread::init(Searchable &s)
 	{
 		ACE_OS::printf("Warning amplitude vector not defined, setting to default\n");
 		for(int i=0;i<nbDOFs;i++)
-			myCpg->ampl[i]=0.1;
+			myCpg->ampl[i]=1;
 	}
-
-	amplit=myCpg->ampl[0];
-
-	//	if(partName=="left_arm" || partName=="right_arm")
-	//	{
-	//		myCpg->ampl[0]=myIK->getArmAmplitude(initPos, myCpg->ampl[0]);
-	//	}
-
-	ACE_OS::printf("amplitude is %f\n", myCpg->ampl[0]);
+    
 	///getting the joint mapping
 	if(options.check("joint_mapping"))
 	{

@@ -36,13 +36,60 @@ IKManager::~IKManager()
 
 double IKManager::getArmAmplitude(double* positions, double leg_amplitude)
 {     
-    iKinChain *armChain, *legChain; 
-    //we simply solve: r_l*w_l = r_a*w_a 
-    //radius*amplitude of arm and leg should be the equal to have approx the same step length
+    //iKinChain *armChain, *legChain; 
+    ////we simply solve: r_l*w_l = r_a*w_a 
+    ////radius*amplitude of arm and leg should be the equal to have approx the same step length
     
     
 
-    Vector pose_q, pose_x0, pose_x1;
+    //Vector pose_q, pose_x0, pose_x1;
+
+    //armChain=leftArm->asChain();    
+    //for(int i=0; i<4; i++)
+    //{
+    	//pose_q.push_back(positions[i]);
+    //}
+    //pose_q.push_back(-1.57);
+    //pose_q.push_back(-1.0);
+    //pose_q.push_back(0.1);
+
+    //armChain->setAng(pose_q);
+    //pose_x0=armChain->Pose(3);
+    //pose_x1=armChain->Pose(7);
+    //double armLength2=0;
+    //for(int i=0;i<3;i++) armLength2+=(pose_x0[i]-pose_x1[i])*(pose_x0[i]-pose_x1[i]);
+    //double armLength=sqrt(armLength2);
+    
+    ////d=sqrt(l2-(L-r)2) r= long jambe, L=longueur bras, l=longueur torse 
+    //double d= sqrt(DShoulder*DShoulder-(armLength-legLength)*(armLength-legLength));
+    ////(x,y)=(legLength*cos(leg_amplitude/2),-d+sin(leg_amplitude/2)))
+    //double x=legLength*cos(leg_amplitude/2);
+    //double y=d-legLength*sin(leg_amplitude/2);
+    //double m=sqrt(x*x+y*y);
+    //double h=(armLength*armLength+legLength*legLength-m*m)/(2*DShoulder);
+    //double phi=acos(h/m);
+    //double psi=acos((DShoulder-h)/armLength);
+    //double nu=phi-acos(x/m);
+    //double theta=M_PI/2-nu-phi;
+    
+    //ACE_OS::printf("d %f x %f y %f m %f h %f phi %f psi %f nu %f theta %f\n", d, x, y, m, h, phi, psi, nu, theta);
+    
+    ////ACE_OS::printf("leg length %f, arm length %f\n", legLength, armLength);
+    ////double arm_amplitude = legLength*leg_amplitude/armLength;
+    //double arm_amplitude = -2*theta;
+    
+    //pose_q.clear();
+    //pose_x0.clear();
+    //armChain->clear();
+
+    
+	//return arm_amplitude;
+    
+        iKinChain *armChain, *legChain; 
+    //we simply solve: r_l*w_l = r_a*w_a 
+    //radius*amplitude of arm and leg should be the equal to have approx the same step length
+	
+    Vector pose_q, pose_x0;
 
     armChain=leftArm->asChain();    
     for(int i=0; i<4; i++)
@@ -54,34 +101,17 @@ double IKManager::getArmAmplitude(double* positions, double leg_amplitude)
     pose_q.push_back(0.1);
 
     armChain->setAng(pose_q);
-    pose_x0=armChain->Pose(3);
-    pose_x1=armChain->Pose(7);
+    pose_x0=armChain->Pose(5);
     double armLength2=0;
-    for(int i=0;i<3;i++) armLength2+=(pose_x0[i]-pose_x1[i])*(pose_x0[i]-pose_x1[i]);
+    for(int i=0;i<3;i++) armLength2+=pose_x0[i]*pose_x0[i];
     double armLength=sqrt(armLength2);
     
-    //d=sqrt(l2-(L-r)2) r= long jambe, L=longueur bras, l=longueur torse 
-    double d= sqrt(DShoulder*DShoulder-(armLength-legLength)*(armLength-legLength));
-    //(x,y)=(legLength*cos(leg_amplitude/2),-d+sin(leg_amplitude/2)))
-    double x=legLength*cos(leg_amplitude/2);
-    double y=d-legLength*sin(leg_amplitude/2);
-    double m=sqrt(x*x+y*y);
-    double h=(armLength*armLength+legLength*legLength-m*m)/(2*DShoulder);
-    double phi=acos(h/m);
-    double psi=acos((DShoulder-h)/armLength);
-    double nu=phi-acos(x/m);
-    double theta=M_PI/2-nu-phi;
-    
-    ACE_OS::printf("d %f x %f y %f m %f h %f phi %f psi %f nu %f theta %f\n", d, x, y, m, h, phi, psi, nu, theta);
-    
-    //ACE_OS::printf("leg length %f, arm length %f\n", legLength, armLength);
-    //double arm_amplitude = legLength*leg_amplitude/armLength;
-    double arm_amplitude = -2*theta;
+    ACE_OS::printf("leg length %f, arm length %f\n", legLength, armLength);
+    double arm_amplitude = legLength*leg_amplitude/armLength;
     
     pose_q.clear();
     pose_x0.clear();
     armChain->clear();
-
     
 	return arm_amplitude;
 }

@@ -41,7 +41,7 @@ bool BalanceControlThread::init(Searchable &s)
 	Property options;
 
 	//get the conf from file
-	if(argument.check("file")) {
+	if(arguments.check("file")) {
 		options.fromConfigFile(arguments.find("file").asString().c_str());
 	} else {//get the default conf
 		char *cubPath;

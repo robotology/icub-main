@@ -22,6 +22,7 @@ using namespace std;
 
 
 class BalanceControlThread : public yarp::os::RateThread {
+    
 public:
 
 	BalanceControlThread(int period); //constructor
@@ -35,10 +36,11 @@ public:
 
 
 private:
+
 	double period;
     ConstString robot;
 
-    myIK *IKManager;
+    IKManager *myIK;
 
 };
 
