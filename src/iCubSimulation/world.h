@@ -13,6 +13,11 @@
 #include "SDL_opengl.h"
 #include "rendering.h" 
 #include <ode/ode.h>
+#include <string>
+using std::string;
+using std::cout;
+using std::endl;
+
 #ifdef _MSC_VER
 #pragma warning(disable:4244 4305)  // for VC++, no precision loss complaints
 #endif 
@@ -36,6 +41,11 @@ public:
 	int waitOBJ1;
 	int S_cylOBJNUM;
 	
+	int waitMOD;
+	int s_waitMOD;
+	int MODEL_NUM;
+	int s_MODEL_NUM;
+	
 	dReal color[100][3];
 	dReal s_color[100][3];
 	dReal color1[100][3];
@@ -47,6 +57,12 @@ class worldSim : public worldSimData {
 public:
 	static const bool textured = true;
 	ConstString actWorld;
+	dTriMeshDataID TriData[100];
+	dTriMeshX trimesh[100];
+
+    dTriMeshDataID s_TriData[100];
+	dTriMeshX s_trimesh[100];
+	
 			// max number of objects
 #define numObjJoints 5 //define Joints
 
@@ -71,6 +87,8 @@ public:
 	dBodyID box;
 	dGeomID boxgeom;
 	
+	bool WAITLOADING;
+	bool static_model;
 struct MyObject {
   dBodyID boxbody;			// the body
   dGeomID geom[GPB];		// geometries representing this body
@@ -90,6 +108,19 @@ struct MyObject {
  MyObject1 cyl_obj[MAXNUM];
  MyObject1 s_cyl_obj[MAXNUM];
 
+int modelTexture[100];
+ int s_modelTexture[100];
+
+struct MyObject2 {
+  dBodyID body;			// the body
+  dGeomID geom;  		// geometries representing this body
+};
+ MyObject2 ThreeD_obj[100];
+ MyObject2 s_ThreeD_obj[100]; 
+
+
+ConstString texture;
+string model_DIR;
 public:
 
 	void resetSpeeds();
@@ -101,6 +132,8 @@ public:
     void setPosition(dReal agent1X, dReal agent1Z, dReal agent1Y );
 	void activateWorld();
 	void init( dWorldID world, dSpaceID space, dReal X, dReal Y, dReal Z );
+	void loadTexture(ConstString texture, int numTexture);
+
 
 	~worldSim();
 

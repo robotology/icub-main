@@ -78,7 +78,7 @@ struct MS3DTriangle						// Triangle info
 
 struct MS3DMaterial						// Material info
 {
-	static unsigned int Texture[15];
+	static unsigned int Texture[200];
 
     char m_name[32];
     float m_ambient[4];

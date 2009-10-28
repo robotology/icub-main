@@ -6,88 +6,146 @@
  **/
 
 #include "xloader.h"
-
 #if _MSC_VER
-#pragma warning(disable:4996)
+#pragma warning(disable:4996 4244 4305)
 #endif
 
-#define MAX_SYMBOL 250  
-#define MODEL_SCALE 10
+const float ModelScale = 1.01;
 //---------------------------------------------------------------
 //---------------------------------------------------------------
-void dLoadMeshFromX( const char* filename, dTriMesh* Trimesh )
+dxTriMeshX *dLoadMeshFromX(const char* FileName)
 {
-  char word[MAX_SYMBOL];
-  int  symbol;
-  int  indexCount;
-  char *p;
-  int  i = 0, j = 0;
-  FILE *in;
+	dxTriMeshX *tmpTriMesh = new dxTriMeshX;
+	char word[256];
+	char*  symbol;
+	int  indexCount;
+	char *p;
+	int  i, j=0;
+	int ret;
+	FILE *in;
+	double dblval;
+	int intval;
+	int idxlen;
 
-  if ((in = fopen(filename, "r")) == NULL) {
-	 //ERROR!
-  }
-  else {
-	printf("Loading mesh data from '%s' ", filename);
-	while ((symbol = fscanf(in, "%s", word)) != EOF) { // Read till the end of file
-	  // Skip templates
-	  if (strcmp(word, "template") == 0) {
-		int ret, ret1;
-    	ret = fscanf(in, "%s", word);
-		ret1 = fscanf(in, "%s", word);
-	  }
-
-	  else 
-
-	  if (strcmp(word, "Mesh") == 0){	// All you need is Mesh !!
-		int ret0 = fscanf(in, "%s", word);
-		if (strcmp(word, "{") != 0 )	// If the mesh has a name
-		int ret1 = fscanf(in, "%s", word);			// skip it.
-
-		int ret2 = fscanf(in, "%d", &(Trimesh->VertexCount));	// Get vertex count
-
-		Trimesh->Vertices = (float *)malloc(Trimesh->VertexCount * 3 *sizeof(float *)); 
-
-		int ret3 = fscanf(in, "%s", word);
-		printf("...");
-		for (i = 0; i < Trimesh->VertexCount; i++) {
-			int ret4 = fscanf(in, "%s", word);
-			p = strtok(word, ",;");		
-			while (p != NULL) {
-					Trimesh->Vertices[j] = atof(p) * MODEL_SCALE;
-				p = strtok(NULL, ",;");
-				j++;
-			}
+	if ((in = fopen(FileName, "r")) == NULL) {
+		printf ("Can't open the file '%s'\n", FileName);
+		return 0;
 		}
-        
-		printf("...");
-
-		int ret5 = fscanf(in, "%d", &indexCount);	// Get index count
-
-		Trimesh->IndexCount = indexCount * 3;
-
-		Trimesh->Indices = (int *)malloc(Trimesh->IndexCount * sizeof(int *)); 
-
-		int ret6 = fscanf(in, "%s", word);	
-
-		for (i = 0; i < indexCount; i++) {
-			j = 0;
-			int ret7 = fscanf(in, "%s", word);
-			p = strtok(word, ",;");
-			while (p != NULL) {
-				if (j != 0) {
-					Trimesh->Indices[i*3+j-1] = atoi(p);
+	else {
+		printf("Loading mesh data from '%s' ", FileName);
+    	
+		while((symbol = fgets(word, 256, in)) != (char*) NULL) { // Read till the end of file
+   			//printf("symbol[%s] word[%s]\n", symbol, word);
+	  		// Skip templates
+	  		if (strcmp(word, "template") == 0) {
+				fscanf(in, "%s", word);
+				fscanf(in, "%s", word);
+	 		}else 
+	  		if (strncmp(word, "Mesh ", 5) == 0){								// All you need is Mesh !!
+      			//printf("\nWord: %s\n", word);
+				//fscanf(in, "%s", word);
+				if (strcmp(word, "{") != 0 )	// If the mesh has a name
+				//fscanf(in, "%s", word);			// then skip it.
+				fscanf(in, "%d", &(tmpTriMesh->VertexCount));	// Get vertex count
+				tmpTriMesh->Vertices = (float *)malloc(tmpTriMesh->VertexCount * 3 * sizeof(float));
+				//printf("\nVertexCount %d\n", tmpTriMesh->VertexCount );
+				fscanf(in, "%s", word);
+				printf("...");
+        		fgets(word, 256, in); // consume newline
+				for (i = 0; i < tmpTriMesh->VertexCount; i++) {
+					//fscanf(in, "%s", word);
+            		fgets(word, 256, in);
+            		//printf("Read(%d): '%s'\n", i, word);
+					p = strtok(word, ",;");		
+					while (p != NULL) {
+						//printf("p = '%s'\n", p);
+                		ret = sscanf(p, "%lf", &dblval);
+                		if(ret > 0) { // only process if double was read
+				  			tmpTriMesh->Vertices[j] = dblval * ModelScale;
+                  			j++;
+                		}
+						p = strtok(NULL, ",;");
+						//printf("j = %d\n", j);
+					}
 				}
-				p = strtok(NULL, ",;");
-			    j++;
-			}
-		}
-		printf("...");
-	  }
+				printf("...");
+        		//printf("\nVertexCount %d\n", tmpTriMesh->VertexCount );
+				fscanf(in, "%d", &indexCount);	// Get index count
+				//printf("IndexCount %d\n", indexCount );
+				tmpTriMesh->IndexCount = indexCount * 3;
+				tmpTriMesh->Indices = (int *)malloc(tmpTriMesh->IndexCount * sizeof(int)); 
+	
+        		fgets(word, 256, in);
+        		//printf("Read(a): '%s'\n", word);
+				//fscanf(in, "%s", word);	
+	
+				for (i = 0; i < indexCount; i++) {
+            		//printf("Indices %d\n", i);
+            		fgets(word, 256, in);
+           		    p = strtok(word, ",;");
+            		ret = sscanf(p, "%d", &intval);
+					//printf("intVal %d \n", intval);
+            		if(intval != 3) {
+            	  		printf("Only triangular polygons supported! Convert your model!\n");
+            	 		return 0;
+            		}
+            		//if(ret == 0) exit(1);
+            		for(j = 0; j < 3; j++) {//hardcoded 3
+            	    	p = strtok(NULL, ",;");
+            	    	ret = sscanf(p, "%d", &intval);
+						//printf("Read(%d,%d): '%s'\n", i, j, p);
+            	    	//if(ret == 0) exit(1);
+            	    	tmpTriMesh->Indices[i*3 + j] = intval;
+            		}	
+				}
+			printf("... OK!\n");
+	  	}
 	}
-  }
+}
+  	//exit(1);
+  	fclose(in);
 
-  printf(" OK!\n");
-
-  fclose(in);
+	if ((in = fopen(FileName, "r")) == NULL) {
+		printf ("Can't open the file '%s'\n", FileName);
+		return 0;
+		}
+	else {
+		printf("Loading texture coordinate from '%s' ", FileName);
+    	j=0;
+		while((symbol = fgets(word, 256, in)) != (char*) NULL) {
+			if (strncmp(word, "MeshTextureCoords", 17) == 0){	
+				fscanf(in, "%d", &(tmpTriMesh->MeshCoordCount));
+        		fgets(word, 256, in); // consume newline
+				//printf("MESH COORD COUNT = %d\n", tmpTriMesh->MeshCoordCount);
+				tmpTriMesh->MeshCoord = (float *)malloc(tmpTriMesh->MeshCoordCount*2 * sizeof(float));
+				printf("...");
+				for (i = 0; i < tmpTriMesh->MeshCoordCount; i++) {	
+					fgets(word, 256, in);
+					//printf("Read(%d): '%s' \n", i, word );
+					p = strtok(word, ",;");
+					while (p != NULL) {
+						ret = sscanf(p, "%lf", &dblval);
+						if(ret > 0) {
+							//printf("dblVal(%d) %lf \n",j, dblval);
+							tmpTriMesh->MeshCoord[j] = dblval ;//* ModelScale;		
+							j++;	
+						}
+						p = strtok(NULL, ",;");
+					}
+				}	
+				printf("...");				
+			}	
+			
+		}printf("... OK!\n");
+	}
+	
+	//exit(1);
+  	fclose(in);
+  	return tmpTriMesh;
+}
+void dTriMeshXDestroy(dTriMeshX TriMesh)
+{
+	delete[] TriMesh->Vertices;
+	delete[] TriMesh->Indices;
+	delete TriMesh;
 }

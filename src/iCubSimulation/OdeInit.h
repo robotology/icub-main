@@ -31,6 +31,7 @@ public:
 	//dJointFeedback *feedback1;
 	//dJointFeedback *feedback_mat;
 	yarp::os::Semaphore mutex;
+	yarp::os::Semaphore mutexTexture;
 	ICubSim *_iCub;
 	worldSim *_wrld;
 	bool stop;

@@ -17,10 +17,10 @@
 #pragma warning(disable:4244 4305)  //for VC++, no precision loss complaints
 #include "SimConfig.h"
 #include "VideoTexture.h"
+#include <string.h>
 
 using namespace yarp::os;
 
-#include <string>
 using namespace std;
 
 const GLfloat light_ambient[]  = { 0.0f, 0.0f, 0.0f, 1.0f };
@@ -30,8 +30,10 @@ const GLfloat light_position[] = { 0.0f, 5.0f, 5.0f, 0.0f };
 
 GLenum mode;
 GLuint nicetexture;
+int num_texture1=15;
+GLuint num_texture = 19;
 
-unsigned int Texture[16];
+unsigned int Texture[200];
 
 GLUquadricObj *sphere;
 GLUquadricObj *cylinder;
@@ -77,31 +79,31 @@ face data/texture/face.raw
 */
 	SimConfig finder;
 	ConstString floor = finder.find("floor");
-	Texture[1] = LoadTextureRAW( floor.c_str(), false );
+	Texture[0] = LoadTextureRAW( floor.c_str(), false );
 
 	ConstString body1 = finder.find("body1");
-	Texture[6] = LoadTextureRAW( body1.c_str(), false );
+	Texture[1] = LoadTextureRAW( body1.c_str(), false );
 	
 	ConstString body2 = finder.find("body2");
-	Texture[8] = LoadTextureRAW( body2.c_str(), false );
+	Texture[2] = LoadTextureRAW( body2.c_str(), false );
 	
 	ConstString skybox_ft = finder.find("skybox_ft");
-	Texture[10] = LoadTextureRAW( skybox_ft.c_str(), false );
+	Texture[3] = LoadTextureRAW( skybox_ft.c_str(), false );
 	
 	ConstString skybox_bk = finder.find("skybox_bk");
-	Texture[11] = LoadTextureRAW( skybox_bk.c_str(), false );
+	Texture[4] = LoadTextureRAW( skybox_bk.c_str(), false );
 
 	ConstString skybox_lt = finder.find("skybox_lt");
-	Texture[12] = LoadTextureRAW( skybox_lt.c_str(), false );
+	Texture[5] = LoadTextureRAW( skybox_lt.c_str(), false );
 
 	ConstString skybox_rt = finder.find("skybox_rt");
-	Texture[13] = LoadTextureRAW( skybox_rt.c_str(), false );
+	Texture[6] = LoadTextureRAW( skybox_rt.c_str(), false );
 
 	ConstString skybox_up = finder.find("skybox_up");
-	Texture[14] = LoadTextureRAW( skybox_up.c_str(), false );
+	Texture[7] = LoadTextureRAW( skybox_up.c_str(), false );
 	
 	ConstString face = finder.find("face");
-	Texture[15] = LoadTextureRAW( face.c_str(), false );
+	Texture[8] = LoadTextureRAW( face.c_str(), false );
 
 	if (!Texture[1]){
 		printf("No texture loaded\n");
@@ -111,6 +113,7 @@ face data/texture/face.raw
 }
 
 void DrawGround(bool wireframe){  
+ glEnable(GL_TEXTURE_2D);
  if (wireframe)
  {
 
@@ -157,7 +160,7 @@ float skyboxMaterial[]   = {1.0f,1.0f,1.0f,1.0f};
 glTexEnvf (GL_TEXTURE_ENV, GL_TEXTURE_ENV_MODE, GL_DECAL);
 glRotatef(180,0,0,1);
  // Draw Front side
- glBindTexture(GL_TEXTURE_2D, Texture[13]);
+ glBindTexture(GL_TEXTURE_2D, Texture[6]);
  glBegin(GL_QUADS); 
   glMaterialfv(GL_FRONT, GL_AMBIENT, skyboxMaterial);
   glTexCoord2f(1.0f, 0.0f); glVertex3f(x,    y,  z+length);
@@ -167,7 +170,7 @@ glRotatef(180,0,0,1);
  glEnd();
 
  // Draw Back side
- glBindTexture(GL_TEXTURE_2D,  Texture[12]);
+ glBindTexture(GL_TEXTURE_2D,  Texture[5]);
  glBegin(GL_QUADS);  
   glTexCoord2f(1.0f, 0.0f); glVertex3f(x+width, y,  z);
   glTexCoord2f(1.0f, 1.0f); glVertex3f(x+width, y+height, z); 
@@ -176,7 +179,7 @@ glRotatef(180,0,0,1);
  glEnd();
 
  // Draw Left side
- glBindTexture(GL_TEXTURE_2D,  Texture[11]);
+ glBindTexture(GL_TEXTURE_2D,  Texture[4]);
  glBegin(GL_QUADS);  
   glTexCoord2f(1.0f, 1.0f); glVertex3f(x,    y+height, z); 
   glTexCoord2f(0.0f, 1.0f); glVertex3f(x,    y+height, z+length); 
@@ -185,7 +188,7 @@ glRotatef(180,0,0,1);
  glEnd();
 
  // Draw Right side
- glBindTexture(GL_TEXTURE_2D,  Texture[10]);
+ glBindTexture(GL_TEXTURE_2D,  Texture[3]);
  glBegin(GL_QUADS);  
   glTexCoord2f(0.0f, 0.0f); glVertex3f(x+width, y,  z);
   glTexCoord2f(1.0f, 0.0f); glVertex3f(x+width, y,  z+length);
@@ -194,7 +197,7 @@ glRotatef(180,0,0,1);
  glEnd();
 
  // Draw Up side
- glBindTexture(GL_TEXTURE_2D,  Texture[14]);
+ glBindTexture(GL_TEXTURE_2D,  Texture[7]);
  glBegin(GL_QUADS);  
   glTexCoord2f(0.0f, 0.0f); glVertex3f(x+width, y+height, z);
   glTexCoord2f(1.0f, 0.0f); glVertex3f(x+width, y+height, z+length); 
@@ -203,7 +206,7 @@ glRotatef(180,0,0,1);
  glEnd();
 
  // Draw Down side
- glBindTexture(GL_TEXTURE_2D,  Texture[14]);
+ glBindTexture(GL_TEXTURE_2D,  Texture[7]);
  glBegin(GL_QUADS);  
   glTexCoord2f(0.0f, 0.0f); glVertex3f(x,    y,  z);
   glTexCoord2f(1.0f, 0.0f); glVertex3f(x,    y,  z+length);
@@ -211,6 +214,7 @@ glRotatef(180,0,0,1);
   glTexCoord2f(0.0f, 1.0f); glVertex3f(x+width, y,  z);
  glEnd();
 
+glDisable(GL_TEXTURE_2D);
 }
 
 void DrawBox(float width, float height, float length, bool wireframe, bool texture, int whichtexture){
@@ -406,6 +410,7 @@ void LDEsetM(const dReal *pos,const dReal *R){
 
 GLuint LoadTextureRAW( const char * filename, int wrap )
 {
+	glEnable( GL_TEXTURE_2D );
     GLuint texture;
     int width, height;
     unsigned char * data;
@@ -433,7 +438,7 @@ GLuint LoadTextureRAW( const char * filename, int wrap )
 
     // free buffer
     free( data );
-
+	glDisable( GL_TEXTURE_2D );
     return texture;
 	//return 0;
 }
@@ -461,5 +466,126 @@ void DrawVideo(VideoTexture *video) {
 	}
 #endif
 	video->apply(Texture);
+}
+
+void DrawX (dTriMeshX trim, int whichtexture){
+
+    glTexEnvf (GL_TEXTURE_ENV, GL_TEXTURE_ENV_MODE, GL_MODULATE);
+    glTexParameterf (GL_TEXTURE_2D, GL_TEXTURE_WRAP_S, GL_REPEAT);
+    glTexParameterf (GL_TEXTURE_2D, GL_TEXTURE_WRAP_T, GL_REPEAT);
+
+    glTexParameterf (GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_LINEAR);
+    glTexParameterf (GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER,
+	GL_LINEAR_MIPMAP_LINEAR);
+
+    glTexEnvf (GL_TEXTURE_ENV, GL_TEXTURE_ENV_MODE, GL_DECAL);
+    glEnable(GL_TEXTURE_2D);
+	 glBindTexture(GL_TEXTURE_2D, Texture[whichtexture]); 
+    glDisable(GL_CULL_FACE);
+    glBegin(GL_TRIANGLES);
+    for (int i=0; i<(int) (trim->IndexCount) ; )
+    {
+          // vertices: 3d vertices (no_vertices * 3)
+          // indices: no_polygons * 3
+          // meshcoord: no_polygons * 3 * 2
+          // Coordinates of the first u,v texture
+          glTexCoord2f( trim->MeshCoord[trim->Indices[i] * 2 + 0 ] , trim->MeshCoord[ trim->Indices[i] * 2 + 1] );
+          // Coordinates of the first vertex
+          glVertex3f( trim->Vertices[trim->Indices[i] * 3 + 0],   trim->Vertices[trim->Indices[i] * 3 + 1],  trim->Vertices[trim->Indices[i] * 3 + 2] );//Vertex definition
+          i++;
+
+          // Coordinates of the first u,v texture  
+          glTexCoord2f( trim->MeshCoord[trim->Indices[i] * 2 + 0 ] , trim->MeshCoord[ trim->Indices[i] * 2 + 1] );
+          // Coordinates of the second vertex
+          glVertex3f( trim->Vertices[trim->Indices[i] * 3 + 0],   trim->Vertices[trim->Indices[i] * 3 + 1],  trim->Vertices[trim->Indices[i] * 3 + 2] );//Vertex definition
+          i++;
+
+          // Coordinates of the first u,v texture
+          glTexCoord2f( trim->MeshCoord[trim->Indices[i] * 2 + 0 ] , trim->MeshCoord[ trim->Indices[i] * 2 + 1] );
+          // Coordinates of the Third vertex
+          glVertex3f( trim->Vertices[trim->Indices[i] * 3 + 0],   trim->Vertices[trim->Indices[i] * 3 + 1],  trim->Vertices[trim->Indices[i] * 3 + 2] );//Vertex definition
+          i++;
+    }
+    glEnd();
+    glEnable( GL_CULL_FACE );
+	glDisable(GL_TEXTURE_2D);
+
+}
+
+void setupTexture(char *filename, int whichtexture){
+    
+	Texture[whichtexture] = LoadBitmapTERMINAL(filename,  whichtexture);
+}
+
+int LoadBitmapTERMINAL(char *filename, int whichtexture)
+{
+    FILE * file1;
+    char temp1;
+    long i;	
+    SIMBITMAPINFOHEADER infoheader1;
+	//cout << " RENDERING NUMBER TEXTURE " << whichtexture << endl;
+    cout << "Loading texture " <<  " '" << filename << "' ";
+    num_texture++; // The counter of the current texture is increased	
+    if( (file1 = fopen(filename, "rb"))==NULL){ cout << "Cannot load/find texture file " << endl; return (0); }// Open the file for reading
+	cout << "......... OK! " << endl;
+	fseek(file1, 18, SEEK_CUR);  // start reading width & height 
+    fread(&infoheader1.biWidth, sizeof(int), 1, file1);
+
+    fread(&infoheader1.biHeight, sizeof(int), 1, file1);
+    fread(&infoheader1.biPlanes, sizeof(short int), 1, file1);
+	
+	cout << "Texture Size " <<  infoheader1.biHeight << " " << infoheader1.biWidth << endl;
+    if (infoheader1.biPlanes != 1) {
+	    printf("Planes from %s is not 1: %u\n", filename, infoheader1.biPlanes);
+	    return 0;
+    }
+    // read the bpp
+    fread(&infoheader1.biBitCount, sizeof(unsigned short int), 1, file1);
+    if (infoheader1.biBitCount != 24) {
+      printf("Bpp from %s is not 24: %d\n", filename, infoheader1.biBitCount);
+      return 0;
+    }
+    fseek(file1, 24, SEEK_CUR);
+
+    // read the data.
+    infoheader1.data = (char *) malloc(infoheader1.biWidth * infoheader1.biHeight * 6);
+    if (infoheader1.data == NULL) {
+	    printf("Error allocating memory for color-corrected image data\n");
+	    return 0;
+    }
+
+    if ((i = fread(infoheader1.data, infoheader1.biWidth * infoheader1.biHeight * 3, 1, file1)) != 1) {
+	    printf("Error reading image data from %s.\n", filename);
+	    return 0;
+    }
+
+    for (i=0; i<(infoheader1.biWidth * infoheader1.biHeight * 3); i+=3) { // reverse all of the colors. (bgr -> rgb)
+	    temp1 = infoheader1.data[i];
+	    infoheader1.data[i] = infoheader1.data[i+2];
+	    infoheader1.data[i+2] = temp1;
+    }
+    fclose(file1); // Closes the file stream
+
+    glBindTexture(GL_TEXTURE_2D, whichtexture);// Bind the ID texture specified by the 2nd parameter
+
+	cout << "Finished Binding texture "<< endl; 
+    // The next commands sets the texture parameters
+    glTexParameterf(GL_TEXTURE_2D, GL_TEXTURE_WRAP_S, GL_REPEAT); // If the u,v coordinates overflow the range 0,1 the image is repeated
+    glTexParameterf(GL_TEXTURE_2D, GL_TEXTURE_WRAP_T, GL_REPEAT);
+    glTexParameterf(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_LINEAR); // The magnification function ("linear" produces better results)
+    glTexParameterf(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_LINEAR_MIPMAP_NEAREST); //The minifying function
+	cout << "Finished Setting parameters "<< endl; 
+    glTexEnvf(GL_TEXTURE_ENV, GL_TEXTURE_ENV_MODE, GL_REPLACE); // We don't combine the color with the original surface color, use only the texture map.
+	cout << "Finished Setting glTexEnvf "<< endl; 
+    // Finally we define the 2d texture
+    glTexImage2D(GL_TEXTURE_2D, 0, 3, infoheader1.biWidth, infoheader1.biHeight, 0, GL_RGB, GL_UNSIGNED_BYTE, infoheader1.data);
+	cout << "Finished Setting glTexImage2D "<< endl;
+	
+  	gluBuild2DMipmaps(GL_TEXTURE_2D, 3, infoheader1.biWidth, infoheader1.biHeight, GL_RGB, GL_UNSIGNED_BYTE, infoheader1.data);
+    cout << "Finished Setting gluBuild2DMipmaps "<< endl; 
+    free(infoheader1.data); // Free the memory we used to load the texture
+    
+	cout << "\nFisnished creating 3D Model................\n" << endl;
+    return ( whichtexture ); // Returns the current texture OpenGL ID
 }
 

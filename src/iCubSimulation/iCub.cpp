@@ -198,473 +198,473 @@ void ICubSim::draw(){
 	
 	glColor3d(0.9,0.9,0.9);
 		glPushMatrix();LDEsetM(dGeomGetPosition(l_leg0_geom),dGeomGetRotation(l_leg0_geom));
-		DrawBox(0.054,0.004,0.13,false,textured,8);glPopMatrix();//Taken from ODE use Y, Z, X
+		DrawBox(0.054,0.004,0.13,false,textured,2);glPopMatrix();//Taken from ODE use Y, Z, X
 	
 	glColor3d(0.5,0.5,0.5);
 		glPushMatrix(); LDEsetM(dGeomGetPosition(l_leg1_geom),dGeomGetRotation(l_leg1_geom));
-		DrawCylinder(0.027,0.095,false,textured,8);glPopMatrix();
+		DrawCylinder(0.027,0.095,false,textured,2);glPopMatrix();
 		
 		glPushMatrix(); LDEsetM(dGeomGetPosition(l_leg2_geom),dGeomGetRotation(l_leg2_geom));
-		DrawCylinder(0.0245,0.063,false,textured,8);glPopMatrix();	
+		DrawCylinder(0.0245,0.063,false,textured,2);glPopMatrix();	
 
 	glColor3d(1.0,1.0,1.0);
 		glPushMatrix(); LDEsetM(dGeomGetPosition(l_leg3_geom),dGeomGetRotation(l_leg3_geom));
-		DrawCylinder(0.0315,0.213,false,textured,8);glPopMatrix();	
+		DrawCylinder(0.0315,0.213,false,textured,2);glPopMatrix();	
 	
 	glColor3d(0.5,0.5,0.5);
 		glPushMatrix(); LDEsetM(dGeomGetPosition(l_leg4_geom),dGeomGetRotation(l_leg4_geom));
-		DrawCylinder(0.0315,0.077,false,textured,8);glPopMatrix();	
+		DrawCylinder(0.0315,0.077,false,textured,2);glPopMatrix();	
 	glColor3d(1.0,1.0,1.0);
 		glPushMatrix(); LDEsetM(dGeomGetPosition(l_leg5_geom),dGeomGetRotation(l_leg5_geom));
-		DrawCylinder(0.034,0.224,false,textured,8);glPopMatrix();
+		DrawCylinder(0.034,0.224,false,textured,2);glPopMatrix();
 	
 	glColor3d(0.5,0.5,0.5);
 		glPushMatrix(); LDEsetM(dGeomGetPosition(l_leg6_geom),dGeomGetRotation(l_leg6_geom));
-		DrawCylinder(0.031,0.075,false,textured,8);glPopMatrix();
+		DrawCylinder(0.031,0.075,false,textured,2);glPopMatrix();
 	glColor3d(1.0,1.0,1.0);
 		glPushMatrix(); LDEsetM(dGeomGetPosition(l_leg7_geom),dGeomGetRotation(l_leg7_geom));
-		DrawCylinder(0.038,0.013,false,textured,8);glPopMatrix();
+		DrawCylinder(0.038,0.013,false,textured,2);glPopMatrix();
 		//////////RIGHT LEG
 		glColor3d(0.9,0.9,0.9);
 		glPushMatrix();LDEsetM(dGeomGetPosition(r_leg0_geom),dGeomGetRotation(r_leg0_geom));
-		DrawBox(0.054,0.004,0.13,false,textured,8);glPopMatrix();
+		DrawBox(0.054,0.004,0.13,false,textured,2);glPopMatrix();
 		
 		glColor3d(0.5,0.5,0.5);
 		glPushMatrix(); LDEsetM(dGeomGetPosition(r_leg1_geom),dGeomGetRotation(r_leg1_geom));
-		DrawCylinder(0.027,0.095,false,textured,8);glPopMatrix();
+		DrawCylinder(0.027,0.095,false,textured,2);glPopMatrix();
 
 		glPushMatrix(); LDEsetM(dGeomGetPosition(r_leg2_geom),dGeomGetRotation(r_leg2_geom));
-		DrawCylinder(0.0245,0.063,false,textured,8);glPopMatrix();	
+		DrawCylinder(0.0245,0.063,false,textured,2);glPopMatrix();	
 
 		glColor3d(1.0,1.0,1.0);
 		glPushMatrix(); LDEsetM(dGeomGetPosition(r_leg3_geom),dGeomGetRotation(r_leg3_geom));
-		DrawCylinder(0.0315,0.213,false,textured,8);glPopMatrix();	
+		DrawCylinder(0.0315,0.213,false,textured,2);glPopMatrix();	
 
 		glColor3d(0.5,0.5,0.5);
 		glPushMatrix(); LDEsetM(dGeomGetPosition(r_leg4_geom),dGeomGetRotation(r_leg4_geom));
-		DrawCylinder(0.0315,0.077,false,textured,8);glPopMatrix();	
+		DrawCylinder(0.0315,0.077,false,textured,2);glPopMatrix();	
 
 		glColor3d(1.0,1.0,1.0);
 		glPushMatrix(); LDEsetM(dGeomGetPosition(r_leg5_geom),dGeomGetRotation(r_leg5_geom));
-		DrawCylinder(0.034,0.224,false,textured,8);glPopMatrix();
+		DrawCylinder(0.034,0.224,false,textured,2);glPopMatrix();
 
 		glColor3d(0.5,0.5,0.5);
 		glPushMatrix(); LDEsetM(dGeomGetPosition(r_leg6_geom),dGeomGetRotation(r_leg6_geom));
-		DrawCylinder(0.031,0.075,false,textured,8);glPopMatrix();
+		DrawCylinder(0.031,0.075,false,textured,2);glPopMatrix();
 
 		glColor3d(1.0,1.0,1.0);
 		glPushMatrix(); LDEsetM(dGeomGetPosition(r_leg7_geom),dGeomGetRotation(r_leg7_geom));
-		DrawCylinder(0.038,0.013,false,textured,8);glPopMatrix();
+		DrawCylinder(0.038,0.013,false,textured,2);glPopMatrix();
 
 	}else{
 		glColor3d(0.9,0.9,0.9);
 		glPushMatrix();LDEsetM(dBodyGetPosition(leftLeg[0]),dBodyGetRotation(leftLeg[0]));
-		DrawBox(0.054,0.004,0.13,false,textured,8);glPopMatrix();
+		DrawBox(0.054,0.004,0.13,false,textured,2);glPopMatrix();
 		glColor3d(0.5,0.5,0.5);
 		glPushMatrix(); LDEsetM(dBodyGetPosition(leftLeg[1]),dBodyGetRotation(leftLeg[1]));
-		DrawCylinder(0.027,0.095,false,textured,8);glPopMatrix();
+		DrawCylinder(0.027,0.095,false,textured,2);glPopMatrix();
 		glPushMatrix(); LDEsetM(dGeomGetPosition(leftLeg_2_1),dGeomGetRotation(leftLeg_2_1));
-		DrawCylinder(0.0245,0.063,false,textured,8);glPopMatrix();	
+		DrawCylinder(0.0245,0.063,false,textured,2);glPopMatrix();	
 		glColor3d(1.0,1.0,1.0);
 		glPushMatrix(); LDEsetM(dGeomGetPosition(leftLeg_2_2),dGeomGetRotation(leftLeg_2_2));
-		DrawCylinder(0.0315,0.213,false,textured,8);glPopMatrix();	
+		DrawCylinder(0.0315,0.213,false,textured,2);glPopMatrix();	
 		glColor3d(0.5,0.5,0.5);
 		glPushMatrix(); LDEsetM(dGeomGetPosition(leftLeg_3_1),dGeomGetRotation(leftLeg_3_1));
-		DrawCylinder(0.0315,0.077,false,textured,8);glPopMatrix();	
+		DrawCylinder(0.0315,0.077,false,textured,2);glPopMatrix();	
 		glColor3d(1.0,1.0,1.0);
 		glPushMatrix(); LDEsetM(dGeomGetPosition(leftLeg_3_2),dGeomGetRotation(leftLeg_3_2));
-		DrawCylinder(0.034,0.224,false,textured,8);glPopMatrix();
+		DrawCylinder(0.034,0.224,false,textured,2);glPopMatrix();
 		//glPushMatrix(); LDEsetM(dGeomGetPosition(leftLeg_4_1),dGeomGetRotation(leftLeg_4_1));
 		//DrawSphere(0.017,false,false);glPopMatrix();	
 		glColor3d(0.5,0.5,0.5);
 		glPushMatrix(); LDEsetM(dGeomGetPosition(leftLeg_4_2),dGeomGetRotation(leftLeg_4_2));
-		DrawCylinder(0.031,0.075,false,textured,8);glPopMatrix();
+		DrawCylinder(0.031,0.075,false,textured,2);glPopMatrix();
 		glColor3d(1.0,1.0,1.0);
 		glPushMatrix(); LDEsetM(dBodyGetPosition(leftLeg[5]),dBodyGetRotation(leftLeg[5]));
-		DrawCylinder(0.038,0.013,false,textured,8);glPopMatrix();
+		DrawCylinder(0.038,0.013,false,textured,2);glPopMatrix();
 		//////////RIGHT LEG
 		glColor3d(0.9,0.9,0.9);
 		glPushMatrix();LDEsetM(dBodyGetPosition(rightLeg[0]),dBodyGetRotation(rightLeg[0]));
-		DrawBox(0.054,0.004,0.13,false,textured,8);glPopMatrix();
+		DrawBox(0.054,0.004,0.13,false,textured,2);glPopMatrix();
 		glColor3d(0.5,0.5,0.5);
 		glPushMatrix(); LDEsetM(dBodyGetPosition(rightLeg[1]),dBodyGetRotation(rightLeg[1]));
-		DrawCylinder(0.027,0.095,false,textured,8);glPopMatrix();
+		DrawCylinder(0.027,0.095,false,textured,2);glPopMatrix();
 		glPushMatrix(); LDEsetM(dGeomGetPosition(rightLeg_2_1),dGeomGetRotation(rightLeg_2_1));
-		DrawCylinder(0.0245,0.063,false,textured,8);glPopMatrix();	
+		DrawCylinder(0.0245,0.063,false,textured,2);glPopMatrix();	
 		glColor3d(1.0,1.0,1.0);
 		glPushMatrix(); LDEsetM(dGeomGetPosition(rightLeg_2_2),dGeomGetRotation(rightLeg_2_2));
-		DrawCylinder(0.0315,0.213,false,textured,8);glPopMatrix();	
+		DrawCylinder(0.0315,0.213,false,textured,2);glPopMatrix();	
 		glColor3d(0.5,0.5,0.5);
 		glPushMatrix(); LDEsetM(dGeomGetPosition(rightLeg_3_1),dGeomGetRotation(rightLeg_3_1));
-		DrawCylinder(0.0315,0.077,false,textured,8);glPopMatrix();	
+		DrawCylinder(0.0315,0.077,false,textured,2);glPopMatrix();	
 		glColor3d(1.0,1.0,1.0);
 		glPushMatrix(); LDEsetM(dGeomGetPosition(rightLeg_3_2),dGeomGetRotation(rightLeg_3_2));
-		DrawCylinder(0.034,0.224,false,textured,8);glPopMatrix();
+		DrawCylinder(0.034,0.224,false,textured,2);glPopMatrix();
 		//glPushMatrix(); LDEsetM(dGeomGetPosition(rightLeg_4_1),dGeomGetRotation(rightLeg_4_1));
 		//DrawSphere(0.017,false,false);glPopMatrix();	
 		glColor3d(0.5,0.5,0.5);
 		glPushMatrix(); LDEsetM(dGeomGetPosition(rightLeg_4_2),dGeomGetRotation(rightLeg_4_2));
-		DrawCylinder(0.031,0.075,false,textured,8);glPopMatrix();
+		DrawCylinder(0.031,0.075,false,textured,2);glPopMatrix();
 		glColor3d(1.0,1.0,1.0);
 		glPushMatrix(); LDEsetM(dBodyGetPosition(rightLeg[5]),dBodyGetRotation(rightLeg[5]));
-		DrawCylinder(0.038,0.013,false,textured,8);glPopMatrix();
+		DrawCylinder(0.038,0.013,false,textured,2);glPopMatrix();
 	}
 	if (actTorso == "off"){
 		glColor3d(1.0,1.0,1.0);
 		glPushMatrix(); LDEsetM(dGeomGetPosition(torso0_geom),dGeomGetRotation(torso0_geom));
-		DrawBox(0.0470,0.11443,0.064,false,textured,8);glPopMatrix();
+		DrawBox(0.0470,0.11443,0.064,false,textured,2);glPopMatrix();
 
 		glPushMatrix();LDEsetM(dGeomGetPosition(torso1_geom),dGeomGetRotation(torso1_geom));
-		DrawBox(0.176,0.063,0.127,false,textured,8);glPopMatrix();
+		DrawBox(0.176,0.063,0.127,false,textured,2);glPopMatrix();
 		glColor3d(0.5,0.5,0.5);
 		glPushMatrix(); LDEsetM(dGeomGetPosition(torso2_geom),dGeomGetRotation(torso2_geom));
-		DrawCylinder(0.031,0.097,false,textured,8);glPopMatrix();
+		DrawCylinder(0.031,0.097,false,textured,2);glPopMatrix();
 
 		glPushMatrix(); LDEsetM(dGeomGetPosition(torso3_geom),dGeomGetRotation(torso3_geom));
-		DrawCylinder(0.04,0.0274,false,textured,8);glPopMatrix();
+		DrawCylinder(0.04,0.0274,false,textured,2);glPopMatrix();
 		glColor3d(1.0,1.0,1.0);
 		glPushMatrix();LDEsetM(dBodyGetPosition(torso[4]),dBodyGetRotation(torso[4]));
-		DrawBox(0.076,0.118,0.109,false,textured,8);glPopMatrix();
+		DrawBox(0.076,0.118,0.109,false,textured,2);glPopMatrix();
 
 		glPushMatrix();LDEsetM(dBodyGetPosition(torso[5]),dBodyGetRotation(torso[5]));
-		DrawBox(0.076,0.118,0.109,false,textured,8);glPopMatrix();
+		DrawBox(0.076,0.118,0.109,false,textured,2);glPopMatrix();
 	}else{
 		//////TORSO
 		glColor3d(1.0,1.0,1.0);
 		glPushMatrix();LDEsetM(dBodyGetPosition(torso[0]),dBodyGetRotation(torso[0]));
-		DrawBox(0.0470,0.11443,0.064,false,textured,8);glPopMatrix();
+		DrawBox(0.0470,0.11443,0.064,false,textured,2);glPopMatrix();
 		
 		glPushMatrix();LDEsetM(dBodyGetPosition(torso[1]),dBodyGetRotation(torso[1]));
-		DrawBox(0.176,0.063,0.127,false,textured,8);glPopMatrix();
+		DrawBox(0.176,0.063,0.127,false,textured,2);glPopMatrix();
 		glColor3d(0.5,0.5,0.5);
 		glPushMatrix(); LDEsetM(dBodyGetPosition(torso[2]),dBodyGetRotation(torso[2]));
-		DrawCylinder(0.031,0.097,false,textured,8);glPopMatrix();
+		DrawCylinder(0.031,0.097,false,textured,2);glPopMatrix();
 		
 		glPushMatrix(); LDEsetM(dBodyGetPosition(torso[3]),dBodyGetRotation(torso[3]));
-		DrawCylinder(0.04,0.0274,false,textured,8);glPopMatrix();
+		DrawCylinder(0.04,0.0274,false,textured,2);glPopMatrix();
 		glColor3d(1.0,1.0,1.0);
 		glPushMatrix();LDEsetM(dBodyGetPosition(torso[4]),dBodyGetRotation(torso[4]));
-		DrawBox(0.076,0.118,0.109,false,textured,8);glPopMatrix();
+		DrawBox(0.076,0.118,0.109,false,textured,2);glPopMatrix();
 
 		glPushMatrix();LDEsetM(dBodyGetPosition(torso[5]),dBodyGetRotation(torso[5]));
-		DrawBox(0.076,0.118,0.109,false,textured,8);glPopMatrix();
+		DrawBox(0.076,0.118,0.109,false,textured,2);glPopMatrix();
 	}
 	if (actLArm == "off"){
 		glColor3d(1.0,1.0,1.0);
 		glPushMatrix(); LDEsetM(dGeomGetPosition(larm0_geom),dGeomGetRotation(larm0_geom));
-		DrawCylinder(0.031,0.011,false,textured,8);glPopMatrix();
+		DrawCylinder(0.031,0.011,false,textured,2);glPopMatrix();
 		glColor3d(0.5,0.5,0.5);
 		glPushMatrix(); LDEsetM(dGeomGetPosition(larm1_geom),dGeomGetRotation(larm1_geom));
-		DrawCylinder(0.03,0.059,false,textured,8);glPopMatrix();
+		DrawCylinder(0.03,0.059,false,textured,2);glPopMatrix();
 		glColor3d(1.0,1.0,1.0);
 		glPushMatrix(); LDEsetM(dGeomGetPosition(larm2_geom),dGeomGetRotation(larm2_geom));
-		DrawCylinder(0.026 ,0.156,false,textured,8);glPopMatrix();
+		DrawCylinder(0.026 ,0.156,false,textured,2);glPopMatrix();
 
 		glPushMatrix(); LDEsetM(dGeomGetPosition(larm3_geom),dGeomGetRotation(larm3_geom));
-		DrawCylinder(0.02 ,0.14,false,textured,8);glPopMatrix();
+		DrawCylinder(0.02 ,0.14,false,textured,2);glPopMatrix();
 	}else{
 		//LEFT ARM
 		glColor3d(1.0,1.0,1.0);
 		glPushMatrix(); LDEsetM(dBodyGetPosition(body[0]),dBodyGetRotation(body[0]));
-		DrawCylinder(0.031,0.011,false,textured,8);glPopMatrix();
+		DrawCylinder(0.031,0.011,false,textured,2);glPopMatrix();
 		glColor3d(0.5,0.5,0.5);
 		glPushMatrix(); LDEsetM(dBodyGetPosition(body[2]),dBodyGetRotation(body[2]));
-		DrawCylinder(0.03,0.059,false,textured,8);glPopMatrix();
+		DrawCylinder(0.03,0.059,false,textured,2);glPopMatrix();
 		glColor3d(1.0,1.0,1.0);
 		glPushMatrix(); LDEsetM(dBodyGetPosition(body[4]),dBodyGetRotation(body[4]));
-		DrawCylinder(0.026 ,0.156,false,textured,8);glPopMatrix();
+		DrawCylinder(0.026 ,0.156,false,textured,2);glPopMatrix();
 
 	//	glPushMatrix(); LDEsetM(dBodyGetPosition(body[6]),dBodyGetRotation(body[6]));
 	//	DrawSphere(0.01,false,false);glPopMatrix();	
 
 		glPushMatrix(); LDEsetM(dBodyGetPosition(body[8]),dBodyGetRotation(body[8]));
-		DrawCylinder(0.02 ,0.14,false,textured,8);glPopMatrix();
+		DrawCylinder(0.02 ,0.14,false,textured,2);glPopMatrix();
 	}
 	if (actRArm == "off"){
 		glColor3d(1.0,1.0,1.0);
 		glPushMatrix(); LDEsetM(dGeomGetPosition(rarm0_geom),dGeomGetRotation(rarm0_geom));
-		DrawCylinder(0.031,0.011,false,textured,8);glPopMatrix();
+		DrawCylinder(0.031,0.011,false,textured,2);glPopMatrix();
 		glColor3d(0.5,0.5,0.5);
 		glPushMatrix(); LDEsetM(dGeomGetPosition(rarm1_geom),dGeomGetRotation(rarm1_geom));
-		DrawCylinder(0.03,0.059,false,textured,8);glPopMatrix();
+		DrawCylinder(0.03,0.059,false,textured,2);glPopMatrix();
 		glColor3d(1.0,1.0,1.0);
 		glPushMatrix(); LDEsetM(dGeomGetPosition(rarm2_geom),dGeomGetRotation(rarm2_geom));
-		DrawCylinder(0.026 ,0.156,false,textured,8);glPopMatrix();
+		DrawCylinder(0.026 ,0.156,false,textured,2);glPopMatrix();
 
 		glPushMatrix(); LDEsetM(dGeomGetPosition(rarm3_geom),dGeomGetRotation(rarm3_geom));
-		DrawCylinder(0.02 ,0.14,false,textured,8);glPopMatrix();
+		DrawCylinder(0.02 ,0.14,false,textured,2);glPopMatrix();
 
 	}else{
 		//RIGHT ARM
 		glColor3d(1.0,1.0,1.0);
 		glPushMatrix(); LDEsetM(dBodyGetPosition(body[1]),dBodyGetRotation(body[1]));
-		DrawCylinder(0.031,0.011,false,textured,8);glPopMatrix();
+		DrawCylinder(0.031,0.011,false,textured,2);glPopMatrix();
 		glColor3d(0.5,0.5,0.5);
 		glPushMatrix(); LDEsetM(dBodyGetPosition(body[3]),dBodyGetRotation(body[3]));
-		DrawCylinder(0.03,0.059,false,textured,8);glPopMatrix();
+		DrawCylinder(0.03,0.059,false,textured,2);glPopMatrix();
 		glColor3d(1.0,1.0,1.0);
 		glPushMatrix(); LDEsetM(dBodyGetPosition(body[5]),dBodyGetRotation(body[5]));
-		DrawCylinder(0.026 ,0.156,false,textured,8);glPopMatrix();
+		DrawCylinder(0.026 ,0.156,false,textured,2);glPopMatrix();
 
 		//glPushMatrix(); LDEsetM(dBodyGetPosition(body[7]),dBodyGetRotation(body[7]));
 		//DrawSphere(0.01,false,false);glPopMatrix();	
 
 		glPushMatrix(); LDEsetM(dBodyGetPosition(body[9]),dBodyGetRotation(body[9]));
-		DrawCylinder(0.02 ,0.14,false,textured,8);glPopMatrix();
+		DrawCylinder(0.02 ,0.14,false,textured,2);glPopMatrix();
 	}
 	if (actLHand == "off"){
 		
 		glPushMatrix();LDEsetM(dGeomGetPosition(l_hand0_geom),dGeomGetRotation(l_hand0_geom));
-		DrawBox(0.022,0.069,0.065,false,textured,8);glPopMatrix();
+		DrawBox(0.022,0.069,0.065,false,textured,2);glPopMatrix();
 		
 		glPushMatrix(); LDEsetM(dGeomGetPosition(l_hand1_geom),dGeomGetRotation(l_hand1_geom));
-		DrawCylinder(0.0065,0.08,false,textured,8);glPopMatrix();
+		DrawCylinder(0.0065,0.08,false,textured,2);glPopMatrix();
 
 		glPushMatrix(); LDEsetM(dGeomGetPosition(l_hand2_geom),dGeomGetRotation(l_hand2_geom));
-		DrawCylinder(0.0065,0.084,false,textured,8);glPopMatrix();
+		DrawCylinder(0.0065,0.084,false,textured,2);glPopMatrix();
 
 		glPushMatrix(); LDEsetM(dGeomGetPosition(l_hand3_geom),dGeomGetRotation(l_hand3_geom));
-		DrawCylinder(0.0065,0.08,false,textured,8);glPopMatrix();
+		DrawCylinder(0.0065,0.08,false,textured,2);glPopMatrix();
 
 		glPushMatrix(); LDEsetM(dGeomGetPosition(l_hand4_geom),dGeomGetRotation(l_hand4_geom));
-		DrawCylinder(0.0065,0.073,false,textured,8);glPopMatrix();
+		DrawCylinder(0.0065,0.073,false,textured,2);glPopMatrix();
 
 		glPushMatrix(); LDEsetM(dGeomGetPosition(l_hand5_geom),dGeomGetRotation(l_hand5_geom));
-		DrawCylinder(0.0065,0.064,false,textured,8);glPopMatrix();
+		DrawCylinder(0.0065,0.064,false,textured,2);glPopMatrix();
 		
 		
 
 	}else{
 		//LEFT HAND + FINGERS
 		glPushMatrix();LDEsetM(dBodyGetPosition(body[10]),dBodyGetRotation(body[10]));
-		DrawBox(0.022,0.069,0.065,false,textured,8);glPopMatrix();//Taken from ODE use Y, Z, Xs
+		DrawBox(0.022,0.069,0.065,false,textured,2);glPopMatrix();//Taken from ODE use Y, Z, Xs
 
 		glPushMatrix(); LDEsetM(dBodyGetPosition(body[12]),dBodyGetRotation(body[12]));
-		DrawCylinder(0.0065,0.012,false,textured,8);glPopMatrix();
+		DrawCylinder(0.0065,0.012,false,textured,2);glPopMatrix();
 
 		glPushMatrix(); LDEsetM(dBodyGetPosition(body[13]),dBodyGetRotation(body[13]));
-		DrawCylinder(0.0065,0.012,false,textured,8);glPopMatrix();
+		DrawCylinder(0.0065,0.012,false,textured,2);glPopMatrix();
 
 		glPushMatrix(); LDEsetM(dGeomGetPosition(lhandfings0_geom),dGeomGetRotation(lhandfings0_geom));
-		DrawCylinder(0.0065,0.012,false,textured,8);glPopMatrix();
+		DrawCylinder(0.0065,0.012,false,textured,2);glPopMatrix();
 
 		glPushMatrix(); LDEsetM(dGeomGetPosition(lhandfings1_geom),dGeomGetRotation(lhandfings1_geom));
-		DrawCylinder(0.0065,0.012,false,textured,8);glPopMatrix();
+		DrawCylinder(0.0065,0.012,false,textured,2);glPopMatrix();
 
 		glPushMatrix(); LDEsetM(dBodyGetPosition(body[16]),dBodyGetRotation(body[16]));
-		DrawCylinder(0.0065,0.026,false,textured,8);glPopMatrix();
+		DrawCylinder(0.0065,0.026,false,textured,2);glPopMatrix();
 
 		glPushMatrix(); LDEsetM(dBodyGetPosition(body[17]),dBodyGetRotation(body[17]));
-		DrawCylinder(0.0065,0.028,false,textured,8);glPopMatrix();
+		DrawCylinder(0.0065,0.028,false,textured,2);glPopMatrix();
 
 		glPushMatrix(); LDEsetM(dGeomGetPosition(lhandfings2_geom),dGeomGetRotation(lhandfings2_geom));
-		DrawCylinder(0.0065,0.026,false,textured,8);glPopMatrix();
+		DrawCylinder(0.0065,0.026,false,textured,2);glPopMatrix();
 
 		glPushMatrix(); LDEsetM(dGeomGetPosition(lhandfings3_geom),dGeomGetRotation(lhandfings3_geom));
-		DrawCylinder(0.0065,0.022,false,textured,8);glPopMatrix();
+		DrawCylinder(0.0065,0.022,false,textured,2);glPopMatrix();
 
 		glPushMatrix(); LDEsetM(dBodyGetPosition(body[20]),dBodyGetRotation(body[20]));
-		DrawCylinder(0.0065,0.022,false,textured,8);glPopMatrix();
+		DrawCylinder(0.0065,0.022,false,textured,2);glPopMatrix();
 
 		glPushMatrix(); LDEsetM(dBodyGetPosition(body[21]),dBodyGetRotation(body[21]));
-		DrawCylinder(0.0065,0.024,false,textured,8);glPopMatrix();
+		DrawCylinder(0.0065,0.024,false,textured,2);glPopMatrix();
 
 		glPushMatrix(); LDEsetM(dGeomGetPosition(lhandfings4_geom),dGeomGetRotation(lhandfings4_geom));
-		DrawCylinder(0.0065,0.022,false,textured,8);glPopMatrix();
+		DrawCylinder(0.0065,0.022,false,textured,2);glPopMatrix();
 
 		glPushMatrix(); LDEsetM(dGeomGetPosition(lhandfings5_geom),dGeomGetRotation(lhandfings5_geom));
-		DrawCylinder(0.0065,0.019,false,textured,8);glPopMatrix();
+		DrawCylinder(0.0065,0.019,false,textured,2);glPopMatrix();
 
 		glPushMatrix(); LDEsetM(dBodyGetPosition(body[24]),dBodyGetRotation(body[24]));
-		DrawCylinder(0.0065,0.02,false,textured,8);glPopMatrix();
+		DrawCylinder(0.0065,0.02,false,textured,2);glPopMatrix();
 
 		glPushMatrix(); LDEsetM(dBodyGetPosition(body[25]),dBodyGetRotation(body[25]));
-		DrawCylinder(0.0065,0.02,false,textured,8);glPopMatrix();
+		DrawCylinder(0.0065,0.02,false,textured,2);glPopMatrix();
 
 		glPushMatrix(); LDEsetM(dGeomGetPosition(lhandfings6_geom),dGeomGetRotation(lhandfings6_geom));
-		DrawCylinder(0.0065,0.02,false,textured,8);glPopMatrix();
+		DrawCylinder(0.0065,0.02,false,textured,2);glPopMatrix();
 
 		glPushMatrix(); LDEsetM(dGeomGetPosition(lhandfings7_geom),dGeomGetRotation(lhandfings7_geom));
-		DrawCylinder(0.0065,0.02,false,textured,8);glPopMatrix();
+		DrawCylinder(0.0065,0.02,false,textured,2);glPopMatrix();
 
 		glPushMatrix(); LDEsetM(dBodyGetPosition(body[28]),dBodyGetRotation(body[28]));
-		DrawCylinder(0.0065,0.026,false,textured,8);glPopMatrix();
+		DrawCylinder(0.0065,0.026,false,textured,2);glPopMatrix();
 
 		glPushMatrix(); LDEsetM(dBodyGetPosition(body[29]),dBodyGetRotation(body[29]));
-		DrawCylinder(0.0065,0.022,false,textured,8);glPopMatrix();
+		DrawCylinder(0.0065,0.022,false,textured,2);glPopMatrix();
 
 		glPushMatrix(); LDEsetM(dBodyGetPosition(body[30]),dBodyGetRotation(body[30]));
-		DrawCylinder(0.0065,0.016,false,textured,8);glPopMatrix();
+		DrawCylinder(0.0065,0.016,false,textured,2);glPopMatrix();
 	}
 	if (actRHand == "off"){
 		//glColor3d(1.0,0.0,0.0);		
 		glColor3d(1.0,1.0,1.0);
 		glPushMatrix();LDEsetM(dGeomGetPosition(r_hand0_geom),dGeomGetRotation(r_hand0_geom));
-		DrawBox(0.022,0.069,0.065,false,textured,8);glPopMatrix();
+		DrawBox(0.022,0.069,0.065,false,textured,2);glPopMatrix();
 		glColor3d(1.0,1.0,1.0);
 		glPushMatrix(); LDEsetM(dGeomGetPosition(r_hand1_geom),dGeomGetRotation(r_hand1_geom));
-		DrawCylinder(0.0065,0.08,false,textured,8);glPopMatrix();
+		DrawCylinder(0.0065,0.08,false,textured,2);glPopMatrix();
 
 		glPushMatrix(); LDEsetM(dGeomGetPosition(r_hand2_geom),dGeomGetRotation(r_hand2_geom));
-		DrawCylinder(0.0065,0.084,false,textured,8);glPopMatrix();
+		DrawCylinder(0.0065,0.084,false,textured,2);glPopMatrix();
 
 		glPushMatrix(); LDEsetM(dGeomGetPosition(r_hand3_geom),dGeomGetRotation(r_hand3_geom));
-		DrawCylinder(0.0065,0.08,false,textured,8);glPopMatrix();
+		DrawCylinder(0.0065,0.08,false,textured,2);glPopMatrix();
 
 		glPushMatrix(); LDEsetM(dGeomGetPosition(r_hand4_geom),dGeomGetRotation(r_hand4_geom));
-		DrawCylinder(0.0065,0.073,false,textured,8);glPopMatrix();
+		DrawCylinder(0.0065,0.073,false,textured,2);glPopMatrix();
 
 		glPushMatrix(); LDEsetM(dGeomGetPosition(r_hand5_geom),dGeomGetRotation(r_hand5_geom));
-		DrawCylinder(0.0065,0.064,false,textured,8);glPopMatrix();
+		DrawCylinder(0.0065,0.064,false,textured,2);glPopMatrix();
 		
 
 	}else{
 	//RIGHT HAND FINGERS
 		glPushMatrix();LDEsetM(dBodyGetPosition(body[11]),dBodyGetRotation(body[11]));
-		DrawBox(0.022,0.069,0.065,false,textured,8);glPopMatrix();//Taken from ODE use Y, Z, Xs
+		DrawBox(0.022,0.069,0.065,false,textured,2);glPopMatrix();//Taken from ODE use Y, Z, Xs
 
 		glPushMatrix(); LDEsetM(dBodyGetPosition(body[31]),dBodyGetRotation(body[31]));
-		DrawCylinder(0.0065,0.012,false,textured,8);glPopMatrix();
+		DrawCylinder(0.0065,0.012,false,textured,2);glPopMatrix();
 
 		glPushMatrix(); LDEsetM(dBodyGetPosition(body[32]),dBodyGetRotation(body[32]));
-		DrawCylinder(0.0065,0.012,false,textured,8);glPopMatrix();
+		DrawCylinder(0.0065,0.012,false,textured,2);glPopMatrix();
 
 		glPushMatrix(); LDEsetM(dGeomGetPosition(rhandfings0_geom),dGeomGetRotation(rhandfings0_geom));
-		DrawCylinder(0.0065,0.012,false,textured,8);glPopMatrix();
+		DrawCylinder(0.0065,0.012,false,textured,2);glPopMatrix();
 
 		glPushMatrix(); LDEsetM(dGeomGetPosition(rhandfings1_geom),dGeomGetRotation(rhandfings1_geom));
-		DrawCylinder(0.0065,0.012,false,textured,8);glPopMatrix();
+		DrawCylinder(0.0065,0.012,false,textured,2);glPopMatrix();
 
 		glPushMatrix(); LDEsetM(dBodyGetPosition(body[35]),dBodyGetRotation(body[35]));
-		DrawCylinder(0.0065,0.026,false,textured,8);glPopMatrix();
+		DrawCylinder(0.0065,0.026,false,textured,2);glPopMatrix();
 
 		glPushMatrix(); LDEsetM(dBodyGetPosition(body[36]),dBodyGetRotation(body[36]));
-		DrawCylinder(0.0065,0.028,false,textured,8);glPopMatrix();
+		DrawCylinder(0.0065,0.028,false,textured,2);glPopMatrix();
 
 		glPushMatrix(); LDEsetM(dGeomGetPosition(rhandfings2_geom),dGeomGetRotation(rhandfings2_geom));
-		DrawCylinder(0.0065,0.026,false,textured,8);glPopMatrix();
+		DrawCylinder(0.0065,0.026,false,textured,2);glPopMatrix();
 
 		glPushMatrix(); LDEsetM(dGeomGetPosition(rhandfings3_geom),dGeomGetRotation(rhandfings3_geom));
-		DrawCylinder(0.0065,0.022,false,textured,8);glPopMatrix();
+		DrawCylinder(0.0065,0.022,false,textured,2);glPopMatrix();
 
 		glPushMatrix(); LDEsetM(dBodyGetPosition(body[39]),dBodyGetRotation(body[39]));
-		DrawCylinder(0.0065,0.022,false,textured,8);glPopMatrix();
+		DrawCylinder(0.0065,0.022,false,textured,2);glPopMatrix();
 
 		glPushMatrix(); LDEsetM(dBodyGetPosition(body[40]),dBodyGetRotation(body[40]));
-		DrawCylinder(0.0065,0.024,false,textured,8);glPopMatrix();
+		DrawCylinder(0.0065,0.024,false,textured,2);glPopMatrix();
 
 		glPushMatrix(); LDEsetM(dGeomGetPosition(rhandfings4_geom),dGeomGetRotation(rhandfings4_geom));
-		DrawCylinder(0.0065,0.022,false,textured,8);glPopMatrix();
+		DrawCylinder(0.0065,0.022,false,textured,2);glPopMatrix();
 
 		glPushMatrix(); LDEsetM(dGeomGetPosition(rhandfings5_geom),dGeomGetRotation(rhandfings5_geom));
-		DrawCylinder(0.0065,0.019,false,textured,8);glPopMatrix();
+		DrawCylinder(0.0065,0.019,false,textured,2);glPopMatrix();
 
 		glPushMatrix(); LDEsetM(dBodyGetPosition(body[43]),dBodyGetRotation(body[43]));
-		DrawCylinder(0.0065,0.02,false,textured,8);glPopMatrix();
+		DrawCylinder(0.0065,0.02,false,textured,2);glPopMatrix();
 
 		glPushMatrix(); LDEsetM(dBodyGetPosition(body[44]),dBodyGetRotation(body[44]));
-		DrawCylinder(0.0065,0.02,false,textured,8);glPopMatrix();
+		DrawCylinder(0.0065,0.02,false,textured,2);glPopMatrix();
 
 		glPushMatrix(); LDEsetM(dGeomGetPosition(rhandfings6_geom),dGeomGetRotation(rhandfings6_geom));
-		DrawCylinder(0.0065,0.02,false,textured,8);glPopMatrix();
+		DrawCylinder(0.0065,0.02,false,textured,2);glPopMatrix();
 
 		glPushMatrix(); LDEsetM(dGeomGetPosition(rhandfings7_geom),dGeomGetRotation(rhandfings7_geom));
-		DrawCylinder(0.0065,0.02,false,textured,8);glPopMatrix();
+		DrawCylinder(0.0065,0.02,false,textured,2);glPopMatrix();
 
 		glPushMatrix(); LDEsetM(dBodyGetPosition(body[47]),dBodyGetRotation(body[47]));
-		DrawCylinder(0.0065,0.026,false,textured,8);glPopMatrix();
+		DrawCylinder(0.0065,0.026,false,textured,2);glPopMatrix();
 
 		glPushMatrix(); LDEsetM(dBodyGetPosition(body[48]),dBodyGetRotation(body[48]));
-		DrawCylinder(0.0065,0.022,false,textured,8);glPopMatrix();
+		DrawCylinder(0.0065,0.022,false,textured,2);glPopMatrix();
 
 		glPushMatrix(); LDEsetM(dBodyGetPosition(body[49]),dBodyGetRotation(body[49]));
-		DrawCylinder(0.0065,0.016,false,textured,8);glPopMatrix();
+		DrawCylinder(0.0065,0.016,false,textured,2);glPopMatrix();
 	}
 	if (actHead == "off"){
 		glPushMatrix(); LDEsetM(dGeomGetPosition(neck0_geom),dGeomGetRotation(neck0_geom));
-		DrawCylinder(0.015,0.077,false,textured,8);glPopMatrix();
+		DrawCylinder(0.015,0.077,false,textured,2);glPopMatrix();
 
 		glPushMatrix(); LDEsetM(dGeomGetPosition(neck1_geom),dGeomGetRotation(neck1_geom));
-		DrawCylinder(0.015,0.077,false,textured,8);glPopMatrix();
+		DrawCylinder(0.015,0.077,false,textured,2);glPopMatrix();
 	}else{
 		glPushMatrix(); LDEsetM(dBodyGetPosition(neck[0]),dBodyGetRotation(neck[0]));
-		DrawCylinder(0.015,0.077,false,textured,8);glPopMatrix();
+		DrawCylinder(0.015,0.077,false,textured,2);glPopMatrix();
 
 		glPushMatrix(); LDEsetM(dBodyGetPosition(neck[1]),dBodyGetRotation(neck[1]));
-		DrawCylinder(0.015,0.077,false,textured,8);glPopMatrix();
+		DrawCylinder(0.015,0.077,false,textured,2);glPopMatrix();
 	}
 	
 	glPushMatrix(); LDEsetM(dGeomGetPosition(head0_geom),dGeomGetRotation(head0_geom));
-	DrawCylinder(0.015,0.06,false,textured,8);glPopMatrix();
+	DrawCylinder(0.015,0.06,false,textured,2);glPopMatrix();
 
 	if (actCover == "on"){
 		glPushMatrix(); LDEsetM(dGeomGetPosition(head1_geom),dGeomGetRotation(head1_geom));
-		DrawBox(0.104, 0.002,0.052,false,textured,8);glTranslatef(0,0.05,0);
+		DrawBox(0.104, 0.002,0.052,false,textured,2);glTranslatef(0,0.05,0);
 		glTranslatef(0,-0.002,0.007);
 		glScalef(0.95,1,1);
-		iCubHeadModel->draw(false,15); 
+		iCubHeadModel->draw(false,8); 
 		if (eyeLids==0)
             eyeLids=new EyeLids; 
 
 		glTranslatef(0,0,0.067);
 		glRotatef(eyeLids->eyeLidsRotation,1,0,0);
-		topEyeLidModel->draw(false,15); 
+		topEyeLidModel->draw(false,8); 
 		glRotatef(-2*eyeLids->eyeLidsRotation,1,0,0);
-		bottomEyeLidModel->draw(false,15); 
+		bottomEyeLidModel->draw(false,8); 
 		glPopMatrix();
 		
 	}else{
 		glPushMatrix(); LDEsetM(dGeomGetPosition(head1_geom),dGeomGetRotation(head1_geom));
-		DrawBox(0.104, 0.002,0.052,false,textured,8);
+		DrawBox(0.104, 0.002,0.052,false,textured,2);
 		glPopMatrix();}
 
 	glColor3d(0.3,0.3,0.3);
 	glPushMatrix(); LDEsetM(dGeomGetPosition(head2_geom),dGeomGetRotation(head2_geom));
-	DrawBox(0.002, 0.093,0.052,false,false,1);glPopMatrix();
+	DrawBox(0.002, 0.093,0.052,false,false,2);glPopMatrix();
 
 	glPushMatrix(); LDEsetM(dGeomGetPosition(head3_geom),dGeomGetRotation(head3_geom));
-	DrawBox(0.002, 0.093,0.052,false,false,1);glPopMatrix();
+	DrawBox(0.002, 0.093,0.052,false,false,2);glPopMatrix();
 
 	glPushMatrix(); LDEsetM(dGeomGetPosition(head4_geom),dGeomGetRotation(head4_geom));
-	DrawBox( 0.104, 0.002 ,0.032,false,false,1);glPopMatrix();
+	DrawBox( 0.104, 0.002 ,0.032,false,false,2);glPopMatrix();
 
 	glPushMatrix(); LDEsetM(dGeomGetPosition(head5_geom),dGeomGetRotation(head5_geom));
-	DrawBox( 0.011, 0.026,0.025,false,false,1);glPopMatrix();
+	DrawBox( 0.011, 0.026,0.025,false,false,2);glPopMatrix();
 
 	glPushMatrix(); LDEsetM(dGeomGetPosition(head6_geom),dGeomGetRotation(head6_geom));
-	DrawBox(  0.011, 0.051,0.012,false,false,1);glPopMatrix();
+	DrawBox(  0.011, 0.051,0.012,false,false,2);glPopMatrix();
 
 	glPushMatrix(); LDEsetM(dGeomGetPosition(head7_geom),dGeomGetRotation(head7_geom));
-	DrawBox( 0.02, 0.022, 0.012,false,false,1);glPopMatrix();
+	DrawBox( 0.02, 0.022, 0.012,false,false,2);glPopMatrix();
 
 	glPushMatrix(); LDEsetM(dGeomGetPosition(eye1_geom),dGeomGetRotation(eye1_geom));
-	DrawCylinder(0.002,0.068,false,true,6);glPopMatrix();
+	DrawCylinder(0.002,0.068,false,true,1);glPopMatrix();
 
 	glPushMatrix(); LDEsetM(dGeomGetPosition(eye2_geom),dGeomGetRotation(eye2_geom));
-	DrawCylinder(0.006,0.030,false,true,6);glPopMatrix();
+	DrawCylinder(0.006,0.030,false,true,1);glPopMatrix();
 
 	glPushMatrix(); LDEsetM(dGeomGetPosition(eye3_geom),dGeomGetRotation(eye3_geom));
-	DrawCylinder(0.006,0.05,false,true,6);glPopMatrix();
+	DrawCylinder(0.006,0.05,false,true,1);glPopMatrix();
 
 	glPushMatrix(); LDEsetM(dGeomGetPosition(eye3_geom),dGeomGetRotation(eye3_geom));
-	DrawCylinder(0.006,0.05,false,true,6);glPopMatrix();
+	DrawCylinder(0.006,0.05,false,true,1);glPopMatrix();
 
 	glPushMatrix(); LDEsetM(dGeomGetPosition(eye4_geom),dGeomGetRotation(eye4_geom));
-	DrawCylinder(0.006,0.030,false,true,6);glPopMatrix();
+	DrawCylinder(0.006,0.030,false,true,1);glPopMatrix();
 
 	glPushMatrix(); LDEsetM(dGeomGetPosition(eye5_geom),dGeomGetRotation(eye5_geom));
-	DrawCylinder(0.006,0.05,false,true,6);glPopMatrix();
+	DrawCylinder(0.006,0.05,false,true,1);glPopMatrix();
 
 	glPushMatrix(); LDEsetM(dGeomGetPosition(Leye1_geom),dGeomGetRotation(Leye1_geom));
 	glColor3d(0,0,0);
-	DrawCylinder(0.006,0.0185,false,false,6);
+	DrawCylinder(0.006,0.0185,false,false,1);
 	glColor3d(1,1,1);
 	DrawSphere(0.0185,false,false,0);
 	glPopMatrix();
 
 	glPushMatrix(); LDEsetM(dGeomGetPosition(Reye1_geom),dGeomGetRotation(Reye1_geom));
 	glColor3d(0,0,0);
-	DrawCylinder(0.006,0.0185,false,false,6);
+	DrawCylinder(0.006,0.0185,false,false,1);
 	glColor3d(1,1,1);
 	
 	DrawSphere(0.0185,false,false,0);

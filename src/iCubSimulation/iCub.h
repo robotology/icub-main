@@ -44,8 +44,7 @@ public:
     static const bool textured = true;
 	ConstString actElevation, actLegs, actTorso, actLArm, actRArm, actLHand, actRHand, actHead, actfixedHip, actVision, actCover, actWorld;
     double elev;
-	dTriMeshDataID TriData[100];
-	dTriMesh trimesh[100];
+	
 
 	bool reinitialized;
 	float eyeLidRot;

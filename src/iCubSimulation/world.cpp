@@ -10,13 +10,8 @@
 #include "world.h"
 #include "SimConfig.h"
 #include <stdio.h>
-#include <string.h>
 #include <yarp/os/ConstString.h>
-#include <string>
 #include <iostream>
-using std::string;
-using std::cout;
-using std::endl;
 
 static float xyz[3], hpr[3];
 static dReal ballVel[3], ballDamp[3];
@@ -143,6 +138,32 @@ void worldSim::draw(){
 		glPushMatrix();LDEsetM(dGeomGetPosition(s_cyl_obj[i].cylgeom[0]),dGeomGetRotation(s_cyl_obj[i].cylgeom[0]));
 		DrawCylinder(s_cyl_obj[i].radius,s_cyl_obj[i].lenght,false,textured,8);glPopMatrix();
 	}
+	
+	if (MODEL_NUM != waitMOD){
+		Time::delay(0.1); waitMOD++;}
+	else{
+
+		for (int i=0; i<MODEL_NUM; i++){
+			glColor3d(1.0,1.0,1.0);
+			glPushMatrix();LDEsetM(dGeomGetPosition(ThreeD_obj[i].geom),dGeomGetRotation(ThreeD_obj[i].geom));     //DRAW THE MODEL
+	        DrawX( trimesh[i], modelTexture[i]);
+			glPopMatrix();
+		}
+		for (int i=0; i<s_MODEL_NUM; i++){
+			glColor3d(1.0,1.0,1.0);
+			glPushMatrix();LDEsetM(dGeomGetPosition(s_ThreeD_obj[i].geom),dGeomGetRotation(s_ThreeD_obj[i].geom));     //DRAW THE MODEL
+	        DrawX( s_trimesh[i], s_modelTexture[i]);
+			glPopMatrix();
+		}
+	}
+}
+
+void worldSim::loadTexture(ConstString texture, int numTexture){
+
+	cout << " NUMBER TEXTURE " << numTexture << endl;
+	ConstString tmptext = (char *) model_DIR.c_str();
+	texture = tmptext + "/"+ texture;
+    setupTexture( (char* ) texture.c_str(), numTexture );
 }
 
 void worldSim::setPosition(dReal agent1X, dReal agent1Y, dReal agent1Z ) {

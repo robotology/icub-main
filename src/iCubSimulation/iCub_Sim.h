@@ -293,8 +293,49 @@ public:
 			}
 		}
 	}
+static void nearCallback (void *data, dGeomID o1, dGeomID o2)
+{
 
-	static void nearCallback (void *data, dGeomID o1, dGeomID o2){
+assert(o1);
+		assert(o2);
+		if (dGeomIsSpace(o1) || dGeomIsSpace(o2)){
+			// colliding a space with something
+			dSpaceCollide2(o1,o2,data,&nearCallback);
+			// Note we do not want to test intersections within a space,
+			// only between spaces.
+			return;
+		}
+  int i;
+  // if (o1->body && o2->body) return;
+
+  // exit without doing anything if the two bodies are connected by a joint
+  dBodyID b1 = dGeomGetBody(o1);
+  dBodyID b2 = dGeomGetBody(o2);
+  if (b1 && b2 && dAreConnectedExcluding (b1,b2,dJointTypeContact)) return;
+
+  dContact contact[MAX_CONTACTS];   // up to MAX_CONTACTS contacts per box-box
+  for (i=0; i<MAX_CONTACTS; i++) {
+    contact[i].surface.mode = dContactSlip1| dContactSlip2| dContactBounce | dContactSoftCFM;
+    contact[i].surface.mu = dInfinity;
+    contact[i].surface.mu2 = 0;
+    contact[i].surface.bounce = 0.1;
+    contact[i].surface.bounce_vel = 0.1;
+    contact[i].surface.slip1 = (dReal)0.0006;
+	contact[i].surface.slip2 = (dReal)0.0006;
+	contact[i].surface.soft_cfm = 0.0001;
+  }
+  if (int numc = dCollide (o1,o2,MAX_CONTACTS,&contact[0].geom,
+			   sizeof(dContact))) {
+    dMatrix3 RI;
+    dRSetIdentity (RI);
+    for (i=0; i<numc; i++) {
+      dJointID c = dJointCreateContact (odeinit.world,odeinit.contactgroup,contact+i);
+      dJointAttach (c,b1,b2);
+     // if (show_contacts) dsDrawBox (contact[i].geom.pos,RI,ss);
+    }
+  }
+}
+	/*static void nearCallback (void *data, dGeomID o1, dGeomID o2){
 		assert(o1);
 		assert(o2);
 		if (dGeomIsSpace(o1) || dGeomIsSpace(o2)){
@@ -324,7 +365,6 @@ public:
 			sizeof(dContact))) {
 				/*dMatrix3 RI;
 				dRSetIdentity (RI);
-				const dReal ss[3] = {0.02,0.02,0.02};*/
 				for (i=0; i<numc; i++) {
 					dJointID c = dJointCreateContact (odeinit.world,odeinit.contactgroup,contact+i);
 					dJointAttach (c,b1,b2);
@@ -332,7 +372,7 @@ public:
 				}
 		}
 	}
-
+*/
 	static void inspectBodyTouch(Bottle& report){
 		report.clear();
 		if (odeinit._iCub->actLHand == "on" && odeinit._iCub->actRHand == "on" ){
@@ -501,7 +541,6 @@ public:
 
 		//draw the ground
 		glColor3d(0.5,0.5,1);
-		glEnable(GL_TEXTURE_2D);
 		glPushMatrix();
 		glRotatef(90.0,1,0,0);
 		glRotatef(180.0,0,1,0);
@@ -673,6 +712,7 @@ public:
 		SDL_SetVideoMode(h,w,32,SDL_OPENGL | SDL_RESIZABLE);// | SDL_SWSURFACE| SDL_ANYFORMAT); // on init 
 		SimConfig finder;
 
+		dAllocateODEDataForThread(dAllocateMaskAll);
 		ConstString logo = finder.find("logo");
 
 		image = SDL_LoadBMP(finder.find(logo.c_str()));
@@ -697,13 +737,31 @@ public:
 		ACE_OS::signal(SIGINT, (ACE_SignalHandler) &sighandler);
 		ACE_OS::signal(SIGTERM, (ACE_SignalHandler) &sighandler);
 
+		odeinit._wrld->WAITLOADING = false;
+		odeinit._wrld->static_model = false;
 		while(!odeinit.stop)
 		{
 			/* Process incoming events. */
 			process_events();
 			/* Draw the screen. */
-			draw_screen();
-			//printStats();
+			if ( !odeinit._wrld->WAITLOADING ){
+				odeinit.mutexTexture.wait();
+				draw_screen();
+
+				odeinit.mutexTexture.post();
+			}
+			else{
+				glFinish();
+				glFlush();
+				//make sure it can also be done for static objects
+				if (odeinit._wrld->static_model){
+					odeinit._wrld->loadTexture(odeinit._wrld->texture, odeinit._wrld->s_modelTexture[odeinit._wrld->s_MODEL_NUM-1]);
+				}else{
+					odeinit._wrld->loadTexture(odeinit._wrld->texture, odeinit._wrld->modelTexture[odeinit._wrld->MODEL_NUM-1]);
+				}
+				odeinit._wrld->WAITLOADING = false;	
+				odeinit._wrld->static_model = false;	
+			}
 		}     
         printf("\n\nStopping SDL and ODE threads...\n");
 		//stop the timer

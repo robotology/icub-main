@@ -13,6 +13,7 @@
 #define SIMCONFIG_INC
 
 #include <yarp/os/ConstString.h>
+#include <yarp/os/Value.h>
 
 class SimConfig {
 public:
@@ -22,6 +23,7 @@ public:
     void configure(int argc, char *argv[]);
     
     yarp::os::ConstString find(const char *fileName);
+	yarp::os::ConstString findPath(const char *key);
     bool isActive();
     
 };

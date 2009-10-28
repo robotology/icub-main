@@ -162,6 +162,7 @@ int setBody = 0;
 dReal sides[3];
 #define DENSITY (1.0)		// density of all objects
 
+int a,b,c;
 bool viewParam1 = false, viewParam2 = false;
 bool noCam;
 
@@ -285,6 +286,7 @@ public:
 
     bool respond (const Bottle &command, Bottle &reply) {
        //fprintf(stderr, "Reading from world port...\n");
+		glDisable(GL_CULL_FACE);
         ConstString cmd = command.get(0).asString();
         bool ok = true;
         bool done = false;
@@ -355,6 +357,21 @@ public:
 						else {bid = odeinit._iCub->r_hand; printf("slim right hand\n");}
 						setBody = 4;
 						break;
+					case VOCAB4('m','o','d','e'):
+						if (odeinit._iCub->actLHand=="on"){bid = odeinit._iCub->body[10]; }
+						else {bid = odeinit._iCub->l_hand;}
+						setBody = 8;
+						break;
+					case VOCAB4('s','m','o','d'):
+						if (odeinit._iCub->actLHand=="on"){bid = odeinit._iCub->body[10];}
+						else {bid = odeinit._iCub->l_hand;}
+						setBody = 9;
+						break;
+					case VOCAB4('m','d','i','r'):
+						if (odeinit._iCub->actLHand=="on"){bid = odeinit._iCub->body[10];}
+						else {bid = odeinit._iCub->l_hand;}
+						setBody = 10;
+						break;
 				}
 				reply.clear();
 				if (bid!=NULL || bid2!=NULL) {
@@ -403,6 +420,31 @@ public:
 								reply.addDouble(coords[1]);
 								reply.addDouble(coords[2]);
 							}
+						}
+						if (setBody==8){
+							unsigned int N = command.get(3).asInt();
+							if ((N >(i+1)) || (N < 1 )){reply.addString("object not known");}
+							else{
+								const dReal *coords = dGeomGetPosition(odeinit._wrld->ThreeD_obj[N-1].geom);
+								reply.addDouble(coords[0]);
+								reply.addDouble(coords[1]);
+								reply.addDouble(coords[2]);
+							}
+						}
+						if (setBody==9){
+							unsigned int N = command.get(3).asInt();
+							if ((N >(i+1)) || (N < 1 )){reply.addString("object not known");}
+							else{
+								const dReal *coords = dGeomGetPosition(odeinit._wrld->s_ThreeD_obj[N-1].geom);
+								reply.addDouble(coords[0]);
+								reply.addDouble(coords[1]);
+								reply.addDouble(coords[2]);
+							}
+						}
+						if (setBody==10){
+							// SET MODEL DIRECTORY................................................
+							reply.addString ( (char*) odeinit._wrld->model_DIR.c_str() );
+							
 						}
 						//reply.fromString("ok");
 					} 
@@ -468,6 +510,33 @@ public:
 								dGeomSetPosition(odeinit._wrld->s_cyl_obj[N-1].cylgeom[0],x,y,z);
 								odeinit.mutex.post();
 							}
+						}
+						if (setBody==8){
+							unsigned int N = command.get(3).asInt();
+							if ((N >(i+1)) || (N < 1 )){reply.addString("object not known");}
+							else{
+								double x = command.get(4).asDouble();
+								double y = command.get(5).asDouble();
+								double z = command.get(6).asDouble();
+								dBodySetPosition(odeinit._wrld->ThreeD_obj[N-1].body,x,y,z);
+								dBodySetLinearVel (odeinit._wrld->ThreeD_obj[N-1].body, 0.0, 0.0, 0.0);
+								dBodySetAngularVel (odeinit._wrld->ThreeD_obj[N-1].body, 0.0, 0.0, 0.0);
+							}
+						}
+						if (setBody==9){
+							unsigned int N = command.get(3).asInt();
+							if ((N >(i+1)) || (N < 1 )){reply.addString("object not known");}
+							else{
+								double x = command.get(4).asDouble();
+								double y = command.get(5).asDouble();
+								double z = command.get(6).asDouble();
+								dGeomSetPosition(odeinit._wrld->s_ThreeD_obj[N-1].geom,x,y,z);
+							}
+						}
+						if (setBody==10){
+							// SET MODEL DIRECTORY................................................
+							odeinit._wrld->model_DIR = command.get(3).asString();
+							cout << odeinit._wrld->model_DIR.c_str() << endl;
 						}
 						reply.fromString("ok");
 					}
@@ -581,7 +650,92 @@ public:
 							odeinit._wrld->s_color1[i][2] = B;
 							odeinit.mutex.post();
 						}
+						// 3D model
+						if (setBody==8){
 
+							ConstString model = command.get(3).asString();
+							odeinit._wrld->texture = command.get(4).asString();
+							                           
+							double x = command.get(5).asDouble(); // x position 
+							double y = command.get(6).asDouble(); // y position 
+							double z = command.get(7).asDouble(); // z position
+
+							cout << "\nAsking to create 3D Model.......\n" << endl;
+
+							odeinit.mutex.wait();
+							dMass m;
+							dMassSetZero(&m);
+ 							odeinit._wrld->TriData[a] = dGeomTriMeshDataCreate();
+							
+							ConstString tmp = (char *) odeinit._wrld->model_DIR.c_str();
+							model = tmp + "/" + model;
+							odeinit._wrld->trimesh[a] = dLoadMeshFromX(model); // HERE THE MODEL SHOULD HAVE THE PATH
+							if (!odeinit._wrld->trimesh[a]){
+								cout << "Check spelling/location of file" << endl;
+							}else{
+								dGeomTriMeshDataBuildSingle(odeinit._wrld->TriData[a], odeinit._wrld->trimesh[a]->Vertices, 3 * sizeof(float), odeinit._wrld->trimesh[a]->VertexCount, odeinit._wrld->trimesh[a]->Indices, odeinit._wrld->trimesh[a]->IndexCount, 3 * sizeof(int));
+								odeinit._wrld->ThreeD_obj[a].body = dBodyCreate (odeinit.world);
+								odeinit._wrld->ThreeD_obj[a].geom = dCreateTriMesh(odeinit.space, odeinit._wrld->TriData[a], 0, 0, 0);
+								dGeomSetData(odeinit._wrld->ThreeD_obj[a].geom,odeinit._wrld->TriData[a]);
+								dMassSetTrimesh(&m,  0.1, odeinit._wrld->ThreeD_obj[a].geom);
+								//printf("mass at %f %f %f %f\n", m.mass, m.c[0], m.c[1], m.c[2]);
+								dGeomSetBody(odeinit._wrld->ThreeD_obj[a].geom, odeinit._wrld->ThreeD_obj[a].body);
+								dMassTranslate(&m, -m.c[0], -m.c[1], -m.c[2]);
+								dGeomSetPosition(odeinit._wrld->ThreeD_obj[a].geom,x,y,z);
+								dBodySetMass(odeinit._wrld->ThreeD_obj[a].body, &m);
+								odeinit.mutex.post();
+
+								if (num < MAXNUM){
+									odeinit._wrld->MODEL_NUM++;
+									a = odeinit._wrld->MODEL_NUM;
+									odeinit._wrld->modelTexture[a-1] = odeinit._wrld->MODEL_NUM + 19;
+								}
+								odeinit.mutexTexture.wait();
+								odeinit._wrld->WAITLOADING = true;	
+							}
+								odeinit.mutexTexture.post();
+
+						}
+						if (setBody==9){
+
+							ConstString model = command.get(3).asString();
+							odeinit._wrld->texture = command.get(4).asString();
+                            
+							double x = command.get(5).asDouble(); // x position 
+							double y = command.get(6).asDouble(); // y position 
+							double z = command.get(7).asDouble(); // z position
+
+							cout << "\nAsking to create static 3D Model.......\n" << endl;
+												
+							
+							
+							odeinit.mutex.wait();
+							ConstString tmp = (char *) odeinit._wrld->model_DIR.c_str();
+							model = tmp + "/" + model;
+ 							odeinit._wrld->s_TriData[b] = dGeomTriMeshDataCreate();
+							odeinit._wrld->s_trimesh[b] = dLoadMeshFromX(model);
+							if (!odeinit._wrld->s_trimesh[b]){
+								cout << "Check spelling/location of file" << endl;
+							}else{
+								dGeomTriMeshDataBuildSingle(odeinit._wrld->s_TriData[b], odeinit._wrld->s_trimesh[b]->Vertices, 3 * sizeof(float), odeinit._wrld->s_trimesh[b]->VertexCount, odeinit._wrld->s_trimesh[b]->Indices, odeinit._wrld->s_trimesh[b]->IndexCount, 3 * sizeof(int));
+								odeinit._wrld->s_ThreeD_obj[b].geom = dCreateTriMesh(odeinit.space, odeinit._wrld->s_TriData[b], 0, 0, 0);
+								dGeomSetData(odeinit._wrld->s_ThreeD_obj[b].geom,odeinit._wrld->s_TriData[b]);
+								dGeomSetPosition(odeinit._wrld->s_ThreeD_obj[b].geom,x,y,z);
+								odeinit.mutex.post();
+
+								if (num < MAXNUM){
+								odeinit._wrld->s_MODEL_NUM++;
+							    b = odeinit._wrld->s_MODEL_NUM;
+								odeinit._wrld->s_modelTexture[b-1] = odeinit._wrld->s_MODEL_NUM + 49;
+								}
+								odeinit.mutexTexture.wait();
+								odeinit._wrld->static_model = true;
+								odeinit._wrld->WAITLOADING = true;	
+								
+							}
+							odeinit.mutexTexture.post();
+
+						}
 							reply.fromString("ok");
 					}
 					if (subcmd=="rot"){
@@ -665,7 +819,45 @@ public:
 								dGeomSetRotation(odeinit._wrld->s_cyl_obj[N-1].cylgeom[0],Rtmp2);
 							}
 						}
+						if ( setBody == 8 ){
+							unsigned int N = command.get(3).asInt();
+							if ( (N >(i+1)) || (N < 1 )){reply.addString("object not known");}
+							else{
+								dMatrix3 Rtx,Rty,Rtz, Rtmp1,Rtmp2;
 
+								double rotx = (command.get(4).asDouble() * M_PI) / 180;
+								double roty = (command.get(5).asDouble() * M_PI) / 180;
+								double rotz = (command.get(6).asDouble() * M_PI) / 180;
+
+								dRFromAxisAndAngle(Rtx,1,0,0,rotx);
+								dRFromAxisAndAngle(Rty,0,1,0,roty);
+								dRFromAxisAndAngle(Rtz,0,0,1,rotz);
+
+								dMultiply0 (Rtmp1,Rty,Rtz,3,3,3);
+								dMultiply0 (Rtmp2,Rtx,Rtmp1,3,3,3);
+								dGeomSetRotation(odeinit._wrld->ThreeD_obj[N-1].geom,Rtmp2);
+							}
+						}
+
+						if ( setBody == 9 ){
+							unsigned int N = command.get(3).asInt();
+							if ( (N >(i+1)) || (N < 1 )){reply.addString("object not known");}
+							else{
+								dMatrix3 Rtx,Rty,Rtz, Rtmp1,Rtmp2;
+
+								double rotx = (command.get(4).asDouble() * M_PI) / 180;
+								double roty = (command.get(5).asDouble() * M_PI) / 180;
+								double rotz = (command.get(6).asDouble() * M_PI) / 180;
+
+								dRFromAxisAndAngle(Rtx,1,0,0,rotx);
+								dRFromAxisAndAngle(Rty,0,1,0,roty);
+								dRFromAxisAndAngle(Rtz,0,0,1,rotz);
+
+								dMultiply0 (Rtmp1,Rty,Rtz,3,3,3);
+								dMultiply0 (Rtmp2,Rtx,Rtmp1,3,3,3);
+								dGeomSetRotation(odeinit._wrld->s_ThreeD_obj[N-1].geom,Rtmp2);
+							}
+						}
 						reply.fromString("ok");
 					
 					}
@@ -798,6 +990,15 @@ void SimulatorModule::init()
 	options.fromConfigFile(torso.c_str());
   	iCubTorso = new PolyDriver(options);
 
+	//odeinit._wrld->model_DIR = finder.findPath("model_path_default").asString();
+	odeinit._wrld->model_DIR = finder.findPath("model_path_default");//findPath("model_path_default");
+		
+	//string pPath;
+	//pPath = getenv ("ICUB_ROOT");
+	//odeinit._wrld->model_DIR = pPath + "/app/simConfig/" + odeinit._wrld->model_DIR;
+
+	//cout << "\n\n\n\n\n" <<  odeinit._wrld->model_DIR << "\n\n\n\n" << endl;
+	
   if(!iCubLArm->isValid() || !iCubRArm->isValid() || !iCubHead->isValid() || !iCubLLeg->isValid() || !iCubRLeg->isValid() || !iCubTorso->isValid())
     {
       ACE_OS::printf("Device not available. Here are the known devices:\n");
@@ -960,6 +1161,8 @@ public:
 
 int main( int argc, char** argv) 
 {		
+	dInitODE2(0); 
+	printf("\nODE configuration: %s\n\n", dGetConfiguration());
     MyNetwork yarp;
     SimConfig finder;
 		
@@ -972,9 +1175,16 @@ int main( int argc, char** argv)
 	odeinit._wrld->cylOBJNUM = 0;
 	odeinit._wrld->waitOBJ1 = 0;
 	odeinit._wrld->S_cylOBJNUM = 0;
+	
+	odeinit._wrld->waitMOD = 0;
+	odeinit._wrld->MODEL_NUM = 0;
 
-	dInitODE(); 
+	odeinit._wrld->s_waitMOD = 0;
+	odeinit._wrld->s_MODEL_NUM = 0;
 
+	a = b = c = 0;
+	
+	
     Drivers::factory().add(new DriverCreatorOf<iCubSimulationControl>("simulationcontrol", 
         "controlboard",
         "iCubSimulationControl"));
@@ -999,4 +1209,4 @@ int main( int argc, char** argv)
     dCloseODE();
 
     return 0;
-} 
+}

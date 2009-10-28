@@ -75,6 +75,11 @@ ConstString SimConfig::find(const char *fileName) {
     return location;
 }
 
+ConstString SimConfig::findPath(const char *key) {
+   // printf("SimConfig: asked to find %s\n", fileName);
+	return getFinder().findPath(key);//find(key);
+  // return getFinder().find(key);
+}
 void SimConfig::configure(int argc, char *argv[])
 {
     configureFinder(argc, argv);
