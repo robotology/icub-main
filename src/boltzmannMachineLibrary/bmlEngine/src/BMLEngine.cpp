@@ -235,7 +235,8 @@ bool BMLEngine::updateModule() {
 				option=option.substr(parPos2+2,dim-2-parPos2);
 
 				parPos1=option.find("(");
-				if(parPos1!=string::npos){
+				if(parPos1!=-1){
+					printf("found the second parentesis \n");
 					parPos2=option.find(")");
 					spacePos=option.find(" ");
 					optionName2=option.substr(parPos1+1,spacePos-parPos1);
