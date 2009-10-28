@@ -52,6 +52,18 @@ void generatorThread::sendStatusForManager()
 
 }
 
+//we send the current position of the joints to the balance controller
+void generatorThread::sendStatusForBalance() {
+	Bottle& cmd =status_balance_port.prepare();
+
+	cmd.clear();
+	for(int i=0; i<nbDOFs;i++){
+		cmd.addDouble(y_cpgs[4*i+2]);
+	}
+
+	status_balance_port.write(false);
+}
+
 ///we get the encoders
 bool generatorThread::getEncoders()
 {
@@ -150,7 +162,7 @@ void generatorThread::getParameters()
 				ACE_OS::printf("turning angle %f too big\n", angle);
 
 
-			myCpg->ampl[0]= myIK->getTurnParams(myCpg->turnAngle, amplit, side, limb);
+			//myCpg->ampl[0]= myIK->getTurnParams(myCpg->turnAngle, amplit, side, limb);
 			//myIK->getTurnParams(myCpg->turnAngle, amplit, side, limb);
 
 			fprintf(parameters_file,"%f %f %f",myCpg->om_stance,myCpg->om_swing, myCpg->turnAngle);
@@ -300,6 +312,7 @@ void generatorThread::run()
 
 		//we send the current status of the cpgs to the higher instance
 		sendStatusForManager();
+		sendStatusForBalance();
 	}
 	else {//try to connect to other limbs
 		connectToOtherLimbs();
@@ -391,6 +404,8 @@ void generatorThread::disconnectPorts()
 	parameters_port.close();
 	current_state_port.close();
 
+	status_balance_port.close();
+
 	for(int i=0;i<nbLIMBs;i++)
 		if(other_part_connected[i])
 		{
@@ -443,7 +458,7 @@ void generatorThread::threadRelease()
 	delete[] initPos;
 
 	delete myCpg;
-	delete myIK;
+	//	delete myIK;
 
 	fclose(target_file);
 	fclose(parameters_file);
@@ -461,7 +476,7 @@ bool generatorThread::init(Searchable &s)
 	current_action = false;
 	previous_quadrant= 0;
 
-	myIK = new IKManager;
+	//	myIK = new IKManager;
 
 	//getting part to interface with
 	Property options;
@@ -612,7 +627,7 @@ bool generatorThread::init(Searchable &s)
 	//////////opening the parameter port to receive input
 	bool ok;
 
-	sprintf(tmp1,"/%s/parameters/in",partName.c_str());
+	sprintf(tmp1,"/%s/balance_parameters/in",partName.c_str());
 	ok= parameters_port.open(tmp1);
 
 	if(!ok)
@@ -627,6 +642,14 @@ bool generatorThread::init(Searchable &s)
 	if(!ok)
 	{
 		ACE_OS::printf("Warning cannot open status port for the manager, part %s\n",partName.c_str());
+	}
+
+	////////opening the ports to send status to the balance controller
+	sprintf(tmp1, "/%s/status_for_balance/out",partName.c_str());
+	ok = status_balance_port.open(tmp1);
+
+	if(!ok) {
+		ACE_OS::printf("CrawlGeneratorModule::init>>WARNING cannot open balance status port part %s\n",partName.c_str());
 	}
 
 	////////////////////////////////////////////////////////////////
@@ -759,10 +782,10 @@ bool generatorThread::init(Searchable &s)
 
 	amplit=myCpg->ampl[0];
 
-	if(partName=="left_arm" || partName=="right_arm")
-	{
-		myCpg->ampl[0]=myIK->getArmAmplitude(initPos, myCpg->ampl[0]);
-	}
+	//	if(partName=="left_arm" || partName=="right_arm")
+	//	{
+	//		myCpg->ampl[0]=myIK->getArmAmplitude(initPos, myCpg->ampl[0]);
+	//	}
 
 	ACE_OS::printf("amplitude is %f\n", myCpg->ampl[0]);
 	///getting the joint mapping

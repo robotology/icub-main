@@ -162,9 +162,18 @@ bool CrawlManagerModule::open(Searchable &s)
 	{
 		options.fromConfigFile(arguments.find("file").asString().c_str());
 	}
-	else
-	{
-		options.fromConfigFile("../../Crawling/config/managerConfig.ini");
+    else
+    {
+    	//ludo: we get the absolute path according to the environment variable (safer since we can run this module from anywhere
+    	//done to avoid relative path problems
+    	char *cubPath;
+    	cubPath = getenv("ICUB_DIR");
+    	if(cubPath == NULL) {
+    		ACE_OS::printf("generatorThread::init>> ERROR getting the environment variable ICUB_DIR, exiting\n");
+    		return false;
+    	}
+    	yarp::String cubPathStr(cubPath);
+    	options.fromConfigFile((cubPathStr + "/app/Crawling/config/managerConfig.ini").c_str());
 	}
     
     options.toString();
@@ -495,7 +504,9 @@ void CrawlManagerModule::InitPosition(void)
         //the robot first goes to an intermediate position before going on all fours
         //the swinging arm is lifted and then put on the ground                    
         int side=0;
-        while(side==0) side=getSwingingArm();
+        while(side==0) {
+        	side=getSwingingArm();
+        }
         
 		cout << "side : " << side << endl;
 
