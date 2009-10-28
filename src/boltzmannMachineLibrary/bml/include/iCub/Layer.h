@@ -8,25 +8,67 @@
 #include <iCub/Row.h>
 #include <iCub/Element.h>
 
+#include <yarp/os/all.h>
+#include <yarp/sig/all.h>
+#include <yarp/sig/Matrix.h>
+#include <yarp/sig/Vector.h>
+
+
 #include <iostream>
 #include <fstream>
 #include <list>
 #include <map>
 #include <string>
 
+using namespace yarp::sig;
+using namespace yarp::math;
 using namespace std;
+
+/**
+* Class that represent a layer of units.
+* @author Francesco Rea
+*/
 
 class Layer : public Element{
 private:
+	/**
+	* name of the layer
+	*/
 	std::string name;
+	/** 
+	* evolution rule 1
+	*/
 	static const int BINARY_THR=1;
+	/** 
+	* evolution rule 2
+	*/
 	static const int PROBAB_THR=2;
+	/** 
+	* evolution rule 3
+	*/
 	static const int BOTH_RULES=3;
+	/**
+	* iterator for the evolution process
+	*/
 	map<std::string,Unit>::iterator iterEvolve;
+	/**
+	* number of rows
+	*/
 	int row;
+	/**
+	* number of columns
+	*/
 	int col;
 public:
-	//------- methods 
+	/**
+	* matrix storing the state of every single unit in the layer
+	*/
+	//Matrix stateMatrix;
+	/**
+	* vector storing the state of every single unit in the layer
+	*/
+	Vector* stateVector;
+	//_____________ METHODS ___________________
 	/**
 	*default constructor
 	*/
@@ -45,6 +87,10 @@ public:
 	*/
 	int getEnergy();
 	/**
+	*
+	*/
+	double* getData();
+	/**
 	* returns the number of Rows
 	*/
 	int getRow();
@@ -56,6 +102,9 @@ public:
 	* returns the name of this row
 	*/
 	std::string getName();//
+	/**
+	* returns the number of units present in the layer
+	*/
 	int getNumUnits(); 
 	/**
 	* add a unit to the unitList
@@ -66,10 +115,20 @@ public:
 	*/
 	void addConnection(Unit unitA, Unit unitB, double weight); //
 	/**
-	* add a unit to the ConnectionList
+	* add a connection 
+	* @param unitName name of the unit
+	* @param weight weight of the connection
 	*/
 	void addConnection(std::string unitName, double weight); //
+	/**
+	* add a connection 
+	* @param connection reference to the connection
+	*/
 	void addConnection(Connection connection);
+	/**
+	* add a row 
+	* @param row reference to the row
+	*/
 	void addRow(Row row);
 	/**
 	* function that creates the connection within the layer
@@ -85,6 +144,7 @@ public:
 	std::string toString(); //
 	/**
 	* save the layer into IOS::BINARY file
+	* @param filename name of the file where the configuration will be saved
 	*/
 	void saveConfiguration(std::string filename); //
 	/**
@@ -93,6 +153,7 @@ public:
 	void loadConfiguration(); //
 	/**
 	* the states of the units in the Layer are updated based on the choosen rules
+	* @param rule reference to the rule used for evolution
 	*/
 	void evolveFreely(int rule); //
 	/**
@@ -100,10 +161,22 @@ public:
 	* @param rule the modality by which the evolution is executed
 	*/
 	void evolveClamped(int rule); //
-	//------ attributes
+	//______________________ ATTRIBUTES __________________________________
+	/**
+	* map of all the units
+	*/
 	map<std::string,Unit> unitList;
+	/**
+	* map of the clamped units
+	*/
 	map<std::string,Unit> clampedList;
+	/**
+	* map of all the connections
+	*/
 	map<std::string,Connection> connectionList;
+	/**
+	* map of all the row of units present in the layer
+	*/
 	map<std::string,Row> rowList;
 };
 

@@ -14,6 +14,7 @@ Layer::~Layer(){}
 *default constructor of a layer composed of nRows 
 */
 Layer::Layer(std::string name,int nRows,int nUnits){
+	stateVector=new Vector(nRows*nUnits);
 	this->name=name;
 	this->row=nRows;
 	this->col=nUnits;
@@ -28,7 +29,7 @@ Layer::Layer(std::string name,int nRows,int nUnits){
 		Row *row=new Row(this->name+"R"+i_str,nUnits); //L1R1U1 means Layer1-Row1-Unit1		
 		this->addRow(*row);
 	}
-	this->interConnectUnits();
+//	this->interConnectUnits();
 	iterEvolve=unitList.begin();
 }
 
@@ -46,6 +47,11 @@ void Layer::addUnit(Unit unit){
 
 int Layer::getRow(){
 	return row;
+}
+
+double* Layer::getData(){
+	//return this->stateMatrix.data;
+	return 0;
 }
 
 /**
@@ -129,9 +135,14 @@ void Layer::addRow(Row row){
 	
 	//migrate the units to the unitList of this Layer
 	map<std::string,Unit>::iterator iterU;
+	int i=1;
 	for(iterU=row.getUnitListIteratorBegin(); iterU!=row.getUnitListIteratorEnd();iterU++){
 		this->addUnit(iterU->second);	
-		//cout<<"migration Unit Connection Weight:"<<iterU->second.connectionList.begin()->second.getWeight()<<endl;
+		//add the state of the unit in the stateVector
+		int pos=(rowList.size()-1)*row.unitList.size()+i;
+		printf("pos: %d ",pos);
+		(*stateVector)(pos)=iterU->second.getState();
+		i++;
 	}
 }
 

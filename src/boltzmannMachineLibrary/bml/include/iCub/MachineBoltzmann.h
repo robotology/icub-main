@@ -15,10 +15,16 @@
 #include <list>
 #include <map>
 #include <string>
+
 using namespace std;
 
 static int standard_layer_dim_rows=10;
 static int standard_layer_dim_units=10;
+
+/**
+* Machine Boltzmann Class
+* @author Francesco Rea
+*/
 
 class MachineBoltzmann{
 private:
@@ -159,6 +165,12 @@ public:
 	* set the weights of the connections based on the energy in clamped and freely mode
 	*/
 	void learn(); 
+	/**
+	* function that trains a layer as it was a restricted boltzmann machine
+	* @param data training data
+	* @param layer_reference  ref to the hidden layer
+	*/
+	void rbm(double* data,int layer_reference){};
     //------- attributes
 	map<std::string,Unit> unitList;
 	/**

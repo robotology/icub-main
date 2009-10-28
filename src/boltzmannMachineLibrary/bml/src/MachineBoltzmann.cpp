@@ -1,6 +1,6 @@
 // -*- mode:C++; tab-width:4; c-basic-offset:4; indent-tabs-mode:nil -*-
 #include <iCub/MachineBoltzmann.h>
-//#include <conio.h>
+
 
 
 #define MEAN_WEIGHT 50 //-->check the variable in layer.cpp
@@ -56,7 +56,7 @@ MachineBoltzmann::MachineBoltzmann(int nLayers){
 	}
 	cout<<"interconnections between layers taking place ..."<<endl;
 	//getch();
-	this->interconnectLayers();
+	//this->interconnectLayers();
 	iterEvolve=elementList.begin();
 }
 
@@ -75,14 +75,14 @@ int MachineBoltzmann::getLayer(int name){
 }
 
 void MachineBoltzmann::migrateLayer(Layer layer){
-	//migrate all the connections in the connectionList of the Boltzmann Machine
-	map<std::string,Connection>::iterator iterC;
 	int count=0;
+	//migrate all the connections in the connectionList of the Boltzmann Machine
+	/*map<std::string,Connection>::iterator iterC;
 	for(iterC=layer.connectionList.begin(); iterC!=layer.connectionList.end();iterC++){
 		this->addConnection(iterC->second);
 		count++;	
 	}
-	printf("CountCOnnections: %d",count);
+	printf("CountCOnnections: %d",count);*/
 
 	//migrate all the units in the unitList of the Boltzmann Machine
 	// after the insertion of the all new connections coming from other layers in every unit
@@ -187,7 +187,7 @@ void MachineBoltzmann::interconnectLayers(){
 }*/
 
 /**
-*creates the Connections between the layer passed as parameter and the already present layers
+* creates the Connections between the layer passed as parameter and the already present layers
 * for every layer that has to be interconnected the structure of the array of connection changes radically
 * the values in the array have to be ordered in relation to the list of units
 */
