@@ -227,7 +227,8 @@ bool BMLEngine::updateModule() {
 			unsigned int parPos2=option.find(")");
 			unsigned int spacePos=option.find(" ");
 			
-			if(spacePos!=string::npos){
+			if(spacePos!=-1){
+				printf("Presence of a space detected \n");
 				optionName1=option.substr(parPos1+1,spacePos-parPos1);
 				optionValue1= option.substr(spacePos+1,parPos2-spacePos-1);
 				unsigned int dim=option.size();
