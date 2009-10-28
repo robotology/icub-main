@@ -37,13 +37,13 @@ void imageThread::afterStart(bool s){
 void imageThread::run(){
 	printf("Image Thread running..... \n");
 	//1. produces the image
-	printf("|||||||||||||||||||||||||||| \n");
+	//printf("|||||||||||||||||||||||||||| \n");
 	for(int i=0;i<plottedLayer->getCol();i++){
 		for(int j=0;j<plottedLayer->getRow();j++)
 		{
 			int pos=i*plottedLayer->getRow()+j;
 			Vector v=*(plottedLayer->stateVector);
-			printf("%d %f \n",pos,v(pos));
+			//printf("%d %f \n",pos,v(pos));
 			for (int scaleX=0; scaleX<scaleFactorX; scaleX++){
 				for(int scaleY=0;scaleY<scaleFactorY;scaleY++){
 					PixelRgb &pix=image2->pixel(i+scaleX,j+scaleY);
@@ -65,7 +65,8 @@ void imageThread::setLayer(Layer* layer){
 * code executed when the thread is released
 */
 void imageThread::threadRelease(){
-	printf("Image Thread releasing..... \n");	
+	printf("Image Thread releasing..... \n");
+	port.close();
 }
 
 ImageOf<PixelRgb>* imageThread::getYarpImage(){

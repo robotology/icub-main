@@ -121,8 +121,8 @@ bool BMLEngine::outCommandPort(){
 
 bool BMLEngine::open(Searchable& config) {
         count=0;
-		scaleFactorX=5;
-		scaleFactorY=10;
+		scaleFactorX=20;
+		scaleFactorY=20;
 		clampingThreshold=1;
 		countLayer=0;
 		currentLayer=0;
@@ -187,6 +187,10 @@ bool BMLEngine::close() {
 		portCmd.close();//(getName("inCmd"));
 		closePortImage();
 		closeCommandPort();
+		layer0Image->stop();
+		delete layer0Image;
+		layer1Image->stop();
+		delete layer1Image;
 		//mb->saveConfiguration();		
 		return true;
 	}
@@ -196,7 +200,7 @@ bool BMLEngine::close() {
  *Function updateModule is executed when the Module is updated, 
  * 1.It reads the command from a port, convertes it into parameters
  * 2.It evolves the Boltzmann machine 
- * 3.Extract the output images of the active layers of the Boltzmann machine
+ * 3.Extracts the output images of the active layers of the Boltzmann machine
  *
  * @param none
  * @return true if there were no errors in the funciton
@@ -219,6 +223,7 @@ bool BMLEngine::updateModule() {
 		}
 		else
 		{
+			//first parameter list
 			command=commandTOT->substr(0,parOpen-1);
 			option=commandTOT->substr(parOpen+1,commandTOT->size()-parOpen);
 			
@@ -247,12 +252,18 @@ bool BMLEngine::updateModule() {
 				//string name=option.substr(1,spacePos-1);
 				//string value=option.substr(spacePos+1,option.size()-spacePos);
 			}
+			
+			printf("option: |%s| \n",option.c_str());
+			printf("name1: |%s| \n",optionName1.c_str());
+			printf("value1: |%s| \n",optionValue1.c_str());
+			
+			
+			printf("option: |%s| \n",option.c_str());
+			printf("name2: |%s| \n",optionName2.c_str());
+			printf("value2: |%s| \n",optionValue2.c_str());
 		}
+
 		printf("command: |%s| \n",command.c_str());
-		printf("option: |%s| \n",option.c_str());
-		printf("name1: |%s| \n",optionName1.c_str());
-		printf("value1: |%s| \n",optionValue1.c_str());
-		
 
 		if(!strcmp(command.c_str(),"EvolveFreely")){
 			printf("ExecuteFreely \n");
@@ -265,6 +276,9 @@ bool BMLEngine::updateModule() {
 			mb->setTemperature(T_TOUCH);
 			runFreely=false;
 			runClamped=true;
+		}
+		else if(!strcmp(command.c_str(),"ConnectLayer")){
+			printf("ConnectLayer \n");
 		}
 		else if(!strcmp(command.c_str(),"Stop")){
 			printf("ExecuteStop \n");
