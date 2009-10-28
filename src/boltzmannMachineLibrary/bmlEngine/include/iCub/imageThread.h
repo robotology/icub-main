@@ -1,5 +1,5 @@
 // -*- mode:C++; tab-width:4; c-basic-offset:4; indent-tabs-mode:nil -*-
-
+#include <cv.h>
 #include <stdio.h>
 
 #include <iCub/YARPImgRecv.h>
@@ -10,7 +10,7 @@
 #include <yarp/sig/all.h>
 
 //openCV include
-#include <cv.h>
+
 #include <cvaux.h>
 #include <highgui.h>
 
