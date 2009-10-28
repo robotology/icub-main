@@ -421,6 +421,32 @@ static void callback( GtkWidget *widget,gpointer   data ){
 	else if(!strcmp((char *)data,"ConnectLayer")){
 		printf("ConnectLayer request \n");
 		string _command("ConnectLayer");
+		string Aname("");
+		string Bname("");
+		if(wModule->inLayer0_flag){
+			printf("LayerA: layer0 \n");
+			Aname.append("layer0");
+		}
+		else if(wModule->inLayer1_flag){
+			printf("LayerA: layer1 \n");
+			Aname.append("layer1");
+		}
+		if(wModule->SelectLayer0_flag){
+			printf("LayerB: layer0 \n");
+			Bname.append("layer0");
+		}
+		else if(wModule->SelectLayer1_flag){
+			printf("LayerB: layer1 \n");
+			Bname.append("layer1");
+		}
+		Bottle tmp;
+		tmp.addString("LayerA");
+		tmp.addString(Aname.c_str());
+		wModule->bOptions.addList()=tmp;
+		tmp.clear();
+		tmp.addString("LayerB");
+		tmp.addString(Bname.c_str());
+		wModule->bOptions.addList()=tmp;
 		wModule->command->assign(_command);
 	}
 	else if(!strcmp((char *)data,"ClampPattern")){
@@ -679,6 +705,87 @@ static void cb_draw_value( GtkToggleButton *button )
 		}
 		else
 			wModule->SelectLayer0_flag=false;
+	}
+	else if(!strcmp(button->button.label_text,"SelectLayer1-->")){
+		printf("Select B: Layer1 \n");
+		if(button->active){
+			wModule->SelectLayer0_flag=false;
+			wModule->SelectLayer1_flag=true;
+			wModule->SelectLayer2_flag=false;
+			wModule->SelectLayer3_flag=false;
+			wModule->SelectLayer4_flag=false;
+			wModule->SelectLayer5_flag=false;
+			wModule->SelectLayer6_flag=false;
+			wModule->SelectLayer7_flag=false;
+			wModule->SelectLayer8_flag=false;
+		}
+		else
+			wModule->SelectLayer1_flag=false;
+	}
+	else if(!strcmp(button->button.label_text,"SelectLayer2-->")){
+		printf("Select B: Layer2 \n");
+		if(button->active){
+			wModule->SelectLayer0_flag=false;
+			wModule->SelectLayer1_flag=false;
+			wModule->SelectLayer2_flag=true;
+			wModule->SelectLayer3_flag=false;
+			wModule->SelectLayer4_flag=false;
+			wModule->SelectLayer5_flag=false;
+			wModule->SelectLayer6_flag=false;
+			wModule->SelectLayer7_flag=false;
+			wModule->SelectLayer8_flag=false;
+		}
+		else
+			wModule->SelectLayer2_flag=false;
+	}
+	else if(!strcmp(button->button.label_text,"SelectLayer3-->")){
+		printf("Select B Layer3 \n");
+		if(button->active){
+			wModule->SelectLayer0_flag=false;
+			wModule->SelectLayer1_flag=false;
+			wModule->SelectLayer2_flag=false;
+			wModule->SelectLayer3_flag=true;
+			wModule->SelectLayer4_flag=false;
+			wModule->SelectLayer5_flag=false;
+			wModule->SelectLayer6_flag=false;
+			wModule->SelectLayer7_flag=false;
+			wModule->SelectLayer8_flag=false;
+		}
+		else
+			wModule->SelectLayer3_flag=true;
+	}
+	else if(!strcmp(button->button.label_text,"SelectLayer4-->")){
+		printf("Select B: Layer4 \n");
+		if(button->active){
+			wModule->SelectLayer0_flag=false;
+			wModule->SelectLayer1_flag=false;
+			wModule->SelectLayer2_flag=false;
+			wModule->SelectLayer3_flag=false;
+			wModule->SelectLayer4_flag=true;
+			wModule->SelectLayer5_flag=false;
+			wModule->SelectLayer6_flag=false;
+			wModule->SelectLayer7_flag=false;
+			wModule->SelectLayer8_flag=false;
+		}
+		else
+			wModule->SelectLayer4_flag=false;
+
+	}
+	else if(!strcmp(button->button.label_text,"SelectLayer5-->")){
+		printf("Select B: Layer5 \n");
+		if(button->active){
+			wModule->SelectLayer0_flag=false;
+			wModule->SelectLayer1_flag=false;
+			wModule->SelectLayer2_flag=false;
+			wModule->SelectLayer3_flag=false;
+			wModule->SelectLayer4_flag=false;
+			wModule->SelectLayer5_flag=true;
+			wModule->SelectLayer6_flag=false;
+			wModule->SelectLayer7_flag=false;
+			wModule->SelectLayer8_flag=false;
+		}
+		else
+			wModule->SelectLayer5_flag=false;
 	}
 	else if(!strcmp(button->button.label_text,"Layer0")){
 		printf("Layer0 request \n");
@@ -1705,7 +1812,7 @@ GtkWidget* BMLInterface::createMainWindow(void)
     //gtk_container_add (GTK_CONTAINER (boxButtons), button);
 	//gtk_container_add (GTK_CONTAINER (boxButtons), button2);
 
-	label = gtk_label_new ("Layer Representations:");
+	label = gtk_label_new ("LayerA Selection: ");
 	gtk_box_pack_start (GTK_BOX (boxButtons), label, FALSE, FALSE, 0);
     gtk_widget_show (label);
 
@@ -1833,8 +1940,8 @@ GtkWidget* BMLInterface::createMainWindow(void)
 	
 	//--box3 section A
 
-	adj1 = gtk_adjustment_new (10.0, 0.0, 50.0, 1.0, 1.0, 1.0);
-	adj2 = gtk_adjustment_new (10.0, 0.0, 50.0, 1.0, 1.0, 1.0);
+	adj1 = gtk_adjustment_new (10.0, 0.0, 100.0, 1.0, 1.0, 1.0);
+	adj2 = gtk_adjustment_new (10.0, 0.0, 100.0, 1.0, 1.0, 1.0);
 	box3 = gtk_hbox_new (FALSE, 0);
 	
 	box5 = gtk_vbox_new (FALSE, 0);
@@ -2164,6 +2271,8 @@ GtkWidget* BMLInterface::createMainWindow(void)
 	gtk_container_set_border_width (GTK_CONTAINER (box3), 0);
     gtk_box_pack_start (GTK_BOX (boxA), box3, TRUE, TRUE, 0);
     gtk_widget_show (box3);
+
+	
 	
 	//--box3 section A
 	box3 = gtk_hbox_new (FALSE, 0);
@@ -2173,9 +2282,19 @@ GtkWidget* BMLInterface::createMainWindow(void)
     gtk_box_pack_start (GTK_BOX (box3), hscale, TRUE, TRUE, 0);
     gtk_widget_show (hscale);*/
 
-	label = gtk_label_new ("where to apply operations:");
-	gtk_box_pack_start (GTK_BOX (box3), label, FALSE, FALSE, 0);
+	GtkWidget* box33 = gtk_vbox_new (FALSE, 1);
+	label = gtk_label_new ("Considering operation between LayerA and LayerB");
+	gtk_box_pack_start (GTK_BOX (box33), label, FALSE, FALSE, 0);
     gtk_widget_show (label);
+	label = gtk_label_new ("                                              ");
+	gtk_box_pack_start (GTK_BOX (box33), label, FALSE, FALSE, 0);
+    gtk_widget_show (label);
+	label = gtk_label_new ("LayerA in LayerA Box;             LayerB--->");
+	gtk_box_pack_start (GTK_BOX (box33), label, FALSE, FALSE, 0);
+    gtk_widget_show (label);
+
+	gtk_box_pack_start (GTK_BOX (box3), box33, TRUE, TRUE, 0);
+    gtk_widget_show (box33);
 
 
 	scrollbar = gtk_hscrollbar_new (GTK_ADJUSTMENT (adj1));
@@ -2262,7 +2381,7 @@ GtkWidget* BMLInterface::createMainWindow(void)
 	char* valueCL="ConnectLayer";
     g_signal_connect (G_OBJECT (button), "clicked",G_CALLBACK (callback), (gpointer) valueCL);
     /* This calls our box creating func tion */
-    boxButton = xpm_label_box (NULL, "ConnectLayer");
+    boxButton = xpm_label_box (NULL, "ConnectLayer(A,B)");
     /* Pack and show all our widgets */
     gtk_widget_show (boxButton);
     gtk_container_add (GTK_CONTAINER (button), boxButton);
@@ -2276,7 +2395,7 @@ GtkWidget* BMLInterface::createMainWindow(void)
 	char* valueAL="AddLayer";
     g_signal_connect (G_OBJECT (button), "clicked",G_CALLBACK (callback), (gpointer) valueAL);
     /* This calls our box creating func tion */
-    boxButton = xpm_label_box (NULL, "AddLayer");
+    boxButton = xpm_label_box (NULL, "AddLayer()");
     /* Pack and show all our widgets */
     gtk_widget_show (boxButton);
     gtk_container_add (GTK_CONTAINER (button), boxButton);
@@ -2289,7 +2408,7 @@ GtkWidget* BMLInterface::createMainWindow(void)
 	/* Connect the "clicked" signal of the button to our callback */
     g_signal_connect (G_OBJECT (button), "clicked",G_CALLBACK (callback), (gpointer) "ClampLayer");
     /* This calls our box creating func tion */
-    boxButton = xpm_label_box (NULL, "ClampLayer");
+    boxButton = xpm_label_box (NULL, "ClampLayer(A)");
     /* Pack and show all our widgets */
     gtk_widget_show (boxButton);
     gtk_container_add (GTK_CONTAINER (button), boxButton);

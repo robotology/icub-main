@@ -33,17 +33,29 @@ using namespace yarp::os;
 using namespace yarp::sig;
 using namespace yarp::sig::draw;
 
-/*
-  This applies Watershed techinique (rain falling) on the image buffered on the input port
- */
-
+/**
+* 
+* @author Francesco Rea
+*/
 
 class BMLInterface : public Module {
 private:
-    BufferedPort<ImageOf<PixelRgb> > port_in; // a port for reading the edge image 
-	BufferedPort<ImageOf<PixelRgb> > portRedPlane; // a port for reading the input Image of the Red Plane
-	BufferedPort<ImageOf<PixelRgb> > portGreenPlane; // a port for reading the input Image of the Green Plane
-	BufferedPort<ImageOf<PixelRgb> > portBluePlane; // a port for reading the input Image of the Blue Plane 
+	/**
+	* a port for reading the edge image
+	*/
+    BufferedPort<ImageOf<PixelRgb> > port_in; //  
+	/**
+	* a port for reading the input Image of the Red Plane
+	*/
+	BufferedPort<ImageOf<PixelRgb> > portRedPlane; // 
+	/**
+	* a port for reading the input Image of the Green Plane
+	*/
+	BufferedPort<ImageOf<PixelRgb> > portGreenPlane; //
+	/**
+	* a port for reading the input Image of the Blue Plane 
+	*/
+	BufferedPort<ImageOf<PixelRgb> > portBluePlane; // 
 	/**
 	*a port for reading the R+G- colour opponency Image
 	*/
@@ -64,10 +76,13 @@ private:
 	*port where the image of the found blob is put
 	*/
 	BufferedPort<ImageOf<PixelBgr> > port_Blobs; 
-
-	
-	
+	/**
+	* port used for all the commands
+	*/
     Port cmdPort;
+	/**
+	* counter
+	*/
     int ct;
 	/**
 	* options of the connection
