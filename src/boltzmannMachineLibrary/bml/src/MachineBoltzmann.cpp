@@ -233,7 +233,7 @@ void MachineBoltzmann::interconnectLayer(int layerNumber){
 				string name("C");
 				name.append(iterU1->first);
 				name.append(iterU2->first);
-				printf("connection name %s",name.c_str());
+				printf("connection name in interconnectLayer %s",name.c_str());
 				Connection *c=new Connection(name,weight_rnd);
 				_connectionList.insert(iterC1,*c);	
 				_probFreely.insert(iterFreely,0);
@@ -261,7 +261,7 @@ void MachineBoltzmann::interconnectLayer(int layerNumber){
 				string name("C");
 				name.append(iterU1->first);
 				name.append(iterU2->first);
-				printf("connection name %s",name.c_str());
+				printf("connection name second part interconnectLayer %s",name.c_str());
 				Connection *c=new Connection(name,weight_rnd);
 				_connectionList.insert(iterC1,*c);
 				//adds elements to the list of probability
@@ -286,7 +286,7 @@ void MachineBoltzmann::interconnectLayer(int layerNumber){
 				string name("C");
 				name.append(iterU2->first);
 				name.append(iterU1->first);
-				printf("connection name %s",name.c_str());
+				printf("connection name in 3 part interconnectLayer %s",name.c_str());
 				Connection *c=new Connection(name,weight_rnd);
 				_connectionList.push_back(*c);
 				_probFreely.push_back(0);

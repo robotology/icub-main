@@ -74,7 +74,7 @@ void Layer::interConnectUnits(){
 			string name("C");
 			name.append(iterI->second.getName());
 			name.append(iterJ->second.getName());
-			printf("connection name %s",name.c_str());
+			printf("connection name in interconnectUnits %s",name.c_str());
 			//double value=double(rand())/RAND_MAX;
 			double value=1;
 			double weight_rnd=(value)*MEAN_WEIGHT;
