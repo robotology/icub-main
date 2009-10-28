@@ -319,7 +319,7 @@ bool BMLEngine::updateModule() {
 			list<Unit>::iterator iter;
 			int totUnits=6;
 			bool end_loop=false;
-			if(mb->_unitList.begin==NULL){
+			if(mb->_unitList.size()==0){
 				return true;
 			}
 			for(iter=mb->_unitList.begin(); !end_loop;iter++){
