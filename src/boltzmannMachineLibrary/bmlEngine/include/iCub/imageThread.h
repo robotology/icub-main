@@ -2,7 +2,7 @@
 
 #include <stdio.h>
 
-#include <iCub/YarpImgRecv.h>
+#include <iCub/YARPImgRecv.h>
 #include <iCub/MachineBoltzmann.h>
 
 //YARP include
@@ -177,7 +177,7 @@ public:
 	/**
 	* port plane
 	*/
-	BufferedPort<ImageOf<PixelMono>> port_plane; 
+	BufferedPort<ImageOf<PixelMono> > port_plane; 
 	/** 
 	* counter for the update step
 	*/
