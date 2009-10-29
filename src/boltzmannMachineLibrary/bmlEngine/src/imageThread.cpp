@@ -54,6 +54,7 @@ void imageThread::run(){
 			}
 		}
 	}
+	printf("Send the image out on port \n");
 	//2. force the image out on the port
 	port.prepare()=*(image2);
 	port.write();
