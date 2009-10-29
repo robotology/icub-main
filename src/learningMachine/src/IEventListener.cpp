@@ -12,7 +12,6 @@
 #include "iCub/EventListenerFactory.h"
 
 namespace iCub {
-namespace contrib {
 namespace learningmachine {
 
 IEventListener::IEventListener() {
@@ -39,6 +38,5 @@ bool IEventListener::configure(Searchable& config) {
 }
 
 } // learningmachine
-} // contrib
 } // iCub
 

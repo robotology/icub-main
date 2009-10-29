@@ -11,7 +11,6 @@
 #include "iCub/EventDispatcher.h"
 
 namespace iCub {
-namespace contrib {
 namespace learningmachine {
 
 
@@ -60,6 +59,5 @@ void EventDispatcher::raise(IEvent& event) {
 
 
 } // learningmachine
-} // contrib
 } // iCub
 

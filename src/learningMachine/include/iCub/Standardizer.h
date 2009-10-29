@@ -14,7 +14,6 @@
 using namespace yarp::os;
 
 namespace iCub {
-namespace contrib {
 namespace learningmachine {
 
 
@@ -26,7 +25,7 @@ namespace learningmachine {
  * implementation both the mean and standard deviation are calculated using a 
  * 'running' computation.
  *
- * \see iCub::contrib::learningmachine::IScaler
+ * \see iCub::learningmachine::IScaler
  *
  * \author Arjan Gijsberts
  *
@@ -132,7 +131,6 @@ public:
 
 
 } // learningmachine
-} // contrib
 } // iCub
 
 #endif

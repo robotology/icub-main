@@ -22,7 +22,6 @@ using namespace yarp::os;
 using namespace yarp::sig;
 
 namespace iCub {
-namespace contrib {
 namespace learningmachine {
 
 std::string printVector(const std::vector<int>& v) {
@@ -490,10 +489,9 @@ public:
 
 };
 } // learningmachine
-} // contrib
 } // iCub
 
-using namespace iCub::contrib::learningmachine;
+using namespace iCub::learningmachine;
 
 int main(int argc, char *argv[]) {
     Network yarp;

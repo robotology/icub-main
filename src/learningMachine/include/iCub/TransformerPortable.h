@@ -14,13 +14,11 @@
 
 
 namespace iCub {
-namespace contrib {
 namespace learningmachine {
 
 typedef PortableT<ITransformer> TransformerPortable;
 
 } // learningmachine
-} // contrib
 } // iCub
 
 #endif

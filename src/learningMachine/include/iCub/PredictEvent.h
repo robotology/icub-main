@@ -19,7 +19,6 @@
 using namespace yarp::sig;
 
 namespace iCub {
-namespace contrib {
 namespace learningmachine {
 
 
@@ -27,7 +26,7 @@ namespace learningmachine {
  * A PredictEvent is raised when the machine makes a prediction. It contains 
  * the input and predicted output vectors.
  *
- * \see iCub::contrib::learningmachine::IEvent
+ * \see iCub::learningmachine::IEvent
  * 
  * \author Arjan Gijsberts
  */
@@ -89,7 +88,6 @@ public:
 };
 
 } // learningmachine
-} // contrib
 } // iCub
 
 #endif

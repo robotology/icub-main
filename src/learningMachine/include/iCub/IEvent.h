@@ -14,7 +14,6 @@
 //#include "iCub/IEventListener.h"
 
 namespace iCub {
-namespace contrib {
 namespace learningmachine {
 
 /**
@@ -51,7 +50,6 @@ public:
 };
 
 } // learningmachine
-} // contrib
 } // iCub
 
 #endif

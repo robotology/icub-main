@@ -14,7 +14,6 @@
 #include "iCub/IEventListener.h"
 
 namespace iCub {
-namespace contrib {
 namespace learningmachine {
 
 
@@ -25,8 +24,8 @@ namespace learningmachine {
  * a double dispatching mechanism that allows extension of both IEventListeners 
  * and IEvents.
  *
- * \see iCub::contrib::learningmachine::IEventListener
- * \see iCub::contrib::learningmachine::IEvent
+ * \see iCub::learningmachine::IEventListener
+ * \see iCub::learningmachine::IEvent
  *
  * \author Arjan Gijsberts
  *
@@ -131,7 +130,6 @@ public:
 };
 
 } // learningmachine
-} // contrib
 } // iCub
 
 #endif

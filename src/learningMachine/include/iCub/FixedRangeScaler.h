@@ -14,7 +14,6 @@
 using namespace yarp::os;
 
 namespace iCub {
-namespace contrib {
 namespace learningmachine {
 
 
@@ -23,7 +22,7 @@ namespace learningmachine {
  * A class that implements preprocessing based on a fixed range of outputs to a 
  * fixed range of outputs. 
  *
- * \see iCub::contrib::learningmachine::IScaler
+ * \see iCub::learningmachine::IScaler
  *
  * \author Arjan Gijsberts
  *
@@ -157,7 +156,6 @@ public:
 };
 
 } // learningmachine
-} // contrib
 } // iCub
 
 #endif

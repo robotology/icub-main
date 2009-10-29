@@ -13,13 +13,11 @@
 #include "iCub/IEventListener.h"
 
 namespace iCub {
-namespace contrib {
 namespace learningmachine {
 
 typedef FactoryT<std::string, IEventListener> EventListenerFactory;
 
 } // learningmachine
-} // contrib
 } // iCub
 
 #endif

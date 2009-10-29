@@ -19,7 +19,6 @@
 
 
 namespace iCub {
-namespace contrib {
 namespace learningmachine {
 
 void registerTransformers() {
@@ -36,7 +35,6 @@ void registerTransformers() {
 }
 
 } // learningmachine
-} // contrib
 } // iCub
 
 #endif

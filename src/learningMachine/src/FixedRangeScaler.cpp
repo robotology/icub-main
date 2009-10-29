@@ -14,7 +14,6 @@
 #include "iCub/FixedRangeScaler.h"
 
 namespace iCub {
-namespace contrib {
 namespace learningmachine {
 
 FixedRangeScaler::FixedRangeScaler(double li, double ui, double lo, double uo) {
@@ -114,6 +113,5 @@ bool FixedRangeScaler::configure(Searchable& config) {
 }
 
 } // learningmachine
-} // contrib
 } // iCub
 

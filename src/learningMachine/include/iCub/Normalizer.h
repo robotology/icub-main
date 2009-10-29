@@ -14,7 +14,6 @@
 using namespace yarp::os;
 
 namespace iCub {
-namespace contrib {
 namespace learningmachine {
 
 
@@ -24,7 +23,7 @@ namespace learningmachine {
  * normalizer limits all values between a predesignated range. By default this
  * range is defined as [-1, 1].
  *
- * \see iCub::contrib::learningmachine::IScaler
+ * \see iCub::learningmachine::IScaler
  *
  * \author Arjan Gijsberts
  *
@@ -119,7 +118,6 @@ public:
 };
 
 } // learningmachine
-} // contrib
 } // iCub
 
 #endif

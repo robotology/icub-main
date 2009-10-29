@@ -15,14 +15,13 @@
 using namespace yarp::os;
 
 namespace iCub {
-namespace contrib {
 namespace learningmachine {
 
 /**
  * Generic abstract class for transformer based processors.
  *
- * \see iCub::contrib::learningmachine::PredictProcessor
- * \see iCub::contrib::learningmachine::TrainProcessor
+ * \see iCub::learningmachine::PredictProcessor
+ * \see iCub::learningmachine::TrainProcessor
  *
  * \author Arjan Gijsberts
  *
@@ -77,8 +76,8 @@ public:
  * the associated port. This architecture allows multiple transformers to be 
  * daisy chained, as long as the chain is terminated by a PredictModule.
  *
- * \see iCub::contrib::learningmachine::PredictModule
- * \see iCub::contrib::learningmachine::ITransformProcessor
+ * \see iCub::learningmachine::PredictModule
+ * \see iCub::learningmachine::ITransformProcessor
  *
  * \author Arjan Gijsberts
  *
@@ -120,8 +119,8 @@ public:
 /**
  * Port processor helper class for incoming training samples. 
  *
- * \see iCub::contrib::learningmachine::TrainModule
- * \see iCub::contrib::learningmachine::IMachineProcessor
+ * \see iCub::learningmachine::TrainModule
+ * \see iCub::learningmachine::IMachineProcessor
  *
  * \author Arjan Gijsberts
  *
@@ -276,7 +275,6 @@ public:
 };
 
 } // learningmachine
-} // contrib
 } // iCub
 
 #endif

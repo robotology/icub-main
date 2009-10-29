@@ -11,7 +11,6 @@
 #include "iCub/TrainEventListener.h"
 
 namespace iCub {
-namespace contrib {
 namespace learningmachine {
 
 
@@ -25,5 +24,4 @@ void TrainEventListener::handle(TrainEvent& e) {
 
 
 } // learningmachine
-} // contrib
 } // iCub

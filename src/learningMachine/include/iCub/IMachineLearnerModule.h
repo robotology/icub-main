@@ -21,7 +21,6 @@
 using namespace yarp::os;
 
 namespace iCub {
-namespace contrib {
 namespace learningmachine {
 
 /**
@@ -29,10 +28,10 @@ namespace learningmachine {
  * abstract class contains base functionality that is shared by 
  * PredictModule, TrainModule and TransformModule.
  *
- * \see iCub::contrib::learningmachine::IMachineLearner
- * \see iCub::contrib::learningmachine::TrainModule
- * \see iCub::contrib::learningmachine::PredictModule
- * \see iCub::contrib::learningmachine::TransformerModule
+ * \see iCub::learningmachine::IMachineLearner
+ * \see iCub::learningmachine::TrainModule
+ * \see iCub::learningmachine::PredictModule
+ * \see iCub::learningmachine::TransformerModule
  *
  * \author Arjan Gijsberts
  */
@@ -102,7 +101,6 @@ public:
 };
 
 } // learningmachine
-} // contrib
 } // iCub
 
 #endif

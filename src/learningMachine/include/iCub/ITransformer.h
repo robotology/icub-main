@@ -20,7 +20,6 @@ using namespace yarp::os;
 using namespace yarp::sig;
 
 namespace iCub {
-namespace contrib {
 namespace learningmachine {
 
 
@@ -30,8 +29,8 @@ namespace learningmachine {
  * to preprocess the data samples that have been received by the 
  * MachineLearner.
  *
- * \see iCub::contrib::learningmachine::Standardizer
- * \see iCub::contrib::learningmachine::Normalizer
+ * \see iCub::learningmachine::Standardizer
+ * \see iCub::learningmachine::Normalizer
  *
  * \author Arjan Gijsberts
  *
@@ -197,7 +196,6 @@ public:
 };
 
 } // learningmachine
-} // contrib
 } // iCub
 
 #endif

@@ -19,7 +19,6 @@
 using namespace yarp::os;
 
 namespace iCub {
-namespace contrib {
 namespace learningmachine {
 
 /**
@@ -92,7 +91,6 @@ public:
 };
 
 } // learningmachine
-} // contrib
 } // iCub
 
 #endif

@@ -12,7 +12,6 @@
 
 
 namespace iCub {
-namespace contrib {
 namespace learningmachine {
 
 void IFixedSizeTransformer::transform(const Vector& input, Vector& output) {
@@ -75,5 +74,4 @@ std::string IFixedSizeTransformer::getConfigHelp() {
 
 
 } // learningmachine
-} // contrib
 } // iCub

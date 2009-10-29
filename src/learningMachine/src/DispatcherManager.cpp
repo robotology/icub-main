@@ -17,7 +17,6 @@
 #include "iCub/IEventListener.h"
 
 namespace iCub {
-namespace contrib {
 namespace learningmachine {
 
 
@@ -147,6 +146,5 @@ bool DispatcherManager::respond(const Bottle& cmd, Bottle& reply) {
 
 
 } // learningmachine
-} // contrib
 } // iCub
 

@@ -23,7 +23,7 @@
 #define NOISE_MAX   0.05
 
 
-using namespace iCub::contrib::learningmachine;
+using namespace iCub::learningmachine;
 using namespace yarp::sig;
 using namespace yarp::math;
 
@@ -97,7 +97,7 @@ int main(int argc, char** argv) {
   std::string name("RLS");
   MachinePortable* mp = new MachinePortable(std::string("RLS"));
   Property p("(dom 250) (cod 2) (lambda (0.5 0.01))");
-  mp->getMachine()->configure(p);
+  mp->getWrapped()->configure(p);
   //std::cout << "Learner:" << std::endl << mp->getMachine()->getInfo() << std::endl;
   
 /*  // create Random Feature transformer

@@ -10,7 +10,6 @@
 #include <stdexcept>
 
 namespace iCub {
-namespace contrib {
 namespace learningmachine {
 
 
@@ -29,7 +28,6 @@ bool IMachineLearnerModule::close() {
 }
 
 } // learningmachine
-} // contrib
 } // iCub
 
 

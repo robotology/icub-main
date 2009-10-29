@@ -11,7 +11,6 @@
 #include "iCub/TrainEvent.h"
 
 namespace iCub {
-namespace contrib {
 namespace learningmachine {
 
 TrainEvent::TrainEvent(Vector input, Vector desired, Vector predicted) {
@@ -35,5 +34,4 @@ std::string TrainEvent::toString() {
 
 
 } // learningmachine
-} // contrib
 } // iCub

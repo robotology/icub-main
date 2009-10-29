@@ -16,7 +16,6 @@
 
 
 namespace iCub {
-namespace contrib {
 namespace learningmachine {
 
 LSSVMLearner::LSSVMLearner(int dom, int cod, double c) {
@@ -236,7 +235,6 @@ bool LSSVMLearner::configure(Searchable& config) {
 }
 
 } // learningmachine
-} // contrib
 } // iCub
 
 

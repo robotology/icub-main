@@ -12,7 +12,6 @@
 
 
 namespace iCub {
-namespace contrib {
 namespace learningmachine {
 
 
@@ -84,5 +83,4 @@ std::string IFixedSizeLearner::getConfigHelp() {
 
 
 } // learningmachine
-} // contrib
 } // iCub

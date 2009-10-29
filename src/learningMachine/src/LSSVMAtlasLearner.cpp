@@ -14,7 +14,6 @@
 #include <iostream>
 
 namespace iCub {
-namespace contrib {
 namespace learningmachine {
 
 bool LSSVMAtlasLearner::kernelsRegistered = false;
@@ -314,7 +313,6 @@ bool LSSVMAtlasLearner::configure(Searchable& config) {
 }
 
 } // learningmachine
-} // contrib
 } // iCub
 
 

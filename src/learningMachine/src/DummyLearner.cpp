@@ -9,7 +9,6 @@
 #include "iCub/DummyLearner.h"
 
 namespace iCub {
-namespace contrib {
 namespace learningmachine {
 
 // just here for debugging, since Vector.toString() cannot be applied to const Vector :(
@@ -25,5 +24,4 @@ std::string printVector(const Vector& v) {
 }
 
 } // learningmachine
-} // contrib
 } // iCub

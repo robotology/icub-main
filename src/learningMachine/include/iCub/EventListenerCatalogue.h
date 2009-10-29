@@ -18,7 +18,6 @@
 
 
 namespace iCub {
-namespace contrib {
 namespace learningmachine {
 
 void registerEventListeners() {
@@ -27,7 +26,6 @@ void registerEventListeners() {
 }
 
 } // learningmachine
-} // contrib
 } // iCub
 
 #endif

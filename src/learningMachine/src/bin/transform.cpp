@@ -13,7 +13,7 @@
 #include "iCub/TransformerCatalogue.h"
 #include "iCub/EventListenerCatalogue.h"
 
-using namespace iCub::contrib::learningmachine;
+using namespace iCub::learningmachine;
 
 int main (int argc, char* argv[]) {
     Network yarp;

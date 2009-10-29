@@ -20,7 +20,7 @@
 #define NOISE_MAX   0.05
 
 
-using namespace iCub::contrib::learningmachine;
+using namespace iCub::learningmachine;
 using namespace yarp::sig;
 using namespace yarp::math;
 

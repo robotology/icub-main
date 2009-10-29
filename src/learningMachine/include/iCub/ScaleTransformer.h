@@ -19,7 +19,6 @@ using namespace yarp::os;
 using namespace yarp::sig;
 
 namespace iCub {
-namespace contrib {
 namespace learningmachine {
 
 class TransformerSupport;
@@ -30,9 +29,9 @@ class TransformerSupport;
  * and other kind of linear scalings based on an offset and scale. The type and 
  * configuration can be set for individual elements in the input vectors.
  *
- * \see iCub::contrib::learningmachine::IFixedSizeTransformer
- * \see iCub::contrib::learningmachine::ITransformer
- * \see iCub::contrib::learningmachine::IScaler
+ * \see iCub::learningmachine::IFixedSizeTransformer
+ * \see iCub::learningmachine::ITransformer
+ * \see iCub::learningmachine::IScaler
  *
  * \author Arjan Gijsberts
  *
@@ -173,7 +172,6 @@ protected:
 
 
 } // learningmachine
-} // contrib
 } // iCub
 
 #endif

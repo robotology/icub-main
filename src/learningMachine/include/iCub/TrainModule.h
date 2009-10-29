@@ -15,15 +15,14 @@ using namespace yarp::os;
 using namespace yarp::sig;
 
 namespace iCub {
-namespace contrib {
 namespace learningmachine {
 
 
 /**
  * Port processor helper class for incoming training samples. 
  *
- * \see iCub::contrib::learningmachine::TrainModule
- * \see iCub::contrib::learningmachine::IMachineProcessor
+ * \see iCub::learningmachine::TrainModule
+ * \see iCub::learningmachine::IMachineProcessor
  *
  * \author Arjan Gijsberts
  *
@@ -62,10 +61,10 @@ public:
  * This module is inspired by the original Learner module by Francesco Orabona
  * and Paul Fitzpatrick.
  *
- * \see iCub::contrib::learningmachine::IMachineLearner
- * \see iCub::contrib::learningmachine::IMachineLearnerModule
- * \see iCub::contrib::learningmachine::PredictModule
- * \see iCub::contrib::learningmachine::Learner
+ * \see iCub::learningmachine::IMachineLearner
+ * \see iCub::learningmachine::IMachineLearnerModule
+ * \see iCub::learningmachine::PredictModule
+ * \see iCub::learningmachine::Learner
  *
  * \author Arjan Gijsberts, Francesco Orabona, Paul Fitzpatrick
  *
@@ -142,7 +141,6 @@ public:
 };
 
 } // learningmachine
-} // contrib
 } // iCub
 
 #endif

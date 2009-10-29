@@ -38,7 +38,6 @@ using namespace yarp::math;
 //using namespace iCub::contrib::liblssvm;
 
 namespace iCub {
-namespace contrib {
 namespace learningmachine {
 
 /**
@@ -301,6 +300,5 @@ public:
 };
 
 } // learningmachine
-} // contrib
 } // iCub
 #endif

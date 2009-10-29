@@ -16,7 +16,6 @@
 #include "iCub/PredictEvent.h"
 
 namespace iCub {
-namespace contrib {
 namespace learningmachine {
 
 bool PredictProcessor::read(ConnectionReader& connection) {
@@ -186,5 +185,4 @@ bool PredictModule::respond(const Bottle& cmd, Bottle& reply) {
 
 
 } // learningmachine
-} // contrib
 } // iCub

@@ -15,7 +15,6 @@
 #define __ICUB_MULTILEARNER_TEMPLATE__
 
 namespace iCub {
-namespace contrib {
 namespace learningmachine {
 
 /**
@@ -33,7 +32,6 @@ public:
 };
 
 } // learningmachine
-} // contrib
 } // iCub
 
 #endif

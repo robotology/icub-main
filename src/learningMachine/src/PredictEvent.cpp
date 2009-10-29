@@ -11,7 +11,6 @@
 #include "iCub/PredictEvent.h"
 
 namespace iCub {
-namespace contrib {
 namespace learningmachine {
 
 
@@ -35,5 +34,4 @@ std::string PredictEvent::toString() {
 
 
 } // learningmachine
-} // contrib
 } // iCub

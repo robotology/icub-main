@@ -14,7 +14,6 @@
 #include <iostream>
 
 namespace iCub {
-namespace contrib {
 namespace learningmachine {
 
 RLSLearner::RLSLearner(int dom, int cod, double lambda) {
@@ -211,7 +210,6 @@ bool RLSLearner::configure(Searchable& config) {
 }
 
 } // learningmachine
-} // contrib
 } // iCub
 
 

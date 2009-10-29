@@ -20,7 +20,6 @@
 using namespace yarp;
 
 namespace iCub {
-namespace contrib {
 namespace learningmachine {
 
 /**
@@ -131,6 +130,5 @@ public:
 };
 
 } // learningmachine
-} // contrib
 } // iCub
 #endif

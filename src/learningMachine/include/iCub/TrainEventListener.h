@@ -17,12 +17,11 @@
 #include "iCub/TrainEvent.h"
 
 namespace iCub {
-namespace contrib {
 namespace learningmachine {
 
 /**
  * 
- * \see iCub::contrib::learningmachine::IEventListener
+ * \see iCub::learningmachine::IEventListener
  * 
  * \author Arjan Gijsberts
  */
@@ -59,7 +58,6 @@ public:
 };
 
 } // learningmachine
-} // contrib
 } // iCub
 
 #endif

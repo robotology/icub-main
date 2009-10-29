@@ -13,7 +13,6 @@
 #include <sstream>
 
 namespace iCub {
-namespace contrib {
 namespace learningmachine {
 
 void DatasetRecorder::feedSample(const Vector& input, const Vector& output) {
@@ -92,5 +91,4 @@ bool DatasetRecorder::configure(Searchable& config) {
 }
 
 } // learningmachine
-} // contrib
 } // iCub

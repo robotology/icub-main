@@ -15,14 +15,14 @@
 #include <fstream>
 #include <sstream>
 
-
 #include <yarp/os/Portable.h>
+#include <yarp/os/Bottle.h>
 
 #include "iCub/FactoryT.h"
 
+using namespace yarp::os;
 
 namespace iCub {
-namespace contrib {
 namespace learningmachine {
 
 /**
@@ -30,8 +30,8 @@ namespace learningmachine {
  * A templated portable class intended to wrap abstract base classes. This 
  * template depends on an associated FactoryT for the specified type.
  *
- * \see iCub::contrib::learningmachine::MachinePortable
- * \see iCub::contrib::learningmachine::TransformerPortable
+ * \see iCub::learningmachine::MachinePortable
+ * \see iCub::learningmachine::TransformerPortable
  *
  * \author Arjan Gijsberts
  *
@@ -227,7 +227,6 @@ public:
 };
 
 } // learningmachine
-} // contrib
 } // iCub
 
 #endif

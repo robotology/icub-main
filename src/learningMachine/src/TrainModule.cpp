@@ -16,7 +16,6 @@
 #include "iCub/TrainEvent.h"
 
 namespace iCub {
-namespace contrib {
 namespace learningmachine {
 
 void TrainProcessor::onRead(PortablePair<Vector,Vector>& sample) {
@@ -276,5 +275,4 @@ bool TrainModule::respond(const Bottle& cmd, Bottle& reply) {
 
 
 } // learningmachine
-} // contrib
 } // iCub

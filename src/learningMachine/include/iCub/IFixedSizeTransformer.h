@@ -15,7 +15,6 @@ using namespace yarp::os;
 using namespace yarp::sig;
 
 namespace iCub {
-namespace contrib {
 namespace learningmachine {
 
 /**
@@ -23,7 +22,7 @@ namespace learningmachine {
  * An generalized interface for an ITransformer with a fixed domain
  * and codomain size. Many simple preprocessing methods fall in this category.
  *
- * \see iCub::contrib::learningmachine::ITransformer
+ * \see iCub::learningmachine::ITransformer
  *
  * \author Arjan Gijsberts
  *
@@ -141,7 +140,6 @@ public:
 };
 
 } // learningmachine
-} // contrib
 } // iCub
 
 #endif

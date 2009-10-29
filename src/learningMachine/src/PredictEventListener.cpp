@@ -11,7 +11,6 @@
 #include "iCub/PredictEventListener.h"
 
 namespace iCub {
-namespace contrib {
 namespace learningmachine {
 
 void PredictEventListener::handle(PredictEvent& e) {
@@ -22,5 +21,4 @@ void PredictEventListener::handle(PredictEvent& e) {
 }
 
 } // learningmachine
-} // contrib
 } // iCub

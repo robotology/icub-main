@@ -14,7 +14,6 @@
 #include "iCub/TransformModule.h"
 
 namespace iCub {
-namespace contrib {
 namespace learningmachine {
 
 bool TransformPredictProcessor::read(ConnectionReader& connection) {
@@ -278,5 +277,4 @@ bool TransformModule::respond(const Bottle& cmd, Bottle& reply) {
 }
 
 } // learningmachine
-} // contrib
 } // iCub

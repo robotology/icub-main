@@ -14,7 +14,6 @@
 #include "iCub/Normalizer.h"
 
 namespace iCub {
-namespace contrib {
 namespace learningmachine {
 
 Normalizer::Normalizer(double l, double u) {
@@ -87,6 +86,5 @@ bool Normalizer::configure(Searchable& config) {
 }
 
 } // learningmachine
-} // contrib
 } // iCub
 

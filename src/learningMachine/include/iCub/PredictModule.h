@@ -16,15 +16,14 @@ using namespace yarp::os;
 using namespace yarp::sig;
 
 namespace iCub {
-namespace contrib {
 namespace learningmachine {
 
 
 /**
  * Generic abstract class for machine based processors.
  *
- * \see iCub::contrib::learningmachine::PredictProcessor
- * \see iCub::contrib::learningmachine::TrainProcessor
+ * \see iCub::learningmachine::PredictProcessor
+ * \see iCub::learningmachine::TrainProcessor
  *
  * \author Arjan Gijsberts
  *
@@ -78,8 +77,8 @@ public:
 /**
  * Reply processor helper class for predictions. 
  *
- * \see iCub::contrib::learningmachine::PredictModule
- * \see iCub::contrib::learningmachine::IMachineProcessor
+ * \see iCub::learningmachine::PredictModule
+ * \see iCub::learningmachine::IMachineProcessor
  *
  * \author Arjan Gijsberts
  *
@@ -95,12 +94,12 @@ public:
 
 /**
  * A module for predictions.
- * The module can contain any iCub::contrib::learningmachine::IMachineLearner.
+ * The module can contain any iCub::learningmachine::IMachineLearner.
  * This module can be used in a combined system with a TrainModule.
  *
- * \see iCub::contrib::learningmachine::IMachineLearner
- * \see iCub::contrib::learningmachine::IMachineLearnerModule
- * \see iCub::contrib::learningmachine::TrainModule
+ * \see iCub::learningmachine::IMachineLearner
+ * \see iCub::learningmachine::IMachineLearnerModule
+ * \see iCub::learningmachine::TrainModule
  *
  * \author Arjan Gijsberts, Francesco Orabona, Paul Fitzpatrick
  *
@@ -208,7 +207,6 @@ public:
 };
 
 } // learningmachine
-} // contrib
 } // iCub
 
 #endif

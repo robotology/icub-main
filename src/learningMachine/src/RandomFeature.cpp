@@ -19,7 +19,6 @@
 using namespace yarp::math;
 
 namespace iCub {
-namespace contrib {
 namespace learningmachine {
 
 RandomFeature::RandomFeature(int dom, int cod, double gamma) {
@@ -151,6 +150,5 @@ bool RandomFeature::configure(Searchable &config) {
 
 
 } // learningmachine
-} // contrib
 } // iCub
 

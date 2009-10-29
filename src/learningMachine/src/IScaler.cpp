@@ -14,7 +14,6 @@
 #include "iCub/IScaler.h"
 
 namespace iCub {
-namespace contrib {
 namespace learningmachine {
 
 double IScaler::transform(double val) {
@@ -74,6 +73,5 @@ bool IScaler::configure(Searchable& config) {
 
 
 } // learningmachine
-} // contrib
 } // iCub
 

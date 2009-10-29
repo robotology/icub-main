@@ -16,7 +16,6 @@ using namespace yarp::os;
 using namespace yarp::sig;
 
 namespace iCub {
-namespace contrib {
 namespace learningmachine {
 
 /**
@@ -148,7 +147,6 @@ public:
 };
 
 } // learningmachine
-} // contrib
 } // iCub
 
 #endif

@@ -14,7 +14,6 @@
 #include "iCub/IPortEventListener.h"
 
 namespace iCub {
-namespace contrib {
 namespace learningmachine {
 
 
@@ -57,5 +56,4 @@ bool IPortEventListener::configure(Searchable& config) {
 
 
 } // learningmachine
-} // contrib
 } // iCub

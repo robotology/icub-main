@@ -20,7 +20,6 @@
 using namespace yarp;
 
 namespace iCub {
-namespace contrib {
 namespace learningmachine {
 
 std::string printVector(const Vector& v);
@@ -164,6 +163,5 @@ public:
 };
 
 } // learningmachine
-} // contrib
 } // iCub
 #endif

@@ -17,7 +17,7 @@
 #define NO_TRAIN  400
 #define NO_TEST   400
 
-using namespace iCub::contrib::learningmachine;
+using namespace iCub::learningmachine;
 using namespace yarp::sig;
 
 std::pair<Vector, Vector> createSample(double min_in, double max_in) {

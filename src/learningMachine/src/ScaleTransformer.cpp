@@ -13,7 +13,6 @@
 #include "iCub/FactoryT.h"
 
 namespace iCub {
-namespace contrib {
 namespace learningmachine {
 
 ScaleTransformer::ScaleTransformer(int dom) {
@@ -215,6 +214,5 @@ bool ScaleTransformer::configure(Searchable &config) {
 
 
 } // learningmachine
-} // contrib
 } // iCub
 

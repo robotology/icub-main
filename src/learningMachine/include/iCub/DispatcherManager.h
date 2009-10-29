@@ -16,7 +16,6 @@
 
 
 namespace iCub {
-namespace contrib {
 namespace learningmachine {
 
 
@@ -24,7 +23,7 @@ namespace learningmachine {
  * The DispatcherManager provides a YARP-based configuration interface for the 
  * EventDispatcher. 
  *
- * \see iCub::contrib::learningmachine::EventDispatcher
+ * \see iCub::learningmachine::EventDispatcher
  *
  * \author Arjan Gijsberts
  *
@@ -59,7 +58,6 @@ public:
 };
 
 } // learningmachine
-} // contrib
 } // iCub
 
 #endif

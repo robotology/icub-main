@@ -19,7 +19,6 @@
 using namespace yarp::sig;
 
 namespace iCub {
-namespace contrib {
 namespace learningmachine {
 
 class IEventListener;
@@ -28,7 +27,7 @@ class IEventListener;
  * A TrainEvent is raised when the machine handles a training sample. It 
  * contains the input, and predicted and actual output vectors.
  *
- * \see iCub::contrib::learningmachine::IEvent
+ * \see iCub::learningmachine::IEvent
  *
  * \author Arjan Gijsberts
  */
@@ -102,7 +101,6 @@ public:
 };
 
 } // learningmachine
-} // contrib
 } // iCub
 
 #endif

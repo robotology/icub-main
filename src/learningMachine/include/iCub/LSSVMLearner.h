@@ -38,7 +38,6 @@ using namespace yarp;
 using namespace yarp::math;
 
 namespace iCub {
-namespace contrib {
 namespace learningmachine {
 
 class Kernel : public IConfig {
@@ -282,6 +281,5 @@ public:
 };
 
 } // learningmachine
-} // contrib
 } // iCub
 #endif

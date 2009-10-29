@@ -14,7 +14,6 @@
 #include "iCub/Standardizer.h"
 
 namespace iCub {
-namespace contrib {
 namespace learningmachine {
 
 Standardizer::Standardizer(double m, double s) { 
@@ -95,6 +94,5 @@ bool Standardizer::configure(Searchable& config) {
 
 
 } // learningmachine
-} // contrib
 } // iCub
 
