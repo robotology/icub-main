@@ -105,10 +105,11 @@ void MachineBoltzmann::interconnectLayers(Layer layerA, Layer layerB){
 	int numhid=layerB.getCol()*layerB.getRow();
 
 	//1. just using matrix
+	Matrix ma=(*layerA.vishid);
 	layerA.vishid=new Matrix(numdims,numhid);
 	for (int i=0;i<numdims;i++)
 		for (int j=0;j<numhid;j++)
-			(*layerA.vishid)(i,j)=0.001;
+			ma(i,j)=0.001;
 	//printf("vishid is: (%s)\n", layerA.vishid->toString().c_str());
 
 	//2. using the connection and unit list
