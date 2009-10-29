@@ -110,6 +110,7 @@ Windows, Linux
 #include <string>
 
 #define MAX_TORSO_PITCH     30.0    // [deg]
+#define EXECTIME_THRESDIST  0.3     // [m]
 #define PRINT_STATUS_PER    1.0     // [s]
 
 using namespace std;
@@ -135,6 +136,7 @@ protected:
     Vector xd;
     Vector od;
 
+    double defaultExecTime;
     double t0;
 
 public:
@@ -167,7 +169,7 @@ public:
         client->view(arm);
 
         // set trajectory time
-        arm->setTrajTime(rf.check("T",Value(2.0)).asDouble());
+        defaultExecTime=rf.check("T",Value(2.0)).asDouble();
 
         // set torso dofs
         Vector newDof, curDof;
@@ -236,9 +238,9 @@ public:
     virtual void run()
     {
         if (Bottle *b=port_xd.read(false))
-        {    
+        {                
             if (b->size()>=3)
-            {                
+            {                                
                 for (int i=0; i<3; i++)
                     xd[i]=b->get(i).asDouble();
 
@@ -248,10 +250,12 @@ public:
                         od[i]=b->get(3+i).asDouble();
                 }
 
+                const double execTime=calcExecTime(xd);
+
                 if (ctrlCompletePose)
-                    arm->goToPose(xd,od);
+                    arm->goToPose(xd,od,execTime);
                 else
-                    arm->goToPosition(xd);
+                    arm->goToPosition(xd,execTime);
             }
         }
 
@@ -279,6 +283,17 @@ public:
 
         arm->getLimits(axis,&min,&max);
         arm->setLimits(axis,min,MAX_TORSO_PITCH);
+    }
+
+    double calcExecTime(const Vector &xd)
+    {
+        Vector x,o;
+        arm->getPose(x,o);
+
+        if (norm(xd-x)<EXECTIME_THRESDIST)
+            return defaultExecTime;
+        else
+            return 1.5*defaultExecTime;
     }
 
     void printStatus()

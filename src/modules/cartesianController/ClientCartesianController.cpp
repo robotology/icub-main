@@ -222,7 +222,7 @@ bool ClientCartesianController::getPose(Vector &x, Vector &o)
 
 
 /************************************************************************/
-bool ClientCartesianController::goToPose(const Vector &xd, const Vector &od)
+bool ClientCartesianController::goToPose(const Vector &xd, const Vector &od, const double t)
 {
     if (xd.length()<3 || od.length()<4)
         return false;
@@ -241,6 +241,8 @@ bool ClientCartesianController::goToPose(const Vector &xd, const Vector &od)
     for (int i=0; i<4; i++)
         xdesPart.addDouble(od[i]);
 
+    command.addDouble(t);
+
     // send command
     portCmd->write();
 
@@ -249,7 +251,7 @@ bool ClientCartesianController::goToPose(const Vector &xd, const Vector &od)
 
 
 /************************************************************************/
-bool ClientCartesianController::goToPosition(const Vector &xd)
+bool ClientCartesianController::goToPosition(const Vector &xd, const double t)
 {
     if (xd.length()<3)
         return false;
@@ -264,6 +266,8 @@ bool ClientCartesianController::goToPosition(const Vector &xd)
 
     for (int i=0; i<3; i++)
         xdesPart.addDouble(xd[i]);
+
+    command.addDouble(t);
 
     // send command
     portCmd->write();

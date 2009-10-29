@@ -1146,13 +1146,17 @@ bool ServerCartesianController::connectToSolver()
 
 
 /************************************************************************/
-bool ServerCartesianController::goTo(unsigned int _ctrlPose, const Vector &xd)
+bool ServerCartesianController::goTo(unsigned int _ctrlPose, const Vector &xd, const double t)
 {    
     if (connected)
     {
         motionDone=false;
         
         ctrl->set_ctrlPose(ctrlPose=_ctrlPose);
+
+        // update trajectory execution time just if required
+        if (t>0.0)
+            setTrajTime(t);
 
         Bottle &b=portSlvOut->prepare();
         b.clear();
@@ -1232,7 +1236,7 @@ bool ServerCartesianController::getPose(Vector &x, Vector &o)
 
 
 /************************************************************************/
-bool ServerCartesianController::goToPose(const Vector &xd, const Vector &od)
+bool ServerCartesianController::goToPose(const Vector &xd, const Vector &od, const double t)
 {
     if (connected)
     {
@@ -1244,7 +1248,7 @@ bool ServerCartesianController::goToPose(const Vector &xd, const Vector &od)
         for (int i=0; i<od.length(); i++)
             _xd[xd.length()+i]=od[i];
     
-        return goTo(IKINCTRL_POSE_FULL,_xd);
+        return goTo(IKINCTRL_POSE_FULL,_xd,t);
     }
     else
         return false;
@@ -1252,10 +1256,10 @@ bool ServerCartesianController::goToPose(const Vector &xd, const Vector &od)
 
 
 /************************************************************************/
-bool ServerCartesianController::goToPosition(const Vector &xd)
+bool ServerCartesianController::goToPosition(const Vector &xd, const double t)
 {
     if (connected)
-        return goTo(IKINCTRL_POSE_XYZ,xd);
+        return goTo(IKINCTRL_POSE_XYZ,xd,t);
     else
         return false;
 }
