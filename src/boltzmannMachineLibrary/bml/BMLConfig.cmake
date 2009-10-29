@@ -6,13 +6,19 @@ SET(LIB_PKG "BML")      # name you want in FIND_PACKAGE(...)
 # We expect a <LIBRARY>_DIR variable to be available, pointing to
 # the directory with this library in it.
 SET(LIB_DIR ${${LIB_PKG}_DIR})
-
-MESSAGE(MESSAGE "  BML Library  !!!!!!!!!!!!!!!!!!!!!")
-
+IF(VERBOSE)
+	MESSAGE(MESSAGE "  BML Library  !!!!!!!!!!!!!!!!!!!!!")
+ENDIF(VERBOSE)
 
 IF (NESTED_BUILD)
   SET(BML_LIBRARIES bml)
+  IF(VERBOSE)	
+    MESSAGE (STATUS "NESTED_BUILD")
+  ENDIF(VERBOSE)
 ELSE (NESTED_BUILD)
+  IF(VERBOSE)	
+	  MESSAGE (STATUS "Not NESTED_BUILD")
+  ENDIF(VERBOSE)
   FIND_LIBRARY(${LIB_PKG}_LIBRARIES ${LIB_TARGET} ${BML_DIR}/lib)
   FIND_LIBRARY(${LIB_PKG}_LIBRARIES ${LIB_TARGET} ${BML_DIR})
   MESSAGE(STATUS "Looking at ${BML_DIR}/lib")
