@@ -278,7 +278,39 @@ bool BMLEngine::updateModule() {
 			runClamped=true;
 		}
 		else if(!strcmp(command.c_str(),"ConnectLayer")){
+			int value1,value2;
 			printf("ConnectLayer \n");
+
+			if(!strcmp(optionValue1.c_str(),"layer0")){
+				value1=0;
+			}
+			else if(!strcmp(optionValue1.c_str(),"layer1")){
+				value1=1;
+			}
+
+			if(!strcmp(optionValue2.c_str(),"layer0")){
+				value2=0;
+			}
+			else if(!strcmp(optionValue2.c_str(),"layer1")){
+				value2=1;
+			}
+
+			map<std::string,Layer>::iterator iterK;
+			map<std::string,Layer>::iterator iterL;
+			map<std::string,Layer>::iterator iterE1,iterE2;
+			
+			int j=0;
+			for(iterE1=mb->elementList.begin(); iterE1!=mb->elementList.end()&&j<value1;iterE1++){
+				j++;
+			}
+			j=0;
+			for(iterE2=mb->elementList.begin(); iterE2!=mb->elementList.end()&&j<value2;iterE2++){
+				j++;
+			}
+			
+			mb->interconnectLayers(iterE1->second,iterE2->second);
+			
+			
 		}
 		else if(!strcmp(command.c_str(),"Stop")){
 			printf("ExecuteStop \n");
