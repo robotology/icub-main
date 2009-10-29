@@ -29,7 +29,7 @@ Layer::Layer(std::string name,int nRows,int nUnits){
 		Row *row=new Row(this->name+"R"+i_str,nUnits); //L1R1U1 means Layer1-Row1-Unit1		
 		this->addRow(*row);
 	}
-//	this->interConnectUnits();
+	this->interConnectUnits();
 	iterEvolve=unitList.begin();
 }
 
@@ -79,6 +79,7 @@ void Layer::interConnectUnits(){
 			double value=1;
 			double weight_rnd=(value)*MEAN_WEIGHT;
 			addConnection(name,weight_rnd);
+
 		}
 	}
 }

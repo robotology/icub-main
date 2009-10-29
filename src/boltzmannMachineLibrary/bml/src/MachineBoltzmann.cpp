@@ -94,9 +94,49 @@ void MachineBoltzmann::migrateLayer(Layer layer){
 		count++;
 		//this->_unitList.push_back(iterU->second);
 	}
-	printf("CountCOnnections: %d",count);
+	printf("CountConnections: %d",count);
 
 }
+/**
+*creates the Connections between two different layers and save'em into the connectionList of Boltzmann Machine
+*/
+void MachineBoltzmann::interconnectLayers(Layer layerA, Layer layerB){
+	int numdims=layerA.getCol()*layerA.getRow();
+	int numhid=layerB.getCol()*layerB.getRow();
+
+	//1. just using matrix
+	layerA.vishid=new Matrix(numdims,numhid);
+	for (int i=0;i<numdims;i++)
+		for (int j=0;j<numhid;j++)
+			(*layerA.vishid)(i,j)=0.001;
+	printf("vishid is: (%s)\n", layerA.vishid->toString().c_str());
+
+	//2. using the connection and unit list
+	/*int k=0;
+	map<std::string,Unit>::iterator iterU1,iterU2;
+	for(iterU1=layerA.unitList.begin(); iterU1!=layerA.unitList.end();iterU1++){
+		this->addUnit2Matrix(iterU1->second);
+		for(iterU2=layerB.unitList.begin(); iterU2!=layerB.unitList.end();iterU2++){					
+			//cout<<"k:"<<k;
+			//double value=double(rand())/RAND_MAX;
+			double value=1;
+			double weight_rnd=(value)*MEAN_WEIGHT;
+			
+			//iterU1->second.addConnectionWeight(1,weight_rnd);
+			string name("C");
+			name.append(iterU1->second.getName());
+			name.append(iterU2->second.getName());
+			printf("connection name in interconnectlayers %s",name.c_str());
+			Connection *c=new Connection(name,weight_rnd);
+			this->addConnection2Matrix(*c);
+			//creates two lists of the same lenght of the connection list
+			this->addProbFreely2Matrix(0);
+			this->addProbClamped2Matrix(0);
+			k++;
+		}		
+	}*/
+}
+
 
 /**
 *creates the Connections between two different layers and save'em into the connectionList of Boltzmann Machine

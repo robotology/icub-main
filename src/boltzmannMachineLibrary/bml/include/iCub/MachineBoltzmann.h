@@ -87,9 +87,15 @@ public:
 	*/
 	void migrateLayer(Layer layer); // 
 	/**
-	* creates the Connections between two different layers and save'em into the connectionList of Boltzmann Machine
+	* creates the Connections between different layers and save them into the connectionList of Boltzmann Machine
 	*/
 	void interconnectLayers(); //
+	/**
+	* creates the Connections between 2 precise layers and save them into the connectionList of Boltzmann Machine
+	* @param layerA sideA of the connection between layers
+	* @parame layerB sideB of the connection between layers
+	*/
+	void interconnectLayers(Layer layerA, Layer layerB); //
 	/**
 	*creates the Connections between the layers passed as parameter with the already present layers
 	* @param layerNumber the reference to the allocated layer that has to be interconnected

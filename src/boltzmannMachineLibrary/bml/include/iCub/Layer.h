@@ -63,7 +63,7 @@ public:
 	/**
 	* matrix storing the state of every single unit in the layer
 	*/
-	//Matrix stateMatrix;
+	Matrix* vishid;
 	/**
 	* vector storing the state of every single unit in the layer
 	*/
