@@ -109,7 +109,7 @@ void MachineBoltzmann::interconnectLayers(Layer layerA, Layer layerB){
 	for (int i=0;i<numdims;i++)
 		for (int j=0;j<numhid;j++)
 			(*layerA.vishid)(i,j)=0.001;
-	printf("vishid is: (%s)\n", layerA.vishid->toString().c_str());
+	//printf("vishid is: (%s)\n", layerA.vishid->toString().c_str());
 
 	//2. using the connection and unit list
 	/*int k=0;
