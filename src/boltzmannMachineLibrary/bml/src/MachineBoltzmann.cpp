@@ -105,8 +105,9 @@ void MachineBoltzmann::interconnectLayers(Layer layerA, Layer layerB){
 	int numhid=layerB.getCol()*layerB.getRow();
 
 	//1. just using matrix
+	
+	layerA.vishid->resize(10,10);
 	Matrix ma=(*layerA.vishid);
-	layerA.vishid=new Matrix(numdims,numhid);
 	for (int i=0;i<numdims;i++)
 		for (int j=0;j<numhid;j++)
 			ma(i,j)=0.001;
