@@ -97,8 +97,12 @@ void velControlThread::run()
     fprintf(targetSpeedFile,"%f\n",t_start-time_watch);
 #endif
 
-    if(first_command)
-        ivel->velocityMove(command.data());
+    if(first_command) {
+        ///LUDO: TODO remove the while loop
+        while(!ivel->velocityMove(command.data())){
+            fprintf(stderr,"velcontrol ERROR>> velocity move sent false\n");
+        }
+    }
     _mutex.post();
 }
 
