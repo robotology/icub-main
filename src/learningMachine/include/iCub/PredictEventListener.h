@@ -53,7 +53,7 @@ public:
      * Inherited from IEventListener.
      */
     IEventListener* create() {
-        return new PredictEventListener(this->getName());
+        return new PredictEventListener(*this);
     }
 
 };

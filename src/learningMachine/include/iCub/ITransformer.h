@@ -70,10 +70,7 @@ public:
     /**
      * Constructor.
      */
-    ITransformer() {
-        this->setName("");
-        this->sampleCount = 0;
-    }
+    ITransformer() : sampleCount(0), name("") { }
 
     /**
      * Destructor.

@@ -188,10 +188,10 @@ public:
      * @return a pointer to the wrapped object
      */
     T* getWrapped() {
-	    if(!this->hasWrapped()) {
-	        throw std::runtime_error("Attempt to retrieve inexistent wrapped object!");
-	    }
-	    return this->wrapped;
+        if(!this->hasWrapped()) {
+            throw std::runtime_error("Attempt to retrieve inexistent wrapped object!");
+        }
+        return this->wrapped;
     }
 
     /**

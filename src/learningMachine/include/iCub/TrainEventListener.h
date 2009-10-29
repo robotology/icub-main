@@ -52,7 +52,7 @@ public:
      * Inherited from IEventListener.
      */
     IEventListener* create() {
-        return new TrainEventListener(this->getName());
+        return new TrainEventListener(*this);
     }
 
 };

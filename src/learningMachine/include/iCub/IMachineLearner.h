@@ -79,9 +79,7 @@ public:
     /**
      * Constructor.
      */
-    IMachineLearner() {
-        this->setName("");
-    }
+    IMachineLearner() : name("") { }
 
     /**
      * Destructor.

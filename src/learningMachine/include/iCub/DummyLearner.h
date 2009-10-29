@@ -60,12 +60,10 @@ public:
     /**
      * Constructor.
      */
-    DummyLearner(int dom = 1, int cod = 1) {
+    DummyLearner(int dom = 1, int cod = 1) : sampleCount(0), trainCount(0) {
         this->setName("Dummy");
         inputs.resize(0);
         outputs.resize(0);
-        this->sampleCount = 0;
-        this->trainCount = 0;
         this->setDomainSize(dom);
         this->setCoDomainSize(cod);
     }
@@ -125,7 +123,7 @@ public:
      * Inherited from IMachineLearner.
      */
     IMachineLearner* create() {
-        return new DummyLearner();
+        return new DummyLearner(*this);
     }
 
     /*

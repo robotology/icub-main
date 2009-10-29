@@ -85,8 +85,7 @@ public:
      * @param dom the initial domain size
      * @param cod the initial codomain size
      */
-    IFixedSizeTransformer(int dom = 1, int cod = 1) 
-        : domainSize(dom), coDomainSize(cod) {
+    IFixedSizeTransformer(int dom = 1, int cod = 1) : domainSize(dom), coDomainSize(cod) {
     }
 
     /*

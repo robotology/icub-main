@@ -47,7 +47,6 @@ public:
     /**
      * Constructor.
      */
-    // does not compile without the default value, although we never use it
     IEventListener();
 
     /**
@@ -57,21 +56,21 @@ public:
 
     /**
      * Default handler for any Event, which means the Event is ignored.
-     * @param  e The Event.
+     * @param  e the base event
      */
     virtual void handle(IEvent& e) {
     }
 
     /**
      * Handling of a TrainEvent.
-     * @param  e The TrainEvent.
+     * @param  e the TrainEvent
      */
     virtual void handle(TrainEvent& e) {
     }
 
     /**
      * Handling of a PredictEvent.
-     * @param  e The PredictEvent.
+     * @param  e the PredictEvent
      */
     virtual void handle(PredictEvent& e) {
     }
@@ -102,9 +101,10 @@ public:
     }
     
     /**
-     * Starts the IEventListener.
+     * Starts the IEventListener, such that it can do perform initialization 
+     * (e.g. opening ports).
      */
-    virtual void start() {}
+    virtual void start() { }
 
     /**
      * Tells whether dispatching of events is enabled.

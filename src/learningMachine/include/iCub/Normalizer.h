@@ -88,7 +88,7 @@ public:
      * Inherited from IScaler.
      */
     IScaler* create() {
-        return new Normalizer();
+        return new Normalizer(*this);
     }
 
     /**

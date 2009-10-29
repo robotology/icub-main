@@ -82,14 +82,12 @@ public:
      *
      * @param pp the default prefix used for the ports.
      */
-    IMachineLearnerModule(std::string pp) : portPrefix(pp) {
-    }
+    IMachineLearnerModule(std::string pp) : portPrefix(pp) { }
 
     /**
      * Destructor.
      */
-    virtual ~IMachineLearnerModule() {
-    }
+    virtual ~IMachineLearnerModule() { }
 
     /**
      * Close the module.

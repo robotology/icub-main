@@ -44,9 +44,7 @@ class Kernel : public IConfig {
 private:
     std::string name;
 public:
-    Kernel(std::string name = "") {
-        this->name = name;
-    }
+    Kernel(std::string n = "") : name(n) { }
 
     virtual double evaluate(const Vector& v1, const Vector& v2) = 0;
 
@@ -72,7 +70,7 @@ class RBFKernel : public Kernel {
 private:
     double gamma;
 public:
-    RBFKernel(double gamma = 1.0) : Kernel("RBF"), gamma(gamma) {
+    RBFKernel(double g = 1.0) : Kernel("RBF"), gamma(g) {
     }
     
     virtual ~RBFKernel() {}

@@ -117,7 +117,7 @@ void LSSVMLearner::reset() {
 }
 
 IMachineLearner* LSSVMLearner::create() {
-    return new LSSVMLearner();
+    return new LSSVMLearner(*this);
 }
 
 std::string LSSVMLearner::getInfo() {

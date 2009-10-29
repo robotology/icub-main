@@ -10,7 +10,6 @@
 #define __ICUB_IFIXEDSIZELEARNER__
 
 #include "iCub/IMachineLearner.h"
-//#include "iCub/TransformerVector.h"
 
 using namespace yarp::os;
 using namespace yarp::sig;
@@ -84,11 +83,10 @@ public:
     /**
      * Constructor.
      *
-     * @param dSize the initial domain size
-     * @param cdSize the initial codomain size
+     * @param dom the initial domain size
+     * @param cod the initial codomain size
      */
-    IFixedSizeLearner(int dSize = 1, int cdSize = 1) 
-        : domainSize(dSize), coDomainSize(cdSize) {
+    IFixedSizeLearner(int dom = 1, int cod = 1) : domainSize(dom), coDomainSize(cod) {
     }
 
     /*

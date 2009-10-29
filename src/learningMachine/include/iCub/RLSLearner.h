@@ -68,6 +68,7 @@ private:
      * Regularization constant.
      */
     double lambda;
+
     /**
      * Number of inputs.
      */
@@ -82,9 +83,7 @@ private:
     }
 
 public:
-    RLS(int n = 1.) {
-        this->lambda = 1.0;
-        this->n = n;
+    RLS(int n = 1., double l = 1.0) : n(n), lambda(l) {
         this->reset();
     }
 

@@ -78,7 +78,7 @@ public:
      * Inherited from ITransformer.
      */
     virtual ITransformer* create() {
-        return new RandomFeature();
+        return new RandomFeature(*this);
     }
 
     /*
@@ -135,8 +135,6 @@ public:
         // rebuild projection matrix
         this->reset();
     }
-
-protected:
 
 };
 

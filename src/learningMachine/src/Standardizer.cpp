@@ -16,12 +16,9 @@
 namespace iCub {
 namespace learningmachine {
 
-Standardizer::Standardizer(double m, double s) { 
+Standardizer::Standardizer(double m, double s) 
+  : noSamples(0), runningMean(0.), runningStd(0.), squaredErrors(0.) { 
     this->setName("Standardizer");
-    this->noSamples = 0;
-    this->runningMean = 0.;
-    this->runningStd = 0.;
-    this->squaredErrors = 0.;
     this->setDesiredMean(m);
     this->setDesiredStd(s);
 }

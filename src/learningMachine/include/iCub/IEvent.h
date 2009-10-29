@@ -2,7 +2,7 @@
  * Copyright (C) 2007-2009 Arjan Gijsberts @ Italian Institute of Technology
  * CopyPolicy: Released under the terms of the GNU GPL v2.0.
  *
- * The abstract event class.
+ * The event class interface.
  *
  */
 
@@ -10,8 +10,6 @@
 #define __ICUB_EVENT__
 
 #include <string>
-
-//#include "iCub/IEventListener.h"
 
 namespace iCub {
 namespace learningmachine {
@@ -29,23 +27,19 @@ protected:
 
 
 public:
-
-
     /**
      * Returns a string representation of the Event.
-     * @return string
+     * @return string  the string representation
      */
     virtual std::string toString() = 0;
-
 
     /**
      * Causes the Event to visit an EventListener. This method is part of the 
      * double dispatch mechanism. Child classes _need_ to override this 
      * function.
-     * @param  listener
+     * @param listener  the listener
      */
     virtual void visit(IEventListener& listener) = 0;
-
 
 };
 

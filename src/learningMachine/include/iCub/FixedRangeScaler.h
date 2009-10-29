@@ -90,7 +90,7 @@ public:
      * Inherited from IScaler.
      */
     IScaler* create() {
-        return new FixedRangeScaler();
+        return new FixedRangeScaler(*this);
     }
 
     /**

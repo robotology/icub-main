@@ -58,11 +58,8 @@ public:
     /**
      * Constructor.
      */
-    DatasetRecorder() {
+    DatasetRecorder() : filename("dataset.dat"), precision(8), sampleCount(0) {
         this->setName("Recorder");
-        this->filename = "dataset.dat";
-        this->precision = 8;
-        this->sampleCount = 0;
     }
     
     /**

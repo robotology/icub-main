@@ -68,8 +68,8 @@ public:
      * @param s the scale for the linear transformation
      * @param o the offset for the linear transformation
      */
-    IScaler(double s = 1., double o = 0.) : scale(s), offset(o), updateEnabled(true) {
-        this->setName("");
+    IScaler(double s = 1., double o = 0.) 
+      : scale(s), offset(o), updateEnabled(true), name("") {
     }
 
     /**

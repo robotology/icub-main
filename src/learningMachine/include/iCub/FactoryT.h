@@ -41,6 +41,17 @@ public:
     FactoryT() {}
 
     /**
+     * The default destructor of the Factory template. This destructor takes 
+     * responsibility for deleting the prototype objects that have been 
+     * registered during its lifetime.
+     */
+    virtual ~FactoryT() {
+        for(typename std::map<K, T* >::iterator it = this->map.begin(); it != this->map.end(); it++) {
+            delete it->second;
+        }
+    }
+
+    /**
      * An instance retrieval method that follows the Singleton pattern.
      *
      * Note that this implementation should not be considered thread safe and 
@@ -57,20 +68,10 @@ public:
     }
 
     /**
-     * The default destructor of the Factory template. This destructor takes 
-     * responsibility for deleting the prototype objects that have been registered 
-     * during its lifetime.
-     */
-    virtual ~FactoryT() {
-        for(typename std::map<K, T* >::iterator it = this->map.begin(); it != this->map.end(); it++) {
-            delete it->second;
-        }
-    }
-
-    /**
-     * Registers a prototype object that can be used to create clones. Strictly speaking,
-     * for this application the object only has to be able to return a new object of its
-     * own type, regardless of the internal state of that object.
+     * Registers a prototype object that can be used to create clones. Strictly 
+     * speaking, for this application the object only has to be able to return a 
+     * new object of its own type, regardless of the internal state of that 
+     * object.
      *
      * @param prototype the prototype object
      */
@@ -83,7 +84,8 @@ public:
 
         if(this->map.find(prototype->getName()) != this->map.end()) {
             std::ostringstream buffer;
-            buffer << "Prototype '" << prototype->getName() << "' has already been registered; please specify a unique key.";
+            buffer << "Prototype '" << prototype->getName() 
+                   << "' has already been registered; please specify a unique key.";
             throw std::runtime_error(buffer.str());
         }
 
@@ -100,7 +102,8 @@ public:
     T* create(const K& key) {
         if(this->map.find(key) == this->map.end()) {
             std::ostringstream buffer;
-            buffer << "Could not find prototype '" << key << "'; please specify a valid key.";
+            buffer << "Could not find prototype '" << key 
+                   << "'; please specify a valid key.";
             throw std::runtime_error(buffer.str());
         }
 
