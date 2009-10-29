@@ -98,9 +98,15 @@ void velControlThread::run()
 #endif
 
     if(first_command) {
-        ///LUDO: TODO remove the while loop
+        int trials = 0;
         while(!ivel->velocityMove(command.data())){
+            trials++;
             fprintf(stderr,"velcontrol ERROR>> velocity move sent false\n");
+            if(trials>10) {
+                fprintf(stderr, "velcontrol ERROR>> tried 10 times to velocityMove, halting...\n");
+                this->halt();
+                break;
+            }
         }
     }
     _mutex.post();
