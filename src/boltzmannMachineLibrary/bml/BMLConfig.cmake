@@ -7,7 +7,7 @@ SET(LIB_PKG "BML")      # name you want in FIND_PACKAGE(...)
 # the directory with this library in it.
 SET(LIB_DIR ${${LIB_PKG}_DIR})
 
-MESSAGE(ERROR "BML Library!!!!!!!!!!!!!!!!!!!!!!")
+MESSAGE(MESSAGE "  BML Library  !!!!!!!!!!!!!!!!!!!!!")
 
 
 IF (NESTED_BUILD)
