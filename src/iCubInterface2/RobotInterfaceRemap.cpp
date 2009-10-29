@@ -467,7 +467,7 @@ bool RobotInterfaceRemap::initialize20(const std::string &inifile)
     for(n=0;n<nparts;n++)
     {
         std::string partid=reqParts->get(n).asString().c_str();
-        std::cout<<"Processing "<<partid<<endl;
+        std::cout<<"--> Processing "<<partid<<endl;
 
         RobotPartEntry *partEntry=new RobotPartEntry;
         partEntry->id=partid;
@@ -524,7 +524,7 @@ bool RobotInterfaceRemap::initialize20(const std::string &inifile)
     }
 
     //now iterate through list of parts to see if all networks have been created correctly
-    std::cout<<"Now I will go through the list of parts to create the wrappers"<<endl;
+    std::cout<<"--> Now I will go through the list of parts to create the wrappers"<<endl;
 
     RobotPartIt partit=parts.begin();
 
@@ -594,23 +594,24 @@ bool RobotInterfaceRemap::initialize20(const std::string &inifile)
         fprintf(stderr, "RobotInterface::no inertial sensor defined in the config file\n");
 
     // now go thourgh list of networks and create analog interface
-    Bottle *analogNets=robotOptions.findGroup("ANALOG").find("networks").asList();
+    Bottle *analogNets=robotOptions.findGroup("GENERAL").find("analog").asList();
+    std::cout<<"--> Checking if I need to create analog wrappers"<<std::endl;
     if (analogNets)
-    {
-        int period;
-        period=robotOptions.findGroup("ANALOG").find("period").asInt();
-        if (period<5)
-        {
-            std::cerr<<"Sorry found invalid period value for ANALOG group, using default instead 20 [ms]"<<endl;
-            period=20;
-        }
-        
+    {       
         int nanalog=analogNets->size();
 
         int n=0;
         for(n=0;n<nanalog;n++)
         {
-            std::string netid=analogNets->get(n).asString().c_str();
+            std::string analogid=analogNets->get(n).asString().c_str();
+
+            std::string netid=robotOptions.findGroup(analogid.c_str()).find("network").asString().c_str();
+            int period=20;
+            if (robotOptions.findGroup(analogid.c_str()).check("period")) 
+                robotOptions.findGroup(analogid.c_str()).find("period").asInt();
+            else
+                std::cout<<"Warning: could not find period using default value ("<<period<<")\n";
+
             std::cout<<"Instantiating analog device on "<< netid << endl;
         
             RobotNetworkEntry *selectedNet=networks.find(netid);
@@ -640,8 +641,12 @@ bool RobotInterfaceRemap::initialize20(const std::string &inifile)
             }
          }
     }
+    else
+    {
+        std::cout<<"No analog wrappers requested\n";
+    }
 
-    std::cout<<"Starting robot calibration!"<<endl;
+    std::cout<<"--> Starting robot calibration!"<<endl;
     calibrate();
     std::cout<<"Finished robot calibration!"<<endl;
 

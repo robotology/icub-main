@@ -1467,7 +1467,7 @@ bool ControlBoardWrapper2::open(Searchable& prop)
         base=parameters.get(3).asInt();
         top=parameters.get(4).asInt();
 
-        cout<<"--> "<<wBase<<" "<<wTop<<" "<<base<<" "<<top<<endl;
+        //cout<<"--> "<<wBase<<" "<<wTop<<" "<<base<<" "<<top<<endl;
 
         //TODO check consistenty
         int axes=top-base+1;
