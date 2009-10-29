@@ -57,6 +57,7 @@ SET(ICUBQWIDGETS_DIR "${ICUB_DIR}/src/gui/libICUB_QWidgets")
 SET(PPEVENTDEBUGGER_DIR "${ICUB_DIR}/src/ppEventDebugger")
 SET(RDOUT_DIR "${ICUB_DIR}/src/rdout")
 SET(IKIN_DIR "${ICUB_DIR}/src/iKin")
+SET(BML_DIR "${ICUB_DIR}/src/boltzmannMachineLibrary/bml")
 SET(CTRLLIB_DIR "${ICUB_DIR}/src/ctrlLib")
 
 SET(icubmod_DIR "${ICUB_DIR}")
