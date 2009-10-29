@@ -281,6 +281,9 @@ bool BMLEngine::updateModule() {
 			int value1,value2;
 			printf("ConnectLayer \n");
 
+			Matrix ma;
+			ma.resize(10,10);
+
 			if(!strcmp(optionValue1.c_str(),"layer0")){
 				value1=0;
 			}
