@@ -74,16 +74,17 @@ void CartesianCtrlCommandPort::onRead(Bottle &command)
         if  (command.get(0).asVocab()==IKINCARTCTRL_VOCAB_CMD_GO)
         {   
             int pose=command.get(1).asVocab();
-            Bottle *v=command.get(2).asList();
+            double t=command.get(2).asDouble();
+            Bottle *v=command.get(3).asList();
             Vector xd(v->size());
 
             for (int i=0; i<v->size(); i++)
                 xd[i]=v->get(i).asDouble();
 
             if (pose==IKINCARTCTRL_VOCAB_VAL_POSE_FULL)
-                ctrl->goTo(IKINCTRL_POSE_FULL,xd);
+                ctrl->goTo(IKINCTRL_POSE_FULL,xd,t);
             else if (pose==IKINCARTCTRL_VOCAB_VAL_POSE_XYZ)
-                ctrl->goTo(IKINCTRL_POSE_XYZ,xd);
+                ctrl->goTo(IKINCTRL_POSE_XYZ,xd,t);
         }
 }
 

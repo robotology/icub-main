@@ -233,15 +233,14 @@ bool ClientCartesianController::goToPose(const Vector &xd, const Vector &od, con
     // prepare command
     command.addVocab(IKINCARTCTRL_VOCAB_CMD_GO);
     command.addVocab(IKINCARTCTRL_VOCAB_VAL_POSE_FULL);
+    command.addDouble(t);
     Bottle &xdesPart=command.addList();
 
     for (int i=0; i<3; i++)
         xdesPart.addDouble(xd[i]);
 
     for (int i=0; i<4; i++)
-        xdesPart.addDouble(od[i]);
-
-    command.addDouble(t);
+        xdesPart.addDouble(od[i]);    
 
     // send command
     portCmd->write();
@@ -262,12 +261,11 @@ bool ClientCartesianController::goToPosition(const Vector &xd, const double t)
     // prepare command
     command.addVocab(IKINCARTCTRL_VOCAB_CMD_GO);
     command.addVocab(IKINCARTCTRL_VOCAB_VAL_POSE_XYZ);
+    command.addDouble(t);
     Bottle &xdesPart=command.addList();
 
     for (int i=0; i<3; i++)
-        xdesPart.addDouble(xd[i]);
-
-    command.addDouble(t);
+        xdesPart.addDouble(xd[i]);    
 
     // send command
     portCmd->write();

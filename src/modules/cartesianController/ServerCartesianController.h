@@ -116,7 +116,7 @@ protected:
     void newController();
     bool getTarget(yarp::sig::Vector &_xdes, yarp::sig::Vector &_qdes);
     void sendVelocity(const yarp::sig::Vector &v);
-    bool goTo(unsigned int _ctrlPose, const yarp::sig::Vector &xd, const double t=0.0);
+    bool goTo(unsigned int _ctrlPose, const yarp::sig::Vector &xd, const double t);
 
     virtual bool threadInit();
     virtual void afterStart(bool s);
