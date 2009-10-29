@@ -16,6 +16,12 @@
 #include <map>
 #include <string>
 
+#include <yarp/sig/all.h>
+#include <yarp/sig/Matrix.h>
+#include <yarp/sig/Vector.h>
+
+using namespace yarp::sig;
+using namespace yarp::math;
 using namespace std;
 
 static int standard_layer_dim_rows=10;
