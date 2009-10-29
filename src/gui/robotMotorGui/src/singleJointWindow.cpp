@@ -349,10 +349,16 @@ void partMover::slider_release(GtkRange *range, gtkClassData* currentClassData)
   int * joint = currentClassData->indexPointer;
   bool *POS_UPDATE = currentPart->CURRENT_POS_UPDATE;
   IPositionControl *ipos = currentPart->pos;
+  GtkWidget **sliderVel = currentPart->sliderVelArray;
 
   double val = gtk_range_get_value(range);
+  double valVel = gtk_range_get_value((GtkRange *)sliderVel[*joint]);
+
   if (!POS_UPDATE[*joint])
-    ipos->positionMove(*joint, val);
+    {
+      ipos->setRefSpeed(*joint, valVel);
+      ipos->positionMove(*joint, val);
+    }
   return;
 }
 
