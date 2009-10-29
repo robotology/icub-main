@@ -116,17 +116,17 @@ public:
 	int *_velocityShifts;                       /** velocity shifts */
 };
 
-const int analogSize=15;
 class AnalogData
 {
 private:
     short *_data;
     int _size;
+    int _bufferSize;
 public:
-    AnalogData(): _data(0), _size(analogSize)
+    AnalogData(int ch, int buffsize): _data(0), _size(ch), _bufferSize(buffsize)
     {
-        _data=new short[16];
-        for(int k=0;k<analogSize;k++)
+        _data=new short[_bufferSize];
+        for(int k=0;k<_bufferSize;k++)
             _data[k]=0;
     }
     ~AnalogData()
@@ -139,49 +139,63 @@ public:
 
     inline int size() 
     { return _size; }
+
+    inline short *getBuffer()
+    {return _data;}
 };
 
 
 #include <yarp/os/Semaphore.h>
-class AnalogEncoders: public yarp::dev::IGenericSensor
+typedef int AnalogDataFormat;
+
+class AnalogSensor: public yarp::dev::IGenericSensor
 {
+public:
+    enum AnalogDataFormat
+    {
+        ANALOG_FORMAT_8,
+        ANALOG_FORMAT_16,
+    };
+
 private:
-    AnalogData data;
+    AnalogData *data;
     yarp::os::Semaphore mutex;
+    AnalogDataFormat dataFormat;
+    yarp::os::Bottle initMsg;
+    yarp::os::Bottle closeMsg;
+    short boardId;
+
+    bool decode8(const unsigned char *msg, int id, short *data);
+    bool decode16(const unsigned char *msg, int id, short *data);
 
 public:
+    AnalogSensor();
+    ~AnalogSensor();
     void handleAnalog(void *);
 
+    short getId()
+    { return boardId;}
+
+    bool isOpen()
+    {
+        if (data)
+            return true;
+        else
+            return false;
+    }
+
+    yarp::os::Bottle &getInitMsg()
+        {return initMsg;}
+    yarp::os::Bottle &getCloseMsg()
+        {return closeMsg;}
+
+    bool open(int channels, AnalogDataFormat f, short bId);
+
+    //IGenericSensor interface
     virtual bool read(yarp::sig::Vector &out);
     virtual bool getChannels(int *nc);
     virtual bool calibrate(int ch, double v);
-};
-
-class SixAxisTorqueSensor
-{
-private:
-    int torques[3];
-    int forces[3];
-    yarp::os::Semaphore mutex;
-
-public:
-    void handleTorque(void *);
-
-    inline int getTorque(int i)
-    {   
-        mutex.wait();
-        int ret=torques[i]; 
-        mutex.post();
-        return ret;
-    }
-
-    inline int getForce(int i)
-    {   
-        mutex.wait();
-        int ret=forces[i]; 
-        mutex.post();
-        return ret;
-    }
+    /////////////////////////////////
 };
 
 class yarp::dev::CanBusMotionControl:public DeviceDriver,
@@ -223,9 +237,7 @@ private:
     double lastReportTime;
     os::Stamp stampEncoders;
 
-    AnalogEncoders analogEncoders;
-    SixAxisTorqueSensor sixAxisSensor;
-
+    AnalogSensor analogSensor;
     yarp::os::ConstString canDevName;
 
 public:

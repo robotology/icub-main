@@ -53,7 +53,7 @@ using namespace yarp;
 using namespace yarp::os;
 using namespace yarp::dev;
 
-//#define __ENABLE_TORQUE__
+#define __ENABLE_TORQUE__
 
 inline void PRINT_CAN_MESSAGE(const char *str, CanMessage &m)
 {
@@ -344,32 +344,132 @@ public:
 };
 inline CanBusResources& RES(void *res) { return *(CanBusResources *)res; }
 
-bool AnalogEncoders::getChannels(int *nc)
+AnalogSensor::AnalogSensor():
+data(0)
 {
-    *nc=data.size();
+
+}
+
+AnalogSensor::~AnalogSensor()
+{
+    if (!data)
+        delete data;
+}
+
+bool AnalogSensor::open(int channels, AnalogDataFormat f, short bId)
+{
+    if (data)
+        return false;
+
+    data=new AnalogData(channels, channels+1);
+    dataFormat=f;
+    boardId=bId;
+
     return true;
 }
 
-bool AnalogEncoders::read(yarp::sig::Vector &out)
+
+bool AnalogSensor::getChannels(int *nc)
+{
+    *nc=data->size();
+    return true;
+}
+
+bool AnalogSensor::read(yarp::sig::Vector &out)
 {
     mutex.wait();
 
-    out.resize(data.size());
-    for(int k=0;k<data.size();k++)
+    if (!data)
     {
-        out[k]=data[k];
+        mutex.post();
+        return false;
+    }
+
+    out.resize(data->size());
+    for(int k=0;k<data->size();k++)
+    {
+        out[k]=(*data)[k];
     }
     
     mutex.post();
     return true;
 }
  
-bool AnalogEncoders::calibrate(int ch, double v)
+bool AnalogSensor::calibrate(int ch, double v)
 {
     return true;
 }
 
-void AnalogEncoders::handleAnalog(void *canbus)
+bool AnalogSensor::decode16(const unsigned char *msg, int id, short *data)
+{
+    const char groupId=(id&0x00f);
+    int baseIndex=0;
+    {
+        switch (groupId)
+        {
+        case 0xA:
+            {
+                for(int k=0;k<=3;k++)
+                    data[k]=((short(msg[k]))<<16)+msg[k+1];
+            }
+            break;
+        case 0xB:
+            {
+                for(int k=0;k<=3;k++)
+                    data[k+3]=((short(msg[k]))<<16)+msg[k+1];
+            }
+            break;
+        case 0xC:
+            {} //skip these, they are not for us
+            break;
+        case 0xD:
+            {} //skip these, they are not for us
+            break;
+        default:
+            fprintf(stderr, "%s [%d] Warning, got unexpected class 0x3 msg(s)\n");
+            return false;
+            break;
+        }
+    }
+    return true;
+}
+
+bool AnalogSensor::decode8(const unsigned char *msg, int id, short *data)
+{
+    const char groupId=(id&0x00f);
+    int baseIndex=0;
+    {
+        switch (groupId)
+        {
+        case 0xC:
+            {
+                for(int k=0;k<=6;k++)
+                    data[k]=msg[k];
+            }
+            break;
+        case 0xD:
+            {
+                for(int k=0;k<=7;k++)
+                    data[7+k]=msg[k];
+            }
+            break;
+        case 0xA:
+            {} //skip these, they are not for us
+            break;
+        case 0xB:
+            {} //skip these, they are not for us
+            break;
+        default:
+            fprintf(stderr, "%s [%d] Warning, got unexpected class 0x3 msg(s)\n");
+            return false;
+            break;
+        }
+    }
+    return true;
+}
+
+
+void AnalogSensor::handleAnalog(void *canbus)
 {
     CanBusResources& r = RES (canbus);
 
@@ -382,45 +482,28 @@ void AnalogEncoders::handleAnalog(void *canbus)
     for (i = 0; i < r._readMessages; i++)
     {
         unsigned int len=0;
-        unsigned int id=0;
+        unsigned int msgid=0;
         unsigned char *buff=0;
         CanMessage& m = r._readBuffer[i];
         buff=m.getData();
-        id=m.getId();
+        msgid=m.getId();
         len=m.getLen();
         
-        const char type=((id&0x700)>>8);
-        const char boardId=((id&0x0f0)>>4);
-        if (type==0x03)
-            if (boardId==0x0E)
+        const char type=((msgid&0x700)>>8);
+        const char id=((msgid&0x0f0)>>4);
+        if (type==0x03) //analog data
+            if (id==boardId)
             {
-                const char groupId=(id&0x00f);
-                int baseIndex=0;
+                switch (dataFormat)
                 {
-                    switch (groupId)
-                    {
-                    case 0xC:
-                        {
-                            for(int k=0;k<=6;k++)
-                                data[k]=buff[k];
-                        }
+                    case ANALOG_FORMAT_8:
+                        decode8(buff, id, data->getBuffer());
                         break;
-                    case 0xD:
-                        {
-                            for(int k=0;k<=7;k++)
-                                data[7+k]=buff[k];
-                        }
+                    case ANALOG_FORMAT_16:
+                        decode16(buff, id, data->getBuffer());
                         break;
-                    case 0xA:
-                        {} //skip these, they are not for us
-                        break;
-                    case 0xB:
-                        {} //skip these, they are not for us
-                        break;
-                    default:
-                        fprintf(stderr, "%s [%d] Warning, got unexpected class 0x3 msg(s)\n");
-                        break;
-                    }
+                    default:{}
+                        //error unrecognized type
                 }
             }
     }
@@ -428,72 +511,6 @@ void AnalogEncoders::handleAnalog(void *canbus)
     mutex.post();
 }
 
-
-void SixAxisTorqueSensor::handleTorque(void *canbus)
-{
-    CanBusResources& r = RES (canbus);
-
-    double before=Time::now();
-    unsigned int i=0;
-    const int _networkN=r._networkN;
-
-    mutex.wait();
-
-    unsigned int countT=0;
-    unsigned int countF=0;
-
-    for (i = 0; i < r._readMessages; i++)
-    {
-        unsigned int len=0;
-        unsigned int id=0;
-        unsigned char *buff=0;
-        CanMessage& m = r._readBuffer[i];
-        buff=m.getData();
-        id=m.getId();
-        len=m.getLen();
-        
-        const char type=((id&0x700)>>8);
-        const char boardId=((id&0x0f0)>>4);
-        if (type==0x03)
-            if (boardId==0x0d)
-            {
-                const char groupId=(id&0x00f);
-                int baseIndex=0;
-                {
-                    switch (groupId)
-                    {
-                    case 0xA:
-                        {
-                            for(int k=0;k<=3;k++)
-                                forces[k]=((short(buff[k]))<<16)+buff[k+1];
-                            countF++;
-                        }
-                        break;
-                    case 0xB:
-                        {
-                            for(int k=0;k<=3;k++)
-                                torques[k]=((short(buff[k]))<<16)+buff[k+1];
-                            countT++;
-                        }
-                        break;
-                    case 0xC:
-                        {} //skip these, they are not for us
-                        break;
-                    case 0xD:
-                        {} //skip these, they are not for us
-                        break;
-                    default:
-                        fprintf(stderr, "%s [%d] Warning, got unexpected class 0x3 msg(s)\n");
-                        break;
-                    }
-                }
-            }
-    }
-
-    if (countT>0)
-        fprintf(stderr, "Received %u torque msgs %u force msgs\n", countT, countF);
-    mutex.post();
-}
 
 bool CanBusMotionControlParameters:: setBroadCastMask(Bottle &list, int MASK)
 {
@@ -847,7 +864,7 @@ bool CanBusResources::initialize (yarp::os::Searchable &config)
 
 bool CanBusResources::initialize (const CanBusMotionControlParameters& parms)
 {
-    fprintf(stderr, "Calling CanBusResources::initialize\n");
+    printf("Calling CanBusResources::initialize\n");
     if (_initialized)
         return false;
 
@@ -882,9 +899,15 @@ bool CanBusResources::initialize (const CanBusMotionControlParameters& parms)
     for(int jj=0;jj<_njoints;jj+=2)
     {
         _destInv[_destinations[jj/2]]=jj;
-    }
+
+     }
 
     _bcastRecvBuffer = allocAndCheck<BCastBufferElement> (_njoints);
+    for (int j=0; j<_njoints ;j++)
+        {
+            _bcastRecvBuffer[j]._update_e=Time::now();
+            _bcastRecvBuffer[j]._position.resetStats();
+        }
 
     //previously initialized
     iCanBus->canSetBaudRate(_speed);
@@ -1111,7 +1134,7 @@ CanBusMotionControl::~CanBusMotionControl ()
 
 bool CanBusMotionControl::open (Searchable &config)
 {
-    fprintf(stderr, "Opening CanBusMotionControl Control\n");
+    printf("Opening CanBusMotionControl Control\n");
     CanBusResources& res = RES (system_resources);
     CanBusMotionControlParameters p;
     bool ret=false;
@@ -1211,17 +1234,60 @@ bool CanBusMotionControl::open (Searchable &config)
         disableAmp(i);
     }
 
-#ifdef __ENABLE_TORQUE__
-    _mutex.wait();
-    res.startPacket();
-    res._writeBuffer[0].setId(0x20d);     //polling to board id 13
-    res._writeBuffer[0].getData()[0]=0x07; //type of message
-    res._writeBuffer[0].getData()[1]=0x00; //start transmission
-    res._writeBuffer[0].setLen(2);
-    res._writeMessages++;
-    res.writePacket();
-    _mutex.post();
-#endif
+    fprintf(stderr, "-->Checking ig Analog\n");
+    Bottle analogConfig=config.findGroup("ANALOG");
+    if (analogConfig.size()>0)
+    {
+        char analogId=analogConfig.find("CanAddress").asInt();
+        char analogFormat=analogConfig.find("Format").asInt();
+        int analogChannels=analogConfig.find("Channels").asInt();
+
+        Bottle *initMsg=analogConfig.find("InitMessage").asList();
+        Bottle *finiMsg=analogConfig.find("CloseMessage").asList();
+
+        if (initMsg)
+        {
+            analogSensor.getInitMsg()=*initMsg;
+        }
+        if (finiMsg)
+        {
+            analogSensor.getCloseMsg()=*finiMsg;
+        }
+
+        switch (analogFormat)
+        {
+            case 8:
+                analogSensor.open(analogChannels, AnalogSensor::ANALOG_FORMAT_8, analogId);
+                break;
+            case 16:
+                analogSensor.open(analogChannels, AnalogSensor::ANALOG_FORMAT_8, analogId);
+                break;
+        }
+
+        if (analogSensor.getInitMsg().size()>0)
+        {
+            res.startPacket();
+            int tmp=analogSensor.getInitMsg().get(0).asInt();
+            res._writeBuffer[0].setId(tmp);
+            int k=0;
+            for (k=0;k<analogSensor.getInitMsg().size()-1;k++)
+            {
+                res._writeBuffer[0].getData()[k]=analogSensor.getInitMsg().get(k+1).asInt();
+            }
+            res._writeBuffer[0].setLen(k);
+            res._writeMessages++;
+  
+#if 0
+            //debug
+            fprintf(stderr, "---> Len:%d %x %x %x\n", 
+                res._writeBuffer[0].getLen(),
+                res._writeBuffer[0].getId(),
+                res._writeBuffer[0].getData()[0],
+                res._writeBuffer[0].getData()[1]);
+#endif                 
+            res.writePacket();
+        }
+    }
 
     threadPool = new ThreadPool2(res.iBufferFactory);
 
@@ -1242,17 +1308,30 @@ bool CanBusMotionControl::close (void)
     //fprintf(stderr, "CanBusMotionControl::close\n");
 
     if (_opened) {
-#ifdef __ENABLE_TORQUE__
-        _mutex.wait();
-        res.startPacket();
-        res._writeBuffer[0].setId(0x20d);     //polling to board id c
-        res._writeBuffer[0].getData()[0]=0x07; //type of message
-        res._writeBuffer[0].getData()[1]=0x01; //stop transmission
-        res._writeBuffer[0].setLen(2);
-        res._writeMessages++;
-        res.writePacket();
-        _mutex.post();
-#endif 
+        if (analogSensor.isOpen())
+            if (analogSensor.getCloseMsg().size()>0)
+            {
+                res.startPacket();
+                int tmp=analogSensor.getCloseMsg().get(0).asInt();
+                res._writeBuffer[0].setId(tmp);
+                int k=0;
+                for (k=0;k<analogSensor.getCloseMsg().size()-1;k++)
+                {
+                    res._writeBuffer[0].getData()[k]=analogSensor.getCloseMsg().get(k+1).asInt();
+                }
+                res._writeBuffer[0].setLen(k);
+                res._writeMessages++;
+
+                //debug
+#if 0
+                fprintf(stderr, "---> Len:%d %x %x %x\n", 
+                    res._writeBuffer[0].getLen(),
+                    res._writeBuffer[0].getId(),
+                    res._writeBuffer[0].getData()[0],
+                    res._writeBuffer[0].getData()[1]);
+#endif
+                res.writePacket();
+            }
 
         // disable the controller, pid controller & pwm off
         int i;
@@ -1306,7 +1385,6 @@ void CanBusMotionControl::handleBroadcasts()
     double before=Time::now();
     unsigned int i=0;
     const int _networkN=r._networkN;
-
 
     for (i = 0; i < r._readMessages; i++)
     {
@@ -1717,10 +1795,7 @@ void CanBusMotionControl:: run()
     // (class 1, 8 bits of the ID used to define the message type and source address).
 
     handleBroadcasts();
-    analogEncoders.handleAnalog(system_resources);
-#ifdef __ENABLE_TORQUE__
-    sixAxisSensor.handleTorque(system_resources);
-#endif
+    analogSensor.handleAnalog(system_resources);
 
     //
     // handle class 0 messages - polling messages.
@@ -2115,7 +2190,7 @@ bool CanBusMotionControl::setTorqueRaw (int j, double ref)
     return _writeDWord (CAN_SET_DESIRED_TORQUE, axis, S_32(ref));
 }
 
-/// cmd is a SingleAxis poitner with 1 double arg
+/// cmd is a SingleAxis pointer with 1 double arg
 bool CanBusMotionControl::getTorqueRaw (int j, double *t)
 {
     CanBusResources& r = RES(system_resources);
@@ -3518,18 +3593,17 @@ bool CanBusMotionControl::_readWord16Array (int msg, double *out)
     return true;
 }
 
-
 bool CanBusMotionControl::read(yarp::sig::Vector &out)
 {
-    return analogEncoders.read(out);
+    return analogSensor.read(out);
 }
 
 bool CanBusMotionControl::getChannels(int *nc)
 {
-    return analogEncoders.getChannels(nc);
+    return analogSensor.getChannels(nc);
 }
 
 bool CanBusMotionControl::calibrate(int ch, double v)
 {
-    return analogEncoders.calibrate(ch, v);
+    return analogSensor.calibrate(ch, v);
 }
