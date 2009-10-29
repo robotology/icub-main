@@ -86,7 +86,7 @@ public:
     /**
      * Destructor.
      */
-    ~IMachineLearner() { }
+    virtual ~IMachineLearner() { }
 
     /**
      * Provide the learning machine with an example of the desired mapping.

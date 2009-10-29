@@ -70,9 +70,10 @@ bool ScaleTransformer::isEmptyScaler(int index) {
     }
 }
 
-void ScaleTransformer::transform(const Vector& input, Vector& output) {
-    this->IFixedSizeTransformer::transform(input, output);
+Vector ScaleTransformer::transform(const Vector& input) {
+    Vector output = this->IFixedSizeTransformer::transform(input);
     assert(input.size() == this->scalers.size());
+    assert(output.size() == this->scalers.size());
 
     for(int i = 0; i < output.size(); i++) {
         // only transform the sample if the scaler is actually set
@@ -82,7 +83,7 @@ void ScaleTransformer::transform(const Vector& input, Vector& output) {
             output(i) = input(i);
         }
     }
-    return;
+    return output;
 }
 
 void ScaleTransformer::setDomainSize(int size) {

@@ -92,7 +92,7 @@ public:
     /*
      * Inherited from ITransformer.
      */
-    virtual void transform(const Vector& input, Vector& output);
+    virtual Vector transform(const Vector& input);
 
     /**
      * Returns the size (dimensionality) of the input domain.

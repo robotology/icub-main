@@ -174,7 +174,7 @@ public:
     /**
      * Destructor.
      */
-    ~LSSVMAtlasLearner();
+    virtual ~LSSVMAtlasLearner();
 
     /*
      * Inherited from IMachineLearner.

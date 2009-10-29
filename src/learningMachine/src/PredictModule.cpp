@@ -129,7 +129,7 @@ bool PredictModule::respond(const Bottle& cmd, Bottle& reply) {
                 reply.addString("Training module configuration options");
                 reply.addString("  help                  Displays this message");
                 reply.addString("  reset                 Resets the machine to its current state");
-                reply.addString("  stat                  Outputs statistics of the machine");
+                reply.addString("  info                  Outputs information about the machine");
                 reply.addString("  load fname            Loads a machine from a file");
                 //reply.addString(this->getMachine()->getConfigHelp().c_str());
                 success = true;

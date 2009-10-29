@@ -14,10 +14,11 @@
 namespace iCub {
 namespace learningmachine {
 
-void IFixedSizeTransformer::transform(const Vector& input, Vector& output) {
-    ITransformer::transform(input, output);
+Vector IFixedSizeTransformer::transform(const Vector& input) {
+    Vector output = ITransformer::transform(input);
     output.resize(this->getCoDomainSize());
     this->validateDomainSizes(input, output);
+    return output;
 }
 
 void IFixedSizeTransformer::validateDomainSizes(const Vector& input, const Vector& output) {

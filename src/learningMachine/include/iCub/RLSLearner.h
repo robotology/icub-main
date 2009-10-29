@@ -214,7 +214,7 @@ public:
     /**
      * Destructor.
      */
-    ~RLSLearner();
+    virtual ~RLSLearner();
 
     /*
      * Inherited from IMachineLearner.

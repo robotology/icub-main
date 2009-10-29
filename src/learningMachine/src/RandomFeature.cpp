@@ -33,16 +33,16 @@ RandomFeature::~RandomFeature() {
 }
 
 
-void RandomFeature::transform(const Vector& input, Vector& output) {
-    this->IFixedSizeTransformer::transform(input, output);
-    //assert(input.size() == this->scalers.size());
+Vector RandomFeature::transform(const Vector& input) {
+    Vector output = this->IFixedSizeTransformer::transform(input);
+
     // python: x_f = numpy.cos(numpy.dot(self.W, x) + self.bias) / math.sqrt(self.nproj)
     output = (this->W * input) + this->b;
     double nprojsq = sqrt((double)this->getCoDomainSize());
     for(int i = 0; i < output.size(); i++) {
         output(i) = cos(output(i)) / nprojsq;
     }
-    return;
+    return output;
 }
 
 void RandomFeature::setCoDomainSize(int size) {

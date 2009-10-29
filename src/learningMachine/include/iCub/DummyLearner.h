@@ -73,7 +73,7 @@ public:
     /**
      * Destructor.
      */
-    ~DummyLearner() {
+    virtual ~DummyLearner() {
     }
 
     /*

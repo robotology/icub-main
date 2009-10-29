@@ -61,7 +61,7 @@ public:
     /**
      * Destructor.
      */
-    ~IPortEventListener() {
+    virtual ~IPortEventListener() {
         this->port.interrupt();
         this->port.close();
     }

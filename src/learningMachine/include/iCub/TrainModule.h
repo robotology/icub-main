@@ -115,7 +115,7 @@ public:
     /**
      * Destructor.
      */
-    /*~TrainModule() {
+    /*virtual ~TrainModule() {
         delete(this->machinePortable);
     }*/
 

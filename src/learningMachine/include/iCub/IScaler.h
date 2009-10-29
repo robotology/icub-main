@@ -75,7 +75,7 @@ public:
     /**
      * Destructor.
      */
-    ~IScaler() {}
+    virtual ~IScaler() {}
 
     /**
      * Feeds a single sample into the scaler, so that it can use this sample

@@ -72,15 +72,7 @@ public:
     /**
      * Destructor.
      */
-    ~RandomFeature();
-
-    /**
-     * Feeds a single sample into the scaler, so that it can use this sample
-     * to learn the appropriate offset and scale.
-     *
-     * @param value the sample value
-     */
-    //virtual void feedSample(const Vector& in);
+    virtual ~RandomFeature();
 
     /*
      * Inherited from ITransformer.
@@ -92,7 +84,7 @@ public:
     /*
      * Inherited from ITransformer.
      */
-    virtual void transform(const Vector& input, Vector& output);
+    virtual Vector transform(const Vector& input);
 
     /*
      * Inherited from ITransformer.

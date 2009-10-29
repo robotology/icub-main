@@ -9,15 +9,15 @@
 #ifndef __ICUB_DATASETRECORDER__
 #define __ICUB_DATASETRECORDER__
 
-#include <yarp/os/Bottle.h>
-#include "iCub/IMachineLearner.h"
-//#include <iostream>
 #include <string>
 #include <fstream>
-//#include <sstream>
+
+#include <yarp/os/Bottle.h>
+
+#include "iCub/IMachineLearner.h"
 
 
-using namespace yarp;
+using namespace yarp::sig;
 
 namespace iCub {
 namespace learningmachine {
@@ -64,11 +64,22 @@ public:
         this->precision = 8;
         this->sampleCount = 0;
     }
+    
+    /**
+     * Copy constructor.
+     */
+    DatasetRecorder(const DatasetRecorder& copy) {
+        // copy all but stream reference
+        this->name = copy.name;
+        this->precision = copy.precision;
+        this->sampleCount = copy.sampleCount;
+        this->filename = copy.filename;
+    }
 
     /**
      * Destructor.
      */
-    ~DatasetRecorder() {
+    virtual ~DatasetRecorder() {
     }
 
     /*
@@ -100,7 +111,7 @@ public:
      * Inherited from IMachineLearner.
      */
     IMachineLearner* create() {
-        return new DatasetRecorder();
+        return new DatasetRecorder(*this);
     }
 
     /*

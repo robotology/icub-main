@@ -26,7 +26,6 @@ namespace iCub {
 namespace learningmachine {
 
 /**
- *
  * A templated portable class intended to wrap abstract base classes. This 
  * template depends on an associated FactoryT for the specified type.
  *
@@ -67,7 +66,7 @@ public:
     /**
      * Destructor.
      */
-    ~PortableT() {
+    virtual ~PortableT() {
         delete(this->wrapped);
     }
     

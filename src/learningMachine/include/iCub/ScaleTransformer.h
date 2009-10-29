@@ -122,7 +122,7 @@ public:
     /**
      * Destructor.
      */
-    ~ScaleTransformer();
+    virtual ~ScaleTransformer();
 
     /*
      * Inherited from ITransformer.
@@ -134,7 +134,7 @@ public:
     /*
      * Inherited from ITransformer.
      */
-    virtual void transform(const Vector& input, Vector& output);
+    virtual Vector transform(const Vector& input);
 
     /*
      * Inherited from ITransformer.

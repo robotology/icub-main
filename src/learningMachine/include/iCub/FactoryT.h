@@ -61,7 +61,7 @@ public:
      * responsibility for deleting the prototype objects that have been registered 
      * during its lifetime.
      */
-    ~FactoryT() {
+    virtual ~FactoryT() {
         for(typename std::map<K, T* >::iterator it = this->map.begin(); it != this->map.end(); it++) {
             delete it->second;
         }

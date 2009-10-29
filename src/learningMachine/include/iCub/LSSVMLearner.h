@@ -75,7 +75,7 @@ public:
     RBFKernel(double gamma = 1.0) : Kernel("RBF"), gamma(gamma) {
     }
     
-    ~RBFKernel() {}
+    virtual ~RBFKernel() {}
 
     virtual double evaluate(const Vector& v1, const Vector& v2) {
         assert(v1.size() == v2.size());
@@ -190,7 +190,7 @@ public:
     /**
      * Destructor.
      */
-    ~LSSVMLearner();
+    virtual ~LSSVMLearner();
 
     /*
      * Inherited from IMachineLearner.

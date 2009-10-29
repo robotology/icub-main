@@ -6,11 +6,10 @@
  *
  */
 
-#include "iCub/DatasetRecorder.h"
-
 #include <iomanip>
-//#include <iostream>
 #include <sstream>
+
+#include "iCub/DatasetRecorder.h"
 
 namespace iCub {
 namespace learningmachine {

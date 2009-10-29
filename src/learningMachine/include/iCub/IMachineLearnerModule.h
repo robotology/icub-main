@@ -88,7 +88,7 @@ public:
     /**
      * Destructor.
      */
-    ~IMachineLearnerModule() {
+    virtual ~IMachineLearnerModule() {
     }
 
     /**

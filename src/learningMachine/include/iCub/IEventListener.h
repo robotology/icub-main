@@ -53,7 +53,7 @@ public:
     /**
      * Destructor.
      */
-    ~IEventListener() {}
+    virtual ~IEventListener() {}
 
     /**
      * Default handler for any Event, which means the Event is ignored.

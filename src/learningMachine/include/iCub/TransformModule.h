@@ -29,7 +29,7 @@ namespace learningmachine {
 class ITransformProcessor {
 protected:
     /**
-     * A pointer to a portable transformer.
+     * A pointer to a portable transformer (not owned by ITransformProcessor).
      */
     TransformerPortable* transformerPortable;
 
@@ -85,7 +85,7 @@ public:
 class TransformPredictProcessor : public ITransformProcessor, public PortReader {
 protected:
     /**
-     * The relay port.
+     * The relay port (not owned by TransformPredictProcessor).
      */
     Port* predict_relay_inout;
     
@@ -127,7 +127,11 @@ public:
  */
 class TransformTrainProcessor : public ITransformProcessor, public TypedReaderCallback< PortablePair<Vector,Vector> > {
 private:
+    /**
+     * The relay port (not owned by TransformTrainProcessor).
+     */
     BufferedPort<PortablePair<Vector,Vector> >* train_out;
+
 public:
     TransformTrainProcessor() {
     }
@@ -234,7 +238,7 @@ public:
     /**
      * Destructor.
      */
-    ~TransformModule() {
+    virtual ~TransformModule() {
         delete(this->transformerPortable);
     }
 

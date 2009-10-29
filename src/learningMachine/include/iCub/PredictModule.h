@@ -155,7 +155,7 @@ public:
     /**
      * Destructor.
      */
-    ~PredictModule() {
+    virtual ~PredictModule() {
         delete(this->machinePortable);
     }
 

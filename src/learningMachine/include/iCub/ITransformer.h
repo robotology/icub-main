@@ -78,16 +78,17 @@ public:
     /**
      * Destructor.
      */
-    ~ITransformer() {}
+    virtual ~ITransformer() {}
 
     /**
      * Transforms an input vector.
      *
      * @param input the input vector
-     * @param output the output vector
+     * @return the output vector
      */
-    virtual void transform(const Vector& input, Vector& output) {
+    virtual Vector transform(const Vector& input) {
         this->sampleCount++;
+        return Vector();
     }
 
     /**

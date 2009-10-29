@@ -27,8 +27,7 @@ bool TransformPredictProcessor::read(ConnectionReader& connection) {
     }
 
     try {
-        Vector trans_input;
-        this->getTransformer()->transform(input, trans_input);
+        Vector trans_input = this->getTransformer()->transform(input);
         this->getOutputPort()->write(trans_input, prediction);
     } catch(const std::exception& e) {
         std::cerr << "Error: " << e.what() << std::endl;
@@ -49,7 +48,7 @@ void TransformTrainProcessor::onRead(PortablePair<Vector,Vector>& input) {
     assert(this->getOutputPort() != (BufferedPort<PortablePair<Vector,Vector> >*) 0);
     try {
         PortablePair<Vector,Vector>& output = this->getOutputPort()->prepare();
-        this->getTransformer()->transform(input.head, output.head);
+        output.head = this->getTransformer()->transform(input.head);
         output.body = input.body;
         this->getOutputPort()->writeStrict();
     } catch(const std::exception& e) {
@@ -187,7 +186,9 @@ bool TransformModule::respond(const Bottle& cmd, Bottle& reply) {
                 reply.addString("Transform module configuration options");
                 reply.addString("  help                  Displays this message");
                 reply.addString("  reset                 Resets the machine to its current state");
-                reply.addString("  stat                  Outputs statistics of the machine");
+                reply.addString("  info                  Outputs information about the transformer");
+                reply.addString("  load fname            Loads a transformer from a file");
+                reply.addString("  save fname            Saves the current transformer to a file");
                 reply.addString("  set key val           Sets a configuration option for the transformer");
                 reply.addString(this->getTransformer()->getConfigHelp().c_str());
                 success = true;

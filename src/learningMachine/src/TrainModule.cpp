@@ -148,7 +148,7 @@ bool TrainModule::respond(const Bottle& cmd, Bottle& reply) {
                 reply.addString("  train                 Trains the machine and sends the model");
                 reply.addString("  model                 Sends the model to the prediction module");
                 reply.addString("  reset                 Resets the machine to its current state");
-                reply.addString("  stat                  Outputs statistics of the machine");
+                reply.addString("  info                  Outputs information about the machine");
                 reply.addString("  pause                 Disable passing the samples to the machine");
                 reply.addString("  continue              Enable passing the samples to the machine");
                 reply.addString("  set key val           Sets a configuration option for the machine");
