@@ -31,8 +31,6 @@ void velControlThread::run()
 {
 	double t_start = yarp::os::Time::now();
 
-	//we set the ff vel to 0
-	ffVelocities = 0;
 
 	if (getIterations()>100)
 	{
@@ -49,6 +47,7 @@ void velControlThread::run()
 	yarp::os::Bottle *bot = command_port.read(false);
 	if(bot!=NULL)
 	{
+        nb_void_loops = 0;
 		//fprintf(stderr, "\n Receiving command: \t");
 		int size = bot->size()/2;
 		for(int i=0;i<size;i++)
@@ -62,7 +61,12 @@ void velControlThread::run()
 			//fprintf(stderr, "for joint *%d, received %f, \t", ind, targets(ind));
 		}
 		first_command++;
-	}
+	} else {
+        nb_void_loops++;
+        if(nb_void_loops > 5) {
+            ffVelocities = 0.0;
+        }
+    }
 
 	//getting commands from the slow port
 	yarp::sig::Vector *vec = command_port2.read(false);
@@ -163,6 +167,8 @@ bool velControlThread::init(PolyDriver *d, ConstString partName, ConstString rob
 	char tmp[255];
 
 	yarp::os::Time::turboBoost();
+
+    nb_void_loops = 0;
 
 	///opening port for fast transfer of position command
 	sprintf(tmp,"/%s/vc/%s/fastCommand", robotName.c_str(), partName.c_str());

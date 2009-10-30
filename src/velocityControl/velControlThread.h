@@ -39,6 +39,8 @@ private:
     bool suspended;
     int first_command;
 
+    int nb_void_loops;
+
     yarp::os::Semaphore _mutex;
 
     int control_rate; //in ms
