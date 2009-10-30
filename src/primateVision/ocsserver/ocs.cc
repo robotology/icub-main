@@ -171,7 +171,6 @@ void iCub::contrib::primateVision::OCSServer::run(){
   Ipp8u* m_8u               = ippiMalloc_8u_C1(srcsize.width,srcsize.height,&psb);
   Ipp8u* M_8u               = ippiMalloc_8u_C1(srcsize.width,srcsize.height,&psb);
   Ipp8u* phaseSym_8u        = ippiMalloc_8u_C1(srcsize.width,srcsize.height,&psb);
-  Ipp8u* phaseOr_8u         = ippiMalloc_8u_C1(srcsize.width,srcsize.height,&psb);
 
   double angl;
  
@@ -634,10 +633,9 @@ void iCub::contrib::primateVision::OCSServer::run(){
  
 
 	//Feat. Orientations:
-	conv_32f_to_8u(or_,psb_32f,phaseOr_8u,psb,srcsize);
 	Bottle& tmpBot_phaseOr = outPort_phaseOr.prepare();
 	tmpBot_phaseOr.clear();
-	tmpBot_phaseOr.add(Value::makeBlob(phaseOr_8u,psb*srcsize.height));
+	tmpBot_phaseOr.add(Value::makeBlob(or_,psb_32f*srcsize.height));
 	tmpBot_phaseOr.addString("or");
 	outPort_phaseOr.write();  // Send it on its way
  
