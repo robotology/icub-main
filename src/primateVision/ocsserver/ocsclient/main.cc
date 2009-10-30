@@ -93,26 +93,26 @@ int main( int argc, char **argv )
 
 
 
-  BufferedPort<Bottle> inPort_ps;      // Create a ports
-  inPort_ps.open("/ocsclient_"+input+"/input/phaseSym");     // Give it a name on the network.
+  BufferedPort<Bottle> inPort_ps;   
+  inPort_ps.open("/ocsclient_"+input+"/input/phaseSym");
   Network::connect("/ocsserver_"+input+"/output/phaseSym" , "/ocsclient_"+input+"/input/phaseSym");
   Bottle *inBot_ps;
   Ipp8u* ps;
 
-  BufferedPort<Bottle> inPort_m;      // Create a ports
-  inPort_m.open("/ocsclient_"+input+"/input/m");     // Give it a name on the network.
+  BufferedPort<Bottle> inPort_m; 
+  inPort_m.open("/ocsclient_"+input+"/input/m"); 
   Network::connect("/ocsserver_"+input+"/output/m" , "/ocsclient_"+input+"/input/m");
   Bottle *inBot_m;
   Ipp8u* m;
 
-  BufferedPort<Bottle> inPort_M;      // Create a ports
-  inPort_M.open("/ocsclient_"+input+"/input/M");     // Give it a name on the network.
+  BufferedPort<Bottle> inPort_M;    
+  inPort_M.open("/ocsclient_"+input+"/input/M");  
   Network::connect("/ocsserver_"+input+"/output/M" , "/ocsclient_"+input+"/input/M");
   Bottle *inBot_M;
   Ipp8u* M;
 
-  BufferedPort<Bottle> inPort_ocs;      // Create a ports
-  inPort_ocs.open("/ocsclient_"+input+"/input/ocs");     // Give it a name on the network.
+  BufferedPort<Bottle> inPort_ocs;  
+  inPort_ocs.open("/ocsclient_"+input+"/input/ocs");  
   Network::connect("/ocsserver_"+input+"/output/ocs" , "/ocsclient_"+input+"/input/ocs");
   Bottle *inBot_ocs;
   Ipp8u* ocs;

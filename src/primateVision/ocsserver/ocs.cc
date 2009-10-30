@@ -116,6 +116,9 @@ void iCub::contrib::primateVision::OCSServer::run(){
   BufferedPort<Bottle> outPort_phaseSym;
   outPort_phaseSym.open("/ocsserver_"+QString::number(servernum)+"/output/phaseSym");
 
+  BufferedPort<Bottle> outPort_phaseOr;
+  outPort_phaseOr.open("/ocsserver_"+QString::number(servernum)+"/output/phaseOr");
+
   BufferedPort<Bottle> outPort_ocs;
   outPort_ocs.open("/ocsserver_"+QString::number(servernum)+"/output/ocs");
 
@@ -168,6 +171,7 @@ void iCub::contrib::primateVision::OCSServer::run(){
   Ipp8u* m_8u               = ippiMalloc_8u_C1(srcsize.width,srcsize.height,&psb);
   Ipp8u* M_8u               = ippiMalloc_8u_C1(srcsize.width,srcsize.height,&psb);
   Ipp8u* phaseSym_8u        = ippiMalloc_8u_C1(srcsize.width,srcsize.height,&psb);
+  Ipp8u* phaseOr_8u         = ippiMalloc_8u_C1(srcsize.width,srcsize.height,&psb);
 
   double angl;
  
@@ -365,7 +369,7 @@ void iCub::contrib::primateVision::OCSServer::run(){
 	//PS
 	ippiSet_32f_C1R(0.0,totalSumAn,psb_32f,srcsize);
 	ippiSet_32f_C1R(0.0,totalEnergy,psb_32f,srcsize);
-	//ippiSet_32f_C1R(0.0,orientation,psb_32f,srcsize);
+	//ippiSet_32f_C1R(0.0,sym_or,psb_32f,srcsize);
 	
 	
 	
@@ -627,6 +631,15 @@ void iCub::contrib::primateVision::OCSServer::run(){
 	tmpBot_phaseSym.add(Value::makeBlob(phaseSym_8u,psb*srcsize.height));
 	tmpBot_phaseSym.addString("sym");
 	outPort_phaseSym.write();  // Send it on its way
+ 
+
+	//Feat. Orientations:
+	conv_32f_to_8u(or_,psb_32f,phaseOr_8u,psb,srcsize);
+	Bottle& tmpBot_phaseOr = outPort_phaseOr.prepare();
+	tmpBot_phaseOr.clear();
+	tmpBot_phaseOr.add(Value::makeBlob(phaseOr_8u,psb*srcsize.height));
+	tmpBot_phaseOr.addString("or");
+	outPort_phaseOr.write();  // Send it on its way
  
 
 	//printf("postproc stop!\n");		
