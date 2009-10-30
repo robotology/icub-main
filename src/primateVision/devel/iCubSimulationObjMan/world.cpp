@@ -230,7 +230,8 @@ void worldSim::draw(){
 
 	//get data from objManServer:
     objList = inPort_objList.read(); //blocking
- 	glColor3d(1.0,1.0,1.0);
+    float alpha = 0.0;//0 for white //1 for black
+ 	glColor4f(1.0,1.0,1.0, alpha);
 
 	if (objList->size()<=MAX_OBJS){
 		//Set the positions for each object
@@ -254,7 +255,7 @@ void worldSim::draw(){
 				glRotatef(180.0,0.0,0.0,1.0);glRotatef(-90.0,1.0,0.0,0.0);glScalef(0.05,0.05,0.05);glTranslatef(0,0.5,2);bottleModel->draw(false,15); 					glPopMatrix();
             	glPushMatrix();LDEsetM(dGeomGetPosition(s_labl_obj[i].labelgeom[0]),dGeomGetRotation(s_labl_obj[i].labelgeom[0]));
 				glRotatef(-180.0,1.0,0.0,0.0);				
-				DrawBox(0.08,0.08,0.001,false,textured, i + 50 );glPopMatrix(); 
+				DrawQuad(0.08,0.08,0.001, i + 50 );glPopMatrix(); 
 			}
 
 				if (objList->get(i)->label == "fags"){
@@ -266,7 +267,7 @@ void worldSim::draw(){
 
            		glDisable(GL_CULL_FACE); glPushMatrix();LDEsetM(dGeomGetPosition(s_labl_obj[i].labelgeom[0]),dGeomGetRotation(s_labl_obj[i].labelgeom[0])); 				glRotatef(180.0,0.0,0.0,1.0);glRotatef(-90.0,1.0,0.0,0.0);glScalef(0.05,0.05,0.05);glTranslatef(0,0.5,2);fagsModel->draw(false,15); 				glPopMatrix();
 				glEnable(GL_CULL_FACE);
-				glPushMatrix();LDEsetM(dGeomGetPosition(s_labl_obj[i].labelgeom[0]),dGeomGetRotation(s_labl_obj[i].labelgeom[0]));glRotatef(-180.0,1.0,0.0,0.0);	DrawBox(0.08,0.08,0.001,false,textured,i + 50);glPopMatrix(); 
+				glPushMatrix();LDEsetM(dGeomGetPosition(s_labl_obj[i].labelgeom[0]),dGeomGetRotation(s_labl_obj[i].labelgeom[0]));glRotatef(-180.0,1.0,0.0,0.0);	DrawQuad(0.08,0.08,0.001, i + 50 );glPopMatrix(); 
         }
 			if (objList->get(i)->label == "unknown"){
 				int pin = objList->get(i)->tex.getRowSize();
@@ -275,7 +276,7 @@ void worldSim::draw(){
 				DrawObjManTexturesPort( i + 50, ObjManwidth, ObjManheight, imgDataIn, pin);
            		glDisable(GL_CULL_FACE); glPushMatrix();LDEsetM(dGeomGetPosition(s_labl_obj[i].labelgeom[0]),dGeomGetRotation(s_labl_obj[i].labelgeom[0])); 				glRotatef(180.0,0.0,0.0,1.0);glRotatef(-90.0,1.0,0.0,0.0);glScalef(0.05,0.05,0.05);glTranslatef(0,0.5,2);unknownModel->draw(false,15); 					glPopMatrix();
 				glEnable(GL_CULL_FACE);
-            	glPushMatrix();LDEsetM(dGeomGetPosition(s_labl_obj[i].labelgeom[0]),dGeomGetRotation(s_labl_obj[i].labelgeom[0]));glRotatef(-180.0,1.0,0.0,0.0);	DrawBox(0.08,0.08,0.001,false,textured,i + 50);glPopMatrix(); 
+            	glPushMatrix();LDEsetM(dGeomGetPosition(s_labl_obj[i].labelgeom[0]),dGeomGetRotation(s_labl_obj[i].labelgeom[0]));glRotatef(-180.0,1.0,0.0,0.0);	DrawQuad(0.08,0.08,0.001, i + 50 );glPopMatrix(); 
         	}
 
 		if (objList->get(i)->label == "coke"){
@@ -285,7 +286,7 @@ void worldSim::draw(){
 				DrawObjManTexturesPort( i + 50, ObjManwidth, ObjManheight, imgDataIn, pin);
            		glDisable(GL_CULL_FACE); glPushMatrix();LDEsetM(dGeomGetPosition(s_labl_obj[i].labelgeom[0]),dGeomGetRotation(s_labl_obj[i].labelgeom[0])); 				glRotatef(180.0,0.0,0.0,1.0);glRotatef(-90.0,1.0,0.0,0.0);glScalef(0.05,0.05,0.05);glTranslatef(0,0.5,2);canModel->draw(false,15); 					glPopMatrix();
 				glEnable(GL_CULL_FACE);
-            	glPushMatrix();LDEsetM(dGeomGetPosition(s_labl_obj[i].labelgeom[0]),dGeomGetRotation(s_labl_obj[i].labelgeom[0]));glRotatef(-180.0,1.0,0.0,0.0);DrawBox(0.08,0.08,0.001,false,textured,i + 50);glPopMatrix(); 
+            	glPushMatrix();LDEsetM(dGeomGetPosition(s_labl_obj[i].labelgeom[0]),dGeomGetRotation(s_labl_obj[i].labelgeom[0]));glRotatef(-180.0,1.0,0.0,0.0);DrawQuad(0.08,0.08,0.001, i + 50 );glPopMatrix(); 
         	}
 						
 		}

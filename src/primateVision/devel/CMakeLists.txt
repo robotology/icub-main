@@ -3,4 +3,5 @@ SUBDIRS(
   es
   esMulti
   body
+  objRec2
 )

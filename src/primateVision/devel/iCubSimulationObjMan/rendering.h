@@ -34,6 +34,7 @@ void swapTextures(int oldText, int newText);
 void setup_opengl();
 void DrawVideo(VideoTexture *video);
 void DrawObjManTextures(int texture);
+void DrawQuad(float width, float height, float length, int texture);
 void DrawObjManTexturesPort(int texture, int imgWidth, int imgHeight, unsigned char *imgData, int pin);
 void DrawGround(bool wireframe);
 void DrawBox(float length, float height, float width, bool wireframe, bool texture, int whichtexture);

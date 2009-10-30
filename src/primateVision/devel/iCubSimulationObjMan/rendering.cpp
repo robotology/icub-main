@@ -119,8 +119,6 @@ face data/texture/face.raw
 	}
      objManlastData = -1000;
      inc = 0;
-
-	objManPort.open("/vtikha/in");
 }
 
 void swapTextures(int oldText, int newText){
@@ -162,7 +160,6 @@ void DrawGround(bool wireframe){
   glTexCoord2f (-50.0f * 0.5f + 0.5f, 50.0f * 0.5f + 0.5f);
   glVertex3f (-50.0f, 50.0f, 0.0f);
   glEnd();
-
  }
 }
 void drawSkyDome(float x, float y, float z, float width, float height, float length)
@@ -170,14 +167,16 @@ void drawSkyDome(float x, float y, float z, float width, float height, float len
  // Center the Skybox around the given x,y,z position
  x = x - width  / 2;
  y = y - height / 2;
- z = z - length / 2;
-float skyboxMaterial[]   = {1.0f,1.0f,1.0f,1.0f};   
-glTexEnvf (GL_TEXTURE_ENV, GL_TEXTURE_ENV_MODE, GL_DECAL);
+ z = z - length / 2; 
+    glTexEnvf (GL_TEXTURE_ENV, GL_TEXTURE_ENV_MODE, GL_DECAL);
+glTexParameterf (GL_TEXTURE_2D, GL_TEXTURE_WRAP_S, GL_REPEAT);
+  glTexParameterf (GL_TEXTURE_2D, GL_TEXTURE_WRAP_T, GL_REPEAT);
+  glTexParameterf (GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_LINEAR);
+  glTexParameterf (GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_LINEAR_MIPMAP_LINEAR);
 glRotatef(180,0,0,1);
  // Draw Front side
  glBindTexture(GL_TEXTURE_2D, Texture[13]);
  glBegin(GL_QUADS); 
-  glMaterialfv(GL_FRONT, GL_AMBIENT, skyboxMaterial);
   glTexCoord2f(1.0f, 0.0f); glVertex3f(x,    y,  z+length);
   glTexCoord2f(1.0f, 1.0f); glVertex3f(x,    y+height, z+length);
   glTexCoord2f(0.0f, 1.0f); glVertex3f(x+width, y+height, z+length); 
@@ -228,7 +227,6 @@ glRotatef(180,0,0,1);
   glTexCoord2f(1.0f, 1.0f); glVertex3f(x+width, y,  z+length); 
   glTexCoord2f(0.0f, 1.0f); glVertex3f(x+width, y,  z);
  glEnd();
-
 }
 
 void DrawBox(float width, float height, float length, bool wireframe, bool texture, int whichtexture){
@@ -244,10 +242,11 @@ void DrawBox(float width, float height, float length, bool wireframe, bool textu
     glScalef(width/2,height/2,length/2);
 	if (texture){
 		glEnable(GL_TEXTURE_2D);
-		glBindTexture(GL_TEXTURE_2D,Texture[whichtexture]); 
-	}
+       	glBindTexture(GL_TEXTURE_2D,Texture[whichtexture]); 
+    }   
 	else{
 		glDisable(GL_TEXTURE_2D);
+        
 	}
     /*glBegin(mode);
     //face 1
@@ -366,9 +365,54 @@ void DrawBox(float width, float height, float length, bool wireframe, bool textu
 	glPopMatrix();
 
 	glDisable(GL_TEXTURE_2D);
-	//glDisable( GL_BLEND ); 
 }
 
+void DrawQuad(float width, float height, float length, int texture){
+
+    glPushMatrix();
+    glScalef( width/2, height/2, length/2);
+    glEnable( GL_BLEND );
+    glEnable(GL_TEXTURE_2D);
+	glBlendFunc(GL_DST_ALPHA, GL_ONE_MINUS_SRC_ALPHA);
+    glBindTexture(GL_TEXTURE_2D,Texture[texture]); 
+
+    glBegin(GL_QUADS);
+		// Front Face
+		glTexCoord2f(0.0f, 0.0f); glVertex3f(-1.0f, -1.0f,  1.0f);	// Bottom Left Of The Texture and Quad
+		glTexCoord2f(1.0f, 0.0f); glVertex3f( 1.0f, -1.0f,  1.0f);	// Bottom Right Of The Texture and Quad
+		glTexCoord2f(1.0f, 1.0f); glVertex3f( 1.0f,  1.0f,  1.0f);	// Top Right Of The Texture and Quad
+		glTexCoord2f(0.0f, 1.0f); glVertex3f(-1.0f,  1.0f,  1.0f);	// Top Left Of The Texture and Quad
+		// Back Face
+		glTexCoord2f(1.0f, 0.0f); glVertex3f(-1.0f, -1.0f, -1.0f);	// Bottom Right Of The Texture and Quad
+		glTexCoord2f(1.0f, 1.0f); glVertex3f(-1.0f,  1.0f, -1.0f);	// Top Right Of The Texture and Quad
+		glTexCoord2f(0.0f, 1.0f); glVertex3f( 1.0f,  1.0f, -1.0f);	// Top Left Of The Texture and Quad
+		glTexCoord2f(0.0f, 0.0f); glVertex3f( 1.0f, -1.0f, -1.0f);	// Bottom Left Of The Texture and Quad
+		// Top Face
+		glTexCoord2f(0.0f, 1.0f); glVertex3f(-1.0f,  1.0f, -1.0f);	// Top Left Of The Texture and Quad
+		glTexCoord2f(0.0f, 0.0f); glVertex3f(-1.0f,  1.0f,  1.0f);	// Bottom Left Of The Texture and Quad
+		glTexCoord2f(1.0f, 0.0f); glVertex3f( 1.0f,  1.0f,  1.0f);	// Bottom Right Of The Texture and Quad
+		glTexCoord2f(1.0f, 1.0f); glVertex3f( 1.0f,  1.0f, -1.0f);	// Top Right Of The Texture and Quad
+		// Bottom Face
+		glTexCoord2f(1.0f, 1.0f); glVertex3f(-1.0f, -1.0f, -1.0f);	// Top Right Of The Texture and Quad
+		glTexCoord2f(0.0f, 1.0f); glVertex3f( 1.0f, -1.0f, -1.0f);	// Top Left Of The Texture and Quad
+		glTexCoord2f(0.0f, 0.0f); glVertex3f( 1.0f, -1.0f,  1.0f);	// Bottom Left Of The Texture and Quad
+		glTexCoord2f(1.0f, 0.0f); glVertex3f(-1.0f, -1.0f,  1.0f);	// Bottom Right Of The Texture and Quad
+		// Right face
+		glTexCoord2f(1.0f, 0.0f); glVertex3f( 1.0f, -1.0f, -1.0f);	// Bottom Right Of The Texture and Quad
+		glTexCoord2f(1.0f, 1.0f); glVertex3f( 1.0f,  1.0f, -1.0f);	// Top Right Of The Texture and Quad
+		glTexCoord2f(0.0f, 1.0f); glVertex3f( 1.0f,  1.0f,  1.0f);	// Top Left Of The Texture and Quad
+		glTexCoord2f(0.0f, 0.0f); glVertex3f( 1.0f, -1.0f,  1.0f);	// Bottom Left Of The Texture and Quad
+		// Left Face
+		glTexCoord2f(0.0f, 0.0f); glVertex3f(-1.0f, -1.0f, -1.0f);	// Bottom Left Of The Texture and Quad
+		glTexCoord2f(1.0f, 0.0f); glVertex3f(-1.0f, -1.0f,  1.0f);	// Bottom Right Of The Texture and Quad
+		glTexCoord2f(1.0f, 1.0f); glVertex3f(-1.0f,  1.0f,  1.0f);	// Top Right Of The Texture and Quad
+		glTexCoord2f(0.0f, 1.0f); glVertex3f(-1.0f,  1.0f, -1.0f);	// Top Left Of The Texture and Quad
+	glEnd();
+    
+    glDisable( GL_BLEND ); 
+    glDisable(GL_TEXTURE_2D);
+    glPopMatrix();
+}
 void DrawSphere(float radius, bool wireframe, bool texture, int whichtexture){
 	glTexEnvf (GL_TEXTURE_ENV, GL_TEXTURE_ENV_MODE, GL_MODULATE);//makes the texture 
 	sphere = gluNewQuadric();
@@ -562,7 +606,7 @@ void DrawObjManTextures(int texture){
 void DrawObjManTexturesPort(int texture, int imgWidth, int imgHeight, unsigned char *imgData_, int pin){
 	
 		//temp image of same size as input:
-		ImageOf<PixelRgb> img;
+		ImageOf<PixelRgba> img;
         img.resize(imgWidth,imgHeight);
 		img.zero();
 		//get a pointer to the temp data:
@@ -570,14 +614,22 @@ void DrawObjManTexturesPort(int texture, int imgWidth, int imgHeight, unsigned c
 		//populate temp://we have y only //convert to RGB:
 		for (int x=0; x<imgWidth; x++) {
        		for (int y=0; y<imgHeight; y++) {
-				pimg[y*imgWidth*3 + x*3  ] = imgData_[y*pin+x]; //R
-           		pimg[y*imgWidth*3 + x*3+1] = imgData_[y*pin+x]; //G
-           		pimg[y*imgWidth*3 + x*3+2] = imgData_[y*pin+x]; //B
-				}
+				pimg[y*imgWidth*4 + x*4  ] = imgData_[y*pin+x]; //R
+           		pimg[y*imgWidth*4 + x*4+1] = imgData_[y*pin+x]; //G
+           		pimg[y*imgWidth*4 + x*4+2] = imgData_[y*pin+x]; //B
+                if (imgData_[y*pin+x]>0){
+                    pimg[y*imgWidth*4 + x*4+3] = 255; // ALPHA
+                }
+                else{
+                    pimg[y*imgWidth*4 + x*4+3] = 0; // ALPHA
+                }
+			}
 		}	
+        
 
         glBindTexture(GL_TEXTURE_2D, Texture[texture]);
-        gluBuild2DMipmaps(GL_TEXTURE_2D, 3, imgWidth, imgHeight,
-                          GL_RGB, GL_UNSIGNED_BYTE, pimg);
+        gluBuild2DMipmaps(GL_TEXTURE_2D, 4, imgWidth, imgHeight,
+                          GL_RGBA, GL_UNSIGNED_BYTE, pimg);
+        
 }
 
