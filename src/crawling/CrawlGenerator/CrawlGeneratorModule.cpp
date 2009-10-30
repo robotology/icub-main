@@ -92,6 +92,8 @@ bool generatorThread::sendFastJointCommand()
 	{
 		cmd.addInt(jointMapping[i]);
 		cmd.addDouble(states[i]);
+		cmd.addInt(jointMapping[i] + VELOCITY_INDEX_OFFSET);
+		cmd.addDouble(dstates[i]);
 	}
 
 	vcFastCommand_port.write(true);
@@ -295,8 +297,9 @@ void generatorThread::run()
 
 		//integrate the system
 		int inner_steps = (int)((period+time_residue)/myCpg->get_dt());
-		for(int j=0; j<inner_steps; j++)
+		for(int j=0; j<inner_steps; j++) {
 			myCpg->integrate_step(y_cpgs,states);
+		}
 
 		//we send the current status of the cpgs to the higher instance
 		sendStatusForManager();
@@ -321,8 +324,11 @@ void generatorThread::run()
 	//save time stamp and print
 	fprintf(target_file,"%f ",time_now);
 
+
+	//we calculate dstates and log the values
 	for(int i=0; i<nbDOFs; i++)
 	{
+		dstates[i] = (states[i] - previous_states[i]) / (period+time_residue);
 		previous_states[i]=states[i];
 		fprintf(target_file,"%f \t", states[i]);
 	}
@@ -434,6 +440,7 @@ void generatorThread::threadRelease()
 
 	delete[] y_cpgs;
 	delete[] states;
+	delete[] dstates;
 	delete[] previous_states;
 	delete[] encoders;
 
@@ -917,6 +924,7 @@ bool generatorThread::init(Searchable &s)
 	fflush(stdout);
 	y_cpgs = new double[nbDOFs*4+2*nbLIMBs+1]; //4 states per internal dof + 2 per coupled dof + 1 go command
 	states = new double[nbDOFs];
+	dstates = new double[nbDOFs];
 	previous_states = new double[nbDOFs];
 	encoders = new double[nbDOFs];
 
@@ -928,6 +936,7 @@ bool generatorThread::init(Searchable &s)
 	{
 		states[i]=0.0;
 		previous_states[i]=0.0;
+		dstates[i] = 0.0;
 
 		y_cpgs[4*i]=0.0/180.0*3.1415/myCpg->ampl[i];
 
@@ -956,6 +965,7 @@ bool generatorThread::init(Searchable &s)
 		states[i]=encoders[i];
 
 		previous_states[i]=encoders[i];
+		dstates[i] = 0.0;
 
 		y_cpgs[4*i]=encoders[i]/180.0*3.1415/myCpg->ampl[i];
 

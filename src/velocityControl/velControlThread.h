@@ -28,6 +28,7 @@ private:
     yarp::sig::Vector Kd; //derivative term
     
     yarp::sig::Vector targets;
+    yarp::sig::Vector ffVelocities;
     yarp::sig::Vector command;
 
     yarp::sig::Vector error;

@@ -301,8 +301,9 @@ void cpgs::integrate_step(double *y, double *at_states)
 
 
 	//***** SETTING TARGET POSITION
-	for(int i=0;i<nbDOFs;i++)
-		at_states[i]= ampl[i]*180.0/M_PI*y[4*i+2];
+	for(int i=0;i<nbDOFs;i++) {
+		at_states[i] = ampl[i]*180.0/M_PI*y[4*i+2];
+	}
 }
 
 

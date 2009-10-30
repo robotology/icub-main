@@ -53,7 +53,7 @@ public:
     bool feedback_on; //if feedbackable, is the feedback information available
     double contact[2];//touch sensor information  for on arm (leg) and the other
     	
-    void integrate_step(double *y, double *at_states);		
+    void integrate_step(double *y, double *at_states);
 	void printInternalVariables();
 	void getArmAngles();
 	

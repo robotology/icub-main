@@ -23,6 +23,8 @@ using namespace std;
 #define MAX_FREQUENCY 1.5 //in Hz
 #define MAX_TURN_ANGLE 0.52 //in radians 
 
+#define VELOCITY_INDEX_OFFSET 1000
+
 #define LEFT 1
 #define RIGHT 2
 
@@ -53,6 +55,7 @@ class generatorThread : public yarp::os::RateThread
     int *jointMapping;
     double *y_cpgs;
     double *states;
+    double *dstates;
     double *previous_states;
     double *encoders;
     double *joint_limit_up;
@@ -87,7 +90,7 @@ class generatorThread : public yarp::os::RateThread
 
     FILE *target_file, *parameters_file, *encoder_file, *feedback_file;
 
-    bool sendJointCommand();
+//    bool sendJointCommand();
     bool sendFastJointCommand();
     void checkJointLimits();
     bool getEncoders();
@@ -97,7 +100,7 @@ class generatorThread : public yarp::os::RateThread
     void connectToOtherLimbs();
     void disconnectPorts();
     void sendStatusForManager();
-    bool getQuadrant();
+//    bool getQuadrant();
 };
 
 class CrawlGeneratorModule : public Module
