@@ -49,11 +49,15 @@ void cart2polar_8u(Ipp8u*cart,int psb_cart, int cw,int ch, Ipp8u* pol, int psb_p
   for(int x = 0;x<cw;x++){
     for(int y = 0;y<ch;y++){
       r = sqrt((x-cx)*(x-cx) + (y-cy)*(y-cy));
-      t = atan((y-cy)/(x-cx));
+      if (x-cx!=0){
+	t = atan((y-cy)/(x-cx));
+      }
+      else {t = 0;}
       pol[t*psb_pol + r] = cart[y*psb_cart + x];
     }
   }
 }
+
 
 
 void cart2polar_32f(Ipp32f*cart,int psb_cart, int cw,int ch, Ipp32f* pol, int psb_pol,  int cx,int cy){
@@ -63,7 +67,10 @@ void cart2polar_32f(Ipp32f*cart,int psb_cart, int cw,int ch, Ipp32f* pol, int ps
   for(int x = 0;x<cw;x++){
     for(int y = 0;y<ch;y++){
       r = sqrt((x-cx)*(x-cx) + (y-cy)*(y-cy));
-      t = atan((y-cy)/(x-cx));
+      if (x-cx!=0){
+	t = atan((y-cy)/(x-cx));
+      }
+      else {t = 0;}
       pol[t*psb_pol + r] = cart[y*psb_cart + x];
     }
   }
@@ -225,18 +232,12 @@ int main( int argc, char **argv )
     ippiCopy_32f_C1R((Ipp32f*) inBot_or->get(0).asBlob(),ocs_psb_32f,orient_fov,orient_fov_psb,zdf_size);
   
     
-
-    printf("1\n");
-
     //***[1]*******POLAR TRANSFORM:
     // polar transform seg about CoG.
     cart2polar_8u(seg,seg_psb, zdf_width,zdf_height, pol_seg,pol_seg_psb, cog_x,cog_y);
     // polar transform orient fov about same point as seg:
     cart2polar_32f(orient_fov,orient_fov_psb, zdf_width,zdf_height, pol_or,pol_or_psb, cog_x,cog_y); 
     //*************POLAR TRANSFORM.
-
-
-    printf("2\n");
 
 
 
@@ -265,21 +266,28 @@ int main( int argc, char **argv )
     }
 
 
-    printf("3\n");
+    printf("%f\n",av); 
 
     //ROLL POLAR IMAGE UP BY "AV" (ORIENT INVARIANCE):
-    rollup_8u(av,pol_seg,pol_seg_psb, polar_width, polar_height, pol_seg_rolled, pol_seg_rolled_psb);
-    
-    //stretch polar map fully right (SCALING INVARIANCE):
-    stretchright_8u(pol_seg_rolled, pol_seg_rolled_psb, polar_width,polar_height,  pol_seg_rolled_right, pol_seg_rolled_right_psb);
+    if (av!=0.0){
+      rollup_8u((int)av,pol_seg,pol_seg_psb, polar_width, polar_height, pol_seg_rolled, pol_seg_rolled_psb);
 
-    //convert result back to cartesian space:
-    polar2cart_8u(pol_seg_rolled_right,pol_seg_rolled_right_psb,  polar_width,polar_height,  out,out_psb);
+      //stretch polar map fully right (SCALING INVARIANCE):
+      stretchright_8u(pol_seg_rolled, pol_seg_rolled_psb, polar_width,polar_height,  pol_seg_rolled_right, pol_seg_rolled_right_psb);
+    }
+    else{
+      //stretch polar map fully right (SCALING INVARIANCE):
+      stretchright_8u(pol_seg, pol_seg_rolled_psb, polar_width,polar_height,  pol_seg_rolled_right, pol_seg_rolled_right_psb);
+ 
+    }
 
     //**************INVARIANCE.
 
 
 
+
+    //convert result back to cartesian space:
+    polar2cart_8u(pol_seg_rolled_right,pol_seg_rolled_right_psb,  polar_width,polar_height,  out,out_psb);
 
 
 
@@ -290,6 +298,9 @@ int main( int argc, char **argv )
 
 
     //NOW SEND THE ORIENTED SEG TO CLASSIFIER!!
+
+   printf(".\n");
+
 
   }
   

@@ -12,7 +12,7 @@
 #include "kal.h"
 
 
-#define MIN_DIST 20 //pixels
+#define MIN_DIST 40 //pixels
 
 using namespace std;
 using namespace iCub::contrib::primateVision;

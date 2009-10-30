@@ -236,6 +236,7 @@ void iCub::contrib::primateVision::OCSServer::run(){
   osp.width=srcsize.width;
   osp.height=srcsize.height;
   osp.psb=psb;
+  osp.psb_32f=psb_32f;
   //Replier:
   OCSReplyParamProbe server_replier;
   server_replier.reply=osp;
