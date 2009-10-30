@@ -233,26 +233,7 @@ bool ServerCartesianController::respond(const Bottle &command, Bottle &reply)
         {
             case IKINCARTCTRL_VOCAB_CMD_STOP:
             {   
-                if (command.size()>1)
-                {
-                    int flag=command.get(1).asVocab();
-    
-                    if (flag==IKINCARTCTRL_VOCAB_VAL_TRUE)
-                    {    
-                        stopControl(true);
-                        reply.addVocab(IKINCARTCTRL_VOCAB_REP_ACK);
-                    }
-                    else if (flag==IKINCARTCTRL_VOCAB_VAL_FALSE)
-                    {    
-                        stopControl(false);
-                        reply.addVocab(IKINCARTCTRL_VOCAB_REP_ACK);
-                    }
-                    else
-                        reply.addVocab(IKINCARTCTRL_VOCAB_REP_NACK);
-                }
-                else
-                    reply.addVocab(IKINCARTCTRL_VOCAB_REP_NACK);
-    
+                stopControl();
                 break;
             }
 
@@ -1428,14 +1409,15 @@ bool ServerCartesianController::checkMotionDone(bool *f)
 
 
 /************************************************************************/
-bool ServerCartesianController::stopControl(const bool f)
+bool ServerCartesianController::stopControl()
 {
     if (connected)
     {
+        executingTraj=false;
+        motionDone   =true;
+
         stopLimbVel();
-    
-        if (f)
-            setTrackingMode(false);
+        setTrackingMode(false);
     
         return true;
     }

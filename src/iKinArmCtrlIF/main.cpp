@@ -264,7 +264,7 @@ public:
 
     virtual void threadRelease()
     {    
-        arm->stopControl(true);
+        arm->stopControl();
         delete client;
 
         port_xd.interrupt();

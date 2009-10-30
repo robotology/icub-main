@@ -43,7 +43,7 @@ public:
     virtual bool getTrajTime(double *t);
     virtual bool setTrajTime(const double t);
     virtual bool checkMotionDone(bool *f);
-    virtual bool stopControl(const bool f);
+    virtual bool stopControl();
 
     virtual ~ClientCartesianController();
 };

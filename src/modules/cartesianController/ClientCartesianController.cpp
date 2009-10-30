@@ -502,17 +502,12 @@ bool ClientCartesianController::checkMotionDone(bool *f)
 
 
 /************************************************************************/
-bool ClientCartesianController::stopControl(const bool f)
+bool ClientCartesianController::stopControl()
 {
     Bottle command, reply;
 
     // prepare command
     command.addVocab(IKINCARTCTRL_VOCAB_CMD_STOP);
-
-    if (f)
-        command.addVocab(IKINCARTCTRL_VOCAB_VAL_TRUE);
-    else
-        command.addVocab(IKINCARTCTRL_VOCAB_VAL_FALSE);
 
     // send command and wait for reply
     if (!portRpc->write(command,reply))
