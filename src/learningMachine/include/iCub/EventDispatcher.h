@@ -38,17 +38,27 @@ private:
      */
     std::list<IEventListener*> listeners;
 
-public:
     /**
      * Empty Constructor
      */
     EventDispatcher();
 
     /**
+     * Copy Constructor
+     */
+    EventDispatcher(const EventDispatcher& other);
+
+    /**
      * Empty Destructor
      */
     virtual ~EventDispatcher();
-
+    
+    /**
+     * Assignment operator.
+     */
+    EventDispatcher& operator=(const EventDispatcher& other);
+    
+public:
     /**
      * An instance retrieval method that follows the Singleton pattern.
      *
@@ -93,7 +103,14 @@ public:
      * @return the IEventListener
      * @param  idx The index of the IEventListener.
      */
-    virtual IEventListener* getListener(int idx);
+    virtual IEventListener& getAt(int idx);
+
+    /**
+     * Returns the IEventListener at a specified index.
+     * @return the IEventListener
+     * @param  idx The index of the IEventListener.
+     */
+    virtual IEventListener& getAt(int idx) const;
     
     /**
      * Clears all the IEventListeners from the EventDispatcher.
@@ -114,7 +131,7 @@ public:
      *
      * @return the number of registered listeners
      */
-    virtual int countListeners() {
+    virtual int countListeners() const {
         return this->listeners.size();
     }
     

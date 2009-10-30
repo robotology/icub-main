@@ -77,7 +77,7 @@ public:
     /*
      * Inherited from ITransformer.
      */
-    virtual ITransformer* create() {
+    virtual ITransformer* clone() {
         return new RandomFeature(*this);
     }
 

@@ -191,7 +191,7 @@ void LSSVMAtlasLearner::reset() {
     this->initAll();
 }
 
-IMachineLearner* LSSVMAtlasLearner::create() {
+IMachineLearner* LSSVMAtlasLearner::clone() {
     return new LSSVMAtlasLearner(this->machines.size(), this->defaultType, this->defaultKernel);
 }
 

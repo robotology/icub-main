@@ -65,20 +65,25 @@ public:
     /**
      * Copy constructor.
      */
-    DatasetRecorder(const DatasetRecorder& copy) {
-        // copy all but stream reference
-        this->name = copy.name;
-        this->precision = copy.precision;
-        this->sampleCount = copy.sampleCount;
-        this->filename = copy.filename;
+    DatasetRecorder(const DatasetRecorder& other) 
+      : IMachineLearner(other), precision(other.precision), 
+        sampleCount(other.sampleCount), filename(other.filename) {
     }
 
     /**
      * Destructor.
      */
     virtual ~DatasetRecorder() {
+        if(!this->stream.is_open()) {
+            this->stream.close();
+        }
     }
-
+    
+    /**
+     * Assignment operator.
+     */
+    DatasetRecorder& operator=(const DatasetRecorder& other);
+    
     /*
      * Inherited from IMachineLearner.
      */
@@ -107,7 +112,7 @@ public:
     /*
      * Inherited from IMachineLearner.
      */
-    IMachineLearner* create() {
+    IMachineLearner* clone() {
         return new DatasetRecorder(*this);
     }
 

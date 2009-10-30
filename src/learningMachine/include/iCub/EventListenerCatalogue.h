@@ -12,7 +12,6 @@
 #define __ICUB_EVENTLISTENERCATALOGUE__
 
 #include "iCub/EventListenerFactory.h"
-
 #include "iCub/TrainEventListener.h"
 #include "iCub/PredictEventListener.h"
 

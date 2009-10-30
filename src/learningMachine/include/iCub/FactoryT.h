@@ -34,12 +34,16 @@ private:
      */
     std::map<K, T*> map;
 
-public:
     /**
      * Constructor.
      */
     FactoryT() {}
-
+    
+    /**
+     * Copy Constructor (unimplemented on purpose)
+     */
+    FactoryT(const FactoryT<K, T>& other);
+    
     /**
      * The default destructor of the Factory template. This destructor takes 
      * responsibility for deleting the prototype objects that have been 
@@ -51,6 +55,12 @@ public:
         }
     }
 
+    /**
+     * Assignment operator (unimplemented on purpose).
+     */
+    FactoryT<K, T>& operator=(const FactoryT<K, T>& other);
+
+public:
     /**
      * An instance retrieval method that follows the Singleton pattern.
      *
@@ -99,7 +109,7 @@ public:
      * @param key a key that identifies the type of machine
      * @return A new object of the specified type
      */
-    T* create(const K& key) {
+    T* clone(const K& key) {
         if(this->map.find(key) == this->map.end()) {
             std::ostringstream buffer;
             buffer << "Could not find prototype '" << key 
@@ -107,7 +117,7 @@ public:
             throw std::runtime_error(buffer.str());
         }
 
-        return this->map.find(key)->second->create();
+        return this->map.find(key)->second->clone();
     }
 };
 

@@ -147,7 +147,7 @@ public:
      *
      * @return a fresh instance of the specified type
      */
-    virtual IScaler* create() = 0;
+    virtual IScaler* clone() = 0;
 
     /**
      * Asks the scaler to return a string serialization.

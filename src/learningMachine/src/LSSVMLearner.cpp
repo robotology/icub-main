@@ -116,7 +116,7 @@ void LSSVMLearner::reset() {
     this->bias.clear();
 }
 
-IMachineLearner* LSSVMLearner::create() {
+IMachineLearner* LSSVMLearner::clone() {
     return new LSSVMLearner(*this);
 }
 

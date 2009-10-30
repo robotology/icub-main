@@ -80,7 +80,7 @@ public:
      *
      * @return a fresh instance of the current class
      */
-    virtual IEventListener* create() = 0;
+    virtual IEventListener* clone() = 0;
 
     /**
      * Retrieve the name of this IEventListener.

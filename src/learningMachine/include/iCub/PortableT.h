@@ -219,7 +219,7 @@ public:
             delete this->wrapped;
             this->wrapped = (T*) 0;
         }
-        this->wrapped = FactoryT<std::string, T>::instance().create(name);
+        this->wrapped = FactoryT<std::string, T>::instance().clone(name);
     }
 
 

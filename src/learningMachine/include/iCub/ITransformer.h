@@ -142,7 +142,7 @@ public:
      *
      * @return a fresh instance of the current class
      */
-    virtual ITransformer* create() = 0;
+    virtual ITransformer* clone() = 0;
 
     /*
      * Inherited from IConfig.

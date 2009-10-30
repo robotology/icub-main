@@ -12,7 +12,6 @@
 #define __ICUB_MACHINECATALOGUE__
 
 #include "iCub/IMachineLearner.h"
-
 #include "iCub/DummyLearner.h"
 #include "iCub/RLSLearner.h"
 #include "iCub/LSSVMLearner.h"

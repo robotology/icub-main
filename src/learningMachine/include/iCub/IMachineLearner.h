@@ -111,11 +111,11 @@ public:
     virtual Vector predict(const Vector& input) = 0;
 
     /**
-     * Asks the learning machine to return a new object of its type.
+     * Asks the learning machine to return a clone of its type.
      *
-     * @return a fresh instance of the current class
+     * @return a clone of the current class
      */
-    virtual IMachineLearner* create() = 0;
+    virtual IMachineLearner* clone() = 0;
 
     /**
      * Forget everything and start over.

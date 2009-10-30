@@ -14,13 +14,31 @@ namespace iCub {
 namespace learningmachine {
 
 
-EventDispatcher::EventDispatcher() {
-}
+EventDispatcher::EventDispatcher() { }
+
+// the copy constructor and the assignment operator are best left unimplemented
+// for this singleton.
+
+//EventDispatcher::EventDispatcher(const EventDispatcher& other) {
+//    for(int i = 0; i < other.countListeners(); i++) {
+//        addListener(other.getAt(i).clone());
+//    }
+//}
+
+//EventDispatcher& EventDispatcher::operator=(const EventDispatcher& other) {
+//    if (this == &other) return *this; // handle self initialization
+
+//    this->clear();
+//    for(int i = 0; i < other.countListeners(); i++) {
+//        this->addListener(other.getAt(i).clone());
+//    }
+//    return *this;
+//}
+
 
 EventDispatcher::~EventDispatcher() {
     this->clear();
 }
-
 
 void EventDispatcher::removeListener(int idx) {
     assert(idx >= 0 && idx < this->listeners.size());
@@ -35,10 +53,16 @@ void EventDispatcher::removeListener(IEventListener* listener) {
     //delete listener;
 }
 
-IEventListener* EventDispatcher::getListener(int idx) {
+IEventListener& EventDispatcher::getAt(int idx) {
     std::list<IEventListener*>::iterator it = this->listeners.begin();
     std::advance(it, idx);
-    return *it;
+    return **it;
+}
+
+IEventListener& EventDispatcher::getAt(int idx) const {
+    std::list<IEventListener*>::const_iterator it = this->listeners.begin();
+    std::advance(it, idx);
+    return **it;
 }
 
 void EventDispatcher::clear() {

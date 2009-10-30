@@ -6,8 +6,6 @@
  *
  */
 
-//#include <cassert>
-#include <iostream>
 #include <stdexcept>
 #include <sstream>
 
@@ -48,7 +46,7 @@ bool DispatcherManager::respond(const Bottle& cmd, Bottle& reply) {
                 { // prevent identifier initialization to cross borders of case
                 Bottle list = cmd.tail();
                 for(int i = 0; i < list.size(); i++) {
-                    IEventListener* listener = this->factory->create(list.get(i).asString().c_str());
+                    IEventListener* listener = this->factory->clone(list.get(i).asString().c_str());
                     listener->start();
                     this->dispatcher->addListener(listener);
                 }
@@ -81,7 +79,7 @@ bool DispatcherManager::respond(const Bottle& cmd, Bottle& reply) {
 
                 std::string replymsg = "Setting configuration option ";
                 if(cmd.get(1).isInt() && cmd.get(1).asInt() >= 1 && cmd.get(1).asInt() <= this->dispatcher->countListeners()) {
-                    if(this->dispatcher->getListener(cmd.get(1).asInt()-1)->configure(property)) {
+                    if(this->dispatcher->getAt(cmd.get(1).asInt()-1).configure(property)) {
                         replymsg += "succeeded";
                     } else {
                         replymsg += "failed; please check key and value type.";
@@ -94,7 +92,7 @@ bool DispatcherManager::respond(const Bottle& cmd, Bottle& reply) {
                             replymsg += ", ";
                         }
 
-                        if(this->dispatcher->getListener(i)->configure(property)) {
+                        if(this->dispatcher->getAt(i).configure(property)) {
                             replymsg += "succeeded";
                         } else {
                             replymsg += "failed";
@@ -117,11 +115,9 @@ bool DispatcherManager::respond(const Bottle& cmd, Bottle& reply) {
                 std::ostringstream buffer;
                 buffer << "Event Manager Information (" << this->dispatcher->countListeners() << " listeners)";
                 reply.addString(buffer.str().c_str());
-                IEventListener* curlistener;
                 for(int i = 0; i < this->dispatcher->countListeners(); i++) {
-                    curlistener = this->dispatcher->getListener(i);
                     buffer.str(""); // why isn't there a proper reset method?
-                    buffer << "  [" << (i + 1) << "] " << curlistener->getInfo();
+                    buffer << "  [" << (i + 1) << "] " << this->dispatcher->getAt(i).getInfo();
                     reply.addString(buffer.str().c_str());
                 }
                 

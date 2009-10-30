@@ -14,6 +14,18 @@
 namespace iCub {
 namespace learningmachine {
 
+DatasetRecorder& DatasetRecorder::operator=(const DatasetRecorder& other) {
+    if (this == &other) return *this; // handle self initialization
+    
+    this->IMachineLearner::operator=(other);
+    this->filename = other.filename;
+    this->precision = other.precision;
+    this->sampleCount = other.sampleCount;
+
+    return *this;
+}
+
+
 void DatasetRecorder::feedSample(const Vector& input, const Vector& output) {
     // open stream if not opened yet
     if(!this->stream.is_open()) {

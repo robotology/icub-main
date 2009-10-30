@@ -199,7 +199,7 @@ public:
     /*
      * Inherited from IMachineLearner.
      */
-    IMachineLearner* create();
+    IMachineLearner* clone();
 
     /*
      * Inherited from IMachineLearner.

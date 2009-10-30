@@ -120,7 +120,7 @@ void RLSLearner::reset() {
     this->initAll();
 }
 
-IMachineLearner* RLSLearner::create() {
+IMachineLearner* RLSLearner::clone() {
     return new RLSLearner(this->machines.size());
 }
 

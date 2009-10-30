@@ -9,12 +9,14 @@
 #ifndef __ICUB_DUMMYLEARNER__
 #define __ICUB_DUMMYLEARNER__
 
-#include <yarp/os/Bottle.h>
-#include "iCub/IFixedSizeLearner.h"
-#include <iostream>
 #include <string>
 #include <vector>
 #include <sstream>
+#include <iostream>
+
+#include <yarp/os/Bottle.h>
+
+#include "iCub/IFixedSizeLearner.h"
 
 
 using namespace yarp;
@@ -71,8 +73,7 @@ public:
     /**
      * Destructor.
      */
-    virtual ~DummyLearner() {
-    }
+    virtual ~DummyLearner() { }
 
     /*
      * Inherited from IMachineLearner.
@@ -122,7 +123,7 @@ public:
     /*
      * Inherited from IMachineLearner.
      */
-    IMachineLearner* create() {
+    IMachineLearner* clone() {
         return new DummyLearner(*this);
     }
 

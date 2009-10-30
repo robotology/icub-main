@@ -51,7 +51,7 @@ public:
     /*
      * Inherited from IEventListener.
      */
-    IEventListener* create() {
+    IEventListener* clone() {
         return new TrainEventListener(*this);
     }
 

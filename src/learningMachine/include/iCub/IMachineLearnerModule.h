@@ -38,6 +38,16 @@ namespace learningmachine {
 class IMachineLearnerModule : public Module {
 protected:
     /**
+     * Copy Constructor (unimplemented on purpose)
+     */
+    IMachineLearnerModule(const IMachineLearnerModule& other);
+
+    /**
+     * Assignment operator (unimplemented on purpose).
+     */
+    IMachineLearnerModule& operator=(const IMachineLearnerModule& other);
+
+    /**
      * An input port for commands.
      */
     BufferedPort<Bottle> cmd_in;
@@ -75,7 +85,7 @@ protected:
      * Exits the module while printing a help message.
      */
     virtual void exitWithHelp(std::string error = "") = 0;
-
+    
 public:
     /**
      * Constructor.
