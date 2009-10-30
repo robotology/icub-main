@@ -409,14 +409,14 @@ bool AnalogSensor::decode16(const unsigned char *msg, int id, short *data)
         {
         case 0xA:
             {
-                for(int k=0;k<=3;k++)
-                    data[k]=((short(msg[k]))<<16)+msg[k+1];
+                for(int k=0;k<3;k++)
+                    data[k]=((short(msg[2*k]))<<8)+msg[2*k+1];
             }
             break;
         case 0xB:
             {
-                for(int k=0;k<=3;k++)
-                    data[k+3]=((short(msg[k]))<<16)+msg[k+1];
+                for(int k=0;k<3;k++)
+                    data[k+3]=((short(msg[2*k]))<<8)+msg[2*k+1];
             }
             break;
         case 0xC:
