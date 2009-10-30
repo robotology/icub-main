@@ -586,6 +586,9 @@ void iCub::contrib::primateVision::ZDFServer::run(){
 	zdfData.mos_yl = rec_res->ly + tl_y;
 	zdfData.mos_xr = rec_res->rx + tr_x;
 	zdfData.mos_yr = rec_res->ry + tr_y + dpix_y;
+	zdfData.cog_x = cog_x;
+	zdfData.cog_y = cog_y;
+	zdfData.area = area;
 	zdfData.update = update;
 	//send:
 	outPort_data.write();	

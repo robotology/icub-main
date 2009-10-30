@@ -77,14 +77,14 @@ namespace iCub {
 	/** Converstion to string of parameters for printing. */
 	string toString(){
 	  char buffer[50];
-	  sprintf(buffer, "%f %f %f %d %d %d %d %d",
-		  x,y,z,mos_xl,mos_yl,mos_xr,mos_yr,(int)update);
+	  sprintf(buffer, "%f %f %f %d %d %d %d %d %d %d %d",
+		  x,y,z,mos_xl,mos_yl,mos_xr,mos_yr,cog_x,cog_y,area,(int)update);
 	  return buffer;
 	}
 	
 	bool write(ConnectionWriter& con){
 	  con.appendInt(BOTTLE_TAG_LIST);
-	  con.appendInt(10);
+	  con.appendInt(13);
 	  dog.write(con);
 	  tex.write(con);
 	  con.appendDouble(x);
@@ -94,6 +94,9 @@ namespace iCub {
 	  con.appendInt(mos_yl);
 	  con.appendInt(mos_xr);
 	  con.appendInt(mos_yr);
+	  con.appendInt(cog_x);
+	  con.appendInt(cog_y);
+	  con.appendInt(area);
 	  con.appendInt((int) update);
 	  return true;
 	}
@@ -105,7 +108,7 @@ namespace iCub {
 	  con.convertTextMode();
 	  int header = con.expectInt();
 	  int len = con.expectInt();
-	  if (header != BOTTLE_TAG_LIST || len!=10){
+	  if (header != BOTTLE_TAG_LIST || len!=13){
 	    return false;
 	  }
 	  dog.read(con);
@@ -117,6 +120,9 @@ namespace iCub {
 	  mos_yl = con.expectInt();
 	  mos_xr = con.expectInt();
 	  mos_yr = con.expectInt();
+	  cog_x = con.expectInt();
+	  cog_y = con.expectInt();
+	  area = con.expectInt();
 	  update = (bool) con.expectInt();
 	  return true;
 	}
@@ -129,6 +135,9 @@ namespace iCub {
 	int mos_yl;
 	int mos_xr;
 	int mos_yr;
+	int cog_x;
+	int cog_y;
+	int area;
 	bool update;
 	ImageOf<PixelMono> dog;
 	ImageOf<PixelMono> tex;
