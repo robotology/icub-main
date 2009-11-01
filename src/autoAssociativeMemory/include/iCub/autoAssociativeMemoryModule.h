@@ -150,7 +150,7 @@
  * 16/08/09  Migrated to RFModule class and implemented necessary changes to ensure compliance with iCub standards 
  * 26/08/09  Completed compliance with standards and changed to new convention for handling port names
  *           (module name has no / prefix and port names _always_ have / prefix)
- * David Vernon   
+ * 14/10/09  Normalized histograms before computing the histogram intersection. 
  *
  */ 
 

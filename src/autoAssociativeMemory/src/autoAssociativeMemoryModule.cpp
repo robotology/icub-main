@@ -45,6 +45,8 @@
  * (module name has no / prefix and port names _always_ have / prefix)
  * David Vernon 26/08/09  
  *
+ * Normalized histograms before computing the histogram intersection. 
+ * David Vernon 14/10/09
  */
 
  
@@ -208,9 +210,27 @@ void ThresholdReceiver::onRead(Bottle& t)
         imgArr[1] = refImgS;
         cvCalcHist(imgArr, refHist);
     
-        double comp = 1 - cvCompareHist(currHist, refHist, CV_COMP_BHATTACHARYYA);  //this method of in tersection seems to produce better results
-        //cout << comp << " ";    //once again, only for debugging purposes
         //do a histogram intersection, and check it against the threshold 
+
+        // The Bhattacharyya distance metric seemed to produce better results at the VVV 09 summer school
+        // however, it works better with normalized histograms so I've added normalization. DV 14/10/09
+        
+        cvNormalizeHist(currHist,1.0);
+        cvNormalizeHist(refHist,1.0);
+        double comp = 1 - cvCompareHist(currHist, refHist, CV_COMP_BHATTACHARYYA);  
+
+
+        // Alternative is intersection DV 14/10/09
+        // this method of intersection is the one proposed by Swain and Ballard
+        // the intersection value should be normalized by the number of pixels
+        // i.e. img.width() * img.height() which is the same as the integral of the histogram
+
+        //double comp = cvCompareHist(currHist, refHist, CV_COMP_INTERSECT)/(img.width() * img.height()); 
+                                                                                   
+        //cout << comp << " ";    //once again, only for debugging purposes
+        //printf("%3.2f ",comp);
+
+
         if (comp > matchValue)
 	    {
 	      matchValue = comp;
