@@ -1,0 +1,107 @@
+<application>
+<name>Log-polar auto-associative memory demo</name>
+
+<dependencies>
+   <port>/icub/cam/left</port>
+</dependencies>
+
+
+<module>
+   <name>demoAAM</name>
+   <parameters></parameters>
+   <node>icub1</node>
+   <tag>aamDriver</tag>
+</module>
+
+<module>
+   <name>autoAssociativeMemory</name>
+   <parameters>--context demoAAM/conf</parameters>
+   <node>icub1</node>
+   <tag>aam</tag>
+</module>
+
+<module>
+   <name>logPolarTransform</name>
+   <parameters>--context demoAAM/conf</parameters>
+   <node>icub1</node>
+   <tag>logPolarTransform</tag>
+</module>
+
+<module>
+   <name>logPolarTransform</name>
+   <parameters>--name inverseLogPolarTransformA --direction LOGPOLAR2CARTESIAN --context demoAAM/conf</parameters>
+   <node>icub1</node>
+   <tag>inverseLogPolarTransformA</tag>
+</module>
+
+<module>
+   <name>logPolarTransform</name>
+   <parameters>--name inverseLogPolarTransformB --direction LOGPOLAR2CARTESIAN --context demoAAM/conf</parameters>
+   <node>icub1</node>
+   <tag>inverseLogPolarTransformB</tag>
+</module>
+
+<module>
+   <name>yarpview</name>
+   <parameters>--name /input_image --x 0 --y 10 --synch</parameters>
+   <node>icub1</node>
+   <tag>input_image</tag>
+</module>
+
+<module>
+   <name>yarpview</name>
+   <parameters>--name /recalled_image --x 320 --y 10 --synch</parameters>
+   <node>icub1</node>
+   <tag>recalled_image</tag>
+</module>
+
+
+
+ 
+<connection>
+   <from>/icub/cam/left</from>
+   <to>/logPolarTransform/image:i</to>
+   <protocol>tcp</protocol>
+</connection>
+
+<connection>
+   <from>/logPolarTransform/image:o</from>
+   <to>/aam/image:i</to>
+   <protocol>tcp</protocol>
+</connection>
+
+<connection>
+   <from>/logPolarTransform/image:o</from>
+   <to>/inverseLogPolarTransformA/image:i</to>
+   <protocol>tcp</protocol>
+</connection>
+
+<connection>
+  <from>/inverseLogPolarTransformA/image:o</from>
+  <to>/input_image</to>
+  <protocol>tcp</protocol>
+</connection>
+
+
+<connection>
+   <from>/aam/image:o</from>
+   <to>/inverseLogPolarTransformB/image:i</to>
+   <protocol>tcp</protocol>
+</connection>
+
+
+<connection>
+   <from>/inverseLogPolarTransformB/image:o</from>
+   <to>/recalled_image</to>
+   <protocol>tcp</protocol>
+ </connection>
+
+
+<connection>
+   <from>/aamdriver/threshold:o</from>
+   <to>/aam/threshold:i</to>
+   <protocol>tcp</protocol>
+</connection>
+
+ 
+</application>

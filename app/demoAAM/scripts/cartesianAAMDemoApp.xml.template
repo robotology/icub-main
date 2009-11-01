@@ -1,5 +1,5 @@
 <application>
-<name>auto-associative memory demo</name>
+<name>Cartesian auto-associative memory demo</name>
 
 <dependencies>
    <port>/icub/cam/left</port>

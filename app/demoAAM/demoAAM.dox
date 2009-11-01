@@ -1,0 +1,266 @@
+/**
+*
+@ingroup icub_applications
+\defgroup icub_demoAAM demoAAM
+
+Demonstrate the use of the autoAssociateMemory module using Cartesian images and LogPolar images.
+
+\section intro_sec Description
+There are two application templates to demonstrate the functionality of the autoAssociativeMemory module:
+
+- cartesianAAMDemoApp.xml.template
+- logPolarAAMDemoApp.xml.template
+
+
+These applications use three modules:
+
+- autoAssociativeMemory
+- demoAAM
+- yarpview
+
+The logPolarAAMDemoApp.xml.template also uses the module 
+
+- logPolarTransform 
+
+The auto-associative memory (AAM) module - autoAssociativeMemory - effects the following functionality: 
+ 
+- when an image is presented to the memory, it attempts to recall that image; 
+- if a previously-stored image matches the presented image sufficiently well, the stored image is recalled; 
+- if no previously-stored image matches sufficiently well, the presented image is stored; 
+ 
+Since images are streamed continuously, processing an image (i.e. reading it from the input port 
+and attempting to recall it from the memory) is triggered by the presence of the threshold value on the input port. 
+The next image to be read and stored/recalled is only processed when a new threshold is written to that port. 
+
+The demoAAM module is does no more than periodically send this threshold to the autoAssociativeMemory module.
+The default period is 1 second.
+
+Images from the /icub/cam/left port are streamed either directly to the autoAssociativeMemory 
+or to the logPolarTransform module with the output then being streamed to the autoAssociativeMemory, 
+depending on which application is being run.
+
+Both the input image and the recalled image are displayed using YARP viewers.  In the case of the 
+Logpolar application, both images are inverse-transformed back to the Cartesian frame of reference
+before being displayed.
+
+Please refer to the autoAssociativeMemory module documentation for details on the module parameters:
+http://eris.liralab.it/iCub/dox/html/group__icub__autoAssociativeMemory.html
+
+In particular, be aware that you need to specify in the autoAssociativeMemory.ini configuration file
+the path to the directory where the module will store the images is learns.
+
+Also note that the period between consecutive thresholds is set in the demoAAM.ini configuration file.  
+Presently it is set to 1000 ms.  The threshold which is used to decide whether or not two images are
+similar is also set in the demoAAM.ini file.  The lower the threshold, the more ambiguity between
+images is tolerated and the fewer new images that will be learned and stored.  The greater the threshold,
+the more distinct the images must be and hence the greater the number of images that will be learned
+and stored.  
+
+The Log-polar version of the application centre-weights the image data and hence tends to discriminate 
+better when objects are presented (in the centre of the field of view) or when the camera is fixating on 
+an object of interest.
+
+
+\section dep_sec Dependencies
+Both applications are dependent on images being streamed on the /icub/cam/left port.
+
+\section modules_sec Instantiated Modules
+
+- \ref icub_autoAssociativeMemory "autoAssociativeMemory"
+- \ref icub_demoAAM "demoAAM"
+- \ref icub_logPolarTransform "logPolarTransform"
+
+
+\section config_sec Configuration Files
+
+- autoAssociativeMemory.ini
+- demoAAM.ini
+ 
+\section example_sec How to run the application
+
+Both the cartesianAAMDemoApp.xml.template and the logPolarAAMDemoApp.xml.template files are listed below.  
+To run these, you need to edit the xml.template files to suit your own platform.  You will need to change at least
+the node name (icub1 in the template).  Rename the files to remove the .template extension.
+
+When the application is running, it will store the first image it receives since it won't have seen it before
+(unless you have already run the application and are using an existing database of stored images).
+Try presenting the an object to the camera to get it to learn its appearance.  Presenting it again should recall
+the image of the initial presentation.
+
+
+\code
+<application>
+<name>Cartesian auto-associative memory demo</name>
+
+<dependencies>
+   <port>/icub/cam/left</port>
+</dependencies>
+
+<module>
+   <name>yarpview</name>
+   <parameters>--name /input_image --x 0 --y 10 --synch</parameters>
+   <node>icub1</node>
+   <tag>input_image</tag>
+</module>
+
+<module>
+   <name>yarpview</name>
+   <parameters>--name /recalled_image --x 320 --y 10 --synch</parameters>
+   <node>icub1</node>
+   <tag>recalled_image</tag>
+</module>
+
+<module>
+   <name>autoAssociativeMemory</name>
+   <parameters>--context demoAAM/conf</parameters>
+   <node>icub1</node>
+   <tag>aam</tag>
+</module>
+
+<module>
+   <name>demoAAM</name>
+   <parameters></parameters>
+   <node>icub1</node>
+   <tag>aamDriver</tag>
+</module>
+
+<connection>
+  <from>/icub/cam/left</from>
+  <to>/input_image</to>
+  <protocol>tcp</protocol>
+</connection>
+ 
+<connection>
+   <from>/icub/cam/left</from>
+   <to>/aam/image:i</to>
+   <protocol>tcp</protocol>
+</connection>
+
+<connection>
+   <from>/aam/image:o</from>
+   <to>/recalled_image</to>
+   <protocol>tcp</protocol>
+ </connection>
+
+<connection>
+   <from>/aamdriver/threshold:o</from>
+   <to>/aam/threshold:i</to>
+   <protocol>tcp</protocol>
+</connection>
+ 
+</application>
+\endcode
+
+
+\code
+<application>
+<name>Log-polar auto-associative memory demo</name>
+
+<dependencies>
+   <port>/icub/cam/left</port>
+</dependencies>
+
+<module>
+   <name>demoAAM</name>
+   <parameters></parameters>
+   <node>icub1</node>
+   <tag>aamDriver</tag>
+</module>
+
+<module>
+   <name>autoAssociativeMemory</name>
+   <parameters>--context demoAAM/conf</parameters>
+   <node>icub1</node>
+   <tag>aam</tag>
+</module>
+
+<module>
+   <name>logPolarTransform</name>
+   <parameters>--context demoAAM/conf</parameters>
+   <node>icub1</node>
+   <tag>logPolarTransform</tag>
+</module>
+
+<module>
+   <name>logPolarTransform</name>
+   <parameters>--name inverseLogPolarTransformA --direction LOGPOLAR2CARTESIAN --context demoAAM/conf</parameters>
+   <node>icub1</node>
+   <tag>inverseLogPolarTransformA</tag>
+</module>
+
+<module>
+   <name>logPolarTransform</name>
+   <parameters>--name inverseLogPolarTransformB --direction LOGPOLAR2CARTESIAN --context demoAAM/conf</parameters>
+   <node>icub1</node>
+   <tag>inverseLogPolarTransformB</tag>
+</module>
+
+<module>
+   <name>yarpview</name>
+   <parameters>--name /input_image --x 0 --y 10 --synch</parameters>
+   <node>icub1</node>
+   <tag>input_image</tag>
+</module>
+
+<module>
+   <name>yarpview</name>
+   <parameters>--name /recalled_image --x 320 --y 10 --synch</parameters>
+   <node>icub1</node>
+   <tag>recalled_image</tag>
+</module>
+
+<connection>
+   <from>/icub/cam/left</from>
+   <to>/logPolarTransform/image:i</to>
+   <protocol>tcp</protocol>
+</connection>
+
+<connection>
+   <from>/logPolarTransform/image:o</from>
+   <to>/aam/image:i</to>
+   <protocol>tcp</protocol>
+</connection>
+
+<connection>
+   <from>/logPolarTransform/image:o</from>
+   <to>/inverseLogPolarTransformA/image:i</to>
+   <protocol>tcp</protocol>
+</connection>
+
+<connection>
+  <from>/inverseLogPolarTransformA/image:o</from>
+  <to>/input_image</to>
+  <protocol>tcp</protocol>
+</connection>
+
+<connection>
+   <from>/aam/image:o</from>
+   <to>/inverseLogPolarTransformB/image:i</to>
+   <protocol>tcp</protocol>
+</connection>
+
+<connection>
+   <from>/inverseLogPolarTransformB/image:o</from>
+   <to>/recalled_image</to>
+   <protocol>tcp</protocol>
+ </connection>
+
+<connection>
+   <from>/aamdriver/threshold:o</from>
+   <to>/aam/threshold:i</to>
+   <protocol>tcp</protocol>
+</connection>
+ 
+</application>
+\endcode
+
+
+ 
+\author David Vernon
+
+Copyright (C) 2009 RobotCub Consortium
+
+CopyPolicy: Released under the terms of the GNU GPL v2.0.
+
+This file can be edited at \in app/demoAAM.dox
+**/
