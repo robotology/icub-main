@@ -389,6 +389,12 @@ public:
 
 int main(int argc, char *argv[])
 {
+    Network yarp;
+
+#ifdef USE_ICUB_MOD
+    DriverCollection dev;
+#endif
+
     ResourceFinder rf;
     rf.setVerbose(true);
     rf.configure("ICUB_ROOT",argc,argv);
@@ -408,12 +414,8 @@ int main(int argc, char *argv[])
         return 0;
     }
 
-    Network yarp;
-
     if (!yarp.checkNetwork())
         return -1;
-
-    DriverCollection dev;
 
     CtrlModule mod;
 
