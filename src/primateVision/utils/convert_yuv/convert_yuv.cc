@@ -73,13 +73,13 @@ void iCub::contrib::primateVision::Convert_YUV::proc(Ipp8u* im)
   prgb[0]= r_orig;
   prgb[1]= g_orig;
   prgb[2]= b_orig;
-  ippiYUVToRGB_8u_P3R(pyuv,width,prgb,width,srcsize);
+  ippiYUVToRGB_8u_P3R((const Ipp8u* const*)pyuv,width,prgb,width,srcsize);
 
   //convert to pixel-order rgba:
   psrc[0]= r_orig;
   psrc[1]= g_orig;
   psrc[2]= b_orig;
   psrc[3]= a_orig;
-  ippiCopy_8u_P4C4R((const Ipp8u*)psrc,width,qrgb->bits(),width*4,srcsize);
+  ippiCopy_8u_P4C4R((const Ipp8u* const*)psrc,width,qrgb->bits(),width*4,srcsize);
       
 }
