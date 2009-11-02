@@ -80,6 +80,6 @@ void iCub::contrib::primateVision::Convert_YUV::proc(Ipp8u* im)
   psrc[1]= g_orig;
   psrc[2]= b_orig;
   psrc[3]= a_orig;
-  ippiCopy_8u_P4C4R(psrc,width,qrgb->bits(),width*4,srcsize);
+  ippiCopy_8u_P4C4R((const Ipp8u*)psrc,width,qrgb->bits(),width*4,srcsize);
       
 }
