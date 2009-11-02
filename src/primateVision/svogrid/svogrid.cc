@@ -745,7 +745,7 @@ QImage* SVOGRID::get_tex_rgba(cell c_){
   prgb[2]= tex_b->bits();
 
   //make planar rgb:
-  ippiYUVToRGB_8u_P3R(pyuv,tex_rgba->width(),prgb,tex_rgba->width(),texsize);
+  ippiYUVToRGB_8u_P3R(&pyuv[0],tex_rgba->width(),&prgb[0],tex_rgba->width(),texsize);
 
   //convert to pixel-order rgba:
   const Ipp8u* psrc[4];
