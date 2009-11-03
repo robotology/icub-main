@@ -29,7 +29,7 @@ Layer::Layer(std::string name,int nRows,int nUnits){
 		Row *row=new Row(this->name+"R"+i_str,nUnits); //L1R1U1 means Layer1-Row1-Unit1		
 		this->addRow(*row);
 	}
-	this->interConnectUnits();
+	//this->interConnectUnits();
 	iterEvolve=unitList.begin();
 }
 
@@ -74,7 +74,7 @@ void Layer::interConnectUnits(){
 			string name("C");
 			name.append(iterI->second.getName());
 			name.append(iterJ->second.getName());
-			printf("connection name in interconnectUnits %s",name.c_str());
+			printf("connection name in interconnectUnits() %s",name.c_str());
 			//double value=double(rand())/RAND_MAX;
 			double value=1;
 			double weight_rnd=(value)*MEAN_WEIGHT;

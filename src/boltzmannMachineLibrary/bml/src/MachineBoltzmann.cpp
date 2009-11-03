@@ -45,7 +45,7 @@ MachineBoltzmann::MachineBoltzmann(int nLayers){
 		cout<<"Creating the Layer number "<<i_str<<endl;
 		cout<<"The layer is rowsXunits: "<<standard_layer_dim_rows<<"X"<<standard_layer_dim_units<<endl;
 		//create a new Layer
-		Layer *layer=new Layer("L"+i_str,standard_layer_dim_rows+2,standard_layer_dim_units+2);
+		Layer *layer=new Layer("L"+i_str,standard_layer_dim_rows,standard_layer_dim_units);
 		//the layer is added in list inside the addLayer function!!!!
 		//elementList.insert(pair<std::string,Layer>(layer->getName(),*layer));
 		//elementList[(std::string)layer->getName()]=*layer;
@@ -86,7 +86,7 @@ void MachineBoltzmann::migrateLayer(Layer layer){
 
 	//migrate all the units in the unitList of the Boltzmann Machine
 	// after the insertion of the all new connections coming from other layers in every unit
-	map<std::string,Unit>::iterator iterU;
+	/*map<std::string,Unit>::iterator iterU;
 	list<Unit>::iterator _iterU;
 	count=0;
 	for(iterU=layer.unitList.begin(); iterU!=layer.unitList.end();iterU++){
@@ -94,7 +94,7 @@ void MachineBoltzmann::migrateLayer(Layer layer){
 		count++;
 		//this->_unitList.push_back(iterU->second);
 	}
-	printf("CountConnections: %d",count);
+	printf("CountConnections: %d",count);*/
 
 }
 /**
@@ -174,7 +174,7 @@ void MachineBoltzmann::interconnectLayers(){
 					string name("C");
 					name.append(iterU1->second.getName());
 					name.append(iterU2->second.getName());
-					printf("connection name in interconnectlayers %s",name.c_str());
+					printf("connection name in interconnectlayers() %s",name.c_str());
 					Connection *c=new Connection(name,weight_rnd);
 					this->addConnection2Matrix(*c);
 					//creates two lists of the same lenght of the connection list
@@ -275,7 +275,7 @@ void MachineBoltzmann::interconnectLayer(int layerNumber){
 				string name("C");
 				name.append(iterU1->first);
 				name.append(iterU2->first);
-				printf("connection name in interconnectLayer %s",name.c_str());
+				printf("connection name in interconnectLayer(layerNumber) %s",name.c_str());
 				Connection *c=new Connection(name,weight_rnd);
 				_connectionList.insert(iterC1,*c);	
 				_probFreely.insert(iterFreely,0);
