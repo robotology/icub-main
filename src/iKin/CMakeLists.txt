@@ -12,7 +12,7 @@ SET(ADD_IPOPT TRUE CACHE BOOL "Dou you want to add IPOPT library?")
 IF(ADD_IPOPT)
    FIND_PACKAGE(IPOPT)
    IF(NOT IPOPT_FOUND)
-      MESSAGE("IPOPT not found! Keep on building...")
+      MESSAGE(STATUS "IPOPT not found! Keep on building...")
    ENDIF(NOT IPOPT_FOUND)
 ENDIF(ADD_IPOPT)
 
