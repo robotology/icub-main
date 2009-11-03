@@ -193,7 +193,7 @@ int SalienceOperator::DrawContrastLP2(ImageOf<PixelMonoSigned>& rg, ImageOf<Pixe
 								  PixelMonoSigned prg, PixelMonoSigned pgr, PixelMonoSigned pby, PixelMono maxDest)
 {
 	int salienceBU, salienceTD;
-
+	//coefficients
 	double a1,b1,a2,b2,a3,b3;
 
 	int minSalienceBU=INT_MAX;
@@ -204,7 +204,7 @@ int SalienceOperator::DrawContrastLP2(ImageOf<PixelMonoSigned>& rg, ImageOf<Pixe
 
 	int minSalienceTot=INT_MAX;
 	int maxSalienceTot=INT_MIN;
-
+	//set to zero the outContrastLP
 	dst.zero();
 	
 	if (numBlob>imageSize) 
@@ -278,7 +278,6 @@ int SalienceOperator::DrawContrastLP2(ImageOf<PixelMonoSigned>& rg, ImageOf<Pixe
 			//__OLD//sum of abs of contrast differences
 			salienceBU=m_boxes[i].cRG+m_boxes[i].cGR+m_boxes[i].cBY;
 
-
 			salienceTD=sqrt((double)(m_boxes[i].meanRG-prg)*(m_boxes[i].meanRG-prg)+
 			                (m_boxes[i].meanGR-pgr)*(m_boxes[i].meanGR-pgr)+
 			                (m_boxes[i].meanBY-pby)*(m_boxes[i].meanBY-pby));
@@ -295,9 +294,9 @@ int SalienceOperator::DrawContrastLP2(ImageOf<PixelMonoSigned>& rg, ImageOf<Pixe
 			salienceTD=255-salienceTD;*/
 
 			//__OLD//if the color is too different it isn't in the scene!
-			if (salienceTD<200) salienceTD=200;
-
 			//__OLD//if (salienceTD<0) salienceTD=0;
+			if (salienceTD<200)
+				salienceTD=200;
 			
 			m_boxes[i].salienceBU=salienceBU;
 			m_boxes[i].salienceTD=salienceTD;
@@ -313,7 +312,7 @@ int SalienceOperator::DrawContrastLP2(ImageOf<PixelMonoSigned>& rg, ImageOf<Pixe
 				maxSalienceTD=salienceTD;
 		}
 	}
-
+	//coefficients for BU
 	if (maxSalienceBU!=minSalienceBU) {
 		//__OLD//a1=255.*(maxDest-1)/(maxSalienceBU-minSalienceBU);
 		a1=254./(maxSalienceBU-minSalienceBU);
@@ -322,7 +321,7 @@ int SalienceOperator::DrawContrastLP2(ImageOf<PixelMonoSigned>& rg, ImageOf<Pixe
 		a1=0;
 		b1=0;
 	}
-
+	//coefficient for TD
 	if (maxSalienceTD!=minSalienceTD) {
 		//__OLD//a2=255.*(maxDest-1)/(maxSalienceTD-minSalienceTD);
 		a2=254./(maxSalienceTD-minSalienceTD);
@@ -354,17 +353,19 @@ int SalienceOperator::DrawContrastLP2(ImageOf<PixelMonoSigned>& rg, ImageOf<Pixe
 	for (int i = 1; i < numBlob; i++) {
 		if (m_boxes[i].valid) {
 			//__OLD//if ((m_boxes[i].salienceBU==maxSalienceBU && pBU==1) || (m_boxes[i].salienceTD==maxSalienceTD && pTD==1))
-			if (m_boxes[i].salienceTotal==maxSalienceTot)
+			//if (m_boxes[i].salienceTotal>=maxSalienceTot)
+			if ((m_boxes[i].salienceBU==maxSalienceBU && pBU==1)||(m_boxes[i].salienceTD==maxSalienceTD && pTD==1))
 				m_boxes[i].salienceTotal=255;
 			else
 				m_boxes[i].salienceTotal=a3*m_boxes[i].salienceTotal+b3;
-
+			//for the whole blob in this loop
 			for (int r=m_boxes[i].rmin; r<=m_boxes[i].rmax; r++)
 				for (int c=m_boxes[i].cmin; c<=m_boxes[i].cmax; c++){
 					int tag=tagged(c,r);
 					if (tag==m_boxes[i].id) {
 						//__OLD//if (sal>th) dst(c ,r)=sal;
 						//__OLD//else dst(c ,r)=0;
+						//set the image outContrastLP with the value salienceTotal
 						dst(c ,r)=(PixelMono)m_boxes[i].salienceTotal;
 					}
 				}

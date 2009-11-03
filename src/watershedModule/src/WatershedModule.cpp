@@ -158,6 +158,9 @@ WatershedModule::WatershedModule(){
 	_inputImgBYS->resize(320,240);
 	blobFov=new ImageOf<PixelMono>;
 	blobFov->resize(320,240);
+
+	salienceBU=10;
+	salienceTD=10;
 }
 
 
@@ -451,6 +454,18 @@ static void callback( GtkWidget *widget,gpointer   data ){
 		printf("drawFoveaBlob3");
 		
 	}
+	else if(!strcmp((char *)data,"ContrastLP1")){
+		printf("ContrastLP1 function");
+		wModule->salience->DrawVQColor(*wModule->salience->colorVQ_img,*wModule->tagged);
+	}
+	else if(!strcmp((char *)data,"ContrastLP2")){
+		printf("ContrastLP2");
+		
+	}
+	else if(!strcmp((char *)data,"ContrastLP3")){
+		printf("ContrastLP3");
+		
+	}
 	else if(!strcmp((char *)data,"maxSalienceBlob1")){
 		printf("drawColorVQ1 function");
 		wModule->salience->maxSalienceBlob(*wModule->tagged, wModule->max_tag,wModule->max_boxes[0]);
@@ -507,6 +522,7 @@ static gint expose_CB (GtkWidget *widget, GdkEventExpose *event, gpointer data)
 				bool conversion=true;
 				_outputImage=_wOperator->getPlane(&_inputImg); 
 				rain();
+				
 				if(wModule->foveaBlob_flag){
 					wModule->salience->drawFoveaBlob(*wModule->salience->foveaBlob,*wModule->tagged);
 					ippiCopy_8u_C1R(wModule->salience->foveaBlob->getPixelAddress(0,0),320,_outputImage->getPixelAddress(0,0),320,srcsize);
@@ -558,6 +574,11 @@ static gint expose_CB (GtkWidget *widget, GdkEventExpose *event, gpointer data)
 				else if(wModule->maxSaliencyBlob_flag){
 					wModule->salience->DrawMaxSaliencyBlob(*wModule->maxSalienceBlob_img,wModule->max_tag,*wModule->tagged);
 					ippiCopy_8u_C1R(wModule->maxSalienceBlob_img->getPixelAddress(0,0),320,_outputImage->getPixelAddress(0,0),320,srcsize);
+					conversion=true;
+				}
+				else if(wModule->contrastLP_flag){
+					wModule->drawAllBlobs(false);
+					ippiCopy_8u_C1R(wModule->outContrastLP->getPixelAddress(0,0),320,_outputImage->getPixelAddress(0,0),320,srcsize);
 					conversion=true;
 				}
 				else if(wModule->colorVQ_flag){
@@ -939,9 +960,11 @@ static void cb_draw_value( GtkToggleButton *button )
 
 bool WatershedModule::outPorts(){
 	bool ret = true;
-	IplImage *cvImage = cvCreateImage(cvSize(320,240),8, 3);
+
+	/*IplImage *cvImage = cvCreateImage(cvSize(320,240),8, 3);
 	cvCvtColor((IplImage*)outMeanColourLP->getIplImage(), cvImage, CV_BGR2RGB);
-	image_out->wrapIplImage(cvImage);
+	image_out->wrapIplImage(cvImage);*/
+
 	/*int psb;
 	IppiSize srcsize={320,240};
 	//printf("Entered in outPorts \n");
@@ -955,6 +978,7 @@ bool WatershedModule::outPorts(){
 	ippiCopy_8u_C1R(im_tmp[2],psb,im_tmp_tmp,psb,srcsize);
 	ippiCopy_8u_C1R(im_tmp[0],psb,im_tmp[2],psb,srcsize);
 	ippiCopy_8u_C1R(im_tmp[2],psb,blobFov->getPixelAddress(0,0),psb,srcsize);*/
+
 	//ippiCopy_8u_P3C3R(im_tmp,psb,image_out->getPixelAddress(0,0),320*3,srcsize);
 	//this->_pOutPort2->prepare()=*(this->image_out);
 	this->_pOutPort2->prepare()=*(this->image_out);
@@ -1012,15 +1036,15 @@ static gint menuFileSingle_CB(GtkWidget *widget, GdkEventExpose *event, gpointer
 static void cb_digits_scale2( GtkAdjustment *adj )
 {
     /* Set the number of decimal places to which adj->value is rounded */
-	
-	printf("Threshold L: %f",(double) adj->value);
+	wModule->salienceTD=adj->value;
+	printf("salienceTD: %f",wModule->salienceTD);
 }
 
 static void cb_digits_scale( GtkAdjustment *adj )
 {
     /* Set the number of decimal places to which adj->value is rounded */
-	
-	printf("Threshold U: %f",(double) adj->value);
+	wModule->salienceBU=adj->value;
+	printf("salienceBU: %f",wModule->salienceBU);
 }
 
 
@@ -1591,15 +1615,15 @@ GtkWidget* WatershedModule::createMainWindow(void)
 	box4 = gtk_vbox_new (FALSE, 0);
 	gtk_container_set_border_width (GTK_CONTAINER (box4), 0);
 
-	label = gtk_label_new ("ThresholdBU:");
+	label = gtk_label_new ("SalienceBU Percentage:");
 	gtk_box_pack_start (GTK_BOX (box4), label, FALSE, FALSE, 0);
     gtk_widget_show (label);
 
-	double maxAdj=100.0;
-	double minAdj=10.0;
-	double stepAdj=1.0;
+	double maxAdj=100;
+	double minAdj=1;
+	double stepAdj=1;
 	
-	adj1 = gtk_adjustment_new (2.0, minAdj,maxAdj,stepAdj, 1.0, 1.0);
+	adj1 = gtk_adjustment_new(1, minAdj,maxAdj,stepAdj, 1, 1);
 	hscale = gtk_hscale_new (GTK_ADJUSTMENT (adj1));
     gtk_widget_set_size_request (GTK_WIDGET (hscale), 200, -1);
     scale_set_default_values (GTK_SCALE (hscale));
@@ -1609,11 +1633,11 @@ GtkWidget* WatershedModule::createMainWindow(void)
                       G_CALLBACK (cb_digits_scale), NULL);
 
 
-	label = gtk_label_new ("ThresholdTD:");
+	label = gtk_label_new ("SalienceTD Percentage:");
 	gtk_box_pack_start (GTK_BOX (box4), label, FALSE, FALSE, 0);
     gtk_widget_show (label);
 
-	adj2 = gtk_adjustment_new (1.0, minAdj,maxAdj,stepAdj, 1.0, 1.0);
+	adj2 = gtk_adjustment_new (1, minAdj,maxAdj,stepAdj, 1, 1);
 	hscale = gtk_hscale_new (GTK_ADJUSTMENT (adj2));
     gtk_widget_set_size_request (GTK_WIDGET (hscale), 200, -1);
     scale_set_default_values (GTK_SCALE (hscale));
@@ -1749,6 +1773,13 @@ GtkWidget* WatershedModule::createMainWindow(void)
     buttonCheck = gtk_check_button_new_with_label("ColorVQ1-->");
     gtk_toggle_button_set_active (GTK_TOGGLE_BUTTON (buttonCheck), FALSE);
     g_signal_connect (G_OBJECT (buttonCheck), "toggled",G_CALLBACK (cb_draw_value),(gpointer) "ColorVQ1");
+    gtk_box_pack_start (GTK_BOX (box4), buttonCheck, TRUE, TRUE, 0);
+    gtk_widget_show (buttonCheck);
+
+	// A checkbutton to control whether the value is displayed or not 
+    buttonCheck = gtk_check_button_new_with_label("ContrastLP1-->");
+    gtk_toggle_button_set_active (GTK_TOGGLE_BUTTON (buttonCheck), FALSE);
+    g_signal_connect (G_OBJECT (buttonCheck), "toggled",G_CALLBACK (cb_draw_value),(gpointer) "ContrastLP1");
     gtk_box_pack_start (GTK_BOX (box4), buttonCheck, TRUE, TRUE, 0);
     gtk_widget_show (buttonCheck);
 

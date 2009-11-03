@@ -87,10 +87,10 @@ private:
 	* options of the connection
 	*/
 	Property options;	//
-
-	double salienceTD;
-	double salienceBU;
+	
 public:
+	//------------------ PUBLIC METHODS -----------------------------------
+
 	/**
 	* default constructor
 	*/
@@ -147,7 +147,16 @@ public:
 	* draws all the blobs in the module
 	*/
 	void drawAllBlobs(bool stable);
-	//--- atributes ---
+	
+	//----------------- PUBLIC ATTRIBUTES -----------------------------
+	/**
+	* saliency parameter
+	*/
+	double salienceTD;
+	/**
+	* saliency parameter
+	*/
+	double salienceBU;
 	/**
 	* Output Bottle Port
 	*/
