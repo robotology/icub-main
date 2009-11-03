@@ -22,7 +22,7 @@ using namespace yarp::sig::draw;
 
 
 #define BLOB_MAXSIZE 4096
-#define BLOB_MINSIZE 600
+#define BLOB_MINSIZE 100
 
 
 static GtkWidget *menubar;
@@ -108,6 +108,7 @@ WatershedModule::WatershedModule(){
 	foveaBlob_flag=false;
 	colorVQ_flag=false;
 	blobList_flag=false;
+	maxSaliencyBlob_flag=false;
 	tagged_flag=false;
 	watershed_flag=false;
 	bluePlane_flag=false;
@@ -121,6 +122,8 @@ WatershedModule::WatershedModule(){
 	_wOperator=this->wOperator;
 	this->salience=new SalienceOperator(320,240);
 	_salience=this->salience;
+	maxSalienceBlob_img=new ImageOf<PixelMono>;
+	maxSalienceBlob_img->resize(320,240);
 	outContrastLP=new ImageOf<PixelMono>;
 	outContrastLP->resize(320,240);
 	outMeanColourLP=new ImageOf<PixelBgr>;
@@ -384,7 +387,7 @@ void rain(){
 			_inputImgBlue, _inputImgGreen, _inputImgRed, wModule->max_tag);
 		wModule->blobCataloged_flag=true;
 		//istruction to set the ptr_tagged in the Watershed Module with the static variable _tagged
-		wModule->tagged=ptr_tagged;
+		wModule->tagged=ptr_tagged; //ptr_tagged is the pointer to _tagged
 		ippiFree(_inputImgRGS32); //Ipp32s* _inputImgRGS32=ippiMalloc_32s_C1(320,240,&psb32s);
 		ippiFree(_inputImgGRS32); //Ipp32s* _inputImgGRS32=ippiMalloc_32s_C1(320,240,&psb32s);
 		ippiFree(_inputImgBYS32); //Ipp32s* _inputImgBYS32=ippiMalloc_32s_C1(320,240,&psb32s);
@@ -492,18 +495,20 @@ static gint expose_CB (GtkWidget *widget, GdkEventExpose *event, gpointer data)
 				bool ret=getPlanes();
 				if(ret==false){
 					printf("No Planes! \n");
-					//return FALSE;
+					//return TRUE;
 				}
 				ret=getOpponencies();
 				if(ret==false){
 					printf("No Opponency! \n");
-					//return FALSE;
+					//return TRUE;
 				}
 				//=new yarp::sig::ImageOf<yarp::sig::PixelRgb>;
 				//_outputImage->resize(320,240);
 				bool conversion=true;
+				_outputImage=_wOperator->getPlane(&_inputImg); 
+				rain();
 				if(wModule->foveaBlob_flag){
-					
+					wModule->salience->drawFoveaBlob(*wModule->salience->foveaBlob,*wModule->tagged);
 					ippiCopy_8u_C1R(wModule->salience->foveaBlob->getPixelAddress(0,0),320,_outputImage->getPixelAddress(0,0),320,srcsize);
 					conversion=true;
 				}
@@ -536,14 +541,24 @@ static gint expose_CB (GtkWidget *widget, GdkEventExpose *event, gpointer data)
 					conversion=true;
 				}
 				else if(wModule->tagged_flag){
+					printf("dimension of the tagged image %d,%d \n", wModule->tagged->width(), wModule->tagged->height());
+					/*for(int r=0; r<wModule->tagged->height(); r++)
+						for (int c=0; c<wModule->tagged->width(); c++)
+							*wModule->tagged->getPixelAddress(r,c)=255-*wModule->tagged->getPixelAddress(r,c);*/
 					ippiCopy_8u_C1R(wModule->tagged->getPixelAddress(0,0),320,_outputImage->getPixelAddress(0,0),320,srcsize);
 					conversion=true;
 				}
 				else if(wModule->blobList_flag){
-					//if((unsigned int)wModule->blobList!=0xcdcdcdcd){
+					wModule->drawAllBlobs(false);
+					/*if(wModule->blobList!=""){
 						ippiCopy_8u_C1R((unsigned char*)wModule->blobList,320,_outputImage->getPixelAddress(0,0),320,srcsize);
 						conversion=true;
-					//}
+					}*/
+				}
+				else if(wModule->maxSaliencyBlob_flag){
+					wModule->salience->DrawMaxSaliencyBlob(*wModule->maxSalienceBlob_img,wModule->max_tag,*wModule->tagged);
+					ippiCopy_8u_C1R(wModule->maxSalienceBlob_img->getPixelAddress(0,0),320,_outputImage->getPixelAddress(0,0),320,srcsize);
+					conversion=true;
 				}
 				else if(wModule->colorVQ_flag){
 					wModule->salience->DrawVQColor(*wModule->salience->colorVQ_img,*wModule->tagged);
@@ -556,8 +571,8 @@ static gint expose_CB (GtkWidget *widget, GdkEventExpose *event, gpointer data)
 						conversion=true;
 					}
 					else if(wModule->meanColour_flag){
-						_outputImage=_wOperator->getPlane(&_inputImg); 
-						rain();
+						//_outputImage=_wOperator->getPlane(&_inputImg); 
+						//rain();
 						wModule->drawAllBlobs(false);
 						ippiCopy_8u_C3R(wModule->outMeanColourLP->getPixelAddress(0,0),320*3,_outputImage3->getPixelAddress(0,0),320*3,srcsize);	
 						conversion=false;
@@ -806,6 +821,25 @@ static void cb_draw_value( GtkToggleButton *button )
 		else
 			wModule->meanColour_flag=false;
 	}
+	else if(!strcmp(button->button.label_text,"MaxSaliencyBlob1-->")){
+		if(button->active)
+			wModule->maxSaliencyBlob_flag=true;
+		else
+			wModule->maxSaliencyBlob_flag=false;
+			
+	}
+	else if(!strcmp(button->button.label_text,"MaxSaliencyBlob2-->")){
+		if(button->active)
+			wModule->maxSaliencyBlob_flag=true;
+		else
+			wModule->maxSaliencyBlob_flag=false;
+	}
+	else if(!strcmp(button->button.label_text,"MaxSaliencyBlob3-->")){
+		if(button->active)
+			wModule->maxSaliencyBlob_flag=true;
+		else
+			wModule->maxSaliencyBlob_flag=false;
+	}
 	else if(!strcmp(button->button.label_text,"FoveaBlob1-->")){
 		if(button->active)
 			wModule->foveaBlob_flag=true;
@@ -973,6 +1007,20 @@ static gint menuFileSingle_CB(GtkWidget *widget, GdkEventExpose *event, gpointer
         }
 
 	return TRUE;
+}
+
+static void cb_digits_scale2( GtkAdjustment *adj )
+{
+    /* Set the number of decimal places to which adj->value is rounded */
+	
+	printf("Threshold L: %f",(double) adj->value);
+}
+
+static void cb_digits_scale( GtkAdjustment *adj )
+{
+    /* Set the number of decimal places to which adj->value is rounded */
+	
+	printf("Threshold U: %f",(double) adj->value);
 }
 
 
@@ -1534,27 +1582,45 @@ GtkWidget* WatershedModule::createMainWindow(void)
     gtk_widget_show (scrollbar);*/
 
 	//-----Check Buttons
-	box4=  gtk_vbox_new (FALSE, 0);
-	/* A checkbutton to control whether the value is displayed or not */
-    buttonCheck = gtk_check_button_new_with_label("Green1-->");
-    gtk_toggle_button_set_active (GTK_TOGGLE_BUTTON (buttonCheck), FALSE);
-    g_signal_connect (G_OBJECT (buttonCheck), "toggled",G_CALLBACK (cb_draw_value),(gpointer) "Green1");
-    gtk_box_pack_start (GTK_BOX (box4), buttonCheck, TRUE, TRUE, 0);
-    gtk_widget_show (buttonCheck);
+	//box4=  gtk_vbox_new (FALSE, 0);
+	
+	//gtk_container_set_border_width (GTK_CONTAINER (box3), 0);
+    //gtk_box_pack_start (GTK_BOX (box2), box3, FALSE, FALSE, 0);
+    //gtk_widget_show (box3);
 
-	/* A checkbutton to control whether the value is displayed or not */
-    buttonCheck = gtk_check_button_new_with_label("Red1-->");
-    gtk_toggle_button_set_active (GTK_TOGGLE_BUTTON (buttonCheck), TRUE);
-    g_signal_connect (G_OBJECT (buttonCheck), "toggled",G_CALLBACK (cb_draw_value), (gpointer) "Red1");
-    gtk_box_pack_start (GTK_BOX (box4), buttonCheck, TRUE, TRUE, 0);
-    gtk_widget_show (buttonCheck);
+	box4 = gtk_vbox_new (FALSE, 0);
+	gtk_container_set_border_width (GTK_CONTAINER (box4), 0);
 
-	/* A checkbutton to control whether the value is displayed or not */
-    buttonCheck = gtk_check_button_new_with_label("Blue1-->");
-    gtk_toggle_button_set_active (GTK_TOGGLE_BUTTON (buttonCheck), FALSE);
-    g_signal_connect (G_OBJECT (buttonCheck), "toggled",G_CALLBACK (cb_draw_value), (gpointer) "Blue1");
-    gtk_box_pack_start (GTK_BOX (box4), buttonCheck, TRUE, TRUE, 0);
-    gtk_widget_show (buttonCheck);
+	label = gtk_label_new ("ThresholdBU:");
+	gtk_box_pack_start (GTK_BOX (box4), label, FALSE, FALSE, 0);
+    gtk_widget_show (label);
+
+	double maxAdj=100.0;
+	double minAdj=10.0;
+	double stepAdj=1.0;
+	
+	adj1 = gtk_adjustment_new (2.0, minAdj,maxAdj,stepAdj, 1.0, 1.0);
+	hscale = gtk_hscale_new (GTK_ADJUSTMENT (adj1));
+    gtk_widget_set_size_request (GTK_WIDGET (hscale), 200, -1);
+    scale_set_default_values (GTK_SCALE (hscale));
+    gtk_box_pack_start (GTK_BOX (box4), hscale, TRUE, TRUE, 0);
+    gtk_widget_show (hscale);
+	g_signal_connect (G_OBJECT (adj1), "value_changed",
+                      G_CALLBACK (cb_digits_scale), NULL);
+
+
+	label = gtk_label_new ("ThresholdTD:");
+	gtk_box_pack_start (GTK_BOX (box4), label, FALSE, FALSE, 0);
+    gtk_widget_show (label);
+
+	adj2 = gtk_adjustment_new (1.0, minAdj,maxAdj,stepAdj, 1.0, 1.0);
+	hscale = gtk_hscale_new (GTK_ADJUSTMENT (adj2));
+    gtk_widget_set_size_request (GTK_WIDGET (hscale), 200, -1);
+    scale_set_default_values (GTK_SCALE (hscale));
+	gtk_box_pack_start (GTK_BOX (box4), hscale, TRUE, TRUE, 0);
+    gtk_widget_show (hscale);
+	g_signal_connect (G_OBJECT (adj2), "value_changed",
+                      G_CALLBACK (cb_digits_scale2), NULL);
 
 	gtk_box_pack_start (GTK_BOX (box3), box4, TRUE, TRUE, 0);
     gtk_widget_show (box4);
@@ -1562,21 +1628,21 @@ GtkWidget* WatershedModule::createMainWindow(void)
 	//-----box4
 	box4=  gtk_vbox_new (FALSE, 0);
 	/* A checkbutton to control whether the value is displayed or not */
-    buttonCheck = gtk_check_button_new_with_label("ColourOpponency1-->");
+    buttonCheck = gtk_check_button_new_with_label("Option1-->");
     gtk_toggle_button_set_active (GTK_TOGGLE_BUTTON (buttonCheck), FALSE);
     g_signal_connect (G_OBJECT (buttonCheck), "toggled",G_CALLBACK (cb_draw_value), (gpointer)"ColourOpponency11");
     gtk_box_pack_start (GTK_BOX (box4), buttonCheck, TRUE, TRUE, 0);
     gtk_widget_show (buttonCheck);
 
 	/* A checkbutton to control whether the value is displayed or not */
-    buttonCheck = gtk_check_button_new_with_label("FindEdges1-->");
+    buttonCheck = gtk_check_button_new_with_label("Option2-->");
     gtk_toggle_button_set_active (GTK_TOGGLE_BUTTON (buttonCheck), FALSE);
     g_signal_connect (G_OBJECT (buttonCheck), "toggled",G_CALLBACK (cb_draw_value),(gpointer) "FindEdges1");
     gtk_box_pack_start (GTK_BOX (box4), buttonCheck, TRUE, TRUE, 0);
     gtk_widget_show (buttonCheck);
 
 	/* A checkbutton to control whether the value is displayed or not */
-    buttonCheck = gtk_check_button_new_with_label("Normalize1-->");
+    buttonCheck = gtk_check_button_new_with_label("Option3-->");
     gtk_toggle_button_set_active (GTK_TOGGLE_BUTTON (buttonCheck), FALSE);
     g_signal_connect (G_OBJECT (buttonCheck), "toggled",G_CALLBACK (cb_draw_value),(gpointer) "Normalize1");
     gtk_box_pack_start (GTK_BOX (box4), buttonCheck, TRUE, TRUE, 0);
@@ -1679,10 +1745,17 @@ GtkWidget* WatershedModule::createMainWindow(void)
     gtk_box_pack_start (GTK_BOX (box4), buttonCheck, TRUE, TRUE, 0);
     gtk_widget_show (buttonCheck);
 
-	/* A checkbutton to control whether the value is displayed or not */
+	// A checkbutton to control whether the value is displayed or not 
     buttonCheck = gtk_check_button_new_with_label("ColorVQ1-->");
     gtk_toggle_button_set_active (GTK_TOGGLE_BUTTON (buttonCheck), FALSE);
     g_signal_connect (G_OBJECT (buttonCheck), "toggled",G_CALLBACK (cb_draw_value),(gpointer) "ColorVQ1");
+    gtk_box_pack_start (GTK_BOX (box4), buttonCheck, TRUE, TRUE, 0);
+    gtk_widget_show (buttonCheck);
+
+	// A checkbutton to control whether the value is displayed or not 
+    buttonCheck = gtk_check_button_new_with_label("MaxSaliencyBlob1-->");
+    gtk_toggle_button_set_active (GTK_TOGGLE_BUTTON (buttonCheck), FALSE);
+    g_signal_connect (G_OBJECT (buttonCheck), "toggled",G_CALLBACK (cb_draw_value),(gpointer) "MaxSaliencyBlob1");
     gtk_box_pack_start (GTK_BOX (box4), buttonCheck, TRUE, TRUE, 0);
     gtk_widget_show (buttonCheck);
 
@@ -2300,24 +2373,12 @@ GtkWidget* WatershedModule::createMainWindow(void)
 	return window;
 }
 
-void SalienceOperator::drawFoveaBlob(ImageOf<PixelMono>& id, ImageOf<PixelInt>& tagged)
-{
-	//id.Zero();
-	id.zero();
 
-	PixelMono gray=50;
-	
-	//__OLD//for (int r=m_boxes[1].rmin; r<=m_boxes[1].rmax; r++)
-	for (int r=0; r<height; r++)
-		for (int c=0; c<width; c++)
-			if (tagged(c, r)==1)
-				id(c ,r)=gray;
-}
 
 void WatershedModule::drawAllBlobs(bool stable)
 {
 	salience->ComputeSalienceAll(this->max_tag,this->max_tag);
-
+	//extracts the PixelBgr color of a particular blob identified by the id (last parameter)
 	PixelBgr varFoveaBlob = salience->varBlob(*tagged, *wModule->ptr_inputRG, *wModule->ptr_inputGR, *wModule->ptr_inputBY, 1);
 
 	salience->drawFoveaBlob(*blobFov, *tagged);
@@ -2372,14 +2433,14 @@ void WatershedModule::drawAllBlobs(bool stable)
 	//__OLD//salience.DrawContrastLP(rg, gr, by, tmp1, tagged, max_tag, 0, 1, 30, 42, 45); // somma coeff pos=3 somma coeff neg=-3
 	//__OLD//salience.checkIOR(tagged, IORBoxes, num_IORBoxes);
 	//__OLD//salience.doIOR(tagged, IORBoxes, num_IORBoxes);
-	float salienceBU=1.0,salienceTD=0.0;
+	//float salienceBU=1.0,salienceTD=0.0;
 	IppiSize srcsize={320,240};
 	PixelMonoSigned searchTD=0,searchRG=30,searchGR=42,searchBY=45;
 	int psb32s;
 	Ipp32s* _inputImgRGS32=ippiMalloc_32s_C1(320,240,&psb32s);
 	Ipp32s* _inputImgGRS32=ippiMalloc_32s_C1(320,240,&psb32s);
 	Ipp32s* _inputImgBYS32=ippiMalloc_32s_C1(320,240,&psb32s);
-	
+	//_inputImgGR
 	if(ptr_inputImgRG!=NULL){
 		//_inputImgRGS->copy(*ptr_inputImgRG,320,240);
 		ippiScale_8u32s_C1R(_inputImgRG.getPixelAddress(0,0),320,_inputImgRGS32,psb32s,srcsize);
@@ -2388,6 +2449,7 @@ void WatershedModule::drawAllBlobs(bool stable)
 	}
 	else
 		return;
+	//_inputImgGR
 	if(ptr_inputImgGR!=NULL){
 		//_inputImgGRS->copy(*ptr_inputImgGR,320,240);
 		ippiScale_8u32s_C1R(_inputImgGR.getPixelAddress(0,0),320,_inputImgGRS32,psb32s,srcsize);
@@ -2396,6 +2458,7 @@ void WatershedModule::drawAllBlobs(bool stable)
 	}
 	else
 		return;
+	//_inputImgBY
 	if(ptr_inputImgBY!=NULL){
 		//_inputImgBYS->copy(*ptr_inputImgBY,320,240);
 		ippiScale_8u32s_C1R(_inputImgBY.getPixelAddress(0,0),320,_inputImgBYS32,psb32s,srcsize);

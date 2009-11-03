@@ -32,8 +32,8 @@ using namespace yarp::sig;
 using namespace yarp::sig::draw;
 
 /**
- *Module that applies Watershed techinique (rain falling) on the image buffered on the input port
- * \author Francesco Rea
+ * Module that applies Watershed techinique (rain falling) on the image buffered on the input port
+ * @author Francesco Rea
  */
 
 
@@ -87,6 +87,9 @@ private:
 	* options of the connection
 	*/
 	Property options;	//
+
+	double salienceTD;
+	double salienceBU;
 public:
 	/**
 	* default constructor
@@ -141,7 +144,7 @@ public:
 	*/
 	bool closePorts();
 	/**
-	* draws all the modules
+	* draws all the blobs in the module
 	*/
 	void drawAllBlobs(bool stable);
 	//--- atributes ---
@@ -149,6 +152,9 @@ public:
 	* Output Bottle Port
 	*/
 	yarp::os::BufferedPort<yarp::os::Bottle> *_pOutPort;
+	/**
+	* Output Bottle Port #2
+	*/
 	yarp::os::BufferedPort<ImageOf<PixelRgb> > *_pOutPort2;
 	/**
 	*Output Bottle Container
@@ -171,8 +177,18 @@ public:
 	*vector of tags to the sequence of blobs
 	*/
 	ImageOf<PixelInt>* tagged;  //
+	/**
+	* image result of the function outContrastLP
+	*/
 	ImageOf<PixelMono> *outContrastLP;
+	/**
+	* image result of the function meanColourLP;
+	*/
 	ImageOf<PixelBgr> *outMeanColourLP;
+	/**
+	* image of the most salient blob
+	*/
+	ImageOf<PixelMono>* maxSalienceBlob_img;
 	/**
 	* pointer to the input image of the red plane
 	*/
@@ -197,8 +213,17 @@ public:
 	* pointer to the input image of the B+Y- colour opponency
 	*/
 	yarp::sig::ImageOf<yarp::sig::PixelMono> *ptr_inputBY; //
+	/**
+	* input image of the opponency R+G-
+	*/
 	ImageOf<PixelMonoSigned> *_inputImgRGS;
+	/**
+	* input image of the opponency G+R-
+	*/
 	ImageOf<PixelMonoSigned> *_inputImgGRS;
+	/**
+	* input image of the opponency B+Y-
+	*/
 	ImageOf<PixelMonoSigned> *_inputImgBYS;
 	/**
 	* image of the fovea blob
@@ -208,29 +233,33 @@ public:
 	* image which is plotted in the drawing area
 	*/
 	ImageOf<PixelRgb> *image_out; //
-	//----flags
+	//---------- flags --------------------------
 	/**
-	* flag for the drawings
+	* flag for drawing contrastLP
 	*/
 	bool contrastLP_flag;
 	/**
-	* flag for the drawings
+	* flag for drawing meanColourImage
 	*/
 	bool meanColour_flag;
 	/**
-	* flag for the drawings
+	* flag for drawing blobCatalog
 	*/
 	bool blobCataloged_flag;
 	/**
-	* flag for the drawings
+	* flag for drawing foveaBlob
 	*/
 	bool foveaBlob_flag;
 	/**
-	* flag for the drawings
+	* flag for drawing colorVQ
 	*/
 	bool colorVQ_flag;
 	/**
-	* flag for the drawings
+	* flag for drawing maxSaliencyBlob
+	*/
+	bool maxSaliencyBlob_flag;
+	/**
+	* flag for drawing blobList
 	*/
 	bool blobList_flag;
 	/**
@@ -238,35 +267,34 @@ public:
 	*/
 	bool tagged_flag;
 	/**
-	* flag for the drawings
+	* flag for drawing watershed image
 	*/
 	bool watershed_flag;
 	/**
-	* flag for the drawings
+	* flag for drawing redPlane image
 	*/
 	bool redPlane_flag;
 	/**
-	* flag for the drawings
+	* flag for drawing greenPlane image
 	*/
 	bool greenPlane_flag;
 	/**
-	* flag for the drawings
+	* flag for drawing bluePlane image
 	*/
 	bool bluePlane_flag;
 	/**
-	* flag for the drawings
+	* flag for drawing RedGreen Opponency Map
 	*/
 	bool RG_flag;
 	/**
-	* flag for the drawings
+	* flag for drawing GreenRed Opponency Map
 	*/
 	bool GR_flag;
 	/**
-	* flag for the drawings
+	* flag for drawing BlueYellow Opponency Map
 	*/
 	bool BY_flag;
 
-	
 
 	//----checkButtons
 	GtkWidget *buttonCheckGreen,*buttonCheckRed,*buttonCheckBlue;

@@ -84,8 +84,14 @@ public:
 	* @param ox x position of the point
 	* @param oy y position of the point
 	*/
-	void logPolar2Cartesian(int irho, int itheta, int& ox, int& oy); //
+	void logPolar2Cartesian(int irho, int itheta, int& ox, int& oy); 
+	/**
+	* draws visual quantized Colour Imade
+	*/
 	void DrawVQColor(ImageOf<PixelBgr>& id, ImageOf<PixelInt>& tagged);
+	/**
+	* gets x and y center
+	*/
 	void get_XY_Center(int* xx, int *yy,int irho,int itheta,ImageOf<PixelRgb> *_img);
 	/**
 	* returns in box the blob with the maximum saliency value
@@ -113,9 +119,12 @@ public:
 	*/
 	PixelBgr varBlob(ImageOf<PixelInt>& tagged, ImageOf<PixelMono> &rg, ImageOf<PixelMono> &gr, ImageOf<PixelMono> &by, int tag); //
 	/**
-	* compute the saliency value for all the blobs 
+	* computes the saliency value for all the blobs 
 	*/
-	void ComputeSalienceAll(int num_blob, int last_tag); //
+	void ComputeSalienceAll(int num_blob, int last_tag); 
+	/**
+	* count the number of the small blobs
+	*/
 	int countSmallBlobs(ImageOf<PixelInt>& tagged, char *blobList, int max_tag, int min_size);
 	/**
 	* merge blobs that are tagged with the same value
@@ -130,11 +139,21 @@ public:
 	* @param last_tag tag of the last
 	*/
 	void ComputeMeanColors(int last_tag); //
+	/**
+	* draws the blobs in the scene painting the blobs with their mean colour
+	*/
 	void DrawMeanColorsLP(ImageOf<PixelBgr>& id, ImageOf<PixelInt>& tagged); //
+	/**
+	* draws the most salient blobs in the scene
+	*/
+	void DrawMaxSaliencyBlob(ImageOf<PixelMono>& id,int max_tag,ImageOf<PixelInt>& tagged);
 	/**
 	* remove the blobs that are out of range
 	*/
 	void RemoveNonValidNoRange(int last_tag, const int max_size, const int min_size);
+	/**
+	* draws the contrast LP2
+	*/
 	int DrawContrastLP2(ImageOf<PixelMonoSigned>& rg, ImageOf<PixelMonoSigned>& gr,
 								  ImageOf<PixelMonoSigned>& by, ImageOf<PixelMono>& dst, ImageOf<PixelInt>& tagged,
 								  int numBlob, float pBU, float pTD,
@@ -142,7 +161,14 @@ public:
 
 	//inline methods
 	inline YARPBox & getBlobNum(int num){return m_boxes[num];}
+	/**
+	* removes the fovea blob
+	*/
 	inline void removeFoveaBlob(ImageOf<PixelInt>& tagged) {m_boxes[tagged(0, 0)].valid=false;}
+	/**
+	* return the total area of the box passed as parameter
+	* @param box reference to the box whose area will be returned
+	*/
 	inline int TotalArea(YARPBox& box) { return (box.xmax - box.xmin + 1) * (box.ymax - box.ymin + 1); }
 	//---attributes
 	/**

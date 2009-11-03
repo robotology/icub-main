@@ -26,8 +26,8 @@ void SalienceOperator::DrawVQColor(ImageOf<PixelBgr>& id, ImageOf<PixelInt>& tag
 			colorVQ->DominantQuantization(m_boxes[tagged(c, r)].meanColors, id(c,r), 0.3*255);
 }
 
-/*Defines Valid and not valid boxes
-
+/**
+* Defines Valid and not valid boxes
 */
 void SalienceOperator::ComputeSalienceAll(int num_blob, int last_tag){	
 	int i=1;
@@ -50,8 +50,13 @@ void SalienceOperator::ComputeSalienceAll(int num_blob, int last_tag){
 	}
 }
 
-/*function that returns the PixelBgr mean of the selectioned blob
-	inputs: the tagged image, the R+G- image, the G+R- image, the B+Y- image, the index of the blob
+/**
+*function that returns the PixelBgr mean of the selectioned blob
+*	@param tagged tagged image
+*	@param rg the R+G- image
+*	@param gr the G+R- image
+*	@param by the B+Y- image
+*	@param tag the index of the blob
 */
 PixelBgr SalienceOperator::varBlob(ImageOf<PixelInt>& tagged, ImageOf<PixelMono> &rg, ImageOf<PixelMono> &gr, ImageOf<PixelMono> &by, int tag)
 {
@@ -118,9 +123,8 @@ void SalienceOperator::RemoveNonValidNoRange(int last_tag, const int max_size, c
 			// i blob vengono comunque ordinati x grandezza.
 			if ( area < min_size ||	area > max_size ) {
 				m_boxes[i].valid=false;
+				//printf("a valid Blob with non valid Dimension \n");
 			}
-			else
-				printf("a valid Blob with valid Dimension \n");
 		}
 	}
 }
@@ -160,7 +164,28 @@ void SalienceOperator::DrawMeanColorsLP(ImageOf<PixelBgr>& id, ImageOf<PixelInt>
 			id(c,r)=m_boxes[tagged(c,r)].meanColors;
 }
 
+void SalienceOperator::DrawMaxSaliencyBlob(ImageOf<PixelMono>& id,int max_tag,ImageOf<PixelInt>& tagged)
+{
+	id.zero();
+	PixelMono pixelColour=255;
+	YARPBox box;
+	maxSalienceBlob(tagged,max_tag,box);
+	for (int r=0; r<height; r++)
+		for (int c=0; c<width; c++)
+			if (tagged(c,r)==box.id)
+				id(c,r)=pixelColour;
+}
 
+void SalienceOperator::drawFoveaBlob(ImageOf<PixelMono>& id,ImageOf<PixelInt>& tagged){
+	//id.Zero();
+	id.zero();
+	PixelMono pixelColour=255;
+	//__OLD//for (int r=m_boxes[1].rmin; r<=m_boxes[1].rmax; r++)
+	for (int r=0; r<height; r++)
+		for (int c=0; c<width; c++)
+			if (tagged(c, r)==1)
+				id(c ,r)=pixelColour;
+}
 
 int SalienceOperator::DrawContrastLP2(ImageOf<PixelMonoSigned>& rg, ImageOf<PixelMonoSigned>& gr,
 								  ImageOf<PixelMonoSigned>& by, ImageOf<PixelMono>& dst, ImageOf<PixelInt>& tagged,
@@ -182,7 +207,8 @@ int SalienceOperator::DrawContrastLP2(ImageOf<PixelMonoSigned>& rg, ImageOf<Pixe
 
 	dst.zero();
 	
-	if (numBlob>imageSize) numBlob=imageSize;
+	if (numBlob>imageSize) 
+		numBlob=imageSize;
 
 	integralRG->computeCartesian(rg);
 	integralGR->computeCartesian(gr);
@@ -305,7 +331,7 @@ int SalienceOperator::DrawContrastLP2(ImageOf<PixelMonoSigned>& rg, ImageOf<Pixe
 		a2=0;
 		b2=0;
 	}
-
+	//calculate the salience total
 	for (int i = 1; i < numBlob; i++) {
 		if (m_boxes[i].valid) {
 			m_boxes[i].salienceTotal=pBU*(a1*m_boxes[i].salienceBU+b1)+pTD*(a2*m_boxes[i].salienceTD+b2);
@@ -449,10 +475,19 @@ void SalienceOperator::maxSalienceBlob(ImageOf<PixelInt>& tagged, int max_tag, Y
 	int xcart;
 	int ycart;
 	
-	for (int l = 1; l < max_tag; l++)
-		if (m_boxes[l].valid)
-			if (m_boxes[l].salienceTotal>m_boxes[max].salienceTotal)
-				max=l;
+	for (int m = 1; m < max_tag; m++){
+		printf("blob number %d:",m);
+		if (m_boxes[m].valid){
+			//printf(" valid ---> %d /n", m_boxes[m].salienceTotal);
+			if (m_boxes[m].salienceTotal>m_boxes[max].salienceTotal)
+				max=m;
+		}
+		else{
+			//printf(" non valid");
+		}
+	}
+
+
 
 	box=m_boxes[max];
 	centerOfMassAndMass(tagged, box.id, &xcart, &ycart, &box.areaCart);
@@ -496,7 +531,9 @@ void SalienceOperator::resize(const int width1, const int height1)
 	//integralBY.resize(width1, height1);
 }
 
-/* //gets the tagged image of pixels,the R+G-, G*R-,B+Y-, the Red, blue and green Plans and creates a catalog of blobs*/
+/**
+*  gets as inputs the R+G-, G*R-,B+Y-, the Red, blue and green Plans and creates a catalog of blobs saved in tagged
+*/
 void SalienceOperator::blobCatalog(ImageOf<PixelInt>& tagged,
 							   ImageOf<PixelMonoSigned> &rg,
 							   ImageOf<PixelMonoSigned> &gr,
@@ -505,15 +542,14 @@ void SalienceOperator::blobCatalog(ImageOf<PixelInt>& tagged,
 							   ImageOf<PixelMono> &g1,
 							   ImageOf<PixelMono> &b1,
 							   int last_tag){
-	
+	//initialisation of all the blobs
 	for (int i = 0; i <= last_tag; i++) {
 		m_boxes[i].cmax = m_boxes[i].rmax = 0;
 		m_boxes[i].cmin = width;
 		m_boxes[i].rmin = height;
 
 		m_boxes[i].xmax = m_boxes[i].ymax = 0;
-		m_boxes[i].xmin = m_boxes[i].ymin = 255;//<---REA_VERSION
-
+		m_boxes[i].xmin = m_boxes[i].ymin = 255;
 
 		//m_boxes[i].xmin = m_lp.GetCWidth();
 		//m_boxes[i].ymin = m_lp.GetCHeight();
@@ -539,7 +575,7 @@ void SalienceOperator::blobCatalog(ImageOf<PixelInt>& tagged,
 		m_boxes[i].bSum=0;
 	}
   
-	// special case for the null tag (0)
+	// ------   special case for the null tag (0) which is not fovea ----------
 	// null tag is not used!!!
 	m_boxes[0].rmax = m_boxes[0].rmin = height/2;
 	m_boxes[0].cmax = m_boxes[0].cmin = width/2;
@@ -548,8 +584,8 @@ void SalienceOperator::blobCatalog(ImageOf<PixelInt>& tagged,
 	m_boxes[0].salienceTotal=0;
 	m_boxes[0].valid = false;
 
+	//---- check cutted blobs -------
 	memset(_checkCutted, 0, sizeof(bool)*width*height);
-	//----------
 	for (int r = 0; r < height; r++)
 		if (tagged(0, r)==tagged(width-1, r)) {
 			m_boxes[tagged(0, r)].cutted=true;
@@ -557,11 +593,12 @@ void SalienceOperator::blobCatalog(ImageOf<PixelInt>& tagged,
 		}
 	
 
-	//----------
+	//------ avereging of pixels ----------
 	// pixels are logpolar, averaging is done in cartesian
 	for (int r = 0; r < height; r++) {
 		for (int c = 0; c < width; c++) {
 			long int tag_index = tagged(c, r);
+			//printf("%d,", tag_index);
 			m_boxes[tag_index].areaLP++;
 			//m_boxes[tag_index].areaCart+=pixelSize[r];
 
@@ -584,8 +621,10 @@ void SalienceOperator::blobCatalog(ImageOf<PixelInt>& tagged,
 			m_boxes[tag_index].ysum += y;
 			m_boxes[tag_index].xsum += x;
 
-			if (m_boxes[tag_index].rmax < r) m_boxes[tag_index].rmax = r;
-			if (m_boxes[tag_index].rmin > r) m_boxes[tag_index].rmin = r;
+			if (m_boxes[tag_index].rmax < r) 
+				m_boxes[tag_index].rmax = r;
+			if (m_boxes[tag_index].rmin > r) 
+				m_boxes[tag_index].rmin = r;
 			if (!m_boxes[tag_index].cutted) {
 				if (m_boxes[tag_index].cmax < c) m_boxes[tag_index].cmax = c;
 				if (m_boxes[tag_index].cmin > c) m_boxes[tag_index].cmin = c;
@@ -603,7 +642,7 @@ void SalienceOperator::blobCatalog(ImageOf<PixelInt>& tagged,
 		}
 	}
 	
-	//-----
+	//----- processing of cutted blobs -------------------
 	for (int i = 1; i <= last_tag; i++) {
 		if (m_boxes[i].cutted) {
 			int index = m_boxes[i].indexCutted;
