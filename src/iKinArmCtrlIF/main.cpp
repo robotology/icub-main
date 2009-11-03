@@ -103,7 +103,9 @@ Windows, Linux
 
 #include <gsl/gsl_math.h>
 
-#include "drivers.h"
+#ifdef USE_ICUB_MOD
+    #include "drivers.h"
+#endif
 
 #include <iostream>
 #include <iomanip>
@@ -389,12 +391,6 @@ public:
 
 int main(int argc, char *argv[])
 {
-    Network yarp;
-
-#ifdef USE_ICUB_MOD
-    DriverCollection dev;
-#endif
-
     ResourceFinder rf;
     rf.setVerbose(true);
     rf.configure("ICUB_ROOT",argc,argv);
@@ -414,8 +410,14 @@ int main(int argc, char *argv[])
         return 0;
     }
 
+    Network yarp;
+
     if (!yarp.checkNetwork())
         return -1;
+
+#ifdef USE_ICUB_MOD
+    DriverCollection dev;
+#endif
 
     CtrlModule mod;
 
