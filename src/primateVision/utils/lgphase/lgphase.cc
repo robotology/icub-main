@@ -128,8 +128,8 @@ iCub::contrib::primateVision::LGPhase::LGPhase(IppiSize srcsize_,
   
 
   //angular filter components:
-  double angl = thisorient*(IPP_PI/2.0)/(norient-1);
-  printf("Orient processing angle: %f\n",angl*180.0/IPP_PI);
+  double angl = thisorient*IPP_PI/norient;
+  printf("Preparing orient processing angle: %f\n",angl*180.0/IPP_PI);
   for (int y=0;y<srcsize.height;y++){ 
     for (int x=0;x<srcsize.width;x++){
       dtheta[y*psb_32f/4+x] = fabs(atan2(sintheta[y*psb_32f/4+x]*cos(angl)-costheta[y*psb_32f/4+x]*sin(angl),costheta[y*psb_32f/4+x]*cos(angl)+sintheta[y*psb_32f/4+x]*sin(angl)));

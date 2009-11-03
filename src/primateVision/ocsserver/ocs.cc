@@ -188,12 +188,12 @@ void iCub::contrib::primateVision::OCSServer::run(){
   int thisorient      = 0;
   OrientT**orientcs   = (OrientT**)  malloc(norient*sizeof(OrientT*));
   CentsurT**centsurcs = (CentsurT**) malloc(norient*sizeof(CentsurT*));
-  Ipp32f**PC          = (Ipp32f**)    malloc(norient*sizeof(Ipp32f*));
-  Ipp32f***csims      = (Ipp32f***)   malloc(norient*sizeof(Ipp32f**));
-  Ipp32fc**featType   = (Ipp32fc**)   malloc(norient*sizeof(Ipp32fc*));
+  Ipp32f**PC          = (Ipp32f**)   malloc(norient*sizeof(Ipp32f*));
+  Ipp32f***csims      = (Ipp32f***)  malloc(norient*sizeof(Ipp32f**));
+  Ipp32fc**featType   = (Ipp32fc**)  malloc(norient*sizeof(Ipp32fc*));
   for(int n=0;n<norient;n++){
     orientcs[n]  = (OrientT*) new OrientT(srcsize,psb_32fc,nscale,norient,thisorient,
-					    minWaveLength,mult,sigmaOnf,dThetaOnSigma,k,cutOff,g);
+					  minWaveLength,mult,sigmaOnf,dThetaOnSigma,k,cutOff,g);
     centsurcs[n] = (CentsurT*) new CentsurT(srcsize,nscale,ncsscale,sigma);
     csims[n]     = (Ipp32f**) malloc(nscale*sizeof(Ipp32f*));
     PC[n]        = ippiMalloc_32f_C1(srcsize.width,srcsize.height,&psb_32f);
@@ -493,8 +493,8 @@ void iCub::contrib::primateVision::OCSServer::run(){
 	  //*****featType 
 	  for (int y=0;y<srcsize.height;y++){ 
 	    for (int x=0;x<srcsize.width;x++){
-	      featType[n][y*srcsize.width+x].re = E[y*srcsize.width+x];
-	      featType[n][y*srcsize.width+x].im = O[y*srcsize.width+x];
+	      featType[n][y*psb_32fc/8+x].re = E[y*psb_32f/4+x];
+	      featType[n][y*psb_32fc/8+x].im = O[y*psb_32f/4+x];
 	    }
 	  }
 	  //**** 
@@ -534,24 +534,25 @@ void iCub::contrib::primateVision::OCSServer::run(){
 	//**** FEATURE ORIENTATIONS 
 	for (int y=0;y<srcsize.height;y++){ 
 	  for (int x=0;x<srcsize.width;x++){
-	    or_[y*srcsize.width+x] = atan2(sin2theta[y*srcsize.width+x],cos2theta[y*srcsize.width+x]);       
+	    or_[y*psb_32f/4+x] = atan2(sin2theta[y*psb_32f/4+x],cos2theta[y*psb_32f/4+x]);       
 	    //neg = or < 0;  
-	    if (or_[y*srcsize.width+x] < 0.0){
-	      neg[y*srcsize.width+x] = 1.0;
-	      not_neg[y*srcsize.width+x] = 0.0;
+	    if (or_[y*psb_32f/4+x] < 0.0){
+	      neg[y*psb_32f/4+x] = 1.0;
+	      not_neg[y*psb_32f/4+x] = 0.0;
 	    }
 	    else{
-	      neg[y*srcsize.width+x] = 0.0;
-	      not_neg[y*srcsize.width+x] = 1.0;
+	      neg[y*psb_32f/4+x] = 0.0;
+	      not_neg[y*psb_32f/4+x] = 1.0;
 	    }
 	    
 	  }
 	}
+	//or_ is rads, conv to degs:
 	ippiMulC_32f_C1IR(90.0/IPP_PI,or_,psb_32f,srcsize);
 	ippiAddC_32f_C1R(or_,psb_32f,180.0,tmp1_32f,psb_32f,srcsize);
 	ippiMul_32f_C1IR(neg,psb_32f,tmp1_32f,psb_32f,srcsize);
 	ippiMul_32f_C1R(not_neg,psb_32f,or_,psb_32f,tmp2_32f,psb_32f,srcsize);
-	ippiAdd_32f_C1R(tmp1_32f,psb_32f,tmp2_32f,psb_32f,or_,psb_32f,srcsize);
+	ippiAdd_32f_C1R(tmp1_32f,psb_32f,tmp2_32f,psb_32f,or_,psb_32f,srcsize); //ORIENT (degs)
 	//**** 
 		
 	ippiAdd_32f_C1R(covy2,psb_32f,covx2,psb_32f,tmp1_32f,psb_32f,srcsize);
