@@ -129,6 +129,10 @@ private:
 	* flag that enable the drawing of the layer present in the simulation
 	*/
 	bool enableDraw;
+	/**
+	* flag that indicates if the inputImage is ready for clamping
+	*/
+	bool inputImage_flag;
 	/** 
 	* flag that regulates the execution of the freely mode
 	*/
@@ -234,6 +238,11 @@ public:
 	* param layerNumber reference to the layer name
 	*/
 	void clampLayer(int LayerNumber);
+	/** 
+	* function that clamp an image as input of a Layer
+	* @param layer reference to the layer name
+	*/
+	void clampLayer(Layer layer);
 	/** 
 	* input Image which is mapped onto the selected layer
 	*/

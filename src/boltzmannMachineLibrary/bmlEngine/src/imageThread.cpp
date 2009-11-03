@@ -7,11 +7,19 @@
 * initialise the thread
 */
 bool imageThread::threadInit(){
-	scaleFactorX=25;
-	scaleFactorY=25;
+	scaleFactorX=2;
+	scaleFactorY=2;
 	cvImage= cvCreateImage(cvSize(320,240), IPL_DEPTH_8U, 3 );
 	image2=new ImageOf<PixelRgb>;
 	image2->resize(320,240);
+	for (int x=0; x<320; x++){
+				for(int y=0;y<240;y++){
+					PixelRgb &pix=image2->pixel(x,y);
+					pix.r=0;
+					pix.b=0;
+					pix.g=0;
+				}
+			}
 	printf("Image Thread initialising.....");
 	//string str=getName();
 	string str("/rea/BMLEngine/");
@@ -41,12 +49,12 @@ void imageThread::run(){
 	for(int i=0;i<plottedLayer->getCol();i++){
 		for(int j=0;j<plottedLayer->getRow();j++)
 		{
-			int pos=i*plottedLayer->getRow()+j;
+			int pos=j*plottedLayer->getCol()+i;
 			Vector v=*(plottedLayer->stateVector);
 			//printf("%d %f \n",pos,v(pos));
 			for (int scaleX=0; scaleX<scaleFactorX; scaleX++){
 				for(int scaleY=0;scaleY<scaleFactorY;scaleY++){
-					PixelRgb &pix=image2->pixel(i+scaleX,j+scaleY);
+					PixelRgb &pix=image2->pixel(i*scaleFactorX+scaleX,j*scaleFactorY+scaleY);
 					pix.r=v(pos)*255;
 					pix.b=v(pos)*255;
 					pix.g=v(pos)*255;

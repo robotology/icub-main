@@ -89,7 +89,7 @@ bool getImage(){
 	_semaphore.post();
 	
 	//printf("GetImage: out of the semaphore \n");
-	return ret;
+	return true;
 }
 
 
@@ -121,8 +121,8 @@ bool BMLEngine::outCommandPort(){
 
 bool BMLEngine::open(Searchable& config) {
         count=0;
-		scaleFactorX=20;
-		scaleFactorY=20;
+		scaleFactorX=10;
+		scaleFactorY=10;
 		clampingThreshold=1;
 		countLayer=0;
 		currentLayer=0;
@@ -148,6 +148,7 @@ bool BMLEngine::open(Searchable& config) {
 
 		//setting of the flags
 		enableDraw=false;
+		inputImage_flag=false;
 		runFreely=false;
 		runClamped=false;
 		probClamped_flag=false;
@@ -208,7 +209,9 @@ bool BMLEngine::close() {
 */
 bool BMLEngine::updateModule() {
 
-	getImage();
+	bool ret=getImage();
+	if(ret)
+		inputImage_flag=true;
 
 	Bottle *bot=portCmd.read(false);
 	if(bot!=NULL){
@@ -308,10 +311,8 @@ bool BMLEngine::updateModule() {
 			for(iterE2=mb->elementList.begin(); iterE2!=mb->elementList.end()&&j<value2;iterE2++){
 				j++;
 			}
-			
+			printf("Calling the interconnectLayers function \n");
 			mb->interconnectLayers(iterE1->second,iterE2->second);
-			
-			
 		}
 		else if(!strcmp(command.c_str(),"Stop")){
 			printf("ExecuteStop \n");
@@ -342,7 +343,22 @@ bool BMLEngine::updateModule() {
 		}
 		else if(!strcmp(command.c_str(),"ClampLayer")){
 			printf("ClampLayer \n");
-			clampLayer(currentLayer);
+			int value1=0;
+			if(!strcmp(optionValue1.c_str(),"layer0")){
+				value1=0;
+			}
+			else if(!strcmp(optionValue1.c_str(),"layer1")){
+				value1=1;
+			}
+			map<std::string,Layer>::iterator iterK;
+			map<std::string,Layer>::iterator iterL;
+			map<std::string,Layer>::iterator iterE1,iterE2;
+			
+			int j=0;
+			for(iterE1=mb->elementList.begin(); iterE1!=mb->elementList.end()&&j<value1;iterE1++){
+				j++;
+			}
+			clampLayer(iterE1->second);
 		}
 		else if(!strcmp(command.c_str(),"ClampPattern")){
 			printf("ClampPattern \n");
@@ -528,7 +544,7 @@ bool BMLEngine::updateModule() {
 			printf("addLayer \n");
 			int valueRow=atoi(optionValue1.c_str());
 			int valueCol=atoi(optionValue2.c_str());
-			addLayer(countLayer,valueRow+2,valueCol+2);
+			addLayer(countLayer,valueRow,valueCol);
 			countLayer++;
 		}
 		else if((!strcmp(command.c_str(),"CurrentLayer"))){
@@ -983,7 +999,7 @@ void BMLEngine::clampLayer(int layerNumber){
 	printf("rowDimension %d \n",totRows);
 
 
-	//3. maps the intensity on the layer
+	//3.maps the intensity on to the layer
 	// it does not consider the hidden units of the layer
 	int rectDimX=320/(totUnits-2);
 	int rectDimY=240/(totRows-2);
@@ -1009,6 +1025,90 @@ void BMLEngine::clampLayer(int layerNumber){
 		}
 	
 
+
+	//4. free memory
+	ippiFree(im_out);
+	ippiFree(im_tmp);
+	ippiFree(im_tmp_tmp);
+}
+
+void BMLEngine::clampLayer(Layer layer){
+	int width=320;
+	int height=240;
+	IppiSize srcsize={width,height};
+	//1.extracts 3 planes
+	Ipp8u* im_out = ippiMalloc_8u_C1(320,240,&psb);
+	Ipp8u* im_tmp[3];
+	Ipp8u* im_tmp_tmp[3];
+	im_tmp_tmp[0]=ippiMalloc_8u_C1(320,240,&psb);
+	im_tmp_tmp[1]=ippiMalloc_8u_C1(320,240,&psb);
+	im_tmp_tmp[2]=ippiMalloc_8u_C1(320,240,&psb);
+	Ipp8u* im_tmp_red=ippiMalloc_8u_C1(320,240,&psb);
+	Ipp8u* im_tmp_green=ippiMalloc_8u_C1(320,240,&psb);
+	Ipp8u* im_tmp_blue=ippiMalloc_8u_C1(320,240,&psb);
+	Ipp8u* im_tmp_tmp2=ippiMalloc_8u_C1(320,240,&psb);
+	im_tmp[0]=ippiMalloc_8u_C1(320,240,&psb);
+	im_tmp[1]=ippiMalloc_8u_C1(320,240,&psb);
+	im_tmp[2]=ippiMalloc_8u_C1(320,240,&psb);
+	
+	if(!inputImage_flag)
+		return;
+	ippiCopy_8u_C3P3R(this->ptr_inputImage->getPixelAddress(0,0),320*3,im_tmp,psb,srcsize);
+	ippiCopy_8u_C1R(im_tmp[0],psb,im_tmp_red,psb,srcsize);
+	ippiCopy_8u_C1R(im_tmp[1],psb,im_tmp_green,psb,srcsize);
+	ippiCopy_8u_C1R(im_tmp[2],psb,im_tmp_blue,psb,srcsize);
+	//2. gets the maximum value between planes
+	for(int i=0;i<320*240;i++){
+		if(im_tmp_red[i]<im_tmp_green[i])
+			if(im_tmp_green[i]<im_tmp_blue[i])
+				im_out[i]=im_tmp_blue[i];
+			else
+				im_out[i]=im_tmp_green[i];
+		else
+			if(im_tmp_red[i]<im_tmp_blue[i])
+				im_out[i]=im_tmp_blue[i];
+			else
+				im_out[i]=im_tmp_red[i];
+	}
+	ippiCopy_8u_C1R(im_out,psb,im_tmp_tmp[0],psb,srcsize);
+	ippiCopy_8u_C1R(im_out,psb,im_tmp_tmp[1],psb,srcsize);
+	ippiCopy_8u_C1R(im_out,psb,im_tmp_tmp[2],psb,srcsize);
+	//ippiCopy_8u_C1C3R(im_out,psb,this->ptr_inputImage2->getPixelAddress(0,0),320*3,srcsize);
+	ippiCopy_8u_P3C3R(im_tmp_tmp,psb,this->ptr_inputImage2->getPixelAddress(0,0),320*3,srcsize);
+	
+	
+	//im_tmp_tmp[0]=im_out;
+	//im_tmp_tmp[1]=im_out;
+	//im_tmp_tmp[2]=im_out;
+
+	//2.Extract the necessary information
+	int dim=layer.stateVector->length();
+	int totRows=layer.getRow();
+	int totUnits=layer.getCol();
+
+	printf("state vector dimension %d \n",dim);
+	printf("layer number cols %d \n",totUnits);
+	printf("layer number rows %d \n",totRows);
+
+
+	//3.maps the intensity on to the layer
+	int rectDimX=320/totUnits;
+	int rectDimY=240/totRows;
+	int sum=0;
+	for(int boltzmannMachineRow=0;boltzmannMachineRow<totRows;boltzmannMachineRow++)
+		for(int boltzmannMachineCol=0;boltzmannMachineCol<totUnits;boltzmannMachineCol++){
+			sum=0;
+			for(int y=0;y<rectDimY;y++){
+				for(int x=0;x<rectDimX;x++){
+					sum+=im_out[boltzmannMachineRow*rectDimY*320+boltzmannMachineCol*rectDimX+320*y+x];
+				}
+			}
+			double mean=sum/(rectDimX*rectDimY);
+			printf("mean of the unit %f ----> ",mean);
+			//set the threashold to decide whether the unit has to be elicite
+			(*layer.stateVector)(boltzmannMachineCol+boltzmannMachineRow*totUnits)=mean/255;
+		}
+	
 
 	//4. free memory
 	ippiFree(im_out);
