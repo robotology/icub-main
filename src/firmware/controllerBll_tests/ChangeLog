@@ -1,0 +1,84 @@
+2008-02-05  Lorenzo Natale  <nat@liralab.t>
+	* Started ChangeLog, please report here a brief summary 
+	of changes made to the firmware. Keep track of the build
+	number, and if possible add a list of the files you 
+	modified.
+	* Current build 1.
+2008-03-March  Francesco Nori  <iron@liralab.t>
+	* The coupling in version 153 has been slightly changed. 
+	Hopefully this will fix a problem with positioning the shoulder.
+	* Current build 5.
+2008-26-March  Serena Ivaldi  <serena.ivaldi@iit.t>
+	* New velocity and acceleration estimation: discrete time fixed windowing.
+	* Current build 6.
+2008-23-July  Francesco Nori  <francesco.nori@iit.t>
+	* New check_in_position now return true when the trajectory generation
+	is ended.
+	* Current build 14.
+2008-23-July  Francesco Nori  <francesco.nori@iit.t>
+	* New led code:
+		- led0_on  = pwm0 on
+		- led0_off = pwm0 off
+		- led2_on  = pwm1 on
+		- led2_off = pwm2 off
+		- led3     = on while waiting the remaining time of 1ms
+		- led1_on  = cab bus off 
+	* Current build 15.
+2008-23-August  Francesco Nori  <francesco.nori@iit.t>
+	* Fixes a bug on the calibration 0x0153 which was not using
+	the offset paramter. Function get_relative_position_abs_ssi()
+	now uses get_position_abs_ssi().
+	* Current build 16.	
+2008-23-August  Francesco Nori  <francesco.nori@iit.t>
+	* Calibrates also version 0x0152
+	* Current build 16.
+2008-10-September  Francesco Nori  <francesco.nori@iit.t>
+	* Check motion done return false if control_status!=POSITION
+	* Current build 17.	
+2008-20-October  Francesco Nori  <francesco.nori@iit.t>
+	* Minor change for version 0x0154.
+	* In version 0x0154 Check_motion done is now called only for axis 0.
+	* Current build 18.	
+2008-20-October  Francesco Nori  <francesco.nori@iit.t>
+	* Improved PID controllers.
+	* Now the scale factor is not applied to the accumulator.
+	* Current build 20.	
+2009-1-March  Marco Maggiali  <marco.maggiali@iit.t>
+	* Changed current filter
+	* Now current limit (in calibration fiel and CAN message) is in milliAmper
+	* Current build 22.	
+2009-1-March  Francesco Nori  <francesco.nori@iit.t>
+	* Calibration now sets _in_position[axis]=false
+	* Current build 23.	
+2009-10-March  Maggiali Marco <marco.maggiali@iit.t>
+	* fixed bug in the i2t
+	* added 0x0155 for brake_setup and future features	 
+	* Current build 24.
+2009-19-March  Maggiali Marco <marco.maggiali@iit.t>
+	* MIN_DUTY at 8. It was 14, but it was too high and the motor tend to move . 
+	* Current build 25.	
+2009-25-March  Maggiali Marco <marco.maggiali@iit.t>
+	* Added control for the receiving of the PID values before enabling the PWM.
+    * Current build 26.
+	
+2009-25-March  Maggiali Marco <marco.maggiali@iit.t>
+	* PWM MIN_DUTY is 6. A motor in the legs joint 2 was still moving a little bit in a certain position.
+	* The PWM STEP is 10. The motor response is faster then before. There will be an increment of this value after more accurate tests.
+    * Current build 27.
+2009-xx-xx  Maggiali Marco <marco.maggiali@iit.t>
+	* Missing
+      * Current build 28.
+	
+2009-21-May  Francesco Nori <iron@liralab.it>
+	* Version 0x0152 bug fixed.
+	* Now PWM is coupled after its computation.     
+	* Current build 29.
+	
+2009-31-July  Marco Randazzo <marco.randazzo@iit.it>
+	* Fixed GetControlMode message on 2BLL / 4DC.
+
+2009-20-October  Marco Maggiali <marco.maggiali@iit.it>
+	* Added MODE_OPENLOOP =0x50. TO BE TESTED 
+	* Current build 31.	
+	
+	
