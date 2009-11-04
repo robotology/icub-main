@@ -71,9 +71,12 @@ public:
 
 	PixelBgr meanColors;
 	
-	char cRG;
+	/*char cRG;
 	char cGR;
-	char cBY;
+	char cBY;*/
+	int cRG;
+	int cGR;
+	int cBY;
 
 	int salienceBU;
 	int salienceTD;

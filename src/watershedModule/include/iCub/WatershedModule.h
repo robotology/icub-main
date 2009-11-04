@@ -303,7 +303,22 @@ public:
 	* flag for drawing BlueYellow Opponency Map
 	*/
 	bool BY_flag;
-
+	/**
+	* flag that indicates that Opponency images are not ready
+	*/
+	bool noOpponencies_flag;
+	/**
+	* flag that indicates that Plane images are not ready
+	*/
+	bool noPlanes_flag;
+	/**
+	* maxBLOB dimension
+	*/
+	int maxBLOB;
+	/**
+	* minBLOB dimension
+	*/
+	int minBLOB;
 
 	//----checkButtons
 	GtkWidget *buttonCheckGreen,*buttonCheckRed,*buttonCheckBlue;

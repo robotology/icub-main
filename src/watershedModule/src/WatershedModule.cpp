@@ -117,6 +117,8 @@ WatershedModule::WatershedModule(){
 	RG_flag=false;
 	GR_flag=false;
 	BY_flag=false;
+	noOpponencies_flag=true;
+	noPlanes_flag=true;
 	//----
 	this->wOperator=new WatershedOperator(false,320,240,320,10);
 	_wOperator=this->wOperator;
@@ -161,6 +163,8 @@ WatershedModule::WatershedModule(){
 
 	salienceBU=10;
 	salienceTD=10;
+	maxBLOB=4096;
+	minBLOB=100;
 }
 
 
@@ -512,11 +516,21 @@ static gint expose_CB (GtkWidget *widget, GdkEventExpose *event, gpointer data)
 					printf("No Planes! \n");
 					//return TRUE;
 				}
+				else{
+					wModule->noPlanes_flag=false;
+				}
 				ret=getOpponencies();
 				if(ret==false){
 					printf("No Opponency! \n");
 					//return TRUE;
 				}
+				else{
+					wModule->noOpponencies_flag=false;
+				}
+				if(wModule->noOpponencies_flag | wModule->noPlanes_flag){
+					return TRUE;
+				}
+
 				//=new yarp::sig::ImageOf<yarp::sig::PixelRgb>;
 				//_outputImage->resize(320,240);
 				bool conversion=true;
@@ -1033,19 +1047,35 @@ static gint menuFileSingle_CB(GtkWidget *widget, GdkEventExpose *event, gpointer
 	return TRUE;
 }
 
-static void cb_digits_scale2( GtkAdjustment *adj )
-{
-    /* Set the number of decimal places to which adj->value is rounded */
-	wModule->salienceTD=adj->value;
-	printf("salienceTD: %f",wModule->salienceTD);
-}
-
 static void cb_digits_scale( GtkAdjustment *adj )
 {
     /* Set the number of decimal places to which adj->value is rounded */
 	wModule->salienceBU=adj->value;
-	printf("salienceBU: %f",wModule->salienceBU);
+	printf("salienceBU: %f",wModule->salienceBU/100);
 }
+
+static void cb_digits_scale2( GtkAdjustment *adj )
+{
+    /* Set the number of decimal places to which adj->value is rounded */
+	wModule->salienceTD=adj->value;
+	printf("salienceTD: %f",wModule->salienceTD/100);
+}
+
+static void cb_digits_scale3( GtkAdjustment *adj )
+{
+    /* Set the number of decimal places to which adj->value is rounded */
+	wModule->maxBLOB=adj->value;
+	printf("maxBLOB: %f",wModule->salienceBU/100);
+}
+
+static void cb_digits_scale4( GtkAdjustment *adj )
+{
+    /* Set the number of decimal places to which adj->value is rounded */
+	wModule->minBLOB=adj->value;
+	printf("minBLOB: %f",wModule->salienceBU/100);
+}
+
+
 
 
 static gint timeout_CB (gpointer data){
@@ -1555,7 +1585,7 @@ GtkWidget* WatershedModule::createMainWindow(void)
     
     
     GtkWidget *scale;
-    GtkObject *adj1, *adj2;
+    GtkObject *adj1, *adj2,*adj3, *adj4;
 	GtkWidget *hscale, *vscale;
 
 
@@ -1645,7 +1675,33 @@ GtkWidget* WatershedModule::createMainWindow(void)
     gtk_widget_show (hscale);
 	g_signal_connect (G_OBJECT (adj2), "value_changed",
                       G_CALLBACK (cb_digits_scale2), NULL);
+	
+	label = gtk_label_new ("MAXBLOB dimension:");
+	gtk_box_pack_start (GTK_BOX (box4), label, FALSE, FALSE, 0);
+    gtk_widget_show (label);
+	adj3 = gtk_adjustment_new (100, 100,6000,100, 1, 1);
+	hscale = gtk_hscale_new (GTK_ADJUSTMENT (adj3));
+    gtk_widget_set_size_request (GTK_WIDGET (hscale), 200, -1);
+    scale_set_default_values (GTK_SCALE (hscale));
+	gtk_box_pack_start (GTK_BOX (box4), hscale, TRUE, TRUE, 0);
+    gtk_widget_show (hscale);
+	g_signal_connect (G_OBJECT (adj3), "value_changed",
+                      G_CALLBACK (cb_digits_scale3), NULL);
 
+	
+	label = gtk_label_new ("MINBLOB dimension:");
+	gtk_box_pack_start (GTK_BOX (box4), label, FALSE, FALSE, 0);
+    gtk_widget_show (label);
+	adj4 = gtk_adjustment_new (1,1,1000,1,1,1);
+	hscale = gtk_hscale_new (GTK_ADJUSTMENT (adj4));
+    gtk_widget_set_size_request (GTK_WIDGET (hscale), 200, -1);
+    scale_set_default_values (GTK_SCALE (hscale));
+	gtk_box_pack_start (GTK_BOX (box4), hscale, TRUE, TRUE, 0);
+    gtk_widget_show (hscale);
+	g_signal_connect (G_OBJECT (adj4), "value_changed",
+                      G_CALLBACK (cb_digits_scale4), NULL);
+	
+	
 	gtk_box_pack_start (GTK_BOX (box3), box4, TRUE, TRUE, 0);
     gtk_widget_show (box4);
 
@@ -2459,7 +2515,8 @@ void WatershedModule::drawAllBlobs(bool stable)
 	//__OLD//salience.drawBlobList(blobFov, tagged, blobList, max_tag, 127);
 	
 	// Comment the following line to disable the elimination of non valid blob
-	salience->RemoveNonValidNoRange(max_tag, BLOB_MAXSIZE, BLOB_MINSIZE);
+	//salience->RemoveNonValidNoRange(max_tag, BLOB_MAXSIZE, BLOB_MINSIZE);
+	salience->RemoveNonValidNoRange(max_tag,maxBLOB,minBLOB);
 	
 	//__OLD//salience.DrawContrastLP(rg, gr, by, tmp1, tagged, max_tag, 0, 1, 30, 42, 45); // somma coeff pos=3 somma coeff neg=-3
 	//__OLD//salience.checkIOR(tagged, IORBoxes, num_IORBoxes);
@@ -2498,7 +2555,10 @@ void WatershedModule::drawAllBlobs(bool stable)
 	}
 	else
 		return;
-	int nBlobs=salience->DrawContrastLP2(*_inputImgGRS, *_inputImgGRS, *_inputImgBYS, *outContrastLP, *tagged, max_tag, salienceBU, salienceTD, searchRG, searchGR, searchBY, 255); // somma coeff pos=3 somma coeff neg=-3
+	int nBlobs=salience->DrawContrastLP2(*_inputImgGRS, *_inputImgGRS, *_inputImgBYS,
+		*outContrastLP, *tagged, max_tag,
+		salienceBU, salienceTD,
+		searchRG, searchGR, searchBY, 255); // somma coeff pos=3 somma coeff neg=-3
 	printf("The number of blobs: %d",nBlobs);
 	salience->ComputeMeanColors(max_tag); //compute for every box the mean Red,Green and Blue Color.
 	salience->DrawMeanColorsLP(*outMeanColourLP,*tagged);
@@ -2512,7 +2572,7 @@ void WatershedModule::drawAllBlobs(bool stable)
 
 	//__OLD//rain.tags2Watershed(tagged, oldWshed);
 
-	delete(blobList);
+	//delete(blobList);
 	ippiFree(_inputImgRGS32); //Ipp32s* _inputImgRGS32=ippiMalloc_32s_C1(320,240,&psb32s);
 	ippiFree(_inputImgGRS32); //Ipp32s* _inputImgGRS32=ippiMalloc_32s_C1(320,240,&psb32s);
 	ippiFree(_inputImgBYS32); //Ipp32s* _inputImgBYS32=ippiMalloc_32s_C1(320,240,&psb32s);

@@ -187,6 +187,174 @@ void SalienceOperator::drawFoveaBlob(ImageOf<PixelMono>& id,ImageOf<PixelInt>& t
 				id(c ,r)=pixelColour;
 }
 
+int SalienceOperator::DrawContrastLP(ImageOf<PixelMonoSigned>& rg, ImageOf<PixelMonoSigned>& gr,
+									 ImageOf<PixelMonoSigned>& by, ImageOf<PixelMono>& dst, ImageOf<PixelInt>& tagged,
+									 int numBlob, float pBU, float pTD,
+									 PixelMonoSigned prg, PixelMonoSigned pgr, PixelMonoSigned pby)
+{
+	//__OLDIplROI zdi;
+	/*int salienceBU, salienceTD;
+	int borderRG;
+	int borderGR;
+	int borderBY;
+
+	int a1,b1,a2,b2;
+
+	int minSalienceBU=INT_MAX;
+	int maxSalienceBU=INT_MIN;
+
+	int minSalienceTD=INT_MAX;
+	int maxSalienceTD=INT_MIN;
+
+	int pixel0=0;
+	int pixel1=1;
+	
+	tmp.Resize(width, height);
+	tmp.Zero();
+	
+	/*__OLDzdi.coi=0;
+	zdi.width=1;
+	zdi.height=1;*/
+	/*
+
+	//__OLD((IplImage *)tmp)->roi=&zdi;
+	((IplImage *)tmp)->maskROI=tmpMsk;
+
+	borderRG=((IplImage *)rg)->BorderMode[IPL_SIDE_BOTTOM_INDEX];
+	iplSetBorderMode((IplImage *)rg, IPL_BORDER_REPLICATE, IPL_SIDE_BOTTOM, 0);
+	borderGR=((IplImage *)gr)->BorderMode[IPL_SIDE_BOTTOM_INDEX];
+	iplSetBorderMode((IplImage *)gr, IPL_BORDER_REPLICATE, IPL_SIDE_BOTTOM, 0);
+	borderBY=((IplImage *)by)->BorderMode[IPL_SIDE_BOTTOM_INDEX];
+	iplSetBorderMode((IplImage *)by, IPL_BORDER_REPLICATE, IPL_SIDE_BOTTOM, 0);
+
+	dst.Zero();
+	
+	if (numBlob>imageSize) numBlob=imageSize;
+	
+	for (int i = 1; i < numBlob; i++) {
+		if (m_boxes[i].valid) {
+			int rdim=(m_boxes[i].rmax-m_boxes[i].rmin+1);
+			int cdim=(m_boxes[i].cmax-m_boxes[i].cmin+1);
+
+			//__OLDzdi.xOffset=m_boxes[i].cmin;
+			//__OLDzdi.yOffset=m_boxes[i].rmin;
+
+			iplPutPixel((IplImage*) tmpMsk, m_boxes[i].cmin, m_boxes[i].rmin, &pixel1);
+
+			iplBlur((IplImage*) rg, (IplImage*) tmp, 3*cdim, 3*rdim, cdim, rdim);
+			m_boxes[i].cRG=abs(tmp(m_boxes[i].cmin, m_boxes[i].rmin)-m_boxes[i].meanRG);
+			//__OLDm_boxes[i].cRG=min(tmp(m_boxes[i].cmin, m_boxes[i].rmin), m_boxes[i].meanRG)*prg;
+
+			iplBlur((IplImage*) gr, (IplImage*) tmp, 3*cdim, 3*rdim, cdim, rdim);
+			m_boxes[i].cGR=abs(tmp(m_boxes[i].cmin, m_boxes[i].rmin)-m_boxes[i].meanGR);
+			//__OLDm_boxes[i].cGR=min(tmp(m_boxes[i].cmin, m_boxes[i].rmin), m_boxes[i].meanGR)*pgr;
+			
+			iplBlur((IplImage*) by, (IplImage*) tmp, 3*cdim, 3*rdim, cdim, rdim);
+			m_boxes[i].cBY=abs(tmp(m_boxes[i].cmin, m_boxes[i].rmin)-m_boxes[i].meanBY);
+			//__OLDm_boxes[i].cBY=min(tmp(m_boxes[i].cmin, m_boxes[i].rmin), m_boxes[i].meanBY)*pby;
+
+			salienceBU=sqrt(m_boxes[i].cRG*m_boxes[i].cRG+
+			                m_boxes[i].cGR*m_boxes[i].cGR+
+			                m_boxes[i].cBY*m_boxes[i].cBY);
+			salienceBU=salienceBU/sqrt(3);
+
+			/*__OLDsalienceBU=m_boxes[i].cRG;
+
+			if (salienceBU<m_boxes[i].cGR)
+				salienceBU=m_boxes[i].cGR;
+
+			if (salienceBU<m_boxes[i].cBY)
+				salienceBU=m_boxes[i].cBY;*/
+
+			//__OLDsalienceBU=m_boxes[i].cRG+m_boxes[i].cGR+m_boxes[i].cBY;
+
+
+			/*__OLDsalienceTD=abs(m_boxes[i].meanRG-prg);
+							
+			if (salienceTD<abs(m_boxes[i].meanGR-pgr))
+				salienceTD=abs(m_boxes[i].meanGR-pgr);
+				
+			if (salienceTD<abs(m_boxes[i].meanBY-pby))
+				salienceTD=abs(m_boxes[i].meanBY-pby);
+
+			salienceTD=255-salienceTD;*/
+	/*
+
+			salienceTD=sqrt((m_boxes[i].meanRG-prg)*(m_boxes[i].meanRG-prg)+
+			                (m_boxes[i].meanGR-pgr)*(m_boxes[i].meanGR-pgr)+
+			                (m_boxes[i].meanBY-pby)*(m_boxes[i].meanBY-pby));
+			salienceTD=255-salienceTD/sqrt(3);
+
+			//__OLD if the color is too different it isn't in the scene!
+			if (salienceTD<200) salienceTD=0;
+
+			//__OLDif (salienceTD<0) salienceTD=0;
+			
+			m_boxes[i].salienceBU=salienceBU;
+			m_boxes[i].salienceTD=salienceTD;
+
+			if (salienceBU<minSalienceBU)
+				minSalienceBU=salienceBU;
+			else if (salienceBU>maxSalienceBU)
+				maxSalienceBU=salienceBU;
+
+			if (salienceTD<minSalienceTD)
+				minSalienceTD=salienceTD;
+			else if (salienceTD>maxSalienceTD)
+				maxSalienceTD=salienceTD;
+
+			iplPutPixel((IplImage*) tmpMsk, m_boxes[i].cmin, m_boxes[i].rmin, &pixel0);
+		}
+	}
+
+	const int maxDest=200;
+	
+	if (maxSalienceBU!=minSalienceBU) {
+		a1=255*(maxDest-1)/(maxSalienceBU-minSalienceBU);
+		b1=1-a1*minSalienceBU/255;
+	} else {
+		a1=0;
+		b1=0;
+	}
+
+	if (maxSalienceTD!=minSalienceTD) {
+		a2=255*(maxDest-1)/(maxSalienceTD-minSalienceTD);
+		b2=1-a2*minSalienceTD/255;
+		//__OLDa2=255*254/(minSalienceTD-maxSalienceTD);
+		//__OLDb2=1-a2*maxSalienceTD/255;
+	} else {
+		a2=0;
+		b2=0;
+	}
+
+	for (i = 0; i < numBlob; i++) {
+		if (m_boxes[i].valid) {
+			m_boxes[i].salienceTotal=pBU*(a1*m_boxes[i].salienceBU/255+b1)+pTD*(a2*m_boxes[i].salienceTD/255+b2);
+			for (int r=m_boxes[i].rmin; r<=m_boxes[i].rmax; r++)
+				for (int c=m_boxes[i].cmin; c<=m_boxes[i].cmax; c++)
+					if (tagged(c, r)==m_boxes[i].id) {
+						/*__OLDunsigned char sal=(a1*m_boxes[i].salienceBU/255+b1+a2*m_boxes[i].salienceTD/255+b2)/2;
+						if (sal>th) dst(c ,r)=sal;
+						else dst(c ,r)=0;*/
+	/*
+						dst(c ,r)=m_boxes[i].salienceTotal;
+						//__OLDdst(c ,r)=a1*m_boxes[i].salienceBU/255+b1;
+						/*__OLDdst(c ,r)=a2*m_boxes[i].salienceTD/255+b2;
+						if (dst(c ,r)<240) dst(c ,r)=1;
+						else dst(c ,r)=dst(c ,r)-240;*/
+	/*
+					}
+		}
+	}
+	
+	((IplImage *)rg)->BorderMode[IPL_SIDE_BOTTOM_INDEX]=borderRG;
+	((IplImage *)gr)->BorderMode[IPL_SIDE_BOTTOM_INDEX]=borderGR;
+	((IplImage *)by)->BorderMode[IPL_SIDE_BOTTOM_INDEX]=borderBY;
+
+	return numBlob;*/
+	return 0;
+}
+
 int SalienceOperator::DrawContrastLP2(ImageOf<PixelMonoSigned>& rg, ImageOf<PixelMonoSigned>& gr,
 								  ImageOf<PixelMonoSigned>& by, ImageOf<PixelMono>& dst, ImageOf<PixelInt>& tagged,
 								  int numBlob, float pBU, float pTD,
@@ -220,7 +388,8 @@ int SalienceOperator::DrawContrastLP2(ImageOf<PixelMonoSigned>& rg, ImageOf<Pixe
 		// I could not change the scale of the salience and change only the color of the
 		// most salient blob
 		if (m_boxes[i].valid) {
-			int tmp;
+			int tmp,t,t_abs;
+			double mlp;
 			
 			//__OLD//int rdim=(double)(m_boxes[i].rmax-m_boxes[i].rmin+1)*.75;
 			//__OLD//int cdim=(double)(m_boxes[i].cmax-m_boxes[i].cmin+1)*.75;
@@ -255,14 +424,25 @@ int SalienceOperator::DrawContrastLP2(ImageOf<PixelMonoSigned>& rg, ImageOf<Pixe
 				m_boxes[i].rmin-rdim)/(rdim*cdim);
 			m_boxes[i].cBY=abs(tmp-m_boxes[i].meanBY);*/
 
-			tmp=255*height*width*integralRG->getMeanLp(a,b,c,d);
-			m_boxes[i].cRG=abs(tmp-m_boxes[i].meanRG);
+			//calculates the contrast differences  for RG,GR,BY
+			mlp=integralRG->getMeanLp(a,b,c,d);
+			tmp=255*height*width*mlp;
+			t=tmp-m_boxes[i].meanRG;
+			t_abs=abs(t);
+			m_boxes[i].cRG=t_abs;
 
-			tmp=255*height*width*integralGR->getMeanLp(a,b,c,d);
-			m_boxes[i].cGR=abs(tmp-m_boxes[i].meanGR);
+			mlp=integralGR->getMeanLp(a,b,c,d);
+			tmp=255*height*width*mlp;
+			t=tmp-m_boxes[i].meanGR;
+			t_abs=abs(t);
+			m_boxes[i].cGR=t_abs;
 			
+			mlp=integralBY->getMeanLp(a,b,c,d);
 			tmp=255*height*width*integralBY->getMeanLp(a,b,c,d);
-			m_boxes[i].cBY=abs(tmp-m_boxes[i].meanBY);
+			t=tmp-m_boxes[i].meanBY;
+			t_abs=abs(t);
+			m_boxes[i].cBY=t_abs;
+			
 
 			/*__OLD//salienceBU=sqrt(m_boxes[i].cRG*m_boxes[i].cRG+
 			                m_boxes[i].cGR*m_boxes[i].cGR+
@@ -276,8 +456,11 @@ int SalienceOperator::DrawContrastLP2(ImageOf<PixelMonoSigned>& rg, ImageOf<Pixe
 				salienceBU=m_boxes[i].cBY;*/
 
 			//__OLD//sum of abs of contrast differences
+			// BU is the sum of abs of contrast differences
 			salienceBU=m_boxes[i].cRG+m_boxes[i].cGR+m_boxes[i].cBY;
-
+			
+			//prg mono plane of RG,pgr mono plane of GR, pby mono plane of BY
+			//TD is the square root of the sum of square errors between planes and means
 			salienceTD=sqrt((double)(m_boxes[i].meanRG-prg)*(m_boxes[i].meanRG-prg)+
 			                (m_boxes[i].meanGR-pgr)*(m_boxes[i].meanGR-pgr)+
 			                (m_boxes[i].meanBY-pby)*(m_boxes[i].meanBY-pby));
@@ -295,8 +478,9 @@ int SalienceOperator::DrawContrastLP2(ImageOf<PixelMonoSigned>& rg, ImageOf<Pixe
 
 			//__OLD//if the color is too different it isn't in the scene!
 			//__OLD//if (salienceTD<0) salienceTD=0;
-			if (salienceTD<200)
-				salienceTD=200;
+			/*if (salienceTD<200)
+				salienceTD=200;*/
+			
 			
 			m_boxes[i].salienceBU=salienceBU;
 			m_boxes[i].salienceTD=salienceTD;
@@ -312,7 +496,7 @@ int SalienceOperator::DrawContrastLP2(ImageOf<PixelMonoSigned>& rg, ImageOf<Pixe
 				maxSalienceTD=salienceTD;
 		}
 	}
-	//coefficients for BU
+	//coefficients for BU (a1,b1)
 	if (maxSalienceBU!=minSalienceBU) {
 		//__OLD//a1=255.*(maxDest-1)/(maxSalienceBU-minSalienceBU);
 		a1=254./(maxSalienceBU-minSalienceBU);
@@ -321,7 +505,7 @@ int SalienceOperator::DrawContrastLP2(ImageOf<PixelMonoSigned>& rg, ImageOf<Pixe
 		a1=0;
 		b1=0;
 	}
-	//coefficient for TD
+	//coefficient for TD (a2,b2)
 	if (maxSalienceTD!=minSalienceTD) {
 		//__OLD//a2=255.*(maxDest-1)/(maxSalienceTD-minSalienceTD);
 		a2=254./(maxSalienceTD-minSalienceTD);
@@ -334,14 +518,14 @@ int SalienceOperator::DrawContrastLP2(ImageOf<PixelMonoSigned>& rg, ImageOf<Pixe
 	for (int i = 1; i < numBlob; i++) {
 		if (m_boxes[i].valid) {
 			m_boxes[i].salienceTotal=pBU*(a1*m_boxes[i].salienceBU+b1)+pTD*(a2*m_boxes[i].salienceTD+b2);
-
+			//correction between salience interval
 			if (m_boxes[i].salienceTotal<minSalienceTot)
 				minSalienceTot=m_boxes[i].salienceTotal;
 			else if (m_boxes[i].salienceTotal>maxSalienceTot)
 				maxSalienceTot=m_boxes[i].salienceTotal;
 		}
 	}
-
+	//calculate coefficient for SalienceTOT (a3,b3)
 	if (maxSalienceTot!=minSalienceTot) {
 		a3=((double)(maxDest-1))/(maxSalienceTot-minSalienceTot);
 		b3=1.-a3*minSalienceTot;
@@ -353,11 +537,12 @@ int SalienceOperator::DrawContrastLP2(ImageOf<PixelMonoSigned>& rg, ImageOf<Pixe
 	for (int i = 1; i < numBlob; i++) {
 		if (m_boxes[i].valid) {
 			//__OLD//if ((m_boxes[i].salienceBU==maxSalienceBU && pBU==1) || (m_boxes[i].salienceTD==maxSalienceTD && pTD==1))
-			//if (m_boxes[i].salienceTotal>=maxSalienceTot)
-			if ((m_boxes[i].salienceBU==maxSalienceBU && pBU==1)||(m_boxes[i].salienceTD==maxSalienceTD && pTD==1))
+			//if ((m_boxes[i].salienceBU==maxSalienceBU && pBU==1)||(m_boxes[i].salienceTD==maxSalienceTD && pTD==1))
+			if (m_boxes[i].salienceTotal==maxSalienceTot)
 				m_boxes[i].salienceTotal=255;
 			else
 				m_boxes[i].salienceTotal=a3*m_boxes[i].salienceTotal+b3;
+
 			//for the whole blob in this loop
 			for (int r=m_boxes[i].rmin; r<=m_boxes[i].rmax; r++)
 				for (int c=m_boxes[i].cmin; c<=m_boxes[i].cmax; c++){
@@ -533,7 +718,8 @@ void SalienceOperator::resize(const int width1, const int height1)
 }
 
 /**
-*  gets as inputs the R+G-, G*R-,B+Y-, the Red, blue and green Plans and creates a catalog of blobs saved in tagged
+*  creates a catalog of blobs saved in tagged
+* @param gets as inputs the R+G-, G*R-,B+Y-, the Red, blue and green Plans 
 */
 void SalienceOperator::blobCatalog(ImageOf<PixelInt>& tagged,
 							   ImageOf<PixelMonoSigned> &rg,
@@ -594,7 +780,7 @@ void SalienceOperator::blobCatalog(ImageOf<PixelInt>& tagged,
 		}
 	
 
-	//------ avereging of pixels ----------
+	//------ avereging of pixels, getting the dimensions ----------
 	// pixels are logpolar, averaging is done in cartesian
 	for (int r = 0; r < height; r++) {
 		for (int c = 0; c < width; c++) {
@@ -608,7 +794,7 @@ void SalienceOperator::blobCatalog(ImageOf<PixelInt>& tagged,
 			int x, y;
 			//get the x,y in order to have the averaging
 			//m_lp.Logpolar2Cartesian(r, c, x, y);
-			this->logPolar2Cartesian(r,c,x,y);
+			logPolar2Cartesian(r,c,x,y);
 
 			if (m_boxes[tag_index].ymax < y) 
 				m_boxes[tag_index].ymax = y;
@@ -662,25 +848,216 @@ void SalienceOperator::blobCatalog(ImageOf<PixelInt>& tagged,
 			}
 		}
 	}
-
-
 }	
+
+
+Image_Data SalienceOperator::Set_Param(int SXO,
+					 int SYO,
+					 int SXR,
+					 int SYR,
+					 int rho,
+					 int theta,
+					 int fovea,
+					 int resolution,
+					 int LPMode, 
+					 double ZoomLevel)
+{
+	int Color = 3;
+	bool Landscape = true;
+    Image_Data image;
+	image.padding = 1; //No Padding
+
+	switch (LPMode)
+	{
+	case Giotto1:
+
+		image.Size_Rho = 76;
+		image.Size_Theta = 128;
+		image.Size_Fovea = 20;
+		image.Resolution = 600;
+		break;
+
+	case Giotto2:
+
+		image.Size_Rho = 152;
+		image.Size_Theta = 252;
+		image.Size_Fovea = 42;
+		image.Resolution = 1090;
+		break;
+
+	case CUST:
+
+		image.Size_Rho = rho;
+		image.Size_Theta = theta;
+		image.Size_Fovea = fovea;
+		image.Resolution = resolution;
+		image.Size_X_Remap = SXR;
+		image.Size_Y_Remap = SYR;
+		break;
+	}
+	
+	image.Size_LP = image.Size_Rho * image.Size_Theta;
+	image.Size_X_Orig = SXO;
+	image.Size_Y_Orig = SYO;
+	image.Size_Img_Orig = image.Size_X_Orig*image.Size_Y_Orig;
+	image.Size_Img_Remap = image.Size_X_Remap * image.Size_Y_Remap;
+	image.LP_Planes = Color;
+	image.Orig_Planes = Color;
+	image.Remap_Planes = Color;
+	image.Valid_Log_Index = false;
+	image.Log_Index = 1.0;
+
+	if (ZoomLevel == FITIN){
+		image.Zoom_Level = (double)(image.Size_Y_Remap);
+		image.Zoom_Level /= (double)(image.Resolution);
+	}
+	else if (ZoomLevel == FITOUT){
+		image.Zoom_Level = (double)(image.Size_Y_Remap*image.Size_Y_Remap);
+		image.Zoom_Level += (double)(image.Size_X_Remap*image.Size_X_Remap);
+		image.Zoom_Level = (double)sqrt(image.Zoom_Level);
+		image.Zoom_Level /= (double)(image.Resolution);
+	}
+	else image.Zoom_Level = ZoomLevel;
+	image.Orig_LandScape  = Landscape;
+	image.Remap_LandScape = Landscape;
+	image.Pix_Numb = 4;
+	image.Fovea_Type = 0;
+	image.Ratio = 1.00;
+	image.dres = (double) image.Resolution;
+	image.Fovea_Display_Mode = 0;
+
+	return image;
+}
+
+
 
 void SalienceOperator::logPolar2Cartesian(int irho, int itheta, int& ox, int& oy){
 	double xx = 0;
 	double yy = 0;
 	double _xsize=2;
 	double _ysize=2;
+	double angleShift=1;
+	Image_Data _img;
+	//Image_Data YARPLogpolar::_img;
+	using namespace _logpolarParams;
 
-	//get_XY_Center(&xx, &yy, irho, itheta, &_img);
-	xx=320/2;
-	yy=240/2;
+	
+	/*_img.Size_X_Orig=256;
+	_img.Size_Y_Orig=256;
+	_img.Size_Rho=1090;
+	_img.Size_Theta=20;
+	_img.Size_Fovea=256.0/1090.0;*/
 
-	//using namespace _logpolarParams;
+	_img = Set_Param(
+				_xsize, _ysize,
+				256, 256,
+				_srho, _stheta, _sfovea,
+				1090,
+				CUST,
+				256.0/1090.0);
+
+	_img.padding =1; // YarpImageAlign;
+	_img.Pix_Numb = 2;
+	_img.Fovea_Type = 0;
+
+	Get_XY_Center(&xx, &yy, irho, itheta, &_img, &angleShift);
+	//xx=320/2;
+	//yy=240/2;
+
+	
 	ox = int(xx + .5) + _xsize/2;
 	oy = _ysize/2 - int(yy + .5);
 
 	//return true;
+}
+
+double SalienceOperator::Compute_Index(double Resolution, int Fovea, int SizeRho)
+{
+	double DValue,Value, Tempt, Dx, ADx;
+	double x1,x2;
+	double Tolerance = 0.0001;
+
+	int exp = SizeRho - Fovea;
+	int j;
+
+	x1 = 1.0;
+	x2 = 3.0;
+	Dx = 100;
+	ADx = 100;
+
+	j=0;
+	Tempt = (double)(x1+x2)/2;
+	while  (ADx>Tolerance) 
+	{
+		if (Dx>=0)
+			ADx = Dx;
+		else
+			ADx = -Dx;
+
+		Value = pow(Tempt,exp+1)-((Resolution/2)-Fovea+0.5)*(Tempt-1)-Tempt;
+		Value = ((Tempt*(pow(Tempt,exp)-1))/(Tempt-1)) -(Resolution/2)+Fovea-0.5;
+		DValue = (exp+1)*pow(Tempt,exp)-((Resolution/2)-Fovea+0.5)-1;
+		DValue = ((exp)*pow(Tempt,exp+1)-(exp+1)*pow(Tempt,exp)+1)/((Tempt-1)*(Tempt-1));
+		Dx = Value/DValue;
+		Tempt -= Dx;
+		j++;
+	}
+
+	return Tempt;
+}
+
+int SalienceOperator::Get_XY_Center(double *xx, double *yy, int rho, int theta, Image_Data *par, double *Ang_Shift)
+{
+	double scalefactor;
+	int Temp_Size_Theta;
+	double A,B;
+	double mod;
+	double rd, td;
+
+	if (rho != 0)
+	{
+		rd = rho+0.5;
+		td = theta+0.5;
+	}
+	else
+	{
+		rd = rho;
+		td = theta;
+	}
+
+	if (!par->Valid_Log_Index){
+		par->Log_Index = Compute_Index(par->Resolution,par->Size_Fovea,par->Size_Rho);
+		par->Valid_Log_Index = true;
+	}
+
+	scalefactor = par->Zoom_Level;
+	B = par->Log_Index/(par->Log_Index-1);
+	A = par->Size_Fovea - B - 0.5;
+
+	if (rho<par->Size_Fovea)
+	{
+		Temp_Size_Theta = par->Size_Theta;
+		mod = rd-0.5;
+		if (rho==0)
+		{
+			Temp_Size_Theta = 1;
+			mod = 0;
+		}
+		else if (par->Fovea_Display_Mode < 2)
+			Temp_Size_Theta = (par->Size_Theta/par->Size_Fovea) * rho;
+	}
+	else
+	{
+		Temp_Size_Theta = par->Size_Theta;
+		mod = A+B*pow(par->Log_Index,rd-par->Size_Fovea);
+	}
+		if (Temp_Size_Theta>par->Size_Theta)
+			Temp_Size_Theta = par->Size_Theta;
+
+	*xx = mod * cos(Ang_Shift[rho]+td*PI/(Temp_Size_Theta/2.0)) * scalefactor;
+	*yy = mod * sin(Ang_Shift[rho]+td*PI/(Temp_Size_Theta/2.0)) * scalefactor;
+
+	return 0;
 }
 
 void SalienceOperator::get_XY_Center(int *xx, int *yy, int irho, int itheta, yarp::sig::ImageOf<PixelRgb> *_img){

@@ -30,18 +30,122 @@ using namespace yarp::os;
 using namespace yarp::sig;
 using namespace yarp::sig::draw;
 
+#define Giotto1 0
+#define Giotto2 1
+#define CUST 20
+#define FITIN   99
+#define FITOUT 101
+
+// Logpolar trans -- Notational conventions:
+// x = ro*cos(eta/q)
+// y = ro*sin(eta/q)
+// ro = k1 + k2*lambda^(csi) csi > F
+// r0 = csi					 csi <= F
+// J(csi, eta) = lambda^csi * ln(lambda)/q (k1+k2*lambda^csi) outside the fovea
+// J(csi, eta) = J(F, eta) within the fovea
+// Jan 2004 -- by nat
+
+namespace _logpolarParams
+{
+	const int _xsize = 256;
+	const int _ysize = 256;
+	const int _srho = 152;
+	const int _stheta = 252;
+	const int _sfovea = 42;
+	
+	const int _xsizefovea = 128;
+	const int _ysizefovea = 128;
+	// this is the ratio between the full size cartesian image and the actual one
+	const double _ratio = 0.25;		// 1/4
+	
+	// parameter of the transformation
+	const double _q = _stheta/(2*PI);
+	const double _lambda = 1.02314422608633;
+	const double _logLambda = log(_lambda);
+	const double _k1 = (_sfovea - 0.5)+(_lambda)/(1-_lambda);
+	const double _k2 = _lambda/(pow(_lambda,_sfovea)*(_lambda-1));
+};
+
+struct Image_Data
+{
+	// Logarithm Index
+	double Log_Index;
+	bool Valid_Log_Index;
+
+	// Zoom Level of the Remapped Image
+	double Zoom_Level;
+
+	// Ratio between the diameter of the image and the size of the smallest pixel
+	int Resolution;
+	double dres;
+
+//	int Fovea_Display_Mode; //0 Sawtooth (Raw); 1 Triangular; 2 Complete
+
+	// Log Polar Metrics
+	int Size_Rho;
+	int Size_Theta;
+	int Size_Fovea;
+	int Size_LP;
+	int Fovea_Type; //0->3 Giotto 2.0; 4->7 Giotto 2.1 //0;4 Sawtooth (Raw); 1;5 Triangular; 2;6 Complete
+	int Pix_Numb;
+	int Fovea_Display_Mode;
+
+	// Remapped Cartesian Metrics
+	int Size_X_Remap;
+	int Size_Y_Remap;
+	int Size_Img_Remap;
+
+	// Original Cartesian Metrics
+	int Size_X_Orig;
+	int Size_Y_Orig;
+	int Size_Img_Orig;
+
+	// Color Depth of the Images
+	int Orig_Planes;
+	int Remap_Planes;
+	int LP_Planes;
+
+	// Orientation of the Cartesian Image
+	bool Orig_LandScape;
+	bool Remap_LandScape;
+
+	int padding;
+
+	float Ratio;  //Used just for naming purpose
+};
+
+
 /**
 * Operator that manage the blobs and calculates the saliency of every blob
-* \author Francesco Rea
+* @author Francesco Rea
 */
 
 class SalienceOperator {
 private:
+	/**
+	* pointer to the first blob
+	*/
 	YARPBox *m_boxes;
+	/**
+	* size of the image
+	*/
 	int imageSize;
+	/**
+	* pointer to the checkCutted
+	*/
 	bool *_checkCutted;
+	/**
+	* pointer to index cutted
+	*/
 	PixelInt *_indexCutted;
-	int height, width;
+	/**
+	* height of the images
+	*/
+	int height;
+	/**
+	* width of the images
+	*/
+	int width;
 public:
 	//---methods
 	/**
@@ -85,6 +189,27 @@ public:
 	* @param oy y position of the point
 	*/
 	void logPolar2Cartesian(int irho, int itheta, int& ox, int& oy); 
+	/**
+	* returns the XY center of a data image
+	*/
+	int Get_XY_Center(double *xx, double *yy, int rho, int theta, Image_Data *par, double *Ang_Shift);
+	/**
+	* set parameters for Image_data
+	*/
+	Image_Data Set_Param(int SXO,
+					 int SYO,
+					 int SXR,
+					 int SYR,
+					 int rho,
+					 int theta,
+					 int fovea,
+					 int resolution,
+					 int LPMode, 
+					 double ZoomLevel);
+	/**
+	* compute Index
+	*/
+	double Compute_Index(double Resolution, int Fovea, int SizeRho);
 	/**
 	* draws visual quantized Colour Imade
 	*/
@@ -152,7 +277,15 @@ public:
 	*/
 	void RemoveNonValidNoRange(int last_tag, const int max_size, const int min_size);
 	/**
-	* draws the contrast LP2
+	*  draw the contrast LP and calculates saliency
+	*/
+	int DrawContrastLP(ImageOf<PixelMonoSigned>& rg, ImageOf<PixelMonoSigned>& gr,
+		ImageOf<PixelMonoSigned>& by, ImageOf<PixelMono>& dst, ImageOf<PixelInt>& tagged,
+		int numBlob, float pBU, float pTD,
+		PixelMonoSigned prg, PixelMonoSigned pgr, PixelMonoSigned pby);
+
+	/**
+	* draws the contrast LP2 and calculates saliency
 	*/
 	int DrawContrastLP2(ImageOf<PixelMonoSigned>& rg, ImageOf<PixelMonoSigned>& gr,
 								  ImageOf<PixelMonoSigned>& by, ImageOf<PixelMono>& dst, ImageOf<PixelInt>& tagged,
