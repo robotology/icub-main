@@ -14,6 +14,9 @@ ImageProcessor::ImageProcessor(){
 	this->inImage=NULL;
 	portImage=NULL;
 
+	maskSeed=4;
+	maskTop=20;
+
 	canProcess_flag=0;
 	inputImage_flag=0;
 	redPlane_flag=1;
@@ -895,9 +898,9 @@ ImageOf<PixelMono>* ImageProcessor::findEdgesBlueOpponency(){
 		cvImage8=cvCreateImage(cvSize(320,240),IPL_DEPTH_8U,1);
 
 	ippiCopy_8u_C1R((unsigned char*)cvImage8->imageData,width,outputBlueYellow2,psb,srcsize);
-	Ipp8u src[3*3]={1,4,1,
-					4,20,4,
-					1,4,1};
+	Ipp8u src[3*3]={1,maskSeed,1,
+					maskSeed,maskTop,maskSeed,
+					1,maskSeed,1};
 	ippiConvValid_8u_C1R(outputBlueYellow2,psb,srcsize,src,3,msksize,&outputBlueYellow[1 + width*1],psb,1);
 	//ippiFilterMedian_8u_C1R((unsigned char*)cvImage->imageData,width,outputBlueYellow,psb,srcsize,msksize,anchor);
 #endif
@@ -1230,9 +1233,9 @@ ImageOf<PixelMono>* ImageProcessor::findEdgesGreenOpponency(){
 	else
 		cvImage8=cvCreateImage(cvSize(320,240),IPL_DEPTH_8U,1);
 	ippiCopy_8u_C1R((unsigned char*)cvImage8->imageData,width,outputGreenRed2,psb,srcsize);
-	Ipp8u src[3*3]={1,4,1,
-					4,20,4,
-					1,4,1};
+	Ipp8u src[3*3]={1,maskSeed,1,
+					maskSeed,maskTop,maskSeed,
+					1,maskSeed,1};
 	ippiConvValid_8u_C1R(outputGreenRed2,psb,srcsize,src,3,msksize,&outputGreenRed[1 + width*1],psb,1);
 	//ippiFilterMedian_8u_C1R((unsigned char*)cvImage->imageData,width,outputGreenRed,psb,srcsize,msksize,anchor);
 #endif
@@ -1524,9 +1527,9 @@ ImageOf<PixelMono>* ImageProcessor::findEdgesRedOpponency(){
 	else
 		cvImage8=cvCreateImage(cvSize(320,240),IPL_DEPTH_8U,1);
 	ippiCopy_8u_C1R((unsigned char*)cvImage8->imageData,width,outputRedGreen2,psb,srcsize);
-    Ipp8u src[3*3]={1,4,1,
-					4,20,4,
-					1,4,1};
+    Ipp8u src[3*3]={1,maskSeed,1,
+					maskSeed,maskTop,maskSeed,
+					1,maskSeed,1};
 	ippiConvValid_8u_C1R(outputRedGreen2,psb,srcsize,src,3,msksize,&outputRedGreen[1 + width*1],psb,1);
 	//ippiFilterMedian_8u_C1R((unsigned char*)cvImage->imageData,width,outputRedGreen,psb,srcsize,msksize,anchor);
 #endif

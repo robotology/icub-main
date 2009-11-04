@@ -550,20 +550,33 @@ static gint expose_CB (GtkWidget *widget, GdkEventExpose *event, gpointer data)
 	return TRUE;
 }
 
-static void cb_digits_scale2( GtkAdjustment *adj )
-{
-    /* Set the number of decimal places to which adj->value is rounded */
-	imageProcessModule->processor1->cannyOperator->setThresholdL((double)adj->value);
-	printf("Threshold L: %f",(double) adj->value);
-}
-
 static void cb_digits_scale( GtkAdjustment *adj )
 {
     /* Set the number of decimal places to which adj->value is rounded */
 	imageProcessModule->processor1->cannyOperator->setThresholdU((double)adj->value);
-	printf("Threshold U: %f",(double) adj->value);
+	printf("Threshold U: %f \n",(double) adj->value);
 }
 
+static void cb_digits_scale2( GtkAdjustment *adj )
+{
+    /* Set the number of decimal places to which adj->value is rounded */
+	imageProcessModule->processor1->cannyOperator->setThresholdL((double)adj->value);
+	printf("Threshold L: %f \n",(double) adj->value);
+}
+
+static void cb_digits_scale3( GtkAdjustment *adj )
+{
+    /* Set the number of maskSeed */
+	imageProcessModule->processor1->maskSeed=adj->value;
+	printf("maskseed: %f \n",(double) adj->value);
+}
+
+static void cb_digits_scale4( GtkAdjustment *adj )
+{
+    /* Set the number of maskSeed */
+	imageProcessModule->processor1->maskTop=adj->value;
+	printf("maskseed: %f \n",(double) adj->value);
+}
 
 static gint timeout_CB (gpointer data){
 	if (getImage()){
@@ -1051,6 +1064,33 @@ GtkWidget* ImageProcessModule::createMainWindow(void)
     gtk_widget_show (hscale);
 	g_signal_connect (G_OBJECT (adj2), "value_changed",
                       G_CALLBACK (cb_digits_scale2), NULL);
+
+	label = gtk_label_new ("OPENCVSobel:maskSeed:");
+	gtk_box_pack_start (GTK_BOX (box5), label, FALSE, FALSE, 0);
+    gtk_widget_show (label);
+	
+	adj3 = gtk_adjustment_new (1.0, 1,10,1, 1.0, 1.0);
+	hscale = gtk_hscale_new (GTK_ADJUSTMENT (adj3));
+    gtk_widget_set_size_request (GTK_WIDGET (hscale), 200, -1);
+    scale_set_default_values (GTK_SCALE (hscale));
+    gtk_box_pack_start (GTK_BOX (box5), hscale, TRUE, TRUE, 0);
+    gtk_widget_show (hscale);
+	g_signal_connect (G_OBJECT (adj3), "value_changed",
+                      G_CALLBACK (cb_digits_scale3), NULL);
+
+
+	label = gtk_label_new ("OPENCVSobel:maskTOP:");
+	gtk_box_pack_start (GTK_BOX (box5), label, FALSE, FALSE, 0);
+    gtk_widget_show (label);
+	
+	adj4 = gtk_adjustment_new (1.0, 1, 30,1, 1.0, 1.0);
+	hscale = gtk_hscale_new (GTK_ADJUSTMENT (adj4));
+    gtk_widget_set_size_request (GTK_WIDGET (hscale), 200, -1);
+    scale_set_default_values (GTK_SCALE (hscale));
+    gtk_box_pack_start (GTK_BOX (box5), hscale, TRUE, TRUE, 0);
+    gtk_widget_show (hscale);
+	g_signal_connect (G_OBJECT (adj4), "value_changed",
+                      G_CALLBACK (cb_digits_scale4), NULL);
 
 	gtk_box_pack_start (GTK_BOX (box3), box5, FALSE, FALSE, 0);
     gtk_widget_show (box5);
