@@ -986,18 +986,17 @@ bool CartesianSolver::open(Searchable &options)
         slv->getLIC().getUpperBoundInf()=2.0*upper_bound_inf;
     }
 
-    // open input port
+    // define input port
     inPort=new InputPort(this);
     inPort->useCallback();
-    inPort->open(("/"+slvName+"/in").c_str());
-    // init data
+    
+    // init input port data
     inPort->get_dof()=dof;
     inPort->get_pose()=ctrlPose;
     inPort->get_contMode()=mode;
 
-    // open output port
-    outPort=new BufferedPort<Bottle>;
-    outPort->open(("/"+slvName+"/out").c_str());
+    // define output port
+    outPort=new BufferedPort<Bottle>;    
 
     // count uncontrolled joints
     countUncontrolledJoints();
@@ -1009,6 +1008,12 @@ bool CartesianSolver::open(Searchable &options)
     configured=true;
 
     start();
+
+    // open ports as very last thing, so that
+    // the solver is completely operative
+    // when it becomes yarp-visible
+    inPort->open(("/"+slvName+"/in").c_str());
+    outPort->open(("/"+slvName+"/out").c_str());
 
     return true;
 }
