@@ -4,7 +4,7 @@
 
 
 /**
-* two possible definition SIMULATION, NOSIMULATION
+* two possible definitions SIMULATION, NOSIMULATION
 */
 #define NOSIMULATION
 
@@ -20,7 +20,7 @@ bool LogPolarModule::open(Searchable& config) {
 	port4.open(getName("outSimulation"));
     cmdPort.open(getName("cmd")); // optional command port
     attach(cmdPort); // cmdPort will work just like terminal
-	dstColor= cvCreateImage( cvSize(320,240), IPL_DEPTH_8U, 3 );
+	dstColor= cvCreateImage( cvSize(320,320), IPL_DEPTH_8U, 3 );
 	dstColor2= cvCreateImage( cvSize(320,240), IPL_DEPTH_8U, 3 );
 	cvImage= cvCreateImage(cvSize(320,240), IPL_DEPTH_8U, 3 );
 	cvImage2= cvCreateImage(cvSize(320,240), IPL_DEPTH_8U, 3 );
@@ -48,9 +48,19 @@ bool LogPolarModule::close(){
 	port4.close();
     return true;
 }
-/*void LogPolarModule::setOptions(yarp::os::Property opt){
+
+void LogPolarModule::setOptions(yarp::os::Property opt){
 	options	=opt;
-}*/
+	ConstString optcheck=opt.find("mode").asString();
+	printf("Working in modality:%s \n", optcheck.c_str());
+	printf("\n");
+	if(!strcmp(optcheck.c_str(),"SIMULATION"))
+		mode=0;
+	else if(!strcmp(optcheck.c_str(),"FORWARD"))
+		mode=1;
+	else if(!strcmp(optcheck.c_str(),"INVERSE"))
+		mode=2;
+}
 
 bool LogPolarModule::updateModule() {
     //initialisation
@@ -60,187 +70,334 @@ bool LogPolarModule::updateModule() {
 	lp2CartPixel *l2cTable;
 	char path[] = "./";
 	CvScalar s;
-	
-	
-	
+
 	
 	//set in grays the image
 	img = port.read(false);
-    
-#ifdef SIMULATION
-
-	//-------------drawing of simulated blobs
-	// add a blue circle
-	ct = 320/2;
-	PixelRgb blue(0,0,255);
-	PixelRgb red(255,0,0);
-	PixelRgb green(0,255,0);
-	PixelRgb yellow(255,255,0);
-	PixelRgb black(0,0,0);
-	addRectangle(*image2,black,0,0,320,240);
-	//addCircle(*image2,blue,ct,50,15);
-	addCircle(*image2,red,ct-50,100,20);
-	//addCircle(*image2,green,ct+50,150,25);
-	//addCircle(*image2,yellow,ct,200,10);
-	
-	// if simulation is active the simulated image is prepared on the port
-	//otherwise the input image is present on the port
-	port4.prepare() = *image2;
-	port4.write();
-#else	
-	if (img==NULL) 
-		return true;
-	cvCopy(img->getIplImage(),cvImage2);
-	cvCvtColor(cvImage2,cvImage,CV_RGB2BGR);
-    //cvCvtColor((IplImage*)img->getIplImage(), cvImage, CV_RGB2GRAY);
-	
-
-	//ImageOf<PixelMono> returnCvImage;
-	//returnCvImage.wrapIplImage(cvImage);
-	//ImageOf<PixelMono> *returnCvImagePointer=NULL;
-	//yarpReturnImagePointer=bayerLPImage;
-	//returnCvImagePointer=&returnCvImage;
-	
-	//unsigned char *bayerCartesian=new unsigned char[img->width() * img->height()];
-
-	int xSize=img->width(), ySize=img->height(), planes=0;
-	/*unsigned char *bayerCartesian =
-		Load_Bitmap (&xSize, &ySize, &planes, img);*/
-	//unsigned char *bayerCartesian =Load_Bitmap (&xSize, &ySize, &planes, "./bayercartesian.bmp");
-	//Save_Bitmap (bayerCartesian, xSize, ySize, planes, "./bayercartesian.bmp");
-	//unsigned char *bayerCartesianInit=new unsigned char[img->width() * img->height()];
-	//bayerCartesianInit=bayerCartesian;
-	//delete img;
-	//printf("Showing OpenCV/IPL image cvImage->height %d img->height %d planes %d \n",xSize,ySize,planes);
-
-
-
-	//--------conversion to logPolar----------------
-	/*int k=0;
-	for(int i=0;i<xSize;i++){
-		for(int j=0;j<ySize;j++){
-			k++;
-			//s=cvGet2D(cvImage,j,i); // get the (i,j) pixel value
-			
-			//getch();
-			//unsigned char value=(unsigned char)floor(s.val[0]);
-			
-			//*bayerCartesian=(unsigned char) value;
-			//printf("intensity=%d",(unsigned char)*bayerCartesian);	
-			//if((j==0)||(i==0))
-			//	bayerCartesianInit=bayerCartesian;
-			//bayerCartesian=((uchar *)(cvImage->imageData + i*cvImage->widthStep))[j];						
-			//bayerCartesian++;
-		}
-	}*/
-	
-	
-	/*unsigned char *bayerLP = new unsigned char[nEcc * nAng];
-	unsigned char *bayerLPInit=new unsigned char[nEcc * nAng];
-	bayerLPInit=bayerLP;
-	if (bayerLP == NULL)
-	{
-		exit (-1);
+	if(img==NULL){
+		return true;	
 	}
-	c2lTable = new cart2LpPixel[nEcc * nAng];
-	if (c2lTable == NULL)
-	{
-		exit (-1);
+    printf(" %d \n",img->width());
+	printf(" %d \n",img->height());
+	if(mode==0){
+
+		//-------------drawing of simulated blobs
+		// add a blue circle
+		ct = 320/2;
+		PixelRgb blue(0,0,255);
+		PixelRgb red(255,0,0);
+		PixelRgb green(0,255,0);
+		PixelRgb yellow(255,255,0);
+		PixelRgb black(0,0,0);
+		addRectangle(*image2,black,0,0,320,240);
+		//addCircle(*image2,blue,ct,50,15);
+		addCircle(*image2,red,ct-50,100,20);
+		//addCircle(*image2,green,ct+50,150,25);
+		//addCircle(*image2,yellow,ct,200,10);
+		
+		// if simulation is active the simulated image is prepared on the port
+		//otherwise the input image is present on the port
+		port4.prepare() = *image2;
+		port4.write();
 	}
-	printf("Image width=%d height=%d  pixelSize=%d \n", xSize,ySize,planes);
-	
-	double overlap=0;
-	double scaleFact = RCcomputeScaleFactor (nEcc, nAng, xSize,ySize, overlap);
+	else if(mode==1){
+		if (img==NULL) 
+			return true;
+		printf("FORWARD \n");
+		cvCopy(img->getIplImage(),cvImage2);
+		cvCvtColor(cvImage2,cvImage,CV_RGB2BGR);
+		//cvCvtColor((IplImage*)img->getIplImage(), cvImage, CV_RGB2GRAY);
+		
 
-	int returnValue=RCbuildC2LMapBayer(nEcc, nAng, xSize,ySize, overlap,scaleFact, ELLIPTICAL,path);
-	printf("return from RCbuildC2LMap: %d \n",returnValue);
-	returnValue=RCallocateC2LTable (c2lTable, nEcc, nAng, 1, path);
-	printf("return from RCallocateC2LMap: %d \n",returnValue);
-	RCgetLpImg (bayerLP, bayerCartesian, c2lTable, nAng * nEcc, 1);
-	//Save_Bitmap (bayerLP, nAng, nEcc, 1, "./TestlpBayer.bmp");
-	RCdeAllocateC2LTable (c2lTable);*/
-	
-	//convert the unsigned char pointer to an YARPImage
-	//IplImage* dst = cvCreateImage( cvSize(xSize,ySize), 8, 1 );
-	
-	//ImageOf<PixelMono> *bayerLPImage=new ImageOf<PixelMono>;
-	//unsigned char* pImage=bayerLPImage->getRawImage();
-	//pImage=bayerCartesianInit;
-	//--
-	/*bayerCartesian=bayerCartesianInit;
-	for(int i=0;i<xSize;i++){
-		for(int j=0;j<ySize;j++){
-			//s.val[0]=*bayerLP;
-			unsigned char value=*bayerCartesian;
-			s.val[0]=(float)value;
-			cvSet2D(dst,j,i,s); // set the (i,j) pixel value
-			bayerCartesian++; //red
-			bayerCartesian++; //green
-			bayerCartesian++; // blue
+		//ImageOf<PixelMono> returnCvImage;
+		//returnCvImage.wrapIplImage(cvImage);
+		//ImageOf<PixelMono> *returnCvImagePointer=NULL;
+		//yarpReturnImagePointer=bayerLPImage;
+		//returnCvImagePointer=&returnCvImage;
+		
+		//unsigned char *bayerCartesian=new unsigned char[img->width() * img->height()];
+
+		int xSize=img->width(), ySize=img->height(), planes=0;
+		/*unsigned char *bayerCartesian =
+			Load_Bitmap (&xSize, &ySize, &planes, img);*/
+		//unsigned char *bayerCartesian =Load_Bitmap (&xSize, &ySize, &planes, "./bayercartesian.bmp");
+		//Save_Bitmap (bayerCartesian, xSize, ySize, planes, "./bayercartesian.bmp");
+		//unsigned char *bayerCartesianInit=new unsigned char[img->width() * img->height()];
+		//bayerCartesianInit=bayerCartesian;
+		//delete img;
+		//printf("Showing OpenCV/IPL image cvImage->height %d img->height %d planes %d \n",xSize,ySize,planes);
+
+
+
+		//--------conversion to logPolar----------------
+		/*int k=0;
+		for(int i=0;i<xSize;i++){
+			for(int j=0;j<ySize;j++){
+				k++;
+				//s=cvGet2D(cvImage,j,i); // get the (i,j) pixel value
+				
+				//getch();
+				//unsigned char value=(unsigned char)floor(s.val[0]);
+				
+				//*bayerCartesian=(unsigned char) value;
+				//printf("intensity=%d",(unsigned char)*bayerCartesian);	
+				//if((j==0)||(i==0))
+				//	bayerCartesianInit=bayerCartesian;
+				//bayerCartesian=((uchar *)(cvImage->imageData + i*cvImage->widthStep))[j];						
+				//bayerCartesian++;
+			}
+		}*/
+		
+		
+		/*unsigned char *bayerLP = new unsigned char[nEcc * nAng];
+		unsigned char *bayerLPInit=new unsigned char[nEcc * nAng];
+		bayerLPInit=bayerLP;
+		if (bayerLP == NULL)
+		{
+			exit (-1);
 		}
-	}*/
-
-	/*bayerLP=bayerLPInit;
-	for(int i=0;i<nAng;i++){
-		for(int j=0;j<nEcc;j++){
-			unsigned char value=*bayerLP;
-			s.val[0]=(float)value;
-			cvSet2D(dst,j,i,s); // set the (i,j) pixel value
-			bayerLP++; //gray
+		c2lTable = new cart2LpPixel[nEcc * nAng];
+		if (c2lTable == NULL)
+		{
+			exit (-1);
 		}
-	}*/
-	
-	
-	//IplImage* src2 = cvCreateImage( cvGetSize(cvImage), 8, 3 );
-	
-	cvLogPolar( cvImage, dstColor, cvPoint2D32f(cvImage->width/2,cvImage->height/2), 50, CV_INTER_LINEAR+CV_WARP_FILL_OUTLIERS );
-	cvLogPolar( dstColor, dstColor2, cvPoint2D32f(cvImage->width/2,cvImage->height/2), 50, CV_INTER_LINEAR+CV_WARP_INVERSE_MAP+CV_WARP_FILL_OUTLIERS );
-	//delete cvImage;
+		printf("Image width=%d height=%d  pixelSize=%d \n", xSize,ySize,planes);
+		
+		double overlap=0;
+		double scaleFact = RCcomputeScaleFactor (nEcc, nAng, xSize,ySize, overlap);
 
-	//cvShowImage("test",dstColor2);
-	
-	//cvCvtColor(dst,dstColor, CV_GRAY2RGB);
-	//delete dst;
+		int returnValue=RCbuildC2LMapBayer(nEcc, nAng, xSize,ySize, overlap,scaleFact, ELLIPTICAL,path);
+		printf("return from RCbuildC2LMap: %d \n",returnValue);
+		returnValue=RCallocateC2LTable (c2lTable, nEcc, nAng, 1, path);
+		printf("return from RCallocateC2LMap: %d \n",returnValue);
+		RCgetLpImg (bayerLP, bayerCartesian, c2lTable, nAng * nEcc, 1);
+		//Save_Bitmap (bayerLP, nAng, nEcc, 1, "./TestlpBayer.bmp");
+		RCdeAllocateC2LTable (c2lTable);*/
+		
+		//convert the unsigned char pointer to an YARPImage
+		//IplImage* dst = cvCreateImage( cvSize(xSize,ySize), 8, 1 );
+		
+		//ImageOf<PixelMono> *bayerLPImage=new ImageOf<PixelMono>;
+		//unsigned char* pImage=bayerLPImage->getRawImage();
+		//pImage=bayerCartesianInit;
+		//--
+		/*bayerCartesian=bayerCartesianInit;
+		for(int i=0;i<xSize;i++){
+			for(int j=0;j<ySize;j++){
+				//s.val[0]=*bayerLP;
+				unsigned char value=*bayerCartesian;
+				s.val[0]=(float)value;
+				cvSet2D(dst,j,i,s); // set the (i,j) pixel value
+				bayerCartesian++; //red
+				bayerCartesian++; //green
+				bayerCartesian++; // blue
+			}
+		}*/
 
-	// add a blue circle
-	ct = 320/2;
-	PixelRgb blue(0,0,255);
-	PixelRgb red(255,0,0);
-	PixelRgb green(0,255,0);
-	PixelRgb yellow(255,255,0);
-	PixelRgb black(0,0,0);
-	addRectangle(*image2,black,0,0,320,240);
-	addCircle(*image2,blue,ct,50,15);
-	addCircle(*image2,red,ct-50,100,20);
-	addCircle(*image2,green,ct+50,150,25);
-	addCircle(*image2,yellow,ct,200,10);
-	
-	
-	//----------conversion to YARP COLOUR-----------------
-	
-	// output the images
-	//otherwise the input image is present on the port
-	port4.prepare() = *image2;
-	port4.write();
-	//-----------
-	yarpReturnImage.wrapIplImage(dstColor);
-	//unsigned char* pointer=yarpReturnImage.getRawImage();
-	//pointer=(uchar *)dstColor->imageData;	
-	//yarpReturnImagePointer=bayerLPImage;
-	yarpReturnImagePointer=&yarpReturnImage;
-	//port2.prepare() = *img;	
-	port2.prepare() = *yarpReturnImagePointer;		
-	port2.write();
-	//-----------
-	yarpReturnImage.wrapIplImage(dstColor2);
-	//unsigned char* pointer=yarpReturnImage.getRawImage();
-	//pointer=(uchar *)dstColor->imageData;	
-	//yarpReturnImagePointer=bayerLPImage;
-	yarpReturnImagePointer=&yarpReturnImage;
-	//port2.prepare() = *img;	
-	port3.prepare() = *yarpReturnImagePointer;		
-	port3.write();
-#endif
+		/*bayerLP=bayerLPInit;
+		for(int i=0;i<nAng;i++){
+			for(int j=0;j<nEcc;j++){
+				unsigned char value=*bayerLP;
+				s.val[0]=(float)value;
+				cvSet2D(dst,j,i,s); // set the (i,j) pixel value
+				bayerLP++; //gray
+			}
+		}*/
+		
+		
+		//IplImage* src2 = cvCreateImage( cvGetSize(cvImage), 8, 3 );
+		
+		cvLogPolar( cvImage, dstColor, cvPoint2D32f(cvImage->width/2,cvImage->height/2), 40, CV_INTER_LINEAR+CV_WARP_FILL_OUTLIERS );
+		cvLogPolar( dstColor, dstColor2, cvPoint2D32f(cvImage->width/2,cvImage->height/2), 40, CV_INTER_LINEAR+CV_WARP_INVERSE_MAP+CV_WARP_FILL_OUTLIERS );
+		//delete cvImage;
+
+		//cvShowImage("test",dstColor2);
+		
+		//cvCvtColor(dst,dstColor, CV_GRAY2RGB);
+		//delete dst;
+
+		// add a blue circle
+		ct = 320/2;
+		PixelRgb blue(0,0,255);
+		PixelRgb red(255,0,0);
+		PixelRgb green(0,255,0);
+		PixelRgb yellow(255,255,0);
+		PixelRgb black(0,0,0);
+		addRectangle(*image2,black,0,0,320,240);
+		addCircle(*image2,blue,ct,50,15);
+		addCircle(*image2,red,ct-50,100,20);
+		addCircle(*image2,green,ct+50,150,25);
+		addCircle(*image2,yellow,ct,200,10);
+		
+		
+		//----------conversion to YARP COLOUR-----------------
+		
+		// output the images
+		//otherwise the input image is present on the port
+		port4.prepare() = *image2;
+		port4.write();
+		//-----------
+		yarpReturnImage.wrapIplImage(dstColor);
+		//unsigned char* pointer=yarpReturnImage.getRawImage();
+		//pointer=(uchar *)dstColor->imageData;	
+		//yarpReturnImagePointer=bayerLPImage;
+		yarpReturnImagePointer=&yarpReturnImage;
+		//port2.prepare() = *img;	
+		port2.prepare() = *yarpReturnImagePointer;		
+		port2.write();
+		//-----------
+		yarpReturnImage.wrapIplImage(dstColor2);
+		//unsigned char* pointer=yarpReturnImage.getRawImage();
+		//pointer=(uchar *)dstColor->imageData;	
+		//yarpReturnImagePointer=bayerLPImage;
+		yarpReturnImagePointer=&yarpReturnImage;
+		//port2.prepare() = *img;	
+		port3.prepare() = *yarpReturnImagePointer;		
+		port3.write();
+	}
+	else if(mode==2){
+		if (img==NULL) 
+			return true;
+		printf("INVERSE \n");
+		cvCopy(img->getIplImage(),cvImage2);
+		cvCvtColor(cvImage2,cvImage,CV_RGB2BGR);
+		//cvCvtColor((IplImage*)img->getIplImage(), cvImage, CV_RGB2GRAY);
+		
+
+		//ImageOf<PixelMono> returnCvImage;
+		//returnCvImage.wrapIplImage(cvImage);
+		//ImageOf<PixelMono> *returnCvImagePointer=NULL;
+		//yarpReturnImagePointer=bayerLPImage;
+		//returnCvImagePointer=&returnCvImage;
+		
+		//unsigned char *bayerCartesian=new unsigned char[img->width() * img->height()];
+
+		int xSize=img->width(), ySize=img->height(), planes=0;
+		/*unsigned char *bayerCartesian =
+			Load_Bitmap (&xSize, &ySize, &planes, img);*/
+		//unsigned char *bayerCartesian =Load_Bitmap (&xSize, &ySize, &planes, "./bayercartesian.bmp");
+		//Save_Bitmap (bayerCartesian, xSize, ySize, planes, "./bayercartesian.bmp");
+		//unsigned char *bayerCartesianInit=new unsigned char[img->width() * img->height()];
+		//bayerCartesianInit=bayerCartesian;
+		//delete img;
+		//printf("Showing OpenCV/IPL image cvImage->height %d img->height %d planes %d \n",xSize,ySize,planes);
+
+
+
+		//--------conversion to logPolar----------------
+		/*int k=0;
+		for(int i=0;i<xSize;i++){
+			for(int j=0;j<ySize;j++){
+				k++;
+				//s=cvGet2D(cvImage,j,i); // get the (i,j) pixel value
+				
+				//getch();
+				//unsigned char value=(unsigned char)floor(s.val[0]);
+				
+				//*bayerCartesian=(unsigned char) value;
+				//printf("intensity=%d",(unsigned char)*bayerCartesian);	
+				//if((j==0)||(i==0))
+				//	bayerCartesianInit=bayerCartesian;
+				//bayerCartesian=((uchar *)(cvImage->imageData + i*cvImage->widthStep))[j];						
+				//bayerCartesian++;
+			}
+		}*/
+		
+		
+		/*unsigned char *bayerLP = new unsigned char[nEcc * nAng];
+		unsigned char *bayerLPInit=new unsigned char[nEcc * nAng];
+		bayerLPInit=bayerLP;
+		if (bayerLP == NULL)
+		{
+			exit (-1);
+		}
+		c2lTable = new cart2LpPixel[nEcc * nAng];
+		if (c2lTable == NULL)
+		{
+			exit (-1);
+		}
+		printf("Image width=%d height=%d  pixelSize=%d \n", xSize,ySize,planes);
+		
+		double overlap=0;
+		double scaleFact = RCcomputeScaleFactor (nEcc, nAng, xSize,ySize, overlap);
+
+		int returnValue=RCbuildC2LMapBayer(nEcc, nAng, xSize,ySize, overlap,scaleFact, ELLIPTICAL,path);
+		printf("return from RCbuildC2LMap: %d \n",returnValue);
+		returnValue=RCallocateC2LTable (c2lTable, nEcc, nAng, 1, path);
+		printf("return from RCallocateC2LMap: %d \n",returnValue);
+		RCgetLpImg (bayerLP, bayerCartesian, c2lTable, nAng * nEcc, 1);
+		//Save_Bitmap (bayerLP, nAng, nEcc, 1, "./TestlpBayer.bmp");
+		RCdeAllocateC2LTable (c2lTable);*/
+		
+		//convert the unsigned char pointer to an YARPImage
+		//IplImage* dst = cvCreateImage( cvSize(xSize,ySize), 8, 1 );
+		
+		//ImageOf<PixelMono> *bayerLPImage=new ImageOf<PixelMono>;
+		//unsigned char* pImage=bayerLPImage->getRawImage();
+		//pImage=bayerCartesianInit;
+		//--
+		/*bayerCartesian=bayerCartesianInit;
+		for(int i=0;i<xSize;i++){
+			for(int j=0;j<ySize;j++){
+				//s.val[0]=*bayerLP;
+				unsigned char value=*bayerCartesian;
+				s.val[0]=(float)value;
+				cvSet2D(dst,j,i,s); // set the (i,j) pixel value
+				bayerCartesian++; //red
+				bayerCartesian++; //green
+				bayerCartesian++; // blue
+			}
+		}*/
+
+		/*bayerLP=bayerLPInit;
+		for(int i=0;i<nAng;i++){
+			for(int j=0;j<nEcc;j++){
+				unsigned char value=*bayerLP;
+				s.val[0]=(float)value;
+				cvSet2D(dst,j,i,s); // set the (i,j) pixel value
+				bayerLP++; //gray
+			}
+		}*/
+		
+		
+		//IplImage* src2 = cvCreateImage( cvGetSize(cvImage), 8, 3 );
+		
+		cvLogPolar( cvImage, dstColor, cvPoint2D32f(cvImage->width/2,cvImage->height/2), 50, CV_INTER_LINEAR+CV_WARP_INVERSE_MAP+CV_WARP_FILL_OUTLIERS );
+		//cvLogPolar( dstColor, dstColor2, cvPoint2D32f(cvImage->width/2,cvImage->height/2), 50, CV_INTER_LINEAR+CV_WARP_INVERSE_MAP+CV_WARP_FILL_OUTLIERS );
+		//delete cvImage;
+
+		//cvShowImage("test",dstColor2);
+		
+		//cvCvtColor(dst,dstColor, CV_GRAY2RGB);
+		//delete dst;
+
+		
+		
+		//----------conversion to YARP COLOUR-----------------
+		
+		// output the images
+		//otherwise the input image is present on the port
+		//port4.prepare() = *image2;
+		//port4.write();
+		//-----------
+		yarpReturnImage.wrapIplImage(dstColor);
+		//unsigned char* pointer=yarpReturnImage.getRawImage();
+		//pointer=(uchar *)dstColor->imageData;	
+		//yarpReturnImagePointer=bayerLPImage;
+		yarpReturnImagePointer=&yarpReturnImage;
+		//port2.prepare() = *img;	
+		port2.prepare() = *yarpReturnImagePointer;		
+		port2.write();
+		//-----------
+		//yarpReturnImage.wrapIplImage(dstColor2);
+		//unsigned char* pointer=yarpReturnImage.getRawImage();
+		//pointer=(uchar *)dstColor->imageData;	
+		//yarpReturnImagePointer=bayerLPImage;
+		//yarpReturnImagePointer=&yarpReturnImage;
+		//port2.prepare() = *img;	
+		//port3.prepare() = *yarpReturnImagePointer;		
+		//port3.write();
+	}
 	//delete yarpReturnImagePointer;
 
     return true;

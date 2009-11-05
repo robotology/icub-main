@@ -39,15 +39,35 @@ public:
 int main(int argc, char *argv[]) {
     //initialise Yarp Network
 	Network yarp;
-	
-
-    // Create and run our module
+	// Create and run our module
 	LogPolarModule module;
-    module.setName("/rea/LogPolar");
+	bool ret=yarp.connect("icubSim/cam/right","/rea/LogPolar/in");
+	if(!ret){
+		module.setName("/rea/LogPolar2");
+	}
+	else
+		module.setName("/rea/LogPolar");
+
 	// Get command line options
-	//Property options;
-	//options.fromCommand(argc,argv);
-	//module.setOptions(options);
+	Property options;
+	if(argc<2){
+		//there are no parameters
+		// litte help on how to use
+		printf("______ HELP ________ \n");
+		printf(" \n");
+		printf("USER COMMANDS: \n");
+		printf("--mode (SIMULATION,FORWARD,INVERSE): selects what this module operates \n");
+		printf(" \n");
+		printf(" \n");
+		//start of the default mode
+		printf("No commands, starting of the default mode ................... \n");
+		options.put("mode","FORWARD");
+	}
+	else{
+		//estracts the command from command line
+		options.fromCommand(argc,argv);
+	}
+	module.setOptions(options);
 
     return module.runModule(argc,argv);
 
