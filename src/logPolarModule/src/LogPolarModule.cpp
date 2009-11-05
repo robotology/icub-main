@@ -57,7 +57,7 @@ void LogPolarModule::setOptions(yarp::os::Property opt){
 	else if(!strcmp(optcheck.c_str(),"FORWARD")){
 		mode=1;
 		//define the sequence of images for the forward mode
-		dstColor= cvCreateImage( cvSize(320,320), IPL_DEPTH_8U, 3 );
+		dstColor= cvCreateImage( cvSize(320,240), IPL_DEPTH_8U, 3 );
 		dstColor2= cvCreateImage( cvSize(320,240), IPL_DEPTH_8U, 3 );
 		cvImage= cvCreateImage(cvSize(320,240), IPL_DEPTH_8U, 3 );
 		cvImage2= cvCreateImage(cvSize(320,240), IPL_DEPTH_8U, 3 );
@@ -69,8 +69,8 @@ void LogPolarModule::setOptions(yarp::os::Property opt){
 		//creates the sequence of images for the inverse mode
 		dstColor= cvCreateImage( cvSize(320,240), IPL_DEPTH_8U, 3 );
 		dstColor2= cvCreateImage( cvSize(320,240), IPL_DEPTH_8U, 3 );
-		cvImage= cvCreateImage(cvSize(320,320), IPL_DEPTH_8U, 3 );
-		cvImage2= cvCreateImage(cvSize(320,320), IPL_DEPTH_8U, 3 );
+		cvImage= cvCreateImage(cvSize(320,240), IPL_DEPTH_8U, 3 );
+		cvImage2= cvCreateImage(cvSize(320,240), IPL_DEPTH_8U, 3 );
 		image2=new ImageOf<PixelRgb>;
 		image2->resize(320,240);
 	}
@@ -227,8 +227,8 @@ bool LogPolarModule::updateModule() {
 		
 		//IplImage* src2 = cvCreateImage( cvGetSize(cvImage), 8, 3 );
 		
-		cvLogPolar( cvImage, dstColor, cvPoint2D32f(cvImage->width/2,cvImage->height/2), 40, CV_INTER_LINEAR+CV_WARP_FILL_OUTLIERS );
-		cvLogPolar( dstColor, dstColor2, cvPoint2D32f(cvImage->width/2,cvImage->height/2), 40, CV_INTER_LINEAR+CV_WARP_INVERSE_MAP+CV_WARP_FILL_OUTLIERS );
+		cvLogPolar( cvImage, dstColor, cvPoint2D32f(cvImage->width/2,cvImage->height/2), 50, CV_INTER_LINEAR+CV_WARP_FILL_OUTLIERS );
+		cvLogPolar( dstColor, dstColor2, cvPoint2D32f(cvImage->width/2,cvImage->height/2), 50, CV_INTER_LINEAR+CV_WARP_INVERSE_MAP+CV_WARP_FILL_OUTLIERS );
 		//delete cvImage;
 
 		//cvShowImage("test",dstColor2);
