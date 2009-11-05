@@ -69,8 +69,8 @@ void LogPolarModule::setOptions(yarp::os::Property opt){
 		//creates the sequence of images for the inverse mode
 		dstColor= cvCreateImage( cvSize(320,240), IPL_DEPTH_8U, 3 );
 		dstColor2= cvCreateImage( cvSize(320,240), IPL_DEPTH_8U, 3 );
-		cvImage= cvCreateImage(cvSize(320,240), IPL_DEPTH_8U, 3 );
-		cvImage2= cvCreateImage(cvSize(320,240), IPL_DEPTH_8U, 3 );
+		cvImage= cvCreateImage(cvSize(240,240), IPL_DEPTH_8U, 3 );
+		cvImage2= cvCreateImage(cvSize(240,240), IPL_DEPTH_8U, 3 );
 		image2=new ImageOf<PixelRgb>;
 		image2->resize(320,240);
 	}
@@ -279,7 +279,21 @@ bool LogPolarModule::updateModule() {
 		if (img==NULL) 
 			return true;
 		printf("INVERSE \n");
-		cvCopy(img->getIplImage(),cvImage2);
+		int xSize=img->width(), ySize=img->height(), planes=0;
+		if(xSize!=ySize){
+			//image needs a crop or 
+			IplImage *cvImage1;
+			cvImage1=cvCreateImage(cvSize(320,240), IPL_DEPTH_8U, 3 );
+			cvCopy(img->getIplImage(),cvImage1);
+			CvRect rec;
+			rec=cvRect(40,0,240,240);
+			cvSetImageROI(cvImage1,rec);
+			cvCopy(cvImage1,cvImage2);
+		}
+		else
+		{
+			cvCopy(img->getIplImage(),cvImage2);
+		}
 		cvCvtColor(cvImage2,cvImage,CV_RGB2BGR);
 		//cvCvtColor((IplImage*)img->getIplImage(), cvImage, CV_RGB2GRAY);
 		
@@ -292,7 +306,7 @@ bool LogPolarModule::updateModule() {
 		
 		//unsigned char *bayerCartesian=new unsigned char[img->width() * img->height()];
 
-		int xSize=img->width(), ySize=img->height(), planes=0;
+		
 		/*unsigned char *bayerCartesian =
 			Load_Bitmap (&xSize, &ySize, &planes, img);*/
 		//unsigned char *bayerCartesian =Load_Bitmap (&xSize, &ySize, &planes, "./bayercartesian.bmp");
@@ -381,7 +395,7 @@ bool LogPolarModule::updateModule() {
 		
 		
 		//IplImage* src2 = cvCreateImage( cvGetSize(cvImage), 8, 3 );
-		cvLogPolar( cvImage, dstColor, cvPoint2D32f(dstColor->width/2,dstColor->height/2), 40, CV_INTER_LINEAR+CV_WARP_INVERSE_MAP+CV_WARP_FILL_OUTLIERS );
+		cvLogPolar( cvImage, dstColor, cvPoint2D32f(dstColor->width/2,dstColor->height/2), 50, CV_INTER_LINEAR+CV_WARP_INVERSE_MAP+CV_WARP_FILL_OUTLIERS );
 		//cvLogPolar( dstColor, dstColor2, cvPoint2D32f(cvImage->width/2,cvImage->height/2), 50, CV_INTER_LINEAR+CV_WARP_INVERSE_MAP+CV_WARP_FILL_OUTLIERS );
 		//delete cvImage;
 
