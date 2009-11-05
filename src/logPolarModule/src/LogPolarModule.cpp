@@ -37,6 +37,7 @@ bool LogPolarModule::interruptModule() {
 	port2.interrupt();
 	port3.interrupt();
 	port4.interrupt();
+	cmdPort.interrupt();
     return true;
 }
 
@@ -46,6 +47,7 @@ bool LogPolarModule::close(){
 	port2.close();
 	port3.close();
 	port4.close();
+	cmdPort.close();
     return true;
 }
 

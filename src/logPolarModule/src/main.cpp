@@ -41,12 +41,12 @@ int main(int argc, char *argv[]) {
 	Network yarp;
 	// Create and run our module
 	LogPolarModule module;
-	bool ret=yarp.connect("icubSim/cam/right","/rea/LogPolar/in");
+	bool ret=yarp.isConnected("icubSim/cam/right","/rea/LogPolar/in");
 	if(!ret){
-		module.setName("/rea/LogPolar2");
+		module.setName("/rea/LogPolar");
 	}
 	else
-		module.setName("/rea/LogPolar");
+		module.setName("/rea/LogPolar2");
 
 	// Get command line options
 	Property options;
