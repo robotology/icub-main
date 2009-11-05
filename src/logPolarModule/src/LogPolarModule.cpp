@@ -20,12 +20,7 @@ bool LogPolarModule::open(Searchable& config) {
 	port4.open(getName("outSimulation"));
     cmdPort.open(getName("cmd")); // optional command port
     attach(cmdPort); // cmdPort will work just like terminal
-	dstColor= cvCreateImage( cvSize(320,320), IPL_DEPTH_8U, 3 );
-	dstColor2= cvCreateImage( cvSize(320,240), IPL_DEPTH_8U, 3 );
-	cvImage= cvCreateImage(cvSize(320,240), IPL_DEPTH_8U, 3 );
-	cvImage2= cvCreateImage(cvSize(320,240), IPL_DEPTH_8U, 3 );
-	image2=new ImageOf<PixelRgb>;
-	image2->resize(320,240);
+	
     return true;
 }
 
@@ -53,15 +48,37 @@ bool LogPolarModule::close(){
 
 void LogPolarModule::setOptions(yarp::os::Property opt){
 	options	=opt;
+	// definition of the mode
 	ConstString optcheck=opt.find("mode").asString();
 	printf("Working in modality:%s \n", optcheck.c_str());
 	printf("\n");
 	if(!strcmp(optcheck.c_str(),"SIMULATION"))
 		mode=0;
-	else if(!strcmp(optcheck.c_str(),"FORWARD"))
+	else if(!strcmp(optcheck.c_str(),"FORWARD")){
 		mode=1;
-	else if(!strcmp(optcheck.c_str(),"INVERSE"))
+		//define the sequence of images for the forward mode
+		dstColor= cvCreateImage( cvSize(320,320), IPL_DEPTH_8U, 3 );
+		dstColor2= cvCreateImage( cvSize(320,240), IPL_DEPTH_8U, 3 );
+		cvImage= cvCreateImage(cvSize(320,240), IPL_DEPTH_8U, 3 );
+		cvImage2= cvCreateImage(cvSize(320,240), IPL_DEPTH_8U, 3 );
+		image2=new ImageOf<PixelRgb>;
+		image2->resize(320,240);
+	}
+	else if(!strcmp(optcheck.c_str(),"INVERSE")){
 		mode=2;
+		//creates the sequence of images for the inverse mode
+		dstColor= cvCreateImage( cvSize(320,240), IPL_DEPTH_8U, 3 );
+		dstColor2= cvCreateImage( cvSize(320,240), IPL_DEPTH_8U, 3 );
+		cvImage= cvCreateImage(cvSize(320,320), IPL_DEPTH_8U, 3 );
+		cvImage2= cvCreateImage(cvSize(320,320), IPL_DEPTH_8U, 3 );
+		image2=new ImageOf<PixelRgb>;
+		image2->resize(320,240);
+	}
+	// definition of the name of the module
+	ConstString name=opt.find("name").asString();
+	printf("Module named as :%s \n", name.c_str());
+	this->setName(name.c_str());
+	printf("\n");
 }
 
 bool LogPolarModule::updateModule() {
@@ -106,6 +123,7 @@ bool LogPolarModule::updateModule() {
 		if (img==NULL) 
 			return true;
 		printf("FORWARD \n");
+		
 		cvCopy(img->getIplImage(),cvImage2);
 		cvCvtColor(cvImage2,cvImage,CV_RGB2BGR);
 		//cvCvtColor((IplImage*)img->getIplImage(), cvImage, CV_RGB2GRAY);
@@ -363,8 +381,7 @@ bool LogPolarModule::updateModule() {
 		
 		
 		//IplImage* src2 = cvCreateImage( cvGetSize(cvImage), 8, 3 );
-		
-		cvLogPolar( cvImage, dstColor, cvPoint2D32f(cvImage->width/2,cvImage->height/2), 50, CV_INTER_LINEAR+CV_WARP_INVERSE_MAP+CV_WARP_FILL_OUTLIERS );
+		cvLogPolar( cvImage, dstColor, cvPoint2D32f(dstColor->width/2,dstColor->height/2), 40, CV_INTER_LINEAR+CV_WARP_INVERSE_MAP+CV_WARP_FILL_OUTLIERS );
 		//cvLogPolar( dstColor, dstColor2, cvPoint2D32f(cvImage->width/2,cvImage->height/2), 50, CV_INTER_LINEAR+CV_WARP_INVERSE_MAP+CV_WARP_FILL_OUTLIERS );
 		//delete cvImage;
 

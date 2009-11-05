@@ -41,12 +41,6 @@ int main(int argc, char *argv[]) {
 	Network yarp;
 	// Create and run our module
 	LogPolarModule module;
-	bool ret=yarp.isConnected("icubSim/cam/right","/rea/LogPolar/in");
-	if(!ret){
-		module.setName("/rea/LogPolar");
-	}
-	else
-		module.setName("/rea/LogPolar2");
 
 	// Get command line options
 	Property options;
@@ -57,11 +51,13 @@ int main(int argc, char *argv[]) {
 		printf(" \n");
 		printf("USER COMMANDS: \n");
 		printf("--mode (SIMULATION,FORWARD,INVERSE): selects what this module operates \n");
+		printf("--name (XXXX): defines the name of this module \n");
 		printf(" \n");
 		printf(" \n");
 		//start of the default mode
 		printf("No commands, starting of the default mode ................... \n");
 		options.put("mode","FORWARD");
+		options.put("name","/rea/logPolar");
 	}
 	else{
 		//estracts the command from command line
