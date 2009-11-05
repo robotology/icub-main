@@ -101,7 +101,7 @@ public:
 	* function that set the options detected from the command line
 	* @param opt options passed to the module
 	*/
-	void LogPolarModule::setOptions(yarp::os::Property opt);
+	void setOptions(yarp::os::Property opt);
 	/**
 	* catches all the commands that have to be executed when the module is closed
 	*/
