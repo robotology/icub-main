@@ -23,3 +23,10 @@ void iCub::contrib::primateVision::conv_8u_to_32f(Ipp8u*im_ci,int psb_8u_,Ipp32f
 
 }
 
+void iCub::contrib::primateVision::conv_32f_to_8u_nn(Ipp32f*im_i,int p4_,Ipp8u*im_o,int p1_,IppiSize srcsize_)
+{
+  
+  ippiConvert_32f8u_C1R(im_i,p4_,im_o,p1_,srcsize_,ippRndNear);
+
+}
+

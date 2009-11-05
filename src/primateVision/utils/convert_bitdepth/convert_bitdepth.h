@@ -36,6 +36,15 @@ namespace iCub {
        * @param psb_8u Step in bytes through the 8u output image.
        * @param imsize Image width and height.
        */
+      void conv_32f_to_8u_nn(Ipp32f*im_32f,int psb_32f,Ipp8u* im_8u,int psb_8u,IppiSize imsize);
+
+      /** Conversion from 32f to 8u without normalisation. Ensure range is within 0.0 - 255.0.
+       * @param im_32f Pointer to 32f input image location.
+       * @param psb_32f Step in bytes through the 32f input image.
+       * @param im_8u Pointer to 8u output image location.
+       * @param psb_8u Step in bytes through the 8u output image.
+       * @param imsize Image width and height.
+       */
       void conv_32f_to_8u(Ipp32f*im_32f,int psb_32f,Ipp8u* im_8u,int psb_8u,IppiSize imsize);
          
       /** Conversion from 8u to 32f.

@@ -38,12 +38,12 @@ namespace iCub {
 	/** Constructor. */
 	OCSServerParams() {
 	  listTag = BOTTLE_TAG_LIST + BOTTLE_TAG_INT;
-	  lenTag = 4;
+	  lenTag = 3;
 	}
 	/** Converstion to string of parameters for printing. */
 	string toString(){
 	  char buffer[50];
-	  sprintf(buffer, "%d %d %d %d",width,height,psb,psb_32f);
+	  sprintf(buffer, "%d %d %d",width,height,psb);
 	  return buffer;
 	}
 	int listTag;
@@ -53,7 +53,6 @@ namespace iCub {
 	int width; /**< Server image width. */
 	int height;/**< Server image height. */
 	int psb;   /**< Step width (in bytes) through 8u image data. */
-	int psb_32f; /**< Step width (in bytes) through 32f image data. */
 	//
 	
       } PACKED_FOR_NET;

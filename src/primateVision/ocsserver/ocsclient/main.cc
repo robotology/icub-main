@@ -118,11 +118,24 @@ int main( int argc, char **argv )
   Ipp8u* ocs;
 
 
+  BufferedPort<Bottle> inPort_fo;  
+  inPort_fo.open("/ocsclient_"+input+"/input/featOr");  
+  Network::connect("/ocsserver_"+input+"/output/featOr" , "/ocsclient_"+input+"/input/featOr");
+  Bottle *inBot_fo;
+  Ipp8u* fo;
+
+  BufferedPort<Bottle> inPort_so;  
+  inPort_so.open("/ocsclient_"+input+"/input/symOr");  
+  Network::connect("/ocsserver_"+input+"/output/symOr" , "/ocsclient_"+input+"/input/symOr");
+  Bottle *inBot_so;
+  Ipp8u* so;
 
 
 
 
   iCub::contrib::primateVision::Display *d_ps = new iCub::contrib::primateVision::Display(srcsize,psb,D_8U_NN,"PhaseSym"+input);
+  iCub::contrib::primateVision::Display *d_fo = new iCub::contrib::primateVision::Display(srcsize,psb,D_8U_NN,"FeatOr"+input);
+  iCub::contrib::primateVision::Display *d_so = new iCub::contrib::primateVision::Display(srcsize,psb,D_8U_NN,"SymOr"+input);
   iCub::contrib::primateVision::Display *d_m = new iCub::contrib::primateVision::Display(srcsize,psb,D_8U_NN,"m"+input);
   iCub::contrib::primateVision::Display *d_M = new iCub::contrib::primateVision::Display(srcsize,psb,D_8U_NN,"M"+input);
   iCub::contrib::primateVision::Display *d_ocs = new iCub::contrib::primateVision::Display(srcsize,psb,D_8U,"OCS"+input);
@@ -136,28 +149,33 @@ int main( int argc, char **argv )
     inBot_ocs = inPort_ocs.read(false);
     inBot_M = inPort_M.read(false);
     inBot_m = inPort_m.read(false);
+    inBot_fo = inPort_fo.read(false);
+    inBot_so = inPort_so.read(false);
     inBot_ps = inPort_ps.read();
 
 
     if (inBot_ps!=NULL){
       d_ps->display((Ipp8u*) inBot_ps->get(0).asBlob());
     }
-    
+    if (inBot_fo!=NULL){
+      d_fo->display((Ipp8u*) inBot_fo->get(0).asBlob());
+    }
+    if (inBot_so!=NULL){
+      d_so->display((Ipp8u*) inBot_so->get(0).asBlob());
+    }
     if (inBot_m!=NULL){
       d_m->display((Ipp8u*) inBot_m->get(0).asBlob());
     }
-    
     if (inBot_M!=NULL){
       d_M->display((Ipp8u*) inBot_M->get(0).asBlob());
     }
-    
     if (inBot_ocs!=NULL){
       d_ocs->display((Ipp8u*) inBot_ocs->get(0).asBlob());
     }
     
 
 
-    if (inBot_ps==NULL && inBot_m==NULL && inBot_M ==NULL && inBot_ocs==NULL){
+    if (inBot_ps==NULL && inBot_fo==NULL && inBot_so==NULL && inBot_m==NULL && inBot_M ==NULL && inBot_ocs==NULL){
       printf("No Input\n");
       usleep(5000); //dont blow out port
     }

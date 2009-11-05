@@ -116,8 +116,11 @@ void iCub::contrib::primateVision::OCSServer::run(){
   BufferedPort<Bottle> outPort_phaseSym;
   outPort_phaseSym.open("/ocsserver_"+QString::number(servernum)+"/output/phaseSym");
 
-  BufferedPort<Bottle> outPort_phaseOr;
-  outPort_phaseOr.open("/ocsserver_"+QString::number(servernum)+"/output/phaseOr");
+  BufferedPort<Bottle> outPort_featOr;
+  outPort_featOr.open("/ocsserver_"+QString::number(servernum)+"/output/featOr");
+
+  BufferedPort<Bottle> outPort_symOr;
+  outPort_symOr.open("/ocsserver_"+QString::number(servernum)+"/output/symOr");
 
   BufferedPort<Bottle> outPort_ocs;
   outPort_ocs.open("/ocsserver_"+QString::number(servernum)+"/output/ocs");
@@ -155,11 +158,11 @@ void iCub::contrib::primateVision::OCSServer::run(){
   Ipp32f* covx2             = ippiMalloc_32f_C1(srcsize.width,srcsize.height,&psb_32f);
   Ipp32f* covy2             = ippiMalloc_32f_C1(srcsize.width,srcsize.height,&psb_32f);
   Ipp32f* covxy             = ippiMalloc_32f_C1(srcsize.width,srcsize.height,&psb_32f);
-  //Ipp32f* maxEnergy         = ippiMalloc_32f_C1(srcsize.width,srcsize.height,&psb_32f);
-  Ipp32f* or_               = ippiMalloc_32f_C1(srcsize.width,srcsize.height,&psb_32f);
+  Ipp32f* maxEnergy         = ippiMalloc_32f_C1(srcsize.width,srcsize.height,&psb_32f);
+  Ipp32f* feat_or           = ippiMalloc_32f_C1(srcsize.width,srcsize.height,&psb_32f);
   Ipp32f* neg               = ippiMalloc_32f_C1(srcsize.width,srcsize.height,&psb_32f);
   Ipp32f* not_neg           = ippiMalloc_32f_C1(srcsize.width,srcsize.height,&psb_32f);
-  //Ipp32f* sym_or           = ippiMalloc_32f_C1(srcsize.width,srcsize.height,&psb_32f);
+  Ipp32f* sym_or           = ippiMalloc_32f_C1(srcsize.width,srcsize.height,&psb_32f);
   Ipp32f* denom             = ippiMalloc_32f_C1(srcsize.width,srcsize.height,&psb_32f);
   Ipp32f* sin2theta         = ippiMalloc_32f_C1(srcsize.width,srcsize.height,&psb_32f);
   Ipp32f* cos2theta         = ippiMalloc_32f_C1(srcsize.width,srcsize.height,&psb_32f);
@@ -171,6 +174,8 @@ void iCub::contrib::primateVision::OCSServer::run(){
   Ipp8u* m_8u               = ippiMalloc_8u_C1(srcsize.width,srcsize.height,&psb);
   Ipp8u* M_8u               = ippiMalloc_8u_C1(srcsize.width,srcsize.height,&psb);
   Ipp8u* phaseSym_8u        = ippiMalloc_8u_C1(srcsize.width,srcsize.height,&psb);
+  Ipp8u* feat_or_8u         = ippiMalloc_8u_C1(srcsize.width,srcsize.height,&psb);
+  Ipp8u* sym_or_8u         = ippiMalloc_8u_C1(srcsize.width,srcsize.height,&psb);
 
   double angl;
  
@@ -236,7 +241,6 @@ void iCub::contrib::primateVision::OCSServer::run(){
   osp.width=srcsize.width;
   osp.height=srcsize.height;
   osp.psb=psb;
-  osp.psb_32f=psb_32f;
   //Replier:
   OCSReplyParamProbe server_replier;
   server_replier.reply=osp;
@@ -365,11 +369,11 @@ void iCub::contrib::primateVision::OCSServer::run(){
 	ippiSet_32f_C1R(0.0,covx2,psb_32f,srcsize);
 	ippiSet_32f_C1R(0.0,covy2,psb_32f,srcsize);
 	ippiSet_32f_C1R(0.0,covxy,psb_32f,srcsize);
-	//ippiSet_32f_C1R(0.0,maxEnergy,psb_32f,srcsize);
+	ippiSet_32f_C1R(0.0,maxEnergy,psb_32f,srcsize);
 	//PS
 	ippiSet_32f_C1R(0.0,totalSumAn,psb_32f,srcsize);
 	ippiSet_32f_C1R(0.0,totalEnergy,psb_32f,srcsize);
-	//ippiSet_32f_C1R(0.0,sym_or,psb_32f,srcsize);
+	ippiSet_32f_C1R(0.0,sym_or,psb_32f,srcsize);
 	
 	
 	
@@ -412,38 +416,38 @@ void iCub::contrib::primateVision::OCSServer::run(){
 	  ippiAdd_32f_C1IR(orientcs[n]->get_sumAn_32f(),psb_32f,totalSumAn,psb_32f,srcsize);
 	  ippiAdd_32f_C1IR(Energy_ThisOrient,psb_32f,totalEnergy,psb_32f,srcsize);
 	  
-	  //*******SYMMETRY ORIENTATION NOT REQUIRED/USED AT THE MOMENT:
-	  // 	  if(n == 0){
-	  // 	    //maxEnergy = Energy_ThisOrient;
-	  // 	    ippiCopy_32f_C1R(Energy_ThisOrient,psb_32f,maxEnergy,psb_32f,srcsize);
-	  // 	  }
-	  // 	  else{
-	  // 	    for (int y=0;y<srcsize.height;y++){ 
-	  // 	      for (int x=0;x<srcsize.width;x++){
-	  // 		if (Energy_ThisOrient[y*srcsize.width+x]>maxEnergy[y*srcsize.width+x]){
-	  // 		  change[y*srcsize.width+x] = 1.0;
-	  // 		  not_change[y*srcsize.width+x] = 0.0;
-	  // 		}
-	  // 		else{
-	  // 		  change[y*srcsize.width+x] = 0.0;
-	  // 		  not_change[y*srcsize.width+x] = 1.0;
-	  // 		}
-	  // 	      }
-	  // 	    }
-	  //
-	  // 	    ippiMulC_32f_C1IR(n,change,psb_32f,srcsize);
-	  // 	    ippiMul_32f_C1IR(not_change,psb_32f,orientation,psb_32f,srcsize);
-	  // 	    ippiAdd_32f_C1IR(change,psb_32f,orientation,psb_32f,srcsize);
-	  //
-	  // 	    //maxEnergy = max(maxEnergy, Energy_ThisOrient);
-	  // 	    for (int y=0;y<srcsize.height;y++){ 
-	  // 	      for (int x=0;x<srcsize.width;x++){
-	  // 		maxEnergy[y*srcsize.width+x] = MAX(maxEnergy[y*srcsize.width+x], Energy_ThisOrient[y*srcsize.width+x]);
-	  // 	      }
-	  // 	    }
-	  //      }
+	  //*******SYMMETRY ORIENTATION:
+	  if(n == 0){
+	    //maxEnergy = Energy_ThisOrient;
+	    ippiCopy_32f_C1R(Energy_ThisOrient,psb_32f,maxEnergy,psb_32f,srcsize);
+	  }
+	  else{
+	    for (int y=0;y<srcsize.height;y++){ 
+	      for (int x=0;x<srcsize.width;x++){
+		if (Energy_ThisOrient[y*srcsize.width+x]>maxEnergy[y*srcsize.width+x]){
+		  change[y*srcsize.width+x] = 1.0;
+		  not_change[y*srcsize.width+x] = 0.0;
+		}
+		else{
+		  change[y*srcsize.width+x] = 0.0;
+		  not_change[y*srcsize.width+x] = 1.0;
+		}
+	      }
+	    }
+	    
+	    ippiMulC_32f_C1IR(n,change,psb_32f,srcsize);
+	    ippiMul_32f_C1IR(not_change,psb_32f,sym_or,psb_32f,srcsize);
+	    ippiAdd_32f_C1IR(change,psb_32f,sym_or,psb_32f,srcsize);
+	    
+	    //maxEnergy = max(maxEnergy, Energy_ThisOrient);
+	    for (int y=0;y<srcsize.height;y++){ 
+	      for (int x=0;x<srcsize.width;x++){
+		maxEnergy[y*srcsize.width+x] = MAX(maxEnergy[y*srcsize.width+x], Energy_ThisOrient[y*srcsize.width+x]);
+	      }
+	    }
+	  }
 	  //*****
-
+	  
 	  //%*****SYMMETRY
 	  
 	  
@@ -534,9 +538,9 @@ void iCub::contrib::primateVision::OCSServer::run(){
 	//**** FEATURE ORIENTATIONS 
 	for (int y=0;y<srcsize.height;y++){ 
 	  for (int x=0;x<srcsize.width;x++){
-	    or_[y*psb_32f/4+x] = atan2(sin2theta[y*psb_32f/4+x],cos2theta[y*psb_32f/4+x]);       
+	    feat_or[y*psb_32f/4+x] = atan2(sin2theta[y*psb_32f/4+x],cos2theta[y*psb_32f/4+x]);       
 	    //neg = or < 0;  
-	    if (or_[y*psb_32f/4+x] < 0.0){
+	    if (feat_or[y*psb_32f/4+x] < 0.0){
 	      neg[y*psb_32f/4+x] = 1.0;
 	      not_neg[y*psb_32f/4+x] = 0.0;
 	    }
@@ -547,20 +551,22 @@ void iCub::contrib::primateVision::OCSServer::run(){
 	    
 	  }
 	}
-	//or_ is rads, conv to degs:
-	ippiMulC_32f_C1IR(90.0/IPP_PI,or_,psb_32f,srcsize);
-	ippiAddC_32f_C1R(or_,psb_32f,180.0,tmp1_32f,psb_32f,srcsize);
+	//feat_or is rads, conv to degs:
+	ippiMulC_32f_C1IR(90.0/IPP_PI,feat_or,psb_32f,srcsize);
+	ippiAddC_32f_C1R(feat_or,psb_32f,180.0,tmp1_32f,psb_32f,srcsize);
 	ippiMul_32f_C1IR(neg,psb_32f,tmp1_32f,psb_32f,srcsize);
-	ippiMul_32f_C1R(not_neg,psb_32f,or_,psb_32f,tmp2_32f,psb_32f,srcsize);
-	ippiAdd_32f_C1R(tmp1_32f,psb_32f,tmp2_32f,psb_32f,or_,psb_32f,srcsize); //ORIENT (degs)
+	ippiMul_32f_C1R(not_neg,psb_32f,feat_or,psb_32f,tmp2_32f,psb_32f,srcsize);
+	ippiAdd_32f_C1R(tmp1_32f,psb_32f,tmp2_32f,psb_32f,feat_or,psb_32f,srcsize); //ORIENT (degs)
 	//**** 
 		
+	//edges
 	ippiAdd_32f_C1R(covy2,psb_32f,covx2,psb_32f,tmp1_32f,psb_32f,srcsize);
 	ippiAdd_32f_C1R(denom,psb_32f,tmp1_32f,psb_32f,M,psb_32f,srcsize);
-	ippiDivC_32f_C1IR(2.0,M,psb_32f,srcsize);//   EDGES
+	//ippiDivC_32f_C1IR(2.0,M,psb_32f,srcsize);//   EDGES
 	
+	//corners
 	ippiSub_32f_C1R(denom,psb_32f,tmp1_32f,psb_32f,m,psb_32f,srcsize);
-	ippiDivC_32f_C1IR(2.0,m,psb_32f,srcsize);//   CORNERS
+	//ippiDivC_32f_C1IR(2.0,m,psb_32f,srcsize);//   CORNERS
 	//****PHASECONG	
 	
 
@@ -569,11 +575,9 @@ void iCub::contrib::primateVision::OCSServer::run(){
 	//%*****SYMMETRY
 	ippiAddC_32f_C1R(totalSumAn,psb_32f,EPSILON,tmp1_32f,psb_32f,srcsize);
 	ippiDiv_32f_C1R(tmp1_32f,psb_32f,totalEnergy,psb_32f,phaseSym,psb_32f,srcsize);
-
-	//****SYMMETRY ORIENTATION NOT REQUIRED/USED AT THE MOMENT:
-	//ippiMulC_32f_C1IR(180.0/norient,sym_or,psb_32f,srcsize);
+	//****SYMMETRY ORIENTATION:
+	ippiMulC_32f_C1IR(180.0/norient,sym_or,psb_32f,srcsize);
 	//****
-
 	//%*****SYMMETRY
 	
 
@@ -608,7 +612,7 @@ void iCub::contrib::primateVision::OCSServer::run(){
 	tmpBot_ocs.clear();
 	tmpBot_ocs.add(Value::makeBlob(ocs_tot_8u,psb*srcsize.height));
 	tmpBot_ocs.addString("ocs");
-	outPort_ocs.write();  // Send it on its way
+	outPort_ocs.write();
 
 	//PHASECONG
 	conv_32f_to_8u(m,psb_32f,m_8u,psb,srcsize);
@@ -616,14 +620,14 @@ void iCub::contrib::primateVision::OCSServer::run(){
 	tmpBot_m.clear();
 	tmpBot_m.add(Value::makeBlob(m_8u,psb*srcsize.height));
 	tmpBot_m.addString("cor");
-	outPort_m.write();  // Send it on its way
+	outPort_m.write(); 
 	
 	conv_32f_to_8u(M,psb_32f,M_8u,psb,srcsize);
 	Bottle& tmpBot_M = outPort_M.prepare();
 	tmpBot_M.clear();
 	tmpBot_M.add(Value::makeBlob(M_8u,psb*srcsize.height));
 	tmpBot_M.addString("edg");
-	outPort_M.write();  // Send it on its way
+	outPort_M.write(); 
 	
 	//PHASE SYMMETRY:
 	conv_32f_to_8u(phaseSym,psb_32f,phaseSym_8u,psb,srcsize);
@@ -631,17 +635,28 @@ void iCub::contrib::primateVision::OCSServer::run(){
 	tmpBot_phaseSym.clear();
 	tmpBot_phaseSym.add(Value::makeBlob(phaseSym_8u,psb*srcsize.height));
 	tmpBot_phaseSym.addString("sym");
-	outPort_phaseSym.write();  // Send it on its way
+	outPort_phaseSym.write(); 
  
 
 	//Feat. Orientations:
-	Bottle& tmpBot_phaseOr = outPort_phaseOr.prepare();
-	tmpBot_phaseOr.clear();
-	tmpBot_phaseOr.add(Value::makeBlob(or_,psb_32f*srcsize.height));
-	tmpBot_phaseOr.addString("or");
-	outPort_phaseOr.write();  // Send it on its way
+	//range 0..180 doubles.. conv to int without scaling:
+	conv_32f_to_8u_nn(feat_or,psb_32f,feat_or_8u,psb,srcsize);
+	Bottle& tmpBot_featOr = outPort_featOr.prepare();
+	tmpBot_featOr.clear();
+	tmpBot_featOr.add(Value::makeBlob(feat_or_8u,psb*srcsize.height));
+	tmpBot_featOr.addString("feat_or");
+	outPort_featOr.write();
  
 
+	//Sym. Orientations:
+	//range 0..180 doubles.. conv to int without scaling:
+	conv_32f_to_8u_nn(sym_or,psb_32f,sym_or_8u,psb,srcsize);
+	Bottle& tmpBot_symOr = outPort_symOr.prepare();
+	tmpBot_symOr.clear();
+	tmpBot_symOr.add(Value::makeBlob(sym_or_8u,psb*srcsize.height));
+	tmpBot_symOr.addString("sym_or");
+	outPort_symOr.write(); 
+ 
 	//printf("postproc stop!\n");		
 
 
