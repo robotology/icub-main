@@ -509,9 +509,14 @@ int cDownloader::get_board_info	   (int target_id, char* board_info)
     read_messages = m_candriver->receive_message(rxBuffer, 64, 1);
 
     //One (or more) answers received
-    //Counts the number of the boards
     int endString=0;
-    for (i=0; i<read_messages; i++)
+	int j=0;
+
+	//reset the addtional info string
+	for (j=0; j<31; j++) board_info[j]=0;
+   
+	//fills the additional info string
+	for (i=0; i<read_messages; i++)
         {
 
 #if 0
@@ -532,7 +537,7 @@ int cDownloader::get_board_info	   (int target_id, char* board_info)
             if (rxBuffer[i].getData()[0]==CAN_GET_ADDITIONAL_INFO && rxBuffer[i].getLen()==6) 
                 {
                     int part = rxBuffer[i].getData()[1];
-                    for (int j = 0; j< 4; j++)
+                    for (j = 0; j< 4; j++)
                         {
                             int tmp=part*4+j;
                             board_info[tmp]=rxBuffer[i].getData()[j+2];
@@ -543,9 +548,6 @@ int cDownloader::get_board_info	   (int target_id, char* board_info)
                         }
                 }
         }
-
-    board_info[endString]=0;
-    board_info[31]=0; //probably redundant, just to be safe
 
     return 0;
 }
