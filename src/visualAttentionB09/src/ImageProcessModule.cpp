@@ -87,9 +87,9 @@ bool ImageProcessModule::close() {
 	cmdPort.close();
 	this->closePorts();
 	//currentProcessor->~ImageProcessor();
-	delete processor1;
-	delete processor2;
-	delete processor3;
+	//delete processor1;
+	//delete processor2;
+	//delete processor3;
 	return true;
 	}
 
