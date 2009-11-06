@@ -275,6 +275,65 @@ bool ClientCartesianController::goToPosition(const Vector &xd, const double t)
 
 
 /************************************************************************/
+bool ClientCartesianController::goToPoseSync(const Vector &xd, const Vector &od, const double t)
+{
+    if (xd.length()<3 || od.length()<4)
+        return false;
+
+    Bottle command, reply;
+
+    // prepare command
+    command.addVocab(IKINCARTCTRL_VOCAB_CMD_GO);
+    command.addVocab(IKINCARTCTRL_VOCAB_VAL_POSE_FULL);
+    command.addDouble(t);
+    Bottle &xdesPart=command.addList();
+
+    for (int i=0; i<3; i++)
+        xdesPart.addDouble(xd[i]);
+
+    for (int i=0; i<4; i++)
+        xdesPart.addDouble(od[i]);
+
+    // send command and wait for reply
+    if (!portRpc->write(command,reply))
+    {
+        fprintf(stdout,"Error: unable to get reply from server!\n");
+        return false;
+    }
+
+    return (reply.get(0).asVocab()==IKINCARTCTRL_VOCAB_REP_ACK);
+}
+
+
+/************************************************************************/
+bool ClientCartesianController::goToPositionSync(const Vector &xd, const double t)
+{
+    if (xd.length()<3)
+        return false;
+
+    Bottle command, reply;
+
+    // prepare command
+    command.addVocab(IKINCARTCTRL_VOCAB_CMD_GO);
+    command.addVocab(IKINCARTCTRL_VOCAB_VAL_POSE_XYZ);
+    command.addDouble(t);
+    Bottle &xdesPart=command.addList();
+
+    for (int i=0; i<3; i++)
+        xdesPart.addDouble(xd[i]);
+
+    // send command and wait for reply
+    if (!portRpc->write(command,reply))
+    {
+        fprintf(stdout,"Error: unable to get reply from server!\n");
+        return false;
+    }
+
+    return (reply.get(0).asVocab()==IKINCARTCTRL_VOCAB_REP_ACK);
+}
+
+
+/************************************************************************/
 bool ClientCartesianController::getDOF(Vector &curDof)
 {
     Bottle command, reply;

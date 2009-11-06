@@ -70,7 +70,7 @@ CartesianCtrlCommandPort::CartesianCtrlCommandPort(ServerCartesianController *_c
 /************************************************************************/
 void CartesianCtrlCommandPort::onRead(Bottle &command)
 {
-    if (command.size()>2)
+    if (command.size()>3)
         if  (command.get(0).asVocab()==IKINCARTCTRL_VOCAB_CMD_GO)
         {   
             int pose=command.get(1).asVocab();
@@ -234,6 +234,36 @@ bool ServerCartesianController::respond(const Bottle &command, Bottle &reply)
             case IKINCARTCTRL_VOCAB_CMD_STOP:
             {   
                 stopControl();
+                break;
+            }
+
+            case IKINCARTCTRL_VOCAB_CMD_GO:
+            {
+                if (command.size()>3)
+                {
+                    int pose=command.get(1).asVocab();
+                    double t=command.get(2).asDouble();
+                    Bottle *v=command.get(3).asList();
+                    Vector xd(v->size());
+    
+                    for (int i=0; i<v->size(); i++)
+                        xd[i]=v->get(i).asDouble();
+
+                    bool ret;
+    
+                    if (pose==IKINCARTCTRL_VOCAB_VAL_POSE_FULL)
+                        ret=goTo(IKINCTRL_POSE_FULL,xd,t);
+                    else if (pose==IKINCARTCTRL_VOCAB_VAL_POSE_XYZ)
+                        ret=goTo(IKINCTRL_POSE_XYZ,xd,t);
+
+                    if (ret)
+                        reply.addVocab(IKINCARTCTRL_VOCAB_REP_ACK);
+                    else
+                        reply.addVocab(IKINCARTCTRL_VOCAB_REP_NACK);
+                }
+                else
+                    reply.addVocab(IKINCARTCTRL_VOCAB_REP_NACK);
+    
                 break;
             }
 
@@ -1244,6 +1274,20 @@ bool ServerCartesianController::goToPosition(const Vector &xd, const double t)
         return goTo(IKINCTRL_POSE_XYZ,xd,t);
     else
         return false;
+}
+
+
+/************************************************************************/
+bool ServerCartesianController::goToPoseSync(const Vector &xd, const Vector &od, const double t)
+{
+    return goToPose(xd,od,t);
+}
+
+
+/************************************************************************/
+bool ServerCartesianController::goToPositionSync(const Vector &xd, const double t)
+{
+    return goToPosition(xd,t);
 }
 
 
