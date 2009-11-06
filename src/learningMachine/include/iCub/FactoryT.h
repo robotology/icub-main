@@ -40,7 +40,7 @@ private:
     FactoryT() {}
     
     /**
-     * Copy Constructor (unimplemented on purpose)
+     * Copy Constructor (unimplemented on purpose).
      */
     FactoryT(const FactoryT<K, T>& other);
     

@@ -1,5 +1,5 @@
 /*
- * Copyright (C) 2007-2008 Arjan Gijsberts @ Italian Institute of Technology
+ * Copyright (C) 2007-2009 Arjan Gijsberts @ Italian Institute of Technology
  * CopyPolicy: Released under the terms of the GNU GPL v2.0.
  *
  * LSSVM Learner implementation for using LibLSSVM over ports.
@@ -8,7 +8,6 @@
 
 #include <cassert>
 #include <sstream>
-//#include <stdexcept>
 
 #include <yarp/math/SVD.h>
 
@@ -28,10 +27,33 @@ LSSVMLearner::LSSVMLearner(int dom, int cod, double c) {
     this->setC(c);
 }
 
+LSSVMLearner::LSSVMLearner(const LSSVMLearner& other) 
+  : IFixedSizeLearner(other), inputs(other.inputs), outputs(other.outputs), 
+    alphas(other.alphas), bias(other.bias), LOO(other.LOO), C(other.C), 
+    kernel(new RBFKernel(*other.kernel)) {
+
+}
+
+
 LSSVMLearner::~LSSVMLearner() {
     delete this->kernel;
 }
 
+LSSVMLearner& LSSVMLearner::operator=(const LSSVMLearner& other) {
+    if (this == &other) return *this; // handle self initialization
+
+    this->IFixedSizeLearner::operator=(other);
+    this->inputs = other.inputs;
+    this->outputs = other.outputs;
+    this->alphas = other.alphas;
+    this->bias = other.bias;
+    this->LOO = other.LOO;
+    this->C = other.C;
+    delete this->kernel;
+    this->kernel = new RBFKernel(*other.kernel);
+
+    return *this;
+}
 
 void LSSVMLearner::feedSample(const Vector& input, const Vector& output) {
     // call parent method to let it do some validation for us
@@ -116,7 +138,7 @@ void LSSVMLearner::reset() {
     this->bias.clear();
 }
 
-IMachineLearner* LSSVMLearner::clone() {
+LSSVMLearner* LSSVMLearner::clone() {
     return new LSSVMLearner(*this);
 }
 

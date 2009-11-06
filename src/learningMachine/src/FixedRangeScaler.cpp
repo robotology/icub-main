@@ -16,12 +16,10 @@
 namespace iCub {
 namespace learningmachine {
 
-FixedRangeScaler::FixedRangeScaler(double li, double ui, double lo, double uo) {
+FixedRangeScaler::FixedRangeScaler(double li, double ui, double lo, double uo) 
+  : lowerBoundIn(li), upperBoundIn(ui), lowerBoundOut(lo), upperBoundOut(uo) {
     this->setName("Fixed");
-    this->setLowerBoundIn(li);
-    this->setUpperBoundIn(ui);
-    this->setLowerBoundOut(lo);
-    this->setUpperBoundOut(uo);
+    this->updateScales();
 }
 
 void FixedRangeScaler::updateScales() {

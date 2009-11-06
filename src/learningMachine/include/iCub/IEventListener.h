@@ -27,6 +27,8 @@ namespace learningmachine {
  *
  * \author Arjan Gijsberts
  */
+
+// forward prototype declarations
 class IEvent;
 class TrainEvent;
 class PredictEvent;
@@ -52,7 +54,7 @@ public:
     /**
      * Destructor.
      */
-    virtual ~IEventListener() {}
+    virtual ~IEventListener() { }
 
     /**
      * Default handler for any Event, which means the Event is ignored.

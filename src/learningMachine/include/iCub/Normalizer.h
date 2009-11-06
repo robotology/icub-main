@@ -87,7 +87,7 @@ public:
     /*
      * Inherited from IScaler.
      */
-    IScaler* clone() {
+    Normalizer* clone() {
         return new Normalizer(*this);
     }
 

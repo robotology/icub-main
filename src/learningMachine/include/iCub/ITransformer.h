@@ -9,12 +9,12 @@
 #ifndef __ICUB_ITRANSFORMER__
 #define __ICUB_ITRANSFORMER__
 
+#include <string>
+#include <sstream>
+
 #include <yarp/sig/Vector.h>
 #include <yarp/os/IConfig.h>
 #include <yarp/os/Bottle.h>
-
-#include <string>
-#include <sstream>
 
 using namespace yarp::os;
 using namespace yarp::sig;

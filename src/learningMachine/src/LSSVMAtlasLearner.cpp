@@ -1,17 +1,18 @@
 /*
- * Copyright (C) 2007-2008 Arjan Gijsberts @ Italian Institute of Technology
+ * Copyright (C) 2007-2009 Arjan Gijsberts @ Italian Institute of Technology
  * CopyPolicy: Released under the terms of the GNU GPL v2.0.
  *
  * LSSVM Learner implementation for using LibLSSVM over ports.
  *
  */
 
-#include "iCub/LSSVMAtlasLearner.h"
-#include "iCub/MercerKernels.h"
 #include <cassert>
 #include <sstream>
 //#include <stdexcept>
-#include <iostream>
+//#include <iostream>
+
+#include "iCub/LSSVMAtlasLearner.h"
+#include "iCub/MercerKernels.h"
 
 namespace iCub {
 namespace learningmachine {
@@ -191,7 +192,9 @@ void LSSVMAtlasLearner::reset() {
     this->initAll();
 }
 
-IMachineLearner* LSSVMAtlasLearner::clone() {
+LSSVMAtlasLearner* LSSVMAtlasLearner::clone() {
+    // inconsistent as it does not use copy constructor!
+    // the LSSVMAtlasLearner is optional and not 'officially' supported
     return new LSSVMAtlasLearner(this->machines.size(), this->defaultType, this->defaultKernel);
 }
 

@@ -3,5 +3,7 @@
 * Modify Scaler to use updated specifier 'all', as for the Machine Learners (done)
 * Implement 'savetofile' and 'loadfromfile' for machines (done)
 * Create library for usage in other packages (done)
-* Create library with all modules for extensions in other packages
-* Create TransformerPortable and serialization unserialization for transformers
+* Create library with all modules for extensions in other packages (done)
+* Create TransformerPortable and serialization unserialization for transformers (done)
+* Implement copy constructor and assignment operator where necessary (in progress)
+* Use references instead of pointers when possible (in progress)

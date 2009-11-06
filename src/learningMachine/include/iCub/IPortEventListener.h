@@ -59,12 +59,23 @@ public:
     IPortEventListener(std::string pp) : portPrefix(pp) { }
 
     /**
+     * Copy Constructor.
+     */
+    IPortEventListener(const IPortEventListener& other)
+      : IEventListener(other), portPrefix(other.portPrefix) { }
+
+    /**
      * Destructor.
      */
     virtual ~IPortEventListener() {
         this->port.interrupt();
         this->port.close();
     }
+
+    /**
+     * Assignment operator.
+     */
+    virtual IPortEventListener& operator=(const IPortEventListener& other);
 
     /**
      * Starts the IEventListener.

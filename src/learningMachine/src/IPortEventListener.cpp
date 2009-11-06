@@ -16,6 +16,13 @@
 namespace iCub {
 namespace learningmachine {
 
+IPortEventListener& IPortEventListener::operator=(const IPortEventListener& other) {
+    if (this == &other) return *this; // handle self initialization
+
+    this->IEventListener::operator=(other);
+    this->portPrefix = other.portPrefix;
+    return *this;
+}
 
 void IPortEventListener::resetPort(std::string portName) {
     // if empty portName, find first available standardly prefixed port

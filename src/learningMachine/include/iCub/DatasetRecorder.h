@@ -1,5 +1,5 @@
 /*
- * Copyright (C) 2007-2008 Arjan Gijsberts @ Italian Institute of Technology
+ * Copyright (C) 2007-2009 Arjan Gijsberts @ Italian Institute of Technology
  * CopyPolicy: Released under the terms of the GNU GPL v2.0.
  *
  * Raw dataset recorder using the MachineLearner interface.
@@ -112,7 +112,7 @@ public:
     /*
      * Inherited from IMachineLearner.
      */
-    IMachineLearner* clone() {
+    DatasetRecorder* clone() {
         return new DatasetRecorder(*this);
     }
 

@@ -39,22 +39,22 @@ private:
     std::list<IEventListener*> listeners;
 
     /**
-     * Empty Constructor
+     * Empty Constructor.
      */
-    EventDispatcher();
+    EventDispatcher() { }
 
     /**
-     * Copy Constructor
+     * Copy Constructor (unimplemented on purpose).
      */
     EventDispatcher(const EventDispatcher& other);
 
     /**
-     * Empty Destructor
+     * Destructor.
      */
     virtual ~EventDispatcher();
     
     /**
-     * Assignment operator.
+     * Assignment operator (unimplemented on purpose).
      */
     EventDispatcher& operator=(const EventDispatcher& other);
     

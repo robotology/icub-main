@@ -1,5 +1,5 @@
 /*
- * Copyright (C) 2007-2008 Arjan Gijsberts @ Italian Institute of Technology
+ * Copyright (C) 2007-2009 Arjan Gijsberts @ Italian Institute of Technology
  * CopyPolicy: Released under the terms of the GNU GPL v2.0.
  *
  * Generalized Interface for Learning Machines (both offline and online)

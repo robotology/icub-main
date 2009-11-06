@@ -67,7 +67,7 @@ public:
      *
      * @return a pointer to the actual machine
      */
-    virtual IMachineLearner* getMachine() {
+    virtual IMachineLearner& getMachine() {
         return this->getMachinePortable()->getWrapped();
     }
 };
@@ -113,9 +113,9 @@ protected:
     BufferedPort<Vector> predict_inout;
 
     /**
-     * A pointer to a concrete wrapper around a learning machine.
+     * A concrete wrapper around a learning machine.
      */
-    MachinePortable* machinePortable;
+    MachinePortable machinePortable;
     
     /**
      * The processor handling prediction requests.
@@ -148,16 +148,12 @@ public:
      *
      * @param pp the default prefix used for the ports.
      */
-    PredictModule(std::string pp = "/lm/predict") : IMachineLearnerModule(pp) {
-        this->machinePortable = new MachinePortable();
-    }
+    PredictModule(std::string pp = "/lm/predict") : IMachineLearnerModule(pp) { }
 
     /**
      * Destructor.
      */
-    virtual ~PredictModule() {
-        delete(this->machinePortable);
-    }
+    virtual ~PredictModule() { }
 
     /*
      * Inherited from IMachineLearnerModule.
@@ -179,8 +175,8 @@ public:
      */
     virtual bool close() {
         IMachineLearnerModule::close();
-        if(this->getMachinePortable()->hasWrapped()) {
-            return this->getMachine()->close();
+        if(this->getMachinePortable().hasWrapped()) {
+            return this->getMachine().close();
         } else {
             return true;
         }
@@ -189,18 +185,18 @@ public:
     /**
      * Retrieve the machine that is wrapped in the portable machine wrapper.
      *
-     * @return a pointer to the actual machine
+     * @return a reference to the actual machine
      */
-    virtual IMachineLearner* getMachine() {
-        return this->getMachinePortable()->getWrapped();
+    virtual IMachineLearner& getMachine() {
+        return this->getMachinePortable().getWrapped();
     }
 
     /**
      * Retrieve the machine portable.
      *
-     * @return a pointer to the machine portable
+     * @return a reference to the machine portable
      */
-    virtual MachinePortable* getMachinePortable() {
+    virtual MachinePortable& getMachinePortable() {
         return this->machinePortable;
     }
 

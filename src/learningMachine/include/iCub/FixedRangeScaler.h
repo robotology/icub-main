@@ -89,7 +89,7 @@ public:
     /*
      * Inherited from IScaler.
      */
-    IScaler* clone() {
+    FixedRangeScaler* clone() {
         return new FixedRangeScaler(*this);
     }
 

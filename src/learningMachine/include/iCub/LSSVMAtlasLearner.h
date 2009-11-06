@@ -22,16 +22,15 @@
 #ifndef __ICUB_LSSVMATLASLEARNER__
 #define __ICUB_LSSVMATLASLEARNER__
 
-#include "iCub/IFixedSizeLearner.h"
-#include "iCub/LSSVM.h"
-
-#include <yarp/os/Bottle.h>
-
 #include <iostream>
 #include <string>
 #include <vector>
 #include <sstream>
 
+#include <yarp/os/Bottle.h>
+
+#include "iCub/IFixedSizeLearner.h"
+#include "iCub/LSSVM.h"
 
 using namespace yarp;
 using namespace iCub::contrib::liblssvm;
@@ -199,7 +198,7 @@ public:
     /*
      * Inherited from IMachineLearner.
      */
-    IMachineLearner* clone();
+    LSSVMAtlasLearner* clone();
 
     /*
      * Inherited from IMachineLearner.

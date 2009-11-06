@@ -19,14 +19,14 @@ namespace iCub {
 namespace learningmachine {
 
 bool PredictProcessor::read(ConnectionReader& connection) {
-    assert(this->getMachine() != (IMachineLearner *) 0);
+    assert(this->getMachinePortable().hasWrapped());
     Vector input, prediction;
     bool ok = input.read(connection);
     if(!ok) {
         return false;
     }
     try {
-        prediction = this->getMachine()->predict(input);
+        prediction = this->getMachine().predict(input);
 
         // Event Code
         if(EventDispatcher::instance().hasListeners()) {
@@ -103,7 +103,7 @@ bool PredictModule::open(Searchable& opt) {
     }
 
     // add reader for models
-    this->model_in.setReader(*this->machinePortable);
+    this->model_in.setReader(this->machinePortable);
 
     // add replier for incoming data (prediction requests)
     this->predictProcessor.setMachinePortable(this->machinePortable);
@@ -140,7 +140,7 @@ bool PredictModule::respond(const Bottle& cmd, Bottle& reply) {
             case VOCAB4('r','e','s','e'):
             case VOCAB3('r','s','t'):
                 // NOTE TO SELF: possibly set the machine to a null pointer for prediction
-                this->getMachine()->reset();
+                this->getMachine().reset();
                 reply.addString("Machine reset.");
                 success = true;
                 break;
@@ -150,7 +150,7 @@ bool PredictModule::respond(const Bottle& cmd, Bottle& reply) {
                 {
                 reply.addVocab(Vocab::encode("help"));
                 reply.addString("Machine Information: ");
-                reply.addString(this->getMachine()->getInfo().c_str());
+                reply.addString(this->getMachine().getInfo().c_str());
                 success = true;
                 break;
                 }

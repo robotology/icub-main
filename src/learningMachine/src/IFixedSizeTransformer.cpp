@@ -6,10 +6,10 @@
  *
  */
 
-#include "iCub/IFixedSizeTransformer.h"
 #include <stdexcept>
 #include <sstream>
 
+#include "iCub/IFixedSizeTransformer.h"
 
 namespace iCub {
 namespace learningmachine {

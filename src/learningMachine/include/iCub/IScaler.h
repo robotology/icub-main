@@ -75,7 +75,7 @@ public:
     /**
      * Destructor.
      */
-    virtual ~IScaler() {}
+    virtual ~IScaler() { }
 
     /**
      * Feeds a single sample into the scaler, so that it can use this sample
@@ -83,7 +83,7 @@ public:
      *
      * @param value the sample value
      */
-    virtual void update(double val) {}
+    virtual void update(double val) { }
 
     /**
      * Transforms a single sample value according to the state of the scaler. 

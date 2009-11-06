@@ -19,6 +19,7 @@ namespace learningmachine {
  *
  * \author Arjan Gijsberts
  */
+
 // forward declaration to solve circular reference
 class IEventListener;
 

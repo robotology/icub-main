@@ -14,10 +14,8 @@ namespace iCub {
 namespace learningmachine {
 
 
-EventDispatcher::EventDispatcher() { }
-
 // the copy constructor and the assignment operator are best left unimplemented
-// for this singleton.
+// for this singleton. Anyhow, here is how they could be implemented.
 
 //EventDispatcher::EventDispatcher(const EventDispatcher& other) {
 //    for(int i = 0; i < other.countListeners(); i++) {

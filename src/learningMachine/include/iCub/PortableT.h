@@ -88,7 +88,7 @@ public:
         Bottle nameBottle;
         nameBottle.addString(this->wrapped->getName().c_str());
         nameBottle.write(connection);
-        this->getWrapped()->write(connection);
+        this->getWrapped().write(connection);
     
         // for text readers
         connection.convertTextMode();
@@ -124,7 +124,7 @@ public:
 	    }
 	
 	    // call read method to construct specific object
-	    bool ok = this->wrapped->read(connection);
+	    bool ok = this->getWrapped().read(connection);
 	    return ok;
     }
 
@@ -141,8 +141,8 @@ public:
 	        throw std::runtime_error(std::string("Could not open file '") + filename + "'");
 	    }
 
-	    stream << this->getWrapped()->getName() << std::endl;
-	    stream << this->getWrapped()->toString();
+	    stream << this->getWrapped().getName() << std::endl;
+	    stream << this->getWrapped().toString();
 
 	    stream.close();
 
@@ -159,7 +159,7 @@ public:
 	    std::ifstream stream(filename.c_str());
 
 	    if(!stream.is_open()) {
-            throw std::runtime_error(std::string("Could not open file '") + filename + "'");
+                throw std::runtime_error(std::string("Could not open file '") + filename + "'");
 	    }
 
 	    std::string name;
@@ -168,7 +168,7 @@ public:
 	    this->setWrapped(name);
 	    std::stringstream strstr;
 	    strstr << stream.rdbuf();
-	    this->getWrapped()->fromString(strstr.str());
+	    this->getWrapped().fromString(strstr.str());
 
 	    return true;
     }
@@ -185,13 +185,13 @@ public:
     /**
      * The accessor for the wrapped object.
      *
-     * @return a pointer to the wrapped object
+     * @return a reference to the wrapped object
      */
-    T* getWrapped() {
+    T& getWrapped() {
         if(!this->hasWrapped()) {
             throw std::runtime_error("Attempt to retrieve inexistent wrapped object!");
         }
-        return this->wrapped;
+        return *(this->wrapped);
     }
 
     /**

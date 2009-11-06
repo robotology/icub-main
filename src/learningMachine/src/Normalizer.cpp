@@ -16,12 +16,9 @@
 namespace iCub {
 namespace learningmachine {
 
-Normalizer::Normalizer(double l, double u) {
+Normalizer::Normalizer(double l, double u)
+  : lowest(DBL_MAX), highest(-DBL_MAX), lowerBound(l), upperBound(u) {
     this->setName("Normalizer");
-    this->lowest = DBL_MAX;
-    this->highest = -DBL_MAX;
-    this->setLowerBound(l);
-    this->setUpperBound(u);
 }
 
 void Normalizer::update(double val) {

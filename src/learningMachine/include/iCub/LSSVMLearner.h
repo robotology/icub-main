@@ -186,9 +186,19 @@ public:
     LSSVMLearner(int dom = 1, int cod = 1, double c = 1.0);
 
     /**
+     * Copy Constructor.
+     */
+    LSSVMLearner(const LSSVMLearner& other);
+
+    /**
      * Destructor.
      */
     virtual ~LSSVMLearner();
+
+    /**
+     * Assignment operator.
+     */
+    virtual LSSVMLearner& operator=(const LSSVMLearner& other);
 
     /*
      * Inherited from IMachineLearner.
@@ -213,7 +223,7 @@ public:
     /*
      * Inherited from IMachineLearner.
      */
-    IMachineLearner* clone();
+    LSSVMLearner* clone();
 
     /*
      * Inherited from IMachineLearner.
