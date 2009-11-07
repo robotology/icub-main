@@ -934,10 +934,8 @@ bool CartesianSolver::open(Searchable &options)
                 _dof[i]=v->get(i).asInt();
 
             decodeDOF(_dof);
+            encodeDOF();
         }
-
-    // update dof
-    encodeDOF();
 
     // joints bounds alignment
     alignJointsBounds();    

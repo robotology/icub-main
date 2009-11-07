@@ -1,4 +1,7 @@
 
+2009-11-07 Ugo Pattacini <ugo.pattacini@iit.it>
+	   * iKinSlv.cpp, iKinSlv.h: DOF handling bug fix
+
 2009-10-12 Ugo Pattacini <ugo.pattacini@iit.it>
 	   * iKinHlp.cpp, iKinHlp.h, iKinVocabs.h: files added
 
