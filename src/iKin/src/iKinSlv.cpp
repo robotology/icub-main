@@ -133,6 +133,7 @@ InputPort::InputPort(CartesianSolver *_slv)
     pose=IKINCTRL_POSE_FULL;
     contMode=false;
     isNew=false;
+    dofChanged=false;
 }
 
 
@@ -168,10 +169,12 @@ bool InputPort::handleTarget(Bottle *b)
         for (int i=0; i<l; i++)
             xd[i]=b->get(i).asDouble();
 
-        if (norm(xd-xdOld)>1e-6)
+        if (norm(xd-xdOld)>1e-6 || dofChanged)
         {
             isNew=true;
             xdOld=xd;
+
+            dofChanged=false;
         }
         else
             slv->send(xd);
@@ -196,6 +199,8 @@ bool InputPort::handleDOF(Bottle *b)
 
         for (int i=0; i<len; i++)
             dof[i]=b->get(i).asInt();
+
+        dofChanged=true;
 
         slv->unlock();
 
@@ -916,18 +921,22 @@ bool CartesianSolver::open(Searchable &options)
         rmp.push_back(rmpTmp);
     }    
 
-    // handle dof
+    // dof here is not defined yet, so define it
+    encodeDOF();
+
+    // handle dof from options
     if (options.check("dof"))
-    {    
-        Bottle *v=options.find("dof").asList();
-        Vector _dof(v->size());
+        if (Bottle *v=options.find("dof").asList())
+        {            
+            Vector _dof(v->size());
+    
+            for (int i=0; i<_dof.length(); i++)
+                _dof[i]=v->get(i).asInt();
 
-        for (int i=0; i<_dof.length(); i++)
-            _dof[i]=v->get(i).asInt();
+            decodeDOF(_dof);
+        }
 
-        decodeDOF(_dof);
-    }
-
+    // update dof
     encodeDOF();
 
     // joints bounds alignment
@@ -1227,7 +1236,7 @@ void CartesianSolver::run()
 /************************************************************************/
 void CartesianSolver::threadRelease()
 {    
-    fprintf(stdout,"Stopping %s\n",slvName.c_str());
+    cout << "Stopping " << slvName << endl;
 }
 
 
@@ -1355,7 +1364,7 @@ Vector ArmCartesianSolver::solve(Vector &xd)
                 w_3rd[offs++]=1.0;
     }
 
-    // call the solver and start the convergence from the current point.
+    // call the solver and start the convergence from the current point
     return slv->solve(prt->chn->getAng(),xd,
                       weight2ndTask,xdElb,w_2nd,
                       weight3rdTask,qd_3rd,w_3rd,

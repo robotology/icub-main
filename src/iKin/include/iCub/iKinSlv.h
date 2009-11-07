@@ -162,8 +162,9 @@ class iKin::InputPort : public yarp::os::BufferedPort<yarp::os::Bottle>
 protected:
     CartesianSolver *slv;
 
-    bool isNew;
     bool contMode;
+    bool isNew;
+    bool dofChanged;
     int  maxLen;
     int  pose;
 
