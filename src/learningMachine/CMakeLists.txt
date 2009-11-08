@@ -87,8 +87,11 @@ SET(LM_HEADER
     include/iCub/TransformModule.h )
 
 # Declare groups of source and header files -- makes things pretty in MSVC.
-#SOURCE_GROUP("Source Files" FILES ${folder_source})
-#SOURCE_GROUP("Header Files" FILES ${folder_header})
+SOURCE_GROUP("Source Files" FILES ${LM_MODULE_SRC} 
+                                  ${LM_MACHINE_SRC} 
+                                  ${LM_TRANSFORMER_SRC} 
+                                  ${LM_EVENT_SRC} )
+SOURCE_GROUP("Header Files" FILES ${LM_HEADER})
 
 SET(USE_LSSVMATLAS FALSE CACHE BOOL "Select true if Atlas version of LSSVM has to be compiled")
 IF(USE_LSSVMATLAS)
@@ -104,9 +107,9 @@ IF(CREATE_LM_LIBRARY)
     INSTALL(TARGETS ${LM_LIB} DESTINATION lib)
 ENDIF(CREATE_LM_LIBRARY)
 
-ADD_EXECUTABLE(${LM_TRAIN_EXEC} ${LM_MODULE_SRC} ${LM_MACHINE_SRC} ${LM_EVENT_SRC} src/TrainModule.cpp src/PredictModule.cpp src/bin/train.cpp)
-ADD_EXECUTABLE(${LM_PREDICT_EXEC} ${LM_MODULE_SRC} ${LM_MACHINE_SRC} ${LM_EVENT_SRC} src/PredictModule.cpp src/bin/predict.cpp)
-ADD_EXECUTABLE(${LM_TRANSFORM_EXEC} ${LM_MODULE_SRC} ${LM_TRANSFORMER_SRC} ${LM_EVENT_SRC} src/TransformModule.cpp src/bin/transform.cpp)
+ADD_EXECUTABLE(${LM_TRAIN_EXEC} ${LM_HEADER} ${LM_MODULE_SRC} ${LM_MACHINE_SRC} ${LM_EVENT_SRC} src/TrainModule.cpp src/PredictModule.cpp src/bin/train.cpp)
+ADD_EXECUTABLE(${LM_PREDICT_EXEC} ${LM_HEADER} ${LM_MODULE_SRC} ${LM_MACHINE_SRC} ${LM_EVENT_SRC} src/PredictModule.cpp src/bin/predict.cpp)
+ADD_EXECUTABLE(${LM_TRANSFORM_EXEC} ${LM_HEADER} ${LM_MODULE_SRC} ${LM_TRANSFORMER_SRC} ${LM_EVENT_SRC} src/TransformModule.cpp src/bin/transform.cpp)
 ADD_EXECUTABLE(${LM_TEST_EXEC} src/bin/test.cpp)
 
 

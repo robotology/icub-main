@@ -122,7 +122,7 @@ bool PredictModule::respond(const Bottle& cmd, Bottle& reply) {
 
     try {
         switch(cmd.get(0).asVocab()) {
-            case VOCAB4('h','e','l','p'): // print help information 
+            case VOCAB4('h','e','l','p'): // print help information
                 // why this vocab?
                 reply.addVocab(Vocab::encode("help"));
 
@@ -162,7 +162,7 @@ bool PredictModule::respond(const Bottle& cmd, Bottle& reply) {
                 if(!cmd.get(1).isString()) {
                     replymsg += "failed";
                 } else {
-                    this->getMachinePortable()->readFromFile(cmd.get(1).asString().c_str());
+                    this->getMachinePortable().readFromFile(cmd.get(1).asString().c_str());
                     replymsg += "succeeded";
                 }
                 reply.addString(replymsg.c_str());

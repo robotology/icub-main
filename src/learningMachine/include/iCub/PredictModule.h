@@ -42,7 +42,7 @@ public:
      * @param mp a pointer to a machine portable.
      */
     IMachineProcessor(MachinePortable* mp = (MachinePortable*) 0) : machinePortable(mp) { }
-    
+
     /**
      * Mutator for the machine portable.
      *
@@ -51,7 +51,7 @@ public:
     virtual void setMachinePortable(MachinePortable* mp) {
         this->machinePortable = mp;
     }
-    
+
     /**
      * Retrieve the machine portable machine wrapper.
      *
@@ -62,7 +62,7 @@ public:
     }
 
     /**
-     * Convenience function to quickly retrieve the machine that is wrapped in 
+     * Convenience function to quickly retrieve the machine that is wrapped in
      * the portable machine wrapper.
      *
      * @return a pointer to the actual machine
@@ -75,7 +75,7 @@ public:
 
 
 /**
- * Reply processor helper class for predictions. 
+ * Reply processor helper class for predictions.
  *
  * \see iCub::learningmachine::PredictModule
  * \see iCub::learningmachine::IMachineProcessor
@@ -84,7 +84,7 @@ public:
  *
  */
 class PredictProcessor : public IMachineProcessor, public PortReader {
-public:    
+public:
     /*
      * Inherited from PortReader.
      */
@@ -116,7 +116,7 @@ protected:
      * A concrete wrapper around a learning machine.
      */
     MachinePortable machinePortable;
-    
+
     /**
      * The processor handling prediction requests.
      */
@@ -175,7 +175,7 @@ public:
      */
     virtual bool close() {
         IMachineLearnerModule::close();
-        if(this->getMachinePortable().hasWrapped()) {
+        if (this->getMachinePortable().hasWrapped()) {
             return this->getMachine().close();
         } else {
             return true;
