@@ -127,8 +127,7 @@ So, now, have a look inside the directory ./example
 This file can be edited at \in src/dataDumper/main.cpp.
 */ 
 
-#include <ace/OS.h>
-//#include <ace/Log_Msg.h>
+#include <ace/OS_NS_sys_stat.h>
 #include <yarp/os/Network.h>
 #include <yarp/os/RFModule.h>
 #include <yarp/os/BufferedPort.h>

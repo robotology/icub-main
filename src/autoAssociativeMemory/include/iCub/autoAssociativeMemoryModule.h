@@ -177,8 +177,6 @@
 #ifndef __ICUB_AAM_MODULE_H__
 #define __ICUB_AAM_MODULE_H__
 
-#include <ace/OS.h>
-
 //yarp
 #include <yarp/os/all.h>
 #include <yarp/os/RFModule.h>
