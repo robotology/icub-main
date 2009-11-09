@@ -30,7 +30,7 @@ bool DispatcherManager::respond(const Bottle& cmd, Bottle& reply) {
 
     try {
         switch(cmd.get(0).asVocab()) {
-            case VOCAB4('h','e','l','p'): // print help information 
+            case VOCAB4('h','e','l','p'): // print help information
                 reply.add(Value::makeVocab("help"));
 
                 reply.addString("Event Manager configuration options");
@@ -56,7 +56,7 @@ bool DispatcherManager::respond(const Bottle& cmd, Bottle& reply) {
                 }
 
             case VOCAB4('r','e','m','o'): // remove
-            case VOCAB3('d','e','l'): // del(ete) 
+            case VOCAB3('d','e','l'): // del(ete)
                 { // prevent identifier initialization to cross borders of case
                 if(cmd.get(1).isInt() && cmd.get(1).asInt() >= 1 && cmd.get(1).asInt() <= this->dispatcher->countListeners()) {
                     this->dispatcher->removeListener(cmd.get(1).asInt()-1);
@@ -78,12 +78,12 @@ bool DispatcherManager::respond(const Bottle& cmd, Bottle& reply) {
                 property.addList() = cmd.tail().tail(); // see comment in TrainModule
 
                 std::string replymsg = "Setting configuration option ";
-                if(cmd.get(1).isInt() && cmd.get(1).asInt() >= 1 && cmd.get(1).asInt() <= this->dispatcher->countListeners()) {
-                    if(this->dispatcher->getAt(cmd.get(1).asInt()-1).configure(property)) {
-                        replymsg += "succeeded";
-                    } else {
-                        replymsg += "failed; please check key and value type.";
-                    }
+                if(cmd.get(1).isInt() && cmd.get(1).asInt() >= 1 &&
+                   cmd.get(1).asInt() <= this->dispatcher->countListeners()) {
+
+                    bool ok = this->dispatcher->getAt(cmd.get(1).asInt()-1).configure(property);
+                    replymsg += ok ? "succeeded" :
+                                     "failed; please check key and value type.";
                     reply.addString(replymsg.c_str());
                     success = true;
                 } else if(cmd.get(1).asString() == "all") {
@@ -91,12 +91,9 @@ bool DispatcherManager::respond(const Bottle& cmd, Bottle& reply) {
                         if(i > 0) {
                             replymsg += ", ";
                         }
-
-                        if(this->dispatcher->getAt(i).configure(property)) {
-                            replymsg += "succeeded";
-                        } else {
-                            replymsg += "failed";
-                        }
+                        bool ok = this->dispatcher->getAt(i).configure(property);
+                        replymsg += ok ? "succeeded" :
+                                        "failed; please check key and value type.";
                     }
                     replymsg += ".";
                     reply.addString(replymsg.c_str());
@@ -120,7 +117,7 @@ bool DispatcherManager::respond(const Bottle& cmd, Bottle& reply) {
                     buffer << "  [" << (i + 1) << "] " << this->dispatcher->getAt(i).getInfo();
                     reply.addString(buffer.str().c_str());
                 }
-                
+
                 success = true;
                 break;
                 }

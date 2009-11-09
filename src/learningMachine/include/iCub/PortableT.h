@@ -44,15 +44,23 @@ private:
      */
     T* wrapped;
 
+    /**
+     * Copy constructor (unimplemented on purpose);
+     */
+    PortableT(const PortableT<T>& other);
+
+    /**
+     * Assignment operator (unimplemented on purpose);
+     */
+    PortableT<T>& operator=(const PortableT<T>& other);
+
 public:
     /**
      * Constructor.
      *
      * @param w initial wrapped object
      */
-    PortableT(T* w = (T*) 0) {
-        this->setWrapped(w);
-    }
+    PortableT(T* w = (T*) 0) : wrapped(w) { }
 
     /**
      * Constructor.
@@ -80,7 +88,7 @@ public:
         // return false directly if there is no machine. If not, we end up
         // up writing things on the port, after which an exception will be
         // thrown when accessing the machine.
-        if(!this->hasWrapped()) {
+        if (!this->hasWrapped()) {
             return false;
         }
         connection.appendInt(BOTTLE_TAG_LIST);
@@ -102,30 +110,30 @@ public:
      * @return true on success
      */
     bool read(ConnectionReader& connection) {
-	    if(!connection.isValid()) {
-        	return false;
-	    }
+        if (!connection.isValid()) {
+            return false;
+        }
 
-	    connection.convertTextMode();
-	    // check headers for the pair (name + actual object serialization)
-	    int header = connection.expectInt();
-	    int len = connection.expectInt();
-	    if(header != BOTTLE_TAG_LIST || len != 2) {
-	        return false;
-	    }
+        connection.convertTextMode();
+        // check headers for the pair (name + actual object serialization)
+        int header = connection.expectInt();
+        int len = connection.expectInt();
+        if (header != BOTTLE_TAG_LIST || len != 2) {
+            return false;
+        }
 
-	    // read machine identifier and use it to create object
-	    Bottle nameBottle;
-	    nameBottle.read(connection);
-	    std::string name = nameBottle.get(0).asString().c_str();
-	    this->setWrapped(name);
-	    if(this->wrapped == (T *) 0) {
-	        return false;
-	    }
+        // read machine identifier and use it to create object
+        Bottle nameBottle;
+        nameBottle.read(connection);
+        std::string name = nameBottle.get(0).asString().c_str();
+        this->setWrapped(name);
+        if (this->wrapped == (T *) 0) {
+            return false;
+        }
 
-	    // call read method to construct specific object
-	    bool ok = this->getWrapped().read(connection);
-	    return ok;
+        // call read method to construct specific object
+        bool ok = this->getWrapped().read(connection);
+        return ok;
     }
 
     /**
@@ -135,18 +143,18 @@ public:
      * @return true on success
      */
     bool writeToFile(std::string filename) {
-	    std::ofstream stream(filename.c_str());
+        std::ofstream stream(filename.c_str());
 
-	    if(!stream.is_open()) {
-	        throw std::runtime_error(std::string("Could not open file '") + filename + "'");
-	    }
+        if (!stream.is_open()) {
+            throw std::runtime_error(std::string("Could not open file '") + filename + "'");
+        }
 
-	    stream << this->getWrapped().getName() << std::endl;
-	    stream << this->getWrapped().toString();
+        stream << this->getWrapped().getName() << std::endl;
+        stream << this->getWrapped().toString();
 
-	    stream.close();
+        stream.close();
 
-	    return true;
+        return true;
     }
 
     /**
@@ -156,21 +164,21 @@ public:
      * @return true on success
      */
     bool readFromFile(std::string filename) {
-	    std::ifstream stream(filename.c_str());
+        std::ifstream stream(filename.c_str());
 
-	    if(!stream.is_open()) {
-                throw std::runtime_error(std::string("Could not open file '") + filename + "'");
-	    }
+        if (!stream.is_open()) {
+            throw std::runtime_error(std::string("Could not open file '") + filename + "'");
+        }
 
-	    std::string name;
-	    stream >> name;
+        std::string name;
+        stream >> name;
 
-	    this->setWrapped(name);
-	    std::stringstream strstr;
-	    strstr << stream.rdbuf();
-	    this->getWrapped().fromString(strstr.str());
+        this->setWrapped(name);
+        std::stringstream strstr;
+        strstr << stream.rdbuf();
+        this->getWrapped().fromString(strstr.str());
 
-	    return true;
+        return true;
     }
 
     /**
@@ -189,7 +197,7 @@ public:
      * @throw runtime error if no wrapped object exists
      */
     T& getWrapped() {
-        if(!this->hasWrapped()) {
+        if (!this->hasWrapped()) {
             throw std::runtime_error("Attempt to retrieve inexistent wrapped object!");
         }
         return *(this->wrapped);
@@ -202,7 +210,7 @@ public:
      * @param wipe boolean whether the previous wrapped object has to be deleted
      */
     void setWrapped(T* w, bool wipe = true) {
-        if(wipe && this->hasWrapped()) {
+        if (wipe && this->hasWrapped()) {
             delete this->wrapped;
             this->wrapped = (T*) 0;
         }
@@ -216,7 +224,7 @@ public:
      * @param wipe boolean whether the previous wrapped object has to be deleted
      */
     void setWrapped(std::string name, bool wipe = true) {
-        if(wipe && this->hasWrapped()) {
+        if (wipe && this->hasWrapped()) {
             delete this->wrapped;
             this->wrapped = (T*) 0;
         }

@@ -240,11 +240,9 @@ bool TrainModule::respond(const Bottle& cmd, Bottle& reply) {
                  */
                 property.addList() = cmd.tail();
                 std::string replymsg = "Setting configuration option ";
-                if(this->getMachine().configure(property)) {
-                    replymsg += "succeeded";
-                } else {
-                    replymsg += "failed; please check key and value type.";
-                }
+                bool ok = this->getMachine().configure(property);
+                replymsg += ok ? "succeeded" :
+                                 "failed; please check key and value type.";
                 reply.addString(replymsg.c_str());
                 success = true;
                 break;

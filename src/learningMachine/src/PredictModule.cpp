@@ -109,7 +109,6 @@ bool PredictModule::open(Searchable& opt) {
     this->model_in.setReader(this->machinePortable);
 
     // add replier for incoming data (prediction requests)
-    //this->predictProcessor.setMachinePortable(this->machinePortable);
     this->predict_inout.setReplier(this->predictProcessor);
 
     // attach to the incoming command port
