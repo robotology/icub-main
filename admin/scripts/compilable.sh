@@ -9,14 +9,13 @@ absdir=`realpath $reldir/..`
 export ICUB_ROOT="$absdir"
 export ICUB_DIR="$PWD"
 
-. $ICUB_ROOT/scripts/config.sh
+. $ICUB_ROOT/admin/scripts/config.sh
 
 if [ "k$1" = "k" ]; then
   # get any packages needed
     if is_msvc8; then
 	echo "Cannot use package management"
     else
-#	yes | sudo $ICUB_ROOT/scripts/get-dependencies.sh
 	echo "skipping package management"
     fi
 fi

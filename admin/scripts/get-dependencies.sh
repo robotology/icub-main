@@ -1,9 +1,9 @@
 #!/bin/bash
 
-# run as ./scripts/get-dependencies.sh
+# run as ./admin/scripts/get-dependencies.sh
 # run as superuser
 
-. ./scripts/config.sh
+. ./admin/scripts/config.sh
 
 apt-get install libace-dev libcv-dev  # ACE and OpenCV
 apt-get install qt3-dev-tools         # Qt build tools (qmake, moc, ui)

@@ -1,8 +1,8 @@
 #!/bin/bash
 
-# run as ./scripts/update-web.sh
+# run as ./admin/scripts/update-web.sh
 
-. ./scripts/config.sh
+. ./admin/scripts/config.sh
 
 export ICUB_ROOT=$PWD
 

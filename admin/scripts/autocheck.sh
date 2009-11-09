@@ -1,8 +1,8 @@
 #!/bin/bash
 
-# run as ./scripts/autocheck.sh
+# run as ./admin/scripts/autocheck.sh
 
-. ./scripts/config.sh
+. ./admin/scripts/config.sh
 
 export ICUB_ROOT=$PWD
 
@@ -16,16 +16,16 @@ cat svnlog.txt | grep -v "svn update" | egrep -v "^\? " | egrep -v "^M " > svnlo
 
 SOURCE=$PWD
 echo Working in directory $SOURCE | tee should_report.txt
-./scripts/compilable.sh || echo done compiling
-chmod u+x ./scripts/update-web.sh # sad CVS accident
+./admin/scripts/compilable.sh || echo done compiling
+chmod u+x ./admin/scripts/update-web.sh # sad CVS accident
 
 if compile_dox; then
-    ./scripts/update-doc.sh || echo done documenting
+    ./admin/scripts/update-doc.sh || echo done documenting
 fi
 
 rm -rf ./doc/$WEB_DOC_SUFFIX
 mv ./doc/report ./doc/$WEB_DOC_SUFFIX
 
-std_timeout 600 ./scripts/update-web.sh
+std_timeout 600 ./admin/scripts/update-web.sh
 ) | tee report.txt
 
