@@ -4,10 +4,10 @@
 # that is the iCub source directory for in-source builds
 # or any directory you like for out-of-source builds
 
-reldir=`dirname $0`
-absdir=`realpath $reldir/..`
-export ICUB_ROOT="$absdir"
-export ICUB_DIR="$PWD"
+#reldir=`dirname $0`
+#absdir=`realpath $reldir/..`
+#export ICUB_ROOT="$absdir"
+#export ICUB_DIR="$PWD"
 
 . $ICUB_ROOT/admin/scripts/config.sh
 

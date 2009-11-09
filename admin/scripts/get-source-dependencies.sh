@@ -1,8 +1,8 @@
 #!/bin/bash
 
-# run as ./scripts/get-source-dependencies.sh
+# run as ./admin/scripts/get-source-dependencies.sh
 
-. ./scripts/config.sh
+. ./admin//scripts/config.sh
 
 echo This script installs random libraries needed by some modules
 echo These libraries are not required for the main iCub build.

@@ -1,7 +1,7 @@
 #!/bin/bash
 
-# run as ./scripts/update-doc.sh
+# run as ./admin/scripts/update-doc.sh
 
-. ./scripts/config.sh
+. ./admin/scripts/config.sh
 
 make dox # too much source code -- sadness
