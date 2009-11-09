@@ -251,7 +251,6 @@ protected:
 
     yarp::sig::Vector unctrlJointsOld;
     yarp::sig::Vector dof;
-    //yarp::sig::Vector fb;
 
     yarp::os::Bottle solutionBottle;
 
