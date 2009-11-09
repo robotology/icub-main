@@ -402,6 +402,9 @@ public:
         yarp::os::Property &robotOptions,
         RobotNetworkEntry &net);
 
+    bool instantiateInertial(const std::string &path,
+        yarp::os::Property &options);
+
     /**
     * Closes all robot devices.
     */

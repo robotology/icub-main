@@ -586,8 +586,12 @@ bool RobotInterfaceRemap::initialize20(const std::string &inifile)
     fprintf(stderr, "RobotInterface::now opening inertial\n");
     if (robotOptions.check("INERTIAL")) 
     {
+        Property tmpProp;
+        //copy parameters verbatim from relative section
+        tmpProp.fromString(robotOptions.findGroup("INERTIAL").toString());
         fprintf(stderr, "RobotInterface:: inertial sensor is in the conf file\n");
-        if (!instantiateInertial(robotOptions))
+        if (!instantiateInertial(PATH, robotOptions))
+        //if (!instantiateInertial(robotOptions))
             fprintf(stderr, "RobotInterface::warning troubles instantiating inertial sensor\n");
     }
     else
@@ -764,6 +768,44 @@ bool RobotInterfaceRemap::instantiateInertial(Property &options)
 
     // create a device for the arm 
     gyro.open(p);
+    if (!gyro.isValid()) 
+    {  
+        return false;
+    } 
+
+    bool ok = gyro.view(gyro_i);
+
+    return ok;
+}
+
+
+bool RobotInterfaceRemap::instantiateInertial(const std::string &path, Property &options)
+{
+    std::string file=options.find("file").asString().c_str();
+    std::string device=options.find("device").asString().c_str();
+    std::string subdevice=options.find("subdevice").asString().c_str();
+
+    std::string fullFilename;
+    fullFilename=path;
+    if (fullFilename[fullFilename.length()-1]!='/')
+        fullFilename.append("/",1);
+
+    fullFilename.append(file.c_str(), file.length());
+
+    Property deviceParameters;
+    deviceParameters.fromConfigFile(fullFilename.c_str());
+
+    std::string portName;
+    portName+="/";
+    portName+=robotName.c_str();
+    portName+="/inertial";
+    deviceParameters.put("name", portName.c_str());
+
+    deviceParameters.put("device", device.c_str());
+    deviceParameters.put("subdevice", subdevice.c_str());
+
+    // create a device for the arm 
+    gyro.open(deviceParameters);
     if (!gyro.isValid()) 
     {  
         return false;
