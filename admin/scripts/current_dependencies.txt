@@ -1,0 +1,77 @@
+== iCub Linux Dependencies ==
+
+Installed packages:
+
+libace-dev
+libgsl0-dev
+libncurses5-dev
+libgtkmm-2.4-dev
+libcv-dev
+
+Simulator related packages:
+libglut3
+libglut3-dev
+libsdl1.2-dev
+
+ode 0.11 from sourceforge
+
+Environment:
+ICUB_DIR=/home/babybot/svn/iCub
+YARP_DIR=/home/babybot/svn/yarp2
+ICUB_ROOT=/home/babybot/svn/iCub
+YARP_ROOT=/home/babybot/svn/yarp2
+ACE_ROOT undefined
+ODE_DIR=/home/babybot/ode-0.11
+SDLDIR undefined
+OPENVC_DIR undefined
+GSL_DIR undefined
+GTK_BASEPATH undefined
+GTKMM_BASEPATH undefined
+# YARP_DIR = where YARP is compiled, should contain YARPConfig.cmake
+# ICUB_DIR = where iCub is compiled, should contain ICUBConfig.cmake
+# YARP_ROOT = source code for YARP
+# ICUB_ROOT = source code for iCub
+# ACE_ROOT = where ace was compiled (if not using precompiled debian package)
+# GSL_DIR = where GSL was compiled (if not using precompiled debian package)
+# OPENCV_DIR = where OPENCV was compiled (if not using precompiled debian package)
+# ODE_DIR = where ode was compiled (if not using precompiled debian package)
+# SDLDIR = where sdl was compiled (if not using precompiled debian package)
+# GTKMM_BASEPATH/GTK_BASEPATH = where gtk/gtkmm was compiled or installed (if not using precompiled debian package)
+
+== iCub Windows dependencies ==
+
+Installed packages:
+
+ace version 5.5.5 from ace web site, compiled locally
+opencv version 1.0, precompiled from sourceforge
+gsl version 0.8, compiled locally
+
+ode 0.11 from sourceforge, compiled locally
+sdl 1.2.13 from SDL website, compiled locally
+gtk/gtkmm from distribution package from gnome website
+
+Environment:
+ICUB_DIR=C:\cygwin\home\babybot\svn\iCub
+YARP_DIR=C:\cygwin\home\babybot\svn\yarp2\build\msvc
+ICUB_ROOT=C:\cygwin\home\babybot\svn\iCub
+YARP_ROOT=C:\cygwin\home\babybot\svn\yarp2
+ACE_ROOT=C:\cygwin\home\babybot\ACE_wrappers
+ODE_DIR=C:/ode
+SLDDIR=C:/SDL-1.2.13
+OPENVC_DIR undefined
+GSL_DIR=c:\gsl\gsl-1.8-win
+GTK_BASEPATH=C:\GTKMM
+GTKMM_BASEPATH=C:\GTKMM
+# YARP_DIR = where YARP is compiled, should contain YARPConfig.cmake
+# ICUB_DIR = where iCub is compiled, should contain ICUBConfig.cmake
+# YARP_ROOT = source code for YARP
+# ICUB_ROOT = source code for iCub
+# ACE_ROOT = where ace was compiled (if not using precompiled debian package)
+# GSL_DIR = where GSL was compiled (if not using precompiled debian package)
+# OPENCV_DIR = where OPENCV was compiled (if not using precompiled debian package)
+# ODE_DIR = where ode was compiled (if not using precompiled debian package)
+# SDLDIR = where sdl was compiled (if not using precompiled debian package)
+# GTKMM_BASEPATH/GTK_BASEPATH = where gtk/gtkmm was compiled or installed (if not using 
+precompiled debian package)
+
+
