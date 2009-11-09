@@ -394,11 +394,10 @@ void CartesianSolver::latchUncontrolledJoints(Vector &joints)
 
 
 /************************************************************************/
-void CartesianSolver::getFeedback(Vector &_fb)
+void CartesianSolver::getFeedback()
 {
     Vector fbTmp(maxPartJoints);
     int chainCnt=0;
-    int _fbCnt=0;
 
     for (int i=0; i<prt->num; i++)
         if (enc[i]->getEncoders(fbTmp.data()))
@@ -409,20 +408,19 @@ void CartesianSolver::getFeedback(Vector &_fb)
                 if ((*prt->chn)[chainCnt].isBlocked())
                     prt->chn->setBlockingValue(chainCnt,tmp);
                 else
-                    _fb[_fbCnt++]=tmp;
+                    prt->chn->setAng(chainCnt,tmp);
 
                 chainCnt++;
             }
-        else for (int j=0; j<jnt[i]; j++)
-            if (!(*prt->chn)[chainCnt++].isBlocked())
-                _fbCnt++;
+        else
+            chainCnt+=jnt[i];
 }
 
 
 /************************************************************************/
 void CartesianSolver::initPos()
 {
-    getFeedback(fb);
+    getFeedback();    
     latchUncontrolledJoints(unctrlJointsOld);
 
     inPort->reset_xd(prt->chn->EndEffPose());
@@ -1009,7 +1007,6 @@ bool CartesianSolver::open(Searchable &options)
     countUncontrolledJoints();
 
     // get starting position
-    fb.resize(prt->chn->getDOF());
     initPos();
 
     configured=true;
@@ -1047,8 +1044,7 @@ bool CartesianSolver::changeDOF(const Vector &_dof)
         countUncontrolledJoints();
 
         // get starting position
-        fb.resize(prt->chn->getDOF());
-        getFeedback(fb);
+        getFeedback();
         latchUncontrolledJoints(unctrlJointsOld);
 
         return true;
@@ -1175,7 +1171,7 @@ void CartesianSolver::run()
     postDOFHandling();
 
     // get current configuration
-    getFeedback(fb);
+    getFeedback();
 
     // acquire uncontrolled joints configuration
     if (!fullDOF)
@@ -1196,7 +1192,7 @@ void CartesianSolver::run()
                  << endl;
     }
 
-    // run the solver if any input is received or dof is changed
+    // run the solver if any input is received or dof is changed in continuous mode
     if (inPort->isNewDataEvent() || dofChanged && inPort->get_contMode())
     {    
         // update optimizer's options

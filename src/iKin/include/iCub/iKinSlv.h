@@ -251,7 +251,7 @@ protected:
 
     yarp::sig::Vector unctrlJointsOld;
     yarp::sig::Vector dof;
-    yarp::sig::Vector fb;
+    //yarp::sig::Vector fb;
 
     yarp::os::Bottle solutionBottle;
 
@@ -269,7 +269,7 @@ protected:
     bool   setLimits(int axis, double min, double max);
     void   countUncontrolledJoints();
     void   latchUncontrolledJoints(yarp::sig::Vector &joints);
-    void   getFeedback(yarp::sig::Vector &_fb);
+    void   getFeedback();
     void   initPos();
     void   lock();
     void   unlock();    
