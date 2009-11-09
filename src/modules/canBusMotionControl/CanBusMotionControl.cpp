@@ -426,7 +426,7 @@ bool AnalogSensor::decode16(const unsigned char *msg, int id, short *data)
             {} //skip these, they are not for us
             break;
         default:
-            fprintf(stderr, "%s [%d] Warning, got unexpected class 0x3 msg(s)\n");
+            fprintf(stderr, "Warning, got unexpected class 0x3 msg(s)\n");
             return false;
             break;
         }
@@ -460,7 +460,7 @@ bool AnalogSensor::decode8(const unsigned char *msg, int id, short *data)
             {} //skip these, they are not for us
             break;
         default:
-            fprintf(stderr, "%s [%d] Warning, got unexpected class 0x3 msg(s)\n");
+            fprintf(stderr, "Warning, got unexpected class 0x3 msg(s): groupId 0x%x\n", groupId);
             return false;
             break;
         }
@@ -469,13 +469,15 @@ bool AnalogSensor::decode8(const unsigned char *msg, int id, short *data)
 }
 
 
-void AnalogSensor::handleAnalog(void *canbus)
+bool AnalogSensor::handleAnalog(void *canbus)
 {
     CanBusResources& r = RES (canbus);
 
     double before=Time::now();
     unsigned int i=0;
     const int _networkN=r._networkN;
+
+    bool ret=true; //return true by default
 
     mutex.wait();
 
@@ -497,18 +499,19 @@ void AnalogSensor::handleAnalog(void *canbus)
                 switch (dataFormat)
                 {
                     case ANALOG_FORMAT_8:
-                        decode8(buff, id, data->getBuffer());
+                        ret=decode8(buff, msgid, data->getBuffer());
                         break;
                     case ANALOG_FORMAT_16:
-                        decode16(buff, id, data->getBuffer());
+                        ret=decode16(buff, msgid, data->getBuffer());
                         break;
-                    default:{}
-                        //error unrecognized type
+                    default:
+                        ret=false;
                 }
             }
     }
 
     mutex.post();
+    return ret;
 }
 
 
@@ -1234,10 +1237,10 @@ bool CanBusMotionControl::open (Searchable &config)
         disableAmp(i);
     }
 
-    fprintf(stderr, "-->Checking ig Analog\n");
     Bottle analogConfig=config.findGroup("ANALOG");
     if (analogConfig.size()>0)
     {
+        fprintf(stderr, "--> Initializing analog device\n");
         char analogId=analogConfig.find("CanAddress").asInt();
         char analogFormat=analogConfig.find("Format").asInt();
         int analogChannels=analogConfig.find("Channels").asInt();
@@ -1276,15 +1279,16 @@ bool CanBusMotionControl::open (Searchable &config)
             }
             res._writeBuffer[0].setLen(k);
             res._writeMessages++;
-  
-#if 0
+
+#if 0  
             //debug
             fprintf(stderr, "---> Len:%d %x %x %x\n", 
                 res._writeBuffer[0].getLen(),
                 res._writeBuffer[0].getId(),
                 res._writeBuffer[0].getData()[0],
                 res._writeBuffer[0].getData()[1]);
-#endif                 
+#endif
+
             res.writePacket();
         }
     }
@@ -1795,7 +1799,10 @@ void CanBusMotionControl:: run()
     // (class 1, 8 bits of the ID used to define the message type and source address).
 
     handleBroadcasts();
-    analogSensor.handleAnalog(system_resources);
+    if (!analogSensor.handleAnalog(system_resources))
+        {
+            fprintf(stderr, "%s [%d] analog sensor received unexpected class 0x03 messages\n", canDevName.c_str(), r._networkN);
+        }
 
     //
     // handle class 0 messages - polling messages.

@@ -171,7 +171,7 @@ private:
 public:
     AnalogSensor();
     ~AnalogSensor();
-    void handleAnalog(void *);
+    bool handleAnalog(void *);
 
     short getId()
     { return boardId;}
