@@ -590,8 +590,7 @@ bool RobotInterfaceRemap::initialize20(const std::string &inifile)
         //copy parameters verbatim from relative section
         tmpProp.fromString(robotOptions.findGroup("INERTIAL").toString());
         fprintf(stderr, "RobotInterface:: inertial sensor is in the conf file\n");
-        if (!instantiateInertial(PATH, robotOptions))
-        //if (!instantiateInertial(robotOptions))
+        if (!instantiateInertial(PATH, tmpProp))
             fprintf(stderr, "RobotInterface::warning troubles instantiating inertial sensor\n");
     }
     else
@@ -781,6 +780,7 @@ bool RobotInterfaceRemap::instantiateInertial(Property &options)
 
 bool RobotInterfaceRemap::instantiateInertial(const std::string &path, Property &options)
 {
+    //    std::cout<<"Path: "<<path<<" Property list: "<<options.toString().c_str();
     std::string file=options.find("file").asString().c_str();
     std::string device=options.find("device").asString().c_str();
     std::string subdevice=options.find("subdevice").asString().c_str();

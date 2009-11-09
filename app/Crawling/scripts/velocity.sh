@@ -22,7 +22,7 @@ case "$1" in
 		sleep 1
 		$MYSHELL "velocityControl --part torso"&
         sleep 1
-		$MYSHELL "velocityControl --part head"&
+		$MYSHELL "velocityControl --part head --period 40"&
 		sleep 1
 		;;
 
