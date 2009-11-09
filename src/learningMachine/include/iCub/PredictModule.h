@@ -18,7 +18,6 @@ using namespace yarp::sig;
 namespace iCub {
 namespace learningmachine {
 
-
 /**
  * Generic abstract class for machine based processors.
  *
@@ -33,7 +32,7 @@ protected:
     /**
      * A pointer to a concrete wrapper around a learning machine.
      */
-    MachinePortable* machinePortable;
+    MachinePortable& machinePortable;
 
 public:
     /**
@@ -41,23 +40,14 @@ public:
      *
      * @param mp a pointer to a machine portable.
      */
-    IMachineProcessor(MachinePortable* mp = (MachinePortable*) 0) : machinePortable(mp) { }
-
-    /**
-     * Mutator for the machine portable.
-     *
-     * @param mp a pointer to a machine portable.
-     */
-    virtual void setMachinePortable(MachinePortable* mp) {
-        this->machinePortable = mp;
-    }
+    IMachineProcessor(MachinePortable& mp) : machinePortable(mp) { }
 
     /**
      * Retrieve the machine portable machine wrapper.
      *
-     * @return a pointer to the machine portable
+     * @return a reference to the machine portable
      */
-    virtual MachinePortable* getMachinePortable() {
+    virtual MachinePortable& getMachinePortable() {
         return this->machinePortable;
     }
 
@@ -68,7 +58,7 @@ public:
      * @return a pointer to the actual machine
      */
     virtual IMachineLearner& getMachine() {
-        return this->getMachinePortable()->getWrapped();
+        return this->getMachinePortable().getWrapped();
     }
 };
 
@@ -85,6 +75,13 @@ public:
  */
 class PredictProcessor : public IMachineProcessor, public PortReader {
 public:
+    /**
+     * Constructor.
+     *
+     * @param mp a reference to a machine portable.
+     */
+    PredictProcessor(MachinePortable& mp) : IMachineProcessor(mp) { }
+
     /*
      * Inherited from PortReader.
      */
@@ -127,6 +124,16 @@ protected:
      */
     Port model_in;
 
+    /**
+     * Copy constructor (unimplemented on purpose);
+     */
+    PredictModule(const PredictModule& other);
+
+    /**
+     * Assignment operator (unimplemented on purpose);
+     */
+    PredictModule& operator=(const PredictModule& other);
+
     /*
      * Inherited from IMachineLearnerModule.
      */
@@ -148,7 +155,9 @@ public:
      *
      * @param pp the default prefix used for the ports.
      */
-    PredictModule(std::string pp = "/lm/predict") : IMachineLearnerModule(pp) { }
+    PredictModule(std::string pp = "/lm/predict")
+      : IMachineLearnerModule(pp), machinePortable((IMachineLearner*) 0),
+        predictProcessor(machinePortable) { }
 
     /**
      * Destructor.

@@ -26,7 +26,7 @@ namespace iCub {
 namespace learningmachine {
 
 /**
- * A templated portable class intended to wrap abstract base classes. This 
+ * A templated portable class intended to wrap abstract base classes. This
  * template depends on an associated FactoryT for the specified type.
  *
  * \see iCub::learningmachine::MachinePortable
@@ -69,7 +69,7 @@ public:
     virtual ~PortableT() {
         delete(this->wrapped);
     }
-    
+
     /**
      * Writes a wrapped object to a connection.
      *
@@ -89,7 +89,7 @@ public:
         nameBottle.addString(this->wrapped->getName().c_str());
         nameBottle.write(connection);
         this->getWrapped().write(connection);
-    
+
         // for text readers
         connection.convertTextMode();
         return true;
@@ -105,7 +105,7 @@ public:
 	    if(!connection.isValid()) {
         	return false;
 	    }
-	
+
 	    connection.convertTextMode();
 	    // check headers for the pair (name + actual object serialization)
 	    int header = connection.expectInt();
@@ -113,7 +113,7 @@ public:
 	    if(header != BOTTLE_TAG_LIST || len != 2) {
 	        return false;
 	    }
-	
+
 	    // read machine identifier and use it to create object
 	    Bottle nameBottle;
 	    nameBottle.read(connection);
@@ -122,7 +122,7 @@ public:
 	    if(this->wrapped == (T *) 0) {
 	        return false;
 	    }
-	
+
 	    // call read method to construct specific object
 	    bool ok = this->getWrapped().read(connection);
 	    return ok;
@@ -146,9 +146,9 @@ public:
 
 	    stream.close();
 
-	    return true;    
+	    return true;
     }
-    
+
     /**
      * Reads a wrapped object from a file.
      *
@@ -186,6 +186,7 @@ public:
      * The accessor for the wrapped object.
      *
      * @return a reference to the wrapped object
+     * @throw runtime error if no wrapped object exists
      */
     T& getWrapped() {
         if(!this->hasWrapped()) {

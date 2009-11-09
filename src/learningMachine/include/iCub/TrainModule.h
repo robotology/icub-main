@@ -19,7 +19,7 @@ namespace learningmachine {
 
 
 /**
- * Port processor helper class for incoming training samples. 
+ * Port processor helper class for incoming training samples.
  *
  * \see iCub::learningmachine::TrainModule
  * \see iCub::learningmachine::IMachineProcessor
@@ -33,10 +33,14 @@ private:
      * Boolean switch to disable and enable the sample stream to the machine.
      */
     bool enabled;
-    
+
 public:
-    TrainProcessor() : enabled(true) {
-    }
+    /**
+     * Constructor.
+     *
+     * @param mp a reference to a machine portable.
+     */
+    TrainProcessor(MachinePortable& mp) : IMachineProcessor(mp), enabled(true) { }
 
     /**
      * Enables or disables processing of training samples.
@@ -46,7 +50,7 @@ public:
     virtual void setEnabled(bool val) {
         this->enabled = val;
     }
-  
+
     /*
      * Inherited from TypedReaderCallback.
      */
@@ -87,6 +91,16 @@ private:
      */
     TrainProcessor trainProcessor;
 
+    /**
+     * Copy constructor (unimplemented on purpose);
+     */
+    TrainModule(const TrainModule& other);
+
+    /**
+     * Assignment operator (unimplemented on purpose);
+     */
+    TrainModule& operator=(const TrainModule& other);
+
     /*
      * Inherited from IMachineLearnerModule.
      */
@@ -109,8 +123,8 @@ public:
      * @param pp the default prefix used for the ports.
      * @param support an instance of the Support class.
      */
-    TrainModule(std::string pp = "/lm/train") : PredictModule(pp) {
-    }
+    TrainModule(std::string pp = "/lm/train")
+      : PredictModule(pp), trainProcessor(machinePortable) { }
 
     /**
      * Destructor.

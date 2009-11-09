@@ -29,51 +29,41 @@ namespace learningmachine {
 class ITransformProcessor {
 protected:
     /**
-     * A pointer to a portable transformer (not owned by ITransformProcessor).
+     * A reference to a portable transformer.
      */
-    TransformerPortable* transformerPortable;
+    TransformerPortable& transformerPortable;
 
 public:
     /**
      * Constructor.
      *
-     * @param mp a pointer to a transformer.
+     * @param tp a reference to a transformer.
      */
-    ITransformProcessor(TransformerPortable* tp = (TransformerPortable*) 0) : transformerPortable(tp) {
-    }
-    
-    /**
-     * Mutator for the transformer portable.
-     *
-     * @param tp a pointer to a transformer portable.
-     */
-    virtual void setTransformerPortable(TransformerPortable* tp) {
-        this->transformerPortable = tp;
-    }
-    
+    ITransformProcessor(TransformerPortable& tp) : transformerPortable(tp) { }
+
     /**
      * Retrieve the transformer portable wrapper.
      *
-     * @return a pointer to the transformer portable
+     * @return a reference to the transformer portable
      */
-    virtual TransformerPortable* getTransformerPortable() {
+    virtual TransformerPortable& getTransformerPortable() {
         return this->transformerPortable;
     }
 
     /**
-     * Retrieve the transformer.
+     * Retrieve the wrapped transformer.
      *
-     * @return a pointer to the transformer.
+     * @return a reference to the wrapped transformer.
      */
-    virtual ITransformer* getTransformer() {
-        return this->getTransformerPortable()->getWrapped();
+    virtual ITransformer& getTransformer() {
+        return this->getTransformerPortable().getWrapped();
     }
 };
 
 /**
- * Reply processor helper class for predictions. This processor receives 
- * requests for predictions, transforms the samples and relays the request to 
- * the associated port. This architecture allows multiple transformers to be 
+ * Reply processor helper class for predictions. This processor receives
+ * requests for predictions, transforms the samples and relays the request to
+ * the associated port. This architecture allows multiple transformers to be
  * daisy chained, as long as the chain is terminated by a PredictModule.
  *
  * \see iCub::learningmachine::PredictModule
@@ -85,39 +75,38 @@ public:
 class TransformPredictProcessor : public ITransformProcessor, public PortReader {
 protected:
     /**
-     * The relay port (not owned by TransformPredictProcessor).
+     * The relay port.
      */
-    Port* predict_relay_inout;
-    
-public:    
+    Port& predictRelay_inout;
+
+public:
+    /**
+     * Constructor.
+     *
+     * @param tp a reference to a transformer.
+     */
+    TransformPredictProcessor(TransformerPortable& tp, Port& p)
+      : ITransformProcessor(tp), predictRelay_inout(p) { }
+
     /*
      * Inherited from PortReader.
      */
     virtual bool read(ConnectionReader& connection);
 
     /**
-     * Mutator for the prediction output port.
-     *
-     * @param t a pointer to a buffered port.
-     */
-    virtual void setOutputPort(Port* op) {
-        this->predict_relay_inout = op;
-    }
-    
-    /**
      * Accessor for the prediction output port.
      *
-     * @return a pointer to the output port.
+     * @return a reference to the output port.
      */
-    virtual Port* getOutputPort() {
-        return this->predict_relay_inout;
+    virtual Port& getOutputPort() {
+        return this->predictRelay_inout;
     }
 
 };
 
 
 /**
- * Port processor helper class for incoming training samples. 
+ * Port processor helper class for incoming training samples.
  *
  * \see iCub::learningmachine::TrainModule
  * \see iCub::learningmachine::IMachineProcessor
@@ -125,16 +114,23 @@ public:
  * \author Arjan Gijsberts
  *
  */
-class TransformTrainProcessor : public ITransformProcessor, public TypedReaderCallback< PortablePair<Vector,Vector> > {
+class TransformTrainProcessor
+  : public ITransformProcessor, public TypedReaderCallback< PortablePair<Vector,Vector> > {
 private:
     /**
-     * The relay port (not owned by TransformTrainProcessor).
+     * The relay port.
      */
-    BufferedPort<PortablePair<Vector,Vector> >* train_out;
+    BufferedPort<PortablePair<Vector,Vector> >& train_out;
 
 public:
-    TransformTrainProcessor() {
-    }
+    /**
+     * Constructor.
+     *
+     * @param tp a reference to a transformer.
+     */
+    TransformTrainProcessor(TransformerPortable& tp,
+                            BufferedPort<PortablePair<Vector,Vector> >& p)
+      : ITransformProcessor(tp), train_out(p) { }
 
     /*
      * Inherited from TypedReaderCallback.
@@ -142,20 +138,11 @@ public:
     virtual void onRead(PortablePair<Vector,Vector>& input);
 
     /**
-     * Mutator for the training output port.
-     *
-     * @param t a pointer to a buffered port.
-     */
-    virtual void setOutputPort(BufferedPort<PortablePair<Vector,Vector> >* op) {
-        this->train_out = op;
-    }
-    
-    /**
      * Retrieve the training output port.
      *
-     * @return a pointer to the output port.
+     * @return a reference to the output port.
      */
-    virtual BufferedPort<PortablePair<Vector,Vector> >* getOutputPort() {
+    virtual BufferedPort<PortablePair<Vector,Vector> >& getOutputPort() {
         return this->train_out;
     }
 
@@ -165,8 +152,8 @@ public:
 
 
 /**
- * A module for transforming vectors. This most common use of this module will 
- * be data preprocessing (e.g. standardization), although it also supports much 
+ * A module for transforming vectors. This most common use of this module will
+ * be data preprocessing (e.g. standardization), although it also supports much
  * more advanced transformations of the data.
  *
  * \author Arjan Gijsberts
@@ -176,9 +163,9 @@ public:
 class TransformModule : public IMachineLearnerModule {
 private:
     /**
-     * A pointer to a concrete wrapper around a transformer.
+     * A portable wrapper around a transformer.
      */
-    TransformerPortable* transformerPortable;
+    TransformerPortable transformerPortable;
 
     /**
      * Buffered port for the incoming training samples (input and output).
@@ -191,11 +178,6 @@ private:
     BufferedPort<PortablePair<Vector,Vector> > train_out;
 
     /**
-     * The processor handling incoming training samples.
-     */
-    TransformTrainProcessor trainProcessor;
-
-    /**
      * Buffered port for the incoming prediction samples.
      */
     BufferedPort<Vector> predict_inout;
@@ -203,7 +185,12 @@ private:
     /**
      * Buffered port for the outgoing prediction samples.
      */
-    Port predict_relay_inout;
+    Port predictRelay_inout;
+
+    /**
+     * The processor handling incoming training samples.
+     */
+    TransformTrainProcessor trainProcessor;
 
     /**
      * The processor handling prediction requests.
@@ -231,16 +218,16 @@ public:
      *
      * @param pp the default prefix used for the ports.
      */
-    TransformModule(std::string pp = "/lm/transform") : IMachineLearnerModule(pp) {
-        this->transformerPortable = new TransformerPortable();
+    TransformModule(std::string pp = "/lm/transform")
+      : IMachineLearnerModule(pp), transformerPortable((ITransformer*) 0),
+        trainProcessor(transformerPortable, train_out),
+        predictProcessor(transformerPortable, predictRelay_inout) {
     }
-    
+
     /**
      * Destructor.
      */
-    virtual ~TransformModule() {
-        delete(this->transformerPortable);
-    }
+    virtual ~TransformModule() { }
 
     /*
      * Inherited from IMachineLearnerModule.
@@ -260,19 +247,19 @@ public:
     /**
      * Retrieve the transformer that is used in this TransformModule.
      *
-     * @return a pointer to the transformer
+     * @return a reference to the transformer
      */
-    virtual ITransformer* getTransformer() {
-        return this->getTransformerPortable()->getWrapped();
+    virtual ITransformer& getTransformer() {
+        return this->getTransformerPortable().getWrapped();
     }
 
 
     /**
      * Retrieve the transformer portable.
      *
-     * @return a pointer to the transformer portable
+     * @return a reference to the transformer portable
      */
-    virtual TransformerPortable* getTransformerPortable() {
+    virtual TransformerPortable& getTransformerPortable() {
         return this->transformerPortable;
     }
 

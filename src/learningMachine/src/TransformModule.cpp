@@ -2,8 +2,8 @@
  * Copyright (C) 2007-2009 Arjan Gijsberts @ Italian Institute of Technology
  * CopyPolicy: Released under the terms of the GNU GPL v2.0.
  *
- * Transform module implementation for wrapping an executable around an 
- * ITransformer. 
+ * Transform module implementation for wrapping an executable around an
+ * ITransformer.
  */
 
 #include <stdexcept>
@@ -17,8 +17,9 @@ namespace iCub {
 namespace learningmachine {
 
 bool TransformPredictProcessor::read(ConnectionReader& connection) {
-    assert(this->getTransformer() != (ITransformer*) 0);
-    assert(this->getOutputPort() != (Port*) 0);
+    if(!this->getTransformerPortable().hasWrapped()) {
+        return false;
+    }
 
     Vector input, prediction;
     bool ok = input.read(connection);
@@ -27,8 +28,8 @@ bool TransformPredictProcessor::read(ConnectionReader& connection) {
     }
 
     try {
-        Vector trans_input = this->getTransformer()->transform(input);
-        this->getOutputPort()->write(trans_input, prediction);
+        Vector trans_input = this->getTransformer().transform(input);
+        this->getOutputPort().write(trans_input, prediction);
     } catch(const std::exception& e) {
         std::cerr << "Error: " << e.what() << std::endl;
         return false;
@@ -44,17 +45,17 @@ bool TransformPredictProcessor::read(ConnectionReader& connection) {
 
 
 void TransformTrainProcessor::onRead(PortablePair<Vector,Vector>& input) {
-    assert(this->getTransformer() != (ITransformer*) 0);
-    assert(this->getOutputPort() != (BufferedPort<PortablePair<Vector,Vector> >*) 0);
-    try {
-        PortablePair<Vector,Vector>& output = this->getOutputPort()->prepare();
-        output.head = this->getTransformer()->transform(input.head);
-        output.body = input.body;
-        this->getOutputPort()->writeStrict();
-    } catch(const std::exception& e) {
-        std::cerr << "Error: " << e.what() << std::endl;
+    if(this->getTransformerPortable().hasWrapped()) {
+        try {
+            PortablePair<Vector,Vector>& output = this->getOutputPort().prepare();
+            output.head = this->getTransformer().transform(input.head);
+            output.body = input.body;
+            this->getOutputPort().writeStrict();
+        } catch(const std::exception& e) {
+            std::cerr << "Error: " << e.what() << std::endl;
+        }
     }
-    
+
     return;
 }
 
@@ -87,7 +88,7 @@ void TransformModule::registerAllPorts() {
     this->registerPort(this->predict_inout, this->portPrefix + "/predict:io");
     this->predict_inout.setStrict();
 
-    this->registerPort(this->predict_relay_inout, this->portPrefix + "/predict_relay:io");
+    this->registerPort(this->predictRelay_inout, this->portPrefix + "/predict_relay:io");
     //this->predict_relay_inout.setStrict();
 
     this->registerPort(this->cmd_in, this->portPrefix + "/cmd:i");
@@ -98,7 +99,7 @@ void TransformModule::unregisterAllPorts() {
     this->train_in.close();
     this->train_out.close();
     this->predict_inout.close();
-    this->predict_relay_inout.close();
+    this->predictRelay_inout.close();
 }
 
 bool TransformModule::interruptModule() {
@@ -106,7 +107,7 @@ bool TransformModule::interruptModule() {
     train_in.interrupt();
     train_out.interrupt();
     predict_inout.interrupt();
-    predict_relay_inout.interrupt();
+    predictRelay_inout.interrupt();
     return true;
 }
 
@@ -132,21 +133,17 @@ bool TransformModule::open(Searchable& opt) {
     } else {
         this->exitWithHelp("no transformer type specified");
     }
-    
+
     // construct transformer
-    this->getTransformerPortable()->setWrapped(transformerName);
+    this->getTransformerPortable().setWrapped(transformerName);
 
     // send configuration options to the transformer
-    this->getTransformer()->configure(opt);
+    this->getTransformer().configure(opt);
 
     // add processor for incoming data (training samples)
-    this->trainProcessor.setTransformerPortable(this->getTransformerPortable());
-    this->trainProcessor.setOutputPort(&this->train_out);
     this->train_in.useCallback(trainProcessor);
 
     // add replier for incoming data (prediction requests)
-    this->predictProcessor.setTransformerPortable(this->getTransformerPortable());
-    this->predictProcessor.setOutputPort(&this->predict_relay_inout);
     this->predict_inout.setReplier(this->predictProcessor);
 
     // register ports
@@ -161,7 +158,7 @@ bool TransformModule::open(Searchable& opt) {
 
     // check for predict data port
     if(opt.check("predictport", val)) {
-        Network::connect(this->predict_relay_inout.where().getName().c_str(), val->asString().c_str());
+        Network::connect(this->predictRelay_inout.where().getName().c_str(), val->asString().c_str());
     } else {
         // add message here if necessary
     }
@@ -180,7 +177,7 @@ bool TransformModule::respond(const Bottle& cmd, Bottle& reply) {
 
     try {
         switch(cmd.get(0).asVocab()) {
-            case VOCAB4('h','e','l','p'): // print help information 
+            case VOCAB4('h','e','l','p'): // print help information
                 reply.add(Value::makeVocab("help"));
 
                 reply.addString("Transform module configuration options");
@@ -190,7 +187,7 @@ bool TransformModule::respond(const Bottle& cmd, Bottle& reply) {
                 reply.addString("  load fname            Loads a transformer from a file");
                 reply.addString("  save fname            Saves the current transformer to a file");
                 reply.addString("  set key val           Sets a configuration option for the transformer");
-                reply.addString(this->getTransformer()->getConfigHelp().c_str());
+                reply.addString(this->getTransformer().getConfigHelp().c_str());
                 success = true;
                 break;
 
@@ -198,7 +195,7 @@ bool TransformModule::respond(const Bottle& cmd, Bottle& reply) {
             case VOCAB3('c','l','r'):
             case VOCAB4('r','e','s','e'):
             case VOCAB3('r','s','t'):
-                this->getTransformer()->reset();
+                this->getTransformer().reset();
                 reply.addString("Transformer reset.");
                 success = true;
                 break;
@@ -208,7 +205,7 @@ bool TransformModule::respond(const Bottle& cmd, Bottle& reply) {
                 { // prevent identifier initialization to cross borders of case
                 reply.add(Value::makeVocab("help"));
                 reply.addString("Transformer Information: ");
-                reply.addString(this->getTransformer()->getInfo().c_str());
+                reply.addString(this->getTransformer().getInfo().c_str());
                 success = true;
                 break;
                 }
@@ -218,13 +215,13 @@ bool TransformModule::respond(const Bottle& cmd, Bottle& reply) {
                 Bottle property;
                 /*
                  * This is a simple hack to enable multiple parameters The need for this hack lies
-                 * in the fact that a group can only be found using findGroup if it is a nested 
-                 * list in a Bottle. If the Bottle itself is the list, then the group will _not_ 
+                 * in the fact that a group can only be found using findGroup if it is a nested
+                 * list in a Bottle. If the Bottle itself is the list, then the group will _not_
                  * be found.
                  */
                 property.addList() = cmd.tail();
                 std::string replymsg = "Setting configuration option ";
-                if(this->getTransformer()->configure(property)) {
+                if(this->getTransformer().configure(property)) {
                     replymsg += "succeeded";
                 } else {
                     replymsg += "failed; please check key and value type.";
@@ -241,7 +238,7 @@ bool TransformModule::respond(const Bottle& cmd, Bottle& reply) {
                 if(!cmd.get(1).isString()) {
                     replymsg += "failed";
                 } else {
-                    this->getTransformerPortable()->readFromFile(cmd.get(1).asString().c_str());
+                    this->getTransformerPortable().readFromFile(cmd.get(1).asString().c_str());
                     replymsg += "succeeded";
                 }
                 reply.addString(replymsg.c_str());
@@ -256,7 +253,7 @@ bool TransformModule::respond(const Bottle& cmd, Bottle& reply) {
                 if(!cmd.get(1).isString()) {
                     replymsg += "failed";
                 } else {
-                    this->getTransformerPortable()->writeToFile(cmd.get(1).asString().c_str());
+                    this->getTransformerPortable().writeToFile(cmd.get(1).asString().c_str());
                     replymsg += "succeeded";
                 }
                 reply.addString(replymsg.c_str());

@@ -19,24 +19,23 @@ namespace iCub {
 namespace learningmachine {
 
 void TrainProcessor::onRead(PortablePair<Vector,Vector>& sample) {
-    assert(this->getMachine() != (IMachineLearner *) 0);
-    if(this->enabled) {
+    if(this->getMachinePortable().hasWrapped() && this->enabled) {
         try {
             // Event Code
             if(EventDispatcher::instance().hasListeners()) {
-                Vector prediction = this->getMachine()->predict(sample.head);
+                Vector prediction = this->getMachine().predict(sample.head);
                 TrainEvent te(sample.head, sample.body, prediction);
                 EventDispatcher::instance().raise(te);
             }
             // Event Code
 
-            this->getMachine()->feedSample(sample.head, sample.body);
+            this->getMachine().feedSample(sample.head, sample.body);
 
         } catch(const std::exception& e) {
             std::cerr << "Error: " << e.what() << std::endl;
         }
     }
-    
+
     return;
 }
 
@@ -81,11 +80,11 @@ bool TrainModule::interruptModule() {
 
 bool TrainModule::open(Searchable& opt) {
     /* Implementation note:
-     * Calling open() in the base class (i.e. PredictModule) is cumbersome due 
-     * to different ordering and dynamic binding (e.g. it calls 
+     * Calling open() in the base class (i.e. PredictModule) is cumbersome due
+     * to different ordering and dynamic binding (e.g. it calls
      * registerAllPorts()) and because we do bother with an incoming model port.
      */
-     
+
     // read for the general specifiers:
     Value* val;
     std::string machineName;
@@ -110,17 +109,15 @@ bool TrainModule::open(Searchable& opt) {
     }
 
     // construct new machine
-    this->getMachinePortable()->setWrapped(machineName);
+    this->getMachinePortable().setWrapped(machineName);
 
     // send configuration options to the machine
-    this->getMachine()->configure(opt);
+    this->getMachine().configure(opt);
 
     // add replier for incoming data (prediction requests)
-    this->predictProcessor.setMachinePortable(this->getMachinePortable());
     this->predict_inout.setReplier(this->predictProcessor);
 
     // add processor for incoming data (training samples)
-    this->trainProcessor.setMachinePortable(this->getMachinePortable());
     this->train_in.useCallback(trainProcessor);
 
     // register ports before connecting
@@ -128,7 +125,7 @@ bool TrainModule::open(Searchable& opt) {
 
     // attach to the incoming command port
     this->attach(cmd_in);
-    
+
     return true;
 }
 
@@ -140,7 +137,7 @@ bool TrainModule::respond(const Bottle& cmd, Bottle& reply) {
 
     try {
         switch(cmd.get(0).asVocab()) {
-            case VOCAB4('h','e','l','p'): // print help information 
+            case VOCAB4('h','e','l','p'): // print help information
                 reply.add(Value::makeVocab("help"));
 
                 reply.addString("Training module configuration options");
@@ -155,16 +152,16 @@ bool TrainModule::respond(const Bottle& cmd, Bottle& reply) {
                 reply.addString("  load fname            Loads a machine from a file");
                 reply.addString("  save fname            Saves the current machine to a file");
                 reply.addString("  event [cmd ...]       Sends commands to event dispatcher (see: event help)");
-                reply.addString(this->getMachine()->getConfigHelp().c_str());
+                reply.addString(this->getMachine().getConfigHelp().c_str());
                 success = true;
                 break;
 
             case VOCAB4('t','r','a','i'): // train the machine, implies sending model
-                this->getMachine()->train();
+                this->getMachine().train();
                 reply.addString("Training completed.");
 
             case VOCAB4('m','o','d','e'): // send model
-                this->model_out.write(*this->machinePortable);
+                this->model_out.write(this->machinePortable);
                 reply.addString("The model has been written to the port.");
                 success = true;
                 break;
@@ -173,7 +170,7 @@ bool TrainModule::respond(const Bottle& cmd, Bottle& reply) {
             case VOCAB3('c','l','r'):
             case VOCAB4('r','e','s','e'): // reset
             case VOCAB3('r','s','t'):
-                this->getMachine()->reset();
+                this->getMachine().reset();
                 reply.addString("Machine cleared.");
                 success = true;
                 break;
@@ -197,11 +194,11 @@ bool TrainModule::respond(const Bottle& cmd, Bottle& reply) {
                 { // prevent identifier initialization to cross borders of case
                 reply.add(Value::makeVocab("help"));
                 reply.addString("Machine Information: ");
-                reply.addString(this->getMachine()->getInfo().c_str());
+                reply.addString(this->getMachine().getInfo().c_str());
                 success = true;
                 break;
                 }
-            
+
             case VOCAB4('l','o','a','d'): // load
                 { // prevent identifier initialization to cross borders of case
                 reply.add(Value::makeVocab("help"));
@@ -209,7 +206,7 @@ bool TrainModule::respond(const Bottle& cmd, Bottle& reply) {
                 if(!cmd.get(1).isString()) {
                     replymsg += "failed";
                 } else {
-                    this->getMachinePortable()->readFromFile(cmd.get(1).asString().c_str());
+                    this->getMachinePortable().readFromFile(cmd.get(1).asString().c_str());
                     replymsg += "succeeded";
                 }
                 reply.addString(replymsg.c_str());
@@ -224,7 +221,7 @@ bool TrainModule::respond(const Bottle& cmd, Bottle& reply) {
                 if(!cmd.get(1).isString()) {
                     replymsg += "failed";
                 } else {
-                    this->getMachinePortable()->writeToFile(cmd.get(1).asString().c_str());
+                    this->getMachinePortable().writeToFile(cmd.get(1).asString().c_str());
                     replymsg += "succeeded";
                 }
                 reply.addString(replymsg.c_str());
@@ -237,13 +234,13 @@ bool TrainModule::respond(const Bottle& cmd, Bottle& reply) {
                 Bottle property;
                 /*
                  * This is a simple hack to enable multiple parameters The need for this hack lies
-                 * in the fact that a group can only be found using findGroup if it is a nested 
-                 * list in a Bottle. If the Bottle itself is the list, then the group will _not_ 
+                 * in the fact that a group can only be found using findGroup if it is a nested
+                 * list in a Bottle. If the Bottle itself is the list, then the group will _not_
                  * be found.
                  */
                 property.addList() = cmd.tail();
                 std::string replymsg = "Setting configuration option ";
-                if(this->getMachine()->configure(property)) {
+                if(this->getMachine().configure(property)) {
                     replymsg += "succeeded";
                 } else {
                     replymsg += "failed; please check key and value type.";
