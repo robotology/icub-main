@@ -617,7 +617,7 @@ static gint expose_CB (GtkWidget *widget, GdkEventExpose *event, gpointer data)
 				}
 				else{
 					//ippiCopy_8u_C3R(_outputImage3->getPixelAddress(0,0),320*3,wModule->image_out->getPixelAddress(0,0),320*3,srcsize);
-					cvCopyImage(_outputImage3->getIplImage(),wModule->image_out->getIplImage(),CV_RGB2BGR);
+					cvCopyImage(_outputImage3->getIplImage(),wModule->image_out->getIplImage());
 				}
 				
 				//----------
