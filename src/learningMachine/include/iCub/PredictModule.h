@@ -125,12 +125,12 @@ protected:
     Port model_in;
 
     /**
-     * Copy constructor (unimplemented on purpose);
+     * Copy constructor (unimplemented on purpose).
      */
     PredictModule(const PredictModule& other);
 
     /**
-     * Assignment operator (unimplemented on purpose);
+     * Assignment operator (unimplemented on purpose).
      */
     PredictModule& operator=(const PredictModule& other);
 

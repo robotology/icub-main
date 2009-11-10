@@ -92,12 +92,12 @@ private:
     TrainProcessor trainProcessor;
 
     /**
-     * Copy constructor (unimplemented on purpose);
+     * Copy constructor (unimplemented on purpose).
      */
     TrainModule(const TrainModule& other);
 
     /**
-     * Assignment operator (unimplemented on purpose);
+     * Assignment operator (unimplemented on purpose).
      */
     TrainModule& operator=(const TrainModule& other);
 

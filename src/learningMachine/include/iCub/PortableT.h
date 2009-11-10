@@ -44,16 +44,6 @@ private:
      */
     T* wrapped;
 
-    /**
-     * Copy constructor (unimplemented on purpose);
-     */
-    PortableT(const PortableT<T>& other);
-
-    /**
-     * Assignment operator (unimplemented on purpose);
-     */
-    PortableT<T>& operator=(const PortableT<T>& other);
-
 public:
     /**
      * Constructor.
@@ -67,7 +57,7 @@ public:
      *
      * @param name name specifier of the wrapped object
      */
-    PortableT(std::string name) {
+    PortableT(std::string name) : wrapped((T*) 0) {
         this->setWrapped(name);
     }
 
@@ -76,6 +66,18 @@ public:
      */
     virtual ~PortableT() {
         delete(this->wrapped);
+    }
+
+    /**
+     * Copy constructor.
+     */
+    PortableT(const PortableT<T>& other) : wrapped(other.wrapped->clone()) { }
+
+    /**
+     * Assignment operator.
+     */
+    PortableT<T>& operator=(const PortableT<T>& other) {
+        this->setWrapped(other.wrapped->clone(), true);
     }
 
     /**
@@ -228,7 +230,7 @@ public:
             delete this->wrapped;
             this->wrapped = (T*) 0;
         }
-        this->wrapped = FactoryT<std::string, T>::instance().clone(name);
+        this->wrapped = FactoryT<std::string, T>::instance().create(name);
     }
 
 

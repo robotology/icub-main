@@ -41,21 +41,21 @@ protected:
      * The name of this type of scaler.
      */
     std::string name;
-    
+
     /**
      * Boolean indicating whether the scaler has to update each sample.
      */
     bool updateEnabled;
 
     /**
-     * Writes a serialization of the scaler into a bottle. 
+     * Writes a serialization of the scaler into a bottle.
      *
-     * @param bot the bottle 
+     * @param bot the bottle
      */
     virtual void writeBottle(Bottle& bot);
 
     /**
-     * Unserializes a scaler from a bottle. 
+     * Unserializes a scaler from a bottle.
      *
      * @param bot the bottle
      */
@@ -68,9 +68,8 @@ public:
      * @param s the scale for the linear transformation
      * @param o the offset for the linear transformation
      */
-    IScaler(double s = 1., double o = 0.) 
-      : scale(s), offset(o), updateEnabled(true), name("") {
-    }
+    IScaler(double s = 1., double o = 0.)
+      : scale(s), offset(o), updateEnabled(true), name("") { }
 
     /**
      * Destructor.
@@ -86,7 +85,7 @@ public:
     virtual void update(double val) { }
 
     /**
-     * Transforms a single sample value according to the state of the scaler. 
+     * Transforms a single sample value according to the state of the scaler.
      * This state is usually made up out of a desired offset and scale.
      *
      * @param val the sample
@@ -95,19 +94,18 @@ public:
     virtual double transform(double val);
 
     /**
-     * Untransforms a single sample value according to the state of the 
+     * Untransforms a single sample value according to the state of the
      * scaler. This operation is the inverse of the transform operation.
      *
      * @param val the sample
      * @return the resulting, transformed sample
      */
     virtual double unTransform(double val) {
-        // check for division by zero
         return (val * this->scale) + this->offset;
     }
 
     /**
-     * Asks the learning machine to return a string containing statistics on 
+     * Asks the learning machine to return a string containing statistics on
      * its operation so far.
      *
      * @return the statistics of the machine
@@ -127,7 +125,7 @@ public:
      * @param name the new name
      */
     void setName(std::string name) { this->name = name; }
-    
+
     /**
      * Mutator for the update state.
      *
@@ -141,7 +139,7 @@ public:
      * @return the current update state
      */
     virtual bool getUpdateEnabled() { return this->updateEnabled; }
-    
+
     /**
      * Asks the scaler to return a new object of its type.
      *

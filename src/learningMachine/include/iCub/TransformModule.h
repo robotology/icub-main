@@ -197,6 +197,16 @@ private:
      */
     TransformPredictProcessor predictProcessor;
 
+    /**
+     * Copy constructor (unimplemented on purpose).
+     */
+    TransformModule(const TransformModule& other);
+
+    /**
+     * Assignment operator (unimplemented on purpose).
+     */
+    TransformModule& operator=(const TransformModule& other);
+
     /*
      * Inherited from IMachineLearnerModule.
      */
@@ -252,7 +262,6 @@ public:
     virtual ITransformer& getTransformer() {
         return this->getTransformerPortable().getWrapped();
     }
-
 
     /**
      * Retrieve the transformer portable.

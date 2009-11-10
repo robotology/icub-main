@@ -29,10 +29,6 @@ RandomFeature::RandomFeature(int dom, int cod, double gamma) {
     this->setGamma(gamma);
 }
 
-RandomFeature::~RandomFeature() {
-}
-
-
 Vector RandomFeature::transform(const Vector& input) {
     Vector output = this->IFixedSizeTransformer::transform(input);
 
@@ -69,7 +65,7 @@ void RandomFeature::reset() {
             this->W(r, c) = gammasq * prng_normal.get();
         }
     }
-    
+
     // python: self.bias = 2 * numpy.pi * numpy.random.rand(self.nproj)
     this->b.resize(this->getCoDomainSize());
     for(int i = 0; i < this->b.size(); i++) {
@@ -82,7 +78,7 @@ void RandomFeature::writeBottle(Bottle& bot) {
 
     // write bias b
     for(int i = 0; i < this->b.size(); i++) {
-        bot.addDouble(this->b(i));    
+        bot.addDouble(this->b(i));
     }
     bot.addInt(this->b.size());
 
@@ -94,7 +90,7 @@ void RandomFeature::writeBottle(Bottle& bot) {
     }
     bot.addInt(this->W.rows());
     bot.addInt(this->W.cols());
-    
+
     // make sure to call the superclass's method
     this->IFixedSizeTransformer::writeBottle(bot);
 }
@@ -102,7 +98,7 @@ void RandomFeature::writeBottle(Bottle& bot) {
 void RandomFeature::readBottle(Bottle& bot) {
     // make sure to call the superclass's method
     this->IFixedSizeTransformer::readBottle(bot);
-    
+
     // read matrix W
     this->W.resize(bot.pop().asInt(), bot.pop().asInt());
     for(int r = this->W.rows() - 1; r >= 0; r--) {

@@ -26,7 +26,7 @@ namespace learningmachine {
 /**
  *
  * A class that provides a preprocessing interface, which can be used
- * to preprocess the data samples that have been received by the 
+ * to preprocess the data samples that have been received by the
  * MachineLearner.
  *
  * \see iCub::learningmachine::Standardizer
@@ -42,14 +42,14 @@ protected:
      * The name of this type of transformer.
      */
     std::string name;
-    
+
     /**
      * Number of samples transformed since initialization.
      */
     int sampleCount;
-    
+
     /**
-     * Writes a serialization of the transformer into a bottle. This method is 
+     * Writes a serialization of the transformer into a bottle. This method is
      * internally referenced by the write method. Typically, subclasses should
      * override this method instead of overriding the write method directly.
      *
@@ -58,8 +58,8 @@ protected:
     virtual void writeBottle(Bottle& bot) = 0;
 
     /**
-     * Unserializes a transformer from a bottle. This method is internally 
-     * referenced by the read method. Typically, subclasses should override this 
+     * Unserializes a transformer from a bottle. This method is internally
+     * referenced by the read method. Typically, subclasses should override this
      * method instead of overriding the read method directly.
      *
      * @param bot the bottle
@@ -75,7 +75,7 @@ public:
     /**
      * Destructor.
      */
-    virtual ~ITransformer() {}
+    virtual ~ITransformer() { }
 
     /**
      * Transforms an input vector.
@@ -89,7 +89,7 @@ public:
     }
 
     /**
-     * Asks the transformer to return a string containing statistics on its 
+     * Asks the transformer to return a string containing statistics on its
      * operation so far.
      *
      * @return the statistics of the transformer
@@ -127,14 +127,14 @@ public:
     }
 
     /**
-     * Asks the transformer to return a string containing the list of 
+     * Asks the transformer to return a string containing the list of
      * configuration options that it supports.
      *
      * @return an informative description of the configuration options
      */
     virtual std::string getConfigHelp() {
-        return std::string("Transformer configuration options for '") + 
-               this->getName() + "'\n"; 
+        return std::string("Transformer configuration options for '") +
+               this->getName() + "'\n";
     }
 
     /**
@@ -186,7 +186,7 @@ public:
      * @return true on succes
      */
     virtual bool fromString(const std::string& str) {
-        Bottle model(str.c_str()); 
+        Bottle model(str.c_str());
         this->readBottle(model);
         return true;
     }

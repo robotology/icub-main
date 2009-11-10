@@ -24,6 +24,16 @@ ScaleTransformer::~ScaleTransformer() {
     this->deleteAll();
 }
 
+ScaleTransformer::ScaleTransformer(const ScaleTransformer& other)
+{
+
+}
+
+ScaleTransformer& ScaleTransformer::operator=(const ScaleTransformer& other) {
+
+}
+
+
 void ScaleTransformer::deleteAll() {
     this->deleteAll(this->scalers.size());
 }
@@ -44,7 +54,7 @@ void ScaleTransformer::setAt(int index, std::string type) {
         // the magic keyword null specifies that no scaler object will be created
         // this is useful to disable the scaler with minimal overhead
         if(type != "null") {
-            this->scalers[index] = FactoryT<std::string, IScaler>::instance().clone(type);
+            this->scalers[index] = FactoryT<std::string, IScaler>::instance().create(type);
         }
     } else {
         throw std::runtime_error("Index for scaler out of bounds!");
@@ -104,7 +114,7 @@ void ScaleTransformer::reset() {
 }
 
 std::string ScaleTransformer::getInfo() {
-    
+
     std::ostringstream buffer;
     buffer << this->IFixedSizeTransformer::getInfo();
     buffer << "Scalers:" << std::endl;
@@ -139,7 +149,7 @@ void ScaleTransformer::writeBottle(Bottle& bot) {
             bot.addString(this->getAt(i)->getName().c_str());
         }
     }
-    
+
     // make sure to call the superclass's method
     this->IFixedSizeTransformer::writeBottle(bot);
 }
@@ -185,7 +195,7 @@ bool ScaleTransformer::configure(Searchable &config) {
             success = true;
         }
     }
-    
+
     // format: set config idx|all key val
     if(!config.findGroup("config").isNull()) {
         Bottle property;

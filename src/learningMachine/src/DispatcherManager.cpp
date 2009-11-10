@@ -46,7 +46,7 @@ bool DispatcherManager::respond(const Bottle& cmd, Bottle& reply) {
                 { // prevent identifier initialization to cross borders of case
                 Bottle list = cmd.tail();
                 for(int i = 0; i < list.size(); i++) {
-                    IEventListener* listener = this->factory->clone(list.get(i).asString().c_str());
+                    IEventListener* listener = this->factory->create(list.get(i).asString().c_str());
                     listener->start();
                     this->dispatcher->addListener(listener);
                 }

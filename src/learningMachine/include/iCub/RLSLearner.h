@@ -35,7 +35,6 @@
 
 using namespace yarp::sig;
 using namespace yarp::math;
-//using namespace iCub::contrib::liblssvm;
 
 namespace iCub {
 namespace learningmachine {
@@ -56,14 +55,17 @@ private:
      * Inverse of matrix A.
      */
     Matrix Ai;
+
     /**
      * Vector b.
      */
     Vector b;
+
     /**
      * Weight vector for the linear predictor.
      */
     Vector w;
+
     /**
      * Regularization constant.
      */
@@ -95,14 +97,14 @@ public:
         diagonal = (1. / this->lambda);
         this->Ai.diagonal(diagonal);
     }
-  
+
     double predict(const Vector& x) {
         return dot(x, this->w);
     }
-  
+
     void update(const Vector& x, double y) {
         this->b = this->b + x * y;
-        
+
         Vector Aix = this->Ai * x;
         Vector xAi = x * this->Ai;
         double s = 1.0 / (1.0 + dot(xAi, x));
@@ -117,11 +119,11 @@ public:
 
         this->w = this->Ai * this->b;
     }
-    
+
     void setLambda(double l) {
         this->lambda = l;
     }
-      
+
     double getLambda() {
         return this->lambda;
     }
@@ -143,7 +145,7 @@ public:
      * @return true on succes
      */
     virtual bool fromString(const std::string& str) {
-        Bottle model(str.c_str()); 
+        Bottle model(str.c_str());
         this->readBottle(model);
         return true;
     }

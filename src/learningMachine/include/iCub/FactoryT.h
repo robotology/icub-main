@@ -20,8 +20,8 @@ namespace learningmachine {
 
 /**
  *
- * A template class for the factory pattern. The factory should be used to 
- * create concrete instances of abstract, registered classes. 
+ * A template class for the factory pattern. The factory should be used to
+ * create concrete instances of abstract, registered classes.
  *
  * \author Arjan Gijsberts
  *
@@ -38,15 +38,15 @@ private:
      * Constructor.
      */
     FactoryT() {}
-    
+
     /**
      * Copy Constructor (unimplemented on purpose).
      */
     FactoryT(const FactoryT<K, T>& other);
-    
+
     /**
-     * The default destructor of the Factory template. This destructor takes 
-     * responsibility for deleting the prototype objects that have been 
+     * The default destructor of the Factory template. This destructor takes
+     * responsibility for deleting the prototype objects that have been
      * registered during its lifetime.
      */
     virtual ~FactoryT() {
@@ -64,8 +64,8 @@ public:
     /**
      * An instance retrieval method that follows the Singleton pattern.
      *
-     * Note that this implementation should not be considered thread safe and 
-     * that problems may arise. However, due to the nature of the expected use 
+     * Note that this implementation should not be considered thread safe and
+     * that problems may arise. However, due to the nature of the expected use
      * this will not be likely to result in problems.
      *
      * See http://www.oaklib.org/docs/oak/singleton.html for more information.
@@ -78,9 +78,9 @@ public:
     }
 
     /**
-     * Registers a prototype object that can be used to create clones. Strictly 
-     * speaking, for this application the object only has to be able to return a 
-     * new object of its own type, regardless of the internal state of that 
+     * Registers a prototype object that can be used to create clones. Strictly
+     * speaking, for this application the object only has to be able to return a
+     * new object of its own type, regardless of the internal state of that
      * object.
      *
      * @param prototype the prototype object
@@ -94,7 +94,7 @@ public:
 
         if(this->map.find(prototype->getName()) != this->map.end()) {
             std::ostringstream buffer;
-            buffer << "Prototype '" << prototype->getName() 
+            buffer << "Prototype '" << prototype->getName()
                    << "' has already been registered; please specify a unique key.";
             throw std::runtime_error(buffer.str());
         }
@@ -109,10 +109,10 @@ public:
      * @param key a key that identifies the type of machine
      * @return A new object of the specified type
      */
-    T* clone(const K& key) {
+    T* create(const K& key) {
         if(this->map.find(key) == this->map.end()) {
             std::ostringstream buffer;
-            buffer << "Could not find prototype '" << key 
+            buffer << "Could not find prototype '" << key
                    << "'; please specify a valid key.";
             throw std::runtime_error(buffer.str());
         }

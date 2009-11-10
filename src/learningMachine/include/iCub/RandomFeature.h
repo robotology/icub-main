@@ -27,7 +27,7 @@ namespace learningmachine {
  * Implementation of Random Feature preprocessing.
  *
  * See:
- * Random Features for Large-Scale Kernel Machines. Ali Rahimi and Ben Recht. 
+ * Random Features for Large-Scale Kernel Machines. Ali Rahimi and Ben Recht.
  *   In Neural Information Processing Systems (NIPS) 2007.
  *
  * \author Arjan Gijsberts
@@ -72,7 +72,7 @@ public:
     /**
      * Destructor.
      */
-    virtual ~RandomFeature();
+    virtual ~RandomFeature() { }
 
     /*
      * Inherited from ITransformer.
@@ -115,7 +115,7 @@ public:
      * Inherited from IConfig.
      */
     virtual bool configure(Searchable &config);
-    
+
     /**
      * Accessor for the gamma parameter.
      *
@@ -124,7 +124,7 @@ public:
     virtual double getGamma() {
         return this->gamma;
     }
-    
+
     /**
      * Mutator for the gamma paramter.
      *
