@@ -62,21 +62,32 @@ private:
 	*/
 	ImageOf<PixelRgb> *yarpReturnImagePointer;
 	/**
-	* destination color image
+	* destination color image of the outPort
 	*/
 	IplImage* dstColor;   //
 	/**
-	* destination color image
+	* destination color image of the invese outPort
 	*/
 	IplImage* dstColor2;
+	CvRect rec;
+	/**
+	* input image (always 320,240)
+	*/
 	ImageOf<PixelRgb> *img; 
+	/**
+	* ------------
+	*/
 	ImageOf<PixelRgb> *image2;
 	/**
-	* OpenCV image necessary during the processing
+	* OpenCV image necessary during the second step processing
 	*/
 	IplImage *cvImage;
 	/**
-	* OpenCV image necessary during the processing
+	* OpenCV image necessary for copy the rectangular input image in the inverse mode
+	*/
+	IplImage *cvImage1;
+	/**
+	* OpenCV image for the first step of processing (240,240 in INVERSE mode)
 	*/
 	IplImage *cvImage2;
 	/**
@@ -84,7 +95,7 @@ private:
 	*/
 	Property options;
 	/**
-	* modality of work of the module
+	* mode of work of the module
 	*/
 	 int mode;
 public:

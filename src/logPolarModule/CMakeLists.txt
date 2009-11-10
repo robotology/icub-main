@@ -58,6 +58,5 @@ ELSE (folder_source)
 ENDIF (folder_source)
 
 
-#INSTALL_TARGETS(/lib ImageProcessModule)
 INSTALL_TARGETS(/bin ${KEYWORD})
 
