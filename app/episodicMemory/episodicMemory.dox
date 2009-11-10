@@ -1,0 +1,197 @@
+/**
+*
+@ingroup icub_applications
+\defgroup icub_episodicMemory episodicMemory
+
+Demonstrate the use of the episodicMemory module using LogPolar images.
+
+\section intro_sec Description
+This application template demonstrates the functionality of the episodicMemory module.
+
+The application uses three modules:
+
+- episodicMemory
+- logPolarTransform 
+- yarpview
+
+The episodicMemory module effects the following functionality: 
+
+-  when an image is presented to the memory, it attempts to recall that image; 
+-  if a previously-stored image matches the presented image sufficiently well, the stored image is recalled.
+-  if no previously-stored image matches sufficiently well, the presented image is stored; 
+-  in both cases, the module outputs:
+   -# the recalled or stored image;
+   -# an image identification number and the match value for the presented image  
+   -# an image identification number and the match value for whatever image was previously presented 
+-  Alternatively, when an image identification number is presented to the memory, 
+   the associated image is recalled and all the above four outputs are generated.
+   If both image and image identification number are presented, the image identification number takes precedence.
+   
+Since images are streamed continuously, the module reads an image with a pre-set but user-definable frequency.
+In addition, before reading the module checks to ensure that the iCub head is not in motion so that
+the eyes are fixating on something.
+ 
+The frequency at which images are read and the threshold defining whether or not an input image adequately matches a stored image
+are both provided as module parameters, set in the episodicMemory configuration file. 
+The threshold can also be set interactivel via the episodicMemory port.
+ 
+Images from the /icub/cam/left port are streamed to the logPolarTransform module with the output 
+then being streamed to the episodicMemory.
+
+Both the input image and the recalled image are displayed using YARP viewers.  
+Both images are inverse-transformed back to the Cartesian frame of reference before being displayed.
+
+Please refer to the episodicMemory module documentation for details on the module parameters:
+http://eris.liralab.it/iCub/dox/html/group__icub__episodicMemory.html
+
+In particular, be aware that you need to specify in the episodicMemory.ini configuration file
+the path to the directory where the module will store the images it learns.
+
+Also note that the period between consecutive image acquisition is set in the episodicMemory.ini configuration file.  
+Presently it is set to 1000 ms.  The threshold which is used to decide whether or not two images are
+similar is also set in the episodicMemory.ini file.  The lower the threshold, the more ambiguity that is tolerated between
+images and therefore the fewer new images that will be learned and stored.  The greater the threshold,
+the more distinct the images must be and hence the greater the number of images that will be learned
+and stored.  
+
+The use of the Log-polar images effectively centre-weights the image data and hence tends to discriminate 
+better when objects are presented (in the centre of the field of view) or when the camera is fixating on 
+an object of interest.
+
+
+\section dep_sec Dependencies
+Both applications are dependent on images being streamed on the /icub/cam/left port.
+
+\section modules_sec Instantiated Modules
+
+- \ref icub_episodicMemory "episodicMemory"
+- \ref icub_logPolarTransform "logPolarTransform"
+
+
+\section config_sec Configuration Files
+
+- episodicMemory.ini
+- logPolarTransform.ini
+ 
+\section example_sec How to run the application
+
+The logPolarEpisodicMemoryApp.xml. template file is listed below.  
+To run it, you need to edit the xml.template file to suit your own platform.  You will need to change at least
+the node name (icub1 in the template).  Rename the files to remove the .template extension.
+
+When the application is running, it will store the first image it receives since it won't have seen it before
+(unless you have already run the application and are using an existing database of stored images).
+Try presenting the an object to the camera to get it to learn its appearance.  Presenting it again should recall
+the image of the initial presentation.
+
+
+\code
+<application>
+<name>episodic memory demo</name>
+
+<dependencies>
+   <port>/icub/cam/left</port>
+   <port>/icub/head/state:o</port>
+</dependencies>
+
+
+<module>
+   <name>episodicMemory</name>
+   <parameters>--context episodicMemory/conf</parameters>
+   <node>icub1</node>
+   <tag>episodicMemory</tag>
+</module>
+
+<module>
+   <name>logPolarTransform</name>
+   <parameters>--context episodicMemory/conf</parameters>
+   <node>icub1</node>
+   <tag>logPolarTransform</tag>
+</module>
+
+<module>
+   <name>logPolarTransform</name>
+   <parameters>--name inverseLogPolarTransformA --direction LOGPOLAR2CARTESIAN --context episodicMemory/conf</parameters>
+   <node>icub1</node>
+   <tag>inverseLogPolarTransformA</tag>
+</module>
+
+<module>
+   <name>logPolarTransform</name>
+   <parameters>--name inverseLogPolarTransformB --direction LOGPOLAR2CARTESIAN --context episodicMemory/conf</parameters>
+   <node>icub1</node>
+   <tag>inverseLogPolarTransformB</tag>
+</module>
+
+<module>
+   <name>yarpview</name>
+   <parameters>--name /input_image --x 0 --y 10 --synch</parameters>
+   <node>icub1</node>
+   <tag>input_image</tag>
+</module>
+
+<module>
+   <name>yarpview</name>
+   <parameters>--name /recalled_image --x 320 --y 10 --synch</parameters>
+   <node>icub1</node>
+   <tag>recalled_image</tag>
+</module>
+
+
+
+<connection>
+  <from>/icub/head/state:o</from>
+  <to>/episodicMemory/head:i</to>
+  <protocol>tcp</protocol>
+</connection>
+ 
+<connection>
+   <from>/icub/cam/left</from>
+   <to>/logPolarTransform/image:i</to>
+   <protocol>tcp</protocol>
+</connection>
+
+<connection>
+   <from>/logPolarTransform/image:o</from>
+   <to>/episodicMemory/image:i</to>
+   <protocol>tcp</protocol>
+</connection>
+
+<connection>
+   <from>/logPolarTransform/image:o</from>
+   <to>/inverseLogPolarTransformA/image:i</to>
+   <protocol>tcp</protocol>
+</connection>
+
+<connection>
+  <from>/inverseLogPolarTransformA/image:o</from>
+  <to>/input_image</to>
+  <protocol>tcp</protocol>
+</connection>
+
+<connection>
+   <from>/episodicMemory/image:o</from>
+   <to>/inverseLogPolarTransformB/image:i</to>
+   <protocol>tcp</protocol>
+</connection>
+
+<connection>
+   <from>/inverseLogPolarTransformB/image:o</from>
+   <to>/recalled_image</to>
+   <protocol>tcp</protocol>
+</connection>
+
+</application>
+
+\endcode
+
+
+ 
+\author David Vernon
+
+Copyright (C) 2009 RobotCub Consortium
+
+CopyPolicy: Released under the terms of the GNU GPL v2.0.
+
+This file can be edited at \in app/episodicMemory.dox
+**/

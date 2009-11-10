@@ -207,7 +207,7 @@ ENDIF (ARTOOLKITPLUS_FOUND)
   # these modules will only be compiled by automated
   # compilation scripts
   IF (COMPILE_FOR_TESTING)
-
+     ADD_SUBDIRECTORY(episodicMemory)
   ENDIF(COMPILE_FOR_TESTING)
 
 IF(OPENCV_FOUND AND IPOPT_FOUND)
