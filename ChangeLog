@@ -1,9 +1,25 @@
+2009-11-10 Alessandro Scalzo <alessandro@liralab.it>
+	* src/modules/dragonfly2/common/DragonflyDeviceDriver2.h
+	* src/modules/dragonfly2/common/DragonflyDeviceDriver2.cpp
+	* src/modules/dragonfly2/linux/FirewireCameraDC1394-2_2.h
+    * src/modules/dragonfly2/linux/FirewireCameraDC1394-2_2.cpp
+	* src/modules/dragonfly2/winnt/FirewireCameraDC1394-2_2.h
+    * src/modules/dragonfly2/winnt/FirewireCameraDC1394-2_2.cpp
+    * src/modules/dragonfly2/CMakeLists.txt
+    
+    Removed:
+    * src/modules/dragonfly2/linux/FirewireCameraSet2.h
+    * src/modules/dragonfly2/linux/FirewireCameraSet2.cpp
+    
+    New windows and linux Dragonfy framegrabber module.
+    Manages all capture formats. No interface changes.
+    
 2009-06-18 Lorenzo Natale
 	* Added definition _CRT_SECURE_NO_DEPRECATE in WIN32 build
 	* remove annoying warning about use of deprecated c functions.
 
 2009-03-18 Alessandro Scalzo <alessandro@liralab.it>
-	Added src/modules/dragonfly2 module
+	* Added src/modules/dragonfly2 module
 	and src/gui/frameGrabber2 GUI.
 
 2008-11-06 Alessandro Scalzo <alessandro@liralab.it>
