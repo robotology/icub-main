@@ -58,7 +58,7 @@ public:
     /**
 	* initialise the thread
 	*/
-	virtual bool imageThread::threadInit();
+	virtual bool threadInit();
 	
 	/**
 	* code that is executed after the thread starts
