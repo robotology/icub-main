@@ -69,6 +69,7 @@ int main(int argc, char *argv[]) {
 
     Network yarp;
     CamCalibModule module;
-    module.setName("/camcalib"); // set default name of module
+    // module.setName("/camcalib"); // set default name of module
+    module.setName("/camCalib"); // set default name of module ... DV capitalized second C
     return module.runModule(argc,argv);
 }

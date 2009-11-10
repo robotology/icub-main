@@ -23,7 +23,7 @@
  *
  * \section parameters_sec Parameters
  * 
- * Command-line Parameters
+ * <b>Command-line Parameters <\b> 
  * 
  * The following key-value pairs can be specified as command-line parameters by prefixing \c -- to the key 
  * (e.g. \c --from file.ini. The value part can be changed to suit your needs; the default values are shown below. 
@@ -41,7 +41,7 @@
  *   specifies the name of the robot (used to form the root of robot port names)
  *
  *
- * <b> Configuration File Parameters </b>
+ * <b>Configuration File Parameters </b>
  *
  * The following key-value pairs can be specified as parameters in the configuration file 
  * (they can also be specified as command-line parameters if you so wish). 
@@ -75,10 +75,10 @@
  *    This port is used to change the parameters of the module at run time or stop the module. \n
  *    The following commands are available
  * 
- *    help \n
- *    quit \n
- *    set thr <n>   ... set the threshold for binary segmentation of the input RGB image 
- *    (where <n> is an integer number)
+ *    \c help \n
+ *    \c quit \n
+ *    \c set \c thr \c <n>   ... set the threshold for binary segmentation of the input RGB image 
+ *    (where \c <n> is an integer number)
  *
  *    Note that the name of this port mirrors whatever is provided by the \c --name parameter value
  *    The port is attached to the terminal so that you can type in commands and receive replies.
@@ -99,8 +99,8 @@
  * The functional specification only names the ports to be used to communicate with the module 
  * but doesn't say anything about the data transmitted on the ports. This is defined by the following code. 
  *
- * BufferedPort<ImageOf<PixelRgb> >   myInputPort; \n 
- * BufferedPort<ImageOf<PixelRgb> >   myOutputPort;       
+ * \c BufferedPort<ImageOf<PixelRgb> >   \c myInputPort; \n 
+ * \c BufferedPort<ImageOf<PixelRgb> >   \c myOutputPort;       
  *
  * \section in_files_sec Input Data Files
  *

@@ -178,7 +178,7 @@ bool Rectification::configure(yarp::os::ResourceFinder &rf)
    }
 
    if (!robotPort.open(robotPortName.c_str())) {           
-      cout << ": Unable to open port " << robotPortName << endl;  
+      cout << getName() << ": Unable to open port " << robotPortName << endl;  
       return false;
    }
 

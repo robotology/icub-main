@@ -112,7 +112,9 @@ bool CamCalibModule::updateModule(){
     _framerate.addStartTime(yarp::os::Time::now());
 
     yarp::sig::ImageOf<PixelRgb> *yrpImgIn;
-    yrpImgIn = _prtImgIn.read();
+
+    yrpImgIn = _prtImgIn.read();  
+ 
     if (yrpImgIn == NULL)   // this is the case if module is requested to quit while waiting for image
         return true;
 
