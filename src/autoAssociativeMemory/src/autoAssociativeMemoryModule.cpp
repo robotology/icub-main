@@ -470,8 +470,5 @@ bool AutoAssociativeMemoryModule::respond(const Bottle& command, Bottle& reply)
         // do something and then reply
         reply=command;
     return true;
-
-	  
- 
-
 }
+
