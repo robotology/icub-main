@@ -59,6 +59,7 @@ private:
 	* number of columns
 	*/
 	int col;
+	
 public:
 	/**
 	* matrix storing the state of every single unit in the layer

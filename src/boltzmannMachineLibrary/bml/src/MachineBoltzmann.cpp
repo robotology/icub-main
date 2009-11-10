@@ -17,11 +17,15 @@ MachineBoltzmann::MachineBoltzmann(){
 	meanWeight=MEAN_WEIGHT;
 	T=T_PARAM;
 	epsilon=1;
+	maxepoch=10;
+	epsilonvb=0.1;
+	epsilonhb=0.1;
 }
 /**
 *default destructor
 */
 MachineBoltzmann::~MachineBoltzmann(){
+	printf("destructor of the class called ..... \n");
 }
 
 /**
@@ -32,7 +36,10 @@ MachineBoltzmann::MachineBoltzmann(int nLayers){
 	meanWeight=MEAN_WEIGHT;
 	countElements=0;
 	epsilon=1;
-	
+	epsilonvb=0.1;
+	epsilonhb=0.1;
+	maxepoch=10;
+
 
 	//creates the layers
 	for(int i=0;i<nLayers;i++){
@@ -111,7 +118,21 @@ void MachineBoltzmann::interconnectLayers(Layer layerA, Layer layerB){
 	for (int i=0;i<numdims;i++)
 		for (int j=0;j<numhid;j++)
 			ma(i,j)=0.001;
-	//printf("vishid is: (%s)\n", layerA.vishid->toString().c_str());
+	double res=sum(ma);
+	Matrix mb(numdims,numhid);
+	for (int i=0;i<numdims;i++)
+		for (int j=0;j<numhid;j++)
+			mb(i,j)=0.1;
+	Matrix mc=mb-ma;
+	printf("mc: (%s)\n",mc.toString().c_str());
+	mc=ma*mb;
+	printf("mc: (%s)\n",mc.toString().c_str());
+	ma.eye();
+	printf("mc: (%s)\n",ma.toString().c_str());
+	mc=ma.transposed();
+	
+	randomMatrix md(12,12);
+	printf("md: (%s)\n",md.toString().c_str());
 
 	//2. using the connection and unit list
 	/*int k=0;
@@ -908,6 +929,144 @@ void MachineBoltzmann::saveConfiguration(){
 		iter->evolve(rule);
 	}
 }*/
+
+void MachineBoltzmann::rbm(Matrix batchdataSingle,Layer *layer,int numhid){
+	
+	//initialisation
+	double err=0,errsum=0;
+	double momentum;
+	int epoch;
+	
+	int batch;
+	int numbatches=10,numcases=10;
+	int numdims=batchdataSingle.cols();
+
+	double poshidact,posvisact;
+
+	
+	//Initializing symmetric weights and biases. 
+    Matrix vishid(numdims,numhid);
+	Matrix tmp=vishid+0.001;  //vishid= 0.001*randn(numdims, numhid);
+	vishid=tmp;
+	printf("[%s] \n",vishid.toString().c_str());
+
+	yarp::sig::Vector hidbiases(numhid); hidbiases.zero();
+    yarp::sig::Vector visbiases(numdims); visbiases.zero();
+
+	yarp::sig::Matrix poshidprobs(numcases,numhid); poshidprobs.zero();
+	yarp::sig::Matrix neghidprobs(numcases,numhid); neghidprobs.zero();
+    yarp::sig::Matrix posprods(numdims,numhid); posprods.zero();
+    yarp::sig::Matrix negprods(numdims,numhid); negprods.zero();
+    yarp::sig::Matrix vishidinc(numdims,numhid); vishidinc.zero();
+	yarp::sig::Vector hidbiasinc(numhid); hidbiasinc.zero();
+    yarp::sig::Vector visbiasinc(numdims); visbiasinc.zero();
+	yarp::sig::Matrix batchposhidprobs(numcases,numhid); batchposhidprobs.zero();
+
+	
+	yarp::sig::Matrix hidbias,visbias;
+	yarp::sig::Matrix negdata,data,negdataprobs;
+	yarp::sig::Matrix poshidstates;
+	//yarp::sig::Matrix data=new Matrix(l->getRow,l->getCol);
+	Vector posvisprobs=*layer->stateVector;
+
+	//executions
+	for(epoch=1;epoch<maxepoch;epoch++){
+		printf("epoch %d \n",epoch); 
+		errsum=0; 
+		for(batch=1;batch<numbatches;batch++){
+			printf("epoch %d batch %d \n",epoch,batch); 
+			visbias = repmat(visbiases,numcases,1);
+			hidbias = repmat(hidbiases,1,1); 
+			//%%%%%%%%% START POSITIVE PHASE %%%%%%%%%%%%%
+			//data = batchdata(:,:,batch);
+			data=batchdataSingle;
+			printf("[%s] \n",data.toString().c_str());
+			//data = data > rand(numcases,numdims);  
+			//poshidprobs = 1./(1 + exp(-data*(2*vishid) - hidbias));    
+			Matrix tmp2= exp(data*(-2)*vishid-hidbias);
+			printf("\n");
+			printf("[%s] \n",tmp2.toString().c_str());
+			printf("\n");
+			poshidprobs = 1/(exp(data*(-1)*vishid - hidbias)+1); //1./(1 + exp((data*(-1))*(2*vishid) - hidbias));    
+			printf("[%s] \n",poshidprobs.toString().c_str());
+			//batchposhidprobs(:,:,batch)=poshidprobs;
+			posprods    = data.transposed() * poshidprobs;
+			double poshidact   = sum(poshidprobs);
+			double posvisact =  sum(data);
+
+			
+			//%%%%%%%%% END OF POSITIVE PHASE  %%%%%%%%%%%%%
+
+			//%%%%% START NEGATIVE PHASE  %%%%%%%%%%%%%%%%%
+			poshidstates = poshidprobs > randomMatrix(numcases,numhid);
+			//negdata = 1./(1 + exp(-poshidstates*vishid.transposed - visbias));
+			negdata = 1/(exp(poshidstates*(-1)*vishid.transposed() - visbias)+1);
+			negdataprobs=negdata;
+			
+			//negdata = negdata > rand(numcases,numdims); 
+			randomMatrix randMat(numcases,numdims);
+			negdata = negdata > randMat;
+			printf("\n");
+			printf("[%s] \n",negdata.toString().c_str());
+			printf("\n");
+			//neghidprobs = 1./(1 + exp(-negdata*(2*vishid) - hidbias));
+			neghidprobs = 1/(exp(negdata*(-2)*vishid - hidbias)+1);
+
+			negprods  = negdata.transposed() *neghidprobs;
+			double neghidact = sum(neghidprobs);
+			double negvisact = sum(negdata); 
+
+			//%%%%%%%%% END OF NEGATIVE PHASE %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+			Matrix dif=data-negdata;
+			printf("\n");
+			printf("[%s] \n",dif.toString().c_str());
+			printf("\n");
+			printf("\n");
+			printf("[%s] \n",(dif^2).toString().c_str());
+			printf("\n");
+			err= sum(dif^2);
+			errsum = err + errsum;
+
+			double momentum;
+			double finalmomentum=0.9;
+			double initialmomentum=0.5;
+			if(epoch>5)
+				momentum=finalmomentum;
+			else
+				momentum=initialmomentum;
+			
+			//%%%%%%%% UPDATE WEIGHTS AND BIASES %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%% 
+			Matrix s=(posprods-negprods)/numcases;
+			Matrix t=weightcost*vishid;
+			Matrix z=s-t;
+			//Matrix v=epsilon*z;
+			vishidinc = momentum*vishidinc + epsilon*z;        
+			visbiasinc = momentum*visbiasinc + (epsilonvb/numcases)*(posvisact-negvisact);
+			double tmp3=(epsilonhb/numcases)*(poshidact-neghidact);
+			hidbiasinc = momentum*hidbiasinc + tmp3;
+
+			(Matrix)vishid = (Matrix)vishid + vishidinc;
+			visbiases = visbiases + visbiasinc;
+			hidbiases = hidbiases + hidbiasinc;
+
+			//%%%%%%%%%%%%%%%% END OF UPDATES %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%% 
+			//if rem(batch,)==0  
+			//figure('Position',[100,100,500,300]);
+			//dispims(negdataprobs',56,56); title('after first layer');
+			//figure(2);
+			//subplot(2,2,1);
+			//hist(vishid(:),100);
+			//subplot(2,2,2);
+			//hist(vishidinc(:),100);
+			//subplot(2,2,3);
+			//hist(poshidprobs(:));
+			//drawnow
+
+		}//for batch
+	} //for epoch
+	printf("epoch %d error %f  \n", epoch, errsum);   
+}
+
 void MachineBoltzmann::evolveFreely(int rule,int random){
 	list<Unit>::iterator iter;
 	list<Unit>::iterator iterU;

@@ -19,6 +19,8 @@
 #include <yarp/sig/all.h>
 #include <yarp/sig/Matrix.h>
 #include <yarp/sig/Vector.h>
+#include <yarp/math/Math.h>
+#include <iCub/matUtil.h>
 
 using namespace yarp::sig;
 using namespace yarp::math;
@@ -38,17 +40,57 @@ private:
 	* temperature of the machine
 	*/
     double T; //
+	/**
+	* counter of the element present in the boltzmann machine
+	*/
 	int countElements;
 	static const int BINARY_THR=1;
 	static const int PROBAB_THR=2;
 	static const int BOTH_RULES=3;
+	/**
+	* mean value of the weight of connection
+	*/
 	int meanWeight;
+	/**
+	* iterator for the evolution of the machine boltzmann
+	*/
 	map<std::string,Layer>::iterator iterEvolve;
+	/**
+	* probability result of the freely evolution
+	*/
 	map<std::string,double> probabilityFreely;
 	/**
 	* scales the difference of probabilities in the learning process
 	*/
 	double epsilon; 
+	/**
+	* number of epoches for every rbm execution
+	*/
+	int maxepoch;
+	/**
+	* cost of a connection
+	*/
+	double weightcost;
+	/**
+	* learning rate for the weight
+	*/
+	double epsilonw;
+	/**
+	* momentum at the initial phase of evolution
+	*/
+	int initialmomentum;
+	/**
+	* momentum at the final phase of evolution
+	*/
+	int finalmomentum;
+	/**
+	* lerning rate for the hidden biases
+	*/
+	double epsilonhb;
+	/**
+	* lerning rate for the visible biases
+	*/
+	double epsilonvb;
 public:
 	//-------- methods
 	/**
@@ -183,6 +225,15 @@ public:
 	* @param layer_reference  ref to the hidden layer
 	*/
 	void rbm(double* data,int layer_reference){};
+
+	/**
+	* restricted boltzmann machine evolution
+	* @param data vector of data that has to have the same dimension of the layer where it is clamped in
+	* @param layer pointer to the layer where the data is clamped in
+	* @param numhid dimension of the linked layer( hidden layer)
+	*/
+	void rbm(Matrix data,Layer *layer,int numhid);
+
     //------- attributes
 	map<std::string,Unit> unitList;
 	/**

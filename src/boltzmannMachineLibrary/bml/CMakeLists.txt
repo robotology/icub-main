@@ -1,4 +1,5 @@
 SET(KEYWORD "bml")
+#SET(LIB)
 
 PROJECT(${KEYWORD})
 
@@ -18,7 +19,6 @@ INCLUDE_DIRECTORIES(
     ${OPENCV_INCLUDE_DIR}    
     ${ODE_INCLUDE_DIRS}	
     ${IPP_INCLUDE_DIRS}	
-
 )
 
 
@@ -29,13 +29,10 @@ SOURCE_GROUP("Source Files" FILES ${folder_source})
 SOURCE_GROUP("Header Files" FILES ${folder_header})
 
 
-
-
 LINK_DIRECTORIES(
     ${ICUB_SOURCE_DIR}
     #${CVBLOBS_SOURCE_DIRS}	
 )
-
 
 
 LINK_LIBRARIES(
@@ -49,22 +46,27 @@ LINK_LIBRARIES(
 
 # Set up our main executable.
 IF (folder_source)
+  IF(LIB)
     ADD_LIBRARY(${KEYWORD}
-    ${folder_source}
-    ${folder_header}
+      ${folder_source}
+      ${folder_header}
     )
+  ELSE(LIB)
     #commented to be just a library 	
-    #ADD_EXECUTABLE(${KEYWORD} 
-    #${folder_source}
-    #${folder_header}
-    #)
+    ADD_EXECUTABLE(${KEYWORD} 
+      ${folder_source}
+      ${folder_header}
+    )
+  ENDIF(LIB)
 ELSE (folder_source)
     MESSAGE(FATAL_ERROR "No source code files found. Please add something")
 ENDIF (folder_source)
 
 
-
-#INSTALL_TARGETS(/bin ${KEYWORD})
-INSTALL_TARGETS(/lib ${KEYWORD})
+IF(LIB)
+  INSTALL_TARGETS(/lib ${KEYWORD})
+ELSE(LIB)
+  INSTALL_TARGETS(/bin ${KEYWORD})
+ENDIF(LIB)
 
 
