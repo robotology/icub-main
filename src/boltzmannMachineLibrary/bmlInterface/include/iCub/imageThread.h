@@ -2,25 +2,27 @@
 
 #include <stdio.h>
 
-#include <iCub/YARPImgRecv.h>
-
-
-//YARP include
-#include <yarp/os/all.h>
-#include <yarp/sig/all.h>
-
 //openCV include
 #include <cv.h>
 #include <cvaux.h>
 #include <highgui.h>
 
 
+//YARP include
+#include <yarp/os/all.h>
+#include <yarp/sig/all.h>
+
+
 #include <yarp/os/RateThread.h>
 #include <yarp/os/Time.h>
 #include <yarp/os/Thread.h>
 
+#include <iCub/YARPImgRecv.h>
 
-//IPP include//#include <ipp.h>
+
+
+//IPP include
+//#include <ipp.h>
 
 
 #include <string>

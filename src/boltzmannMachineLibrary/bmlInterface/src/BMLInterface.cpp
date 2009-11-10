@@ -1682,7 +1682,10 @@ void BMLInterface::setUp()
 		_imgRecv.SetFovea(true);
 	
 	if (openPorts() == false)
-		ACE_OS::exit(1);
+	{
+		printf("ERROR: not opened ports \n");
+		//ACE_OS::exit(1);
+	}
 	
 	//_inputImg.resize(320,240);
 	_inputImgLayer0.resize(320,240);
