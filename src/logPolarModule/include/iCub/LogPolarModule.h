@@ -12,7 +12,7 @@
 #include <highgui.h>
 
 
-#include <iCub/RC_DIST_FB_logpolar_mapper.h>
+//#include <iCub/RC_DIST_FB_logpolar_mapper.h>
 
 using namespace yarp::os;
 using namespace yarp::sig;

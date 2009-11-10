@@ -88,8 +88,8 @@ bool LogPolarModule::updateModule() {
     //initialisation
 	int nEcc = 250;
 	int nAng = 350;
-	cart2LpPixel *c2lTable;
-	lp2CartPixel *l2cTable;
+	//cart2LpPixel *c2lTable;
+	//lp2CartPixel *l2cTable;
 	char path[] = "./";
 	CvScalar s;
 
