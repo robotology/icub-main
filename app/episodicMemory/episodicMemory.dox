@@ -1,7 +1,7 @@
 /**
 *
 @ingroup icub_applications
-\defgroup icub_episodicMemory episodicMemory
+\defgroup icub_episodicMemoryApplication episodicMemory
 
 Demonstrate the use of the episodicMemory module using LogPolar images.
 
@@ -88,41 +88,41 @@ the image of the initial presentation.
 \code
 <application>
 <name>episodic memory demo</name>
-
+ 
 <dependencies>
    <port>/icub/cam/left</port>
    <port>/icub/head/state:o</port>
 </dependencies>
-
-
+ 
+ 
 <module>
    <name>episodicMemory</name>
    <parameters>--context episodicMemory/conf</parameters>
    <node>icub1</node>
    <tag>episodicMemory</tag>
 </module>
-
+ 
 <module>
    <name>logPolarTransform</name>
    <parameters>--context episodicMemory/conf</parameters>
    <node>icub1</node>
    <tag>logPolarTransform</tag>
 </module>
-
+ 
 <module>
    <name>logPolarTransform</name>
    <parameters>--name inverseLogPolarTransformA --direction LOGPOLAR2CARTESIAN --context episodicMemory/conf</parameters>
    <node>icub1</node>
    <tag>inverseLogPolarTransformA</tag>
 </module>
-
+ 
 <module>
    <name>logPolarTransform</name>
    <parameters>--name inverseLogPolarTransformB --direction LOGPOLAR2CARTESIAN --context episodicMemory/conf</parameters>
    <node>icub1</node>
    <tag>inverseLogPolarTransformB</tag>
 </module>
-
+ 
 <module>
    <name>yarpview</name>
    <parameters>--name /input_image --x 0 --y 10 --synch</parameters>

@@ -43,7 +43,7 @@
  * YARP.
  *
  * \section parameters_sec Parameters
- * <b>Command Line Parameters <\b> 
+ * <b>Command Line Parameters </b> 
  *
  * The following key-value pairs can be specified as command-line parameters by prefixing \c -- to the key 
  * (e.g. \c --from \c file.ini. The value part can be changed to suit your needs; the default values are shown below. 
@@ -61,7 +61,7 @@
  *   specifies the name of the robot (used to form the root of robot port names)
  *
  *
- * <b>Configuration File Parameters <\b> 
+ * <b>Configuration File Parameters </b> 
  *
  * The following key-value pairs can be specified as parameters in the configuration file 
  * (they can also be specified as command-line parameters if you so wish). 
@@ -121,7 +121,7 @@
  *                      
  * \section portsc_sec Ports Created
  *
- *  <b>Input ports<\b> 
+ *  <b>Input ports</b> 
  *
  *  - \c /episodicMemory
  *    This port is used to change the parameters of the module at run time or stop the module. \n
@@ -141,7 +141,7 @@
  * - \c /episodicMemory/head:i \n
  *   This port needs to be connected to \c /icub/head/state:o to get the gaze values.
  *
- * <b>Output ports<\b> 
+ * <b>Output ports</b> 
  *
  *  - \c /episodicMemory \n
  *    see above
@@ -153,7 +153,7 @@
  * but doesn't say anything about the data transmitted on the ports. This is defined by the following code. 
  *
  *
- * <b>I/O Port Types & Naming<\b> 
+ * <b>I/O Port Types & Naming</b> 
  *
  * - \c BufferedPort<ImageOf<PixelRgb> > \c portImageIn;
  * - \c BufferedPort<Bottle>             \c portImageIdIn;          \c //int \c image_id 
