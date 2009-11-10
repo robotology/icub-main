@@ -6,8 +6,8 @@
  *
  */
 
-#ifndef __ICUB_ITRANSFORMER__
-#define __ICUB_ITRANSFORMER__
+#ifndef LM_ITRANSFORMER__
+#define LM_ITRANSFORMER__
 
 #include <string>
 #include <sstream>
@@ -73,7 +73,7 @@ public:
     ITransformer() : sampleCount(0), name("") { }
 
     /**
-     * Destructor.
+     * Destructor (empty).
      */
     virtual ~ITransformer() { }
 

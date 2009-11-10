@@ -6,8 +6,8 @@
  *
  */
 
-#ifndef __ICUB_MACHINEPORTABLE__
-#define __ICUB_MACHINEPORTABLE__
+#ifndef LM_MACHINEPORTABLE__
+#define LM_MACHINEPORTABLE__
 
 #include "iCub/PortableT.h"
 #include "iCub/IMachineLearner.h"

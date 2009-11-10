@@ -13,13 +13,10 @@
 namespace iCub {
 namespace learningmachine {
 
-TrainEvent::TrainEvent(Vector input, Vector desired, Vector predicted) {
+TrainEvent::TrainEvent(const Vector& input, const Vector& desired, const Vector& predicted) {
     this->input = input;
     this->desired = desired;
     this->predicted = predicted;
-}
-
-TrainEvent::~TrainEvent() {
 }
 
 void TrainEvent::visit(IEventListener& listener) {

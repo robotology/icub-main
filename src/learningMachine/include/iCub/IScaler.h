@@ -6,8 +6,8 @@
  *
  */
 
-#ifndef __ICUB_ISCALER__
-#define __ICUB_ISCALER__
+#ifndef LM_ISCALER__
+#define LM_ISCALER__
 
 #include <cmath>
 #include <string>
@@ -19,7 +19,10 @@ namespace iCub {
 namespace learningmachine {
 
 /**
- * The IScaler is a linear scaler based scaler.
+ * The IScaler is a linear scaler based scaler. It is used in particularly as
+ * part of the ScaleTransformer.
+ *
+ * \see iCub::learningmachine:ScaleTransformer
  *
  * \author Arjan Gijsberts
  *
@@ -72,7 +75,7 @@ public:
       : scale(s), offset(o), updateEnabled(true), name("") { }
 
     /**
-     * Destructor.
+     * Destructor (empty).
      */
     virtual ~IScaler() { }
 
@@ -165,8 +168,50 @@ public:
      * Inherited from IConfig.
      */
     virtual bool configure(Searchable& config);
+};
 
+/**
+ * The NullScaler is a scaler that does nothing, the output of the transform
+ * function is equal to its input. The use is so that the ScaleTransformer
+ * can 'disable' transformation on certain inputs.
+ *
+ * \see iCub::learningmachine:IScaler
+ * \see iCub::learningmachine:ScaleTransformer
+ *
+ * \author Arjan Gijsberts
+ *
+ */
 
+class NullScaler : public IScaler {
+private:
+public:
+    /**
+     * Constructor.
+     */
+    NullScaler() {
+        this->setName("null");
+    }
+
+    /*
+     * Inherited from IScaler.
+     */
+    virtual double transform(double val) {
+        return val;
+    }
+
+    /*
+     * Inherited from IScaler.
+     */
+    virtual double unTransform(double val) {
+        return val;
+    }
+
+    /*
+     * Inherited from IScaler.
+     */
+    virtual NullScaler* clone() {
+        return new NullScaler(*this);
+    }
 };
 
 } // learningmachine

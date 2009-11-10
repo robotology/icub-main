@@ -6,8 +6,8 @@
  *
  */
 
-#ifndef __ICUB_IEVENTLISTENER__
-#define __ICUB_IEVENTLISTENER__
+#ifndef LM_IEVENTLISTENER__
+#define LM_IEVENTLISTENER__
 
 #include <yarp/os/IConfig.h>
 
@@ -21,8 +21,8 @@ namespace iCub {
 namespace learningmachine {
 
 /**
- * The abstract base class for EventListener handlers. Due to technical 
- * limitations of C++, this base class needs to implement an empty, virtual 
+ * The abstract base class for EventListener handlers. Due to technical
+ * limitations of C++, this base class needs to implement an empty, virtual
  * handle method for each Event type.
  *
  * \author Arjan Gijsberts
@@ -52,7 +52,7 @@ public:
     IEventListener();
 
     /**
-     * Destructor.
+     * Destructor (empty).
      */
     virtual ~IEventListener() { }
 
@@ -60,22 +60,19 @@ public:
      * Default handler for any Event, which means the Event is ignored.
      * @param  e the base event
      */
-    virtual void handle(IEvent& e) {
-    }
+    virtual void handle(IEvent& e) { }
 
     /**
      * Handling of a TrainEvent.
      * @param  e the TrainEvent
      */
-    virtual void handle(TrainEvent& e) {
-    }
+    virtual void handle(TrainEvent& e) { }
 
     /**
      * Handling of a PredictEvent.
      * @param  e the PredictEvent
      */
-    virtual void handle(PredictEvent& e) {
-    }
+    virtual void handle(PredictEvent& e) { }
 
     /**
      * Asks the event listener to return a new object of its type.
@@ -101,9 +98,9 @@ public:
     void setName(std::string name) {
         this->name = name;
     }
-    
+
     /**
-     * Starts the IEventListener, such that it can do perform initialization 
+     * Starts the IEventListener, such that it can do perform initialization
      * (e.g. opening ports).
      */
     virtual void start() { }
@@ -111,7 +108,7 @@ public:
     /**
      * Tells whether dispatching of events is enabled.
      *
-     * @return  true if dispatching is enabled.
+     * @return  true if dispatching is enabled
      */
     virtual bool isEnabled() {
         return this->enabled;
@@ -132,13 +129,13 @@ public:
     virtual bool configure(Searchable& config);
 
     /**
-     * Asks the event listener to return a string containing information on 
+     * Asks the event listener to return a string containing information on
      * its configuration so far.
      *
      * @return the information on the IEventListener
      */
-    virtual std::string getInfo() { 
-        return this->getName() + (this->isEnabled() ? " (enabled)" : " (disabled)"); 
+    virtual std::string getInfo() {
+        return this->getName() + (this->isEnabled() ? " (enabled)" : " (disabled)");
     }
 
 };

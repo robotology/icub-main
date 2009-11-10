@@ -2,12 +2,12 @@
  * Copyright (C) 2007-2009 Arjan Gijsberts @ Italian Institute of Technology
  * CopyPolicy: Released under the terms of the GNU GPL v2.0.
  *
- * Linear scaling transformer.
+ * Random Feature transformer.
  *
  */
 
-#ifndef __ICUB_RANDOMFEATURE__
-#define __ICUB_RANDOMFEATURE__
+#ifndef LM_RANDOMFEATURE__
+#define LM_RANDOMFEATURE__
 
 #include <yarp/sig/Vector.h>
 #include <yarp/sig/Matrix.h>
@@ -40,10 +40,12 @@ protected:
      * Gamma parameter, analoguous to same parameter in RBF kernel.
      */
     double gamma;
+
     /**
      * Projection matrix W.
      */
     Matrix W;
+
     /**
      * Bias vector b.
      */
@@ -70,14 +72,14 @@ public:
     RandomFeature(int dom = 1, int cod = 1, double gamma = 1.);
 
     /**
-     * Destructor.
+     * Destructor (empty).
      */
     virtual ~RandomFeature() { }
 
     /*
      * Inherited from ITransformer.
      */
-    virtual ITransformer* clone() {
+    virtual RandomFeature* clone() {
         return new RandomFeature(*this);
     }
 

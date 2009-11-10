@@ -6,8 +6,8 @@
  *
  */
 
-#ifndef __ICUB_PREDICTEVENT__
-#define __ICUB_PREDICTEVENT__
+#ifndef LM_PREDICTEVENT__
+#define LM_PREDICTEVENT__
 
 #include <string>
 
@@ -23,11 +23,11 @@ namespace learningmachine {
 
 
 /**
- * A PredictEvent is raised when the machine makes a prediction. It contains 
+ * A PredictEvent is raised when the machine makes a prediction. It contains
  * the input and predicted output vectors.
  *
  * \see iCub::learningmachine::IEvent
- * 
+ *
  * \author Arjan Gijsberts
  */
 
@@ -39,7 +39,7 @@ protected:
      * Vector of inputs.
      */
     Vector input;
-    
+
     /**
      * Vector of predicted outputs.
      */
@@ -47,17 +47,17 @@ protected:
 
 public:
     /**
-     * Constructor
+     * Constructor.
      *
      * @param input the vector of inputs
      * @param predicted the vector of predicted outputs
      */
-    PredictEvent(Vector input, Vector predicted);
+    PredictEvent(const Vector& input, const Vector& predicted);
 
     /**
-     * Destructor
+     * Destructor (empty).
      */
-    virtual ~PredictEvent();
+    virtual ~PredictEvent() { }
 
     /*
      * Inherited from IEvent.

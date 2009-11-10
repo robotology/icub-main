@@ -8,8 +8,8 @@
  * hard to implement the factory pattern neatly in C++.
  */
 
-#ifndef __ICUB_EVENTLISTENERCATALOGUE__
-#define __ICUB_EVENTLISTENERCATALOGUE__
+#ifndef LM_EVENTLISTENERCATALOGUE__
+#define LM_EVENTLISTENERCATALOGUE__
 
 #include "iCub/EventListenerFactory.h"
 #include "iCub/TrainEventListener.h"

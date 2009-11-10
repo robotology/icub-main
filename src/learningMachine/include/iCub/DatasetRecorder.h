@@ -6,8 +6,8 @@
  *
  */
 
-#ifndef __ICUB_DATASETRECORDER__
-#define __ICUB_DATASETRECORDER__
+#ifndef LM_DATASETRECORDER__
+#define LM_DATASETRECORDER__
 
 #include <string>
 #include <fstream>

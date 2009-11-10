@@ -14,12 +14,9 @@ namespace iCub {
 namespace learningmachine {
 
 
-PredictEvent::PredictEvent(Vector input, Vector predicted) {
+PredictEvent::PredictEvent(const Vector& input, const Vector& predicted) {
     this->input = input;
     this->predicted = predicted;
-}
-
-PredictEvent::~PredictEvent() {
 }
 
 void PredictEvent::visit(IEventListener& listener) {

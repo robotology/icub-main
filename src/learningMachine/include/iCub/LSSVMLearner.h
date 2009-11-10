@@ -2,14 +2,14 @@
  * Copyright (C) 2007-2009 Arjan Gijsberts @ Italian Institute of Technology
  * CopyPolicy: Released under the terms of the GNU GPL v2.0.
  *
- * Least Squares Support Vector Machine (LSSVM) based learner 
+ * Least Squares Support Vector Machine (LSSVM) based learner
  *
  */
 
 /**
  *
- * An implementation of the LSSVM learning machine for use with the IMachineLearner
- * interface.
+ * An implementation of the LSSVM learning machine for use with the
+ * IMachineLearner interface.
  *
  * \see iCub::contrib::IMachineLearner
  * \see iCub::contrib::IFixedSizeLearner
@@ -18,10 +18,9 @@
  *
  */
 
-#ifndef __ICUB_LSSVMLEARNER__
-#define __ICUB_LSSVMLEARNER__
+#ifndef LM_LSSVMLEARNER__
+#define LM_LSSVMLEARNER__
 
-#include <iostream>
 #include <string>
 #include <vector>
 #include <sstream>
@@ -49,18 +48,18 @@ public:
     virtual double evaluate(const Vector& v1, const Vector& v2) = 0;
 
     virtual std::string getConfigHelp() {
-        return std::string("Kernel configuration options for '") + 
-               this->getName() + "'\n"; 
+        return std::string("Kernel configuration options for '") +
+               this->getName() + "'\n";
     }
-    
+
     virtual std::string getName() {
         return this->name;
     }
-    
+
     virtual void setName(std::string n) {
         this->name = n;
     }
-    
+
     virtual std::string getInfo() {
         return this->getName();
     }
@@ -72,14 +71,14 @@ private:
 public:
     RBFKernel(double g = 1.0) : Kernel("RBF"), gamma(g) {
     }
-    
+
     virtual ~RBFKernel() {}
 
     virtual double evaluate(const Vector& v1, const Vector& v2) {
         assert(v1.size() == v2.size());
         double result = 0.0;
         double diff;
-        
+
         for(int i = 0; i < v1.size(); i++) {
             diff = v1(i) - v2(i);
             result += diff * diff;
@@ -87,11 +86,11 @@ public:
         result *= -1 * this->gamma;
         return exp(result);
     }
-    
+
     virtual void setGamma(double g) {
         this->gamma = g;
     }
-    
+
     virtual double getGamma() {
         return this->gamma;
     }
@@ -122,12 +121,12 @@ public:
         buffer << " gamma: " << this->getGamma();
         return buffer.str();
     }
-    
+
 };
 
 /**
  *
- * This is basic implementation of the LSSVM algorithms. Note that for 
+ * This is basic implementation of the LSSVM algorithms. Note that for
  * efficiency the hyperparameters are shared among all outputs. Only the RBF
  * kernel function is supported.
  *
@@ -148,17 +147,17 @@ private:
      * Storage for the output vectors.
      */
     std::vector<Vector> outputs;
-    
+
     /**
      * The matrix of Lagrange multipliers, i.e. the coefficients.
      */
     Matrix alphas;
-    
+
     /**
      * The vector of biases.
      */
     Vector bias;
-    
+
     /**
      * The exact Leave-One-Out error on the training data.
      */
@@ -166,9 +165,9 @@ private:
 
     /**
      * Regularization parameter C.
-     */    
+     */
     double C;
-    
+
     /**
      * The kernel function.
      */
@@ -268,7 +267,7 @@ public:
     virtual void setC(double C) {
         this->C = C;
     }
-    
+
     /**
      * Accessor for the regularization parameter C.
      *

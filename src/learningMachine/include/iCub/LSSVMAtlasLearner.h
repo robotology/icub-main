@@ -19,8 +19,8 @@
  *
  */
 
-#ifndef __ICUB_LSSVMATLASLEARNER__
-#define __ICUB_LSSVMATLASLEARNER__
+#ifndef LM_LSSVMATLASLEARNER__
+#define LM_LSSVMATLASLEARNER__
 
 #include <iostream>
 #include <string>

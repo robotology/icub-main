@@ -6,8 +6,8 @@
  *
  */
 
-#ifndef __ICUB_SCALETRANSFORMER__
-#define __ICUB_SCALETRANSFORMER__
+#ifndef LM_SCALETRANSFORMER__
+#define LM_SCALETRANSFORMER__
 
 #include <vector>
 #include <stdexcept>
@@ -20,8 +20,6 @@ using namespace yarp::sig;
 
 namespace iCub {
 namespace learningmachine {
-
-class TransformerSupport;
 
 /**
  * The ScaleTransformer is a ITransformer that supports element-based scaling
@@ -80,21 +78,12 @@ private:
      * @param index the index of the scaler
      */
     IScaler* getAt(int index) {
-        if(index >= 0 && index < this->scalers.size()) {
+        if (index >= 0 && index < this->scalers.size()) {
             return this->scalers[index];
         } else {
             throw std::runtime_error("Index for scaler out of bounds!");
         }
     }
-
-    /**
-     * Checks whether the scaler on a certain position is an empty scaler
-     * ('null').
-     *
-     * @param index the index of the scaler to check
-     * @return true if the scaler is null
-     */
-    bool isEmptyScaler(int index);
 
     /**
      * Sets all scalers to a given type.
@@ -120,14 +109,14 @@ public:
     ScaleTransformer(int dom = 1);
 
     /**
-     * Destructor.
-     */
-    virtual ~ScaleTransformer();
-
-    /**
      * Copy constructor.
      */
     ScaleTransformer(const ScaleTransformer& other);
+
+    /**
+     * Destructor.
+     */
+    virtual ~ScaleTransformer();
 
     /**
      * Assignment operator.
@@ -137,7 +126,7 @@ public:
     /*
      * Inherited from ITransformer.
      */
-    virtual ITransformer* clone() {
+    virtual ScaleTransformer* clone() {
         return new ScaleTransformer(*this);
     }
 
@@ -179,7 +168,6 @@ public:
 protected:
 
 };
-
 
 } // learningmachine
 } // iCub

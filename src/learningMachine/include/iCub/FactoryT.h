@@ -6,8 +6,8 @@
  *
  */
 
-#ifndef __ICUB_FACTORY_TEMPLATE__
-#define __ICUB_FACTORY_TEMPLATE__
+#ifndef LM_FACTORY_TEMPLATE__
+#define LM_FACTORY_TEMPLATE__
 
 #include <map>
 #include <string>
@@ -35,12 +35,12 @@ private:
     std::map<K, T*> map;
 
     /**
-     * Constructor.
+     * Constructor (empty).
      */
-    FactoryT() {}
+    FactoryT() { }
 
     /**
-     * Copy Constructor (unimplemented on purpose).
+     * Copy Constructor (private and unimplemented on purpose).
      */
     FactoryT(const FactoryT<K, T>& other);
 
@@ -56,7 +56,7 @@ private:
     }
 
     /**
-     * Assignment operator (unimplemented on purpose).
+     * Assignment operator (private and unimplemented on purpose).
      */
     FactoryT<K, T>& operator=(const FactoryT<K, T>& other);
 
@@ -104,10 +104,11 @@ public:
 
 
     /**
-     * Creates a new object given a specific type of key.
+     * Creates a new object given a specific type of key. The receiving end
+     * takes ownership of the returned pointer.
      *
      * @param key a key that identifies the type of machine
-     * @return A new object of the specified type
+     * @return a copied object of the specified type
      */
     T* create(const K& key) {
         if(this->map.find(key) == this->map.end()) {

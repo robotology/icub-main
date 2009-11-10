@@ -6,8 +6,8 @@
  *
  */
 
-#ifndef __ICUB_TRAINEVENTLISTENER__
-#define __ICUB_TRAINEVENTLISTENER__
+#ifndef LM_TRAINEVENTLISTENER__
+#define LM_TRAINEVENTLISTENER__
 
 #include <string>
 
@@ -20,17 +20,18 @@ namespace iCub {
 namespace learningmachine {
 
 /**
- * 
+ *
  * \see iCub::learningmachine::IEventListener
- * 
+ *
  * \author Arjan Gijsberts
  */
 
 class TrainEventListener : public IPortEventListener {
 protected:
     void vectorToBottle(const Vector& vec, Bottle& bot) {
-        for(int i = 0; i < vec.size(); i++) 
+        for(int i = 0; i < vec.size(); i++) {
             bot.addDouble(vec[i]);
+        }
     }
 
 public:
@@ -51,7 +52,7 @@ public:
     /*
      * Inherited from IEventListener.
      */
-    IEventListener* clone() {
+    TrainEventListener* clone() {
         return new TrainEventListener(*this);
     }
 

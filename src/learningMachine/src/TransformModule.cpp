@@ -6,6 +6,7 @@
  * ITransformer.
  */
 
+#include <iostream>
 #include <stdexcept>
 #include <cassert>
 
@@ -151,14 +152,16 @@ bool TransformModule::open(Searchable& opt) {
 
     // check for train data port
     if(opt.check("trainport", val)) {
-        Network::connect(this->train_out.where().getName().c_str(), val->asString().c_str());
+        Network::connect(this->train_out.where().getName().c_str(),
+                         val->asString().c_str());
     } else {
         // add message here if necessary
     }
 
     // check for predict data port
     if(opt.check("predictport", val)) {
-        Network::connect(this->predictRelay_inout.where().getName().c_str(), val->asString().c_str());
+        Network::connect(this->predictRelay_inout.where().getName().c_str(),
+                         val->asString().c_str());
     } else {
         // add message here if necessary
     }
@@ -214,10 +217,10 @@ bool TransformModule::respond(const Bottle& cmd, Bottle& reply) {
                 { // prevent identifier initialization to cross borders of case
                 Bottle property;
                 /*
-                 * This is a simple hack to enable multiple parameters The need for this hack lies
-                 * in the fact that a group can only be found using findGroup if it is a nested
-                 * list in a Bottle. If the Bottle itself is the list, then the group will _not_
-                 * be found.
+                 * This is a simple hack to enable multiple parameters The need
+                 * for this hack lies in the fact that a group can only be found
+                 * using findGroup if it is a nested list in a Bottle. If the
+                 * Bottle itself is the list, then the group will _not_ be found.
                  */
                 property.addList() = cmd.tail();
                 std::string replymsg = "Setting configuration option ";
@@ -232,7 +235,8 @@ bool TransformModule::respond(const Bottle& cmd, Bottle& reply) {
             case VOCAB4('l','o','a','d'): // load
                 { // prevent identifier initialization to cross borders of case
                 reply.add(Value::makeVocab("help"));
-                std::string replymsg = std::string("Loading transformer from '") + cmd.get(1).asString().c_str() + "'... " ;
+                std::string replymsg = std::string("Loading transformer from '") +
+                                       cmd.get(1).asString().c_str() + "'... " ;
                 if(!cmd.get(1).isString()) {
                     replymsg += "failed";
                 } else {
@@ -247,7 +251,8 @@ bool TransformModule::respond(const Bottle& cmd, Bottle& reply) {
             case VOCAB4('s','a','v','e'): // save
                 { // prevent identifier initialization to cross borders of case
                 reply.add(Value::makeVocab("help"));
-                std::string replymsg = std::string("Saving transformer to '") + cmd.get(1).asString().c_str() + "'... " ;
+                std::string replymsg = std::string("Saving transformer to '") +
+                                       cmd.get(1).asString().c_str() + "'... " ;
                 if(!cmd.get(1).isString()) {
                     replymsg += "failed";
                 } else {

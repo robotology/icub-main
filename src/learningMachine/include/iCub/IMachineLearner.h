@@ -6,8 +6,8 @@
  *
  */
 
-#ifndef __ICUB_IMACHINELEARNER__
-#define __ICUB_IMACHINELEARNER__
+#ifndef LM_IMACHINELEARNER__
+#define LM_IMACHINELEARNER__
 
 #include <yarp/sig/Vector.h>
 #include <yarp/os/IConfig.h>
@@ -23,14 +23,13 @@ using namespace yarp::sig;
 namespace iCub {
 namespace learningmachine {
 
-
 /**
  *
- * A generalized interface for a learning machine for offline and 
- * online learning machines (e.g. SVM, LSSVM, ANN). This interface 
+ * A generalized interface for a learning machine for offline and
+ * online learning machines (e.g. SVM, LSSVM, ANN). This interface
  * extends the Learner interface, which imposes certain limitations.
  * Learning machines that meet this interface can, if desired, be made
- * into two executable modules by iCub::contrib::LearnModule and 
+ * into two executable modules by iCub::contrib::LearnModule and
  * iCub::contrib::PredictModule.
  *
  * The learning machine can be used for regression and classification
@@ -38,8 +37,8 @@ namespace learningmachine {
  *
  * Be aware that objects of this class type cannot be written directly
  * on a port, although this interface implements Portable. The reason is
- * that this is an abstract base class, which conflicts with the template 
- * port readers and writers. See MachinePortable for how to send 
+ * that this is an abstract base class, which conflicts with the template
+ * port readers and writers. See MachinePortable for how to send
  * Learning Machines over ports.
  *
  * \see iCub::contrib::Learner
@@ -50,6 +49,7 @@ namespace learningmachine {
  * \author Arjan Gijsberts
  *
  */
+
 class IMachineLearner : public IConfig, public Portable {
 protected:
     /**
@@ -58,7 +58,7 @@ protected:
     std::string name;
 
     /**
-     * Writes a serialization of the machine into a bottle. This method is 
+     * Writes a serialization of the machine into a bottle. This method is
      * internally referenced by the write method. Typically, subclasses should
      * override this method instead of overriding the write method directly.
      *
@@ -67,8 +67,8 @@ protected:
     virtual void writeBottle(Bottle& bot) = 0;
 
     /**
-     * Unserializes a machine from a bottle. This method is internally 
-     * referenced by the read method. Typically, subclasses should override this 
+     * Unserializes a machine from a bottle. This method is internally
+     * referenced by the read method. Typically, subclasses should override this
      * method instead of overriding the read method directly.
      *
      * @param bot the bottle
@@ -82,7 +82,7 @@ public:
     IMachineLearner() : name("") { }
 
     /**
-     * Destructor.
+     * Destructor (empty).
      */
     virtual ~IMachineLearner() { }
 
@@ -95,9 +95,9 @@ public:
     virtual void feedSample(const Vector& input, const Vector& output) = 0;
 
     /**
-     * Train the learning machine on the examples that have been supplied so 
-     * far. This method is primarily intended to be used for offline/batch 
-     * learning machines. It explicitly initiates the training routine on those 
+     * Train the learning machine on the examples that have been supplied so
+     * far. This method is primarily intended to be used for offline/batch
+     * learning machines. It explicitly initiates the training routine on those
      * machines for the samples that have been collected so far.
      */
     virtual void train() { }
@@ -113,7 +113,7 @@ public:
     /**
      * Asks the learning machine to return a clone of its type.
      *
-     * @return a clone of the current class
+     * @return a clone of the current learner
      */
     virtual IMachineLearner* clone() = 0;
 
@@ -141,28 +141,28 @@ public:
         this->readBottle(model);
         return true;
     }
-    
+
     /**
-     * Asks the learning machine to return a string containing information on 
+     * Asks the learning machine to return a string containing information on
      * its operation so far.
      *
      * @return the information on the machine
      */
-    virtual std::string getInfo() { 
-        return std::string("Type: ") + this->getName() + std::string("\n"); 
+    virtual std::string getInfo() {
+        return std::string("Type: ") + this->getName() + std::string("\n");
     }
 
     /**
-     * Asks the learning machine to return a string containing the list of 
+     * Asks the learning machine to return a string containing the list of
      * configuration options that it supports.
      *
      * @return an informative description of the configuration options
      */
     virtual std::string getConfigHelp() {
-        return std::string("Machine configuration options for '") + 
-               this->getName() + "'\n"; 
+        return std::string("Machine configuration options for '") +
+               this->getName() + "'\n";
     }
-    
+
     /**
      * Asks the learning machine to return a string serialization.
      *
@@ -180,7 +180,7 @@ public:
      * @return true on succes
      */
     virtual bool fromString(const std::string& str) {
-        Bottle model(str.c_str()); 
+        Bottle model(str.c_str());
         this->readBottle(model);
         return true;
     }

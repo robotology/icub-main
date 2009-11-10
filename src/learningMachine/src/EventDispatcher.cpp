@@ -24,7 +24,7 @@ namespace learningmachine {
 //}
 
 //EventDispatcher& EventDispatcher::operator=(const EventDispatcher& other) {
-//    if (this == &other) return *this; // handle self initialization
+//    if(this == &other) return *this; // handle self initialization
 
 //    this->clear();
 //    for(int i = 0; i < other.countListeners(); i++) {

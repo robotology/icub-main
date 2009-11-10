@@ -6,8 +6,8 @@
  *
  */
 
-#ifndef __ICUB_FIXEDRANGESCALER__
-#define __ICUB_FIXEDRANGESCALER__
+#ifndef LM_FIXEDRANGESCALER__
+#define LM_FIXEDRANGESCALER__
 
 #include "iCub/IScaler.h"
 
@@ -16,11 +16,10 @@ using namespace yarp::os;
 namespace iCub {
 namespace learningmachine {
 
-
 /**
  *
- * A class that implements preprocessing based on a fixed range of outputs to a 
- * fixed range of outputs. 
+ * A class that implements preprocessing based on a fixed range of outputs to a
+ * fixed range of outputs.
  *
  * \see iCub::learningmachine::IScaler
  *
@@ -48,9 +47,9 @@ protected:
      * The expected upper bound in the sample values.
      */
     double upperBoundIn;
-    
+
     /**
-     * Updates the scale and offset according to the specified expected and 
+     * Updates the scale and offset according to the specified expected and
      * desired ranges.
      */
     void updateScales();
@@ -103,9 +102,9 @@ public:
      *
      * @param l the new lower bound
      */
-    virtual void setLowerBoundOut(double lo) { 
+    virtual void setLowerBoundOut(double lo) {
         this->lowerBoundOut = lo;
-        this->updateScales(); 
+        this->updateScales();
     }
 
     /**
@@ -120,7 +119,7 @@ public:
      */
     virtual void setUpperBoundOut(double uo) {
         this->upperBoundOut = uo;
-        this->updateScales(); 
+        this->updateScales();
     }
 
     /**
@@ -135,7 +134,7 @@ public:
      */
     virtual void setLowerBoundIn(double li) {
         this->lowerBoundIn = li;
-        this->updateScales(); 
+        this->updateScales();
     }
 
     /**
@@ -150,7 +149,7 @@ public:
      */
     virtual void setUpperBoundIn(double ui) {
         this->upperBoundIn = ui;
-        this->updateScales(); 
+        this->updateScales();
     }
 
 };

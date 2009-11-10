@@ -6,8 +6,8 @@
  *
  */
 
-#ifndef __ICUB_TRANSFORMERCATALOGUE__
-#define __ICUB_TRANSFORMERCATALOGUE__
+#ifndef LM_TRANSFORMERCATALOGUE__
+#define LM_TRANSFORMERCATALOGUE__
 
 #include "iCub/ITransformer.h"
 #include "iCub/IScaler.h"
@@ -23,15 +23,16 @@ namespace learningmachine {
 
 void registerTransformers() {
     // register scalers
-    FactoryT<std::string, IScaler>::instance().registerPrototype(new Standardizer);
-    FactoryT<std::string, IScaler>::instance().registerPrototype(new Normalizer);
-    FactoryT<std::string, IScaler>::instance().registerPrototype(new FixedRangeScaler);
+    FactoryT<std::string, IScaler>::instance().registerPrototype(new NullScaler());
+    FactoryT<std::string, IScaler>::instance().registerPrototype(new Standardizer());
+    FactoryT<std::string, IScaler>::instance().registerPrototype(new Normalizer());
+    FactoryT<std::string, IScaler>::instance().registerPrototype(new FixedRangeScaler());
 
     // register proper transformers
-    FactoryT<std::string, ITransformer>::instance().registerPrototype(new ScaleTransformer);
-    FactoryT<std::string, ITransformer>::instance().registerPrototype(new RandomFeature);
-    
-    
+    FactoryT<std::string, ITransformer>::instance().registerPrototype(new ScaleTransformer());
+    FactoryT<std::string, ITransformer>::instance().registerPrototype(new RandomFeature());
+
+
 }
 
 } // learningmachine

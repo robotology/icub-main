@@ -15,7 +15,7 @@
 namespace iCub {
 namespace learningmachine {
 
-ScaleTransformer::ScaleTransformer(int dom) {
+ScaleTransformer::ScaleTransformer(int dom) : IFixedSizeTransformer(dom, dom) {
     this->setName("Scaler");
     this->setDomainSize(dom);
 }
@@ -25,14 +25,25 @@ ScaleTransformer::~ScaleTransformer() {
 }
 
 ScaleTransformer::ScaleTransformer(const ScaleTransformer& other)
-{
-
+  : IFixedSizeTransformer(other) {
+    this->scalers.resize(other.scalers.size());
+    for(int i = 0; i < other.scalers.size(); i++) {
+        this->scalers[i] = other.scalers[i]->clone();
+    }
 }
 
 ScaleTransformer& ScaleTransformer::operator=(const ScaleTransformer& other) {
+    if(this == &other) return *this; // handle self initialization
+    if(this == &other) return *this; // handle self initialization
+    this->IFixedSizeTransformer::operator=(other);
 
+    this->deleteAll(other.scalers.size());
+    for(int i = 0; i < other.scalers.size(); i++) {
+        this->scalers[i] = other.scalers[i]->clone();
+    }
+
+    return *this;
 }
-
 
 void ScaleTransformer::deleteAll() {
     this->deleteAll(this->scalers.size());
@@ -51,11 +62,7 @@ void ScaleTransformer::setAt(int index, std::string type) {
     if(index >= 0 && index < this->scalers.size()) {
         delete this->scalers[index];
         this->scalers[index] = (IScaler *) 0;
-        // the magic keyword null specifies that no scaler object will be created
-        // this is useful to disable the scaler with minimal overhead
-        if(type != "null") {
-            this->scalers[index] = FactoryT<std::string, IScaler>::instance().create(type);
-        }
+        this->scalers[index] = FactoryT<std::string, IScaler>::instance().create(type);
     } else {
         throw std::runtime_error("Index for scaler out of bounds!");
     }
@@ -68,30 +75,13 @@ void ScaleTransformer::setAll(std::string type) {
     }
 }
 
-bool ScaleTransformer::isEmptyScaler(int index) {
-    if(index < this->scalers.size()) {
-        if(this->scalers[index] == (IScaler*) 0) {
-            return true;
-        } else {
-            return false;
-        }
-    } else {
-        return true;
-    }
-}
-
 Vector ScaleTransformer::transform(const Vector& input) {
     Vector output = this->IFixedSizeTransformer::transform(input);
     assert(input.size() == this->scalers.size());
     assert(output.size() == this->scalers.size());
 
     for(int i = 0; i < output.size(); i++) {
-        // only transform the sample if the scaler is actually set
-        if(!this->isEmptyScaler(i)) {
-            output(i) = this->getAt(i)->transform(input(i));
-        } else {
-            output(i) = input(i);
-        }
+        output(i) = this->getAt(i)->transform(input(i));
     }
     return output;
 }
@@ -120,12 +110,7 @@ std::string ScaleTransformer::getInfo() {
     buffer << "Scalers:" << std::endl;
     for(int i = 0; i < this->scalers.size(); i++) {
         buffer << "  [" << (i + 1) << "] ";
-        if(!this->isEmptyScaler(i)) {
-            buffer << this->scalers[i]->getInfo();
-        } else {
-            buffer << "null";
-        }
-        buffer << std::endl;
+        buffer << this->scalers[i]->getInfo() << std::endl;
     }
     return buffer.str();
 }
@@ -142,12 +127,8 @@ std::string ScaleTransformer::getConfigHelp() {
 void ScaleTransformer::writeBottle(Bottle& bot) {
     // write all scalers
     for(int i = 0; i < this->getDomainSize(); i++) {
-        if(this->isEmptyScaler(i)) {
-            bot.addString("null");
-        } else {
-            bot.addString(this->getAt(i)->toString().c_str());
-            bot.addString(this->getAt(i)->getName().c_str());
-        }
+        bot.addString(this->getAt(i)->toString().c_str());
+        bot.addString(this->getAt(i)->getName().c_str());
     }
 
     // make sure to call the superclass's method
@@ -161,9 +142,7 @@ void ScaleTransformer::readBottle(Bottle& bot) {
     // read all scalers in reverse order
     for(int i = this->getDomainSize() - 1; i >= 0; i--) {
         this->setAt(i, bot.pop().asString().c_str());
-        if(!this->isEmptyScaler(i)) {
-            this->getAt(i)->fromString(bot.pop().asString().c_str());
-        }
+        this->getAt(i)->fromString(bot.pop().asString().c_str());
     }
 }
 
@@ -204,21 +183,16 @@ bool ScaleTransformer::configure(Searchable &config) {
         if(list.get(0).isInt()) {
             // format: set config idx key val
             int i = list.get(0).asInt() - 1;
-            if(!this->isEmptyScaler(i)) {
-                success = this->getAt(i)->configure(property);
-            }
+            success = this->getAt(i)->configure(property);
         } else if(list.get(0).asString() == "all") {
             // format: set config all key val
             for(int i = 0; i < this->scalers.size(); i++) {
-                if(!this->isEmptyScaler(i)) {
-                    success |= this->getAt(i)->configure(property);
-                }
+                success |= this->getAt(i)->configure(property);
             }
         } else {
             throw std::runtime_error("Illegal index!");
         }
     }
-
 
     return success;
 }

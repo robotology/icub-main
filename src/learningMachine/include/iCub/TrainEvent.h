@@ -5,9 +5,9 @@
  * The standard train event class.
  *
  */
- 
-#ifndef __ICUB_TRAINEVENT__
-#define __ICUB_TRAINEVENT__
+
+#ifndef LM_TRAINEVENT__
+#define LM_TRAINEVENT__
 
 #include <string>
 
@@ -24,7 +24,7 @@ namespace learningmachine {
 class IEventListener;
 
 /**
- * A TrainEvent is raised when the machine handles a training sample. It 
+ * A TrainEvent is raised when the machine handles a training sample. It
  * contains the input, and predicted and actual output vectors.
  *
  * \see iCub::learningmachine::IEvent
@@ -38,12 +38,12 @@ protected:
      * Vector of inputs.
      */
     Vector input;
-    
+
     /**
      * Vector of desired outputs.
      */
     Vector desired;
-    
+
     /**
      * Vector of predicted outputs.
      */
@@ -51,18 +51,18 @@ protected:
 
 public:
     /**
-     * Constructor
+     * Constructor.
      *
      * @param input the vector of inputs
      * @param desired the vector of desired outputs
      * @param predicted the vector of predicted outputs
      */
-    TrainEvent(Vector input, Vector desired, Vector predicted);
+    TrainEvent(const Vector& input, const Vector& desired, const Vector& predicted);
 
     /**
-     * Destructor
+     * Destructor (empty).
      */
-    virtual ~TrainEvent();
+    virtual ~TrainEvent() { }
 
     /*
      * Inherited from IEvent.
@@ -73,7 +73,7 @@ public:
      * Inherited from IEvent.
      */
     std::string toString();
-    
+
     /**
      * Accessor for the vector of inputs.
      * @return a reference to the registered vector of inputs

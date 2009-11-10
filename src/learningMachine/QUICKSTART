@@ -148,12 +148,22 @@ Note that the Standardizer and the Normalizer are data-driven and thus first
 need to be fed data before they can be used to transform training data. The 
 Fixed scaler is _not_ data-driven and is thus particularly useful for online 
 learning. In certain robotics problems the extrema of the input data are known 
-are priori (e.g. joint limits) or can be guessed rather precisely.
+are priori (e.g. joint limits) or can be guessed rather precisely. If desired, 
+updates of the scalers can be (temporarily) disabled using the 'disable' 
+command. The following example shows how this is done in detail.
+
+--------------------------------------------------------------------------------
+set config 1 disable
+"Setting configuration option succeeded"
+set config 1 enable
+"Setting configuration option succeeded"
+--------------------------------------------------------------------------------
 
 By default, the Scaler transformer starts without any transformation on the 
-input columns (cf. the 'info' command). Setting a scaler to a column is done 
-using the 'set type' command. An example demonstrating the functionality of the 
-three types of scalers is:
+input columns using a 'secret' NullScaler (cf. the 'info' command). Setting a 
+scaler to a column is done using the 'set type' command. An example 
+demonstrating the functionality of the three types of scalers (or four, if you'd 
+count the NullScaler as well) is:
 
 --------------------------------------------------------------------------------
 set type 1 Standardizer
@@ -181,6 +191,9 @@ set config 3 lowerout -1
 set config 3 upperout 2
 "Setting configuration option succeeded"
 set config 3 in -20 40
+"Setting configuration option succeeded"
+
+set type 4 null
 "Setting configuration option succeeded"
 --------------------------------------------------------------------------------
 
@@ -406,7 +419,7 @@ train 1000
 Step 7.
 Disable data-driven updates of the scalers.
 (transform)---------------------------------------------------------------------
-set config all update
+set config all disable
 "Setting configuration option succeeded"
 --------------------------------------------------------------------------------
 

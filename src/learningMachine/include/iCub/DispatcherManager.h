@@ -6,8 +6,8 @@
  *
  */
 
-#ifndef __ICUB_DISPATCHERMANAGER__
-#define __ICUB_DISPATCHERMANAGER__
+#ifndef LM_DISPATCHERMANAGER__
+#define LM_DISPATCHERMANAGER__
 
 #include <yarp/os/Bottle.h>
 

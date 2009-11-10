@@ -6,8 +6,8 @@
  *
  */
 
-#ifndef __ICUB_PORTABLE_TEMPLATE__
-#define __ICUB_PORTABLE_TEMPLATE__
+#ifndef LM_PORTABLE_TEMPLATE__
+#define LM_PORTABLE_TEMPLATE__
 
 #include <stdexcept>
 #include <string>
@@ -62,6 +62,11 @@ public:
     }
 
     /**
+     * Copy constructor.
+     */
+    PortableT(const PortableT<T>& other) : wrapped(other.wrapped->clone()) { }
+
+    /**
      * Destructor.
      */
     virtual ~PortableT() {
@@ -69,15 +74,16 @@ public:
     }
 
     /**
-     * Copy constructor.
-     */
-    PortableT(const PortableT<T>& other) : wrapped(other.wrapped->clone()) { }
-
-    /**
      * Assignment operator.
      */
     PortableT<T>& operator=(const PortableT<T>& other) {
+        if(this == &other) return *this;
+
+        // clone method is a safer bet than copy constructor or assignment
+        // operator in our case.
         this->setWrapped(other.wrapped->clone(), true);
+
+        return *this;
     }
 
     /**
@@ -90,7 +96,7 @@ public:
         // return false directly if there is no machine. If not, we end up
         // up writing things on the port, after which an exception will be
         // thrown when accessing the machine.
-        if (!this->hasWrapped()) {
+        if(!this->hasWrapped()) {
             return false;
         }
         connection.appendInt(BOTTLE_TAG_LIST);
@@ -112,7 +118,7 @@ public:
      * @return true on success
      */
     bool read(ConnectionReader& connection) {
-        if (!connection.isValid()) {
+        if(!connection.isValid()) {
             return false;
         }
 
@@ -120,7 +126,7 @@ public:
         // check headers for the pair (name + actual object serialization)
         int header = connection.expectInt();
         int len = connection.expectInt();
-        if (header != BOTTLE_TAG_LIST || len != 2) {
+        if(header != BOTTLE_TAG_LIST || len != 2) {
             return false;
         }
 
@@ -129,7 +135,7 @@ public:
         nameBottle.read(connection);
         std::string name = nameBottle.get(0).asString().c_str();
         this->setWrapped(name);
-        if (this->wrapped == (T *) 0) {
+        if(this->wrapped == (T *) 0) {
             return false;
         }
 
@@ -147,7 +153,7 @@ public:
     bool writeToFile(std::string filename) {
         std::ofstream stream(filename.c_str());
 
-        if (!stream.is_open()) {
+        if(!stream.is_open()) {
             throw std::runtime_error(std::string("Could not open file '") + filename + "'");
         }
 
@@ -168,7 +174,7 @@ public:
     bool readFromFile(std::string filename) {
         std::ifstream stream(filename.c_str());
 
-        if (!stream.is_open()) {
+        if(!stream.is_open()) {
             throw std::runtime_error(std::string("Could not open file '") + filename + "'");
         }
 
@@ -199,7 +205,7 @@ public:
      * @throw runtime error if no wrapped object exists
      */
     T& getWrapped() {
-        if (!this->hasWrapped()) {
+        if(!this->hasWrapped()) {
             throw std::runtime_error("Attempt to retrieve inexistent wrapped object!");
         }
         return *(this->wrapped);
@@ -212,7 +218,7 @@ public:
      * @param wipe boolean whether the previous wrapped object has to be deleted
      */
     void setWrapped(T* w, bool wipe = true) {
-        if (wipe && this->hasWrapped()) {
+        if(wipe && this->hasWrapped()) {
             delete this->wrapped;
             this->wrapped = (T*) 0;
         }
@@ -226,7 +232,7 @@ public:
      * @param wipe boolean whether the previous wrapped object has to be deleted
      */
     void setWrapped(std::string name, bool wipe = true) {
-        if (wipe && this->hasWrapped()) {
+        if(wipe && this->hasWrapped()) {
             delete this->wrapped;
             this->wrapped = (T*) 0;
         }

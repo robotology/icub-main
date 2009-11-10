@@ -2,16 +2,15 @@
  * Copyright (C) 2009 Arjan Gijsberts @ Italian Institute of Technology
  * CopyPolicy: Released under the terms of the GNU GPL v2.0.
  *
- * *TEMPORARY* implementation of Regularized Least Squares (aka Ridge Regression) 
- * Learner. 
+ * *TEMPORARY* implementation of Regularized Least Squares (aka Ridge Regression)
+ * Learner.
  *
  */
 
-#include "iCub/RLSLearner.h"
 #include <cassert>
-//#include <sstream>
 #include <stdexcept>
-#include <iostream>
+
+#include "iCub/RLSLearner.h"
 
 namespace iCub {
 namespace learningmachine {
@@ -19,7 +18,7 @@ namespace learningmachine {
 RLSLearner::RLSLearner(int dom, int cod, double lambda) {
     this->setName("RLS");
     this->sampleCount = 0;
-    // make sure to not use initialization list to constructor of base for 
+    // make sure to not use initialization list to constructor of base for
     // domain and codomain size, as it will not use overloaded mutators
     this->setDomainSize(dom);
     // slightly inefficient to use mutators, as we are initializing twice
@@ -27,8 +26,31 @@ RLSLearner::RLSLearner(int dom, int cod, double lambda) {
     this->setLambdaAll(lambda);
 }
 
+RLSLearner::RLSLearner(const RLSLearner& other)
+  : IFixedSizeLearner(other), sampleCount(other.sampleCount) {
+    this->machines.resize(other.machines.size());
+    for(int i = 0; i < other.machines.size(); i++) {
+        this->machines[i] = new RLS(*(other.machines[i]));
+    }
+
+}
+
 RLSLearner::~RLSLearner() {
     this->deleteAll();
+}
+
+RLSLearner& RLSLearner::operator=(const RLSLearner& other) {
+    if(this == &other) return *this; // handle self initialization
+
+    this->IFixedSizeLearner::operator=(other);
+    this->sampleCount = other.sampleCount;
+
+    this->deleteAll(other.machines.size());
+    for(int i = 0; i < other.machines.size(); i++) {
+        this->machines[i] = new RLS(*(other.machines[i]));
+    }
+
+    return *this;
 }
 
 void RLSLearner::deleteAll() {
@@ -90,7 +112,7 @@ RLS* RLSLearner::createMachine() {
 
 void RLSLearner::feedSample(const Vector& input, const Vector& output) {
     this->IFixedSizeLearner::feedSample(input, output);
-    
+
     for(int c = 0; c < output.size(); c++) {
         this->machines[c]->update(input, output(c));
     }
@@ -106,7 +128,7 @@ Vector RLSLearner::predict(const Vector& input) {
     this->checkDomainSize(input);
 
     Vector output(this->getCoDomainSize());
-    
+
     // feed to machines
     for(int c = 0; c < this->getCoDomainSize(); c++) {
         output[c] = this->machines[c]->predict(input);
@@ -118,10 +140,6 @@ Vector RLSLearner::predict(const Vector& input) {
 void RLSLearner::reset() {
     this->sampleCount = 0;
     this->initAll();
-}
-
-IMachineLearner* RLSLearner::clone() {
-    return new RLSLearner(this->machines.size());
 }
 
 std::string RLSLearner::getInfo() {
@@ -164,7 +182,7 @@ void RLSLearner::readBottle(Bottle& bot) {
 
 void RLSLearner::setDomainSize(int size) {
     this->IFixedSizeLearner::setDomainSize(size);
-    
+
     this->initAll();
 }
 

@@ -2,10 +2,12 @@
  * Copyright (C) 2007-2009 Arjan Gijsberts @ Italian Institute of Technology
  * CopyPolicy: Released under the terms of the GNU GPL v2.0.
  *
- * Training module implementation for wrapping an executable around IMachineLearner classes.
+ * Training module implementation for wrapping an executable around
+ * IMachineLearner classes.
  *
  */
 
+#include <iostream>
 #include <stdexcept>
 #include <cassert>
 
@@ -202,7 +204,8 @@ bool TrainModule::respond(const Bottle& cmd, Bottle& reply) {
             case VOCAB4('l','o','a','d'): // load
                 { // prevent identifier initialization to cross borders of case
                 reply.add(Value::makeVocab("help"));
-                std::string replymsg = std::string("Loading machine from '") + cmd.get(1).asString().c_str() + "'... " ;
+                std::string replymsg = std::string("Loading machine from '") +
+                                       cmd.get(1).asString().c_str() + "'... " ;
                 if(!cmd.get(1).isString()) {
                     replymsg += "failed";
                 } else {
@@ -217,7 +220,8 @@ bool TrainModule::respond(const Bottle& cmd, Bottle& reply) {
             case VOCAB4('s','a','v','e'): // save
                 { // prevent identifier initialization to cross borders of case
                 reply.add(Value::makeVocab("help"));
-                std::string replymsg = std::string("Saving machine to '") + cmd.get(1).asString().c_str() + "'... " ;
+                std::string replymsg = std::string("Saving machine to '") +
+                                       cmd.get(1).asString().c_str() + "'... " ;
                 if(!cmd.get(1).isString()) {
                     replymsg += "failed";
                 } else {
@@ -233,10 +237,10 @@ bool TrainModule::respond(const Bottle& cmd, Bottle& reply) {
                 { // prevent identifier initialization to cross borders of case
                 Bottle property;
                 /*
-                 * This is a simple hack to enable multiple parameters The need for this hack lies
-                 * in the fact that a group can only be found using findGroup if it is a nested
-                 * list in a Bottle. If the Bottle itself is the list, then the group will _not_
-                 * be found.
+                 * This is a simple hack to enable multiple parameters The need
+                 * for this hack lies in the fact that a group can only be found
+                 * using findGroup if it is a nested list in a Bottle. If the
+                 * Bottle itself is the list, then the group will _not_ be found.
                  */
                 property.addList() = cmd.tail();
                 std::string replymsg = "Setting configuration option ";
@@ -266,8 +270,6 @@ bool TrainModule::respond(const Bottle& cmd, Bottle& reply) {
 
     return success;
 }
-
-
 
 } // learningmachine
 } // iCub

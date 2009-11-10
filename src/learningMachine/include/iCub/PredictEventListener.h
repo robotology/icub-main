@@ -6,8 +6,8 @@
  *
  */
 
-#ifndef __ICUB_PREDICTEVENTLISTENER__
-#define __ICUB_PREDICTEVENTLISTENER__
+#ifndef LM_PREDICTEVENTLISTENER__
+#define LM_PREDICTEVENTLISTENER__
 
 #include <string>
 
@@ -19,19 +19,19 @@
 namespace iCub {
 namespace learningmachine {
 
-
 /**
- * 
- * \see iCub::learningmachine::IEventListener
- * 
+ *
+ * \see iCub::learningmachine::IPortEventListener
+ *
  * \author Arjan Gijsberts
  */
 
 class PredictEventListener : public IPortEventListener {
 protected:
     void vectorToBottle(const Vector& vec, Bottle& bot) {
-        for(int i = 0; i < vec.size(); i++) 
+        for(int i = 0; i < vec.size(); i++) {
             bot.addDouble(vec[i]);
+        }
     }
 
 public:
@@ -40,7 +40,7 @@ public:
      *
      * @param pp default port prefix
      */
-    PredictEventListener(std::string pp = "/lm/event/predict") : IPortEventListener(pp) { 
+    PredictEventListener(std::string pp = "/lm/event/predict") : IPortEventListener(pp) {
         this->setName("Predict");
     }
 
@@ -52,7 +52,7 @@ public:
     /*
      * Inherited from IEventListener.
      */
-    IEventListener* clone() {
+    PredictEventListener* clone() {
         return new PredictEventListener(*this);
     }
 

@@ -20,16 +20,16 @@ namespace learningmachine {
 LSSVMLearner::LSSVMLearner(int dom, int cod, double c) {
     this->setName("LSSVM");
     this->kernel = new RBFKernel();
-    // make sure to not use initialization list to constructor of base for 
+    // make sure to not use initialization list to constructor of base for
     // domain and codomain size, as it will not use overloaded mutators
     this->setDomainSize(dom);
     this->setCoDomainSize(cod);
     this->setC(c);
 }
 
-LSSVMLearner::LSSVMLearner(const LSSVMLearner& other) 
-  : IFixedSizeLearner(other), inputs(other.inputs), outputs(other.outputs), 
-    alphas(other.alphas), bias(other.bias), LOO(other.LOO), C(other.C), 
+LSSVMLearner::LSSVMLearner(const LSSVMLearner& other)
+  : IFixedSizeLearner(other), inputs(other.inputs), outputs(other.outputs),
+    alphas(other.alphas), bias(other.bias), LOO(other.LOO), C(other.C),
     kernel(new RBFKernel(*other.kernel)) {
 
 }
@@ -40,7 +40,7 @@ LSSVMLearner::~LSSVMLearner() {
 }
 
 LSSVMLearner& LSSVMLearner::operator=(const LSSVMLearner& other) {
-    if (this == &other) return *this; // handle self initialization
+    if(this == &other) return *this; // handle self initialization
 
     this->IFixedSizeLearner::operator=(other);
     this->inputs = other.inputs;
@@ -70,7 +70,7 @@ void LSSVMLearner::train() {
     if(inputs.size() == 0) {
         return;
     }
-    
+
     // create kernel matrix
     Matrix K(inputs.size() + 1, inputs.size() + 1);
     for(int r = 0; r < K.rows() - 1; r++) {
@@ -84,10 +84,10 @@ void LSSVMLearner::train() {
         K(i, K.cols() - 1) = K(K.rows() - 1, i) = 1.;
     }
     K(K.rows() - 1, K.cols() - 1) = 0.;
-    
+
     // invert kernel matrix
     Matrix Kinv = luinv(K);
-    
+
     // compute solution
     Matrix Y = zeros(this->outputs.size() + 1, this->getCoDomainSize());
     for(int r = 0; r < Y.rows() - 1; r++) {
@@ -95,14 +95,14 @@ void LSSVMLearner::train() {
             Y(r, c) = this->outputs[r](c);
         }
     }
-    
+
     Matrix result = Kinv * Y;
     this->alphas = result.submatrix(0, result.rows() - 2, 0, result.cols() - 1);
     this->bias = result.getRow(result.rows() - 1);
-    
+
     // compute LOO
     this->LOO = zeros(this->getCoDomainSize());
-    
+
     for(int i = 0; i < this->getCoDomainSize(); i++) {
         Vector alphas_i = this->alphas.getCol(i);
         for(int j = 0; j < alphas_i.size(); j++) {
@@ -116,17 +116,17 @@ void LSSVMLearner::train() {
 
 Vector LSSVMLearner::predict(const Vector& input) {
     this->checkDomainSize(input);
-    
+
     if(this->inputs.size() == 0) {
         return zeros(this->getCoDomainSize());
     }
-    
+
     // compute kernel expansion
     Vector k(this->inputs.size());
     for(int i = 0; i < k.size(); i++) {
         k(i) = this->kernel->evaluate(this->inputs[i], input);
     }
-    
+
     return (this->alphas.transposed() * k) + this->bias;
 }
 
@@ -168,13 +168,13 @@ void LSSVMLearner::writeBottle(Bottle& bot) {
 
     // write c
     bot.addDouble(this->getC());
-    
+
     // write bias
     for(int i = 0; i < this->bias.size(); i++) {
-        bot.addDouble(this->bias(i));    
+        bot.addDouble(this->bias(i));
     }
     bot.addInt(this->bias.size());
-    
+
     // write alphas
     for(int r = 0; r < this->alphas.rows(); r++) {
         for(int c = 0; c < this->alphas.cols(); c++) {
@@ -183,7 +183,7 @@ void LSSVMLearner::writeBottle(Bottle& bot) {
     }
     bot.addInt(this->alphas.rows());
     bot.addInt(this->alphas.cols());
-    
+
     // write inputs
     for(int i = 0; i < this->inputs.size(); i++) {
         for(int d = 0; d < this->getDomainSize(); d++) {
@@ -191,7 +191,7 @@ void LSSVMLearner::writeBottle(Bottle& bot) {
         }
     }
     bot.addInt(this->inputs.size());
-    
+
     // make sure to call the superclass's method
     this->IFixedSizeLearner::writeBottle(bot);
 }
@@ -199,7 +199,7 @@ void LSSVMLearner::writeBottle(Bottle& bot) {
 void LSSVMLearner::readBottle(Bottle& bot) {
     // make sure to call the superclass's method
     this->IFixedSizeLearner::readBottle(bot);
-    
+
     // read inputs
     this->inputs.resize(bot.pop().asInt());
     for(int i = this->inputs.size() - 1; i >= 0; i--) {
@@ -216,16 +216,16 @@ void LSSVMLearner::readBottle(Bottle& bot) {
             this->alphas(r, c) = bot.pop().asDouble();
         }
     }
-    
+
     // read bias
     this->bias.resize(bot.pop().asInt());
     for(int i = this->bias.size() - 1; i >= 0; i--) {
         this->bias(i) = bot.pop().asDouble();
     }
-    
+
     // read c
     this->setC(bot.pop().asDouble());
-    
+
     // read gamma
     this->kernel->setGamma(bot.pop().asDouble());
 }
@@ -250,9 +250,9 @@ bool LSSVMLearner::configure(Searchable& config) {
             success = true;
         }
     }
-    
+
     success |= this->kernel->configure(config);
-    
+
     return success;
 }
 

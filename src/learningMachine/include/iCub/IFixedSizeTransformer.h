@@ -6,8 +6,8 @@
  *
  */
 
-#ifndef __ICUB_IFIXEDSIZETRANSFORMER__
-#define __ICUB_IFIXEDSIZETRANSFORMER__
+#ifndef LM_IFIXEDSIZETRANSFORMER__
+#define LM_IFIXEDSIZETRANSFORMER__
 
 #include "iCub/ITransformer.h"
 
@@ -85,8 +85,7 @@ public:
      * @param dom the initial domain size
      * @param cod the initial codomain size
      */
-    IFixedSizeTransformer(int dom = 1, int cod = 1) : domainSize(dom), coDomainSize(cod) {
-    }
+    IFixedSizeTransformer(int dom = 1, int cod = 1) : domainSize(dom), coDomainSize(cod) { }
 
     /*
      * Inherited from ITransformer.
@@ -98,28 +97,36 @@ public:
      *
      * @return the size of the input domain
      */
-    int getDomainSize() { return this->domainSize; }
+    int getDomainSize() {
+        return this->domainSize;
+    }
 
     /**
      * Returns the size (dimensionality) of the output domain (codomain).
      *
      * @return the size of the codomain
      */
-    int getCoDomainSize() { return this->coDomainSize; }
+    int getCoDomainSize() {
+        return this->coDomainSize;
+    }
 
     /**
      * Mutator for the domain size.
      *
      * @param size the desired domain size
      */
-    virtual void setDomainSize(int size) { this->domainSize = size; }
+    virtual void setDomainSize(int size) {
+        this->domainSize = size;
+    }
 
     /**
      * Mutator for the codomain size.
      *
      * @param size the desired codomain size
      */
-    virtual void setCoDomainSize(int size) {this->coDomainSize = size; }
+    virtual void setCoDomainSize(int size) {
+        this->coDomainSize = size;
+    }
 
     /*
      * Inherited from ITransformer.

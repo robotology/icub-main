@@ -6,8 +6,8 @@
  *
  */
 
-#ifndef __ICUB_IFIXEDSIZELEARNER__
-#define __ICUB_IFIXEDSIZELEARNER__
+#ifndef LM_IFIXEDSIZELEARNER__
+#define LM_IFIXEDSIZELEARNER__
 
 #include "iCub/IMachineLearner.h"
 
@@ -20,7 +20,7 @@ namespace learningmachine {
 /**
  *
  * An generalized interface for a learning machine with a fixed domain
- * and codomain size. Many machine learning techniques will fall in this 
+ * and codomain size. Many machine learning techniques will fall in this
  * category.
  *
  * The learning machine can be used for regression and classification
@@ -86,8 +86,7 @@ public:
      * @param dom the initial domain size
      * @param cod the initial codomain size
      */
-    IFixedSizeLearner(int dom = 1, int cod = 1) : domainSize(dom), coDomainSize(cod) {
-    }
+    IFixedSizeLearner(int dom = 1, int cod = 1) : domainSize(dom), coDomainSize(cod) { }
 
     /*
      * Inherited from IMachineLearner.

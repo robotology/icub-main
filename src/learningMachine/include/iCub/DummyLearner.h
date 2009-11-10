@@ -6,8 +6,8 @@
  *
  */
 
-#ifndef __ICUB_DUMMYLEARNER__
-#define __ICUB_DUMMYLEARNER__
+#ifndef LM_DUMMYLEARNER__
+#define LM_DUMMYLEARNER__
 
 #include <string>
 #include <vector>
@@ -27,7 +27,7 @@ namespace learningmachine {
 std::string printVector(const Vector& v);
 /**
  *
- * This dummy machine learner demonstrates how the IMachineLearner interface can 
+ * This dummy machine learner demonstrates how the IMachineLearner interface can
  * be used in practice. The functionality, however, is rather useless.
  *
  * \see iCub::contrib::IMachineLearner
@@ -71,7 +71,7 @@ public:
     }
 
     /**
-     * Destructor.
+     * Destructor (empty).
      */
     virtual ~DummyLearner() { }
 

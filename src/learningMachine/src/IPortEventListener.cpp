@@ -17,7 +17,7 @@ namespace iCub {
 namespace learningmachine {
 
 IPortEventListener& IPortEventListener::operator=(const IPortEventListener& other) {
-    if (this == &other) return *this; // handle self initialization
+    if(this == &other) return *this; // handle self initialization
 
     this->IEventListener::operator=(other);
     this->portPrefix = other.portPrefix;
@@ -36,14 +36,14 @@ void IPortEventListener::resetPort(std::string portName) {
         } while(Network::queryName(buffer.str().c_str()).isValid());
         portName = buffer.str();
     }
-    
+
     // check availability of new port
     if(Network::queryName(portName.c_str()).isValid()) {
         throw std::runtime_error(std::string("port already registered"));
     } else {
         this->port.interrupt();
         this->port.close();
-        if (port.open(portName.c_str()) != true) {
+        if(port.open(portName.c_str()) != true) {
             throw std::runtime_error(std::string("could not register port"));
         }
     }

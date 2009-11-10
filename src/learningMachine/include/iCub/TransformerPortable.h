@@ -6,8 +6,8 @@
  *
  */
 
-#ifndef __ICUB_TRANSFORMERPORTABLE__
-#define __ICUB_TRANSFORMERPORTABLE__
+#ifndef LM_TRANSFORMERPORTABLE__
+#define LM_TRANSFORMERPORTABLE__
 
 #include "iCub/PortableT.h"
 #include "iCub/ITransformer.h"

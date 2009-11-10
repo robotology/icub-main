@@ -7,10 +7,8 @@
  */
 
 
-#ifndef __ICUB_IMACHINELEARNERMODULE__
-#define __ICUB_IMACHINELEARNERMODULE__
-
-#include <iostream>
+#ifndef LM_IMACHINELEARNERMODULE__
+#define LM_IMACHINELEARNERMODULE__
 
 #include <yarp/os/Module.h>
 #include <yarp/os/Searchable.h>
@@ -24,8 +22,8 @@ namespace iCub {
 namespace learningmachine {
 
 /**
- * An abstract base module for the machine learning YARP interface. This 
- * abstract class contains base functionality that is shared by 
+ * An abstract base module for the machine learning YARP interface. This
+ * abstract class contains base functionality that is shared by
  * PredictModule, TrainModule and TransformModule.
  *
  * \see iCub::learningmachine::IMachineLearner
@@ -35,18 +33,9 @@ namespace learningmachine {
  *
  * \author Arjan Gijsberts
  */
+
 class IMachineLearnerModule : public Module {
 protected:
-    /**
-     * Copy Constructor (unimplemented on purpose)
-     */
-    IMachineLearnerModule(const IMachineLearnerModule& other);
-
-    /**
-     * Assignment operator (unimplemented on purpose).
-     */
-    IMachineLearnerModule& operator=(const IMachineLearnerModule& other);
-
     /**
      * An input port for commands.
      */
@@ -56,11 +45,21 @@ protected:
      * A prefix path for the ports that will be registered.
      */
     std::string portPrefix;
-    
+
     /**
      * An instance of the DispatchManager to configure event listeners.
      */
     DispatcherManager dmanager;
+
+    /**
+     * Copy Constructor (private and unimplemented on purpose).
+     */
+    IMachineLearnerModule(const IMachineLearnerModule& other);
+
+    /**
+     * Assignment operator (private and unimplemented on purpose).
+     */
+    IMachineLearnerModule& operator=(const IMachineLearnerModule& other);
 
     /**
      * Register a port with a given name.
@@ -85,7 +84,7 @@ protected:
      * Exits the module while printing a help message.
      */
     virtual void exitWithHelp(std::string error = "") = 0;
-    
+
 public:
     /**
      * Constructor.
@@ -95,7 +94,7 @@ public:
     IMachineLearnerModule(std::string pp) : portPrefix(pp) { }
 
     /**
-     * Destructor.
+     * Destructor (empty).
      */
     virtual ~IMachineLearnerModule() { }
 

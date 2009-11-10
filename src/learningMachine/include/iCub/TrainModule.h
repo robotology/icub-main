@@ -6,8 +6,8 @@
  *
  */
 
-#ifndef __ICUB_TRAINMODULE__
-#define __ICUB_TRAINMODULE__
+#ifndef LM_TRAINMODULE__
+#define LM_TRAINMODULE__
 
 #include "iCub/PredictModule.h"
 
@@ -92,12 +92,12 @@ private:
     TrainProcessor trainProcessor;
 
     /**
-     * Copy constructor (unimplemented on purpose).
+     * Copy constructor (private and unimplemented on purpose).
      */
     TrainModule(const TrainModule& other);
 
     /**
-     * Assignment operator (unimplemented on purpose).
+     * Assignment operator (private and unimplemented on purpose).
      */
     TrainModule& operator=(const TrainModule& other);
 

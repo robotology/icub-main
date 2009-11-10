@@ -6,8 +6,8 @@
  *
  */
 
-#ifndef __ICUB_EVENTLISTENERFACTORY__
-#define __ICUB_EVENTLISTENERFACTORY__
+#ifndef LM_EVENTLISTENERFACTORY__
+#define LM_EVENTLISTENERFACTORY__
 
 #include "iCub/FactoryT.h"
 #include "iCub/IEventListener.h"

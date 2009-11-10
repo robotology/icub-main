@@ -6,8 +6,8 @@
  *
  */
 
-#ifndef __ICUB_IPORTEVENTLISTENER__
-#define __ICUB_IPORTEVENTLISTENER__
+#ifndef LM_IPORTEVENTLISTENER__
+#define LM_IPORTEVENTLISTENER__
 
 #include <string>
 
@@ -22,9 +22,12 @@ namespace iCub {
 namespace learningmachine {
 
 /**
- * The abstract base class for EventListeners that output to a port. This class 
+ * The abstract base class for EventListeners that output to a port. This class
  * is introduced so that base functionality to register ports can be inherited
  * by multiple subclasses.
+ *
+ * \see iCub::learningmachine::PredictEventListener
+ * \see iCub::learningmachine::TrainEventListener
  *
  * \author Arjan Gijsberts
  */
@@ -42,7 +45,7 @@ protected:
     std::string portPrefix;
 
     /**
-     * Resets the port and opens it at the specified name. If passed an empty 
+     * Resets the port and opens it at the specified name. If passed an empty
      * string the port is opened at the first free port with the predefined
      * prefix.
      *
@@ -90,13 +93,13 @@ public:
     virtual bool configure(Searchable& config);
 
     /**
-     * Asks the event listener to return a string containing information on 
+     * Asks the event listener to return a string containing information on
      * its configuration so far.
      *
      * @return the information on the IEventListener
      */
-    virtual std::string getInfo() { 
-        return this->IEventListener::getInfo() + " [port: " + this->port.where().toString().c_str() + "]"; 
+    virtual std::string getInfo() {
+        return this->IEventListener::getInfo() + " [port: " + this->port.where().toString().c_str() + "]";
     }
 
 };

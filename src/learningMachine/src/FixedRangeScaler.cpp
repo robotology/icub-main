@@ -16,14 +16,14 @@
 namespace iCub {
 namespace learningmachine {
 
-FixedRangeScaler::FixedRangeScaler(double li, double ui, double lo, double uo) 
+FixedRangeScaler::FixedRangeScaler(double li, double ui, double lo, double uo)
   : lowerBoundIn(li), upperBoundIn(ui), lowerBoundOut(lo), upperBoundOut(uo) {
     this->setName("Fixed");
     this->updateScales();
 }
 
 void FixedRangeScaler::updateScales() {
-    this->scale = (this->getUpperBoundIn() - this->getLowerBoundIn()) / 
+    this->scale = (this->getUpperBoundIn() - this->getLowerBoundIn()) /
                   (this->getUpperBoundOut() - this->getLowerBoundOut());
     this->offset = this->getLowerBoundIn() - (this->getLowerBoundOut() * this->scale);
 }
@@ -31,8 +31,10 @@ void FixedRangeScaler::updateScales() {
 std::string FixedRangeScaler::getInfo() {
     std::ostringstream buffer;
     buffer << this->IScaler::getInfo() << ", ";
-    buffer << "In Bounds: [" << this->getLowerBoundIn() << "," << this->getUpperBoundIn() << "], ";
-    buffer << "Out Bounds: [" << this->getLowerBoundOut() << "," << this->getUpperBoundOut() << "]";
+    buffer << "In Bounds: [" << this->getLowerBoundIn() << ","
+                             << this->getUpperBoundIn() << "], ";
+    buffer << "Out Bounds: [" << this->getLowerBoundOut() << ","
+                              << this->getUpperBoundOut() << "]";
     return buffer.str();
 }
 
@@ -49,7 +51,7 @@ void FixedRangeScaler::writeBottle(Bottle& bot) {
 void FixedRangeScaler::readBottle(Bottle& bot) {
     // make sure to call the superclass's method (will reset transformer)
     this->IScaler::readBottle(bot);
-    
+
     this->upperBoundIn = bot.pop().asDouble();
     this->lowerBoundIn = bot.pop().asDouble();
     this->upperBoundOut = bot.pop().asDouble();
@@ -84,7 +86,7 @@ bool FixedRangeScaler::configure(Searchable& config) {
 
     if(!config.findGroup("in").isNull()) {
         Bottle& bot = config.findGroup("in");
-        if(bot.size() == 3 && (bot.get(1).isInt() || bot.get(1).isDouble()) && 
+        if(bot.size() == 3 && (bot.get(1).isInt() || bot.get(1).isDouble()) &&
            (bot.get(2).isInt() || bot.get(2).isDouble())) {
 
             this->setLowerBoundIn(bot.get(1).asDouble());
@@ -95,7 +97,7 @@ bool FixedRangeScaler::configure(Searchable& config) {
 
     if(!config.findGroup("out").isNull()) {
         Bottle& bot = config.findGroup("out");
-        if(bot.size() == 3 && (bot.get(1).isInt() || bot.get(1).isDouble()) && 
+        if(bot.size() == 3 && (bot.get(1).isInt() || bot.get(1).isDouble()) &&
            (bot.get(2).isInt() || bot.get(2).isDouble())) {
 
             this->setLowerBoundOut(bot.get(1).asDouble());
@@ -104,9 +106,6 @@ bool FixedRangeScaler::configure(Searchable& config) {
         }
     }
 
-    // set the desired outgoing upper bound (double)
-    //std::cout << config.toString() << std::endl;
-    
     return success;
 }
 

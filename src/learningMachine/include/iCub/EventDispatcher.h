@@ -6,8 +6,8 @@
  *
  */
 
-#ifndef __ICUB_EVENTDISPATCHER__
-#define __ICUB_EVENTDISPATCHER__
+#ifndef LM_EVENTDISPATCHER__
+#define LM_EVENTDISPATCHER__
 
 #include <list>
 
@@ -18,10 +18,10 @@ namespace learningmachine {
 
 
 /**
- * The EventDispatcher manages the relation between the various instances of 
- * IEventListeners and IEvents. It allows IEvents to get raised and dispatches 
- * these to the registered IEventListeners. Internally, the EventDispatcher uses 
- * a double dispatching mechanism that allows extension of both IEventListeners 
+ * The EventDispatcher manages the relation between the various instances of
+ * IEventListeners and IEvents. It allows IEvents to get raised and dispatches
+ * these to the registered IEventListeners. Internally, the EventDispatcher uses
+ * a double dispatching mechanism that allows extension of both IEventListeners
  * and IEvents.
  *
  * \see iCub::learningmachine::IEventListener
@@ -39,31 +39,31 @@ private:
     std::list<IEventListener*> listeners;
 
     /**
-     * Empty Constructor.
+     * Constructor (empty).
      */
     EventDispatcher() { }
 
     /**
-     * Copy Constructor (unimplemented on purpose).
+     * Copy Constructor (private and unimplemented on purpose).
      */
     EventDispatcher(const EventDispatcher& other);
 
     /**
-     * Destructor.
+     * Destructor (private on purpose).
      */
     virtual ~EventDispatcher();
-    
+
     /**
-     * Assignment operator (unimplemented on purpose).
+     * Assignment operator (private and unimplemented on purpose).
      */
     EventDispatcher& operator=(const EventDispatcher& other);
-    
+
 public:
     /**
      * An instance retrieval method that follows the Singleton pattern.
      *
-     * Note that this implementation should not be considered thread safe and 
-     * that problems may arise. However, due to the nature of the expected use 
+     * Note that this implementation should not be considered thread safe and
+     * that problems may arise. However, due to the nature of the expected use
      * this will not be likely to result in problems.
      *
      * See http://www.oaklib.org/docs/oak/singleton.html for more information.
@@ -89,10 +89,10 @@ public:
      * @param  idx The index of the IEventListener that is to be removed.
      */
     virtual void removeListener(int idx);
-    
+
     /**
-     * Removes an IEventListener from the list. This does _not_ delete the 
-     * object itself. As the caller has access to the pointer, it can take 
+     * Removes an IEventListener from the list. This does _not_ delete the
+     * object itself. As the caller has access to the pointer, it can take
      * responsibility for the proper destruction of the object.
      * @param  listener The IEventListener instance that is to be removed.
      */
@@ -111,7 +111,7 @@ public:
      * @param  idx The index of the IEventListener.
      */
     virtual IEventListener& getAt(int idx) const;
-    
+
     /**
      * Clears all the IEventListeners from the EventDispatcher.
      */
@@ -119,13 +119,13 @@ public:
 
     /**
      * Raises an IEvent, causing it to be dispatched to each registered
-     * IEventListener. Note that a double dispatching mechanism is used to 
-     * determine the proper runtime types of both the IEvent and the 
+     * IEventListener. Note that a double dispatching mechanism is used to
+     * determine the proper runtime types of both the IEvent and the
      * IEventListener using dynamic binding.
      * @param  event The IEvent instance that is to be raised.
      */
     virtual void raise(IEvent& event);
-    
+
     /**
      * Counts the number of registered listeners.
      *
@@ -134,7 +134,7 @@ public:
     virtual int countListeners() const {
         return this->listeners.size();
     }
-    
+
     /**
      * Tells whether there are listeners for events.
      *
@@ -143,7 +143,7 @@ public:
     virtual bool hasListeners() {
         return (!this->listeners.empty());
     }
-    
+
 };
 
 } // learningmachine

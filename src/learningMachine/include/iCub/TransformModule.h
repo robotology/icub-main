@@ -6,8 +6,8 @@
  *
  */
 
-#ifndef __ICUB_TRANSFORMMODULE__
-#define __ICUB_TRANSFORMMODULE__
+#ifndef LM_TRANSFORMMODULE__
+#define LM_TRANSFORMMODULE__
 
 #include "iCub/IMachineLearnerModule.h"
 #include "iCub/TransformerPortable.h"
@@ -198,12 +198,12 @@ private:
     TransformPredictProcessor predictProcessor;
 
     /**
-     * Copy constructor (unimplemented on purpose).
+     * Copy constructor (private and unimplemented on purpose).
      */
     TransformModule(const TransformModule& other);
 
     /**
-     * Assignment operator (unimplemented on purpose).
+     * Assignment operator (private and unimplemented on purpose).
      */
     TransformModule& operator=(const TransformModule& other);
 

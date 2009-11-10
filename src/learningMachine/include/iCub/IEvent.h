@@ -6,8 +6,8 @@
  *
  */
 
-#ifndef __ICUB_EVENT__
-#define __ICUB_EVENT__
+#ifndef LM_EVENT__
+#define LM_EVENT__
 
 #include <string>
 

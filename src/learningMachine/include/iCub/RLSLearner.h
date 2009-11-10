@@ -2,7 +2,7 @@
  * Copyright (C) 2009 Arjan Gijsberts @ Italian Institute of Technology
  * CopyPolicy: Released under the terms of the GNU GPL v2.0.
  *
- * *TEMPORARY* Regularized Least Squares learner.
+ * Regularized Least Squares learner.
  *
  */
 
@@ -18,8 +18,8 @@
  *
  */
 
-#ifndef __ICUB_RLSLEARNER__
-#define __ICUB_RLSLEARNER__
+#ifndef LM_RLSLEARNER__
+#define LM_RLSLEARNER__
 
 #include <string>
 #include <vector>
@@ -38,16 +38,6 @@ using namespace yarp::math;
 
 namespace iCub {
 namespace learningmachine {
-
-/**
- *
- *
- * \see iCub::contrib::IMachineLearner
- * \see iCub::contrib::IFixedSizeLearner
- *
- * \author Arjan Gijsberts
- *
- */
 
 class RLS {
 private:
@@ -151,6 +141,18 @@ public:
     }
 };
 
+
+/**
+ * Linear Regularized Least Squares (a.k.a. ridge regression) learner. It uses
+ * an rank 1 update rule to update the matrix inverse.
+ *
+ * \see iCub::contrib::IMachineLearner
+ * \see iCub::contrib::IFixedSizeLearner
+ *
+ * \author Arjan Gijsberts
+ *
+ */
+
 class RLSLearner : public IFixedSizeLearner {
 private:
 
@@ -213,9 +215,19 @@ public:
     RLSLearner(int dom = 1, int cod = 1, double lambda = 1.0);
 
     /**
+     * Copy constructor.
+     */
+    RLSLearner(const RLSLearner& other);
+
+    /**
      * Destructor.
      */
     virtual ~RLSLearner();
+
+    /**
+     * Assignment operator.
+     */
+    RLSLearner& operator=(const RLSLearner& other);
 
     /*
      * Inherited from IMachineLearner.
@@ -247,7 +259,9 @@ public:
     /*
      * Inherited from IMachineLearner.
      */
-    IMachineLearner* clone();
+    RLSLearner* clone() {
+        return new RLSLearner(*this);
+    }
 
     /*
      * Inherited from IMachineLearner.

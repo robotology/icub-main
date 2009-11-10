@@ -11,8 +11,8 @@
  * ONLY PLACEHOLDER FOR NOW
  */
 
-#ifndef __ICUB_MULTILEARNER_TEMPLATE__
-#define __ICUB_MULTILEARNER_TEMPLATE__
+#ifndef LM_MULTILEARNER_TEMPLATE__
+#define LM_MULTILEARNER_TEMPLATE__
 
 namespace iCub {
 namespace learningmachine {

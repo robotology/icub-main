@@ -6,8 +6,8 @@
  *
  */
 
-#ifndef __ICUB_PREDICTMODULE__
-#define __ICUB_PREDICTMODULE__
+#ifndef LM_PREDICTMODULE__
+#define LM_PREDICTMODULE__
 
 #include "iCub/IMachineLearnerModule.h"
 #include "iCub/MachinePortable.h"
@@ -125,12 +125,12 @@ protected:
     Port model_in;
 
     /**
-     * Copy constructor (unimplemented on purpose).
+     * Copy constructor (private and unimplemented on purpose).
      */
     PredictModule(const PredictModule& other);
 
     /**
-     * Assignment operator (unimplemented on purpose).
+     * Assignment operator (private and unimplemented on purpose).
      */
     PredictModule& operator=(const PredictModule& other);
 
@@ -160,7 +160,7 @@ public:
         predictProcessor(machinePortable) { }
 
     /**
-     * Destructor.
+     * Destructor (empty).
      */
     virtual ~PredictModule() { }
 
@@ -184,7 +184,7 @@ public:
      */
     virtual bool close() {
         IMachineLearnerModule::close();
-        if (this->getMachinePortable().hasWrapped()) {
+        if(this->getMachinePortable().hasWrapped()) {
             return this->getMachine().close();
         } else {
             return true;

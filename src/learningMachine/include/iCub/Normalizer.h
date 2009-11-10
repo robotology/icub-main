@@ -6,8 +6,8 @@
  *
  */
 
-#ifndef __ICUB_NORMALIZER__
-#define __ICUB_NORMALIZER__
+#ifndef LM_NORMALIZER__
+#define LM_NORMALIZER__
 
 #include "iCub/IScaler.h"
 
@@ -16,10 +16,9 @@ using namespace yarp::os;
 namespace iCub {
 namespace learningmachine {
 
-
 /**
  *
- * A class that implements normalization as a preprocessing step. This 
+ * A class that implements normalization as a preprocessing step. This
  * normalizer limits all values between a predesignated range. By default this
  * range is defined as [-1, 1].
  *
@@ -28,6 +27,7 @@ namespace learningmachine {
  * \author Arjan Gijsberts
  *
  */
+
 class Normalizer : public IScaler {
 protected:
     /**

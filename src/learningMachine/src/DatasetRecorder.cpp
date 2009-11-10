@@ -15,8 +15,8 @@ namespace iCub {
 namespace learningmachine {
 
 DatasetRecorder& DatasetRecorder::operator=(const DatasetRecorder& other) {
-    if (this == &other) return *this; // handle self initialization
-    
+    if(this == &other) return *this; // handle self initialization
+
     this->IMachineLearner::operator=(other);
     this->filename = other.filename;
     this->precision = other.precision;

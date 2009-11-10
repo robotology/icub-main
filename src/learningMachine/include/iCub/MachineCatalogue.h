@@ -8,8 +8,8 @@
  * hard to implement the factory pattern neatly in C++.
  */
 
-#ifndef __ICUB_MACHINECATALOGUE__
-#define __ICUB_MACHINECATALOGUE__
+#ifndef LM_MACHINECATALOGUE__
+#define LM_MACHINECATALOGUE__
 
 #include "iCub/IMachineLearner.h"
 #include "iCub/DummyLearner.h"

@@ -42,7 +42,7 @@ std::string IScaler::toString() {
 }
 
 bool IScaler::fromString(const std::string& str) {
-    Bottle model(str.c_str()); 
+    Bottle model(str.c_str());
     this->readBottle(model);
     return true;
 }
@@ -62,9 +62,21 @@ void IScaler::readBottle(Bottle& bot) {
 bool IScaler::configure(Searchable& config) {
     bool success = false;
 
-    // enable/disable update
+    // toggle enable/disable update
     if(!config.findGroup("update").isNull()) {
         this->setUpdateEnabled(!this->getUpdateEnabled());
+        success = true;
+    }
+
+    // enable update
+    if(!config.findGroup("enable").isNull()) {
+        this->setUpdateEnabled(true);
+        success = true;
+    }
+
+    // disable update
+    if(!config.findGroup("disable").isNull()) {
+        this->setUpdateEnabled(false);
         success = true;
     }
 

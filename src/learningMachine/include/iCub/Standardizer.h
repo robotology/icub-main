@@ -6,8 +6,8 @@
  *
  */
 
-#ifndef __ICUB_STANDARDIZER__
-#define __ICUB_STANDARDIZER__
+#ifndef LM_STANDARDIZER__
+#define LM_STANDARDIZER__
 
 #include "iCub/IScaler.h"
 
@@ -19,10 +19,10 @@ namespace learningmachine {
 
 /**
  *
- * A class that implements standardization as a preprocessing step. 
- * Standardization is the process of converting all samples such that the set 
- * has a zero mean and unit standard deviation. In this particular 
- * implementation both the mean and standard deviation are calculated using a 
+ * A class that implements standardization as a preprocessing step.
+ * Standardization is the process of converting all samples such that the set
+ * has a zero mean and unit standard deviation. In this particular
+ * implementation both the mean and standard deviation are calculated using a
  * 'running' computation.
  *
  * \see iCub::learningmachine::IScaler
@@ -42,17 +42,17 @@ protected:
      * Temporary variable that counts the sum of the squared errors.
      */
     double squaredErrors;
-    
+
     /**
      * Desired mean for the output distribution.
      */
     double mean;
-    
+
     /**
      * Desired standard deviation for the output distribution.
      */
     double std;
-    
+
     /**
      * Running mean based on the samples seen so far.
      */
@@ -91,7 +91,7 @@ public:
      * Inherited from IScaler
      */
     virtual std::string getInfo();
-    
+
     /*
      * Inherited from IConfig
      */
@@ -100,10 +100,10 @@ public:
     /*
      * Inherited from IScaler
      */
-    IScaler* clone() {
+    Standardizer* clone() {
         return new Standardizer(*this);
     }
-    
+
     /**
      * Accessor for the desired mean.
      */

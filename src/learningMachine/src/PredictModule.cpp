@@ -2,10 +2,12 @@
  * Copyright (C) 2007-2009 Arjan Gijsberts @ Italian Institute of Technology
  * CopyPolicy: Released under the terms of the GNU GPL v2.0.
  *
- * Prediction module implementation for wrapping an executable around IMachineLearner classes.
+ * Prediction module implementation for wrapping an executable around
+ * IMachineLearner classes.
  *
  */
 
+#include <iostream>
 #include <stdexcept>
 #include <cassert>
 
@@ -102,7 +104,8 @@ bool PredictModule::open(Searchable& opt) {
 
     // check for model input port specifier and connect if found
     if(opt.check("modelport", val)) {
-        Network::connect(val->asString().c_str(), this->model_in.where().getName().c_str());
+        Network::connect(val->asString().c_str(),
+                         this->model_in.where().getName().c_str());
     }
 
     // add reader for models
@@ -125,7 +128,7 @@ bool PredictModule::respond(const Bottle& cmd, Bottle& reply) {
     try {
         switch(cmd.get(0).asVocab()) {
             case VOCAB4('h','e','l','p'): // print help information
-                // why this vocab?
+                {
                 reply.addVocab(Vocab::encode("help"));
 
                 reply.addString("Training module configuration options");
@@ -136,16 +139,18 @@ bool PredictModule::respond(const Bottle& cmd, Bottle& reply) {
                 //reply.addString(this->getMachine()->getConfigHelp().c_str());
                 success = true;
                 break;
+                }
 
             case VOCAB4('c','l','e','a'): // clear the machine
             case VOCAB3('c','l','r'):
             case VOCAB4('r','e','s','e'):
             case VOCAB3('r','s','t'):
-                // NOTE TO SELF: possibly set the machine to a null pointer for prediction
+                {
                 this->getMachine().reset();
                 reply.addString("Machine reset.");
                 success = true;
                 break;
+                }
 
             case VOCAB4('i','n','f','o'): // information
             case VOCAB4('s','t','a','t'): // print statistics
@@ -160,7 +165,8 @@ bool PredictModule::respond(const Bottle& cmd, Bottle& reply) {
             case VOCAB4('l','o','a','d'): // load
                 { // prevent identifier initialization to cross borders of case
                 reply.add(Value::makeVocab("help"));
-                std::string replymsg = std::string("Loading machine from '") + cmd.get(1).asString().c_str() + "'... " ;
+                std::string replymsg = std::string("Loading machine from '") +
+                                       cmd.get(1).asString().c_str() + "'... " ;
                 if(!cmd.get(1).isString()) {
                     replymsg += "failed";
                 } else {
@@ -183,8 +189,6 @@ bool PredictModule::respond(const Bottle& cmd, Bottle& reply) {
     }
     return success;
 }
-
-
 
 } // learningmachine
 } // iCub
