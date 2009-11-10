@@ -35,16 +35,6 @@ namespace learningmachine {
  *
  */
 
-/*
- * Note that this class internally handles a 'null' type scaler, which is basically a
- * null pointer in the vector of scalers. This has the disadvantage that regular checking
- * for null pointers is needed in various methods. An alternative would have been to
- * explicitely declare a passthrough scaler that does not do any operation on the samples.
- * However, this would add some overhead on the method calling and would create a requirement
- * that the user has registered this null scaler in the factory. In its current form, with
- * internal handling of null scalers, we do not have this dependency and the class will
- * not cause any conflict in the absence of scalers.
- */
 class ScaleTransformer : public IFixedSizeTransformer {
 private:
     /**
