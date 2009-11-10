@@ -2,7 +2,7 @@
 
 #include <stdio.h>
 
-#include <iCub/YarpImgRecv.h>
+#include <iCub/YARPImgRecv.h>
 
 
 //YARP include
@@ -33,13 +33,12 @@ using namespace yarp::sig;
 using namespace yarp::sig::draw;
 using namespace std;
 
+
 /**
 * Thread that reads the port and traslate the value into a colour
 * The corrispective element in the output image is highlighted proportionally to the value read
-* /author Francesco Rea
+* @author Francesco Rea
 */
-
-
 class imageThread : public RateThread {
 public:
 	/**
@@ -63,16 +62,16 @@ public:
 	* code that is executed after the thread starts
 	* @param s is true if the thread started
 	*/
-	virtual void imageThread::afterStart(bool s);
+	virtual void afterStart(bool s);
 	
 	/**
 	* running code of the thread
 	*/
-    virtual void imageThread::run();
+    virtual void run();
 	/**
 	* code executed when the thread is released
 	*/
-    virtual void imageThread::threadRelease();
+    virtual void threadRelease();
 	/**
 	* returns the name of the thread
 	*/
@@ -183,8 +182,8 @@ public:
 	* port where the commands are vehiculated from controller to engine
 	*/
 	BufferedPort<yarp::os::Bottle> portCmd;
-
-	BufferedPort<ImageOf<PixelMono>> port_plane; 
+	
+	BufferedPort<ImageOf<PixelMono> > port_plane; 
 	/** 
 	* counter for the update step
 	*/
@@ -205,10 +204,17 @@ public:
 	*counter incremented inside the updateModule
 	*/
 	int count;  
-	
+	/**
+	* temporary RGB image
+	*/
 	ImageOf<PixelRgb> img_tmp; //=new ImageOf<PixelRgb>;
+	/**
+	* temporary RGB image
+	*/
 	ImageOf<PixelRgb> img; //=new ImageOf<PixelRgb>;
-	
+	/**
+	* temporary RGB image
+	*/
 	ImageOf<PixelRgb> *img0; //=new ImageOf<PixelRgb>;
 	/**
 	* YARP image where all the objects are drawn sequentially
@@ -218,7 +224,6 @@ public:
 	* openCv image where all the objects are drawn sequentially
 	*/
 	IplImage *cvImage;
-
 	/** 
 	* flag that enable the drawing of the layer present in the simulation
 	*/
