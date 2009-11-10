@@ -55,6 +55,7 @@ public:
 	int drumHit;
 	int stuckCounter;
 	double *stuckPos;
+    double *disStuckPos;
 	double *y_nofeed;
 	int up_down;
 

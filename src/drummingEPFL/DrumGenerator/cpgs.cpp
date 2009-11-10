@@ -103,6 +103,7 @@ cpg_manager::cpg_manager(int nbDOFs){
   drumHit=0;
   stuckCounter=0;
   stuckPos = new double[nbDOFs];
+  disStuckPos = new double[nbDOFs];
 
 
 }
@@ -130,6 +131,7 @@ cpg_manager::~cpg_manager()
   delete[] r;
   delete[] ampl;
   delete[] stuckPos;
+  delete[] disStuckPos;
 }
 
 
@@ -158,7 +160,7 @@ void cpg_manager::integrate_step(double *y, double *at_states)
 
   for(int i=0;i<nbDOFs;i++)
     {
-      r[i]=(y[4+i*4]-y[2+i*4])*(y[4+i*4]-y[2+i*4])+y[5+i*4]*y[5+i*4]; 
+      r[i]=y[4+i*4]*y[4+i*4]+y[5+i*4]*y[5+i*4]; 
     }
 
   //******** external clock************  
@@ -180,8 +182,8 @@ void cpg_manager::integrate_step(double *y, double *at_states)
       dydt[i*4+3] = u_go*u_go*u_go*u_go*b * (b/4.0 * (g[i] - y[i*4+2]) - y[i*4+3]);
 
 	   //rhythmic one
-      dydt[i*4+4] = a * (m[i]-r[i]) * (y[i*4+4]-y[i*4+2]) - omega * y[i*4+5];
-      dydt[i*4+5] = a * (m[i]-r[i]) * y[i*4+5] + omega* (y[i*4+4]-y[i*4+2]);
+      dydt[i*4+4] = a * (m[i]-r[i]) * y[i*4+4] - omega * y[i*4+5];
+      dydt[i*4+5] = a * (m[i]-r[i]) * y[i*4+5] + omega* y[i*4+4];
    }
 
   ///couplings
@@ -198,8 +200,8 @@ void cpg_manager::integrate_step(double *y, double *at_states)
 	  {
 	    indice = j*4;
 	    
-	    dydt[i*4+4] += epsilon[i][j]*(cos(theta[i][j])*(y[indice]-y[indice-2]) - sin(theta[i][j])*y[indice+1]);
-	    dydt[i*4+5] +=  epsilon[i][j]*(sin(theta[i][j])*(y[indice]-y[indice-2]) + cos(theta[i][j])*y[indice+1]);
+	    dydt[i*4+4] += epsilon[i][j]*(cos(theta[i][j])*(y[indice]) - sin(theta[i][j])*y[indice+1]);
+	    dydt[i*4+5] +=  epsilon[i][j]*(sin(theta[i][j])*(y[indice]) + cos(theta[i][j])*y[indice+1]);
 	  }
       }
 
@@ -210,7 +212,7 @@ void cpg_manager::integrate_step(double *y, double *at_states)
 
   for(int i=0;i<nbDOFs;i++)
     {
-      r2[i]=(y[4+i*4+cpgs_size]-y[2+i*4+cpgs_size])*(y[4+i*4+cpgs_size]-y[2+i*4+cpgs_size])+y[5+i*4+cpgs_size]*y[5+i*4+cpgs_size]; 
+      r2[i]=(y[4+i*4+cpgs_size])*(y[4+i*4+cpgs_size])+y[5+i*4+cpgs_size]*y[5+i*4+cpgs_size]; 
     }
 
   //******** external clock************  
@@ -231,70 +233,83 @@ void cpg_manager::integrate_step(double *y, double *at_states)
       dydt[i*4+3+cpgs_size] = u_go*u_go*u_go*u_go*b * (b/4.0 * (g[i] - y[i*4+2+cpgs_size]) - y[i*4+3+cpgs_size]);
 
 	   //rhythmic one
-      dydt[i*4+4+cpgs_size] = a * (m[i]-r2[i]) * (y[i*4+4+cpgs_size]-y[i*4+2+cpgs_size]) - omega * y[i*4+5+cpgs_size];
-      dydt[i*4+5+cpgs_size] = a * (m[i]-r2[i]) * y[i*4+5+cpgs_size] + omega * (y[i*4+4+cpgs_size]-y[i*4+2+cpgs_size]);
+      dydt[i*4+4+cpgs_size] = a * (m[i]-r2[i]) * (y[i*4+4+cpgs_size]) - omega * y[i*4+5+cpgs_size];
+      dydt[i*4+5+cpgs_size] = a * (m[i]-r2[i]) * y[i*4+5+cpgs_size] + omega * (y[i*4+4+cpgs_size]);
    }
 
   ///couplings
   for(int i = 0;i<nbDOFs;i++)
     for(int j=0;j<nbDOFs+1;j++)
       {
-	int indice;
-	if(j == 0)
-	  {
-	    dydt[i*4+4+cpgs_size] += epsilon[i][j]*(cos(theta[i][j])*y[cpgs_size] - sin(theta[i][j])*y[1+cpgs_size]);
-	    dydt[i*4+5+cpgs_size] +=  epsilon[i][j]*(sin(theta[i][j])*y[cpgs_size] + cos(theta[i][j])*y[1+cpgs_size]);
-	  }
-	else
-	  {
-	    indice = j*4;
-	    
-	    dydt[i*4+4+cpgs_size] += epsilon[i][j]*(cos(theta[i][j])*(y[indice+cpgs_size]-y[indice-2+cpgs_size]) - sin(theta[i][j])*y[indice+1+cpgs_size]);
-	    dydt[i*4+5+cpgs_size] +=  epsilon[i][j]*(sin(theta[i][j])*(y[indice+cpgs_size]-y[indice-2+cpgs_size]) + cos(theta[i][j])*y[indice+1+cpgs_size]);
-	  }
+        int indice;
+        if(j == 0)
+          {
+            dydt[i*4+4+cpgs_size] += epsilon[i][j]*(cos(theta[i][j])*y[cpgs_size] - sin(theta[i][j])*y[1+cpgs_size]);
+            dydt[i*4+5+cpgs_size] +=  epsilon[i][j]*(sin(theta[i][j])*y[cpgs_size] + cos(theta[i][j])*y[1+cpgs_size]);
+          }
+        else
+          {
+            indice = j*4;
+            
+            dydt[i*4+4+cpgs_size] += epsilon[i][j]*(cos(theta[i][j])*(y[indice+cpgs_size]) - sin(theta[i][j])*y[indice+1+cpgs_size]);
+            dydt[i*4+5+cpgs_size] +=  epsilon[i][j]*(sin(theta[i][j])*(y[indice+cpgs_size]) + cos(theta[i][j])*y[indice+1+cpgs_size]);
+          }
       }
   
   
 //*******SOUND FEEDBACK*********
 
-  if(drumHit==1)
+    if(drumHit==1)
     {
-      if(stuckCounter==0)
-	{
-	  for(int i=0; i<nbDOFs; i++)
-	    {stuckPos[i]=y[4*i+4]; }
+        if(stuckCounter==0)
+        {
+            for(int i=0; i<nbDOFs; i++)
+            {
+                stuckPos[i]=y[4*i+4];
+                disStuckPos[i]=y[4*i+2];                 
+            }
 
-	  if(y[5]>0){up_down=1;} //arm is going up
-	  else{up_down=-1;}
+        if(y[5]>0)
+        {
+            up_down=1;
+        } //arm is going up
+        else
+        {
+            up_down=-1;
+        }
 
-	  stuckCounter=1;
-	  ACE_OS::printf("FEEDBACK ON\n");
-	  ACE_OS::printf("stuck value %f, target value %f, observer %f\n", stuckPos[0], y[4], y[4+cpgs_size]);
+        stuckCounter=1;
+        ACE_OS::printf("FEEDBACK ON\n");
+        ACE_OS::printf("stuck value %f, target value %f, observer %f\n", stuckPos[0], y[4], y[4+cpgs_size]);
 	} 
 
-      else{
-	
-      if(stuckCounter>10 && up_down*y[4+cpgs_size]>up_down*stuckPos[0])
-	{
-	  ACE_OS::printf("FEEDBACK OFF\n");
-	  ACE_OS::printf("stuck value %f, target value %f, observer %f\n", stuckPos[0], y[4], y[4+cpgs_size]);
-	  drumHit=0;
-	  stuckCounter=0;
-      for(int i=0;i<cpgs_size;i++)//we adapt the observer to the current state of the oscillator
-		{
-	   		y[i+cpgs_size] = y[i];
-	   		dydt[i+cpgs_size] = dydt[i]; 
-		} 
+    else
+    {
+        if(stuckCounter>10 && up_down*y[4+cpgs_size]>up_down*stuckPos[0])
+        {
+            ACE_OS::printf("FEEDBACK OFF\n");
+            ACE_OS::printf("stuck value %f, target value %f, observer %f\n", stuckPos[0], y[4], y[4+cpgs_size]);
+            drumHit=0;
+            stuckCounter=0;
+            
+            for(int i=0;i<cpgs_size;i++)//we adapt the observer to the current state of the oscillator
+            {
+                y[i+cpgs_size] = y[i];
+                dydt[i+cpgs_size] = dydt[i]; 
+            } 
 	}
     //else{
-      for(int i=0;i<nbDOFs;i++)
-          {
-              stuckCounter++;
-              dydt[i*4+4] += alpha_x*(stuckPos[i]-y[4*i+4]);
-              dydt[i*4+5] = dydt[i*4+5]/(1+alpha_y*(stuckPos[i]-y[4*i+4])*(stuckPos[i]-y[4*i+4]));
-          }// }
+      
+    for(int i=0;i<nbDOFs;i++)
+    {
+        stuckCounter++;
+        dydt[i*4+4] += alpha_x*(stuckPos[i]-(y[4*i+4]));
+        dydt[i*4+5] = dydt[i*4+5]/(1+alpha_y*(stuckPos[i]-(y[4*i+4]))*(stuckPos[i]-(y[4*i+4])));
+        dydt[i*4+2] += alpha_x*(disStuckPos[i]-y[4*i+2]);
+        dydt[i*4+3] = dydt[i*4+3]/(1+alpha_y*(disStuckPos[i]-y[4*i+2])*(disStuckPos[i]-y[4*i+2]));
+    }
 
-      }}
+    }}
       
   /* if(drumHit==0 && stuckCounter==1)
     {
@@ -306,14 +321,15 @@ void cpg_manager::integrate_step(double *y, double *at_states)
   //********INTEGRATION****************************************
 
    for(int i=0; i<2*cpgs_size; i++)
-     {
-       y[i]=y[i]+dydt[i]*dt;}
+    {
+       y[i]=y[i]+dydt[i]*dt;
+    }
 
 
 
-  //***** SETTING TARGET POSITION
-  for(int i=0;i<nbDOFs;i++)
-    at_states[i]= ampl[i]*180/M_PI*y[4*i+4];
+    //***** SETTING TARGET POSITION
+    for(int i=0;i<nbDOFs;i++)
+        at_states[i]= ampl[i]*180/M_PI*(y[4*i+4]+y[4*i+2]);
 }
 
 

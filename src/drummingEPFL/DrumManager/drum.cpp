@@ -36,7 +36,7 @@ drum::drum()
 
     m_off=-5.0;//no oscillations
     m_on = 1.0;//oscillations
-    freqHead=0.20;
+    freqHead=0.1;
   
     mu = new double*[nbparts];  
     g = new double*[nbparts];
@@ -110,23 +110,23 @@ void drum::sendNewParameterSet(int i)
     Bottle& paramBot = param_port[i].prepare();
     paramBot.clear();  
 
-    ACE_OS::printf("Parameters sent for part %s ", 
-                        parts[i].c_str()); 
+    //ACE_OS::printf("Parameters sent for part %s ", 
+                        //parts[i].c_str()); 
                         
     for(int j=0;j<controlled_dofs[i];j++)
     {
-        ACE_OS::printf("joint %d: (%4.2f, %4.2f) ", 
+        /*ACE_OS::printf("joint %d: (%4.2f, %4.2f) ", 
                             j, 
                             mu[i][j], 
-                            g[i][j]);
+                            g[i][j]);*/
                             
         paramBot.addDouble(mu[i][j]);//mu
         paramBot.addDouble(g[i][j]);//g
     }
     
-    ACE_OS::printf("freq %4.2f, phase shift %4.2f\n", 
+    /*ACE_OS::printf("freq %4.2f, phase shift %4.2f\n", 
                             frequency[beat[i]],    
-                            phase_shift[i][beat[i]]);
+                            phase_shift[i][beat[i]]);*/
                             
     if(i==HEAD)
     {
@@ -279,20 +279,21 @@ void drum::scanHeadPosition()
 
 void drum::scanDrumPosition()
 {
-    Bottle *Position= scan_port.read();
+    //ACE_OS::printf("SCANNING\n");
+    Bottle *Position= scan_port.read(false);
     if(Position!=NULL)
     {
-        Bottle& DrumPos = *(Position->get(0).asList());
-        int nb_scan_drums=DrumPos.size();
+        int nb_scan_drums=Position->size();
+        ACE_OS::printf("receiving information for %d ids\n", nb_scan_drums);
         for(int i=0; i<nb_scan_drums; i++)
         {            
-            Bottle& temp= *(DrumPos.get(i).asList());
+            Bottle& temp= *(Position->get(i).asList());
             int temp_id = temp.get(0).asInt();
             int id_found=0;
-            
+            ACE_OS::printf("id %d\n", temp_id);
             for(int j=0; j<(nbparts-1); j++) //all parts but the head
              {
-                for(int k=0; k<nbDrums[j]; k++)
+                for(int k=0; k<nbIds[j]; k++)
                 {
                     if(temp_id==id[j][k])
                     {
@@ -305,14 +306,21 @@ void drum::scanDrumPosition()
                             exit(-1);
                         }
                         id_found++;
+                        
                         for(int m=0; m<temp.size()-1; m++)
                         {
                             G[j][k][m]=temp.get(m+1).asDouble();
-                            ACE_OS::printf("Received new angles for part %s, drum %d, id %d:  ",
-                                                        parts[j].c_str(), k, temp_id);
-                            ACE_OS::printf("0: %4.2f, 1: %4.2f, 2: %4.2f, 3: %4.2f\n", 
-                                                        G[j][k][0],G[j][k][1],G[j][k][2],G[j][k][3]);
+                            if(k==Score[i][beat[i]])
+                            {
+                                g[j][m]=G[j][k][m];
+                            }
                         }
+                        sendNewParameterSet(j);
+                        
+                        ACE_OS::printf("Received new angles for part %s, drum %d, id %d:  ",
+                                                        parts[j].c_str(), k, temp_id);
+                        ACE_OS::printf("0: %4.2f, 1: %4.2f, 2: %4.2f, 3: %4.2f\n", 
+                                                        G[j][k][0],G[j][k][1],G[j][k][2],G[j][k][3]);
                     }
                 }
             }
@@ -502,43 +510,36 @@ void drum::doConnect()
 
     //opening port to get frequency and couplings from the DrumManager
     interactive_port.open("/interactive/in");
-  
-    //opening and connecting ports for the SOUND FEEDBACK    
-    //midi_port.open("/midiDrum/in");
-    //midi_port.setStrict(true);
-    //soundFeedback=Network::connect("/midiDrum/server/out","/midiDrum/in", "tcp");
-    
-    if(!soundFeedback)
+
+    bool check=scan_port.open("/scan/in");
+    if(!check)
     {
-        ACE_OS::printf("No sound feedback\n");
+        ACE_OS::printf("fail to open scan port\n");
+    }
+    //head_port.open("/headPort/in");
+
+    ACE_OS::printf("connecting ports for ikin");
+    fflush(stdout);
+    
+    bool scan=Network::connect("/drumsarah/out","/scan/in");
+    //head = Network::connect("/DrumHeadControl/out","/headPort/in", "udp");
+    
+    ACE_OS::printf("... done\n");
+    fflush(stdout);
+
+    //if(head && scan)
+    if(scan)
+    {
+        ACE_OS::printf( "Visual feedback enabled\n");
+        visualFeedback=true;
     }
     else
     {
-        ACE_OS::printf("Sound feedback enabled\n");
+       ACE_OS::printf(  "No visual feedback \n");
+       //(scan %d, head %d)\n"(int) scan, (int) head ); 
     }
     
-    //scan_port.open("/scanPort/in");
-    //head_port.open("/headPort/in");
-
-    //ACE_OS::printf("connecting ports");
-    //bool scan, head;
-    //scan = Network::connect("/DrumIKin/out","/scanPort/in", "udp");
-    //head = Network::connect("/DrumHeadControl/out","/headPort/in", "udp");
-    //ACE_OS::printf("... done\n");
-
-    ////if(head && scan)
-    //if(scan)
-    //{
-        //ACE_OS::printf( "Visual feedback enabled\n");
-        //visualFeedback=true;
-    //}
-    //else
-    //{
-       //ACE_OS::printf(  "No visual feedback (scan %d, head %d)\n",
-                        //(int) scan, (int) head ); 
-    //}
-    
-    visualFeedback=true;
+    //visualFeedback=true;
  
 }
 
@@ -797,11 +798,11 @@ void drum::run()
     while(true)
     {
         //*******get position of the drums************
-        //if(visualFeedback)
-        //{
-            //scanDrumPosition();
+        if(visualFeedback)
+        {
+            scanDrumPosition();
             //scanHeadPosition();
-        //}  
+        }  
         
         //***** gets frequency and sends it to the generators
         keep=getRhythm();      

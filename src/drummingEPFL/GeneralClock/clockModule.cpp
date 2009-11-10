@@ -100,7 +100,7 @@ bool clockThread::init(Searchable &s)
   
   ///default frequency
   nu = 0.5; //Hz
-  a = 15.0;
+  a = 50.0;
   m_on = 1.0;
   dt = 0.001;
 

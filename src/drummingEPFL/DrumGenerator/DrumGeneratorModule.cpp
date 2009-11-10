@@ -3,7 +3,7 @@
 #include "DrumGeneratorModule.h"
 #include <ace/OS.h>
 
-#define DEBUG 0
+#define DEBUG 1
 
 generatorThread::generatorThread(int period) : RateThread(period)
 {
@@ -75,14 +75,20 @@ void generatorThread::getParameters()
     if(command!=NULL)
         if(command->size() >=2*nbDOFs+2)
             {
-                ACE_OS::printf("Receiving parameters for part %s:\n ", partName.c_str());
+                //ACE_OS::printf("Receiving parameters for part %s:\n ", partName.c_str());
                 for (int i=0; i<2*nbDOFs; i++)
                     {
                         myManager->next_parameters[i]= command->get(i).asDouble();
                         fprintf(parameters_file,"%f \t", myManager->next_parameters[i]);
-                        ACE_OS::printf("%f \t", myManager->next_parameters[i]);
+                        //ACE_OS::printf("%f \t", myManager->next_parameters[i]);
                     }
-                ACE_OS::printf("\n");
+                //ACE_OS::printf("\n");
+                
+                //if(myManager->parameters[1]!=myManager->next_parameters[1])
+                //{
+                    //y_cpgs[nbDOFs*4+2]=0.0; //reset go command
+                    //y_cpgs[2*(nbDOFs*4+3)-1]=0.0;//go command of the observer
+                //}
 
                 double freq = command->get(2*nbDOFs).asDouble();
 
@@ -98,13 +104,17 @@ void generatorThread::getParameters()
 
                 myManager->next_theta=phase;       
                 
-                ACE_OS::printf("freq and phase: %4.2f %4.2f\n", myManager->next_nu, phase);       
+                //ACE_OS::printf("freq and phase: %4.2f %4.2f\n", myManager->next_nu, phase);       
 
                 fprintf(parameters_file,"%f %f ",myManager->next_nu,phase);
                 fprintf(parameters_file,"%f \n",Time::now()/*-original_time*/);
+            
+            
             }
         else
+        {
             ACE_OS::printf("warning, manager sending crappy values\n");
+        }
 }
 
 void generatorThread::getHit()
@@ -204,14 +214,14 @@ void generatorThread::run()
 
     //we get the clock
 
-    getExternalClock();
+    //getExternalClock();
 
     if(myManager->nu<0)
-        {
-            ACE_OS::printf("Task is finished\n");
-            this->stop();
-            return;
-        }
+    {
+        ACE_OS::printf("Task is finished\n");
+        this->stop();
+        return;
+    }
 
  
     //integrate the system
@@ -219,45 +229,46 @@ void generatorThread::run()
     int inner_steps = (int)((period+time_residue)/myManager->get_dt());
 
     for(int j=0; j<inner_steps; j++)
-
+    {
         myManager->integrate_step(y_cpgs,states);
-
+    }
  
     ////calculate the current beat
 
     if(getNewBeat())
+    {
+
+        //ACE_OS::printf("current beat: %d\n", beat);
+        beat++;
+        lastBeat_time = time_now;
+        y_cpgs[nbDOFs*4+2]=0.0; //reset go command
+        y_cpgs[2*(nbDOFs*4+3)-1]=0.0;//go command of the observer
+
+        ///////send status to manager
+
+        Bottle& output = check_motion_port.prepare();
+        output.clear();
+        output.addInt(beat);//beat=0 score not started yet
+        check_motion_port.write();  
+        
+    }
+        ///update parameters
+
+        for (int i=0; i<2*nbDOFs; i++)
         {
+            myManager->parameters[i] = myManager->next_parameters[i];
+        }
 
-            //ACE_OS::printf("current beat: %d\n", beat);
-            beat++;
-            lastBeat_time = time_now;
-            y_cpgs[nbDOFs*4+2]=0.0; //reset go command
-            y_cpgs[2*(nbDOFs*4+3)-1]=0.0;//go command of the observer
-
-            ///////send status to manager
-
-            Bottle& output = check_motion_port.prepare();
-            output.clear();
-            output.addInt(beat);//beat=0 score not started yet
-            check_motion_port.write();  
-
-            ///update parameters
-
-            for (int i=0; i<2*nbDOFs; i++)
-                {
-                    myManager->parameters[i] = myManager->next_parameters[i];
-                }
-
-            myManager->nu = myManager->next_nu;
-            //fprintf(stderr, "%lf\n", myManager->nu);
+        myManager->nu = myManager->next_nu;
+        //fprintf(stderr, "%lf\n", myManager->nu);
       
-            for(int i=0; i<nbDOFs; i++)
-                {
-                    myManager->theta[i][0] = myManager->theta_init[i][0]+myManager->next_theta;
-                }
-        } 
+        for(int i=0; i<nbDOFs; i++)
+        {
+            myManager->theta[i][0] = myManager->theta_init[i][0]+myManager->next_theta;
+        }
+        
+    //}   
 
-  
 
     ///we update of the previous states
 
@@ -266,6 +277,8 @@ void generatorThread::run()
             previous_states[i]=states[i];
             fprintf(target_file,"%f \t", states[i]);
         }
+        
+    fprintf(target_file,"%f %f \t", y_cpgs[0], y_cpgs[1]);
 
     ///save time stamp
 
@@ -300,54 +313,42 @@ bool generatorThread::getNewBeat()
 
     double tmp_clock[2];
 
-    tmp_clock[0] = cos(myManager->theta[0][0])*y_cpgs[0] - 
-
-        sin(myManager->theta[0][0])*y_cpgs[1];
-
-  
-
-    tmp_clock[1] = sin(myManager->theta[0][0])*y_cpgs[0] + 
-
-        cos(myManager->theta[0][0])*y_cpgs[1];
-
-
+    tmp_clock[0] = cos(myManager->theta[0][0])*y_cpgs[0] - sin(myManager->theta[0][0])*y_cpgs[1];
+    tmp_clock[1] = sin(myManager->theta[0][0])*y_cpgs[0] + cos(myManager->theta[0][0])*y_cpgs[1];
 
     //check if init quadrant
 
     if((tmp_clock[0] >0.0) && (tmp_clock[1]>0.0))
-
+    {
+        //previous_quadrant[0] = true;
         previous_quadrant[1] = true;
-
+    }
 
 
     //check if in previous quadrant y< && x>0
 
     if((tmp_clock[0] <0.0) && (tmp_clock[1]<0.0))
-
+    //if((tmp_clock[0] <0.0) && (tmp_clock[1]>0.0))
+    {
         if(previous_quadrant[1])
 
             {
-
                 previous_quadrant[0] = true;
-
                 previous_quadrant[1] = false;
 
             }
-
+    }
 
 
     if((tmp_clock[0] >0.0) && (tmp_clock[1]<0.0))
-
+    //if((tmp_clock[0]<0.0) && (tmp_clock[1]<0.0))
+    {
         if(previous_quadrant[0])
-
-            {
-
-                previous_quadrant[0] = false;
-
-                return true;
-
-            }
-
+        {
+            previous_quadrant[0] = false;
+            return true;
+        }
+    }
   
 
     return false;
