@@ -24,7 +24,7 @@
 
 #include <iCub/MachineBoltzmann.h>
 
-#include <ipp.h>
+//#include <ipp.h>
 
 
 
@@ -34,7 +34,8 @@ using namespace yarp::sig;
 using namespace yarp::sig::draw;
 
 /**
-* 
+* Graphical interface used in order to send preformatted commands to the BMLEngine through port
+* and to visualize the input data, the state of the layer and the feature extracted by the boltzmann Machine
 * @author Francesco Rea
 */
 
@@ -88,7 +89,11 @@ private:
 	* options of the connection
 	*/
 	Property options;	//
+	
 public:
+	/**
+	* constructor of the class
+	*/
 	BMLInterface();
 	/**
 	* open the port
@@ -140,7 +145,7 @@ public:
 	*/
 	bool closePorts();
 
-	void drawAllBlobs(bool stable);
+	//void drawAllBlobs(bool stable);
 	//--- atributes ---
 	/**
 	* Output Port for commands 
@@ -199,6 +204,11 @@ public:
 	* pointer to the input image of layer8
 	*/
 	yarp::sig::ImageOf<yarp::sig::PixelRgb> *ptr_inputLayer8; //
+	/**
+	* flag that indicates when an input Image is regurarly 
+	* acquired on the dedicated port
+	*/
+	bool inputImageReady_flag;
 	/**
 	* function that 
 	*/
