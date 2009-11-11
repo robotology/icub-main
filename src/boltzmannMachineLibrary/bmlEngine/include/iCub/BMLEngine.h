@@ -14,7 +14,7 @@
 #include <highgui.h>
 
 //IPP include
-#include <ipp.h>
+//#include <ipp.h>
 
 //within Project Include
 #include <iCub/MachineBoltzmann.h>
@@ -32,6 +32,8 @@ using namespace yarp::sig::draw;
 * This class implements a process able of getting command from a controller 
 * interpreting them in term of callings to function of the 
 * library BM(BOLZMANN MACHINE LIBRARY)
+* the module reads any command on the port /inCmd
+* whereas the input image for any clamping is read on /inputImage
 *
 * \author Rea Francesco
 */
@@ -129,10 +131,7 @@ private:
 	* flag that enable the drawing of the layer present in the simulation
 	*/
 	bool enableDraw;
-	/**
-	* flag that indicates if the inputImage is ready for clamping
-	*/
-	bool inputImage_flag;
+	
 	/** 
 	* flag that regulates the execution of the freely mode
 	*/
@@ -144,21 +143,21 @@ private:
 	/**
 	* temporary red plane of the image
 	*/
-	Ipp8u *red_tmp;
+	//Ipp8u *red_tmp;
 	/**
 	* temporary blue plane of the image
 	*/
-	Ipp8u *blue_tmp;
+	//Ipp8u *blue_tmp;
 	/**
 	* temporary green plane of the image
 	*/
-	Ipp8u *green_tmp;
-	Ipp8u *im_out;
+	//Ipp8u *green_tmp;
+	//Ipp8u *im_out;
 	/**
 	* temporary image composition of planes
 	*/
-	Ipp8u* im_tmp[3];
-	Ipp8u* im_tmp_tmp;
+	//Ipp8u* im_tmp[3];
+	//Ipp8u* im_tmp_tmp;
 	int psb;
 	/** 
 	* value that indicates whether an area can be visually clamped 
@@ -275,7 +274,10 @@ public:
 	* flag that tells if the probability of the clamped mode has to be calculated
 	*/
 	bool probClamped_flag;
-
+	/**
+	* flag that indicates if the inputImage is ready for clamping
+	*/
+	bool inputImage_flag;
 };
 
 #endif //_BMLEngine_H_

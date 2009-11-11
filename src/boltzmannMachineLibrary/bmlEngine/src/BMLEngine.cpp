@@ -87,6 +87,8 @@ bool getImage(){
 	ret = _imgRecv.GetLastImage(&_inputImg);
 	engineModule->ptr_inputImage=&_inputImg;
 	_semaphore.post();
+
+	engineModule->inputImage_flag=true;
 	
 	//printf("GetImage: out of the semaphore \n");
 	return true;
@@ -154,19 +156,19 @@ bool BMLEngine::open(Searchable& config) {
 		probClamped_flag=false;
 		probFreely_flag=false;
 
-		im_out = ippiMalloc_8u_C1(320,240,&psb);		
-		im_tmp_tmp= ippiMalloc_8u_C1(320,240,&psb);
-		im_tmp[0]=im_out;
-		im_tmp[1]=im_out;
-		im_tmp[2]=im_out;
-		red_tmp= ippiMalloc_8u_C1(320,240,&psb);
-		blue_tmp= ippiMalloc_8u_C1(320,240,&psb);
-		green_tmp= ippiMalloc_8u_C1(320,240,&psb);
-		for(int i=0;i<320*240;i++){
+		//im_out = ippiMalloc_8u_C1(320,240,&psb);		
+		//im_tmp_tmp= ippiMalloc_8u_C1(320,240,&psb);
+		//im_tmp[0]=im_out;
+		//im_tmp[1]=im_out;
+		//im_tmp[2]=im_out;
+		//red_tmp= ippiMalloc_8u_C1(320,240,&psb);
+		//blue_tmp= ippiMalloc_8u_C1(320,240,&psb);
+		//green_tmp= ippiMalloc_8u_C1(320,240,&psb);
+		/*for(int i=0;i<320*240;i++){
 			red_tmp[i]=255;
 			blue_tmp[i]=255;
 			green_tmp[i]=255;
-		}
+		}*/
 			
 
 		engineModule=this;
@@ -189,9 +191,9 @@ bool BMLEngine::close() {
 		closePortImage();
 		closeCommandPort();
 		layer0Image->stop();
-		delete layer0Image;
-		layer1Image->stop();
-		delete layer1Image;
+		//delete layer0Image;
+		//layer1Image->stop();
+		//delete layer1Image;
 		//mb->saveConfiguration();		
 		return true;
 	}
@@ -564,7 +566,7 @@ bool BMLEngine::updateModule() {
 
 	//extract every unit present in the BoltzmannMachine
 	//int psb;
-	IppiSize srcsize={320,240};
+	//IppiSize srcsize={320,240};
 	
 	
 	int k=0;
@@ -895,9 +897,9 @@ void BMLEngine::addLayer(int number,int colDimension, int rowDimension){
 void BMLEngine::clampLayer(int layerNumber){
 	int width=320;
 	int height=240;
-	IppiSize srcsize={width,height};
+	//IppiSize srcsize={width,height};
 	//1.extracts 3 planes
-	Ipp8u* im_out = ippiMalloc_8u_C1(320,240,&psb);
+	/*Ipp8u* im_out = ippiMalloc_8u_C1(320,240,&psb);
 	Ipp8u* im_tmp[3];
 	Ipp8u* im_tmp_tmp[3];
 	im_tmp_tmp[0]=ippiMalloc_8u_C1(320,240,&psb);
@@ -909,16 +911,17 @@ void BMLEngine::clampLayer(int layerNumber){
 	Ipp8u* im_tmp_tmp2=ippiMalloc_8u_C1(320,240,&psb);
 	im_tmp[0]=ippiMalloc_8u_C1(320,240,&psb);
 	im_tmp[1]=ippiMalloc_8u_C1(320,240,&psb);
-	im_tmp[2]=ippiMalloc_8u_C1(320,240,&psb);
+	im_tmp[2]=ippiMalloc_8u_C1(320,240,&psb);*/
 	
 	//if((unsigned int)ptr_inputImage==0xcccccccc)
 	//	return;
-	ippiCopy_8u_C3P3R(this->ptr_inputImage->getPixelAddress(0,0),320*3,im_tmp,psb,srcsize);
-	ippiCopy_8u_C1R(im_tmp[0],psb,im_tmp_red,psb,srcsize);
-	ippiCopy_8u_C1R(im_tmp[1],psb,im_tmp_green,psb,srcsize);
-	ippiCopy_8u_C1R(im_tmp[2],psb,im_tmp_blue,psb,srcsize);
+	//ippiCopy_8u_C3P3R(this->ptr_inputImage->getPixelAddress(0,0),320*3,im_tmp,psb,srcsize);
+	//ippiCopy_8u_C1R(im_tmp[0],psb,im_tmp_red,psb,srcsize);
+	//ippiCopy_8u_C1R(im_tmp[1],psb,im_tmp_green,psb,srcsize);
+	//ippiCopy_8u_C1R(im_tmp[2],psb,im_tmp_blue,psb,srcsize);
+	
 	//2. gets the maximum value between planes
-	for(int i=0;i<320*240;i++){
+	/*for(int i=0;i<320*240;i++){
 		if(im_tmp_red[i]<im_tmp_green[i])
 			if(im_tmp_green[i]<im_tmp_blue[i])
 				im_out[i]=im_tmp_blue[i];
@@ -929,12 +932,12 @@ void BMLEngine::clampLayer(int layerNumber){
 				im_out[i]=im_tmp_blue[i];
 			else
 				im_out[i]=im_tmp_red[i];
-	}
-	ippiCopy_8u_C1R(im_out,psb,im_tmp_tmp[0],psb,srcsize);
-	ippiCopy_8u_C1R(im_out,psb,im_tmp_tmp[1],psb,srcsize);
-	ippiCopy_8u_C1R(im_out,psb,im_tmp_tmp[2],psb,srcsize);
+	}*/
+	//ippiCopy_8u_C1R(im_out,psb,im_tmp_tmp[0],psb,srcsize);
+	//ippiCopy_8u_C1R(im_out,psb,im_tmp_tmp[1],psb,srcsize);
+	//ippiCopy_8u_C1R(im_out,psb,im_tmp_tmp[2],psb,srcsize);
 	//ippiCopy_8u_C1C3R(im_out,psb,this->ptr_inputImage2->getPixelAddress(0,0),320*3,srcsize);
-	ippiCopy_8u_P3C3R(im_tmp_tmp,psb,this->ptr_inputImage2->getPixelAddress(0,0),320*3,srcsize);
+	//ippiCopy_8u_P3C3R(im_tmp_tmp,psb,this->ptr_inputImage2->getPixelAddress(0,0),320*3,srcsize);
 	
 	
 	//im_tmp_tmp[0]=im_out;
@@ -1009,7 +1012,7 @@ void BMLEngine::clampLayer(int layerNumber){
 			sum=0;
 			for(int y=0;y<rectDimY;y++){
 				for(int x=0;x<rectDimX;x++){
-					sum+=im_out[boltzmannMachineRow*rectDimY*320+boltzmannMachineCol*rectDimX+x+320*y];
+					//sum+=im_out[boltzmannMachineRow*rectDimY*320+boltzmannMachineCol*rectDimX+x+320*y];
 				}
 			}
 			float mean=sum/(rectDimX*rectDimY);
@@ -1027,38 +1030,41 @@ void BMLEngine::clampLayer(int layerNumber){
 
 
 	//4. free memory
-	ippiFree(im_out);
-	ippiFree(im_tmp);
-	ippiFree(im_tmp_tmp);
+	//ippiFree(im_out);
+	//ippiFree(im_tmp);
+	//ippiFree(im_tmp_tmp);
 }
 
 void BMLEngine::clampLayer(Layer layer){
 	int width=320;
 	int height=240;
-	IppiSize srcsize={width,height};
+	//IppiSize srcsize={width,height};
 	//1.extracts 3 planes
-	Ipp8u* im_out = ippiMalloc_8u_C1(320,240,&psb);
-	Ipp8u* im_tmp[3];
-	Ipp8u* im_tmp_tmp[3];
-	im_tmp_tmp[0]=ippiMalloc_8u_C1(320,240,&psb);
-	im_tmp_tmp[1]=ippiMalloc_8u_C1(320,240,&psb);
-	im_tmp_tmp[2]=ippiMalloc_8u_C1(320,240,&psb);
-	Ipp8u* im_tmp_red=ippiMalloc_8u_C1(320,240,&psb);
-	Ipp8u* im_tmp_green=ippiMalloc_8u_C1(320,240,&psb);
-	Ipp8u* im_tmp_blue=ippiMalloc_8u_C1(320,240,&psb);
-	Ipp8u* im_tmp_tmp2=ippiMalloc_8u_C1(320,240,&psb);
-	im_tmp[0]=ippiMalloc_8u_C1(320,240,&psb);
-	im_tmp[1]=ippiMalloc_8u_C1(320,240,&psb);
-	im_tmp[2]=ippiMalloc_8u_C1(320,240,&psb);
+	IplImage* im_tmp_ipl = cvCreateImage( cvSize(320,240), 8, 1 );
+	//Ipp8u* im_out = ippiMalloc_8u_C1(320,240,&psb);
+	//Ipp8u* im_tmp[3];
+	//Ipp8u* im_tmp_tmp[3];
+	//im_tmp_tmp[0]=ippiMalloc_8u_C1(320,240,&psb);
+	//im_tmp_tmp[1]=ippiMalloc_8u_C1(320,240,&psb);
+	//im_tmp_tmp[2]=ippiMalloc_8u_C1(320,240,&psb);
+	//Ipp8u* im_tmp_red=ippiMalloc_8u_C1(320,240,&psb);
+	//Ipp8u* im_tmp_green=ippiMalloc_8u_C1(320,240,&psb);
+	//Ipp8u* im_tmp_blue=ippiMalloc_8u_C1(320,240,&psb);
+	//Ipp8u* im_tmp_tmp2=ippiMalloc_8u_C1(320,240,&psb);
+	//im_tmp[0]=ippiMalloc_8u_C1(320,240,&psb);
+	//im_tmp[1]=ippiMalloc_8u_C1(320,240,&psb);
+	//im_tmp[2]=ippiMalloc_8u_C1(320,240,&psb);
 	
 	if(!inputImage_flag)
 		return;
-	ippiCopy_8u_C3P3R(this->ptr_inputImage->getPixelAddress(0,0),320*3,im_tmp,psb,srcsize);
-	ippiCopy_8u_C1R(im_tmp[0],psb,im_tmp_red,psb,srcsize);
-	ippiCopy_8u_C1R(im_tmp[1],psb,im_tmp_green,psb,srcsize);
-	ippiCopy_8u_C1R(im_tmp[2],psb,im_tmp_blue,psb,srcsize);
+	cvCvtColor(ptr_inputImage->getIplImage(),im_tmp_ipl,CV_RGB2GRAY);
+	//ippiCopy_8u_C3P3R(this->ptr_inputImage->getPixelAddress(0,0),320*3,im_tmp,psb,srcsize);
+	//ippiCopy_8u_C1R(im_tmp[0],psb,im_tmp_red,psb,srcsize);
+	//ippiCopy_8u_C1R(im_tmp[1],psb,im_tmp_green,psb,srcsize);
+	//ippiCopy_8u_C1R(im_tmp[2],psb,im_tmp_blue,psb,srcsize);
 	//2. gets the maximum value between planes
-	for(int i=0;i<320*240;i++){
+	
+	/*for(int i=0;i<320*240;i++){
 		if(im_tmp_red[i]<im_tmp_green[i])
 			if(im_tmp_green[i]<im_tmp_blue[i])
 				im_out[i]=im_tmp_blue[i];
@@ -1069,13 +1075,13 @@ void BMLEngine::clampLayer(Layer layer){
 				im_out[i]=im_tmp_blue[i];
 			else
 				im_out[i]=im_tmp_red[i];
-	}
-	ippiCopy_8u_C1R(im_out,psb,im_tmp_tmp[0],psb,srcsize);
-	ippiCopy_8u_C1R(im_out,psb,im_tmp_tmp[1],psb,srcsize);
-	ippiCopy_8u_C1R(im_out,psb,im_tmp_tmp[2],psb,srcsize);
+	}*/
+	//ippiCopy_8u_C1R(im_out,psb,im_tmp_tmp[0],psb,srcsize);
+	//ippiCopy_8u_C1R(im_out,psb,im_tmp_tmp[1],psb,srcsize);
+	//ippiCopy_8u_C1R(im_out,psb,im_tmp_tmp[2],psb,srcsize);
 	//ippiCopy_8u_C1C3R(im_out,psb,this->ptr_inputImage2->getPixelAddress(0,0),320*3,srcsize);
-	ippiCopy_8u_P3C3R(im_tmp_tmp,psb,this->ptr_inputImage2->getPixelAddress(0,0),320*3,srcsize);
-	
+	//ippiCopy_8u_P3C3R(im_tmp_tmp,psb,this->ptr_inputImage2->getPixelAddress(0,0),320*3,srcsize);
+	//cvCopy(im_tmp_ipl,ptr_inputImage2->getIplImage());
 	
 	//im_tmp_tmp[0]=im_out;
 	//im_tmp_tmp[1]=im_out;
@@ -1095,12 +1101,17 @@ void BMLEngine::clampLayer(Layer layer){
 	int rectDimX=320/totUnits;
 	int rectDimY=240/totRows;
 	int sum=0;
+	uchar* data=(uchar*)(im_tmp_ipl->imageData);
+	int step       = im_tmp_ipl->widthStep/sizeof(uchar);
+	printf("step of the gray image as input %d",step);
+
 	for(int boltzmannMachineRow=0;boltzmannMachineRow<totRows;boltzmannMachineRow++)
 		for(int boltzmannMachineCol=0;boltzmannMachineCol<totUnits;boltzmannMachineCol++){
 			sum=0;
 			for(int y=0;y<rectDimY;y++){
 				for(int x=0;x<rectDimX;x++){
-					sum+=im_out[boltzmannMachineRow*rectDimY*320+boltzmannMachineCol*rectDimX+320*y+x];
+					sum+=data[boltzmannMachineRow*rectDimY*320+boltzmannMachineCol*rectDimX+320*y+x];
+					//sum+=im_tmp_ipl[boltzmannMachineRow*rectDimY*320+boltzmannMachineCol*rectDimX+320*y+x];
 				}
 			}
 			double mean=sum/(rectDimX*rectDimY);
@@ -1111,7 +1122,7 @@ void BMLEngine::clampLayer(Layer layer){
 	
 
 	//4. free memory
-	ippiFree(im_out);
-	ippiFree(im_tmp);
-	ippiFree(im_tmp_tmp);
+	//ippiFree(im_out);
+	//ippiFree(im_tmp);
+	//ippiFree(im_tmp_tmp);
 }

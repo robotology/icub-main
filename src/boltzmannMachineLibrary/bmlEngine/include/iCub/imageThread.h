@@ -58,7 +58,7 @@ public:
     /**
 	* initialise the thread
 	*/
-	virtual bool threadInit();
+	virtual bool threadInit(); 
 	/**
 	* code that is executed after the thread starts
 	* @param s is true if the thread started
