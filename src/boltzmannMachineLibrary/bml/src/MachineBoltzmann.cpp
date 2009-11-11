@@ -989,7 +989,8 @@ void MachineBoltzmann::rbm(Matrix batchdataSingle,Layer *layer,int numhid){
 			printf("[%s] \n",tmp2.toString().c_str());
 			printf("\n");
 			Matrix ss=exp(data*(-1)*vishid - hidbias);
-			poshidprobs = 1.0/(ss+1.0); //1./(1 + exp((data*(-1))*(2*vishid) - hidbias));    
+			Matrix tt=ss+1.0;
+			poshidprobs = 1.0/tt; //1./(1 + exp((data*(-1))*(2*vishid) - hidbias));    
 			printf("[%s] \n",poshidprobs.toString().c_str());
 			//batchposhidprobs(:,:,batch)=poshidprobs;
 			posprods    = data.transposed() * poshidprobs;
