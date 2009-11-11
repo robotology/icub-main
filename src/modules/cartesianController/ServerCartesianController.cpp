@@ -377,6 +377,35 @@ bool ServerCartesianController::respond(const Bottle &command, Bottle &reply)
                             break;
                         }
 
+                        case IKINCARTCTRL_VOCAB_OPT_DES:
+                        {
+                            reply.addVocab(IKINCARTCTRL_VOCAB_REP_ACK);
+
+                            // xdcap part
+                            Bottle &xPart=reply.addList();
+                            xPart.addVocab(IKINSLV_VOCAB_OPT_X);
+                            Bottle &xData=xPart.addList();
+
+                            // populate xdcap list
+                            for (int i=0; i<xdes.length(); i++)
+                                xData.addDouble(xdes[i]);
+    
+                            // qdcap part
+                            Bottle &qPart=reply.addList();
+                            qPart.addVocab(IKINSLV_VOCAB_OPT_Q);
+                            Bottle &qData=qPart.addList();
+
+                            // populate qdcap list
+                            int cnt=0;
+                            for (unsigned int i=0; i<chain->getN(); i++)
+                                if ((*chain)[i].isBlocked())
+                                    qData.addDouble(chain->getAng(i));
+                                else
+                                    qData.addDouble(qdes[cnt++]);
+
+                            break;
+                        }
+
                         default:
                             reply.addVocab(IKINCARTCTRL_VOCAB_REP_NACK);
                     }
@@ -1234,11 +1263,11 @@ bool ServerCartesianController::getPose(Vector &x, Vector &o)
         x.resize(3);
         o.resize(pose.length()-3);
     
-        for (int i=0; i<3; i++)
+        for (int i=0; i<x.length(); i++)
             x[i]=pose[i];
     
-        for (int i=0; i<pose.length(); i++)
-            o[i]=pose[3+i];
+        for (int i=0; i<o.length(); i++)
+            o[i]=pose[x.length()+i];
     
         return true;
     }
@@ -1288,6 +1317,36 @@ bool ServerCartesianController::goToPoseSync(const Vector &xd, const Vector &od,
 bool ServerCartesianController::goToPositionSync(const Vector &xd, const double t)
 {
     return goToPosition(xd,t);
+}
+
+
+/************************************************************************/
+bool ServerCartesianController::getDesired(Vector &xdcap, Vector &odcap, Vector &qdcap)
+{
+    if (connected)
+    {
+        xdcap.resize(3);
+        odcap.resize(xdes.length()-3);
+
+        for (int i=0; i<xdcap.length(); i++)
+            xdcap[i]=xdes[i];
+
+        for (int i=0; i<odcap.length(); i++)
+            odcap[i]=xdes[xdcap.length()+i];
+
+        qdcap.resize(chain->getN());
+        int cnt=0;
+
+        for (unsigned int i=0; i<chain->getN(); i++)
+            if ((*chain)[i].isBlocked())
+                qdcap[i]=chain->getAng(i);
+            else
+                qdcap[i]=qdes[cnt++];
+
+        return true;
+    }
+    else
+        return false;
 }
 
 

@@ -6,6 +6,9 @@
 
 #include <stdio.h>
 
+#include <iCub/iKinVocabs.h>
+#include <iCub/iKinHlp.h>
+
 #include "CommonCartesianController.h"
 #include "ClientCartesianController.h"
 
@@ -14,6 +17,7 @@ using namespace yarp::os;
 using namespace yarp::dev;
 using namespace yarp::sig;
 using namespace yarp::math;
+using namespace iKin;
 
 
 /************************************************************************/
@@ -330,6 +334,71 @@ bool ClientCartesianController::goToPositionSync(const Vector &xd, const double 
     }
 
     return (reply.get(0).asVocab()==IKINCARTCTRL_VOCAB_REP_ACK);
+}
+
+
+/************************************************************************/
+bool ClientCartesianController::getDesired(Vector &xdcap, Vector &odcap, Vector &qdcap)
+{
+    Bottle command, reply;
+
+    // prepare command
+    command.addVocab(IKINCARTCTRL_VOCAB_CMD_GET);
+    command.addVocab(IKINCARTCTRL_VOCAB_OPT_DES);
+
+    // send command and wait for reply
+    if (!portRpc->write(command,reply))
+    {
+        fprintf(stdout,"Error: unable to get reply from server!\n");
+        return false;
+    }
+
+    if (reply.get(0).asVocab()==IKINCARTCTRL_VOCAB_REP_ACK)
+    {
+        // xdcap and odcap part
+        if (Bottle *xPart=reply.get(1).asList())
+        {    
+            if (xPart->check(Vocab::decode(IKINSLV_VOCAB_OPT_X)))
+            {
+                Bottle *xData=CartesianHelper::getEndEffectorPoseOption(*xPart);
+            
+                xdcap.resize(3);
+                odcap.resize(4);
+            
+                for (int i=0; i<xdcap.length(); i++)
+                    xdcap[i]=xData->get(i).asDouble();
+            
+                for (int i=0; i<odcap.length(); i++)
+                    odcap[i]=xData->get(xdcap.length()+i).asDouble();
+            }
+            else
+                return false;
+        }
+        else
+            return false;
+
+        // qdcap part
+        if (Bottle *qPart=reply.get(2).asList())
+        {    
+            if (qPart->check(Vocab::decode(IKINSLV_VOCAB_OPT_Q)))
+            {
+                Bottle *qData=CartesianHelper::getJointsOption(*qPart);
+
+                qdcap.resize(qData->size());
+
+                for (int i=0; i<qdcap.length(); i++)
+                    qdcap[i]=qData->get(i).asDouble();
+            }
+            else
+                return false;
+        }
+        else
+            return false;
+
+        return true;
+    }
+    else
+        return false;
 }
 
 

@@ -13,6 +13,7 @@
 #define IKINCARTCTRL_VOCAB_OPT_MODE         VOCAB4('m','o','d','e')
 #define IKINCARTCTRL_VOCAB_OPT_TIME         VOCAB4('t','i','m','e')
 #define IKINCARTCTRL_VOCAB_OPT_DOF          VOCAB3('d','o','f')
+#define IKINCARTCTRL_VOCAB_OPT_DES          VOCAB3('d','e','s')
 #define IKINCARTCTRL_VOCAB_OPT_LIM          VOCAB3('l','i','m')
 #define IKINCARTCTRL_VOCAB_OPT_MOTIONDONE   VOCAB4('d','o','n','e')
 #define IKINCARTCTRL_VOCAB_OPT_ISSOLVERON   VOCAB4('i','s','o','n')

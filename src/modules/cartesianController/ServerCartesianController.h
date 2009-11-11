@@ -146,6 +146,7 @@ public:
     virtual bool goToPosition(const yarp::sig::Vector &xd, const double t=0.0);
     virtual bool goToPoseSync(const yarp::sig::Vector &xd, const yarp::sig::Vector &od, const double t=0.0);
     virtual bool goToPositionSync(const yarp::sig::Vector &xd, const double t=0.0);
+    virtual bool getDesired(yarp::sig::Vector &xdcap, yarp::sig::Vector &odcap,yarp::sig::Vector &qdcap);
     virtual bool getDOF(yarp::sig::Vector &curDof);
     virtual bool setDOF(const yarp::sig::Vector &newDof, yarp::sig::Vector &curDof);
     virtual bool getLimits(int axis, double *min, double *max);
