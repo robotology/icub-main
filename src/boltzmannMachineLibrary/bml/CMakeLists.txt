@@ -1,5 +1,5 @@
 SET(KEYWORD "bml")
-#SET(LIB)
+SET(LIB true)
 
 PROJECT(${KEYWORD})
 
@@ -47,12 +47,14 @@ LINK_LIBRARIES(
 # Set up our main executable.
 IF (folder_source)
   IF(LIB)
+    MESSAGE("adding library .....")
     ADD_LIBRARY(${KEYWORD}
       ${folder_source}
       ${folder_header}
     )
   ELSE(LIB)
-    #commented to be just a library 	
+    #commented to be just a library 
+    MESSAGE("adding executable .....")		
     ADD_EXECUTABLE(${KEYWORD} 
       ${folder_source}
       ${folder_header}
@@ -64,8 +66,10 @@ ENDIF (folder_source)
 
 
 IF(LIB)
+  MESSAGE("setting install library target .....")
   INSTALL_TARGETS(/lib ${KEYWORD})
 ELSE(LIB)
+  MESSAGE("setting install executable target .....")
   INSTALL_TARGETS(/bin ${KEYWORD})
 ENDIF(LIB)
 

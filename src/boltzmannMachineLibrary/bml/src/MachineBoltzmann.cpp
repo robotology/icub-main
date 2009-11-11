@@ -73,6 +73,7 @@ MachineBoltzmann::MachineBoltzmann(int nLayers){
 void MachineBoltzmann::addLayer(Layer layer){
 	//finally add the layer to the list of layer
 	elementList.insert(pair<std::string,Layer>(layer.getName(),layer));
+	printf("the layer %s has just been added to the elementList",layer.getName());
 	countElements++;
 }
 
