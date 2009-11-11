@@ -67,11 +67,60 @@ private:
     int n;
 
     void writeBottle(Bottle& bot) {
-        // TO IMPLEMENT
+        // write lambda
+        bot.addDouble(this->lambda);
+
+        // write number of inputs
+        bot.addInt(this->n);
+
+        // write vector b
+        for(int i = 0; i < this->b.size(); i++) {
+            bot.addDouble(this->b(i));
+        }
+        bot.addInt(this->b.size());
+
+        // write vector w
+        for(int i = 0; i < this->w.size(); i++) {
+            bot.addDouble(this->w(i));
+        }
+        bot.addInt(this->w.size());
+
+        // write matrix Ai
+        for(int r = 0; r < this->Ai.rows(); r++) {
+            for(int c = 0; c < this->Ai.cols(); c++) {
+                bot.addDouble(this->Ai(r, c));
+            }
+        }
+        bot.addInt(this->Ai.rows());
+        bot.addInt(this->Ai.cols());
     }
 
     void readBottle(Bottle& bot) {
-        // TO IMPLEMENT
+        // read matrix Ai
+        this->Ai.resize(bot.pop().asInt(), bot.pop().asInt());
+        for(int r = this->Ai.rows() - 1; r >= 0; r--) {
+            for(int c = this->Ai.cols() - 1; c >= 0; c--) {
+                this->Ai(r, c) = bot.pop().asDouble();
+            }
+        }
+
+        // read vector w
+        this->w.resize(bot.pop().asInt());
+        for(int i = this->w.size() - 1; i >= 0; i--) {
+            this->w(i) = bot.pop().asDouble();
+        }
+
+        // read vector b
+        this->b.resize(bot.pop().asInt());
+        for(int i = this->b.size() - 1; i >= 0; i--) {
+            this->b(i) = bot.pop().asDouble();
+        }
+
+        // read number of inputs
+        this->n = bot.pop().asInt();
+
+        // read lambda
+        this->lambda = bot.pop().asDouble();
     }
 
 public:

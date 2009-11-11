@@ -34,7 +34,7 @@ ScaleTransformer::ScaleTransformer(const ScaleTransformer& other)
 
 ScaleTransformer& ScaleTransformer::operator=(const ScaleTransformer& other) {
     if(this == &other) return *this; // handle self initialization
-    if(this == &other) return *this; // handle self initialization
+
     this->IFixedSizeTransformer::operator=(other);
 
     this->deleteAll(other.scalers.size());

@@ -5,5 +5,7 @@
 * Create library for usage in other packages (done)
 * Create library with all modules for extensions in other packages (done)
 * Create TransformerPortable and serialization unserialization for transformers (done)
-* Implement copy constructor and assignment operator where necessary (in progress)
-* Use references instead of pointers when possible (in progress)
+* Implement copy constructor and assignment operator where necessary (done)
+* Use references instead of pointers when possible (done)
+* Simplify writing and reading vectors and matrices to bottles
+* Replicate yarp::math so that optionally Atlas can be used

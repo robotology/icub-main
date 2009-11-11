@@ -2,13 +2,14 @@
  * Copyright (C) 2007-2009 Arjan Gijsberts @ Italian Institute of Technology
  * CopyPolicy: Released under the terms of the GNU GPL v2.0.
  *
- * Example code how to use the learningMachine library using the portable 
+ * Example code how to use the learningMachine library using the portable
  * wrapper.
  */
 #include <iostream>
 #include <math.h>
 #include "iCub/MachinePortable.h"
 #include "iCub/MachineCatalogue.h"
+#include "iCub/TransformerPortable.h"
 #include "iCub/TransformerCatalogue.h"
 
 #include <yarp/sig/Vector.h>
@@ -68,15 +69,15 @@ std::pair<Vector, Vector> createSample() {
 }
 
 /*
- * This example shows how LearningMachine classes can be used in a indirect 
- * manner in your code. In this context, this means that the YARP configuration 
- * mechanism is used and instances are of the abstract base type. This 
- * facilitates easy migration to other learning methods. Please see all 
- * direct/indirect/portable examples to have an idea which method suits your 
+ * This example shows how LearningMachine classes can be used in a indirect
+ * manner in your code. In this context, this means that the YARP configuration
+ * mechanism is used and instances are of the abstract base type. This
+ * facilitates easy migration to other learning methods. Please see all
+ * direct/indirect/portable examples to have an idea which method suits your
  * application best.
  *
- * Please keep in mind that the purpose is to demonstrate how to interface with 
- * the learningMachine library. The synthetic data used in this example is 
+ * Please keep in mind that the purpose is to demonstrate how to interface with
+ * the learningMachine library. The synthetic data used in this example is
  * utterly useless.
  */
 
@@ -95,16 +96,16 @@ int main(int argc, char** argv) {
 
   // create Regularized Least Squares learner
   std::string name("RLS");
-  MachinePortable* mp = new MachinePortable(std::string("RLS"));
+  MachinePortable mp = MachinePortable("RLS");
   Property p("(dom 250) (cod 2) (lambda (0.5 0.01))");
-  mp->getWrapped()->configure(p);
-  //std::cout << "Learner:" << std::endl << mp->getMachine()->getInfo() << std::endl;
-  
-/*  // create Random Feature transformer
-  ITransformer* rf = new RandomFeature();
+  mp.getWrapped().configure(p);
+  std::cout << "Learner:" << std::endl << mp.getWrapped().getInfo() << std::endl;
+
+  // create Random Feature transformer
+  TransformerPortable tp = TransformerPortable("RandomFeature");
   p.fromString("(dom 2) (cod 250) (gamma 16.0)", true);
-  rf->configure(p);
-  std::cout << "Transformer:" << std::endl << rf->getInfo() << std::endl;
+  tp.getWrapped().configure(p);
+  std::cout << "Transformer:" << std::endl << tp.getWrapped().getInfo() << std::endl;
 
 
   // create and feed training samples
@@ -118,22 +119,39 @@ int main(int argc, char** argv) {
 
     // add some noise to output for training
     Vector noisyOutput = sample.second + Rand::vector(noise_min, noise_max);
-    
+
     // transform input using RF
-    Vector transInput;
-    rf->transform(sample.first, transInput);
+    Vector transInput = tp.getWrapped().transform(sample.first);
 
     // make prediction before feeding full sample
-    Vector prediction = rls->predict(transInput);
+    Vector prediction = mp.getWrapped().predict(transInput);
     Vector diff = prediction - sample.second;
     elementProd(diff, diff);
     trainMSE = trainMSE + diff;
 
     // train on complete sample with noisy output
-    rls->feedSample(transInput, noisyOutput);
+    mp.getWrapped().feedSample(transInput, noisyOutput);
   }
   trainMSE = elementDiv(trainMSE, NO_TRAIN);
   std::cout << "Train MSE: " << trainMSE.toString() << std::endl;
+
+  std::cout << std::endl;
+  std::cout << "Saving machine portable to file 'mp.txt'...";
+  bool ok = mp.writeToFile("mp.txt");
+  std::cout << ((ok) ? "ok!" : "failed :(") << std::endl;
+
+  std::cout << "Saving transformer portable to file 'tp.txt'...";
+  ok = tp.writeToFile("tp.txt");
+  std::cout << ((ok) ? "ok!" : "failed :(") << std::endl;
+
+  std::cout << "Loading machine portable from file 'mp.txt'...";
+  ok = mp.readFromFile("mp.txt");
+  std::cout << ((ok) ? "ok!" : "failed :(") << std::endl;
+
+  std::cout << "Loading transformer portable from file 'tp.txt'...";
+  ok = tp.readFromFile("tp.txt");
+  std::cout << ((ok) ? "ok!" : "failed :(") << std::endl;
+  std::cout << std::endl;
 
   // predict test samples
   testMSE = 0.;
@@ -142,19 +160,16 @@ int main(int argc, char** argv) {
     std::pair<Vector, Vector> sample = createSample();
 
     // transform input using RF
-    Vector transInput;
-    rf->transform(sample.first, transInput);
+    Vector transInput = tp.getWrapped().transform(sample.first);
 
     // make prediction
-    Vector prediction = rls->predict(transInput);
+    Vector prediction = mp.getWrapped().predict(transInput);
     Vector diff = prediction - sample.second;
     elementProd(diff, diff);
-    //std::cout << "Sample: " << sample.input << 
+    //std::cout << "Sample: " << sample.input <<
     testMSE = testMSE + diff;
   }
   testMSE = elementDiv(testMSE, NO_TEST);
-  std::cout << "Test MSE: " << testMSE.toString() << std::endl;*/
+  std::cout << "Test MSE: " << testMSE.toString() << std::endl;
 
-  delete mp;
-  //delete rf;
 }

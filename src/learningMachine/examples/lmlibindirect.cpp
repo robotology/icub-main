@@ -65,15 +65,15 @@ std::pair<Vector, Vector> createSample() {
 }
 
 /*
- * This example shows how LearningMachine classes can be used in a indirect 
- * manner in your code. In this context, this means that the YARP configuration 
- * mechanism is used and instances are of the abstract base type. This 
- * facilitates easy migration to other learning methods. Please see all 
- * direct/indirect/portable examples to have an idea which method suits your 
+ * This example shows how LearningMachine classes can be used in a indirect
+ * manner in your code. In this context, this means that the YARP configuration
+ * mechanism is used and instances are of the abstract base type. This
+ * facilitates easy migration to other learning methods. Please see all
+ * direct/indirect/portable examples to have an idea which method suits your
  * application best.
  *
- * Please keep in mind that the purpose is to demonstrate how to interface with 
- * the learningMachine library. The synthetic data used in this example is 
+ * Please keep in mind that the purpose is to demonstrate how to interface with
+ * the learningMachine library. The synthetic data used in this example is
  * utterly useless.
  */
 
@@ -86,11 +86,12 @@ int main(int argc, char** argv) {
   std::cout << "LearningMachine library example (indirect)" << std::endl;
 
   // create Regularized Least Squares learner
+  // we need pointers here!
   IMachineLearner* rls = new RLSLearner();
   Property p("(dom 250) (cod 2) (lambda (0.5 0.01))");
   rls->configure(p);
   std::cout << "Learner:" << std::endl << rls->getInfo() << std::endl;
-  
+
   // create Random Feature transformer
   ITransformer* rf = new RandomFeature();
   p.fromString("(dom 2) (cod 250) (gamma 16.0)", true);
@@ -109,10 +110,9 @@ int main(int argc, char** argv) {
 
     // add some noise to output for training
     Vector noisyOutput = sample.second + Rand::vector(noise_min, noise_max);
-    
+
     // transform input using RF
-    Vector transInput;
-    rf->transform(sample.first, transInput);
+    Vector transInput = rf->transform(sample.first);
 
     // make prediction before feeding full sample
     Vector prediction = rls->predict(transInput);
@@ -133,14 +133,13 @@ int main(int argc, char** argv) {
     std::pair<Vector, Vector> sample = createSample();
 
     // transform input using RF
-    Vector transInput;
-    rf->transform(sample.first, transInput);
+    Vector transInput = rf->transform(sample.first);
 
     // make prediction
     Vector prediction = rls->predict(transInput);
     Vector diff = prediction - sample.second;
     elementProd(diff, diff);
-    //std::cout << "Sample: " << sample.input << 
+    //std::cout << "Sample: " << sample.input <<
     testMSE = testMSE + diff;
   }
   testMSE = elementDiv(testMSE, NO_TEST);

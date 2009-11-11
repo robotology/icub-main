@@ -280,7 +280,7 @@ public:
     /**
      * Accessor for the kernel.
      *
-     * @returns the kernel
+     * @returns a pointer to the kernel
      */
     virtual RBFKernel* getKernel() {
         return this->kernel;

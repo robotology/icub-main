@@ -36,7 +36,7 @@ namespace learningmachine {
  */
 
 class ScaleTransformer : public IFixedSizeTransformer {
-private:
+protected:
     /**
      * The vector of IScaler objects.
      */

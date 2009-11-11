@@ -34,7 +34,6 @@ LSSVMLearner::LSSVMLearner(const LSSVMLearner& other)
 
 }
 
-
 LSSVMLearner::~LSSVMLearner() {
     delete this->kernel;
 }

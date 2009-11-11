@@ -7,7 +7,6 @@ SET(LMLIB_INDIRECT lmlibindirect)
 SET(LMLIB_PORTABLE lmlibportable)
 
 PROJECT(${PROJECTNAME})
-FIND_PACKAGE(YARP)
 FIND_PACKAGE(ICUB QUIET)
 IF (NOT ICUB_FOUND)
    MESSAGE (STATUS "ICUB repository not found; assuming distributed build.")
