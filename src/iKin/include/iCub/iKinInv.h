@@ -50,22 +50,13 @@
 
 namespace iKin
 {
-    class iKinCtrl;
-    class SteepCtrl;
-    class VarKpSteepCtrl;
-    class LMCtrl;
-    class LMCtrl_GPM;
-    class GSLMinCtrl;
-    class MultiRefMinJerkCtrl;
-}
-
 
 /**
 * \ingroup iKinInv
 *
 * Abstract class for inverting chain's kinematics.
 */
-class iKin::iKinCtrl
+class iKinCtrl
 {
 private:
     // Default constructor: not implemented.
@@ -396,7 +387,7 @@ public:
     * (euclidean norm is used). 
     * @return actual distance from the target.
     */
-    virtual double dist() { return norm(e); }
+    virtual double dist() { return ctrl::norm(e); }
 
     /**
     * Default destructor.
@@ -413,7 +404,7 @@ public:
 * 1) grad=-Jt*e 
 * 2) grad=-pinv(J)*e. 
 */
-class iKin::SteepCtrl : public iKin::iKinCtrl
+class SteepCtrl : public iKinCtrl
 {
 private:
     // Default constructor: not implemented.
@@ -472,8 +463,8 @@ public:
     virtual void setChainConstraints(bool _constrained);
     virtual yarp::sig::Vector iterate(yarp::sig::Vector &xd, const unsigned int verbose=0);
     virtual void restart(const yarp::sig::Vector &q0);
-    virtual bool test_convergence(const double tol_size) { return norm(grad)<tol_size; }
-    virtual std::string getAlgoName()                    { return "steepest-descent";  }
+    virtual bool test_convergence(const double tol_size) { return ctrl::norm(grad)<tol_size; }
+    virtual std::string getAlgoName()                    { return "steepest-descent";        }
 
     /**
     * Resets integral status at the current joint angles.
@@ -515,7 +506,7 @@ public:
 * r(k)<1 => Kp(k)=Kp(k-1)*Kp_inc; 
 * r(k)>max_per_inc => Kp(k)=Kp(k-1)*Kp_dec;
 */
-class iKin::VarKpSteepCtrl : public iKin::SteepCtrl
+class VarKpSteepCtrl : public SteepCtrl
 {
 private:
     // Default constructor: not implemented.
@@ -580,7 +571,7 @@ public:
 *
 * H=Jt*J is the approximation of Hessian matrix
 */
-class iKin::LMCtrl : public iKin::iKinCtrl
+class LMCtrl : public iKinCtrl
 {
 private:
     // Default constructor: not implemented.
@@ -648,8 +639,8 @@ public:
     virtual void setChainConstraints(bool _constrained);
     virtual yarp::sig::Vector iterate(yarp::sig::Vector &xd, const unsigned int verbose=0);
     virtual void restart(const yarp::sig::Vector &q0);
-    virtual bool test_convergence(const double tol_size) { return norm(grad)<tol_size;   }
-    virtual std::string getAlgoName()                    { return "levenberg-marquardt"; }
+    virtual bool test_convergence(const double tol_size) { return ctrl::norm(grad)<tol_size; }
+    virtual std::string getAlgoName()                    { return "levenberg-marquardt";     }
 
     /**
     * Resets integral status at the current joint angles.
@@ -688,7 +679,7 @@ public:
 * Projection Method according to the paper available at
 * http://robotics.hanyang.ac.kr/new/papers/TA02-4.pdf . 
 */
-class iKin::LMCtrl_GPM : public iKin::LMCtrl
+class LMCtrl_GPM : public LMCtrl
 {
 private:
     // Default constructor: not implemented.
@@ -760,7 +751,7 @@ public:
 * 4) Quasi Newton BFGS (Broyden-Fletcher-Goldfarb-Shanno) 
 * 5) Nelder-Mead Simplex
 */ 
-class iKin::GSLMinCtrl : public iKin::iKinCtrl
+class GSLMinCtrl : public iKinCtrl
 {
 private:
     // Default constructor: not implemented.
@@ -875,7 +866,7 @@ public:
 *       Joint Space are used instead of VITE coupled
 *       controllers.
 */
-class iKin::MultiRefMinJerkCtrl : public iKin::iKinCtrl
+class MultiRefMinJerkCtrl : public iKinCtrl
 {
 private:
     // Default constructor: not implemented.
@@ -1045,7 +1036,7 @@ public:
     virtual ~MultiRefMinJerkCtrl();
 };
 
-
+}
 
 #endif
 

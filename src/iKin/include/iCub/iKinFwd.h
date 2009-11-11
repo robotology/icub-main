@@ -43,15 +43,6 @@
 
 namespace iKin
 {
-    class iKinLink;
-    class iKinChain;
-    class iKinLimb;
-    class iCubArm;
-    class iCubLeg;
-    class iCubEye;
-    class iCubEyeNeckRef;
-}
-
 
 /**
 * \ingroup iKinFwd
@@ -59,7 +50,7 @@ namespace iKin
 * A Base class for defining a Link with standard 
 * Denavit-Hartenberg convention.
 */
-class iKin::iKinLink
+class iKinLink
 {
 private:
     double       A;
@@ -282,7 +273,7 @@ public:
 *
 * A Base class for defining a Serial Link Chain. 
 */
-class iKin::iKinChain
+class iKinChain
 {
 protected:
     unsigned int      N;
@@ -665,7 +656,7 @@ public:
 *
 * A class for defining generic Limb
 */
-class iKin::iKinLimb : protected iKin::iKinChain
+class iKinLimb : protected iKinChain
 {
 protected:
     std::deque<iKinLink*> linkList;
@@ -761,7 +752,7 @@ public:
 *
 * A class for defining the 7-DOF iCub Arm
 */
-class iKin::iCubArm : public iKin::iKinLimb
+class iCubArm : public iKinLimb
 {
 protected:
     virtual void _allocate_limb(const std::string &_type);
@@ -792,7 +783,7 @@ public:
 *
 * A class for defining the 6-DOF iCub Leg
 */
-class iKin::iCubLeg : public iKin::iKinLimb
+class iCubLeg : public iKinLimb
 {
 protected:
     virtual void _allocate_limb(const std::string &_type);
@@ -823,7 +814,7 @@ public:
 *
 * A class for defining the 5-DOF iCub Eye
 */
-class iKin::iCubEye : public iKin::iKinLimb
+class iCubEye : public iKinLimb
 {
 protected:
     virtual void _allocate_limb(const std::string &_type);
@@ -855,7 +846,7 @@ public:
 * A class for defining the 5-DOF iCub Eye with the root 
 * reference frame attached to the neck. 
 */
-class iKin::iCubEyeNeckRef : public iKin::iCubEye
+class iCubEyeNeckRef : public iCubEye
 {
 protected:
     virtual void _allocate_limb(const std::string &_type);
@@ -880,7 +871,7 @@ public:
     iCubEyeNeckRef(const iCubEyeNeckRef &eye);
 };
 
-
+}
 
 #endif
 

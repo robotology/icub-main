@@ -23,11 +23,6 @@
 
 namespace ctrl
 {
-    class Integrator;
-    class parallelPID;
-    class seriesPID;
-}
-
 
 /**
 * \ingroup PIDs
@@ -35,7 +30,7 @@ namespace ctrl
 * A class for defining a saturated integrator based on Tustin 
 * formula: 1/s => Ts/2*(z+1)/(z-1)
 */
-class ctrl::Integrator
+class Integrator
 {
 private:
     // Default constructor: not implemented.
@@ -141,7 +136,7 @@ public:
 * - I=(Ki*ei+(sat(u)-u)/Tt)/s
 * - D=Kd*ed*s/(1+s*Td/N) [Td=Kd/Kp]
 */
-class ctrl::parallelPID
+class parallelPID
 {
 private:
     // Default constructor: not implemented.
@@ -169,8 +164,8 @@ protected:
     unsigned int dim;
     double Ts;
 
-    ctrl::Integrator          *Int;
-    std::deque<ctrl::Filter*>  Der;
+    Integrator          *Int;
+    std::deque<Filter*>  Der;
 
 public:
     /**
@@ -227,7 +222,7 @@ public:
 * - I=Kp/(Ti*s)
 * - D=Kd*s/(1+s*Td/N) [Td=Kd/Kp]
 */
-class ctrl::seriesPID
+class seriesPID
 {
 private:
     // Default constructor: not implemented.
@@ -251,8 +246,8 @@ protected:
     unsigned int dim;
     double Ts;
 
-    std::deque<ctrl::Filter*> Int;
-    std::deque<ctrl::Filter*> Der;
+    std::deque<Filter*> Int;
+    std::deque<Filter*> Der;
 
 public:
     /**
@@ -290,6 +285,7 @@ public:
     ~seriesPID();
 };
 
+}
 
 #endif
 

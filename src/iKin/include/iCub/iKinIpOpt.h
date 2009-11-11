@@ -23,18 +23,13 @@
 
 namespace iKin
 {
-    class iKinIterateCallback;
-    class iKinLinIneqConstr;
-    class iKin_NLP;
-    class iKinIpOptMin;
-}
 
 /**
 * \ingroup iKinIpOpt
 *
 * Class for defining iteration callback
 */
-class iKin::iKinIterateCallback
+class iKinIterateCallback
 {
 private:
     // Copy constructor: not implemented.
@@ -60,7 +55,7 @@ public:
 * Class for defining Linear Inequality Constraints of the form 
 * lB <= C*q <= uB for the nonlinear problem NLP. 
 */
-class iKin::iKinLinIneqConstr
+class iKinLinIneqConstr
 {
 protected:
     yarp::sig::Matrix C;
@@ -164,7 +159,7 @@ public:
 *
 * Class for defining IpOpt NLP problem
 */
-class iKin::iKin_NLP : public Ipopt::TNLP
+class iKin_NLP : public Ipopt::TNLP
 {
 private:
     // Copy constructor: not implemented.
@@ -329,7 +324,7 @@ public:
 *
 * Class for inverting chain's kinematics based on IpOpt lib
 */
-class iKin::iKinIpOptMin
+class iKinIpOptMin
 {
 private:
     // Default constructor: not implemented.
@@ -559,7 +554,7 @@ public:
     virtual ~iKinIpOptMin();
 };
 
-
+}
 
 #endif
 

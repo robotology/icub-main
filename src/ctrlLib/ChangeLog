@@ -1,4 +1,8 @@
 
+2009-11-11 Ugo Pattacini <ugo.pattacini@iit.it>
+	   * ctrlMath: some functions moved to Yarp layer
+       * all headers: namespace rearranged
+
 2009-07-29 Ugo Pattacini <ugo.pattacini@iit.it>
 	   * ctrlMath:
          - SE3inv() added to invert 4 by 4 rototranslational matrix

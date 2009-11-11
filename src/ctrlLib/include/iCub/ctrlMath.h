@@ -30,6 +30,9 @@
 #include <yarp/math/Math.h>
 
 
+namespace ctrl
+{
+
 /**
 * \ingroup Maths
 *
@@ -185,7 +188,7 @@ yarp::sig::Vector dcm2axis(const yarp::sig::Matrix &R, unsigned int verbose=0);
 * @param verbose sets some verbosity.  
 * @return 4 by 4 rotation matrix of the form [R,1].
 */
-yarp::sig::Matrix axis2dcm(yarp::sig::Vector v, unsigned int verbose=0);
+yarp::sig::Matrix axis2dcm(const yarp::sig::Vector &v, unsigned int verbose=0);
 
 
 /**
@@ -200,39 +203,8 @@ yarp::sig::Matrix axis2dcm(yarp::sig::Vector v, unsigned int verbose=0);
 */
 yarp::sig::Matrix SE3inv(const yarp::sig::Matrix &H, unsigned int verbose=0);
 
-
-/**
-* \ingroup Maths
-*
-* Returns the result of scalar times matrix.
-*/
-yarp::sig::Matrix operator*(const double k, const yarp::sig::Matrix &M);
-
-
-/**
-* \ingroup Maths
-*
-* Returns the result of matrix times scalar.
-*/
-yarp::sig::Matrix operator*(const yarp::sig::Matrix &M, const double k);
-
-
-/**
-* \ingroup Maths
-*
-* Returns the element-wise product between v1 and v2.
-*/
-yarp::sig::Vector operator*(const yarp::sig::Vector &v1, const yarp::sig::Vector &v2);
-
-
-/**
-* \ingroup Maths
-*
-* Returns the element-wise division between v1 and v2. 
-*/
-yarp::sig::Vector operator/(const yarp::sig::Vector &v1, const yarp::sig::Vector &v2);
-
-
+}
+ 
 #endif
 
 

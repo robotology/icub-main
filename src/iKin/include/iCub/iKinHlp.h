@@ -20,9 +20,6 @@
 
 namespace iKin
 {
-    class CartesianHelper;
-}
-
 
 /**
 * \ingroup iKinHlp
@@ -30,7 +27,7 @@ namespace iKin
 * Helper class providing useful methods to deal with Cartesian 
 * Solver options. 
 */
-class iKin::CartesianHelper
+class CartesianHelper
 {
 protected:
     static void addVectorOption(yarp::os::Bottle &b, const int vcb, const yarp::sig::Vector &v);
@@ -93,6 +90,7 @@ public:
     static yarp::os::Bottle *getJointsOption(yarp::os::Bottle &b);
 };
 
+}
 
 #endif
 

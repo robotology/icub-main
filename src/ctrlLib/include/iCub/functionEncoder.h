@@ -18,9 +18,6 @@
 
 namespace ctrl
 {
-    class waveletEncoder;
-}
-
 
 /**
 * \ingroup functionEncoder
@@ -28,7 +25,7 @@ namespace ctrl
 * Encodes any given function as a set of wavelet coefficients. 
 * The father wavelet used here is the \b db4.
 */
-class ctrl::waveletEncoder
+class waveletEncoder
 {
 protected:
     gsl_integration_workspace *w;
@@ -86,6 +83,7 @@ public:
     ~waveletEncoder();
 };
 
+}
 
 #endif
 

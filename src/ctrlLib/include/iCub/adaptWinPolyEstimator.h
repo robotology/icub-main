@@ -22,20 +22,15 @@
 
 namespace ctrl
 {
-    typedef struct
-    {
-        double time;
-        yarp::sig::Vector data;
-    } AWPolyElement;
+
+typedef struct
+{
+    double time;
+    yarp::sig::Vector data;
+} AWPolyElement;
 
 
-    typedef std::deque<AWPolyElement> AWPolyList;
-
-    class AWPolyEstimator;
-    class AWLinEstimator;
-    class AWQuadEstimator;
-}
-
+typedef std::deque<AWPolyElement> AWPolyList;
 
 /**
 * \ingroup adaptWinPolyEstimator
@@ -43,7 +38,7 @@ namespace ctrl
 * Adaptive window polynomial fitting. 
 * Abstract class. 
 */
-class ctrl::AWPolyEstimator
+class AWPolyEstimator
 {
 protected:
     AWPolyList elemList;
@@ -126,7 +121,7 @@ public:
 *
 * Adaptive window linear fitting.
 */
-class ctrl::AWLinEstimator : public ctrl::AWPolyEstimator
+class AWLinEstimator : public AWPolyEstimator
 {
 protected:
     /** 
@@ -148,7 +143,7 @@ public:
 *
 * Adaptive window quadratic fitting.
 */
-class ctrl::AWQuadEstimator : public ctrl::AWPolyEstimator
+class AWQuadEstimator : public AWPolyEstimator
 {
 protected:
     virtual double getEsteeme() { return 2.0*coeff[2]; }
@@ -157,6 +152,7 @@ public:
     AWQuadEstimator(unsigned int _N, const double _D) : AWPolyEstimator(2,_N,_D) { }
 };
 
+}
 
 #endif
 

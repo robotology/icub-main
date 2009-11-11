@@ -19,17 +19,13 @@
 
 namespace ctrl
 {
-    class Filter;
-    class RateLimiter;
-}
-
 
 /**
 * \ingroup Filters
 *
 * IIR and FIR.
 */
-class ctrl::Filter
+class Filter
 {
 protected:
    yarp::sig::Vector b;
@@ -75,7 +71,7 @@ public:
 *
 * Rate Limiter.
 */
-class ctrl::RateLimiter
+class RateLimiter
 {
 protected:
     yarp::sig::Vector uD;
@@ -111,6 +107,7 @@ public:
     yarp::sig::Vector filt(const yarp::sig::Vector &u);
 };
 
+}
 
 #endif
 

@@ -19,16 +19,13 @@
 
 namespace ctrl
 {
-    class Kalman;
-}
-
 
 /**
 * \ingroup Kalman
 *
 * Classic Kalman estimator.
 */
-class ctrl::Kalman
+class Kalman
 {
 protected:
     yarp::sig::Matrix A, At;
@@ -97,6 +94,7 @@ public:
     yarp::sig::Matrix get_K() { return K; }
 };
 
+}
 
 #endif
 

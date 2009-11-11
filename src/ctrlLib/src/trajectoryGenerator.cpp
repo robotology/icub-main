@@ -112,7 +112,7 @@ void minJerkTrajGen::compute(const double T, const Vector &xd, const Vector &fb,
 
         for (unsigned int i=0; i<dim; i++)
         {    
-            x[i]=dot(coeff[i],vtau);
+            x[i]=yarp::math::dot(coeff[i],vtau);
     
             v[i]=a[i]=0.0;
             for (unsigned int j=0; j<5; j++)

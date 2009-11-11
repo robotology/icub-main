@@ -28,17 +28,13 @@
 
 namespace ctrl
 {
-    class minJerkTrajGen;
-    class minJerkTrajGenVelCtrl;
-}
-
 
 /**
 * \ingroup trajectoryGenerator
 *
 * Generates minimum jerk trajectory
 */
-class ctrl::minJerkTrajGen
+class minJerkTrajGen
 {
 private:
     // Default constructor: not implemented.
@@ -117,6 +113,7 @@ public:
     ~minJerkTrajGen();
 };
 
+}
 
 #endif
 

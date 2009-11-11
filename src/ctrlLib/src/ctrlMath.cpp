@@ -13,7 +13,7 @@ using namespace yarp::math;
 
 
 /************************************************************************/
-double dot(const Matrix &A, int colA, const Matrix &B, int colB)
+double ctrl::dot(const Matrix &A, int colA, const Matrix &B, int colB)
 {
     double ret=0.0;
     size_t nrowsA=A.rows();
@@ -28,7 +28,7 @@ double dot(const Matrix &A, int colA, const Matrix &B, int colB)
 
 
 /************************************************************************/
-Vector cross(const Vector &a, const Vector &b, unsigned int verbose)
+Vector ctrl::cross(const Vector &a, const Vector &b, unsigned int verbose)
 {
     Vector v(3);
 
@@ -46,8 +46,8 @@ Vector cross(const Vector &a, const Vector &b, unsigned int verbose)
 
 
 /************************************************************************/
-Vector cross(const Matrix &A, int colA, const Matrix &B, int colB,
-             unsigned int verbose)
+Vector ctrl::cross(const Matrix &A, int colA, const Matrix &B, int colB,
+                   unsigned int verbose)
 {
     Vector v(3);
 
@@ -65,8 +65,8 @@ Vector cross(const Matrix &A, int colA, const Matrix &B, int colB,
 
 
 /************************************************************************/
-Vector Dcross(const Vector &a, const Vector &Da, const Vector &b, const Vector &Db,
-              unsigned int verbose)
+Vector ctrl::Dcross(const Vector &a, const Vector &Da, const Vector &b, const Vector &Db,
+                    unsigned int verbose)
 {
     Vector Dv(3);
 
@@ -84,9 +84,9 @@ Vector Dcross(const Vector &a, const Vector &Da, const Vector &b, const Vector &
 
 
 /************************************************************************/
-Vector Dcross(const Matrix &A, const Matrix &DA, int colA,
-              const Matrix &B, const Matrix &DB, int colB,
-              unsigned int verbose)
+Vector ctrl::Dcross(const Matrix &A, const Matrix &DA, int colA,
+                    const Matrix &B, const Matrix &DB, int colB,
+                    unsigned int verbose)
 {
     Vector Dv(3);
 
@@ -104,7 +104,7 @@ Vector Dcross(const Matrix &A, const Matrix &DA, int colA,
 
 
 /************************************************************************/
-Vector dcm2axis(const Matrix &R, unsigned int verbose)
+Vector ctrl::dcm2axis(const Matrix &R, unsigned int verbose)
 {
     if (R.rows()<3 || R.cols()<3)
     {
@@ -118,7 +118,7 @@ Vector dcm2axis(const Matrix &R, unsigned int verbose)
     v[0]=R(2,1)-R(1,2);
     v[1]=R(0,2)-R(2,0);
     v[2]=R(1,0)-R(0,1);
-    double r=norm(v);
+    double r=ctrl::norm(v);
     double theta=atan2(0.5*r,0.5*(R(0,0)+R(1,1)+R(2,2)-1));
 
     if (r<1e-3)
@@ -132,7 +132,7 @@ Vector dcm2axis(const Matrix &R, unsigned int verbose)
         v[0]=V(0,2);
         v[1]=V(1,2);
         v[2]=V(2,2);
-        r=norm(v);
+        r=ctrl::norm(v);
     }
 
     v=(1.0/r)*v;
@@ -143,7 +143,7 @@ Vector dcm2axis(const Matrix &R, unsigned int verbose)
 
 
 /************************************************************************/
-Matrix axis2dcm(Vector v, unsigned int verbose)
+Matrix ctrl::axis2dcm(const Vector &v, unsigned int verbose)
 {
     if (v.length()<4)
     {
@@ -189,7 +189,7 @@ Matrix axis2dcm(Vector v, unsigned int verbose)
 
 
 /************************************************************************/
-Matrix SE3inv(const Matrix &H, unsigned int verbose)
+Matrix ctrl::SE3inv(const Matrix &H, unsigned int verbose)
 {    
     if (H.rows()<4 || H.cols()<4)
     {
@@ -220,61 +220,5 @@ Matrix SE3inv(const Matrix &H, unsigned int verbose)
 
     return invH;
 }
-
-
-/************************************************************************/
-Matrix operator*(const double k, const Matrix &M)
-{
-    size_t rows=M.rows();
-    size_t cols=M.cols();
-
-    Matrix res(rows,cols);
-
-    for (unsigned int r=0; r<rows; r++)
-        for (unsigned int c=0; c<cols; c++)
-            res(r,c)=k*M(r,c);
-
-    return res;
-}
-
-
-/************************************************************************/
-Matrix operator*(const Matrix &M, const double k)
-{
-    return k*M;
-}
-
-
-/************************************************************************/
-Vector operator*(const Vector &v1, const Vector &v2)
-{
-    size_t n1=v1.length();
-    size_t n2=v2.length();
-    size_t n =n1>n2?n2:n1;
-
-    Vector res(n);
-
-    for (unsigned int i=0; i<n; i++)
-        res[i]=v1[i]*v2[i];
-
-    return res;
-}
-
-
-/************************************************************************/
-Vector operator/(const Vector &v1, const Vector &v2)
-{
-    size_t n1=v1.length();
-    size_t n2=v2.length();
-    size_t n =n1>n2?n2:n1;
-
-    Vector res(n);
-
-    for (unsigned int i=0; i<n; i++)
-        res[i]=v1[i]/v2[i];
-
-    return res;
-}
-
 
 

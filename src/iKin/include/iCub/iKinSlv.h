@@ -135,17 +135,10 @@
 
 namespace iKin
 {
-    class  RpcProcessor;
-    class  InputPort;
-    class  SolverCallback;
-    struct PartDescriptor;
-    class  CartesianSolver;
-    class  ArmCartesianSolver;
-    class  LegCartesianSolver;
-}
 
+class CartesianSolver;
 
-class iKin::RpcProcessor : public yarp::os::PortReader
+class RpcProcessor : public yarp::os::PortReader
 {
 protected:
     CartesianSolver *slv;
@@ -157,7 +150,7 @@ public:
 };
 
 
-class iKin::InputPort : public yarp::os::BufferedPort<yarp::os::Bottle>
+class InputPort : public yarp::os::BufferedPort<yarp::os::Bottle>
 {
 protected:
     CartesianSolver *slv;
@@ -190,7 +183,7 @@ public:
 };
 
 
-class iKin::SolverCallback : public iKin::iKinIterateCallback
+class SolverCallback : public iKinIterateCallback
 {
 protected:
     CartesianSolver *slv;
@@ -202,7 +195,7 @@ public:
 };
 
 
-struct iKin::PartDescriptor
+struct PartDescriptor
 {
     iKinLimb                      *lmb;
     iKinChain                     *chn;
@@ -218,8 +211,8 @@ struct iKin::PartDescriptor
 *
 * Abstract class defining the core of on-line solvers.
 */
-class iKin::CartesianSolver : public yarp::os::RateThread,
-                              public iKin::CartesianHelper
+class CartesianSolver : public yarp::os::RateThread,
+                        public CartesianHelper
 {
 protected:
     PartDescriptor                        *prt;
@@ -381,7 +374,7 @@ public:
 * Derived class which implements the on-line solver for the 
 * chain torso+arm. 
 */
-class iKin::ArmCartesianSolver : public iKin::CartesianSolver
+class ArmCartesianSolver : public CartesianSolver
 {
 protected:
     virtual PartDescriptor *getPartDesc(yarp::os::Searchable &options);
@@ -408,7 +401,7 @@ public:
 * Derived class which implements the on-line solver for the leg 
 * chain. 
 */
-class iKin::LegCartesianSolver : public iKin::CartesianSolver
+class LegCartesianSolver : public CartesianSolver
 {
 protected:
     virtual PartDescriptor *getPartDesc(yarp::os::Searchable &options);
@@ -424,6 +417,7 @@ public:
     LegCartesianSolver(const std::string &_slvName="legCartSolver") : CartesianSolver(_slvName) { }
 };
 
+}
 
 #endif
 
