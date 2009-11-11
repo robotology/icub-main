@@ -998,7 +998,7 @@ bool iCubSimulationControl::setRefSpeedsRaw(const double *spds)
 	_mutex.wait();
 	for(int i = 0; i<njoints; i++)
         {
-             vel = spds[i];
+             vel = spds[i]/10;
 			 
 	}
 	_mutex.post();
@@ -1118,7 +1118,7 @@ bool iCubSimulationControl::getEncoderSpeedsRaw(double *v)
 {
    _mutex.wait();
     for(int i = 0;i<njoints;i++)
-        v[i] = current_vel[i];
+        v[i] = current_vel[i] * 10;
     _mutex.post();
     return true;
 }
@@ -1126,7 +1126,7 @@ bool iCubSimulationControl::getEncoderSpeedsRaw(double *v)
 bool iCubSimulationControl::getEncoderSpeedRaw(int j, double *v)
 {
 	_mutex.wait();
-    *v = current_vel[j];
+    *v = current_vel[j] * 10;
     _mutex.post();
     return true;
 }
