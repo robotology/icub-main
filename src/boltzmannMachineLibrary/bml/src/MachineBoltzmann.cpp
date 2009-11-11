@@ -1001,7 +1001,8 @@ void MachineBoltzmann::rbm(Matrix batchdataSingle,Layer *layer,int numhid){
 			//%%%%%%%%% END OF POSITIVE PHASE  %%%%%%%%%%%%%
 
 			//%%%%% START NEGATIVE PHASE  %%%%%%%%%%%%%%%%%
-			poshidstates = poshidprobs > (Matrix)randomMatrix(numcases,numhid);
+			ss=(Matrix)randomMatrix(numcases,numhid);
+			poshidstates = poshidprobs > ss;
 			//negdata = 1./(1 + exp(-poshidstates*vishid.transposed - visbias));
 			tt=exp(poshidstates*(-1)*vishid.transposed() - visbias)+1;
 			negdata = 1.0/tt;
@@ -1009,7 +1010,8 @@ void MachineBoltzmann::rbm(Matrix batchdataSingle,Layer *layer,int numhid){
 			
 			//negdata = negdata > rand(numcases,numdims); 
 			randomMatrix randMat(numcases,numdims);
-			negdata = negdata >(Matrix)randMat;
+			ss=(Matrix)randMat;
+			negdata = negdata >ss;
 			printf("\n");
 			printf("[%s] \n",negdata.toString().c_str());
 			printf("\n");
