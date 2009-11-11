@@ -463,6 +463,13 @@ static void callback( GtkWidget *widget,gpointer   data ){
 	else if(!strcmp((char *)data,"ClampLayer")){
 		printf("ClampLayer \n");
 		string _command("ClampLayer");
+		Bottle tmp;
+		tmp.addString("layer");
+		if(wModule->inLayer0_flag)
+			tmp.addString("layer0");
+		else if(wModule->inLayer1_flag)
+			tmp.addString("layer1");
+		wModule->bOptions.addList()=tmp;
 		wModule->command->assign(_command);
 	}
 	else if(!strcmp((char *)data,"setProbabilityFreely")){
@@ -604,7 +611,7 @@ static gint expose_CB (GtkWidget *widget, GdkEventExpose *event, gpointer data)
 					//two copies in order to have 2 conversions
 					//the first transform the yarp mono into a 4-channel image
 					//ippiCopy_8u_C1R(_outputImage->getPixelAddress(0,0), width,im_out,psb,srcsize);
-					cvCvtColor(_outputImage->getPixelAddress(0,0),wModule->image_out->getPixelAddress(0,0),CV_GRAY2RGB);
+					cvCvtColor(_outputImage->getIplImage(),wModule->image_out->getIplImage(),CV_GRAY2RGB);
 					//im_tmp[0]=im_out;
 					//im_tmp[1]=im_out;
 					//im_tmp[2]=im_out;
