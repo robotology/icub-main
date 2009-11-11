@@ -724,8 +724,10 @@ void iCubSimulationControl::run() {
                     //ctrl.setVelocity(next_vel[i]);
 					if(((current_pos[i]<limitsMin[i])&&(next_vel[i]<0)) || ((current_pos[i]>limitsMax[i])&&(next_vel[i]>0)))
                          ctrl.setVelocity(0.0);
-                     else
+                     else{
                          ctrl.setVelocity(next_vel[i]);
+					}
+						
                 } else {
                     // no acceleration control right now, just velocity
                     ctrl.setControlParameters(vels[i],1);
@@ -983,7 +985,7 @@ bool iCubSimulationControl::setRefSpeedRaw(int j, double sp)
         {
             _mutex.wait();
 			 vel = sp *180/M_PI ;
-             vels[j] = vel;
+             vels[j] = vel/10;
 			 printf("the velocity: %lf %lf\n",vel, sp );
             _mutex.post();
             return true;
