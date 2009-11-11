@@ -988,7 +988,8 @@ void MachineBoltzmann::rbm(Matrix batchdataSingle,Layer *layer,int numhid){
 			printf("\n");
 			printf("[%s] \n",tmp2.toString().c_str());
 			printf("\n");
-			poshidprobs = 1/(exp(data*(-1)*vishid - hidbias)+1); //1./(1 + exp((data*(-1))*(2*vishid) - hidbias));    
+			Matrix ss=exp(data*(-1)*vishid - hidbias);
+			poshidprobs = 1/(ss+1.0); //1./(1 + exp((data*(-1))*(2*vishid) - hidbias));    
 			printf("[%s] \n",poshidprobs.toString().c_str());
 			//batchposhidprobs(:,:,batch)=poshidprobs;
 			posprods    = data.transposed() * poshidprobs;
@@ -999,19 +1000,20 @@ void MachineBoltzmann::rbm(Matrix batchdataSingle,Layer *layer,int numhid){
 			//%%%%%%%%% END OF POSITIVE PHASE  %%%%%%%%%%%%%
 
 			//%%%%% START NEGATIVE PHASE  %%%%%%%%%%%%%%%%%
-			poshidstates = poshidprobs > randomMatrix(numcases,numhid);
+			poshidstates = poshidprobs > (Matrix)randomMatrix(numcases,numhid);
 			//negdata = 1./(1 + exp(-poshidstates*vishid.transposed - visbias));
 			negdata = 1/(exp(poshidstates*(-1)*vishid.transposed() - visbias)+1);
 			negdataprobs=negdata;
 			
 			//negdata = negdata > rand(numcases,numdims); 
 			randomMatrix randMat(numcases,numdims);
-			negdata = negdata > randMat;
+			negdata = negdata >(Matrix)randMat;
 			printf("\n");
 			printf("[%s] \n",negdata.toString().c_str());
 			printf("\n");
 			//neghidprobs = 1./(1 + exp(-negdata*(2*vishid) - hidbias));
-			neghidprobs = 1/(exp(negdata*(-2)*vishid - hidbias)+1);
+			ss=exp(negdata*(-2)*vishid - hidbias);
+			neghidprobs = 1/(ss+1.0);
 
 			negprods  = negdata.transposed() *neghidprobs;
 			double neghidact = sum(neghidprobs);
@@ -1037,7 +1039,8 @@ void MachineBoltzmann::rbm(Matrix batchdataSingle,Layer *layer,int numhid){
 				momentum=initialmomentum;
 			
 			//%%%%%%%% UPDATE WEIGHTS AND BIASES %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%% 
-			Matrix s=(posprods-negprods)/numcases;
+			ss=posprods-negprods;
+			Matrix s=ss/(double)numcases;
 			Matrix t=weightcost*vishid;
 			Matrix z=s-t;
 			//Matrix v=epsilon*z;
