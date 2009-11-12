@@ -380,10 +380,11 @@ bool ServerCartesianController::respond(const Bottle &command, Bottle &reply)
                         case IKINCARTCTRL_VOCAB_OPT_DES:
                         {
                             reply.addVocab(IKINCARTCTRL_VOCAB_REP_ACK);
+							Bottle &body=reply.addList();
 
                             // xdcap part
-                            Bottle &xPart=reply.addList();
-                            xPart.addVocab(IKINSLV_VOCAB_OPT_X);
+                            Bottle &xPart=body.addList();
+                            xPart.addVocab(IKINCARTCTRL_VOCAB_OPT_X);
                             Bottle &xData=xPart.addList();
 
                             // populate xdcap list
@@ -391,8 +392,8 @@ bool ServerCartesianController::respond(const Bottle &command, Bottle &reply)
                                 xData.addDouble(xdes[i]);
     
                             // qdcap part
-                            Bottle &qPart=reply.addList();
-                            qPart.addVocab(IKINSLV_VOCAB_OPT_Q);
+                            Bottle &qPart=body.addList();
+                            qPart.addVocab(IKINCARTCTRL_VOCAB_OPT_Q);
                             Bottle &qData=qPart.addList();
 
                             // populate qdcap list

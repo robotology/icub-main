@@ -6,9 +6,6 @@
 
 #include <stdio.h>
 
-#include <iCub/iKinVocabs.h>
-#include <iCub/iKinHlp.h>
-
 #include "CommonCartesianController.h"
 #include "ClientCartesianController.h"
 
@@ -17,7 +14,6 @@ using namespace yarp::os;
 using namespace yarp::dev;
 using namespace yarp::sig;
 using namespace yarp::math;
-using namespace iKin;
 
 
 /************************************************************************/
@@ -354,14 +350,13 @@ bool ClientCartesianController::getDesired(Vector &xdcap, Vector &odcap, Vector 
     }
 
     if (reply.get(0).asVocab()==IKINCARTCTRL_VOCAB_REP_ACK)
-    {
-        // xdcap and odcap part
-        if (Bottle *xPart=reply.get(1).asList())
-        {    
-            if (xPart->check(Vocab::decode(IKINSLV_VOCAB_OPT_X)))
+	{
+		if (Bottle *body=reply.get(1).asList())
+		{
+			// xdcap and odcap part
+			if (body->check(Vocab::decode(IKINCARTCTRL_VOCAB_OPT_X)))
             {
-                Bottle *xData=CartesianHelper::getEndEffectorPoseOption(*xPart);
-            
+                Bottle *xData=body->find(Vocab::decode(IKINCARTCTRL_VOCAB_OPT_X)).asList();
                 xdcap.resize(3);
                 odcap.resize(4);
             
@@ -373,17 +368,11 @@ bool ClientCartesianController::getDesired(Vector &xdcap, Vector &odcap, Vector 
             }
             else
                 return false;
-        }
-        else
-            return false;
 
-        // qdcap part
-        if (Bottle *qPart=reply.get(2).asList())
-        {    
-            if (qPart->check(Vocab::decode(IKINSLV_VOCAB_OPT_Q)))
+			// qdcap part
+            if (body->check(Vocab::decode(IKINCARTCTRL_VOCAB_OPT_Q)))
             {
-                Bottle *qData=CartesianHelper::getJointsOption(*qPart);
-
+                Bottle *qData=body->find(Vocab::decode(IKINCARTCTRL_VOCAB_OPT_Q)).asList();
                 qdcap.resize(qData->size());
 
                 for (int i=0; i<qdcap.length(); i++)
@@ -391,12 +380,12 @@ bool ClientCartesianController::getDesired(Vector &xdcap, Vector &odcap, Vector 
             }
             else
                 return false;
-        }
-        else
-            return false;
 
-        return true;
-    }
+			return true;
+		}
+		else
+			return false;
+	}
     else
         return false;
 }
