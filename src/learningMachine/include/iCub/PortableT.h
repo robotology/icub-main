@@ -56,6 +56,7 @@ public:
      * Constructor.
      *
      * @param name name specifier of the wrapped object
+     * @throw runtime error if no object exists with the given key
      */
     PortableT(std::string name) : wrapped((T*) 0) {
         this->setWrapped(name);

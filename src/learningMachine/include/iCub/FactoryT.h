@@ -84,6 +84,8 @@ public:
      * object.
      *
      * @param prototype the prototype object
+     * @throw runtime error if the name of the prototype is empty
+     * @throw runtime error if another object is registered with the same name
      */
     void registerPrototype(T* prototype) {
         assert(prototype != (T*) 0);
@@ -109,6 +111,7 @@ public:
      *
      * @param key a key that identifies the type of machine
      * @return a copied object of the specified type
+     * @throw runtime error if no object has been registered with the same key
      */
     T* create(const K& key) {
         if(this->map.find(key) == this->map.end()) {

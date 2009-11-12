@@ -96,7 +96,7 @@ int main(int argc, char** argv) {
 
   // create Regularized Least Squares learner
   std::string name("RLS");
-  MachinePortable mp = MachinePortable("RLS");
+  MachinePortable mp = MachinePortable("RLS2");
   Property p("(dom 250) (cod 2) (lambda (0.5 0.01))");
   mp.getWrapped().configure(p);
   std::cout << "Learner:" << std::endl << mp.getWrapped().getInfo() << std::endl;

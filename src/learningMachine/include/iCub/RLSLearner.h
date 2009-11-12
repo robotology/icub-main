@@ -292,6 +292,8 @@ public:
      * Returns a pointer to the RLS at a certain position.
      *
      * @param index the index of the scaler
+     * @return a pointer to the RLS at the given index
+     * @throw runtime error if the index is out of bounds
      */
     RLS* getAt(int index);
 

@@ -189,8 +189,6 @@ bool ScaleTransformer::configure(Searchable &config) {
             for(int i = 0; i < this->scalers.size(); i++) {
                 success |= this->getAt(i)->configure(property);
             }
-        } else {
-            throw std::runtime_error("Illegal index!");
         }
     }
 

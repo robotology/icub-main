@@ -114,6 +114,7 @@ IF(CREATE_LM_LIBRARY)
     # create library to directly include machines and/or transformers, without modules
     ADD_LIBRARY(${LM_LIB} ${LM_MACHINE_SRC} ${LM_TRANSFORMER_SRC})
     INSTALL(TARGETS ${LM_LIB} DESTINATION lib)
+    EXPORT_LIBRARY_DEPENDENCIES(${PROJECT_BINARY_DIR}/${LM_LIB}LibraryDepends.cmake)
 ENDIF(CREATE_LM_LIBRARY)
 
 ADD_EXECUTABLE(${LM_TRAIN_EXEC} ${LM_HEADER} ${LM_MODULE_SRC} ${LM_MACHINE_SRC} ${LM_EVENT_SRC} src/TrainModule.cpp src/PredictModule.cpp src/bin/train.cpp)
@@ -138,6 +139,7 @@ ENDIF(USE_LSSVMATLAS)
 
 # Add our include files into our compiler's search path.
 INCLUDE_DIRECTORIES(${PROJECT_SOURCE_DIR}/include)
+
 
 INSTALL(TARGETS ${LM_TRAIN_EXEC} ${LM_PREDICT_EXEC} ${LM_TRANSFORM_EXEC} DESTINATION bin)
 INSTALL(FILES ${LM_HEADER} DESTINATION include/iCub)

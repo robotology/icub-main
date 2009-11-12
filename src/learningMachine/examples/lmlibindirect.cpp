@@ -5,6 +5,7 @@
  * Example code how to use the learningMachine library in an indirect manner.
  */
 #include <iostream>
+#include <stdexcept>
 #include <math.h>
 #include <iCub/RLSLearner.h>
 #include <iCub/RandomFeature.h>

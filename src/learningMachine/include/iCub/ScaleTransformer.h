@@ -66,6 +66,7 @@ protected:
      * Returns a pointer to the scaler at a certain position.
      *
      * @param index the index of the scaler
+     * @throw runtime error if the index is out of bounds
      */
     IScaler* getAt(int index) {
         if (index >= 0 && index < this->scalers.size()) {
