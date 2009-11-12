@@ -99,19 +99,19 @@ bool BIControlGazeEngine::open(Searchable& config) {
 		runFreely=false;
 		runClamped=false;
 
-		im_out = ippiMalloc_8u_C1(320,240,&psb);		
-		im_tmp_tmp= ippiMalloc_8u_C1(320,240,&psb);
-		im_tmp[0]=im_out;
-		im_tmp[1]=im_out;
-		im_tmp[2]=im_out;
-		red_tmp= ippiMalloc_8u_C1(320,240,&psb);
-		blue_tmp= ippiMalloc_8u_C1(320,240,&psb);
-		green_tmp= ippiMalloc_8u_C1(320,240,&psb);
-		for(int i=0;i<320*240;i++){
+		//im_out = ippiMalloc_8u_C1(320,240,&psb);		
+		//im_tmp_tmp= ippiMalloc_8u_C1(320,240,&psb);
+		//im_tmp[0]=im_out;
+		//im_tmp[1]=im_out;
+		//im_tmp[2]=im_out;
+		//red_tmp= ippiMalloc_8u_C1(320,240,&psb);
+		//blue_tmp= ippiMalloc_8u_C1(320,240,&psb);
+		//green_tmp= ippiMalloc_8u_C1(320,240,&psb);
+		/*for(int i=0;i<320*240;i++){
 			red_tmp[i]=255;
 			blue_tmp[i]=255;
 			green_tmp[i]=255;
-		}
+		}*/
 			
 
 		engineModule=this;

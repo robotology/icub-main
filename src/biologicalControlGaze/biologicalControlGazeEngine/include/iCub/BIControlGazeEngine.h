@@ -14,7 +14,7 @@
 #include <highgui.h>
 
 //IPP include
-#include <ipp.h>
+//#include <ipp.h>
 
 //within Project Include
 //#include <iCub/BMLEngine.h>
@@ -119,19 +119,19 @@ private:
 	/**
 	* temporary red plane of the output image
 	*/
-	Ipp8u* red_tmp;
+	//Ipp8u* red_tmp;
 	/**
 	* temporary green plane of the output image
 	*/
-	Ipp8u* green_tmp;
+	//Ipp8u* green_tmp;
 	/**
 	* temporary blue plane of the output image
 	*/
-	Ipp8u* blue_tmp;
+	//Ipp8u* blue_tmp;
 
-	Ipp8u *im_out;
-	Ipp8u* im_tmp[3];
-	Ipp8u* im_tmp_tmp;
+	//Ipp8u *im_out;
+	//Ipp8u* im_tmp[3];
+	//Ipp8u* im_tmp_tmp;
 	int psb;
 	/** 
 	* value that indicates whether an area can be visually clamped 
