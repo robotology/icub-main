@@ -25,7 +25,7 @@ using namespace yarp::sig;
 
 
 //--------- static functions ---------------
-static double sum(yarp::sig::Matrix mat){
+static double sum(const yarp::sig::Matrix &mat){
 	double sum=0.0;
 	for(int col=0;col<mat.cols();col++)
 		for(int row=0;row< mat.rows();row++)
@@ -33,7 +33,7 @@ static double sum(yarp::sig::Matrix mat){
 	return sum;
 }
 
-static double sum(yarp::sig::Vector vec){
+static double sum(const yarp::sig::Vector &vec){
 	double sum=0.0;
 	for(int i=0;i<vec.length();i++)
 			sum+=vec(i);
@@ -49,7 +49,7 @@ static Matrix repmat(Vector vec,int rows,int cols){
 	return res;
 }
 
-static Matrix exp(Matrix m){
+static Matrix exp(const Matrix &m){
 	//printf("The matrix is %s", m.toString().c_str());
 	Matrix res(m.rows(),m.cols());
 	for (int row=0;row<m.rows();row++)
@@ -85,14 +85,14 @@ static Vector operator+(const yarp::sig::Vector &m, double c){
 	return res;
 }
 
-static Matrix operator*(yarp::sig::Matrix &m,double c){
+static Matrix operator*(const yarp::sig::Matrix &m,double c){
 	Matrix res(m.rows(),m.cols());
 	for (int row=0;row<m.rows();row++)
 		for(int col=0;col<m.cols();col++)
 			res(row,col)=m(row,col)*c;
 	return res;
 }
-static Matrix operator*(double c,yarp::sig::Matrix &m){
+static Matrix operator*(double c,const yarp::sig::Matrix &m){
 	Matrix res(m.rows(),m.cols());
 	for (int row=0;row<m.rows();row++)
 		for(int col=0;col<m.cols();col++)
@@ -100,14 +100,14 @@ static Matrix operator*(double c,yarp::sig::Matrix &m){
 	return res;
 }
 
-static Matrix operator/(double c,yarp::sig::Matrix &m){
+static Matrix operator/(double c,const yarp::sig::Matrix &m){
 	Matrix res(m.rows(),m.cols());
 	for (int row=0;row<m.rows();row++)
 		for(int col=0;col<m.cols();col++)
 			res(row,col)=c/m(row,col);
 	return res;
 }
-static Matrix operator/(yarp::sig::Matrix &m,double c){
+static Matrix operator/(const yarp::sig::Matrix &m,double c){
 	Matrix res(m.rows(),m.cols());
 	for (int row=0;row<m.rows();row++)
 		for(int col=0;col<m.cols();col++)
@@ -115,7 +115,7 @@ static Matrix operator/(yarp::sig::Matrix &m,double c){
 	return res;
 }
 
-static Matrix operator>(yarp::sig::Matrix &a,yarp::sig::Matrix &b){
+static Matrix operator>(const yarp::sig::Matrix &a,const yarp::sig::Matrix &b){
 	Matrix res(a.rows(),a.cols());
 	for (int row=0;row<a.rows();row++)
 		for(int col=0;col<a.cols();col++)
