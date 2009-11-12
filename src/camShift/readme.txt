@@ -1,17 +1,15 @@
-This filter implements the OpenCV camshift algorithm for the YARP iCub Software Architecture.
+This filter uses the OpenCV camShift algorithm for tracking an object on the image in the YARP iCub Software Architecture.
 
-The inputs of the filter are 
-1 - /camshift/img/i (a color image)		
-2 - /camshift/roi/i (a input region of interest, in a bottle  x,y,w,h) 
+Input/Output ports
+1 - /effectDetector/init //receives a bottle containing information on initial ROI, histogram and bounds, sends 0 when initialization fails, 1 when it succeeds.
+
+Input ports
+1 - /effectDetector/rawsegmimg:i //image on which the segmentation was performed
+2 - /effectDetector/rawcurrimg:i //flow of input images
 
 The outputs of the filter are:
-1 - /camshift/obj/o  (array with parameters of the containing ellipse 
-    centerx,centery, width, height, orientation)
-2 - /camshift/roi/o  (search window)
-3 - /camshift/img/o  (backprojected image)
+1 - /effectDetector/effect:o  //stream of (u,v) positions of the tracked object
 
 
 Parameters:
 
---file <campars.ini> // file with internal camera parameters
---angle              // to output azimuth-elevation [degrees]
