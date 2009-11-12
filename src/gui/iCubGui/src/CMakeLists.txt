@@ -1,3 +1,7 @@
+if(COMMAND cmake_policy)
+  cmake_policy(SET CMP0003 NEW)
+endif(COMMAND cmake_policy)
+
 # Sources
 SET(icubgui_SRC animationview.cpp bvh.cpp bvhnode.cpp camera.cpp main.cpp qavimator.cpp settings.cpp settingsdialog.cpp)
 
