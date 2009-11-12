@@ -24,7 +24,7 @@
 
 #include <iCub/MachineBoltzmann.h>
 
-#include <ipp.h>
+//#include <ipp.h>
 
 
 

@@ -551,53 +551,65 @@ static gint expose_CB (GtkWidget *widget, GdkEventExpose *event, gpointer data)
 				guchar *pixels;
 				unsigned int rowstride;
 				unsigned int imageWidth,imageHeight,areaWidth, areaHeight;
-				IppiSize srcsize={320,240};
+				//IppiSize srcsize={320,240};
 				
 				bool ret=getLayers();
-				if(ret==false)
+				if(ret==false){
 					printf("No Layers! \n");
+					return true;
+				}
 			
 				//=new yarp::sig::ImageOf<yarp::sig::PixelRgb>;
 				//_outputImage->resize(320,240);
 				bool conversion=true;
 				if(wModule->inputImage_flag){
-					ippiCopy_8u_C3R(wModule->ptr_inputImage->getPixelAddress(0,0),320*3,_outputImage3->getPixelAddress(0,0),320*3,srcsize);
+					//ippiCopy_8u_C3R(wModule->ptr_inputImage->getPixelAddress(0,0),320*3,_outputImage3->getPixelAddress(0,0),320*3,srcsize);
+					cvCopyImage(wModule->ptr_inputImage->getIplImage(),_outputImage3->getIplImage());
 					conversion=false;
 				}
 				else if(wModule->inLayer0_flag){
-					ippiCopy_8u_C3R(wModule->ptr_inputLayer0->getPixelAddress(0,0),320*3,_outputImage3->getPixelAddress(0,0),320*3,srcsize);
+					//ippiCopy_8u_C3R(wModule->ptr_inputLayer0->getPixelAddress(0,0),320*3,_outputImage3->getPixelAddress(0,0),320*3,srcsize);
+					cvCopyImage(wModule->ptr_inputLayer0->getIplImage(),_outputImage3->getIplImage());
 					conversion=false;
 				}
 				else if(wModule->inLayer1_flag){
-					ippiCopy_8u_C3R(wModule->ptr_inputLayer1->getPixelAddress(0,0),320*3,_outputImage3->getPixelAddress(0,0),320*3,srcsize);
+					//ippiCopy_8u_C3R(wModule->ptr_inputLayer1->getPixelAddress(0,0),320*3,_outputImage3->getPixelAddress(0,0),320*3,srcsize);
+					cvCopyImage(wModule->ptr_inputLayer1->getIplImage(),_outputImage3->getIplImage());
 					conversion=false;
 				}
 				else if(wModule->inLayer2_flag){
-					ippiCopy_8u_C3R(wModule->ptr_inputLayer2->getPixelAddress(0,0),320*3,_outputImage3->getPixelAddress(0,0),320*3,srcsize);
+					//ippiCopy_8u_C3R(wModule->ptr_inputLayer2->getPixelAddress(0,0),320*3,_outputImage3->getPixelAddress(0,0),320*3,srcsize);
+					cvCopyImage(wModule->ptr_inputLayer2->getIplImage(),_outputImage3->getIplImage());
 					conversion=false;
 				}
 				else if(wModule->inLayer3_flag){
-					ippiCopy_8u_C3R(wModule->ptr_inputLayer3->getPixelAddress(0,0),320*3,_outputImage3->getPixelAddress(0,0),320*3,srcsize);
+					//ippiCopy_8u_C3R(wModule->ptr_inputLayer3->getPixelAddress(0,0),320*3,_outputImage3->getPixelAddress(0,0),320*3,srcsize);
+					cvCopyImage(wModule->ptr_inputLayer3->getIplImage(),_outputImage3->getIplImage());
 					conversion=false;
 				}
 				else if(wModule->inLayer4_flag){
-					ippiCopy_8u_C3R(wModule->ptr_inputLayer4->getPixelAddress(0,0),320*3,_outputImage3->getPixelAddress(0,0),320*3,srcsize);
+					//ippiCopy_8u_C3R(wModule->ptr_inputLayer4->getPixelAddress(0,0),320*3,_outputImage3->getPixelAddress(0,0),320*3,srcsize);
+					cvCopyImage(wModule->ptr_inputLayer4->getIplImage(),_outputImage3->getIplImage());
 					conversion=false;
 				}
 				else if(wModule->inLayer5_flag){
-					ippiCopy_8u_C3R(wModule->ptr_inputLayer5->getPixelAddress(0,0),320*3,_outputImage3->getPixelAddress(0,0),320*3,srcsize);
+					//ippiCopy_8u_C3R(wModule->ptr_inputLayer5->getPixelAddress(0,0),320*3,_outputImage3->getPixelAddress(0,0),320*3,srcsize);
+					cvCopyImage(wModule->ptr_inputLayer5->getIplImage(),_outputImage3->getIplImage());
 					conversion=false;
 				}
 				else if(wModule->inLayer6_flag){
-					ippiCopy_8u_C3R(wModule->ptr_inputLayer6->getPixelAddress(0,0),320*3,_outputImage3->getPixelAddress(0,0),320*3,srcsize);
+					//ippiCopy_8u_C3R(wModule->ptr_inputLayer6->getPixelAddress(0,0),320*3,_outputImage3->getPixelAddress(0,0),320*3,srcsize);
+					cvCopyImage(wModule->ptr_inputLayer6->getIplImage(),_outputImage3->getIplImage());
 					conversion=false;
 				}
 				else if(wModule->inLayer7_flag){
-					ippiCopy_8u_C3R(wModule->ptr_inputLayer7->getPixelAddress(0,0),320*3,_outputImage3->getPixelAddress(0,0),320*3,srcsize);
+					//ippiCopy_8u_C3R(wModule->ptr_inputLayer7->getPixelAddress(0,0),320*3,_outputImage3->getPixelAddress(0,0),320*3,srcsize);
+					cvCopyImage(wModule->ptr_inputLayer7->getIplImage(),_outputImage3->getIplImage());
 					conversion=false;
 				}
 				else if(wModule->inLayer8_flag){
-					ippiCopy_8u_C3R(wModule->ptr_inputLayer8->getPixelAddress(0,0),320*3,_outputImage3->getPixelAddress(0,0),320*3,srcsize);
+					//ippiCopy_8u_C3R(wModule->ptr_inputLayer8->getPixelAddress(0,0),320*3,_outputImage3->getPixelAddress(0,0),320*3,srcsize);
+					cvCopyImage(wModule->ptr_inputLayer8->getIplImage(),_outputImage3->getIplImage());
 					conversion=false;
 				}
 				else if(false){
@@ -616,28 +628,31 @@ static gint expose_CB (GtkWidget *widget, GdkEventExpose *event, gpointer data)
 					else _outputImage->zero(); //the input is a RGB image, whereas the watershed is working with a mono image
 				}
 				else _outputImage->zero(); //the input is a RGB image, whereas the watershed is working with a mono image
-
 				//-------
 				
 				if(conversion){
-					int psb,width=320,height=240;
-					Ipp8u* im_out = ippiMalloc_8u_C1(width,height,&psb);
-					Ipp8u* im_tmp[3];
+					cvCvtColor(_outputImage->getIplImage(),wModule->image_out->getIplImage(),CV_GRAY2RGB);
+
+					//int psb,width=320,height=240;
+					//Ipp8u* im_out = ippiMalloc_8u_C1(width,height,&psb);
+					//Ipp8u* im_tmp[3];
 					//two copies in order to have 2 conversions
 					//the first transform the yarp mono into a 4-channel image
-					ippiCopy_8u_C1R(_outputImage->getPixelAddress(0,0), width,im_out,psb,srcsize);
-					im_tmp[0]=im_out;
-					im_tmp[1]=im_out;
-					im_tmp[2]=im_out;
+					//ippiCopy_8u_C1R(_outputImage->getPixelAddress(0,0), width,im_out,psb,srcsize);
+					//im_tmp[0]=im_out;
+					//im_tmp[1]=im_out;
+					//im_tmp[2]=im_out;
 					//the second transforms the 4-channel image into colorImage for yarp
-					ippiCopy_8u_P3C3R(im_tmp,psb,wModule->image_out->getPixelAddress(0,0),width*3,srcsize);
-					ippiFree(im_out);
-					ippiFree(im_tmp); //throws exception for heap corruption if done for every position of the vector
+					//ippiCopy_8u_P3C3R(im_tmp,psb,wModule->image_out->getPixelAddress(0,0),width*3,srcsize);
+					//ippiFree(im_out);
+					//ippiFree(im_tmp); //throws exception for heap corruption if done for every position of the vector
 					//ippiFree(im_tmp[1]);
 					//ippiFree(im_tmp[2]);
 				}
-				else
-					ippiCopy_8u_C3R(_outputImage3->getPixelAddress(0,0),320*3,wModule->image_out->getPixelAddress(0,0),320*3,srcsize);
+				else{
+					//ippiCopy_8u_C3R(_outputImage3->getPixelAddress(0,0),320*3,wModule->image_out->getPixelAddress(0,0),320*3,srcsize);
+					cvCopyImage(_outputImage3->getIplImage(),wModule->image_out->getIplImage());
+				}
 				
 				//----------
 				_semaphore.wait();
