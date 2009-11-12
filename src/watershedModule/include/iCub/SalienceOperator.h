@@ -47,10 +47,10 @@ using namespace yarp::sig::draw;
 
 namespace _logpolarParams
 {
-	const int _xsize = 256;
-	const int _ysize = 256;
+	const int _xsize = 320; //const int _xsize = 256;
+	const int _ysize = 240; //const int _ysize = 256;
 	const int _srho = 152;
-	const int _stheta = 252;
+	const int _stheta = 240; //const int _stheta = 252;
 	const int _sfovea = 42;
 	
 	const int _xsizefovea = 128;
@@ -146,6 +146,8 @@ private:
 	* width of the images
 	*/
 	int width;
+
+	Image_Data _img;
 public:
 	//---methods
 	/**

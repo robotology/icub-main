@@ -17,6 +17,29 @@ SalienceOperator::SalienceOperator(const int width1, const int height1)//:_gaze(
 	colorVQ_img->resize(320,240);
 
 	colorVQ=new ColorVQ(320,240,10);
+
+	
+	//Image_Data YARPLogpolar::_img;
+	using namespace _logpolarParams;
+
+	
+	/*_img.Size_X_Orig=256;
+	_img.Size_Y_Orig=256;
+	_img.Size_Rho=1090;
+	_img.Size_Theta=20;
+	_img.Size_Fovea=256.0/1090.0;*/
+
+	_img = Set_Param(
+				_xsize, _ysize,
+				256, 256,
+				_srho, _stheta, _sfovea,
+				1090,
+				CUST,
+				256.0/1090.0);
+
+	_img.padding =1; // YarpImageAlign;
+	_img.Pix_Numb = 2;
+	_img.Fovea_Type = 0;
 }
 
 void SalienceOperator::DrawVQColor(ImageOf<PixelBgr>& id, ImageOf<PixelInt>& tagged)
@@ -937,28 +960,7 @@ void SalienceOperator::logPolar2Cartesian(int irho, int itheta, int& ox, int& oy
 	double _xsize=2;
 	double _ysize=2;
 	double angleShift=1;
-	Image_Data _img;
-	//Image_Data YARPLogpolar::_img;
-	using namespace _logpolarParams;
-
 	
-	/*_img.Size_X_Orig=256;
-	_img.Size_Y_Orig=256;
-	_img.Size_Rho=1090;
-	_img.Size_Theta=20;
-	_img.Size_Fovea=256.0/1090.0;*/
-
-	_img = Set_Param(
-				_xsize, _ysize,
-				256, 256,
-				_srho, _stheta, _sfovea,
-				1090,
-				CUST,
-				256.0/1090.0);
-
-	_img.padding =1; // YarpImageAlign;
-	_img.Pix_Numb = 2;
-	_img.Fovea_Type = 0;
 
 	Get_XY_Center(&xx, &yy, irho, itheta, &_img, &angleShift);
 	//xx=320/2;
