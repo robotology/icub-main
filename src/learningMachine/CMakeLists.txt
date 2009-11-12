@@ -12,14 +12,6 @@ PROJECT(${PROJECTNAME})
 
 SET(CMAKE_CXX_FLAGS "-O3")
 
-FIND_PACKAGE(YARP)
-
-FIND_PACKAGE(ICUB QUIET)
-IF (NOT ICUB_FOUND)
-    MESSAGE (STATUS "ICUB repository not found; assuming distributed build.")
-    MESSAGE (STATUS "If this is not what you want, set ICUB_DIR variable.")
-ENDIF (NOT ICUB_FOUND)
-
 # Source code Groups
 SET(LM_MODULE_SRC 
     src/IMachineLearnerModule.cpp )
@@ -92,6 +84,23 @@ SOURCE_GROUP("Source Files" FILES ${LM_MODULE_SRC}
                                   ${LM_TRANSFORMER_SRC} 
                                   ${LM_EVENT_SRC} )
 SOURCE_GROUP("Header Files" FILES ${LM_HEADER})
+
+
+FIND_PACKAGE(ICUB QUIET)
+IF (NOT ICUB_FOUND)
+    MESSAGE (STATUS "ICUB repository not found; assuming distributed build.")
+    MESSAGE (STATUS "If this is not what you want, set ICUB_DIR variable.")
+ENDIF (NOT ICUB_FOUND)
+
+# order is CRUCIAL here! These libraries must be linked before GSL cblas library 
+SET(USE_ATLAS FALSE CACHE BOOL "Select true to link to Atlas for BLAS")
+IF(USE_ATLAS)
+   FIND_PACKAGE(Atlas)
+   # GSL already provides cblas header, we only need the Atlas libraries
+   LINK_LIBRARIES(${ATLAS_CBLAS_LIBRARY} ${ATLAS_ATLAS_LIBRARY})
+ENDIF(USE_ATLAS)
+
+FIND_PACKAGE(YARP)
 
 SET(USE_LSSVMATLAS FALSE CACHE BOOL "Select true if Atlas version of LSSVM has to be compiled")
 IF(USE_LSSVMATLAS)
