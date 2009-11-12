@@ -50,8 +50,8 @@ SUBDIRS(
 	tempTrackSimple
 	colTrackSimple
         CVDepthClient2
-#	objRec
-#	objMan
+	objRec
+	objMan
         demos
 	devel
 	)

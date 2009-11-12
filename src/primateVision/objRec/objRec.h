@@ -68,14 +68,22 @@ namespace iCub {
 	void loadNet();
 	void extractPixels(IplImage* img);
 	
+//Orient/scale inv. functions:	
+void polar2cart_8u(Ipp8u*pol,int psb_pol,IppiSize pol_size, Ipp8u*cart,int psb_cart,IppiSize cart_size);
+void cart2polar_8u(Ipp8u*cart,int psb_cart,IppiSize cart_size,  Ipp8u* pol,int psb_pol,IppiSize pol_size, int cx,int cy);
+void getMaxRightXY_8u(Ipp8u* in, int psb_in,IppiSize sz,int*X,int*Y);
+void rollUp_8u(int n,Ipp8u*in,int psb_in, IppiSize sz,Ipp8u*out,int psb_out);
+void stretchRight_8u(int max_right, int max_width, Ipp8u* in, int psb_in,IppiSize sz_o, Ipp8u* out, int psb_out);
+
+
 	//NN Parameters
-	BiasedCluster *in, *hid, *out;
+	BiasedCluster *NN_in, *NN_hid, *NN_out;
 	DotLinker *in2hid, *hid2out, *in2out;
 	BackPropagationAlgo* learnNet; 
 	BaseNeuralNet* net;
 	double pixelValNorm[3000][50];
 	int numInputs, numOutputs, numHiddens, inc;
-	IplImage* temp;
+	IplImage *temp,*inv;
 	double momentum;
 	double learnRate;
       };
