@@ -3,15 +3,10 @@
 <nameserver namespace="/icub02" node="icub3"> </nameserver>
 
 <node display="true">icub3</node>
-<node>icub-b1</node>
-<node>icub-b2</node>
-<node>icub-b3</node>
-<node>icub-b4</node>
-<node>icub-b5</node>
-<node>icub-b6</node>
 <node display="true">icub11</node>
-<node display="true">icub12</node>
-<node>pc104-icub02</node>
+<node>icub15</node>
+<node>icub17</node>
+<node>pc104</node>
 
 </cluster>
 
