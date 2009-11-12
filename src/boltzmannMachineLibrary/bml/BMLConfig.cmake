@@ -2,7 +2,7 @@
 # The rest of the file can remain unchanged in most cases.
 SET(LIB_TARGET "bml")   # name used in ADD_LIBRARY(...)
 SET(LIB_PKG "BML")      # name you want in FIND_PACKAGE(...)
-SET(VERBOSE TRUE)
+SET(VERBOSE FALSE)
 
 # We expect a <LIBRARY>_DIR variable to be available, pointing to
 # the directory with this library in it.
