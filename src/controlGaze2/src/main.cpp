@@ -91,7 +91,7 @@ using namespace iCub::contrib;
  * 
  * \defgroup configCamera
  */
- */@{*/
+ /*@{*/
  /**
  * --configCamera iCubEyes.ini
  * 
@@ -131,7 +131,7 @@ using namespace iCub::contrib;
  /**
  * \defgroup appPath
  */
- */@{*/
+ /*@{*/
  /**
  * --appPath c:/icub/app/myapp
  * 
@@ -140,7 +140,7 @@ using namespace iCub::contrib;
  /**
  * \defgroup imageSize
  */
- */@{*/
+ /*@{*/
  /**
  * --imageSize 160x120
  * 
@@ -150,7 +150,7 @@ using namespace iCub::contrib;
  /**
  * \defgroup motorBoard
  */
- */@{*/
+ /*@{*/
  /**
  * --motorBoard /icub/head
  * 
@@ -160,7 +160,7 @@ using namespace iCub::contrib;
  /**
  * \defgroup Other Parameters and Defaults
  */
- */@{*/
+ /*@{*/
  /**
  * pidON	          0
  * pidGAIN	  5.0
@@ -249,7 +249,7 @@ using namespace iCub::contrib;
  * 
  * \defgroup /controlGaze2/pos
  */
- */@{*/
+ /*@{*/
  /**
  * This port accepts gaze position commands. 
  * The iCub head will perform a fast redirection of gaze (saccade), first moving the eyes quickly to the final heading. 
@@ -273,7 +273,7 @@ using namespace iCub::contrib;
  /**
  * \defgroup /controlGaze2/vel
  */
- */@{*/
+ /*@{*/
  /**
  * This port accepts commands that implement the smooth pursuit behavior. 
  * The behavior is similar to the position commands but the eye does not saccade faster: both eyes and head move slower. 
@@ -290,7 +290,7 @@ using namespace iCub::contrib;
  /**
  * \defgroup /controlGaze2/dis
  */
- */@{*/
+ /*@{*/
  /**
  * This port accepts gaze vergence commands. Each command is a vector of 1 float:
  * - x - the horizontal image disparity in normalized image coordinates (-1, 1) 
@@ -299,7 +299,7 @@ using namespace iCub::contrib;
  /**
  * \defgroup /controlGaze2/imgcoord
  */
- */@{*/
+ /*@{*/
  /**
  * This port was made purposefully to connect directly viewer clicks. Will send the gaze direction to the clicked position in the viewer. 
  *
@@ -307,14 +307,14 @@ using namespace iCub::contrib;
  /**
  * \defgroup /controlGaze2/imu
  */
- */@{*/
+ /*@{*/
  /**
  * Connects to the output of the inertial sensor a compensates for external body motions.
  /*@}*/
  /**
  * \defgroup /controlGaze2/trackersignal/bot:o 
  */
- */@{*/
+ /*@{*/
  /**
  * Not working. Used once to indicate the end of a saccade, meaning there is a new object to track. 
  * Please advice if interested in this feature. 
@@ -323,7 +323,7 @@ using namespace iCub::contrib;
  /**
  * \defgroup /controlGaze2/possibledirections/vec:o 
  */
- */@{*/
+ /*@{*/
  /**
  * Experimental. Tells external modules about direction that cannot be reached due to head-eye mechanical limits. 
  * Please advice if interested in this feature.
@@ -332,7 +332,7 @@ using namespace iCub::contrib;
  /**
  * \defgroup /controlGaze2/status:o 
  */
- */@{*/
+ /*@{*/
  /**
  * Outputs the state of the controller and the current azimuth and elevation gaze direction coordinates (degrees).
  * The port sends bottles with three elements:
