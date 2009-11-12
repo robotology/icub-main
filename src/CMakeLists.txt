@@ -201,7 +201,7 @@ ENDIF (ARTOOLKITPLUS_FOUND)
     ADD_SUBDIRECTORY(cylGuard)
   ENDIF(GSL_FOUND AND IPOPT_FOUND)
 
-  ADD_SUBDIRECTORY(iKinArmCtrlIF)
+  #ADD_SUBDIRECTORY(iKinArmCtrlIF)
 
   # add here modules you want to test for compilation
   # these modules will only be compiled by automated
