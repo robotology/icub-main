@@ -7,8 +7,8 @@ SET(VERBOSE FALSE)
 # We expect a <LIBRARY>_DIR variable to be available, pointing to
 # the directory with this library in it.
 SET(LIB_DIR ${${LIB_PKG}_DIR})
-MESSAGE("${LIB_PKG} Library!!!!!!!!!!!!!!!!!!!!!")
 IF(VERBOSE)
+  MESSAGE("${LIB_PKG} Library!!!!!!!!!!!!!!!!!!!!!")
   MESSAGE("LOOKING FOR INCLUDE FLES IN ${${LIB_PKG}_DIR}/include")
 ENDIF(VERBOSE)
 SET(${LIB_PKG}_INCLUDE_DIRS ${${LIB_PKG}_DIR}/include/)
@@ -21,9 +21,9 @@ IF (NESTED_BUILD)
     MESSAGE (STATUS "NESTED_BUILD")
   ENDIF(VERBOSE)
 ELSE (NESTED_BUILD)
-  MESSAGE ( "Not NESTED_BUILD")
-
+  
   IF(VERBOSE)
+   MESSAGE ( "Not NESTED_BUILD")
    MESSAGE( "Looking at ${BML_DIR}/lib")
    MESSAGE( "Looking at ${BML_DIR}")
   ENDIF(VERBOSE)	
