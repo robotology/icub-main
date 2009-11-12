@@ -995,10 +995,18 @@ bool WatershedModule::outPorts(){
 
 	//ippiCopy_8u_P3C3R(im_tmp,psb,image_out->getPixelAddress(0,0),320*3,srcsize);
 	//this->_pOutPort2->prepare()=*(this->image_out);
-	this->_pOutPort2->prepare()=*(this->image_out);
+	
 	//this->_pOutPort2->prepare()=*(this->processor2->portImage);
 	//this->_pOutPort3->prepare()=*(this->processor3->portImage);
 	//printf("After prepares \n");
+	ImageOf<PixelRgb>* out=new ImageOf<PixelRgb>;
+	out->resize(320,240);
+	IppiSize srcsize={320,240};
+	
+	ippiCopy_8u_C3R(wModule->outMeanColourLP->getPixelAddress(0,0),320*3,out->getPixelAddress(0,0),320*3,srcsize);	
+	this->_pOutPort3->prepare()=*out;
+	this->_pOutPort3->write();
+	this->_pOutPort2->prepare()=*(this->image_out);
 	this->_pOutPort2->write();
 	//this->_pOutPort2->write();
 	//this->_pOutPort3->write();
@@ -1326,6 +1334,16 @@ bool WatershedModule::openPorts(){
                     g_print("ERROR: Port registration failed.\nQuitting, sorry.\n");
                     return false;
                 }
+			_pOutPort3 = new yarp::os::BufferedPort<ImageOf<PixelRgb> >;
+            g_print("Registering port %s on network %s...\n", "/rea/Watershed/outBlobs","default");
+            ok = _pOutPort3->open("/rea/Watershed/outView");
+            if  (ok)
+                g_print("Port registration succeed!\n");
+            else 
+                {
+                    g_print("ERROR: Port registration failed.\nQuitting, sorry.\n");
+                    return false;
+                }
 
         }
 
@@ -1354,6 +1372,8 @@ bool WatershedModule::closePorts(){
             g_print("Closing port %s on network %s...\n", "/rea/Watershed/out","default");
 			_pOutPort2->close();
             g_print("Closing port %s on network %s...\n", "/rea/Watershed/outBlobs","default");
+			_pOutPort3->close();
+            g_print("Closing port %s on network %s...\n", "/rea/Watershed/outView","default");
         }
 
 	return true;

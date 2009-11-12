@@ -158,13 +158,17 @@ public:
 	*/
 	double salienceBU;
 	/**
-	* Output Bottle Port
+	* Output Bottle Port for any possible command
 	*/
 	yarp::os::BufferedPort<yarp::os::Bottle> *_pOutPort;
 	/**
-	* Output Bottle Port #2
+	* Output port that send out a PixelRgb image
 	*/
 	yarp::os::BufferedPort<ImageOf<PixelRgb> > *_pOutPort2;
+	/**
+	* Output port that send out a PixelRgb image
+	*/
+	yarp::os::BufferedPort<ImageOf<PixelRgb> > *_pOutPort3;
 	/**
 	*Output Bottle Container
 	*/
