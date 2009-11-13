@@ -1172,90 +1172,102 @@ bool CFWCamera_DR2_2::setBytesPerPacketDC1394(unsigned int bpp)
 
 // base class implementation
 
+#define TRANSL(feature) ((int)feature-(int)DC1394_FEATURE_MIN)
+
 bool CFWCamera_DR2_2::setBrightness(double v)
 {
 	if (v<0.0 || v>1.0) return false;
-	setActiveDC1394(DC1394_FEATURE_BRIGHTNESS,true);
-	setModeDC1394(DC1394_FEATURE_BRIGHTNESS,false);  
-	return setFeatureDC1394(DC1394_FEATURE_BRIGHTNESS,v); 
+	int feature=TRANSL(DC1394_FEATURE_BRIGHTNESS);
+	setActiveDC1394(feature,true);
+	setModeDC1394(feature,false);  
+	return setFeatureDC1394(feature,v); 
 }
 bool CFWCamera_DR2_2::setExposure(double v)
 {
 	if (v<0.0 || v>1.0) return false;
-	setActiveDC1394(DC1394_FEATURE_EXPOSURE,true);
-	setModeDC1394(DC1394_FEATURE_EXPOSURE,false);  
-	return setFeatureDC1394(DC1394_FEATURE_EXPOSURE,v); 
+	int feature=TRANSL(DC1394_FEATURE_EXPOSURE);
+	setActiveDC1394(feature,true);
+	setModeDC1394(feature,false);  
+	return setFeatureDC1394(feature,v); 
 }
 bool CFWCamera_DR2_2::setSharpness(double v)
 { 
 	if (v<0.0 || v>1.0) return false;
-	setActiveDC1394(DC1394_FEATURE_SHARPNESS,true);
-	setModeDC1394(DC1394_FEATURE_SHARPNESS,false);
-	return setFeatureDC1394(DC1394_FEATURE_SHARPNESS,v); 
+	int feature=TRANSL(DC1394_FEATURE_SHARPNESS);
+	setActiveDC1394(feature,true);
+	setModeDC1394(feature,false);  
+	return setFeatureDC1394(feature,v); 
 }
 bool CFWCamera_DR2_2::setWhiteBalance(double blue, double red)
 {
-	if (blue<0.0 || blue>1.0 || red<0.0 || red>1.0) return false; 
-	setActiveDC1394(DC1394_FEATURE_WHITE_BALANCE,true);
-	setModeDC1394(DC1394_FEATURE_WHITE_BALANCE,false);
+	if (blue<0.0 || blue>1.0 || red<0.0 || red>1.0) return false;
+	int feature=TRANSL(DC1394_FEATURE_WHITE_BALANCE); 
+	setActiveDC1394(feature,true);
+	setModeDC1394(feature,false);
 	return setWhiteBalanceDC1394(blue,red); 
 }
 bool CFWCamera_DR2_2::setHue(double v)
 {
-	if (v<0.0 || v>1.0) return false; 
-	setActiveDC1394(DC1394_FEATURE_HUE,true);
-	setModeDC1394(DC1394_FEATURE_HUE,false);
-	return setFeatureDC1394(DC1394_FEATURE_HUE,v); 
+	if (v<0.0 || v>1.0) return false;
+	int feature=TRANSL(DC1394_FEATURE_HUE);
+	setActiveDC1394(feature,true);
+	setModeDC1394(feature,false);  
+	return setFeatureDC1394(feature,v);  
 }
 bool CFWCamera_DR2_2::setSaturation(double v)
 {
 	if (v<0.0 || v>1.0) return false;
-	setActiveDC1394(DC1394_FEATURE_SATURATION,true);
-	setModeDC1394(DC1394_FEATURE_SATURATION,false);
-	return setFeatureDC1394(DC1394_FEATURE_SATURATION,v); 
+	int feature=TRANSL(DC1394_FEATURE_SATURATION);
+	setActiveDC1394(feature,true);
+	setModeDC1394(feature,false);  
+	return setFeatureDC1394(feature,v);  
 }
 bool CFWCamera_DR2_2::setGamma(double v)
 {
 	if (v<0.0 || v>1.0) return false;
-	setActiveDC1394(DC1394_FEATURE_GAMMA,true);
-	setModeDC1394(DC1394_FEATURE_GAMMA,false);
-	return setFeatureDC1394(DC1394_FEATURE_GAMMA,v); 
+	int feature=TRANSL(DC1394_FEATURE_GAMMA);
+	setActiveDC1394(feature,true);
+	setModeDC1394(feature,false);  
+	return setFeatureDC1394(feature,v);  
 }
 bool CFWCamera_DR2_2::setShutter(double v)
 {
-	if (v<0.0 || v>1.0) return false; 
-	setActiveDC1394(DC1394_FEATURE_SHUTTER,true);
-	setModeDC1394(DC1394_FEATURE_SHUTTER,false);
-	return setFeatureDC1394(DC1394_FEATURE_SHUTTER,v); 
+	if (v<0.0 || v>1.0) return false;
+	int feature=TRANSL(DC1394_FEATURE_SHUTTER);
+	setActiveDC1394(feature,true);
+	setModeDC1394(feature,false);  
+	return setFeatureDC1394(feature,v);  
 }
 bool CFWCamera_DR2_2::setGain(double v)
 {
-	if (v<0.0 || v>1.0) return false; 
-	setActiveDC1394(DC1394_FEATURE_GAIN,true);
-	setModeDC1394(DC1394_FEATURE_GAIN,false);
-	return setFeatureDC1394(DC1394_FEATURE_GAIN,v); 
+	if (v<0.0 || v>1.0) return false;
+	int feature=TRANSL(DC1394_FEATURE_GAIN);
+	setActiveDC1394(feature,true);
+	setModeDC1394(feature,false);  
+	return setFeatureDC1394(feature,v);  
 }
 bool CFWCamera_DR2_2::setIris(double v)
 {
-	if (v<0.0 || v>1.0) return false; 
-	setActiveDC1394(DC1394_FEATURE_IRIS,true);
-	setModeDC1394(DC1394_FEATURE_IRIS,false);
-	return setFeatureDC1394(DC1394_FEATURE_IRIS,v); 
+	if (v<0.0 || v>1.0) return false;
+	int feature=TRANSL(DC1394_FEATURE_IRIS);
+	setActiveDC1394(feature,true);
+	setModeDC1394(feature,false);  
+	return setFeatureDC1394(feature,v);  
 }
 
 // GET
 
 double CFWCamera_DR2_2::getBrightness()
 { 
-	return getFeatureDC1394(DC1394_FEATURE_BRIGHTNESS); 
+	return getFeatureDC1394(TRANSL(DC1394_FEATURE_BRIGHTNESS)); 
 }
 double CFWCamera_DR2_2::getExposure()
 { 
-	return getFeatureDC1394(DC1394_FEATURE_EXPOSURE); 
+	return getFeatureDC1394(TRANSL(DC1394_FEATURE_EXPOSURE)); 
 }	
 double CFWCamera_DR2_2::getSharpness()
 { 
-	return getFeatureDC1394(DC1394_FEATURE_SHARPNESS); 
+	return getFeatureDC1394(TRANSL(DC1394_FEATURE_SHARPNESS)); 
 }
 bool CFWCamera_DR2_2::getWhiteBalance(double &blue, double &red)
 { 
@@ -1263,25 +1275,25 @@ bool CFWCamera_DR2_2::getWhiteBalance(double &blue, double &red)
 }	
 double CFWCamera_DR2_2::CFWCamera_DR2_2::getHue()
 { 
-	return getFeatureDC1394(DC1394_FEATURE_HUE); 
+	return getFeatureDC1394(TRANSL(DC1394_FEATURE_HUE)); 
 }	
 double CFWCamera_DR2_2::getSaturation()
 { 
-	return CFWCamera_DR2_2::getFeatureDC1394(DC1394_FEATURE_SATURATION); 
+	return CFWCamera_DR2_2::getFeatureDC1394(TRANSL(DC1394_FEATURE_SATURATION)); 
 }
 double CFWCamera_DR2_2::getGamma()
 { 
-	return getFeatureDC1394(DC1394_FEATURE_GAMMA); 
+	return getFeatureDC1394(TRANSL(DC1394_FEATURE_GAMMA)); 
 }
 double CFWCamera_DR2_2::getShutter()
 { 
-	return getFeatureDC1394(DC1394_FEATURE_SHUTTER);
+	return getFeatureDC1394(TRANSL(DC1394_FEATURE_SHUTTER));
 }
 double CFWCamera_DR2_2::getGain()
 { 
-	return getFeatureDC1394(DC1394_FEATURE_GAIN);
+	return getFeatureDC1394(TRANSL(DC1394_FEATURE_GAIN));
 }
 double CFWCamera_DR2_2::getIris()
 { 
-	return getFeatureDC1394(DC1394_FEATURE_IRIS); 
+	return getFeatureDC1394(TRANSL(DC1394_FEATURE_IRIS)); 
 }
