@@ -15,11 +15,12 @@
 #include <yarp/sig/Vector.h>
 #include <yarp/os/Property.h>
 #include <yarp/math/Rand.h>
+#include <yarp/os/Time.h>
 
 #define MIN(a, b)   ((a < b) ? a : b)
 
-#define NO_TRAIN    1000
-#define NO_TEST     1000
+#define NO_TRAIN    4000
+#define NO_TEST     8000
 #define NOISE_MIN  -0.05
 #define NOISE_MAX   0.05
 
@@ -86,6 +87,7 @@ int main(int argc, char** argv) {
   Vector testMSE(2);
   Vector noise_min(2);
   Vector noise_max(2);
+  double t1, t2;
 
   // initialize catalogue of machine factory
   registerMachines();
@@ -111,7 +113,9 @@ int main(int argc, char** argv) {
   // create and feed training samples
   noise_min = NOISE_MIN;
   noise_max = NOISE_MAX;
-
+  
+  
+  t1 = yarp::os::Time::now();
   trainMSE = 0.0;
   for(int i = 0; i < NO_TRAIN; i++) {
     // create a new training sample
@@ -134,6 +138,8 @@ int main(int argc, char** argv) {
   }
   trainMSE = elementDiv(trainMSE, NO_TRAIN);
   std::cout << "Train MSE: " << trainMSE.toString() << std::endl;
+  t2 = yarp::os::Time::now();
+  std::cout << "Training took: " << (t2 - t1) << " seconds" << std::endl;
 
   std::cout << std::endl;
   std::cout << "Saving machine portable to file 'mp.txt'...";
@@ -154,6 +160,7 @@ int main(int argc, char** argv) {
   std::cout << std::endl;
 
   // predict test samples
+  t1 = yarp::os::Time::now();
   testMSE = 0.;
   for(int i = 0; i < NO_TEST; i++) {
     // create a new testing sample
@@ -171,5 +178,7 @@ int main(int argc, char** argv) {
   }
   testMSE = elementDiv(testMSE, NO_TEST);
   std::cout << "Test MSE: " << testMSE.toString() << std::endl;
+  t2 = yarp::os::Time::now();
+  std::cout << "Testing took: " << (t2 - t1) << " seconds" << std::endl;
 
 }

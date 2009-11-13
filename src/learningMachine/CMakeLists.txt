@@ -6,6 +6,7 @@ SET(LM_TRAIN_EXEC train)
 SET(LM_PREDICT_EXEC predict)
 SET(LM_TRANSFORM_EXEC transform)
 SET(LM_TEST_EXEC test)
+SET(LM_MERGE_EXEC merge)
 SET(LM_LIB ${PROJECTNAME})
 
 PROJECT(${PROJECTNAME})
@@ -92,14 +93,6 @@ IF (NOT ICUB_FOUND)
     MESSAGE (STATUS "If this is not what you want, set ICUB_DIR variable.")
 ENDIF (NOT ICUB_FOUND)
 
-# order is CRUCIAL here! These libraries must be linked before GSL cblas library 
-SET(USE_ATLAS FALSE CACHE BOOL "Select true to link to Atlas for BLAS")
-IF(USE_ATLAS)
-   FIND_PACKAGE(Atlas)
-   # GSL already provides cblas header, we only need the Atlas libraries
-   LINK_LIBRARIES(${ATLAS_CBLAS_LIBRARY} ${ATLAS_ATLAS_LIBRARY})
-ENDIF(USE_ATLAS)
-
 FIND_PACKAGE(YARP)
 
 SET(USE_LSSVMATLAS FALSE CACHE BOOL "Select true if Atlas version of LSSVM has to be compiled")
@@ -121,6 +114,7 @@ ADD_EXECUTABLE(${LM_TRAIN_EXEC} ${LM_HEADER} ${LM_MODULE_SRC} ${LM_MACHINE_SRC} 
 ADD_EXECUTABLE(${LM_PREDICT_EXEC} ${LM_HEADER} ${LM_MODULE_SRC} ${LM_MACHINE_SRC} ${LM_EVENT_SRC} src/PredictModule.cpp src/bin/predict.cpp)
 ADD_EXECUTABLE(${LM_TRANSFORM_EXEC} ${LM_HEADER} ${LM_MODULE_SRC} ${LM_TRANSFORMER_SRC} ${LM_EVENT_SRC} src/TransformModule.cpp src/bin/transform.cpp)
 ADD_EXECUTABLE(${LM_TEST_EXEC} src/bin/test.cpp)
+ADD_EXECUTABLE(${LM_MERGE_EXEC} src/bin/merge.cpp)
 
 
 # Add liblssvm library that uses Atlas
