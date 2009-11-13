@@ -165,6 +165,8 @@ WatershedModule::WatershedModule(){
 	salienceTD=10;
 	maxBLOB=4096;
 	minBLOB=100;
+
+	blobList = new char [320*240+1];
 }
 
 
@@ -510,8 +512,9 @@ static gint expose_CB (GtkWidget *widget, GdkEventExpose *event, gpointer data)
 				unsigned int rowstride;
 				unsigned int imageWidth,imageHeight,areaWidth, areaHeight;
 				IppiSize srcsize={320,240};
-				
+
 				bool ret=getPlanes();
+				
 				if(ret==false){
 					printf("No Planes! \n");
 					//return TRUE;
@@ -586,12 +589,14 @@ static gint expose_CB (GtkWidget *widget, GdkEventExpose *event, gpointer data)
 					}*/
 				}
 				else if(wModule->maxSaliencyBlob_flag){
+					wModule->drawAllBlobs(false);
 					wModule->salience->DrawMaxSaliencyBlob(*wModule->maxSalienceBlob_img,wModule->max_tag,*wModule->tagged);
 					ippiCopy_8u_C1R(wModule->maxSalienceBlob_img->getPixelAddress(0,0),320,_outputImage->getPixelAddress(0,0),320,srcsize);
 					conversion=true;
 				}
 				else if(wModule->contrastLP_flag){
 					wModule->drawAllBlobs(false);
+					//ippiCopy_8u_C3R(wModule->outMeanColourLP->getPixelAddress(0,0),320*3,_outputImage3->getPixelAddress(0,0),320*3,srcsize);	
 					ippiCopy_8u_C1R(wModule->outContrastLP->getPixelAddress(0,0),320,_outputImage->getPixelAddress(0,0),320,srcsize);
 					conversion=true;
 				}
@@ -602,6 +607,8 @@ static gint expose_CB (GtkWidget *widget, GdkEventExpose *event, gpointer data)
 				}
 				else if(wModule->blobCataloged_flag){
 					if(wModule->contrastLP_flag){
+						wModule->drawAllBlobs(false);
+						//ippiCopy_8u_C3R(wModule->outMeanColourLP->getPixelAddress(0,0),320*3,_outputImage3->getPixelAddress(0,0),320*3,srcsize);	
 						ippiCopy_8u_C1R(wModule->outContrastLP->getPixelAddress(0,0),320,_outputImage->getPixelAddress(0,0),320,srcsize);
 						conversion=true;
 					}
@@ -975,6 +982,8 @@ static void cb_draw_value( GtkToggleButton *button )
 bool WatershedModule::outPorts(){
 	bool ret = true;
 
+	//initialization and allocation
+
 	/*IplImage *cvImage = cvCreateImage(cvSize(320,240),8, 3);
 	cvCvtColor((IplImage*)outMeanColourLP->getIplImage(), cvImage, CV_BGR2RGB);
 	image_out->wrapIplImage(cvImage);*/
@@ -1004,11 +1013,14 @@ bool WatershedModule::outPorts(){
 	IppiSize srcsize={320,240};
 	ippiCopy_8u_C3R(wModule->outMeanColourLP->getPixelAddress(0,0),320*3,out->getPixelAddress(0,0),320*3,srcsize);	
 
+	//prepare the output on ports
 	this->_pOutPort3->prepare()=*out;
 	this->_pOutPort3->write();
 	this->_pOutPort2->prepare()=*(this->image_out);
 	this->_pOutPort2->write();
 	
+	//deallocation
+	delete out;
 	//ippiFree(im_out);
 	//ippiFree(im_tmp_tmp);
 	//ippiFree(im_tmp);
@@ -2491,7 +2503,7 @@ void WatershedModule::drawAllBlobs(bool stable)
 	//__OLD//salience.drawBlobList(blobFov, tagged, blobList, max_tag, 127);
 	
 	//list of boolean whether is present or not a blob
-	blobList = new char [320*240+1];
+	
 	memset(blobList, 0, sizeof(char)*(max_tag+1));
 	// - faster
 	// - it considers also "lateral" pixels
@@ -2588,6 +2600,8 @@ void WatershedModule::drawAllBlobs(bool stable)
 	/*__OLD//blobFinder.DrawGrayLP(tmp1, tagged, 200);
 	//__OLD//ACE_OS::sprintf(savename, "./rain.ppm");
 	//__OLD//YARPImageFile::Write(savename, tmp1);*/
+
+	
 
 	//__OLD//rain.tags2Watershed(tagged, oldWshed);
 
