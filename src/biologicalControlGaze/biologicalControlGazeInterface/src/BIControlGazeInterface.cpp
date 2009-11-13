@@ -194,6 +194,8 @@ bool BIControlGazeInterface::interruptModule() {
     return true;
 }
 
+
+
 bool BIControlGazeInterface::close() {
 		port_in.close();
 		port_out.close();
@@ -207,7 +209,18 @@ void BIControlGazeInterface::setOptions(yarp::os::Property opt){
 }
 
 bool BIControlGazeInterface::updateModule() {    
-    return true;
+	// Shows all widgets in main Window
+    gtk_widget_show_all (mainWindow);
+	gtk_window_move(GTK_WINDOW(mainWindow), 10,10);
+	// All GTK applications must have a gtk_main(). Control ends here
+	// and waits for an event to occur (like a key press or
+	// mouse event).
+
+	gtk_main ();
+	gtk_widget_destroy(mainWindow);
+    this->close();
+	yarp::os::Network::fini();
+    return false;
 }
 
 bool getLayers(){
@@ -2984,6 +2997,13 @@ GtkWidget* BIControlGazeInterface::createMainWindow(void)
 }
 
 
+
+
+
+
+
+//static GtkWidget *mainWindow = NULL;
+
 bool BIControlGazeInterface::open(Searchable& config) {
     //ct = 0;
     //port_in.open(getName("in"));
@@ -3006,26 +3026,9 @@ bool BIControlGazeInterface::open(Searchable& config) {
     printf("Functionality omitted for older GTK version\n");
 #endif
 
-	// Shows all widgets in main Window
-    gtk_widget_show_all (mainWindow);
-	gtk_window_move(GTK_WINDOW(mainWindow), 10,10);
-	// All GTK applications must have a gtk_main(). Control ends here
-	// and waits for an event to occur (like a key press or
-	// mouse event).
-
-	gtk_main ();
-	gtk_widget_destroy(mainWindow);
-    yarp::os::Network::fini();
-
+	
     return true;
 }
-
-
-
-
-//static GtkWidget *mainWindow = NULL;
-
-
 
 
 int main(int argc, char *argv[]) {
