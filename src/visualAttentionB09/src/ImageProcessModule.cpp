@@ -66,9 +66,9 @@ bool ImageProcessModule::open(Searchable& config) {
 
 	gtk_widget_destroy(mainWindow);
 
-    yarp::os::Network::fini();
-
 	this->close();
+
+	yarp::os::Network::fini();
     return false;
 }
 
