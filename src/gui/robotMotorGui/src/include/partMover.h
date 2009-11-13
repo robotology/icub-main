@@ -1,10 +1,6 @@
 #ifndef PARTMOVER_H
 #define PARTMOVER_H
 
-///////////GTK///////////
-#include <gtk/gtk.h>
-#include <gtk/gtkmain.h>
-#include <yarp/os/Time.h>
 /////////ACE///////////
 //#include <ace/config.h>
 //#include <ace/OS.h>
@@ -18,12 +14,16 @@
 #include <yarp/sig/Vector.h>
 #include <yarp/os/Time.h>
 #include <yarp/os/ResourceFinder.h>
+///////////GTK///////////
+#include <gtk/gtk.h>
+#include <gtk/gtkmain.h>
+#include "gtkMessages.h"
+
 // #include <yarp/String.h>
 using namespace yarp::dev;
 using namespace yarp::sig;
 using namespace yarp::os;
 using namespace yarp;
-#include "gtkMessages.h"
 
 struct gtkClassData;
 

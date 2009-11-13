@@ -1,8 +1,10 @@
+
+#include <yarp/os/ResourceFinder.h>
+
 ///////////GTK///////////
 #include <gtk/gtk.h>
 #include <gtk/gtkmain.h>
 #include "gtkMessages.h"
-#include <yarp/os/ResourceFinder.h>
 
 const int   MAX_NUMBER_ACTIVATED = 8;
 const double ARM_VELOCITY[]={10.0, 10.0, 10.0, 10.0, 10.0, 10.0, 10.0,	10.0, 10.0, 10.0, 10.0, 10.0, 10.0, 10.0, 10.0, 10.0};

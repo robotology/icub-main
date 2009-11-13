@@ -114,14 +114,15 @@
  *This file can be edited at src/gui/robotMotorGui/src/main.cpp.
  **/
 
+///////////YARP//////////
+#include <yarp/os/impl/NameClient.h>
+
 ///////canGui/////////////
 //#include "include/robotMotorGui.h"
 //#include "include/partMover.h"
+
 #include "include/allPartsWindow.h"
-//////////YARP///////////
 #include <string>
-#include <string.h>
-#include <yarp/os/impl/NameClient.h>
 
 using namespace yarp::os::impl;
 
