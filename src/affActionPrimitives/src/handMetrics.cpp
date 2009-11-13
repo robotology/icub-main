@@ -223,7 +223,7 @@ Vector& HandMetrics::getError()
 
 double HandMetrics::getTimeInterval()
 {
-	return abs(curTime - prevTime);
+	return fabs(curTime - prevTime);
 }
 
 
@@ -248,7 +248,7 @@ Vector &FunctionSmoother::smooth(const Vector &v, Vector &smoothedValues, const 
 		if (deltaT > t) // reset integral
 			smoothedValues[i] = 0;
 
-        if (abs(d - prevValues[i]) < e) 
+        if (fabs(d - prevValues[i]) < e) 
 			smoothedValues[i] = 0;
 		else
         {

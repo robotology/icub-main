@@ -71,12 +71,12 @@ bool affActionPrimitives::open(Property &opt)
         return false;
     }
 
-    string robot=opt.check("robot",Value("icub")).asString();
-    string part=opt.check("part",Value("right_arm")).asString();
+    string robot=opt.check("robot",Value("icub")).asString().c_str();
+    string part=opt.check("part",Value("right_arm")).asString().c_str();
     int period=opt.check("period",Value(MOTORIF_DEFAULT_PER)).asInt();
     double trajTime=opt.check("trajTime",Value(MOTORIF_DEFAULT_TRAJTIME)).asDouble();
-    string local=opt.find("local").asString();
-    string sensingCalibFile=opt.find("calibFile").asString();
+    string local=opt.find("local").asString().c_str();
+    string sensingCalibFile=opt.find("calibFile").asString().c_str();
     string fwslash="/";
 
     // get params from config file
@@ -269,7 +269,7 @@ bool affActionPrimitives::handMotionDone(const set<int> &joints)
 		bool b;
 		posCtrl->checkMotionDone(*itr,&b);
 
-        if (abs(v[*itr])>0.01 && !b)
+        if (fabs(v[*itr])>0.01 && !b)
             return false;
 	}
 
