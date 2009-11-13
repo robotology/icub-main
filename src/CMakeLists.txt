@@ -202,6 +202,7 @@ ENDIF (ARTOOLKITPLUS_FOUND)
   ENDIF(GSL_FOUND AND IPOPT_FOUND)
 
   ADD_SUBDIRECTORY(iKinArmCtrlIF)
+  ADD_SUBDIRECTORY(affActionPrimitives)
 
   # add here modules you want to test for compilation
   # these modules will only be compiled by automated
