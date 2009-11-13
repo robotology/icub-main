@@ -192,8 +192,8 @@ bool WatershedModule::open(Searchable& config) {
 
 	gtk_main ();
 	gtk_widget_destroy(mainWindow);
-    yarp::os::Network::fini();
-	this->close();
+    this->close();
+	yarp::os::Network::fini();
     return false;
 }
 
