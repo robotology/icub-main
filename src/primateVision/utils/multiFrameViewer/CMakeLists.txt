@@ -20,7 +20,6 @@ TARGET_LINK_LIBRARIES( mfexample
                         Qt3Support 
                         QtCore
                         QtGui
-			timing
 			)
 
 ADD_LIBRARY( multiframeviewer

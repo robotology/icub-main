@@ -4,7 +4,6 @@
  */
 
 #include "multiFrameViewer.h"
-#include <timing.h>
 
 
 iCub::contrib::primateVision::multiFrameViewer::multiFrameViewer(int w_, int h_,QWidget *parent, const char *name)
