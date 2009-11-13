@@ -1,0 +1,51 @@
+*************************
+* TEST1, image sequence *
+*************************
+
+***tab 1:
+yarpserver 
+
+***tab 2:
+cd ~/PhD/installed_stuff/iCub/src/effectDetector
+./effectDetector
+
+***tab 3: source of the sequence of images
+yarpdev --device file_grabber --pattern ~/simulatedRamp_2009_11_12/image%02d.ppm --first 1 --last 16 --loop --framerate 1 --name /images --imageFile test2.ppm --noise 0 --frequency 1
+
+***tab 4: connections
+yarp connect /images /effectDetector/rawcurrimg
+yarp connect /images /effectDetector/rawsegmimg
+
+***tab 5:
+yarp write ... /effectDetector/init
+430 55 60 60 255 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 256 240
+
+***tab 6: read the output positions
+yarp read ... /effectDetector/effect
+
+
+***************************************
+* TEST2, live imagese from the webcam *
+***************************************
+
+***tab 1:
+yarpserver 
+
+***tab 2:
+cd ~/PhD/installed_stuff/iCub/src/effectDetector
+./effectDetector
+
+***tab 3: source of the sequence of images
+yarpdev --device opencv_grabber --name /images 
+
+***tab 4: connections
+yarp connect /images /effectDetector/rawcurrimg
+yarp connect /images /effectDetector/rawsegmimg
+
+***tab 5:
+yarp write ... /effectDetector/init
+350 340 80 80 255 128 0 0 0 0 0 0 0 0 0 0 0 0 0 255 0 256 150
+
+***tab 6: read the output positions
+yarp read ... /effectDetector/effect
+
