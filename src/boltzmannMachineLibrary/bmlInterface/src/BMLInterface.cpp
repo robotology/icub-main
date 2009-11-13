@@ -216,7 +216,18 @@ void BMLInterface::setOptions(yarp::os::Property opt){
 }
 
 bool BMLInterface::updateModule() {    
-    return true;
+    // Shows all widgets in main Window
+    gtk_widget_show_all (mainWindow);
+	gtk_window_move(GTK_WINDOW(mainWindow), 10,10);
+	// All GTK applications must have a gtk_main(). Control ends here
+	// and waits for an event to occur (like a key press or
+	// mouse event).
+
+	gtk_main ();
+	gtk_widget_destroy(mainWindow);
+    yarp::os::Network::fini();
+	this->close();
+    return false;
 }
 
 
@@ -2932,18 +2943,7 @@ bool BMLInterface::open(Searchable& config) {
     printf("Functionality omitted for older GTK version\n");
 #endif
 
-	// Shows all widgets in main Window
-    gtk_widget_show_all (mainWindow);
-	gtk_window_move(GTK_WINDOW(mainWindow), 10,10);
-	// All GTK applications must have a gtk_main(). Control ends here
-	// and waits for an event to occur (like a key press or
-	// mouse event).
-
-	gtk_main ();
-	gtk_widget_destroy(mainWindow);
-    yarp::os::Network::fini();
-	this->close();
-    return false;
+	return true;	
 }
 
 

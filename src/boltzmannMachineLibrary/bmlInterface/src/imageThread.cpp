@@ -29,7 +29,7 @@ void imageThread::afterStart(bool s){
 * running code of the thread
 */
 void imageThread::run(){
-	printf("Image Thread running..... \n");
+	//printf("Image Thread running..... \n");
 	
 }
 
@@ -37,7 +37,7 @@ void imageThread::run(){
 * code executed when the thread is released
 */
 void imageThread::threadRelease(){
-	printf("Image Thread releasing..... \n");	
+	//printf("Image Thread releasing..... \n");	
 }
 
 ImageOf<PixelRgb>* imageThread::getYarpImage(){
