@@ -284,7 +284,7 @@ public:
         double min, max;
 
         arm->getLimits(axis,&min,&max);
-        //arm->setLimits(axis,min,MAX_TORSO_PITCH);
+        arm->setLimits(axis,min,MAX_TORSO_PITCH);
     }
 
     double calcExecTime(const Vector &xd)
