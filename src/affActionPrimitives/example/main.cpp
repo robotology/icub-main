@@ -7,9 +7,7 @@
 #include <yarp/math/Math.h>
 #include <iCub/affActionPrimitives.h>
 
-#ifdef USE_ICUB_MOD
-    #include "drivers.h"
-#endif
+#include "drivers.h"
 
 #include <iostream>
 #include <iomanip>
@@ -131,9 +129,7 @@ int main(int argc, char *argv[])
     if (!yarp.checkNetwork())
         return -1;
 
-#ifdef USE_ICUB_MOD
 	DriverCollection dev;
-#endif
 
     ResourceFinder rf;
     rf.setVerbose(true);

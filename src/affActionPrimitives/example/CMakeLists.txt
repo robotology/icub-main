@@ -6,15 +6,11 @@ FIND_PACKAGE(YARP)
 FIND_PACKAGE(ICUB)
 FIND_PACKAGE(AFFACTIONPRIMITIVES REQUIRED)
 
-IF(USE_ICUB_MOD)
-	FIND_PACKAGE(icubmod)
-	IMPORT_DEVICES(${ICUB_DIR}/src/${PROJECTNAME}/drivers.h icubmod)
-	SET(folder_header drivers.h)
-ELSE(USE_ICUB_MOD)
-    SET(folder_header)
-ENDIF(USE_ICUB_MOD)
+FIND_PACKAGE(icubmod)
+IMPORT_DEVICES(${AFFACTIONPRIMITIVES_DIR}/example/drivers.h icubmod)
 
 SET(folder_source main.cpp)
+SET(folder_header drivers.h)
 
 SOURCE_GROUP("Source Files" FILES ${folder_source})
 SOURCE_GROUP("Header Files" FILES ${folder_header})
