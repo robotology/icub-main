@@ -402,7 +402,8 @@ public:
 	  yarp::dev::RemoteFrameGrabberDC1394(),
 	  
 	  //members	  
-	  m_refresh("Refresh"),
+	  m_Refresh1("Refresh"),
+      m_Refresh2("Refresh"),
 	  m_broadcast("Broadcast"),
 	  m_propagate("Propagate"),
 	  m_LabelControls1("Features"),
@@ -428,13 +429,10 @@ public:
 
 		// GTKMM
 		set_title("Grabber Remote GUI");
-        /*
-		// REFRESH & BROADCAST
         
-		//m_VBoxFeat.pack_start(*(new Gtk::HSeparator()),Gtk::PACK_SHRINK,4);
-		Gtk::HBox *pHBox=new Gtk::HBox();
-		pHBox->pack_start(m_refresh,Gtk::PACK_EXPAND_PADDING);
-		
+		// REFRESH & BROADCAST
+
+        /*
 		m_propagate.set_sensitive(false);
 		pHBox->pack_start(m_propagate,Gtk::PACK_EXPAND_PADDING);
 		
@@ -457,6 +455,10 @@ public:
 
         int height_panel_1=DC1394SliderBase::GetHeight();
 
+		Gtk::HBox *pHBox=new Gtk::HBox();
+		pHBox->pack_start(m_Refresh1,Gtk::PACK_EXPAND_PADDING);
+		m_VBoxFeat1.pack_start(*pHBox,Gtk::PACK_SHRINK,12);
+
 		m_pSli[m_nFeatures++]=new DC1394Slider(DC1394_FEATURE_SHARPNESS,(char*)"Sharpness",m_VBoxFeat2,this);
 		m_pSli[m_nFeatures++]=new DC1394Slider(DC1394_FEATURE_HUE,(char*)"Hue",m_VBoxFeat2,this);
 		m_pSli[m_nFeatures++]=new DC1394Slider(DC1394_FEATURE_SATURATION,(char*)"Saturation",m_VBoxFeat2,this);
@@ -469,6 +471,10 @@ public:
 		//m_pSli[m_nFeatures++]=new DC1394Slider(DC1394_FEATURE_WHITE_SHADING,(char*)"White shading",m_VBoxFeat2,this);
     
         int height_panel_2=DC1394SliderBase::GetHeight()-height_panel_1;
+
+		pHBox=new Gtk::HBox();
+		pHBox->pack_start(m_Refresh2,Gtk::PACK_EXPAND_PADDING);
+		m_VBoxFeat2.pack_start(*pHBox,Gtk::PACK_SHRINK,12);
 
 		m_Notebook.append_page(m_VBoxFeat1,m_LabelControls1);
 		m_Notebook.append_page(m_VBoxFeat2,m_LabelControls2);
@@ -485,7 +491,7 @@ public:
             }		
         }
         
-		Gtk::HBox *pHBox=new Gtk::HBox();
+		pHBox=new Gtk::HBox();
 		m_MenuMode.set_size_request(64,32);
 		Gtk::Label *pLabel=new Gtk::Label("Video Format");
 		pLabel->set_size_request(96,32);
@@ -624,12 +630,13 @@ public:
 
 		if (height_panel_2>height_panel_1) height_panel_1=height_panel_2;
         if (height_panel_1<460) height_panel_1=460;
-		set_size_request(340,height_panel_1);
+		set_size_request(340,height_panel_1+32);
 
 		Init();
         
         // handlers
-        //m_refresh.signal_clicked().connect(sigc::mem_fun(*this,&FrameGrabberGUIControl2::on_refresh_pressed));
+        m_Refresh1.signal_clicked().connect(sigc::mem_fun(*this,&FrameGrabberGUIControl2::on_refresh_pressed));
+        m_Refresh2.signal_clicked().connect(sigc::mem_fun(*this,&FrameGrabberGUIControl2::on_refresh_pressed));
         //m_propagate.signal_clicked().connect(sigc::mem_fun(*this,&FrameGrabberGUIControl2::on_propagate_pressed));
         //m_broadcast.signal_clicked().connect(sigc::mem_fun(*this,&FrameGrabberGUIControl2::on_broadcast_change));
         m_MenuMode.signal_changed().connect(sigc::mem_fun(*this,&FrameGrabberGUIControl2::on_mode_change));
@@ -677,7 +684,7 @@ protected:
 	int m_nFeatures;
 	DC1394SliderBase* m_pSli[16];
 
-	Gtk::Button m_refresh; ///< Read control values from framegrabber.
+    Gtk::Button m_Refresh1,m_Refresh2; ///< Read control values from framegrabber.
 	Gtk::Button m_reset;
 	Gtk::Button m_defaults;
 	Gtk::Button m_propagate;
@@ -867,7 +874,7 @@ protected:
 	virtual void on_refresh_pressed()
 	{ 
         printf("on_refresh_pressed()\n");
-		//Reload();
+		Reload();
 		//if (m_broadcast.get_active()) Propagate();
 	}
 
