@@ -306,6 +306,21 @@ bool ServerCartesianController::respond(const Bottle &command, Bottle &reply)
                             break;
                         }
 
+                        case IKINCARTCTRL_VOCAB_OPT_TOL:
+                        {
+                            double tol;
+    
+                            if (getInTargetTol(&tol))
+                            {   
+                                reply.addVocab(IKINCARTCTRL_VOCAB_REP_ACK);
+                                reply.addDouble(tol);
+                            }
+                            else
+                                reply.addVocab(IKINCARTCTRL_VOCAB_REP_NACK);
+    
+                            break;
+                        }
+
                         case IKINCARTCTRL_VOCAB_OPT_MOTIONDONE:
                         {
                             bool flag;
@@ -444,6 +459,13 @@ bool ServerCartesianController::respond(const Bottle &command, Bottle &reply)
                         case IKINCARTCTRL_VOCAB_OPT_TIME:
                         {
                             setTrajTime(command.get(2).asDouble());
+                            reply.addVocab(IKINSLV_VOCAB_REP_ACK);
+                            break;
+                        }
+
+                        case IKINCARTCTRL_VOCAB_OPT_TOL:
+                        {
+                            setInTargetTol(command.get(2).asDouble());
                             reply.addVocab(IKINSLV_VOCAB_REP_ACK);
                             break;
                         }
@@ -1492,6 +1514,32 @@ bool ServerCartesianController::setTrajTime(const double t)
     if (attached)
     {
         trajTime=ctrl->set_execTime(t,true);
+        return true;
+    }
+    else
+        return false;
+}
+
+
+/************************************************************************/
+bool ServerCartesianController::getInTargetTol(double *tol)
+{
+    if (attached)
+    {
+        *tol=ctrl->getInTargetTol();
+        return true;
+    }
+    else
+        return false;
+}
+
+
+/************************************************************************/
+bool ServerCartesianController::setInTargetTol(const double tol)
+{
+    if (attached)
+    {
+        ctrl->setInTargetTol(tol);
         return true;
     }
     else

@@ -582,6 +582,62 @@ bool ClientCartesianController::setTrajTime(const double t)
 
 
 /************************************************************************/
+bool ClientCartesianController::getInTargetTol(double *tol)
+{
+    Bottle command, reply;
+
+    // prepare command
+    command.addVocab(IKINCARTCTRL_VOCAB_CMD_GET);
+    command.addVocab(IKINCARTCTRL_VOCAB_OPT_TOL);
+
+    // send command and wait for reply
+    if (!portRpc->write(command,reply))
+    {
+        fprintf(stdout,"Error: unable to get reply from server!\n");
+        return false;
+    }
+
+    if (reply.get(0).asVocab()==IKINCARTCTRL_VOCAB_REP_ACK)
+    {
+        if (reply.size()>1)
+        {
+            *tol=reply.get(1).asDouble();
+
+            return true;
+        }
+        else
+            return false;
+    }
+    else
+        return false;
+}
+
+
+/************************************************************************/
+bool ClientCartesianController::setInTargetTol(const double tol)
+{
+    Bottle command, reply;
+
+    // prepare command
+    command.addVocab(IKINCARTCTRL_VOCAB_CMD_SET);
+    command.addVocab(IKINCARTCTRL_VOCAB_OPT_TOL);
+    command.addDouble(tol);
+
+    // send command and wait for reply
+    if (!portRpc->write(command,reply))
+    {
+        fprintf(stdout,"Error: unable to get reply from server!\n");
+        return false;
+    }
+
+    if (reply.get(0).asVocab()==IKINCARTCTRL_VOCAB_REP_ACK)
+        return true;
+    else
+        return false;
+}
+
+
+/************************************************************************/
 bool ClientCartesianController::checkMotionDone(bool *f)
 {
     Bottle command, reply;

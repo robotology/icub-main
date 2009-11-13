@@ -45,6 +45,8 @@ public:
     virtual bool setLimits(int axis, const double min, const double max);
     virtual bool getTrajTime(double *t);
     virtual bool setTrajTime(const double t);
+    virtual bool getInTargetTol(double *tol);
+    virtual bool setInTargetTol(const double tol);
     virtual bool checkMotionDone(bool *f);
     virtual bool stopControl();
 
