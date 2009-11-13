@@ -1002,14 +1002,13 @@ bool WatershedModule::outPorts(){
 	ImageOf<PixelRgb>* out=new ImageOf<PixelRgb>;
 	out->resize(320,240);
 	IppiSize srcsize={320,240};
-	
 	ippiCopy_8u_C3R(wModule->outMeanColourLP->getPixelAddress(0,0),320*3,out->getPixelAddress(0,0),320*3,srcsize);	
+
 	this->_pOutPort3->prepare()=*out;
 	this->_pOutPort3->write();
 	this->_pOutPort2->prepare()=*(this->image_out);
 	this->_pOutPort2->write();
-	//this->_pOutPort2->write();
-	//this->_pOutPort3->write();
+	
 	//ippiFree(im_out);
 	//ippiFree(im_tmp_tmp);
 	//ippiFree(im_tmp);
