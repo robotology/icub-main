@@ -68,8 +68,8 @@ bool ImageProcessModule::open(Searchable& config) {
 
     yarp::os::Network::fini();
 
-	
-    return true;
+	this->close();
+    return false;
 }
 
 // try to interrupt any communications or resource usage
