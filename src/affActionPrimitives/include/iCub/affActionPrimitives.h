@@ -49,7 +49,6 @@ protected:
 
     yarp::sig::Vector xd;
     yarp::sig::Vector od;
-    yarp::sig::Vector dReach;
     yarp::sig::Vector dTap;
     yarp::sig::Vector hGrasp;
 
@@ -73,10 +72,10 @@ protected:
     std::map<const int,bool (affActionPrimitives::*)(const bool)> executeHand;
     std::deque<MotorIFQueue> q;
 
-    void stopBlockedJoints(std::set<int> &activeJoints);
-    bool handMotionDone(const std::set<int> &joints);
-    bool moveHand(const yarp::sig::Vector &fingerPos, const bool sync);
-    bool nopHand(const bool sync=false) { return true; }
+    virtual void stopBlockedJoints(std::set<int> &activeJoints);
+    virtual bool handMotionDone(const std::set<int> &joints);
+    virtual bool moveHand(const yarp::sig::Vector &fingerPos, const bool sync);
+    virtual bool nopHand(const bool sync=false) { return true; }
 
     void queue_clear();
     void queue_push(const yarp::sig::Vector &x, const yarp::sig::Vector &o, const int handId);
@@ -104,20 +103,20 @@ public:
     yarp::sig::Vector getTapDisplacement()  { return dTap;   }
 
     // actions list
-    bool reach(const yarp::sig::Vector &x, const yarp::sig::Vector &o, const bool sync=false);
-    bool grasp(const yarp::sig::Vector &x, const bool sync=false);
-    bool touch(const yarp::sig::Vector &x, const bool sync=false);
-    bool tap  (const yarp::sig::Vector &x, const bool sync=false);
-    bool home(const bool sync=false);
-    bool openHand(const bool sync=false);
-    bool closeHand(const bool sync=false);
-    bool alignHand(const bool sync=false);
+    virtual bool reach(const yarp::sig::Vector &x, const yarp::sig::Vector &o, const bool sync=false);
+    virtual bool grasp(const yarp::sig::Vector &x, const bool sync=false);
+    virtual bool touch(const yarp::sig::Vector &x, const bool sync=false);
+    virtual bool tap  (const yarp::sig::Vector &x, const bool sync=false);
+    virtual bool home(const bool sync=false);
+    virtual bool openHand(const bool sync=false);
+    virtual bool closeHand(const bool sync=false);
+    virtual bool alignHand(const bool sync=false);
 
-    bool getPose(yarp::sig::Vector &x, yarp::sig::Vector &o);
-    bool check(bool &f, const bool sync=false);
+    virtual bool getPose(yarp::sig::Vector &x, yarp::sig::Vector &o);
+    virtual bool check(bool &f, const bool sync=false);
 
-    void syncCheckInterrupt();
-    void syncCheckReinstate();
+    virtual void syncCheckInterrupt();
+    virtual void syncCheckReinstate();
 };
 
 #endif

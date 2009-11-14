@@ -52,8 +52,6 @@ affActionPrimitives::affActionPrimitives() : RateThread(MOTORIF_DEFAULT_PER)
     handMoveDone=latchHandMoveDone=true;
     configured=closed=false;
     checkEnabled=true;
-
-    dReach.resize(3,0.0);
 }
 
 
@@ -335,13 +333,8 @@ void affActionPrimitives::run()
 
         if (e>MOTORIF_X_THRES)
         {
-            cartCtrl->goToPose(xd+dReach,od);
             fprintf(stdout,"reaching... xdcap=%s |e|=%.3f [m]\n",xdcap.toString().c_str(),e);
-            
-            if (norm(dReach)==0.0)
-                dReach=0.0001;
-            else
-                dReach=0.0;
+            cartCtrl->goToPose(xd,od);
         }
         
         cartCtrl->checkMotionDone(&armMoveDone);
