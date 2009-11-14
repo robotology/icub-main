@@ -20,7 +20,7 @@ iKinCtrl::iKinCtrl(iKinChain &c, unsigned int _ctrlPose, const Vector &q0) : cha
     dim=chain.getDOF();
 
     Vector _q0(dim);  _q0 =0.0;
-    grad.resize(dim); grad=0.0;
+    grad.resize(dim,0.0);
 
     size_t n=q0.length();
     n=n>dim ? dim : n;
@@ -274,8 +274,7 @@ SteepCtrl::SteepCtrl(iKinChain &c, unsigned int _type, unsigned int _ctrlPose, c
     type=_type;
     constrained=true;
 
-    qdot.resize(dim);
-    qdot=0.0;
+    qdot.resize(dim,0.0);
 
     Matrix lim(dim,2);
     for (unsigned int i=0; i<dim; i++)
@@ -467,8 +466,7 @@ LMCtrl::LMCtrl(iKinChain &c, unsigned int _ctrlPose, const Vector &q0, double _T
 {
     constrained=true;
 
-    qdot.resize(dim);
-    qdot=0.0;
+    qdot.resize(dim,0.0);
 
     Matrix lim(dim,2);
     for (unsigned int i=0; i<dim; i++)
@@ -751,7 +749,7 @@ GSLMinCtrl::GSLMinCtrl(iKinChain &c, unsigned int _ctrlPose, const Vector &q0, c
                        double _step_size, double _tol) : algo_type(_algo_type), step_size(_step_size),
                        tol(_tol), iKinCtrl(c,_ctrlPose,q0)
 {  
-    q_set.resize(dim); q_set=0.0;
+    q_set.resize(dim,0.0);
     q_set_len=0;
 
     hash_qf.clear();
@@ -1052,14 +1050,9 @@ MultiRefMinJerkCtrl::MultiRefMinJerkCtrl(iKinChain &c, unsigned int _ctrlPose, c
     maxDeltaTime=2.0*Ts;
     tOld=Time::now();
 
-    q_set.resize(dim);
-    q_set=0.0;
-
-    qdot.resize(dim);
-    qdot=0.0;
-
-    xdot.resize(6);
-    xdot=0.0;
+    q_set.resize(dim,0.0);
+    qdot.resize(dim,0.0);
+    xdot.resize(6,0.0);
 
     W=eye(dim,dim);
     Eye6=eye(6,6);

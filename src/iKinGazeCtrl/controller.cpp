@@ -59,8 +59,8 @@ Controller::Controller(PolyDriver *_drvTorso, PolyDriver *_drvHead, exchangeData
         nJointsTorso=3;
         nJointsHead =6;
         
-        fbTorso.resize(nJointsTorso); fbTorso=0.0;
-        fbHead.resize(nJointsHead);   fbHead=0.0;
+        fbTorso.resize(nJointsTorso,0.0);
+        fbHead.resize(nJointsHead,0.0);
 
         // create bounds matrix for integrators
         lim.resize(nJointsHead,2);
@@ -108,8 +108,8 @@ Controller::Controller(PolyDriver *_drvTorso, PolyDriver *_drvHead, exchangeData
     genTrajEyes=new minJerkTrajGen(Ts,fbEyes);
     Int=new Integrator(Ts,fbHead,lim);
 
-    v.resize(nJointsHead);
-    vdegOld=v=0.0;
+    v.resize(nJointsHead,0.0);
+    vdegOld=v;
 
     sendCnt=0;
 }

@@ -16,8 +16,8 @@ minJerkTrajGen::minJerkTrajGen(const double _Ts, const Vector &x0) :
     dim=x.length();
     xdOld=x;
 
-    v.resize(dim);
-    a.resize(dim);
+    v.resize(dim,0.0);
+    a.resize(dim,0.0);
     vtau.resize(6);
     vData.resize(5);
     aData.resize(4);
@@ -28,7 +28,6 @@ minJerkTrajGen::minJerkTrajGen(const double _Ts, const Vector &x0) :
         coeff.push_back(c);
     }
 
-    v=a=0.0;
     TOld=t0=t=tau=0.0;
 
     vtau[0]=1.0;

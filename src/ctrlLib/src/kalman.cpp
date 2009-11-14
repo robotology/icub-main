@@ -20,9 +20,9 @@ Kalman::Kalman(const Matrix &_A, const Matrix &_H, const Matrix &_Q,
     Ht=H.transposed();
     I=eye(n,n);
 
-    x.resize(n);   x=0.0;
-    P.resize(n,n); P=0.0;
-    K.resize(n,m); K=0.0;
+    x.resize(n,0.0);
+    P.resize(n,n); P.zero();
+    K.resize(n,m); K.zero();
 }
 
 

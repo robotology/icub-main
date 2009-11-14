@@ -91,9 +91,7 @@ Vector AWPolyEstimator::estimate()
 
     if (firstRun)
     {    
-        winLen.resize(dim);
-        winLen=N;
-
+        winLen.resize(dim,N);
         firstRun=false;
     }    
 

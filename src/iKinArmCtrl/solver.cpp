@@ -77,7 +77,7 @@ Solver::Solver(PolyDriver *_drvTorso, PolyDriver *_drvArm, exchangeData *_commDa
         alignJointsBounds(chain,limTorso,limArm);
 
         // arm's starting position
-        fb.resize(nJoints); fb=0.0;
+        fb.resize(nJoints,0.0);
         getFeedback(fb,chain,encTorso,encArm,nJointsTorso,nJointsArm,ctrlTorso>0);
         chain->setAng(fb);
     }
@@ -102,7 +102,7 @@ Solver::Solver(PolyDriver *_drvTorso, PolyDriver *_drvArm, exchangeData *_commDa
         q0[offs+6]=-00.0*(M_PI/180.0);
         chain->setAng(q0);
 
-        fb.resize(nJoints); fb=0.0;
+        fb.resize(nJoints,0.0);
     }
 
     // re-adjust torso bounds
@@ -260,7 +260,7 @@ void Solver::run()
         {
             weight3rdTask=0.01;
 
-            qd_3rd.resize(chain->getDOF()); qd_3rd=0.0;
+            qd_3rd.resize(chain->getDOF(),0.0);
 
             w_3rd=qd_3rd;
             w_3rd[0]=w_3rd[1]=w_3rd[2]=1.0;

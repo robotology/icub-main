@@ -72,8 +72,8 @@ Controller::Controller(PolyDriver *_drvTorso, PolyDriver *_drvArm, exchangeData 
         (*chain)[1].setMax(0.0);
     }
 
-    fb.resize(nJoints);   fb  =0.0;
-    vOld.resize(nJoints); vOld=0.0;
+    fb.resize(nJoints,0.0);
+    vOld.resize(nJoints,0.0);
 
     sendCnt=0;
 }
@@ -224,7 +224,7 @@ void Controller::run()
         else
         {
             q1.resize(nJointsTorso+chain->getDOF());
-            v1.resize(nJointsTorso+chain->getDOF()); v1=0.0;
+            v1.resize(nJointsTorso+chain->getDOF(),0.0);
 
             for (int i=0; i<nJointsTorso; i++)
                 q1[i]=(180.0/M_PI)*chain->getAng(i);

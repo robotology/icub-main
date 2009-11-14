@@ -26,8 +26,7 @@ ClientCartesianController::ClientCartesianController()
     closed=false;
     gotPose=false;
 
-    pose.resize(7);
-    pose=0.0;
+    pose.resize(7,0.0);
 }
 
 

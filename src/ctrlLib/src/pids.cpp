@@ -16,7 +16,7 @@ using namespace ctrl;
 Integrator::Integrator(const double _Ts, const Vector &y0, const Matrix &_lim)
 {
     dim=y0.length();
-    x_old.resize(dim); x_old=0.0;
+    x_old.resize(dim,0.0);
     applySat=true;
 
     y  =y0;
@@ -76,7 +76,7 @@ parallelPID::parallelPID(const double _Ts,
                          N(_N), Tt(_Tt), satLim(_satLim)
 {
     dim=N.length();
-    u.resize(dim); u=0.0;
+    u.resize(dim,0.0);
 
     uSat.resize(dim);
     for (unsigned int i=0; i<dim; i++)
@@ -168,7 +168,7 @@ seriesPID::seriesPID(const double _Ts,
                      Ts(_Ts), Kp(_Kp), Ti(_Ti), Kd(_Kd), N(_N), satLim(_satLim)
 {
     dim=N.length();
-    u.resize(dim); u=0.0;
+    u.resize(dim,0.0);
 
     uSat.resize(dim);
     for (unsigned int i=0; i<dim; i++)

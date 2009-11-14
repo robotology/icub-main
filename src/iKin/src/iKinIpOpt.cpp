@@ -94,10 +94,10 @@ iKin_NLP::iKin_NLP(iKinChain &c, unsigned int _ctrlPose, const yarp::sig::Vector
 
     q=qd;
 
-    e_xyz.resize(3);   e_xyz=0.0;
-    e_ang.resize(3);   e_ang=0.0;
-    e_2nd.resize(3);   e_2nd=0.0;
-    e_3rd.resize(dim); e_3rd=0.0;
+    e_xyz.resize(3,0.0);
+    e_ang.resize(3,0.0);
+    e_2nd.resize(3,0.0);
+    e_3rd.resize(dim,0.0);
 
     J_xyz.resize(3,dim); J_xyz.zero();
     J_ang.resize(3,dim); J_ang.zero();

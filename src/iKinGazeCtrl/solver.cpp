@@ -86,8 +86,8 @@ EyePinvRefGen::EyePinvRefGen(PolyDriver *_drvTorso, PolyDriver *_drvHead,
         nJointsTorso=3;
         nJointsHead =6;
         
-        fbTorso.resize(nJointsTorso); fbTorso=0.0;
-        fbHead.resize(nJointsHead);   fbHead=0.0;
+        fbTorso.resize(nJointsTorso,0.0);
+        fbHead.resize(nJointsHead,0.0);
 
         // create bounds matrix for integrators
         // just for eye part
@@ -113,9 +113,10 @@ EyePinvRefGen::EyePinvRefGen(PolyDriver *_drvTorso, PolyDriver *_drvHead,
     qd[2]=fbHead[5];
     I=new Integrator(Ts,qd,lim);
 
-    fp.resize(3);      fp=0.0;
-    eyesJ.resize(3,3); eyesJ=0.0;
-    gyro.resize(12);   gyro=0.0;
+    fp.resize(3,0.0);
+    eyesJ.resize(3,3);
+    eyesJ.zero();
+    gyro.resize(12,0.0);
 
     genOn=false;
 }
@@ -340,8 +341,8 @@ Solver::Solver(PolyDriver *_drvTorso, PolyDriver *_drvHead, exchangeData *_commD
         nJointsTorso=3;
         nJointsHead =6;
 
-        fbTorso.resize(nJointsTorso); fbTorso=0.0;
-        fbHead.resize(nJointsHead);   fbHead=0.0;
+        fbTorso.resize(nJointsTorso,0.0);
+        fbHead.resize(nJointsHead,0.0);
     }
 
     // neck roll disabled
@@ -483,10 +484,8 @@ bool Solver::threadInit()
     commData->get_qd()=fbHead;
     commData->get_x()=fp;
     commData->get_q()=fbHead;
-    commData->get_v().resize(5);
-    commData->get_v()=0.0;
-    commData->get_compv().resize(3);
-    commData->get_compv()=0.0;
+    commData->get_v().resize(5,0.0);
+    commData->get_compv().resize(3,0.0);
     commData->get_fpFrame()=chainEyeL->getH()+chainEyeR->getH();
 
     xdOld=fp;

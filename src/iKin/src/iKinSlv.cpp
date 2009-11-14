@@ -124,12 +124,10 @@ InputPort::InputPort(CartesianSolver *_slv)
     slv=_slv;
 
     maxLen=7;
-    xd.resize(maxLen);
-    xd=0.0;
+    xd.resize(maxLen,0.0);
     xdOld=xd;
 
-    dof.resize(1);
-    dof=0;
+    dof.resize(1,0);
 
     pose=IKINCTRL_POSE_FULL;
     contMode=false;
@@ -1349,8 +1347,7 @@ Vector ArmCartesianSolver::solve(Vector &xd)
     {
         weight3rdTask=0.01;
 
-        qd_3rd.resize(prt->chn->getDOF());
-        qd_3rd=0.0;
+        qd_3rd.resize(prt->chn->getDOF(),0.0);
         w_3rd=qd_3rd;
 
         int offs=0;
