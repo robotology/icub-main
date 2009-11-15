@@ -182,6 +182,7 @@ ENDIF (ARTOOLKITPLUS_FOUND)
   ADD_SUBDIRECTORY(demoAAM)
   IF (OPENCV_FOUND)
      ADD_SUBDIRECTORY(autoAssociativeMemory)
+     ADD_SUBDIRECTORY(episodicMemory)
   ENDIF (OPENCV_FOUND)
 
   # utility modules
@@ -208,7 +209,7 @@ ENDIF (ARTOOLKITPLUS_FOUND)
   # these modules will only be compiled by automated
   # compilation scripts
   IF (COMPILE_FOR_TESTING)
-     ADD_SUBDIRECTORY(episodicMemory)
+
   ENDIF(COMPILE_FOR_TESTING)
 
 IF(OPENCV_FOUND AND IPOPT_FOUND)
