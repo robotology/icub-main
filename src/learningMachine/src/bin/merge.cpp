@@ -132,7 +132,7 @@ protected:
         do {
             // standard prefix + i
             buffer.str(""); // clear buffer
-            buffer << prefix << i++ << ":o";
+            buffer << prefix << i++ << ":i";
         } while(Network::queryName(buffer.str().c_str()).isValid());
         return buffer.str();
     }
@@ -149,7 +149,9 @@ public:
     /**
      * Default destructor.
      */
-    ~PortSource();
+    ~PortSource() {
+        this->interrupt();
+    }
 
     /**
      * Copy constructor.
@@ -165,8 +167,12 @@ public:
         port.open(this->getInputName(prefix).c_str());
     }
 
-    virtual void connect(std::string name) {
-        Network::connect(name.c_str(), this->port.where().getName().c_str());
+    virtual void connect(std::string dst) {
+        if(Network::queryName(dst.c_str()).isValid()) {
+            Network::connect(dst.c_str(), this->port.where().getName().c_str());
+        } else {
+            //
+        }
     }
 
     virtual void update() {
@@ -177,6 +183,10 @@ public:
         return this->data;
     }
 
+    virtual void interrupt() {
+        this->port.interrupt();
+        this->port.close();
+    }
 };
 
 
@@ -191,13 +201,15 @@ public:
     /**
      * Default constructor.
      */
-    SourceList();
+    SourceList() { }
 
     /**
      * Default destructor.
      */
     ~SourceList() {
-        // destruct list!
+        for(SourceMap::iterator it = this->sourceMap.begin(); it != this->sourceMap.end(); it++) {
+            delete it->second;
+        }
     }
 
     /**
@@ -214,10 +226,7 @@ public:
         // for each in portmap, port.read, store in datamap
         SourceMap::iterator it;
         for(it = this->sourceMap.begin(); it != this->sourceMap.end(); it++ ) {
-            (*it).second->update();
-            //std::cout << "Updating port " << (*it).first << std::endl;
-
-            //cout << (*it).first << " => " << (*it).second << endl;
+            it->second->update();
         }
     }
 
@@ -236,6 +245,12 @@ public:
             throw std::runtime_error("Attempt to retrieve inexistent source.");
         }
         return *(this->sourceMap[name]);
+    }
+
+    virtual void interrupt() {
+        for(SourceMap::iterator it = this->sourceMap.begin(); it != this->sourceMap.end(); it++) {
+            it->second->interrupt();
+        }
     }
 };
 
@@ -352,20 +367,20 @@ public:
         int len = format.size();
         while(i < len) {
             if(format.get(i).isString()) {
-                std::string specifier = format.get(i).asString().c_str();
+                std::string name = format.get(i).asString().c_str();
                 i++;
                 if(format.get(i).isInt()) {
                     do {
                         int index = format.get(i).asInt();
-                        this->children.push_back(new IndexSelector(specifier, index));
+                        this->children.push_back(new IndexSelector(name, index));
                         i++;
                     } while(format.get(i).isInt());
                 } else {
-                    this->children.push_back(new AllSelector(specifier));
+                    this->children.push_back(new AllSelector(name));
                 }
             } else if(format.get(i).isList()) {
-                    this->children.push_back(new CompositeSelector(*(format.get(i).asList())));
-                    i++;
+                this->children.push_back(new CompositeSelector(*(format.get(i).asList())));
+                i++;
             }
         }
     }
@@ -417,9 +432,9 @@ protected:
     double updateTiming;
 
     /**
-     * The collecting resource for all data from the ports.
+     * The collecting resource for all data from all sources.
      */
-    //PortSource portSource;
+    SourceList sourceList;
 
     /**
      *
@@ -436,6 +451,7 @@ public:
      * Destructor.
      */
     ~MergeModule() {
+        this->interruptModule();
         delete this->dataSelector;
     }
 
@@ -451,6 +467,7 @@ public:
      * Inherited from yarp::os::Module
      */
     virtual bool interruptModule() {
+        this->sourceList.interrupt();
         return true;
     }
 
@@ -466,6 +483,7 @@ public:
             // prolly should check if it's a list...
             if(val->isList()) {
                 this->dataSelector = new CompositeSelector(*(val->asList()));
+                this->dataSelector->declareSources(this->sourceList);
                 success = true;
             } else {
                 throw std::runtime_error("The format must be a list!");
@@ -485,7 +503,7 @@ public:
     virtual bool updateModule() {
         double updateStart = yarp::os::Time::now();
 
-        //this->portSource.update();
+        this->sourceList.update();
         //this->listeners.process(this->portSource);
 
         double updateEnd = yarp::os::Time::now();
