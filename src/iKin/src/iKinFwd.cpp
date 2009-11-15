@@ -416,18 +416,21 @@ bool iKinChain::setBlockingValue(const unsigned int i, double Ang)
             // update the cumulative link which follows in the chain
             if (i<N-1)
             {
-                unsigned int j=0;
                 Matrix H=eye(4,4);
-    
-                for (; j<=i; j++)
+                int j;
+
+                for (j=i-1; j>=0; j--)
+                    if (!allList[j]->isBlocked())
+                        break;
+                
+                for (++j; j<=(int)i; j++)
                     H=H*allList[j]->getH(true);
     
-                for (; j<N && !allList[j]->isCumulative(); j++)
-                    H=H*allList[j]->getH();
+                for (; j<(int)N && !allList[j]->isCumulative(); j++)
+                    H=H*allList[j]->getH(true);
     
-                if (allList[j]->isCumulative())
-                    allList[j]->addCumH(H);
-            }
+                allList[j]->addCumH(H);
+            } 
 
             return true;
         }
