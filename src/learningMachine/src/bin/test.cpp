@@ -23,6 +23,7 @@ using namespace yarp::sig;
 
 namespace iCub {
 namespace learningmachine {
+namespace test {
 
 std::string printVector(const std::vector<int>& v) {
   std::ostringstream output;
@@ -276,7 +277,7 @@ public:
 
         // check for the columns of the dataset that should be used for inputs
         if(opt.check("inputs", val)) {
-            // if it's a list, 
+            // if it's a list,
             if(val->isList()) {
                 Bottle* inputs = val->asList();
                 for(int i = 0; i < inputs->size(); i++) {
@@ -291,7 +292,7 @@ public:
 
         // check for the columns of the dataset that should be used for outputs
         if(opt.check("outputs", val)) {
-            // if it's a list, 
+            // if it's a list,
             if(val->isList()) {
                 Bottle* outputs = val->asList();
                 for(int i = 0; i < outputs->size(); i++) {
@@ -336,7 +337,7 @@ public:
 
         try {
             switch(cmd.get(0).asVocab()) {
-                case VOCAB4('h','e','l','p'): // print help information 
+                case VOCAB4('h','e','l','p'): // print help information
                     success = true;
                     reply.add(Value::makeVocab("help"));
 
@@ -407,7 +408,7 @@ public:
                     for(int i = 0; i < noSamples; i++) {
                         std::pair<Vector,Vector> sample = this->dataset.getNextSample();
                         Vector prediction = this->sendPredictSample(sample.first);
-                        
+
                         if(prediction.size() != sample.second.size()) {
                             std::string msg("incoming prediction has incorrect dimension");
                             throw std::runtime_error(msg);
@@ -453,7 +454,7 @@ public:
                     if(cmd.size() > 1 && cmd.get(1).isInt()) {
                         success = true;
                         this->frequency = cmd.get(1).asInt();
-	                    reply.addString((std::string("Current frequency: ") + cmd.get(1).toString().c_str()).c_str());
+                        reply.addString((std::string("Current frequency: ") + cmd.get(1).toString().c_str()).c_str());
                     }
                     break;
                     }
@@ -465,22 +466,22 @@ public:
                 default:
                     break;
             }
-        } catch(const std::exception& e) { 
+        } catch(const std::exception& e) {
             success = true; // to make sure YARP prints the error message
             std::string msg = std::string("Error: ") + e.what();
             reply.addString(msg.c_str());
-        } catch(...) { 
+        } catch(...) {
             success = true; // to make sure YARP prints the error message
             std::string msg = std::string("Error. (something bad happened, but I wouldn't know what!)");
             reply.addString(msg.c_str());
-        } 
+        }
 
         return success;
     }
 
-    bool updateModule() {
+    /*bool updateModule() {
         return true;
-    }
+    }*/
 
     bool close() {
         this->unregisterAllPorts();
@@ -488,10 +489,12 @@ public:
     }
 
 };
+
+} // test
 } // learningmachine
 } // iCub
 
-using namespace iCub::learningmachine;
+using namespace iCub::learningmachine::test;
 
 int main(int argc, char *argv[]) {
     Network yarp;

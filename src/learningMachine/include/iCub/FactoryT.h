@@ -94,7 +94,7 @@ public:
             throw std::runtime_error("Cannot register prototype with empty key; please specify a unique key.");
         }
 
-        if(this->map.find(prototype->getName()) != this->map.end()) {
+        if(this->map.count(prototype->getName()) > 0) {
             std::ostringstream buffer;
             buffer << "Prototype '" << prototype->getName()
                    << "' has already been registered; please specify a unique key.";
@@ -114,7 +114,7 @@ public:
      * @throw runtime error if no object has been registered with the same key
      */
     T* create(const K& key) {
-        if(this->map.find(key) == this->map.end()) {
+        if(this->map.count(key) > 0) {
             std::ostringstream buffer;
             buffer << "Could not find prototype '" << key
                    << "'; please specify a valid key.";

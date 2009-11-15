@@ -235,7 +235,7 @@ public:
     }
 
     /**
-     * Destructor.
+     * Destructor (empty).
      */
     virtual ~TransformModule() { }
 

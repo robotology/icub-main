@@ -127,21 +127,14 @@ public:
       : PredictModule(pp), trainProcessor(machinePortable) { }
 
     /**
-     * Destructor.
+     * Destructor (empty).
      */
-    /*virtual ~TrainModule() {
-        delete(this->machinePortable);
-    }*/
+    virtual ~TrainModule() { };
 
     /*
      * Inherited from IMachineLearnerModule.
      */
     virtual bool open(Searchable& opt);
-
-    /*
-     * Inherited from IMachineLearnerModule.
-     */
-    //bool updateModule();
 
     /*
      * Inherited from IMachineLearnerModule.
