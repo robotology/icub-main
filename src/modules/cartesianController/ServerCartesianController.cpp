@@ -415,9 +415,9 @@ bool ServerCartesianController::respond(const Bottle &command, Bottle &reply)
                             int cnt=0;
                             for (unsigned int i=0; i<chain->getN(); i++)
                                 if ((*chain)[i].isBlocked())
-                                    qData.addDouble(chain->getAng(i));
+                                    qData.addDouble((180.0/M_PI)*chain->getAng(i));
                                 else
-                                    qData.addDouble(qdes[cnt++]);
+                                    qData.addDouble((180.0/M_PI)*qdes[cnt++]);
 
                             break;
                         }
@@ -666,7 +666,7 @@ bool ServerCartesianController::getTarget(Vector &_xdes, Vector &_qdes)
             int len=l1<l2 ? l1 : l2;
 
             for (int i=0; i<len; i++)
-                _qdes[i]=b2->get(i).asDouble();
+                _qdes[i]=(M_PI/180.0)*b2->get(i).asDouble();
         }
 
         return true;
@@ -1361,9 +1361,9 @@ bool ServerCartesianController::getDesired(Vector &xdcap, Vector &odcap, Vector 
 
         for (unsigned int i=0; i<chain->getN(); i++)
             if ((*chain)[i].isBlocked())
-                qdcap[i]=chain->getAng(i);
+                qdcap[i]=(180.0/M_PI)*chain->getAng(i);
             else
-                qdcap[i]=qdes[cnt++];
+                qdcap[i]=(180.0/M_PI)*qdes[cnt++];
 
         return true;
     }

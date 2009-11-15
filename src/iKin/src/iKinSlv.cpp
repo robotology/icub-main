@@ -792,13 +792,13 @@ void CartesianSolver::printInfo(Vector &xd, Vector &x, Vector &q, const double t
     Vector e=xd-x;
     
     cout << endl;
-    cout << "  Target rxPose   [m] = " << xd.toString()                            << endl;
-    cout << "  Target txPose   [m] = " << x.toString()                             << endl;
-    cout << "Target txJoints [deg] = " << ((180.0/M_PI)*q).toString()              << endl;
-    cout << "  norm(rxPose-txPose) = pos   [m]: " << getNorm(e,"pos")              << endl;
+    cout << "  Target rxPose   [m] = " << xd.toString()               << endl;
+    cout << "  Target txPose   [m] = " << x.toString()                << endl;
+    cout << "Target txJoints [deg] = " << q.toString()                << endl;
+    cout << "  norm(rxPose-txPose) = pos   [m]: " << getNorm(e,"pos") << endl;
     if (ctrlPose==IKINCTRL_POSE_FULL)
-    cout << "                        ang [deg]: " << (180.0/M_PI)*getNorm(e,"ang") << endl;
-    cout << "    computed in   [s] = " << t                                        << endl;
+    cout << "                        ang [deg]: " << getNorm(e,"ang") << endl;
+    cout << "    computed in   [s] = " << t                           << endl;
     cout << endl;
 }
 
@@ -1215,6 +1215,9 @@ void CartesianSolver::run()
         // q is the estimation of the real qd,
         // so that x is the actual achieved pose
         Vector x=prt->chn->EndEffPose(q);
+        
+        // change to degrees
+        q=(180.0/M_PI)*q;
 
         // send data
         send(xd,x,q);

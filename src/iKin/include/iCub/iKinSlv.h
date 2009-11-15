@@ -24,7 +24,8 @@
  *    specifies the target pose to be achieved as a 7-components
  *    vector for position and orientation parts. Note that if
  *    the current pose is of [xyz] type, then only the first
- *    3-components are meaningful.
+ *    3-components are meaningful (x,...,az are in meters, theta
+ *    is in radians).
  *  
  * \b pose request: example ([pose] [full]), specifies the 
  *    end-effector pose the user wants to achieve; it can be
@@ -62,7 +63,7 @@
  * \b lim request: example [set] [lim] axis min max, [get] [lim]
  *    axis. Set/return minimum and maximum values for the joint.
  *    Allowed range shall be a valid subset of the real control
- *    limits.
+ *    limits (unit is deg).
  *  
  * \b verbosity request: example [set] [verb] [on]/[off], [get] 
  *    [verb].
@@ -107,7 +108,7 @@
  *    vector).
  *  
  * \b q property: contains the joints configuration which 
- *    achieve x (DOF-components vector).
+ *    achieve x (DOF-components vector in deg).
  *  
  * Date: first release 20/06/2009
  *

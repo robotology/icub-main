@@ -125,7 +125,7 @@ int main()
 
     cout<<"xd      ="<<CartesianHelper::getTargetOption(reply)->toString()<<endl;
     cout<<"x       ="<<CartesianHelper::getEndEffectorPoseOption(reply)->toString()<<endl;
-    cout<<"q [rad] ="<<CartesianHelper::getJointsOption(reply)->toString()<<endl;
+    cout<<"q [deg] ="<<CartesianHelper::getJointsOption(reply)->toString()<<endl;
     cout<<endl;
 
     // ask the same but with torso enabled
@@ -138,7 +138,7 @@ int main()
 
     cout<<"xd      ="<<CartesianHelper::getTargetOption(reply)->toString()<<endl;
     cout<<"x       ="<<CartesianHelper::getEndEffectorPoseOption(reply)->toString()<<endl;
-    cout<<"q [rad] ="<<CartesianHelper::getJointsOption(reply)->toString()<<endl;
+    cout<<"q [deg] ="<<CartesianHelper::getJointsOption(reply)->toString()<<endl;
     cout<<endl;
 
     // close up
