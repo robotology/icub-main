@@ -786,19 +786,19 @@ void CartesianSolver::send(const Vector &xd)
 
 
 /************************************************************************/
-void CartesianSolver::printInfo(Vector &xd, Vector &x, Vector &q, const double t)
+void CartesianSolver::printInfo(const Vector &xd, const Vector &x, const Vector &q, const double t)
 {
     // compute error
     Vector e=xd-x;
     
     cout << endl;
-    cout << "  Target rxPose   [m] = " << xd.toString()               << endl;
-    cout << "  Target txPose   [m] = " << x.toString()                << endl;
-    cout << "Target txJoints [deg] = " << q.toString()                << endl;
-    cout << "  norm(rxPose-txPose) = pos   [m]: " << getNorm(e,"pos") << endl;
+    cout << "  Target rxPose   [m] = " << const_cast<Vector&>(xd).toString() << endl;
+    cout << "  Target txPose   [m] = " << const_cast<Vector&>(x).toString()  << endl;
+    cout << "Target txJoints [deg] = " << const_cast<Vector&>(q).toString()  << endl;
+    cout << "  norm(rxPose-txPose) = pos   [m]: " << getNorm(e,"pos")        << endl;
     if (ctrlPose==IKINCTRL_POSE_FULL)
-    cout << "                        ang [deg]: " << getNorm(e,"ang") << endl;
-    cout << "    computed in   [s] = " << t                           << endl;
+    cout << "                        ang [deg]: " << getNorm(e,"ang")        << endl;
+    cout << "    computed in   [s] = " << t                                  << endl;
     cout << endl;
 }
 

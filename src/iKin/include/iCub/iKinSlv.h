@@ -274,7 +274,8 @@ protected:
     bool   respond(const yarp::os::Bottle &command, yarp::os::Bottle &reply);
     void   send(const yarp::sig::Vector &xd);
     void   send(const yarp::sig::Vector &xd, const yarp::sig::Vector &x, const yarp::sig::Vector &q);
-    void   printInfo(yarp::sig::Vector &xd, yarp::sig::Vector &x, yarp::sig::Vector &q, const double t);    
+    void   printInfo(const yarp::sig::Vector &xd, const yarp::sig::Vector &x, const yarp::sig::Vector &q,
+                     const double t);    
 
     virtual bool threadInit();
     virtual void afterStart(bool);
