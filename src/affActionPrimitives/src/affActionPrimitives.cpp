@@ -21,8 +21,7 @@
 #define MOTORIF_ALIGNHAND           0x03
 
 #define MOTORIF_DEFAULT_PER         250     // [ms]
-#define MOTORIF_DEFAULT_TRAJTIME    2.0     // [s]
-#define MOTORIF_X_THRES             0.05    // [m]    
+#define MOTORIF_DEFAULT_TRAJTIME    1.5     // [s]
 
 
 using namespace std;
@@ -132,9 +131,6 @@ bool affActionPrimitives::open(Property &opt)
 //  enabledJoints.erase(8);
 //  enabledJoints.erase(9);
 //  enabledJoints.erase(10);
-
-    // set in-target tolerance
-    cartCtrl->setInTargetTol(0.01);
 
     // set trajectory time
     cartCtrl->setTrajTime(trajTime);
@@ -329,14 +325,10 @@ void affActionPrimitives::run()
         Vector x,o,xdcap,odcap,qdcap;
         cartCtrl->getPose(x,o);
         cartCtrl->getDesired(xdcap,odcap,qdcap);
-        double e=norm(xdcap-x);
 
-        if (e>MOTORIF_X_THRES)
-        {
-            fprintf(stdout,"reaching... xdcap=%s |e|=%.3f [m]\n",xdcap.toString().c_str(),e);
-            cartCtrl->goToPose(xd,od);
-        }
-        
+        fprintf(stdout,"reaching... xdcap=%s |e|=%.3f [m]\n",
+                xdcap.toString().c_str(),norm(xdcap-x));
+
         cartCtrl->checkMotionDone(&armMoveDone);
 
         if (armMoveDone)
