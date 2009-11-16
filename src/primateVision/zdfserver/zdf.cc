@@ -16,7 +16,8 @@
 //THIS APP IS A RECCLIENT!!!
 #include <recio.h>
 #include "zdf.h"
-
+#include <qstring.h>
+#include <string.h>
 
 //use NDT or RANK comparision?
 #define RANK0_NDT1 1 //0 (NDT FASTER and RANK a little too sensitive)
@@ -74,6 +75,9 @@ void iCub::contrib::primateVision::ZDFServer::run(){
   int bland_dog_thresh = prop.findGroup("ZDF").find("BLAND_DOG_THRESH").asInt();
   double bland_prob    = prop.findGroup("ZDF").find("BLAND_PROB").asDouble();
 
+  yarp::os::ConstString temp_port    = prop.findGroup("ZDF").find("INPORT").asString();
+  QString in_port =  temp_port.c_str();
+
   int t_size           = prop.findGroup("ZDFTRACK").find("T_SIZE").asInt();
   int t_lock_lr        = prop.findGroup("ZDFTRACK").find("T_LOCK_LR").asInt();
   int t_lock_ud        = prop.findGroup("ZDFTRACK").find("T_LOCK_UD").asInt();
@@ -89,11 +93,12 @@ void iCub::contrib::primateVision::ZDFServer::run(){
   int nclasses         = 2; //zd, not_zd
 
 
+  cout <<  "HERE " << temp_port.c_str() << endl;
   //PROBE RECSERVER:
   Port inPort_s;
   inPort_s.open("/zdfserver/input/serv_params");     
-  Network::connect("/zdfserver/input/serv_params", "/recserver/output/serv_params");
-  Network::connect("/recserver/output/serv_params", "/zdfserver/input/serv_params");
+  Network::connect("/zdfserver/input/serv_params", in_port+"/output/serv_params");
+  Network::connect(in_port+"/output/serv_params", "/zdfserver/input/serv_params");
   BinPortable<RecServerParams> response; 
   Bottle empty;
   inPort_s.write(empty,response);
@@ -103,12 +108,12 @@ void iCub::contrib::primateVision::ZDFServer::run(){
   //RECSERVER INPUT:
   BufferedPort<Bottle> inPort_ly; 
   inPort_ly.open("/zdfserver/input/rec_ly");     
-  Network::connect("/recserver/output/left_ye" , "/zdfserver/input/rec_ly");
+  Network::connect(in_port+"/output/left_ye" , "/zdfserver/input/rec_ly");
   Bottle *inBot_ly;
   
   BufferedPort<Bottle> inPort_ry; 
   inPort_ry.open("/zdfserver/input/rec_ry");     
-  Network::connect("/recserver/output/right_ye" , "/zdfserver/input/rec_ry");
+  Network::connect(in_port+"/output/right_ye" , "/zdfserver/input/rec_ry");
   Bottle *inBot_ry;
   
   RecResultParams* rec_res;
@@ -214,8 +219,8 @@ void iCub::contrib::primateVision::ZDFServer::run(){
   //Motion output
   Port outPort_mot;
   outPort_mot.open("/zdfserver/output/mot");     // Give it a name on the network.
-  Network::connect("/zdfserver/output/mot", "/recserver/input/motion");
-  Network::connect("/recserver/input/motion", "/zdfserver/output/mot");
+  Network::connect("/zdfserver/output/mot", in_port+"/input/motion");
+  Network::connect(in_port+"/input/motion", "/zdfserver/output/mot");
   BinPortable<RecMotionRequest> motion_request;
 
 
