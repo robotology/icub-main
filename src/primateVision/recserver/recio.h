@@ -50,7 +50,7 @@ namespace iCub {
 	}
 	/** Converstion to string of parameters for printing. */
 	string toString(){
-	  char buffer[50];
+	  char buffer[500];
 	  sprintf(buffer, "%d %d %d %d %d %d %f %f %f",
 		  width,height,psb,mos_width,mos_height,focus,baseline,pix2degX,pix2degY);
 	  return buffer;
