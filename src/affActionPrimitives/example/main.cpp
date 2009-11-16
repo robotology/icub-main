@@ -35,7 +35,8 @@ public:
 
     virtual bool configure(ResourceFinder &rf)
     {
-		Property option("(robot icubSim) (local test) (part left_arm) (trajTime 3.0)");
+		Property option("(robot icubSim) (local test) (part left_arm) (trajTime 3.0)\
+						(torso (0 0 1))");
         option.put("calibFile",rf.findFile("from"));
 
 		mot=new affActionPrimitives;

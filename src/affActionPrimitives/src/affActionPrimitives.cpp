@@ -138,12 +138,26 @@ bool affActionPrimitives::open(Property &opt)
     // set shot mode
     cartCtrl->setTrackingMode(false);
 
-    // enable torso yaw
-    Vector curDof;
-    cartCtrl->getDOF(curDof);
-    Vector newDof=curDof;
-    newDof[2]=1.0;    
-    cartCtrl->setDOF(newDof,curDof);
+    // enable torso joints
+    if (opt.check("torso"))
+    {
+        if (Bottle *joints=opt.find("torso").asList())
+        {
+            Vector curDof;
+            cartCtrl->getDOF(curDof);
+            Vector newDof=curDof;
+
+            int l=joints->size()>3 ? 3 : joints->size();
+
+            fprintf(stdout,"enabling torso joints... ");
+
+            for (int i=0; i<l; i++)
+                newDof[i]=joints->get(i).asInt();
+
+            cartCtrl->setDOF(newDof,curDof);
+            fprintf(stdout,"%s\n",curDof.toString().c_str());
+        }
+    }
 
     // create hand metrix
     readMatrices(sensingCalib,sensingConstants);
