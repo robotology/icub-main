@@ -40,6 +40,8 @@ void iCub::contrib::primateVision::ObjRecServer::run()
   momentum  = prop.findGroup("OBJREC").find("MOMENTUM").asDouble();
   learnRate = prop.findGroup("OBJREC").find("LEARNRATE").asDouble();
   int max_unknowns = prop.findGroup("OBJREC").find("MAX_UNKNOWNS").asInt();
+  yarp::os::ConstString temp_NN    = prop.findGroup("OBJREC").find("NN").asString();
+  QString in_NN =  temp_NN.c_str();
 
   //probe ZDFServer:
   Port inPort_s;
@@ -119,7 +121,7 @@ void iCub::contrib::primateVision::ObjRecServer::run()
   int seed =time(0);
   nnfw::Random::setSeed(seed); 
   //load the saved model
-  net = loadXML( "/home/andrew/src/iCub/src/primateVision/objRec/data/learnedModel.xml" ); 
+  net = loadXML( in_NN );
   const ClusterVec& cl = net->clusters();  //configure the NN clusters
   for( nnfw::u_int i=0; i<cl.size(); i++ ){                
     cl[i]->inputs().zeroing();
