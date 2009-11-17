@@ -9,6 +9,8 @@
 #ifndef LM_TRANSFORMMODULE__
 #define LM_TRANSFORMMODULE__
 
+#include <yarp/os/PortablePair.h>
+
 #include "iCub/IMachineLearnerModule.h"
 #include "iCub/TransformerPortable.h"
 
@@ -220,7 +222,7 @@ private:
     /*
      * Inherited from IMachineLearnerModule.
      */
-    void exitWithHelp(std::string error = "");
+    void printOptions(std::string error = "");
 
 public:
     /**
@@ -242,7 +244,7 @@ public:
     /*
      * Inherited from IMachineLearnerModule.
      */
-    virtual bool open(Searchable& opt);
+    virtual bool configure(ResourceFinder& opt);
 
     /*
      * Inherited from IMachineLearnerModule.

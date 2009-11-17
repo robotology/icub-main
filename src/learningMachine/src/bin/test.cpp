@@ -13,9 +13,16 @@
 #include <sstream>
 #include <fstream>
 #include <stdexcept>
+#include <cassert>
 
-#include <yarp/os/Module.h>
+#include <yarp/os/Network.h>
+#include <yarp/os/ResourceFinder.h>
+#include <yarp/os/RFModule.h>
+#include <yarp/os/PortablePair.h>
 #include <yarp/sig/Vector.h>
+#include <yarp/os/Port.h>
+#include <yarp/os/BufferedPort.h>
+#include <yarp/os/Time.h>
 #include <yarp/IOException.h>
 
 using namespace yarp::os;
@@ -169,7 +176,7 @@ public:
 };
 
 
-class MachineLearnerTestModule : public Module {
+class MachineLearnerTestModule : public RFModule {
 private:
     BufferedPort<PortablePair<Vector,Vector> > train_out;
     Port predict_inout;
@@ -208,11 +215,9 @@ public:
 
     }
 
-    void exitWithHelp(std::string error = "") {
-        int errorCode = 0;
+    void printOptions(std::string error = "") {
         if(error != "") {
             std::cout << "Error: " << error << std::endl;
-            errorCode = 1;
         }
         std::cout << "Available options" << std::endl;
         std::cout << "--help                 Display this help message" << std::endl;
@@ -223,7 +228,6 @@ public:
         std::cout << "--outputs (idx1, ..)   List of indices to use as outputs" << std::endl;
         std::cout << "--port pfx             Prefix for registering the ports" << std::endl;
         std::cout << "--frequency f          Sampling frequency in Hz" << std::endl;
-        exit(errorCode);
     }
 
     void printConfig() {
@@ -234,13 +238,14 @@ public:
     }
 
 
-    bool open(Searchable& opt) {
+    virtual bool configure(ResourceFinder& opt) {
         // read for the general specifiers:
         Value* val;
 
         // check for help request
         if(opt.check("help")) {
-            this->exitWithHelp();
+            this->printOptions();
+            return false;
         }
 
         // check for port specifier: portSuffix
@@ -281,9 +286,11 @@ public:
             if(val->isList()) {
                 Bottle* inputs = val->asList();
                 for(int i = 0; i < inputs->size(); i++) {
-                    this->dataset.addInputColumn(inputs->get(i).asInt());
+                    if(inputs->get(i).isInt()) {
+                        this->dataset.addInputColumn(inputs->get(i).asInt());
+                    }
                 }
-            } else {
+            } else if(val->isInt()) {
                 this->dataset.addInputColumn(val->asInt());
             }
         } else {
@@ -296,9 +303,11 @@ public:
             if(val->isList()) {
                 Bottle* outputs = val->asList();
                 for(int i = 0; i < outputs->size(); i++) {
-                    this->dataset.addOutputColumn(outputs->get(i).asInt());
+                    if(outputs->get(i).isInt()) {
+                        this->dataset.addOutputColumn(outputs->get(i).asInt());
+                    }
                 }
-            } else {
+            } else if(val->isInt()) {
                 this->dataset.addOutputColumn(val->asInt());
             }
         } else {
@@ -316,6 +325,8 @@ public:
 
         this->dataset.open();
 
+        this->attachTerminal();
+
         return true;
     }
 
@@ -330,6 +341,11 @@ public:
         Vector prediction;
         this->predict_inout.write(input, prediction);
         return prediction;
+    }
+
+    bool updateModule() {
+        Time::delay(1.);
+        return true;
     }
 
     bool respond(const Bottle& cmd, Bottle& reply) {
@@ -479,10 +495,6 @@ public:
         return success;
     }
 
-    /*bool updateModule() {
-        return true;
-    }*/
-
     bool close() {
         this->unregisterAllPorts();
         return true;
@@ -498,10 +510,15 @@ using namespace iCub::learningmachine::test;
 
 int main(int argc, char *argv[]) {
     Network yarp;
+    int ret;
+
+    ResourceFinder rf;
+    rf.configure("ICUB_ROOT", argc, argv);
+    rf.setDefaultContext("learningMachine");
 
     MachineLearnerTestModule module;
     try {
-        module.runModule(argc,argv);
+        ret = module.runModule(rf);
         //module.attachTerminal();
     } catch(const std::exception& e) {
         std::cerr << "Error: " << e.what() << std::endl;
@@ -510,6 +527,6 @@ int main(int argc, char *argv[]) {
         std::cerr << "Error: " << msg << std::endl;
         return 1;
     }
-    return 0;
+    return ret;
 }
 

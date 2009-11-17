@@ -8,4 +8,6 @@
 * Implement copy constructor and assignment operator where necessary (done)
 * Use references instead of pointers when possible (done)
 * Simplify writing and reading vectors and matrices to bottles
-* Replicate yarp::math so that optionally Atlas can be used
+* Replicate yarp::math so that optionally Atlas can be used (done)
+* Move from Module to RFModule (done, not tested)
+* Supply command files and let command files be loaded from terminal

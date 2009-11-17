@@ -10,8 +10,11 @@
 #ifndef LM_IMACHINELEARNERMODULE__
 #define LM_IMACHINELEARNERMODULE__
 
-#include <yarp/os/Module.h>
-#include <yarp/os/Searchable.h>
+#include <yarp/os/RFModule.h>
+#include <yarp/os/ResourceFinder.h>
+#include <yarp/os/Bottle.h>
+#include <yarp/os/BufferedPort.h>
+#include <yarp/os/Time.h>
 
 #include "iCub/DispatcherManager.h"
 
@@ -34,12 +37,12 @@ namespace learningmachine {
  * \author Arjan Gijsberts
  */
 
-class IMachineLearnerModule : public Module {
+class IMachineLearnerModule : public RFModule {
 protected:
     /**
      * An input port for commands.
      */
-    BufferedPort<Bottle> cmd_in;
+    Port cmd_in;
 
     /**
      * A prefix path for the ports that will be registered.
@@ -81,9 +84,9 @@ protected:
     virtual void unregisterAllPorts() = 0;
 
     /**
-     * Exits the module while printing a help message.
+     * Prints the accepted command line options with an optional error message.
      */
-    virtual void exitWithHelp(std::string error = "") = 0;
+    virtual void printOptions(std::string error = "") = 0;
 
 public:
     /**
@@ -104,6 +107,14 @@ public:
      * @return true if the module was closed successfully
      */
     virtual bool close();
+
+    /**
+     * Default empty update loop with 1 second delay.
+     */
+    virtual bool updateModule() {
+        Time::delay(1.);
+        return true;
+    }
 
 };
 

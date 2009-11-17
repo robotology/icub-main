@@ -147,7 +147,7 @@ protected:
     /*
      * Inherited from IMachineLearnerModule.
      */
-    void exitWithHelp(std::string error = "");
+    void printOptions(std::string error = "");
 
 public:
     /**
@@ -167,7 +167,7 @@ public:
     /*
      * Inherited from IMachineLearnerModule.
      */
-    virtual bool open(Searchable& opt);
+    virtual bool configure(ResourceFinder& opt);
 
     /*
      * Inherited from IMachineLearnerModule.

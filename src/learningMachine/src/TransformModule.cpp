@@ -11,6 +11,7 @@
 #include <cassert>
 
 #include <yarp/IOException.h>
+#include <yarp/os/Network.h>
 
 #include "iCub/TransformModule.h"
 
@@ -61,11 +62,9 @@ void TransformTrainProcessor::onRead(PortablePair<Vector,Vector>& input) {
 }
 
 
-void TransformModule::exitWithHelp(std::string error) {
-    int errorCode = 0;
+void TransformModule::printOptions(std::string error) {
     if(error != "") {
         std::cout << "Error: " << error << std::endl;
-        errorCode = 1;
     }
     std::cout << "Available options" << std::endl;
     std::cout << "--help                 Display this help message" << std::endl;
@@ -73,7 +72,6 @@ void TransformModule::exitWithHelp(std::string error) {
     std::cout << "--trainport port       Data port for the training samples" << std::endl;
     std::cout << "--predictport port     Data port for the prediction samples" << std::endl;
     std::cout << "--port pfx             Prefix for registering the ports" << std::endl;
-    exit(errorCode);
 }
 
 
@@ -112,14 +110,15 @@ bool TransformModule::interruptModule() {
     return true;
 }
 
-bool TransformModule::open(Searchable& opt) {
+bool TransformModule::configure(ResourceFinder& opt) {
     // read for the general specifiers:
     Value* val;
     std::string transformerName;
 
     // check for help request
     if(opt.check("help")) {
-        this->exitWithHelp();
+        this->printOptions();
+        return false;
     }
 
     // check for port specifier: portSuffix
@@ -132,7 +131,8 @@ bool TransformModule::open(Searchable& opt) {
     if(opt.check("transformer", val)) {
         transformerName = val->asString().c_str();
     } else {
-        this->exitWithHelp("no transformer type specified");
+        this->printOptions("no transformer type specified");
+        return false;
     }
 
     // construct transformer
@@ -166,8 +166,9 @@ bool TransformModule::open(Searchable& opt) {
         // add message here if necessary
     }
 
-    // attach to the incoming command port
+    // attach to the incoming command port and terminal
     this->attach(cmd_in);
+    this->attachTerminal();
 
     return true;
 }

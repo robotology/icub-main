@@ -18,8 +18,9 @@
 
 #include <yarp/sig/Vector.h>
 #include <yarp/os/Port.h>
-#include <yarp/os/Module.h>
-#include <yarp/os/BufferedPort.h>
+#include <yarp/os/ResourceFinder.h>
+#include <yarp/os/RFModule.h>
+//#include <yarp/os/BufferedPort.h>
 #include <yarp/os/Network.h>
 #include <yarp/os/Time.h>
 
@@ -30,102 +31,25 @@ namespace iCub {
 namespace learningmachine {
 namespace merge {
 
-/*
-SourceList:
-  DataSource
-   : PortSource
-
-DataSelector
-  CompositeSelector has DataSelector
-  DataSelector
-  : AllSelector
-  : IndexSelector
-*/
-
-
-//class PortSource : public DataSource {
-//private:
-//    /**
-//     * Copy constructor.
-//     */
-//    PortSource(const PortSource& other);
-//
-//    /**
-//     * Assignment operator.
-//     */
-//    PortSource& operator=(const PortSource& other);
-//
-//protected:
-//    /**
-//     *
-//     */
-//    std::string portPrefix;
-//
-//public:
-//    /**
-//     * Default constructor.
-//     */
-//    PortSource() : portPrefix("/lm/merge/source") { }
-//
-//    /**
-//     * Default destructor.
-//     */
-//    ~PortSource() { }
-//
-//    /**
-//     * Retrieves new data from the ports.
-//     * @param
-//     * @return
-//     */
-//    void update() {
-//        // for each in portmap, port.read, store in datamap
-//        PortMap::iterator it;
-//        for(it = this->portMap.begin(); it != this->portMap.end(); it++ ) {
-//            std::cout << "Updating port " << (*it).first << std::endl;
-//            (*it).second.read(this->dataMap[(*it).first]);
-//            //cout << (*it).first << " => " << (*it).second << endl;
-//        }
-//    }
-//
-//    const Bottle& getData(std::string portName) {
-//        return this->dataMap[portName];
-//    }
-//
-//    bool addPort(std::string portName) {
-//        // check if portName exists
-//        if(!this->hasPort(portName)) {
-//            this->portMap[portName] = Port();
-//            std::string inputName = this->getInputName();
-//            this->portMap[portName].open(inputName.c_str());
-//            Network::connect(portName.c_str(), inputName.c_str());
-//            return true;
-//        } else {
-//            return false;
-//        }
-//    }
-//
-//    bool hasPort(std::string portName) {
-//        return (this->portMap.count(portName) > 0);
-//    }
-//
-//    std::string getInputName() {
-//        std::ostringstream buffer;
-//        int i = 1;
-//        do {
-//            // standard prefix + i
-//            buffer.str(""); // clear buffer
-//            buffer << this->portPrefix << i++ << ":o";
-//        } while(Network::queryName(buffer.str().c_str()).isValid());
-//        return buffer.str();
-//    }
-//
-//};
-
 
 class PortSource {
 protected:
+    /**
+     * Cached data.
+     */
     Bottle data;
+
+    /**
+     * The port for incoming data.
+     */
     Port port;
+
+    /**
+     * Returns the first free port given a prefix appended by an integer.
+     *
+     * @param prefix  the prefix for the port.
+     * @return the string for the first available portname given the prefix
+     */
     std::string getInputName(std::string prefix) {
         std::ostringstream buffer;
         int i = 1;
@@ -137,13 +61,22 @@ protected:
         return buffer.str();
     }
 
+    /**
+     * Copy constructor (private and unimplemented on purpose).
+     */
+    PortSource(const PortSource& other);
+
+    /**
+     * Assignment operator (private and unimplemented on purpose).
+     */
+    PortSource& operator=(const PortSource& other);
+
 public:
     /**
      * Default constructor.
      */
     PortSource(std::string name, std::string prefix = "/lm/merge/source") {
         this->initPort(prefix);
-        this->connect(name);
     }
 
     /**
@@ -151,50 +84,68 @@ public:
      */
     ~PortSource() {
         this->interrupt();
+        this->close();
     }
 
     /**
-     * Copy constructor.
+     * Opens the first free incoming port with the given prefix.
+     * @param prefix  the prefix for the name
      */
-    PortSource(const PortSource& other);
-
-    /**
-     * Assignment operator.
-     */
-    PortSource& operator=(const PortSource& other);
-
     virtual void initPort(std::string prefix) {
         port.open(this->getInputName(prefix).c_str());
     }
 
+    /**
+     * Connects the incoming port to the specified port.
+     * @param dst  the destination port
+     */
     virtual void connect(std::string dst) {
         if(Network::queryName(dst.c_str()).isValid()) {
             Network::connect(dst.c_str(), this->port.where().getName().c_str());
         } else {
-            //
+            throw std::runtime_error("Cannot find requested port: " + dst);
         }
     }
 
+    /**
+     * Reads new data from the port and caches it locally.
+     */
     virtual void update() {
         this->port.read(data);
     }
 
+    /**
+     * Returns the locally cached data.
+     * @return a reference to the locally stored bottle
+     */
     virtual Bottle& getData() {
         return this->data;
     }
 
+    /**
+     * Interrupts the port.
+     */
     virtual void interrupt() {
         this->port.interrupt();
+    }
+
+    /**
+     * Closes the port.
+     */
+    virtual void close() {
         this->port.close();
     }
 };
 
 
-
-typedef std::map<std::string, PortSource*> SourceMap;
-
 class SourceList {
 protected:
+    typedef std::map<std::string, PortSource*> SourceMap;
+
+    /**
+     * Map that links port names to the PortSource objects that are connected to
+     * them.
+     */
     SourceMap sourceMap;
 
 public:
@@ -222,6 +173,9 @@ public:
      */
     SourceList& operator=(const SourceList& other);
 
+    /**
+     * Updates each registered port with new data.
+     */
     virtual void update() {
         // for each in portmap, port.read, store in datamap
         SourceMap::iterator it;
@@ -230,16 +184,26 @@ public:
         }
     }
 
+    /**
+     * Returns true iff a PortSource has been registered for the given port name.
+     */
     virtual bool hasSource(std::string name) {
         return (this->sourceMap.count(name) > 0);
     }
 
+    /**
+     *
+     */
     virtual void addSource(std::string name) {
         if(!this->hasSource(name)) {
             this->sourceMap[name] = new PortSource(name);
+            this->sourceMap[name]->connect(name);
         }
     }
 
+    /**
+     *
+     */
     virtual PortSource& getSource(std::string name) {
         if(!this->hasSource(name)) {
             throw std::runtime_error("Attempt to retrieve inexistent source.");
@@ -247,9 +211,21 @@ public:
         return *(this->sourceMap[name]);
     }
 
+    /**
+     *
+     */
     virtual void interrupt() {
         for(SourceMap::iterator it = this->sourceMap.begin(); it != this->sourceMap.end(); it++) {
             it->second->interrupt();
+        }
+    }
+
+    /**
+     *
+     */
+    virtual void close() {
+        for(SourceMap::iterator it = this->sourceMap.begin(); it != this->sourceMap.end(); it++) {
+            it->second->close();
         }
     }
 };
@@ -265,10 +241,6 @@ protected:
 
 public:
 
-    /*void select(Bottle& output, SourceList& sources) {
-
-    }*/
-    //std::string printStructure(int indent);
     virtual std::string toString(int indent = 0) = 0;
 
     virtual void declareSources(SourceList& sl) = 0;
@@ -361,7 +333,13 @@ public:
      */
     CompositeSelector& operator=(const CompositeSelector& other);
 
-// ./merge --config "(/foo:o 3 /foo:o 1 /bar:o 2 3 4) /baz:o ()) ()" --names "()"
+    void addChild(DataSelector* ds) {
+        this->children.push_back(ds);
+    }
+
+    /**
+     *
+     */
     void loadFormat(Bottle& format) {
         int i = 0;
         int len = format.size();
@@ -372,14 +350,14 @@ public:
                 if(format.get(i).isInt()) {
                     do {
                         int index = format.get(i).asInt();
-                        this->children.push_back(new IndexSelector(name, index));
+                        this->addChild(new IndexSelector(name, index));
                         i++;
                     } while(format.get(i).isInt());
                 } else {
-                    this->children.push_back(new AllSelector(name));
+                    this->addChild(new AllSelector(name));
                 }
             } else if(format.get(i).isList()) {
-                this->children.push_back(new CompositeSelector(*(format.get(i).asList())));
+                this->addChild(new CompositeSelector(*(format.get(i).asList())));
                 i++;
             }
         }
@@ -409,17 +387,8 @@ public:
     }
 };
 
-//typedef std::map<std::string, PortSource> SourceMap;
-typedef std::map<std::string, Bottle> DataMap;
 
-// have a paired structure of Port and Bottle, e.g. PortItem
-// let PortSource use a map<string, PortItem>, this prevents to have
-// double maps with identical keys
-
-
-
-
-class MergeModule : public Module {
+class MergeModule : public RFModule {
 protected:
     /**
      * Desired period of the module updates.
@@ -427,44 +396,47 @@ protected:
     double desiredPeriod;
 
     /**
-     * Time spent in the last update routine.
-     */
-    double updateTiming;
-
-    /**
      * The collecting resource for all data from all sources.
      */
     SourceList sourceList;
 
     /**
-     *
+     * A pointer to the root DataSelector.
      */
     DataSelector* dataSelector;
+
+    void printOptions(std::string error = "") {
+        int errorCode = 0;
+        if(error != "") {
+            std::cerr << "Error: " << error << std::endl;
+        }
+        std::cout << "Available options" << std::endl;
+        std::cout << "--format               The format for the output (required)" << std::endl;
+        std::cout << "--frequency f          Sampling frequency in Hz" << std::endl;
+    }
 
 public:
     /**
      * Constructor.
      */
-    MergeModule() : dataSelector((DataSelector*) 0) { }
+    MergeModule() : dataSelector((DataSelector*) 0), desiredPeriod(0.1) { }
 
     /**
      * Destructor.
      */
     ~MergeModule() {
-        this->interruptModule();
         delete this->dataSelector;
     }
 
     /*
-     * Inherited from yarp::os::Module
+     * Inherited from yarp::os::RFModule
      */
     virtual double getPeriod() {
-        return (this->updateTiming < this->desiredPeriod) ?
-               (this->desiredPeriod - this->updateTiming) : 0.;
+        return this->desiredPeriod;
     }
 
     /*
-     * Inherited from yarp::os::Module
+     * Inherited from yarp::os::RFModule
      */
     virtual bool interruptModule() {
         this->sourceList.interrupt();
@@ -472,12 +444,25 @@ public:
     }
 
     /*
-     * Inherited from yarp::os::Module
+     * Inherited from yarp::os::RFModule
      */
-    virtual bool open(Searchable& opt) {
+    virtual bool close() {
+        this->sourceList.close();
+        return true;
+    }
+
+    /*
+     * Inherited from yarp::os::RFModule
+     */
+    virtual bool configure(ResourceFinder& opt) {
         // read for the general specifiers:
         Value* val;
         bool success = false;
+
+        if(opt.check("help")) {
+            this->printOptions();
+            return false;
+        }
 
         if(opt.check("format", val)) {
             // prolly should check if it's a list...
@@ -490,27 +475,34 @@ public:
             }
         } else {
             // error, no format!
-            //printErrorWithHelp("Please supply a format!");
+            this->printOptions("Please supply a format!");
+            return false;
         }
 
+        if(opt.check("frequency", val)) {
+            if(val->isDouble() || val->isInt()) {
+                this->setFrequency(val->asDouble());
+            }
+        }
+
+        this->attachTerminal();
 
         return success;
     }
 
+
     /*
-     * Inherited from yarp::os::Module
+     * Inherited from yarp::os::RFModule
      */
     virtual bool updateModule() {
-        double updateStart = yarp::os::Time::now();
-
         this->sourceList.update();
         //this->listeners.process(this->portSource);
-
-        double updateEnd = yarp::os::Time::now();
-        this->updateTiming = updateStart - updateEnd;
         return true;
     }
 
+    /*
+     * Inherited from yarp::os::RFModule
+     */
     bool respond(const Bottle& cmd, Bottle& reply) {
         bool success = false;
 
@@ -570,6 +562,18 @@ public:
     }
 
     /**
+     * Mutator for the desired period by means of setting the frequency.
+     * @param f  the desired frequency
+     * @return
+     */
+    virtual void setFrequency(double f) {
+        if(f <= 0) {
+            throw std::runtime_error("Frequency must be larger than 0");
+        }
+        this->setDesiredPeriod(1. / f);
+    }
+
+    /**
      * Accessor for the desired period.
      * @return the desired period in seconds
      */
@@ -586,11 +590,14 @@ using namespace iCub::learningmachine::merge;
 
 int main(int argc, char *argv[]) {
     Network yarp;
+    int ret;
 
+    ResourceFinder rf;
+    rf.configure("ICUB_ROOT", argc, argv);
+    rf.setDefaultContext("learningMachine");
     MergeModule module;
     try {
-        module.runModule(argc,argv);
-        //module.attachTerminal();
+        ret = module.runModule(rf);
     } catch(const std::exception& e) {
         std::cerr << "Error: " << e.what() << std::endl;
         return 1;
@@ -598,6 +605,6 @@ int main(int argc, char *argv[]) {
         std::cerr << "Error: " << msg << std::endl;
         return 1;
     }
-    return 0;
+    return ret;
 }
 

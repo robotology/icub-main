@@ -42,17 +42,14 @@ void TrainProcessor::onRead(PortablePair<Vector,Vector>& sample) {
 }
 
 
-void TrainModule::exitWithHelp(std::string error) {
-    int errorCode = 0;
+void TrainModule::printOptions(std::string error) {
     if(error != "") {
         std::cout << "Error: " << error << std::endl;
-        errorCode = 1;
     }
     std::cout << "Available options for training module" << std::endl;
     std::cout << "--help                 Display this help message" << std::endl;
     std::cout << "--machine type         Desired type of learning machine" << std::endl;
     std::cout << "--port pfx             Prefix for registering the ports" << std::endl;
-    exit(errorCode);
 }
 
 
@@ -80,7 +77,7 @@ bool TrainModule::interruptModule() {
     return true;
 }
 
-bool TrainModule::open(Searchable& opt) {
+bool TrainModule::configure(ResourceFinder& opt) {
     /* Implementation note:
      * Calling open() in the base class (i.e. PredictModule) is cumbersome due
      * to different ordering and dynamic binding (e.g. it calls
@@ -91,11 +88,10 @@ bool TrainModule::open(Searchable& opt) {
     Value* val;
     std::string machineName;
 
-    //PredictModule::open(opt);
-
     // check for help request
     if(opt.check("help")) {
-        this->exitWithHelp();
+        this->printOptions();
+        return false;
     }
 
     // check for port specifier: portSuffix
@@ -107,7 +103,8 @@ bool TrainModule::open(Searchable& opt) {
     if(opt.check("machine", val)) {
         machineName = val->asString().c_str();
     } else {
-        this->exitWithHelp("no machine type specified");
+        this->printOptions("No machine type specified");
+        return false;
     }
 
     // construct new machine
@@ -125,8 +122,9 @@ bool TrainModule::open(Searchable& opt) {
     // register ports before connecting
     this->registerAllPorts();
 
-    // attach to the incoming command port
+    // attach to the incoming command port and terminal
     this->attach(cmd_in);
+    this->attachTerminal();
 
     return true;
 }

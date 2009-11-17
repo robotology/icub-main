@@ -114,7 +114,7 @@ public:
      * @throw runtime error if no object has been registered with the same key
      */
     T* create(const K& key) {
-        if(this->map.count(key) > 0) {
+        if(this->map.count(key) == 0) {
             std::ostringstream buffer;
             buffer << "Could not find prototype '" << key
                    << "'; please specify a valid key.";

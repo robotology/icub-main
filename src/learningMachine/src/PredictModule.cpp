@@ -11,6 +11,7 @@
 #include <stdexcept>
 #include <cassert>
 
+#include <yarp/os/Network.h>
 #include <yarp/IOException.h>
 
 #include "iCub/PredictModule.h"
@@ -52,17 +53,14 @@ bool PredictProcessor::read(ConnectionReader& connection) {
 }
 
 
-void PredictModule::exitWithHelp(std::string error) {
-    int errorCode = 0;
+void PredictModule::printOptions(std::string error) {
     if(error != "") {
         std::cout << "Error: " << error << std::endl;
-        errorCode = 1;
     }
     std::cout << "Available options for prediction module" << std::endl;
     std::cout << "--help                 Display this help message" << std::endl;
     std::cout << "--port pfx             Prefix for registering the ports" << std::endl;
     std::cout << "--modelport port       Model port of the training module" << std::endl;
-    exit(errorCode);
 }
 
 void PredictModule::registerAllPorts() {
@@ -85,13 +83,14 @@ bool PredictModule::interruptModule() {
     return true;
 }
 
-bool PredictModule::open(Searchable& opt) {
+bool PredictModule::configure(ResourceFinder& opt) {
     // read for the general specifiers:
     Value* val;
 
     // check for help request
     if(opt.check("help")) {
-        this->exitWithHelp();
+        this->printOptions();
+        return false;
     }
 
     // check for port specifier: portSuffix
@@ -114,8 +113,9 @@ bool PredictModule::open(Searchable& opt) {
     // add replier for incoming data (prediction requests)
     this->predict_inout.setReplier(this->predictProcessor);
 
-    // attach to the incoming command port
+    // attach to the incoming command port and terminal
     this->attach(cmd_in);
+    this->attachTerminal();
 
     return true;
 }

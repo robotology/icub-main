@@ -9,6 +9,9 @@
 #include <iostream>
 #include <string>
 
+#include <yarp/os/Network.h>
+#include <yarp/os/ResourceFinder.h>
+
 #include "iCub/PredictModule.h"
 #include "iCub/MachineCatalogue.h"
 #include "iCub/EventListenerCatalogue.h"
@@ -17,17 +20,21 @@ using namespace iCub::learningmachine;
 
 int main (int argc, char* argv[]) {
     Network yarp;
+    int ret;
+
+    ResourceFinder rf;
+    rf.configure("ICUB_ROOT", argc, argv);
+    rf.setDefaultContext("learningMachine");
 
     PredictModule module;
     try {
         // initialize catalogue of machine factory
         registerMachines();
-        
+
         // initialize catalogue of event listeners
         registerEventListeners();
 
-        module.runModule(argc,argv);
-        //module.attachTerminal();
+        ret = module.runModule(rf);
     } catch(const std::exception& e) {
         std::cerr << "Error: " << e.what() << std::endl;
         return 1;
@@ -35,5 +42,5 @@ int main (int argc, char* argv[]) {
         std::cerr << "Error: " << msg << std::endl;
         return 1;
     }
-    return 0;
+    return ret;
 }
