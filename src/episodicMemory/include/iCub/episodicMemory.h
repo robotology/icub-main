@@ -67,25 +67,25 @@
  * (they can also be specified as command-line parameters if you so wish). 
  * The value part can be changed to suit your needs; the default values are shown below. 
  * 
- * - \c portImageIn         \c /image:i  \n
+ * - \c imageInPort         \c /image:i  \n
  *   specifies the port for input of an image
  *
- * - \c portImageIdIn       \c /imageId:i  \n
+ * - \c imageIdInPort       \c /imageId:i  \n
  *   specifies the port for input of an image identification number
  *
  * - \c headPort            \c /head:i   \n  
  *   specifies the input port name for the head encoder values used to check that the iCub head has stopped moving
  * 
- * - \c portImageOut        \c /image:o  \n
+ * - \c imageOutPort        \c /image:o  \n
  *   specifies the image output port
  *
- * - \c portImageIdOut      \c /imageId:o  \n
+ * - \c imageIdOutPort      \c /imageId:o  \n
  *   specifies the port for output of the image identification number corresponding to the output image
  *
- * - \c portImageIdPrevOut  \c /imageIdPrev:o  \n
+ * - \c imageIdPrevOutPort  \c /imageIdPrev:o  \n
  *   specifies the port for output of the image identification number corresponding to the previous output image
  *
- * - \c database            \c defaultDatabase  \n
+ * - \c database            \c episodicDatabase  \n
  *   specifies the directory name in which the database of images will be stored
  * 
  * - \c path                \c ~/iCub/app/episodicMemory  \n
@@ -108,11 +108,11 @@
  * the image with the highest match is recalled.
  * 
  * For example, if the configuration file \c episodicMemory.ini is located in \c C:/iCub/app/episodicMemory/conf 
- * and the database is \c C:/iCub/app/episodicMemory/defaultDatabase then 
+ * and the database is \c C:/iCub/app/episodicMemory/episodicDatabase then 
  *
  * - \c episodicMemory module must be invoked with \c --context \c episodicMemory/conf 
  * - \c episodicMemory.ini must contain \c "path C:/iCub/app/episodicMemory"
- * - the directory \c C:/iCub/app/episodicMemory/defaultDatabase must exist. 
+ * - the directory \c C:/iCub/app/episodicMemory/episodicDatabase must exist. 
  *
  *
  * \section portsa_sec Ports Accessed
@@ -143,8 +143,7 @@
  *
  * <b>Output ports</b> 
  *
- *  - \c /episodicMemory \n
- *    see above
+ *  - \c /episodicMemory
  *  - \c /episodicMemory/image:o
  *  - \c /episodicMemory/imageId:o
  *  - \c /episodicMemory/imageIdPrev:o
@@ -155,16 +154,16 @@
  *
  * <b>I/O Port Types & Naming</b> 
  *
- * - \c BufferedPort<ImageOf<PixelRgb> > \c portImageIn;
- * - \c BufferedPort<Bottle>             \c portImageIdIn;          \c //int \c image_id 
- * - \c BufferedPort<ImageOf<PixelRgb> > \c portImageOut;
- * - \c BufferedPort<Bottle>             \c portImageIdOut;         \c //int image_id, \c double match_value 
- * - \c BufferedPort<Bottle>             \c portImageIdPrevOut;     \c //int image_id, \c double match_value 
+ * - \c BufferedPort<ImageOf<PixelRgb> > \c imageInPort;
+ * - \c BufferedPort<Bottle>             \c imageIdInPort;          \c //int \c image_id 
+ * - \c BufferedPort<ImageOf<PixelRgb> > \c imageOutPort;
+ * - \c BufferedPort<Bottle>             \c imageIdOutPort;         \c //int image_id, \c double match_value 
+ * - \c BufferedPort<Bottle>             \c imageIdPrevOutPort;     \c //int image_id, \c double match_value 
  * - \c BufferedPort<Vector>             \c headPort;            \n
  *
  * \section in_files_sec Input Data Files
  *
- * \c defaultDatabase  (see above)
+ * \c episodicDatabase  (see above)
  *
  * \section out_data_sec Output Data Files
  *

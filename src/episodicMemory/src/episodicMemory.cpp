@@ -37,8 +37,8 @@
  * David Vernon 18/08/09
  *
  * Fixed problem with automatic prefixing of module name to port names
- * it is now  getName(rf.check("portImageIn", Value("image:i"), "Input image port (string)").asString());
- * instead of rf.check("portImageIn", Value(getName("image:i")), "Input image port (string)").asString();
+ * it is now  getName(rf.check("imageInPort", Value("image:i"), "Input image port (string)").asString());
+ * instead of rf.check("imageInPort", Value(getName("image:i")), "Input image port (string)").asString();
  * as the latter only prefixed the default value, not the parameter value
  * David Vernon 19/08/09
  *
@@ -67,7 +67,7 @@
 HistMatchData::HistMatchData()
 {
     setThreshold(0.6);  //default threshold value
-    databaseName = "defaultDatabase";
+    databaseName = "episodicDatabase";
     databaseContext = "";
 }
 
@@ -179,35 +179,35 @@ bool EpisodicMemory::configure(yarp::os::ResourceFinder &rf)
 
     imageInPortName      = "/";
     imageInPortName     += getName(
-                           rf.check("portImageIn",
+                           rf.check("imageInPort",
 				           Value("/image:i"),
 				           "Input image port (string)").asString()
                            );
 
     imageIdInPortName    = "/";
     imageIdInPortName   += getName(
-                           rf.check("portImageIdIn",
+                           rf.check("imageIdInPort",
 				           Value("/imageId:i"),
 				           "Input image id port (string)").asString()
                            );
 
     imageOutPortName     = "/";
     imageOutPortName    += getName(
-                           rf.check("portImageOut",
+                           rf.check("imageOutPort",
 				           Value("/image:o"),
 				           "Output image port (string)").asString()
                            );
 
     imageIdOutPortName   = "/";
     imageIdOutPortName  += getName(
-                           rf.check("portImageIdOut",
+                           rf.check("imageIdOutPort",
 				           Value("/imageId:o"),
 				           "Output image id port (string)").asString()
                            );
 
     imageIdPrevOutPortName = "/";
     imageIdPrevOutPortName+= getName(
-                           rf.check("portImageIdPrevOut",
+                           rf.check("imageIdPrevOutPort",
 				           Value("/imageIdPrev:o"),
 				           "Output previous image id port (string)").asString()
                            );
@@ -220,7 +220,7 @@ bool EpisodicMemory::configure(yarp::os::ResourceFinder &rf)
                            );
 
     databaseName         = rf.check("database",
-					       Value("defaultDatabase"),
+					       Value("episodicDatabase"),
 					       "Database name (string)").asString().c_str();
 
     path                 = rf.check("path",
