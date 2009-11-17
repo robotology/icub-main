@@ -1,3 +1,4 @@
+# ask Francesco Rea if you have troubles.
 SET(VERBOSE OFF)
 
 IF(VERBOSE)
