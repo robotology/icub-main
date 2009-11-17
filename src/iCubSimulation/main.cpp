@@ -286,7 +286,7 @@ public:
 
     bool respond (const Bottle &command, Bottle &reply) {
        //fprintf(stderr, "Reading from world port...\n");
-		glDisable(GL_CULL_FACE);
+		//glDisable(GL_CULL_FACE);
         ConstString cmd = command.get(0).asString();
         bool ok = true;
         bool done = false;
