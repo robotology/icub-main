@@ -60,8 +60,8 @@ void iCub::contrib::primateVision::AttnServer::run(){
   int    allow_mot       = prop.findGroup("ATTN").find("MOTION").asInt();
   bool    use_ior        = (bool) prop.findGroup("ATTN").find("IOR").asInt();
   bool    use_tsb        = (bool) prop.findGroup("ATTN").find("TSB").asInt();
-
-
+  yarp::os::ConstString temp_port    = prop.findGroup("ATTN").find("INPORT").asString();
+  QString in_port =  temp_port.c_str();
 
   QString in_source;
   if (input==0){in_source="l";}
@@ -122,10 +122,6 @@ void iCub::contrib::primateVision::AttnServer::run(){
 
 
 
-
-
-
-
   // OUTPUT PORTS:
   BufferedPort<Bottle> outPort_s;
   outPort_s.open("/attnserver_"+in_source+"/output/serv_params");
@@ -138,8 +134,8 @@ void iCub::contrib::primateVision::AttnServer::run(){
   //Motion request port:
   Port outPort_mot;
   outPort_mot.open("/attnserver_"+in_source+"/output/mot");
-  Network::connect("/attnserver_"+in_source+"/output/mot", "/recserver/input/motion");
-  Network::connect("/recserver/input/motion", "/attnserver_"+in_source+"/output/mot");
+  Network::connect("/attnserver_"+in_source+"/output/mot", in_port+"/input/motion");
+  Network::connect(in_port+"/input/motion", "/attnserver_"+in_source+"/output/mot");
   BinPortable<RecMotionRequest> motion_request;
 
   //initalise:
