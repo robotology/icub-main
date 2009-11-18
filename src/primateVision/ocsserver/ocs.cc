@@ -69,6 +69,9 @@ void iCub::contrib::primateVision::OCSServer::run(){
   int ncsscale = prop.findGroup("CENTSUR").find("NCSSCALE").asInt();
   double sigma = prop.findGroup("CENTSUR").find("SIGMA").asDouble();
 
+  yarp::os::ConstString temp_port    = prop.findGroup("OCS").find("INPORT").asString();
+  QString in_port =  temp_port.c_str();
+
   printf("%d orientations, %d scales (%d feature maps). \n",norient,nscale,nscale*norient);
   printf("%d centsur scales for each feature map. \n",ncsscale);
   printf("Symmetry Polarity:%d \n",polarity);
@@ -80,6 +83,8 @@ void iCub::contrib::primateVision::OCSServer::run(){
   Ipp8u* rec_im_y;
 
 
+cout << temp_port.c_str() << endl;
+
 #ifdef FILE
   QImage*im = new QImage("ad_g.jpg","JPEG");
   srcsize.width = im->width();
@@ -89,8 +94,8 @@ void iCub::contrib::primateVision::OCSServer::run(){
   //IN PORTS:
   Port inPort_s;
   inPort_s.open("/ocsserver_"+QString::number(servernum)+"/input/serv_params");     // Give it a name on the network.
-  Network::connect("/ocsserver_"+QString::number(servernum)+"/input/serv_params", "/recserver/output/serv_params");
-  Network::connect("/recserver/output/serv_params", "/ocsserver_"+QString::number(servernum)+"/input/serv_params");
+  Network::connect("/ocsserver_"+QString::number(servernum)+"/input/serv_params", in_port + "/output/serv_params");
+  Network::connect(in_port + "/output/serv_params", "/ocsserver_"+QString::number(servernum)+"/input/serv_params");
   BinPortable<RecServerParams> response; 
   Bottle empty;
   inPort_s.write(empty,response);
@@ -251,11 +256,11 @@ void iCub::contrib::primateVision::OCSServer::run(){
   BufferedPort<Bottle> inPort_y;
   if (input==0){
     inPort_y.open("/ocsserver_"+QString::number(servernum)+"/input/rec_ly");     // Give it a name on the network.
-    Network::connect("/recserver/output/left_ye" , "/ocsserver_"+QString::number(servernum)+"/input/rec_ly");
+    Network::connect(in_port + "/output/left_ye" , "/ocsserver_"+QString::number(servernum)+"/input/rec_ly");
   }
   else{
     inPort_y.open("/ocsserver_"+QString::number(servernum)+"/input/rec_ry");     // Give it a name on the network.
-    Network::connect("/recserver/output/right_ye" , "/ocsserver_"+QString::number(servernum)+"/input/rec_ry");
+    Network::connect(in_port + "/output/right_ye" , "/ocsserver_"+QString::number(servernum)+"/input/rec_ry");
   }
   Bottle *inBot_y;
 #endif
