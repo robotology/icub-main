@@ -44,7 +44,8 @@ void iCub::contrib::primateVision::IORServer::run(){
   int    g_height     = prop.findGroup("IOR").find("G_HEIGHT").asInt();
   double g_sigma      = prop.findGroup("IOR").find("G_SIGMA").asDouble();
   double decay        = prop.findGroup("IOR").find("DECAY").asDouble();
-
+  yarp::os::ConstString temp_port    = prop.findGroup("IOR").find("INPORT").asString();
+  QString in_port =  temp_port.c_str();
 
   QString in_source,rec_name;
   if (input==0){in_source="l";rec_name="left";}
@@ -60,8 +61,8 @@ void iCub::contrib::primateVision::IORServer::run(){
   //rec server (for mos_width/mos_height/width/height/psb_in)
   Port inPort_r;
   inPort_r.open("/iorserver_"+in_source+"/input/r_serv_params");     // Give it a name on the network.
-  Network::connect("/iorserver_"+in_source+"/input/r_serv_params", "/recserver/output/serv_params");
-  Network::connect("/recserver/output/serv_params", "/iorserver_"+in_source+"/input/r_serv_params");
+  Network::connect("/iorserver_"+in_source+"/input/r_serv_params", in_port + "/output/serv_params");
+  Network::connect( in_port + "/output/serv_params", "/iorserver_"+in_source+"/input/r_serv_params");
   BinPortable<RecServerParams> rserver_response; 
   Bottle rempty;
   inPort_r.write(rempty,rserver_response);
@@ -114,7 +115,7 @@ void iCub::contrib::primateVision::IORServer::run(){
   else{
       //just connect to recserver:
       inPort_p.open("/iorserver_"+in_source+"/input/rec_params");     // Give it a name on the network.
-      Network::connect("/recserver/output/rec_params", "/iorserver_"+in_source+"/input/rec_params");
+      Network::connect(in_port + "/output/rec_params", "/iorserver_"+in_source+"/input/rec_params");
   }
 
 
