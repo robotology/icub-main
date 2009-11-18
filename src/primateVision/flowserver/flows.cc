@@ -45,6 +45,9 @@ void iCub::contrib::primateVision::FlowServer::run(){
   int flow_scale       = prop.findGroup("FLOWS").find("FLOW_SCALE").asInt();
   int bland_dog_thresh = prop.findGroup("FLOWS").find("BLAND_DOG_THRESH").asInt();
   int input            = prop.findGroup("FLOWS").find("INPUT").asInt();
+  yarp::os::ConstString temp_port    = prop.findGroup("FLOWS").find("INPORT").asString();
+  QString in_port =  temp_port.c_str();
+
 
   QString in_source,rec_name;
   if (input==0){in_source="l";rec_name="left";}
@@ -54,8 +57,8 @@ void iCub::contrib::primateVision::FlowServer::run(){
   //IN PORTS:
   Port inPort_s;
   inPort_s.open("/flowserver_"+in_source+"/input/serv_params");     // Give it a name on the network.
-  Network::connect("/flowserver_"+in_source+"/input/serv_params", "/recserver/output/serv_params");
-  Network::connect("/recserver/output/serv_params", "/flowserver_"+in_source+"/input/serv_params");
+  Network::connect("/flowserver_"+in_source+"/input/serv_params", in_port + "/output/serv_params");
+  Network::connect( in_port + "/output/serv_params", "/flowserver_"+in_source+"/input/serv_params");
   BinPortable<RecServerParams> response; 
   Bottle empty;
   inPort_s.write(empty,response);
@@ -72,7 +75,7 @@ void iCub::contrib::primateVision::FlowServer::run(){
 
   BufferedPort<Bottle> inPort_y;      // Create a port
   inPort_y.open("/flowserver_"+in_source+"/input/rec_y");     // Give it a name on the network.
-  Network::connect("/recserver/output/"+rec_name+"_ye" , "/flowserver_"+in_source+"/input/rec_y");
+  Network::connect(in_port + "/output/"+rec_name+"_ye" , "/flowserver_"+in_source+"/input/rec_y");
   Bottle *inBot_y;
   Ipp8u* rec_im_y;
 
