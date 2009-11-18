@@ -67,9 +67,8 @@ void iCub::contrib::primateVision::AttnServer_Stereo::run(){
   xisize.height          = prop.findGroup("ATTN").find("XI_HEIGHT").asInt();
   xtsize.width           = prop.findGroup("ATTN").find("XT_WIDTH").asInt();
   xtsize.height          = prop.findGroup("ATTN").find("XT_HEIGHT").asInt();
-
-
-
+  yarp::os::ConstString temp_port    = prop.findGroup("ATTN").find("INPORT").asString();
+  QString in_port =  temp_port.c_str();
 
   //IN PORTS:
   //reused server check port:
@@ -171,22 +170,22 @@ void iCub::contrib::primateVision::AttnServer_Stereo::run(){
 
   //Original ims for XCHECK:
   //REC:
-  Network::connect("/attnserver_st/input/serv_params", "/recserver/output/serv_params");
-  Network::connect("/recserver/output/serv_params", "/attnserver_st/input/serv_params");
+  Network::connect("/attnserver_st/input/serv_params", in_port+"/output/serv_params");
+  Network::connect(in_port+"/output/serv_params", "/attnserver_st/input/serv_params");
   BinPortable<RecServerParams> r_server_response; 
   inPort_s.write(empty,r_server_response);
   RecServerParams rsp = r_server_response.content();
   std::cout << "RecServer Probe Response: " << rsp.toString() << std::endl;
-  Network::disconnect("/attnserver_st/input/serv_params", "/recserver/output/serv_params");
-  Network::disconnect("/recserver/output/serv_params", "/attnserver_st/input/serv_params");
+  Network::disconnect("/attnserver_st/input/serv_params", in_port+"/output/serv_params");
+  Network::disconnect(in_port+"/output/serv_params", "/attnserver_st/input/serv_params");
   BufferedPort<Bottle> inPort_rec_l;
   inPort_rec_l.open("/attnserver_st/input/rec_l");
-  Network::connect("/attnserver_st/input/rec_l", "/recserver/output/left_ye");
-  Network::connect("/recserver/output/left_ye", "/attnserver_st/input/rec_l");
+  Network::connect("/attnserver_st/input/rec_l", in_port+"/output/left_ye");
+  Network::connect(in_port+"/output/left_ye", "/attnserver_st/input/rec_l");
   BufferedPort<Bottle> inPort_rec_r;
   inPort_rec_r.open("/attnserver_st/input/rec_r");
-  Network::connect("/attnserver_st/input/rec_r", "/recserver/output/right_ye");
-  Network::connect("/recserver/output/right_ye", "/attnserver_st/input/rec_r");
+  Network::connect("/attnserver_st/input/rec_r", in_port+"/output/right_ye");
+  Network::connect(in_port+"/output/right_ye", "/attnserver_st/input/rec_r");
 
 
 
@@ -214,8 +213,8 @@ void iCub::contrib::primateVision::AttnServer_Stereo::run(){
   //Motion request port:
   Port outPort_mot;
   outPort_mot.open("/attnserver_st/output/mot");
-  Network::connect("/attnserver_st/output/mot", "/recserver/input/motion");
-  Network::connect("/recserver/input/motion", "/attnserver_st/output/mot");
+  Network::connect("/attnserver_st/output/mot", in_port+"/input/motion");
+  Network::connect(in_port+"/input/motion", "/attnserver_st/output/mot");
   BinPortable<RecMotionRequest> motion_request;
 
 
