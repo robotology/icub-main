@@ -93,7 +93,7 @@ void iCub::contrib::primateVision::ZDFServer::run(){
   int nclasses         = 2; //zd, not_zd
 
 
-  cout <<  "HERE " << temp_port.c_str() << endl;
+ // cout <<  "HERE " << temp_port.c_str() << endl;
   //PROBE RECSERVER:
   Port inPort_s;
   inPort_s.open("/zdfserver/input/serv_params");     
