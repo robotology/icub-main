@@ -107,19 +107,24 @@ public:
 
     // open a datafile
     void open(std::string filename) {
-        this->setFilename(filename);
+        // close previous file
+        if(this->file.is_open()) {
+            this->file.close();
+        }
 
         this->file.open(filename.c_str());
-        if(!file.is_open()) {
+        if(!file.is_open() || file.fail()) {
             std::string msg("could not open file '" + filename + "'");
+            this->setFilename("");
             throw std::runtime_error(msg);
             return; // will not be reached anyways...
         }
+        this->setFilename(filename);
         this->reset();
     }
 
     bool hasNextSample() {
-        return !this->file.eof();
+        return !this->file.eof() && this->file.good();
     }
 
     void reset() {
@@ -273,11 +278,8 @@ public:
 
         // check for filename of the dataset
         if(opt.check("datafile", val)) {
-            this->dataset.setFilename(val->asString().c_str());
-        } else {
-            // default choice
-            this->dataset.setFilename("dataset.dat");
-            // add message here if necessary (since it is obligatory)
+            //this->dataset.setFilename(val->asString().c_str());
+            this->dataset.open(val->asString().c_str());
         }
 
         // check for the columns of the dataset that should be used for inputs
@@ -323,8 +325,6 @@ public:
 
         this->printConfig();
 
-        this->dataset.open();
-
         this->attachTerminal();
 
         return true;
@@ -366,6 +366,12 @@ public:
                     reply.addString("  open fname            Opens a datafile");
                     reply.addString("  freq f                Sampling frequency in Hertz (0 for disabled)");
                     break;
+                case VOCAB4('c','o','n','f'): // print the configuration
+                    {
+                    success = true;
+                    this->printConfig();
+                    break;
+                    }
 
                 case VOCAB4('s','k','i','p'): // skip some training sample(s)
                     {
@@ -453,6 +459,7 @@ public:
                 case VOCAB4('o','p','e','n'):
                     success = true;
                     if(cmd.get(1).isString()) {
+                    	std::cout << "Open..." << std::endl;
                         this->dataset.open(cmd.get(1).asString().c_str());
                     }
                     reply.addString((std::string("Opened dataset: ") + cmd.get(1).asString().c_str()).c_str());
