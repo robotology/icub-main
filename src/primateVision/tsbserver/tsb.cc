@@ -39,7 +39,8 @@ void iCub::contrib::primateVision::TSBServer::run(){
 
   int input        = prop.findGroup("TSB").find("INPUT").asInt();
   double sigma_tsb = prop.findGroup("TSB").find("TSB_SIGMA").asDouble();
-  
+  yarp::os::ConstString temp_port    = prop.findGroup("TSB").find("INPORT").asString();
+  QString in_port =  temp_port.c_str();
 
   QString in_source,rec_name;
   if (input==0){in_source="l";rec_name="left";}
@@ -49,8 +50,8 @@ void iCub::contrib::primateVision::TSBServer::run(){
   //IN PORTS:
   Port inPort_s;
   inPort_s.open("/tsbserver_"+in_source+"/input/serv_params");     // Give it a name on the network.
-  Network::connect("/tsbserver_"+in_source+"/input/serv_params", "/recserver/output/serv_params");
-  Network::connect("/recserver/output/serv_params", "/tsbserver_"+in_source+"/input/serv_params");
+  Network::connect("/tsbserver_"+in_source+"/input/serv_params", in_port + "/output/serv_params");
+  Network::connect(in_port + "/output/serv_params", "/tsbserver_"+in_source+"/input/serv_params");
   BinPortable<RecServerParams> response; 
   Bottle empty;
   inPort_s.write(empty,response);
@@ -66,7 +67,7 @@ void iCub::contrib::primateVision::TSBServer::run(){
 
   BufferedPort<BinPortable<RecResultParams> > inPort_p;
   inPort_p.open("/tsbserver_"+in_source+"/input/rec_params");     // Give it a name on the network.
-  Network::connect("/recserver/output/rec_params", "/tsbserver_"+in_source+"/input/rec_params");
+  Network::connect(in_port + "/output/rec_params", "/tsbserver_"+in_source+"/input/rec_params");
   BinPortable<RecResultParams> *rec_res; 
 
 
