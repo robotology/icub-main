@@ -17,7 +17,7 @@ echo "See $DEPFILE for list of library dependencies." >> versionFile
 cp ./admin/scripts/current_dependencies.txt $MODULE/$DEPFILE
 
 echo "Preparing tar file"
-tar cvfz ../$ARCHFILE $MODULE
+gzip ../$ARCHFILE $MODULE
 
 echo "Cleaning tmp dir"
 cd ..
