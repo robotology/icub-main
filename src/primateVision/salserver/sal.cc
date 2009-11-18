@@ -58,7 +58,6 @@ void iCub::contrib::primateVision::SalServer::run(){
   bool input_cor = (bool) prop.findGroup("SAL").find("INPUT_COR").asInt();
   bool input_sym = (bool) prop.findGroup("SAL").find("INPUT_SYM").asInt();
 
-
   IppiSize srcsize;
   srcsize.width = 0;
   srcsize.height = 0;
