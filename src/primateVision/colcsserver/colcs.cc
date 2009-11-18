@@ -44,6 +44,9 @@ void iCub::contrib::primateVision::ColCSServer::run(){
   prop.fromConfigFile(cfg->c_str());
   int ncsscale = prop.findGroup("COLCS").find("NCSSCALE").asInt();
   int input    = prop.findGroup("COLCS").find("INPUT").asInt();
+  yarp::os::ConstString temp_port    = prop.findGroup("COLCS").find("INPORT").asString();
+  QString in_port =  temp_port.c_str();
+
 
   QString in_source,rec_name;
   if (input==0){in_source="l";rec_name="left";}
@@ -52,8 +55,8 @@ void iCub::contrib::primateVision::ColCSServer::run(){
   //IN PORTS:
   Port inPort_s;
   inPort_s.open("/colcsserver_"+in_source+"/input/serv_params");     // Give it a name on the network.
-  Network::connect("/colcsserver_"+in_source+"/input/serv_params", "/recserver/output/serv_params");
-  Network::connect("/recserver/output/serv_params", "/colcsserver_"+in_source+"/input/serv_params");
+  Network::connect("/colcsserver_"+in_source+"/input/serv_params", in_port + "/output/serv_params");
+  Network::connect(in_port + "/output/serv_params", "/colcsserver_"+in_source+"/input/serv_params");
   BinPortable<RecServerParams> response; 
   Bottle empty;
   inPort_s.write(empty,response);
@@ -67,13 +70,13 @@ void iCub::contrib::primateVision::ColCSServer::run(){
 
   BufferedPort<Bottle> inPort_u;      // Create a port
   inPort_u.open("/colcsserver_"+in_source+"/input/rec_u");     // Give it a name on the network.
-  Network::connect("/recserver/output/"+rec_name+"_ue" , "/colcsserver_"+in_source+"/input/rec_u");
+  Network::connect(in_port + "/output/"+rec_name+"_ue" , "/colcsserver_"+in_source+"/input/rec_u");
   Bottle *inBot_u;
   Ipp8u* rec_im_u;
 
   BufferedPort<Bottle> inPort_v;      // Create a port
   inPort_v.open("/colcsserver_"+in_source+"/input/rec_v");     // Give it a name on the network.
-  Network::connect("/recserver/output/"+rec_name+"_ve" , "/colcsserver_"+in_source+"/input/rec_v");
+  Network::connect(in_port + "/output/"+rec_name+"_ve" , "/colcsserver_"+in_source+"/input/rec_v");
   Bottle *inBot_v;
   Ipp8u* rec_im_v;
 
