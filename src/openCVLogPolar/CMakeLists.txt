@@ -1,4 +1,4 @@
-SET(KEYWORD "logPolarModule")
+SET(KEYWORD "openCVLogPolar")
 
 PROJECT(${KEYWORD})
 
