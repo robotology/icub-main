@@ -30,7 +30,7 @@ namespace vislab {
 namespace control {
 
 HandCtrl::HandCtrl() :
-	HandModule("AbstractHandCtrl") {
+	HandModule("abstractHandCtrl") {
 }
 
 HandCtrl::~HandCtrl() {
