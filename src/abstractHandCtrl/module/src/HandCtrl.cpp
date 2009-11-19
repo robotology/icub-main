@@ -242,19 +242,6 @@ void HandCtrl::WorkerThread::run() {
 	}
 }
 
-
-// TOP
-//		double TOP_OFFSET[3] = { -0.03, -0.05, 0.14 };
-//		Vector v1(hand7D.size()), v2(hand7D.size());
-//
-//		for (int i = 0; i < 3; i++) {
-//			v1[i] += HandCtrlConstants["top"]["orientation"][i];
-//			v2[i] = hand7D[i] + TOP_OFFSET[i];
-//		}
-//		for (int i = 3; i < v2.size(); i++) {
-//			v1[i] = v2[i] = HandCtrlConstants["top"]["orientation"][i];
-//		}
-
 bool HandCtrl::updateModule() {
 	return HandModule::updateModule();
 }
