@@ -205,6 +205,15 @@ ENDIF (ARTOOLKITPLUS_FOUND)
   ADD_SUBDIRECTORY(iKinArmCtrlIF)
   ADD_SUBDIRECTORY(affActionPrimitives)
 
+  if(LIBVISLAB_FOUND)
+    add_subdirectory(abstractHandCtrl)
+
+    find_package(IKIN QUIET)
+    if(IKIN_FOUND)
+      add_subdirectory(eye2world)
+    endif(IKIN_FOUND)
+  endif(LIBVISLAB_FOUND)
+
   # add here modules you want to test for compilation
   # these modules will only be compiled by automated
   # compilation scripts
