@@ -14,24 +14,30 @@
 # Inc., 59 Temple Place, Suite 330, Boston, MA 02111-1307 USA
 ################################################################################
 
+if(${CMAKE_MAJOR_VERSION}.${CMAKE_MINOR_VERSION} LESS 2.6)
 
-include(findLibrary)
-include(mergeFindResults)
+  message(STATUS "-- FindLIBVISLAB requires CMake >=2.6")
 
-if(NOT LIBVISLAB_FOUND)
+else(${CMAKE_MAJOR_VERSION}.${CMAKE_MINOR_VERSION} LESS 2.6)
 
-  if($ENV{LIBVISLAB_DIR})
-    file(TO_CMAKE_PATH $ENV{LIBVISLAB_DIR} HINTS)
-  endif($ENV{LIBVISLAB_DIR})
+  include(findLibrary)
+  include(mergeFindResults)
 
-  findLibrary(vislab "vislab/util/all.h")
-  findLibrary(vislab_YARP "vislab/yarp/util/all.h")
+  if(NOT LIBVISLAB_FOUND)
 
-  mergeFindResults(LIBVISLAB vislab_YARP vislab)
+    if($ENV{LIBVISLAB_DIR})
+      file(TO_CMAKE_PATH $ENV{LIBVISLAB_DIR} HINTS)
+    endif($ENV{LIBVISLAB_DIR})
 
-  if(LIBVISLAB_FOUND)
-    message(STATUS "FindLIBVISLAB found: ${LIBVISLAB_LIBRARIES}")
-  endif(LIBVISLAB_FOUND)
+    findLibrary(vislab "vislab/util/all.h")
+    findLibrary(vislab_YARP "vislab/yarp/util/all.h")
 
-endif(NOT LIBVISLAB_FOUND)
+    mergeFindResults(LIBVISLAB vislab_YARP vislab)
 
+    if(LIBVISLAB_FOUND)
+      message(STATUS "FindLIBVISLAB found: ${LIBVISLAB_LIBRARIES}")
+    endif(LIBVISLAB_FOUND)
+
+  endif(NOT LIBVISLAB_FOUND)
+
+endif(${CMAKE_MAJOR_VERSION}.${CMAKE_MINOR_VERSION} LESS 2.6)
