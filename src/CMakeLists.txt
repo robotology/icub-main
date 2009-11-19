@@ -25,10 +25,10 @@ IF (NOT ODE_FOUND)
    MESSAGE(STATUS "Skipping modules using ODE (Open Dynamics Engine)")
 ENDIF (NOT ODE_FOUND)
 
-find_package(LIBVISLAB QUIET)
-IF (NOT LIBVISLAB_FOUND)
-   MESSAGE(STATUS "Skipping modules using OpenVislab (http://OpenVislab.sf.net) libraries")
-ENDIF (NOT LIBVISLAB_FOUND)
+#find_package(LIBVISLAB QUIET)
+#IF (NOT LIBVISLAB_FOUND)
+#   MESSAGE(STATUS "Skipping modules using OpenVislab (http://OpenVislab.sf.net) libraries")
+#ENDIF (NOT LIBVISLAB_FOUND)
 
 FIND_PACKAGE(SDL QUIET)
 
