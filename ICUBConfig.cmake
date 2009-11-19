@@ -60,6 +60,7 @@ SET(BML_DIR "${ICUB_DIR}/src/boltzmannMachineLibrary/bml")
 SET(CTRLLIB_DIR "${ICUB_DIR}/src/ctrlLib")
 SET(IKIN_DIR "${ICUB_DIR}/src/iKin")
 SET(AFFACTIONPRIMITIVES_DIR "${ICUB_DIR}/src/affActionPrimitives")
+set(LIBHANDCTRL_DIR "${ICUB_DIR}/src/abstractHandCtrl/lib")
 
 SET(icubmod_DIR "${ICUB_DIR}")
 SET(ICUBDEV_DIR "${ICUB_DIR}/src/iCubDev")
