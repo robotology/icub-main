@@ -1507,7 +1507,7 @@ void log_polar_transform  (DVimage *input_image, DVimage *output_image, int dire
    
    if (input_image != NULL && output_image != NULL) { 
 	   
-      overlap = 0.5;//1.00;
+      //overlap = 0.5;//1.00;
 
 	  input_image->get_size(&width_in,&height_in);
 	  depth_in = input_image->get_image_mode();
