@@ -175,7 +175,7 @@ void Eye2world::WorkerThread::run() {
 		eyes[key] = chain;
 		(*chain)[6].setMax(35 * M_PI / 180.0);
 
-		projections[key] = new Projection(cam, tabletopPosition);
+		projections[key] = new Projection(cam, &tabletopPosition);
 	}
 
 	while (!isStopping()) {

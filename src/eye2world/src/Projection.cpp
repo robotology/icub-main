@@ -20,7 +20,7 @@ namespace vislab {
 namespace math {
 
 
-Projection::Projection(const CameraCalibration& c, const Vector& offset) {
+Projection::Projection(const CameraCalibration& c, const Vector* offset) {
 	this->offset = offset;
 	cameraCalibration = c;
 	heightOffset = 0.0;
