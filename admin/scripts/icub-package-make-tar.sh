@@ -14,7 +14,7 @@ echo "iCub snapshot version $REL" > versionFile
 echo "Built on `date`" >> versionFile
 echo "See $DEPFILE for list of library dependencies." >> versionFile
 
-cp ./admin/scripts/current_dependencies.txt $MODULE/$DEPFILE
+cp ../admin/scripts/current_dependencies.txt $MODULE/$DEPFILE
 
 echo "Preparing tar file"
 tar cvfz ../$ARCHFILE $MODULE
