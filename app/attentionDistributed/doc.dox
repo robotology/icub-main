@@ -70,7 +70,7 @@ the local ./conf folder.
 Customize and run ./scripts/appConfig-visual.xml.template
 \endcode
 
-\author Lorenzo Natale
+\author Jonas Ruesch 
 
 Copyright (C) 2008 RobotCub Consortium
 
