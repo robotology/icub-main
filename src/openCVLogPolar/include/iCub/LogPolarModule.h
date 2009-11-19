@@ -31,16 +31,13 @@ using namespace yarp::sig::draw;
 /**
 *
 @ingroup icub_module
-\defgroup icub_yourModule yourModule
+\defgroup icub_openCVLogPolar openCVLogPolar
 
-Module that extracts the log polar image of an input image.
-The module is able to produce a fake output image composed of coloured circles
+This module is a wrapper of the opencv logpolar transform; it extracts the log polar image 
+from an input image.
+It can produce a fake output image composed of coloured circles
 
 \section intro_sec Description
-This module is not implemented, it is only a template for writing
-the documentation of modules.
-
-Place here a description of your module. You might want to use a list as in:
 
 The module does:
 -	creates a logpolar image starting from the input image
