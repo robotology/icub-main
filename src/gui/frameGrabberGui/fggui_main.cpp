@@ -12,23 +12,11 @@
  * \defgroup icub_framegrabbergui frameGrabberGui
  *
  * A graphical interface to set gain, shutter, brightness and color balance on a remote framegrabber.
- * Run without options to see help on usage.
+ * Run without options to see help on usage. Note: this module is now obsolete have a look at
+ * \see icub_framegrabbergui2 instead.
  *
  * The frameGrabberGui module opens one port connected to a RemoteFrameGrabber control port.
  * The name of the local and remote ports are provided as command arguments.
- *
- * \dot
- * digraph module_framegrabbergui_example {
- *     graph [ rankdir = "LR" ];
- *     edge [arrowhead="open", style="solid"];
- *     node [shape=ellipse];
- *     subgraph cluster_framegrabbergui {
- *      color = "black"; style = "solid";
- *      label = "frameGrabberGui module";
- *       "/fggui/right";
- *     }
- *     "/fggui/right" -> "/icub/cam/right"
- * \enddot
  *
  * Usage:\n
  * frameGrabberGui --local <localportname> --remote <grabberport> [--width <gui_width>] [--height <gui_height>] [--x <gui_x_pos>] [--y <gui_y_pos>]

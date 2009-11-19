@@ -1,15 +1,9 @@
 // -*- mode:C++; tab-width:4; c-basic-offset:4; indent-tabs-mode:nil -*-
 
-/*
- * Copyright (C) 2007 Alessandro Scalzo
- * CopyPolicy: Released under the terms of the GNU GPL v2.0.
- *
- */
-
 /**
  * @ingroup icub_module
  *
- * \defgroup icub_framegrabbergui frameGrabberGui
+ * \defgroup icub_framegrabbergui2 frameGrabberGui2
  *
  * A graphical interface to set gain, shutter, brightness and color balance on a remote framegrabber.
  * Run without options to see help on usage.
@@ -17,25 +11,17 @@
  * The frameGrabberGui module opens one port connected to a RemoteFrameGrabber control port.
  * The name of the local and remote ports are provided as command arguments.
  *
- * \dot
- * digraph module_framegrabbergui_example {
- *     graph [ rankdir = "LR" ];
- *     edge [arrowhead="open", style="solid"];
- *     node [shape=ellipse];
- *     subgraph cluster_framegrabbergui {
- *      color = "black"; style = "solid";
- *      label = "frameGrabberGui module";
- *       "/fggui/right";
- *     }
- *     "/fggui/right" -> "/icub/cam/right"
- * \enddot
  *
  * Usage:\n
- * frameGrabberGui --local <localportname> --remote <grabberport> [--width <gui_width>] [--height <gui_height>] [--x <gui_x_pos>] [--y <gui_y_pos>]
+ * frameGrabberGui2 --local <localportname> --remote <grabberport> [--width <gui_width>] [--height <gui_height>] [--x <gui_x_pos>] [--y <gui_y_pos>]
  * 
  * \see yarp::dev::RemoteFrameGrabber, FrameGrabberGUIControl
  *
  * \author Alessandro Scalzo
+ * 
+ * Copyright (C) 2008 RobotCub Consortium
+ *
+ * CopyPolicy: Released under the terms of the GNU GPL v2.0.
  *
  */
 
