@@ -13,7 +13,7 @@ iCub::contrib::primateVision::RecHandleMotionRequest::RecHandleMotionRequest(int
  k_vel_vers  = prop.findGroup("RECMOT").find("KVEL_VERS").asDouble();
  k_vel_tilt  = prop.findGroup("RECMOT").find("KVEL_TILT").asDouble();
  k_vel_roll  = prop.findGroup("RECMOT").find("KVEL_ROLL").asDouble();
- k_vel_pitch = prop.findGroup("RECMOT").find("KVEL_IPP_PITCH").asDouble();
+ k_vel_pitch = prop.findGroup("RECMOT").find("KVEL_PITCH").asDouble();
  k_vel_yaw   = prop.findGroup("RECMOT").find("KVEL_YAW").asDouble();
  vor_on      = (bool) prop.findGroup("VOR").find("VOR_ON").asInt();
  vor_k_rol   = prop.findGroup("RECMOT").find("K_ROL").asDouble();
@@ -74,8 +74,8 @@ void iCub::contrib::primateVision::RecHandleMotionRequest::run(){
 	angles[1] = rmq->content().deg_r;                
 	angles[2] = rmq->content().deg_y;                
 	angles[3] = -rmq->content().pix_y*pix2degy;      
-	angles[4] = (rmq->content().pix_xl+rmq->content().pix_xr)*pix2degx/2.0;
-	angles[5] = (rmq->content().pix_xl-rmq->content().pix_xr)*pix2degx/2.0;
+	angles[4] = (rmq->content().pix_xl+rmq->content().pix_xr)*pix2degx; // had /2
+	angles[5] = (rmq->content().pix_xl-rmq->content().pix_xr)*pix2degx; // had /2
 	//printf("RecServer: Motion command received: (%d,%d,%d)\n",
 	//rmq->content().pix_xl,rmq->content().pix_xr,rmq->content().pix_y);
 	//printf("RecServer: Motion command forwarded: (%f,%f,%f)\n",angles[3],angles[4],angles[5]);

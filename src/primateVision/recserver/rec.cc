@@ -58,6 +58,7 @@ void iCub::contrib::primateVision::RecServer::run()
   int height      = prop.findGroup("REC").find("HEIGHT").asInt();
   bool motion     = (bool) prop.findGroup("REC").find("MOTION").asInt();
   bool realOrSim  = (bool) prop.findGroup("REC").find("REAL0_SIM1").asInt();
+  bool clear      = (bool) prop.findGroup("REC").find("CLEAR").asInt();
   double baseline = prop.findGroup("REC").find("BASELINE").asDouble();
 
   bool do_bar_l = true;
@@ -122,8 +123,8 @@ void iCub::contrib::primateVision::RecServer::run()
   desired_angles[3] = 0.0;
   desired_angles[4] = 0.1; //vergence, initalise non-zero to pass update check.
   desired_angles[5] = 0.0; //version
-  double t_deg,l_deg,r_deg,vergence_deg,version_deg;
-  double old_t_deg=0.0,old_l_deg=0.0,old_r_deg=0.0;
+  double t_deg,l_deg,r_deg,vergence_deg,version_deg, roll_deg,pitch_deg,yaw_deg;
+  double old_t_deg=0.0,old_l_deg=0.0,old_r_deg=0.0, old_roll_deg=0.0;
   bool do_l,do_r;
 
   //to read inertial port:
@@ -238,8 +239,8 @@ void iCub::contrib::primateVision::RecServer::run()
 
 
   //PROCESSING CLASSES:
-  Rectify *rl = new Rectify((char*)crfl.c_str(),srcsize, 0.0); 
-  Rectify *rr = new Rectify((char*)crfr.c_str(),srcsize, toff_r); 
+  Rectify *rl = new Rectify(clear,(char*)crfl.c_str(),srcsize, 0.0   ); 
+  Rectify *rr = new Rectify(clear,(char*)crfr.c_str(),srcsize, toff_r); 
   int focus = (rl->get_focus() + rr->get_focus())/2;
   //Image conversion classes:
   Convert_RGB *c_rgb2yuv_l = new Convert_RGB(srcsize);
@@ -317,15 +318,17 @@ void iCub::contrib::primateVision::RecServer::run()
 	vec_enc[i] = vec_enc_tmp[i];
       }
     }    
-
-
  
     vergence_deg = vec_enc[4];
     version_deg  = vec_enc[5];
     t_deg = -vec_enc[3];
-    l_deg = -(version_deg + vergence_deg);
-    r_deg = (version_deg - vergence_deg);
-
+	pitch_deg = -vec_enc[0];
+	roll_deg = -vec_enc[1];
+	yaw_deg = -vec_enc[2];
+    l_deg = -(version_deg + vergence_deg)/2.0;
+    r_deg = (version_deg - vergence_deg)/2.0;
+	
+	//cout <<  vergence_deg << " " << version_deg << " " << t_deg << " " << l_deg << " " << r_deg << endl;
     
     //send rec params (leave here for TSBServer!):
     rec_res_params.lx = rl->get_ix();
@@ -336,9 +339,9 @@ void iCub::contrib::primateVision::RecServer::run()
     rec_res_params.deg_rx = r_deg;
     rec_res_params.deg_ly = t_deg;
     rec_res_params.deg_ry = t_deg + toff_r;
-    rec_res_params.head_r = -vec_enc[1];
-    rec_res_params.head_p = -vec_enc[0];
-    rec_res_params.head_y = -vec_enc[2];
+    rec_res_params.head_r = roll_deg;
+    rec_res_params.head_p = pitch_deg;
+    rec_res_params.head_y = yaw_deg;
     //3D target pos:
     rec_res_params.gaze3D_x = ((baseline/2.0)*(tan(IPP_PI/2.0-r_deg*IPP_PI/180.0)-tan(IPP_PI/2.0+l_deg*IPP_PI/180.0)))/(tan(IPP_PI/2.0-r_deg*IPP_PI/180.0)+tan(IPP_PI/2.0+l_deg*IPP_PI/180.0));
     z_ = tan(IPP_PI/2.0-r_deg*IPP_PI/180.0)*(baseline/2.0-rec_res_params.gaze3D_x);
@@ -359,13 +362,14 @@ void iCub::contrib::primateVision::RecServer::run()
 
       //see if geometry has changed:
       do_l = true;
-      if (t_deg == old_t_deg && l_deg == old_l_deg){do_l = false;}
+      if (t_deg+pitch_deg == old_t_deg && l_deg+yaw_deg == old_l_deg && roll_deg==old_roll_deg){do_l = false;}
       //calc rec params if necessary:
       if (do_l){
-	rl->proc(t_deg, l_deg); 
+		rl->proc(t_deg+pitch_deg, l_deg-yaw_deg, roll_deg); 
       }
       old_l_deg = l_deg;
       old_t_deg = t_deg;
+      old_roll_deg = roll_deg;
       
       if (scale==1.0){
 	//L: convert directly to RGBA:
@@ -440,7 +444,7 @@ void iCub::contrib::primateVision::RecServer::run()
       outBot_lvb.add(Value::makeBlob(&rec_res_params,sizeof(RecResultParams)));
       outPort_lvb.write();
 
-      //EIPP_PIPOLAR RECTIFIED IMS + PARAMS
+      //EPIPOLAR RECTIFIED IMS + PARAMS
       rl->epipolar_rect(yl_brect,psb,yl_eprect,psb);
       Bottle& outBot_lye = outPort_lye.prepare();
       outBot_lye.clear();
@@ -473,13 +477,14 @@ void iCub::contrib::primateVision::RecServer::run()
 
       //see if geometry has changed:
       do_r = true;
-      if (t_deg == old_t_deg && r_deg == old_r_deg){do_r = false;}      
+      if (t_deg+pitch_deg == old_t_deg && r_deg+yaw_deg == old_r_deg && roll_deg==old_roll_deg){do_r = false;}      
       //calc rec params if necessary:
       if (do_r){
-	rr->proc(t_deg, r_deg); 
+	    rr->proc(t_deg+pitch_deg, r_deg-yaw_deg, roll_deg); 
       }
       old_r_deg = r_deg;
       old_t_deg = t_deg;
+	  old_roll_deg = roll_deg;
       
       if (scale==1.0){
 	//R: convert directly to RGBA:
@@ -587,7 +592,7 @@ void iCub::contrib::primateVision::RecServer::run()
 
     //prevent port saturation:
     if (imgr==NULL && imgl==NULL){
-      printf("No Input\n");
+     // printf("No Input\n");
       usleep(5000); //dont blow out port
     }
     
