@@ -253,12 +253,15 @@ class Eye2world: public vislab::yarp::util::AbstractRFModule {
 		void run();
 	};
 
-	/* class variables */
 	::yarp::os::Property leftEyeCalibration;
 	::yarp::os::Property rightEyeCalibration;
 	::yarp::os::Property tabletopPosition;
 
+	std::map<const std::string, ::yarp::os::Property*> cameras;
+
+protected:
 	WorkerThread *workerThread;
+	virtual ::yarp::os::Thread* createWorkerThread();
 
 public:
 	/**
@@ -267,13 +270,10 @@ public:
 	Eye2world();
 
 	/**
-	 * @see AbstractRFModule#close()
+	 * @see AbstractRFModule#configure(::yarp::os::ResourceFinder&)
 	 */
-	bool configure(::yarp::os::ResourceFinder &rf); // configure all the module parameters and return true if successful
-	/**
-	 * @see AbstractRFModule#close()
-	 */
-	bool close(); // close and shut down the module
+	// configure all the module parameters and return true if successful
+	bool configure(::yarp::os::ResourceFinder& rf);
 };
 
 }

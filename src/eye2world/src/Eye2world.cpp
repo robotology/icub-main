@@ -83,7 +83,6 @@ bool Eye2world::configure(ResourceFinder &rf) {
 	rightEyeCalibration.fromString(config.findGroup("CAMERA_CALIBRATION_RIGHT").toString());
 	leftEyeCalibration.fromString(config.findGroup("CAMERA_CALIBRATION_LEFT").toString());
 
-	map<const string, Property*> cameras;
 	cameras["right"] = &rightEyeCalibration;
 	cameras["left"] = &leftEyeCalibration;
 
@@ -102,13 +101,12 @@ bool Eye2world::configure(ResourceFinder &rf) {
 		return false; // unable to open; let RFModule know so that it won't run
 	}
 
-	workerThread = new WorkerThread(moduleOptions, dataPorts, id, cameras, tabletopPosition);
-	return workerThread->start();;
+	return startThread();
 }
 
-bool Eye2world::close() {
-	/* stop the thread */
-	return AbstractRFModule::close() && workerThread->stop();
+Thread* Eye2world::createWorkerThread() {
+	workerThread = new WorkerThread(moduleOptions, dataPorts, id, cameras, tabletopPosition);
+	return workerThread;
 }
 
 Eye2world::WorkerThread::WorkerThread(const OptionManager& moduleOptions,
