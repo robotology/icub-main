@@ -56,7 +56,7 @@ class Handv1Metrics : public HandMetrics {
 
 	/** The amplifier controller of the hand. */
 	::yarp::dev::IAmplifierControl* ampControl;
-	/** The value of the PIDs before the were changed by this class. */
+	/** The value of the PIDs before they were changed by this class. */
 	::yarp::dev::Pid prevPids[numAxes];
 
 	/** The sensing constants of the hand (cf. Handv1#calibrate). */

@@ -53,7 +53,7 @@ Handv1Metrics::Handv1Metrics(IEncoders* const encoders, IPidControl* const pidCo
 	}
 
 	for (int i = 0; i < numAxes; i++) {
-		pidControl->enablePid(i);
+		pidControl->disablePid(i);
 	}
 
 	pidControl->getPids(prevPids);

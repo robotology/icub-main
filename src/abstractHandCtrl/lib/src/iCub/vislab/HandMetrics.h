@@ -44,9 +44,6 @@ class HandMetrics {
 	bool newSnapshot;
 
 protected:
-	/** The expected number of axes. */
-	const static int numAxes = 16;
-
 	/** The encoders of the hand. */
 	::yarp::dev::IEncoders* encoders;
 	/** The PID controller of the hand. */
@@ -69,6 +66,9 @@ protected:
 	double prevTime, curTime;
 
 public:
+	/** The expected number of axes. */
+	const static int numAxes = 16;
+
 	/**
 	 * The constructor.
 	 * @param encoders The encoders of the hand.

@@ -60,6 +60,8 @@ Hand::Hand(PolyDriver& controlBoard) :
 	enabledJoints = COMPLETE_HAND;
 	disabledJoints.clear();
 
+	posControl->getRefSpeeds(prevSpeed);
+	printVector(prevSpeed, HandMetrics::numAxes);
 	handMetrics = NULL;
 }
 
@@ -73,6 +75,7 @@ Hand::~Hand() {
 	if (handMetrics != NULL) {
 		delete handMetrics;
 	}
+	posControl->setRefSpeeds(prevSpeed);
 }
 
 HandMetrics& Hand::getMetrics() {
@@ -119,6 +122,44 @@ void Hand::getDisabledJoints(vector<int>& joints) {
 	mutex.post();
 }
 
+void Hand::setVelocity(const double d, const int joint) {
+	if (enabledJoints.find(joint) != enabledJoints.end()) { // contains(.)
+		posControl->setRefSpeed(joint, d);
+	}
+}
+
+void Hand::setVelocity(const double d, const std::set<int> joints) {
+	Vector v(HandMetrics::numAxes);
+	set<int>::const_iterator itr;
+	for (itr = joints.begin(); itr != joints.end(); ++itr) {
+		int joint = (*itr);
+		if (joint >= v.size() || joint < Hand::WRIST_PROSUP) {
+			cout << "Warning: joint #" << joint << " is not part of the hand." << endl;
+		} else {
+			v[joint] = d;
+		}
+	}
+	setVelocity(v, joints);
+}
+
+void Hand::setVelocity(const ::yarp::sig::Vector& v, const std::set<int> joints) {
+	set<int>::const_iterator itr;
+	for (itr = joints.begin(); itr != joints.end(); ++itr) {
+		int joint = (*itr);
+		if (joint >= v.size() || joint < 0) {
+			cout << "Warning: No value for joint #" << joint << " specified." << endl;
+		} else {
+			setVelocity(v[joint], joint);
+		}
+	}
+}
+
+void Hand::setVelocity(const ::yarp::sig::Vector& v, const int joint) {
+	set<int> s;
+	s.insert(joint);
+	setVelocity(v, s);
+}
+
 bool Hand::move(const Vector& v, const set<int> joints) {
 	printVector(v);
 	bool result = true;
@@ -154,6 +195,7 @@ bool Hand::move(const Motion& m, const int joint) {
 }
 
 bool Hand::move(const Motion& m, const std::set<int> joints) {
+	setVelocity(m.getVelocity(), joints);
 	bool result = move(m.getPosition(), joints);
 	Time::delay(m.getTiming());
 	return result;
