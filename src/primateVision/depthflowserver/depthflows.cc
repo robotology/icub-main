@@ -46,14 +46,15 @@ void iCub::contrib::primateVision::DepthflowServer::run(){
   int windowSize  = prop.findGroup("DEPTHFLOWS").find("WINDOWSIZE").asInt();
   int threshold   = prop.findGroup("DEPTHFLOWS").find("THRESHOLD").asInt();
   int uniqueness  = prop.findGroup("DEPTHFLOWS").find("UNIQUENESS").asInt();
-
+  yarp::os::ConstString temp_port    = prop.findGroup("DEPTHFLOWS").find("INPORT").asString();
+  QString in_port =  temp_port.c_str();
 
 
   //IN PORTS:
   Port inPort_s;
   inPort_s.open("/depthflowserver/input/serv_params");
-  Network::connect("/depthflowserver/input/serv_params", "/recserver/output/serv_params");
-  Network::connect("/recserver/output/serv_params", "/depthflowserver/input/serv_params");
+  Network::connect("/depthflowserver/input/serv_params", in_port+"/output/serv_params");
+  Network::connect(in_port+"/output/serv_params", "/depthflowserver/input/serv_params");
   BinPortable<RecServerParams> response; 
   Bottle empty;
   inPort_s.write(empty,response);
@@ -71,13 +72,13 @@ void iCub::contrib::primateVision::DepthflowServer::run(){
 
   BufferedPort<Bottle> inPort_yl;
   inPort_yl.open("/depthflowserver/input/rec_yl");
-  Network::connect("/recserver/output/left_ye" , "/depthflowserver/input/rec_yl");
+  Network::connect(in_port+"/output/left_ye" , "/depthflowserver/input/rec_yl");
   Bottle *inBot_yl;
   Ipp8u* rec_im_yl;
 
   BufferedPort<Bottle> inPort_yr; 
   inPort_yr.open("/depthflowserver/input/rec_yr");  
-  Network::connect("/recserver/output/right_ye" , "/depthflowserver/input/rec_yr");
+  Network::connect(in_port+"/output/right_ye" , "/depthflowserver/input/rec_yr");
   Bottle *inBot_yr;
   Ipp8u* rec_im_yr;
 
