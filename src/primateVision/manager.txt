@@ -1,4 +1,5 @@
-
+requires python
+change the yarpserver namspace from /pvnamespace to your own yarp server namespace
 
 1- START YARP SERVER
 2- SETUP yarp run nodes using -> yarp run --server /pvManager

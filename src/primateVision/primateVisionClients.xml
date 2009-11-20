@@ -1,7 +1,7 @@
 <application>
 <name>Primate Vision</name>
 <dependencies>
-      <port>/test1</port>
+      <port>/pvnamespace</port>
 </dependencies> 
 <module>
 	  <name>recclient</name>
