@@ -480,7 +480,7 @@ RECURSIVE              = YES
 # excluded from the INPUT source files. This way you can easily exclude a 
 # subdirectory from a directory tree whose root is specified with the INPUT tag.
 
-EXCLUDE                = primateVision firmware armSimpleAnticollisionFilter
+EXCLUDE                = 
 
 # The EXCLUDE_SYMLINKS tag can be used select whether or not files or 
 # directories that are symbolic links (a Unix filesystem feature) are excluded 
@@ -494,9 +494,9 @@ EXCLUDE_SYMLINKS       = NO
 # against the file with absolute path, so to exclude all test directories 
 # for example use the pattern */test/*
 
-# vvv is the summerschool - too much stuff in there
-# shoulder_text seems to have some proprietary code? (ntcan.h)
-EXCLUDE_PATTERNS       = */shoulder_test/*/ntcan.h
+# armSimple... contains too much stuff
+# firmware contains a lot of stuff too
+EXCLUDE_PATTERNS       = */firmware/* /*armSimpleAnticollisionFilter/*
 
 # The EXAMPLE_PATH tag can be used to specify one or more files or 
 # directories that contain example code fragments that are included (see 
