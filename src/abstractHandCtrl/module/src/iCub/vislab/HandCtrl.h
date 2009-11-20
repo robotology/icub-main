@@ -307,13 +307,12 @@ class HandCtrl: public HandModule {
 	};
 	friend class WorkerThread;
 
-	WorkerThread *workerThread;
+protected:
+
+	WorkerThread* workerThread;
+	virtual ::yarp::os::Thread* createWorkerThread();
 
 public:
-
-	/** The expected number of axes. */
-	static const int numAxes = 16;
-
 	/**
 	 * The constructor.
 	 */

@@ -126,13 +126,18 @@ bool HandCtrl::configure(ResourceFinder &rf) {
 
 	str
 			= "RPC port to communicate with the iKin arm controller via Bottle(Vocab:cmd) objects (c.f. iKinArmCtrl rpc).";
-	str = prefix + getName(rf.check("iKin", Value(prefix +partName +"/rpc"), str).asString());
+	str = prefix + getName(rf.check("iKin", Value(prefix + partName + "/rpc"), str).asString());
 	dataPorts.add(id.RPC_iKin, str, new Port());
 
-	workerThread = new WorkerThread(moduleOptions, dataPorts, id, motionSpecification, controlBoard, handType);
-//	workerThread->addMotionSpecification(motionSpecification);
+	return startThread();
+}
+
+Thread* HandCtrl::createWorkerThread() {
+	workerThread = new WorkerThread(moduleOptions, dataPorts, id, motionSpecification, controlBoard,
+			handType);
+	//	workerThread->addMotionSpecification(motionSpecification);
 	workerThread->setSensingConstants(sensingCalibration);
-	return workerThread->start();
+	return workerThread;
 }
 
 bool HandCtrl::close() {
