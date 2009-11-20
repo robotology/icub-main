@@ -42,7 +42,10 @@ public:
 		mot=new affActionPrimitives;
 
 		if (!mot->open(option))
+		{
+			delete mot;
 			return false;
+		}
 
 		Vector od(4);
 		od[0]=-0.029;
