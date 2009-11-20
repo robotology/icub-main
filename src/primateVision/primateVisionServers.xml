@@ -20,7 +20,7 @@
 <module>
 	  <name>depthflowserver</name>
 	  <parameters>-c ${ICUB_DIR}/src/primateVision/config/dfcsSim.cfg</parameters>
-	  <node>quad</node>
+	  <node>pvManager</node>
 	  <stdio>pvManager</stdio>
 	<tag>DepthFlowServer</tag>
    </module>
