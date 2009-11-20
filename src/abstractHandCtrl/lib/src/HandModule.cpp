@@ -37,6 +37,22 @@ HandModule::HandModule(ConstString name) :
 HandModule::~HandModule() {
 }
 
+
+bool HandModule::ReloadCommand::execute(const Bottle& params, Bottle& reply) const {
+	HandModule* h = (HandModule*) parent;
+	NetInt32 result = Vocab::encode("ack");
+
+	try {
+		h->motionSpecification.fromConfigFile(h->motionSpecificationFilename);
+		h->workerThread->addMotionSpecification(h->motionSpecification);
+	} catch (...) {
+		result = Vocab::encode("fail");
+	}
+
+	reply.addVocab(result);
+	return true;
+}
+
 bool HandModule::configure(ResourceFinder &rf) {
 	if (!AbstractRFModule::configure(rf)) {
 		return false;
@@ -77,7 +93,7 @@ bool HandModule::configure(ResourceFinder &rf) {
 		this->handType = GENERAL;
 	}
 
-	ConstString motionSpecificationFile = rf.check("motionSpec", Value("motion_specification.ini"),
+	motionSpecificationFilename = rf.check("motionSpec", Value("motion_specification.ini"),
 			"Name of the configuration file specifying the motions (string)").asString();
 
 	str = prefix + getName(rf.check("control", Value("/control"),
@@ -129,9 +145,14 @@ bool HandModule::configure(ResourceFinder &rf) {
 		return false;
 	}
 
-	motionSpecification.fromConfigFile(motionSpecificationFile);
+	motionSpecification.fromConfigFile(motionSpecificationFilename);
 
 	return true;
+}
+
+bool HandModule::startThread() {
+	workerThread = dynamic_cast<HandWorkerThread *>(AbstractRFModule::workerThread);
+	return AbstractRFModule::startThread();
 }
 
 //#define DEBUG
@@ -180,8 +201,12 @@ void HandModule::HandWorkerThread::createHand() {
 		break;
 	}
 }
+void HandModule::HandWorkerThread::setMotionSpecification(Searchable& s) {
+	motions.clear();
+	addMotionSpecification(s);
+}
 
-void HandModule::HandWorkerThread::addMotionSpecification(::yarp::os::Searchable& s) {
+void HandModule::HandWorkerThread::addMotionSpecification(Searchable& s) {
 	Bottle b(s.toString());
 	readMotionSequences(b, motions);
 #define DEBUG

@@ -48,6 +48,17 @@ public:
 		GENERAL, v1
 	};
 
+protected:
+	class ReloadCommand: public vislab::yarp::util::Command {
+		virtual bool execute(const ::yarp::os::Bottle& params, ::yarp::os::Bottle& reply) const;
+	public:
+		ReloadCommand(HandModule* const parent) :
+			Command(parent, "reload motion specifications",
+					"Reloads the motion specification from the previously declared file.") {
+		}
+	};
+	friend class DoCommand;
+
 	/**
 	 * The worker thread of the {@link HandModule} module.
 	 *
@@ -101,6 +112,11 @@ public:
 		void getDisabledJoints(std::vector<int>& joints);
 
 		/**
+		 * Replaces the internal set of motions with those specified as parameter.
+		 * @param s The {@link Searchable} containing the motion specifications.
+		 */
+		void setMotionSpecification(::yarp::os::Searchable& s);
+		/**
 		 * Adds new motion specifications to the internal set.
 		 * @param s The {@link Searchable} containing the motion specifications.
 		 */
@@ -142,6 +158,8 @@ private:
 		unsigned int Control;
 	} id;
 
+	::yarp::os::ConstString motionSpecificationFilename;
+
 protected:
 	/** The arm identifier as human readable string. */
 	::yarp::os::ConstString partName;
@@ -154,6 +172,10 @@ protected:
 	::yarp::dev::PolyDriver controlBoard;
 	/** The type of the hands. */
 	HandType handType;
+
+	HandWorkerThread* workerThread;
+
+	virtual bool startThread();
 
 public:
 
