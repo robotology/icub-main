@@ -1,7 +1,7 @@
 // -*- mode:C++; tab-width:4; c-basic-offset:4; indent-tabs-mode:nil -*-
 
 /**
- * @ingroup icub_module
+ * @ingroup icub_guis
  *
  * \defgroup icub_framegrabbergui2 frameGrabberGui2
  *
@@ -18,10 +18,12 @@
  * \see yarp::dev::RemoteFrameGrabber, FrameGrabberGUIControl
  *
  * \author Alessandro Scalzo
- * 
- * Copyright (C) 2008 RobotCub Consortium
+ *
+ * Copyright (C) 2009 RobotCub Consortium
  *
  * CopyPolicy: Released under the terms of the GNU GPL v2.0.
+ *
+ * This file can be edited at src/gui/frameGrabberGui2/fggui2_main.cpp.
  *
  */
 

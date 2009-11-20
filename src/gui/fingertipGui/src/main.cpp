@@ -15,6 +15,30 @@ using namespace yarp::os;
 
 static GtkWidget *mainWindow = NULL;
 
+/**
+*
+@ingroup icub_guis
+\defgroup icub_fingertipGui fingertipGui
+
+A gui for the fingertip.
+
+\section intro_sec Description
+This is a gui that displays the output of the fingertip sensor.
+
+\section tested_os_sec Tested OS
+
+Linux and Windows.
+
+\author Alexander Schmitz and Francesco Rea
+
+Copyright (C) 2009 RobotCub Consortium
+
+CopyPolicy: Released under the terms of the GNU GPL v2.0.
+
+This file can be edited at src/gui/fingertipGui/main.cpp.
+**/
+
+
 int main(int argc, char *argv[]) {
     Network yarp;
 
