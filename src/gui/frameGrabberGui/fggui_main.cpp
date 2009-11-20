@@ -6,7 +6,7 @@
  *
  * A graphical interface to set gain, shutter, brightness and color balance on a remote framegrabber.
  * Run without options to see help on usage. Note: this module is now obsolete have a look at
- * \see icub_framegrabbergui2 instead.
+ * see \ref icub_framegrabbergui2 instead.
  *
  * The frameGrabberGui module opens one port connected to a RemoteFrameGrabber control port.
  * The name of the local and remote ports are provided as command arguments.
@@ -15,7 +15,7 @@
  *
  * frameGrabberGui --local <localportname> --remote <grabberport> [--width <gui_width>] [--height <gui_height>] [--x <gui_x_pos>] [--y <gui_y_pos>]
  * 
- * \see yarp::dev::RemoteFrameGrabber, FrameGrabberGUIControl
+ * see \ref yarp::dev::RemoteFrameGrabber, FrameGrabberGUIControl
  *
  * \author Alessandro Scalzo
  *
