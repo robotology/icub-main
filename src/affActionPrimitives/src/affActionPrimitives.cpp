@@ -400,7 +400,7 @@ void affActionPrimitives::setHome(const Vector &x, const Vector &o)
 }
 
 
-void affActionPrimitives::setGraspDeltaHeight(const Vector &h)
+void affActionPrimitives::setGraspDisplacement(const Vector &h)
 {
     hGrasp=h;
 }

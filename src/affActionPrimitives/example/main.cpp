@@ -64,7 +64,7 @@ public:
 		h[0]=0.0;
 		h[1]=0.0;
 		h[2]=0.08;
-		mot->setGraspDeltaHeight(h);
+		mot->setGraspDisplacement(h);
 
 		Vector d(3);
 		d[0]=0.0;

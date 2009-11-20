@@ -94,7 +94,7 @@ public:
     void setGraspOrien(const yarp::sig::Vector &o);
     void setTapOrien(const yarp::sig::Vector &o);
     void setHome(const yarp::sig::Vector &x, const yarp::sig::Vector &o);
-    void setGraspDeltaHeight(const yarp::sig::Vector &h);
+    void setGraspDisplacement(const yarp::sig::Vector &h);
     void setTapDisplacement(const yarp::sig::Vector &disp);
 
     yarp::sig::Vector getGraspOrien()       { return oGrasp; }
