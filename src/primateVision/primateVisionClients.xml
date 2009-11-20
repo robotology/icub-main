@@ -1,0 +1,144 @@
+<application>
+<name>Primate Vision</name>
+<dependencies>
+      <port>/test1</port>
+</dependencies> 
+<module>
+	  <name>recclient</name>
+	  <parameters>sim</parameters>
+	  <node>quad</node>
+	  <stdio>vtikha</stdio>
+	<tag>RecClient</tag>
+   </module>
+<module>
+	  <name>zdfclient</name>
+	  <node>vtikha</node>
+	  <stdio>vtikha</stdio>
+	<tag>ZdfClient</tag>
+   </module>
+<module>
+	  <name>depthflowclient</name>
+	  <node>quad</node>
+	  <stdio>vtikha</stdio>
+	<tag>DepthFlowClient</tag>
+   </module>
+<module>
+	  <name>iorclient</name>
+	  <parameters>l</parameters>
+	  <node>vtikha</node>
+	  <stdio>vtikha</stdio>
+	<tag>IorClient_L</tag>
+   </module>
+<module>
+	  <name>iorclient</name>
+	  <parameters>r</parameters>
+	  <node>vtikha</node>
+	  <stdio>vtikha</stdio>
+	<tag>IorClient_R</tag>
+   </module>
+<module>
+	  <name>tsbclient</name>
+	  <parameters>l</parameters>
+	  <node>vtikha</node>
+	  <stdio>vtikha</stdio>
+	<tag>TsbClient_L</tag>
+   </module>
+<module>
+	  <name>tsbclient</name>
+	  <parameters>r</parameters>
+	  <node>vtikha</node>
+	  <stdio>vtikha</stdio>
+	<tag>TsbClient_R</tag>
+   </module>
+<module>
+	  <name>ycsclient</name>
+	  <parameters>l</parameters>
+	  <node>vtikha</node>
+	  <stdio>vtikha</stdio>
+	<tag>YCSClient_L</tag>
+   </module>
+<module>
+	  <name>ycsclient</name>
+	  <parameters>r</parameters>
+	  <node>vtikha</node>
+	  <stdio>vtikha</stdio>
+	<tag>YcsClient_R</tag>
+   </module>
+<module>
+	  <name>colcsclient</name>
+	  <parameters>l</parameters>
+	  <node>vtikha</node>
+	  <stdio>vtikha</stdio>
+	<tag>ColcsClient_L</tag>
+   </module>
+<module>
+	  <name>colcsclient</name>
+	  <parameters>r</parameters>
+	  <node>vtikha</node>
+	  <stdio>vtikha</stdio>
+	<tag>ColcsClient_R</tag>
+   </module>
+<module>
+	  <name>ocsclient</name>
+	  <parameters>0</parameters>
+	  <node>vtikha</node>
+	  <stdio>vtikha</stdio>
+	<tag>OcsClient_L</tag>
+   </module>
+<module>
+	  <name>ocsclient</name>
+	  <parameters>1</parameters>
+	  <node>vtikha</node>
+	  <stdio>vtikha</stdio>
+	<tag>OcsClient_R</tag>
+   </module>
+<module>
+	  <name>flowclient</name>
+	  <parameters>l</parameters>
+	  <node>vtikha</node>
+	  <stdio>vtikha</stdio>
+	<tag>FlowClient_L</tag>
+   </module>
+<module>
+	  <name>flowclient</name>
+	  <parameters>r</parameters>
+	  <node>vtikha</node>
+	  <stdio>vtikha</stdio>
+	<tag>FlowClient_R</tag>
+   </module>
+<module>
+	  <name>salclient</name>
+	  <parameters>l</parameters>
+	  <node>vtikha</node>
+	  <stdio>vtikha</stdio>
+	<tag>SalClient_L</tag>
+   </module>
+<module>
+	  <name>salclient</name>
+	  <parameters>r</parameters>
+	  <node>vtikha</node>
+	  <stdio>vtikha</stdio>
+	<tag>SalClient_R</tag>
+   </module>
+<module>
+	  <name>attnclient</name>
+	  <parameters>l</parameters>
+	  <node>vtikha</node>
+	  <stdio>vtikha</stdio>
+	<tag>AttnClient_L</tag>
+   </module>
+<module>
+	  <name>attnclient</name>
+	  <parameters>r</parameters>
+	  <node>vtikha</node>
+	  <stdio>vtikha</stdio>
+	<tag>AttnClient_R</tag>
+   </module>
+<module>
+	  <name>attnclient_stereo</name>
+	  <node>vtikha</node>
+	  <stdio>vtikha</stdio>
+	<tag>AttnClient_St</tag>
+   </module>
+</application>
+
