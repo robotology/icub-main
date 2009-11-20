@@ -1,8 +1,6 @@
 <application>
 <name>Primate Vision</name>
 <dependencies>
-	  <port>/icubSim/cam/left</port>
-      <port>/icubSim/cam/right</port>
       <port>/pvnamespace</port>
 </dependencies> 
 <module>
