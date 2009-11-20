@@ -1,7 +1,9 @@
 requires python
-change the yarpserver namspace from /pvnamespace to your own yarp server namespace
+Change the yarpserver namspace from /pvnamespace to your own yarp server namespace
 
-1- START YARP SERVER
-2- SETUP yarp run nodes using -> yarp run --server /pvManager
-3 - startServers.sh
-4 - startClients.sh
+
+1 - START YARP SERVER
+2 - start a robot or iCubSim or change parameters
+3 - SETUP yarp run nodes using -> yarp run --server /pvManager
+4 - run startServers.sh
+5 - run startClients.sh
