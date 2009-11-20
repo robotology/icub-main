@@ -17,9 +17,10 @@
 #define IPP_RADIAL            0
 
 
-iCub::contrib::primateVision::Rectify::Rectify(char* crf,IppiSize ss_,double t_o_)
+iCub::contrib::primateVision::Rectify::Rectify(bool clear_, char* crf,IppiSize ss_,double t_o_)
 {
 
+  clear = clear_;
   width=ss_.width;
   height=ss_.height;
 
@@ -43,6 +44,7 @@ iCub::contrib::primateVision::Rectify::Rectify(char* crf,IppiSize ss_,double t_o
   A=get_mat(3,3);
   Po=get_mat(3,4);
   Pn=get_mat(3,4);
+  An=get_mat(3,3);
   Rt=get_mat(3,4);
   Rtn=get_mat(3,4);
   H=get_mat(3,3);
@@ -112,15 +114,25 @@ iCub::contrib::primateVision::Rectify::Rectify(char* crf,IppiSize ss_,double t_o
   }
   else{
     printf("Rectify: Not applying barrel rectification.\n");
-    fc1 =300.0;
-    fc2 =300.0;
-    cc1 =width/2.0;
-    cc2 =height/2.0;
+	//calibrated default values for simulator    
+	fc1 = 200.0; //horizontal 100
+    fc2 = 150.0; //vertical 150
+    cc1 = width/2.0;
+    cc2 = height/2.0;
   }
 
+// imput ('real') cam from reality or sim cam:
   A->me[0][0] = fc1; A->me[0][1] = 0.0; A->me[0][2] = cc1;
   A->me[1][0] = 0.0; A->me[1][1] = fc2; A->me[1][2] = cc2; 
-  A->me[2][0] = 0.0; A->me[2][1]= 0.0;  A->me[2][2]=  1.0;
+  A->me[2][0] = 0.0; A->me[2][1] = 0.0;  A->me[2][2]= 1.0;
+
+
+//virtual mosaic output cam we are constructing should have same properties as real ones:
+//can scale things by scaling fc1 and fc2 in An:
+  An->me[0][0] = fc1; An->me[0][1] = 0.0; An->me[0][2] = width/2.0;
+  An->me[1][0] = 0.0; An->me[1][1] = fc2; An->me[1][2] = height/2.0; 
+  An->me[2][0] = 0.0; An->me[2][1] = 0.0; An->me[2][2] = 1.0;
+
 }
 
 
@@ -155,16 +167,17 @@ void iCub::contrib::primateVision::Rectify::barrel_rect(Ipp8u *image,int psb_in_
 
 
 
-void iCub::contrib::primateVision::Rectify::proc(double ang_t, double ang_v){
+void iCub::contrib::primateVision::Rectify::proc(double ang_t, double ang_v, double ang_roll){
 
   //construct [R|t]:
-  r = 0.0;// (angle around z axis, roll)
-  p = IPP_PI*(ang_t+tilt_offset)/180.0; //tilt  (angle around x axis, pitch) up is +
-  y = IPP_PI*ang_v/180.0; //pan (angle around y axis, yaw)  L is +
-  tx = 0.0;
-  ty = 0.0;
-  tz = 0.0;
+  r = IPP_PI*(ang_roll)/180.0;// (angle around z axis, roll.)
+  p = IPP_PI*(ang_t+tilt_offset)/180.0; //tilt (angle around x axis, pitch) up is +
+  y = IPP_PI*ang_v/180.0; //pan (angle around y axis, yaw)  L is + // SIM: horiz angle seems to be doubled.
+  tx = 0.0; //x-pos of camera, origin is mid of baseline. in pixels
+  ty = 0.0; //y-pos of camera, should probably use 0.0.
+  tz = 0.0; //z-pos of camera, should probably use 0.0.
   
+  //construct [R|t] for o:
   Rt->me[0][0] = cos(y)*cos(r); 
   Rt->me[0][1] = sin(p)*sin(y)*cos(r)-cos(p)*sin(r); 
   Rt->me[0][2] = cos(p)*sin(y)*cos(r)+sin(p)*sin(r); 
@@ -184,16 +197,18 @@ void iCub::contrib::primateVision::Rectify::proc(double ang_t, double ang_v){
 
   //desired rigid transformations to
   //camera orientation that 
-  //enforces parallel epipolar geometry
-  
+  //enforces parallel epipolar geometry.
+  //want a virtual cam at origin pointing along z-axis.
+
   //make Pn:
   rn = 0.0;//(angle around z axis, roll)
   pn = 0.0;//tilt (angle around x axis, pitch)
-  yn_ = 0.0;//(angle around y axis, yaw)
+  yn_ = 0.0;//pan (angle around y axis, yaw)
   txn = 0.0;
   tyn = 0.0;
   tzn = 0.0;
   
+  //construct [R|t] for n:
   Rtn->me[0][0] = cos(yn_)*cos(rn); 
   Rtn->me[0][1] = sin(pn)*sin(yn_)*cos(rn)-cos(pn)*sin(rn); 
   Rtn->me[0][2] = cos(pn)*sin(yn_)*cos(rn)+sin(pn)*sin(rn); 
@@ -209,8 +224,9 @@ void iCub::contrib::primateVision::Rectify::proc(double ang_t, double ang_v){
   
 
   //create Pn = A[R|t]:
-  Pn = m_mlt(A,Rtn,MNULL);  // Pn = A*[R|t];
-  
+  Pn = m_mlt(An,Rtn,MNULL);  // Pn = A*[R|t];
+  //(re-use A as we want a virtual cam with equivalent params)  
+
   //get T:
   id_mat(H);
   P2T(Po,Pn,H,T);
@@ -225,10 +241,10 @@ void iCub::contrib::primateVision::Rectify::proc(double ang_t, double ang_v){
   
   // check for reflections
   if(uA->ve[0]>uC->ve[0]) {
-    H->me[0][0]=-1;
+    H->me[0][0]=-1.0;
     mod = true;}
   if(uA->ve[1]>uC->ve[1]) {
-    H->me[1][1]=-1;
+    H->me[1][1]=-1.0;
     mod = true;}
   if(mod){
     // modify T if necessary 
@@ -239,11 +255,13 @@ void iCub::contrib::primateVision::Rectify::proc(double ang_t, double ang_v){
 
   //memory alignment:
 
-  //in it's simplest form this us enough:
-  //  ix = (int) (uO->ve[0] - width/2.0);
-  //  iy = (int) (uO->ve[1] - height/2.0);
+  //in it's simplest form this is enough:
+    ix = (uO->ve[0] - width/2);
+    iy = (uO->ve[1] - height/2);
 
-
+#if 0
+  //this check needs updating:
+ 
   //however, we want to maximise the post-transformation image area:
   if      (uA->ve[0]>=uD->ve[0] && uA->ve[0]>=0){ ix = uA->ve[0];}
   else if (uD->ve[0]>=uA->ve[0] && uD->ve[0]>=0){ ix = uD->ve[0];}
@@ -256,11 +274,13 @@ void iCub::contrib::primateVision::Rectify::proc(double ang_t, double ang_v){
   else if (uA->ve[1]<=uB->ve[1] && uB->ve[1]<=0){ iy = uB->ve[1];}
   else  //if  (uB->ve[1]<=uA->ve[1] && uA->ve[1]<=0)
           { iy = uA->ve[1];}
-  
+#endif
 
+  //apply shift (in pixels) to T that brings (centre -for simple methed- of) transformed image back to origin of output image.
+  //this brings the transformed image back into the output memory space.
   shift_origin(T,-ix,-iy);  
-  
 
+  //ix and iy are then the locations the image should be put in the mosaic.
 }
 
 
@@ -277,7 +297,9 @@ void  iCub::contrib::primateVision::Rectify::epipolar_rect(Ipp8u *imagein,int ps
 
   //this removes previous border contents, but leaves
   //black borders that affect saliency. better not to reset.
-  //ippiSet_8u_C1R(0,imageout,psb,srcsize);
+ if (clear){ 
+	ippiSet_8u_C1R(0,imageout,psb,srcsize);
+ }
 
   ippiWarpPerspective_8u_C1R(imagein,srcsize,psb_in,srcroi,
 			     imageout,psb,srcroi,Tc,
@@ -328,18 +350,20 @@ void  iCub::contrib::primateVision::Rectify::P2T (MAT *Po_, MAT *Pn_, MAT* H_,MA
 
 void  iCub::contrib::primateVision::Rectify::shift_origin(MAT *A_, int x_, int y_)
  {
-   // shift origins by applying transaltion
+   // shift origin by applying transaltion
    MAT *Taux, *K;
    K = get_mat(3,3);
    Taux = get_mat(3,3);
 
+// create a translation matrix:
    id_mat(K);
 
    if (y_!=0){
-     K->me[1][2]=(double)y_;} //shift y.
+     K->me[1][2]=(double)y_;} //shift along y.
    if (x_!=0){
-     K->me[0][2]=(double)x_;} //shift x
+     K->me[0][2]=(double)x_;} //shift along x.
 
+//apply it to our transformation:
    Taux=m_mlt(K,A_,MNULL);
    cp_mat(Taux,A_);
    

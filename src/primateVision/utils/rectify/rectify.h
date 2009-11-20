@@ -55,7 +55,7 @@ namespace iCub {
 	 * @param brecFile Name of Matlab intrinsic camera parameter file to load for barrel rectification parameters.
 	 * @param tilt_offset Tilt Offset in degrees between left and right cameras; one is the reference and must be zero.
 	 */
-	Rectify(char* brecFile,IppiSize imsize, double tilt_offset);
+	Rectify(bool clear, char* brecFile,IppiSize imsize, double tilt_offset);
 
 	/** Destructor.
 	 */
@@ -66,7 +66,7 @@ namespace iCub {
 	 * @param ang_t Tilt angle of this camera.
 	 * @param ang_v Verge angle of this camera.
 	 */
-	void proc(double ang_t, double ang_v);
+	void proc(double ang_t, double ang_v, double ang_roll);
 	
 	/** Barrel rectifies an image.
 	 * @param im Pointer to input image to be barrel rectified.
@@ -103,12 +103,12 @@ namespace iCub {
       private:
 	//EPIPOLAR RECT SUPPORT FUNCS:
 	void P2T (MAT *Po_, MAT *Pn_, MAT *H_,MAT *T_);
-	void shift_origin(MAT *A, int x, int y);
-	void transf(MAT *A, double a, double b,VEC*result);
+	void shift_origin(MAT *A_, int x, int y);
+	void transf(MAT *A_, double a, double b,VEC*result);
 	
 	
 	VEC *uO,*uA,*uB,*uC,*uD;
-	MAT *Po,*T,*A,*Rt,*Pn,*Rtn,*H;
+	MAT *Po,*T,*A,*An,*Rt,*Pn,*Rtn,*H;
 	bool mod;
 	double r,p,y,tx,ty,tz,rn,pn,yn_,txn,tyn,tzn;
 	int ix,iy;
@@ -121,6 +121,7 @@ namespace iCub {
 	Ipp32f fc1,fc2,cc1,cc2,kc1,kc2,pc1,pc2;
 	Ipp8u *buffer;
 	int xStep, yStep, buflen;
+    bool clear;
 	
       };
 
