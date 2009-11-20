@@ -1,0 +1,6 @@
+
+
+1- START YARP SERVER
+2- SETUP yarp run nodes using -> yarp run --server /pvManager
+3 - startServers.sh
+4 - startClients.sh

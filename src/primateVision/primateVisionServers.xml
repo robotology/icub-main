@@ -6,141 +6,141 @@
 <module>
 	  <name>recserver</name>
       <parameters>--config ${ICUB_DIR}/src/primateVision/config/recSim.cfg</parameters>
-	  <node>quad</node>
-	  <stdio>vtikha</stdio>
+	  <node>pvManager</node>
+	  <stdio>pvManager</stdio>
 	<tag>RecServer</tag>
    </module>
 <module>
 	  <name>zdfserver</name>
 	  <parameters>-c ${ICUB_DIR}/src/primateVision/config/zdfSim.cfg</parameters>
-	  <node>vtikha</node>
-	  <stdio>vtikha</stdio>
+	  <node>pvManager</node>
+	  <stdio>pvManager</stdio>
 	<tag>ZdfServer</tag>
    </module>
 <module>
 	  <name>depthflowserver</name>
 	  <parameters>-c ${ICUB_DIR}/src/primateVision/config/dfcsSim.cfg</parameters>
 	  <node>quad</node>
-	  <stdio>vtikha</stdio>
+	  <stdio>pvManager</stdio>
 	<tag>DepthFlowServer</tag>
    </module>
 <module>
 	  <name>iorserver</name>
 	  <parameters>-c ${ICUB_DIR}/src/primateVision/config/iorLSim.cfg</parameters>
-	  <node>vtikha</node>
-	  <stdio>vtikha</stdio>
+	  <node>pvManager</node>
+	  <stdio>pvManager</stdio>
 	<tag>IorServer_L</tag>
    </module>
 <module>
 	  <name>iorserver</name>
 	  <parameters>-c ${ICUB_DIR}/src/primateVision/config/iorRSim.cfg</parameters>
-	  <node>vtikha</node>
-	  <stdio>vtikha</stdio>
+	  <node>pvManager</node>
+	  <stdio>pvManager</stdio>
 	<tag>IorServer_R</tag>
    </module>
 <module>
 	  <name>tsbserver</name>
 	  <parameters>-c ${ICUB_DIR}/src/primateVision/config/tsbLSim.cfg</parameters>
-	  <node>vtikha</node>
-	  <stdio>vtikha</stdio>
+	  <node>pvManager</node>
+	  <stdio>pvManager</stdio>
 	<tag>TsbServer_L</tag>
    </module>
 <module>
 	  <name>tsbserver</name>
 	  <parameters>-c ${ICUB_DIR}/src/primateVision/config/tsbRSim.cfg</parameters>
-	  <node>vtikha</node>
-	  <stdio>vtikha</stdio>
+	  <node>pvManager</node>
+	  <stdio>pvManager</stdio>
 	<tag>TsbServer_R</tag>
    </module>
 <module>
 	  <name>ycsserver</name>
 	  <parameters>-c ${ICUB_DIR}/src/primateVision/config/ycsLSim.cfg</parameters>
-	  <node>vtikha</node>
-	  <stdio>vtikha</stdio>
+	  <node>pvManager</node>
+	  <stdio>pvManager</stdio>
 	<tag>YcsServer_L</tag>
    </module>
 <module>
 	  <name>ycsserver</name>
 	  <parameters>-c ${ICUB_DIR}/src/primateVision/config/ycsRSim.cfg</parameters>
-	  <node>vtikha</node>
-	  <stdio>vtikha</stdio>
+	  <node>pvManager</node>
+	  <stdio>pvManager</stdio>
 	<tag>YcsServer_R</tag>
    </module>
 <module>
 	  <name>colcsserver</name>
 	  <parameters>-c ${ICUB_DIR}/src/primateVision/config/colcsLSim.cfg</parameters>
-	  <node>vtikha</node>
-	  <stdio>vtikha</stdio>
+	  <node>pvManager</node>
+	  <stdio>pvManager</stdio>
 	<tag>ColcsServer_L</tag>
    </module>
 <module>
 	  <name>colcsserver</name>
 	  <parameters>-c ${ICUB_DIR}/src/primateVision/config/colcsRSim.cfg</parameters>
-	  <node>vtikha</node>
-	  <stdio>vtikha</stdio>
+	  <node>pvManager</node>
+	  <stdio>pvManager</stdio>
 	<tag>ColcsServer_R</tag>
    </module>
 <module>
 	  <name>ocsserver</name>
 	  <parameters>-c ${ICUB_DIR}/src/primateVision/config/ocs0Sim.cfg</parameters>
-	  <node>vtikha</node>
-	  <stdio>vtikha</stdio>
+	  <node>pvManager</node>
+	  <stdio>pvManager</stdio>
 	<tag>OcsServer_L</tag>
    </module>
 <module>
 	  <name>ocsserver</name>
 	  <parameters>-c ${ICUB_DIR}/src/primateVision/config/ocs1Sim.cfg</parameters>
-	  <node>vtikha</node>
-	  <stdio>vtikha</stdio>
+	  <node>pvManager</node>
+	  <stdio>pvManager</stdio>
 	<tag>OcsServer_R</tag>
    </module>
 <module>
 	  <name>flowserver</name>
 	  <parameters>-c ${ICUB_DIR}/src/primateVision/config/flowLSim.cfg</parameters>
-	  <node>vtikha</node>
-	  <stdio>vtikha</stdio>
+	  <node>pvManager</node>
+	  <stdio>pvManager</stdio>
 	<tag>FlowServer_L</tag>
    </module>
 <module>
 	  <name>flowserver</name>
 	  <parameters>-c ${ICUB_DIR}/src/primateVision/config/flowRSim.cfg</parameters>
-	  <node>vtikha</node>
-	  <stdio>vtikha</stdio>
+	  <node>pvManager</node>
+	  <stdio>pvManager</stdio>
 	<tag>FlowServer_R</tag>
    </module>
 <module>
 	  <name>salserver</name>
 	  <parameters>-c ${ICUB_DIR}/src/primateVision/config/salL.cfg</parameters>
-	  <node>vtikha</node>
-	  <stdio>vtikha</stdio>
+	  <node>pvManager</node>
+	  <stdio>pvManager</stdio>
 	<tag>SalServer_L</tag>
    </module>
 <module>
 	  <name>salserver</name>
 	  <parameters>-c ${ICUB_DIR}/src/primateVision/config/salR.cfg</parameters>
-	  <node>vtikha</node>
-	  <stdio>vtikha</stdio>
+	  <node>pvManager</node>
+	  <stdio>pvManager</stdio>
 	<tag>SalServer_R</tag>
    </module>
 <module>
 	  <name>attnserver</name>
 	  <parameters>-c ${ICUB_DIR}/src/primateVision/config/attnLSim.cfg</parameters>
-	  <node>vtikha</node>
-	  <stdio>vtikha</stdio>
+	  <node>pvManager</node>
+	  <stdio>pvManager</stdio>
 	<tag>AttnServer_L</tag>
    </module>
 <module>
 	  <name>attnserver</name>
 	  <parameters>-c ${ICUB_DIR}/src/primateVision/config/attnRSim.cfg</parameters>
-	  <node>vtikha</node>
-	  <stdio>vtikha</stdio>
+	  <node>pvManager</node>
+	  <stdio>pvManager</stdio>
 	<tag>AttnServer_R</tag>
    </module>
 <module>
 	  <name>attnserver_stereo</name>
 	  <parameters>-c ${ICUB_DIR}/src/primateVision/config/attnSSim.cfg</parameters>
-	  <node>vtikha</node>
-	  <stdio>vtikha</stdio>
+	  <node>pvManager</node>
+	  <stdio>pvManager</stdio>
 	<tag>AttnServer_St</tag>
    </module>
 
