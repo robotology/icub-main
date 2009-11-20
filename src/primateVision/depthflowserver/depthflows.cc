@@ -48,8 +48,6 @@ void iCub::contrib::primateVision::DepthflowServer::run(){
   int uniqueness  = prop.findGroup("DEPTHFLOWS").find("UNIQUENESS").asInt();
   yarp::os::ConstString temp_port    = prop.findGroup("DEPTHFLOWS").find("INPORT").asString();
   QString in_port =  temp_port.c_str();
-
-
   //IN PORTS:
   Port inPort_s;
   inPort_s.open("/depthflowserver/input/serv_params");
@@ -146,7 +144,6 @@ void iCub::contrib::primateVision::DepthflowServer::run(){
 
     inBot_yr = inPort_yr.read(false);   //non-blocking
     inBot_yl = inPort_yl.read();        //blocking
-
     
     if (inBot_yl!=NULL && inBot_yr!=NULL){
 
@@ -169,8 +166,6 @@ void iCub::contrib::primateVision::DepthflowServer::run(){
       df_res_params.hd   = df->get_hd();
       df_res_params.mind = df->get_mind();
       df_res_params.maxd = df->get_maxd();
-
-
 
       //CONSTRUCT SAL:
 
