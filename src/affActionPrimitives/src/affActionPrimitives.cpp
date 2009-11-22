@@ -123,14 +123,9 @@ bool affActionPrimitives::open(Property &opt)
 
     for (int i=iMin; i<iMax; i++)
     {    
-        enabledJoints.insert(i);    // set ref joint speed
+        enabledJoints.insert(i);
         posCtrl->setRefSpeed(i,20.0);
     }
-
-//  // remove thumb joints
-//  enabledJoints.erase(8);
-//  enabledJoints.erase(9);
-//  enabledJoints.erase(10);
 
     // set trajectory time
     cartCtrl->setTrajTime(trajTime);
@@ -169,19 +164,33 @@ bool affActionPrimitives::open(Property &opt)
     fprintf(stdout,"creating hand smoother...\n");
     fs=new FunctionSmoother(thresholds);
 
-    fingerOpenPos.resize(9,0.0);
-    fingerClosePos.resize(9,0.0);
-    fingerAlignPos.resize(9,0.0);
+    fingerOpenPos.resize(iMax,0.0);
+    fingerClosePos.resize(iMax,0.0);
+    fingerAlignPos.resize(iMax,0.0);
 
-    fingerClosePos[0]=10.0;
-    fingerClosePos[1]=40.0;
-    fingerClosePos[2]=90.0;
-    fingerClosePos[3]=10.0;
-    fingerClosePos[4]=70.0;
-    fingerClosePos[5]=70.0;
-    fingerClosePos[6]=70.0;
-    fingerClosePos[7]=70.0;
-    fingerClosePos[8]=110.0;
+    if (opt.check("fingerOpenPos"))
+    {
+        Bottle *v=opt.find("fingerOpenPos").asList();
+
+        for (int i=0; i<v->size(); i++)
+            fingerOpenPos[iMin+i]=v->get(i).asDouble();
+    }
+
+    if (opt.check("fingerClosePos"))
+    {
+        Bottle *v=opt.find("fingerClosePos").asList();
+
+        for (int i=0; i<v->size(); i++)
+            fingerClosePos[iMin+i]=v->get(i).asDouble();
+    }
+
+    if (opt.check("fingerAlignPos"))
+    {
+        Bottle *v=opt.find("fingerAlignPos").asList();
+
+        for (int i=0; i<v->size(); i++)
+            fingerAlignPos[iMin+i]=v->get(i).asDouble();
+    }
 
     mutex=new Semaphore(1);
     motionDoneEvent=new ACE_Auto_Event;
@@ -501,7 +510,7 @@ bool affActionPrimitives::moveHand(const Vector &fingerPos, const bool sync)
     {        
         activeJoints=enabledJoints;
         for (set<int>::const_iterator itr=enabledJoints.begin(); itr!=enabledJoints.end(); itr++)
-            posCtrl->positionMove(*itr,fingerPos[*itr-iMin]);
+            posCtrl->positionMove(*itr,fingerPos[*itr]);
 
         latchHandMoveDone=handMoveDone=false;
         fprintf(stdout,"start moving hand\n");
