@@ -8,4 +8,6 @@ edison_source/parser
 
 Requires a powerfull computer...
 
+I had to change function GetRegions in msImageProcessor.cpp
+
 TODO: edisonLib - the above files could be wrapper around a static lib

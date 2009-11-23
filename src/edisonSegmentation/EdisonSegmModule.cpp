@@ -284,14 +284,14 @@ bool EdisonSegmModule::updateModule()
 	}*/
 		
 	int regionCount; // how many regions have been found
-	int *labels; //pointer for the labels (should this be released in the end?) 
+	int *labels = NULL; //pointer for the labels (should this be released in the end?) 
 	float *modes; //pointer for the Luv values (should this be released in the end?) 
 	int *modePointCounts; //the area of each region (should this be released in the end?) 
 
 	regionCount = iProc.GetRegions(&labels, &modes, &modePointCounts);
 	int *labelp = (int*)labelImage.getRawImage();
 	for(int i = 0; i < width_*height_; i++)
-		labelp[i] = labels[i];
+		labelp[i] = labels[i]*30 + 30;
 	
 	IplImage *labelint = (IplImage*)labelImage.getIplImage();
 	IplImage *labelchar = (IplImage*)labelView.getIplImage();

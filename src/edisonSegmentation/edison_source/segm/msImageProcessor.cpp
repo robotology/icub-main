@@ -1125,8 +1125,16 @@ int msImageProcessor::GetRegions(int **labels_out, float **modes_out, int **MPC_
 
 	//allocate memory for labels_out, modes_out and MPC_out based
 	//on output storage structure
-	int		*labels_	= *labels_out, *MPC_out_ = *MPC_out;
-	float	*modes_		= *modes_out; 
+
+	//ALEX BERNARDINO 29/07/09 - I had to change this in order to get the outputs
+	//int		*labels_	= *labels_out, *MPC_out_ = *MPC_out;
+	//float	*modes_		= *modes_out; 
+	int *labels_;
+	int *MPC_out_;
+	float *modes_;
+	//END MODIFICATION
+
+
 	if(!(labels_ = new int [L]))
 	{
 		ErrorHandler("msImageProcessor", "GetRegions", "Not enough memory.");
@@ -1156,6 +1164,18 @@ int msImageProcessor::GetRegions(int **labels_out, float **modes_out, int **MPC_
 		MPC_out_[i]	= modePointCounts[i];
 
 	//done. Return the number of regions resulting from filtering or segmentation.
+
+	//ALEX BERNARDINO 29/07/09 - I had to change this in order to get the outputs
+	if(labels_out)
+		*labels_out = labels;
+	if(modes_out)
+		*modes_out = modes_;
+	if(MPC_out)
+		*MPC_out = MPC_out_;
+	//END MODIFICATION
+
+	
+
 	return regionCount;
 }
 
