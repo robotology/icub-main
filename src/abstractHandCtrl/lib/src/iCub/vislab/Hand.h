@@ -50,8 +50,54 @@ class Hand {
 	static const int allButThumb[];
 	static const int completeHand[];
 
+	/**
+	 * This class implements a {@link RateThread} for recording the motions of the {@link Hand}.
+	 *
+	 * @author Christian Wressnegger
+	 * @date 2009
+	 */
+	class RecordingThread: public ::yarp::os::RateThread {
+		vislab::yarp::util::MotionSequence recording;
+		vislab::yarp::util::MotionSequence curRecording;
+		::yarp::dev::IEncoders* encoders;
+
+	public:
+		/**
+		 * The constructor.
+		 * @param encoders The encoders of the {@link Hand}.
+		 * @param period The time interval the motions should be sampled.
+		 */
+		RecordingThread(::yarp::dev::IEncoders* const encoders, int period = 100);
+		/**
+		 * The destructor.
+		 */
+		virtual ~RecordingThread();
+		/**
+		 * @see RateThread#run()
+		 */
+		virtual void run();
+		/**
+		 * @see RateThread#start()
+		 */
+		bool start();
+		/**
+		 * @see RateThread#stop()
+		 */
+		void stop();
+
+		/**
+		 * Returns the last finished recording of the {@link Hand}.
+		 * @return The last finished recording of the {@link Hand}.
+		 */
+		vislab::yarp::util::MotionSequence getRecording();
+	};
+
 	/** The speeds of the control before they were changed by this class. */
 	double prevSpeed[HandMetrics::numAxes];
+
+	bool recording;
+	vislab::yarp::util::MotionSequence recordedSequence;
+	RecordingThread* recordingThread;
 
 protected:
 
@@ -248,6 +294,27 @@ public:
 	 */
 	bool move(const vislab::yarp::util::MotionSequence& seq, const std::set<int> joints,
 			const bool invert = false);
+
+	/**
+	 * En-/Disables the recording for the hands movements.
+	 * @param b The indicator to decide if we start or stop the recording.
+	 */
+	void record(const bool b = true);
+	/**
+	 * Returns the last finished recording of the {@link Hand}.
+	 * @return The last finished recording of the {@link Hand}.
+	 */
+	vislab::yarp::util::MotionSequence getRecording();
+	/**
+	 * Set the sampling rate for recording hand movements.
+	 * @param t The sampling rate as milliseconds.
+	 */
+	void setSamplingRate(double t);
+	/**
+	 * Returns the sampling rate which is used for recording hand movements.
+	 * @return The sampling rate which is used for recording hand movements.
+	 */
+	double getSamplingRate();
 };
 
 }

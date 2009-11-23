@@ -209,24 +209,15 @@ void HandModule::HandWorkerThread::setMotionSpecification(Searchable& s) {
 void HandModule::HandWorkerThread::addMotionSpecification(Searchable& s) {
 	Bottle b(s.toString());
 	readMotionSequences(b, motions);
-#define DEBUG
+
 #ifdef DEBUG
 	map<const string, MotionSequence>::const_iterator itr1;
 	for (itr1 = motions.begin(); itr1 != motions.end(); ++itr1) {
 		cout << "Motion type: " << itr1->first << endl;
-		MotionSequence seq = itr1->second;
-		for (int i = 0; i < seq.length(); i++) {
-			Motion& m = seq[i];
-			cout << "  Position = ";
-			printVector(m.getPosition());
-			cout << "  Velocity = ";
-			printVector(m.getVelocity());
-			cout << "  Timing = " << m.getTiming() << endl;
-		}
+		cout << itr1->second.toString() << endl;
 	}
 #endif
 }
-
 
 
 void HandModule::HandWorkerThread::setSensingConstants(::yarp::os::Searchable& s) {

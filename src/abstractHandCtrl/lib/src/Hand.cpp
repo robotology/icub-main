@@ -45,6 +45,53 @@ const std::set<int> Hand::ALL_FINGER_JOINTS(Hand::allFingerJoints, Hand::allFing
 const std::set<int> Hand::ALL_BUT_THUMB(Hand::allButThumb, Hand::allButThumb + 8);
 const std::set<int> Hand::COMPLETE_HAND(Hand::completeHand, Hand::completeHand + 12);
 
+Hand::RecordingThread::RecordingThread(IEncoders* const encoders, int period) :
+	RateThread(period) {
+	if (encoders == NULL) {
+		throw "Valid encoders are mandatory.";
+	}
+
+	int numAxes;
+	encoders->getAxes(&numAxes);
+	if (numAxes != HandMetrics::numAxes) {
+		throw "The number of axes mismatches the expected number";
+	}
+
+	this->encoders = encoders;
+	curRecording.setNumJoints(HandMetrics::numAxes);
+}
+
+Hand::RecordingThread::~RecordingThread() {
+}
+
+bool Hand::RecordingThread::start() {
+	curRecording.clear();
+	return RateThread::start();
+}
+
+void Hand::RecordingThread::stop() {
+	recording = curRecording;
+	RateThread::stop();
+}
+
+void Hand::RecordingThread::run() {
+	Motion m(HandMetrics::numAxes);
+
+	Vector v(HandMetrics::numAxes);
+	encoders->getEncoders(v.data());
+	m.setPosition(v);
+
+	encoders->getEncoderSpeeds(v.data());
+	m.setVelocity(v);
+	m.setTiming(0.0);
+
+	curRecording.addMotion(m);
+}
+
+MotionSequence Hand::RecordingThread::getRecording() {
+	return recording;
+}
+
 Hand::Hand(PolyDriver& controlBoard) :
 	controlBoard(controlBoard) {
 
@@ -61,8 +108,13 @@ Hand::Hand(PolyDriver& controlBoard) :
 	disabledJoints.clear();
 
 	posControl->getRefSpeeds(prevSpeed);
+#ifdef DEBUG
 	printVector(prevSpeed, HandMetrics::numAxes);
+#endif
 	handMetrics = NULL;
+
+	recordingThread = new RecordingThread(encoders);
+	record(false);
 }
 
 void Hand::defineHandMetrics() {
@@ -76,6 +128,7 @@ Hand::~Hand() {
 		delete handMetrics;
 	}
 	posControl->setRefSpeeds(prevSpeed);
+	delete recordingThread;
 }
 
 HandMetrics& Hand::getMetrics() {
@@ -259,6 +312,25 @@ bool Hand::motionDone(const set<int> joints) {
 
 void Hand::stopBlockedJoints(std::set<int>& activeJoints) {
 	// to be detailed in derived classes
+}
+
+void Hand::record(const bool b) {
+	if (recording != b) {
+		if (recording) {
+			recordingThread->stop();
+			// save file
+		} else {
+			recordingThread->start();
+		}
+	}
+}
+
+MotionSequence Hand::getRecording() {
+	return recordingThread->getRecording();
+}
+
+void Hand::setSamplingRate(double t) {
+	recordingThread->setRate(t);
 }
 
 }
