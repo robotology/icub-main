@@ -19,6 +19,7 @@
 #include <yarp/os/BufferedPort.h>
 #include <yarp/os/Bottle.h>
 #include <yarp/sig/Vector.h>
+#include <iostream>
 
 class EyeLids
 {
@@ -32,6 +33,7 @@ public:
 	bool OpenPort();
     
     void ClosePort();
+	void checkPort();
 };
 
 #endif

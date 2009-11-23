@@ -11,6 +11,7 @@
 
 using namespace yarp::os;
 using namespace yarp::sig;
+using namespace std;
 
 EyeLids::EyeLids()
 {
@@ -30,16 +31,19 @@ void EyeLids::ClosePort()
 bool EyeLids::OpenPort()
 {
     port.open("/icubSim/face/eyelids");
-	if(port.getInputCount()>0)
-	{
-		    Bottle *bot = port.read(false);
-			if (bot!=NULL) 
-            {
-			    eyeLidsRotation=bot->get(0).asDouble();
-			    bot->clear();
-			    printf("Message received: %s\n",bot->toString().c_str());
-            }
-    }
-	
 	return true;
+}
+
+
+void EyeLids::checkPort()
+{
+   if(port.getInputCount()>0)
+	{
+        Bottle *bot = port.read(false);
+		if (bot!=NULL){
+	        eyeLidsRotation = bot->get(0).asDouble();
+            bot->clear();
+		    printf("Message received: %s\n",bot->toString().c_str());
+        }    
+    }
 }
