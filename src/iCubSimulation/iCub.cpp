@@ -606,6 +606,7 @@ void ICubSim::draw(){
 		if (eyeLids==0)
             eyeLids=new EyeLids; 
 
+		eyeLids->checkPort();
 		glTranslatef(0,0,0.067);
 		glRotatef(eyeLids->eyeLidsRotation,1,0,0);
 		topEyeLidModel->draw(false,8); 
