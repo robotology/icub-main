@@ -40,7 +40,7 @@ namespace iCub {
 	}
 	/** Converstion to string of parameters for printing. */
 	string toString(){
-	  char buffer[50];
+	  char buffer[256];
 	  sprintf(buffer, "%d %d %d %d %d",width,height,mos_width,mos_height,psb);
 	  return buffer;
 	}
@@ -76,8 +76,8 @@ namespace iCub {
 	}
 	/** Converstion to string of parameters for printing. */
 	string toString(){
-	  char buffer[50];
-	  sprintf(buffer, "%f %f %f %d %d %d %d %d %d %d %d",
+	  char buffer[256];
+	  sprintf(buffer, "%f %f %f %d %d %d %d %f %f %d %d",
 		  x,y,z,mos_xl,mos_yl,mos_xr,mos_yr,cog_x,cog_y,area,(int)update);
 	  return buffer;
 	}
@@ -94,8 +94,8 @@ namespace iCub {
 	  con.appendInt(mos_yl);
 	  con.appendInt(mos_xr);
 	  con.appendInt(mos_yr);
-	  con.appendInt(cog_x);
-	  con.appendInt(cog_y);
+	  con.appendDouble(cog_x);
+	  con.appendDouble(cog_y);
 	  con.appendInt(area);
 	  con.appendInt((int) update);
 	  return true;
@@ -120,8 +120,8 @@ namespace iCub {
 	  mos_yl = con.expectInt();
 	  mos_xr = con.expectInt();
 	  mos_yr = con.expectInt();
-	  cog_x = con.expectInt();
-	  cog_y = con.expectInt();
+	  cog_x = con.expectDouble();
+	  cog_y = con.expectDouble();
 	  area = con.expectInt();
 	  update = (bool) con.expectInt();
 	  return true;
@@ -135,8 +135,8 @@ namespace iCub {
 	int mos_yl;
 	int mos_xr;
 	int mos_yr;
-	int cog_x;
-	int cog_y;
+	double cog_x;
+	double cog_y;
 	int area;
 	bool update;
 	ImageOf<PixelMono> dog;

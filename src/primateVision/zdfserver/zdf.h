@@ -95,7 +95,7 @@ namespace iCub {
 	 * @param pdy A pointer to the destination memory space to write the cog y.
 	 * @param pspread A pointer to the destination memory space to write the spread.
 	 */
-	void getAreaCoGSpread(Ipp8u*im, int p,IppiSize s, int*parea,int*pdx,int*pdy,int*pspread);
+	void getAreaCoGSpread(Ipp8u*im, int p,IppiSize s, int*parea,double*pdx,double*pdy,double*pspread);
 
 
       };

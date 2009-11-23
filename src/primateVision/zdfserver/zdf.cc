@@ -82,7 +82,7 @@ void iCub::contrib::primateVision::ZDFServer::run(){
   int t_lock_lr        = prop.findGroup("ZDFTRACK").find("T_LOCK_LR").asInt();
   int t_lock_ud        = prop.findGroup("ZDFTRACK").find("T_LOCK_UD").asInt();
   Ipp32f shift_sim_t   = prop.findGroup("ZDFTRACK").find("TRACK_SIM").asDouble();
-  double track_gain    = prop.findGroup("ZDFTRACK").find("TRACK_GAIN").asDouble();
+  double zd_track_gain = prop.findGroup("ZDFTRACK").find("ZD_TRACK_GAIN").asDouble();
   int min_area         = prop.findGroup("ZDFTRACK").find("MIN_AREA").asInt();
   int max_area         = prop.findGroup("ZDFTRACK").find("MAX_AREA").asInt();
   int max_spread       = prop.findGroup("ZDFTRACK").find("MAX_SPREAD").asInt();
@@ -90,10 +90,11 @@ void iCub::contrib::primateVision::ZDFServer::run(){
   bool return_home     = (bool) prop.findGroup("ZDFTRACK").find("RETURN_HOME").asInt();
   bool motion          = (bool) prop.findGroup("ZDFTRACK").find("MOTION").asInt();
   bool track_lock      = (bool) prop.findGroup("ZDFTRACK").find("TRACK_LOCK").asInt();
+  double cog_snap      = prop.findGroup("ZDFTRACK").find("COG_SNAP").asDouble();
+  double cog_drift     = (double) prop.findGroup("ZDFTRACK").find("COG_DRIFT").asInt();
   int nclasses         = 2; //zd, not_zd
 
 
- // cout <<  "HERE " << temp_port.c_str() << endl;
   //PROBE RECSERVER:
   Port inPort_s;
   inPort_s.open("/zdfserver/input/serv_params");     
@@ -150,9 +151,11 @@ void iCub::contrib::primateVision::ZDFServer::run(){
   int mid_x_m = (msize.width  - tsize.width)/2;
   int mid_y_m = (msize.height - tsize.height)/2;
   int area;
-  int cog_x = 0;
-  int cog_y = 0;
-  int spread;
+  double cog_x = 0.0;
+  double cog_y = 0.0;
+  double cog_x_send = 0.0;
+  double cog_y_send = 0.0;
+  double spread;
  
 
   //RANK/NDT TRANSFORM:
@@ -226,12 +229,10 @@ void iCub::contrib::primateVision::ZDFServer::run(){
 
   if (motion){
     //initalise:
-    motion_request.content().pix_y  = 0;
-    motion_request.content().pix_xl = 20;
-    motion_request.content().pix_xr = -20;
+    motion_request.content().pix_y  = 0.0;
+    motion_request.content().pix_xl = 20.0;
+    motion_request.content().pix_xr = -20.0;
     motion_request.content().deg_r  = 0.0;
-    motion_request.content().deg_p  = 0.0;
-    motion_request.content().deg_y  = 0.0;
     motion_request.content().relative = false; //absolute initial pos.
     motion_request.content().suspend  = 0;
     motion_request.content().lockto  = NO_LOCK;
@@ -315,7 +316,6 @@ void iCub::contrib::primateVision::ZDFServer::run(){
 	  ippiCopy_8u_C1R(&rec_im_ly[((srcsize.height-tsize.height)/2)*psb_in +
 				     (srcsize.width-tsize.width)/2],
 			  psb_in,temp_r,psb_t,tsize);
-	  acquire = false;
 	}
 
 
@@ -454,7 +454,8 @@ void iCub::contrib::primateVision::ZDFServer::run(){
 	ippiCopy_8u_C1R(m->get_class(),m->get_psb(),out,psb_m,msize);
 	//evaluate result:
 	getAreaCoGSpread(out,psb_m,msize, &area,&cog_x,&cog_y,&spread); 	
-
+	cog_x_send = cog_x;
+	cog_y_send = cog_y;
 	
 
 
@@ -477,47 +478,54 @@ void iCub::contrib::primateVision::ZDFServer::run(){
 
 	//If nice segmentation:
 	if (area>=min_area && area<=max_area && spread<=max_spread){
-	  //update templates towards segmentation CoG:
-	  printf("area:%d spread:%d cogx:%d cogy:%d - UPDATING TEMPLATE\n",area,spread,cog_x,cog_y);
-	  
-	  if (cog_x>0){cog_x=1;}  //take sign to drift template towards cog of segmentation
-	  if (cog_x<0){cog_x=-1;} //only want to DRIFT there cos a jump would otherwise be 
-	  if (cog_y>0){cog_y=1;}  //induced by a sudden increase in seg area.
-	  if (cog_y<0){cog_y=-1;}
-	  
-	  ippiCopy_8u_C1R(&fov_l[(mid_x_m+cog_x) + 
-				 (mid_y_m+cog_y)*psb_m],
-			  psb_m,temp_l,psb_t,tsize);
-	  ippiCopy_8u_C1R(&fov_r[(mid_x_m+cog_x) + 
-				 (mid_y_m+cog_y)*psb_m],
-			  psb_m,temp_r,psb_t,tsize);
+ 	  //don't update templates to image centre any more as we have a nice target
+      acquire = false;
+	  //update templates to(wards) segmentation CoG:
+	  printf("area:%d spread:%f cogx:%f cogy:%f - UPDATING TEMPLATE\n",area,spread,cog_x,cog_y);
+		//Bring cog of target into centre of fovea:
+		if (cog_snap!=0.0){
+			  //SNAP GAZE TO OBJECT:
+			  cog_x*=cog_snap;
+			  cog_y*=cog_snap;
+		}
+		else {
+			  //DRIFT GAZE TOWARDS OBJECT:
+			  if (cog_x>cog_drift){cog_x=cog_drift;}          //take sign to drift template towards cog of segmentation
+			  else if (cog_x<-cog_drift){cog_x=-cog_drift;}   //only want to DRIFT there cos a jump would otherwise be
+			  else {cog_x=0.0;} 
+			  if (cog_y>cog_drift){cog_y=cog_drift;}  //induced by a sudden change in seg area.
+			  else if (cog_y<-cog_drift){cog_y=-cog_drift;}
+			  else {cog_y=0.0;}
+		}
+	  ippiCopy_8u_C1R(&fov_l[(mid_x_m+((int)round(cog_x))) + (mid_y_m+((int)round(cog_y)))*psb_m],psb_m,temp_l,psb_t,tsize);
+	  ippiCopy_8u_C1R(&fov_r[(mid_x_m+((int)round(cog_x))) + (mid_y_m+((int)round(cog_y)))*psb_m],psb_m,temp_r,psb_t,tsize);
+	  //We've updated, so reset waiting:
 	  waiting=0;
+      //report that we-ve updated templates:
 	  update = true;
 	}
-	//Otherwise, just keep previous templates.
+	//Otherwise, just keep previous templates:
 	else{
-	  printf("area:%d spread:%d cogx:%d cogy:%d\n",area,spread,cog_x,cog_y);	
+	  printf("area:%d spread:%f cogx:%f cogy:%f\n",area,spread,cog_x,cog_y);	
 	  waiting++;
+      //report that we didn't update template:
 	  update = false;
 	}
 	
 	
 	
 	if(waiting>=max_wait){
-	  printf("Acquiring new target (waiting:%d >= max_wait:%d)\n",waiting,max_wait);
+	  printf("Acquiring new target until nice seg (waiting:%d >= max_wait:%d)\n",waiting,max_wait);
 	  acquire = true;
-	  waiting = 0;
 	  if (motion && return_home){
 	    printf("Returning home!\n");
 	    //re-initalise:
-	    motion_request.content().pix_y  = 0;
-	    motion_request.content().pix_xl = 20;
-	    motion_request.content().pix_xr = -20;
+	    motion_request.content().pix_y  = 0.0;
+	    motion_request.content().pix_xl = 20.0;
+	    motion_request.content().pix_xr = -20.0;
 	    motion_request.content().deg_r  = 0.0;
-	    motion_request.content().deg_p  = 0.0;
-	    motion_request.content().deg_y  = 0.0;
 	    motion_request.content().relative = false; //absolute initial pos.
-	    motion_request.content().suspend  = 50;
+	    motion_request.content().suspend  = 200;
 	    motion_request.content().lockto  = NO_LOCK;
 	    motion_request.content().unlock = true;
 	    //send:
@@ -528,13 +536,13 @@ void iCub::contrib::primateVision::ZDFServer::run(){
 	  if (motion){
 	    //*********************************
 	    //ALWAYS MOVE TO REDUCE VIRTUAL VERGE SHIFT AND TRACK OFFSET TO ZERO:
-	    motion_request.content().pix_xl = (int) (((double)tl_x)*track_gain);
-	    motion_request.content().pix_xr = (int) (((double)tr_x)*track_gain);
-	    motion_request.content().pix_y  = (int) (((double)(tl_y+tr_y)/2.0)*track_gain);
-	    motion_request.content().relative = true; //relative move.
+	    motion_request.content().pix_xl = tl_x*zd_track_gain;
+	    motion_request.content().pix_xr = tr_x*zd_track_gain;
+	    motion_request.content().pix_y  = ((tl_y+tr_y)/2.0)*zd_track_gain;
+		motion_request.content().relative = true; //relative move.
 	    motion_request.content().suspend  = 0; 
 	    
-	    //If target locking requesteg, while tracking success, 
+	    //If target locking requested, while tracking success, 
 	    //lock motion control to the ZDF server only.  Otherwise, unlock 
 	    //so that attentional saccades can occur.
 	    if (track_lock && track){
@@ -591,8 +599,8 @@ void iCub::contrib::primateVision::ZDFServer::run(){
 	zdfData.mos_yl = rec_res->ly + tl_y;
 	zdfData.mos_xr = rec_res->rx + tr_x;
 	zdfData.mos_yr = rec_res->ry + tr_y + dpix_y;
-	zdfData.cog_x = cog_x;
-	zdfData.cog_y = cog_y;
+	zdfData.cog_x = cog_x_send;
+	zdfData.cog_y = cog_y_send;
 	zdfData.area = area;
 	zdfData.update = update;
 	//send:
@@ -800,44 +808,42 @@ double iCub::contrib::primateVision::ZDFServer::cmp_rank(int*l1, int*l2)
 
 
 
-void iCub::contrib::primateVision::ZDFServer::getAreaCoGSpread(Ipp8u*im_,int psb_,IppiSize sz_,int*parea,int*pdx,int*pdy,int*spread){
+void iCub::contrib::primateVision::ZDFServer::getAreaCoGSpread(Ipp8u*im_,int psb_,IppiSize sz_,int*parea,double*pdx,double*pdy,double*spread){
 
-  int naccum = 0, xaccum = 0, yaccum = 0;
-  *spread = 0;
+  double naccum = 0.0, xaccum = 0.0, yaccum = 0.0;
+  *spread = 0.0;
 
   for (int j=0;j<sz_.height;j++){
     for (int i=0;i<sz_.width;i++){
       if (im_[j*psb_+i]!=0){
-	xaccum+=i; yaccum+=j; naccum++;
+		xaccum+=(double)i; 
+		yaccum+=(double)j; 
+		naccum+=1.0;
       }
     }
   }
   
   *parea = naccum;
-  if (naccum > 0){
-    *pdx = -(sz_.width/2 - xaccum/naccum - 1);
-    *pdy = -(sz_.height/2 - yaccum/naccum - 1);  
+  if (naccum > 0.0){
+    *pdx = -(sz_.width/2.0 - xaccum/naccum - 1.0);
+    *pdy = -(sz_.height/2.0 - yaccum/naccum - 1.0);  
 
     //get spread:
     for (int j=0;j<sz_.height;j++){
       for (int i=0;i<sz_.width;i++){
-	if (im_[j*psb_+i]!=0){  
-
-	  *spread += (int) sqrt( abs((i-sz_.width/2-1) - (*pdx)) *
-				 abs((i-sz_.width/2-1) - (*pdx)) 
-				 + 
-				 abs((j-sz_.height/2-1) -(*pdy)) *
-				 abs((j-sz_.height/2-1) -(*pdy)) );
-	}
+		if (im_[j*psb_+i]!=0){  
+		  *spread += sqrt( fabs((i-sz_.width/2.0 - 1.0) - (*pdx)) * fabs((i-sz_.width/2.0 - 1.0) - (*pdx)) 
+					 + fabs((j-sz_.height/2.0 - 1.0) -(*pdy)) * fabs((j-sz_.height/2.0 - 1.0) -(*pdy)) );
+		}
       }
     }
     
     *spread/=naccum;
   }
   else {
-    *pdx = 0;
-    *pdy = 0;
-    *spread = 0;
+    *pdx = 0.0;
+    *pdy = 0.0;
+    *spread = 0.0;
   }
   
  
