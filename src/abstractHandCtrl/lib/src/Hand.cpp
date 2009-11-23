@@ -325,6 +325,10 @@ void Hand::record(const bool b) {
 	}
 }
 
+bool Hand::isRecording() {
+	return recordingThread->isRunning();
+}
+
 MotionSequence Hand::getRecording() {
 	return recordingThread->getRecording();
 }

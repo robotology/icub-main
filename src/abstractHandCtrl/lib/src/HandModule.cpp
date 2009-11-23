@@ -223,7 +223,7 @@ void HandModule::HandWorkerThread::addMotionSpecification(Searchable& s) {
 void HandModule::HandWorkerThread::setSensingConstants(::yarp::os::Searchable& s) {
 	if (handType != v1) {
 		cout << "Warning: You are trying to set sensing constants which is not \
-			    	 necessary/ ment for the type of hand you specified." << endl;
+			    	 necessary/ meant for the type of hand you specified." << endl;
 	}
 
 	Bottle b(s.toString());

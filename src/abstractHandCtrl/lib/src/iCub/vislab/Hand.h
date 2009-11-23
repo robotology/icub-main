@@ -296,10 +296,15 @@ public:
 			const bool invert = false);
 
 	/**
-	 * En-/Disables the recording for the hands movements.
+	 * En-/Disables the recording for the {@link Hand}s movements.
 	 * @param b The indicator to decide if we start or stop the recording.
 	 */
 	void record(const bool b = true);
+	/**
+	 * Returns if the movements of the {@link Hand} are currently recorded or not.
+	 * @return If the movements of the {@link Hand} are currently recorded or not.
+	 */
+	bool isRecording();
 	/**
 	 * Returns the last finished recording of the {@link Hand}.
 	 * @return The last finished recording of the {@link Hand}.
@@ -311,8 +316,8 @@ public:
 	 */
 	void setSamplingRate(double t);
 	/**
-	 * Returns the sampling rate which is used for recording hand movements.
-	 * @return The sampling rate which is used for recording hand movements.
+	 * Returns the sampling rate which is used for recording {@link Hand} movements.
+	 * @return The sampling rate which is used for recording {@link Hand} movements.
 	 */
 	double getSamplingRate();
 };
