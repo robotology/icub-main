@@ -117,12 +117,10 @@ int main( int argc, char **argv )
   BinPortable<RecMotionRequest> motion_request;
 
   //initalise:
-  motion_request.content().pix_y  = 0;
-  motion_request.content().pix_xl = 0;
-  motion_request.content().pix_xr = 0;
+  motion_request.content().pix_y  = 0.0;
+  motion_request.content().pix_xl = 0.0;
+  motion_request.content().pix_xr = 0.0;
   motion_request.content().deg_r  = 0.0;
-  motion_request.content().deg_p  = 0.0;
-  motion_request.content().deg_y  = 0.0;
   motion_request.content().relative = false; //gonna send absolute moves!
   motion_request.content().suspend = 0; 
   motion_request.content().lockto = NO_LOCK; 
@@ -239,24 +237,18 @@ int main( int argc, char **argv )
 
     if (mot){
       //SEND eye POSITIONS LIKE THIS!
-      motion_request.content().pix_xl = (int) 150.0*sin(((double)k)/100.0); //200
-      motion_request.content().pix_xr = (int) 150.0*sin(((double)k)/100.0); //200
-      motion_request.content().pix_y  = (int) 100.0*sin(((double)k)/80.0);  //150
-      //neck tilt/pitch:
-      motion_request.content().deg_p  = 15.0*sin(((double)k)/80.0);
-      //neck pan/yaw:
-      motion_request.content().deg_y  = 20.0*sin(((double)k)/80.0);
+      motion_request.content().pix_xl = 200.0*sin(((double)k)/140.0); //200
+      motion_request.content().pix_xr = 200.0*sin(((double)k)/140.0); //200
+      motion_request.content().pix_y  = 150.0*sin(((double)k)/80.0);  //150
       //neck  roll:
-      motion_request.content().deg_r  = 15.0*sin(((double)k)/80.0);
+      motion_request.content().deg_r  = 25.0*sin(((double)k)/120.0);   //25
 
 
-      printf("RecClient: Moving (%d,%d,%d, %f,%f,%f)\n",
+      printf("RecClient: Moving (%f,%f,%f, %f)\n",
 	     motion_request.content().pix_xl,
 	     motion_request.content().pix_xr,
 	     motion_request.content().pix_y,
-		 motion_request.content().deg_r,
-		 motion_request.content().deg_p,
- 		 motion_request.content().deg_y);
+		 motion_request.content().deg_r);
 
       outPort_mot.write(motion_request);
     }

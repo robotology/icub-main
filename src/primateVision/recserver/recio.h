@@ -50,7 +50,7 @@ namespace iCub {
 	}
 	/** Converstion to string of parameters for printing. */
 	string toString(){
-	  char buffer[500];
+	  char buffer[256];
 	  sprintf(buffer, "%d %d %d %d %d %d %f %f %f",
 		  width,height,psb,mos_width,mos_height,focus,baseline,pix2degX,pix2degY);
 	  return buffer;
@@ -89,7 +89,7 @@ namespace iCub {
 	}
 	/** Converstion to string of parameters for printing. */
 	string toString(){
-	  char buffer[50];
+	  char buffer[256];
 	  sprintf(buffer, "%d %d %d %d %f %f %f %f %f %f %f %f %f",
 		  lx,rx,ly,ry,deg_lx,deg_rx,deg_ly,deg_ry,head_r,head_p,head_y,gaze3D_x,gaze3D_y,gaze3D_z);
 	  return buffer;
@@ -131,25 +131,23 @@ namespace iCub {
 	/** Constructor. */
 	RecMotionRequest() {
 	  listTag = BOTTLE_TAG_LIST + BOTTLE_TAG_INT;
-	  lenTag = 10;
+	  lenTag = 8;
 	}
 	/** Converstion to string of parameters for printing. */
 	string toString(){
-	  char buffer[50];
-	  sprintf(buffer, "%d %d %d %f %f %f %d %d %d %d",
-		  pix_xl,pix_xr,pix_y,deg_r,deg_p,deg_y,(bool)relative,suspend,lockto,unlock);
+	  char buffer[256];
+	  sprintf(buffer, "%f %f %f %f %d %d %d %d",
+		  pix_xl,pix_xr,pix_y,deg_r,(bool)relative,suspend,lockto,unlock);
 	  return buffer;
 	}
 	int listTag;
 	int lenTag;
 	
 	//Params:
-	int pix_y; /**< Desired vertical shift in pixels. */
-	int pix_xl;/**< Desired left camera horizontal shift in pixels. */
-	int pix_xr;/**< Desired right camera horizontal shift in pixels. */
+	double pix_y; /**< Desired vertical shift in pixels. */
+	double pix_xl;/**< Desired left camera horizontal shift in pixels. */
+	double pix_xr;/**< Desired right camera horizontal shift in pixels. */
 	double deg_r;/**< Desired neck roll angle in degrees. */
-	double deg_p;/**< Desired neck pitch angle in degrees. */
-	double deg_y;/**< Desired neck yaw angle in degrees. */
 	bool relative;/**< Specifies if it should be a relative or absolute motion. */
 	int suspend; /**< Number of cycles (processed frames) the RecServer should stop responding to other motion commands after initiating this request. */
 	int lockto; /**< which RecServer client server (if any) should motion commands be exclusively accepted from?*/

@@ -22,6 +22,7 @@ iCub::contrib::primateVision::RecHandleMotionRequest::RecHandleMotionRequest(int
  vor_d_rol   = prop.findGroup("RECMOT").find("D_ROL").asDouble();
  vor_d_pan   = prop.findGroup("RECMOT").find("D_PAN").asDouble();
  vor_d_tlt   = prop.findGroup("RECMOT").find("D_TLT").asDouble();
+ headfollow  = prop.findGroup("RECMOT").find("HEADFOLLOW").asDouble();
 
 
   angles[0]=0.0;
@@ -70,14 +71,14 @@ void iCub::contrib::primateVision::RecHandleMotionRequest::run(){
 
       if (locked_to == rmq->content().lockto || locked_to == NO_LOCK){
 	//accept command..
-	angles[0] = rmq->content().deg_p;                
-	angles[1] = rmq->content().deg_r;                
-	angles[2] = rmq->content().deg_y;                
+	//head pitch (angles[0]) and yaw (angles[2]) done automatically now!!                
+	angles[0] = 0.0;
+	angles[1] = rmq->content().deg_r; 
+	angles[2] = 0.0;                            
 	angles[3] = -rmq->content().pix_y*pix2degy;      
-	angles[4] = (rmq->content().pix_xl+rmq->content().pix_xr)*pix2degx; // had /2
-	angles[5] = (rmq->content().pix_xl-rmq->content().pix_xr)*pix2degx; // had /2
-	//printf("RecServer: Motion command received: (%d,%d,%d)\n",
-	//rmq->content().pix_xl,rmq->content().pix_xr,rmq->content().pix_y);
+	angles[4] = (rmq->content().pix_xl+rmq->content().pix_xr)*pix2degx; // /2 version
+	angles[5] = (rmq->content().pix_xl-rmq->content().pix_xr)*pix2degx; // /2 vergence
+	//printf("RecServer: Motion command received: (%f,%f,%f)\n",rmq->content().pix_xl,rmq->content().pix_xr,rmq->content().pix_y);
 	//printf("RecServer: Motion command forwarded: (%f,%f,%f)\n",angles[3],angles[4],angles[5]);
 	relative  = rmq->content().relative;
 	suspend   = rmq->content().suspend;
@@ -96,11 +97,26 @@ void iCub::contrib::primateVision::RecHandleMotionRequest::run(){
 	  angles[5]=0.0;
 	}
 	
+    //incorporate HEAD FOLLOWING EYES:
+    if (headfollow != 0.0){
+      //sub a bit from version (angles[4]), add it to yaw (angles[2]):
+	  angles[4] -= angles[4]*headfollow; //head does % of motion according to 'headfollow'
+      angles[2] -= angles[4]*headfollow;
+      //sub from eye tilt (angles[3]), add to head tilt (angles[0]):
+	  angles[3] -= angles[3]*headfollow;
+      angles[0] += angles[3]*headfollow;
+     }
+
 
       }
     }
     
     
+
+
+
+
+
 
     //incorporate VOR:
     if (vor_on){

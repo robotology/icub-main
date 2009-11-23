@@ -74,6 +74,7 @@ namespace iCub {
 	IEncoders *encs; /**< Pointer encoder status ports. */
 
 	bool vor_on;
+	double headfollow;
 	double vor_k_rol;
 	double vor_k_pan;
 	double vor_k_tlt;
@@ -89,6 +90,7 @@ namespace iCub {
       private:
 	double angles[6]; /**< Axis angles. */
 	double vels[6];   /**< Axis velocities. */
+	double l_deg,r_deg;
 	bool relative;    /**< Relative/absolute motion flag. */
 	int suspend;      /**< Suspend period (in loop cycles). */
 	int locked_to;    /**< Command acceptance locking. */
