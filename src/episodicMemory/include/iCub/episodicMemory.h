@@ -221,6 +221,10 @@
 #ifndef __ICUB_episodicMemory_MODULE_H__
 #define __ICUB_episodicMemory_MODULE_H__
 
+//opencv
+#include <cv.h>
+#include <highgui.h>
+
 #include <ace/OS.h>
 
 //yarp
@@ -236,10 +240,6 @@
 #include <fstream>
 #include <sstream>
 #include <string>
-
-//opencv
-#include <cv.h>
-#include <highgui.h>
 
 using namespace std;
 using namespace yarp;
