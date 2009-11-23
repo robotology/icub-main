@@ -55,6 +55,10 @@ if(NOT ${NAME}_FOUND)
 	  check_modules(PC_LIB ${libname})
 	endif(PKG_CONFIG_FOUND)
 
+	#message(STATUS "-- 1-2 -- ${CMAKE_PREFIX_PATH}")
+	#message(STATUS "--  3  -- ${HINTS}")
+	#message(STATUS "--  4  -- $ENV{PATH} -- $ENV{LIB}")
+	#message(STATUS "--  5  -- ${CMAKE_SYSTEM_PREFIX_PATH}")
 	
 	find_library(${NAME}_LIBRARIES ${name}
 	             HINTS ${HINTS} ${PC_${libname}_LIBDIR} ${PC_${libname}_LIBRARY_DIRS} PATH_SUFFIXES "lib")

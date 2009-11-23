@@ -24,10 +24,11 @@ else(${CMAKE_MAJOR_VERSION}.${CMAKE_MINOR_VERSION} LESS 2.6)
   include(mergeFindResults)
 
   if(NOT LIBVISLAB_FOUND)
-
-    if($ENV{LIBVISLAB_DIR})
+  
+	set(LIBVISLAB_DIR $ENV{LIBVISLAB_DIR)
+    if(LIBVISLAB_DIR)
       file(TO_CMAKE_PATH $ENV{LIBVISLAB_DIR} HINTS)
-    endif($ENV{LIBVISLAB_DIR})
+    endif(LIBVISLAB_DIR)
 
     findLibrary(vislab "vislab/util/all.h")
     findLibrary(vislab_YARP "vislab/yarp/util/all.h")
