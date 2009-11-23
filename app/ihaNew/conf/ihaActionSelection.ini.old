@@ -1,0 +1,38 @@
+name iha
+dbg 50
+
+############################################################
+# Actions
+#
+action_defs conf/iha_actiondefs.ini
+sequence_dir ./conf/sequences
+num_actions 21
+#
+############################################################
+
+
+############################################################
+# Main configuration settings for experience creation
+HORIZONS 20
+#
+############################################################
+
+############################################################
+# This setting gives a max radius for the neighbour list for
+# the purposes of working out relative probablities in the
+# experience selection
+neighbour_radius 3.0
+#
+############################################################
+
+############################################################
+# TEMPERATURE
+# start temp
+temperature 3.0
+# cooling (use instead of adapt_temp)
+# 0 = no cooling
+temp_dec 0.001
+#
+############################################################
+
+max_repeat_zero 3

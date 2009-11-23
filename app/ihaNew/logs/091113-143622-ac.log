@@ -1,0 +1,407 @@
+Action Selection Module
+Debug level : 50
+max_repeat_zero 3
+Writing actions to port /iha/as/action:out
+yarp: Port /iha/as/action:out active at tcp://10.0.0.104:10212
+Waiting for port /iha/controller/action:cmd  ready. Now connecting /iha/as/action:out to /iha/controller/action:cmd yarp: Sending output from /iha/as/action:out to /iha/controller/action:cmd using tcp
+Added output connection from "/iha/as/action:out" to "/iha/controller/action:cmd"
+ connected.
+Connected to Action
+neighbour_radius 3.000000
+temperature 3.000000
+temp_dec 0.001000
+53 joints configured
+Joint : HEAD_PITCH -> 0
+Joint : HEAD_YAW -> 1
+Joint : HEAD_PAN -> 2
+Joint : EYES_UD -> 3
+Joint : EYES_RL -> 4
+Joint : EYES_CD -> 5
+Joint : LSH_ROT -> 6
+Joint : LSH_ELV -> 7
+Joint : LSH_TWST -> 8
+Joint : LELB_FLX -> 9
+Joint : LELB_TWST -> 10
+Joint : LWR_ABD -> 11
+Joint : LWR_FLX -> 12
+Joint : LDIG_1 -> 13
+Joint : LDIG_2 -> 14
+Joint : LDIG_3 -> 15
+Joint : LDIG_4 -> 16
+Joint : LDIG_5 -> 17
+Joint : LDIG_6 -> 18
+Joint : LDIG_7 -> 19
+Joint : LDIG_8 -> 20
+Joint : LDIG_9 -> 21
+Joint : RSH_ROT -> 22
+Joint : RSH_ELV -> 23
+Joint : RSH_TWST -> 24
+Joint : RELB_FLX -> 25
+Joint : RELB_TWST -> 26
+Joint : RWR_ABD -> 27
+Joint : RWR_FLX -> 28
+Joint : RDIG_1 -> 29
+Joint : RDIG_2 -> 30
+Joint : RDIG_3 -> 31
+Joint : RDIG_4 -> 32
+Joint : RDIG_5 -> 33
+Joint : RDIG_6 -> 34
+Joint : RDIG_7 -> 35
+Joint : RDIG_8 -> 36
+Joint : RDIG_9 -> 37
+Joint : TOR_TW -> 38
+Joint : TOR_LR -> 39
+Joint : TOR_FB -> 40
+Joint : LL_TW -> 41
+Joint : L_KNEE -> 42
+Joint : LL_ABD -> 43
+Joint : LL_FB -> 44
+Joint : LFT_LIFT -> 45
+Joint : LFT_TURN -> 46
+Joint : RL_TW -> 47
+Joint : R_KNEE -> 48
+Joint : RL_ABD -> 49
+Joint : RL_FB -> 50
+Joint : RFT_LIFT -> 51
+Joint : RFT_TURN -> 52
+13 actions configured
+arrays allocated
+action #0:
+action: Rest
+read: HEAD_PITCH 0 20
+read: HEAD_YAW 0 20
+read: HEAD_PAN 0 20
+read: EYES_UD 0 20
+read: EYES_RL 0 20
+read: EYES_CD 0 20
+read: RSH_ROT -20 15
+read: RSH_ELV 25 15
+read: RSH_TWST 0 20
+read: RELB_FLX 10 16
+read: RELB_TWST 0 20
+read: RWR_ABD 0 20
+read: RWR_FLX -1 20
+read: RDIG_1 0 20
+read: RDIG_2 0 20
+read: RDIG_3 0 20
+read: RDIG_4 0 20
+read: RDIG_5 0 20
+read: RDIG_6 0 20
+read: RDIG_7 0 20
+read: RDIG_8 0 20
+read: RDIG_9 20 20
+read: LSH_ROT -20 15
+read: LSH_ELV 25 15
+read: LSH_TWST 0 20
+read: LELB_FLX 10 20
+read: LELB_TWST 0 20
+read: LWR_ABD 0 20
+read: LWR_FLX -1 20
+read: LDIG_1 0 20
+read: LDIG_2 0 20
+read: LDIG_3 0 20
+read: LDIG_4 0 20
+read: LDIG_5 0 20
+read: LDIG_6 0 20
+read: LDIG_7 0 20
+read: LDIG_8 0 20
+read: LDIG_9 20 20
+sequence item: BLOCK
+Read Sequence: conf/sequences/Rest.seq
+HEAD_PITCH 0 20
+HEAD_YAW 0 20
+HEAD_PAN 0 20
+EYES_UD 0 20
+EYES_RL 0 20
+EYES_CD 0 20
+RSH_ROT -20 15
+RSH_ELV 25 15
+RSH_TWST 0 20
+RELB_FLX 10 16
+RELB_TWST 0 20
+RWR_ABD 0 20
+RWR_FLX -1 20
+RDIG_1 0 20
+RDIG_2 0 20
+RDIG_3 0 20
+RDIG_4 0 20
+RDIG_5 0 20
+RDIG_6 0 20
+RDIG_7 0 20
+RDIG_8 0 20
+RDIG_9 20 20
+LSH_ROT -20 15
+LSH_ELV 25 15
+LSH_TWST 0 20
+LELB_FLX 10 20
+LELB_TWST 0 20
+LWR_ABD 0 20
+LWR_FLX -1 20
+LDIG_1 0 20
+LDIG_2 0 20
+LDIG_3 0 20
+LDIG_4 0 20
+LDIG_5 0 20
+LDIG_6 0 20
+LDIG_7 0 20
+LDIG_8 0 20
+LDIG_9 20 20
+BLOCK
+action #1:
+action: head-left
+read: HEAD_PAN -70 20
+sequence item: BLOCK
+Read Sequence: conf/sequences/headleft.seq
+HEAD_PAN -70 20
+BLOCK
+action #2:
+action: head-right
+read: HEAD_PAN 70 20
+sequence item: BLOCK
+Read Sequence: conf/sequences/headright.seq
+HEAD_PAN 70 20
+BLOCK
+action #3:
+action: head-forward
+read: HEAD_PITCH 0 20
+read: HEAD_YAW 0 20
+read: HEAD_PAN 0 20
+read: EYES_UD 0 20
+read: EYES_RL 0 20
+read: EYES_CD 0 20
+sequence item: BLOCK
+Read Sequence: conf/sequences/headfwd.seq
+HEAD_PITCH 0 20
+HEAD_YAW 0 20
+HEAD_PAN 0 20
+EYES_UD 0 20
+EYES_RL 0 20
+EYES_CD 0 20
+BLOCK
+action #4:
+action: Hide-face
+read: HEAD_PITCH -40 10
+read: LSH_ROT -51 20
+read: LSH_ELV 22 15
+read: LSH_TWST 19 20
+read: LELB_FLX 106 20
+read: LELB_TWST -56 20
+read: LWR_ABD 10 20
+read: LWR_FLX 0 10
+read: RSH_ROT -42 15
+read: RSH_ELV 20 15
+read: RSH_TWST 9 20
+read: RELB_FLX 106 20
+read: RELB_TWST -46 20
+read: RWR_ABD 10 20
+read: RWR_FLX 0 10
+sequence item: BLOCK
+Read Sequence: conf/sequences/Hide.seq
+HEAD_PITCH -40 10
+LSH_ROT -51 20
+LSH_ELV 22 15
+LSH_TWST 19 20
+LELB_FLX 106 20
+LELB_TWST -56 20
+LWR_ABD 10 20
+LWR_FLX 0 10
+RSH_ROT -42 15
+RSH_ELV 20 15
+RSH_TWST 9 20
+RELB_FLX 106 20
+RELB_TWST -46 20
+RWR_ABD 10 20
+RWR_FLX 0 10
+BLOCK
+action #5:
+action: NA
+read: EYES_UD 0 5
+sequence item: BLOCK
+Read Sequence: conf/sequences/donothing.seq
+EYES_UD 0 5
+BLOCK
+action #6:
+action: RArm-Up
+read: RSH_ROT -20 10
+read: RSH_ELV 80 20
+read: RSH_TWST -37 20
+read: RELB_FLX 90 20
+read: RELB_TWST 0 10
+read: RWR_ABD 0 10
+read: RWR_FLX 0 10
+sequence item: BLOCK
+Read Sequence: conf/sequences/S_RArmUp.seq
+RSH_ROT -20 10
+RSH_ELV 80 20
+RSH_TWST -37 20
+RELB_FLX 90 20
+RELB_TWST 0 10
+RWR_ABD 0 10
+RWR_FLX 0 10
+BLOCK
+action #7:
+action: LArm-Up
+read: LSH_ROT -20 10
+read: LSH_ELV 80 20
+read: LSH_TWST -40 20
+read: LELB_FLX 90 20
+read: LELB_TWST 0 10
+read: LWR_ABD 0 10
+read: LWR_FLX 0 10
+sequence item: BLOCK
+Read Sequence: conf/sequences/S_LArmUp.seq
+LSH_ROT -20 10
+LSH_ELV 80 20
+LSH_TWST -40 20
+LELB_FLX 90 20
+LELB_TWST 0 10
+LWR_ABD 0 10
+LWR_FLX 0 10
+BLOCK
+action #8:
+action: RArm-Down
+read: RSH_ROT -20 15
+read: RSH_ELV 25 15
+read: RSH_TWST 0 20
+read: RELB_FLX 10 20
+read: RELB_TWST 0 20
+read: RWR_ABD 0 20
+read: RWR_FLX -10 15
+sequence item: BLOCK
+Read Sequence: conf/sequences/S_RArmDown.seq
+RSH_ROT -20 15
+RSH_ELV 25 15
+RSH_TWST 0 20
+RELB_FLX 10 20
+RELB_TWST 0 20
+RWR_ABD 0 20
+RWR_FLX -10 15
+BLOCK
+action #9:
+action: LArm-Down
+read: LSH_ROT -20 15
+read: LSH_ELV 25 15
+read: LSH_TWST 0 20
+read: LELB_FLX 10 20
+read: LELB_TWST 0 20
+read: LWR_ABD 0 20
+read: LWR_FLX -10 15
+sequence item: BLOCK
+Read Sequence: conf/sequences/S_LArmDown.seq
+LSH_ROT -20 15
+LSH_ELV 25 15
+LSH_TWST 0 20
+LELB_FLX 10 20
+LELB_TWST 0 20
+LWR_ABD 0 20
+LWR_FLX -10 15
+BLOCK
+action #10:
+action: RArm-Wave
+read: RSH_ROT -20 10
+read: RSH_ELV 80 20
+read: RSH_TWST -40 20
+read: RELB_FLX 80 20
+read: RELB_TWST 0 20
+read: RWR_ABD 0 20
+read: RWR_FLX 5 20
+sequence item: BLOCK
+read: RELB_FLX 110 30
+read: RWR_FLX -5 30
+sequence item: BLOCK
+read: RELB_FLX 80 30
+read: RWR_FLX 5 30
+sequence item: BLOCK
+read: RELB_FLX 110 30
+read: RWR_FLX -5 30
+sequence item: BLOCK
+read: RELB_FLX 80 30
+read: RWR_FLX 5 30
+sequence item: BLOCK
+read: RELB_FLX 90 30
+read: RWR_FLX 0 30
+sequence item: BLOCK
+Read Sequence: conf/sequences/S_RArmWave.seq
+RSH_ROT -20 10
+RSH_ELV 80 20
+RSH_TWST -40 20
+RELB_FLX 80 20
+RELB_TWST 0 20
+RWR_ABD 0 20
+RWR_FLX 5 20
+BLOCK
+RELB_FLX 110 30
+RWR_FLX -5 30
+BLOCK
+RELB_FLX 80 30
+RWR_FLX 5 30
+BLOCK
+RELB_FLX 110 30
+RWR_FLX -5 30
+BLOCK
+RELB_FLX 80 30
+RWR_FLX 5 30
+BLOCK
+RELB_FLX 90 30
+RWR_FLX 0 30
+BLOCK
+action #11:
+action: LArm-Wave
+read: LSH_ROT -20 10
+read: LSH_ELV 80 20
+read: LSH_TWST -40 20
+read: LELB_FLX 80 20
+read: LELB_TWST 0 10
+read: LWR_ABD 0 10
+read: LWR_FLX 5 10
+sequence item: BLOCK
+read: LELB_FLX 110 30
+read: LWR_FLX -5 30
+sequence item: BLOCK
+read: LELB_FLX 80 30
+read: LWR_FLX 5 30
+sequence item: BLOCK
+read: LELB_FLX 110 30
+read: LWR_FLX -5 30
+sequence item: BLOCK
+read: LELB_FLX 80 30
+read: LWR_FLX 5 30
+sequence item: BLOCK
+read: LELB_FLX 90 30
+read: LWR_FLX 0 30
+sequence item: BLOCK
+Read Sequence: conf/sequences/S_LArmWave.seq
+LSH_ROT -20 10
+LSH_ELV 80 20
+LSH_TWST -40 20
+LELB_FLX 80 20
+LELB_TWST 0 10
+LWR_ABD 0 10
+LWR_FLX 5 10
+BLOCK
+LELB_FLX 110 30
+LWR_FLX -5 30
+BLOCK
+LELB_FLX 80 30
+LWR_FLX 5 30
+BLOCK
+LELB_FLX 110 30
+LWR_FLX -5 30
+BLOCK
+LELB_FLX 80 30
+LWR_FLX 5 30
+BLOCK
+LELB_FLX 90 30
+LWR_FLX 0 30
+BLOCK
+action #12:
+action: RArm-Drum
+Error: empty file
+Read Sequence: conf/sequences/S_RArmDrum.seq
+Reading behaviours
+BSet Group 1612512608 : 0 1 2 3 4 5 6 7 8 9 10 11 12
+BSet Group 1612512608 : 0 5
+NUM_ACTIONS defined : 13
+Reading current distances (h=20) using port /iha/as/currdist:in:20
+yarp: Port /iha/as/currdist:in:20 active at tcp://10.0.0.104:10272
+Waiting for port /iha/ds/currdist:out:20 yarp: Removing output from /iha/as/action:out to /iha/controller/action:cmd

@@ -1,0 +1,342 @@
+Sensor Motor Interface Module
+Debug level : 20
+echo_output FALSE
+gaze_input FALSE
+num_image_sensors x/y : 8/8
+Writing sensor output to port /iha/sm/sensor:out
+yarp: Port /iha/sm/sensor:out active at tcp://10.0.0.104:10122
+yarp: Port /iha/sm/image:in active at tcp://10.0.0.104:10132
+yarp: Port /iha/sm/facecoords:in active at tcp://10.0.0.104:10142
+yarp: Port /iha/sm/soundsensor:in active at tcp://10.0.0.104:10152
+yarp: Port /iha/sm/encoders:in active at tcp://10.0.0.104:10162
+Waiting for port /icub/cam/left  ready. Now connecting /icub/cam/left to /iha/sm/image:in yarp: Receiving input from /icub/cam/left to /iha/sm/image:in using tcp
+Added output connection from "/icub/cam/left" to "/iha/sm/image:in"
+ connected.
+Connected to Image
+Waiting for port /iha/fd/facedetect:coords  ready. Now connecting /iha/fd/facedetect:coords to /iha/sm/facecoords:in Added output connection from "/iha/fd/facedetect:coords" to "/iha/sm/facecoords:in"
+ connected.
+Connected to Face Coords
+Waiting for port /iha/sound/sndsensor:out yarp: Receiving input from /iha/fd/facedetect:coords to /iha/sm/facecoords:in using tcp
+ ready. Now connecting /iha/sound/sndsensor:out to /iha/sm/soundsensor:in Added output connection from "/iha/sound/sndsensor:out" to "/iha/sm/soundsensor:in"
+ connected.
+Connected to sound sensor
+Waiting for port /iha/controller/encoders:out yarp: Receiving input from /iha/sound/sndsensor:out to /iha/sm/soundsensor:in using tcp
+yarp: Sending output from /iha/sm/sensor:out to /iha/dynamics/data:in using tcp
+ ready. Now connecting /iha/controller/encoders:out to /iha/sm/encoders:in yarp: Receiving input from /iha/controller/encoders:out to /iha/sm/encoders:in using tcp
+Added output connection from "/iha/controller/encoders:out" to "/iha/sm/encoders:in"
+ connected.
+Connected to encoders
+yarp: Port /iha/sm/status:out active at tcp://10.0.0.104:10262
+yarp: Port /iha/sm/quit active at tcp://10.0.0.104:10272
+Checking "file": = /usr/local/src/robot/iCub/app/ ... (configuration file to use, if any)
+Working with config file /usr/local/src/robot/iCub/app/iha_new/conf/
+Checking "name": = /iha/sm (name of module)
+Checking "help": if present, display usage message
+Listening to terminal (type "quit" to stop module)
+TS: 0 
+TS: 100 
+TS: 200 
+TS: 300 
+TS: 400 
+TS: 500 
+TS: 600 
+TS: 700 
+TS: 800 
+TS: 900 
+TS: 1000 
+TS: 1100 
+TS: 1200 
+TS: 1300 
+TS: 1400 
+TS: 1500 
+TS: 1601 
+TS: 1701 
+TS: 1801 
+TS: 1901 
+TS: 2001 
+TS: 2101 
+TS: 2201 
+TS: 2301 
+TS: 2401 
+TS: 2501 
+TS: 2601 
+TS: 2701 
+TS: 2801 
+TS: 2901 
+TS: 3001 
+TS: 3101 
+TS: 3201 
+TS: 3301 
+TS: 3401 
+TS: 3501 
+TS: 3601 
+TS: 3701 
+TS: 3801 
+TS: 3901 
+TS: 4001 
+TS: 4101 
+TS: 4201 
+TS: 4301 
+TS: 4401 
+TS: 4501 
+TS: 4601 
+TS: 4701 
+TS: 4801 
+TS: 4901 
+TS: 5001 
+TS: 5101 
+TS: 5201 
+TS: 5301 
+TS: 5401 
+TS: 5501 
+TS: 5601 
+TS: 5701 
+TS: 5801 
+TS: 5901 
+TS: 6001 
+TS: 6101 
+TS: 6201 
+TS: 6301 
+TS: 6401 
+TS: 6501 
+TS: 6601 
+TS: 6701 
+TS: 6801 
+TS: 6901 
+TS: 7001 
+TS: 7101 
+TS: 7201 
+TS: 7301 
+TS: 7401 
+TS: 7501 
+TS: 7601 
+TS: 7701 
+TS: 7801 
+TS: 7901 
+TS: 8001 
+TS: 8101 
+TS: 8201 
+TS: 8301 
+TS: 8401 
+TS: 8501 
+TS: 8601 
+TS: 8701 
+TS: 8801 
+TS: 8901 
+TS: 9001 
+TS: 9101 
+TS: 9201 
+TS: 9301 
+TS: 9401 
+TS: 9501 
+TS: 9601 
+TS: 9701 
+TS: 9801 
+TS: 9902 
+TS: 10002 
+TS: 10102 
+TS: 10202 
+TS: 10302 
+TS: 10402 
+TS: 10502 
+TS: 10602 
+TS: 10702 
+TS: 10802 
+TS: 10902 
+TS: 11002 
+TS: 11102 
+TS: 11202 
+TS: 11302 
+TS: 11402 
+TS: 11502 
+TS: 11602 
+TS: 11702 
+TS: 11802 
+TS: 11902 
+TS: 12002 
+TS: 12102 
+TS: 12202 
+TS: 12302 
+TS: 12402 
+TS: 12502 
+TS: 12602 
+TS: 12702 
+TS: 12802 
+TS: 12902 
+TS: 13002 
+TS: 13102 
+TS: 13202 
+TS: 13302 
+TS: 13402 
+TS: 13502 
+TS: 13602 
+TS: 13702 
+TS: 13802 
+TS: 13902 
+TS: 14002 
+TS: 14102 
+TS: 14202 
+TS: 14302 
+TS: 14402 
+TS: 14502 
+TS: 14602 
+TS: 14702 
+TS: 14802 
+TS: 14902 
+TS: 15002 
+TS: 15102 
+TS: 15202 
+TS: 15302 
+TS: 15402 
+TS: 15502 
+TS: 15602 
+TS: 15702 
+TS: 15802 
+TS: 15902 
+TS: 16002 
+TS: 16102 
+TS: 16202 
+TS: 16302 
+TS: 16402 
+TS: 16502 
+TS: 16602 
+TS: 16702 
+TS: 16802 
+TS: 16902 
+TS: 17002 
+TS: 17102 
+TS: 17202 
+TS: 17302 
+TS: 17402 
+TS: 17502 
+TS: 17602 
+TS: 17702 
+TS: 17802 
+TS: 17902 
+TS: 18002 
+TS: 18102 
+TS: 18202 
+TS: 18302 
+TS: 18402 
+TS: 18502 
+TS: 18602 
+TS: 18702 
+TS: 18802 
+TS: 18902 
+TS: 19002 
+TS: 19102 
+TS: 19202 
+TS: 19302 
+TS: 19402 
+TS: 19502 
+TS: 19602 
+TS: 19702 
+TS: 19802 
+TS: 19902 
+TS: 20002 
+TS: 20102 
+TS: 20202 
+TS: 20302 
+TS: 20402 
+TS: 20502 
+TS: 20602 
+TS: 20702 
+TS: 20802 
+TS: 20903 
+TS: 21003 
+TS: 21103 
+TS: 21203 
+TS: 21303 
+TS: 21403 
+TS: 21503 
+TS: 21603 
+TS: 21703 
+TS: 21803 
+TS: 21903 
+TS: 22003 
+TS: 22103 
+TS: 22203 
+TS: 22303 
+TS: 22403 
+TS: 22503 
+TS: 22603 
+TS: 22703 
+TS: 22803 
+TS: 22903 
+TS: 23003 
+TS: 23103 
+TS: 23203 
+TS: 23303 
+TS: 23403 
+TS: 23503 
+TS: 23603 
+TS: 23703 
+TS: 23803 
+TS: 23903 
+TS: 24003 
+TS: 24103 
+TS: 24203 
+TS: 24303 
+TS: 24403 
+TS: 24503 
+TS: 24603 
+TS: 24703 
+TS: 24803 
+TS: 24903 
+TS: 25003 
+TS: 25103 
+TS: 25203 
+TS: 25303 
+TS: 25403 
+TS: 25503 
+TS: 25603 
+TS: 25703 
+TS: 25803 
+TS: 25903 
+TS: 26003 
+TS: 26103 
+TS: 26203 
+TS: 26303 
+TS: 26403 
+TS: 26503 
+TS: 26603 
+TS: 26703 
+TS: 26803 
+TS: 26903 
+TS: 27003 
+TS: 27103 
+TS: 27203 
+TS: 27303 
+TS: 27403 
+TS: 27503 
+TS: 27603 
+TS: 27703 
+TS: 27803 
+TS: 27903 
+TS: 28003 
+TS: 28103 
+TS: 28203 
+TS: 28303 
+TS: 28403 
+TS: 28503 
+TS: 28603 
+TS: 28703 
+TS: 28803 
+TS: 28903 
+TS: 29003 
+TS: 29103 
+TS: 29203 
+TS: 29303 
+yarp: Removing input from /iha/controller/encoders:out to /iha/sm/encoders:in
+TS: 29403 
+yarp: Removing output from /iha/sm/sensor:out to /iha/dynamics/data:in
+yarp: Removing input from /iha/fd/facedetect:coords to /iha/sm/facecoords:in
+yarp: Removing input from /iha/sound/sndsensor:out to /iha/sm/soundsensor:in
+SensorMotorInterfaceModule::respond quit
+sensorOutputPort.interrupt();
+faceCoordsPort.interrupt();
+imagePort.interrupt();
+soundSensorPort.interrupt();
+SoundSensorReadLoop ended
+sensorMotorPort.interrupt();
+statusPort.interrupt();

@@ -1,0 +1,7 @@
+Sensor Motor Interface Module
+Debug level : 20
+echo_output FALSE
+gaze_input FALSE
+num_image_sensors x/y : 8/8
+Writing sensor output to port /iha/sm/sensor:out
+yarp: Port /iha/sm/sensor:out failed to activate at tcp://10.0.0.104:10122 (address conflict)

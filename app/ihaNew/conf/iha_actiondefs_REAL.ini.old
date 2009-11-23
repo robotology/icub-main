@@ -1,0 +1,129 @@
+name ihacontrol
+
+NUM_JOINTS 53
+
+JOINT_NAMES HEAD_PITCH HEAD_YAW HEAD_PAN EYES_UD EYES_RL EYES_CD LSH_ROT LSH_ELV LSH_TWST LELB_FLX LELB_TWST LWR_ABD LWR_FLX LDIG_1 LDIG_2 LDIG_3 LDIG_4 LDIG_5 LDIG_6 LDIG_7 LDIG_8 LDIG_9 RSH_ROT RSH_ELV RSH_TWST RELB_FLX RELB_TWST RWR_ABD RWR_FLX RDIG_1 RDIG_2 RDIG_3 RDIG_4 RDIG_5 RDIG_6 RDIG_7 RDIG_8 RDIG_9 TOR_TW TOR_LR TOR_FB LL_TW L_KNEE LL_ABD LL_FB LFT_LIFT LFT_TURN RL_TW R_KNEE RL_ABD RL_FB RFT_LIFT RFT_TURN
+
+JOINT_MOTORS 0 1 2 3 4 5 6 7 8 9 10 11 12 13 14 15 16 17 18 19 20 21 22 23 24 25 26 27 28 29 30 31 32 33 34 35 36 37 38 39 40 41 42 43 44 45 46 47 48 49 50 51 52
+
+NUM_ACTIONS 17
+
+SequenceDir conf/sequences
+
+[BEHAVIOURSETS]
+NUM 2
+DEFAULT 0
+
+# Have removed all face actions from all behaviour sets
+
+# First set includes all possible actions from resting position
+SET0 0 3 4 5 6 7 8 9 10 11 12 13 14 15
+
+# Set of valid actions when in hiding or thinking pose
+SET1 0 7
+
+# Action 0 brings all motors back to resting position
+[ACTION00]
+Name "Rest"
+Command "rest"
+SequenceFile "Rest.seq"
+NextSet 0
+
+[ACTION01]
+Name "Smile"
+Command "smi"
+SequenceFile "Smile.seq"
+ExpressionFile "Smile.exp"
+NextSet -1
+
+[ACTION02]
+Name "Neutral"
+Command "neu"
+SequenceFile "Neutral.seq"
+ExpressionFile "Neutral.exp"
+NextSet -1
+
+[ACTION03]
+Name "head-left"
+Command "hlf"
+SequenceFile "headleft.seq"
+NextSet 0
+
+[ACTION04]
+Name "head-right"
+Command "hri"
+SequenceFile "headright.seq"
+NextSet 0
+
+[ACTION05]
+Name "head-forward"
+Command "hfw"
+SequenceFile "headfwd.seq"
+NextSet 0
+
+[ACTION06]
+Name "Hide-face"
+Command "hfa"
+SequenceFile "Hide.seq"
+NextSet 1
+
+[ACTION07]
+Name "NA"
+Command "non"
+SequenceFile "donothing.seq"
+NextSet -1
+
+[ACTION08]
+Name "RArm-Up"
+Command "rau"
+SequenceFile "S_RArmUp.seq"
+NextSet 0
+
+[ACTION09]
+Name "LArm-Up"
+Command "lau"
+SequenceFile "S_LArmUp.seq"
+NextSet 0
+
+[ACTION10]
+Name "RArm-Down"
+Command "rad"
+SequenceFile "S_RArmDown.seq"
+NextSet 0
+
+[ACTION11]
+Name "LArm-Down"
+Command "lad"
+SequenceFile "S_LArmDown.seq"
+NextSet 0
+
+[ACTION12]
+Name "RArm-Wave"
+Command "raw"
+SequenceFile "S_RArmWave.seq"
+NextSet 0
+
+[ACTION13]
+Name "LArm-Wave"
+Command "law"
+SequenceFile "S_LArmWave.seq"
+NextSet 0
+
+[ACTION14]
+Name "ThinkR"
+Command "thr"
+SequenceFile "ThinkR.seq"
+NextSet 1
+
+[ACTION15]
+Name "ThinkL"
+Command "thl"
+SequenceFile "ThinkL.seq"
+NextSet 1
+
+[ACTION16]
+Name "Frown"
+Command "fro"
+SequenceFile "Frown.seq"
+ExpressionFile "Frown.exp"
+NextSet -1

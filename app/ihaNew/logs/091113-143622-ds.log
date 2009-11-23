@@ -1,0 +1,42 @@
+Experience Metric Space Module
+Debug level : 40
+Configuration:
+Data Store number 1
+Will save datastore to /usr/local/src/robot/iCub/app/iha_new/logs/DSsave-091113-143622.txt
+number of bins 8
+granularity 2
+experience_action_gap 2
+regular_experiences TRUE
+action_experiences FALSE
+value_experiences FALSE
+num_actions 13
+write_ms_to_port FALSE
+write_curr_dist_to_port TRUE
+write_max_dsp_neighbours 6
+write_max_dsp_radius 3.000000
+neighbour_radius 3.000000
+Merge Adapt Type:  NONE
+    Threshold =  0.200000
+    Increment =  0.010000
+only_merge_same_actions FALSE
+purge_experiences TRUE
+    Threshold =  0.400000
+adaptive_binning FALSE
+adaptive_binning_window_size 96
+histogram_resolution 256
+future_horizon40
+future_value_update_type MAX
+metric_space_heuristic NONE
+verify_heuristic FALSE
+heuristic_start_threshold 20
+heuristic_tree_radius 1.500000
+value_decrement 0.001000
+numBins: 8 Granularity: 2 ImgXY: 8x8 EAGap 2
+sensorsGroup.size() 44
+limitLoGroup.size() 44
+limitHiGroup.size() 44
+Read 43 sensor limit pairs
+Read 64 image limit pairs. Total number of limit pairs 107
+Horizons : 20. Total 1
+yarp: Port /iha/ds/1/data:in active at tcp://10.0.0.104:10202
+Waiting for port /iha/dynamics/reward:out 

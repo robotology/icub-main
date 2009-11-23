@@ -1,0 +1,5 @@
+The controller for the facial expressions much be started. Motivation
+dynamics communicates with this yarp device. Use the application in
+app/faceExpressions to start itXS
+
+-If you don't have the gaze tracker, use the "_wout_gaze" scripts

@@ -1,0 +1,391 @@
+Icub Control Module
+Debug level : 40
+53 joints configured
+13 actions configured
+action: Rest
+Read Sequence: conf/sequences/Rest_SIM.seq
+action: head-left
+Read Sequence: conf/sequences/headleft_SIM.seq
+action: head-right
+Read Sequence: conf/sequences/headright_SIM.seq
+action: head-forward
+Read Sequence: conf/sequences/headfwd_SIM.seq
+action: Hide-face
+Read Sequence: conf/sequences/Hide_SIM.seq
+action: NA
+Read Sequence: conf/sequences/donothing_SIM.seq
+action: RArm-Up
+Read Sequence: conf/sequences/S_RArmUp_SIM.seq
+action: LArm-Up
+Read Sequence: conf/sequences/S_LArmUp_SIM.seq
+action: RArm-Down
+Read Sequence: conf/sequences/S_RArmDown_SIM.seq
+action: LArm-Down
+Read Sequence: conf/sequences/S_LArmDown_SIM.seq
+action: RArm-Wave
+Read Sequence: conf/sequences/S_RArmWave_SIM.seq
+action: LArm-Wave
+Read Sequence: conf/sequences/S_LArmWave_SIM.seq
+action: RArm-Drum
+Read Sequence: conf/sequences/S_RArmDrum_SIM.seq
+Reading behaviours
+NUM_ACTIONS defined : 13
+yarp: Port /iha/controller/action:cmd active at tcp://10.0.0.104:10202
+yarp: Port /iha/controller/encoders:out active at tcp://10.0.0.104:10212
+motor_motion_timeout:5000
+sensor_output_rate:10
+speed_multiplier:3.000000
+always_set_speed TRUE
+robot:icub
+Active parts:
+  head TRUE
+  left_arm TRUE
+  right_arm TRUE
+  torso FALSE
+  left_leg FALSE
+  right_leg FALSE
+(remote "/icub/head") (robot icub) (device remote_controlboard) (local "/icub/head/client") (part head)
+Create device head
+yarp: Port /icub/head/client/rpc:o active at tcp://10.0.0.104:10222
+yarp: Receiving input from /iha/as/action:out to /iha/controller/action:cmd using tcp
+yarp: Port /icub/head/client/command:o active at tcp://10.0.0.104:10232
+yarp: Port /icub/head/client/state:i active at tcp://10.0.0.104:10242
+yarp: Sending output from /iha/controller/encoders:out to /iha/sm/encoders:in using tcp
+yarp: Sending output from /icub/head/client/rpc:o to /icub/head/rpc:i using tcp
+yarp: Sending output from /icub/head/client/command:o to /icub/head/command:i using udp
+yarp: Receiving input from /icub/head/state:o to /icub/head/client/state:i using udp
+Checking "file": = /usr/local/src/robot/iCub/app/ ... (configuration file to use, if any)
+Working with config file /usr/local/src/robot/iCub/app/iha_new/conf/ihaIcubControl.ini
+Checking "name": = /iha/controller (name of module)
+Checking "help": if present, display usage message
+View head as IPositionControl
+View head as IEncoders
+yarpdev: created device <remote_controlboard>.  See C++ class RemoteControlBoard for documentation.
+head returns 6 axes
+(remote "/icub/left_arm") (robot icub) (device remote_controlboard) (local "/icub/left_arm/client") (part left_arm)
+Create device left_arm
+yarp: Port /icub/left_arm/client/rpc:o active at tcp://10.0.0.104:10282
+yarp: Port /icub/left_arm/client/command:o active at tcp://10.0.0.104:10292
+yarp: Port /icub/left_arm/client/state:i active at tcp://10.0.0.104:10302
+yarp: Sending output from /icub/left_arm/client/rpc:o to /icub/left_arm/rpc:i using tcp
+yarp: Sending output from /icub/left_arm/client/command:o to /icub/left_arm/command:i using udp
+yarp: Receiving input from /icub/left_arm/state:o to /icub/left_arm/client/state:i using udp
+View left_arm as IPositionControl
+View head as IEncoders
+yarpdev: created device <remote_controlboard>.  See C++ class RemoteControlBoard for documentation.
+left_arm returns 16 axes
+(remote "/icub/right_arm") (robot icub) (device remote_controlboard) (local "/icub/right_arm/client") (part right_arm)
+Create device right_arm
+yarp: Port /icub/right_arm/client/rpc:o active at tcp://10.0.0.104:10312
+yarp: Port /icub/right_arm/client/command:o active at tcp://10.0.0.104:10322
+yarp: Port /icub/right_arm/client/state:i active at tcp://10.0.0.104:10332
+yarp: Sending output from /icub/right_arm/client/rpc:o to /icub/right_arm/rpc:i using tcp
+yarp: Sending output from /icub/right_arm/client/command:o to /icub/right_arm/command:i using udp
+yarp: Receiving input from /icub/right_arm/state:o to /icub/right_arm/client/state:i using udp
+View right_arm as IPositionControl
+View head as IEncoders
+yarpdev: created device <remote_controlboard>.  See C++ class RemoteControlBoard for documentation.
+right_arm returns 16 axes
+Starting Encoders Output Thread
+EncodersOutputThread created.
+TS: 0 Action: 0.000000
+yarp: Port /iha/controller/quit active at tcp://10.0.0.104:10342
+Listening to terminal (type "quit" to stop module)
+TS: 100 Action: 0.000000
+TS: 200 Action: 0.000000
+TS: 300 Action: 0.000000
+TS: 400 Action: 0.000000
+TS: 500 Action: 0.000000
+TS: 600 Action: 0.000000
+TS: 700 Action: 0.000000
+TS: 800 Action: 0.000000
+TS: 900 Action: 0.000000
+TS: 1000 Action: 0.000000
+TS: 1100 Action: 0.000000
+TS: 1200 Action: 0.000000
+TS: 1300 Action: 0.000000
+TS: 1400 Action: 0.000000
+TS: 1500 Action: 0.000000
+TS: 1601 Action: 0.000000
+TS: 1701 Action: 0.000000
+TS: 1801 Action: 0.000000
+TS: 1901 Action: 0.000000
+TS: 2001 Action: 0.000000
+TS: 2101 Action: 0.000000
+TS: 2201 Action: 0.000000
+TS: 2301 Action: 0.000000
+TS: 2401 Action: 0.000000
+TS: 2501 Action: 0.000000
+TS: 2601 Action: 0.000000
+TS: 2701 Action: 0.000000
+TS: 2801 Action: 0.000000
+TS: 2901 Action: 0.000000
+TS: 3001 Action: 0.000000
+TS: 3101 Action: 0.000000
+TS: 3201 Action: 0.000000
+TS: 3301 Action: 0.000000
+TS: 3401 Action: 0.000000
+TS: 3501 Action: 0.000000
+TS: 3601 Action: 0.000000
+TS: 3701 Action: 0.000000
+TS: 3801 Action: 0.000000
+TS: 3901 Action: 0.000000
+TS: 4001 Action: 0.000000
+TS: 4101 Action: 0.000000
+TS: 4201 Action: 0.000000
+TS: 4301 Action: 0.000000
+TS: 4401 Action: 0.000000
+TS: 4501 Action: 0.000000
+TS: 4601 Action: 0.000000
+TS: 4701 Action: 0.000000
+TS: 4801 Action: 0.000000
+TS: 4901 Action: 0.000000
+TS: 5001 Action: 0.000000
+TS: 5101 Action: 0.000000
+TS: 5201 Action: 0.000000
+TS: 5301 Action: 0.000000
+TS: 5401 Action: 0.000000
+TS: 5501 Action: 0.000000
+TS: 5601 Action: 0.000000
+TS: 5701 Action: 0.000000
+TS: 5801 Action: 0.000000
+TS: 5901 Action: 0.000000
+TS: 6001 Action: 0.000000
+TS: 6101 Action: 0.000000
+TS: 6201 Action: 0.000000
+TS: 6301 Action: 0.000000
+TS: 6401 Action: 0.000000
+TS: 6501 Action: 0.000000
+TS: 6601 Action: 0.000000
+TS: 6701 Action: 0.000000
+TS: 6801 Action: 0.000000
+TS: 6901 Action: 0.000000
+TS: 7001 Action: 0.000000
+TS: 7101 Action: 0.000000
+TS: 7201 Action: 0.000000
+TS: 7301 Action: 0.000000
+TS: 7401 Action: 0.000000
+TS: 7501 Action: 0.000000
+TS: 7601 Action: 0.000000
+TS: 7701 Action: 0.000000
+TS: 7801 Action: 0.000000
+TS: 7901 Action: 0.000000
+TS: 8001 Action: 0.000000
+TS: 8101 Action: 0.000000
+TS: 8201 Action: 0.000000
+TS: 8301 Action: 0.000000
+TS: 8401 Action: 0.000000
+TS: 8501 Action: 0.000000
+TS: 8601 Action: 0.000000
+TS: 8701 Action: 0.000000
+TS: 8801 Action: 0.000000
+TS: 8901 Action: 0.000000
+TS: 9001 Action: 0.000000
+TS: 9101 Action: 0.000000
+TS: 9201 Action: 0.000000
+TS: 9301 Action: 0.000000
+TS: 9401 Action: 0.000000
+TS: 9501 Action: 0.000000
+TS: 9601 Action: 0.000000
+TS: 9701 Action: 0.000000
+TS: 9801 Action: 0.000000
+TS: 9902 Action: 0.000000
+TS: 10002 Action: 0.000000
+TS: 10102 Action: 0.000000
+TS: 10202 Action: 0.000000
+TS: 10302 Action: 0.000000
+TS: 10402 Action: 0.000000
+TS: 10502 Action: 0.000000
+TS: 10602 Action: 0.000000
+TS: 10702 Action: 0.000000
+TS: 10802 Action: 0.000000
+TS: 10902 Action: 0.000000
+TS: 11002 Action: 0.000000
+TS: 11102 Action: 0.000000
+TS: 11202 Action: 0.000000
+TS: 11302 Action: 0.000000
+TS: 11402 Action: 0.000000
+TS: 11502 Action: 0.000000
+TS: 11602 Action: 0.000000
+TS: 11702 Action: 0.000000
+TS: 11802 Action: 0.000000
+TS: 11902 Action: 0.000000
+TS: 12002 Action: 0.000000
+TS: 12102 Action: 0.000000
+TS: 12202 Action: 0.000000
+TS: 12302 Action: 0.000000
+TS: 12402 Action: 0.000000
+TS: 12502 Action: 0.000000
+TS: 12602 Action: 0.000000
+TS: 12702 Action: 0.000000
+TS: 12802 Action: 0.000000
+TS: 12902 Action: 0.000000
+TS: 13002 Action: 0.000000
+TS: 13102 Action: 0.000000
+TS: 13202 Action: 0.000000
+TS: 13302 Action: 0.000000
+TS: 13402 Action: 0.000000
+TS: 13502 Action: 0.000000
+TS: 13602 Action: 0.000000
+TS: 13702 Action: 0.000000
+TS: 13802 Action: 0.000000
+TS: 13902 Action: 0.000000
+TS: 14002 Action: 0.000000
+TS: 14102 Action: 0.000000
+TS: 14202 Action: 0.000000
+TS: 14302 Action: 0.000000
+TS: 14402 Action: 0.000000
+TS: 14502 Action: 0.000000
+TS: 14602 Action: 0.000000
+TS: 14702 Action: 0.000000
+TS: 14802 Action: 0.000000
+TS: 14902 Action: 0.000000
+TS: 15002 Action: 0.000000
+TS: 15102 Action: 0.000000
+TS: 15202 Action: 0.000000
+TS: 15302 Action: 0.000000
+TS: 15402 Action: 0.000000
+TS: 15502 Action: 0.000000
+TS: 15602 Action: 0.000000
+TS: 15702 Action: 0.000000
+TS: 15802 Action: 0.000000
+TS: 15902 Action: 0.000000
+TS: 16002 Action: 0.000000
+TS: 16102 Action: 0.000000
+TS: 16202 Action: 0.000000
+TS: 16302 Action: 0.000000
+TS: 16402 Action: 0.000000
+TS: 16502 Action: 0.000000
+TS: 16602 Action: 0.000000
+TS: 16702 Action: 0.000000
+TS: 16802 Action: 0.000000
+TS: 16902 Action: 0.000000
+TS: 17002 Action: 0.000000
+TS: 17102 Action: 0.000000
+TS: 17202 Action: 0.000000
+TS: 17302 Action: 0.000000
+TS: 17402 Action: 0.000000
+TS: 17502 Action: 0.000000
+TS: 17602 Action: 0.000000
+TS: 17702 Action: 0.000000
+TS: 17802 Action: 0.000000
+TS: 17902 Action: 0.000000
+TS: 18002 Action: 0.000000
+TS: 18102 Action: 0.000000
+TS: 18202 Action: 0.000000
+TS: 18302 Action: 0.000000
+TS: 18402 Action: 0.000000
+TS: 18502 Action: 0.000000
+TS: 18602 Action: 0.000000
+TS: 18702 Action: 0.000000
+TS: 18802 Action: 0.000000
+TS: 18902 Action: 0.000000
+TS: 19002 Action: 0.000000
+TS: 19102 Action: 0.000000
+TS: 19202 Action: 0.000000
+TS: 19302 Action: 0.000000
+TS: 19402 Action: 0.000000
+TS: 19502 Action: 0.000000
+TS: 19602 Action: 0.000000
+TS: 19702 Action: 0.000000
+TS: 19802 Action: 0.000000
+TS: 19902 Action: 0.000000
+TS: 20002 Action: 0.000000
+TS: 20102 Action: 0.000000
+TS: 20202 Action: 0.000000
+TS: 20302 Action: 0.000000
+TS: 20402 Action: 0.000000
+TS: 20502 Action: 0.000000
+TS: 20602 Action: 0.000000
+TS: 20702 Action: 0.000000
+TS: 20802 Action: 0.000000
+TS: 20903 Action: 0.000000
+TS: 21003 Action: 0.000000
+TS: 21103 Action: 0.000000
+TS: 21203 Action: 0.000000
+TS: 21303 Action: 0.000000
+TS: 21403 Action: 0.000000
+TS: 21503 Action: 0.000000
+TS: 21603 Action: 0.000000
+TS: 21703 Action: 0.000000
+TS: 21803 Action: 0.000000
+TS: 21903 Action: 0.000000
+TS: 22003 Action: 0.000000
+TS: 22103 Action: 0.000000
+TS: 22203 Action: 0.000000
+TS: 22303 Action: 0.000000
+TS: 22403 Action: 0.000000
+TS: 22503 Action: 0.000000
+TS: 22603 Action: 0.000000
+TS: 22703 Action: 0.000000
+TS: 22803 Action: 0.000000
+TS: 22903 Action: 0.000000
+TS: 23003 Action: 0.000000
+TS: 23103 Action: 0.000000
+TS: 23203 Action: 0.000000
+TS: 23303 Action: 0.000000
+TS: 23403 Action: 0.000000
+TS: 23503 Action: 0.000000
+TS: 23603 Action: 0.000000
+TS: 23703 Action: 0.000000
+TS: 23803 Action: 0.000000
+TS: 23903 Action: 0.000000
+TS: 24003 Action: 0.000000
+TS: 24103 Action: 0.000000
+TS: 24203 Action: 0.000000
+TS: 24303 Action: 0.000000
+TS: 24403 Action: 0.000000
+TS: 24503 Action: 0.000000
+TS: 24603 Action: 0.000000
+TS: 24703 Action: 0.000000
+TS: 24803 Action: 0.000000
+TS: 24903 Action: 0.000000
+TS: 25003 Action: 0.000000
+TS: 25103 Action: 0.000000
+TS: 25203 Action: 0.000000
+TS: 25303 Action: 0.000000
+TS: 25403 Action: 0.000000
+TS: 25503 Action: 0.000000
+TS: 25603 Action: 0.000000
+TS: 25703 Action: 0.000000
+TS: 25803 Action: 0.000000
+TS: 25903 Action: 0.000000
+TS: 26003 Action: 0.000000
+TS: 26103 Action: 0.000000
+TS: 26203 Action: 0.000000
+TS: 26303 Action: 0.000000
+TS: 26403 Action: 0.000000
+TS: 26503 Action: 0.000000
+TS: 26603 Action: 0.000000
+TS: 26703 Action: 0.000000
+TS: 26803 Action: 0.000000
+TS: 26903 Action: 0.000000
+TS: 27003 Action: 0.000000
+TS: 27103 Action: 0.000000
+TS: 27203 Action: 0.000000
+TS: 27303 Action: 0.000000
+TS: 27403 Action: 0.000000
+TS: 27503 Action: 0.000000
+TS: 27603 Action: 0.000000
+TS: 27703 Action: 0.000000
+TS: 27803 Action: 0.000000
+TS: 27903 Action: 0.000000
+TS: 28003 Action: 0.000000
+TS: 28103 Action: 0.000000
+TS: 28203 Action: 0.000000
+TS: 28303 Action: 0.000000
+TS: 28403 Action: 0.000000
+TS: 28503 Action: 0.000000
+TS: 28603 Action: 0.000000
+TS: 28703 Action: 0.000000
+TS: 28803 Action: 0.000000
+TS: 28903 Action: 0.000000
+TS: 29003 Action: 0.000000
+TS: 29103 Action: 0.000000
+TS: 29203 Action: 0.000000
+TS: 29303 Action: 0.000000
+yarp: Removing input from /iha/as/action:out to /iha/controller/action:cmd
+Module closing
+TS: 29403 Action: 0.000000
+yarp: Removing output from /iha/controller/encoders:out to /iha/sm/encoders:in
+Module finished
