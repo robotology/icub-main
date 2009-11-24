@@ -69,6 +69,8 @@ iCub::contrib::primateVision::Flow::~Flow()
 void iCub::contrib::primateVision::Flow::proc(Ipp8u* new_im_,int psb_in,int newx_, int newy_)
 {
 
+  //we know how much the window has moved in the mosaic.
+  //align both current with previous to remove the effect of our own motion.
 
   newx=newx_;
   newy=newy_;
