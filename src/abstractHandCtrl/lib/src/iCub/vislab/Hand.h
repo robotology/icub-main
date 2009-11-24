@@ -314,7 +314,7 @@ public:
 	 * Set the sampling rate for recording hand movements.
 	 * @param t The sampling rate as milliseconds.
 	 */
-	void setSamplingRate(double t);
+	void setSamplingRate(int t);
 	/**
 	 * Returns the sampling rate which is used for recording {@link Hand} movements.
 	 * @return The sampling rate which is used for recording {@link Hand} movements.

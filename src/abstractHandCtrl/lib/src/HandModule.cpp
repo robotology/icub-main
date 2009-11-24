@@ -151,8 +151,9 @@ bool HandModule::configure(ResourceFinder &rf) {
 }
 
 bool HandModule::startThread() {
+	bool b = AbstractRFModule::startThread();
 	workerThread = dynamic_cast<HandWorkerThread *>(AbstractRFModule::workerThread);
-	return AbstractRFModule::startThread();
+	return b;
 }
 
 //#define DEBUG

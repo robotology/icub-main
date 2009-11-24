@@ -70,8 +70,8 @@ bool Hand::RecordingThread::start() {
 }
 
 void Hand::RecordingThread::stop() {
-	recording = curRecording;
 	RateThread::stop();
+	recording = curRecording;
 }
 
 void Hand::RecordingThread::run() {
@@ -315,8 +315,8 @@ void Hand::stopBlockedJoints(std::set<int>& activeJoints) {
 }
 
 void Hand::record(const bool b) {
-	if (recording != b) {
-		if (recording) {
+	if (isRecording() != b) {
+		if (!b) {
 			recordingThread->stop();
 			// save file
 		} else {
@@ -333,7 +333,7 @@ MotionSequence Hand::getRecording() {
 	return recordingThread->getRecording();
 }
 
-void Hand::setSamplingRate(double t) {
+void Hand::setSamplingRate(int t) {
 	recordingThread->setRate(t);
 }
 
