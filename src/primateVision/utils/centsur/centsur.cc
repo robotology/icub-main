@@ -123,8 +123,6 @@ void iCub::contrib::primateVision::CentSur::make_pyramid(Ipp32f* im_32f,int p_32
   //copy filter output (within padding) to gauss:
   ippiCopy_32f_C1R(pyramid_gauss[0],psb_p[0],gauss[0],psb_32f,srcsize);
   
-
-
   //others:
   sd = 0.5;
   su = 2.0;
@@ -165,8 +163,6 @@ void iCub::contrib::primateVision::CentSur::make_pyramid(Ipp32f* im_32f,int p_32
 		       su,su,IPPI_INTER_LINEAR);
     
   }
-  
-  
 }
 
 
