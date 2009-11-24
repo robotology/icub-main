@@ -226,12 +226,10 @@ void iCub::contrib::primateVision::SpTZDFServer::run(){
 
   if (mot){
     //initalise:
-    motion_request.content().pix_y  = 0;
-    motion_request.content().pix_xl = 40;
-    motion_request.content().pix_xr = -40;
+    motion_request.content().pix_y  = 0.0;
+    motion_request.content().pix_xl = 20.0;
+    motion_request.content().pix_xr = -20.0;
     motion_request.content().deg_r  = 0.0;
-    motion_request.content().deg_p  = 0.0;
-    motion_request.content().deg_y  = 0.0;
     motion_request.content().relative = false; //absolute initial pos.
     motion_request.content().suspend  = 0;
     motion_request.content().lockto  = NO_LOCK;
@@ -760,11 +758,11 @@ void iCub::contrib::primateVision::SpTZDFServer::run(){
 	    //return to home:
 	    printf("Request to return home.\n");
 	    if (mot){
-	      motion_request.content().pix_xl = 40;
-	      motion_request.content().pix_xr = -40;
-	      motion_request.content().pix_y  = 0;
+	      motion_request.content().pix_xl = 20.0;
+	      motion_request.content().pix_xr = -20.0;
+	      motion_request.content().pix_y  = 0.0;
 	      motion_request.content().relative = false; //absolute move.
-	      motion_request.content().suspend = 50; //wait
+	      motion_request.content().suspend = 100; //wait
 	      outPort_mot.write(motion_request);
 	    }
 	    since_update = 0;
