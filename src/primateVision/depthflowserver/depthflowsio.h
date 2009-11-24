@@ -42,7 +42,7 @@ namespace iCub {
 	}
 	/** Converstion to string of parameters for printing. */
 	string toString(){
-	  char buffer[50];
+	  char buffer[256];
 	  sprintf(buffer, "%d %d %d %d %d %d %f",
 		  width,height,psb,psb32f,range,offset,baseline);
 	  return buffer;
@@ -77,7 +77,7 @@ public:
 	}
 	/** Converstion to string of parameters for printing. */
 	string toString(){
-	  char buffer[50];
+	  char buffer[256];
 	  sprintf(buffer, "%d %d %d %f %f",
 		  px,py,hd, mind,maxd);
 	  return buffer;

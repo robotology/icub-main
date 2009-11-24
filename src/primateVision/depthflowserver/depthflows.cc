@@ -112,10 +112,10 @@ void iCub::contrib::primateVision::DepthflowServer::run(){
 				uniqueness,
 				baseline,
 				rsp.focus);
+ 
+	 DepthflowResultParams df_res_params;
 
-  DepthflowResultParams df_res_params;
-
-
+  printf (" %f, %d \n",baseline, rsp.focus);
   //Make replier for server param probes on server port:
   //Set Params:
   DepthflowServerParams dfsp;
@@ -152,7 +152,6 @@ void iCub::contrib::primateVision::DepthflowServer::run(){
       rec_im_yr = (Ipp8u*) inBot_yr->get(0).asBlob();
       rec_res_r = (RecResultParams*) inBot_yr->get(1).asBlob(); 
 
-
       df->proc(rec_im_yl, 
 	       rec_im_yr, 
 	       psb_in,
@@ -160,7 +159,7 @@ void iCub::contrib::primateVision::DepthflowServer::run(){
 	       rec_res_l->ly,
 	       rec_res_r->rx,
 	       rec_res_r->ry);
-      
+
       df_res_params.px   = df->get_px();
       df_res_params.py   = df->get_py();
       df_res_params.hd   = df->get_hd();
@@ -176,18 +175,13 @@ void iCub::contrib::primateVision::DepthflowServer::run(){
       ippiSet_8u_C1R(100,sal,psb,srcsize);
 
 
-
-
-
-
-
       //disp:
       Bottle& tmpBot_disp = outPort_disp.prepare();
       tmpBot_disp.clear();
       tmpBot_disp.add(Value::makeBlob( df->get_disp(), df->get_psb()*srcsize.height));
       tmpBot_disp.add(Value::makeBlob(&df_res_params,sizeof(DepthflowResultParams)));
       outPort_disp.write();  // Send it on its way
-      
+  
       //depth:
       Bottle& tmpBot_depth = outPort_depth.prepare();
       tmpBot_depth.clear();
@@ -210,7 +204,6 @@ void iCub::contrib::primateVision::DepthflowServer::run(){
       tmpBot_sal.addString("dfcs");
       outPort_sal.write();  // Send it on its way
       
-
     }
     else{
       printf("No Input\n");
