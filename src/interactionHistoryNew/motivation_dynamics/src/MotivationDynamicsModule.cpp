@@ -1,0 +1,521 @@
+// -*- mode:C++; tab-width:4; c-basic-offset:4; indent-tabs-mode:nil -*-
+// vim:expandtab:tabstop=4:shiftwidth=4:softtabstop=4:
+
+/*
+ * Copyright (C) 2008 RobotCub Consortium, European Commission FP6 Project IST-004370
+ * Author: Assif Mirza
+ * email:   assif.mirza@robotcub.org
+ * website: www.robotcub.org
+ * Permission is granted to copy, distribute, and/or modify this program
+ * under the terms of the GNU General Public License, version 2 or any
+ * later version published by the Free Software Foundation.
+ *
+ * A copy of the license can be found at
+ * http://www.robotcub.org/icub/license/gpl.txt
+ *
+ * This program is distributed in the hope that it will be useful, but
+ * WITHOUT ANY WARRANTY; without even the implied warranty of
+ * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the GNU General
+ * Public License for more details
+ */
+
+#include <cmath>
+#include <iCub/iha/MotivationDynamicsModule.h>
+#include <iCub/iha/iha_utils.h>
+using namespace iCub::iha;
+
+ /**
+  * @addtogroup icub_iha_Dynamics
+
+\section iha_motiv_reward Reward
+
+Motivation feedback (reward) is provided through two mechanisms: observation of a face, and audio feedback.
+\subsection iha_motiv_face Face
+
+A face can be detected in the robot's camera image using OpenCV HAAR Cascades, and this provides direct positive reward. Habituation causes this reward to drop-off over time.
+
+The reward for face detection, \f$R_{f}\f$, constrained to be in the range [0,1], is a function of the number of consecutive timesteps a face is seen. 
+First the reward rises linearly, then holds at 1 for a period before decaying towards 0. \f$R_{f}\f$ is calculated incrementally
+
+\subsection iha_motiv_sound Sound
+
+Sound is captured from a microphone using \b Portaudio \b v1.9, and used both as an additional sensory signal as well as providing further environmental reward. 
+The "energy" of the sound over the period of a timestep, \f$\varepsilon_{sound}\f$, provides a sensory input to the robot. 
+It is calculated as the sum of the amplitude of the sound signal for every sound sample in a period of a timestep, and is normalized to take values in the range [0,1]. 
+
+In converting \f$\varepsilon_{sound}\f$ to a reward signal \f$R_{s}\f$, low level background noise is attenuated by taking the square of the sound sensor variable for all values below a threshold \f$T_{sound}\f$, above which the reward value is set to 1. 
+Taking the square of the sound signal results in a greater attenuation of smaller values of the variable than larger ones thus effectively reducing background noise and emphasizing the reward when the sound is above the threshold.
+
+
+\subsection iha_motiv_result Resulting Reward Signal
+
+The final reward signal is a combination of the sound and face reward signals, as follows:
+
+\f[ R = \max( 1, \alpha ( R_{f} + R_{s} ) ) \f]
+
+where \f$\alpha\f$, in the range [0,1] attenuates the reward signal. With \f$\alpha\f$=0.5, R is the average of the reward signals, and with \f$\alpha\f$=1, either of the reward signals can result in a maximum resulting reward. A reasonable setting is, \f$\alpha\f$=0.75, meaning that neither reward signal on its own can result in a maximum \f$R\f$, but requires support from the other reward signal. 
+
+\section lib_sec Libraries
+- YARP libraries.
+- IHA Debug Library
+
+\section parameters_sec Parameters
+\verbatim
+--dbg [INT]   : debug printing level
+--name [STR]  : process name for ports
+--file [STR]  : configuration file
+--connect_to_coords [STR]       : autoconnect to specified port for face
+--connect_to_soundsensor [STR]  : autoconnect to specified port for sound
+--face_response_attack [INT]  : face response, increase period
+--face_response_level [INT]   : face response, level off period
+--face_response_decay [INT]   : face response, decay period
+--sound_catch_threshold [FLT] : level at which sound is heard
+--face_lost_count [INT]       : time after which face is considered lost
+--reward_contrib_face [FLT]   : contribution of face to reward
+--reward_contrib_sound [FLT]  : contribution of sound to reward
+\endverbatim
+
+\section portsa_sec Ports Accessed
+
+\section portsc_sec Ports Created
+ 
+\section conf_file_sec Configuration Files
+conf/ihaMotivationDynamics.ini
+
+Sample INI file:
+\verbatim
+dbg 40
+name iha
+
+# Controls face response envelope
+face_response_attack 4
+face_response_level 3
+face_response_decay 20
+
+# level at which sound is heard
+sound_catch_threshold 0.67
+
+# time after which face is considered lost
+face_lost_count 3
+
+# relative contributions to reward
+reward_contrib_face 0.75
+reward_contrib_sound 0.75
+\endverbatim
+
+\section tested_os_sec Tested OS
+Linux
+
+\section example_sec Example Instantiation of the Module
+ihaMotivationDynamics --name /iha/dynamics --file conf/ihaMotivationDynamics.ini
+
+See also the script $ICUB_ROOT/app/iha_manual/dynamics.sh
+
+\see \ref icub_iha_IhaFaceDetect
+\see iCub::contrib::IhaFaceDetectModule
+\see \ref icub_iha_SoundSensor
+\see iCub::contrib::SoundSensorModule
+
+\see iCub::contrib::MotivationDynamicsModule
+
+\author Assif Mirza
+
+Copyright (C) 2008 RobotCub Consortium
+
+CopyPolicy: Released under the terms of the GNU GPL v2.0.
+
+This file can be edited at \in src/interactionHistory/motivation_dynamics/src/MotivationDynamicsModule.cpp.
+\author Assif Mirza
+ *
+ */
+MotivationDynamicsModule::MotivationDynamicsModule(){
+    resetcount=0;
+    acc=0;
+    faceReward=0.0;
+}
+
+MotivationDynamicsModule::~MotivationDynamicsModule(){ 
+}
+
+
+bool MotivationDynamicsModule::open(Searchable& config){
+   
+	if (config.check("dbg")) { IhaDebug::setLevel(config.find("dbg").asInt()); }
+ 	ACE_OS::fprintf(stderr, "Debug level : %d\n",IhaDebug::getLevel());
+
+    if (config.check("help","if present, display usage message")) {
+		cerr << "usage : " << "\n"
+		<< "----------------------------------------" << "\n"
+		<< "  --dbg [INT]   : debug printing level" << "\n"
+		<< "  --name [STR]  : process name for ports" << "\n"
+		<< "  --file [STR]  : configuration file" << "\n"
+		<< "---------------------------------------------------------------------------" << "\n"
+        << "  --connect_to_data [STR]       : autoconnect to specified port for sensor data" << "\n"
+        << "  --connect_to_expression [STR]  : connect to port for sending emotion actions" << "\n"
+		<< "---------------------------------------------------------------------------" << "\n"
+        << "  --face_response_attack [INT]  : face response, increase period" << "\n"
+        << "  --face_response_level [INT]   : face response, level off period" << "\n"
+        << "  --face_response_decay [INT]   : face response, decay period" << "\n"
+        << "  --sound_catch_threshold [FLT] : level at which sound is heard" << "\n"
+        << "  --face_lost_count [INT]       : time after which face is considered lost" << "\n"
+        << "  --reward_contrib_face [FLT]   : contribution of face to reward" << "\n"
+        << "  --reward_contrib_sound [FLT]  : contribution of sound to reward" << "\n"
+        << "  --action_ehi [INT]          : action to execute on high reward" << "\n"
+        << "  --action_elo [INT]          : action to execute on low reward" << "\n"
+        << "  --action_emid [INT]         : action to execute on medium reward" << "\n"
+        << "  --th_ehi [FLT]              : threshold for high reward" << "\n"
+        << "  --th_elo [FLT]              : threshold for low reward" << "\n"
+		<< "---------------------------------------------------------------------------" << "\n"
+		<< "\n";
+        return false;
+    }
+
+	face_response_attack = config.check("face_response_attack",Value(4)).asInt();
+	IhaDebug::pmesg(DBGL_INFO,"face_response_attack:%d\n",face_response_attack);
+	face_response_level = config.check("face_response_level",Value(2)).asInt();
+	IhaDebug::pmesg(DBGL_INFO,"face_response_level:%d\n",face_response_level);
+	face_response_decay = config.check("face_response_decay",Value(20)).asInt();
+	IhaDebug::pmesg(DBGL_INFO,"face_response_decay:%d\n",face_response_decay);
+	sound_catch_threshold = config.check("sound_catch_threshold",Value(0.67)).asDouble();
+	IhaDebug::pmesg(DBGL_INFO,"sound_catch_threshold:%f\n",sound_catch_threshold);
+	face_lost_count = config.check("face_lost_count",Value(3)).asInt();
+	IhaDebug::pmesg(DBGL_INFO,"face_lost_count:%d\n",face_lost_count);
+	reward_contrib_face = config.check("reward_contrib_face",Value(0.75)).asDouble();
+	IhaDebug::pmesg(DBGL_INFO,"reward_contrib_face:%f\n",reward_contrib_face);
+	reward_contrib_sound = config.check("reward_contrib_sound",Value(0.75)).asDouble();
+	IhaDebug::pmesg(DBGL_INFO,"reward_contrib_sound:%f\n",reward_contrib_sound);
+	reward_contrib_gaze = config.check("reward_contrib_gaze",Value(0.75)).asDouble();
+	IhaDebug::pmesg(DBGL_INFO,"reward_contrib_gaze:%f\n",reward_contrib_gaze);
+	
+
+    //indices used to access the sensor data
+    //these are defined in the SMI config file and included for motivation dynamics
+    ts_offset = config.check("ts_offset",Value(1)).asInt();
+    num_encoders = config.check("num_encoders",Value(38)).asInt();
+    Value *v;
+    config.check("face_offset",v);
+    face_index = v->asInt() + ts_offset;
+    config.check("sound_offset",v);
+    sound_index = v->asInt() + ts_offset;
+    config.check("gaze_offset",v);
+    gaze_index = v->asInt() + ts_offset;
+    config.check("action_offset",v);
+    action_index = v->asInt() + ts_offset;
+    config.check("reward_offset",v);
+    reward_index = v->asInt() + ts_offset;
+
+    last_enc= new double[num_encoders];
+
+	// emotive actions. The actions executed in response
+	// to reward values, and the thresholds
+	reward_display = boolStringTest(config.check("reward_display",Value("TRUE")).asString());
+	IhaDebug::pmesg(DBGL_INFO,"reward_display %s\n",reward_display?"TRUE":"FALSE");
+
+    action_ehi = config.check("action_ehi",Value(1)).asInt();
+    action_elo = config.check("action_elo",Value(16)).asInt();
+    action_emid = config.check("action_emid",Value(2)).asInt();
+    th_ehi = config.check("th_ehi",Value(0.8)).asDouble();
+    th_elo = config.check("th_elo",Value(0.3)).asDouble();
+    
+    current_eout=action_emid;
+    IhaDebug::pmesg(DBGL_INFO,"Emote actions: (%d) < %f (%d) < %f (%d)\n",action_elo,th_elo,action_emid,th_ehi,action_ehi);
+
+	// open the sensor data input port
+    ConstString dataPortName = getName("data:in");
+	dataPort.open(dataPortName.c_str());
+
+    bool ok = true;
+	// if required we can connect to the data port
+	if (config.check("connect_to_data")) {
+		if (connectToParam(config,"connect_to_data",dataPortName.c_str(), 0.25, this)) {
+            IhaDebug::pmesg(DBGL_INFO,"Connected to SMI Data\n");
+        } else {
+            ok = false;
+        }
+	}
+
+	//------------------------------------------------------
+	// open the output port where we write expressions
+    // this should be connected to the raw port
+    ConstString expressionRawPortName = getName("expression:out");
+	IhaDebug::pmesg(DBGL_INFO,"Writing expressions to port %s\n",expressionRawPortName.c_str());
+	expressionRawPort.open(expressionRawPortName.c_str());
+	//------------------------------------------------------
+
+
+	if (config.check("connect_to_expression")) {
+		// reverse connection
+		if (connectToParamReverse(config,"connect_to_expression",expressionRawPortName.c_str(), 0.25, this)) {
+            IhaDebug::pmesg(DBGL_INFO,"Connected to Expression Raw\n");
+        } else {
+            ok = false;
+        }
+	}
+
+
+	// open the data (with reward added) output port
+    ConstString outputPortName = getName("reward:out");
+	outPort.open(outputPortName.c_str());
+
+    ok &= quitPort.open(getName("quit"));
+    attach(quitPort, true);
+    return ok;
+}
+
+bool MotivationDynamicsModule::close(){
+    IhaDebug::pmesg(DBGL_DEBUG1,"In closeModule\n");
+    dataPort.close();
+    outPort.close();
+
+    delete [] last_enc;
+    last_enc = NULL;
+
+    return true;
+}
+
+bool MotivationDynamicsModule::interruptModule(){
+    IhaDebug::pmesg(DBGL_DEBUG1,"In interruptModule\n");
+    dataPort.close();
+    outPort.close();
+    return true;
+}
+
+
+
+void MotivationDynamicsModule::sendExpression(int expr) {
+    Bottle out;
+    // hard coded for now
+    if (expr==action_ehi) {
+        out.add("L04");
+        expressionRawPort.write(out);
+        out.clear();
+        out.add("R04");
+        expressionRawPort.write(out);
+        out.clear();
+        out.add("M0B");
+        expressionRawPort.write(out);
+        out.clear();
+        out.add("S7F");
+        expressionRawPort.write(out);
+        out.clear();
+    }
+    if (expr==action_emid) {
+        out.add("L02");
+        expressionRawPort.write(out);
+        out.clear();
+        out.add("R02");
+        expressionRawPort.write(out);
+        out.clear();
+        out.add("M08");
+        expressionRawPort.write(out);
+        out.clear();
+        out.add("S7F");
+        expressionRawPort.write(out);
+        out.clear();
+    }
+    if (expr==action_elo) {
+        out.add("L04");
+        expressionRawPort.write(out);
+        out.clear();
+        out.add("R04");
+        expressionRawPort.write(out);
+        out.clear();
+        //out.add("M0B");
+        out.add("M38");
+        expressionRawPort.write(out);
+        out.clear();
+        out.add("S5B");
+        expressionRawPort.write(out);
+        out.clear();
+    }
+    
+}
+
+
+bool MotivationDynamicsModule::updateModule(){
+
+    vector<string> reward_names;
+    vector<double> rewards;
+    vector<double> reward_contribs;
+    int num_rewards = 0;
+
+
+
+    double face_attack_rate = 1.0 / (double)(face_response_attack);
+    double face_decay_rate = 1.0 / (double)(face_response_decay-face_response_level);
+
+
+    // find out if a face has been detected
+    //Vector* pc = dataPort.read(true);
+    IhaDebug::pmesg(DBGL_DEBUG1,"Reading from port \n");
+    Bottle* db = dataPort.read(true);
+    IhaDebug::pmesg(DBGL_DEBUG1,"Read from port \n");
+    if (db!=NULL) {
+        //accumulate the face sensor, resetting when we dont see it
+        IhaDebug::pmesg(DBGL_DEBUG1,"Face %lf %d \n",db->get(face_index).asDouble(),(int)db->get(face_index).asDouble());
+        if (((int) db->get(face_index).asDouble()) == 0 ) {
+           if (resetcount >= face_lost_count) {
+                acc=0;
+                resetcount=0;
+           } else {
+                resetcount++;
+           }
+        } else {
+            acc++;
+            resetcount=0;
+        }
+        // calc reward due to face:
+        // final value will be between 0 and 1
+        // When a face is seen, the reward increases linearly for a time face_response_attack 
+        // until it reaches its maximum.
+        // It stays at maximum for a further face_response_level  timesteps.
+        // Then it starts to decay back to 0 over time face_response_decay (geometric)
+        //double faceReward = 0;
+        if (acc==0)  //  Zero at all times there is no face 
+        {
+            faceReward = faceReward - face_decay_rate;  // changed to decay
+            IhaDebug::pmesg(DBGL_DEBUG1,"Face acc/rwd: %04d %06.4f decaying 1 \n",acc,faceReward);
+        } 
+        else if (acc<face_response_attack) // Increase linearly for Attack phase
+        {
+            faceReward = faceReward + face_attack_rate;
+            IhaDebug::pmesg(DBGL_DEBUG1,"Face acc/rwd: %04d %06.4f increasing %d %lf \n",acc,faceReward, face_response_attack, face_attack_rate);
+        } 
+        else if ( acc < face_response_level ) // stay level
+        {
+            IhaDebug::pmesg(DBGL_DEBUG1,"Face acc/rwd: %04d %06.4f level %d \n",acc,faceReward, face_response_level);
+            faceReward = 1.0;
+        }
+        else // Linear decrease
+        {
+            faceReward = faceReward - face_decay_rate;
+            IhaDebug::pmesg(DBGL_DEBUG1,"Face acc/rwd: %04d %06.4f decaying 2 \n",acc,faceReward);
+        }
+
+        if (faceReward<0.0) faceReward=0.0;
+        if (faceReward>1.0) faceReward=1.0;
+
+        reward_names.push_back("face");
+        rewards.push_back(faceReward);
+        reward_contribs.push_back(reward_contrib_face);
+        num_rewards++;
+
+        double sndval = db->get(sound_index).asDouble();
+
+        // reward for sound is additive with face, maximum 1
+        // the sound value is squared in order to attenuate low values
+        double soundReward = 0;
+        if (sndval > sound_catch_threshold) 
+        {
+            soundReward = 1.0;
+        }
+        else
+        {
+            soundReward = sndval*sndval;
+        }
+
+        reward_names.push_back("sound");
+        rewards.push_back(soundReward);
+        reward_contribs.push_back(reward_contrib_sound);
+        num_rewards++;
+
+        //need to save and compare the last set of encoder values to
+        //compute both the motion and the turn-taking rewards
+        //how do I find out how many values are for the encoders at this point?
+        //need a way to label the data
+
+        //this assumes that the encoders are always the first values in the sensor array
+        double enc_diff = 0.0;
+        for(int i = 0; i < num_encoders; i++) {
+            double e = db->get(i + ts_offset).asDouble();
+            enc_diff += fabs(e - last_enc[i]);
+            last_enc[i] = e;
+        }
+        IhaDebug::pmesg(DBGL_DEBUG1,"Encoder diff %06.4f \n",enc_diff);
+
+        //Frank: new sources of reward
+        //motion
+        //have robot get reward for moving? How to do habituation correctly?
+        //Aim for giving max reward when there is some movement, but not "too much"
+
+
+        //mutual gaze
+        //reward mutual gaze 
+        double gazeReward = db->get(gaze_index).asDouble();
+        reward_names.push_back("gaze");
+        rewards.push_back(gazeReward);
+        reward_contribs.push_back(reward_contrib_gaze);
+        num_rewards++;
+        
+        //turn-taking
+      
+        //interpret the output of the drum module as human "action"
+        //reward robot for staying still during human drumming,
+        //followed by hitting the drum
+
+
+        //regard the (temporary loss and reacquisition of the face
+        //as the person playing peekaboo
+        //reward the robot for performing a peekaboo action after
+        //the face is reacquired
+
+
+
+        //compute reward from a vector of arbitrary length
+        double totalReward = 0.0;
+        for(int i=0; i < num_rewards; i++) {
+            totalReward += rewards[i]*reward_contribs[i];
+        }
+        //double totalReward = faceReward*reward_contrib_face + soundReward*reward_contrib_sound;
+        if (totalReward>1.0) totalReward=1.0;
+
+        string astr="";
+        if (totalReward==1) {
+            astr.append("\E[31m**********\E[39m");
+        } else {
+            astr.append("===========",(int)(totalReward*10));
+            astr.append("           ",10-(int)(totalReward*10));
+        }
+
+        for(int i=0; i < num_rewards; i++) {
+            IhaDebug::pmesg(DBGL_DEBUG1,"%s rwd: %06.4f contrib: %06.4f \n",reward_names[i].c_str(),rewards[i],reward_contribs[i]);
+        }
+        IhaDebug::pmesg(DBGL_DEBUG1,"TotalRwd: %06.4f : %d \n",totalReward, num_rewards);
+
+        // add the reward to the sensor output in the right place
+        //indicies from ExMetSpace.ini (need to fix this)
+        Bottle out;
+        out.copy(*db,0,reward_index);
+        out.addDouble(totalReward);
+        Bottle tmp;
+        tmp.copy(*db,reward_index,db->size()-reward_index);
+        out.append(tmp);
+        outPort.write(out);
+        IhaDebug::pmesg(DBGL_DEBUG1,"Wrote output to port\n");
+
+        if (reward_display) {
+			if (totalReward >= th_ehi) {
+				new_eout=action_ehi;
+			} else if (totalReward < th_elo) {
+				new_eout=action_elo;
+			} else {
+				new_eout=action_emid;
+			}
+			
+			if (current_eout != new_eout) {
+				IhaDebug::pmesg(DBGL_STATUS1,"============ Emote action %d\n",new_eout);
+				sendExpression(new_eout);
+				IhaDebug::pmesg(DBGL_DEBUG1,"============ Emote action %d done\n",new_eout);
+			}
+			current_eout = new_eout;
+		}
+        
+    }
+
+    return true;
+}
+
+bool MotivationDynamicsModule::respond(const Bottle &command,Bottle &reply){
+        
+    return false;
+} 	

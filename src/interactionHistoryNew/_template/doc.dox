@@ -1,0 +1,18 @@
+/**
+\page template_module The IHA Template Module
+
+This is a template class located in the directory _template.  
+
+You can use this class to create a new module member of the IHA architecture using the script copytemplate.sh as follows:
+
+\code 
+./copytemplate.sh ExampleNew
+\endcode
+
+That will create a module class called \b ExampleNewModule in directory \b example_new with the files:
+- CMakeLists.txt
+- src/main.cpp 
+- src/ExampleNewModule.cpp 
+- include/iCub/iha/ExampleNewModule.h 
+
+ */

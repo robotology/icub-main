@@ -1,0 +1,88 @@
+// -*- mode:C++; tab-width:4; c-basic-offset:4; indent-tabs-mode:nil -*-
+// vim:expandtab:tabstop=4:shiftwidth=4:softtabstop=4:
+
+/*
+ * Copyright (C) 2008 RobotCub Consortium, European Commission FP6 Project IST-004370
+ * Author: Assif Mirza
+ * email:   assif.mirza@robotcub.org
+ * website: www.robotcub.org
+ * Permission is granted to copy, distribute, and/or modify this program
+ * under the terms of the GNU General Public License, version 2 or any
+ * later version published by the Free Software Foundation.
+ *
+ * A copy of the license can be found at
+ * http://www.robotcub.org/icub/license/gpl.txt
+ *
+ * This program is distributed in the hope that it will be useful, but
+ * WITHOUT ANY WARRANTY; without even the implied warranty of
+ * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the GNU General
+ * Public License for more details
+ */
+
+#ifndef __IHA_AC_SENSORLOOP__
+#define __IHA_AC_SENSORLOOP__
+
+#include <stdio.h>
+#include <string>
+#include <iostream>
+
+#include <yarp/String.h>
+#include <yarp/os/all.h>
+#include <yarp/sig/all.h>
+
+#include <iCub/iha/debug.h>
+
+using namespace yarp;
+using namespace yarp::os;
+using namespace yarp::sig;
+using namespace std;
+
+namespace iCub {
+    namespace contrib {
+        class SensorLoop;
+    }
+}
+
+using namespace iCub::contrib;
+
+
+/**
+ * Sensor Loop
+ * Consolidates image, sound, reward and robot sensors into a single sensor feed
+ */
+class SensorLoop : public yarp::os::RateThread 
+{
+public:
+	SensorLoop(Port &_sensorport, int datarate, int _imgx=0,int _imgy=0, bool _dofacedetect=false, bool _doreward=false, bool _dosoundsensor=false) 
+		: yarp::os::RateThread(datarate), sensorport(&_sensorport), 
+	   imgx(_imgx),imgy(_imgy),doimage((imgx*imgy)>0),dofacedetect(_dofacedetect),doreward(_doreward),dosoundsensor(_dosoundsensor)
+	{
+		if (doimage) {
+			img=new int[imgx*imgy];
+			memset(img,0,sizeof(int)*imgx*imgy);
+		}
+		progstart = Time::now();
+	}
+	~SensorLoop() {
+		if (doimage) {
+			delete[] img;
+		}
+	}
+	void run();
+	void onStop() {}
+	void beforeStart() {}
+	void afterStart() {}
+	bool threadInit() { return true; }
+	void threadRelease() {}
+private:
+	Port* sensorport;
+	int *img;
+	int imgx,imgy;
+	bool doimage;
+	bool dofacedetect;
+	bool doreward;
+	bool dosoundsensor;
+	double progstart;
+};
+
+#endif
