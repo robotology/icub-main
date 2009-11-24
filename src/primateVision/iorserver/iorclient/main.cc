@@ -99,8 +99,8 @@ int main( int argc, char **argv )
       ior = (Ipp8u*) inBot_ior->get(0).asBlob();
       d_ior->display(ior);
 
-      frame++;
-      d_ior->save(ior,"ior"+input+QString::number(frame)+".jpg"); 
+      //frame++;
+     // d_ior->save(ior,"ior"+input+QString::number(frame)+".jpg"); 
       
     }
     else{
