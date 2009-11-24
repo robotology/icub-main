@@ -168,7 +168,7 @@ void iCub::contrib::primateVision::FlowServer::run(){
       //flow is done on DOG:
       d->proc(rec_im_y,psb_in);
       //lx,ly hold mosaic coords of window.
-      //get flow:
+      //get flow taking into account our own deliberate motion in mosaic reference frame:
       f->proc(d->get_dog_onoff(),d->get_psb(),rec_res->lx,rec_res->ly);
       //fx,fy appear:
       //value:   0  1  2  3  4  5  6  7 
