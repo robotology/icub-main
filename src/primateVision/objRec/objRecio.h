@@ -42,7 +42,7 @@ namespace iCub {
 	}
 	/** Converstion to string of parameters for printing. */
 	string toString(){
-	  char buffer[50];
+	  char buffer[256];
 	  sprintf(buffer, "%d %d %d %d %d %d",width,height,mos_width,mos_height,psb,nclasses);
 	  return buffer;
 	}
@@ -77,7 +77,7 @@ namespace iCub {
 	}
 	/** Converstion to string of parameters for printing. */
 	string toString(){
-	  char buffer[100];
+	  char buffer[256];
 	  sprintf(buffer, "%f %f %f %d %d %d %d %f %f %s",
 		  x,y,z,mos_xl,mos_yl,mos_xr,mos_yr,radius,confidence,label.c_str());
 	  return buffer;
