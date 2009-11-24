@@ -38,7 +38,7 @@ namespace iCub {
 	}
 	/** Converstion to string of parameters for printing. */
 	string toString(){
-	  char buffer[50];
+	  char buffer[256];
 	  sprintf(buffer, "%d %d %d %d",m_size,t_size,m_psb,t_psb);
 	  return buffer;
 	}
