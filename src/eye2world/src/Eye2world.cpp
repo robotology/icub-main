@@ -218,7 +218,7 @@ void Eye2world::WorkerThread::run() {
 		if (headPosition != NULL && headPosition->size() >= 6) {
 			//get data and convert from degrees to radiant
 			for (unsigned int i = 0; i < 6; i++) {
-				head6d[i] = headPosition->get(i).asDouble() * M_PI / 180;
+				head6d[i] = headPosition->get(i).asDouble() * M_PI / 180.0;
 			}
 			positionUpdated = true;
 		}
@@ -227,7 +227,7 @@ void Eye2world::WorkerThread::run() {
 		if (torsoPosition != NULL && torsoPosition->size() >= 3) {
 			//get data and convert from degrees to radiant
 			for (unsigned int i = 0; i < 3; i++) {
-				torso3d[i] = torsoPosition->get(i).asDouble() * M_PI / 180;
+				torso3d[i] = torsoPosition->get(i).asDouble() * M_PI / 180.0;
 			}
 			positionUpdated = true;
 		}
