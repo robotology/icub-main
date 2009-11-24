@@ -1,0 +1,65 @@
+<application>
+	<name>protoObjectVisualAttention</name>
+ <dependencies>
+		<port>/icub/head/rpc:i</port> 
+		<port>/icub/cam/right</port>
+	</dependencies>
+	<module>
+		<name>camCalib</name>
+		<parameters>--name /icub/camcalib/right --context protoObjectVisualAttention/conf --from icubEyes.ini --group CAMERA_CALIBRATION_RIGHT</parameters>
+		<tag>camcalib</tag>
+		<node>node1</node>
+	</module>
+	<module>
+		<name>openCVLogPolar</name>
+		<parameters>--name /cvLogPolar1/ --context protoObjectVisualAttention/conf --mode FORWARD</parameters>
+		<tag>logPolarForward</tag>
+		<node>node1</node>
+	</module>
+	<module>
+		<name>openCVLogPolar</name>
+		<parameters>--name /cvLogPolar2 --context protoObjectVisualAttention/conf --mode REVERSE </parameters>
+		<tag>logPolarReverse</tag>
+		<node>node2</node>
+	</module>
+	<module>
+		<name>visualAttentionB09</name>
+		<parameters></parameters>
+		<tag>imageProcessor</tag>
+		<node>node2</node>
+	</module>
+	<module>
+		<name>watershedModule</name>
+		<parameters></parameters>
+		<tag>watershed</tag>
+		<node>node3</node>
+	</module>
+	<module>
+		<name>contextualRefiment</name>
+		<parameters>--context attentionDistributed/conf </parameters>
+		<tag>cRefiment</tag>
+		<node>clientMachine</node>
+	</module>
+	<module>
+		<name>yarpview</name>
+		<parameters>--name /logPolarForwardView --context attentionDistributed/conf </parameters>
+		<tag>cRefinement</tag>
+		<node>clientMachine</node>
+	</module>
+ <connection>
+  <output>/icub/cam/right</output>
+  <input>/icub/guiCameraRight/image_in</input>
+ </connection>
+ <connection>
+      	<output>/icub/cam/right</output>
+		<input>/icub/camcalib/right/in</input>
+	</connection>
+	<connection>
+      	<output>/icub/camcalib/right/out</output>
+		<input>/cvLogPolar2/in:i</input>
+	</connection>
+	<connection>
+      	<output>/cvLogPolae2/out:o</output>
+		<input>/logPolarForwardView</input>
+	</connection>
+</application>
