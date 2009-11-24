@@ -23,6 +23,7 @@
 #include <display.h>
 #include <qimage.h>
 #include <ipp.h>
+#include <stdio.h>
 
 using namespace iCub::contrib::primateVision;
 

@@ -96,12 +96,10 @@ int main(int argc, char *argv[])
 
 
   //SET START POSITION:
-  motion_request.content().pix_xl = 0;
-  motion_request.content().pix_xr = 0;
-  motion_request.content().pix_y  = 0;
+  motion_request.content().pix_xl = 0.0;
+  motion_request.content().pix_xr = 0.0;
+  motion_request.content().pix_y  = 0.0;
   motion_request.content().deg_r  = 0.0;
-  motion_request.content().deg_p  = 0.0;
-  motion_request.content().deg_y  = 0.0;
   motion_request.content().relative  = false;
   outPort_mot.write(motion_request);
 

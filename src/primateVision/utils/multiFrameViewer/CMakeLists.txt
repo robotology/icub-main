@@ -16,10 +16,12 @@ ADD_EXECUTABLE( mfexample
 		mmultiFrameViewer.cc 
 		)
 
-TARGET_LINK_LIBRARIES( mfexample 
+TARGET_LINK_LIBRARIES(  mfexample 		
                         Qt3Support 
                         QtCore
                         QtGui
+			pthread	
+			
 			)
 
 ADD_LIBRARY( multiframeviewer
@@ -33,10 +35,21 @@ INCLUDE_DIRECTORIES(
 LINK_DIRECTORIES(
 	${PROJECT_SOURCE_DIR}/utils/timing
 	)
-TARGET_LINK_LIBRARIES( multiframeviewer
-  timing
+LINK_LIBRARIES(
+		/usr/lib/libpthread.a
 )
 
+TARGET_LINK_LIBRARIES( multiframeviewer
+# dl
+ #pthread
+ timing
+ 
+
+
+)
+LINK_LIBRARIES(
+		/usr/lib/libpthread.a
+)
 
 # install targets
 INSTALL_TARGETS(${LIB_DIR} 

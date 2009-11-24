@@ -54,6 +54,7 @@ iCub::contrib::primateVision::Depthflow::~Depthflow()
 
 void iCub::contrib::primateVision::Depthflow::proc(Ipp8u*im_l_,Ipp8u*im_r_,int psb_i,int ixl,int iyl,int ixr,int iyr){
 
+	printf("here1\n");
 
   //figure out stereo params:
   hd = ixl-ixr + 1;  //horiz displacement between L & R images
@@ -62,7 +63,7 @@ void iCub::contrib::primateVision::Depthflow::proc(Ipp8u*im_l_,Ipp8u*im_r_,int p
   mind = focus*baseline/(d_range + d_offset + hd);
   maxd = focus*baseline/(d_offset + hd);
 
-
+	printf("here2\n");
   //SHIFT IMAGES TO ALIGN VERTICALLY:
   if (iyl>iyr){//if left higher
     tmpsize.width = fullsize.width;
@@ -81,16 +82,15 @@ void iCub::contrib::primateVision::Depthflow::proc(Ipp8u*im_l_,Ipp8u*im_r_,int p
 
 
   
-
+	printf("here3\n");
   //Disparity-map:
   dmap->proc(im_l_tmp,im_r_tmp,psb);
 
- 
-
+printf("here3.1\n");
   //convert to absolute depths:
   disp2depth(dmap->get_disp(),dmap->get_psb(),depth_new,psb_f,fullsize);
 
-
+printf("here3.2\n");
   //deal with any motion:
   //overlapping regions of old and new:
   dx=px-old_px;
@@ -98,7 +98,7 @@ void iCub::contrib::primateVision::Depthflow::proc(Ipp8u*im_l_,Ipp8u*im_r_,int p
   dsize.width=width-abs(dx);
   dsize.height=height-abs(dy);
   
-
+	printf("here4\n");
   //depthflow:
   if (dx>=0 && dy>=0){
     ippiSub_32f_C1R(&depth_old[dy*psb_f+dx],psb_f,depth_new,psb_f,depthflow,psb_f,dsize);
@@ -114,7 +114,7 @@ void iCub::contrib::primateVision::Depthflow::proc(Ipp8u*im_l_,Ipp8u*im_r_,int p
   }  
 
 
-  
+	printf("here5\n");
   //copy depth_new to depth_old:
   ippiCopy_32f_C1R(depth_new,psb_f,depth_old,psb_f,fullsize);
   old_px = px;
