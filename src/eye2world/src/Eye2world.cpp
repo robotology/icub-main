@@ -35,7 +35,9 @@ Eye2world::Eye2world() :
 }
 
 bool Eye2world::configure(ResourceFinder &rf) {
-	AbstractRFModule::configure(rf);
+	if (!AbstractRFModule::configure(rf)) {
+		return false;
+	}
 	ConstString str;
 
 	str = "Adds a specific value to the z coordinate of the transformation to the projection plane.";
