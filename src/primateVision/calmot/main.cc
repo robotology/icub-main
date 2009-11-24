@@ -54,7 +54,7 @@
 #define GREY  0.3
 #define WHITE 0.99
 
-#define PIX 50
+#define PIX 50.0
 
 
 using namespace iCub::contrib::primateVision;
@@ -122,12 +122,10 @@ int main( int argc, char **argv )
   sleep(1);
 
   //initalise:
-  motion_request.content().pix_y    = 0;
-  motion_request.content().pix_xl   = 0;
-  motion_request.content().pix_xr   = 0;
+  motion_request.content().pix_y    = 0.0;
+  motion_request.content().pix_xl   = 0.0;
+  motion_request.content().pix_xr   = 0.0;
   motion_request.content().deg_r    = 0.0;
-  motion_request.content().deg_p    = 0.0;
-  motion_request.content().deg_y    = 0.0;
   motion_request.content().relative = false; //absolute just to init.
   motion_request.content().suspend = 0;
   motion_request.content().lockto = NO_LOCK;
@@ -144,7 +142,7 @@ int main( int argc, char **argv )
   IppiSize srcsize;
   srcsize.width = width;
   srcsize.height = height;
-  int des_x=0,des_y=0,des_xl,des_xr;
+  double des_x=0.0,des_y=0.0,des_xl,des_xr;
 
 
 
@@ -178,7 +176,7 @@ int main( int argc, char **argv )
     MyDrawLine(rec_im_y,psb,srcsize,width/2,height/2,BLACK);
     d_y->display(rec_im_y);
     
-    if (frames%15==0){
+    if (frames%50==0){
       motion_request.content().pix_xl = des_xl;
       motion_request.content().pix_xr = des_xr;
       motion_request.content().pix_y  = des_y;
