@@ -180,9 +180,9 @@ int main( int argc, char **argv )
         d_r->display(ar);
 
         //save:
-        frame++;
-        d_l->save(al,"attnl"+QString::number(frame)+".jpg");
-        d_r->save(ar,"attnr"+QString::number(frame)+".jpg");
+       // frame++;
+       // d_l->save(al,"attnl"+QString::number(frame)+".jpg");
+       // d_r->save(ar,"attnr"+QString::number(frame)+".jpg");
 
         got_l=false;
         got_r=false;

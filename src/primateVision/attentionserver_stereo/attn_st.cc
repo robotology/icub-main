@@ -219,12 +219,10 @@ void iCub::contrib::primateVision::AttnServer_Stereo::run(){
 
 
   //initalise:
-  motion_request.content().pix_y  = 0;
-  motion_request.content().pix_xl = 0;
-  motion_request.content().pix_xr = 0;
+  motion_request.content().pix_y  = 0.0;
+  motion_request.content().pix_xl = 0.0;
+  motion_request.content().pix_xr = 0.0;
   motion_request.content().deg_r = 0.0;
-  motion_request.content().deg_p = 0.0;
-  motion_request.content().deg_y = 0.0;
   motion_request.content().relative = true; //gonna send relative moves!
   motion_request.content().suspend = suspend_cycles; //these moves are high-piriorty, avoid conflicts so pause for this many recserver updates after issue.
   motion_request.content().lockto = NO_LOCK;
@@ -276,7 +274,7 @@ void iCub::contrib::primateVision::AttnServer_Stereo::run(){
   int non_z_x_l=srcsize.width/2,non_z_y_l=srcsize.height/2;
   int non_z_x_r=srcsize.width/2,non_z_y_r=srcsize.height/2;
   double ang_xl=0.0,ang_xr=0.0,ang_y=0.0;
-  int des_xl=0,des_xr=0,des_y=0; 
+  double des_xl=0.0,des_xr=0.0,des_y=0.0; 
   double tmp;
   int pf_ind=0;  
   int past_fix_x_l[num_v];
@@ -763,18 +761,18 @@ void iCub::contrib::primateVision::AttnServer_Stereo::run(){
     if (xcheck_ok){
         
         //set desired relative angular saccades:
-        des_xl = targ_x_l-srcsize.width/2;
-        des_xr = targ_x_r-srcsize.width/2;
+        des_xl = ((double)targ_x_l)-srcsize.width/2.0;
+        des_xr = ((double)targ_x_r)-srcsize.width/2.0;
         if (lr_win==ALEFT){
-            des_y  = targ_y_l-srcsize.height/2;
+            des_y  = ((double)targ_y_l)-srcsize.height/2.0;
         }
         else{
-            des_y  = targ_y_r-srcsize.height/2;
+            des_y  = ((double)targ_y_r)-srcsize.height/2.0;
         }
 
 
 #if INFO
-        printf("DESIRED RELATIVE SACCADE: xl:%d xr:%d y:%d\n", des_xl,des_xr,des_y);
+        printf("DESIRED RELATIVE SACCADE: xl:%f xr:%f y:%f\n", des_xl,des_xr,des_y);
 #endif     
         //MOVE!! 
         if (allow_mot){
@@ -789,10 +787,10 @@ void iCub::contrib::primateVision::AttnServer_Stereo::run(){
             if (filter_saccades){
                 //adjust cluster stuff:
                 for (int i=0;i<num_v;i++){
-                    past_fix_x_l[i] += des_xl;
-                    past_fix_y_l[i] += des_y;
-                    past_fix_x_r[i] += des_xr;
-                    past_fix_y_r[i] += des_y;
+                    past_fix_x_l[i] += (int) des_xl;
+                    past_fix_y_l[i] += (int) des_y;
+                    past_fix_x_r[i] += (int) des_xr;
+                    past_fix_y_r[i] += (int) des_y;
                 }
                 //adjust last non-zero to previous point:
                 non_z_x_l += targ_x_l-srcsize.width/2;
