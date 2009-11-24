@@ -26,6 +26,7 @@
 #include <iostream>
 #include <set>
 #include <map>
+#include <cmath>
 
 #include <yarp/sig/all.h>
 #include <yarp/sig/Matrix.h>
@@ -49,6 +50,11 @@ class Hand {
 	static const int allFingerJoints[];
 	static const int allButThumb[];
 	static const int completeHand[];
+
+	static const int limits[][2];
+
+	static const std::vector<std::pair<int, int> > initLimits(const int arr[][2], size_t len);
+	static const std::vector<int> initRanges(const std::vector<std::pair<int, int> > v);
 
 	/**
 	 * This class implements a {@link RateThread} for recording the motions of the {@link Hand}.
@@ -162,6 +168,11 @@ public:
 	static const std::set<int> ALL_BUT_THUMB;
 	/** Lumps together all joints of the hand. */
 	static const std::set<int> COMPLETE_HAND;
+
+	/** The limits of the hands joints. */
+	static const std::vector<std::pair<int, int> > LIMITS;
+
+	static const std::vector<int> RANGES;
 
 	/**
 	 * The constructor.

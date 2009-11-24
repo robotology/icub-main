@@ -38,12 +38,41 @@ const int Hand::completeHand[] = { WRIST_PROSUP, WRIST_PITCH, WRIST_YAW, HAND_FI
 		THUMB_PROXIMAL, THUMB_DISTAL, INDEX_PROXIMAL, INDEX_DISTAL, MIDDLE_PROXIMAL, MIDDLE_DISTAL,
 		PINKY };
 
-const std::set<int> Hand::PROXIMAL_JOINTS(Hand::proximalJoints, Hand::proximalJoints + 4);
-const std::set<int> Hand::DISTAL_JOINTS(Hand::distalJoints, Hand::distalJoints + 3);
-const std::set<int> Hand::THUMB_JOINTS(Hand::thumbJoints, Hand::thumbJoints + 1);
-const std::set<int> Hand::ALL_FINGER_JOINTS(Hand::allFingerJoints, Hand::allFingerJoints + 9);
-const std::set<int> Hand::ALL_BUT_THUMB(Hand::allButThumb, Hand::allButThumb + 8);
-const std::set<int> Hand::COMPLETE_HAND(Hand::completeHand, Hand::completeHand + 12);
+const set<int> Hand::PROXIMAL_JOINTS(Hand::proximalJoints, Hand::proximalJoints + 4);
+const set<int> Hand::DISTAL_JOINTS(Hand::distalJoints, Hand::distalJoints + 3);
+const set<int> Hand::THUMB_JOINTS(Hand::thumbJoints, Hand::thumbJoints + 1);
+const set<int> Hand::ALL_FINGER_JOINTS(Hand::allFingerJoints, Hand::allFingerJoints + 9);
+const set<int> Hand::ALL_BUT_THUMB(Hand::allButThumb, Hand::allButThumb + 8);
+const set<int> Hand::COMPLETE_HAND(Hand::completeHand, Hand::completeHand + 12);
+
+//const pair<int, int> Hand::limits[] = { std::make_pair(-96, 10), std::make_pair(0, 161),
+//		std::make_pair(-37, 80), std::make_pair(5, 106), std::make_pair(-90, 90),
+//		std::make_pair(-90, 0), std::make_pair(-20, 40), std::make_pair(0, 60),
+//		std::make_pair(-15, 105), std::make_pair(0, 90), std::make_pair(0, 90), std::make_pair(0, 90),
+//		std::make_pair(0, 90), std::make_pair(0, 90), std::make_pair(0, 90), std::make_pair(0, 115) };
+
+const int Hand::limits[][2] = { { -96, 10 }, { 0, 161 }, { -37, 80 }, { 5, 106 },
+		{ -90, 90 }, { -90, 0 }, { -20, 40 }, { 0, 60 }, { -15, 105 }, { 0, 90 }, { 0, 90 }, { 0, 90 },
+		{ 0, 90 }, { 0, 90 }, { 0, 90 }, { 0, 115 } };
+
+const vector<pair<int, int> > Hand::LIMITS = initLimits(Hand::limits, HandMetrics::numAxes);
+const vector<int> Hand::RANGES = Hand::initRanges(Hand::LIMITS);
+
+const vector<pair<int, int> > Hand::initLimits(const int arr[][2], size_t len) {
+	vector<pair<int, int> > v;
+	for (size_t i = 0; i < len; i++) {
+		v.push_back(make_pair(arr[i][0], arr[i][1]));
+	}
+	return v;
+}
+
+const vector<int> Hand::initRanges(const vector<pair<int, int> > v) {
+	vector<int> v_;
+	for (size_t i = 0; i < v.size(); i++) {
+		v_.push_back(abs(v[i].second - v[i].first));
+	}
+	return v_;
+}
 
 Hand::RecordingThread::RecordingThread(IEncoders* const encoders, int period) :
 	RateThread(period) {
