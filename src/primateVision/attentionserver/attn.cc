@@ -139,12 +139,10 @@ void iCub::contrib::primateVision::AttnServer::run(){
   BinPortable<RecMotionRequest> motion_request;
 
   //initalise:
-  motion_request.content().pix_y  = 0;
-  motion_request.content().pix_xl = 0;
-  motion_request.content().pix_xr = 0;
+  motion_request.content().pix_y  = 0.0;
+  motion_request.content().pix_xl = 0.0;
+  motion_request.content().pix_xr = 0.0;
   motion_request.content().deg_r = 0.0;
-  motion_request.content().deg_p = 0.0;
-  motion_request.content().deg_y = 0.0;
   motion_request.content().relative = true; //gonna send relative moves!
   motion_request.content().suspend = 100;
   motion_request.content().lockto = NO_LOCK;
@@ -186,7 +184,7 @@ void iCub::contrib::primateVision::AttnServer::run(){
   Ipp32f fix_val,old_fix_val=999.0;
   int spread_x, spread_y;
   int max_x,min_x,max_y,min_y;
-  int des_xl=0,des_xr=0,des_y=0;
+  double des_xl=0.0,des_xr=0.0,des_y=0.0;
   double ang_xl=0.0,ang_xr=0.0,ang_y=0.0;
   double tmp;
   int pf_ind=0;
@@ -457,17 +455,17 @@ void iCub::contrib::primateVision::AttnServer::run(){
       //Motion:
       if (sac && allow_mot){
 	if (input==0){
-	  des_xl = fix_x-srcsize.width/2;
-	  des_xr = 0;
+	  des_xl = fix_x-srcsize.width/2.0;
+	  des_xr = 0.0;
 	}
 	else{
-	  des_xr = fix_x-srcsize.width/2;
-	  des_xl = 0;
+	  des_xr = fix_x-srcsize.width/2.0;
+	  des_xl = 0.0;
 	}
-	des_y  = fix_y-srcsize.height/2;
+	des_y  = fix_y-srcsize.height/2.0;
 	
 #if INFO
-	printf("DESIRED RELATIVE SACCADE: xl:%d xr:%d y:%d\n", des_xl,des_xr,des_y);
+	printf("DESIRED RELATIVE SACCADE: xl:%f xr:%f y:%f\n", des_xl,des_xr,des_y);
 #endif      		
 	
 	
