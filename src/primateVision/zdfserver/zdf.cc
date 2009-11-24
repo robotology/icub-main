@@ -86,8 +86,8 @@ void iCub::contrib::primateVision::ZDFServer::run(){
   int min_area         = prop.findGroup("ZDFTRACK").find("MIN_AREA").asInt();
   int max_area         = prop.findGroup("ZDFTRACK").find("MAX_AREA").asInt();
   int max_spread       = prop.findGroup("ZDFTRACK").find("MAX_SPREAD").asInt();
-  int max_wait         = prop.findGroup("ZDFTRACK").find("MAX_WAIT").asInt();
-  bool return_home     = (bool) prop.findGroup("ZDFTRACK").find("RETURN_HOME").asInt();
+  int acquire_wait     = prop.findGroup("ZDFTRACK").find("ACQUIRE_WAIT").asInt();
+  int return_home      = prop.findGroup("ZDFTRACK").find("RETURN_HOME").asInt();
   bool motion          = (bool) prop.findGroup("ZDFTRACK").find("MOTION").asInt();
   bool track_lock      = (bool) prop.findGroup("ZDFTRACK").find("TRACK_LOCK").asInt();
   double cog_snap      = prop.findGroup("ZDFTRACK").find("COG_SNAP").asDouble();
@@ -514,10 +514,10 @@ void iCub::contrib::primateVision::ZDFServer::run(){
 	
 	
 	
-	if(waiting>=max_wait){
-	  printf("Acquiring new target until nice seg (waiting:%d >= max_wait:%d)\n",waiting,max_wait);
+	if(waiting>=acquire_wait){
+	  printf("Acquiring new target until nice seg (waiting:%d >= acquire_wait:%d)\n",waiting,acquire_wait);
 	  acquire = true;
-	  if (motion && return_home){
+	  if (motion && return_home!=0 && waiting>=return_home){
 	    printf("Returning home!\n");
 	    //re-initalise:
 	    motion_request.content().pix_y  = 0.0;
