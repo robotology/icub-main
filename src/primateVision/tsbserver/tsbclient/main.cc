@@ -100,8 +100,8 @@ int main( int argc, char **argv )
       y = (Ipp8u*) inBot_y->get(0).asBlob();
       d_y->display(y);
 
-      frame++;
-      d_y->save(y,"tsb"+input+QString::number(frame)+".jpg"); 
+   //   frame++;
+    //  d_y->save(y,"tsb"+input+QString::number(frame)+".jpg"); 
       
     }
     
