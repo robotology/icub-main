@@ -237,9 +237,9 @@ int main( int argc, char **argv )
 
     if (mot){
       //SEND eye POSITIONS LIKE THIS!
-      motion_request.content().pix_xl = 200.0*sin(((double)k)/140.0); //200
-      motion_request.content().pix_xr = 200.0*sin(((double)k)/140.0); //200
-      motion_request.content().pix_y  = 150.0*sin(((double)k)/80.0);  //150
+      motion_request.content().pix_xl = 80.0*sin(((double)k)/140.0); //200
+      motion_request.content().pix_xr = 80.0*sin(((double)k)/140.0); //200
+      motion_request.content().pix_y  = 60.0*sin(((double)k)/80.0);  //150
       //neck  roll:
       motion_request.content().deg_r  = 25.0*sin(((double)k)/120.0);   //25
 

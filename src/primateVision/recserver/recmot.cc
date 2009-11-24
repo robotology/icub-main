@@ -1,5 +1,6 @@
 #include "recmot.h"
 
+#define PI 3.14159265
 
 iCub::contrib::primateVision::RecHandleMotionRequest::RecHandleMotionRequest(int period, string *cfg):
   RateThread(period)
@@ -76,10 +77,11 @@ void iCub::contrib::primateVision::RecHandleMotionRequest::run(){
 	angles[1] = rmq->content().deg_r; 
 	angles[2] = 0.0;                            
 	angles[3] = -rmq->content().pix_y*pix2degy;      
-	angles[4] = (rmq->content().pix_xl+rmq->content().pix_xr)*pix2degx; // /2 version
-	angles[5] = (rmq->content().pix_xl-rmq->content().pix_xr)*pix2degx; // /2 vergence
+	//angles[4] = pix2degx * (rmq->content().pix_xr+rmq->content().pix_xl); //version aprox: (l+r)/2 better: atan( (tan(L)+tan(R))/2 )
+    angles[4] = (180.0/PI) * atan(  (tan((PI/180.0)*pix2degx*rmq->content().pix_xl) + tan((PI/180.0)*pix2degx*rmq->content().pix_xr))/2.0 );
+	angles[5] = pix2degx*(rmq->content().pix_xl-rmq->content().pix_xr); //vergence  =  l - r
 	//printf("RecServer: Motion command received: (%f,%f,%f)\n",rmq->content().pix_xl,rmq->content().pix_xr,rmq->content().pix_y);
-	//printf("RecServer: Motion command forwarded: (%f,%f,%f)\n",angles[3],angles[4],angles[5]);
+	printf("RecServer: Motion command forwarded: (%f,%f,%f)\n",angles[3],angles[4],angles[5]);
 	relative  = rmq->content().relative;
 	suspend   = rmq->content().suspend;
 	locked_to = rmq->content().lockto;

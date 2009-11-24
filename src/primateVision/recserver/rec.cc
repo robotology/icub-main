@@ -60,6 +60,10 @@ void iCub::contrib::primateVision::RecServer::run()
   bool realOrSim  = (bool) prop.findGroup("REC").find("REAL0_SIM1").asInt();
   bool clear      = (bool) prop.findGroup("REC").find("CLEAR").asInt();
   double baseline = prop.findGroup("REC").find("BASELINE").asDouble();
+  double mos_focx = prop.findGroup("REC").find("MOS_FOC_X").asDouble();
+  double mos_focy = prop.findGroup("REC").find("MOS_FOC_Y").asDouble();
+  double sim_focx = prop.findGroup("REC").find("SIM_FOC_X").asDouble();
+  double sim_focy = prop.findGroup("REC").find("SIM_FOC_Y").asDouble();
 
   bool do_bar_l = true;
   bool do_bar_r = true;
@@ -239,8 +243,8 @@ void iCub::contrib::primateVision::RecServer::run()
 
 
   //PROCESSING CLASSES:
-  Rectify *rl = new Rectify(clear,(char*)crfl.c_str(),srcsize, 0.0   ); 
-  Rectify *rr = new Rectify(clear,(char*)crfr.c_str(),srcsize, toff_r); 
+  Rectify *rl = new Rectify(clear,(char*)crfl.c_str(),srcsize, 0.0 ,   sim_focx,sim_focy,mos_focx,mos_focy); //mos_foc only used if sim..
+  Rectify *rr = new Rectify(clear,(char*)crfr.c_str(),srcsize, toff_r, sim_focx,sim_focy,mos_focx,mos_focy); 
   int focus = (rl->get_focus() + rr->get_focus())/2;
   //Image conversion classes:
   Convert_RGB *c_rgb2yuv_l = new Convert_RGB(srcsize);
@@ -325,10 +329,10 @@ void iCub::contrib::primateVision::RecServer::run()
 	pitch_deg = -vec_enc[0];
 	roll_deg = -vec_enc[1];
 	yaw_deg = -vec_enc[2];
-    l_deg = -(version_deg + vergence_deg)/2.0;
-    r_deg = (version_deg - vergence_deg)/2.0;
+    l_deg = -(version_deg + vergence_deg/2.0); // l = vs + vg/2
+    r_deg = (version_deg - vergence_deg/2.0); // r = vs - vg/2
 	
-	//cout <<  vergence_deg << " " << version_deg << " " << t_deg << " " << l_deg << " " << r_deg << endl;
+	// cout << pitch_deg << " " << yaw_deg << " " << t_deg << " " << l_deg << " " << r_deg << endl; //CORRECT ON SIM!!
     
     //send rec params (leave here for TSBServer!):
     rec_res_params.lx = rl->get_ix();
@@ -362,10 +366,10 @@ void iCub::contrib::primateVision::RecServer::run()
 
       //see if geometry has changed:
       do_l = true;
-      if (t_deg+pitch_deg == old_t_deg && l_deg+yaw_deg == old_l_deg && roll_deg==old_roll_deg){do_l = false;}
+      if (t_deg+pitch_deg == old_t_deg && l_deg-yaw_deg == old_l_deg && roll_deg==old_roll_deg){do_l = false;}
       //calc rec params if necessary:
       if (do_l){
-		rl->proc(t_deg+pitch_deg, l_deg-yaw_deg, roll_deg); 
+		rl->proc(t_deg+pitch_deg, l_deg-yaw_deg, roll_deg, baseline/2.0,0.0,0.0); 
       }
       old_l_deg = l_deg;
       old_t_deg = t_deg;
@@ -407,7 +411,9 @@ void iCub::contrib::primateVision::RecServer::run()
       rec_res_params.head_r = -vec_enc[1];
       rec_res_params.head_p = -vec_enc[0];
       rec_res_params.head_y = -vec_enc[2];
-      //3D target pos:
+
+      //3D target pos: //NEED TO INTEGRATE HEAD ANGLES NOW!!!!!!! **********
+
       rec_res_params.gaze3D_x = ((baseline/2.0)*(tan(IPP_PI/2.0-r_deg*IPP_PI/180.0)-tan(IPP_PI/2.0+l_deg*IPP_PI/180.0)))/(tan(IPP_PI/2.0-r_deg*IPP_PI/180.0)+tan(IPP_PI/2.0+l_deg*IPP_PI/180.0));
       z_ = tan(IPP_PI/2.0-r_deg*IPP_PI/180.0)*(baseline/2.0-rec_res_params.gaze3D_x);
       rec_res_params.gaze3D_z = cos(t_deg*IPP_PI/180.0)*z_;
@@ -477,10 +483,10 @@ void iCub::contrib::primateVision::RecServer::run()
 
       //see if geometry has changed:
       do_r = true;
-      if (t_deg+pitch_deg == old_t_deg && r_deg+yaw_deg == old_r_deg && roll_deg==old_roll_deg){do_r = false;}      
+      if (t_deg+pitch_deg == old_t_deg && r_deg-yaw_deg == old_r_deg && roll_deg==old_roll_deg){do_r = false;}      
       //calc rec params if necessary:
       if (do_r){
-	    rr->proc(t_deg+pitch_deg, r_deg-yaw_deg, roll_deg); 
+	    rr->proc(t_deg+pitch_deg, r_deg-yaw_deg, roll_deg, baseline/2.0,0.0,0.0); 
       }
       old_r_deg = r_deg;
       old_t_deg = t_deg;
