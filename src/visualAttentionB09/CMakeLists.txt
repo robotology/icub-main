@@ -1,7 +1,8 @@
+
 SET(KEYWORD "visualAttentionB09")
 
-
 PROJECT(${KEYWORD})
+
 
 FIND_PACKAGE(ICUB)
 FIND_PACKAGE(YARP REQUIRED)
@@ -68,6 +69,7 @@ LINK_LIBRARIES(
     ${IDL_LIBRARIES}
     ${IPP_LIBRARIES} 
     #ippi	
+    pthread
 )
 
 # Set up our main executable.
