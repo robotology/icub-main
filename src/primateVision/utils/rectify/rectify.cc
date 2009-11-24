@@ -17,8 +17,11 @@
 #define IPP_RADIAL            0
 
 
-iCub::contrib::primateVision::Rectify::Rectify(bool clear_, char* crf,IppiSize ss_,double t_o_)
+iCub::contrib::primateVision::Rectify::Rectify(bool clear_, char* crf,IppiSize ss_,double t_o_, double sfx_, double sfy_,double mfx_, double mfy_)
 {
+
+  fc1 = sfx_; //for sim..
+  fc2 = sfy_;
 
   clear = clear_;
   width=ss_.width;
@@ -115,8 +118,6 @@ iCub::contrib::primateVision::Rectify::Rectify(bool clear_, char* crf,IppiSize s
   else{
     printf("Rectify: Not applying barrel rectification.\n");
 	//calibrated default values for simulator    
-	fc1 = 200.0; //horizontal 100
-    fc2 = 150.0; //vertical 150
     cc1 = width/2.0;
     cc2 = height/2.0;
   }
@@ -124,13 +125,13 @@ iCub::contrib::primateVision::Rectify::Rectify(bool clear_, char* crf,IppiSize s
 // imput ('real') cam from reality or sim cam:
   A->me[0][0] = fc1; A->me[0][1] = 0.0; A->me[0][2] = cc1;
   A->me[1][0] = 0.0; A->me[1][1] = fc2; A->me[1][2] = cc2; 
-  A->me[2][0] = 0.0; A->me[2][1] = 0.0;  A->me[2][2]= 1.0;
+  A->me[2][0] = 0.0; A->me[2][1] = 0.0; A->me[2][2] = 1.0;
 
 
 //virtual mosaic output cam we are constructing should have same properties as real ones:
 //can scale things by scaling fc1 and fc2 in An:
-  An->me[0][0] = fc1; An->me[0][1] = 0.0; An->me[0][2] = width/2.0;
-  An->me[1][0] = 0.0; An->me[1][1] = fc2; An->me[1][2] = height/2.0; 
+  An->me[0][0] = mfx_; An->me[0][1] = 0.0; An->me[0][2] = width/2.0;
+  An->me[1][0] = 0.0; An->me[1][1] = mfy_; An->me[1][2] = height/2.0; 
   An->me[2][0] = 0.0; An->me[2][1] = 0.0; An->me[2][2] = 1.0;
 
 }
@@ -167,15 +168,15 @@ void iCub::contrib::primateVision::Rectify::barrel_rect(Ipp8u *image,int psb_in_
 
 
 
-void iCub::contrib::primateVision::Rectify::proc(double ang_t, double ang_v, double ang_roll){
+void iCub::contrib::primateVision::Rectify::proc(double ang_t, double ang_v, double ang_roll, double tx, double ty, double tz){
 
   //construct [R|t]:
-  r = IPP_PI*(ang_roll)/180.0;// (angle around z axis, roll.)
+  r = IPP_PI*ang_roll/180.0;// (angle around z axis, roll.)
   p = IPP_PI*(ang_t+tilt_offset)/180.0; //tilt (angle around x axis, pitch) up is +
   y = IPP_PI*ang_v/180.0; //pan (angle around y axis, yaw)  L is + // SIM: horiz angle seems to be doubled.
-  tx = 0.0; //x-pos of camera, origin is mid of baseline. in pixels
-  ty = 0.0; //y-pos of camera, should probably use 0.0.
-  tz = 0.0; //z-pos of camera, should probably use 0.0.
+ // tx = 0.0; //x-pos of camera, origin is mid of baseline. in pixels
+ // ty = 0.0; //y-pos of camera, should probably use 0.0.
+ // tz = 0.0; //z-pos of camera, should probably use 0.0.
   
   //construct [R|t] for o:
   Rt->me[0][0] = cos(y)*cos(r); 

@@ -55,7 +55,7 @@ namespace iCub {
 	 * @param brecFile Name of Matlab intrinsic camera parameter file to load for barrel rectification parameters.
 	 * @param tilt_offset Tilt Offset in degrees between left and right cameras; one is the reference and must be zero.
 	 */
-	Rectify(bool clear, char* brecFile,IppiSize imsize, double tilt_offset);
+	Rectify(bool clear, char* brecFile,IppiSize imsize, double tilt_offset, double fx, double fy, double mfx, double mfy);
 
 	/** Destructor.
 	 */
@@ -66,7 +66,7 @@ namespace iCub {
 	 * @param ang_t Tilt angle of this camera.
 	 * @param ang_v Verge angle of this camera.
 	 */
-	void proc(double ang_t, double ang_v, double ang_roll);
+	void proc(double ang_t, double ang_v, double ang_roll,double tx, double ty, double tz);
 	
 	/** Barrel rectifies an image.
 	 * @param im Pointer to input image to be barrel rectified.
