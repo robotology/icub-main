@@ -187,9 +187,10 @@ cout << temp_port.c_str() << endl;
   //complex filters and ifft of filters:
   Ipp32fc*im_32fc           = ippiMalloc_32fc_C1(srcsize.width,srcsize.height,&psb_32fc);
   Ipp32fc*imagefft          = ippiMalloc_32fc_C1(srcsize.width,srcsize.height,&psb_32fc);
-  int size;
-  IppiDFTSpec_C_32fc *pDFTSpec;
-  ippiDFTInitAlloc_C_32fc(&pDFTSpec,srcsize,IPP_FFT_DIV_INV_BY_N,ippAlgHintFast);
+  int size = 0;
+  IppiDFTSpec_C_32fc *pDFTSpec = NULL;
+  int ret = ippiDFTInitAlloc_C_32fc(&pDFTSpec,srcsize,IPP_FFT_DIV_INV_BY_N,ippAlgHintFast);
+  printf("ret: %d; size: %d\n");
   ippiDFTGetBufSize_C_32fc(pDFTSpec,&size);
   Ipp8u*pbuf = (Ipp8u*) malloc(size*sizeof(Ipp8u));
 
