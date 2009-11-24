@@ -49,10 +49,10 @@ function start_process () {
 		if [ "X$logfile" == "X" ]
 		then
 			# echo the output to the calling terminal (stderr) 
-			$xterm_wrap "ihaPortReader --port /$runname/stdout" &
+			$xterm_wrap "ihaNewPortReader --port /$runname/stdout" &
 		else
 			# We can also write to the log
-			$xterm_wrap "ihaPortReader --port /$runname/stdout --filename ${logfile##*/} --dir ${logfile%/*}" &
+			$xterm_wrap "ihaNewPortReader --port /$runname/stdout --filename ${logfile##*/} --dir ${logfile%/*}" &
 		fi
 
 	else 
@@ -103,12 +103,12 @@ function stop_process () {
 
 		# tidy up the logger process
 
-		PID=`ps -ef | grep ihaPortReader | grep $runname | awk '{print $2}'`
+		PID=`ps -ef | grep ihaNewPortReader | grep $runname | awk '{print $2}'`
 		if [ ${#PID} -ne 0 ] 
 		then
 			kill $PID
 		fi
-		PID=`ps -ef | grep ihaPortReader | grep $runname | awk '{print $2}'`
+		PID=`ps -ef | grep ihaNewPortReader | grep $runname | awk '{print $2}'`
 		if [ ${#PID} -ne 0 ] 
 		then
 			kill -9 $PID
