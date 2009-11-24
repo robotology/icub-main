@@ -36,7 +36,7 @@ namespace iCub {
 	  lenTag = 4;
 	}
 	string toString(){
-	  char buffer[50];
+	  char buffer[256];
 	  sprintf(buffer, "%d %d %d %d",width,height,psb,subflow);
 	  return buffer;
 	}
