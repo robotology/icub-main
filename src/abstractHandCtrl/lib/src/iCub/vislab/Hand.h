@@ -169,9 +169,10 @@ public:
 	/** Lumps together all joints of the hand. */
 	static const std::set<int> COMPLETE_HAND;
 
-	/** The limits of the hands joints. */
+	/** The limits of the hand's joints: (min, max) degrees. */
 	static const std::vector<std::pair<int, int> > LIMITS;
 
+	/** The range of the hand's joints. */
 	static const std::vector<int> RANGES;
 
 	/**

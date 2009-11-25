@@ -179,9 +179,6 @@ protected:
 
 public:
 
-	/** The number of axes. */
-	static const int numAxes = 16;
-
 	/**
 	 * The constructor.
 	 * @param name The module's name.

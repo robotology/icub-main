@@ -243,7 +243,6 @@ void Hand::setVelocity(const ::yarp::sig::Vector& v, const int joint) {
 }
 
 bool Hand::move(const Vector& v, const set<int> joints) {
-	printVector(v);
 	bool result = true;
 	mutex.wait();
 	set<int> activeJoints;

@@ -139,7 +139,7 @@ bool HandModule::configure(ResourceFinder &rf) {
 
 	int numAxes;
 	encoders->getAxes(&numAxes);
-	if (numAxes != this->numAxes) {
+	if (numAxes != HandMetrics::numAxes) {
 		cerr << "The number of axes mismatches the expected number. "
 				<< "It might be that the remote control board to connect to " << controlboardName << endl;
 		return false;
@@ -245,10 +245,10 @@ void HandModule::HandWorkerThread::setSensingConstants(::yarp::os::Searchable& s
 	for (int i = 0; i < 4; i++) {
 		Matrix& m = sensingConstants[osValueNames[i]];
 
-		if (m.cols() != numAxes) {
-			cout << "Warning: The expected size of `" << osValueNames[i] << "` is " << numAxes
+		if (m.cols() != HandMetrics::numAxes) {
+			cout << "Warning: The expected size of `" << osValueNames[i] << "` is " << HandMetrics::numAxes
 					<< ", but it was " << m.cols() << ". The sizes will be automatically adopted!" << endl;
-			resize(m, m.rows(), numAxes);
+			resize(m, m.rows(), HandMetrics::numAxes);
 		}
 	}
 	createHand();
