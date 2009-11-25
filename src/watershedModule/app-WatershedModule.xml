@@ -2,19 +2,19 @@
   <name>Watershed Module starter</name>
   <dependencies>
     <port>/rea/ImageProcessor/out</port>
-    <port>/icub01</port>
+    <port>/rea</port>
   </dependencies>
   <module>
     <name>yarpview</name>
     <parameters>--name /rea/outBlobsView --x 0 --y 10 --synch</parameters>
-    <node>rea</node>
+    <node>/rea</node>
     <tag>outBlobsView</tag>
   </module>
   <module>
     <name>WatershedModule</name>
     <parameters></parameters>
-    <node>rea</node>
-    <stdio>rea</stdio>
+    <node>/rea</node>
+	 <as>watershedmodule</as>
     <tag>watershed</tag>
   </module>
   <connection>

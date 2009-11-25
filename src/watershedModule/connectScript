@@ -1,0 +1,7 @@
+yarp connect /rea/ImageProcessor/out /rea/Watershed/in
+yarp connect /rea/ImageProcessor/outRed /rea/Watershed/inRed
+yarp connect /rea/ImageProcessor/outGreen /rea/Watershed/inGreen
+yarp connect /rea/ImageProcessor/outBlue /rea/Watershed/inBlue
+yarp connect /rea/ImageProcessor/outRG /rea/Watershed/inRG
+yarp connect /rea/ImageProcessor/outGR /rea/Watershed/inGR
+yarp connect /rea/ImageProcessor/outBY /rea/Watershed/inBY

@@ -40,16 +40,11 @@ SOURCE_GROUP("Header Files" FILES ${folder_header})
 LINK_DIRECTORIES(
     ${ICUB_SOURCE_DIR}
     #${CVBLOBS_SOURCE_DIRS}	
+	/opt/intel/ipp/sharedlib	
 )
 
 
-LINK_LIBRARIES(
-    ${OPENCV_LIBRARIES}
-    #${CVBLOBS_LIBRARIES}
-    ${ODE_LIBRARIES}
-    ${IDL_LIBRARIES}
-    ${IPP_LIBRARIES}	 
-)
+
 
 # Set up our main executable.
 IF (folder_source)
@@ -57,6 +52,24 @@ IF (folder_source)
         ${folder_source} 
         ${folder_header}
     )	
+	IF(WIN32)
+	TARGET_LINK_LIBRARIES( ${KEYWORD} 
+    ${OPENCV_LIBRARIES}
+    #${CVBLOBS_LIBRARIES}
+    ${ODE_LIBRARIES}
+    ${IDL_LIBRARIES}
+    ${IPP_LIBRARIES}	 
+   )
+	ELSE(WIN32)
+	 TARGET_LINK_LIBRARIES( ${KEYWORD} 
+    ${OPENCV_LIBRARIES}
+    #${CVBLOBS_LIBRARIES}
+    ${ODE_LIBRARIES}
+    ${IDL_LIBRARIES}
+    ${IPP_LIBRARIES}	
+	 pthread 
+   )
+	ENDIF(WIN32)
 ELSE (folder_source)
     MESSAGE(FATAL_ERROR "No source code files found. Please add something")
 ENDIF (folder_source)
