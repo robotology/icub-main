@@ -293,15 +293,16 @@ class HandCtrl: public HandModule {
 		bool iKinArmCtrlComm(const ::yarp::os::ConstString cmd);
 
 		std::queue< ::yarp::os::ConstString> motionQueue;
+		::yarp::os::ConstString outputDir;
 
 	public:
 
 		void doMotion(const ::yarp::os::ConstString type);
+		void setOutputDir(const ::yarp::os::ConstString dir);
 
 		WorkerThread(const vislab::yarp::util::OptionManager& moduleOptions,
 				const vislab::yarp::util::Contactables& ports, const struct PortIds id,
-				::yarp::os::Searchable& motionSpec, ::yarp::dev::PolyDriver& controlBoard,
-				HandModule::HandType t);
+				::yarp::dev::PolyDriver& controlBoard, HandModule::HandType t);
 
 		void run();
 	};
@@ -311,6 +312,8 @@ protected:
 
 	WorkerThread* workerThread;
 	virtual ::yarp::os::Thread* createWorkerThread();
+
+	::yarp::os::ConstString outputDir;
 
 public:
 	/**

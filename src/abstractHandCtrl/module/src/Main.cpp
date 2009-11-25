@@ -15,6 +15,7 @@
  *******************************************************************************/
 
 #include "iCub/vislab/HandCtrl.h"
+#include <yarp/os/all.h>
 
 using namespace yarp::os;
 using namespace vislab::control;
@@ -32,7 +33,7 @@ int main(int argc, char * argv[])
    ResourceFinder rf;
    rf.setVerbose(true);
    rf.setDefaultConfigFile("conf.ini"); //overridden by --from parameter
-   rf.setDefaultContext("GraspDetection");   //overridden by --context parameter
+   rf.setDefaultContext("abstractHandCtrl");   //overridden by --context parameter
    rf.configure("ICUB_ROOT", argc, argv);
  
    /* run the module: runModule() calls configure first and, if successful, it then runs */

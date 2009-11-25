@@ -107,12 +107,14 @@ bool HandCtrl::configure(ResourceFinder &rf) {
 	addRemoteCommand(new UnBlockCommand(this));
 
 	str = "Dis-/Enables the motion recorder";
-	addModuleOption(new Option("record", str, Option::ON_OFF, Option::OFF));
+	addModuleOption(new Option("recording", str, Option::ON_OFF, Option::OFF));
+	str = "The sampling rate of the motion recorder [ms].";
+	addModuleOption(new Option("sampling rate", str, Option::NUMERIC, Value(100)));
 	str = "Dis-/Enables the direct control of the arm";
 	addModuleOption(new Option("direct control", str, Option::ON_OFF, Option::OFF));
 
 	str
-			= "Input port providing the target configuration for the hand's joints as Vector(12) (c.f. http://eris.liralab.it/wiki/ICub_joints excl. shoulder & elbow)";
+			= "Input port providing the target configuration for the hand's joints as Vector(16) (c.f. http://eris.liralab.it/wiki/ICub_joints)";
 	str = prefix + getName(rf.check("q", Value("/q:i"), str).asString());
 	dataPorts.add(id.Input_Q, str, new BufferedPort<Vector> );
 
@@ -129,14 +131,17 @@ bool HandCtrl::configure(ResourceFinder &rf) {
 	str = prefix + getName(rf.check("iKin", Value(prefix + partName + "/rpc"), str).asString());
 	dataPorts.add(id.RPC_iKin, str, new Port());
 
+	rf.setDefault("log", "");
+	outputDir = rf.findPath("log");
+
 	return startThread();
 }
 
 Thread* HandCtrl::createWorkerThread() {
-	workerThread = new WorkerThread(moduleOptions, dataPorts, id, motionSpecification, controlBoard,
-			handType);
-	//	workerThread->addMotionSpecification(motionSpecification);
+	workerThread = new WorkerThread(moduleOptions, dataPorts, id, controlBoard, handType);
+	workerThread->addMotionSpecification(motionSpecification);
 	workerThread->setSensingConstants(sensingCalibration);
+	workerThread->setOutputDir(outputDir);
 	return workerThread;
 }
 
@@ -146,11 +151,10 @@ bool HandCtrl::close() {
 }
 
 HandCtrl::WorkerThread::WorkerThread(const OptionManager& moduleOptions, const Contactables& ports,
-		const struct PortIds id, Searchable& motionSpec, PolyDriver& controlBoard, HandType t) :
+		const struct PortIds id, PolyDriver& controlBoard, HandType t) :
 	HandWorkerThread(moduleOptions, ports, controlBoard, t) {
 
 	this->id = id;
-	addMotionSpecification(motionSpec);
 	iKinArmCtrl = (Port*) dataPorts[id.RPC_iKin];
 }
 
@@ -179,11 +183,15 @@ void HandCtrl::WorkerThread::doMotion(const ConstString type) {
 	mutex.post();
 }
 
+void HandCtrl::WorkerThread::setOutputDir(const ConstString dir) {
+	outputDir = dir;
+}
+
 void HandCtrl::WorkerThread::run() {
 	BufferedPort<Vector>* q = (BufferedPort<Vector>*) dataPorts[id.Input_Q];
 
 	MotionSequence prevSequence;
-	Vector initPosition(numAxes); // all zero
+	Vector initPosition(HandMetrics::numAxes); // all zero
 	initPosition[Hand::HAND_FINGER] = 40;
 
 	// just in case iKinArmCtrl is running
@@ -192,16 +200,32 @@ void HandCtrl::WorkerThread::run() {
 
 	while (!isStopping()) {
 
+		if (moduleOptions["recording"].getValue().asString() == "on") {
+			if (!hand->isRecording()) {
+				hand->record(true);
+				hand->setSamplingRate(moduleOptions["sampling rate"].getValue().asDouble());
+			}
+		} else {
+			if (hand->isRecording()) {
+				hand->record(false);
+				MotionSequence seq = hand->getRecording();
+
+				ostringstream oss;
+				oss << outputDir << "motion-" << Time::now() << ".ini";
+				seq.toFile(oss.str().c_str());
+			}
+		}
+
 		if (moduleOptions["direct control"].getValue().asString() == "on") {
 			Vector* v = q->read(false);
 			if (v != NULL) {
-				const int expectedVectorSize = 12;
-				int offset = max(0, numAxes - (v->size() - expectedVectorSize));
+				int offset = max(0, HandMetrics::numAxes - v->size());
 
-				Vector position(numAxes);
-				for (int i = 0; i < numAxes - offset; i++) {
+				Vector position(HandMetrics::numAxes);
+				for (int i = 0; i < v->size() && i < HandMetrics::numAxes; i++) {
 					position[offset + i] = (*v)[i];
 				}
+				printVector(position);
 				hand->move(position);
 			}
 		} else {
