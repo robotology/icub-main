@@ -12,7 +12,7 @@
 #include <highgui.h>
 
 //primatevision include
-#include <multiclass.h> 
+#include "multiclass.h"
 #include <iCub/convert_rgb.h>
 
 
