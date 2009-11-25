@@ -31,10 +31,94 @@ using namespace yarp::os;
 using namespace yarp::sig;
 using namespace yarp::sig::draw;
 
+
 /**
- * Module that applies Watershed techinique (rain falling) on the image buffered on the input port
- * @author Francesco Rea
- */
+*
+@ingroup icub_module
+\defgroup icub_watershedModule watershedModule
+
+Module that applies Watershed techinique (rain falling) on the image buffered on the input port
+
+\section intro_sec Description
+This module receives an edge image and the respective red plane, green plane and yellow plane.
+It needs the opponency maps composed as R+G-, G+R-, B+Y-.
+The module applies the watershed technique in order to extract all the blob and calculates a saliency map based on the mean color of the blob,
+its dimension and the the color distance to the target object
+
+
+The module does:
+-   stream the mean color image of all the blobs
+-   stream the image of the fovea blob
+-   strean the saliency map as a gray scale image
+-	stream the most salient blob
+
+
+\image html EXAMPLE.jpg
+
+\section lib_sec Libraries
+YARP
+OPENCV
+IPP
+GTK
+
+\section parameters_sec Parameters
+This provides a comprehensive list of the parameters. For example:
+none
+
+ 
+\section portsa_sec Ports Accessed
+ImageProcessor/outImage:o
+ImageProcessor/outRed:o
+ImageProcessor/outGreen:o
+ImageProcessor/outBlue:o
+ImageProcessor/outRG:o
+ImageProcessor/outGR:o
+ImageProcessor/outBY:o
+
+
+\section portsc_sec Ports Created
+Input ports:
+- /watershed/inputImage:i
+- /watershed/inRed:i
+- /watershed/inGreen:i
+- /watershed/inBlue:i
+- /watershed/inRG:i
+- /watershed/inGR:i
+- /watershed/inBY:i
+Outports
+- /watershed/outBlobs:o
+- /watershed/outView:o
+- /watershed/outImage:o
+
+\section in_files_sec Input Data Files
+none
+
+\section out_data_sec Output Data Files
+none
+ 
+\section conf_file_sec Configuration Files
+none
+
+For example:
+The module requires a description of the robot through the parameter 
+--file.
+
+\section tested_os_sec Tested OS
+Linux and Windows.
+
+\section example_sec Example Instantiation of the Module
+Provide here a typical example of use of your module.
+Example:
+
+myModule --from module.ini
+
+\author Francesco Rea
+
+Copyright (C) 2008 RobotCub Consortium
+
+CopyPolicy: Released under the terms of the GNU GPL v2.0.
+
+**/
 
 
 class WatershedModule : public Module {

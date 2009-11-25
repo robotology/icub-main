@@ -1243,7 +1243,40 @@ bool WatershedModule::openPorts(){
 	// Registering Port(s)
     //reduce verbosity --paulfitz
 	g_print("Registering port %s on network %s...\n", "/rea/Watershed/in","default");
-	ret = _imgRecv.Connect("/rea/Watershed/in","default");
+	ret = _imgRecv.Connect("/rea/Watershed/image:i","default");
+	if (ret == true)
+        {
+            g_print("Port registration succeed!\n");
+        }
+	else
+        {
+            g_print("ERROR: Port registration failed.\nQuitting, sorry.\n");
+            return false;
+        }
+	//--------
+	ret = _imgRecvRed.Connect("/rea/Watershed/inRed:i","default");
+	if (ret == true)
+        {
+            //reduce verbosity --paulfitz
+            g_print("Port registration succeed!\n");
+        }
+	else
+        {
+            g_print("ERROR: Port registration failed.\nQuitting, sorry.\n");
+            return false;
+        }
+	ret = _imgRecvGreen.Connect("/rea/Watershed/inGreen:i","default");
+	if (ret == true)
+        {
+            //reduce verbosity --paulfitz
+            g_print("Port registration succeed!\n");
+        }
+	else
+        {
+            g_print("ERROR: Port registration failed.\nQuitting, sorry.\n");
+            return false;
+        }
+	ret = _imgRecvBlue.Connect("/rea/Watershed/inBlue:i","default");
 	if (ret == true)
         {
             //reduce verbosity --paulfitz
@@ -1255,7 +1288,7 @@ bool WatershedModule::openPorts(){
             return false;
         }
 	//--------
-	ret = _imgRecvRed.Connect("/rea/Watershed/inRed","default");
+	ret = _imgRecvRG.Connect("/rea/Watershed/inRG:i","default");
 	if (ret == true)
         {
             //reduce verbosity --paulfitz
@@ -1266,7 +1299,7 @@ bool WatershedModule::openPorts(){
             g_print("ERROR: Port registration failed.\nQuitting, sorry.\n");
             return false;
         }
-	ret = _imgRecvGreen.Connect("/rea/Watershed/inGreen","default");
+	ret = _imgRecvGR.Connect("/rea/Watershed/inGR:i","default");
 	if (ret == true)
         {
             //reduce verbosity --paulfitz
@@ -1277,41 +1310,7 @@ bool WatershedModule::openPorts(){
             g_print("ERROR: Port registration failed.\nQuitting, sorry.\n");
             return false;
         }
-	ret = _imgRecvBlue.Connect("/rea/Watershed/inBlue","default");
-	if (ret == true)
-        {
-            //reduce verbosity --paulfitz
-            g_print("Port registration succeed!\n");
-        }
-	else
-        {
-            g_print("ERROR: Port registration failed.\nQuitting, sorry.\n");
-            return false;
-        }
-	//--------
-	ret = _imgRecvRG.Connect("/rea/Watershed/inRG","default");
-	if (ret == true)
-        {
-            //reduce verbosity --paulfitz
-            g_print("Port registration succeed!\n");
-        }
-	else
-        {
-            g_print("ERROR: Port registration failed.\nQuitting, sorry.\n");
-            return false;
-        }
-	ret = _imgRecvGR.Connect("/rea/Watershed/inGR","default");
-	if (ret == true)
-        {
-            //reduce verbosity --paulfitz
-            g_print("Port registration succeed!\n");
-        }
-	else
-        {
-            g_print("ERROR: Port registration failed.\nQuitting, sorry.\n");
-            return false;
-        }
-	ret = _imgRecvBY.Connect("/rea/Watershed/inBY","default");
+	ret = _imgRecvBY.Connect("/rea/Watershed/inBY:i","default");
 	if (ret == true)
         {
             //reduce verbosity --paulfitz
@@ -1327,7 +1326,7 @@ bool WatershedModule::openPorts(){
         {		
             _pOutPort = new yarp::os::BufferedPort<yarp::os::Bottle>;
             g_print("Registering port %s on network %s...\n", "/rea/Watershed/out","default");
-            bool ok = _pOutPort->open("/rea/Watershed/out");
+			bool ok = _pOutPort->open("/rea/Watershed/outputImage:o");
             if  (ok)
                 g_print("Port registration succeed!\n");
             else 
@@ -1337,7 +1336,7 @@ bool WatershedModule::openPorts(){
                 }
 			_pOutPort2 = new yarp::os::BufferedPort<ImageOf<PixelRgb> >;
             g_print("Registering port %s on network %s...\n", "/rea/Watershed/outBlobs","default");
-            ok = _pOutPort2->open("/rea/Watershed/outBlobs");
+			ok = _pOutPort2->open("/rea/Watershed/outBlobs:o");
             if  (ok)
                 g_print("Port registration succeed!\n");
             else 
@@ -1347,7 +1346,7 @@ bool WatershedModule::openPorts(){
                 }
 			_pOutPort3 = new yarp::os::BufferedPort<ImageOf<PixelRgb> >;
             g_print("Registering port %s on network %s...\n", "/rea/Watershed/outBlobs","default");
-            ok = _pOutPort3->open("/rea/Watershed/outView");
+			ok = _pOutPort3->open("/rea/Watershed/outView:o");
             if  (ok)
                 g_print("Port registration succeed!\n");
             else 
