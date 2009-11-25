@@ -1094,6 +1094,27 @@ static void cb_digits_scale4( GtkAdjustment *adj )
 	printf("minBLOB: %f",wModule->salienceBU/100);
 }
 
+static void cb_digits_scaler( GtkAdjustment *adj )
+{
+    /* Set the number of decimal places to which adj->value is rounded */
+	wModule->targetRED=adj->value;
+	printf("targetRED: %f",wModule->salienceBU/100);
+}
+
+static void cb_digits_scaleg( GtkAdjustment *adj )
+{
+    /* Set the number of decimal places to which adj->value is rounded */
+	wModule->targetGREEN=adj->value;
+	printf("targetGREEN: %f",wModule->salienceBU/100);
+}
+
+static void cb_digits_scaleb( GtkAdjustment *adj )
+{
+    /* Set the number of decimal places to which adj->value is rounded */
+	wModule->targetBLUE=adj->value;
+	printf("targetBLUE: %f",wModule->salienceBU/100);
+}
+
 
 
 
@@ -1615,7 +1636,7 @@ GtkWidget* WatershedModule::createMainWindow(void)
     
     
     GtkWidget *scale;
-    GtkObject *adj1, *adj2,*adj3, *adj4;
+    GtkObject *adj1, *adj2,*adj3, *adj4,*adjr, *adjg, *adjb;
 	GtkWidget *hscale, *vscale;
 
 
@@ -1675,7 +1696,7 @@ GtkWidget* WatershedModule::createMainWindow(void)
 	box4 = gtk_vbox_new (FALSE, 0);
 	gtk_container_set_border_width (GTK_CONTAINER (box4), 0);
 
-	label = gtk_label_new ("SalienceBU Percentage:");
+	label = gtk_label_new ("saliency linear combination Kcoeff. BU:");
 	gtk_box_pack_start (GTK_BOX (box4), label, FALSE, FALSE, 0);
     gtk_widget_show (label);
 
@@ -1693,7 +1714,7 @@ GtkWidget* WatershedModule::createMainWindow(void)
                       G_CALLBACK (cb_digits_scale), NULL);
 
 
-	label = gtk_label_new ("SalienceTD Percentage:");
+	label = gtk_label_new ("saliency linear combination Kcoeff. TD:");
 	gtk_box_pack_start (GTK_BOX (box4), label, FALSE, FALSE, 0);
     gtk_widget_show (label);
 
@@ -1731,6 +1752,41 @@ GtkWidget* WatershedModule::createMainWindow(void)
 	g_signal_connect (G_OBJECT (adj4), "value_changed",
                       G_CALLBACK (cb_digits_scale4), NULL);
 	
+	label = gtk_label_new ("red intensity target:");
+	gtk_box_pack_start (GTK_BOX (box4), label, FALSE, FALSE, 0);
+    gtk_widget_show (label);
+	adjr = gtk_adjustment_new (1,1,1000,1,1,1);
+	hscale = gtk_hscale_new (GTK_ADJUSTMENT (adjr));
+    gtk_widget_set_size_request (GTK_WIDGET (hscale), 200, -1);
+    scale_set_default_values (GTK_SCALE (hscale));
+	gtk_box_pack_start (GTK_BOX (box4), hscale, TRUE, TRUE, 0);
+    gtk_widget_show (hscale);
+	g_signal_connect (G_OBJECT (adjr), "value_changed",
+                      G_CALLBACK (cb_digits_scaler), NULL);
+
+	label = gtk_label_new ("green intensity target:");
+	gtk_box_pack_start (GTK_BOX (box4), label, FALSE, FALSE, 0);
+    gtk_widget_show (label);
+	adjg = gtk_adjustment_new (1,1,1000,1,1,1);
+	hscale = gtk_hscale_new (GTK_ADJUSTMENT (adjg));
+    gtk_widget_set_size_request (GTK_WIDGET (hscale), 200, -1);
+    scale_set_default_values (GTK_SCALE (hscale));
+	gtk_box_pack_start (GTK_BOX (box4), hscale, TRUE, TRUE, 0);
+    gtk_widget_show (hscale);
+	g_signal_connect (G_OBJECT (adjg), "value_changed",
+                      G_CALLBACK (cb_digits_scaleg), NULL);
+
+	label = gtk_label_new ("blue intensity target:");
+	gtk_box_pack_start (GTK_BOX (box4), label, FALSE, FALSE, 0);
+    gtk_widget_show (label);
+	adjb = gtk_adjustment_new (1,1,1000,1,1,1);
+	hscale = gtk_hscale_new (GTK_ADJUSTMENT (adjb));
+    gtk_widget_set_size_request (GTK_WIDGET (hscale), 200, -1);
+    scale_set_default_values (GTK_SCALE (hscale));
+	gtk_box_pack_start (GTK_BOX (box4), hscale, TRUE, TRUE, 0);
+    gtk_widget_show (hscale);
+	g_signal_connect (G_OBJECT (adjb), "value_changed",
+                      G_CALLBACK (cb_digits_scaleb), NULL);
 	
 	gtk_box_pack_start (GTK_BOX (box3), box4, TRUE, TRUE, 0);
     gtk_widget_show (box4);

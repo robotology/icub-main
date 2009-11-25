@@ -234,13 +234,26 @@ public:
 	
 	//----------------- PUBLIC ATTRIBUTES -----------------------------
 	/**
-	* saliency parameter
+	* saliencyTOT linear combination Ktd coefficient (TOP DOWN saliency weight)
 	*/
 	double salienceTD;
 	/**
-	* saliency parameter
+	* saliencyTOT linear combination Kbu coefficient (BOTTOM-UP saliency weight)
 	*/
 	double salienceBU;
+	/**
+	* red intensity of the target that has been found 
+	*/
+	double targetRED;
+	/**
+	* green intensity of the target that has been found 
+	*/
+	double targetGREEN;
+	/**
+	* blue intensity of the target that has been found 
+	*/
+	double targetBLUE;
+
 	/**
 	* Output Bottle Port for any possible command
 	*/

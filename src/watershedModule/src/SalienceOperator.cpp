@@ -447,7 +447,10 @@ int SalienceOperator::DrawContrastLP2(ImageOf<PixelMonoSigned>& rg, ImageOf<Pixe
 				m_boxes[i].rmin-rdim)/(rdim*cdim);
 			m_boxes[i].cBY=abs(tmp-m_boxes[i].meanBY);*/
 
-			//calculates the contrast differences  for RG,GR,BY
+			//CALCULATES BOTTOM-UP SALIENCY
+			// as the absolute distance between the colour of the blob and
+			// the colour of surrondings(rectangular window)
+
 			mlp=integralRG->getMeanLp(a,b,c,d);
 			tmp=255*height*width*mlp;
 			t=tmp-m_boxes[i].meanRG;
@@ -482,6 +485,8 @@ int SalienceOperator::DrawContrastLP2(ImageOf<PixelMonoSigned>& rg, ImageOf<Pixe
 			// BU is the sum of abs of contrast differences
 			salienceBU=m_boxes[i].cRG+m_boxes[i].cGR+m_boxes[i].cBY;
 			
+			// CALCULATE THE TOP-DOWN SALIENCY 
+			// as the euclidian distance between the colour of the blob and the colour of the target
 			//prg mono plane of RG,pgr mono plane of GR, pby mono plane of BY
 			//TD is the square root of the sum of square errors between planes and means
 			salienceTD=sqrt((double)(m_boxes[i].meanRG-prg)*(m_boxes[i].meanRG-prg)+
@@ -537,9 +542,10 @@ int SalienceOperator::DrawContrastLP2(ImageOf<PixelMonoSigned>& rg, ImageOf<Pixe
 		a2=0;
 		b2=0;
 	}
-	//calculate the salience total
+	//for every blobs ....
 	for (int i = 1; i < numBlob; i++) {
-		if (m_boxes[i].valid) {
+			if (m_boxes[i].valid) {
+			//calculates the salience total
 			m_boxes[i].salienceTotal=pBU*(a1*m_boxes[i].salienceBU+b1)+pTD*(a2*m_boxes[i].salienceTD+b2);
 			//correction between salience interval
 			if (m_boxes[i].salienceTotal<minSalienceTot)
