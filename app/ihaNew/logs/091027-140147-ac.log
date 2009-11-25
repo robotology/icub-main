@@ -1,5 +1,0 @@
-Action Selection Module
-Debug level : 50
-max_repeat_zero 3
-Writing actions to port /iha/as/action:out
-yarp: Port /iha/as/action:out failed to activate at tcp://10.0.0.104:10172 (address conflict)
