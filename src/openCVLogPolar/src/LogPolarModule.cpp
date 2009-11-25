@@ -399,6 +399,7 @@ bool LogPolarModule::updateModule() {
 		//cvLogPolar( dstColor, dstColor2, cvPoint2D32f(cvImage->width/2,cvImage->height/2), 50, CV_INTER_LINEAR+CV_WARP_INVERSE_MAP+CV_WARP_FILL_OUTLIERS );
 		//delete cvImage;
 
+
 		//cvShowImage("test",dstColor2);
 		
 		//cvCvtColor(dst,dstColor, CV_GRAY2RGB);
