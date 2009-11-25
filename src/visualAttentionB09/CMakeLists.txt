@@ -95,10 +95,10 @@ ELSE (folder_source)
 ENDIF (folder_source)
 
 
-ADD_LIBRARY(ImageProcessModule
-    ${ImageProcessModuleSRC}
-    ${folder_header}
-)
+#ADD_LIBRARY(ImageProcessModule
+#    ${ImageProcessModuleSRC}
+#    ${folder_header}
+#)
 
 INSTALL_TARGETS(/lib ${KEYWORD})
 INSTALL_TARGETS(/bin ${KEYWORD})
