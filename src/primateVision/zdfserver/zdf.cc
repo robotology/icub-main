@@ -91,7 +91,6 @@ void iCub::contrib::primateVision::ZDFServer::run(){
   bool motion          = (bool) prop.findGroup("ZDFTRACK").find("MOTION").asInt();
   bool track_lock      = (bool) prop.findGroup("ZDFTRACK").find("TRACK_LOCK").asInt();
   double cog_snap      = prop.findGroup("ZDFTRACK").find("COG_SNAP").asDouble();
-  double cog_drift     = (double) prop.findGroup("ZDFTRACK").find("COG_DRIFT").asInt();
   int nclasses         = 2; //zd, not_zd
 
 
@@ -482,21 +481,10 @@ void iCub::contrib::primateVision::ZDFServer::run(){
       acquire = false;
 	  //update templates to(wards) segmentation CoG:
 	  printf("area:%d spread:%f cogx:%f cogy:%f - UPDATING TEMPLATE\n",area,spread,cog_x,cog_y);
-		//Bring cog of target into centre of fovea:
-		if (cog_snap!=0.0){
-			  //SNAP GAZE TO OBJECT:
-			  cog_x*=cog_snap;
-			  cog_y*=cog_snap;
-		}
-		else {
-			  //DRIFT GAZE TOWARDS OBJECT:
-			  if (cog_x>cog_drift){cog_x=cog_drift;}          //take sign to drift template towards cog of segmentation
-			  else if (cog_x<-cog_drift){cog_x=-cog_drift;}   //only want to DRIFT there cos a jump would otherwise be
-			  else {cog_x=0.0;} 
-			  if (cog_y>cog_drift){cog_y=cog_drift;}  //induced by a sudden change in seg area.
-			  else if (cog_y<-cog_drift){cog_y=-cog_drift;}
-			  else {cog_y=0.0;}
-		}
+	  //Bring cog of target towards centre of fovea:
+	  //SNAP GAZE TO OBJECT:
+	  cog_x*=cog_snap;
+	  cog_y*=cog_snap;
 	  ippiCopy_8u_C1R(&fov_l[(mid_x_m+((int)round(cog_x))) + (mid_y_m+((int)round(cog_y)))*psb_m],psb_m,temp_l,psb_t,tsize);
 	  ippiCopy_8u_C1R(&fov_r[(mid_x_m+((int)round(cog_x))) + (mid_y_m+((int)round(cog_y)))*psb_m],psb_m,temp_r,psb_t,tsize);
 	  //We've updated, so reset waiting:
