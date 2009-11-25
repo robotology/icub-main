@@ -54,7 +54,9 @@
 #define GREY  0.3
 #define WHITE 0.99
 
-#define PIX 50.0
+#define PIX 30.0
+#define SAC_GAIN_X 1.0
+#define SAC_GAIN_Y 1.0
 
 
 using namespace iCub::contrib::primateVision;
@@ -145,7 +147,6 @@ int main( int argc, char **argv )
   double des_x=0.0,des_y=0.0,des_xl,des_xr;
 
 
-
   iCub::contrib::primateVision::Display *d_y = new iCub::contrib::primateVision::Display(srcsize,psb,D_8U_NN,"Y_REC");
 
 
@@ -162,6 +163,7 @@ int main( int argc, char **argv )
   }
 
 
+
   motion_request.content().relative = true; //relative pixel moves.
 
 
@@ -172,20 +174,51 @@ int main( int argc, char **argv )
 
     inBot_y = inPort_y.read();   //blocking
     rec_im_y = (Ipp8u*) inBot_y->get(0).asBlob();
+
+
     MyDrawLine(rec_im_y,psb,srcsize,width/2+des_x,height/2+des_y,WHITE);
     MyDrawLine(rec_im_y,psb,srcsize,width/2,height/2,BLACK);
     d_y->display(rec_im_y);
     
     if (frames%50==0){
-      motion_request.content().pix_xl = des_xl;
-      motion_request.content().pix_xr = des_xr;
-      motion_request.content().pix_y  = des_y;
+
+	  // first move this direction
+      motion_request.content().pix_xl = des_xl*SAC_GAIN_X;
+      motion_request.content().pix_xr = des_xr*SAC_GAIN_X;
+      motion_request.content().pix_y  = des_y*SAC_GAIN_Y;
       outPort_mot.write(motion_request);
-      //swap direction for next time!:
+
+      //if endpoint is far from mosaic centre,
+      //need to amplify motion.
+      //conversely, if endpoint is in centre, amplification reduced. 
+
+#if 1
+     for (int i=0;i<=50;i++){
+       inBot_y = inPort_y.read();   //blocking
+       rec_im_y = (Ipp8u*) inBot_y->get(0).asBlob();
+        MyDrawLine(rec_im_y,psb,srcsize,width/2+des_x,height/2+des_y,WHITE);
+        MyDrawLine(rec_im_y,psb,srcsize,width/2,height/2,BLACK);
+      	d_y->display(rec_im_y); 
+        frames++;
+        if (frames%50==0){
+
+		    //second move this direction
+            motion_request.content().pix_xl = des_xl*SAC_GAIN_X;
+         	motion_request.content().pix_xr = des_xr*SAC_GAIN_X;
+      		motion_request.content().pix_y  = des_y*SAC_GAIN_Y;
+      		outPort_mot.write(motion_request);
+
+        }
+      }
+#endif
+
+	  //swap direction for next time!:
       des_x  = -des_x;
       des_xl = -des_xl;
       des_xr = -des_xr;
       des_y  = -des_y;
+      
+
     }
 
     frames++;
