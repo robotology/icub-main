@@ -17,14 +17,14 @@
 #include <windows.h>
 #endif
 
-#define HAVE_APPLE_OPENGL_FRAMEWORK 
-#ifdef HAVE_APPLE_OPENGL_FRAMEWORK
-#include <OpenGL/gl.h>
-#include <OpenGL/glu.h>
-#else
+//#define HAVE_APPLE_OPENGL_FRAMEWORK 
+//#ifdef HAVE_APPLE_OPENGL_FRAMEWORK
+//#include <OpenGL/gl.h>
+//#include <OpenGL/glu.h>
+//#else
 #include <GL/gl.h>
 #include <GL/glu.h>
-#endif
+//#endif
 
 #include <iostream>
 #include <fstream>
