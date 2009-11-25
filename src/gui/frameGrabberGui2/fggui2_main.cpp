@@ -30,8 +30,6 @@
 #include <gtkmm.h>
 #include "FrameGrabberGUIControl2.h"
 
-//#include <ace/config.h>
-//#include <ace/OS.h>
 #include <yarp/os/Property.h> 
 #include <yarp/os/Network.h>
 #include <string.h>

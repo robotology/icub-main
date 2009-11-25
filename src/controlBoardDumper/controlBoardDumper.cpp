@@ -16,9 +16,9 @@ void controlBoardDumper::setDevice(PolyDriver *Arm_d, int rate, ConstString port
   ok &= Arm_dd->view(lim);
 
   if (!ok)
-    ACE_OS::printf("Problems acquiring interfaces\n");
+    printf("Problems acquiring interfaces\n");
   else
-    ACE_OS::printf("Control board was accessed succesfully!\n");
+    printf("Control board was accessed succesfully!\n");
 
   pos->getAxes(&numberOfJoints);
   fprintf(stderr, "Number of axes is: %d \n", numberOfJoints);
@@ -80,7 +80,7 @@ void controlBoardDumper::threadRelease()
 
 void controlBoardDumper::run()
 {
-  //ACE_OS::printf("Entering the main thread\n");
+  //printf("Entering the main thread\n");
   //enc->getEncoders(data);
   //Bottle bData;
   //for (int i = 0; i < numberOfJointsRead; i++)
@@ -92,7 +92,7 @@ void controlBoardDumper::run()
 
   if (getter)
     {
-      //ACE_OS::printf("Getter is getting something\n");
+      //printf("Getter is getting something\n");
       getter -> getData(data);
 
       //fprintf(stderr, "Time is %lf \n", stmp.getTime());
@@ -100,7 +100,7 @@ void controlBoardDumper::run()
       Bottle bData;
       for (int i = 0; i < numberOfJointsRead; i++)
 	{
-	  //ACE_OS::printf("%.2f \n", data[dataMap[i]]);
+	  //printf("%.2f \n", data[dataMap[i]]);
 	  dataRead[i] = data[dataMap[i]];
 	  bData.addDouble(dataRead[i]);
 	}

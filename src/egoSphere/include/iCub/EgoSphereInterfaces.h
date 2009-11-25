@@ -12,7 +12,6 @@
 #ifndef __EGOSPHEREINTERFACES__
 #define __EGOSPHEREINTERFACES__
 
-#include <string>
 #include <yarp/os/Bottle.h>
 
 namespace iCub {

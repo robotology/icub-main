@@ -7,27 +7,21 @@
 #include <iCub/YARPImgRecv.h>
 
 #include <yarp/os/all.h>
-#include <yarp/os/Time.h>
-#include <yarp/os/RateThread.h>
-#include <yarp/os/Thread.h>
-#include <yarp/os/Network.h>
 #include <yarp/sig/all.h>
-#include <yarp/sig/Vector.h>
 #include <yarp/dev/ControlBoardInterfaces.h>
 #include <yarp/dev/PolyDriver.h>
 #include <yarp/dev/CanBusInterface.h>
 
-//openCV include
-#include <cv.h>
-#include <cvaux.h>
-#include <highgui.h>
 
 using namespace yarp::os;
 using namespace yarp::sig;
 using namespace yarp::sig::draw;
 using namespace yarp::dev;
-using namespace yarp;
-using namespace std;
+
+//openCV include
+#include <cv.h>
+#include <cvaux.h>
+#include <highgui.h>
 
 /**
 * Thread that reads the port and traslate the value into a colour
@@ -82,7 +76,7 @@ public:
 	/**
 	* returns the name of the thread
 	*/
-	string getName(){};
+	std::string getName(){};
 
 	/** 
 	* set the attribute options of class Property

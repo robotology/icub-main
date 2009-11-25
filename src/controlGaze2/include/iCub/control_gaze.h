@@ -28,7 +28,6 @@
 #include <string>
 
 // yarp
-#include <yarp/String.h>
 #include <yarp/sig/Vector.h>
 
 #include <yarp/os/all.h>

@@ -61,7 +61,9 @@
 // iCub
 #include <iCub/episodicMemory.h>
 
-
+//opencv
+#include <cv.h>
+#include <highgui.h>
 
 //HistMatchData constructor
 HistMatchData::HistMatchData()

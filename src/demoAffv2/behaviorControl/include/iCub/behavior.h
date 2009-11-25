@@ -23,14 +23,9 @@
 #include <iostream>
 
 // yarp
-#include <yarp/String.h>
-#include <yarp/os/all.h>
-#include <yarp/sig/all.h>
 #include <yarp/os/all.h>
 #include <yarp/sig/all.h>
 #include <yarp/dev/all.h>
-#include <yarp/os/Bottle.h>
-#include <yarp/os/Module.h>
 
 #include "iCub/RemoteAttentionSelection.h"
 

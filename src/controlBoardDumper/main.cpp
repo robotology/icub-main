@@ -279,7 +279,7 @@ public:
         options.fromString(s.toString());
         if (!options.check("robot") || !options.check("part")) 
             {
-                ACE_OS::printf("Missing either --robot or --part options. Quitting!\n");
+                printf("Missing either --robot or --part options. Quitting!\n");
                 return false;
             }
 
@@ -342,8 +342,8 @@ public:
         // create a device 
         dd.open(ddOptions);
         if (!dd.isValid()) {
-            ACE_OS::printf("Device not available.  Here are the known devices:\n");
-            ACE_OS::printf("%s", Drivers::factory().toString().c_str());
+			printf("Device not available.  Here are the known devices:\n");
+            printf("%s", Drivers::factory().toString().c_str());
             Network::fini();
             return false;
         }

@@ -25,7 +25,6 @@ dxTriMeshX *dLoadMeshFromX(const char* FileName)
 	FILE *in;
 	double dblval;
 	int intval;
-	int idxlen;
 
 	if ((in = fopen(FileName, "r")) == NULL) {
 		printf ("Can't open the file '%s'\n", FileName);

@@ -1,10 +1,6 @@
 #ifndef PARTMOVER_H
 #define PARTMOVER_H
 
-/////////ACE///////////
-//#include <ace/config.h>
-//#include <ace/OS.h>
-//#include <ace/Log_Msg.h>
 #include <math.h>
 ///////////YARP//////////
 #include <yarp/os/BufferedPort.h>

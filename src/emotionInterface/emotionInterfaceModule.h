@@ -19,7 +19,6 @@
 
 
 // yarp
-#include <yarp/String.h>
 #include <yarp/os/all.h>
 #include <yarp/sig/all.h>
 

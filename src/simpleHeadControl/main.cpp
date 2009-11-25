@@ -12,11 +12,6 @@
  *
  */
 
-
-#include <ace/config.h>
-#include <ace/OS.h>
-#include <ace/Log_Msg.h>
-
 #include <yarp/os/PortablePair.h>
 #include <yarp/os/BufferedPort.h>
 #include <yarp/os/Time.h>
@@ -24,12 +19,14 @@
 #include <yarp/os/Thread.h>
 #include <yarp/os/Vocab.h>
 #include <yarp/os/Terminator.h>
-#include <yarp/String.h>
+#include <yarp/os/Os.h>
 
 #include <yarp/dev/ControlBoardInterfaces.h>
 #include <yarp/dev/PolyDriver.h>
 
 #include <yarp/sig/Vector.h>
+
+#include <string>
 
 #include "pidfilter.h"
 
@@ -49,24 +46,24 @@ int main(int argc, char *argv[])
 
     Terminee terminee("/simpleHeadControl/quit");
     if (!terminee.isOk()) {
-        ACE_OS::printf("Failed to create proper quit socket\n");
+        printf("Failed to create proper quit socket\n");
         return 1;
     }
 
-    const char *conf = ACE_OS::getenv("ICUB_ROOT");
+	const char *conf = yarp::os::getenv("ICUB_ROOT");
     
 	if (conf == NULL) {
-		ACE_OS::printf("This application requires the ICUB_ROOT environment variable\n");
-		ACE_OS::printf("defined to point at the configuration files under $ICUB_ROOT/conf\n");
+		printf("This application requires the ICUB_ROOT environment variable\n");
+		printf("defined to point at the configuration files under $ICUB_ROOT/conf\n");
 		return 0;
 	}
 
     // just list the devices if no argument given
     if (argc <= 2) {
-        ACE_OS::printf("You can call %s like this:\n", argv[0]);
-        ACE_OS::printf("   %s --robot ROBOTNAME --OPTION VALUE ...\n", argv[0]);
-        ACE_OS::printf("For example:\n");
-        ACE_OS::printf("   %s --robot icub\n", argv[0]);
+        printf("You can call %s like this:\n", argv[0]);
+        printf("   %s --robot ROBOTNAME --OPTION VALUE ...\n", argv[0]);
+        printf("For example:\n");
+        printf("   %s --robot icub\n", argv[0]);
         return 0;
     }
 
@@ -74,18 +71,18 @@ int main(int argc, char *argv[])
     Property options;
     options.fromCommand(argc, argv);
     if (!options.check("robot")) {
-        ACE_OS::printf("Missing the --robot option\n");
+        printf("Missing the --robot option\n");
         return 0;
     }
 
 	if (!options.check("device")) {
-		ACE_OS::printf("Adding device remote_controlboard\n");
+		printf("Adding device remote_controlboard\n");
 		options.put("device", "remote_controlboard");
 	}
 
     Value& robotname = options.find("robot");
 
-	yarp::String s("/");
+	std::string s("/");
 	s += robotname.asString().c_str();
 	s += "/head/control";
 	options.put("local", s.c_str());
@@ -96,14 +93,14 @@ int main(int argc, char *argv[])
 	s += "/head";
 	options.put("remote", s.c_str());
 
-	yarp::String filename;
+	std::string filename;
 	filename += conf;
 	filename += "/conf/";
 	filename += robotname.asString().c_str();
 	filename += "_simpleheadcontrol.ini";
 
 	Property p;
-	ACE_OS::printf("Head controller working with config file %s\n", filename.c_str());
+	printf("Head controller working with config file %s\n", filename.c_str());
 	p.fromConfigFile(filename.c_str());
     
     fprintf(stderr, "%s", p.toString().c_str());
@@ -114,7 +111,7 @@ int main(int argc, char *argv[])
     BufferedPort<yarp::sig::Vector> targetLeft;  
     BufferedPort<yarp::sig::Vector> targetRight;
 
-	yarp::String name;
+	std::string name;
 	name.clear();
 	name += "/";
 	name += robotname.asString().c_str();
@@ -139,8 +136,8 @@ int main(int argc, char *argv[])
     // create a device to connect to the remote robot server.
     PolyDriver dd(options);
     if (!dd.isValid()) {
-        ACE_OS::printf("Device not available.  Here are the known devices:\n");
-        ACE_OS::printf("%s", Drivers::factory().toString().c_str());
+        printf("Device not available.  Here are the known devices:\n");
+        printf("%s", Drivers::factory().toString().c_str());
         Network::fini();
         return 1;
     }
@@ -161,11 +158,11 @@ int main(int argc, char *argv[])
     ok &= dd.view(lim);
 
     if (!ok) {
-        ACE_OS::printf("Problems acquiring interfaces\n");
+        printf("Problems acquiring interfaces\n");
         return 1;
     }
 
-	yarp::String name_src("/");
+	std::string name_src("/");
 	name_src += robotname.asString().c_str();
 	name_src += "/inertial";
 
@@ -173,19 +170,17 @@ int main(int argc, char *argv[])
 
     int jnts = 0;
     pos->getAxes(&jnts);
-    ACE_OS::printf("Working with %d axes\n", jnts);
+    printf("Working with %d axes\n", jnts);
 
     double *tmp = new double[jnts];
-    ACE_ASSERT (tmp != NULL);
 	double *prev_control = new double[jnts];
-    ACE_ASSERT (prev_control != NULL);
 	double *q = new double[jnts];
-	ACE_OS::memset(q, 0, sizeof(double)*jnts);
-	ACE_OS::memset(tmp, 0, sizeof(double)*jnts);
-	ACE_OS::memset(prev_control, 0, sizeof(double)*jnts);
+	memset(q, 0, sizeof(double)*jnts);
+	memset(tmp, 0, sizeof(double)*jnts);
+	memset(prev_control, 0, sizeof(double)*jnts);
 
-    ACE_OS::printf("Device active...\n");
-    ACE_OS::printf("Setting up default configuration for the robot head\n");
+    printf("Device active...\n");
+    printf("Setting up default configuration for the robot head\n");
 
     // setting up the controller parameters for velocity control.
     int i;
@@ -205,7 +200,7 @@ int main(int argc, char *argv[])
 
 	Bottle& tmp_b = p.findGroup("PIDS").findGroup("Pan");
 	if (verbose)
-		ACE_OS::printf("%s\n", tmp_b.toString().c_str());
+		printf("%s\n", tmp_b.toString().c_str());
     
     // Beware, strange things might happen to those who use the PidFilter class.
     // Why should you use a PidFilter class when all you need is as simple as a double?
@@ -214,7 +209,7 @@ int main(int argc, char *argv[])
     	
 	tmp_b = p.findGroup("PIDS").findGroup("Tilt");
 	if (verbose)
-		ACE_OS::printf("%s\n", tmp_b.toString().c_str());
+		printf("%s\n", tmp_b.toString().c_str());
 
     // Beware, strange things might happen to those who use the PidFilter class.
     // Why should you use a PidFilter class when all you need is as simple as a double?
@@ -223,24 +218,24 @@ int main(int argc, char *argv[])
 
 	tmp_b = p.findGroup("PIDS").findGroup("Vergence");
 	if (verbose)
-		ACE_OS::printf("%s\n", tmp_b.toString().c_str());
+		printf("%s\n", tmp_b.toString().c_str());
     double Kvergence=tmp_b.get(1).asDouble();
 	
 	tmp_b = p.findGroup("PIDS").findGroup("NeckPan");
 	if (verbose)
-		ACE_OS::printf("%s\n", tmp_b.toString().c_str());
+		printf("%s\n", tmp_b.toString().c_str());
 	//PidFilter neckpan(tmp_b.get(1).asDouble(), tmp_b.get(2).asDouble(), tmp_b.get(3).asDouble(), tmp_b.get(4).asDouble());
     double Kn_pan=tmp_b.get(1).asDouble();
 
 	tmp_b = p.findGroup("PIDS").findGroup("NeckTilt");
 	if (verbose)
-		ACE_OS::printf("%s\n", tmp_b.toString().c_str());
+		printf("%s\n", tmp_b.toString().c_str());
     //	PidFilter necktilt(tmp_b.get(1).asDouble(), tmp_b.get(2).asDouble(), tmp_b.get(3).asDouble(), tmp_b.get(4).asDouble());
     double Kn_tilt=tmp_b.get(1).asDouble();
 
 	tmp_b = p.findGroup("PIDS").findGroup("VOR");
 	if (verbose)
-		ACE_OS::printf("%s\n", tmp_b.toString().c_str());
+		printf("%s\n", tmp_b.toString().c_str());
     double vorx = tmp_b.get(1).asDouble();
 	double vory = tmp_b.get(2).asDouble();
 	double vorz = tmp_b.get(3).asDouble();
@@ -266,9 +261,9 @@ int main(int argc, char *argv[])
                         {
                             int k;
                             for (k = 6; k < 9; k++) {
-                                ACE_OS::printf("%.2f ", (*gyro)[k]);
+                                printf("%.2f ", (*gyro)[k]);
                             }
-                            ACE_OS::printf("\n");
+                            printf("\n");
                         }
 
 
@@ -276,7 +271,7 @@ int main(int argc, char *argv[])
                     enc->getEncoders(q);
 
                     //vvv std
-                    ACE_OS::memset(tmp, 0, sizeof(double)*jnts);
+                    memset(tmp, 0, sizeof(double)*jnts);
                     //                	(*v)[1] = (*v)[1] / (*v)[5] - 0.5;
                     //                	(*v)[2] = (*v)[2] / (*v)[6] - 0.5;
                     //                (*v)[1]=-0.25*(*v)[1];
@@ -317,15 +312,15 @@ int main(int argc, char *argv[])
 
                     bool ok = vel->velocityMove(tmp);
                     if (!ok)
-                        ACE_OS::printf("Something wrong with the velocityMove command\n");
+                        printf("Something wrong with the velocityMove command\n");
                     
-                    ACE_OS::memcpy(prev_control, tmp, sizeof(double)*jnts);
+                    memcpy(prev_control, tmp, sizeof(double)*jnts);
                 }
             else {
                 // slow down when signal is not missing.
                 bool ok = vel->velocityMove(prev_control);
                 if (!ok)
-                    ACE_OS::printf("Something wrong with the velocityMove command\n");
+                    printf("Something wrong with the velocityMove command\n");
                 
                 int i;
                 for (i = 0; i < jnts; i++)
@@ -338,7 +333,7 @@ int main(int argc, char *argv[])
                 Time::delay(k);
             }
             else {
-                ACE_OS::printf("Can't comply with the %d ms period (%.2f)\n", period, (now-before)*1000);
+                printf("Can't comply with the %d ms period (%.2f)\n", period, (now-before)*1000);
             }
         }
 

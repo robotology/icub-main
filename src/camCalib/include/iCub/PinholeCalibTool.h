@@ -15,10 +15,6 @@
 #include <stdio.h>
 #include <math.h>
 
-// ace
-//#include <ace/config.h>
-//#include <ace/OS.h>
-
 // opencv
 #include <cv.h>
 

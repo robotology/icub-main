@@ -13,9 +13,6 @@
 // -------------------------------------------------------
 
 //#include <conio.h>
-
-#include <yarp/String.h>
-
 #include "libsvmLearningMachine.h"
 #include "lMCommands.h"
 
@@ -46,8 +43,8 @@ using namespace iCub::contrib;
 
 
 // port basename and network name
-String portName = "learner";
-String netName = "default";
+std::string portName = "learner";
+std::string netName = "default";
 
 #define learner (*(pLearner))
 
@@ -626,7 +623,7 @@ private:
 
     T bLearner;
 
-    void registerPort(Port& port, String& name, String& net);
+	void registerPort(Port& port, std::string& name, std::string &net);
     void registerAllPorts();
     void unregisterAllPorts();
 public:
@@ -659,7 +656,7 @@ public:
 // -------------------------------------------------------
 
 template <class T>
-void LearnerModule<T>::registerPort(Port& port, String& name, String& net)
+void LearnerModule<T>::registerPort(Port& port, std::string& name, std::string& net)
 {
 
 	if ( port.open(name.c_str()) != true ) {
@@ -673,7 +670,7 @@ template <class T>
 void LearnerModule<T>::registerAllPorts()
 {
 
-	String fullPortName;
+	std::string fullPortName;
 
 	fullPortName = "/" + portName + "/o:vec"; data_out.open(fullPortName.c_str());
 	fullPortName = "/" + portName + "/i:vec"; data_in.open(fullPortName.c_str());

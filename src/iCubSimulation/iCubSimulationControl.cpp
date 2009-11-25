@@ -568,20 +568,20 @@ bool iCubSimulationControl::open(yarp::os::Searchable& config) {
 	Bottle& xtmp = p.findGroup("GENERAL").findGroup("AxisMap","a list of reordered indices for the axes");
     
 	if (xtmp.size() != njoints+1) {
-        ACE_OS::printf("AxisMap does not have the right number of entries\n");
+        printf("AxisMap does not have the right number of entries\n");
         return false;
     }
     for (i = 1; i < xtmp.size(); i++) axisMap[i-1] = xtmp.get(i).asInt();
 
 	 xtmp = p.findGroup("GENERAL").findGroup("Encoder","a list of scales for the encoders");
 	if (xtmp.size() != njoints+1) {
-        ACE_OS::printf("Encoder does not have the right number of entries\n");
+        printf("Encoder does not have the right number of entries\n");
         return false;
     }
     for (i = 1; i < xtmp.size(); i++) angleToEncoder[i-1] = xtmp.get(i).asDouble();
     xtmp = p.findGroup("GENERAL").findGroup("Zeros","a list of offsets for the zero point");
 	if (xtmp.size() != njoints+1) {
-        ACE_OS::printf("Zeros does not have the right number of entries\n");
+        printf("Zeros does not have the right number of entries\n");
         return false;
     }
     for (i = 1; i < xtmp.size(); i++) zeros[i-1] = xtmp.get(i).asDouble();
@@ -591,7 +591,7 @@ bool iCubSimulationControl::open(yarp::os::Searchable& config) {
     xtmp = p.findGroup("LIMITS").findGroup("Max","access the joint limits max");
     if(xtmp.size() != njoints+1)
         {
-            ACE_OS::printf("Not enough max joint limits\n");
+            printf("Not enough max joint limits\n");
             return false;
         }
     for( i =1;i<xtmp.size();i++) 
@@ -600,7 +600,7 @@ bool iCubSimulationControl::open(yarp::os::Searchable& config) {
     xtmp = p.findGroup("LIMITS").findGroup("Min","access the joint limits min");
     if(xtmp.size() != njoints+1)
         {
-            ACE_OS::printf("Not enough min joint limits\n");
+            printf("Not enough min joint limits\n");
             return false;
         }
     for(int i =1;i<xtmp.size();i++)
@@ -609,7 +609,7 @@ bool iCubSimulationControl::open(yarp::os::Searchable& config) {
 	xtmp = p.findGroup("LIMITS").findGroup("error_tol","error tolerance during tracking");
     if(xtmp.size() != njoints+1)
         {
-            ACE_OS::printf("Not enough error_tol\n");
+            printf("Not enough error_tol\n");
             return false;
         }
     for(int i=1;i<xtmp.size();i++)
@@ -777,7 +777,7 @@ bool iCubSimulationControl::setReferenceRaw (int j, double ref)
             _mutex.post();
             return true;
         }
-    ACE_OS::printf("trying to set ref of an unknown joint number %d\n",j);
+    printf("trying to set ref of an unknown joint number %d\n",j);
     return false;
 }
 
@@ -831,7 +831,7 @@ bool iCubSimulationControl::getReferenceRaw(int j, double *ref)
             _mutex.post();
             return true;
         }
-    ACE_OS::printf("getReferenceRaw axis number too high %d\n",j);
+    printf("getReferenceRaw axis number too high %d\n",j);
     return false;
 }
 
@@ -900,11 +900,11 @@ bool iCubSimulationControl::positionMoveRaw(int axis, double ref)
                 next_pos[axis] = ref;
             motor_on[axis]=true;
 				
-            ACE_OS::printf("changed position %d to %f\n",axis,next_pos[axis]);
+            printf("changed position %d to %f\n",axis,next_pos[axis]);
             _mutex.post();
             return true;
         }
-    ACE_OS::printf("positionMoveRaw joint access too high %d \n",axis);
+    printf("positionMoveRaw joint access too high %d \n",axis);
     return false;    
 }
 
@@ -924,7 +924,7 @@ bool iCubSimulationControl::positionMoveRaw(const double *refs)
             else
 			 next_pos[i] = ref;
             motor_on[i]=true;
-            ACE_OS::printf("moving joint %d to pos %f\n",i,next_pos[i]);
+            printf("moving joint %d to pos %f\n",i,next_pos[i]);
         }
     _mutex.post();
     return true;
@@ -954,7 +954,7 @@ bool iCubSimulationControl::checkMotionDoneRaw (bool *ret)
             if(!(fabs(current_pos[i]-next_pos[i])<error_tol[i]))
                 {
                     fin = false;
-                    // ACE_OS::printf("axes %d unfinished\n");
+                    // printf("axes %d unfinished\n");
                 }
         }
     //if(fin)
@@ -976,7 +976,7 @@ bool iCubSimulationControl::checkMotionDoneRaw(int axis, bool *ret)
             _mutex.post();
             return true;
         }
-    ACE_OS::printf("checkMotionDoneRaw axis too high %d\n",axis);
+    printf("checkMotionDoneRaw axis too high %d\n",axis);
     return false;
 }
 bool iCubSimulationControl::setRefSpeedRaw(int j, double sp)
@@ -1038,7 +1038,7 @@ bool iCubSimulationControl::stopRaw(int j)
             _mutex.post();
             return true;
         }
-    ACE_OS::printf("stopRaw joint num too high %d \n",j);
+    printf("stopRaw joint num too high %d \n",j);
     return false;
 }
 bool iCubSimulationControl::stopRaw()
@@ -1150,7 +1150,7 @@ bool iCubSimulationControl::disableAmpRaw(int axis)
             _mutex.post();
             return true;            
         }
-    ACE_OS::printf("disableAmpRaw axis num too high %d\n",axis);
+    printf("disableAmpRaw axis num too high %d\n",axis);
     return false;  
 }
 
@@ -1164,7 +1164,7 @@ bool iCubSimulationControl::enableAmpRaw(int axis)
             _mutex.post();
             return true;            
         }
-    ACE_OS::printf("enableAmpRaw axis num too high %d\n",axis);
+    printf("enableAmpRaw axis num too high %d\n",axis);
     return false;
 }
 

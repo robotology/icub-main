@@ -15,6 +15,8 @@
 #ifndef ICUB_SIMH
 #define ICUB_SIMH
 
+#include <yarp/os/Os.h>
+
 #include "SDL_thread.h"
 #include "SDL.h"
 #include "SDL_timer.h"
@@ -139,7 +141,7 @@ public:
 	static void quit(int code)
 	{
 		SDL_Quit();
-		exit(code);
+		yarp::os::exit(code);
 	}
 	static void handle_key_down(SDL_keysym* keysym)
 	{
@@ -389,7 +391,7 @@ assert(o1);
 					bool result = odeinit._iCub->checkTouchSensor(x);
 					const char *name = names[nameIndex];
 					nameIndex++;
-					if (name==NULL) {printf("sensor list out of date!\n");exit(1);}
+					if (name==NULL) {printf("sensor list out of date!\n");yarp::os::exit(1);}
 					report.addVocab(Vocab::encode(name));
 					report.addInt(result?1:0);
 				}
@@ -410,7 +412,10 @@ assert(o1);
 							bool result = odeinit._iCub->checkTouchSensor(x);
 							const char *name = names[nameIndex];
 							nameIndex++;
-							if (name==NULL) {printf("sensor list out of date!\n");exit(1);}
+							if (name==NULL) {
+								printf("sensor list out of date!\n");
+								yarp::os::exit(1);
+							}
 							report.addVocab(Vocab::encode(name));
 							report.addInt(result?1:0);
 						}
@@ -418,7 +423,9 @@ assert(o1);
 				}else{
 					bool result = odeinit._iCub->checkTouchSensor(odeinit._iCub->r_hand);
 					const char *name = names[nameIndex];nameIndex++;
-					if (name==NULL) {printf("sensor list out of date!\n");exit(1);}
+					if (name==NULL) {
+						printf("sensor list out of date!\n");
+						yarp::os::exit(1);}
 					report.addVocab(Vocab::encode(name));
 					report.addInt(result?1:0);
 				}
@@ -439,7 +446,9 @@ assert(o1);
 							bool result = odeinit._iCub->checkTouchSensor(x);
 							const char *name = names[nameIndex];
 							nameIndex++;
-							if (name==NULL) {printf("sensor list out of date!\n");exit(1);}
+							if (name==NULL) {
+                                printf("sensor list out of date!\n");
+                                yarp::os::exit(1);}
 							report.addVocab(Vocab::encode(name));
 							report.addInt(result?1:0);
 						}
@@ -448,7 +457,10 @@ assert(o1);
 					bool result = odeinit._iCub->checkTouchSensor(odeinit._iCub->l_hand);
 					const char *name = names[nameIndex];
 					nameIndex++;
-					if (name==NULL) {printf("sensor list out of date!\n");exit(1);}
+					if (name==NULL) {
+                        printf("sensor list out of date!\n");
+                        yarp::os::exit(1);
+                    }
 					report.addVocab(Vocab::encode(name));
 					report.addInt(result?1:0);
 				}
@@ -464,14 +476,20 @@ assert(o1);
 				if (i == 0){
 					bool result = odeinit._iCub->checkTouchSensor(odeinit._iCub->l_hand);
 					const char *name = names[nameIndex];nameIndex++;
-					if (name==NULL) {printf("sensor list out of date!\n");exit(1);}
+					if (name==NULL) {
+                        printf("sensor list out of date!\n");
+                        yarp::os::exit(1);
+                    }
 					report.addVocab(Vocab::encode(name));
 					report.addInt(result?1:0);
 				}
 				else{
 					bool result = odeinit._iCub->checkTouchSensor(odeinit._iCub->r_hand);
 					const char *name = names[nameIndex];nameIndex++;
-					if (name==NULL) {printf("sensor list out of date!\n");exit(1);}
+					if (name==NULL) {
+                        printf("sensor list out of date!\n");
+                        yarp::os::exit(1);
+                    }
 					report.addVocab(Vocab::encode(name));
 					report.addInt(result?1:0);
 				}
@@ -734,8 +752,8 @@ assert(o1);
 		startTime = clock();
 		odeinit.stop = false;
 		
-		ACE_OS::signal(SIGINT, (ACE_SignalHandler) &sighandler);
-		ACE_OS::signal(SIGTERM, (ACE_SignalHandler) &sighandler);
+		yarp::os::signal(yarp::os::YARP_SIGINT, sighandler);
+		yarp::os::signal(yarp::os::YARP_SIGTERM, sighandler);
 
 		odeinit._wrld->WAITLOADING = false;
 		odeinit._wrld->static_model = false;

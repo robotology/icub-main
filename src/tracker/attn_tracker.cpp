@@ -96,12 +96,8 @@
 #include <vector>
 #include <math.h>
 
-#include <ace/config.h>
-#include <ace/OS.h>
-
 #include <yarp/os/all.h>
 #include <yarp/sig/all.h>
-#include <yarp/String.h>
 
 #include "ImgTrack.h"
 #include "TrackerMonitor.h"
@@ -259,7 +255,7 @@ bool TemplateTracker::open(Searchable& p) {
     posPort.open(posName.c_str());
     encPort.open(encName.c_str());
 
-    String quitName = name.c_str();
+	std::string quitName = name.c_str();
     quitName += "/quit";
     if (pTerminee!=NULL) {
         delete pTerminee;
@@ -267,11 +263,11 @@ bool TemplateTracker::open(Searchable& p) {
     }
     pTerminee = new Terminee(quitName.c_str());
     if (pTerminee==NULL) {
-        ACE_OS::printf("Failed to allocate proper quit socket\n");
+        printf("Failed to allocate proper quit socket\n");
         return false;
     }
     if (!pTerminee->isOk()) {
-        ACE_OS::printf("Failed to create proper quit socket\n");
+        printf("Failed to create proper quit socket\n");
         return 1;
     }
 

@@ -1,6 +1,5 @@
 #include "iCub/predMatrix.h"
 
-#include <yarp/String.h>
 #include <yarp/sig/Vector.h>
 
 #include <yarp/os/all.h>

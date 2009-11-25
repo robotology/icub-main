@@ -16,11 +16,8 @@
 
 #include <yarp/os/Searchable.h>
 
-#undef main
-
 #include <string>
 #include <list>
-#include <yarp/String.h>
 
 const int NNETS=10;
 static const char *POSSIBLE_NETWORKS[]={"LEGS", "LEFTHAND", "RIGHTHAND", "TORSO", "HEAD", "RIGHTARM", "LEFTARM", "HEADTORSO", "LEFTLEG", "RIGHTLEG"};

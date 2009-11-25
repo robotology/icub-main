@@ -8,17 +8,14 @@
  
 #define YARP_CVTYPES_H_
 
-#include <yarp/String.h>
 #include <stdio.h>
 #include <yarp/os/all.h>
 #include <yarp/sig/all.h>
 
 #include <yarp/os/Module.h>
 
-using namespace yarp;
 using namespace yarp::os;
 using namespace yarp::sig;
-using namespace std;
 
 #include <iCub/SalienceModule.h>
 #include <iCub/SalienceFactory.h>

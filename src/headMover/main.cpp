@@ -2,13 +2,14 @@
 
 #include <math.h>
 #include <time.h>
+#include <stdlib.h>
+#include <string.h>
 
 #include <yarp/os/BufferedPort.h>
 #include <yarp/os/Time.h>
 #include <yarp/os/Network.h>
 #include <yarp/os/RateThread.h>
 #include <yarp/os/Vocab.h>
-#include <yarp/String.h>
 
 #include <yarp/dev/ControlBoardInterfaces.h>
 #include <yarp/dev/PolyDriver.h>
@@ -18,7 +19,6 @@
 using namespace yarp::dev;
 using namespace yarp::sig;
 using namespace yarp::os;
-using namespace yarp;
 
 const double HEAD_VELOCITY[]={      10,  10,  10,  10,  10,  10};
 const double START_POSITION_HEAD[]={ 0,   0,   0,   0,   0,   0};

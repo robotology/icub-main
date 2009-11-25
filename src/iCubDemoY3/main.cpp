@@ -72,8 +72,6 @@ This file can be edited at \in src/iCubDemoY3/main.cpp.
 
 #include <math.h>
 
-#include <ace/OS.h> //needed to get env
-
 #include <yarp/os/BufferedPort.h>
 #include <yarp/os/Time.h>
 #include <yarp/os/Network.h>

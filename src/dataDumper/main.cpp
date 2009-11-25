@@ -127,7 +127,6 @@ So, now, have a look inside the directory ./example
 This file can be edited at \in src/dataDumper/main.cpp.
 */ 
 
-#include <ace/OS_NS_sys_stat.h>
 #include <yarp/os/Network.h>
 #include <yarp/os/RFModule.h>
 #include <yarp/os/BufferedPort.h>
@@ -138,6 +137,7 @@ This file can be edited at \in src/dataDumper/main.cpp.
 #include <yarp/sig/Vector.h>
 #include <yarp/sig/Image.h>
 #include <yarp/sig/ImageFile.h>
+#include <yarp/os/Os.h>
 
 #ifdef ADD_VIDEO
     #include <cv.h>
@@ -390,7 +390,7 @@ public:
             double curTime=Time::now();
             if (curTime-oldTime>10.0)
             {
-                writeToDisk=sz;
+				writeToDisk=(sz==1)? true:false;
                 oldTime=curTime;
             }
 
@@ -562,7 +562,6 @@ public:
             rxTime=false;
 
         char dirName[255];
-        struct stat dirStat;
         bool proceed=true;
 
         // look for a proper directory
@@ -573,7 +572,7 @@ public:
             else
                 sprintf(dirName,"./%s",portName);
 
-            proceed=!stat(dirName,&dirStat);
+			proceed=!yarp::os::stat(dirName);
         }
 
         createFullPath(dirName);
@@ -648,9 +647,7 @@ public:
 
 void createFullPath(const char* path)
 {
-    struct stat dirStat;
-
-    if (stat(path,&dirStat))
+	if (yarp::os::stat(path))
     {
         string strPath=string(path);
         size_t found=strPath.find_last_of("/");
@@ -659,7 +656,7 @@ void createFullPath(const char* path)
             found--;
 
         createFullPath(strPath.substr(0,found+1).c_str());
-        ACE_OS::mkdir(strPath.c_str());
+		yarp::os::mkdir(strPath.c_str());
     }
 }
 

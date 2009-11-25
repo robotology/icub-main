@@ -7,7 +7,7 @@
 // This callback starts all sequences (time based)
 void run_all_parts (GtkButton *button, partMover** currentPartMover)
 {
-  int i;
+  int i; 
   for (i = 0; i < NUMBER_OF_ACTIVATED_PARTS; i++)
     currentPartMover[i]->run_all(NULL, currentPartMover[i]);
   return;

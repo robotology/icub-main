@@ -6,6 +6,8 @@
 #include <sstream>
 
 #include <yarp/os/Thread.h>
+#include <yarp/os/RFModule.h>
+#include <yarp/os/Os.h>
 
 #include "ControlBoardWrapper.h"
 #include "ControlBoardWrapper2.h"
@@ -305,7 +307,7 @@ bool RobotInterfaceRemap::fnitCart()
 
 bool RobotInterfaceRemap::initialize10(const std::string &inifile)
 {
-    ACE_OS::fprintf(stderr, "Going to initialize the robot with a file\n");
+    fprintf(stderr, "Going to initialize the robot with a file\n");
 
     std::string PATH;
     PATH=extractPath(inifile.c_str());
@@ -440,7 +442,7 @@ bool RobotInterfaceRemap::initialize10(const std::string &inifile)
 
 bool RobotInterfaceRemap::initialize20(const std::string &inifile)
 {
-    ACE_OS::fprintf(stderr, "Initialization from file, new version 2.0\n");
+    fprintf(stderr, "Initialization from file, new version 2.0\n");
 
     std::string PATH;
     PATH=extractPath(inifile.c_str());
@@ -738,9 +740,9 @@ bool RobotInterfaceRemap::instantiateNetwork(std::string &path, Property &robotO
 
 bool RobotInterfaceRemap::instantiateInertial(Property &options)
 {
-    ACE_OS::fprintf(stderr, "Instantiating an INERTIAL device\n");
+    fprintf(stderr, "Instantiating an INERTIAL device\n");
 
-    const char *conf = ACE_OS::getenv("ICUB_ROOT");
+	const char *conf = yarp::os::getenv("ICUB_ROOT");
     robotName=options.findGroup("GENERAL").find("name").asString().c_str();
 
     //////////// inertial

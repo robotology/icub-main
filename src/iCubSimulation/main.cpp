@@ -124,13 +124,11 @@
 #include <yarp/sig/Image.h>
 #include <yarp/sig/ImageFile.h>
 #include <yarp/sig/ImageDraw.h>
+#include <yarp/os/Os.h>
 
 
 #include <stdio.h>
 #include <string.h>
-
-#include <ace/OS.h>
-#undef main
 
 #ifdef WIN32
 #include <windows.h>
@@ -1001,10 +999,10 @@ void SimulatorModule::init()
 	
   if(!iCubLArm->isValid() || !iCubRArm->isValid() || !iCubHead->isValid() || !iCubLLeg->isValid() || !iCubRLeg->isValid() || !iCubTorso->isValid())
     {
-      ACE_OS::printf("Device not available. Here are the known devices:\n");
-	  ACE_OS::printf("%s", Drivers::factory().toString().c_str());
+      printf("Device not available. Here are the known devices:\n");
+	  printf("%s", Drivers::factory().toString().c_str());
       Network::fini();
-      exit(1);
+      yarp::os::exit(1);
     }
 
 }
@@ -1191,7 +1189,7 @@ int main( int argc, char** argv)
 
     if (!Network::checkNetwork()) {
         printf("Please start a yarp name server first\n");
-        exit(1);
+        yarp::os::exit(1);
     }
 
     SimulatorModule module;

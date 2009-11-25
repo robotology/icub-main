@@ -1,8 +1,5 @@
 #include "ControlBoardWrapper2.h"
 
-#include "ace/OS.h"
-#include "ace/Thread.h"
-
 #include <iostream>
 
 using namespace std;
@@ -187,9 +184,7 @@ DriverCreator *createControlBoardWrapper2() {
 
 ImplementCallbackHelper2::ImplementCallbackHelper2(ControlBoardWrapper2 *x) {
     pos = dynamic_cast<yarp::dev::IPositionControl *> (x);
-    ACE_ASSERT (pos != 0);
     vel = dynamic_cast<yarp::dev::IVelocityControl *> (x);
-    ACE_ASSERT (vel != 0);
 }
 
 void CommandsHelper2::handleControlModeMsg(const yarp::os::Bottle& cmd, 
@@ -296,7 +291,7 @@ void CommandsHelper2::handleTorqueMsg(const yarp::os::Bottle& cmd,
 			{
 				*rec = true;
 				if (caller->verbose())
-					ACE_OS::printf("set command received\n");
+					printf("set command received\n");
 	            
 				switch(cmd.get(2).asVocab())
 				{
@@ -314,7 +309,6 @@ void CommandsHelper2::handleTorqueMsg(const yarp::os::Bottle& cmd,
 						if (njs==controlledJoints)
 						{
 							double *p = new double[njs];    // LATER: optimize to avoid allocation. 
-							ACE_ASSERT (p != NULL);
 							for (i = 0; i < njs; i++)
 								p[i] = b.get(i).asDouble();
 							*ok = torque->setTorques (p);
@@ -337,7 +331,6 @@ void CommandsHelper2::handleTorqueMsg(const yarp::os::Bottle& cmd,
 						if (njs==controlledJoints)
 						{
 							double *p = new double[njs];    // LATER: optimize to avoid allocation. 
-							ACE_ASSERT (p != NULL);
 							for (i = 0; i < njs; i++)
 								p[i] = b.get(i).asDouble();
 							*ok = torque->setTorqueErrorLimits (p);
@@ -370,7 +363,6 @@ void CommandsHelper2::handleTorqueMsg(const yarp::os::Bottle& cmd,
 						if (njs==controlledJoints)
 						{
 							Pid *p = new Pid[njs];
-							ACE_ASSERT (p != NULL);
 							for (i = 0; i < njs; i++)
 							{
 								Bottle& c = *(b.get(i).asList());
@@ -420,7 +412,7 @@ void CommandsHelper2::handleTorqueMsg(const yarp::os::Bottle& cmd,
 			{
 				*rec = true;
 				if (caller->verbose())
-					ACE_OS::printf("get command received\n");
+					printf("get command received\n");
 				int tmp = 0;
 				double dtmp = 0.0;
 				response.addVocab(VOCAB_IS);
@@ -445,7 +437,6 @@ void CommandsHelper2::handleTorqueMsg(const yarp::os::Bottle& cmd,
 					case VOCAB_TRQS:
 						{
 							double *p = new double[controlledJoints];
-							ACE_ASSERT(p!=NULL);
 							*ok = torque->getTorques(p);
 							Bottle& b = response.addList();
 							int i;
@@ -464,7 +455,6 @@ void CommandsHelper2::handleTorqueMsg(const yarp::os::Bottle& cmd,
 					case VOCAB_ERRS: 
 						{
 							double *p = new double[controlledJoints];
-							ACE_ASSERT(p!=NULL);
 							*ok = torque->getTorqueErrors(p);
 							Bottle& b = response.addList();
 							int i;
@@ -484,7 +474,6 @@ void CommandsHelper2::handleTorqueMsg(const yarp::os::Bottle& cmd,
 					case VOCAB_OUTPUTS: 
 						{
 							double *p = new double[controlledJoints];
-							ACE_ASSERT(p!=NULL);
 							*ok = torque->getTorquePidOutputs(p);
 							Bottle& b = response.addList();
 							int i;
@@ -512,7 +501,6 @@ void CommandsHelper2::handleTorqueMsg(const yarp::os::Bottle& cmd,
 					case VOCAB_PIDS: 
 						{
 							Pid *p = new Pid[controlledJoints];
-							ACE_ASSERT (p != NULL);
 							*ok = torque->getTorquePids(p);
 							Bottle& b = response.addList();
 							int i;
@@ -541,7 +529,6 @@ void CommandsHelper2::handleTorqueMsg(const yarp::os::Bottle& cmd,
 					case VOCAB_REFERENCES:
 						{
 							double *p = new double[controlledJoints];
-							ACE_ASSERT(p!=NULL);
 							*ok = torque->getRefTorques(p);
 								Bottle& b = response.addList();
 							int i;
@@ -561,7 +548,6 @@ void CommandsHelper2::handleTorqueMsg(const yarp::os::Bottle& cmd,
 					case VOCAB_LIMS: 
 						{
 							double *p = new double[controlledJoints];
-							ACE_ASSERT(p!=NULL);
 							*ok = torque->getTorqueErrorLimits(p);
 							Bottle& b = response.addList();
 							int i;
@@ -583,27 +569,27 @@ void CommandsHelper2::handleTorqueMsg(const yarp::os::Bottle& cmd,
 
 void ImplementCallbackHelper2::onRead(CommandMessage& v) 
 {
-    //ACE_OS::printf("Data received on the control channel of size: %d\n", v.body.size());
+    //printf("Data received on the control channel of size: %d\n", v.body.size());
     //	int i;
 
     Bottle& b = v.head;
-    //    ACE_OS::printf("bottle: %s\n", b.toString().c_str());
+    //    printf("bottle: %s\n", b.toString().c_str());
 
     switch (b.get(0).asVocab())
     {
     case VOCAB_POSITION_MODE: 
     case VOCAB_POSITION_MOVES: 
         {
-            //ACE_OS::printf("Received a position command\n");
+            //printf("Received a position command\n");
             //for (int i = 0; i < v.body.size(); i++)
-            //    ACE_OS::printf("%.2f ", v.body[i]);
-            //ACE_OS::printf("\n");
+            //    printf("%.2f ", v.body[i]);
+            //printf("\n");
 
             if (pos)
             {
                 bool ok = pos->positionMove(&(v.body[0]));
                 if (!ok)
-                    ACE_OS::printf("Issues while trying to start a position move\n");
+                    printf("Issues while trying to start a position move\n");
             }
 
         }
@@ -612,30 +598,30 @@ void ImplementCallbackHelper2::onRead(CommandMessage& v)
     case VOCAB_VELOCITY_MODE:
     case VOCAB_VELOCITY_MOVES:
         {
-            //          ACE_OS::printf("Received a velocity command\n");
+            //          printf("Received a velocity command\n");
             //			for (i = 0; i < v.body.size(); i++)
-            //				ACE_OS::printf("%.2f ", v.body[i]);
-            //			ACE_OS::printf("\n");
+            //				printf("%.2f ", v.body[i]);
+            //			printf("\n");
             if (vel) 
             {
                 bool ok = vel->velocityMove(&(v.body[0]));
                 if (!ok)
-                    ACE_OS::printf("Issues while trying to start a velocity move\n");
+                    printf("Issues while trying to start a velocity move\n");
             }
         }
         break;
     default: 
         {
-            ACE_OS::printf("Unrecognized message while receiving on command port\n");
+            printf("Unrecognized message while receiving on command port\n");
         }
         break;
     }
 
-    //    ACE_OS::printf("v: ");
+    //    printf("v: ");
     //    int i <;
     //    for (i = 0; i < (int)v.size(); i++)
-    //        ACE_OS::printf("%.3f ", v[i]);
-    //    ACE_OS::printf("\n");
+    //        printf("%.3f ", v[i]);
+    //    printf("\n");
 }
 
 bool CommandsHelper2::respond(const yarp::os::Bottle& cmd, 
@@ -647,7 +633,7 @@ bool CommandsHelper2::respond(const yarp::os::Bottle& cmd,
     bool ok = false;
     bool rec = false; // is the command recognized?
     if (caller->verbose())
-        ACE_OS::printf("command received: %s\n", cmd.toString().c_str());
+        printf("command received: %s\n", cmd.toString().c_str());
     int code = cmd.get(0).asVocab();
 
 	if ((cmd.size()>1) && (cmd.get(1).asVocab()==VOCAB_TORQUE))
@@ -666,7 +652,7 @@ bool CommandsHelper2::respond(const yarp::os::Bottle& cmd,
         {
             rec=true;
             if (caller->verbose())
-                ACE_OS::printf("Calling calibrate joint\n");
+                printf("Calling calibrate joint\n");
 
             int j=cmd.get(1).asInt();
             int ui=cmd.get(2).asInt();
@@ -674,7 +660,7 @@ bool CommandsHelper2::respond(const yarp::os::Bottle& cmd,
             double v2=cmd.get(4).asDouble();
             double v3=cmd.get(5).asDouble();
             if (ical2==0)
-                ACE_OS::printf("Sorry I don't have a IControlCalibration2 interface\n");
+                printf("Sorry I don't have a IControlCalibration2 interface\n");
             else
                 ok=ical2->calibrate2(j,ui,v1,v2,v3);
         }
@@ -683,7 +669,7 @@ bool CommandsHelper2::respond(const yarp::os::Bottle& cmd,
         {
             rec=true;
             if (caller->verbose())
-                ACE_OS::printf("Calling calibrate\n");
+                printf("Calling calibrate\n");
             ok=ical2->calibrate();
         }
         break;
@@ -691,7 +677,7 @@ bool CommandsHelper2::respond(const yarp::os::Bottle& cmd,
         {
             rec=true;
             if (caller->verbose())
-                ACE_OS::printf("Calling calibrate done\n");
+                printf("Calling calibrate done\n");
             int j=cmd.get(1).asInt();
             ok=ical2->done(j);
         }
@@ -700,7 +686,7 @@ bool CommandsHelper2::respond(const yarp::os::Bottle& cmd,
         {
             rec=true;
             if (caller->verbose())
-                ACE_OS::printf("Calling park function\n");
+                printf("Calling park function\n");
             int flag=cmd.get(1).asInt();
             if (flag)
                 ok=ical2->park(true);
@@ -713,7 +699,7 @@ bool CommandsHelper2::respond(const yarp::os::Bottle& cmd,
         {
             rec = true;
             if (caller->verbose())
-                ACE_OS::printf("set command received\n");
+                printf("set command received\n");
 
             switch(cmd.get(1).asVocab()) 
             {
@@ -749,7 +735,6 @@ bool CommandsHelper2::respond(const yarp::os::Bottle& cmd,
                     if (njs==controlledJoints)
                     {
                         Pid *p = new Pid[njs];
-                        ACE_ASSERT (p != NULL);
                         for (i = 0; i < njs; i++)
                         {
                             Bottle& c = *(b.get(i).asList());
@@ -782,7 +767,6 @@ bool CommandsHelper2::respond(const yarp::os::Bottle& cmd,
                     if (njs==controlledJoints)
                     {
                         double *p = new double[njs];    // LATER: optimize to avoid allocation. 
-                        ACE_ASSERT (p != NULL);
                         for (i = 0; i < njs; i++)
                             p[i] = b.get(i).asDouble();
                         ok = pid->setReferences (p);
@@ -805,7 +789,6 @@ bool CommandsHelper2::respond(const yarp::os::Bottle& cmd,
                     if (njs==controlledJoints)
                     {
                         double *p = new double[njs];    // LATER: optimize to avoid allocation. 
-                        ACE_ASSERT (p != NULL);
                         for (i = 0; i < njs; i++)
                             p[i] = b.get(i).asDouble();
                         ok = pid->setErrorLimits (p);
@@ -908,7 +891,6 @@ bool CommandsHelper2::respond(const yarp::os::Bottle& cmd,
                     if(njs!=controlledJoints)
                         break;
                     double *p = new double[njs];    // LATER: optimize to avoid allocation. 
-                    ACE_ASSERT (p != NULL);
                     for (i = 0; i < njs; i++)
                         p[i] = b.get(i).asDouble();
                     ok = pos->relativeMove(p);
@@ -930,7 +912,6 @@ bool CommandsHelper2::respond(const yarp::os::Bottle& cmd,
                     if (njs!=controlledJoints)
                         break;
                     double *p = new double[njs];    // LATER: optimize to avoid allocation. 
-                    ACE_ASSERT (p != NULL);
                     for (i = 0; i < njs; i++)
                         p[i] = b.get(i).asDouble();
                     ok = pos->setRefSpeeds(p);
@@ -952,7 +933,6 @@ bool CommandsHelper2::respond(const yarp::os::Bottle& cmd,
                     if(njs!=controlledJoints)
                         break;
                     double *p = new double[njs];    // LATER: optimize to avoid allocation. 
-                    ACE_ASSERT (p != NULL);
                     for (i = 0; i < njs; i++)
                         p[i] = b.get(i).asDouble();
                     ok = pos->setRefAccelerations(p);
@@ -998,7 +978,6 @@ bool CommandsHelper2::respond(const yarp::os::Bottle& cmd,
                     if (njs!=controlledJoints)
                         break;
                     double *p = new double[njs];    // LATER: optimize to avoid allocation. 
-                    ACE_ASSERT (p != NULL);
                     for (i = 0; i < njs; i++)
                         p[i] = b.get(i).asDouble();
                     ok = enc->setEncoders(p);
@@ -1032,7 +1011,7 @@ bool CommandsHelper2::respond(const yarp::os::Bottle& cmd,
 
             default:
                 {
-                    ACE_OS::printf("received an unknown command after a VOCAB_SET\n");
+                    printf("received an unknown command after a VOCAB_SET\n");
                 }
                 break;
             } //switch(cmd.get(1).asVocab()
@@ -1043,7 +1022,7 @@ bool CommandsHelper2::respond(const yarp::os::Bottle& cmd,
         {
             rec = true;
             if (caller->verbose())
-                ACE_OS::printf("get command received\n");
+                printf("get command received\n");
             int tmp = 0;
             double dtmp = 0.0;
             response.addVocab(VOCAB_IS);
@@ -1061,7 +1040,6 @@ bool CommandsHelper2::respond(const yarp::os::Bottle& cmd,
             case VOCAB_ERRS: 
                 {
                     double *p = new double[controlledJoints];
-                    ACE_ASSERT(p!=NULL);
                     ok = pid->getErrors(p);
                     Bottle& b = response.addList();
                     int i;
@@ -1081,7 +1059,6 @@ bool CommandsHelper2::respond(const yarp::os::Bottle& cmd,
             case VOCAB_OUTPUTS: 
                 {
                     double *p = new double[controlledJoints];
-                    ACE_ASSERT(p!=NULL);
                     ok = pid->getOutputs(p);
                     Bottle& b = response.addList();
                     int i;
@@ -1109,7 +1086,6 @@ bool CommandsHelper2::respond(const yarp::os::Bottle& cmd,
             case VOCAB_PIDS: 
                 {
                     Pid *p = new Pid[controlledJoints];
-                    ACE_ASSERT (p != NULL);
                     ok = pid->getPids(p);
                     Bottle& b = response.addList();
                     int i;
@@ -1138,7 +1114,6 @@ bool CommandsHelper2::respond(const yarp::os::Bottle& cmd,
             case VOCAB_REFERENCES:
                 {
                     double *p = new double[controlledJoints];
-                    ACE_ASSERT(p!=NULL);
                     ok = pid->getReferences(p);
                     Bottle& b = response.addList();
                     int i;
@@ -1158,7 +1133,6 @@ bool CommandsHelper2::respond(const yarp::os::Bottle& cmd,
             case VOCAB_LIMS: 
                 {
                     double *p = new double[controlledJoints];
-                    ACE_ASSERT(p!=NULL);
                     ok = pid->getErrorLimits(p);
                     Bottle& b = response.addList();
                     int i;
@@ -1202,7 +1176,6 @@ bool CommandsHelper2::respond(const yarp::os::Bottle& cmd,
             case VOCAB_REF_SPEEDS: 
                 {
                     double *p = new double[controlledJoints];
-                    ACE_ASSERT(p!=NULL);
                     ok = pos->getRefSpeeds(p);
                     Bottle& b = response.addList();
                     int i;
@@ -1222,7 +1195,6 @@ bool CommandsHelper2::respond(const yarp::os::Bottle& cmd,
             case VOCAB_REF_ACCELERATIONS: 
                 {
                     double *p = new double[controlledJoints];
-                    ACE_ASSERT(p!=NULL);
                     ok = pos->getRefAccelerations(p);
                     Bottle& b = response.addList();
                     int i;
@@ -1242,7 +1214,6 @@ bool CommandsHelper2::respond(const yarp::os::Bottle& cmd,
             case VOCAB_ENCODERS: 
                 {
                     double *p = new double[controlledJoints];
-                    ACE_ASSERT(p!=NULL);
                     ok = enc->getEncoders(p);
                     Bottle& b = response.addList();
                     int i;
@@ -1262,7 +1233,6 @@ bool CommandsHelper2::respond(const yarp::os::Bottle& cmd,
             case VOCAB_ENCODER_SPEEDS: 
                 {
                     double *p = new double[controlledJoints];
-                    ACE_ASSERT(p!=NULL);
                     ok = enc->getEncoderSpeeds(p);
                     Bottle& b = response.addList();
                     int i;
@@ -1282,7 +1252,6 @@ bool CommandsHelper2::respond(const yarp::os::Bottle& cmd,
             case VOCAB_ENCODER_ACCELERATIONS:
                 {
                     double *p = new double[controlledJoints];
-                    ACE_ASSERT(p!=NULL);
                     ok = enc->getEncoderAccelerations(p);
                     Bottle& b = response.addList();
                     int i;
@@ -1302,7 +1271,6 @@ bool CommandsHelper2::respond(const yarp::os::Bottle& cmd,
             case VOCAB_AMP_CURRENTS: 
                 {
                     double *p = new double[controlledJoints];
-                    ACE_ASSERT(p!=NULL);
                     ok = amp->getCurrents(p);
                     Bottle& b = response.addList();
                     int i;
@@ -1338,7 +1306,7 @@ bool CommandsHelper2::respond(const yarp::os::Bottle& cmd,
 
             default:
                 {
-                    ACE_OS::printf("received an unknown request after a VOCAB_GET\n");
+                    printf("received an unknown request after a VOCAB_GET\n");
                 }
                 break;
             } //switch cmd.get(1).asVocab()) 
@@ -1385,18 +1353,19 @@ bool CommandsHelper2::initialize() {
     addUsage("[set] [vmo] $iAxisNumber $fVelocity", "command the velocity of an axis");
     addUsage("[get] [enc] $iAxisNumber", "get the encoder value for an axis");
 
-    yarp::String args;
+	std::string args;
     for (int i=0; i<controlledJoints; i++) {
         if (i>0) {
             args += " ";
         }
-        args = args + "$f" + yarp::NetType::toString(i);
+		// removed dependency from yarp internals
+        //args = args + "$f" + yarp::NetType::toString(i);
     }
-    addUsage((yarp::String("[set] [poss] (")+args+")").c_str(), 
+	addUsage((std::string("[set] [poss] (")+args+")").c_str(), 
         "command the position of all axes");
-    addUsage((yarp::String("[set] [rels] (")+args+")").c_str(), 
+    addUsage((std::string("[set] [rels] (")+args+")").c_str(), 
         "command the relative position of all axes");
-    addUsage((yarp::String("[set] [vmos] (")+args+")").c_str(), 
+    addUsage((std::string("[set] [vmos] (")+args+")").c_str(), 
         "command the velocity of all axes");
 
     addUsage("[set] [aen] $iAxisNumber", "enable (amplifier for) the given axis");
@@ -1408,7 +1377,6 @@ bool CommandsHelper2::initialize() {
 }
 
 CommandsHelper2::CommandsHelper2(ControlBoardWrapper2 *x) { 
-    ACE_ASSERT (x != NULL);
     caller = x; 
     pid = dynamic_cast<yarp::dev::IPidControl *> (caller);
     pos = dynamic_cast<yarp::dev::IPositionControl *> (caller);
@@ -1497,7 +1465,7 @@ bool ControlBoardWrapper2::open(Searchable& prop)
 
     partName=prop.check("name",Value("controlboard"),
         "prefix for port names").asString().c_str();
-    yarp::String rootName="/";
+	std::string rootName="/";
     rootName+=(partName);
 
     // attach readers.

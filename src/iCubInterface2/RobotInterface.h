@@ -2,17 +2,12 @@
 
 #include "IRobotInterface.h"
 
-#include <ace/OS.h>
-#include <ace/Log_Msg.h>
-
 #include <yarp/os/Network.h>
 #include <yarp/os/Port.h>
 #include <yarp/os/Bottle.h>
 #include <yarp/os/Time.h>
 #include <yarp/os/Property.h>
  
-#include <yarp/String.h>
-
 #include <yarp/dev/ControlBoardInterfaces.h>
 #include <yarp/dev/GenericSensorInterfaces.h>
 #include <yarp/dev/PolyDriver.h>

@@ -1,9 +1,6 @@
 #ifndef DOWNLOADER_H
 #define DOWNLOADER_H
 
-//#include <ace/OS.h>
-//#include <ace/SString.h>
-//#include <ace/containers.h> 
 #include <yarp/os/Searchable.h>
 #include <yarp/dev/CanBusInterface.h>
 #include <ace/streams.h>

@@ -15,7 +15,6 @@
 #include <iostream>
 
 // yarp
-#include <yarp/String.h>
 #include <yarp/os/all.h>
 #include <yarp/dev/PolyDriver.h>
 #include <yarp/dev/ControlBoardInterfaces.h>

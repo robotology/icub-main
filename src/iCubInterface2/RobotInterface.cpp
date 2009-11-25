@@ -4,9 +4,10 @@
 
 #include <yarp/os/Thread.h>
 
+#include <yarp/os/Os.h>
+
 using namespace yarp::dev;
 using namespace yarp::os;
-using namespace yarp;
 
 inline void printNoDeviceFound(const char *str)
 {
@@ -128,14 +129,14 @@ void RobotInterface::park(bool wait)
 
 bool RobotInterface::initialize(const std::string &file)
 {
-    ACE_OS::fprintf(stderr, "Going to initialize the robot with a file\n");
+    fprintf(stderr, "Going to initialize the robot with a file\n");
 #if 0
     // LATER: to be replaced with a yarpish function.
     const char *conf = ACE_OS::getenv("ICUB_ROOT");
 
     if (conf == NULL) {
-		ACE_OS::printf("This application requires the ICUB_ROOT environment variable\n");
-		ACE_OS::printf("defined to point at the configuration files under $ICUB_ROOT/conf\n");
+		printf("This application requires the ICUB_ROOT environment variable\n");
+		printf("defined to point at the configuration files under $ICUB_ROOT/conf\n");
 		return false;
 	}
 #endif
@@ -144,7 +145,7 @@ bool RobotInterface::initialize(const std::string &file)
  
     Property robotOptions;
  //   ACE_OS::sprintf (&filename[0], "%s/conf/%s", conf, inifile.asString().c_str());
-	ACE_OS::fprintf(stderr, "Read robot description from %s\n", file.c_str());
+	fprintf(stderr, "Read robot description from %s\n", file.c_str());
 	robotOptions.fromConfigFile(file.c_str());
 
     if (robotOptions.findGroup("GENERAL").check("automaticIds"))
@@ -236,7 +237,8 @@ bool RobotInterface::instantiateRightArm(Property &options)
 
     fprintf(stderr, "Instantiating RIGHT ARM\n");
 
-    const char *conf = ACE_OS::getenv("ICUB_ROOT");
+	const char *conf = yarp::os::getenv("ICUB_ROOT");
+
     Value &robotName=options.findGroup("GENERAL").find("name");
     
 	//////////// arm
@@ -245,8 +247,8 @@ bool RobotInterface::instantiateRightArm(Property &options)
 	Value &subdevice=options.findGroup("RIGHTARM").find("subdevice");
     Value &candevice=options.findGroup("RIGHTARM").find("canbusdevice");
 
-    String armFullFilename;
-    String armPortName;
+	std::string armFullFilename;
+    std::string armPortName;
     armFullFilename+=conf;
     armFullFilename+="/conf/";
     armFullFilename+=armInifile.asString().c_str();
@@ -306,9 +308,9 @@ bool RobotInterface::instantiateRightArm(Property &options)
 
 bool RobotInterface::instantiateInertial(Property &options)
 {
-    ACE_OS::fprintf(stderr, "Instantiating an INERTIAL device\n");
+    fprintf(stderr, "Instantiating an INERTIAL device\n");
 
-    const char *conf = ACE_OS::getenv("ICUB_ROOT");
+	const char *conf = yarp::os::getenv("ICUB_ROOT");
     Value &robotName=options.findGroup("GENERAL").find("name");
     
 	//////////// inertial
@@ -316,8 +318,8 @@ bool RobotInterface::instantiateInertial(Property &options)
 	Value &subdevice=options.findGroup("INERTIAL").find("subdevice");
     Value &inifile=options.findGroup("INERTIAL").find("file");
  
-    String fullFilename;
-    String portName;
+    std::string fullFilename;
+    std::string portName;
     fullFilename+=conf;
     fullFilename+="/conf/";
     fullFilename+=inifile.asString().c_str();
@@ -401,7 +403,7 @@ bool RobotInterface::instantiateLegs(Property &options)
 
     fprintf(stderr, "Instantiating LEGS\n");
 
-    const char *conf = ACE_OS::getenv("ICUB_ROOT");
+	const char *conf = yarp::os::getenv("ICUB_ROOT");
     Value &robotName=options.findGroup("GENERAL").find("name");
     
 	//////////// legs
@@ -410,8 +412,8 @@ bool RobotInterface::instantiateLegs(Property &options)
 	Value &subdevice=options.findGroup("LEGS").find("subdevice");
     Value &candevice=options.findGroup("LEGS").find("canbusdevice");
 
-    String legsFullFilename;
-    String legsPortName;
+    std::string legsFullFilename;
+    std::string legsPortName;
     legsFullFilename+=conf;
     legsFullFilename+="/conf/";
     legsFullFilename+=legsInifile.asString().c_str();
@@ -522,7 +524,7 @@ bool RobotInterface::instantiateLeftArm(Property &options)
 
     fprintf(stderr, "Instantiating LEFT ARM\n");
 
-    const char *conf = ACE_OS::getenv("ICUB_ROOT");
+	const char *conf = yarp::os::getenv("ICUB_ROOT");
     Value &robotName=options.findGroup("GENERAL").find("name");
     
 	//////////// arm
@@ -531,8 +533,8 @@ bool RobotInterface::instantiateLeftArm(Property &options)
 	Value &subdevice=options.findGroup("LEFTARM").find("subdevice");
     Value &candevice=options.findGroup("LEFTARM").find("canbusdevice");
 
-    String armFullFilename;
-    String armPortName;
+    std::string armFullFilename;
+    std::string armPortName;
     armFullFilename+=conf;
     armFullFilename+="/conf/";
     armFullFilename+=armInifile.asString().c_str();
@@ -593,7 +595,7 @@ bool RobotInterface::instantiateHead(Property &options)
 {
     fprintf(stderr, "Instantiating a HEAD device\n");
 
-    const char *conf = ACE_OS::getenv("ICUB_ROOT");
+	const char *conf = yarp::os::getenv("ICUB_ROOT");
     Value &robotName=options.findGroup("GENERAL").find("name");
       
 	//////////// head
@@ -602,8 +604,8 @@ bool RobotInterface::instantiateHead(Property &options)
 	Value &subdevice=options.findGroup("HEAD").find("subdevice");
     Value &candevice=options.findGroup("HEAD").find("canbusdevice");
               
-    String fullFilename;  
-    String portName;
+    std::string fullFilename;  
+    std::string portName;
     fullFilename+=conf;
     fullFilename+="/conf/";
     fullFilename+=inifile.asString().c_str();

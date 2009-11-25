@@ -221,12 +221,6 @@
 #ifndef __ICUB_episodicMemory_MODULE_H__
 #define __ICUB_episodicMemory_MODULE_H__
 
-//opencv
-#include <cv.h>
-#include <highgui.h>
-
-#include <ace/OS.h>
-
 //yarp
 #include <yarp/os/all.h>
 #include <yarp/os/RFModule.h>

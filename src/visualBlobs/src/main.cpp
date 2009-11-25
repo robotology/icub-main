@@ -14,7 +14,6 @@
 #include <BlobResult.h>
 
 // yarp
-#include <yarp/String.h>
 #include <stdio.h>
 #include <yarp/os/all.h>
 #include <yarp/sig/all.h>

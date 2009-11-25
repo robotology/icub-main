@@ -1,11 +1,14 @@
+2009-11-25 Lorenzo Natale <nat@liralab.it>
+	* removed unused include files that introduced ace dependencies in bunch of files (mainly yarp/String.h and some ace inclusions).
+
 2009-11-10 Alessandro Scalzo <alessandro@liralab.it>
 	* src/modules/dragonfly2/common/DragonflyDeviceDriver2.h
 	* src/modules/dragonfly2/common/DragonflyDeviceDriver2.cpp
 	* src/modules/dragonfly2/linux/FirewireCameraDC1394-2_2.h
-    * src/modules/dragonfly2/linux/FirewireCameraDC1394-2_2.cpp
+	* src/modules/dragonfly2/linux/FirewireCameraDC1394-2_2.cpp
 	* src/modules/dragonfly2/winnt/FirewireCameraDC1394-2_2.h
-    * src/modules/dragonfly2/winnt/FirewireCameraDC1394-2_2.cpp
-    * src/modules/dragonfly2/CMakeLists.txt
+	* src/modules/dragonfly2/winnt/FirewireCameraDC1394-2_2.cpp
+	* src/modules/dragonfly2/CMakeLists.txt
     
     Removed:
     * src/modules/dragonfly2/linux/FirewireCameraSet2.h

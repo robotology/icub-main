@@ -189,10 +189,6 @@
 #include <sstream>
 #include <string>
 
-//opencv
-#include <cv.h>
-#include <highgui.h>
-
 using namespace std;
 using namespace yarp;
 using namespace yarp::os;

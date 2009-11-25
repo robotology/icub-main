@@ -37,7 +37,6 @@ Windows, Linux
 \author Ugo Pattacini
 */ 
 
-#include <ace/OS.h>
 #include <yarp/os/Network.h>
 #include <yarp/os/RFModule.h>
 #include <yarp/os/RateThread.h>

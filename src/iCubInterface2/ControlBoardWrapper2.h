@@ -22,8 +22,6 @@
 #include <yarp/os/RateThread.h>
 #include <yarp/os/Stamp.h>
 #include <yarp/os/Vocab.h>
-#include <yarp/String.h>
-#include <yarp/NetType.h>
 
 #include <yarp/dev/ControlBoardInterfaces.h>
 #include <yarp/dev/PolyDriver.h>
@@ -238,7 +236,7 @@ private:
     PortReaderBuffer<Bottle> command_buffer;
 
     Vector            encoders;
-    yarp::String      partName;
+	std::string      partName;
 
     int               controlledJoints;
     int               base;

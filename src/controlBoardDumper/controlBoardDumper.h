@@ -1,5 +1,3 @@
-#include <ace/OS.h>
-#include <ace/Log_Msg.h>
 #include <math.h>
 
 #include <yarp/os/Network.h>
@@ -7,19 +5,9 @@
 #include <yarp/os/Bottle.h>
 #include <yarp/os/Time.h>
 
-#include <yarp/String.h> 
-
-//#include <yarp/dev/ControlBoardInterfaces.h>
-//#include <yarp/dev/PolyDriver.h>
 #include <yarp/os/RateThread.h>
 
 #include "genericControlBoardDumper.h"
-
-//using namespace yarp::dev;
-//using namespace yarp::os;
-//using namespace yarp;
-
-
 
 class controlBoardDumper: public RateThread
 {

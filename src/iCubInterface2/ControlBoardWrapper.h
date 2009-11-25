@@ -22,8 +22,6 @@
 #include <yarp/os/RateThread.h>
 #include <yarp/os/Stamp.h>
 #include <yarp/os/Vocab.h>
-#include <yarp/String.h>
-#include <yarp/NetType.h>
 
 #include <yarp/dev/ControlBoardInterfaces.h>
 #include <yarp/dev/PolyDriver.h>
@@ -34,6 +32,8 @@
 
 #include <yarp/os/Semaphore.h>
 #include <yarp/dev/Wrapper.h>
+
+#include <string>
 
 using namespace yarp::os;
 using namespace yarp::dev;
@@ -167,7 +167,7 @@ private:
 
     PolyDriver *subdevice;
     Vector      encoders;
-    yarp::String      partName;
+	std::string      partName;
 
     int               deviceJoints;
     int               controlledJoints;
@@ -272,7 +272,7 @@ public:
 
         verb = (prop.check("verbose","if present, give detailed output"));
         if (verb)
-            ACE_OS::printf("running with verbose output\n");
+            printf("running with verbose output\n");
 
         thread_period = prop.check("threadrate", 20, "thread rate in ms. for streaming encoder data").asInt();
 
@@ -281,7 +281,7 @@ public:
 
         partName=prop.check("name",Value("controlboard"),
             "prefix for port names").asString().c_str();
-        yarp::String rootName="/";
+		std::string rootName="/";
         rootName+=(partName);
 
         // attach readers.

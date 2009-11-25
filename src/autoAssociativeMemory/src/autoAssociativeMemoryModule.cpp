@@ -48,13 +48,14 @@
  * Normalized histograms before computing the histogram intersection. 
  * David Vernon 14/10/09
  */
-
+ 
  
 
 // iCub
 #include <iCub/autoAssociativeMemoryModule.h>
-
-
+//opencv
+#include <cv.h>
+#include <highgui.h>
 
 //HistMatchData constructor
 HistMatchData::HistMatchData()

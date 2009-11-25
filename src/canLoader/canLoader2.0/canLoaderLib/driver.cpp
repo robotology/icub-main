@@ -1,11 +1,10 @@
 // -*- mode:C++; tab-width:4; c-basic-offset:4; indent-tabs-mode:nil -*-
 #include "driver.h"
 #include <stdio.h>
-#include <ace/OS.h>
 
 #include <yarp/os/Time.h>
 #include <yarp/os/Bottle.h>
-#include <yarp/String.h>
+
 using namespace yarp;
 using namespace yarp::os;
 using namespace yarp::dev;
