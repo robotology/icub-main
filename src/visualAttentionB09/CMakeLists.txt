@@ -63,7 +63,16 @@ LINK_DIRECTORIES(
 #LINK_LIBRARIES(debug "$ENV{ICUB_ROOT}/lib/debug/cvBlobs.lib" 
 #	optimized "$ENV{ICUB_ROOT}/lib/debug/cvBlobs.lib")
 
-LINK_LIBRARIES(
+IF (WIN32) #required in win
+  LINK_LIBRARIES(
+    ${OPENCV_LIBRARIES}
+    #${ODE_LIBRARIES}
+    ${IDL_LIBRARIES}
+    ${IPP_LIBRARIES} 
+    #ippi	
+)	
+ELSE(WIN32) #required in linux
+  LINK_LIBRARIES(
     ${OPENCV_LIBRARIES}
     #${ODE_LIBRARIES}
     ${IDL_LIBRARIES}
@@ -71,6 +80,9 @@ LINK_LIBRARIES(
     #ippi	
     pthread
 )
+ENDIF (WIN32)
+
+
 
 # Set up our main executable.
 IF (folder_source)
