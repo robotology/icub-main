@@ -39,7 +39,7 @@
 #define MIN(a,b) ((a) < (b) ? (a) : (b))
 
 #define INFO 1
-
+#define START_VERGE 10.0
 
 
 iCub::contrib::primateVision::ZDFServer::ZDFServer(string*c_)
@@ -230,8 +230,8 @@ void iCub::contrib::primateVision::ZDFServer::run(){
   if (motion){
     //initalise:
     motion_request.content().pix_y  = 0.0;
-    motion_request.content().pix_xl = 20.0;
-    motion_request.content().pix_xr = -20.0;
+    motion_request.content().pix_xl = START_VERGE;
+    motion_request.content().pix_xr = -START_VERGE;
     motion_request.content().deg_r  = 0.0;
     motion_request.content().relative = false; //absolute initial pos.
     motion_request.content().suspend  = 0;
@@ -521,8 +521,8 @@ void iCub::contrib::primateVision::ZDFServer::run(){
 	    printf("Returning home!\n");
 	    //re-initalise:
 	    motion_request.content().pix_y  = 0.0;
-	    motion_request.content().pix_xl = 20.0;
-	    motion_request.content().pix_xr = -20.0;
+	    motion_request.content().pix_xl = START_VERGE;
+	    motion_request.content().pix_xr = -START_VERGE;
 	    motion_request.content().deg_r  = 0.0;
 	    motion_request.content().relative = false; //absolute initial pos.
 	    motion_request.content().suspend  = 200;

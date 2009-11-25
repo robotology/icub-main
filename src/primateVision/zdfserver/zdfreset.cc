@@ -43,6 +43,8 @@
 //MY INCLUDES
 #include <recio.h>
 
+#define START_VERGE 10.0
+
 
 using namespace iCub::contrib::primateVision;
  
@@ -76,8 +78,8 @@ int main( int argc, char **argv )
 
   //initalise:
   motion_request.content().pix_y  = 0.0;
-  motion_request.content().pix_xl = 20.0;
-  motion_request.content().pix_xr = -20.0;
+  motion_request.content().pix_xl = START_VERGE;
+  motion_request.content().pix_xr = -START_VERGE;
   motion_request.content().deg_r = 0.0;
   motion_request.content().relative = false; //gonna send absolute move!
   motion_request.content().suspend = 100;
