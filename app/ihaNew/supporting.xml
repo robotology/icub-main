@@ -1,0 +1,48 @@
+<application>
+<name>Manage supporting IHA processes</name>
+<dependencies>
+      <port>/icub02</port>
+</dependencies>
+<module>
+  <name>yarpdev</name>
+  <parameters>--device sound_grabber --subdevice portaudio --name /iha/sound_grabber --read</parameters>
+  <node>icub3</node>
+  <tag>pa</tag>
+</module>
+<module>
+  <name>ihaNewSoundSensor</name>
+  <parameters>--name /iha/sound --file ihaSoundSensor.ini</parameters>
+  <node>icub3</node>
+  <stdio>icub12</stdio>
+  <tag>soundserver</tag>
+</module>
+<module>
+  <name>ihaNewIhaFaceDetect</name>
+  <parameters>--name /iha/fd --file ihaIhaFaceDetect.ini</parameters>
+  <node>icub3</node>
+  <stdio>icub12</stdio>
+  <tag>soundserver</tag>
+</module>
+<module>
+  <name>yarpview</name>
+  <parameters>--name /view/facedetect --x 0 --y 10 --synch</parameters>
+  <node>icub12</node>
+  <tag>viewfd</tag>
+</module>
+<connection>
+  <output>/iha/sound_grabber</output>
+  <input>/iha/sound/sndsensor:in</input>
+  <protocol>tcp</protocol>
+</connection>
+<connection>
+  <output>/icub/cam/left</output>
+  <input>/iha/fd/facedetect:in</input>
+  <protocol>tcp</protocol>
+</connection>
+<connection>
+  <output>/iha/fd/facedetect:out</output>
+  <input>/view/facedetect</input>
+  <protocol>tcp</protocol>
+</connection>
+</application>
+
