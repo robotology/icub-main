@@ -312,7 +312,7 @@ ENDIF (OPENCV_LIBRARY)
 # display help message
 IF (NOT OPENCV_FOUND)
   MESSAGE("OPENCV library or headers not found. "
-  "Please search manually or set env. variable OPENCV_ROOT to guide search." )
+  "Please search manually or set env. variable OPENCV_DIR to guide search." )
 ENDIF (NOT OPENCV_FOUND)
 
 MARK_AS_ADVANCED(
