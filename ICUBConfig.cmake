@@ -62,7 +62,12 @@ SET(IKIN_DIR "${ICUB_DIR}/src/iKin")
 SET(AFFACTIONPRIMITIVES_DIR "${ICUB_DIR}/src/affActionPrimitives")
 set(LIBHANDCTRL_DIR "${ICUB_DIR}/src/abstractHandCtrl/lib")
 
-SET(icubmod_DIR "${ICUB_DIR}")
+IF (BUILDING_ICUB)
+  SET(icubmod_DIR "${CMAKE_BINARY_DIR}")
+ELSE (BUILDING_ICUB)
+  SET(icubmod_DIR "${ICUB_DIR}")
+ENDIF (BUILDING_ICUB)
+
 SET(ICUBDEV_DIR "${ICUB_DIR}/src/iCubDev")
 
 SET(ICUB_FOUND TRUE)

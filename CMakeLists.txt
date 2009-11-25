@@ -16,6 +16,9 @@ endif(COMMAND cmake_policy)
 
 PROJECT(iCub)
 
+### Useful for adjust some configuration for allow out-of-source building
+SET(BUILDING_ICUB TRUE)
+
 SET(NESTED_BUILD TRUE)
 
 SET(ICUB_DIR ${PROJECT_SOURCE_DIR} CACHE LOCATION "Where is ICUB root?")
