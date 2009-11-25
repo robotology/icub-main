@@ -42,7 +42,14 @@
   <parameters>--name /iha/controller --robot icub --file /usr/local/src/robot/iCub/app/ihaNew/conf/ihaIcubControl.ini --action_defs /usr/local/src/robot/iCub/app/ihaNew/conf/iha_actiondefs.ini --sequence_dir /usr/local/src/robot/iCub/app/ihaNew/conf/sequences --speed_multiplier 1 </parameters>
   <node>icub12</node>
   <stdio>icub12</stdio>
-  <tag>actionselect</tag>
+  <tag>controller</tag>
+</module>
+<module>
+  <name>ihaNewStatusMonitor</name>
+  <parameters>--name /iha/status --file /usr/local/src/robot/iCub/app/ihaNew/conf/ihaStatusMonitor.ini </parameters>
+  <node>icub12</node>
+  <stdio>icub12</stdio>
+  <tag>monitor</tag>
 </module>
 <!-- sensor motor interface connections -->
 <connection>
@@ -87,7 +94,6 @@
   <input>/iha/sfw/filewriter/img:in</input>
   <protocol>tcp</protocol>
 </connection>
-<!-- there are connections for this, but not listed yet -->
 <!-- experience metric space connections -->
 <connection>
   <output>/iha/dynamics/reward:out</output>
@@ -100,10 +106,26 @@
   <input>/iha/as/currdist:in</input>
   <protocol>tcp</protocol>
 </connection>
-<!-- all controller connections -->
+<!-- controller connections -->
 <connection>
   <output>/iha/as/action:out</output>
   <input>/iha/controller/action:cmd</input>
+  <protocol>tcp</protocol>
+</connection>
+<!-- status monitor connections -->
+<connection>
+  <output>/iha/ds/status:out</output>
+  <input>/iha/status/monitor:in</input>
+  <protocol>tcp</protocol>
+</connection>
+<connection>
+  <output>/iha/as/status:out</output>
+  <input>/iha/status/monitor:in</input>
+  <protocol>tcp</protocol>
+</connection>
+<connection>
+  <output>/iha/sm/status:out</output>
+  <input>/iha/status/monitor:in</input>
   <protocol>tcp</protocol>
 </connection>
 </application>
