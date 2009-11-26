@@ -280,5 +280,3 @@ void Model::reloadTextures()
 //Ronny André Reierstad
 //www.morrowland.com
 //apron@morrowland.com
-
-

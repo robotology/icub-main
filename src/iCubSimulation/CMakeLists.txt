@@ -17,7 +17,9 @@ LINK_LIBRARIES(${ODE_LIBRARIES})
 
 FILE(GLOB folder_source *.cpp)
 FILE(GLOB folder_header *.h)
+
 IF (APPLE)
+  ADD_DEFINITIONS(HAVE_APPLE_OPENGL_FRAMEWORK)
  ## add SDLMain.m and SDLMain.h required for Mac OS platform
  LIST( APPEND folder_source ${SDL_INCLUDE_DIR}/SDLMain.m )
 ENDIF (APPLE)
