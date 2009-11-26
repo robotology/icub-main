@@ -35,14 +35,28 @@ int main(int argc, char *argv[]) {
 	for (int i=1;i<argc;i++) {
 		if ((strcmp(argv[i],"--configfile")==0)||(strcmp(argv[i],"-c")==0)) {
 			fname = argv[++i];
+			printf("file name:%s \n",fname.c_str());
 		}
 		if ((strcmp(argv[i],"--help")==0)||(strcmp(argv[i],"-h")==0)) {
 			cout <<"usage: "<<argv[0]<<" [-h/--help] [-c/--configfile file] " <<endl;
 		exit(0);
 		}
 	}	
+	ResourceFinder* _the_finder = new ResourceFinder;
+	ResourceFinder& finder = *_the_finder;
+    finder.setVerbose();
+    finder.setDefaultConfigFile("protoObjectVisualAttention.ini");
+    finder.setDefaultContext("protoObjectVisualAttention");
+    finder.configure("ICUB_ROOT", argc, argv); 
+	ConstString location = finder.findFile("multiclass");
+    if (location!="") {
+     //   printf("Found config: %s\n", location.c_str());
+    }
+
+
 	Property prop;
-	prop.fromConfigFile(fname.c_str());
+	printf("file found in location: %s \n",location.c_str() );
+	prop.fromConfigFile(location.c_str());
 	struct MultiClass::Parameters params;
 
 	params.iter_max = prop.findGroup("MRF").find("MAX_ITERATIONS").asInt();
