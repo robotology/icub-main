@@ -390,7 +390,7 @@ public:
             double curTime=Time::now();
             if (curTime-oldTime>10.0)
             {
-				writeToDisk=(sz==1)? true:false;
+				writeToDisk=sz>0;
                 oldTime=curTime;
             }
 
