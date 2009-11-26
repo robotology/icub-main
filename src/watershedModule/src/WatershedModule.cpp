@@ -1743,7 +1743,7 @@ GtkWidget* WatershedModule::createMainWindow(void)
 	label = gtk_label_new ("MINBLOB dimension:");
 	gtk_box_pack_start (GTK_BOX (box4), label, FALSE, FALSE, 0);
     gtk_widget_show (label);
-	adj4 = gtk_adjustment_new (1,1,1000,1,1,1);
+	adj4 = gtk_adjustment_new (1,1,3000,1,1,1);
 	hscale = gtk_hscale_new (GTK_ADJUSTMENT (adj4));
     gtk_widget_set_size_request (GTK_WIDGET (hscale), 200, -1);
     scale_set_default_values (GTK_SCALE (hscale));
@@ -1755,7 +1755,7 @@ GtkWidget* WatershedModule::createMainWindow(void)
 	label = gtk_label_new ("red intensity target:");
 	gtk_box_pack_start (GTK_BOX (box4), label, FALSE, FALSE, 0);
     gtk_widget_show (label);
-	adjr = gtk_adjustment_new (1,1,1000,1,1,1);
+	adjr = gtk_adjustment_new (1,1,255,1,1,1);
 	hscale = gtk_hscale_new (GTK_ADJUSTMENT (adjr));
     gtk_widget_set_size_request (GTK_WIDGET (hscale), 200, -1);
     scale_set_default_values (GTK_SCALE (hscale));
@@ -1767,7 +1767,7 @@ GtkWidget* WatershedModule::createMainWindow(void)
 	label = gtk_label_new ("green intensity target:");
 	gtk_box_pack_start (GTK_BOX (box4), label, FALSE, FALSE, 0);
     gtk_widget_show (label);
-	adjg = gtk_adjustment_new (1,1,1000,1,1,1);
+	adjg = gtk_adjustment_new (1,1,255,1,1,1);
 	hscale = gtk_hscale_new (GTK_ADJUSTMENT (adjg));
     gtk_widget_set_size_request (GTK_WIDGET (hscale), 200, -1);
     scale_set_default_values (GTK_SCALE (hscale));
@@ -1779,7 +1779,7 @@ GtkWidget* WatershedModule::createMainWindow(void)
 	label = gtk_label_new ("blue intensity target:");
 	gtk_box_pack_start (GTK_BOX (box4), label, FALSE, FALSE, 0);
     gtk_widget_show (label);
-	adjb = gtk_adjustment_new (1,1,1000,1,1,1);
+	adjb = gtk_adjustment_new (1,1,255,1,1,1);
 	hscale = gtk_hscale_new (GTK_ADJUSTMENT (adjb));
     gtk_widget_set_size_request (GTK_WIDGET (hscale), 200, -1);
     scale_set_default_values (GTK_SCALE (hscale));
@@ -2609,7 +2609,11 @@ void WatershedModule::drawAllBlobs(bool stable)
 	//__OLD//salience.doIOR(tagged, IORBoxes, num_IORBoxes);
 	//float salienceBU=1.0,salienceTD=0.0;
 	IppiSize srcsize={320,240};
-	PixelMonoSigned searchTD=0,searchRG=30,searchGR=42,searchBY=45;
+	PixelMonoSigned searchTD=0;
+		PixelMonoSigned searchRG=((targetRED-targetGREEN)/510+0.5)*255;
+		PixelMonoSigned searchGR=((targetGREEN-targetRED)/510+0.5)*255;
+		PixelMonoSigned addRG=((targetRED+targetGREEN)/510)*255;
+		PixelMonoSigned searchBY=((targetBLUE-addRG)/510+0.5)*255;
 	int psb32s;
 	Ipp32s* _inputImgRGS32=ippiMalloc_32s_C1(320,240,&psb32s);
 	Ipp32s* _inputImgGRS32=ippiMalloc_32s_C1(320,240,&psb32s);
