@@ -81,6 +81,10 @@ int main(int argc, char *argv[]) {
 	//module.setOptions(options);
 	module.setProperties(params);
 
+	Property options;
+    options.fromCommand(argc, argv);
+	module.istantiateThread(options);
+
     return module.runModule(argc,argv);
 
     //MyModule module;

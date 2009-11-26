@@ -14,6 +14,7 @@
 //primatevision include
 #include "multiclass.h"
 #include <iCub/convert_rgb.h>
+#include <iCub/classifierThread.h>
 
 
 using namespace yarp::os;
@@ -59,21 +60,9 @@ private:
 	*/
 	BufferedPort<ImageOf<PixelMono> > portOut; //
 	/**
-	* reference to the multiclassifier
+	* output image (always 320,240)
 	*/
-	MultiClass* m;
-	/**
-	* edge map reference
-	*/
-	Ipp8u *edge_map;
-	/**
-	* input image
-	*/
-	Ipp8u * in;
-	/**
-	* converter to RGB
-	*/
-	Convert_RGB* ci;
+	ImageOf<PixelMono> *imgOut;
 	/**
 	* port for various command
 	*/
@@ -103,38 +92,17 @@ private:
 	* input image (always 320,240)
 	*/
 	ImageOf<PixelRgb> *imgInput; 
+	
+	
 	/**
-	* output image (always 320,240)
+	*  pointer to the classifier thread
 	*/
-	ImageOf<PixelMono> *imgOut; 
-	/**
-	* probability map image (always 320,240)
-	*/
-	ImageOf<PixelMono> *imgProbClassA; 
-	/**
-	* probability map image Other (always 320,240)
-	*/
-	ImageOf<PixelMono> *imgProbOther;
-	/**
-	* the image that represent everything not of class A
-	*/
-	ImageOf<PixelMono> *imageOther;
-	/**
-	* the image that represent the class A
-	*/
-	ImageOf<PixelMono> *imageClassA;
-	/**
-	* size of the output
-	*/
-	IppiSize isize;
+	classifierThread *cThread;
 	/**
 	* options of the module deteched from command line
 	*/
 	yarp::os::Property options;
-	/**
-	* series of parameters for the multiclass object
-	*/
-	MultiClass::Parameters properties;
+	
 	/**
 	* mode of work of the module
 	*/
@@ -167,11 +135,15 @@ public:
 	* updates the module
 	*/
 	bool updateModule();
+	/**
+	* istantiate the classification Thread
+	*/
+	void istantiateThread(Property options);
 
 	/**
 	* return the 255 complementary image of the input
 	*/
-	ImageOf<PixelMono>* inverse(ImageOf<PixelMono>* input);
+	//ImageOf<PixelMono>* inverse(ImageOf<PixelMono>* input);
 };
 
 
