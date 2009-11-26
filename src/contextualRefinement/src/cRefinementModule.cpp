@@ -14,7 +14,6 @@ bool cRefinementModule::open(Searchable& config) {
 	portOut.open(getName("out"));
     cmdPort.open(getName("cmd")); // optional command port
     attach(cmdPort); // cmdPort will work just like terminal
-	
     return true;
 }
 
@@ -48,7 +47,6 @@ void cRefinementModule::setProperties(MultiClass::Parameters prop){
 void cRefinementModule::setOptions(yarp::os::Property opt ){
 	options	=opt;
 	// definition of the mode
-	
 	// definition of the name of the module
 	ConstString name=opt.find("name").asString();
 	printf("Module named as :%s \n", name.c_str());
