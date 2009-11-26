@@ -7,7 +7,8 @@
  */
 
 #include "emotionInterfaceModule.h"
-
+#include <string.h>
+#include <stdlib.h>
 
 
 EmotionInterfaceModule::EmotionInterfaceModule(){

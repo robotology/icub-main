@@ -2,6 +2,7 @@
 #include "downloader.h"
 
 #include <yarp/os/Time.h>
+#include <stdlib.h> //added for abs
 
 using namespace yarp::dev;
 using namespace yarp::os;
