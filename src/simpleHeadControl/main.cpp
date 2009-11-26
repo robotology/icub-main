@@ -27,6 +27,7 @@
 #include <yarp/sig/Vector.h>
 
 #include <string>
+#include <string.h> //memcpy and the like
 
 #include "pidfilter.h"
 
