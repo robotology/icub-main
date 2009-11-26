@@ -4,7 +4,7 @@
  * @ingroup iKin 
  *
  * Classes for on-line solution of inverse kinematic of iCub 
- * limbs based on IpOpt. The solvers run as an on-line daemons 
+ * limbs based on IpOpt. The solvers run as on-line daemons 
  * which connect to the robot to retrieve information on the 
  * current joints configuration (along with the bounds) and by 
  * requesting a desired pose with queries made through YARP 
@@ -73,8 +73,7 @@
  *    as result of the reconfiguration. The result may differ
  *    from the request since on certain limb (e.g. arm) some
  *    links are considered to form a unique super-link (e.g. the
- *    shoulder) whose components cannot be actuated or not
- *    separately.
+ *    shoulder) whose components cannot be actuated separately.
  *  
  * Commands concerning the thread status: 
  *  
