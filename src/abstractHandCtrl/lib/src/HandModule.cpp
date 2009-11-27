@@ -220,6 +220,10 @@ void HandModule::HandWorkerThread::addMotionSpecification(Searchable& s) {
 #endif
 }
 
+const map<const string, MotionSequence>& HandModule::HandWorkerThread::getMotionSpecifications() {
+	return motions;
+}
+
 
 void HandModule::HandWorkerThread::setSensingConstants(::yarp::os::Searchable& s) {
 	if (handType != v1) {

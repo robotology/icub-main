@@ -45,15 +45,9 @@ const set<int> Hand::ALL_FINGER_JOINTS(Hand::allFingerJoints, Hand::allFingerJoi
 const set<int> Hand::ALL_BUT_THUMB(Hand::allButThumb, Hand::allButThumb + 8);
 const set<int> Hand::COMPLETE_HAND(Hand::completeHand, Hand::completeHand + 12);
 
-//const pair<int, int> Hand::limits[] = { std::make_pair(-96, 10), std::make_pair(0, 161),
-//		std::make_pair(-37, 80), std::make_pair(5, 106), std::make_pair(-90, 90),
-//		std::make_pair(-90, 0), std::make_pair(-20, 40), std::make_pair(0, 60),
-//		std::make_pair(-15, 105), std::make_pair(0, 90), std::make_pair(0, 90), std::make_pair(0, 90),
-//		std::make_pair(0, 90), std::make_pair(0, 90), std::make_pair(0, 90), std::make_pair(0, 115) };
-
-const int Hand::limits[][2] = { { -96, 10 }, { 0, 161 }, { -37, 80 }, { 5, 106 },
-		{ -90, 90 }, { -90, 0 }, { -20, 40 }, { 0, 60 }, { -15, 105 }, { 0, 90 }, { 0, 90 }, { 0, 90 },
-		{ 0, 90 }, { 0, 90 }, { 0, 90 }, { 0, 115 } };
+const int Hand::limits[][2] = { { -96, 10 }, { 0, 161 }, { -37, 80 }, { 5, 106 }, { -90, 90 }, {
+		-90, 0 }, { -20, 40 }, { 0, 60 }, { -15, 105 }, { 0, 90 }, { 0, 90 }, { 0, 90 }, { 0, 90 }, {
+		0, 90 }, { 0, 90 }, { 0, 115 } };
 
 const vector<pair<int, int> > Hand::LIMITS = initLimits(Hand::limits, HandMetrics::numAxes);
 const vector<int> Hand::RANGES = Hand::initRanges(Hand::LIMITS);
@@ -74,51 +68,96 @@ const vector<int> Hand::initRanges(const vector<pair<int, int> > v) {
 	return v_;
 }
 
-Hand::RecordingThread::RecordingThread(IEncoders* const encoders, int period) :
-	RateThread(period) {
-	if (encoders == NULL) {
-		throw "Valid encoders are mandatory.";
-	}
-
-	int numAxes;
-	encoders->getAxes(&numAxes);
-	if (numAxes != HandMetrics::numAxes) {
-		throw "The number of axes mismatches the expected number";
-	}
-
-	this->encoders = encoders;
+Hand::Recorder::Recorder(HandMetrics& handMetrics, int period) :
+	RateThread(period), handMetrics(handMetrics) {
 	curRecording.setNumJoints(HandMetrics::numAxes);
 }
 
-Hand::RecordingThread::~RecordingThread() {
+Hand::Recorder::~Recorder() {
 }
 
-bool Hand::RecordingThread::start() {
+bool Hand::Recorder::start() {
 	curRecording.clear();
 	return RateThread::start();
 }
 
-void Hand::RecordingThread::stop() {
+void Hand::Recorder::stop() {
 	RateThread::stop();
 	recording = curRecording;
 }
 
-void Hand::RecordingThread::run() {
+void Hand::Recorder::run() {
 	Motion m(HandMetrics::numAxes);
-
-	Vector v(HandMetrics::numAxes);
-	encoders->getEncoders(v.data());
-	m.setPosition(v);
-
-	encoders->getEncoderSpeeds(v.data());
-	m.setVelocity(v);
+	m.setPosition(handMetrics.getPosition());
+	m.setVelocity(handMetrics.getVelocity());
 	m.setTiming(0.0);
 
 	curRecording.addMotion(m);
 }
 
-MotionSequence Hand::RecordingThread::getRecording() {
+MotionSequence Hand::Recorder::getRecording() {
 	return recording;
+}
+
+Hand::JointMonitor::JointMonitor(Hand& hand, int period) :
+	RateThread(period), hand(hand) {
+}
+
+Hand::JointMonitor::~JointMonitor() {
+}
+
+void Hand::JointMonitor::run() {
+	hand.getMetrics().snapshot();
+
+	blockedJoints.clear();
+	hand.stopBlockedJoints(&blockedJoints);
+
+	if (hand.motionDone()) {
+		stop();
+	}
+}
+
+//void Hand::JointMonitor::monitor(std::set<int> joints, bool b) {
+//	if (isRunning()) {
+//		throw "The monitor has to be stopped before it is possible to make changes.";
+//	}
+//	set<int>::const_iterator itr;
+//	for (itr = joints.begin(); itr != joints.end(); ++itr) {
+//		if (b) { // add
+//			if (*itr > 0 && *itr < HandMetrics::numAxes) {
+//				monitoredJoints.insert(*itr);
+//			}
+//		} else { // remove
+//			monitoredJoints.erase(*itr);
+//		}
+//	}
+//}
+
+const set<int>& Hand::JointMonitor::getBlockedJoints() const {
+	return blockedJoints;
+}
+
+void Hand::JointMonitor::waitMotionDone() {
+	lock.wait();
+	lock.post();
+}
+
+bool Hand::JointMonitor::start() {
+	if (!isRunning()) {
+		cout << "wait" << endl;
+		lock.wait();
+		cout << "resume" << endl;
+		if (!RateThread::start()) {
+			lock.post();
+			return false;
+		}
+	}
+	return true;
+}
+
+void Hand::JointMonitor::stop() {
+	RateThread::stop();
+	lock.post();
 }
 
 Hand::Hand(PolyDriver& controlBoard) :
@@ -142,7 +181,9 @@ Hand::Hand(PolyDriver& controlBoard) :
 #endif
 	handMetrics = NULL;
 
-	recordingThread = new RecordingThread(encoders);
+	jointMonitor = new JointMonitor(*this);
+
+	recorder = new Recorder(getMetrics());
 	record(false);
 }
 
@@ -157,7 +198,8 @@ Hand::~Hand() {
 		delete handMetrics;
 	}
 	posControl->setRefSpeeds(prevSpeed);
-	delete recordingThread;
+	delete jointMonitor;
+	delete recorder;
 }
 
 HandMetrics& Hand::getMetrics() {
@@ -242,7 +284,11 @@ void Hand::setVelocity(const ::yarp::sig::Vector& v, const int joint) {
 	setVelocity(v, s);
 }
 
-bool Hand::move(const Vector& v, const set<int> joints) {
+bool Hand::move(const Vector& v, const bool sync) {
+	return move(v, COMPLETE_HAND, sync);
+}
+
+bool Hand::move(const Vector& v, const set<int> joints, const bool sync) {
 	bool result = true;
 	mutex.wait();
 	set<int> activeJoints;
@@ -259,69 +305,99 @@ bool Hand::move(const Vector& v, const set<int> joints) {
 			activeJoints.insert(joint);
 		}
 	}
-	do {
-		getMetrics().snapshot();
-		stopBlockedJoints(activeJoints);
-	} while (!motionDone(activeJoints));
+	mutex.post();
+
+	if (!jointMonitor->start()) {
+		cout << "Warning: Unable to monitor joint movements, i.e. ";
+		cout << "it is not possible to check for completeness of motions or blocked joints" << endl;
+		cout << "Contact somebody is supposed to know what's going on!" << endl;
+	}
+	if (sync) {
+		jointMonitor->waitMotionDone();
+		int i = 0;
+		i++;
+	}
 
 	posControl->stop(); // just to make sure
-	mutex.post();
 	return result;
 }
 
-bool Hand::move(const Motion& m, const int joint) {
+bool Hand::move(const Motion& m, const int joint, const bool sync) {
 	set<int> s;
 	s.insert(joint);
-	return move(m, s);
+	return move(m, s, sync);
 }
 
-bool Hand::move(const Motion& m, const std::set<int> joints) {
+bool Hand::move(const Motion& m, const bool sync) {
+	return move(m, COMPLETE_HAND, sync);
+}
+
+bool Hand::move(const Motion& m, const std::set<int> joints, const bool sync) {
 	setVelocity(m.getVelocity(), joints);
-	bool result = move(m.getPosition(), joints);
+	bool result = move(m.getPosition(), joints, sync);
 	Time::delay(m.getTiming());
 	return result;
 }
 
-bool Hand::move(const Matrix& m, const int joint, const bool invert) {
+bool Hand::move(const Matrix& m, const int joint, const bool sync, const bool invert) {
 	set<int> s;
 	s.insert(joint);
-	return move(m, s, invert);
+	return move(m, s, sync, invert);
 }
 
-bool Hand::move(const Matrix& m, const set<int> joints, const bool invert) {
-	bool result = true;
-	set<int> activeJoints(joints.begin(), joints.end());
+bool Hand::move(const Matrix& m, const bool sync, const bool invert) {
+	return move(m, COMPLETE_HAND, sync, invert);
+}
 
-	for (int step = invert ? m.rows() - 1 : 0; (invert && step >= 0) || (!invert && step < m.rows()); step
-			= invert ? step - 1 : step + 1) {
-		result &= move(m.getRow(step), joints);
+bool Hand::move(const Matrix& m, const set<int> joints, const bool sync, const bool invert) {
+	bool result = true;
+
+	if (m.rows() > 0) {
+		int step;
+		if (invert) {
+			for (step = m.rows() - 1; step >= 1; step--) {
+				result &= move(m.getRow(step), joints, true);
+			}
+		} else {
+			for (step = 0; step < m.rows() - 1; step++) {
+				result &= move(m.getRow(step), joints, true);
+			}
+		}
+		result &= move(m.getRow(step), joints, sync);
 	}
+
 	return result;
 }
 
-bool Hand::move(const MotionSequence& seq, const bool invert) {
-	return move(seq, COMPLETE_HAND, invert);
+bool Hand::move(const MotionSequence& seq, const bool sync, const bool invert) {
+	return move(seq, COMPLETE_HAND, sync, invert);
 }
 
-bool Hand::move(const MotionSequence& seq, const int joint, const bool invert) {
+bool Hand::move(const MotionSequence& seq, const int joint, const bool sync, const bool invert) {
 	set<int> s;
 	s.insert(joint);
-	return move(seq, s, invert);
+	return move(seq, s, sync, invert);
 }
 
-bool Hand::move(const MotionSequence& seq, const std::set<int> joints, const bool invert) {
+bool Hand::move(const MotionSequence& seq, const std::set<int> joints, const bool sync,
+		const bool invert) {
 	bool result = true;
-	if (invert) {
-		MotionSequence::const_reverse_iterator itr;
-		for (itr = seq.rbegin(); itr != seq.rend(); ++itr) {
-			move(*itr, joints);
+
+	if (seq.length() > 0) {
+		int step;
+		if (invert) {
+			for (step = seq.length() - 1; step >= 1; step--) {
+				result &= move(seq[step], joints, true);
+			}
+		} else {
+			MotionSequence::const_iterator itr;
+			for (step = 1; step < seq.length() - 1; step++) {
+				result &= move(seq[step], joints, true);
+			}
 		}
-	} else {
-		MotionSequence::const_iterator itr;
-		for (itr = seq.begin(); itr != seq.end(); ++itr) {
-			move(*itr, joints);
-		}
+		result &= move(seq[step], joints, sync);
 	}
+
 	return result;
 }
 
@@ -338,31 +414,43 @@ bool Hand::motionDone(const set<int> joints) {
 	return true;
 }
 
-void Hand::stopBlockedJoints(std::set<int>& activeJoints) {
+void Hand::stopBlockedJoints(std::set<int>* blockedJoints) {
 	// to be detailed in derived classes
 }
 
-void Hand::record(const bool b) {
+bool Hand::record(const bool b) {
+	bool result = true;
 	if (isRecording() != b) {
 		if (!b) {
-			recordingThread->stop();
+			recorder->stop();
 			// save file
 		} else {
-			recordingThread->start();
+			result = recorder->start();
 		}
 	}
+	return result;
 }
 
 bool Hand::isRecording() {
-	return recordingThread->isRunning();
+	return recorder->isRunning();
 }
 
 MotionSequence Hand::getRecording() {
-	return recordingThread->getRecording();
+	return recorder->getRecording();
 }
 
 void Hand::setSamplingRate(int t) {
-	recordingThread->setRate(t);
+	if (recorder->getRate() != t) {
+		recorder->setRate(t);
+	}
+}
+
+int Hand::getSamplingRate() {
+	return recorder->getRate();
+}
+
+void Hand::setMonitorRate(int i) {
+	jointMonitor->setRate(i);
 }
 
 }

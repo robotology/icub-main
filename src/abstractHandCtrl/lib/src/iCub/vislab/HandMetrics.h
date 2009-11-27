@@ -99,12 +99,12 @@ public:
 	 * Returns the current positions of the hand's joints.
 	 * @return The current positions of the hand's joints.
 	 */
-	::yarp::sig::Vector& getPosition();
+	const ::yarp::sig::Vector& getPosition();
 	/**
 	 * Returns the current velocity of the hand's joints.
 	 * @return The current velocity of the hand's joints.
 	 */
-	::yarp::sig::Vector& getVelocity();
+	const ::yarp::sig::Vector& getVelocity();
 	/**
 	 * Returns the time interval of the latest snapshot.
 	 * @return The time interval of the latest snapshot.

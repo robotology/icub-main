@@ -76,7 +76,7 @@ void HandMetrics::printSnapshotData(ostream& s) {
 }
 #endif
 
-Vector& HandMetrics::getPosition() {
+const Vector& HandMetrics::getPosition() {
 	if (position.size() <= 0) {
 		position.resize(numAxes);
 		Vector error(numAxes), output(numAxes);
@@ -95,7 +95,7 @@ Vector& HandMetrics::getPosition() {
 	return position;
 }
 
-Vector& HandMetrics::getVelocity() {
+const Vector& HandMetrics::getVelocity() {
 	if (velocity.size() <= 0) {
 		Vector deltaR = getPosition() - prevPosition;
 		double deltaT = getTimeInterval();

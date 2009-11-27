@@ -86,9 +86,11 @@ protected:
 	/**
 	 * Encodes rules for sensing objects based on the {@link HandMetrics} dedicated to
 	 * this version of the iCub.
-	 * @param activeJoints The set of active joints.
+	 * @param blockedJoints The set of blocked joints.
+	 *
+	 * @see Hand#stopBlockedJoints(std::set<int>* const)
 	 */
-	virtual void stopBlockedJoints(std::set<int>& activeJoints);
+	virtual void stopBlockedJoints(std::set<int>* const blockedJoints = NULL);
 
 public:
 

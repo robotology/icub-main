@@ -109,7 +109,7 @@ Handv1Metrics& Handv1::getMetrics() const {
 	return *handMetrics;
 }
 
-void Handv1::stopBlockedJoints(std::set<int>& activeJoints) {
+void Handv1::stopBlockedJoints(std::set<int>* const blockedJoints) {
 	Vector smoothedError;
 	Vector thresholds = sensingConstants["thresholds"].getRow(0);
 	fs.smooth(handMetrics->getError(), smoothedError, handMetrics->getTimeInterval());
@@ -125,7 +125,9 @@ void Handv1::stopBlockedJoints(std::set<int>& activeJoints) {
 					< thresholds[i])) {
 				posControl->stop(i);
 				cout << "joint #" << i << " blocked" << endl;
-				activeJoints.erase(i);
+				if (blockedJoints != NULL) {
+					blockedJoints->insert(i);
+				}
 			}
 		}
 	}

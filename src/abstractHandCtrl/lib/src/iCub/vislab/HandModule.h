@@ -67,7 +67,6 @@ protected:
 	 */
 	class HandWorkerThread: public vislab::yarp::util::AbstractRFModule::AbstractWorkerThread {
 	protected:
-
 		/** The motion sequence specifications. */
 		std::map<const std::string, vislab::yarp::util::MotionSequence> motions;
 		/** The sensing constants of the hand (cf. Handv1#calibrate). */
@@ -121,6 +120,12 @@ protected:
 		 * @param s The {@link Searchable} containing the motion specifications.
 		 */
 		void addMotionSpecification(::yarp::os::Searchable& s);
+		/**
+		 * Returns the internal set of motion specifications.
+		 * @return The internal set of motion specifications.
+		 */
+		const std::map<const std::string, vislab::yarp::util::MotionSequence>
+				& getMotionSpecifications();
 
 		/**
 		 * Sets the sensing constants of the robot's hand (cf. Hand#calibrate).

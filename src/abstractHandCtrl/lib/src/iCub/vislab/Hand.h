@@ -19,6 +19,8 @@
 
 #include "HandMetrics.h"
 
+#include <ace/Auto_Event.h>
+
 #include <vislab/util/all.h>
 #include <vislab/yarp/util/all.h>
 #include <vislab/yarp/all.h>
@@ -62,22 +64,24 @@ class Hand {
 	 * @author Christian Wressnegger
 	 * @date 2009
 	 */
-	class RecordingThread: public ::yarp::os::RateThread {
+	class Recorder: public ::yarp::os::RateThread {
+
 		vislab::yarp::util::MotionSequence recording;
 		vislab::yarp::util::MotionSequence curRecording;
-		::yarp::dev::IEncoders* encoders;
+
+		HandMetrics& handMetrics;
 
 	public:
 		/**
 		 * The constructor.
-		 * @param encoders The encoders of the {@link Hand}.
+		 * @param handMetric The metrics object for the {@link Hand}.
 		 * @param period The time interval the motions should be sampled.
 		 */
-		RecordingThread(::yarp::dev::IEncoders* const encoders, int period = 100);
+		Recorder(HandMetrics& handMetric, int period = 100);
 		/**
 		 * The destructor.
 		 */
-		virtual ~RecordingThread();
+		virtual ~Recorder();
 		/**
 		 * @see RateThread#run()
 		 */
@@ -98,12 +102,55 @@ class Hand {
 		vislab::yarp::util::MotionSequence getRecording();
 	};
 
+	class JointMonitor: public ::yarp::os::RateThread {
+
+		Hand& hand;
+		//std::set<int> monitoredJoints;
+		std::set<int> blockedJoints;
+
+		//ACE_Auto_Event motionDoneEvent;
+		::yarp::os::Semaphore lock;
+
+	public:
+		/**
+		 * The constructor.
+		 * @param hand The {@link Hand} to be monitored.
+		 * @param period The time interval the joints should be checked.
+		 */
+		JointMonitor(Hand& hand, int period = 100);
+		/**
+		 * The destructor.
+		 */
+		virtual ~JointMonitor();
+		/**
+		 * @see RateThread#run()
+		 */
+		virtual void run();
+		/**
+		 * @see RateThread#start()
+		 */
+		bool start();
+		/**
+		 * @see RateThread#stop()
+		 */
+    void stop();
+
+		//void monitor(std::set<int> joints, bool b = true);
+
+		const std::set<int>& getBlockedJoints() const;
+
+		void waitMotionDone();
+
+	};
+	friend class JointMonitor;
+
 	/** The speeds of the control before they were changed by this class. */
 	double prevSpeed[HandMetrics::numAxes];
 
 	bool recording;
 	vislab::yarp::util::MotionSequence recordedSequence;
-	RecordingThread* recordingThread;
+	Recorder* recorder;
+	JointMonitor* jointMonitor;
 
 protected:
 
@@ -139,11 +186,11 @@ protected:
 	 */
 	virtual bool motionDone(const std::set<int> joints = COMPLETE_HAND);
 	/**
-	 * Stops the motion of joints that are "blocked". If so those joints will be removed
-	 * from the set of active joints.
-	 * @param activeJoints The set of active joints.
+	 * Stops the motion of joints that are "blocked". If so those joints will be added to
+	 * the set of blocked joints. Stopping motions is done by calling
+	 * @param blockedJoints The set of blocked joints.
 	 */
-	virtual void stopBlockedJoints(std::set<int>& activeJoints);
+	virtual void stopBlockedJoints(std::set<int>* const blockedJoints = NULL);
 
 public:
 	/**
@@ -238,26 +285,40 @@ public:
 	void setVelocity(const ::yarp::sig::Vector& v, const std::set<int> joints = COMPLETE_HAND);
 
 	/**
-	 * Move the specified joints to the given position.
+	 * Move the hand to the given position.
 	 * @param v The position to move to  as {@link ::yarp::sig::Vector} of size 16 (number of joints of the arm).
-	 * @param joints The joints to be moved (default: {@link COMPLETE_HAND}).
 	 * @return Indicates if the command for moving the joints was successfully set.
 	 */
-	bool move(const ::yarp::sig::Vector& v, const std::set<int> joints = COMPLETE_HAND);
+	bool move(const ::yarp::sig::Vector& v, const bool sync = true);
+
+	/**
+	 * Move the specified joints to the given position.
+	 * @param v The position to move to  as {@link ::yarp::sig::Vector} of size 16 (number of joints of the arm).
+	 * @param joints The joints to be moved.
+	 * @return Indicates if the command for moving the joints was successfully set.
+	 */
+	bool move(const ::yarp::sig::Vector& v, const std::set<int> joints, const bool sync = true);
 	/**
 	 * Move the specified joint according to the given motion specification.
 	 * @param m The motion specification to follow.
 	 * @param joint The joint to be moved.
 	 * @return Indicates if the command for moving the joints was successfully set.
 	 */
-	bool move(const vislab::yarp::util::Motion& m, const int joint);
+	bool move(const vislab::yarp::util::Motion& m, const int joint, const bool sync = true);
 	/**
-	 * Move the specified joints according to the given motion specification.
+	 * Move the hand according to the given motion specification.
 	 * @param m The motion specification to follow.
 	 * @param joints The joints to be moved (default: {@link COMPLETE_HAND}).
 	 * @return Indicates if the command for moving the joints was successfully set.
 	 */
-	bool move(const vislab::yarp::util::Motion& m, const std::set<int> joints = COMPLETE_HAND);
+	bool move(const vislab::yarp::util::Motion& m, const bool sync = true);
+	/**
+	 * Move the specified joints according to the given motion specification.
+	 * @param m The motion specification to follow.
+	 * @param joints The joints to be moved.
+	 * @return Indicates if the command for moving the joints was successfully set.
+	 */
+	bool move(const vislab::yarp::util::Motion& m, const std::set<int> joints, const bool sync = true);
 	/**
 	 * Move the specified joint to the given positions (one row after the other).
 	 * @param m The positions to move to as {@link ::yarp::sig::Matrix} with 16 (number of joints of the arm) columns.
@@ -265,14 +326,14 @@ public:
 	 * @param invert Invert the specified motion.
 	 * @return Indicates if the command for moving the joints was successfully set.
 	 */
-	bool move(const ::yarp::sig::Matrix& m, const int joint, const bool invert = false);
+	bool move(const ::yarp::sig::Matrix& m, const int joint, const bool sync = true, const bool invert = false);
 	/**
 	 * Move the hand to the given positions (one row after the other).
 	 * @param m The positions to move to as {@link ::yarp::sig::Matrix} with 16 (number of joints of the arm) columns.
 	 * @param invert Invert the specified motion.
 	 * @return Indicates if the command for moving the joints was successfully set.
 	 */
-	bool move(const ::yarp::sig::Matrix& m, const bool invert = false);
+	bool move(const ::yarp::sig::Matrix& m, const bool sync = true, const bool invert = false);
 	/**
 	 * Move the specified joints to the given positions (one row after the other).
 	 * @param m The positions to move to as {@link ::yarp::sig::Matrix} with 16 (number of joints of the arm) columns.
@@ -280,14 +341,14 @@ public:
 	 * @param invert Invert the specified motion.
 	 * @return Indicates if the command for moving the joints was successfully set.
 	 */
-	bool move(const ::yarp::sig::Matrix& m, const std::set<int> joints, const bool invert = false);
+	bool move(const ::yarp::sig::Matrix& m, const std::set<int> joints, const bool sync = true, const bool invert = false);
 	/**
 	 * Move the hand to the given motion sequence.
 	 * @param seq The motion sequence to follow.
 	 * @param invert Invert the specified motion.
 	 * @return Indicates if the command for moving the joints was successfully set.
 	 */
-	bool move(const vislab::yarp::util::MotionSequence& seq, const bool invert = false);
+	bool move(const vislab::yarp::util::MotionSequence& seq, const bool sync = true, const bool invert = false);
 	/**
 	 * Move the specified joint to the given positions (one row after the other).
 	 * @param seq The motion sequence to follow.
@@ -295,7 +356,7 @@ public:
 	 * @param invert Invert the specified motion.
 	 * @return Indicates if the command for moving the joints was successfully set.
 	 */
-	bool move(const vislab::yarp::util::MotionSequence& seq, const int joint, const bool invert =
+	bool move(const vislab::yarp::util::MotionSequence& seq, const int joint, const bool sync = true, const bool invert =
 			false);
 	/**
 	 * Move the specified joints according to the given motion sequence.
@@ -304,14 +365,21 @@ public:
 	 * @param invert Invert the specified motion.
 	 * @return Indicates if the command for moving the joints was successfully set.
 	 */
-	bool move(const vislab::yarp::util::MotionSequence& seq, const std::set<int> joints,
+	bool move(const vislab::yarp::util::MotionSequence& seq, const std::set<int> joints, const bool sync = true,
 			const bool invert = false);
+
+	/**
+	 * This function allows one to dis-/ enable the
+	 * @param b
+	 */
+	void doControlledMovements(const bool b = true);
 
 	/**
 	 * En-/Disables the recording for the {@link Hand}s movements.
 	 * @param b The indicator to decide if we start or stop the recording.
+	 * @return An indicator for if the state was successfully changed or not.
 	 */
-	void record(const bool b = true);
+	bool record(const bool b = true);
 	/**
 	 * Returns if the movements of the {@link Hand} are currently recorded or not.
 	 * @return If the movements of the {@link Hand} are currently recorded or not.
@@ -331,7 +399,9 @@ public:
 	 * Returns the sampling rate which is used for recording {@link Hand} movements.
 	 * @return The sampling rate which is used for recording {@link Hand} movements.
 	 */
-	double getSamplingRate();
+	int getSamplingRate();
+
+	void setMonitorRate(int t);
 };
 
 }
