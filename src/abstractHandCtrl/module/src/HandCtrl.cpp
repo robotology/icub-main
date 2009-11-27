@@ -50,7 +50,19 @@ bool HandCtrl::DoCommand::execute(const Bottle& params, Bottle& reply) const {
 		g->workerThread->doMotion(motionParameters[0].c_str());
 		reply.addVocab(Vocab::encode("ack"));
 	} else {
-		reply.addString("Incomplete request! No type specified (\"do MOTION_ID\")");
+		const map<const string, MotionSequence>& m = g->workerThread->getMotionSpecifications();
+
+		if (m.empty()) {
+			reply.addString("no motions specified");
+		} else {
+			map<const string, MotionSequence>::const_iterator itr;
+			ostringstream oss;
+			oss << "Available motions: ";
+			for (itr = m.begin(); itr != m.end(); ++itr) {
+				oss << endl << itr->first;
+			}
+			addMultilineString(reply, oss.str().c_str());
+		}
 	}
 	return true;
 }
@@ -61,14 +73,16 @@ bool HandCtrl::BlockCommand::execute(const Bottle& params, Bottle& reply) const 
 	parseListOf<int> (params.get(1).toString(), blockParameters);
 
 	if (blockParameters.empty()) {
-		p->workerThread->setEnable(blockParameters, false);
+		vector<int> disabledJoints;
+		p->workerThread->getDisabledJoints(disabledJoints);
+
 		ostringstream ss;
-		if (blockParameters.empty()) {
+		if (disabledJoints.empty()) {
 			ss << "no blocked joints";
 		} else {
-			for (unsigned int i = 0; i < blockParameters.size(); i++) {
-				ss << blockParameters[i];
-				if (i < blockParameters.size() - 1) {
+			for (unsigned int i = 0; i < disabledJoints.size(); i++) {
+				ss << disabledJoints[i];
+				if (i < disabledJoints.size() - 1) {
 					ss << ",";
 				}
 			}
@@ -112,6 +126,8 @@ bool HandCtrl::configure(ResourceFinder &rf) {
 	addModuleOption(new Option("sampling rate", str, Option::NUMERIC, Value(100)));
 	str = "Dis-/Enables the direct control of the arm";
 	addModuleOption(new Option("direct control", str, Option::ON_OFF, Option::OFF));
+	str = "The rate for monitoring the hand movements [ms].";
+	addModuleOption(new Option("monitor rate", str, Option::NUMERIC, Value(100)));
 
 	str
 			= "Input port providing the target configuration for the hand's joints as Vector(16) (c.f. http://eris.liralab.it/wiki/ICub_joints)";
@@ -202,8 +218,10 @@ void HandCtrl::WorkerThread::run() {
 
 		if (moduleOptions["recording"].getValue().asString() == "on") {
 			if (!hand->isRecording()) {
-				hand->record(true);
-				hand->setSamplingRate(moduleOptions["sampling rate"].getValue().asDouble());
+				hand->setSamplingRate(moduleOptions["sampling rate"].getValue().asInt());
+				if (!hand->record(true)) {
+					cerr << "Unable to start recorder" << endl;
+				}
 			}
 		} else {
 			if (hand->isRecording()) {
@@ -216,6 +234,8 @@ void HandCtrl::WorkerThread::run() {
 			}
 		}
 
+		hand->setMonitorRate(moduleOptions["monitor rate"].getValue().asInt());
+
 		if (moduleOptions["direct control"].getValue().asString() == "on") {
 			Vector* v = q->read(false);
 			if (v != NULL) {
@@ -226,7 +246,7 @@ void HandCtrl::WorkerThread::run() {
 					position[offset + i] = (*v)[i];
 				}
 				printVector(position);
-				hand->move(position);
+				hand->move(position, false);
 			}
 		} else {
 			mutex.wait();
@@ -239,7 +259,7 @@ void HandCtrl::WorkerThread::run() {
 				motionQueue.pop();
 				mutex.post();
 
-				cout << "Motion Idtype: " << cmd << endl;
+				cout << "Motion Id: " << cmd << endl;
 
 				if (motions.find(cmd.c_str()) != motions.end()) {
 					MotionSequence& sequence = motions[cmd.c_str()];
@@ -247,8 +267,6 @@ void HandCtrl::WorkerThread::run() {
 					// Decide on which joints need to be rolled back
 					hand->getMetrics().snapshot();
 					Vector position = hand->getMetrics().getPosition();
-					cout << "Position: ";
-					printVector(position);
 
 					set<int> joints;
 					set<int>::const_iterator itr;
