@@ -28,6 +28,7 @@
   <name>mobileEyeCoordServer</name>
   <parameters> --name /iha/mobeyeserver</parameters>
   <node>kaspar2</node>
+  <stdio>icub12</stdio>
   <tag>mcs</tag>
 </module>
 <module>
@@ -46,14 +47,14 @@
 </module>
 <module>
   <name>ihaNewIhaFaceDetect</name>
-  <parameters>--name /iha/sfd --file /usr/local/src/robot/iCub/app/ihaNew/conf/ihaSelfFaceDetect.ini --outout_image FALSE</parameters>
+  <parameters>--name /iha/sfd --file /usr/local/src/robot/iCub/app/ihaNew/conf/ihaSelfFaceDetect.ini --output_image FALSE</parameters>
   <node>icub12</node>
   <stdio>icub12</stdio>
   <tag>selffacedetect</tag>
 </module>
 <module>
   <name>ihaNewMobileEye</name>
-  <parameters>--name /iha/me --file /usr/local/src/robot/iCub/app/ihaNew/conf/ihaMobileEye.ini</parameters>
+  <parameters>--name /iha/me --file /usr/local/src/robot/iCub/app/ihaNew/conf/ihaMobileEye.ini --NTSC</parameters>
   <node>icub12</node>
   <stdio>icub12</stdio>
   <tag>mobileeye</tag>
@@ -81,14 +82,20 @@
   <protocol>tcp</protocol>
 </connection>
 <connection>
+  <output>/iha/gdv</output>
+  <input>/iha/sfd/facedetect:in</input>
+  <protocol>tcp</protocol>
+</connection>
+<connection>
   <output>/iha/fd/facedetect:out</output>
   <input>/view/facedetect</input>
-  <protocol>tcp</protocol>
+  <!--why use udp? that's what is used in the icub camera app manager-->
+  <protocol>udp</protocol>
 </connection>
 <connection>
   <output>/iha/me/mobileeye:out</output>
   <input>/view/gaze</input>
-  <protocol>tcp</protocol>
+  <protocol>udp</protocol>
 </connection>
 <connection>
   <output>/iha/gdv</output>
