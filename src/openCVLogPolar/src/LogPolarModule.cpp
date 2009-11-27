@@ -314,10 +314,12 @@ bool LogPolarModule::updateModule() {
 		printf("xCog %d, yCog%d",xCog, yCog);
 		Bottle& outBot1=portCOG.prepare();
 		Bottle bOptions;
-		bOptions.addInt(xCog);
-		bOptions.addInt(yCog);
+		outBot1.addInt(xCog);
+		outBot1.addInt(yCog);
+		outBot1.addInt(xCog);
+		outBot1.addInt(yCog);
 		outBot1.fromString("cog:");
-		outBot1.addList()=bOptions;
+		//outBot1.addList()=bOptions;
 		portCOG.writeStrict();
 		bOptions.clear();
 	}
