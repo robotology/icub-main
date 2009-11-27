@@ -5,7 +5,7 @@
 </dependencies>
 <module>
   <name>ihaNewSensorMotorInterface</name>
-  <parameters>--name /iha/sm --file /usr/local/src/robot/iCub/app/ihaNew/conf/ihaSensorMotorInterface.ini --connect_to_image /icub/cam/left --connect_to_face_coords /iha/fd/facedetect:coords --connect_to_soundsensor /iha/sound/sndsensor:out --connect_to_encoders /iha/controller/encoders:out --gaze_input FALSE</parameters>
+  <parameters>--name /iha/sm --file /usr/local/src/robot/iCub/app/ihaNew/conf/ihaSensorMotorInterface.ini --connect_to_image /icub/cam/left --connect_to_face_coords /iha/fd/facedetect:coords --connect_to_gaze_coords /iha/me/mobileeye:coords --connect_to_soundsensor /iha/sound/sndsensor:out --connect_to_encoders /iha/controller/encoders:out --gaze_input TRUE</parameters>
   <node>icub3</node>
   <stdio>icub12</stdio>
   <tag>smi</tag>
@@ -131,5 +131,4 @@
   <protocol>tcp</protocol>
 </connection>
 </application>
-
 
