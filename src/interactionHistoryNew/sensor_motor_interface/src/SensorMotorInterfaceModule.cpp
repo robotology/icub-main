@@ -284,7 +284,7 @@ bool SensorMotorInterfaceModule::open(Searchable& config){
     if(use_gaze) {
         if (config.check("connect_to_gaze_coords")) {
             if (connectToParam(config,"connect_to_gaze_coords",gazeCoordsPortName.c_str(), 0.25, this)) {
-                IhaDebug::pmesg(DBGL_INFO,"Connected to Face Coords\n");
+                IhaDebug::pmesg(DBGL_INFO,"Connected to Gaze Coords\n");
             } else {
                 ok = false;
             }

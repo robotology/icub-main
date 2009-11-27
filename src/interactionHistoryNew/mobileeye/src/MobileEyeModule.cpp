@@ -35,7 +35,7 @@ bool MobileEyeModule::open(Searchable& config)    {
     imgOutPort.open(getName("mobileeye:out"));
 	gazePort.open(getName("mobileeye:gaze")); 
     facePort.open(getName("mobileeye:face"));
-    coordsPort.open(getName("mobileeye:coordsout"));
+    coordsPort.open(getName("mobileeye:coords"));
     //coordsPort.setStrict(true);
     oldSizeX = -1;
     oldSizeY = -1;

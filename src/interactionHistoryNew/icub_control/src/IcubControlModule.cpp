@@ -177,22 +177,10 @@ bool IcubControlModule::open(Searchable& config){
     // create names of ports
     ConstString commandPortName = getName("action:cmd");
     ConstString encodersPortName = getName("encoders:out");
-    //ConstString expressionRawInPortName = getName("expressions:in");
 
 	// open the ports
 	commandPort.open(commandPortName.c_str());
 	encodersPort.open(encodersPortName.c_str());
-	//expressionRawInPort.open(expressionRawInPortName.c_str());
-
-	// if required we can connect to the expression (raw) port
-	//if (config.check("connect_to_expression")) {
-	//	if (connectToParam(config,"connect_to_expression",expressionRawInPortName.c_str(), 0.25, this,true)) {
-    //        IhaDebug::pmesg(DBGL_INFO,(char *)"Connected to Expression\n");
-    //    } else {
-    //        ok = false;
-    //    }
-	//}
-
 
 	//------------------------------------------------------
     // Read parameters
@@ -764,38 +752,6 @@ bool IcubControlModule::sendAction(int act) {
 	IhaDebug::pmesg(DBGL_STATUS2,(char *)"sendAction %d complete. %s\n",act,retval?"":"FAILED");
 	return retval;
 }
-
-// bool IcubControlModule::sendExpression(int act) {
-//     bool retval=true;
-//     // get the expression
-//     //if (iCubActions.expressions.find(act)) {
-//         Bottle bot;
-//         char hex_str[8]="";
-//         sprintf(hex_str,"%s",iCubActions.expressions[act].part1.c_str());
-//         bot.add(hex_str);
-//         fprintf(stderr,"Sending %s\n",hex_str);
-//         expressionRawInPort.write(bot);
-//         bot.clear();
-//         sprintf(hex_str,"%s",iCubActions.expressions[act].part2.c_str());
-//         bot.add(hex_str);
-//         fprintf(stderr,"Sending %s\n",hex_str);
-//         expressionRawInPort.write(bot);
-//         bot.clear();
-//         sprintf(hex_str,"%s",iCubActions.expressions[act].part3.c_str());
-//         bot.add(hex_str);
-//         fprintf(stderr,"Sending %s\n",hex_str);
-//         expressionRawInPort.write(bot);
-//         bot.clear();
-//         sprintf(hex_str,"%s",iCubActions.expressions[act].part4.c_str());
-//         bot.add(hex_str);
-//         fprintf(stderr,"Sending %s\n",hex_str);
-//         expressionRawInPort.write(bot);
-
-//     //} else {
-//     //    IhaDebug::pmesg(DBGL_STATUS1, "Expression %d not found\n",act);
-//     //}
-//     return retval;
-// }
 
 double** IcubControlModule::getEncoderReadings() {
     for (int part=0;part<numParts;part++) {
