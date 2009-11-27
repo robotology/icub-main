@@ -50,6 +50,10 @@ private:
 	*/
     Port cmdPort;
 	/**
+	* port that send a bottle that contains the cog of the returned image
+	*/
+    BufferedPort<Bottle> portCOG;
+	/**
 	* exexution step counter
 	*/
     int ct;

@@ -8,17 +8,58 @@
 */
 #define NOSIMULATION
 
+static void cogCalculate(ImageOf<PixelMonoSigned> image, int& xRes, int&yRes ){
+	int xSize=image.width();
+	int ySize=image.height();
+	double cogx=0,cogy=0;
+	double toti;
+
+	for (int x=0;x<xSize;x++){
+		for(int y=0;y<ySize;y++){
+			toti+=image(x,y);
+			cogx+=x*image(x,y);
+			cogy+=y*image(x,y);
+		}
+	}
+
+	xRes=cogx/toti;
+	yRes=cogy/toti;
+
+}
+
+static void cogCalculate(IplImage image, int& xRes, int&yRes ){
+	int xSize=image.width;
+	int ySize=image.height;
+	double cogx=0,cogy=0;
+	double toti=0;
+	uchar* data=(uchar*)(image.imageData);
+	int step       = image.widthStep/sizeof(uchar);
+
+	for (int x=0;x<xSize;x++){
+		for(int y=0;y<ySize;y++){
+			toti+=data[x+y*step];
+			cogx+=x*data[x+y*step];
+			cogy+=y*data[x+y*step];
+		}
+	}
+	
+	xRes=cogx/toti;
+	yRes=cogy/toti;
+
+}
+
 /**
 *function that opens the module
 */
 bool LogPolarModule::open(Searchable& config) {
     ct = 0;
-    port.open(getName("in"));
+	port.open(getName("image:i"));
 	//ConstString portName2 = options.check("name",Value("/worker2")).asString();
-	port2.open(getName("out"));
-	port3.open(getName("outInverse"));
-	port4.open(getName("outSimulation"));
-    cmdPort.open(getName("cmd")); // optional command port
+	port2.open(getName("image:o"));
+	port3.open(getName("inverse:o"));
+	port4.open(getName("simulation:o"));
+	portCOG.open(getName("cog:o"));
+	cmdPort.open(getName("cmd:i")); // optional command port
     attach(cmdPort); // cmdPort will work just like terminal
 	
     return true;
@@ -32,6 +73,7 @@ bool LogPolarModule::interruptModule() {
 	port2.interrupt();
 	port3.interrupt();
 	port4.interrupt();
+	portCOG.interrupt();
 	cmdPort.interrupt();
     return true;
 }
@@ -42,6 +84,7 @@ bool LogPolarModule::close(){
 	port2.close();
 	port3.close();
 	port4.close();
+	portCOG.close();
 	cmdPort.close();
     return true;
 }
@@ -102,7 +145,7 @@ bool LogPolarModule::updateModule() {
     printf(" %d \n",img->width());
 	printf(" %d \n",img->height());
 	if(mode==0){
-
+		printf("SIMULATION \n");
 		//-------------drawing of simulated blobs
 		// add a blue circle
 		ct = 320/2;
@@ -123,9 +166,10 @@ bool LogPolarModule::updateModule() {
 		port4.write();
 	}
 	else if(mode==1){
+
 		if (img==NULL) 
 			return true;
-		printf("FORWARD \n");
+		//printf("FORWARD \n");
 		
 		cvCopy(img->getIplImage(),cvImage2);
 		cvCvtColor(cvImage2,cvImage,CV_RGB2BGR);
@@ -239,19 +283,6 @@ bool LogPolarModule::updateModule() {
 		//cvCvtColor(dst,dstColor, CV_GRAY2RGB);
 		//delete dst;
 
-		// add a blue circle
-		ct = 320/2;
-		PixelRgb blue(0,0,255);
-		PixelRgb red(255,0,0);
-		PixelRgb green(0,255,0);
-		PixelRgb yellow(255,255,0);
-		PixelRgb black(0,0,0);
-		addRectangle(*image2,black,0,0,320,240);
-		addCircle(*image2,blue,ct,50,15);
-		addCircle(*image2,red,ct-50,100,20);
-		addCircle(*image2,green,ct+50,150,25);
-		addCircle(*image2,yellow,ct,200,10);
-		
 		
 		//----------conversion to YARP COLOUR-----------------
 		
@@ -277,6 +308,18 @@ bool LogPolarModule::updateModule() {
 		//port2.prepare() = *img;	
 		port3.prepare() = *yarpReturnImagePointer;		
 		port3.write();
+		//------
+		int xCog,yCog;
+		cogCalculate(*dstColor,xCog,yCog);
+		printf("xCog %d, yCog%d",xCog, yCog);
+		Bottle& outBot1=portCOG.prepare();
+		Bottle bOptions;
+		bOptions.addInt(xCog);
+		bOptions.addInt(yCog);
+		outBot1.fromString("cog:");
+		outBot1.addList()=bOptions;
+		portCOG.writeStrict();
+		bOptions.clear();
 	}
 	else if(mode==2){
 		if (img==NULL) 

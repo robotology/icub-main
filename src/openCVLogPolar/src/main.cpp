@@ -34,18 +34,18 @@ Here is a  comprehensive list of the parameters you can pass to the module.
 none
 
 \section portsc_sec Ports Created
-<name>/in
-<name>/out
-<name>/outSimulation
-<name>/outInverse
+<name>/image:i
+<name>/image:o
+<name>/simulation:o
+<name>/inverse:o
 
 Output ports:
-- <name>/out: streams out a yarp::sig::ImageOf<PixelRgb> which is the result of the processing (either FORWARD or REVERSE)
-- <name>/outInverse:  streams out a yarp::sig::Image<PixelRgb> which is the reverse logPolar of the image in out (only FORWARD mode)
-- <name>/outSimulation:  streams out a yarp::sig::Image<PixelRgb> which is composed of coloured circles
+- <name>/image:o: streams out a yarp::sig::ImageOf<PixelRgb> which is the result of the processing (either FORWARD or REVERSE)
+- <name>/inverse:o:  streams out a yarp::sig::Image<PixelRgb> which is the reverse logPolar of the image in out (only FORWARD mode)
+- <name>/simulation:o:  streams out a yarp::sig::Image<PixelRgb> which is composed of coloured circles
 
 Input ports:
-- <name>/in: input ports which takes as input a yarp::sig::ImageOf<PixelRgb>
+- <name>/image:i: input ports which takes as input a yarp::sig::ImageOf<PixelRgb>
 
 \section in_files_sec Input Data Files
 none
