@@ -326,7 +326,7 @@ bool LogPolarModule::updateModule() {
 	else if(mode==2){
 		if (img==NULL) 
 			return true;
-		printf("INVERSE \n");
+		//printf("INVERSE \n");
 		int xSize=img->width(), ySize=img->height(), planes=0;
 		if(xSize!=ySize){
 			//image needs a crop or 
@@ -476,6 +476,20 @@ bool LogPolarModule::updateModule() {
 		//port2.prepare() = *img;	
 		//port3.prepare() = *yarpReturnImagePointer;		
 		//port3.write();
+		//-----------------
+		int xCog,yCog;
+		cogCalculate(*dstColor,xCog,yCog);
+		printf("xCog %d, yCog%d",xCog, yCog);
+		Bottle& outBot1=portCOG.prepare();
+		Bottle bOptions;
+		outBot1.addInt(xCog);
+		outBot1.addInt(yCog);
+		outBot1.addInt(xCog);
+		outBot1.addInt(yCog);
+		outBot1.fromString("cog:");
+		//outBot1.addList()=bOptions;
+		portCOG.writeStrict();
+		bOptions.clear();
 	}
 	//delete yarpReturnImagePointer;
 
