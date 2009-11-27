@@ -538,8 +538,20 @@ bool ServerCartesianController::respond(const Bottle &command, Bottle &reply)
 /************************************************************************/
 void ServerCartesianController::stopLimbVel()
 {
-    for (int i=0; i<numDrv; i++)
-        (*RES_VEL(lVel))[i]->stop();
+    int j=0;
+    int k=0;
+
+    for (unsigned int i=0; i<chain->getN(); i++)
+    {
+        if (!(*chain)[i].isBlocked())
+            (*RES_VEL(lVel))[j]->stop((*RES_RMP(lRmp))[j][k]);
+
+        if (++k>=(*RES_JNT(lJnt))[j])
+        {
+            j++;
+            k=0;
+        }
+    }
 }
 
 
