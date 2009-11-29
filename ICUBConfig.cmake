@@ -1,3 +1,7 @@
+# Copyright: (C) 2009 RobotCub Consortium
+# Authors: Paul Fitzpatrick, Giorgio Metta, Lorenzo Natale
+# CopyPolicy: Released under the terms of the GNU GPL v2.0.
+
 # If ICUB_FOUND is set, we have already done all this
 IF (NOT ICUB_FOUND)
 
