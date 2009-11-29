@@ -1,5 +1,5 @@
 /* 
- * Copyright (C) 2009 RobotCub Consortium, European Commission FP6 Project IST-004370
+ * Copyright (C) 2006 RobotCub Consortium, European Commission FP6 Project IST-004370
  * Authors: Lorenzo Natale and Francesco Nori
  * Permission is granted to copy, distribute, and/or modify this program
  * under the terms of the GNU General Public License, version 2 or any
