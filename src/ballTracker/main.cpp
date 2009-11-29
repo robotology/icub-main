@@ -21,7 +21,6 @@
 #include <yarp/sig/ImageFile.h>
 #include <yarp/sig/ImageDraw.h>
 #include <yarp/sig/Vector.h>
-#include <yarp/String.h>
 #include <yarp/os/Property.h>
 #include <yarp/os/Time.h>
 
@@ -633,16 +632,16 @@ void namePorts(int argc, char *argv[], BufferedPort<ImageOf<PixelRgb> > & in, Bu
     }
 
 	ConstString name = p.check("name",Value(DEFAULT_NAME)).asString();
-	String inImageName = name.c_str();
+	std::string inImageName = name.c_str();
 	inImageName += "/img/i";
 
-	String outImageName = name.c_str();
+	std::string outImageName = name.c_str();
 	outImageName += "/img/o";
 
-	String posOutName = name.c_str();
+	std::string posOutName = name.c_str();
 	posOutName += "/pos/o";
 
-	String outImageMonoName = name.c_str();
+	std::string outImageMonoName = name.c_str();
 	outImageMonoName += "/img/mono/o";
 
     in.open(inImageName.c_str());
@@ -657,7 +656,7 @@ void nameSlavePort(int argc, char *argv[], BufferedPort<Vector> & inSlave)
     p.fromCommand(argc,argv);
 
 	ConstString name = p.check("name",Value(DEFAULT_NAME)).asString();
-	String inPosSlave = name.c_str();
+	std::string inPosSlave = name.c_str();
 	inPosSlave += "/pos/slave/i";
 
     inSlave.open(inPosSlave.c_str());
@@ -1106,7 +1105,7 @@ bool findCircles(ImageOf<PixelRgb> &inImg, BufferedPort<ImageOf<PixelMono> > &ou
 	{
 		for (i=0; i<width; i++)
 		{
-			distance = sqrt((i-x)*(i-x)+(j-y)*(j-y));
+			distance = sqrt(double((i-x)*(i-x))+double((j-y)*(j-y)));
 			if (distance >= radius)
 			{
 				colorImg[3*(j*width+i)+0] = (3*colorImg[3*(j*width+i)+0]+255)/4;

@@ -154,8 +154,8 @@ ENDIF (ARTOOLKITPLUS_FOUND)
   # removed to avoid prolification of cmake conditionals -- Lorenzo Natale
   #SET (ICUB_TEST "$ENV{ICUB_TEST}")
   #IF (ICUB_TEST)
-  #  ADD_SUBDIRECTORY(ballTracker)
-  #  ADD_SUBDIRECTORY(colorSegmentation)
+  ADD_SUBDIRECTORY(ballTracker)
+  ADD_SUBDIRECTORY(colorSegmentation)
   #ENDIF (ICUB_TEST)
   
   # libraries -- adding them last to test if CMake reorders correctly

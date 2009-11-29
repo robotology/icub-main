@@ -340,7 +340,7 @@ void CircularHT::clearNeighbours(int x,int y, int radius) {
 		int indexR = (r-radiusMin)/radiusInc;
 		for(int i = y1; i < y2; i++) {
 			for(int j = x1; j < x2; j++) {	      	     
-				if(pow (j - x, 2) + pow (i - y, 2) < halfSquared) {
+				if(pow (j - x, 2.0) + pow (i - y, 2.0) < halfSquared) {
 					houghValues[indexR][i][j]= 0;
 				}
 			}
