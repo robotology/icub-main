@@ -147,11 +147,12 @@ ENDIF (ARTOOLKITPLUS_FOUND)
   ADD_SUBDIRECTORY(gui)
   
   # some less tested modules, only compiled if ICUB_TEST is set in environment
-  SET (ICUB_TEST "$ENV{ICUB_TEST}")
-  IF (ICUB_TEST)
-    ADD_SUBDIRECTORY(ballTracker)
-    ADD_SUBDIRECTORY(colorSegmentation)
-  ENDIF (ICUB_TEST)
+  # removed to avoid prolification of cmake conditionals -- Lorenzo Natale
+  #SET (ICUB_TEST "$ENV{ICUB_TEST}")
+  #IF (ICUB_TEST)
+  #  ADD_SUBDIRECTORY(ballTracker)
+  #  ADD_SUBDIRECTORY(colorSegmentation)
+  #ENDIF (ICUB_TEST)
   
   # libraries -- adding them last to test if CMake reorders correctly
   ADD_SUBDIRECTORY(rfwr)
