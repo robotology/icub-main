@@ -11,7 +11,8 @@ ELSE(WIN32)
 ENDIF(WIN32)
 
 # Configurable install variables, use CMAKE_INSTALL_PREFIX to install into target directory
-SET(CMAKE_INSTALL_PREFIX "." CACHE PATH "Root install path" FORCE)
+# removed conflicts with install prefix set by the main cmake file
+# SET(CMAKE_INSTALL_PREFIX "." CACHE PATH "Root install path" FORCE)
 
 #SET(YARP_DIR "$ENV{YARP_ROOT}" CACHE LOCATION "where is yarp?")
 FIND_PACKAGE(YARP)
