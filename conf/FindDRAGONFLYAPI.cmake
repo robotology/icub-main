@@ -1,3 +1,7 @@
+# Copyright: (C) 2009 RobotCub Consortium
+# Author: Lorenzo Natale
+# CopyPolicy: Released under the terms of the GNU GPL v2.0.
+
 # Created:
 # DRAGONFLYAPI_INC_DIRS   - Directories to include to use dragonfly API
 # DRAGONFLYAPI_LIB        - Default library to link against to use the dragonfly API

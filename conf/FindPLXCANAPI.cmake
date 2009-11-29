@@ -1,3 +1,7 @@
+# Copyright: (C) 2009 RobotCub Consortium
+# Authors: Alexandre Bernardino, Paul Fitzpatrick, Lorenzo Natale
+# CopyPolicy: Released under the terms of the GNU GPL v2.0.
+
 # Created:
 # PLXCANAPI_INC_DIRS   - Directories to include to use esdcan api
 # PLXCANAPI_LIB        - Default library to link against to use the esdcan API
