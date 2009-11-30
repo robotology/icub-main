@@ -597,7 +597,9 @@ static gint expose_CB (GtkWidget *widget, GdkEventExpose *event, gpointer data)
 					}*/
 				}
 				else if(wModule->maxSaliencyBlob_flag){
+					printf("Max Saliency Blob displayed... \n");
 					wModule->drawAllBlobs(false);
+					printf("Collections of blobs calculated... \n");
 					wModule->salience->DrawMaxSaliencyBlob(*wModule->maxSalienceBlob_img,wModule->max_tag,*wModule->tagged);
 					ippiCopy_8u_C1R(wModule->maxSalienceBlob_img->getPixelAddress(0,0),320,_outputImage->getPixelAddress(0,0),320,srcsize);
 					conversion=true;
