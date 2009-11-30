@@ -52,7 +52,7 @@ unsigned int cc;
       vf[cc] = gsl_vector_get( V, cc);
 }
 
-void gsl_print_vector( gsl_vector* M, char *name)
+void gsl_print_vector( gsl_vector* M, const char *name)
 {
 unsigned int j;
      
@@ -64,7 +64,7 @@ printf("\n\n");
 
 }
 
-void gsl_print_matrix( gsl_matrix* M, char *name)
+void gsl_print_matrix( gsl_matrix* M, const char *name)
 {
 unsigned int i,j;
      
