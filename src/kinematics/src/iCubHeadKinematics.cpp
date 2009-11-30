@@ -171,8 +171,8 @@ int iCubHeadKinematics::invkin_eyes(const double *targetpoint, const double *nec
 	  auxneckposition[cnt] = neckposition[cnt]*M_PI/180;
 
 	
-	RobMatrix T34 = *Rl->frametransf( 3, 0);
-	RobMatrix T45 = *Rl->frametransf( 4, 0);
+	RobMatrix T34 = Rl->frametransf( 3, 0);
+	RobMatrix T45 = Rl->frametransf( 4, 0);
 	RobMatrix T35 = T34 * T45;
 	
 	
@@ -182,7 +182,9 @@ int iCubHeadKinematics::invkin_eyes(const double *targetpoint, const double *nec
 
 	RobMatrix T03 = Rl->fk(auxneckposition,3);
 
-	gsl_matrix *T03inv = RobMatrix2Gsl( &T03.Inv() );
+	//fix possible bug "taking address of temporary variable" -- Lorenzo N.
+	RobMatrix tmpMatrix = T03.Inv();
+	gsl_matrix *T03inv = RobMatrix2Gsl( &tmpMatrix );
 
 	gsl_print_matrix( T03inv, "T03inv");
 
@@ -225,20 +227,20 @@ int iCubHeadKinematics::opticalaxisdirection(const double *neckposition, double 
 	  auxneckposition[cnt] = neckposition[cnt]*M_PI/180;
 
     cout << "j0" << auxneckposition[0] << "j1" << auxneckposition[1] << "j2" << auxneckposition[2] << "j3" << auxneckposition[3] << endl;
+    
+    RobMatrix T05 = Rl->fk( auxneckposition );
+    T05.print();
+	double d = sqrt( T05.M[1][0] * T05.M[1][0] +  T05.M[1][1] * T05.M[1][1]);
 
-	RobMatrix *T05 = &Rl->fk( auxneckposition );
-    T05->print();
-	double d = sqrt( T05->M[1][0] * T05->M[1][0] +  T05->M[1][1] * T05->M[1][1]);
-
-	gaze[0] = atan2( -T05->M[1][2], d);
+	gaze[0] = atan2( -T05.M[1][2], d);
 
 	//check if gaze[0] is around 90 todo
 
 	double f = cos( gaze[0] );
 
-	gaze[1] = atan2( T05->M[0][2]/f, T05->M[2][2]/f);
+	gaze[1] = atan2( T05.M[0][2]/f, T05.M[2][2]/f);
 
-	gaze[2] = atan2( T05->M[1][0]/f, T05->M[1][1]/f);
+	gaze[2] = atan2( T05.M[1][0]/f, T05.M[1][1]/f);
 
 	// angle conversion
 	gaze[0] = gaze[0] * 180/M_PI;	gaze[1] = gaze[1] * 180/M_PI;    gaze[2] = gaze[2] * 180/M_PI;
@@ -294,8 +296,8 @@ RobMatrix   iCubHeadKinematics::fkine(const double *neckposition, char eye)
 int iCubHeadKinematics::invkin_eyes2(const double *direction, const double *eyeposition, double *eyes)
 {
 
-	RobMatrix T34 = *Rl->frametransf( 3, eyeposition[0]);
-	RobMatrix T45 = *Rl->frametransf( 4, eyeposition[1]);
+	RobMatrix T34 = Rl->frametransf( 3, eyeposition[0]);
+	RobMatrix T45 = Rl->frametransf( 4, eyeposition[1]);
 	RobMatrix T35 = T34 * T45;
 
 	double dirmod;

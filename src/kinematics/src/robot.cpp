@@ -271,9 +271,8 @@ int ret;
 	return ret;
 }
 
-RobMatrix * Robot::frametransf(int joint, double value)
+RobMatrix Robot::frametransf(int joint, double value)
 {
-	RobMatrix *M = &((m_Joints+joint)->V(value));
-	
-	return M;
+  //	RobMatrix *M = &((m_Joints+joint)->V(value));
+	return ((m_Joints+joint)->V(value));
 }

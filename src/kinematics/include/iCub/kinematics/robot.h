@@ -17,7 +17,7 @@ class Robot
 {
 	/* TODO (#1#): adicionar a ferramenta a classe robot */
 	public:
-		RobMatrix * frametransf(int joint, double value);
+		RobMatrix frametransf(int joint, double value);
 		// class constructor
 		Robot(int njoints);
 		/**
