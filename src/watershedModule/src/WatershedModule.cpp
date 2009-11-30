@@ -650,7 +650,7 @@ static gint expose_CB (GtkWidget *widget, GdkEventExpose *event, gpointer data)
 					//the second transforms the 4-channel image into colorImage for yarp
 					ippiCopy_8u_P3C3R(im_tmp,psb,wModule->image_out->getPixelAddress(0,0),width*3,srcsize);
 					ippiFree(im_out);
-					ippiFree(im_tmp); //throws exception for heap corruption if done for every position of the vector
+					//ippiFree(im_tmp); //throws exception for heap corruption if done for every position of the vector
 					//ippiFree(im_tmp[1]);
 					//ippiFree(im_tmp[2]);
 				}

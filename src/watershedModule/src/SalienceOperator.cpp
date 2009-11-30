@@ -691,7 +691,7 @@ void SalienceOperator::maxSalienceBlob(ImageOf<PixelInt>& tagged, int max_tag, Y
 	int ycart;
 	
 	for (int m = 1; m < max_tag; m++){
-		printf("blob number %d:",m);
+		//printf("blob number %d:",m);
 		if (m_boxes[m].valid){
 			//printf(" valid ---> %d /n", m_boxes[m].salienceTotal);
 			if (m_boxes[m].salienceTotal>m_boxes[max].salienceTotal)
