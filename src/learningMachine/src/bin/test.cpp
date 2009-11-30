@@ -193,16 +193,17 @@ private:
     int frequency; // in Hz
 
     void registerPort(Contactable& port, std::string name) {
-        if (port.open(name.c_str()) != true) {
-            std::string msg("could not register port " + name);
-            exit(1);
+        if(port.open(name.c_str()) != true) {
+            std::string msg("could not register port ");
+            msg+=name;
+            throw std::runtime_error(msg);
         }
     }
 
     void registerAllPorts() {
-        this->registerPort(this->train_out, "/" + this->portPrefix + "/train:o");
+        this->registerPort(this->train_out, this->portPrefix + "/train:o");
         this->train_out.setStrict();
-        this->registerPort(this->predict_inout, "/" + this->portPrefix + "/predict:io");
+        this->registerPort(this->predict_inout, this->portPrefix + "/predict:io");
     }
 
     void unregisterAllPorts() {
@@ -216,7 +217,7 @@ private:
     }
 
 public:
-    MachineLearnerTestModule(std::string pp = "test") : portPrefix(pp) {
+    MachineLearnerTestModule(std::string pp = "/lm/test") : portPrefix(pp) {
 
     }
 
