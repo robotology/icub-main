@@ -603,6 +603,7 @@ static gint expose_CB (GtkWidget *widget, GdkEventExpose *event, gpointer data)
 					wModule->salience->DrawMaxSaliencyBlob(*wModule->maxSalienceBlob_img,wModule->max_tag,*wModule->tagged);
 					ippiCopy_8u_C1R(wModule->maxSalienceBlob_img->getPixelAddress(0,0),320,_outputImage->getPixelAddress(0,0),320,srcsize);
 					conversion=true;
+                    printf("ippiCopy successfully executed... \n");
 				}
 				else if(wModule->contrastLP_flag){
 					wModule->drawAllBlobs(false);
@@ -638,19 +639,24 @@ static gint expose_CB (GtkWidget *widget, GdkEventExpose *event, gpointer data)
 				//-------
 				
 				if(conversion){
-					int psb,width=320,height=240;
+                    printf("conversion initialised ...  \n");					
+                    int psb,width=320,height=240;
 					Ipp8u* im_out = ippiMalloc_8u_C1(width,height,&psb);
-					Ipp8u* im_tmp[3];
+					Ipp8u* im_tmp0 = ippiMalloc_8u_C1(width,height,&psb);
+                    Ipp8u* im_tmp1= ippiMalloc_8u_C1(width,height,&psb);
+                    Ipp8u* im_tmp2 = ippiMalloc_8u_C1(width,height,&psb);
 					//two copies in order to have 2 conversions
 					//the first transform the yarp mono into a 4-channel image
 					ippiCopy_8u_C1R(_outputImage->getPixelAddress(0,0), width,im_out,psb,srcsize);
-					im_tmp[0]=im_out;
-					im_tmp[1]=im_out;
-					im_tmp[2]=im_out;
+					im_tmp0=im_out;
+					im_tmp1=im_out;
+					im_tmp2=im_out;
+                    Ipp8u* im_tmp[3]={im_tmp0,im_tmp1,im_tmp2};
 					//the second transforms the 4-channel image into colorImage for yarp
 					ippiCopy_8u_P3C3R(im_tmp,psb,wModule->image_out->getPixelAddress(0,0),width*3,srcsize);
+                    printf("successfully copied to a 3 channel image ...  \n");	
 					ippiFree(im_out);
-					ippiFree(im_tmp[0]); //throws exception for heap corruption if done for every position of the vector
+					ippiFree(im_tmp0); //throws exception for heap corruption if done for every position of the vector
 					//ippiFree(im_tmp[1]);
 					//ippiFree(im_tmp[2]);
 				}
@@ -658,6 +664,7 @@ static gint expose_CB (GtkWidget *widget, GdkEventExpose *event, gpointer data)
 					ippiCopy_8u_C3R(_outputImage3->getPixelAddress(0,0),320*3,wModule->image_out->getPixelAddress(0,0),320*3,srcsize);
 				
 				//----------
+                printf("yarp image2pixbuf /n");
 				_semaphore.wait();
 				bool result=yarpImage2Pixbuf(wModule->image_out, frame);
 				//bool result=yarpImage2Pixbuf(&_inputImg, frame);
