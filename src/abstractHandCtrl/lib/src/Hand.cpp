@@ -119,7 +119,7 @@ void Hand::JointMonitor::run() {
 
 //void Hand::JointMonitor::monitor(std::set<int> joints, bool b) {
 //	if (isRunning()) {
-//		throw "The monitor has to be stopped before it is possible to make changes.";
+//		throw runtime_error("The monitor has to be stopped before it is possible to make changes.");
 //	}
 //	set<int>::const_iterator itr;
 //	for (itr = joints.begin(); itr != joints.end(); ++itr) {
@@ -169,7 +169,7 @@ Hand::Hand(PolyDriver& controlBoard) :
 	isValid &= controlBoard.view(posControl);
 
 	if (!isValid) {
-		throw "Insufficient control board";
+		throw invalid_argument("Insufficient control board");
 	}
 
 	enabledJoints = COMPLETE_HAND;

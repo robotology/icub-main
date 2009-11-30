@@ -47,8 +47,9 @@ Handv1::FunctionSmoother::~FunctionSmoother() {
 Vector& Handv1::FunctionSmoother::smooth(const Vector& v, Vector& smoothedValues,
 		const double deltaT) {
 	if (v.length() != prevValues.size()) {
-		throw "The value vector size mismatches the size of the previous values. \
-				   Therefore they are for sure not corresponding and shouldn't be compared.";
+		throw invalid_argument(
+				"The value vector size mismatches the size of the previous values. \
+				 Therefore they are for sure not corresponding and shouldn't be compared.");
 	}
 
 	smoothedValues.resize(v.length());
@@ -76,7 +77,7 @@ Handv1::Handv1(PolyDriver& controlBoard, map<const string, Matrix>& constants) :
 	Hand(controlBoard), sensingConstants(constants) {
 
 	if (sensingConstants.find("thresholds") == sensingConstants.end()) {
-		throw "No threshold defined!";
+		throw invalid_argument("Sensing constants: No threshold defined!");
 	}
 	fs = FunctionSmoother(sensingConstants["thresholds"].getRow(0));
 }
@@ -91,7 +92,7 @@ void Handv1::defineHandMetrics() {
 	isValid &= controlBoard.view(ampControl);
 
 	if (!isValid) {
-		throw "Insufficient control board";
+		throw invalid_argument("Insufficient control board");
 	}
 
 	handMetrics = new Handv1Metrics(encoders, pidControl, ampControl, sensingConstants);
@@ -102,7 +103,7 @@ Handv1::~Handv1() {
 }
 
 void Handv1::calibrate() {
-	throw "Not implemented yet!";
+	throw runtime_error("Not implemented yet!");
 }
 
 Handv1Metrics& Handv1::getMetrics() const {

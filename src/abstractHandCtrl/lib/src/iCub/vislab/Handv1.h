@@ -27,6 +27,7 @@
 #include <iostream>
 #include <set>
 #include <map>
+#include <stdexcept>
 
 #include <yarp/sig/all.h>
 #include <yarp/sig/Matrix.h>

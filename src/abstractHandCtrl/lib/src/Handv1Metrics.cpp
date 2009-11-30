@@ -41,7 +41,7 @@ Handv1Metrics::Handv1Metrics(IEncoders* const encoders, IPidControl* const pidCo
 	int numAxes;
 	encoders->getAxes(&numAxes);
 	if (numAxes != this->numAxes) {
-		throw "The number of axes mismatches the expected number";
+		throw invalid_argument("The number of axes mismatches the expected number");
 	}
 
 	this->encoders = encoders;

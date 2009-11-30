@@ -45,7 +45,7 @@ bool HandModule::ReloadCommand::execute(const Bottle& params, Bottle& reply) con
 	try {
 		h->motionSpecification.fromConfigFile(h->motionSpecificationFilename);
 		h->workerThread->addMotionSpecification(h->motionSpecification);
-	} catch (...) {
+	} catch (exception& e) {
 		result = Vocab::encode("fail");
 	}
 
@@ -174,7 +174,7 @@ HandModule::HandWorkerThread::HandWorkerThread(const OptionManager& moduleOption
 	isValid &= controlBoard.view(ampControl);
 
 	if (!isValid) {
-		throw "Insufficient control board";
+		throw invalid_argument("Insufficient control board");
 	}
 
 	createHand();
@@ -192,7 +192,7 @@ void HandModule::HandWorkerThread::createHand() {
 			}
 			handv1 = new Handv1(controlBoard, sensingConstants);
 			HandModule::HandWorkerThread::hand = (Hand*) handv1;
-		} catch (char const*) {
+		} catch (exception& e) {
 			hand = new Hand(controlBoard);
 		}
 		break;

@@ -25,6 +25,7 @@
 #include <string>
 #include <map>
 #include <cmath>
+#include <stdexcept>
 
 #include <yarp/sig/all.h>
 #include <yarp/os/all.h>
