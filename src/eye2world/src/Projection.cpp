@@ -76,7 +76,7 @@ void Projection::setBaseTransformation(const Matrix& T) { // T: cam <- robot
 void Projection::project(const Vector &in, Vector &out) {
 
 	if (in.size() < 2) {
-		throw "The input vector has to contain 2D coordinates";
+		throw std::invalid_argument("The input vector has to contain 2D coordinates");
 	}
 
 	Vector p_c(3);

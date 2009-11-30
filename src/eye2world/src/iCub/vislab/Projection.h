@@ -1,6 +1,8 @@
 #ifndef __ICUB_VISLAB__VISLAB_PROJECTION_H_
 #define __ICUB_VISLAB__VISLAB_PROJECTION_H_
 
+#include <stdexcept>
+
 #include <vislab/yarp/all.h>
 
 #include <yarp/sig/all.h>
