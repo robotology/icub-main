@@ -439,7 +439,7 @@ void not_connected_status()
 //*********************************************************************************
 
 //Shows a message dialog for displaying infos/errors
-GtkWidget * dialog_message_generator(GtkMessageType gtk_message_type, char* const text1, char* const text2, bool connect=true)
+GtkWidget * dialog_message_generator(GtkMessageType gtk_message_type, const char *text1, const char *text2, bool connect=true)
 {
     GtkWidget *message;
 
@@ -527,7 +527,7 @@ GtkWidget * dialog_message_generator(GtkMessageType gtk_message_type, char* cons
 
 }
 //*********************************************************************************
-bool dialog_message (GtkMessageType gtk_message_type, char* const text1, char* const text2, bool connect=true)
+bool dialog_message (GtkMessageType gtk_message_type, const char *text1, const char *text2, bool connect=true)
 {
 	if (prompt_version==true) return 0;
 
