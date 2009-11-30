@@ -166,6 +166,14 @@ WatershedModule::WatershedModule(){
 	maxBLOB=4096;
 	minBLOB=100;
 
+	targetRED=1;
+	targetGREEN=1;
+	targetBLUE=1;
+	searchRG=0;
+	searchGR=0;
+	searchBY=0;
+		
+
 	blobList = new char [320*240+1];
 }
 
@@ -241,7 +249,7 @@ bool WatershedModule::interruptModule() {
 }
 
 bool WatershedModule::close() {
-		
+	printf("Closing all the ports \n");
 	/**
 	* a port for reading the edge image 
 	*/
@@ -1116,6 +1124,25 @@ static void cb_digits_scaleb( GtkAdjustment *adj )
 }
 
 
+//-------------------------------------------------
+// Main Window Statusbar
+//-------------------------------------------------
+static void updateStatusbar (GtkStatusbar  *statusbar)
+{
+    gchar *msg;
+    float fps;
+    fps = 1000 / float(50);
+ 
+    gtk_statusbar_pop (statusbar, 0); // clear any previous message, underflow is allowed 
+				    
+	msg = g_strdup_printf ("%s - %.1f fps    r:%f;g:%f;b:%f     RG:%f;GR:%f;BY:%f","WatershedModule", fps, 
+		wModule->targetRED,wModule->targetGREEN,wModule->targetBLUE, wModule->searchRG, wModule->searchGR, wModule->searchBY);
+	printf("r:%f;g:%f;b:%f     RG:%f;GR:%f;BY:%f",wModule->targetRED,wModule->targetGREEN,wModule->targetBLUE, wModule->searchRG, wModule->searchGR, wModule->searchBY);
+
+    gtk_statusbar_push (statusbar, 0, msg);
+
+    g_free (msg);
+}
 
 
 static gint timeout_CB (gpointer data){
@@ -1137,7 +1164,7 @@ static gint timeout_CB (gpointer data){
             //            if (_savingSet)
             //                saveCurrentFrame();
     }
-
+	updateStatusbar(GTK_STATUSBAR (statusbar));
 	wModule->outPorts();
 	return TRUE;
 }
@@ -1145,23 +1172,7 @@ static gint timeout_CB (gpointer data){
 
 
 
-//-------------------------------------------------
-// Main Window Statusbar
-//-------------------------------------------------
-static void updateStatusbar (GtkStatusbar  *statusbar)
-{
-    gchar *msg;
-    float fps;
-    fps = 1000 / float(50);
- 
-    gtk_statusbar_pop (statusbar, 0); // clear any previous message, underflow is allowed 
-				    
-    msg = g_strdup_printf ("%s - %.1f fps","/rea/imageProcess", fps);
 
-    gtk_statusbar_push (statusbar, 0, msg);
-
-    g_free (msg);
-}
 
 //-------------------------------------------------
 // Main Window Menubar
@@ -2610,10 +2621,10 @@ void WatershedModule::drawAllBlobs(bool stable)
 	//float salienceBU=1.0,salienceTD=0.0;
 	IppiSize srcsize={320,240};
 	PixelMonoSigned searchTD=0;
-		PixelMonoSigned searchRG=((targetRED-targetGREEN)/510+0.5)*255;
-		PixelMonoSigned searchGR=((targetGREEN-targetRED)/510+0.5)*255;
-		PixelMonoSigned addRG=((targetRED+targetGREEN)/510)*255;
-		PixelMonoSigned searchBY=((targetBLUE-addRG)/510+0.5)*255;
+	searchRG=((targetRED-targetGREEN)/510+0.5)*255;
+	searchGR=((targetGREEN-targetRED)/510+0.5)*255;
+	PixelMonoSigned addRG=((targetRED+targetGREEN)/510)*255;
+	searchBY=((targetBLUE-addRG)/510+0.5)*255;
 	int psb32s;
 	Ipp32s* _inputImgRGS32=ippiMalloc_32s_C1(320,240,&psb32s);
 	Ipp32s* _inputImgGRS32=ippiMalloc_32s_C1(320,240,&psb32s);

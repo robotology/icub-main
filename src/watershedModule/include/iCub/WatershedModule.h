@@ -253,6 +253,18 @@ public:
 	* blue intensity of the target that has been found 
 	*/
 	double targetBLUE;
+	/**
+	* R+G- value for the search
+	*/
+	PixelMonoSigned searchRG;
+	/**
+	* G+R- value for the search
+	*/
+	PixelMonoSigned searchGR;
+	/**
+	* B+Y- value for the search
+	*/
+	PixelMonoSigned searchBY;
 
 	/**
 	* Output Bottle Port for any possible command
@@ -278,6 +290,9 @@ public:
 	* reference to the salience operator
 	*/
 	SalienceOperator *salience;
+	/**
+	* number of blobs
+	*/
 	int max_tag;
 	/**
 	* vector of boolean which tells whether there is a blob or not
