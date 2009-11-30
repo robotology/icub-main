@@ -33,10 +33,10 @@ template <class S, class T> inline void clone(T*& dst, S* src, int n)
 #define Malloc(type,n) (type *)malloc((n)*sizeof(type))
 
 #if LIBSVM_DEBUG
-void info(char *fmt,...)
+void info(const char *fmt,...)
 {
 
-    va_list ap;
+  va_list ap;
 	va_start(ap,fmt);
 	vprintf(fmt,ap);
 	va_end(ap);
@@ -52,7 +52,7 @@ void info_flush()
 
 #else
 
-void info(char *fmt,...) {}
+void info(const char *fmt,...) {}
 void info_flush() {}
 
 #endif

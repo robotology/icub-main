@@ -11,7 +11,7 @@
 #include <yarp/os/ConstString.h>
 #include <yarp/os/Time.h>
 
-class yarp::dev::PolyDriver;
+//class yarp::dev::PolyDriver;
 
 class velControlThread: public yarp::os::RateThread
 {
