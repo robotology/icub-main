@@ -14,8 +14,8 @@ void gsl_vector_setfromfloat( gsl_vector* V, double* vf);
 void gsl_vector_setfromdouble( gsl_vector* V, double* vf);
 void gsl_vector_gettofloat( gsl_vector* V, double* vf);
 void gsl_copy_submatrix( gsl_matrix *dest, const gsl_matrix *orig, int lin, int col, int nlin, int ncol);
-void gsl_print_vector( gsl_vector* M, char *name);
-void gsl_print_matrix( gsl_matrix* M, char *name);
+void gsl_print_vector( gsl_vector* M, const char *name);
+void gsl_print_matrix( gsl_matrix* M, const char *name);
 
 float gsl_matrix_pseudoinv( gsl_matrix* M, gsl_matrix* Minv, double tol);
 
