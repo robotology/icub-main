@@ -657,6 +657,8 @@ static gint expose_CB (GtkWidget *widget, GdkEventExpose *event, gpointer data)
                     printf("successfully copied to a 3 channel image ...  \n");	
 					ippiFree(im_out);
 					ippiFree(im_tmp0);
+					ippiFree(im_tmp1);
+					ippiFree(im_tmp2);
 				}
 				else
 					ippiCopy_8u_C3R(_outputImage3->getPixelAddress(0,0),320*3,wModule->image_out->getPixelAddress(0,0),320*3,srcsize);
