@@ -51,8 +51,7 @@ None.
 - \e <robot>/<part>/V:i (e.g. /iCub/left_arm/V:i) receives the input data 
   vector.
  
-- \e <robot>/<part>/FT:o (e.g. /iCub/left_arm/FT:i) provides the estimated 
-  first derivatives.
+- \e <robot>/<part>/FT:o (e.g. /iCub/left_arm/FT:i) send the output Force/Torque vector
  
 \section tested_os_sec Tested OS
 Windows.
