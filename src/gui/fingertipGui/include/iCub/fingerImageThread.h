@@ -20,15 +20,14 @@ using namespace yarp::dev;
 
 //openCV include
 #include <cv.h>
-#include <cvaux.h>
-#include <highgui.h>
+//#include <cvaux.h>
+//#include <highgui.h>
 
 /**
 * Thread that reads the port and traslate the value into a colour
 * The corrispective element in the output image is highlighted proportionally to the value read
 * /author Francesco Rea
 */
-
 
 class fingerImageThread : public RateThread {
 	

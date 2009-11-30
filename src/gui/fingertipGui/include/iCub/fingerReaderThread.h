@@ -11,9 +11,6 @@
 
 //openCV include
 #include <cv.h>
-#include <cvaux.h>
-#include <highgui.h>
-
 
 #include <yarp/os/RateThread.h>
 #include <yarp/os/Time.h>
