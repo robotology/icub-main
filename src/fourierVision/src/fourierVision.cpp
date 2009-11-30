@@ -6957,7 +6957,7 @@ Press, Teukolsky, Vetterling, and Flannery
 
 /* nrerror - numerical recipies standard error handler */
 
-void nrerror(char error_text[])
+void nrerror(const char *error_text)
 {
    if (FALSE) {
      printf("Numerical Recipies run-time error ... \n");
