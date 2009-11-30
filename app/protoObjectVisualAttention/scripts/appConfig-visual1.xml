@@ -1,12 +1,12 @@
 <application>
 	<name>protoObjectVisualAttention</name>
  <dependencies>
-		<port>/icub/head/rpc:i</port> 
-		<port>/icub/cam/right</port>
+		<port>/icubSim/head/rpc:i</port> 
+		<port>/icubSim/cam/right</port>
 	</dependencies>
 	<module>
 		<name>camCalib</name>
-		<parameters>--name /icub/camcalib/right  --from icubEyes.ini --group CAMERA_CALIBRATION_RIGHT</parameters>
+		<parameters>--name /icubSim/camcalib/right  --from icubEyes.ini --group CAMERA_CALIBRATION_RIGHT</parameters>
 		<tag>camcalib</tag>
 		<node>/lightHouse</node>
 	</module>
@@ -14,19 +14,25 @@
 		<name>openCVLogPolar</name>
 		<parameters>--name /cvLogPolarF  --mode FORWARD</parameters>
 		<tag>logPolarForward</tag>
-		<node>/lightHouse</node>
+		<node>/surfer</node>
+	</module>
+	<module>
+		<name>openCVLogPolar</name>
+		<parameters>--name /cvLogPolarR --mode REVERSE </parameters>
+		<tag>logPolarReverse</tag>
+		<node>/surfer</node>
 	</module>
 	<module>
 		<name>visualAttentionB09</name>
 		<parameters></parameters>
 		<tag>imageProcessor</tag>
-		<node>/surfer</node>
+		<node>/lightHouse</node>
 	</module>
 	<module>
 		<name>watershedModule</name>
 		<parameters></parameters>
 		<tag>watershed</tag>
-		<node>/surfer</node>
+		<node>/lightHouse</node>
 	</module>
 	<module>
 		<name>contextualRefinement</name>
@@ -36,7 +42,8 @@
 	</module>
 	<module>
 		<name>yarpview</name>
-		<tag>gazeCtrl</tag>
+		<parameters>--name /logPolarForwardView --x 100 --y 600 --synch</parameters>
+		<tag>viewer</tag>
 		<node>/lightHouse</node>
 	</module>
 	<module>
@@ -45,13 +52,13 @@
 		<tag>blobViewer</tag>
 		<node>/lightHouse</node>
 	</module>
- 	
+ 
  <connection>
       	<output>/icubSim/cam/right</output>
-			<input>/icub/camcalib/right/in</input>
+			<input>/icubSim/camcalib/right/in</input>
 	</connection>
 	<connection>
-      	<output>/icub/cam/right</output>
+      	<output>/icubSim/cam/right</output>
 			<input>/cvLogPolarF/in</input>
 	</connection>
 	<connection>
@@ -64,34 +71,34 @@
 	</connection>
 	<connection>
       	<from>/rea/ImageProcessor/out</from>
-			<to>/rea/Watershed/image:i</to>
+			<to>/rea/Watershed/in</to>
 	</connection>
 	<connection>
       	<from>/rea/ImageProcessor/outRed</from>
-			<to>/rea/Watershed/inRed:i</to>
+			<to>/rea/Watershed/inRed</to>
 	</connection>
 	<connection>
       	<from>/rea/ImageProcessor/outGreen</from>
-			<to>/rea/Watershed/inGreen:i</to>
+			<to>/rea/Watershed/inGreen</to>
 	</connection>
 	<connection>
       	<from>/rea/ImageProcessor/outBlue</from>
-			<to>/rea/Watershed/inBlue:i</to>
+			<to>/rea/Watershed/inBlue</to>
 	</connection>
 	<connection>
       	<from>/rea/ImageProcessor/outRG</from>
-			<to>/rea/Watershed/inRG:i</to>
+			<to>/rea/Watershed/inRG</to>
 	</connection>
 	<connection>
       	<from>/rea/ImageProcessor/outGR</from>
-			<to>/rea/Watershed/inGR:i</to>
+			<to>/rea/Watershed/inGR</to>
 	</connection>
 	<connection>
       	<from>/rea/ImageProcessor/outBY</from>
-			<to>/rea/Watershed/inBY:i</to>
+			<to>/rea/Watershed/inBY</to>
 	</connection>
 	<connection>
-      	<from>/rea/Watershed/outBlobs:o</from>
+      	<from>/rea/Watershed/outBlobs</from>
 			<to>/blobView</to>
 	</connection>
 </application>
