@@ -1,18 +1,63 @@
 /**
-@ingroup icub_module
+* @ingroup icub_module
+*
+* \defgroup genericFTCalibrator genericFTCalibrator
+* 
+* Converts Voltage row values from FT sensors into
+* equivalent Force/Torque measurements. 
+* 
+* Copyright (C) 2008 RobotCub Consortium
+*  
+* Author: Matteo Fumagalli
+*  
+* Date: first release 26/11/2009 
+* 
+* CopyPolicy: Released under the terms of the GNU GPL v2.0.
 
-\defgroup genericFTCalibrator genericFTCalibrator
- 
-Converts Voltage row values from FT sensors and converts their measurements into
-equivalent Force/Torque measurements. 
+\section intro_sec Description
 
-Copyright (C) 2008 RobotCub Consortium
- 
-Author: Matteo Fumagalli
- 
-Date: first release 26/11/2009 
+This module converts the Forces and Torques of an FT sensor,
+given the input vector of the measured Voltages. Voltages are 
+passed to the module through a YARP port and the outputs are
+sent to another YARP port. The convertion is provided by the 
+Calibration matrix, which is read by the module using a 
+configuration file. 
 
-CopyPolicy: Released under the terms of the GNU GPL v2.0.
+\section lib_sec Libraries 
+- YARP libraries. 
+
+\section in_files_sec Input Data Files
+None.
+
+\section out_data_sec Output Data Files
+None. 
+ 
+\section conf_file_sec Configuration Files
+- FTCalibration.ini. (Default: LeftArmFT.ini)
+
+\section parameters_sec Parameters
+--context \e context 
+- The parameter \e context identifies the context to add where
+  the resource finder will look for the configuration file. 
+  Note that the context path is relative to $ICUB_ROOT/app.
+ 
+--from \e from
+- The parameter \e from identifies the configuration file name
+  to be read by the module in order to define the ports to open
+  and the calibration matrix. (Default: LeftArmFT.ini)
+
+\section portsc_sec Ports Created
+ 
+- \e <robot>/<part>/V:i (e.g. /iCub/left_arm/V:i) receives the input data 
+  vector.
+ 
+- \e <robot>/<part>/FT:o (e.g. /iCub/left_arm/FT:i) provides the estimated 
+  first derivatives.
+ 
+\section tested_os_sec Tested OS
+Windows.
+
+
 */
 
 
@@ -65,8 +110,20 @@ public:
 	dataCollector(BufferedPort<Vector> &_port_FT, ResourceFinder &rf) :
 	  port_FT(_port_FT)
 	  {
-		  if(rf.check("rows") && rf.check("cols"))
-			  C.resize(rf.find("rows").asInt(),rf.find("cols").asInt());
+		  Bottle tmp;
+		  if(rf.check("rows"))
+		  {
+			  if(rf.check("row0"))
+			  {
+				  tmp = rf.findGroup("row0");
+				  C.resize(rf.find("rows").asInt(),tmp.size()-1);
+			  }
+			  else 
+			  {
+				  fprintf(stderr,"error: first row should be labeled as 'row0'\n Setting number of colums = 1");
+				  C.resize(rf.find("rows").asInt(),1);
+			  }
+		  }
 		  else
 		  {
 			  fprintf(stderr,"missing information on matrix caibration!!! Default matrix = I(6,6)\n");
@@ -78,6 +135,7 @@ public:
 
 		  //reading calibration matrix
 		  fprintf(stderr,"C:\n");
+		  
 		  for(int i = 0; i<C.rows(); i++)
 		  {
 			  row = string("row") + _itoa(i,buf,10);
@@ -85,11 +143,24 @@ public:
 			  
 			  if(rf.check(row.c_str()))
 			  {
-				  for(int j=0;j<C.cols();j++)
+				  if(tmp.size()<rf.findGroup(row.c_str()).size())
+					  fprintf(stderr,"Warning: too many elements!!!\n One or more datas will not be used...");
+
+				  for(int j=0;j<tmp.size()-1;j++)
 				  {
-					  C(i,j)=rf.findGroup(row.c_str()).get(j+1).asDouble();
-					  fprintf(stderr,"%.2lf\t",C(i,j));
+					  if(!rf.findGroup(row.c_str()).get(j+1).isNull())
+					  {
+							C(i,j)=rf.findGroup(row.c_str()).get(j+1).asDouble();
+							fprintf(stderr,"%.2lf\t",C(i,j));
+					  }
+					  else
+					  {
+						  C(i,j)=0.0;
+						  fprintf(stderr,"%.2lf\t",C(i,j));
+						  fprintf(stderr,"Warning:missing element, zero added");
+					  }
 				  }
+
 				  fprintf(stderr,"\n");
 			  }
 		  }
@@ -125,11 +196,10 @@ public:
         else
 		{
 			fprintf(stderr,"Device not found\n");
-            PortName=PortName+"/LeftArm";
+            PortName=PortName+"/left_arm";
 		}
 
 		int rows;
-		int cols;
 		if(rf.check("rows"))	
 		{
 			rows = rf.find("rows").asInt();
@@ -139,17 +209,6 @@ public:
 		{
 			rows=0;
 			fprintf(stderr,"error! row string not found.\nreturning...");
-			return true;
-		}
-		if(rf.check("cols"))	
-		{
-			rows = rf.find("cols").asInt();
-			fprintf(stderr,"number of cols: %d\n", rows);
-		}
-		else 
-		{
-			rows=0;
-			fprintf(stderr,"error! cols string not found.\nreturning...");
 			return true;
 		}
 
@@ -192,6 +251,14 @@ int main(int argc, char * argv[])
 	rf.setDefaultConfigFile("LeftArmFTCal.ini");
 
     rf.configure("ICUB_ROOT", argc, argv);
+
+	if (rf.check("help"))
+    {
+        cout << "Options:" << endl << endl;
+		cout << "\t--context   context: where to find the called resource (referred to $ICUB_ROOT\app: default FTSensorCalibration\conf)"                << endl;
+        cout << "\t--from      from: The name of the file.ini to be used for calibration"          << endl;
+        return 0;
+    }
 
     //create your module
     FT_Calibrator ft_sender;
