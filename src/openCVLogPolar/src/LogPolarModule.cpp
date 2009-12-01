@@ -309,16 +309,19 @@ bool LogPolarModule::updateModule() {
 		port3.prepare() = *yarpReturnImagePointer;		
 		port3.write();
 		//------
-		int xCog=0,yCog=0;
-		//cogCalculate(*dstColor,xCog,yCog);
+		int xCog,yCog;
+		cogCalculate(*dstColor,xCog,yCog);
 		printf("xCog %d, yCog%d",xCog, yCog);
-		outBot1=portCOG.prepare();
+		
 		//Bottle bOptions;
+		Bottle& outBot1=portCOG.prepare();
+		outBot1.clear();
 		//outBot1.addString("cog:");
 		outBot1.addInt(xCog);
 		outBot1.addInt(yCog);
-		outBot1.addInt(xCog);
-		outBot1.addInt(yCog);
+		//outBot1.addInt(xCog);
+		//outBot1.addInt(yCog);
+		
 		//outBot1.addList()=bOptions;
 		portCOG.writeStrict();
 		//bOptions.clear();
@@ -480,20 +483,18 @@ bool LogPolarModule::updateModule() {
 		//port3.write();
 		//-----------------
 		int xCog,yCog;
-		//cogCalculate(*dstColor,xCog,yCog);
-		xCog=0;yCog=0;
+		cogCalculate(*dstColor,xCog,yCog);
 		printf("xCog %d, yCog%d",xCog, yCog);
 		Bottle& outBot1=portCOG.prepare();
-		Bottle bOptions;
 		outBot1.clear();
 		outBot1.addInt(xCog);
 		outBot1.addInt(yCog);
-		outBot1.addInt(xCog);
-		outBot1.addInt(yCog);
+		//outBot1.addInt(xCog);
+		//outBot1.addInt(yCog);
 		//outBot1.fromString("cog:");
 		//outBot1.addList()=bOptions;
 		portCOG.writeStrict();
-		bOptions.clear();
+		
 	}
 	//delete yarpReturnImagePointer;
 
