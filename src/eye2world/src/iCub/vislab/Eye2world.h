@@ -15,9 +15,9 @@
  *******************************************************************************/
 
 /**
- * @ingroup module
+ * @ingroup icub_module
  *
- * \defgroup module_eye2world eye2world
+ * \defgroup icub_eye2world eye2world
  *
  * This module provides a projection from the image plane to the world represented as
  * plane in front of the robot relatively specified to robot's base coordinates (e.g.
@@ -26,91 +26,91 @@
  * 
  * \section lib_sec Libraries
  *
- * YARP (YARP_{OS,dev,sig,math})
- *   ACE
- * iKin
- *   IPOPT
- *   ctrlLib
- * OpenVislab (libvislab, libvislab_YARP): http://OpenVislab.sf.net
+ * - YARP (YARP_{OS,dev,sig,math})
+ *   - ACE
+ * - iKin
+ *   - IPOPT
+ *   - ctrlLib
+ * - OpenVislab (libvislab, libvislab_YARP): http://OpenVislab.sf.net
  *
  * \section parameters_sec Parameters
  * 
- * Command-line Parameters
+ * \section cmdline_parameters_sec Command-line Parameters
  * 
  * The following key-value pairs can be specified as command-line parameters by prefixing -- to the key 
  * (e.g. --from conf.ini). The value part can be changed to suit your needs; the default values are shown below.
  *
- * --from <STRING>
- *   specifies the configuration file.
+ * --from <STRING> <BR>
+ *   specifies the configuration file. <BR>
  *   default: "conf.ini"
  *
- * --context <STRING>
- *   specifies the sub-path from $ICUB_ROOT/icub/app to the configuration file.
+ * --context <STRING> <BR>
+ *   specifies the sub-path from $ICUB_ROOT/icub/app to the configuration file. <BR>
  *   default: "eye2world"
  *
- * --name <STRING>
- *   specifies the name of the module (used to form the stem of module port names).
+ * --name <STRING> <BR>
+ *   specifies the name of the module (used to form the stem of module port names). <BR>
  *   default: "eye2world"
  *
- * --robot <STRING>
- *   specifies the name of the robot (used to form the root of robot port names).
+ * --robot <STRING> <BR>
+ *   specifies the name of the robot (used to form the root of robot port names). <BR>
  *   default: "icub"
  *
  *
- * Configuration File Parameters
+ * \subsection conffile_parameters_sec Configuration File Parameters
  *
  * The following key-value pairs can be specified as parameters in the configuration file 
  * (they can also be specified as command-line parameters).
  * The value part can be changed to suit your needs; the default values are shown below. 
  *   
- * --eyeCalibration <FILE>
+ * --eyeCalibration <FILE> <BR>
  *   specifies the file name to the calibration file for the iCub's eyes.
  *
- * --tableConfiguration <FILE>
+ * --tableConfiguration <FILE> <BR>
  *   specifies the file name to configuration of the file.
  *
- * --in <PORT>
- *   specifies the input port name for the 2D coordinate to be transformed.
+ * --in <PORT> <BR>
+ *   specifies the input port name for the 2D coordinate to be transformed. <BR>
  *   default: /in
  *
- * --headState <PORT>
- *   specifies the input port name for head's state (position/ pose).
+ * --headState <PORT> <BR>
+ *   specifies the input port name for head's state (position/ pose). <BR>
  *   default: /icub/head/state:i
  *
- * --torsoState <PORT>
- *   specifies the input port name for head's state (position/ pose).
+ * --torsoState <PORT> <BR>
+ *   specifies the input port name for head's state (position/ pose). <BR>
  *   default: /icub/torso/state:i
  *
- * --out <PORT>
- *   specifies the output port name for the resulting 3D coordinates.
+ * --out <PORT> <BR>
+ *   specifies the output port name for the resulting 3D coordinates. <BR>
  *   default: /out
  *
  * 
  * \section portsa_sec Ports Accessed
  * 
- * - /icub/head/state:o
+ * - /icub/head/state:o <BR>
  *   The coordinates are expected to be wrapped in a Bottle object as double values:
- *   Bottle(double:neckPitch, double:neckRoll, double:neckYaw, double:eyesTilt, double:eyesVesion, double:eyesVergence)
+ *   @code Bottle(double:neckPitch, double:neckRoll, double:neckYaw, double:eyesTilt, double:eyesVesion, double:eyesVergence) @endcode
  *
- * - /icub/torso/state:o
+ * - /icub/torso/state:o <BR>
  *   The coordinates are expected to be wrapped in a Bottle object as double values:
- *   Bottle(double:yaw, double:roll, double:pitch)
+ *   @code Bottle(double:yaw, double:roll, double:pitch) @endcode
  *                      
  * \section portsc_sec Ports Created
  *
- *  Input ports
+ * \subsection inputports_sec Input ports
  *
- *  - /eye2world
+ *  - /eye2world <BR>
  *    This port is used to change the parameters of the module at run time or stop the module
  *    The following commands are available:
- *    - set [ <id> <value> ]
- *      available options:
- *      - heightOffset (numeric)
+ *    - set  \[ <id> <value> \] <BR>
+ *      available options: <BR>
+ *      - heightOffset (numeric) <BR>
  *        This value will be added to the z-offset of the projection plan to the robot's base
  *        coordinates. This may help you time find the correct position of the projection plane
  *        without modifying the configuration and restarting the module.
  *
- *      - motor2eye (numeric)
+ *      - motor2eye (numeric) <BR>
  *        This value is supposed to compensate the error introduced by the fact that the distance
  *        between the lens and the motor of the eye is not taken into account for the kinematics.
  *        In order to achieve this, the value is simply added to the z coordinate of the
@@ -118,7 +118,7 @@
  *        That way it is possible to adjust the accuracy of the project without messing about the
  *        real relative distance to the projection plane.
  *
- *      - scale (numeric)
+ *      - scale (numeric) <BR>
  *        This one will be multiplied to the resulting x and y coordinate. This is another
  *        Possibility to tweak accuracy of the projection.
  *
@@ -132,25 +132,26 @@
  *    directive: yarp rpc /eye2world This opens a connection from a terminal to the port and allows
  *    the user to then type in commands and receive replies.
  *
- *  - /eye2world/in
- *    cf. Input parameter "--in"
- *    The coordinates are wrapped in a Bottle object as double values: Bottle([ConstString:cam,] double:x, double:y[, double:height])
+ *  - /eye2world/in <BR>
+ *    cf. Input parameter "--in" <BR>
+ *    The coordinates are wrapped in a Bottle object as double values: @code Bottle([ConstString:cam,] double:x, double:y[, double:height]) @endcode
  *    Optionally it is possible to specify the camera/ eye to use ("left", "right") and an additional offset with respect to the
  *    z-axes of the projection plane.
  *
- * Output ports
+ * \subsection outputports Output ports
  *
- *  - /eye2world
+ *  - /eye2world <BR>
  *    see above
  *
- *  - /eye2world/out
- *    cf. Input parameter "--out"
- *    The coordinates are wrapped in a Bottle object as double values: Bottle(double:x, double:y, double:z)
+ *  - /eye2world/out <BR>
+ *    cf. Input parameter "--out" <BR>
+ *    The coordinates are wrapped in a Bottle object as double values: @code Bottle(double:x, double:y, double:z) @endcode
  *
  *
  * \section in_files_sec Input Data Files
  *
- * Eye calibration:
+ * \subsection eyecalib_sec Eye calibration:
+ *
  * \code
  *   [CAMERA_CALIBRATION_${X}]
  *   (...)
@@ -160,15 +161,18 @@
  *   cy 141.662
  *   (...)
  * \endcode
+ *
  * where ${X} might be "LEFT" or "RIGHT"
  *
- * Table configuration
+ * \subsection tableconf_sec Table configuration
+ *
  * \code
  *   [POSITION]
  *   x  0.0
  *   y  0.0
  *   z -0.06
  * \endcode
+ *
  * where (x,y,z) is the 3D offset of the projection plane relative to the robot's reference frame in meters.
  *
  * \section out_data_sec Output Data Files
@@ -177,12 +181,13 @@
  *
  * \section conf_file_sec Configuration Files
  *
- * conf.ini  in $ICUB_ROOT/icub/app/Eye2world/
+ * conf.ini in $ICUB_ROOT/icub/app/Eye2world/
  * 
  * \section tested_os_sec Tested OS
  *
  * most extensively on
- * Linux version 2.6.30-gentoo-r8 (gcc version 4.3.4 (Gentoo 4.3.4 p1.0, pie-10.1.5) )
+ * Linux version 2.6.30-gentoo-r8 (gcc version 4.3.4 (Gentoo 4.3.4 p1.0, pie-10.1.5) ) but compiles
+ * and runs fine on Windows (XP SP3) as well.
  *
  * \section example_sec Example Instantiation of the Module
  * 
