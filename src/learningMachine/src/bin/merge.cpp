@@ -7,7 +7,7 @@
  *
  */
 
-// ./merge --config "(/foo:o 3 /foo:o 1 /bar:o (2,3,4) /baz:o ()) ()" --names "()"
+// ./merge --config "(/foo:o[3,1] /bar:o[2,3][1-4] (/baz:o))"
 
 #include <iostream>
 #include <sstream>
@@ -35,7 +35,10 @@ namespace iCub {
 namespace learningmachine {
 namespace merge {
 
-
+/**
+ * The PortSource collects data from a source port and caches the most recent
+ * Bottle of data.
+ */
 class PortSource {
 protected:
     /**
@@ -141,7 +144,9 @@ public:
     }
 };
 
-
+/**
+ * The SourceList manages a map of PortSource objects.
+ */
 class SourceList {
 protected:
     typedef std::map<std::string, PortSource*> SourceMap;
@@ -201,7 +206,10 @@ public:
     }
 
     /**
+     * Adds a source port for the given name. It does nothing if a source port
+     * with the given name already exists.
      *
+     * @param name  the name
      */
     virtual void addSource(std::string name) {
         if (!this->hasSource(name)) {
@@ -211,7 +219,10 @@ public:
     }
 
     /**
+     * Retrives the port source for a given name.
      *
+     * @param name  the name
+     * @throw a runtime error if the name has not been registered
      */
     virtual PortSource& getSource(std::string name) {
         if (!this->hasSource(name)) {
@@ -238,10 +249,18 @@ public:
         }
     }
 
+    /**
+     * Returns the prefix for the source ports.
+     * @return the port prefix
+     */
     virtual std::string getPortPrefix() {
         return this->portPrefix;
     }
 
+    /**
+     * Sets the prefix for the source ports.
+     * @param pp the port prefix
+     */
     virtual void setPortPrefix(std::string pp) {
         this->portPrefix = pp;
     }
@@ -249,51 +268,145 @@ public:
 
 
 /**
- * The DataSelector is an abstract base class for an object that selects a
- * part of data from one or more DataSources. The structure of DataSelector and
- * its subclasses follows the composite pattern.
+ * The DataSelector is an interface for an object that selects data from one or
+ * more DataSources. The structure of DataSelector and its subclasses follows
+ * the composite pattern.
  */
 class DataSelector {
 protected:
 
 public:
-
+    /**
+     * Returns a string specification of the data selector.
+     * @param indent  a number of spaces of indentation
+     */
     virtual std::string toString(int indent = 0) = 0;
 
+    /**
+     * Declares the required sources for this data selector to the source list.
+     * @param sl the source list
+     */
     virtual void declareSources(SourceList& sl) = 0;
 
+    /**
+     * Selectively adds data from the source list to an output bottle.
+     * @param bot a reference to the output Bottle
+     * @param sl the source list
+     */
     virtual void select(Bottle& bot, SourceList& sl) = 0;
 
 };
 
+
+/**
+ * The IndexSelector selects the components at specified indices from the
+ * source. It supports an arbitrary number of dimensions and indices can be
+ * specified using a range. If not indices are specified, it returns all of the
+ * source data.
+ */
 class IndexSelector : public DataSelector {
 protected:
+    /**
+     * The name of the source port.
+     */
     std::string name;
+
+    /**
+     * A list of a list of indices. For each dimension, there is a list of
+     * indices.
+     */
     std::list<std::list<int> > indices;
+
+    /**
+     * Select data from source recursively using the index specifiers.
+     *
+     * @param out a reference to the output Bottle
+     * @param in a reference to the input bottle
+     * @param it the iterator
+     * @throw a runtime error if trying to index a non-list type
+     */
+    virtual void selectRecursive(Bottle& out, Bottle& in, std::list< std::list<int> >::iterator it) {
+        std::list<int>::iterator it2;
+        for (it2 = (*it).begin(); it2 != (*it).end(); ++it2) {
+            it++;
+            int idx = *it2 - 1;
+            if(it == this->indices.end()) {
+                out.add(in.get(idx));
+            } else {
+                if(!in.get(idx).isList()) {
+                    throw std::runtime_error("Cannot index non-list type");
+                }
+                this->selectRecursive(out, *(in.get(idx).asList()), it);
+            }
+            it--;
+
+        }
+
+    }
 
 public:
     /**
      * Default constructor.
+     *
+     * @param format a string specifying the format
      */
     IndexSelector(std::string format) {
         this->loadFormat(format);
     }
 
+    /*
+     * Inherited from DataSelector.
+     */
     std::string toString(int indent = 0) {
         std::ostringstream buffer;
-        //buffer << std::string(indent, ' ') << this->name << "(" << this->index << ")" << std::endl;
-        buffer << std::string(indent, ' ') << this->name << std::endl;
+        buffer << std::string(indent, ' ') << this->name;
+        std::list< std::list<int> >::iterator it1;
+        for (it1 = this->indices.begin(); it1 != this->indices.end(); ++it1) {
+            buffer << "[";
+            std::list<int>::iterator it2;
+            for (it2 = (*it1).begin(); it2 != (*it1).end(); ++it2) {
+                if (it2 != (*it1).begin())
+                    buffer << ",";
+                buffer << *it2;
+            }
+            buffer << "]";
+        }
+        buffer << std::endl;
         return buffer.str();
     }
 
+    /*
+     * Inherited from DataSelector.
+     */
     virtual void declareSources(SourceList& sl) {
         sl.addSource(this->name);
     }
 
+    /*
+     * Inherited from DataSelector.
+     */
     virtual void select(Bottle& bot, SourceList& sl) {
-        //bot.add(sl.getSource(this->name).getData().get(this->index));
+        if(this->indices.size() == 0) {
+            // no indices, select all
+            Bottle& src = sl.getSource(this->name).getData();
+            for(int i = 0; i < src.size(); i++) {
+                bot.add(src.get(i));
+            }
+        } else {
+            // select sub-bottles and items recursively
+            std::list< std::list<int> >::iterator it1;
+            it1 = this->indices.begin();
+            this->selectRecursive(bot, sl.getSource(this->name).getData(), it1);
+        }
     }
 
+
+    /**
+     * Loads the format of the IndexSelector from a string.
+     *
+     * @param format the format string
+     * @throw a runtime error if parsing fails
+     */
     virtual void loadFormat(std::string format) {
         std::cout << "Parsing format: " << format << std::endl;
         // find indexing specifier
@@ -314,86 +427,87 @@ public:
         }
     }
 
+    /**
+     * Loads index specifiers from a string format.
+     *
+     * @param format the format string
+     * @throw a runtime error if parsing the index specifiers fails
+     */
     virtual void loadIndices(std::string format) {
         std::cout << "Parsing index format: " << format << std::endl;
+        std::list<int> idxList;
+        std::vector<std::string> indexSplit = this->split(format, ",");
+        for (int i = 0; i < indexSplit.size(); i++) {
+            std::cout << "  Handling " << indexSplit[i] << std::endl;
+            std::vector<std::string> rangeSplit = this->split(indexSplit[i], "-");
 
+            if (rangeSplit.size() == 0) {
+                // should be impossible
+                throw std::runtime_error("Unexpected problem parsing: " + indexSplit[i]);
+
+            } else if (rangeSplit.size() == 1) {
+                // single index specification
+                idxList.push_back(this->stringToInt(rangeSplit[0]));
+
+            } else if (rangeSplit.size() == 2) {
+                // start-end index specification
+                int start = this->stringToInt(rangeSplit[0]);
+                int end = this->stringToInt(rangeSplit[1]);
+                if (start > end) {
+                    throw std::runtime_error("End of range before start of range: " + indexSplit[i]);
+                }
+                for (int idx = start; idx <= end; idx++) {
+                    idxList.push_back(idx);
+                }
+
+            } else if (rangeSplit.size() > 2) {
+                // illegal
+                throw std::runtime_error("Illegal range specification: " + indexSplit[i]);
+            }
+        }
+        this->indices.push_back(idxList);
     }
 
+    /**
+     * Splits a string into parts at the given delimiter.
+     *
+     * @param input the input string
+     * @param delimiter the delimiter
+     * @return a vector with the string parts
+     */
     static std::vector<std::string> split(std::string input, std::string delimiter) {
         std::string::size_type start, end = 0;
         std::vector<std::string> output;
         while (end != std::string::npos) {
             end = input.find(delimiter, start);
             output.push_back(input.substr(start, (end == std::string::npos) ? end : end - start));
+            start = end + 1;
         }
         return output;
     }
 
+    /**
+     * Converts a string to an integer in a proper C++ way.
+     * @param str the string
+     * @return an integer
+     * @throw a runtime error if the string cannot be parsed as an integer
+     */
     static int stringToInt(std::string str) {
         std::istringstream buffer(str);
         int ret;
         if (buffer >> ret) {
             return ret;
         } else {
-            throw std::runtime_error("Could not read integer from " + str);
+            throw std::runtime_error("Could not read integer from '" + str + "'");
         }
     }
 };
 
-//class IndexSelector : public DataSelector{
-//protected:
-//    std::string name;
-//    int index;
-//public:
-//    /**
-//     * Default constructor.
-//     */
-//    IndexSelector(std::string n, int i) : name(n), index(i) { }
-//
-//    std::string toString(int indent = 0) {
-//        std::ostringstream buffer;
-//        buffer << std::string(indent, ' ') << this->name << "(" << this->index << ")" << std::endl;
-//        return buffer.str();
-//    }
-//
-//    virtual void declareSources(SourceList& sl) {
-//        sl.addSource(this->name);
-//    }
-//
-//    virtual void select(Bottle& bot, SourceList& sl) {
-//        bot.add(sl.getSource(this->name).getData().get(this->index));
-//    }
-//};
 
-//class AllSelector : public DataSelector {
-//protected:
-//    std::string name;
-//public:
-//    /**
-//     * Default constructor.
-//     */
-//    AllSelector(std::string n) : name(n) { }
-//
-//    std::string toString(int indent = 0) {
-//        std::ostringstream buffer;
-//        buffer << std::string(indent, ' ') << this->name << std::endl;
-//        return buffer.str();
-//    }
-//
-//    virtual void declareSources(SourceList& sl) {
-//        sl.addSource(this->name);
-//    }
-//
-//    virtual void select(Bottle& bot, SourceList& sl) {
-//        Bottle& src = sl.getSource(this->name).getData();
-//        for(int i = 0; i < src.size(); i++) {
-//            bot.add(src.get(i));
-//        }
-//    }
-//};
-
-
-
+/**
+ * The composite selector groups other data selectors.
+ *
+ */
 class CompositeSelector : public DataSelector {
 protected:
     std::vector<DataSelector*> children;
@@ -432,7 +546,10 @@ public:
     }
 
     /**
+     * Loads the format of this composite selector from a Bottle.
      *
+     * @param format the bottle specifying the format
+     * @throw a runtime error if parsing fails
      */
     void loadFormat(Bottle& format) {
         int i = 0;
@@ -440,18 +557,6 @@ public:
         while (i < len) {
             if (format.get(i).isString()) {
                 this->addChild(new IndexSelector(format.get(i).asString().c_str()));
-                /*
-                std::string name = format.get(i).asString().c_str();
-                i++;
-                if(format.get(i).isInt()) {
-                    do {
-                        int index = format.get(i).asInt();
-                        this->addChild(new IndexSelector(name, index-1));
-                        i++;
-                    } while(format.get(i).isInt());
-                } else {
-                    this->addChild(new AllSelector(name));
-                }*/
             } else if (format.get(i).isList()) {
                 this->addChild(new CompositeSelector(*(format.get(i).asList())));
             } else {
@@ -462,6 +567,9 @@ public:
         }
     }
 
+    /*
+     * Inherited from DataSelector.
+     */
     std::string toString(int indent = 0) {
         std::ostringstream buffer;
         buffer << std::string(indent, ' ') << "(" << std::endl;
@@ -472,12 +580,18 @@ public:
         return buffer.str();
     }
 
+    /*
+     * Inherited from DataSelector.
+     */
     virtual void declareSources(SourceList& sl) {
         for (int i = 0; i < this->children.size(); i++) {
             this->children[i]->declareSources(sl);
         }
     }
 
+    /*
+     * Inherited from DataSelector.
+     */
     virtual void select(Bottle& bot, SourceList& sl) {
         Bottle& bot2 = bot.addList();
         for (int i = 0; i < this->children.size(); i++) {
@@ -486,7 +600,10 @@ public:
     }
 };
 
-
+/**
+ * The MergeModule merges data from several input ports into a single output
+ * port.
+ */
 class MergeModule : public RFModule {
 protected:
     /**
@@ -525,6 +642,13 @@ protected:
         std::cout << "--port pfx             Prefix for registering the ports" << std::endl;
     }
 
+    /**
+     * Register a port at a specified name.
+     *
+     * @param port the port
+     * @param name the name
+     * @throw a runtime error if the port could not be registered
+     */
     void registerPort(Contactable& port, std::string name) {
         if (port.open(name.c_str()) != true) {
             std::string msg("could not register port ");
@@ -533,17 +657,25 @@ protected:
         }
     }
 
+    /**
+     * Register all ports for this module.
+     */
     void registerAllPorts() {
         this->registerPort(this->output, this->portPrefix + "/output:o");
     }
 
+    /**
+     * Attempts to unregister all ports used by this module.
+     *
+     * @throw a runtime error if unregistering the port fails
+     */
     void unregisterAllPorts() {
         try {
             this->sourceList.close();
             this->output.close();
         } catch (yarp::IOException e) {
-            printf("Exception happened while unregistering ports\n");
-            printf("Message: %s\n", e.toString().c_str());
+            std::string msg("Failed to unregister ports: ");
+            throw std::runtime_error(msg + e.toString().c_str());
         }
     }
 
@@ -629,7 +761,7 @@ public:
 
         this->registerAllPorts();
 
-        this->attachTerminal();
+        //this->attachTerminal();
 
         return success;
     }
@@ -640,12 +772,18 @@ public:
      */
     virtual bool updateModule() {
         assert(this->dataSelector != (DataSelector*) 0);
-        this->sourceList.update();
-        Bottle out;
-        this->dataSelector->select(out, this->sourceList);
-        std::cout << "Bottle: " << out.toString().c_str() << std::endl;
-        this->output.write(out);
-        //this->listeners.process(this->portSource);
+        try {
+            this->sourceList.update();
+            Bottle out;
+            this->dataSelector->select(out, this->sourceList);
+            std::cout << "Bottle: " << out.toString().c_str() << std::endl;
+            this->output.write(out);
+            //this->listeners.process(this->portSource);
+        } catch (const std::exception& e) {
+            std::cerr << "Error: " << e.what() << std::endl;
+        } catch (...) {
+            std::cerr << "Error... something bad happened, but I wouldn't know what!" << std::endl;
+        }
         return true;
     }
 
@@ -692,10 +830,12 @@ public:
             success = true; // to make sure YARP prints the error message
             std::string msg = std::string("Error: ") + e.what();
             reply.addString(msg.c_str());
+            this->close();
         } catch (...) {
             success = true; // to make sure YARP prints the error message
             std::string msg = std::string("Error. (something bad happened, but I wouldn't know what!)");
             reply.addString(msg.c_str());
+            this->close();
         }
 
         return success;
