@@ -14,12 +14,29 @@
  * Inc., 59 Temple Place, Suite 330, Boston, MA 02111-1307 USA
  *******************************************************************************/
 
+/**
+ * @defgroup libHandCtrl
+ *
+ * @ingroup icub_module
+ *
+ * Classes for controlling the hands of the iCub.
+ *
+ * \section lib_sec Dependencies
+ *
+ * - YARP (YARP_{OS,dev,sig,math})
+ * - ACE
+ * - OpenVislab (libvislab, libvislab_YARP): http://OpenVislab.sf.net
+ *
+ *
+ * @author Christian Wressnegger
+ * @date 2009
+ *
+ */
+
 #ifndef __ICUB_VISLAB_HAND_H_
 #define __ICUB_VISLAB_HAND_H_
 
 #include "HandMetrics.h"
-
-#include <ace/Auto_Event.h>
 
 #include <vislab/util/all.h>
 #include <vislab/yarp/util/all.h>
@@ -40,7 +57,9 @@ namespace vislab {
 namespace control {
 
 /**
- * Provides an abstraction layer for the iCub's hand.
+ * @ingroup libHandCtrl
+ *
+ * Provides an abstraction layer of the iCub's hands.
  *
  * @author Christian Wressnegger
  * @date 2009

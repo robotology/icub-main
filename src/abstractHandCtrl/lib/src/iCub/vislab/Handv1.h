@@ -38,6 +38,8 @@ namespace vislab {
 namespace control {
 
 /**
+ * @ingroup libHandCtrl
+ *
  * Provides an abstraction layer for the hand of the iCub "v1".
  *
  * @author Christian Wressnegger
