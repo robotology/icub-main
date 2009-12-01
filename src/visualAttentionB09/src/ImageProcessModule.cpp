@@ -1212,7 +1212,7 @@ GtkWidget* ImageProcessModule::createMainWindow(void)
 	//----------BOX3 SECTION:2
 	//box3 is the single area that controls the processing towards the output port
 	//every processes sequence has a sequence of checkboxes a label and a button
-	box3 = gtk_hbox_new (FALSE, 0);
+	/*box3 = gtk_hbox_new (FALSE, 0);
     gtk_container_set_border_width (GTK_CONTAINER (box3), 0);
     gtk_box_pack_start (GTK_BOX (box2), box3, TRUE, TRUE, 0);
     gtk_widget_show (box3);
@@ -1501,7 +1501,7 @@ GtkWidget* ImageProcessModule::createMainWindow(void)
 
 	gtk_box_pack_start (GTK_BOX (box3), box4, TRUE, TRUE, 0);
     gtk_widget_show (box4);
-	//---box 4
+	//---box 4*/
 	
 	//-------run button
 	button = gtk_button_new ();
