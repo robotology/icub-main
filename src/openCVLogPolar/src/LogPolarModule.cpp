@@ -319,8 +319,8 @@ bool LogPolarModule::updateModule() {
 		//outBot1.addString("cog:");
 		outBot1.addInt(xCog);
 		outBot1.addInt(yCog);
-		//outBot1.addInt(xCog);
-		//outBot1.addInt(yCog);
+		outBot1.addInt(xCog);
+		outBot1.addInt(yCog);
 		
 		//outBot1.addList()=bOptions;
 		portCOG.writeStrict();
@@ -489,8 +489,8 @@ bool LogPolarModule::updateModule() {
 		outBot1.clear();
 		outBot1.addInt(xCog);
 		outBot1.addInt(yCog);
-		//outBot1.addInt(xCog);
-		//outBot1.addInt(yCog);
+		outBot1.addInt(xCog);
+		outBot1.addInt(yCog);
 		//outBot1.fromString("cog:");
 		//outBot1.addList()=bOptions;
 		portCOG.writeStrict();
