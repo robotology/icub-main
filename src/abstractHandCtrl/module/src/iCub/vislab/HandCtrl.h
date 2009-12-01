@@ -27,7 +27,7 @@
  * \section lib_sec Libraries
  *
  * - YARP (YARP_{OS,dev,sig,math})
- * - ACE
+ *   - ACE
  * - OpenVislab (libvislab, libvislab_YARP): http://OpenVislab.sf.net
  *
  * \section parameters_sec Parameters
@@ -42,7 +42,7 @@
  *   default: "conf.ini"
  *
  * --context <STRING> <BR>
- *   specifies the sub-path from @code $ICUB_ROOT/icub/app @endcode to the configuration file. <BR>
+ *   specifies the sub-path from $ICUB_ROOT/icub/app to the configuration file. <BR>
  *   default: "eye2world"
  *
  * --name <STRING> <BR>
@@ -102,13 +102,13 @@
  *  - /abstractHandCtrl <BR>
  *    This port is used to change the parameters of the module at run time or stop the module.
  *    The following commands are available:
- *    - set \[ <id> <value> \]  <BR>
- *      available options:  <BR>
- *      - direct control (on/off)  <BR>
- *        Enables/ Disables the direct control of the hand using the port specified above.
+ *    - set <id> <value> <BR>
+ *      available options:
+ *       - direct control (on/off)  <BR>
+ *         Enables/ Disables the direct control of the hand using the port specified above.
  *
- *      - recording (on/off) <BR>
- *        Enables/ Disables the recording of the performed motion.
+ *        - recording (on/off) <BR>
+ *          Enables/ Disables the recording of the performed motion.
  *
  *    - echo <str>
  *    - help
