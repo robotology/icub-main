@@ -639,33 +639,36 @@ static gint expose_CB (GtkWidget *widget, GdkEventExpose *event, gpointer data)
 				if(conversion){
                     int psb,width=320,height=240;
 					Ipp8u* im_out = ippiMalloc_8u_C1(width,height,&psb);
-					Ipp8u* im_tmp0 = ippiMalloc_8u_C1(width,height,&psb);
-                    Ipp8u* im_tmp1= ippiMalloc_8u_C1(width,height,&psb);
-                    Ipp8u* im_tmp2 = ippiMalloc_8u_C1(width,height,&psb);
+					//Ipp8u* im_tmp0 = ippiMalloc_8u_C1(width,height,&psb);
+                    //Ipp8u* im_tmp1= ippiMalloc_8u_C1(width,height,&psb);
+                    //Ipp8u* im_tmp2 = ippiMalloc_8u_C1(width,height,&psb);
 					//two copies in order to have 2 conversions
 					//the first transform the yarp mono into a 4-channel image
 					ippiCopy_8u_C1R(_outputImage->getPixelAddress(0,0), width,im_out,psb,srcsize);
 
-					ippiCopy_8u_C1R(im_out, width,im_tmp0,psb,srcsize);
-					ippiCopy_8u_C1R(im_out, width,im_tmp1,psb,srcsize);
-					ippiCopy_8u_C1R(im_out, width,im_tmp2,psb,srcsize);
+					//ippiCopy_8u_C1R(im_out, width,im_tmp0,psb,srcsize);
+					//ippiCopy_8u_C1R(im_out, width,im_tmp1,psb,srcsize);
+					//ippiCopy_8u_C1R(im_out, width,im_tmp2,psb,srcsize);
 
 					//im_tmp0=im_out;
 					//im_tmp1=im_out;
 					//im_tmp2=im_out;
 
-                    Ipp8u* im_tmp[3]={im_tmp0,im_tmp1,im_tmp2};
+                    //Ipp8u* im_tmp[3]={im_tmp0,im_tmp1,im_tmp2};
+
+                    Ipp8u* im_tmp[3]={im_out,im_out,im_out};
+                    //Ipp8u* im_tmp[3]={_outputImage->getPixelAddress(0,0),_outputImage->getPixelAddress(0,0),_outputImage->getPixelAddress(0,0)};
 					//the second transforms the 4-channel image into colorImage for yarp
 					ippiCopy_8u_P3C3R(im_tmp,psb,wModule->image_out->getPixelAddress(0,0),width*3,srcsize);
                     printf("freeing im_out  \n");	
 					ippiFree(im_out);
-					printf("freeing im_tmp0  \n");	
-					ippiFree(im_tmp0);
-					printf("freeing im_tmp1 \n");	
-					ippiFree(im_tmp1);
-					printf("freeing im_tmp2  \n");	
-					ippiFree(im_tmp2);
-					printf("freeing ended  \n");	
+					//printf("freeing im_tmp0  \n");	
+					//ippiFree(im_tmp0);
+					//printf("freeing im_tmp1 \n");	
+					//ippiFree(im_tmp1);
+					//printf("freeing im_tmp2  \n");	
+					//ippiFree(im_tmp2);
+					//printf("freeing ended  \n");	
 				}
 				else
 					ippiCopy_8u_C3R(_outputImage3->getPixelAddress(0,0),320*3,wModule->image_out->getPixelAddress(0,0),320*3,srcsize);
