@@ -26,67 +26,67 @@
  *
  * \section lib_sec Libraries
  *
- * YARP (YARP_{OS,dev,sig,math})
- *   ACE
- * OpenVislab (libvislab, libvislab_YARP): http://OpenVislab.sf.net
+ * - YARP (YARP_{OS,dev,sig,math})
+ * - ACE
+ * - OpenVislab (libvislab, libvislab_YARP): http://OpenVislab.sf.net
  *
  * \section parameters_sec Parameters
  *
- * Command-line Parameters
+ * \subsection cmdline_parameters_sec Command-line Parameters
  *
  * The following key-value pairs can be specified as command-line parameters by prefixing -- to the key
  * (e.g. --from conf.ini). The value part can be changed to suit your needs; the default values are shown below.
  *
- * --from <STRING>
- *   specifies the configuration file.
+ * --from <STRING> <BR>
+ *   specifies the configuration file. <BR>
  *   default: "conf.ini"
  *
- * --context <STRING>
- *   specifies the sub-path from $ICUB_ROOT/icub/app to the configuration file.
+ * --context <STRING> <BR>
+ *   specifies the sub-path from @code $ICUB_ROOT/icub/app @endcode to the configuration file. <BR>
  *   default: "eye2world"
  *
- * --name <STRING>
- *   specifies the name of the module (used to form the stem of module port names).
+ * --name <STRING> <BR>
+ *   specifies the name of the module (used to form the stem of module port names). <BR>
  *   default: "eye2world"
  *
- * --robot <STRING>
- *   specifies the name of the robot (used to form the root of robot port names).
+ * --robot <STRING> <BR>
+ *   specifies the name of the robot (used to form the root of robot port names). <BR>
  *   default: "icub"
  *
  *
- * Configuration File Parameters
+ * \subsection conffile_parameters_sec Configuration File Parameters
  *
  * The following key-value pairs can be specified as parameters in the configuration file
  * (they can also be specified as command-line parameters).
  * The value part can be changed to suit your needs; the default values are shown below.
  *
- * --part <STRING>
- *   specifies name of the arm to use:.
+ * --part <STRING> <BR>
+ *   specifies name of the arm to use. <BR>
  *   default: "right_arm"
  *
- * --handType <STRING>
- *   specifies the type of the hand of the iCub: "general" | "v1"
+ * --handType <STRING> <BR>
+ *   specifies the type of the hand of the iCub: "general" | "v1" <BR>
  *   default: "general"
  *
- * --motionSpec <FILE>
- *   specifies the file name of the configuration file containing the motions
- *   default: "motion_specification.ini"
+ * --motionSpec <FILE> <BR>
+ *   specifies the file name of the configuration file containing the motions <BR>
+ *   default: "motion_specification.ini" <BR>
  *
- * --sensingCalib <FILE>
- *   specifies the file name of the calibration file containing hand's the sensing constants.
+ * --sensingCalib <FILE> <BR>
+ *   specifies the file name of the calibration file containing hand's the sensing constants. <BR>
  *   default: "object_sensing.ini"
  *
- * --control <PORT>
- *   specifies the communication port for communicating with the controlboard of the arm.
+ * --control <PORT> <BR>
+ *   specifies the communication port for communicating with the control board of the arm. <BR>
  *   default: /abstractHandCtrl/control
  *
- * --q <PORT>
- *   specifies the port to directly receive joint configurations as Vector(12) to control the hand.
+ * --q <PORT> <BR>
+ *   specifies the port to directly receive joint configurations as Vector(12) to control the hand. <BR>
  *   default: /q:i
  *
- * --iKin <PORT>
- *   specifies the rpc port of iKinArmCtrl in order to check the status of that module.
- *   default: /<PART>/rpc
+ * --iKin <PORT> <BR>
+ *   specifies the rpc port of iKinArmCtrl in order to check the status of that module. <BR>
+ *   default: /<PART>/rpc <BR>
  *
  *
  * \section portsa_sec Ports Accessed
@@ -97,19 +97,18 @@
  *
  * \section portsc_sec Ports Created
  *
- *  Input ports
+ * \subsection inputports_sec Input ports
  *
- *  - /abstractHandCtrl
- *    This port is used to change the parameters of the module at run time or stop the module
+ *  - /abstractHandCtrl <BR>
+ *    This port is used to change the parameters of the module at run time or stop the module.
  *    The following commands are available:
- *    - set [ <id> <value> ]
- *      available options:
- *      - direct control (on/off)
+ *    - set \[ <id> <value> \]  <BR>
+ *      available options:  <BR>
+ *      - direct control (on/off)  <BR>
  *        Enables/ Disables the direct control of the hand using the port specified above.
  *
- *      - *recording (on/off)
- *        Enables/ Disables the recording of the performed motion. This feature isn't available/
- *        ready to use yet and it is therefore disabled
+ *      - recording (on/off) <BR>
+ *        Enables/ Disables the recording of the performed motion.
  *
  *    - echo <str>
  *    - help
@@ -122,15 +121,15 @@
  *    the user to then type in commands and receive replies.
  *
  *
- * Output ports
+ * \subsection outputports_Sec Output ports
  *
- *  - /eye2world
+ *  - /eye2world <BR>
  *    see above
  *
  *
  * \section in_files_sec Input Data Files
  *
- * Sensing Constants:
+ * \subsection sensing_sec Sensing Constants
  *
  * \code
  *	 thresholds    0  0  0  0  0  0  0  0  0  0  0  0  0  0  0  0
@@ -141,12 +140,14 @@
  * 	 derivate_gain 0  0  0  0  0  0  0  0  0  0  0  0  0  0  0  0
  * \endcode
  *
- * Motion Specification
+ * \subsection motion_sec Motion Specification
+ *
  * \code
  *   (...)
  *   [include X "y.ini"]
  *   (...)
  * \endcode
+ *
  * where X is the identifier of the motion which can be used for the "do" command and y is some
  * file name where the file should have a structure like the following:
  *
@@ -165,6 +166,7 @@
  *   numberOfPoses   2
  *   numberOfJoints 16
  * \endcode
+ *
  * The number of "POSITION${x}" entries is controlled by the "numberOfPoses" value in the "DIMENSIONS"
  * section. The size of each vector in those section is specified by "numberOfJoints": 16 in this case.
  * For a more extensive description of the file format, check the documenation of the robotMotorGui.
@@ -178,12 +180,13 @@
  *
  * \section conf_file_sec Configuration Files
  *
- * conf.ini  in $ICUB_ROOT/icub/app/AbstractHandControl/
+ * conf.ini in $ICUB_ROOT/icub/app/AbstractHandControl/
  *
  * \section tested_os_sec Tested OS
  *
  * most extensively on
- * Linux version 2.6.30-gentoo-r8 (gcc version 4.3.4 (Gentoo 4.3.4 p1.0, pie-10.1.5) )
+ * Linux version 2.6.30-gentoo-r8 (gcc version 4.3.4 (Gentoo 4.3.4 p1.0, pie-10.1.5) ) but compiles
+ * and runs fine on Windows (XP SP3) as well.
  *
  * \section example_sec Example Instantiation of the Module
  *
@@ -191,6 +194,7 @@
  *                  --handType v1
  *                  --motionSpec /home/demo/res/motion_specification.ini"
  *                  --sensingCalib "/home/demo/res/object_sensing.ini"
+ *
  *
  *
  * \author Christian Wressnegger
