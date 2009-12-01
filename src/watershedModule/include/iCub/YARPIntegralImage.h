@@ -32,10 +32,10 @@ public:
 	inline double getSaliency(int maxX, int minX, int maxY, int minY);
 	inline double getSaliencyLp(int maxT, int minT, int maxR, int minR);
 	
-	int computeCartesian(ImageOf<PixelMono> &input);
 	int computeCartesian(ImageOf<PixelMonoSigned> &input);
-	int computeLp(ImageOf<PixelMono> &input);
+	int computeCartesian(ImageOf<PixelMono> &input);
 	int computeLp(ImageOf<PixelMonoSigned> &input);
+	int computeLp(ImageOf<PixelMono> &input);
 
 private:
 	void _resize(int nC, int nR, int sfovea);

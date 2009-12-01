@@ -65,9 +65,9 @@ public:
 	unsigned long int gSum;
 	unsigned long int bSum;
 	
-	PixelMonoSigned meanRG;
-	PixelMonoSigned meanGR;
-	PixelMonoSigned meanBY;
+	PixelMono meanRG;
+	PixelMono meanGR;
+	PixelMono meanBY;
 
 	PixelBgr meanColors;
 	

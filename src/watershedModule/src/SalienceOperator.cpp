@@ -210,10 +210,10 @@ void SalienceOperator::drawFoveaBlob(ImageOf<PixelMono>& id,ImageOf<PixelInt>& t
 				id(c ,r)=pixelColour;
 }
 
-int SalienceOperator::DrawContrastLP(ImageOf<PixelMonoSigned>& rg, ImageOf<PixelMonoSigned>& gr,
-									 ImageOf<PixelMonoSigned>& by, ImageOf<PixelMono>& dst, ImageOf<PixelInt>& tagged,
+int SalienceOperator::DrawContrastLP(ImageOf<PixelMono>& rg, ImageOf<PixelMono>& gr,
+									 ImageOf<PixelMono>& by, ImageOf<PixelMono>& dst, ImageOf<PixelInt>& tagged,
 									 int numBlob, float pBU, float pTD,
-									 PixelMonoSigned prg, PixelMonoSigned pgr, PixelMonoSigned pby)
+									 PixelMono prg, PixelMono pgr, PixelMono pby)
 {
 	//__OLDIplROI zdi;
 	/*int salienceBU, salienceTD;
@@ -378,10 +378,10 @@ int SalienceOperator::DrawContrastLP(ImageOf<PixelMonoSigned>& rg, ImageOf<Pixel
 	return 0;
 }
 
-int SalienceOperator::DrawContrastLP2(ImageOf<PixelMonoSigned>& rg, ImageOf<PixelMonoSigned>& gr,
-								  ImageOf<PixelMonoSigned>& by, ImageOf<PixelMono>& dst, ImageOf<PixelInt>& tagged,
+int SalienceOperator::DrawContrastLP2(ImageOf<PixelMono>& rg, ImageOf<PixelMono>& gr,
+								  ImageOf<PixelMono>& by, ImageOf<PixelMono>& dst, ImageOf<PixelInt>& tagged,
 								  int numBlob, float pBU, float pTD,
-								  PixelMonoSigned prg, PixelMonoSigned pgr, PixelMonoSigned pby, PixelMono maxDest)
+								  PixelMono prg, PixelMono pgr, PixelMono pby, PixelMono maxDest)
 {
 	int salienceBU, salienceTD;
 	//coefficients
@@ -751,9 +751,9 @@ void SalienceOperator::resize(const int width1, const int height1)
 * @param gets as inputs the R+G-, G*R-,B+Y-, the Red, blue and green Plans 
 */
 void SalienceOperator::blobCatalog(ImageOf<PixelInt>& tagged,
-							   ImageOf<PixelMonoSigned> &rg,
-							   ImageOf<PixelMonoSigned> &gr,
-							   ImageOf<PixelMonoSigned> &by,
+							   ImageOf<PixelMono> &rg,
+							   ImageOf<PixelMono> &gr,
+							   ImageOf<PixelMono> &by,
 							   ImageOf<PixelMono> &r1,
 							   ImageOf<PixelMono> &g1,
 							   ImageOf<PixelMono> &b1,

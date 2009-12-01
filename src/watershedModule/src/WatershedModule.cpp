@@ -62,9 +62,9 @@ static yarp::sig::ImageOf<yarp::sig::PixelInt> *ptr_tagged;
 static yarp::sig::ImageOf<yarp::sig::PixelMono>* _outputImage;
 static yarp::sig::ImageOf<yarp::sig::PixelRgb>* _outputImage3;
 
-static ImageOf<PixelMonoSigned> rgs;
-static ImageOf<PixelMonoSigned> grs;
-static ImageOf<PixelMonoSigned> bys;
+static ImageOf<PixelMono> rgs;
+static ImageOf<PixelMono> grs;
+static ImageOf<PixelMono> bys;
 static ImageOf<PixelMono> r2;
 static ImageOf<PixelMono> g2;
 static ImageOf<PixelMono> b2;
@@ -152,9 +152,9 @@ WatershedModule::WatershedModule(){
 	ptr_inputGR->resize(320,240);
 	ptr_inputBY= new ImageOf<yarp::sig::PixelMono>; //pointer to the input image of the B+Y- colour opponency
 	ptr_inputBY->resize(320,240);
-	_inputImgRGS=new ImageOf<PixelMonoSigned>;
-	_inputImgGRS=new ImageOf<PixelMonoSigned>;
-	_inputImgBYS=new ImageOf<PixelMonoSigned>;
+	_inputImgRGS=new ImageOf<PixelMono>;
+	_inputImgGRS=new ImageOf<PixelMono>;
+	_inputImgBYS=new ImageOf<PixelMono>;
 	_inputImgRGS->resize(320,240);
 	_inputImgGRS->resize(320,240);
 	_inputImgBYS->resize(320,240);
@@ -373,9 +373,9 @@ void rain(){
 		Ipp32s* _inputImgRGS32=ippiMalloc_32s_C1(320,240,&psb32s);
 		Ipp32s* _inputImgGRS32=ippiMalloc_32s_C1(320,240,&psb32s);
 		Ipp32s* _inputImgBYS32=ippiMalloc_32s_C1(320,240,&psb32s);
-		/*ImageOf<PixelMonoSigned> *_inputImgRGS=new ImageOf<PixelMonoSigned>;
-		ImageOf<PixelMonoSigned> *_inputImgGRS=new ImageOf<PixelMonoSigned>;
-		ImageOf<PixelMonoSigned> *_inputImgBYS=new ImageOf<PixelMonoSigned>;
+		/*ImageOf<PixelMono> *_inputImgRGS=new ImageOf<PixelMono>;
+		ImageOf<PixelMono> *_inputImgGRS=new ImageOf<PixelMono>;
+		ImageOf<PixelMono> *_inputImgBYS=new ImageOf<PixelMono>;
 		_inputImgRGS->resize(320,240);
 		_inputImgGRS->resize(320,240);
 		_inputImgBYS->resize(320,240);*/
@@ -1144,7 +1144,7 @@ static void updateStatusbar (GtkStatusbar  *statusbar)
  
     gtk_statusbar_pop (statusbar, 0); // clear any previous message, underflow is allowed 
 				    
-	msg = g_strdup_printf ("%s - %.1f fps    r:%f;g:%f;b:%f     RG:%f;GR:%f;BY:%f","WatershedModule", fps, 
+	msg = g_strdup_printf ("%s - %.1f fps    r:%f;g:%f;b:%f     RG:%d;GR:%d;BY:%d","WatershedModule", fps, 
 		wModule->targetRED,wModule->targetGREEN,wModule->targetBLUE, wModule->searchRG, wModule->searchGR, wModule->searchBY);
 	printf("r:%f;g:%f;b:%f     RG:%f;GR:%f;BY:%f",wModule->targetRED,wModule->targetGREEN,wModule->targetBLUE, wModule->searchRG, wModule->searchGR, wModule->searchBY);
 
@@ -2629,11 +2629,11 @@ void WatershedModule::drawAllBlobs(bool stable)
 	//__OLD//salience.doIOR(tagged, IORBoxes, num_IORBoxes);
 	//float salienceBU=1.0,salienceTD=0.0;
 	IppiSize srcsize={320,240};
-	PixelMonoSigned searchTD=0;
-	searchRG=((targetRED-targetGREEN)/510+0.5)*255;
-	searchGR=((targetGREEN-targetRED)/510+0.5)*255;
-	PixelMonoSigned addRG=((targetRED+targetGREEN)/510)*255;
-	searchBY=((targetBLUE-addRG)/510+0.5)*255;
+	PixelMono searchTD=0;
+	searchRG=((targetRED-targetGREEN+255)/510)*255;
+	searchGR=((targetGREEN-targetRED+255)/510)*255;
+	PixelMono addRG=((targetRED+targetGREEN)/510)*255;
+	searchBY=((targetBLUE-addRG+255)/510)*255;
 	int psb32s;
 	Ipp32s* _inputImgRGS32=ippiMalloc_32s_C1(320,240,&psb32s);
 	Ipp32s* _inputImgGRS32=ippiMalloc_32s_C1(320,240,&psb32s);

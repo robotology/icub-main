@@ -176,9 +176,9 @@ public:
 	* @param b1 Blue plan of the opponency colour image
 	*/
 	void blobCatalog(ImageOf<PixelInt>& tagged,
-							   ImageOf<PixelMonoSigned> &rg,
-							   ImageOf<PixelMonoSigned> &gr,
-							   ImageOf<PixelMonoSigned> &by,
+							   ImageOf<PixelMono> &rg,
+							   ImageOf<PixelMono> &gr,
+							   ImageOf<PixelMono> &by,
 							   ImageOf<PixelMono> &r1,
 							   ImageOf<PixelMono> &g1,
 							   ImageOf<PixelMono> &b1,
@@ -281,18 +281,18 @@ public:
 	/**
 	*  draw the contrast LP and calculates saliency
 	*/
-	int DrawContrastLP(ImageOf<PixelMonoSigned>& rg, ImageOf<PixelMonoSigned>& gr,
-		ImageOf<PixelMonoSigned>& by, ImageOf<PixelMono>& dst, ImageOf<PixelInt>& tagged,
+	int DrawContrastLP(ImageOf<PixelMono>& rg, ImageOf<PixelMono>& gr,
+		ImageOf<PixelMono>& by, ImageOf<PixelMono>& dst, ImageOf<PixelInt>& tagged,
 		int numBlob, float pBU, float pTD,
-		PixelMonoSigned prg, PixelMonoSigned pgr, PixelMonoSigned pby);
+		PixelMono prg, PixelMono pgr, PixelMono pby);
 
 	/**
 	* draws the contrast LP2 and calculates saliency
 	*/
-	int DrawContrastLP2(ImageOf<PixelMonoSigned>& rg, ImageOf<PixelMonoSigned>& gr,
-								  ImageOf<PixelMonoSigned>& by, ImageOf<PixelMono>& dst, ImageOf<PixelInt>& tagged,
+	int DrawContrastLP2(ImageOf<PixelMono>& rg, ImageOf<PixelMono>& gr,
+								  ImageOf<PixelMono>& by, ImageOf<PixelMono>& dst, ImageOf<PixelInt>& tagged,
 								  int numBlob, float pBU, float pTD,
-								  PixelMonoSigned prg, PixelMonoSigned pgr, PixelMonoSigned pby, PixelMono maxDest);
+								  PixelMono prg, PixelMono pgr, PixelMono pby, PixelMono maxDest);
 
 	//inline methods
 	inline YARPBox & getBlobNum(int num){return m_boxes[num];}

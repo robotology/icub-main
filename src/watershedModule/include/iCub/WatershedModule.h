@@ -256,15 +256,15 @@ public:
 	/**
 	* R+G- value for the search
 	*/
-	PixelMonoSigned searchRG;
+	int searchRG;
 	/**
 	* G+R- value for the search
 	*/
-	PixelMonoSigned searchGR;
+	int searchGR;
 	/**
 	* B+Y- value for the search
 	*/
-	PixelMonoSigned searchBY;
+	int searchBY;
 
 	/**
 	* Output Bottle Port for any possible command
@@ -341,15 +341,15 @@ public:
 	/**
 	* input image of the opponency R+G-
 	*/
-	ImageOf<PixelMonoSigned> *_inputImgRGS;
+	ImageOf<PixelMono> *_inputImgRGS;
 	/**
 	* input image of the opponency G+R-
 	*/
-	ImageOf<PixelMonoSigned> *_inputImgGRS;
+	ImageOf<PixelMono> *_inputImgGRS;
 	/**
 	* input image of the opponency B+Y-
 	*/
-	ImageOf<PixelMonoSigned> *_inputImgBYS;
+	ImageOf<PixelMono> *_inputImgBYS;
 	/**
 	* image of the fovea blob
 	*/
