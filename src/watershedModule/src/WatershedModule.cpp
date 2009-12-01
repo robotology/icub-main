@@ -645,9 +645,15 @@ static gint expose_CB (GtkWidget *widget, GdkEventExpose *event, gpointer data)
 					//two copies in order to have 2 conversions
 					//the first transform the yarp mono into a 4-channel image
 					ippiCopy_8u_C1R(_outputImage->getPixelAddress(0,0), width,im_out,psb,srcsize);
-					im_tmp0=im_out;
-					im_tmp1=im_out;
-					im_tmp2=im_out;
+
+					ippiCopy_8u_C1R(im_out, width,im_tmp0,psb,srcsize);
+					ippiCopy_8u_C1R(im_out, width,im_tmp1,psb,srcsize);
+					ippiCopy_8u_C1R(im_out, width,im_tmp2,psb,srcsize);
+
+					//im_tmp0=im_out;
+					//im_tmp1=im_out;
+					//im_tmp2=im_out;
+
                     Ipp8u* im_tmp[3]={im_tmp0,im_tmp1,im_tmp2};
 					//the second transforms the 4-channel image into colorImage for yarp
 					ippiCopy_8u_P3C3R(im_tmp,psb,wModule->image_out->getPixelAddress(0,0),width*3,srcsize);
