@@ -73,6 +73,9 @@ private:
 	* destination color image of the invese outPort
 	*/
 	IplImage* dstColor2;
+	/**
+	* rectangle of the image ROI
+	*/
 	CvRect rec;
 	/**
 	* input image (always 320,240)
@@ -102,6 +105,10 @@ private:
 	* mode of work of the module
 	*/
 	 int mode;
+	 /**
+	 * bottle used for the COG
+	 */
+	 Bottle outBot1;
 public:
 	/**
 	*opens the port and intialise the module

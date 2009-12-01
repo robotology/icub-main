@@ -45,7 +45,7 @@ static void cogCalculate(IplImage image, int& xRes, int&yRes ){
 	
 	xRes=cogx/toti;
 	yRes=cogy/toti;
-
+	
 }
 
 /**
@@ -309,19 +309,20 @@ bool LogPolarModule::updateModule() {
 		port3.prepare() = *yarpReturnImagePointer;		
 		port3.write();
 		//------
-		int xCog,yCog;
-		cogCalculate(*dstColor,xCog,yCog);
+		int xCog=0,yCog=0;
+		//cogCalculate(*dstColor,xCog,yCog);
 		printf("xCog %d, yCog%d",xCog, yCog);
-		Bottle& outBot1=portCOG.prepare();
-		Bottle bOptions;
+		outBot1=portCOG.prepare();
+		//Bottle bOptions;
+		//outBot1.addString("cog:");
 		outBot1.addInt(xCog);
 		outBot1.addInt(yCog);
 		outBot1.addInt(xCog);
 		outBot1.addInt(yCog);
-		outBot1.fromString("cog:");
 		//outBot1.addList()=bOptions;
 		portCOG.writeStrict();
-		bOptions.clear();
+		//bOptions.clear();
+
 	}
 	else if(mode==2){
 		if (img==NULL) 
@@ -334,6 +335,7 @@ bool LogPolarModule::updateModule() {
 			cvCopy(img->getIplImage(),cvImage1);
 			cvSetImageROI(cvImage1,rec);
 			cvCopy(cvImage1,cvImage2);
+			cvRelease((void**)&cvImage1);
 		}
 		else
 		{
@@ -478,15 +480,17 @@ bool LogPolarModule::updateModule() {
 		//port3.write();
 		//-----------------
 		int xCog,yCog;
-		cogCalculate(*dstColor,xCog,yCog);
+		//cogCalculate(*dstColor,xCog,yCog);
+		xCog=0;yCog=0;
 		printf("xCog %d, yCog%d",xCog, yCog);
 		Bottle& outBot1=portCOG.prepare();
 		Bottle bOptions;
+		outBot1.clear();
 		outBot1.addInt(xCog);
 		outBot1.addInt(yCog);
 		outBot1.addInt(xCog);
 		outBot1.addInt(yCog);
-		outBot1.fromString("cog:");
+		//outBot1.fromString("cog:");
 		//outBot1.addList()=bOptions;
 		portCOG.writeStrict();
 		bOptions.clear();
