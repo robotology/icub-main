@@ -422,6 +422,18 @@ void connected_status()
     gtk_widget_set_sensitive (combo_netId, false);	
 	gtk_widget_set_sensitive (combo_netType, false);	
 	if (calibration_enabled) gtk_widget_set_sensitive (calibrate_button, false);
+	return;
+	
+	//not used now
+	GdkColor color;
+	color.red=50000;
+	color.green=65535;
+	color.blue=50000;
+	gtk_widget_modify_bg (start_end_button, GTK_STATE_NORMAL,	  &color);
+	gtk_widget_modify_bg (start_end_button, GTK_STATE_ACTIVE,      &color);
+	gtk_widget_modify_bg (start_end_button, GTK_STATE_PRELIGHT,    &color);
+	gtk_widget_modify_bg (start_end_button, GTK_STATE_SELECTED,    &color);	
+	gtk_widget_modify_bg (start_end_button, GTK_STATE_INSENSITIVE, &color);
 }
 
 void not_connected_status()
@@ -435,6 +447,18 @@ void not_connected_status()
     gtk_widget_set_sensitive (combo_netId, true);
 	gtk_widget_set_sensitive (combo_netType, true);	
 	if (calibration_enabled) gtk_widget_set_sensitive (calibrate_button, false);
+	return;
+	
+	//not used now
+	GdkColor color;
+	color.red=65535;
+	color.green=50000;
+	color.blue=50000;
+	gtk_widget_modify_bg (start_end_button, GTK_STATE_NORMAL,	  &color);
+	gtk_widget_modify_bg (start_end_button, GTK_STATE_ACTIVE,      &color);
+	gtk_widget_modify_bg (start_end_button, GTK_STATE_PRELIGHT,    &color);
+	gtk_widget_modify_bg (start_end_button, GTK_STATE_SELECTED,    &color);	
+	gtk_widget_modify_bg (start_end_button, GTK_STATE_INSENSITIVE, &color);
 }
 //*********************************************************************************
 
@@ -877,7 +901,8 @@ static void choose_file (GtkFileChooser *picker,	gpointer   user_data)
     filestr.open ("config.txt", fstream::out);
     if (filestr.is_open())
     {
-        filestr.write(path, strlen(path));
+        filestr<<path<<endl;
+		if (calibration_enabled==true) filestr<<"calib"<<endl;
         filestr.close();
         filestr.clear();
     }
@@ -1372,7 +1397,7 @@ int myMain( int   argc, char *argv[] )
 		printf("Initializing prompt version of canLoader...\n");
 		if      (argc==2 && strcmp(argv[1],"--help")==0)
 		{
-				printf("CANLOADER APPLICATION V2.4c\n");
+				printf("CANLOADER APPLICATION V2.5\n");
 				printf("Syntax:\n");
 				printf("1) to execute the GUI version of the canLoader:\n");
 				printf("./canLoader20 \n");
@@ -1482,7 +1507,7 @@ int myMain( int   argc, char *argv[] )
     //create the main window, and sets the callback destroy_main() to quit
     //the application when the main window is closed
     window = gtk_window_new (GTK_WINDOW_TOPLEVEL);
-    gtk_window_set_title (GTK_WINDOW (window), "CAN Flasher V2.4c");
+    gtk_window_set_title (GTK_WINDOW (window), "CAN Flasher V2.5");
     g_signal_connect (window, "destroy",G_CALLBACK (destroy_main), &window);
 
     gtk_container_set_border_width (GTK_CONTAINER (window), 8);
@@ -1500,11 +1525,11 @@ int myMain( int   argc, char *argv[] )
     //deviceNameEntry=gtk_entry_new();
     //gtk_entry_set_editable(GTK_ENTRY(deviceNameEntry),true);
 	//gtk_entry_set_text(GTK_ENTRY(deviceNameEntry),networkType.c_str());
-
-    start_end_button = gtk_button_new_with_mnemonic ("Connect");
-
     inv1 = gtk_fixed_new ();
     gtk_container_add				(GTK_CONTAINER (top_hbox), inv1);
+
+	start_end_button = gtk_button_new_with_mnemonic ("Connect");
+
     gtk_fixed_put					(GTK_FIXED(inv1), start_end_button, 0, 0);
     gtk_widget_set_size_request     (start_end_button, 80, 30);
     g_signal_connect				(start_end_button, "clicked", G_CALLBACK (start_end_click), NULL);
@@ -1594,6 +1619,20 @@ int myMain( int   argc, char *argv[] )
         g_signal_connect (download_button, "clicked", G_CALLBACK (download_click),NULL);
         gtk_widget_set_size_request     (download_button, 130, 30);
 
+		//find default path
+        fstream filestr;
+        char path[256];
+		char calib_string[256];
+        filestr.open ("config.txt", fstream::in);
+        if (filestr.is_open())
+        {
+            filestr.getline (path,255);
+			filestr.getline (calib_string,255);
+			filestr.close();
+            filestr.clear();
+        }
+
+		if (strcmp(calib_string,"calib")==0) calibration_enabled=true;
 		//calibrate button in the panel
 		if (calibration_enabled==true)
 		{
@@ -1606,22 +1645,10 @@ int myMain( int   argc, char *argv[] )
         //file chooser
         picker = gtk_file_chooser_button_new ("Pick a File", GTK_FILE_CHOOSER_ACTION_OPEN);
 
-
-        //find default path
-        fstream filestr;
-        char path[256];
-        filestr.open ("config.txt", fstream::in);
-        if (filestr.is_open())
-        {
-            filestr.getline (path,255);
-            filestr.close();
-            filestr.clear();
-            gtk_file_chooser_set_filename (GTK_FILE_CHOOSER(picker), path);
-        }
-
         gtk_box_pack_start (GTK_BOX (panel_hbox), picker, TRUE, TRUE, 0);
         g_signal_connect (picker, "selection-changed", G_CALLBACK (choose_file), NULL);
         gtk_widget_set_size_request     (picker, 130, 30);
+		gtk_file_chooser_set_filename (GTK_FILE_CHOOSER(picker), path);
 
         //progress bar
         progress_bar=gtk_progress_bar_new ();
