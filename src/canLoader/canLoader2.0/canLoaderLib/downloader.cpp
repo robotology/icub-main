@@ -1185,12 +1185,12 @@ int cDownloader::download_hexintel_line(char* line, int len, int board_pid, bool
     {
 		int value= getvalue(line+i,2);
         sprsChecksum+= value;
-        printf ("chk: %d %d\n", value, sprsChecksum);  
+    //    printf ("chk: %d %d\n", value, sprsChecksum);  
     }
 	sprsChecksum = (sprsChecksum & 0xFF);
     if (sprsChecksum == 0x00)
     {
-          printf ("Checksum OK\n");
+      //    printf ("Checksum OK\n");
     }
     else
     {
