@@ -503,6 +503,7 @@ void cleanExit(){
 		saveOptFile(_options.fileName);
 	if (frame)
 		g_object_unref(frame);*/
+	printf("cleanExit \n");
 	// Exit from application
 	gtk_main_quit ();
     //deleteObjects();
@@ -597,13 +598,10 @@ static gint expose_CB (GtkWidget *widget, GdkEventExpose *event, gpointer data)
 					}*/
 				}
 				else if(wModule->maxSaliencyBlob_flag){
-					printf("Max Saliency Blob displayed... \n");
 					wModule->drawAllBlobs(false);
-					printf("Collections of blobs calculated... \n");
 					wModule->salience->DrawMaxSaliencyBlob(*wModule->maxSalienceBlob_img,wModule->max_tag,*wModule->tagged);
 					ippiCopy_8u_C1R(wModule->maxSalienceBlob_img->getPixelAddress(0,0),320,_outputImage->getPixelAddress(0,0),320,srcsize);
 					conversion=true;
-                    printf("ippiCopy successfully executed... \n");
 				}
 				else if(wModule->contrastLP_flag){
 					wModule->drawAllBlobs(false);
@@ -639,7 +637,6 @@ static gint expose_CB (GtkWidget *widget, GdkEventExpose *event, gpointer data)
 				//-------
 				
 				if(conversion){
-                    printf("conversion initialised ...  \n");					
                     int psb,width=320,height=240;
 					Ipp8u* im_out = ippiMalloc_8u_C1(width,height,&psb);
 					Ipp8u* im_tmp0 = ippiMalloc_8u_C1(width,height,&psb);
@@ -654,11 +651,15 @@ static gint expose_CB (GtkWidget *widget, GdkEventExpose *event, gpointer data)
                     Ipp8u* im_tmp[3]={im_tmp0,im_tmp1,im_tmp2};
 					//the second transforms the 4-channel image into colorImage for yarp
 					ippiCopy_8u_P3C3R(im_tmp,psb,wModule->image_out->getPixelAddress(0,0),width*3,srcsize);
-                    printf("successfully copied to a 3 channel image ...  \n");	
+                    printf("freeing im_out  \n");	
 					ippiFree(im_out);
+					printf("freeing im_tmp0  \n");	
 					ippiFree(im_tmp0);
+					printf("freeing im_tmp1 \n");	
 					ippiFree(im_tmp1);
+					printf("freeing im_tmp2  \n");	
 					ippiFree(im_tmp2);
+					printf("freeing ended  \n");	
 				}
 				else
 					ippiCopy_8u_C3R(_outputImage3->getPixelAddress(0,0),320*3,wModule->image_out->getPixelAddress(0,0),320*3,srcsize);
@@ -1515,7 +1516,7 @@ GtkWidget* WatershedModule::createMainWindow(void)
 	gtk_window_set_default_size(GTK_WINDOW (window), 320, 700); 
 	gtk_window_set_resizable (GTK_WINDOW (window), TRUE);
 	g_signal_connect (G_OBJECT (window), "destroy",
-                      G_CALLBACK (gtk_main_quit),
+                      G_CALLBACK (cleanExit),
                       NULL);
 
     
