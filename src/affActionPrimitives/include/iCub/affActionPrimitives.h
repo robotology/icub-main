@@ -50,7 +50,7 @@ protected:
     yarp::sig::Vector xd;
     yarp::sig::Vector od;
     yarp::sig::Vector dTap;
-    yarp::sig::Vector hGrasp;
+    yarp::sig::Vector dGrasp;
 
     yarp::sig::Vector thresholds;
     yarp::sig::Vector fingerOpenPos;
@@ -97,13 +97,13 @@ public:
     void setGraspOrien(const yarp::sig::Vector &o);
     void setTapOrien(const yarp::sig::Vector &o);
     void setHome(const yarp::sig::Vector &x, const yarp::sig::Vector &o);
-    void setGraspDisplacement(const yarp::sig::Vector &h);
+    void setGraspDisplacement(const yarp::sig::Vector &disp);
     void setTapDisplacement(const yarp::sig::Vector &disp);
-
-    yarp::sig::Vector getGraspOrien()       { return oGrasp; }
-    yarp::sig::Vector getTapOrien()         { return oTap;   }
-    yarp::sig::Vector getGraspDeltaHeight() { return hGrasp; }
-    yarp::sig::Vector getTapDisplacement()  { return dTap;   }
+                                            
+    yarp::sig::Vector getGraspOrien()        { return oGrasp; }
+    yarp::sig::Vector getTapOrien()          { return oTap;   }
+    yarp::sig::Vector getGraspDisplacement() { return dGrasp; }
+    yarp::sig::Vector getTapDisplacement()   { return dTap;   }
 
     // actions list
     virtual bool reach(const yarp::sig::Vector &x, const yarp::sig::Vector &o, const bool sync=false);

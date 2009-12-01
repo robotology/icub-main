@@ -433,13 +433,13 @@ void affActionPrimitives::setHome(const Vector &x, const Vector &o)
 }
 
 
-void affActionPrimitives::setGraspDisplacement(const Vector &h)
+void affActionPrimitives::setGraspDisplacement(const Vector &disp)
 {
-    hGrasp=h;
+    dGrasp=disp;
 }
 
 
-void affActionPrimitives::setTapDisplacement(const yarp::sig::Vector &disp)
+void affActionPrimitives::setTapDisplacement(const Vector &disp)
 {
     dTap=disp;
 }
@@ -477,7 +477,7 @@ bool affActionPrimitives::grasp(const Vector &x, const bool sync)
     if (configured)
     {
         fprintf(stdout,"start grasping\n");
-        if (!reach(x+hGrasp,oGrasp,false))
+        if (!reach(x+dGrasp,oGrasp,false))
             return false;
 
         queue_push(x,oGrasp,MOTORIF_CLOSEHAND);
