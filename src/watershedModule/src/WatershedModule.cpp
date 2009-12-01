@@ -1580,63 +1580,63 @@ GtkWidget* WatershedModule::createMainWindow(void)
 	gtk_box_pack_start (GTK_BOX (boxButtons), label, FALSE, FALSE, 0);
     gtk_widget_show (label);
 
-	/* A checkbutton to control whether the value is displayed or not */
+	// A checkbutton to control whether the value is displayed or not
     buttonCheckGreen = gtk_check_button_new_with_label("<--GreenPlane");
     gtk_toggle_button_set_active (GTK_TOGGLE_BUTTON (buttonCheckGreen), FALSE);
     g_signal_connect (G_OBJECT (buttonCheckGreen), "toggled",G_CALLBACK (cb_draw_value), (gpointer) "GreenPlane");
     gtk_box_pack_start (GTK_BOX (boxButtons), buttonCheckGreen, TRUE, TRUE, 0);
     gtk_widget_show (buttonCheckGreen);
 
-	/* A checkbutton to control whether the value is displayed or not */
+	// A checkbutton to control whether the value is displayed or not
     buttonCheck = gtk_check_button_new_with_label("<--RedPlane");
     gtk_toggle_button_set_active (GTK_TOGGLE_BUTTON (buttonCheck), FALSE);
     g_signal_connect (G_OBJECT (buttonCheck), "toggled",G_CALLBACK (cb_draw_value), (gpointer) "RedPlane");
     gtk_box_pack_start (GTK_BOX (boxButtons), buttonCheck, TRUE, TRUE, 0);
     gtk_widget_show (buttonCheck);
 
-	/* A checkbutton to control whether the value is displayed or not */
+	// A checkbutton to control whether the value is displayed or not
     buttonCheck = gtk_check_button_new_with_label("<--BluePlane");
     gtk_toggle_button_set_active (GTK_TOGGLE_BUTTON (buttonCheck), FALSE);
     g_signal_connect (G_OBJECT (buttonCheck), "toggled",G_CALLBACK (cb_draw_value), (gpointer) "BluePlane");
     gtk_box_pack_start (GTK_BOX (boxButtons), buttonCheck, TRUE, TRUE, 0);
     gtk_widget_show (buttonCheck);
 
-	/* A checkbutton to control whether the value is displayed or not */
+	// A checkbutton to control whether the value is displayed or not
     buttonCheck = gtk_check_button_new_with_label("<--RGImage");
     gtk_toggle_button_set_active (GTK_TOGGLE_BUTTON (buttonCheck), FALSE);
     g_signal_connect (G_OBJECT (buttonCheck), "toggled",G_CALLBACK (cb_draw_value),(gpointer) "<--RGImage");
     gtk_box_pack_start (GTK_BOX (boxButtons), buttonCheck, TRUE, TRUE, 0);
     gtk_widget_show (buttonCheck);
 
-	/* A checkbutton to control whether the value is displayed or not */
+	// A checkbutton to control whether the value is displayed or not
     buttonCheck = gtk_check_button_new_with_label("<--GRImage");
     gtk_toggle_button_set_active (GTK_TOGGLE_BUTTON (buttonCheck), FALSE);
     g_signal_connect (G_OBJECT (buttonCheck), "toggled",G_CALLBACK (cb_draw_value),(gpointer) "<--GRImage");
     gtk_box_pack_start (GTK_BOX (boxButtons), buttonCheck, TRUE, TRUE, 0);
     gtk_widget_show (buttonCheck);
 
-	/* A checkbutton to control whether the value is displayed or not */
+	// A checkbutton to control whether the value is displayed or not
     buttonCheck = gtk_check_button_new_with_label("<--BYImage");
     gtk_toggle_button_set_active (GTK_TOGGLE_BUTTON (buttonCheck), FALSE);
     g_signal_connect (G_OBJECT (buttonCheck), "toggled",G_CALLBACK (cb_draw_value), (gpointer) "<--BYImage");
     gtk_box_pack_start (GTK_BOX (boxButtons), buttonCheck, TRUE, TRUE, 0);
     gtk_widget_show (buttonCheck);
 	
-	/* A checkbutton to control whether the value is displayed or not */
+	// A checkbutton to control whether the value is displayed or not
     buttonCheck = gtk_check_button_new_with_label("<--WatershedRain");
     gtk_toggle_button_set_active (GTK_TOGGLE_BUTTON (buttonCheck), FALSE);
     g_signal_connect (G_OBJECT (buttonCheck), "toggled",G_CALLBACK (cb_draw_value), (gpointer) "<--WatershedRain");
     gtk_box_pack_start (GTK_BOX (boxButtons), buttonCheck, TRUE, TRUE, 0);
     gtk_widget_show (buttonCheck);
 
-	/* A checkbutton to control whether the value is displayed or not */
+	// A checkbutton to control whether the value is displayed or not
     buttonCheck = gtk_check_button_new_with_label("<--MeanColorsImage");
     gtk_toggle_button_set_active (GTK_TOGGLE_BUTTON (buttonCheck), FALSE);
     g_signal_connect (G_OBJECT (buttonCheck), "toggled",G_CALLBACK (cb_draw_value),(gpointer) "<--MeanColorsImage");
     gtk_box_pack_start (GTK_BOX (boxButtons), buttonCheck, TRUE, TRUE, 0);
     gtk_widget_show (buttonCheck);
 
-	/* A checkbutton to control whether the value is displayed or not */
+	// A checkbutton to control whether the value is displayed or not
     buttonCheck = gtk_check_button_new_with_label("<--Blue1");
     gtk_toggle_button_set_active (GTK_TOGGLE_BUTTON (buttonCheck), FALSE);
     g_signal_connect (G_OBJECT (buttonCheck), "toggled",G_CALLBACK (cb_draw_value), (gpointer) "<--Blue1");
@@ -1813,21 +1813,21 @@ GtkWidget* WatershedModule::createMainWindow(void)
 
 	//-----box4
 	box4=  gtk_vbox_new (FALSE, 0);
-	/* A checkbutton to control whether the value is displayed or not */
+	// A checkbutton to control whether the value is displayed or not
     buttonCheck = gtk_check_button_new_with_label("Option1-->");
     gtk_toggle_button_set_active (GTK_TOGGLE_BUTTON (buttonCheck), FALSE);
     g_signal_connect (G_OBJECT (buttonCheck), "toggled",G_CALLBACK (cb_draw_value), (gpointer)"ColourOpponency11");
     gtk_box_pack_start (GTK_BOX (box4), buttonCheck, TRUE, TRUE, 0);
     gtk_widget_show (buttonCheck);
 
-	/* A checkbutton to control whether the value is displayed or not */
+	// A checkbutton to control whether the value is displayed or not
     buttonCheck = gtk_check_button_new_with_label("Option2-->");
     gtk_toggle_button_set_active (GTK_TOGGLE_BUTTON (buttonCheck), FALSE);
     g_signal_connect (G_OBJECT (buttonCheck), "toggled",G_CALLBACK (cb_draw_value),(gpointer) "FindEdges1");
     gtk_box_pack_start (GTK_BOX (box4), buttonCheck, TRUE, TRUE, 0);
     gtk_widget_show (buttonCheck);
 
-	/* A checkbutton to control whether the value is displayed or not */
+	// A checkbutton to control whether the value is displayed or not
     buttonCheck = gtk_check_button_new_with_label("Option3-->");
     gtk_toggle_button_set_active (GTK_TOGGLE_BUTTON (buttonCheck), FALSE);
     g_signal_connect (G_OBJECT (buttonCheck), "toggled",G_CALLBACK (cb_draw_value),(gpointer) "Normalize1");
@@ -1889,42 +1889,42 @@ GtkWidget* WatershedModule::createMainWindow(void)
 	//-----box4
 	box4=  gtk_vbox_new (FALSE, 0);
 	
-	/* A checkbutton to control whether the value is displayed or not */
+	// A checkbutton to control whether the value is displayed or not
     buttonCheck = gtk_check_button_new_with_label("Watershed1-->");
     gtk_toggle_button_set_active (GTK_TOGGLE_BUTTON (buttonCheck), FALSE);
     g_signal_connect (G_OBJECT (buttonCheck), "toggled",G_CALLBACK (cb_draw_value),(gpointer) "Watershed1");
     gtk_box_pack_start (GTK_BOX (box4), buttonCheck, TRUE, TRUE, 0);
     gtk_widget_show (buttonCheck);
 	
-	/* A checkbutton to control whether the value is displayed or not */
+	// A checkbutton to control whether the value is displayed or not
     buttonCheck = gtk_check_button_new_with_label("Tagged1-->");
     gtk_toggle_button_set_active (GTK_TOGGLE_BUTTON (buttonCheck), FALSE);
     g_signal_connect (G_OBJECT (buttonCheck), "toggled",G_CALLBACK (cb_draw_value),(gpointer) "Tagged1");
     gtk_box_pack_start (GTK_BOX (box4), buttonCheck, TRUE, TRUE, 0);
     gtk_widget_show (buttonCheck);
 
-	/* A checkbutton to control whether the value is displayed or not */
+	// A checkbutton to control whether the value is displayed or not
     buttonCheck = gtk_check_button_new_with_label("BlobList1-->");
     gtk_toggle_button_set_active (GTK_TOGGLE_BUTTON (buttonCheck), FALSE);
     g_signal_connect (G_OBJECT (buttonCheck), "toggled",G_CALLBACK (cb_draw_value),(gpointer) "BlobList1");
     gtk_box_pack_start (GTK_BOX (box4), buttonCheck, TRUE, TRUE, 0);
     gtk_widget_show (buttonCheck);
 
-	/* A checkbutton to control whether the value is displayed or not */
+	// A checkbutton to control whether the value is displayed or not
     buttonCheck = gtk_check_button_new_with_label("ContrastLP1-->");
     gtk_toggle_button_set_active (GTK_TOGGLE_BUTTON (buttonCheck), FALSE);
     g_signal_connect (G_OBJECT (buttonCheck), "toggled",G_CALLBACK (cb_draw_value),(gpointer) "ContrastLP1");
     gtk_box_pack_start (GTK_BOX (box4), buttonCheck, TRUE, TRUE, 0);
     gtk_widget_show (buttonCheck);
 
-	/* A checkbutton to control whether the value is displayed or not */
+	// A checkbutton to control whether the value is displayed or not
     buttonCheck = gtk_check_button_new_with_label("MeanColoursLP1-->");
     gtk_toggle_button_set_active (GTK_TOGGLE_BUTTON (buttonCheck), TRUE);
     g_signal_connect (G_OBJECT (buttonCheck), "toggled",G_CALLBACK (cb_draw_value),(gpointer) "MeanColoursLP1");
     gtk_box_pack_start (GTK_BOX (box4), buttonCheck, TRUE, TRUE, 0);
     gtk_widget_show (buttonCheck);
 
-	/* A checkbutton to control whether the value is displayed or not */
+	// A checkbutton to control whether the value is displayed or not
     buttonCheck = gtk_check_button_new_with_label("FoveaBlob1-->");
     gtk_toggle_button_set_active (GTK_TOGGLE_BUTTON (buttonCheck), FALSE);
     g_signal_connect (G_OBJECT (buttonCheck), "toggled",G_CALLBACK (cb_draw_value),(gpointer) "FoveaBlob1");
@@ -2015,7 +2015,7 @@ GtkWidget* WatershedModule::createMainWindow(void)
 
 	//----------BOXA SECTION:2
 	//boxA is the area that contains the two subsection for watershed and saliency operators
-	boxA = gtk_hbox_new (FALSE, 0);
+	/*boxA = gtk_hbox_new (FALSE, 0);
 	
     gtk_container_set_border_width (GTK_CONTAINER (boxA), 0);
     gtk_box_pack_start (GTK_BOX (box2), boxA, TRUE, TRUE, 0);
@@ -2026,11 +2026,11 @@ GtkWidget* WatershedModule::createMainWindow(void)
 	
 	//--box3 section A
 	box3 = gtk_hbox_new (FALSE, 0);
-	/*hscale = gtk_hscale_new (GTK_ADJUSTMENT (adj1));
-    gtk_widget_set_size_request (GTK_WIDGET (hscale), 200, -1);
-    scale_set_default_values (GTK_SCALE (hscale));
-    gtk_box_pack_start (GTK_BOX (box3), hscale, TRUE, TRUE, 0);
-    gtk_widget_show (hscale);*/
+	//hscale = gtk_hscale_new (GTK_ADJUSTMENT (adj1));
+    //gtk_widget_set_size_request (GTK_WIDGET (hscale), 200, -1);
+    //scale_set_default_values (GTK_SCALE (hscale));
+    //gtk_box_pack_start (GTK_BOX (box3), hscale, TRUE, TRUE, 0);
+    //gtk_widget_show (hscale);
 
 	label = gtk_label_new ("Options:");
 	gtk_box_pack_start (GTK_BOX (box3), label, FALSE, FALSE, 0);
@@ -2038,30 +2038,29 @@ GtkWidget* WatershedModule::createMainWindow(void)
 
 
 	scrollbar = gtk_hscrollbar_new (GTK_ADJUSTMENT (adj1));
-    /* Notice how this causes the scales to always be updated
-     * continuously when the scrollbar is moved */
-    /*gtk_range_set_update_policy (GTK_RANGE (scrollbar), 
+    
+    //gtk_range_set_update_policy (GTK_RANGE (scrollbar), 
                                  GTK_UPDATE_CONTINUOUS);
-    gtk_box_pack_start (GTK_BOX (box3), scrollbar, TRUE, TRUE, 0);
-    gtk_widget_show (scrollbar);*/
+    //gtk_box_pack_start (GTK_BOX (box3), scrollbar, TRUE, TRUE, 0);
+    //gtk_widget_show (scrollbar);
 
 	//-----Check Buttons
 	box4=  gtk_vbox_new (FALSE, 0);
-	/* A checkbutton to control whether the value is displayed or not */
+	// A checkbutton to control whether the value is displayed or not 
     buttonCheck = gtk_check_button_new_with_label("Green1-->");
     gtk_toggle_button_set_active (GTK_TOGGLE_BUTTON (buttonCheck), FALSE);
     g_signal_connect (G_OBJECT (buttonCheck), "toggled",G_CALLBACK (cb_draw_value),(gpointer) "Green1");
     gtk_box_pack_start (GTK_BOX (box4), buttonCheck, TRUE, TRUE, 0);
     gtk_widget_show (buttonCheck);
 
-	/* A checkbutton to control whether the value is displayed or not */
+	// A checkbutton to control whether the value is displayed or not
     buttonCheck = gtk_check_button_new_with_label("Red1-->");
     gtk_toggle_button_set_active (GTK_TOGGLE_BUTTON (buttonCheck), TRUE);
     g_signal_connect (G_OBJECT (buttonCheck), "toggled",G_CALLBACK (cb_draw_value),(gpointer) "Red1");
     gtk_box_pack_start (GTK_BOX (box4), buttonCheck, TRUE, TRUE, 0);
     gtk_widget_show (buttonCheck);
 
-	/* A checkbutton to control whether the value is displayed or not */
+	// A checkbutton to control whether the value is displayed or not
     buttonCheck = gtk_check_button_new_with_label("Blue1-->");
     gtk_toggle_button_set_active (GTK_TOGGLE_BUTTON (buttonCheck), FALSE);
     g_signal_connect (G_OBJECT (buttonCheck), "toggled",G_CALLBACK (cb_draw_value),(gpointer) "Blue1");
@@ -2073,21 +2072,21 @@ GtkWidget* WatershedModule::createMainWindow(void)
 
 	//-----box4
 	box4=  gtk_vbox_new (FALSE, 0);
-	/* A checkbutton to control whether the value is displayed or not */
+	// A checkbutton to control whether the value is displayed or not
     buttonCheck = gtk_check_button_new_with_label("ColourOpponency1-->");
     gtk_toggle_button_set_active (GTK_TOGGLE_BUTTON (buttonCheck), FALSE);
     g_signal_connect (G_OBJECT (buttonCheck), "toggled",G_CALLBACK (cb_draw_value),(gpointer) "ColourOpponency11");
     gtk_box_pack_start (GTK_BOX (box4), buttonCheck, TRUE, TRUE, 0);
     gtk_widget_show (buttonCheck);
 
-	/* A checkbutton to control whether the value is displayed or not */
+	// A checkbutton to control whether the value is displayed or not
     buttonCheck = gtk_check_button_new_with_label("MeanColoursLP1-->");
     gtk_toggle_button_set_active (GTK_TOGGLE_BUTTON (buttonCheck), FALSE);
     g_signal_connect (G_OBJECT (buttonCheck), "toggled",G_CALLBACK (cb_draw_value),(gpointer) "MeanColoursLP1");
     gtk_box_pack_start (GTK_BOX (box4), buttonCheck, TRUE, TRUE, 0);
     gtk_widget_show (buttonCheck);
 
-	/* A checkbutton to control whether the value is displayed or not */
+	// A checkbutton to control whether the value is displayed or not
     buttonCheck = gtk_check_button_new_with_label("Normalize1-->");
     gtk_toggle_button_set_active (GTK_TOGGLE_BUTTON (buttonCheck), FALSE);
     g_signal_connect (G_OBJECT (buttonCheck), "toggled",G_CALLBACK (cb_draw_value),(gpointer) "Normalize1");
@@ -2100,11 +2099,11 @@ GtkWidget* WatershedModule::createMainWindow(void)
 
 	//-------run button
 	button = gtk_button_new ();
-	/* Connect the "clicked" signal of the button to our callback */
+	// Connect the "clicked" signal of the button to our callback 
     g_signal_connect (G_OBJECT (button), "clicked",G_CALLBACK (callback), (gpointer) "Rain2");
-    /* This calls our box creating func tion */
+    // This calls our box creating func tion 
     boxButton = xpm_label_box (NULL, "Rain2");
-    /* Pack and show all our widgets */
+    // Pack and show all our widgets 
     gtk_widget_show (boxButton);
     gtk_container_add (GTK_CONTAINER (button), boxButton);
     gtk_widget_show (button);
@@ -2122,11 +2121,11 @@ GtkWidget* WatershedModule::createMainWindow(void)
 	
 	//--box3 section B
 	//box3 = gtk_hbox_new (FALSE, 0);
-	/*hscale = gtk_hscale_new (GTK_ADJUSTMENT (adj1));
-    gtk_widget_set_size_request (GTK_WIDGET (hscale), 200, -1);
-    scale_set_default_values (GTK_SCALE (hscale));
-    gtk_box_pack_start (GTK_BOX (box3), hscale, TRUE, TRUE, 0);
-    gtk_widget_show (hscale);*/
+	//hscale = gtk_hscale_new (GTK_ADJUSTMENT (adj1));
+    //gtk_widget_set_size_request (GTK_WIDGET (hscale), 200, -1);
+    //scale_set_default_values (GTK_SCALE (hscale));
+    //gtk_box_pack_start (GTK_BOX (box3), hscale, TRUE, TRUE, 0);
+    //gtk_widget_show (hscale);
 
 	label = gtk_label_new ("Options:");
 	gtk_box_pack_start (GTK_BOX (box3), label, FALSE, FALSE, 0);
@@ -2134,12 +2133,11 @@ GtkWidget* WatershedModule::createMainWindow(void)
 
 
 	scrollbar = gtk_hscrollbar_new (GTK_ADJUSTMENT (adj1));
-    /* Notice how this causes the scales to always be updated
-     * continuously when the scrollbar is moved */
-    /*gtk_range_set_update_policy (GTK_RANGE (scrollbar), 
+    
+    //gtk_range_set_update_policy (GTK_RANGE (scrollbar), 
                                  GTK_UPDATE_CONTINUOUS);
     gtk_box_pack_start (GTK_BOX (box3), scrollbar, TRUE, TRUE, 0);
-    gtk_widget_show (scrollbar);*/
+    gtk_widget_show (scrollbar);
 
 	//-----Check Buttons
 	box4=  gtk_vbox_new (FALSE, 0);
@@ -2209,26 +2207,28 @@ GtkWidget* WatershedModule::createMainWindow(void)
     gtk_widget_show (buttonCheck);
 	---------------*/
 
+	/*
+
 	gtk_box_pack_start (GTK_BOX (box3), box4, TRUE, TRUE, 0);
     gtk_widget_show (box4);
 
 	//-----box4
 	box4=  gtk_vbox_new (FALSE, 0);
-	/* A checkbutton to control whether the value is displayed or not */
+	// A checkbutton to control whether the value is displayed or not
     buttonCheck = gtk_check_button_new_with_label("ContrastLP2-->");
     gtk_toggle_button_set_active (GTK_TOGGLE_BUTTON (buttonCheck), FALSE);
     g_signal_connect (G_OBJECT (buttonCheck), "toggled",G_CALLBACK (cb_draw_value),(gpointer) "ContrastLP2");
     gtk_box_pack_start (GTK_BOX (box4), buttonCheck, TRUE, TRUE, 0);
     gtk_widget_show (buttonCheck);
 
-	/* A checkbutton to control whether the value is displayed or not */
+	// A checkbutton to control whether the value is displayed or not
     buttonCheck = gtk_check_button_new_with_label("MeanColoursLP2-->");
     gtk_toggle_button_set_active (GTK_TOGGLE_BUTTON (buttonCheck), FALSE);
     g_signal_connect (G_OBJECT (buttonCheck), "toggled",G_CALLBACK (cb_draw_value),(gpointer) "MeanColoursLP2");
     gtk_box_pack_start (GTK_BOX (box4), buttonCheck, TRUE, TRUE, 0);
     gtk_widget_show (buttonCheck);
 
-	/* A checkbutton to control whether the value is displayed or not */
+	// A checkbutton to control whether the value is displayed or not
     buttonCheck = gtk_check_button_new_with_label("Normalize1-->");
     gtk_toggle_button_set_active (GTK_TOGGLE_BUTTON (buttonCheck), FALSE);
     g_signal_connect (G_OBJECT (buttonCheck), "toggled",G_CALLBACK (cb_draw_value),(gpointer) "Normalize1");
@@ -2240,11 +2240,11 @@ GtkWidget* WatershedModule::createMainWindow(void)
 	//---box 4
 
 	button = gtk_button_new ();
-	/* Connect the "clicked" signal of the button to our callback */
+	// Connect the "clicked" signal of the button to our callback 
     g_signal_connect (G_OBJECT (button), "clicked",G_CALLBACK (callback), (gpointer) "DrawAllBlobs2");
-    /* This calls our box creating func tion */
+    // This calls our box creating func tion 
     boxButton = xpm_label_box (NULL, "DrawAllBlobs2");
-    /* Pack and show all our widgets */
+    // Pack and show all our widgets 
     gtk_widget_show (boxButton);
     gtk_container_add (GTK_CONTAINER (button), boxButton);
     gtk_widget_show (button);
@@ -2252,11 +2252,11 @@ GtkWidget* WatershedModule::createMainWindow(void)
 	gtk_widget_show (button);
 
 	button = gtk_button_new ();
-	/* Connect the "clicked" signal of the button to our callback */
+	// Connect the "clicked" signal of the button to our callback 
     g_signal_connect (G_OBJECT (button), "clicked",G_CALLBACK (callback), (gpointer) "drawFoveaBlob2");
-    /* This calls our box creating func tion */
+    // This calls our box creating func tion 
     boxButton = xpm_label_box (NULL, "drawFoveaBlob2");
-    /* Pack and show all our widgets */
+    // Pack and show all our widgets 
     gtk_widget_show (boxButton);
     gtk_container_add (GTK_CONTAINER (button), boxButton);
     gtk_widget_show (button);
@@ -2264,11 +2264,11 @@ GtkWidget* WatershedModule::createMainWindow(void)
 	gtk_widget_show (button);
 
 	button = gtk_button_new ();
-	/* Connect the "clicked" signal of the button to our callback */
+	// Connect the "clicked" signal of the button to our callback 
     g_signal_connect (G_OBJECT (button), "clicked",G_CALLBACK (callback), (gpointer) "drawVQColor2");
-    /* This calls our box creating func tion */
+    // This calls our box creating func tion 
     boxButton = xpm_label_box (NULL, "drawVQColor2");
-    /* Pack and show all our widgets */
+    // Pack and show all our widgets 
     gtk_widget_show (boxButton);
     gtk_container_add (GTK_CONTAINER (button), boxButton);
     gtk_widget_show (button);
@@ -2292,11 +2292,11 @@ GtkWidget* WatershedModule::createMainWindow(void)
     gtk_widget_show (box3);
 	
 	//--box3 section A
-	/*hscale = gtk_hscale_new (GTK_ADJUSTMENT (adj1));
-    gtk_widget_set_size_request (GTK_WIDGET (hscale), 200, -1);
-    scale_set_default_values (GTK_SCALE (hscale));
-    gtk_box_pack_start (GTK_BOX (box3), hscale, TRUE, TRUE, 0);
-    gtk_widget_show (hscale);*/
+	//hscale = gtk_hscale_new (GTK_ADJUSTMENT (adj1));
+    // gtk_widget_set_size_request (GTK_WIDGET (hscale), 200, -1);
+    // scale_set_default_values (GTK_SCALE (hscale));
+    //gtk_box_pack_start (GTK_BOX (box3), hscale, TRUE, TRUE, 0);
+    //gtk_widget_show (hscale);
 
 	label = gtk_label_new ("Options:");
 	gtk_box_pack_start (GTK_BOX (box3), label, FALSE, FALSE, 0);
@@ -2304,30 +2304,29 @@ GtkWidget* WatershedModule::createMainWindow(void)
 
 
 	scrollbar = gtk_hscrollbar_new (GTK_ADJUSTMENT (adj1));
-    /* Notice how this causes the scales to always be updated
-     * continuously when the scrollbar is moved */
-    /*gtk_range_set_update_policy (GTK_RANGE (scrollbar), 
+    
+    //gtk_range_set_update_policy (GTK_RANGE (scrollbar), 
                                  GTK_UPDATE_CONTINUOUS);
-    gtk_box_pack_start (GTK_BOX (box3), scrollbar, TRUE, TRUE, 0);
-    gtk_widget_show (scrollbar);*/
+    //gtk_box_pack_start (GTK_BOX (box3), scrollbar, TRUE, TRUE, 0);
+    //gtk_widget_show (scrollbar);
 
 	//-----Check Buttons
 	box4=  gtk_vbox_new (FALSE, 0);
-	/* A checkbutton to control whether the value is displayed or not */
+	// A checkbutton to control whether the value is displayed or not
     buttonCheck = gtk_check_button_new_with_label("Green1-->");
     gtk_toggle_button_set_active (GTK_TOGGLE_BUTTON (buttonCheck), FALSE);
     g_signal_connect (G_OBJECT (buttonCheck), "toggled",G_CALLBACK (cb_draw_value),(gpointer) "Green1");
     gtk_box_pack_start (GTK_BOX (box4), buttonCheck, TRUE, TRUE, 0);
     gtk_widget_show (buttonCheck);
 
-	/* A checkbutton to control whether the value is displayed or not */
+	// A checkbutton to control whether the value is displayed or not
     buttonCheck = gtk_check_button_new_with_label("Red1-->");
     gtk_toggle_button_set_active (GTK_TOGGLE_BUTTON (buttonCheck), TRUE);
     g_signal_connect (G_OBJECT (buttonCheck), "toggled",G_CALLBACK (cb_draw_value),(gpointer) "Red1");
     gtk_box_pack_start (GTK_BOX (box4), buttonCheck, TRUE, TRUE, 0);
     gtk_widget_show (buttonCheck);
 
-	/* A checkbutton to control whether the value is displayed or not */
+	// A checkbutton to control whether the value is displayed or not
     buttonCheck = gtk_check_button_new_with_label("Blue1-->");
     gtk_toggle_button_set_active (GTK_TOGGLE_BUTTON (buttonCheck), FALSE);
     g_signal_connect (G_OBJECT (buttonCheck), "toggled",G_CALLBACK (cb_draw_value),(gpointer) "Blue1");
@@ -2339,21 +2338,21 @@ GtkWidget* WatershedModule::createMainWindow(void)
 
 	//-----box4
 	box4=  gtk_vbox_new (FALSE, 0);
-	/* A checkbutton to control whether the value is displayed or not */
+	// A checkbutton to control whether the value is displayed or not
     buttonCheck = gtk_check_button_new_with_label("ColourOpponency1-->");
     gtk_toggle_button_set_active (GTK_TOGGLE_BUTTON (buttonCheck), FALSE);
     g_signal_connect (G_OBJECT (buttonCheck), "toggled",G_CALLBACK (cb_draw_value),(gpointer) "ColourOpponency11");
     gtk_box_pack_start (GTK_BOX (box4), buttonCheck, TRUE, TRUE, 0);
     gtk_widget_show (buttonCheck);
 
-	/* A checkbutton to control whether the value is displayed or not */
+	// A checkbutton to control whether the value is displayed or not
     buttonCheck = gtk_check_button_new_with_label("FindEdges1-->");
     gtk_toggle_button_set_active (GTK_TOGGLE_BUTTON (buttonCheck), FALSE);
     g_signal_connect (G_OBJECT (buttonCheck), "toggled",G_CALLBACK (cb_draw_value),(gpointer) "FindEdges1");
     gtk_box_pack_start (GTK_BOX (box4), buttonCheck, TRUE, TRUE, 0);
     gtk_widget_show (buttonCheck);
 
-	/* A checkbutton to control whether the value is displayed or not */
+	// A checkbutton to control whether the value is displayed or not
     buttonCheck = gtk_check_button_new_with_label("Normalize1-->");
     gtk_toggle_button_set_active (GTK_TOGGLE_BUTTON (buttonCheck), FALSE);
     g_signal_connect (G_OBJECT (buttonCheck), "toggled",G_CALLBACK (cb_draw_value),(gpointer) "Normalize1");
@@ -2366,11 +2365,11 @@ GtkWidget* WatershedModule::createMainWindow(void)
 
 	//-------run button
 	button = gtk_button_new ();
-	/* Connect the "clicked" signal of the button to our callback */
+	// Connect the "clicked" signal of the button to our callback 
     g_signal_connect (G_OBJECT (button), "clicked",G_CALLBACK (callback), (gpointer) "Rain3");
-    /* This calls our box creating func tion */
+    // This calls our box creating func tion 
     boxButton = xpm_label_box (NULL, "Rain3");
-    /* Pack and show all our widgets */
+    // Pack and show all our widgets 
     gtk_widget_show (boxButton);
     gtk_container_add (GTK_CONTAINER (button), boxButton);
     gtk_widget_show (button);
@@ -2387,11 +2386,11 @@ GtkWidget* WatershedModule::createMainWindow(void)
     gtk_widget_show (separator);
 	
 	//--box3 section B
-	/*hscale = gtk_hscale_new (GTK_ADJUSTMENT (adj1));
-    gtk_widget_set_size_request (GTK_WIDGET (hscale), 200, -1);
-    scale_set_default_values (GTK_SCALE (hscale));
-    gtk_box_pack_start (GTK_BOX (box3), hscale, TRUE, TRUE, 0);
-    gtk_widget_show (hscale);*/
+	// hscale = gtk_hscale_new (GTK_ADJUSTMENT (adj1));
+    // gtk_widget_set_size_request (GTK_WIDGET (hscale), 200, -1);
+    //scale_set_default_values (GTK_SCALE (hscale));
+    //gtk_box_pack_start (GTK_BOX (box3), hscale, TRUE, TRUE, 0);
+    //gtk_widget_show (hscale);
 
 	label = gtk_label_new ("OCheckList:");
 	gtk_box_pack_start (GTK_BOX (box3), label, FALSE, FALSE, 0);
@@ -2399,12 +2398,11 @@ GtkWidget* WatershedModule::createMainWindow(void)
 
 
 	scrollbar = gtk_hscrollbar_new (GTK_ADJUSTMENT (adj1));
-    /* Notice how this causes the scales to always be updated
-     * continuously when the scrollbar is moved */
-    /*gtk_range_set_update_policy (GTK_RANGE (scrollbar), 
+    
+    //gtk_range_set_update_policy (GTK_RANGE (scrollbar), 
                                  GTK_UPDATE_CONTINUOUS);
-    gtk_box_pack_start (GTK_BOX (box3), scrollbar, TRUE, TRUE, 0);
-    gtk_widget_show (scrollbar);*/
+    //gtk_box_pack_start (GTK_BOX (box3), scrollbar, TRUE, TRUE, 0);
+    //gtk_widget_show (scrollbar);
 
 	//-----Check Buttons
 	box4=  gtk_vbox_new (FALSE, 0);
@@ -2474,28 +2472,28 @@ GtkWidget* WatershedModule::createMainWindow(void)
     gtk_widget_show (buttonCheck);
 
 	-----*/
-
+	/*
 
 	gtk_box_pack_start (GTK_BOX (box3), box4, TRUE, TRUE, 0);
     gtk_widget_show (box4);
 
 	//-----box4
 	box4=  gtk_vbox_new (FALSE, 0);
-	/* A checkbutton to control whether the value is displayed or not */
+	// A checkbutton to control whether the value is displayed or not
     buttonCheck = gtk_check_button_new_with_label("ContrastLP3-->");
     gtk_toggle_button_set_active (GTK_TOGGLE_BUTTON (buttonCheck), FALSE);
     g_signal_connect (G_OBJECT (buttonCheck), "toggled",G_CALLBACK (cb_draw_value),(gpointer) "ContrastLP3");
     gtk_box_pack_start (GTK_BOX (box4), buttonCheck, TRUE, TRUE, 0);
     gtk_widget_show (buttonCheck);
 
-	/* A checkbutton to control whether the value is displayed or not */
+	// A checkbutton to control whether the value is displayed or not
     buttonCheck = gtk_check_button_new_with_label("MeanColoursLP3-->");
     gtk_toggle_button_set_active (GTK_TOGGLE_BUTTON (buttonCheck), FALSE);
     g_signal_connect (G_OBJECT (buttonCheck), "toggled",G_CALLBACK (cb_draw_value),(gpointer) "MeanColoursLP3");
     gtk_box_pack_start (GTK_BOX (box4), buttonCheck, TRUE, TRUE, 0);
     gtk_widget_show (buttonCheck);
 
-	/* A checkbutton to control whether the value is displayed or not */
+	// A checkbutton to control whether the value is displayed or not
     buttonCheck = gtk_check_button_new_with_label("Normalize1-->");
     gtk_toggle_button_set_active (GTK_TOGGLE_BUTTON (buttonCheck), FALSE);
     g_signal_connect (G_OBJECT (buttonCheck), "toggled",G_CALLBACK (cb_draw_value),(gpointer) "Normalize1");
@@ -2508,11 +2506,11 @@ GtkWidget* WatershedModule::createMainWindow(void)
 
 	//-------run button
 	button = gtk_button_new ();
-	/* Connect the "clicked" signal of the button to our callback */
+	// Connect the "clicked" signal of the button to our callback 
     g_signal_connect (G_OBJECT (button), "clicked",G_CALLBACK (callback), (gpointer) "DrawAllBlobs3");
-    /* This calls our box creating func tion */
+    // This calls our box creating func tion 
     boxButton = xpm_label_box (NULL, "DrawAllBlobs3");
-    /* Pack and show all our widgets */
+    // Pack and show all our widgets 
     gtk_widget_show (boxButton);
     gtk_container_add (GTK_CONTAINER (button), boxButton);
     gtk_widget_show (button);
@@ -2520,11 +2518,11 @@ GtkWidget* WatershedModule::createMainWindow(void)
 	gtk_widget_show (button);
 
 	button = gtk_button_new ();
-	/* Connect the "clicked" signal of the button to our callback */
+	// Connect the "clicked" signal of the button to our callback 
     g_signal_connect (G_OBJECT (button), "clicked",G_CALLBACK (callback), (gpointer) "drawFoveaBlob3");
-    /* This calls our box creating func tion */
+    // This calls our box creating func tion 
     boxButton = xpm_label_box (NULL, "drawFoveaBlob3");
-    /* Pack and show all our widgets */
+    // Pack and show all our widgets 
     gtk_widget_show (boxButton);
     gtk_container_add (GTK_CONTAINER (button), boxButton);
     gtk_widget_show (button);
@@ -2532,16 +2530,16 @@ GtkWidget* WatershedModule::createMainWindow(void)
 	gtk_widget_show (button);
 
 	button = gtk_button_new ();
-	/* Connect the "clicked" signal of the button to our callback */
+	// Connect the "clicked" signal of the button to our callback 
     g_signal_connect (G_OBJECT (button), "clicked",G_CALLBACK (callback), (gpointer) "drawVQColor3");
-    /* This calls our box creating func tion */
+    // This calls our box creating func tion 
     boxButton = xpm_label_box (NULL, "drawVQColor3");
-    /* Pack and show all our widgets */
+    // Pack and show all our widgets
     gtk_widget_show (boxButton);
     gtk_container_add (GTK_CONTAINER (button), boxButton);
     gtk_widget_show (button);
 	gtk_box_pack_start (GTK_BOX (box3), button, TRUE, TRUE, 0);
-	gtk_widget_show (button);
+	gtk_widget_show (button);*/
 
 	//------ HSEPARATOR ---------------
 	separator = gtk_hseparator_new ();
