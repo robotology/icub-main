@@ -153,6 +153,19 @@ bool iCub::iha::Actions::open(yarp::os::Property& config)
 	return true;
 }
 
+
+int iCub::iha::Actions::getActionIndex(std::string name) {
+  int act = -1;
+  for(int i = 0; i < num_actions; i++) {
+    if(action_names[i].compare(name) == 0) {
+      act = i;
+      break;
+    }
+  }
+  return act;
+}
+
+
 vector<std::string> iCub::iha::Actions::getActionCommandList() 
 {
 	return getActionCommandList(bset_default);

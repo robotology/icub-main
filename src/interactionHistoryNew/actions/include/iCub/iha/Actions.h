@@ -100,6 +100,7 @@ public:
 	int getNumActions() { return num_actions; };
 
 
+	int getActionIndex(std::string name);
 
 	std::string getActionName(int act) {return action_names[act]; }
 
