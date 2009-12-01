@@ -307,8 +307,32 @@ void affActionPrimitives::queue_push(const Vector &x, const Vector &o, const int
     mutex->wait();
     MotorIFQueue el;
 
+    el.execReach=true;
     el.x=x;
     el.o=o;
+    el.handId=handId;
+
+    q.push_back(el);
+    mutex->post();
+}
+
+
+void affActionPrimitives::queue_push(const Vector &x, const Vector &o)
+{
+    queue_push(x,o,MOTORIF_NOPHAND);
+}
+
+
+void affActionPrimitives::queue_push(const int handId)
+{
+    Vector dummy(1);
+
+    mutex->wait();
+    MotorIFQueue el;
+
+    el.execReach=false;
+    el.x=dummy;
+    el.o=dummy;
     el.handId=handId;
 
     q.push_back(el);
@@ -333,7 +357,7 @@ void affActionPrimitives::queue_exec()
 
     if (exec)
     {
-        if (el.x.length())
+        if (el.execReach)
             reach(el.x,el.o,false);
 
         (this->*executeHand[el.handId])(false);
@@ -487,7 +511,7 @@ bool affActionPrimitives::tap(const Vector &x, const bool sync)
         if (!reach(x,oTap,false))
             return false;
 
-        queue_push(x+dTap,oTap,MOTORIF_NOPHAND);
+        queue_push(x+dTap,oTap);
 
         bool ret=true;
 

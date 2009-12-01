@@ -64,6 +64,7 @@ protected:
 
     typedef struct
     {
+        bool execReach;
         yarp::sig::Vector x;
         yarp::sig::Vector o;
         bool handId;
@@ -79,6 +80,8 @@ protected:
 
     void queue_clear();
     void queue_push(const yarp::sig::Vector &x, const yarp::sig::Vector &o, const int handId);
+    void queue_push(const yarp::sig::Vector &x, const yarp::sig::Vector &o);
+    void queue_push(const int handId);
     void queue_exec();
 
     virtual void run();    
