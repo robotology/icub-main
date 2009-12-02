@@ -36,7 +36,7 @@ namespace vislab {
 namespace control {
 
 /**
- * @ingroup libHandCtrl
+ * @ingroup abstractHandCtrl_lib
  *
  * This class provides several metrics for a hand of the iCub.
  *

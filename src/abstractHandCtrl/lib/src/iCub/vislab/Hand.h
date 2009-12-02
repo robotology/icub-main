@@ -15,9 +15,9 @@
  *******************************************************************************/
 
 /**
- * @defgroup libHandCtrl
+ * @defgroup abstractHandCtrl_lib libHandCtrl
  *
- * @ingroup icub_module
+ * @ingroup icub_abstractHandCtrl
  *
  * Classes for controlling the hands of the iCub.
  *
@@ -57,7 +57,7 @@ namespace vislab {
 namespace control {
 
 /**
- * @ingroup libHandCtrl
+ * @ingroup abstractHandCtrl_lib
  *
  * Provides an abstraction layer of the iCub's hands.
  *
