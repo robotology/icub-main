@@ -230,6 +230,14 @@ bool SensorMotorInterfaceModule::open(Searchable& config){
 	sensorOutputPort.open(sensorOutputPortName.c_str());
 	//------------------------------------------------------
 
+	//------------------------------------------------------
+    // Sensor Output Port to Short Term Memory
+    ConstString memOutputPortName = getName("memsensor:out");
+	// open the memory output port 
+	IhaDebug::pmesg(DBGL_INFO,"Writing memory sensor output to port %s\n",memOutputPortName.c_str());
+	memOutputPort.open(memOutputPortName.c_str());
+	//------------------------------------------------------
+
 
 	//------------------------------------------------------
 	// create names of the sensor ports
@@ -336,6 +344,8 @@ bool SensorMotorInterfaceModule::close(){
     statusPort.close();
     fprintf(stderr,"sensorOutputPort.close();\n");
     sensorOutputPort.close();
+    fprintf(stderr,"memOutputPort.close();\n");
+    memOutputPort.close();
     return true;
 }
 
@@ -343,6 +353,8 @@ bool SensorMotorInterfaceModule::interruptModule(){
 
     fprintf(stderr,"sensorOutputPort.interrupt();\n");
     sensorOutputPort.interrupt();
+    fprintf(stderr,"memOutputPort.interrupt();\n");
+    memOutputPort.interrupt();
     fprintf(stderr,"faceCoordsPort.interrupt();\n");
     faceCoordsPort.interrupt();
     if(use_gaze) {
@@ -366,30 +378,36 @@ bool SensorMotorInterfaceModule::updateModule(){
     // Read the encoders data
     Bottle* smData = sensorMotorPort.read();
 
-    // create an output bottle
+    // create an output bottle for data to the motivation dynamics
     Bottle outData;
+    //create an output bottle for data to the short term memory
+    Bottle outMemData;
 
     // timestep is first
     Value ts=Value(smData->get(0));
     outData.addInt(ts.asInt());
     writeStatus(statusPort,"SensMotIf","TS",ts.asInt());
-
+    
     // copy all the encoders data except the last item 
     //(which is the current action) to our output
     for (int i=1;i<smData->size()-1;i++) {
         Value item = Value(smData->get(i));
         outData.addDouble(item.asDouble());
     }
-
+    
     // face detect - just output the first item which is a boolean detect/not
+    outMemData.addString("face");
     if (faceDetectLoop->getFaceState()) {
         outData.addDouble(1);
+        outMemData.addDouble(1);
     } else {
         outData.addDouble(0);
+        outMemData.addDouble(0);
     }
-
     // value of the sound sensor
+    outMemData.addString("sound");
     outData.addDouble(soundSensorReadLoop->getCurrentSoundSensor());
+    outMemData.addDouble(soundSensorReadLoop->getCurrentSoundSensor());
 
     //get something from the gaze tracker here
     if(use_gaze)
@@ -398,8 +416,10 @@ bool SensorMotorInterfaceModule::updateModule(){
         outData.addDouble(0.0);
     
     // current action value
+    outMemData.addString("action");
     Value ca=Value(smData->get(smData->size()-1));
     outData.addDouble(ca.asDouble());
+    outMemData.addDouble(ca.asDouble());
 
     // image sensors last
     yarp::sig::ImageOf< yarp::sig::PixelRgb >* ci = imageReadLoop->aquireCurrentImage();
@@ -419,6 +439,12 @@ bool SensorMotorInterfaceModule::updateModule(){
     sensorOutputPort.write(outData);
     if (echo_output) {
         IhaDebug::pmesg(DBGL_STATUS1,"%s\n",outData.toString().c_str());
+    }
+
+    // write to the stm output port
+    memOutputPort.write(outMemData);
+    if (echo_output) {
+        IhaDebug::pmesg(DBGL_STATUS1,"%s\n",outMemData.toString().c_str());
     }
 
     if (IhaDebug::getLevel()==DBGL_STATUSLINE) {

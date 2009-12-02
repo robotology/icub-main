@@ -69,6 +69,8 @@ private:
     yarp::os::BufferedPort<yarp::os::Bottle> gazeCoordsPort; // for reading coordinates of gaze
     yarp::os::BufferedPort<yarp::os::Bottle> soundSensorPort; // sound sensor data from sound server
     yarp::os::Port sensorOutputPort; // place where final sensor array is written
+    yarp::os::Port memOutputPort; // place where sensor readings for short term memory
+                                  // are written
     yarp::os::Port statusPort;
 
     // parameters read from ini file/command line
