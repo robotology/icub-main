@@ -2,12 +2,41 @@
  * Copyright (C) 2007-2009 Arjan Gijsberts @ Italian Institute of Technology
  * CopyPolicy: Released under the terms of the GNU GPL v2.0.
  *
- * Executable for merging data from different ports into a single LM formatted
- * port (portablepair<vector>)
+ * Executable for merging data from different ports into a single port
  *
  */
 
-// ./merge --config "(/foo:o[3,1] /bar:o[2,3][1-4] (/baz:o))"
+// e.g. ./merge --config "(/foo:o[3,1] /bar:o[2,3][1-4] (/baz:o))"
+
+/**
+ *
+ * Format grammar:
+ *
+
+<format>            : <bottle_specifier>
+
+<specifier>         : <port_specifier>
+                    | <bottle_specifier>
+
+<bottle_specifier>  : '(' <specifier> (' ' <specifier>)* ')'
+
+<port_specifier>    : <port_name> ( '[' <indices> ']' )*
+
+<indices>           : <index> ( ',' <index> )+
+
+<index>             : <single_index>
+                    | <range_index>
+
+<port_name>         : [a-zA-Z0-9_:/]+
+
+<single_index>      : [0-9]+
+
+<range_index>       : [0-9]+ '-' [0-9]+
+
+
+ *
+ *
+ */
 
 #include <iostream>
 #include <sstream>
@@ -331,7 +360,13 @@ protected:
             it++;
             int idx = *it2 - 1;
             if(it == this->indices.end()) {
-                out.add(in.get(idx));
+                if(in.get(idx).isList()) {
+                    // add unwrapped bottle
+                    this->addBottle(out, *(in.get(idx).asList()));
+                } else {
+                    // add value directly
+                    out.add(in.get(idx));
+                }
             } else {
                 if(!in.get(idx).isList()) {
                     throw std::runtime_error("Cannot index non-list type");
@@ -342,6 +377,18 @@ protected:
 
         }
 
+    }
+
+    /**
+     * Adds all the elements in one bottle to an output bottle.
+     *
+     * @param out a reference to the output bottle
+     * @param in a reference to the input bottle
+     */
+    virtual void addBottle(Bottle& out, const Bottle& in) {
+        for(int i = 0; i < in.size(); i++) {
+            out.add(in.get(i));
+        }
     }
 
 public:
@@ -388,10 +435,7 @@ public:
     virtual void select(Bottle& bot, SourceList& sl) {
         if(this->indices.size() == 0) {
             // no indices, select all
-            Bottle& src = sl.getSource(this->name).getData();
-            for(int i = 0; i < src.size(); i++) {
-                bot.add(src.get(i));
-            }
+            this->addBottle(bot, sl.getSource(this->name).getData());
         } else {
             // select sub-bottles and items recursively
             std::list< std::list<int> >::iterator it1;
@@ -434,11 +478,9 @@ public:
      * @throw a runtime error if parsing the index specifiers fails
      */
     virtual void loadIndices(std::string format) {
-        std::cout << "Parsing index format: " << format << std::endl;
         std::list<int> idxList;
         std::vector<std::string> indexSplit = this->split(format, ",");
         for (int i = 0; i < indexSplit.size(); i++) {
-            std::cout << "  Handling " << indexSplit[i] << std::endl;
             std::vector<std::string> rangeSplit = this->split(indexSplit[i], "-");
 
             if (rangeSplit.size() == 0) {
