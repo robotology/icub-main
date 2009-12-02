@@ -109,7 +109,6 @@
  *        Enables/ Disables the direct control of the hand using the port specified above.
  *      - recording (on/off) <br />
  *        Enables/ Disables the recording of the performed motion.
- *
  *    - echo <str>
  *    - help
  *    - quit
@@ -187,7 +186,7 @@
  *
  * most extensively on
  * Linux version 2.6.30-gentoo-r8 (gcc version 4.3.4 (Gentoo 4.3.4 p1.0, pie-10.1.5) ) but compiles
- * and runs fine on Windows (XP SP3) as well.
+ * and runs fine on Windows XP SP3 MSVC++8 as well.
  *
  * \section example_sec Example Instantiation of the Module
  *
