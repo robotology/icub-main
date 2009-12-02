@@ -24,14 +24,13 @@
  * think of a table the robot is operating on)
  *
  * 
- * \section lib_sec Libraries
+ * \section lib_sec Dependencies
  *
  * - YARP (YARP_{OS,dev,sig,math})
  *   - ACE
  * - iKin
  *   - IPOPT
  *   - ctrlLib
- * - libHandCtrl
  * - OpenVislab (libvislab, libvislab_YARP): http://OpenVislab.sf.net
  *
  * \section parameters_sec Parameters
@@ -110,7 +109,6 @@
  *        This value will be added to the z-offset of the projection plan to the robot's base
  *        coordinates. This may help you time find the correct position of the projection plane
  *        without modifying the configuration and restarting the module.
- *
  *      - motor2eye (numeric) <br />
  *        This value is supposed to compensate the error introduced by the fact that the distance
  *        between the lens and the motor of the eye is not taken into account for the kinematics.
@@ -118,7 +116,6 @@
  *        transformation to the projection plane but is again subtracted from the result afterwards.
  *        That way it is possible to adjust the accuracy of the project without messing about the
  *        real relative distance to the projection plane.
- *
  *      - scale (numeric) <br />
  *        This one will be multiplied to the resulting x and y coordinate. This is another
  *        Possibility to tweak accuracy of the projection.
@@ -203,7 +200,7 @@
  *
  * \author Christian Wressnegger
  * 
- * Copyright (C) 2009 Christian Wressnegger
+ * Copyright (C) 2009 Christian Wressnegger<br />
  * CopyPolicy: Released under the terms of the GNU GPL v2.0.
  */
 
