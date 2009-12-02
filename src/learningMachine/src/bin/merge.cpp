@@ -6,7 +6,7 @@
  *
  */
 
-// e.g. ./merge --config "(/foo:o[3,1] /bar:o[2,3][1-4] (/baz:o))"
+// e.g. ./merge --format "(/foo:o[3,1] /bar:o[2,3][1-4] (/baz:o))"
 
 /**
  *
