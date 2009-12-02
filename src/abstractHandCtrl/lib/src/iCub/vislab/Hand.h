@@ -24,7 +24,7 @@
  * \section lib_sec Dependencies
  *
  * - YARP (YARP_{OS,dev,sig,math})
- * - ACE
+ *   - ACE
  * - OpenVislab (libvislab, libvislab_YARP): http://OpenVislab.sf.net
  *
  *
