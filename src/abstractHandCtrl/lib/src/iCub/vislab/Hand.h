@@ -402,11 +402,11 @@ public:
 	bool move(const vislab::yarp::util::MotionSequence& seq, const std::set<int> joints, const bool sync = true,
 			const bool invert = false);
 
-	/**
-	 * This function allows one to dis-/ enable the
-	 * @param b
-	 */
-	void doControlledMovements(const bool b = true);
+//	/**
+//	 * This function allows one to dis-/ enable the
+//	 * @param b
+//	 */
+//	void doControlledMovements(const bool b = true);
 
 	/**
 	 * En-/Disables the recording for the {@link Hand}s movements.
