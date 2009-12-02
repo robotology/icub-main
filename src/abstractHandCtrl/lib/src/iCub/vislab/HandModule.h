@@ -36,7 +36,7 @@ namespace vislab {
 namespace control {
 
 /**
- * @ingroup abstractHandCtrl_lib
+ * @ingroup libHandCtrl
  *
  * The base module for our implementations related to iCub's hand.
  *

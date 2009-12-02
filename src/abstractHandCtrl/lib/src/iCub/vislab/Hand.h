@@ -15,7 +15,7 @@
  *******************************************************************************/
 
 /**
- * @defgroup abstractHandCtrl_lib libHandCtrl
+ * @defgroup libHandCtrl libHandCtrl
  *
  * @ingroup icub_abstractHandCtrl
  *
@@ -30,6 +30,9 @@
  *
  * @author Christian Wressnegger
  * @date 2009
+ *
+ * Copyright (C) 2009 Christian Wressnegger<br />
+ * CopyPolicy: Released under the terms of the GNU GPL v2.0.
  *
  */
 
@@ -57,7 +60,7 @@ namespace vislab {
 namespace control {
 
 /**
- * @ingroup abstractHandCtrl_lib
+ * @ingroup libHandCtrl
  *
  * Provides an abstraction layer of the iCub's hands.
  *

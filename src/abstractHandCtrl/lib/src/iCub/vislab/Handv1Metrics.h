@@ -38,7 +38,7 @@ namespace vislab {
 namespace control {
 
 /**
- * @ingroup abstractHandCtrl_lib
+ * @ingroup libHandCtrl
  *
  * This class extends the initially provided metrics for a hand of the iCub in order to
  * determine the actually used voltage and the error with respect to the supposed voltage.
