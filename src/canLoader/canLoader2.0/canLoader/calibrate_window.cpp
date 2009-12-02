@@ -267,7 +267,7 @@ void file_load_click (GtkButton *button,	gpointer ch_p)
 
 	int ri=0;
 	int ci=0;
-	Sleep(1000);
+	drv_sleep (1000);
 	for (ri=0;ri<6;ri++)
 			for (ci=0;ci<6;ci++)
 				{
