@@ -32,19 +32,30 @@ static void cogCalculate(IplImage image, int& xRes, int&yRes ){
 	int ySize=image.height;
 	double cogx=0,cogy=0;
 	double toti=0;
-	uchar* data=(uchar*)(image.imageData);
-	int step       = image.widthStep/sizeof(uchar);
+	
+	int step = image.widthStep/sizeof(uchar);
+	int channels = image.nChannels;
+	uchar* data = (uchar *)image.imageData;
+	int k=0;
 
 	for (int x=0;x<xSize;x++){
 		for(int y=0;y<ySize;y++){
 			toti+=data[x+y*step];
+
+			if(data[x+y*step]!=0)
+				printf("%d-",data[x*channels+y*step+k]);
 			cogx+=x*data[x+y*step];
 			cogy+=y*data[x+y*step];
 		}
 	}
-	
-	xRes=cogx/toti;
-	yRes=cogy/toti;
+	if(toti==0){
+		xRes=xSize/2;
+		yRes=ySize/2;
+	}
+	else{
+		xRes=cogx/toti;
+		yRes=cogy/toti;
+	}
 	
 }
 
@@ -312,7 +323,9 @@ bool LogPolarModule::updateModule() {
 		int xCog,yCog;
 		cogCalculate(*dstColor,xCog,yCog);
 		printf("xCog %d, yCog%d",xCog, yCog);
-		
+		if((xCog>320)||(yCog>240)){
+			xCog=180;yCog=120;
+		}
 		//Bottle bOptions;
 		Bottle& outBot1=portCOG.prepare();
 		outBot1.clear();
@@ -485,6 +498,9 @@ bool LogPolarModule::updateModule() {
 		int xCog,yCog;
 		cogCalculate(*dstColor,xCog,yCog);
 		printf("xCog %d, yCog%d",xCog, yCog);
+		if((xCog>320)||(xCog<0)||(yCog<0)||(yCog>240)){
+			xCog=160;yCog=120;
+		}
 		Bottle& outBot1=portCOG.prepare();
 		outBot1.clear();
 		outBot1.addInt(xCog);
