@@ -31,6 +31,7 @@
  * - iKin
  *   - IPOPT
  *   - ctrlLib
+ * - libHandCtrl
  * - OpenVislab (libvislab, libvislab_YARP): http://OpenVislab.sf.net
  *
  * \section parameters_sec Parameters
@@ -40,20 +41,20 @@
  * The following key-value pairs can be specified as command-line parameters by prefixing -- to the key 
  * (e.g. --from conf.ini). The value part can be changed to suit your needs; the default values are shown below.
  *
- * --from <STRING> <BR>
- *   specifies the configuration file. <BR>
+ * --from &lt;STRING&gt; <br />
+ *   specifies the configuration file. <br />
  *   default: "conf.ini"
  *
- * --context <STRING> <BR>
- *   specifies the sub-path from $ICUB_ROOT/icub/app to the configuration file. <BR>
+ * --context &lt;STRING&gt; <br />
+ *   specifies the sub-path from $ICUB_ROOT/icub/app to the configuration file. <br />
  *   default: "eye2world"
  *
- * --name <STRING> <BR>
- *   specifies the name of the module (used to form the stem of module port names). <BR>
+ * --name &lt;STRING&gt; <br />
+ *   specifies the name of the module (used to form the stem of module port names). <br />
  *   default: "eye2world"
  *
- * --robot <STRING> <BR>
- *   specifies the name of the robot (used to form the root of robot port names). <BR>
+ * --robot &lt;STRING&gt; <br />
+ *   specifies the name of the robot (used to form the root of robot port names). <br />
  *   default: "icub"
  *
  *
@@ -63,36 +64,36 @@
  * (they can also be specified as command-line parameters).
  * The value part can be changed to suit your needs; the default values are shown below. 
  *   
- * --eyeCalibration <FILE> <BR>
+ * --eyeCalibration &lt;FILE&gt; <br />
  *   specifies the file name to the calibration file for the iCub's eyes.
  *
- * --tableConfiguration <FILE> <BR>
+ * --tableConfiguration &lt;FILE&gt; <br />
  *   specifies the file name to configuration of the file.
  *
- * --in <PORT> <BR>
- *   specifies the input port name for the 2D coordinate to be transformed. <BR>
+ * --in &lt;PORT&gt; <br />
+ *   specifies the input port name for the 2D coordinate to be transformed. <br />
  *   default: /in
  *
- * --headState <PORT> <BR>
- *   specifies the input port name for head's state (position/ pose). <BR>
+ * --headState &lt;PORT&gt; <br />
+ *   specifies the input port name for head's state (position/ pose). <br />
  *   default: /icub/head/state:i
  *
- * --torsoState <PORT> <BR>
- *   specifies the input port name for head's state (position/ pose). <BR>
+ * --torsoState &lt;PORT&gt; <br />
+ *   specifies the input port name for head's state (position/ pose). <br />
  *   default: /icub/torso/state:i
  *
- * --out <PORT> <BR>
- *   specifies the output port name for the resulting 3D coordinates. <BR>
+ * --out &lt;PORT&gt; <br />
+ *   specifies the output port name for the resulting 3D coordinates. <br />
  *   default: /out
  *
  * 
  * \section portsa_sec Ports Accessed
  * 
- * - /icub/head/state:o <BR>
+ * - /icub/head/state:o <br />
  *   The coordinates are expected to be wrapped in a Bottle object as double values:
  *   @code Bottle(double:neckPitch, double:neckRoll, double:neckYaw, double:eyesTilt, double:eyesVesion, double:eyesVergence) @endcode
  *
- * - /icub/torso/state:o <BR>
+ * - /icub/torso/state:o <br />
  *   The coordinates are expected to be wrapped in a Bottle object as double values:
  *   @code Bottle(double:yaw, double:roll, double:pitch) @endcode
  *                      
@@ -100,27 +101,27 @@
  *
  * \subsection inputports_sec Input ports
  *
- *  - /eye2world <BR>
+ *  - /eye2world <br />
  *    This port is used to change the parameters of the module at run time or stop the module
  *    The following commands are available:
- *    - set <id> <value> <BR>
+ *    - set &#91; &lt;id&gt; &lt;value&gt; &#93; <br />
  *      available options:
- *        - heightOffset (numeric) <BR>
- *          This value will be added to the z-offset of the projection plan to the robot's base
- *          coordinates. This may help you time find the correct position of the projection plane
- *          without modifying the configuration and restarting the module.
+ *      - heightOffset (numeric) <br />
+ *        This value will be added to the z-offset of the projection plan to the robot's base
+ *        coordinates. This may help you time find the correct position of the projection plane
+ *        without modifying the configuration and restarting the module.
  *
- *        - motor2eye (numeric) <BR>
- *          This value is supposed to compensate the error introduced by the fact that the distance
- *          between the lens and the motor of the eye is not taken into account for the kinematics.
- *          In order to achieve this, the value is simply added to the z coordinate of the
- *          transformation to the projection plane but is again subtracted from the result afterwards.
- *          That way it is possible to adjust the accuracy of the project without messing about the
- *          real relative distance to the projection plane.
+ *      - motor2eye (numeric) <br />
+ *        This value is supposed to compensate the error introduced by the fact that the distance
+ *        between the lens and the motor of the eye is not taken into account for the kinematics.
+ *        In order to achieve this, the value is simply added to the z coordinate of the
+ *        transformation to the projection plane but is again subtracted from the result afterwards.
+ *        That way it is possible to adjust the accuracy of the project without messing about the
+ *        real relative distance to the projection plane.
  *
- *        - scale (numeric) <BR>
- *          This one will be multiplied to the resulting x and y coordinate. This is another
- *          Possibility to tweak accuracy of the projection.
+ *      - scale (numeric) <br />
+ *        This one will be multiplied to the resulting x and y coordinate. This is another
+ *        Possibility to tweak accuracy of the projection.
  *
  *    - echo <str>
  *    - help
@@ -132,19 +133,19 @@
  *    directive: yarp rpc /eye2world This opens a connection from a terminal to the port and allows
  *    the user to then type in commands and receive replies.
  *
- *  - /eye2world/in <BR>
- *    cf. Input parameter "--in" <BR>
+ *  - /eye2world/in <br />
+ *    cf. Input parameter "--in" <br />
  *    The coordinates are wrapped in a Bottle object as double values: @code Bottle([ConstString:cam,] double:x, double:y[, double:height]) @endcode
  *    Optionally it is possible to specify the camera/ eye to use ("left", "right") and an additional offset with respect to the
  *    z-axes of the projection plane.
  *
  * \subsection outputports Output ports
  *
- *  - /eye2world <BR>
+ *  - /eye2world <br />
  *    see above
  *
- *  - /eye2world/out <BR>
- *    cf. Input parameter "--out" <BR>
+ *  - /eye2world/out <br />
+ *    cf. Input parameter "--out" <br />
  *    The coordinates are wrapped in a Bottle object as double values: @code Bottle(double:x, double:y, double:z) @endcode
  *
  *
@@ -191,11 +192,13 @@
  *
  * \section example_sec Example Instantiation of the Module
  * 
- * eye2world <BR>
- * --in /in <BR>
- * --eyeCalibration "iCubLisboa01/conf/icubEyes.ini" <BR>
- * --tableConfiguration "iCubLisboa01/conf/table.ini" <BR>
- * --out /out
+ * <dl>
+ * 	<dt>eye2world</dt>
+ * 		<dd>--in /in<dd>
+ *    <dd>--eyeCalibration "iCubLisboa01/conf/icubEyes.ini"</dd>
+ * 		<dd>--tableConfiguration "iCubLisboa01/conf/table.ini" </dd>
+ * 		<dd>--out /out</dd>
+ * </dl>
  *
  *
  * \author Christian Wressnegger
