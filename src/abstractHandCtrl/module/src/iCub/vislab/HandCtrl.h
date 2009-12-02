@@ -34,23 +34,23 @@
  *
  * \subsection cmdline_parameters_sec Command-line Parameters
  *
- * The following key-value pairs can be specified as command-line parameters by prefixing -- to the key
+ * The following key-value pairs can be specified as command-line parameters by prefixing "--" to the key
  * (e.g. --from conf.ini). The value part can be changed to suit your needs; the default values are shown below.
  *
- * --from <STRING> <BR>
- *   specifies the configuration file. <BR>
+ * - from &lt;STRING&gt; <br />
+ *   specifies the configuration file. <br />
  *   default: "conf.ini"
  *
- * --context <STRING> <BR>
- *   specifies the sub-path from $ICUB_ROOT/icub/app to the configuration file. <BR>
+ * - context &lt;STRING&gt; <br />
+ *   specifies the sub-path from $ICUB_ROOT/icub/app to the configuration file. <br />
  *   default: "eye2world"
  *
- * --name <STRING> <BR>
- *   specifies the name of the module (used to form the stem of module port names). <BR>
+ * - name &lt;STRING&gt; <br />
+ *   specifies the name of the module (used to form the stem of module port names). <br />
  *   default: "eye2world"
  *
- * --robot <STRING> <BR>
- *   specifies the name of the robot (used to form the root of robot port names). <BR>
+ * - robot &lt;STRING&gt; <br />
+ *   specifies the name of the robot (used to form the root of robot port names). <br />
  *   default: "icub"
  *
  *
@@ -60,33 +60,33 @@
  * (they can also be specified as command-line parameters).
  * The value part can be changed to suit your needs; the default values are shown below.
  *
- * --part <STRING> <BR>
- *   specifies name of the arm to use. <BR>
+ * - part &lt;STRING&gt; <br />
+ *   specifies name of the arm to use. <br />
  *   default: "right_arm"
  *
- * --handType <STRING> <BR>
- *   specifies the type of the hand of the iCub: "general" | "v1" <BR>
+ * - handType &lt;STRING&gt; <br />
+ *   specifies the type of the hand of the iCub: "general" | "v1" <br />
  *   default: "general"
  *
- * --motionSpec <FILE> <BR>
- *   specifies the file name of the configuration file containing the motions <BR>
- *   default: "motion_specification.ini" <BR>
+ * - motionSpec &lt;FILE&gt; <br />
+ *   specifies the file name of the configuration file containing the motions <br />
+ *   default: "motion_specification.ini" <br />
  *
- * --sensingCalib <FILE> <BR>
- *   specifies the file name of the calibration file containing hand's the sensing constants. <BR>
+ * - sensingCalib &lt;FILE&gt; <br />
+ *   specifies the file name of the calibration file containing hand's the sensing constants. <br />
  *   default: "object_sensing.ini"
  *
- * --control <PORT> <BR>
- *   specifies the communication port for communicating with the control board of the arm. <BR>
+ * - control &lt;PORT&gt; <br />
+ *   specifies the communication port for communicating with the control board of the arm. <br />
  *   default: /abstractHandCtrl/control
  *
- * --q <PORT> <BR>
- *   specifies the port to directly receive joint configurations as Vector(12) to control the hand. <BR>
+ * - q &lt;PORT&gt; <br />
+ *   specifies the port to directly receive joint configurations as Vector(12) to control the hand. <br />
  *   default: /q:i
  *
- * --iKin <PORT> <BR>
- *   specifies the rpc port of iKinArmCtrl in order to check the status of that module. <BR>
- *   default: /<PART>/rpc <BR>
+ * - iKin &lt;PORT&gt; <br />
+ *   specifies the rpc port of iKinArmCtrl in order to check the status of that module. <br />
+ *   default: /&lt;PART&gt;/rpc <br />
  *
  *
  * \section portsa_sec Ports Accessed
@@ -99,16 +99,16 @@
  *
  * \subsection inputports_sec Input ports
  *
- *  - /abstractHandCtrl <BR>
+ *  - /abstractHandCtrl <br />
  *    This port is used to change the parameters of the module at run time or stop the module.
  *    The following commands are available:
- *    - set <id> <value> <BR>
+ *    - set &#91; &lt;id&gt; &lt;value&gt; &#93; <br />
  *      available options:
- *       - direct control (on/off)  <BR>
- *         Enables/ Disables the direct control of the hand using the port specified above.
+ *      - direct control (on/off) <br />
+ *        Enables/ Disables the direct control of the hand using the port specified above.
  *
- *        - recording (on/off) <BR>
- *          Enables/ Disables the recording of the performed motion.
+ *      - recording (on/off) <br />
+ *        Enables/ Disables the recording of the performed motion.
  *
  *    - echo <str>
  *    - help
@@ -123,7 +123,7 @@
  *
  * \subsection outputports_Sec Output ports
  *
- *  - /eye2world <BR>
+ *  - /eye2world <br />
  *    see above
  *
  *
@@ -174,6 +174,7 @@
  * Right now only the position value are taken into account. The velocities an timing are supposed
  * to follow soon!
  *
+ *
  * \section out_data_sec Output Data Files
  *
  * None
@@ -190,10 +191,13 @@
  *
  * \section example_sec Example Instantiation of the Module
  *
- * abstractHandCtrl --part left_arm
- *                  --handType v1
- *                  --motionSpec /home/demo/res/motion_specification.ini"
- *                  --sensingCalib "/home/demo/res/object_sensing.ini"
+ * <dl>
+ *   <dt>abstractHandCtrl</dt>
+ *     <dd>--part left_arm</dd>
+ *     <dd>--handType v1</dd>
+ *     <dd>--motionSpec /home/demo/res/motion_specification.ini"</dd>
+ *     <dd>--sensingCalib "/home/demo/res/object_sensing.ini"</dd>
+ * </dl>
  *
  *
  *
