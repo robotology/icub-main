@@ -24,10 +24,11 @@
  * provide joint configurations for the hand using a external port.
  *
  *
- * \section lib_sec Libraries
+ * \section lib_sec Dependencies
  *
  * - YARP (YARP_{OS,dev,sig,math})
  *   - ACE
+ * - libHandCtrl
  * - OpenVislab (libvislab, libvislab_YARP): http://OpenVislab.sf.net
  *
  * \section parameters_sec Parameters
@@ -106,7 +107,6 @@
  *      available options:
  *      - direct control (on/off) <br />
  *        Enables/ Disables the direct control of the hand using the port specified above.
- *
  *      - recording (on/off) <br />
  *        Enables/ Disables the recording of the performed motion.
  *
@@ -203,7 +203,7 @@
  *
  * \author Christian Wressnegger
  *
- * Copyright (C) 2009 Christian Wressnegger
+ * Copyright (C) 2009 Christian Wressnegger<br />
  * CopyPolicy: Released under the terms of the GNU GPL v2.0.
  */
 
