@@ -64,8 +64,8 @@ where \f$\alpha\f$, in the range [0,1] attenuates the reward signal. With \f$\al
 --dbg [INT]   : debug printing level
 --name [STR]  : process name for ports
 --file [STR]  : configuration file
---connect_to_coords [STR]       : autoconnect to specified port for face
---connect_to_soundsensor [STR]  : autoconnect to specified port for sound
+--connect_to_coords [STR]       : autoconnect to specified port for data
+--connect_to_mem [STR]  : autoconnect to specified port for short term memory
 --face_response_attack [INT]  : face response, increase period
 --face_response_level [INT]   : face response, level off period
 --face_response_decay [INT]   : face response, decay period
@@ -151,6 +151,7 @@ bool MotivationDynamicsModule::open(Searchable& config){
 		<< "  --file [STR]  : configuration file" << "\n"
 		<< "---------------------------------------------------------------------------" << "\n"
         << "  --connect_to_data [STR]       : autoconnect to specified port for sensor data" << "\n"
+        << "  --connect_to_mem [STR]       : autoconnect to specified port for short term memory" << "\n"
         << "  --connect_to_expression [STR]  : connect to port for sending emotion actions" << "\n"
 		<< "---------------------------------------------------------------------------" << "\n"
         << "  --face_response_attack [INT]  : face response, increase period" << "\n"
@@ -234,6 +235,20 @@ bool MotivationDynamicsModule::open(Searchable& config){
         }
 	}
 
+	// open the short term memory port
+    ConstString memPortName = getName("mem:in");
+	memPort.open(memPortName.c_str());
+
+    ok = true;
+	// if required we can connect to the data port
+	if (config.check("connect_to_mem")) {
+		if (connectToParam(config,"connect_to_mem",memPortName.c_str(), 0.25, this)) {
+            IhaDebug::pmesg(DBGL_INFO,"Connected to short term memory\n");
+        } else {
+            ok = false;
+        }
+	}
+
 	//------------------------------------------------------
 	// open the output port where we write expressions
     // this should be connected to the raw port
@@ -265,6 +280,7 @@ bool MotivationDynamicsModule::open(Searchable& config){
 bool MotivationDynamicsModule::close(){
     IhaDebug::pmesg(DBGL_DEBUG1,"In closeModule\n");
     dataPort.close();
+    memPort.close();
     outPort.close();
 
     delete [] last_enc;
@@ -276,6 +292,7 @@ bool MotivationDynamicsModule::close(){
 bool MotivationDynamicsModule::interruptModule(){
     IhaDebug::pmesg(DBGL_DEBUG1,"In interruptModule\n");
     dataPort.close();
+    memPort.close();
     outPort.close();
     return true;
 }
@@ -339,17 +356,28 @@ bool MotivationDynamicsModule::updateModule(){
     vector<double> reward_contribs;
     int num_rewards = 0;
 
-
-
     double face_attack_rate = 1.0 / (double)(face_response_attack);
     double face_decay_rate = 1.0 / (double)(face_response_decay-face_response_level);
 
+    
+    //get the turn-taking reward 
+    IhaDebug::pmesg(DBGL_DEBUG1,"Reading from mem port \n");
+    Bottle* mb = memPort.read(true);
+    IhaDebug::pmesg(DBGL_DEBUG1,"Read from mem port \n");
 
-    // find out if a face has been detected
-    //Vector* pc = dataPort.read(true);
-    IhaDebug::pmesg(DBGL_DEBUG1,"Reading from port \n");
+    reward_names.push_back("drum");
+    rewards.push_back(mb->get(1).asDouble());
+    reward_contribs.push_back(1.0);
+    num_rewards++;
+    reward_names.push_back("hide");
+    rewards.push_back(mb->get(3).asDouble());
+    reward_contribs.push_back(1.0);
+    num_rewards++;
+
+
+    IhaDebug::pmesg(DBGL_DEBUG1,"Reading from data port \n");
     Bottle* db = dataPort.read(true);
-    IhaDebug::pmesg(DBGL_DEBUG1,"Read from port \n");
+    IhaDebug::pmesg(DBGL_DEBUG1,"Read from data port \n");
     if (db!=NULL) {
         //accumulate the face sensor, resetting when we dont see it
         IhaDebug::pmesg(DBGL_DEBUG1,"Face %lf %d \n",db->get(face_index).asDouble(),(int)db->get(face_index).asDouble());
@@ -447,19 +475,6 @@ bool MotivationDynamicsModule::updateModule(){
         reward_contribs.push_back(reward_contrib_gaze);
         num_rewards++;
         
-        //turn-taking
-      
-        //interpret the output of the drum module as human "action"
-        //reward robot for staying still during human drumming,
-        //followed by hitting the drum
-
-
-        //regard the (temporary loss and reacquisition of the face
-        //as the person playing peekaboo
-        //reward the robot for performing a peekaboo action after
-        //the face is reacquired
-
-
 
         //compute reward from a vector of arbitrary length
         double totalReward = 0.0;

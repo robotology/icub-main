@@ -60,6 +60,7 @@ private:
     // ports
     yarp::os::BufferedPort<yarp::os::Bottle> quitPort;
     yarp::os::BufferedPort<yarp::os::Bottle> dataPort; // for reading data from the SMI
+    yarp::os::BufferedPort<yarp::os::Bottle> memPort; // for score from short term memory
     yarp::os::Port outPort; //for writing the data with reward added
     yarp::os::Port expressionRawPort; // for writing facial expressions
 
