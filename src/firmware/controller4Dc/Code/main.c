@@ -29,7 +29,7 @@
 byte	_board_ID = 15;	
 
 char    _additional_info [32];
-word    _build_number = 24;
+word    _build_number = 25;
 UInt8    mainLoopOVF[2]={0,0};
 int     _countBoardStatus[2] ={0,0};
 UInt8   highcurrent[4]={false,false,false,false};
@@ -43,6 +43,7 @@ UInt16  mais_init_request=0;
 #if ((VERSION==0x0120) || (VERSION==0x0121) || (VERSION==0x0128) || (VERSION==0x0130))
 
 byte _initMAIS[8];
+UInt16 msec;
 Int16 idtx=0;
 Int32 cur_enc_pos[JN]={0,0,0,0};
 Int32 cur_hall_pos[JN]={0,0,0,0};
@@ -219,6 +220,7 @@ void main(void)
 #if ( (VERSION==0x0121) || (VERSION==0x0128) || (VERSION==0x0130))	
 	// MAIS initialization
 	
+	
 	// set the resolution to 8bits 
 	_initMAIS[0]=0x10;
 	_initMAIS[1]=0x2;	
@@ -326,6 +328,9 @@ void main(void)
 //******************************************************************************************/ 		
 #if ( (VERSION==0x0121) || (VERSION==0x0128) || (VERSION==0x0130))	
 
+		//updates the 1000 msec counter
+		msec==1000 ? msec=0 : msec++;
+
 		if (mais_counter>=MAX_MAIS_COUNTER)
 		{
 			if(mais_init_request==MAIS_INIT_REQUEST)
@@ -360,10 +365,17 @@ void main(void)
 			}
 			#ifdef  DEBUG_CAN_MSG 
 		    can_printf("MAIS is not broadcasting");	
-		    #endif	
+		    #endif
 		}
 		else
 		    mais_counter++;
+		
+		#ifdef DEBUG_ANA_INC
+		for (i=0; i<JN; i++)
+			if(msec==250*i)
+		    	can_printf("[%d] enc_temp: %d", i, (Int16) get_position_encoder(i));
+		#endif
+		
 #endif
 //-------------------------------------------------------------------------------------------
 

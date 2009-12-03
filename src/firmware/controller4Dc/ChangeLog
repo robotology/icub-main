@@ -83,7 +83,9 @@ Added control for the receiving of the PID values before enabling the PWM.
 2009-24-June  Francesco Nori <francesco.nori@iit.t>
 * Current build 24. iron: integral discretization problem removed
 	
-
+2009-24-June  Francesco Nori <francesco.nori@iit.t>
+* Current build 25. iron: DEBUG_ANA_INC can now be used to print out the incremental encoder readings (a can_print message diplays the incremental encoders positions every second)
+	
 
 
 
