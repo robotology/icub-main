@@ -402,6 +402,7 @@ bool AnalogSensor::calibrate(int ch, double v)
 
 bool AnalogSensor::decode16(const unsigned char *msg, int id, short *data)
 {
+
     const char groupId=(id&0x00f);
     int baseIndex=0;
     {
@@ -410,13 +411,13 @@ bool AnalogSensor::decode16(const unsigned char *msg, int id, short *data)
         case 0xA:
             {
                 for(int k=0;k<3;k++)
-                    data[k]=((short(msg[2*k]))<<8)+msg[2*k+1];
+                    data[k]=((short(msg[2*k+1]))<<8)+msg[2*k];
             }
             break;
         case 0xB:
             {
                 for(int k=0;k<3;k++)
-                    data[k+3]=((short(msg[2*k]))<<8)+msg[2*k+1];
+                    data[k+3]=((short(msg[2*k+1]))<<8)+msg[2*k];
             }
             break;
         case 0xC:
@@ -431,6 +432,7 @@ bool AnalogSensor::decode16(const unsigned char *msg, int id, short *data)
             break;
         }
     }
+
     return true;
 }
 
@@ -493,7 +495,9 @@ bool AnalogSensor::handleAnalog(void *canbus)
         
         const char type=((msgid&0x700)>>8);
         const char id=((msgid&0x0f0)>>4);
+
         if (type==0x03) //analog data
+            {
             if (id==boardId)
             {
                 switch (dataFormat)
@@ -507,6 +511,7 @@ bool AnalogSensor::handleAnalog(void *canbus)
                     default:
                         ret=false;
                 }
+            }
             }
     }
 
@@ -1263,7 +1268,7 @@ bool CanBusMotionControl::open (Searchable &config)
                 analogSensor.open(analogChannels, AnalogSensor::ANALOG_FORMAT_8, analogId);
                 break;
             case 16:
-                analogSensor.open(analogChannels, AnalogSensor::ANALOG_FORMAT_8, analogId);
+                analogSensor.open(analogChannels, AnalogSensor::ANALOG_FORMAT_16, analogId);
                 break;
         }
 
