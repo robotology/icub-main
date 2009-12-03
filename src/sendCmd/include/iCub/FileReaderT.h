@@ -48,6 +48,7 @@ private:
         // do not need to clear normal stream, as we already clear f_stream and 
         // don't want to delete std::cin
         delete this->f_stream;
+        this->f_stream = (std::ifstream*) 0;
     }
     
     /**
