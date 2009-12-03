@@ -353,19 +353,20 @@ bool getOpponencies(){
 	//printf("GetImage: out of the semaphore \n");
 	return ret;
 }
-
+/**
+* main function that associates any pixel in the image to a tagged blob
+*/
 void rain(){
-		printf("Rain1");
 		wModule->max_tag=wModule->wOperator->apply(*_outputImage,_tagged);
-		printf("MAX_TAG=%d",wModule->max_tag);
+		//printf("MAX_TAG=%d",wModule->max_tag);
 		bool ret=getPlanes();
 		if(ret==false){
-			printf("No Planes! \n");
+			//printf("No Planes! \n");
 			//return;
 		}
 		ret=getOpponencies();
 		if(ret==false){
-			printf("No Opponency! \n");
+			//printf("No Opponency! \n");
 			//return;
 		}
 		int psb32s;
@@ -525,7 +526,7 @@ static gint expose_CB (GtkWidget *widget, GdkEventExpose *event, gpointer data)
 				bool ret=getPlanes();
 				
 				if(ret==false){
-					printf("No Planes! \n");
+					//printf("No Planes! \n");
 					//return TRUE;
 				}
 				else{
@@ -533,7 +534,7 @@ static gint expose_CB (GtkWidget *widget, GdkEventExpose *event, gpointer data)
 				}
 				ret=getOpponencies();
 				if(ret==false){
-					printf("No Opponency! \n");
+					//printf("No Opponency! \n");
 					//return TRUE;
 				}
 				else{
@@ -583,11 +584,15 @@ static gint expose_CB (GtkWidget *widget, GdkEventExpose *event, gpointer data)
 					conversion=true;
 				}
 				else if(wModule->tagged_flag){
-					printf("dimension of the tagged image %d,%d \n", wModule->tagged->width(), wModule->tagged->height());
-					/*for(int r=0; r<wModule->tagged->height(); r++)
-						for (int c=0; c<wModule->tagged->width(); c++)
-							*wModule->tagged->getPixelAddress(r,c)=255-*wModule->tagged->getPixelAddress(r,c);*/
-					ippiCopy_8u_C1R(wModule->tagged->getPixelAddress(0,0),320,_outputImage->getPixelAddress(0,0),320,srcsize);
+					//printf("dimension of the tagged image %d,%d \n", wModule->tagged->width(), wModule->tagged->height());
+					for(int y=0; y<wModule->tagged->height(); y++){
+						for (int x=0; x<wModule->tagged->width(); x++){
+							_outputImage->pixel(x,y)=(int)((wModule->max_tag/255)*wModule->tagged->pixel(x,y));
+						}
+					}
+					//cvCvtColor(wModule->tagged->getIplImage(),_outputImage->getIplImage(),CV_GRAY2RGB);
+					//cvCopy(wModule->tagged->getIplImage(),_outputImage->getIplImage());
+					//ippiCopy_8u_C1R(wModule->tagged->getPixelAddress(0,0),320,_outputImage->getPixelAddress(0,0),320,srcsize);
 					conversion=true;
 				}
 				else if(wModule->blobList_flag){
@@ -660,7 +665,6 @@ static gint expose_CB (GtkWidget *widget, GdkEventExpose *event, gpointer data)
                     //Ipp8u* im_tmp[3]={_outputImage->getPixelAddress(0,0),_outputImage->getPixelAddress(0,0),_outputImage->getPixelAddress(0,0)};
 					//the second transforms the 4-channel image into colorImage for yarp
 					ippiCopy_8u_P3C3R(im_tmp,psb,wModule->image_out->getPixelAddress(0,0),width*3,srcsize);
-                    printf("freeing im_out  \n");	
 					ippiFree(im_out);
 					//printf("freeing im_tmp0  \n");	
 					//ippiFree(im_tmp0);
@@ -674,7 +678,6 @@ static gint expose_CB (GtkWidget *widget, GdkEventExpose *event, gpointer data)
 					ippiCopy_8u_C3R(_outputImage3->getPixelAddress(0,0),320*3,wModule->image_out->getPixelAddress(0,0),320*3,srcsize);
 				
 				//----------
-                printf("yarp image2pixbuf /n");
 				_semaphore.wait();
 				bool result=yarpImage2Pixbuf(wModule->image_out, frame);
 				//bool result=yarpImage2Pixbuf(&_inputImg, frame);
@@ -1046,6 +1049,15 @@ bool WatershedModule::outPorts(){
 	this->_pOutPort2->prepare()=*(this->image_out);
 	this->_pOutPort2->write();
 	
+	//streams out the centroid x and y coordinate
+	Bottle& _outBottle=_centroidPort->prepare();
+	_outBottle.addString("centroid:");
+	_outBottle.addInt(this->salience->centroid_x);
+	_outBottle.addInt(this->salience->centroid_y);
+	_centroidPort->writeStrict();
+	_outBottle.clear();
+
+
 	//deallocation
 	delete out;
 	//ippiFree(im_out);
@@ -1156,7 +1168,7 @@ static void updateStatusbar (GtkStatusbar  *statusbar)
 				    
 	msg = g_strdup_printf ("%s - %.1f fps    r:%f;g:%f;b:%f     RG:%d;GR:%d;BY:%d","WatershedModule", fps, 
 		wModule->targetRED,wModule->targetGREEN,wModule->targetBLUE, wModule->searchRG, wModule->searchGR, wModule->searchBY);
-	printf("r:%f;g:%f;b:%f     RG:%f;GR:%f;BY:%f",wModule->targetRED,wModule->targetGREEN,wModule->targetBLUE, wModule->searchRG, wModule->searchGR, wModule->searchBY);
+	//printf("r:%f;g:%f;b:%f     RG:%f;GR:%f;BY:%f",wModule->targetRED,wModule->targetGREEN,wModule->targetBLUE, wModule->searchRG, wModule->searchGR, wModule->searchBY);
 
     gtk_statusbar_push (statusbar, 0, msg);
 
@@ -1376,7 +1388,7 @@ bool WatershedModule::openPorts(){
 	if (true)
         {		
             _pOutPort = new yarp::os::BufferedPort<yarp::os::Bottle>;
-            g_print("Registering port %s on network %s...\n", "/rea/Watershed/out","default");
+			g_print("Registering port %s on network %s...\n", "/rea/Watershed/outputImage:o","default");
 			bool ok = _pOutPort->open("/rea/Watershed/outputImage:o");
             if  (ok)
                 g_print("Port registration succeed!\n");
@@ -1386,7 +1398,7 @@ bool WatershedModule::openPorts(){
                     return false;
                 }
 			_pOutPort2 = new yarp::os::BufferedPort<ImageOf<PixelRgb> >;
-            g_print("Registering port %s on network %s...\n", "/rea/Watershed/outBlobs","default");
+			g_print("Registering port %s on network %s...\n", "/rea/Watershed/outBlobs:o","default");
 			ok = _pOutPort2->open("/rea/Watershed/outBlobs:o");
             if  (ok)
                 g_print("Port registration succeed!\n");
@@ -1396,7 +1408,7 @@ bool WatershedModule::openPorts(){
                     return false;
                 }
 			_pOutPort3 = new yarp::os::BufferedPort<ImageOf<PixelRgb> >;
-            g_print("Registering port %s on network %s...\n", "/rea/Watershed/outBlobs","default");
+			g_print("Registering port %s on network %s...\n", "/rea/Watershed/outView:o","default");
 			ok = _pOutPort3->open("/rea/Watershed/outView:o");
             if  (ok)
                 g_print("Port registration succeed!\n");
@@ -1405,7 +1417,16 @@ bool WatershedModule::openPorts(){
                     g_print("ERROR: Port registration failed.\nQuitting, sorry.\n");
                     return false;
                 }
-
+			_centroidPort = new yarp::os::BufferedPort<Bottle >;
+			g_print("Registering port %s on network %s...\n", "/rea/Watershed/centroid:o","default");
+			ok = _centroidPort->open("/rea/Watershed/centroid:o");
+            if  (ok)
+                g_print("Port registration succeed!\n");
+            else 
+                {
+                    g_print("ERROR: Port registration failed.\nQuitting, sorry.\n");
+                    return false;
+                }
         }
 
 	return true;
@@ -1432,9 +1453,11 @@ bool WatershedModule::closePorts(){
 			_pOutPort->close();
             g_print("Closing port %s on network %s...\n", "/rea/Watershed/out","default");
 			_pOutPort2->close();
-            g_print("Closing port %s on network %s...\n", "/rea/Watershed/outBlobs","default");
+			g_print("Closing port %s on network %s...\n", "/rea/Watershed/outBlobs:o","default");
 			_pOutPort3->close();
-            g_print("Closing port %s on network %s...\n", "/rea/Watershed/outView","default");
+			g_print("Closing port %s on network %s...\n", "/rea/Watershed/outView:o","default");
+			_centroidPort->close();
+			g_print("Closing port %s on network %s...\n", "/rea/Watershed/centroid:o","default");
         }
 
 	return true;
@@ -2677,7 +2700,7 @@ void WatershedModule::drawAllBlobs(bool stable)
 		*outContrastLP, *tagged, max_tag,
 		salienceBU, salienceTD,
 		searchRG, searchGR, searchBY, 255); // somma coeff pos=3 somma coeff neg=-3
-	printf("The number of blobs: %d",nBlobs);
+	//printf("The number of blobs: %d",nBlobs);
 	salience->ComputeMeanColors(max_tag); //compute for every box the mean Red,Green and Blue Color.
 	salience->DrawMeanColorsLP(*outMeanColourLP,*tagged);
 	

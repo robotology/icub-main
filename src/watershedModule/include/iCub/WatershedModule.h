@@ -58,12 +58,10 @@ The module does:
 \section lib_sec Libraries
 YARP
 OPENCV
-IPP
 GTK
 
 \section parameters_sec Parameters
-This provides a comprehensive list of the parameters. For example:
-none
+--name : name of the module and relative port name
 
  
 \section portsa_sec Ports Accessed
@@ -98,19 +96,14 @@ none
  
 \section conf_file_sec Configuration Files
 none
-
-For example:
-The module requires a description of the robot through the parameter 
 --file.
 
 \section tested_os_sec Tested OS
 Linux and Windows.
 
 \section example_sec Example Instantiation of the Module
-Provide here a typical example of use of your module.
-Example:
+watershedModule --name
 
-myModule --from module.ini
 
 \author Francesco Rea
 
@@ -279,9 +272,13 @@ public:
 	*/
 	yarp::os::BufferedPort<ImageOf<PixelRgb> > *_pOutPort3;
 	/**
+	* port for streaming the centroid of the most salient blob
+	*/
+	yarp::os::BufferedPort<Bottle > *_centroidPort;
+	/**
 	*Output Bottle Container
 	*/
-	yarp::os::Bottle _outBottle;
+	Bottle _outBottle;
 	/**
 	* reference to the watershed operator
 	*/

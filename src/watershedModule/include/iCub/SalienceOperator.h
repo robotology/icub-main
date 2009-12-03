@@ -116,7 +116,8 @@ struct Image_Data
 
 
 /**
-* Operator that manage the blobs and calculates the saliency of every blob
+* Operator that manages the blobs and calculates the saliency of every blob
+* based on the linear combination of top-down (search color) and bottom-up contribution (isolated blobs).
 * @author Francesco Rea
 */
 
@@ -146,6 +147,7 @@ private:
 	* width of the images
 	*/
 	int width;
+	
 
 	Image_Data _img;
 public:
@@ -334,6 +336,14 @@ public:
 	* colour quantization image
 	*/
 	ImageOf<PixelBgr>* colorVQ_img;
+	/**
+	* center of the max saliency blob, x coordinate
+	*/
+	double centroid_x;
+	/**
+	* center of the max saliency blob, x coordinate
+	*/
+	double centroid_y;
 
 };
 

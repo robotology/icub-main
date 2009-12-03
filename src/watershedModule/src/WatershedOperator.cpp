@@ -398,8 +398,9 @@ void WatershedOperator::connectivityGraph(const ImageOf<PixelInt>& src, bool *ma
 }
 
 
-/* create regions (numbers by "counter") which are lokal minima(s)
-inputs: downPos2 from the previously called function
+/** 
+*creates regions (numbers by "counter") which are lokal minima(s)
+*inputs: downPos2 from the previously called function
 	tSrc from the previously called function
 */
 int WatershedOperator::markMinimas(ImageOf<PixelInt>& result)
@@ -473,9 +474,10 @@ int WatershedOperator::markMinimas(ImageOf<PixelInt>& result)
 	return (counter-1);
 }
   
-/* function that applies the watershed (rainfalling algorithm)
-		input: downPos2 previously developed
-		output: result image of PixelInt result of the watershed algorithm
+/** 
+*function that applies the watershed (rainfalling algorithm)
+*		input: downPos2 previously developed
+*		output: result image of PixelInt result of the watershed algorithm
 */
 void WatershedOperator::letsRain(ImageOf<PixelInt>& result)
 {
@@ -505,7 +507,9 @@ void WatershedOperator::letsRain(ImageOf<PixelInt>& result)
 	}
 }
 
-
+/**
+* finds the lower neighbour for every pixel in the src file
+*/
 void WatershedOperator::findLowerNeigh(const ImageOf<PixelMono>& src)
 {
 	static const int lokalMin = -1;
@@ -840,9 +844,10 @@ void WatershedOperator::findLowerNeigh(const ImageOf<PixelMono>& src)
 
 }
 
-/*function that creates a temporane image
-	input: Mono Image src which is copied into tSrc
-	output: pointer to PixelInt p_downPos2
+/**
+* function that creates a temporary image
+*	input: Mono Image src which is copied into tSrc
+*	output: pointer to PixelInt p_downPos2
 */
 void WatershedOperator::createTmpImage(const ImageOf<PixelMono>& src)
 {
@@ -902,7 +907,9 @@ void WatershedOperator::createTmpImage(const ImageOf<PixelMono>& src)
     return false;
 }*/
 
-/* //applies the rain watershed from the edge picture, and returns the tagged image of integer*/
+/**
+* applies the rain watershed from the edge picture, and returns the tagged image of integers
+*/
 int WatershedOperator::apply(const ImageOf<PixelMono> &src, ImageOf<PixelInt> &result)
 {
 	int num_tags;

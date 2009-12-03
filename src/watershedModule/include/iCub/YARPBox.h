@@ -12,9 +12,6 @@
 
 #define PI 3.14
 
-
-
-
 class YARPBox {
 public:
 	YARPBox() { valid = false; }
@@ -74,6 +71,7 @@ public:
 	/*char cRG;
 	char cGR;
 	char cBY;*/
+
 	int cRG;
 	int cGR;
 	int cBY;

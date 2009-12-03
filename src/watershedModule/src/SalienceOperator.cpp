@@ -3,7 +3,6 @@
 #include <yarp/math/Math.h>
 #include <iCub/SalienceOperator.h>
 
-//TODO:all the code related to the kinematic gaze of the robot head
 SalienceOperator::SalienceOperator(const int width1, const int height1)//:_gaze( YMatrix(_dh_nrf, 5, DH_left[0]), YMatrix(_dh_nrf, 5, DH_right[0]), YMatrix(4, 4, TBaseline[0]) )
 {
 	resize(width1, height1);
@@ -18,11 +17,13 @@ SalienceOperator::SalienceOperator(const int width1, const int height1)//:_gaze(
 
 	colorVQ=new ColorVQ(320,240,10);
 
+
+	centroid_x=0;
+	centroid_y=0;
 	
 	//Image_Data YARPLogpolar::_img;
 	using namespace _logpolarParams;
 
-	
 	/*_img.Size_X_Orig=256;
 	_img.Size_Y_Orig=256;
 	_img.Size_Rho=1090;
@@ -40,6 +41,8 @@ SalienceOperator::SalienceOperator(const int width1, const int height1)//:_gaze(
 	_img.padding =1; // YarpImageAlign;
 	_img.Pix_Numb = 2;
 	_img.Fovea_Type = 0;
+
+
 }
 
 void SalienceOperator::DrawVQColor(ImageOf<PixelBgr>& id, ImageOf<PixelInt>& tagged)
@@ -640,9 +643,12 @@ void SalienceOperator::fuseFoveaBlob3(ImageOf<PixelInt>& tagged, char *blobList,
 			if (blobList[tagged(c,r)]==2) 
 				tagged(c,r)=1;
 }
-
+/**
+* calculates the center of mass of a blob with a particular tag
+*/
 void SalienceOperator::centerOfMassAndMass(ImageOf<PixelInt> &in, PixelInt tag, int *x, int *y, double *mass){
-	/*int r,t;
+	int r,t;
+	double J=0.5;
 	double areaT = 0.0;
 	double sumX = 0.0;
 	double sumY = 0.0;
@@ -652,7 +658,7 @@ void SalienceOperator::centerOfMassAndMass(ImageOf<PixelInt> &in, PixelInt tag, 
 		int sumTmpY = 0;
 		int areaTmp = 0;
 
-		src = (PixelInt *)in.getRawImage()[r];
+		src = (PixelInt *)in.getRowArray()[r];
 		for(t = 0; t < width; t++) {
 			if (*src==tag) {
 				int tmpX;
@@ -666,7 +672,7 @@ void SalienceOperator::centerOfMassAndMass(ImageOf<PixelInt> &in, PixelInt tag, 
 			}
 			src++;
 		}
-		double J=0.5;
+		
 		sumX+=sumTmpX*J;
 		sumY+=sumTmpY*J;
 		areaT+=areaTmp*J;
@@ -680,15 +686,17 @@ void SalienceOperator::centerOfMassAndMass(ImageOf<PixelInt> &in, PixelInt tag, 
 	} else {
 		*x = 0;
 		*y = 0;
-	}*/
+	}
 }
 
-
+/**
+* selected the blob with maximum saliency
+*/
 void SalienceOperator::maxSalienceBlob(ImageOf<PixelInt>& tagged, int max_tag, YARPBox &box)
 {
 	int max=1;
-	int xcart;
-	int ycart;
+	int xcart=0;
+	int ycart=0;
 	
 	for (int m = 1; m < max_tag; m++){
 		//printf("blob number %d:",m);
@@ -708,6 +716,9 @@ void SalienceOperator::maxSalienceBlob(ImageOf<PixelInt>& tagged, int max_tag, Y
 	centerOfMassAndMass(tagged, box.id, &xcart, &ycart, &box.areaCart);
 	box.centroid_x=xcart;
 	box.centroid_y=ycart;
+	this->centroid_x=xcart;
+	this->centroid_y=ycart;
+
 	//_gaze.computeRay(YARPBabybotHeadKin::KIN_LEFT_PERI, box.elev, box.az, (int)box.centroid_x, (int)box.centroid_y);
 }
 
@@ -747,8 +758,8 @@ void SalienceOperator::resize(const int width1, const int height1)
 }
 
 /**
-*  creates a catalog of blobs saved in tagged
-* @param gets as inputs the R+G-, G*R-,B+Y-, the Red, blue and green Plans 
+*  creates a catalog of blobs from the saved present in tagged
+* @param gets as inputs the R+G-, G*R-,B+Y-, the Red, blue and green planes  and the tagged image 
 */
 void SalienceOperator::blobCatalog(ImageOf<PixelInt>& tagged,
 							   ImageOf<PixelMono> &rg,
@@ -879,7 +890,9 @@ void SalienceOperator::blobCatalog(ImageOf<PixelInt>& tagged,
 	}
 }	
 
-
+/**
+* set paramenters of the saliency operator
+*/
 Image_Data SalienceOperator::Set_Param(int SXO,
 					 int SYO,
 					 int SXR,
@@ -959,7 +972,9 @@ Image_Data SalienceOperator::Set_Param(int SXO,
 }
 
 
-
+/**
+* trasform a logPolar coordinate (rho,theta) into a cartesian coordinate (x,y)
+*/
 void SalienceOperator::logPolar2Cartesian(int irho, int itheta, int& ox, int& oy){
 	double xx = 0;
 	double yy = 0;

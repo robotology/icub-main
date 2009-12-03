@@ -30,7 +30,7 @@ using namespace yarp::sig::draw;
 
 
 /**
-* Operator that manage the watershed operation (rain falling) and extracts blobs
+* Operator that manages the watershed operations (rain falling) and extracts blobs
 * \author Francesco Rea
 */
 class WatershedOperator {
@@ -90,10 +90,17 @@ public:
 	* constructor
 	*/
 	WatershedOperator(const bool lp, const int width1, const int height1, const int wstep, const PixelMono th);
+	/*
+	* resize
+	*/
 	void resize(const int width1, const int height1, const int wstep, const PixelMono th);
+	/**
+	* set threashold
+	*/
 	inline void setThreshold(PixelMono th) {threshold=th;}
 	//__OLD//bool apply(ImageOf<PixelMono>& srcdest);
 	//__OLD//bool apply(const ImageOf<PixelMono>& src, ImageOf<PixelMono>& dest);
+
 	/**
 	* applies the rain watershed from the edge picture, and returns the tagged image of integer
 	*/
@@ -115,7 +122,6 @@ public:
 	// public attributes
 	ImageOf<PixelMono> tSrc;
 	ImageOf<PixelMono>* outputImage;
-	
 };
 
 #endif //_WATERSHEDOPERATOR_H_
