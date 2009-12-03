@@ -47,15 +47,6 @@ int main(int argc, char *argv[]) {
         exitErrorHelp(std::string("Failed to open outgoing port: ") + portOutName);
     }
 
-    // connect to remote port
-    if(property.check("port", val, "port to which the commands will be sent")) {
-        if(!port.addOutput(val->asString().c_str())) {
-            exitErrorHelp("Failed to connect ports");
-        }
-    } else {
-        exitErrorHelp("Please supply a port to connect to using --port", true);
-    }
-
     // open file or stdin using file reader template
     FileReaderT<Bottle> str;
     try {
@@ -66,6 +57,17 @@ int main(int argc, char *argv[]) {
         }
     } catch(const std::exception& e) {
         exitErrorHelp(e.what());
+    }
+
+    // connect to remote port
+    if(property.check("port", val, "port to which the commands will be sent")) {
+        if(!port.addOutput(val->asString().c_str())) {
+            port.close();
+            exitErrorHelp("Failed to connect ports");
+        }
+    } else {
+        port.close();
+        exitErrorHelp("Please supply a port to connect to using --port", true);
     }
 
     // send bottles and wait for replies
@@ -84,10 +86,12 @@ int main(int argc, char *argv[]) {
 
             // check if we still have connections
             if(port.getOutputCount() < 1) {
+                port.close();
                 exitErrorHelp("Remote port disconnected");
             }
         }
     } catch(const std::exception& e) {
+        port.close();
         exitErrorHelp(e.what());
     }
     
