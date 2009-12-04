@@ -59,6 +59,8 @@ extern char BOARD_TYPE;
 #define CAN_CMD_MUX_NUM           0xF
 #define CAN_CMD_NONE              0x0
 #define CAN_CMD_SET_RESOLUTION    0x10 //set data resolution
+#define CAN_CMD_SET_MATRIX_G      0x11 //set matrix gain
+#define CAN_CMD_GET_MATRIX_G      0x12 //get matrix gain
 
 //////////////////////////////////////////////////////////////
 // BROADCAST MESSAGES, CLASS 0x03
