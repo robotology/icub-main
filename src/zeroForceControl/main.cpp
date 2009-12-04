@@ -299,8 +299,8 @@ public:
         else
 		{
 			fprintf(stderr,"Device not found\n");
-            PortName=fwdSlash+"iCub";
-			robot = "iCub";
+            PortName=fwdSlash+"icub";
+			robot = "icub";
 		}
 		
 		ConstString partName=rf.find("part").asString();
@@ -325,7 +325,7 @@ public:
 		PolyDriver dd(Options);
 		if(!createDriver(dd)) return 0;
 
-		port_FT.open(("/" + PortName+"/FT:i").c_str());
+		port_FT.open((PortName+"/FT:i").c_str());
 		ft_control = new ftControl(SAMPLER_RATE, &dd, port_FT, rf);
 		ft_control->start();
 		return true;
