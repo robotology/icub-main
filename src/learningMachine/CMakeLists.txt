@@ -49,6 +49,7 @@ SET(LM_HEADER
     include/iCub/EventListenerFactory.h
     include/iCub/FactoryT.h
     include/iCub/FixedRangeScaler.h
+    include/iCub/FileReaderT.h
     include/iCub/IEvent.h
     include/iCub/IEventListener.h
     include/iCub/IFixedSizeLearner.h

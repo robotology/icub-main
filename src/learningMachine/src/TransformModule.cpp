@@ -115,6 +115,9 @@ bool TransformModule::configure(ResourceFinder& opt) {
     Value* val;
     std::string transformerName;
 
+    // cache resource finder
+    this->setResourceFinder(&opt);
+
     // check for help request
     if(opt.check("help")) {
         this->printOptions();
@@ -166,6 +169,12 @@ bool TransformModule::configure(ResourceFinder& opt) {
         // add message here if necessary
     }
 
+    // and finally load command file
+    if(opt.check("commands", val)) {
+        std::string full_fname = this->findFile(val->asString().c_str());
+        this->loadCommandFile(full_fname);
+    }
+
     // attach to the incoming command port and terminal
     this->attach(cmd_in);
     this->attachTerminal();
@@ -191,6 +200,7 @@ bool TransformModule::respond(const Bottle& cmd, Bottle& reply) {
                 reply.addString("  load fname            Loads a transformer from a file");
                 reply.addString("  save fname            Saves the current transformer to a file");
                 reply.addString("  set key val           Sets a configuration option for the transformer");
+                reply.addString("  cmd fname             Loads commands from a file");
                 reply.addString(this->getTransformer().getConfigHelp().c_str());
                 success = true;
                 break;
@@ -258,6 +268,25 @@ bool TransformModule::respond(const Bottle& cmd, Bottle& reply) {
                     replymsg += "failed";
                 } else {
                     this->getTransformerPortable().writeToFile(cmd.get(1).asString().c_str());
+                    replymsg += "succeeded";
+                }
+                reply.addString(replymsg.c_str());
+                success = true;
+                break;
+                }
+
+            case VOCAB3('c','m','d'): // cmd
+            case VOCAB4('c','o','m','m'): // command
+                { // prevent identifier initialization to cross borders of case
+                reply.add(Value::makeVocab("help"));
+                std::string replymsg;
+                if(!cmd.get(1).isString()) {
+                    replymsg = "Please supply a valid filename.";
+                } else {
+                    std::string full_fname = this->findFile(cmd.get(1).asString().c_str());
+                    replymsg = std::string("Loading commands from '") +
+                                           full_fname + "'... " ;
+                    this->loadCommandFile(full_fname, &reply);
                     replymsg += "succeeded";
                 }
                 reply.addString(replymsg.c_str());

@@ -87,6 +87,9 @@ bool PredictModule::configure(ResourceFinder& opt) {
     // read for the general specifiers:
     Value* val;
 
+    // cache resource finder
+    this->setResourceFinder(&opt);
+
     // check for help request
     if(opt.check("help")) {
         this->printOptions();
@@ -113,6 +116,11 @@ bool PredictModule::configure(ResourceFinder& opt) {
     // add replier for incoming data (prediction requests)
     this->predict_inout.setReplier(this->predictProcessor);
 
+    // and finally load command file
+    if(opt.check("commands", val)) {
+        this->loadCommandFile(val->asString().c_str());
+    }
+
     // attach to the incoming command port and terminal
     this->attach(cmd_in);
     this->attachTerminal();
@@ -136,6 +144,7 @@ bool PredictModule::respond(const Bottle& cmd, Bottle& reply) {
                 reply.addString("  reset                 Resets the machine to its current state");
                 reply.addString("  info                  Outputs information about the machine");
                 reply.addString("  load fname            Loads a machine from a file");
+                reply.addString("  cmd fname             Loads commands from a file");
                 //reply.addString(this->getMachine()->getConfigHelp().c_str());
                 success = true;
                 break;
@@ -171,6 +180,25 @@ bool PredictModule::respond(const Bottle& cmd, Bottle& reply) {
                     replymsg += "failed";
                 } else {
                     this->getMachinePortable().readFromFile(cmd.get(1).asString().c_str());
+                    replymsg += "succeeded";
+                }
+                reply.addString(replymsg.c_str());
+                success = true;
+                break;
+                }
+
+            case VOCAB3('c','m','d'): // cmd
+            case VOCAB4('c','o','m','m'): // command
+                { // prevent identifier initialization to cross borders of case
+                reply.add(Value::makeVocab("help"));
+                std::string replymsg;
+                if(!cmd.get(1).isString()) {
+                    replymsg = "Please supply a valid filename.";
+                } else {
+                    std::string full_fname = this->findFile(cmd.get(1).asString().c_str());
+                    replymsg = std::string("Loading commands from '") +
+                                           full_fname + "'... " ;
+                    this->loadCommandFile(full_fname, &reply);
                     replymsg += "succeeded";
                 }
                 reply.addString(replymsg.c_str());

@@ -55,6 +55,11 @@ protected:
     DispatcherManager dmanager;
 
     /**
+     * A pointer to the ResourceFinder.
+     */
+    ResourceFinder* rf;
+
+    /**
      * Copy Constructor (private and unimplemented on purpose).
      */
     IMachineLearnerModule(const IMachineLearnerModule& other);
@@ -88,13 +93,55 @@ protected:
      */
     virtual void printOptions(std::string error = "") = 0;
 
+    /**
+     * Reads bottles from a file and sends these one by one to the respond method.
+     *
+     * @param fname  the filename
+     * @param out  an optional Bottle to which the replies will be appended
+     */
+    virtual void loadCommandFile(std::string fname, Bottle* out = (Bottle*) 0);
+
+    /**
+     * Returns a reference to the cached ResourceFinder.
+     *
+     * @return a reference to a ResourceFinder
+     * @exception std::runtime_error  if there is no cached ResourceFinder
+     */
+    virtual ResourceFinder& getResourceFinder() {
+        if(this->rf == (ResourceFinder*) 0) {
+            throw std::runtime_error("Attempt to retrieve inexistent resource finder.");
+        }
+        return *(this->rf);
+    }
+
+    /**
+     * Finds the full path to a specified filename using the ResourceFinder.
+     * This method is necessary to work around the limitation of ResourceFinder
+     * to only work with registered keys instead of directly with filenames.
+     *
+     * @param fname  the filename
+     * @return the full path
+     * @exception std::runtime_error if the file cannot be located
+     */
+    std::string findFile(std::string fname);
+
+    /**
+     * Mutator for the locally stored ResourceFinder. The module does _not_ take
+     * responsibility for the allocated memory.
+     *
+     * @param rf  a pointer to a ResourceFinder
+     */
+    virtual void setResourceFinder(ResourceFinder* rf) {
+        this->rf = rf;
+    }
+
 public:
     /**
      * Constructor.
      *
      * @param pp the default prefix used for the ports.
      */
-    IMachineLearnerModule(std::string pp) : portPrefix(pp) { }
+    IMachineLearnerModule(std::string pp) : portPrefix(pp), rf((ResourceFinder*) 0) { }
 
     /**
      * Destructor (empty).

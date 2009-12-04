@@ -521,8 +521,8 @@ int main(int argc, char *argv[]) {
     int ret;
 
     ResourceFinder rf;
-    rf.configure("ICUB_ROOT", argc, argv);
     rf.setDefaultContext("learningMachine");
+    rf.configure("ICUB_ROOT", argc, argv);
 
     MachineLearnerTestModule module;
     try {
@@ -530,9 +530,11 @@ int main(int argc, char *argv[]) {
         //module.attachTerminal();
     } catch(const std::exception& e) {
         std::cerr << "Error: " << e.what() << std::endl;
+        module.close();
         return 1;
     } catch(char* msg) {
         std::cerr << "Error: " << msg << std::endl;
+        module.close();
         return 1;
     }
     return ret;

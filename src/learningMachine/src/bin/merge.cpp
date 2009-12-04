@@ -111,7 +111,7 @@ public:
     /**
      * Default constructor.
      */
-    PortSource(std::string name, std::string pp = "/lm/merge/source") {
+    PortSource(std::string name, std::string pp) {
         this->initPort(pp);
     }
 
@@ -452,7 +452,7 @@ public:
      * @throw a runtime error if parsing fails
      */
     virtual void loadFormat(std::string format) {
-        std::cout << "Parsing format: " << format << std::endl;
+        //std::cout << "Parsing format: " << format << std::endl;
         // find indexing specifier
         std::string::size_type idxStart = format.find("[");
         this->name = format.substr(0, idxStart);
@@ -598,8 +598,10 @@ public:
         int len = format.size();
         while (i < len) {
             if (format.get(i).isString()) {
+                //std::cout << "Adding Index for " << format.get(i).asString().c_str() << std::endl;
                 this->addChild(new IndexSelector(format.get(i).asString().c_str()));
             } else if (format.get(i).isList()) {
+                //std::cout << "Adding Composite for " << format.get(i).asList()->toString().c_str() << std::endl;
                 this->addChild(new CompositeSelector(*(format.get(i).asList())));
             } else {
                 throw std::runtime_error(std::string("Unexpected token during parsing: ") +
@@ -638,6 +640,28 @@ public:
         Bottle& bot2 = bot.addList();
         for (int i = 0; i < this->children.size(); i++) {
             this->children[i]->select(bot2, sl);
+        }
+    }
+};
+
+/**
+ * The RootSelector is entry point for a format bottle. It inherits most of its
+ * functionality from the CompositeSelector, with the primary difference being
+ * that it does _not_ wrap its contents in another Bottle.
+ */
+class RootSelector : public CompositeSelector {
+public:
+    /**
+     * Default constructor.
+     */
+    RootSelector(Bottle& format) : CompositeSelector(format) { }
+
+    /*
+     * Inherited from DataSelector.
+     */
+    virtual void select(Bottle& bot, SourceList& sl) {
+        for (int i = 0; i < this->children.size(); i++) {
+            this->children[i]->select(bot, sl);
         }
     }
 };
@@ -776,13 +800,15 @@ public:
         // check for port specifier: portSuffix
         if (opt.check("port", val)) {
             this->portPrefix = val->asString().c_str();
-            this->sourceList.setPortPrefix(this->portPrefix);
         }
+
+        // set port prefix
+        this->sourceList.setPortPrefix(this->portPrefix + "/source");
 
         // read and parse format
         if (opt.check("format", val)) {
             if (val->isList()) {
-                this->dataSelector = new CompositeSelector(*(val->asList()));
+                this->dataSelector = new RootSelector(*(val->asList()));
                 this->dataSelector->declareSources(this->sourceList);
                 success = true;
             } else {
@@ -803,7 +829,7 @@ public:
 
         this->registerAllPorts();
 
-        //this->attachTerminal();
+        this->attachTerminal();
 
         return success;
     }
@@ -818,7 +844,7 @@ public:
             this->sourceList.update();
             Bottle out;
             this->dataSelector->select(out, this->sourceList);
-            std::cout << "Bottle: " << out.toString().c_str() << std::endl;
+            //std::cout << "Bottle: " << out.toString().c_str() << std::endl;
             this->output.write(out);
             //this->listeners.process(this->portSource);
         } catch (const std::exception& e) {
@@ -924,16 +950,18 @@ int main(int argc, char *argv[]) {
     int ret;
 
     ResourceFinder rf;
-    rf.configure("ICUB_ROOT", argc, argv);
     rf.setDefaultContext("learningMachine");
+    rf.configure("ICUB_ROOT", argc, argv);
     MergeModule module;
     try {
         ret = module.runModule(rf);
-    } catch (const std::exception& e) {
+    } catch(const std::exception& e) {
         std::cerr << "Error: " << e.what() << std::endl;
+        module.close();
         return 1;
-    } catch (char* msg) {
+    } catch(char* msg) {
         std::cerr << "Error: " << msg << std::endl;
+        module.close();
         return 1;
     }
     return ret;

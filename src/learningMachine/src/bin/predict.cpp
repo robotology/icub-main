@@ -23,8 +23,8 @@ int main (int argc, char* argv[]) {
     int ret;
 
     ResourceFinder rf;
-    rf.configure("ICUB_ROOT", argc, argv);
     rf.setDefaultContext("learningMachine");
+    rf.configure("ICUB_ROOT", argc, argv);
 
     PredictModule module;
     try {
@@ -37,9 +37,13 @@ int main (int argc, char* argv[]) {
         ret = module.runModule(rf);
     } catch(const std::exception& e) {
         std::cerr << "Error: " << e.what() << std::endl;
+        std::cerr << "Type 'quit' or CTRL+C to exit." << std::endl;
+        module.close();
         return 1;
     } catch(char* msg) {
         std::cerr << "Error: " << msg << std::endl;
+        std::cerr << "Type 'quit' or CTRL+C to exit." << std::endl;
+        module.close();
         return 1;
     }
     return ret;
