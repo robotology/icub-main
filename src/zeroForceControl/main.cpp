@@ -348,7 +348,7 @@ int main(int argc, char * argv[])
 	if (rf.check("help"))
     {
         cout << "Options:" << endl << endl;
-		cout << "\t--context   context: where to find the called resource (referred to $ICUB_ROOT\app: default FTSensorCalibration\conf)"                << endl;
+		cout << "\t--context   context: where to find the called resource (referred to $ICUB_ROOT\\app: default FTSensorCalibration\\conf)"                << endl;
         cout << "\t--from      from: The name of the file.ini to be used for calibration"          << endl;
         return 0;
     }
