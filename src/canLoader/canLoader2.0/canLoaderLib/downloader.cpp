@@ -150,7 +150,7 @@ int cDownloader::strain_save_to_eeprom  (int target_id)
 }
 
 //*****************************************************************/
-int cDownloader::strain_get_adc(int target_id, char channel, unsigned int& adc)
+int cDownloader::strain_get_adc(int target_id, char channel, unsigned int& adc, int type)
 {
      // check if driver is running
      if (m_candriver == NULL)
@@ -161,9 +161,10 @@ int cDownloader::strain_get_adc(int target_id, char channel, unsigned int& adc)
 
 	 // Send read channel command to strain board
 	 txBuffer[0].setId((2 << 8) + target_id);
-	 txBuffer[0].setLen(2);
+	 txBuffer[0].setLen(3);
 	 txBuffer[0].getData()[0]= 0x0C;
 	 txBuffer[0].getData()[1]= channel;
+	 txBuffer[0].getData()[2]= type;
 	 int ret = m_candriver->send_message(txBuffer, 1);
 	 // check if send_message was successful
 	 if (ret==0)
@@ -178,7 +179,7 @@ int cDownloader::strain_get_adc(int target_id, char channel, unsigned int& adc)
           if (rxBuffer[i].getData()[0]==0x0C && 
 			 rxBuffer[i].getId()==(2 << 8) + (target_id<<4)) 
 	  		 {
-                 adc = rxBuffer[i].getData()[2]<<8 | rxBuffer[i].getData()[3];
+                 adc = rxBuffer[i].getData()[3]<<8 | rxBuffer[i].getData()[4];
 				 return 0;
              }
         }
@@ -214,6 +215,57 @@ int cDownloader::strain_get_offset(int target_id, char channel, unsigned int& of
 			}
 	}
 	return -1;
+}
+
+//*****************************************************************/
+int cDownloader::strain_get_matrix_gain	 (int target_id, unsigned int& gain)
+{
+	 // check if driver is running
+     if (m_candriver == NULL)
+        {
+            printf ("ERR: Driver not ready\n");
+            return -1;
+        }
+
+ 	 //read matrix gain
+	 txBuffer[0].setId((2 << 8) + target_id);
+	 txBuffer[0].setLen(1);
+	 txBuffer[0].getData()[0]= 0x12; 
+
+	 int ret = m_candriver->send_message(txBuffer, 1);
+
+ 	 int read_messages = m_candriver->receive_message(rxBuffer,1);
+	 for (int i=0; i<read_messages; i++)
+	 {
+		if (rxBuffer[i].getData()[0]==0x12 &&  
+			rxBuffer[i].getId()==(2 << 8) + (target_id<<4)) 
+			{
+				gain = rxBuffer[i].getData()[1];
+				return 0;
+			}
+	 }
+	 return -1;
+}
+
+//*****************************************************************/
+int cDownloader::strain_set_matrix_gain	 (int target_id, unsigned int  gain)
+{
+	 // check if driver is running
+     if (m_candriver == NULL)
+        {
+            printf ("ERR: Driver not ready\n");
+            return -1;
+        }
+
+ 	 //set matrix
+	 txBuffer[0].setId((2 << 8) + target_id);
+	 txBuffer[0].setLen(2);
+	 txBuffer[0].getData()[0]= 0x11; 
+	 txBuffer[0].getData()[1]= gain;
+
+	 int ret = m_candriver->send_message(txBuffer, 1);
+
+	 return 0;
 }
 
 //*****************************************************************/
