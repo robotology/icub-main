@@ -137,7 +137,8 @@ public:
 		  
 		  for(int i = 0; i<C.rows(); i++)
 		  {
-			  row = string("row") + _itoa(i,buf,10);
+		    sprintf(buf, "%d", i);
+			  row = string("row") + buf;
 			  fprintf(stderr,"%s\n", row.c_str());
 			  
 			  if(rf.check(row.c_str()))
@@ -246,15 +247,15 @@ int main(int argc, char * argv[])
     // prepare and configure the resource finder
     ResourceFinder rf;
     rf.setVerbose();
-	rf.setDefaultContext("FTSensorCalibration/conf");
-	rf.setDefaultConfigFile("LeftArmFTCal.ini");
+	rf.setDefaultContext("ftSensorCalibration/conf");
+	rf.setDefaultConfigFile("leftArmFTCal.ini");
 
     rf.configure("ICUB_ROOT", argc, argv);
 
 	if (rf.check("help"))
     {
         cout << "Options:" << endl << endl;
-		cout << "\t--context   context: where to find the called resource (referred to $ICUB_ROOT\app: default FTSensorCalibration\conf)"                << endl;
+		cout << "\t--context   context: where to find the called resource (referred to $ICUB_ROOT\\app: default FTSensorCalibration\\conf)"                << endl;
         cout << "\t--from      from: The name of the file.ini to be used for calibration"          << endl;
         return 0;
     }
