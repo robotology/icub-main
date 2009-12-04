@@ -119,10 +119,12 @@ int strain_stop_sampling     (int target_id);
 int strain_calibrate_offset  (int target_id, unsigned int middle_val);
 int strain_get_offset		 (int target_id, char channel, unsigned int& offset);
 int strain_set_offset		 (int target_id, char channel, unsigned int  offset);
-int strain_get_adc			 (int target_id, char channel, unsigned int& adc);
+int strain_get_adc			 (int target_id, char channel, unsigned int& adc, int type);
 int strain_save_to_eeprom    (int target_id);
 int strain_get_matrix_rc	 (int target_id, char r, char c, unsigned int& elem);
 int strain_set_matrix_rc	 (int target_id, char r, char c, unsigned int  elem);
+int strain_get_matrix_gain	 (int target_id, unsigned int& gain);
+int strain_set_matrix_gain	 (int target_id, unsigned int  gain);
 
 cDownloader();
 };
