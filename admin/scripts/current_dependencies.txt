@@ -1,3 +1,7 @@
+== YARP VERSION ==
+
+This snapshot was released with yarp 2.2.5.
+
 == iCub Linux Dependencies ==
 
 Installed packages:
