@@ -419,7 +419,7 @@ void ParseCommand() //, unsigned int SID)
 			}
 			break;
 	
-			case CAN_CMD_GET_CH_DAC:
+			case CAN_CMD_GET_CH_DAC:   //get gain of DAC converter 
 			{
 	          if(msg->CAN_Per_Msg_PayLoad[1] < 6)
 	          {
@@ -434,22 +434,77 @@ void ParseCommand() //, unsigned int SID)
 	
 			case CAN_CMD_GET_CH_ADC:  //get ADC channel
 			{
-	          if(msg->CAN_Per_Msg_PayLoad[1] < 6)
-	          {
-			    Txdata[0] = CAN_CMD_GET_CH_ADC; 
-			    Txdata[1] = msg->CAN_Per_Msg_PayLoad[1];  
-			    Txdata[2] = (BoardConfig.EE_AN_ChannelValue[msg->CAN_Per_Msg_PayLoad[1]]+0x7FFF) >> 8; 
-		   	    Txdata[3] = (BoardConfig.EE_AN_ChannelValue[msg->CAN_Per_Msg_PayLoad[1]]+0x7FFF) & 0xFF; 
-				/*
-				Txdata[2] = BoardConfig.EE_AN_ChannelValue[msg->CAN_Per_Msg_PayLoad[1]] >> 8; 
-				Txdata[3] = BoardConfig.EE_AN_ChannelValue[msg->CAN_Per_Msg_PayLoad[1]] & 0xFF; 
-				*/
-				datalen=4;	            
-	          }
+				if(msg->CAN_Per_Msg_PayLoad[1] < 6)
+		          {
+			        if(msg->CAN_Per_Msg_PayLoad[2] == 0)
+			        {
+						Txdata[0] = CAN_CMD_GET_CH_ADC; 
+						Txdata[1] = msg->CAN_Per_Msg_PayLoad[1];  
+						Txdata[2] = msg->CAN_Per_Msg_PayLoad[2];  
+						Txdata[3] = (BoardConfig.EE_AN_ChannelValue[msg->CAN_Per_Msg_PayLoad[1]]+0x7FFF) >> 8; 
+						Txdata[4] = (BoardConfig.EE_AN_ChannelValue[msg->CAN_Per_Msg_PayLoad[1]]+0x7FFF) & 0xFF; 
+						datalen=5;
+		
+				    }
+					else
+					{
+						Txdata[0] = CAN_CMD_GET_CH_ADC; 
+						Txdata[1] = msg->CAN_Per_Msg_PayLoad[1];  
+						Txdata[2] = msg->CAN_Per_Msg_PayLoad[2];
+							  MatrixMultiply(
+							  6, // int numRows1,
+							  6, // int numCols1Rows2,
+							  1, // int numCols2,
+							  &BoardConfig.EE_TF_TorqueValue[0],   // fractional* dstM,
+							  &BoardConfig.EE_TF_TMatrix[0][0],    // fractional* srcM1,
+							  (int*) &BoardConfig.EE_AN_ChannelValue[0]); // fractional* srcM2 
+						Txdata[3] = (BoardConfig.EE_TF_TorqueValue[msg->CAN_Per_Msg_PayLoad[1]]+0x7FFF) >> 8; 
+						Txdata[4] = (BoardConfig.EE_TF_TorqueValue[msg->CAN_Per_Msg_PayLoad[1]]+0x7FFF) & 0xFF; 
+						datalen=5;
+					}   
+		          }
 			}
 			break;
-		
-		    case CAN_CMD_SET_MATRIX_RC: //set i,j value of transform. matrix:
+
+		case CAN_CMD_GET_MATRIX_G: //get matrix gain
+			{
+		#ifdef MAIS
+		      // 
+	    	  // MAIS
+		      // 
+		      EEnqueue(ERR_CAN_COMMAND_UNAVAILABLE);
+		  return;
+		#else 
+		      //
+		      // STRAIN
+		      //
+				Txdata[0] = CAN_CMD_GET_MATRIX_G; 
+				Txdata[1] = BoardConfig.EE_MatrixGain; 
+				datalen=2;
+		#endif	            
+			}
+		break;
+	
+		case CAN_CMD_SET_MATRIX_G: //set matrix gain
+		    { 
+		#ifdef MAIS
+		      // 
+	    	  // MAIS
+		      // 
+		      EEnqueue(ERR_CAN_COMMAND_UNAVAILABLE);
+		  return;
+		#else 
+		      //
+		      // STRAIN
+		      //
+			  BoardConfig.EE_MatrixGain=msg->CAN_Per_Msg_PayLoad[1];
+		      
+		#endif
+			  datalen=0;
+		    }  
+		break;	
+	
+		case CAN_CMD_SET_MATRIX_RC: //set i,j value of transform. matrix:
 		    { 
 		      //  set i,j value of transform. matrix:
 		      //  0x205 len 5  data 3 i j vv vv 
