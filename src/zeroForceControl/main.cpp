@@ -340,8 +340,8 @@ int main(int argc, char * argv[])
     // prepare and configure the resource finder
     ResourceFinder rf;
     rf.setVerbose();
-	rf.setDefaultContext("FTSensorCalibration/conf");
-	rf.setDefaultConfigFile("LeftArmFTCal.ini");
+	rf.setDefaultContext("ftSensorCalibration/conf");
+	rf.setDefaultConfigFile("leftArmFTCal.ini");
 
     rf.configure("ICUB_ROOT", argc, argv);
 
