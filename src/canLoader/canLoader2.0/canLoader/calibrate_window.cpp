@@ -17,14 +17,19 @@ GtkWidget* curr_measure[6];
 GtkWidget* max_measure[6];
 GtkWidget* min_measure[6];
 GtkWidget* diff_measure[6];
+GtkWidget* newton_measure[6];
 GtkWidget* edit_matrix[6][6];
+GtkWidget* edit_matrix_gain;
+GtkWidget* label_matrix_gain;
 GtkWidget* slider_gain[6];	
 GtkWidget* slider_zero;	
 GtkWidget* info_dlg;
 GtkWidget* picker_calib;
 GtkWidget *save_button;
+GtkWidget *check_raw_vals;
 gboolean timer_func (gpointer data);
 
+unsigned int calib_const=0;
 bool matrix_changed;
 bool something_changed;
 		
@@ -82,15 +87,16 @@ gboolean timer_func (gpointer data)
 	downloader.strain_get_offset (downloader.board_list[selected].pid, 4, offset[4]);
 	downloader.strain_get_offset (downloader.board_list[selected].pid, 5, offset[5]);
 
-	downloader.strain_get_adc (downloader.board_list[selected].pid, 0, adc[0]);
-	downloader.strain_get_adc (downloader.board_list[selected].pid, 1, adc[1]);
-	downloader.strain_get_adc (downloader.board_list[selected].pid, 2, adc[2]);
-	downloader.strain_get_adc (downloader.board_list[selected].pid, 3, adc[3]);
-	downloader.strain_get_adc (downloader.board_list[selected].pid, 4, adc[4]);
-	downloader.strain_get_adc (downloader.board_list[selected].pid, 5, adc[5]);
+	int bool_raw= gtk_toggle_button_get_active (GTK_TOGGLE_BUTTON (check_raw_vals));
+	downloader.strain_get_adc (downloader.board_list[selected].pid, 0, adc[0], bool_raw);
+	downloader.strain_get_adc (downloader.board_list[selected].pid, 1, adc[1], bool_raw);
+	downloader.strain_get_adc (downloader.board_list[selected].pid, 2, adc[2], bool_raw);
+	downloader.strain_get_adc (downloader.board_list[selected].pid, 3, adc[3], bool_raw);
+	downloader.strain_get_adc (downloader.board_list[selected].pid, 4, adc[4], bool_raw);
+	downloader.strain_get_adc (downloader.board_list[selected].pid, 5, adc[5], bool_raw);
 
 	int ri,ci=0;
-	char tempbuf [50];
+	char tempbuf [250];
 	GdkColor color;
 	color.red=65535;
 	//color.green=0;
@@ -106,20 +112,27 @@ gboolean timer_func (gpointer data)
 	}
 
 	if (matrix_changed==false)
-		for (ri=0;ri<6;ri++)
-			for (ci=0;ci<6;ci++)
-				{
-					downloader.strain_get_matrix_rc(downloader.board_list[selected].pid,ri,ci,matrix[ri][ci]);
-					sprintf(tempbuf,"%x",matrix[ri][ci]);
-					gtk_entry_set_text (GTK_ENTRY (edit_matrix[ri][ci]), tempbuf);
-					gtk_widget_modify_base (edit_matrix[ri][ci],GTK_STATE_NORMAL, NULL );
-				}
+		{
+			for (ri=0;ri<6;ri++)
+				for (ci=0;ci<6;ci++)
+					{
+						downloader.strain_get_matrix_rc(downloader.board_list[selected].pid,ri,ci,matrix[ri][ci]);
+						sprintf(tempbuf,"%x",matrix[ri][ci]);
+						gtk_entry_set_text (GTK_ENTRY (edit_matrix[ri][ci]), tempbuf);
+						gtk_widget_modify_base (edit_matrix[ri][ci],GTK_STATE_NORMAL, NULL );
+					}
+			downloader.strain_get_matrix_gain(downloader.board_list[selected].pid,calib_const);
+			sprintf(tempbuf,"%d",calib_const);
+			gtk_label_set_text (GTK_LABEL(edit_matrix_gain), tempbuf);
+		}
 	else
-		for (ri=0;ri<6;ri++)
-			for (ci=0;ci<6;ci++)
-				{
-					gtk_widget_modify_base (edit_matrix[ri][ci],GTK_STATE_NORMAL, &color );
-				}
+		{
+			for (ri=0;ri<6;ri++)
+				for (ci=0;ci<6;ci++)
+					{
+						gtk_widget_modify_base (edit_matrix[ri][ci],GTK_STATE_NORMAL, &color );
+					}
+		}
 	for (int i=0;i<6;i++)
 	{
 		if (adc[i]>maxadc[i]) maxadc[i]=adc[i];
@@ -184,6 +197,19 @@ gboolean timer_func (gpointer data)
 	gtk_label_set_text(GTK_LABEL(diff_measure[4]),tempbuf);
 	sprintf(tempbuf,"%d",maxadc[5]-minadc[5]);
 	gtk_label_set_text(GTK_LABEL(diff_measure[5]),tempbuf);
+
+	sprintf(tempbuf,"%+.3f",(int(adc[0])-0x7fff)/float(calib_const));
+	gtk_label_set_text(GTK_LABEL(newton_measure[0]),tempbuf);
+	sprintf(tempbuf,"%+.3f",(int(adc[1])-0x7fff)/float(calib_const));
+	gtk_label_set_text(GTK_LABEL(newton_measure[1]),tempbuf);
+	sprintf(tempbuf,"%+.3f",(int(adc[2])-0x7fff)/float(calib_const));
+	gtk_label_set_text(GTK_LABEL(newton_measure[2]),tempbuf);
+	sprintf(tempbuf,"%+.3f",(int(adc[3])-0x7fff)/float(calib_const));
+	gtk_label_set_text(GTK_LABEL(newton_measure[3]),tempbuf);
+	sprintf(tempbuf,"%+.3f",(int(adc[4])-0x7fff)/float(calib_const));
+	gtk_label_set_text(GTK_LABEL(newton_measure[4]),tempbuf);
+	sprintf(tempbuf,"%+.3f",(int(adc[5])-0x7fff)/float(calib_const));
+	gtk_label_set_text(GTK_LABEL(newton_measure[5]),tempbuf);
 
 	return true;
 }
@@ -260,6 +286,12 @@ void file_load_click (GtkButton *button,	gpointer ch_p)
 		printf("%d %x\n", calib_matrix[ri][ci],calib_matrix[ri][ci]);
 		downloader.strain_set_matrix_rc(downloader.board_list[selected].pid,ri,ci,calib_matrix[ri][ci]);
 	}
+	filestr.getline (buffer,256);
+	int cc=0;
+	sscanf (buffer,"%d",&cc);
+	downloader.strain_set_matrix_gain(downloader.board_list[selected].pid,cc);
+	//calib_const=cc;
+	//calib_const=63;
 	filestr.close();
 	matrix_changed=true;
 	something_changed=true;
@@ -427,6 +459,16 @@ void calibrate_click (GtkButton *button,	gpointer   user_data)
 	diff_measure[3] = gtk_label_new_with_mnemonic ("32000");
 	diff_measure[4] = gtk_label_new_with_mnemonic ("32000");
 	diff_measure[5] = gtk_label_new_with_mnemonic ("32000");
+	newton_measure[0] = gtk_label_new_with_mnemonic ("0");
+	newton_measure[1] = gtk_label_new_with_mnemonic ("0");
+	newton_measure[2] = gtk_label_new_with_mnemonic ("0");
+	newton_measure[3] = gtk_label_new_with_mnemonic ("0");
+	newton_measure[4] = gtk_label_new_with_mnemonic ("0");
+	newton_measure[5] = gtk_label_new_with_mnemonic ("0");
+	label_matrix_gain = gtk_label_new_with_mnemonic ("matrix gain:");
+	edit_matrix_gain = gtk_label_new_with_mnemonic ("null");
+
+	check_raw_vals = gtk_check_button_new_with_label  ("use calib matrix");
 
 	slider_gain[0] = gtk_hscale_new_with_range   (0,0x3FF,1);
 	slider_gain[1] = gtk_hscale_new_with_range   (0,0x3FF,1);
@@ -443,8 +485,8 @@ void calibrate_click (GtkButton *button,	gpointer   user_data)
 
 	gtk_container_add  (GTK_CONTAINER(GTK_BOX (GTK_DIALOG (calib_window)->vbox)),fixed);
 	
-	int r[6]={0+10,60+10,60*2+10,60*3+10,60*4+10,60*5+10};
-	int c[7]={0+10,50+10,150+10,230+10,350+10,400+10,450+10};
+	int r[7]={0+10,60+10,60*2+10,60*3+10,60*4+10,60*5+10,60*6+10};
+	int c[9]={0+10,50+10,150+10,230+10,350+10,400+10,450+10,500+10,550+10};
 
 	gtk_fixed_put(GTK_FIXED(fixed),label_gain[0],c[0],r[0]);
 	gtk_fixed_put(GTK_FIXED(fixed),label_gain[1],c[0],r[1]);
@@ -511,6 +553,16 @@ void calibrate_click (GtkButton *button,	gpointer   user_data)
 	gtk_fixed_put(GTK_FIXED(fixed),diff_measure[4],c[6],r[4]);
 	gtk_fixed_put(GTK_FIXED(fixed),diff_measure[5],c[6],r[5]);
 
+	gtk_fixed_put(GTK_FIXED(fixed),newton_measure[0],c[8],r[0]);
+	gtk_fixed_put(GTK_FIXED(fixed),newton_measure[1],c[8],r[1]);
+	gtk_fixed_put(GTK_FIXED(fixed),newton_measure[2],c[8],r[2]);
+	gtk_fixed_put(GTK_FIXED(fixed),newton_measure[3],c[8],r[3]);
+	gtk_fixed_put(GTK_FIXED(fixed),newton_measure[4],c[8],r[4]);
+	gtk_fixed_put(GTK_FIXED(fixed),newton_measure[5],c[8],r[5]);
+
+	gtk_fixed_put(GTK_FIXED(fixed),label_matrix_gain,c[5],r[5]+40+6*32);
+	gtk_fixed_put(GTK_FIXED(fixed),edit_matrix_gain,c[5]+100,r[5]+40+6*32);
+
 	gtk_widget_set_size_request(auto_button,100,40);
 	gtk_widget_set_size_request(save_button,140,40);
 	gtk_widget_set_size_request(file_load_button,140,40);
@@ -530,6 +582,7 @@ void calibrate_click (GtkButton *button,	gpointer   user_data)
 	g_signal_connect (slider_gain[5], "value-changed", G_CALLBACK (slider_changed),&ch[5]);
 	g_signal_connect (slider_zero, "value-changed", G_CALLBACK (zero_changed),NULL);
 	
+	gtk_fixed_put(GTK_FIXED(fixed),check_raw_vals,c[2]+10,r[5]+240);
 	gtk_fixed_put(GTK_FIXED(fixed),auto_button,c[1]-20,r[5]+40);
 	gtk_fixed_put(GTK_FIXED(fixed),slider_zero,c[1]-20,r[5]+100);
 	gtk_fixed_put(GTK_FIXED(fixed),save_button,c[2]+10,r[5]+40);
