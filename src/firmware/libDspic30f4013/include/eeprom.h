@@ -34,6 +34,8 @@ typedef struct s_eeprom
   // additional info
   unsigned char EE_AdditionalInfo[32]; 
 
+  // matrix calibration gain
+  unsigned char EE_MatrixGain;
   unsigned int  EE_ChkSum;                 // data validation checksum
 
 } s_eeprom;
