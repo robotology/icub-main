@@ -15,7 +15,7 @@ extern char BOARD_TYPE;
 #define CAN_DATA_FRAME      0
 #define CAN_REMOTE_FRAME    1
 
-#define CAN_MSG_CLASS_PERIODIC 0x0100
+#define CAN_MSG_CLASS_PERIODIC 0x0300
 // For messages of class 011 the meaning of data/ID is defined as follows:
 //  -------------------------- ----------------
 // |           11b            |        8B      |
