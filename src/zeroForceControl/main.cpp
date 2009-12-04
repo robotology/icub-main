@@ -29,8 +29,6 @@ using namespace std;
 using namespace iFC;
 using namespace iKin;
 
-#define c0_1000 0
-#define c1000_0 1
 
 const int SAMPLER_RATE = 50;
 const int FT_VALUES = 6;
@@ -67,7 +65,7 @@ private:
 	iKinChain *chain;
 
 	iFB *FTB;
-	iFTransform *sensore;
+	iFTransform *sensor;
 
 	Matrix Rs;
 	Vector ps;
@@ -93,16 +91,16 @@ public:
 
 		  // Elbow to FT sensor variables
 		  Rs=eye(3,3);
-		  ps.resize(3,1);
+		  ps.resize(3);
 		  ps=0.0;
 
 		  arm= new iCubArm("Left");
-		  sensore = new iFTransform(Rs,ps);
+		  sensor = new iFTransform(Rs,ps);
 		  chain = arm->asChain();
 
 		  FTB = new iFB(2);
 		  FTB->attach(arm);
-		  FTB->attach(sensore);
+		  FTB->attach(sensor);
 
 		  first = true;
 		  FTs.resize(FT_VALUES);
@@ -132,6 +130,20 @@ public:
 			  ipos->positionMove(i,initPosition[i]);
 
 		  bool check = false;
+		  int count;
+		  //for(int i=0;i<ARM_JNT;i++)
+		  //{
+		  //  check=false;
+		  //  count=0;
+		  //  while(!check && count < 100)
+		  //    {
+		  //      ipos->checkMotionDone(i,&check);
+		  //      count++;
+		  //      Time::delay(0.1);
+	          //    }
+		  //}
+		  
+
 		  while(!check)
 		  {
 			  check=true;
@@ -147,8 +159,8 @@ public:
 	  void run()
 	  {
 		  Vector *tmp=port_FT.read(false);
-		  iencs->getEncoders(encoders.data());
-		  arm->setAng(encoders);
+		  if(iencs->getEncoders(encoders.data()))
+		          arm->setAng(encoders);
 		
 		  if(tmp!=0)  
 		  {
@@ -178,14 +190,19 @@ public:
 		  Matrix K;
 		  K=k*eye(ARM_JNT,ARM_JNT);
 
-		  Vector tao = checkLimits(encoders,K*arm->GeoJacobian(encoders)*FT); 
+		  Vector tau = K*(arm->GeoJacobian(encoders).transposed())*FT;
+		  Vector safeTau = tau;
+		  safeTau=checkLimits(encoders, tau); 
 
-		  fprintf(stderr,"tao = ");
+		  fprintf(stderr,"tau = ");
 		  for(int i=0;i<4;i++)
-			  fprintf(stderr,"%.3lf\t", tao(i));
+			  fprintf(stderr,"%.3lf\t", tau(i));
+		  fprintf(stderr,"\n");
+
+		  fprintf(stderr,"safeTau = ");
+		  for(int i=0;i<4;i++)
+			  fprintf(stderr,"%.3lf\t", safeTau(i));
 		  fprintf(stderr,"\n\n\n");
-
-
 	  }
 
 	  void threadRelease()
@@ -195,7 +212,7 @@ public:
 		  for(int i=0;i<ARM_JNT;i++)
 			  ipids->resetPid(i);
 			
-		  delete sensore;
+		  delete sensor;
 		  delete FTB;
 		  delete arm;
 	  }
