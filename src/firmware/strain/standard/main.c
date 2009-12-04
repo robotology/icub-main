@@ -62,7 +62,7 @@
 #define STRAIN_RELEASE     0x01
 
 #define MAIS_BUILD         0x01
-#define STRAIN_BUILD       0x01
+#define STRAIN_BUILD       0x02
 
 #ifdef STRAIN 
   char VERSION=   		STRAIN_VERSION;
@@ -144,6 +144,7 @@ struct s_eeprom _EEDATA(1) ee_data =
     {0,0,0,0,0,0x7FFF},
   },
   {0,1,2,3,4,5,6,7,8,9,10,11,12,13,14,15,16,17,18,19,20,21,22,23,24,25,26,27,28,29,30,31},
+  {1},
   0x0000 // Checksum
 };
 
@@ -460,7 +461,7 @@ void T2(void)
 }
 
 
-void ParseCommand_local(canmsg_t *msg) //, unsigned int SID)
+/*void ParseCommand_local(canmsg_t *msg) //, unsigned int SID)
 //
 // parse board test messages and renspond to the sender 
 // response has SID and a variable payload different freom command 2 another
@@ -595,13 +596,34 @@ void ParseCommand_local(canmsg_t *msg) //, unsigned int SID)
 
 		case CAN_CMD_GET_CH_ADC:
 		{
-          if(msg->CAN_Per_Msg_PayLoad[1] < 6)
+         if(msg->CAN_Per_Msg_PayLoad[1] < 6)
           {
-			Txdata[0] = CAN_CMD_GET_CH_ADC; 
-			Txdata[1] = msg->CAN_Per_Msg_PayLoad[1];  
-			Txdata[2] = (BoardConfig.EE_AN_ChannelValue[msg->CAN_Per_Msg_PayLoad[1]]+0x7FFF) >> 8; 
-			Txdata[3] = (BoardConfig.EE_AN_ChannelValue[msg->CAN_Per_Msg_PayLoad[1]]+0x7FFF) & 0xFF; 
-			datalen=4;	            
+	        if(msg->CAN_Per_Msg_PayLoad[2] == 0)
+	        {
+				Txdata[0] = CAN_CMD_GET_CH_ADC; 
+				Txdata[1] = msg->CAN_Per_Msg_PayLoad[1];  
+				Txdata[2] = msg->CAN_Per_Msg_PayLoad[2];  
+				Txdata[3] = (BoardConfig.EE_AN_ChannelValue[msg->CAN_Per_Msg_PayLoad[1]]+0x7FFF) >> 8; 
+				Txdata[4] = (BoardConfig.EE_AN_ChannelValue[msg->CAN_Per_Msg_PayLoad[1]]+0x7FFF) & 0xFF; 
+				datalen=5;
+
+		    }
+			else
+			{
+				Txdata[0] = CAN_CMD_GET_CH_ADC; 
+				Txdata[1] = msg->CAN_Per_Msg_PayLoad[1];  
+				Txdata[2] = msg->CAN_Per_Msg_PayLoad[2];
+					  MatrixMultiply(
+					  6, // int numRows1,
+					  6, // int numCols1Rows2,
+					  1, // int numCols2,
+					  &BoardConfig.EE_TF_TorqueValue[0],   // fractional* dstM,
+					  &BoardConfig.EE_TF_TMatrix[0][0],    // fractional* srcM1,
+					  (int*) &BoardConfig.EE_AN_ChannelValue[0]); // fractional* srcM2 
+				Txdata[3] = (BoardConfig.EE_TF_TorqueValue[msg->CAN_Per_Msg_PayLoad[1]]+0x7FFF) >> 8; 
+				Txdata[4] = (BoardConfig.EE_TF_TorqueValue[msg->CAN_Per_Msg_PayLoad[1]]+0x7FFF) & 0xFF; 
+				datalen=5;
+			}   
           }
 		}
 		break;
@@ -940,7 +962,7 @@ void ParseCommand_local(canmsg_t *msg) //, unsigned int SID)
     while(!CAN1IsTXReady(0));
     CAN1SendMessage((CAN_TX_SID(i)) & CAN_TX_EID_DIS & CAN_SUB_NOR_TX_REQ, (CAN_TX_EID(0x0)) & CAN_NOR_TX_REQ, Txdata,datalen,0); 
   }
-}
+}*/
 
 
 int main(void)
