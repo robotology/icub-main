@@ -131,25 +131,25 @@ public:
 
 		  bool check = false;
 		  int count;
-		  //for(int i=0;i<ARM_JNT;i++)
-		  //{
-		  //  check=false;
-		  //  count=0;
-		  //  while(!check && count < 100)
-		  //    {
-		  //      ipos->checkMotionDone(i,&check);
-		  //      count++;
-		  //      Time::delay(0.1);
-	          //    }
-		  //}
+		  for(int i=0;i<ARM_JNT;i++)
+		  {
+		    check=false;
+		    count=0;
+		    while(!check && count < 100)
+		      {
+		        ipos->checkMotionDone(i,&check);
+		        count++;
+		        Time::delay(0.1);
+			      }
+		  }
 		  
 
-		  while(!check)
+		 /* while(!check)
 		  {
 			  check=true;
 			  for(int i=0;i<ARM_JNT;i++)
 				  check &= checkSinglePosition(initPosition[i],encoders(i));
-		  }
+		  }*/
 		  Time::delay(1.0);
 
 		  for(int i=0;i<ARM_JNT;i++)
@@ -183,8 +183,6 @@ public:
 				  FTs_init=0.0;
 			  }
 		  }
-
-		
 
 		  double k=1.0; //to be tuned
 		  Matrix K;
