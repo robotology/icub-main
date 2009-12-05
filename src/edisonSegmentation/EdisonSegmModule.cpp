@@ -97,7 +97,7 @@ bool EdisonSegmModule::open(Searchable& config)
 	//override defaults if specified
 	if(rf.check("height")) height_ = rf.find("height").asInt();
     if(rf.check("width")) width_ = rf.find("width").asInt();
-    //if(rf.check("dim")) dim_ = rf.find("dim").asInt(); //dim must be 3 !
+    if(rf.check("dim")) dim_ = rf.find("dim").asInt();
 	if(rf.check("sigmaS")) sigmaS = rf.find("sigmaS").asInt();		
 	if(rf.check("sigmaR")) sigmaR = rf.find("sigmaR").asDouble();		
 	if(rf.check("minRegion")) minRegion = rf.find("minRegion").asInt();  
@@ -117,13 +117,13 @@ bool EdisonSegmModule::open(Searchable& config)
 	// name of the camera calibration file
     // ConstString strCamConfigPath=rf.findFile("camera");
 
-    _imgPort.open(getName("image"));
-	_configPort.open(getName("conf"));
-    _filtPort.open(getName("filt"));
-	_labelPort.open(getName("label"));
-	_viewPort.open(getName("view"));
-	_outPort.open(getName("segm"));
-	_labelViewPort.open(getName("debug"));
+	_imgPort.open(getName("rawimg:i"));
+	_configPort.open(getName("conf:i"));
+	_filtPort.open(getName("filtimg:o"));
+	_labelPort.open(getName("labelimg:o"));
+	_viewPort.open(getName("viewimg:o"));
+	_rawPort.open(getName("rawimg:o"));
+	_labelViewPort.open(getName("debugimg:o"));
 	attach(_configPort, true);
 
 	//read an image to get the dimensions
@@ -134,12 +134,16 @@ bool EdisonSegmModule::open(Searchable& config)
 	orig_height_ = yrpImgIn->height();
 	orig_width_ = yrpImgIn->width();
 
+	//THIS IS NOT REQUIRED - INPUT IMAGES ARE ALWAYS RGB
+	//IF DIM == 3 THEN THE PROCESSING CLASS CONVERTS TO LUV
+	//IF DIM == 1 THEN THE PROCESSING CLASS ONLY USES THE FIRST CHANNEL
+	//WE USE HUE CHANNEL, SO MUST CONVERT FROM RGB TO HSV
 	//check compatibility of image depth 
-	if (yrpImgIn->getPixelSize() != dim_) 
+	/*if (yrpImgIn->getPixelSize() != dim_) 
 	{
 		cout << endl << "Incompatible image depth" << endl;
 		return false;
-	}
+	}*/ 
 
 	//check image dimensions
 	if( orig_width_ < width_ || orig_height_ < height_)
@@ -151,6 +155,8 @@ bool EdisonSegmModule::open(Searchable& config)
 	//allocate memory for image buffers and get the pointers
  
 	inputImage.resize(width_, height_); inputImage_ = inputImage.getRawImage();
+	inputHsv.resize(width_, height_); inputHsv_ = inputHsv.getRawImage();
+	inputHue.resize(width_, height_); inputHue_ = inputHue.getRawImage();
 	filtImage.resize(width_, height_);  filtImage_ = filtImage.getRawImage();
 	segmImage.resize(width_, height_);  segmImage_ = segmImage.getRawImage();
 	gradMap.resize(width_, height_);    gradMap_ = (float*)gradMap.getRawImage();
@@ -171,7 +177,7 @@ bool EdisonSegmModule::close()
 	_filtPort.close();
     _viewPort.close();
 	_configPort.close();
-	_outPort.close();
+	_rawPort.close();
 
 	// also deallocate image _frame
     return true;
@@ -185,7 +191,7 @@ bool EdisonSegmModule::interruptModule(){
 	_filtPort.interrupt();
 	_labelViewPort.interrupt();
 	_viewPort.interrupt();
-	_outPort.interrupt();
+	_rawPort.interrupt();
     return true;
 }
 
@@ -215,6 +221,8 @@ bool EdisonSegmModule::updateModule()
 	//copying roi data to buffer
 	iplimg->roi = &roi;
 	cvCopy( iplimg, inputImage.getIplImage());
+
+	double edgetime = yarp::os::Time::now();
 	//compute gradient and confidence maps
 	BgEdgeDetect edgeDetector(gradWindRad);
 	BgImage bgImage;
@@ -228,9 +236,18 @@ bool EdisonSegmModule::updateModule()
 		weightMap_[i] = 0;
       }
     }
+	///////////////////////////// This block can be parallelized
+	cout << "Edge computation Time (ms): " << (yarp::os::Time::now() - edgetime)*1000.0 << endl;
 
 	msImageProcessor iProc;
-	iProc.DefineImage(inputImage_, COLOR, height_, width_);
+	if( dim_ == 3 )
+		iProc.DefineImage(inputImage_, COLOR, height_, width_);
+	else
+	{	
+		cvCvtColor(inputImage.getIplImage(), inputHsv.getIplImage(), CV_RGB2HSV);
+		cvSplit(inputHsv.getIplImage(), inputHue.getIplImage(), 0, 0, 0);
+		iProc.DefineImage(inputHue_, GRAYSCALE, height_, width_);
+	}
 	if(iProc.ErrorStatus) {
 		cout << "MeanShift Error" << endl;
 		return false;
@@ -241,11 +258,15 @@ bool EdisonSegmModule::updateModule()
 		return false;
 	}
 
+
+	double filtertime = yarp::os::Time::now();
 	iProc.Filter(sigmaS, sigmaR, speedup);
     if(iProc.ErrorStatus) {
 		cout << "MeanShift Error" << endl;
 		return false;
 	}
+	cout << "Mean Shift Filter Computation Time (ms): " << (yarp::os::Time::now() - filtertime)*1000.0 << endl;
+
 
     //obtain the filtered image
     iProc.GetResults(filtImage_);
@@ -255,11 +276,13 @@ bool EdisonSegmModule::updateModule()
 	}
     
     //fuse regions
+	double fusetime = yarp::os::Time::now();
     iProc.FuseRegions(sigmaR, minRegion);
     if(iProc.ErrorStatus) {
 		cout << "MeanShift Error" << endl;
 		return false;
 	}
+	cout << "Region Fusion Computation Time (ms): " << (yarp::os::Time::now() - fusetime)*1000.0 << endl;
 
     //obtain the segmented image
     iProc.GetResults(segmImage_);
@@ -302,8 +325,8 @@ bool EdisonSegmModule::updateModule()
 	yrpImgLabel = labelImage;
 	_labelPort.write();
 
-	ImageOf<PixelMono> &yrpImgView = _labelViewPort.prepare();
-	yrpImgView = labelView;
+	ImageOf<PixelMono> &yrpImgDebug = _labelViewPort.prepare();
+	yrpImgDebug = labelView;
 	_labelViewPort.write();
 
 
@@ -311,9 +334,14 @@ bool EdisonSegmModule::updateModule()
 	yrpFiltOut = filtImage;
 	_filtPort.write();
 
-	ImageOf<PixelRgb> &yrpImgOut = _viewPort.prepare();
-	yrpImgOut = segmImage;
+	ImageOf<PixelRgb> &yrpImgView = _viewPort.prepare();
+	yrpImgView = segmImage;
 	_viewPort.write();
+
+	ImageOf<PixelRgb> &yrpImgOut = _rawPort.prepare();
+	yrpImgOut = *yrpImgIn;
+	_rawPort.write();
+
 
 	//report the frame rate
 	if(cycles % 100 == 0)

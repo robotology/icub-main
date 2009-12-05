@@ -47,6 +47,13 @@ private:
 	ImageOf<PixelRgb> inputImage;
 	unsigned char * inputImage_;
 
+	//internal storage for hsv image, only needed for dim = 1.
+	ImageOf<PixelRgb> inputHsv;
+	unsigned char * inputHsv_;
+
+	//internal storage for hue channel, only needed for dim = 1.
+	ImageOf<PixelMono> inputHue;
+	unsigned char * inputHue_;
 
 	//store the weight maps
 	ImageOf<PixelFloat> gradMap;
@@ -88,12 +95,12 @@ private:
 	SpeedUpLevel speedup; //{NO_SPEEDUP, MED_SPEEDUP, HIGH_SPEEDUP} 
 	
     BufferedPort<ImageOf<PixelRgb> >       _imgPort;      //input image
-	BufferedPort<ImageOf<PixelRgb> >       _outPort;      //output image with the modes of each detected object
-	BufferedPort<ImageOf<PixelRgb> >       _viewPort;     //output image - segmentation, edges, etc (configurable)
+	BufferedPort<ImageOf<PixelRgb> >       _rawPort;      //raw image 
+	BufferedPort<ImageOf<PixelRgb> >       _viewPort;     //output image - segmentation (modes of each detected object), edges, etc (configurable)
 	BufferedPort<ImageOf<PixelInt> >       _labelPort;    //output image with labels 
     BufferedPort<ImageOf<PixelRgb> >       _filtPort;     //output the mean shift filtered image
 	BufferedPort<Bottle>				   _configPort;   //to configure the module
-	BufferedPort<ImageOf<PixelMono> >       _labelViewPort; //to visualize the labels
+	BufferedPort<ImageOf<PixelMono> >      _labelViewPort; //to visualize the labels
 
 public:
     EdisonSegmModule();
