@@ -118,7 +118,7 @@ bool EdisonSegmModule::open(Searchable& config)
     // ConstString strCamConfigPath=rf.findFile("camera");
 
 	_imgPort.open(getName("rawimg:i"));
-	_configPort.open(getName("conf:i"));
+	_configPort.open(getName("conf"));
 	_filtPort.open(getName("filtimg:o"));
 	_labelPort.open(getName("labelimg:o"));
 	_viewPort.open(getName("viewimg:o"));
