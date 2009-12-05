@@ -64,7 +64,7 @@ EdisonSegmModule::~EdisonSegmModule()
 bool EdisonSegmModule::open(Searchable& config)
 {
     if (config.check("help","if present, display usage message")) {
-        printf("Call with --from configFile.ini\n");
+        printf("Call with --from configfile.ini\n");
         return false;
     }
     //need to initialize _xsize, _ysize, _thresh, _camerafile, _objectfile, _objectnum, _object
@@ -79,7 +79,7 @@ bool EdisonSegmModule::open(Searchable& config)
     if (config.check("from"))
         rf.setDefaultConfigFile(config.find("from").asString());
     else
-        rf.setDefaultConfigFile("configFile.ini");
+        rf.setDefaultConfigFile("edisonConfig.ini");
 
     rf.configure("ICUB_ROOT",0,NULL);
 
@@ -87,17 +87,17 @@ bool EdisonSegmModule::open(Searchable& config)
 	height_ = 240;
 	width_ = 320;
 	dim_ = 3;
-    sigmaS = 7;		
+	sigmaS = 7;		
     sigmaR = 6.5;		
     minRegion = 20;  
     gradWindRad = 2; 
     threshold = 0.3; 
     mixture = 0.2;  
     speedup = MED_SPEEDUP; 
-	//override defaults if specified
+	//override defaults if specified - TODO: range checking
 	if(rf.check("height")) height_ = rf.find("height").asInt();
     if(rf.check("width")) width_ = rf.find("width").asInt();
-    if(rf.check("dim")) dim_ = rf.find("dim").asInt();
+    //if(rf.check("dim")) dim_ = rf.find("dim").asInt(); // not required - should always be 3
 	if(rf.check("sigmaS")) sigmaS = rf.find("sigmaS").asInt();		
 	if(rf.check("sigmaR")) sigmaR = rf.find("sigmaR").asDouble();		
 	if(rf.check("minRegion")) minRegion = rf.find("minRegion").asInt();  
@@ -117,6 +117,7 @@ bool EdisonSegmModule::open(Searchable& config)
 	// name of the camera calibration file
     // ConstString strCamConfigPath=rf.findFile("camera");
 
+	
 	_imgPort.open(getName("rawimg:i"));
 	_configPort.open(getName("conf"));
 	_filtPort.open(getName("filtimg:o"));
@@ -145,13 +146,12 @@ bool EdisonSegmModule::open(Searchable& config)
 		return false;
 	}*/ 
 
-	//check image dimensions
-	if( orig_width_ < width_ || orig_height_ < height_)
-	{
-		cout << endl << "Input image smaller than required" << endl;
-		return false;
-	}
-	 
+	//override internal image dimension if necessary
+	if( width_ > orig_width_ )
+		width_ = orig_width_;
+	if( height_ > orig_height_ )
+		height_ = orig_height_;
+
 	//allocate memory for image buffers and get the pointers
  
 	inputImage.resize(width_, height_); inputImage_ = inputImage.getRawImage();
@@ -162,7 +162,6 @@ bool EdisonSegmModule::open(Searchable& config)
 	gradMap.resize(width_, height_);    gradMap_ = (float*)gradMap.getRawImage();
 	confMap.resize(width_, height_);    confMap_ = (float*)confMap.getRawImage();
 	weightMap.resize(width_, height_);  weightMap_ = (float*)weightMap.getRawImage();
-
 	labelImage.resize(width_, height_);
 	labelView.resize(width_, height_);
     
@@ -211,16 +210,22 @@ bool EdisonSegmModule::updateModule()
     IplImage *iplimg = (IplImage*)yrpImgIn->getIplImage();
 
     //computing the ROI to crop the image
-	struct _IplROI roi;
+	/*struct _IplROI roi;
 	roi.coi = 0; // all channels are selected
 	roi.height = height_;
 	roi.width = width_;
 	roi.xOffset = ( orig_width_ - width_ ) / 2;
-	roi.yOffset = ( orig_height_ - height_ ) / 2;
+	roi.yOffset = ( orig_height_ - height_ ) / 2;*/
 	
 	//copying roi data to buffer
-	iplimg->roi = &roi;
-	cvCopy( iplimg, inputImage.getIplImage());
+	/*iplimg->roi = &roi;
+	cvCopy( iplimg, inputImage.getIplImage());*/
+
+	//Rescale image if required
+	if( (width_ != orig_width_) || (height_ != orig_height_ ) )
+		cvResize(iplimg, inputImage.getIplImage(), CV_INTER_NN);
+	else
+		cvCopy( iplimg, inputImage.getIplImage());
 
 	double edgetime = yarp::os::Time::now();
 	//compute gradient and confidence maps
@@ -322,20 +327,48 @@ bool EdisonSegmModule::updateModule()
 	cvConvert(labelint, labelchar);
 
 	ImageOf<PixelInt> &yrpImgLabel = _labelPort.prepare();
-	yrpImgLabel = labelImage;
+	//Rescale image if required
+	if( (width_ != orig_width_) || (height_ != orig_height_ ) )
+	{
+		yrpImgLabel.resize(orig_width_, orig_height_);
+		cvResize(labelImage.getIplImage(), yrpImgLabel.getIplImage(), CV_INTER_NN);
+	}
+	else
+		yrpImgLabel = labelImage;
 	_labelPort.write();
 
 	ImageOf<PixelMono> &yrpImgDebug = _labelViewPort.prepare();
-	yrpImgDebug = labelView;
+	//Rescale image if required
+	if( (width_ != orig_width_) || (height_ != orig_height_ ) )
+	{
+		yrpImgDebug.resize(orig_width_, orig_height_);
+		cvResize(labelView.getIplImage(), yrpImgDebug.getIplImage(), CV_INTER_NN);
+	}
+	else
+		yrpImgDebug = labelView;
 	_labelViewPort.write();
 
 
 	ImageOf<PixelRgb> &yrpFiltOut = _filtPort.prepare();
-	yrpFiltOut = filtImage;
+	//Rescale image if required
+	if( (width_ != orig_width_) || (height_ != orig_height_ ) )
+	{
+		yrpFiltOut.resize(orig_width_, orig_height_);
+		cvResize(filtImage.getIplImage(), yrpFiltOut.getIplImage(), CV_INTER_NN);
+	}
+	else
+		yrpFiltOut = filtImage;
 	_filtPort.write();
 
 	ImageOf<PixelRgb> &yrpImgView = _viewPort.prepare();
-	yrpImgView = segmImage;
+	//Rescale image if required
+	if( (width_ != orig_width_) || (height_ != orig_height_ ) )
+	{
+		yrpImgView.resize(orig_width_, orig_height_);
+		cvResize(segmImage.getIplImage(), yrpImgView.getIplImage(), CV_INTER_NN);
+	}
+	else
+		yrpImgView = segmImage;
 	_viewPort.write();
 
 	ImageOf<PixelRgb> &yrpImgOut = _rawPort.prepare();
@@ -353,10 +386,3 @@ bool EdisonSegmModule::updateModule()
 }
 
 
-int main(int argc, char *argv[]) {
-
-    Network yarp;
-    EdisonSegmModule module;
-    module.setName("/edisonSegm"); // set default name of module
-    return module.runModule(argc,argv);
-}
