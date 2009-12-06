@@ -230,14 +230,15 @@ bool SoundSensorModule::updateModule(){
         for (int i=mark;i<linelen;i++){
                 ACE_OS::fprintf(stderr," ");
         }
-        ACE_OS::fprintf(stderr,"|\r");
+        //ACE_OS::fprintf(stderr,"|\r");
     }
     
     //ACE_OS::fprintf(stderr,"\n");
-    if (IhaDebug::getLevel()==DBGL_STATUS2)fprintf(stderr,"%8d\t %.4f  \r",total,sval);
+    //if (IhaDebug::getLevel()==DBGL_STATUS2)
+    fprintf(stderr,"%8d\t %.4f  \r",total,sval);
     //if (IhaDebug::getLevel()>DBGL_STATUS2)fprintf(stderr,"%8d\t %.4f  \n",total,sval);
     // IhaDebug::pmesg(DBGL_STATUS2,"%8d\t %.4f  \n",total,sval);
-    fprintf(stderr," total %8d\t  sval %.4f  \n",total,sval);
+    //fprintf(stderr," total %8d\t  sval %.4f  \n",total,sval);
     //}
 
     Bottle bot;
