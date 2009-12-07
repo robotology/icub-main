@@ -31,6 +31,7 @@
  * - iKin
  *   - IPOPT
  *   - ctrlLib
+ * - libeyecub
  * - OpenVislab (libvislab, libvislab_YARP): http://OpenVislab.sf.net
  *
  * \section parameters_sec Parameters
