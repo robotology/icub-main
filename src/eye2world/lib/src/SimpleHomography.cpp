@@ -84,10 +84,8 @@ void SimpleHomography::setBaseTransformation(const Matrix& T) { // T: cam <- rob
 	if (T_cr != T || forceRecomputation) {
 		// body <- table transformation
 		T_rt = eye(4, 4);
-		if (offset.size() >= 3) {
-			T_rt[0][3] = -offset[0];
-			T_rt[1][3] = -offset[1];
-			T_rt[2][3] = -offset[2];
+		for (int i = 0; i < 3 && i < offset.size(); i++) {
+			T_rt[i][3] = -offset[i];
 		}
 		T_rt[2][3] -= heightOffset;
 		T_rt = SE3inv(T_rt);
