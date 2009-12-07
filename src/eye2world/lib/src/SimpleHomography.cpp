@@ -24,7 +24,7 @@ using namespace ctrl;
 
 using namespace vislab::yarp;
 
-#define DEBUG
+//#define DEBUG
 
 #if defined (DEBUG)
 #include <iostream>
