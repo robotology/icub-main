@@ -65,6 +65,7 @@ SET(CTRLLIB_DIR "${ICUB_DIR}/src/ctrlLib")
 SET(IKIN_DIR "${ICUB_DIR}/src/iKin")
 SET(AFFACTIONPRIMITIVES_DIR "${ICUB_DIR}/src/affActionPrimitives")
 set(LIBHANDCTRL_DIR "${ICUB_DIR}/src/abstractHandCtrl/lib")
+set(LIBEYECUB_DIR "${ICUB_DIR}/src/eye2world/lib")
 
 IF (BUILDING_ICUB)
   SET(icubmod_DIR "${CMAKE_BINARY_DIR}")
