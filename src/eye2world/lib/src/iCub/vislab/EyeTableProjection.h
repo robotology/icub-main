@@ -25,6 +25,9 @@
  *
  * - YARP (YARP_{OS,dev,sig,math})
  *   - ACE
+ * - iKin
+ *   - IPOPT
+ *   - ctrlLib
  * - OpenVislab (libvislab, libvislab_YARP): http://OpenVislab.sf.net
  *
  *
