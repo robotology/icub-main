@@ -41,19 +41,19 @@
  * The following key-value pairs can be specified as command-line parameters by prefixing -- to the key 
  * (e.g. --from conf.ini). The value part can be changed to suit your needs; the default values are shown below.
  *
- * --from &lt;STRING&gt; <br />
+ * - from &lt;STRING&gt; <br />
  *   specifies the configuration file. <br />
  *   default: "conf.ini"
  *
- * --context &lt;STRING&gt; <br />
+ * - context &lt;STRING&gt; <br />
  *   specifies the sub-path from $ICUB_ROOT/icub/app to the configuration file. <br />
  *   default: "eye2world"
  *
- * --name &lt;STRING&gt; <br />
+ * - name &lt;STRING&gt; <br />
  *   specifies the name of the module (used to form the stem of module port names). <br />
  *   default: "eye2world"
  *
- * --robot &lt;STRING&gt; <br />
+ * - robot &lt;STRING&gt; <br />
  *   specifies the name of the robot (used to form the root of robot port names). <br />
  *   default: "icub"
  *
@@ -64,25 +64,25 @@
  * (they can also be specified as command-line parameters).
  * The value part can be changed to suit your needs; the default values are shown below. 
  *   
- * --eyeCalibration &lt;FILE&gt; <br />
+ * - eyeCalibration &lt;FILE&gt; <br />
  *   specifies the file name to the calibration file for the iCub's eyes.
  *
- * --tableConfiguration &lt;FILE&gt; <br />
+ * - tableConfiguration &lt;FILE&gt; <br />
  *   specifies the file name to configuration of the file.
  *
- * --in &lt;PORT&gt; <br />
+ * - in &lt;PORT&gt; <br />
  *   specifies the input port name for the 2D coordinate to be transformed. <br />
  *   default: /in
  *
- * --headState &lt;PORT&gt; <br />
+ * - headState &lt;PORT&gt; <br />
  *   specifies the input port name for head's state (position/ pose). <br />
  *   default: /icub/head/state:i
  *
- * --torsoState &lt;PORT&gt; <br />
+ * - torsoState &lt;PORT&gt; <br />
  *   specifies the input port name for head's state (position/ pose). <br />
  *   default: /icub/torso/state:i
  *
- * --out &lt;PORT&gt; <br />
+ * - out &lt;PORT&gt; <br />
  *   specifies the output port name for the resulting 3D coordinates. <br />
  *   default: /out
  *
