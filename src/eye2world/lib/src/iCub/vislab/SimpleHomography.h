@@ -31,11 +31,27 @@
 namespace vislab {
 namespace math {
 
+/**
+ * @ingroup libeyecub
+ *
+ * The calibration constants for a camera.
+ *
+ * @author Christian Wressnegger
+ * @date 2009
+ */
 struct CameraCalibration {
 	double fx, fy;
 	double cy, cx;
 };
 
+/**
+ * @ingroup libeyecub
+ *
+ * Implements the actual projection (homography) from one plan to another using the specified transformations.
+ *
+ * @author Christian Wressnegger
+ * @date 2009
+ */
 class SimpleHomography {
 protected:
 	/** A 3d offset to additionally take in account. */
@@ -71,7 +87,6 @@ public:
 	 * The destructor.
 	 */
 	virtual ~SimpleHomography();
-
 
 	/**
 	 * Sets a additional offset according the z-axis starting at the projection plane.
