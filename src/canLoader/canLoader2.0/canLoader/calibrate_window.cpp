@@ -26,6 +26,7 @@ GtkWidget* slider_zero;
 GtkWidget* info_dlg;
 GtkWidget* picker_calib;
 GtkWidget *save_button;
+GtkWidget *matrix_reset_button;
 GtkWidget *check_raw_vals;
 gboolean timer_func (gpointer data);
 
@@ -254,6 +255,27 @@ void file_save_click (GtkButton *button,	gpointer ch_p)
 }
 
 //*********************************************************************************
+void reset_matrix_click (GtkButton *button,	gpointer ch_p)
+{
+	int ri=0;
+	int ci=0;
+	for (ri=0; ri<6; ri++)	
+		{
+			for (ci=0; ci<6; ci++)
+				{
+					if (ri==ci)
+						gtk_entry_set_text (GTK_ENTRY (edit_matrix[ri][ci]),"7fff");
+					else
+						gtk_entry_set_text (GTK_ENTRY (edit_matrix[ri][ci]),"0");
+				}
+		}
+	calib_const=1;
+	char tempbuf[255];
+	sprintf(tempbuf,"%d",calib_const);
+	gtk_label_set_text (GTK_LABEL(edit_matrix_gain), tempbuf);
+}
+
+//*********************************************************************************
 void file_load_click (GtkButton *button,	gpointer ch_p)
 { 
 	std::string filename = "C:\\Software\\iCub\\bin\\debug\\ciao.dat";
@@ -358,6 +380,7 @@ void matrix_send (GtkEntry *entry,	gpointer index)
 				downloader.strain_set_matrix_rc(downloader.board_list[selected].pid,ri,ci,matrix[ri][ci]);
 			}
 
+	downloader.strain_set_matrix_gain(downloader.board_list[selected].pid,calib_const);
 	printf("Calibration matrix updated\n");
 	matrix_changed=false;
 
@@ -422,6 +445,7 @@ void calibrate_click (GtkButton *button,	gpointer   user_data)
 	save_button   = gtk_button_new_with_label ("Save to eeprom"); 
 	file_load_button   = gtk_button_new_with_mnemonic ("Load Calibration File"); 
 	file_save_button   = gtk_button_new_with_mnemonic ("Save Calibration File"); 
+	matrix_reset_button = gtk_button_new_with_mnemonic ("Reset Calibration"); 
 	curr_measure[0] = gtk_label_new_with_mnemonic ("32000");
 	curr_measure[1] = gtk_label_new_with_mnemonic ("32000");
 	curr_measure[2] = gtk_label_new_with_mnemonic ("32000");
@@ -562,14 +586,18 @@ void calibrate_click (GtkButton *button,	gpointer   user_data)
 
 	gtk_fixed_put(GTK_FIXED(fixed),label_matrix_gain,c[5],r[5]+40+6*32);
 	gtk_fixed_put(GTK_FIXED(fixed),edit_matrix_gain,c[5]+100,r[5]+40+6*32);
+	gtk_fixed_put(GTK_FIXED(fixed),matrix_reset_button,c[5]+140,r[5]+40+6*32);
 
 	gtk_widget_set_size_request(auto_button,100,40);
 	gtk_widget_set_size_request(save_button,140,40);
 	gtk_widget_set_size_request(file_load_button,140,40);
 	gtk_widget_set_size_request(file_save_button,140,40);
 	gtk_widget_set_size_request(picker_calib,140,40);
+	gtk_widget_set_size_request(matrix_reset_button,100,30);
+
 	g_signal_connect (file_load_button, "clicked", G_CALLBACK (file_load_click),NULL);
 	g_signal_connect (file_save_button, "clicked", G_CALLBACK (file_save_click),NULL);
+	g_signal_connect (matrix_reset_button, "clicked", G_CALLBACK (reset_matrix_click),NULL);
 	g_signal_connect (auto_button, "clicked", G_CALLBACK (auto_click),NULL);
     g_signal_connect (save_button, "clicked", G_CALLBACK (save_click),NULL);
 	g_signal_connect (calib_window, "response", G_CALLBACK (close_window),NULL);
@@ -588,6 +616,7 @@ void calibrate_click (GtkButton *button,	gpointer   user_data)
 	gtk_fixed_put(GTK_FIXED(fixed),save_button,c[2]+10,r[5]+40);
 	gtk_fixed_put(GTK_FIXED(fixed),file_load_button,c[2]+10,r[5]+90);
 	gtk_fixed_put(GTK_FIXED(fixed),file_save_button,c[2]+10,r[5]+140);
+
 	gtk_fixed_put(GTK_FIXED(fixed),picker_calib,c[2]+10,r[5]+190);
 
 	gtk_range_set_value (GTK_RANGE(slider_zero),calibration_value);
