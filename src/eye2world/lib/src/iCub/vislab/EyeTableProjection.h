@@ -19,7 +19,7 @@
  *
  * @ingroup icub_eye2world
  *
- * Classes for projecting point of the eye's image plan to a table using a simple homography.
+ * Classes for projecting points of the eye's image plan to a table using a simple homography.
  *
  * \section lib_sec Dependencies
  *
