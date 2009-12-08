@@ -4,6 +4,7 @@
 #include <time.h>
 #include <stdlib.h>
 #include <string.h>
+#include <stdio.h>
 
 #include <yarp/os/BufferedPort.h>
 #include <yarp/os/Time.h>

@@ -7,6 +7,7 @@
  */
 
 #include <iCub/BlobFunctions.h>
+#include <stdio.h>
 
 
 void BlobFunctions::filterBiggest(CBlobResult *blobs){

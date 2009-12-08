@@ -7,6 +7,7 @@
  */
 
 #include <iCub/StringBuf.h>
+#include <stdio.h>
 
 using namespace iCub::contrib;
 using namespace std;

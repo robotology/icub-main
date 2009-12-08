@@ -65,6 +65,7 @@
 ///
 ///
 #include "histogram.h"
+#include <stdio.h>
 
 ////////////////////
 // Histo3D class
@@ -257,8 +258,15 @@ int Histogram::_load1D(const char *file, Histo1D &lut)
 	int tmpMin;
 	int tmpSize;
 	double tmpMaximum;
-	fscanf(fp, "%lf\n", &tmpMaximum);
-	fscanf(fp, "%d %d %d\n", &tmpMax, &tmpMin, &tmpSize);
+    size_t ret;
+
+	ret=fscanf(fp, "%lf\n", &tmpMaximum);
+    if (ret!=1)
+        return 0;
+
+	ret=fscanf(fp, "%d %d %d\n", &tmpMax, &tmpMin, &tmpSize);
+    if (ret!=3)
+        return 0;
 
 	lut.resize((unsigned char) tmpMax, (unsigned char) tmpMin, (unsigned char) tmpSize);
 	lut._maximum = tmpMaximum;
@@ -271,7 +279,7 @@ int Histogram::_load1D(const char *file, Histo1D &lut)
 	{
 		int tmp;
 		double v;
-		fscanf(fp, "%d \t%lf\n", &tmp, &v);
+		ret=fscanf(fp, "%d \t%lf\n", &tmp, &v);
 		tmpEntry->setValue(v);
 		it++;
 	}
