@@ -18,6 +18,6 @@ file(GLOB_RECURSE headers "${SOURCE_DIR}*.h")
 source_group("Source Files" FILES ${sources})
 source_group("Header Files" FILES ${headers})
 
-add_library(${TARGET_NAME} ${headers} ${sources})
+add_library(${TARGET_NAME} STATIC ${headers} ${sources})
 target_link_libraries(${TARGET_NAME} ${YARP_LIBRARIES} ${LIBVISLAB_LIBRARIES})
 install(TARGETS ${TARGET_NAME} RUNTIME DESTINATION bin LIBRARY DESTINATION lib ARCHIVE DESTINATION lib)
