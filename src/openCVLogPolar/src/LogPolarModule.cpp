@@ -8,7 +8,7 @@
 */
 #define NOSIMULATION
 
-static void cogCalculate(ImageOf<PixelMonoSigned> image, int& xRes, int&yRes ){
+static void cogCalculate(ImageOf<PixelMono> image, int& xRes, int&yRes ){
 	int xSize=image.width();
 	int ySize=image.height();
 	double cogx=0,cogy=0;
@@ -42,8 +42,8 @@ static void cogCalculate(IplImage image, int& xRes, int&yRes ){
 		for(int y=0;y<ySize;y++){
 			toti+=data[x+y*step];
 
-			if(data[x+y*step]!=0)
-				printf("%d-",data[x*channels+y*step+k]);
+			//if(data[x+y*step]!=0)
+			//	printf("%d-",data[x*channels+y*step+k]);
 			cogx+=x*data[x+y*step];
 			cogy+=y*data[x+y*step];
 		}
@@ -153,8 +153,8 @@ bool LogPolarModule::updateModule() {
 	if(img==NULL){
 		return true;	
 	}
-    printf(" %d \n",img->width());
-	printf(" %d \n",img->height());
+    //printf(" %d \n",img->width());
+	//printf(" %d \n",img->height());
 	if(mode==0){
 		printf("SIMULATION \n");
 		//-------------drawing of simulated blobs
@@ -321,7 +321,7 @@ bool LogPolarModule::updateModule() {
 		port3.write();
 		//------
 		int xCog,yCog;
-		cogCalculate(*dstColor,xCog,yCog);
+		//cogCalculate(*dstColor,xCog,yCog);
 		printf("xCog %d, yCog%d",xCog, yCog);
 		if((xCog>320)||(yCog>240)){
 			xCog=180;yCog=120;
@@ -496,8 +496,8 @@ bool LogPolarModule::updateModule() {
 		//port3.write();
 		//-----------------
 		int xCog,yCog;
-		cogCalculate(*dstColor,xCog,yCog);
-		printf("xCog %d, yCog%d",xCog, yCog);
+		//cogCalculate(*dstColor,xCog,yCog);
+		//printf("xCog %d, yCog%d",xCog, yCog);
 		if((xCog>320)||(xCog<0)||(yCog<0)||(yCog>240)){
 			xCog=160;yCog=120;
 		}
