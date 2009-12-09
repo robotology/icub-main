@@ -319,7 +319,7 @@ bool EdisonSegmModule::updateModule()
 	regionCount = iProc.GetRegions(&labels, &modes, &modePointCounts);
 	int *labelp = (int*)labelImage.getRawImage();
 	for(int i = 0; i < width_*height_; i++)
-		labelp[i] = labels[i]*30 + 30;
+		labelp[i] = labels[i];
 	
 	IplImage *labelint = (IplImage*)labelImage.getIplImage();
 	IplImage *labelchar = (IplImage*)labelView.getIplImage();
