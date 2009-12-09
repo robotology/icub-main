@@ -385,11 +385,22 @@ class ImageProcessor
 		* flag that allows the processing when all the inputs are ready
 		*/
 		int canProcess_flag; //--
-		
+		/**
+		* flag that indicates if there has been the resizing
+		*/
+		bool resized_flag;
+		/**
+		* flag that indicates the colour opponency map is ready B+Y-
+		*/
 		int blueYellow_flag;
+		/**
+		* flag that indicates the colour opponency map is ready R+G-
+		*/
 		int redGreen_flag;
+		/**
+		* flag that indicates the colour opponency map is ready G+R-
+		*/
 		int greenRed_flag;
-
 
 		//---
 		Ipp32s src0[9];
@@ -402,8 +413,14 @@ class ImageProcessor
 		Ipp32s src7[9];
 
 		//---- 
-		static const int CONVMAX_TH=100; //parameter of the findEdges function
-		static const int CONVSEQ_TH=500; //parameter of the findEdges function
+		/**
+		* parameter of the findEdges function
+		*/
+		static const int CONVMAX_TH=100; //
+		/**
+		* parameter of the findEdges function
+		*/
+		static const int CONVSEQ_TH=500; //
 		
 };
 

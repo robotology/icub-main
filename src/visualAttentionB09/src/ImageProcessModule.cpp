@@ -475,7 +475,8 @@ static gint expose_CB (GtkWidget *widget, GdkEventExpose *event, gpointer data)
 				}
 				else
 				{
-					imageProcessModule->currentProcessor->resizeImages(_inputImg.width(),_inputImg.height());
+					if(!imageProcessModule->currentProcessor->resized_flag)
+						imageProcessModule->currentProcessor->resizeImages(_inputImg.width(),_inputImg.height());
 				}
 
 				_outputImage=imageProcessModule->currentProcessor->process(&_inputImg); //findEdges(&_inputImg,1,0);
@@ -520,7 +521,10 @@ static gint expose_CB (GtkWidget *widget, GdkEventExpose *event, gpointer data)
 																areaHeight,
 																GDK_INTERP_BILINEAR); // Best quality
 						//GDK_INTERP_NEAREST); // Best speed
-
+						if(scaledFrame==0){
+							printf("Scaled Frame null \n");
+							return true;
+						}
 						pixels = gdk_pixbuf_get_pixels (scaledFrame);
 						rowstride = gdk_pixbuf_get_rowstride(scaledFrame);
 						printf("got pixels from the scaledFrame \n");
