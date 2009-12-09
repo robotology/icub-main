@@ -31,54 +31,42 @@ ImageProcessor::ImageProcessor(){
 	findEdges_flag=1;
 	normalize_flag=0;
 	combineMax_flag=0;
-	width=320;
-	height=240;
+	//width=320;
+	//height=240;
 	int psb;
-	IppiSize srcsize={320,240};
+	//IppiSize srcsize={320,240};
 
 	portImage=new ImageOf<PixelRgb>;
-	this->portImage->resize(320,240);
+	//this->portImage->resize(320,240);
 
 	edges_yarp=new ImageOf<PixelMono>;
-	edges_yarp->resize(320,240);
+	
 
 	redPlane=new ImageOf<PixelMono>;
-	redPlane->resize(320,240);
 	greenPlane=new ImageOf<PixelMono>;
-	greenPlane->resize(320,240);
 	bluePlane=new ImageOf<PixelMono>;
-	bluePlane->resize(320,240);
 	yellowPlane=new ImageOf<PixelMono>;
-	yellowPlane->resize(320,240);
+	
 
 	redPlane_tmp=new ImageOf<PixelMono>;
-	redPlane_tmp->resize(320,240);
 	greenPlane_tmp=new ImageOf<PixelMono>;
-	greenPlane_tmp->resize(320,240);
 	bluePlane_tmp=new ImageOf<PixelMono>;
-	bluePlane_tmp->resize(320,240);
+	
 	
 	
 	red_yarp=new ImageOf<PixelMono>;
-	red_yarp->resize(320,240);
 	green_yarp=new ImageOf<PixelMono>;
-	green_yarp->resize(320,240);
 	blue_yarp=new ImageOf<PixelMono>;
-	blue_yarp->resize(320,240);
+	
 
 	redGreenEdges_yarp=new ImageOf<PixelMono>;
-	redGreenEdges_yarp->resize(320,240);
 	greenRedEdges_yarp=new ImageOf<PixelMono>;
-	greenRedEdges_yarp->resize(320,240);
 	blueYellowEdges_yarp=new ImageOf<PixelMono>;
-	blueYellowEdges_yarp->resize(320,240);
 
 	redGreenEdges=new ImageOf<PixelMono>;
-	redGreenEdges->resize(width,height);
 	greenRedEdges=new ImageOf<PixelMono>;
-	greenRedEdges->resize(width,height);
-	blueYellowEdges=new ImageOf<PixelMono>;
-	blueYellowEdges->resize(width,height);
+	blueYellowEdges=new ImageOf<PixelMono>;	
+
 
 	edgesBlue=new ImageOf<PixelMono>;
 	//edgesBlue->resize(width,height);
@@ -86,34 +74,18 @@ ImageProcessor::ImageProcessor(){
 	//edgesRed->resize(width,height);
 	edgesGreen=new ImageOf<PixelMono>;
 	//edgesGreen->resize(width,height);
-
-	redGreen_ippi = ippiMalloc_8u_C1(width,height,&psb);
-	greenRed_ippi = ippiMalloc_8u_C1(width,height,&psb);
-	blueYellow_ippi = ippiMalloc_8u_C1(width,height,&psb);
-	bluePlane_ippi = ippiMalloc_8u_C1(width,height,&psb);
-	redPlane_ippi = ippiMalloc_8u_C1(width,height,&psb);
-	greenPlane_ippi = ippiMalloc_8u_C1(width,height,&psb);
+	
 
 	redGreen_yarp=new ImageOf<PixelMono>;
-	redGreen_yarp->resize(320,240);
 	greenRed_yarp=new ImageOf<PixelMono>;
-	greenRed_yarp->resize(320,240);
 	blueYellow_yarp=new ImageOf<PixelMono>;
-	blueYellow_yarp->resize(320,240);
 
 	tmp=new ImageOf<PixelMono>;
-	tmp->resize(320,240);
+	
 	image_out=new ImageOf<PixelRgb>;
-	image_out->resize(320,240);
 	image_tmp=new ImageOf<PixelMono>;
-	image_tmp->resize(320,240);
 	outputImage=new ImageOf<PixelMono>;
-	outputImage->resize(320,240);
-
-	cvImage16= cvCreateImage(cvSize(320,240),IPL_DEPTH_16S,1);
-	cvImage8= cvCreateImage(cvSize(320,240),IPL_DEPTH_8U,1);
-
-	this->cannyOperator=new CANNY(srcsize);
+	
 	
 	src0[0]= 1;src0[1]= 2;src0[2]=1;
 	src0[3]= 0;src0[4]= 0;src0[5]=0;
@@ -226,17 +198,69 @@ ImageProcessor::ImageProcessor(ImageOf<PixelRgb>* inputImage){
 
 	this->cannyOperator=new CANNY(srcsize);
 }
+/**
+* 
+*/
+void ImageProcessor::resizeImages(int width,int height){
+	int psb;
+	IppiSize srcsize={width,height};
+	this->portImage->resize(width,height);
 
-/*function that gets the 3 images in the colourOpponency space R+G-,G+R-,B+Y-
-	the standard indicates that redGreen means R+G-, whereas greenRed means G+R-;
+	edges_yarp->resize(width,height);
+	redPlane->resize(width,height);
+	greenPlane->resize(width,height);
+	bluePlane->resize(width,height);
+	yellowPlane->resize(width,height);
+	
+	redPlane_tmp->resize(width,height);
+	greenPlane_tmp->resize(width,height);
+	bluePlane_tmp->resize(width,height);
+	
+	red_yarp->resize(width,height);
+	green_yarp->resize(width,height);
+	blue_yarp->resize(width,height);
+
+	redGreenEdges_yarp->resize(width,height);
+	greenRedEdges_yarp->resize(width,height);
+	blueYellowEdges_yarp->resize(width,height);
+
+	redGreenEdges->resize(width,height);
+	greenRedEdges->resize(width,height);
+	blueYellowEdges->resize(width,height);
+
+	redGreen_yarp->resize(width,height);
+	greenRed_yarp->resize(width,height);
+	blueYellow_yarp->resize(width,height);
+
+	redGreen_ippi = ippiMalloc_8u_C1(width,height,&psb);
+	greenRed_ippi = ippiMalloc_8u_C1(width,height,&psb);
+	blueYellow_ippi = ippiMalloc_8u_C1(width,height,&psb);
+	bluePlane_ippi = ippiMalloc_8u_C1(width,height,&psb);
+	redPlane_ippi = ippiMalloc_8u_C1(width,height,&psb);
+	greenPlane_ippi = ippiMalloc_8u_C1(width,height,&psb);
+
+	tmp->resize(width,height);
+	image_out->resize(width,height);
+	image_tmp->resize(width,height);
+	outputImage->resize(width,height);
+
+	cvImage16= cvCreateImage(cvSize(width,height),IPL_DEPTH_16S,1);
+	cvImage8= cvCreateImage(cvSize(width,height),IPL_DEPTH_8U,1);
+	this->cannyOperator=new CANNY(srcsize);
+}
+
+/**
+* function that gets the 3 images in the colourOpponency space R+G-,G+R-,B+Y-
+*	the standard indicates that redGreen means R+G-, whereas greenRed means G+R-;
 */
 void ImageProcessor::colourOpponency(ImageOf<PixelRgb> *src){
 	int width=src->width();
 	int height=src->height();
-	IppiSize srcsize ={320,240};
+	//IppiSize srcsize ={320,240};
+	IppiSize srcsize ={width,height};
 
 	tmp=new ImageOf<PixelMono>;
-	tmp->resize(320,240);
+	tmp->resize(width,height);
 	
 	/*if((unsigned int)bluePlane==0xcdcdcdcd){
 		bluePlane=new ImageOf<PixelMono>;
@@ -279,20 +303,20 @@ void ImageProcessor::colourOpponency(ImageOf<PixelRgb> *src){
 	printf("src: 0x%08x\n", src);
 	this->getBluePlane(src,tmp);	
 	printf("tmp: 0x%08x\n", tmp);
-	ippiCopy_8u_C1R(tmp->getPixelAddress(0,0),width,bluePlane->getPixelAddress(0,0),width,srcsize);
+	ippiCopy_8u_C1R(tmp->getRawImage(),tmp->getRowSize(),bluePlane->getRawImage(),bluePlane->getRowSize(),srcsize);
     printf("bluePlane: 0x%08x\n", bluePlane);
 	
 
 	printf("ColourOpponency, getRedPlane \n");
 	this->getRedPlane(src,tmp);
 	//printf("tmp: 0x%08x\n", tmp);
-	ippiCopy_8u_C1R(tmp->getPixelAddress(0,0),width,redPlane->getPixelAddress(0,0),width,srcsize);
+	ippiCopy_8u_C1R(tmp->getRawImage(),tmp->getRowSize(),redPlane->getRawImage(),redPlane->getRowSize(),srcsize);
 	printf("redPlane: 0x%08x\n", redPlane);
 
 	printf("ColourOpponency, getGreenPlane \n");
 	this->getGreenPlane(src,tmp);
 	//printf("tmp: 0x%08x\n", tmp);
-	ippiCopy_8u_C1R(tmp->getPixelAddress(0,0),width,greenPlane->getPixelAddress(0,0),width,srcsize);
+	ippiCopy_8u_C1R(tmp->getRawImage(),tmp->getRowSize(),greenPlane->getRawImage(),greenPlane->getRowSize(),srcsize);
 	printf("greenPlane: 0x%08x\n", greenPlane);
 	
 
@@ -432,7 +456,7 @@ void ImageProcessor::colourOpponency(ImageOf<PixelRgb> *src){
 	ippsFree(pBufferRed);
 	ippsFree(pBufferGreen);
 	
-	delete tmp;
+	//delete tmp;
 	
 	/*
 	//4.1 subtract the red from the green to obtain R+G-
@@ -905,7 +929,7 @@ ImageOf<PixelMono>* ImageProcessor::findEdgesBlueOpponency(){
 	else
 		cvImage8=cvCreateImage(cvSize(320,240),IPL_DEPTH_8U,1);
 
-	ippiCopy_8u_C1R((unsigned char*)cvImage8->imageData,width,outputBlueYellow2,psb,srcsize);
+	ippiCopy_8u_C1R((unsigned char*)cvImage8->imageData,cvImage8->widthStep,outputBlueYellow2,psb,srcsize);
 	Ipp8u src[3*3]={1,maskSeed,1,
 					maskSeed,maskTop,maskSeed,
 					1,maskSeed,1};
@@ -938,7 +962,7 @@ ImageOf<PixelMono>* ImageProcessor::findEdgesBlueOpponency(){
 	//ippiThreshold_8u_C1R(outputRedGreen,psb,redGreenEdges->getPixelAddress(0,0),psb,srcsize,(Ipp8u) 50 ,ippCmpGreater);
 	//5. save the output into the outputImage
 	//ippiThreshold_8u_C1IR(outputRedGreen,psb,srcsize,100,ippCmpGreater);
-	ippiCopy_8u_C1R(outputBlueYellow,width,blueYellowEdges->getPixelAddress(0,0),width,srcsize);
+	ippiCopy_8u_C1R(outputBlueYellow,psb,blueYellowEdges->getRawImage(),psb,srcsize);
 	
 	//ippiAdd_8u_C1IRSfs(redGreenEdges->getPixelAddress(0,0),width,redGreenEdges->getPixelAddress(0,0),width,srcsize,0.5);
 	//ippiCopy_8u_C1R(outputBlueYellow,width,greenRedEdges_yarp->getPixelAddress(0,0),width,srcsize);
@@ -1236,13 +1260,11 @@ ImageOf<PixelMono>* ImageProcessor::findEdgesGreenOpponency(){
 #ifdef OPENCVSOBEL
 	IppiSize msksize={3,3};
 	printf("OPENCV SOBEL Find Edges Green Opponency \n");
-
-
 	if((greenRed_flag)&&(canProcess_flag))
 		cvSobel(greenRed_yarp->getIplImage(),cvImage16,1,1,3);
 	else
 		cvImage8=cvCreateImage(cvSize(320,240),IPL_DEPTH_8U,1);
-	ippiCopy_8u_C1R((unsigned char*)cvImage8->imageData,width,outputGreenRed2,psb,srcsize);
+	ippiCopy_8u_C1R((unsigned char*)cvImage8->imageData,cvImage8->widthStep,outputGreenRed2,psb,srcsize);
 	Ipp8u src[3*3]={1,maskSeed,1,
 					maskSeed,maskTop,maskSeed,
 					1,maskSeed,1};
@@ -1275,7 +1297,7 @@ ImageOf<PixelMono>* ImageProcessor::findEdgesGreenOpponency(){
 	//ippiThreshold_8u_C1R(outputRedGreen,psb,redGreenEdges->getPixelAddress(0,0),psb,srcsize,(Ipp8u) 50 ,ippCmpGreater);
 	//5. save the output into the outputImage
 	//ippiThreshold_8u_C1IR(outputRedGreen,psb,srcsize,100,ippCmpGreater);
-	ippiCopy_8u_C1R(outputGreenRed,width,greenRedEdges->getPixelAddress(0,0),width,srcsize);
+	ippiCopy_8u_C1R(outputGreenRed,psb,greenRedEdges->getRawImage(),psb,srcsize);
 	//ippiAdd_8u_C1IRSfs(redGreenEdges->getPixelAddress(0,0),width,redGreenEdges->getPixelAddress(0,0),width,srcsize,0.5);
 	//ippiCopy_8u_C1R(outputGreenRed,width,greenRedEdges_yarp->getPixelAddress(0,0),width,srcsize);
 	//ippiCopy_8u_C1R(outputBlueYellow,width,blueYellowEdges_yarp->getPixelAddress(0,0),width,srcsize);
@@ -1535,7 +1557,7 @@ ImageOf<PixelMono>* ImageProcessor::findEdgesRedOpponency(){
 	}
 	else
 		cvImage8=cvCreateImage(cvSize(320,240),IPL_DEPTH_8U,1);
-	ippiCopy_8u_C1R((unsigned char*)cvImage8->imageData,width,outputRedGreen2,psb,srcsize);
+	ippiCopy_8u_C1R((unsigned char*)cvImage8->imageData,cvImage8->widthStep,outputRedGreen2,psb,srcsize);
     Ipp8u src[3*3]={1,maskSeed,1,
 					maskSeed,maskTop,maskSeed,
 					1,maskSeed,1};
@@ -1567,7 +1589,7 @@ ImageOf<PixelMono>* ImageProcessor::findEdgesRedOpponency(){
 	//ippiThreshold_8u_C1R(outputRedGreen,psb,redGreenEdges->getPixelAddress(0,0),psb,srcsize,(Ipp8u) 50 ,ippCmpGreater);
 	//5. save the output into the outputImage
 	//ippiThreshold_8u_C1IR(outputRedGreen,psb,srcsize,100,ippCmpGreater);
-	ippiCopy_8u_C1R(outputRedGreen,psb,redGreenEdges->getPixelAddress(0,0),width,srcsize);
+	ippiCopy_8u_C1R(outputRedGreen,psb,redGreenEdges->getRawImage(),psb,srcsize);
 	
 	//ippiAdd_8u_C1IRSfs(redGreenEdges->getPixelAddress(0,0),width,redGreenEdges->getPixelAddress(0,0),width,srcsize,0.5);
 
@@ -1719,8 +1741,9 @@ void ImageProcessor::setInputImage(ImageOf<PixelMono> *src){
 	
 }
 
-/* function that processes the input image (passed as parameter)
-	accordingly to the processing options selected for this processor
+/**
+* function that processes the input image accordingly to the processing options selected for this processor
+* @param src source image of the processing
 */
 
 ImageOf<PixelRgb>* ImageProcessor::process (ImageOf<PixelRgb> *src){
@@ -1733,16 +1756,16 @@ ImageOf<PixelRgb>* ImageProcessor::process (ImageOf<PixelRgb> *src){
 	IppiSize srcsize;
 	srcsize.height=src->height();
 	srcsize.width=src->width();
-	/*if(image_tmp==NULL){
+	if(image_tmp==NULL){
 		printf("process:image_tmp NULL");
-		image_tmp=new ImageOf<PixelMono>;
+		//image_tmp=new ImageOf<PixelMono>;
 		image_tmp->resize(width,height);
 	}
 	if(image_out==NULL){
 		printf("process:image_out NULL");
-		image_out=new ImageOf<PixelRgb>;
+		//image_out=new ImageOf<PixelRgb>;
 		image_out->resize(width,height);
-	}*/
+	}
 	
 	//int image_tmp_flag=0;
 
@@ -1801,7 +1824,7 @@ ImageOf<PixelRgb>* ImageProcessor::process (ImageOf<PixelRgb> *src){
 				}
 				else{
 					//image_tmp=this->getBluePlane(src);
-					image_tmp=bluePlane;
+					ippiCopy_8u_C1R(bluePlane->getRawImage(),256,image_tmp->getRawImage(),256,srcsize);
 				}
 			}
 		else if(greenPlane_flag)
@@ -1831,7 +1854,8 @@ ImageOf<PixelRgb>* ImageProcessor::process (ImageOf<PixelRgb> *src){
 			}
 		else if(this->yellowPlane_flag){
 				this->colourOpponency(src);
-				ippiCopy_8u_C1R(yellowPlane->getPixelAddress(0,0),320,image_tmp->getPixelAddress(0,0),320,srcsize);
+				printf("yellow image size %d \n",yellowPlane->getRowSize() );
+				ippiCopy_8u_C1R(yellowPlane->getRawImage(),yellowPlane->getRowSize(),image_tmp->getRawImage(),yellowPlane->getRowSize(),srcsize);
 		}
 
     printf("image_tmp: 0x%08x\n", image_tmp);	
@@ -1853,32 +1877,33 @@ ImageOf<PixelRgb>* ImageProcessor::process (ImageOf<PixelRgb> *src){
 	}
 	else{
 		int psb;
-		printf("runs the code for multiplexing 1 channel to 4 \n");
+		printf("runs the code for multiplexing 1 channel to 3 \n");
 		im_out = ippiMalloc_8u_C1(width,height,&psb);
-		Ipp8u* im_tmp[3];
-        im_tmp[0]=ippiMalloc_8u_C1(width,height,&psb);
-        im_tmp[1]=ippiMalloc_8u_C1(width,height,&psb);
-        im_tmp[2]=ippiMalloc_8u_C1(width,height,&psb);
+		ippiCopy_8u_C1R(image_tmp->getPixelAddress(0,0), 256,im_out,psb,srcsize);
+		Ipp8u* im_tmp[3]={im_out,im_out,im_out};
+        //im_tmp[0]=ippiMalloc_8u_C1(width,height,&psb);
+        //im_tmp[1]=ippiMalloc_8u_C1(width,height,&psb);
+        //im_tmp[2]=ippiMalloc_8u_C1(width,height,&psb);
 		//two copies in order to have 2 conversions
 		//the first transform the yarp mono into a 4-channel image
         printf("image_tmp: 0x%08x\n", image_tmp);
-		ippiCopy_8u_C1R(image_tmp->getPixelAddress(0,0), width,im_out,psb,srcsize);
-        ippiCopy_8u_C1R(im_out,psb,im_tmp[0],psb,srcsize);
-        ippiCopy_8u_C1R(im_out,psb,im_tmp[1],psb,srcsize); 
-        ippiCopy_8u_C1R(im_out,psb,im_tmp[2],psb,srcsize);
+		
+        //ippiCopy_8u_C1R(im_out,psb,im_tmp[0],psb,srcsize);
+        //ippiCopy_8u_C1R(im_out,psb,im_tmp[1],psb,srcsize); 
+        //ippiCopy_8u_C1R(im_out,psb,im_tmp[2],psb,srcsize);
 		//im_tmp[0]=im_out;
 		//im_tmp[1]=im_out;
 		//im_tmp[2]=im_out;
-		//the second transforms the 4-channel image into colorImage for yarp
-		ippiCopy_8u_P3C3R(im_tmp,psb,image_out->getPixelAddress(0,0),width*3,srcsize); 
+		//the second transforms the 3-channel image into colorImage for yarp
+		ippiCopy_8u_P3C3R(im_tmp,psb,image_out->getPixelAddress(0,0),760,srcsize); 
         //ippiCopy_8u_C3R(src->getPixelAddress(0,0),width*3,image_out->getPixelAddress(0,0),width*3,srcsize);
 		printf("copied to the portImage \n");
 		this->portImage=image_out;
 		ippiFree(im_out);
 		//ippiFree(im_tmp);
-		ippiFree(im_tmp[0]);
-		ippiFree(im_tmp[1]);
-		ippiFree(im_tmp[2]);
+		//ippiFree(im_tmp[0]);
+		//ippiFree(im_tmp[1]);
+		//ippiFree(im_tmp[2]);
 	}
     printf("image_out: 0x%08x\n", image_out);
 	return image_out;
@@ -1914,11 +1939,8 @@ ImageOf<PixelMono>* ImageProcessor::getRedPlane(ImageOf<PixelRgb>* inputImage,Im
 	shift[0]=ippiMalloc_8u_C1(width,height,&psb); 
 	shift[1]=ippiMalloc_8u_C1(width,height,&psb);
 	shift[2]=ippiMalloc_8u_C1(width,height,&psb);
-	Ipp8u* plane=ippiMalloc_8u_C1(width,height,&psb);
-	ippiCopy_8u_C1R(shift[0],psb,plane,width,srcsize);
-	ippiCopy_8u_C3P3R(inputImage->getPixelAddress(0,0),width*3,shift,psb,srcsize);
-	ippiCopy_8u_C1R(shift[0],psb,tmp->getPixelAddress(0,0),width,srcsize);
-	ippiFree(plane);
+	ippiCopy_8u_C3P3R(inputImage->getRawImage(),760,shift,psb,srcsize);
+	ippiCopy_8u_C1R(shift[0],psb,tmp->getRawImage(),psb,srcsize);
 	ippiFree(shift[0]);
 	ippiFree(shift[1]);
 	ippiFree(shift[2]);
@@ -1954,11 +1976,8 @@ ImageOf<PixelMono>* ImageProcessor::getGreenPlane(ImageOf<PixelRgb>* inputImage,
 	shift[0]=ippiMalloc_8u_C1(width,height,&psb); 
 	shift[1]=ippiMalloc_8u_C1(width,height,&psb);
 	shift[2]=ippiMalloc_8u_C1(width,height,&psb);
-	Ipp8u* plane=ippiMalloc_8u_C1(width,height,&psb);
-	ippiCopy_8u_C1R(shift[1],psb,plane,width,srcsize);
-	ippiCopy_8u_C3P3R(inputImage->getPixelAddress(0,0),width*3,shift,psb,srcsize);
-	ippiCopy_8u_C1R(shift[1],psb,tmp->getPixelAddress(0,0),width,srcsize);
-	ippiFree(plane);
+	ippiCopy_8u_C3P3R(inputImage->getRawImage(),760,shift,psb,srcsize);
+	ippiCopy_8u_C1R(shift[1],psb,tmp->getRawImage(),psb,srcsize);
 	ippiFree(shift[0]);
 	ippiFree(shift[1]);
 	ippiFree(shift[2]);
@@ -1995,18 +2014,12 @@ ImageOf<PixelMono>* ImageProcessor::getBluePlane(ImageOf<PixelRgb>* inputImage,I
 	shift[0]=ippiMalloc_8u_C1(width,height,&psb); 
 	shift[1]=ippiMalloc_8u_C1(width,height,&psb);
 	shift[2]=ippiMalloc_8u_C1(width,height,&psb);
-	Ipp8u* plane=ippiMalloc_8u_C1(width,height,&psb);
-	ippiCopy_8u_C1R(shift[2],psb,plane,width,srcsize);
-	printf("in getBluePlane \n");
-	ippiCopy_8u_C3P3R(inputImage->getPixelAddress(0,0),width*3,shift,psb,srcsize);
-	printf("Middle in getBluePlane \n");
-	ippiCopy_8u_C1R(shift[2],psb,tmp->getPixelAddress(0,0),width,srcsize);
-	printf("After copy in getBluePlane \n");
-	ippiFree(plane);
+	//ippiCopy_8u_C3P3R(inputImage->getPixelAddress(0,0),width*3,shift,psb,srcsize);
+	ippiCopy_8u_C3P3R(inputImage->getRawImage(),760,shift,psb,srcsize);
+	ippiCopy_8u_C1R(shift[2],psb,tmp->getRawImage(),psb,srcsize);
 	ippiFree(shift[0]);
 	ippiFree(shift[1]);
 	ippiFree(shift[2]);
-
 	return outputImage;
 }
 

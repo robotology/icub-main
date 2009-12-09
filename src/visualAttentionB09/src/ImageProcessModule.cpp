@@ -32,6 +32,8 @@ static ImageProcessModule *imageProcessModule;
 
 bool ImageProcessModule::open(Searchable& config) {
     ct = 0;
+
+	inputImage_flag=false;
 	
 	maxAdj=200.0;
 	minAdj=0.0;
@@ -63,9 +65,7 @@ bool ImageProcessModule::open(Searchable& config) {
 	// mouse event).
 
 	gtk_main ();
-
 	gtk_widget_destroy(mainWindow);
-
 	this->close();
 
 	yarp::os::Network::fini();
@@ -236,6 +236,7 @@ bool getImage(){
 	//imageProcessModule->processor2->inImage=&_inputImg;
 	//imageProcessModule->processor3->inImage=&_inputImg;
 	//printf("GetImage: out of the semaphore \n");
+	//imageProcessModule->inputImage_flag=true;
 	return ret;
 }
 
@@ -254,7 +255,7 @@ void ImageProcessModule::setUp()
 	if (openPorts() == false)
 		ACE_OS::exit(1);
 	
-	_inputImg.resize(320,240);
+	//_inputImg.resize(320,240);
 }
 
 bool ImageProcessModule::openPorts(){
@@ -425,7 +426,9 @@ static void scale_set_default_values( GtkScale *scale ){
 // Main Window Callbacks
 //-------------------------------------------------
 
-/* usual callback function */
+/**
+* usual callback function 
+*/
 static void callback( GtkWidget *widget,gpointer   data ){
     g_print ("Hello again - %s was pressed \n", (char *) data);
 	
@@ -466,10 +469,15 @@ static gint expose_CB (GtkWidget *widget, GdkEventExpose *event, gpointer data)
 					printf("currentProcessor resulted nil");
 					return false;
 				}
-				if(&_inputImg==NULL){
+				if(imageProcessModule->currentProcessor->canProcess_flag==false){
 					printf("expose_CB:_inputImg NULL");
 					return false;
 				}
+				else
+				{
+					imageProcessModule->currentProcessor->resizeImages(_inputImg.width(),_inputImg.height());
+				}
+
 				_outputImage=imageProcessModule->currentProcessor->process(&_inputImg); //findEdges(&_inputImg,1,0);
                 printf("_outputImage: 0x%08x\n", _outputImage);
 				if(_outputImage==NULL){
@@ -506,7 +514,7 @@ static gint expose_CB (GtkWidget *widget, GdkEventExpose *event, gpointer data)
 				if ( (areaWidth != imageWidth) || (areaHeight != imageHeight) )
 					{
 						GdkPixbuf *scaledFrame;
-						//printf("scaling image... \n");
+						printf("scaling image... \n");
 						scaledFrame = gdk_pixbuf_scale_simple(	frame,
 																areaWidth,
 																areaHeight,

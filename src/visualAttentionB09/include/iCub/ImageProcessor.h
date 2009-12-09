@@ -187,6 +187,10 @@ class ImageProcessor
 		*/
 		ImageProcessor ( ImageOf<PixelRgb>* inputImage );//
 		/**
+		* method that resize images once the processor knows the dimesions of the input
+		*/
+		void resizeImages(int width, int height);
+		/**
 		* combines the 3 edge images saving the maximum value for every pixel 
 		*/
 		ImageOf<PixelMono>* combineMax(); //
