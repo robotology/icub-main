@@ -425,13 +425,15 @@ bool RobotInterfaceRemap::initialize10(const std::string &inifile)
     fprintf(stderr, "RobotInterface::now opening inertial\n");
     if (robotOptions.check("INERTIAL")) 
     {
+        Property tmpProp;
+        //copy parameters verbatim from relative section
+        tmpProp.fromString(robotOptions.findGroup("INERTIAL").toString());
         fprintf(stderr, "RobotInterface:: inertial sensor is in the conf file\n");
-        if (!instantiateInertial(robotOptions))
+        if (!instantiateInertial(PATH, tmpProp))
             fprintf(stderr, "RobotInterface::warning troubles instantiating inertial sensor\n");
     }
     else
         fprintf(stderr, "RobotInterface::no inertial sensor defined in the config file\n");
-
 
     std::cout<<"Starting robot calibration!"<<endl;
     calibrate();
