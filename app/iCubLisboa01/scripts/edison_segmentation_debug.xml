@@ -1,0 +1,37 @@
+<application>
+<name>Edison Segmentation</name>
+<dependencies>
+      <port>/icub/cam/left</port>
+</dependencies>
+<module>
+      <name>edisonSegmentation</name>
+      <parameters>--context demoAffv2/conf</parameters>
+      <node>cortex4</node>
+      <stdio>chico3</stdio>
+      <tag>edison_segmentation</tag>
+</module>
+<module>
+      <name>yarpview</name>
+      <parameters>--name /edisonSegm/yarpview/raw --x 0 --y 0 --synch</parameters>
+      <node>chico3</node>
+      <tag>raw_image</tag>
+</module>
+<module>
+      <name>yarpview</name>
+      <parameters>--name /edisonSegm/yarpview/view --x 320 --y 0 --synch</parameters>
+      <node>chico3</node>
+      <tag>labeled_image</tag>
+</module>
+<connection>
+      <output>/icub/cam/left</output>
+      <input>/edisonSegm/rawimg:i</input>
+</connection>
+<connection>
+      <output>/edisonSegm/rawimg:o</output>
+      <input>/edisonSegm/yarpview/raw</input>
+</connection>
+<connection>
+      <output>/edisonSegm/viewimg:o</output>
+      <input>/edisonSegm/yarpview/view</input>
+</connection>
+</application>
