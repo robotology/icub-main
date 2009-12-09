@@ -147,6 +147,10 @@ private:
 	* width of the images
 	*/
 	int width;
+	/**
+	* pointers to angleShift
+	*/
+	 double *_angShiftMap;
 	
 
 	Image_Data _img;

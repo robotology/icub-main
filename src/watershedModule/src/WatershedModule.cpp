@@ -102,6 +102,8 @@ static WatershedModule *wModule;
 #define _semaphore (*(ptr_semaphore))
 
 WatershedModule::WatershedModule(){
+	inputImage_flag=false;
+
 	meanColour_flag=true;
 	contrastLP_flag=false;
 	blobCataloged_flag=true;
@@ -119,47 +121,33 @@ WatershedModule::WatershedModule(){
 	BY_flag=false;
 	noOpponencies_flag=true;
 	noPlanes_flag=true;
+	resized_flag=false;
 	//----
-	this->wOperator=new WatershedOperator(false,320,240,320,10);
-	_wOperator=this->wOperator;
-	this->salience=new SalienceOperator(320,240);
-	_salience=this->salience;
 	maxSalienceBlob_img=new ImageOf<PixelMono>;
-	maxSalienceBlob_img->resize(320,240);
 	outContrastLP=new ImageOf<PixelMono>;
-	outContrastLP->resize(320,240);
 	outMeanColourLP=new ImageOf<PixelBgr>;
-	outMeanColourLP->resize(320,240);
+	
 	wModule=this;
 
 	max_boxes = new YARPBox[3];
 	//initializing the image plotted out int the drawing area
 	image_out=new ImageOf<PixelRgb>;
-	image_out->resize(320,240);
 	_outputImage3=new ImageOf<PixelRgb>;
-	_outputImage3->resize(320,240);
 	_outputImage=new ImageOf<PixelMono>;
-	_outputImage->resize(320,240);
 	ptr_inputRed=new ImageOf<yarp::sig::PixelMono>; //pointer to the input image of the red plane
-	ptr_inputRed->resize(320,240);
+
 	ptr_inputGreen= new ImageOf<yarp::sig::PixelMono>; //pointer to the input image of the green plane
-	ptr_inputGreen->resize(320,240);
 	ptr_inputBlue= new ImageOf<yarp::sig::PixelMono>; //pointer to the input image of the blue plane
-	ptr_inputBlue->resize(320,240);
 	ptr_inputRG= new ImageOf<yarp::sig::PixelMono>; //pointer to the input image of the R+G- colour opponency
-	ptr_inputRG->resize(320,240);
 	ptr_inputGR= new ImageOf<yarp::sig::PixelMono>; //pointer to the input image of the G+R- colour opponency
-	ptr_inputGR->resize(320,240);
 	ptr_inputBY= new ImageOf<yarp::sig::PixelMono>; //pointer to the input image of the B+Y- colour opponency
-	ptr_inputBY->resize(320,240);
+	
 	_inputImgRGS=new ImageOf<PixelMono>;
 	_inputImgGRS=new ImageOf<PixelMono>;
 	_inputImgBYS=new ImageOf<PixelMono>;
-	_inputImgRGS->resize(320,240);
-	_inputImgGRS->resize(320,240);
-	_inputImgBYS->resize(320,240);
+	
 	blobFov=new ImageOf<PixelMono>;
-	blobFov->resize(320,240);
+	
 
 	salienceBU=10;
 	salienceTD=10;
@@ -172,11 +160,39 @@ WatershedModule::WatershedModule(){
 	searchRG=0;
 	searchGR=0;
 	searchBY=0;
-		
-
-	blobList = new char [320*240+1];
+	
 }
 
+void WatershedModule::resizeImages(int width, int height){
+	this->wOperator=new WatershedOperator(false,width,height,width,10);
+	_wOperator=this->wOperator;
+	this->salience=new SalienceOperator(width,height);
+	_salience=this->salience;
+
+	maxSalienceBlob_img->resize(width,height);
+	outMeanColourLP->resize(width,height);
+	outContrastLP->resize(width,height);
+
+	image_out->resize(width,height);
+	_outputImage->resize(width,height);
+	_outputImage3->resize(width,height);
+
+	ptr_inputRed->resize(width,height);
+	ptr_inputGreen->resize(width,height);
+	ptr_inputBlue->resize(width,height);
+	ptr_inputRG->resize(width,height);
+	ptr_inputGR->resize(width,height);
+	ptr_inputBY->resize(width,height);
+
+	_inputImgRGS->resize(width,height);
+	_inputImgGRS->resize(width,height);
+	_inputImgBYS->resize(width,height);
+	blobFov->resize(width,height);
+
+	blobList = new char [width*height+1];
+
+	resized_flag=true;
+}
 
 bool WatershedModule::open(Searchable& config) {
     //ct = 0;
@@ -523,8 +539,10 @@ static gint expose_CB (GtkWidget *widget, GdkEventExpose *event, gpointer data)
 				unsigned int imageWidth,imageHeight,areaWidth, areaHeight;
 				IppiSize srcsize={320,240};
 
-				bool ret=getPlanes();
-				
+				if(!wModule->inputImage_flag){
+					return true;
+				}
+				bool ret=getPlanes();				
 				if(ret==false){
 					//printf("No Planes! \n");
 					//return TRUE;
@@ -1194,9 +1212,13 @@ static gint timeout_CB (gpointer data){
 			gtk_widget_queue_draw (da);
             //            if (_savingSet)
             //                saveCurrentFrame();
+			if(!wModule->resized_flag)
+				wModule->resizeImages(_inputImg.width(),_inputImg.height());
+			wModule->inputImage_flag=true;
     }
 	updateStatusbar(GTK_STATUSBAR (statusbar));
-	wModule->outPorts();
+	if(wModule->inputImage_flag)
+		wModule->outPorts();
 	return TRUE;
 }
 

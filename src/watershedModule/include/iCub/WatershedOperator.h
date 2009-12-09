@@ -105,6 +105,9 @@ public:
 	* applies the rain watershed from the edge picture, and returns the tagged image of integer
 	*/
 	int apply(const ImageOf<PixelMono> &src, ImageOf<PixelInt> &result); //
+	/**
+	* applies the rain watershed from the edge picture, and returns the tagged image of integer (OLD)
+	*/
 	int applyOnOld(const ImageOf<PixelMono> &src, ImageOf<PixelInt> &result);
 	void tags2Watershed(const ImageOf<PixelInt>& src, ImageOf<PixelMono>& dest);
 	/**

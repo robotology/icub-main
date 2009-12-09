@@ -189,6 +189,10 @@ public:
 	*/
 	bool updateModule(); //
 	/**
+	* function that resizes all the images and all the objects that are dependent from the size of the inputimage
+	*/
+	void resizeImages(int width, int height);
+	/**
 	* set the attribute options of class Property
 	*/
 	void setOptions(Property options); //
@@ -416,6 +420,14 @@ public:
 	* flag for drawing BlueYellow Opponency Map
 	*/
 	bool BY_flag;
+	/**
+	* flag that indicates if the inputImage has been acquired
+	*/
+	bool inputImage_flag;
+	/**
+	* flag that indicates if the images have been resized
+	*/
+	bool resized_flag;
 	/**
 	* flag that indicates that Opponency images are not ready
 	*/

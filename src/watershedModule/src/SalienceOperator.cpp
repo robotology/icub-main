@@ -16,7 +16,7 @@ SalienceOperator::SalienceOperator(const int width1, const int height1)//:_gaze(
 	colorVQ_img->resize(320,240);
 
 	colorVQ=new ColorVQ(320,240,10);
-
+	_angShiftMap = (double *) malloc (152 * sizeof(double));
 
 	centroid_x=0;
 	centroid_y=0;
@@ -835,6 +835,8 @@ void SalienceOperator::blobCatalog(ImageOf<PixelInt>& tagged,
 			//get the x,y in order to have the averaging
 			//m_lp.Logpolar2Cartesian(r, c, x, y);
 			logPolar2Cartesian(r,c,x,y);
+			printf("x:%d,y:%d  ",x,y);
+
 
 			if (m_boxes[tag_index].ymax < y) 
 				m_boxes[tag_index].ymax = y;
@@ -973,21 +975,19 @@ Image_Data SalienceOperator::Set_Param(int SXO,
 
 
 /**
-* trasform a logPolar coordinate (rho,theta) into a cartesian coordinate (x,y)
+* trasforms a logPolar coordinate (rho,theta) into a cartesian coordinate (x,y)
 */
 void SalienceOperator::logPolar2Cartesian(int irho, int itheta, int& ox, int& oy){
 	double xx = 0;
 	double yy = 0;
-	double _xsize=2;
-	double _ysize=2;
-	double angleShift=1;
+	//double _xsize=2;
+	//double _ysize=2;
+	//double angleShift;
 	
 
-	Get_XY_Center(&xx, &yy, irho, itheta, &_img, &angleShift);
-	//xx=320/2;
-	//yy=240/2;
+	Get_XY_Center(&xx, &yy, irho, itheta, &_img, _angShiftMap);
 
-	
+	using namespace _logpolarParams;
 	ox = int(xx + .5) + _xsize/2;
 	oy = _ysize/2 - int(yy + .5);
 
