@@ -303,13 +303,19 @@ int Histogram::_loadFull(const char *file)
 	int tmpMax;
 	int tmpMin;
 	int tmpSize;
-	
-	fscanf(fp, "%lf\n", &tmpMaximum);
+	size_t ret;
+
+	ret=fscanf(fp, "%lf\n", &tmpMaximum);
+    if (ret!=1)
+        return 0;
 	
 	int i;
 	for(i = 0; i<3; i++)
 	{
-		fscanf(fp, "%d %d %d\n", &tmpMax, &tmpMin, &tmpSize);
+		ret=fscanf(fp, "%d %d %d\n", &tmpMax, &tmpMin, &tmpSize);
+        if (ret!=3)
+            return 0;
+
 		max[i] = (unsigned char) tmpMax;
 		min[i] = (unsigned char) tmpMin;
 		size[i] = (unsigned char) tmpSize;
@@ -328,7 +334,10 @@ int Histogram::_loadFull(const char *file)
 	while  (_3dlut.find(it, &tmpEntry)!=-1)
 	{
 		double v;
-		fscanf(fp, "%d %d %d %lf\n", &dummy1, &dummy2, &dummy3, &v);
+		ret=fscanf(fp, "%d %d %d %lf\n", &dummy1, &dummy2, &dummy3, &v);
+        if (ret!=4)
+            return 0;
+
 		tmpEntry->setValue(v);
 		it++;
 	}

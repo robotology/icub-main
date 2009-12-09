@@ -529,10 +529,21 @@ int LoadBitmapTERMINAL(char *filename, int whichtexture)
     if( (file1 = fopen(filename, "rb"))==NULL){ cout << "Cannot load/find texture file " << endl; return (0); }// Open the file for reading
 	cout << "......... OK! " << endl;
 	fseek(file1, 18, SEEK_CUR);  // start reading width & height 
-    fread(&infoheader1.biWidth, sizeof(int), 1, file1);
 
-    fread(&infoheader1.biHeight, sizeof(int), 1, file1);
-    fread(&infoheader1.biPlanes, sizeof(short int), 1, file1);
+    size_t ret=0;
+    ret=fread(&infoheader1.biWidth, sizeof(int), 1, file1);
+
+    if (ret!=1)
+        return 0;
+
+    ret=fread(&infoheader1.biHeight, sizeof(int), 1, file1);
+    if (ret!=1)
+        return 0;
+
+    ret=fread(&infoheader1.biPlanes, sizeof(short int), 1, file1);
+
+    if (ret!=1)
+        return 0;
 	
 	cout << "Texture Size " <<  infoheader1.biHeight << " " << infoheader1.biWidth << endl;
     if (infoheader1.biPlanes != 1) {
@@ -540,7 +551,11 @@ int LoadBitmapTERMINAL(char *filename, int whichtexture)
 	    return 0;
     }
     // read the bpp
-    fread(&infoheader1.biBitCount, sizeof(unsigned short int), 1, file1);
+    ret=fread(&infoheader1.biBitCount, sizeof(unsigned short int), 1, file1);
+
+    if (ret!=1)
+        return 0;
+
     if (infoheader1.biBitCount != 24) {
       printf("Bpp from %s is not 24: %d\n", filename, infoheader1.biBitCount);
       return 0;

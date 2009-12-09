@@ -37,23 +37,27 @@ dxTriMeshX *dLoadMeshFromX(const char* FileName)
    			//printf("symbol[%s] word[%s]\n", symbol, word);
 	  		// Skip templates
 	  		if (strcmp(word, "template") == 0) {
-				fscanf(in, "%s", word);
-				fscanf(in, "%s", word);
+				ret=fscanf(in, "%s", word);
+				ret=fscanf(in, "%s", word);
 	 		}else 
 	  		if (strncmp(word, "Mesh ", 5) == 0){								// All you need is Mesh !!
       			//printf("\nWord: %s\n", word);
 				//fscanf(in, "%s", word);
 				if (strcmp(word, "{") != 0 )	// If the mesh has a name
 				//fscanf(in, "%s", word);			// then skip it.
-				fscanf(in, "%d", &(tmpTriMesh->VertexCount));	// Get vertex count
+				ret=fscanf(in, "%d", &(tmpTriMesh->VertexCount));	// Get vertex count
 				tmpTriMesh->Vertices = (float *)malloc(tmpTriMesh->VertexCount * 3 * sizeof(float));
 				//printf("\nVertexCount %d\n", tmpTriMesh->VertexCount );
-				fscanf(in, "%s", word);
+				ret=fscanf(in, "%s", word);
 				printf("...");
-        		fgets(word, 256, in); // consume newline
+        		if (fgets(word, 256, in)==0)
+                    return 0;
+
 				for (i = 0; i < tmpTriMesh->VertexCount; i++) {
 					//fscanf(in, "%s", word);
-            		fgets(word, 256, in);
+            		if (fgets(word, 256, in)==0)
+                        return 0;
+
             		//printf("Read(%d): '%s'\n", i, word);
 					p = strtok(word, ",;");		
 					while (p != NULL) {
@@ -69,18 +73,21 @@ dxTriMeshX *dLoadMeshFromX(const char* FileName)
 				}
 				printf("...");
         		//printf("\nVertexCount %d\n", tmpTriMesh->VertexCount );
-				fscanf(in, "%d", &indexCount);	// Get index count
+				ret=fscanf(in, "%d", &indexCount);	// Get index count
 				//printf("IndexCount %d\n", indexCount );
 				tmpTriMesh->IndexCount = indexCount * 3;
 				tmpTriMesh->Indices = (int *)malloc(tmpTriMesh->IndexCount * sizeof(int)); 
 	
-        		fgets(word, 256, in);
+        		if (fgets(word, 256, in)==0)
+                    return 0;
         		//printf("Read(a): '%s'\n", word);
 				//fscanf(in, "%s", word);	
 	
 				for (i = 0; i < indexCount; i++) {
             		//printf("Indices %d\n", i);
-            		fgets(word, 256, in);
+            		if (fgets(word, 256, in)==0)
+                        return 0;
+
            		    p = strtok(word, ",;");
             		ret = sscanf(p, "%d", &intval);
 					//printf("intVal %d \n", intval);
@@ -113,13 +120,17 @@ dxTriMeshX *dLoadMeshFromX(const char* FileName)
     	j=0;
 		while((symbol = fgets(word, 256, in)) != (char*) NULL) {
 			if (strncmp(word, "MeshTextureCoords", 17) == 0){	
-				fscanf(in, "%d", &(tmpTriMesh->MeshCoordCount));
-        		fgets(word, 256, in); // consume newline
+				ret=fscanf(in, "%d", &(tmpTriMesh->MeshCoordCount));
+        		if (fgets(word, 256, in)==NULL)
+                    return 0; // consume newline
+
 				//printf("MESH COORD COUNT = %d\n", tmpTriMesh->MeshCoordCount);
 				tmpTriMesh->MeshCoord = (float *)malloc(tmpTriMesh->MeshCoordCount*2 * sizeof(float));
 				printf("...");
 				for (i = 0; i < tmpTriMesh->MeshCoordCount; i++) {	
-					fgets(word, 256, in);
+					if (fgets(word, 256, in)==0)
+                        return 0;
+
 					//printf("Read(%d): '%s' \n", i, word );
 					p = strtok(word, ",;");
 					while (p != NULL) {

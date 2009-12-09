@@ -43,14 +43,14 @@ YARPImgRecv::~YARPImgRecv()
 
 YARPImgRecv::YARPImgRecv(char *portName, char *network)
 {
-	sprintf(_portName, portName);
+	sprintf(_portName, "%s", portName);
 	if (network == NULL)
         {
-            sprintf(_network, "default");
+            sprintf(_network, "%s", "default");
         }
 	else
         {
-            sprintf(_network, network);
+            sprintf(_network, "%s", network);
         }
 	_connected = false;
 	_portNameIsValid = true;
@@ -89,14 +89,14 @@ bool YARPImgRecv::Connect(char *portName, char *network)
 		printf("already connected \n");
 		return false;
 	}
-	sprintf(_portName,portName);
+	sprintf(_portName, "%s", portName);
 	if (network == NULL)
         {
-            sprintf(_network, "default");
+            sprintf(_network, "%s", "default");
         }
 	else
         {
-            sprintf(_network, network);
+            sprintf(_network, "%s", network);
         }
 	_portNameIsValid = true;
 

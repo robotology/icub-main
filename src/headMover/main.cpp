@@ -284,10 +284,14 @@ int main(int argc, char *argv[])
 
     char cmd[80];
     bool quit=false;
+    size_t ret;
     while (!quit) 
     {
         printf("Type 'quit+enter' to exit the program\n");
-        scanf("%s", cmd);
+        ret=scanf("%s", cmd);
+        if (ret!=1)
+            quit=true;
+
         if (strcmp(cmd, "quit")==0)
             quit=true;
     }

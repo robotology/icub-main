@@ -348,13 +348,13 @@ int main(int argc, char *argv[])
 
                 case VOCAB_STOP: {
                     int j = p.get(2).asInt();
-                    printf("%s: stopping axis %d\n", Vocab::decode(VOCAB_STOP).c_str());
+                    printf("%s: stopping axis %d\n", Vocab::decode(VOCAB_STOP).c_str(), j);
                     pos->stop(j);
                 }
                 break;
 
                 case VOCAB_STOPS: {
-                    printf("%s: stopping all axes %d\n", Vocab::decode(VOCAB_STOPS).c_str());
+                    printf("%s: stopping all axes\n", Vocab::decode(VOCAB_STOPS).c_str());
                     pos->stop();
                 }
                 break;
