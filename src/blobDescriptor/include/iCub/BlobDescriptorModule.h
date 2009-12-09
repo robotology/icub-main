@@ -149,6 +149,8 @@ using namespace yarp::sig;
 //#include <vector>
 using namespace std;
 
+//#define MAX_ELEMS 100 /* maximum number of segmented elements (blobs) to process in a cycle */
+
 class BlobDescriptorModule : public RFModule
 {
 	/* private class variables and module parameters */
@@ -164,20 +166,20 @@ class BlobDescriptorModule : public RFModule
 	string                            _handlerPortName;
 	Port                              _handlerPort; /* a port to handle messages */
 	BufferedPort<ImageOf<PixelRgb> >  _rawImgInputPort;
-	BufferedPort<ImageOf<PixelRgb> >  _labeledImgInputPort;
+	BufferedPort<ImageOf<PixelInt> >  _labeledImgInputPort;
 	BufferedPort<ImageOf<PixelRgb> >  _rawImgOutputPort;
 	BufferedPort<ImageOf<PixelRgb> >  _viewImgOutputPort;
 	BufferedPort<Bottle>              _affDescriptorOutputPort;
 	BufferedPort<Bottle>              _trackerInitOutputPort;
 	/* yarp images */
 	ImageOf<PixelRgb>                *_yarpRawImg;
-	ImageOf<PixelRgb>                *_yarpLabeledImg;
+	ImageOf<PixelInt>                *_yarpLabeledImg;
 	ImageOf<PixelRgb>                *_yarpViewImg;
 	Bottle                            _affDescriptor;
 	Bottle                            _trackerInit;
 	/* OpenCV images */
 	IplImage                         *_opencvRawImg;
-	IplImage                         *_opencvLabeledImg;
+	IplImage                         *_opencvLabeledImg; // 32 b
     IplImage                         *_opencvLabeledImg8bit; /* for debug and visualization */
 	int                               raw_w, raw_h, labeled_w, labeled_h;
 	CvSize                            raw_sz, labeled_sz;
@@ -189,17 +191,16 @@ class BlobDescriptorModule : public RFModule
 	float                            *h_ranges, *s_ranges, *v_ranges;
 
 	IplImage                         *h_plane; /* for the first input of cvCalcHist. FIXME: h_plane or x_plane? */
+	//int                               _descriptors[MAX_ELEMS];
 
 	/* other parameters that can be user-specified (besides port names) */
 	int                               _minAreaThreshold; /* min. number of pixels allowed for foreground objects */
 
 public:
-	//BlobDescriptorModule();                   /* default constructor */
 	virtual bool configure(ResourceFinder &rf); /* configure module parameters, return true if successful */
 	virtual bool interruptModule();             /* interrupt, e.g., ports */
 	virtual bool close();                       /* close and shut down module */
 	virtual bool respond(const Bottle &command, Bottle &reply);
-	double getPeriod();
 	virtual bool updateModule();
 };
 

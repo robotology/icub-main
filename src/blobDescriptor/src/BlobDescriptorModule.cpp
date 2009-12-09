@@ -117,21 +117,10 @@ bool BlobDescriptorModule::configure(ResourceFinder &rf) // equivalent to Module
         return false;
     }
 
-
-
     _yarpRawImg     = _rawImgInputPort.read(true);
     _yarpLabeledImg = _labeledImgInputPort.read(true);
 
-    raw_w   = _yarpRawImg->width();
-    raw_h   = _yarpRawImg->height();
-    raw_sz  = cvSize(raw_w, raw_h);
-    _opencvRawImg = cvCreateImage(raw_sz, IPL_DEPTH_8U, 1);
-
-    labeled_w  = _yarpLabeledImg->width();
-    labeled_h  = _yarpLabeledImg->height();
-    labeled_sz = cvSize(labeled_w, labeled_h);
-    _opencvLabeledImg     = cvCreateImage(labeled_sz, IPL_DEPTH_8U, 1);
-    _opencvLabeledImg8bit = cvCreateImage(labeled_sz, IPL_DEPTH_8U, 1); /* for debug */
+    // _opencvRawImg and _opencvLabeledImg are assigned in updateModule()
 
     // FIXME: check
     h_plane = cvCreateImage(labeled_sz, IPL_DEPTH_8U, 1);
@@ -213,29 +202,47 @@ bool BlobDescriptorModule::respond(const Bottle &command, Bottle &reply)
  */
 bool BlobDescriptorModule::updateModule()
 {
+
     _yarpRawImg     = _rawImgInputPort.read(true);
     _yarpLabeledImg = _labeledImgInputPort.read(true);
+
 
     raw_w   = _yarpRawImg->width();
     raw_h   = _yarpRawImg->height();
     raw_sz  = cvSize(raw_w, raw_h);
-    _opencvRawImg = cvCreateImage(raw_sz, IPL_DEPTH_8U, 1);
 
     labeled_w  = _yarpLabeledImg->width();
     labeled_h  = _yarpLabeledImg->height();
     labeled_sz = cvSize(labeled_w, labeled_h);
-    _opencvLabeledImg     = cvCreateImage(labeled_sz, IPL_DEPTH_8U, 1);
-    _opencvLabeledImg8bit = cvCreateImage(labeled_sz, IPL_DEPTH_8U, 1); /* for debug */
 
+    _opencvRawImg = (IplImage *) _yarpRawImg->getIplImage();
+    _opencvLabeledImg = (IplImage *) _yarpLabeledImg->getIplImage();
 
-
+    // DEBUG
+    int *ptr = (int *) _yarpLabeledImg->getRawImage();
 
     float *ranges[] = { h_ranges, s_ranges, v_ranges }; // FIXME: deallocate this?
 
     IplImage *planes[] = { h_plane }; /* just hue (Ivana used saturation, too - planesW variable) */
 
-    // FIXME: compute _numLabels as the max value within _opencvLabeledImg
-    _numLabels = 42;
+
+    /* compute _numLabels as the max value within _opencvLabeledImg */
+    double max_val, trash;
+    cvMinMaxLoc(_opencvLabeledImg, &trash, &max_val, NULL, NULL, NULL);
+    _numLabels = (int) max_val;
+    //cout << "min and max label: " << (int) trash << " " << _numLabels << endl;
+
+    // DEBUG
+    for(int i=0; i<labeled_h; i++)
+    {
+        for(int j=0; j<labeled_w; j++)
+        {
+            cout << *ptr++ << " ";
+        }
+        cout << endl;
+    }
+
+    return false;
 
     _numObjects = selectObjects(_opencvLabeledImg, _opencvLabeledImg8bit, _numLabels, _minAreaThreshold);
     cout << getName() << ": number of objects is " << _numObjects << endl;
@@ -247,6 +254,9 @@ bool BlobDescriptorModule::updateModule()
     /* compute histogram of each object */
     for(int i=0; i < _numObjects; i++)
     {
+
+
+
         objDescTable[i].h_bins = hist_size[0];
         objDescTable[i].s_bins = hist_size[1];
         objDescTable[i].objHist = cvCreateHist(2, hist_size, CV_HIST_ARRAY, ranges, 1);
@@ -254,15 +264,13 @@ bool BlobDescriptorModule::updateModule()
         float ohmax; // to normalize the object histogram
         cvGetMinMaxHistValue(objDescTable[i].objHist, 0, &ohmax, 0, 0);
         cvConvertScale(objDescTable[i].objHist->bins, objDescTable[i].objHist->bins, ohmax ? 255. / ohmax : 0., 0);
+
+
+
+
     }
 
 
     
   	return true;
-}
-
-double BlobDescriptorModule::getPeriod()
-{
-    /* module periodicity (in seconds), called implicitly by BlobDescriptorModule */
-    return 0.1;
 }
