@@ -1,6 +1,9 @@
 // -*- mode:C++; tab-width:4; c-basic-offset:4; indent-tabs-mode:nil -*-
 
 #include <iCub/LogPolarModule.h>
+#include <iostream>
+
+using namespace std;
 
 
 /**
@@ -70,6 +73,7 @@ bool LogPolarModule::open(Searchable& config) {
 	port3.open(getName("inverse:o"));
 	port4.open(getName("simulation:o"));
 	portCOG.open(getName("cog:o"));
+	portTarget.open(getName("target:i"));
 	cmdPort.open(getName("cmd:i")); // optional command port
     attach(cmdPort); // cmdPort will work just like terminal
 	
@@ -81,78 +85,97 @@ bool LogPolarModule::open(Searchable& config) {
 */
 bool LogPolarModule::interruptModule() {
     port.interrupt();
-	port2.interrupt();
-	port3.interrupt();
-	port4.interrupt();
-	portCOG.interrupt();
-	cmdPort.interrupt();
+    port2.interrupt();
+    port3.interrupt();
+    port4.interrupt();
+    portCOG.interrupt();
+    cmdPort.interrupt();
+    portTarget.interrupt();
     return true;
 }
 
 
 bool LogPolarModule::close(){
-	port.close();
-	port2.close();
-	port3.close();
-	port4.close();
-	portCOG.close();
-	cmdPort.close();
+    port.close();
+    port2.close();
+    port3.close();
+    port4.close();
+    portCOG.close();
+    cmdPort.close();
+    portTarget.close();
     return true;
 }
 
 void LogPolarModule::setOptions(yarp::os::Property opt){
-	options	=opt;
-	// definition of the mode
-	ConstString optcheck=opt.find("mode").asString();
-	printf("Working in modality:%s \n", optcheck.c_str());
-	printf("\n");
-	if(!strcmp(optcheck.c_str(),"SIMULATION"))
-		mode=0;
-	else if(!strcmp(optcheck.c_str(),"FORWARD")){
-		mode=1;
-		//define the sequence of images for the forward mode
-		dstColor= cvCreateImage( cvSize(320,240), IPL_DEPTH_8U, 3 );
-		dstColor2= cvCreateImage( cvSize(320,240), IPL_DEPTH_8U, 3 );
-		cvImage= cvCreateImage(cvSize(320,240), IPL_DEPTH_8U, 3 );
-		cvImage2= cvCreateImage(cvSize(320,240), IPL_DEPTH_8U, 3 );
-		image2=new ImageOf<PixelRgb>;
-		image2->resize(320,240);
-	}
-	else if(!strcmp(optcheck.c_str(),"INVERSE")){
-		mode=2;
-		//creates the sequence of images for the inverse mode
-		dstColor= cvCreateImage( cvSize(320,240), IPL_DEPTH_8U, 3 );
-		dstColor2= cvCreateImage( cvSize(320,240), IPL_DEPTH_8U, 3 );
-		cvImage= cvCreateImage(cvSize(240,240), IPL_DEPTH_8U, 3 );
-		cvImage1=cvCreateImage(cvSize(320,240), IPL_DEPTH_8U, 3 );
-		cvImage2= cvCreateImage(cvSize(240,240), IPL_DEPTH_8U, 3 );
-		image2=new ImageOf<PixelRgb>;
-		image2->resize(320,240);
-		
-		rec=cvRect(40,0,240,240);
-	}
-	// definition of the name of the module
-	ConstString name=opt.find("name").asString();
-	printf("Module named as :%s \n", name.c_str());
-	this->setName(name.c_str());
-	printf("\n");
+    options	=opt;
+    // definition of the mode
+    ConstString optcheck=opt.find("mode").asString();
+    printf("Working in modality:%s \n", optcheck.c_str());
+    printf("\n");
+    if(!strcmp(optcheck.c_str(),"SIMULATION"))
+        mode=0;
+    else if(!strcmp(optcheck.c_str(),"FORWARD")){
+        mode=1;
+        //define the sequence of images for the forward mode
+        dstColor= cvCreateImage( cvSize(320,240), IPL_DEPTH_8U, 3 );
+        dstColor2= cvCreateImage( cvSize(320,240), IPL_DEPTH_8U, 3 );
+        cvImage= cvCreateImage(cvSize(320,240), IPL_DEPTH_8U, 3 );
+        cvImage2= cvCreateImage(cvSize(320,240), IPL_DEPTH_8U, 3 );
+        image2=new ImageOf<PixelRgb>;
+        image2->resize(320,240);
+    }
+    else if(!strcmp(optcheck.c_str(),"INVERSE")){
+        mode=2;
+        //creates the sequence of images for the inverse mode
+        dstColor= cvCreateImage( cvSize(320,240), IPL_DEPTH_8U, 3 );
+        dstColor2= cvCreateImage( cvSize(320,240), IPL_DEPTH_8U, 3 );
+        cvImage= cvCreateImage(cvSize(240,240), IPL_DEPTH_8U, 3 );
+        cvImage1=cvCreateImage(cvSize(320,240), IPL_DEPTH_8U, 3 );
+        cvImage2= cvCreateImage(cvSize(240,240), IPL_DEPTH_8U, 3 );
+        image2=new ImageOf<PixelRgb>;
+        image2->resize(320,240);
+        
+        rec=cvRect(40,0,240,240);
+    }
+    // definition of the name of the module
+    ConstString name=opt.find("name").asString();
+    printf("Module named as :%s \n", name.c_str());
+    this->setName(name.c_str());
+    printf("\n");
 }
 
 bool LogPolarModule::updateModule() {
+    
     //initialisation
-	int nEcc = 250;
-	int nAng = 350;
-	//cart2LpPixel *c2lTable;
-	//lp2CartPixel *l2cTable;
-	char path[] = "./";
-	CvScalar s;
+    int nEcc = 250;
+    int nAng = 350;
+    //cart2LpPixel *c2lTable;
+    //lp2CartPixel *l2cTable;
+    char path[] = "./";
+    CvScalar s;
+    
+    Bottle *bot=portTarget.read(false);
+    if(bot!=NULL){
+        int intValues[4];    
+        for(int i=0;i<4;i++){
+            yarp::os::Value v=bot->pop();
+            printf("integer:%d \n", v.asInt());
+            intValues[3-i]=v.asInt();
+        }
+        targetX=intValues[0];
+        targetY=intValues[1];
+        std::string *commandTOT=new string(bot->toString().c_str());
+        printf("%s \n", commandTOT->c_str());
+    }
+    
+    
+    //set in grays the image
+    img = port.read(false);
+    if(img==NULL){
+        return true;	
+    }
 
-	
-	//set in grays the image
-	img = port.read(false);
-	if(img==NULL){
-		return true;	
-	}
+        
     //printf(" %d \n",img->width());
 	//printf(" %d \n",img->height());
 	if(mode==0){
@@ -364,7 +387,7 @@ bool LogPolarModule::updateModule() {
 		PixelRgb black(0,0,0);
 		CvScalar red;
 		red.val[0]=255;red.val[1]=0;red.val[2]=0;
-		cvCircle(cvImage2,cvPoint(180,120),2,red,1,8,0);
+        cvCircle(cvImage2,cvPoint(targetX,targetY),2,red,1,8,0);
 		cvCvtColor(cvImage2,cvImage,CV_RGB2BGR);
 		//cvCvtColor((IplImage*)img->getIplImage(), cvImage, CV_RGB2GRAY);
 		

@@ -46,9 +46,13 @@ private:
 	*/
 	BufferedPort<ImageOf<PixelRgb> > port4; //
 	/**
-	* port for various command
+	* port for external commands
 	*/
     Port cmdPort;
+    /**
+	* port necessary to set the target point in the image
+	*/
+    BufferedPort<Bottle> portTarget;
 	/**
 	* port that send a bottle that contains the cog of the returned image
 	*/
@@ -102,13 +106,21 @@ private:
 	*/
 	Property options;
 	/**
-	* mode of work of the module
+	* mode of work of the module<<
 	*/
 	 int mode;
 	 /**
 	 * bottle used for the COG
 	 */
 	 Bottle outBot1;
+     /**
+     * position of the target X
+     */
+     int targetX;
+     /**
+     * position of the target Y
+     */
+     int targetY;
 public:
 	/**
 	*opens the port and intialise the module
