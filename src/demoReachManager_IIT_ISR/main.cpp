@@ -382,7 +382,7 @@ public:
             return false;
         }
 
-        rpcPort.open(getName("rpc"));
+        rpcPort.open(getName("/rpc"));
         attach(rpcPort);
 
         return true;
