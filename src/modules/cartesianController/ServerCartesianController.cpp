@@ -780,11 +780,10 @@ void ServerCartesianController::run()
         }
     
         // streams out the end-effector pose
+        txInfo->update();
         portState->prepare()=chain->EndEffPose();
         portState->setEnvelope(*txInfo);
-        portState->write();
-    
-        txInfo->update();
+        portState->write();        
     
         // end of critical code
         mutex->post();
@@ -974,8 +973,8 @@ bool ServerCartesianController::open(Searchable &config)
 
     chain=limb->asChain();
 
-    mutex =new Semaphore(); 
-    txInfo=new Stamp(0,Time::now());
+    mutex =new Semaphore(1); 
+    txInfo=new Stamp;
 
     openPorts();
 
