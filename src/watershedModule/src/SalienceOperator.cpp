@@ -6,16 +6,16 @@
 SalienceOperator::SalienceOperator(const int width1, const int height1)//:_gaze( YMatrix(_dh_nrf, 5, DH_left[0]), YMatrix(_dh_nrf, 5, DH_right[0]), YMatrix(4, 4, TBaseline[0]) )
 {
 	resize(width1, height1);
-	integralRG=new YARPIntegralImage(320,240);
-	integralGR=new YARPIntegralImage(320,240);
-	integralBY=new YARPIntegralImage(320,240);
+	integralRG=new YARPIntegralImage(width1,height1);
+	integralGR=new YARPIntegralImage(width1,height1);
+	integralBY=new YARPIntegralImage(width1,height1);
 
 	foveaBlob=new ImageOf<PixelMono>;
-	foveaBlob->resize(320,240);
+	foveaBlob->resize(width1,height1);
 	colorVQ_img=new ImageOf<PixelBgr>;
-	colorVQ_img->resize(320,240);
+	colorVQ_img->resize(width1,height1);
 
-	colorVQ=new ColorVQ(320,240,10);
+	colorVQ=new ColorVQ(width1,height1,10);
 	_angShiftMap = (double *) malloc (152 * sizeof(double));
 
 	centroid_x=0;
@@ -835,7 +835,7 @@ void SalienceOperator::blobCatalog(ImageOf<PixelInt>& tagged,
 			//get the x,y in order to have the averaging
 			//m_lp.Logpolar2Cartesian(r, c, x, y);
 			logPolar2Cartesian(r,c,x,y);
-			printf("x:%d,y:%d  ",x,y);
+			//printf("x:%d,y:%d  ",x,y);
 
 
 			if (m_boxes[tag_index].ymax < y) 

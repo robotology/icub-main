@@ -164,6 +164,9 @@ WatershedModule::WatershedModule(){
 }
 
 void WatershedModule::resizeImages(int width, int height){
+	this->width=width;
+	this->height=height;
+
 	this->wOperator=new WatershedOperator(false,width,height,width,10);
 	_wOperator=this->wOperator;
 	this->salience=new SalienceOperator(width,height);
@@ -190,6 +193,14 @@ void WatershedModule::resizeImages(int width, int height){
 	blobFov->resize(width,height);
 
 	blobList = new char [width*height+1];
+
+	_inputImg.resize(width,height);
+	_inputImgRed.resize(width,height);
+	_inputImgGreen.resize(width,height);
+	_inputImgBlue.resize(width,height);
+	_inputImgRG.resize(width,height);
+	_inputImgGR.resize(width,height);
+	_inputImgBY.resize(width,height);
 
 	resized_flag=true;
 }
@@ -372,10 +383,10 @@ bool getOpponencies(){
 /**
 * main function that associates any pixel in the image to a tagged blob
 */
-void rain(){
-		wModule->max_tag=wModule->wOperator->apply(*_outputImage,_tagged);
+void WatershedModule::rain(){
+		max_tag=wOperator->apply(*_outputImage,_tagged);
 		//printf("MAX_TAG=%d",wModule->max_tag);
-		bool ret=getPlanes();
+		/*bool ret=getPlanes();
 		if(ret==false){
 			//printf("No Planes! \n");
 			//return;
@@ -384,12 +395,12 @@ void rain(){
 		if(ret==false){
 			//printf("No Opponency! \n");
 			//return;
-		}
+		}*/
 		int psb32s;
-		IppiSize srcsize={320,240};
-		Ipp32s* _inputImgRGS32=ippiMalloc_32s_C1(320,240,&psb32s);
-		Ipp32s* _inputImgGRS32=ippiMalloc_32s_C1(320,240,&psb32s);
-		Ipp32s* _inputImgBYS32=ippiMalloc_32s_C1(320,240,&psb32s);
+		IppiSize srcsize={this->width,this->height};
+		Ipp32s* _inputImgRGS32=ippiMalloc_32s_C1(this->width,this->height,&psb32s);
+		Ipp32s* _inputImgGRS32=ippiMalloc_32s_C1(this->width,this->height,&psb32s);
+		Ipp32s* _inputImgBYS32=ippiMalloc_32s_C1(this->width,this->height,&psb32s);
 		/*ImageOf<PixelMono> *_inputImgRGS=new ImageOf<PixelMono>;
 		ImageOf<PixelMono> *_inputImgGRS=new ImageOf<PixelMono>;
 		ImageOf<PixelMono> *_inputImgBYS=new ImageOf<PixelMono>;
@@ -397,31 +408,31 @@ void rain(){
 		_inputImgGRS->resize(320,240);
 		_inputImgBYS->resize(320,240);*/
 		if(ptr_inputImgRG!=NULL){
-			ippiScale_8u32s_C1R(_inputImgRG.getPixelAddress(0,0),320,_inputImgRGS32,psb32s,srcsize);
-			ippiConvert_32s8s_C1R(_inputImgRGS32,psb32s,(Ipp8s*)wModule->_inputImgRGS->getPixelAddress(0,0),320,srcsize);
+			ippiScale_8u32s_C1R(_inputImgRG.getRawImage(),_inputImgRG.getRowSize(),_inputImgRGS32,psb32s,srcsize);
+			ippiConvert_32s8s_C1R(_inputImgRGS32,psb32s,(Ipp8s*)wModule->_inputImgRGS->getRawImage(),wModule->_inputImgRGS->getRowSize(),srcsize);
 			//_inputImgRGS->copy(_inputImgRG,320,240);
 		}
 		else
 			return;
 		if(ptr_inputImgGR!=NULL){
-			ippiScale_8u32s_C1R(_inputImgGR.getPixelAddress(0,0),320,_inputImgGRS32,psb32s,srcsize);
-			ippiConvert_32s8s_C1R(_inputImgGRS32,psb32s,(Ipp8s*)wModule->_inputImgGRS->getPixelAddress(0,0),320,srcsize);
+			ippiScale_8u32s_C1R(_inputImgGR.getRawImage(),_inputImgGR.getRowSize(),_inputImgGRS32,psb32s,srcsize);
+			ippiConvert_32s8s_C1R(_inputImgGRS32,psb32s,(Ipp8s*)wModule->_inputImgGRS->getRawImage(),wModule->_inputImgGRS->getRowSize(),srcsize);
 			//_inputImgGRS->copy(_inputImgGR,320,240);
 		}
 		else
 			return;
 		if(ptr_inputImgBY!=NULL){
-			ippiScale_8u32s_C1R(_inputImgBY.getPixelAddress(0,0),320,_inputImgBYS32,psb32s,srcsize);
-			ippiConvert_32s8s_C1R(_inputImgBYS32,psb32s,(Ipp8s*)wModule->_inputImgBYS->getPixelAddress(0,0),320,srcsize);
+			ippiScale_8u32s_C1R(_inputImgBY.getRawImage(),_inputImgBY.getRowSize(),_inputImgBYS32,psb32s,srcsize);
+			ippiConvert_32s8s_C1R(_inputImgBYS32,psb32s,(Ipp8s*)wModule->_inputImgBYS->getRawImage(),wModule->_inputImgBYS->getRowSize(),srcsize);
 			//_inputImgBYS->copy(_inputImgBY,320,240);
 		}
 		else
 			return;
-		wModule->salience->blobCatalog(_tagged, *wModule->_inputImgRGS, *wModule->_inputImgGRS, *wModule->_inputImgBYS,
+		salience->blobCatalog(_tagged, *wModule->_inputImgRGS, *wModule->_inputImgGRS, *wModule->_inputImgBYS,
 			_inputImgBlue, _inputImgGreen, _inputImgRed, wModule->max_tag);
-		wModule->blobCataloged_flag=true;
+		blobCataloged_flag=true;
 		//istruction to set the ptr_tagged in the Watershed Module with the static variable _tagged
-		wModule->tagged=ptr_tagged; //ptr_tagged is the pointer to _tagged
+		tagged=ptr_tagged; //ptr_tagged is the pointer to _tagged
 		ippiFree(_inputImgRGS32); //Ipp32s* _inputImgRGS32=ippiMalloc_32s_C1(320,240,&psb32s);
 		ippiFree(_inputImgGRS32); //Ipp32s* _inputImgGRS32=ippiMalloc_32s_C1(320,240,&psb32s);
 		ippiFree(_inputImgBYS32); //Ipp32s* _inputImgBYS32=ippiMalloc_32s_C1(320,240,&psb32s);
@@ -437,7 +448,7 @@ static void callback( GtkWidget *widget,gpointer   data ){
     g_print ("Hello again - %s was pressed \n", (char *) data);
 	
 	if(!strcmp((char *)data,"Rain1")){
-		rain();
+		wModule->rain();
 	}
 	else if(!strcmp((char *)data,"Rain2")){
 		printf("Rain2");
@@ -537,11 +548,12 @@ static gint expose_CB (GtkWidget *widget, GdkEventExpose *event, gpointer data)
 				guchar *pixels;
 				unsigned int rowstride;
 				unsigned int imageWidth,imageHeight,areaWidth, areaHeight;
-				IppiSize srcsize={320,240};
+				
 
 				if(!wModule->inputImage_flag){
 					return true;
 				}
+				IppiSize srcsize={wModule->width,wModule->height};
 				bool ret=getPlanes();				
 				if(ret==false){
 					//printf("No Planes! \n");
@@ -566,39 +578,39 @@ static gint expose_CB (GtkWidget *widget, GdkEventExpose *event, gpointer data)
 				//_outputImage->resize(320,240);
 				bool conversion=true;
 				_outputImage=_wOperator->getPlane(&_inputImg); 
-				rain();
+				wModule->rain();
 				
 				if(wModule->foveaBlob_flag){
 					wModule->salience->drawFoveaBlob(*wModule->salience->foveaBlob,*wModule->tagged);
-					ippiCopy_8u_C1R(wModule->salience->foveaBlob->getPixelAddress(0,0),320,_outputImage->getPixelAddress(0,0),320,srcsize);
+					ippiCopy_8u_C1R(wModule->salience->foveaBlob->getRawImage(),wModule->salience->foveaBlob->getRowSize(),_outputImage->getRawImage(),_outputImage->getRowSize(),srcsize);
 					conversion=true;
 				}
 				else if(wModule->redPlane_flag){
-					ippiCopy_8u_C1R(wModule->ptr_inputRed->getPixelAddress(0,0),320,_outputImage->getPixelAddress(0,0),320,srcsize);
+					ippiCopy_8u_C1R(wModule->ptr_inputRed->getRawImage(),wModule->ptr_inputRed->getRowSize(),_outputImage->getRawImage(),_outputImage->getRowSize(),srcsize);
 					conversion=true;
 				}
 				else if(wModule->greenPlane_flag){
-					ippiCopy_8u_C1R(wModule->ptr_inputGreen->getPixelAddress(0,0),320,_outputImage->getPixelAddress(0,0),320,srcsize);
+					ippiCopy_8u_C1R(wModule->ptr_inputGreen->getRawImage(),wModule->ptr_inputGreen->getRowSize(),_outputImage->getRawImage(),_outputImage->getRowSize(),srcsize);
 					conversion=true;
 				}
 				else if(wModule->bluePlane_flag){
-					ippiCopy_8u_C1R(wModule->ptr_inputBlue->getPixelAddress(0,0),320,_outputImage->getPixelAddress(0,0),320,srcsize);
+					ippiCopy_8u_C1R(wModule->ptr_inputBlue->getRawImage(),wModule->ptr_inputBlue->getRowSize(),_outputImage->getRawImage(),_outputImage->getRowSize(),srcsize);
 					conversion=true;
 				}
 				else if(wModule->RG_flag){
-					ippiCopy_8u_C1R(wModule->ptr_inputRG->getPixelAddress(0,0),320,_outputImage->getPixelAddress(0,0),320,srcsize);
+					ippiCopy_8u_C1R(wModule->ptr_inputRG->getRawImage(),wModule->ptr_inputRG->getRowSize(),_outputImage->getRawImage(),_outputImage->getRowSize(),srcsize);
 					conversion=true;
 				}
 				else if(wModule->GR_flag){
-					ippiCopy_8u_C1R(wModule->ptr_inputGR->getPixelAddress(0,0),320,_outputImage->getPixelAddress(0,0),320,srcsize);
+					ippiCopy_8u_C1R(wModule->ptr_inputGR->getRawImage(),wModule->ptr_inputGR->getRowSize(),_outputImage->getRawImage(),_outputImage->getRowSize(),srcsize);
 					conversion=true;
 				}
 				else if(wModule->BY_flag){
-					ippiCopy_8u_C1R(wModule->ptr_inputBY->getPixelAddress(0,0),320,_outputImage->getPixelAddress(0,0),320,srcsize);
+					ippiCopy_8u_C1R(wModule->ptr_inputBY->getRawImage(),wModule->ptr_inputBY->getRowSize(),_outputImage->getRawImage(),_outputImage->getRowSize(),srcsize);
 					conversion=true;
 				}
 				else if(wModule->watershed_flag){
-					ippiCopy_8u_C1R(wModule->wOperator->tSrc.getPixelAddress(0,0),320,_outputImage->getPixelAddress(0,0),320,srcsize);
+					ippiCopy_8u_C1R(wModule->wOperator->tSrc.getRawImage(),wModule->wOperator->tSrc.getRowSize(),_outputImage->getRawImage(),_outputImage->getRowSize(),srcsize);
 					conversion=true;
 				}
 				else if(wModule->tagged_flag){
@@ -610,45 +622,45 @@ static gint expose_CB (GtkWidget *widget, GdkEventExpose *event, gpointer data)
 					}
 					//cvCvtColor(wModule->tagged->getIplImage(),_outputImage->getIplImage(),CV_GRAY2RGB);
 					//cvCopy(wModule->tagged->getIplImage(),_outputImage->getIplImage());
-					//ippiCopy_8u_C1R(wModule->tagged->getPixelAddress(0,0),320,_outputImage->getPixelAddress(0,0),320,srcsize);
+					//ippiCopy_8u_C1R(wModule->tagged->getRawImage(),320,_outputImage->getRawImage(),320,srcsize);
 					conversion=true;
 				}
 				else if(wModule->blobList_flag){
 					wModule->drawAllBlobs(false);
 					/*if(wModule->blobList!=""){
-						ippiCopy_8u_C1R((unsigned char*)wModule->blobList,320,_outputImage->getPixelAddress(0,0),320,srcsize);
+						ippiCopy_8u_C1R((unsigned char*)wModule->blobList,320,_outputImage->getRawImage(),320,srcsize);
 						conversion=true;
 					}*/
 				}
 				else if(wModule->maxSaliencyBlob_flag){
 					wModule->drawAllBlobs(false);
 					wModule->salience->DrawMaxSaliencyBlob(*wModule->maxSalienceBlob_img,wModule->max_tag,*wModule->tagged);
-					ippiCopy_8u_C1R(wModule->maxSalienceBlob_img->getPixelAddress(0,0),320,_outputImage->getPixelAddress(0,0),320,srcsize);
+					ippiCopy_8u_C1R(wModule->maxSalienceBlob_img->getRawImage(),wModule->maxSalienceBlob_img->getRowSize(),_outputImage->getRawImage(),_outputImage->getRowSize(),srcsize);
 					conversion=true;
 				}
 				else if(wModule->contrastLP_flag){
 					wModule->drawAllBlobs(false);
-					//ippiCopy_8u_C3R(wModule->outMeanColourLP->getPixelAddress(0,0),320*3,_outputImage3->getPixelAddress(0,0),320*3,srcsize);	
-					ippiCopy_8u_C1R(wModule->outContrastLP->getPixelAddress(0,0),320,_outputImage->getPixelAddress(0,0),320,srcsize);
+					//ippiCopy_8u_C3R(wModule->outMeanColourLP->getRawImage(),320*3,_outputImage3->getRawImage(),320*3,srcsize);	
+					ippiCopy_8u_C1R(wModule->outContrastLP->getRawImage(),wModule->outContrastLP->getRowSize(),_outputImage->getRawImage(),_outputImage->getRowSize(),srcsize);
 					conversion=true;
 				}
 				else if(wModule->colorVQ_flag){
 					wModule->salience->DrawVQColor(*wModule->salience->colorVQ_img,*wModule->tagged);
-					ippiCopy_8u_C3R(wModule->salience->colorVQ_img->getPixelAddress(0,0),320*3,_outputImage3->getPixelAddress(0,0),320*3,srcsize);
+					ippiCopy_8u_C3R(wModule->salience->colorVQ_img->getRawImage(),wModule->salience->colorVQ_img->getRowSize(),_outputImage3->getRawImage(),_outputImage3->getRowSize(),srcsize);
 					conversion=false;
 				}
 				else if(wModule->blobCataloged_flag){
 					if(wModule->contrastLP_flag){
 						wModule->drawAllBlobs(false);
-						//ippiCopy_8u_C3R(wModule->outMeanColourLP->getPixelAddress(0,0),320*3,_outputImage3->getPixelAddress(0,0),320*3,srcsize);	
-						ippiCopy_8u_C1R(wModule->outContrastLP->getPixelAddress(0,0),320,_outputImage->getPixelAddress(0,0),320,srcsize);
+						//ippiCopy_8u_C3R(wModule->outMeanColourLP->getRawImage(),320*3,_outputImage3->getRawImage(),320*3,srcsize);	
+						ippiCopy_8u_C1R(wModule->outContrastLP->getRawImage(),wModule->outContrastLP->getRowSize(),_outputImage->getRawImage(),_outputImage->getRowSize(),srcsize);
 						conversion=true;
 					}
 					else if(wModule->meanColour_flag){
 						//_outputImage=_wOperator->getPlane(&_inputImg); 
 						//rain();
 						wModule->drawAllBlobs(false);
-						ippiCopy_8u_C3R(wModule->outMeanColourLP->getPixelAddress(0,0),320*3,_outputImage3->getPixelAddress(0,0),320*3,srcsize);	
+						ippiCopy_8u_C3R(wModule->outMeanColourLP->getRawImage(),wModule->outMeanColourLP->getRowSize(),_outputImage3->getRawImage(),_outputImage3->getRowSize(),srcsize);	
 						conversion=false;
 					}
 					else
@@ -660,14 +672,16 @@ static gint expose_CB (GtkWidget *widget, GdkEventExpose *event, gpointer data)
 				//-------
 				
 				if(conversion){
-                    int psb,width=320,height=240;
+                    int psb;
+					int width=wModule->width;
+					int height=wModule->height;
 					Ipp8u* im_out = ippiMalloc_8u_C1(width,height,&psb);
 					//Ipp8u* im_tmp0 = ippiMalloc_8u_C1(width,height,&psb);
                     //Ipp8u* im_tmp1= ippiMalloc_8u_C1(width,height,&psb);
                     //Ipp8u* im_tmp2 = ippiMalloc_8u_C1(width,height,&psb);
 					//two copies in order to have 2 conversions
 					//the first transform the yarp mono into a 4-channel image
-					ippiCopy_8u_C1R(_outputImage->getPixelAddress(0,0), width,im_out,psb,srcsize);
+					ippiCopy_8u_C1R(_outputImage->getRawImage(), _outputImage->getRowSize(),im_out,psb,srcsize);
 
 					//ippiCopy_8u_C1R(im_out, width,im_tmp0,psb,srcsize);
 					//ippiCopy_8u_C1R(im_out, width,im_tmp1,psb,srcsize);
@@ -680,9 +694,9 @@ static gint expose_CB (GtkWidget *widget, GdkEventExpose *event, gpointer data)
                     //Ipp8u* im_tmp[3]={im_tmp0,im_tmp1,im_tmp2};
 
                     Ipp8u* im_tmp[3]={im_out,im_out,im_out};
-                    //Ipp8u* im_tmp[3]={_outputImage->getPixelAddress(0,0),_outputImage->getPixelAddress(0,0),_outputImage->getPixelAddress(0,0)};
+                    //Ipp8u* im_tmp[3]={_outputImage->getRawImage(),_outputImage->getRawImage(),_outputImage->getRawImage()};
 					//the second transforms the 4-channel image into colorImage for yarp
-					ippiCopy_8u_P3C3R(im_tmp,psb,wModule->image_out->getPixelAddress(0,0),width*3,srcsize);
+					ippiCopy_8u_P3C3R(im_tmp,psb,wModule->image_out->getRawImage(),wModule->image_out->getRowSize(),srcsize);
 					ippiFree(im_out);
 					//printf("freeing im_tmp0  \n");	
 					//ippiFree(im_tmp0);
@@ -693,7 +707,7 @@ static gint expose_CB (GtkWidget *widget, GdkEventExpose *event, gpointer data)
 					//printf("freeing ended  \n");	
 				}
 				else
-					ippiCopy_8u_C3R(_outputImage3->getPixelAddress(0,0),320*3,wModule->image_out->getPixelAddress(0,0),320*3,srcsize);
+					ippiCopy_8u_C3R(_outputImage3->getRawImage(),_outputImage3->getRowSize(),wModule->image_out->getRawImage(),wModule->image_out->getRowSize(),srcsize);
 				
 				//----------
 				_semaphore.wait();
@@ -1057,8 +1071,8 @@ bool WatershedModule::outPorts(){
 	//this->_pOutPort3->prepare()=*(this->processor3->portImage);
 	//printf("After prepares \n");
 	ImageOf<PixelRgb>* out=new ImageOf<PixelRgb>;
-	out->resize(320,240);
-	IppiSize srcsize={320,240};
+	out->resize(this->width,this->height);
+	IppiSize srcsize={this->width,this->height};
 	ippiCopy_8u_C3R(wModule->outMeanColourLP->getPixelAddress(0,0),320*3,out->getPixelAddress(0,0),320*3,srcsize);	
 
 	//prepare the output on ports
@@ -1309,7 +1323,7 @@ void WatershedModule::createObjects() {
 	ptr_imgRecvBY = new YARPImgRecv;
 
 	ptr_tagged = new yarp::sig::ImageOf<yarp::sig::PixelInt>;
-	ptr_tagged->resize(320,240);
+	ptr_tagged->resize(this->width,this->height);
 
     ptr_inputImg = new yarp::sig::ImageOf<yarp::sig::PixelRgb>;
 	ptr_inputImgRed = new yarp::sig::ImageOf<yarp::sig::PixelMono>;
@@ -1501,13 +1515,7 @@ void WatershedModule::setUp()
 	if (openPorts() == false)
 		ACE_OS::exit(1);
 	
-	_inputImg.resize(320,240);
-	_inputImgRed.resize(320,240);
-	_inputImgGreen.resize(320,240);
-	_inputImgBlue.resize(320,240);
-	_inputImgRG.resize(320,240);
-	_inputImgGR.resize(320,240);
-	_inputImgBY.resize(320,240);
+	
 
 
 }

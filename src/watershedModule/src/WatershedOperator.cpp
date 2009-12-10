@@ -28,7 +28,7 @@ WatershedOperator::WatershedOperator(const bool lp, const int width1,
 	logpolar=lp;
 
 	outputImage=new ImageOf<PixelMono>;
-	outputImage->resize(320,240);
+	outputImage->resize(width1,height1);
 	
 
 	resize(width1, height1, wstep, th);
@@ -919,8 +919,8 @@ int WatershedOperator::apply(const ImageOf<PixelMono> &src, ImageOf<PixelInt> &r
 	//__OLD//result.Resize(widthStep, height);
 	p_result=(int *)result.getRawImage();
 	
-	this->height=240;
-	this->width=320;
+	this->height=src.height();
+	this->width=src.width();
 	i=0;
 	for (int r=0; r<height; r++) {
 		for (int c=0; c<width; c++)	{

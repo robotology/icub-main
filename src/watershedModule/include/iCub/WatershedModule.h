@@ -225,11 +225,23 @@ public:
 	*/
 	bool closePorts();
 	/**
+	* applies the rain falling watershed
+	*/
+	void rain();
+	/**
 	* draws all the blobs in the module
 	*/
 	void drawAllBlobs(bool stable);
 	
 	//----------------- PUBLIC ATTRIBUTES -----------------------------
+	/**
+	* width of images which the module is dealing with
+	*/
+	int width;
+	/**
+	* height of images which the module is dealing with
+	*/
+	int height;
 	/**
 	* saliencyTOT linear combination Ktd coefficient (TOP DOWN saliency weight)
 	*/
