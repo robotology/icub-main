@@ -84,7 +84,7 @@
  * <b>Port Types<b>
  *
  * - BufferedPort<ImageOf<PixelRgb> >  _rawImgInputPort;
- * - BufferedPort<ImageOf<PixelRgb> >  _labeledImgInputPort;
+ * - BufferedPort<ImageOf<PixelInt> >  _labeledImgInputPort;
  * - BufferedPort<ImageOf<PixelRgb> >  _rawImgOutputPort;
  * - BufferedPort<ImageOf<PixelRgb> >  _viewImgOutputPort;
  * - BufferedPort<Bottle>              _affDescriptorOutputPort;
