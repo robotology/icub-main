@@ -175,8 +175,6 @@ bool InputPort::handleTarget(Bottle *b)
 
             dofChanged=false;
         }
-        else
-            slv->send(xd);
 
         return true;
     }
