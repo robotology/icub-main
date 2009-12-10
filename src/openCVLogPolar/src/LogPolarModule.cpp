@@ -364,7 +364,7 @@ bool LogPolarModule::updateModule() {
 		PixelRgb black(0,0,0);
 		CvScalar red;
 		red.val[0]=255;red.val[1]=0;red.val[2]=0;
-		cvCircle(cvImage2->imageData,cvPoint(180,120),2,red,1,8,0);
+		cvCircle(cvImage2,cvPoint(180,120),2,red,1,8,0);
 		cvCvtColor(cvImage2,cvImage,CV_RGB2BGR);
 		//cvCvtColor((IplImage*)img->getIplImage(), cvImage, CV_RGB2GRAY);
 		
@@ -506,6 +506,7 @@ bool LogPolarModule::updateModule() {
 		int xCog,yCog;
 		//cogCalculate(*dstColor,xCog,yCog);
 		//printf("xCog %d, yCog%d",xCog, yCog);
+		xCog=0;yCog=0;
 		if((xCog>320)||(xCog<0)||(yCog<0)||(yCog>240)){
 			xCog=160;yCog=120;
 		}
