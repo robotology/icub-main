@@ -45,7 +45,7 @@ class CmCParser
   CmCToken *GetToken( void );
 
   //indicate any delimiters
-  void SetDelimiters(char *);
+  void SetDelimiters(const char *);
 
   //indicate whether delimiters should be stored as tokens
   void StoreDelimiters(bool);

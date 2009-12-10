@@ -151,7 +151,7 @@ int CmCParser::Parse(char *filename)
   return 0;  
 }
 
-void CmCParser::SetDelimiters(char *delimiters)
+void CmCParser::SetDelimiters(const char *delimiters)
 {
   if(delimiters_) delete delimiters_;
   delimiters_ = new char[strlen(delimiters)+1];
