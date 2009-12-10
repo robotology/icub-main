@@ -1,9 +1,8 @@
 <application>
 	<name>protoObjectVisualAttention</name>
  <dependencies>
-		<!--port>/icub/head/rpc:i</port--> 
-		<port>/icub/cam/right</port>
-		<port>/grabber/logpolar</port>
+		<port>/icubSim/head/rpc:i</port> 
+		<port>/icubSim/cam/right</port>
 	</dependencies>
 	<module>
 		<name>camCalib</name>
@@ -48,20 +47,20 @@
 		<node>/lightHouse</node>
 	</module>
  	
-  <connection>
-      	<output>/icub/cam/right</output>
+ <connection>
+      	<output>/icubSim/cam/right</output>
 			<input>/icub/camcalib/right/in</input>
 	</connection>
 	<connection>
-      	<output>/grabber/logpolar</output>
+      	<output>/icubSim/cam/right</output>
 			<input>/cvLogPolarF/image:i</input>
 	</connection>
 	<connection>
-      	<output>/grabber/logpolar</output>
+      	<output>/cvLogPolarF/image:o</output>
 			<input>/logPolarForwardView</input>
 	</connection>
 	<connection>
-      	<from>/grabber/logpolar</from>
+      	<from>/cvLogPolarF/image:o</from>
 			<to>/rea/ImageProcessor/in</to>
 	</connection>
 	<connection>

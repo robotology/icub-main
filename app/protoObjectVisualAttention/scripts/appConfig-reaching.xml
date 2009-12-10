@@ -1,24 +1,28 @@
 <application>
 	<name>protoObjectReaching</name>
  	<dependencies>
-		<port>/icub/head/rpc:i</port> 
-		<port>/icub/cam/right</port>
+		<port>/icubSim/head/rpc:i</port> 
+		<port>/icubSim/cam/right</port>
 		<port>/rea/Watershed/outBlobs:o</port>
 	</dependencies>	
 	<module>
 		<name>openCVLogPolar</name>
-		<parameters>--name /cvLogPolarR --mode REVERSE </parameters>
+		<parameters>--name /cvLogPolarR --mode INVERSE </parameters>
 		<tag>logPolarReverse</tag>
 		<node>/lightHouse</node>
 	</module>
 	<module>
-		<name>iKinGazeControl</name>
-		<parameters>--name /blobView --x 600 --y 600 --synch</parameters>
-		<tag>blobViewer</tag>
+		<name>yarpview</name>
+		<parameters>--name /reverseView --x 600 --y 600 --synch</parameters>
+		<tag>rView</tag>
 		<node>/lightHouse</node>
 	</module>
 	<connection>
-      	<from>/rea/ImageProcessor/outBY</from>
-			<to>/rea/Watershed/inBY:i</to>
+      	<from>/rea/Watershed/outBlobs:o</from>
+			<to>/cvLogPolarR/image:i</to>
+	</connection>
+	<connection>
+      	<from>/cvLogPolarR/image:o</from>
+			<to>/reverseView</to>
 	</connection>
 </application>
