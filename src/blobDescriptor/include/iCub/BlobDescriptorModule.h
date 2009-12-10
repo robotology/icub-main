@@ -179,8 +179,8 @@ class BlobDescriptorModule : public RFModule
 	Bottle                            _trackerInit;
 	/* OpenCV images */
 	IplImage                         *_opencvRawImg;
-	IplImage                         *_opencvLabeledImg; // 32 b
-    IplImage                         *_opencvLabeledImg8bit; /* for debug and visualization */
+	IplImage                         *_opencvLabeledImg32; /* 32 bit */
+    IplImage                         *_opencvLabeledImg8;  /*  8 bit. FIXME: check if this is necessary */
 	int                               raw_w, raw_h, labeled_w, labeled_h;
 	CvSize                            raw_sz, labeled_sz;
 
