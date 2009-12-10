@@ -357,6 +357,14 @@ bool LogPolarModule::updateModule() {
 		{
 			cvCopy(img->getIplImage(),cvImage2);
 		}
+		PixelRgb blue(0,0,255);
+		//PixelRgb red(255,0,0);
+		PixelRgb green(0,255,0);
+		PixelRgb yellow(255,255,0);
+		PixelRgb black(0,0,0);
+		CvScalar red;
+		red.val[0]=255;red.val[1]=0;red.val[2]=0;
+		cvCircle(cvImage2->imageData,cvPoint(180,120),2,red,1,8,0);
 		cvCvtColor(cvImage2,cvImage,CV_RGB2BGR);
 		//cvCvtColor((IplImage*)img->getIplImage(), cvImage, CV_RGB2GRAY);
 		
