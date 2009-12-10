@@ -114,7 +114,7 @@ protected:
     void alignJointsBounds();
     void getFeedback(yarp::sig::Vector &_fb);
     void newController();
-    bool getTarget(yarp::sig::Vector &_xdes, yarp::sig::Vector &_qdes);
+    bool getNewTarget();
     void sendVelocity(const yarp::sig::Vector &v);
     bool goTo(unsigned int _ctrlPose, const yarp::sig::Vector &xd, const double t);
 

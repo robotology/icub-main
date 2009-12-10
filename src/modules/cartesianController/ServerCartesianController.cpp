@@ -34,6 +34,7 @@ using namespace yarp::os::impl;
 using namespace yarp::dev;
 using namespace yarp::sig;
 using namespace yarp::math;
+using namespace ctrl;
 using namespace iKin;
 
 
@@ -655,19 +656,26 @@ void ServerCartesianController::newController()
 
 
 /************************************************************************/
-bool ServerCartesianController::getTarget(Vector &_xdes, Vector &_qdes)
+bool ServerCartesianController::getNewTarget()
 {
     if (Bottle *b1=portSlvIn->read(false))
     {
+        bool isNew=false;
+        Vector _xdes, _qdes;
+
         if (b1->check(Vocab::decode(IKINSLV_VOCAB_OPT_X)))
         {
             Bottle *b2=CartesianHelper::getEndEffectorPoseOption(*b1);
             int l1=b2->size();
             int l2=7;
             int len=l1<l2 ? l1 : l2;
+            _xdes.resize(len);
 
             for (int i=0; i<len; i++)
                 _xdes[i]=b2->get(i).asDouble();
+
+            if (norm(_xdes-xdes)>1e-6)
+                isNew=true;
         }
 
         if (b1->check(Vocab::decode(IKINSLV_VOCAB_OPT_Q)))
@@ -676,12 +684,23 @@ bool ServerCartesianController::getTarget(Vector &_xdes, Vector &_qdes)
             int l1=b2->size();
             int l2=chain->getDOF();
             int len=l1<l2 ? l1 : l2;
+            _qdes.resize(len);
 
             for (int i=0; i<len; i++)
                 _qdes[i]=(M_PI/180.0)*b2->get(i).asDouble();
+
+            if (norm(_qdes-qdes)>1e-6)
+                isNew=true;
         }
 
-        return true;
+        // update target
+        if (isNew)
+        {
+            xdes=_xdes;
+            qdes=_qdes;
+        }
+
+        return isNew;
     }
     else
         return false;
@@ -745,7 +764,7 @@ void ServerCartesianController::run()
         mutex->wait();
     
         // get the current target pose
-        if (getTarget(xdes,qdes))
+        if (getNewTarget())
             executingTraj=true; // onset of new trajectory
     
         // read the feedback
