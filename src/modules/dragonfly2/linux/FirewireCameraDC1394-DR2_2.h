@@ -24,7 +24,7 @@
 #include <yarp/os/Stamp.h>
 #include <yarp/dev/FrameGrabberInterfaces.h>
 
-#define NUM_DMA_BUFFERS 10
+#define NUM_DMA_BUFFERS 4
 
 class CFWCamera_DR2_2 : public yarp::dev::IFrameGrabberControlsDC1394
 {
@@ -78,7 +78,7 @@ protected:
     int m_nNumCameras;
     int m_nActiveCams;
 
-    bool m_bFrameIsValid;
+    int m_nInvalidFrames;
     bool m_bCameraOn;
 
     bool m_bIsRaw,m_bIsRgb,m_bIsFormat7;
@@ -93,7 +93,7 @@ protected:
     dc1394color_coding_t m_color_coding;
     uint32_t m_iMin[DC1394_FEATURE_NUM],m_iMax[DC1394_FEATURE_NUM];
 
-    dc1394video_frame_t *m_pFrame;
+    dc1394video_frame_t *m_pFrame,*m_pFramePoll;
     yarp::os::Semaphore m_AcqMutex;
     yarp::os::Stamp m_Stamp;
 
