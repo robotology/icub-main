@@ -72,7 +72,7 @@ CartesianCtrlCommandPort::CartesianCtrlCommandPort(ServerCartesianController *_c
 void CartesianCtrlCommandPort::onRead(Bottle &command)
 {
     if (command.size()>3)
-        if  (command.get(0).asVocab()==IKINCARTCTRL_VOCAB_CMD_GO)
+        if (command.get(0).asVocab()==IKINCARTCTRL_VOCAB_CMD_GO)
         {   
             int pose=command.get(1).asVocab();
             double t=command.get(2).asDouble();
