@@ -1,0 +1,135 @@
+<application>
+<name>Manage supporting IHA processes</name>
+<dependencies>
+      <port>/root</port>
+</dependencies>
+<module>
+  <name>ihaNewSensorMotorInterface</name>
+  <parameters>--name /iha/sm --file /usr/local/src/robot/iCub/app/ihaNew/conf/ihaSensorMotorInterface.ini --connect_to_image /icub/cam/left --connect_to_face_coords /iha/fd/facedetect:coords --connect_to_soundsensor /iha/sound/sndsensor:out --connect_to_encoders /iha/controller/encoders:out --gaze_input FALSE</parameters>
+  <node>serad</node>
+  <stdio>serad</stdio>
+  <tag>smi</tag>
+</module>
+<module>
+  <name>ihaNewMotivationDynamics</name>
+  <parameters>--name /iha/dynamics --file /usr/local/src/robot/iCub/app/ihaNew/conf/ihaMotivationDynamics.ini --connect_to_data /iha/sm/sensor:out --connect_to_expression /icub/face/raw/in</parameters>
+  <node>serad</node>
+  <stdio>serad</stdio>
+  <tag>dynamics</tag>
+</module>
+<module>
+  <name>ihaNewSensorsFileWriter</name>
+  <parameters>--name /iha/sfw --file /usr/local/src/robot/iCub/app/ihaNew/conf/ihaSensorsFileWriter.ini --connect_to_sensors /iha/sm/sensor:out --connect_to_image /icub/cam/left</parameters>
+  <node>serad</node>
+  <tag>writer</tag>
+</module>
+<module>
+  <name>ihaNewExperienceMetricSpace</name>
+  <parameters>--name /iha/ds --file /usr/local/src/robot/iCub/app/ihaNew/conf/ihaExperienceMetricSpace.ini --connect_to_sensors /iha/dynamics/reward:out --connect_to_expression /icub/face/raw/in --save /usr/local/src/robot/iCub/app/ihaNew/logs/DSsave.txt</parameters>
+  <node>serad</node>
+  <stdio>serad</stdio>
+  <tag>datastore</tag>
+</module>
+<!--The horizon for the datastore port has to be hardcoded here, be careful -->
+<module>
+  <name>ihaNewActionSelection</name>
+  <parameters>--name /iha/as --file /usr/local/src/robot/iCub/app/ihaNew/conf/ihaActionSelection.ini --connect_to_action /iha/controller/action:cmd --connect_to_dist /iha/ds/currdist:out:20 --action_defs /usr/local/src/robot/iCub/app/ihaNew/conf/iha_actiondefs.ini --sequence_dir /usr/local/src/robot/iCub/app/ihaNew/conf/sequences</parameters>
+  <node>serad</node>
+  <stdio>serad</stdio>
+  <tag>actionselect</tag>
+</module>
+<module>
+  <name>ihaNewIcubControl</name>
+  <parameters>--name /iha/controller --robot icub --file /usr/local/src/robot/iCub/app/ihaNew/conf/ihaIcubControl.ini --action_defs /usr/local/src/robot/iCub/app/ihaNew/conf/iha_actiondefs.ini --sequence_dir /usr/local/src/robot/iCub/app/ihaNew/conf/sequences --speed_multiplier 1 </parameters>
+  <node>serad</node>
+  <stdio>serad</stdio>
+  <tag>controller</tag>
+</module>
+<module>
+  <name>ihaNewStatusMonitor</name>
+  <parameters>--name /iha/status --file /usr/local/src/robot/iCub/app/ihaNew/conf/ihaStatusMonitor.ini </parameters>
+  <node>serad</node>
+  <stdio>serad</stdio>
+  <tag>monitor</tag>
+</module>
+<!-- sensor motor interface connections -->
+<connection>
+  <output>/icub/cam/left</output>
+  <input>/iha/sm/image:in</input>
+  <protocol>tcp</protocol>
+</connection>
+<connection>
+  <output>/iha/fd/facedetect:coords</output>
+  <input>/iha/sm/facecoords:in</input>
+  <protocol>tcp</protocol>
+</connection>
+<connection>
+  <output>/iha/sound/sndsensor:out</output>
+  <input>/iha/sm/soundsensor:in</input>
+  <protocol>tcp</protocol>
+</connection>
+<connection>
+  <output>/iha/fd/facedetect:out</output>
+  <input>/iha/sm/encoders:in</input>
+  <protocol>tcp</protocol>
+</connection>
+<!-- motivation dynamics connections -->
+<connection>
+  <output>/iha/sm/sensor:out</output>
+  <input>/iha/dynamics/data:in</input>
+  <protocol>tcp</protocol>
+</connection>
+<connection>
+  <output>/iha/dynamics/expression:out</output>
+  <input>/icub/face/raw/in</input>
+  <protocol>tcp</protocol>
+</connection>
+<!-- sensor filewriter connections -->
+<connection>
+  <output>/iha/sm/sensor:out</output>
+  <input>/iha/sfw/filewriter/data:in</input>
+  <protocol>tcp</protocol>
+</connection>
+<connection>
+  <output>/icub/cam/left</output>
+  <input>/iha/sfw/filewriter/img:in</input>
+  <protocol>tcp</protocol>
+</connection>
+<!-- experience metric space connections -->
+<connection>
+  <output>/iha/dynamics/reward:out</output>
+  <input>/iha/ds/data:in</input>
+  <protocol>tcp</protocol>
+</connection>
+<!-- action selection connections -->
+<!-- horizon length is hardcoded since manager has no way to pass variables -->
+<connection>
+  <output>/iha/ds/currdist:out:20</output>
+  <input>/iha/as/currdist:in:20</input>
+  <protocol>tcp</protocol>
+</connection>
+<!-- controller connections -->
+<connection>
+  <output>/iha/as/action:out</output>
+  <input>/iha/controller/action:cmd</input>
+  <protocol>tcp</protocol>
+</connection>
+<!-- status monitor connections -->
+<connection>
+  <output>/iha/ds/status:out</output>
+  <input>/iha/status/monitor:in</input>
+  <protocol>tcp</protocol>
+</connection>
+<connection>
+  <output>/iha/as/status:out</output>
+  <input>/iha/status/monitor:in</input>
+  <protocol>tcp</protocol>
+</connection>
+<connection>
+  <output>/iha/sm/status:out</output>
+  <input>/iha/status/monitor:in</input>
+  <protocol>tcp</protocol>
+</connection>
+</application>
+
+

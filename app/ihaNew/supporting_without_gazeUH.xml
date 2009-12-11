@@ -1,0 +1,54 @@
+<application>
+<name>Manage supporting IHA processes</name>
+<dependencies>
+      <port>/root</port>
+</dependencies>
+<module>
+      <name>yarpdev</name>
+      <parameters>--name /icub/face/raw --device serial --subdevice serialport --file /usr/local/src/robot/iCub/app/faceExpressions/conf/serialport.ini</parameters>
+	  <node>pc104</node>
+	<tag>face_device</tag>
+   </module>
+<module>
+  <name>yarpdev</name>
+  <parameters>--device sound_grabber --subdevice portaudio --name /iha/sound_grabber --read</parameters>
+  <node>serad</node>
+  <tag>pa</tag>
+</module>
+<module>
+  <name>ihaNewSoundSensor</name>
+  <parameters>--name /iha/sound --file /usr/local/src/robot/iCub/app/ihaNew/conf/ihaSoundSensor.ini</parameters>
+  <node>serad</node>
+  <stdio>serad</stdio>
+  <tag>soundserver</tag>
+</module>
+<module>
+  <name>ihaNewIhaFaceDetect</name>
+  <parameters>--name /iha/fd --file /usr/local/src/robot/iCub/app/ihaNew/conf/ihaFaceDetect.ini</parameters>
+  <node>serad</node>
+  <stdio>serad</stdio>
+  <tag>facedetect</tag>
+</module>
+<module>
+  <name>yarpview</name>
+  <parameters>--name /view/facedetect --x 0 --y 10 --synch</parameters>
+  <node>serad</node>
+  <tag>viewfd</tag>
+</module>
+<connection>
+  <output>/iha/sound_grabber</output>
+  <input>/iha/sound/sndsensor:in</input>
+  <protocol>tcp</protocol>
+</connection>
+<connection>
+  <output>/icub/cam/left</output>
+  <input>/iha/fd/facedetect:in</input>
+  <protocol>tcp</protocol>
+</connection>
+<connection>
+  <output>/iha/fd/facedetect:out</output>
+  <input>/view/facedetect</input>
+  <protocol>tcp</protocol>
+</connection>
+</application>
+
