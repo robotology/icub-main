@@ -50,17 +50,21 @@
 		<input>/icub/camcalib/right/in</input>
 	</connection>
 	<connection>
-      	<output>/icub/camcalib/right/out</output>
+      	        <output>/icub/camcalib/right/out</output>
 		<input>/icub/guiCamCalibRight/viewer/image_in</input>
 	</connection>
 	<connection>
-      	<output>/icub/camcalib/right/out</output>
+      	        <output>/icub/camcalib/right/out</output>
 		<input>/icub/salience/right/view</input>
 	</connection>
 	<connection>
-      	<output>/icub/salience/right/map</output>
+      	        <output>/icub/salience/right/map</output>
 		<input>/icub/guiSalienceRight/viewer/image_in</input>
 	</connection>
+        <connection>
+                <output>/icub/guiSalienceRight/salienceControls/conf</output>
+                <input>/icub/salience/right/conf</input>
+        </connection>
 	<connection>
       	<output>/icub/salience/right/map</output>
 		<input>/icub/egoSphere/mapVisual/map_in</input>
