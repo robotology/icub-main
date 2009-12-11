@@ -1,0 +1,26 @@
+SET(PROJECTNAME demoGraspManager_IIT_ISR)
+PROJECT(${PROJECTNAME})
+
+FIND_PACKAGE(YARP)
+FIND_PACKAGE(ICUB)
+
+FIND_PACKAGE(CTRLLIB REQUIRED)
+INCLUDE_DIRECTORIES(${CTRLLIB_INCLUDE_DIRS})
+
+IF(USE_ICUB_MOD)
+    FIND_PACKAGE(icubmod)
+    IMPORT_DEVICES(${ICUB_DIR}/src/${PROJECTNAME}/drivers.h icubmod)
+    SET(folder_header drivers.h)
+ELSE(USE_ICUB_MOD)
+    SET(folder_header)
+ENDIF(USE_ICUB_MOD)
+
+SET(folder_source main.cpp)
+SET(folder_header drivers.h)
+
+SOURCE_GROUP("Source Files" FILES ${folder_source})
+SOURCE_GROUP("Header Files" FILES ${folder_header})
+
+ADD_EXECUTABLE(${PROJECTNAME} ${folder_source} ${folder_header})
+TARGET_LINK_LIBRARIES(${PROJECTNAME} ${CTRLLIB_LIBRARIES})
+INSTALL(TARGETS ${PROJECTNAME} DESTINATION bin)
