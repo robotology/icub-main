@@ -43,7 +43,7 @@ bool CFWCamera_DR2_2::Create(unsigned int idCamera,unsigned int size_x,unsigned 
 	m_RawBufferSize=0;
 	m_color_coding=DC1394_COLOR_CODING_RGB8;
 
-	m_bFrameIsValid=true;
+	m_nInvalidFrames=0;
 
 	m_bDR2=bDR2;
 
@@ -251,8 +251,7 @@ void CFWCamera_DR2_2::LoadSettings(unsigned int size_x,unsigned int size_y)
 
 		//getBytesPerPacketDC1394();
 		//fprintf(stderr,"relative bpp %d\n",m_RelBPP);
-		setBytesPerPacketDC1394(100);
-		setBytesPerPacketDC1394(100);            
+		setBytesPerPacketDC1394(100);           
 	}  
 }
 
@@ -354,10 +353,18 @@ bool CFWCamera_DR2_2::Capture(yarp::sig::ImageOf<yarp::sig::PixelRgb>* pImage,un
 		m_AcqMutex.post();
 		return false;
 	}
-
-	if (!m_bFrameIsValid)
+	
+	m_pFramePoll=0;	
+	while (dc1394_capture_dequeue(m_pCamera,DC1394_CAPTURE_POLICY_POLL,&m_pFramePoll)==DC1394_SUCCESS && m_pFramePoll)
 	{
-		m_bFrameIsValid=true;
+	    dc1394_capture_enqueue(m_pCamera,m_pFrame);
+	    m_pFrame=m_pFramePoll;
+	    m_pFramePoll=0; 
+	}
+
+	if (m_nInvalidFrames)
+	{
+		--m_nInvalidFrames;
 		dc1394_capture_enqueue(m_pCamera,m_pFrame);
 		m_AcqMutex.post();
 		return false;
@@ -662,7 +669,7 @@ bool CFWCamera_DR2_2::setVideoModeDC1394(int video_mode)
 		return false;
 	}
 
-	m_bFrameIsValid=false;
+    m_nInvalidFrames=NUM_DMA_BUFFERS;
 
 	dc1394_video_set_transmission(m_pCamera,DC1394_OFF);
 	dc1394_capture_stop(m_pCamera);
@@ -823,7 +830,7 @@ bool CFWCamera_DR2_2::setColorCodingDC1394(int coding)
 		return false;
 	}
 
-	m_bFrameIsValid=false;
+	m_nInvalidFrames=NUM_DMA_BUFFERS;
 
 	dc1394_video_set_transmission(m_pCamera,DC1394_OFF);
 	dc1394_capture_stop(m_pCamera);
@@ -886,7 +893,7 @@ bool CFWCamera_DR2_2::setFormat7WindowDC1394(unsigned int xdim,unsigned int ydim
 		return false;
 	}
 
-	m_bFrameIsValid=false;
+	m_nInvalidFrames=NUM_DMA_BUFFERS;
 	dc1394_video_set_transmission(m_pCamera,DC1394_OFF);
 	dc1394_capture_stop(m_pCamera);
 
@@ -941,7 +948,7 @@ bool CFWCamera_DR2_2::setOperationModeDC1394(bool b1394b)
 		return false;
 	}
 
-	m_bFrameIsValid=false;
+	m_nInvalidFrames=NUM_DMA_BUFFERS;
 
 	dc1394_video_set_transmission(m_pCamera,DC1394_OFF);
 	dc1394_capture_stop(m_pCamera);
@@ -1016,7 +1023,7 @@ bool CFWCamera_DR2_2::setDefaultsDC1394()
 		return false;
 	}
 
-	m_bFrameIsValid=false;
+	m_nInvalidFrames=NUM_DMA_BUFFERS;
 
 	bool bRetVal=DC1394_SUCCESS==dc1394_memory_load(m_pCamera,0);
 
