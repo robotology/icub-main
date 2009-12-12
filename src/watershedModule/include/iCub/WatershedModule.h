@@ -156,10 +156,7 @@ private:
 	* port where the commands are sent
 	*/
     Port cmdPort;
-	/**
-	* counter
-	*/
-    int ct;
+	
 	/**
 	* options of the connection
 	*/
@@ -234,6 +231,11 @@ public:
 	void drawAllBlobs(bool stable);
 	
 	//----------------- PUBLIC ATTRIBUTES -----------------------------
+	/**
+	* counter
+	*/
+    int ct;
+
 	/**
 	* width of images which the module is dealing with
 	*/

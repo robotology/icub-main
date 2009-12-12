@@ -17,6 +17,9 @@ SalienceOperator::SalienceOperator(const int width1, const int height1)//:_gaze(
 
 	colorVQ=new ColorVQ(width1,height1,10);
 	_angShiftMap = (double *) malloc (152 * sizeof(double));
+	for(int i=0;i<152;i++){
+		_angShiftMap[i]=0.0;
+	}
 
 	centroid_x=0;
 	centroid_y=0;
@@ -982,7 +985,6 @@ void SalienceOperator::logPolar2Cartesian(int irho, int itheta, int& ox, int& oy
 	double yy = 0;
 	//double _xsize=2;
 	//double _ysize=2;
-	//double angleShift;
 	
 
 	Get_XY_Center(&xx, &yy, irho, itheta, &_img, _angShiftMap);

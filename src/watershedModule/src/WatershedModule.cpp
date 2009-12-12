@@ -102,6 +102,8 @@ static WatershedModule *wModule;
 #define _semaphore (*(ptr_semaphore))
 
 WatershedModule::WatershedModule(){
+	ct=0;
+
 	inputImage_flag=false;
 
 	meanColour_flag=true;
@@ -166,6 +168,9 @@ WatershedModule::WatershedModule(){
 void WatershedModule::resizeImages(int width, int height){
 	this->width=width;
 	this->height=height;
+
+	ptr_tagged = new yarp::sig::ImageOf<yarp::sig::PixelInt>;
+	ptr_tagged->resize(width,height);
 
 	this->wOperator=new WatershedOperator(false,width,height,width,10);
 	_wOperator=this->wOperator;
@@ -573,6 +578,8 @@ static gint expose_CB (GtkWidget *widget, GdkEventExpose *event, gpointer data)
 				if(wModule->noOpponencies_flag | wModule->noPlanes_flag){
 					return TRUE;
 				}
+
+				wModule->ct++;
 
 				//=new yarp::sig::ImageOf<yarp::sig::PixelRgb>;
 				//_outputImage->resize(320,240);
@@ -1073,7 +1080,7 @@ bool WatershedModule::outPorts(){
 	ImageOf<PixelRgb>* out=new ImageOf<PixelRgb>;
 	out->resize(this->width,this->height);
 	IppiSize srcsize={this->width,this->height};
-	ippiCopy_8u_C3R(wModule->outMeanColourLP->getPixelAddress(0,0),320*3,out->getPixelAddress(0,0),320*3,srcsize);	
+    ippiCopy_8u_C3R(wModule->outMeanColourLP->getRawImage(),wModule->outMeanColourLP->getRowSize(),out->getRawImage(),out->getRowSize(),srcsize);	
 
 	//prepare the output on ports
 	this->_pOutPort3->prepare()=*out;
@@ -1081,13 +1088,18 @@ bool WatershedModule::outPorts(){
 	this->_pOutPort2->prepare()=*(this->image_out);
 	this->_pOutPort2->write();
 	
-	//streams out the centroid x and y coordinate
-	Bottle& _outBottle=_centroidPort->prepare();
-	_outBottle.addString("centroid:");
-	_outBottle.addInt(this->salience->centroid_x);
-	_outBottle.addInt(this->salience->centroid_y);
-	_centroidPort->writeStrict();
-	_outBottle.clear();
+	if(ct%100==0){
+		//streams out the centroid x and y coordinate
+		Bottle& _outBottle=_centroidPort->prepare();
+		_outBottle.clear();
+		//_outBottle.addString("centroid:");
+		_outBottle.addInt(this->salience->centroid_x);
+		_outBottle.addInt(this->salience->centroid_y);
+		_outBottle.addInt(this->salience->centroid_x);
+		_outBottle.addInt(this->salience->centroid_y);
+		_centroidPort->writeStrict();
+		ct=1;
+	}
 
 
 	//deallocation
@@ -1322,8 +1334,7 @@ void WatershedModule::createObjects() {
 	ptr_imgRecvGR = new YARPImgRecv;
 	ptr_imgRecvBY = new YARPImgRecv;
 
-	ptr_tagged = new yarp::sig::ImageOf<yarp::sig::PixelInt>;
-	ptr_tagged->resize(this->width,this->height);
+	
 
     ptr_inputImg = new yarp::sig::ImageOf<yarp::sig::PixelRgb>;
 	ptr_inputImgRed = new yarp::sig::ImageOf<yarp::sig::PixelMono>;
@@ -2689,21 +2700,21 @@ void WatershedModule::drawAllBlobs(bool stable)
 	//__OLD//salience.checkIOR(tagged, IORBoxes, num_IORBoxes);
 	//__OLD//salience.doIOR(tagged, IORBoxes, num_IORBoxes);
 	//float salienceBU=1.0,salienceTD=0.0;
-	IppiSize srcsize={320,240};
+	IppiSize srcsize={this->width,this->height};
 	PixelMono searchTD=0;
 	searchRG=((targetRED-targetGREEN+255)/510)*255;
 	searchGR=((targetGREEN-targetRED+255)/510)*255;
 	PixelMono addRG=((targetRED+targetGREEN)/510)*255;
 	searchBY=((targetBLUE-addRG+255)/510)*255;
 	int psb32s;
-	Ipp32s* _inputImgRGS32=ippiMalloc_32s_C1(320,240,&psb32s);
-	Ipp32s* _inputImgGRS32=ippiMalloc_32s_C1(320,240,&psb32s);
-	Ipp32s* _inputImgBYS32=ippiMalloc_32s_C1(320,240,&psb32s);
+	Ipp32s* _inputImgRGS32=ippiMalloc_32s_C1(this->width,this->height,&psb32s);
+	Ipp32s* _inputImgGRS32=ippiMalloc_32s_C1(this->width,this->height,&psb32s);
+	Ipp32s* _inputImgBYS32=ippiMalloc_32s_C1(this->width,this->height,&psb32s);
 	//_inputImgGR
 	if(ptr_inputImgRG!=NULL){
 		//_inputImgRGS->copy(*ptr_inputImgRG,320,240);
-		ippiScale_8u32s_C1R(_inputImgRG.getPixelAddress(0,0),320,_inputImgRGS32,psb32s,srcsize);
-		ippiConvert_32s8s_C1R(_inputImgRGS32,psb32s,(Ipp8s*)_inputImgRGS->getPixelAddress(0,0),320,srcsize);
+        ippiScale_8u32s_C1R(_inputImgRG.getRawImage(),_inputImgRG.getRowSize(),_inputImgRGS32,psb32s,srcsize);
+        ippiConvert_32s8s_C1R(_inputImgRGS32,psb32s,(Ipp8s*)_inputImgRGS->getRawImage(),_inputImgRGS->getRowSize(),srcsize);
 		//ippiCopy_8u_C1R(_inputImgRG.getPixelAddress(0,0),320,_inputImgRGS->getPixelAddress(0,0),320,srcsize);
 	}
 	else
@@ -2711,8 +2722,8 @@ void WatershedModule::drawAllBlobs(bool stable)
 	//_inputImgGR
 	if(ptr_inputImgGR!=NULL){
 		//_inputImgGRS->copy(*ptr_inputImgGR,320,240);
-		ippiScale_8u32s_C1R(_inputImgGR.getPixelAddress(0,0),320,_inputImgGRS32,psb32s,srcsize);
-		ippiConvert_32s8s_C1R(_inputImgGRS32,psb32s,(Ipp8s*)_inputImgGRS->getPixelAddress(0,0),320,srcsize);
+        ippiScale_8u32s_C1R(_inputImgGR.getRawImage(),_inputImgGR.getRowSize(),_inputImgGRS32,psb32s,srcsize);
+        ippiConvert_32s8s_C1R(_inputImgGRS32,psb32s,(Ipp8s*)_inputImgGRS->getRawImage(),_inputImgGRS->getRowSize(),srcsize);
 		//ippiCopy_8u_C1R(_inputImgGR.getPixelAddress(0,0),320,_inputImgGRS->getPixelAddress(0,0),320,srcsize);
 	}
 	else
@@ -2720,8 +2731,8 @@ void WatershedModule::drawAllBlobs(bool stable)
 	//_inputImgBY
 	if(ptr_inputImgBY!=NULL){
 		//_inputImgBYS->copy(*ptr_inputImgBY,320,240);
-		ippiScale_8u32s_C1R(_inputImgBY.getPixelAddress(0,0),320,_inputImgBYS32,psb32s,srcsize);
-		ippiConvert_32s8s_C1R(_inputImgBYS32,psb32s,(Ipp8s*)_inputImgBYS->getPixelAddress(0,0),320,srcsize);
+        ippiScale_8u32s_C1R(_inputImgBY.getRawImage(),_inputImgBY.getRowSize(),_inputImgBYS32,psb32s,srcsize);
+        ippiConvert_32s8s_C1R(_inputImgBYS32,psb32s,(Ipp8s*)_inputImgBYS->getRawImage(),_inputImgBYS->getRowSize(),srcsize);
 		//ippiCopy_8u_C1R(_inputImgBY.getPixelAddress(0,0),320,_inputImgBYS->getPixelAddress(0,0),320,srcsize);
 	}
 	else
