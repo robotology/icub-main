@@ -939,7 +939,7 @@ ImageOf<PixelMono>* ImageProcessor::findEdgesBlueOpponency(){
 	if((blueYellow_flag)&&(canProcess_flag))
 		cvSobel(blueYellow_yarp->getIplImage(),cvImage16,1,1,3);
 	else
-		cvImage8=cvCreateImage(cvSize(320,240),IPL_DEPTH_8U,1);
+		cvImage8=cvCreateImage(cvSize(width,height),IPL_DEPTH_8U,1);
 
 	ippiCopy_8u_C1R((unsigned char*)cvImage8->imageData,cvImage8->widthStep,outputBlueYellow2,psb,srcsize);
 	Ipp8u src[3*3]={1,maskSeed,1,
@@ -1749,9 +1749,6 @@ void ImageProcessor::setInputImage(ImageOf<PixelRgb> *src){
 	this->inImage=src;
 	this->portImage=src;
 }
-void ImageProcessor::setInputImage(ImageOf<PixelMono> *src){
-	
-}
 
 /**
 * function that processes the input image accordingly to the processing options selected for this processor
@@ -1761,8 +1758,8 @@ void ImageProcessor::setInputImage(ImageOf<PixelMono> *src){
 ImageOf<PixelRgb>* ImageProcessor::process (ImageOf<PixelRgb> *src){
 	//ImageOf<PixelMono> *image_tmp=new ImageOf<PixelMono>;
 	//ImageOf<PixelRgb> *image_out=new ImageOf<PixelRgb>;
-	int width=src->width();
-	int height=src->height();
+	this->width=src->width();
+	this->height=src->height();
 	//image_tmp->resize(width,height);
 	//image_out->resize(width,height);
 	IppiSize srcsize;
@@ -2266,8 +2263,6 @@ ImageOf<PixelMono>*  ImageProcessor::LShiftC ( ImageOf<PixelMono> *src1){
 }
 
 ImageOf<PixelMono>* ImageProcessor::combineMax(){
-	int height= 240;
-	int width= 320;
 	IppiSize srcsize ={width,height};
 	int psb;
 
@@ -2317,11 +2312,10 @@ ImageOf<PixelMono>* ImageProcessor::combineMax(){
 		i++;
 	}*/
 
-	int thresholdHigh=140;
-	int thresholdLow=1;
+	
 	if(edgesOutput_ippi==NULL)
 		return NULL;
-	for(int i=0; i<320*240;i++){
+	for(int i=0; i<width*height;i++){
 		//edgesOutput_ippi[i]=edgesBlue_ippi[i];
 
 		if(edgesGreen_ippi[i]<edgesRed_ippi[i])
