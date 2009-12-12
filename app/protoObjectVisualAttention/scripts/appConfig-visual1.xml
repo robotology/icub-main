@@ -2,15 +2,10 @@
 	<name>protoObjectVisualAttention</name>
  <dependencies>
 		<!--port>/icub/head/rpc:i</port--> 
-		<port>/icub/cam/right</port>
-		<port>/grabber/logpolar</port>
+		<!-- port>/icub/cam/right</port -->
+		<port>/icub/cam/right/logpolar</port>
+		<port>/icub/cam/left/logpolar</port>
 	</dependencies>
-	<module>
-		<name>camCalib</name>
-		<parameters>--name /icub/camcalib/right  --from icubEyes.ini --group CAMERA_CALIBRATION_RIGHT</parameters>
-		<tag>camcalib</tag>
-		<node>/lightHouse</node>
-	</module>
 	<module>
 		<name>openCVLogPolar</name>
 		<parameters>--name /cvLogPolarF  --mode FORWARD</parameters>
@@ -48,20 +43,16 @@
 		<node>/lightHouse</node>
 	</module>
  	
-  <connection>
-      	<output>/icub/cam/right</output>
-			<input>/icub/camcalib/right/in</input>
-	</connection>
 	<connection>
       	<output>/grabber/logpolar</output>
 			<input>/cvLogPolarF/image:i</input>
 	</connection>
 	<connection>
-      	<output>/grabber/logpolar</output>
+      	<output>/icub/cam/left/logpolar</output>
 			<input>/logPolarForwardView</input>
 	</connection>
 	<connection>
-      	<from>/grabber/logpolar</from>
+      	<from>/icub/cam/left/logpolar</from>
 			<to>/rea/ImageProcessor/in</to>
 	</connection>
 	<connection>
@@ -95,5 +86,9 @@
 	<connection>
       	<from>/rea/Watershed/outBlobs:o</from>
 			<to>/blobView</to>
+	</connection>
+	<connection>
+      	<from>/rea/Watershed/outImages:o</from>
+			<to>/watershedView</to>
 	</connection>
 </application>
