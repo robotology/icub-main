@@ -22,7 +22,6 @@
 #include <iCub/handMetrics.h>
 
 #include <deque>
-#include <map>
 #include <set>
 
 

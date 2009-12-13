@@ -9,8 +9,6 @@
 #include <iCub/affActionPrimitives.h>
 
 #include <stdio.h>
-#include <iostream>
-#include <iomanip>
 #include <string>
 
 #define RES_EVENT(x)                    (static_cast<ACE_Auto_Event*>(x))
