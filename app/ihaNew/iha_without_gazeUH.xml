@@ -10,12 +10,18 @@
   <stdio>serad</stdio>
   <tag>smi</tag>
 </module>
-<module>
-  <name>ihaNewMotivationDynamics</name>
-  <parameters>--name /iha/dynamics --file /usr/local/src/robot/iCub/app/ihaNew/conf/ihaMotivationDynamics.ini --connect_to_data /iha/sm/sensor:out --connect_to_expression /icub/face/raw/in</parameters>
+  <name>ihaShortTermMemory</name>
+  <parameters>--name /iha/stm --file /usr/local/src/robot/iCub/app/ihaNew/conf/ihaShortTermMemory.ini --connect_to_data /iha/sm/memsensor:out</parameters>
   <node>serad</node>
   <stdio>serad</stdio>
   <tag>dynamics</tag>
+</module>
+<module>
+  <name>ihaNewMotivationDynamics</name>
+  <parameters>--name /iha/dynamics --file /usr/local/src/robot/iCub/app/ihaNew/conf/ihaMotivationDynamics.ini --connect_to_data /iha/sm/sensor:out --connect_t_mem /iha/dynamics/score:out --connect_to_expression /icub/face/raw/in</parameters>
+  <node>serad</node>
+  <stdio>serad</stdio>
+  <tag>stm</tag>
 </module>
 <module>
   <name>ihaNewSensorsFileWriter</name>
@@ -37,13 +43,6 @@
   <node>serad</node>
   <stdio>serad</stdio>
   <tag>actionselect</tag>
-</module>
-<module>
-  <name>ihaNewIcubControl</name>
-  <parameters>--name /iha/controller --robot icub --file /usr/local/src/robot/iCub/app/ihaNew/conf/ihaIcubControl.ini --action_defs /usr/local/src/robot/iCub/app/ihaNew/conf/iha_actiondefs.ini --sequence_dir /usr/local/src/robot/iCub/app/ihaNew/conf/sequences --speed_multiplier 1 </parameters>
-  <node>serad</node>
-  <stdio>serad</stdio>
-  <tag>controller</tag>
 </module>
 <module>
   <name>ihaNewStatusMonitor</name>
@@ -73,7 +72,18 @@
   <input>/iha/sm/encoders:in</input>
   <protocol>tcp</protocol>
 </connection>
+<!-- short term memory connections -->
+<connection>
+  <output>/iha/sm/memsensor:out</output>
+  <input>/iha/stm/data:in</input>
+  <protocol>tcp</protocol>
+</connection>
 <!-- motivation dynamics connections -->
+<connection>
+  <output>/iha/stm/score:out</output>
+  <input>/iha/dyamics/mem:in</input>
+  <protocol>tcp</protocol>
+</connection>
 <connection>
   <output>/iha/sm/sensor:out</output>
   <input>/iha/dynamics/data:in</input>
