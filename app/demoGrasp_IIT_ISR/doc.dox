@@ -1,0 +1,49 @@
+/**
+@ingroup  icub_applications
+\defgroup icub_demoGrasp_IIT_ISR demoGrasp_IIT_ISR
+
+The Joint Grasping application developed by IIT and ISR.
+
+\section intro_sec Description
+This application launches all the required modules in order to detect and track
+the 3-d position of a target within the image plane applying the particle filter 
+algorithm along with the controllers to move the head accordingly and both arms to
+reach for the object and eventually grasp it.
+
+\section dep_sec Dependencies
+Assumes that \ref icub_iCubInterface (with ICartesianControl 
+interface implemented) is running.
+
+\section int_sec Instantiated Modules
+- \ref pf3dTracker "pf3dTracker"
+
+- \ref leftEyeToRoot "leftEyeToRoot"
+
+- \ref demoGraspManager_IIT_ISR "demoGraspManager_IIT_ISR"
+
+- \ref iKinGazeCtrl "iKinGazeCtrl"
+
+- \ref graspDetector "graspDetector"
+
+\section config_sec Configuration Files
+The file ./conf/config.ini contains the initialization parameters for the 
+demoGraspManager_IIT_ISR module.
+
+\section howto How to run the Application
+Customize the file ./scripts/*.template for your specific platform
+before launching them.
+
+- ./scripts/demoGrasp_IIT_ISR.xml.template
+
+\note To enable/disable arms refer to the options available within the config.ini file.
+
+\author Ugo Pattacini and Matteo Taiana
+
+Copyright (C) 2009 RobotCub Consortium
+
+CopyPolicy: Released under the terms of the GNU GPL v2.0.
+
+This file can be edited at app/demoGrasp_IIT_ISR/doc.dox
+**/
+
+

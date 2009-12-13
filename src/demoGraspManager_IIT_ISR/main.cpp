@@ -1,3 +1,135 @@
+/** 
+\defgroup demoGraspManager_IIT_ISR demoGraspManager_IIT_ISR
+ 
+@ingroup icub_module  
+ 
+The manager module for the Joint Grasping Demo developed by IIT 
+and ISR. 
+
+Copyright (C) 2009 RobotCub Consortium
+ 
+Author: Ugo Pattacini 
+
+CopyPolicy: Released under the terms of the GNU GPL v2.0.
+
+\section intro_sec Description
+This module collects the 3-d object positions estimated by the 
+particle filter and sends data to the head and arm controllers 
+in order to gaze at the target, reach for it and eventually 
+grasp it. 
+It relies on the YARP ICartesianControl interface to control 
+both arms and on \ref graspDetector "graspDetector" to detect 
+any contact between the target and the fingers. 
+ 
+\section lib_sec Libraries 
+- YARP libraries. 
+
+\section parameters_sec Parameters
+None. 
+ 
+\section portsa_sec Ports Accessed
+Assumes that \ref icub_iCubInterface (with ICartesianControl 
+interface implemented) is running. 
+ 
+\section portsc_sec Ports Created 
+ 
+- \e /demoGraspManager_IIT_ISR/trackTarget:i receives the 3-d 
+  position to track.
+ 
+- \e /demoGraspManager_IIT_ISR/leftDetectGrasp:i receives the 
+  the bottle containing the contact status of the left hand
+  fingers.
+ 
+- \e /demoGraspManager_IIT_ISR/rightDetectGrasp:i receives the 
+  the bottle containing the contact status of the right hand
+  fingers.
+ 
+- \e /demoGraspManager_IIT_ISR/cmdHead:o sends out commands to 
+  the \ref iKinGazeCtrl module in order to control the gaze.
+ 
+- \e /demoGraspManager_IIT_ISR/cmdFace:o sends out commands to 
+  the face expression high level interface in order to give an
+  emotional representation of the current robot state.
+ 
+\section in_files_sec Input Data Files
+None.
+
+\section out_data_sec Output Data Files 
+None. 
+ 
+\section conf_file_sec Configuration Files
+The configuration file passed through the option \e --from
+should look like as follows:
+ 
+\code 
+[general]
+// the robot name to connect to 
+robot	        icub
+// the thread period [ms] 
+thread_period   30
+// left arm switch 
+left_arm        on 
+// right arm switch 
+right_arm       on 
+// arm trajectory execution time [s]
+traj_time       2.0 
+// homes limbs if target detection timeout expires [s]
+idle_tmo        5.0 
+
+[torso] 
+// joint switch (min **) (max **) [deg]; 'min', 'max' optional 
+pitch on  (max 30.0) 
+roll off 
+yaw on
+
+[left_arm]
+// the offset [m] to be added to the desired position  
+reach_offset	    0.0 -0.15 -0.05
+// the offset [m] for grasping 
+grasp_offset	    0.0 0.0 -0.05
+// perturbation given as standard deviation [m] 
+grasp_sigma 0.01 0.01 0.01 
+// hand orientation to be kept [axis-angle rep.] 
+hand_orientation 0.064485 0.707066 0.704201 3.140572 
+
+[right_arm]
+reach_offset	    0.0 0.15 -0.05
+grasp_offset	    0.0 0.0 -0.05
+grasp_sigma	        0.01 0.01 0.01
+hand_orientation    -0.012968 -0.721210 0.692595 2.917075
+
+[home_arm]
+// home position [deg] 
+poss    -30.0 30.0 0.0  45.0 0.0  0.0  0.0  0.0
+// velocities to reach home positions [deg/s] 
+vels    10.0  10.0 10.0 10.0 10.0 10.0 10.0 10.0
+
+[arm_selection]
+// hysteresis range added around plane y=0 [m]
+hysteresis_thres 0.1
+
+[grasp]
+// ball radius [m] for still target detection 
+sphere_radius   0.05 
+// timeout [s] for still target detection 
+sphere_tmo      3.0 
+// timeout [s] to open hand after closure 
+release_tmo     3.0 
+// threshold [deg] on the fingers status to detect contact  
+grasp_thres     0.5 
+// open hand positions [deg] 
+open_hand       0.0 0.0 0.0   0.0   0.0 0.0 0.0   0.0   0.0 
+// close hand positions [deg] 
+close_hand      0.0 80.0 12.0 18.0 27.0 50.0 20.0  50.0 135.0 
+// velocities to reach hand positions [deg/s] 
+vels_hand       10.0 10.0  10.0 10.0 10.0 10.0 10.0 10.0  10.0 
+\endcode 
+
+\section tested_os_sec Tested OS
+Windows, Linux
+
+\author Ugo Pattacini
+*/ 
 
 #include <yarp/os/Network.h>
 #include <yarp/os/RFModule.h>
@@ -24,9 +156,10 @@
 
 #define DEFAULT_THR_PER     20
 
-#define LEFTARM             0
-#define RIGHTARM            1
-#define USEDARM             -1
+#define NOARM               0
+#define LEFTARM             1
+#define RIGHTARM            2
+#define USEDARM             3
 
 #define OPENHAND            0
 #define CLOSEHAND           1
@@ -268,8 +401,10 @@ protected:
 
             type="right_arm";
         }
-        else
+        else if (armSel!=NOARM)
             type=armSel==LEFTARM?"left_arm":"right_arm";
+        else
+            return;
 
         fprintf(stdout,"*** Initializing %s controller ...\n",type.c_str());
 
@@ -328,7 +463,7 @@ protected:
             fprintf(stdout,"--- Target timeout => IDLE\n");
 
             steerHeadToHome();
-            cartArm->stopControl();
+            stopControl();
             steerTorsoToHome();
             steerArmToHome(LEFTARM);
             steerArmToHome(RIGHTARM);
@@ -417,8 +552,10 @@ protected:
 
             type="right_arm";
         }
-        else
+        else if (armSel!=NOARM)
             type=armSel==LEFTARM?"left_arm":"right_arm";
+        else
+            return;
 
         fprintf(stdout,"*** Homing %s\n",type.c_str());
 
@@ -497,7 +634,7 @@ protected:
             if ((armSel==LEFTARM) && (targetPos[1]>hystThres) ||
                 (armSel==RIGHTARM) && (targetPos[1]<-hystThres))
             {
-                cartArm->stopControl();
+                stopControl();
                 steerArmToHome();
             
                 // swap interfaces
@@ -678,6 +815,12 @@ protected:
     {
         latchTimer=Time::now();
         sphereCenter=targetPos;
+    }
+
+    void stopControl()
+    {
+        if (useLeftArm || useRightArm)
+            cartArm->stopControl();
     }
 
     void setFace(const int type)
@@ -989,7 +1132,7 @@ public:
             detectGrasp=&leftDetectGrasp;
             armSel=LEFTARM;
         }
-        else
+        else if (useRightArm)
         {
             drvRightArm->view(posArm);
             drvCartRightArm->view(cartArm);
@@ -999,6 +1142,17 @@ public:
             armHandOrien=&rightArmHandOrien;
             detectGrasp=&rightDetectGrasp;
             armSel=RIGHTARM;
+        }
+        else
+        {
+            posArm=NULL;
+            cartArm=NULL;
+            armReachOffs=NULL;
+            armGraspOffs=NULL;
+            armGraspSigma=NULL;
+            armHandOrien=NULL;
+            detectGrasp=NULL;    
+            armSel=NOARM;
         }
 
         // open ports
@@ -1044,7 +1198,7 @@ public:
 
         // steer the robot to the initial configuration
         steerHeadToHome();
-        cartArm->stopControl();
+        stopControl();
         steerTorsoToHome();
         steerArmToHome(LEFTARM);
         steerArmToHome(RIGHTARM);
@@ -1072,7 +1226,7 @@ public:
     virtual void threadRelease()
     {
         steerHeadToHome();
-        cartArm->stopControl();
+        stopControl();
         steerTorsoToHome();
         steerArmToHome(LEFTARM);
         steerArmToHome(RIGHTARM);
