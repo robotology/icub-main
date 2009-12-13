@@ -227,8 +227,8 @@ public:
     * @param sync if true wait until the action is accomplished. 
     * @return true/false on success/fail. 
     *  
-    * \note It reachs for (x+d,o), then reachs for (x,o) and close 
-    *       the hand at the same time.
+    * \note It reachs for (x+d,o), then reachs for (x,o) closing the
+    *       hand at the same time.
     */
     virtual bool grasp(const yarp::sig::Vector &x, const yarp::sig::Vector &o,
                        const yarp::sig::Vector &d, const bool sync=false);
@@ -278,7 +278,7 @@ public:
     * \note Some examples: 
     *  
     * the call \b pushAction(x,o,&affActionPrimitives::closeHand) 
-    * push the combined action of reach(x,o) and closeHand() into 
+    * pushes the combined action of reach(x,o) and closeHand() into 
     * the queue; the action will be executed as soon as all the 
     * previous items in the queue will have been accomplished. 
     */
@@ -340,22 +340,23 @@ public:
     * @return true/false on success/fail. 
     *  
     * \note Actually the check is performed on the content of the 
-    *       actions queue.
+    *       actions queue so that the blocking call returns as soon
+    *       as the queue is empty.
     */
     virtual bool checkActionsDone(bool &f, const bool sync=false);
 
     /**
     * Suddenly interrupt any blocking call that is pending on 
-    * querying the action termination status; also disable this 
-    * blocking feature for future calls with sync switch on. 
+    * querying the action status; also disable this blocking feature
+    * for future calls with sync switch on. 
     * @return true/false on success/fail. 
     *  
-    * \note useful to allow stopping gracefully the application.
+    * \note useful to allow a graceful stop of the application.
     */
     virtual bool syncCheckInterrupt();
 
     /**
-    * Reinstate the blocking feature of future calls with sync 
+    * Reinstate the blocking feature for future calls with sync 
     * switch on. 
     * @return true/false on success/fail. 
     */
