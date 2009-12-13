@@ -24,53 +24,46 @@ using namespace yarp::math;
 class testModule: public RFModule
 {
 protected:
-	affActionPrimitives *mot;
+	affActionPrimitives *action;
 	BufferedPort<Bottle> inPort;
+
+    Vector graspOrien;
+    Vector graspDisp;
 
 public:
     testModule()
 	{
-		mot=NULL;
+		action=NULL;
+
+        graspOrien.resize(4);
+        graspDisp.resize(3);
+
+        graspOrien[0]=0.133;
+        graspOrien[1]=0.428;
+        graspOrien[2]=-0.894;
+        graspOrien[3]=2.757;
+
+        graspDisp[0]=0.0;
+        graspDisp[1]=0.0;
+        graspDisp[2]=0.08;
 	}
 
     virtual bool configure(ResourceFinder &rf)
     {
-		Property option("(robot icubSim) (local test) (part left_arm) (trajTime 3.0)\
-						(torso (0 0 1)) (fingerClosePos (10.0 40.0 90.0 10.0 70.0 70.0 70.0 70.0 110.0))");
-        option.put("calibFile",rf.findFile("from"));
+		Property option("(robot icubSim) (local test) (part left_arm) (traj_time 3.0)\
+						(torso_pitch on) (torso_pitch_max 30.0)\
+                        (torso_roll off)\
+                        (torso_yaw on)\
+                        (fingers_close_poss (10.0 40.0 90.0 10.0 70.0 70.0 70.0 70.0 110.0))");
+        option.put("hand_calibration_file",rf.findFile("from"));
 
-		mot=new affActionPrimitives;
+		action=new affActionPrimitives(option);
 
-		if (!mot->open(option))
+		if (!action->isValid())
 		{
-			delete mot;
+			delete action;
 			return false;
 		}
-
-		Vector od(4);
-		od[0]=-0.029;
-	    od[1]=-0.763;
-		od[2]=0.646;
-		od[3]=3.110;
-		mot->setTapOrien(od);
-
-		od[0]=0.133;
-	    od[1]=0.428;
-		od[2]=-0.894;
-		od[3]=2.757;
-		mot->setGraspOrien(od);
-
-		Vector h(3);
-		h[0]=0.0;
-		h[1]=0.0;
-		h[2]=0.08;
-		mot->setGraspDisplacement(h);
-
-		Vector d(3);
-		d[0]=0.0;
-		d[1]=0.1;
-		d[2]=0.0;
-		mot->setTapDisplacement(d);
 
 		inPort.open("/testMod/in");
 
@@ -79,8 +72,8 @@ public:
 
     virtual bool close()
     {
-		if (mot!=NULL)
-			delete mot;
+		if (action!=NULL)
+			delete action;
 		
 		inPort.close();
         
@@ -94,7 +87,8 @@ public:
 
     virtual bool updateModule()
 	{		
-		Bottle *b=inPort.read();	// blocking
+        // get a target object position from a YARP port
+		Bottle *b=inPort.read();	// blocking call
 
         if (b!=NULL)
 		{
@@ -106,11 +100,11 @@ public:
 			xd[2]=b->get(2).asDouble();
 			dRel[2]=0.1;
 
-			xd[0]=xd[0]>-0.1?-0.1:xd[0];	// safe thres
+			xd[0]=xd[0]>-0.1?-0.1:xd[0];	// safe thresholding
 
-			mot->grasp(xd,true);
-			mot->reach(xd+dRel,mot->getGraspOrien(),true);
-			mot->openHand(true);
+			action->grasp(xd,graspOrien,graspDisp,true);    // grasp it (wait until it's done)
+			action->reach(xd+dRel,graspOrien,true);         // lift the object
+			action->openHand(true);                         // release the object
 		}		
 
 		return true;
@@ -118,7 +112,7 @@ public:
 
 	bool interruptModule()
 	{
-		mot->syncCheckInterrupt();
+		action->syncCheckInterrupt();
 		inPort.interrupt();
 
 		return true;
@@ -145,3 +139,6 @@ int main(int argc, char *argv[])
 
     return mod.runModule(rf);
 }
+
+
+

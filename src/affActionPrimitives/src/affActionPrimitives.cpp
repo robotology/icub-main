@@ -15,13 +15,9 @@
 
 #define RES_EVENT(x)                (static_cast<ACE_Auto_Event*>(x))
 
-#define MOTORIF_NOPHAND             0x00
-#define MOTORIF_OPENHAND            0x01
-#define MOTORIF_CLOSEHAND           0x02
-#define MOTORIF_ALIGNHAND           0x03
-
-#define MOTORIF_DEFAULT_PER         250     // [ms]
-#define MOTORIF_DEFAULT_TRAJTIME    1.5     // [s]
+#define ACTIONPRIM_DEFAULT_PER          50      // [ms]
+#define ACTIONPRIM_DEFAULT_TRAJTIME     1.5     // [s]
+#define ACTIONPRIM_DEFAULT_FINGERSVEL   20.0    // [deg/s]
 
 
 using namespace std;
@@ -32,7 +28,22 @@ using namespace yarp::sig;
 using namespace yarp::math;
 
 
-affActionPrimitives::affActionPrimitives() : RateThread(MOTORIF_DEFAULT_PER)
+affActionPrimitives::affActionPrimitives() :
+                     RateThread(ACTIONPRIM_DEFAULT_PER)
+{
+    init();
+}
+
+
+affActionPrimitives::affActionPrimitives(Property &opt) :
+                     RateThread(ACTIONPRIM_DEFAULT_PER)
+{
+    init();
+    open(opt);
+}
+
+
+void affActionPrimitives::init()
 {
     polyHand=polyCart=NULL;
 
@@ -42,15 +53,73 @@ affActionPrimitives::affActionPrimitives() : RateThread(MOTORIF_DEFAULT_PER)
     mutex=NULL;
     motionDoneEvent=NULL;
 
-    executeHand[MOTORIF_NOPHAND]  =&affActionPrimitives::nopHand;
-    executeHand[MOTORIF_OPENHAND] =&affActionPrimitives::openHand;
-    executeHand[MOTORIF_CLOSEHAND]=&affActionPrimitives::closeHand;
-    executeHand[MOTORIF_ALIGNHAND]=&affActionPrimitives::alignHand;
-
     armMoveDone =latchArmMoveDone =true;
     handMoveDone=latchHandMoveDone=true;
     configured=closed=false;
     checkEnabled=true;
+
+    latchTimer=waitTmo=0.0;
+}
+
+
+bool affActionPrimitives::isValid()
+{
+    return configured;
+}
+
+
+bool affActionPrimitives::handleTorsoDOF(Property &opt, const string &key, const int j)
+{
+    if (opt.check(key.c_str()))
+    {
+        bool sw=opt.find(key.c_str()).asString()=="on"?true:false;
+
+        Vector newDof, dummyRet;
+        newDof.resize(3,2);
+        newDof[j]=sw?1:0;
+
+        fprintf(stdout,"%s %s\n",key.c_str(),sw?"enabled":"disabled");
+        cartCtrl->setDOF(newDof,dummyRet);
+
+        if (sw)
+        {
+            string minKey=key+"_min";
+            string maxKey=key+"_max";
+            double min, max;
+
+            cartCtrl->getLimits(j,&min,&max);
+
+            min=opt.check(minKey.c_str(),Value(min)).asDouble();
+            max=opt.check(maxKey.c_str(),Value(max)).asDouble();
+
+            fprintf(stdout,"%s limits: [%d,%d] deg\n",key.c_str(),min,max);
+            cartCtrl->setLimits(j,min,max);
+        }
+
+        return true;
+    }
+
+    return false;
+}
+
+
+bool affActionPrimitives::getVector(Property &opt, const string &key, Vector &v, const int offs)
+{
+    if (opt.check(key.c_str()))
+    {
+        Bottle *b=opt.find(key.c_str()).asList();
+
+        int l1=b->size();
+        int l2=v.length();
+        int l=l1<l2?l1:l2;
+
+        for (int i=0; i<l; i++)
+            v[offs+i]=b->get(i).asDouble();
+
+        return true;
+    }
+
+    return false;
 }
 
 
@@ -62,18 +131,18 @@ bool affActionPrimitives::open(Property &opt)
         return false;
     }
 
-    if (!opt.check("calibFile"))
+    if (!opt.check("hand_calibration_file"))
     {
-        fprintf(stdout,"Error: option \"calibFile\" is missing\n");
+        fprintf(stdout,"Error: option \"hand_calibration_file\" is missing\n");
         return false;
     }
 
     string robot=opt.check("robot",Value("icub")).asString().c_str();
     string part=opt.check("part",Value("right_arm")).asString().c_str();
-    int period=opt.check("period",Value(MOTORIF_DEFAULT_PER)).asInt();
-    double trajTime=opt.check("trajTime",Value(MOTORIF_DEFAULT_TRAJTIME)).asDouble();
+    int period=opt.check("thread_period",Value(ACTIONPRIM_DEFAULT_PER)).asInt();
+    double trajTime=opt.check("traj_time",Value(ACTIONPRIM_DEFAULT_TRAJTIME)).asDouble();
     string local=opt.find("local").asString().c_str();
-    string sensingCalibFile=opt.find("calibFile").asString().c_str();
+    string sensingCalibFile=opt.find("hand_calibration_file").asString().c_str();
     string fwslash="/";
 
     // get params from config file
@@ -118,41 +187,26 @@ bool affActionPrimitives::open(Property &opt)
     polyHand->view(posCtrl);
     polyCart->view(cartCtrl);
 
-    iMin=7;                     // first hand joint
-    posCtrl->getAxes(&iMax);    // last hand joint
+    iMin=7;                     // hand first joint
+    posCtrl->getAxes(&iMax);    // hand last joint
 
+    double fingersVel=opt.check("fingers_vel",Value(ACTIONPRIM_DEFAULT_FINGERSVEL)).asDouble();
     for (int i=iMin; i<iMax; i++)
     {    
         enabledJoints.insert(i);
-        posCtrl->setRefSpeed(i,20.0);
+        posCtrl->setRefSpeed(i,fingersVel);
     }
 
     // set trajectory time
     cartCtrl->setTrajTime(trajTime);
 
-    // set shot mode
+    // set one shot mode
     cartCtrl->setTrackingMode(false);
 
-    // enable torso joints
-    if (opt.check("torso"))
-    {
-        if (Bottle *joints=opt.find("torso").asList())
-        {
-            Vector curDof;
-            cartCtrl->getDOF(curDof);
-            Vector newDof=curDof;
-
-            int l=joints->size()>3 ? 3 : joints->size();
-
-            fprintf(stdout,"enabling torso joints... ");
-
-            for (int i=0; i<l; i++)
-                newDof[i]=joints->get(i).asInt();
-
-            cartCtrl->setDOF(newDof,curDof);
-            fprintf(stdout,"%s\n",curDof.toString().c_str());
-        }
-    }
+    // handle torso DOF's
+    handleTorsoDOF(opt,"torso_pitch",0);
+    handleTorsoDOF(opt,"torso_roll",1);
+    handleTorsoDOF(opt,"torso_yaw",2);
 
     // create hand metrix
     readMatrices(sensingCalib,sensingConstants);
@@ -166,31 +220,9 @@ bool affActionPrimitives::open(Property &opt)
 
     fingerOpenPos.resize(iMax,0.0);
     fingerClosePos.resize(iMax,0.0);
-    fingerAlignPos.resize(iMax,0.0);
 
-    if (opt.check("fingerOpenPos"))
-    {
-        Bottle *v=opt.find("fingerOpenPos").asList();
-
-        for (int i=0; i<v->size(); i++)
-            fingerOpenPos[iMin+i]=v->get(i).asDouble();
-    }
-
-    if (opt.check("fingerClosePos"))
-    {
-        Bottle *v=opt.find("fingerClosePos").asList();
-
-        for (int i=0; i<v->size(); i++)
-            fingerClosePos[iMin+i]=v->get(i).asDouble();
-    }
-
-    if (opt.check("fingerAlignPos"))
-    {
-        Bottle *v=opt.find("fingerAlignPos").asList();
-
-        for (int i=0; i<v->size(); i++)
-            fingerAlignPos[iMin+i]=v->get(i).asDouble();
-    }
+    getVector(opt,"fingers_open_poss",fingerOpenPos,iMin);
+    getVector(opt,"fingers_close_poss",fingerClosePos,iMin);
 
     mutex=new Semaphore(1);
     motionDoneEvent=new ACE_Auto_Event;
@@ -211,31 +243,31 @@ void affActionPrimitives::close()
 
     if (isRunning())
     {
-        fprintf(stdout,"stopping thread...\n");
+        fprintf(stdout,"stopping thread ...\n");
         stop();
     }
 
     if (fs!=NULL)
     {    
-        fprintf(stdout,"disposing hand smoother...\n");
+        fprintf(stdout,"disposing hand smoother ...\n");
         delete fs;
     }
 
     if (handMetrics!=NULL)
     {
-        fprintf(stdout,"disposing hand metrics...\n");
+        fprintf(stdout,"disposing hand metrics ...\n");
         delete handMetrics;
     }
 
     if (polyHand!=NULL)
     {
-        fprintf(stdout,"closing hand driver...\n");
+        fprintf(stdout,"closing hand driver ...\n");
         delete polyHand;
     }
 
     if (polyCart!=NULL)
     {
-        fprintf(stdout,"closing cartesian driver...\n"); 
+        fprintf(stdout,"closing cartesian driver ...\n"); 
         delete polyCart;
     }
 
@@ -294,62 +326,112 @@ bool affActionPrimitives::handMotionDone(const set<int> &joints)
 }
 
 
-void affActionPrimitives::queue_clear()
+bool affActionPrimitives::clearActionsQueue()
 {
-    mutex->wait();
-    q.clear();
-    mutex->post();
+    if (configured)
+    {
+        mutex->wait();
+        actionsQueue.clear();
+        mutex->post();
+
+        return true;
+    }
+    else
+        return false;
 }
 
 
-void affActionPrimitives::queue_push(const Vector &x, const Vector &o, const int handId)
+bool affActionPrimitives::pushAction(const Vector &x, const Vector &o,
+                                     bool (affActionPrimitives::*handAction)(const bool))
 {
-    mutex->wait();
-    MotorIFQueue el;
+    if (configured)
+    {
+        mutex->wait();
+        Action action;
+    
+        action.waitState=false;
+        action.tmo=0.0;
+        action.execReach=true;
+        action.x=x;
+        action.o=o;
+        action.handAction=handAction;
+    
+        actionsQueue.push_back(action);
+        mutex->post();
 
-    el.execReach=true;
-    el.x=x;
-    el.o=o;
-    el.handId=handId;
-
-    q.push_back(el);
-    mutex->post();
+        return true;
+    }
+    else
+        return false;
 }
 
 
-void affActionPrimitives::queue_push(const Vector &x, const Vector &o)
+bool affActionPrimitives::pushAction(const Vector &x, const Vector &o)
 {
-    queue_push(x,o,MOTORIF_NOPHAND);
+    return pushAction(x,o,&affActionPrimitives::nopHand);
 }
 
 
-void affActionPrimitives::queue_push(const int handId)
+bool affActionPrimitives::pushAction(bool (affActionPrimitives::*handAction)(const bool))
 {
-    Vector dummy(1);
-
-    mutex->wait();
-    MotorIFQueue el;
-
-    el.execReach=false;
-    el.x=dummy;
-    el.o=dummy;
-    el.handId=handId;
-
-    q.push_back(el);
-    mutex->post();
+    if (configured)
+    {        
+        mutex->wait();
+        Action action;
+        Vector dummy(1);
+    
+        action.waitState=false;
+        action.tmo=0.0;
+        action.execReach=false;
+        action.x=dummy;
+        action.o=dummy;
+        action.handAction=handAction;
+    
+        actionsQueue.push_back(action);
+        mutex->post();
+    
+        return true;
+    }
+    else
+        return false;
 }
 
 
-void affActionPrimitives::queue_exec()
+bool affActionPrimitives::pushWaitState(const double tmo)
+{
+    if (configured)
+    {
+        mutex->wait();
+        Action action;
+        Vector dummy(1);
+
+        action.waitState=true;
+        action.tmo=tmo;
+        action.execReach=false;
+        action.x=dummy;
+        action.o=dummy;
+        action.handAction=&affActionPrimitives::nopHand;
+
+        actionsQueue.push_back(action);
+        mutex->post();
+
+        return true;
+    }
+    else
+        return false;
+}
+
+
+bool affActionPrimitives::execQueuedAction()
 {
     bool exec=false;
-    MotorIFQueue el;
+    Action action;
 
     mutex->wait();
-    if (q.size())
+    if (actionsQueue.size())
     {
-        el=q[0];
-        q.pop_front();
+        action=actionsQueue[0];
+        actionsQueue.pop_front();
 
         exec=true;
     }
@@ -357,11 +439,17 @@ void affActionPrimitives::queue_exec()
 
     if (exec)
     {
-        if (el.execReach)
-            reach(el.x,el.o,false);
+        if (action.waitState)
+            wait(action.tmo);
 
-        (this->*executeHand[el.handId])(false);
+        if (action.execReach)
+            reach(action.x,action.o);
+
+        if (action.handAction!=NULL)
+            (this->*action.handAction)(false);
     }
+
+    return exec;
 }
 
 
@@ -379,10 +467,7 @@ void affActionPrimitives::run()
         cartCtrl->checkMotionDone(&armMoveDone);
 
         if (armMoveDone)
-        {
-            fprintf(stdout,"reaching complete\n");
-            queue_exec();
-        }            
+            fprintf(stdout,"reaching complete\n");            
     }
 
     if (!handMoveDone)
@@ -395,17 +480,15 @@ void affActionPrimitives::run()
         handMoveDone=handMotionDone(activeJoints);
 
         if (handMoveDone)
-        {    
             fprintf(stdout,"hand motion complete\n");
-            queue_exec();
-        }
     }
 
     latchArmMoveDone=armMoveDone;
     latchHandMoveDone=handMoveDone;
 
     if (latchArmMoveDone && latchHandMoveDone)
-        RES_EVENT(motionDoneEvent)->signal();
+        if (!execQueuedAction() && Time::now()-latchTimer>waitTmo)
+            RES_EVENT(motionDoneEvent)->signal();
 }
 
 
@@ -415,33 +498,17 @@ affActionPrimitives::~affActionPrimitives()
 }
 
 
-void affActionPrimitives::setGraspOrien(const Vector &o)
+bool affActionPrimitives::wait(const double tmo)
 {
-    oGrasp=o;
-}
+    if (configured)
+    {
+        waitTmo=tmo;
+        latchTimer=Time::now();
 
-
-void affActionPrimitives::setTapOrien(const Vector &o)
-{
-    oTap=o;
-}
-
-void affActionPrimitives::setHome(const Vector &x, const Vector &o)
-{
-    xHome=x;
-    oHome=o;
-}
-
-
-void affActionPrimitives::setGraspDisplacement(const Vector &disp)
-{
-    dGrasp=disp;
-}
-
-
-void affActionPrimitives::setTapDisplacement(const Vector &disp)
-{
-    dTap=disp;
+        return true;
+    }
+    else
+        return false;
 }
 
 
@@ -449,22 +516,28 @@ bool affActionPrimitives::reach(const Vector &x, const Vector &o, const bool syn
 {
     if (configured)
     {
-        queue_clear();
-
+        clearActionsQueue();
+    
         xd=x;
         od=o;
         
         bool ret=cartCtrl->goToPoseSync(xd,od);
 
+        if (!ret)
+        {
+            fprintf(stdout,"reach error\n");
+            return false;
+        }
+    
         latchArmMoveDone=armMoveDone=false;
         fprintf(stdout,"reach for [%s], [%s]\n",xd.toString().c_str(),od.toString().c_str());
     
         if (sync)
         {
             bool f=false;
-            ret=check(f,true);
+            ret=checkActionsDone(f,true);
         }
-
+    
         return ret;
     }
     else
@@ -472,22 +545,22 @@ bool affActionPrimitives::reach(const Vector &x, const Vector &o, const bool syn
 }
 
 
-bool affActionPrimitives::grasp(const Vector &x, const bool sync)
+bool affActionPrimitives::grasp(const Vector &x, const Vector &o, const Vector &d, const bool sync)
 {
     if (configured)
     {
         fprintf(stdout,"start grasping\n");
-        if (!reach(x+dGrasp,oGrasp,false))
+        if (!reach(x+d,o))
             return false;
 
-        queue_push(x,oGrasp,MOTORIF_CLOSEHAND);
+        pushAction(x,o,&affActionPrimitives::closeHand);
 
         bool ret=true;
 
         if (sync)
         {
             bool f=false;
-            ret=check(f,true);
+            ret=checkActionsDone(f,true);
         }
 
         return ret;
@@ -497,28 +570,48 @@ bool affActionPrimitives::grasp(const Vector &x, const bool sync)
 }
 
 
-bool affActionPrimitives::touch(const Vector &x, const bool sync)
-{
-    return true;
-}
-
-
-bool affActionPrimitives::tap(const Vector &x, const bool sync)
+bool affActionPrimitives::touch(const Vector &x, const Vector &o, const Vector &d, const bool sync)
 {
     if (configured)
     {
-        fprintf(stdout,"start tapping\n");
-        if (!reach(x,oTap,false))
+        fprintf(stdout,"start touching\n");
+        if (!reach(x+d,o))
             return false;
 
-        queue_push(x+dTap,oTap);
+        pushAction(x,o);
 
         bool ret=true;
 
         if (sync)
         {
             bool f=false;
-            ret=check(f,true);
+            ret=checkActionsDone(f,true);
+        }
+
+        return ret;
+    }
+    else
+        return false;
+}
+
+
+bool affActionPrimitives::tap(const Vector &x, const Vector &o, const Vector &d,  const bool sync)
+{
+    if (configured)
+    {
+        fprintf(stdout,"start tapping\n");
+        if (!reach(x,o))
+            return false;
+
+        pushAction(x+d,o);
+        pushAction(x,o);
+
+        bool ret=true;
+
+        if (sync)
+        {
+            bool f=false;
+            ret=checkActionsDone(f,true);
         }
 
         return ret;
@@ -544,13 +637,19 @@ bool affActionPrimitives::moveHand(const Vector &fingerPos, const bool sync)
         if (sync)
         {
             bool f=false;
-            ret=check(f,true);
+            ret=checkActionsDone(f,true);
         }
 
         return ret;
     }
     else
         return false;
+}
+
+
+bool affActionPrimitives::nopHand(const bool sync)
+{
+    return configured;
 }
 
 
@@ -566,12 +665,6 @@ bool affActionPrimitives::closeHand(const bool sync)
 }
 
 
-bool affActionPrimitives::alignHand(const bool sync)
-{
-    return moveHand(fingerAlignPos,sync);
-}
-
-
 bool affActionPrimitives::getPose(Vector &x, Vector &o)
 {
     if (configured)
@@ -581,13 +674,29 @@ bool affActionPrimitives::getPose(Vector &x, Vector &o)
 }
 
 
-bool affActionPrimitives::home(const bool sync)
+bool affActionPrimitives::stopControl()
 {
-    return reach(xHome,oHome,sync);
+    if (configured)
+    {
+        suspend();
+
+        clearActionsQueue();
+
+        cartCtrl->stopControl();
+
+        for (set<int>::const_iterator itr=enabledJoints.begin(); itr!=enabledJoints.end(); itr++)
+            posCtrl->stop(*itr);
+
+        resume();
+
+        return true;
+    }
+    else
+        return false;
 }
 
 
-bool affActionPrimitives::check(bool &f, const bool sync)
+bool affActionPrimitives::checkActionsDone(bool &f, const bool sync)
 {
     if (configured)
     {
@@ -606,15 +715,30 @@ bool affActionPrimitives::check(bool &f, const bool sync)
 }
 
 
-void affActionPrimitives::syncCheckInterrupt()
+bool affActionPrimitives::syncCheckInterrupt()
 {
-    checkEnabled=false;
-    RES_EVENT(motionDoneEvent)->signal();
+    if (configured)
+    {
+        checkEnabled=false;
+        RES_EVENT(motionDoneEvent)->signal();
+
+        return true;
+    }
+    else
+        return false;
 }
 
 
-void affActionPrimitives::syncCheckReinstate()
+bool affActionPrimitives::syncCheckReinstate()
 {
-    checkEnabled=true;
+    if (configured)
+    {
+        checkEnabled=true;
+        return true;
+    }
+    else
+        return false;
 }
+
+
 
