@@ -62,7 +62,7 @@ extern sDutyControlBL DutyCycleReq[2];
 //********************
 
 void decouple_positions(void);
-void decouple_dutycycle(void);
+void decouple_dutycycle(Int32 *);
 
 #ifndef VERSION
 #	error "No valid version specified"
@@ -504,7 +504,7 @@ void main(void)
 		for (i=0; i<JN; i++) _debug1[i] = PWMoutput[i] = compute_pwm(i);
 
 //		decouple PWM	
-		decouple_dutycycle();
+		decouple_dutycycle(PWMoutput);
 
 
 #ifdef TORQUE_CNTRL	
@@ -727,7 +727,7 @@ void decouple_positions(void)
 #endif
 }
 
-void decouple_dutycycle()
+void decouple_dutycycle(Int32 *pwm)
 {
 	Int32 temp = 0;
 
@@ -736,25 +736,28 @@ void decouple_dutycycle()
 		|Me1| |  1    -1 |  |Je1|
 		|Me2|=|  1     1 |* |Je2|    */
 	
-	temp 	     = PWMoutput[0];
-	PWMoutput[0] = (PWMoutput[0] - PWMoutput[1])>>1;
-	PWMoutput[1] = (temp         + PWMoutput[1])>>1;	
+	temp 	     = pwm[0];
+	pwm[0] = (pwm[0] - pwm[1])>>1;
+	pwm[1] = (temp         + pwm[1])>>1;	
 				
 	if (_control_mode[0] == MODE_IDLE || 
 		_control_mode[1] == MODE_IDLE)
 	{
-		PWMoutput[0] = 0;
-		PWMoutput[1] = 0;
+		pwm[0] = 0;
+		pwm[1] = 0;
 	}
 	temp   = _pd[0];
 	_pd[0] = (_pd[0] - _pd[1])>>1;
 	_pd[1] = (temp   + _pd[1])>>1;		
 #elif VERSION == 0x0153
 	if (_control_mode[0] == MODE_POSITION)
-	{ 
-	       temp = _other_duty[0] + _other_duty[1];
-	       PWMoutput[0] += temp;
-	       _pd[0]       += temp;
+	{
+		temp = _adj_duty[0] + _adj_duty[1];
+	    pwm[0] += temp;
+	    _pd[0] += temp;
+	    //update the prediction for coupled board duty
+	    _adj_duty[0] = _adj_duty[0] + _delta_duty[0];
+	    _adj_duty[1] = _adj_duty[1] + _delta_duty[1];
 	}
 #endif			
 }

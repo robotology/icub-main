@@ -203,6 +203,10 @@ byte can_interface (void)
 						CAN_SET_ACTIVE_ENCODER_POSITION_HANDLER(0)
 						break;
 
+					case CAN_BCAST_PID_VAL:
+						CAN_SET_ACTIVE_PID_HANDLER(0)
+						break;
+
 					case CAN_BCAST_TRQ_PID:
 						break;
 										
