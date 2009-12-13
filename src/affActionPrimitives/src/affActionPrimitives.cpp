@@ -13,7 +13,7 @@
 #include <iomanip>
 #include <string>
 
-#define RES_EVENT(x)                (static_cast<ACE_Auto_Event*>(x))
+#define RES_EVENT(x)                    (static_cast<ACE_Auto_Event*>(x))
 
 #define ACTIONPRIM_DEFAULT_PER          50      // [ms]
 #define ACTIONPRIM_DEFAULT_TRAJTIME     1.5     // [s]
