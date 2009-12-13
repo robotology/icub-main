@@ -37,7 +37,7 @@
 byte	_board_ID = 16;	
 char    _additional_info [32];
 UInt8    mainLoopOVF=0;
-word    _build_number = 31;
+word    _build_number = 32;
 int     _countBoardStatus =0;
 Int16   _flash_version=0; 
 UInt8   BUS_OFF=false;
@@ -62,6 +62,7 @@ extern sDutyControlBL DutyCycleReq[2];
 //********************
 
 void decouple_positions(void);
+void decouple_dutycycle(void);
 
 #ifndef VERSION
 #	error "No valid version specified"
@@ -93,7 +94,6 @@ void main(void)
 	byte k=0;
 	UInt16 *value=0;
 	Int32 t1val=0;
-	Int32 temp_swap = 0;
 	Int32 PID_R= 2;
 	Int32 kpp=1;
 	Int16 test =0;
@@ -504,35 +504,8 @@ void main(void)
 		for (i=0; i<JN; i++) _debug1[i] = PWMoutput[i] = compute_pwm(i);
 
 //		decouple PWM	
+		decouple_dutycycle();
 
-#if VERSION == 0x0152	
-		/*  Waist Differential coupling 
-		|Me1| |  1    -1 |  |Je1|
-		|Me2|=|  1     1 |* |Je2|    */
-		
-	/*  Waist Differential coupling 
-		|Me1| |  1    -1 |  |Je1|
-		|Me2|=|  1     1 |* |Je2|    */
-	
-	//_error[0] =_error[0] -  _error[1];
-	//_error[1] =_error[0] +2*_error[1];
-	
-	temp_swap 	 = PWMoutput[0];
-	PWMoutput[0] = (PWMoutput[0] - PWMoutput[1])>>1;
-	PWMoutput[1] = (temp_swap    + PWMoutput[1])>>1;	
-				
-	if (_control_mode[0] == MODE_IDLE || 
-		_control_mode[1] == MODE_IDLE)
-	{
-		PWMoutput[0] = 0;
-		PWMoutput[1] = 0;
-	}
-	temp_swap = _pd[0];
-	_pd[0] = (_pd[0] 	- _pd[1]);
-	_pd[1] = (temp_swap + _pd[1]);	
-	
-	
-#endif			
 
 #ifdef TORQUE_CNTRL	
 		/* PWM filtering */
@@ -713,7 +686,7 @@ void main(void)
 void decouple_positions(void)
 {
 		
-#if   VERSION == 0x0153		
+#if   VERSION == 0x0153
 		/* beware of the first cycle when _old has no meaning */		
 		_position[0] = _position[0]+ (float) (((float) _adjustment[0])*1.7105F);  
 		_position[0] = _position[0]- (float) (((float) _adjustment[1])*1.7105F);
@@ -754,11 +727,34 @@ void decouple_positions(void)
 #endif
 }
 
+void decouple_dutycycle()
+{
+	Int32 temp = 0;
 
-
-
-
-
-
-
-
+#if VERSION == 0x0152
+	/*  Waist Differential coupling 
+		|Me1| |  1    -1 |  |Je1|
+		|Me2|=|  1     1 |* |Je2|    */
+	
+	temp 	     = PWMoutput[0];
+	PWMoutput[0] = (PWMoutput[0] - PWMoutput[1])>>1;
+	PWMoutput[1] = (temp         + PWMoutput[1])>>1;	
+				
+	if (_control_mode[0] == MODE_IDLE || 
+		_control_mode[1] == MODE_IDLE)
+	{
+		PWMoutput[0] = 0;
+		PWMoutput[1] = 0;
+	}
+	temp   = _pd[0];
+	_pd[0] = (_pd[0] - _pd[1])>>1;
+	_pd[1] = (temp   + _pd[1])>>1;		
+#elif VERSION == 0x0153
+	if (_control_mode[0] == MODE_POSITION)
+	{ 
+	       temp = _other_duty[0] + _other_duty[1];
+	       PWMoutput[0] += temp;
+	       _pd[0]       += temp;
+	}
+#endif			
+}

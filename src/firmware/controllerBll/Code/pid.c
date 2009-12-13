@@ -141,9 +141,10 @@ Int32  _pd_current[JN] = INIT_ARRAY (0);        // pd portion of the current pid
 
 #if VERSION == 0x0153 || VERSION == 0x0173
 Int32  _other_position[JN] = INIT_ARRAY (0);	// the position of the synchronized card 
-Int32  _adjustment[JN] = INIT_ARRAY (0);		// the actual adjustment (compensation) 
-Int32  _delta_adj[JN] = INIT_ARRAY (0);			// velocity over the adjustment 
+Int32  _adjustment[JN] = INIT_ARRAY (0);	// the actual adjustment (compensation) 
+Int32  _delta_adj[JN] = INIT_ARRAY (0);		// velocity over the adjustment 
 Int16  _other_error[JN] = INIT_ARRAY (0);    	// the error of the syncronized card
+Int16  _other_duty[JN] = INIT_ARRAY (0);    	// the duty of the syncronized card
 #endif
 
 
