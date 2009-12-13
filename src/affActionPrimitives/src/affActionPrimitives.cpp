@@ -28,6 +28,7 @@ using namespace yarp::sig;
 using namespace yarp::math;
 
 
+/************************************************************************/
 affActionPrimitives::affActionPrimitives() :
                      RateThread(ACTIONPRIM_DEFAULT_PER)
 {
@@ -35,6 +36,7 @@ affActionPrimitives::affActionPrimitives() :
 }
 
 
+/************************************************************************/
 affActionPrimitives::affActionPrimitives(Property &opt) :
                      RateThread(ACTIONPRIM_DEFAULT_PER)
 {
@@ -43,6 +45,7 @@ affActionPrimitives::affActionPrimitives(Property &opt) :
 }
 
 
+/************************************************************************/
 void affActionPrimitives::init()
 {
     polyHand=polyCart=NULL;
@@ -62,13 +65,16 @@ void affActionPrimitives::init()
 }
 
 
+/************************************************************************/
 bool affActionPrimitives::isValid()
 {
     return configured;
 }
 
 
-bool affActionPrimitives::handleTorsoDOF(Property &opt, const string &key, const int j)
+/************************************************************************/
+bool affActionPrimitives::handleTorsoDOF(Property &opt, const string &key,
+                                         const int j)
 {
     if (opt.check(key.c_str()))
     {
@@ -103,7 +109,9 @@ bool affActionPrimitives::handleTorsoDOF(Property &opt, const string &key, const
 }
 
 
-bool affActionPrimitives::getVector(Property &opt, const string &key, Vector &v, const int offs)
+/************************************************************************/
+bool affActionPrimitives::getVector(Property &opt, const string &key, Vector &v,
+                                    const int offs)
 {
     if (opt.check(key.c_str()))
     {
@@ -123,6 +131,7 @@ bool affActionPrimitives::getVector(Property &opt, const string &key, Vector &v,
 }
 
 
+/************************************************************************/
 bool affActionPrimitives::open(Property &opt)
 {
     if (!opt.check("local"))
@@ -236,6 +245,7 @@ bool affActionPrimitives::open(Property &opt)
 }
 
 
+/************************************************************************/
 void affActionPrimitives::close()
 {
     if (closed)
@@ -283,6 +293,7 @@ void affActionPrimitives::close()
 }
 
 
+/************************************************************************/
 void affActionPrimitives::stopBlockedJoints(set<int> &activeJoints)
 {
 	Vector smoothedError;	
@@ -309,6 +320,7 @@ void affActionPrimitives::stopBlockedJoints(set<int> &activeJoints)
 }
 
 
+/************************************************************************/
 bool affActionPrimitives::handMotionDone(const set<int> &joints)
 {
 	Vector v=handMetrics->getVelocity();
@@ -326,6 +338,7 @@ bool affActionPrimitives::handMotionDone(const set<int> &joints)
 }
 
 
+/************************************************************************/
 bool affActionPrimitives::clearActionsQueue()
 {
     if (configured)
@@ -341,6 +354,7 @@ bool affActionPrimitives::clearActionsQueue()
 }
 
 
+/************************************************************************/
 bool affActionPrimitives::pushAction(const Vector &x, const Vector &o,
                                      bool (affActionPrimitives::*handAction)(const bool))
 {
@@ -366,12 +380,14 @@ bool affActionPrimitives::pushAction(const Vector &x, const Vector &o,
 }
 
 
+/************************************************************************/
 bool affActionPrimitives::pushAction(const Vector &x, const Vector &o)
 {
     return pushAction(x,o,&affActionPrimitives::nopHand);
 }
 
 
+/************************************************************************/
 bool affActionPrimitives::pushAction(bool (affActionPrimitives::*handAction)(const bool))
 {
     if (configured)
@@ -397,6 +413,7 @@ bool affActionPrimitives::pushAction(bool (affActionPrimitives::*handAction)(con
 }
 
 
+/************************************************************************/
 bool affActionPrimitives::pushWaitState(const double tmo)
 {
     if (configured)
@@ -422,6 +439,7 @@ bool affActionPrimitives::pushWaitState(const double tmo)
 }
 
 
+/************************************************************************/
 bool affActionPrimitives::execQueuedAction()
 {
     bool exec=false;
@@ -453,6 +471,7 @@ bool affActionPrimitives::execQueuedAction()
 }
 
 
+/************************************************************************/
 void affActionPrimitives::run()
 {
     if (!armMoveDone)
@@ -492,12 +511,14 @@ void affActionPrimitives::run()
 }
 
 
+/************************************************************************/
 affActionPrimitives::~affActionPrimitives()
 {
     close();
 }
 
 
+/************************************************************************/
 bool affActionPrimitives::wait(const double tmo)
 {
     if (configured)
@@ -512,6 +533,7 @@ bool affActionPrimitives::wait(const double tmo)
 }
 
 
+/************************************************************************/
 bool affActionPrimitives::reach(const Vector &x, const Vector &o, const bool sync)
 {
     if (configured)
@@ -545,7 +567,9 @@ bool affActionPrimitives::reach(const Vector &x, const Vector &o, const bool syn
 }
 
 
-bool affActionPrimitives::grasp(const Vector &x, const Vector &o, const Vector &d, const bool sync)
+/************************************************************************/
+bool affActionPrimitives::grasp(const Vector &x, const Vector &o, const Vector &d,
+                                const bool sync)
 {
     if (configured)
     {
@@ -570,7 +594,9 @@ bool affActionPrimitives::grasp(const Vector &x, const Vector &o, const Vector &
 }
 
 
-bool affActionPrimitives::touch(const Vector &x, const Vector &o, const Vector &d, const bool sync)
+/************************************************************************/
+bool affActionPrimitives::touch(const Vector &x, const Vector &o, const Vector &d,
+                                const bool sync)
 {
     if (configured)
     {
@@ -595,7 +621,9 @@ bool affActionPrimitives::touch(const Vector &x, const Vector &o, const Vector &
 }
 
 
-bool affActionPrimitives::tap(const Vector &x, const Vector &o, const Vector &d,  const bool sync)
+/************************************************************************/
+bool affActionPrimitives::tap(const Vector &x, const Vector &o, const Vector &d,
+                              const bool sync)
 {
     if (configured)
     {
@@ -621,6 +649,7 @@ bool affActionPrimitives::tap(const Vector &x, const Vector &o, const Vector &d,
 }
 
 
+/************************************************************************/
 bool affActionPrimitives::moveHand(const Vector &fingerPos, const bool sync)
 {
     if (configured)
@@ -647,24 +676,28 @@ bool affActionPrimitives::moveHand(const Vector &fingerPos, const bool sync)
 }
 
 
+/************************************************************************/
 bool affActionPrimitives::nopHand(const bool sync)
 {
     return configured;
 }
 
 
+/************************************************************************/
 bool affActionPrimitives::openHand(const bool sync)
 {
     return moveHand(fingerOpenPos,sync);
 }
 
 
+/************************************************************************/
 bool affActionPrimitives::closeHand(const bool sync)
 {
     return moveHand(fingerClosePos,sync);
 }
 
 
+/************************************************************************/
 bool affActionPrimitives::getPose(Vector &x, Vector &o)
 {
     if (configured)
@@ -674,6 +707,7 @@ bool affActionPrimitives::getPose(Vector &x, Vector &o)
 }
 
 
+/************************************************************************/
 bool affActionPrimitives::stopControl()
 {
     if (configured)
@@ -696,6 +730,7 @@ bool affActionPrimitives::stopControl()
 }
 
 
+/************************************************************************/
 bool affActionPrimitives::checkActionsDone(bool &f, const bool sync)
 {
     if (configured)
@@ -715,6 +750,7 @@ bool affActionPrimitives::checkActionsDone(bool &f, const bool sync)
 }
 
 
+/************************************************************************/
 bool affActionPrimitives::syncCheckInterrupt()
 {
     if (configured)
@@ -729,6 +765,7 @@ bool affActionPrimitives::syncCheckInterrupt()
 }
 
 
+/************************************************************************/
 bool affActionPrimitives::syncCheckReinstate()
 {
     if (configured)
