@@ -80,5 +80,10 @@
 2009-20-October  Marco Maggiali <marco.maggiali@iit.it>
 	* Added MODE_OPENLOOP =0x50. TO BE TESTED 
 	* Current build 31.	
-	
+
+2009-13-December  iron <francesco.nori@iit.it>
+	* Version 0x0153 now decouples also the duty cycles. 
+	* Includes a tentative for fixing a possible delay (4ms)
+	on the trasmission of positions in version 0x0153 and 0x0173.
+	* Current build 32.	
 	
