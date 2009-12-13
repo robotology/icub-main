@@ -263,14 +263,14 @@ extern char    _additional_info [32];
 	if (CAN_LEN == 8) \
 	{ \
 		value = BYTE_C(CAN_DATA[0], CAN_DATA[1], CAN_DATA[2], CAN_DATA[3]); \
-		_delta_adj[0] = L_sub (value, _other_position[0]) >> 2; \
-		_adjustment[0] = L_add (value, _delta_adj[0]); \
-		_other_position[0] = value; \
+		_cpl_pos_delta[0] = L_sub (value, _cpl_pos_received[0]) >> 2; \
+		_cpl_pos_prediction[0] = value; \
+		_cpl_pos_received[0] = value; \
 		\
 		value = BYTE_C(CAN_DATA[4], CAN_DATA[5], CAN_DATA[6], CAN_DATA[7]); \
-		_delta_adj[1] = L_sub (value, _other_position[1]) >> 2; \
-		_adjustment[1] = L_add (value, _delta_adj[1]); \
-		_other_position[1] = value; \
+		_cpl_pos_delta[1] = L_sub (value, _cpl_pos_received[1]) >> 2; \
+		_cpl_pos_prediction[1] = value; \
+		_cpl_pos_received[1] = value; \
 		\
 		_pending_request = false; \
 		_timeout = 0; \
@@ -289,9 +289,9 @@ extern char    _additional_info [32];
 	if (CAN_LEN == 8) \
 	{ \
 		value = BYTE_W(CAN_DATA[4], CAN_DATA[5]); \
-		_delta_duty[0] = (value - _other_duty[0]) >> 2; \
-		_adj_duty[0] = value + _delta_adj[0]; \
-		_other_duty[0] = value; \
+		_cpl_pid_delta[0] = (value - _cpl_pid_received[0]) >> 2; \
+		_cpl_pid_prediction[0] = value; \
+		_cpl_pid_received[0] = value; \
 		\
 		_general_board_error = ERROR_NONE; \
 	} \
@@ -308,10 +308,10 @@ extern char    _additional_info [32];
 	if (CAN_LEN == 8) \
 	{ \
 		value = BYTE_W(CAN_DATA[4], CAN_DATA[5]); \
-		_other_error[0] = value; \
+		_cpl_err[0] = value; \
 		\
 		value = BYTE_W(CAN_DATA[6], CAN_DATA[7]); \
-		_other_error[1] = value; \
+		_cpl_err[1] = value; \
 		\
 		_general_board_error = ERROR_NONE; \
 	} \

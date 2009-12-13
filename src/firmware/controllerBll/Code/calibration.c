@@ -70,12 +70,12 @@ byte calibrate (byte channel, byte type, Int16 param1,Int16 param2, Int16 param3
 			set_relative_position_abs_ssi_turns(channel, 0);
 			_position[channel] = get_relative_position_abs_ssi(channel);
 			#if VERSION==0x0153
-				_position[channel] = _position[channel]+ ((float)_adjustment[0]*6.5/3.8);  
-				_position[channel] = _position[channel]- ((float) _adjustment[1]*6.5/3.8);    
+				_position[channel] = _position[channel]+ ((float)_cpl_pos_prediction[0]*6.5/3.8);  
+				_position[channel] = _position[channel]- ((float) _cpl_pos_prediction[1]*6.5/3.8);    
 			#elif VERSION==0x0173
 				_position[channel] = (((float) _position[channel])*0.6153F);  
-				_position[channel] = _position[channel]+ _adjustment[0];
-				_position[channel] = _position[channel]- _adjustment[1];			
+				_position[channel] = _position[channel]+ _cpl_pos_prediction[0];
+				_position[channel] = _position[channel]- _cpl_pos_prediction[1];			
 			#endif			
 			_set_point[channel] = param1;
 			init_trajectory (channel, _position[channel], _set_point[channel], param2);

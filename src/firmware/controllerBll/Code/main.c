@@ -688,28 +688,28 @@ void decouple_positions(void)
 		
 #if   VERSION == 0x0153
 		/* beware of the first cycle when _old has no meaning */		
-		_position[0] = _position[0]+ (float) (((float) _adjustment[0])*1.7105F);  
-		_position[0] = _position[0]- (float) (((float) _adjustment[1])*1.7105F);
+		_position[0] = _position[0]+ (float) (((float) _cpl_pos_prediction[0])*1.7105F);  
+		_position[0] = _position[0]- (float) (((float) _cpl_pos_prediction[1])*1.7105F);
 		/*
 		|M1| |  1     0    0   |  |T1|
 		|T2|=|  0     1    0   |* |T2|     with a=3.8/6.5 i.e. a=1/1.7105
 		|M3| | 1/a  -1/a   1   |  |T3|
 		*/
-		_adjustment[0] = L_add(_adjustment[0], _delta_adj[0]);
-		_adjustment[1] = L_add(_adjustment[1], _delta_adj[1]);
+		_cpl_pos_prediction[0] = L_add(_cpl_pos_prediction[0], _cpl_pos_delta[0]);
+		_cpl_pos_prediction[1] = L_add(_cpl_pos_prediction[1], _cpl_pos_delta[1]);
 
 #elif VERSION == 0x0173
 		/* beware of the first cycle when _old has no meaning */		
 		_position[0] = (((float) _position[0])*0.6153F);  
-		_position[0] = _position[0]+ _adjustment[0];
-		_position[0] = _position[0]- _adjustment[1];
+		_position[0] = _position[0]+ _cpl_pos_prediction[0];
+		_position[0] = _position[0]- _cpl_pos_prediction[1];
 		/*
 		|M1| |  1     0    0   |  |T1|     pulley diameter
 		|T2|=|  0     1    0   |* |T2|     with a=40/65 i.e. a=0.6153
 		|M3| |  1    -1    a   |  |T3|
 		*/
-		_adjustment[0] = L_add(_adjustment[0], _delta_adj[0]);
-		_adjustment[1] = L_add(_adjustment[1], _delta_adj[1]);
+		_cpl_pos_prediction[0] = L_add(_cpl_pos_prediction[0], _cpl_pos_delta[0]);
+		_cpl_pos_prediction[1] = L_add(_cpl_pos_prediction[1], _cpl_pos_delta[1]);
 						
 #elif VERSION == 0x0155
 //		_position[0] = _position[0] - _position[1];
@@ -752,12 +752,12 @@ void decouple_dutycycle(Int32 *pwm)
 #elif VERSION == 0x0153
 	if (_control_mode[0] == MODE_POSITION)
 	{
-		temp = _adj_duty[0] + _adj_duty[1];
+		temp = _cpl_pid_prediction[0] + _cpl_pid_prediction[1];
 	    pwm[0] += temp;
 	    _pd[0] += temp;
 	    //update the prediction for coupled board duty
-	    _adj_duty[0] = _adj_duty[0] + _delta_duty[0];
-	    _adj_duty[1] = _adj_duty[1] + _delta_duty[1];
+	    _cpl_pid_prediction[0] = _cpl_pid_prediction[0] + _cpl_pid_delta[0];
+	    _cpl_pid_prediction[1] = _cpl_pid_prediction[1] + _cpl_pid_delta[1];
 	}
 #endif			
 }
