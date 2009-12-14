@@ -464,5 +464,6 @@ int main(int argc, char *argv[]) {
     Network yarp;
     Control_GazeModule module;
     module.setName("/controlGaze2"); // set default name of module
+	module.attachTerminal();
     return module.runModule(argc,argv);
 }

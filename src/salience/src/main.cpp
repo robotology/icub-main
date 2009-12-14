@@ -94,6 +94,7 @@ int main(int argc, char *argv[]) {
 	rf.configure("ICUB_ROOT", argc, argv);
     SalienceModule module;
     module.setName("/salience");
+	module.attachTerminal();
     return module.runModule(rf);     
 }
 

@@ -71,5 +71,6 @@ int main(int argc, char *argv[]) {
 	rf.configure("ICUB_ROOT", argc, argv);
     CamCalibConfModule module;
     module.setName("/camCalibConf");
+	module.attachTerminal();
     return module.runModule(rf);   
 }

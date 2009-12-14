@@ -65,5 +65,6 @@ int main(int argc, char *argv[]) {
 	rf.configure("ICUB_ROOT", argc, argv);
     AttentionSelectionModule module;
     module.setName("/attentionSelection");
+	module.attachTerminal();
     return module.runModule(rf);  
 }
