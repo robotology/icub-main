@@ -10,6 +10,7 @@
 /* YARP */
 #include <yarp/os/Network.h>
 #include <yarp/os/RFModule.h>
+#include <yarp/os/Stamp.h>
 using namespace yarp::os;
 
 /* iCub */
@@ -80,8 +81,17 @@ bool BlobDescriptorModule::configure(ResourceFinder &rf) // equivalent to Module
                                                      "Tracker initialization output port (string)" ).asString()
                                            );
     _minAreaThreshold = rf.check( "min_area_threshold",
-                                  Value(2000),
+                                  Value(100),
                                   "Minimum number of pixels allowed for foreground objects" ).asInt();
+
+	_maxObjects = rf.check( "max_objects" , 
+						    Value(20), 
+							"Maximum number of objects to process" ).asInt();
+	if( _maxObjects <= 0)
+	{
+		cout << "WARNING: Invalid parameter (number of objects). Will use default (20)" << endl;
+		_maxObjects = 20;
+	}
 
 	//Network::init();
 	
@@ -117,28 +127,60 @@ bool BlobDescriptorModule::configure(ResourceFinder &rf) // equivalent to Module
         return false;
     }
 
-    _yarpRawImg     = _rawImgInputPort.read(true);
-    _yarpLabeledImg = _labeledImgInputPort.read(true);
-    /* the OpenCV versions of these images will be set in BlobDescriptorModule::updateModule() */
+    _yarpRawInputPtr     = _rawImgInputPort.read(true);
+    _yarpLabeledInputPtr = _labeledImgInputPort.read(true);
+    
+	//check dimensions
+	if( (_yarpRawInputPtr->width() != _yarpLabeledInputPtr->width()) || 
+		(_yarpRawInputPtr->height() != _yarpLabeledInputPtr->height()))
+	{
+		cout << getName() << ": input image dimensions differ. Will exit ... " << endl;
+        return false;
+	}
 
-    // FIXME: check
-    h_plane = cvCreateImage(labeled_sz, IPL_DEPTH_8U, 1);
+	
+    _w   = _yarpRawInputPtr->width();
+    _h   = _yarpRawInputPtr->height();
+    _sz  = cvSize(_w, _h);
+
+	//Allocate image buffers
+	_yarpRawImg.resize(_w,_h);
+	_yarpHSVImg.resize(_w,_h);
+	_yarpHueImg.resize(_w,_h);
+	_yarpLabeledImg.resize(_w,_h);
+	_yarpViewImg.resize(_w,_h);
+	_yarpTempImg.resize(_w,_h);
+    //_h_plane = cvCreateImage(_sz, IPL_DEPTH_8U, 1);
 
     /* IvanaModule::init() */
-    hist_size    = new int[2];
-    hist_size[0] = H_BINS;
-    hist_size[1] = S_BINS;
-    h_ranges     = new float[2];
-    s_ranges     = new float[2];
-    v_ranges     = new float[2];
+    _hist_size[0] = H_BINS;
+    _hist_size[1] = S_BINS;
     /* hue varies from 0 (~0°red) to 180 (~360°red again) */
-    h_ranges[0]  =   0;
-    h_ranges[1]  = 360;
+    _h_ranges[0]  =   0;
+    _h_ranges[1]  = 360;
     /* saturation varies from 0 (black-gray-white) to 255 (pure spectrum color) */
-    s_ranges[0]  =   0;
-    s_ranges[1]  = 255;
-    v_ranges[0]  =   0;
-    v_ranges[1]  = 255;
+    _s_ranges[0]  =   0;
+    _s_ranges[1]  = 255;
+    _v_ranges[0]  =   0;
+    _v_ranges[1]  = 255;
+	float *ranges[] = { _h_ranges, _s_ranges, _v_ranges };
+    
+	//Initializing the object descriptor list
+	_objDescTable = new ObjectDescriptor[_maxObjects];
+	//must allocate and initialize the masks and histograms
+	//this should go in the future to the object class constructor
+	for(int i = 0; i < _maxObjects; i++)
+	{
+		_objDescTable[i].mask_image = cvCreateImage(_sz,8,1);
+		_objDescTable[i].mask_data = (unsigned char*)_objDescTable[i].mask_image->imageData;
+		_objDescTable[i].h_bins = _hist_size[0];
+		_objDescTable[i].s_bins = _hist_size[1];
+        _objDescTable[i].objHist = cvCreateHist(1, _hist_size, CV_HIST_ARRAY, ranges, 1);
+		_objDescTable[i].storage = cvCreateMemStorage(0);
+		_objDescTable[i].contours = 0;
+		_objDescTable[i].convexhull = 0; 
+
+	}
 
 	return true; // tell RFModule that everything went well, so that it will run the module
 }
@@ -174,10 +216,12 @@ bool BlobDescriptorModule::close()
     _affDescriptorOutputPort.close();
     _trackerInitOutputPort.close();
 
-    cvReleaseImage(&_opencvRawImg);
-    cvReleaseImage(&_opencvLabeledImg32);
-    cvReleaseImage(&_opencvLabeledImg8);
-    cvReleaseImage(&h_plane);
+	for(int i = 0; i < _maxObjects; i++)
+	{
+		cvReleaseImage(&(_objDescTable[i].mask_image));
+		cvReleaseHist(&(_objDescTable[i].objHist));
+	}
+	delete [] _objDescTable;
 
 	// Network::fini();
 	return true;
@@ -201,69 +245,114 @@ bool BlobDescriptorModule::respond(const Bottle &command, Bottle &reply)
  */
 bool BlobDescriptorModule::updateModule()
 {
-    _yarpRawImg     = _rawImgInputPort.read(true);
-    _yarpLabeledImg = _labeledImgInputPort.read(true);
+	Stamp rawstamp, labeledstamp; 
+	
+    _yarpRawInputPtr = _rawImgInputPort.read(true);
+	_yarpLabeledInputPtr = _labeledImgInputPort.read(true);
+	
+	//must make sure images are corresponding - they must have the same timestamp
+	if( !_rawImgInputPort.getEnvelope(rawstamp) || !_labeledImgInputPort.getEnvelope(labeledstamp) )
+	{
+		cout << "This module requires ports with valid timestamp data. Stamps are missing. Exiting ..." << endl;
+		return false;
+	}
+	while( rawstamp.getCount() < labeledstamp.getCount() )
+	{
+		_yarpRawInputPtr = _rawImgInputPort.read(true);
+		_rawImgInputPort.getEnvelope(rawstamp);
+	}
+	while( rawstamp.getCount() > labeledstamp.getCount() )
+	{
+		_yarpLabeledInputPtr = _labeledImgInputPort.read(true);
+		_labeledImgInputPort.getEnvelope(labeledstamp);
+	}
 
-    raw_w   = _yarpRawImg->width();
-    raw_h   = _yarpRawImg->height();
-    raw_sz  = cvSize(raw_w, raw_h);
 
-    labeled_w  = _yarpLabeledImg->width();
-    labeled_h  = _yarpLabeledImg->height();
-    labeled_sz = cvSize(labeled_w, labeled_h);
+	_yarpRawImg = *_yarpRawInputPtr;
+	_yarpViewImg = _yarpRawImg;
+	_yarpLabeledImg = *_yarpLabeledInputPtr;
 
-    _opencvRawImg = (IplImage *) _yarpRawImg->getIplImage();
-    _opencvLabeledImg32 = (IplImage *) _yarpLabeledImg->getIplImage();
+	//Get opencv pointers to images to more easily call opencv functions
+    IplImage * opencvRawImg = (IplImage *) _yarpRawImg.getIplImage();
+	IplImage * opencvHSVImg = (IplImage *) _yarpHSVImg.getIplImage();
+	IplImage * opencvHueImg = (IplImage *) _yarpHueImg.getIplImage();
+    IplImage * opencvLabeledImg = (IplImage *) _yarpLabeledImg.getIplImage();
+	IplImage * opencvViewImg = (IplImage *) _yarpViewImg.getIplImage();
+	IplImage * opencvTempImg = (IplImage *) _yarpTempImg.getIplImage();
 
-    // DEBUG
-    int *ptr = (int *) _yarpLabeledImg->getRawImage();
+    //Convert from RGB to HSV and get the Hue plane - to compute the histograms
+	cvCvtColor(opencvRawImg, opencvHSVImg, CV_RGB2HSV);
+	cvSplit(opencvHSVImg, opencvHueImg, NULL, NULL, NULL);
+    IplImage *planes[] = { opencvHueImg }; /* just hue (Ivana used saturation, too - planesW variable) */
 
-    float *ranges[] = { h_ranges, s_ranges, v_ranges }; // FIXME: deallocate this?
-    IplImage *planes[] = { h_plane }; /* just hue (Ivana used saturation, too - planesW variable) */
-
-    /* compute _numLabels as the max value within _opencvLabeledImg */
+    /* compute numLabels as the max value within opencvLabeledImg */
     double max_val, trash;
-    cvMinMaxLoc(_opencvLabeledImg32, &trash, &max_val, NULL, NULL, NULL);
-    _numLabels = (int) max_val;
+    cvMinMaxLoc(opencvLabeledImg, &trash, &max_val, NULL, NULL, NULL);
+    int numLabels = (int) max_val;
 
-    // DEBUG
-    for(int i=0; i<labeled_h; i++)
-    {
-        for(int j=0; j<labeled_w; j++)
-        {
-            cout << *ptr++ << " ";
-        }
-        cout << endl;
-    }
-    //return false;
-
-    _numObjects = selectObjects(_opencvLabeledImg32, _opencvLabeledImg8, _numLabels, _minAreaThreshold);
-    cout << getName() << ": number of objects is " << _numObjects << endl;
+	// different selection criteria should be allowed here
+    _numObjects = selectObjects( opencvLabeledImg, opencvTempImg, numLabels, _minAreaThreshold);
+	if(_numObjects > _maxObjects )
+	{
+		cout << "Number of objects is bigger than the defined maximum. Only " << _maxObjects << " will be processed." << endl;
+		_numObjects = _maxObjects;
+	}
 
     /* extract characteristics of objects */
-    objDescTable = new ObjectDescriptor[_numObjects];
-    extractObj(_opencvLabeledImg32, _numObjects, objDescTable);
+    extractObj(opencvLabeledImg, _numObjects, _objDescTable);
+
+	// Here all objects have been segmented and are stored independently.
+	// Contour extraction
+	for( int i=0; i < _numObjects; i++)
+	{
+		cvFindContours(_objDescTable[i].mask_image, 
+		               _objDescTable[i].storage, 
+					   &(_objDescTable[i].contours),
+					   sizeof(CvContour),
+					   CV_RETR_LIST, 
+					   CV_CHAIN_APPROX_SIMPLE, 
+				       cvPoint(0,0)
+					   );
+	}
+
+	for( int i=0; i < _numObjects; i++)
+	{
+		// Contour drawing
+		cvDrawContours(
+			opencvViewImg, 
+			_objDescTable[i].contours, 
+			CV_RGB(0,255,0), //External color
+			CV_RGB(0,0,255), //Hole color
+			1,				 
+			1, 
+			CV_AA, 
+			cvPoint(0, 0)			// roi offset
+			);
+	}
+	
+	//DEBUG - print the characteristics of the objects found
+	for(int i=0; i < _numObjects; i++)
+    {
+		cout << "Object no " << _objDescTable[i].no;
+		cout << " label " << _objDescTable[i].label;
+		cout << " area " << _objDescTable[i].area;
+		cout << " x " << _objDescTable[i].center.x;
+		cout << " y " << _objDescTable[i].center.y << endl;
+	}
+
 
     /* compute histogram of each object */
     for(int i=0; i < _numObjects; i++)
     {
-
-
-
-        objDescTable[i].h_bins = hist_size[0];
-        objDescTable[i].s_bins = hist_size[1];
-        objDescTable[i].objHist = cvCreateHist(2, hist_size, CV_HIST_ARRAY, ranges, 1);
-        cvCalcHist(planes, objDescTable[i].objHist, 0, objDescTable[i].mask_image);
+        cvCalcHist(planes, _objDescTable[i].objHist, 0, _objDescTable[i].mask_image);
         float ohmax; // to normalize the object histogram
-        cvGetMinMaxHistValue(objDescTable[i].objHist, 0, &ohmax, 0, 0);
-        cvConvertScale(objDescTable[i].objHist->bins, objDescTable[i].objHist->bins, ohmax ? 255. / ohmax : 0., 0);
-
-
-
-
+        cvGetMinMaxHistValue(_objDescTable[i].objHist, 0, &ohmax, 0, 0);
+        cvConvertScale(_objDescTable[i].objHist->bins, _objDescTable[i].objHist->bins, ohmax ? 255. / ohmax : 0., 0);
     }
 
-
-    
+	//output image to view results
+	ImageOf<PixelRgb> &yarpOutputImage = _viewImgOutputPort.prepare();
+	yarpOutputImage = _yarpViewImg;
+	_viewImgOutputPort.write();
   	return true;
 }

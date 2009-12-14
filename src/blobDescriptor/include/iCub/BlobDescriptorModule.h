@@ -171,30 +171,34 @@ class BlobDescriptorModule : public RFModule
 	BufferedPort<ImageOf<PixelRgb> >  _viewImgOutputPort;
 	BufferedPort<Bottle>              _affDescriptorOutputPort;
 	BufferedPort<Bottle>              _trackerInitOutputPort;
-	/* yarp images */
-	ImageOf<PixelRgb>                *_yarpRawImg;
-	ImageOf<PixelInt>                *_yarpLabeledImg;
-	ImageOf<PixelRgb>                *_yarpViewImg;
+	/* yarp image pointes to access image ports*/
+	ImageOf<PixelRgb>                 *_yarpRawInputPtr;
+	ImageOf<PixelInt>                 *_yarpLabeledInputPtr;
+	/* yarp image internal buffers */
+	ImageOf<PixelRgb>				  _yarpRawImg;
+	ImageOf<PixelRgb>                _yarpViewImg;
+	ImageOf<PixelRgb>				  _yarpHSVImg;
+	ImageOf<PixelMono>				  _yarpHueImg;
+	ImageOf<PixelInt>				  _yarpLabeledImg;
+	ImageOf<PixelMono>                _yarpTempImg;
+
 	Bottle                            _affDescriptor;
 	Bottle                            _trackerInit;
 	/* OpenCV images */
-	IplImage                         *_opencvRawImg;
-	IplImage                         *_opencvLabeledImg32; /* 32 bit */
-    IplImage                         *_opencvLabeledImg8;  /*  8 bit. FIXME: check if this is necessary */
-	int                               raw_w, raw_h, labeled_w, labeled_h;
-	CvSize                            raw_sz, labeled_sz;
+	//IplImage                         *_opencvRawImg;
+	//IplImage                         *_opencvLabeledImg32; /* 32 bit */
+    //IplImage                         *_opencvLabeledImg8;  /*  8 bit. FIXME: check if this is necessary */
+	int                               _w, _h;
+	CvSize                            _sz;
 
-	ObjectDescriptor                 *objDescTable;
+	ObjectDescriptor                 *_objDescTable;
 	int                               _numObjects;
-	int                               _numLabels;
-    int                              *hist_size;
-	float                            *h_ranges, *s_ranges, *v_ranges;
-
-	IplImage                         *h_plane; /* for the first input of cvCalcHist. FIXME: h_plane or x_plane? */
-	//int                               _descriptors[MAX_ELEMS];
-
+    int _hist_size[2];
+	float _h_ranges[2], _s_ranges[2], _v_ranges[2];
+	
 	/* other parameters that can be user-specified (besides port names) */
 	int                               _minAreaThreshold; /* min. number of pixels allowed for foreground objects */
+	int _maxObjects; /* maximum number of object to process */
 
 public:
 	virtual bool configure(ResourceFinder &rf); /* configure module parameters, return true if successful */

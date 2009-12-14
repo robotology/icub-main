@@ -22,9 +22,11 @@
 using namespace std;
 
 /* objectDescriptor.h */
+
+//Should create a class with proper constructors and destructors
 struct ObjectDescriptor
 {
-    int no; // number of objects in the image
+    int no; // number of objects in the image ??? It looks like it is more the index of the object in the array
     int label;
     int area;
     CvPoint center;
@@ -35,6 +37,12 @@ struct ObjectDescriptor
     unsigned char *mask_data;
 
     CvScalar color; // for display? CHECK
+
+	//New fields added for contour processing - Alex 13/12/2009
+	CvMemStorage* storage; // = cvCreateMemStorage(0);
+	CvSeq *contours; // = 0;
+	CvSeq *convexhull; // = 0;
+
 };
 
 /* calcdistances.h */

@@ -111,6 +111,8 @@ int selectObjects(IplImage *labeledImage, IplImage *out, int numLabels, int area
     //convert from label image (integer) to output image (unsigned char)
     int32ToInt8Image(labeledImage, out);
 
+	delete [] area;
+
     return numObjects;
 }
 
@@ -205,41 +207,41 @@ void extractObj(IplImage *labeledImage, int numObjects, ObjectDescriptor *objDes
 
     //initialization of the area and labels of the objectDescriptors
     for (int i = 0; i < numObjects; i++)
-        {
-            objDescTable[i].no = i;
-            objDescTable[i].area = 0;
-            objDescTable[i].mask_image = cvCreateImage(cvSize(width, height),8,1);
-            objDescTable[i].mask_data = (unsigned char*)objDescTable[i].mask_image->imageData;
-            for( int k = 0; k < height; k++ )
-                for( int j = 0; j < width; j++ )
-                    objDescTable[i].mask_data[k*stride+j]  = 0; //set all the pixels black
-            objDescTable[i].center = cvPoint(0,0); //default center of the object
-            objDescTable[i].label = -1;
-        }
+    {
+		objDescTable[i].no = i;
+        objDescTable[i].area = 0;
+        //objDescTable[i].mask_image = cvCreateImage(cvSize(width, height),8,1);
+        //objDescTable[i].mask_data = (unsigned char*)objDescTable[i].mask_image->imageData;
+        for( int k = 0; k < height; k++ )
+			for( int j = 0; j < width; j++ )
+				objDescTable[i].mask_data[k*stride+j]  = 0; //set all the pixels black
+        objDescTable[i].center = cvPoint(0,0); //default center of the object
+        objDescTable[i].label = -1;
+    }
     //calculating the area and the mask images for the histogram for each object
     for (int i = 0; i < height; i++)
+    {			
+		for (int j = 0; j < width; j++)
         {
-            for (int j = 0; j < width; j++)
-                {
-                    int label = labeledData[i*stride+j];
-                    if (label != 0)
-                        {
-                            int ind = indexOfL(label, objDescTable, numObjects);
-                            int a = objDescTable[ind].area;
-                            objDescTable[ind].mask_data[i*stride+j] = 255;
-                            objDescTable[ind].area++;
-                            objDescTable[ind].label = label;
-                            objDescTable[ind].center.x += j;
-                            objDescTable[ind].center.y += i;
-                        }
-                }
+			int label = labeledData[i*stride+j];
+            if (label != 0)
+			{
+				int ind = indexOfL(label, objDescTable, numObjects);
+                int a = objDescTable[ind].area;
+                objDescTable[ind].mask_data[i*stride+j] = 255;
+                objDescTable[ind].area++;
+                objDescTable[ind].label = label;
+                objDescTable[ind].center.x += j;
+                objDescTable[ind].center.y += i;
+            }
         }
+    }
 
     for (int i = 0; i < numObjects; i++)
-        {
-            objDescTable[i].center.x /= objDescTable[i].area;
-            objDescTable[i].center.y /= objDescTable[i].area;
-        }
+    {
+        objDescTable[i].center.x /= objDescTable[i].area;
+        objDescTable[i].center.y /= objDescTable[i].area;
+    }
 }
 
 /* Function:  int32ToInt8Image
@@ -303,4 +305,5 @@ void printImgLabels(IplImage *img, int numObjects)
 
             }
     printf("\n");
+	delete [] labelsList;
 }
