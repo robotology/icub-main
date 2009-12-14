@@ -17,13 +17,13 @@
  * The following key-value pairs can be specified as command-line parameters by prefixing -- to the key
  * (e.g. \c --from file.ini). The value part can be changed to suit your needs; the default values are shown below.
  *
- * - \c from \c blobDescriptor.ini \n
+ * - <tt>--from blobDescriptor.ini</tt> \n
  *   The configuration file
  *
- * - \c context \c blobDescriptor/conf \n
+ * - <tt>--context blobDescriptor/conf</tt> \n
  *   The sub-path from \c $ICUB_ROOT/icub/app to the configuration file
  *
- * - \c name \c blobDescriptor \n
+ * - <tt>--name blobDescriptor</tt> \n
  *   The name of the module (used to form the stem of module port names)
  *
  * <b>Configuration File Parameters</b>
@@ -32,69 +32,75 @@
  * (they can also be specified as command-line parameters if you so wish).
  * The value part can be changed to suit your needs; the default values are shown below.
  *
- * - \c conf_port \c /blobDescriptor/conf
+ * - <tt>conf_port /blobDescriptor/conf</tt> \n
  *   Complete configuration, message handling port name (optional)
  *
- * - \c raw_image_input_port \c /blobDescriptor/rawImg:i
+ * - <tt>raw_image_input_port /blobDescriptor/rawImg:i</tt> \n
  *   Complete raw image input port name
  *
- * - \c labeled_image_input_port \c /blobDescriptor/labeledImg:i
+ * - <tt>labeled_image_input_port /blobDescriptor/labeledImg:i</tt> \n
  *   Complete labeled image input port name
  *
- * - \c raw_image_output_port \c /blobDescriptor/rawImg:o
+ * - <tt>raw_image_output_port /blobDescriptor/rawImg:o</tt> \n
  *   Complete raw image output port name
  *
- * - \c view_image_output_port \c /blobDescriptor/viewImg:o
+ * - <tt>view_image_output_port /blobDescriptor/viewImg:o</tt> \n
  *   Complete port name of output image, including overlay edges
  *
- * - \c aff_descriptor_output_port \c /blobDescriptor/affDescriptor:o
+ * - <tt>aff_descriptor_output_port /blobDescriptor/affDescriptor:o</tt> \n
  *   Complete affordance object descriptor output port name
  *
- * - \c tracker_init_output_port \c /blobDescriptor/trackerInit:o
+ * - <tt>tracker_init_output_port /blobDescriptor/trackerInit:o</tt> \n
  *   Complete tracker initialization parameter output port name
+ *
+ * - <tt>min_area_threshold 100</tt> \n
+ *   Minimum number of pixels allowed for foreground objects
+ *
+ * - <tt>max_objects 20</tt> \n
+ *   Maximum number of objects to process
  *
  * \section portsa_sec Ports Accessed
  *
- * - \c /edisonSegm/rawimg:o
+ * - <tt>/edisonSegm/rawimg:o</tt> \n
  *   Raw image port previously created by a segmentation module.
  *
- * - \c /edisonSegm/labelimg:o
+ * - <tt>/edisonSegm/labelimg:o</tt> \n
  *   Labeled image port previously created by a segmentation module.
  *
  * \section portsc_sec Ports Created
  *
  *  <b>Input ports</b>
  *
- *  - \c /blobDescriptor/rawImg:i \n
+ *  - <tt>/blobDescriptor/rawImg:i</tt> \n
  *    Raw image input port
  *
- *  - \c /blobDescriptor/labeledImg:i \n
+ *  - <tt>/blobDescriptor/labeledImg:i</tt> \n
  *    Labeled image input port
  *
  * <b>Output ports</b>
  *
- * - /blobDescriptor/rawImg:o
+ * - <tt>/blobDescriptor/rawImg:o</tt> \n
  *   Raw image output port
  *
- * - /blobDescriptor/viewImg:o
+ * - <tt>/blobDescriptor/viewImg:o</tt> \n
  *   Port to display output image, including overlay edges
  *
- * - /blobDescriptor/affDescriptor:o
+ * - <tt>/blobDescriptor/affDescriptor:o</tt> \n
  *   Affordance object descriptor output port
  *
- * - /blobDescriptor/trackerInit:o
+ * - <tt>/blobDescriptor/trackerInit:o</tt> \n
  *   Tracker initialization parameter output port
  *
- * <b>Port Types<b>
+ * <b>Port Types</b>
  *
- * - BufferedPort<ImageOf<PixelRgb> >  _rawImgInputPort;
- * - BufferedPort<ImageOf<PixelInt> >  _labeledImgInputPort;
- * - BufferedPort<ImageOf<PixelRgb> >  _rawImgOutputPort;
- * - BufferedPort<ImageOf<PixelRgb> >  _viewImgOutputPort;
- * - BufferedPort<Bottle>              _affDescriptorOutputPort;
- * - BufferedPort<Bottle>              _trackerInitOutputPort;
+ * - <tt>BufferedPort<ImageOf<PixelRgb> >  _rawImgInputPort</tt>
+ * - <tt>BufferedPort<ImageOf<PixelInt> >  _labeledImgInputPort</tt>
+ * - <tt>BufferedPort<ImageOf<PixelRgb> >  _rawImgOutputPort</tt>
+ * - <tt>BufferedPort<ImageOf<PixelRgb> >  _viewImgOutputPort</tt>
+ * - <tt>BufferedPort<Bottle>              _affDescriptorOutputPort</tt>
+ * - <tt>BufferedPort<Bottle>              _trackerInitOutputPort</tt>
  *
- * \section out_data_sec Input Data Files
+ * \section in_data_sec Input Data Files
  *
  * None
  *
@@ -104,7 +110,7 @@
  *
  * \section conf_file_sec Configuration Files
  *
- * \c blobDescriptor.ini  in \c $ICUB_ROOT/app/blobDescriptor/conf or \c $ICUB_ROOT/app/demoAffv2/conf
+ * \c blobDescriptor.ini in \c $ICUB_ROOT/app/blobDescriptor/conf or \c $ICUB_ROOT/app/demoAffv2/conf (Object Affordances demo)
  *
  * \section tested_os_sec Tested OS
  *
@@ -112,7 +118,7 @@
  *
  * \section example_sec Example Instantiation of the Module
  *
- * <tt>blobDescriptor --name blobDescriptor --context blobDescriptor/conf --from blobDescriptor.ini </tt>
+ * <tt>blobDescriptor --name blobDescriptor --context blobDescriptor/conf --from blobDescriptor.ini </tt>\n
  * <tt>blobDescriptor --context demoAffv2/conf</tt>
  *
  * \author Giovanni Saponaro <gsaponaro@isr.ist.utl.pt>, Ivana Cingovska, Alexandre Bernardino
@@ -120,7 +126,7 @@
  * Copyright (C) 2009 RobotCub Consortium, European Commission FP6 Project IST-004370
  * CopyPolicy: Released under the terms of the GNU GPL v2.0
  *
- * This file can be edited at src/blobDescriptor/src/blobDescriptor.h
+ * This file can be edited at src/blobDescriptor/include/iCub/BlobDescriptorModule.h
  *
  */
 
@@ -154,8 +160,6 @@ using namespace yarp::sig;
 //#include <vector>
 using namespace std;
 
-//#define MAX_ELEMS 100 /* maximum number of segmented elements (blobs) to process in a cycle */
-
 class BlobDescriptorModule : public RFModule
 {
 	/* private class variables and module parameters */
@@ -164,8 +168,8 @@ class BlobDescriptorModule : public RFModule
 	string                            _robotPortName;
 	string                            _rawImgInputPortName;
 	string                            _labeledImgInputPortName;
-        string                            _rawImgOutputPortName;
-        string                            _viewImgOutputPortName;
+    string                            _rawImgOutputPortName;
+    string                            _viewImgOutputPortName;
 	string                            _affDescriptorOutputPortName;
 	string                            _trackerInitOutputPortName;
 	string                            _handlerPortName;
@@ -180,30 +184,30 @@ class BlobDescriptorModule : public RFModule
 	ImageOf<PixelRgb>                *_yarpRawInputPtr;
 	ImageOf<PixelInt>                *_yarpLabeledInputPtr;
 	/* yarp internal image buffers */
-	ImageOf<PixelRgb>		  _yarpRawImg;
-	ImageOf<PixelRgb>                 _yarpViewImg;
-	ImageOf<PixelRgb>		  _yarpHSVImg;
-	ImageOf<PixelMono>		  _yarpHueImg;
-	ImageOf<PixelInt>		  _yarpLabeledImg;
-	ImageOf<PixelMono>                _yarpTempImg;
+    ImageOf<PixelRgb>                 _yarpRawImg;
+    ImageOf<PixelRgb>                 _yarpViewImg;
+    ImageOf<PixelRgb>                 _yarpHSVImg;
+    ImageOf<PixelMono>                _yarpHueImg;
+    ImageOf<PixelInt>                 _yarpLabeledImg;
+    ImageOf<PixelMono>                _yarpTempImg;
 
 	Bottle                            _affDescriptor;
 	Bottle                            _trackerInit;
 	/* OpenCV images - not needed anymore */
 	//IplImage                       *_opencvRawImg;
 	//IplImage                       *_opencvLabeledImg32;
-        //IplImage                       *_opencvLabeledImg8;
+    //IplImage                       *_opencvLabeledImg8;
 	int                               _w, _h;
 	CvSize                            _sz;
 
 	ObjectDescriptor                 *_objDescTable;
 	int                               _numObjects;
-        int                               _hist_size[2];
+    int                               _hist_size[2];
 	float                             _h_ranges[2], _s_ranges[2], _v_ranges[2];
 	
 	/* other parameters that can be user-specified (besides port names) */
 	int                               _minAreaThreshold; /* min. number of pixels allowed for foreground objects */
-	int                               _maxObjects; /* maximum number of object to process */
+	int                               _maxObjects;       /* maximum number of object to process */
 
 public:
 	virtual bool configure(ResourceFinder &rf); /* configure module parameters, return true if successful */
