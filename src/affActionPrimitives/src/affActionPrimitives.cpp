@@ -325,7 +325,10 @@ bool affActionPrimitives::open(Property &opt)
 void affActionPrimitives::close()
 {
     if (closed)
-        return;    
+        return;
+
+    if (polyHand!=NULL && polyCart!=NULL)
+        stopControl();
 
     if (isRunning())
     {
@@ -694,7 +697,7 @@ bool affActionPrimitives::cmdHand(const HandWayPoint &handWP)
         }
 
         latchHandMoveDone=handMoveDone=false;
-        fprintf(stdout,"moving to hand WP: [%s]\n",const_cast<Vector&>(handWP.poss).toString().c_str());
+        fprintf(stdout,"moving hand to WP: [%s]\n",const_cast<Vector&>(handWP.poss).toString().c_str());
 
         return true;
     }
