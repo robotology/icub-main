@@ -106,6 +106,109 @@ bool affActionPrimitives::handleTorsoDOF(Property &opt, const string &key,
 
 
 /************************************************************************/
+bool affActionPrimitives::configHandSeq(Property &opt)
+{
+    if (opt.check("hand_sequences_file"))
+    {
+        string handSeqFile=opt.find("hand_sequences_file").asString();
+        Property handSeqProp;
+
+        fprintf(stdout,"Processing %s file\n",handSeqFile.c_str());
+        handSeqProp.fromConfigFile(handSeqFile.c_str());
+    
+        // GENERAL group
+        Bottle &bGeneral=handSeqProp.findGroup("GENERAL");
+        if (bGeneral.isNull())
+        {
+            fprintf(stdout,"WARNING: \"GENERAL\" group is missing\n");    
+            return false;
+        }
+
+        if (!bGeneral.check("numSequences"))
+        {
+            fprintf(stdout,"WARNING: \"numSequences\" option is missing\n");    
+            return false;
+        }
+
+        int numSequences=bGeneral.find("numSequences").asInt();
+
+        // SEQUENCE groups
+        for (int i=0; i<numSequences; i++)
+        {
+            char seq[255];
+            sprintf(seq,"SEQ_%d",i);
+
+            Bottle bSeq=handSeqProp.findGroup(seq);
+            if (bSeq.isNull())
+            {
+                fprintf(stdout,"WARNING: \"%s\" group is missing\n",seq);    
+                return false;
+            }
+
+            if (!bSeq.check("key"))
+            {
+                fprintf(stdout,"WARNING: \"key\" option is missing\n");    
+                return false;
+            }
+
+            string key=bSeq.find("key").asString();
+
+            if (!bSeq.check("numWayPoints"))
+            {
+                fprintf(stdout,"WARNING: \"numWayPoints\" option is missing\n");    
+                return false;
+            }
+
+            int numWayPoints=bSeq.find("numWayPoints").asInt();
+
+            for (int j=0; j<numWayPoints; j++)
+            {
+                char wp[255];
+                sprintf(wp,"wp_%d",j);
+
+                Bottle bWP=bSeq.findGroup(wp);
+                if (bWP.isNull())
+                {
+                    fprintf(stdout,"WARNING: \"%s\" entry is missing\n",wp);    
+                    return false;
+                }
+
+                if (!bWP.check("poss"))
+                {
+                    fprintf(stdout,"WARNING: \"poss\" option is missing\n");    
+                    return false;
+                }
+
+                if (!bWP.check("vels"))
+                {
+                    fprintf(stdout,"WARNING: \"vels\" option is missing\n");    
+                    return false;
+                }
+
+                Bottle *bPoss=bWP.find("poss").asList();
+                Vector poss(bPoss->size());
+
+                for (int k=0; k<poss.length(); k++)
+                    poss[k]=bPoss->get(k).asDouble();
+
+                Bottle *bVels=bWP.find("vels").asList();
+                Vector vels(bVels->size());
+
+                for (int k=0; k<vels.length(); k++)
+                    vels[k]=bVels->get(k).asDouble();
+
+                addHandSeqWP(key,poss,vels);
+            }
+        }
+    
+        return true;
+    }
+    else
+        return false;
+}
+
+
+/************************************************************************/
 bool affActionPrimitives::open(Property &opt)
 {
     if (!opt.check("local"))
@@ -138,6 +241,9 @@ bool affActionPrimitives::open(Property &opt)
         close();
         return false;
     }
+
+    // get hand sequence motions (if any)
+    configHandSeq(opt);
 
     // open the position client
     Property optPolyHand("(device remote_controlboard)");
@@ -546,7 +652,7 @@ bool affActionPrimitives::cmdHand(const HandWayPoint &handWP)
         {   
             int j=*itr-jHandMin;
 
-            if (j>=handWP.poss.length())
+            if (j>=handWP.poss.length() || j>=handWP.vels.length())
                 break;
 
             posCtrl->setRefSpeed(*itr,handWP.vels[j]);
@@ -612,6 +718,18 @@ bool affActionPrimitives::addHandSeqWP(const string &handSeqKey,
 
 
 /************************************************************************/
+bool affActionPrimitives::isValidHandSeq(const string &handSeqKey)
+{
+    map<string,deque<HandWayPoint> >::iterator itr=handSeqMap.find(handSeqKey);
+
+    if (itr!=handSeqMap.end())
+        return true;
+    else
+        return false;
+}
+
+
+/************************************************************************/
 bool affActionPrimitives::removeHandSeq(const string &handSeqKey)
 {
     map<string,deque<HandWayPoint> >::iterator itr=handSeqMap.find(handSeqKey);
@@ -623,6 +741,19 @@ bool affActionPrimitives::removeHandSeq(const string &handSeqKey)
     }
     else
         return false;
+}
+
+
+/************************************************************************/
+deque<string> affActionPrimitives::getHandSeqList()
+{
+    map<string,deque<HandWayPoint> >::iterator itr;
+    deque<string> q;
+
+    for (itr=handSeqMap.begin(); itr!=handSeqMap.end(); ++itr)
+        q.push_back(itr->first);
+
+    return q;
 }
 
 

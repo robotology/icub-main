@@ -99,6 +99,7 @@ protected:
 
     virtual bool handleTorsoDOF(yarp::os::Property &opt, const std::string &key,
                                 const int j);
+    virtual bool configHandSeq(yarp::os::Property &opt);
     virtual bool pushAction(const bool execArm, const yarp::sig::Vector &x,
                             const yarp::sig::Vector &o, const bool execHand,
                             const HandWayPoint &handWP);
@@ -150,10 +151,7 @@ public:
     * \b traj_time <double>: the arm movement execution time [s]. 
     *  
     * \b local <string>: specify a name used to open local ports. 
-    *  
-    * \b hand_calibration_file <string>: complete path to the hand 
-    *    calibration file.
-    *  
+    *
     * \b torso_pitch <string>: if "on" it enables the control of the 
     *    pitch of the torso.
     * \b torso_pitch_min <double>: set the pitch minimum value 
@@ -169,7 +167,27 @@ public:
     * \b torso_yaw <string>: if "on" it enables the control of the 
     *    yaw of the torso.
     * \b torso_yaw_min <double>: set the yaw minimum value [deg].
-    * \b torso_yaw_max <double>: set the yaw maximum value [deg].
+    * \b torso_yaw_max <double>: set the yaw maximum value [deg]. 
+    *  
+    * \b hand_calibration_file <string>: complete path to the hand 
+    *    calibration file.
+    *  
+    * \b hand_sequences_file <string>: complete path to the file 
+    *    containing the hand motions sequences.
+    *  Here is the format of motion sequences:
+    *  
+    *  [GENERAL]
+    *  numSequences ***
+    *  
+    *  [SEQ_0]
+    *  key ***
+    *  numWayPoints ***
+    *  wp_0  (poss (10.0 20.0 ...)) (vels (20.0 20.0 ...))
+    *  wp_1  ***
+    *  ...
+    *  
+    *  [SEQ_1]
+    *  ...
     */
     bool open(yarp::os::Property &opt);
 
@@ -212,6 +230,13 @@ public:
                       const yarp::sig::Vector vels);
 
     /**
+    * Check whether a sequence key is defined.
+    * @param handSeqKey the hand sequence key.
+    * @return true iff valid key. 
+    */
+    bool isValidHandSeq(const std::string &handSeqKey);
+
+    /**
     * Remove an already existing hand motion sequence.
     * @param handSeqKey the hand sequence key.
     * @return true/false on success/fail. 
@@ -219,7 +244,13 @@ public:
     bool removeHandSeq(const std::string &handSeqKey);
 
     /**
-    * Execute an hand sequence motion pointed by the key.
+    * Return the whole list of available hand sequence keys.
+    * @return the list of available hand sequence keys.
+    */
+    std::deque<std::string> getHandSeqList();
+
+    /**
+    * Execute an hand motion sequence pointed by the key.
     * @param handSeqKey the hand sequence key. 
     * @param sync if true wait until the action is accomplished.  
     * @return true/false on success/fail. 

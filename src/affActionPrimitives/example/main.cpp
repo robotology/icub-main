@@ -12,6 +12,7 @@
 #include <iostream>
 #include <iomanip>
 #include <string>
+#include <deque>
 
 using namespace std;
 using namespace yarp;
@@ -53,7 +54,8 @@ public:
 		Property option("(robot icubSim) (local test) (part left_arm) (traj_time 3.0)\
 						(torso_pitch on) (torso_pitch_max 30.0)\
                         (torso_roll off) (torso_yaw on)");
-        option.put("hand_calibration_file",rf.findFile("from"));
+        option.put("hand_calibration_file",rf.findFile("calibFile"));
+        option.put("hand_sequences_file",rf.findFile("seqFile"));
 
 		action=new affActionPrimitivesLayer1(option);
 
@@ -62,24 +64,11 @@ public:
 			delete action;
 			return false;
 		}
-
-        Vector poss(9), vels(9);
-
-        poss=0.0;
-        vels=20.0;
-        action->addHandSeqWP("open",poss,vels);
-
-        poss[0]=10.0;
-        poss[1]=40.0;
-        poss[2]=90.0;
-        poss[3]=10.0;
-        poss[4]=70.0;
-        poss[5]=70.0;
-        poss[6]=70.0;
-        poss[7]=70.0;
-        poss[8]=110.0;
-        vels=20.0;
-        action->addHandSeqWP("close",poss,vels);
+        
+        deque<string> q=action->getHandSeqList();
+        cout<<"List of available hand sequence keys:"<<endl;
+        for (size_t i=0; i<q.size(); i++)
+            cout<<q[i]<<endl;
 
 		inPort.open("/testMod/in");
 
@@ -148,7 +137,8 @@ int main(int argc, char *argv[])
     ResourceFinder rf;
     rf.setVerbose(true);
     rf.setDefaultContext("affActionPrimitives/conf");
-    rf.setDefaultConfigFile("object_sensing.ini");
+    rf.setDefault("calibFile","object_sensing.ini");
+    rf.setDefault("seqFile","hand_sequences.ini");
     rf.configure("ICUB_ROOT",argc,argv);
 
     testModule mod;
