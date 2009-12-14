@@ -228,7 +228,7 @@ bool affActionPrimitives::open(Property &opt)
     string robot=opt.check("robot",Value("icub")).asString().c_str();
     string part=opt.check("part",Value("right_arm")).asString().c_str();
     int period=opt.check("thread_period",Value(ACTIONPRIM_DEFAULT_PER)).asInt();
-    double trajTime=opt.check("traj_time",Value(ACTIONPRIM_DEFAULT_TRAJTIME)).asDouble();
+    double traj_time=opt.check("traj_time",Value(ACTIONPRIM_DEFAULT_TRAJTIME)).asDouble();
     double reach_tol=opt.check("reach_tol",Value(ACTIONPRIM_DEFAULT_REACHTOL)).asDouble();
     string local=opt.find("local").asString().c_str();
     string sensingCalibFile=opt.find("hand_calibration_file").asString().c_str();
@@ -286,7 +286,7 @@ bool affActionPrimitives::open(Property &opt)
         enabledJoints.insert(j);
 
     // set trajectory time
-    cartCtrl->setTrajTime(trajTime);
+    cartCtrl->setTrajTime(traj_time);
 
     // set tolerance
     cartCtrl->setInTargetTol(reach_tol);
