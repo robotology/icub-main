@@ -1,5 +1,5 @@
 
-cmake_minimum_required(VERSION 2.6)
+cmake_minimum_required(VERSION 2.4)
 
 set(PROJECTNAME abstractHandCtrl)
 project(${PROJECTNAME})
@@ -11,7 +11,6 @@ find_package(IPOPT REQUIRED)
 find_package(LIBHANDCTRL REQUIRED)
 find_package(LIBVISLAB REQUIRED)
 include_directories(${YARP_INCLUDE_DIRS} ${LIBVISLAB_INCLUDE_DIRS} ${LIBHANDCTRL_INCLUDE_DIRS})
-
 
 set(SOURCE_DIR "src/")
 
