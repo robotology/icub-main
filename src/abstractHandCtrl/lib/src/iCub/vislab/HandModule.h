@@ -40,6 +40,149 @@ namespace control {
  *
  * The base module for our implementations related to iCub's hand.
  *
+ *
+ * \section lib_sec Dependencies
+ *
+ * - YARP (YARP_{OS,dev,sig,math})
+ *   - ACE
+ * - OpenVislab (libvislab, libvislab_YARP): http://OpenVislab.sf.net
+ *
+ * \section parameters_sec Parameters
+ *
+ * \subsection cmdline_parameters_sec Command-line Parameters
+ *
+ * The following key-value pairs can be specified as command-line parameters by prefixing "--" to the key
+ * (e.g. --from conf.ini). The value part can be changed to suit your needs; the default values are shown below.
+ *
+ * - from &lt;STRING&gt; <br />
+ *   specifies the configuration file. <br />
+ *   default: "conf.ini"
+ *
+ * - context &lt;STRING&gt; <br />
+ *   specifies the sub-path from $ICUB_ROOT/icub/app to the configuration file. <br />
+ *   default: "eye2world"
+ *
+ * - name &lt;STRING&gt; <br />
+ *   specifies the name of the module (used to form the stem of module port names). <br />
+ *   default: "eye2world"
+ *
+ * - robot &lt;STRING&gt; <br />
+ *   specifies the name of the robot (used to form the root of robot port names). <br />
+ *   default: "icub"
+ *
+ *
+ * \subsection conffile_parameters_sec Configuration File Parameters
+ *
+ * The following key-value pairs can be specified as parameters in the configuration file
+ * (they can also be specified as command-line parameters).
+ * The value part can be changed to suit your needs; the default values are shown below.
+ *
+ * - part &lt;STRING&gt; <br />
+ *   specifies name of the arm to use. <br />
+ *   default: "right_arm"
+ *
+ * - handType &lt;STRING&gt; <br />
+ *   specifies the type of the hand of the iCub: "general" | "v1" <br />
+ *   default: "general"
+ *
+ * - motionSpec &lt;FILE&gt; <br />
+ *   specifies the file name of the configuration file containing the motions <br />
+ *   default: "motion_specification.ini" <br />
+ *
+ * - sensingCalib &lt;FILE&gt; <br />
+ *   <strong>ONLY USED IF</strong> <handType> is specified as "v1". <br />
+ *   specifies the file name of the calibration file containing hand's the sensing constants. <br />
+ *   default: "object_sensing.ini"
+ *
+ * - control &lt;PORT&gt; <br />
+ *   specifies the communication port for communicating with the control board of the arm. <br />
+ *   default: /abstractHandCtrl/control
+ *
+ * - q &lt;PORT&gt; <br />
+ *   specifies the port to directly receive joint configurations as Vector(12) to control the hand. <br />
+ *   default: /q:i
+ *
+ *
+ * \section portsa_sec Ports Accessed
+ *
+ * - /<robot>/<part>/control
+ *   The port of the control board of the arm to be controlled. Used and managed by the PolyDriver class.
+ *
+ * \section portsc_sec Ports Created
+ *
+ * \subsection inputports_sec Input ports
+ *
+ *  - /abstractHandCtrl <br />
+ *    This port is used to change the parameters of the module at run time or stop the module.
+ *    The following commands are available:
+ *    - set &#91; &lt;id&gt; &lt;value&gt; &#93; <br />
+ *      no options available:
+ *    - echo <str>
+ *    - help
+ *    - quit
+ *
+ *    Note that the name of this port mirrors whatever is provided by the --name parameter value
+ *    The port is attached to the terminal so that you can type in commands and receive replies.
+ *    The port can be used by other modules but also interactively by a user through the yarp rpc
+ *    directive: yarp rpc /eye2world This opens a connection from a terminal to the port and allows
+ *    the user to then type in commands and receive replies.
+ *
+ *
+ * \subsection outputports_Sec Output ports
+ *
+ *  - /eye2world <br />
+ *    see above
+ *
+ *
+ * \section in_files_sec Input Data Files
+ *
+ * \subsection sensing_sec Sensing Constants
+ *
+ * \code
+ *	 thresholds    0  0  0  0  0  0  0  0  0  0  0  0  0  0  0  0
+ *	 offsets       0  0  0  0  0  0  0  0  0  0  0  0  0  0  0  0
+ *	 springs       0  0  0  0  0  0  0  0  0  0  0  0  0  0  0  0
+ *	 springs       0  0  0  0  0  0  0  0  0  0  0  0  0  0  0  0
+ *	 springs       0  0  0  0  0  0  0  0  0  0  0  0  0  0  0  0
+ * 	 derivate_gain 0  0  0  0  0  0  0  0  0  0  0  0  0  0  0  0
+ * \endcode
+ *
+ * \subsection motion_sec Motion Specification
+ *
+ * \code
+ *   (...)
+ *   [include X "y.ini"]
+ *   (...)
+ * \endcode
+ *
+ * where X is the identifier of the motion which can be used for the "do" command and y is some
+ * file name where the file should have a structure like the following:
+ *
+ * \code
+ *   [POSITION0]
+ *   jointPositions   0.0   0.0   0.0   0.0   0.0   0.0   0.0   0.0   0.0   0.0   0.0   0.0   0.0   0.0   0.0   0.0
+ *   jointVelocities 10.0  10.0  10.0  10.0  10.0  10.0  10.0  10.0  10.0  10.0  10.0  10.0  10.0  10.0  10.0  10.0
+ *   timing 0.0
+ *
+ *   [POSITION1]
+ *   jointPositions   0.0   0.0   0.0   0.0   0.0   0.0   0.0   0.0   0.0   0.0   0.0   0.0   0.0   0.0   0.0   0.0
+ *   jointVelocities 10.0  10.0  10.0  10.0  10.0  10.0  10.0  10.0  10.0  10.0  10.0  10.0  10.0  10.0  10.0  10.0
+ *   timing 0.0
+ *
+ *   [DIMENSIONS]
+ *   numberOfPoses   2
+ *   numberOfJoints 16
+ * \endcode
+ *
+ * The number of "POSITION${x}" entries is controlled by the "numberOfPoses" value in the "DIMENSIONS"
+ * section. The size of each vector in those section is specified by "numberOfJoints": 16 in this case.
+ * For a more extensive description of the file format, check the documenation of the robotMotorGui.
+ *
+ * Right now only the position value are taken into account. The velocities an timing are supposed
+ * to follow soon!
+ *
+ *
+ *
  * @author Christian Wressnegger
  * @date 2009
  */

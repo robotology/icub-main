@@ -128,10 +128,8 @@ class Hand {
 	class JointMonitor: public ::yarp::os::RateThread {
 
 		Hand& hand;
-		//std::set<int> monitoredJoints;
 		std::set<int> blockedJoints;
 
-		//ACE_Auto_Event motionDoneEvent;
 		::yarp::os::Semaphore lock;
 
 	public:
