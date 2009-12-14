@@ -73,7 +73,9 @@ private:
     int face_lost_count;           // debounce - face has to be absent for this long for it to be lost
     double reward_contrib_face;    // contribution of face to reward
     double reward_contrib_sound;   // contribution of sound to reward
-    double reward_contrib_gaze;   // contribution of sound to reward
+    double reward_contrib_gaze;   // contribution of gaze to reward
+    double reward_contrib_drum;   // contribution of drum to reward
+    double reward_contrib_hide;   // contribution of hide to reward
 
     // -- for emotion actions
     bool reward_display;

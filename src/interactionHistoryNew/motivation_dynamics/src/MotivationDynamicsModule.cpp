@@ -181,12 +181,17 @@ bool MotivationDynamicsModule::open(Searchable& config){
 	IhaDebug::pmesg(DBGL_INFO,"sound_catch_threshold:%f\n",sound_catch_threshold);
 	face_lost_count = config.check("face_lost_count",Value(3)).asInt();
 	IhaDebug::pmesg(DBGL_INFO,"face_lost_count:%d\n",face_lost_count);
+
 	reward_contrib_face = config.check("reward_contrib_face",Value(0.75)).asDouble();
 	IhaDebug::pmesg(DBGL_INFO,"reward_contrib_face:%f\n",reward_contrib_face);
 	reward_contrib_sound = config.check("reward_contrib_sound",Value(0.75)).asDouble();
 	IhaDebug::pmesg(DBGL_INFO,"reward_contrib_sound:%f\n",reward_contrib_sound);
 	reward_contrib_gaze = config.check("reward_contrib_gaze",Value(0.75)).asDouble();
 	IhaDebug::pmesg(DBGL_INFO,"reward_contrib_gaze:%f\n",reward_contrib_gaze);
+	reward_contrib_drum = config.check("reward_contrib_drum",Value(0.75)).asDouble();
+	IhaDebug::pmesg(DBGL_INFO,"reward_contrib_drum:%f\n",reward_contrib_drum);
+	reward_contrib_hide = config.check("reward_contrib_hide",Value(0.75)).asDouble();
+	IhaDebug::pmesg(DBGL_INFO,"reward_contrib_hide:%f\n",reward_contrib_hide);
 	
 
     //indices used to access the sensor data
@@ -212,9 +217,11 @@ bool MotivationDynamicsModule::open(Searchable& config){
 	reward_display = boolStringTest(config.check("reward_display",Value("TRUE")).asString());
 	IhaDebug::pmesg(DBGL_INFO,"reward_display %s\n",reward_display?"TRUE":"FALSE");
 
+    //note: these are no longer action indicies, they should
+    //just have different values
     action_ehi = config.check("action_ehi",Value(1)).asInt();
-    action_elo = config.check("action_elo",Value(16)).asInt();
-    action_emid = config.check("action_emid",Value(2)).asInt();
+    action_elo = config.check("action_elo",Value(2)).asInt();
+    action_emid = config.check("action_emid",Value(3)).asInt();
     th_ehi = config.check("th_ehi",Value(0.8)).asDouble();
     th_elo = config.check("th_elo",Value(0.3)).asDouble();
     
@@ -367,11 +374,11 @@ bool MotivationDynamicsModule::updateModule(){
 
     reward_names.push_back("drum");
     rewards.push_back(mb->get(1).asDouble());
-    reward_contribs.push_back(1.0);
+    reward_contribs.push_back(reward_contrib_drum);
     num_rewards++;
     reward_names.push_back("hide");
     rewards.push_back(mb->get(3).asDouble());
-    reward_contribs.push_back(1.0);
+    reward_contribs.push_back(reward_contrib_hide);
     num_rewards++;
 
 
