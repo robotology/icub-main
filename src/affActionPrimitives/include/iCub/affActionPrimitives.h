@@ -165,20 +165,24 @@ public:
     *  
     * \b torso_roll <string>: if "on" it enables the control of the 
     *    roll of the torso.
-    * \b torso_roll_min <double>: set the roll minimum value [deg].
+    *  
+    * \b torso_roll_min <double>: set the roll minimum value [deg]. 
+    *  
     * \b torso_roll_max <double>: set the roll maximum value [deg].
     *  
     * \b torso_yaw <string>: if "on" it enables the control of the 
     *    yaw of the torso.
-    * \b torso_yaw_min <double>: set the yaw minimum value [deg].
+    *  
+    * \b torso_yaw_min <double>: set the yaw minimum value [deg]. 
+    *  
     * \b torso_yaw_max <double>: set the yaw maximum value [deg]. 
     *  
     * \b hand_calibration_file <string>: complete path to the hand 
     *    calibration file.
     *  
     * \b hand_sequences_file <string>: complete path to the file 
-    *    containing the hand motions sequences.
-    *  Here is the format of motion sequences:
+    *    containing the hand motions sequences. Here is the format
+    *    of motion sequences:
     *  
     *  [GENERAL]
     *  numSequences ***
