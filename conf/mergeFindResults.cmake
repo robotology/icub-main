@@ -15,7 +15,9 @@
 ################################################################################
 
 
-function(mergeFindResults target) # [package1 [package2 [package3 ... ]]])
+macro(mergeFindResults target) # [package1 [package2 [package3 ... ]]])
+
+set(target ${target})
 
 if(NOT target)
   message(FATAL_ERROR "The 'mergeFindResults' function at least needs the target name")
@@ -24,36 +26,48 @@ endif(NOT target)
 string(TOUPPER ${target} TARGET)
 
 
-set(FOUND TRUE)
+set(FOUND 1)
 set(LIBRARIES "")
 
 foreach(arg ${ARGN})
   string(TOUPPER ${arg} ARG)
   if(${ARG}_FOUND)
-    set(INCLUDES ${INCLUDES} ${${ARG}_INCLUDES})
+    list(FIND INCLUDES "${${ARG}_INCLUDES}" b)
+    message(STATUS "b = ${b}: ${${ARG}_INCLUDES}")
+    if (b LESS 0)
+      set(INCLUDES ${INCLUDES} ${${ARG}_INCLUDES})
+   	endif(b LESS 0)
     set(LIBRARIES ${LIBRARIES} ${${ARG}_LIBRARIES})
     set(${ARG}_FOUND)
     set(${ARG}_INCLUDES)
     set(${ARG}_LIBRARIES)
   else(${ARG}_FOUND)
-    set(FOUND FALSE)
+    set(FOUND 0)
   endif(${ARG}_FOUND)
 endforeach(arg ${ARGN})
-
-if(INCLUDES)
-  list(REMOVE_DUPLICATES INCLUDES)
-endif(INCLUDES)
 
 set(${TARGET}_INCLUDES ${INCLUDES})
 set(${TARGET}_LIBRARIES ${LIBRARIES})
 
-set(FOUND ${${TARGET}_LIBRARIES})
-find_package_handle_standard_args(${TARGET} DEFAULT_MSG ${TARGET}_LIBRARIES)
+if(${CMAKE_MAJOR_VERSION}.${CMAKE_MINOR_VERSION} LESS 2.6)
 
+  set(${TARGET}_FOUND ${TARGET}_LIBRARIES)
 
-set(${TARGET}_FOUND ${${TARGET}_FOUND} PARENT_SCOPE)
-set(${TARGET}_INCLUDES ${INCLUDES} PARENT_SCOPE)
-set(${TARGET}_INCLUDE_DIRS ${INCLUDES} PARENT_SCOPE)
-set(${TARGET}_LIBRARIES ${LIBRARIES} PARENT_SCOPE)
+  set(${TARGET}_FOUND ${${TARGET}_FOUND})
+  set(${TARGET}_INCLUDES ${INCLUDES})
+  set(${TARGET}_INCLUDE_DIRS ${INCLUDES})
+  set(${TARGET}_LIBRARIES ${LIBRARIES})
 
-endfunction(mergeFindResults)
+else(${CMAKE_MAJOR_VERSION}.${CMAKE_MINOR_VERSION} LESS 2.6)
+  
+  include(FindPackageHandleStandardArgs)
+  find_package_handle_standard_args(${TARGET} DEFAULT_MSG ${TARGET}_LIBRARIES)
+
+  set(${TARGET}_FOUND ${${TARGET}_FOUND} PARENT_SCOPE)
+  set(${TARGET}_INCLUDES ${INCLUDES} PARENT_SCOPE)
+  set(${TARGET}_INCLUDE_DIRS ${INCLUDES} PARENT_SCOPE)
+  set(${TARGET}_LIBRARIES ${LIBRARIES} PARENT_SCOPE)
+
+endif(${CMAKE_MAJOR_VERSION}.${CMAKE_MINOR_VERSION} LESS 2.6)
+
+endmacro(mergeFindResults)
