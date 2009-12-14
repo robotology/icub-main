@@ -15,8 +15,6 @@
 
 #define ACTIONPRIM_DEFAULT_PER          50      // [ms]
 #define ACTIONPRIM_DEFAULT_TRAJTIME     1.5     // [s]
-#define ACTIONPRIM_DEFAULT_FINGERSVEL   20.0    // [deg/s]
-
 
 using namespace std;
 using namespace yarp;
@@ -108,39 +106,17 @@ bool affActionPrimitives::handleTorsoDOF(Property &opt, const string &key,
 
 
 /************************************************************************/
-bool affActionPrimitives::getVector(Property &opt, const string &key, Vector &v,
-                                    const int offs)
-{
-    if (opt.check(key.c_str()))
-    {
-        Bottle *b=opt.find(key.c_str()).asList();
-
-        int l1=b->size();
-        int l2=v.length();
-        int l=l1<l2?l1:l2;
-
-        for (int i=0; i<l; i++)
-            v[offs+i]=b->get(i).asDouble();
-
-        return true;
-    }
-
-    return false;
-}
-
-
-/************************************************************************/
 bool affActionPrimitives::open(Property &opt)
 {
     if (!opt.check("local"))
     {
-        fprintf(stdout,"Error: option \"local\" is missing\n");
+        fprintf(stdout,"ERROR: option \"local\" is missing\n");
         return false;
     }
 
     if (!opt.check("hand_calibration_file"))
     {
-        fprintf(stdout,"Error: option \"hand_calibration_file\" is missing\n");
+        fprintf(stdout,"ERROR: option \"hand_calibration_file\" is missing\n");
         return false;
     }
 
@@ -194,15 +170,11 @@ bool affActionPrimitives::open(Property &opt)
     polyHand->view(posCtrl);
     polyCart->view(cartCtrl);
 
-    iMin=7;                     // hand first joint
-    posCtrl->getAxes(&iMax);    // hand last joint
+    jHandMin=7;                     // hand first joint
+    posCtrl->getAxes(&jHandMax);    // hand last joint
 
-    double fingersVel=opt.check("fingers_vel",Value(ACTIONPRIM_DEFAULT_FINGERSVEL)).asDouble();
-    for (int i=iMin; i<iMax; i++)
-    {    
-        enabledJoints.insert(i);
-        posCtrl->setRefSpeed(i,fingersVel);
-    }
+    for (int j=jHandMin; j<jHandMax; j++)
+        enabledJoints.insert(j);
 
     // set trajectory time
     cartCtrl->setTrajTime(trajTime);
@@ -224,12 +196,6 @@ bool affActionPrimitives::open(Property &opt)
 
     fprintf(stdout,"creating hand smoother...\n");
     fs=new FunctionSmoother(thresholds);
-
-    fingerOpenPos.resize(iMax,0.0);
-    fingerClosePos.resize(iMax,0.0);
-
-    getVector(opt,"fingers_open_poss",fingerOpenPos,iMin);
-    getVector(opt,"fingers_close_poss",fingerClosePos,iMin);
 
     mutex=new Semaphore(1);
     motionDoneEvent=new ACE_Auto_Event;
@@ -302,7 +268,7 @@ void affActionPrimitives::stopBlockedJoints(set<int> &activeJoints)
 		int i=*itr;
 
 		if (i>=thresholds.length() || i<0)
-            fprintf(stdout,"Warning: No thresholds for joint #%d specified.\n",i);
+            fprintf(stdout,"WARNING: No thresholds for joint #%d specified.\n",i);
         else 
         {
 			bool isOpening=thresholds[i]>0;
@@ -353,8 +319,8 @@ bool affActionPrimitives::clearActionsQueue()
 
 
 /************************************************************************/
-bool affActionPrimitives::pushAction(const Vector &x, const Vector &o,
-                                     bool (affActionPrimitives::*handAction)(const bool))
+bool affActionPrimitives::pushAction(const bool execArm, const Vector &x, const Vector &o,
+                                     const bool execHand, const HandWayPoint &handWP)
 {
     if (configured)
     {
@@ -362,11 +328,11 @@ bool affActionPrimitives::pushAction(const Vector &x, const Vector &o,
         Action action;
     
         action.waitState=false;
-        action.tmo=0.0;
-        action.execReach=true;
+        action.execArm=execArm;
         action.x=x;
         action.o=o;
-        action.handAction=handAction;
+        action.execHand=execHand;
+        action.handWP=handWP;
     
         actionsQueue.push_back(action);
         mutex->post();
@@ -379,32 +345,72 @@ bool affActionPrimitives::pushAction(const Vector &x, const Vector &o,
 
 
 /************************************************************************/
-bool affActionPrimitives::pushAction(const Vector &x, const Vector &o)
+bool affActionPrimitives::pushAction(const Vector &x, const Vector &o,
+                                     const string &handSeqKey)
 {
-    return pushAction(x,o,&affActionPrimitives::nopHand);
+    if (configured)
+    {
+        map<string,deque<HandWayPoint> >::iterator itr=handSeqMap.find(handSeqKey);
+        if (itr!=handSeqMap.end())
+        {
+            deque<HandWayPoint> &q=itr->second;
+
+            for (size_t i=0; i<q.size(); i++)
+                pushAction(true,x,o,true,q[i]);
+
+            return true;
+        }
+        else
+        {
+            fprintf(stdout,"WARNING: \"%s\" hand sequence key not found\n",
+                    handSeqKey.c_str());    
+
+            return false;
+        }
+    }
+    else
+        return false;
 }
 
 
 /************************************************************************/
-bool affActionPrimitives::pushAction(bool (affActionPrimitives::*handAction)(const bool))
+bool affActionPrimitives::pushAction(const Vector &x, const Vector &o)
 {
     if (configured)
-    {        
-        mutex->wait();
-        Action action;
-        Vector dummy(1);
-    
-        action.waitState=false;
-        action.tmo=0.0;
-        action.execReach=false;
-        action.x=dummy;
-        action.o=dummy;
-        action.handAction=handAction;
-    
-        actionsQueue.push_back(action);
-        mutex->post();
-    
+    {
+        HandWayPoint dummy;
+        pushAction(true,x,o,false,dummy);
+
         return true;
+    }
+    else
+        return false;
+}
+
+
+/************************************************************************/
+bool affActionPrimitives::pushAction(const string &handSeqKey)
+{
+    if (configured)
+    {
+        map<string,deque<HandWayPoint> >::iterator itr=handSeqMap.find(handSeqKey);
+        if (itr!=handSeqMap.end())
+        {
+            deque<HandWayPoint> &q=itr->second;
+            Vector dummy(1);
+
+            for (size_t i=0; i<q.size(); i++)
+                pushAction(false,dummy,dummy,true,q[i]);
+
+            return true;
+        }
+        else
+        {
+            fprintf(stdout,"WARNING: \"%s\" hand sequence key not found\n",
+                    handSeqKey.c_str());    
+
+            return false;
+        }
     }
     else
         return false;
@@ -422,10 +428,8 @@ bool affActionPrimitives::pushWaitState(const double tmo)
 
         action.waitState=true;
         action.tmo=tmo;
-        action.execReach=false;
-        action.x=dummy;
-        action.o=dummy;
-        action.handAction=&affActionPrimitives::nopHand;
+        action.execArm=false;
+        action.execHand=false;
 
         actionsQueue.push_back(action);
         mutex->post();
@@ -458,11 +462,11 @@ bool affActionPrimitives::execQueuedAction()
         if (action.waitState)
             wait(action.tmo);
 
-        if (action.execReach)
+        if (action.execArm)
             reach(action.x,action.o);
 
-        if (action.handAction!=NULL)
-            (this->*action.handAction)(false);
+        if (action.execHand)
+            cmdHand(action.handWP);
     }
 
     return exec;
@@ -497,7 +501,7 @@ void affActionPrimitives::run()
         handMoveDone=handMotionDone(activeJoints);
 
         if (handMoveDone)
-            fprintf(stdout,"hand motion complete\n");
+            fprintf(stdout,"hand WP reached\n");
     }
 
     latchArmMoveDone=armMoveDone;
@@ -523,6 +527,33 @@ bool affActionPrimitives::wait(const double tmo)
     {
         waitTmo=tmo;
         latchTimer=Time::now();
+
+        return true;
+    }
+    else
+        return false;
+}
+
+
+/************************************************************************/
+bool affActionPrimitives::cmdHand(const HandWayPoint &handWP)
+{
+    if (configured)
+    {        
+        activeJoints=enabledJoints;
+        for (set<int>::const_iterator itr=enabledJoints.begin(); itr!=enabledJoints.end(); itr++)
+        {   
+            int j=*itr-jHandMin;
+
+            if (j>=handWP.poss.length())
+                break;
+
+            posCtrl->setRefSpeed(*itr,handWP.vels[j]);
+            posCtrl->positionMove(*itr,handWP.poss[j]);
+        }
+
+        latchHandMoveDone=handMoveDone=false;
+        fprintf(stdout,"moving to hand WP: %s\n",const_cast<Vector&>(handWP.poss).toString().c_str());
 
         return true;
     }
@@ -566,26 +597,28 @@ bool affActionPrimitives::reach(const Vector &x, const Vector &o, const bool syn
 
 
 /************************************************************************/
-bool affActionPrimitives::grasp(const Vector &x, const Vector &o, const Vector &d,
-                                const bool sync)
+bool affActionPrimitives::addHandSeqWP(const string &handSeqKey,
+                                       const Vector &poss, const Vector vels)
 {
-    if (configured)
-    {
-        fprintf(stdout,"start grasping\n");
-        if (!reach(x+d,o))
-            return false;
+    HandWayPoint handWP;
+    handWP.poss=poss;
+    handWP.vels=vels;
 
-        pushAction(x,o,&affActionPrimitives::closeHand);
+    handSeqMap[handSeqKey].push_back(handWP);
 
-        bool ret=true;
+    return true;
+}
 
-        if (sync)
-        {
-            bool f=false;
-            ret=checkActionsDone(f,true);
-        }
 
-        return ret;
+/************************************************************************/
+bool affActionPrimitives::removeHandSeq(const string &handSeqKey)
+{
+    map<string,deque<HandWayPoint> >::iterator itr=handSeqMap.find(handSeqKey);
+
+    if (itr!=handSeqMap.end())
+    {    
+        handSeqMap[handSeqKey].clear();
+        return true;
     }
     else
         return false;
@@ -593,71 +626,13 @@ bool affActionPrimitives::grasp(const Vector &x, const Vector &o, const Vector &
 
 
 /************************************************************************/
-bool affActionPrimitives::touch(const Vector &x, const Vector &o, const Vector &d,
-                                const bool sync)
-{
-    if (configured)
-    {
-        fprintf(stdout,"start touching\n");
-        if (!reach(x+d,o))
-            return false;
-
-        pushAction(x,o);
-
-        bool ret=true;
-
-        if (sync)
-        {
-            bool f=false;
-            ret=checkActionsDone(f,true);
-        }
-
-        return ret;
-    }
-    else
-        return false;
-}
-
-
-/************************************************************************/
-bool affActionPrimitives::tap(const Vector &x, const Vector &o, const Vector &d,
-                              const bool sync)
-{
-    if (configured)
-    {
-        fprintf(stdout,"start tapping\n");
-        if (!reach(x,o))
-            return false;
-
-        pushAction(x+d,o);
-        pushAction(x,o);
-
-        bool ret=true;
-
-        if (sync)
-        {
-            bool f=false;
-            ret=checkActionsDone(f,true);
-        }
-
-        return ret;
-    }
-    else
-        return false;
-}
-
-
-/************************************************************************/
-bool affActionPrimitives::moveHand(const Vector &fingerPos, const bool sync)
+bool affActionPrimitives::moveHand(const string &handSeqKey, const bool sync)
 {
     if (configured)
     {        
-        activeJoints=enabledJoints;
-        for (set<int>::const_iterator itr=enabledJoints.begin(); itr!=enabledJoints.end(); itr++)
-            posCtrl->positionMove(*itr,fingerPos[*itr]);
-
-        latchHandMoveDone=handMoveDone=false;
-        fprintf(stdout,"start moving hand\n");
+        fprintf(stdout,"\"%s\" hand sequence requested\n",handSeqKey.c_str());
+        if (!pushAction(handSeqKey))
+            return false;
 
         bool ret=true;
 
@@ -671,27 +646,6 @@ bool affActionPrimitives::moveHand(const Vector &fingerPos, const bool sync)
     }
     else
         return false;
-}
-
-
-/************************************************************************/
-bool affActionPrimitives::nopHand(const bool sync)
-{
-    return configured;
-}
-
-
-/************************************************************************/
-bool affActionPrimitives::openHand(const bool sync)
-{
-    return moveHand(fingerOpenPos,sync);
-}
-
-
-/************************************************************************/
-bool affActionPrimitives::closeHand(const bool sync)
-{
-    return moveHand(fingerClosePos,sync);
 }
 
 
@@ -770,6 +724,82 @@ bool affActionPrimitives::syncCheckReinstate()
     {
         checkEnabled=true;
         return true;
+    }
+    else
+        return false;
+}
+
+
+/************************************************************************/
+bool affActionPrimitivesLayer1::grasp(const Vector &x, const Vector &o, const Vector &d,
+                                      const bool sync)
+{
+    if (configured)
+    {
+        fprintf(stdout,"start grasping\n");
+        pushAction(x+d,o,"open");
+        pushAction(x,o,"close");
+
+        bool ret=true;
+
+        if (sync)
+        {
+            bool f=false;
+            ret=checkActionsDone(f,true);
+        }
+
+        return ret;
+    }
+    else
+        return false;
+}
+
+
+/************************************************************************/
+bool affActionPrimitivesLayer1::touch(const Vector &x, const Vector &o, const Vector &d,
+                                      const bool sync)
+{
+    if (configured)
+    {
+        fprintf(stdout,"start touching\n");
+        pushAction(x+d,o,"open");
+        pushAction(x,o);
+
+        bool ret=true;
+
+        if (sync)
+        {
+            bool f=false;
+            ret=checkActionsDone(f,true);
+        }
+
+        return ret;
+    }
+    else
+        return false;
+}
+
+
+/************************************************************************/
+bool affActionPrimitivesLayer1::tap(const Vector &x, const Vector &o, const Vector &d,
+                                    const bool sync)
+{
+    if (configured)
+    {
+        fprintf(stdout,"start tapping\n");
+        pushAction(x,o,"open");
+        pushAction(x+d,o);
+        pushAction(x,o);
+
+        bool ret=true;
+
+        if (sync)
+        {
+            bool f=false;
+            ret=checkActionsDone(f,true);
+        }
+
+        return ret;
     }
     else
         return false;

@@ -24,7 +24,7 @@ using namespace yarp::math;
 class testModule: public RFModule
 {
 protected:
-	affActionPrimitives *action;
+	affActionPrimitivesLayer1 *action;
 	BufferedPort<Bottle> inPort;
 
     Vector graspOrien;
@@ -52,18 +52,34 @@ public:
     {
 		Property option("(robot icubSim) (local test) (part left_arm) (traj_time 3.0)\
 						(torso_pitch on) (torso_pitch_max 30.0)\
-                        (torso_roll off)\
-                        (torso_yaw on)\
-                        (fingers_close_poss (10.0 40.0 90.0 10.0 70.0 70.0 70.0 70.0 110.0))");
+                        (torso_roll off) (torso_yaw on)");
         option.put("hand_calibration_file",rf.findFile("from"));
 
-		action=new affActionPrimitives(option);
+		action=new affActionPrimitivesLayer1(option);
 
 		if (!action->isValid())
 		{
 			delete action;
 			return false;
 		}
+
+        Vector poss(9), vels(9);
+
+        poss=0.0;
+        vels=20.0;
+        action->addHandSeqWP("open",poss,vels);
+
+        poss[0]=10.0;
+        poss[1]=40.0;
+        poss[2]=90.0;
+        poss[3]=10.0;
+        poss[4]=70.0;
+        poss[5]=70.0;
+        poss[6]=70.0;
+        poss[7]=70.0;
+        poss[8]=110.0;
+        vels=20.0;
+        action->addHandSeqWP("close",poss,vels);
 
 		inPort.open("/testMod/in");
 
@@ -104,7 +120,7 @@ public:
 
 			action->grasp(xd,graspOrien,graspDisp,true);    // grasp it (wait until it's done)
 			action->reach(xd+dRel,graspOrien,true);         // lift the object
-			action->openHand(true);                         // release the object
+			action->moveHand("open");                       // release the object
 		}		
 
 		return true;
