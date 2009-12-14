@@ -118,13 +118,13 @@ bool EdisonSegmModule::open(Searchable& config)
     // ConstString strCamConfigPath=rf.findFile("camera");
 
 	
-	_imgPort.open(getName("rawimg:i"));
+	_imgPort.open(getName("rawImg:i"));
 	_configPort.open(getName("conf"));
-	_filtPort.open(getName("filtimg:o"));
-	_labelPort.open(getName("labelimg:o"));
-	_viewPort.open(getName("viewimg:o"));
-	_rawPort.open(getName("rawimg:o"));
-	_labelViewPort.open(getName("debugimg:o"));
+	_filtPort.open(getName("filtImg:o"));
+	_labelPort.open(getName("labeledImg:o"));
+	_viewPort.open(getName("viewImg:o"));
+	_rawPort.open(getName("rawImg:o"));
+	_labelViewPort.open(getName("debugImg:o"));
 	attach(_configPort, true);
 
 	//read an image to get the dimensions

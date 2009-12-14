@@ -18,7 +18,7 @@ The image is split into regions corresponding to uniformly colored patches.
 
 
 Details on the employed algorithms is provided in the following paper:
-[1] D. Comanicu, P. Meer: "Mean shift: A robust approach toward feature space analysis".
+[1] D. Comaniciu, P. Meer: "Mean shift: A robust approach toward feature space analysis".
     IEEE Trans. Pattern Anal. Machine Intell., May 2002.
 
 [2] P. Meer, B. Georgescu: "Edge detection with embedded confidence". IEEE Trans. Pattern Anal.
@@ -83,16 +83,16 @@ Port with raw RGB image.
 /conf
 for module configuration
 
-/rawimg:i
+/rawImg:i
 receive the original RGB image to segment
 
-/rawimg:o
+/rawImg:o
 output the original RGB image 
 
-/labelimg:o 
+/labeledImg:o 
 segmented image with the labels (PixelInt)
 
-/viewimg:o
+/viewImg:o
 segmented image with the colors models for each region (good to visualize) 
 
 \section in_files_sec Input Data Files
@@ -130,9 +130,9 @@ edisonSegmentation.exe --from configFile.ini
 yarpdev --device opencv_grabber --movie H:\DataSets\testImages2009_07_21\segm_test_icub.avi --loop --framerate 0.1
 yarpview /raw
 yarpview /view
-yarp connect /grabber /edisonSegm/rawimg:i
-yarp connect /edisonSegm/rawimg:o /raw
-yarp connect /edisonSegm/viewimg:o /view
+yarp connect /grabber /edisonSegm/rawImg:i
+yarp connect /edisonSegm/rawImg:o /raw
+yarp connect /edisonSegm/viewImg:o /view
 \endcode
 
 \author Alexandre Bernardino
