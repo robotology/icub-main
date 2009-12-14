@@ -15,6 +15,8 @@
 
 #define ACTIONPRIM_DEFAULT_PER          50      // [ms]
 #define ACTIONPRIM_DEFAULT_TRAJTIME     1.5     // [s]
+#define ACTIONPRIM_DEFAULT_REACHTOL     0.02    // [m]
+#define ACTIONPRIM_DUMP_PERIOD          2.0     // [s]
 
 using namespace std;
 using namespace yarp;
@@ -227,6 +229,7 @@ bool affActionPrimitives::open(Property &opt)
     string part=opt.check("part",Value("right_arm")).asString().c_str();
     int period=opt.check("thread_period",Value(ACTIONPRIM_DEFAULT_PER)).asInt();
     double trajTime=opt.check("traj_time",Value(ACTIONPRIM_DEFAULT_TRAJTIME)).asDouble();
+    double reach_tol=opt.check("reach_tol",Value(ACTIONPRIM_DEFAULT_REACHTOL)).asDouble();
     string local=opt.find("local").asString().c_str();
     string sensingCalibFile=opt.find("hand_calibration_file").asString().c_str();
     string fwslash="/";
@@ -284,6 +287,9 @@ bool affActionPrimitives::open(Property &opt)
 
     // set trajectory time
     cartCtrl->setTrajTime(trajTime);
+
+    // set tolerance
+    cartCtrl->setInTargetTol(reach_tol);
 
     // set one shot mode
     cartCtrl->setTrackingMode(false);
@@ -556,9 +562,8 @@ bool affActionPrimitives::execQueuedAction()
     mutex->wait();
     if (actionsQueue.size())
     {
-        action=actionsQueue[0];
+        action=actionsQueue.front();
         actionsQueue.pop_front();
-
         exec=true;
     }
     mutex->post();
@@ -569,7 +574,7 @@ bool affActionPrimitives::execQueuedAction()
             wait(action.tmo);
 
         if (action.execArm)
-            reach(action.x,action.o);
+            cmdArm(action.x,action.o);
 
         if (action.execHand)
             cmdHand(action.handWP);
@@ -582,14 +587,21 @@ bool affActionPrimitives::execQueuedAction()
 /************************************************************************/
 void affActionPrimitives::run()
 {
+    const double t=Time::now();
+
     if (!armMoveDone)
     {
         Vector x,o,xdcap,odcap,qdcap;
         cartCtrl->getPose(x,o);
         cartCtrl->getDesired(xdcap,odcap,qdcap);
 
-        fprintf(stdout,"reaching... xdcap=%s |e|=%.3f [m]\n",
-                xdcap.toString().c_str(),norm(xdcap-x));
+        if (t-t0>ACTIONPRIM_DUMP_PERIOD)
+        {
+            fprintf(stdout,"reaching... xdcap=%s |e|=%.3f [m]\n",
+                    xdcap.toString().c_str(),norm(xdcap-x));
+
+            t0=t;
+        }
 
         cartCtrl->checkMotionDone(&armMoveDone);
 
@@ -613,7 +625,7 @@ void affActionPrimitives::run()
     latchArmMoveDone=armMoveDone;
     latchHandMoveDone=handMoveDone;
 
-    if (latchArmMoveDone && latchHandMoveDone && Time::now()-latchTimer>waitTmo)
+    if (latchArmMoveDone && latchHandMoveDone && (t-latchTimer>waitTmo))
         if (!execQueuedAction())
             RES_EVENT(motionDoneEvent)->signal();
 }
@@ -643,6 +655,28 @@ bool affActionPrimitives::wait(const double tmo)
 
 
 /************************************************************************/
+bool affActionPrimitives::cmdArm(const Vector &x, const Vector &o)
+{
+    if (configured)
+    {
+        if (!cartCtrl->goToPoseSync(x,o))
+        {
+            fprintf(stdout,"reach error\n");
+            return false;
+        }
+    
+        latchArmMoveDone=armMoveDone=false;
+        fprintf(stdout,"reach for [%s], [%s]\n",const_cast<Vector&>(x).toString().c_str(),
+                                                const_cast<Vector&>(o).toString().c_str());
+        t0=Time::now();
+        return true;
+    }
+    else
+        return false;
+}
+
+
+/************************************************************************/
 bool affActionPrimitives::cmdHand(const HandWayPoint &handWP)
 {
     if (configured)
@@ -660,43 +694,9 @@ bool affActionPrimitives::cmdHand(const HandWayPoint &handWP)
         }
 
         latchHandMoveDone=handMoveDone=false;
-        fprintf(stdout,"moving to hand WP: %s\n",const_cast<Vector&>(handWP.poss).toString().c_str());
+        fprintf(stdout,"moving to hand WP: [%s]\n",const_cast<Vector&>(handWP.poss).toString().c_str());
 
         return true;
-    }
-    else
-        return false;
-}
-
-
-/************************************************************************/
-bool affActionPrimitives::reach(const Vector &x, const Vector &o, const bool sync)
-{
-    if (configured)
-    {
-        clearActionsQueue();
-    
-        xd=x;
-        od=o;
-        
-        bool ret=cartCtrl->goToPoseSync(xd,od);
-
-        if (!ret)
-        {
-            fprintf(stdout,"reach error\n");
-            return false;
-        }
-    
-        latchArmMoveDone=armMoveDone=false;
-        fprintf(stdout,"reach for [%s], [%s]\n",xd.toString().c_str(),od.toString().c_str());
-    
-        if (sync)
-        {
-            bool f=false;
-            ret=checkActionsDone(f,true);
-        }
-    
-        return ret;
     }
     else
         return false;
@@ -754,6 +754,30 @@ deque<string> affActionPrimitives::getHandSeqList()
         q.push_back(itr->first);
 
     return q;
+}
+
+
+/************************************************************************/
+bool affActionPrimitives::reach(const Vector &x, const Vector &o, const bool sync)
+{
+    if (configured)
+    {        
+        fprintf(stdout,"\"reach\" requested\n");
+        if (!pushAction(x,o))
+            return false;
+
+        bool ret=true;
+
+        if (sync)
+        {
+            bool f=false;
+            ret=checkActionsDone(f,true);
+        }
+
+        return ret;
+    }
+    else
+        return false;
 }
 
 

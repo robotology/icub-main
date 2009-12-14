@@ -60,6 +60,7 @@ protected:
 
     double waitTmo;
     double latchTimer;
+    double t0;
 
     int jHandMin;
     int jHandMax;
@@ -103,6 +104,7 @@ protected:
     virtual bool pushAction(const bool execArm, const yarp::sig::Vector &x,
                             const yarp::sig::Vector &o, const bool execHand,
                             const HandWayPoint &handWP);
+    virtual bool cmdArm(const yarp::sig::Vector &x, const yarp::sig::Vector &o);
     virtual bool cmdHand(const HandWayPoint &handWP);
     virtual bool wait(const double tmo);
     virtual void stopBlockedJoints(std::set<int> &activeJoints);
@@ -149,6 +151,8 @@ public:
     *    the time granularity as well.
     *  
     * \b traj_time <double>: the arm movement execution time [s]. 
+    *  
+    * \b reach_tol <double>: the reaching tolerance [m]. 
     *  
     * \b local <string>: specify a name used to open local ports. 
     *
@@ -203,61 +207,6 @@ public:
     void close();
 
     /**
-    * Reach for a given target (arm primitive action).
-    * @param x the 3-d target position [m]. 
-    * @param o the 4-d hand orientation used while reaching (given 
-    *          in axis-angle representation) [rad].
-    * @param sync if true wait until the action is accomplished. 
-    * @return true/false on success/fail. 
-    */
-    virtual bool reach(const yarp::sig::Vector &x, const yarp::sig::Vector &o,
-                       const bool sync=false);
-
-    /**
-    * Define an hand WayPoint (WP) to be added at the bottom of the 
-    * hand motion sequence pointed by the key. 
-    * @param handSeqKey the hand sequence key.
-    * @param poss the fingers WP positions to be attained [deg].
-    * @param vels the fingers velocities [deg/s].
-    * @return true/false on success/fail. 
-    *  
-    * \note this method creates a new empty sequence referred by the
-    *       passed key if the key does not point to any valid
-    *       sequence; hence the couple (poss,vels) will be the first
-    *       WP of the new sequence.
-    */
-    bool addHandSeqWP(const std::string &handSeqKey, const yarp::sig::Vector &poss,
-                      const yarp::sig::Vector vels);
-
-    /**
-    * Check whether a sequence key is defined.
-    * @param handSeqKey the hand sequence key.
-    * @return true iff valid key. 
-    */
-    bool isValidHandSeq(const std::string &handSeqKey);
-
-    /**
-    * Remove an already existing hand motion sequence.
-    * @param handSeqKey the hand sequence key.
-    * @return true/false on success/fail. 
-    */
-    bool removeHandSeq(const std::string &handSeqKey);
-
-    /**
-    * Return the whole list of available hand sequence keys.
-    * @return the list of available hand sequence keys.
-    */
-    std::deque<std::string> getHandSeqList();
-
-    /**
-    * Execute an hand motion sequence pointed by the key.
-    * @param handSeqKey the hand sequence key. 
-    * @param sync if true wait until the action is accomplished.  
-    * @return true/false on success/fail. 
-    */
-    virtual bool moveHand(const std::string &handSeqKey, const bool sync=false);
-
-    /**
     * Insert a combination of arm and hand primitive actions in the 
     * actions queue. 
     * @param x the 3-d target position [m]. 
@@ -303,7 +252,62 @@ public:
     * Empty the actions queue. 
     * @return true/false on success/fail.
     */
-    bool clearActionsQueue();    
+    bool clearActionsQueue();
+
+    /**
+    * Define an hand WayPoint (WP) to be added at the bottom of the 
+    * hand motion sequence pointed by the key. 
+    * @param handSeqKey the hand sequence key.
+    * @param poss the fingers WP positions to be attained [deg].
+    * @param vels the fingers velocities [deg/s].
+    * @return true/false on success/fail. 
+    *  
+    * \note this method creates a new empty sequence referred by the
+    *       passed key if the key does not point to any valid
+    *       sequence; hence the couple (poss,vels) will be the first
+    *       WP of the new sequence.
+    */
+    bool addHandSeqWP(const std::string &handSeqKey, const yarp::sig::Vector &poss,
+                      const yarp::sig::Vector vels);
+
+    /**
+    * Check whether a sequence key is defined.
+    * @param handSeqKey the hand sequence key.
+    * @return true iff valid key. 
+    */
+    bool isValidHandSeq(const std::string &handSeqKey);
+
+    /**
+    * Remove an already existing hand motion sequence.
+    * @param handSeqKey the hand sequence key.
+    * @return true/false on success/fail. 
+    */
+    bool removeHandSeq(const std::string &handSeqKey);
+
+    /**
+    * Return the whole list of available hand sequence keys.
+    * @return the list of available hand sequence keys.
+    */
+    std::deque<std::string> getHandSeqList();
+
+    /**
+    * Reach for a given target (arm primitive action).
+    * @param x the 3-d target position [m]. 
+    * @param o the 4-d hand orientation used while reaching (given 
+    *          in axis-angle representation) [rad].
+    * @param sync if true wait until the action is accomplished. 
+    * @return true/false on success/fail. 
+    */
+    virtual bool reach(const yarp::sig::Vector &x, const yarp::sig::Vector &o,
+                       const bool sync=false);
+
+    /**
+    * Execute an hand motion sequence pointed by the key.
+    * @param handSeqKey the hand sequence key. 
+    * @param sync if true wait until the action is accomplished.  
+    * @return true/false on success/fail. 
+    */
+    virtual bool moveHand(const std::string &handSeqKey, const bool sync=false);
 
     /**
     * Return the current end-effector position. 
