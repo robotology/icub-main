@@ -34,7 +34,7 @@ bool AcousticMap::open(Searchable& config){
 	bool ok = true;
 
 	if(!config.check("name")){
-		std::cout << "AuditoryMap: Error, module base name not found in configuration." << std::endl;
+		std::cout << "AuditoryMap: Error, module base name not found in configuration. Start the module with the --name option.." << std::endl;
 		return false;
 	}
 

@@ -39,7 +39,7 @@ bool ObjectMap::open(Searchable& config){
     bool ok = true;
 
     if(!config.check("name")){
-        std::cout << "ObjectMap: Error, module base name not found in configuration." << std::endl;
+        std::cout << "ObjectMap: Error, module base name not found in configuration. Start the module with the --name option.." << std::endl;
         return false;
     }
 
