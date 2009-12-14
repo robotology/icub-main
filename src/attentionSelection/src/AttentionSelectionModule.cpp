@@ -181,7 +181,7 @@ bool AttentionSelectionModule::updateModule(){
 		_intFPSAchieved = _intFPS;
 	}
 	else{
-		_intFPSAchieved = ::floor((1.0 / _dblTPFAchieved) + 0.5);
+		_intFPSAchieved = (int)::floor((1.0 / _dblTPFAchieved) + 0.5);
 	}
 	_dblStartTime = yarp::os::Time::now();
 
