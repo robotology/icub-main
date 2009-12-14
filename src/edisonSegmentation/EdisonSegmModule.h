@@ -22,6 +22,7 @@
 #include <yarp/sig/all.h>
 #include <yarp/os/Module.h>
 #include <yarp/os/ResourceFinder.h>
+#include <yarp/os/Stamp.h>
 
 using namespace yarp;
 using namespace yarp::os;
@@ -101,6 +102,8 @@ private:
     BufferedPort<ImageOf<PixelRgb> >       _filtPort;     //output the mean shift filtered image
 	BufferedPort<Bottle>				   _configPort;   //to configure the module
 	BufferedPort<ImageOf<PixelMono> >      _labelViewPort; //to visualize the labels
+
+	Stamp _stamp;
 
 public:
     EdisonSegmModule();

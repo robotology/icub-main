@@ -26,7 +26,7 @@ using namespace std;
 using namespace yarp::os;
 
 
-EdisonSegmModule::EdisonSegmModule()
+EdisonSegmModule::EdisonSegmModule() : _stamp(0,0)
 {
   orig_height_       = -1;
   orig_width_		 = -1;
@@ -203,6 +203,19 @@ bool EdisonSegmModule::updateModule()
     if (yrpImgIn == NULL)   // this is the case if module is requested to quit while waiting for image
         return true;
 
+	bool use_private_stamp;
+	Stamp s;
+	if(!_imgPort.getEnvelope(s))
+	{
+		cout << "No stamp found in input image. Will use private stamp" << endl;
+		use_private_stamp = true;
+	}
+	else
+	{
+		cout << "Received image #" << s.getCount() << " generated at time " << s.getTime() << endl;
+		use_private_stamp = false;
+	}
+
 	if(cycles == 0)
 		_timestart = yarp::os::Time::now();
 	cycles++;
@@ -325,6 +338,25 @@ bool EdisonSegmModule::updateModule()
 	IplImage *labelchar = (IplImage*)labelView.getIplImage();
 
 	cvConvert(labelint, labelchar);
+
+	//prepare timestamps
+	if(use_private_stamp)
+	{
+		_stamp.update();
+		_labelPort.setEnvelope(_stamp);
+		_labelViewPort.setEnvelope(_stamp);
+		_viewPort.setEnvelope(_stamp);
+		_filtPort.setEnvelope(_stamp);
+		_rawPort.setEnvelope(_stamp);
+	}
+	else
+	{
+		_labelPort.setEnvelope(s);
+		_labelViewPort.setEnvelope(s);
+		_viewPort.setEnvelope(s);
+		_filtPort.setEnvelope(s);
+		_rawPort.setEnvelope(s);
+	}
 
 	ImageOf<PixelInt> &yrpImgLabel = _labelPort.prepare();
 	//Rescale image if required
