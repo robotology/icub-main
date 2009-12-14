@@ -1,5 +1,5 @@
 
-cmake_minimum_required(VERSION 2.6)
+cmake_minimum_required(VERSION 2.4)
 
 set(TARGET_NAME HandCtrl)
 project(lib${TARGET_NAME})
@@ -9,7 +9,6 @@ find_package(ICUB)
 find_package(YARP REQUIRED)
 find_package(LIBVISLAB REQUIRED)
 include_directories(${YARP_INCLUDE_DIRS} ${LIBVISLAB_INCLUDE_DIRS})
-
 
 set(SOURCE_DIR "src/")
 
