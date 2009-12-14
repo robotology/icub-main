@@ -276,16 +276,16 @@ bool Control_GazeModule::configure(yarp::os::ResourceFinder &rf){
         // return false;
     }
 
-	_smoothInput_port.open( getName("vel"));
-	_saccadeInput_port.open( getName("pos"));
-	_imageCoordPort.open( getName("imgcoord"));
-	_inertialInput_port.open( getName("imu"));
-	_disparityInput_port.open( getName("dis"));
-	_trackersignalOutput_port.open( getName("trackersignal/bot:o"));
-	_posdirOutput_port.open( getName("possibledirections/vec:o") );
-    _status_port.open(getName("status:o"));
+	_smoothInput_port.open( getName("/vel"));
+	_saccadeInput_port.open( getName("/pos"));
+	_imageCoordPort.open( getName("/imgcoord"));
+	_inertialInput_port.open( getName("/imu"));
+	_disparityInput_port.open( getName("/dis"));
+	_trackersignalOutput_port.open( getName("/trackersignal/bot:o"));
+	_posdirOutput_port.open( getName("/possibledirections/vec:o") );
+    _status_port.open(getName("/status:o"));
     // open config port
-    _configPort.open(getName("conf"));
+    _configPort.open(getName("/conf"));
     attach(_configPort, true);
 
 	//INITIAL COMMAND AND STATE
@@ -327,7 +327,7 @@ bool Control_GazeModule::configure(yarp::os::ResourceFinder &rf){
 	oldW = gsl_vector_calloc(3);
 	inertialW = gsl_vector_calloc(3);
 
-	egosphere.open(getName("remoteEgoSphere"));
+	egosphere.open(getName("/remoteEgoSphere"));
 
 
 	if(_bLog)

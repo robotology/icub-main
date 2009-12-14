@@ -116,15 +116,15 @@ bool AttentionSelectionModule::configure(yarp::os::ResourceFinder &rf){
 
     bool ok = true;
 
-	ok &= _remoteEgosphere.open(getName("remoteEgoSphere"));
+	ok &= _remoteEgosphere.open(getName("/remoteEgoSphere"));
 
-    ok &= _prtImgFloatSalienceIn.open(getName("i:map"));
-	ok &= _prtImgFloatSelectionOut.open(getName("o:map"));
-    ok &= _prtVctPosOut.open(getName("o:position"));
-    ok &= _trackersignalOutput_port.open(getName("o:velocity"));
-    ok &= _prtVctTrackerIn.open(getName("i:tracker"));
-	ok &= _prtBotGazeStateIn.open(getName("i:gaze"));
-    ok &= _configPort.open(getName("conf"));
+    ok &= _prtImgFloatSalienceIn.open(getName("/i:map"));
+	ok &= _prtImgFloatSelectionOut.open(getName("/o:map"));
+    ok &= _prtVctPosOut.open(getName("/o:position"));
+    ok &= _trackersignalOutput_port.open(getName("/o:velocity"));
+    ok &= _prtVctTrackerIn.open(getName("/i:tracker"));
+	ok &= _prtBotGazeStateIn.open(getName("/i:gaze"));
+    ok &= _configPort.open(getName("/conf"));
     attach(_configPort);
 	_dblStartTime = yarp::os::Time::now();
     return ok;

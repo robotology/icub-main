@@ -128,8 +128,8 @@ bool CamCalibConfModule::configure(ResourceFinder& rf){
     _grabFlag = false;
     _patternImageCounter = 0;
 
-    _prtImg.open(getName("image"));
-    _configPort.open(getName("conf"));
+    _prtImg.open(getName("/image"));
+    _configPort.open(getName("/conf"));
     attach(_configPort);
 
     cout << endl;

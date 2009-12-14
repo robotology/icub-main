@@ -197,10 +197,10 @@ bool EgoSphereModule::configure(yarp::os::ResourceFinder &rf){
     }
 
     // open output map port
-    _prtImgEgoFloat.open(getName("map_out"));
+    _prtImgEgoFloat.open(getName("/map_out"));
 
     // open config port
-    _configPort.open(getName("conf"));
+    _configPort.open(getName("/conf"));
     attach(_configPort);
  
     Time::turboBoost();

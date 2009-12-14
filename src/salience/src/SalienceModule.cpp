@@ -64,10 +64,10 @@ bool SalienceModule::configure(yarp::os::ResourceFinder &rf){
         }
     }
 
-    imgPort.open(getName("view"));
-	peakPort.open(getName("peak")); //For streaming saliency peak coordinates (Alex, 31/05/08)
-    filteredPort.open(getName("map"));
-    configPort.open(getName("conf"));
+    imgPort.open(getName("/view"));
+	peakPort.open(getName("/peak")); //For streaming saliency peak coordinates (Alex, 31/05/08)
+    filteredPort.open(getName("/map"));
+    configPort.open(getName("/conf"));
     attach(configPort);
 
     oldSizeX = -1;
