@@ -33,27 +33,30 @@ iKinLinIneqConstr::iKinLinIneqConstr(Ipopt::Number _lowerBoundInf, Ipopt::Number
 
 
 /************************************************************************/
-void iKinLinIneqConstr::_allocate(const iKinLinIneqConstr &obj)
+void iKinLinIneqConstr::_allocate(const iKinLinIneqConstr *obj)
 {
-    active=obj.active;
+    C =obj->C;
+    uB=obj->uB;
+    lB=obj->lB;
 
-    C =obj.C;
-    uB=obj.uB;
-    lB=obj.lB;
+    lowerBoundInf=obj->lowerBoundInf;
+    upperBoundInf=obj->upperBoundInf;
+
+    active=obj->active;
 }
 
 
 /************************************************************************/
 iKinLinIneqConstr::iKinLinIneqConstr(const iKinLinIneqConstr &obj)
 {
-    _allocate(obj);
+    _allocate(&obj);
 }
 
 
 /************************************************************************/
 iKinLinIneqConstr &iKinLinIneqConstr::operator=(const iKinLinIneqConstr &obj)
 {
-    _allocate(obj);
+    _allocate(&obj);
 
     return *this;
 }
@@ -510,6 +513,7 @@ iKinIpOptMin::iKinIpOptMin(iKinChain &c, unsigned int _ctrlPose, const double to
                            const unsigned int verbose, bool useHessian) : chain(c)
 {
     ctrlPose=_ctrlPose;
+    pLIC=&noLIC;
 
     if (ctrlPose>IKINCTRL_POSE_ANG)
         ctrlPose=IKINCTRL_POSE_ANG;
@@ -673,7 +677,7 @@ yarp::sig::Vector iKinIpOptMin::solve(const yarp::sig::Vector &q0, yarp::sig::Ve
     SmartPtr<iKin_NLP> nlp=new iKin_NLP(chain,ctrlPose,q0,xd,
                                         weight2ndTask,chain2ndTask,xd_2nd,w_2nd,
                                         weight3rdTask,qd_3rd,w_3rd,
-                                        LIC,exhalt);
+                                        *pLIC,exhalt);
 
     nlp->set_scaling(obj_scaling,x_scaling,g_scaling);
     nlp->set_bound_inf(lowerBoundInf,upperBoundInf);

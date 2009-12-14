@@ -67,7 +67,7 @@ protected:
 
     bool active;
 
-    void _allocate(const iKinLinIneqConstr &obj);
+    virtual void _allocate(const iKinLinIneqConstr *obj);
 
 public:
     /**
@@ -99,7 +99,7 @@ public:
     *            iKinLinIneqConstr.
     * @return a reference to the current object.
     */
-    iKinLinIneqConstr &operator=(const iKinLinIneqConstr &obj);
+    virtual iKinLinIneqConstr &operator=(const iKinLinIneqConstr &obj);
 
     /**
     * Returns a reference to the constraints matrix C.
@@ -341,7 +341,8 @@ protected:
     iKinChain &chain;
     iKinChain chain2ndTask;
 
-    iKinLinIneqConstr LIC;
+    iKinLinIneqConstr  noLIC;
+    iKinLinIneqConstr *pLIC;
 
     unsigned int ctrlPose;    
 
@@ -405,13 +406,20 @@ public:
     unsigned int get_ctrlPose() { return ctrlPose; }
 
     /**
-    * Returns a reference to the Linear Inequality Constraints 
-    * object which enables to impose constraints of the form 
-    * lB <= C*q <= uB.
-    * @return Linear Inequality Constraints object. 
+    * Attach a iKinLinIneqConstr object in order to impose 
+    * constraints of the form lB <= C*q <= uB.
+    * @param lic is the iKinLinIneqConstr object to attach.
     * \see iKinLinIneqConstr
     */
-    iKinLinIneqConstr &getLIC() { return LIC; }
+    void attachLIC(iKinLinIneqConstr &lic) { pLIC=&lic; }
+
+    /**
+    * Returns a reference to the attached Linear Inequality 
+    * Constraints object.
+    * @return Linear Inequality Constraints pLIC. 
+    * \see iKinLinIneqConstr
+    */
+    iKinLinIneqConstr &getLIC() { return *pLIC; }
 
     /**
     * Selects 2nd Task End-Effector by giving the ordinal number n 

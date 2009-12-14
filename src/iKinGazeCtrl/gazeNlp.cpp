@@ -459,9 +459,9 @@ Vector GazeIpOptMin::solve(const Vector &q0, Vector &xd,
     Ipopt::SmartPtr<iKin_NLP> nlp;
 
     if (neckType)
-        nlp=new HeadCenter_NLP(chain,q0,xd,LIC,exhalt);
+        nlp=new HeadCenter_NLP(chain,q0,xd,*pLIC,exhalt);
     else
-        nlp=new Eyes_NLP(chain,chain2,q0,xd,LIC,exhalt);
+        nlp=new Eyes_NLP(chain,chain2,q0,xd,*pLIC,exhalt);
 
     nlp->set_scaling(obj_scaling,x_scaling,g_scaling);
     nlp->set_bound_inf(lowerBoundInf,upperBoundInf);

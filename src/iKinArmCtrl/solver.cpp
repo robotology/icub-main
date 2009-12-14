@@ -187,7 +187,7 @@ bool Solver::threadInit()
     double lower_bound_inf, upper_bound_inf;
     slv->getBoundsInf(lower_bound_inf,upper_bound_inf);
     shouConstr=new iCubShoulderConstr(chain->getDOF(),2.0*lower_bound_inf,2.0*upper_bound_inf);
-    slv->getLIC()=*shouConstr;
+    slv->attachLIC(*shouConstr);
     slv->getLIC().setActive(true);
 
     // In order to speed up the process, a scaling for the problem 

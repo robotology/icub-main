@@ -39,8 +39,25 @@ protected:
 
     iKinChain *chain;
 
-public:
+    virtual void _allocate(const iKinLinIneqConstr *obj)
+    {
+        iKinLinIneqConstr::_allocate(obj);
 
+        const iCubShoulderConstr *ptr=static_cast<const iCubShoulderConstr*>(obj);
+
+        joint1_0=ptr->joint1_0;
+        joint1_1=ptr->joint1_1;
+        joint2_0=ptr->joint2_0;
+        joint2_1=ptr->joint2_1;
+
+        m=ptr->m;
+        n=ptr->n;
+
+        numAxes2Shou=ptr->numAxes2Shou;
+        chain=ptr->chain;
+    }
+
+public:
     iCubShoulderConstr(iKinChain *_chain) : iKinLinIneqConstr()
     {      
         chain=_chain;
@@ -981,13 +998,13 @@ bool CartesianSolver::open(Searchable &options)
     // enforce linear inequalities constraints, if any
     if (prt->cns)
     {
-        prt->cns->update(NULL);
-        slv->getLIC()=*prt->cns;
+        slv->attachLIC(*prt->cns);
         
         double lower_bound_inf, upper_bound_inf;        
         slv->getBoundsInf(lower_bound_inf,upper_bound_inf);
         slv->getLIC().getLowerBoundInf()=2.0*lower_bound_inf;
         slv->getLIC().getUpperBoundInf()=2.0*upper_bound_inf;
+        slv->getLIC().update(NULL);
     }
 
     // define input port
