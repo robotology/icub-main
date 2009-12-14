@@ -1,5 +1,5 @@
 
-cmake_minimum_required(VERSION 2.6)
+cmake_minimum_required(VERSION 2.4)
 
 SET(PROJECTNAME eye2world)
 PROJECT(${PROJECTNAME})
@@ -13,7 +13,6 @@ find_package(IKIN REQUIRED)
 find_package(LIBEYECUB REQUIRED)
 find_package(LIBVISLAB REQUIRED)
 include_directories(${LIBEYECUB_INCLUDE_DIRS} ${IKIN_INCLUDE_DIRS} ${CTRLLIB_INCLUDE_DIRS} ${LIBVISLAB_INCLUDE_DIRS})
-
 
 set(SOURCE_DIR "src/")
 
