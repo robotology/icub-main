@@ -110,7 +110,7 @@ bool affActionPrimitives::configHandSeq(Property &opt)
 {
     if (opt.check("hand_sequences_file"))
     {
-        string handSeqFile=opt.find("hand_sequences_file").asString();
+        string handSeqFile=opt.find("hand_sequences_file").asString().c_str();
         Property handSeqProp;
 
         fprintf(stdout,"Processing %s file\n",handSeqFile.c_str());
@@ -151,7 +151,7 @@ bool affActionPrimitives::configHandSeq(Property &opt)
                 return false;
             }
 
-            string key=bSeq.find("key").asString();
+            string key=bSeq.find("key").asString().c_str();
 
             if (!bSeq.check("numWayPoints"))
             {
