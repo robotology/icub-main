@@ -1,7 +1,5 @@
 // -*- mode:C++; tab-width:4; c-basic-offset:4; indent-tabs-mode:nil -*-
 
-/* helper classes and functions, taken from Ivana Cingovska's 2008 work */
-
 /* iCub */
 #include <iCub/BlobDescriptorModule.h>
 #include <iCub/BlobDescriptorSupport.h>

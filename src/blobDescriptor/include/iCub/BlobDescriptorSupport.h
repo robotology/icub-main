@@ -1,7 +1,7 @@
 #ifndef __ICUB_BLOB_DESC_SUPPORT_H__
 #define __ICUB_BLOB_DESC_SUPPORT_H__
 
-/* helper classes and functions, taken from Ivana Cingovska's 2008 work */
+/* helper classes and functions - most are taken from Ivana Cingovska's 2008 work */
 
 /* OpenCV */
 #include <cv.h>
@@ -39,7 +39,7 @@ struct ObjectDescriptor
     CvScalar color; // for display? CHECK
 
 	//New fields added for contour processing - Alex 13/12/2009
-	CvMemStorage* storage; // = cvCreateMemStorage(0);
+	CvMemStorage *storage; // = cvCreateMemStorage(0);
 	CvSeq *contours; // = 0;
 	CvSeq *convexhull; // = 0;
 

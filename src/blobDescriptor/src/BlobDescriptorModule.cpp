@@ -2,7 +2,7 @@
 
 /* 
  * Copyright (C) 2009 RobotCub Consortium, European Commission FP6 Project IST-004370
- * Author: Giovanni Saponaro <gsaponaro@isr.ist.utl.pt>, Ivana Cingovska
+ * Author: Giovanni Saponaro <gsaponaro@isr.ist.utl.pt>, Ivana Cingovska, Alexandre Bernardino
  * CopyPolicy: Released under the terms of the GNU GPL v2.0 
  *
  */
@@ -130,20 +130,19 @@ bool BlobDescriptorModule::configure(ResourceFinder &rf) // equivalent to Module
     _yarpRawInputPtr     = _rawImgInputPort.read(true);
     _yarpLabeledInputPtr = _labeledImgInputPort.read(true);
     
-	//check dimensions
+	/* check that raw and labeled image dimensions are the same */
 	if( (_yarpRawInputPtr->width() != _yarpLabeledInputPtr->width()) || 
 		(_yarpRawInputPtr->height() != _yarpLabeledInputPtr->height()))
 	{
-		cout << getName() << ": input image dimensions differ. Will exit ... " << endl;
+		cout << getName() << ": input image dimensions differ. Exiting..." << endl;
         return false;
 	}
-
 	
     _w   = _yarpRawInputPtr->width();
     _h   = _yarpRawInputPtr->height();
     _sz  = cvSize(_w, _h);
 
-	//Allocate image buffers
+	/* allocate internal image buffers */
 	_yarpRawImg.resize(_w,_h);
 	_yarpHSVImg.resize(_w,_h);
 	_yarpHueImg.resize(_w,_h);
@@ -165,14 +164,14 @@ bool BlobDescriptorModule::configure(ResourceFinder &rf) // equivalent to Module
     _v_ranges[1]  = 255;
 	float *ranges[] = { _h_ranges, _s_ranges, _v_ranges };
     
-	//Initializing the object descriptor list
+	/* initialize object descriptor list */
 	_objDescTable = new ObjectDescriptor[_maxObjects];
-	//must allocate and initialize the masks and histograms
-	//this should go in the future to the object class constructor
+	/* must allocate and initialize masks and histograms */
+	/* FIXME: in the future, this should go in the object class constructor */
 	for(int i = 0; i < _maxObjects; i++)
 	{
-		_objDescTable[i].mask_image = cvCreateImage(_sz,8,1);
-		_objDescTable[i].mask_data = (unsigned char*)_objDescTable[i].mask_image->imageData;
+		_objDescTable[i].mask_image = cvCreateImage(_sz, IPL_DEPTH_8U, 1);
+		_objDescTable[i].mask_data = (unsigned char *) _objDescTable[i].mask_image->imageData;
 		_objDescTable[i].h_bins = _hist_size[0];
 		_objDescTable[i].s_bins = _hist_size[1];
         _objDescTable[i].objHist = cvCreateHist(1, _hist_size, CV_HIST_ARRAY, ranges, 1);
@@ -250,12 +249,13 @@ bool BlobDescriptorModule::updateModule()
     _yarpRawInputPtr = _rawImgInputPort.read(true);
 	_yarpLabeledInputPtr = _labeledImgInputPort.read(true);
 	
-	//must make sure images are corresponding - they must have the same timestamp
+	/* check that both images have timestamps */
 	if( !_rawImgInputPort.getEnvelope(rawstamp) || !_labeledImgInputPort.getEnvelope(labeledstamp) )
 	{
-		cout << "This module requires ports with valid timestamp data. Stamps are missing. Exiting ..." << endl;
+        cout << getName() << ": this module requires ports with valid timestamp data. Stamps are missing. Exiting..." << endl;
 		return false;
 	}
+    /* synchronize the two images, if one of them is delayed, so that they correspond */
 	while( rawstamp.getCount() < labeledstamp.getCount() )
 	{
 		_yarpRawInputPtr = _rawImgInputPort.read(true);
@@ -267,42 +267,42 @@ bool BlobDescriptorModule::updateModule()
 		_labeledImgInputPort.getEnvelope(labeledstamp);
 	}
 
-
 	_yarpRawImg = *_yarpRawInputPtr;
 	_yarpViewImg = _yarpRawImg;
 	_yarpLabeledImg = *_yarpLabeledInputPtr;
 
-	//Get opencv pointers to images to more easily call opencv functions
-    IplImage * opencvRawImg = (IplImage *) _yarpRawImg.getIplImage();
-	IplImage * opencvHSVImg = (IplImage *) _yarpHSVImg.getIplImage();
-	IplImage * opencvHueImg = (IplImage *) _yarpHueImg.getIplImage();
-    IplImage * opencvLabeledImg = (IplImage *) _yarpLabeledImg.getIplImage();
-	IplImage * opencvViewImg = (IplImage *) _yarpViewImg.getIplImage();
-	IplImage * opencvTempImg = (IplImage *) _yarpTempImg.getIplImage();
+	/* get OpenCV pointers to images, to more easily call OpenCV functions */
+    IplImage *opencvRawImg     = (IplImage *) _yarpRawImg.getIplImage();
+	IplImage *opencvHSVImg     = (IplImage *) _yarpHSVImg.getIplImage();
+	IplImage *opencvHueImg     = (IplImage *) _yarpHueImg.getIplImage();
+    IplImage *opencvLabeledImg = (IplImage *) _yarpLabeledImg.getIplImage();
+	IplImage *opencvViewImg    = (IplImage *) _yarpViewImg.getIplImage();
+	IplImage *opencvTempImg    = (IplImage *) _yarpTempImg.getIplImage();
 
-    //Convert from RGB to HSV and get the Hue plane - to compute the histograms
+    /* convert from RGB to HSV and get the Hue plane - to compute the histograms */
 	cvCvtColor(opencvRawImg, opencvHSVImg, CV_RGB2HSV);
 	cvSplit(opencvHSVImg, opencvHueImg, NULL, NULL, NULL);
-    IplImage *planes[] = { opencvHueImg }; /* just hue (Ivana used saturation, too - planesW variable) */
+    IplImage *planes[] = { opencvHueImg };
 
     /* compute numLabels as the max value within opencvLabeledImg */
     double max_val, trash;
     cvMinMaxLoc(opencvLabeledImg, &trash, &max_val, NULL, NULL, NULL);
     int numLabels = (int) max_val;
 
-	// different selection criteria should be allowed here
+	/* FIXME: different selection criteria should be accepted here */
     _numObjects = selectObjects( opencvLabeledImg, opencvTempImg, numLabels, _minAreaThreshold);
 	if(_numObjects > _maxObjects )
 	{
-		cout << "Number of objects is bigger than the defined maximum. Only " << _maxObjects << " will be processed." << endl;
+        cout << getName() << ": more objects than the permitted maximum. Only " << _maxObjects << " will be processed." << endl;
 		_numObjects = _maxObjects;
 	}
 
     /* extract characteristics of objects */
     extractObj(opencvLabeledImg, _numObjects, _objDescTable);
 
-	// Here all objects have been segmented and are stored independently.
-	// Contour extraction
+	/* here, all objects have been segmented and are stored independently. */
+
+	/* contour extraction */
 	for( int i=0; i < _numObjects; i++)
 	{
 		cvFindContours(_objDescTable[i].mask_image, 
@@ -317,16 +317,16 @@ bool BlobDescriptorModule::updateModule()
 
 	for( int i=0; i < _numObjects; i++)
 	{
-		// Contour drawing
+		/* contour drawing */
 		cvDrawContours(
 			opencvViewImg, 
 			_objDescTable[i].contours, 
-			CV_RGB(0,255,0), //External color
-			CV_RGB(0,0,255), //Hole color
+			CV_RGB(0,255,0), // external color
+			CV_RGB(0,0,255), // hole color
 			1,				 
 			1, 
 			CV_AA, 
-			cvPoint(0, 0)			// roi offset
+			cvPoint(0, 0)	 // ROI offset
 			);
 	}
 	
@@ -350,7 +350,7 @@ bool BlobDescriptorModule::updateModule()
         cvConvertScale(_objDescTable[i].objHist->bins, _objDescTable[i].objHist->bins, ohmax ? 255. / ohmax : 0., 0);
     }
 
-	//output image to view results
+	/* output image to view results */
 	ImageOf<PixelRgb> &yarpOutputImage = _viewImgOutputPort.prepare();
 	yarpOutputImage = _yarpViewImg;
 	_viewImgOutputPort.write();

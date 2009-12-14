@@ -55,7 +55,11 @@
  *
  * \section portsa_sec Ports Accessed
  *
- * - None
+ * - \c /edisonSegm/rawimg:o
+ *   Raw image port previously created by a segmentation module.
+ *
+ * - \c /edisonSegm/labelimg:o
+ *   Labeled image port previously created by a segmentation module.
  *
  * \section portsc_sec Ports Created
  *
@@ -100,7 +104,7 @@
  *
  * \section conf_file_sec Configuration Files
  *
- * \c blobDescriptor.ini  in \c $ICUB_ROOT/app/blobDesriptor/conf
+ * \c blobDescriptor.ini  in \c $ICUB_ROOT/app/blobDescriptor/conf
  *
  * \section tested_os_sec Tested OS
  *
@@ -110,7 +114,7 @@
  *
  * <tt>blobDescriptor --name blobDescriptor --context blobDescriptor/conf --from blobDescriptor.ini </tt>
  *
- * \author Giovanni Saponaro <gsaponaro@isr.ist.utl.pt>, Ivana Cingovska
+ * \author Giovanni Saponaro <gsaponaro@isr.ist.utl.pt>, Ivana Cingovska, Alexandre Bernardino
  *
  * Copyright (C) 2009 RobotCub Consortium, European Commission FP6 Project IST-004370
  * CopyPolicy: Released under the terms of the GNU GPL v2.0
@@ -171,12 +175,12 @@ class BlobDescriptorModule : public RFModule
 	BufferedPort<ImageOf<PixelRgb> >  _viewImgOutputPort;
 	BufferedPort<Bottle>              _affDescriptorOutputPort;
 	BufferedPort<Bottle>              _trackerInitOutputPort;
-	/* yarp image pointes to access image ports*/
-	ImageOf<PixelRgb>                 *_yarpRawInputPtr;
-	ImageOf<PixelInt>                 *_yarpLabeledInputPtr;
-	/* yarp image internal buffers */
+	/* yarp image pointers to access image ports */
+	ImageOf<PixelRgb>                *_yarpRawInputPtr;
+	ImageOf<PixelInt>                *_yarpLabeledInputPtr;
+	/* yarp internal image buffers */
 	ImageOf<PixelRgb>				  _yarpRawImg;
-	ImageOf<PixelRgb>                _yarpViewImg;
+	ImageOf<PixelRgb>                 _yarpViewImg;
 	ImageOf<PixelRgb>				  _yarpHSVImg;
 	ImageOf<PixelMono>				  _yarpHueImg;
 	ImageOf<PixelInt>				  _yarpLabeledImg;
@@ -184,21 +188,21 @@ class BlobDescriptorModule : public RFModule
 
 	Bottle                            _affDescriptor;
 	Bottle                            _trackerInit;
-	/* OpenCV images */
-	//IplImage                         *_opencvRawImg;
-	//IplImage                         *_opencvLabeledImg32; /* 32 bit */
-    //IplImage                         *_opencvLabeledImg8;  /*  8 bit. FIXME: check if this is necessary */
+	/* OpenCV images - not needed anymore */
+	//IplImage                       *_opencvRawImg;
+	//IplImage                       *_opencvLabeledImg32;
+    //IplImage                       *_opencvLabeledImg8;
 	int                               _w, _h;
 	CvSize                            _sz;
 
 	ObjectDescriptor                 *_objDescTable;
 	int                               _numObjects;
-    int _hist_size[2];
-	float _h_ranges[2], _s_ranges[2], _v_ranges[2];
+    int                               _hist_size[2];
+	float                             _h_ranges[2], _s_ranges[2], _v_ranges[2];
 	
 	/* other parameters that can be user-specified (besides port names) */
 	int                               _minAreaThreshold; /* min. number of pixels allowed for foreground objects */
-	int _maxObjects; /* maximum number of object to process */
+	int                               _maxObjects; /* maximum number of object to process */
 
 public:
 	virtual bool configure(ResourceFinder &rf); /* configure module parameters, return true if successful */
