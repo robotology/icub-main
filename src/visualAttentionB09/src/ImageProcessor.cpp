@@ -354,9 +354,9 @@ void ImageProcessor::colourOpponency(ImageOf<PixelRgb> *src){
 
 	Ipp8u* yellowPlane_ippi = ippiMalloc_8u_C1(width,height,&psb);
 
-	ippiCopy_8u_C1R(bluePlane->getPixelAddress(0,0),width,bluePlane_ippi,psb,srcsize);
-	ippiCopy_8u_C1R(redPlane->getPixelAddress(0,0),width,redPlane_ippi,psb,srcsize);
-	ippiCopy_8u_C1R(greenPlane->getPixelAddress(0,0),width,greenPlane_ippi,psb,srcsize);
+    ippiCopy_8u_C1R(bluePlane->getRawImage(),bluePlane->getRowSize(),bluePlane_ippi,psb,srcsize);
+	ippiCopy_8u_C1R(redPlane->getRawImage(),redPlane->getRowSize(),redPlane_ippi,psb,srcsize);
+    ippiCopy_8u_C1R(greenPlane->getRawImage(),greenPlane->getRowSize(),greenPlane_ippi,psb,srcsize);
 	
 	//3. convolve with a gaussian in order to filter image planes red and green
 	
@@ -498,9 +498,9 @@ void ImageProcessor::colourOpponency(ImageOf<PixelRgb> *src){
 	//greenRed_yarp->resize(width,height);
 	//blueYellow_yarp->resize(width,height);
 	
-	ippiCopy_8u_C1R(redGreen_ippi,psb,redGreen_yarp->getPixelAddress(0,0),width,srcsize);
-	ippiCopy_8u_C1R(greenRed_ippi,psb,greenRed_yarp->getPixelAddress(0,0),width,srcsize);
-	ippiCopy_8u_C1R(blueYellow_ippi,psb,blueYellow_yarp->getPixelAddress(0,0),width,srcsize);
+    ippiCopy_8u_C1R(redGreen_ippi,psb,redGreen_yarp->getRawImage(),redGreen_yarp->getRowSize(),srcsize);
+	ippiCopy_8u_C1R(greenRed_ippi,psb,greenRed_yarp->getRawImage(),greenRed_yarp->getRowSize(),srcsize);
+	ippiCopy_8u_C1R(blueYellow_ippi,psb,blueYellow_yarp->getRawImage(),blueYellow_yarp->getRowSize(),srcsize);
 	/*ippiCopy_8u_C1R(redPlane->getPixelAddress(0,0),psb,redGreen_yarp->getPixelAddress(0,0),width,srcsize);
 	ippiCopy_8u_C1R(greenPlane->getPixelAddress(0,0),psb,greenRed_yarp->getPixelAddress(0,0),width,srcsize);
 	ippiCopy_8u_C1R(bluePlane->getPixelAddress(0,0),psb,blueYellow_yarp->getPixelAddress(0,0),width,srcsize);*/
