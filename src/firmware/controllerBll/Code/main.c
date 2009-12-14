@@ -730,6 +730,7 @@ void decouple_positions(void)
 void decouple_dutycycle(Int32 *pwm)
 {
 	Int32 temp = 0;
+	static UInt8 count=0;
 
 #if VERSION == 0x0152
 	/*  Waist Differential coupling 
@@ -753,8 +754,13 @@ void decouple_dutycycle(Int32 *pwm)
 	if (_control_mode[0] == MODE_POSITION)
 	{
 		temp = _cpl_pid_prediction[0] + _cpl_pid_prediction[1];
-	    pwm[0] += temp;
-	    _pd[0] += temp;
+	    //pwm[0] += temp;
+	    //_pd[0] += temp;
+		#ifdef DEBUG_CPL_BOARD
+			if(count==0)
+				can_printf("cplPid:%d", temp);
+			count++;
+		#endif	
 	    //update the prediction for coupled board duty
 	    _cpl_pid_prediction[0] = _cpl_pid_prediction[0] + _cpl_pid_delta[0];
 	    _cpl_pid_prediction[1] = _cpl_pid_prediction[1] + _cpl_pid_delta[1];
