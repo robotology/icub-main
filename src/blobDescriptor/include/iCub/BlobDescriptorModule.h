@@ -104,7 +104,7 @@
  *
  * \section conf_file_sec Configuration Files
  *
- * \c blobDescriptor.ini  in \c $ICUB_ROOT/app/blobDescriptor/conf
+ * \c blobDescriptor.ini  in \c $ICUB_ROOT/app/blobDescriptor/conf or \c $ICUB_ROOT/app/demoAffv2/conf
  *
  * \section tested_os_sec Tested OS
  *
@@ -113,6 +113,7 @@
  * \section example_sec Example Instantiation of the Module
  *
  * <tt>blobDescriptor --name blobDescriptor --context blobDescriptor/conf --from blobDescriptor.ini </tt>
+ * <tt>blobDescriptor --context demoAffv2/conf</tt>
  *
  * \author Giovanni Saponaro <gsaponaro@isr.ist.utl.pt>, Ivana Cingovska, Alexandre Bernardino
  *
@@ -179,11 +180,11 @@ class BlobDescriptorModule : public RFModule
 	ImageOf<PixelRgb>                *_yarpRawInputPtr;
 	ImageOf<PixelInt>                *_yarpLabeledInputPtr;
 	/* yarp internal image buffers */
-	ImageOf<PixelRgb>				  _yarpRawImg;
+	ImageOf<PixelRgb>		  _yarpRawImg;
 	ImageOf<PixelRgb>                 _yarpViewImg;
-	ImageOf<PixelRgb>				  _yarpHSVImg;
-	ImageOf<PixelMono>				  _yarpHueImg;
-	ImageOf<PixelInt>				  _yarpLabeledImg;
+	ImageOf<PixelRgb>		  _yarpHSVImg;
+	ImageOf<PixelMono>		  _yarpHueImg;
+	ImageOf<PixelInt>		  _yarpLabeledImg;
 	ImageOf<PixelMono>                _yarpTempImg;
 
 	Bottle                            _affDescriptor;
