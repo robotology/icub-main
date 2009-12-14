@@ -19,7 +19,7 @@
 </module>
 <module>
       <name>yarpview</name>
-      <parameters>--name /blobDescriptor/yarpview/view --x 320 --y 0 --synch</parameters>
+      <parameters>--name /blobDescriptor/yarpview/view --x 0 --y 0 --synch</parameters>
       <node>view-node</node>
       <tag>labeled_image</tag>
 </module>
@@ -39,5 +39,4 @@
       <output>/blobDescriptor/viewImg:o</output>
       <input>/blobDescriptor/yarpview/view</input>
 </connection>
-
 </application>
