@@ -26,10 +26,7 @@ endmacro(check_modules)
 ################################################################################
 
 
-macro(findLibrary name includeIndicator)
-
-set(name ${name})
-set(includeIndicator ${includeIndicator})
+function(findLibrary name includeIndicator)
 
 if(NOT name)
   message(FATAL_ERROR "The 'findLibrary' function needs the name of the library")
@@ -75,29 +72,17 @@ if(NOT ${NAME}_FOUND)
 	          HINTS ${HINTS} ${PC_${libname}_INCLUDEDIR} ${PC_${libname}_INCLUDE_DIRS} ${LIBPATH} PATH_SUFFIXES "include")
 
 	
-if(${CMAKE_MAJOR_VERSION}.${CMAKE_MINOR_VERSION} LESS 2.6)
-
-  	set(${TARGET}_FOUND ${TARGET}_LIBRARIES)
-	
-	set(${NAME}_FOUND ${${NAME}_FOUND})
-	set(${NAME}_INCLUDES ${${NAME}_INCLUDES})
-	set(${NAME}_INCLUDE_DIRS ${${NAME}_INCLUDES})
-	set(${NAME}_LIBRARIES ${${NAME}_LIBRARIES})
-
-else(${CMAKE_MAJOR_VERSION}.${CMAKE_MINOR_VERSION} LESS 2.6)
-
 	include(FindPackageHandleStandardArgs)
+	
 	find_package_handle_standard_args(${NAME} DEFAULT_MSG ${NAME}_LIBRARIES ${NAME}_INCLUDES)
+	mark_as_advanced(${NAME}_INCLUDES ${NAME}_LIBRARIES)
 
+	
 	set(${NAME}_FOUND ${${NAME}_FOUND} PARENT_SCOPE)
 	set(${NAME}_INCLUDES ${${NAME}_INCLUDES} PARENT_SCOPE)
 	set(${NAME}_INCLUDE_DIRS ${${NAME}_INCLUDES} PARENT_SCOPE)
 	set(${NAME}_LIBRARIES ${${NAME}_LIBRARIES} PARENT_SCOPE)
-
-endif(${CMAKE_MAJOR_VERSION}.${CMAKE_MINOR_VERSION} LESS 2.6)
-
-	mark_as_advanced(${NAME}_INCLUDES ${NAME}_LIBRARIES)
 	
 endif(NOT ${NAME}_FOUND)
 
-endmacro(findLibrary)
+endfunction(findLibrary)

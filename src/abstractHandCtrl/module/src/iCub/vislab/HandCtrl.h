@@ -74,7 +74,6 @@
  *   default: "motion_specification.ini" <br />
  *
  * - sensingCalib &lt;FILE&gt; <br />
- *   <strong>ONLY USED IF</strong> <handType> is specified as "v1". <br />
  *   specifies the file name of the calibration file containing hand's the sensing constants. <br />
  *   default: "object_sensing.ini"
  *
