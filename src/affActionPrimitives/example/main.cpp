@@ -51,7 +51,7 @@ public:
 
     virtual bool configure(ResourceFinder &rf)
     {
-		Property option("(robot icubSim) (local test) (part left_arm) (traj_time 3.0)\
+		Property option("(robot icub) (local testMod) (part left_arm) (traj_time 2.0)\
 						(torso_pitch on) (torso_pitch_max 30.0)\
                         (torso_roll off) (torso_yaw on)");
         option.put("hand_calibration_file",rf.findFile("calibFile"));
@@ -108,8 +108,8 @@ public:
 			xd[0]=xd[0]>-0.1?-0.1:xd[0];	// safe thresholding
 
 			action->grasp(xd,graspOrien,graspDisp,true);    // grasp it (wait until it's done)
-			action->reach(xd+dRel,graspOrien,true);         // lift the object
-			action->moveHand("open");                       // release the object
+			action->reach(xd+dRel,graspOrien,true);         // lift the object (wait until it's done)
+			action->moveHand("open",true);                  // release the object (wait until it's done)
 		}		
 
 		return true;
