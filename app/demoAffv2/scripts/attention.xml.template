@@ -3,6 +3,7 @@
 <dependencies>
         <port>/icub/head/rpc:i</port> 
         <port>/icub/cam/right</port>
+		<port>/icub/camcalib/right</port>
 </dependencies>
 <module>
         <name>salience</name>
