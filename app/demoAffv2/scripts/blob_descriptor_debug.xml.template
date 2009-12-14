@@ -25,14 +25,14 @@
 </module>
 <connection>
       <output>/icub/cam/left</output>
-      <input>/edisonSegm/rawimg:i</input>
+      <input>/edisonSegm/rawImg:i</input>
 </connection>
 <connection>
-      <output>/edisonSegm/rawimg:o</output>
+      <output>/edisonSegm/rawImg:o</output>
       <input>/blobDescriptor/rawImg:i</input>
 </connection>
 <connection>
-      <output>/edisonSegm/labelimg:o</output>
+      <output>/edisonSegm/labeledImg:o</output>
       <input>/blobDescriptor/labeledImg:i</input>
 </connection>
 <connection>

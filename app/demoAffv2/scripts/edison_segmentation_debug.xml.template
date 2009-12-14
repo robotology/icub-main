@@ -24,14 +24,14 @@
 </module>
 <connection>
       <output>/icub/cam/left</output>
-      <input>/edisonSegm/rawimg:i</input>
+      <input>/edisonSegm/rawImg:i</input>
 </connection>
 <connection>
-      <output>/edisonSegm/rawimg:o</output>
+      <output>/edisonSegm/rawImg:o</output>
       <input>/edisonSegm/yarpview/raw</input>
 </connection>
 <connection>
-      <output>/edisonSegm/viewimg:o</output>
+      <output>/edisonSegm/viewImg:o</output>
       <input>/edisonSegm/yarpview/view</input>
 </connection>
 </application>
