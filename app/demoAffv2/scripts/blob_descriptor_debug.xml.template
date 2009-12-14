@@ -24,19 +24,19 @@
       <tag>labeled_image</tag>
 </module>
 <connection>
-      <output>/icub/cam/left</output>
-      <input>/edisonSegm/rawImg:i</input>
+      <from>/icub/cam/left</from>
+      <to>/edisonSegm/rawImg:i</to>
 </connection>
 <connection>
-      <output>/edisonSegm/rawImg:o</output>
-      <input>/blobDescriptor/rawImg:i</input>
+      <from>/edisonSegm/rawImg:o</from>
+      <to>/blobDescriptor/rawImg:i</to>
 </connection>
 <connection>
-      <output>/edisonSegm/labeledImg:o</output>
-      <input>/blobDescriptor/labeledImg:i</input>
+      <from>/edisonSegm/labeledImg:o</from>
+      <to>/blobDescriptor/labeledImg:i</to>
 </connection>
 <connection>
-      <output>/blobDescriptor/viewImg:o</output>
-      <input>/blobDescriptor/yarpview/view</input>
+      <from>/blobDescriptor/viewImg:o</from>
+      <to>/blobDescriptor/yarpview/view</to>
 </connection>
 </application>

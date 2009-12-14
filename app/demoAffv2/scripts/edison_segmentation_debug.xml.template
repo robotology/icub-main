@@ -23,15 +23,15 @@
       <tag>labeled_image</tag>
 </module>
 <connection>
-      <output>/icub/cam/left</output>
-      <input>/edisonSegm/rawImg:i</input>
+      <from>/icub/cam/left</from>
+      <to>/edisonSegm/rawImg:i</to>
 </connection>
 <connection>
-      <output>/edisonSegm/rawImg:o</output>
-      <input>/edisonSegm/yarpview/raw</input>
+      <from>/edisonSegm/rawImg:o</from>
+      <to>/edisonSegm/yarpview/raw</to>
 </connection>
 <connection>
-      <output>/edisonSegm/viewImg:o</output>
-      <input>/edisonSegm/yarpview/view</input>
+      <from>/edisonSegm/viewImg:o</from>
+      <to>/edisonSegm/yarpview/view</to>
 </connection>
 </application>
