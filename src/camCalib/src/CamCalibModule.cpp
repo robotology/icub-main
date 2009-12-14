@@ -53,9 +53,9 @@ bool CamCalibModule::configure(yarp::os::ResourceFinder &rf){
         }
     }
 
-	_prtImgIn.open(getName("in"));
-	_prtImgOut.open(getName("out"));
-    _configPort.open(getName("conf"));
+	_prtImgIn.open(getName("/in"));
+	_prtImgOut.open(getName("/out"));
+    _configPort.open(getName("/conf"));
     attach(_configPort);
 	fflush(stdout);
     return true;
