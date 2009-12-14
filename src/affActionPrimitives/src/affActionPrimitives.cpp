@@ -507,8 +507,8 @@ void affActionPrimitives::run()
     latchArmMoveDone=armMoveDone;
     latchHandMoveDone=handMoveDone;
 
-    if (latchArmMoveDone && latchHandMoveDone)
-        if (!execQueuedAction() && Time::now()-latchTimer>waitTmo)
+    if (latchArmMoveDone && latchHandMoveDone && Time::now()-latchTimer>waitTmo)
+        if (!execQueuedAction())
             RES_EVENT(motionDoneEvent)->signal();
 }
 
@@ -524,7 +524,8 @@ affActionPrimitives::~affActionPrimitives()
 bool affActionPrimitives::wait(const double tmo)
 {
     if (configured)
-    {
+    {        
+        fprintf(stdout,"wait for %g seconds\n",tmo);
         waitTmo=tmo;
         latchTimer=Time::now();
 
