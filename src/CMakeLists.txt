@@ -137,6 +137,9 @@ ENDIF (ARTOOLKITPLUS_FOUND)
     ADD_SUBDIRECTORY(cvBlobsLib)
     ADD_SUBDIRECTORY(fastFilt)
     ADD_SUBDIRECTORY(faceTracker)
+
+    ADD_SUBDIRECTORY(ballTracker)
+    ADD_SUBDIRECTORY(colorSegmentation)
     
   ENDIF (OPENCV_FOUND)
 
@@ -154,8 +157,6 @@ ENDIF (ARTOOLKITPLUS_FOUND)
   # removed to avoid prolification of cmake conditionals -- Lorenzo Natale
   #SET (ICUB_TEST "$ENV{ICUB_TEST}")
   #IF (ICUB_TEST)
-  ADD_SUBDIRECTORY(ballTracker)
-  ADD_SUBDIRECTORY(colorSegmentation)
   #ENDIF (ICUB_TEST)
   
   # libraries -- adding them last to test if CMake reorders correctly
