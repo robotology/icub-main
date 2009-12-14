@@ -16,7 +16,8 @@ ELSE(USE_ICUB_MOD)
 ENDIF(USE_ICUB_MOD)
 
 SET(folder_source main.cpp)
-SET(folder_header drivers.h)
+#causing problems when USE_ICUB_MOD is false 
+#SET(folder_header drivers.h)
 
 SOURCE_GROUP("Source Files" FILES ${folder_source})
 SOURCE_GROUP("Header Files" FILES ${folder_header})
