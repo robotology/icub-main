@@ -446,7 +446,7 @@ void Hand::setSamplingRate(int t) {
 }
 
 int Hand::getSamplingRate() {
-	return recorder->getRate();
+	return (int) recorder->getRate();
 }
 
 void Hand::setMonitorRate(int i) {

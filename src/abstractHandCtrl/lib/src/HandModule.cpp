@@ -45,7 +45,7 @@ bool HandModule::ReloadCommand::execute(const Bottle& params, Bottle& reply) con
 	try {
 		h->motionSpecification.fromConfigFile(h->motionSpecificationFilename);
 		h->workerThread->addMotionSpecification(h->motionSpecification);
-	} catch (exception& e) {
+	} catch (exception&) {
 		result = Vocab::encode("fail");
 	}
 
@@ -192,7 +192,7 @@ void HandModule::HandWorkerThread::createHand() {
 			}
 			handv1 = new Handv1(controlBoard, sensingConstants);
 			HandModule::HandWorkerThread::hand = (Hand*) handv1;
-		} catch (exception& e) {
+		} catch (exception&) {
 			hand = new Hand(controlBoard);
 		}
 		break;
