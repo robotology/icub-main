@@ -33,13 +33,16 @@
  * The value part can be changed to suit your needs; the default values are shown below.
  *
  * - <tt>conf_port /blobDescriptor/conf</tt> \n
- *   Complete configuration, message handling port name (optional)
+ *   Complete configuration and message handling port name
  *
  * - <tt>raw_image_input_port /blobDescriptor/rawImg:i</tt> \n
  *   Complete raw image input port name
  *
  * - <tt>labeled_image_input_port /blobDescriptor/labeledImg:i</tt> \n
  *   Complete labeled image input port name
+ *
+ * - <tt>user_selection_port /blobDescriptor/userSelection:i</tt> \n
+ *   Complete user selection intput port name - for debug
  *
  * - <tt>raw_image_output_port /blobDescriptor/rawImg:o</tt> \n
  *   Complete raw image output port name
@@ -53,6 +56,9 @@
  * - <tt>tracker_init_output_port /blobDescriptor/trackerInit:o</tt> \n
  *   Complete tracker initialization parameter output port name
  *
+ * - <tt>tracker_init_single_obj_output_port /blobDescriptor/trackerInitSingleObj:o</tt> \n
+ *   Single object (from user click - debug) tracker initialization parameter output port name
+ *
  * - <tt>min_area_threshold 100</tt> \n
  *   Minimum number of pixels allowed for foreground objects
  *
@@ -62,20 +68,23 @@
  * \section portsa_sec Ports Accessed
  *
  * - <tt>/edisonSegm/rawimg:o</tt> \n
- *   Raw image port previously created by a segmentation module.
+ *   Raw image port, previously created by a segmentation module
  *
  * - <tt>/edisonSegm/labelimg:o</tt> \n
- *   Labeled image port previously created by a segmentation module.
+ *   Labeled image port, previously created by a segmentation module
  *
  * \section portsc_sec Ports Created
  *
  *  <b>Input ports</b>
  *
- *  - <tt>/blobDescriptor/rawImg:i</tt> \n
- *    Raw image input port
+ * - <tt>/blobDescriptor/rawImg:i</tt> \n
+ *   Raw image input port
  *
- *  - <tt>/blobDescriptor/labeledImg:i</tt> \n
- *    Labeled image input port
+ * - <tt>/blobDescriptor/labeledImg:i</tt> \n
+ *   Labeled image input port
+ *
+ * - <tt>/blobDescriptor/userSelection:i</tt> \n
+ *   User selection input port - for debug 
  *
  * <b>Output ports</b>
  *
@@ -91,14 +100,22 @@
  * - <tt>/blobDescriptor/trackerInit:o</tt> \n
  *   Tracker initialization parameter output port
  *
+ * <b>Input/Output ports</b>
+ *
+ * - <tt>/blobDescriptor/conf</tt> \n
+ *   Complete configuration and message handling port name
+ *
  * <b>Port Types</b>
  *
  * - <tt>BufferedPort<ImageOf<PixelRgb> >  _rawImgInputPort</tt>
  * - <tt>BufferedPort<ImageOf<PixelInt> >  _labeledImgInputPort</tt>
+ * - <tt>BufferedPort<Bottle>              _userSelectionInputPort</tt>
  * - <tt>BufferedPort<ImageOf<PixelRgb> >  _rawImgOutputPort</tt>
  * - <tt>BufferedPort<ImageOf<PixelRgb> >  _viewImgOutputPort</tt>
  * - <tt>BufferedPort<Bottle>              _affDescriptorOutputPort</tt>
  * - <tt>BufferedPort<Bottle>              _trackerInitOutputPort</tt>
+ * - <tt>BufferedPort<Bottle>              _trackerInitSingleObjOutputPort</tt>
+ * - <tt>Port                              _handlerPort</tt>
  *
  * \section in_data_sec Input Data Files
  *
@@ -138,9 +155,10 @@
 #include <yarp/os/Network.h>
 #include <yarp/os/Port.h>
 #include <yarp/os/RFModule.h>
+#include <yarp/os/Stamp.h>
 #include <yarp/os/Time.h>
 using namespace yarp::os;
-#include <yarp/sig/all.h> // FIXME: only load necessary headers
+#include <yarp/sig/Image.h>
 using namespace yarp::sig;
 
 /* iCub */
@@ -168,18 +186,22 @@ class BlobDescriptorModule : public RFModule
 	string                            _robotPortName;
 	string                            _rawImgInputPortName;
 	string                            _labeledImgInputPortName;
+    string                            _userSelectionInputPortName; /* for debug */
     string                            _rawImgOutputPortName;
     string                            _viewImgOutputPortName;
 	string                            _affDescriptorOutputPortName;
 	string                            _trackerInitOutputPortName;
-	string                            _handlerPortName;
-	Port                              _handlerPort; /* a port to handle messages */
+    string                            _trackerInitSingleObjOutputPortName; /* from user click - debug */
+    string                            _handlerPortName;
+    Port                              _handlerPort; /* a port to handle messages */
 	BufferedPort<ImageOf<PixelRgb> >  _rawImgInputPort;
 	BufferedPort<ImageOf<PixelInt> >  _labeledImgInputPort;
+    BufferedPort<Bottle>              _userSelectionInputPort; /* for debug */
 	BufferedPort<ImageOf<PixelRgb> >  _rawImgOutputPort;
 	BufferedPort<ImageOf<PixelRgb> >  _viewImgOutputPort;
 	BufferedPort<Bottle>              _affDescriptorOutputPort;
 	BufferedPort<Bottle>              _trackerInitOutputPort;
+    BufferedPort<Bottle>              _trackerInitSingleObjOutputPort; /* from user click - debug */
 	/* yarp image pointers to access image ports */
 	ImageOf<PixelRgb>                *_yarpRawInputPtr;
 	ImageOf<PixelInt>                *_yarpLabeledInputPtr;
@@ -193,6 +215,7 @@ class BlobDescriptorModule : public RFModule
 
 	Bottle                            _affDescriptor;
 	Bottle                            _trackerInit;
+    Bottle                            _trackerInitSingleObj; /* from user click - debug */
 	/* OpenCV images - not needed anymore */
 	//IplImage                       *_opencvRawImg;
 	//IplImage                       *_opencvLabeledImg32;

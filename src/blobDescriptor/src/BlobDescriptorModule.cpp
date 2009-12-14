@@ -9,8 +9,6 @@
  
 /* YARP */
 #include <yarp/os/Network.h>
-#include <yarp/os/RFModule.h>
-#include <yarp/os/Stamp.h>
 using namespace yarp::os;
 
 /* iCub */
@@ -60,6 +58,11 @@ bool BlobDescriptorModule::configure(ResourceFinder &rf) // equivalent to Module
                                                      Value("/labeledImg:i"),
                                                      "Labeled image input port (string)" ).asString()
                                            );
+    _userSelectionInputPortName  = getName(
+                                           rf.check( "user_selection_port",
+                                                     Value("/userSelection:i"),
+                                                     "User selection input port (string)" ).asString()
+                                           );
     _rawImgOutputPortName        = getName(
                                            rf.check( "raw_image_output_port",
                                                      Value("/rawImg:o"),
@@ -80,22 +83,36 @@ bool BlobDescriptorModule::configure(ResourceFinder &rf) // equivalent to Module
                                                      Value("/trackerInit:o"),
                                                      "Tracker initialization output port (string)" ).asString()
                                            );
+    _trackerInitSingleObjOutputPortName = getName(
+                                                  rf.check( "tracker_init_single_obj_output_port",
+                                                            Value("/trackerInitSingleObj:o"),
+                                                            "Single object tracker initialization output port (string)" ).asString()
+                                                  );
+    _handlerPortName = getName(
+                               rf.check( "conf_port",
+                                         Value("/conf"),
+                                         "Configuration and message handling port (string)" ).asString()
+                               );
     _minAreaThreshold = rf.check( "min_area_threshold",
                                   Value(100),
                                   "Minimum number of pixels allowed for foreground objects" ).asInt();
-
 	_maxObjects = rf.check( "max_objects" , 
 						    Value(20), 
 							"Maximum number of objects to process" ).asInt();
 	if( _maxObjects <= 0)
 	{
-		cout << "WARNING: Invalid parameter (number of objects). Will use default (20)" << endl;
+		cout << getName() << " WARNING: Invalid number of objects parameter. Will use default (20) instead." << endl;
 		_maxObjects = 20;
 	}
 
 	//Network::init();
 	
 	/* open ports */
+    if(! _handlerPort.open(_handlerPortName.c_str()) )
+    {
+        cout << getName() << ": unable to open port" << _handlerPortName << endl;
+        return false;
+    }
 	if(! _rawImgInputPort.open(_rawImgInputPortName.c_str()) )
 	{
 		cout << getName() << ": unable to open port" << _rawImgInputPortName << endl;
@@ -104,6 +121,11 @@ bool BlobDescriptorModule::configure(ResourceFinder &rf) // equivalent to Module
     if(! _labeledImgInputPort.open(_labeledImgInputPortName.c_str()) )
     {
         cout << getName() << ": unable to open port" << _labeledImgInputPortName << endl;
+        return false;
+    }
+    if(! _userSelectionInputPort.open(_userSelectionInputPortName.c_str()) )
+    {
+        cout << getName() << ": unable to open port" << _userSelectionInputPortName << endl;
         return false;
     }
     if(! _rawImgOutputPort.open(_rawImgOutputPortName.c_str()) )
@@ -126,11 +148,17 @@ bool BlobDescriptorModule::configure(ResourceFinder &rf) // equivalent to Module
         cout << getName() << ": unable to open port" << _trackerInitOutputPortName << endl;
         return false;
     }
+    /* descriptor of a single object, selected by the user on yarpview - debug */
+    if(! _trackerInitSingleObjOutputPort.open(_trackerInitSingleObjOutputPortName.c_str()) )
+    {
+        cout << getName() << ": unable to open port" << _trackerInitSingleObjOutputPortName << endl;
+        return false;
+    }
 
     _yarpRawInputPtr     = _rawImgInputPort.read(true);
     _yarpLabeledInputPtr = _labeledImgInputPort.read(true);
     
-	/* check that raw and labeled image dimensions are the same */
+	/* check that raw and labeled image dimensions are equal */
 	if( (_yarpRawInputPtr->width() != _yarpLabeledInputPtr->width()) || 
 		(_yarpRawInputPtr->height() != _yarpLabeledInputPtr->height()))
 	{
@@ -181,7 +209,7 @@ bool BlobDescriptorModule::configure(ResourceFinder &rf) // equivalent to Module
 
 	}
 
-	return true; // tell RFModule that everything went well, so that it will run the module
+	return true; /* tell RFModule that everything went well, so that it will run the module */
 }
 	
 /**
@@ -193,10 +221,12 @@ bool BlobDescriptorModule::interruptModule()
 	cout << getName() << ": interrupting module, for port cleanup." << endl;
 	_rawImgInputPort.interrupt();
     _labeledImgInputPort.interrupt();
+    _userSelectionInputPort.interrupt();
     _rawImgOutputPort.interrupt();
     _viewImgOutputPort.interrupt();
     _affDescriptorOutputPort.interrupt();
     _trackerInitOutputPort.interrupt();
+    _trackerInitSingleObjOutputPort.interrupt(); /* from user click - debug */
 	return true;
 }
 	
@@ -210,10 +240,12 @@ bool BlobDescriptorModule::close()
 
     _rawImgInputPort.close();
     _labeledImgInputPort.close();
+    _userSelectionInputPort.close();
     _rawImgOutputPort.close();
     _viewImgOutputPort.close();
     _affDescriptorOutputPort.close();
     _trackerInitOutputPort.close();
+    _trackerInitSingleObjOutputPort.close();
 
 	for(int i = 0; i < _maxObjects; i++)
 	{
@@ -267,9 +299,9 @@ bool BlobDescriptorModule::updateModule()
 		_labeledImgInputPort.getEnvelope(labeledstamp);
 	}
 
-	_yarpRawImg = *_yarpRawInputPtr;
-	_yarpViewImg = _yarpRawImg;
-	_yarpLabeledImg = *_yarpLabeledInputPtr;
+    _yarpRawImg     = *_yarpRawInputPtr;
+    _yarpViewImg    =  _yarpRawImg;
+    _yarpLabeledImg = *_yarpLabeledInputPtr;
 
 	/* get OpenCV pointers to images, to more easily call OpenCV functions */
     IplImage *opencvRawImg     = (IplImage *) _yarpRawImg.getIplImage();
