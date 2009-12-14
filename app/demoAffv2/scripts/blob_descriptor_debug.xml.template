@@ -1,0 +1,43 @@
+<application>
+<name>Blob Descriptor</name>
+<dependencies>
+      <port>/icub/cam/left</port>
+</dependencies>
+<module>
+      <name>edisonSegmentation</name>
+      <parameters>--context demoAffv2/conf</parameters>
+      <node>pwr-node1</node>
+      <stdio>view-node</stdio>
+      <tag>edison_segmentation</tag>
+</module>
+<module>
+      <name>blobDescriptor</name>
+      <parameters>--context demoAffv2/conf</parameters>
+      <node>pwr-node2</node>
+      <stdio>view-node</stdio>
+      <tag>blob_descriptor</tag>
+</module>
+<module>
+      <name>yarpview</name>
+      <parameters>--name /blobDescriptor/yarpview/view --x 320 --y 0 --synch</parameters>
+      <node>view-node</node>
+      <tag>labeled_image</tag>
+</module>
+<connection>
+      <output>/icub/cam/left</output>
+      <input>/edisonSegm/rawimg:i</input>
+</connection>
+<connection>
+      <output>/edisonSegm/rawimg:o</output>
+      <input>/blobDescriptor/rawImg:i</input>
+</connection>
+<connection>
+      <output>/edisonSegm/labelimg:o</output>
+      <input>/blobDescriptor/labeledImg:i</input>
+</connection>
+<connection>
+      <output>/blobDescriptor/viewImg:o</output>
+      <input>/blobDescriptor/yarpview/view</input>
+</connection>
+
+</application>
