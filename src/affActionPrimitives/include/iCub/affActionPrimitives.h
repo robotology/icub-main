@@ -158,8 +158,10 @@ public:
     *
     * \b torso_pitch <string>: if "on" it enables the control of the 
     *    pitch of the torso.
+    *  
     * \b torso_pitch_min <double>: set the pitch minimum value 
     *    [deg].
+    *  
     * \b torso_pitch_max <double>: set the pitch maximum value 
     *    [deg].
     *  
