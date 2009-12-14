@@ -18,8 +18,6 @@
 // yarp
 #include <yarp/os/all.h>
 #include <yarp/sig/all.h>
-#include <yarp/os/Module.h>
-#include <yarp/os/ResourceFinder.h>
 
 // iCub
 #include <iCub/PinholeCalibTool.h>
@@ -48,13 +46,13 @@ using namespace iCub::contrib;
  * \see icub_camcalib
  *
  */
-class iCub::contrib::CamCalibModule : public Module {
+class iCub::contrib::CamCalibModule : public RFModule {
 
 private:
 
     BufferedPort<ImageOf<PixelRgb> >    _prtImgIn;
 	BufferedPort<ImageOf<PixelRgb> >    _prtImgOut;
-    yarp::os::BufferedPort<yarp::os::Bottle> _configPort;
+    yarp::os::Port _configPort;
 
     ICalibTool                           *_calibTool;
 
@@ -68,7 +66,7 @@ public:
     ~CamCalibModule();
     
     /** Passes config on to iCub::contrib::CalibTool */
-    virtual bool open(Searchable& config);
+    virtual bool configure(yarp::os::ResourceFinder &rf);
     virtual bool close();
     virtual bool interruptModule();
     virtual bool updateModule();

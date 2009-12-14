@@ -8,6 +8,10 @@
 
 #include <iCub/CamCalibConfModule.h>
 
+using namespace std;
+using namespace yarp::os;
+using namespace yarp::sig;
+
 CamCalibConfModule::CamCalibConfModule(){
 
     _ocvImgIn = NULL;
@@ -36,24 +40,20 @@ CamCalibConfModule::~CamCalibConfModule(){
    // data is released trough close/interrupt methods
 }
 
-bool CamCalibConfModule::open(Searchable& config){
-   
-    if (config.check("help","if present, display usage message")) {
-        printf("Call with --name /module_prefix --file configFile.ini --group CONFIGURATION_GROUP\n");
-        return false;
-    }
+bool CamCalibConfModule::configure(ResourceFinder& rf){
+       
 
     // pass configuration over to bottle
-    Bottle botConfig(config.toString().c_str());
-    botConfig.setMonitor(config.getMonitor());
+    Bottle botConfig(rf.toString().c_str());
+    botConfig.setMonitor(rf.getMonitor());
     // is group option present?
     Value *valGroup; // check assigns pointer to reference
-    if(config.check("group", valGroup, "Configuration group to load module options from (string).")){
+    if(rf.check("group", valGroup, "Configuration group to load module options from (string).")){
         string strGroup = valGroup->asString().c_str();
         // is group a valid bottle?
-        if (!config.findGroup(strGroup.c_str()).isNull()){
+        if (!rf.findGroup(strGroup.c_str()).isNull()){
             botConfig.clear();
-            botConfig.fromString(config.findGroup(strGroup.c_str(), string("Loading configuration from group " + strGroup).c_str()).toString().c_str());
+            botConfig.fromString(rf.findGroup(strGroup.c_str(), string("Loading configuration from group " + strGroup).c_str()).toString().c_str());
         }
         else{
             cout << endl << "Group " << strGroup << " not found." << endl;
@@ -130,7 +130,7 @@ bool CamCalibConfModule::open(Searchable& config){
 
     _prtImg.open(getName("image"));
     _configPort.open(getName("conf"));
-    attach(_configPort, true);
+    attach(_configPort);
 
     cout << endl;
     cout << "We need to acquire " << _numPatternImagesRequired << " images of the chessboard pattern." << endl;
@@ -362,7 +362,7 @@ bool CamCalibConfModule::updateModule(){
 
 bool CamCalibConfModule::respond(const Bottle& command, Bottle& reply) {
     
-    if(Module::respond(command, reply))
+    if(RFModule::respond(command, reply))
         return true;
     reply.clear();  // reply contains a "command not recognized" from Module::respond()
 

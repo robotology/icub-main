@@ -26,10 +26,6 @@
 #include <yarp/sig/Image.h>
 #include <yarp/os/Semaphore.h>
 
-using namespace std;
-using namespace yarp::os;
-using namespace yarp::sig;
-
 namespace iCub {
     namespace contrib {
         class CamCalibConfModule;
@@ -45,12 +41,12 @@ using namespace iCub::contrib;
  * \see icub_camcalibconf
  *
  */
-class iCub::contrib::CamCalibConfModule : public Module {
+class iCub::contrib::CamCalibConfModule : public yarp::os::RFModule {
 
 private:
 
-    BufferedPort<ImageOf<PixelRgb> >    _prtImg;
-    yarp::os::BufferedPort<yarp::os::Bottle> _configPort;
+	yarp::os::BufferedPort<yarp::sig::ImageOf<yarp::sig::PixelRgb> >    _prtImg;
+    yarp::os::Port _configPort;
 
     IplImage                            *_ocvImgIn;
     IplImage                            *_ocvImgTmp1;
@@ -72,12 +68,12 @@ private:
     //CvMat                               *_rotationVectors;        // The output 3xM or Mx3 array of rotation vectors (compact representation of rotation matrices, see cvRodrigues2).
     //CvMat                               *_translationVectors;     // The output 3xM or Mx3 array of translation vectors.
     int                                 _patternImageCounter;  
-    string                              _outputFilename;  
-    string                              _outputGroupname;
+	std::string                              _outputFilename;  
+    std::string                              _outputGroupname;
 
     bool                                _grabFlag;                // if true grab image if pattern recognized
 
-    Semaphore                           _semaphore;
+    yarp::os::Semaphore                           _semaphore;
 
     virtual void initImages(int width, int height);
     virtual bool writeCalibrationToFile(int width, int height,
@@ -85,8 +81,8 @@ private:
                                         float cx, float cy,
                                         float k1, float k2,
                                         float p1, float p2,
-                                        string filename,
-                                        string groupname);
+                                        std::string filename,
+                                        std::string groupname);
 
 public:
 
@@ -94,12 +90,12 @@ public:
     ~CamCalibConfModule();
     
     /** Passes config on to iCub::contrib::CalibTool */
-    virtual bool open(Searchable& config);
+	virtual bool configure(yarp::os::ResourceFinder& rf);
     virtual bool close();
     virtual bool interruptModule();
     virtual bool updateModule();
 
-    virtual bool respond(const Bottle& command, Bottle& reply);
+    virtual bool respond(const yarp::os::Bottle& command, yarp::os::Bottle& reply);
 
 };
 

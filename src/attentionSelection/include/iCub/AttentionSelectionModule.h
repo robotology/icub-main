@@ -24,16 +24,10 @@
 // yarp
 #include <yarp/os/all.h>
 #include <yarp/sig/all.h>
-#include <yarp/os/ResourceFinder.h>
 
 // iCub
 #include <iCub/AttentionSelectionInterfaces.h>
 #include <iCub/RemoteEgoSphere.h> // to access egosphere remotely
-
-using namespace yarp;
-using namespace yarp::os;
-using namespace yarp::sig;
-using namespace std;
 
 namespace iCub {
     namespace contrib {
@@ -50,20 +44,20 @@ using namespace iCub::contrib;
  * \see icub_attentionselection
  *
  */
-class iCub::contrib::AttentionSelectionModule : public Module {
+class iCub::contrib::AttentionSelectionModule : public RFModule {
 
 private:
 
     // ports
-    BufferedPort<ImageOf<PixelFloat> >       _prtImgFloatSalienceIn;
-	BufferedPort<ImageOf<PixelFloat> >		 _prtImgFloatSelectionOut;
-    BufferedPort<VectorOf<double> >          _prtVctPosOut;  // sending [azimuth, elevation, depth] to gaze control
-    BufferedPort<VectorOf<double> >          _trackersignalOutput_port;  
-    yarp::os::BufferedPort<yarp::os::Bottle> _configPort;
+	yarp::os::BufferedPort<yarp::sig::ImageOf<yarp::sig::PixelFloat> >       _prtImgFloatSalienceIn;
+	yarp::os::BufferedPort<yarp::sig::ImageOf<yarp::sig::PixelFloat> >		 _prtImgFloatSelectionOut;
+    yarp::os::BufferedPort<yarp::sig::VectorOf<double> >          _prtVctPosOut;  // sending [azimuth, elevation, depth] to gaze control
+    yarp::os::BufferedPort<yarp::sig::VectorOf<double> >          _trackersignalOutput_port;  
+    yarp::os::Port _configPort;
     yarp::os::BufferedPort<yarp::sig::Vector> _prtVctTrackerIn;
 	yarp::os::BufferedPort<yarp::os::Bottle> _prtBotGazeStateIn;
 
-    void getPeak(ImageOf<PixelFloat> &img, int &i, int &j, float &v);
+    void getPeak(yarp::sig::ImageOf<yarp::sig::PixelFloat> &img, int &i, int &j, float &v);
 
 	bool _inhibitOutput; // inhibit motor output
     double _hViewAngle; // horizontal view field (degrees)
@@ -118,7 +112,7 @@ private:
 
 	RemoteEgoSphere _remoteEgosphere;
 
-    Semaphore _mutex;
+    yarp::os::Semaphore _mutex;
 
 public:
 
@@ -126,7 +120,7 @@ public:
     virtual ~AttentionSelectionModule();
     
     /** Passes config on to iCub::contrib::CalibTool */
-    virtual bool open(Searchable& config);
+    virtual bool configure(yarp::os::ResourceFinder &rf);
     virtual bool close();
     virtual bool interruptModule();
     virtual bool updateModule();

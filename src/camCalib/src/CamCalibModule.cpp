@@ -18,40 +18,13 @@ CamCalibModule::~CamCalibModule(){
 
 }
 
-
-bool CamCalibModule::open(Searchable& config){
-
-    // locate configuration file
-    ResourceFinder rf;        
-	if (config.check("context")){
-        rf.setDefaultContext(config.find("context").asString());
-	}
-	if (config.check("from")){
-        rf.setDefaultConfigFile(config.find("from").asString());
-	}
-	else if (config.check("file")){
-        rf.setDefaultConfigFile(config.find("file").asString());
-	}
-	else{
-        rf.setDefaultConfigFile("icubCamConf.ini");
-	}
-    rf.configure("ICUB_ROOT",0,NULL);
-	Property prop(rf.toString());
-	prop.fromString(config.toString(), false);
-	prop.setMonitor(config.getMonitor());
+bool CamCalibModule::configure(yarp::os::ResourceFinder &rf){
 
     // pass configuration over to bottle
-    Bottle botConfig(prop.toString().c_str());
-    botConfig.setMonitor(prop.getMonitor());
-    
-	// check --group option
-    if (prop.check("group")){    
-        Bottle &groupSelector=botConfig.addList();
-        groupSelector.addString("group");
-        groupSelector.addString(config.find("group").asString());
-    }    
+    Bottle botConfig(rf.toString().c_str());
+    botConfig.setMonitor(rf.getMonitor());	
 
-    // is group option present?
+    // Load from configuration group ([<group_name>]), if group option present
     Value *valGroup; // check assigns pointer to reference
     if(botConfig.check("group", valGroup, "Configuration group to load module options from (string).")){
         string strGroup = valGroup->asString().c_str();        
@@ -83,7 +56,7 @@ bool CamCalibModule::open(Searchable& config){
 	_prtImgIn.open(getName("in"));
 	_prtImgOut.open(getName("out"));
     _configPort.open(getName("conf"));
-    attach(_configPort, true);
+    attach(_configPort);
 	fflush(stdout);
     return true;
 }

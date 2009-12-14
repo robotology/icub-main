@@ -72,11 +72,8 @@ using namespace yarp::sig;
  *
  */
 
-
-
-
 int main(int argc, char *argv[]) {
-    // prepare a pool of filters
+    
     SalienceFactories& pool = SalienceFactories::getPool();
     pool.add(new SalienceFactoryOf<MotionSalience>("motion"));
     pool.add(new SalienceFactoryOf<EMDSalience>("emd"));
@@ -89,10 +86,14 @@ int main(int argc, char *argv[]) {
     pool.add(new SalienceFactoryOf<AdvancedDirectionalSalience>("advdirectional"));
     pool.add(new SalienceFactoryOf<ProxySalience>("proxy"));
 
-    // run the filters
-    Network yarp;
+	Network yarp;
+	ResourceFinder rf;
+	rf.setVerbose(true);
+	rf.setDefaultConfigFile("salience.ini"); //overridden by --from parameter
+	rf.setDefaultContext("salience"); //overridden by --context parameter
+	rf.configure("ICUB_ROOT", argc, argv);
     SalienceModule module;
-    module.setName("/salience"); // set default name of module
-    return module.runModule(argc,argv);
+    module.setName("/salience");
+    return module.runModule(rf);     
 }
 

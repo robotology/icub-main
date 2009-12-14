@@ -57,8 +57,13 @@ using namespace iCub::contrib;
 
 int main(int argc, char *argv[]) {
 
-    Network yarp;
+	Network yarp;
+	ResourceFinder rf;
+	rf.setVerbose(true);
+	rf.setDefaultConfigFile("attentionSelection.ini"); //overridden by --from parameter
+	rf.setDefaultContext("attentionSelection"); //overridden by --context parameter
+	rf.configure("ICUB_ROOT", argc, argv);
     AttentionSelectionModule module;
-    module.setName("/attentionselection"); // set default name of module
-    return module.runModule(argc,argv);
+    module.setName("/attentionSelection");
+    return module.runModule(rf);  
 }

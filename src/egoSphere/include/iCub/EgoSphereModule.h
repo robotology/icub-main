@@ -30,7 +30,6 @@
 #include <yarp/sig/all.h>
 #include <yarp/dev/PolyDriver.h>
 #include <yarp/dev/ControlBoardInterfaces.h>
-#include <yarp/os/ResourceFinder.h>
 
 // iCub
 #include <iCub/SphereProjector.h>
@@ -43,19 +42,12 @@
 #include <iCub/Framerate.h>
 #include <iCub/IModalityMap.h>
 
-using namespace yarp;
-using namespace yarp::os;
-using namespace yarp::sig;
-using namespace yarp::dev;
-using namespace std;
-
 namespace iCub {
     namespace contrib {
         class EgoSphereModule;
     }
 }
 
-using namespace iCub::contrib;
 
 /**
  *
@@ -64,28 +56,26 @@ using namespace iCub::contrib;
  * \see icub_egosphere
  *
  */
-class iCub::contrib::EgoSphereModule : public Module,
+class iCub::contrib::EgoSphereModule : public yarp::os::RFModule,
                                        public IEgoSphereControls {
 
 private:
 
     // image ports
-    BufferedPort<ImageOf<PixelFloat> >	_prtImgEgoFloat;
+	yarp::os::BufferedPort<ImageOf<PixelFloat> > _prtImgEgoFloat;
 
     // config port
-    BufferedPort<Bottle>                _configPort;
-
-    // Object locations port
+    yarp::os::Port _configPort;    
    
     // modality maps
-	std::vector<IModalityMap*>			_vctMap;
+	std::vector<IModalityMap*> _vctMap;
 
     // controlboard
-    PolyDriver			                _dd;
-    IEncoders			                *_ienc;
-    IPositionControl                    *_ipos;
-    double                              *_encoders;
-    int                                 _numAxes;
+    yarp::dev::PolyDriver  _dd;
+    yarp::dev::IEncoders *_ienc;
+    yarp::dev::IPositionControl *_ipos;
+    double *_encoders;
+    int _numAxes;
 
 	// kinematics
     iCubHeadKinematics                  _headKin;
@@ -152,7 +142,7 @@ public:
     virtual ~EgoSphereModule();
     
     /** Passes config on to iCub::contrib::CalibTool */
-    virtual bool open(Searchable& config);
+    virtual bool configure(yarp::os::ResourceFinder &rf);
     virtual bool close();
     virtual bool interruptModule();
     virtual bool updateModule();

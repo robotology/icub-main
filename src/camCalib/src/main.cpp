@@ -61,15 +61,18 @@ using namespace iCub::contrib;
 
 
 int main(int argc, char *argv[]) {
-
-     // prepare CalibTools
+     
     CalibToolFactories& pool = CalibToolFactories::getPool();
     pool.add(new CalibToolFactoryOf<PinholeCalibTool>("pinhole"));
     pool.add(new CalibToolFactoryOf<SphericalCalibTool>("spherical"));
 
     Network yarp;
+	ResourceFinder rf;
+	rf.setVerbose(true);
+	rf.setDefaultConfigFile("camCalib.ini"); //overridden by --from parameter
+	rf.setDefaultContext("camCalib"); //overridden by --context parameter
+	rf.configure("ICUB_ROOT", argc, argv);
     CamCalibModule module;
-    // module.setName("/camcalib"); // set default name of module
-    module.setName("/camCalib"); // set default name of module ... DV capitalized second C
-    return module.runModule(argc,argv);
+    module.setName("/camCalib");
+    return module.runModule(rf);
 }

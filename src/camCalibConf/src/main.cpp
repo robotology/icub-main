@@ -63,8 +63,13 @@ using namespace iCub::contrib;
 
 int main(int argc, char *argv[]) {
 
-    Network yarp;
+	Network yarp;
+	ResourceFinder rf;
+	rf.setVerbose(true);
+	rf.setDefaultConfigFile("camCalibConf.ini"); //overridden by --from parameter
+	rf.setDefaultContext("camCalibConf"); //overridden by --context parameter
+	rf.configure("ICUB_ROOT", argc, argv);
     CamCalibConfModule module;
-    module.setName("/camcalibconf"); // set default name of module
-    return module.runModule(argc,argv);
+    module.setName("/camCalibConf");
+    return module.runModule(rf);   
 }

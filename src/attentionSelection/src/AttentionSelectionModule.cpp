@@ -9,6 +9,11 @@
 #include <iCub/AttentionSelectionModule.h>
 #include <cv.h>
 
+using namespace yarp;
+using namespace yarp::os;
+using namespace yarp::sig;
+using namespace std;
+
 template <class T>
 T portable_min(T x, T y) {
     return (x<y)?x:y;
@@ -39,72 +44,53 @@ AttentionSelectionModule::~AttentionSelectionModule(){
 }
 
 
-bool AttentionSelectionModule::open(Searchable& config){
-   
-	// locate configuration file
-    ResourceFinder rf;        
-	if (config.check("context")){
-        rf.setDefaultContext(config.find("context").asString());
-	}
-	if (config.check("from")){
-        rf.setDefaultConfigFile(config.find("from").asString());
-	}
-	else if (config.check("file")){
-        rf.setDefaultConfigFile(config.find("file").asString());
-	}
-	else{
-        rf.setDefaultConfigFile("icubAttentionSelection.ini");
-	}
-    rf.configure("ICUB_ROOT",0,NULL);
-	Property prop(rf.toString());
-	prop.fromString(config.toString(), false);
-	prop.setMonitor(config.getMonitor());
+bool AttentionSelectionModule::configure(yarp::os::ResourceFinder &rf){
 
-    _hViewAngle = prop.check("horizontalViewAngle",
+    _hViewAngle = rf.check("horizontalViewAngle",
                                 Value(360.0),
                                 "Width of input saliency map corresponds to how many degrees? (double)").asDouble();
-    _vViewAngle = prop.check("verticalViewAngle",
+    _vViewAngle = rf.check("verticalViewAngle",
                                 Value(180.0),
                                 "Height of input saliency map corresponds to how many degrees? (double)").asDouble();
-    _resX = prop.check("resx",
+    _resX = rf.check("resx",
                         Value(320),
                         "EgoSphere resolution (pixels int).").asInt();
-    _resY = prop.check("resy",
+    _resY = rf.check("resy",
                         Value(240),
                         "EgoSphere resolution (pixels int).").asInt();
-    _thresholdDifference = (float)prop.check("thresholdDifference",
+    _thresholdDifference = (float)rf.check("thresholdDifference",
                                 Value(20),
                                 "|oldMaxSalience - newMaxSalience| > thresholdSaccade in order to switch to a new attention location (double)").asDouble();
-    _verbose = (bool)prop.check("verbose",
+    _verbose = (bool)rf.check("verbose",
                                 Value(0),
                                 "Verbose output (int [0|1]).").asInt();
-    _thresholdDistanceFraction = (float)prop.check("thresholdDistanceFraction",
+    _thresholdDistanceFraction = (float)rf.check("thresholdDistanceFraction",
                                     Value(0.1666),
                                     "thresholdDistanceFraction * min(imgWidth, imgHeight) = thresholdDifference (distance needed for a new salient location to be selected) (double).").asDouble();
-    _timeDelay = prop.check("timeDelay",
+    _timeDelay = rf.check("timeDelay",
                                 Value(2.0),
                                 "Time delay before selecting a new most salient location (seconds double).").asDouble();
 
-    _limitAzimuthRightPix = (int)(-prop.check("limitAzimuthRight",
+    _limitAzimuthRightPix = (int)(-rf.check("limitAzimuthRight",
                                         Value(-180.0),
                                         "Limit for egocentric locations selected for saccades (degree double).").asDouble()
                                         / _hViewAngle * (double)_resX + ((double)_resX/2.0));
-    _limitAzimuthLeftPix = (int)(-prop.check("limitAzimuthLeft",
+    _limitAzimuthLeftPix = (int)(-rf.check("limitAzimuthLeft",
                                         Value(180.0),
                                         "Limit for egocentric locations selected for saccades 9degree double).").asDouble()
                                         / _hViewAngle * (double)_resX + ((double)_resX/2.0));
-    _limitElevationTopPix = (int)(-prop.check("limitElevationTop",
+    _limitElevationTopPix = (int)(-rf.check("limitElevationTop",
                                         Value(90.0),
                                         "Limit for egocentric locations selected for saccades 9degree double).").asDouble()
                                         / _vViewAngle * (double)_resY + ((double)_resY/2.0));
-    _limitElevationBottomPix = (int)(-prop.check("limitElevationBottom",
+    _limitElevationBottomPix = (int)(-rf.check("limitElevationBottom",
                                         Value(-90.0),
                                         "Limit for egocentric locations selected for saccades 9degree double).").asDouble()
                                         / _vViewAngle * (double)_resY + ((double)_resY/2.0));
-	_intFPS = prop.check("fps", Value(50), "Try to achieve this number of frames per second (int).").asInt();
-	_intPrintFPSAfterNumFrames = prop.check("fpsOutputFrequency", Value(20), "Print the achieved framerate after this number of frames (int).").asInt();
+	_intFPS = rf.check("fps", Value(50), "Try to achieve this number of frames per second (int).").asInt();
+	_intPrintFPSAfterNumFrames = rf.check("fpsOutputFrequency", Value(20), "Print the achieved framerate after this number of frames (int).").asInt();
 	_dblTPF = 1.0f/((float)_intFPS);
-    _inhibitOutput = (bool)prop.check("inhibitOutput", Value(false), "Do not send the selected target position [0/1].").asInt();
+    _inhibitOutput = (bool)rf.check("inhibitOutput", Value(false), "Do not send the selected target position [0/1].").asInt();
 
     _maxSalienceX = -1;
     _maxSalienceY = -1;
@@ -139,7 +125,7 @@ bool AttentionSelectionModule::open(Searchable& config){
     ok &= _prtVctTrackerIn.open(getName("i:tracker"));
 	ok &= _prtBotGazeStateIn.open(getName("i:gaze"));
     ok &= _configPort.open(getName("conf"));
-    attach(_configPort, true);
+    attach(_configPort);
 	_dblStartTime = yarp::os::Time::now();
     return ok;
 }
@@ -441,7 +427,7 @@ bool AttentionSelectionModule::respond(const Bottle &command,Bottle &reply){
     _mutex.post();
 
     if (!rec)
-        ok = Module::respond(command,reply);
+        ok = RFModule::respond(command,reply);
     
     if (!ok) {
         reply.clear();

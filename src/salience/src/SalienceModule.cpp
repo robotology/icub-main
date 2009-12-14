@@ -8,6 +8,10 @@
  
 #include <iCub/SalienceModule.h>
 
+using namespace yarp::os;
+using namespace yarp::sig;
+using namespace iCub::contrib;
+
 SalienceModule::SalienceModule(){
 	_framerate.init(50);
 }
@@ -16,45 +20,26 @@ SalienceModule::~SalienceModule(){
 
 }
 
-bool SalienceModule::open(Searchable& config)    {
+bool SalienceModule::configure(yarp::os::ResourceFinder &rf){
     
-    // locate configuration file
-    ResourceFinder rf;        
-	if (config.check("context")){
-        rf.setDefaultContext(config.find("context").asString());
-	}
-	if (config.check("from")){
-        rf.setDefaultConfigFile(config.find("from").asString());
-	}
-	else if (config.check("file")){
-        rf.setDefaultConfigFile(config.find("file").asString());
-	}
-	else{
-        rf.setDefaultConfigFile("icubSalience.ini");
-	}
-    rf.configure("ICUB_ROOT",0,NULL);
-	Property prop(rf.toString());
-	prop.fromString(config.toString(), false);
-	prop.setMonitor(config.getMonitor());
-
-    numBlurPasses = prop.check("numBlurPasses",
+    numBlurPasses = rf.check("numBlurPasses",
                                     Value(0),
                                     "Blur the output map numBlurPasses times with a gaussian 3x3 kernel (int).").asInt();
-    drawSaliencePeak = (bool)prop.check("drawSaliencePeak",
+    drawSaliencePeak = (bool)rf.check("drawSaliencePeak",
                                     Value(1),
                                     "Draw a crosshair at salience peak onto the output visualization image (int [0|1]).").asInt();
-	thresholdSalience = prop.check("thresholdSalience",
+	thresholdSalience = rf.check("thresholdSalience",
                                     Value(0.0),
                                     "Set salience map values < threshold to zero (double).").asDouble();
-    activateIOR = (bool)prop.check("activateInhibitionOfReturn",
+    activateIOR = (bool)rf.check("activateInhibitionOfReturn",
                                     Value(0),
                                     "Use IOR (int [0|1]).").asInt();
     if (activateIOR){
-        ior.open(prop);
+        ior.open(rf);
     }  
 
     filter = NULL;
-    ConstString filterName = prop.check("filter",
+    ConstString filterName = rf.check("filter",
                                           Value(""),
                                           "filter to use (string [group|intensity|color|directional|motion|emd|ruddy|face])").asString();
 
@@ -71,7 +56,7 @@ bool SalienceModule::open(Searchable& config)    {
 
     filter = SalienceFactories::getPool().get(filterName);
     if (filter!=NULL) {
-        bool ok = filter->open(prop);
+        bool ok = filter->open(rf);
         if (!ok) {
             delete filter;
             filter = NULL;
@@ -83,7 +68,7 @@ bool SalienceModule::open(Searchable& config)    {
 	peakPort.open(getName("peak")); //For streaming saliency peak coordinates (Alex, 31/05/08)
     filteredPort.open(getName("map"));
     configPort.open(getName("conf"));
-    attach(configPort, true);
+    attach(configPort);
 
     oldSizeX = -1;
     oldSizeY = -1;
@@ -423,7 +408,7 @@ bool SalienceModule::respond(const Bottle &command,Bottle &reply){
     mutex.post();
 
     if (!rec)
-        ok = Module::respond(command,reply);
+        ok = RFModule::respond(command,reply);
     
     if (!ok) {
         reply.clear();

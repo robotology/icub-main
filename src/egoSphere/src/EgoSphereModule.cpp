@@ -7,6 +7,13 @@
 
 #include <iCub/EgoSphereModule.h>
 
+using namespace yarp;
+using namespace yarp::os;
+using namespace yarp::sig;
+using namespace yarp::dev;
+using namespace std;
+using namespace iCub::contrib;
+
 EgoSphereModule::EgoSphereModule(){
 
     _encoders = NULL;
@@ -54,30 +61,11 @@ EgoSphereModule::~EgoSphereModule(){
 	_gazeHead = NULL;
 }
 
-bool EgoSphereModule::open(Searchable& config){
-
-	// locate configuration file
-    ResourceFinder rf;        
-	if (config.check("context")){
-        rf.setDefaultContext(config.find("context").asString());
-	}
-	if (config.check("from")){
-        rf.setDefaultConfigFile(config.find("from").asString());
-	}
-	else if (config.check("file")){
-        rf.setDefaultConfigFile(config.find("file").asString());
-	}
-	else{
-        rf.setDefaultConfigFile("icubEgoSphere.ini");
-	}
-    rf.configure("ICUB_ROOT",0,NULL);
-	Property prop(rf.toString());
-	prop.fromString(config.toString(), false);
-	prop.setMonitor(config.getMonitor());
+bool EgoSphereModule::configure(yarp::os::ResourceFinder &rf){
 
     // check for toplevel configuration options (not contained in configuration group)
     // name of the server controlboard to connect to
-	_strControlboard = prop.check("controlboard",
+	_strControlboard = rf.check("controlboard",
                                     Value("not_available"),
                                     "Port name of the server controlboard to connect to (string).").asString().c_str();
 	if(_strControlboard == std::string("not_available")){
@@ -89,11 +77,11 @@ bool EgoSphereModule::open(Searchable& config){
 	}
 
     // Options from the EGO_SPHERE configuration group
-    Bottle botConfig(prop.toString().c_str());
-    botConfig.setMonitor(prop.getMonitor());
-    if (!prop.findGroup("EGO_SPHERE").isNull()){ // read options from group [EGO_SPHERE] or if not present directly from file
+    Bottle botConfig(rf.toString().c_str());
+    botConfig.setMonitor(rf.getMonitor());
+    if (!rf.findGroup("EGO_SPHERE").isNull()){ // read options from group [EGO_SPHERE] or if not present directly from file
         botConfig.clear();
-        botConfig.fromString(prop.findGroup("EGO_SPHERE", "Loading configuration from group EGO_SPHERE.").toString());
+        botConfig.fromString(rf.findGroup("EGO_SPHERE", "Loading configuration from group EGO_SPHERE.").toString());
     }
     _egoImgSize.width = botConfig.check("resx",
                                         Value(800),
@@ -164,7 +152,7 @@ bool EgoSphereModule::open(Searchable& config){
     // Visual Map
 	if(_activateModVision){
 		IModalityMap *map = new VisualMap();
-		if(map->open(prop)){
+		if(map->open(rf)){
 			_vctMap.push_back(map);
 		}
 		else{
@@ -177,7 +165,7 @@ bool EgoSphereModule::open(Searchable& config){
     // Objects Map 
 	if(_activateModObjects){
 		IModalityMap *map = new ObjectMap();
-		if(map->open(prop)){
+		if(map->open(rf)){
 			_vctMap.push_back(map);
 		}
 		else{
@@ -190,7 +178,7 @@ bool EgoSphereModule::open(Searchable& config){
     // AcousticMap
     if(_activateModAuditory){
 		IModalityMap *map = new AcousticMap();
-		if(map->open(prop)){
+		if(map->open(rf)){
 			_vctMap.push_back(map);
 		}
 		else{
@@ -202,7 +190,7 @@ bool EgoSphereModule::open(Searchable& config){
 
     // IOR
     if (_activateIOR){
-        if(!_ior.open(prop)){ // will look for [IOR] group itself
+        if(!_ior.open(rf)){ // will look for [IOR] group itself
             cout << "Error opening IOR! Inhibition of return will be turned off..." << endl;
             _activateIOR = false;
         }
@@ -213,7 +201,7 @@ bool EgoSphereModule::open(Searchable& config){
 
     // open config port
     _configPort.open(getName("conf"));
-    attach(_configPort, true);
+    attach(_configPort);
  
     Time::turboBoost();
     return true;
@@ -580,7 +568,7 @@ bool EgoSphereModule::respond(const Bottle &command,Bottle &reply){
     _semaphore.post();
 
     if (!rec)
-        ok = Module::respond(command,reply);
+        ok = RFModule::respond(command,reply);
     
     if (!ok) {
         reply.clear();

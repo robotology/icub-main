@@ -94,39 +94,20 @@ Control_GazeModule::~Control_GazeModule(){
 }
 
 
-bool Control_GazeModule::open(Searchable& config){
+bool Control_GazeModule::configure(yarp::os::ResourceFinder &rf){
    
 	std::string strCamConfigFile = "";
 	std::string strPredConfigFile = "";
-	std::string strAppPath = "";
-
-	// locate configuration file
-    ResourceFinder rf;        
-	if (config.check("context")){
-        rf.setDefaultContext(config.find("context").asString());
-	}
-	if (config.check("from")){
-        rf.setDefaultConfigFile(config.find("from").asString());
-	}
-	else if (config.check("file")){
-        rf.setDefaultConfigFile(config.find("file").asString());
-	}
-	else{
-        rf.setDefaultConfigFile("icubAttentionSelection.ini");
-	}
-    rf.configure("ICUB_ROOT",0,NULL);
-	Property prop(rf.toString());
-	prop.fromString(config.toString(), false);
-	prop.setMonitor(config.getMonitor());
+	std::string strAppPath = "";	
 
 	bool res = true;
     cout << "Opening Module ..." << endl;
 	
-	strAppPath = prop.check("appPath", "", "Absolute path to the application folder (string).").asString().c_str();
-	strPredConfigFile = prop.check("configPredictors","","Name of the configuration file containing the predictors parameters (string)").asString().c_str();
-	strCamConfigFile = prop.check("configCamera","","Name of the configuration file containing the camera parameters (string)").asString().c_str();
+	strAppPath = rf.check("appPath", "", "Absolute path to the application folder (string).").asString().c_str();
+	strPredConfigFile = rf.check("configPredictors","","Name of the configuration file containing the predictors parameters (string)").asString().c_str();
+	strCamConfigFile = rf.check("configCamera","","Name of the configuration file containing the camera parameters (string)").asString().c_str();
 
-	if(!prop.check("appPath")){
+	if(!rf.check("appPath")){
 		strPredConfigFile = (rf.findFile(strPredConfigFile.c_str())).c_str();
 		strCamConfigFile = (rf.findFile(strCamConfigFile.c_str())).c_str();
 	}
@@ -137,12 +118,12 @@ bool Control_GazeModule::open(Searchable& config){
 	
 	// getting predictors properties
 	bool use_pred=true;
-	if(!prop.check("configPredictors")){
+	if(!rf.check("configPredictors")){
 		use_pred = false;
 	}
 	if(use_pred){	
 		Property propPredictors;
-		propPredictors.setMonitor(prop.getMonitor());            
+		propPredictors.setMonitor(rf.getMonitor());            
 		res = propPredictors.fromConfigFile(strPredConfigFile.c_str());
 		if(!res){
 			cout << "Error reading predictors configuration from file: " << strPredConfigFile.c_str() << endl;
@@ -154,7 +135,7 @@ bool Control_GazeModule::open(Searchable& config){
 
 	// getting camera properties
 	Property propCamera;
-	propCamera.setMonitor(prop.getMonitor());
+	propCamera.setMonitor(rf.getMonitor());
 	res = propCamera.fromConfigFile(strCamConfigFile.c_str());
 	if(!res){
 		cout << "Error reading camera configuration from file: " << strCamConfigFile.c_str() << endl;
@@ -164,7 +145,7 @@ bool Control_GazeModule::open(Searchable& config){
 	// open camera instance
     _cam.open(propCamera);
 
-	Bottle &xtmp = prop.findGroup("imageSize", "Actual image size (not calibration size)");
+	Bottle &xtmp = rf.findGroup("imageSize", "Actual image size (not calibration size)");
 	if(xtmp.size()==3){
 		int w = xtmp.get(1).asInt();
 		int h = xtmp.get(2).asInt();
@@ -172,33 +153,33 @@ bool Control_GazeModule::open(Searchable& config){
 		printf("Set actual image size to width = %d, heigth = %d\n", _cam.width(), _cam.height());
 	}
   
-    string strRemoteControlboard = prop.check("motorboard","","Portname of the remote (server) controlboard").asString().c_str();
+    string strRemoteControlboard = rf.check("motorboard","","Portname of the remote (server) controlboard").asString().c_str();
 
 	controlType = visON;
-	int a = prop.check("pidON", 0, "use integral term in tracker?").asInt();
+	int a = rf.check("pidON", 0, "use integral term in tracker?").asInt();
 
-	controlType = controlType | (pidON * prop.check("pidON", 0, "use integral term in tracker?").asInt());
-	double pidGAIN = prop.check("pidGAIN", 5.0, "integral gain").asDouble();
+	controlType = controlType | (pidON * rf.check("pidON", 0, "use integral term in tracker?").asInt());
+	double pidGAIN = rf.check("pidGAIN", 5.0, "integral gain").asDouble();
 
 	head.setintgain( pidGAIN);
 
-	_bVOR = (bool)prop.check("vorON", 0, "use inertial sensor (0/1)").asInt();
+	_bVOR = (bool)rf.check("vorON", 0, "use inertial sensor (0/1)").asInt();
 	controlType = controlType | (vorON * (int)_bVOR);
 	
-	_bLog = (bool)prop.check("log", Value(0), "write controller log information? (0/1)").asInt();
-	string strLogFile = prop.check("logfilename","log","Name of the file to write the log information (string)").asString().c_str();
+	_bLog = (bool)rf.check("log", Value(0), "write controller log information? (0/1)").asInt();
+	string strLogFile = rf.check("logfilename","log","Name of the file to write the log information (string)").asString().c_str();
 	char buf[20];
 	sprintf(buf, "%09.3f", yarp::os::Time().now()); //This gives a pretty unique name
 	string strLogFilePath = strAppPath + string("/conf/") + strLogFile + string(buf) + string(".txt");
 
 	
 	// added JR 070723 (to control look back to center hack)
-    _limitResetTime = prop.check("limitResetTime",
+    _limitResetTime = rf.check("limitResetTime",
                                    Value(4.0),
                                    "Time from start of saccade until look back to center if saccade reaches a joint limit (double).").asDouble();
 
 	// added AB 080532 (to control the minimum duration of saccades and make more natural behavior)
-	_headSaccadeDelay = prop.check("headSaccadeDelay",
+	_headSaccadeDelay = rf.check("headSaccadeDelay",
                                      Value(0.0),
                                      "Minimum time between saccades (double).").asDouble();
 
@@ -207,19 +188,19 @@ bool Control_GazeModule::open(Searchable& config){
     // used a reference here - otherwise check for null doesn't work
     // (cannot copy a null bottle)
 	
-	controlrate = prop.check("ControlRate",
+	controlrate = rf.check("ControlRate",
                              Value(50.0),
                              "Rate of the control thread (cycles per second)").asDouble();
 	
-	framerate = prop.check("FrameRate",
+	framerate = rf.check("FrameRate",
                              Value(20.0),
                              "Expected rate of velocity commands").asDouble();
 	
-	vergenceGain = prop.check("vergenceGain", Value(0.02), "Gain for Vergence Controller").asDouble();
+	vergenceGain = rf.check("vergenceGain", Value(0.02), "Gain for Vergence Controller").asDouble();
 	//init head controller with saccade gains
 	head.setGazeControllerGain(  controlrate );
 
-	Bottle& K = prop.findGroup("K", "controller gain");
+	Bottle& K = rf.findGroup("K", "controller gain");
 
 	if( !K.isNull() )
         {
@@ -243,7 +224,7 @@ bool Control_GazeModule::open(Searchable& config){
 		printf("NO CONTROLLER GAIN READ\n");
 
 	egosphereVisualUpdateThreshold =
-		prop.check("egosphereVisualUpdateThreshold", 1, "threshold for ending saccade").asDouble();
+		rf.check("egosphereVisualUpdateThreshold", 1, "threshold for ending saccade").asDouble();
 
 	//	head.setGazeControllerGain(gsl_matrix *K)
 	Property propBoard;

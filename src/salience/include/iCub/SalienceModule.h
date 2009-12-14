@@ -36,10 +36,6 @@ namespace iCub {
     }
 }
 
-using namespace yarp::os;
-using namespace yarp::sig;
-using namespace iCub::contrib;
-
 /**
  *
  * Helper for creating and networking salience filters.
@@ -49,13 +45,13 @@ using namespace iCub::contrib;
  * \author Paul Fitzpatrick
  *
  */
-class iCub::contrib::SalienceModule : public Module,
+class iCub::contrib::SalienceModule : public RFModule,
                                       public ISalienceModuleControls {
 private:
-    BufferedPort<ImageOf<PixelRgb> > imgPort;
-    BufferedPort<ImageOf<PixelFloat> > filteredPort;
-	BufferedPort<Bottle> peakPort; //For streaming saliency peak coordinates (Alex, 31/05/08)
-    BufferedPort<Bottle> configPort;
+	yarp::os::BufferedPort<yarp::sig::ImageOf<yarp::sig::PixelRgb> > imgPort;
+    yarp::os::BufferedPort<yarp::sig::ImageOf<yarp::sig::PixelFloat> > filteredPort;
+	yarp::os::BufferedPort<yarp::os::Bottle> peakPort; //For streaming saliency peak coordinates (Alex, 31/05/08)
+	yarp::os::Port configPort;
     Salience *filter;
     yarp::os::Semaphore mutex;
     int numBlurPasses;
@@ -67,15 +63,15 @@ private:
     IOR ior;
 	Framerate _framerate;
     //virtual void resizeBufferedImages(int w, int h);
-    virtual void drawRgbFromFloat(ImageOf<PixelFloat> &imgFloat, 
-                                      ImageOf<PixelRgb> &imgRgb, 
+    virtual void drawRgbFromFloat(yarp::sig::ImageOf<yarp::sig::PixelFloat> &imgFloat, 
+                                      yarp::sig::ImageOf<yarp::sig::PixelRgb> &imgRgb, 
                                       float scale);
-    virtual void getPeak(ImageOf<PixelFloat> &img, int &i, int &j, float &v);
+    virtual void getPeak(yarp::sig::ImageOf<yarp::sig::PixelFloat> &img, int &i, int &j, float &v);
     
 public:
 	SalienceModule();
 	virtual ~SalienceModule();
-    virtual bool open(Searchable& config);
+    virtual bool configure(yarp::os::ResourceFinder &rf);
     virtual bool close();
     virtual bool interruptModule();
     /**

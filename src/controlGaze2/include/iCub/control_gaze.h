@@ -203,7 +203,7 @@ public:
     
 	yarp::os::Semaphore _mutex;
 
-	virtual bool open( yarp::os::Searchable& config);
+	virtual bool configure(yarp::os::ResourceFinder &rf);
     virtual bool close();
     virtual bool interruptModule();
     virtual bool updateModule();
