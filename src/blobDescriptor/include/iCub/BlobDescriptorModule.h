@@ -163,8 +163,8 @@ class BlobDescriptorModule : public RFModule
 	string                            _robotPortName;
 	string                            _rawImgInputPortName;
 	string                            _labeledImgInputPortName;
-    string                            _rawImgOutputPortName;
-    string                            _viewImgOutputPortName;
+        string                            _rawImgOutputPortName;
+        string                            _viewImgOutputPortName;
 	string                            _affDescriptorOutputPortName;
 	string                            _trackerInitOutputPortName;
 	string                            _handlerPortName;
@@ -191,13 +191,13 @@ class BlobDescriptorModule : public RFModule
 	/* OpenCV images - not needed anymore */
 	//IplImage                       *_opencvRawImg;
 	//IplImage                       *_opencvLabeledImg32;
-    //IplImage                       *_opencvLabeledImg8;
+        //IplImage                       *_opencvLabeledImg8;
 	int                               _w, _h;
 	CvSize                            _sz;
 
 	ObjectDescriptor                 *_objDescTable;
 	int                               _numObjects;
-    int                               _hist_size[2];
+        int                               _hist_size[2];
 	float                             _h_ranges[2], _s_ranges[2], _v_ranges[2];
 	
 	/* other parameters that can be user-specified (besides port names) */
