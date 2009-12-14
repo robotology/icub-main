@@ -6,7 +6,7 @@ You can monitor which iCub modules are currently compiling at:
 
  - <a href="http://eris.liralab.it/iCub/dox/report-etch/">The Linux/gcc compile status report on Debian etch</A>
  - <a href="http://eris.liralab.it/iCub/dox/report-lenny">The Linux/gcc compile status report on Debian lenny</A>
- - <a href="http://eris.liralab.it/iCub/dox/report-ubuntu">The Linux/gcc compile status report on Ubuntu intrepid</A>
+ - <a href="http://eris.liralab.it/iCub/dox/report-ubuntu">The Linux/gcc compile status report on Ubuntu 9.10</A>
  - <a href="http://eris.liralab.it/iCub/dox/report-msvc8/">The Windows/MSVC8 status report</A>
 
 
