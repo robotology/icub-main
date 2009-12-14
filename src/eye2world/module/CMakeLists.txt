@@ -1,5 +1,5 @@
 
-cmake_minimum_required(VERSION 2.6)
+cmake_minimum_required(VERSION 2.4)
 
 SET(PROJECTNAME eye2world)
 PROJECT(${PROJECTNAME})
