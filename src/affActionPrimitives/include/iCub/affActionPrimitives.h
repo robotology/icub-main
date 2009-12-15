@@ -347,13 +347,13 @@ public:
 
     /**
     * Suddenly interrupt any blocking call that is pending on 
-    * querying the action status; also disable this blocking feature
-    * for future calls with sync switch on. 
+    * querying the action status. 
+    * @param disable disable the blocking feature for future 
+    * calls with sync switch on; useful to allow a graceful stop of 
+    * the application. \see syncCheckReinstate to reinstate it.
     * @return true/false on success/fail. 
-    *  
-    * \note useful to allow a graceful stop of the application.
     */
-    virtual bool syncCheckInterrupt();
+    virtual bool syncCheckInterrupt(const bool disable=false);
 
     /**
     * Reinstate the blocking feature for future calls with sync 

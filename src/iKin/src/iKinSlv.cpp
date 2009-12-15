@@ -2,8 +2,7 @@
 #include <ace/Auto_Event.h>
 #include <yarp/os/Time.h>
 
-#include <iostream>
-#include <iomanip>
+#include <stdio.h>
 
 #include <iCub/iKinVocabs.h>
 #include <iCub/iKinSlv.h>
@@ -276,19 +275,19 @@ void InputPort::onRead(Bottle &b)
 {
     if (b.check(Vocab::decode(IKINSLV_VOCAB_OPT_XD)))
         if (!handleTarget(b.find(Vocab::decode(IKINSLV_VOCAB_OPT_XD)).asList()))
-            cout<<"expected "<<Vocab::decode(IKINSLV_VOCAB_OPT_XD)<<" data"<<endl;
+            fprintf(stdout,"expected %s data\n",Vocab::decode(IKINSLV_VOCAB_OPT_XD).c_str());
 
     if (b.check(Vocab::decode(IKINSLV_VOCAB_OPT_DOF)))
         if (!handleDOF(b.find(Vocab::decode(IKINSLV_VOCAB_OPT_DOF)).asList()))
-            cout<<"expected "<<Vocab::decode(IKINSLV_VOCAB_OPT_DOF)<<" data"<<endl;
+            fprintf(stdout,"expected %s data\n",Vocab::decode(IKINSLV_VOCAB_OPT_DOF).c_str());
 
     if (b.check(Vocab::decode(IKINSLV_VOCAB_OPT_POSE)))
         if (!handlePose(b.find(Vocab::decode(IKINSLV_VOCAB_OPT_POSE)).asVocab()))
-            cout<<"got incomplete "<<Vocab::decode(IKINSLV_VOCAB_OPT_POSE)<<" command"<<endl;
+            fprintf(stdout,"got incomplete %s command\n",Vocab::decode(IKINSLV_VOCAB_OPT_POSE).c_str());
 
     if (b.check(Vocab::decode(IKINSLV_VOCAB_OPT_MODE)))
         if (!handleMode(b.find(Vocab::decode(IKINSLV_VOCAB_OPT_MODE)).asVocab()))
-            cout<<"got incomplete "<<Vocab::decode(IKINSLV_VOCAB_OPT_MODE)<<" command"<<endl;
+            fprintf(stdout,"got incomplete %s command\n",Vocab::decode(IKINSLV_VOCAB_OPT_MODE).c_str());
 }
 
 
@@ -336,17 +335,17 @@ void CartesianSolver::alignJointsBounds()
     double min, max;
     int cnt=0;
 
-    cout << "Aligning joints bounds..." << endl;
+    fprintf(stdout,"Aligning joints bounds ...\n");
 
     for (int i=0; i<prt->num; i++)
     {
-        cout<<"part #"<<i<<": "<<prt->prp[i].find("part").asString()<<endl;
+        fprintf(stdout,"part #%d: %s\n",i,prt->prp[i].find("part").asString().c_str());
 
         for (int j=0; j<jnt[i]; j++)
         {               
             lim[i]->getLimits(rmp[i][j],&min,&max);
 
-            cout<<"joint #"<<cnt<<": ["<<min<<", "<<max<<"] deg"<<endl;
+            fprintf(stdout,"joint #%d: [%g,%g] deg\n",cnt,min,max);
         
             (*prt->chn)[cnt].setMin((M_PI/180.0)*min);
             (*prt->chn)[cnt].setMax((M_PI/180.0)*max);
@@ -543,7 +542,7 @@ bool CartesianSolver::respond(const Bottle &command, Bottle &reply)
     
             case IKINSLV_VOCAB_CMD_SUSP:
             {                    
-                cout << slvName << " suspended" << endl;
+                fprintf(stdout,"%s suspended\n",slvName.c_str());
                 suspend();
                 reply.addVocab(IKINSLV_VOCAB_REP_ACK);
                 break;
@@ -558,12 +557,12 @@ bool CartesianSolver::respond(const Bottle &command, Bottle &reply)
                 }
                 else if (isSuspended())
                 {    
-                    cout << slvName << " resumed" << endl;
+                    fprintf(stdout,"%s resumed\n",slvName.c_str());
                     initPos();
                     resume();
                 }
                 else
-                    cout << slvName << " is already running" << endl;
+                    fprintf(stdout,"%s is already running\n",slvName.c_str());
 
                 reply.addVocab(IKINSLV_VOCAB_REP_ACK);
                 break;
@@ -749,10 +748,10 @@ bool CartesianSolver::respond(const Bottle &command, Bottle &reply)
                 if (command.size()>1)
                 {    
                     options.fromString(command.get(1).asList()->toString());
-                    cout << "Configuring with options: " << options.toString() << endl;
+                    fprintf(stdout,"Configuring with options: %s\n",options.toString().c_str());
                 }
                 else
-                    cout << "Configuring with default options" << endl;
+                    fprintf(stdout,"Configuring with default options\n");
 
                 if (open(options))
                     reply.addVocab(IKINSLV_VOCAB_REP_ACK);
@@ -808,15 +807,15 @@ void CartesianSolver::printInfo(const Vector &xd, const Vector &x, const Vector 
     // compute error
     Vector e=xd-x;
     
-    cout << endl;
-    cout << "  Target rxPose   [m] = " << const_cast<Vector&>(xd).toString() << endl;
-    cout << "  Target txPose   [m] = " << const_cast<Vector&>(x).toString()  << endl;
-    cout << "Target txJoints [deg] = " << const_cast<Vector&>(q).toString()  << endl;
-    cout << "  norm(rxPose-txPose) = pos   [m]: " << getNorm(e,"pos")        << endl;
+    fprintf(stdout,"\n");
+    fprintf(stdout,"  Target rxPose   [m] = %s\n",const_cast<Vector&>(xd).toString().c_str());
+    fprintf(stdout,"  Target txPose   [m] = %s\n",const_cast<Vector&>(x).toString().c_str());
+    fprintf(stdout,"Target txJoints [deg] = %s\n",const_cast<Vector&>(q).toString().c_str());
+    fprintf(stdout,"  norm(rxPose-txPose) = pos   [m]: %g\n",getNorm(e,"pos"));
     if (ctrlPose==IKINCTRL_POSE_FULL)
-    cout << "                        ang [deg]: " << getNorm(e,"ang")        << endl;
-    cout << "    computed in   [s] = " << t                                  << endl;
-    cout << endl;
+    fprintf(stdout,"                        ang [deg]: %g\n",getNorm(e,"ang"));
+    fprintf(stdout,"    computed in   [s] = %g\n",t);
+    fprintf(stdout,"\n");
 }
 
 
@@ -875,7 +874,7 @@ bool CartesianSolver::open(Searchable &options)
 {    
     if (configured)
     {
-        cout << slvName << "already configured" << endl;
+        fprintf(stdout,"%s already configured\n",slvName.c_str());
         return true;
     }
 
@@ -886,15 +885,14 @@ bool CartesianSolver::open(Searchable &options)
     // open drivers
     for (int i=0; i<prt->num; i++)
     {
-        cout << "Allocating device driver for " 
-             << prt->prp[i].find("part").asString()
-             << "..." << endl;
+        fprintf(stdout,"Allocating device driver for %s ...\n",
+                prt->prp[i].find("part").asString().c_str());
 
         PolyDriver *pDrv=new PolyDriver(prt->prp[i]);
 
         if (!pDrv->isValid())
         {
-            cout << "Device driver not available!" << endl;
+            fprintf(stdout,"Device driver not available!\n");
             close();
             return false;
         }
@@ -906,7 +904,7 @@ bool CartesianSolver::open(Searchable &options)
 
         if (!pDrv->view(pLim) || !pDrv->view(pEnc))
         {    
-            cout << "Problems acquiring interfaces!" << endl;
+            fprintf(stdout,"Problems acquiring interfaces!\n");
             close();
             return false;
         }
@@ -1148,10 +1146,9 @@ void CartesianSolver::close()
 bool CartesianSolver::threadInit()
 {
     if (!configured)
-        cout << "Error: " << slvName << " not configured!" << endl;
-
-    cout << "Starting " << slvName << " at "
-         << period << " ms" << endl;
+        fprintf(stdout,"Error: %s not configured!\n",slvName.c_str());
+    else
+        fprintf(stdout,"Starting %s at %d ms\n",slvName.c_str(),period);
 
     return configured;
 }
@@ -1160,12 +1157,8 @@ bool CartesianSolver::threadInit()
 /************************************************************************/
 void CartesianSolver::afterStart(bool s)
 {
-    cout << slvName;
-
-    if (s)
-        cout << " started successfully" << endl;
-    else
-        cout << " did not start!" << endl;
+    fprintf(stdout,"%s %s\n",slvName.c_str(),
+            s?"started successfully":"did not start!");
 }
 
 
@@ -1203,9 +1196,8 @@ void CartesianSolver::run()
         // are detected and mode==continuous
         doSolve|=inPort->get_contMode() && distExtMoves>1.0;
         if (doSolve && verbosity)
-            cout << "Detected movements on uncontrolled links"
-                 << "(norm=" << distExtMoves << " deg) ..."
-                 << endl;
+            fprintf(stdout,"Detected movements on uncontrolled links\
+                            (norm=%g deg) ...\n",distExtMoves);
     }
 
     // run the solver if any input is received or dof is changed in continuous mode
@@ -1249,7 +1241,7 @@ void CartesianSolver::run()
 /************************************************************************/
 void CartesianSolver::threadRelease()
 {    
-    cout << "Stopping " << slvName << endl;
+    fprintf(stdout,"Stopping %s\n",slvName.c_str());
 }
 
 
@@ -1339,7 +1331,8 @@ bool ArmCartesianSolver::decodeDOF(const Vector &_dof)
         // they all shall be on or off
         newDOF[3]=newDOF[4]=newDOF[5]=dof[3];
 
-        cout << "Warning on shoulder: attempt to set one joint differently from others" << endl;
+        fprintf(stdout,"Warning on shoulder:\
+                        attempt to set one joint differently from others\n");
     }
 
     return CartesianSolver::decodeDOF(newDOF);

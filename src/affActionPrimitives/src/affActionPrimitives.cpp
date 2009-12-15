@@ -865,12 +865,14 @@ bool affActionPrimitives::checkActionsDone(bool &f, const bool sync)
 
 
 /************************************************************************/
-bool affActionPrimitives::syncCheckInterrupt()
+bool affActionPrimitives::syncCheckInterrupt(const bool disable)
 {
     if (configured)
     {
-        checkEnabled=false;
         RES_EVENT(motionDoneEvent)->signal();
+
+        if (disable)
+            checkEnabled=false;
 
         return true;
     }
