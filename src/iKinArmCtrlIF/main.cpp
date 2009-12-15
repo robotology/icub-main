@@ -304,22 +304,25 @@ public:
 
         if (t-t0>=PRINT_STATUS_PER)
         {
-            Vector x,o;
+            Vector x,o,xdcap,odcap,qdcap;
 
             arm->getPose(x,o);
-            double ex=norm(xd-x);
+            arm->getDesired(xdcap,odcap,qdcap);
+            double e_x=norm(xdcap-x);
 
-            cout<< "xd          [m] = "<<xd.toString()<<endl;
-            cout<< "x           [m] = "<<x.toString() <<endl;
-            cout<< "norm(e_x)   [m] = "<<ex           <<endl;
+            cout<< "xd          [m] = "<<xd.toString()   <<endl;
+            cout<< "xdcap       [m] = "<<xdcap.toString()<<endl;
+            cout<< "x           [m] = "<<x.toString()    <<endl;
+            cout<< "norm(e_x)   [m] = "<<e_x             <<endl;
 
             if (ctrlCompletePose)
             {
-                double eo=norm(od-o);
+                double e_o=norm(odcap-o);
 
-                cout<< "od        [rad] = "<<od.toString()<<endl;
-                cout<< "o         [rad] = "<<o.toString() <<endl;
-                cout<< "norm(e_o) [rad] = "<<eo           <<endl;
+                cout<< "od        [rad] = "<<od.toString()   <<endl;
+                cout<< "odcap     [rad] = "<<odcap.toString()<<endl;
+                cout<< "o         [rad] = "<<o.toString()    <<endl;
+                cout<< "norm(e_o) [rad] = "<<e_o             <<endl;
             }
 
             cout<<endl;
