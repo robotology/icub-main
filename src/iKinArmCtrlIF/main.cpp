@@ -30,8 +30,8 @@ description.
  
 --ctrlName \e name 
 - The parameter \e name identifies the cartesian controller's 
-  name to connect to. If not specified \e cartesianController is
-  assumed.
+  name to connect to. If not specified \e
+  icub/cartesianController is assumed.
  
 --part \e type 
 - The parameter \e type selects the robot's arm to work with. It
@@ -353,7 +353,7 @@ public:
 
         // get params from the RF
         modName=rf.check("modName",Value("iKinArmCtrlIF")).asString();
-        ctrlName=rf.check("ctrlName",Value("cartesianController")).asString();
+        ctrlName=rf.check("ctrlName",Value("icub/cartesianController")).asString();
         partName=rf.check("part",Value("right_arm")).asString();
 
         remoteName=slash+ctrlName+slash+partName;
@@ -398,14 +398,14 @@ int main(int argc, char *argv[])
     if (rf.check("help"))
     {
         cout << "Options:" << endl << endl;
-        cout << "\t--modName  name: module name (default iKinArmCtrlIF)"                         << endl;
-        cout << "\t--ctrlName name: controller name to connect to (default cartesianController)" << endl;
-        cout << "\t--part     type: robot arm type, left_arm or right_arm (default: right_arm)"  << endl;
-        cout << "\t--T        time: specify the task execution time in seconds (default: 2.0)"   << endl;
-        cout << "\t--DOF10        : control the torso yaw/roll/pitch as well"                    << endl;
-        cout << "\t--DOF9         : control the torso yaw/pitch as well"                         << endl;
-        cout << "\t--DOF8         : control the torso yaw as well"                               << endl;
-        cout << "\t--onlyXYZ      : disable orientation control"                                 << endl;
+        cout << "\t--modName  name: module name (default iKinArmCtrlIF)"                              << endl;
+        cout << "\t--ctrlName name: controller name to connect to (default icub/cartesianController)" << endl;
+        cout << "\t--part     type: robot arm type, left_arm or right_arm (default: right_arm)"       << endl;
+        cout << "\t--T        time: specify the task execution time in seconds (default: 2.0)"        << endl;
+        cout << "\t--DOF10        : control the torso yaw/roll/pitch as well"                         << endl;
+        cout << "\t--DOF9         : control the torso yaw/pitch as well"                              << endl;
+        cout << "\t--DOF8         : control the torso yaw as well"                                    << endl;
+        cout << "\t--onlyXYZ      : disable orientation control"                                      << endl;
 
         return 0;
     }
