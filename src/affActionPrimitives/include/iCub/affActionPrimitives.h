@@ -112,6 +112,7 @@ protected:
 
     void init();    
     bool execQueuedAction();
+    bool execPendingHandAction();
     virtual void run();    
 
 public:

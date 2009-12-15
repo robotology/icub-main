@@ -471,10 +471,17 @@ bool affActionPrimitives::pushAction(const Vector &x, const Vector &o,
         map<string,deque<HandWayPoint> >::iterator itr=handSeqMap.find(handSeqKey);
         if (itr!=handSeqMap.end())
         {
-            deque<HandWayPoint> &q=itr->second;
+            deque<HandWayPoint> &q=itr->second;            
 
-            for (size_t i=0; i<q.size(); i++)
-                pushAction(true,x,o,true,q[i]);
+            if (q.size())
+            {   
+                Vector dummy(1);
+                             
+                pushAction(true,x,o,true,q[0]);
+
+                for (size_t i=1; i<q.size(); i++)
+                    pushAction(false,dummy,dummy,true,q[i]);
+            }
 
             return true;
         }
@@ -591,6 +598,32 @@ bool affActionPrimitives::execQueuedAction()
 
 
 /************************************************************************/
+bool affActionPrimitives::execPendingHandAction()
+{
+    bool exec=false;
+    Action action;
+
+    mutex->wait();
+    if (actionsQueue.size())
+    {
+        // polling on the first action in the queue
+        action=actionsQueue.front();        
+
+        // if it is an hand-action then execute and update queue
+        if (action.execHand && !action.execArm && !action.waitState)
+        {    
+            actionsQueue.pop_front();
+            cmdHand(action.handWP);
+            exec=true;
+        }
+    }
+    mutex->post();
+
+    return exec;
+}
+
+
+/************************************************************************/
 void affActionPrimitives::run()
 {
     const double t=Time::now();
@@ -622,10 +655,11 @@ void affActionPrimitives::run()
 
         // check whether all the remaining active joints have come
         // to a complete stop
-        handMoveDone=handMotionDone(activeJoints);
-
-        if (handMoveDone)
+        if (handMoveDone=handMotionDone(activeJoints))
+        {    
             fprintf(stdout,"hand WP reached\n");
+            execPendingHandAction();    // here handMoveDone may switch false again
+        }
     }
 
     latchArmMoveDone=armMoveDone;
