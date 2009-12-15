@@ -309,17 +309,17 @@ public:
             arm->getPose(x,o);
             double ex=norm(xd-x);
 
-            cout<< "xd         [m] = "<<xd.toString()<<endl;
-            cout<< "x          [m] = "<<x.toString() <<endl;
-            cout<< "norm(ex)   [m] = "<<ex           <<endl;
+            cout<< "xd          [m] = "<<xd.toString()<<endl;
+            cout<< "x           [m] = "<<x.toString() <<endl;
+            cout<< "norm(e_x)   [m] = "<<ex           <<endl;
 
             if (ctrlCompletePose)
             {
                 double eo=norm(od-o);
 
-                cout<< "od       [rad] = "<<od.toString()<<endl;
-                cout<< "o        [rad] = "<<o.toString() <<endl;
-                cout<< "norm(eo) [rad] = "<<eo           <<endl;
+                cout<< "od        [rad] = "<<od.toString()<<endl;
+                cout<< "o         [rad] = "<<o.toString() <<endl;
+                cout<< "norm(e_o) [rad] = "<<eo           <<endl;
             }
 
             cout<<endl;
