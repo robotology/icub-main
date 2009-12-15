@@ -728,8 +728,9 @@ void SalienceOperator::maxSalienceBlob(ImageOf<PixelInt>& tagged, int max_tag, Y
 
 void SalienceOperator::resize(const int width1, const int height1)
 {
-	width=width1;
-	height=height1;
+	this->width=width1;
+	this->height=height1;
+
 
 	imageSize=width*height;
 
@@ -762,7 +763,13 @@ void SalienceOperator::resize(const int width1, const int height1)
 
 /**
 *  creates a catalog of blobs from the saved present in tagged
-* @param gets as inputs the R+G-, G*R-,B+Y-, the Red, blue and green planes  and the tagged image 
+* @param rg R+G-
+* @param gr G+R-
+* @param by B+Y-
+* @param red the Red plane
+* @param blue the blue plane
+* @param green green planes
+* @param tagged tagged image 
 */
 void SalienceOperator::blobCatalog(ImageOf<PixelInt>& tagged,
 							   ImageOf<PixelMono> &rg,
