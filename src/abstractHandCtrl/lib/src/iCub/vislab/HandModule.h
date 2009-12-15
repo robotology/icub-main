@@ -56,15 +56,12 @@ namespace control {
  *
  * - from &lt;STRING&gt; <br />
  *   specifies the configuration file. <br />
- *   default: "conf.ini"
  *
  * - context &lt;STRING&gt; <br />
  *   specifies the sub-path from $ICUB_ROOT/icub/app to the configuration file. <br />
- *   default: "eye2world"
  *
  * - name &lt;STRING&gt; <br />
  *   specifies the name of the module (used to form the stem of module port names). <br />
- *   default: "eye2world"
  *
  * - robot &lt;STRING&gt; <br />
  *   specifies the name of the robot (used to form the root of robot port names). <br />
@@ -86,12 +83,12 @@ namespace control {
  *   default: "general"
  *
  * - motionSpec &lt;FILE&gt; <br />
- *   specifies the file name of the configuration file containing the motions <br />
+ *   specifies the file name of the configuration file (within the given context) containing the motions <br />
  *   default: "motion_specification.ini" <br />
  *
  * - sensingCalib &lt;FILE&gt; <br />
  *   <strong>ONLY USED IF</strong> <handType> is specified as "v1". <br />
- *   specifies the file name of the calibration file containing hand's the sensing constants. <br />
+ *   specifies the file name of the calibration file (within the given context) containing hand's the sensing constants. <br />
  *   default: "object_sensing.ini"
  *
  * - control &lt;PORT&gt; <br />
@@ -112,7 +109,7 @@ namespace control {
  *
  * \subsection inputports_sec Input ports
  *
- *  - /abstractHandCtrl <br />
+ *  - /<name> <br />
  *    This port is used to change the parameters of the module at run time or stop the module.
  *    The following commands are available:
  *    - set &#91; &lt;id&gt; &lt;value&gt; &#93; <br />
@@ -130,7 +127,7 @@ namespace control {
  *
  * \subsection outputports_Sec Output ports
  *
- *  - /eye2world <br />
+ *  - /<name> <br />
  *    see above
  *
  *
@@ -180,7 +177,6 @@ namespace control {
  *
  * Right now only the position value are taken into account. The velocities an timing are supposed
  * to follow soon!
- *
  *
  *
  * @author Christian Wressnegger

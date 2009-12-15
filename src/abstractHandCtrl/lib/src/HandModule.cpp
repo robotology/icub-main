@@ -37,7 +37,6 @@ HandModule::HandModule(ConstString name) :
 HandModule::~HandModule() {
 }
 
-
 bool HandModule::ReloadCommand::execute(const Bottle& params, Bottle& reply) const {
 	HandModule* h = (HandModule*) parent;
 	NetInt32 result = Vocab::encode("ack");
@@ -77,12 +76,16 @@ bool HandModule::configure(ResourceFinder &rf) {
 			"The typ of the icub's hands: \"general\" | \"v1\" (string)").asString();
 
 	if (handType == "v1") {
-		str = "Name of the configuration file specifying the object sensing constants (string)";
-		ConstString sensingCalibrationFile =
-				rf.check("sensingCalib", Value("object_sensing.ini"), str).asString();
+		rf.setDefault("sensingCalib", "object_sensing.ini");
+		// str = "Name of the configuration file specifying the object sensing constants (string)";
+		ConstString sensingCalibrationFile = rf.findFile("sensingCalib"/*, str*/);
 
 		Property p;
-		p.fromConfigFile(sensingCalibrationFile);
+		if (!p.fromConfigFile(sensingCalibrationFile)) {
+			cerr << "Unable to read sensing calibration. "
+					<< "Specify a valid file name or consider using the \"general\" hand type" << endl;
+			return false;
+		}
 
 		string part = partName.c_str();
 		transform(part.begin(), part.end(), part.begin(), ::toupper);
@@ -93,8 +96,12 @@ bool HandModule::configure(ResourceFinder &rf) {
 		this->handType = GENERAL;
 	}
 
-	motionSpecificationFilename = rf.check("motionSpec", Value("motion_specification.ini"),
-			"Name of the configuration file specifying the motions (string)").asString();
+	rf.setDefault("motionSpec", "motion_specification.ini");
+	motionSpecificationFilename = rf.findFile("motionSpec"/*,
+	 "Name of the configuration file specifying the motions (string)"*/);
+
+	motionSpecification.fromConfigFile(motionSpecificationFilename);
+
 
 	str = prefix + getName(rf.check("control", Value("/control"),
 			"Control port for communicating with the control board").asString());
@@ -145,14 +152,12 @@ bool HandModule::configure(ResourceFinder &rf) {
 		return false;
 	}
 
-	motionSpecification.fromConfigFile(motionSpecificationFilename);
-
 	return true;
 }
 
 bool HandModule::startThread() {
 	bool b = AbstractRFModule::startThread();
-	workerThread = dynamic_cast<HandWorkerThread *>(AbstractRFModule::workerThread);
+	workerThread = dynamic_cast<HandWorkerThread *> (AbstractRFModule::workerThread);
 	return b;
 }
 
@@ -224,11 +229,12 @@ const map<const string, MotionSequence>& HandModule::HandWorkerThread::getMotion
 	return motions;
 }
 
-
 void HandModule::HandWorkerThread::setSensingConstants(::yarp::os::Searchable& s) {
 	if (handType != v1) {
-		cout << "Warning: You are trying to set sensing constants which is not \
-			    	 necessary/ meant for the type of hand you specified." << endl;
+		cout
+				<< "Warning: You are trying to set sensing constants which is not \
+			    	 necessary/ meant for the type of hand you specified."
+				<< endl;
 	}
 
 	Bottle b(s.toString());
@@ -250,8 +256,9 @@ void HandModule::HandWorkerThread::setSensingConstants(::yarp::os::Searchable& s
 		Matrix& m = sensingConstants[osValueNames[i]];
 
 		if (m.cols() != HandMetrics::numAxes) {
-			cout << "Warning: The expected size of `" << osValueNames[i] << "` is " << HandMetrics::numAxes
-					<< ", but it was " << m.cols() << ". The sizes will be automatically adopted!" << endl;
+			cout << "Warning: The expected size of `" << osValueNames[i] << "` is "
+					<< HandMetrics::numAxes << ", but it was " << m.cols()
+					<< ". The sizes will be automatically adopted!" << endl;
 			resize(m, m.rows(), HandMetrics::numAxes);
 		}
 	}
