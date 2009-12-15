@@ -53,7 +53,7 @@ if(NOT ${NAME}_FOUND)
 	
 	# use pkg-config to get the directories and then use these values
 	# in the FIND_PATH() and FIND_LIBRARY() calls
-	find_package(PkgConfig)
+	find_package(PkgConfig QUIET)
 	if(PKG_CONFIG_FOUND)
 	  check_modules(PC_LIB ${libname})
 	endif(PKG_CONFIG_FOUND)
