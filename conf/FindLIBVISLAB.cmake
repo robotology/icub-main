@@ -17,7 +17,7 @@
 include(findLibrary)
 include(mergeFindResults)
 
-if(NOT LIBVISLAB_FOUND)
+if(NOT LIBVISLAB_FOUND AND ${CMAKE_MAJOR_VERSION}.${CMAKE_MINOR_VERSION} GREATER 2.4)
   
   set(LIBVISLAB_DIR $ENV{LIBVISLAB_DIR})
   if(LIBVISLAB_DIR)
@@ -35,4 +35,5 @@ if(NOT LIBVISLAB_FOUND)
     message(STATUS "Setting the LIBVISLAB_DIR environment variable to the install directory might help finding the libraries.")
   endif(LIBVISLAB_FOUND)
 
-endif(NOT LIBVISLAB_FOUND)
+endif(NOT LIBVISLAB_FOUND AND ${CMAKE_MAJOR_VERSION}.${CMAKE_MINOR_VERSION} GREATER 2.4)
+
