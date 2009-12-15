@@ -23,10 +23,11 @@
 #define RES_JNT(p)              ((ACE_Vector<int>*)p)
 #define RES_RMP(p)              ((ACE_Vector<int*>*)p)
 
-#define CARTCTRL_DEFAULT_PER    10
-#define CARTCTRL_DEFAULT_TOL    5e-3
-#define CARTCTRL_MAX_ACCEL      1e9
-#define CARTCTRL_CONNECT_TMO    5e3
+#define CARTCTRL_DEFAULT_PER        10
+#define CARTCTRL_DEFAULT_TOL        5e-3
+#define CARTCTRL_DEFAULT_TRAJTIME   2.0
+#define CARTCTRL_MAX_ACCEL          1e9
+#define CARTCTRL_CONNECT_TMO        5e3
 
 using namespace yarp;
 using namespace yarp::os;
@@ -143,7 +144,8 @@ void ServerCartesianController::init()
     connectCnt=0;
     ctrlPose=IKINCTRL_POSE_FULL;
     maxPartJoints=0;
-    trajTime=1.0;
+    targetTol=CARTCTRL_DEFAULT_TOL;
+    trajTime=CARTCTRL_DEFAULT_TRAJTIME;
 
     // request high resolution scheduling
     Time::turboBoost();
@@ -629,13 +631,13 @@ void ServerCartesianController::getFeedback(Vector &_fb)
 /************************************************************************/
 void ServerCartesianController::newController()
 {
-    // if it already exists, destroy old controller
-    if (ctrl)
-        delete ctrl;
-
     // guard
     if (!chain)
         return;
+
+    // if it already exists, destroy old controller
+    if (ctrl)
+        delete ctrl;
 
     // update quantities
     fb.resize(chain->getDOF());
@@ -648,9 +650,9 @@ void ServerCartesianController::newController()
     ctrl=new MultiRefMinJerkCtrl(*chain,ctrlPose,chain->getAng(),getRate()/1000.0);
 
     // set tolerance
-    ctrl->setInTargetTol(CARTCTRL_DEFAULT_TOL);
+    ctrl->setInTargetTol(targetTol);
 
-    // set default task execution time
+    // set task execution time
     trajTime=ctrl->set_execTime(trajTime,true);
 }
 
@@ -1555,7 +1557,7 @@ bool ServerCartesianController::getInTargetTol(double *tol)
 {
     if (attached)
     {
-        *tol=ctrl->getInTargetTol();
+        *tol=targetTol;
         return true;
     }
     else
@@ -1569,6 +1571,7 @@ bool ServerCartesianController::setInTargetTol(const double tol)
     if (attached)
     {
         ctrl->setInTargetTol(tol);
+        targetTol=ctrl->getInTargetTol();
         return true;
     }
     else

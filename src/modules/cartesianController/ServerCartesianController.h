@@ -87,6 +87,7 @@ protected:
     unsigned int connectCnt;
     unsigned int ctrlPose;
     int          maxPartJoints;
+    double       targetTol;
     double       trajTime;
 
     yarp::os::Semaphore *mutex;

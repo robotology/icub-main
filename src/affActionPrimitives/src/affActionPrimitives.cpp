@@ -15,7 +15,7 @@
 
 #define ACTIONPRIM_DEFAULT_PER          50      // [ms]
 #define ACTIONPRIM_DEFAULT_TRAJTIME     1.5     // [s]
-#define ACTIONPRIM_DEFAULT_REACHTOL     0.02    // [m]
+#define ACTIONPRIM_DEFAULT_REACHTOL     0.01    // [m]
 #define ACTIONPRIM_DUMP_PERIOD          2.0     // [s]
 
 using namespace std;

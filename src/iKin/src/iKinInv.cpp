@@ -221,7 +221,7 @@ Vector iKinCtrl::solve(Vector &xd, const double tol_size, const int max_iter,
     {
         iterate(xd,verbose);
         
-        if (dist()<inTargetTol)
+        if (isInTarget())
         {
             if (exit_code)
                 *exit_code=IKINCTRL_RET_TOLX;
