@@ -345,7 +345,7 @@ void CartesianSolver::alignJointsBounds()
         {               
             lim[i]->getLimits(rmp[i][j],&min,&max);
 
-            fprintf(stdout,"joint #%d: [%g,%g] deg\n",cnt,min,max);
+            fprintf(stdout,"joint #%d: [%g, %g] deg\n",cnt,min,max);
         
             (*prt->chn)[cnt].setMin((M_PI/180.0)*min);
             (*prt->chn)[cnt].setMax((M_PI/180.0)*max);
