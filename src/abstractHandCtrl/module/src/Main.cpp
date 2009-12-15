@@ -33,7 +33,7 @@ int main(int argc, char * argv[])
    ResourceFinder rf;
    rf.setVerbose(true);
    rf.setDefaultConfigFile("conf.ini"); //overridden by --from parameter
-   rf.setDefaultContext("abstractHandCtrl");   //overridden by --context parameter
+   rf.setDefaultContext("abstractHandCtrl/conf");   //overridden by --context parameter
    rf.configure("ICUB_ROOT", argc, argv);
  
    /* run the module: runModule() calls configure first and, if successful, it then runs */

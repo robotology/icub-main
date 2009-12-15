@@ -44,11 +44,11 @@
  *
  * - context &lt;STRING&gt; <br />
  *   specifies the sub-path from $ICUB_ROOT/icub/app to the configuration file. <br />
- *   default: "eye2world"
+ *   default: "abstractHandControl/conf"
  *
  * - name &lt;STRING&gt; <br />
  *   specifies the name of the module (used to form the stem of module port names). <br />
- *   default: "eye2world"
+ *   default: "abstractHandControl"
  *
  * - robot &lt;STRING&gt; <br />
  *   specifies the name of the robot (used to form the root of robot port names). <br />
@@ -70,11 +70,12 @@
  *   default: "general"
  *
  * - motionSpec &lt;FILE&gt; <br />
- *   specifies the file name of the configuration file containing the motions <br />
+ *   specifies the file name of the configuration file (within the given context) containing the motions <br />
  *   default: "motion_specification.ini" <br />
  *
  * - sensingCalib &lt;FILE&gt; <br />
- *   specifies the file name of the calibration file containing hand's the sensing constants. <br />
+ *   <strong>ONLY USED IF</strong> <handType> is specified as "v1". <br />
+ *   specifies the file name of the calibration file (within the given context) containing hand's the sensing constants. <br />
  *   default: "object_sensing.ini"
  *
  * - control &lt;PORT&gt; <br />
@@ -192,10 +193,11 @@
  *
  * <dl>
  *   <dt>abstractHandCtrl</dt>
+ *     <dd>--context "abstractHandCtrl/conf"
  *     <dd>--part left_arm</dd>
  *     <dd>--handType v1</dd>
- *     <dd>--motionSpec /home/demo/res/motion_specification.ini"</dd>
- *     <dd>--sensingCalib "/home/demo/res/object_sensing.ini"</dd>
+ *     <dd>--motionSpec "motion_specification.ini"</dd>
+ *     <dd>--sensingCalib "object_sensing.ini"</dd>
  * </dl>
  *
  *
