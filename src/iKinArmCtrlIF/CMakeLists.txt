@@ -5,6 +5,7 @@ FIND_PACKAGE(YARP)
 FIND_PACKAGE(ICUB)
 
 IF(USE_ICUB_MOD)
+    ADD_DEFINITIONS(-DUSE_ICUB_MOD)
 	FIND_PACKAGE(icubmod)
 	IMPORT_DEVICES(${ICUB_DIR}/src/${PROJECTNAME}/drivers.h icubmod)
 	SET(folder_header drivers.h)

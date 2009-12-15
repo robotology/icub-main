@@ -8,6 +8,7 @@ FIND_PACKAGE(CTRLLIB REQUIRED)
 INCLUDE_DIRECTORIES(${CTRLLIB_INCLUDE_DIRS})
 
 IF(USE_ICUB_MOD)
+    ADD_DEFINITIONS(-DUSE_ICUB_MOD)
     FIND_PACKAGE(icubmod)
     IMPORT_DEVICES(${ICUB_DIR}/src/${PROJECTNAME}/drivers.h icubmod)
     SET(folder_header drivers.h)
@@ -16,8 +17,6 @@ ELSE(USE_ICUB_MOD)
 ENDIF(USE_ICUB_MOD)
 
 SET(folder_source main.cpp)
-#causing problems when USE_ICUB_MOD is false 
-#SET(folder_header drivers.h)
 
 SOURCE_GROUP("Source Files" FILES ${folder_source})
 SOURCE_GROUP("Header Files" FILES ${folder_header})
