@@ -251,6 +251,7 @@ bool BlobDescriptorModule::close()
 	{
 		cvReleaseImage(&(_objDescTable[i].mask_image));
 		cvReleaseHist(&(_objDescTable[i].objHist));
+		cvReleaseMemStorage(&(_objDescTable[i].storage));
 	}
 	delete [] _objDescTable;
 
