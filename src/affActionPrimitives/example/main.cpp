@@ -51,9 +51,8 @@ public:
 
     virtual bool configure(ResourceFinder &rf)
     {
-		Property option("(robot icub) (local testMod) (part left_arm) (traj_time 2.0)\
-						(torso_pitch on) (torso_pitch_max 30.0)\
-                        (torso_roll off) (torso_yaw on)");
+		Property option("(robot icubSim) (local testMod) (part left_arm) (traj_time 2.0)\
+						(torso_pitch on) (torso_pitch_max 30.0) (torso_roll off) (torso_yaw on)");
         option.put("hand_calibration_file",rf.findFile("calibFile"));
         option.put("hand_sequences_file",rf.findFile("seqFile"));
 
@@ -117,7 +116,7 @@ public:
 
 	bool interruptModule()
 	{
-		action->syncCheckInterrupt();
+		action->syncCheckInterrupt(true);
 		inPort.interrupt();
 
 		return true;
