@@ -47,7 +47,7 @@
  *
  * - context &lt;STRING&gt; <br />
  *   specifies the sub-path from $ICUB_ROOT/icub/app to the configuration file. <br />
- *   default: "eye2world"
+ *   default: "eye2world/conf"
  *
  * - name &lt;STRING&gt; <br />
  *   specifies the name of the module (used to form the stem of module port names). <br />
