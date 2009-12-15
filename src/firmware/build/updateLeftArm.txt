@@ -1,5 +1,5 @@
 // left_arm
-pcan 1 1 2BLL.1.51.out.S
+pcan 1 1 2BLL.1.50.out.S
 pcan 1 2 2BLL.1.53.out.S
 pcan 1 3 4DC.1.19.out.S
 pcan 1 5 4DC.1.18.out.S
