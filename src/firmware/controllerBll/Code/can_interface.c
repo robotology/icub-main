@@ -832,7 +832,7 @@ void set_can_masks()
 	else if (VERSION == 0x0153)
 	{	
 		create_F_M(&filter1, &mask1,CLASS_POLLING_DSP,0xFF, _board_ID, CLASS_PERIODIC_DSP, CAN_ID_COUPLED_BOARD, CAN_BCAST_POSITION);
-		create_F_M(&filter2, &mask2,CLASS_CANLOADER,  0x00, 0xFF,      CLASS_CANLOADER,    0x00, 0xFF);    	
+		create_F_M(&filter2, &mask2,CLASS_CANLOADER,  0x00, 0xFF,      CLASS_PERIODIC_DSP, CAN_ID_COUPLED_BOARD, CAN_BCAST_PID_VAL);
 	}
 	else
 	{

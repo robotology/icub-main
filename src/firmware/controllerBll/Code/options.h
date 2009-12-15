@@ -1,6 +1,7 @@
 #ifndef __options_h__
 #define __options_h__
 
+//#define VERSION 0x0150   				/* first two joint of the shoulder */
 //#define VERSION 0x0151   				/* standard/basic implementation */
 //#define VERSION 0x0152				/* waist deifferential decoupling */
 //#define VERSION 0x0153			   	/* decouples the third joint of the shoulder */
@@ -20,7 +21,7 @@
 //#define DEBUG_SERIAL				1		/* for debugging through terminal */
 //#define DEBUG_CURRENT				1		/* for debugging current through terminal */
 //#define DEBUG_CALIBRATION			1		/* for calibration debugging through terminal */
-#define DEBUG_CPL_BOARD	    	1		/* for coupled board debug */
+//#define DEBUG_CPL_BOARD	    	1		/* for coupled board debug */
 //#define EMERGENCY_DISABLED		1		/* emergency fault signal disabled */
 //#define SMOOTH_PID_CTRL			1		/* for debugging current spikes */
 //#define TEMPERATURE_SENSOR    	1

@@ -45,7 +45,9 @@ void print_version(void)
 {
 	AS1_printStringEx ("\r\n\n");
 	AS1_printStringEx ("Firmware - ver ");
-#if VERSION == 0x0151
+#if VERSION == 0x0150
+	AS1_printStringEx ("1.50");
+#elif VERSION == 0x0151
 	AS1_printStringEx ("1.51");
 #elif VERSION == 0x0152
 	AS1_printStringEx ("1.52");

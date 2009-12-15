@@ -285,13 +285,18 @@ extern char    _additional_info [32];
 #if VERSION == 0x0153 || VERSION == 0x0173
 #define CAN_SET_ACTIVE_PID_HANDLER(x) \
 { \
-	long value; \
+	Int16 value; \
 	if (CAN_LEN == 8) \
 	{ \
 		value = BYTE_W(CAN_DATA[4], CAN_DATA[5]); \
 		_cpl_pid_delta[0] = (value - _cpl_pid_received[0]) >> 2; \
 		_cpl_pid_prediction[0] = value; \
 		_cpl_pid_received[0] = value; \
+		\
+		value = BYTE_W(CAN_DATA[6], CAN_DATA[7]); \
+		_cpl_pid_delta[1] = (value - _cpl_pid_received[1]) >> 2; \
+		_cpl_pid_prediction[1] = value; \
+		_cpl_pid_received[1] = value; \
 		\
 		_general_board_error = ERROR_NONE; \
 	} \
@@ -304,7 +309,7 @@ extern char    _additional_info [32];
 #if VERSION == 0x0153 || VERSION == 0x0173
 #define CAN_SET_ACTIVE_ERROR_HANDLER(x) \
 { \
-	long value; \
+	Int16 value; \
 	if (CAN_LEN == 8) \
 	{ \
 		value = BYTE_W(CAN_DATA[4], CAN_DATA[5]); \

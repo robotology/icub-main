@@ -156,8 +156,9 @@ float _filt_pid[JN] = INIT_ARRAY (0);			// filtered pid control
 #endif
 
 
-
-#if VERSION == 0x0151
+#if VERSION == 0x0150
+Int16 _version = 0x0150;
+#elif VERSION == 0x0151
 Int16 _version = 0x0151;
 #elif VERSION == 0x0152
 Int16 _version = 0x0152;

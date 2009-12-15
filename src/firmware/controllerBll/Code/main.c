@@ -268,7 +268,7 @@ void main(void)
 	for (i=0; i<JN; i++) _position_old[i] = 0;
 	for (i=0; i<JN; i++) _speed[i] = 0;
 	for (i=0; i<JN; i++) _accel[i] = 0;
-	for (i=0; i<JN; i++) _safeband[i] =57; //57 ticks => 5 gradi di AEA.
+	for (i=0; i<JN; i++) _safeband[i] =5; //5 ticks => 1 gradi di AEA.
 	
 	/* reset the recursive windows for storage of position and velocity data */
 	/* (for velocity and position estimates) */
@@ -688,11 +688,11 @@ void decouple_positions(void)
 		
 #if   VERSION == 0x0153
 		/* beware of the first cycle when _old has no meaning */		
-		_position[0] = _position[0]+ (float) (((float) _cpl_pos_prediction[0])*1.7105F);  
-		_position[0] = _position[0]- (float) (((float) _cpl_pos_prediction[1])*1.7105F);
+		_position[0] = _position[0]+ (float) (((float) _cpl_pos_prediction[0])*1.625F);  
+		_position[0] = _position[0]- (float) (((float) _cpl_pos_prediction[1])*1.625F);
 		/*
 		|M1| |  1     0    0   |  |T1|
-		|T2|=|  0     1    0   |* |T2|     with a=3.8/6.5 i.e. a=1/1.7105
+		|T2|=|  0     1    0   |* |T2|     with a=40/65 i.e. a=1/1.625
 		|M3| | 1/a  -1/a   1   |  |T3|
 		*/
 		_cpl_pos_prediction[0] = L_add(_cpl_pos_prediction[0], _cpl_pos_delta[0]);
@@ -729,17 +729,96 @@ void decouple_positions(void)
 
 void decouple_dutycycle(Int32 *pwm)
 {
-	Int32 temp = 0;
+	float tempf;
+	Int32 temp32 = 0;
 	static UInt8 count=0;
 
-#if VERSION == 0x0152
+#if VERSION == 0x0150
+
+	/* Version 0x0153 relizes the shoulder coupling (here '_c' denotes 
+	 * the coupled board variables).The applied coupling is the following:
+	 *
+	 * 			[    Jm1,      0,      0]
+	 * tau_m = 	[ -Jm2/a,  Jm2/a,      0] tau_j
+	 * 			[ -Jm3/a,  Jm3/a,  Jm3/a]
+	 *
+	 * 			[    R1/K1,      0,      0]
+	 * u_m = 	[        0,  R2/K2,      0] tau_m
+	 * 			[        0,      0,  R3/K3]
+	 *
+	 *			[    R1/K1*Jm1,            0,            0]                    			[ 1         0         0     ]
+	 * u_m =	[ -R2/K2*Jm2/a,  R2/K2*Jm2/a,            0] tau_j =  1.0e-03 * 0.1519 * [-1.6455    1.6455    0     ]
+	 *			[ -R3/K3*Jm3/a,  R3/K3*Jm3/a,  R3/K3*Jm3/a]                    			[-1.6455    1.6455    1.6455]
+	 *
+	 * where:
+	 * tau_m 	: torques applied by the motors (tau_m_c[0], tau_m_c[1], tau_m[0])
+	 * tau_j 	: virtual torque at the joints  (tau_j_c[0], tau_j_c[1], tau_j[0])
+	 * R		: motor resitance (mean of the three phases) R1=0.8967 VS R2=R3=0.8363
+	 * K		: motor constant torque K1=0.0500  K2=K3=0.0280
+	 * Jm		: inertia of the motors Jm1=8.47E-06 Jm2=Jm3=5.15E-06 
+	 * 
+	 * This solution follows from the following coupling:
+	 *		[  1,  0,  0]
+	 * qj =	[  1,  a,  0] qm = Tjm qm
+	 *		[  0, -a,  a]
+	 * where:
+	 *
+	 * qm 	: position of the motors (qm_c[0], qm_c[1], qm[0])
+	 * qj 	: position of the motors (qj_c[0], qj_c[1], qj[0])
+	 * 
+	 * and from the assumption that dynamics of motors are not
+	 * effected by the kinematic coupling (due to high gear boxes):
+	 *
+	 *	[  Jm1,    0,    0]
+	 * 	[    0,  Jm2,    0] d2qm = tau_m
+	 *	[    0,    0,  Jm3]
+	 *
+	 * where:
+	 *
+	 * Jm 	: motor inertia
+	 * tau_m: motor torque 
+	 */
+	if (_control_mode[1] == MODE_POSITION)
+	{
+	
+		#ifdef DEBUG_CPL_BOARD
+		if(count==255)
+		{
+			can_printf("Pid:(%d,%d)", (Int16) pwm[0], (Int16) pwm[1]);
+			count=0;
+		}			
+		count++;
+		#endif	
+	
+		tempf = ((float)(_pd[1] - _pd[0]));
+		tempf = tempf * 1.6455F;
+		_pd[1] = (Int32) tempf;
+
+		tempf = ((float)(pwm[1] - pwm[0]));
+		tempf = tempf * 1.6455F;
+	 	pwm[1] = (Int32) tempf;
+				
+		
+		#ifdef DEBUG_CPL_BOARD
+		if(count==255)
+		{
+			can_printf("cplPid:(%d,%d)", (Int16) pwm[0], (Int16) pwm[1]);
+			count=0;
+		}			
+		count++;
+		#endif	
+	}
+		
+	
+
+#elif VERSION == 0x0152
 	/*  Waist Differential coupling 
 		|Me1| |  1    -1 |  |Je1|
 		|Me2|=|  1     1 |* |Je2|    */
 	
-	temp 	     = pwm[0];
+	temp32 	     = pwm[0];
 	pwm[0] = (pwm[0] - pwm[1])>>1;
-	pwm[1] = (temp         + pwm[1])>>1;	
+	pwm[1] = (temp32         + pwm[1])>>1;	
 				
 	if (_control_mode[0] == MODE_IDLE || 
 		_control_mode[1] == MODE_IDLE)
@@ -747,18 +826,72 @@ void decouple_dutycycle(Int32 *pwm)
 		pwm[0] = 0;
 		pwm[1] = 0;
 	}
-	temp   = _pd[0];
+	temp32   = _pd[0];
 	_pd[0] = (_pd[0] - _pd[1])>>1;
-	_pd[1] = (temp   + _pd[1])>>1;		
+	_pd[1] = (temp32   + _pd[1])>>1;
+		
 #elif VERSION == 0x0153
+
+	/* Version 0x0153 relizes the shoulder coupling (here '_c' denotes 
+	 * the coupled board variables).The applied coupling is the following:
+	 *
+	 * 			[    Jm1,      0,      0]
+	 * tau_m = 	[ -Jm2/a,  Jm2/a,      0] tau_j
+	 * 			[ -Jm3/a,  Jm3/a,  Jm3/a]
+	 *
+	 * 			[    R1/K1,      0,      0]
+	 * u_m = 	[        0,  R2/K2,      0] tau_m
+	 * 			[        0,      0,  R3/K3]
+	 *
+	 *			[    R1/K1*Jm1,            0,            0]                    			[1         0         0]
+	 * u_m =	[ -R2/K2*Jm2/a,  R2/K2*Jm2/a,            0] tau_j =  1.0e-03 * 0.1519 * [-1.73    1.73       0]
+	 *			[ -R3/K3*Jm3/a,  R3/K3*Jm3/a,  R3/K3*Jm3/a]                    			[-1.73    1.73    1.73]
+	 *
+	 * where:
+	 * tau_m 	: torques applied by the motors (tau_m_c[0], tau_m_c[1], tau_m[0])
+	 * tau_j 	: virtual torque at the joints  (tau_j_c[0], tau_j_c[1], tau_j[0])
+	 * R		: motor resitance (mean of the three phases) R1=0.8967 VS R2=R3=0.8363
+	 * K		: motor constant torque K1=0.0500  K2=K3=0.0280
+	 * Jm		: inertia of the motors Jm1=8.47E-06 Jm2=Jm3=5.15E-06 
+	 * 
+	 * This solution follows from the following coupling:
+	 *		[  1,  0,  0]
+	 * qj =	[  1,  a,  0] qm = Tjm qm
+	 *		[  0, -a,  a]
+	 * where:
+	 *
+	 * qm 	: position of the motors (qm_c[0], qm_c[1], qm[0])
+	 * qj 	: position of the motors (qj_c[0], qj_c[1], qj[0])
+	 * 
+	 * and from the assumption that dynamics of motors are not
+	 * effected by the kinematic coupling (due to high gear boxes):
+	 *
+	 *	[  Jm1,    0,    0]
+	 * 	[    0,  Jm2,    0] d2qm = tau_m
+	 *	[    0,    0,  Jm3]
+	 *
+	 * where:
+	 *
+	 * Jm 	: motor inertia
+	 * tau_m: motor torque 
+	 */
 	if (_control_mode[0] == MODE_POSITION)
 	{
-		temp = _cpl_pid_prediction[0] + _cpl_pid_prediction[1];
-	    //pwm[0] += temp;
-	    //_pd[0] += temp;
+   		tempf = (float)(_pd[0]);
+		tempf = tempf * 1.6455F;
+	    temp32 = (Int32) _cpl_pid_prediction[1] + (Int32) (tempf);
+	    _pd[0] += temp32;
+	    
+		tempf = (float)(pwm[0]);
+		tempf = tempf * 1.6455F;
+		temp32 = (Int32) _cpl_pid_prediction[1] + (Int32) (tempf);
+	    pwm[0] += temp32;	    
 		#ifdef DEBUG_CPL_BOARD
-			if(count==0)
-				can_printf("cplPid:%d", temp);
+			if(count==255)
+			{
+				can_printf("cplPid:%d(%d,%d)", (Int16) pwm[0], (Int16) (tempf), _cpl_pid_prediction[1]);
+				count=0;
+			}			
 			count++;
 		#endif	
 	    //update the prediction for coupled board duty
