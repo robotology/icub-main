@@ -20,6 +20,10 @@ CamCalibModule::~CamCalibModule(){
 
 bool CamCalibModule::configure(yarp::os::ResourceFinder &rf){
 
+	ConstString str = rf.check("name", Value("/camCalib"), "module name (string)").asString();
+	setName(str.c_str()); // modulePortName  
+	attachTerminal();
+
     // pass configuration over to bottle
     Bottle botConfig(rf.toString().c_str());
     botConfig.setMonitor(rf.getMonitor());	

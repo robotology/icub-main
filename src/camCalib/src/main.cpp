@@ -68,12 +68,10 @@ int main(int argc, char *argv[]) {
 
     Network yarp;
 	ResourceFinder rf;
-	CamCalibModule module;
-    module.setName("/camCalib");
-	module.attachTerminal();
 	rf.setVerbose(true);
 	rf.setDefaultConfigFile("camCalib.ini"); //overridden by --from parameter
 	rf.setDefaultContext("camCalib"); //overridden by --context parameter
 	rf.configure("ICUB_ROOT", argc, argv);    
+	CamCalibModule module;    	
     return module.runModule(rf);
 }
