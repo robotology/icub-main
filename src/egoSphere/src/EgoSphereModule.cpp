@@ -63,6 +63,10 @@ EgoSphereModule::~EgoSphereModule(){
 
 bool EgoSphereModule::configure(yarp::os::ResourceFinder &rf){
 
+	ConstString str = rf.check("name", Value("/egoSphere"), "module name (string)").asString();
+	setName(str.c_str()); // modulePortName  
+	attachTerminal();
+
     // check for toplevel configuration options (not contained in configuration group)
     // name of the server controlboard to connect to
 	_strControlboard = rf.check("controlboard",

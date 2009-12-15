@@ -63,7 +63,7 @@ namespace iCub {
  *
  *
  */
-class iCub::contrib::Control_GazeModule : public yarp::os::Module,
+class iCub::contrib::Control_GazeModule : public yarp::os::RFModule,
                                           public iCub::contrib::IControlGazeControls {
 
 private:
@@ -71,26 +71,26 @@ private:
 	/** input ports
 		_positionInput_port - position reference
 	*/
-   	BufferedPort< yarp::sig::Vector >			_smoothInput_port;
-	BufferedPort< yarp::sig::Vector >			_saccadeInput_port;
-	BufferedPort< yarp::sig::Vector >			_disparityInput_port;
-	BufferedPort< yarp::sig::Vector >			_inertialInput_port;
-	BufferedPort<Bottle> _imageCoordPort;				// For simple connection with a viewer click
+   	yarp::os::BufferedPort< yarp::sig::Vector >			_smoothInput_port;
+	yarp::os::BufferedPort< yarp::sig::Vector >			_saccadeInput_port;
+	yarp::os::BufferedPort< yarp::sig::Vector >			_disparityInput_port;
+	yarp::os::BufferedPort< yarp::sig::Vector >			_inertialInput_port;
+	yarp::os::BufferedPort<Bottle> _imageCoordPort;				// For simple connection with a viewer click
 
     // config port
-    BufferedPort<Bottle> _configPort;
+	yarp::os::Port _configPort;
 
 	
 	
 
 	/**	output ports
 	*/
-	BufferedPort< yarp::sig::Vector >			_posdirOutput_port;
-	BufferedPort< yarp::os::Bottle >			_trackersignalOutput_port;
-    BufferedPort< yarp::os::Bottle >			_status_port;
+	yarp::os::BufferedPort< yarp::sig::Vector >			_posdirOutput_port;
+	yarp::os::BufferedPort< yarp::os::Bottle >			_trackersignalOutput_port;
+    yarp::os::BufferedPort< yarp::os::Bottle >			_status_port;
 	
 
-	Semaphore                 _semaphore;
+	yarp::os::Semaphore                 _semaphore;
 
 	/** communication with the motors
 	*/

@@ -96,6 +96,10 @@ Control_GazeModule::~Control_GazeModule(){
 
 bool Control_GazeModule::configure(yarp::os::ResourceFinder &rf){
    
+	ConstString str = rf.check("name", Value("/controlGaze"), "module name (string)").asString();
+	setName(str.c_str()); // modulePortName  
+	attachTerminal();
+
 	std::string strCamConfigFile = "";
 	std::string strPredConfigFile = "";
 	std::string strAppPath = "";	
@@ -286,7 +290,7 @@ bool Control_GazeModule::configure(yarp::os::ResourceFinder &rf){
     _status_port.open(getName("/status:o"));
     // open config port
     _configPort.open(getName("/conf"));
-    attach(_configPort, true);
+    attach(_configPort);
 
 	//INITIAL COMMAND AND STATE
 	_targ_azy = 0; 
@@ -752,7 +756,7 @@ bool Control_GazeModule::respond(const Bottle &command,Bottle &reply){
 	}
 	
     if (!rec)
-        ok = Module::respond(command,reply); // will add message 'not recognized' if not recognized
+        ok = RFModule::respond(command,reply); // will add message 'not recognized' if not recognized
 	return ok;
 }
 

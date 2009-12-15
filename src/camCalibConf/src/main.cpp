@@ -70,7 +70,5 @@ int main(int argc, char *argv[]) {
 	rf.setDefaultContext("camCalibConf"); //overridden by --context parameter
 	rf.configure("ICUB_ROOT", argc, argv);
     CamCalibConfModule module;
-    module.setName("/camCalibConf");
-	module.attachTerminal();
     return module.runModule(rf);   
 }

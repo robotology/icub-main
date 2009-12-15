@@ -22,6 +22,10 @@ SalienceModule::~SalienceModule(){
 
 bool SalienceModule::configure(yarp::os::ResourceFinder &rf){
     
+	ConstString str = rf.check("name", Value("/salience"), "module name (string)").asString();
+	setName(str.c_str()); // modulePortName  
+	attachTerminal();
+
     numBlurPasses = rf.check("numBlurPasses",
                                     Value(0),
                                     "Blur the output map numBlurPasses times with a gaussian 3x3 kernel (int).").asInt();

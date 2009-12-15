@@ -46,6 +46,10 @@ AttentionSelectionModule::~AttentionSelectionModule(){
 
 bool AttentionSelectionModule::configure(yarp::os::ResourceFinder &rf){
 
+	ConstString str = rf.check("name", Value("/attentionSelection"), "module name (string)").asString();
+	setName(str.c_str()); // modulePortName  
+	attachTerminal();
+
     _hViewAngle = rf.check("horizontalViewAngle",
                                 Value(360.0),
                                 "Width of input saliency map corresponds to how many degrees? (double)").asDouble();

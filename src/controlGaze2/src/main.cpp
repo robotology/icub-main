@@ -461,9 +461,12 @@ using namespace iCub::contrib;
 
 int main(int argc, char *argv[]) {
 
-    Network yarp;
+	Network yarp;
+	ResourceFinder rf;
+	rf.setVerbose(true);
+	rf.setDefaultConfigFile("controlGaze.ini"); //overridden by --from parameter
+	rf.setDefaultContext("controlGaze"); //overridden by --context parameter
+	rf.configure("ICUB_ROOT", argc, argv);
     Control_GazeModule module;
-    module.setName("/controlGaze2"); // set default name of module
-	module.attachTerminal();
-    return module.runModule(argc,argv);
+    return module.runModule(rf); 
 }
