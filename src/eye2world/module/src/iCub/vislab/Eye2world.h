@@ -65,10 +65,10 @@
  * The value part can be changed to suit your needs; the default values are shown below. 
  *   
  * - eyeCalibration &lt;FILE&gt; <br />
- *   specifies the file name to the calibration file for the iCub's eyes.
+ *   specifies the file name to the calibration file for the iCub's eyes (within the given context).
  *
  * - tableConfiguration &lt;FILE&gt; <br />
- *   specifies the file name to configuration of the file.
+ *   specifies the file name to configuration of the file (within the given context).
  *
  * - in &lt;PORT&gt; <br />
  *   specifies the input port name for the 2D coordinate to be transformed. <br />
@@ -192,8 +192,9 @@
  * <dl>
  * 	<dt>eye2world</dt>
  * 		<dd>--in /in<dd>
- *    <dd>--eyeCalibration "iCubLisboa01/conf/icubEyes.ini"</dd>
- * 		<dd>--tableConfiguration "iCubLisboa01/conf/table.ini" </dd>
+ *    <dd>--context "iCubLisboa/conf"</dd>
+ *    <dd>--eyeCalibration "icubEyes.ini"</dd>
+ * 		<dd>--tableConfiguration "table.ini" </dd>
  * 		<dd>--out /out</dd>
  * </dl>
  *

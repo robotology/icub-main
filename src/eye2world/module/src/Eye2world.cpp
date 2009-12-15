@@ -55,11 +55,13 @@ bool Eye2world::configure(ResourceFinder &rf) {
 
 	ConstString robotPort = prefix + robotName;
 
-	ConstString calibrationFilename = rf.check("eyeCalibration", Value("iCubEyes.ini"),
-			"Name of the configuration file of the iCub's eye calibration (string)").asString();
+	rf.setDefault("eyeCalibration", "iCubEyes.ini");
+	ConstString calibrationFilename = rf.findFile("eyeCalibration" /*,
+	 "Name of the configuration file of the iCub's eye calibration (string)"*/);
 
-	ConstString tableConfiguration = rf.check("tableConfiguration", Value("table.ini"),
-			"Name of the configuration file of the experiments table (string)").asString();
+	rf.setDefault("tableConfiguration", "table.ini");
+	ConstString tableConfiguration = rf.findFile("tableConfiguration" /*,
+	 "Name of the configuration file of the experiments table (string)"*/);
 
 	str
 			= "Input port providing 2D coordinates as Bottle([ConstString:cam,] double:x, double:y[, double:height])";
@@ -78,20 +80,20 @@ bool Eye2world::configure(ResourceFinder &rf) {
 			"Output port providing 3D coordinates as Bottle(double:x, double:y, double:z)").asString());
 	dataPorts.add(id.Output_Coordinates3d, str, new BufferedPort<Bottle> );
 
-	ResourceFinder config;
-	config.setDefaultConfigFile(calibrationFilename);
-	config.setDefaultContext("");
-	config.configure("ICUB_ROOT", 0, NULL, false);
+	Property config;
+	if (!config.fromConfigFile(calibrationFilename)) {
+		return false;
+	}
 	rightEyeCalibration.fromString(config.findGroup("CAMERA_CALIBRATION_RIGHT").toString());
 	leftEyeCalibration.fromString(config.findGroup("CAMERA_CALIBRATION_LEFT").toString());
 
 	cameras["right"] = &rightEyeCalibration;
 	cameras["left"] = &leftEyeCalibration;
 
-	ResourceFinder tableConfig;
-	tableConfig.setDefaultConfigFile(tableConfiguration);
-	tableConfig.setDefaultContext("");
-	tableConfig.configure("ICUB_ROOT", 0, NULL, false);
+	Property tableConfig;
+	if (!tableConfig.fromConfigFile(tableConfiguration)) {
+		cerr << "Unable to read table configuration. Assuming 0 vector as 3D offset." << endl;
+	}
 	tabletopPosition.fromString(tableConfig.findGroup("POSITION").toString());
 
 	vector<unsigned int> errorLog;
@@ -153,11 +155,11 @@ void Eye2world::WorkerThread::run() {
 #ifndef DEBUG_OFFLINE
 	bool positionUpdated = false;
 	bool transformationAvailable = false;
-	BufferedPort<Bottle>* in = (BufferedPort<Bottle>*) dataPorts[id.Input_Coordinates2d];
-	BufferedPort<Bottle>* head = (BufferedPort<Bottle>*) dataPorts[id.Input_HeadPosition];
-	BufferedPort<Bottle>* torso = (BufferedPort<Bottle>*) dataPorts[id.Input_TorsoPosition];
+	BufferedPort < Bottle > *in = (BufferedPort<Bottle>*) dataPorts[id.Input_Coordinates2d];
+	BufferedPort < Bottle > *head = (BufferedPort<Bottle>*) dataPorts[id.Input_HeadPosition];
+	BufferedPort < Bottle > *torso = (BufferedPort<Bottle>*) dataPorts[id.Input_TorsoPosition];
 #endif
-	BufferedPort<Bottle>* out = (BufferedPort<Bottle>*) dataPorts[id.Output_Coordinates3d];
+	BufferedPort < Bottle > *out = (BufferedPort<Bottle>*) dataPorts[id.Output_Coordinates3d];
 
 	while (!isStopping()) {
 
