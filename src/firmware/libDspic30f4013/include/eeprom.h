@@ -36,6 +36,16 @@ typedef struct s_eeprom
 
   // matrix calibration gain
   unsigned char EE_MatrixGain;
+  int           EE_CalibrationTare[6];
+  int           EE_FullScales[6];
+  int           EE_debug2[6];
+  int           EE_debug3[6];
+  int           EE_debug4[6];
+  int           EE_debug5[6];
+  int           EE_debug6[6];
+  int           EE_debug7[6];
+  int           EE_debug8[6];
+  unsigned char EE_SerialNumber[8]; 
   unsigned int  EE_ChkSum;                 // data validation checksum
 
 } s_eeprom;
