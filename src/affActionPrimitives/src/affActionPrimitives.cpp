@@ -16,7 +16,7 @@
 
 #define ACTIONPRIM_DEFAULT_PER          50      // [ms]
 #define ACTIONPRIM_DEFAULT_TRAJTIME     1.5     // [s]
-#define ACTIONPRIM_DEFAULT_REACHTOL     0.01    // [m]
+#define ACTIONPRIM_DEFAULT_REACHTOL     0.005   // [m]
 #define ACTIONPRIM_DUMP_PERIOD          2.0     // [s]
 
 using namespace std;
@@ -815,54 +815,6 @@ deque<string> affActionPrimitives::getHandSeqList()
 
 
 /************************************************************************/
-bool affActionPrimitives::reach(const Vector &x, const Vector &o, const bool sync)
-{
-    if (configured)
-    {        
-        fprintf(stdout,"\"reach\" requested\n");
-        if (!pushAction(x,o))
-            return false;
-
-        bool ret=true;
-
-        if (sync)
-        {
-            bool f=false;
-            ret=checkActionsDone(f,true);
-        }
-
-        return ret;
-    }
-    else
-        return false;
-}
-
-
-/************************************************************************/
-bool affActionPrimitives::moveHand(const string &handSeqKey, const bool sync)
-{
-    if (configured)
-    {        
-        fprintf(stdout,"\"%s\" hand sequence requested\n",handSeqKey.c_str());
-        if (!pushAction(handSeqKey))
-            return false;
-
-        bool ret=true;
-
-        if (sync)
-        {
-            bool f=false;
-            ret=checkActionsDone(f,true);
-        }
-
-        return ret;
-    }
-    else
-        return false;
-}
-
-
-/************************************************************************/
 bool affActionPrimitives::getPose(Vector &x, Vector &o)
 {
     if (configured)
@@ -946,24 +898,16 @@ bool affActionPrimitives::syncCheckReinstate()
 
 
 /************************************************************************/
-bool affActionPrimitivesLayer1::grasp(const Vector &x, const Vector &o, const Vector &d,
-                                      const bool sync)
+bool affActionPrimitivesLayer1::grasp(const Vector &x, const Vector &o, const Vector &d)
 {
     if (configured)
     {
         fprintf(stdout,"start grasping\n");
-        pushAction(x+d,o,"open");
-        pushAction(x,o,"close");
+        pushAction(x+d,o,"open_hand");
+        pushAction(x,o);
+        pushAction("close_hand");
 
-        bool ret=true;
-
-        if (sync)
-        {
-            bool f=false;
-            ret=checkActionsDone(f,true);
-        }
-
-        return ret;
+        return true;
     }
     else
         return false;
@@ -971,24 +915,15 @@ bool affActionPrimitivesLayer1::grasp(const Vector &x, const Vector &o, const Ve
 
 
 /************************************************************************/
-bool affActionPrimitivesLayer1::touch(const Vector &x, const Vector &o, const Vector &d,
-                                      const bool sync)
+bool affActionPrimitivesLayer1::touch(const Vector &x, const Vector &o, const Vector &d)
 {
     if (configured)
     {
         fprintf(stdout,"start touching\n");
-        pushAction(x+d,o,"open");
+        pushAction(x+d,o,"open_hand");
         pushAction(x,o);
 
-        bool ret=true;
-
-        if (sync)
-        {
-            bool f=false;
-            ret=checkActionsDone(f,true);
-        }
-
-        return ret;
+        return true;
     }
     else
         return false;
@@ -996,25 +931,16 @@ bool affActionPrimitivesLayer1::touch(const Vector &x, const Vector &o, const Ve
 
 
 /************************************************************************/
-bool affActionPrimitivesLayer1::tap(const Vector &x, const Vector &o, const Vector &d,
-                                    const bool sync)
+bool affActionPrimitivesLayer1::tap(const Vector &x, const Vector &o, const Vector &d)
 {
     if (configured)
     {
         fprintf(stdout,"start tapping\n");
-        pushAction(x,o,"open");
+        pushAction(x,o,"open_hand");
         pushAction(x+d,o);
         pushAction(x,o);
 
-        bool ret=true;
-
-        if (sync)
-        {
-            bool f=false;
-            ret=checkActionsDone(f,true);
-        }
-
-        return ret;
+        return true;
     }
     else
         return false;

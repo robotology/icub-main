@@ -31,9 +31,8 @@
 *
 * The base class defining affordance actions. 
 *  
-* It allows to yield primitive actions such as reach(), 
-* moveHand(); it allows to handle an actions queue in 
-* order to specify a desired combination of primitive actions. 
+* It allows to execute arm and hand primitive actions (such as 
+* reach) and to combine them in an actions queue.
 */
 class affActionPrimitives : public yarp::os::RateThread
 {
@@ -225,16 +224,17 @@ public:
     *  
     * \note Some examples: 
     *  
-    * the call \b pushAction(x,o,"close") pushes the combined action
-    * of reach(x,o) and hand "close" sequence into the queue; the 
-    * action will be executed as soon as all the previous items in 
-    * the queue will have been served.
+    * the call \b pushAction(x,o,"close_hand") pushes the combined 
+    * action of reach(x,o) and hand "close_hand" sequence into the 
+    * queue; the action will be executed as soon as all the previous 
+    * items in the queue will have been served. 
     */
     bool pushAction(const yarp::sig::Vector &x, const yarp::sig::Vector &o, 
                     const std::string &handSeqKey);
 
     /**
-    * Insert an arm primitive action in the actions queue.
+    * Insert the arm-primitive action reach for target in the 
+    * actions queue. 
     * @param x the 3-d target position [m]. 
     * @param o the 4-d hand orientation used while reaching (given 
     *          in axis-angle representation) [rad].
@@ -243,7 +243,7 @@ public:
     bool pushAction(const yarp::sig::Vector &x, const yarp::sig::Vector &o);
 
     /**
-    * Insert a hand primitive action in the actions queue.
+    * Insert a hand-primitive action in the actions queue.
     * @param handSeqKey the hand sequence key.   
     * @return true/false on success/fail. 
     */
@@ -297,25 +297,6 @@ public:
     * @return the list of available hand sequence keys.
     */
     std::deque<std::string> getHandSeqList();
-
-    /**
-    * Reach for a given target (arm primitive action).
-    * @param x the 3-d target position [m]. 
-    * @param o the 4-d hand orientation used while reaching (given 
-    *          in axis-angle representation) [rad].
-    * @param sync if true wait until the action is accomplished. 
-    * @return true/false on success/fail. 
-    */
-    virtual bool reach(const yarp::sig::Vector &x, const yarp::sig::Vector &o,
-                       const bool sync=false);
-
-    /**
-    * Execute an hand motion sequence pointed by the key.
-    * @param handSeqKey the hand sequence key. 
-    * @param sync if true wait until the action is accomplished.  
-    * @return true/false on success/fail. 
-    */
-    virtual bool moveHand(const std::string &handSeqKey, const bool sync=false);
 
     /**
     * Return the current end-effector position. 
@@ -373,8 +354,8 @@ public:
 * affActionPrimitives father class. 
 *  
 * It internally predeclares (without actually defining) a set of
-* hand sequence motions key ("open" and "close") that are used 
-* for grasp(), touch() and tap() actions. 
+* hand sequence motions key ("open_hand" and "close_hand") that 
+* are used for grasp(), touch() and tap() actions. 
 */
 class affActionPrimitivesLayer1 : public affActionPrimitives
 {
@@ -399,20 +380,20 @@ public:
     * @param d the displacement [m] wrt the target position that 
     *          identifies a location to be reached prior to
     *          grasping.
-    * @param sync if true wait until the action is accomplished. 
     * @return true/false on success/fail. 
     *  
     * \note internal implementation: 
     * ... 
-    * pushAction(x+d,o,"open"); 
-    * pushAction(x,o,"close"); 
-    * ... 
+    * pushAction(x+d,o,"open_hand"); 
+    * pushAction(x,o); 
+    * pushAction("close_hand") 
+    * ...
     *  
     * It reachs for (x+d,o) opening the hand, then reachs for (x,o)
     * closing the hand at the same time. 
     */
     virtual bool grasp(const yarp::sig::Vector &x, const yarp::sig::Vector &o,
-                       const yarp::sig::Vector &d, const bool sync=false);
+                       const yarp::sig::Vector &d);
 
     /**
     * Touch the given target (combined action).
@@ -422,12 +403,11 @@ public:
     * @param d the displacement [m] wrt the target position that 
     *          identifies a location to be reached prior to
     *          touching.
-    * @param sync if true wait until the action is accomplished. 
     * @return true/false on success/fail. 
     *  
     * \note internal implementation: 
     * ... 
-    * pushAction(x+d,o,"open"); 
+    * pushAction(x+d,o,"open_hand"); 
     * pushAction(x,o); 
     * ... 
     *  
@@ -435,7 +415,7 @@ public:
     * Similar to grasp but without hand action. 
     */
     virtual bool touch(const yarp::sig::Vector &x, const yarp::sig::Vector &o,
-                       const yarp::sig::Vector &d, const bool sync=false);
+                       const yarp::sig::Vector &d);
 
     /**
     * Tap the given target (combined action).
@@ -443,12 +423,11 @@ public:
     * @param o the 4-d hand orientation used while tapping (given in
     *          axis-angle representation) [rad].
     * @param d the displacement [m]; see the note below.
-    * @param sync if true wait until the action is accomplished. 
     * @return true/false on success/fail. 
     *  
     * \note internal implementation: 
     * ...
-    * pushAction(x,o,"open");
+    * pushAction(x,o,"open_hand");
     * pushAction(x+d,o);
     * pushAction(x,o);
     * ...
@@ -457,7 +436,7 @@ public:
     * for (x,o).
     */
     virtual bool tap(const yarp::sig::Vector &x, const yarp::sig::Vector &o,
-                     const yarp::sig::Vector &d, const bool sync=false);
+                     const yarp::sig::Vector &d);
 
 };
 
