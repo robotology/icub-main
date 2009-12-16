@@ -11,6 +11,7 @@
 	  <stdio>icub14</stdio>
 	  <tag>logpolar-grabber-right</tag>
    </module>
+	<module>
       <name>icubmoddev</name>
 	      <parameters>--device logpolargrabber --width 320 --height 240 --framerate 33 --subdevice dragonfly2 --name /icub/cam/leftpolar/ --DR2 --d 0</parameters>
      <node>pc104</node>
