@@ -356,6 +356,17 @@ public:
 	 */
 	bool move(const ::yarp::sig::Matrix& m, const int joint, const bool sync = true, const bool invert = false);
 	/**
+	 * Move the specified joint to the given positions (one row after the other - rows in [start, end]).
+	 * @param m The positions to move to as {@link ::yarp::sig::Matrix} with 16 (number of joints of the arm) columns.
+	 * @param start The start index.
+	 * @param start The end index.
+	 * @param joint The joint to be moved.
+	 * @param sync If set to true the function wait for the motion to be done. Otherwise it returns immediately.
+	 * @param invert Invert the specified motion.
+	 * @return Indicates if the command for moving the joints was successfully set.
+	 */
+	bool move(const ::yarp::sig::Matrix& m, const int start, const int end, const int joint, const bool sync = true, const bool invert = false);
+	/**
 	 * Move the hand to the given positions (one row after the other).
 	 * @param m The positions to move to as {@link ::yarp::sig::Matrix} with 16 (number of joints of the arm) columns.
 	 * @param sync If set to true the function wait for the motion to be done. Otherwise it returns immediately.
@@ -363,6 +374,16 @@ public:
 	 * @return Indicates if the command for moving the joints was successfully set.
 	 */
 	bool move(const ::yarp::sig::Matrix& m, const bool sync = true, const bool invert = false);
+	/**
+	 * Move the hand to the given positions (one row after the other - rows in [start, end]).
+	 * @param m The positions to move to as {@link ::yarp::sig::Matrix} with 16 (number of joints of the arm) columns.
+	 * @param start The start index.
+	 * @param start The end index.
+	 * @param sync If set to true the function wait for the motion to be done. Otherwise it returns immediately.
+	 * @param invert Invert the specified motion.
+	 * @return Indicates if the command for moving the joints was successfully set.
+	 */
+	bool move(const ::yarp::sig::Matrix& m, const int start, const int end, const bool sync = true, const bool invert = false);
 	/**
 	 * Move the specified joints to the given positions (one row after the other).
 	 * @param m The positions to move to as {@link ::yarp::sig::Matrix} with 16 (number of joints of the arm) columns.
@@ -373,7 +394,18 @@ public:
 	 */
 	bool move(const ::yarp::sig::Matrix& m, const std::set<int> joints, const bool sync = true, const bool invert = false);
 	/**
-	 * Move the hand to the given motion sequence.
+	 * Move the specified joints to the given positions (one row after the other - rows in [start, end]).
+	 * @param m The positions to move to as {@link ::yarp::sig::Matrix} with 16 (number of joints of the arm) columns.
+	 * @param start The start index.
+	 * @param start The end index.
+	 * @param joints The joints to be moved.
+	 * @param sync If set to true the function wait for the motion to be done. Otherwise it returns immediately.
+	 * @param invert Invert the specified motion.
+	 * @return Indicates if the command for moving the joints was successfully set.
+	 */
+	bool move(const ::yarp::sig::Matrix& m, const int start, const int end, const std::set<int> joints, const bool sync = true, const bool invert = false);
+	/**
+	 * Move the hand according to the given motion sequence.
 	 * @param seq The motion sequence to follow.
 	 * @param sync If set to true the function wait for the motion to be done. Otherwise it returns immediately.
 	 * @param invert Invert the specified motion.
@@ -381,7 +413,17 @@ public:
 	 */
 	bool move(const vislab::yarp::util::MotionSequence& seq, const bool sync = true, const bool invert = false);
 	/**
-	 * Move the specified joint to the given positions (one row after the other).
+	 * Move the hand according to the given motion sub-sequence [start, end].
+	 * @param seq The motion sequence to follow.
+	 * @param start The start index of the sequence.
+	 * @param start The end index of the sequence.
+	 * @param sync If set to true the function wait for the motion to be done. Otherwise it returns immediately.
+	 * @param invert Invert the specified motion.
+	 * @return Indicates if the command for moving the joints was successfully set.
+	 */
+	bool move(const vislab::yarp::util::MotionSequence& seq, const size_t start, const size_t end, const bool sync = true, const bool invert = false);
+	/**
+	 * Move the specified joint according to the given motion sequence.
 	 * @param seq The motion sequence to follow.
 	 * @param joint The joint to be moved.
 	 * @param sync If set to true the function wait for the motion to be done. Otherwise it returns immediately.
@@ -389,6 +431,18 @@ public:
 	 * @return Indicates if the command for moving the joints was successfully set.
 	 */
 	bool move(const vislab::yarp::util::MotionSequence& seq, const int joint, const bool sync = true, const bool invert =
+			false);
+	/**
+	 * Move the specified joint according to the given motion sub-sequence [start, end].
+	 * @param seq The motion sequence to follow.
+	 * @param start The start index of the sequence.
+	 * @param start The end index of the sequence.
+	 * @param joint The joint to be moved.
+	 * @param sync If set to true the function wait for the motion to be done. Otherwise it returns immediately.
+	 * @param invert Invert the specified motion.
+	 * @return Indicates if the command for moving the joints was successfully set.
+	 */
+	bool move(const vislab::yarp::util::MotionSequence& seq, const size_t start, const size_t end, const int joint, const bool sync = true, const bool invert =
 			false);
 	/**
 	 * Move the specified joints according to the given motion sequence.
@@ -399,6 +453,18 @@ public:
 	 * @return Indicates if the command for moving the joints was successfully set.
 	 */
 	bool move(const vislab::yarp::util::MotionSequence& seq, const std::set<int> joints, const bool sync = true,
+			const bool invert = false);
+	/**
+	 * Move the specified joints according to the given motion sub-sequence [start, end].
+	 * @param seq The motion sequence to follow.
+	 * @param start The start index of the sequence.
+	 * @param start The end index of the sequence.
+	 * @param joints The joints to be moved.
+	 * @param sync If set to true the function wait for the motion to be done. Otherwise it returns immediately.
+	 * @param invert Invert the specified motion.
+	 * @return Indicates if the command for moving the joints was successfully set.
+	 */
+	bool move(const vislab::yarp::util::MotionSequence& seq, const size_t start, const size_t end, const std::set<int> joints, const bool sync = true,
 			const bool invert = false);
 
 //	/**

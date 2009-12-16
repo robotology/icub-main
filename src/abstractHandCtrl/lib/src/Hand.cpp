@@ -343,26 +343,51 @@ bool Hand::move(const Motion& m, const std::set<int> joints, const bool sync) {
 }
 
 bool Hand::move(const Matrix& m, const int joint, const bool sync, const bool invert) {
+	return move(m, 0, m.rows() - 1, joint, sync, invert);
+}
+
+bool Hand::move(const Matrix& m, const int start, const int end, const int joint, const bool sync,
+		const bool invert) {
 	set<int> s;
 	s.insert(joint);
-	return move(m, s, sync, invert);
+	return move(m, start, end, s, sync, invert);
 }
 
 bool Hand::move(const Matrix& m, const bool sync, const bool invert) {
+	return move(m, 0, m.rows() - 1, sync, invert);
+}
+
+bool Hand::move(const Matrix& m, const int start, const int end, const bool sync, const bool invert) {
 	return move(m, COMPLETE_HAND, sync, invert);
 }
 
 bool Hand::move(const Matrix& m, const set<int> joints, const bool sync, const bool invert) {
+	return move(m, 0, m.rows() - 1, joints, sync, invert);
+}
+
+bool Hand::move(const Matrix& m, const int start, const int end, const set<int> joints,
+		const bool sync, const bool invert) {
+
 	bool result = true;
+	int i1 = max(0, start);
+	int i2 = min(m.rows() - 1, end), b;
+
+	if (i2 < i1) {
+		b = i1;
+		i1 = i2;
+		i2 = b;
+	}
+
+	assert(i1 < i2);
 
 	if (m.rows() > 0) {
 		int step;
 		if (invert) {
-			for (step = m.rows() - 1; step >= 1; step--) {
+			for (step = i2; step > i1; step--) {
 				result &= move(m.getRow(step), joints, true);
 			}
 		} else {
-			for (step = 0; step < m.rows() - 1; step++) {
+			for (step = i1; step < i2; step++) {
 				result &= move(m.getRow(step), joints, true);
 			}
 		}
@@ -373,28 +398,54 @@ bool Hand::move(const Matrix& m, const set<int> joints, const bool sync, const b
 }
 
 bool Hand::move(const MotionSequence& seq, const bool sync, const bool invert) {
-	return move(seq, COMPLETE_HAND, sync, invert);
+	return move(seq, 0, seq.length() - 1, sync, invert);
+}
+
+bool Hand::move(const MotionSequence& seq, const size_t start, const size_t end, const bool sync,
+		const bool invert) {
+	return move(seq, start, end, COMPLETE_HAND, sync, invert);
 }
 
 bool Hand::move(const MotionSequence& seq, const int joint, const bool sync, const bool invert) {
+	return move(seq, 0, seq.length() - 1, joint, sync, invert);
+}
+
+bool Hand::move(const MotionSequence& seq, const size_t start, const size_t end, const int joint,
+		const bool sync, const bool invert) {
 	set<int> s;
 	s.insert(joint);
-	return move(seq, s, sync, invert);
+	return move(seq, start, end, s, sync, invert);
 }
 
 bool Hand::move(const MotionSequence& seq, const std::set<int> joints, const bool sync,
 		const bool invert) {
+	return move(seq, 0, seq.length() - 1, joints, sync, invert);
+}
+
+bool Hand::move(const MotionSequence& seq, const size_t start, const size_t end,
+		const std::set<int> joints, const bool sync, const bool invert) {
+
 	bool result = true;
+	size_t i1 = max((size_t) 0, start);
+	size_t i2 = min(seq.length() - 1, end), b;
+
+	if (i2 < i1) {
+		b = i1;
+		i1 = i2;
+		i2 = b;
+	}
+
+	assert(i1 < i2);
 
 	if (seq.length() > 0) {
-		int step;
+		size_t step;
 		if (invert) {
-			for (step = seq.length() - 1; step >= 1; step--) {
+			for (step = i2; step > i1; step--) {
 				result &= move(seq[step], joints, true);
 			}
 		} else {
 			MotionSequence::const_iterator itr;
-			for (step = 1; step < seq.length() - 1; step++) {
+			for (step = i1; step < i2; step++) {
 				result &= move(seq[step], joints, true);
 			}
 		}
