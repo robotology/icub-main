@@ -237,13 +237,13 @@ namespace math {
  * @author Christian Wressnegger
  * @date 2009
  */
-class Eye2world: public vislab::yarp::util::AbstractRFModule {
+class Eye2world: public vislab::yarp::util::ThreadedRFModule {
 
 	struct PortIds {
 		unsigned int Input_Coordinates2d, Input_HeadPosition, Input_TorsoPosition, Output_Coordinates3d;
 	} id;
 
-	class WorkerThread: public vislab::yarp::util::AbstractRFModule::AbstractWorkerThread {
+	class WorkerThread: public vislab::yarp::util::ThreadedRFModule::RFWorkerThread {
 	private:
 
 		::yarp::os::Bottle* inputCoordinates;
@@ -278,7 +278,7 @@ public:
 	Eye2world();
 
 	/**
-	 * @see AbstractRFModule#configure(::yarp::os::ResourceFinder&)
+	 * @see ThreadedRFModule#configure(::yarp::os::ResourceFinder&)
 	 */
 	// configure all the module parameters and return true if successful
 	bool configure(::yarp::os::ResourceFinder& rf);

@@ -31,11 +31,11 @@ namespace vislab {
 namespace math {
 
 Eye2world::Eye2world() :
-	AbstractRFModule("eye2world") {
+	ThreadedRFModule("eye2world") {
 }
 
 bool Eye2world::configure(ResourceFinder &rf) {
-	if (!AbstractRFModule::configure(rf)) {
+	if (!ThreadedRFModule::configure(rf)) {
 		return false;
 	}
 	ConstString str;
@@ -115,7 +115,7 @@ Thread* Eye2world::createWorkerThread() {
 Eye2world::WorkerThread::WorkerThread(const OptionManager& moduleOptions,
 		const Contactables& ports, struct PortIds ids, map<const string, Property*>& cams,
 		Property& table) :
-	AbstractWorkerThread(moduleOptions, ports) {
+	RFWorkerThread(moduleOptions, ports) {
 
 	id = ids;
 
