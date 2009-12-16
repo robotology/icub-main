@@ -183,6 +183,7 @@ enum
     COLUMN_VERSION,
     COLUMN_RELEASE,
     COLUMN_BUILD,
+	COLUMN_SERIAL,
     COLUMN_STATUS,
     COLUMN_ADD_INFO,
 	COLUMN_EEPROM,
@@ -217,6 +218,7 @@ static GtkTreeModel * refresh_board_list_model (void)
     store = gtk_list_store_new ( NUM_COLUMNS,
         G_TYPE_BOOLEAN,
         G_TYPE_UINT,
+		G_TYPE_STRING,
         G_TYPE_STRING,
         G_TYPE_STRING,
         G_TYPE_STRING,
@@ -232,6 +234,7 @@ static GtkTreeModel * refresh_board_list_model (void)
     char board_version	[10]; memset (board_version,0,10);
     char board_release	[10]; memset (board_release,0,10);
     char board_build    [10]; memset (board_build,0,10);
+	char board_serial   [10]; memset (board_serial,0,10);
 
     // add data to the list store	 
     for (i = 0; i < downloader.board_list_size; i++)
@@ -298,6 +301,7 @@ static GtkTreeModel * refresh_board_list_model (void)
         sprintf (board_version,"%d",downloader.board_list[i].version);
         sprintf (board_release,"%X",downloader.board_list[i].release,downloader.board_list[i].release);
         sprintf (board_build,"%d",downloader.board_list[i].build,downloader.board_list[i].build);
+        sprintf (board_serial,"%s",downloader.board_list[i].serial,downloader.board_list[i].serial);
 
         gtk_list_store_append (store, &iter);
         gtk_list_store_set (store, &iter,
@@ -307,6 +311,7 @@ static GtkTreeModel * refresh_board_list_model (void)
             COLUMN_VERSION, board_version,
             COLUMN_RELEASE, board_release,
             COLUMN_BUILD, board_build,
+			COLUMN_SERIAL, board_serial,
             COLUMN_STATUS, board_status,
             COLUMN_ADD_INFO, board_add_info,
 			COLUMN_EEPROM, downloader.board_list[i].eeprom,
@@ -1227,7 +1232,7 @@ static void add_columns (GtkTreeView *treeview)
         COLUMN_TYPE,
         NULL);
     gtk_tree_view_column_set_sizing (GTK_TREE_VIEW_COLUMN (column),GTK_TREE_VIEW_COLUMN_FIXED);
-    gtk_tree_view_column_set_fixed_width (GTK_TREE_VIEW_COLUMN (column), 80);
+    gtk_tree_view_column_set_fixed_width (GTK_TREE_VIEW_COLUMN (column), 90);
     //gtk_tree_view_column_set_sort_column_id (column, COLUMN_TYPE);
     gtk_tree_view_append_column (treeview, column);
 
@@ -1257,10 +1262,22 @@ static void add_columns (GtkTreeView *treeview)
 
     // column 5b BUILD
     renderer = gtk_cell_renderer_text_new ();
-    column = gtk_tree_view_column_new_with_attributes ("Build number",
+    column = gtk_tree_view_column_new_with_attributes ("Build",
         renderer,
         "text",
         COLUMN_BUILD,
+        NULL);
+    gtk_tree_view_column_set_sizing (GTK_TREE_VIEW_COLUMN (column),GTK_TREE_VIEW_COLUMN_FIXED);
+    gtk_tree_view_column_set_fixed_width (GTK_TREE_VIEW_COLUMN (column), 70);
+    //gtk_tree_view_column_set_sort_column_id (column, COLUMN_RELEASE);
+    gtk_tree_view_append_column (treeview, column);
+
+	// column 5c SERIAL
+    renderer = gtk_cell_renderer_text_new ();
+    column = gtk_tree_view_column_new_with_attributes ("Serial",
+        renderer,
+        "text",
+        COLUMN_SERIAL,
         NULL);
     gtk_tree_view_column_set_sizing (GTK_TREE_VIEW_COLUMN (column),GTK_TREE_VIEW_COLUMN_FIXED);
     gtk_tree_view_column_set_fixed_width (GTK_TREE_VIEW_COLUMN (column), 70);
@@ -1307,7 +1324,7 @@ static void add_columns (GtkTreeView *treeview)
 
     // set this column to a fixed sizing
     gtk_tree_view_column_set_sizing (GTK_TREE_VIEW_COLUMN (column),GTK_TREE_VIEW_COLUMN_FIXED);
-    gtk_tree_view_column_set_fixed_width (GTK_TREE_VIEW_COLUMN (column), 30);
+    gtk_tree_view_column_set_fixed_width (GTK_TREE_VIEW_COLUMN (column), 40);
     gtk_tree_view_append_column (treeview, column);
 
 }

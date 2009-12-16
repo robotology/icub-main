@@ -9,6 +9,8 @@ int ch[6]={0,1,2,3,4,5};
 unsigned int offset[6];
 unsigned int adc[6]={0,0,0,0,0,0};
 unsigned int maxadc[6]={0,0,0,0,0,0};
+int calib_bias[6]={0,0,0,0,0,0};
+int curr_bias[6]={0,0,0,0,0,0};
 unsigned int minadc[6]={65535,65535,65535,65535,65535,65535};
 unsigned int matrix[6][6];
 unsigned int calib_matrix[6][6];
@@ -28,9 +30,19 @@ GtkWidget* picker_calib;
 GtkWidget *save_button;
 GtkWidget *matrix_reset_button;
 GtkWidget *check_raw_vals;
+GtkWidget *set_calib_bias_button;
+GtkWidget *reset_calib_bias_button;
+GtkWidget *set_curr_bias_button;
+GtkWidget *reset_curr_bias_button;
+GtkWidget *curr_bias_label[6];
+GtkWidget *calib_bias_label[6];
+GtkWidget *full_scale_label[6];
+GtkWidget *edit_serial_number;
 gboolean timer_func (gpointer data);
 
 unsigned int calib_const=0;
+unsigned int full_scale_const[6]={0,0,0,0,0,0};
+char serial_no[8]={'U','N','D','E','F',0,0,0};
 bool matrix_changed;
 bool something_changed;
 		
@@ -100,8 +112,8 @@ gboolean timer_func (gpointer data)
 	char tempbuf [250];
 	GdkColor color;
 	color.red=65535;
-	//color.green=0;
-	//color.blue=0;
+	color.green=40000;
+	color.blue=40000;
 
 	if (something_changed==true)
 	{
@@ -125,6 +137,13 @@ gboolean timer_func (gpointer data)
 			downloader.strain_get_matrix_gain(downloader.board_list[selected].pid,calib_const);
 			sprintf(tempbuf,"%d",calib_const);
 			gtk_label_set_text (GTK_LABEL(edit_matrix_gain), tempbuf);
+
+			for (ri=0;ri<6;ri++)
+			{
+				downloader.strain_get_full_scale(downloader.board_list[selected].pid,ri,full_scale_const[ri]);
+				sprintf(tempbuf,"%d",full_scale_const[ri]);
+				gtk_label_set_text (GTK_LABEL(full_scale_label[ri]), tempbuf);
+			}
 		}
 	else
 		{
@@ -136,8 +155,27 @@ gboolean timer_func (gpointer data)
 		}
 	for (int i=0;i<6;i++)
 	{
-		if (adc[i]>maxadc[i]) maxadc[i]=adc[i];
-		if (adc[i]<minadc[i]) minadc[i]=adc[i];
+		if (!bool_raw)
+		{
+			if (adc[i]>maxadc[i]) maxadc[i]=adc[i];
+			if (adc[i]<minadc[i]) minadc[i]=adc[i];
+		}
+		else
+		{
+			maxadc[i]=0;
+			minadc[i]=65535;
+		}
+	}
+
+	for (int i=0;i<6;i++)
+	{
+		downloader.strain_get_calib_bias(downloader.board_list[selected].pid,i,calib_bias[i]);
+		sprintf(tempbuf,"%d",calib_bias[i]);
+		gtk_label_set_text (GTK_LABEL(calib_bias_label[i]), tempbuf);
+
+		downloader.strain_get_curr_bias(downloader.board_list[selected].pid,i,curr_bias[i]);
+		sprintf(tempbuf,"%d",curr_bias[i]);
+		gtk_label_set_text (GTK_LABEL(curr_bias_label[i]), tempbuf);
 	}
 
 	gtk_range_set_value (GTK_RANGE(slider_gain[0]),(offset[0]));
@@ -160,58 +198,129 @@ gboolean timer_func (gpointer data)
 	sprintf(tempbuf,"%d",adc[5]);
 	gtk_label_set_text(GTK_LABEL(curr_measure[5]),tempbuf);
 
-	sprintf(tempbuf,"%d",maxadc[0]);
-	gtk_label_set_text(GTK_LABEL(max_measure[0]),tempbuf);
-	sprintf(tempbuf,"%d",maxadc[1]);
-	gtk_label_set_text(GTK_LABEL(max_measure[1]),tempbuf);
-	sprintf(tempbuf,"%d",maxadc[2]);
-	gtk_label_set_text(GTK_LABEL(max_measure[2]),tempbuf);
-	sprintf(tempbuf,"%d",maxadc[3]);
-	gtk_label_set_text(GTK_LABEL(max_measure[3]),tempbuf);
-	sprintf(tempbuf,"%d",maxadc[4]);
-	gtk_label_set_text(GTK_LABEL(max_measure[4]),tempbuf);
-	sprintf(tempbuf,"%d",maxadc[5]);
-	gtk_label_set_text(GTK_LABEL(max_measure[5]),tempbuf);
+	if (bool_raw)
+	{
+		sprintf(tempbuf,"---");
+		gtk_label_set_text(GTK_LABEL(max_measure[0]),tempbuf);
+		sprintf(tempbuf,"---");
+		gtk_label_set_text(GTK_LABEL(max_measure[1]),tempbuf);
+		sprintf(tempbuf,"---");
+		gtk_label_set_text(GTK_LABEL(max_measure[2]),tempbuf);
+		sprintf(tempbuf,"---");
+		gtk_label_set_text(GTK_LABEL(max_measure[3]),tempbuf);
+		sprintf(tempbuf,"---");
+		gtk_label_set_text(GTK_LABEL(max_measure[4]),tempbuf);
+		sprintf(tempbuf,"---");
+		gtk_label_set_text(GTK_LABEL(max_measure[5]),tempbuf);
 
-	sprintf(tempbuf,"%d",minadc[0]);
-	gtk_label_set_text(GTK_LABEL(min_measure[0]),tempbuf);
-	sprintf(tempbuf,"%d",minadc[1]);
-	gtk_label_set_text(GTK_LABEL(min_measure[1]),tempbuf);
-	sprintf(tempbuf,"%d",minadc[2]);
-	gtk_label_set_text(GTK_LABEL(min_measure[2]),tempbuf);
-	sprintf(tempbuf,"%d",minadc[3]);
-	gtk_label_set_text(GTK_LABEL(min_measure[3]),tempbuf);
-	sprintf(tempbuf,"%d",minadc[4]);
-	gtk_label_set_text(GTK_LABEL(min_measure[4]),tempbuf);
-	sprintf(tempbuf,"%d",minadc[5]);
-	gtk_label_set_text(GTK_LABEL(min_measure[5]),tempbuf);
+		sprintf(tempbuf,"---");
+		gtk_label_set_text(GTK_LABEL(min_measure[0]),tempbuf);
+		sprintf(tempbuf,"---");
+		gtk_label_set_text(GTK_LABEL(min_measure[1]),tempbuf);
+		sprintf(tempbuf,"---");
+		gtk_label_set_text(GTK_LABEL(min_measure[2]),tempbuf);
+		sprintf(tempbuf,"---");
+		gtk_label_set_text(GTK_LABEL(min_measure[3]),tempbuf);
+		sprintf(tempbuf,"---");
+		gtk_label_set_text(GTK_LABEL(min_measure[4]),tempbuf);
+		sprintf(tempbuf,"---");
+		gtk_label_set_text(GTK_LABEL(min_measure[5]),tempbuf);
 
-	sprintf(tempbuf,"%d",maxadc[0]-minadc[0]);
-	gtk_label_set_text(GTK_LABEL(diff_measure[0]),tempbuf);
-	sprintf(tempbuf,"%d",maxadc[1]-minadc[1]);
-	gtk_label_set_text(GTK_LABEL(diff_measure[1]),tempbuf);
-	sprintf(tempbuf,"%d",maxadc[2]-minadc[2]);
-	gtk_label_set_text(GTK_LABEL(diff_measure[2]),tempbuf);
-	sprintf(tempbuf,"%d",maxadc[3]-minadc[3]);
-	gtk_label_set_text(GTK_LABEL(diff_measure[3]),tempbuf);
-	sprintf(tempbuf,"%d",maxadc[4]-minadc[4]);
-	gtk_label_set_text(GTK_LABEL(diff_measure[4]),tempbuf);
-	sprintf(tempbuf,"%d",maxadc[5]-minadc[5]);
-	gtk_label_set_text(GTK_LABEL(diff_measure[5]),tempbuf);
+		sprintf(tempbuf,"---");
+		gtk_label_set_text(GTK_LABEL(diff_measure[0]),tempbuf);
+		sprintf(tempbuf,"---");
+		gtk_label_set_text(GTK_LABEL(diff_measure[1]),tempbuf);
+		sprintf(tempbuf,"---");
+		gtk_label_set_text(GTK_LABEL(diff_measure[2]),tempbuf);
+		sprintf(tempbuf,"---");
+		gtk_label_set_text(GTK_LABEL(diff_measure[3]),tempbuf);
+		sprintf(tempbuf,"---");
+		gtk_label_set_text(GTK_LABEL(diff_measure[4]),tempbuf);
+		sprintf(tempbuf,"---");
+		gtk_label_set_text(GTK_LABEL(diff_measure[5]),tempbuf);
 
-	sprintf(tempbuf,"%+.3f",(int(adc[0])-0x7fff)/float(calib_const));
-	gtk_label_set_text(GTK_LABEL(newton_measure[0]),tempbuf);
-	sprintf(tempbuf,"%+.3f",(int(adc[1])-0x7fff)/float(calib_const));
-	gtk_label_set_text(GTK_LABEL(newton_measure[1]),tempbuf);
-	sprintf(tempbuf,"%+.3f",(int(adc[2])-0x7fff)/float(calib_const));
-	gtk_label_set_text(GTK_LABEL(newton_measure[2]),tempbuf);
-	sprintf(tempbuf,"%+.3f",(int(adc[3])-0x7fff)/float(calib_const));
-	gtk_label_set_text(GTK_LABEL(newton_measure[3]),tempbuf);
-	sprintf(tempbuf,"%+.3f",(int(adc[4])-0x7fff)/float(calib_const));
-	gtk_label_set_text(GTK_LABEL(newton_measure[4]),tempbuf);
-	sprintf(tempbuf,"%+.3f",(int(adc[5])-0x7fff)/float(calib_const));
-	gtk_label_set_text(GTK_LABEL(newton_measure[5]),tempbuf);
+		/*
+		//previous version
+		sprintf(tempbuf,"%+.3f N",(int(adc[0])-0x7fff)/float(calib_const));
+		gtk_label_set_text(GTK_LABEL(newton_measure[0]),tempbuf);
+		sprintf(tempbuf,"%+.3f N",(int(adc[1])-0x7fff)/float(calib_const));
+		gtk_label_set_text(GTK_LABEL(newton_measure[1]),tempbuf);
+		sprintf(tempbuf,"%+.3f N",(int(adc[2])-0x7fff)/float(calib_const));
+		gtk_label_set_text(GTK_LABEL(newton_measure[2]),tempbuf);
+		sprintf(tempbuf,"%+.3f N/m",(int(adc[3])-0x7fff)/float(calib_const));
+		gtk_label_set_text(GTK_LABEL(newton_measure[3]),tempbuf);
+		sprintf(tempbuf,"%+.3f N/m",(int(adc[4])-0x7fff)/float(calib_const));
+		gtk_label_set_text(GTK_LABEL(newton_measure[4]),tempbuf);
+		sprintf(tempbuf,"%+.3f N/m",(int(adc[5])-0x7fff)/float(calib_const));
+		gtk_label_set_text(GTK_LABEL(newton_measure[5]),tempbuf);*/
 
+		sprintf(tempbuf,"%+.3f N",(int(adc[0])-0x7fff)/float(0x7fff)*500);
+		gtk_label_set_text(GTK_LABEL(newton_measure[0]),tempbuf);
+		sprintf(tempbuf,"%+.3f N",(int(adc[1])-0x7fff)/float(0x7fff)*500);
+		gtk_label_set_text(GTK_LABEL(newton_measure[1]),tempbuf);
+		sprintf(tempbuf,"%+.3f N",(int(adc[2])-0x7fff)/float(0x7fff)*1000);
+		gtk_label_set_text(GTK_LABEL(newton_measure[2]),tempbuf);
+		sprintf(tempbuf,"%+.3f N/m",(int(adc[3])-0x7fff)/float(0x7fff)*8);
+		gtk_label_set_text(GTK_LABEL(newton_measure[3]),tempbuf);
+		sprintf(tempbuf,"%+.3f N/m",(int(adc[4])-0x7fff)/float(0x7fff)*8);
+		gtk_label_set_text(GTK_LABEL(newton_measure[4]),tempbuf);
+		sprintf(tempbuf,"%+.3f N/m",(int(adc[5])-0x7fff)/float(0x7fff)*8);
+		gtk_label_set_text(GTK_LABEL(newton_measure[5]),tempbuf);
+	}
+	else
+	{
+		sprintf(tempbuf,"%d",maxadc[0]);
+		gtk_label_set_text(GTK_LABEL(max_measure[0]),tempbuf);
+		sprintf(tempbuf,"%d",maxadc[1]);
+		gtk_label_set_text(GTK_LABEL(max_measure[1]),tempbuf);
+		sprintf(tempbuf,"%d",maxadc[2]);
+		gtk_label_set_text(GTK_LABEL(max_measure[2]),tempbuf);
+		sprintf(tempbuf,"%d",maxadc[3]);
+		gtk_label_set_text(GTK_LABEL(max_measure[3]),tempbuf);
+		sprintf(tempbuf,"%d",maxadc[4]);
+		gtk_label_set_text(GTK_LABEL(max_measure[4]),tempbuf);
+		sprintf(tempbuf,"%d",maxadc[5]);
+		gtk_label_set_text(GTK_LABEL(max_measure[5]),tempbuf);
+
+		sprintf(tempbuf,"%d",minadc[0]);
+		gtk_label_set_text(GTK_LABEL(min_measure[0]),tempbuf);
+		sprintf(tempbuf,"%d",minadc[1]);
+		gtk_label_set_text(GTK_LABEL(min_measure[1]),tempbuf);
+		sprintf(tempbuf,"%d",minadc[2]);
+		gtk_label_set_text(GTK_LABEL(min_measure[2]),tempbuf);
+		sprintf(tempbuf,"%d",minadc[3]);
+		gtk_label_set_text(GTK_LABEL(min_measure[3]),tempbuf);
+		sprintf(tempbuf,"%d",minadc[4]);
+		gtk_label_set_text(GTK_LABEL(min_measure[4]),tempbuf);
+		sprintf(tempbuf,"%d",minadc[5]);
+		gtk_label_set_text(GTK_LABEL(min_measure[5]),tempbuf);
+
+		sprintf(tempbuf,"%d",maxadc[0]-minadc[0]);
+		gtk_label_set_text(GTK_LABEL(diff_measure[0]),tempbuf);
+		sprintf(tempbuf,"%d",maxadc[1]-minadc[1]);
+		gtk_label_set_text(GTK_LABEL(diff_measure[1]),tempbuf);
+		sprintf(tempbuf,"%d",maxadc[2]-minadc[2]);
+		gtk_label_set_text(GTK_LABEL(diff_measure[2]),tempbuf);
+		sprintf(tempbuf,"%d",maxadc[3]-minadc[3]);
+		gtk_label_set_text(GTK_LABEL(diff_measure[3]),tempbuf);
+		sprintf(tempbuf,"%d",maxadc[4]-minadc[4]);
+		gtk_label_set_text(GTK_LABEL(diff_measure[4]),tempbuf);
+		sprintf(tempbuf,"%d",maxadc[5]-minadc[5]);
+		gtk_label_set_text(GTK_LABEL(diff_measure[5]),tempbuf);
+
+		sprintf(tempbuf,"--- N");
+		gtk_label_set_text(GTK_LABEL(newton_measure[0]),tempbuf);
+		sprintf(tempbuf,"--- N");
+		gtk_label_set_text(GTK_LABEL(newton_measure[1]),tempbuf);
+		sprintf(tempbuf,"--- N");
+		gtk_label_set_text(GTK_LABEL(newton_measure[2]),tempbuf);
+		sprintf(tempbuf,"--- N/m");
+		gtk_label_set_text(GTK_LABEL(newton_measure[3]),tempbuf);
+		sprintf(tempbuf,"--- N/m");
+		gtk_label_set_text(GTK_LABEL(newton_measure[4]),tempbuf);
+		sprintf(tempbuf,"--- N/m");
+		gtk_label_set_text(GTK_LABEL(newton_measure[5]),tempbuf);
+	}
 	return true;
 }
 
@@ -240,14 +349,33 @@ void slider_changed (GtkButton *button,	gpointer ch_p)
 //*********************************************************************************
 void file_save_click (GtkButton *button,	gpointer ch_p)
 { 
-	std::string filename = "C:\\Software\\iCub\\bin\\debug\\ciao.dat";
+	std::string filename = "C:\\Software\\randazSVN\\ATI\\Code ATI Sensor\\data\\CanLoaderData.dat";
 	fstream filestr;
 	filestr.open (filename.c_str(), fstream::out);
 	int i=0;
 	char buffer[256];
+	sprintf (buffer,"%s",serial_no);
+	filestr<<buffer<<endl;
+	for (i=0;i<6; i++)
+	{
+		sprintf (buffer,"%d",offset[i]);
+		filestr<<buffer<<endl;
+	}
 	for (i=0;i<36; i++)
 	{
 		sprintf (buffer,"%x",matrix[i/6][i%6]);
+		filestr<<buffer<<endl;
+	}
+	sprintf (buffer,"%d",calib_const);
+	filestr<<buffer<<endl;
+	for (i=0;i<6; i++)
+	{
+		sprintf (buffer,"%d",calib_bias[i]);
+		filestr<<buffer<<endl;
+	}
+	for (i=0;i<6; i++)
+	{
+		sprintf (buffer,"%d",full_scale_const[i]);
 		filestr<<buffer<<endl;
 	}
 	printf ("Calibration file saved!\n");
@@ -272,11 +400,136 @@ void reset_matrix_click (GtkButton *button,	gpointer ch_p)
 	calib_const=1;
 	char tempbuf[255];
 	sprintf(tempbuf,"%d",calib_const);
-	gtk_label_set_text (GTK_LABEL(edit_matrix_gain), tempbuf);
+	gtk_entry_set_text (GTK_ENTRY (edit_matrix_gain), tempbuf);
 }
 
 //*********************************************************************************
+void set_curr_bias_click (GtkButton *button,	gpointer ch_p)
+{
+	downloader.strain_set_curr_bias(downloader.board_list[selected].pid);
+}
+//*********************************************************************************
+void reset_curr_bias_click (GtkButton *button,	gpointer ch_p)
+{
+	downloader.strain_reset_curr_bias(downloader.board_list[selected].pid);
+}
+//*********************************************************************************
+void set_calib_bias_click (GtkButton *button,	gpointer ch_p)
+{
+	something_changed=true;
+	downloader.strain_set_calib_bias(downloader.board_list[selected].pid);
+}
+//*********************************************************************************
+void reset_calib_bias_click (GtkButton *button,	gpointer ch_p)
+{
+	something_changed=true;
+	downloader.strain_reset_calib_bias(downloader.board_list[selected].pid);
+}
+//*********************************************************************************
 void file_load_click (GtkButton *button,	gpointer ch_p)
+{
+	std::string filename = "C:\\Software\\iCub\\bin\\debug\\ciao.dat";
+
+	char* buff;
+
+	buff = gtk_file_chooser_get_filename   (GTK_FILE_CHOOSER(picker_calib));
+	if (buff==NULL)
+		{
+			printf ("ERR: File not found!\n");
+			return;
+		}
+
+	fstream filestr;
+	filestr.open (buff, fstream::in);
+    if (!filestr.is_open())
+        {
+            printf ("ERR: Error opening calibration file!\n");
+            return;
+        }
+
+	int i=0;
+	char buffer[256];
+	filestr.getline (buffer,256);
+	sprintf(serial_no,buffer);
+	gtk_entry_set_text (GTK_ENTRY (edit_serial_number), serial_no);
+	downloader.strain_set_serial_number(downloader.board_list[selected].pid,serial_no);
+
+	for (i=0;i<6; i++)
+	{
+		filestr.getline (buffer,256);
+		sscanf  (buffer,"%d",&offset[i]);
+		gtk_range_set_value (GTK_RANGE(slider_gain[i]),(offset[i]));
+	}
+	for (i=0;i<36; i++)
+	{
+		int ri=i/6;
+		int ci=i%6;
+		filestr.getline (buffer,256);
+		sscanf (buffer,"%x",&calib_matrix[ri][ci]);
+		printf("%d %x\n", calib_matrix[ri][ci],calib_matrix[ri][ci]);
+		downloader.strain_set_matrix_rc(downloader.board_list[selected].pid,ri,ci,calib_matrix[ri][ci]);
+	}
+	filestr.getline (buffer,256);
+	int cc=0;
+	sscanf (buffer,"%d",&cc);
+	downloader.strain_set_matrix_gain(downloader.board_list[selected].pid,cc);
+
+	for (i=0;i<6; i++)
+	{
+		filestr.getline (buffer,256);
+		sscanf  (buffer,"%d",&calib_bias[i]);
+		downloader.strain_set_calib_bias(downloader.board_list[selected].pid,i,calib_bias[i]);
+	}
+	for (i=0;i<6; i++)
+	{
+		filestr.getline (buffer,256);
+		sscanf  (buffer,"%d",&full_scale_const[i]);
+		downloader.strain_set_full_scale(downloader.board_list[selected].pid,i,full_scale_const[i]);
+	}
+
+	//calib_const=cc;
+	//calib_const=63;
+	filestr.close();
+
+	matrix_changed=true;
+	something_changed=true;
+	printf ("Calibration file loaded!\n");
+
+	int ri=0;
+	int ci=0;
+	drv_sleep (1000);
+	for (ri=0;ri<6;ri++)
+			for (ci=0;ci<6;ci++)
+				{
+					downloader.strain_get_matrix_rc(downloader.board_list[selected].pid,ri,ci,matrix[ri][ci]);
+					sprintf(buffer,"%x",matrix[ri][ci]);
+					gtk_entry_set_text (GTK_ENTRY (edit_matrix[ri][ci]), buffer);
+					gtk_widget_modify_base (edit_matrix[ri][ci],GTK_STATE_NORMAL, NULL );
+				}
+
+	int count_ok=0;
+	for (i=0;i<36; i++)
+	{
+		ri=i/6;
+		ci=i%6;
+		if (calib_matrix[ri][ci]==matrix[ri][ci])
+		{
+			count_ok++;
+		}
+	}
+	if (count_ok==36)
+	{
+		printf ("Calibration file applied with no errors\n");
+		matrix_changed=false;
+	}
+	else
+	{
+		printf ("Found %d errors applying the calibration file!!\n",36-count_ok);
+	}
+}
+
+//*********************************************************************************
+void file_import_click (GtkButton *button,	gpointer ch_p)
 { 
 	std::string filename = "C:\\Software\\iCub\\bin\\debug\\ciao.dat";
 
@@ -312,9 +565,14 @@ void file_load_click (GtkButton *button,	gpointer ch_p)
 	int cc=0;
 	sscanf (buffer,"%d",&cc);
 	downloader.strain_set_matrix_gain(downloader.board_list[selected].pid,cc);
-	//calib_const=cc;
-	//calib_const=63;
+	for (i=0;i<6; i++)
+	{
+		filestr.getline (buffer,256);
+		sscanf (buffer,"%d",&cc);
+		downloader.strain_set_full_scale(downloader.board_list[selected].pid,i,cc);
+	}
 	filestr.close();
+
 	matrix_changed=true;
 	something_changed=true;
 	printf ("Calibration file loaded!\n");
@@ -367,6 +625,13 @@ void matrix_change (GtkEntry *entry,	gpointer index)
 }
 
 //*********************************************************************************
+void serial_number_send (GtkEntry *entry,	gpointer index)
+{ 
+	const gchar* temp2 = gtk_entry_get_text (GTK_ENTRY (edit_serial_number));
+	sprintf(serial_no,temp2);
+	downloader.strain_set_serial_number(downloader.board_list[selected].pid,temp2);
+}
+//*********************************************************************************
 void matrix_send (GtkEntry *entry,	gpointer index)
 { 
 	int ri=0;
@@ -414,6 +679,7 @@ void calibrate_click (GtkButton *button,	gpointer   user_data)
 	GtkWidget *fixed;
 	GtkWidget *auto_button;
 	GtkWidget *file_load_button;
+	GtkWidget *file_import_button;
 	GtkWidget *file_save_button;
 	GtkWidget* label_gain[6];
 	GtkWidget* label_meas[6];	
@@ -440,12 +706,18 @@ void calibrate_click (GtkButton *button,	gpointer   user_data)
 	}
 
 	fixed = gtk_fixed_new();
-	picker_calib = gtk_file_chooser_button_new ("Pick a File", GTK_FILE_CHOOSER_ACTION_OPEN);
-	auto_button   = gtk_button_new_with_mnemonic ("Automatic \nCalibration"); 
-	save_button   = gtk_button_new_with_label ("Save to eeprom"); 
-	file_load_button   = gtk_button_new_with_mnemonic ("Load Calibration File"); 
-	file_save_button   = gtk_button_new_with_mnemonic ("Save Calibration File"); 
-	matrix_reset_button = gtk_button_new_with_mnemonic ("Reset Calibration"); 
+	picker_calib            = gtk_file_chooser_button_new ("Pick a File", GTK_FILE_CHOOSER_ACTION_OPEN);
+	auto_button             = gtk_button_new_with_mnemonic ("Automatic \nOffset Adj"); 
+	save_button             = gtk_button_new_with_label ("Save to eeprom"); 
+	file_load_button        = gtk_button_new_with_mnemonic ("Load Calibration File"); 
+	file_import_button      = gtk_button_new_with_mnemonic ("Import Calib Matrix"); 
+	file_save_button        = gtk_button_new_with_mnemonic ("Save Calibration File"); 
+	matrix_reset_button     = gtk_button_new_with_mnemonic ("Reset Calibration"); 
+	set_calib_bias_button   = gtk_button_new_with_mnemonic ("Set Calibration Bias"); ;
+	reset_calib_bias_button = gtk_button_new_with_mnemonic ("Reset Calibration Bias"); ;
+	set_curr_bias_button    = gtk_button_new_with_mnemonic ("Set Current Bias"); ;
+	reset_curr_bias_button  = gtk_button_new_with_mnemonic ("Reset Current Bias"); ;
+
 	curr_measure[0] = gtk_label_new_with_mnemonic ("32000");
 	curr_measure[1] = gtk_label_new_with_mnemonic ("32000");
 	curr_measure[2] = gtk_label_new_with_mnemonic ("32000");
@@ -458,12 +730,12 @@ void calibrate_click (GtkButton *button,	gpointer   user_data)
 	label_meas[3] = gtk_label_new_with_mnemonic ("Channel 3:");
 	label_meas[4] = gtk_label_new_with_mnemonic ("Channel 4:");
 	label_meas[5] = gtk_label_new_with_mnemonic ("Channel 5:");
-	label_gain[0] = gtk_label_new_with_mnemonic ("Gain 0:");
-	label_gain[1] = gtk_label_new_with_mnemonic ("Gain 1:");
-	label_gain[2] = gtk_label_new_with_mnemonic ("Gain 2:");
-	label_gain[3] = gtk_label_new_with_mnemonic ("Gain 3:");
-	label_gain[4] = gtk_label_new_with_mnemonic ("Gain 4:");
-	label_gain[5] = gtk_label_new_with_mnemonic ("Gain 5:");
+	label_gain[0] = gtk_label_new_with_mnemonic ("Offset 0:");
+	label_gain[1] = gtk_label_new_with_mnemonic ("Offset 1:");
+	label_gain[2] = gtk_label_new_with_mnemonic ("Offset 2:");
+	label_gain[3] = gtk_label_new_with_mnemonic ("Offset 3:");
+	label_gain[4] = gtk_label_new_with_mnemonic ("Offset 4:");
+	label_gain[5] = gtk_label_new_with_mnemonic ("Offset 5:");
 
 	max_measure[0] = gtk_label_new_with_mnemonic ("32000");
 	max_measure[1] = gtk_label_new_with_mnemonic ("32000");
@@ -489,6 +761,24 @@ void calibrate_click (GtkButton *button,	gpointer   user_data)
 	newton_measure[3] = gtk_label_new_with_mnemonic ("0");
 	newton_measure[4] = gtk_label_new_with_mnemonic ("0");
 	newton_measure[5] = gtk_label_new_with_mnemonic ("0");
+	calib_bias_label[0] = gtk_label_new_with_mnemonic ("0");
+	calib_bias_label[1] = gtk_label_new_with_mnemonic ("0");
+	calib_bias_label[2] = gtk_label_new_with_mnemonic ("0");
+	calib_bias_label[3] = gtk_label_new_with_mnemonic ("0");
+	calib_bias_label[4] = gtk_label_new_with_mnemonic ("0");
+	calib_bias_label[5] = gtk_label_new_with_mnemonic ("0");
+	curr_bias_label[0] = gtk_label_new_with_mnemonic ("0");
+	curr_bias_label[1] = gtk_label_new_with_mnemonic ("0");
+	curr_bias_label[2] = gtk_label_new_with_mnemonic ("0");
+	curr_bias_label[3] = gtk_label_new_with_mnemonic ("0");
+	curr_bias_label[4] = gtk_label_new_with_mnemonic ("0");
+	curr_bias_label[5] = gtk_label_new_with_mnemonic ("0");
+	full_scale_label[0] = gtk_label_new_with_mnemonic ("0");
+	full_scale_label[1] = gtk_label_new_with_mnemonic ("0");
+	full_scale_label[2] = gtk_label_new_with_mnemonic ("0");
+	full_scale_label[3] = gtk_label_new_with_mnemonic ("0");
+	full_scale_label[4] = gtk_label_new_with_mnemonic ("0");
+	full_scale_label[5] = gtk_label_new_with_mnemonic ("0");
 	label_matrix_gain = gtk_label_new_with_mnemonic ("matrix gain:");
 	edit_matrix_gain = gtk_label_new_with_mnemonic ("null");
 
@@ -507,10 +797,12 @@ void calibrate_click (GtkButton *button,	gpointer   user_data)
 		for (ci=0;ci<6;ci++)
 			edit_matrix[ri][ci] = gtk_entry_new ();
 
+	edit_serial_number = gtk_entry_new ();
+
 	gtk_container_add  (GTK_CONTAINER(GTK_BOX (GTK_DIALOG (calib_window)->vbox)),fixed);
 	
-	int r[7]={0+10,60+10,60*2+10,60*3+10,60*4+10,60*5+10,60*6+10};
-	int c[9]={0+10,50+10,150+10,230+10,350+10,400+10,450+10,500+10,550+10};
+	int r[8]={0+10,60+10,60*2+10,60*3+10,60*4+10,60*5+10,60*6+10,60*7+10};
+	int c[12]={0+10,50+10,150+10,230+10,350+10,400+10,450+10,500+10,550+10,650+10,700+10,750+10};
 
 	gtk_fixed_put(GTK_FIXED(fixed),label_gain[0],c[0],r[0]);
 	gtk_fixed_put(GTK_FIXED(fixed),label_gain[1],c[0],r[1]);
@@ -526,12 +818,20 @@ void calibrate_click (GtkButton *button,	gpointer   user_data)
 	gtk_fixed_put(GTK_FIXED(fixed),slider_gain[4],c[1],r[4]-10);
 	gtk_fixed_put(GTK_FIXED(fixed),slider_gain[5],c[1],r[5]-10);
 
+	gtk_fixed_put(GTK_FIXED(fixed),set_calib_bias_button,c[11],r[2]-10);
+	gtk_fixed_put(GTK_FIXED(fixed),reset_calib_bias_button,c[11],r[3]-10);
+	gtk_fixed_put(GTK_FIXED(fixed),set_curr_bias_button,c[11],r[4]-10);
+	gtk_fixed_put(GTK_FIXED(fixed),reset_curr_bias_button,c[11],r[5]-10);
+
 	for (ri=0;ri<6;ri++)
 		for (ci=0;ci<6;ci++)
 			{
 			 gtk_fixed_put(GTK_FIXED(fixed),edit_matrix[ci][ri],c[5]+ri*42,r[5]+40+ci*32);
 			 gtk_widget_set_size_request(edit_matrix[ri][ci],40,20);
 			}
+
+	gtk_fixed_put(GTK_FIXED(fixed),edit_serial_number,c[1]-20,r[5]+150);
+    gtk_widget_set_size_request(edit_serial_number,100,20);
 
 	gtk_widget_set_size_request(slider_gain[0],80,30);
 	gtk_widget_set_size_request(slider_gain[1],80,30);
@@ -584,6 +884,27 @@ void calibrate_click (GtkButton *button,	gpointer   user_data)
 	gtk_fixed_put(GTK_FIXED(fixed),newton_measure[4],c[8],r[4]);
 	gtk_fixed_put(GTK_FIXED(fixed),newton_measure[5],c[8],r[5]);
 
+	gtk_fixed_put(GTK_FIXED(fixed),calib_bias_label[0],c[9],r[0]);
+	gtk_fixed_put(GTK_FIXED(fixed),calib_bias_label[1],c[9],r[1]);
+	gtk_fixed_put(GTK_FIXED(fixed),calib_bias_label[2],c[9],r[2]);
+	gtk_fixed_put(GTK_FIXED(fixed),calib_bias_label[3],c[9],r[3]);
+	gtk_fixed_put(GTK_FIXED(fixed),calib_bias_label[4],c[9],r[4]);
+	gtk_fixed_put(GTK_FIXED(fixed),calib_bias_label[5],c[9],r[5]);
+
+	gtk_fixed_put(GTK_FIXED(fixed),curr_bias_label[0],c[10],r[0]);
+	gtk_fixed_put(GTK_FIXED(fixed),curr_bias_label[1],c[10],r[1]);
+	gtk_fixed_put(GTK_FIXED(fixed),curr_bias_label[2],c[10],r[2]);
+	gtk_fixed_put(GTK_FIXED(fixed),curr_bias_label[3],c[10],r[3]);
+	gtk_fixed_put(GTK_FIXED(fixed),curr_bias_label[4],c[10],r[4]);
+	gtk_fixed_put(GTK_FIXED(fixed),curr_bias_label[5],c[10],r[5]);
+
+	gtk_fixed_put(GTK_FIXED(fixed),full_scale_label[0],c[1]-20,r[5]+180);
+	gtk_fixed_put(GTK_FIXED(fixed),full_scale_label[1],c[1]-20,r[5]+195);
+	gtk_fixed_put(GTK_FIXED(fixed),full_scale_label[2],c[1]-20,r[5]+210);
+	gtk_fixed_put(GTK_FIXED(fixed),full_scale_label[3],c[1]-20,r[5]+225);
+	gtk_fixed_put(GTK_FIXED(fixed),full_scale_label[4],c[1]-20,r[5]+240);
+	gtk_fixed_put(GTK_FIXED(fixed),full_scale_label[5],c[1]-20,r[5]+255);
+
 	gtk_fixed_put(GTK_FIXED(fixed),label_matrix_gain,c[5],r[5]+40+6*32);
 	gtk_fixed_put(GTK_FIXED(fixed),edit_matrix_gain,c[5]+100,r[5]+40+6*32);
 	gtk_fixed_put(GTK_FIXED(fixed),matrix_reset_button,c[5]+140,r[5]+40+6*32);
@@ -591,16 +912,27 @@ void calibrate_click (GtkButton *button,	gpointer   user_data)
 	gtk_widget_set_size_request(auto_button,100,40);
 	gtk_widget_set_size_request(save_button,140,40);
 	gtk_widget_set_size_request(file_load_button,140,40);
+	gtk_widget_set_size_request(file_import_button,140,40);
 	gtk_widget_set_size_request(file_save_button,140,40);
 	gtk_widget_set_size_request(picker_calib,140,40);
-	gtk_widget_set_size_request(matrix_reset_button,100,30);
+	gtk_widget_set_size_request(matrix_reset_button,140,30);
+	gtk_widget_set_size_request(set_calib_bias_button,140,40);
+	gtk_widget_set_size_request(reset_calib_bias_button,140,40);
+	gtk_widget_set_size_request(set_curr_bias_button,140,40);
+	gtk_widget_set_size_request(reset_curr_bias_button,140,40);
 
+	g_signal_connect (file_import_button, "clicked", G_CALLBACK (file_import_click),NULL);
 	g_signal_connect (file_load_button, "clicked", G_CALLBACK (file_load_click),NULL);
 	g_signal_connect (file_save_button, "clicked", G_CALLBACK (file_save_click),NULL);
 	g_signal_connect (matrix_reset_button, "clicked", G_CALLBACK (reset_matrix_click),NULL);
 	g_signal_connect (auto_button, "clicked", G_CALLBACK (auto_click),NULL);
     g_signal_connect (save_button, "clicked", G_CALLBACK (save_click),NULL);
 	g_signal_connect (calib_window, "response", G_CALLBACK (close_window),NULL);
+	g_signal_connect (set_calib_bias_button, "clicked", G_CALLBACK (set_calib_bias_click),NULL);
+	g_signal_connect (reset_calib_bias_button, "clicked", G_CALLBACK (reset_calib_bias_click),NULL);
+    g_signal_connect (set_curr_bias_button, "clicked", G_CALLBACK (set_curr_bias_click),NULL);
+	g_signal_connect (reset_curr_bias_button, "clicked", G_CALLBACK (reset_curr_bias_click),NULL);
+
 
 	g_signal_connect (slider_gain[0], "value-changed", G_CALLBACK (slider_changed),&ch[0]);
 	g_signal_connect (slider_gain[1], "value-changed", G_CALLBACK (slider_changed),&ch[1]);
@@ -610,16 +942,20 @@ void calibrate_click (GtkButton *button,	gpointer   user_data)
 	g_signal_connect (slider_gain[5], "value-changed", G_CALLBACK (slider_changed),&ch[5]);
 	g_signal_connect (slider_zero, "value-changed", G_CALLBACK (zero_changed),NULL);
 	
-	gtk_fixed_put(GTK_FIXED(fixed),check_raw_vals,c[2]+10,r[5]+240);
+	gtk_fixed_put(GTK_FIXED(fixed),check_raw_vals,c[5],r[5]+60+6*32);
 	gtk_fixed_put(GTK_FIXED(fixed),auto_button,c[1]-20,r[5]+40);
 	gtk_fixed_put(GTK_FIXED(fixed),slider_zero,c[1]-20,r[5]+100);
 	gtk_fixed_put(GTK_FIXED(fixed),save_button,c[2]+10,r[5]+40);
 	gtk_fixed_put(GTK_FIXED(fixed),file_load_button,c[2]+10,r[5]+90);
 	gtk_fixed_put(GTK_FIXED(fixed),file_save_button,c[2]+10,r[5]+140);
+	gtk_fixed_put(GTK_FIXED(fixed),file_import_button,c[2]+10,r[5]+190);
 
-	gtk_fixed_put(GTK_FIXED(fixed),picker_calib,c[2]+10,r[5]+190);
+	gtk_fixed_put(GTK_FIXED(fixed),picker_calib,c[2]+10,r[5]+240);
 
 	gtk_range_set_value (GTK_RANGE(slider_zero),calibration_value);
+
+	downloader.strain_get_serial_number(downloader.board_list[selected].pid,serial_no);
+	gtk_entry_set_text (GTK_ENTRY (edit_serial_number), serial_no);
 
 	downloader.strain_start_sampling(downloader.board_list[selected].pid);
 
@@ -635,6 +971,8 @@ void calibrate_click (GtkButton *button,	gpointer   user_data)
 			g_signal_connect(edit_matrix[ri][ci], "changed", G_CALLBACK (matrix_change),&index[ri*6+ci]);
 			g_signal_connect(edit_matrix[ri][ci], "activate", G_CALLBACK (matrix_send),&index[ri*6+ci]);
 		}
+
+	g_signal_connect(edit_serial_number, "activate", G_CALLBACK (serial_number_send),&index[ri*6+ci]);
 
 	gtk_widget_show_all (fixed);
 	//gtk_window_set_resizable(GTK_WINDOW(calib_window),false);
