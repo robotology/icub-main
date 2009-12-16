@@ -727,9 +727,10 @@ int cDownloader::strain_calibrate_offset  (int target_id, unsigned int middle_va
 	{
 	    // Send read channel command to strain board
 		txBuffer[0].setId((2 << 8) + target_id);
-		txBuffer[0].setLen(2);
+		txBuffer[0].setLen(3);
 		txBuffer[0].getData()[0]= 0x0C;
 		txBuffer[0].getData()[1]= channel;
+		txBuffer[0].getData()[2]= 0;
 		ret = m_candriver->send_message(txBuffer, 1);
 		// check if send_message was successful
 		if (ret==0)
@@ -743,7 +744,7 @@ int cDownloader::strain_calibrate_offset  (int target_id, unsigned int middle_va
         {
             if (rxBuffer[i].getData()[0]==0x0C) 
 				{
-                    measure = rxBuffer[i].getData()[2]<<8 | rxBuffer[i].getData()[3];
+                    measure = rxBuffer[i].getData()[3]<<8 | rxBuffer[i].getData()[4];
 					break;
                 }
         }
@@ -790,9 +791,10 @@ int cDownloader::strain_calibrate_offset  (int target_id, unsigned int middle_va
 
 			// Send read channel command to strain board
 			txBuffer[0].setId((2 << 8) + target_id);
-			txBuffer[0].setLen(2);
+			txBuffer[0].setLen(3);
 			txBuffer[0].getData()[0]= 0x0C;
 			txBuffer[0].getData()[1]= channel;
+			txBuffer[0].getData()[2]= 0;
 			ret = m_candriver->send_message(txBuffer, 1);
 			// check if send_message was successful
 			if (ret==0)
@@ -806,7 +808,7 @@ int cDownloader::strain_calibrate_offset  (int target_id, unsigned int middle_va
 			{
 				if (rxBuffer[i].getData()[0]==0x0C) 
 					{
-						measure = rxBuffer[i].getData()[2]<<8 | rxBuffer[i].getData()[3];
+						measure = rxBuffer[i].getData()[3]<<8 | rxBuffer[i].getData()[4];
 						break;
 					}
 			}
