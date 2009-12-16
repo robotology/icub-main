@@ -667,9 +667,16 @@ bool ServerCartesianController::getNewTarget()
 {
     if (Bottle *b1=portSlvIn->read(false))
     {
+        // the token shall be in
         if (!CartesianHelper::getTokenOption(*b1,&rxToken))
             return false;
 
+        // ... and not greater than the trasmitted one
+        if (rxToken>txToken)
+            return false;
+
+        // if we stopped the controller then we skip
+        // any message with token smaller than the threshold
         if (skipSlvRes)
         {
             if (rxToken<=txTokenLatched)

@@ -277,6 +277,8 @@ void InputPort::onRead(Bottle &b)
 {
     if (CartesianHelper::getTokenOption(b,&token))
         pToken=&token;
+    else
+        pToken=NULL;
 
     if (b.check(Vocab::decode(IKINSLV_VOCAB_OPT_XD)))
         if (!handleTarget(b.find(Vocab::decode(IKINSLV_VOCAB_OPT_XD)).asList()))
@@ -1236,6 +1238,8 @@ void CartesianSolver::run()
             token=*inPort->get_tokenPtr();
             pToken=&token;
         }
+        else
+            pToken=NULL;
 
         // call the solver to converge
         double t0=Time::now();
