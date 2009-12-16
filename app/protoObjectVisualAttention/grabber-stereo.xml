@@ -1,8 +1,72 @@
 <application>
 <name>logpolar grabber and reconstruct</name>
 <dependencies>
- 
-	<port>icub14</port>
+ 	
+	<port>/pc104</port>
 </dependencies>
-   
+   <module>
+      <name>icubmoddev</name>
+	      <parameters>--device logpolargrabber --width 320 --height 240 --framerate 33 --subdevice dragonfly2 --name /icub/cam/rightpolar/ --DR2 --d 1</parameters>
+     <node>pc104</node>
+          <stdio>icub14</stdio>
+	  <tag>logpolar-grabber-right</tag>
+   </module>
+	<module>
+      <name>icubmoddev</name>
+	      <parameters>--device logpolargrabber --width 320 --height 240 --framerate 33 --subdevice dragonfly2 --name /icub/cam/leftpolar/ --DR2 --d 0</parameters>
+     <node>pc104</node>
+	  <stdio>icub14</stdio>
+	  <tag>logpolar-grabber-left</tag>
+   </module>
+   <module>
+      <name>yarpview</name>
+      <parameters>--name /leftview --x 0 --y 50 --synch</parameters>
+      <node>icub14</node>
+	  <tag>leftview</tag>
+   </module>
+   <module>
+      <name>yarpview</name>
+      <parameters>--name /rightview --x 320 --y 50 --synch</parameters>
+      <node>icub14</node>
+      <tag>rightview</tag>
+   </module>
+   <module>
+      <name>yarpview</name>
+      <parameters>--name /viewremaper --x 640 --y 50 --synch</parameters>
+      <node>icub14</node>
+      <tag>viewremaper</tag>
+   </module>
+   <module>
+      <name>logpolarRemapper</name>
+      <parameters>--name remapper --remote /icub/cam/leftpolar --width 480</parameters>
+      <node>pc104</node>
+      <stdio>icub14</stdio>
+      <tag>remapper</tag>
+   </module>
+   <module>
+      <name>yarpview</name>
+      <parameters>--name /view4 --x 960 --y 50 --synch</parameters>
+      <node>icub14</node>
+      <tag>view4</tag>
+   </module>
+<connection>
+  <output>/icub/cam/leftpolar/logpolar</output>
+  <input>/leftview</input>
+  <protocol>mcast</protocol>
+</connection>
+<connection>
+  <output>/icub/cam/rightpolar/logpolar</output>
+  <input>/rightview</input>
+  <protocol>mcast</protocol>
+</connection>
+<connection>
+  <output>/icub/cam/rightpolar</output>
+  <input>/viewremaper</input>
+  <protocol>mcast</protocol>
+</connection>
+<connection>
+  <output>/remapper:out</output>
+  <input>/view4</input>
+  <protocol>udp</protocol>
+</connection>
 </application>
