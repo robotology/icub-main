@@ -36,8 +36,37 @@ const int ARM_JNT = 4;
 
 const double initPosition[4] = {0.0, 0.0, 0.0, 0.0};
 
-const double MAX_JNT_LIMITS[4] = {0.0, 0.0, 0.0, 0.0};
-const double MIN_JNT_LIMITS[4] = {0.0, 0.0, 0.0, 0.0};
+const double MAX_JNT_LIMITS[4] = {2.0, 120.0, 90.0, 90.0};
+const double MIN_JNT_LIMITS[4] = {-85.0, 0.0, -20.0, 10.0};
+
+/**
+*
+* A class for defining the 4-DOF iCub Arm (3 of the shoulder and one for the elbow. The end effector is placed on the wrist)
+*/
+class iCubArm4DOF : public iKinLimb
+{
+protected:
+    virtual void _allocate_limb(const std::string &_type);
+
+public:
+    /**
+    * Default constructor. 
+    */
+    iCubArm4DOF();
+
+    /**
+    * Constructor. 
+    * @param _type is a string to discriminate between "left" and 
+    *              "right" arm
+    */
+    iCubArm4DOF(const std::string &_type);
+
+    /**
+    * Creates a new Arm from an already existing Arm object.
+    * @param arm is the Arm to be copied.
+    */
+    iCubArm4DOF(const iCubArm4DOF &arm);
+};
 
 // class dataCollector: class for reading from Vrow and providing for FT on an output port
 class ftControl: public RateThread
@@ -61,7 +90,7 @@ private:
 	Vector FTs_init;
 	Vector FT;
 	int count;
-	iCubArm *arm;
+	iCubArm4DOF *arm;
 	iKinChain *chain;
 
 	iFB *FTB;
@@ -73,6 +102,9 @@ private:
 	BufferedPort<Vector> port_FT;
 	Vector Datum;
 	bool first;
+
+	Vector tau;
+	Vector tauSafe;
 
 public:
 	ftControl(int _rate, PolyDriver *_dd, BufferedPort<Vector> &_port_FT, ResourceFinder &_rf):	  
@@ -94,7 +126,7 @@ public:
 		  ps.resize(3);
 		  ps=0.0;
 
-		  arm= new iCubArm("Left");
+		  arm= new iCubArm4DOF("Left");
 		  sensor = new iFTransform(Rs,ps);
 		  chain = arm->asChain();
 
@@ -119,6 +151,10 @@ public:
 			  FTPid[i].setOffset(0.0);	
 			  // Setting the FTPid, iCub is controllable using setOffset
 		  }
+		  tau.resize(4);
+		  tauSafe.resize(4);
+		  tau=0.0;
+		  tauSafe=0.0;
 	  }
 	  bool threadInit()
 	  {
@@ -143,13 +179,6 @@ public:
 			      }
 		  }
 		  
-
-		 /* while(!check)
-		  {
-			  check=true;
-			  for(int i=0;i<ARM_JNT;i++)
-				  check &= checkSinglePosition(initPosition[i],encoders(i));
-		  }*/
 		  Time::delay(1.0);
 
 		  for(int i=0;i<ARM_JNT;i++)
@@ -189,8 +218,8 @@ public:
 		  K=k*eye(ARM_JNT,ARM_JNT);
 
 		  Vector tau = K*(arm->GeoJacobian(encoders).transposed())*FT;
-		  Vector safeTau = tau;
-		  safeTau=checkLimits(encoders, tau); 
+		  tauSafe = tau;
+		  tauSafe = checkLimits(encoders, tau); 
 
 		  fprintf(stderr,"tau = ");
 		  for(int i=0;i<4;i++)
@@ -199,7 +228,7 @@ public:
 
 		  fprintf(stderr,"safeTau = ");
 		  for(int i=0;i<4;i++)
-			  fprintf(stderr,"%.3lf\t", safeTau(i));
+			  fprintf(stderr,"%.3lf\t", tauSafe(i));
 		  fprintf(stderr,"\n\n\n");
 	  }
 
@@ -383,6 +412,70 @@ int main(int argc, char * argv[])
     return 0;
 }
 
+/************************************************************************/
+iCubArm4DOF::iCubArm4DOF()
+{
+    _allocate_limb("right");
+}
 
+
+/************************************************************************/
+iCubArm4DOF::iCubArm4DOF(const string &_type)
+{
+    _allocate_limb(_type);
+}
+
+
+/************************************************************************/
+iCubArm4DOF::iCubArm4DOF(const iCubArm4DOF &arm)
+{
+    _copy_limb(arm);
+}
+
+
+/************************************************************************/
+void iCubArm4DOF::_allocate_limb(const string &_type)
+{
+    iKinLimb::_allocate_limb(_type);
+
+    H0.zero();
+    H0(0,1)=-1;
+    H0(1,2)=-1;
+    H0(2,0)=1;
+    H0(3,3)=1;
+
+    linkList.resize(8);
+
+    if (type=="right")
+    {
+        linkList[0]=new iKinLink(     0.032,      0.0,  M_PI/2.0,               0.0, -22.0*M_PI/180.0,  84.0*M_PI/180.0);
+        linkList[1]=new iKinLink(       0.0,      0.0,  M_PI/2.0,         -M_PI/2.0, -39.0*M_PI/180.0,  39.0*M_PI/180.0);
+        linkList[2]=new iKinLink(-0.0233647,  -0.1433,  M_PI/2.0, -105.0*M_PI/180.0, -59.0*M_PI/180.0,  59.0*M_PI/180.0);
+        linkList[3]=new iKinLink(       0.0, -0.10774,  M_PI/2.0,         -M_PI/2.0, -95.5*M_PI/180.0,   0.0*M_PI/180.0);
+        linkList[4]=new iKinLink(       0.0,      0.0, -M_PI/2.0,         -M_PI/2.0,              0.0, 160.8*M_PI/180.0);
+        linkList[5]=new iKinLink(       0.0, -0.15228, -M_PI/2.0, -105.0*M_PI/180.0, -37.0*M_PI/180.0,  90.0*M_PI/180.0);
+        linkList[6]=new iKinLink(     0.015,      0.0,  M_PI/2.0,               0.0,   0.0*M_PI/180.0, 106.0*M_PI/180.0);
+        linkList[7]=new iKinLink(       0.0,  -0.1373,  M_PI/2.0,         -M_PI/2.0, -90.0*M_PI/180.0,  90.0*M_PI/180.0);
+        }
+    else
+    {
+        linkList[0]=new iKinLink(     0.032,      0.0,  M_PI/2.0,               0.0, -22.0*M_PI/180.0,  84.0*M_PI/180.0);
+        linkList[1]=new iKinLink(       0.0,      0.0,  M_PI/2.0,         -M_PI/2.0, -39.0*M_PI/180.0,  39.0*M_PI/180.0);
+        linkList[2]=new iKinLink( 0.0233647,  -0.1433, -M_PI/2.0,  105.0*M_PI/180.0, -59.0*M_PI/180.0,  59.0*M_PI/180.0);
+        linkList[3]=new iKinLink(       0.0,  0.10774, -M_PI/2.0,          M_PI/2.0, -95.5*M_PI/180.0,   0.0*M_PI/180.0);
+        linkList[4]=new iKinLink(       0.0,      0.0,  M_PI/2.0,         -M_PI/2.0,              0.0, 160.8*M_PI/180.0);
+        linkList[5]=new iKinLink(       0.0,  0.15228, -M_PI/2.0,   75.0*M_PI/180.0, -37.0*M_PI/180.0,  90.0*M_PI/180.0);
+        linkList[6]=new iKinLink(    -0.015,      0.0,  M_PI/2.0,               0.0,   0.0*M_PI/180.0, 106.0*M_PI/180.0);
+        linkList[7]=new iKinLink(       0.0,   0.1373,  M_PI/2.0,         -M_PI/2.0, -90.0*M_PI/180.0,  90.0*M_PI/180.0);
+        }
+
+    for (unsigned int i=0; i<linkList.size(); i++)
+        *this << *linkList[i];
+
+    blockLink(0,0.0);
+    blockLink(1,0.0);
+    blockLink(2,0.0);
+    blockLink(7,0.0);
+}
 
 
