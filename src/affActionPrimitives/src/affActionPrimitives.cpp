@@ -838,6 +838,9 @@ bool affActionPrimitives::stopControl()
         for (set<int>::const_iterator itr=enabledJoints.begin(); itr!=enabledJoints.end(); itr++)
             posCtrl->stop(*itr);
 
+        armMoveDone =latchArmMoveDone =true;
+        handMoveDone=latchHandMoveDone=true;
+
         resume();
 
         return true;
