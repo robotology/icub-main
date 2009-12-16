@@ -40,6 +40,10 @@ CamCalibConfModule::~CamCalibConfModule(){
    // data is released trough close/interrupt methods
 }
 
+double CamCalibConfModule::getPeriod(){
+	return 0.0;
+}
+
 bool CamCalibConfModule::configure(ResourceFinder& rf){
        
 	ConstString str = rf.check("name", Value("/camCalibConf"), "module name (string)").asString();

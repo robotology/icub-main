@@ -125,6 +125,7 @@ public:
     virtual bool interruptModule();
     virtual bool updateModule();
     virtual bool respond(const Bottle &command,Bottle &reply);
+	virtual double getPeriod(); 
 
 };
 

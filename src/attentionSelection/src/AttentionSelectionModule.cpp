@@ -43,6 +43,9 @@ AttentionSelectionModule::AttentionSelectionModule() :
 AttentionSelectionModule::~AttentionSelectionModule(){ 
 }
 
+double AttentionSelectionModule::getPeriod(){
+	return 0.0;
+}
 
 bool AttentionSelectionModule::configure(yarp::os::ResourceFinder &rf){
 

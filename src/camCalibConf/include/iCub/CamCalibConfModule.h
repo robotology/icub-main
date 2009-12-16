@@ -94,7 +94,7 @@ public:
     virtual bool close();
     virtual bool interruptModule();
     virtual bool updateModule();
-
+	virtual double getPeriod();
     virtual bool respond(const yarp::os::Bottle& command, yarp::os::Bottle& reply);
 
 };

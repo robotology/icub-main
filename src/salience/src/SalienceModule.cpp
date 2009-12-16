@@ -20,6 +20,10 @@ SalienceModule::~SalienceModule(){
 
 }
 
+double SalienceModule::getPeriod(){
+	return 0.0;
+}
+
 bool SalienceModule::configure(yarp::os::ResourceFinder &rf){
     
 	ConstString str = rf.check("name", Value("/salience"), "module name (string)").asString();

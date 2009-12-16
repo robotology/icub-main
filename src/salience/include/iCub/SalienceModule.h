@@ -74,6 +74,7 @@ public:
     virtual bool configure(yarp::os::ResourceFinder &rf);
     virtual bool close();
     virtual bool interruptModule();
+	virtual double getPeriod();
     /**
      * The respond method implements the ISalienceModuleControls interface
      * and the ISalienceControls for the first/top filter.\n

@@ -61,6 +61,10 @@ EgoSphereModule::~EgoSphereModule(){
 	_gazeHead = NULL;
 }
 
+double EgoSphereModule::getPeriod(){
+	return 0.0;
+}
+
 bool EgoSphereModule::configure(yarp::os::ResourceFinder &rf){
 
 	ConstString str = rf.check("name", Value("/egoSphere"), "module name (string)").asString();
