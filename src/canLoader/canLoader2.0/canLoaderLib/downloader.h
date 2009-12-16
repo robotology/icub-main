@@ -17,6 +17,7 @@ public:
  int  version;
  int  release;
  int  build;
+ char serial [50];
  int  status;
  bool selected;
  bool eeprom;
@@ -113,6 +114,7 @@ int open_file			(std::string file);
 int change_card_address	(int target_id, int new_id, int board_type);
 int change_board_info	(int target_id, char* board_info);
 int get_board_info		(int target_id, char* board_info);
+int get_serial_no		(int target_id, char* board_info);
 
 int strain_start_sampling    (int target_id);
 int strain_stop_sampling     (int target_id);
@@ -125,6 +127,18 @@ int strain_get_matrix_rc	 (int target_id, char r, char c, unsigned int& elem);
 int strain_set_matrix_rc	 (int target_id, char r, char c, unsigned int  elem);
 int strain_get_matrix_gain	 (int target_id, unsigned int& gain);
 int strain_set_matrix_gain	 (int target_id, unsigned int  gain);
+int strain_get_calib_bias	 (int target_id, char channel, signed int& bias);
+int strain_set_calib_bias	 (int target_id);
+int strain_set_calib_bias	 (int target_id, char channel, signed int bias);
+int strain_reset_calib_bias	 (int target_id);
+int strain_get_curr_bias	 (int target_id, char channel, signed int& bias);
+int strain_set_curr_bias	 (int target_id);
+int strain_set_curr_bias	 (int target_id, char channel, signed int bias);
+int strain_reset_curr_bias	 (int target_id);
+int strain_set_full_scale	 (int target_id, unsigned char channel, unsigned int   full_scale);
+int strain_get_full_scale	 (int target_id, unsigned char channel, unsigned int&  full_scale);
+int strain_get_serial_number (int target_id, char* serial_number);
+int strain_set_serial_number (int target_id, const char* serial_number);
 
 cDownloader();
 };
