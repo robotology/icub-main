@@ -31,6 +31,11 @@ static int canTxBufferIndex;
 static int testcounter;
 static canmsg_t canTxBuffer[CAN_TX_SOFTWARE_BUFFER_SIZE];
 
+#ifndef MAIS
+extern int  CurrentTare[6];
+extern char UseCalibration;
+#endif 
+
 // can messages buffer
 struct canmsg_tag CAN_Messages[CAN_MAX_MESSAGES_IN_BUFF];
 
@@ -434,6 +439,16 @@ void ParseCommand() //, unsigned int SID)
 	
 			case CAN_CMD_GET_CH_ADC:  //get ADC channel
 			{
+		#ifdef MAIS
+		      // 
+	    	  // MAIS
+		      // 
+		      EEnqueue(ERR_CAN_COMMAND_UNAVAILABLE);
+		  return;
+		#else 
+		      //
+		      // STRAIN
+		      //
 				if(msg->CAN_Per_Msg_PayLoad[1] < 6)
 		          {
 			        if(msg->CAN_Per_Msg_PayLoad[2] == 0)
@@ -458,11 +473,14 @@ void ParseCommand() //, unsigned int SID)
 							  &BoardConfig.EE_TF_TorqueValue[0],   // fractional* dstM,
 							  &BoardConfig.EE_TF_TMatrix[0][0],    // fractional* srcM1,
 							  (int*) &BoardConfig.EE_AN_ChannelValue[0]); // fractional* srcM2 
+  						VectorAdd (6, BoardConfig.EE_TF_TorqueValue, BoardConfig.EE_TF_TorqueValue, BoardConfig.EE_CalibrationTare);
+					    VectorAdd (6, BoardConfig.EE_TF_TorqueValue, BoardConfig.EE_TF_TorqueValue, CurrentTare);
 						Txdata[3] = (BoardConfig.EE_TF_TorqueValue[msg->CAN_Per_Msg_PayLoad[1]]+0x7FFF) >> 8; 
 						Txdata[4] = (BoardConfig.EE_TF_TorqueValue[msg->CAN_Per_Msg_PayLoad[1]]+0x7FFF) & 0xFF; 
 						datalen=5;
 					}   
 		          }
+		#endif
 			}
 			break;
 
@@ -499,6 +517,226 @@ void ParseCommand() //, unsigned int SID)
 		      //
 			  BoardConfig.EE_MatrixGain=msg->CAN_Per_Msg_PayLoad[1];
 		      
+		#endif
+			  datalen=0;
+		    }  
+		break;	
+
+		case CAN_CMD_GET_FULL_SCALES: //get matrix gain
+			{
+		#ifdef MAIS
+		      // 
+	    	  // MAIS
+		      // 
+		      EEnqueue(ERR_CAN_COMMAND_UNAVAILABLE);
+		  return;
+		#else 
+		      //
+		      // STRAIN
+		      //
+			if(msg->CAN_Per_Msg_PayLoad[1] < 6)
+				{
+					Txdata[0] = CAN_CMD_GET_FULL_SCALES; 
+					Txdata[1] = msg->CAN_Per_Msg_PayLoad[1]; 
+					Txdata[2] = BoardConfig.EE_FullScales[msg->CAN_Per_Msg_PayLoad[1]] >> 8; 
+					Txdata[3] = BoardConfig.EE_FullScales[msg->CAN_Per_Msg_PayLoad[1]] & 0xFF; 
+					datalen=4;
+				}
+		#endif	            
+			}
+		break;
+
+		case CAN_CMD_SET_FULL_SCALES: //set matrix gain
+		    { 
+		#ifdef MAIS
+		      // 
+	    	  // MAIS
+		      // 
+		      EEnqueue(ERR_CAN_COMMAND_UNAVAILABLE);
+		  return;
+		#else 
+		      //
+		      // STRAIN
+		      //
+		      if(msg->CAN_Per_Msg_PayLoad[1] < 6)
+			  	 BoardConfig.EE_FullScales[msg->CAN_Per_Msg_PayLoad[1]]= msg->CAN_Per_Msg_PayLoad[2]<<8 | msg->CAN_Per_Msg_PayLoad[3];
+		      
+		#endif
+			  datalen=0;
+		    }  
+		break;
+
+		case CAN_CMD_SET_SERIAL_NO: //set serial number
+		    { 
+		#ifdef MAIS
+		      // 
+	    	  // MAIS
+		      // 
+		      EEnqueue(ERR_CAN_COMMAND_UNAVAILABLE);
+		  return;
+		#else 
+		      //
+		      // STRAIN
+		      //
+			 BoardConfig.EE_SerialNumber[0]= msg->CAN_Per_Msg_PayLoad[1];
+			 BoardConfig.EE_SerialNumber[1]= msg->CAN_Per_Msg_PayLoad[2];
+			 BoardConfig.EE_SerialNumber[2]= msg->CAN_Per_Msg_PayLoad[3];
+			 BoardConfig.EE_SerialNumber[3]= msg->CAN_Per_Msg_PayLoad[4];
+			 BoardConfig.EE_SerialNumber[4]= msg->CAN_Per_Msg_PayLoad[5];
+			 BoardConfig.EE_SerialNumber[5]= msg->CAN_Per_Msg_PayLoad[6];
+			 BoardConfig.EE_SerialNumber[6]= msg->CAN_Per_Msg_PayLoad[7];
+			 BoardConfig.EE_SerialNumber[7]= 0;
+		#endif
+			  datalen=0;
+		    }  
+		break;
+
+		case CAN_CMD_GET_SERIAL_NO:
+			{
+		#ifdef MAIS
+		      // 
+	    	  // MAIS
+		      // 
+		      EEnqueue(ERR_CAN_COMMAND_UNAVAILABLE);
+		  return;
+		#else 
+		      //
+		      // STRAIN
+		      //
+				Txdata[0] = CAN_CMD_GET_SERIAL_NO; 
+			    Txdata[1] = BoardConfig.EE_SerialNumber[0];
+				Txdata[2] = BoardConfig.EE_SerialNumber[1]; 
+				Txdata[3] = BoardConfig.EE_SerialNumber[2]; 
+			    Txdata[4] = BoardConfig.EE_SerialNumber[3];
+				Txdata[5] = BoardConfig.EE_SerialNumber[4]; 
+				Txdata[6] = BoardConfig.EE_SerialNumber[5]; 
+			    Txdata[7] = BoardConfig.EE_SerialNumber[6];
+
+				datalen=8;
+		#endif	            
+			}
+		break;
+
+		case CAN_CMD_GET_CALIB_TARE:
+			{
+		#ifdef MAIS
+		      // 
+	    	  // MAIS
+		      // 
+		      EEnqueue(ERR_CAN_COMMAND_UNAVAILABLE);
+		  return;
+		#else 
+		      //
+		      // STRAIN
+		      //
+				Txdata[0] = CAN_CMD_GET_CALIB_TARE; 
+			    Txdata[1] = msg->CAN_Per_Msg_PayLoad[1];
+				Txdata[2] = BoardConfig.EE_CalibrationTare[msg->CAN_Per_Msg_PayLoad[1]] >> 8; 
+				Txdata[3] = BoardConfig.EE_CalibrationTare[msg->CAN_Per_Msg_PayLoad[1]] & 0xFF; 
+
+				datalen=4;
+		#endif	            
+			}
+		break;
+	
+		case CAN_CMD_SET_CALIB_TARE: 
+		    { 
+		#ifdef MAIS
+		      // 
+	    	  // MAIS
+		      // 
+		      EEnqueue(ERR_CAN_COMMAND_UNAVAILABLE);
+		  return;
+		#else 
+		      //
+		      // STRAIN
+		      //
+			  if (msg->CAN_Per_Msg_PayLoad[1]==0)
+			  {
+				for (i=0; i<6; i++)
+			  	BoardConfig.EE_CalibrationTare[i]=0;
+			  }
+			  else if (msg->CAN_Per_Msg_PayLoad[1]==1)
+			  {
+				  MatrixMultiply(
+				  6, // int numRows1,
+				  6, // int numCols1Rows2,
+				  1, // int numCols2,
+				  &BoardConfig.EE_TF_TorqueValue[0],   // fractional* dstM,
+				  &BoardConfig.EE_TF_TMatrix[0][0],    // fractional* srcM1,
+				  (int*) &BoardConfig.EE_AN_ChannelValue[0]); // fractional* srcM2 
+
+				  for (i=0; i<6; i++)
+			  	  	BoardConfig.EE_CalibrationTare[i]=-(BoardConfig.EE_TF_TorqueValue[i]);
+			  }     
+			  else if (msg->CAN_Per_Msg_PayLoad[1]==2)
+			  {
+					if (msg->CAN_Per_Msg_PayLoad[2]<6)
+					BoardConfig.EE_CalibrationTare[msg->CAN_Per_Msg_PayLoad[2]] = msg->CAN_Per_Msg_PayLoad[3]<<8 | msg->CAN_Per_Msg_PayLoad[4];
+			  }
+		#endif
+			  datalen=0;
+		    }  
+		break;	
+
+	case CAN_CMD_GET_CURR_TARE: 
+			{
+		#ifdef MAIS
+		      // 
+	    	  // MAIS
+		      // 
+		      EEnqueue(ERR_CAN_COMMAND_UNAVAILABLE);
+		  return;
+		#else 
+		      //
+		      // STRAIN
+		      //
+			  Txdata[0] = CAN_CMD_GET_CURR_TARE; 
+			  Txdata[1] = msg->CAN_Per_Msg_PayLoad[1];
+			  Txdata[2] = CurrentTare[msg->CAN_Per_Msg_PayLoad[1]] >> 8; 
+			  Txdata[3] = CurrentTare[msg->CAN_Per_Msg_PayLoad[1]] & 0xFF; 
+
+			  datalen=4;
+		#endif	            
+			}
+		break;
+	
+		case CAN_CMD_SET_CURR_TARE: 
+		    { 
+		#ifdef MAIS
+		      // 
+	    	  // MAIS
+		      // 
+		      EEnqueue(ERR_CAN_COMMAND_UNAVAILABLE);
+		  return;
+		#else 
+		      //
+		      // STRAIN
+		      //
+			  if (msg->CAN_Per_Msg_PayLoad[1]==0)
+			  {
+				for (i=0; i<6; i++)
+			    CurrentTare[i]=0;
+			  }
+			  else if (msg->CAN_Per_Msg_PayLoad[1]==1)
+			  {
+				  MatrixMultiply(
+				  6, // int numRows1,
+				  6, // int numCols1Rows2,
+				  1, // int numCols2,
+				  &BoardConfig.EE_TF_TorqueValue[0],   // fractional* dstM,
+				  &BoardConfig.EE_TF_TMatrix[0][0],    // fractional* srcM1,
+				  (int*) &BoardConfig.EE_AN_ChannelValue[0]); // fractional* srcM2 
+   				  VectorAdd (6, BoardConfig.EE_TF_TorqueValue, BoardConfig.EE_TF_TorqueValue, BoardConfig.EE_CalibrationTare);
+
+				  for (i=0; i<6; i++)
+			  	  	CurrentTare[i]=-(BoardConfig.EE_TF_TorqueValue[i]);
+			  }
+  			  else if (msg->CAN_Per_Msg_PayLoad[1]==2)
+			  {
+					if (msg->CAN_Per_Msg_PayLoad[2]<6)
+					CurrentTare[msg->CAN_Per_Msg_PayLoad[2]] = msg->CAN_Per_Msg_PayLoad[3]<<8 | msg->CAN_Per_Msg_PayLoad[4];
+			  }
 		#endif
 			  datalen=0;
 		    }  
@@ -546,8 +784,7 @@ void ParseCommand() //, unsigned int SID)
 		#ifdef STRAIN
 				unsigned int dat;
 				dat = msg->CAN_Per_Msg_PayLoad[1]<<8 | msg->CAN_Per_Msg_PayLoad[2];  
-				CalibrateOffset(dat);
-		
+				//CalibrateOffset(dat); //Removed
 		#endif				
 			}
 			break;
@@ -583,6 +820,7 @@ void ParseCommand() //, unsigned int SID)
 		
 		    case CAN_CMD_SET_TXMODE: // set continuous or on demand tx  0x205 len 2  data 7 0/1
 		    {
+	    #ifdef MAIS
 		      if(msg->CAN_Per_Msg_PayLoad[1]==0)
 		      { 
 				can_enable=1;
@@ -606,6 +844,45 @@ void ParseCommand() //, unsigned int SID)
 		        DisableIntT3;
 		        // ConfigIntTimer2(T2_INT_PRIOR_1 & T2_INT_OFF);
 		      }
+		#else
+		      if(msg->CAN_Per_Msg_PayLoad[1]==0)
+		      { 
+				//Transmit calibrated data continuosly
+				UseCalibration=1;
+				can_enable=1;
+		        EnableIntT2;
+		        EnableIntT1;
+	        	EnableIntT3;
+		        // ConfigIntTimer2(T2_INT_PRIOR_1 & T2_INT_ON);
+		      }
+		      else if (msg->CAN_Per_Msg_PayLoad[1]==1)
+		      {
+				//Do acquisition but do not transmit
+				can_enable=0;
+				DisableIntT2; 
+				EnableIntT3;
+		        // ConfigIntTimer2(T2_INT_PRIOR_1 & T2_INT_OFF);
+		      }
+		      else if (msg->CAN_Per_Msg_PayLoad[1]==3)
+		      {
+				//Transmit NOT calibrated data continuosly
+				can_enable=1;
+				UseCalibration=0;
+		        EnableIntT2;
+		        EnableIntT1;
+	        	EnableIntT3;
+		        // ConfigIntTimer2(T2_INT_PRIOR_1 & T2_INT_ON);
+		      }
+		      else 
+		      {
+				//Stop acquisition
+				can_enable=0;
+		        DisableIntT1;
+		        DisableIntT2;
+		        DisableIntT3;
+		        // ConfigIntTimer2(T2_INT_PRIOR_1 & T2_INT_OFF);
+		      }
+		#endif
 		      datalen=0;
 		    }  
 		    break;
@@ -632,14 +909,14 @@ void ParseCommand() //, unsigned int SID)
 		        mux_enable=0;
 				BoardConfig.EE_AN_SelectedChannel=0;
 			    AMUXChannelSelect(BoardConfig.EE_AN_SelectedChannel);
-				SetDAC(PDM_NORMAL, BoardConfig.EE_AN_ChannelOffset[BoardConfig.EE_AN_SelectedChannel]);
+				//SetDAC(PDM_NORMAL, BoardConfig.EE_AN_ChannelOffset[BoardConfig.EE_AN_SelectedChannel]); //??
 		      }
 			  else
 		      {
 		        mux_enable=1;
 				BoardConfig.EE_AN_SelectedChannel=0;
 				AMUXChannelSelect(BoardConfig.EE_AN_SelectedChannel);
-				SetDAC(PDM_NORMAL, BoardConfig.EE_AN_ChannelOffset[BoardConfig.EE_AN_SelectedChannel]);
+				//SetDAC(PDM_NORMAL, BoardConfig.EE_AN_ChannelOffset[BoardConfig.EE_AN_SelectedChannel]); //??
 		      }
 		 #endif 
 		      datalen=0;
