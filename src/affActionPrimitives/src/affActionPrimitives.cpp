@@ -2,6 +2,7 @@
 #include <ace/Auto_Event.h>
 #include <yarp/math/Math.h>
 #include <yarp/os/Time.h>
+#include <yarp/os/Random.h>
 
 #include <gsl/gsl_math.h>
 
@@ -60,6 +61,12 @@ void affActionPrimitives::init()
     checkEnabled=true;
 
     latchTimer=waitTmo=0.0;
+
+    xd.resize(3,0.0);
+    od.resize(4,0.0);
+    smallOffs.resize(3,0.0);
+
+    Random::seed((int)Time::now());
 }
 
 
@@ -646,6 +653,11 @@ void affActionPrimitives::run()
 
         if (armMoveDone)
             fprintf(stdout,"reaching complete\n");            
+        else
+        {    
+            cartCtrl->goToPose(xd+smallOffs,od);  // reinforce reaching command
+            smallOffs=-1.0*smallOffs;
+        }
     }
 
     if (!handMoveDone)
@@ -699,15 +711,20 @@ bool affActionPrimitives::cmdArm(const Vector &x, const Vector &o)
 {
     if (configured)
     {
+        xd=x;
+        od=o;
+
+        for (int i=0; i<x.length(); i++)
+            smallOffs[i]=1e-4*(2.0*Random::uniform()-1.0);
+
         if (!cartCtrl->goToPoseSync(x,o))
         {
             fprintf(stdout,"reach error\n");
             return false;
         }
-    
+
         latchArmMoveDone=armMoveDone=false;
-        fprintf(stdout,"reach for [%s], [%s]\n",const_cast<Vector&>(x).toString().c_str(),
-                                                const_cast<Vector&>(o).toString().c_str());
+        fprintf(stdout,"reach for [%s], [%s]\n",xd.toString().c_str(),od.toString().c_str());
         t0=Time::now();
         return true;
     }

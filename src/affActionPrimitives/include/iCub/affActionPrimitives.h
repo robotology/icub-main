@@ -67,6 +67,7 @@ protected:
 
     yarp::sig::Vector xd;
     yarp::sig::Vector od;
+    yarp::sig::Vector smallOffs;
 
     yarp::sig::Vector thresholds;
     std::set<int> enabledJoints;
