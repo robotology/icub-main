@@ -92,15 +92,15 @@ class Hand {
 		vislab::yarp::util::MotionSequence recording;
 		vislab::yarp::util::MotionSequence curRecording;
 
-		HandMetrics& handMetrics;
+		Hand& hand;
 
 	public:
 		/**
 		 * The constructor.
-		 * @param handMetric The metrics object for the {@link Hand}.
+		 * @param hand The object representing the hand.
 		 * @param period The time interval the motions should be sampled.
 		 */
-		Recorder(HandMetrics& handMetric, int period = 100);
+		Recorder(Hand& hand, int period = 100);
 		/**
 		 * The destructor.
 		 */
@@ -130,7 +130,7 @@ class Hand {
 		Hand& hand;
 		std::set<int> blockedJoints;
 
-		::yarp::os::Semaphore lock;
+		::yarp::os::Semaphore mutex;
 
 	public:
 		/**
@@ -177,6 +177,7 @@ protected:
 
 	/** Provides several metrics for this hand. */
 	HandMetrics* handMetrics;
+	::yarp::os::Semaphore metricsMutex;
 
 	/** The control board of the corresponding arm. */
 	::yarp::dev::PolyDriver& controlBoard;
@@ -188,7 +189,7 @@ protected:
 	::yarp::dev::IPositionControl* posControl;
 
 	/** A lock for modifying the sets of enabled and disabled joints. */
-	::yarp::os::Semaphore mutex;
+	::yarp::os::Semaphore jointsMutex;
 	/** The set of disabled joints. */
 	std::set<int> disabledJoints;
 	/** The set of enabled joints. */
@@ -258,7 +259,7 @@ public:
 	 * Returns the metrics object of this hand.
 	 * @return The metrics object of this hand.
 	 */
-	HandMetrics& getMetrics();
+	virtual HandMetrics& getMetrics();
 
 	/**
 	 * @deprecated [Use setEnable(const std::vector<int>&, const bool) instead]

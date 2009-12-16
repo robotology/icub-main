@@ -47,6 +47,9 @@ class HandMetrics {
 	bool newSnapshot;
 
 protected:
+	/** Sempahore for locking the value computations. */
+	::yarp::os::Semaphore mutex;
+
 	/** The encoders of the hand. */
 	::yarp::dev::IEncoders* encoders;
 	/** The PID controller of the hand. */
@@ -67,6 +70,25 @@ protected:
 
 	/** The previous and current time stamp. */
 	double prevTime, curTime;
+
+	/**
+	 * Returns the current positions of the hand's joints.
+	 * @param sync Synchronized executing of the function.
+	 * @return The current positions of the hand's joints.
+	 */
+	const ::yarp::sig::Vector getPosition(const bool sync);
+	/**
+	 * Returns the current velocity of the hand's joints.
+	 * @param sync Synchronized executing of the function.
+	 * @return The current velocity of the hand's joints.
+	 */
+	const ::yarp::sig::Vector getVelocity(const bool sync);
+	/**
+	 * Returns the time interval of the latest snapshot.
+	 * @param sync Synchronized executing of the function.
+	 * @return The time interval of the latest snapshot.
+	 */
+	double getTimeInterval(const bool sync);
 
 public:
 	/** The expected number of axes. */
@@ -102,12 +124,12 @@ public:
 	 * Returns the current positions of the hand's joints.
 	 * @return The current positions of the hand's joints.
 	 */
-	const ::yarp::sig::Vector& getPosition();
+	const ::yarp::sig::Vector getPosition();
 	/**
 	 * Returns the current velocity of the hand's joints.
 	 * @return The current velocity of the hand's joints.
 	 */
-	const ::yarp::sig::Vector& getVelocity();
+	const ::yarp::sig::Vector getVelocity();
 	/**
 	 * Returns the time interval of the latest snapshot.
 	 * @return The time interval of the latest snapshot.

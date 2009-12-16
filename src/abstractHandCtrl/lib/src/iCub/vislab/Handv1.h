@@ -118,7 +118,7 @@ public:
 	 * Returns the metrics object of this hand.
 	 * @return The metrics object of this hand.
 	 */
-	Handv1Metrics& getMetrics() const;
+	virtual Handv1Metrics& getMetrics();
 };
 
 }

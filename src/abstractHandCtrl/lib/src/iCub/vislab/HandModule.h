@@ -182,7 +182,7 @@ namespace control {
  * @author Christian Wressnegger
  * @date 2009
  */
-class HandModule: public vislab::yarp::util::AbstractRFModule {
+class HandModule: public vislab::yarp::util::ThreadedRFModule {
 public:
 	/** The type of the hand. */
 	enum HandType {
@@ -206,7 +206,7 @@ protected:
 	 * @author Christian Wressnegger
 	 * @date 2009
 	 */
-	class HandWorkerThread: public vislab::yarp::util::AbstractRFModule::AbstractWorkerThread {
+	class HandWorkerThread: public vislab::yarp::util::ThreadedRFModule::RFWorkerThread {
 	protected:
 		/** The motion sequence specifications. */
 		std::map<const std::string, vislab::yarp::util::MotionSequence> motions;
@@ -329,14 +329,14 @@ public:
 	 * The constructor.
 	 * @param name The module's name.
 	 */
-	HandModule(::yarp::os::ConstString name);
+	HandModule(::yarp::os::ConstString name, double period = 1.0);
 	/**
 	 * The destructor.
 	 */
 	virtual ~HandModule();
 
 	/**
-	 * @see AbstractRFModule#configure(ResourceFinder)
+	 * @see ThreadedRFModule#configure(ResourceFinder)
 	 */
 	virtual bool configure(::yarp::os::ResourceFinder &rf); // configure all the module parameters and return true if successful
 };

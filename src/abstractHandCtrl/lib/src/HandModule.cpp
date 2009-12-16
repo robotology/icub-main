@@ -30,8 +30,8 @@ using namespace vislab::yarp;
 namespace vislab {
 namespace control {
 
-HandModule::HandModule(ConstString name) :
-	AbstractRFModule(name) {
+HandModule::HandModule(ConstString name, double period) :
+	ThreadedRFModule(name, period) {
 }
 
 HandModule::~HandModule() {
@@ -53,12 +53,11 @@ bool HandModule::ReloadCommand::execute(const Bottle& params, Bottle& reply) con
 }
 
 bool HandModule::configure(ResourceFinder &rf) {
-	if (!AbstractRFModule::configure(rf)) {
+	if (!ThreadedRFModule::configure(rf)) {
 		return false;
 	}
 
 	ConstString str;
-	ConstString prefix = "/";
 
 	partName = rf.check("part", Value("right_arm"),
 			"The robot's arm to work with (\"right_arm\" or \"left_arm\")").asString();
@@ -156,8 +155,8 @@ bool HandModule::configure(ResourceFinder &rf) {
 }
 
 bool HandModule::startThread() {
-	bool b = AbstractRFModule::startThread();
-	workerThread = dynamic_cast<HandWorkerThread *> (AbstractRFModule::workerThread);
+	bool b = ThreadedRFModule::startThread();
+	workerThread = dynamic_cast<HandWorkerThread *> (ThreadedRFModule::workerThread);
 	return b;
 }
 
@@ -165,7 +164,7 @@ bool HandModule::startThread() {
 
 HandModule::HandWorkerThread::HandWorkerThread(const OptionManager& moduleOptions,
 		const Contactables& ports, PolyDriver& controlBoard, HandType t) :
-	AbstractWorkerThread(moduleOptions, ports), controlBoard(controlBoard) {
+	RFWorkerThread(moduleOptions, ports), controlBoard(controlBoard) {
 
 	handType = t;
 	hand = NULL;
@@ -186,15 +185,13 @@ HandModule::HandWorkerThread::HandWorkerThread(const OptionManager& moduleOption
 }
 
 void HandModule::HandWorkerThread::createHand() {
+	// in case createHand is called more than once
+	if (hand != NULL) {
+		delete hand;
+	}
 	switch (handType) {
 	case v1:
 		try {
-			if (hand != NULL) {
-				// This is necessary in case the Hand constructor throws an
-				// exception. ...which it actually does the first time, because
-				// the sensing constants aren't properly set in the beginning.
-				delete hand;
-			}
 			handv1 = new Handv1(controlBoard, sensingConstants);
 			HandModule::HandWorkerThread::hand = (Hand*) handv1;
 		} catch (exception&) {

@@ -79,6 +79,20 @@ class Handv1Metrics : public HandMetrics {
 	/** The previous spring stiffness constants. */
 	::yarp::sig::Vector prevSpringStiffness;
 
+protected:
+	/**
+	 * Returns the current voltage of the hand's joints.
+	 * @param sync Synchronized executing of the function.
+	 * @return The current voltage of the hand's joints.
+	 */
+	const ::yarp::sig::Vector getVoltage(const bool sync);
+	/**
+	 * Returns the current error of the hand's joints.
+	 * @param sync Synchronized executing of the function.
+	 * @return The current error of the hand's joints.
+	 */
+	const ::yarp::sig::Vector getError(const bool sync);
+
 public:
 	/**
 	 * The constructor.
@@ -98,12 +112,12 @@ public:
 	 * Returns the current voltage of the hand's joints.
 	 * @return The current voltage of the hand's joints.
 	 */
-	::yarp::sig::Vector& getVoltage();
+	const ::yarp::sig::Vector getVoltage();
 	/**
 	 * Returns the current error of the hand's joints.
 	 * @return The current error of the hand's joints.
 	 */
-	::yarp::sig::Vector& getError();
+	const ::yarp::sig::Vector getError();
 };
 
 }

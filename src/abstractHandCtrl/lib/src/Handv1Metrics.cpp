@@ -104,10 +104,13 @@ Handv1Metrics::~Handv1Metrics() {
 #endif
 }
 
-Vector& Handv1Metrics::getVoltage() {
+const Vector Handv1Metrics::getVoltage(const bool sync) {
+	if (sync) {
+		mutex.wait();
+	}
 	if (voltage.size() <= 0) {
 		voltage.resize(numAxes);
-		Vector v = getVelocity();
+		Vector v = getVelocity(false);
 		v = vislab::yarp::operator *(objectSensingConstants["derivate_gain"].getRow(0), v);
 
 		for (int i = 0; i < v.size(); i++) {
@@ -143,14 +146,31 @@ Vector& Handv1Metrics::getVoltage() {
 		printVector(voltage);
 #endif
 	}
-	return voltage;
+	Vector v = voltage;
+	mutex.post();
+	return v;
 }
 
-Vector& Handv1Metrics::getError() {
-	if (error.size() <= 0) {
-		error = targetVoltage - getVoltage();
+const Vector Handv1Metrics::getVoltage() {
+	return getVoltage(true);
+}
+
+const Vector Handv1Metrics::getError(const bool sync) {
+	if (sync) {
+		mutex.wait();
 	}
-	return error;
+	if (error.size() <= 0) {
+		error = targetVoltage - getVoltage(false);
+	}
+	Vector v = error;
+	if (sync) {
+		mutex.post();
+	}
+	return v;
+}
+
+const Vector Handv1Metrics::getError() {
+	return getError(true);
 }
 
 }

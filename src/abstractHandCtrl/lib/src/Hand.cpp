@@ -68,8 +68,8 @@ const vector<int> Hand::initRanges(const vector<pair<int, int> > v) {
 	return v_;
 }
 
-Hand::Recorder::Recorder(HandMetrics& handMetrics, int period) :
-	RateThread(period), handMetrics(handMetrics) {
+Hand::Recorder::Recorder(Hand& hand, int period) :
+	RateThread(period), hand(hand) {
 	curRecording.setNumJoints(HandMetrics::numAxes);
 }
 
@@ -88,8 +88,8 @@ void Hand::Recorder::stop() {
 
 void Hand::Recorder::run() {
 	Motion m(HandMetrics::numAxes);
-	m.setPosition(handMetrics.getPosition());
-	m.setVelocity(handMetrics.getVelocity());
+	m.setPosition(hand.getMetrics().getPosition());
+	m.setVelocity(hand.getMetrics().getVelocity());
 	m.setTiming(0.0);
 
 	curRecording.addMotion(m);
@@ -138,17 +138,17 @@ const set<int>& Hand::JointMonitor::getBlockedJoints() const {
 }
 
 void Hand::JointMonitor::waitMotionDone() {
-	lock.wait();
-	lock.post();
+	mutex.wait();
+	mutex.post();
 }
 
 bool Hand::JointMonitor::start() {
 	if (!isRunning()) {
-		cout << "wait" << endl;
-		lock.wait();
-		cout << "resume" << endl;
+		//TODO: cout << "wait" << endl;
+		mutex.wait();
+		//TODO: cout << "resume" << endl;
 		if (!RateThread::start()) {
-			lock.post();
+			mutex.post();
 			return false;
 		}
 	}
@@ -157,7 +157,7 @@ bool Hand::JointMonitor::start() {
 
 void Hand::JointMonitor::stop() {
 	RateThread::stop();
-	lock.post();
+	mutex.post();
 }
 
 Hand::Hand(PolyDriver& controlBoard) :
@@ -182,8 +182,7 @@ Hand::Hand(PolyDriver& controlBoard) :
 	handMetrics = NULL;
 
 	jointMonitor = new JointMonitor(*this);
-
-	recorder = new Recorder(getMetrics());
+	recorder = new Recorder(*this);
 	record(false);
 }
 
@@ -198,20 +197,26 @@ Hand::~Hand() {
 		delete handMetrics;
 	}
 	posControl->setRefSpeeds(prevSpeed);
+
+	jointMonitor->stop();
+	recorder->stop();
+
 	delete jointMonitor;
 	delete recorder;
 }
 
 HandMetrics& Hand::getMetrics() {
+	metricsMutex.wait();
 	if (handMetrics == NULL) {
 		defineHandMetrics();
 	}
+	metricsMutex.post();
 	return *handMetrics;
 }
 
 void Hand::setEnable(const vector<int>& joints, const bool b) {
 	if (!joints.empty()) {
-		mutex.wait();
+		jointsMutex.wait();
 		if (b) { //enable
 			for (unsigned int i = 0; i < joints.size(); i++) {
 				disabledJoints.erase(joints[i]);
@@ -227,7 +232,7 @@ void Hand::setEnable(const vector<int>& joints, const bool b) {
 				enabledJoints.erase(*itr);
 			}
 		}
-		mutex.post();
+		jointsMutex.post();
 	}
 }
 
@@ -240,10 +245,10 @@ void Hand::enableJoints(const vector<int>& joints) {
 }
 
 void Hand::getDisabledJoints(vector<int>& joints) {
-	mutex.wait();
+	jointsMutex.wait();
 	joints.clear();
 	copy(disabledJoints.begin(), disabledJoints.end(), inserter(joints, joints.end()));
-	mutex.post();
+	jointsMutex.post();
 }
 
 void Hand::setVelocity(const double d, const int joint) {
@@ -290,7 +295,7 @@ bool Hand::move(const Vector& v, const bool sync) {
 
 bool Hand::move(const Vector& v, const set<int> joints, const bool sync) {
 	bool result = true;
-	mutex.wait();
+	jointsMutex.wait();
 	set<int> activeJoints;
 	set<int>::const_iterator itr;
 	for (itr = joints.begin(); itr != joints.end(); ++itr) {
@@ -305,7 +310,7 @@ bool Hand::move(const Vector& v, const set<int> joints, const bool sync) {
 			activeJoints.insert(joint);
 		}
 	}
-	mutex.post();
+	jointsMutex.post();
 
 	if (!jointMonitor->start()) {
 		cout << "Warning: Unable to monitor joint movements, i.e. ";
@@ -314,8 +319,6 @@ bool Hand::move(const Vector& v, const set<int> joints, const bool sync) {
 	}
 	if (sync) {
 		jointMonitor->waitMotionDone();
-		int i = 0;
-		i++;
 	}
 
 	posControl->stop(); // just to make sure
@@ -407,7 +410,7 @@ bool Hand::motionDone(const set<int> joints) {
 	for (itr = joints.begin(); itr != joints.end(); ++itr) {
 		bool b;
 		posControl->checkMotionDone(*itr, &b);
-		if (abs(v[*itr]) > 0.01 && !b) {
+		if (abs(v[*itr]) > 0.005 && !b) {
 			return false;
 		}
 	}

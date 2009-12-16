@@ -80,6 +80,7 @@ Handv1::Handv1(PolyDriver& controlBoard, map<const string, Matrix>& constants) :
 		throw invalid_argument("Sensing constants: No threshold defined!");
 	}
 	fs = FunctionSmoother(sensingConstants["thresholds"].getRow(0));
+	handMetrics = NULL;
 }
 
 void Handv1::defineHandMetrics() {
@@ -106,14 +107,19 @@ void Handv1::calibrate() {
 	throw runtime_error("Not implemented yet!");
 }
 
-Handv1Metrics& Handv1::getMetrics() const {
+Handv1Metrics& Handv1::getMetrics() {
+	metricsMutex.wait();
+	if (handMetrics == NULL) {
+		defineHandMetrics();
+	}
+	metricsMutex.post();
 	return *handMetrics;
 }
 
 void Handv1::stopBlockedJoints(std::set<int>* const blockedJoints) {
 	Vector smoothedError;
 	Vector thresholds = sensingConstants["thresholds"].getRow(0);
-	fs.smooth(handMetrics->getError(), smoothedError, handMetrics->getTimeInterval());
+	fs.smooth(getMetrics().getError(), smoothedError, getMetrics().getTimeInterval());
 
 	set<int>::const_iterator itr;
 	for (itr = enabledJoints.begin(); itr != enabledJoints.end(); ++itr) {

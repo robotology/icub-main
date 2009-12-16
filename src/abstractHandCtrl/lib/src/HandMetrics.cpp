@@ -40,6 +40,7 @@ HandMetrics::HandMetrics(IEncoders* const encoders, ::yarp::dev::IPidControl* co
 	this->encoders = encoders;
 	this->pidControl = pidControl;
 	prevPosition.resize(numAxes);
+	position.resize(numAxes);
 
 	Time::turboBoost();
 	prevTime = Time::now();
@@ -51,21 +52,29 @@ HandMetrics::~HandMetrics() {
 }
 
 void HandMetrics::snapshot() {
-	prevPosition = position;
+	mutex.wait();
+	bool newSnapshot = position.size() <= 0 || velocity.size() < 0;
+
+	if (newSnapshot) {
+		prevPosition = position;
+	} else {
+		cout << "extend" << endl;
+	}
 
 	// reset hand metrics (force re-computations)
 	position.clear();
 	velocity.clear();
 
-	// positions
-	position = getPosition();
-
-	prevTime = curTime;
+	if (newSnapshot) {
+		prevTime = curTime;
+	}
 	curTime = Time::now();
+	mutex.post();
 }
 
 #ifdef DEBUG
 void HandMetrics::printSnapshotData(ostream& s) {
+	mutex.wait();
 	s << "delta t = " << curTime - prevTime << endl;
 	s << "position = ";
 	printVector(position, s);
@@ -73,10 +82,14 @@ void HandMetrics::printSnapshotData(ostream& s) {
 	printVector(prevPosition, s);
 	s << "targetVoltage = ";
 	printVector(targetVoltage, s);
+	mutex.post();
 }
 #endif
 
-const Vector& HandMetrics::getPosition() {
+const Vector HandMetrics::getPosition(const bool sync) {
+	if (sync) {
+		mutex.wait();
+	}
 	if (position.size() <= 0) {
 		position.resize(numAxes);
 		Vector error(numAxes), output(numAxes);
@@ -92,13 +105,24 @@ const Vector& HandMetrics::getPosition() {
 
 		position = position + error;
 	}
-	return position;
+	Vector v = position;
+	if (sync) {
+		mutex.post();
+	}
+	return v;
 }
 
-const Vector& HandMetrics::getVelocity() {
+const Vector HandMetrics::getPosition() {
+	return getPosition(true);
+}
+
+const Vector HandMetrics::getVelocity(const bool sync) {
+	if (sync) {
+		mutex.wait();
+	}
 	if (velocity.size() <= 0) {
-		Vector deltaR = getPosition() - prevPosition;
-		double deltaT = getTimeInterval();
+		Vector deltaR = getPosition(false) - prevPosition;
+		double deltaT = getTimeInterval(false);
 		velocity = deltaR / deltaT;
 
 #ifdef DEBUG
@@ -107,12 +131,30 @@ const Vector& HandMetrics::getVelocity() {
 		cout << "deltaT = " << deltaT << endl;
 #endif
 	}
+	Vector v = velocity;
+	if (sync) {
+		mutex.post();
+	}
+	return v;
+}
 
-	return velocity;
+const Vector HandMetrics::getVelocity() {
+	return getVelocity(true);
+}
+
+double HandMetrics::getTimeInterval(const bool sync) {
+	if (sync) {
+		mutex.wait();
+	}
+	double d = abs(curTime - prevTime);
+	if (sync) {
+		mutex.post();
+	}
+	return d;
 }
 
 double HandMetrics::getTimeInterval() {
-	return abs(curTime - prevTime);
+	return getTimeInterval(true);
 }
 
 }
