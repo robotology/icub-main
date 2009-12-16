@@ -134,6 +134,11 @@ bool HandCtrl::configure(ResourceFinder &rf) {
 	str = prefix + getName(rf.check("q", Value("/q:i"), str).asString());
 	dataPorts.add(id.Input_Q, str, new BufferedPort<Vector> );
 
+	str
+			= "RPC port to communicate with the iKin arm controller via Bottle(Vocab:cmd) objects (c.f. iKinArmCtrl rpc).";
+	str = prefix + getName(rf.check("iKin", Value(prefix + partName + "/rpc"), str).asString());
+	dataPorts.add(id.RPC_iKin, str, new Port());
+
 	vector<unsigned int> errorLog;
 	if (!dataPorts.open(&errorLog)) {
 		for (unsigned int i = 0; i < errorLog.size(); i++) {
@@ -141,11 +146,6 @@ bool HandCtrl::configure(ResourceFinder &rf) {
 		}
 		return false; // unable to open; let RFModule know so that it won't run
 	}
-
-	str
-			= "RPC port to communicate with the iKin arm controller via Bottle(Vocab:cmd) objects (c.f. iKinArmCtrl rpc).";
-	str = prefix + getName(rf.check("iKin", Value(prefix + partName + "/rpc"), str).asString());
-	dataPorts.add(id.RPC_iKin, str, new Port());
 
 	rf.setDefault("log", "");
 	outputDir = rf.findPath("log");
@@ -204,7 +204,7 @@ void HandCtrl::WorkerThread::setOutputDir(const ConstString dir) {
 }
 
 void HandCtrl::WorkerThread::run() {
-	BufferedPort<Vector>* q = (BufferedPort<Vector>*) dataPorts[id.Input_Q];
+	BufferedPort < Vector > *q = (BufferedPort<Vector>*) dataPorts[id.Input_Q];
 
 	MotionSequence prevSequence;
 	Vector initPosition(HandMetrics::numAxes); // all zero
