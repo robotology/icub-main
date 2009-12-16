@@ -1,10 +1,22 @@
 <application>
 <name>logpolar grabber and reconstruct</name>
 <dependencies>
-      <!--port>pc104</port-->
-		<port>icub14</port>
+ 
+	<port>icub14</port>
 </dependencies>
-  
+   <module>
+      <name>icubmoddev</name>
+	      <parameters>--device logpolargrabber --width 320 --height 240 --framerate 33 --subdevice dragonfly2 --name /icub/cam/rightpolar/ --DR2 --d 1</parameters>
+     <node>pc104</node>
+	  <stdio>icub14</stdio>
+	  <tag>logpolar-grabber-right</tag>
+   </module>
+      <name>icubmoddev</name>
+	      <parameters>--device logpolargrabber --width 320 --height 240 --framerate 33 --subdevice dragonfly2 --name /icub/cam/leftpolar/ --DR2 --d 0</parameters>
+     <node>pc104</node>
+	  <stdio>icub14</stdio>
+	  <tag>logpolar-grabber-left</tag>
+   </module>
    <module>
       <name>yarpview</name>
       <parameters>--name /leftview --x 0 --y 50 --synch</parameters>
