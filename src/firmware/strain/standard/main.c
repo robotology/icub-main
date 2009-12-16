@@ -59,7 +59,7 @@
 #define MAIS_VERSION       0x01
 #define STRAIN_VERSION     0x02
 #define MAIS_RELEASE       0x01
-#define STRAIN_RELEASE     0x01
+#define STRAIN_RELEASE     0x03
 
 #define MAIS_BUILD         0x01
 #define STRAIN_BUILD       0x02
@@ -143,8 +143,18 @@ struct s_eeprom _EEDATA(1) ee_data =
     {0,0,0,0,0x7FFF,0},
     {0,0,0,0,0,0x7FFF},
   },
-  {0,1,2,3,4,5,6,7,8,9,10,11,12,13,14,15,16,17,18,19,20,21,22,23,24,25,26,27,28,29,30,31},
-  {1},
+  {0,1,2,3,4,5,6,7,8,9,10,11,12,13,14,15,16,17,18,19,20,21,22,23,24,25,26,27,28,29,30,31},  //Additional Info
+  {1},  // Matrix Gain
+  {0,0,0,0,0,0},  //Calibration Tare
+  {0,0,0,0,0,0},  //Debug1
+  {0,0,0,0,0,0},  //Debug2
+  {0,0,0,0,0,0},  //Debug3
+  {0,0,0,0,0,0},  //Debug4
+  {0,0,0,0,0,0},  //Debug5
+  {0,0,0,0,0,0},  //Debug6
+  {0,0,0,0,0,0},  //Debug7
+  {0,0,0,0,0,0},  //Debug8
+  {0,0,0,0,0,0,0,0},  //Serial number
   0x0000 // Checksum
 };
 
@@ -154,6 +164,8 @@ struct s_eeprom BoardConfig = {0};
 //
 //  variables
 
+int  CurrentTare[6] = {0,0,0,0,0,0};
+char UseCalibration = 1;
 char filter_enable = 0;
 char can_enable = 0;
 char mux_enable = 1;
@@ -381,9 +393,21 @@ void T2(void)
   // 
   // STRAIN
   // 
-  unsigned char ForceData[6], TorqueData[6]; 
+  // ForceData and TorqueData are defined as 8 bytes arrays, but only 6 bytes are used.
+  // The remainaing two should be not trasmitted, unless a particular event occurs (i.e:debug message, saturation warning etc.)
+  unsigned char ForceData[8], TorqueData[8]; 
   static unsigned char ChToTransmit=1; 
+  unsigned char saturation = 0;
+  unsigned char i=0;
+  unsigned char length=6;
  
+  for (i=0; i<6; i++)
+  {
+	if ((unsigned int)(BoardConfig.EE_AN_ChannelValue[i]+0x7FFF) > 64000 ||
+	    (unsigned int)(BoardConfig.EE_AN_ChannelValue[i]+0x7FFF) <  1000)
+			saturation=1;
+  }
+
   // Tim1IRQ has to be disabled: MatrixMultiply and IIRTransposed 
   // from dsp library shares some common resources
 //@@@
@@ -400,34 +424,33 @@ void T2(void)
   //@@@
   //EnableIntT3;
 
-// send 6 analog strain gauges samples
-// #define CAN_SEND_SG_VALUES
-// send torque/force data
-#define CAN_SEND_FT_VALUES
+  if (UseCalibration==1)
+  {
+	  //Use Caliration Matrix
+	  VectorAdd (6, BoardConfig.EE_TF_TorqueValue, BoardConfig.EE_TF_TorqueValue, BoardConfig.EE_CalibrationTare);
+	  VectorAdd (6, BoardConfig.EE_TF_TorqueValue, BoardConfig.EE_TF_TorqueValue, CurrentTare);
+	  BoardConfig.EE_TF_TorqueValue[0]+=0x7FFF;
+	  BoardConfig.EE_TF_TorqueValue[1]+=0x7FFF;
+	  BoardConfig.EE_TF_TorqueValue[2]+=0x7FFF;
+	  BoardConfig.EE_TF_TorqueValue[3]+=0x7FFF;
+	  BoardConfig.EE_TF_TorqueValue[4]+=0x7FFF;
+	  BoardConfig.EE_TF_TorqueValue[5]+=0x7FFF;
+	  memcpy(ForceData,BoardConfig.EE_TF_TorqueValue,6);
+	  memcpy(TorqueData,BoardConfig.EE_TF_ForceValue,6);
+  }
+  else
+  {
+ 	  //Do not use calibration matrix
+	  BoardConfig.EE_AN_ChannelValue[0]+=0x7FFF;
+	  BoardConfig.EE_AN_ChannelValue[1]+=0x7FFF;
+	  BoardConfig.EE_AN_ChannelValue[2]+=0x7FFF;
+	  BoardConfig.EE_AN_ChannelValue[3]+=0x7FFF;
+	  BoardConfig.EE_AN_ChannelValue[4]+=0x7FFF;
+	  BoardConfig.EE_AN_ChannelValue[5]+=0x7FFF;
+	  memcpy(ForceData,BoardConfig.EE_AN_ChannelValue,6);
+	  memcpy(TorqueData,&BoardConfig.EE_AN_ChannelValue[3],6);
+  }
 
-#ifdef CAN_SEND_SG_VALUES
-// send filtered/unfiltered SG samples
-  BoardConfig.EE_AN_ChannelValue[0]+=0x7FFF;
-  BoardConfig.EE_AN_ChannelValue[1]+=0x7FFF;
-  BoardConfig.EE_AN_ChannelValue[2]+=0x7FFF;
-  BoardConfig.EE_AN_ChannelValue[3]+=0x7FFF;
-  BoardConfig.EE_AN_ChannelValue[4]+=0x7FFF;
-  BoardConfig.EE_AN_ChannelValue[5]+=0x7FFF;
-  memcpy(ForceData,BoardConfig.EE_AN_ChannelValue,6);
-  memcpy(TorqueData,&BoardConfig.EE_AN_ChannelValue[3],6);
-#endif
-
-#ifdef CAN_SEND_FT_VALUES
-// send multiplied samples
-  BoardConfig.EE_TF_TorqueValue[0]+=0x7FFF;
-  BoardConfig.EE_TF_TorqueValue[1]+=0x7FFF;
-  BoardConfig.EE_TF_TorqueValue[2]+=0x7FFF;
-  BoardConfig.EE_TF_TorqueValue[3]+=0x7FFF;
-  BoardConfig.EE_TF_TorqueValue[4]+=0x7FFF;
-  BoardConfig.EE_TF_TorqueValue[5]+=0x7FFF;
-  memcpy(ForceData,BoardConfig.EE_TF_TorqueValue,6);
-  memcpy(TorqueData,BoardConfig.EE_TF_ForceValue,6);
-#endif
 
   // memcpy(ForceData,BoardConfig.EE_AN_ChannelValue,6);
   // memcpy(TorqueData,&BoardConfig.EE_AN_ChannelValue[3],6);
@@ -435,12 +458,17 @@ void T2(void)
   // Load message ID , Data into transmit buffer and set transmit request bit
   // class, source, type for periodoc messages
   // force data 
-
+  if (saturation!=0)
+  {
+	 length=7;
+	 ForceData[6]=1;
+	 TorqueData[6]=1;	
+  }
   SID = (CAN_MSG_CLASS_PERIODIC) | ((BoardConfig.EE_CAN_BoardAddress)<<4) | (CAN_CMD_FORCE_VECTOR) ;
-  CAN1SendMessage((CAN_TX_SID(SID)) & CAN_TX_EID_DIS & CAN_SUB_NOR_TX_REQ, (CAN_TX_EID(0x0)) & CAN_NOR_TX_REQ, ForceData,6,0); // buffer 0 
+  CAN1SendMessage((CAN_TX_SID(SID)) & CAN_TX_EID_DIS & CAN_SUB_NOR_TX_REQ, (CAN_TX_EID(0x0)) & CAN_NOR_TX_REQ, ForceData,length,0); // buffer 0 
   // torque data 
   SID = (CAN_MSG_CLASS_PERIODIC) | ((BoardConfig.EE_CAN_BoardAddress)<<4) | (CAN_CMD_TORQUE_VECTOR) ;
-  CAN1SendMessage((CAN_TX_SID(SID)) & CAN_TX_EID_DIS & CAN_SUB_NOR_TX_REQ, (CAN_TX_EID(0x0)) & CAN_NOR_TX_REQ, TorqueData,6,1); // buffer 1 
+  CAN1SendMessage((CAN_TX_SID(SID)) & CAN_TX_EID_DIS & CAN_SUB_NOR_TX_REQ, (CAN_TX_EID(0x0)) & CAN_NOR_TX_REQ, TorqueData,length,1); // buffer 1 
   
   // Wait till message is transmitted completely
   //  while(!CAN1IsTXReady(0)) 
@@ -969,7 +997,7 @@ int main(void)
 { 
   unsigned int match_value;
   unsigned int i;
-  canmsg_t CAN_Msg;
+  //canmsg_t CAN_Msg;
 
   //
   // init code
