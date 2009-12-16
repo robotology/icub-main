@@ -113,3 +113,7 @@ bool CamCalibModule::updateModule(){
     return true;
 }
 
+double CamCalibModule::getPeriod() {
+  return 0.0;
+}
+
