@@ -829,9 +829,9 @@ void CartesianSolver::printInfo(const Vector &xd, const Vector &x, const Vector 
     fprintf(stdout,"  Target rxPose   [m] = %s\n",const_cast<Vector&>(xd).toString().c_str());
     fprintf(stdout,"  Target txPose   [m] = %s\n",const_cast<Vector&>(x).toString().c_str());
     fprintf(stdout,"Target txJoints [deg] = %s\n",const_cast<Vector&>(q).toString().c_str());
-    fprintf(stdout,"  norm(rxPose-txPose) = pos   [m]: %g\n",getNorm(e,"pos"));
+    fprintf(stdout,"  norm(rxPose-txPose) = pos [m]: %g\n",getNorm(e,"pos"));
     if (ctrlPose==IKINCTRL_POSE_FULL)
-    fprintf(stdout,"                        ang [deg]: %g\n",getNorm(e,"ang"));
+    fprintf(stdout,"                        ang [*]: %g\n",getNorm(e,"ang"));
     fprintf(stdout,"    computed in   [s] = %g\n",t);
     fprintf(stdout,"\n");
 }
