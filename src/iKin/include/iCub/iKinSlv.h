@@ -43,9 +43,13 @@
  *    number of chain's dof. The special value 2 is used to keep
  *    the link status unchanged and proceed to next link.
  *  
+ * \b tok synchro: a double may be added to the request which 
+ *    will be in turn sent back by the solver for
+ *    synchronization purpose.
+ *  
  * \note One single command sent to the streaming input port can 
  *       contain multiple requests: e.g. ([pose] [xyz]) ([dof]
- *       (1 0 1 2 1)) ([xd] (-0.1 0.1 0.1))
+ *       (1 0 1 2 1)) ([xd] (-0.1 0.1 0.1) ([tok] 1.234))
  *
  *  
  * \b "/<solverName>/rpc" accepts a vocab-like bottle containing
@@ -97,7 +101,7 @@
  *  
  * \b "/<solverName>/out" streams out a bottle containing the 
  *    result of optimization instance. The format is ([xd]
- *    (...)) ([x] (...)) ([q] (...)) as following:
+ *    (...)) ([x] (...)) ([q] (...) ([tok] ...)) as following:
  *  
  * \b xd property: contains the desired cartesian pose to be 
  *    achieved (7-components vector).
@@ -108,6 +112,9 @@
  *  
  * \b q property: contains the joints configuration which 
  *    achieve x (DOF-components vector in deg).
+ *  
+ * \b tok property: contains the token that the client may 
+ *    added to the request.
  *  
  * Date: first release 20/06/2009
  *
@@ -161,6 +168,9 @@ protected:
     int  maxLen;
     int  pose;
 
+    double  token;
+    double *pToken;
+
     yarp::sig::Vector dof;
     yarp::sig::Vector xd;
     yarp::sig::Vector xdOld;
@@ -172,8 +182,9 @@ public:
     void reset_xd(const yarp::sig::Vector &_xd);
     yarp::sig::Vector &get_dof() { return dof;      }
     yarp::sig::Vector &get_xd()  { return xd;       }
-    int  &get_pose()             { return pose;     }
-    bool &get_contMode()         { return contMode; }
+    int    &get_pose()           { return pose;     }
+    bool   &get_contMode()       { return contMode; }
+    double *get_tokenPtr()       { return pToken;   }
 
     bool isNewDataEvent();
     bool handleTarget(yarp::os::Bottle *b);
@@ -231,16 +242,18 @@ protected:
     yarp::os::BufferedPort<yarp::os::Bottle> *outPort;
     yarp::os::Semaphore                       mutex;
 
-    std::string  slvName;
-    std::string  type;
-    unsigned int period;
-    unsigned int ctrlPose;
-    bool         fullDOF;
-    bool         configured;
-    bool         closed;
-    bool         verbosity;
-    int          maxPartJoints;
-    int          unctrlJointsNum;
+    std::string   slvName;
+    std::string   type;
+    unsigned int  period;
+    unsigned int  ctrlPose;
+    bool          fullDOF;
+    bool          configured;
+    bool          closed;
+    bool          verbosity;
+    int           maxPartJoints;
+    int           unctrlJointsNum;
+    double        token;
+    double       *pToken;
 
     yarp::sig::Vector unctrlJointsOld;
     yarp::sig::Vector dof;
@@ -271,8 +284,8 @@ protected:
     void   fillDOFInfo(yarp::os::Bottle &reply);
     double getNorm(const yarp::sig::Vector &v, const std::string &typ);
     bool   respond(const yarp::os::Bottle &command, yarp::os::Bottle &reply);
-    void   send(const yarp::sig::Vector &xd);
-    void   send(const yarp::sig::Vector &xd, const yarp::sig::Vector &x, const yarp::sig::Vector &q);
+    void   send(const yarp::sig::Vector &xd, double *tok);
+    void   send(const yarp::sig::Vector &xd, const yarp::sig::Vector &x, const yarp::sig::Vector &q, double *tok);
     void   printInfo(const yarp::sig::Vector &xd, const yarp::sig::Vector &x, const yarp::sig::Vector &q,
                      const double t);    
 

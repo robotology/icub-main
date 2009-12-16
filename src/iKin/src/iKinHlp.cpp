@@ -62,6 +62,15 @@ void CartesianHelper::addModeOption(Bottle &b, const bool tracking)
 
 
 /************************************************************************/
+void CartesianHelper::addTokenOption(Bottle &b, const double token)
+{
+    Bottle &tokenPart=b.addList();
+    tokenPart.addVocab(IKINSLV_VOCAB_OPT_TOKEN);
+    tokenPart.addDouble(token);
+}
+
+
+/************************************************************************/
 Bottle *CartesianHelper::getTargetOption(Bottle &b)
 {
     return b.find(Vocab::decode(IKINSLV_VOCAB_OPT_XD)).asList();
@@ -81,5 +90,17 @@ Bottle *CartesianHelper::getJointsOption(Bottle &b)
     return b.find(Vocab::decode(IKINSLV_VOCAB_OPT_Q)).asList();
 }
 
+
+/************************************************************************/
+bool CartesianHelper::getTokenOption(Bottle &b, double *token)
+{
+    if (b.check(Vocab::decode(IKINSLV_VOCAB_OPT_TOKEN)))
+    {
+        *token=b.find(Vocab::decode(IKINSLV_VOCAB_OPT_TOKEN)).asDouble();
+        return true;
+    }
+    else
+        return false;
+}
 
 

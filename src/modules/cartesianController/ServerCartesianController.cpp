@@ -147,6 +147,11 @@ void ServerCartesianController::init()
     targetTol=CARTCTRL_DEFAULT_TOL;
     trajTime=CARTCTRL_DEFAULT_TRAJTIME;
 
+    txToken=0.0;
+    rxToken=0.0;
+    txTokenLatched=0.0;
+    skipSlvRes=false;
+
     // request high resolution scheduling
     Time::turboBoost();
 }
@@ -662,6 +667,17 @@ bool ServerCartesianController::getNewTarget()
 {
     if (Bottle *b1=portSlvIn->read(false))
     {
+        if (!CartesianHelper::getTokenOption(*b1,&rxToken))
+            return false;
+
+        if (skipSlvRes)
+        {
+            if (rxToken<=txTokenLatched)
+                return false;
+            else
+                skipSlvRes=false;
+        }
+
         bool isNew=false;
         Vector _xdes, _qdes;
 
@@ -777,7 +793,7 @@ void ServerCartesianController::run()
         {
             // limb control loop
             ctrl->iterate(xdes,qdes);
-    
+
             // send joints velocities to the robot [deg/s]
             sendVelocity((180.0/M_PI)*ctrl->get_qdot());
     
@@ -1267,6 +1283,8 @@ bool ServerCartesianController::goTo(unsigned int _ctrlPose, const Vector &xd, c
         // correct solver status will be reinstated
         // accordingly at the end of trajectory
         CartesianHelper::addModeOption(b,true);
+        // token part
+        CartesianHelper::addTokenOption(b,txToken=Time::now());
     
         portSlvOut->write();        
     
@@ -1442,6 +1460,8 @@ bool ServerCartesianController::setDOF(const Vector &newDof, Vector &curDof)
         if (!portSlvRpc->write(command,reply))
         {
             fprintf(stdout,"%s error: unable to get reply from solver!\n",slvName.c_str());
+
+            // end of critical code
             mutex->post();
             return false;
         }
@@ -1597,11 +1617,20 @@ bool ServerCartesianController::stopControl()
 {
     if (connected)
     {
+        // begin of critical code
+        mutex->wait();
+
         executingTraj=false;
         motionDone   =true;
 
         stopLimbVel();
         setTrackingMode(false);
+
+        txTokenLatched=txToken;
+        skipSlvRes=true;
+
+        // end of critical code
+        mutex->post();
     
         return true;
     }

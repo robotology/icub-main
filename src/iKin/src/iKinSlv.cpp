@@ -149,6 +149,8 @@ InputPort::InputPort(CartesianSolver *_slv)
     contMode=false;
     isNew=false;
     dofChanged=false;
+    token=0.0;
+    pToken=NULL;
 }
 
 
@@ -192,7 +194,7 @@ bool InputPort::handleTarget(Bottle *b)
             dofChanged=false;
         }
         else
-            slv->send(xd);
+            slv->send(xd,pToken);
 
         return true;
     }
@@ -273,6 +275,9 @@ bool InputPort::handleMode(const int newMode)
 /************************************************************************/
 void InputPort::onRead(Bottle &b)
 {
+    if (CartesianHelper::getTokenOption(b,&token))
+        pToken=&token;
+
     if (b.check(Vocab::decode(IKINSLV_VOCAB_OPT_XD)))
         if (!handleTarget(b.find(Vocab::decode(IKINSLV_VOCAB_OPT_XD)).asList()))
             fprintf(stdout,"expected %s data\n",Vocab::decode(IKINSLV_VOCAB_OPT_XD).c_str());
@@ -294,7 +299,7 @@ void InputPort::onRead(Bottle &b)
 /************************************************************************/
 void SolverCallback::exec(Vector xd, Vector q)
 {
-    slv->send(xd,slv->prt->chn->EndEffPose(),q);
+    slv->send(xd,slv->prt->chn->EndEffPose(),q,slv->pToken);
 }
 
 
@@ -323,6 +328,10 @@ CartesianSolver::CartesianSolver(const string &_slvName) : RateThread(CARTSLV_DE
     cmdProcessor=new RpcProcessor(this);
     rpcPort->setReader(*cmdProcessor);
     rpcPort->open(("/"+slvName+"/rpc").c_str());
+
+    // token
+    token=0.0;
+    pToken=NULL;
 
     // request high resolution scheduling
     Time::turboBoost();
@@ -773,7 +782,7 @@ bool CartesianSolver::respond(const Bottle &command, Bottle &reply)
 
 
 /************************************************************************/
-void CartesianSolver::send(const Vector &xd, const Vector &x, const Vector &q)
+void CartesianSolver::send(const Vector &xd, const Vector &x, const Vector &q, double *tok)
 {       
     Bottle &b=outPort->prepare();
     b.clear();
@@ -784,12 +793,15 @@ void CartesianSolver::send(const Vector &xd, const Vector &x, const Vector &q)
     addVectorOption(solutionBottle,IKINSLV_VOCAB_OPT_Q,q);
     b.append(solutionBottle);
 
+    if (tok)
+        addTokenOption(b,*tok);
+
     outPort->write();
 }
 
 
 /************************************************************************/
-void CartesianSolver::send(const Vector &xd)
+void CartesianSolver::send(const Vector &xd, double *tok)
 {
     Bottle &b=outPort->prepare();
     b.clear();
@@ -797,12 +809,16 @@ void CartesianSolver::send(const Vector &xd)
     addVectorOption(b,IKINSLV_VOCAB_OPT_XD,xd);
     b.append(solutionBottle);
 
+    if (tok)
+        addTokenOption(b,*tok);
+
     outPort->write();
 }
 
 
 /************************************************************************/
-void CartesianSolver::printInfo(const Vector &xd, const Vector &x, const Vector &q, const double t)
+void CartesianSolver::printInfo(const Vector &xd, const Vector &x, const Vector &q,
+                                const double t)
 {
     // compute error
     Vector e=xd-x;
@@ -1215,6 +1231,11 @@ void CartesianSolver::run()
     {        
         // point to the desired pose
         Vector &xd=inPort->get_xd();
+        if (inPort->get_tokenPtr()) // latch the token
+        {
+            token=*inPort->get_tokenPtr();
+            pToken=&token;
+        }
 
         // call the solver to converge
         double t0=Time::now();
@@ -1229,7 +1250,7 @@ void CartesianSolver::run()
         q=(180.0/M_PI)*q;
 
         // send data
-        send(xd,x,q);
+        send(xd,x,q,pToken);
 
         // dump on screen
         if (verbosity)

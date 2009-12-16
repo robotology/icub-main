@@ -66,6 +66,14 @@ public:
     static void addModeOption(yarp::os::Bottle &b, const bool tracking);
 
     /**
+    * Appends to a bottle a token to be exchanged with the solver.
+    * @param token. 
+    *  
+    * \note useful for some synchronization. 
+    */
+    static void addTokenOption(yarp::os::Bottle &b, const double token);    
+
+    /**
     * Retrieves commanded target data from a bottle.
     * @param b is the bottle containing the data to be retrieved.
     * @return a pointer to the sub-bottle containing the retrieved 
@@ -88,6 +96,15 @@ public:
     *         data.
     */
     static yarp::os::Bottle *getJointsOption(yarp::os::Bottle &b);
+
+    /**
+    * Retrieves the token from the bottle. 
+    * @param b is the bottle containing the data to be retrieved. 
+    * @param token is the pointer where to return the token.
+    * @return true iff the token property is present within the 
+    *         bottle b
+    */
+    static bool getTokenOption(yarp::os::Bottle &b, double *token);
 };
 
 }

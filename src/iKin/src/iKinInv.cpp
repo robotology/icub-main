@@ -1174,7 +1174,7 @@ Vector MultiRefMinJerkCtrl::iterate(Vector &xd, Vector &qd, const unsigned int v
         iter++;
     
         q_old=q;
-        calc_e();        
+        calc_e();
 
         genTrajJoint->compute(execTime,q_set,q,inTargetTol,dt);
         genTrajTask->compute(execTime,x_set,x,inTargetTol,dt);

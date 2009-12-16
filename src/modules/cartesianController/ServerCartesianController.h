@@ -90,6 +90,11 @@ protected:
     double       targetTol;
     double       trajTime;
 
+    double       txToken;
+    double       rxToken;
+    double       txTokenLatched;
+    bool         skipSlvRes;
+
     yarp::os::Semaphore *mutex;
     yarp::os::Stamp     *txInfo;
 
