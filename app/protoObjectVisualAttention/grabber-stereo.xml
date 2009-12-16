@@ -6,17 +6,17 @@
 </dependencies>
    <module>
       <name>icubmoddev</name>
-	      <parameters>--device logpolargrabber --width 320 --height 240 --framerate 33 --subdevice dragonfly2 --name /icub/cam/rightpolar/ --DR2 --d 1</parameters>
+	      <parameters>--device logpolargrabber --subdevice dragonfly2 --width 320 --height 240 --video_type 1 --white_balance 0.506 0.494 --gain 0.312 --shutter 0.913 --name /icub/cam/left  --brightness 0 --DR2 --stamp --d 0 --framerate 30 </parameters>
      <node>pc104</node>
           <stdio>icub14</stdio>
-	  <tag>logpolar-grabber-right</tag>
+	  <tag>logpolar-grabber-left</tag>
    </module>
 	<module>
       <name>icubmoddev</name>
-	      <parameters>--device logpolargrabber --width 320 --height 240 --framerate 33 --subdevice dragonfly2 --name /icub/cam/leftpolar/ --DR2 --d 0</parameters>
+	      <parameters>--device logpolargrabber --subdevice dragonfly2 --width 320 --height 240 --video_type 1 --white_balance 0.506 0.494 --gain 0.312 --shutter 0.913 --name /icub/cam/right  --brightness 0 --DR2 --stamp --d 1 --framerate 30 </parameters>
      <node>pc104</node>
 	  <stdio>icub14</stdio>
-	  <tag>logpolar-grabber-left</tag>
+	  <tag>logpolar-grabber-right</tag>
    </module>
    <module>
       <name>yarpview</name>
@@ -32,13 +32,13 @@
    </module>
    <module>
       <name>yarpview</name>
-      <parameters>--name /viewremaper --x 640 --y 50 --synch</parameters>
+      <parameters>--name /viewremapper --x 640 --y 50 --synch</parameters>
       <node>icub14</node>
-      <tag>viewremaper</tag>
+      <tag>viewremapper</tag>
    </module>
    <module>
       <name>logpolarRemapper</name>
-      <parameters>--name remapper --remote /icub/cam/leftpolar --width 480</parameters>
+      <parameters>--name remapper --remote /icub/cam/left --width 480</parameters>
       <node>pc104</node>
       <stdio>icub14</stdio>
       <tag>remapper</tag>
@@ -50,18 +50,18 @@
       <tag>view4</tag>
    </module>
 <connection>
-  <output>/icub/cam/leftpolar/logpolar</output>
+  <output>/icub/cam/left/logpolar</output>
   <input>/leftview</input>
   <protocol>mcast</protocol>
 </connection>
 <connection>
-  <output>/icub/cam/rightpolar/logpolar</output>
+  <output>/icub/cam/right/logpolar</output>
   <input>/rightview</input>
   <protocol>mcast</protocol>
 </connection>
 <connection>
-  <output>/icub/cam/rightpolar</output>
-  <input>/viewremaper</input>
+  <output>/icub/cam/right</output>
+  <input>/viewremapper</input>
   <protocol>mcast</protocol>
 </connection>
 <connection>
