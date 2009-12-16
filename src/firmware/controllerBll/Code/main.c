@@ -113,7 +113,7 @@ void main(void)
 	//Int32 windSizeVel=50;
 	Int32 positionWindow[35][JN]; //max window size: 254
 	Int32 velocityWindow[55][JN]; //max window size: 254
-  	UInt16 _safeband[JN];	//it is a value for reducing the JOINT limit of 2*_safeband [tick encoder]
+  	Int16 _safeband[JN];	//it is a value for reducing the JOINT limit of 2*_safeband [tick encoder]
 #ifdef TEMPERATURE_SENSOR
 	byte   TempSensCount1 = 0;
 	UInt32 TempSensCount2 = 0;
@@ -261,14 +261,14 @@ void main(void)
 	
 	
 	
-	
+ 	
 	//////////////////////////////////////
 	
 	/* initialize speed and acceleration to zero (useful later on) */
 	for (i=0; i<JN; i++) _position_old[i] = 0;
 	for (i=0; i<JN; i++) _speed[i] = 0;
 	for (i=0; i<JN; i++) _accel[i] = 0;
-	for (i=0; i<JN; i++) _safeband[i] =5; //5 ticks => 1 gradi di AEA.
+	for (i=0; i<JN; i++) _safeband[i] =-5; //5 ticks => 1 grado di AEA.
 	
 	/* reset the recursive windows for storage of position and velocity data */
 	/* (for velocity and position estimates) */
@@ -443,14 +443,50 @@ void main(void)
 					#ifdef DEBUG_CONTROL_MODE
 					can_printf("OUT of LIMITS ax:%d", i);	
 					#endif
-					if  (_position[i] > (_max_position[i]-_safeband[i]))
-					_desired[i] = (_max_position[i]-(_safeband[i]<<1)); //if it is out of limit it goes a littlebit far from the limits 
-					else 
-			    	_desired[i] = (_min_position[i]+(_safeband[i]<<1)); //if it is out of limit it goes a littlebit far from the limits 
-			
-					_integral[i] = 0; 
-					_set_point[i] = _desired[i];
-					init_trajectory (i, _desired[i], _desired[i], 1); 
+					
+					if (_safeband[i]>0)
+					{
+						if  ((_position[i] > (_max_position[i]-_safeband[i])) && (_desired[i]>(_max_position[i]-_safeband[i])))
+						{
+							_desired[i]=(_max_position[i]-_safeband[i]); 
+							_integral[i] = 0; 
+							_set_point[i] = _desired[i];
+							init_trajectory (i, _desired[i], _desired[i], 1); 
+						}
+						
+						if  ((_position[i] < (_min_position[i]+_safeband[i])) && (_desired[i]<(_min_position[i]+_safeband[i])))
+						{
+							_desired[i]=(_min_position[i]+_safeband[i]); 
+							_integral[i] = 0; 
+							_set_point[i] = _desired[i];
+							init_trajectory (i, _desired[i], _desired[i], 1); 
+						}
+					}
+					else	
+					{
+						if  ((_position[i] > (_max_position[i]+_safeband[i])) && (_desired[i]>(_max_position[i]-_safeband[i])))
+						{
+							#ifdef DEBUG_CONTROL_MODE
+							can_printf("OUT of LIMITS MAX ax:%d", i);	
+							#endif
+							_desired[i]=_max_position[i]; 
+							_integral[i] = 0; 
+							_set_point[i] = _desired[i];
+							init_trajectory (i, _desired[i], _desired[i], 1); 
+						}
+						
+						if  ((_position[i] < (_min_position[i]-_safeband[i])) && (_desired[i]<(_min_position[i]+_safeband[i])))
+						{
+							#ifdef DEBUG_CONTROL_MODE
+							can_printf("OUT of LIMITS MIN ax:%d", i);	
+							#endif
+							_desired[i]=_min_position[i]; 
+							_integral[i] = 0; 
+							_set_point[i] = _desired[i];
+							init_trajectory (i, _desired[i], _desired[i], 1); 
+						}
+						
+					}
 	 			} 
  			}
  			if (_control_mode[i] == MODE_OPENLOOP)
@@ -459,15 +495,48 @@ void main(void)
 	 			{			
 	 				_control_mode[i] = MODE_POSITION; //	
 					_ko[i]=0;  //remove the PWM offset if it is out of limits
-					if  (_position[i] > (_max_position[i]-_safeband[i]))
-					_desired[i] = (_max_position[i]-(_safeband[i]<<1)); //if it is out of limit it goes a littlebit far from the limits 
-					else 
-			    	_desired[i] = (_min_position[i]+(_safeband[i]<<1)); //if it is out of limit it goes a littlebit far from the limits 
-			
-					_integral[i] = 0; 
-					_set_point[i] = _desired[i];
-					init_trajectory (i, _desired[i], _desired[i], 1); 
-					
+					if (_safeband[i]>0)
+					{
+						if  ((_position[i] > (_max_position[i]-_safeband[i])) && (_desired[i]>(_max_position[i]-_safeband[i])))
+						{
+							_desired[i]=(_max_position[i]-_safeband[i]); 
+							_integral[i] = 0; 
+							_set_point[i] = _desired[i];
+							init_trajectory (i, _desired[i], _desired[i], 1); 
+						}
+						
+						if  ((_position[i] < (_min_position[i]+_safeband[i])) && (_desired[i]<(_min_position[i]+_safeband[i])))
+						{
+							_desired[i]=(_min_position[i]+_safeband[i]); 
+							_integral[i] = 0; 
+							_set_point[i] = _desired[i];
+							init_trajectory (i, _desired[i], _desired[i], 1); 
+						}
+					}
+					else	
+					{
+						if  ((_position[i] > (_max_position[i]+_safeband[i])) && (_desired[i]>(_max_position[i]-_safeband[i])))
+						{
+							#ifdef DEBUG_CONTROL_MODE
+							can_printf("OUT of LIMITS MAX ax:%d", i);	
+							#endif
+							_desired[i]=_max_position[i]; 
+							_integral[i] = 0; 
+							_set_point[i] = _desired[i];
+							init_trajectory (i, _desired[i], _desired[i], 1); 
+						}
+						
+						if  ((_position[i] < (_min_position[i]-_safeband[i])) && (_desired[i]<(_min_position[i]+_safeband[i])))
+						{
+							#ifdef DEBUG_CONTROL_MODE
+							can_printf("OUT of LIMITS MIN ax:%d", i);	
+							#endif
+							_desired[i]=_min_position[i]; 
+							_integral[i] = 0; 
+							_set_point[i] = _desired[i];
+							init_trajectory (i, _desired[i], _desired[i], 1); 
+						}
+					}
 					#ifdef DEBUG_CONTROL_MODE
 					can_printf("MODE CHANGED TO POSITION, OUT of LIMITS ax:%d", i);	
 	 			    #endif 

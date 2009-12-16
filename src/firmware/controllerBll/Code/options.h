@@ -27,7 +27,7 @@
 //#define TEMPERATURE_SENSOR    	1
 //#define ENCODER_SHIFT_11BITS  	1
 //#define DEBUG_ABS_SENSOR_STATUS 	1
-//#define DEBUG_CONTROL_MODE    	1
+#define DEBUG_CONTROL_MODE    	1
 
 
 #endif
