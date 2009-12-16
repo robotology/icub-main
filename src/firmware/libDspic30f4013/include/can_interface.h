@@ -61,7 +61,14 @@ extern char BOARD_TYPE;
 #define CAN_CMD_SET_RESOLUTION    0x10 //set data resolution
 #define CAN_CMD_SET_MATRIX_G      0x11 //set matrix gain
 #define CAN_CMD_GET_MATRIX_G      0x12 //get matrix gain
-
+#define CAN_CMD_SET_CALIB_TARE    0x13 //set/reset calibration tare
+#define CAN_CMD_GET_CALIB_TARE    0x14 //get calibration tare
+#define CAN_CMD_SET_CURR_TARE     0x15 //set/reset current tare
+#define CAN_CMD_GET_CURR_TARE     0x16 //get current tare
+#define CAN_CMD_SET_FULL_SCALES   0x17 //set/reset current tare
+#define CAN_CMD_GET_FULL_SCALES   0x18 //get current tare
+#define CAN_CMD_SET_SERIAL_NO     0x19 //set/reset current tare
+#define CAN_CMD_GET_SERIAL_NO     0x1A //get current tare
 //////////////////////////////////////////////////////////////
 // BROADCAST MESSAGES, CLASS 0x03
 // Transmitted Torque values 3*16 bit 
