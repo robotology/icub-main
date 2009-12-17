@@ -94,8 +94,8 @@ public:
 
     virtual bool configure(ResourceFinder &rf)
     {
-        partUsed=rf.check("part",Value("both")).asString().c_str();
-        if (partUsed!="both" && partUsed!="left" && partUsed!="right")
+        partUsed=rf.check("part",Value("both_arms")).asString().c_str();
+        if (partUsed!="both_arms" && partUsed!="left_arm" && partUsed!="right_arm")
         {
             cout<<"Invalid part requested !"<<endl;
             return false;
@@ -110,9 +110,11 @@ public:
         Property optionL(option); optionL.put("part","left_arm");
         Property optionR(option); optionR.put("part","right_arm");
 
-        if (partUsed=="both" || partUsed=="left")
+        if (partUsed=="both_arms" || partUsed=="left_arm")
         {    
+            cout<<"***** Instantiating primitives for left_arm"<<endl;
             actionL=new affActionPrimitivesLayer1(optionL);
+
             if (!actionL->isValid())
             {
                 delete actionL;
@@ -122,9 +124,11 @@ public:
                 useArm(USE_LEFT);
         }
 
-        if (partUsed=="both" || partUsed=="right")
+        if (partUsed=="both_arms" || partUsed=="right_arm")
         {    
+            cout<<"***** Instantiating primitives for right_arm"<<endl;
             actionR=new affActionPrimitivesLayer1(optionR);
+
             if (!actionR->isValid())
             {
                 delete actionR;
@@ -140,7 +144,7 @@ public:
         }
 
         deque<string> q=action->getHandSeqList();
-        cout<<"List of available hand sequence keys:"<<endl;
+        cout<<"***** List of available hand sequence keys:"<<endl;
         for (size_t i=0; i<q.size(); i++)
             cout<<q[i]<<endl;
 
@@ -159,7 +163,7 @@ public:
 
         if (!inPort.isClosed())
             inPort.close();
-        
+
 		return true;
     }
 
@@ -209,7 +213,7 @@ public:
 			xd[2]=b->get(2).asDouble();
 
             // switch only if it's allowed
-            if (partUsed=="both")
+            if (partUsed=="both_arms")
             {
                 if (xd[1]>0.0)
                     useArm(USE_RIGHT);
@@ -245,9 +249,7 @@ public:
 
 	bool interruptModule()
 	{
-		actionL->syncCheckInterrupt(true);
-        actionR->syncCheckInterrupt(true);
-
+		action->syncCheckInterrupt(true);
         inPort.interrupt();
 
 		return true;
