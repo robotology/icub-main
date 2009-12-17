@@ -14,6 +14,9 @@
 #include <string>
 #include <deque>
 
+#define USE_LEFT    0
+#define USE_RIGHT   1
+
 using namespace std;
 using namespace yarp;
 using namespace yarp::os;
@@ -25,49 +28,91 @@ using namespace yarp::math;
 class testModule: public RFModule
 {
 protected:
-	affActionPrimitivesLayer1 *action;
+	affActionPrimitivesLayer1 *actionL;
+    affActionPrimitivesLayer1 *actionR;
+    affActionPrimitivesLayer1 *action;
 	BufferedPort<Bottle> inPort;
 
-    Vector graspOrien, home_x, home_o;
+    Vector graspOrienL, graspOrienR;
+    Vector graspDispL, graspDispR;
+    Vector dOffsL, dOffsR;
+    Vector dRelL, dRelR;
+    Vector home_xL, home_oL, home_xR, home_oR;
+
+    Vector *graspOrien;
+    Vector *graspDisp;
+    Vector *dOffs;
+    Vector *dRel;
+    Vector *home_x, *home_o;
 
 public:
     testModule()
-	{
-		action=NULL;
+	{		
+        graspOrienL.resize(4);    graspOrienR.resize(4);
+        graspDispL.resize(4);     graspDispR.resize(3);
+        dOffsL.resize(3);         dOffsR.resize(3);
+        dRelL.resize(3);          dRelR.resize(3);
+        home_xL.resize(3);        home_xR.resize(3);
+        home_oL.resize(4);        home_oR.resize(4);
 
-        graspOrien.resize(4);
-        home_x.resize(3);
-        home_o.resize(4);
+        graspOrienL[0]=-0.171542; graspOrienR[0]=-0.0191;
+        graspOrienL[1]= 0.124396; graspOrienR[1]=-0.983248;
+        graspOrienL[2]=-0.977292; graspOrienR[2]=0.181269;
+        graspOrienL[3]= 3.058211; graspOrienR[3]=3.093746;
 
-        graspOrien[0]=-0.171542;
-        graspOrien[1]= 0.124396;
-        graspOrien[2]=-0.977292;
-        graspOrien[3]= 3.058211;
+        graspDispL[0]=0.0;        graspDispR[0]=0.0; 
+        graspDispL[1]=0.0;        graspDispR[1]=0.0; 
+        graspDispL[2]=0.05;       graspDispR[2]=0.08;
+
+        dOffsL[0]=-0.02;          dOffsR[0]=-0.02;
+        dOffsL[1]=-0.04;          dOffsR[1]= 0.03;
+        dOffsL[2]=-0.02;          dOffsR[2]= 0.01;
+
+        dRelL[0]=0.0;             dRelR[0]=0.0;  
+        dRelL[1]=0.0;             dRelR[1]=0.0;  
+        dRelL[2]=0.15;            dRelR[2]=0.10; 
         
-        home_x[0]=-0.29;
-        home_x[1]=-0.21; 
-        home_x[2]= 0.11;
-        home_o[0]=-0.029976;
-        home_o[1]= 0.763076;
-        home_o[2]=-0.645613;
-        home_o[3]= 2.884471;
+        home_xL[0]=-0.29;         home_xR[0]=-0.29;
+        home_xL[1]=-0.21;         home_xR[1]= 0.21;
+        home_xL[2]= 0.11;         home_xR[2]= 0.14;
+        home_oL[0]=-0.029976;     home_oR[0]=-0.119573;
+        home_oL[1]= 0.763076;     home_oR[1]=-0.802358;
+        home_oL[2]=-0.645613;     home_oR[2]= 0.584742;
+        home_oL[3]= 2.884471;     home_oR[3]= 2.857523;
 
+        action=actionL=actionR=NULL;
+        graspOrien=NULL;
+        graspDisp=NULL;
+        dOffs=NULL;
+        dRel=NULL;
+        home_x=NULL;
+        home_o=NULL;
 	}
 
     virtual bool configure(ResourceFinder &rf)
     {
-		Property option("(robot icub) (local testMod) (part left_arm) (traj_time 2.0)\
-						(torso_pitch on) (torso_pitch_max 20.0) (torso_roll off) (torso_yaw on)");
+		Property option("(robot icub) (local testMod) (traj_time 2.0)\
+						(torso_pitch on) (torso_pitch_max 20.0)\
+                        (torso_roll off) (torso_yaw on)");
         option.put("hand_calibration_file",rf.findFile("calibFile"));
         option.put("hand_sequences_file",rf.findFile("seqFile"));
 
-		action=new affActionPrimitivesLayer1(option);
+        Property optionL(option); optionL.put("part","left_arm");
+        Property optionR(option); optionR.put("part","right_arm");
 
-		if (!action->isValid())
+		actionL=new affActionPrimitivesLayer1(optionL);
+        actionR=new affActionPrimitivesLayer1(optionR);
+
+		if (!actionL->isValid() || !actionR->isValid())
 		{
-			delete action;
+			delete actionL;
+            delete actionR;
+
 			return false;
 		}
+
+        // init action
+        useArm(USE_LEFT);
         
         deque<string> q=action->getHandSeqList();
         cout<<"List of available hand sequence keys:"<<endl;
@@ -81,18 +126,48 @@ public:
 
     virtual bool close()
     {
-		if (action!=NULL)
-			delete action;
+		if (actionL!=NULL)
+			delete actionL;
 		
-		inPort.close();
+        if (actionR!=NULL)
+            delete actionR;
+
+        if (!inPort.isClosed())
+            inPort.close();
         
 		return true;
     }
 
     virtual double getPeriod()
 	{
-		return 1.0;
+		return 0.1;
 	}
+
+    void useArm(const int arm)
+    {
+        if (arm==USE_LEFT)
+        {
+            action=actionL;
+
+            graspOrien=&graspOrienL;
+            graspDisp=&graspDispL;
+            dOffs=&dOffsL;
+            dRel=&dRelL;
+            home_x=&home_xL;
+            home_o=&home_oL;
+        }
+        else if (arm==USE_RIGHT)
+        {
+            action=actionR;
+
+            graspOrien=&graspOrienR;
+            graspDisp=&graspDispR;
+            dOffs=&dOffsR;
+            dRel=&dRelR;
+            home_x=&home_xR;
+            home_o=&home_oR;
+        }
+    }
 
     virtual bool updateModule()
 	{		
@@ -101,36 +176,28 @@ public:
 
         if (b!=NULL)
 		{
+			Vector xd(3);
             bool f;
-			Vector xd(3), dOffs(3), graspDisp(3);
 			
 			xd[0]=b->get(0).asDouble();
 			xd[1]=b->get(1).asDouble();
 			xd[2]=b->get(2).asDouble();
 
-            dOffs[0]=-0.02;
-            dOffs[1]=-0.04;
-            dOffs[2]=-0.02;
+            if (xd[1]>0.0)
+                useArm(USE_RIGHT);
+            else
+                useArm(USE_LEFT);
 
-            xd=xd+dOffs;
+            xd=xd+*dOffs;
 
 			xd[0]=xd[0]>-0.1?-0.1:xd[0];	// safe thresholding
 
-            graspDisp[0]=0.0;
-            graspDisp[1]=0.0;
-            graspDisp[2]=0.05;
-
             // grasp it (wait until it's done)
-			action->grasp(xd,graspOrien,graspDisp);
+			action->grasp(xd,*graspOrien,*graspDisp);
             action->checkActionsDone(f,true);
 
-            Vector dRel(3);
-            dRel[0]=0.0;
-            dRel[1]=0.0;
-            dRel[2]=0.10;
-
             // lift the object (wait until it's done)
-			action->pushAction(xd+dRel,graspOrien);
+			action->pushAction(xd+*dRel,*graspOrien);
             action->checkActionsDone(f,true);
 
             // release the object (wait until it's done)
@@ -138,7 +205,7 @@ public:
             action->checkActionsDone(f,true);
 
             // go home :)
-            action->pushAction(home_x,home_o);
+            action->pushAction(*home_x,*home_o);
 		}		
 
 		return true;
@@ -146,8 +213,10 @@ public:
 
 	bool interruptModule()
 	{
-		action->syncCheckInterrupt(true);
-		inPort.interrupt();
+		actionL->syncCheckInterrupt(true);
+        actionR->syncCheckInterrupt(true);
+
+        inPort.interrupt();
 
 		return true;
 	}
