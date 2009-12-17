@@ -184,9 +184,10 @@ public:
     *    calibration file.
     *  
     * \b hand_sequences_file <string>: complete path to the file 
-    *    containing the hand motions sequences. Here is the format
-    *    of motion sequences:
+    *    containing the hand motions sequences.<br />Here is the
+    *    format of motion sequences:
     *  
+    *  <code>
     *  [GENERAL]
     *  numSequences ***
     *  
@@ -199,6 +200,7 @@ public:
     *  
     *  [SEQ_1]
     *  ...
+    *  </code>
     */
     bool open(yarp::os::Property &opt);
 
