@@ -17,14 +17,20 @@
 #include "iCub/vislab/EyeTableProjection.h"
 
 #include <cmath>
+#include <yarp/math/Math.h>
+#include <iCub/ctrlMath.h>
+#include <vislab/yarp/sig.h>
 
 using namespace yarp::os;
 using namespace yarp::sig;
+using namespace yarp::math;
 
 using namespace std;
 
 using namespace iKin;
 using namespace ctrl;
+
+using namespace vislab::yarp;
 
 //#define DEBUG
 
@@ -51,8 +57,10 @@ CameraCalibration EyeTableProjection::getCameraCalibration(Property& p) {
 	return c;
 }
 
-EyeTableProjection::EyeTableProjection(const ConstString& eye, Property& calibration, const Vector* tabletop) :
-	SimpleHomography(getCameraCalibration(calibration), tabletop), eye(eye.c_str()), camera(eye) {
+EyeTableProjection::EyeTableProjection(const ConstString& eye, Property& calibration,
+		const Vector* tabletop) :
+	SimpleHomography(getCameraCalibration(calibration), tabletop), eye(eye.c_str()), camera(eye),
+			safetyRadius(0.2) {
 
 	if (eye != "right" && eye != "left") {
 		throw invalid_argument("You have to properly specify one of the eyes (\"left\" | \"right\"");
@@ -87,9 +95,21 @@ void EyeTableProjection::setBaseTransformation(const ::yarp::sig::Vector& torso3
 	SimpleHomography::setBaseTransformation(T);
 }
 
+void EyeTableProjection::setSafetyRadius(const double r) {
+	safetyRadius = r;
+}
+
 void EyeTableProjection::project(const ::yarp::sig::Vector& in, ::yarp::sig::Vector& out) {
 	SimpleHomography::project(in, out);
-	out[0] = min(-0.1, out[0]);
+	double len = ctrl::norm(out);
+
+	// limit the output range
+	if (len == 0) {
+		// Negative x values lie in front of the robot
+		out[0] = -safetyRadius;
+	} else if (len < safetyRadius) {
+		out = (out / len) * safetyRadius;
+	}
 }
 
 }

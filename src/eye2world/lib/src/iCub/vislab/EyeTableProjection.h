@@ -70,6 +70,8 @@ private:
 
 	static CameraCalibration getCameraCalibration(::yarp::os::Property& p);
 
+	double safetyRadius;
+
 public:
 	/**
 	 * The constructor
@@ -92,6 +94,14 @@ public:
 	 * @param head6dThe current state of the robot's head retrieved by e.g. /icub/head/state:o
 	 */
 	void setBaseTransformation(const ::yarp::sig::Vector& torso3d, const ::yarp::sig::Vector& head6d);
+
+	/**
+	 * Sest a radius for the area around the robot's base coordinates where points shouldn't be projected
+	 * to. If a point is internally projected to that area, it is correct such that the output matches the
+	 * above criteria. The constructor sets this value to 0.2 (20 centimeters) by default.
+	 * @param r The safety radius [m]. 0.01 = 1 millimeter.
+	 */
+	void setSafetyRadius(const double r);
 
 	/**
 	 * Projects the given 2D point to the table top but limits the output the robot's possible field of view.
