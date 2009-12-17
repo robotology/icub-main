@@ -19,7 +19,6 @@
  * Public License for more details
  */
 
-
 #include <iCub/iha/AudioAnalyserModule.h>
 
 #include <iCub/iha/iha_utils.h>
@@ -178,6 +177,17 @@ bool AudioAnalyserModule::open(Searchable& config){
     Threshold1=0.4;
     Threshold2=1.0;//sends beats if human stays silent from 1 sec.
     
+    //maybe these should be set somewhere outside of the 
+    //update (not inside a loop in orginal code
+    time(&stime);
+    time(&ftime);  
+    ftime1=ftime;
+    //st1=clock();
+    timeval tim;
+    gettimeofday(&tim, NULL);
+    st1=tim.tv_sec+(tim.tv_usec/1000000.0);
+    //st1 = yarp::os::Time::now();
+    ss=st1;
 
     ok &= quitPort.open(getName("quit"));
     attach(quitPort, true);
@@ -199,22 +209,16 @@ bool AudioAnalyserModule::interruptModule(){
 
 bool AudioAnalyserModule::updateModule(){
 
-    //maybe these should be set somewhere outside of the 
-    //update (not inside a loop in orginal code
-    time(&stime);
-    time(&ftime);  
-    ftime1=ftime;
-    st1=clock();
-    ss=st1;
 
-
+    //printf("in updateModule \n");
+    
     Sound *sound = soundPort.read();
-    if (isStopping() || sound==NULL)
-        {
-            return false;
-        }
-
-    ftime1=ftime;
+    if (isStopping() || sound==NULL){
+        printf("returning false \n");
+        return false;
+    }
+    
+    //ftime1=ftime;
     for (int i=0;i<sound->getSamples();i++) {
         for(int j = 0; j < sound->getChannels(); j++) {
             val=(double)sound->get(i,j)/32768;
@@ -237,9 +241,14 @@ bool AudioAnalyserModule::updateModule(){
                         count2=2;
                         count3=count1;
                         time(&stime1);
-                        ft=clock();
+                        //ft=clock();
+                        timeval tim;
+                        gettimeofday(&tim, NULL);
+                        ft=tim.tv_sec+(tim.tv_usec/1000000.0);
+                        //ft = yarp::os::Time::now();
                         if (beatNo!=0) {
-                            dur = (double)(ft - st) / CLOCKS_PER_SEC;
+                            //dur = (double)(ft - st) / CLOCKS_PER_SEC;
+                            dur = ft - st;
                             durArr[beatNo]=dur;
                         }
                     }
@@ -259,8 +268,12 @@ bool AudioAnalyserModule::updateModule(){
                         count2=count2-2;//window[2], window[3]
                         avg=avg/count2;
                         vlow=window[1];
-                        time(&ftime1);
-                        st=clock();
+                        //time(&ftime1);
+                        //st=clock();
+                        timeval tim;
+                        gettimeofday(&tim, NULL);
+                        double st=tim.tv_sec+(tim.tv_usec/1000000.0);
+                        //st = yarp::os::Time::now();
                         beatNo++;
                         high=-AUDIO_MAX_VAL;
                         low=AUDIO_MAX_VAL;
@@ -279,26 +292,36 @@ bool AudioAnalyserModule::updateModule(){
         } //channels loop
     } // samples loop
     
-    time(&ftime);
-    fs=clock();
-    duration_double=(double)(fs-ss)/CLOCKS_PER_SEC;
+    //time(&ftime);
+    //fs=clock();
+    timeval tim;
+    gettimeofday(&tim, NULL);
+    double fs=tim.tv_sec+(tim.tv_usec/1000000.0);
+    //fs = yarp::os::Time::now();
+    //double dur = double(fs -ss);
+    //duration_double=(double)(fs-ss)/CLOCKS_PER_SEC;
+    duration_double = fs - ss;
     //if enough time has elapsed, send the output
+    //printf("duration: %lf %lf\n", duration_double,Threshold2);
     if ( duration_double > Threshold2) { 
         //printf("TH1 %lf", Threshold2);
-        // printf("%lf TH %lf ", duration_double, Threshold2);
+        printf("%lf TH %lf ", duration_double, Threshold2);
         stop=1;
-        //  time(&ftime2);
         ss=fs;
         
         Bottle bot;
+        printf("beats: %d \n",beatNo);
         bot.addInt(beatNo);
         for (int i=1; i<beatNo; i++) {
             duration = (int)(durArr[i]*AUDIO_MAX_VAL);
             bot.addInt(duration);//duration
         }
+        //reset beats to zero
+        beatNo = 0; 
         printf("send message: %s \n", bot.toString().c_str());
         // send the message
         dataPortOut.write(bot);
+        bot.clear();
     }
     return true;
 }
