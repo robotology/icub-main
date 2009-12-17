@@ -11,7 +11,6 @@ PROJECT(${PROJECTNAME})
 find_package(ICUB)
 
 find_package(YARP REQUIRED)
-find_package(IPOPT REQUIRED)
 find_package(CTRLLIB REQUIRED)
 find_package(IKIN REQUIRED)
 find_package(LIBEYECUB REQUIRED)
