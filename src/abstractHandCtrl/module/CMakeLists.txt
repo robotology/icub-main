@@ -11,7 +11,6 @@ project(${PROJECTNAME})
 find_package(ICUB)
 
 find_package(YARP REQUIRED)
-find_package(IPOPT REQUIRED)
 find_package(LIBHANDCTRL REQUIRED)
 find_package(LIBVISLAB REQUIRED)
 include_directories(${YARP_INCLUDE_DIRS} ${LIBVISLAB_INCLUDE_DIRS} ${LIBHANDCTRL_INCLUDE_DIRS})
