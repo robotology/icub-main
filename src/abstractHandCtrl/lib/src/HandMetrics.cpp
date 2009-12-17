@@ -53,12 +53,10 @@ HandMetrics::~HandMetrics() {
 
 void HandMetrics::snapshot() {
 	mutex.wait();
-	bool newSnapshot = position.size() <= 0 || velocity.size() < 0;
+	bool newSnapshot = position.size() > 0 || velocity.size() > 0;
 
 	if (newSnapshot) {
 		prevPosition = position;
-	} else {
-		cout << "extend" << endl;
 	}
 
 	// reset hand metrics (force re-computations)

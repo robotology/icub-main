@@ -461,7 +461,7 @@ bool Hand::motionDone(const set<int> joints) {
 	for (itr = joints.begin(); itr != joints.end(); ++itr) {
 		bool b;
 		posControl->checkMotionDone(*itr, &b);
-		if (abs(v[*itr]) > 0.005 && !b) {
+		if (abs(v[*itr]) > 0.001 && !b) {
 			return false;
 		}
 	}
