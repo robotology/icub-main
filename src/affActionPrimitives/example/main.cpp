@@ -48,6 +48,7 @@ protected:
 public:
     testModule()
 	{		
+        // initialization of arm-dependent quantities
         graspOrienL.resize(4);    graspOrienR.resize(4);
         graspDispL.resize(4);     graspDispR.resize(3);
         dOffsL.resize(3);         dOffsR.resize(3);
@@ -188,9 +189,12 @@ public:
             else
                 useArm(USE_LEFT);
 
+            // apply systematic offset
+            // due to uncalibrated kinematic
             xd=xd+*dOffs;
 
-			xd[0]=xd[0]>-0.1?-0.1:xd[0];	// safe thresholding
+            // safe thresholding
+			xd[0]=xd[0]>-0.1?-0.1:xd[0];
 
             // grasp it (wait until it's done)
 			action->grasp(xd,*graspOrien,*graspDisp);
