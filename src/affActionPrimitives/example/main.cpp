@@ -76,12 +76,12 @@ public:
         dRelL[2]=0.15;            dRelR[2]=0.10; 
         
         home_xL[0]=-0.29;         home_xR[0]=-0.29;
-        home_xL[1]=-0.21;         home_xR[1]= 0.21;
-        home_xL[2]= 0.11;         home_xR[2]= 0.14;
-        home_oL[0]=-0.029976;     home_oR[0]=-0.119573;
-        home_oL[1]= 0.763076;     home_oR[1]=-0.802358;
-        home_oL[2]=-0.645613;     home_oR[2]= 0.584742;
-        home_oL[3]= 2.884471;     home_oR[3]= 2.857523;
+        home_xL[1]=-0.21;         home_xR[1]= 0.24;
+        home_xL[2]= 0.11;         home_xR[2]= 0.07;
+        home_oL[0]=-0.029976;     home_oR[0]=-0.193426;
+        home_oL[1]= 0.763076;     home_oR[1]=-0.63989;
+        home_oL[2]=-0.645613;     home_oR[2]= 0.743725;
+        home_oL[3]= 2.884471;     home_oR[3]= 2.995693;
 
         action=actionL=actionR=NULL;
         graspOrien=NULL;
