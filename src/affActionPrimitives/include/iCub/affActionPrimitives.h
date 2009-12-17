@@ -187,7 +187,7 @@ public:
     *    containing the hand motions sequences.<br />Here is the
     *    format of motion sequences:
     *  
-    *  <code>
+    *  \code
     *  [GENERAL]
     *  numSequences ***
     *  
@@ -200,7 +200,7 @@ public:
     *  
     *  [SEQ_1]
     *  ...
-    *  </code>
+    *  \endcode
     */
     bool open(yarp::os::Property &opt);
 
