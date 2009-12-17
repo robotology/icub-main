@@ -25,8 +25,8 @@ CONFIG_PATH=`eval echo $CNAME`
 XTERM_WRAP="xterm -hold -fg white -bg black -title dynamics -geometry $DYNAMICS_GEOM  -e bash -l -c "
 
 # Command to start motivation dynamics without making connections to face/sound ports
-#CMD="$EXEC --name $DYNAMICS_NAME --file $CONFIG_PATH/$CONFIG_FILE --connect_to_data $SMI_INTERFACE_SENSORS_OUT $*"
-CMD="$EXEC --name $DYNAMICS_NAME --file $CONFIG_PATH/$CONFIG_FILE --connect_to_data $SMI_INTERFACE_SENSORS_OUT --connect_to_expression $EXPRESSION_RAW_PORT $*"
+CMD="$EXEC --name $DYNAMICS_NAME --file $CONFIG_PATH/$CONFIG_FILE --connect_to_data $SMI_INTERFACE_SENSORS_OUT --connect_to_mem $STM_SCORE_OUT --connect_to_expression $EXPRESSION_RAW_PORT $*"
+#CMD="$EXEC --name $DYNAMICS_NAME --file $CONFIG_PATH/$CONFIG_FILE  $*"
 # 
 ################################################################################
 
@@ -51,7 +51,9 @@ case "$scriptcmd" in
 	connect)
 		yarp wait $DYNAMICS_PORT_DATA_IN
 		yarp wait $SMI_INTERFACE_SENSORS_OUT
+		yarp wait $STM_SCORE_OUT
 	        yarp connect $SMI_INTERFACE_SENSORS_OUT $DYNAMICS_PORT_DATA_IN
+	        yarp connect $STM_SCORE_OUT $DYNAMICS_PORT_MEM_IN
 		;;
 	disconnect)
 	       yarp disconnect $SMI_INTERFACE_SENSORS_OUT $DYNAMICS_PORT_DATA_IN

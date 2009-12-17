@@ -52,8 +52,8 @@ case "$scriptcmd" in
 		;;
 	start)
 		#start_process $RUNNAME $MACHINE "$CMD" "none" &
-		#start_process $RUNNAME $MACHINE "$CMD" "$XTERM_WRAP" &
-	        start_process $RUNNAME $MACHINE "$CMD" "$XTERM_WRAP" $LOGFILE &
+		start_process $RUNNAME $MACHINE "$CMD" "$XTERM_WRAP" &
+	        #start_process $RUNNAME $MACHINE "$CMD" "$XTERM_WRAP" $LOGFILE &
 		;;
 	connect)
 		yarp wait $PORTAUDIO_PORT

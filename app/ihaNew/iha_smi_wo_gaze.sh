@@ -37,11 +37,10 @@ CONFIG_PATH=`eval echo $CNAME`
 
 XTERM_WRAP="xterm -hold -fg white -bg darkslategray -title iha_smi -geometry $SMI_GEOM  -e bash -l -c "
 
-#CMD="$EXEC --name $SMI_INTERFACE_NAME --file $CONFIG_PATH/$INTERFACE_CONFIG_FILE  --connect_to_image $CAMERA --connect_to_coords $FACEDETECT_PORT_DETECT --connect_to_reward $DYNAMICS_PORT_REWARD_OUT --connect_to_soundsensor $SOUNDSERVER_PORT_OUT --connect_to_encoders $CONTROLLER_ENCODERS_OUT --connect_to_action $CONTROLLER_ACTION_CMD $*"
-CMD="$EXEC --name $SMI_INTERFACE_NAME --file $CONFIG_PATH/$SMI_INTERFACE_CONFIG_FILE  --connect_to_image $CAMERA --connect_to_face_coords $FACEDETECT_PORT_DETECT --connect_to_soundsensor $SOUNDSERVER_PORT_OUT --connect_to_encoders $CONTROLLER_ENCODERS_OUT $*"
-#CMD="$EXEC --name $SMI_INTERFACE_NAME --file $CONFIG_PATH/$CONFIG_FILE  --connect_to_image $SALIENCE_PORT_OUT --connect_to_coords $FACEDETECT_PORT_DETECT --connect_to_reward $DYNAMICS_PORT_REWARD_OUT --connect_to_soundsensor $SOUNDSERVER_PORT_OUT --connect_to_encoders $CONTROLLER_ENCODERS_OUT --connect_to_expression $EXPRESSION_RAW_PORT $*"
-#CMD="$EXEC --name $SMI_INTERFACE_NAME --file $CONFIG_PATH/$CONFIG_FILE  --connect_to_image $SALIENCE_PORT_OUT --connect_to_coords $FACEDETECT_PORT_DETECT --connect_to_soundsensor $SOUNDSERVER_PORT_OUT --connect_to_encoders $CONTROLLER_ENCODERS_OUT --connect_to_expression $EXPRESSION_RAW_PORT $*"
-#CMD="$EXEC --name $SMI_INTERFACE_NAME --file $CONFIG_PATH/$CONFIG_FILE --connect_to_encoders $CONTROLLER_ENCODERS_OUT $*"
+
+#CMD="$EXEC --name $SMI_INTERFACE_NAME --file $CONFIG_PATH/$SMI_INTERFACE_CONFIG_FILE  --connect_to_image $CAMERA --connect_to_face_coords $FACEDETECT_PORT_DETECT --connect_to_soundsensor $SOUNDSERVER_PORT_OUT --connect_to_encoders $CONTROLLER_ENCODERS_OUT --gaze_input FALSE $*"
+CMD="$EXEC --name $SMI_INTERFACE_NAME --file $CONFIG_PATH/$SMI_INTERFACE_CONFIG_FILE  --connect_to_image $CAMERA --connect_to_face_coords $FACEDETECT_PORT_DETECT --connect_to_soundsensor $SOUNDSERVER_PORT_OUT --connect_to_encoders $CONTROLLER_ENCODERS_OUT --connect_to_beat $AUDIOANALYSER_PORT_OUT --gaze_input FALSE --beat_input TRUE $*"
+
 # 
 ################################################################################
 

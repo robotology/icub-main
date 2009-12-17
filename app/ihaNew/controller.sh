@@ -10,8 +10,7 @@ scriptcmd=$1
 shift
 
 # Logfile
-# if the environment variable is set already, then use that otherwise set a defa
-ult
+# if the environment variable is set already, then use that otherwise set a default
 if [ ${#LOGDIR} -eq 0 ]
 then
 LOGDIR=/usr/local/src/robot/iCub/app/ihaNew/logs/

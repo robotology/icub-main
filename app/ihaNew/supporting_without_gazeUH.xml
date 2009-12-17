@@ -23,6 +23,13 @@
   <tag>soundserver</tag>
 </module>
 <module>
+  <name>ihaNewAudioAnalyzer</name>
+  <parameters>--name /iha/beat --file /usr/local/src/robot/iCub/app/ihaNew/conf/ihaAudioAnalyser.ini</parameters>
+  <node>serad</node>
+  <stdio>serad</stdio>
+  <tag>audioanalyser</tag>
+</module>
+<module>
   <name>ihaNewIhaFaceDetect</name>
   <parameters>--name /iha/fd --file /usr/local/src/robot/iCub/app/ihaNew/conf/ihaFaceDetect.ini</parameters>
   <node>serad</node>
@@ -38,6 +45,11 @@
 <connection>
   <output>/iha/sound_grabber</output>
   <input>/iha/sound/sndsensor:in</input>
+  <protocol>tcp</protocol>
+</connection>
+<connection>
+  <output>/iha/sound_grabber</output>
+  <input>/iha/beat/sndsensor:in</input>
   <protocol>tcp</protocol>
 </connection>
 <connection>

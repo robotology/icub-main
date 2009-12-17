@@ -10,18 +10,19 @@
   <stdio>serad</stdio>
   <tag>smi</tag>
 </module>
-  <name>ihaShortTermMemory</name>
+<module>
+  <name>ihaNewShortTermMemory</name>
   <parameters>--name /iha/stm --file /usr/local/src/robot/iCub/app/ihaNew/conf/ihaShortTermMemory.ini --connect_to_data /iha/sm/memsensor:out</parameters>
   <node>serad</node>
   <stdio>serad</stdio>
-  <tag>dynamics</tag>
+  <tag>stm</tag>
 </module>
 <module>
   <name>ihaNewMotivationDynamics</name>
-  <parameters>--name /iha/dynamics --file /usr/local/src/robot/iCub/app/ihaNew/conf/ihaMotivationDynamics.ini --connect_to_data /iha/sm/sensor:out --connect_t_mem /iha/dynamics/score:out --connect_to_expression /icub/face/raw/in</parameters>
+  <parameters>--name /iha/dynamics --file /usr/local/src/robot/iCub/app/ihaNew/conf/ihaMotivationDynamics.ini --connect_to_data /iha/sm/sensor:out --connect_to_mem /iha/stm/score:out --connect_to_expression /icub/face/raw/in</parameters>
   <node>serad</node>
   <stdio>serad</stdio>
-  <tag>stm</tag>
+  <tag>dynamics</tag>
 </module>
 <module>
   <name>ihaNewSensorsFileWriter</name>
@@ -81,7 +82,7 @@
 <!-- motivation dynamics connections -->
 <connection>
   <output>/iha/stm/score:out</output>
-  <input>/iha/dyamics/mem:in</input>
+  <input>/iha/dynamics/mem:in</input>
   <protocol>tcp</protocol>
 </connection>
 <connection>
