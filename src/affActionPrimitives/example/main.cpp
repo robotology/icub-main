@@ -67,8 +67,8 @@ public:
         graspDispL[1]=0.0;        graspDispR[1]=0.0; 
         graspDispL[2]=0.05;       graspDispR[2]=0.08;
 
-        dOffsL[0]=-0.02;          dOffsR[0]=-0.02;
-        dOffsL[1]=-0.04;          dOffsR[1]= 0.03;
+        dOffsL[0]=-0.03;          dOffsR[0]=-0.03;
+        dOffsL[1]=-0.07;          dOffsR[1]= 0.04;
         dOffsL[2]=-0.02;          dOffsR[2]= 0.01;
 
         dRelL[0]=0.0;             dRelR[0]=0.0;  
@@ -101,7 +101,7 @@ public:
             return false;
         }
 
-		Property option("(robot icub) (local testMod) (traj_time 2.0)\
+		Property option("(robot icub) (local testMod) (traj_time 2.0) (reach_tol 0.007)\
 						(torso_pitch on) (torso_pitch_max 20.0)\
                         (torso_roll off) (torso_yaw on)");
         option.put("hand_calibration_file",rf.findFile("calibFile"));
