@@ -92,6 +92,13 @@ public:
 	 * @param head6dThe current state of the robot's head retrieved by e.g. /icub/head/state:o
 	 */
 	void setBaseTransformation(const ::yarp::sig::Vector& torso3d, const ::yarp::sig::Vector& head6d);
+
+	/**
+	 * Projects the given 2D point to the table top but limits the output the robot's possible field of view.
+	 * @param in The 2D input coordinates to be projected.
+	 * @param out The 3D output of {@var in}.
+	 */
+	void project(const ::yarp::sig::Vector& in, ::yarp::sig::Vector& out);
 };
 
 }

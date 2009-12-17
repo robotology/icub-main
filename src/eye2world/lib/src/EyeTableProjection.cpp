@@ -16,6 +16,8 @@
 
 #include "iCub/vislab/EyeTableProjection.h"
 
+#include <cmath>
+
 using namespace yarp::os;
 using namespace yarp::sig;
 
@@ -83,6 +85,11 @@ void EyeTableProjection::setBaseTransformation(const ::yarp::sig::Vector& torso3
 	// eye -> robot
 	Matrix T = SE3inv(eye.getH(v));
 	SimpleHomography::setBaseTransformation(T);
+}
+
+void EyeTableProjection::project(const ::yarp::sig::Vector& in, ::yarp::sig::Vector& out) {
+	SimpleHomography::project(in, out);
+	out[0] = max(-0.1, out[0]);
 }
 
 }
