@@ -110,6 +110,8 @@ bool ShortTermMemoryModule::open(Searchable& config){
     //seconds
 	mem_length = config.check("mem_length",Value(4)).asInt();
 	IhaDebug::pmesg(DBGL_INFO,"mem_length:%d\n",mem_length);
+	sound_thresh = config.check("sound_thresh",Value(0.5)).asDouble();
+	IhaDebug::pmesg(DBGL_INFO,"sound_thresh:%d\n",sound_thresh);
     
 	// create names of ports
     ConstString coordsPortName = getName("data:in");
@@ -131,10 +133,6 @@ bool ShortTermMemoryModule::open(Searchable& config){
     waitTime = 1.0/resolution;
     lastTime = 0;
     
-    ok &= quitPort.open(getName("quit"));
-    attach(quitPort, true);
-    return ok;
-    
     //We need to also open the iCub's action definitions,
     //so we can refer to the actions by name 
     //rather than a number that might change
@@ -151,7 +149,7 @@ bool ShortTermMemoryModule::open(Searchable& config){
 	actiondefs_props.fromConfigFile(action_defs_file.c_str()); 
     
 	if (!iCubActions.open(actiondefs_props)) {
-		fprintf(stderr,"Error in action definitions\n");
+        IhaDebug::pmesg(DBGL_INFO,"Error in action definitions\n");
 		exit(-1);
 	}
     
@@ -167,15 +165,19 @@ bool ShortTermMemoryModule::open(Searchable& config){
     memory_process.insert(make_pair("both_drum",v));
     memory_process.insert(make_pair("robot_hide",v));
     memory_process.insert(make_pair("human_hide",v));
-    memory_process.insert(make_pair("both_hide",v));
+    memory_process.insert(make_pair("human_only_hide",v));
 
     memory_sum.insert(make_pair("robot_drum", 0));
     memory_sum.insert(make_pair("human_drum", 0));
     memory_sum.insert(make_pair("both_drum", 0));
     memory_sum.insert(make_pair("robot_hide", 0));
     memory_sum.insert(make_pair("human_hide", 0));
-    memory_sum.insert(make_pair("both_hide", 0));
+    memory_sum.insert(make_pair("human_only_hide", 0));
     
+
+    ok &= quitPort.open(getName("quit"));
+    attach(quitPort, true);
+    return ok;
 
 }
 
@@ -212,19 +214,25 @@ bool ShortTermMemoryModule::updateModule(){
         }
         //store the new data (notice that values are arranged new to old)
         for(int i = 0; i < smUpdate->size(); i=i+2) {
+            IhaDebug::pmesg(DBGL_DEBUG1,"%s : %f \n",smUpdate->get(i).asString().c_str(),smUpdate->get(i+1).asDouble());
             std::string s =  string(smUpdate->get(i).asString().c_str()); 
             vector<double>::iterator iter = memory[s].begin();   
             memory[s].insert(iter,smUpdate->get(i+1).asDouble());
         }
         
         int curr_act = int(memory["action"].front());
-        int human_drum = int(memory["sound"].front() > 0.5);
+        //int human_drum = int(memory["sound"].front() > sound_thresh);
+        int human_drum = int(memory["beat"].front() > sound_thresh);
         int robot_drum = int(curr_act == drum_act);
         int both_drum = int(human_drum && robot_drum);
         int robot_hide = int(curr_act == hide_act);
         int human_hide =int(memory["face"].front() == 0.0);
-        int both_hide = int(human_hide && robot_hide);
+        int human_only_hide = int(human_hide && !robot_hide);
         
+        IhaDebug::pmesg(DBGL_DEBUG1,"Current action %d Drum %d Hide %d\n",curr_act, drum_act,hide_act);
+        IhaDebug::pmesg(DBGL_DEBUG1,"Drumming: human %d robot %d both %d\n",human_drum,robot_drum,both_drum);
+        IhaDebug::pmesg(DBGL_DEBUG1,"Hiding: human %d robot %d human_only %d\n",human_hide,robot_hide,human_only_hide);
+
         
         if(memory_process["robot_drum"].size() >= (resolution*mem_length)) {
             //discard the old memory before adding the new one
@@ -251,14 +259,21 @@ bool ShortTermMemoryModule::updateModule(){
         iter = memory_process["human_hide"].begin();   
         memory_process["human_hide"].insert(iter,human_hide);
         memory_sum["human_hide"] = memory_sum["human_hide"] + human_hide;
-        iter = memory_process["both_hide"].begin();   
-        memory_process["both_hide"].insert(iter,both_hide);
-        memory_sum["both_hide"] = memory_sum["both_hide"] + both_hide;
+        iter = memory_process["human_only_hide"].begin();   
+        memory_process["human_only_hide"].insert(iter,human_only_hide);
+        memory_sum["human_only_hide"] = memory_sum["human_only_hide"] + human_only_hide;
         
     }
     
+    IhaDebug::pmesg(DBGL_DEBUG1,"MS Drumming: human %d robot %d both %d\n",memory_sum["human_drum"],memory_sum["robot_drum"],memory_sum["both_drum"]);
+    IhaDebug::pmesg(DBGL_DEBUG1,"MS Hiding: human %d robot %d human_only %d\n",memory_sum["human_hide"],memory_sum["robot_hide"],memory_sum["human_only_hide"]);
+
     //calculate a score for the turn-taking synchronization between the
     //human and the robot for each form of turn-taking
+    //this doesn't penalize the robot enough for drumming at the 
+    //same time that the human does
+    //need a model of duration and start and end of 
+    //uninterrupted drumming
     double drum_score = (0.5* (memory_sum["robot_drum"] + memory_sum["human_drum"]) \
                          - memory_sum["both_drum"])/(resolution*mem_length);
     //for peekaboo, if the robot or the person is hiding for too long
@@ -267,8 +282,8 @@ bool ShortTermMemoryModule::updateModule(){
     double hide_score = 0;
     if (memory_sum["robot_hide"] < (2.5*resolution))
         hide_score += memory_sum["robot_hide"];
-    if (memory_sum["human_hide"] < (2.5*resolution))
-        hide_score += memory_sum["human_hide"];
+    if (memory_sum["human_only_hide"] < (2.5*resolution))
+        hide_score += memory_sum["human_only_hide"];
     hide_score = hide_score/(resolution*mem_length);
     
     //send the memory-based reward to motivation dynamics

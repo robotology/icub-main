@@ -203,6 +203,9 @@ bool SensorMotorInterfaceModule::open(Searchable& config){
 	use_gaze = boolStringTest(config.check("gaze_input",Value("FALSE")).asString());
 	IhaDebug::pmesg(DBGL_INFO,"gaze_input %s\n",use_gaze?"TRUE":"FALSE");
 
+    use_beats = boolStringTest(config.check("beat_input",Value("FALSE")).asString());
+	IhaDebug::pmesg(DBGL_INFO,"beat_input %s\n",use_beats?"TRUE":"FALSE");
+
 	// image pixelation
 	num_image_sensors_x = config.check("num_image_sensors_x",Value(8)).asInt();
 	num_image_sensors_y = config.check("num_image_sensors_y",Value(8)).asInt();
@@ -245,6 +248,7 @@ bool SensorMotorInterfaceModule::open(Searchable& config){
     ConstString faceCoordsPortName = getName("facecoords:in");
     ConstString gazeCoordsPortName = getName("gazecoords:in");
     ConstString soundSensorPortName = getName("soundsensor:in");
+    ConstString beatPortName = getName("beat:in");
     ConstString sensorMotorPortName = getName("encoders:in");
 
 	//------------------------------------------------------
@@ -253,6 +257,8 @@ bool SensorMotorInterfaceModule::open(Searchable& config){
 	faceCoordsPort.open(faceCoordsPortName.c_str());
     if (use_gaze)
         gazeCoordsPort.open(gazeCoordsPortName.c_str());
+    if (use_beats)
+        beatPort.open(beatPortName.c_str());
 	soundSensorPort.open(soundSensorPortName.c_str());
 	sensorMotorPort.open(sensorMotorPortName.c_str());
 
@@ -262,6 +268,8 @@ bool SensorMotorInterfaceModule::open(Searchable& config){
 	faceDetectLoop = new FaceDetectLoop (faceCoordsPort);
     if (use_gaze)
         gazeReadLoop = new GazeReadLoop (gazeCoordsPort);
+    if (use_beats)
+        beatReadLoop = new BeatReadLoop (beatPort);
 	soundSensorReadLoop = new SoundSensorReadLoop (soundSensorPort);
 
 	//------------------------------------------------------
@@ -270,6 +278,9 @@ bool SensorMotorInterfaceModule::open(Searchable& config){
 	faceDetectLoop->start();
     if(use_gaze) {
         gazeReadLoop->start();
+    }
+    if(use_beats) {
+        beatReadLoop->start();
     }
 	soundSensorReadLoop->start();
 
@@ -298,6 +309,16 @@ bool SensorMotorInterfaceModule::open(Searchable& config){
             }
         }
     }
+    if(use_beats) {
+        if (config.check("connect_to_beat")) {
+            if (connectToParam(config,"connect_to_beat",beatPortName.c_str(), 0.25, this)) {
+                IhaDebug::pmesg(DBGL_INFO,"Connected to audio analyser\n");
+            } else {
+                ok = false;
+            }
+        }
+    }
+
 	if (config.check("connect_to_soundsensor")) {
 		if (connectToParam(config,"connect_to_soundsensor",soundSensorPortName.c_str(), 0.25, this)) {
 			IhaDebug::pmesg(DBGL_INFO,"Connected to sound sensor\n");
@@ -334,6 +355,10 @@ bool SensorMotorInterfaceModule::close(){
         fprintf(stderr,"gazeCoordsPort.close();\n");
         gazeCoordsPort.close();
     }
+    if (use_beats) {
+        fprintf(stderr,"beatPort.close();\n");
+        beatPort.close();
+    }
 	fprintf(stderr,"imagePort.close();\n");
 	imagePort.close();
 	fprintf(stderr,"soundSensorPort.close();\n");
@@ -360,6 +385,10 @@ bool SensorMotorInterfaceModule::interruptModule(){
     if(use_gaze) {
         fprintf(stderr,"gazeCoordsPort.interrupt();\n");
         gazeCoordsPort.interrupt();
+    }
+    if(use_beats) {
+        fprintf(stderr,"beatPort.interrupt();\n");
+        beatPort.interrupt();
     }
 	fprintf(stderr,"imagePort.interrupt();\n");
 	imagePort.interrupt();
@@ -415,6 +444,15 @@ bool SensorMotorInterfaceModule::updateModule(){
     else
         outData.addDouble(0.0);
     
+    //get something from the audio analyser
+    //currently only sending to memory, need to fix
+    if(use_beats){ 
+        outMemData.addString("beat");
+        outMemData.addDouble(double(beatReadLoop->getCurrentBeat()));
+    }
+
+
+
     // current action value
     outMemData.addString("action");
     Value ca=Value(smData->get(smData->size()-1));
@@ -441,6 +479,7 @@ bool SensorMotorInterfaceModule::updateModule(){
         IhaDebug::pmesg(DBGL_STATUS1,"%s\n",outData.toString().c_str());
     }
 
+    //IhaDebug::pmesg(DBGL_INFO,"%s\n",outMemData.toString().c_str());
     // write to the stm output port
     memOutputPort.write(outMemData);
     if (echo_output) {

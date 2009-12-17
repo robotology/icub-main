@@ -145,6 +145,8 @@ public:
         return iCubActions.getActionNextBehaviourSet(act);
     }
 
+    std::string getActionName(int act) {return iCubActions.getActionName(act); }
+
 
 private:
     Actions iCubActions;

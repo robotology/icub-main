@@ -36,6 +36,7 @@
 #include <iCub/iha/ImageReadLoop.h>
 #include <iCub/iha/GazeReadLoop.h>
 #include <iCub/iha/SoundSensorReadLoop.h>
+#include <iCub/iha/BeatReadLoop.h>
 //#include <iCub/iha/SensorLoop.h>
 
 using namespace yarp;
@@ -68,6 +69,7 @@ private:
     yarp::os::BufferedPort<yarp::sig::Vector> faceCoordsPort; // for reading coordinates of current detected face
     yarp::os::BufferedPort<yarp::os::Bottle> gazeCoordsPort; // for reading coordinates of gaze
     yarp::os::BufferedPort<yarp::os::Bottle> soundSensorPort; // sound sensor data from sound server
+    yarp::os::BufferedPort<yarp::os::Bottle> beatPort; // beat data from audio analyser
     yarp::os::Port sensorOutputPort; // place where final sensor array is written
     yarp::os::Port memOutputPort; // place where sensor readings for short term memory
                                   // are written
@@ -77,7 +79,7 @@ private:
     int num_image_sensors_x;
     int num_image_sensors_y;
     bool echo_output;
-    bool use_gaze;
+    bool use_gaze,use_beats;
 
   
 
@@ -87,6 +89,7 @@ private:
     //RewardReadLoop* rewardReadLoop;
     SoundSensorReadLoop* soundSensorReadLoop;
     GazeReadLoop* gazeReadLoop;
+    BeatReadLoop* beatReadLoop;
 
     // image sensor array
 	int *imageSensorarray;

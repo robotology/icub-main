@@ -310,6 +310,7 @@ bool AudioAnalyserModule::updateModule(){
         ss=fs;
         
         Bottle bot;
+        bot.clear();
         printf("beats: %d \n",beatNo);
         bot.addInt(beatNo);
         for (int i=1; i<beatNo; i++) {
@@ -320,8 +321,8 @@ bool AudioAnalyserModule::updateModule(){
         beatNo = 0; 
         printf("send message: %s \n", bot.toString().c_str());
         // send the message
-        dataPortOut.write(bot);
-        bot.clear();
+        sndSensorPort.write(bot);
+
     }
     return true;
 }

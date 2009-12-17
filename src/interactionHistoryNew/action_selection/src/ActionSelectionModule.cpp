@@ -346,7 +346,8 @@ bool ActionSelectionModule::sendAction(int act) {
     writeStatus(statusPort,"ActSelect","Action",act);
 
 	//IhaDebug::pmesg(DBGL_DEBUG2,"Sending Action %d=%s\n",act,action_commands[act].c_str());
-	IhaDebug::pmesg(DBGL_DEBUG2,"Sending Action %d\n",act);
+
+	IhaDebug::pmesg(DBGL_DEBUG2,"Sending Action %d, %s\n",act,actionSelector.getActionName(act).c_str());
 	Bottle bot,reply;
 	bot.addInt(act);
 	IhaDebug::pmesg(DBGL_DEBUG3,"Write: %s\n",bot.toString().c_str());

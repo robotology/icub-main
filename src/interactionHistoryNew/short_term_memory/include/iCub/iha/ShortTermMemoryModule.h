@@ -74,7 +74,9 @@ private:
     int resolution;
     //the memory's length in seconds
     int mem_length;
-
+    //threshold for drumming
+    double sound_thresh;
+    
     //keep track of how often to store new data in memory
     double lastTime, waitTime;
 
