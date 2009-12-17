@@ -284,6 +284,7 @@ bool Control_GazeModule::configure(yarp::os::ResourceFinder &rf){
 	_saccadeInput_port.open( getName("/pos"));
 	_imageCoordPort.open( getName("/imgcoord"));
 	_inertialInput_port.open( getName("/imu"));
+	_torsoInput_port.open( getName("/torso"));
 	_disparityInput_port.open( getName("/dis"));
 	_trackersignalOutput_port.open( getName("/trackersignal/bot:o"));
 	_posdirOutput_port.open( getName("/possibledirections/vec:o") );
@@ -330,6 +331,8 @@ bool Control_GazeModule::configure(yarp::os::ResourceFinder &rf){
 
 	oldW = gsl_vector_calloc(3);
 	inertialW = gsl_vector_calloc(3);
+
+	torsoW = gsl_vector_calloc(3);
 
 	egosphere.open(getName("/remoteEgoSphere"));
 
@@ -505,6 +508,7 @@ bool Control_GazeModule::close(){
 	_disparityInput_port.close();
     printf("4\n");
 	_inertialInput_port.close();
+	_torsoInput_port.close();
     _configPort.close();
 	_trackersignalOutput_port.close();
 	_posdirOutput_port.close();
@@ -516,6 +520,7 @@ bool Control_GazeModule::close(){
     printf("6\n");
 	gsl_vector_free( oldW );
 	gsl_vector_free( inertialW );
+	gsl_vector_free( torsoW );
     printf("7\n");
 	dd.close();
     printf("8\n");
@@ -780,12 +785,14 @@ bool Control_GazeModule::updateModule() //this runs every
 	Vector *velinput = NULL;
 	Vector *dispinput = NULL;
 	Vector *inertialmeas = NULL;
+	Vector *torsovel = NULL;
 
 	imgcoordinput = _imageCoordPort.read(false);
 	posinput = _saccadeInput_port.read( false );
 	velinput = _smoothInput_port.read( false );
 	dispinput = _disparityInput_port.read( false );
 	inertialmeas = _inertialInput_port.read( false );
+	torsovel = _torsoInput_port.read(false);
 	
 
 	//Update state
@@ -819,6 +826,17 @@ bool Control_GazeModule::updateModule() //this runs every
 
 		gsl_print_vector( inertialW, "inertialW");
 	}
+
+	if( !torsovel ) {
+		gsl_vector_set_zero( torsoW );
+	}
+	else {
+		gsl_vector_set(torsoW, 0, (*torsovel)(0));
+		gsl_vector_set(torsoW, 1, (*torsovel)(1));
+		gsl_vector_set(torsoW, 2, (*torsovel)(2));
+		gsl_print_vector( torsoW, "torsoW");
+	}
+
 
 
 	// COMMAND PROCESSOR
@@ -1033,6 +1051,11 @@ bool Control_GazeModule::updateModule() //this runs every
 		case REST: 
 		case LIMIT:
 			currenterror = head.HeadGazeController(desazy, deselev, X, pert, oldW, vels, headpos, inertialW, 0,controlType);
+			//TEST TORSO COMPENSATION
+			vels[0] = vels[0] - (*torsovel)(2);
+			vels[1] = vels[1] - (*torsovel)(1);
+			vels[2] = vels[2] - (*torsovel)(0);
+
 			//printf("%f %f %f %f \n", vels[0], vels[2], vels[3], vels[4] );
 
             vels[5]=-vergenceGain*disparity;
@@ -1062,6 +1085,11 @@ bool Control_GazeModule::updateModule() //this runs every
 
 		case SACCADE_2: //saccade continuation (combined neck/eye phase)
 			currenterror = head.HeadGazeController(desazy, deselev, X, pert, oldW, vels, headpos, inertialW, 0,controlType);
+			//TEST TORSO COMPENSATION
+			vels[0] = vels[0] - (*torsovel)(2);
+			vels[1] = vels[1] - (*torsovel)(1);
+			vels[2] = vels[2] - (*torsovel)(0);
+
 
             vels[5]=-vergenceGain*disparity;
 			//printf("%f %f %f %f \n", vels[0], vels[2], vels[3], vels[4] );
@@ -1117,6 +1145,11 @@ bool Control_GazeModule::updateModule() //this runs every
                 }
 			currenterror = head.HeadGazeController(desazy, deselev, X, pert, oldW, vels, headpos, inertialW, 0,controlType);
 			//printf("%f %f %f %f \n", vels[0], vels[2], vels[3], vels[4] );
+			//TEST TORSO COMPENSATION
+			vels[0] = vels[0] - (*torsovel)(2);
+			vels[1] = vels[1] - (*torsovel)(1);
+			vels[2] = vels[2] - (*torsovel)(0);
+
 
             vels[5]=-vergenceGain*disparity;
 			velmove(vels); //velocity control is smoother
@@ -1225,6 +1258,8 @@ bool Control_GazeModule::updateModule() //this runs every
             fprintf(fp, "mot: %03.3f %03.3f %03.3f %03.3f %03.3f %03.3f\n", vels[0], vels[1], vels[2], vels[3], vels[4], vels[5]);
             //report inertial measurements
             fprintf(fp, "imu: %03.3f %03.3f %03.3f\n", gsl_vector_get(inertialW,0), gsl_vector_get(inertialW,1), gsl_vector_get(inertialW,2));
+			//report torso velocity measurements
+			fprintf(fp, "tor: %03.3f %03.3f %03.3f\n", gsl_vector_get(torsoW,0), gsl_vector_get(inertialW,1), gsl_vector_get(inertialW,2));
             //report prediction values
             if(USE_PREDICTIVE_CONTROL)
                 fprintf(fp, "pre: %03.3f %03.3f %03.3f\n", _prediction[0], _prediction[1], _prediction[2]);

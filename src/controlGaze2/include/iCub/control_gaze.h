@@ -75,6 +75,7 @@ private:
 	yarp::os::BufferedPort< yarp::sig::Vector >			_saccadeInput_port;
 	yarp::os::BufferedPort< yarp::sig::Vector >			_disparityInput_port;
 	yarp::os::BufferedPort< yarp::sig::Vector >			_inertialInput_port;
+	yarp::os::BufferedPort< yarp::sig::Vector >			_torsoInput_port;
 	yarp::os::BufferedPort<Bottle> _imageCoordPort;				// For simple connection with a viewer click
 
     // config port
@@ -139,6 +140,9 @@ private:
 	/** used with the inertial sensor to know the expected motion*/
 	gsl_vector				*oldW;
 	gsl_vector				*inertialW;
+
+	/** used with the torso velocity */
+	gsl_vector              *torsoW;
 
     enum Behaviour { SACCADE_1 = 1 , SACCADE_2 = 2, CONTINUE_PURSUIT = 3, LIMIT = 4, REST = 5, START_PURSUIT = 6 };
 	enum Command {NONE = 0, SACCADE = 1, PURSUIT = 2, INTERRUPT = 3};
