@@ -28,6 +28,8 @@ using namespace yarp::math;
 class testModule: public RFModule
 {
 protected:
+    string partUsed;
+
 	affActionPrimitivesLayer1 *actionL;
     affActionPrimitivesLayer1 *actionR;
     affActionPrimitivesLayer1 *action;
@@ -92,6 +94,13 @@ public:
 
     virtual bool configure(ResourceFinder &rf)
     {
+        partUsed=rf.check("part",Value("both")).asString().c_str();
+        if (partUsed!="both" && partUsed!="left" && partUsed!="right")
+        {
+            cout<<"Invalid part requested !"<<endl;
+            return false;
+        }
+
 		Property option("(robot icub) (local testMod) (traj_time 2.0)\
 						(torso_pitch on) (torso_pitch_max 20.0)\
                         (torso_roll off) (torso_yaw on)");
@@ -101,20 +110,35 @@ public:
         Property optionL(option); optionL.put("part","left_arm");
         Property optionR(option); optionR.put("part","right_arm");
 
-		actionL=new affActionPrimitivesLayer1(optionL);
-        actionR=new affActionPrimitivesLayer1(optionR);
+        if (partUsed=="both" || partUsed=="left")
+        {    
+            actionL=new affActionPrimitivesLayer1(optionL);
+            if (!actionL->isValid())
+            {
+                delete actionL;
+                return false;
+            }
+            else
+                useArm(USE_LEFT);
+        }
 
-		if (!actionL->isValid() || !actionR->isValid())
-		{
-			delete actionL;
-            delete actionR;
+        if (partUsed=="both" || partUsed=="right")
+        {    
+            actionR=new affActionPrimitivesLayer1(optionR);
+            if (!actionR->isValid())
+            {
+                delete actionR;
 
-			return false;
-		}
+                // remind to check to delete the left as well (if any)
+                if (actionL)
+                    delete actionL;
 
-        // init action
-        useArm(USE_LEFT);
-        
+                return false;
+            }
+            else
+                useArm(USE_RIGHT);
+        }
+
         deque<string> q=action->getHandSeqList();
         cout<<"List of available hand sequence keys:"<<endl;
         for (size_t i=0; i<q.size(); i++)
@@ -184,10 +208,14 @@ public:
 			xd[1]=b->get(1).asDouble();
 			xd[2]=b->get(2).asDouble();
 
-            if (xd[1]>0.0)
-                useArm(USE_RIGHT);
-            else
-                useArm(USE_LEFT);
+            // switch only if it's allowed
+            if (partUsed=="both")
+            {
+                if (xd[1]>0.0)
+                    useArm(USE_RIGHT);
+                else
+                    useArm(USE_LEFT);
+            }
 
             // apply systematic offset
             // due to uncalibrated kinematic
