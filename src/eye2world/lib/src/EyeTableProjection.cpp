@@ -89,7 +89,7 @@ void EyeTableProjection::setBaseTransformation(const ::yarp::sig::Vector& torso3
 
 void EyeTableProjection::project(const ::yarp::sig::Vector& in, ::yarp::sig::Vector& out) {
 	SimpleHomography::project(in, out);
-	out[0] = max(-0.1, out[0]);
+	out[0] = min(-0.1, out[0]);
 }
 
 }
