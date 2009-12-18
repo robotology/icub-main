@@ -7,7 +7,8 @@ using namespace std;
 
 colourProcessorModule::colourProcessorModule(){
     reinit_flag=false;
-    
+    startrgb_flag=true;
+    startyuv_flag=false;
 }
 
 
@@ -90,11 +91,10 @@ void colourProcessorModule::setOptions(yarp::os::Property opt){
     ConstString yuvoption=opt.find("yuvprocessor").asString();
     if(yuvoption!=""){
         printf("|||  Module named as :%s \n", yuvoption.c_str());
-        if(strcmp(yuvoption.c_str(),"ON")){
+        if(!strcmp(yuvoption.c_str(),"ON")){
             printf(" yuv processor starting.... \n");
-            startYuvProcessor();
+            startyuv_flag=true;
         }
-
         //this->setName(name.c_str());
     }
     ConstString rgboption=opt.find("rgbprocessor").asString();
@@ -136,6 +136,10 @@ bool colourProcessorModule::updateModule() {
         reinitialise(img->width(), img->height());
         reinit_flag=true;
         startRgbProcessor();
+        if(startyuv_flag){
+            startYuvProcessor();
+        }
+
     }
 
     //copy the inputImg into a buffer
@@ -147,6 +151,9 @@ bool colourProcessorModule::updateModule() {
 }
 
 void colourProcessorModule::outPorts(){
+
+    //todo: getoutputcount for everyport
+
     //port2.prepare() = *img;	
     if(this->rgbProcessor.redPlane!=0){
         redPort.prepare() = *(this->rgbProcessor.redPlane);		

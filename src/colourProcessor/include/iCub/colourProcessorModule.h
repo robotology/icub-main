@@ -160,7 +160,14 @@ private:
     * port where the uvchannel of the input image is streamed
     */
     BufferedPort<ImageOf<PixelMono> > uvPort;
-    
+    /**
+    * flag that indicates the yuv processor should be start
+    */
+    bool startyuv_flag;
+    /**
+    * flag that indicates the yuv processor should be start
+    */
+    bool startrgb_flag;
     /**
     * port necessary for rpc commands
     */
