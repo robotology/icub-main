@@ -871,6 +871,30 @@ public:
     iCubEyeNeckRef(const iCubEyeNeckRef &eye);
 };
 
+
+/**
+* \ingroup iKinFwd
+*
+* A class for defining the 6-DOF Inertia Sensor Kinematics
+*/
+class iCubInertialSensor : public iKinLimb
+{
+protected:
+    virtual void _allocate_limb(const std::string &_type);
+
+public:
+    /**
+    * Default constructor. 
+    */
+    iCubInertialSensor();
+
+    /**
+    * Creates a new Inertial Sensor from an already existing object.
+    * @param sensor is the object to be copied.
+    */
+    iCubInertialSensor(const iCubInertialSensor &sensor);
+};
+
 }
 
 #endif

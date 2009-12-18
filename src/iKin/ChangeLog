@@ -1,4 +1,7 @@
 
+2009-12-18 Ugo Pattacini <ugo.pattacini@iit.it>
+	   * iKinFwd.h,.cpp: iCubInertialSensor class added
+
 2009-11-11 Ugo Pattacini <ugo.pattacini@iit.it>
 	   * all headers: namespace rearranged
 

@@ -1445,3 +1445,51 @@ void iCubEyeNeckRef::_allocate_limb(const string &_type)
     linkList.erase(linkList.begin(),linkList.begin()+2);
 }
 
+
+/************************************************************************/
+iCubInertialSensor::iCubInertialSensor()
+{
+    _allocate_limb("right");
+}
+
+
+/************************************************************************/
+iCubInertialSensor::iCubInertialSensor(const iCubInertialSensor &sensor)
+{
+    _copy_limb(sensor);
+}
+
+
+/************************************************************************/
+void iCubInertialSensor::_allocate_limb(const string &_type)
+{
+    iKinLimb::_allocate_limb(_type);
+
+    H0.zero();
+    H0(0,1)=-1;
+    H0(1,2)=-1;
+    H0(2,0)=1;
+    H0(3,3)=1;
+
+    linkList.resize(8);
+
+    // links of torso and neck
+    linkList[0]=new iKinLink(    0.032,       0.0,  M_PI/2.0,       0.0, -22.0*M_PI/180.0, 84.0*M_PI/180.0);
+    linkList[1]=new iKinLink(      0.0,       0.0,  M_PI/2.0, -M_PI/2.0, -39.0*M_PI/180.0, 39.0*M_PI/180.0);
+    linkList[2]=new iKinLink(  0.00231,   -0.1933, -M_PI/2.0, -M_PI/2.0, -59.0*M_PI/180.0, 59.0*M_PI/180.0);
+    linkList[3]=new iKinLink(    0.033,       0.0,  M_PI/2.0,  M_PI/2.0, -40.0*M_PI/180.0, 30.0*M_PI/180.0);
+    linkList[4]=new iKinLink(      0.0,       0.0,  M_PI/2.0,  M_PI/2.0, -70.0*M_PI/180.0, 60.0*M_PI/180.0);
+    linkList[5]=new iKinLink(   -0.054,    0.0825,       0.0, -M_PI/2.0, -55.0*M_PI/180.0, 55.0*M_PI/180.0);
+
+    // virtual links that describe T_nls (see http://eris.liralab.it/wiki/ICubInertiaSensorKinematics)
+    linkList[6]=new iKinLink( 0.013250,  0.008538,  0.785721,       0.0,              0.0,             0.0);
+    linkList[7]=new iKinLink( 0.013250, -0.026861,  0.785075,       0.0,              0.0,             0.0);
+
+    for (unsigned int i=0; i<linkList.size(); i++)
+        *this << *linkList[i];
+
+    // block virtual links
+    blockLink(6,0.0);
+    blockLink(7,0.0);
+}
+
