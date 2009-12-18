@@ -83,9 +83,26 @@ void colourProcessorModule::setOptions(yarp::os::Property opt){
     // definition of the mode
     // definition of the name of the module
     ConstString name=opt.find("name").asString();
-    printf("Module named as :%s \n", name.c_str());
-    this->setName(name.c_str());
-    printf("\n");
+    if(name!=""){
+        printf("|||  Module named as :%s \n", name.c_str());
+        this->setName(name.c_str());
+    }
+    ConstString yuvoption=opt.find("yuvprocessor").asString();
+    if(yuvoption!=""){
+        printf("|||  Module named as :%s \n", yuvoption.c_str());
+        if(strcmp(yuvoption.c_str(),"ON")){
+            printf(" yuv processor starting.... \n");
+            startYuvProcessor();
+        }
+
+        //this->setName(name.c_str());
+    }
+    ConstString rgboption=opt.find("rgbprocessor").asString();
+    if(rgboption!=""){
+        printf("|||  Module named as :%s \n", rgboption.c_str());
+        //this->setName(name.c_str());
+    }
+    
 }
 
 bool colourProcessorModule::updateModule() {
