@@ -1,0 +1,37 @@
+<application>
+  <name>eye2world</name>
+  <dependencies>
+      <port>/icub/cam/left</port>
+      <port>/icub/head/state:o</port>
+      <port>/icub/torso/state:o</port>
+  </dependencies>
+  <module>
+      <name>yarpview</name>
+      <parameters>--name /e2w_demo/viewer/img:i --out /e2w_demo/viewer/click:o</parameters>
+      <node>chico3</node>
+      <tag>demo_input</tag>
+  </module>
+ <module>
+      <name>eye2world</name>
+      <parameters>--context iCubLisboa01/conf --robot icub --eyeCalibration icubEyes.ini --tableConfiguration table.ini</parameters>
+      <node>icubbrain2</node>
+      <stdio>chico3</stdio>
+      <tag>eye2world</tag>
+  </module>
+  <connection>
+      <from>/icub/cam/left</from>
+      <to>/e2w_demo/viewer/img:i</to>
+  </connection>
+  <connection>
+      <from>/e2w_demo/viewer/click:o</from>
+      <to>/eye2world/in</to>
+  </connection>
+  <connection>
+      <from>/icub/head/state:o</from>
+      <to>/eye2world/icub/head/state:i</to>
+  </connection>
+  <connection>
+      <from>/icub/torso/state:o</from>
+      <to>/eye2world/icub/torso/state:i</to>
+  </connection>
+</application>
