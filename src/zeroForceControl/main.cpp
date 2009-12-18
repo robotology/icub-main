@@ -3,13 +3,12 @@
 #include <yarp/os/Time.h>
 #include <yarp/os/Network.h>
 #include <yarp/os/RateThread.h>
-#include <yarp/os/Stamp.h>
 #include <yarp/sig/Vector.h>
 #include <yarp/sig/Matrix.h>
 #include <yarp/math/Math.h>
+#include <yarp/os/Stamp.h>
 #include <yarp/dev/PolyDriver.h>
 #include <yarp/dev/ControlBoardInterfaces.h>
-//#include <yarp/dev/GenericSensorInterfaces.h>
 
 #include <iostream>
 #include <iomanip>
@@ -38,6 +37,10 @@ const double initPosition[4] = {0.0, 0.0, 0.0, 0.0};
 
 const double MAX_JNT_LIMITS[4] = {2.0, 120.0, 90.0, 90.0};
 const double MIN_JNT_LIMITS[4] = {-85.0, 0.0, -20.0, 10.0};
+
+#define CONNECTION_ERROR 0
+#define CONNECTION_OK	 1
+
 
 /**
 *
@@ -106,6 +109,11 @@ private:
 	Vector tau;
 	Vector tauSafe;
 
+	int watchDOG;
+	Stamp info;
+	double time, time0;
+    
+
 public:
 	ftControl(int _rate, PolyDriver *_dd, BufferedPort<Vector> &_port_FT, ResourceFinder &_rf):	  
 	  RateThread(_rate), dd(_dd)
@@ -155,6 +163,9 @@ public:
 		  tauSafe.resize(4);
 		  tau=0.0;
 		  tauSafe=0.0;
+
+		  watchDOG = 0;
+		  time = time0 = 0.0;
 	  }
 	  bool threadInit()
 	  {
@@ -169,14 +180,14 @@ public:
 		  int count;
 		  for(int i=0;i<ARM_JNT;i++)
 		  {
-		    check=false;
-		    count=0;
-		    while(!check && count < 100)
-		      {
-		        ipos->checkMotionDone(i,&check);
-		        count++;
-		        Time::delay(0.1);
-			      }
+			  check=false;
+			  count=0;
+			  while(!check && count < 100)
+			  {
+				  ipos->checkMotionDone(i,&check);
+				  count++;
+				  Time::delay(0.1);
+			  }
 		  }
 		  
 		  Time::delay(1.0);
@@ -188,30 +199,59 @@ public:
 	  void run()
 	  {
 		  Vector *tmp=port_FT.read(false);
+		  
 		  if(iencs->getEncoders(encoders.data()))
 		          arm->setAng(encoders);
-		
-		  if(tmp!=0)  
+
+		  port_FT.getEnvelope(info);
+		  time = info.getTime();
+
+		  int connected = CONNECTION_OK;
+
+		  if(time - time0 > 0.0) 
 		  {
-			  Vector Datum = *tmp;
-			  FTs = *Datum.data();
-			  if(first) FTs_init = FTs;
-			  FT = FTB->getFB(FTs-FTs_init);
-			  first = false;
+			  connected = CONNECTION_OK;
+			  time0 = time;
+			  watchDOG = 0;
 		  }
-		  else
+		  else   
 		  {
-			  if(!first)
-			  {
-				  FT = FTB->getFB();
-			  }
-			  else 
-			  {
+			  watchDOG+=1;
+		  }
+
+		  if(watchDOG>=20) connected = CONNECTION_ERROR;
+
+		  switch(connected)
+		  { 
+			  case CONNECTION_ERROR:
 				  FT=0.0;
-				  FTs=0.0;
-				  FTs_init=0.0;
-			  }
+				  break;
+			  case CONNECTION_OK:
+				  if(tmp!=0)  
+				  {
+					  Vector Datum = *tmp;
+					  FTs = *Datum.data();
+					  if(first) FTs_init = FTs;
+					  FT = FTB->getFB(FTs-FTs_init);
+					  first = false;
+				  }
+				  else
+				  {
+					  if(!first)
+					  {
+						  FT = FTB->getFB();
+					  }
+					  else 
+					  {
+						  FT=0.0;
+						  FTs=0.0;
+						  FTs_init=0.0;
+					  }
+				  }
+				  break;
+			  
 		  }
+		  
 
 		  double k=1.0; //to be tuned
 		  Matrix K;
