@@ -6,14 +6,14 @@
 </dependencies>
    <module>
       <name>icubmoddev</name>
-	      <parameters>--device logpolargrabber --subdevice dragonfly2 --width 320 --height 240 --video_type 1 --white_balance 0.506 0.494 --gain 0.312 --shutter 0.913 --name /icub/cam/left  --brightness 0 --DR2 --stamp --d 0 --framerate 30 </parameters>
+	      <parameters>--device logpolargrabber --subdevice dragonfly2 --width 320 --height 240  --white_balance 0.506 0.494 --gain 0.312 --shutter 0.913 --name /icub/cam/left  --brightness 0 --DR2  --d 0 --framerate 30 </parameters>
      <node>pc104</node>
           <stdio>icub14</stdio>
 	  <tag>logpolar-grabber-left</tag>
    </module>
 	<module>
       <name>icubmoddev</name>
-	      <parameters>--device logpolargrabber --subdevice dragonfly2 --width 320 --height 240 --video_type 1 --white_balance 0.506 0.494 --gain 0.312 --shutter 0.913 --name /icub/cam/right  --brightness 0 --DR2 --stamp --d 1 --framerate 30 </parameters>
+	      <parameters>--device logpolargrabber --subdevice dragonfly2 --width 320 --height 240  --white_balance 0.506 0.494 --gain 0.312 --shutter 0.913 --name /icub/cam/right  --brightness 0 --DR2  --d 1 --framerate 30 </parameters>
      <node>pc104</node>
 	  <stdio>icub14</stdio>
 	  <tag>logpolar-grabber-right</tag>
