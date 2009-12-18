@@ -41,12 +41,17 @@ EyePinvRefGen::EyePinvRefGen(PolyDriver *_drvTorso, PolyDriver *_drvHead,
         chainEyeL->blockLink(chainEyeL->getN()-1,0.0);
         chainEyeL->blockLink(chainEyeL->getN()-2,0.0);
     }
+    else
+        alignLnkLeft1=alignLnkLeft2=NULL;
+
     if (getAlignLinks(configFile,"RIGHT",&alignLnkRight1,&alignLnkRight2))
     {
         *chainEyeR<<*alignLnkRight1<<*alignLnkRight2;
         chainEyeR->blockLink(chainEyeR->getN()-1,0.0);
         chainEyeR->blockLink(chainEyeR->getN()-2,0.0);
     }
+    else
+        alignLnkRight1=alignLnkRight2=NULL;
 
     Matrix lim;
 
@@ -303,12 +308,17 @@ Solver::Solver(PolyDriver *_drvTorso, PolyDriver *_drvHead, exchangeData *_commD
         chainEyeL->blockLink(chainEyeL->getN()-1,0.0);
         chainEyeL->blockLink(chainEyeL->getN()-2,0.0);
     }
+    else
+        alignLnkLeft1=alignLnkLeft2=NULL;
+
     if (getAlignLinks(configFile,"RIGHT",&alignLnkRight1,&alignLnkRight2))
     {
         *chainEyeR<<*alignLnkRight1<<*alignLnkRight2;
         chainEyeR->blockLink(chainEyeR->getN()-1,0.0);
         chainEyeR->blockLink(chainEyeR->getN()-2,0.0);
     }
+    else
+        alignLnkRight1=alignLnkRight2=NULL;
 
     if (Robotable)
     {

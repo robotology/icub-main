@@ -53,14 +53,13 @@ bool getAlignLinks(const string &configFile, const string &type,
             Bottle length=parType.findGroup("length");
             Bottle offset=parType.findGroup("offset");
             Bottle twist=parType.findGroup("twist");
-            Bottle joint=parType.findGroup("joint");
 
-            if (length.size()>=2 && offset.size()>=2 && twist.size()>=2 && joint.size()>=2)
+            if (length.size()>=2 && offset.size()>=2 && twist.size()>=2)
             {
                 *link1=new iKinLink(length.get(1).asDouble(),offset.get(1).asDouble(),
-                                    twist.get(1).asDouble(),joint.get(1).asDouble());
+                                    twist.get(1).asDouble(),0.0,0.0,0.0);
                 *link2=new iKinLink(length.get(2).asDouble(),offset.get(2).asDouble(),
-                                    twist.get(2).asDouble(),joint.get(2).asDouble());
+                                    twist.get(2).asDouble(),0.0,0.0,0.0);
 
                 return true;
             }

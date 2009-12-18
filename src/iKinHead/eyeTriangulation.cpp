@@ -58,6 +58,8 @@ eyeTriangulation::eyeTriangulation(const string &configFile, Matrix PrjL, Matrix
       chainRightEye->blockLink(chainRightEye->getN()-1,0.0);
       chainRightEye->blockLink(chainRightEye->getN()-2,0.0);
   }
+  else
+      alignLnkRight1=alignLnkRight2=NULL;
 
   if (getAlignLinks(configFile,"LEFT_ALIGN",&alignLnkLeft1,&alignLnkLeft2))
   {
@@ -65,6 +67,8 @@ eyeTriangulation::eyeTriangulation(const string &configFile, Matrix PrjL, Matrix
       chainLeftEye->blockLink(chainLeftEye->getN()-1,0.0);
       chainLeftEye->blockLink(chainLeftEye->getN()-2,0.0);
   }
+  else
+      alignLnkLeft1=alignLnkLeft2=NULL;
 
   cout << "Left Eye kinematic parameters:" << endl;
   for (unsigned int i=0; i<chainLeftEye->getN(); i++)
@@ -223,14 +227,13 @@ bool eyeTriangulation::getAlignLinks(const string &configFile, const string &typ
             Bottle length=parType.findGroup("length");
             Bottle offset=parType.findGroup("offset");
             Bottle twist=parType.findGroup("twist");
-            Bottle joint=parType.findGroup("joint");
 
-            if (length.size()>=2 && offset.size()>=2 && twist.size()>=2 && joint.size()>=2)
+            if (length.size()>=2 && offset.size()>=2 && twist.size()>=2)
             {
                 *link1=new iKinLink(length.get(1).asDouble(),offset.get(1).asDouble(),
-                                    twist.get(1).asDouble(),joint.get(1).asDouble());
+                                    twist.get(1).asDouble(),0.0,0.0,0.0);
                 *link2=new iKinLink(length.get(2).asDouble(),offset.get(2).asDouble(),
-                                    twist.get(2).asDouble(),joint.get(2).asDouble());
+                                    twist.get(2).asDouble(),0.0,0.0,0.0);
 
                 return true;
             }

@@ -39,7 +39,7 @@
   * 
   * Moreover, two further groups [LEFT_ALIGN] and [RIGHT_ALIGN]
   * can be added to the configuration file to describe the
-  * virtual links (given in terms of lenght,offset,twist,joint
+  * virtual links (given in terms of lenght,offset,twist
   * parameters) which are appended to the eye kinematic in order
   * to achieve the alignment with the optical axes.
   * 
