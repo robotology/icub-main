@@ -259,6 +259,18 @@ public:
     bool pushWaitState(const double tmo);
 
     /**
+    * Immediately update the current reaching target without 
+    * affecting the actions queue or initiate a new reach. 
+    * @param x the 3-d target position [m]. 
+    * @param o the 4-d hand orientation used while reaching (given 
+    *          in axis-angle representation) [rad].
+    * @return true/false on success/fail. 
+    *  
+    * \note Intended for streaming reaching. 
+    */
+    bool reach(const yarp::sig::Vector &x, const yarp::sig::Vector &o);
+
+    /**
     * Empty the actions queue. 
     * @return true/false on success/fail.
     */

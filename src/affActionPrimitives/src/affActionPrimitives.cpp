@@ -574,6 +574,26 @@ bool affActionPrimitives::pushWaitState(const double tmo)
 
 
 /************************************************************************/
+bool affActionPrimitives::reach(const Vector &x, const Vector &o)
+{
+    if (configured)
+    {
+        xd=x;
+        od=o;
+
+        cartCtrl->goToPose(xd,od);
+
+        latchArmMoveDone=armMoveDone=false;
+        fprintf(stdout,"reach for [%s], [%s]\n",xd.toString().c_str(),od.toString().c_str());
+        t0=Time::now();
+        return true;
+    }
+    else
+        return false;
+}
+
+
+/************************************************************************/
 bool affActionPrimitives::execQueuedAction()
 {
     bool exec=false;
@@ -717,7 +737,7 @@ bool affActionPrimitives::cmdArm(const Vector &x, const Vector &o)
         for (int i=0; i<x.length(); i++)
             smallOffs[i]=1e-4*(2.0*Random::uniform()-1.0);
 
-        if (!cartCtrl->goToPoseSync(x,o))
+        if (!cartCtrl->goToPoseSync(xd,od))
         {
             fprintf(stdout,"reach error\n");
             return false;
