@@ -1,3 +1,0 @@
-E:/work2/iCub/src/colourProcessor/CMakeFiles/ALL_BUILD.dir
-E:/work2/iCub/src/colourProcessor/CMakeFiles/ZERO_CHECK.dir
-E:/work2/iCub/src/colourProcessor/CMakeFiles/colourProcessor.dir
