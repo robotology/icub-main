@@ -1,0 +1,81 @@
+<application>
+<name>log_vision</name>
+<dependencies>
+      <port>/icub01</port>
+</dependencies> 
+<module>
+	  <name>colourProcessor</name>
+      <parameters>--configfile colourprocessor.ini</parameters>
+	  <node>quad</node>
+	<tag>colourProcessor</tag>
+   </module>
+<module>
+	  <name>YUVProcessor</name>
+	  <node>quad</node>
+	<tag>YUVProcessor</tag>
+   </module>
+<module>
+      <name>yarpview</name>
+      <parameters>--name /cam/left --x 0 --y 10 </parameters>
+      <node>quad</node>
+	<tag>left cam</tag>
+   </module>
+   <module>
+      <name>yarpview</name>
+      <parameters>--name /cam/right --x 320 --y 10 </parameters>
+      <node>quad</node>
+	<tag>right cam</tag>
+   </module>
+  <module>
+      <name>yarpview</name>
+      <parameters>--name /view/Y --x 320 --y 350 </parameters>
+      <node>quad</node>
+	<tag>view Y</tag>
+   </module>
+<module>
+      <name>yarpview</name>
+      <parameters>--name /view/UV --x 320 --y 350 </parameters>
+      <node>quad</node>
+	<tag>view UV</tag>
+   </module>
+<connection>
+  <output>/icub/cam/left/logpolar</output>
+  <input>/cam/left</input>
+  <protocol>tcp</protocol>
+</connection>
+<connection>
+  <output>/icub/cam/right/logpolar</output>
+  <input>/cam/right</input>
+  <protocol>tcp</protocol>
+</connection>
+<connection>
+  <output>/icub/cam/left/logpolar</output>
+  <input>/colourPU/image:i</input>
+  <protocol>tcp</protocol>
+</connection>
+<connection>
+  <output>/colourPU/ychannel:o</output>
+  <input>/yuvProc/Y/image:i</input>
+  <protocol>tcp</protocol>
+</connection>
+<connection>
+  <output>/colourPU/uchannel:o</output>
+  <input>/yuvProc/U/image:i</input>
+  <protocol>tcp</protocol>
+</connection>
+<connection>
+  <output>/colourPU/vchannel:o</output>
+  <input>/yuvProc/V/image:i</input>
+  <protocol>tcp</protocol>
+</connection>
+<connection>
+  <output>/yuvProc/Y/image:o</output>
+  <input>/view/Y</input>
+  <protocol>tcp</protocol>
+</connection>
+<connection>
+  <output>/yuvProc/UV/image:o</output>
+  <input>/view/UV</input>
+  <protocol>tcp</protocol>
+</connection>
+</application>
