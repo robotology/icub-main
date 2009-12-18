@@ -1,0 +1,267 @@
+<?xml version="1.0" encoding = "Windows-1252"?>
+<VisualStudioProject
+	ProjectType="Visual C++"
+	Version="8.00"
+	Name="ALL_BUILD"
+	ProjectGUID="{B1EE3041-E6BE-4D40-941E-98A84F158CF1}"
+	Keyword="Win32Proj">
+	<Platforms>
+		<Platform
+			Name="Win32"/>
+	</Platforms>
+	<Configurations>
+		<Configuration
+			Name="Debug|Win32"
+			OutputDirectory="Debug"
+			IntermediateDirectory="ALL_BUILD.dir\Debug"
+			ConfigurationType="10"
+			UseOfMFC="0"
+			ATLMinimizesCRunTimeLibraryUsage="FALSE"
+			CharacterSet="2">
+			<Tool
+				Name="VCCLCompilerTool"
+				AdditionalIncludeDirectories="E:\work\ACE_wrappers;E:\work2\yarp2\src\libYARP_OS\include;E:\work2\yarp2\src\libYARP_sig\include;E:\work2\yarp2\src\libYARP_math\include;E:\work\gsl-1.8;E:\work2\yarp2\src\libYARP_dev\include;E:\work2\yarp2\include;E:\work2\iCub\src\colourProcessor\include;C:\Programmi\OpenCV\cv\include;C:\Programmi\OpenCV\cvaux\include;C:\Programmi\OpenCV\cxcore\include;C:\Programmi\OpenCV\otherlibs\highgui;E:\work\ipp\include;"
+				ExceptionHandling="0"
+				PreprocessorDefinitions="YARP_PRESENT,_REENTRANT,WIN32,_WINDOWS,CMAKE_INTDIR=\&quot;Debug\&quot;"
+				AssemblerListingLocation="Debug"
+				ObjectFile="$(IntDir)\"
+/>
+			<Tool
+				Name="VCCustomBuildTool"/>
+			<Tool
+				Name="VCResourceCompilerTool"
+				AdditionalIncludeDirectories="E:\work\ACE_wrappers;E:\work2\yarp2\src\libYARP_OS\include;E:\work2\yarp2\src\libYARP_sig\include;E:\work2\yarp2\src\libYARP_math\include;E:\work\gsl-1.8;E:\work2\yarp2\src\libYARP_dev\include;E:\work2\yarp2\include;E:\work2\iCub\src\colourProcessor\include;C:\Programmi\OpenCV\cv\include;C:\Programmi\OpenCV\cvaux\include;C:\Programmi\OpenCV\cxcore\include;C:\Programmi\OpenCV\otherlibs\highgui;E:\work\ipp\include;"
+				PreprocessorDefinitions="YARP_PRESENT,_REENTRANT,WIN32,_WINDOWS,CMAKE_INTDIR=\&quot;Debug\&quot;"/>
+			<Tool
+				Name="VCMIDLTool"
+				PreprocessorDefinitions="YARP_PRESENT,_REENTRANT,WIN32,_WINDOWS,CMAKE_INTDIR=\&quot;Debug\&quot;"
+				MkTypLibCompatible="FALSE"
+				TargetEnvironment="1"
+				GenerateStublessProxies="TRUE"
+				TypeLibraryName="$(InputName).tlb"
+				OutputDirectory="$(IntDir)"
+				HeaderFileName="$(InputName).h"
+				DLLDataFileName=""
+				InterfaceIdentifierFileName="$(InputName)_i.c"
+				ProxyFileName="$(InputName)_p.c"/>
+			<Tool
+				Name="VCPreBuildEventTool"/>
+			<Tool
+				Name="VCPreLinkEventTool"/>
+			<Tool
+				Name="VCPostBuildEventTool"/>
+		</Configuration>
+		<Configuration
+			Name="Release|Win32"
+			OutputDirectory="Release"
+			IntermediateDirectory="ALL_BUILD.dir\Release"
+			ConfigurationType="10"
+			UseOfMFC="0"
+			ATLMinimizesCRunTimeLibraryUsage="FALSE"
+			CharacterSet="2">
+			<Tool
+				Name="VCCLCompilerTool"
+				AdditionalIncludeDirectories="E:\work\ACE_wrappers;E:\work2\yarp2\src\libYARP_OS\include;E:\work2\yarp2\src\libYARP_sig\include;E:\work2\yarp2\src\libYARP_math\include;E:\work\gsl-1.8;E:\work2\yarp2\src\libYARP_dev\include;E:\work2\yarp2\include;E:\work2\iCub\src\colourProcessor\include;C:\Programmi\OpenCV\cv\include;C:\Programmi\OpenCV\cvaux\include;C:\Programmi\OpenCV\cxcore\include;C:\Programmi\OpenCV\otherlibs\highgui;E:\work\ipp\include;"
+				ExceptionHandling="0"
+				PreprocessorDefinitions="YARP_PRESENT,_REENTRANT,WIN32,_WINDOWS,CMAKE_INTDIR=\&quot;Release\&quot;"
+				AssemblerListingLocation="Release"
+				ObjectFile="$(IntDir)\"
+/>
+			<Tool
+				Name="VCCustomBuildTool"/>
+			<Tool
+				Name="VCResourceCompilerTool"
+				AdditionalIncludeDirectories="E:\work\ACE_wrappers;E:\work2\yarp2\src\libYARP_OS\include;E:\work2\yarp2\src\libYARP_sig\include;E:\work2\yarp2\src\libYARP_math\include;E:\work\gsl-1.8;E:\work2\yarp2\src\libYARP_dev\include;E:\work2\yarp2\include;E:\work2\iCub\src\colourProcessor\include;C:\Programmi\OpenCV\cv\include;C:\Programmi\OpenCV\cvaux\include;C:\Programmi\OpenCV\cxcore\include;C:\Programmi\OpenCV\otherlibs\highgui;E:\work\ipp\include;"
+				PreprocessorDefinitions="YARP_PRESENT,_REENTRANT,WIN32,_WINDOWS,CMAKE_INTDIR=\&quot;Release\&quot;"/>
+			<Tool
+				Name="VCMIDLTool"
+				PreprocessorDefinitions="YARP_PRESENT,_REENTRANT,WIN32,_WINDOWS,CMAKE_INTDIR=\&quot;Release\&quot;"
+				MkTypLibCompatible="FALSE"
+				TargetEnvironment="1"
+				GenerateStublessProxies="TRUE"
+				TypeLibraryName="$(InputName).tlb"
+				OutputDirectory="$(IntDir)"
+				HeaderFileName="$(InputName).h"
+				DLLDataFileName=""
+				InterfaceIdentifierFileName="$(InputName)_i.c"
+				ProxyFileName="$(InputName)_p.c"/>
+			<Tool
+				Name="VCPreBuildEventTool"/>
+			<Tool
+				Name="VCPreLinkEventTool"/>
+			<Tool
+				Name="VCPostBuildEventTool"/>
+		</Configuration>
+		<Configuration
+			Name="MinSizeRel|Win32"
+			OutputDirectory="MinSizeRel"
+			IntermediateDirectory="ALL_BUILD.dir\MinSizeRel"
+			ConfigurationType="10"
+			UseOfMFC="0"
+			ATLMinimizesCRunTimeLibraryUsage="FALSE"
+			CharacterSet="2">
+			<Tool
+				Name="VCCLCompilerTool"
+				AdditionalIncludeDirectories="E:\work\ACE_wrappers;E:\work2\yarp2\src\libYARP_OS\include;E:\work2\yarp2\src\libYARP_sig\include;E:\work2\yarp2\src\libYARP_math\include;E:\work\gsl-1.8;E:\work2\yarp2\src\libYARP_dev\include;E:\work2\yarp2\include;E:\work2\iCub\src\colourProcessor\include;C:\Programmi\OpenCV\cv\include;C:\Programmi\OpenCV\cvaux\include;C:\Programmi\OpenCV\cxcore\include;C:\Programmi\OpenCV\otherlibs\highgui;E:\work\ipp\include;"
+				ExceptionHandling="0"
+				PreprocessorDefinitions="YARP_PRESENT,_REENTRANT,WIN32,_WINDOWS,CMAKE_INTDIR=\&quot;MinSizeRel\&quot;"
+				AssemblerListingLocation="MinSizeRel"
+				ObjectFile="$(IntDir)\"
+/>
+			<Tool
+				Name="VCCustomBuildTool"/>
+			<Tool
+				Name="VCResourceCompilerTool"
+				AdditionalIncludeDirectories="E:\work\ACE_wrappers;E:\work2\yarp2\src\libYARP_OS\include;E:\work2\yarp2\src\libYARP_sig\include;E:\work2\yarp2\src\libYARP_math\include;E:\work\gsl-1.8;E:\work2\yarp2\src\libYARP_dev\include;E:\work2\yarp2\include;E:\work2\iCub\src\colourProcessor\include;C:\Programmi\OpenCV\cv\include;C:\Programmi\OpenCV\cvaux\include;C:\Programmi\OpenCV\cxcore\include;C:\Programmi\OpenCV\otherlibs\highgui;E:\work\ipp\include;"
+				PreprocessorDefinitions="YARP_PRESENT,_REENTRANT,WIN32,_WINDOWS,CMAKE_INTDIR=\&quot;MinSizeRel\&quot;"/>
+			<Tool
+				Name="VCMIDLTool"
+				PreprocessorDefinitions="YARP_PRESENT,_REENTRANT,WIN32,_WINDOWS,CMAKE_INTDIR=\&quot;MinSizeRel\&quot;"
+				MkTypLibCompatible="FALSE"
+				TargetEnvironment="1"
+				GenerateStublessProxies="TRUE"
+				TypeLibraryName="$(InputName).tlb"
+				OutputDirectory="$(IntDir)"
+				HeaderFileName="$(InputName).h"
+				DLLDataFileName=""
+				InterfaceIdentifierFileName="$(InputName)_i.c"
+				ProxyFileName="$(InputName)_p.c"/>
+			<Tool
+				Name="VCPreBuildEventTool"/>
+			<Tool
+				Name="VCPreLinkEventTool"/>
+			<Tool
+				Name="VCPostBuildEventTool"/>
+		</Configuration>
+		<Configuration
+			Name="RelWithDebInfo|Win32"
+			OutputDirectory="RelWithDebInfo"
+			IntermediateDirectory="ALL_BUILD.dir\RelWithDebInfo"
+			ConfigurationType="10"
+			UseOfMFC="0"
+			ATLMinimizesCRunTimeLibraryUsage="FALSE"
+			CharacterSet="2">
+			<Tool
+				Name="VCCLCompilerTool"
+				AdditionalIncludeDirectories="E:\work\ACE_wrappers;E:\work2\yarp2\src\libYARP_OS\include;E:\work2\yarp2\src\libYARP_sig\include;E:\work2\yarp2\src\libYARP_math\include;E:\work\gsl-1.8;E:\work2\yarp2\src\libYARP_dev\include;E:\work2\yarp2\include;E:\work2\iCub\src\colourProcessor\include;C:\Programmi\OpenCV\cv\include;C:\Programmi\OpenCV\cvaux\include;C:\Programmi\OpenCV\cxcore\include;C:\Programmi\OpenCV\otherlibs\highgui;E:\work\ipp\include;"
+				ExceptionHandling="0"
+				PreprocessorDefinitions="YARP_PRESENT,_REENTRANT,WIN32,_WINDOWS,CMAKE_INTDIR=\&quot;RelWithDebInfo\&quot;"
+				AssemblerListingLocation="RelWithDebInfo"
+				ObjectFile="$(IntDir)\"
+/>
+			<Tool
+				Name="VCCustomBuildTool"/>
+			<Tool
+				Name="VCResourceCompilerTool"
+				AdditionalIncludeDirectories="E:\work\ACE_wrappers;E:\work2\yarp2\src\libYARP_OS\include;E:\work2\yarp2\src\libYARP_sig\include;E:\work2\yarp2\src\libYARP_math\include;E:\work\gsl-1.8;E:\work2\yarp2\src\libYARP_dev\include;E:\work2\yarp2\include;E:\work2\iCub\src\colourProcessor\include;C:\Programmi\OpenCV\cv\include;C:\Programmi\OpenCV\cvaux\include;C:\Programmi\OpenCV\cxcore\include;C:\Programmi\OpenCV\otherlibs\highgui;E:\work\ipp\include;"
+				PreprocessorDefinitions="YARP_PRESENT,_REENTRANT,WIN32,_WINDOWS,CMAKE_INTDIR=\&quot;RelWithDebInfo\&quot;"/>
+			<Tool
+				Name="VCMIDLTool"
+				PreprocessorDefinitions="YARP_PRESENT,_REENTRANT,WIN32,_WINDOWS,CMAKE_INTDIR=\&quot;RelWithDebInfo\&quot;"
+				MkTypLibCompatible="FALSE"
+				TargetEnvironment="1"
+				GenerateStublessProxies="TRUE"
+				TypeLibraryName="$(InputName).tlb"
+				OutputDirectory="$(IntDir)"
+				HeaderFileName="$(InputName).h"
+				DLLDataFileName=""
+				InterfaceIdentifierFileName="$(InputName)_i.c"
+				ProxyFileName="$(InputName)_p.c"/>
+			<Tool
+				Name="VCPreBuildEventTool"/>
+			<Tool
+				Name="VCPreLinkEventTool"/>
+			<Tool
+				Name="VCPostBuildEventTool"/>
+		</Configuration>
+	</Configurations>
+	<Files>
+			<File
+				RelativePath="E:\work2\iCub\src\colourProcessor\CMakeFiles\ALL_BUILD">
+			</File>
+			<File
+				RelativePath="E:\work2\iCub\src\colourProcessor\CMakeLists.txt">
+				<FileConfiguration
+					Name="Debug|Win32">
+					<Tool
+					Name="VCCustomBuildTool"
+					Description="Building Custom Rule E:/work2/iCub/src/colourProcessor/CMakeLists.txt"
+					CommandLine="&quot;E:\programmi\CMake 2.8\bin\cmake.exe&quot; -HE:/work2/iCub/src/colourProcessor -BE:/work2/iCub/src/colourProcessor --check-stamp-file CMakeFiles/generate.stamp"
+					AdditionalDependencies="E:\work2\iCub\src\colourProcessor\CMakeLists.txt;E:\work2\iCub\src\colourProcessor\CMakeFiles\CMakeSystem.cmake;E:\work2\iCub\src\colourProcessor\CMakeFiles\CMakeCCompiler.cmake;E:\work2\iCub\src\colourProcessor\CMakeFiles\CMakeCXXCompiler.cmake;&quot;E:\programmi\CMake 2.8\share\cmake-2.8\Modules\CMakeSystemSpecificInformation.cmake&quot;;&quot;E:\programmi\CMake 2.8\share\cmake-2.8\Modules\CMakeGenericSystem.cmake&quot;;&quot;E:\programmi\CMake 2.8\share\cmake-2.8\Modules\Platform\gcc.cmake&quot;;&quot;E:\programmi\CMake 2.8\share\cmake-2.8\Modules\Platform\Windows.cmake&quot;;&quot;E:\programmi\CMake 2.8\share\cmake-2.8\Modules\Platform\WindowsPaths.cmake&quot;;&quot;E:\programmi\CMake 2.8\share\cmake-2.8\Modules\CMakeCInformation.cmake&quot;;&quot;E:\programmi\CMake 2.8\share\cmake-2.8\Modules\Platform\Windows-cl.cmake&quot;;E:\work2\iCub\src\colourProcessor\CMakeFiles\CMakeCPlatform.cmake;E:\work2\iCub\src\colourProcessor\CMakeFiles\CMakeCXXPlatform.cmake;&quot;E:\programmi\CMake 2.8\share\cmake-2.8\Modules\Platform\cl.cmake&quot;;E:\work2\iCub\src\colourProcessor\CMakeFiles\CMakeRCCompiler.cmake;&quot;E:\programmi\CMake 2.8\share\cmake-2.8\Modules\CMakeRCInformation.cmake&quot;;&quot;E:\programmi\CMake 2.8\share\cmake-2.8\Modules\CMakeCommonLanguageInclude.cmake&quot;;&quot;E:\programmi\CMake 2.8\share\cmake-2.8\Modules\CMakeCXXInformation.cmake&quot;;&quot;E:\programmi\CMake 2.8\share\cmake-2.8\Modules\CMakeCommonLanguageInclude.cmake&quot;;E:\work2\iCub\ICUBConfig.cmake;&quot;E:\programmi\CMake 2.8\share\cmake-2.8\Modules\UsePkgConfig.cmake&quot;;E:\work2\yarp2\YARPConfig.cmake;E:\work2\yarp2\conf\YarpDevice.cmake;E:\work2\iCub\conf\FindOpenCV.cmake;E:\work2\iCub\conf\FindIPP.cmake;E:\work2\iCub\src\colourProcessor\CMakeLists.txt;"
+					Outputs="CMakeFiles\generate.stamp"/>
+				</FileConfiguration>
+				<FileConfiguration
+					Name="Release|Win32">
+					<Tool
+					Name="VCCustomBuildTool"
+					Description="Building Custom Rule E:/work2/iCub/src/colourProcessor/CMakeLists.txt"
+					CommandLine="&quot;E:\programmi\CMake 2.8\bin\cmake.exe&quot; -HE:/work2/iCub/src/colourProcessor -BE:/work2/iCub/src/colourProcessor --check-stamp-file CMakeFiles/generate.stamp"
+					AdditionalDependencies="E:\work2\iCub\src\colourProcessor\CMakeLists.txt;E:\work2\iCub\src\colourProcessor\CMakeFiles\CMakeSystem.cmake;E:\work2\iCub\src\colourProcessor\CMakeFiles\CMakeCCompiler.cmake;E:\work2\iCub\src\colourProcessor\CMakeFiles\CMakeCXXCompiler.cmake;&quot;E:\programmi\CMake 2.8\share\cmake-2.8\Modules\CMakeSystemSpecificInformation.cmake&quot;;&quot;E:\programmi\CMake 2.8\share\cmake-2.8\Modules\CMakeGenericSystem.cmake&quot;;&quot;E:\programmi\CMake 2.8\share\cmake-2.8\Modules\Platform\gcc.cmake&quot;;&quot;E:\programmi\CMake 2.8\share\cmake-2.8\Modules\Platform\Windows.cmake&quot;;&quot;E:\programmi\CMake 2.8\share\cmake-2.8\Modules\Platform\WindowsPaths.cmake&quot;;&quot;E:\programmi\CMake 2.8\share\cmake-2.8\Modules\CMakeCInformation.cmake&quot;;&quot;E:\programmi\CMake 2.8\share\cmake-2.8\Modules\Platform\Windows-cl.cmake&quot;;E:\work2\iCub\src\colourProcessor\CMakeFiles\CMakeCPlatform.cmake;E:\work2\iCub\src\colourProcessor\CMakeFiles\CMakeCXXPlatform.cmake;&quot;E:\programmi\CMake 2.8\share\cmake-2.8\Modules\Platform\cl.cmake&quot;;E:\work2\iCub\src\colourProcessor\CMakeFiles\CMakeRCCompiler.cmake;&quot;E:\programmi\CMake 2.8\share\cmake-2.8\Modules\CMakeRCInformation.cmake&quot;;&quot;E:\programmi\CMake 2.8\share\cmake-2.8\Modules\CMakeCommonLanguageInclude.cmake&quot;;&quot;E:\programmi\CMake 2.8\share\cmake-2.8\Modules\CMakeCXXInformation.cmake&quot;;&quot;E:\programmi\CMake 2.8\share\cmake-2.8\Modules\CMakeCommonLanguageInclude.cmake&quot;;E:\work2\iCub\ICUBConfig.cmake;&quot;E:\programmi\CMake 2.8\share\cmake-2.8\Modules\UsePkgConfig.cmake&quot;;E:\work2\yarp2\YARPConfig.cmake;E:\work2\yarp2\conf\YarpDevice.cmake;E:\work2\iCub\conf\FindOpenCV.cmake;E:\work2\iCub\conf\FindIPP.cmake;E:\work2\iCub\src\colourProcessor\CMakeLists.txt;"
+					Outputs="CMakeFiles\generate.stamp"/>
+				</FileConfiguration>
+				<FileConfiguration
+					Name="MinSizeRel|Win32">
+					<Tool
+					Name="VCCustomBuildTool"
+					Description="Building Custom Rule E:/work2/iCub/src/colourProcessor/CMakeLists.txt"
+					CommandLine="&quot;E:\programmi\CMake 2.8\bin\cmake.exe&quot; -HE:/work2/iCub/src/colourProcessor -BE:/work2/iCub/src/colourProcessor --check-stamp-file CMakeFiles/generate.stamp"
+					AdditionalDependencies="E:\work2\iCub\src\colourProcessor\CMakeLists.txt;E:\work2\iCub\src\colourProcessor\CMakeFiles\CMakeSystem.cmake;E:\work2\iCub\src\colourProcessor\CMakeFiles\CMakeCCompiler.cmake;E:\work2\iCub\src\colourProcessor\CMakeFiles\CMakeCXXCompiler.cmake;&quot;E:\programmi\CMake 2.8\share\cmake-2.8\Modules\CMakeSystemSpecificInformation.cmake&quot;;&quot;E:\programmi\CMake 2.8\share\cmake-2.8\Modules\CMakeGenericSystem.cmake&quot;;&quot;E:\programmi\CMake 2.8\share\cmake-2.8\Modules\Platform\gcc.cmake&quot;;&quot;E:\programmi\CMake 2.8\share\cmake-2.8\Modules\Platform\Windows.cmake&quot;;&quot;E:\programmi\CMake 2.8\share\cmake-2.8\Modules\Platform\WindowsPaths.cmake&quot;;&quot;E:\programmi\CMake 2.8\share\cmake-2.8\Modules\CMakeCInformation.cmake&quot;;&quot;E:\programmi\CMake 2.8\share\cmake-2.8\Modules\Platform\Windows-cl.cmake&quot;;E:\work2\iCub\src\colourProcessor\CMakeFiles\CMakeCPlatform.cmake;E:\work2\iCub\src\colourProcessor\CMakeFiles\CMakeCXXPlatform.cmake;&quot;E:\programmi\CMake 2.8\share\cmake-2.8\Modules\Platform\cl.cmake&quot;;E:\work2\iCub\src\colourProcessor\CMakeFiles\CMakeRCCompiler.cmake;&quot;E:\programmi\CMake 2.8\share\cmake-2.8\Modules\CMakeRCInformation.cmake&quot;;&quot;E:\programmi\CMake 2.8\share\cmake-2.8\Modules\CMakeCommonLanguageInclude.cmake&quot;;&quot;E:\programmi\CMake 2.8\share\cmake-2.8\Modules\CMakeCXXInformation.cmake&quot;;&quot;E:\programmi\CMake 2.8\share\cmake-2.8\Modules\CMakeCommonLanguageInclude.cmake&quot;;E:\work2\iCub\ICUBConfig.cmake;&quot;E:\programmi\CMake 2.8\share\cmake-2.8\Modules\UsePkgConfig.cmake&quot;;E:\work2\yarp2\YARPConfig.cmake;E:\work2\yarp2\conf\YarpDevice.cmake;E:\work2\iCub\conf\FindOpenCV.cmake;E:\work2\iCub\conf\FindIPP.cmake;E:\work2\iCub\src\colourProcessor\CMakeLists.txt;"
+					Outputs="CMakeFiles\generate.stamp"/>
+				</FileConfiguration>
+				<FileConfiguration
+					Name="RelWithDebInfo|Win32">
+					<Tool
+					Name="VCCustomBuildTool"
+					Description="Building Custom Rule E:/work2/iCub/src/colourProcessor/CMakeLists.txt"
+					CommandLine="&quot;E:\programmi\CMake 2.8\bin\cmake.exe&quot; -HE:/work2/iCub/src/colourProcessor -BE:/work2/iCub/src/colourProcessor --check-stamp-file CMakeFiles/generate.stamp"
+					AdditionalDependencies="E:\work2\iCub\src\colourProcessor\CMakeLists.txt;E:\work2\iCub\src\colourProcessor\CMakeFiles\CMakeSystem.cmake;E:\work2\iCub\src\colourProcessor\CMakeFiles\CMakeCCompiler.cmake;E:\work2\iCub\src\colourProcessor\CMakeFiles\CMakeCXXCompiler.cmake;&quot;E:\programmi\CMake 2.8\share\cmake-2.8\Modules\CMakeSystemSpecificInformation.cmake&quot;;&quot;E:\programmi\CMake 2.8\share\cmake-2.8\Modules\CMakeGenericSystem.cmake&quot;;&quot;E:\programmi\CMake 2.8\share\cmake-2.8\Modules\Platform\gcc.cmake&quot;;&quot;E:\programmi\CMake 2.8\share\cmake-2.8\Modules\Platform\Windows.cmake&quot;;&quot;E:\programmi\CMake 2.8\share\cmake-2.8\Modules\Platform\WindowsPaths.cmake&quot;;&quot;E:\programmi\CMake 2.8\share\cmake-2.8\Modules\CMakeCInformation.cmake&quot;;&quot;E:\programmi\CMake 2.8\share\cmake-2.8\Modules\Platform\Windows-cl.cmake&quot;;E:\work2\iCub\src\colourProcessor\CMakeFiles\CMakeCPlatform.cmake;E:\work2\iCub\src\colourProcessor\CMakeFiles\CMakeCXXPlatform.cmake;&quot;E:\programmi\CMake 2.8\share\cmake-2.8\Modules\Platform\cl.cmake&quot;;E:\work2\iCub\src\colourProcessor\CMakeFiles\CMakeRCCompiler.cmake;&quot;E:\programmi\CMake 2.8\share\cmake-2.8\Modules\CMakeRCInformation.cmake&quot;;&quot;E:\programmi\CMake 2.8\share\cmake-2.8\Modules\CMakeCommonLanguageInclude.cmake&quot;;&quot;E:\programmi\CMake 2.8\share\cmake-2.8\Modules\CMakeCXXInformation.cmake&quot;;&quot;E:\programmi\CMake 2.8\share\cmake-2.8\Modules\CMakeCommonLanguageInclude.cmake&quot;;E:\work2\iCub\ICUBConfig.cmake;&quot;E:\programmi\CMake 2.8\share\cmake-2.8\Modules\UsePkgConfig.cmake&quot;;E:\work2\yarp2\YARPConfig.cmake;E:\work2\yarp2\conf\YarpDevice.cmake;E:\work2\iCub\conf\FindOpenCV.cmake;E:\work2\iCub\conf\FindIPP.cmake;E:\work2\iCub\src\colourProcessor\CMakeLists.txt;"
+					Outputs="CMakeFiles\generate.stamp"/>
+				</FileConfiguration>
+			</File>
+		<Filter
+			Name="CMake Rules"
+			Filter="">
+			<File
+				RelativePath="E:\work2\iCub\src\colourProcessor\CMakeFiles\ALL_BUILD.rule">
+				<FileConfiguration
+					Name="Debug|Win32">
+					<Tool
+					Name="VCCustomBuildTool"
+					Description="Build all projects"
+					CommandLine=""
+					AdditionalDependencies="E:\work2\iCub\src\colourProcessor\CMakeFiles\ALL_BUILD.rule"
+					Outputs="E:\work2\iCub\src\colourProcessor\CMakeFiles\ALL_BUILD"/>
+				</FileConfiguration>
+				<FileConfiguration
+					Name="Release|Win32">
+					<Tool
+					Name="VCCustomBuildTool"
+					Description="Build all projects"
+					CommandLine=""
+					AdditionalDependencies="E:\work2\iCub\src\colourProcessor\CMakeFiles\ALL_BUILD.rule"
+					Outputs="E:\work2\iCub\src\colourProcessor\CMakeFiles\ALL_BUILD"/>
+				</FileConfiguration>
+				<FileConfiguration
+					Name="MinSizeRel|Win32">
+					<Tool
+					Name="VCCustomBuildTool"
+					Description="Build all projects"
+					CommandLine=""
+					AdditionalDependencies="E:\work2\iCub\src\colourProcessor\CMakeFiles\ALL_BUILD.rule"
+					Outputs="E:\work2\iCub\src\colourProcessor\CMakeFiles\ALL_BUILD"/>
+				</FileConfiguration>
+				<FileConfiguration
+					Name="RelWithDebInfo|Win32">
+					<Tool
+					Name="VCCustomBuildTool"
+					Description="Build all projects"
+					CommandLine=""
+					AdditionalDependencies="E:\work2\iCub\src\colourProcessor\CMakeFiles\ALL_BUILD.rule"
+					Outputs="E:\work2\iCub\src\colourProcessor\CMakeFiles\ALL_BUILD"/>
+				</FileConfiguration>
+			</File>
+		</Filter>
+	</Files>
+	<Globals>
+	</Globals>
+</VisualStudioProject>

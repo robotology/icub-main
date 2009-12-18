@@ -1,0 +1,26 @@
+# CMake generation dependency list for this directory.
+E:/work2/iCub/src/colourProcessor/CMakeLists.txt
+E:/work2/iCub/src/colourProcessor/CMakeFiles/CMakeSystem.cmake
+E:/work2/iCub/src/colourProcessor/CMakeFiles/CMakeCCompiler.cmake
+E:/work2/iCub/src/colourProcessor/CMakeFiles/CMakeCXXCompiler.cmake
+E:/programmi/CMake 2.8/share/cmake-2.8/Modules/CMakeSystemSpecificInformation.cmake
+E:/programmi/CMake 2.8/share/cmake-2.8/Modules/CMakeGenericSystem.cmake
+E:/programmi/CMake 2.8/share/cmake-2.8/Modules/Platform/gcc.cmake
+E:/programmi/CMake 2.8/share/cmake-2.8/Modules/Platform/Windows.cmake
+E:/programmi/CMake 2.8/share/cmake-2.8/Modules/Platform/WindowsPaths.cmake
+E:/programmi/CMake 2.8/share/cmake-2.8/Modules/CMakeCInformation.cmake
+E:/programmi/CMake 2.8/share/cmake-2.8/Modules/Platform/Windows-cl.cmake
+E:/work2/iCub/src/colourProcessor/CMakeFiles/CMakeCPlatform.cmake
+E:/work2/iCub/src/colourProcessor/CMakeFiles/CMakeCXXPlatform.cmake
+E:/programmi/CMake 2.8/share/cmake-2.8/Modules/Platform/cl.cmake
+E:/work2/iCub/src/colourProcessor/CMakeFiles/CMakeRCCompiler.cmake
+E:/programmi/CMake 2.8/share/cmake-2.8/Modules/CMakeRCInformation.cmake
+E:/programmi/CMake 2.8/share/cmake-2.8/Modules/CMakeCommonLanguageInclude.cmake
+E:/programmi/CMake 2.8/share/cmake-2.8/Modules/CMakeCXXInformation.cmake
+E:/programmi/CMake 2.8/share/cmake-2.8/Modules/CMakeCommonLanguageInclude.cmake
+E:/work2/iCub/ICUBConfig.cmake
+E:/programmi/CMake 2.8/share/cmake-2.8/Modules/UsePkgConfig.cmake
+E:/work2/yarp2/YARPConfig.cmake
+E:/work2/yarp2/conf/YarpDevice.cmake
+E:/work2/iCub/conf/FindOpenCV.cmake
+E:/work2/iCub/conf/FindIPP.cmake
