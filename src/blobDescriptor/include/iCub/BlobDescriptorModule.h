@@ -15,16 +15,16 @@
  * <b>Command-line Parameters</b>
  *
  * The following key-value pairs can be specified as command-line parameters by prefixing -- to the key
- * (e.g. \c --from file.ini). The value part can be changed to suit your needs; the default values are shown below.
+ * (e.g., <tt>--from file.ini</tt>). The value part can be changed to suit your needs; default values are shown below.
  *
- * - <tt>--from blobDescriptor.ini</tt> \n
- *   The configuration file
+ * - <tt>from blobDescriptor.ini</tt> \n
+ *   Configuration file
  *
- * - <tt>--context blobDescriptor/conf</tt> \n
- *   The sub-path from \c $ICUB_ROOT/icub/app to the configuration file
+ * - <tt>context blobDescriptor/conf</tt> \n
+ *   Sub-path from \c $ICUB_ROOT/icub/app to the configuration file
  *
- * - <tt>--name blobDescriptor</tt> \n
- *   The name of the module (used to form the stem of module port names)
+ * - <tt>name blobDescriptor</tt> \n
+ *   Root name of the module (used to form the stem of module port names)
  *
  * <b>Configuration File Parameters</b>
  *
@@ -67,10 +67,10 @@
  *
  * \section portsa_sec Ports Accessed
  *
- * - <tt>/edisonSegm/rawimg:o</tt> \n
+ * - <tt>/edisonSegm/rawImg:o</tt> \n
  *   Raw image port, previously created by a segmentation module
  *
- * - <tt>/edisonSegm/labelimg:o</tt> \n
+ * - <tt>/edisonSegm/labelImg:o</tt> \n
  *   Labeled image port, previously created by a segmentation module
  *
  * \section portsc_sec Ports Created
@@ -135,8 +135,8 @@
  *
  * \section example_sec Example Instantiation of the Module
  *
- * <tt>blobDescriptor --name blobDescriptor --context blobDescriptor/conf --from blobDescriptor.ini </tt>\n
- * <tt>blobDescriptor --context demoAffv2/conf</tt>
+ * - <tt>blobDescriptor --name blobDescriptor --context blobDescriptor/conf --from blobDescriptor.ini </tt>\n
+ * - <tt>blobDescriptor --context demoAffv2/conf</tt>
  *
  * \author Giovanni Saponaro <gsaponaro@isr.ist.utl.pt>, Ivana Cingovska, Alexandre Bernardino
  *
