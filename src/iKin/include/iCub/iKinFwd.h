@@ -706,8 +706,8 @@ public:
     *    (default=right).
     *  
     * \b H0 <list of 4x4 doubles (per rows)>: specifies the rigid 
-    *    roto-translation matrix from the root reference fram to the
-    *    0th frame (default=eye(4,4)).
+    *    roto-translation matrix from the root reference frame to
+    *    the 0th frame (default=eye(4,4)).
     *  
     * \b numLinks <int>: specifies the expected number of links.
     *  
@@ -734,6 +734,7 @@ public:
     *  
     * \code 
     * type right 
+    * H0 (1.0 2.0 3.0 ...) 
     * numLinks 4 
     * link_0 (option1 value1) (option2 value2) ... 
     * link_1 (option1 value1) ... 

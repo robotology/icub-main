@@ -955,17 +955,16 @@ bool CartesianSolver::open(Searchable &options)
     encodeDOF();
 
     // handle dof from options
-    if (options.check("dof"))
-        if (Bottle *v=options.find("dof").asList())
-        {            
-            Vector _dof(v->size());
-    
-            for (int i=0; i<_dof.length(); i++)
-                _dof[i]=v->get(i).asInt();
+    if (Bottle *v=options.find("dof").asList())
+    {            
+        Vector _dof(v->size());
 
-            decodeDOF(_dof);
-            encodeDOF();
-        }
+        for (int i=0; i<_dof.length(); i++)
+            _dof[i]=v->get(i).asInt();
+
+        decodeDOF(_dof);
+        encodeDOF();
+    }
 
     // joints bounds alignment
     alignJointsBounds();    

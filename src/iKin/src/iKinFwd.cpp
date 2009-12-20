@@ -1159,26 +1159,27 @@ iKinLimb::iKinLimb(const Property &option)
 /************************************************************************/
 bool iKinLimb::fromLinksProperties(const Property &option)
 {
-    _dispose_limb();
+    Property &opt=const_cast<Property&>(option);
 
-    type=const_cast<Property&>(option).check("type",Value("right")).asString().c_str();
+    _dispose_limb();    
+
+    type=opt.check("type",Value("right")).asString().c_str();
     if (type!="right" && type!="left")
     {
         cerr << "Error: invalid handedness type specified!" << endl;
         return false;
     }
 
-    Bottle &bH0=const_cast<Property&>(option).findGroup("H0");
-    if (!bH0.isNull())
+    if (Bottle *bH0=opt.find("H0").asList())
     {
         int i=0;
         int j=0;
 
         H0.zero();
 
-        for (int cnt=0; (cnt<bH0.size()) && (cnt<H0.rows()*H0.cols()); cnt++)
+        for (int cnt=0; (cnt<bH0->size()) && (cnt<H0.rows()*H0.cols()); cnt++)
         {    
-            H0(i,j)=bH0.get(cnt).asDouble();
+            H0(i,j)=bH0->get(cnt).asDouble();
 
             if (++j>=H0.cols())
             {
@@ -1188,7 +1189,7 @@ bool iKinLimb::fromLinksProperties(const Property &option)
         }
     }
 
-    int numLinks=const_cast<Property&>(option).check("numLinks",Value(0)).asInt();
+    int numLinks=opt.check("numLinks",Value(0)).asInt();
     if (numLinks==0)
     {
         cerr << "Error: invalid number of links specified!" << endl;
@@ -1206,7 +1207,7 @@ bool iKinLimb::fromLinksProperties(const Property &option)
         char link[255];
         sprintf(link,"link_%d",i);
 
-        Bottle &bLink=const_cast<Property&>(option).findGroup(link);
+        Bottle &bLink=opt.findGroup(link);
         if (bLink.isNull())
         {
             cerr << "Error: " << link << " is missing!" << endl;
