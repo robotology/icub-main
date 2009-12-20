@@ -1,11 +1,13 @@
 
 #include <iCub/iKinFwd.h>
 
+#include <stdio.h>
 #include <iostream>
 #include <iomanip>
 
 using namespace std;
 using namespace yarp;
+using namespace yarp::os;
 using namespace yarp::sig;
 using namespace yarp::math;
 using namespace ctrl;
@@ -1148,10 +1150,97 @@ iKinLimb::iKinLimb(const iKinLimb &limb)
 
 
 /************************************************************************/
-iKinLimb &iKinLimb::operator=(const iKinLimb &limb)
+iKinLimb::iKinLimb(const Property &option)
+{
+    fromLinksProperties(option);
+}
+
+
+/************************************************************************/
+bool iKinLimb::fromLinksProperties(const Property &option)
 {
     _dispose_limb();
-	_dispose_chain();
+
+    type=const_cast<Property&>(option).check("type",Value("right")).asString().c_str();
+    if (type!="right" && type!="left")
+    {
+        cerr << "Error: invalid handedness type specified!" << endl;
+        return false;
+    }
+
+    Bottle &bH0=const_cast<Property&>(option).findGroup("H0");
+    if (!bH0.isNull())
+    {
+        int i=0;
+        int j=0;
+
+        H0.zero();
+
+        for (int cnt=0; (cnt<bH0.size()) && (cnt<H0.rows()*H0.cols()); cnt++)
+        {    
+            H0(i,j)=bH0.get(cnt).asDouble();
+
+            if (++j>=H0.cols())
+            {
+                i++;
+                j=0;
+            }
+        }
+    }
+
+    int numLinks=const_cast<Property&>(option).check("numLinks",Value(0)).asInt();
+    if (numLinks==0)
+    {
+        cerr << "Error: invalid number of links specified!" << endl;
+
+        type="right";
+        H0.eye();
+
+        return false;
+    }
+
+    linkList.resize(numLinks,NULL);
+
+    for (int i=0; i<numLinks; i++)
+    {
+        char link[255];
+        sprintf(link,"link_%d",i);
+
+        Bottle &bLink=const_cast<Property&>(option).findGroup(link);
+        if (bLink.isNull())
+        {
+            cerr << "Error: " << link << " is missing!" << endl;
+
+            type="right";
+            H0.eye();
+            _dispose_limb();
+
+            return false;
+        }
+
+        double A=bLink.check("A",Value(0.0)).asDouble();
+        double D=bLink.check("D",Value(0.0)).asDouble();
+        double alpha=(M_PI/180.0)*bLink.check("alpha",Value(0.0)).asDouble();
+        double offset=(M_PI/180.0)*bLink.check("offset",Value(0.0)).asDouble();
+        double min=(M_PI/180.0)*bLink.check("min",Value(0.0)).asDouble();
+        double max=(M_PI/180.0)*bLink.check("max",Value(0.0)).asDouble();
+
+        linkList[i]=new iKinLink(A,D,alpha,offset,min,max);
+
+        *this<<*linkList[i];
+
+        if (bLink.check("blocked"))
+            blockLink(i,(M_PI/180.0)*bLink.find("blocked").asDouble());
+    }
+
+    return configured=true;
+}
+
+
+/************************************************************************/
+iKinLimb &iKinLimb::operator=(const iKinLimb &limb)
+{
+    _dispose_limb();	
     _copy_limb(limb);
 
     return *this;
@@ -1172,6 +1261,8 @@ void iKinLimb::_allocate_limb(const string &_type)
 
     if (type!="right" && type!="left")
         type="right";
+
+    configured=true;
 }
 
 
@@ -1191,6 +1282,8 @@ void iKinLimb::_copy_limb(const iKinLimb &limb)
             *this << *linkList[i];
         }
     }
+
+    configured=limb.configured;
 }
 
 
@@ -1201,13 +1294,14 @@ void iKinLimb::_dispose_limb()
     {
         for (unsigned int i=0; i<n; i++)
             if (linkList[i])
-            {
                 delete linkList[i];
-                linkList[i]=NULL;
-            }
 
         linkList.clear();
     }
+
+    _dispose_chain();
+
+    configured=false;
 }
 
 
@@ -1492,4 +1586,5 @@ void iCubInertialSensor::_allocate_limb(const string &_type)
     blockLink(6,0.0);
     blockLink(7,0.0);
 }
+
 

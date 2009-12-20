@@ -31,6 +31,7 @@
 #ifndef __IKINFWD_H__
 #define __IKINFWD_H__
 
+#include <yarp/os/Property.h>
 #include <yarp/sig/Vector.h>
 #include <yarp/sig/Matrix.h>
 #include <yarp/math/Math.h>
@@ -661,6 +662,7 @@ class iKinLimb : protected iKinChain
 protected:
     std::deque<iKinLink*> linkList;
     std::string           type;
+    bool                  configured;
 
     virtual void _allocate_limb(const std::string &_type);
     virtual void _copy_limb(const iKinLimb &limb);
@@ -684,6 +686,67 @@ public:
     * @param limb is the Limb to be copied.
     */
     iKinLimb(const iKinLimb &limb);
+
+    /**
+    * Creates a new Limb from a list of properties wherein links 
+    * parameters are specified. 
+    * @param option is the list of links properties. 
+    * \see fromProperty
+    */
+    iKinLimb(const yarp::os::Property &option);
+
+    /**
+    * Initializes the Limb from a list of properties where links 
+    * parameters are specified. 
+    * @param option is the list of links properties. 
+    *  
+    * \note Available options are: 
+    *  
+    * \b type <string>: specifies the limb handedness [left/right] 
+    *    (default=right).
+    *  
+    * \b H0 <list of 4x4 doubles (per rows)>: specifies the rigid 
+    *    roto-translation matrix from the root reference fram to the
+    *    0th frame (default=eye(4,4)).
+    *  
+    * \b numLinks <int>: specifies the expected number of links.
+    *  
+    * \b A <double>: specifies the link length [m] (default=0.0).
+    *  
+    * \b D <double>: specifies the link offset [m] (default=0.0).
+    *  
+    * \b alpha <double>: specifies the link twist [deg] 
+    *    (default=0.0).
+    *  
+    * \b offset <double>: specifies the joint angle offset [deg] 
+    *    (default=0.0).
+    *  
+    * \b min <double>: specifies the joint angle lower bound [deg]
+    *    (default=0.0).
+    *  
+    * \b max <double>: specifies the joint angle upper bound [deg] 
+    *    (default=0.0).
+    *  
+    * \b blocked <double>: blocks the link at the specified value 
+    *    [deg] (default=released).
+    *  
+    * \note The list should look like as the following: 
+    *  
+    * \code 
+    * type right 
+    * numLinks 4 
+    * link_0 (option1 value1) (option2 value2) ... 
+    * link_1 (option1 value1) ... 
+    * ... 
+    * \endcode 
+    */
+    bool fromLinksProperties(const yarp::os::Property &option);
+
+    /**
+    * Checks if the limb has been properly configured.
+    * @return true iff correctly coinfigured.
+    */
+    bool isValid() { return configured; }
 
     /**
     * Copies a Limb object into the current one.

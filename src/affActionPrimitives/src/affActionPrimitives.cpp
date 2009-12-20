@@ -150,7 +150,7 @@ bool affActionPrimitives::configHandSeq(Property &opt)
             char seq[255];
             sprintf(seq,"SEQ_%d",i);
 
-            Bottle bSeq=handSeqProp.findGroup(seq);
+            Bottle &bSeq=handSeqProp.findGroup(seq);
             if (bSeq.isNull())
             {
                 fprintf(stdout,"WARNING: \"%s\" group is missing\n",seq);    
@@ -178,7 +178,7 @@ bool affActionPrimitives::configHandSeq(Property &opt)
                 char wp[255];
                 sprintf(wp,"wp_%d",j);
 
-                Bottle bWP=bSeq.findGroup(wp);
+                Bottle &bWP=bSeq.findGroup(wp);
                 if (bWP.isNull())
                 {
                     fprintf(stdout,"WARNING: \"%s\" entry is missing\n",wp);    
