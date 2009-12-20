@@ -696,7 +696,7 @@ public:
     iKinLimb(const yarp::os::Property &option);
 
     /**
-    * Initializes the Limb from a list of properties where links 
+    * Initializes the Limb from a list of properties wherein links 
     * parameters are specified. 
     * @param option is the list of links properties. 
     *  
