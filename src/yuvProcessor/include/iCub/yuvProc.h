@@ -3,8 +3,8 @@
  *
  * \defgroup icub_yuvProcessor yuvProcessor
  *
- * Functionally, receives the rectified Y (intensity) channel from Francesco's Rea Coulour Processor Module and performs centre-surround processing and construction of an intensity uniqueness map (intensity saliency) via a difference-of-Gaussian pyramid filter bank. 
- * It also receives rectified U and V chrominance channels from Francesco's Rea Coulour Processor Module and performs centre-surround processing and construction of a colour chrominance uniqueness map (colour saliency) via a difference-of-Gaussian pyramid filter bank.
+ * Receives the rectified Y (intensity) channel from the coulourProcessor Module and performs centre-surround processing with a construction of an intensity uniqueness map (intensity saliency) via a difference-of-Gaussian pyramid filter bank. 
+ * It also receives rectified U and V chrominance channels from the same module and constructs a colour chrominance uniqueness map (colour saliency) using the same technique.
  *
  * 
  * \section lib_sec Libraries
