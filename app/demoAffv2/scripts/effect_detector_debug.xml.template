@@ -21,7 +21,7 @@
       <name>effectDetector</name>
       <parameters>--context demoAffv2/conf</parameters>
       <node>pwr-node2</node>
-      <stdio>view-node</node>
+      <stdio>view-node</stdio>
       <tag>effect_detector</tag>
 </module>
 <module>
