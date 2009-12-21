@@ -10,7 +10,7 @@ Copyright (C) 2009 RobotCub Consortium
  
 Author: Ugo Pattacini 
 
-CopyPolicy: Released under the terms of the GNU GPL v2.0.
+CopyPolicy: Released under the terms of the GNU GPL v2.0. 
 
 \section intro_sec Description 
 An example module that makes use of \ref affActionPrimitives 
@@ -38,6 +38,9 @@ reach(x2+lift_displacement,o)).
 7) The robot releases the grasped object. 
  
 8) The robot steers the arm to home position. 
+ 
+\note A video on iCub grasping objects can be seen at
+      http://eris.liralab.it/misc/icubvideos/icub_grasps_sponges.wmv 
  
 \section lib_sec Libraries 
 - YARP libraries. 
