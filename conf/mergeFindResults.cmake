@@ -67,29 +67,23 @@ endforeach(arg ${ARGN})
 set(${TARGET}_INCLUDES ${INCLUDES})
 set(${TARGET}_LIBRARIES ${LIBRARIES})
 
-if(${CMAKE_MAJOR_VERSION}.${CMAKE_MINOR_VERSION} LESS 2.6)
+  if(${CMAKE_MAJOR_VERSION}.${CMAKE_MINOR_VERSION} LESS 2.6)
 
-  if(FOUND)
-    set(${TARGET}_FOUND ${${TARGET}_LIBRARIES})
-  else(FOUND)
-    set(${TARGET}_FOUND 0)
-  endif(FOUND)
+    if(FOUND)
+      set(${TARGET}_FOUND ${${TARGET}_LIBRARIES})
+    else(FOUND)
+      set(${TARGET}_FOUND 0)
+    endif(FOUND)
+
+  else(${CMAKE_MAJOR_VERSION}.${CMAKE_MINOR_VERSION} LESS 2.6)
+  
+    include(FindPackageHandleStandardArgs)
+    find_package_handle_standard_args(${TARGET} DEFAULT_MSG ${TARGET}_LIBRARIES)
+
+  endif(${CMAKE_MAJOR_VERSION}.${CMAKE_MINOR_VERSION} LESS 2.6)
 
   set(${TARGET}_FOUND ${${TARGET}_FOUND})
   set(${TARGET}_INCLUDES ${INCLUDES})
   set(${TARGET}_INCLUDE_DIRS ${INCLUDES})
   set(${TARGET}_LIBRARIES ${LIBRARIES})
-
-else(${CMAKE_MAJOR_VERSION}.${CMAKE_MINOR_VERSION} LESS 2.6)
-  
-  include(FindPackageHandleStandardArgs)
-  find_package_handle_standard_args(${TARGET} DEFAULT_MSG ${TARGET}_LIBRARIES)
-
-  set(${TARGET}_FOUND ${${TARGET}_FOUND} PARENT_SCOPE)
-  set(${TARGET}_INCLUDES ${INCLUDES} PARENT_SCOPE)
-  set(${TARGET}_INCLUDE_DIRS ${INCLUDES} PARENT_SCOPE)
-  set(${TARGET}_LIBRARIES ${LIBRARIES} PARENT_SCOPE)
-
-endif(${CMAKE_MAJOR_VERSION}.${CMAKE_MINOR_VERSION} LESS 2.6)
-
 endmacro(mergeFindResults)
