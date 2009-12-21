@@ -26,13 +26,13 @@
 </module>
 <module>
       <name>yarpview</name>
-      <parameters>--name /userSelection:view --out /userSelection:o --synch</parameters>
+      <parameters>--name /userSelection:view --out /userSelection:o --x 0 --y 0 --synch</parameters>
       <node>chico3</node>
       <tag>user_selection</tag>
 </module>
 <module>
       <name>yarpview</name>
-      <parameters>--name /blobDescriptor/yarpview/view --synch</parameters>
+      <parameters>--name /blobDescriptor/yarpview/view --x 320 --y 0 --synch</parameters>
       <node>chico3</node>
       <tag>labeled_image</tag>
 </module>
