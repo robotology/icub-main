@@ -9,6 +9,64 @@
 //#include <stdio.h>
 using namespace std;
 
+ObjectDescriptor::ObjectDescriptor()
+{
+	h_bins = 16;
+	s_bins = 16;
+	v_bins = 16;
+	_hist_size[0] = h_bins;
+    _hist_size[1] = s_bins;
+    /* in 8 bit images hue varies from 0 to 180 */
+    _h_ranges[0]  =   0;
+    _h_ranges[1]  = 180;
+    /* saturation varies from 0 (black-gray-white) to 255 (pure spectrum color) */
+    _s_ranges[0]  =   0;
+    _s_ranges[1]  = 255;
+    _v_ranges[0]  =   0;
+    _v_ranges[1]  = 255;
+	roi_x = 0;
+	roi_y = 0;
+	roi_width = 0;
+	roi_height = 0;
+	v_min = 0;
+	v_max = 0;
+	s_min = 0;
+	s_max = 0;
+    objHist = NULL;
+	mask_image = NULL;
+	mask_data = NULL;
+	storage = NULL;
+	contours = NULL;
+	affcontours = NULL;
+	convexhull = NULL; 
+}
+
+bool ObjectDescriptor::Create(int width, int height)
+{
+	_w = width;
+	_h = height; 
+	_sz = cvSize(width, height);
+	mask_image = cvCreateImage(_sz, IPL_DEPTH_8U, 1);
+	mask_data = (unsigned char *)mask_image->imageData;
+	float *ranges[] = { _h_ranges, _s_ranges, _v_ranges };
+    objHist = cvCreateHist(1, _hist_size, CV_HIST_ARRAY, ranges, 1); //only use hue
+	storage = cvCreateMemStorage(0);
+	contours = 0;
+	affcontours = 0;
+	convexhull = 0; 
+	return true;
+}
+
+ObjectDescriptor::~ObjectDescriptor()
+{
+	if(mask_image)
+		cvReleaseImage(&mask_image);
+	if(objHist)
+		cvReleaseHist(&objHist);
+	if(storage)
+		cvReleaseMemStorage(&storage);
+}
+
 /*
  * helper classes and functions, taken from Ivana Cingovska's 2008 work
  **********************************************************************
@@ -67,49 +125,60 @@ Arguments:    labeledImage - integer labeled image
 */
 int selectObjects(IplImage *labeledImage, IplImage *out, int numLabels, int areaThres)
 {
-    int *area;
+	int numObjects = 0;
+
+    int *area, *labels;
     area = new int[numLabels];
+	labels = new int[numLabels];
     memset(area, 0, sizeof(int)*numLabels);
+	memset(labels, -1, sizeof(int)*numLabels);
 
     int *labeledData;
-    //unsigned char *output;
     labeledData = (int*)labeledImage->imageData;
-    //output = (unsigned char*)out->imageData;
 
     int width, height, stride;
     width = labeledImage->width;
     height = labeledImage->height;
-    stride = labeledImage->widthStep/sizeof(int);
-
-    int numObjects = 0;
+    stride = labeledImage->widthStep/sizeof(int); 
 
     //calculating the area
     for (int i = 0; i < height; i++)
         for (int j = 0; j < width; j++)
             {
                 int k = labeledData[i * width + j];
-                if (k != 0)
-                    area[k - 1] += 1;
+                if (k >= 0 && k < numLabels)
+				{
+                    area[k] += 1;
+				}
+				else
+				{
+					printf("WARNING. PROBLEM IN SELECTOBJECTS: LABEL DIFFERENT THAN EXPECTED\n"); 
+				}
             }
-    //annulling the areas smaller than threshold
+
+    //canceling the areas smaller than threshold and getting new labels
     for (int i = 0; i < numLabels; i++)
         if (area[i] < areaThres)
             area[i] = 0;
-        else numObjects++;
+        else 
+		{
+			labels[i] = numObjects++;
+		};
 
 
-    //annulling the objects with small area
+    //relabeling objects (start at zero and unit increments)
     for (int i = 0; i < height; i++)
         for (int j = 0; j < width; j++)
             {
-                int k = area[labeledData[i * width + j] - 1];
-                if (k == 0)
-                    labeledData[i * width + j] = 0;
+				int k = labeledData[i * width + j];
+				labeledData[i * width + j] = labels[k];
             }
+			
     //convert from label image (integer) to output image (unsigned char)
-    int32ToInt8Image(labeledImage, out);
+    //int32ToInt8Image(labeledImage, out);
 
 	delete [] area;
+	delete [] labels;
 
     return numObjects;
 }
@@ -210,10 +279,13 @@ void extractObj(IplImage *labeledImage, int numObjects, ObjectDescriptor *objDes
         objDescTable[i].area = 0;
         //objDescTable[i].mask_image = cvCreateImage(cvSize(width, height),8,1);
         //objDescTable[i].mask_data = (unsigned char*)objDescTable[i].mask_image->imageData;
+	    //TODO: Optimize this with memset
         for( int k = 0; k < height; k++ )
 			for( int j = 0; j < width; j++ )
 				objDescTable[i].mask_data[k*stride+j]  = 0; //set all the pixels black
         objDescTable[i].center = cvPoint(0,0); //default center of the object
+
+		//optimize this - 
         objDescTable[i].label = -1;
     }
     //calculating the area and the mask images for the histogram for each object
@@ -222,7 +294,7 @@ void extractObj(IplImage *labeledImage, int numObjects, ObjectDescriptor *objDes
 		for (int j = 0; j < width; j++)
         {
 			int label = labeledData[i*stride+j];
-            if (label != 0)
+            if ( (label != -1) && label < numObjects )
 			{
 				int ind = indexOfL(label, objDescTable, numObjects);
                 int a = objDescTable[ind].area;

@@ -24,24 +24,50 @@ using namespace std;
 /* objectDescriptor.h */
 
 //Should create a class with proper constructors and destructors
-struct ObjectDescriptor
+class ObjectDescriptor
 {
+public: //everything public for a start
+	ObjectDescriptor();
+	bool Create(int width, int height);
+	~ObjectDescriptor();
     int no; // number of objects in the image ??? It looks like it is more the index of the object in the array
     int label;
     int area;
     CvPoint center;
+
+	bool has_holes;
+	//Color Histogram
     CvHistogram *objHist; // colour descriptor? CHECK
-    int h_bins, s_bins;
+	//New fields added for color histogram computations - Alex 19/12/2009
+	int _w; 
+	int _h;
+	CvSize _sz;
+	int _hist_size[2];
+	float _h_ranges[2], _s_ranges[2], _v_ranges[2];
+    int	h_bins; 
+	int	s_bins;
+	int v_bins;
 
     IplImage* mask_image; // object mask
     unsigned char *mask_data;
 
     CvScalar color; // for display? CHECK
 
+	//New fields added for tracker initialization - Alex 20/12/2009
+	int roi_x;
+	int roi_y;
+	int roi_width;
+	int roi_height;
+	int v_min;
+	int v_max;
+	int s_min;
+	int s_max;
+
 	//New fields added for contour processing - Alex 13/12/2009
 	CvMemStorage *storage; // = cvCreateMemStorage(0);
-	CvSeq *contours; // = 0;
-	CvSeq *convexhull; // = 0;
+	CvSeq *contours; // raw blob contours
+	CvSeq *affcontours; // processed contours for the description of affordances 
+	CvSeq *convexhull; // 
 
 };
 

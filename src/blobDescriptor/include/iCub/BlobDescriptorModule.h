@@ -210,6 +210,8 @@ class BlobDescriptorModule : public RFModule
     ImageOf<PixelRgb>                 _yarpViewImg;
     ImageOf<PixelRgb>                 _yarpHSVImg;
     ImageOf<PixelMono>                _yarpHueImg;
+	ImageOf<PixelMono>				  _yarpSatImg;
+	ImageOf<PixelMono>                _yarpValImg;
     ImageOf<PixelInt>                 _yarpLabeledImg;
     ImageOf<PixelMono>                _yarpTempImg;
 
@@ -225,8 +227,8 @@ class BlobDescriptorModule : public RFModule
 
 	ObjectDescriptor                 *_objDescTable;
 	int                               _numObjects;
-    int                               _hist_size[2];
-	float                             _h_ranges[2], _s_ranges[2], _v_ranges[2];
+    //int                               _hist_size[2];
+	//float                             _h_ranges[2], _s_ranges[2], _v_ranges[2];
 	
 	/* other parameters that can be user-specified (besides port names) */
 	int                               _minAreaThreshold; /* min. number of pixels allowed for foreground objects */

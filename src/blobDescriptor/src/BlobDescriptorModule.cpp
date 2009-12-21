@@ -22,9 +22,9 @@ using namespace yarp::os;
 using namespace std;
 
 // FIXME: make these user-specified parameters
-#define H_BINS 30
-#define S_BINS 30
-#define V_BINS 30
+//#define H_BINS 30
+//#define S_BINS 30
+//#define V_BINS 30
 
 /**
  * Receive a previously initialized Resource Finder object and process module parameters,
@@ -174,41 +174,30 @@ bool BlobDescriptorModule::configure(ResourceFinder &rf) // equivalent to Module
 	_yarpRawImg.resize(_w,_h);
 	_yarpHSVImg.resize(_w,_h);
 	_yarpHueImg.resize(_w,_h);
+	_yarpSatImg.resize(_w,_h);
+	_yarpValImg.resize(_w,_h);
 	_yarpLabeledImg.resize(_w,_h);
 	_yarpViewImg.resize(_w,_h);
 	_yarpTempImg.resize(_w,_h);
     //_h_plane = cvCreateImage(_sz, IPL_DEPTH_8U, 1);
 
     /* IvanaModule::init() */
-    _hist_size[0] = H_BINS;
-    _hist_size[1] = S_BINS;
+    //_hist_size[0] = H_BINS;
+    //_hist_size[1] = S_BINS;
     /* hue varies from 0 (~0°red) to 180 (~360°red again) */
-    _h_ranges[0]  =   0;
-    _h_ranges[1]  = 360;
+    //_h_ranges[0]  =   0;
+    //_h_ranges[1]  = 360;
     /* saturation varies from 0 (black-gray-white) to 255 (pure spectrum color) */
-    _s_ranges[0]  =   0;
-    _s_ranges[1]  = 255;
-    _v_ranges[0]  =   0;
-    _v_ranges[1]  = 255;
-	float *ranges[] = { _h_ranges, _s_ranges, _v_ranges };
+	//_s_ranges[0]  =   0;
+    //_s_ranges[1]  = 255;
+    //_v_ranges[0]  =   0;
+    //_v_ranges[1]  = 255;
+	//float *ranges[] = { _h_ranges, _s_ranges, _v_ranges };
     
 	/* initialize object descriptor list */
 	_objDescTable = new ObjectDescriptor[_maxObjects];
-	/* must allocate and initialize masks and histograms */
-	/* FIXME: in the future, this should go in the object class constructor */
-	for(int i = 0; i < _maxObjects; i++)
-	{
-		_objDescTable[i].mask_image = cvCreateImage(_sz, IPL_DEPTH_8U, 1);
-		_objDescTable[i].mask_data = (unsigned char *) _objDescTable[i].mask_image->imageData;
-		_objDescTable[i].h_bins = _hist_size[0];
-		_objDescTable[i].s_bins = _hist_size[1];
-        _objDescTable[i].objHist = cvCreateHist(1, _hist_size, CV_HIST_ARRAY, ranges, 1);
-		_objDescTable[i].storage = cvCreateMemStorage(0);
-		_objDescTable[i].contours = 0;
-		_objDescTable[i].convexhull = 0; 
-
-	}
-
+	for(int i = 0; i < _maxObjects; i++)	
+		_objDescTable[i].Create(_w,_h);
 	return true; /* tell RFModule that everything went well, so that it will run the module */
 }
 	
@@ -247,12 +236,7 @@ bool BlobDescriptorModule::close()
     _trackerInitOutputPort.close();
     _trackerInitSingleObjOutputPort.close();
 
-	for(int i = 0; i < _maxObjects; i++)
-	{
-		cvReleaseImage(&(_objDescTable[i].mask_image));
-		cvReleaseHist(&(_objDescTable[i].objHist));
-		cvReleaseMemStorage(&(_objDescTable[i].storage));
-	}
+	
 	delete [] _objDescTable;
 
 	// Network::fini();
@@ -308,19 +292,27 @@ bool BlobDescriptorModule::updateModule()
     IplImage *opencvRawImg     = (IplImage *) _yarpRawImg.getIplImage();
 	IplImage *opencvHSVImg     = (IplImage *) _yarpHSVImg.getIplImage();
 	IplImage *opencvHueImg     = (IplImage *) _yarpHueImg.getIplImage();
+	IplImage *opencvSatImg     = (IplImage *) _yarpSatImg.getIplImage();
+	IplImage *opencvValImg     = (IplImage *) _yarpValImg.getIplImage();
     IplImage *opencvLabeledImg = (IplImage *) _yarpLabeledImg.getIplImage();
 	IplImage *opencvViewImg    = (IplImage *) _yarpViewImg.getIplImage();
 	IplImage *opencvTempImg    = (IplImage *) _yarpTempImg.getIplImage();
 
     /* convert from RGB to HSV and get the Hue plane - to compute the histograms */
 	cvCvtColor(opencvRawImg, opencvHSVImg, CV_RGB2HSV);
-	cvSplit(opencvHSVImg, opencvHueImg, NULL, NULL, NULL);
-    IplImage *planes[] = { opencvHueImg };
+	cvSplit(opencvHSVImg, opencvHueImg, opencvSatImg, opencvValImg, NULL);
+    IplImage *planes[] = { opencvHueImg }; //compute histogram of hue only
+
+	/* generic variables for use with cvMaxMinLoc */
+	double max_val, min_val;
+	//CvPoint max_loc, min_loc;
 
     /* compute numLabels as the max value within opencvLabeledImg */
-    double max_val, trash;
-    cvMinMaxLoc(opencvLabeledImg, &trash, &max_val, NULL, NULL, NULL);
-    int numLabels = (int) max_val;
+    cvMinMaxLoc(opencvLabeledImg, &min_val, &max_val, NULL, NULL, NULL);
+	if(min_val != 0)
+		cout << "WARNING: min_val of labeled image is different from zero !!!!" << endl;
+	
+	int numLabels = (int)max_val + 1;
 
 	/* FIXME: different selection criteria should be accepted here */
     _numObjects = selectObjects( opencvLabeledImg, opencvTempImg, numLabels, _minAreaThreshold);
@@ -346,21 +338,31 @@ bool BlobDescriptorModule::updateModule()
 					   CV_CHAIN_APPROX_SIMPLE, 
 				       cvPoint(0,0)
 					   );
+
+		if(_objDescTable[i].contours == NULL)
+			cout << "Something very wrong happened. Object without edges" << endl;
+
+		if(_objDescTable[i].contours->h_next == NULL)
+			_objDescTable[i].has_holes = false;
+		else
+			_objDescTable[i].has_holes = true;
 	}
 
+	
 	for( int i=0; i < _numObjects; i++)
 	{
-		/* contour drawing */
-		cvDrawContours(
-			opencvViewImg, 
-			_objDescTable[i].contours, 
-			CV_RGB(0,255,0), // external color
-			CV_RGB(0,0,255), // hole color
-			1,				 
-			1, 
-			CV_AA, 
-			cvPoint(0, 0)	 // ROI offset
-			);
+		/* contour drawing - only for objects without holes */
+		if(_objDescTable[i].has_holes == false)
+			cvDrawContours(
+				opencvViewImg, 
+				_objDescTable[i].contours, 
+				CV_RGB(0,255,0), // external color
+				CV_RGB(0,0,255), // hole color
+				1,				 
+				1, 
+				CV_AA, 
+				cvPoint(0, 0)	 // ROI offset
+		);
 	}
 	
 	//DEBUG - print the characteristics of the objects found
@@ -375,13 +377,104 @@ bool BlobDescriptorModule::updateModule()
 
 
     /* compute histogram of each object */
-    for(int i=0; i < _numObjects; i++)
+    for(int i = 0; i < _numObjects; i++)
     {
         cvCalcHist(planes, _objDescTable[i].objHist, 0, _objDescTable[i].mask_image);
         float ohmax; // to normalize the object histogram
         cvGetMinMaxHistValue(_objDescTable[i].objHist, 0, &ohmax, 0, 0);
         cvConvertScale(_objDescTable[i].objHist->bins, _objDescTable[i].objHist->bins, ohmax ? 255. / ohmax : 0., 0);
     }
+
+	/* compute saturation and intensity bounds for each object */
+	for(int i = 0; i < _numObjects; i++)
+    {
+		cvMinMaxLoc(opencvSatImg, &min_val, &max_val, 0, 0, _objDescTable[i].mask_image);
+		_objDescTable[i].s_min = (int)min_val;
+		_objDescTable[i].s_max = (int)max_val;
+		cvMinMaxLoc(opencvValImg, &min_val, &max_val, 0, 0, _objDescTable[i].mask_image);
+		_objDescTable[i].v_min = (int)min_val;
+		_objDescTable[i].v_max = (int)max_val;
+    }
+	/* compute the roi for each object to set the target roi */
+	for(int i = 0; i < _numObjects; i++)
+    {
+		//MUST FIND A GOOD WAY TO DO IT
+		//MAYBE USE FITELLIPSE ON THE CONTOUR
+		//TRACKER COULD ALSO RECEIVE THE ANGLE
+		//THE FOLLOWING INITIALIZATION IS JUST FOR EARLY TESTING
+		_objDescTable[i].roi_height = 30;
+		_objDescTable[i].roi_width = 30;
+		_objDescTable[i].roi_x = _objDescTable[i].center.x - 15;
+		_objDescTable[i].roi_y = _objDescTable[i].center.y - 15;
+    }
+
+	Bottle *userinput = _userSelectionInputPort.read(false);
+	int userselection = -1;
+	if(userinput != NULL)
+	{
+		CvPoint2D32f pt;
+		pt.x = (float)(userinput->get(0).asInt());
+		pt.y = (float)(userinput->get(1).asInt());
+				
+		cout << "Received selection (x,y) = " << pt.x << "  " << pt.y << endl;  
+		//check which is the selected object
+		for(int i = 0; i < _numObjects; i++)
+		{
+			// test only objects without holes 
+			if(_objDescTable[i].has_holes == false)
+			{
+				if( cvPointPolygonTest( _objDescTable[i].contours, pt, 0) > 0) //point inside
+				{
+					userselection = i;
+					break;
+				}
+			}
+		}
+		//Draw the contour of the selected object with a different color
+		if(userselection != -1)
+			cvDrawContours(
+				opencvViewImg, 
+				_objDescTable[userselection].contours, 
+				CV_RGB(0,0,255), // external color
+				CV_RGB(0,0,0), // hole color
+				1,				 
+				1, 
+				CV_AA, 
+				cvPoint(0, 0)	 // ROI offset
+		);
+	}
+
+
+	/* output data to initialize the tracker on the selected object (if any)*/
+	if(userselection != -1)
+	{
+		Bottle &bot = _trackerInitSingleObjOutputPort.prepare();
+		bot.clear();
+		bot.addInt(_objDescTable[userselection].roi_x);
+		bot.addInt(_objDescTable[userselection].roi_y);
+		bot.addInt(_objDescTable[userselection].roi_width);
+		bot.addInt(_objDescTable[userselection].roi_height);
+		bot.addInt((int)cvQueryHistValue_1D(_objDescTable[userselection].objHist, 0));
+		bot.addInt((int)cvQueryHistValue_1D(_objDescTable[userselection].objHist, 1));
+		bot.addInt((int)cvQueryHistValue_1D(_objDescTable[userselection].objHist, 2));
+		bot.addInt((int)cvQueryHistValue_1D(_objDescTable[userselection].objHist, 3));
+		bot.addInt((int)cvQueryHistValue_1D(_objDescTable[userselection].objHist, 4));
+		bot.addInt((int)cvQueryHistValue_1D(_objDescTable[userselection].objHist, 5));
+		bot.addInt((int)cvQueryHistValue_1D(_objDescTable[userselection].objHist, 6));
+		bot.addInt((int)cvQueryHistValue_1D(_objDescTable[userselection].objHist, 7));
+		bot.addInt((int)cvQueryHistValue_1D(_objDescTable[userselection].objHist, 8));
+		bot.addInt((int)cvQueryHistValue_1D(_objDescTable[userselection].objHist, 9));
+		bot.addInt((int)cvQueryHistValue_1D(_objDescTable[userselection].objHist, 10));
+		bot.addInt((int)cvQueryHistValue_1D(_objDescTable[userselection].objHist, 11));
+		bot.addInt((int)cvQueryHistValue_1D(_objDescTable[userselection].objHist, 12));
+		bot.addInt((int)cvQueryHistValue_1D(_objDescTable[userselection].objHist, 13));
+		bot.addInt((int)cvQueryHistValue_1D(_objDescTable[userselection].objHist, 14));
+		bot.addInt((int)cvQueryHistValue_1D(_objDescTable[userselection].objHist, 15));
+		bot.addInt(_objDescTable[userselection].v_min);
+		bot.addInt(_objDescTable[userselection].v_max);
+		bot.addInt(_objDescTable[userselection].s_min);
+		_trackerInitSingleObjOutputPort.write();
+	}
 
 	/* output image to view results */
 	ImageOf<PixelRgb> &yarpOutputImage = _viewImgOutputPort.prepare();
