@@ -8,7 +8,7 @@
  *  
  * \note SI units adopted: meters for lengths and radians for
  *       angles.
-
+ *
  * \section dep_sec Dependencies 
  * - ctrlLib 
  * - IPOPT: see http://eris.liralab.it/wiki/Installing_IPOPT .

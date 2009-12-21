@@ -7,6 +7,17 @@
  *
  * \author Ugo Pattacini
  *
+ * \section intro_sec Description
+ *
+ * Relying on the Yarp Cartesian Interface a library has been 
+ * developed with aim of providing the user a collection of action 
+ * primitives such as reach(), grasp(), tap(), … along with an easy 
+ * way to combine them together forming higher level actions in
+ * order to eventually execute more sophisticated tasks without 
+ * concerning with the motion control details. 
+ *  
+ * \image html affActionPrimitives.jpg 
+ *  
  */ 
 
 #ifndef __AFFACTIONPRIMITIVES_H__
