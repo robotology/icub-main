@@ -176,9 +176,9 @@ public:
         }
 
         if (part=="left_arm" || part=="right_arm")
-            slv=new ArmCartesianSolver(slvName);
+            slv=new iCubArmCartesianSolver(slvName);
         else if (part=="left_leg" || part=="right_leg")
-            slv=new LegCartesianSolver(slvName);
+            slv=new iCubLegCartesianSolver(slvName);
         else
         {
             cout<<"Error: "<<part<<" is invalid"<<endl;

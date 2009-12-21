@@ -58,7 +58,7 @@ int main()
         return -1;
     
     // declare the on-line arm solver called "solver"
-    ArmCartesianSolver onlineSolver("solver");
+    iCubArmCartesianSolver onlineSolver("solver");
 
     Property options;
     // it will operate on the simulator (which is supposed to be already running)
@@ -119,7 +119,7 @@ int main()
     xd[0]=-0.3;
     xd[1]=0.0;
     xd[2]=0.1;
-    ArmCartesianSolver::addTargetOption(cmd,xd);
+    iCubArmCartesianSolver::addTargetOption(cmd,xd);
     out.write(cmd);
     in.wait(reply);
 
@@ -132,7 +132,7 @@ int main()
     cmd.clear();
     Vector dof(3);
     dof=1;
-    ArmCartesianSolver::addDOFOption(cmd,dof);
+    iCubArmCartesianSolver::addDOFOption(cmd,dof);
     out.write(cmd);
     in.wait(reply);
 

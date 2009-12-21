@@ -1277,20 +1277,17 @@ CartesianSolver::~CartesianSolver()
 
 
 /************************************************************************/
-PartDescriptor *ArmCartesianSolver::getPartDesc(Searchable &options)
+PartDescriptor *iCubArmCartesianSolver::getPartDesc(Searchable &options)
 {
     type="right";
     if (options.check("type"))
     {    
-        type=options.find("type").asString();
+        type=options.find("type").asString().c_str();
         if (type!="left" && type!="right")
             type="right";
     }
 
-    string robot="/icub";
-    if (options.check("robot"))
-        robot=options.find("robot").asString();
-
+    string robot=options.check("robot",Value("icub")).asString().c_str();
     Property optTorso("(device remote_controlboard)");
     Property optArm("(device remote_controlboard)");
 
@@ -1321,7 +1318,7 @@ PartDescriptor *ArmCartesianSolver::getPartDesc(Searchable &options)
 
 
 /************************************************************************/
-bool ArmCartesianSolver::open(Searchable &options)
+bool iCubArmCartesianSolver::open(Searchable &options)
 {
     // call father's open() method
     if (CartesianSolver::open(options))
@@ -1335,7 +1332,7 @@ bool ArmCartesianSolver::open(Searchable &options)
 
 
 /************************************************************************/
-bool ArmCartesianSolver::decodeDOF(const Vector &_dof)
+bool iCubArmCartesianSolver::decodeDOF(const Vector &_dof)
 {
     // latch current status
     Vector newDOF=dof;
@@ -1364,7 +1361,7 @@ bool ArmCartesianSolver::decodeDOF(const Vector &_dof)
 
 
 /************************************************************************/
-Vector ArmCartesianSolver::solve(Vector &xd)
+Vector iCubArmCartesianSolver::solve(Vector &xd)
 {
     Vector dummyVector(1);
 
@@ -1402,20 +1399,17 @@ Vector ArmCartesianSolver::solve(Vector &xd)
 
 
 /************************************************************************/
-PartDescriptor *LegCartesianSolver::getPartDesc(Searchable &options)
+PartDescriptor *iCubLegCartesianSolver::getPartDesc(Searchable &options)
 {
     type="right";
     if (options.check("type"))
     {    
-        type=options.find("type").asString();
+        type=options.find("type").asString().c_str();
         if (type!="left" && type!="right")
             type="right";
     }
 
-    string robot="/icub";
-    if (options.check("robot"))
-        robot=options.find("robot").asString();
-
+    string robot=options.check("robot",Value("icub")).asString().c_str();
     Property optLeg("(device remote_controlboard)");
 
     string partLeg  =type=="left" ? "left_arm" : "right_arm";

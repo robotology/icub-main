@@ -388,7 +388,7 @@ public:
 * Derived class which implements the on-line solver for the 
 * chain torso+arm. 
 */
-class ArmCartesianSolver : public CartesianSolver
+class iCubArmCartesianSolver : public CartesianSolver
 {
 protected:
     virtual PartDescriptor *getPartDesc(yarp::os::Searchable &options);
@@ -403,7 +403,7 @@ public:
     *                 father's class constructor for the description
     *                 of the ports
     */
-    ArmCartesianSolver(const std::string &_slvName="armCartSolver") : CartesianSolver(_slvName) { }
+    iCubArmCartesianSolver(const std::string &_slvName="armCartSolver") : CartesianSolver(_slvName) { }
 
     virtual bool open(yarp::os::Searchable &options);
 };
@@ -415,7 +415,7 @@ public:
 * Derived class which implements the on-line solver for the leg 
 * chain. 
 */
-class LegCartesianSolver : public CartesianSolver
+class iCubLegCartesianSolver : public CartesianSolver
 {
 protected:
     virtual PartDescriptor *getPartDesc(yarp::os::Searchable &options);
@@ -428,7 +428,7 @@ public:
     *                 father's class constructor for the description
     *                 of the ports
     */
-    LegCartesianSolver(const std::string &_slvName="legCartSolver") : CartesianSolver(_slvName) { }
+    iCubLegCartesianSolver(const std::string &_slvName="legCartSolver") : CartesianSolver(_slvName) { }
 };
 
 }

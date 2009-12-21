@@ -36,7 +36,7 @@ protected:
     BufferedPort<Bottle> inPort;
     BufferedPort<Bottle> outPort;
 	map<string, IKinPort *> iKinPorts;
-	map<string, ArmCartesianSolver *> iKSolvers;
+	map<string, iCubArmCartesianSolver *> iKSolvers;
 	map<string, Value> parameters;
 	Vector leftOrientation, rightOrientation;
 	map<string, PolyDriver *> polydrivers;

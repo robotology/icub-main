@@ -215,7 +215,7 @@ void ReachManagerModule::OpenIKSolver(string arm)
 	cout << "=====================================" << endl;
 	// declare the on-line arm solver called "solver"
 	string solverName = ((string)parameters["solver_name"].asString()) + "/" + arm + "_arm";
- //   iKSolvers[arm] = new ArmCartesianSolver(solverName.c_str());
+ //   iKSolvers[arm] = new iCubArmCartesianSolver(solverName.c_str());
 	//Property options;
  //   // it will operate on the simulator (which is supposed to be already running)
 	//options.put("robot",parameters["robot"].asString().c_str());
@@ -390,7 +390,7 @@ Vector ReachManagerModule::Solve(const sig::Vector &xd, string partName, string 
 
 		//cout <<  "VECTOR : " << xd.toString() << endl;
 
-		ArmCartesianSolver::addTargetOption(cmd,xd);
+		iCubArmCartesianSolver::addTargetOption(cmd,xd);
 
 		iKinPorts["right"]->out.write(cmd);
 		iKinPorts["left"]->out.write(cmd);
@@ -471,7 +471,7 @@ Vector ReachManagerModule::Solve(const sig::Vector &xd, string partName, string 
 
 		//cout <<  "VECTOR : " << xd.toString() << endl;
 
-		ArmCartesianSolver::addTargetOption(cmd,xd);
+		iCubArmCartesianSolver::addTargetOption(cmd,xd);
 
 		iKinPorts[partName]->out.write(cmd);
 		iKinPorts[partName]->in.wait(reply);
