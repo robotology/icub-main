@@ -5,28 +5,26 @@
 </dependencies>
 <module>
       <name>icubmoddev</name>
-      <parameters>--device grabber --subdevice dragonfly2 --width 320 --height 240 --video_type 1 --white_balance 0.506 0.494 --gain 0.312 --shutter 0.913 --name /icub/cam/left  --brightness 0 --DR2 --stamp --d 0 --sharpness 0.5 --hue 0.48 --gamma 0.4 --saturation 0.271 --framerate 30</parameters>
+      <parameters>--device grabber --subdevice dragonfly2 --width 320 --height 240 --video_type 1 --white_balance 0.506 0.494 --gain 0.312 --shutter 0.913 --name /icub/cam/left  --brightness 0 --DR2 --stamp --d 0 --sharpness 0.5 --hue 0.48 --gamma 0.4 --saturation 0.271</parameters>
 	  <node>pc104</node>
 	<tag>camera_left</tag>
    </module>
    <module>
       <name>icubmoddev</name>
-      <parameters>--device grabber --subdevice dragonfly2 --width 320 --height 240 --video_type 1 --white_balance 0.506 0.494 --gain 0.312 --shutter 0.913 --name /icub/cam/right  --brightness 0 --DR2 --stamp --d 1 --sharpness 0.5 --hue 0.48 --gamma 0.4 --saturation 0.271 --framerate 30</parameters>
+      <parameters>--device grabber --subdevice dragonfly2 --width 320 --height 240 --video_type 1 --white_balance 0.506 0.494 --gain 0.312 --shutter 0.913 --name /icub/cam/right  --brightness 0 --DR2 --stamp --d 1 --sharpness 0.5 --hue 0.48 --gamma 0.4 --saturation 0.271</parameters>
       <node>pc104</node>
 	<tag>camera_right</tag>
    </module>
         <module>
                 <name>camCalib</name>
-		<parameters>--file /home/icub/iCub/app/iCubLisboa01/conf/icubEyes.ini --group CAMERA_CALIBRATION_LEFT --name /icub/camcalib/left</parameters>
-                <node>cortex5</node>
-                <stdio>chico3</stdio>
+		<parameters>--context iCubLisboa01/conf --from icubEyes.ini --group CAMERA_CALIBRATION_LEFT --name /icub/camcalib/left</parameters>
+                <node>icubbrain2</node>
                 <tag>camCalibLeft</tag>
         </module>
                 <module>
                 <name>camCalib</name>
-		<parameters>--file /home/icub/iCub/app/iCubLisboa01/conf/icubEyes.ini --group CAMERA_CALIBRATION_RIGHT --name /icub/camcalib/right</parameters>
-                <node>cortex5</node>
-                <stdio>chico3</stdio>
+		<parameters>--context iCubLisboa01/conf --from icubEyes.ini --group CAMERA_CALIBRATION_RIGHT --name /icub/camcalib/right</parameters>
+                <node>icubbrain2</node>
                 <tag>camCalibRight</tag>
         </module>
 

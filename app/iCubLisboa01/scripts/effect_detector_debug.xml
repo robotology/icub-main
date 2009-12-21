@@ -1,0 +1,71 @@
+<application>
+<name>Effect Detector</name>
+<dependencies>
+      <port>/icub/cam/left</port>
+</dependencies>
+<module>
+      <name>edisonSegmentation</name>
+      <parameters>--context demoAffv2/conf</parameters>
+      <node>cortex6</node>
+      <stdio>chico3</stdio>
+      <tag>edison_segmentation</tag>
+</module>
+<module>
+      <name>blobDescriptor</name>
+      <parameters>--context demoAffv2/conf</parameters>
+      <node>cortex5</node>
+      <stdio>chico3</stdio>
+      <tag>blob_descriptor</tag>
+</module>
+<module>
+      <name>effectDetector</name>
+      <parameters>--context demoAffv2/conf</parameters>
+      <node>cortex5</node>
+      <stdio>chico3</node>
+      <tag>effect_detector</tag>
+</module>
+<module>
+      <name>yarpview</name>
+      <parameters>--name /userSelection:view --out /userSelection:o --synch</parameters>
+      <node>chico3</node>
+      <tag>user_selection</tag>
+</module>
+<module>
+      <name>yarpview</name>
+      <parameters>--name /blobDescriptor/yarpview/view --synch</parameters>
+      <node>chico3</node>
+      <tag>labeled_image</tag>
+</module>
+<connection>
+      <from>/icub/cam/left</from>
+      <to>/edisonSegm/rawImg:i</to>
+</connection>
+<connection>
+      <from>/icub/cam/left</from>
+      <to>/userSelection:view</to>
+</connection>
+<connection>
+      <from>/edisonSegm/rawImg:o</from>
+      <to>/blobDescriptor/rawImg:i</to>
+</connection>
+<connection>
+      <from>/edisonSegm/labeledImg:o</from>
+      <to>/blobDescriptor/labeledImg:i</to>
+</connection>
+<connection>
+      <from>/blobDescriptor/viewImg:o</from>
+      <to>/blobDescriptor/yarpview/view</to>
+</connection>
+<connection>
+      <from>/userSelection:o</from>
+      <to>/blobDescriptor/userSelection:i</to>
+</connection>
+<connection>
+      <from>/icub/cam/left</from>
+      <to>/effectDetector/rawcurrimg</to>
+</connection>
+<connection>
+      <from>/edisonSegm/rawImg:o</from> 
+      <to>/effectDetector/rawsegmimg</to>
+</connection>
+</application>
