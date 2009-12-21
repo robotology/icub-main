@@ -21,7 +21,7 @@
       <name>effectDetector</name>
       <parameters>--context demoAffv2/conf</parameters>
       <node>cortex5</node>
-      <stdio>chico3</node>
+      <stdio>chico3</stdio>
       <tag>effect_detector</tag>
 </module>
 <module>
