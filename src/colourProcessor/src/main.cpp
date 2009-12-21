@@ -13,7 +13,7 @@ int main(int argc, char *argv[]) {
         
     //initialise Yarp Network
     Network yarp;
-   
+    Time::turboBoost();
     // Create and run our module
     colourProcessorModule module;
 

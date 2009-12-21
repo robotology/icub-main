@@ -155,31 +155,31 @@ void colourProcessorModule::outPorts(){
     //todo: getoutputcount for everyport
 
     //port2.prepare() = *img;	
-    if(this->rgbProcessor.redPlane!=0){
+    if((this->rgbProcessor.redPlane!=0)&&(redPort.getOutputCount())){
         redPort.prepare() = *(this->rgbProcessor.redPlane);		
         redPort.write();
     }
-    if(this->rgbProcessor.bluePlane!=0){
+    if((this->rgbProcessor.bluePlane!=0)&&(bluePort.getOutputCount())){
         bluePort.prepare() = *(this->rgbProcessor.bluePlane);		
         bluePort.write();
     }
-    if(this->rgbProcessor.greenPlane!=0){
+    if((this->rgbProcessor.greenPlane!=0)&&(greenPort.getOutputCount())){
         greenPort.prepare() = *(this->rgbProcessor.greenPlane);		
         greenPort.write();
     }
-    if(this->yuvProcessor.yPlane!=0){
+    if((this->yuvProcessor.yPlane!=0)&&(yPort.getOutputCount())){
         yPort.prepare() = *(this->yuvProcessor.yPlane);		
         yPort.write();
     }
-    if(this->yuvProcessor.uPlane!=0){
+    if((this->yuvProcessor.uPlane!=0)&&(uPort.getOutputCount())){
         uPort.prepare() = *(this->yuvProcessor.uPlane);		
         uPort.write();
     }
-    if(this->yuvProcessor.vPlane!=0){
+    if((this->yuvProcessor.vPlane!=0)&&(vPort.getOutputCount())){
         vPort.prepare() = *(this->yuvProcessor.vPlane);		
         vPort.write();
     }
-    if(this->yuvProcessor.uvPlane!=0){
+    if((this->yuvProcessor.uvPlane!=0)&&(uvPort.getOutputCount())){
         uvPort.prepare() = *(this->yuvProcessor.uvPlane);		
         uvPort.write();
     }
