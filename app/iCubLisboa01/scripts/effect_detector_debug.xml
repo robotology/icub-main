@@ -68,4 +68,8 @@
       <from>/edisonSegm/rawImg:o</from> 
       <to>/effectDetector/rawsegmimg</to>
 </connection>
+<connection>
+      <from>/blobDescriptor/trackerInitSingleObj:o</from> 
+      <to>/effectDetector/init</to>
+</connection>
 </application>
