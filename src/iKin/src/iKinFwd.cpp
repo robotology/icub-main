@@ -1574,7 +1574,7 @@ void iCubInertialSensor::_allocate_limb(const string &_type)
     linkList[2]=new iKinLink(  0.00231,   -0.1933, -M_PI/2.0, -M_PI/2.0, -59.0*M_PI/180.0, 59.0*M_PI/180.0);
     linkList[3]=new iKinLink(    0.033,       0.0,  M_PI/2.0,  M_PI/2.0, -40.0*M_PI/180.0, 30.0*M_PI/180.0);
     linkList[4]=new iKinLink(      0.0,       0.0,  M_PI/2.0,  M_PI/2.0, -70.0*M_PI/180.0, 60.0*M_PI/180.0);
-    linkList[5]=new iKinLink(   -0.054,    0.0825,       0.0, -M_PI/2.0, -55.0*M_PI/180.0, 55.0*M_PI/180.0);
+    linkList[5]=new iKinLink(   -0.054,    0.0825, -M_PI/2.0, -M_PI/2.0, -55.0*M_PI/180.0, 55.0*M_PI/180.0);
 
     // virtual links that describe T_nls (see http://eris.liralab.it/wiki/ICubInertiaSensorKinematics)
     linkList[6]=new iKinLink( 0.013250,  0.008538,  0.785721,       0.0,              0.0,             0.0);
