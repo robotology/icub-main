@@ -52,11 +52,19 @@ IF (folder_source)
     ADD_EXECUTABLE(${KEYWORD} 
         ${folder_source} 
         ${folder_header}
-    )	
+    )
+    IF(WIN32)	
     TARGET_LINK_LIBRARIES( ${KEYWORD} 
       ${OPENCV_LIBRARIES}
       ${IPP_LIBRARIES}
-    )	
+    )
+    ELSE(WIN32) #required in linux
+     TARGET_LINK_LIBRARIES( ${KEYWORD}
+       ${OPENCV_LIBRARIES}
+       ${IPP_LIBRARIES} 	
+       pthread
+     )
+    ENDIF (WIN32)	
 ELSE (folder_source)
     MESSAGE( "No source code files found. Please add something")
 ENDIF (folder_source)
