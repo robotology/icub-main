@@ -218,6 +218,7 @@ ENDIF (ARTOOLKITPLUS_FOUND)
 
   ADD_SUBDIRECTORY(iKinArmCtrlIF)
   ADD_SUBDIRECTORY(affActionPrimitives)
+  ADD_SUBDIRECTORY(affActionPrimitives/example)
 
   if(LIBVISLAB_FOUND)
     add_subdirectory(abstractHandCtrl)

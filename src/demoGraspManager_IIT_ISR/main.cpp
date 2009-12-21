@@ -51,6 +51,10 @@ interface implemented) is running.
   the face expression high level interface in order to give an
   emotional representation of the current robot state.
  
+- \e /demoGraspManager_IIT_ISR/rpc remote procedure 
+    call. Recognized remote commands:
+    -'quit' quit the module
+ 
 \section in_files_sec Input Data Files
 None.
 

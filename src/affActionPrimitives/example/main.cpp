@@ -1,3 +1,127 @@
+/** 
+\defgroup affActionPrimitivesExample affActionPrimitivesExample
+ 
+@ingroup icub_module  
+ 
+Example of grasping module based upon \ref affActionPrimitives 
+library. 
+
+Copyright (C) 2009 RobotCub Consortium
+ 
+Author: Ugo Pattacini 
+
+CopyPolicy: Released under the terms of the GNU GPL v2.0.
+
+\section intro_sec Description 
+An example module that makes use of \ref affActionPrimitives 
+library in order to execute a sequence of simple actions: 
+reaches for an object, tries to grasp it, then lifts it and 
+finally releases it. 
+ 
+1) A bottle containing the 3-d position of the object to grasp 
+is received (let be x1).
+ 
+2) To this 3-d point a systematic offset is added in order to
+compensate for the uncalibrated kinematics of the arm (let be
+x2=x1+systematic_offset). 
+ 
+3) The robot reaches for a position located on top of the object 
+with the specified orientation (let be reach(x2+grasp_disp,o)). 
+ 
+4) The robot grasps the object (let be reach(x2,o)). 
+ 
+5) The hand is closed. 
+ 
+6) The robot lifts the object to a specified location (let be 
+reach(x2+lift_displacement,o)). 
+ 
+7) The robot releases the grasped object. 
+ 
+8) The robot steers the arm to home position. 
+ 
+\section lib_sec Libraries 
+- YARP libraries. 
+- \ref affActionPrimitives library.  
+
+\section parameters_sec Parameters
+--name \e name
+- specify the module name, which is \e affActionPrimitivesMod by
+  default.
+ 
+--part \e type 
+- specify which arm has to be used: type can be \e left_arm, \e 
+  right_arm, \e both_arms (default=both_arms).
+ 
+\section portsa_sec Ports Accessed
+Assumes that \ref icub_iCubInterface (with ICartesianControl 
+interface implemented) is running. 
+ 
+\section portsc_sec Ports Created 
+ 
+- \e /<modName>/in receives a bottle containing the 3-d position 
+  of the object to grasp.
+ 
+- \e /<modName>/rpc remote procedure call. 
+    Recognized remote commands:
+    -'quit' quit the module
+ 
+\section in_files_sec Input Data Files
+None.
+
+\section out_data_sec Output Data Files 
+None. 
+ 
+\section conf_file_sec Configuration Files 
+--hand_calibration_file \e file 
+- specify the path to the hand calibration file relative to the 
+  current context ( \ref affActionPrimitives ).
+ 
+--hand_sequences_file \e file 
+- specify the path to the file containing the hand motion 
+  sequences relative to the current context ( \ref
+  affActionPrimitives ).
+ 
+--from \e file 
+- specify the configuration file (use \e --context option to 
+  select the current context).
+ 
+The configuration file passed through the option \e --from
+should look like as follows:
+ 
+\code 
+// hereafter are listed the options used to open a \ref 
+affActionPrimitives object 
+[general]
+robot           icub
+traj_time       1.5
+reach_tol       0.007
+torso_pitch     on
+torso_roll      off
+torso_yaw       on
+torso_pitch_max 30.0
+
+[left_arm]
+grasp_orientation               (-0.171542 0.124396 -0.977292 3.058211)
+grasp_displacement              (0.0 0.0 0.05)
+systematic_error_displacement   (-0.03 -0.07 -0.02)
+lifting_displacement            (0.0 0.0 0.2)
+home_position                   (-0.29 -0.21 0.11)
+home_orientation                (-0.029976 0.763076 -0.645613 2.884471)
+
+[right_arm]
+grasp_orientation               (-0.0191 -0.983248 0.181269 3.093746)
+grasp_displacement              (0.0 0.0 0.05)
+systematic_error_displacement   (-0.03 -0.07 -0.02)
+lifting_displacement            (0.0 0.0 0.2)
+home_position                   (-0.29 -0.21 0.11)
+home_orientation                (-0.193426 -0.63989 0.743725 2.995693)
+\endcode 
+
+\section tested_os_sec Tested OS
+Windows, Linux
+
+\author Ugo Pattacini
+*/ 
 
 #include <yarp/os/Network.h>
 #include <yarp/os/RFModule.h>
@@ -7,7 +131,9 @@
 #include <yarp/math/Math.h>
 #include <iCub/affActionPrimitives.h>
 
-#include "drivers.h"
+#ifdef USE_ICUB_MOD
+    #include "drivers.h"
+#endif
 
 #include <iostream>
 #include <iomanip>
@@ -25,7 +151,7 @@ using namespace yarp::dev;
 using namespace yarp::math;
 
 
-class testModule: public RFModule
+class exampleModule: public RFModule
 {
 protected:
     string partUsed;
@@ -33,47 +159,52 @@ protected:
 	affActionPrimitivesLayer1 *actionL;
     affActionPrimitivesLayer1 *actionR;
     affActionPrimitivesLayer1 *action;
-	BufferedPort<Bottle> inPort;
+	BufferedPort<Bottle>       inPort;
+    Port                       rpcPort;
 
     Vector graspOrienL, graspOrienR;
-    Vector graspDispL, graspDispR;
-    Vector dOffsL, dOffsR;
-    Vector dRelL, dRelR;
-    Vector home_xL, home_oL, home_xR, home_oR;
+    Vector graspDispL,  graspDispR;
+    Vector dOffsL,      dOffsR;
+    Vector dLiftL,      dLiftR;
+    Vector home_xL,     home_xR;
+    Vector home_oL,     home_oR;
 
     Vector *graspOrien;
     Vector *graspDisp;
     Vector *dOffs;
-    Vector *dRel;
-    Vector *home_x, *home_o;
+    Vector *dLift;
+    Vector *home_x;
+    Vector *home_o;
+
+    bool openPorts;
 
 public:
-    testModule()
-	{		
-        // initialization of arm-dependent quantities
+    exampleModule()
+	{		        
         graspOrienL.resize(4);    graspOrienR.resize(4);
         graspDispL.resize(4);     graspDispR.resize(3);
         dOffsL.resize(3);         dOffsR.resize(3);
-        dRelL.resize(3);          dRelR.resize(3);
+        dLiftL.resize(3);         dLiftR.resize(3);
         home_xL.resize(3);        home_xR.resize(3);
         home_oL.resize(4);        home_oR.resize(4);
 
+        // default values for arm-dependent quantities
         graspOrienL[0]=-0.171542; graspOrienR[0]=-0.0191;
         graspOrienL[1]= 0.124396; graspOrienR[1]=-0.983248;
-        graspOrienL[2]=-0.977292; graspOrienR[2]=0.181269;
-        graspOrienL[3]= 3.058211; graspOrienR[3]=3.093746;
+        graspOrienL[2]=-0.977292; graspOrienR[2]= 0.181269;
+        graspOrienL[3]= 3.058211; graspOrienR[3]= 3.093746;
 
-        graspDispL[0]=0.0;        graspDispR[0]=0.0; 
-        graspDispL[1]=0.0;        graspDispR[1]=0.0; 
-        graspDispL[2]=0.05;       graspDispR[2]=0.08;
+        graspDispL[0]= 0.0;       graspDispR[0]= 0.0; 
+        graspDispL[1]= 0.0;       graspDispR[1]= 0.0; 
+        graspDispL[2]= 0.05;      graspDispR[2]= 0.05;
 
         dOffsL[0]=-0.03;          dOffsR[0]=-0.03;
-        dOffsL[1]=-0.07;          dOffsR[1]= 0.04;
-        dOffsL[2]=-0.02;          dOffsR[2]= 0.01;
+        dOffsL[1]=-0.07;          dOffsR[1]=-0.07;
+        dOffsL[2]=-0.02;          dOffsR[2]=-0.02;
 
-        dRelL[0]=0.0;             dRelR[0]=0.0;  
-        dRelL[1]=0.0;             dRelR[1]=0.0;  
-        dRelL[2]=0.15;            dRelR[2]=0.10; 
+        dLiftL[0]= 0.0;           dLiftR[0]= 0.0;  
+        dLiftL[1]= 0.0;           dLiftR[1]= 0.0;  
+        dLiftL[2]= 0.15;          dLiftR[2]= 0.15; 
         
         home_xL[0]=-0.29;         home_xR[0]=-0.29;
         home_xL[1]=-0.21;         home_xR[1]= 0.24;
@@ -87,28 +218,141 @@ public:
         graspOrien=NULL;
         graspDisp=NULL;
         dOffs=NULL;
-        dRel=NULL;
+        dLift=NULL;
         home_x=NULL;
         home_o=NULL;
+
+        openPorts=false;
 	}
+
+    void getArmDependentOptions(Bottle &b, Vector &_gOrien, Vector &_gDisp,
+                                Vector &_dOffs, Vector &_dLift, Vector &_home_x,
+                                Vector &_home_o)
+    {
+        if (Bottle *pB=b.find("grasp_orientation").asList())
+        {
+            int sz=pB->size();
+            int len=_gOrien.length();
+            int l=len<sz?len:sz;
+
+            for (int i=0; i<l; i++)
+                _gOrien[i]=pB->get(i).asDouble();
+        }
+
+        if (Bottle *pB=b.find("grasp_displacement").asList())
+        {
+            int sz=pB->size();
+            int len=_gDisp.length();
+            int l=len<sz?len:sz;
+
+            for (int i=0; i<l; i++)
+                _gDisp[i]=pB->get(i).asDouble();
+        }
+
+        if (Bottle *pB=b.find("systematic_error_displacement").asList())
+        {
+            int sz=pB->size();
+            int len=_dOffs.length();
+            int l=len<sz?len:sz;
+
+            for (int i=0; i<l; i++)
+                _dOffs[i]=pB->get(i).asDouble();
+        }
+
+        if (Bottle *pB=b.find("lifting_displacement").asList())
+        {
+            int sz=pB->size();
+            int len=_dLift.length();
+            int l=len<sz?len:sz;
+
+            for (int i=0; i<l; i++)
+                _dLift[i]=pB->get(i).asDouble();
+        }
+
+        if (Bottle *pB=b.find("home_position").asList())
+        {
+            int sz=pB->size();
+            int len=_home_x.length();
+            int l=len<sz?len:sz;
+
+            for (int i=0; i<l; i++)
+                _home_x[i]=pB->get(i).asDouble();
+        }
+
+        if (Bottle *pB=b.find("home_orientation").asList())
+        {
+            int sz=pB->size();
+            int len=_home_o.length();
+            int l=len<sz?len:sz;
+
+            for (int i=0; i<l; i++)
+                _home_o[i]=pB->get(i).asDouble();
+        }
+    }
 
     virtual bool configure(ResourceFinder &rf)
     {
+
+        string name=rf.find("name").asString().c_str();
+        setName(name.c_str());
+
         partUsed=rf.check("part",Value("both_arms")).asString().c_str();
         if (partUsed!="both_arms" && partUsed!="left_arm" && partUsed!="right_arm")
         {
             cout<<"Invalid part requested !"<<endl;
             return false;
+        }        
+
+        Property config; config.fromConfigFile(rf.findFile("from").c_str());
+        Bottle &bGeneral=config.findGroup("general");
+        if (bGeneral.isNull())
+        {
+            cout<<"Error: group general is missing!"<<endl;
+            return false;
         }
 
-		Property option("(robot icub) (local testMod) (traj_time 2.0) (reach_tol 0.007)\
-						(torso_pitch on) (torso_pitch_max 20.0)\
-                        (torso_roll off) (torso_yaw on)");
-        option.put("hand_calibration_file",rf.findFile("calibFile"));
-        option.put("hand_sequences_file",rf.findFile("seqFile"));
+        // parsing general config options
+        Property option;
+        for (int i=1; i<bGeneral.size(); i++)
+        {
+            Bottle *pB=bGeneral.get(i).asList();
+            if (pB->size()==2)
+                option.put(pB->get(0).asString().c_str(),pB->get(1));
+            else
+            {
+                cout<<"Error: invalid option!"<<endl;
+                return false;
+            }
+        }
+
+        option.put("local",name.c_str());
+        option.put("hand_calibration_file",rf.findFile("hand_calibration_file"));
+        option.put("hand_sequences_file",rf.findFile("hand_sequences_file"));
 
         Property optionL(option); optionL.put("part","left_arm");
         Property optionR(option); optionR.put("part","right_arm");
+
+        // parsing left_arm config options
+        Bottle &bLeft=config.findGroup("left_arm");
+        if (bLeft.isNull())
+        {
+            cout<<"Error: group left_arm is missing!"<<endl;
+            return false;
+        }
+        else 
+            getArmDependentOptions(bLeft,graspOrienL,graspDispL,
+                                   dOffsL,dLiftL,home_xL,home_oL);
+
+        // parsing right_arm config options
+        Bottle &bRight=config.findGroup("right_arm");
+        if (bRight.isNull())
+        {
+            cout<<"Error: group right_arm is missing!"<<endl;
+            return false;
+        }
+        else
+            getArmDependentOptions(bRight,graspOrienR,graspDispR,
+                                   dOffsR,dLiftR,home_xR,home_oR);
 
         if (partUsed=="both_arms" || partUsed=="left_arm")
         {    
@@ -148,7 +392,12 @@ public:
         for (size_t i=0; i<q.size(); i++)
             cout<<q[i]<<endl;
 
-		inPort.open("/testMod/in");
+        string fwslash="/";
+        inPort.open((fwslash+name+"/in").c_str());
+        rpcPort.open((fwslash+name+"/rpc").c_str());
+        attach(rpcPort);
+
+        openPorts=true;
 
         return true;
     }
@@ -161,10 +410,13 @@ public:
         if (actionR!=NULL)
             delete actionR;
 
-        if (!inPort.isClosed())
+        if (openPorts)
+        {
             inPort.close();
+            rpcPort.close();
+        }
 
-		return true;
+        return true;
     }
 
     virtual double getPeriod()
@@ -181,7 +433,7 @@ public:
             graspOrien=&graspOrienL;
             graspDisp=&graspDispL;
             dOffs=&dOffsL;
-            dRel=&dRelL;
+            dLift=&dLiftL;
             home_x=&home_xL;
             home_o=&home_oL;
         }
@@ -192,7 +444,7 @@ public:
             graspOrien=&graspOrienR;
             graspDisp=&graspDispR;
             dOffs=&dOffsR;
-            dRel=&dRelR;
+            dLift=&dLiftR;
             home_x=&home_xR;
             home_o=&home_oR;
         }
@@ -233,7 +485,7 @@ public:
             action->checkActionsDone(f,true);
 
             // lift the object (wait until it's done)
-			action->pushAction(xd+*dRel,*graspOrien);
+			action->pushAction(xd+*dLift,*graspOrien);
             action->checkActionsDone(f,true);
 
             // release the object (wait until it's done)
@@ -249,8 +501,9 @@ public:
 
 	bool interruptModule()
 	{
-		action->syncCheckInterrupt(true);
+		action->syncCheckInterrupt(true);        
         inPort.interrupt();
+        rpcPort.interrupt();
 
 		return true;
 	}
@@ -264,16 +517,20 @@ int main(int argc, char *argv[])
     if (!yarp.checkNetwork())
         return -1;
 
-	DriverCollection dev;
+#ifdef USE_ICUB_MOD
+    DriverCollection dev;
+#endif
 
     ResourceFinder rf;
     rf.setVerbose(true);
     rf.setDefaultContext("affActionPrimitives/conf");
-    rf.setDefault("calibFile","object_sensing.ini");
-    rf.setDefault("seqFile","hand_sequences.ini");
+    rf.setDefaultConfigFile("config.ini");
+    rf.setDefault("hand_calibration_file","object_sensing.ini");
+    rf.setDefault("hand_sequences_file","hand_sequences.ini");
+    rf.setDefault("name","affActionPrimitivesMod");
     rf.configure("ICUB_ROOT",argc,argv);
 
-    testModule mod;
+    exampleModule mod;
 
     return mod.runModule(rf);
 }

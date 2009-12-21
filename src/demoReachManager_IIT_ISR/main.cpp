@@ -41,6 +41,10 @@ iCubInterface is supposed to be running.
   the iKinArmCtrl module in order to control the arm for the
   reaching.
  
+- \e /demoReachManager_IIT_ISR/rpc remote procedure 
+    call. Recognized remote commands:
+    -'quit' quit the module
+ 
 \section in_files_sec Input Data Files
 None.
 
