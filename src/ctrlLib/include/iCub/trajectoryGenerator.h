@@ -12,6 +12,7 @@
 #ifndef __TRAJECTORYGENERATOR_H__
 #define __TRAJECTORYGENERATOR_H__
 
+#include <yarp/os/Semaphore.h>
 #include <yarp/sig/Vector.h>
 #include <yarp/sig/Matrix.h>
 
@@ -41,6 +42,7 @@ private:
     minJerkTrajGen();
 
 protected:
+    yarp::os::Semaphore *mutex;
     unsigned int dim;
 
     yarp::sig::Vector x;
@@ -90,19 +92,19 @@ public:
     * Returns the current reference position.
     * @return the current reference position.
     */
-    virtual yarp::sig::Vector get_x() { return x; }
+    virtual yarp::sig::Vector get_x();
 
     /**
     * Returns the current reference velocity.
     * @return the current reference velocity.
     */
-    virtual yarp::sig::Vector get_v() { return v; }
+    virtual yarp::sig::Vector get_v();
 
     /**
     * Returns the current reference acceleration.
     * @return the current reference acceleration.
     */
-    virtual yarp::sig::Vector get_a() { return a; }
+    virtual yarp::sig::Vector get_a();
 
     /**
     * Returns the current state.

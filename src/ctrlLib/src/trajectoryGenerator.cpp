@@ -4,6 +4,7 @@
 
 using namespace std;
 using namespace yarp;
+using namespace yarp::os;
 using namespace yarp::sig;
 using namespace yarp::math;
 using namespace ctrl;
@@ -43,7 +44,9 @@ minJerkTrajGen::minJerkTrajGen(const double _Ts, const Vector &x0) :
     aData[2]=12.0;
     aData[3]=20.0;
 
-    state=MINJERK_STATE_REACHED;    
+    mutex=new Semaphore(1);
+
+    state=MINJERK_STATE_REACHED;
 }
 
 
@@ -135,6 +138,7 @@ void minJerkTrajGen::compute(const double T, const Vector &xd, const Vector &fb,
         for (int j=1; j<vtau.length(); j++)
             vtau[j]=tau*vtau[j-1];
 
+        mutex->wait();
         for (unsigned int i=0; i<dim; i++)
         {    
             x[i]=yarp::math::dot(coeff[i],vtau);
@@ -148,13 +152,48 @@ void minJerkTrajGen::compute(const double T, const Vector &xd, const Vector &fb,
                     a[i]+=coeff[i][j+2]*aData[j]/(fT*fT)*vtau[j];
             }            
         }
+        mutex->post();
     }
+}
+
+
+/************************************************************************/
+Vector minJerkTrajGen::get_x()
+{
+    mutex->wait();
+    Vector latch_x=x;
+    mutex->post();
+
+    return latch_x;
+}
+
+
+/************************************************************************/
+Vector minJerkTrajGen::get_v()
+{
+    mutex->wait();
+    Vector latch_v=v;
+    mutex->post();
+
+    return latch_v;
+}
+
+
+/************************************************************************/
+Vector minJerkTrajGen::get_a()
+{
+    mutex->wait();
+    Vector latch_a=a;
+    mutex->post();
+
+    return latch_a;
 }
 
 
 /************************************************************************/
 minJerkTrajGen::~minJerkTrajGen()
 {
+    delete mutex;
     coeff.clear();
 }
 
