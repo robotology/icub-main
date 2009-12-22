@@ -1,0 +1,22 @@
+<application>
+  <name>eye2world</name>
+  <dependencies>
+      <port>/icub/head/state:o</port>
+      <port>/icub/torso/state:o</port>
+  </dependencies>
+  <module>
+      <name>eye2world</name>
+      <parameters>--context iCubLisboa01/conf --robot icub --eyeCalibration icubEyes.ini --tableConfiguration table.ini</parameters>
+      <node>cortex6</node>
+      <stdio>chico3</stdio>
+      <tag>specially fancy module</tag>
+  </module>
+  <connection>
+      <from>/icub/head/state:o</from>
+      <to>/eye2world/icub/head/state:i</to>
+  </connection>
+  <connection>
+      <from>/icub/torso/state:o</from>
+      <to>/eye2world/icub/torso/state:i</to>
+  </connection>
+</application>
