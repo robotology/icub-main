@@ -3,18 +3,20 @@
  *  
  * @ingroup icub_module 
  *  
- * Definition of primitive actions for dealing with affordances.
+ * Definition of primitive actions for dealing with affordances 
+ * and more. 
  *
  * \author Ugo Pattacini
  *
  * \section intro_sec Description
  *
- * Relying on the Yarp Cartesian Interface a library has been 
- * developed with aim of providing the user a collection of action 
- * primitives such as reach(), grasp(), tap(), … along with an easy 
- * way to combine them together forming higher level actions in
- * order to eventually execute more sophisticated tasks without 
- * concerning with the motion control details. 
+ * The library relies on the Yarp Cartesian Interface and 
+ * provides the user a collection of action primitives in task 
+ * space and joint space (such as reach()) along with an easy 
+ * way to combine them together forming higher level actions 
+ * (e.g. grasp(), tap(), …) in order to eventually execute more 
+ * sophisticated tasks without concerning with the motion 
+ * control details. 
  *  
  * \image html affActionPrimitives.jpg 
  *  
@@ -40,10 +42,11 @@
 /**
 * \ingroup affActionPrimitives
 *
-* The base class defining affordance actions. 
+* The base class defining actions. 
 *  
-* It allows to execute arm and hand primitive actions (such as 
-* reach) and to combine them in an actions queue.
+* It allows to execute arm (in task-space, e.g. reach()) and 
+* hand (in joint-space) primitive actions and to combine them in 
+* the actions queue. 
 */
 class affActionPrimitives : public yarp::os::RateThread
 {
@@ -382,6 +385,10 @@ public:
 * It internally predeclares (without actually defining) a set of
 * hand sequence motions key ("open_hand" and "close_hand") that 
 * are used for grasp(), touch() and tap() actions. 
+*  
+* \note Given as an example of how primitive actions can be 
+*       combined in higher level actions, thus how further
+*       layers can be inherited from the base class.
 */
 class affActionPrimitivesLayer1 : public affActionPrimitives
 {
