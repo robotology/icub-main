@@ -2,15 +2,41 @@
 @ingroup  icub_applications
 \defgroup icub_armCartesianController armCartesianController
 
-An application that enables the user to select objects laying on a table,
+An application that enables the user to select objects lying on a table,
 in order to steer the robot gaze to them and ultimately command a grasp.
 
 \section intro_sec Description
-...
+A table whose height relative to the robot reference frame is supposed to
+be known is presented to the robot along with some object lying on top.
+Robot cameras images are made availabe to the user who in turn is asked to
+select points within two different windows displaying the same image.
+Any clicked point (represented in u,v image coordinates) is then transformed
+in the corresponding 3-d point projected on the table surface as result
+of the so called homography operation.
+
+One window is intended to sent the transformed clicked point of the selected
+object (suppose that we click on a object) as input to the gaze control module
+which steers the robot head in order to keep the object in fixation.
+ 
+On the other hand, the 3-d output of the second window is used to initiate a
+grasp action on the selected object.
+The grasp is executed in three steps with the nearest hand:
+- at first, the hand reaches a position on top of the object with the correct
+  posture;
+- then, the hand goes down towards the commanded 3-d point;
+- finally, the fingers close over the object while contact detection prevents
+  damage.
+Once grasped, the object is lifted and then released, while the hand moves to
+the home position. Note that the only feedback part consists of contact detection,
+no adjustments for correcting grasp positions are given by vision system.
+
+- For details about homography please refer to \ref icub_eye2world documentation.
+- For details about executing motor primitives please refer to \ref affActionPrimitives
+  documentation.
+- For details about controlling the gaze please refer to \ref iKinGazeCtrl documentation.
 
 \section dep_sec Dependencies
-Assumes \ref icub_iCubInterface (with cartesian control
-implemented) is running.
+Assumes \ref icub_iCubInterface (with cartesian control implemented) is running.
 
 \section int_sec Instantiated Modules
 - \ref icub_eye2world
@@ -22,7 +48,7 @@ implemented) is running.
 \section config_sec Configuration Files
 - ./conf/table.ini provides the 3-d position of the table where
   objects to grasp are supposed to lay on. Note that the position is
-  relative to the robot's root reference frame and is computed in meters.
+  relative to the robot's reference frame and is computed in meters.
 
 - .conf/icubEyes.ini contains calibration parameters for the cameras.
 
