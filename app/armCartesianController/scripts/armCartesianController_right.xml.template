@@ -1,0 +1,107 @@
+<application>
+
+  <name>armCartesianController using right arm only</name>
+
+  <dependencies>
+      <port>/icub/head/state:o</port>
+      <port>/icub/torso/state:o</port>
+      <port>/icub/cartesianController/left_arm/state:o</port>
+      <port>/icub/cartesianController/right_arm/state:o</port>
+  </dependencies>
+
+  <module>
+      <name>affActionPrimitivesExample</name>
+      <parameters>--right_arm</parameters>
+      <node>pwrNode1</node>
+      <tag>graspCtrl</tag>
+  </module>
+
+  <module>
+      <name>iKinGazeCtrl</name>
+      <node>pwrNode2</node>
+      <tag>gazeCtrl</tag>
+  </module>
+
+  <module>
+      <name>yarpview</name>
+      <parameters>--name /viewer/inputGrasp/img:i --out /viewer/inputGrasp/click:o</parameters>
+      <node>console</node>
+      <tag>inputGraspViewer</tag>
+  </module>
+
+  <module>
+      <name>yarpview</name>
+      <parameters>--name /viewer/inputGaze/img:i --out /viewer/inputGaze/click:o</parameters>
+      <node>console</node>
+      <tag>inputGazeViewer</tag>
+  </module>
+
+  <module>
+      <name>eye2world</name>
+      <parameters>--name eye2worldGrasp --context armCartesianController/conf
+                  --robot icub --eyeCalibration icubEyes.ini --tableConfiguration table.ini</parameters>
+      <node>pwrNode3</node>
+      <tag>eye2worldGrasp</tag>
+  </module>
+
+  <module>
+      <name>eye2world</name>
+      <parameters>--name eye2worldGaze --context armCartesianController/conf
+                  --robot icub --eyeCalibration icubEyes.ini --tableConfiguration table.ini</parameters>
+      <node>pwrNode3</node>
+      <tag>eye2worldGaze</tag>
+  </module>
+
+  <connection>
+      <from>/icub/cam/left</from>
+      <to>/viewer/inputGrasp/img:i</to>
+  </connection>
+
+  <connection>
+      <from>/viewer/inputGrasp/click:o</from>
+      <to>/eye2worldGrasp/in</to>
+  </connection>
+
+  <connection>
+      <from>/icub/head/state:o</from>
+      <to>/eye2worldGrasp/icub/head/state:i</to>
+  </connection>
+
+  <connection>
+      <from>/icub/torso/state:o</from>
+      <to>/eye2worldGrasp/icub/torso/state:i</to>
+  </connection>
+
+  <connection>
+      <from>/eye2worldGrasp/out</from>
+      <to>/affActionPrimitivesMod/in</to>
+  </connection>
+
+  <connection>
+      <from>/icub/cam/left</from>
+      <to>/viewer/inputGaze/img:i</to>
+  </connection>
+
+  <connection>
+      <from>/viewer/inputGaze/click:o</from>
+      <to>/eye2worldGaze/in</to>
+  </connection>
+
+  <connection>
+      <from>/icub/head/state:o</from>
+      <to>/eye2worldGaze/icub/head/state:i</to>
+  </connection>
+
+  <connection>
+      <from>/icub/torso/state:o</from>
+      <to>/eye2worldGaze/icub/torso/state:i</to>
+  </connection>
+
+  <connection>
+      <from>/eye2worldGaze/out</from>
+      <to>/iKinGazeCtrl/head/xd:i</to>
+  </connection>
+
+</application>
+
+

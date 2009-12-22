@@ -1,66 +1,51 @@
 /**
 @ingroup  icub_applications
-
 \defgroup icub_armCartesianController armCartesianController
 
-Set of modules for controlling the robot in cartesian space.
+An application that enables the user to select objects laying on a table,
+in order to steer the robot gaze to them and ultimately command a grasp.
 
 \section intro_sec Description
-
-This application contains scripts to run the modules which compute 
-direct and inverse kinematics. 
-
-Warning: this documentation is work in progress.
+...
 
 \section dep_sec Dependencies
+Assumes \ref icub_iCubInterface (with cartesian control
+implemented) is running.
 
-Assumes \ref icub_iCubInterface "iCubInterface" is already running and 
-the part you want to control is instantited (e.g. right or left arm).
+\section int_sec Instantiated Modules
+- \ref icub_eye2world
 
-\section modules_sec Instantiated Modules
-- \ref iKinArmCtrl "iKinArmCtrl"
+- \ref affActionPrimitivesExample
 
-\section parameters_sec Parameters
-
-None.
+- \ref iKinGazeCtrl
 
 \section config_sec Configuration Files
+- ./conf/table.ini provides the 3-d position of the table where
+  objects to grasp are supposed to lay on. Note that the position is
+  relative to the robot's root reference frame and is computed in meters.
 
-None.
- 
-\section example_sec How to run the application
+- .conf/icubEyes.ini contains calibration parameters for the cameras.
 
-As first thing, launch the server:
-\code
-./yarp_run.sh
-\endcode
+\section howto_sec How to run the Application
+Customize the file ./scripts/*.template for your specific platform
+before launching them.
 
-To launch the application, just type the following:
-\code
-./app.sh start arm
-\endcode
-where the parameter \e arm can be one of { right, left }.
-The chosen type is then saved within a file for a further reference.
+- ./scripts/armCartesianController.xml.template
+  proides grasping with both arms.
 
-Then issue one of the following:
- 
-\code
-./app.sh connect:    connect the controller to the robot
-./app.sh disconnect: disconnect the controller from the robot
-./app.sh stop:       stop the controller
-\endcode
+- ./scripts/armCartesianController_left.xml.template
+  proides grasping using only the left arm.
 
-Once connected the controller provides the yarp port "xd" as input for the target pose given 
-as a vector of seven components: x y z cartesian position (meters) + the orientation (radians)
-in axis/angle representation (i.e. ax ay az theta).
+- ./scripts/armCartesianController_right.xml.template
+  proides grasping using only the right arm.
 
 \author Ugo Pattacini
 
-Copyright (C) 2008 RobotCub Consortium
+Copyright (C) 2009 RobotCub Consortium
 
 CopyPolicy: Released under the terms of the GNU GPL v2.0.
 
-
-This file can be edited at \in app/armCartesianController/doc.dox
-
+This file can be edited at app/armCartesianController/doc.dox
 */
+
+
