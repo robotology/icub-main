@@ -40,8 +40,7 @@ and MATLAB is in the path.
  
 \section lib_sec Libraries 
 - YARP libraries. 
-- \ref iKin "iKin" library (IPOPT is not used, so the dependence
-  can be switched off from within CMake).
+- \ref ctrlLib.
 - MATLAB installed. 
 
 \section parameters_sec Parameters
@@ -131,7 +130,7 @@ This file can be edited at
 #include <yarp/os/Property.h>
 #include <yarp/sig/Vector.h>
 
-#include <iCub/iKinFwd.h>
+#include <iCub/ctrlMath.h>
 
 #include <iostream>
 #include <fstream>
@@ -146,6 +145,7 @@ using namespace yarp;
 using namespace yarp::os;
 using namespace yarp::sig;
 using namespace yarp::math;
+using namespace ctrl;
 
 
 bool runViewer(Engine *ep);
