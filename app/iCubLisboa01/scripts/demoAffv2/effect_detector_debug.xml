@@ -6,21 +6,21 @@
 <module>
       <name>edisonSegmentation</name>
       <parameters>--context demoAffv2/conf</parameters>
-      <node>cortex6</node>
+      <node>icubbrain1</node>
       <stdio>chico3</stdio>
       <tag>edison_segmentation</tag>
 </module>
 <module>
       <name>blobDescriptor</name>
       <parameters>--context demoAffv2/conf</parameters>
-      <node>cortex5</node>
+      <node>icubbrain2</node>
       <stdio>chico3</stdio>
       <tag>blob_descriptor</tag>
 </module>
 <module>
       <name>effectDetector</name>
       <parameters>--context demoAffv2/conf</parameters>
-      <node>cortex5</node>
+      <node>icubbrain2</node>
       <stdio>chico3</stdio>
       <tag>effect_detector</tag>
 </module>
