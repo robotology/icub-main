@@ -20,6 +20,10 @@ which steers the robot head in order to keep the object in fixation.
  
 On the other hand, the 3-d output of the second window is used to initiate a
 grasp action on the selected object.
+
+Important note: make sure the windows always have the original size, do not
+                resize them manually.
+
 The grasp is executed in three steps with the nearest hand:
 - at first, the hand reaches a position on top of the object with the correct
   posture;
