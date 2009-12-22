@@ -353,6 +353,7 @@ bool EffectDetector::respond(const Bottle & command, Bottle & reply)
     {
       cvNamedWindow( "Histogram", 1 );
       cvNamedWindow( "CamShift", 1 );
+      cvNamedWindow( "vFilter", 1 );
       cvSetMouseCallback( "CamShift", on_mouse, 0 );
       cvCreateTrackbar( "Vmin", "CamShift", &vmin, 256, 0 );
       cvCreateTrackbar( "Vmax", "CamShift", &vmax, 256, 0 );
@@ -497,15 +498,15 @@ bool EffectDetector::updateModule()
       _smin=smin;
       cout<<"vmin= "<<_vmin<<" vmax="<<_vmax<<" smin="<<_smin<<endl;
       // thresholds the saturation channel - creates a mask indicating pixels with "good" saturation. 
-      cvInRangeS( rawCurrImg, cvScalar(0,_smin,MIN(_vmin,_vmax),0),
-			      cvScalar(180,256,MAX(_vmin,_vmax),0), mask );
+      cvInRangeS( rawCurrImg, cvScalar(0,_smin,MIN(_vmin,_vmax+1),0),
+			      cvScalar(180,256,MAX(_vmin,_vmax+1),0), mask );
       // splits the hue channel from the color image
       cvSplit( rawCurrImg, hue, 0, 0, 0 );
 
       //TEST: which pixels have V==255?
       cvInRangeS( rawCurrImg, cvScalar(0,0,255,0),
 			      cvScalar(181,256,256,0), maskTEST );
-      cvShowImage( "V==255", maskTEST );
+      cvShowImage( "vFilter", maskTEST );
 
 
       // segments image pixels with good match to the histogram
