@@ -205,7 +205,7 @@ public:
         else
             engSetVisible(ep,0);
 
-        engEvalString(ep,"cd([getenv('ICUB_ROOT') '/app/signalScope'])");
+        engEvalString(ep,"cd([getenv('ICUB_ROOT') '/app/signalScope/scripts'])");
 
         if (!checkScope(ep))
         {

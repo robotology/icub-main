@@ -203,7 +203,7 @@ public:
         else
             engSetVisible(ep,0);
 
-        engEvalString(ep,"cd([getenv('ICUB_ROOT') '/app/iKinView'])");
+        engEvalString(ep,"cd([getenv('ICUB_ROOT') '/app/iKinView/scripts'])");
 
         if (!runViewer(ep,armType))
         {
