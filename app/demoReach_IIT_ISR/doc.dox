@@ -28,7 +28,7 @@ Assumes \ref icub_iCubInterface is running.
 The file ./conf/config.ini contains the initialization parameters for the 
 demoReachManager_IIT_ISR module.
 
-\section howto How to run the Application
+\section howto_sec How to run the Application
 Customize the file ./scripts/*.template for your specific platform
 before launching them.
 
@@ -54,6 +54,6 @@ Copyright (C) 2009 RobotCub Consortium
 CopyPolicy: Released under the terms of the GNU GPL v2.0.
 
 This file can be edited at app/demoReach_IIT_ISR/doc.dox
-**/
+*/
 
 
