@@ -1,4 +1,7 @@
 
+2009-12-22 Ugo Pattacini <ugo.pattacini@iit.it>
+	   * trajectoryGenerator: new feedback sampling algorithm 
+
 2009-11-11 Ugo Pattacini <ugo.pattacini@iit.it>
 	   * ctrlMath: some functions moved to Yarp layer
        * all headers: namespace rearranged

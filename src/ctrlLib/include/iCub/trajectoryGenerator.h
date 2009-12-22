@@ -52,15 +52,18 @@ protected:
     yarp::sig::Vector vData;
     yarp::sig::Vector aData;
     yarp::sig::Vector xdOld;
+    double samplingTau;
     double TOld;
+    double Tmin;
+    double fT;
     double t0;
     double t;
-    double tau;
     double Ts;
 
     int state;
 
     virtual void calcCoeff(const double T, const yarp::sig::Vector &xd, const yarp::sig::Vector &fb);
+    virtual void calcThresholds();
 
 public:
     /**
@@ -75,7 +78,7 @@ public:
     * @param T the current execution time.  
     * @param xd the desired position to reach. 
     * @param fb the current position. 
-    * @param tol the tolerance for in target checking 
+    * @param tol the tolerance for in-target checking 
     * @param dt the delta time expired from the previous call and 
     *           externally provided (if dt<0, internal sample time
     *           is used).

@@ -28,7 +28,7 @@ minJerkTrajGen::minJerkTrajGen(const double _Ts, const Vector &x0) :
         coeff.push_back(c);
     }
 
-    TOld=t0=t=tau=0.0;
+    TOld=fT=t0=t=0.0;    
 
     vtau[0]=1.0;
 
@@ -60,13 +60,31 @@ void minJerkTrajGen::calcCoeff(const double T, const Vector &xd, const Vector &f
         coeff[i][1]=tmp1;
         coeff[i][2]=tmp2;
         coeff[i][3]=-3.0*tmp2-6.0*tmp1+10.0*ei;
-        coeff[i][4]=3.0*tmp2+8.0*tmp1-15.0*ei;
+        coeff[i][4]= 3.0*tmp2+8.0*tmp1-15.0*ei;
         coeff[i][5]=-tmp2-3.0*tmp1+6.0*ei;
-    
-        xdOld[i]=xd[i];
     }
+}
 
-    TOld=T;
+
+/************************************************************************/
+void minJerkTrajGen::calcThresholds()
+{
+    double Tratio=fT/Ts;
+    if (Tratio<200.0)
+    {    
+        samplingTau=1.0;
+        Tmin=fT;
+    }
+    else if (Tratio<300.0)
+    {    
+        samplingTau=0.75;
+        Tmin=20.0*Ts;
+    }
+    else
+    {
+        samplingTau=0.5;
+        Tmin=10.0*Ts;
+    } 
 }
 
 
@@ -77,7 +95,12 @@ void minJerkTrajGen::compute(const double T, const Vector &xd, const Vector &fb,
     if (fabs(T-TOld)>1e-6 || norm(xd-xdOld)>1e-6)
     {    
         calcCoeff(T,xd,fb);
+        xdOld=xd;
+        TOld=fT=T;
         t0=t;
+
+        calcThresholds();
+        
         state=MINJERK_STATE_STARTING;
     }
 
@@ -86,9 +109,8 @@ void minJerkTrajGen::compute(const double T, const Vector &xd, const Vector &fb,
     else
         t+=dt;        
 
-    tau=(t-t0)/T;
-
-    if (tau>=1.0)
+    double tau=(t-t0)/fT;
+    if (tau>=samplingTau)
     {
         if (norm(xd-fb)<tol)
         {
@@ -96,30 +118,34 @@ void minJerkTrajGen::compute(const double T, const Vector &xd, const Vector &fb,
             v=a=0.0;
             state=MINJERK_STATE_REACHED;
         }
-        else
+        else if (norm(x-fb)>tol)
         {
-            calcCoeff(T,xd,fb);
+            fT=fT*(1.0-tau);            
+            fT=fT<Tmin?Tmin:fT;            
+            calcCoeff(fT,xd,fb);
+            calcThresholds();
             t0=t;
+            tau=0.0;
             state=MINJERK_STATE_FEEDBACK;
         }
     }
 
     if (state!=MINJERK_STATE_REACHED)
     {
-        for (unsigned int j=1; j<6; j++)
+        for (int j=1; j<vtau.length(); j++)
             vtau[j]=tau*vtau[j-1];
 
         for (unsigned int i=0; i<dim; i++)
         {    
             x[i]=yarp::math::dot(coeff[i],vtau);
-    
+
             v[i]=a[i]=0.0;
-            for (unsigned int j=0; j<5; j++)
+            for (int j=0; j<vData.length(); j++)
             {    
-                v[i]+=coeff[i][j+1]*vData[j]/T*vtau[j];
-    
+                v[i]+=coeff[i][j+1]*vData[j]/fT*vtau[j];
+
                 if (j<4)
-                    a[i]+=coeff[i][j+2]*aData[j]/(T*T)*vtau[j];
+                    a[i]+=coeff[i][j+2]*aData[j]/(fT*fT)*vtau[j];
             }            
         }
     }
