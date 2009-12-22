@@ -453,6 +453,8 @@ public:
         }
     }
 
+    // we don't need a thread since the actions library already
+    // incapsulates one inside dealing with all the tight time constraints
     virtual bool updateModule()
 	{		
         // get a target object position from a YARP port
