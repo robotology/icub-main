@@ -73,12 +73,12 @@ void minJerkTrajGen::calcCoeff(const double T, const Vector &xd, const Vector &f
 void minJerkTrajGen::calcThresholds()
 {
     double Tratio=fT/Ts;
-    if (Tratio<200.0)
+    if (Tratio<=100.0)
     {    
         samplingTau=1.0;
         Tmin=fT;
     }
-    else if (Tratio<300.0)
+    else if (Tratio<=200.0)
     {    
         samplingTau=0.75;
         Tmin=20.0*Ts;
