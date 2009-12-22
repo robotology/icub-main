@@ -59,7 +59,7 @@ class EffectDetector : public Module
 
 
   private:
-    IplImage *buffer, *image, *hsv, *hue, *mask, *backproject, *histimg;
+    IplImage *buffer, *image, *hsv, *hue, *mask, *backproject, *histimg, *maskTEST;
     int backproject_mode;
     int show_hist;
     CvRect track_window;

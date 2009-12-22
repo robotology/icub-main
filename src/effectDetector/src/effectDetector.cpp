@@ -187,6 +187,7 @@ bool EffectDetector::open(Searchable& config)
     hsv = 0; 
     hue = 0;
     mask = 0;
+    maskTEST = 0;
     backproject = 0;
     histimg = 0;
     hist = 0;
@@ -364,6 +365,8 @@ bool EffectDetector::respond(const Bottle & command, Bottle & reply)
       hsv = cvCreateImage( sz, 8, 3 );
       hue = cvCreateImage( sz, 8, 1 );
       mask = cvCreateImage( sz, 8, 1 );
+      maskTEST = cvCreateImage( sz, 8, 1 );
+      
       //cout<<"RESPOND(): mask = "<<mask<<endl;
       histimg = cvCreateImage( cvSize(320,200), 8, 3 );
   
@@ -492,11 +495,18 @@ bool EffectDetector::updateModule()
       _vmin=vmin;
       _vmax=vmax;
       _smin=smin;
+      cout<<"vmin= "<<_vmin<<" vmax="<<_vmax<<" smin="<<_smin<<endl;
       // thresholds the saturation channel - creates a mask indicating pixels with "good" saturation. 
       cvInRangeS( rawCurrImg, cvScalar(0,_smin,MIN(_vmin,_vmax),0),
 			      cvScalar(180,256,MAX(_vmin,_vmax),0), mask );
       // splits the hue channel from the color image
       cvSplit( rawCurrImg, hue, 0, 0, 0 );
+
+      //TEST: which pixels have V==255?
+      cvInRangeS( rawCurrImg, cvScalar(0,0,255,0),
+			      cvScalar(181,256,256,0), maskTEST );
+      cvShowImage( "V==255", maskTEST );
+
 
       // segments image pixels with good match to the histogram
       cvCalcBackProject( &hue, backproject, hist );
