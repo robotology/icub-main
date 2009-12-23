@@ -222,6 +222,7 @@ ENDIF (ARTOOLKITPLUS_FOUND)
 
   if(LIBVISLAB_FOUND)
     add_subdirectory(abstractHandCtrl)
+    add_subdirectory(my2ndModule)
 
     find_package(IKIN QUIET)
     if(IKIN_FOUND)
