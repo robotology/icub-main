@@ -119,13 +119,13 @@ public:
 class AnalogData
 {
 private:
-    short *_data;
+    double *_data;
     int _size;
     int _bufferSize;
 public:
     AnalogData(int ch, int buffsize): _data(0), _size(ch), _bufferSize(buffsize)
     {
-        _data=new short[_bufferSize];
+        _data=new double[_bufferSize];
         for(int k=0;k<_bufferSize;k++)
             _data[k]=0;
     }
@@ -134,13 +134,13 @@ public:
         delete [] _data;
     }
 
-    inline short &operator[](int i)
+    inline double &operator[](int i)
     { return _data[i]; }
 
     inline int size() 
     { return _size; }
 
-    inline short *getBuffer()
+    inline double *getBuffer()
     {return _data;}
 };
 
@@ -159,14 +159,16 @@ public:
 
 private:
     AnalogData *data;
+	double* scaleFactor;
     yarp::os::Semaphore mutex;
     AnalogDataFormat dataFormat;
     yarp::os::Bottle initMsg;
     yarp::os::Bottle closeMsg;
     short boardId;
+	short useCalibration;
 
-    bool decode8(const unsigned char *msg, int id, short *data);
-    bool decode16(const unsigned char *msg, int id, short *data);
+    bool decode8(const unsigned char *msg, int id, double *data);
+    bool decode16(const unsigned char *msg, int id, double *data);
 
 public:
     AnalogSensor();
@@ -188,8 +190,12 @@ public:
         {return initMsg;}
     yarp::os::Bottle &getCloseMsg()
         {return closeMsg;}
+	short getUseCalibration()
+		{return useCalibration;}
+//	double &getScaleFactor()
+//		{return scaleFactor;}
 
-    bool open(int channels, AnalogDataFormat f, short bId);
+    bool open(int channels, AnalogDataFormat f, short bId, short useCalib);
 
     //IGenericSensor interface
     virtual bool read(yarp::sig::Vector &out);

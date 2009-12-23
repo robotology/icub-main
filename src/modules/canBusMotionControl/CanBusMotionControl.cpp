@@ -347,23 +347,41 @@ inline CanBusResources& RES(void *res) { return *(CanBusResources *)res; }
 AnalogSensor::AnalogSensor():
 data(0)
 {
-
+	useCalibration=0;
+	scaleFactor=0;
 }
 
 AnalogSensor::~AnalogSensor()
 {
     if (!data)
         delete data;
+	if (!scaleFactor)
+		delete scaleFactor;
 }
 
-bool AnalogSensor::open(int channels, AnalogDataFormat f, short bId)
+bool AnalogSensor::open(int channels, AnalogDataFormat f, short bId, short useCalib)
 {
     if (data)
         return false;
+	if (scaleFactor)
+		return false;
 
     data=new AnalogData(channels, channels+1);
+	scaleFactor=new double[channels];
+	int i=0;
+	for (i=0; i<channels; i++) scaleFactor[i]=1;
     dataFormat=f;
     boardId=bId;
+	useCalibration=useCalib;
+	if (useCalibration==1 && dataFormat==AnalogSensor::ANALOG_FORMAT_16)
+	{
+		scaleFactor[0]=500;
+		scaleFactor[1]=500;
+		scaleFactor[2]=1000;
+		scaleFactor[3]=8;
+		scaleFactor[4]=8;
+		scaleFactor[5]=8;
+	}
 
     return true;
 }
@@ -400,9 +418,9 @@ bool AnalogSensor::calibrate(int ch, double v)
     return true;
 }
 
-bool AnalogSensor::decode16(const unsigned char *msg, int id, short *data)
+bool AnalogSensor::decode16(const unsigned char *msg, int id, double *data)
 {
-
+	
     const char groupId=(id&0x00f);
     int baseIndex=0;
     {
@@ -411,13 +429,25 @@ bool AnalogSensor::decode16(const unsigned char *msg, int id, short *data)
         case 0xA:
             {
                 for(int k=0;k<3;k++)
-                    data[k]=(((unsigned short)(msg[2*k+1]))<<8)+msg[2*k]-32768;
+					{
+						data[k]=(((unsigned short)(msg[2*k+1]))<<8)+msg[2*k]-32768;
+						if (useCalibration==1)
+						{
+							data[k]=data[k]*scaleFactor[k]/float(0x7fff);
+						}
+					}
             }
             break;
         case 0xB:
             {
                 for(int k=0;k<3;k++)
-                    data[k+3]=(((unsigned short)(msg[2*k+1]))<<8)+msg[2*k]-32768;
+					{
+						data[k+3]=(((unsigned short)(msg[2*k+1]))<<8)+msg[2*k]-32768;
+						if (useCalibration==1)
+						{
+							data[k+3]=data[k+3]*scaleFactor[k+3]/float(0x7fff);
+						}
+					}
             }
             break;
         case 0xC:
@@ -431,12 +461,14 @@ bool AnalogSensor::decode16(const unsigned char *msg, int id, short *data)
             return false;
             break;
         }
+		//@@@DEBUG ONLY
+		//fprintf(stderr, "   %+8.1f %+8.1f %+8.1f %+8.1f %+8.1f %+8.1f\n",data[0],data[1],data[2],data[3],data[4],data[5],data[6]);
     }
 
     return true;
 }
 
-bool AnalogSensor::decode8(const unsigned char *msg, int id, short *data)
+bool AnalogSensor::decode8(const unsigned char *msg, int id, double *data)
 {
     const char groupId=(id&0x00f);
     int baseIndex=0;
@@ -506,7 +538,22 @@ bool AnalogSensor::handleAnalog(void *canbus)
                         ret=decode8(buff, msgid, data->getBuffer());
                         break;
                     case ANALOG_FORMAT_16:
-                        ret=decode16(buff, msgid, data->getBuffer());
+						if (len==6) 
+						{
+							ret=decode16(buff, msgid, data->getBuffer());
+						}
+						else
+						{
+							if (len==7 && buff[6] == 1)
+							{
+								fprintf(stderr, "Warning strain sensor: saturation");
+							}
+							else
+							{
+								fprintf(stderr, "Warning strain sensor: unknown state");
+							}
+							ret=decode16(buff, msgid, data->getBuffer());
+						}
                         break;
                     default:
                         ret=false;
@@ -1249,6 +1296,7 @@ bool CanBusMotionControl::open (Searchable &config)
         char analogId=analogConfig.find("CanAddress").asInt();
         char analogFormat=analogConfig.find("Format").asInt();
         int analogChannels=analogConfig.find("Channels").asInt();
+		int analogCalibration=analogConfig.find("UseCalibration").asInt();
 
         Bottle *initMsg=analogConfig.find("InitMessage").asList();
         Bottle *finiMsg=analogConfig.find("CloseMessage").asList();
@@ -1265,12 +1313,19 @@ bool CanBusMotionControl::open (Searchable &config)
         switch (analogFormat)
         {
             case 8:
-                analogSensor.open(analogChannels, AnalogSensor::ANALOG_FORMAT_8, analogId);
+                analogSensor.open(analogChannels, AnalogSensor::ANALOG_FORMAT_8, analogId, analogCalibration);
                 break;
             case 16:
-                analogSensor.open(analogChannels, AnalogSensor::ANALOG_FORMAT_16, analogId);
+                analogSensor.open(analogChannels, AnalogSensor::ANALOG_FORMAT_16, analogId, analogCalibration);
                 break;
         }
+
+		if (analogSensor.getUseCalibration()==1 &&
+			analogChannels==6)
+		{
+			//get the scale factors
+			
+		}
 
         if (analogSensor.getInitMsg().size()>0)
         {
@@ -2060,7 +2115,7 @@ bool CanBusMotionControl::getTorquePidRaw (int axis, Pid *out)
  
 	if (!ENABLED(axis))
     {
-		//@@ BOH??
+		//@@@ TODO: check here
 		// value = 0;
         return true;
     }
@@ -2087,7 +2142,7 @@ bool CanBusMotionControl::getTorquePidRaw (int axis, Pid *out)
 	CanMessage *m=t->get(0);
     if (m==0)
     {
-		//@@ BOH??
+		//@@@ TODO: check here
 		// value=0;
         return false;
     }
@@ -2120,7 +2175,7 @@ bool CanBusMotionControl::getTorquePidRaw (int axis, Pid *out)
 	m=t->get(0);
     if (m==0)
     {
-		//@@ BOH??
+		//@@@ TODO: check here
 		// value=0;
         return false;
     }
