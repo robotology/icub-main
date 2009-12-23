@@ -1,0 +1,11 @@
+
+cmake_minimum_required(VERSION 2.6)
+set(CMAKE_MODULE_PATH ${CMAKE_MODULE_PATH} "$ENV{VISLAB_CMAKE}")
+include(makeExecutable)
+
+set(CMAKE_LIBRARY_PATH ${CMAKE_LIBRARY_PATH} $ENV{ICUB_DIR} $ENV{ICUB_ROOT})
+
+set(USED_PACKAGES YARP iKin ctrlLib LIBVISLAB)
+# the order of libiKin & libctrlLib is crucial! 
+
+makeExecutable("eye2world" "0.1.0" "1")

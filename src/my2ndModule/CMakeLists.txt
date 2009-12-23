@@ -1,0 +1,26 @@
+
+cmake_minimum_required(VERSION 2.4)
+
+if(COMMAND cmake_policy)
+  cmake_policy(SET CMP0003 NEW)
+endif(COMMAND cmake_policy)
+
+SET(PROJECTNAME my2ndModule)
+PROJECT(${PROJECTNAME})
+
+find_package(ICUB)
+
+find_package(YARP REQUIRED)
+find_package(LIBVISLAB REQUIRED)
+include_directories(${LIBVISLAB_INCLUDE_DIRS})
+
+set(SOURCE_DIR "src/")
+
+file(GLOB_RECURSE sources "${SOURCE_DIR}*.cpp")
+file(GLOB_RECURSE headers "${SOURCE_DIR}*.h")
+source_group("Source Files" FILES ${sources})
+source_group("Header Files" FILES ${headers})
+
+add_executable(${PROJECTNAME} ${headers} ${sources})
+target_link_libraries(${PROJECTNAME} ${LIBVISLAB_LIBRARIES})
+install(TARGETS ${PROJECTNAME} RUNTIME DESTINATION bin LIBRARY DESTINATION lib ARCHIVE DESTINATION lib)
