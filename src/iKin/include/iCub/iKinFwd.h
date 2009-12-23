@@ -4,7 +4,7 @@
  * @ingroup icub_module 
  *  
  * Classes for forward-inverse kinematics of serial-links chains
- * and iCub limbs 
+ * of revolute joints and iCub limbs 
  *  
  * \note SI units adopted: meters for lengths and radians for
  *       angles.
