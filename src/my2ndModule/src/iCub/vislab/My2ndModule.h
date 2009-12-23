@@ -43,7 +43,7 @@
  *
  * - context &lt;STRING&gt; <br />
  *   specifies the sub-path from $ICUB_ROOT/icub/app to the configuration file. <br />
- *   default: "eye2world/conf"
+ *   default: "my2ndModule/conf"
  *
  * - name &lt;STRING&gt; <br />
  *   specifies the name of the module (used to form the stem of module port names). <br />
@@ -51,7 +51,7 @@
  *
  * - robot &lt;STRING&gt; <br />
  *   specifies the name of the robot (used to form the root of robot port names). <br />
- *   default: "icub"
+ *   default: "myRobot"
  *
  *
  * \subsection conffile_parameters_sec Configuration File Parameters
