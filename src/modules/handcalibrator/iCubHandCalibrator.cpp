@@ -173,21 +173,21 @@ bool iCubHandCalibrator::calibrate(DeviceDriver *dd)
         return false;
 
     int k;
-    for (k = 0; k < nj; k++) 
-    {
-        fprintf(stderr, "HANDCALIB::Calling enable amp for joint %d\n", k);
-        iAmps->enableAmp(k);
-        fprintf(stderr, "HANDCALIB::Calling enable pid for joint %d\n", k);
-        iPids->enablePid(k);
-    }
-
     ret = true;
     bool x;
 
 	////////////////////////////////////////////
 	int firstSetOfJoints[] = {0, 1, 3, 5};
     for (k =0; k < 4; k++)
-		calibrateJoint(firstSetOfJoints[k]);
+        {
+            fprintf(stderr, "HANDCALIB::Calling enable amp for joint %d\n", firstSetOfJoints[k]);
+            iAmps->enableAmp(firstSetOfJoints[k]);
+            Time::delay(0.1);
+            fprintf(stderr, "HANDCALIB::Calling enable pid for joint %d\n", firstSetOfJoints[k]);
+            iPids->enablePid(firstSetOfJoints[k]);
+            calibrateJoint(firstSetOfJoints[k]);
+        }
+
 	for (k =0; k < 4; k++)
 	{
 		x = checkCalibrateJointEnded(firstSetOfJoints[k]);
@@ -197,11 +197,19 @@ bool iCubHandCalibrator::calibrate(DeviceDriver *dd)
 		goToZero(firstSetOfJoints[k]);
 	for (k = 0; k < 4; k++)
 		checkGoneToZero(firstSetOfJoints[k]);
+
 	//////////////////////////////////////////
     Time::delay(10.0);
 	int secondSetOfJoints[] = {2, 4, 6, 7};
-	for (k =0; k < 4; k++)
-		calibrateJoint(secondSetOfJoints[k]);
+    for (k =0; k < 4; k++)
+        {
+            fprintf(stderr, "HANDCALIB::Calling enable amp for joint %d\n", secondSetOfJoints[k]);
+            iAmps->enableAmp(secondSetOfJoints[k]);
+            Time::delay(0.1);
+            fprintf(stderr, "HANDCALIB::Calling enable pid for joint %d\n", secondSetOfJoints[k]);
+            iPids->enablePid(secondSetOfJoints[k]);
+            calibrateJoint(secondSetOfJoints[k]);
+        }
 	for (k =0; k < 4; k++)
 	{
 		x = checkCalibrateJointEnded(secondSetOfJoints[k]);
