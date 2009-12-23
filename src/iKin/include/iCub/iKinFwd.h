@@ -49,7 +49,10 @@ namespace iKin
 * \ingroup iKinFwd
 *
 * A Base class for defining a Link with standard 
-* Denavit-Hartenberg convention.
+* Denavit-Hartenberg convention. 
+*  
+* \note This class implements revolute joints only, as they are 
+*       the unique type of joints used in humanoid robotics.
 */
 class iKinLink
 {
