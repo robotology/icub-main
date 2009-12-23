@@ -29,7 +29,8 @@ minJerkTrajGen::minJerkTrajGen(const double _Ts, const Vector &x0) :
         coeff.push_back(c);
     }
 
-    TOld=fT=t0=t=0.0;    
+    TOld=fT=t0=t=0.0;
+    Tmin=10*Ts;
 
     vtau[0]=1.0;
 
@@ -70,28 +71,6 @@ void minJerkTrajGen::calcCoeff(const double T, const Vector &xd, const Vector &f
 
 
 /************************************************************************/
-void minJerkTrajGen::calcThresholds()
-{
-    double Tratio=fT/Ts;
-    if (Tratio<=100.0)
-    {    
-        samplingTau=1.0;
-        Tmin=fT;
-    }
-    else if (Tratio<=200.0)
-    {    
-        samplingTau=0.75;
-        Tmin=20.0*Ts;
-    }
-    else
-    {
-        samplingTau=0.5;
-        Tmin=10.0*Ts;
-    } 
-}
-
-
-/************************************************************************/
 void minJerkTrajGen::compute(const double T, const Vector &xd, const Vector &fb,
                              const double tol, const double dt)
 {
@@ -101,9 +80,6 @@ void minJerkTrajGen::compute(const double T, const Vector &xd, const Vector &fb,
         xdOld=xd;
         TOld=fT=T;
         t0=t;
-
-        calcThresholds();
-        
         state=MINJERK_STATE_STARTING;
     }
 
@@ -113,7 +89,7 @@ void minJerkTrajGen::compute(const double T, const Vector &xd, const Vector &fb,
         t+=dt;        
 
     double tau=(t-t0)/fT;
-    if (tau>=samplingTau)
+    if (tau>=0.5)
     {
         if (norm(xd-fb)<tol)
         {
@@ -126,7 +102,6 @@ void minJerkTrajGen::compute(const double T, const Vector &xd, const Vector &fb,
             fT=fT*(1.0-tau);            
             fT=fT<Tmin?Tmin:fT;            
             calcCoeff(fT,xd,fb);
-            calcThresholds();
             t0=t;
             tau=0.0;
             state=MINJERK_STATE_FEEDBACK;

@@ -54,7 +54,6 @@ protected:
     yarp::sig::Vector vData;
     yarp::sig::Vector aData;
     yarp::sig::Vector xdOld;
-    double samplingTau;
     double TOld;
     double Tmin;
     double fT;
@@ -65,7 +64,6 @@ protected:
     int state;
 
     virtual void calcCoeff(const double T, const yarp::sig::Vector &xd, const yarp::sig::Vector &fb);
-    virtual void calcThresholds();
 
 public:
     /**
