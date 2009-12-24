@@ -51,7 +51,7 @@ Assumes \ref icub_iCubInterface (with cartesian control implemented) is running.
 
 \section config_sec Configuration Files
 - ./conf/table.ini provides the 3-d position of the table where
-  objects to grasp are supposed to lay on. Note that the position is
+  objects to grasp are supposed to lie on. Note that the position is
   relative to the robot's reference frame and is computed in meters.
 
 - .conf/icubEyes.ini contains calibration parameters for the cameras.
