@@ -21,11 +21,11 @@
  * \image html affActionPrimitives.jpg 
  *  
  * Central to the library's implementation is the concept of 
- * action. An action is a "request" that issues for an execution 
- * of three different tasks according to its internal selector: 
- * 1) it can ask the system to wait for a specified time 
- * interval; 2) it can ask to steer the arm to a specified pose, 
- * hence performing a motion in the task space; 3) it can 
+ * \b action. An action is a "request" that issues for an 
+ * execution of three different tasks according to its internal 
+ * selector: 1) it can ask the system to wait for a specified 
+ * time interval; 2) it can ask to steer the arm to a specified 
+ * pose, hence performing a motion in the task space; 3) it can 
  * command the execution of some predefined sequences in the 
  * joint space identified by a tag; besides there exists the 
  * possibility to issue with only one action a task of type 2) 
