@@ -793,13 +793,16 @@ protected:
 
             if (flag)
                 tmpSet.erase(*i);
-            else    // stop and remove all joints belonging to the finger
+            else
             {
-                pair<multimap<int,int>::iterator,multimap<int,int>::iterator> fng=jnts2FingersMap.equal_range(*i);
-                for (multimap<int,int>::iterator j=fng.first; j!=fng.second; ++j)
+                pair<multimap<int,int>::iterator,multimap<int,int>::iterator> jnt=jnts2FingersMap.equal_range(*i);
+                int fng=jnt.first->second;
+
+                if ((*detectGrasp)[fng]>graspModelDistThres)
                 {
-                    if ((*detectGrasp)[j->second]>graspModelDistThres)
-                    {                        
+                    // stop and remove all joints belonging to the finger                    
+                    for (multimap<int,int>::iterator j=jnt.first; j!=jnt.second; ++j)
+                    {
                         posArm->stop(j->first);
                         tmpSet.erase(j->first);
                     }

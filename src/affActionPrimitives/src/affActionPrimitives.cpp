@@ -2,7 +2,6 @@
 #include <ace/Auto_Event.h>
 #include <yarp/math/Math.h>
 #include <yarp/os/Time.h>
-#include <yarp/os/Random.h>
 
 #include <gsl/gsl_math.h>
 
@@ -17,7 +16,7 @@
 #define ACTIONPRIM_DEFAULT_PER          50      // [ms]
 #define ACTIONPRIM_DEFAULT_TRAJTIME     1.5     // [s]
 #define ACTIONPRIM_DEFAULT_REACHTOL     0.005   // [m]
-#define ACTIONPRIM_DUMP_PERIOD          2.0     // [s]
+#define ACTIONPRIM_DUMP_PERIOD          1.0     // [s]
 
 using namespace std;
 using namespace yarp;
@@ -61,12 +60,6 @@ void affActionPrimitives::init()
     checkEnabled=true;
 
     latchTimer=waitTmo=0.0;
-
-    xd.resize(3,0.0);
-    od.resize(4,0.0);
-    smallOffs.resize(3,0.0);
-
-    Random::seed((int)Time::now());
 }
 
 
@@ -289,12 +282,6 @@ bool affActionPrimitives::open(Property &opt)
     polyHand->view(posCtrl);
     polyCart->view(cartCtrl);
 
-    jHandMin=7;                     // hand first joint
-    posCtrl->getAxes(&jHandMax);    // hand last joint
-
-    for (int j=jHandMin; j<jHandMax; j++)
-        enabledJoints.insert(j);
-
     // set trajectory time
     cartCtrl->setTrajTime(traj_time);
 
@@ -318,6 +305,39 @@ bool affActionPrimitives::open(Property &opt)
 
     fprintf(stdout,"creating hand smoother...\n");
     fs=new FunctionSmoother(thresholds);
+
+    // get grasp detection thresholds
+    graspDetectionThres.resize(5,0.0);
+    if (Bottle *pB=opt.find("grasp_detection_thresholds").asList())
+    {
+        int sz=pB->size();
+        int len=graspDetectionThres.length();
+        int l=len<sz?len:sz;
+
+        for (int i=0; i<l; i++)
+            graspDetectionThres[i]=pB->get(i).asDouble();
+    }
+
+    // open port for grasp detection
+    graspDetectionPort.open((fwslash+local+fwslash+part+fwslash+"/detectGrasp:i").c_str());
+
+    jHandMin=7;                     // hand first joint
+    posCtrl->getAxes(&jHandMax);    // hand last joint
+
+    // hand joints set
+    for (int j=jHandMin; j<jHandMax; j++)
+        fingersJntsSet.insert(j);
+
+    // map from hand joints to fingers
+    jnts2FingersMap.insert(pair<int,int>(8,0));
+    jnts2FingersMap.insert(pair<int,int>(9,0));
+    jnts2FingersMap.insert(pair<int,int>(10,0));
+    jnts2FingersMap.insert(pair<int,int>(11,1));
+    jnts2FingersMap.insert(pair<int,int>(12,1));
+    jnts2FingersMap.insert(pair<int,int>(13,2));
+    jnts2FingersMap.insert(pair<int,int>(14,2));
+    jnts2FingersMap.insert(pair<int,int>(15,3));
+    jnts2FingersMap.insert(pair<int,int>(15,4));
 
     mutex=new Semaphore(1);
     motionDoneEvent=new ACE_Auto_Event;
@@ -370,6 +390,12 @@ void affActionPrimitives::close()
         delete polyCart;
     }
 
+    if (!graspDetectionPort.isClosed())
+    {    
+        graspDetectionPort.interrupt();
+        graspDetectionPort.close();
+    }
+
     if (mutex!=NULL)
         delete mutex;
 
@@ -383,12 +409,58 @@ void affActionPrimitives::close()
 
 
 /************************************************************************/
-void affActionPrimitives::stopBlockedJoints(set<int> &activeJoints)
+bool affActionPrimitives::isGraspEnded()
+{
+    // get data from the graspDetector
+    Bottle *pB=graspDetectionPort.read(false);
+
+    // latch the current moving fingers set
+    set<int> tmpSet=fingersMovingJntsSet;
+
+    for (set<int>::iterator i=fingersMovingJntsSet.begin(); i!=fingersMovingJntsSet.end(); ++i)
+    {
+        bool flag;
+        posCtrl->checkMotionDone(*i,&flag);
+
+        if (flag)
+            tmpSet.erase(*i);
+        else if (pB!=NULL)
+        {
+            pair<multimap<int,int>::iterator,multimap<int,int>::iterator> jnt=jnts2FingersMap.equal_range(*i);
+            int fng=jnt.first->second;
+
+            if (pB->get(fng).asDouble()>graspDetectionThres[fng])
+            {
+                // stop and remove all joints belonging to the finger
+                for (multimap<int,int>::iterator j=jnt.first; j!=jnt.second; ++j)
+                {
+                    posCtrl->stop(j->first);
+                    tmpSet.erase(j->first);
+                }
+            }
+        }
+    }
+
+    // update the moving fingers set
+    fingersMovingJntsSet=tmpSet;
+
+    if (fingersMovingJntsSet.size())
+        return false;
+    else
+        return true;
+}
+
+
+/************************************************************************/
+void affActionPrimitives::stopBlockedJoints()
 {
 	Vector smoothedError;	
 	fs->smooth(handMetrics->getError(),smoothedError,handMetrics->getTimeInterval());
 
-	for (set<int>::const_iterator itr=enabledJoints.begin(); itr!=enabledJoints.end(); itr++)
+    // latch the current moving fingers set
+    set<int> tmpSet=fingersMovingJntsSet;
+
+	for (set<int>::iterator itr=fingersMovingJntsSet.begin(); itr!=fingersMovingJntsSet.end(); ++itr)
     {
 		int i=*itr;
 
@@ -401,20 +473,23 @@ void affActionPrimitives::stopBlockedJoints(set<int> &activeJoints)
 			if ((isOpening && smoothedError[i]>thresholds[i]) || (!isOpening && smoothedError[i]<thresholds[i])) 
             {
 				posCtrl->stop(i);
-				activeJoints.erase(i);
+				tmpSet.erase(i);
                 fprintf(stdout,"joint #%d blocked\n",i);
 			}
 		}
 	}
+
+    // update the moving fingers set
+    fingersMovingJntsSet=tmpSet;
 }
 
 
 /************************************************************************/
-bool affActionPrimitives::handMotionDone(const set<int> &joints)
+bool affActionPrimitives::handMotionDone()
 {
 	Vector v=handMetrics->getVelocity();
 
-	for (set<int>::const_iterator itr=joints.begin(); itr!=joints.end(); itr++)
+	for (set<int>::iterator itr=fingersMovingJntsSet.begin(); itr!=fingersMovingJntsSet.end(); ++itr)
     {
 		bool b;
 		posCtrl->checkMotionDone(*itr,&b);
@@ -578,14 +653,16 @@ bool affActionPrimitives::reach(const Vector &x, const Vector &o)
 {
     if (configured)
     {
-        xd=x;
-        od=o;
-
-        cartCtrl->goToPose(xd,od);
+        cartCtrl->goToPose(x,o);
 
         latchArmMoveDone=armMoveDone=false;
-        fprintf(stdout,"reach for [%s], [%s]\n",xd.toString().c_str(),od.toString().c_str());
+
+        fprintf(stdout,"reach for [%s], [%s]\n",
+                const_cast<Vector&>(x).toString().c_str(),
+                const_cast<Vector&>(o).toString().c_str());
+
         t0=Time::now();
+
         return true;
     }
     else
@@ -673,21 +750,24 @@ void affActionPrimitives::run()
 
         if (armMoveDone)
             fprintf(stdout,"reaching complete\n");            
-        else
-        {    
-            cartCtrl->goToPose(xd+smallOffs,od);  // reinforce reaching command
-            smallOffs=-1.0*smallOffs;
-        }
     }
 
     if (!handMoveDone)
     {
-        handMetrics->snapshot();
-        stopBlockedJoints(activeJoints);
+        // model-based grasp detection
+        handMoveDone=isGraspEnded();
+
+        // old-fashioned approach
+        if (!handMoveDone)
+        {
+            handMetrics->snapshot();
+            stopBlockedJoints();
+            handMoveDone=handMotionDone();
+        }
 
         // check whether all the remaining active joints have come
         // to a complete stop
-        if (handMoveDone=handMotionDone(activeJoints))
+        if (handMoveDone)
         {    
             fprintf(stdout,"hand WP reached\n");
             execPendingHandAction();    // here handMoveDone may switch false again
@@ -731,21 +811,20 @@ bool affActionPrimitives::cmdArm(const Vector &x, const Vector &o)
 {
     if (configured)
     {
-        xd=x;
-        od=o;
-
-        for (int i=0; i<x.length(); i++)
-            smallOffs[i]=1e-4*(2.0*Random::uniform()-1.0);
-
-        if (!cartCtrl->goToPoseSync(xd,od))
+        if (!cartCtrl->goToPoseSync(x,o))
         {
             fprintf(stdout,"reach error\n");
             return false;
         }
 
         latchArmMoveDone=armMoveDone=false;
-        fprintf(stdout,"reach for [%s], [%s]\n",xd.toString().c_str(),od.toString().c_str());
+
+        fprintf(stdout,"reach for [%s], [%s]\n",
+                const_cast<Vector&>(x).toString().c_str(),
+                const_cast<Vector&>(o).toString().c_str());
+
         t0=Time::now();
+
         return true;
     }
     else
@@ -758,8 +837,8 @@ bool affActionPrimitives::cmdHand(const HandWayPoint &handWP)
 {
     if (configured)
     {        
-        activeJoints=enabledJoints;
-        for (set<int>::const_iterator itr=enabledJoints.begin(); itr!=enabledJoints.end(); itr++)
+        fingersMovingJntsSet=fingersJntsSet;
+        for (set<int>::iterator itr=fingersJntsSet.begin(); itr!=fingersJntsSet.end(); ++itr)
         {   
             int j=*itr-jHandMin;
 
@@ -855,7 +934,7 @@ bool affActionPrimitives::stopControl()
 
         cartCtrl->stopControl();
 
-        for (set<int>::const_iterator itr=enabledJoints.begin(); itr!=enabledJoints.end(); itr++)
+        for (set<int>::iterator itr=fingersJntsSet.begin(); itr!=fingersJntsSet.end(); ++itr)
             posCtrl->stop(*itr);
 
         armMoveDone =latchArmMoveDone =true;
@@ -954,14 +1033,15 @@ bool affActionPrimitivesLayer1::touch(const Vector &x, const Vector &o, const Ve
 
 
 /************************************************************************/
-bool affActionPrimitivesLayer1::tap(const Vector &x, const Vector &o, const Vector &d)
+bool affActionPrimitivesLayer1::tap(const Vector &x1, const Vector &o1,
+                                    const Vector &x2, const Vector &o2)
 {
     if (configured)
     {
         fprintf(stdout,"start tapping\n");
-        pushAction(x,o,"open_hand");
-        pushAction(x+d,o);
-        pushAction(x,o);
+        pushAction(x1,o1,"open_hand");
+        pushAction(x2,o2);
+        pushAction(x1,o1);
 
         return true;
     }

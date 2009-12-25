@@ -60,6 +60,8 @@ Assumes that \ref icub_iCubInterface (with ICartesianControl
 interface implemented) is running. 
  
 \section portsc_sec Ports Created 
+Aside from the internal ports created by \ref 
+affActionPrimitives library, we also have: 
  
 - \e /<modName>/in receives a bottle containing the 3-d position 
   of the object to grasp.
@@ -92,16 +94,16 @@ The configuration file passed through the option \e --from
 should look like as follows:
  
 \code 
-// hereafter are listed the options used to open a \ref 
-affActionPrimitives object 
 [general]
-robot           icub
-traj_time       1.5
-reach_tol       0.007
-torso_pitch     on
-torso_roll      off
-torso_yaw       on
-torso_pitch_max 30.0
+// options used to open a affActionPrimitives object 
+robot                           icub
+traj_time                       1.5
+reach_tol                       0.007
+torso_pitch                     on
+torso_roll                      off
+torso_yaw                       on
+torso_pitch_max                 30.0
+grasp_detection_thresholds      (0.5 0.5 0.5 0.5 0.5)
 
 [left_arm]
 grasp_orientation               (-0.171542 0.124396 -0.977292 3.058211)

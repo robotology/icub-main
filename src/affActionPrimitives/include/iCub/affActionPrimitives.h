@@ -12,38 +12,46 @@
  *
  * The library relies on the Yarp Cartesian Interface and 
  * provides the user a collection of action primitives in task 
- * space and joint space (such as reach()) along with an easy 
- * way to combine them together forming higher level actions 
- * (e.g. grasp(), tap(), …) in order to eventually execute more 
- * sophisticated tasks without concerning with the motion 
- * control details. 
+ * space and joint space along with an easy way to combine them
+ * together forming higher level actions (e.g. grasp(), tap(), 
+ * …) in order to eventually execute more sophisticated tasks 
+ * without concerning with the motion control details. 
  *  
  * \image html affActionPrimitives.jpg 
  *  
  * Central to the library's implementation is the concept of 
  * \b action. An action is a "request" that issues for an 
  * execution of three different tasks according to its internal 
- * selector: 1) it can ask the system to wait for a specified 
- * time interval; 2) it can ask to steer the arm to a specified 
- * pose, hence performing a motion in the task space; 3) it can 
- * command the execution of some predefined sequences in the 
- * joint space identified by a tag; besides there exists the 
- * possibility to issue with only one action a task of type 2) 
- * simultaneously to a task of type 3). Moreover, whenever an 
- * action is produced from within the code the corresponding 
- * request item is pushed at the bottom of actions queue. 
- * Therefore, user can identify suitable fingers movements in 
- * the joint space, associate proper grasping 3d points together 
- * with hand posture and finally execute the grasping task as a 
- * harmonic combination of a reaching movement and fingers 
- * actuations, complying with the time requirements due to the 
- * synchronized sequence. 
+ * selector: 
+ *  
+ * - 1 It can ask the system to wait for a specified time 
+ * interval;
+ *  
+ * - 2 It can ask to steer the arm to a specified pose, hence 
+ * performing a motion in the task space;
+ *  
+ * - 3 It can command the execution of some predefined 
+ * fingers sequences in the joint space identified by a tag. 
+ *  
+ * Besides, there exists the possibility to issue with only one 
+ * action a task of type 2 simultaneously to a task of type 3. 
+ *  
+ * Moreover, whenever an action is produced from within the code 
+ * the corresponding request item is pushed at the bottom of 
+ * actions queue. Therefore, user can identify suitable fingers 
+ * movements in the joint space, associate proper grasping 3d 
+ * points together with hand posture and finally execute the 
+ * grasping task as a harmonic combination of a reaching 
+ * movement and fingers actuations, complying with the time 
+ * requirements due to the synchronized sequence. 
  */ 
 
 #ifndef __AFFACTIONPRIMITIVES_H__
 #define __AFFACTIONPRIMITIVES_H__
 
 #include <yarp/os/RateThread.h>
+#include <yarp/os/BufferedPort.h>
+#include <yarp/os/Bottle.h>
 #include <yarp/os/Semaphore.h>
 #include <yarp/dev/PolyDriver.h>
 #include <yarp/dev/CartesianControl.h>
@@ -53,8 +61,8 @@
 #include <iCub/handMetrics.h>
 
 #include <deque>
-#include <map>
 #include <set>
+#include <map>
 
 
 /**
@@ -77,6 +85,8 @@ protected:
     yarp::dev::IPositionControl  *posCtrl;
     yarp::dev::ICartesianControl *cartCtrl;
 
+    yarp::os::BufferedPort<yarp::os::Bottle> graspDetectionPort;
+
     yarp::os::Semaphore *mutex;
     void                *motionDoneEvent;
 
@@ -96,14 +106,13 @@ protected:
     int jHandMin;
     int jHandMax;
 
-    yarp::sig::Vector xd;
-    yarp::sig::Vector od;
-    yarp::sig::Vector smallOffs;
+    yarp::sig::Vector      graspDetectionThres;
+    std::set<int>          fingersJntsSet;
+    std::set<int>          fingersMovingJntsSet;
+    std::multimap<int,int> jnts2FingersMap;
 
-    yarp::sig::Vector thresholds;
-    std::set<int> enabledJoints;
-    std::set<int> activeJoints;
     std::map<const std::string, yarp::sig::Matrix> sensingConstants;
+    yarp::sig::Vector thresholds;
     HandMetrics      *handMetrics;
     FunctionSmoother *fs;
 
@@ -139,8 +148,9 @@ protected:
     virtual bool cmdArm(const yarp::sig::Vector &x, const yarp::sig::Vector &o);
     virtual bool cmdHand(const HandWayPoint &handWP);
     virtual bool wait(const double tmo);
-    virtual void stopBlockedJoints(std::set<int> &activeJoints);
-    virtual bool handMotionDone(const std::set<int> &joints);
+    virtual bool isGraspEnded();
+    virtual void stopBlockedJoints();
+    virtual bool handMotionDone();
 
     void init();    
     bool execQueuedAction();
@@ -187,7 +197,8 @@ public:
     *  
     * \b reach_tol <double>: the reaching tolerance [m]. 
     *  
-    * \b local <string>: specify a name used to open local ports. 
+    * \b local <string>: specify a stem name used to open local 
+    *    ports.
     *
     * \b torso_pitch <string>: if "on" it enables the control of the 
     *    pitch of the torso.
@@ -211,6 +222,11 @@ public:
     * \b torso_yaw_min <double>: set the yaw minimum value [deg]. 
     *  
     * \b torso_yaw_max <double>: set the yaw maximum value [deg]. 
+    *  
+    * \b grasp_detection_thresholds <5 double>: specify the fingers
+    *    thresholds used for model-based grasp detection. Indeed, a
+    *    port is open called /<local>/detectGrasp:i to acquire data
+    *    provided by \ref icub_graspDetector module.
     *  
     * \b hand_calibration_file <string>: complete path to the hand 
     *    calibration file.
@@ -441,7 +457,7 @@ public:
     * ...
     *  
     * It reachs for (x+d,o) opening the hand, then reachs for (x,o)
-    * closing the hand at the same time. 
+    * and finally closes the hand. 
     */
     virtual bool grasp(const yarp::sig::Vector &x, const yarp::sig::Vector &o,
                        const yarp::sig::Vector &d);
@@ -463,32 +479,33 @@ public:
     * ... 
     *  
     * It reachs for (x+d,o), then reachs for (x,o). 
-    * Similar to grasp but without hand action. 
+    * Similar to grasp but without final hand action. 
     */
     virtual bool touch(const yarp::sig::Vector &x, const yarp::sig::Vector &o,
                        const yarp::sig::Vector &d);
 
     /**
     * Tap the given target (combined action).
-    * @param x the 3-d target position [m]. 
-    * @param o the 4-d hand orientation used while tapping (given in
-    *          axis-angle representation) [rad].
-    * @param d the displacement [m]; see the note below.
+    * @param x1 the fisrt 3-d target position [m]. 
+    * @param o1 the first 4-d hand orientation (given in axis-angle 
+    *           representation) [rad].
+    * @param x2 the second 3-d target position [m]. 
+    * @param o2 the second 4-d hand orientation (given in axis-angle
+    *           representation) [rad].
     * @return true/false on success/fail. 
     *  
     * \note internal implementation: 
     * ...
-    * pushAction(x,o,"open_hand");
-    * pushAction(x+d,o);
-    * pushAction(x,o);
+    * pushAction(x1,o1,"open_hand");
+    * pushAction(x2,o2);
+    * pushAction(x1,o1); 
     * ...
     *  
-    * It reachs for (x,o), then reachs for (x+d,o) and then again
-    * for (x,o).
+    * It reachs for (x1,o1), then reachs for (x2,o2) and then again
+    * for (x1,o1).
     */
-    virtual bool tap(const yarp::sig::Vector &x, const yarp::sig::Vector &o,
-                     const yarp::sig::Vector &d);
-
+    virtual bool tap(const yarp::sig::Vector &x1, const yarp::sig::Vector &o1,
+                     const yarp::sig::Vector &x2, const yarp::sig::Vector &o2);
 };
 
 
