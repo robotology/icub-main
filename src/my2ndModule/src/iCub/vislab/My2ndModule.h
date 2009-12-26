@@ -19,9 +19,9 @@
  *
  * \defgroup icub_my2ndModule my2ndModule
  *
- * This module provides a projection from the image plane to the world represented as
- * plane in front of the robot relatively specified to robot's base coordinates (e.g.
- * think of a table the robot is operating on)
+ * This module aims at demonstrating the use of the YARP extension RFModule2 introduced by
+ * the OpenVislab libraries (http://OpenVislab.sf.net). Furthermore it shows the use of motions
+ * and motion sequences which also were proposed for inclusion into the YARP library.
  *
  * 
  * \section lib_sec Dependencies
