@@ -261,7 +261,7 @@ bool BlobDescriptorModule::respond(const Bottle &command, Bottle &reply)
  */
 bool BlobDescriptorModule::updateModule()
 {
-	Stamp rawstamp, labeledstamp; 
+	Stamp rawstamp, labeledstamp, writestamp; 
 	
     _yarpRawInputPtr = _rawImgInputPort.read(true);
 	_yarpLabeledInputPtr = _labeledImgInputPort.read(true);
@@ -283,6 +283,9 @@ bool BlobDescriptorModule::updateModule()
 		_yarpLabeledInputPtr = _labeledImgInputPort.read(true);
 		_labeledImgInputPort.getEnvelope(labeledstamp);
 	}
+
+	//here both stamps are equal
+	writestamp = rawstamp;
 
     _yarpRawImg     = *_yarpRawInputPtr;
     _yarpViewImg    =  _yarpRawImg;
@@ -563,6 +566,7 @@ bool BlobDescriptorModule::updateModule()
 			/*28*/objbot.addDouble((double)_objDescTable[i].squareness);
 		}
 	}
+	_affDescriptorOutputPort.setEnvelope(writestamp);
 	_affDescriptorOutputPort.write();
 
 	/* output data for tracker initialization */
@@ -601,6 +605,8 @@ bool BlobDescriptorModule::updateModule()
 		}
 	}
 
+	_trackerInitOutputPort.setEnvelope(writestamp);
+	_trackerInitOutputPort.write();
 
 	/* output data to initialize the tracker on the selected object (if any)*/
 	if(userselection != -1)
@@ -630,12 +636,20 @@ bool BlobDescriptorModule::updateModule()
 		bot.addInt(_objDescTable[userselection].v_min);
 		bot.addInt(_objDescTable[userselection].v_max);
 		bot.addInt(_objDescTable[userselection].s_min);
+		_trackerInitSingleObjOutputPort.setEnvelope(writestamp);
 		_trackerInitSingleObjOutputPort.write();
 	}
 
+	/* output the original image */
+	ImageOf<PixelRgb> &yarpRawOutputImage = _rawImgOutputPort.prepare();
+	yarpRawOutputImage = _yarpRawImg;
+	_rawImgOutputPort.setEnvelope(writestamp);
+	_rawImgOutputPort.write();
+	
 	/* output image to view results */
 	ImageOf<PixelRgb> &yarpOutputImage = _viewImgOutputPort.prepare();
 	yarpOutputImage = _yarpViewImg;
+	_viewImgOutputPort.setEnvelope(writestamp);
 	_viewImgOutputPort.write();
   	return true;
 }
