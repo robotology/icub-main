@@ -234,6 +234,8 @@ class BlobDescriptorModule : public RFModule
 	int                               _minAreaThreshold; /* min. number of pixels allowed for foreground objects */
 	int                               _maxObjects;       /* maximum number of object to process */
 
+	
+
 public:
 	virtual bool configure(ResourceFinder &rf); /* configure module parameters, return true if successful */
 	virtual bool interruptModule();             /* interrupt, e.g., ports */

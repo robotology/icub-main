@@ -343,17 +343,16 @@ bool BlobDescriptorModule::updateModule()
 			cout << "Something very wrong happened. Object without edges" << endl;
 
 		if(_objDescTable[i].contours->h_next == NULL)
-			_objDescTable[i].has_holes = false;
+			_objDescTable[i].valid = true;
 		else
-			_objDescTable[i].has_holes = true;
+			_objDescTable[i].valid = false;  //objects with holes are not allowed
 	}
 
 	
 	for( int i=0; i < _numObjects; i++)
 	{
-		/* contour drawing - only for objects without holes */
-		if(_objDescTable[i].has_holes == false)
-			cvDrawContours(
+		/* contour drawing - all objects */
+		cvDrawContours(
 				opencvViewImg, 
 				_objDescTable[i].contours, 
 				CV_RGB(0,255,0), // external color
@@ -420,8 +419,8 @@ bool BlobDescriptorModule::updateModule()
 		//check which is the selected object
 		for(int i = 0; i < _numObjects; i++)
 		{
-			// test only objects without holes 
-			if(_objDescTable[i].has_holes == false)
+			// test only valid objects (without holes)
+			if(_objDescTable[i].valid)
 			{
 				if( cvPointPolygonTest( _objDescTable[i].contours, pt, 0) > 0) //point inside
 				{
@@ -442,6 +441,164 @@ bool BlobDescriptorModule::updateModule()
 				CV_AA, 
 				cvPoint(0, 0)	 // ROI offset
 		);
+	}
+
+	//Approximate the contours - only for valid objects
+	for( int i=0; i < _numObjects; i++)
+	{
+		if(_objDescTable[i].valid)
+		{
+			_objDescTable[i].contours = cvApproxPoly( 
+				_objDescTable[i].contours, 
+				sizeof(CvContour), 
+				_objDescTable[i].storage, 
+				CV_POLY_APPROX_DP, 
+				cvContourPerimeter(_objDescTable[i].contours)*0.02, 
+				1);
+
+			_objDescTable[i].convexhull = cvConvexHull2( _objDescTable[i].contours, _objDescTable[i].storage, CV_CLOCKWISE, 1 );
+
+			//mesurements of the contour
+			_objDescTable[i].contour_area = fabs(cvContourArea( _objDescTable[i].contours, CV_WHOLE_SEQ ));
+			_objDescTable[i].contour_perimeter = cvArcLength( _objDescTable[i].contours, CV_WHOLE_SEQ, 1 );
+			_objDescTable[i].convex_perimeter = cvArcLength( _objDescTable[i].convexhull, CV_WHOLE_SEQ, 1 );
+			CvBox2D enclosing_rect = cvMinAreaRect2( _objDescTable[i].convexhull, _objDescTable[i].storage );
+			_objDescTable[i].major_axis = (enclosing_rect.size.width > enclosing_rect.size.height ? enclosing_rect.size.width : enclosing_rect.size.height);
+			_objDescTable[i].minor_axis = (enclosing_rect.size.width > enclosing_rect.size.height ? enclosing_rect.size.height : enclosing_rect.size.width);
+			_objDescTable[i].rect_area = _objDescTable[i].major_axis*_objDescTable[i].minor_axis;
+		
+			CvPoint2D32f center;
+			float radius;
+			cvMinEnclosingCircle( _objDescTable[i].contours, &center, &radius );
+
+			//shape descriptors
+			if(_objDescTable[i].contour_perimeter > 0)
+				_objDescTable[i].convexity = _objDescTable[i].convex_perimeter/_objDescTable[i].contour_perimeter;
+			else
+				_objDescTable[i].convexity = 0;
+
+			if(_objDescTable[i].major_axis > 0)
+				_objDescTable[i].eccentricity = _objDescTable[i].minor_axis/_objDescTable[i].major_axis;
+			else
+				_objDescTable[i].eccentricity = 0;
+
+	
+			if(_objDescTable[i].contour_perimeter > 0)
+				_objDescTable[i].compactness = _objDescTable[i].contour_area/(_objDescTable[i].contour_perimeter*_objDescTable[i].contour_perimeter);
+
+			if( radius > 0)
+				_objDescTable[i].circleness = _objDescTable[i].contour_area/(3.1415*radius*radius);
+
+			if(_objDescTable[i].rect_area > 0)
+				_objDescTable[i].squareness = _objDescTable[i].contour_area/_objDescTable[i].rect_area;
+
+			//find the approximating ellipse
+			_objDescTable[i].ellipse = cvFitEllipse2(_objDescTable[i].contours);
+
+			/*printf("\nArea: %f\n", contour_area);			// 1
+			printf("Convexity: %f\n", convexity);			// 2
+			printf("Eccentricity: %f\n", eccentricity);		// 3
+			printf("Compactness: %f\n", compactness);		// 4
+			printf("Circleness: %f\n", circleness);			// 5
+			printf("Squareness: %f\n\n", squareness);		// 6
+			*/
+			//display contours in image
+
+			
+			//printf("\ndid cvDrawContours\n");
+		}
+	}
+
+	Bottle &affbot = _affDescriptorOutputPort.prepare();
+	affbot.clear();
+	/* output affordance descriptors */
+	for(int i = 0; i < _numObjects; i++)
+	{
+		if( _objDescTable[i].valid)
+		{
+			Bottle &objbot = affbot.addList();
+			objbot.clear();
+
+			double x = _objDescTable[i].ellipse.center.x;
+			double y = _objDescTable[i].ellipse.center.y;
+			double w = _objDescTable[i].ellipse.size.width;
+			double h = _objDescTable[i].ellipse.size.height;
+
+			double norm_x = (x-w/2)/(w/2); //between -1 and 1 
+			double norm_y = (y-h/2)/(h/2); //between -1 and 1 
+			double norm_w = (w/_w);        //between 0 and 1 
+			double norm_h = (h/_h);		   //between 0 and 1 	
+
+			/*0*/objbot.addDouble(norm_x);
+			/*1*/objbot.addDouble(-norm_y);
+			/*2*/objbot.addDouble(norm_w);
+			/*3*/objbot.addDouble(norm_h);
+			/*4*/objbot.addDouble(_objDescTable[i].ellipse.angle);
+			/*5*/objbot.addDouble(0);
+			/*6*/objbot.addDouble(0);
+
+
+			/*7*/objbot.addDouble((double)cvQueryHistValue_1D(_objDescTable[i].objHist, 0));
+			/*8*/objbot.addDouble((double)cvQueryHistValue_1D(_objDescTable[i].objHist, 1));
+			/*9*/objbot.addDouble((double)cvQueryHistValue_1D(_objDescTable[i].objHist, 2));
+			/*10*/objbot.addDouble((double)cvQueryHistValue_1D(_objDescTable[i].objHist, 3));
+			/*11*/objbot.addDouble((double)cvQueryHistValue_1D(_objDescTable[i].objHist, 4));
+			/*12*/objbot.addDouble((double)cvQueryHistValue_1D(_objDescTable[i].objHist, 5));
+			/*13*/objbot.addDouble((double)cvQueryHistValue_1D(_objDescTable[i].objHist, 6));
+			/*14*/objbot.addDouble((double)cvQueryHistValue_1D(_objDescTable[i].objHist, 7));
+			/*15*/objbot.addDouble((double)cvQueryHistValue_1D(_objDescTable[i].objHist, 8));
+			/*16*/objbot.addDouble((double)cvQueryHistValue_1D(_objDescTable[i].objHist, 9));
+			/*17*/objbot.addDouble((double)cvQueryHistValue_1D(_objDescTable[i].objHist, 10));
+			/*18*/objbot.addDouble((double)cvQueryHistValue_1D(_objDescTable[i].objHist, 11));
+			/*19*/objbot.addDouble((double)cvQueryHistValue_1D(_objDescTable[i].objHist, 12));
+			/*20*/objbot.addDouble((double)cvQueryHistValue_1D(_objDescTable[i].objHist, 13));
+			/*21*/objbot.addDouble((double)cvQueryHistValue_1D(_objDescTable[i].objHist, 14));
+			/*22*/objbot.addDouble((double)cvQueryHistValue_1D(_objDescTable[i].objHist, 15));
+
+			/*23*/objbot.addDouble((double)_objDescTable[i].contour_area);
+			/*24*/objbot.addDouble((double)_objDescTable[i].convexity);
+			/*25*/objbot.addDouble((double)_objDescTable[i].eccentricity);
+			/*26*/objbot.addDouble((double)_objDescTable[i].compactness);
+			/*27*/objbot.addDouble((double)_objDescTable[i].circleness);
+			/*28*/objbot.addDouble((double)_objDescTable[i].squareness);
+		}
+	}
+	_affDescriptorOutputPort.write();
+
+	/* output data for tracker initialization */
+	Bottle &trackbot = _trackerInitOutputPort.prepare();
+	trackbot.clear();
+	/* output affordance descriptors */
+	for(int i = 0; i < _numObjects; i++)
+	{
+		if( _objDescTable[i].valid)
+		{
+			Bottle &objbot = trackbot.addList();
+			objbot.clear();
+			objbot.addInt(_objDescTable[i].roi_x);
+			objbot.addInt(_objDescTable[i].roi_y);
+			objbot.addInt(_objDescTable[i].roi_width);
+			objbot.addInt(_objDescTable[i].roi_height);
+			objbot.addInt((int)cvQueryHistValue_1D(_objDescTable[i].objHist, 0));
+			objbot.addInt((int)cvQueryHistValue_1D(_objDescTable[i].objHist, 1));
+			objbot.addInt((int)cvQueryHistValue_1D(_objDescTable[i].objHist, 2));
+			objbot.addInt((int)cvQueryHistValue_1D(_objDescTable[i].objHist, 3));
+			objbot.addInt((int)cvQueryHistValue_1D(_objDescTable[i].objHist, 4));
+			objbot.addInt((int)cvQueryHistValue_1D(_objDescTable[i].objHist, 5));
+			objbot.addInt((int)cvQueryHistValue_1D(_objDescTable[i].objHist, 6));
+			objbot.addInt((int)cvQueryHistValue_1D(_objDescTable[i].objHist, 7));
+			objbot.addInt((int)cvQueryHistValue_1D(_objDescTable[i].objHist, 8));
+			objbot.addInt((int)cvQueryHistValue_1D(_objDescTable[i].objHist, 9));
+			objbot.addInt((int)cvQueryHistValue_1D(_objDescTable[i].objHist, 10));
+			objbot.addInt((int)cvQueryHistValue_1D(_objDescTable[i].objHist, 11));
+			objbot.addInt((int)cvQueryHistValue_1D(_objDescTable[i].objHist, 12));
+			objbot.addInt((int)cvQueryHistValue_1D(_objDescTable[i].objHist, 13));
+			objbot.addInt((int)cvQueryHistValue_1D(_objDescTable[i].objHist, 14));
+			objbot.addInt((int)cvQueryHistValue_1D(_objDescTable[i].objHist, 15));
+			objbot.addInt(_objDescTable[i].v_min);
+			objbot.addInt(_objDescTable[i].v_max);
+			objbot.addInt(_objDescTable[i].s_min);
+		}
 	}
 
 

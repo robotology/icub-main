@@ -11,19 +11,29 @@ using namespace std;
 
 ObjectDescriptor::ObjectDescriptor()
 {
+
+	valid = 0;	 // Objects that can be considered candidates for manipulation
+
+/*  Segmentation masks */
+	mask_image = NULL;
+	mask_data = NULL;
+	
+
+/* Variables to define the histograms - both for the affordances and for the tracker*/
 	h_bins = 16;
 	s_bins = 16;
 	v_bins = 16;
 	_hist_size[0] = h_bins;
     _hist_size[1] = s_bins;
-    /* in 8 bit images hue varies from 0 to 180 */
-    _h_ranges[0]  =   0;
+    _h_ranges[0]  =   0;     //in 8 bit images hue varies from 0 to 180
     _h_ranges[1]  = 180;
-    /* saturation varies from 0 (black-gray-white) to 255 (pure spectrum color) */
-    _s_ranges[0]  =   0;
+    _s_ranges[0]  =   0;     //saturation varies from 0 (black-gray-white) to 255 (pure spectrum color) 
     _s_ranges[1]  = 255;
     _v_ranges[0]  =   0;
     _v_ranges[1]  = 255;
+	objHist = NULL;
+	
+/* Variables to initialize the tracker */
 	roi_x = 0;
 	roi_y = 0;
 	roi_width = 0;
@@ -32,13 +42,33 @@ ObjectDescriptor::ObjectDescriptor()
 	v_max = 0;
 	s_min = 0;
 	s_max = 0;
-    objHist = NULL;
-	mask_image = NULL;
-	mask_data = NULL;
-	storage = NULL;
+
+/* variables for the countours */
+    storage = NULL;
 	contours = NULL;
 	affcontours = NULL;
 	convexhull = NULL; 
+
+/* variables to define the shape */
+	contour_area = 0;
+	contour_perimeter = 0;
+	convex_perimeter = 0;
+	major_axis = 0;
+	minor_axis = 0;
+	rect_area = 0;
+	ellipse.angle = 0;
+	ellipse.center.x = 0;
+	ellipse.center.y = 0;
+	ellipse.size.height = 0;
+	ellipse.size.width = 0;
+
+/* shape descriptors for the affordances */
+	convexity = 0;
+	eccentricity = 0;
+	compactness = 0;
+	circleness = 0;
+	squareness = 0;
+
 }
 
 bool ObjectDescriptor::Create(int width, int height)

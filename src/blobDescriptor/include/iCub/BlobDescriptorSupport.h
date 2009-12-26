@@ -35,7 +35,7 @@ public: //everything public for a start
     int area;
     CvPoint center;
 
-	bool has_holes;
+	bool valid;
 	//Color Histogram
     CvHistogram *objHist; // colour descriptor? CHECK
 	//New fields added for color histogram computations - Alex 19/12/2009
@@ -62,12 +62,29 @@ public: //everything public for a start
 	int v_max;
 	int s_min;
 	int s_max;
+	
 
 	//New fields added for contour processing - Alex 13/12/2009
 	CvMemStorage *storage; // = cvCreateMemStorage(0);
 	CvSeq *contours; // raw blob contours
 	CvSeq *affcontours; // processed contours for the description of affordances 
 	CvSeq *convexhull; // 
+
+	/* variables to define the shape */
+	double contour_area;
+	double contour_perimeter;
+	double convex_perimeter;
+	double major_axis;
+	double minor_axis;
+	double rect_area;
+	CvBox2D ellipse; //approximating ellipse
+
+/* shape descriptors for the affordances */
+	double convexity;
+	double eccentricity;
+	double compactness;
+	double circleness;
+	double squareness;
 
 };
 
