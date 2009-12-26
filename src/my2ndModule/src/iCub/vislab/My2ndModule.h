@@ -47,7 +47,7 @@
  *
  * - name &lt;STRING&gt; <br />
  *   specifies the name of the module (used to form the stem of module port names). <br />
- *   default: "eye2world"
+ *   default: "my2ndModule"
  *
  * - robot &lt;STRING&gt; <br />
  *   specifies the name of the robot (used to form the root of robot port names). <br />
