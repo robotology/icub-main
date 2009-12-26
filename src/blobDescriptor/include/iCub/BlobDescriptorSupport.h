@@ -77,7 +77,7 @@ public: //everything public for a start
 	double major_axis;
 	double minor_axis;
 	double rect_area;
-	CvBox2D ellipse; //approximating ellipse
+	CvBox2D enclosing_rect; 
 
 /* shape descriptors for the affordances */
 	double convexity;

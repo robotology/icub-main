@@ -56,11 +56,11 @@ ObjectDescriptor::ObjectDescriptor()
 	major_axis = 0;
 	minor_axis = 0;
 	rect_area = 0;
-	ellipse.angle = 0;
-	ellipse.center.x = 0;
-	ellipse.center.y = 0;
-	ellipse.size.height = 0;
-	ellipse.size.width = 0;
+	enclosing_rect.angle = 0;
+	enclosing_rect.center.x = 0;
+	enclosing_rect.center.y = 0;
+	enclosing_rect.size.height = 0;
+	enclosing_rect.size.width = 0;
 
 /* shape descriptors for the affordances */
 	convexity = 0;

@@ -21,11 +21,6 @@ using namespace yarp::os;
 #include <stdio.h>
 using namespace std;
 
-// FIXME: make these user-specified parameters
-//#define H_BINS 30
-//#define S_BINS 30
-//#define V_BINS 30
-
 /**
  * Receive a previously initialized Resource Finder object and process module parameters,
  * both from command line and .ini file.
@@ -351,6 +346,7 @@ bool BlobDescriptorModule::updateModule()
 			_objDescTable[i].valid = false;  //objects with holes are not allowed
 	}
 
+
 	
 	for( int i=0; i < _numObjects; i++)
 	{
@@ -368,14 +364,14 @@ bool BlobDescriptorModule::updateModule()
 	}
 	
 	//DEBUG - print the characteristics of the objects found
-	for(int i=0; i < _numObjects; i++)
+	/*for(int i=0; i < _numObjects; i++)
     {
 		cout << "Object no " << _objDescTable[i].no;
 		cout << " label " << _objDescTable[i].label;
 		cout << " area " << _objDescTable[i].area;
 		cout << " x " << _objDescTable[i].center.x;
 		cout << " y " << _objDescTable[i].center.y << endl;
-	}
+	}*/
 
 
     /* compute histogram of each object */
@@ -410,42 +406,7 @@ bool BlobDescriptorModule::updateModule()
 		_objDescTable[i].roi_y = _objDescTable[i].center.y - 15;
     }
 
-	Bottle *userinput = _userSelectionInputPort.read(false);
-	int userselection = -1;
-	if(userinput != NULL)
-	{
-		CvPoint2D32f pt;
-		pt.x = (float)(userinput->get(0).asInt());
-		pt.y = (float)(userinput->get(1).asInt());
-				
-		cout << "Received selection (x,y) = " << pt.x << "  " << pt.y << endl;  
-		//check which is the selected object
-		for(int i = 0; i < _numObjects; i++)
-		{
-			// test only valid objects (without holes)
-			if(_objDescTable[i].valid)
-			{
-				if( cvPointPolygonTest( _objDescTable[i].contours, pt, 0) > 0) //point inside
-				{
-					userselection = i;
-					break;
-				}
-			}
-		}
-		//Draw the contour of the selected object with a different color
-		if(userselection != -1)
-			cvDrawContours(
-				opencvViewImg, 
-				_objDescTable[userselection].contours, 
-				CV_RGB(0,0,255), // external color
-				CV_RGB(0,0,0), // hole color
-				1,				 
-				1, 
-				CV_AA, 
-				cvPoint(0, 0)	 // ROI offset
-		);
-	}
-
+	
 	//Approximate the contours - only for valid objects
 	for( int i=0; i < _numObjects; i++)
 	{
@@ -465,9 +426,9 @@ bool BlobDescriptorModule::updateModule()
 			_objDescTable[i].contour_area = fabs(cvContourArea( _objDescTable[i].contours, CV_WHOLE_SEQ ));
 			_objDescTable[i].contour_perimeter = cvArcLength( _objDescTable[i].contours, CV_WHOLE_SEQ, 1 );
 			_objDescTable[i].convex_perimeter = cvArcLength( _objDescTable[i].convexhull, CV_WHOLE_SEQ, 1 );
-			CvBox2D enclosing_rect = cvMinAreaRect2( _objDescTable[i].convexhull, _objDescTable[i].storage );
-			_objDescTable[i].major_axis = (enclosing_rect.size.width > enclosing_rect.size.height ? enclosing_rect.size.width : enclosing_rect.size.height);
-			_objDescTable[i].minor_axis = (enclosing_rect.size.width > enclosing_rect.size.height ? enclosing_rect.size.height : enclosing_rect.size.width);
+			_objDescTable[i].enclosing_rect = cvMinAreaRect2( _objDescTable[i].convexhull, _objDescTable[i].storage );
+			_objDescTable[i].major_axis = (_objDescTable[i].enclosing_rect.size.width > _objDescTable[i].enclosing_rect.size.height ? _objDescTable[i].enclosing_rect.size.width : _objDescTable[i].enclosing_rect.size.height);
+			_objDescTable[i].minor_axis = (_objDescTable[i].enclosing_rect.size.width > _objDescTable[i].enclosing_rect.size.height ? _objDescTable[i].enclosing_rect.size.height : _objDescTable[i].enclosing_rect.size.width);
 			_objDescTable[i].rect_area = _objDescTable[i].major_axis*_objDescTable[i].minor_axis;
 		
 			CvPoint2D32f center;
@@ -495,9 +456,6 @@ bool BlobDescriptorModule::updateModule()
 			if(_objDescTable[i].rect_area > 0)
 				_objDescTable[i].squareness = _objDescTable[i].contour_area/_objDescTable[i].rect_area;
 
-			//find the approximating ellipse
-			_objDescTable[i].ellipse = cvFitEllipse2(_objDescTable[i].contours);
-
 			/*printf("\nArea: %f\n", contour_area);			// 1
 			printf("Convexity: %f\n", convexity);			// 2
 			printf("Eccentricity: %f\n", eccentricity);		// 3
@@ -512,8 +470,17 @@ bool BlobDescriptorModule::updateModule()
 		}
 	}
 
+	/* Count the number of valid objects */
+	int valid_objs = 0;
+	for(int i = 0; i < _numObjects; i++)
+		if( _objDescTable[i].valid)
+			valid_objs ++;
+
+	
+
 	Bottle &affbot = _affDescriptorOutputPort.prepare();
 	affbot.clear();
+	affbot.addInt(valid_objs);
 	/* output affordance descriptors */
 	for(int i = 0; i < _numObjects; i++)
 	{
@@ -522,10 +489,10 @@ bool BlobDescriptorModule::updateModule()
 			Bottle &objbot = affbot.addList();
 			objbot.clear();
 
-			double x = _objDescTable[i].ellipse.center.x;
-			double y = _objDescTable[i].ellipse.center.y;
-			double w = _objDescTable[i].ellipse.size.width;
-			double h = _objDescTable[i].ellipse.size.height;
+			double x = _objDescTable[i].enclosing_rect.center.x;
+			double y = _objDescTable[i].enclosing_rect.center.y;
+			double w = _objDescTable[i].enclosing_rect.size.width;
+			double h = _objDescTable[i].enclosing_rect.size.height;
 
 			double norm_x = (x-w/2)/(w/2); //between -1 and 1 
 			double norm_y = (y-h/2)/(h/2); //between -1 and 1 
@@ -536,7 +503,7 @@ bool BlobDescriptorModule::updateModule()
 			/*1*/objbot.addDouble(-norm_y);
 			/*2*/objbot.addDouble(norm_w);
 			/*3*/objbot.addDouble(norm_h);
-			/*4*/objbot.addDouble(_objDescTable[i].ellipse.angle);
+			/*4*/objbot.addDouble(_objDescTable[i].enclosing_rect.angle);
 			/*5*/objbot.addDouble(0);
 			/*6*/objbot.addDouble(0);
 
@@ -567,11 +534,12 @@ bool BlobDescriptorModule::updateModule()
 		}
 	}
 	_affDescriptorOutputPort.setEnvelope(writestamp);
-	_affDescriptorOutputPort.write();
+	_affDescriptorOutputPort.write(); 
 
 	/* output data for tracker initialization */
 	Bottle &trackbot = _trackerInitOutputPort.prepare();
 	trackbot.clear();
+	trackbot.addInt(valid_objs);
 	/* output affordance descriptors */
 	for(int i = 0; i < _numObjects; i++)
 	{
@@ -604,10 +572,45 @@ bool BlobDescriptorModule::updateModule()
 			objbot.addInt(_objDescTable[i].s_min);
 		}
 	}
-
 	_trackerInitOutputPort.setEnvelope(writestamp);
 	_trackerInitOutputPort.write();
 
+	/* check if there is an user selection */
+	Bottle *userinput = _userSelectionInputPort.read(false);
+	int userselection = -1;
+	if(userinput != NULL)
+	{
+		CvPoint2D32f pt;
+		pt.x = (float)(userinput->get(0).asInt());
+		pt.y = (float)(userinput->get(1).asInt());
+				
+		cout << "Received selection (x,y) = " << pt.x << "  " << pt.y << endl;  
+		//check which is the selected object
+		for(int i = 0; i < _numObjects; i++)
+		{
+			// test only valid objects (without holes)
+			if(_objDescTable[i].valid)
+			{
+				if( cvPointPolygonTest( _objDescTable[i].contours, pt, 0) > 0) //point inside
+				{
+					userselection = i;
+					break;
+				}
+			}
+		}
+		//Draw the contour of the selected object with a different color
+		if(userselection != -1)
+			cvDrawContours(
+				opencvViewImg, 
+				_objDescTable[userselection].contours, 
+				CV_RGB(255,0,0), // external color
+				CV_RGB(255,255,255), // hole color
+				1,				 
+				1, 
+				CV_AA, 
+				cvPoint(0, 0)	 // ROI offset
+		);
+	}
 	/* output data to initialize the tracker on the selected object (if any)*/
 	if(userselection != -1)
 	{
