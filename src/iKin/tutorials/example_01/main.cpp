@@ -70,7 +70,7 @@ int main()
     // switch off verbosity
     options.put("verbosity","off");
 
-    // launch the solver and make it connect to the simulator
+    // launch the solver and let it connect to the simulator
     if (!onlineSolver.open(options))
         return -1;
     
