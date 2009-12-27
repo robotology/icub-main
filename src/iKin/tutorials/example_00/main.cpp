@@ -154,6 +154,11 @@ int main()
     // note that the tolerance is applied to the squared norm
     slv.setTranslationalTol(1e-8);
 
+    // In order to speed up the process, a scaling for the problem 
+    // is usually required (a good scaling holds each element of the jacobian
+    // of constraints and the hessian of lagrangian in norm between 0.1 and 10.0).
+    slv.setUserScaling(true,100.0,100.0,100.0);
+
     // solve for xf starting from current configuration q0
     // 2nd and 3rd tasks are not treated
     qhat=slv.solve(chain->getAng(),xf,0.0,dummy,dummy,0.0,dummy,dummy);
