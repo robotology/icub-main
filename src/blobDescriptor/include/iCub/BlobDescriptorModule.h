@@ -95,10 +95,45 @@
  *   Port to display output image, including overlay edges
  *
  * - <tt>/blobDescriptor/affDescriptor:o</tt> \n
- *   Affordance object descriptor output port
+ *   Affordance object descriptor output port 
+ *   The message is a Bottle containing several values.
+ *   The first value is and integer indicating the number of objects (N).
+ *   The consecutive N values (one per object) are lists (Bottles) containg 
+ *   the objects descriptors, with the following order:
+ **  0 (double) - the normalized x coordinate of center of the enclosing rectangle (between -1 and 1 w.r.t. the the image size).
+ **  1 (double) - the normalized y coordinate of center of the enclosing rectangle (between -1 and 1 w.r.t. the the image size). 
+ **  2 (double) - the normalized width of the enclosing rectangle (between 0 and 1 w.r.t. the the image size)
+ **  3 (double) - the normalized height of the enclosing rectangle (between 0 and 1 w.r.t. the the image size)
+ **  4 (double) - the angle (orientation) of the object's enclosing rectangle, according to OpenCv definition (see CvBox2D).
+ **  5 (double) - reserved for future usage, set to 0.
+ **  6 (double) - reserved for future usage, set to 0.
+ **  7 (double) - value of the 1st bin of the Hue normalized color histogram of the pixels inside the object's region.
+ **  ...
+ ** 22 (double) - value of the 16th (last) bin of the Hue normalized color histogram of the pixels inside the object's region.
+ ** 23 (double) - area
+ ** 24 (double) - convexity - ratio between the perimeter of the object's convex hull and the perimeter of the object's contour.
+ ** 25 (double) - eccentricity - ratio between the minor and major axis of the minimum area enclosing rectangle
+ ** 26 (double) - compactness - ratio between the object area and its squared perimeter.
+ ** 27 (double) - circleness - ratio between the object area and the area of its enclosing circle.
+ ** 28 (double) - squareness - ration between the object area and the area of its minimum area enclosing rectangle
  *
  * - <tt>/blobDescriptor/trackerInit:o</tt> \n
  *   Tracker initialization parameter output port
+ *   The message is a Bottle containing several values.
+ *   The first value is and integer indicating the number of objects (N).
+ *   The consecutive N values (one per object) are lists (Bottles) containing 
+ *   the values required for the OpenCv camshift tracker, with the following order:
+ **  0 (double) - the x coordinate of the tracking box
+ **  1 (double) - the y coordinate of the tracking box. 
+ **  2 (double) - the width of the tracking box.
+ **  3 (double) - the height of the tracking box
+ **  4 (double) - value of the 1st bin of the Hue normalized color histogram of the pixels inside the object's region.
+ **  ...
+ ** 19 (double) - value of the 16th (last) bin of the Hue normalized color histogram of the pixels inside the object's region.
+ ** 20 (double) - value of the minimum intensity value in the object region (v_min)
+ ** 21 (double) - value of the maximum intensity value in the object region (v_max)
+ ** 22 (double) - value of the minimum saturation value in the object region (s_min)
+ * 
  *
  * <b>Input/Output ports</b>
  *
