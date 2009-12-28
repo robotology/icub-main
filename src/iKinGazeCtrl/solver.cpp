@@ -563,7 +563,7 @@ void Solver::run()
 
     Vector theta=neckTargetRotAngles(xd);
 
-    if (norm(xd-xdOld)>1e-6 || movedTorso)
+    if (!(xd==xdOld) || movedTorso)
     {
         // call the solver for neck (only if necessary)        
         if (movedTorso ||

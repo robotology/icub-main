@@ -74,7 +74,7 @@ void minJerkTrajGen::calcCoeff(const double T, const Vector &xd, const Vector &f
 void minJerkTrajGen::compute(const double T, const Vector &xd, const Vector &fb,
                              const double tol, const double dt)
 {
-    if (fabs(T-TOld)>1e-6 || norm(xd-xdOld)>1e-6)
+    if ((T!=TOld) || !(xd==xdOld))
     {    
         calcCoeff(T,xd,fb);
         xdOld=xd;

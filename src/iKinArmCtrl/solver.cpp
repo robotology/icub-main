@@ -242,7 +242,7 @@ void Solver::run()
         movedTorso=norm(qTorso-qTorso_old)>1.0*(M_PI/180.0);
     }
 
-    if (norm(xd-xd_old)>1e-6 || movedTorso)
+    if (!(xd==xd_old) || movedTorso)
     {
         Vector dummyVector(1);
 

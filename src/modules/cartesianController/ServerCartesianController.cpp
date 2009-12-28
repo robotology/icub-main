@@ -699,7 +699,7 @@ bool ServerCartesianController::getNewTarget()
             for (int i=0; i<len; i++)
                 _xdes[i]=b2->get(i).asDouble();
 
-            if (norm(_xdes-xdes)>1e-6)
+            if (!(_xdes==xdes))
                 isNew=true;
         }
 
@@ -714,7 +714,7 @@ bool ServerCartesianController::getNewTarget()
             for (int i=0; i<len; i++)
                 _qdes[i]=(M_PI/180.0)*b2->get(i).asDouble();
 
-            if (norm(_qdes-qdes)>1e-6)
+            if (!(_qdes==qdes))
                 isNew=true;
         }
 

@@ -186,7 +186,7 @@ bool InputPort::handleTarget(Bottle *b)
         for (int i=0; i<l; i++)
             xd[i]=b->get(i).asDouble();
 
-        if (norm(xd-xdOld)>1e-6 || dofChanged)
+        if (!(xd==xdOld) || dofChanged)
         {
             isNew=true;
             xdOld=xd;
