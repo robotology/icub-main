@@ -123,6 +123,7 @@ class EffectDetector : public RFModule
     CvScalar hsv2rgb( float hue );
     virtual bool updateModule();
     bool respond(const Bottle & command, Bottle & reply);
+	virtual double getPeriod();
 
 };
 

@@ -568,4 +568,8 @@ bool EffectDetector::updateModule()
   
 
   return true;
-};
+}
+
+double EffectDetector::getPeriod() {
+  return 0.0;
+}
