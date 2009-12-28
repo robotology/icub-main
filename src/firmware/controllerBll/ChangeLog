@@ -87,3 +87,6 @@
 	on the trasmission of positions in version 0x0153 and 0x0173.
 	* Current build 32.	
 	
+2009-28-December  Marco Maggiali <marco.maggiali@iit.it>
+	* Version 0x0157 for joints 2 and 3 of the shoulder for icub V1.1. 
+	* Current build 33.	
