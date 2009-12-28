@@ -12,7 +12,7 @@ find_package(ICUB)
 
 find_package(YARP REQUIRED)
 find_package(LIBVISLAB REQUIRED)
-include_directories(${LIBVISLAB_INCLUDE_DIRS})
+include_directories(${YARP_INCLUDE_DIRS} ${LIBVISLAB_INCLUDE_DIRS})
 
 set(SOURCE_DIR "src/")
 
@@ -22,5 +22,5 @@ source_group("Source Files" FILES ${sources})
 source_group("Header Files" FILES ${headers})
 
 add_executable(${PROJECTNAME} ${headers} ${sources})
-target_link_libraries(${PROJECTNAME} ${LIBVISLAB_LIBRARIES})
+target_link_libraries(${PROJECTNAME} ${LIBVISLAB_LIBRARIES} ${YARP_LIBRARIES})
 install(TARGETS ${PROJECTNAME} RUNTIME DESTINATION bin LIBRARY DESTINATION lib ARCHIVE DESTINATION lib)
