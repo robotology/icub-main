@@ -256,7 +256,7 @@ extern char    _additional_info [32];
 
 //-------------------------------------------------------------------
 // shift by 2 is because data is available every 4 control cycles 
-#if VERSION == 0x0153 || VERSION == 0x0173
+#if VERSION == 0x0153 || VERSION==0x0157 || VERSION == 0x0173
 #define CAN_SET_ACTIVE_ENCODER_POSITION_HANDLER(x) \
 { \
 	long value; \
@@ -282,7 +282,7 @@ extern char    _additional_info [32];
 #endif
 
 //-------------------------------------------------------------------
-#if VERSION == 0x0153 || VERSION == 0x0173
+#if VERSION == 0x0153 || VERSION==0x0157 || VERSION == 0x0173
 #define CAN_SET_ACTIVE_PID_HANDLER(x) \
 { \
 	Int16 value; \
@@ -306,7 +306,7 @@ extern char    _additional_info [32];
 #endif
 
 //-------------------------------------------------------------------
-#if VERSION == 0x0153 || VERSION == 0x0173
+#if VERSION == 0x0153 || VERSION==0x0157 || VERSION == 0x0173
 #define CAN_SET_ACTIVE_ERROR_HANDLER(x) \
 { \
 	Int16 value; \

@@ -169,7 +169,7 @@ extern Int32  _pd_current[JN] ;         // pd portion of the current pid
 #endif
 
 
-#if VERSION == 0x0153 || VERSION == 0x0173
+#if VERSION == 0x0153 || VERSION==0x0157 || VERSION == 0x0173
 extern Int32  _cpl_pos_received[JN] ;		// the position of the synchronized card 
 extern Int32  _cpl_pos_prediction[JN] ;			// the actual adjustment (compensation) 
 extern Int32  _cpl_pos_delta[JN] ;			// velocity over the adjustment 

@@ -139,7 +139,7 @@ Int32  _pd_current[JN] = INIT_ARRAY (0);        // pd portion of the current pid
 #endif
 
 
-#if VERSION == 0x0153 || VERSION == 0x0173
+#if VERSION == 0x0153 || VERSION==0x0157 || VERSION == 0x0173
 Int32  _cpl_pos_received[JN] = INIT_ARRAY (0);	// the position of the synchronized card 
 Int32  _cpl_pos_prediction[JN] = INIT_ARRAY (0);		// the actual adjustment (compensation) 
 Int32  _cpl_pos_delta[JN] = INIT_ARRAY (0);			// velocity over the adjustment 
@@ -170,6 +170,8 @@ Int16 _version = 0x0154;
 Int16 _version = 0x0155;
 #elif VERSION == 0x0156
 Int16 _version = 0x0156;
+#elif VERSION == 0x0157
+Int16 _version = 0x0157;
 #elif VERSION == 0x0170
 Int16 _version = 0x0170;
 #elif VERSION == 0x0171
@@ -836,12 +838,18 @@ void check_desired_within_limits(byte i, Int32 previous_desired)
 			_desired[i] = _min_position[i];
 			if (_control_mode[i] == MODE_VELOCITY)
 				_set_vel[i] = 0;
+			#ifdef DEBUG_CONTROL_MODE
+					can_printf("WARN: OUT of MIN LIMITS");	
+				#endif
 		}
 		if (_desired[i] > _max_position[i] && (_desired[i] - previous_desired) > 0)
 		{
 			_desired[i] = _max_position[i];
 			if (_control_mode[i] == MODE_VELOCITY)
 				_set_vel[i] = 0;
+			#ifdef DEBUG_CONTROL_MODE
+					can_printf("WARN: OUT of MAX LIMITS");	
+				#endif
 		}
 	}
 }

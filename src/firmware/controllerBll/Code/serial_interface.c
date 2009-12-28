@@ -59,6 +59,8 @@ void print_version(void)
 	AS1_printStringEx ("1.55");
 #elif VERSION == 0x0156
 	AS1_printStringEx ("1.56");
+#elif VERSION == 0x0157
+	AS1_printStringEx ("1.57");
 #endif
 	AS1_printStringEx ("\r\n");
 }

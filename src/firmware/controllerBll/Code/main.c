@@ -37,7 +37,7 @@
 byte	_board_ID = 16;	
 char    _additional_info [32];
 UInt8    mainLoopOVF=0;
-word    _build_number = 32;
+word    _build_number = 33;
 int     _countBoardStatus =0;
 Int16   _flash_version=0; 
 UInt8   BUS_OFF=false;
@@ -212,7 +212,7 @@ void main(void)
 #endif 	
 
     init_position_abs_ssi ();
-#if VERSION == 0x0153 || VERSION == 0x0173 || VERSION == 0x0172
+#if VERSION == 0x0153 || VERSION ==0x0157 || VERSION == 0x0173 || VERSION == 0x0172 
     init_relative_position_abs_ssi();
 #endif 
 
@@ -321,7 +321,7 @@ void main(void)
 	    // max_real_position is the limit of the joint starting from 
 	    // 4095 and going to decrease this number without zero-cross
 	    // untill the joint limit is reached
-#if   VERSION == 0x0153 || VERSION == 0x0173
+#if   VERSION == 0x0153 || VERSION == 0x0157 || VERSION == 0x0173 
 		_position_old[0]=_position[0]; 
 		_position[0]=Filter_Bit (get_relative_position_abs_ssi(0));
 		_position_old[1]=_position[1]; 
@@ -767,6 +767,20 @@ void decouple_positions(void)
 		_cpl_pos_prediction[0] = L_add(_cpl_pos_prediction[0], _cpl_pos_delta[0]);
 		_cpl_pos_prediction[1] = L_add(_cpl_pos_prediction[1], _cpl_pos_delta[1]);
 
+#elif   VERSION == 0x0157
+		/* beware of the first cycle when _old has no meaning */		
+		_position[0] = (((float) _position[0])*0.6153F);  
+		_position[0] = _position[0]+ _cpl_pos_prediction[0];
+		_position[0] = _position[0]- _cpl_pos_prediction[1];
+		/*
+		|M1| |  1     0    0   |  |T1|     pulley diameter
+		|T2|=|  0     1    0   |* |T2|     with a=40/65 i.e. a=0.6153
+		|M3| |  1    -1    a   |  |T3|
+		*/
+		_cpl_pos_prediction[0] = L_add(_cpl_pos_prediction[0], _cpl_pos_delta[0]);
+		_cpl_pos_prediction[1] = L_add(_cpl_pos_prediction[1], _cpl_pos_delta[1]);
+
+
 #elif VERSION == 0x0173
 		/* beware of the first cycle when _old has no meaning */		
 		_position[0] = (((float) _position[0])*0.6153F);  
@@ -804,7 +818,7 @@ void decouple_dutycycle(Int32 *pwm)
 
 #if VERSION == 0x0150
 
-	/* Version 0x0153 relizes the shoulder coupling (here '_c' denotes 
+	/* Version 0x0150 relizes the shoulder coupling (here '_c' denotes 
 	 * the coupled board variables).The applied coupling is the following:
 	 *
 	 * 			[    Jm1,      0,      0]
@@ -902,6 +916,74 @@ void decouple_dutycycle(Int32 *pwm)
 #elif VERSION == 0x0153
 
 	/* Version 0x0153 relizes the shoulder coupling (here '_c' denotes 
+	 * the coupled board variables).The applied coupling is the following:
+	 *
+	 * 			[    Jm1,      0,      0]
+	 * tau_m = 	[ -Jm2/a,  Jm2/a,      0] tau_j
+	 * 			[ -Jm3/a,  Jm3/a,  Jm3/a]
+	 *
+	 * 			[    R1/K1,      0,      0]
+	 * u_m = 	[        0,  R2/K2,      0] tau_m
+	 * 			[        0,      0,  R3/K3]
+	 *
+	 *			[    R1/K1*Jm1,            0,            0]                    			[1         0         0]
+	 * u_m =	[ -R2/K2*Jm2/a,  R2/K2*Jm2/a,            0] tau_j =  1.0e-03 * 0.1519 * [-1.73    1.73       0]
+	 *			[ -R3/K3*Jm3/a,  R3/K3*Jm3/a,  R3/K3*Jm3/a]                    			[-1.73    1.73    1.73]
+	 *
+	 * where:
+	 * tau_m 	: torques applied by the motors (tau_m_c[0], tau_m_c[1], tau_m[0])
+	 * tau_j 	: virtual torque at the joints  (tau_j_c[0], tau_j_c[1], tau_j[0])
+	 * R		: motor resitance (mean of the three phases) R1=0.8967 VS R2=R3=0.8363
+	 * K		: motor constant torque K1=0.0500  K2=K3=0.0280
+	 * Jm		: inertia of the motors Jm1=8.47E-06 Jm2=Jm3=5.15E-06 
+	 * 
+	 * This solution follows from the following coupling:
+	 *		[  1,  0,  0]
+	 * qj =	[  1,  a,  0] qm = Tjm qm
+	 *		[  0, -a,  a]
+	 * where:
+	 *
+	 * qm 	: position of the motors (qm_c[0], qm_c[1], qm[0])
+	 * qj 	: position of the motors (qj_c[0], qj_c[1], qj[0])
+	 * 
+	 * and from the assumption that dynamics of motors are not
+	 * effected by the kinematic coupling (due to high gear boxes):
+	 *
+	 *	[  Jm1,    0,    0]
+	 * 	[    0,  Jm2,    0] d2qm = tau_m
+	 *	[    0,    0,  Jm3]
+	 *
+	 * where:
+	 *
+	 * Jm 	: motor inertia
+	 * tau_m: motor torque 
+	 */
+	if (_control_mode[0] == MODE_POSITION)
+	{
+   		tempf = (float)(_pd[0]);
+		tempf = tempf * 1.6455F;
+	    temp32 = (Int32) _cpl_pid_prediction[1] + (Int32) (tempf);
+	    _pd[0] += temp32;
+	    
+		tempf = (float)(pwm[0]);
+		tempf = tempf * 1.6455F;
+		temp32 = (Int32) _cpl_pid_prediction[1] + (Int32) (tempf);
+	    pwm[0] += temp32;	    
+		#ifdef DEBUG_CPL_BOARD
+			if(count==255)
+			{
+				can_printf("cplPid:%d(%d,%d)", (Int16) pwm[0], (Int16) (tempf), _cpl_pid_prediction[1]);
+				count=0;
+			}			
+			count++;
+		#endif	
+	    //update the prediction for coupled board duty
+	    _cpl_pid_prediction[0] = _cpl_pid_prediction[0] + _cpl_pid_delta[0];
+	    _cpl_pid_prediction[1] = _cpl_pid_prediction[1] + _cpl_pid_delta[1];
+	}
+#elif VERSION == 0x0157
+
+	/* Version 0x0157 relizes the shoulder coupling (here '_c' denotes 
 	 * the coupled board variables).The applied coupling is the following:
 	 *
 	 * 			[    Jm1,      0,      0]

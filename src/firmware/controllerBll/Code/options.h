@@ -1,13 +1,14 @@
 #ifndef __options_h__
 #define __options_h__
 
-//#define VERSION 0x0150   				/* first two joint of the shoulder */
+//#define VERSION 0x0150   				/* position and pwm decoupling of the first two joint of the shoulder  */
 //#define VERSION 0x0151   				/* standard/basic implementation */
 //#define VERSION 0x0152				/* waist deifferential decoupling */
 //#define VERSION 0x0153			   	/* decouples the third joint of the shoulder */
 //#define VERSION 0x0154		    	/* only one joint */
-//#define VERSION 0x0155		    	/* */
+//#define VERSION 0x0155                /* it reads absolute and incremental encoder for one robot */
 //#define VERSION 0x0156		    	/* low level current control */
+//define  VERSION 0x0157		    	/* position and pwm decoupling of the third joint of the shoulder */
 //#define VERSION 0x0170		    	/* Listens for CAN messages from strain boards and computes force control */
 //#define VERSION 0x0171		    	/* Use the internal ADC to measure the strain gauges computes force control */
 //#define VERSION 0x0172		    	/* like version 0x0170, with optical encoder*/
@@ -27,7 +28,7 @@
 //#define TEMPERATURE_SENSOR    	1
 //#define ENCODER_SHIFT_11BITS  	1
 //#define DEBUG_ABS_SENSOR_STATUS 	1
-#define DEBUG_CONTROL_MODE    	1
+//#define DEBUG_CONTROL_MODE    	1
 
 
 #endif

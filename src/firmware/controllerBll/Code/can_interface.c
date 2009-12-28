@@ -189,7 +189,7 @@ byte can_interface (void)
 			// special message, not too neat
 			// ID 0x0100 (001 0000 0000b) message class = periodic message  
 			
-#if VERSION == 0x0153 || VERSION == 0x0173 
+#if VERSION == 0x0153 || VERSION==0x0157 || VERSION == 0x0173 
 
 			if (_canmsg.CAN_ID_class == CLASS_PERIODIC_DSP)
 			{
@@ -829,7 +829,7 @@ void set_can_masks()
 		create_F_M(&filter1, &mask1,CLASS_POLLING_DSP,0xFF, _board_ID, CLASS_PERIODIC_SENS, 0xFF, 0xFF);   
 		create_F_M(&filter2, &mask2,CLASS_CANLOADER,  0x00, 0xFF, 	   CLASS_CANLOADER,  	0x00, 0xFF);  
 	}
-	else if (VERSION == 0x0153)
+	else if (VERSION == 0x0153 || VERSION==0x0157)
 	{	
 		create_F_M(&filter1, &mask1,CLASS_POLLING_DSP,0xFF, _board_ID, CLASS_PERIODIC_DSP, CAN_ID_COUPLED_BOARD, CAN_BCAST_POSITION);
 		create_F_M(&filter2, &mask2,CLASS_CANLOADER,  0x00, 0xFF,      CLASS_PERIODIC_DSP, CAN_ID_COUPLED_BOARD, CAN_BCAST_PID_VAL);
