@@ -241,8 +241,11 @@ IF(OPENCV_FOUND AND IPOPT_FOUND)
     ADD_SUBDIRECTORY(pf3dTracker)
 ENDIF(OPENCV_FOUND AND IPOPT_FOUND)
 
+# vision modules for object affordances
 IF(OPENCV_FOUND)
     ADD_SUBDIRECTORY(edisonSegmentation)
+    ADD_SUBDIRECTORY(blobDescriptor)
+    ADD_SUBDIRECTORY(effectDetector)
 ENDIF(OPENCV_FOUND)
   
 ENDIF(BUILD_FOR_RELEASE)
