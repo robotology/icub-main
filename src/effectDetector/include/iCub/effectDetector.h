@@ -9,9 +9,10 @@
 
 // yarp
 #include <yarp/os/Network.h>
-#include <yarp/os/Module.h>
+#include <yarp/os/RFModule.h>
 #include <yarp/sig/Image.h>
 #include <yarp/sig/Vector.h>
+#include <yarp/os/all.h>
 
 //OpenCV
 #include <cv.h>
@@ -54,7 +55,7 @@ void on_mouse( int event, int x, int y, int flags, void* param );
 
 
 
-class EffectDetector : public Module
+class EffectDetector : public RFModule
 {
 
 
@@ -68,6 +69,7 @@ class EffectDetector : public Module
     int hdims;
     float hranges_arr[2];
     float* hranges;
+	int _default_vmin;
     int _vmin, _vmax, _smin;    
     int bin_w,i,c;
     double refreshDelay;
@@ -113,7 +115,8 @@ class EffectDetector : public Module
     EffectDetector();
     ~EffectDetector();
     
-    virtual bool open(Searchable& config);
+    //virtual bool open(Searchable& config);
+	virtual bool configure(ResourceFinder &rf); /* configure module parameters, return true if successful */
 
     virtual bool close();
     virtual bool interruptModule();

@@ -10,7 +10,7 @@
 
 // yarp
 #include <yarp/os/Network.h>
-#include <yarp/os/Module.h>
+#include <yarp/os/RFModule.h>
 #include <yarp/sig/Image.h>
 #include <yarp/sig/Vector.h>
 
@@ -157,12 +157,16 @@ float EffectDetector::computeSimilarity(IplImage *rawSegmImg, IplImage *rawCurrI
 
 
 
-bool EffectDetector::open(Searchable& config)
+bool EffectDetector::configure(ResourceFinder &config) // equivalent to Module::open()
 {
     if (config.check("help","if present, display usage message")) {
-	printf("Call with --name </portprefix> --file <configfile.ini>\n");
+	printf("Call with --name </portprefix> --from <configfile.ini>\n");
 	return false;
     }
+
+	_default_vmin = config.check("default_vmin", 
+		Value(0), 
+		"If 0 use value from port, otherwise use this value").asInt();
 
     //set state of the system
     state = NOTPROCESSING;
@@ -335,7 +339,10 @@ bool EffectDetector::respond(const Bottle & command, Bottle & reply)
     //cvConvertScale( hist->bins, hist->bins, max_val ? 255. / max_val : 0., 0 );
 
     //set data that's going to be used in the update() method.
-    _vmin = (command.get(20)).asDouble();
+	if(_default_vmin)
+		_vmin = _default_vmin;
+	else
+		_vmin = (command.get(20)).asDouble();
     _vmax = (command.get(21)).asDouble();
     _smin = (command.get(22)).asDouble();
     vmin=_vmin; //global variables, needed by the callback functions

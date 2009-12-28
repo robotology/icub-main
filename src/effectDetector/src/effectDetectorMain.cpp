@@ -21,8 +21,15 @@
 int main(int argc, char *argv[]) {
     Network yarp;
     yarp::os::Time::turboBoost();
+	
+	/* prepare and configure Resource Finder */
+	ResourceFinder rf;
+	rf.setVerbose(true);
+	rf.setDefaultConfigFile("effectDetector.ini");  // overridden by --from parameter
+	rf.setDefaultContext("effectDetector/conf");    // overridden by --context parameter
+	rf.configure("ICUB_ROOT", argc, argv);
 
     EffectDetector module;
-    module.setName("/effectDetector"); // set default name of module
-    return module.runModule(argc,argv);
+	module.setName("/effectDetector");
+    return module.runModule(rf);
 }
