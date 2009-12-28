@@ -656,3 +656,7 @@ bool BlobDescriptorModule::updateModule()
 	_viewImgOutputPort.write();
   	return true;
 }
+
+double BlobDescriptorModule::getPeriod() {
+  return 0.0;
+}

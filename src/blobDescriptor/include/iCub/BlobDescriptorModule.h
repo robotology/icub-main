@@ -277,6 +277,7 @@ public:
 	virtual bool close();                       /* close and shut down module */
 	virtual bool respond(const Bottle &command, Bottle &reply);
 	virtual bool updateModule();
+	virtual double getPeriod();
 };
 
 #endif // __ICUB_BLOB_DESC_MODULE_H__
