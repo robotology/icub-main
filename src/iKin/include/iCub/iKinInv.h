@@ -958,7 +958,7 @@ public:
 
     virtual void restart(const yarp::sig::Vector &q0);
 
-    virtual std::string getAlgoName() { return "multi-referential-dynamical-systems"; }
+    virtual std::string getAlgoName() { return "multi-referential-minimum-jerk-generators"; }
 
     // disable unused father's methods
     virtual bool test_convergence(const double tol_size) { return false; }
