@@ -18,14 +18,14 @@
 <module>
       <name>camCalib</name>
       <parameters>--context iCubLisboa01/conf --from icubEyes.ini --group CAMERA_CALIBRATION_LEFT --name /icub/camcalib/left</parameters>
-      <node>cortex5</node>
+      <node>icubbrain1</node>
       <stdio>chico3</stdio>
       <tag>camCalibLeft</tag>
 </module>
 <module>
       <name>camCalib</name>
       <parameters>--context iCubLisboa01/conf --from icubEyes.ini --group CAMERA_CALIBRATION_RIGHT --name /icub/camcalib/right</parameters>
-      <node>cortex5</node>
+      <node>icubbrain1</node>
       <stdio>chico3</stdio>
       <tag>camCalibRight</tag>
 </module>
