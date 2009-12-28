@@ -167,7 +167,6 @@ bool colourProcessorModule::updateModule() {
 
 void colourProcessorModule::outPorts(){
 
-    //todo: getoutputcount for everyport
 
     //port2.prepare() = *img;	
     if((this->rgbProcessor.redPlane!=0)&&(redPort.getOutputCount())){
@@ -199,7 +198,7 @@ void colourProcessorModule::outPorts(){
         uvPort.write();
     }
     if((this->rgbProcessor.redGreen_yarp!=0)&&(rgPort.getOutputCount())){
-        rgPort.prepare()=*(this->rgbProcessor.redPlane);
+        rgPort.prepare()=*(this->rgbProcessor.redGreen_yarp);
         rgPort.write();
     }
     if((this->rgbProcessor.greenRed_yarp!=0)&&(grPort.getOutputCount())){

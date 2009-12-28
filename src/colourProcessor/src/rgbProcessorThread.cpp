@@ -37,6 +37,7 @@ void rgbProcessorThread::reinitialise(){
     shift[0]=ippiMalloc_8u_C1(width,height,&psb); 
 	shift[1]=ippiMalloc_8u_C1(width,height,&psb);
 	shift[2]=ippiMalloc_8u_C1(width,height,&psb);
+
     redPlane=new ImageOf<PixelMono>;
     redPlane->resize(width,height);
     greenPlane=new ImageOf<PixelMono>;
@@ -313,24 +314,7 @@ void rgbProcessorThread::colourOpponency(){
 	}*/
 
 
-	//6. free memory space
-
-	ippiFree(redPlane_ippi32_f);
-	ippiFree(bluePlane_ippi32_f);
-	ippiFree(greenPlane_ippi32_f);
-	ippiFree(yellowPlane_ippi32_f);
-
-	ippiFree(redGreen_ippi32);
-	ippiFree(blueYellow_ippi32);
-	ippiFree(greenRed_ippi32);
 	
-	ippiFree(redPlane_ippi32);
-	ippiFree(bluePlane_ippi32);
-	ippiFree(greenPlane_ippi32);
-	
-	ippsFree(pBufferBlue);
-	ippsFree(pBufferRed);
-	ippsFree(pBufferGreen);
 	
 	//delete tmp;
 	
@@ -362,9 +346,10 @@ void rgbProcessorThread::colourOpponency(){
 	//greenRed_yarp->resize(width,height);
 	//blueYellow_yarp->resize(width,height);
 	
-    ippiCopy_8u_C1R(redGreen_ippi,psb,redGreen_yarp->getRawImage(),redGreen_yarp->getRowSize(),srcsize);
+    /*ippiCopy_8u_C1R(redGreen_ippi,psb,redGreen_yarp->getRawImage(),redGreen_yarp->getRowSize(),srcsize);
 	ippiCopy_8u_C1R(greenRed_ippi,psb,greenRed_yarp->getRawImage(),greenRed_yarp->getRowSize(),srcsize);
-	ippiCopy_8u_C1R(blueYellow_ippi,psb,blueYellow_yarp->getRawImage(),blueYellow_yarp->getRowSize(),srcsize);
+	ippiCopy_8u_C1R(blueYellow_ippi,psb,blueYellow_yarp->getRawImage(),blueYellow_yarp->getRowSize(),srcsize);*/
+
 	/*ippiCopy_8u_C1R(redPlane->getPixelAddress(0,0),psb,redGreen_yarp->getPixelAddress(0,0),width,srcsize);
 	ippiCopy_8u_C1R(greenPlane->getPixelAddress(0,0),psb,greenRed_yarp->getPixelAddress(0,0),width,srcsize);
 	ippiCopy_8u_C1R(bluePlane->getPixelAddress(0,0),psb,blueYellow_yarp->getPixelAddress(0,0),width,srcsize);*/
@@ -387,4 +372,23 @@ void rgbProcessorThread::colourOpponency(){
 	/*this->blueYellow_flag=1;
 	this->redGreen_flag=1;
 	this->greenRed_flag=1;*/
+
+    //6. free memory space
+
+	ippiFree(redPlane_ippi32_f);
+	ippiFree(bluePlane_ippi32_f);
+	ippiFree(greenPlane_ippi32_f);
+	ippiFree(yellowPlane_ippi32_f);
+
+	ippiFree(redGreen_ippi32);
+	ippiFree(blueYellow_ippi32);
+	ippiFree(greenRed_ippi32);
+	
+	ippiFree(redPlane_ippi32);
+	ippiFree(bluePlane_ippi32);
+	ippiFree(greenPlane_ippi32);
+	
+	ippsFree(pBufferBlue);
+	ippsFree(pBufferRed);
+	ippsFree(pBufferGreen);
 }
