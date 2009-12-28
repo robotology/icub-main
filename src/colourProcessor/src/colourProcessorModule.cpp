@@ -24,6 +24,10 @@ bool colourProcessorModule::open(Searchable& config) {
     greenPort.open(getName("green:o"));
     bluePort.open(getName("blue:o"));
 
+    rgPort.open(getName("rg:o"));
+    grPort.open(getName("gr:o"));
+    byPort.open(getName("by:o"));
+
     yPort.open(getName("ychannel:o"));
     uPort.open(getName("uchannel:o"));
     vPort.open(getName("vchannel:o"));
@@ -44,6 +48,10 @@ bool colourProcessorModule::interruptModule() {
     redPort.interrupt();
     greenPort.interrupt();
     bluePort.interrupt();
+
+    rgPort.interrupt();
+    grPort.interrupt();
+    byPort.interrupt();
     
     yPort.interrupt();
     uPort.interrupt();
@@ -66,6 +74,13 @@ bool colourProcessorModule::close(){
     greenPort.close();
     printf("blue channel port closing .... \n");
     bluePort.close();
+
+    printf("R+G- colourOpponency port closing .... \n");
+    rgPort.close();
+    printf("G+R- colourOpponency port closing .... \n");
+    grPort.close();
+    printf("B+Y- colourOpponency port closing .... \n");
+    byPort.close();
 
     printf("intensity channel port closing .... \n");
     yPort.close();
@@ -145,7 +160,7 @@ bool colourProcessorModule::updateModule() {
     //copy the inputImg into a buffer
     ippiCopy_8u_C3R(img->getRawImage(), img->getRowSize(),inputImg->getRawImage(), inputImg->getRowSize(),srcsize);
    
-    
+  
     outPorts();
     return true;
 }
@@ -182,6 +197,18 @@ void colourProcessorModule::outPorts(){
     if((this->yuvProcessor.uvPlane!=0)&&(uvPort.getOutputCount())){
         uvPort.prepare() = *(this->yuvProcessor.uvPlane);		
         uvPort.write();
+    }
+    if((this->rgbProcessor.redGreen_yarp!=0)&&(rgPort.getOutputCount())){
+        rgPort.prepare()=*(this->rgbProcessor.redPlane);
+        rgPort.write();
+    }
+    if((this->rgbProcessor.greenRed_yarp!=0)&&(grPort.getOutputCount())){
+        grPort.prepare()=*(this->rgbProcessor.greenRed_yarp);
+        grPort.write();
+    }
+    if((this->rgbProcessor.blueYellow_yarp!=0)&&(byPort.getOutputCount())){
+        byPort.prepare()=*(this->rgbProcessor.blueYellow_yarp);
+        byPort.write();
     }
 }
 

@@ -141,6 +141,18 @@ private:
     */
     BufferedPort<ImageOf<PixelMono> > bluePort;
     /**
+    * port where the difference of gaussian R+G- is streamed
+    */
+    BufferedPort<ImageOf<PixelMono> > rgPort;
+    /**
+    * port where the difference of gaussian G+R- is streamed
+    */
+    BufferedPort<ImageOf<PixelMono> > grPort;
+    /**
+    * port where the difference of gaussian B+Y- of the image is streamed
+    */
+    BufferedPort<ImageOf<PixelMono> > byPort;
+    /**
     * port where the yellow plane of the image is streamed
     */
     BufferedPort<ImageOf<PixelMono> > yellowPort;

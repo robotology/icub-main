@@ -8,7 +8,7 @@
 #include <yarp/sig/all.h>
 
 //IPP include
-#include <ippi.h>
+#include <ipp.h>
 
 using namespace yarp::os;
 using namespace yarp::sig;
@@ -30,6 +30,10 @@ private:
     */
     int height;
     /**
+    * IppiSize reference to the dimension of the input image
+    */
+    IppiSize srcsize;
+    /**
     * reference to the temporary 3 planes for extraction
     */
     Ipp8u* shift[3];
@@ -50,6 +54,23 @@ private:
     */
     ImageOf<PixelRgb> *img; 
     
+    /**
+    * temp variable for the plane extraction
+    */
+    Ipp32f* redPlane_ippi32_f; //
+    /**
+    * temp variable for the plane extraction
+    */
+    Ipp32f* bluePlane_ippi32_f; //
+    /**
+    * temp variable for the plane extraction
+    */
+    Ipp32f* yellowPlane_ippi32_f; //
+    /**
+    *temp variable for the plane extraction
+    */
+    Ipp32f* greenPlane_ippi32_f; //
+    
     //_______________ private method  __________________________
 
     /**
@@ -64,6 +85,10 @@ private:
     * function that extracts the green plane
     */
     void getGreenPlane(ImageOf<PixelRgb>* inputImage,ImageOf<PixelMono>* tmp);
+    /**
+    * function that calculates the colour opponency maps as differences of Gaussians
+    */
+    void colourOpponency();
 public:
     /**
     * constructor of the thread
@@ -116,6 +141,18 @@ public:
     *yarp mono image of the blue channel
     */
     ImageOf<PixelMono>* bluePlane; 
+    /**
+    * yarp image for Opponency Map R+G-
+    */
+    ImageOf<PixelMono>* redGreen_yarp;
+    /**
+    * yarp image for Opponency Map G+R-
+    */
+    ImageOf<PixelMono>* greenRed_yarp;
+    /**
+    * yarp image for Opponency Map B+Y-
+    */
+    ImageOf<PixelMono>* blueYellow_yarp;
 };
 
 #endif //_RGBPROCESSORTHREAD_H_
