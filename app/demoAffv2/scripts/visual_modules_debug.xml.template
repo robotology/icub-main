@@ -28,7 +28,7 @@
 </module>
 <module>
       <name>eye2world</name>
-      <parameters>--context demoAffv2/conf --robot icub</parameters>
+      <parameters>--context demoAffv2/conf --robot icub --from table.ini --eyeCalibration icubEyes.ini</parameters>
       <node>pwr-node2</node>
       <stdio>view-node</stdio>
       <tag>eye2world</tag>
