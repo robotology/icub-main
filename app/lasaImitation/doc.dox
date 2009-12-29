@@ -1,0 +1,49 @@
+/**
+@ingroup icub_applications
+\defgroup icub_lasaImitation Imitation learning, refinement and reuse 
+
+\brief  Imitation learning, refinement and reuse application
+ 
+
+\section sec_intro Introduction
+
+\section sec_process_flow Process Flow
+
+
+\section dep_sec Dependencies
+-# When connecting to a physical robot:
+  - This module assumes \ref icub_iCubInterface iCubInterface2 is already running.
+  - Assumes that touch devices are connected to the computer running the \ref icub_lasaImitation_TouchController "Touch Controller Module"
+  - Assumes that X-Sens and Datagloves sensors are connected to the computer running the - \ref icub_lasaImitation_YarpedMotionSensors "Motion-Sensors Capture Module"
+-# When connecting to the simulator:
+  - The simulator should be started with the head, arms and hands activated along with the fixed_hip.
+
+\section modules_sec Instantiated Modules
+
+List here the modules that are instantiated by this application:
+- \ref icub__lasaImitation_VelocityControllerModule  "Extended Velocity Controller Module"
+- \ref icub__lasaImitation_DataStreamerModule        "Data Streaming Module"
+- \ref icub__lasaImitation_MotionSensorsModule       "Motion Sensors Capture Module"
+- \ref icub__lasaImitation_TouchControllerModule     "Touch Controller Module"
+
+
+
+\section parameters_sec Parameters
+Application parameters are contained in the file lasaImitationApp.xml
+
+\section config_sec Configuration Files
+
+ 
+\section example_sec How to run the application
+ 
+
+\author Eric Sauser
+
+Copyright (C) 2008 RobotCub Consortium
+
+CopyPolicy: Released under the terms of the GNU GPL v2.0.
+
+This file can be edited at \in app/lasaImitation/doc.dox
+
+*/
+
