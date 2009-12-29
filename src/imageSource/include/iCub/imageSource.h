@@ -3,8 +3,17 @@
  *
  * \defgroup icub_imageSource imageSource 
  *
- * Read an image from a file and stream it to a specified port.
+ * Read an image from a file and stream it with specified dimensions to a specified port.
  * Add random noise to differentiate between each image streamed.
+ *
+ * If the window key-value pair is set to 1, and provided the dimensions of the image read from file is 
+ * larger than the dimensions of the image to be streamed (as specified in the width and height key-value pairs), 
+ * then we extract a sub-image of the required dimensions.  
+ * The scan pattern is random if the random key-value pair is set to 1; otherwise it is a regular scan pattern in
+ * row major order, with x and y increment equal to the window dimensions so that the window scans the complete image 
+ * (except for borders at the right-hand side and bottom).
+ * In either case (random or regular scan), the module also writes the gaze angles to an output port, 
+ * simulating the functionality of the attentionSelection module
  *
  * 
  * \section lib_sec Libraries
@@ -37,6 +46,9 @@
  * - \c outputPort \c /image:o  \n  
  *   The complete output port name to which the image should be streamed
  *
+ * - \c gazePort \c /gaze:o  \n  
+ *   The complete output port name to which the gaze angles should be streamed
+ *
  * - \c imageFile \c image.ppm \n
  *   specifies the image filename
  *
@@ -54,6 +66,21 @@
  *
  * - \c noise \c 20 \n
  *   specifies the random noise level
+ *
+ * - \c window \c 0 \n
+ *   specifies whether or not to extract a sub-image (default 0 is not to do so, in which case the image is scaled)
+ * 
+ * - \c random \c 0 \n
+ *   specifies the scan pattern when extracting a sub-image (default 0 is regular scan, row major order)
+ * 
+ * - \c horizontalViewAngle \c 120.0 \n
+ *   specifies the horizontal field of view in degrees
+ * 
+ * - \c verticalViewAngle \c 90.0 \n
+ *   specifies the vertical field of view in degrees
+ * 
+ * Note: neither of the port names above (/image:o or /gaze:o) will be prefixed with module name (i.e. /imageSource)
+ * since the purpose of this module is to simulate the output ports of other modules (e.g. /icub/cam/left or /attentionSelection/o:position)
  * 
  * \section portsa_sec Ports Accessed
  * 
@@ -85,12 +112,18 @@
  *
  *  - \c /image:o
  *
+ *  - \c /gaze:o \n
+ *
  * <b>Port types </b>
  *
  * The functional specification only names the ports to be used to communicate with the module 
  * but doesn't say anything about the data transmitted on the ports. This is defined by the following code. 
  *
- * - \c BufferedPort<ImageOf<PixelRgb> >   \c outputPort;       
+ * - \c BufferedPort<ImageOf<PixelRgb> >   \c outputPort;      
+ * - \c BufferedPort<VectorOf<double> >    \c gazeOutPort;  <tt>//double azimuth, elevation, 'a', 0, 0 </tt>
+ * 
+ * Note that the protocol used for the gazeOutPort is the same as that used by the attentionSelection module
+ * when controlling the controlGaze2 module using the /pos port.
  *
  * \section in_files_sec Input Data Files
  *
@@ -146,6 +179,7 @@
  * Audit Trail
  * -----------
  * 22/09/09  First version validated   DV
+ * 20/11/09  Added windowing and gaze functionality   DV
  */ 
 
 
@@ -182,21 +216,33 @@ private:
    int input_width;
    int input_height;
    int input_depth;
+   int xOffset;
+   int yOffset;
    bool debug;
+   bool windowFlag;
 
    /* thread parameters: they are pointers so that they refer to the original variables in imageSource */
 
    BufferedPort<ImageOf<PixelRgb> > *imagePortOut;   
+   BufferedPort<VectorOf<double> >  *gazePortOut;   
    int *widthValue;     
    int *heightValue;     
-   int *noiseValue;  
+   int *noiseValue; 
+   int *windowValue; 
+   int *randomValue; 
+   double *horizontalViewAngleValue;
+   double *verticalViewAngleValue;
+
    string *imageFilenameValue;  
 
 public:
 
    /* class methods */
 
-   ImageSourceThread(BufferedPort<ImageOf<PixelRgb> > *imageOut, string *imageFilename,  int period, int *width, int *height, int *noise);
+   ImageSourceThread(BufferedPort<ImageOf<PixelRgb> > *imageOut,  
+                     BufferedPort<VectorOf<double> >  *gazePortOut, 
+                     string *imageFilename,  int period, int *width, int *height, int *noise, int *window, int *random,
+                     double *horizontalViewAngle, double *verticalViewAngle);
    bool threadInit();     
    void threadRelease();
    void run(); 
@@ -214,16 +260,22 @@ class ImageSource:public RFModule
 
    string moduleName;
    string outputPortName;  
+   string gazePortName;
    string handlerPortName;
    string imageFilename;
    int    frequency;
    int    width;
    int    height;
    int    noiseLevel;
+   int    window;
+   int    random;
+   double horizontalViewAngle;
+   double verticalViewAngle;
 
    /* class variables */
 
    BufferedPort<ImageOf<PixelRgb> > imageOut;     // output port
+   BufferedPort<VectorOf<double> >  gazeOut;      // gaze port
    Port handlerPort;                              // a port to handle messages 
 
    /* pointer to a new thread to be created and started in configure() and stopped in close() */
