@@ -9,7 +9,7 @@
       <parameters>--context iCubLisboa01/conf --robot icub --eyeCalibration icubEyes.ini --tableConfiguration table.ini</parameters>
       <node>cortex6</node>
       <stdio>chico3</stdio>
-      <tag>specially fancy module</tag>
+      <tag>eye2world</tag>
   </module>
   <connection>
       <from>/icub/head/state:o</from>
