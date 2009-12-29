@@ -146,11 +146,12 @@ None.
 None. 
  
 \section conf_file_sec Configuration Files
-The configuration file passed through the option \e --config 
-should contain the fields required to reconstruct the virtual 
-links (given in terms of lenght,offset,twist,joint parameters) 
-which are appended to the eye kinematic in order to achieve the 
-alignment with the optical axes. 
+Optionally, a configuration file passed through \e --config 
+contains the fields required to reconstruct the virtual links 
+(given in terms of lenght,offset,twist parameters) which are 
+appended to the eye kinematic in order to achieve the alignment 
+with the optical axes compensating for possible unknown offsets. 
+This option is not currently used. 
  
 Example: 
  
