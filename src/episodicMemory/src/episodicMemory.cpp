@@ -54,6 +54,10 @@
  *
  * Complete the episodicMemory module
  * David Vernon 4/11/09
+ *
+ * Added a configuration key-value pair - offline - to allow the memory to be used without checking
+ * that the robot gaze is stable
+ * David Vernon 21/11/09
  */
 
  
@@ -193,6 +197,13 @@ bool EpisodicMemory::configure(yarp::os::ResourceFinder &rf)
 				           "Input image id port (string)").asString()
                            );
 
+   actionInputPortName   = "/";
+   actionInputPortName  += getName(
+                           rf.check("actionInPort", 
+                           Value("/action:i"),
+                           "saccade and action tag port (string)").asString()
+                           );
+  
     imageOutPortName     = "/";
     imageOutPortName    += getName(
                            rf.check("imageOutPort",
@@ -205,13 +216,6 @@ bool EpisodicMemory::configure(yarp::os::ResourceFinder &rf)
                            rf.check("imageIdOutPort",
 				           Value("/imageId:o"),
 				           "Output image id port (string)").asString()
-                           );
-
-    imageIdPrevOutPortName = "/";
-    imageIdPrevOutPortName+= getName(
-                           rf.check("imageIdPrevOutPort",
-				           Value("/imageIdPrev:o"),
-				           "Output previous image id port (string)").asString()
                            );
 
     robotPortName         = "/";
@@ -235,28 +239,33 @@ bool EpisodicMemory::configure(yarp::os::ResourceFinder &rf)
 
     frequency            = rf.check("frequency",
                            Value(2),
-                           "initial period for image acquisition (double)").asInt();
+                           "initial period for image acquisition (int)").asInt();
+
+    offline              = rf.check("offline",
+                           Value(0),
+                           "turn off check on robot gaze if non-zero (int)").asInt();
 
 
-    printf("episodicMemory: parameters are \n%s\n%s\n%s\n%s\n%s\n%s\n%s\n%s\n%f\n%d\n\n",
+    printf("episodicMemory: parameters are \n%s\n%s\n%s\n%s\n%s\n%s\n%s\n%s\n%f\n%d\n%d\n\n",
            imageInPortName.c_str(),
            imageIdInPortName.c_str(), 
+           actionInputPortName.c_str(),
            imageOutPortName.c_str(), 
            imageIdOutPortName.c_str(), 
-           imageIdPrevOutPortName.c_str(), 
            robotPortName.c_str(),
            databaseName.c_str(), 
            path.c_str(), 
            threshold, 
+           offline,
            frequency);
 
     // create episodicMemory ports
 
     imageIn.open(imageInPortName.c_str());
     imageIdIn.open(imageIdInPortName.c_str());
+    actionIn.open(actionInputPortName.c_str());
     imageOut.open(imageOutPortName.c_str());
     imageIdOut.open(imageIdOutPortName.c_str());
-    imageIdPrevOut.open(imageIdPrevOutPortName.c_str());
     
    if (!robotPort.open(robotPortName.c_str())) {           
       cout << ": Unable to open port " << robotPortName << endl;  
@@ -279,13 +288,14 @@ bool EpisodicMemory::configure(yarp::os::ResourceFinder &rf)
 
    episodicMemoryThread = new EpisodicMemoryThread(&imageIn,
                                                    &imageIdIn,
+                                                   &actionIn, 
                                                    &imageOut,
                                                    &imageIdOut,
-                                                   &imageIdPrevOut,
                                                    &robotPort,
                                                    &databaseName,
                                                    &path,
                                                    &threshold,
+                                                   &offline,
                                                    (int)(1000 / frequency));
 
    /* now start the thread to do the work */
@@ -306,9 +316,9 @@ bool EpisodicMemory::interruptModule()
 
     imageIn.interrupt();
     imageIdIn.interrupt();
+    actionIn.interrupt();
     imageOut.interrupt();
     imageIdOut.interrupt();
-    imageIdPrevOut.interrupt();
     robotPort.interrupt();
     handlerPort.interrupt();
 
@@ -317,7 +327,7 @@ bool EpisodicMemory::interruptModule()
 
 bool EpisodicMemory::close()
 {
-    cout << "Closing Auto-Associative Memory...\n\n";
+    cout << "Closing EpisodicMemory...\n\n";
 
     // close episodicMemory ports
     
@@ -325,9 +335,9 @@ bool EpisodicMemory::close()
     
     imageIn.close();
     imageIdIn.close();
+    actionIn.close();
     imageOut.close();
     imageIdOut.close();
-    imageIdPrevOut.close();
     robotPort.close();
     handlerPort.close();
 
@@ -379,32 +389,35 @@ bool EpisodicMemory::respond(const Bottle& command, Bottle& reply)
 
 
 EpisodicMemoryThread::EpisodicMemoryThread(BufferedPort<ImageOf<PixelRgb> > *imageIn,
-                                           BufferedPort<Bottle>             *imageIdIn,
+                                           BufferedPort<VectorOf<double> >  *imageIdIn,
+                                           BufferedPort<VectorOf<double> >  *actionIn,
                                            BufferedPort<ImageOf<PixelRgb> > *imageOut,
-                                           BufferedPort<Bottle>             *imageIdOut,
-                                           BufferedPort<Bottle>             *imageIdPrevOut,
+                                           BufferedPort<VectorOf<double> >  *imageIdOut,
                                            BufferedPort<Vector>             *robotPortInOut,
                                            string                           *databaseName,
                                            string                           *path,
                                            double                           *threshold,
+                                           int                              *offline,
                                            int                              period) : RateThread(period)
 {
    debug = false;
 
    imageInPort          = imageIn;
    imageIdInPort        = imageIdIn;
+   actionInPort         = actionIn;
    imageOutPort         = imageOut;
    imageIdOutPort       = imageIdOut;
-   imageIdPrevOutPort   = imageIdPrevOut;
    robotPort            = robotPortInOut;
    databaseNameValue    = databaseName;
    pathValue            = path;
    thresholdValue       = threshold;
+   offlineValue         = offline;
 
    if (debug) {
       cout << "EpisodicMemoryThread: database name  " << *databaseNameValue << endl;
       cout << "EpisodicMemoryThread: path           " << *pathValue << endl;
       cout << "EpisodicMemoryThread: threshold      " << *thresholdValue << endl;
+      cout << "EpisodicMemoryThread: offline        " << *offlineValue << endl;
    }
 }
 
@@ -412,7 +425,7 @@ bool EpisodicMemoryThread::threadInit()
 {
    /* initialize variables and create data-structures if needed */
 
-    debug = true;
+    debug = false;
 
     encoderPositions = NULL;
     roll = 0;
@@ -421,11 +434,17 @@ bool EpisodicMemoryThread::threadInit()
     rollNew = 0;
     pitchNew = 0;
     yawNew = 0;
- 
-    imageId = 0;
-    imageIdPrevious = 0;
+
+    imageId = -1;           // initialize to -1 so that we know these are not valid values
+    imageIdPrevious = -1;   //
+
     imageMatch = 0;
     imageMatchPrevious = 0;
+   
+    gazeAzimuth           = 0;
+    gazeElevation         = 0;
+    gazeAzimuthPrevious   = 0;
+    gazeElevationPrevious = 0;
 
     data.setThreshold(*thresholdValue);
    
@@ -448,30 +467,31 @@ bool EpisodicMemoryThread::threadInit()
 void EpisodicMemoryThread::run(){
 
 
-   if (debug) {
+   if (false) {
       cout << "EpisodicMemoryThread::run: database name  " << *databaseNameValue << endl;
       cout << "EpisodicMemoryThread::run: path           " << *pathValue << endl;
       cout << "EpisodicMemoryThread::run: threshold      " << *thresholdValue << endl;
    }
 
-   if (debug)
+   if (false)
       std::cout << "EpisodicMemoryThread::run: the threshold is now: " << *thresholdValue << std::endl;
 
    data.setThreshold(*thresholdValue);   // set the threshold ... we do this in case it has been changed at run-time
-   
+
+
    /* First check to see if we can read an image identification number
     * If so, simply retrieve the image.
     * Otherwise recall the image that best matches the presented image,
     * or store it if none match it
     */
-
-   imgInId = imageIdInPort->read();  // try to read a bottle containing the image id
-
+ 
+   imgInId = imageIdInPort->read(false);  // try to read a vector containing the image id
+ 
    if (imgInId != NULL) { 
 
       /* retrieve the image corresponding to the image id */
 
-      imageId = (*imgInId).get(0).asInt();
+      imageId = (int)(*imgInId)(0);
 
       if (debug) {
          std::cout << "EpisodicMemoryThread::run: retrieving imageId " << imageId << std::endl;
@@ -493,58 +513,81 @@ void EpisodicMemoryThread::run(){
          imageMatchPrevious = imageMatch;
          imageMatch         = matchValue;
 
+         gazeAzimuthPrevious    = gazeAzimuth;
+         gazeElevationPrevious  = gazeElevation;
+ 
          imageOutPort->prepare() = matchImage;
          imageOutPort->write();
-        
-         Bottle& out = imageIdOutPort->prepare();
-         out.clear();
-         out.addInt(imageId);
-         out.addDouble(imageMatch);
+   
+         VectorOf<double>& out = imageIdOutPort->prepare();
+         out.resize(8,0);
+         out[0] = imageId;
+         out[1] = imageMatch;
+         out[2] = gazeAzimuth;
+         out[3] = gazeElevation;
+         out[4] = imageIdPrevious;
+         out[5] = imageMatchPrevious;
+         out[6] = gazeAzimuthPrevious;
+         out[7] = gazeElevationPrevious;
          imageIdOutPort->write();
 
-         Bottle& outPrevious = imageIdPrevOutPort->prepare();
-         outPrevious.clear();
-         outPrevious.addInt(imageIdPrevious);
-         outPrevious.addDouble(imageMatchPrevious);
-         imageIdPrevOutPort->write();
-
-         cout << "EpisodicMemoryThread::run: imageId retrieved " << imageId << imageMatch << endl;
-         cout << "EpisodicMemoryThread::run: imageId previous  " << imageIdPrevious << imageMatchPrevious << endl;
+         if (debug) {
+            cout << "EpisodicMemoryThread::run: image retrieved " << imageId         << " " << imageMatch         << " " <<  gazeAzimuth         << " " << gazeElevation << endl;
+            cout << "                           image previous  " << imageIdPrevious << " " << imageMatchPrevious << " " <<  gazeAzimuthPrevious << " " << gazeElevationPrevious << endl;
+         }
 
       }
    }
    else {
    
       /* no imageId is available so we need to read an image
-       * We check first to see if the head has stabilized 
+       * We do so only when an action is input
+       * We check also to see if the head has stabilized 
+       * but we ignore this step if the offline flag is set
        */
 
-      do {
-         encoderPositions = robotPort->read(true); // change to true
-      } while (encoderPositions == NULL);
+      actionIn  = NULL;
+      if (actionIn == NULL) {
+         actionIn  = actionInPort->read(true);         // read a vector containing the action (gaze command)
+      }
+                  
+      if (actionIn != NULL) { 
+       
+         gazeAzimuthPrevious    = gazeAzimuth;
+         gazeElevationPrevious  = gazeElevation;
 
-      if (encoderPositions != NULL) {
-         roll  = (float) encoderPositions->data()[1];  
-         pitch = (float) encoderPositions->data()[0];  
-         yaw   = (float) encoderPositions->data()[2];  
+         gazeAzimuth   = (*actionIn)(0);
+         gazeElevation = (*actionIn)(1);
       }
 
-      if (debug) {
-         cout << "EpisodicMemoryThread::run: roll, pitch, yaw angles are: " << endl << roll << endl << pitch << endl << yaw << endl;
-      }      
-      
-      do {
-         encoderPositions = robotPort->read(true); // change to true
-      } while (encoderPositions == NULL);
 
-      if (encoderPositions != NULL) {
-         rollNew  = (float) encoderPositions->data()[1];  
-         pitchNew = (float) encoderPositions->data()[0];  
-         yawNew   = (float) encoderPositions->data()[2];  
+      if (*offlineValue == 0) { 
+         do {
+            encoderPositions = robotPort->read(true);  
+         } while (encoderPositions == NULL);
+
+         if (encoderPositions != NULL) {
+            roll  = (float) encoderPositions->data()[1];  
+            pitch = (float) encoderPositions->data()[0];  
+            yaw   = (float) encoderPositions->data()[2];  
+         }
+
+ 
+         do {
+            encoderPositions = robotPort->read(true); // change to true
+         } while (encoderPositions == NULL);
+
+         if (encoderPositions != NULL) {
+            rollNew  = (float) encoderPositions->data()[1];  
+            pitchNew = (float) encoderPositions->data()[0];  
+            yawNew   = (float) encoderPositions->data()[2];  
+         }
       }
-      if (debug) {
-         cout << "EpisodicMemoryThread::run: roll, pitch, yaw angles are: " << endl << roll << endl << pitch << endl << yaw << endl;
-      }      
+
+      if (false) {
+         cout << "EpisodicMemoryThread::run: old roll, pitch, yaw angles are: " << endl << roll << endl << pitch << endl << yaw << endl;
+         cout << "EpisodicMemoryThread::run: new roll, pitch, yaw angles are: " << endl << rollNew << endl << pitchNew << endl << yawNew << endl;
+      } 
 
       if ((roll == rollNew) && (pitch == pitchNew) && (yaw == yawNew)) {
 
@@ -554,7 +597,7 @@ void EpisodicMemoryThread::run(){
             imgIn = imageInPort->read(true);
          } while (imgIn == NULL);
    	
-   	     ImageOf<PixelRgb>& img = *imgIn;
+         ImageOf<PixelRgb>& img = *imgIn;
     
          data.imgMutex.wait();
 
@@ -643,20 +686,22 @@ void EpisodicMemoryThread::run(){
             imageOutPort->prepare() = matchImage;
             imageOutPort->write();
         
-            Bottle& out = imageIdOutPort->prepare();
-            out.clear();
-            out.addInt(imageId);
-            out.addDouble(imageMatch);
+            VectorOf<double>& out = imageIdOutPort->prepare();
+            out.resize(8,0);
+            out[0] = imageId;
+            out[1] = imageMatch;
+            out[2] = gazeAzimuth;
+            out[3] = gazeElevation;
+            out[4] = imageIdPrevious;
+            out[5] = imageMatchPrevious;
+            out[6] = gazeAzimuthPrevious;
+            out[7] = gazeElevationPrevious;
             imageIdOutPort->write();
 
-            Bottle& outPrevious = imageIdPrevOutPort->prepare();
-            outPrevious.clear();
-            outPrevious.addInt(imageIdPrevious);
-            outPrevious.addDouble(imageMatchPrevious);
-            imageIdPrevOutPort->write();
-
-            cout << "EpisodicMemoryThread::run: image retrieved " << imageId << imageMatch << endl;
-            cout << "EpisodicMemoryThread::run: image previous  " << imageIdPrevious << imageMatchPrevious << endl;
+            if (debug) {
+               cout << "EpisodicMemoryThread::run: image retrieved " << imageId         << " " << imageMatch         << " " <<  gazeAzimuth         << " " << gazeElevation << endl;
+               cout << "                           image previous  " << imageIdPrevious << " " << imageMatchPrevious << " " <<  gazeAzimuthPrevious << " " << gazeElevationPrevious << endl;
+            }
          }
          else  { //no match found
     
@@ -666,17 +711,39 @@ void EpisodicMemoryThread::run(){
             imageOutPort->write();
     
             //create a filename that is imageXX.jpg
-            Bottle& out = imageIdOutPort->prepare();
-            out.clear();
-            out.addInt(images.size()-1);
-            out.addDouble(1.0);
+
+            imageIdPrevious    = imageId;
+            imageId            = images.size()-1;
+
+            imageMatchPrevious = imageMatch;
+            imageMatch         = (double)1.0;
+
+            VectorOf<double>& out = imageIdOutPort->prepare();
+            out.resize(8,0);
+            out[0] = imageId;
+            out[1] = imageMatch;
+            out[2] = gazeAzimuth;
+            out[3] = gazeElevation;
+            out[4] = imageIdPrevious;
+            out[5] = imageMatchPrevious;
+            out[6] = gazeAzimuthPrevious;
+            out[7] = gazeElevationPrevious;
             imageIdOutPort->write();
-            cout << "stored" << endl;
+
+            
+            if (debug) {
+               cout << "EpisodicMemoryThread::run: image stored    " << imageId         << " " << imageMatch         << " " <<  gazeAzimuth         << " " << gazeElevation << endl;
+               cout << "                           image previous  " << imageIdPrevious << " " << imageMatchPrevious << " " <<  gazeAzimuthPrevious << " " << gazeElevationPrevious << endl;
+            }
+
             string s;
             ostringstream oss(s);
             oss << "image" << images.size()-1 << ".jpg";
-            cout << oss.str() << endl;
-        
+            if (debug) {
+               cout << "EpisodicMemoryThread::run: image stored    ";
+               cout << oss.str() << endl;
+            }
+
             //write it out to the proper database
 
             string databasefolder = data.getDatabaseContext() + "/" + data.getDatabaseName();
