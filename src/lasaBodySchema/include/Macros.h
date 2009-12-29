@@ -21,6 +21,7 @@
 #define __MATHMACROS_H_
 
 #include <math.h>
+#include <stdlib.h>
 
 #ifndef PIf
 #define PIf 3.14159265358979323846f

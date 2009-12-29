@@ -18,8 +18,9 @@
  * Public License for more details
  */
 
+#include <ace/OS_NS_stdio.h>
 #include "BodySchemaLogger.h"
-#include <ace/OS.h>
+//#include <ace/OS.h>
 
 bool BodySchemaLogger::open(Searchable& s){
 

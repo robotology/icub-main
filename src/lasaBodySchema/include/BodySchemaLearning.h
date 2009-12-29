@@ -18,8 +18,7 @@
  */
 
 /**
- * @ingroup icub_module
- *
+ * \ingroup icub_lasabodyschema_module
  * \defgroup icub_body_schema_learning  body_schema_learning  
  * 
  * Learns the body schema from sensorimotor contingencies

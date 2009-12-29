@@ -20,8 +20,8 @@
 
 #define ICUB_IS_HERE
 
+#include <ace/OS_NS_stdio.h>
 #include "BodySchemaLearning.h"
-#include <ace/OS.h>
 
 
 int cartesian_dim=3;

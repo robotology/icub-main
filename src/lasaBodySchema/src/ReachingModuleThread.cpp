@@ -24,11 +24,12 @@
 
 #define RANDOM_TARGETS
 
+#include <ace/OS_NS_stdio.h>
 #include "ReachingModuleThread.h"
 #include "KChainOrientationBodySchema.h"
 
 
-#include <ace/OS.h>
+//#include <ace/OS.h>
 
 int cartesian_dim=0;
 int joint_angle_dim=0;

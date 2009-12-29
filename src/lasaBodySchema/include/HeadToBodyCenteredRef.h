@@ -19,8 +19,7 @@
 
 
 /**
- * @ingroup lasabodyschema_module
- * @addtogroup lasabodyschema_modules
+ * @ingroup icub_lasabodyschema_module
  * \defgroup icub_head_transfo  head_transfo  
  * 
  * Converts position from eyes-centered to body-centered frames of reference

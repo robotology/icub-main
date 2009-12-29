@@ -19,9 +19,7 @@
 
 
 /**
- * \defgroup lasabodyschema_modules lasaBodySchema Modules
- * @ingroup icub_module
- * @addtogroup lasabodyschema_modules
+ * @ingroup icub_lasabodyschema_module
  * \defgroup icub_reaching_module  reaching_module  
  * 
  * Performs reaching movements with any serial manipulator

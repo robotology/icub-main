@@ -17,8 +17,9 @@
  * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the GNU General
  * Public License for more details
  */
+#include <ace/OS_NS_stdio.h>
 #include "PerceptionSimulationModule.h"
-#include <ace/OS.h>
+//#include <ace/OS.h>
 
 int cartesian_dim=0;
 int joint_angle_dim =0;
