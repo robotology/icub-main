@@ -95,10 +95,10 @@
  *   Port to display output image, including overlay edges
  *
  * - <tt>/blobDescriptor/affDescriptor:o</tt> \n
- *   Affordance object descriptor output port 
+ *   Affordance object descriptor output port \n
  *   The message is a Bottle containing several values.
- *   The first value is and integer indicating the number of objects (N).
- *   The consecutive N values (one per object) are lists (Bottles) containg 
+ *   The first value is an integer indicating the number of objects (N).
+ *   The consecutive N values (one per object) are lists (Bottles) containing 
  *   the objects descriptors, with the following order:
  *		- 0 (double) - the normalized x coordinate of center of the enclosing rectangle (between -1 and 1 w.r.t. the the image size).
  *		- 1 (double) - the normalized y coordinate of center of the enclosing rectangle (between -1 and 1 w.r.t. the the image size). 
@@ -118,9 +118,9 @@
  *		- 28 (double) - squareness - ration between the object area and the area of its minimum area enclosing rectangle
  *
  * - <tt>/blobDescriptor/trackerInit:o</tt> \n
- *   Tracker initialization parameter output port
+ *   Tracker initialization parameter output port \n
  *   The message is a Bottle containing several values.
- *   The first value is and integer indicating the number of objects (N).
+ *   The first value is an integer indicating the number of objects (N).
  *   The consecutive N values (one per object) are lists (Bottles) containing 
  *   the values required for the OpenCv camshift tracker, with the following order:
  *		- 0 (double) - the x coordinate of the tracking box
