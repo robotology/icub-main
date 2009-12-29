@@ -74,12 +74,12 @@ void Localizer::run()
     if (Bottle *pixel=port_pixel->read(false))
         if (pixel->size()>=4)
         {
-            double lx=pixel->get(0).asDouble();
-            double ly=pixel->get(1).asDouble();
-            double rx=pixel->get(2).asDouble();
-            double ry=pixel->get(3).asDouble();
-            double mx=(lx+rx)/2.0;
-            double my=(ly+ry)/2.0;
+            double ul=pixel->get(0).asDouble();
+            double vl=pixel->get(1).asDouble();
+            double ur=pixel->get(2).asDouble();
+            double vr=pixel->get(3).asDouble();
+            double um=(ul+ur)/2.0;
+            double vm=(vl+vr)/2.0;
 
             // consider a reference frame attached to the current
             // fixation point aligned with the normalized sum
@@ -87,14 +87,14 @@ void Localizer::run()
             Vector ref(3), fb(3);
 
             // along x
-            ref[0]=cx; fb[0]=mx;
+            ref[0]=cx; fb[0]=um;
 
             // along y
-            ref[1]=cy; fb[1]=my;
+            ref[1]=cy; fb[1]=vm;
 
             // along z
-            double el=mx-lx;
-            double er=mx-rx;
+            double el=um-ul;
+            double er=um-ur;
             ref[2]=0.0; fb[2]=(fabs(el)+fabs(er))/2.0;
             if (el<0.0 || er>0.0)
                 fb[2]=-fb[2];   // go towards increasing direction of z

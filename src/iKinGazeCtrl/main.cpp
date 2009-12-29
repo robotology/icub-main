@@ -107,8 +107,7 @@ following ports:
  
 - \e /<ctrlName>/<part>/pixel:i receives the current target 
   position expressed in image planes. It accepts 4 double (also
-  as a Bottle object) in this order: [leftx lefty rightx
-  righty].
+  as a Bottle object) in this order: [ul vl ur vr].
  
 - \e /<ctrlName>/<part>/x:o returns the actual fixation point 
   (Vector of 3 double).
