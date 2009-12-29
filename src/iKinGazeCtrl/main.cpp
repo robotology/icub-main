@@ -134,6 +134,10 @@ following ports:
     -'susp' suspend the controller
     -'run' resume the controller
  
+\note Data sent through the ".../x:o", ".../qd:o", ".../q:o", 
+      ".../v:o" ports is meant for slow rate logging purpose,
+      hence it is downsampled to avoid burdening the network.
+ 
 \section coor_sys_sec Coordinate System 
 Positions (meters) refer to the root reference frame attached to
 the waist as in 
