@@ -1,11 +1,11 @@
 <application>
-<name>episodic memory demo</name>
+<name>Episodic Memory Demo</name>
 
 <dependencies>
    <port>/icub/cam/left</port>
    <port>/icub/head/state:o</port>
+   <port>/attentionSelection/o:position</port>
 </dependencies>
-
 
 <module>
    <name>episodicMemory</name>
@@ -57,6 +57,13 @@
   <protocol>tcp</protocol>
 </connection>
  
+<connection>
+   <from>/attentionSelection/o:position</from>
+   <to>/episodicMemory/action:i</to>
+   <protocol>tcp</protocol>
+ </connection>
+
+
 <connection>
    <from>/icub/cam/left</from>
    <to>/logPolarTransform/image:i</to>
