@@ -1,0 +1,98 @@
+# DO NOT DELETE
+
+./obj/DTW.o: ./include/DTW.h ./include/Regression.h ./include/Matrix4.h
+./obj/DTW.o: ./include/TMatrix.h ./include/TVector.h ./include/Vector.h
+./obj/DTW.o: ./include/Macros.h ./include/MathLibCommon.h
+./obj/DTW.o: ./include/Matrix.h ./include/Vector3.h ./include/Matrix3.h
+./obj/Differentiator.o: ./include/Differentiator.h
+./obj/Differentiator.o: ./include/MathLibCommon.h ./include/Matrix.h
+./obj/Differentiator.o: ./include/Macros.h ./include/Vector.h
+./obj/Integrators.o: ./include/Integrators.h ./include/MathLibCommon.h
+./obj/Macros.o: ./include/Macros.h ./include/MathLibCommon.h
+./obj/MathLib.o: ./include/MathLib.h ./include/MathLibCommon.h
+./obj/MathLib.o: ./include/Macros.h ./include/Vector.h
+./obj/MathLib.o: ./include/TVector.h ./include/Vector3.h
+./obj/MathLib.o: ./include/Matrix.h ./include/SpatialVector.h
+./obj/MathLib.o: ./include/SpatialMatrix.h ./include/Matrix3.h
+./obj/MathLib.o: ./include/TMatrix.h ./include/SpatialFrame.h
+./obj/MathLib.o: ./include/SpatialVelocity.h ./include/SpatialForce.h
+./obj/MathLib.o: ./include/SpatialInertia.h ./include/Referential.h
+./obj/MathLib.o: ./include/Matrix4.h ./include/ReferenceFrame.h
+./obj/MathLib.o: ./include/Differentiator.h ./include/SplineFit.h
+./obj/MathLibCommon.o: ./include/MathLibCommon.h
+./obj/Matrix.o: ./include/Matrix.h ./include/MathLibCommon.h
+./obj/Matrix.o: ./include/Macros.h ./include/Vector.h
+./obj/Matrix3.o: ./include/Matrix3.h ./include/TMatrix.h
+./obj/Matrix3.o: ./include/TVector.h ./include/Vector.h
+./obj/Matrix3.o: ./include/Macros.h ./include/MathLibCommon.h
+./obj/Matrix3.o: ./include/Matrix.h ./include/Vector3.h
+./obj/Matrix4.o: ./include/Matrix4.h ./include/TMatrix.h
+./obj/Matrix4.o: ./include/TVector.h ./include/Vector.h
+./obj/Matrix4.o: ./include/Macros.h ./include/MathLibCommon.h
+./obj/Matrix4.o: ./include/Matrix.h ./include/Vector3.h
+./obj/Matrix4.o: ./include/Matrix3.h
+./obj/Quaternion.o: ./include/Quaternion.h ./include/Vector3.h
+./obj/Quaternion.o: ./include/TVector.h ./include/Vector.h
+./obj/Quaternion.o: ./include/Macros.h ./include/MathLibCommon.h
+./obj/ReferenceFrame.o: ./include/ReferenceFrame.h ./include/Vector3.h
+./obj/ReferenceFrame.o: ./include/TVector.h ./include/Vector.h
+./obj/ReferenceFrame.o: ./include/Macros.h ./include/MathLibCommon.h
+./obj/ReferenceFrame.o: ./include/Matrix3.h ./include/TMatrix.h
+./obj/ReferenceFrame.o: ./include/Matrix.h ./include/Matrix4.h
+./obj/Referential.o: ./include/Referential.h ./include/Vector3.h
+./obj/Referential.o: ./include/TVector.h ./include/Vector.h
+./obj/Referential.o: ./include/Macros.h ./include/MathLibCommon.h
+./obj/Referential.o: ./include/Matrix3.h ./include/TMatrix.h
+./obj/Referential.o: ./include/Matrix.h ./include/Matrix4.h
+./obj/Regression.o: ./include/Regression.h ./include/Matrix4.h
+./obj/Regression.o: ./include/TMatrix.h ./include/TVector.h
+./obj/Regression.o: ./include/Vector.h ./include/Macros.h
+./obj/Regression.o: ./include/MathLibCommon.h ./include/Matrix.h
+./obj/Regression.o: ./include/Vector3.h ./include/Matrix3.h
+./obj/SpatialForce.o: ./include/SpatialForce.h
+./obj/SpatialForce.o: ./include/SpatialVector.h ./include/Vector3.h
+./obj/SpatialForce.o: ./include/TVector.h ./include/Vector.h
+./obj/SpatialForce.o: ./include/Macros.h ./include/MathLibCommon.h
+./obj/SpatialFrame.o: ./include/SpatialFrame.h ./include/Vector3.h
+./obj/SpatialFrame.o: ./include/TVector.h ./include/Vector.h
+./obj/SpatialFrame.o: ./include/Macros.h ./include/MathLibCommon.h
+./obj/SpatialFrame.o: ./include/Matrix3.h ./include/TMatrix.h
+./obj/SpatialFrame.o: ./include/Matrix.h ./include/SpatialVector.h
+./obj/SpatialFrame.o: ./include/SpatialVelocity.h
+./obj/SpatialFrame.o: ./include/SpatialForce.h
+./obj/SpatialFrame.o: ./include/SpatialInertia.h
+./obj/SpatialFrame.o: ./include/Referential.h ./include/Matrix4.h
+./obj/SpatialFrame.o: ./include/ReferenceFrame.h
+./obj/SpatialInertia.o: ./include/SpatialInertia.h ./include/Matrix3.h
+./obj/SpatialInertia.o: ./include/TMatrix.h ./include/TVector.h
+./obj/SpatialInertia.o: ./include/Vector.h ./include/Macros.h
+./obj/SpatialInertia.o: ./include/MathLibCommon.h ./include/Matrix.h
+./obj/SpatialInertia.o: ./include/Vector3.h ./include/SpatialVelocity.h
+./obj/SpatialInertia.o: ./include/SpatialVector.h
+./obj/SpatialInertia.o: ./include/SpatialForce.h
+./obj/SpatialMatrix.o: ./include/SpatialMatrix.h ./include/Matrix3.h
+./obj/SpatialMatrix.o: ./include/TMatrix.h ./include/TVector.h
+./obj/SpatialMatrix.o: ./include/Vector.h ./include/Macros.h
+./obj/SpatialMatrix.o: ./include/MathLibCommon.h ./include/Matrix.h
+./obj/SpatialMatrix.o: ./include/Vector3.h ./include/SpatialVector.h
+./obj/SpatialVector.o: ./include/SpatialVector.h ./include/Vector3.h
+./obj/SpatialVector.o: ./include/TVector.h ./include/Vector.h
+./obj/SpatialVector.o: ./include/Macros.h ./include/MathLibCommon.h
+./obj/SpatialVelocity.o: ./include/SpatialVelocity.h
+./obj/SpatialVelocity.o: ./include/SpatialVector.h ./include/Vector3.h
+./obj/SpatialVelocity.o: ./include/TVector.h ./include/Vector.h
+./obj/SpatialVelocity.o: ./include/Macros.h ./include/MathLibCommon.h
+./obj/SpatialVelocity.o: ./include/SpatialForce.h
+./obj/SplineFit.o: ./include/SplineFit.h ./include/Matrix.h
+./obj/SplineFit.o: ./include/MathLibCommon.h ./include/Macros.h
+./obj/SplineFit.o: ./include/Vector.h
+./obj/TMatrix.o: ./include/TMatrix.h ./include/TVector.h
+./obj/TMatrix.o: ./include/Vector.h ./include/Macros.h
+./obj/TMatrix.o: ./include/MathLibCommon.h ./include/Matrix.h
+./obj/TVector.o: ./include/TVector.h ./include/Vector.h
+./obj/TVector.o: ./include/Macros.h ./include/MathLibCommon.h
+./obj/Vector.o: ./include/Vector.h ./include/Macros.h
+./obj/Vector.o: ./include/MathLibCommon.h
+./obj/Vector3.o: ./include/Vector3.h ./include/TVector.h
+./obj/Vector3.o: ./include/Vector.h ./include/Macros.h
+./obj/Vector3.o: ./include/MathLibCommon.h

@@ -1,0 +1,44 @@
+#include "StdTools/Timer.h"
+#include "UDPConnection/UDPNetwork.h"
+
+
+int main(int argc, char *argv[]){
+  
+  UDPNetwork net;
+  
+  bool bIsClient=false;
+  if(argc>1)
+    bIsClient = true;
+  
+  if(bIsClient)
+    printf("Client Mode\n");
+  else
+    printf("Server Mode\n");
+
+  net.Init("127.0.0.1",1207,!bIsClient);
+  net.SetTimers(100,500);
+
+  bool bExit = false;
+  int step = 0;
+  
+  while(!bExit){
+    
+    #ifndef WIN32
+      usleep(20000);
+    #else
+      Sleep(10);
+    #endif
+        
+    char txt[256];
+    sprintf(txt,"%d",step++);
+    
+    net.SendMessage(txt,256);
+    net.Step();
+    
+    if((net.GetMessage(txt,256))>0){
+      printf("Received <%s>\n",txt);  
+    }
+    
+  }
+  return 0;
+}

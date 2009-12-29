@@ -1,0 +1,10 @@
+MESSAGE(STATUS "MathLib Library")
+
+IF (NESTED_BUILD)
+  SET(MathLib_LIBRARIES MathLib)
+ELSE (NESTED_BUILD)
+  FIND_LIBRARY(MathLib_LIBRARIES MathLib ${MathLib_DIR})
+ENDIF (NESTED_BUILD)
+
+SET(MathLib_INCLUDE_DIR ${MathLib_DIR}/include)
+

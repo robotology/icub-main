@@ -1,0 +1,16 @@
+/**
+@ingroup icub_module
+\defgroup icub_lasaImitation_module Imitation Modules
+
+\brief Collection of modules developed at LASA-EPFL for control and imitation learning on the iCub.
+
+\author Eric Sauser
+
+Copyright (C) 2008 RobotCub Consortium
+
+CopyPolicy: Released under the terms of the GNU GPL v2.0.
+
+This file can be edited at src/lasaImitation/doc.dox
+
+*/
+
