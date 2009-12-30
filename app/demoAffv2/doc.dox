@@ -6,11 +6,7 @@
  *
  * \brief  Demonstration of affordance usage (2nd version)
  
-In this demo we illustrate the use of affordances in simple imitation games. It is an example of how to use self-learned models of the world to interpret others actions and interact with them.
-
-This application consists of a number of scripts and configuration files that are used to start and stop a number of interconnecting processes. 
-
-This demonstration is based on the simpler demonstration demoaff, with several improvements with respect to modularization, automation and integration with other cognitive behaviors (e.g. the attention system).
+In this demo we illustrate the use of affordances in simple imitation games. It is an example of how to use self-learned models of the world to interpret others actions and interact with them. 
 
 \section demoAffv2 Introduction
 
@@ -24,11 +20,34 @@ Details on how to learn this networks and how to use it can be found in \link ht
  - IEEE Transactions on robotics - Learning object affordances: from sensory-motor coordination to imitation,
 (ref: L. Montesano, M. Lopes, A. Bernadino, J. Santos-Victor (2008) Learning object affordances: from sensory-motor coordination to imitation, \e IEEE Transactions \e on Robotics )
 
+\section The Scenario
+
+The application considers a scenario where a human interacts with the robot through objecs displaced in a table. In a first stage, the robot is engaged in a bottom up salience visual search behaviour, looking for objects (visual blobs) with distinct colors. When the human interacts with an object on the table, executing one action that results in an effect previously learned by the robot in its self exploration phase, the robot will try to imitate the effect (emulation). This may be done either on the same object or in a different one because to achieve the same effect, the robot may choose to use a different action.  
+
+\section History
+
+This demonstration is an evolutionn of the simpler demonstration demoaff but includes several improvements, mainly in what respects to modularization, automation and integration with other cognitive behaviors (e.g. the attention system).
+
+\section Organization
+
+This application consists on two main sub-applications with low-coupling, that are coordinated by a behavioural control module: (i) the attention system and (ii) the affordances system. The attention sub-system is described in 
+\link http://eris.liralab.it/iCub/dox/html/group__icub__attentionDistributed.html. 
+\endlink
+The attention sybsystem is tuned to detect object with saturated and distinct colors, as well as image flicker. 
+The affordances system is a breakdown of the modules described in 
+\link http://eris.liralab.it/wiki/DemoAff demoaff
+\endlink
+with important changes with respect to the perceptual (object segmentation) and motor (manipulation) modules.   
+A module denominated behaviourController is responsible for switching between a visual search behaviour (bottom uo salience attention system) the imitation behavior. The switching occurs when the attention of the robot is brought to one object in the table either by the robot's own visual search behaviour or guided by the human through action that atract robot's attention.
+
+Both sybsystems and the behavior controller are lauched via scripts (.xml files) located in $ICUB_ROOT/app/demoAffv2.
+
 
 \section dep_sec Dependencies
 -# When connecting to a physical robot:
-  - This module assumes \ref icub_iCubInterface "iCubInterface" is already running.
-  - Assumes that the left camera has been started. The demonstration works with a resolution of 320x480 and a lens of 6mm to provide good image descriptors of the object shape.
+  - This module assumes \ref icub_iCubInterface "iCubInterface" is already running. The attention system operates the head. The affordances system operates the head, torso and arm.
+  - Assumes that the cameras have been started, with corresponding camera calibration modules. The demonstration works with a resolution of 320x480. The attention system receives images from the right camera that should have a wide angle lens to provide an extended view field for the visual search (tests used a 2.8mm lens). The affordances subsystem receives images from the left camera that should have and a zoom lens of (tests used a 6mm lens) to provide good image descriptors of the objects' shape. A good calibration of the intrinsic parameters of the left camera is required to precisely locate the objects in cartesian coordinates. Also having a dark table, non-frontal illumination and a good color balance setting is essential for good object segmentation. Test have used the following settings for the left camera with good results.  Features: Shutter = 0.65, RED = 0.478, BLUE = 0.648: Features (adv): Saturation = 0.6. 
+
   
 -# It has not been tested in the simulator:
 
@@ -38,15 +57,25 @@ Details on how to learn this networks and how to use it can be found in \link ht
 
 \section modules_sec Instantiated Modules
 
-- \ref icub_edisonSegmentation "Object Segmentation Module"
-- \ref icub_blobDescriptor "Object Descriptor Module" 
-- \ref icub_effectDetector "Effect Detector Module" 
-- \ref icub_camCalib "Camera Calibration Module"
-- \ref icub_eye2world "Conversion of 2D to 3D (for objects in table)"
+The attention sybsystem instantiates the following modules:
+- \ref icub_salience "salience"
+- \ref icub_egoSphere "egoSphere"
+- \ref icub_attentionSelection "attentionSelection"
+- \ref icub_controlGaze2 "controlGaze2"
+- \ref icub_applicationGui "applicationGui"
+
+The affordances subsystem instantiates the following modules:
+
+- \ref icub_edisonSegmentation "edisonSegmentation"
+- \ref icub_blobDescriptor "blobDescriptor" 
+- \ref icub_effectDetector "effectDetector" 
+- \ref icub_eye2world "eye2world"
+- \ref icub_affordanceModule "affordanceModule"
+- \ref icub_behaviorControl "behaviorControl"
 
 
 \section Parameters
-The script does not require any parameters.
+N/A
 
 \section Configuration Files
 Configuration files are located in the ICUB_ROOT/app/demoAffv2/conf folder.
@@ -54,10 +83,39 @@ Configuration files are located in the ICUB_ROOT/app/demoAffv2/conf folder.
  
 \section example_sec How to run the application
 
-This is  by the xml scripts located in app/demoAffv2.
- 
-For further details, see the wiki description  \link http://eris.liralab.it/wiki/DemoAff demoaff
- \endlink
+As mentioned previously, the application is composed by sub applications that can be run by executing the xml scripts in $ICUB_ROOT/app/demoAffv2. In the following subsections we describe in more detail how to setup and run the whole system.
+
+\subsection Setting up and running the motor control system.
+
+The manipulation modules rely on the ICartesianControl interface, hence to compile it you need to enable the module icubmod_cartesiancontrollerclient in CMake while compiling the iCub repository, and to make this switch visible you have to tick the USE_ICUB_MOD just before.
+
+Attention: perform CMake configure/generate operations twice in a row prior to compiling the new module, due to a CMake bug; moreover, do not remove the CMake cache between the first and the second configuration.
+
+To enable the cartesian features on the PC104, you have to launch iCubInterface pointing to the iCubInterfaceCartesian.ini file. Just afterwards you need to launch the solvers through the Application Manager XML file located under $ICUB_ROOT/app/cartesianSolver/scripts. PC104 code must be compiled with option icubmod_cartesiancontrollerserver active.
+
+
+\subsection Setting up and running the Cameras
+
+Adjust and install the camera_calib.xml.template from $ICUB_ROOT/app/default/scripts<code> for your robot. Adjust everything tagged as 'CHANGE' (nodes, contexts, config files). Use <code>camCalibConfig to determine the calibration parameters. 
+Start the cameras_calib.xml application using the manager.py script. 
+camera_calib.xml starts the cameras, framegrabber GUIs, image viewers and camera calibration modules.
+Check that you obtain the calibrated images. 
+
+In the framegrabber GUI for the left camera select the Features tab and set:
+Shutter = 0.65, RED = 0.478, BLUE = 0.648.
+In the Features (adv) tab set: 
+Saturation = 0.6. 
+
+
+\subsection Setting up and running the Attention subsystem
+
+Adjust and install the attention.xml.template from $ICUB_ROOT/app/demoAffv2/scripts. Adjust everything tagged as 'CHANGE' (mainly nodes). Make sure you compiled the Qt user interface at least on your local machine used for graphical interaction. This subpplication depends on the camera_calib.xml (cameras and camera calibration ports) and on the icub/head motor controlboard (dependencies are listed by the manager.py). 
+Start the attention.xml application using the manager.py script. Check that all modules and ports are up and ready. You should see now the Qt user interface (applicationGui) on the machine you configured it to run on. You can then either connect all the listed connections shown in the manager.py user interface or use the applicationGui to connect them one by one. Note: You need to initialize the salience filter user interface by pressing the button 'initialize', this loads user interface controls for the available filters the salience module is running. Set at least one filter weight to non-zero, to start the attention system. 
+
+\subsection Setting up and running the Affordance Based Imitation subsystem
+
+Adjust and install the affordance_imitation.xml.template from $ICUB_ROOT/app/demoAffv2/scripts. Adjust everything tagged as 'CHANGE' (mainly nodes). TO BE COMPLETED
+
 
 \author Luis Montesano, Manuel Lopes, Alexandre Bernardino
 
