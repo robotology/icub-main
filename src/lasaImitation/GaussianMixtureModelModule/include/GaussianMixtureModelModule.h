@@ -20,15 +20,18 @@
 /**
  *
 @ingroup icub_lasaImitation_module
-\defgroup icub__lasaImitation_TouchControllerModule Touch Controller Module
+\defgroup icub__lasaImitation_GaussianMixtureModelModule Gaussian Mixture Model Module
 
-This module provides 3d-cartesian touch feedback from external touch sensors. 
+Module devoted to hold and execute a learned task model by means of a Gaussian Mixture Model.
 
 \section intro_sec Description
 
-This module provides 3d-cartesian touch feedback from external touch sensors which should be usb-mice based interfaces. Feedback provided is 6-dof velocity feedback, i.e., 3 translations around the 3 canonical axes and 3 rotations around these same axes.
+This module allows to learn and to execute a task by means of a model encoded in a Gaussian mixture.
+It receives the current robot state and produce desired output command for the robot to reproduce the
+task as best as possible.
 
-Tested interfaces are "GlidePoint" touch sensors arranged as a grid around the iCub's wrist as well as a 3Dconnexion 6-dof mouse.
+This module can also be used for online correction, i.e., the model can be updated according to an exernal
+control signal indicating if a correction has being applied. 
 
 For more information, one can refer to the following paper under preparation: 
 <a href="http://lasa.epfl.ch/~sauser/RobotCub/ArgallEtAl_TactileGuidance.pdf"> 
@@ -37,15 +40,12 @@ Argall, Sauser and Billard. Tactile Guidance for Policy Refinement and Reuse. </
 \section dependencies_sec Dependencies
 
 - YARP
-- \ref icub__lasaImitation_MultipleMiceDriver "Multiple Mice Driver"
 
 \section parameters_sec Parameters
 
 \verbatim
---name <string>:   the module base name for port creation (Touch000 by default)
---period <double>: control loop period (0.05 sec by default)
---type <string>:   type of input device ("3Dmouse" or "touchpad")
---device <string>: generic name of the mouse device
+--name <string>:    the module base name for port creation
+--period <double>:  control loop period (0.1 sec by default)
 \endverbatim
 
 \section portsa_sec Ports Accessed
@@ -54,28 +54,30 @@ Argall, Sauser and Billard. Tactile Guidance for Policy Refinement and Reuse. </
 
 Input ports:
 
-    - /TouchController/moduleName/rpc: single general command entry port to the module
-          - [run]: run the controller
-          - [susp]: suspend the controller (send zero output)
-          - [quit]: quit the module (exit)
-          - [kpt] kp: set gain values for translational feedback
-          - [kpr] kp: set gain values for rotational feedback
-          - [sid] id: set the next touched mouse with given id
+    - /GaussianMixtureModel/moduleName/rpc: single general command entry port to the module
+          - [load] file: load a model file
+          - [save] file: save a model file
+          - [exec]: run current model
+          - [susp]: pause/resume execution
+          - [stop]: stop execution
+          - [corr]: set/unset correction-based learning
+          - [lear]: applies last correction set
 
-    - /TouchController/moduleName/frameOfRef: externally provided frame of reference for the touch device
+    - /GaussianMixtureModel/moduleName/correctionLevel: current level of the correction process (0: off, 1:on)
+    - /GaussianMixtureModel/moduleName/currentState: current state of the robot (the state space depends on the model type)
 
 Output ports:
 
-    - /TouchController/moduleName/velocity: a vector of size 6 providing sensed velocities for 6-dof
+    - /GaussianMixtureModel/moduleName/command: command to be sent to the robot (the command space depends on the model)
 
 
 \section in_files_sec Input Data Files
 
-mice_moduleName.map (load last mice configuration)
+Model files located in ./data/
 
 \section out_data_sec Output Data Files
 
-mice_moduleName.map (save last mice configuration)
+Model files located in ./data/
 
 \section conf_file_sec Configuration Files
 
@@ -88,7 +90,7 @@ Linux
 \section example_sec Example Instantiation of the Module
 
 \verbatim
-TouchControllerModule --name TouchRight --period 0.02 --type 3dmouse --device 3Dconnexion
+GaussianMixtureModelModule --name GMM --period 0.02
 \endverbatim
 
 \note This module is still heavily under development.
@@ -99,20 +101,21 @@ Copyright (C) 2008 RobotCub Consortium
  
 CopyPolicy: Released under the terms of the GNU GPL v2.0.
 
-This file can be edited at src/lasaImitation/TouchControllerModule/src/TouchControllerModule.h.
+This file can be edited at src/lasaImitation/GaussianMixtureModelModule/src/GaussianMixtureModelModule.h.
 **/
 
-#ifndef TOUCHCONTROLLERMODULE_H_
-#define TOUCHCONTROLLERMODULE_H_
+
+#ifndef GaussianMixtureModelMODULE_H_
+#define GaussianMixtureModelMODULE_H_
 
 #include <yarp/os/Module.h>
 
 using namespace yarp;
 using namespace yarp::os;
 
-#include "TouchControllerThread.h"
+#include "GaussianMixtureModelThread.h"
 
-class TouchControllerModule: public Module
+class GaussianMixtureModelModule: public Module
 {
 private:
     Property                    mParams;
@@ -121,11 +124,11 @@ private:
 
     BufferedPort<Bottle>        mControlPort;
 
-    TouchControllerThread      *mThread;
+    GaussianMixtureModelThread      *mThread;
     
 public:
-            TouchControllerModule();
-    virtual ~TouchControllerModule();
+            GaussianMixtureModelModule();
+    virtual ~GaussianMixtureModelModule();
 
 
     virtual bool    open(Searchable &s);

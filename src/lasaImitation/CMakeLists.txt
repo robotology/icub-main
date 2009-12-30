@@ -26,7 +26,11 @@ SET(SUBPROJECTS_LIST MathLib
                      MultipleMiceExample
                      DataStreamerModule
                      TouchControllerModule
-                     VelocityControllerExt)
+                     VelocityControllerExt
+                     GaussianMixtureModelModule
+                     RobotControllerModule
+                     ImitationApplicationModule
+)
 
 IF (BUILD_MOTIONSSENSORS)
   SET(SUBPROJECTS_LIST ${SUBPROJECTS_LIST} YarpedMotionSensors)

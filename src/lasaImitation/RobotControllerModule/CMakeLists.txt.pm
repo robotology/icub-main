@@ -1,0 +1,4 @@
+SET(PM_PROJECT_NAME RobotControllerModule)
+SET(PM_PROJECT_TYPE Executable)
+SET(PM_PROJECT_DEPS ICUB)
+

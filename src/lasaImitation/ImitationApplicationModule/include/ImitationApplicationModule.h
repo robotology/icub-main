@@ -20,13 +20,15 @@
 /**
  *
 @ingroup icub_lasaImitation_module
-\defgroup icub__lasaImitation_MyDefaultModule MyDefault Module
+\defgroup icub__lasaImitation_ImitationApplicationModule Imitation Application Control Module
 
-Default module template for generating other modules combined with a rate thread
+State machine module which controls the activity and processes of the modules involved in the 
+\ref icub_lasaImitation "Imitation learning, refinement and reuse" application.
 
 \section intro_sec Description
 
-To instantiate a new module, just copy the files and replace each occurences of MyDefault by the name of your desired module.
+This module is the application state machine and drives each module involved in the application
+\ref icub_lasaImitation "Imitation learning, refinement and reuse".
 
 \section dependencies_sec Dependencies
 
@@ -36,7 +38,7 @@ To instantiate a new module, just copy the files and replace each occurences of 
 
 \verbatim
 --name <string>:    the module base name for port creation
---period <double>:  control loop period (0.02 sec by default)
+--period <double>:  control loop period (0.1 sec by default)
 \endverbatim
 
 \section portsa_sec Ports Accessed
@@ -45,25 +47,24 @@ To instantiate a new module, just copy the files and replace each occurences of 
 
 Input ports:
 
-- /MyDefault/moduleName/rpc
-- /MyDefault/moduleName/input
+- /ImitationApplication/moduleName/rpc: The list of commands listed in the application \ref icub_lasaImitation "Imitation learning, refinement and reuse" are considered 
 
 Output ports:
 
-- /MyDefault/moduleName/output
+- /ImitationApplication/moduleName/commandToX : series of output ports where "X" are modules involved in the application \ref icub_lasaImitation "Imitation learning, refinement and reuse"
 
 
 \section in_files_sec Input Data Files
 
-None
+See \ref icub_lasaImitation "Imitation learning, refinement and reuse" application 
 
 \section out_data_sec Output Data Files
 
-None
+See \ref icub_lasaImitation "Imitation learning, refinement and reuse" application 
 
 \section conf_file_sec Configuration Files
 
-None
+See \ref icub_lasaImitation "Imitation learning, refinement and reuse" application 
 
 \section tested_os_sec Tested OS
 
@@ -72,8 +73,13 @@ Linux
 \section example_sec Example Instantiation of the Module
 
 \verbatim
-MyDefaultModule --period 0.02
+ImitationApplicationModule --period 0.1
 \endverbatim
+
+However, don't forget to run the application script.
+
+
+\note This module is still heavily under development.
 
 \author Eric Sauser
 
@@ -81,21 +87,21 @@ Copyright (C) 2008 RobotCub Consortium
  
 CopyPolicy: Released under the terms of the GNU GPL v2.0.
 
-This file can be edited at src/lasaImitation/MyDefaultModule/src/MyDefaultModule.h.
+This file can be edited at src/lasaImitation/ImitationApplicationModule/src/ImitationApplicationModule.h.
 **/
 
 
-#ifndef MyDefaultMODULE_H_
-#define MyDefaultMODULE_H_
+#ifndef ImitationApplicationMODULE_H_
+#define ImitationApplicationMODULE_H_
 
 #include <yarp/os/Module.h>
 
 using namespace yarp;
 using namespace yarp::os;
 
-#include "MyDefaultThread.h"
+#include "ImitationApplicationThread.h"
 
-class MyDefaultModule: public Module
+class ImitationApplicationModule: public Module
 {
 private:
     Property                    mParams;
@@ -104,11 +110,11 @@ private:
 
     BufferedPort<Bottle>        mControlPort;
 
-    MyDefaultThread      *mThread;
+    ImitationApplicationThread      *mThread;
     
 public:
-            MyDefaultModule();
-    virtual ~MyDefaultModule();
+            ImitationApplicationModule();
+    virtual ~ImitationApplicationModule();
 
 
     virtual bool    open(Searchable &s);
