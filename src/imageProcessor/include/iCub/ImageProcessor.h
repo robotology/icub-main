@@ -431,18 +431,46 @@ class ImageProcessor:public RateThread
         * flag that indicates the colour opponency map is ready G+R-
         */
         int greenRed_flag;
+        /**
+        * flag for maximum convolution
+        */
+        bool CONVMAX;   
+        /**
+        * flag for convolution filter
+        */
+        bool CONVFILTER;
+        /**
+        * flag that allows find edges function to use sobel from IPP library
+        */
+        bool IPPISOBEL;
+        /**
+        * flag that allows find edges function to use opencv sobel
+        */
+        bool OPENCVSOBEL;
+        /**
+        * flag that allows find edges function to use a sequence of convolutions
+        */
+        bool CONVSEQ;
 
         //---
-        Ipp32s src0[9];
-        Ipp32s src1[9];
-        Ipp32s src2[9];
-        Ipp32s src3[9];
-        Ipp32s src4[9];
-        Ipp32s src5[9];
-        Ipp32s src6[9];
-        Ipp32s src7[9];
-
+        Ipp32f src0f[9];
+        Ipp32f src1f[9];
+        Ipp32f src2f[9];
+        Ipp32f src3f[9];
+        Ipp32f src4f[9];
+        Ipp32f src5f[9];
+        Ipp32f src6f[9];
+        Ipp32f src7f[9];
         //---- 
+        Ipp32s src0s[9];
+        Ipp32s src1s[9];
+        Ipp32s src2s[9];
+        Ipp32s src3s[9];
+        Ipp32s src4s[9];
+        Ipp32s src5s[9];
+        Ipp32s src6s[9];
+        Ipp32s src7s[9];
+     
         /**
         * parameter of the findEdges function
         */

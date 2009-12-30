@@ -132,58 +132,58 @@ CopyPolicy: Released under the terms of the GNU GPL v2.0.
 
 class ImageProcessModule : public Module {
 private:
-	/**
-	* a port for the inputImage
-	*/
+    /**
+    * a port for the inputImage
+    */
     BufferedPort<ImageOf<PixelRgb> > inImagePort; // 
-	/**
-	* a port for the redPlane
-	*/
-	BufferedPort<ImageOf<PixelMono> > redPlanePort; //
     /**
-	* a port for the greenPlane
-	*/
-	BufferedPort<ImageOf<PixelMono> > greenPlanePort; //
+    * a port for the redPlane
+    */
+    BufferedPort<ImageOf<PixelMono> > redPlanePort; //
     /**
-	* a port for the bluePlane
-	*/
-	BufferedPort<ImageOf<PixelMono> > bluePlanePort; //	 
+    * a port for the greenPlane
+    */
+    BufferedPort<ImageOf<PixelMono> > greenPlanePort; //
     /**
-	* input port for the R+G- colour Opponency Map
-	*/
-	BufferedPort<ImageOf<PixelMono> > rgPort; 
+    * a port for the bluePlane
+    */
+    BufferedPort<ImageOf<PixelMono> > bluePlanePort; //	 
     /**
-	* input port for the G+R- colour Opponency Map
-	*/
-	BufferedPort<ImageOf<PixelMono> > grPort; 
+    * input port for the R+G- colour Opponency Map
+    */
+    BufferedPort<ImageOf<PixelMono> > rgPort; 
     /**
-	* input port for the B+Y- colour Opponency Map
-	*/
-	BufferedPort<ImageOf<PixelMono> > byPort; 	
+    * input port for the G+R- colour Opponency Map
+    */
+    BufferedPort<ImageOf<PixelMono> > grPort; 
     /**
-	*  output port for edges in R+G- colour Opponency Map
-	*/
-	BufferedPort<ImageOf<PixelMono> > rgEdgesPort; 
+    * input port for the B+Y- colour Opponency Map
+    */
+    BufferedPort<ImageOf<PixelMono> > byPort; 	
     /**
-	* output port for edges in G+R- colour Opponency Map
-	*/
-	BufferedPort<ImageOf<PixelMono> > grEdgesPort; 
+    *  output port for edges in R+G- colour Opponency Map
+    */
+    BufferedPort<ImageOf<PixelMono> > rgEdgesPort; 
     /**
-	* output port for edges in B+Y- colour Opponency Map
-	*/
-	BufferedPort<ImageOf<PixelMono> > byEdgesPort;
-	/**
-	* command port of the module
-	*/
+    * output port for edges in G+R- colour Opponency Map
+    */
+    BufferedPort<ImageOf<PixelMono> > grEdgesPort; 
+    /**
+    * output port for edges in B+Y- colour Opponency Map
+    */
+    BufferedPort<ImageOf<PixelMono> > byEdgesPort;
+    /**
+    * command port of the module
+    */
     BufferedPort<Bottle > cmdPort;
-	/**
-	* counter of the module
-	*/
+    /**
+    * counter of the module
+    */
     int ct;
-	/**
-	* options of the connection
-	*/
-	Property options;	//
+    /**
+    * options of the connection
+    */
+    Property options;	//
     /**
     * width of the input image
     */
@@ -209,30 +209,30 @@ private:
     */
     ImageOf<PixelMono> *tmp;
 public:
-	/**
-	*open the ports of the module
-	*/
-	bool open(Searchable& config); //
-	/**
-	* tryes to interrupt any communications or resource usage
-	*/
-    bool interruptModule(); // 
-	/**
-	* closes the modules and all its components
-	*/
-	bool close(); //
-	/**
-	* active control of the Module
-	*/
-	bool updateModule(); //
-	/**
-	* set the attribute options of class Property
-	*/
     /**
-	* set the attribute options of class Property
-	*/
-	void setOptions(Property options); //
-	/**
+    *open the ports of the module
+    */
+    bool open(Searchable& config); //
+    /**
+    * tryes to interrupt any communications or resource usage
+    */
+    bool interruptModule(); // 
+    /**
+    * closes the modules and all its components
+    */
+    bool close(); //
+    /**
+    * active control of the Module
+    */
+    bool updateModule(); //
+    /**
+    * set the attribute options of class Property
+    */
+    /**
+    * set the attribute options of class Property
+    */
+    void setOptions(Property options); //
+    /**
     * function to reainitialise the attributes of the class
     */
     void reinitialise(int weight, int height);
@@ -240,49 +240,69 @@ public:
     * respond to command coming from the command port
     */
     bool respond(const Bottle &command,Bottle &reply);
-	/**
-	* creates some objects necessary for the window
-	*/
-	void createObjects();
-	/**
-	* sets the adjustments in the window
-	*/
-	void setAdjs();
-	//gint timeout_CB (gpointer data);
-	//bool getImage();
-	/**
-	* opens all the ports necessary for the module
-	*/
-	bool openPorts();
-	/**
-	* closes all the ports opened when the module started
-	*/
-	bool closePorts();
-	/**
-	* streams out data on ports
-	*/
-	bool outPorts();
-	/**
-	* sets the module up
-	*/
-	void setUp();
+    /**
+    * creates some objects necessary for the window
+    */
+    void createObjects();
+    /**
+    * sets the adjustments in the window
+    */
+    void setAdjs();
+    //gint timeout_CB (gpointer data);
+    //bool getImage();
+    /**
+    * opens all the ports necessary for the module
+    */
+    bool openPorts();
+    /**
+    * closes all the ports opened when the module started
+    */
+    bool closePorts();
+    /**
+    * streams out data on ports
+    */
+    bool outPorts();
+    /**
+    * sets the module up
+    */
+    void setUp();
     /**
     * function that starts the imageprocessor
     */
     bool startImageProcessor();
 
 
-	//_____________ ATTRIBUTES __________________
-	
+    //_____________ ATTRIBUTES __________________
+    
 
-	/**
-	* processor that controls the processing of the input image
-	*/
-	ImageProcessor *currentProcessor;
-	/**
-	* flag that controls if the inputImage has been ever read
-	*/
-	bool inputImage_flag;
+    /**
+    * processor that controls the processing of the input image
+    */
+    ImageProcessor *currentProcessor;
+    /**
+    * flag that controls if the inputImage has been ever read
+    */
+    bool inputImage_flag;
+    /**
+    * flag for maximum convolution
+    */
+    bool CONVMAX;   
+    /**
+    * flag for convolution filter
+    */
+    bool CONVFILTER;
+    /**
+    * flag that allows find edges function to use sobel from IPP library
+    */
+    bool IPPISOBEL;
+    /**
+    * flag that allows find edges function to use opencv sobel
+    */
+    bool OPENCVSOBEL;
+    /**
+    * flag that allows find edges function to use a sequence of convolutions
+    */
+    bool CONVSEQ;
 };
 
 #endif //_IMAGEPROCESSMODULE_H_

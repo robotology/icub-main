@@ -64,6 +64,14 @@ void ImageProcessModule::setOptions(yarp::os::Property opt){
         printf("|||  Module named as :%s \n", name.c_str());
         this->setName(name.c_str());
     }
+    ConstString value=opt.find("OPENCVSOBEL").asString();
+    if(value!=""){
+       if(value=="ON")
+        this->OPENCVSOBEL=true;
+       else if(value=="OFF")
+           this->OPENCVSOBEL=false;
+
+    }
 }
 
 
@@ -268,6 +276,7 @@ bool ImageProcessModule::updateModule() {
         reinitialise(tmp->width(), tmp->height());
         reinit_flag=true;
         currentProcessor=new ImageProcessor();
+        currentProcessor->OPENCVSOBEL=OPENCVSOBEL;
         currentProcessor->resizeImages(tmp->width(),tmp->height());
         startImageProcessor();
     }
