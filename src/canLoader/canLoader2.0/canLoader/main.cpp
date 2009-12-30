@@ -12,8 +12,9 @@ CanLoder20 is a YARP/GTK based application that allows the firmware update of th
 The board types currently supported by the CanLoader application are:
 - MC4	 (Motorola 56807 DSP for control of bushed CC motors)
 - BLL	 (Motorola 56807 DSP for control of brushless motors)
-- STRAIN (DSPIC 40f4013 6 axis force/torque sensor)
-- MAIS	 (DSPIC 40f4013 Hall-effect position sensor)
+- STRAIN (DSPIC 30f4013 6 axis force/torque sensor)
+- MAIS	 (DSPIC 30f4013 Hall-effect position sensor)
+_ SKIN   (DSPIC 30f4011 Tactile Sensor board) 
 In order to successfully transfer the firmware to the boards using the CanLoader application, the desired boards
 must be powered on and properly connected to the CAN Bus using either the 'ecan' or 'pcan' CAN Bus driver.
 The CanLoader application can run in two different modalities:
@@ -1414,7 +1415,7 @@ int myMain( int   argc, char *argv[] )
 		printf("Initializing prompt version of canLoader...\n");
 		if      (argc==2 && strcmp(argv[1],"--help")==0)
 		{
-				printf("CANLOADER APPLICATION V2.5\n");
+				printf("CANLOADER APPLICATION V2.5a\n");
 				printf("Syntax:\n");
 				printf("1) to execute the GUI version of the canLoader:\n");
 				printf("./canLoader20 \n");
@@ -1524,7 +1525,7 @@ int myMain( int   argc, char *argv[] )
     //create the main window, and sets the callback destroy_main() to quit
     //the application when the main window is closed
     window = gtk_window_new (GTK_WINDOW_TOPLEVEL);
-    gtk_window_set_title (GTK_WINDOW (window), "CAN Flasher V2.5");
+    gtk_window_set_title (GTK_WINDOW (window), "CAN Flasher V2.5a");
     g_signal_connect (window, "destroy",G_CALLBACK (destroy_main), &window);
 
     gtk_container_set_border_width (GTK_CONTAINER (window), 8);

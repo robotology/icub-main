@@ -969,7 +969,7 @@ int cDownloader::change_board_info(int target_id, char* board_info)
         }
 
     //pause
-    drv_sleep(10);
+    drv_sleep(500);
 
     // update the board list
     initschede();
@@ -992,6 +992,7 @@ int cDownloader::change_card_address(int target_id, int new_id, int board_type)
 	switch (board_type)
 	{
 	    case BOARD_TYPE_STRAIN: 
+		case BOARD_TYPE_SKIN:
 		case BOARD_TYPE_MAIS:
 			txBuffer[0].setId((0x02 << 8) + (ID_MASTER << 4) + target_id);
 			txBuffer[0].setLen(2);
@@ -1024,7 +1025,8 @@ int cDownloader::change_card_address(int target_id, int new_id, int board_type)
             printf ("ERR: Unable to send message\n");
             return -1;
         }
- 
+		// pause
+    drv_sleep(500);
     // update the board list
     initschede();
 
