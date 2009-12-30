@@ -2,18 +2,57 @@
 @ingroup icub_applications
 \defgroup icub_lasaImitation Imitation learning, refinement and reuse 
 
-\brief  Imitation learning, refinement and reuse application
+\brief An application on iCub that show abilitites for learning by demonstration, policy refinement and reuse.
  
 
 \section sec_intro Introduction
 
-\section sec_process_flow Process Flow
+Demonstration learning is a powerful and practical
+technique to develop robot behaviors. Even so, development
+remains a challenge and possible demonstration limitations
+are known to sometimes degrade policy or model performance. 
 
+Indeed, as shown below, learning by demonstration in a robotic system usually involves 
+during the learning phase:
+<i> a) </i> a dataset of demonstrations,
+<i> b) </i> an algorithm that processes these data to produce 
+<i> c) </i> a task model.
+Next during the reproduction phase, the task model usually produces
+<i> d) </i> motor commands to be sent to the robot, which returns
+<i> e) </i> sensory feedback to update the state of the model. 
+
+\image html lasaImitationImg1a.jpg
+
+However, in such a senario, the human teacher has no way to help the robot
+doing its task better in case of inaccuracies or of "bad understanding". Therefore,
+an extension of this "classical" system is proposed to put the human into the loop.
+A schematic of the extended system, now endowed with online corrective feedback abilities is
+shown below. 
+
+\image html lasaImitationImg1b.jpg
+
+First of all, the robot is equiped with "touch sensors" on which a human can provide
+online corrections to the robot while it's doing its task. This corrective feedback,
+along with the robot usual sensory feedback is used by the learning algorithm to
+update the task model. This is called "Tactile guidance for policy refinement and resuse".
+The interested reader is suggested to have a look at the following paper under preparation:  
+<a href="http://lasa.epfl.ch/~sauser/RobotCub/ArgallEtAl_TactileGuidance.pdf"> 
+Argall, Sauser and Billard. Tactile Guidance for Policy Refinement and Reuse. </a>
+
+
+\section sec_description Description
+
+The <b> Imitation learning, refinement and reuse application </b> on iCub consists of a number of interoperating modules or processes,
+which relationships are described in the following diagram.
+
+\image html lasaImitationFlow.jpg
+
+Please note that the offline learning module is for now implemented as matlab functions. They are therefore not included here.
 
 \section dep_sec Dependencies
 -# When connecting to a physical robot:
   - This module assumes \ref icub_iCubInterface iCubInterface2 is already running.
-  - Assumes that touch devices are connected to the computer running the \ref icub_lasaImitation_TouchController "Touch Controller Module"
+  - Assumes that touch devices are connected to the computer running the \ref icub_lasaImitation_TouchController "Touch Controller Module"(s)
   - Assumes that X-Sens and Datagloves sensors are connected to the computer running the - \ref icub_lasaImitation_YarpedMotionSensors "Motion-Sensors Capture Module"
 -# When connecting to the simulator:
   - The simulator should be started with the head, arms and hands activated along with the fixed_hip.
@@ -21,21 +60,48 @@
 \section modules_sec Instantiated Modules
 
 List here the modules that are instantiated by this application:
-- \ref icub__lasaImitation_VelocityControllerModule  "Extended Velocity Controller Module"
-- \ref icub__lasaImitation_DataStreamerModule        "Data Streaming Module"
-- \ref icub__lasaImitation_MotionSensorsModule       "Motion Sensors Capture Module"
-- \ref icub__lasaImitation_TouchControllerModule     "Touch Controller Module"
+- \ref icub__lasaImitation_VelocityControllerModule    "Extended Velocity Controller Module"
+- \ref icub__lasaImitation_DataStreamerModule          "Data Streaming Module"
+- \ref icub__lasaImitation_MotionSensorsModule         "Motion Sensors Capture Module"
+- \ref icub__lasaImitation_TouchControllerModule       "Touch Controller Module"
+- \ref icub__lasaImitation_RobotControllerModule       "Robot Controller Module"
+- \ref icub__lasaImitation_GaussianMixtureModelModule  "Gaussian Mixture Model Module"
+- \ref icub__lasaImitation_ImitationApplicationModule  "Imitation Application Control Module"
 
 
-
-\section parameters_sec Parameters
-Application parameters are contained in the file lasaImitationApp.xml
 
 \section config_sec Configuration Files
+
+The file app/lasaImitation/conf/config.ini will contain the initialization parameters for the application.
 
  
 \section example_sec How to run the application
  
+app/lasaImitation/scripts/lasaImitationDemo.xml will contain the running script for launching 
+the application modules.
+
+On the opened control terminal the following commands can be entered:
+\verbatim
+- [run]    : start the application by making all modules active
+- [susp]   : pause/resume the application
+- [quit]   : exit
+\endverbatim
+
+When the application is actually running:
+
+\verbatim
+- [tact]            : set/unset the robot to move according to touch feedback
+- [tele]            : set/unset the robot to be teleoperated (!motion sensors should be calibrated!)
+- [rec]             : start/stop demonstration recording.
+- [cld]             : clear demonstration data
+- [load] <string>   : load task model named <string>
+- [save] <string>   : save current task model
+- [repr]            : start the reproduction of current task-model
+- [stop]            : stop it
+- [corr]            : set/unset corrective learning during reproduction
+\endverbatim
+
+\note The final and online version of this application is still under development.
 
 \author Eric Sauser
 
