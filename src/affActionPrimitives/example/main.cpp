@@ -297,7 +297,6 @@ public:
 
     virtual bool configure(ResourceFinder &rf)
     {
-
         string name=rf.find("name").asString().c_str();
         setName(name.c_str());
 
