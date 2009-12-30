@@ -1,0 +1,71 @@
+/**
+ * @ingroup icub_applications
+ *
+ * \defgroup icub_demoAffv2_app demoAffv2 
+
+ *
+ * \brief  Demonstration of affordance usage (2nd version)
+ 
+In this demo we illustrate the use of affordances in simple imitation games. It is an example of how to use self-learned models of the world to interpret others actions and interact with them.
+
+This application consists of a number of scripts and configuration files that are used to start and stop a number of interconnecting processes. 
+
+This demonstration is based on the simpler demonstration demoaff, with several improvements with respect to modularization, automation and integration with other cognitive behaviors (e.g. the attention system).
+
+\section demoAffv2 Introduction
+
+Affordances relate robot's actions, object properties and the effects of the actions executed upon the objects. The core of the affordances is a Bayesian network that captures the previous robot experience. By using this network it is possible to infer based on the effects the best action to replicate them or to select the most appropriate object that will provide similar results. 
+
+Details on how to learn this networks and how to use it can be found in \link http://www.robotcub.net/index.php/robotcub/more_information/deliverables/ RobotCub Deliverables \endlink and papers:
+
+ - D4.1 : Experiments on Affordances
+ \link http://www.robotcub.org/index.php/robotcub/content/download/1039/3660/file/RC_IST_AB_Deliverable_D4.1.pdf D4.1pdf
+ \endlink
+ - IEEE Transactions on robotics - Learning object affordances: from sensory-motor coordination to imitation,
+(ref: L. Montesano, M. Lopes, A. Bernadino, J. Santos-Victor (2008) Learning object affordances: from sensory-motor coordination to imitation, \e IEEE Transactions \e on Robotics )
+
+
+\section dep_sec Dependencies
+-# When connecting to a physical robot:
+  - This module assumes \ref icub_iCubInterface "iCubInterface" is already running.
+  - Assumes that the left camera has been started. The demonstration works with a resolution of 320x480 and a lens of 6mm to provide good image descriptors of the object shape.
+  
+-# It has not been tested in the simulator:
+
+- It depends on the following external libraries:
+-# opencv
+-# pnl
+
+\section modules_sec Instantiated Modules
+
+- \ref icub_edisonSegmentation "Object Segmentation Module"
+- \ref icub_blobDescriptor "Object Descriptor Module" 
+- \ref icub_effectDetector "Effect Detector Module" 
+- \ref icub_camCalib "Camera Calibration Module"
+- \ref icub_eye2world "Conversion of 2D to 3D (for objects in table)"
+
+
+\section Parameters
+The script does not require any parameters.
+
+\section Configuration Files
+Configuration files are located in the ICUB_ROOT/app/demoAffv2/conf folder.
+
+ 
+\section example_sec How to run the application
+
+This is  by the xml scripts located in app/demoAffv2.
+ 
+For further details, see the wiki description  \link http://eris.liralab.it/wiki/DemoAff demoaff
+ \endlink
+
+\author Luis Montesano, Manuel Lopes, Alexandre Bernardino
+
+Copyright (C) 2008 RobotCub Consortium
+
+CopyPolicy: Released under the terms of the GNU GPL v2.0.
+
+This file can be edited at \in app/demoAffv2/doc.dox
+ *
+ */
+
