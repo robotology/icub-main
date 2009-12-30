@@ -94,7 +94,7 @@ Bottle *CartesianHelper::getJointsOption(Bottle &b)
 /************************************************************************/
 bool CartesianHelper::getTokenOption(Bottle &b, double *token)
 {
-    if (b.check(Vocab::decode(IKINSLV_VOCAB_OPT_TOKEN)))
+    if (b.check(Vocab::decode(IKINSLV_VOCAB_OPT_TOKEN)) && (token!=NULL))
     {
         *token=b.find(Vocab::decode(IKINSLV_VOCAB_OPT_TOKEN)).asDouble();
         return true;

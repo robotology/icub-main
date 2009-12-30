@@ -669,11 +669,19 @@ bool ServerCartesianController::getNewTarget()
     {
         // the token shall be in
         if (!CartesianHelper::getTokenOption(*b1,&rxToken))
+        {
+            fprintf(stdout,"%s warning: skipped message from solver\
+                            due to missing token\n",ctrlName.c_str());
             return false;
+        }
 
         // ... and not greater than the trasmitted one
         if (rxToken>txToken)
+        {
+            fprintf(stdout,"%s warning: skipped message from solver\
+                            due to invalid token\n",ctrlName.c_str());
             return false;
+        }
 
         // if we stopped the controller then we skip
         // any message with token smaller than the threshold
@@ -810,7 +818,7 @@ void ServerCartesianController::run()
                 executingTraj=false;
                 motionDone   =true;
     
-                if (!trackingMode)
+                if (!trackingMode && (rxToken==txToken))
                 {
                     stopLimbVel();
     
@@ -1293,7 +1301,7 @@ bool ServerCartesianController::goTo(unsigned int _ctrlPose, const Vector &xd, c
         // token part
         CartesianHelper::addTokenOption(b,txToken=Time::now());
     
-        portSlvOut->write();        
+        portSlvOut->write();
     
         return true;
     }
