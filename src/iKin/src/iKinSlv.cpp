@@ -275,12 +275,20 @@ bool InputPort::handleMode(const int newMode)
 /************************************************************************/
 void InputPort::onRead(Bottle &b)
 {
-    if (CartesianHelper::getTokenOption(b,&token))
-        pToken=&token;
-    else
-        pToken=NULL;
+    bool xdOptIn  =b.check(Vocab::decode(IKINSLV_VOCAB_OPT_XD));
+    bool dofOptIn =b.check(Vocab::decode(IKINSLV_VOCAB_OPT_DOF));
+    bool poseOptIn=b.check(Vocab::decode(IKINSLV_VOCAB_OPT_POSE));
+    bool modeOptIn=b.check(Vocab::decode(IKINSLV_VOCAB_OPT_MODE));
 
-    if (b.check(Vocab::decode(IKINSLV_VOCAB_OPT_XD)))
+    if (xdOptIn || dofOptIn)
+    {
+        if (CartesianHelper::getTokenOption(b,&token))
+            pToken=&token;
+        else
+            pToken=NULL;
+    }
+
+    if (xdOptIn)
     {    
         if (!handleTarget(b.find(Vocab::decode(IKINSLV_VOCAB_OPT_XD)).asList()))
             fprintf(stdout,"%s: expected %s data\n",slv->slvName.c_str(),
@@ -290,17 +298,17 @@ void InputPort::onRead(Bottle &b)
         fprintf(stdout,"%s: missing %s data; it shall be present\n",
                 slv->slvName.c_str(),Vocab::decode(IKINSLV_VOCAB_OPT_XD).c_str());
 
-    if (b.check(Vocab::decode(IKINSLV_VOCAB_OPT_DOF)))
+    if (dofOptIn)
         if (!handleDOF(b.find(Vocab::decode(IKINSLV_VOCAB_OPT_DOF)).asList()))
             fprintf(stdout,"%s: expected %s data\n",slv->slvName.c_str(),
                     Vocab::decode(IKINSLV_VOCAB_OPT_DOF).c_str());
 
-    if (b.check(Vocab::decode(IKINSLV_VOCAB_OPT_POSE)))
+    if (poseOptIn)
         if (!handlePose(b.find(Vocab::decode(IKINSLV_VOCAB_OPT_POSE)).asVocab()))
             fprintf(stdout,"%s: got incomplete %s command\n",slv->slvName.c_str(),
                     Vocab::decode(IKINSLV_VOCAB_OPT_POSE).c_str());
 
-    if (b.check(Vocab::decode(IKINSLV_VOCAB_OPT_MODE)))
+    if (modeOptIn)
         if (!handleMode(b.find(Vocab::decode(IKINSLV_VOCAB_OPT_MODE)).asVocab()))
             fprintf(stdout,"%s: got incomplete %s command\n",slv->slvName.c_str(),
                     Vocab::decode(IKINSLV_VOCAB_OPT_MODE).c_str());
