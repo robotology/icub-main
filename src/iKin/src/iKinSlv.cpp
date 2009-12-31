@@ -275,34 +275,35 @@ bool InputPort::handleMode(const int newMode)
 /************************************************************************/
 void InputPort::onRead(Bottle &b)
 {
-    bool xdOptIn  =b.check(Vocab::decode(IKINSLV_VOCAB_OPT_XD));
-    bool dofOptIn =b.check(Vocab::decode(IKINSLV_VOCAB_OPT_DOF));
-    bool poseOptIn=b.check(Vocab::decode(IKINSLV_VOCAB_OPT_POSE));
-    bool modeOptIn=b.check(Vocab::decode(IKINSLV_VOCAB_OPT_MODE));
+    if (CartesianHelper::getTokenOption(b,&token))
+        pToken=&token;
+    else
+        pToken=NULL;
 
-    if (xdOptIn || dofOptIn)
-    {
-        if (CartesianHelper::getTokenOption(b,&token))
-            pToken=&token;
-        else
-            pToken=NULL;
-    }
-
-    if (xdOptIn)
+    if (b.check(Vocab::decode(IKINSLV_VOCAB_OPT_XD)))
+    {    
         if (!handleTarget(b.find(Vocab::decode(IKINSLV_VOCAB_OPT_XD)).asList()))
-            fprintf(stdout,"expected %s data\n",Vocab::decode(IKINSLV_VOCAB_OPT_XD).c_str());
+            fprintf(stdout,"%s: expected %s data\n",slv->slvName.c_str(),
+                    Vocab::decode(IKINSLV_VOCAB_OPT_XD).c_str());
+    }
+    else
+        fprintf(stdout,"%s: missing %s data; it shall be present\n",
+                slv->slvName.c_str(),Vocab::decode(IKINSLV_VOCAB_OPT_XD).c_str());
 
-    if (dofOptIn)
+    if (b.check(Vocab::decode(IKINSLV_VOCAB_OPT_DOF)))
         if (!handleDOF(b.find(Vocab::decode(IKINSLV_VOCAB_OPT_DOF)).asList()))
-            fprintf(stdout,"expected %s data\n",Vocab::decode(IKINSLV_VOCAB_OPT_DOF).c_str());
+            fprintf(stdout,"%s: expected %s data\n",slv->slvName.c_str(),
+                    Vocab::decode(IKINSLV_VOCAB_OPT_DOF).c_str());
 
-    if (poseOptIn)
+    if (b.check(Vocab::decode(IKINSLV_VOCAB_OPT_POSE)))
         if (!handlePose(b.find(Vocab::decode(IKINSLV_VOCAB_OPT_POSE)).asVocab()))
-            fprintf(stdout,"got incomplete %s command\n",Vocab::decode(IKINSLV_VOCAB_OPT_POSE).c_str());
+            fprintf(stdout,"%s: got incomplete %s command\n",slv->slvName.c_str(),
+                    Vocab::decode(IKINSLV_VOCAB_OPT_POSE).c_str());
 
-    if (modeOptIn)
+    if (b.check(Vocab::decode(IKINSLV_VOCAB_OPT_MODE)))
         if (!handleMode(b.find(Vocab::decode(IKINSLV_VOCAB_OPT_MODE)).asVocab()))
-            fprintf(stdout,"got incomplete %s command\n",Vocab::decode(IKINSLV_VOCAB_OPT_MODE).c_str());
+            fprintf(stdout,"%s: got incomplete %s command\n",slv->slvName.c_str(),
+                    Vocab::decode(IKINSLV_VOCAB_OPT_MODE).c_str());
 }
 
 
@@ -806,7 +807,7 @@ void CartesianSolver::send(const Vector &xd, const Vector &x, const Vector &q, d
     if (tok)
         addTokenOption(b,*tok);
 
-    outPort->write();
+    outPort->writeStrict();
 }
 
 
@@ -822,7 +823,7 @@ void CartesianSolver::send(const Vector &xd, double *tok)
     if (tok)
         addTokenOption(b,*tok);
 
-    outPort->write();
+    outPort->writeStrict();
 }
 
 

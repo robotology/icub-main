@@ -450,13 +450,17 @@ bool ServerCartesianController::respond(const Bottle &command, Bottle &reply)
     
                             if (mode==IKINCARTCTRL_VOCAB_VAL_MODE_TRACK)
                             {    
-                                setTrackingMode(true);
-                                reply.addVocab(IKINSLV_VOCAB_REP_ACK);
+                                if (setTrackingMode(true))
+                                    reply.addVocab(IKINSLV_VOCAB_REP_ACK);
+                                else
+                                    reply.addVocab(IKINSLV_VOCAB_REP_NACK);
                             }
                             else if (mode==IKINCARTCTRL_VOCAB_VAL_MODE_SINGLE)
                             {    
-                                setTrackingMode(false);
-                                reply.addVocab(IKINSLV_VOCAB_REP_ACK);
+                                if (setTrackingMode(false))
+                                    reply.addVocab(IKINSLV_VOCAB_REP_ACK);
+                                else
+                                    reply.addVocab(IKINSLV_VOCAB_REP_NACK);
                             }
                             else
                                 reply.addVocab(IKINSLV_VOCAB_REP_NACK);
@@ -823,10 +827,7 @@ void ServerCartesianController::run()
                     stopLimbVel();
     
                     // switch the solver status to one shot mode
-                    Bottle &b=portSlvOut->prepare();
-                    b.clear();
-                    CartesianHelper::addModeOption(b,false);
-                    portSlvOut->write();
+                    setTrackingMode(false);
                 }
             }
         }
@@ -1301,8 +1302,8 @@ bool ServerCartesianController::goTo(unsigned int _ctrlPose, const Vector &xd, c
         // token part
         CartesianHelper::addTokenOption(b,txToken=Time::now());
     
-        portSlvOut->write();
-    
+        portSlvOut->writeStrict();
+
         return true;
     }
     else
@@ -1315,12 +1316,30 @@ bool ServerCartesianController::setTrackingMode(const bool f)
 {
     if (connected)
     {
-        Bottle &b=portSlvOut->prepare();
-        b.clear();
-        CartesianHelper::addModeOption(b,trackingMode=f);
-        portSlvOut->write();
+        Bottle command, reply;
 
-        return true;
+        // prepare command
+        command.addVocab(IKINSLV_VOCAB_CMD_SET);
+        command.addVocab(IKINSLV_VOCAB_OPT_MODE);
+        if (f)
+            command.addInt(IKINSLV_VOCAB_VAL_MODE_TRACK);
+        else
+            command.addInt(IKINSLV_VOCAB_VAL_MODE_SINGLE);
+
+        // send command to solver and wait for reply
+        if (!portSlvRpc->write(command,reply))
+        {
+            fprintf(stdout,"%s error: unable to get reply from solver!\n",slvName.c_str());
+            return false;
+        }
+
+        if (reply.get(0).asVocab()==IKINSLV_VOCAB_REP_ACK)
+        {
+            trackingMode=f;
+            return true;
+        }
+        else
+            return false;        
     }
     else
         return false;
