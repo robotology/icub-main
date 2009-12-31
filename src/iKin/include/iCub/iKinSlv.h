@@ -50,6 +50,12 @@
  * \note One single command sent to the streaming input port can 
  *       contain multiple requests: e.g. ([pose] [xyz]) ([dof]
  *       (1 0 1 2 1)) ([xd] (-0.1 0.1 0.1) ([tok] 1.234))
+ *  
+ * \note Remind that the intended use of this port is in 
+ *       streaming mode, thus it might happen that one request
+ *       is dropped in favour of the most recent one. Therefore,
+ *       as a general remark, rely on this port for xd requests
+ *       and use rpc for dof, mode, pose requests (see below).
  *
  *  
  * \b "/<solverName>/rpc" accepts a vocab-like bottle containing
