@@ -15,14 +15,13 @@
  * space and joint space along with an easy way to combine them
  * together forming higher level actions (e.g. grasp(), tap(), 
  * …) in order to eventually execute more sophisticated tasks 
- * without concerning with the motion control details. 
+ * without reference to the motion control details. 
  *  
  * \image html affActionPrimitives.jpg 
  *  
  * Central to the library's implementation is the concept of 
- * \b action. An action is a "request" that issues for an 
- * execution of three different tasks according to its internal 
- * selector: 
+ * \b action. An action is a "request" for an execution of three 
+ * different tasks according to its internal selector: 
  *  
  * - 1 It can ask the system to wait for a specified time 
  * interval;
@@ -33,17 +32,18 @@
  * - 3 It can command the execution of some predefined 
  * fingers sequences in the joint space identified by a tag. 
  *  
- * Besides, there exists the possibility to issue with only one 
- * action a task of type 2 simultaneously to a task of type 3. 
+ * Besides, there exists the possibility of generating one 
+ * action for the execution of a task of type 2 simultaneously 
+ * to a task of type 3. 
  *  
  * Moreover, whenever an action is produced from within the code 
  * the corresponding request item is pushed at the bottom of 
- * actions queue. Therefore, user can identify suitable fingers 
- * movements in the joint space, associate proper grasping 3d 
- * points together with hand posture and finally execute the 
- * grasping task as a harmonic combination of a reaching 
- * movement and fingers actuations, complying with the time 
- * requirements due to the synchronized sequence. 
+ * <b>actions queue</b>. Therefore, user can identify suitable 
+ * fingers movements in the joint space, associate proper 
+ * grasping 3d points together with hand posture and finally 
+ * execute the grasping task as a harmonious combination of a 
+ * reaching movement and fingers actuations, complying with the 
+ * time requirements of the synchronized sequence. 
  */ 
 
 #ifndef __AFFACTIONPRIMITIVES_H__
