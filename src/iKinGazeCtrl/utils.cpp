@@ -6,7 +6,8 @@
 void xdPort::onRead(Bottle &b)
 {
     size_t bLen=b.size();
-    size_t n=bLen>3 ? 3 : bLen;
+    size_t xdLen=xd.length();
+    size_t n=bLen>xdLen ? xdLen : bLen;
 
     for (unsigned int i=0; i<n; i++)
         xd[i]=b.get(i).asDouble();
