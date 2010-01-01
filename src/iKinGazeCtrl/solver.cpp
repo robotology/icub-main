@@ -531,7 +531,7 @@ void Solver::afterStart(bool s)
 void Solver::run()
 {
     // get the current target
-    Vector xd=port_xd->get_xd();
+    Vector &xd=port_xd->get_xd();
 
     bool movedTorso=false;
 

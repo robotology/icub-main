@@ -227,7 +227,7 @@ void Solver::afterStart(bool s)
 void Solver::run()
 {
     // get the current target pose
-    Vector xd=port_xd->get_xd();
+    Vector &xd=port_xd->get_xd();
     bool movedTorso=false;
 
     // if torso is not controlled but it's been moved, update end-effector pose 
