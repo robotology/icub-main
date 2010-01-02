@@ -34,10 +34,65 @@ Once grasped, the object is lifted and then released, while the hand moves to
 the home position. Note that the only feedback part consists of contact detection,
 no adjustments for correcting grasp positions are given by vision system.
 
-- For details about homography please refer to \ref icub_eye2world documentation.
-- For details about executing motor primitives please refer to \ref affActionPrimitives
-  documentation.
-- For details about controlling the gaze please refer to \ref iKinGazeCtrl documentation.
+\section cartesianController_sec Summary of Cartesian Controller Implementation
+Given the cartesian position of an object to be grasped as result of a visual
+recognition process, the complexity of the reaching task is tackled with a modular
+approach as depicted below:
+
+\image html cartesianModularDiagram.png "Diagram of modular controller"
+
+-# in the first stage the arm joints configuration which achieves the complete
+   desired pose (i.e. end-effector position and orientation) is determined through
+   a <b>nonlinear optimizer</b> taking into account all the imposed constraints;
+-# human-like quasi-straight trajectories are then generated independently by a
+   <b>biologically inspired controller</b>.
+
+\subsection solver_sec 1. The Solver
+To sidestep the weaknesses of kinematic inversion methods that do not account
+automatically for joints constraints (they usually resort to the null-space
+projection which in turn has to be accurately tuned), a solution based upon
+a constrained optimization method has been adopted for the solver module.
+In particular, we used <a href="https://projects.coin-or.org/Ipopt">IpOpt</a>
+which is a public domain software package designed for large-scale nonlinear
+optimization problems and is applied here to find solutions for the inverse
+problem as follows:
+
+\f[\mathbf{q} = \arg\min_{\mathbf{q} \in \mathbb{R}^10}\left(\left\|\mathbf{\alpha}_d-
+\mathit{K_{\alpha}\left(\mathbf{q}\right\)}\right\|^2 + \mathit{w}\cdot\left\|\mathbf{q}_{rest}-
+\mathbf{q}\right\|^2\right)   s.t. \left{\begin{matrix}\left\|\mathbf{x}_d-mathit{K_x}\left(\
+mathfb{q}\right)\right\|^2<\epsilon \\ \mathbf{q}_L<\mathbf{q}<\mathbf{q}_U\end{matrix}\right.\f]
+
+Where the solution \f$\mathbf{q}\f$ is the joints vector with 10 components
+(7 joints for arm, 3 joints for torso or any other number of joints depending
+on the task) that is guaranteed to be found within the physical bounds expressed
+by \f$\mathbf{q}_L\f$ and \f$\mathbf{q}_U\f$; \f$\mathbf{x}_d\equiv\left(x,y,d\right)_d\f$
+is the positional part of the desired pose, \f$\mathbf{\alpha}_d\f$ is the desired
+orientation and \f$\mathit{K_x}\f$ and \f$\mathit{K_{\alpha}}\f$ are the forward
+kinematic maps for the position and orientation part, respectively; \f$\mathfb{q}_{rest}\f$
+is used to keep torso as close as possible (weighting with a positive factor \f$\mathit{w} < 1\f$)
+to the vertical position while reaching and \f$\epsilon\f$ is a small number in
+the range of \f$10^{-4}÷10^{-5}\f$.
+
+\subsection solver_sec 2. The Controller
+The generation of velocity profile is achieved by applying the concept of
+<a href="http://infoscience.epfl.ch/record/114045">Multi-Referential Systems</a>
+where two minimum-jerk generators, one in joint space and one in task space, produce
+velocities commands simultaneously; the coherence constraints are enforced with a
+Lagrangian multipliers method that can be exploited also to modulate the relative
+influence of each dynamical system to avoid joint angles bounds while going all
+over the path.
+
+\image html cartesianControllerDiagram.png "Multi-Referential controllers diagram"
+
+The advantage of such a redundant representation of the movement is that a quasi-straight
+line trajectory profile can be generated for the end-effector in the task space reproducing
+a human-like behaviour, while retaining converge property and robustness against singularities
+(the method can be cast back to the DLS algorithm).
+
+For further details about:
+- <b>homography</b> please refer to \ref icub_eye2world documentation.
+- <b>executing motor primitives</b> such as the grasp please refer to \ref affActionPrimitives documentation.
+- <b>controlling the gaze</b> please refer to \ref iKinGazeCtrl documentation.
 
 \section dep_sec Dependencies
 Assumes \ref icub_iCubInterface (with cartesian control implemented) is running.
