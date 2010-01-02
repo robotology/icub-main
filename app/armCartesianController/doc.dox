@@ -47,7 +47,7 @@ approach as depicted below:
 -# human-like quasi-straight trajectories are then generated independently by a
    <b>biologically inspired controller</b>.
 
-\subsection solver_sec 1. The Solver
+\subsection cartesianSolver_sec 1. The Solver
 To sidestep the weaknesses of kinematic inversion methods that do not account
 automatically for joints constraints (they usually resort to the null-space
 projection which in turn has to be accurately tuned), a solution based upon
@@ -57,13 +57,11 @@ which is a public domain software package designed for large-scale nonlinear
 optimization problems and is applied here to find solutions for the inverse
 problem as follows:
 
-\f[
-\mathbf{q}=\arg\min_{\mathbf{q}\in\mathbb{R}^{10}}\left(\left\|\mathbf{\alpha}_d-
+\f[\mathbf{q}=\arg\min_{\mathbf{q}\in\mathbb{R}^{10}}\left(\left\|\mathbf{\alpha}_d-
 \mathit{K_{\alpha}}\left(\mathbf{q}\right\)\right\|^2+\mathit{w}\cdot\left\|
 \mathbf{q}_{rest}-\mathbf{q}\right\|^2\right) \quad s.t.\left{\begin{matrix}\left\|
 \mathbf{x}_d-\mathit{K_x}\left(\mathbf{q}\right)\right\|^2<\epsilon\\
-\mathbf{q}_L<\mathbf{q}<\mathbf{q}_U\end{matrix}\right.
-\f]
+\mathbf{q}_L<\mathbf{q}<\mathbf{q}_U\end{matrix}\right.\f]
 
 Where the solution \f$\mathbf{q}\f$ is the joints vector with 10 components
 (7 joints for arm, 3 joints for torso or any other number of joints depending
@@ -76,7 +74,7 @@ is used to keep torso as close as possible (weighting with a positive factor \f$
 to the vertical position while reaching and \f$\epsilon\f$ is a small number in
 the range of \f$10^{-4}÷10^{-5}\f$.
 
-\subsection solver_sec 2. The Controller
+\subsection cartesianController_sec 2. The Controller
 The generation of velocity profile is achieved by applying the concept of
 <a href="http://infoscience.epfl.ch/record/114045">Multi-Referential Systems</a>
 where two minimum-jerk generators, one in joint space and one in task space, produce
