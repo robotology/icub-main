@@ -100,11 +100,11 @@
  *   The first value is an integer indicating the number of objects (N).
  *   The consecutive N values (one per object) are lists (Bottles) containing 
  *   the objects descriptors, with the following order:
- *		- 0 (double) - the normalized x coordinate of center of the enclosing rectangle (between -1 and 1 w.r.t. the the image size).
- *		- 1 (double) - the normalized y coordinate of center of the enclosing rectangle (between -1 and 1 w.r.t. the the image size). 
- *		- 2 (double) - the normalized width of the enclosing rectangle (between 0 and 1 w.r.t. the the image size)
- *		- 3 (double) - the normalized height of the enclosing rectangle (between 0 and 1 w.r.t. the the image size)
- *		- 4 (double) - the angle (orientation) of the object's enclosing rectangle, according to OpenCv definition (see CvBox2D).
+ *		- 0 (double) - normalized x coordinate of the center of the enclosing rectangle (between -1 and 1 w.r.t. the image size).
+ *		- 1 (double) - normalized y coordinate of the center of the enclosing rectangle (between -1 and 1 w.r.t. the image size). 
+ *		- 2 (double) - normalized width of the enclosing rectangle (between 0 and 1 w.r.t. the the image size)
+ *		- 3 (double) - normalized height of the enclosing rectangle (between 0 and 1 w.r.t. the the image size)
+ *		- 4 (double) - angle (orientation) of the object's enclosing rectangle, according to OpenCV definition (see CvBox2D).
  *		- 5 (double) - reserved for future usage, set to 0.
  *		- 6 (double) - reserved for future usage, set to 0.
  *		- 7 (double) - value of the 1st bin of the Hue normalized color histogram of the pixels inside the object's region.
@@ -115,24 +115,24 @@
  *		- 25 (double) - eccentricity - ratio between the minor and major axis of the minimum area enclosing rectangle
  *		- 26 (double) - compactness - ratio between the object area and its squared perimeter.
  *		- 27 (double) - circleness - ratio between the object area and the area of its enclosing circle.
- *		- 28 (double) - squareness - ration between the object area and the area of its minimum area enclosing rectangle
+ *		- 28 (double) - squareness - ratio between the object area and the area of its minimum-area enclosing rectangle
  *
  * - <tt>/blobDescriptor/trackerInit:o</tt> \n
  *   Tracker initialization parameter output port \n
  *   The message is a Bottle containing several values.
  *   The first value is an integer indicating the number of objects (N).
  *   The consecutive N values (one per object) are lists (Bottles) containing 
- *   the values required for the OpenCv camshift tracker, with the following order:
- *		- 0 (double) - the x coordinate of the tracking box
- *		- 1 (double) - the y coordinate of the tracking box. 
- *		- 2 (double) - the width of the tracking box.
- *		- 3 (double) - the height of the tracking box
+ *   the values required for the OpenCV CAMSHIFT tracker, with the following order:
+ *		- 0 (double) - x coordinate of the tracking box
+ *		- 1 (double) - y coordinate of the tracking box. 
+ *		- 2 (double) - width of the tracking box.
+ *		- 3 (double) - height of the tracking box
  *		- 4 (double) - value of the 1st bin of the Hue normalized color histogram of the pixels inside the object's region.
  *		- ...
  *		- 19 (double) - value of the 16th (last) bin of the Hue normalized color histogram of the pixels inside the object's region.
- *		- 20 (double) - value of the minimum intensity value in the object region (v_min)
- *		- 21 (double) - value of the maximum intensity value in the object region (v_max)
- *		- 22 (double) - value of the minimum saturation value in the object region (s_min)
+ *		- 20 (double) - value of the minimum intensity value in the object region (v_min).
+ *		- 21 (double) - value of the maximum intensity value in the object region (v_max).
+ *		- 22 (double) - value of the minimum saturation value in the object region (s_min).
  *
  *
  * <b>Input/Output ports</b>
@@ -162,7 +162,8 @@
  *
  * \section conf_file_sec Configuration Files
  *
- * \c blobDescriptor.ini in \c $ICUB_ROOT/app/blobDescriptor/conf or \c $ICUB_ROOT/app/demoAffv2/conf (Object Affordances demo)
+ * - \c blobDescriptor.ini in \c $ICUB_ROOT/app/blobDescriptor/conf
+ * - \c blobDescriptor.ini in \c $ICUB_ROOT/app/demoAffv2/conf (Object Affordances demo)
  *
  * \section tested_os_sec Tested OS
  *
@@ -171,7 +172,7 @@
  * \section example_sec Example Instantiation of the Module
  *
  * - <tt>blobDescriptor --name blobDescriptor --context blobDescriptor/conf --from blobDescriptor.ini </tt>\n
- * - <tt>blobDescriptor --context demoAffv2/conf</tt>
+ * - <tt>blobDescriptor --context demoAffv2/conf</tt> (Object Affordances demo)
  *
  * \author Giovanni Saponaro <gsaponaro@isr.ist.utl.pt>, Ivana Cingovska, Alexandre Bernardino
  *
