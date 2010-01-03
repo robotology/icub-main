@@ -117,7 +117,7 @@ Start the attention.xml application using the manager.py script. Check that all 
 Adjust and install the affordance_imitation.xml.template from $ICUB_ROOT/app/demoAffv2/scripts. Adjust everything tagged as 'CHANGE' (mainly nodes). TO BE COMPLETED
 
 
-\author Luis Montesano, Manuel Lopes, Alexandre Bernardino
+\author Luis Montesano, Manuel Lopes, Jonas Ruesch, Matteo Taiana, Giovanni Saponaro, Ugo Pattacini, Christian Wressneger, Alexandre Bernardino.
 
 Copyright (C) 2008 RobotCub Consortium
 
