@@ -188,6 +188,7 @@ void rgbProcessorThread::colourOpponency(){
     Ipp8u* redPlane_ippi= ippiMalloc_8u_C1(width,height,&psb);
     Ipp8u* greenPlane_ippi= ippiMalloc_8u_C1(width,height,&psb);
     Ipp8u* bluePlane_ippi= ippiMalloc_8u_C1(width,height,&psb);
+    Ipp8u* yellowPlane_ippi = ippiMalloc_8u_C1(width,height,&psb);
 
     Ipp8u* redGreen_ippi= ippiMalloc_8u_C1(width,height,&psb);
     Ipp8u* greenRed_ippi= ippiMalloc_8u_C1(width,height,&psb);
@@ -213,7 +214,7 @@ void rgbProcessorThread::colourOpponency(){
 	Ipp8u* yellowPlane_ippi_f = ippiMalloc_8u_C1(width,height,&psb);
 	Ipp8u* greenPlane_ippi_f = ippiMalloc_8u_C1(width,height,&psb);
 
-	Ipp8u* yellowPlane_ippi = ippiMalloc_8u_C1(width,height,&psb);
+	
 
     ippiCopy_8u_C1R(bluePlane->getRawImage(),bluePlane->getRowSize(),bluePlane_ippi,psb,srcsize);
 	ippiCopy_8u_C1R(redPlane->getRawImage(),redPlane->getRowSize(),redPlane_ippi,psb,srcsize);
@@ -353,17 +354,6 @@ void rgbProcessorThread::colourOpponency(){
 	/*ippiCopy_8u_C1R(redPlane->getPixelAddress(0,0),psb,redGreen_yarp->getPixelAddress(0,0),width,srcsize);
 	ippiCopy_8u_C1R(greenPlane->getPixelAddress(0,0),psb,greenRed_yarp->getPixelAddress(0,0),width,srcsize);
 	ippiCopy_8u_C1R(bluePlane->getPixelAddress(0,0),psb,blueYellow_yarp->getPixelAddress(0,0),width,srcsize);*/
-
-	//ippiFree(bluePlane_ippi); // ippiMalloc_8u_C1(width,height,&psb);
-	//ippiFree(redPlane_ippi); // ippiMalloc_8u_C1(width,height,&psb);
-	//ippiFree (greenPlane_ippi); // ippiMalloc_8u_C1(width,height,&psb);
-	
-	ippiFree(bluePlane_ippi_f); // ippiMalloc_8u_C1(width,height,&psb);
-	ippiFree(redPlane_ippi_f); // ippiMalloc_8u_C1(width,height,&psb);
-	ippiFree(yellowPlane_ippi_f); // ippiMalloc_8u_C1(width,height,&psb);
-	ippiFree(yellowPlane_ippi); // ippiMalloc_8u_C1(width,height,&psb);
-	ippiFree(greenPlane_ippi_f); // ippiMalloc_8u_C1(width,height,&psb);
-	
     
 	/*blueYellow_yarp=bluePlane;
 	redGreen_yarp=bluePlane;
@@ -375,6 +365,20 @@ void rgbProcessorThread::colourOpponency(){
 
     //6. free memory space
 
+    ippiFree(bluePlane_ippi); // ippiMalloc_8u_C1(width,height,&psb);
+	ippiFree(redPlane_ippi); // ippiMalloc_8u_C1(width,height,&psb);
+	ippiFree (greenPlane_ippi); // ippiMalloc_8u_C1(width,height,&psb);
+    ippiFree(yellowPlane_ippi); // ippiMalloc_8u_C1(width,height,&psb);
+
+    ippiFree(redGreen_ippi);
+	ippiFree(blueYellow_ippi);
+	ippiFree(greenRed_ippi);
+
+    ippiFree(bluePlane_ippi_f); // ippiMalloc_8u_C1(width,height,&psb);
+	ippiFree(redPlane_ippi_f); // ippiMalloc_8u_C1(width,height,&psb);
+	ippiFree(yellowPlane_ippi_f); // ippiMalloc_8u_C1(width,height,&psb);
+	ippiFree(greenPlane_ippi_f); // ippiMalloc_8u_C1(width,height,&psb);
+
 	ippiFree(redPlane_ippi32_f);
 	ippiFree(bluePlane_ippi32_f);
 	ippiFree(greenPlane_ippi32_f);
@@ -383,6 +387,8 @@ void rgbProcessorThread::colourOpponency(){
 	ippiFree(redGreen_ippi32);
 	ippiFree(blueYellow_ippi32);
 	ippiFree(greenRed_ippi32);
+
+    
 	
 	ippiFree(redPlane_ippi32);
 	ippiFree(bluePlane_ippi32);
