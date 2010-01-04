@@ -15,7 +15,7 @@ int main(int argc, char *argv[]) {
     Network yarp;
     Time::turboBoost();
     // Create and run our module
-    colourProcessorModule module;
+    saliencyBlobFinderModule module;
 
     std::string fname;
  
