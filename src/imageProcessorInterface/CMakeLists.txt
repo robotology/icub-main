@@ -1,5 +1,5 @@
 
-SET(KEYWORD "visualAttentionB09")
+SET(KEYWORD "imageProcessorInterface")
 
 PROJECT(${KEYWORD})
 
