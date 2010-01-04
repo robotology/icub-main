@@ -1,10 +1,9 @@
 // -*- mode:C++; tab-width:4; c-basic-offset:4; indent-tabs-mode:nil -*-
-#ifndef _RGBPROCESSORMODULE_H_
-#define _RGBPROCESSORMODULE_H_
+#ifndef _SALIENCYBLOBFINDERMODULE_H_
+#define _SALIENCYBLOBFINDERMODULE_H_
 
 //within project includes
-#include <iCub/rgbProcessorThread.h>
-#include <iCub/yuvProcessorThread.h>
+
 
 //IPP include
 #include <ippi.h>
@@ -46,22 +45,20 @@ using namespace yarp::sig;
 /**
 *
 @ingroup icub_module
-\defgroup icub_colourProcessor colourProcessor
+\defgroup icub_saliencyBlobFinder saliencyBlobFinder
 
-This module processes the input image and always extracts the R G B channels.
-Starting from those channels it can produce the corrispective YUV channels if the user selects the option.
-If not selected the YUV channels are not computed and the module remains light.
+This module receives an edge image and the respective red plane, green plane and yellow plane.
+It needs the opponency maps composed as R+G-, G+R-, B+Y-.
+The module applies the watershed technique in order to extract all the blob and calculates a saliency map based on the mean color of the blob,
+its dimension and the the color distance to the target object
 
 \section intro_sec Description
 
 The module does:
--	run different processors for colour processing
--   reads a configuration file (todo)
--   reads commands from rpc
--	always, the RED, GREEN BLUE planes are streamed out on ports.
--	if the yuv processor is on, the Y, U+V  planes are streamed out on ports
--   for every rgb channel, the rgb processor applies a gaussian filter (todo)
--   for the intensity channel and the chrominance channel it applies a gaussian filter (todo)
+-   stream the mean color image of all the blobs
+-   stream the image of the fovea blob
+-   stream the saliency map as a gray scale image
+-	stream the most salient blob
 
 
 \section lib_sec Libraries
@@ -77,26 +74,22 @@ Here is a  comprehensive list of the parameters you can pass to the module.
 none
 
 \section portsc_sec Ports Created
-<name>/cmd:i
+<name>/cmd
 <name>/image:i
 <name>/red:o
 <name>/green:o
 <name>/blue:o
-<name>/ychannel:o
-<name>/uvchannel:o
+
 
 
 Output ports:
 - <name>/red:o: streams out a yarp::sig::ImageOf<PixelMono> which is the red plane
 - <name>/green:o:  streams out a yarp::sig::Image<PixelMono> which is the green plane
 - <name>/blue:o:  streams out a yarp::sig::Image<PixelMono> which is the blue plane
-- <name>/ychannel:o: streams out a yarp::sig::ImageOf<PixelMono> which is the intensity information
-- <name>/uvchannel:o:  streams out a yarp::sig::Image<PixelMono> which is the chrominance information
-
 
 Input ports:
 - <name>/image:i: input ports which takes as input a yarp::sig::ImageOf<PixelRgb>
-- <name>/cmd:i : port for the input rpc commands
+- <name>/cmd : port for the input rpc commands
 
 \section in_files_sec Input Data Files
 none
@@ -105,13 +98,13 @@ none
 none
  
 \section conf_file_sec Configuration Files
-none
+saliencyBlobFinder
 
 \section tested_os_sec Tested OS
 Linux and Windows.
 
 \section example_sec Example Instantiation of the Module
-colourProcessor --name /colourPU 
+saliencyBlobFinderProcessor --name /blobFinder 
 
 \author Francesco Rea
 
@@ -122,7 +115,7 @@ CopyPolicy: Released under the terms of the GNU GPL v2.0.
 **/
 
 
-class colourProcessorModule : public Module{
+class saliencyBlobFinderModule : public Module{
 private:
     /**
     * port where the input image is read from
@@ -157,34 +150,12 @@ private:
     */
     BufferedPort<ImageOf<PixelMono> > yellowPort;
     /**
-    * port where the ychannel of the image is streamed
-    */
-    BufferedPort<ImageOf<PixelMono> > yPort;
-    /**
-    * port where the uchannel of the image is streamed
-    */
-    BufferedPort<ImageOf<PixelMono> > uPort;
-    /**
-    * port where the vchannel plane of the image is streamed
-    */
-    BufferedPort<ImageOf<PixelMono> > vPort;
-     /**
-    * port where the uvchannel of the input image is streamed
-    */
-    BufferedPort<ImageOf<PixelMono> > uvPort;
-    /**
-    * flag that indicates the yuv processor should be start
-    */
-    bool startyuv_flag;
-    /**
-    * flag that indicates the yuv processor should be start
-    */
-    bool startrgb_flag;
-    /**
     * port necessary for rpc commands
     */
     BufferedPort<Bottle> cmdPort;
-
+    /**
+    * ipp reference to the size of the input image
+    */
     IppiSize srcsize;
     /**
     * width of the input image
@@ -209,29 +180,19 @@ private:
     /**
     * input image
     */
-    ImageOf<PixelRgb> *inputImg;
-    /**
-    * input image
-    */
     ImageOf<PixelRgb> *img;
+
     //_________ private methods ____________
-    /**
-    * function that starts the RGB Processor
-    */
-    void startRgbProcessor();
-    /**
-    * function that starts the YUV Processor
-    */
-    void startYuvProcessor();
+    
 public:
     /**
     * default constructor
     */
-    colourProcessorModule();
+    saliencyBlobFinderModule();
     /**
     * destructor
     */
-    ~colourProcessorModule(){};
+    ~saliencyBlobFinderModule(){};
     /**
     *opens the port and intialise the module
     * @param config configuration of the module
@@ -252,10 +213,14 @@ public:
     bool close(); 
     /**
     * function that reinitiases some attributes of the class
+    * @param width width of the input image
+    * @param height height of the input image
     */
     void reinitialise(int width,int height);
     /**
     * respond to command coming from the command port
+    * @param command command received by the module
+    * @param reply answer that this module gives to the command (if any)
     */
     bool respond(const Bottle &command,Bottle &reply);
     /**
@@ -266,15 +231,12 @@ public:
     * function that streams the images out on the ports
     */
     void outPorts();
-    
-
 
     //_________ public attributes _______________
-    yuvProcessorThread yuvProcessor;
-    rgbProcessorThread rgbProcessor;
+    
    
 };
 
-#endif //_RGBPROCESSORMODULE_H_
+#endif //__SALIENCYBLOBFINDERMODULE_H_
 
 //----- end-of-file --- ( next line intentionally left blank ) ------------------

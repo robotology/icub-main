@@ -1,21 +1,17 @@
-#include <iCub/colourProcessorModule.h>
-
-
+#include <iCub/saliencyBlobFinderModule.h>
 
 #include <iostream>
 using namespace std;
 
-colourProcessorModule::colourProcessorModule(){
+saliencyBlobFinderModule::saliencyBlobFinderModule(){
     reinit_flag=false;
-    startrgb_flag=true;
-    startyuv_flag=false;
 }
 
 
 /**
 *function that opens the module
 */
-bool colourProcessorModule::open(Searchable& config) {
+bool saliencyBlobFinderModule::open(Searchable& config) {
     ct = 0;
     //ConstString portName2 = options.check("name",Value("/worker2")).asString();
     inputPort.open(getName("image:i"));
@@ -28,12 +24,8 @@ bool colourProcessorModule::open(Searchable& config) {
     grPort.open(getName("gr:o"));
     byPort.open(getName("by:o"));
 
-    yPort.open(getName("ychannel:o"));
-    uPort.open(getName("uchannel:o"));
-    vPort.open(getName("vchannel:o"));
-    uvPort.open(getName("uvchannel:o"));
-
-    cmdPort.open(getName("cmd:i"));
+    
+    cmdPort.open(getName("cmd"));
     attach(cmdPort);
     
     return true;
@@ -42,7 +34,7 @@ bool colourProcessorModule::open(Searchable& config) {
 /** 
 * tries to interrupt any communications or resource usage
 */
-bool colourProcessorModule::interruptModule() {
+bool saliencyBlobFinderModule::interruptModule() {
     inputPort.interrupt();
     
     redPort.interrupt();
@@ -52,11 +44,6 @@ bool colourProcessorModule::interruptModule() {
     rgPort.interrupt();
     grPort.interrupt();
     byPort.interrupt();
-    
-    yPort.interrupt();
-    uPort.interrupt();
-    vPort.interrupt();
-    uvPort.interrupt();
 
     cmdPort.interrupt();
     
@@ -64,7 +51,7 @@ bool colourProcessorModule::interruptModule() {
 }
 
 
-bool colourProcessorModule::close(){
+bool saliencyBlobFinderModule::close(){
     printf("input port closing .... \n");
     inputPort.close();
     
@@ -82,19 +69,13 @@ bool colourProcessorModule::close(){
     printf("B+Y- colourOpponency port closing .... \n");
     byPort.close();
 
-    printf("intensity channel port closing .... \n");
-    yPort.close();
-    printf("chrominance channel port closing .... \n");
-    uPort.close();
-    vPort.close();
-    uvPort.close();
-
+    
     cmdPort.close();
    
     return true;
 }
 
-void colourProcessorModule::setOptions(yarp::os::Property opt){
+void saliencyBlobFinderModule::setOptions(yarp::os::Property opt){
     //options	=opt;
     // definition of the mode
     // definition of the name of the module
@@ -103,24 +84,11 @@ void colourProcessorModule::setOptions(yarp::os::Property opt){
         printf("|||  Module named as :%s \n", name.c_str());
         this->setName(name.c_str());
     }
-    ConstString yuvoption=opt.find("yuvprocessor").asString();
-    if(yuvoption!=""){
-        printf("|||  Module named as :%s \n", yuvoption.c_str());
-        if(!strcmp(yuvoption.c_str(),"ON")){
-            printf(" yuv processor starting.... \n");
-            startyuv_flag=true;
-        }
-        //this->setName(name.c_str());
-    }
-    ConstString rgboption=opt.find("rgbprocessor").asString();
-    if(rgboption!=""){
-        printf("|||  Module named as :%s \n", rgboption.c_str());
-        //this->setName(name.c_str());
-    }
+    
     
 }
 
-bool colourProcessorModule::updateModule() {
+bool saliencyBlobFinderModule::updateModule() {
     
    
     /*Bottle *bot=portTarget.read(false);
@@ -144,94 +112,35 @@ bool colourProcessorModule::updateModule() {
     if(0==img)
         return true;
 
-    if(!reinit_flag){
-        
+    if(!reinit_flag){    
 	    srcsize.height=img->height();
 	    srcsize.width=img->width();
         reinitialise(img->width(), img->height());
         reinit_flag=true;
-        startRgbProcessor();
-        if(startyuv_flag){
-            startYuvProcessor();
-        }
-
     }
 
     //copy the inputImg into a buffer
-    ippiCopy_8u_C3R(img->getRawImage(), img->getRowSize(),inputImg->getRawImage(), inputImg->getRowSize(),srcsize);
+//    ippiCopy_8u_C3R(img->getRawImage(), img->getRowSize(),inputImg->getRawImage(), inputImg->getRowSize(),srcsize);
    
   
     outPorts();
     return true;
 }
 
-void colourProcessorModule::outPorts(){
+void saliencyBlobFinderModule::outPorts(){
 
 
-    //port2.prepare() = *img;	
-    if((this->rgbProcessor.redPlane!=0)&&(redPort.getOutputCount())){
-        redPort.prepare() = *(this->rgbProcessor.redPlane);		
-        redPort.write();
-    }
-    if((this->rgbProcessor.bluePlane!=0)&&(bluePort.getOutputCount())){
-        bluePort.prepare() = *(this->rgbProcessor.bluePlane);		
-        bluePort.write();
-    }
-    if((this->rgbProcessor.greenPlane!=0)&&(greenPort.getOutputCount())){
-        greenPort.prepare() = *(this->rgbProcessor.greenPlane);		
-        greenPort.write();
-    }
-    if((this->yuvProcessor.yPlane!=0)&&(yPort.getOutputCount())){
-        yPort.prepare() = *(this->yuvProcessor.yPlane);		
-        yPort.write();
-    }
-    if((this->yuvProcessor.uPlane!=0)&&(uPort.getOutputCount())){
-        uPort.prepare() = *(this->yuvProcessor.uPlane);		
-        uPort.write();
-    }
-    if((this->yuvProcessor.vPlane!=0)&&(vPort.getOutputCount())){
-        vPort.prepare() = *(this->yuvProcessor.vPlane);		
-        vPort.write();
-    }
-    if((this->yuvProcessor.uvPlane!=0)&&(uvPort.getOutputCount())){
-        uvPort.prepare() = *(this->yuvProcessor.uvPlane);		
-        uvPort.write();
-    }
-    if((this->rgbProcessor.redGreen_yarp!=0)&&(rgPort.getOutputCount())){
-        rgPort.prepare()=*(this->rgbProcessor.redGreen_yarp);
-        rgPort.write();
-    }
-    if((this->rgbProcessor.greenRed_yarp!=0)&&(grPort.getOutputCount())){
-        grPort.prepare()=*(this->rgbProcessor.greenRed_yarp);
-        grPort.write();
-    }
-    if((this->rgbProcessor.blueYellow_yarp!=0)&&(byPort.getOutputCount())){
-        byPort.prepare()=*(this->rgbProcessor.blueYellow_yarp);
-        byPort.write();
-    }
-}
 
-void colourProcessorModule::startRgbProcessor(){
-    //rgbProcessorThread rgbProcessor();
-    rgbProcessor.setInputImage(inputImg);
-    //rgbProcessor.resize(width,height);
-    rgbProcessor.start();
 }
 
 
-void colourProcessorModule::startYuvProcessor(){
-    //rgbProcessorThread rgbProcessor();
-    yuvProcessor.setInputImage(rgbProcessor.redPlane,rgbProcessor.greenPlane,rgbProcessor.bluePlane);
-    //rgbProcessor.resize(width,height);
-    yuvProcessor.start();
-}
-void colourProcessorModule::reinitialise(int weight, int height){
-    inputImg=new ImageOf<PixelRgb>;
-    inputImg->resize(weight,height);
+void saliencyBlobFinderModule::reinitialise(int weight, int height){
+    img=new ImageOf<PixelRgb>;
+    img->resize(weight,height);
 }
 
 
-bool colourProcessorModule::respond(const Bottle &command,Bottle &reply){
+bool saliencyBlobFinderModule::respond(const Bottle &command,Bottle &reply){
         
     bool ok = false;
     bool rec = false; // is the command recognized?
@@ -345,13 +254,11 @@ bool colourProcessorModule::respond(const Bottle &command,Bottle &reply){
             switch(command.get(1).asVocab()) {
             case COMMAND_VOCAB_RGB_PROCESSOR:{
                 printf("RUN RGB \n");
-                startRgbProcessor();
                 ok=true;
             }
                 break;
             case COMMAND_VOCAB_YUV_PROCESSOR:{
                 printf("RUN YUV \n");
-                startYuvProcessor();
                 ok=true;
             }
                 break;
