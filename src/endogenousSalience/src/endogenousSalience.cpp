@@ -389,9 +389,26 @@ void EndogenousSalienceThread::run(){
    
    while (isStopping() != true) { // the thread continues to run until isStopping() returns true
  
+      /* 
+       * Step 1: read the encoder values for inclusion in the salience bottle
+       * ==========================================================================
+       *
+       */
+
+      if (debug) cout << "endogenousSalienceThread: reading encoder values" << endl;
+
+      do {
+         encoderPositions = robotPort->read(true);
+      } while (encoderPositions == NULL);
+
+      for (int i=0; i<=5; i++) {
+         encoders[i] = (float) encoderPositions->data()[i];  
+         if (debug)   cout << "endogenousSalienceThread: encoder values: " <<  encoders[i] << endl;
+      }
+
            
       /* 
-       * Step 1: grab cartesian and logpolar images and copy images to local format
+       * Step 2: grab cartesian and logpolar images and copy images to local format
        * ==========================================================================
        */
 
@@ -462,7 +479,7 @@ void EndogenousSalienceThread::run(){
 
 
       /* 
-       * Step 2: Identify the modal hue and saturation values in the logpolar image
+       * Step 3: Identify the modal hue and saturation values in the logpolar image
        * ==========================================================================
        *
        */
@@ -478,7 +495,7 @@ void EndogenousSalienceThread::run(){
 
 
       /* 
-       * Step 3: segment the cartesian image  
+       * Step 4: segment the cartesian image  
        * ===================================== 
        */
 
@@ -491,7 +508,7 @@ void EndogenousSalienceThread::run(){
 
      
 
-      // Step 4: filter the colour_segmentation by performing an morphological opening
+      // Step 5: filter the colour_segmentation by performing an morphological opening
       // =============================================================================
 		      
       if (debug) cout << "endogenousSalienceThread: post-segmentation filtering " << endl;
@@ -502,7 +519,7 @@ void EndogenousSalienceThread::run(){
 	  }
 
 
-      // Step 5: perform blob analysis and choose largest blob as the most salient region
+      // Step 6: perform blob analysis and choose largest blob as the most salient region
       // ================================================================================
  
       if (debug) cout << "endogenousSalienceThread: finding blobs " << endl;
@@ -519,28 +536,8 @@ void EndogenousSalienceThread::run(){
       }
       
       if (debug) cout << "endogenousSalienceThread: blob centroid " << xCentroid << " " << yCentroid << endl;
-
-         
-      /* 
-       * Step 6: read the encoder values for inclusion in the salience bottle
-       * ==========================================================================
-       *
-       */
-
-      if (debug) cout << "endogenousSalienceThread: reading encoder values" << endl;
-
-      /*
-      do {
-         encoderPositions = robotPort->read(true);
-      } while (encoderPositions == NULL);
-
-      for (int i=0; i<=5; i++) {
-         encoders[i] = (float) encoderPositions->data()[i];  
-         if (debug)   cout << "endogenousSalienceThread: encoder values: " <<  encoders[i] << endl;
-      }
-
-      */
-
+   
+      
       /* 
        * Step 7: build and write out the salience bottle
        * =============================================== 

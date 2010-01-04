@@ -13,7 +13,8 @@
  * row major order, with x and y increment equal to the window dimensions so that the window scans the complete image 
  * (except for borders at the right-hand side and bottom).
  * In either case (random or regular scan), the module also writes the gaze angles to an output port, 
- * simulating the functionality of the attentionSelection module
+ * simulating the functionality of the attentionSelection module.
+ * It also writes encoder values for the head, simulating the functionality of the /icub/head/state:o port on the iCub.
  *
  * 
  * \section lib_sec Libraries
@@ -47,6 +48,9 @@
  *   The complete output port name to which the image should be streamed
  *
  * - \c gazePort \c /gaze:o  \n  
+ *   The complete output port name to which the gaze angles should be streamed
+ *
+ * - \c encoderPort \c /icub/head/state:o   \n  
  *   The complete output port name to which the gaze angles should be streamed
  *
  * - \c imageFile \c image.ppm \n
@@ -113,6 +117,8 @@
  *  - \c /image:o
  *
  *  - \c /gaze:o \n
+ * 
+ *  - \c  /icub/head/state:o  \n
  *
  * <b>Port types </b>
  *
@@ -120,7 +126,8 @@
  * but doesn't say anything about the data transmitted on the ports. This is defined by the following code. 
  *
  * - \c BufferedPort<ImageOf<PixelRgb> >   \c outputPort;      
- * - \c BufferedPort<VectorOf<double> >    \c gazeOutPort;  <tt>//double azimuth, elevation, 'a', 0, 0 </tt>
+ * - \c BufferedPort<VectorOf<double> >    \c gazeOutPort;     <tt>//double azimuth, elevation, 'a', 0, 0 </tt>
+ * - \c BufferedPort<VectorOf<double> >    \c encoderOutPort;  <tt>//double 0, 1, 2, 3, 4, 5 </tt>
  * 
  * Note that the protocol used for the gazeOutPort is the same as that used by the attentionSelection module
  * when controlling the controlGaze2 module using the /pos port.
@@ -180,6 +187,7 @@
  * -----------
  * 22/09/09  First version validated   DV
  * 20/11/09  Added windowing and gaze functionality   DV
+ * 04/01/10  Added encoder functionality   DV
  */ 
 
 
@@ -225,6 +233,7 @@ private:
 
    BufferedPort<ImageOf<PixelRgb> > *imagePortOut;   
    BufferedPort<VectorOf<double> >  *gazePortOut;   
+   BufferedPort<VectorOf<double> >  *encoderPortOut;   
    int *widthValue;     
    int *heightValue;     
    int *noiseValue; 
@@ -240,7 +249,8 @@ public:
    /* class methods */
 
    ImageSourceThread(BufferedPort<ImageOf<PixelRgb> > *imageOut,  
-                     BufferedPort<VectorOf<double> >  *gazePortOut, 
+                     BufferedPort<VectorOf<double> >  *gazePortOut,
+                     BufferedPort<VectorOf<double> >  *encoderPortOut, 
                      string *imageFilename,  int period, int *width, int *height, int *noise, int *window, int *random,
                      double *horizontalViewAngle, double *verticalViewAngle);
    bool threadInit();     
@@ -261,6 +271,7 @@ class ImageSource:public RFModule
    string moduleName;
    string outputPortName;  
    string gazePortName;
+   string encoderPortName;
    string handlerPortName;
    string imageFilename;
    int    frequency;
@@ -276,6 +287,7 @@ class ImageSource:public RFModule
 
    BufferedPort<ImageOf<PixelRgb> > imageOut;     // output port
    BufferedPort<VectorOf<double> >  gazeOut;      // gaze port
+   BufferedPort<VectorOf<double> >  encoderOut;   // encoder port
    Port handlerPort;                              // a port to handle messages 
 
    /* pointer to a new thread to be created and started in configure() and stopped in close() */

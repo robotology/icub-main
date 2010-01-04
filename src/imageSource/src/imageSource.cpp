@@ -21,6 +21,7 @@
  * Audit Trail
  * -----------
  * 21/09/09  First version validated   DV
+ * 04/01/10  Added encoder functionality DV
  */ 
 
  
@@ -71,6 +72,12 @@ bool ImageSource::configure(yarp::os::ResourceFinder &rf)
                            Value("/gaze:o"),
                            "Output gaze port (string)").asString();
 
+   /* get the complete name of the gaze output port */
+
+   encoderPortName       = rf.check("encoderPort", 
+                           Value("/icub/head/state:o"),
+                           "Output encoder port (string)").asString();
+
    /* get the frequency, width, height, standard deviation, horizontalViewAngle, and verticalViewAngle values */
 
    frequency             = rf.check("frequency",
@@ -107,17 +114,18 @@ bool ImageSource::configure(yarp::os::ResourceFinder &rf)
 
 
    if (debug) {
-      cout << "imageSource::configure: image file name  " << imageFilename << endl;
-      cout << "imageSource::configure: output port name " << outputPortName << endl;
-      cout << "imageSource::configure: gaze port name   " << gazePortName << endl;
-      cout << "imageSource::configure: frequency        " << frequency << endl;
-      cout << "imageSource::configure: width            " << width << endl;
-      cout << "imageSource::configure: height           " << height << endl;
-      cout << "imageSource::configure: noise level      " << noiseLevel << endl;
-      cout << "imageSource::configure: window flag      " << window << endl;
-      cout << "imageSource::configure: random flag      " << random << endl;
-      cout << "imageSource::configure: horizontal FoV   " << horizontalViewAngle << endl;
-      cout << "imageSource::configure: vertical FoV     " << verticalViewAngle << endl;
+      cout << "imageSource::configure: image file name   " << imageFilename << endl;
+      cout << "imageSource::configure: output port name  " << outputPortName << endl;
+      cout << "imageSource::configure: gaze port name    " << gazePortName << endl;
+      cout << "imageSource::configure: encoder port name " << encoderPortName << endl;
+      cout << "imageSource::configure: frequency         " << frequency << endl;
+      cout << "imageSource::configure: width             " << width << endl;
+      cout << "imageSource::configure: height            " << height << endl;
+      cout << "imageSource::configure: noise level       " << noiseLevel << endl;
+      cout << "imageSource::configure: window flag       " << window << endl;
+      cout << "imageSource::configure: random flag       " << random << endl;
+      cout << "imageSource::configure: horizontal FoV    " << horizontalViewAngle << endl;
+      cout << "imageSource::configure: vertical FoV      " << verticalViewAngle << endl;
    }
 
    /* do all initialization here */
@@ -132,6 +140,12 @@ bool ImageSource::configure(yarp::os::ResourceFinder &rf)
           
    if (!gazeOut.open(gazePortName.c_str())) {
       cout << "imageSource::configure" << ": unable to open port " << gazePortName << endl;
+      return false;  // unable to open; let RFModule know so that it won't run
+   }
+
+             
+   if (!encoderOut.open(encoderPortName.c_str())) {
+      cout << "imageSource::configure" << ": unable to open port " << encoderPortName << endl;
       return false;  // unable to open; let RFModule know so that it won't run
    }
 
@@ -158,7 +172,7 @@ bool ImageSource::configure(yarp::os::ResourceFinder &rf)
 
    //cout << "imageSource::configure: calling Thread constructor"   << endl;
 
-   imageSourceThread = new ImageSourceThread(&imageOut, &gazeOut, &imageFilename, 
+   imageSourceThread = new ImageSourceThread(&imageOut, &gazeOut, &encoderOut, &imageFilename, 
                                              (int)(1000 / frequency), &width, &height, &noiseLevel, &window, &random,
                                              &horizontalViewAngle, &verticalViewAngle);
 
@@ -177,6 +191,7 @@ bool ImageSource::interruptModule()
 {
    imageOut.interrupt();
    gazeOut.interrupt();
+   encoderOut.interrupt();
    handlerPort.interrupt();
 
    return true;
@@ -187,6 +202,7 @@ bool ImageSource::close()
 {
    imageOut.close();
    gazeOut.close();
+   encoderOut.close();
    handlerPort.close();
 
    /* stop the thread */
@@ -244,7 +260,8 @@ double ImageSource::getPeriod()
 
  
 ImageSourceThread::ImageSourceThread(BufferedPort<ImageOf<PixelRgb> > *imageOut, 
-                                     BufferedPort<VectorOf<double> > *gazeOut,
+                                     BufferedPort<VectorOf<double> > *gazeOut,   
+                                     BufferedPort<VectorOf<double> > *encoderOut,
                                      string *imageFilename, int period, int *width, int *height, int *noiseLevel, 
                                      int *window, int *random,
                                      double *horizontalViewAngle, double *verticalViewAngle) : RateThread(period)
@@ -253,6 +270,7 @@ ImageSourceThread::ImageSourceThread(BufferedPort<ImageOf<PixelRgb> > *imageOut,
 
    imagePortOut             = imageOut;
    gazePortOut              = gazeOut;
+   encoderPortOut           = encoderOut;
    imageFilenameValue       = imageFilename;
    widthValue               = width;
    heightValue              = height;
@@ -460,6 +478,23 @@ void ImageSourceThread::run(){
        
       gazePortOut->write();
    }
+           
+   /*
+    * Now write out the simulated encoder values
+    */
+
+   VectorOf<double> &vctEnc = encoderPortOut->prepare();
+   vctEnc.resize(6);
+   vctEnc(0) = 0;
+   vctEnc(1) = 1;
+   vctEnc(2) = 2; 
+   vctEnc(3) = 3;  
+   vctEnc(4) = 4; 
+   vctEnc(5) = 5; 
+
+   // write output vector
+       
+   encoderPortOut->write();
 }
 
 void ImageSourceThread::threadRelease() 

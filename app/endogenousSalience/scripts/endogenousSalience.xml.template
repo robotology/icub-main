@@ -32,19 +32,22 @@
    <tag>left_image</tag>
 </module>
 
+
 <module>
    <name>yarpview</name>
-   <parameters>--name /logpolarImage --x 340 --y 000 --w 320 --h 318 </parameters>
+   <parameters>--name /segmentedOutputImage --x 340 --y 000 --w 320 --h 318 </parameters>
+   <node>icub1</node>
+   <tag>logpolar_image</tag>
+</module>
+
+
+<module>
+   <name>yarpview</name>
+   <parameters>--name /logpolarImage --x 680 --y 000 --w 320 --h 318 </parameters>
    <node>icub1</node>
    <tag>sampled_image</tag>
 </module>
 
-<module>
-   <name>yarpview</name>
-   <parameters>--name /segmentedOutputImage --x 680 --y 000 --w 320 --h 318 </parameters>
-   <node>icub1</node>
-   <tag>logpolar_image</tag>
-</module>
 
 
 <connection>
@@ -56,6 +59,12 @@
 <connection>
   <from>/icub/cam/left</from>
   <to>/endogenousSalience/cartesianImage:i</to>
+  <protocol>tcp</protocol>
+</connection>
+
+<connection>
+  <from>/icub/head/state:o</from>
+  <to>/endogenousSalience/head:i</to>
   <protocol>tcp</protocol>
 </connection>
 
