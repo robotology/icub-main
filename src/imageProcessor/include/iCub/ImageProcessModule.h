@@ -105,6 +105,9 @@ Outports
 - outRG:o
 - outGR:o
 - outBY:o
+InOut ports
+-cmd
+
 
 \section in_files_sec Input Data Files
 none
@@ -172,6 +175,10 @@ private:
     * output port for edges in B+Y- colour Opponency Map
     */
     BufferedPort<ImageOf<PixelMono> > byEdgesPort;
+    /**
+    * overall edges port combination of maximum values of all the colorOpponency edges
+    */
+    BufferedPort<ImageOf<PixelMono> > edgesPort;
     /**
     * command port of the module
     */

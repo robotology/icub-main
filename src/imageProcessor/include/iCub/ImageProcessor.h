@@ -262,7 +262,7 @@ class ImageProcessor:public RateThread
      
         
         
-        ImageOf<PixelMono>* lineMax(ImageOf<PixelMono> *src);
+        ImageOf<PixelMono> lineMax(ImageOf<PixelMono> &src);
         /**
         * add two images (using IPP)
         */

@@ -257,6 +257,9 @@ ImageProcessor::ImageProcessor(ImageOf<PixelRgb>* inputImage):RateThread(THREAD_
 * 
 */
 void ImageProcessor::resizeImages(int width,int height){
+    this->height=height;
+    this->width=width;
+
     int psb;
     IppiSize srcsize={width,height};
     this->portImage->resize(width,height);
@@ -644,9 +647,10 @@ if (IPPISOBEL){
 }
 if(OPENCVSOBEL){
     IppiSize msksize={3,3};
-    printf("OPENCV SOBEL Find Edges Blue Opponency \n");
-    if((blueYellow_flag)&&(canProcess_flag))
+    if(blueYellow_flag){
         cvSobel(blueYellow_yarp->getIplImage(),cvImage16,1,1,3);
+        cvConvertScale(cvImage16,cvImage8);
+    }
     else
         cvImage8=cvCreateImage(cvSize(width,height),IPL_DEPTH_8U,1);
 
@@ -980,9 +984,10 @@ if (IPPISOBEL){
 
 if (OPENCVSOBEL){
     IppiSize msksize={3,3};
-    printf("OPENCV SOBEL Find Edges Green Opponency \n");
-    if((greenRed_flag)&&(canProcess_flag))
+    if(greenRed_flag){
         cvSobel(greenRed_yarp->getIplImage(),cvImage16,1,1,3);
+        cvConvertScale(cvImage16,cvImage8);
+    }
     else
         cvImage8=cvCreateImage(cvSize(320,240),IPL_DEPTH_8U,1);
     ippiCopy_8u_C1R((unsigned char*)cvImage8->imageData,cvImage8->widthStep,outputGreenRed2,psb,srcsize);
@@ -1971,40 +1976,46 @@ ImageOf<PixelMono>*  ImageProcessor::LShiftC ( ImageOf<PixelMono> *src1){
     return outputImage;
 }
 
-ImageOf<PixelMono>* ImageProcessor::combineMax(){
-    IppiSize srcsize ={width,height};
-    int psb;
 
+ImageOf<PixelMono>* ImageProcessor::combineMax(){
+
+    int psb;
+    Ipp8u* edgesOutput_ippi=ippiMalloc_8u_C1(width,height,&psb);
+
+    IppiSize srcsize ={width,height};
+    
     Ipp8u* edgesBlue_ippi=ippiMalloc_8u_C1(width,height,&psb); 
     Ipp8u* edgesGreen_ippi=ippiMalloc_8u_C1(width,height,&psb);
     Ipp8u* edgesRed_ippi=ippiMalloc_8u_C1(width,height,&psb);
-    Ipp8u* edgesOutput_ippi=ippiMalloc_8u_C1(width,height,&psb);
+    
+    /*
     Ipp8u* edgesOutput2_ippi=ippiMalloc_8u_C1(width,height,&psb);
     Ipp8u* edgesMask_ippi=ippiMalloc_8u_C1(width,height,&psb);
+    */
 
  
-    edgesBlue=this->findEdgesBlueOpponency();
-    if(edgesBlue==NULL)
-        return NULL;
-    ippiCopy_8u_C1R(edgesBlue->getPixelAddress(0,0),width,edgesBlue_ippi,psb,srcsize);
+    //edgesBlue=this->findEdgesBlueOpponency();
+    //if(edgesBlue==NULL)
+    //    return NULL;
+    ippiCopy_8u_C1R(blueYellowEdges_yarp->getRawImage(),blueYellowEdges_yarp->getRowSize(),edgesBlue_ippi,psb,srcsize);
 
-    edgesGreen=this->findEdgesGreenOpponency();
-    if(edgesGreen==NULL)
-        return NULL;
-    ippiCopy_8u_C1R(edgesGreen->getPixelAddress(0,0),width,edgesGreen_ippi,psb,srcsize);
+    //edgesGreen=this->findEdgesGreenOpponency();
+    //if(edgesGreen==NULL)
+    //    return NULL;
+    ippiCopy_8u_C1R(greenRedEdges_yarp->getRawImage(),greenRedEdges_yarp->getRowSize(),edgesGreen_ippi,psb,srcsize);
 
-    edgesRed=this->findEdgesRedOpponency();
-    if(edgesRed==NULL)
-        return NULL;
-    ippiCopy_8u_C1R(edgesRed->getPixelAddress(0,0),width,edgesRed_ippi,psb,srcsize);
+    //edgesRed=this->findEdgesRedOpponency();
+    //if(edgesRed==NULL)
+    //    return NULL;
+    ippiCopy_8u_C1R(redGreenEdges_yarp->getRawImage(),redGreenEdges_yarp->getRowSize(),edgesRed_ippi,psb,srcsize);
 
 
     int i=0,r=0,c=0;
     
-    //if((unsigned int)edgesOutput==0xcdcdcdcd){
-        edgesOutput=new ImageOf<PixelMono>;
-        edgesOutput->resize(width,height);
-    //}
+    
+    edgesOutput=new ImageOf<PixelMono>;
+    edgesOutput->resize(width,height);
+   
     
     
     /*unsigned char* pointerRed=edgesOutput->getRawImage();
@@ -2021,11 +2032,9 @@ ImageOf<PixelMono>* ImageProcessor::combineMax(){
         i++;
     }*/
 
-    
-    if(edgesOutput_ippi==NULL)
-        return NULL;
+
     for(int i=0; i<width*height;i++){
-        //edgesOutput_ippi[i]=edgesBlue_ippi[i];
+        //edgesOutput_ippi[i]=edgesGreen_ippi[i];
 
         if(edgesGreen_ippi[i]<edgesRed_ippi[i])
             if(edgesRed_ippi[i]<edgesBlue_ippi[i])
@@ -2057,16 +2066,37 @@ ImageOf<PixelMono>* ImageProcessor::combineMax(){
     ippiAdd_8u_C1IRSfs(edgesRed_ippi,psb,edgesOutput->getPixelAddress(0,0),width,srcsize,1);
     ippiAdd_8u_C1IRSfs(edgesBlue_ippi,psb,edgesOutput->getPixelAddress(0,0),width,srcsize,1);*/
 
-    ippiCopy_8u_C1R(edgesOutput_ippi,psb,edgesOutput->getPixelAddress(0,0),width,srcsize);
+    ippiCopy_8u_C1R(edgesOutput_ippi,psb,edgesOutput->getRawImage(),edgesOutput->getRowSize(),srcsize);
     //edgesOutput->setExternal((unsigned char*)pointerRed,height,width);
 
     ippiFree(edgesBlue_ippi);
     ippiFree(edgesRed_ippi);
     ippiFree(edgesGreen_ippi);
+
     ippiFree(edgesOutput_ippi);
-    ippiFree(edgesOutput2_ippi);
-    ippiFree(edgesMask_ippi);
+
+    /*ippiFree(edgesOutput2_ippi);
+    ippiFree(edgesMask_ippi);*/
     return edgesOutput;
+}
+
+ImageOf<PixelMono> ImageProcessor::lineMax(ImageOf<PixelMono> &src)
+{
+	/*ImageOf<PixelMono> dst;
+    dst.resize(width,height);
+    int fovHeight=(int)height/3;
+    int x,y;
+    for (int y=0; y<fovHeight; y++)
+		for (int x=0; x<width; x++)
+            dst.getPixelAddress(x,y)=src.getPixelAddress(x,y)*2.5; //con soglia 4
+			//dst(x,y)=src(x,y)*3.5; //con soglia 6
+
+	for (y=fovHeight; y<height; y++)
+		for (int x=0; x<width; x++)
+            dst.getPixelAddress(x,y)=src.getPixelAddress(x,y)*(3.51773*exp(-0.00832991*y)); //con soglia 4
+			//dst(x,y)=src(x,y)*(5.58286*exp(-0.011389*y)); //con soglia 6
+    return dst;*/
+    return src;
 }
 
 ImageOf<PixelMono>* ImageProcessor::subtract(ImageOf<PixelMono> *src1, ImageOf<PixelMono> *src2){

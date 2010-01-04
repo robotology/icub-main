@@ -44,6 +44,8 @@ bool ImageProcessModule::interruptModule() {
     grPort.interrupt();
     byPort.interrupt();
 
+    edgesPort.interrupt();
+
     inImagePort.interrupt();
     cmdPort.interrupt();
 	return true;
@@ -114,13 +116,15 @@ bool ImageProcessModule::openPorts(){
     bluePlanePort.open(getName("blue:i"));
     greenPlanePort.open(getName("green:i"));
 
-    rgPort.open(getName("image1:i"));
-    grPort.open(getName("image2:i"));
-    byPort.open(getName("image3:i"));
+    rgPort.open(getName("rg:i"));
+    grPort.open(getName("gr:i"));
+    byPort.open(getName("by:i"));
 
-    rgEdgesPort.open(getName("edges1:o"));
-    grEdgesPort.open(getName("edges2:o"));
-    byEdgesPort.open(getName("edges3:o"));
+    rgEdgesPort.open(getName("rgEdges:o"));
+    grEdgesPort.open(getName("grEdges:o"));
+    byEdgesPort.open(getName("byEdges:o"));
+
+    edgesPort.open(getName("edges:o"));
 
     cmdPort.open(getName("cmd")); // optional command port
     attach(cmdPort); // cmdPort will work just like terminal
@@ -146,6 +150,11 @@ bool ImageProcessModule::outPorts(){
         byEdgesPort.write();
         ret=true;
     } 
+    if((0!=currentProcessor->edges_yarp)&&(edgesPort.getOutputCount())){
+        edgesPort.prepare() = *(currentProcessor->edges_yarp);		
+        edgesPort.write();
+        ret=true;
+    } 
 	return ret;
 }
 
@@ -165,9 +174,9 @@ bool ImageProcessModule::closePorts(){
     grPort.close();
     byPort.close();
 
-    cmdPort.close();
+    edgesPort.close();
 
-	
+    cmdPort.close();
 
 	return ret;
 }
@@ -181,9 +190,20 @@ void ImageProcessModule::reinitialise(int weight, int height){
 
 
 bool ImageProcessModule::updateModule() {
+    //check for any possible command
+    Bottle* command=cmdPort.read(false);
+    if(command!=0){
+        //Bottle* tmpBottle=cmdPort.read(false);
+        ConstString str= command->toString();
+        printf("command received: %s \n", str.c_str());
+        Bottle* reply=new Bottle();
+        this->respond(*command,*reply);
+    }
+
     /*this->inputImg = this->inImagePort.read(false);
     if(0==inputImg)
         return true;*/
+
     tmp=rgPort.read(false);
     if(tmp==0){
         return true;
@@ -200,8 +220,8 @@ bool ImageProcessModule::updateModule() {
         currentProcessor->resizeImages(tmp->width(),tmp->height());
         startImageProcessor();
     }
-    currentProcessor->redGreen_yarp=tmp;
 
+    currentProcessor->redGreen_yarp=tmp;
     currentProcessor->redPlane=redPlanePort.read(false);
     if(0!=currentProcessor->redGreen_yarp){
         currentProcessor->redGreen_flag=true;
@@ -212,17 +232,22 @@ bool ImageProcessModule::updateModule() {
     currentProcessor->blueYellow_yarp=byPort.read(false);
     if(0!=currentProcessor->blueYellow_yarp){
         currentProcessor->blueYellow_flag=true;
-        currentProcessor->blueYellow_yarp=currentProcessor->findEdgesBlueOpponency();
+        currentProcessor->blueYellowEdges_yarp=currentProcessor->findEdgesBlueOpponency();
     }
     
     currentProcessor->greenPlane=greenPlanePort.read(false);
     currentProcessor->greenRed_yarp=grPort.read(false);
     if(0!=currentProcessor->greenRed_yarp){
-        currentProcessor->blueYellow_flag=true;
+        currentProcessor->greenRed_flag=true;
         currentProcessor->greenRedEdges_yarp=currentProcessor->findEdgesGreenOpponency();
     }
 
-    outPorts();
+    if((currentProcessor->redGreen_flag)&&(currentProcessor->greenRed_flag)&&(currentProcessor->blueYellow_flag)){
+        currentProcessor->edges_yarp=currentProcessor->combineMax();
+        //lineMax();
+        outPorts();
+    }
+
     return true;
 }
 
