@@ -31,7 +31,6 @@ bool ImageProcessModule::open(Searchable& config) {
     this->openPorts();   
     //ConstString portName2 = options.check("name",Value("/worker2")).asString();
     
-
     return true;
 }
 
@@ -51,10 +50,11 @@ bool ImageProcessModule::interruptModule() {
 }
 
 bool ImageProcessModule::close() {
-    this->currentProcessor->stop();
+    if(currentProcessor->isRunning())
+        this->currentProcessor->stop();
 	this->closePorts();
 	return true;
-	}
+}
 
 void ImageProcessModule::setOptions(yarp::os::Property opt){
 	//options	=opt;
@@ -64,13 +64,10 @@ void ImageProcessModule::setOptions(yarp::os::Property opt){
         printf("|||  Module named as :%s \n", name.c_str());
         this->setName(name.c_str());
     }
-    ConstString value=opt.find("OPENCVSOBEL").asString();
+    ConstString value=opt.find("mode").asString();
     if(value!=""){
-       if(value=="ON")
+       if(value=="OPENCVSOBEL")
         this->OPENCVSOBEL=true;
-       else if(value=="OFF")
-           this->OPENCVSOBEL=false;
-
     }
 }
 
@@ -117,56 +114,17 @@ bool ImageProcessModule::openPorts(){
     bluePlanePort.open(getName("blue:i"));
     greenPlanePort.open(getName("green:i"));
 
-    rgPort.open(getName("rg:i"));
-    grPort.open(getName("gr:i"));
-    byPort.open(getName("by:i"));
+    rgPort.open(getName("image1:i"));
+    grPort.open(getName("image2:i"));
+    byPort.open(getName("image3:i"));
 
-    rgEdgesPort.open(getName("rgEdges:o"));
-    grEdgesPort.open(getName("grEdges:o"));
-    byEdgesPort.open(getName("byEdges:o"));
+    rgEdgesPort.open(getName("edges1:o"));
+    grEdgesPort.open(getName("edges2:o"));
+    byEdgesPort.open(getName("edges3:o"));
 
     cmdPort.open(getName("cmd")); // optional command port
     attach(cmdPort); // cmdPort will work just like terminal
-	//outputports
-	if (false)
-        {
-		
-            /*_pOutPort = new yarp::os::BufferedPort<ImageOf<PixelRgb> >;
-			_pOutPort2 = new yarp::os::BufferedPort<ImageOf<PixelRgb> >;
-			_pOutPort3 = new yarp::os::BufferedPort<ImageOf<PixelRgb> >;*/
-            printf("Registering port %s on network %s...\n", "/rea/ImageProcessor/out","default");
-			printf("Registering port %s on network %s...\n", "/rea/ImageProcessor/out2","default");
-			printf("Registering port %s on network %s...\n", "/rea/ImageProcessor/out3","default");
-			/*portRg = new yarp::os::BufferedPort<ImageOf<PixelMono> >;
-			portGr = new yarp::os::BufferedPort<ImageOf<PixelMono> >;
-			portBy = new yarp::os::BufferedPort<ImageOf<PixelMono> >;*/
-            printf("Registering port %s on network %s...\n", "/rea/ImageProcessor/outRG","default");
-			printf("Registering port %s on network %s...\n", "/rea/ImageProcessor/outGR","default");
-			printf("Registering port %s on network %s...\n", "/rea/ImageProcessor/outBY","default");
-			/*portRedPlane = new yarp::os::BufferedPort<ImageOf<PixelMono> >;
-			portGreenPlane = new yarp::os::BufferedPort<ImageOf<PixelMono> >;
-			portBluePlane = new yarp::os::BufferedPort<ImageOf<PixelMono> >;*/
-            printf("Registering port %s on network %s...\n", "/rea/ImageProcessor/outRed","default");
-			printf("Registering port %s on network %s...\n", "/rea/ImageProcessor/outGreen","default");
-			printf("Registering port %s on network %s...\n", "/rea/ImageProcessor/outBlue","default");
-            /*bool ok = _pOutPort->open("/rea/ImageProcessor/out");
-			ok = _pOutPort2->open("/rea/ImageProcessor/out2");
-			ok = _pOutPort3->open("/rea/ImageProcessor/out3");
-			ok = portRg->open("/rea/ImageProcessor/outRG");
-			ok = portGr->open("/rea/ImageProcessor/outGR");
-			ok = portBy->open("/rea/ImageProcessor/outBY");
-			ok = portRedPlane->open("/rea/ImageProcessor/outRed");
-			ok = portGreenPlane->open("/rea/ImageProcessor/outGreen");
-			ok = portBluePlane->open("/rea/ImageProcessor/outBlue");*/
-            if  (ok)
-                printf("Port registration succeed!\n");
-            else 
-                {
-                    printf("ERROR: Port registration failed.\nQuitting, sorry.\n");
-                    return false;
-                }
-
-        }
+	
 
 	return true;
 }
@@ -209,46 +167,7 @@ bool ImageProcessModule::closePorts(){
 
     cmdPort.close();
 
-	//closing output ports
-	if (false)
-        {
-		
-            /*_pOutPort;
-			_pOutPort2 = new yarp::os::BufferedPort<ImageOf<PixelRgb>>;
-			_pOutPort3 = new yarp::os::BufferedPort<ImageOf<PixelRgb>>;*/
-			
-			
-            printf("Closing port %s on network %s...\n", "/rea/ImageProcessor/in","default");
-			//_imgRecv.Disconnect();
-			printf("Closing port %s on network %s...\n", "/rea/ImageProcessor/out","dafult");
-			printf("Closing port %s on network %s...\n", "/rea/ImageProcessor/out2","dafult");
-			printf("Closing port %s on network %s...\n", "/rea/ImageProcessor/out3","dafult");
-			/*_pOutPort->close(); //->open("/rea/ImageProcessor/out");
-			_pOutPort2->close(); //open("/rea/ImageProcessor/out2");
-			_pOutPort3->close(); //open("/rea/ImageProcessor/out3");*/
-			printf("Closing port %s on network %s...\n", "/rea/ImageProcessor/outRG","dafult");
-			printf("Closing port %s on network %s...\n", "/rea/ImageProcessor/outGR","dafult");
-			printf("Closing port %s on network %s...\n", "/rea/ImageProcessor/outBY","dafult");
-			/*portRg->close(); //open("/rea/ImageProcessor/outRG");
-			portGr->close(); //open("/rea/ImageProcessor/outGR");
-			portBy->close(); //open("/rea/ImageProcessor/outBY");*/
-            printf("Closing port %s on network %s...\n", "/rea/ImageProcessor/outRed","dafult");
-			printf("Closing port %s on network %s...\n", "/rea/ImageProcessor/outGreen","dafult");
-			printf("Closing port %s on network %s...\n", "/rea/ImageProcessor/outBlue","dafult");
-			/*portRedPlane->close(); //open("/rea/ImageProcessor/outRed");
-			portGreenPlane->close(); //open("/rea/ImageProcessor/outGreen");
-			portBluePlane->close(); //open("/rea/ImageProcessor/outBlue");*/
-
-            if(true){
-                printf("All ports closed succeed!\n");
-            }
-            else 
-            {
-                    printf("ERROR: Ports closing failed.\nQuitting, sorry.\n");
-                    return false;
-            }
-
-        }
+	
 
 	return ret;
 }
@@ -276,6 +195,7 @@ bool ImageProcessModule::updateModule() {
         reinitialise(tmp->width(), tmp->height());
         reinit_flag=true;
         currentProcessor=new ImageProcessor();
+        //passes the temporary variable for the mode
         currentProcessor->OPENCVSOBEL=OPENCVSOBEL;
         currentProcessor->resizeImages(tmp->width(),tmp->height());
         startImageProcessor();
