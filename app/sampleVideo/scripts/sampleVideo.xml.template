@@ -1,0 +1,53 @@
+<application>
+<name>File-based image source streaming to port and subsequent subsampling</name>
+
+<dependencies>
+</dependencies>
+
+<module>
+   <name>imageSource</name>
+   <parameters>--context sampleVideo/conf </parameters>
+   <node>icub1</node>
+   <tag>imageSource</tag>
+</module>
+
+<module>
+   <name>sampleVideo</name>
+   <parameters></parameters>
+   <node>icub1</node>
+   <tag>sampleVideo</tag>
+</module>
+
+<module>
+   <name>yarpview</name>
+   <parameters>--name /leftInputImage --x 000 --y 0 --w 320 --h 318 </parameters>
+   <node>icub1</node>
+   <tag>left_image</tag>
+</module>
+
+<module>
+   <name>yarpview</name>
+   <parameters>--name /sampledOutputImage --x 340 --y 0 --w 320 --h 318 </parameters>
+   <node>icub1</node>
+   <tag>sampled_image</tag>
+</module>
+
+<connection>
+  <from>/icub/cam/left</from>
+  <to>/leftInputImage</to>
+  <protocol>tcp</protocol>
+</connection>
+
+<connection>
+  <from>/icub/cam/left</from>
+  <to>/sampleVideo/image:i</to>
+  <protocol>tcp</protocol>
+</connection>
+
+<connection>
+  <from>/sampleVideo/image:o</from>
+  <to>/sampledOutputImage</to>
+  <protocol>tcp</protocol>
+</connection>
+
+</application>
