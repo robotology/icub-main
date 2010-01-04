@@ -1,7 +1,7 @@
  /**
    * @ingroup icub_module
    *
-   * \defgroup icub_your_module_name your_module_name
+   * \defgroup zeroForceControl zeroForceControl
    *
    */
 
