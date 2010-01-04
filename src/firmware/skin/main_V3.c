@@ -1,3 +1,12 @@
+/* Author Marco Maggiali 
+// Firmware Version 1.0 Build Number 0 
+// 
+// Compiled  with C30 V3_20
+*/ MP
+
+
+
+
 
 #include<p30f4011.h>
 #include"can_interface.h"
