@@ -265,6 +265,7 @@ class DVhs_histogram {
 	   void put_bin(int h, int s, int value);
 	   void increment_bin(int h, int s);
 	   void initialize();
+       void hsMode(float *hue, float *saturation);
 
    //private:
       int *data;  
@@ -290,6 +291,7 @@ typedef  struct {
 /*** Fourier vision prototypes ***/
 
 void fourier_segmentation (DVimage *input_image_1, DVimage *input_image_2, DVimage *output_image_1, DVimage *output_image_2, DVimage *phase_output_image_1, DVimage *phase_output_image_2, double threshold, int filter_radius, int non_maxima_suppression_radius, double min_max_threshold, int mask, double mask_threshold);
+void colour_segmentation (DVimage *input_image, float hue, float saturation, float hue_range, float saturation_range, DVimage *output_image);
 void fft(float *image, float *real, float *imaginary, int width, int height, int direction);
 void test_rlft3 (float *image, int width, int height) ;
 double log_magnitude (double a_r, double a_i);
@@ -320,6 +322,8 @@ int  enhance_local_maxima_by_filtering(float *source_image, int half_kernel_size
 void mask_image (DVimage *input_image, DVimage *mask_image,  DVimage *output_image, double threshold);
 void colour_histogram (DVimage *input_image, DVhs_histogram *hs);
 void gaussianApodization (DVimage *input_image, float std_dev, DVimage *output_image);
+void erosion(DVimage *input_image, int radius, DVimage *output_image);
+void dilation(DVimage *input_image, int radius, DVimage *output_image);
 void log_polar_transform (DVimage *input_image, DVimage *output_image, int direction, double overlap);
 void rectify(DVimage *input_image_left, DVimage *input_image_right, 
              float fx_left,  float fy_left,  float px_left,  float py_left,  float theta_y_left,

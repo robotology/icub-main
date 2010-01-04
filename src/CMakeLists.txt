@@ -198,10 +198,12 @@ ENDIF (ARTOOLKITPLUS_FOUND)
      ADD_SUBDIRECTORY(autoAssociativeMemory)
      ADD_SUBDIRECTORY(episodicMemory)
      ADD_SUBDIRECTORY(proceduralMemory)
+     ADD_SUBDIRECTORY(endogenousSalience)
   ENDIF (OPENCV_FOUND)
 
   # utility modules
   ADD_SUBDIRECTORY(imageSource)
+  ADD_SUBDIRECTORY(sampleVideo)
 
   # example module that is compliant with iCub configuration, coding, and documentation standards
   ADD_SUBDIRECTORY(myModule)

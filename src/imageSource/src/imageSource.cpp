@@ -277,6 +277,22 @@ ImageSourceThread::ImageSourceThread(BufferedPort<ImageOf<PixelRgb> > *imageOut,
 
 bool ImageSourceThread::threadInit() 
 {
+
+   /* generate a seed for the random variables */
+
+   srand((int)(1000*yarp::os::Time::now()));
+
+   /* set the window offsets to zero */
+
+   xOffset = 0;
+   yOffset = 0;
+
+   if (debug) {
+      cout << "ImageSourceThread::threadInit: xOffset        " << xOffset << endl;
+      cout << "ImageSourceThread::threadInit: yOffset        " << yOffset << endl;
+   }
+
+
    /* open the image file and create an image */
    
    if (debug) {
@@ -291,15 +307,6 @@ bool ImageSourceThread::threadInit()
       cout << "ImageSourceThread::threadInit: unable to read image file" << endl;
       return false;
    }
-
-   /* generate a seed for the random variables */
-
-   srand((int)(1000*yarp::os::Time::now()));
-
-   /* set the window offsets to zero */
-
-   xOffset = 0;
-   yOffset = 0;
 }
 
 void ImageSourceThread::run(){
@@ -312,6 +319,8 @@ void ImageSourceThread::run(){
       cout << "ImageSourceThread::run: random flag    " << *randomValue << endl;
       cout << "ImageSourceThread::run: horizontal FoV " << *horizontalViewAngleValue << endl;
       cout << "ImageSourceThread::run: vertical FoV   " << *verticalViewAngleValue << endl;
+      cout << "ImageSourceThread::run: xOffset        " << xOffset << endl;
+      cout << "ImageSourceThread::run: yOffset        " << yOffset << endl;
    }
 
 

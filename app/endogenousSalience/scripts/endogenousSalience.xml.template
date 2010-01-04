@@ -1,0 +1,88 @@
+<application>
+<name>Demo of endogenous Salience</name>
+
+<dependencies>
+</dependencies>
+
+<module>
+   <name>imageSource</name>
+   <parameters>--context endogenousSalience/conf --frequency 1 --random 1 --window 1</parameters>
+   <node>icub1</node>
+   <tag>imageSource</tag>
+</module>
+
+<module>
+   <name>endogenousSalience</name>
+   <parameters></parameters>
+   <node>icub1</node>
+   <tag>endogenousSalience</tag>
+</module>
+
+<module>
+   <name>logPolarTransform</name>
+   <parameters>--context endogenousSalience/conf</parameters>
+   <node>icub1</node>
+   <tag>logPolarTransform</tag>
+</module>
+
+<module>
+   <name>yarpview</name>
+   <parameters>--name /leftInputImage --x 000 --y 000 --w 320 --h 318 </parameters>
+   <node>icub1</node>
+   <tag>left_image</tag>
+</module>
+
+<module>
+   <name>yarpview</name>
+   <parameters>--name /logpolarImage --x 340 --y 000 --w 320 --h 318 </parameters>
+   <node>icub1</node>
+   <tag>sampled_image</tag>
+</module>
+
+<module>
+   <name>yarpview</name>
+   <parameters>--name /segmentedOutputImage --x 680 --y 000 --w 320 --h 318 </parameters>
+   <node>icub1</node>
+   <tag>logpolar_image</tag>
+</module>
+
+
+<connection>
+  <from>/icub/cam/left</from>
+  <to>/leftInputImage</to>
+  <protocol>tcp</protocol>
+</connection>
+
+<connection>
+  <from>/icub/cam/left</from>
+  <to>/endogenousSalience/cartesianImage:i</to>
+  <protocol>tcp</protocol>
+</connection>
+
+<connection>
+  <from>/icub/cam/left</from>
+  <to>/logPolarTransform/image:i</to>
+  <protocol>tcp</protocol>
+</connection>
+
+<connection>
+  <from>/logPolarTransform/image:o</from>
+  <to>/endogenousSalience/logpolarImage:i</to>
+  <protocol>tcp</protocol>
+</connection>
+
+
+<connection>
+  <from>/logPolarTransform/image:o</from>
+  <to>/logpolarImage</to>
+  <protocol>tcp</protocol>
+</connection>
+
+
+<connection>
+  <from>/endogenousSalience/segmentedImage:o</from>
+  <to>/segmentedOutputImage</to>
+  <protocol>tcp</protocol>
+</connection>
+
+</application>

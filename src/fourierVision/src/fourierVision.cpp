@@ -491,7 +491,48 @@ void DVhs_histogram::initialize() {
    for (int i=0; i<j; i++)
       *(data+i) = 0;
 }
- 
+
+
+ // compute the hue and saturation values corresponding to the mode of the histogram
+ // these values are in the range [0,360] and [0,1] respectively
+ // NB they are NOT the bin numbers of the histogram mode
+
+void DVhs_histogram::hsMode(float *hue, float *saturation) {
+
+   int i, j;
+   int max_value;
+   int max_i;
+   int max_h;
+   int max_s;
+
+   max_value = 0;
+   max_i = 0;
+
+   j=hue_dimension*saturation_dimension;
+   for (i=0; i<j; i++) {
+      if (*(data+i) >= max_value) {
+         max_value = *(data+i);
+         max_i = i;
+      }
+   }
+
+   max_s = max_i / hue_dimension;
+   max_h = max_i - (max_s * hue_dimension);
+
+   if (saturation_dimension <= 1) {
+      *saturation = 0.5;
+   }
+   else {
+      *saturation = (float) max_s / (float) (saturation_dimension-1);
+   }
+
+   if (hue_dimension <= 1) {
+      *hue = 180;
+   }
+   else {
+      *hue = (float) (360 * max_h) / (float) (hue_dimension-1);
+   }
+}
 
 
 /************************************************************************************************
@@ -1050,8 +1091,31 @@ void colour_segmentation (DVimage *input_image, float hue, float saturation, flo
          
             rgb2hsi(r,g,b,&h, &s, &i);
 
-            if ( (h >= (hue - hue_range)) && (h <= (hue + hue_range)) &&
-                (s >= (saturation - saturation_range)) && (s <= (saturation + saturation_range)) ) {
+            if (   
+                  (
+                     (
+                        (h >= hue - hue_range      ) && (h <= hue + hue_range      )
+                     ) 
+                     
+                     ||
+
+                     (
+                        (h >= hue+360 - hue_range) && (h <= hue+360 + hue_range)
+                     )
+
+                     ||
+
+                     (
+                        (h >= hue-360 - hue_range) && (h <= hue-360 + hue_range)
+                     )
+                     
+                  ) 
+                  &&
+                  (
+                     (s >= (saturation - saturation_range)) && (s <= (saturation + saturation_range))
+                  )
+               ) 
+               {
 
                //output_image->put_pixel(p,q,r,0);  
                //output_image->put_pixel(p,q,g,1);  
