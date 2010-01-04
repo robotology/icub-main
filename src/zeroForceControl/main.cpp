@@ -1,3 +1,11 @@
+ /**
+   * @ingroup icub_module
+   *
+   * \defgroup icub_your_module_name your_module_name
+   *
+   */
+
+
 #include <yarp/os/BufferedPort.h>
 #include <yarp/os/RFModule.h>
 #include <yarp/os/Time.h>
@@ -32,6 +40,10 @@ using namespace iKin;
 const int SAMPLER_RATE = 50;
 const int FT_VALUES = 6;
 const int ARM_JNT = 4;
+
+const bool verbose = 1;
+const int CPRNT = 10;
+const int CALIBRATION_OK = false; // should be true when FT calibration will be ok
 
 const double initPosition[4] = {0.0, 0.0, 0.0, 0.0};
 
@@ -112,6 +124,8 @@ private:
 	int watchDOG;
 	Stamp info;
 	double time, time0;
+
+	Vector *datas;
     
 
 public:
@@ -130,9 +144,13 @@ public:
 		  iencs->getEncoders(encoders.data());
 
 		  // Elbow to FT sensor variables
-		  Rs=eye(3,3);
+		  Rs.resize(3,3);
+		  Rs=0.0;
+		  Rs(0,0) = Rs(2,1) = 1.0;
+		  Rs(1,2) = -1.0;
 		  ps.resize(3);
 		  ps=0.0;
+		  ps(1) = 0.10;
 
 		  arm= new iCubArm4DOF("Left");
 		  sensor = new iFTransform(Rs,ps);
@@ -177,7 +195,7 @@ public:
 			  ipos->positionMove(i,initPosition[i]);
 
 		  bool check = false;
-		  int count;
+		  //int count;
 		  for(int i=0;i<ARM_JNT;i++)
 		  {
 			  check=false;
@@ -193,15 +211,20 @@ public:
 		  Time::delay(1.0);
 
 		  for(int i=0;i<ARM_JNT;i++)
-			  ipids->setPid(i,FTPid[i]);  // iCub is now controllable using setOffset
+		  {
+			  //ipids->setPid(i,FTPid[i]);  // iCub is now controllable using setOffset
+		  }
+		  
+		  count =0;
 		  return true;
 	  }
 	  void run()
 	  {
-		  Vector *tmp=port_FT.read(false);
+		  datas=port_FT.read(false);
 		  
 		  if(iencs->getEncoders(encoders.data()))
 		          arm->setAng(encoders);
+		  else if(verbose) fprintf(stderr,"ERROR: no read from encoders\n");
 
 		  port_FT.getEnvelope(info);
 		  time = info.getTime();
@@ -219,18 +242,31 @@ public:
 			  watchDOG+=1;
 		  }
 
-		  if(watchDOG>=20) connected = CONNECTION_ERROR;
+		  if(watchDOG>=20) 
+		  {
+			  connected = CONNECTION_ERROR;
+			  if (verbose) fprintf(stderr,"WARNING: possible connection problem. watchdog:%d\n\n",watchDOG);
+		  }
 
 		  switch(connected)
 		  { 
 			  case CONNECTION_ERROR:
 				  FT=0.0;
+				  fprintf(stderr,"ERROR: connection lost\n\n");
 				  break;
 			  case CONNECTION_OK:
-				  if(tmp!=0)  
-				  {
-					  Vector Datum = *tmp;
-					  FTs = *Datum.data();
+				  if(count>=CPRNT && verbose)
+					  fprintf(stderr,"Connection ok...\n\n");
+				  if(datas!=0)  
+				  { 
+					  if(CALIBRATION_OK)
+					  {
+						  Vector Datum = *datas;
+						  FTs = *Datum.data();
+					  } else
+						  FTs = readFT();
+
+
 					  if(first) FTs_init = FTs;
 					  FT = FTB->getFB(FTs-FTs_init);
 					  first = false;
@@ -261,15 +297,21 @@ public:
 		  tauSafe = tau;
 		  tauSafe = checkLimits(encoders, tau); 
 
-		  fprintf(stderr,"tau = ");
-		  for(int i=0;i<4;i++)
-			  fprintf(stderr,"%.3lf\t", tau(i));
-		  fprintf(stderr,"\n");
+		  if(count>=CPRNT)
+		  {
+			  fprintf(stderr,"tau = ");
+			  for(int i=0;i<4;i++)
+				  fprintf(stderr,"%.3lf\t", tau(i));
+			  fprintf(stderr,"\n");
 
-		  fprintf(stderr,"safeTau = ");
-		  for(int i=0;i<4;i++)
-			  fprintf(stderr,"%.3lf\t", tauSafe(i));
-		  fprintf(stderr,"\n\n\n");
+			  fprintf(stderr,"safeTau = ");
+			  for(int i=0;i<4;i++)
+				  fprintf(stderr,"%.3lf\t", tauSafe(i));
+			  fprintf(stderr,"\n\n\n");
+
+			  count = 0;
+		  }
+		  count++;
 	  }
 
 	  void threadRelease()
@@ -294,9 +336,22 @@ public:
 		  Vector t = TAO;
 		  for(int i=0;i<ARM_JNT;i++)
 		  {
-			  if((q(i)<=MIN_JNT_LIMITS[i]) || (q(i)>=MAX_JNT_LIMITS[i])) t(i) = 0.0;
+			  if((q(i)<=MIN_JNT_LIMITS[i]) || (q(i)>=MAX_JNT_LIMITS[i]))
+			  {
+				  t(i) = 0.0;
+				  if(verbose) fprintf(stderr,"Joint %d over limits %.2lf (%.2lf - %.2lf)\n", i, q(i), MIN_JNT_LIMITS[i], MAX_JNT_LIMITS[i]);
+			  }
 		  }
 		  return t;
+	  }
+
+	  Vector readFT()
+	  {
+		  Vector Datum = *datas;
+		  Vector FTtmp = *Datum.data();
+		  FTtmp(2) = -FTtmp(2);
+		  FTtmp(4) = -FTtmp(4);
+		  return FTtmp;
 	  }
 		  
 };
