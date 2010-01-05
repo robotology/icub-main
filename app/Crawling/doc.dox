@@ -14,7 +14,7 @@ The general implementation is pictured below
 
 The four limbs as well as the head and the torso are controlled. For each part, the trajectoires of all the dofs are produced by a \ref icub_CrawlGenerator "CrawlGenerator" module (referred to as CPG on the figure), some of them being coupled together to ensure the gait (green arrows). On top of these, the \ref icub_CrawlManager "CrawlManager" module is responsible for sending the control (i.e. high-level) parameters corresponding to the different behaviors.   
 
-Documentation concerning the iCub Interface and velocityControl modules can be found respectively \ref icub_iCubInterface "here" and \ref icub_velocityControl "here". 
+Documentation concerning the iCubInterface and velocityControl modules can be found respectively \ref icub_iCubInterface "here" and \ref icub_velocityControl "here". 
 
 \section dep_sec Dependencies
 
@@ -22,7 +22,7 @@ Assumes \ref icub_iCubInterface "iCubInterface" is running, and that the parts y
 
 
 \section int_sec Instantiated Modules
-- \ref icub_velocityControl "velocityControl" (for each of the controlled parts)
+- \ref icub_velocityControl "velocityControl" (for each of the controlled parts)	
 - \ref icub_CrawlGenerator "CrawlGenerator" (for each of the controlled parts)
 - \ref icub_CrawlManager "CrawlManager"	
 
@@ -56,5 +56,5 @@ Copyright (C) 2008 RobotCub Consortium
 
 CopyPolicy: Released under the terms of the GNU GPL v2.0.
 
-This file can be edited at \in app/Crawling
+This file can be edited at \in app/Crawling/doc.dox
 **/
