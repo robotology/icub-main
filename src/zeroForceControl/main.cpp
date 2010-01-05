@@ -499,6 +499,7 @@ public:
 		port_FT.close();
 
 		delete ft_control;
+		delete dd;
 		return true;
 	}
 };
