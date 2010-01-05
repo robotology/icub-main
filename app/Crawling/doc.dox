@@ -1,0 +1,55 @@
+/**
+@ingroup  icub_applications
+\defgroup icub_Crawling Crawling Demo
+\brief  Architecture for crawling and reaching on all fours 
+
+\section intro_sec Introduction
+
+The Crawling application consists of a set of modules that are used for crawling, steering and reaching on all fours, please refer to \link http://www.robotcub.org/index.php/robotcub/content/download/1340/4673/file/Deliverable_3_8_EPFL.pdf Deliverable 3.8. 
+
+The implementation is as below
+
+\image html crawl_new_impl.jpg
+
+\section dep_sec Dependencies
+
+Assumes \ref icub_iCubInterface "iCubInterface" is running, and that the parts you want to control are instantiated.
+
+For each active part, an corresponding \ref icub_velocityControl "velocityControl" module should be running. 
+
+\section int_sec Instantiated Modules
+- \ref icub_CrawlGenerator "CrawlGenerator" (for each of the controlled part, referred as "CPG" on figure above)
+- \ref icub_CrawlManager "CrawlManager"	
+
+\section parameters_sec Parameters
+
+The script does not require any parameters. 
+
+\section config_sec Configuration Files
+
+Configuration files are located in the ICUB_DIR/app/Crawling/config folder. 
+
+The files of type limbConfig.ini contain the information about the different limbs: number of dofs, joint limits, ... and also about the topology of the network of oscillator (i.e. the coupling between them). 
+
+The file managerConfig.ini contain the parameters corresponding to the different behaviors: crawling, stand on all fours, reach with the left/right arm, ... 
+
+
+\section example_sec How to run the application
+
+To run the application, please do the following :
+
+- manager.py $ICUB_DIR/app/Crawling/scripts/vel_cont.xml  (preferably on PC104)
+
+- manager.py $ICUB_DIR/app/Crawling/scripts/gen.xml 
+
+- manager.py $ICUB_DIR/app/Crawling/scripts/man.xml
+
+
+\author Sarah Degallier
+
+Copyright (C) 2008 RobotCub Consortium
+
+CopyPolicy: Released under the terms of the GNU GPL v2.0.
+
+This file can be edited at \in app/Crawling
+**/
