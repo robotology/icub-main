@@ -78,6 +78,62 @@ private:
     * input image
     */
     ImageOf<PixelRgb> *img;
+    /**
+	* reference to the watershed operator
+	*/
+	WatershedOperator *wOperator;
+	/**
+	* reference to the salience operator
+	*/
+	SalienceOperator *salience;
+    /**
+	* number of blobs
+	*/
+	int max_tag;
+    /**
+    * pointer to the output image of the watershed algorithm
+    */
+    ImageOf<yarp::sig::PixelMono>* _outputImage;
+    /**
+    * pointer to the input image
+    */
+    ImageOf<yarp::sig::PixelRgb> *ptr_inputImg;
+    /**
+    * pointer to the red plane input image
+    */
+    ImageOf<PixelMono> *ptr_inputImgRed;
+    /**
+    * pointer to the green plane input image
+    */
+    ImageOf<PixelMono> *ptr_inputImgGreen;
+    /**
+    * pointer to the input blue plane image
+    */
+    ImageOf<PixelMono> *ptr_inputImgBlue;
+    /**
+    * pointer to the input image R+G-
+    */
+    ImageOf<PixelMono> *ptr_inputImgRG;
+    /**
+    * pointer to the input image G+R-
+    */
+    ImageOf<PixelMono> *ptr_inputImgGR;
+    /**
+    * pointer to the input image B+Y-
+    */
+    ImageOf<PixelMono> *ptr_inputImgBY;
+    /**
+    * pointer to the image of tags
+    */
+    ImageOf<PixelInt> *ptr_tagged;
+    /**
+	* flag for drawing blobCatalog
+	*/
+	bool blobCataloged_flag;
+    /**
+	*vector of tags to the sequence of blobs
+	*/
+	ImageOf<PixelInt>* tagged;
 
     //_________ private methods ____________
     
@@ -104,8 +160,14 @@ public:
     void threadRelease();
     /**
     * function that reinitiases some attributes of the class
+    * @param height height of the input image
+    * @param width width of the input image
     */
     void reinitialise(int height, int width);
+    /**
+    * function the applies the watershed (rain falling) algorithm
+    */
+    void rain();
 
     //_________ public attributes _______________
     
