@@ -1,24 +1,29 @@
 /**
 @ingroup  icub_applications
 \defgroup icub_Crawling Crawling Demo
-\brief  Architecture for crawling and reaching on all fours 
+
 
 \section intro_sec Introduction
 
-The Crawling application consists of a set of modules that are used for crawling, steering and reaching on all fours, please refer to \link http://www.robotcub.org/index.php/robotcub/content/download/1340/4673/file/Deliverable_3_8_EPFL.pdf Deliverable 3.8. \endlink
+The Crawling application consists of a set of modules that are used for crawling, steering and reaching on all fours (please refer to \link http://www.robotcub.org/index.php/robotcub/content/download/1340/4673/file/Deliverable_3_8_EPFL.pdf Deliverable 3.8. \endlink for more information). 
 
-The implementation is as below
+The general implementation is pictured below
 
 \image html crawl_new_impl.jpg
+
+
+The four limbs as well as the head and the torso are controlled. For each part, the trajectoires of all the dofs are produced by a \ref icub_CrawlGenerator "CrawlGenerator" module (referred to as CPG on the figure), some of them being coupled together to ensure the gait (green arrows). On top of these, the \ref icub_CrawlManager "CrawlManager" module is responsible for sending the control (i.e. high-level) parameters corresponding to the different behaviors.   
+
+Documentation concerning the iCub Interface and velocityControl modules can be found respectively \ref icub_iCubInterface "here" and \ref icub_velocityControl "here". 
 
 \section dep_sec Dependencies
 
 Assumes \ref icub_iCubInterface "iCubInterface" is running, and that the parts you want to control are instantiated.
 
-For each active part, an corresponding \ref icub_velocityControl "velocityControl" module should be running. 
 
 \section int_sec Instantiated Modules
-- \ref icub_CrawlGenerator "CrawlGenerator" (for each of the controlled part, referred as "CPG" on figure above)
+- \ref icub_velocityControl "velocityControl" (for each of the controlled parts)
+- \ref icub_CrawlGenerator "CrawlGenerator" (for each of the controlled parts)
 - \ref icub_CrawlManager "CrawlManager"	
 
 \section parameters_sec Parameters
