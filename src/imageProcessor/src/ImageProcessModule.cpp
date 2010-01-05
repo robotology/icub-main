@@ -36,6 +36,7 @@ bool ImageProcessModule::open(Searchable& config) {
 
 // try to interrupt any communications or resource usage
 bool ImageProcessModule::interruptModule() {
+    printf("interrupting the module.. \n");
 	redPlanePort.interrupt();
     bluePlanePort.interrupt();
     greenPlanePort.interrupt();
@@ -43,6 +44,9 @@ bool ImageProcessModule::interruptModule() {
     rgPort.interrupt();
     grPort.interrupt();
     byPort.interrupt();
+    rgEdgesPort.interrupt();
+    grEdgesPort.interrupt();
+    byEdgesPort.interrupt();
 
     edgesPort.interrupt();
 
@@ -178,6 +182,10 @@ bool ImageProcessModule::closePorts(){
     rgPort.close();
     grPort.close();
     byPort.close();
+    rgEdgesPort.close();
+    grEdgesPort.close();
+    byEdgesPort.close();
+
 
     edgesPort.close();
 
