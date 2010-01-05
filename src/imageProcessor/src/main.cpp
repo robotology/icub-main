@@ -31,7 +31,7 @@ int main(int argc, char *argv[]) {
 		printf(" \n");
 		printf("USER COMMANDS: \n");
 		printf("--file (XXXX): defines the name of the configfile to look into parameters \n");
-        printf("e.g --file imageprocessor.ini \n");
+        printf("e.g.: imageProcessor --file imageProcessor.ini \n");
 		printf(" \n");
 		printf(" \n");
 		return 0;
