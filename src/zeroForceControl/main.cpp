@@ -332,11 +332,11 @@ public:
 		  delete arm;
 	  }
 
-	  bool checkSinglePosition(double qd, double q)
+	  /*bool checkSinglePosition(double qd, double q)
 	  {
 		  if(abs(qd-q)<=1.0) return true;
 		  else return false;
-	  }
+	  }*/
 	  Vector checkLimits(Vector q, Vector TAO)
 	  {
 		  Vector t = TAO;
