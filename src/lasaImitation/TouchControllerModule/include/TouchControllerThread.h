@@ -30,6 +30,8 @@
 using namespace yarp::os;
 using namespace yarp::sig;
 
+#include "MultipleMiceDriver/MMiceDeviceDriver.h"
+#include "TouchController.h"
 
 class TouchControllerThread: public RateThread
 {
@@ -37,15 +39,38 @@ private:
     Semaphore               mMutex;
     int                     mPeriod;
     char                    mBaseName[256];
+
+    int                     mType;
+    char                    mDeviceName[256];
     
-    BufferedPort<Vector>    mInputPort;
+    MMiceDeviceDriver       mMiceDriver;
+    TouchController         mTouchController;
+    
+    double                  mTransGain;
+    double                  mRotGain;
+    double                  mTransLimit;
+    double                  mRotLimit;
+    Vector                  mCoefs;
+    
+    Matrix                  mFrameOfRef;
+    
+    BufferedPort<Matrix>    mFrameOfRefPort;
     BufferedPort<Vector>    mOutputPort;
+    
+    bool                    bRunning;
     
 public:
     TouchControllerThread(int period, const char* baseName);
     virtual ~TouchControllerThread();
 
-
+            void    SetDevice(const char* deviceName,int type);
+            void    SetSensorIdByTouch(int id);
+            void    Activate(bool act = true);
+            void    SetTransGain(double gain);
+            void    SetTransLimit(double gain);
+            void    SetRotGain(double gain);
+            void    SetRotLimit(double gain);
+    
     virtual void run();
     virtual bool threadInit();
     virtual void threadRelease();

@@ -6,7 +6,7 @@
 #ifdef USE_MATHLIB_NAMESPACE
 namespace MathLib {
 #endif
-
+class IKGroupSolver;
 /**
  * \class IKSolver
  * 
@@ -21,54 +21,57 @@ namespace MathLib {
 class IKSolver
 {
 public:
-			/// Constructor
-            IKSolver();
-			/// Destructor
-    virtual ~IKSolver();
-	
-			/// Allows to print out debug message
-			void    SetVerbose(bool verbose=true);
+    friend class IKGroupSolver;
 
-			/// Initialization: prepare the system to process n DOFs and m constraints
+public:
+            /// Constructor
+            IKSolver();
+            /// Destructor
+    virtual ~IKSolver();
+    
+            /// Allows to print out debug message
+            void    SetVerbose(bool verbose=true);
+
+            /// Initialization: prepare the system to process n DOFs and m constraints
             void    SetSizes(int dofs, int constraintsSize);
-			/// Set the thresholds for 
+            /// Set the thresholds for 
             void    SetThresholds(REALTYPE loose, REALTYPE cut);    
 
-			/// Removes all constraints limits on the outputs
+            /// Removes all constraints limits on the outputs
             void    ClearLimits();
-			
-			/**
-			 * \brief Sets the constraints limits on the putput
-			 * \param low      Vector for low bounds values (should be <=0)
-			 * \param high     Vector for high bounds values (should be >=0)
-			 */  
+            
+            /**
+             * \brief Sets the constraints limits on the putput
+             * \param low      Vector for low bounds values
+             * \param high     Vector for high bounds values
+             */  
             void    SetLimits(Vector &low, Vector &high);
             
-			/// Sets the jacobian to the system
+            /// Sets the jacobian to the system
             void    SetJacobian(Matrix & j);
-			
-			/// Sets the weights on the degrees of freedom (useful if the redundancies are on the DOFs)
+            
+            /// Sets the weights on the degrees of freedom (useful if the redundancies are on the DOFs)
             void    SetDofsWeights(Vector &v);
-			/// Sets the weights on the constraints (useful if the redundancies are on the constraints)
+            /// Sets the weights on the constraints (useful if the redundancies are on the constraints)
             void    SetConstraintsWeights(Vector &v);
-			/// Selects which constraints should be used of not (all of them by default...)
+            /// Selects which constraints should be used or not (all of them by default...)
             void    SetValidConstraints(Vector &constr);
 
-			/// Sets the target values to reach (Size given by the number of constraints)
+            /// Sets the target values to reach (Size given by the number of constraints)
             void    SetTarget(Vector &v);
-			/// Sets the target for the null space (Size given by the number of DOFs)
+            /// Sets the target for the null space (Size given by the number of DOFs)
             void    SetNullTarget(Vector &null);
         
-			/// Compute the inverse kinematic solution
+            /// Compute the inverse kinematic solution
             void    Solve();
-			
-			/// Get the result
+            
+            /// Get the result
             void        GetOutput(Vector &output);
-            /// Get the actual target values produces
-			void        GetTargetOutput(Vector &output);
-			/// Get the error between produced target and the requested one
+            /// Get the actual target that output values produces
+            void        GetTargetOutput(Vector &output);
+            /// Get the error between produced target and the requested one
             void        GetTargetError(Vector &error);
-			/// Get the squared norm of the error between produced target and the requested one
+            /// Get the squared norm of the error between produced target and the requested one
             REALTYPE    GetTargetError();
         
   
@@ -82,72 +85,74 @@ protected:
 
     IndicesVector       mValidConstraints;
     Vector              mLimits[2]; 
-  Vector              mCurrLimits[2]; 
+    Vector              mCurrLimits[2];
+    Vector              mLimitsOffset;
 
-  Matrix              mFullJacobian;
-  Matrix              mJacobian;
-  
-  Matrix              mInputConstrWeights;
-  Matrix              mInputDofsWeights;
-  Matrix              mWeights;
-  Matrix              mWeightsTranspose;
-  Matrix              mConstrWeights;
+    Matrix              mFullJacobian;
+    Matrix              mJacobian;
 
-  Vector              mFullDesiredTarget;
-  Vector              mDesiredTarget;
-  Vector              mOffsetTarget;
-  Vector              mActualTarget;
+    Matrix              mInputConstrWeights;
+    Matrix              mInputDofsWeights;
+    Matrix              mWeights;
+    Matrix              mWeightsTranspose;
+    Matrix              mConstrWeights;
 
-  Vector              mOutputTarget;
-  Vector              mFullOutputTarget;
+    Vector              mFullDesiredTarget;
+    Vector              mDesiredTarget;
+    Vector              mOffsetTarget;
+    Vector              mActualTarget;
+    Vector              mLimitsOffsetTarget;
 
-  Vector              mNullTarget;
-  bool                bUseNullTarget;
-  
-  Matrix              mJWt;
-  Matrix              mWJt;
-  Matrix              mWJtJWt;
-  
-  Matrix              mTriMatrix;
-  
-  Matrix              mEigenVectors;
-  Matrix              mRedEigenVectors;
-  Matrix              mNullEigenVectors;
-  Matrix              mEigenVectorsTranspose;
-  Matrix              mRedEigenVectorsTranspose;
-  Matrix              mNullEigenVectorsTranspose;
+    Vector              mOutputTarget;
+    Vector              mFullOutputTarget;
 
-  Vector              mEigenValues;
-  Vector              mRedEigenValues;
-  Vector              mRedInvEigenValues;
-  
-  Vector              mCondNumbersVector;
-  
-  int                 mEigenSteps;
-  
-  int                 mRank;
-  int                 mConstraintsSize;
-  int                 mDofs;
-  int                 mValidConstraintsSize;
-  REALTYPE            mLooseThreshold;
-  REALTYPE            mCutThreshold;
-  
-  Matrix              mRedPseudoInverseTmpMatrix;
-  Matrix              mRedPseudoInverse;
-  Matrix              mWeightedRedPseudoInverse;
-  
-  Vector              mStepOutput;
-  Vector              mOutput;
-  Vector              mOutputOffset;
+    Vector              mNullTarget;
+    bool                bUseNullTarget;
 
-  
-  Vector              mOutputLimitsError;  
-  
-  IndicesVector       mValidJoints;
-  IndicesVector       mJointMapping;
-  IndicesVector       mInverseJointMapping;
-  
-  Matrix              mOutputNullSpace;
+    Matrix              mJWt;
+    Matrix              mWJt;
+    Matrix              mWJtJWt;
+
+    Matrix              mTriMatrix;
+
+    Matrix              mEigenVectors;
+    Matrix              mRedEigenVectors;
+    Matrix              mNullEigenVectors;
+    Matrix              mEigenVectorsTranspose;
+    Matrix              mRedEigenVectorsTranspose;
+    Matrix              mNullEigenVectorsTranspose;
+
+    Vector              mEigenValues;
+    Vector              mRedEigenValues;
+    Vector              mRedInvEigenValues;
+
+    Vector              mCondNumbersVector;
+
+    int                 mEigenSteps;
+
+    int                 mRank;
+    int                 mConstraintsSize;
+    int                 mDofs;
+    int                 mValidConstraintsSize;
+    REALTYPE            mLooseThreshold;
+    REALTYPE            mCutThreshold;
+
+    Matrix              mRedPseudoInverseTmpMatrix;
+    Matrix              mRedPseudoInverse;
+    Matrix              mWeightedRedPseudoInverse;
+
+    Vector              mStepOutput;
+    Vector              mOutput;
+    Vector              mOutputOffset;
+
+
+    Vector              mOutputLimitsError;  
+
+    IndicesVector       mValidJoints;
+    IndicesVector       mJointMapping;
+    IndicesVector       mInverseJointMapping;
+
+    Matrix              mOutputNullSpace;
   
 };
 

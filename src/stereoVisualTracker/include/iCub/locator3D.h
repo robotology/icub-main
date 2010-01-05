@@ -51,6 +51,7 @@ class Locator3D
   void PrintParams(int k=1);
   void SetDefaultParams(float angle0, float angle1, float dist);
   void SetDefaultTranslation(float dist);
+  void CenterOrigin();
   void SetIntrinsicsParams(const CvCamera *cam[]);
   void SetIntrinsicsParams(int i, const CvCamera *cam);
 

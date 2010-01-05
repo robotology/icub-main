@@ -23,6 +23,7 @@
 using namespace yarp::os;
 
 #include <math.h>
+#include <string.h>
 
 int main(int argc, char *argv[])
 {
@@ -49,14 +50,14 @@ bool TouchControllerModule::open(Searchable &s){
         return true;
 
     if(!mParams.check("name")){
-        mParams.put("name","TouchController000");
-        fprintf(stderr, "No module base name specifed, using <TouchController000> as default\n");
+        mParams.put("name","Touch000");
+        fprintf(stderr, "No module base name specifed, using <Touch000> as default\n");
         fprintf(stderr, "  usage: --name name (e.g. test)\n");
     }
     setName(mParams.find("name").asString());
     
     if(!mParams.check("period")){
-        mParams.put("period",0.01);
+        mParams.put("period",0.05);
         fprintf(stderr, "No module period specifed, using <0.01> ms as default\n");
         fprintf(stderr, "  usage: --period time (e.g. 0.01)\n");
     }
@@ -65,6 +66,31 @@ bool TouchControllerModule::open(Searchable &s){
         fprintf(stderr, "Period specifed, %f<0, using <0.01> ms as default\n",mPeriod);
         mPeriod = 0.01;
     }
+
+    if(!mParams.check("type")){
+        fprintf(stderr, "No device type specifed: please specify either '3Dmouse' or 'touchpad'\n");
+        fprintf(stderr, "  usage: --type <type>\n");
+        return false;
+    }
+    char cType[256];
+    strncpy(cType,mParams.find("type").asString().c_str(),256);
+    if(strncmp(cType,"3Dmouse",256)==0){
+        mType = 0;
+    }else if(strncmp(cType,"touchpad",256)==0){
+        mType = 1;    
+    }else{
+        fprintf(stderr, "Bad device type specifed: please specify either '3Dmouse' or 'touchpad'\n");
+        fprintf(stderr, "  usage: --type <type>\n");
+        return false;
+    }
+
+    if(!mParams.check("device")){
+        fprintf(stderr, "No device name specifed\n");
+        fprintf(stderr, "  usage: --device name (e.g. 3Dconnexion)\n");
+        return false;
+    }
+    strncpy(mDeviceName,mParams.find("device").asString().c_str(),256);
+    
     
     char portName[255];
     snprintf(portName,255,"/TouchController/%s/rpc",getName().c_str());
@@ -73,7 +99,10 @@ bool TouchControllerModule::open(Searchable &s){
     
     snprintf(portName,255,"TouchController/%s",getName().c_str());
     mThread = new TouchControllerThread(int(floor(mPeriod*1000)),portName);
-    mThread->start();
+    mThread->SetDevice(mDeviceName,mType);
+    if(!mThread->start()){
+        return false;
+    }
     
     bIsReady = true;
     return bIsReady;
@@ -107,97 +136,55 @@ bool TouchControllerModule::respond(const Bottle& command, Bottle& reply) {
             int prevIndex = index;
             
             switch(command.get(index).asVocab()) {
-            /*
+            case VOCAB3('s','i','d'):
+                if(cmdSize>=2){
+                    int id = command.get(index+1).asInt();
+                    mThread->SetSensorIdByTouch(id);
+                    index+=2;
+                }else{
+                    retVal = false;
+                }
+                break;
             case VOCAB3('r','u','n'):
+                mThread->Activate(true);
+                index+=1;
+                break;
+            case VOCAB4('s','u','s','p'):
+                mThread->Activate(false);
+                index+=1;
+                break;
+            case VOCAB3('k','p','t'):
                 if(cmdSize>=2){
-                          if(command.get(index+1).asString() == "start"){
-                                mThread->SetLoop(false);
-                                mThread->Start();
-                                index+=2;
-                    }else if(command.get(index+1).asString() == "loop"){
-                                mThread->SetLoop(true);
-                                mThread->Start();
-                                index+=2;
-                    }else if(command.get(index+1).asString() == "stop"){
-                                mThread->Stop();
-                                index+=2;
-                    }else if(command.get(index+1).asString() == "pause"){
-                                mThread->Pause();
-                                index+=2;
-                    }else if(command.get(index+1).asString() == "resume"){
-                                mThread->Resume();
-                                index+=2;
-                    }else{
-                        retVal = false;
-                    }
+                    mThread->SetTransGain(command.get(index+1).asDouble());
+                    index+=2;
                 }else{
                     retVal = false;
                 }
                 break;
-                
-            case VOCAB3('r','e','c'):
+            case VOCAB3('k','p','r'):
                 if(cmdSize>=2){
-                          if(command.get(index+1).asString() == "set"){
-                                mThread->SetRecordMode(true);
-                                index+=2;
-                    }else if(command.get(index+1).asString() == "unset"){
-                                mThread->SetRecordMode(false);
-                                index+=2;
-                    }else{
-                        retVal = false;
-                    }
+                    mThread->SetRotGain(command.get(index+1).asDouble());
+                    index+=2;
                 }else{
                     retVal = false;
                 }
                 break;
-
-            case VOCAB4('d','a','t','a'):
+            case VOCAB4('l','i','m','t'):
                 if(cmdSize>=2){
-                          if(command.get(index+1).asString() == "lineSize"){
-                                if(cmdSize>=3){
-                                    mThread->SetStreamLineSize(command.get(index+2).asInt());
-                                    index+=3;
-                                }else{
-                                    retVal = false;
-                                }
-                    }else if(command.get(index+1).asString() == "maxSize"){
-                                if(cmdSize>=3){
-                                    mThread->SetStreamMaxSize(command.get(index+2).asInt());
-                                    index+=3;
-                                }else{
-                                    retVal = false;
-                                }
-                    }else if(command.get(index+1).asString() == "load"){
-                                if(cmdSize>=3){
-                                    mThread->Load(command.get(index+2).asString().c_str());
-                                    index+=3;
-                                }else{
-                                    retVal = false;
-                                }
-                    }else if(command.get(index+1).asString() == "save"){
-                                if(cmdSize>=3){
-                                    mThread->Save(command.get(index+2).asString().c_str());
-                                    index+=3;
-                                }else{
-                                    retVal = false;
-                                }
-                    }else if(command.get(index+1).asString() == "timeOn"){
-                                mThread->SetUseTime(true);
-                                index+=2;
-                    }else if(command.get(index+1).asString() == "timeOff"){
-                                mThread->SetUseTime(false);
-                                index+=2;
-                    }else if(command.get(index+1).asString() == "clear"){
-                                mThread->Clear();
-                                index+=2;
-                    }else{
-                        retVal = false;
-                    }
+                    mThread->SetTransLimit(command.get(index+1).asDouble());
+                    index+=2;
                 }else{
                     retVal = false;
                 }
                 break;
-            */
+            case VOCAB4('l','i','m','r'):
+                if(cmdSize>=2){
+                    mThread->SetRotLimit(command.get(index+1).asDouble());
+                    index+=2;
+                }else{
+                    retVal = false;
+                }
+                break;
             default:
                 retVal      = Module::respond(command,reply);
                 defRetVal   = true;

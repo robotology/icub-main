@@ -170,11 +170,10 @@ void VelocityController::Update(){
 void VelocityController::Update(double dt){
     if(!bIsReady) return;
 
-    mMutex.wait();
 
     if(dt < mMinimumLoopTime){
         mCummulativeDt += dt;
-        cout << "Too fast"<<endl;
+        cout << "Too fast: "<< dt << "<" <<mMinimumLoopTime<<endl;
         if(mCummulativeDt < mMinimumLoopTime){
             mMutex.post();
             return;    
@@ -184,6 +183,8 @@ void VelocityController::Update(double dt){
     }
     mCummulativeDt = 0.0;
     double invDt = 1.0/dt;
+
+    mMutex.wait();
 
     if(mEncoders){
         mEncoders->getEncoders              (mJointsPos.data());

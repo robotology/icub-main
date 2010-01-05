@@ -123,7 +123,7 @@ to it.
 ./head_transfo_module --file conf/config_head2body.ini --name /transfo
 sleep 1
 yarp connect /icub/head/state:o /simulator/head:i
-yarp connect /icub/head/state:o /micha/transfo/proprio_head:i
+yarp connect /icub/head/state:o /transfo/proprio_head:i
 yarp connect /my_name/vision0:o /transfo/position:i
 yarp connect /transfo/position:o /simulator/target:i
 yarp connect /simulator/cmd:o /transfo/cmd:i
@@ -195,4 +195,4 @@ CopyPolicy: Released under the terms of the GNU GPL v2.0.
 This file can be edited at \in src/lasaBodySchema/dox/doc.dox
 
 */ 
- 
+

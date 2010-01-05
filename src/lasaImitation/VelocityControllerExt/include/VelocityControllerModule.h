@@ -155,7 +155,7 @@ private:
     double                      mPeriod;
     
     bool                        bIsReady;
-    
+
     bool                        mParts[8];
     
     bool                        bFakeDrivers;
@@ -187,6 +187,10 @@ private:
     BufferedPort<Vector>        mTargetVelPort;
     BufferedPort<Vector>        mPosPort;
     BufferedPort<Vector>        mVelPort;
+
+    double                      mTime;
+    double                      mPrevTime;    
+
 public:
             VelocityControllerThread(int period, const char* moduleName, vector<VelocityController*> *controllers);
     virtual ~VelocityControllerThread();

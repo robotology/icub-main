@@ -1,8 +1,7 @@
-
+cmake_minimum_required(VERSION 2.6)
 
 PROJECT(arm_ctl)
 #INCLUDE (/usr/share/cmake-2.4/Modules/FindOpenGL.cmake)
-
 #SET(YARP_DIR_HARD_CODED "/opt/yarp-2.2.1")
 #FIND_PATH(with_yarp YARPConfig.cmake YARP_DIR)
 #FIND_PATH(with_yarp YARPConfig.cmake YARP_DIR_HARD_CODED)
@@ -16,6 +15,7 @@ FIND_PACKAGE(OpenGL)
 FIND_PACKAGE(GLUT)
 
 INCLUDE_DIRECTORIES(include)
+LINK_LIBRARIES(${OPENGL_LIBRARIES} ${GLUT_LIBRARIES})
 
 LINK_LIBRARIES(${OPENGL_LIBRARIES})
 LINK_LIBRARIES(${GLUT_LIBRARIES})

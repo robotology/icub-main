@@ -19,7 +19,8 @@
 
 #ifndef __MATHMACROS_H_
 #define __MATHMACROS_H_
-
+#include <stdlib.h>
+#include <string.h>
 #include <math.h>
 #include <stdlib.h>
 

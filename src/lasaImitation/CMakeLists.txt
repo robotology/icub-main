@@ -11,7 +11,7 @@ PROJECT (lasaImitation)
 
 FIND_PACKAGE(YARP REQUIRED)
 
-SET(NESTED_BUILD TRUE)
+SET(NESTED_BUILD FALSE)
 SET(PM_PROJECT_ROOT ${CMAKE_CURRENT_SOURCE_DIR})
 
 SET(BUILD_MOTIONSSENSORS FALSE CACHE BOOL "Do you have the XSens and 5DT drivers?")
@@ -21,6 +21,7 @@ SET(SUBPROJECTS_LIST MathLib
                      YarpTools
                      UDPConnection
                      GLTools
+                     IKTest
                      MyDefaultModule
                      MultipleMiceDriver
                      MultipleMiceExample

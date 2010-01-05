@@ -60,6 +60,8 @@ Input ports:
           - [quit]: quit the module (exit)
           - [kpt] kp: set gain values for translational feedback
           - [kpr] kp: set gain values for rotational feedback
+          - [limt] lim: set limit values for translational feedback
+          - [limr] lim: set limit values for rotational feedback
           - [sid] id: set the next touched mouse with given id
 
     - /TouchController/moduleName/frameOfRef: externally provided frame of reference for the touch device
@@ -122,6 +124,9 @@ private:
     BufferedPort<Bottle>        mControlPort;
 
     TouchControllerThread      *mThread;
+    
+    int                         mType;
+    char                        mDeviceName[256];
     
 public:
             TouchControllerModule();

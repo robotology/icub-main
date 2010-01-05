@@ -20,7 +20,7 @@
 
 #include <ace/OS_NS_stdio.h>
 #include "BodySchemaLogger.h"
-//#include <ace/OS.h>
+
 
 bool BodySchemaLogger::open(Searchable& s){
 

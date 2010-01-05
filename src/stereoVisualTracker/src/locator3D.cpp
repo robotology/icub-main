@@ -149,7 +149,7 @@ int Locator3D::Calibrate(IplImage **img, const CvCamera *cam[], CvSize checkerbo
     isCalibrated=1;
     nb_points =0;
     cout<<"calibration done"<<endl;
-    //    PrintParams();//for checking
+        PrintParams();//for checking
     return 1;
   }
   else{
@@ -198,6 +198,7 @@ int Locator3D::LoadParams(const char* filename){
 
 void Locator3D::PrintParams(int k){
     float rotmat[9];
+    float transmat[16];
   if(k>0){
     cout<<"extrinsic paramerters"<<endl;
     for(int i=0;i<2;i++){
@@ -208,8 +209,19 @@ void Locator3D::PrintParams(int k){
 	   if(j<3 && k<3){
 	     rotmat[j*3+k] =camInfos[i].mat[j][k];
 	   }
+           if(j==0)      transmat[j*4+k] =camInfos[i].mat[j][k]*camera_intrinsics[i].focal_length[0];
+           else if(j==1) transmat[j*4+k] =camInfos[i].mat[j][k]*camera_intrinsics[i].focal_length[1];
+           else          transmat[j*4+k] =camInfos[i].mat[j][k];
 	 }
 	 cout<<endl;
+      }
+      cout<<endl;
+      cout<<"Tansform matrix"<<endl;
+      for(int j=0;j<4;j++){
+	 for(int k=0;k<4;k++){
+	   cout<<transmat[j*4+k]<<" ";
+	 }
+      cout<<endl;
       }
       cout<<endl;
       Quat q;
@@ -218,8 +230,19 @@ void Locator3D::PrintParams(int k){
       angle = 1.f/sin(angle*0.5);
       cout<<": "<<q.x*angle<<" "<<q.y*angle<<" "<<q.z*angle<<endl;
       cout<<endl;
+
+
+     
     }
   }
+}
+
+void Locator3D::CenterOrigin(){
+   float center[3];
+   float val = (camInfos[0].mat[3][0]-camInfos[1].mat[3][0])*(camInfos[0].mat[3][0]-camInfos[1].mat[3][0]);
+   val      += (camInfos[0].mat[3][1]-camInfos[1].mat[3][1])*(camInfos[0].mat[3][1]-camInfos[1].mat[3][1]);
+   val      += (camInfos[0].mat[3][2]-camInfos[1].mat[3][2])*(camInfos[0].mat[3][2]-camInfos[1].mat[3][2]);
+  cout << sqrt(val)<<endl;
 }
 
 void Locator3D::SetDefaultTranslation(float dist){

@@ -17,7 +17,7 @@ void    IKSolver::SetVerbose(bool verbose){
 }
 
 void  IKSolver::Solve(){
-    if(bVerbose) cout << "IKSolver: Solving"<<endl;
+    if(bVerbose) cerr << "IKSolver: Solving"<<endl;
         
     mWeights       = mInputDofsWeights;
     mCurrLimits[0] = mLimits[0];
@@ -34,9 +34,27 @@ void  IKSolver::Solve(){
 
     mInputConstrWeights.GetMatrixSpace(mValidConstraints,mValidConstraints,mConstrWeights);
 
+    mLimitsOffset.Zero();
+    for(int i=0;i<mDofs;i++){
+        if(mCurrLimits[0][i]<mCurrLimits[1][i]){
+            if(mCurrLimits[0][i]>0.0){
+                mCurrLimits[1][i]  -= mCurrLimits[0][i];
+                mLimitsOffset[i]    = mCurrLimits[0][i];
+                mCurrLimits[0][i]   = 0.0;
+            }else if(mCurrLimits[1][i]<0.0){
+                mCurrLimits[0][i]  -= mCurrLimits[1][i];
+                mLimitsOffset[i]    = mCurrLimits[1][i];
+                mCurrLimits[1][i]   = 0.0;
+            }
+        }
+    }
+    mJacobian.Mult(mLimitsOffset,mLimitsOffsetTarget);
+    mDesiredTarget -= mLimitsOffsetTarget;
+    mOutput += mLimitsOffset;
+    
     int stepCnt =0;
     while(1){
-        if(bVerbose) cout << "IKSolver: Pass <"<< stepCnt <<">"<<endl;
+        if(bVerbose) cerr << "IKSolver: Pass <"<< stepCnt <<">"<<endl;
         
         StepSolve();
 
@@ -59,10 +77,10 @@ void  IKSolver::Solve(){
             }
         }
         if(minId>=0){
-            if(bVerbose) cout << "IKSolver: Pass <"<< stepCnt <<"> Limits reached..."<<endl;
+            if(bVerbose) cerr << "IKSolver: Pass <"<< stepCnt <<"> Limits reached..."<<endl;
             for(int i=0;i<mDofs;i++){
                 if(minOutputLimitError == mOutputLimitsError[i]){
-                    if(bVerbose) cout << "IKSolver: Pass <"<< stepCnt <<"> Locking DOF <"<<i<<">"<<endl;
+                    if(bVerbose) cerr << "IKSolver: Pass <"<< stepCnt <<"> Locking DOF <"<<i<<">"<<endl;
                     mWeights(i,i) = 0.0;
                 }
             }
@@ -77,16 +95,12 @@ void  IKSolver::Solve(){
 
         if(minOutputLimitError==1.0){
             mOutput += mStepOutput;
-            if(bVerbose) cout << "IKSolver: Pass <"<< stepCnt <<"> Success"<<endl;
+            if(bVerbose) cerr << "IKSolver: Pass <"<< stepCnt <<"> Success"<<endl;
             break;
         }else{
-            //if(bVerbose) cout << "IKSolver: Pass <"<< stepCnt <<"> Limits reached..."<<endl;
             stepCnt ++;
-            //mDesiredTarget.Print();
             mDesiredTarget -= mJacobian * mStepOutput;    
             mOutput += mStepOutput;
-            //cout << "IKS "<<cnt <<" ";
-            //mDesiredTarget.Print();
         }
     }
     
@@ -96,7 +110,7 @@ void  IKSolver::Solve(){
     mFullOutputTarget.Zero();
     mFullOutputTarget.SetSubVector(mValidConstraints,mOutputTarget);
     
-    if(bVerbose) cout << "IKSolver: Done"<<endl;
+    if(bVerbose) cerr << "IKSolver: Done"<<endl;
 }
 
 void  IKSolver::StepSolve(){
@@ -126,7 +140,7 @@ void  IKSolver::StepSolve(){
   
   // Condition numbers
   if(!Matrix::IsInverseOk()){
-    if(bVerbose) cout << "IKSolver:    Unable to perform eigen value decomposition: too many iterations"<<endl;
+    if(bVerbose) cerr << "IKSolver:    Unable to perform eigen value decomposition: too many iterations"<<endl;
     mCondNumbersVector.Zero();
   }else{  
       if((fabs(mEigenValues(0))<EPSILON)||isnan(mEigenValues(0))){
@@ -150,12 +164,12 @@ void  IKSolver::StepSolve(){
   }
   if(bVerbose){
     if(maxRank != mRank)
-     cout << "IKSolver:   Jacobian is not full rank: "<<mRank<<"/"<<maxRank<<endl;
+     cerr << "IKSolver:   Jacobian is not full rank: "<<mRank<<"/"<<maxRank<<endl;
   }   
 
 
-  //if(mRank!=mConstraintsSize) cout<<mRank<<endl;
-  //cout << "Rank: "<<mRank<<" "<<mConstraintsSize<<endl;
+  //if(mRank!=mConstraintsSize) cerr<<mRank<<endl;
+  //cerr << "Rank: "<<mRank<<" "<<mConstraintsSize<<endl;
   // If positive rank... do what's possible
   if(mRank>0){      
     // Vr  = V(1:rank)
@@ -173,9 +187,9 @@ void  IKSolver::StepSolve(){
     // Smoothing when close to singular  
     for(int i=1;i<mRank;i++){
       if(mCondNumbersVector(i) < mLooseThreshold){
-        if(bVerbose) cout << "IKSolver:   Loose mode set: Multiplying eigenvalue <"<< mRedInvEigenValues(i) <<"> with condition number <"<<mCondNumbersVector(i)<<"> with <"<< (mCondNumbersVector(i)-mCutThreshold)/(mLooseThreshold-mCutThreshold) <<">"<<endl;
+        if(bVerbose) cerr << "IKSolver:   Loose mode set: Multiplying eigenvalue <"<< mRedInvEigenValues(i) <<"> with condition number <"<<mCondNumbersVector(i)<<"> with <"<< (mCondNumbersVector(i)-mCutThreshold)/(mLooseThreshold-mCutThreshold) <<">"<<endl;
         mRedInvEigenValues(i) *= (mCondNumbersVector(i)-mCutThreshold)/(mLooseThreshold-mCutThreshold);
-        //cout <<"loosing"<<endl;
+        //cerr <<"loosing"<<endl;
         //exit(0); 
       }
     }
@@ -194,7 +208,7 @@ void  IKSolver::StepSolve(){
     //mWeightedRedPseudoInverse.Print();
 
   }else{  
-    if(bVerbose) cout << "IKSolver:   Jacobian is of rank 0. Zeroing output."<<endl;
+    if(bVerbose) cerr << "IKSolver:   Jacobian is of rank 0. Zeroing output."<<endl;
     mStepOutput.Zero();
   }  
   
@@ -206,7 +220,7 @@ void  IKSolver::StepSolve(){
     }
   }
   if(!bSanityCheck){
-    if(bVerbose) cout << "IKSolver:   Sanity check failed. Nan values found. Zeroing output."<<endl;
+    if(bVerbose) cerr << "IKSolver:   Sanity check failed. Nan values found. Zeroing output."<<endl;
     mStepOutput.Zero(); 
   }
 
@@ -224,28 +238,12 @@ void    IKSolver::SetLimits(Vector &low,Vector &high){
     int len;
     mLimits[0].Zero();
     mLimits[0].SetSubVector(0,low);
-    /*len = MIN(low.Size(),mDofs);
-    for(int i=0;i<len;i++){
-        mLimits[0](i) = low(i);         
-    } */       
     mLimits[1].Zero();
     mLimits[1].SetSubVector(0,high);
-    /*
-    len = MIN(high.Size(),mDofs);
-    for(int i=0;i<len;i++){
-        mLimits[1](i) = high(i);         
-    } 
-    */       
 }
 void    IKSolver::SetTarget(Vector &v){
     mFullDesiredTarget.Zero();
     mFullDesiredTarget.SetSubVector(0,v);
-    /*
-    int len = MIN(v.Size(),mConstraintsSize);
-    for(int i=0;i<len;i++){
-        mFullDesiredTarget(i) = v(i);         
-    } 
-    */   
 }
 void    IKSolver::SetValidConstraints(Vector &constr){
     mValidConstraints.clear();
@@ -319,54 +317,50 @@ void    IKSolver::SetConstraintsWeights(Vector &v){
 void    IKSolver::SetNullTarget(Vector &null){
     mNullTarget.Zero();    
     mNullTarget.SetSubVector(0,null);
-    /*
-    int len = MIN(null.Size(),mDofs);
-    for(int i=0;i<len;i++){
-        mNullTarget(i) = null(i);         
-    }
-    */
 }
 
 
 void IKSolver::Resize(){  
   
-  mLimits[0].Resize(mDofs);
-  mLimits[1].Resize(mDofs);
-  mFullJacobian.Resize(mConstraintsSize,mDofs);
-  
-  mInputDofsWeights.Resize(mDofs,mDofs,false);
-  mInputConstrWeights.Resize(mConstraintsSize,mConstraintsSize,false);
-  mWeights.Resize(mDofs,mDofs,false);
-  mWeightsTranspose.Resize(mDofs,mDofs,false);
-  mInputDofsWeights.Identity();
-  mInputConstrWeights.Identity();
-  
-  mFullDesiredTarget.Resize(mConstraintsSize);
-  mOffsetTarget.Resize(mConstraintsSize);
-  mActualTarget.Resize(mConstraintsSize);
-  mFullOutputTarget.Resize(mConstraintsSize);
+    mLimits[0].Resize(mDofs);
+    mLimits[1].Resize(mDofs);
+    mLimitsOffset.Resize(mDofs);
 
-  mNullTarget.Resize(mDofs);
-  mNullTarget.Zero();
+    mFullJacobian.Resize(mConstraintsSize,mDofs);
 
-  mJWt.Resize(mConstraintsSize,mDofs,false);
-  mWJt.Resize(mDofs,mConstraintsSize,false);
-  mWJtJWt.Resize(mDofs,mDofs,false);
+    mInputDofsWeights.Resize(mDofs,mDofs,false);
+    mInputConstrWeights.Resize(mConstraintsSize,mConstraintsSize,false);
+    mWeights.Resize(mDofs,mDofs,false);
+    mWeightsTranspose.Resize(mDofs,mDofs,false);
+    mInputDofsWeights.Identity();
+    mInputConstrWeights.Identity();
 
-  mTriMatrix.Resize(3,mDofs);
+    mFullDesiredTarget.Resize(mConstraintsSize);
+    mOffsetTarget.Resize(mConstraintsSize);
+    mActualTarget.Resize(mConstraintsSize);
+    mFullOutputTarget.Resize(mConstraintsSize);
 
-  mEigenVectors.Resize(mDofs,mDofs,false);
-  mEigenVectorsTranspose.Resize(mDofs,mDofs,false);
+    mNullTarget.Resize(mDofs);
+    mNullTarget.Zero();
 
-  mEigenValues.Resize(mDofs,false);
-  mCondNumbersVector.Resize(mDofs,false);
+    mJWt.Resize(mConstraintsSize,mDofs,false);
+    mWJt.Resize(mDofs,mConstraintsSize,false);
+    mWJtJWt.Resize(mDofs,mDofs,false);
 
-  mOutputLimitsError.Resize(mDofs,false);
+    mTriMatrix.Resize(3,mDofs);
+
+    mEigenVectors.Resize(mDofs,mDofs,false);
+    mEigenVectorsTranspose.Resize(mDofs,mDofs,false);
+
+    mEigenValues.Resize(mDofs,false);
+    mCondNumbersVector.Resize(mDofs,false);
+
+    mOutputLimitsError.Resize(mDofs,false);
 
 
-  mOutput.Resize(mDofs,false);
-  mOutputOffset.Resize(mDofs,false);
-  mStepOutput.Resize(mDofs,false);
+    mOutput.Resize(mDofs,false);
+    mOutputOffset.Resize(mDofs,false);
+    mStepOutput.Resize(mDofs,false);
 }
 
 

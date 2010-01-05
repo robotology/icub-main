@@ -30,25 +30,59 @@
 using namespace yarp::os;
 using namespace yarp::sig;
 
+#include <iCub/iKinFwd.h>
+#include <iCub/iKinIpOpt.h>
+
+#include "iCubAddKinChain.h"
 
 class RobotControllerThread: public RateThread
 {
+public:
+    enum State {RCS_IDLE = 0,
+                RCS_RUN};
+                
 private:    
     Semaphore               mMutex;
     int                     mPeriod;
     char                    mBaseName[256];
+
+    State                   mState;
     
+    int                     mJointSize;
+    Vector                  mTargetJointPos;
+    Vector                  mTargetJointVel;
+    Vector                  mCurrentJointPos;
+    Vector                  mCurrentJointVel;
+    
+
+    iKin::iCubWrist         *mFwdKinWrist[2];
+    iKin::iCubArm           *mFwdKinArm[2];
+
+//    iKin::iKinChain         *mFwdKinWristChain[2];
+//    iKin::iKinChain         *mFwdKinArmChain[2];
+    
+    
+    
+    BufferedPort<Vector>    mTargetJointPosPort;
+    BufferedPort<Vector>    mTargetJointVelPort;
+
+    BufferedPort<Vector>    mCurrentJointPosPort;
+    BufferedPort<Vector>    mCurrentJointVelPort;
+
     BufferedPort<Vector>    mInputPort;
     BufferedPort<Vector>    mOutputPort;
     
 public:
-    RobotControllerThread(int period, const char* baseName);
+            RobotControllerThread(int period, const char* baseName);
     virtual ~RobotControllerThread();
 
 
-    virtual void run();
-    virtual bool threadInit();
-    virtual void threadRelease();
+            void    Init();
+            void    Free();
+
+    virtual void    run();
+    virtual bool    threadInit();
+    virtual void    threadRelease();
 };
 
 #endif

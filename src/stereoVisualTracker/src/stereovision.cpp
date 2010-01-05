@@ -455,13 +455,16 @@ void Stereovision::ExecuteCommand(int key)
         }
         break;
     case '3': // calibrate cameras extrinsics params
+        cout << "3 pressed"<<endl;
         loc->Decalibrate();
         // loc->SetDefaultParams(10,-10,150);
-//         loc->PrintParams();
+        //loc->PrintParams();
         save3d = 1;
         break;
     case 'h': 
+        //loc->CenterOrigin();
         loc->SetDefaultTranslation(68);
+        loc->PrintParams();
         break;
     case 'H':
         loc->SetDefaultParams(0,0,68);

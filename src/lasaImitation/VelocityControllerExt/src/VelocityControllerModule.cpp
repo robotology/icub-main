@@ -251,11 +251,22 @@ VelocityControllerThread::VelocityControllerThread(int period,
     mPeriod         = period;
     mControllersPtr = controllers;
     strcpy(mModuleName, moduleName);
+    mTime               = 0.0;
+    mPrevTime           =-1.0;    
 }
 
 VelocityControllerThread::~VelocityControllerThread(){}
 
 void VelocityControllerThread::run(){
+    if(mPrevTime<0.0){
+        mPrevTime = Time::now();
+        return;
+    }else{
+        mPrevTime = mTime;    
+    }    
+    mTime       = Time::now();
+    double dt   = mTime - mPrevTime;    
+    
     vector<VelocityController*> &mControllers = *mControllersPtr;
     
     int totalJoints = 0;
@@ -277,9 +288,9 @@ void VelocityControllerThread::run(){
         }        
     }
 
-
+    
     for(int i=0;i<int(mControllers.size());i++){
-        mControllers[i]->Update();
+        mControllers[i]->Update(dt);
     }
     
     Vector &outputPosVec = mPosPort.prepare();

@@ -1,7 +1,7 @@
 #include "YarpMathLibInterface.h"
 
 
-Matrix& YarpMatrixToMatrix(const yarp::sig::Matrix &ymat, Matrix& result){
+MathLib::Matrix& YarpMatrixToMatrix(const yarp::sig::Matrix &ymat, MathLib::Matrix& result){
     int r = ymat.rows();
     int c = ymat.cols();
     result.Resize(r,c,false);
@@ -13,12 +13,12 @@ Matrix& YarpMatrixToMatrix(const yarp::sig::Matrix &ymat, Matrix& result){
     return result;
 }
 
-Matrix YarpMatrixToMatrix(const yarp::sig::Matrix &ymat){
-    Matrix mat;
+MathLib::Matrix YarpMatrixToMatrix(const yarp::sig::Matrix &ymat){
+    MathLib::Matrix mat;
     return YarpMatrixToMatrix(ymat,mat);
 }
 
-Vector& YarpVectorToVector(const yarp::sig::Vector &yvec, Vector& result){
+MathLib::Vector& YarpVectorToVector(const yarp::sig::Vector &yvec, MathLib::Vector& result){
     int r = yvec.size();
     result.Resize(r,false);
     for(int i=0;i<r;i++){
@@ -27,17 +27,17 @@ Vector& YarpVectorToVector(const yarp::sig::Vector &yvec, Vector& result){
     return result;
 }
 
-Vector YarpVectorToVector(const yarp::sig::Vector &yvec){
-    Vector vec;
+MathLib::Vector YarpVectorToVector(const yarp::sig::Vector &yvec){
+    MathLib::Vector vec;
     return YarpVectorToVector(yvec,vec);
 }
 
-yarp::sig::Matrix MatrixToYarpMatrix(const Matrix &mat){
+yarp::sig::Matrix MatrixToYarpMatrix(const MathLib::Matrix &mat){
     yarp::sig::Matrix ymat;
     return MatrixToYarpMatrix(mat,ymat);
 }
 
-yarp::sig::Matrix& MatrixToYarpMatrix(const Matrix &mat, yarp::sig::Matrix& result){
+yarp::sig::Matrix& MatrixToYarpMatrix(const MathLib::Matrix &mat, yarp::sig::Matrix& result){
     int r = mat.RowSize();
     int c = mat.ColumnSize();
     result.resize(r,c);
@@ -49,11 +49,11 @@ yarp::sig::Matrix& MatrixToYarpMatrix(const Matrix &mat, yarp::sig::Matrix& resu
     return result;
 }
 
-yarp::sig::Vector VectorToYarpVector(const Vector &vec){
+yarp::sig::Vector VectorToYarpVector(const MathLib::Vector &vec){
     yarp::sig::Vector yvec;
     return VectorToYarpVector(vec,yvec);    
 }
-yarp::sig::Vector& VectorToYarpVector(const Vector &vec, yarp::sig::Vector &result){
+yarp::sig::Vector& VectorToYarpVector(const MathLib::Vector &vec, yarp::sig::Vector &result){
     int r = vec.Size();
     result.resize(r);
     for(int i=0;i<r;i++){
@@ -63,13 +63,13 @@ yarp::sig::Vector& VectorToYarpVector(const Vector &vec, yarp::sig::Vector &resu
 }
 
 bool LoadYarpMatrix(const char* filename, yarp::sig::Matrix &result){
-    Matrix tmp;
+    MathLib::Matrix tmp;
     bool res = tmp.Load(filename);
     result = MatrixToYarpMatrix(tmp);
     return res;
 }
 bool SaveYarpMatrix(const char* filename, yarp::sig::Matrix &mat){
-    Matrix tmp = YarpMatrixToMatrix(mat);
+    MathLib::Matrix tmp = YarpMatrixToMatrix(mat);
     bool res = tmp.Save(filename);
     return res;
 }

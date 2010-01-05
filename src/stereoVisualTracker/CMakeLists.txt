@@ -1,3 +1,5 @@
+cmake_minimum_required(VERSION 2.6)
+
 PROJECT(stereovision)
 
 
@@ -9,7 +11,7 @@ LINK_DIRECTORIES(${OPENCV_LINK_DIRECTORIES})
 LINK_LIBRARIES(${OPENCV_LIBRARIES})
 
 
-INCLUDE_DIRECTORIES(include/ include/iCub /usr/local/include/opencv)
+#INCLUDE_DIRECTORIES(include/ include/iCub /usr/local/include/opencv)
 
 
 IF (WIN32 AND NOT CYGWIN)
@@ -31,7 +33,7 @@ ENDIF(NOT WIN32)
 
 ADD_DEFINITIONS(-DWITH_YARP -DNEW_VERSION)
 
-SET(CMAKE_VERBOSE_MAKEFILE ON)
+#SET(CMAKE_VERBOSE_MAKEFILE ON)
 
 
 #SET(CMAKE_EXE_LINKER_FLAGS "-lstdc++ -lm -lcvaux -lopencv -lhighgui")

@@ -23,6 +23,7 @@
 using namespace yarp::os;
 
 #include <math.h>
+#include <string.h>
 
 int main(int argc, char *argv[])
 {
@@ -49,8 +50,8 @@ bool RobotControllerModule::open(Searchable &s){
         return true;
 
     if(!mParams.check("name")){
-        mParams.put("name","RobotController000");
-        fprintf(stderr, "No module base name specifed, using <RobotController000> as default\n");
+        mParams.put("name","");
+        fprintf(stderr, "No module base name specifed, using <> as default\n");
         fprintf(stderr, "  usage: --name name (e.g. test)\n");
     }
     setName(mParams.find("name").asString());
@@ -67,11 +68,18 @@ bool RobotControllerModule::open(Searchable &s){
     }
     
     char portName[255];
-    snprintf(portName,255,"/RobotController/%s/rpc",getName().c_str());
+    if(strlen(getName().c_str())==0)
+        snprintf(portName,255,"/RobotController/rpc",getName().c_str());
+    else
+        snprintf(portName,255,"/RobotController/%s/rpc",getName().c_str());
+
     mControlPort.open(portName);
     attach(mControlPort,true);
     
-    snprintf(portName,255,"RobotController/%s",getName().c_str());
+    if(strlen(getName().c_str())==0)
+        snprintf(portName,255,"RobotController",getName().c_str());
+    else
+        snprintf(portName,255,"RobotController/%s",getName().c_str());
     mThread = new RobotControllerThread(int(floor(mPeriod*1000)),portName);
     mThread->start();
     

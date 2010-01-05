@@ -1,6 +1,6 @@
 #include <ace/OS_NS_stdio.h>
 #include "HeadToBodyCenteredRef.h"
-//#include <ace/OS.h>
+
 
 
 int cartesian_dim=3;
@@ -91,21 +91,28 @@ bool HeadToBodyCenteredRef::updateModule(){
   }
 
   //getting the latest propioceptive informatin
-  headProprio.ReadPosition(proprio.GetArray(),joint_angle_dim);
+  headProprio.ReadPosition(proprio.GetArray(),joint_angle_dim,true);
+
   proprio *=deg2rad;
-  // headProprio.Print();
+  //proprio.Print();
 
   //checking if an input position has arrived
   if(in.ReadPosition(visionPosHead.GetArray())){
-    float d = visionPosHead.Norm();
  
+    float d = visionPosHead.Norm();
     // this is where you can change the signs, but do the same in BodySchemaLearning.cpp
     visionPosHead.GetArray()[0] *= -1;
     visionPosHead.GetArray()[2] *= -1;
     if(d < 1000 && visionPosHead.GetArray()[2] > 100){ //exclude vision outliers 
+    visionPosHead.Print();
  
     head->SetForwardKinematics(proprio.GetArray(),visionPosBody.GetArray(), 
 				 visionPosHead.GetArray());
+    visionPosBody.Print();
+   cout << "------------ "<<joint_angle_dim<<endl;
+proprio.Print();
+   cout << "------------"<<endl;
+    //  visionPosBody.Print();
     //sending out the result
     out.SendPosition(visionPosBody.GetArray());
     }

@@ -38,7 +38,7 @@ On Ubuntu >= 8.10 (>= Intrepid Ibex)
           - sudo /etc/init.d/hal restart (or "sudo service hal restart" on Ubuntu >= Karmic Koala)
     - change the default permissions to /dev/input/eventXX
           - Using <sudo>, add the following line at the end of the file: /etc/udev/rules.d/40-permissions.rules
-                + KERNEL=="event[0-9]*", GROUP="input", MODE="0660"
+                - KERNEL=="event[0-9]*", GROUP="input", MODE="0660"
           - Or create this file for (Ubuntu >= Karmic Koala)
     - restart udev
           - sudo /etc/init.d/udev restart (or "sudo service udev restart" on Ubuntu >= Karmic Koala)
