@@ -53,7 +53,7 @@ bool ImageProcessModule::interruptModule() {
 
 bool ImageProcessModule::close() {
     printf("Closing the module ... \n");
-    if(currentProcessor->isRunning()){
+    if(0!=currentProcessor){
         printf("Thread running! Closing the thread ... \n");
         this->currentProcessor->stop();
     }
