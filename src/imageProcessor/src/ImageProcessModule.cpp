@@ -52,9 +52,13 @@ bool ImageProcessModule::interruptModule() {
 }
 
 bool ImageProcessModule::close() {
-    if(currentProcessor->isRunning())
+    printf("Closing the module ... \n");
+    if(currentProcessor->isRunning()){
+        printf("Thread running! Closing the thread ... \n");
         this->currentProcessor->stop();
+    }
 	this->closePorts();
+    printf("The module has been successfully closed ... \n");
 	return true;
 }
 
@@ -159,6 +163,7 @@ bool ImageProcessModule::outPorts(){
 }
 
 bool ImageProcessModule::closePorts(){
+    printf("Closing all the ports ... \n");
 	bool ret = false;
 	//int res = 0;
 	// Closing Port(s)
@@ -177,7 +182,8 @@ bool ImageProcessModule::closePorts(){
     edgesPort.close();
 
     cmdPort.close();
-
+    
+    printf("All the ports successfully closed ... \n");
 	return ret;
 }
 
