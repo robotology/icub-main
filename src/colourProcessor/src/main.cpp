@@ -33,7 +33,7 @@ int main(int argc, char *argv[]) {
 		printf(" \n");
 		printf("USER COMMANDS: \n");
 		printf("--file (XXXX): defines the name of the configfile name to look for in  default context file \n");
-        printf("e.g --file colourprocessor.ini \n");
+        printf("e.g.: colourProcessor --file colourprocessor.ini \n");
 		printf(" \n");
 		printf(" \n");
 		return 0;
