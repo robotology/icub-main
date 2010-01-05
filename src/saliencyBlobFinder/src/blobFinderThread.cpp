@@ -3,12 +3,14 @@
 #include <iostream>
 using namespace std;
 
+#define _inputImg (*(ptr_inputImg))
 #define _inputImgRed (*(ptr_inputImgRed))
 #define _inputImgGreen (*(ptr_inputImgGreen))
 #define _inputImgBlue (*(ptr_inputImgBlue))
 #define _inputImgRG (*(ptr_inputImgRG))
 #define _inputImgGR (*(ptr_inputImgGR))
 #define _inputImgBY (*(ptr_inputImgBY))
+#define _tagged (*(ptr_tagged))
 
 blobFinderThread::blobFinderThread(){
     reinit_flag=false;
@@ -20,21 +22,70 @@ void blobFinderThread::reinitialise(int width, int height){
     img->resize(width,height);
     this->width=width;
     this->height=height;
+    resizeImages(width,height);
 }
+
+void blobFinderThread::resizeImages(int width, int height){
+    this->width=width;
+    this->height=height;
+
+    int widthstep=256;
+
+    ptr_tagged = new yarp::sig::ImageOf<yarp::sig::PixelInt>;
+    ptr_tagged->resize(widthstep,height);
+    
+    this->wOperator=new WatershedOperator(true,width,height,widthstep,10);
+    //_wOperator=this->wOperator;
+    this->salience=new SalienceOperator(width,height);
+    //_salience=this->salience;
+
+    //maxSalienceBlob_img->resize(width,height);
+    //outMeanColourLP->resize(width,height);
+    //outContrastLP->resize(width,height);
+
+    //image_out->resize(width,height);
+    _outputImage->resize(width,height);
+    //_outputImage3->resize(width,height);
+
+    //ptr_inputRed->resize(width,height);
+    //ptr_inputGreen->resize(width,height);
+    //ptr_inputBlue->resize(width,height);
+    //ptr_inputRG->resize(width,height);
+    //ptr_inputGR->resize(width,height);
+    //ptr_inputBY->resize(width,height);
+
+    _inputImgRGS->resize(width,height);
+    _inputImgGRS->resize(width,height);
+    _inputImgBYS->resize(width,height);
+    //blobFov->resize(width,height);
+
+    //blobList = new char [width*height+1];
+
+    _inputImg.resize(width,height);
+    _inputImgRed.resize(width,height);
+    _inputImgGreen.resize(width,height);
+    _inputImgBlue.resize(width,height);
+    _inputImgRG.resize(width,height);
+    _inputImgGR.resize(width,height);
+    _inputImgBY.resize(width,height);
+
+    resized_flag=true;
+}
+
 
 
 /**
 *	initialization of the thread 
 */
 bool blobFinderThread::threadInit(){
-
+    return true;
 }
 
 /**
 * active loop of the thread
 */
 void blobFinderThread::run(){
-    
+    rain();
 }
 /**
 *	releases the thread
@@ -72,27 +123,27 @@ void blobFinderThread::rain(){
     _inputImgBYS->resize(320,240);*/
     if(ptr_inputImgRG!=0){
         ippiScale_8u32s_C1R(_inputImgRG.getRawImage(),_inputImgRG.getRowSize(),_inputImgRGS32,psb32s,srcsize);
-        ippiConvert_32s8s_C1R(_inputImgRGS32,psb32s,(Ipp8s*)wModule->_inputImgRGS->getRawImage(),wModule->_inputImgRGS->getRowSize(),srcsize);
+        ippiConvert_32s8s_C1R(_inputImgRGS32,psb32s,(Ipp8s*)_inputImgRGS->getRawImage(),_inputImgRGS->getRowSize(),srcsize);
         //_inputImgRGS->copy(_inputImgRG,320,240);
     }
     else
         return;
     if(ptr_inputImgGR!=0){
         ippiScale_8u32s_C1R(_inputImgGR.getRawImage(),_inputImgGR.getRowSize(),_inputImgGRS32,psb32s,srcsize);
-        ippiConvert_32s8s_C1R(_inputImgGRS32,psb32s,(Ipp8s*)wModule->_inputImgGRS->getRawImage(),wModule->_inputImgGRS->getRowSize(),srcsize);
+        ippiConvert_32s8s_C1R(_inputImgGRS32,psb32s,(Ipp8s*)_inputImgGRS->getRawImage(),_inputImgGRS->getRowSize(),srcsize);
         //_inputImgGRS->copy(_inputImgGR,320,240);
     }
     else
         return;
     if(ptr_inputImgBY!=0){
         ippiScale_8u32s_C1R(_inputImgBY.getRawImage(),_inputImgBY.getRowSize(),_inputImgBYS32,psb32s,srcsize);
-        ippiConvert_32s8s_C1R(_inputImgBYS32,psb32s,(Ipp8s*)wModule->_inputImgBYS->getRawImage(),wModule->_inputImgBYS->getRowSize(),srcsize);
+        ippiConvert_32s8s_C1R(_inputImgBYS32,psb32s,(Ipp8s*)_inputImgBYS->getRawImage(),_inputImgBYS->getRowSize(),srcsize);
         //_inputImgBYS->copy(_inputImgBY,320,240);
     }
     else
         return;
-    salience->blobCatalog(_tagged, *wModule->_inputImgRGS, *wModule->_inputImgGRS, *wModule->_inputImgBYS,
-        _inputImgBlue, _inputImgGreen, _inputImgRed, wModule->max_tag);
+    salience->blobCatalog(_tagged, *_inputImgRGS, *_inputImgGRS, *_inputImgBYS,
+        _inputImgBlue, _inputImgGreen, _inputImgRed, max_tag);
     blobCataloged_flag=true;
     //istruction to set the ptr_tagged in the Watershed Module with the static variable _tagged
     tagged=ptr_tagged; //ptr_tagged is the pointer to _tagged

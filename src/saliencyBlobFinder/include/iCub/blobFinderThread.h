@@ -3,10 +3,11 @@
 #define _BLOBFINDERTHREAD_H_
 
 //within project includes
+#include <iCub/WatershedOperator.h>
+#include <iCub/SalienceOperator.h>
 
 //IPP include
 #include <ippi.h>
-
 
 //YARP include
 #include <yarp/os/all.h>
@@ -123,6 +124,18 @@ private:
     */
     ImageOf<PixelMono> *ptr_inputImgBY;
     /**
+	* input image of the opponency R+G-
+	*/
+	ImageOf<PixelMono> *_inputImgRGS;
+	/**
+	* input image of the opponency G+R-
+	*/
+	ImageOf<PixelMono> *_inputImgGRS;
+	/**
+	* input image of the opponency B+Y-
+	*/
+	ImageOf<PixelMono> *_inputImgBYS;
+    /**
     * pointer to the image of tags
     */
     ImageOf<PixelInt> *ptr_tagged;
@@ -134,8 +147,18 @@ private:
 	*vector of tags to the sequence of blobs
 	*/
 	ImageOf<PixelInt>* tagged;
+    /**
+	* flag that indicates if the images have been resized
+	*/
+	bool resized_flag;
 
     //_________ private methods ____________
+    /**
+    * resizes all the needed images
+    * @param width width of the input image
+    * @param height height of the input image
+    */
+    void resizeImages(int width, int height);
     
 public:
     /**

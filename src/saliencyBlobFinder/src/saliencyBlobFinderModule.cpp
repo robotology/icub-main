@@ -84,8 +84,6 @@ void saliencyBlobFinderModule::setOptions(yarp::os::Property opt){
         printf("|||  Module named as :%s \n", name.c_str());
         this->setName(name.c_str());
     }
-    
-    
 }
 
 bool saliencyBlobFinderModule::updateModule() {
@@ -128,9 +126,6 @@ bool saliencyBlobFinderModule::updateModule() {
 }
 
 void saliencyBlobFinderModule::outPorts(){
-
-
-
 }
 
 

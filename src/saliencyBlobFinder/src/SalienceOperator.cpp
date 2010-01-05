@@ -108,9 +108,9 @@ PixelBgr SalienceOperator::varBlob(ImageOf<PixelInt>& tagged, ImageOf<PixelMono>
 	tmpg = tmpg / m_boxes[tag].areaLP;
 	tmpb = tmpb / m_boxes[tag].areaLP;
 
-	tmp.r = sqrt((double)tmpr - m_boxes[tag].meanRG*m_boxes[tag].meanRG);
-	tmp.g = sqrt((double)tmpg - m_boxes[tag].meanGR*m_boxes[tag].meanGR);
-	tmp.b = sqrt((double)tmpb - m_boxes[tag].meanBY*m_boxes[tag].meanBY);
+	tmp.r = floor(sqrt((double)tmpr - m_boxes[tag].meanRG*m_boxes[tag].meanRG));
+	tmp.g = floor(sqrt((double)tmpg - m_boxes[tag].meanGR*m_boxes[tag].meanGR));
+	tmp.b = floor(sqrt((double)tmpb - m_boxes[tag].meanBY*m_boxes[tag].meanBY));
 
 	if (tmp.r==0) tmp.r=1;
 	if (tmp.g==0) tmp.g=1;
@@ -458,7 +458,7 @@ int SalienceOperator::DrawContrastLP2(ImageOf<PixelMono>& rg, ImageOf<PixelMono>
 			// the colour of surrondings(rectangular window)
 
 			mlp=integralRG->getMeanLp(a,b,c,d);
-			tmp=255*height*width*mlp;
+			tmp=255*height*width*(int)floor(mlp);
 			t=tmp-m_boxes[i].meanRG;
 			t_abs=abs(t);
 			m_boxes[i].cRG=t_abs;
@@ -470,7 +470,7 @@ int SalienceOperator::DrawContrastLP2(ImageOf<PixelMono>& rg, ImageOf<PixelMono>
 			m_boxes[i].cGR=t_abs;
 			
 			mlp=integralBY->getMeanLp(a,b,c,d);
-			tmp=255*height*width*integralBY->getMeanLp(a,b,c,d);
+			tmp=255*height*width*(int)floor(integralBY->getMeanLp(a,b,c,d));
 			t=tmp-m_boxes[i].meanBY;
 			t_abs=abs(t);
 			m_boxes[i].cBY=t_abs;
@@ -498,7 +498,7 @@ int SalienceOperator::DrawContrastLP2(ImageOf<PixelMono>& rg, ImageOf<PixelMono>
 			salienceTD=sqrt((double)(m_boxes[i].meanRG-prg)*(m_boxes[i].meanRG-prg)+
 			                (m_boxes[i].meanGR-pgr)*(m_boxes[i].meanGR-pgr)+
 			                (m_boxes[i].meanBY-pby)*(m_boxes[i].meanBY-pby));
-			salienceTD=255-salienceTD/sqrt((double)3);
+			salienceTD=255-salienceTD/sqrt(3.0);
 			
 			/*__OLD//salienceTD=abs(m_boxes[i].meanRG-prg);
 							

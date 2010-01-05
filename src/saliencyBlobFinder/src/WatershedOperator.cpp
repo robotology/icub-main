@@ -1002,8 +1002,8 @@ int WatershedOperator::apply(const ImageOf<PixelMono> &src, ImageOf<PixelInt> &t
  */
 ImageOf<PixelMono>* WatershedOperator::getPlane(ImageOf<PixelRgb>* inputImage){
     unsigned char c = 0;
-    int x, y, z;
-    int Offset;
+    //int x, y, z;
+    //int Offset;
     int psb;
     int width=inputImage->width();
     int height=inputImage->height();

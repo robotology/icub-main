@@ -76,9 +76,9 @@ public:
 	int cGR;
 	int cBY;
 
-	int salienceBU;
-	int salienceTD;
-	int salienceTotal;
+	double salienceBU;
+	double salienceTD;
+	double salienceTotal;
 
 	double elev;
 	double az;
