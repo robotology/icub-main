@@ -42,7 +42,7 @@
 	</module>
 	<module>
 		<name>yarpview</name>
-		<parameters>--name /grView --x 600 --y 600 --synch</parameters>
+		<parameters>--name /grView --x 500 --y 600 --synch</parameters>
 		<tag>grview</tag>
 		<node>/lightHouse</node>
 	</module>
@@ -54,8 +54,14 @@
 	</module>
  	<module>
 		<name>yarpview</name>
-		<parameters>--name /edgesView --x 600 --y 400 --synch</parameters>
+		<parameters>--name /edgesView --x 500 --y 400 --synch</parameters>
 		<tag>edgesview</tag>
+		<node>/lightHouse</node>
+	</module>
+	<module>
+		<name>yarpview</name>
+		<parameters>--name /logPolarForwardView --x 800 --y 400 --synch</parameters>
+		<tag>logpolarforward</tag>
 		<node>/lightHouse</node>
 	</module>
  
