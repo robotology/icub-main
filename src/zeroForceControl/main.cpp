@@ -213,7 +213,7 @@ public:
 		  }
 		  */
 		  
-		  Time::delay(1.0);
+		  //Time::delay(1.0);
 
 		  for(int i=0;i<ARM_JNT;i++)
 		  {
@@ -369,12 +369,14 @@ private:
 	Property Options;
 	ftControl *ft_control;
 	BufferedPort<Vector> port_FT;
+    	int mod_count;
 public:
 	ft_ControlModule()
 	{
+		mod_count = 0;
 	}
 
-	bool createDriver(PolyDriver &_dd)
+	virtual bool createDriver(PolyDriver &_dd)
 	{
 		if(!(_dd).isValid())
 		{
@@ -410,7 +412,8 @@ public:
 		}
 		return true;
 	}
-	virtual bool configure(ResourceFinder &rf)
+
+	bool configure(ResourceFinder &rf)
 	{
 		string PortName;
 		string part;
@@ -460,18 +463,26 @@ public:
 			fprintf(stderr,"device driver created\n");
 
 		port_FT.open((PortName+"/FT:i").c_str());
+		fprintf(stderr,"input port opened...\n");
 		ft_control = new ftControl(SAMPLER_RATE, &dd, port_FT, rf);
+		fprintf(stderr,"ft thread istantiated...\n");
 		ft_control->start();
+		fprintf(stderr,"thread started\n");
 		return true;
 	}
 
 	
-	virtual double getPeriod()	{ return 1.0; }
-	virtual bool updateModule() { return true; }
+	double getPeriod()	{ return 1; }
+	bool updateModule() { 
+		mod_count++;
+        	fprintf(stderr,"[%d] updateModule... ",mod_count);
+		return true; 
+		}
 	
 	
-	virtual bool close()
+	bool close()
 	{
+		fprintf(stderr,"closing...don't know why :S ");
 		ft_control->stop();
 		port_FT.interrupt();
 		port_FT.close();
