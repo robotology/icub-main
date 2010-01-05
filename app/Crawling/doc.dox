@@ -5,32 +5,85 @@
 
 \section intro_sec Introduction
 
-The Crawling application consists of a set of modules that are used for crawling, steering and reaching on all fours (please refer to \link http://www.robotcub.org/index.php/robotcub/content/download/1340/4673/file/Deliverable_3_8_EPFL.pdf Deliverable 3.8. \endlink for more information). 
+The Crawling application consists of a set of modules that are used for crawling, steering and reaching on all fours (please refer to \link http://www.robotcub.org/index.php/robotcub/content/download/1340/4673/file/Deliverable_3_8_EPFL.pdf Deliverable 3.8. \endlink for more information). The architecture can be extended to visually guided crawling. We present first <strong> Basic Crawling </strong> and then <strong> Visually Guided Crawling </strong>. 
 
-The general implementation is pictured below
+
+ <ul>
+ <li> <strong> Basic Crawling </strong>
+</ul>
+
+The general implementation for the basic crawling architecture is pictured below
 
 \image html crawl_new_impl.jpg
 
-
 The four limbs as well as the head and the torso are controlled. For each part, the trajectoires of all the dofs are produced by a \ref icub_CrawlGenerator "CrawlGenerator" module (referred to as CPG on the figure), some of them being coupled together to ensure the gait (green arrows). On top of these, the \ref icub_CrawlManager "CrawlManager" module is responsible for sending the control (i.e. high-level) parameters corresponding to the different behaviors.   
 
-Documentation concerning the iCubInterface and velocityControl modules can be found respectively \ref icub_iCubInterface "here" and \ref icub_velocityControl "here". 
+The behavior of the robot can be modulated by the user using the keyboard, more precisely :
+- [1] -> going on all fours
+- [2] -> crawling (straight)
+- [3] -> crawling faster
+- [4] -> crawling slower 
+- [5] -> turning left
+- [6] -> turning right
+- [9] -> stop the module
+
+
+ <ul>
+ <li> <strong> Visually Guided Crawling </strong>
+ </ul>
+
+This architecture can be extended so to include visual feedback information. The implementation for visually guided crawling is depicted below
+
+\image html crawl_new_impl_5.jpg
+
+
+
+Note: Documentation concerning the iCubInterface and velocityControl modules can be found respectively \ref icub_iCubInterface "here" and \ref icub_velocityControl "here". 
 
 \section dep_sec Dependencies
 
+ <ul>
+ <li> <strong> Basic Crawling </strong>
+ </ul>
+
 Assumes \ref icub_iCubInterface "iCubInterface" is running, and that the parts you want to control are instantiated.
+
+ <ul>
+ <li> <strong> Visually Guided Crawling </strong>
+ </ul>
 
 
 \section int_sec Instantiated Modules
+
+ <ul>
+ <li> <strong> Basic Crawling </strong>
+ </ul>
+
 - \ref icub_velocityControl "velocityControl" (for each of the controlled parts)	
 - \ref icub_CrawlGenerator "CrawlGenerator" (for each of the controlled parts)
 - \ref icub_CrawlManager "CrawlManager"	
 
+ <ul>
+ <li> <strong> Visually Guided Crawling </strong>
+ </ul>
+
 \section parameters_sec Parameters
+
+ <ul>
+ <li> <strong> Basic Crawling </strong>
+ </ul>
 
 The script does not require any parameters. 
 
+ <ul>
+ <li> <strong> Visually Guided Crawling </strong>
+ </ul>
+
 \section config_sec Configuration Files
+
+ <ul>
+ <li> <strong> Basic Crawling </strong>
+ </ul>
 
 Configuration files are located in the ICUB_DIR/app/Crawling/config folder. 
 
@@ -38,8 +91,16 @@ The files of type limbConfig.ini contain the information about the different lim
 
 The file managerConfig.ini contain the parameters corresponding to the different behaviors: crawling, stand on all fours, reach with the left/right arm, ... 
 
+ <ul>
+ <li> <strong> Visually Guided Crawling </strong>
+ </ul>
+
 
 \section example_sec How to run the application
+
+ <ul>
+ <li> <strong> Basic Crawling </strong>
+ </ul>
 
 To run the application, please do the following :
 
@@ -49,6 +110,10 @@ To run the application, please do the following :
 
 - manager.py $ICUB_DIR/app/Crawling/scripts/man.xml
 
+
+ <ul>
+ <li> <strong> Visually Guided Crawling </strong>
+ </ul>
 
 \author Sarah Degallier
 
