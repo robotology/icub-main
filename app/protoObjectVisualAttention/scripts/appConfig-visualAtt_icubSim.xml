@@ -48,8 +48,8 @@
 	</module>
 	<module>
 		<name>yarpview</name>
-		<parameters>--name /grView --x 200 --y 400 --synch</parameters>
-		<tag>grview</tag>
+		<parameters>--name /byView --x 200 --y 400 --synch</parameters>
+		<tag>byview</tag>
 		<node>/lightHouse</node>
 	</module>
  	<module>
