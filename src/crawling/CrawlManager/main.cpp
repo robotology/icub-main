@@ -19,6 +19,73 @@
  * Public License for more details
  */
 
+/**
+ * @ingroup icub_module
+ *
+ * \defgroup icub_CrawlManager CrawlManager
+ *
+ *This module is part of the application \ref icub_Crawling "Crawling"
+ *
+ *\section intro_sec Description 
+ *
+ * This module transforms a score into the appropriate parameters for the dynamical systems generating the trajectories (\in \ref icub_Crawling "Crawling"). It sends the parameters at timing corresponding to the beat of each of the part.If you want to  use the whole drumming application, please refer to \ref icub_Crawling "Crawling". 
+ *
+ *\section lib_sec Libraries
+ *
+ *No external libraries
+ *
+ *
+ *\section parameters_sec Parameters
+ *
+ * No parameters. 
+*
+* They are read by default from the file app/Crawling/config/managerConfig.ini, another file \a newFile.ini can be used through the command :
+*   --config-path  newFile.ini
+ *
+ *\section portssa_sec Ports Accessed 
+ *
+ * Input ports\n
+ * <ul>
+ * <li> for each active \a part (i.e left_arm, right_arm, left_leg, right_leg, torso, head) of the robot: /part/parameters/in (created by the \ref icub_CrawlGenerator "CrawlGenerator" module)
+ *</ul>
+ *
+ *\section portsc_sec Ports Created
+ *
+ * </ul>
+ * Output ports\n
+ * <ul>
+ * <li> For each \a part of the robot, a corresponding port /part/parameters/out sends 2*ndofs+1 doubles (where ndofs is the number of dofs of \a part)
+ * <ul> 
+ * <li> the amplitude of the movement (1 if crawling; -5 otherwise) and the target position for each dof
+ * <li> the frequency
+ * </ul>
+ *</ul>
+ *
+ *\section conf_file_sec Configuration Files
+ *
+ *This module requires a config file :
+ *<ul>
+ *<li> managerConfig.ini
+ *</ul>
+ *
+ * It can be found at \in app/Crawling/config/managerConfig.ini  
+ *
+ *
+ *\section tested_os_sec Tested OS
+ *
+ * This module has been tested on Linux and Windows. 
+ *
+ *\section example_sec Example Instantiation of the Module
+ *
+ * ./CrawlManager
+
+ * This file can be edited at \in src/crawling/CrawlManager/main.cpp 
+ *
+ *\authors Sarah Degallier Ludovic Righetti
+ *
+ **/
+
+
 
 
 #include <yarp/os/Network.h>
