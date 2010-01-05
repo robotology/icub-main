@@ -9,16 +9,16 @@
 
 //#include <ppEventDebugger.h>
 
-generatorThread::generatorThread(int period) : RateThread(period)
+GeneratorThread::GeneratorThread(int period) : RateThread(period)
 {
 	this->period = ((double)period)/1000.0;
 }
 
-generatorThread::~generatorThread()
+GeneratorThread::~GeneratorThread()
 {   
 }
 ///this function checks if the joint limits are respected and adapt the commands if needed
-void generatorThread::checkJointLimits()
+void GeneratorThread::checkJointLimits()
 {
 	for(int i=0;i<nbDOFs;i++)
 	{
@@ -39,7 +39,7 @@ void generatorThread::checkJointLimits()
 }
 
 ///this function sends the speed component of the rhythmic system to the manager
-void generatorThread::sendStatusForManager()
+void GeneratorThread::sendStatusForManager()
 {
 	Bottle& cmd =check_status_port.prepare();
 
@@ -52,7 +52,7 @@ void generatorThread::sendStatusForManager()
 }
 
 ///we get the encoders
-bool generatorThread::getEncoders()
+bool GeneratorThread::getEncoders()
 {
 	int nj;
 	PartEncoders->getAxes(&nj);
@@ -80,7 +80,7 @@ bool generatorThread::getEncoders()
 }
 
 /// sends the command the velocity controllers
-bool generatorThread::sendFastJointCommand()   
+bool GeneratorThread::sendFastJointCommand()   
 {
 	checkJointLimits();
 	Bottle& cmd = vcFastCommand_port.prepare();
@@ -101,7 +101,7 @@ bool generatorThread::sendFastJointCommand()
 }
 
 ///read the parameters coming from the manager and update those of the cpgs class
-void generatorThread::getParameters()
+void GeneratorThread::getParameters()
 {
 	//cout << "getting param ";
 	Bottle *command = parameters_port.read(false);
@@ -177,7 +177,7 @@ void generatorThread::getParameters()
 
 /// get other limbs rhythmic states for the coupling with the other limbs
 /// only for the legs and the arms
-bool generatorThread::getOtherLimbStatus()
+bool GeneratorThread::getOtherLimbStatus()
 {
 	for(int i=0;i<nbLIMBs;i++)
 		if(other_part_connected[i])
@@ -201,7 +201,7 @@ bool generatorThread::getOtherLimbStatus()
 
 ///when the feedback is on, get the needed contact info 
 /// not used for the head and torso
-void generatorThread::getContactInformation()
+void GeneratorThread::getContactInformation()
 {
 	char tmp1[255], tmp2[255];
 
@@ -228,7 +228,7 @@ void generatorThread::getContactInformation()
 
 /// continuously tries to connect to other limbs (arms and legs) until successful
 /// this is used to transfer the status info for the external couplings
-void generatorThread::connectToOtherLimbs()
+void GeneratorThread::connectToOtherLimbs()
 {
 	for(int i=0;i<nbLIMBs;i++)
 	{
@@ -265,7 +265,7 @@ void generatorThread::connectToOtherLimbs()
 	}
 }
 
-void generatorThread::run()
+void GeneratorThread::run()
 {
 
 	static double time_now=Time::now();
@@ -354,14 +354,14 @@ void generatorThread::run()
 
 
 
-bool generatorThread::threadInit()
+bool GeneratorThread::threadInit()
 {
 	fprintf(stderr, "%s thread init\n", partName.c_str());
 	return true;
 }
 
 
-void generatorThread::disconnectPorts()
+void GeneratorThread::disconnectPorts()
 {
 	char tmp1[255],tmp2[255];
 
@@ -404,7 +404,7 @@ void generatorThread::disconnectPorts()
 		}
 }
 
-void generatorThread::threadRelease()
+void GeneratorThread::threadRelease()
 {
 	fprintf(stderr, "%s thread releasing\n", partName.c_str());
 	//we stop the vcControl
@@ -457,7 +457,7 @@ void generatorThread::threadRelease()
 	fprintf(stderr, "%s thread released\n", partName.c_str());
 }
 
-bool generatorThread::init(Searchable &s)
+bool GeneratorThread::init(Searchable &s)
 {
 	Property arguments(s.toString());
 	Time::turboBoost();
@@ -504,7 +504,7 @@ bool generatorThread::init(Searchable &s)
 		char *cubPath;
 		cubPath = getenv("ICUB_DIR");
 		if(cubPath == NULL) {
-			printf("generatorThread::init>> ERROR getting the environment variable ICUB_DIR, exiting\n");
+			printf("GeneratorThread::init>> ERROR getting the environment variable ICUB_DIR, exiting\n");
 			return false;
 		}
 		yarp::String cubPathStr(cubPath);
@@ -673,7 +673,7 @@ bool generatorThread::init(Searchable &s)
 	///we create the CPG
 	printf("nb limbs is %d\n", nbLIMBs);
 	fflush(stdout);
-	myCpg = new cpgs(nbDOFs, nbLIMBs);
+	myCpg = new Cpgs(nbDOFs, nbLIMBs);
 	fflush(stdout);
 
 	myCpg->partName = this->partName;
@@ -1105,9 +1105,15 @@ bool generatorThread::init(Searchable &s)
 
 
 
-////////////DRUM GENERATOR MODULE/////////////////
+////////////CRAWL GENERATOR MODULE/////////////////
 
+CrawlGeneratorModule::CrawlGeneratorModule()
+{
+}
 
+CrawlGeneratorModule::~CrawlGeneratorModule()
+{
+}
 
 double CrawlGeneratorModule::getPeriod()
 
@@ -1154,7 +1160,7 @@ bool CrawlGeneratorModule::open(yarp::os::Searchable &s)
 	}
 
 
-	theThread = new generatorThread(period);
+	theThread = new GeneratorThread(period);
 	if(!theThread->init(s))
 	{
 		printf("Failed to initialize the thread\n");

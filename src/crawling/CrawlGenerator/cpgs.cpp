@@ -1,31 +1,53 @@
-/*  * Copyright (C) 2008 sarah d�gallier BIRG, EPFL, Lausanne
- * RobotCub Consortium, European Commission FP6 Project IST-004370
- * email:   sarah.degallier@robotcub.org
- * website: www.robotcub.org
- * Permission is granted to copy, distribute, and/or modify this program
- * under the terms of the GNU General Public License, version 2 or any
- * later version published by the Free Software Foundation.
- *
- * A copy of the license can be found at
- * http://www.robotcub.org/icub/license/gpl.txt
- *
- * This program is distributed in the hope that it will be useful, but
- * WITHOUT ANY WARRANTY; without even the implied warranty of
- * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the GNU General
- * Public License for more details
- */
+/** @file Cpgs.cpp Source file the Cpgs class.
+*
+* Version information : 1.0
+*
+* Date 04/05/2009
+*
+*/
+/*
+* Copyright (C) 2008 Sarah Degallier, EPFL
+* RobotCub Consortium, European Commission FP6 Project IST-004370
+* email: sarah.degallier@robotcub.org
+* website: www.robotcub.org
+*
+* Permission is granted to copy, distribute, and/or modify this program
+* under the terms of the GNU General Public License, version 2
+* or any later version published by the Free Software Foundation.
+*
+* A copy of the license can be found at
+* http://www.robotcub.org/icub/license/gpl.txt
+*
+* This program is distributed in the hope that it will be useful,
+* but WITHOUT ANY WARRANTY; without even the implied warranty of
+* MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.
+* See the GNU General Public License for more details.
+*/
 
-#include "cpgs.h"
+#include "Cpgs.h"
 #include <iostream>
 
 using namespace std;
 
-cpgs::cpgs(int nbDOFs, int nbLIMBs){
+Cpgs::Cpgs(int nbDOFs, int nbLIMBs):
+	//********fixed parameters*********
+	//equation
+	a(2.0), //rate of convergence of the rhythmic system
+	b(5.0),//rate of convergence of the discrete system
+	m_off(-5.0), //value to turn off the oscillations
+	m_on(1.0), // value to turn on the oscillations
+	b_go(0.5), //rate of conv. of the go command (for the discrete system)
+	u_go(4.0), //max value of the go command
+	dt(0.001), //integration step in seconds
+	c(100.0),//parameter for the swing/stance switching
+	om_stance(0.2), //stance frequency in Hz
+	om_swing(om_stance) //stance frequency in Hz
+{
 
 	this->nbDOFs = nbDOFs;
 	this->nbLIMBs = nbLIMBs;
 
-	cpgs_size = 4*nbDOFs + 1 + 2*nbLIMBs;
+	Cpgs_size = 4*nbDOFs + 1 + 2*nbLIMBs;
 	controlled_param = 2*nbDOFs; //amplitude of oscillations + target of the discrete offset
 
 	//we initialize coupling strength and phase angle and set everything to 0
@@ -64,8 +86,8 @@ cpgs::cpgs(int nbDOFs, int nbLIMBs){
 
 	//radii
 	r = new double [nbDOFs+nbLIMBs];
-	dydt = new double [cpgs_size];
-	for(int i=0; i<cpgs_size; i++)
+	dydt = new double [Cpgs_size];
+	for(int i=0; i<Cpgs_size; i++)
 	{
 		dydt[i]=0.0;
 	}
@@ -81,23 +103,6 @@ cpgs::cpgs(int nbDOFs, int nbLIMBs){
 		parameters[2*i+1]=0.0; //target of the discrete movement
 	}
 
-	//********fixed parameters*********
-
-	//equation
-	a = 2.0; //rate of convergence of the rhythmic system
-	b = 5.0;//rate of convergence of the discrete system
-	m_off = -5.0; //value to turn off the oscillations
-	m_on = 1.0; // value to turn on the oscillations
-	b_go = 0.5; //rate of conv. of the go command (for the discrete system)
-	u_go = 4.0; //max value of the go command
-	dt = 0.001; //integration step in seconds
-	c = 100.0;//parameter for the swing/stance switching
-
-	//frequency and amplitude
-	om_stance=0.2; //in Hz
-	//next_om_stance = 0.25;
-	om_swing = om_stance;
-	//next_om_swing = om_stance;
 
 	ampl = new double[nbDOFs];
 	for(int i=0;i<nbDOFs;i++) {
@@ -116,7 +121,7 @@ cpgs::cpgs(int nbDOFs, int nbLIMBs){
 
 
 
-cpgs::~cpgs()
+Cpgs::~Cpgs()
 
 {
 	delete[] parameters;
@@ -141,7 +146,7 @@ cpgs::~cpgs()
 	delete[] external_coupling;
 }
 
-void cpgs::integrate_step(double *y, double *at_states)
+void Cpgs::integrate_step(double *y, double *at_states)
 {
 
 	//************ getting open parameters******************
@@ -190,7 +195,7 @@ void cpgs::integrate_step(double *y, double *at_states)
 		r[nbDOFs+i]=y[4*nbDOFs+2*i]*y[4*nbDOFs+2*i] + y[4*nbDOFs+2*i+1]*y[4*nbDOFs+2*i+1];
 
 	//go Command
-	dydt[cpgs_size-1]=b_go*(u_go-y[cpgs_size-1]);
+	dydt[Cpgs_size-1]=b_go*(u_go-y[Cpgs_size-1]);
 
 
 	//***********JOINTS***********************************
@@ -200,7 +205,7 @@ void cpgs::integrate_step(double *y, double *at_states)
 	for(int i =0;i<nbDOFs;i++)
 	{
 		//discrete system
-		dydt[i*4] = y[cpgs_size-1]*y[cpgs_size-1]*y[cpgs_size-1]*y[cpgs_size-1]*y[i*4+1];
+		dydt[i*4] = y[Cpgs_size-1]*y[Cpgs_size-1]*y[Cpgs_size-1]*y[Cpgs_size-1]*y[i*4+1];
 		dydt[i*4+1] = u_go*u_go*u_go*u_go*b * (b/4.0 * (g[i] - y[i*4]) - y[i*4+1]);
 
 		//rhythmic one
@@ -272,7 +277,7 @@ void cpgs::integrate_step(double *y, double *at_states)
 
 
 	//********INTEGRATION****************************************
-	for(int i=0; i<cpgs_size; i++)
+	for(int i=0; i<Cpgs_size; i++)
 		y[i]=y[i]+dydt[i]*dt;
 
 
@@ -283,11 +288,11 @@ void cpgs::integrate_step(double *y, double *at_states)
 }
 
 
-void cpgs::printInternalVariables()
+void Cpgs::printInternalVariables()
 {
 
-	printf("nbDOFs %d, cpgs_size %d, controlled param %d\n",
-			nbDOFs,cpgs_size,controlled_param);
+	printf("nbDOFs %d, Cpgs_size %d, controlled param %d\n",
+			nbDOFs,Cpgs_size,controlled_param);
 	printf("a %f, b %f, m_off %f, m_on %f, b_go %f, u_go %f, dt %f\n",
 			a,b,m_off,m_on,b_go,u_go,dt);
 	printf("omStance %f, omSwing %f\n",om_stance,om_swing);
@@ -323,5 +328,10 @@ void cpgs::printInternalVariables()
 
 	printf("\n");
 
+}
+
+double Cpgs::get_dt()
+{
+   return dt;
 }
 
