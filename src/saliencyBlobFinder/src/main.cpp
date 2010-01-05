@@ -4,7 +4,7 @@
 #include <iCub/saliencyBlobFinderModule.h>
 
 #include <iostream>
-
+#include <string.h>
 using namespace std;
 
 
@@ -30,8 +30,8 @@ int main(int argc, char *argv[]) {
 		printf("______ HELP ________ \n");
 		printf(" \n");
 		printf("USER COMMANDS: \n");
-		printf("--configfile (XXXX): defines the name of the configfile name to look for in  default context file \n");
-        printf("e.g --configfile colourprocessor.ini \n");
+		printf("--file (XXXX): defines the name of the configfile name to look for in  default context file \n");
+        printf("e.g --file colourprocessor.ini \n");
 		printf(" \n");
 		printf(" \n");
 		return 0;
@@ -39,7 +39,7 @@ int main(int argc, char *argv[]) {
 	else{
 		//estracts the command from command line
         for (int i=1;i<argc;i++) {
-		    if ((strcmp(argv[i],"--configfile")==0)||(strcmp(argv[i],"-c")==0)) {
+		    if ((strcmp(argv[i],"--file")==0)||(strcmp(argv[i],"-c")==0)) {
 			    fname = argv[++i];
 			    printf("file name:%s \n",fname.c_str());
 		    }
