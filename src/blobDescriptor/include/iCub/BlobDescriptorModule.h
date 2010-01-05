@@ -62,8 +62,17 @@
  * - <tt>min_area_threshold 100</tt> \n
  *   Minimum number of pixels allowed for foreground objects
  *
+ * - <tt>max_area_threshold 20000</tt> \n
+ *   Maximum number of pixels allowed for foreground objects
+ *
  * - <tt>max_objects 20</tt> \n
  *   Maximum number of objects to process
+ *
+ * - <tt>invalidate_boundary_objects 0</tt> \n
+ *   Flag to make invalid objects that are touch the image boundaries 
+ *
+ * - <tt>draw_holes 0</tt> \n
+ *   Flag to draw the holes of the valid objects in the display image 
  *
  * \section portsa_sec Ports Accessed
  *
@@ -93,7 +102,10 @@
  *
  * - <tt>/blobDescriptor/viewImg:o</tt> \n
  *   Port to display output image, including overlay edges
- *
+ *   Valid objects are outlined with a RED contour.
+ *   Invalid object are outlined with a GRAY contour.
+ *   User selected objects are outlines with a BLUE contour.
+ *   HOles of valid objects can be outlined in YELLOW (when enabled in configuration file).
  * - <tt>/blobDescriptor/affDescriptor:o</tt> \n
  *   Affordance object descriptor output port \n
  *   The message is a Bottle containing several values.
@@ -267,9 +279,11 @@ class BlobDescriptorModule : public RFModule
 	//float                             _h_ranges[2], _s_ranges[2], _v_ranges[2];
 	
 	/* other parameters that can be user-specified (besides port names) */
-	int                               _minAreaThreshold; /* min. number of pixels allowed for foreground objects */
-	int                               _maxObjects;       /* maximum number of object to process */
-
+	int _minAreaThreshold; /* min. number of pixels allowed for foreground objects */
+	int _maxAreaThreshold; /* min. number of pixels allowed for foreground objects */
+	int _maxObjects;       /* maximum number of object to process */
+	int	_invalidate_boundary_objects; /*  Flag to invalidate objects touching the image boundaries */
+	int _draw_holes;       /* Flag to draw the holes of the valid objects in the display image */
 	
 
 public:

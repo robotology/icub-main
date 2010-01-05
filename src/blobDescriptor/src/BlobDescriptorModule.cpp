@@ -91,6 +91,11 @@ bool BlobDescriptorModule::configure(ResourceFinder &rf) // equivalent to Module
     _minAreaThreshold = rf.check( "min_area_threshold",
                                   Value(100),
                                   "Minimum number of pixels allowed for foreground objects" ).asInt();
+
+	_maxAreaThreshold = rf.check( "max_area_threshold",
+                                  Value(20000),
+                                  "Maximum number of pixels allowed for foreground objects" ).asInt();
+
 	_maxObjects = rf.check( "max_objects" , 
 						    Value(20), 
 							"Maximum number of objects to process" ).asInt();
@@ -99,6 +104,10 @@ bool BlobDescriptorModule::configure(ResourceFinder &rf) // equivalent to Module
 		cout << getName() << " WARNING: Invalid number of objects parameter. Will use default (20) instead." << endl;
 		_maxObjects = 20;
 	}
+
+	_invalidate_boundary_objects = rf.check("invalidate_boundary_objects", Value(0), "Flag to invalidate objects touching the image boundaries" ).asInt();
+
+	_draw_holes = rf.check("draw_holes", Value(0), "Flag to draw the holes of the valid object in the overlay image" ).asInt();
 
 	//Network::init();
 	
@@ -323,7 +332,8 @@ bool BlobDescriptorModule::updateModule()
     /* extract characteristics of objects */
     extractObj(opencvLabeledImg, _numObjects, _objDescTable);
 
-	/* here, all objects have been segmented and are stored independently. */
+	/* here, all objects have been segmented and are stored independently
+	in _objDescTable structure. The fields mask, area, center and label are set. */
 
 	/* contour extraction */
 	for( int i=0; i < _numObjects; i++)
@@ -332,48 +342,15 @@ bool BlobDescriptorModule::updateModule()
 		               _objDescTable[i].storage, 
 					   &(_objDescTable[i].contours),
 					   sizeof(CvContour),
-					   CV_RETR_LIST, 
+					   CV_RETR_CCOMP, 
 					   CV_CHAIN_APPROX_SIMPLE, 
 				       cvPoint(0,0)
 					   );
 
 		if(_objDescTable[i].contours == NULL)
 			cout << "Something very wrong happened. Object without edges" << endl;
-
-		if(_objDescTable[i].contours->h_next == NULL)
-			_objDescTable[i].valid = true;
-		else
-			_objDescTable[i].valid = false;  //objects with holes are not allowed
-	}
-
-
-	
-	for( int i=0; i < _numObjects; i++)
-	{
-		/* contour drawing - all objects */
-		cvDrawContours(
-				opencvViewImg, 
-				_objDescTable[i].contours, 
-				CV_RGB(0,255,0), // external color
-				CV_RGB(0,0,255), // hole color
-				1,				 
-				1, 
-				CV_AA, 
-				cvPoint(0, 0)	 // ROI offset
-		);
 	}
 	
-	//DEBUG - print the characteristics of the objects found
-	/*for(int i=0; i < _numObjects; i++)
-    {
-		cout << "Object no " << _objDescTable[i].no;
-		cout << " label " << _objDescTable[i].label;
-		cout << " area " << _objDescTable[i].area;
-		cout << " x " << _objDescTable[i].center.x;
-		cout << " y " << _objDescTable[i].center.y << endl;
-	}*/
-
-
     /* compute histogram of each object */
     for(int i = 0; i < _numObjects; i++)
     {
@@ -406,13 +383,60 @@ bool BlobDescriptorModule::updateModule()
 		_objDescTable[i].roi_y = _objDescTable[i].center.y - 15;
     }
 
+/*
+*		SELECTING OBJECTS NOT FULFILLING CERTAIN CRITERIA
+*
+*/
+
+	//By default all are valid
+	for(int i = 0; i < _numObjects; i++ )
+	{
+		_objDescTable[i].valid = true;
+	}
+
+
+	//Invalidate objects exceeding a maximum area
+	for(int i = 0; i < _numObjects; i++ )
+	{
+		if(_objDescTable[i].area > _maxAreaThreshold)
+		{
+			_objDescTable[i].valid = false;  
+		}
+	}
+
+
+	if(_invalidate_boundary_objects)
+	{
+		CvPoint* pt;
+		for(int i = 0; i < _numObjects; i++ )
+		{
+			for(int j = 0; j < _objDescTable[i].contours->total; j++) 
+			{
+				pt = (CvPoint*)cvGetSeqElem( _objDescTable[i].contours, j );
+				if( (pt->x <= 1) || (pt->x >= (_w-2)) || (pt->y <= 1) || (pt->y >= (_h-2)))
+				{
+					_objDescTable[i].valid = false;
+					break;
+				}
+			}
+		}
+	}
+		
+
+	/* Count the number of valid objects */
+	int valid_objs = 0;
+	for(int i = 0; i < _numObjects; i++)
+		if( _objDescTable[i].valid)
+			valid_objs++;
+
 	
-	//Approximate the contours - only for valid objects
+	//Approximate the contours and compute shape descriptors.
+	//Only for valid objects
 	for( int i=0; i < _numObjects; i++)
 	{
 		if(_objDescTable[i].valid)
 		{
-			_objDescTable[i].contours = cvApproxPoly( 
+			_objDescTable[i].affcontours = cvApproxPoly( 
 				_objDescTable[i].contours, 
 				sizeof(CvContour), 
 				_objDescTable[i].storage, 
@@ -420,11 +444,11 @@ bool BlobDescriptorModule::updateModule()
 				cvContourPerimeter(_objDescTable[i].contours)*0.02, 
 				1);
 
-			_objDescTable[i].convexhull = cvConvexHull2( _objDescTable[i].contours, _objDescTable[i].storage, CV_CLOCKWISE, 1 );
+			_objDescTable[i].convexhull = cvConvexHull2( _objDescTable[i].affcontours, _objDescTable[i].storage, CV_CLOCKWISE, 1 );
 
 			//mesurements of the contour
-			_objDescTable[i].contour_area = fabs(cvContourArea( _objDescTable[i].contours, CV_WHOLE_SEQ ));
-			_objDescTable[i].contour_perimeter = cvArcLength( _objDescTable[i].contours, CV_WHOLE_SEQ, 1 );
+			_objDescTable[i].contour_area = fabs(cvContourArea( _objDescTable[i].affcontours, CV_WHOLE_SEQ ));
+			_objDescTable[i].contour_perimeter = cvArcLength( _objDescTable[i].affcontours, CV_WHOLE_SEQ, 1 );
 			_objDescTable[i].convex_perimeter = cvArcLength( _objDescTable[i].convexhull, CV_WHOLE_SEQ, 1 );
 			_objDescTable[i].enclosing_rect = cvMinAreaRect2( _objDescTable[i].convexhull, _objDescTable[i].storage );
 			_objDescTable[i].major_axis = (_objDescTable[i].enclosing_rect.size.width > _objDescTable[i].enclosing_rect.size.height ? _objDescTable[i].enclosing_rect.size.width : _objDescTable[i].enclosing_rect.size.height);
@@ -433,7 +457,7 @@ bool BlobDescriptorModule::updateModule()
 		
 			CvPoint2D32f center;
 			float radius;
-			cvMinEnclosingCircle( _objDescTable[i].contours, &center, &radius );
+			cvMinEnclosingCircle( _objDescTable[i].affcontours, &center, &radius );
 
 			//shape descriptors
 			if(_objDescTable[i].contour_perimeter > 0)
@@ -470,13 +494,8 @@ bool BlobDescriptorModule::updateModule()
 		}
 	}
 
-	/* Count the number of valid objects */
-	int valid_objs = 0;
-	for(int i = 0; i < _numObjects; i++)
-		if( _objDescTable[i].valid)
-			valid_objs ++;
 
-	
+	// Output shape descriptors
 
 	Bottle &affbot = _affDescriptorOutputPort.prepare();
 	affbot.clear();
@@ -536,7 +555,8 @@ bool BlobDescriptorModule::updateModule()
 	_affDescriptorOutputPort.setEnvelope(writestamp);
 	_affDescriptorOutputPort.write(); 
 
-	/* output data for tracker initialization */
+	// output data for tracker initialization
+
 	Bottle &trackbot = _trackerInitOutputPort.prepare();
 	trackbot.clear();
 	trackbot.addInt(valid_objs);
@@ -598,19 +618,9 @@ bool BlobDescriptorModule::updateModule()
 				}
 			}
 		}
-		//Draw the contour of the selected object with a different color
-		if(userselection != -1)
-			cvDrawContours(
-				opencvViewImg, 
-				_objDescTable[userselection].contours, 
-				CV_RGB(255,0,0), // external color
-				CV_RGB(255,255,255), // hole color
-				1,				 
-				1, 
-				CV_AA, 
-				cvPoint(0, 0)	 // ROI offset
-		);
+		
 	}
+
 	/* output data to initialize the tracker on the selected object (if any)*/
 	if(userselection != -1)
 	{
@@ -643,6 +653,46 @@ bool BlobDescriptorModule::updateModule()
 		_trackerInitSingleObjOutputPort.write();
 	}
 
+	// DRAWING
+	/* contour drawing */
+	for( int i=0; i < _numObjects; i++)
+	{
+		//user selection - blue outline
+		if(userselection == i)
+			cvDrawContours(
+				opencvViewImg, 
+				_objDescTable[userselection].affcontours, 
+				CV_RGB(255,0,0), // BLUE
+				CV_RGB(255,255,0), // not used
+				1,				 
+				1, 
+				CV_AA, 
+				cvPoint(0, 0)	           // ROI offset
+			);
+		else if( _objDescTable[i].valid)   //valid objects red contours
+			cvDrawContours(
+				opencvViewImg, 
+				_objDescTable[i].contours, 
+				CV_RGB(0,0,255),           // RED
+				CV_RGB(0,255,255),         // YELLOW
+				2,				 
+				1, 
+				CV_AA, 
+				cvPoint(0, 0)	   // ROI offset
+			);
+		else 	//invalid objects - white contours
+			cvDrawContours(
+				opencvViewImg, 
+				_objDescTable[i].contours, 
+				CV_RGB(128,128,128), // GRAY
+				CV_RGB(128,128,128),  // GRAY
+				2,				 
+				1, 
+				CV_AA, 
+				cvPoint(0, 0)	 // ROI offset
+			);
+	}
+	
 	/* output the original image */
 	ImageOf<PixelRgb> &yarpRawOutputImage = _rawImgOutputPort.prepare();
 	yarpRawOutputImage = _yarpRawImg;
