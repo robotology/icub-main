@@ -387,8 +387,6 @@ void rgbProcessorThread::colourOpponency(){
 	ippiFree(redGreen_ippi32);
 	ippiFree(blueYellow_ippi32);
 	ippiFree(greenRed_ippi32);
-
-    
 	
 	ippiFree(redPlane_ippi32);
 	ippiFree(bluePlane_ippi32);
