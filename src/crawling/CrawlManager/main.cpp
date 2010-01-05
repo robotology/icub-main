@@ -28,7 +28,7 @@
  *
  *\section intro_sec Description 
  *
- * This module transforms a score into the appropriate parameters for the dynamical systems generating the trajectories (\in \ref icub_Crawling "Crawling"). It sends the parameters at timing corresponding to the beat of each of the part.If you want to  use the whole drumming application, please refer to \ref icub_Crawling "Crawling". 
+ * This module send the appropriate parameters for the dynamical systems generating the trajectories (\ref icub_CrawlGenerator "CrawlGenerator") according to the chosen behavior. It sends the parameters at timing corresponding to the beat of each of the part.If you want to  use the whole drumming application, please refer to \ref icub_Crawling "Crawling". 
  *
  *\section lib_sec Libraries
  *
