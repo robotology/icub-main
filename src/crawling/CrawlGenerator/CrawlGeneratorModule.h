@@ -88,7 +88,7 @@ class generatorThread : public yarp::os::RateThread
    
     bool current_action;
 
-    FILE *target_file, *parameters_file, *encoder_file, *feedback_file;
+    FILE *target_file, *parameters_file, *encoder_file, *feedback_file, *velocity_file;
 
 //    bool sendJointCommand();
     bool sendFastJointCommand();

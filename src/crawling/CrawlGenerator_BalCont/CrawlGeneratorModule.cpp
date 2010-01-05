@@ -3,7 +3,7 @@
 #include "CrawlGeneratorModule.h"
 #include <ace/OS.h>
 
-#define DEBUG 0
+#define DEBUG 1
 
 #define SGN(a) (a<0 ? -1 : 1)
 #define ABS(a) (a<0 ? -a : a)
@@ -130,14 +130,28 @@ void generatorThread::getParameters()
 					discrete++;
 					printf("discrete movement %d\n", discrete);
 				}
+            
+            double rhythmic_params[nbDOFs];    
+            for(int i=0; i<nbDOFs;i++)
+            {
+                rhythmic_params[i]=params[2*i];
+                if(rhythmic_params[i]>0)
+                {
+                    myCpg->parameters[2*i]=myCpg->ampl[i]/rhythmic_params[i];
+                }
+                else
+                {
+                    myCpg->parameters[2*i]=rhythmic_params[i];
+                }
+            }    
 
-			for (int i=0; i<2*nbDOFs; i++)
-				myCpg->parameters[i] = params[i];
+			for (int i=0; i<nbDOFs; i++)
+				myCpg->parameters[2*i+1] = params[2*i+1];
 
 			for (int i=0; i<2*nbDOFs; i++)
 				fprintf(parameters_file,"%f \t", myCpg->parameters[i]);
 
-			//myCpg->printInternalVariables();
+			myCpg->printInternalVariables();
 
 			double freq = command->get(2*nbDOFs).asDouble();
 
@@ -160,10 +174,6 @@ void generatorThread::getParameters()
 					ACE_OS::printf("turning angle %f too small\n", angle);
 			else
 				ACE_OS::printf("turning angle %f too big\n", angle);
-
-
-			//myCpg->ampl[0]= myIK->getTurnParams(myCpg->turnAngle, amplit, side, limb);
-			//myIK->getTurnParams(myCpg->turnAngle, amplit, side, limb);
 
 			fprintf(parameters_file,"%f %f %f",myCpg->om_stance,myCpg->om_swing, myCpg->turnAngle);
 			fprintf(parameters_file,"%f \n",Time::now()/*-original_time*/);
@@ -627,7 +637,7 @@ bool generatorThread::init(Searchable &s)
 	//////////opening the parameter port to receive input
 	bool ok;
 
-	sprintf(tmp1,"/%s/balance_parameters/in",partName.c_str());
+	sprintf(tmp1,"/%s/parameters/in",partName.c_str());
 	ok= parameters_port.open(tmp1);
 
 	if(!ok)

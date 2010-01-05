@@ -9,15 +9,7 @@ IKManager::IKManager()
   this->rate = ((double)rate)/1000.0;
   
   leftArm = new iCubArm("left");
-  rightArm = new iCubArm("right");
-  leftLeg = new iCubLeg("left");		
-  rightLeg = new iCubLeg("right");
 
-  //the left arm is controlling the torso 
-  leftArm->releaseLink(0);
-  leftArm->releaseLink(1);
-  leftArm->releaseLink(2); 
-  
   legLength = 0.23;  
   dShoulder = 0.110; //distance from middle torso to shoulder in coronal plane (x)
   dHip = 0.068;
@@ -29,9 +21,6 @@ IKManager::~IKManager()
 {
 	delete chain;
     delete leftArm;
-    delete rightArm;
-    delete leftLeg;
-    delete rightLeg;	
 }
 
 double IKManager::getArmAmplitude(double* positions, double leg_amplitude)
@@ -57,7 +46,7 @@ double IKManager::getArmAmplitude(double* positions, double leg_amplitude)
     for(int i=0;i<3;i++) armLength2+=pose_x0[i]*pose_x0[i];
     double armLength=sqrt(armLength2);
     
-    ACE_OS::printf("leg length %f, arm length %f\n", legLength, armLength);
+    printf("leg length %f, arm length %f\n", legLength, armLength);
     double arm_amplitude = legLength*leg_amplitude/armLength;
     
     pose_q.clear();
@@ -66,19 +55,20 @@ double IKManager::getArmAmplitude(double* positions, double leg_amplitude)
     
 	return arm_amplitude;
 }
+
 double IKManager::getTurnParams(double turn_angle, double amplitude, int side, int limb)
 { 
   double final_amplitude;
   double c, alpha, beta, Gamma, B, R, deltaLeg, deltaArm;
   
   double gamma = M_PI-turn_angle;
-  ACE_OS::printf("turn angle %f\n", turn_angle);
+  printf("turn angle %f\n", turn_angle);
   c = sqrt(DShoulder*DShoulder + DHip*DHip -2*DHip*DShoulder*cos(gamma));
   double temp = (DShoulder*DShoulder-c*c-DHip*DHip)/(2*c*DHip);
   
   if(fabs(temp)>1)
   {
-      ACE_OS::printf("error while computing amplitudes\n");
+      printf("error while computing amplitudes\n");
       return amplitude;
   }
   
@@ -105,7 +95,7 @@ double IKManager::getTurnParams(double turn_angle, double amplitude, int side, i
   Gamma=M_PI-2*alpha;
   R= fabs(c/2/cos(M_PI/2-alpha));
   
-  ACE_OS::printf("radius of curvature is %f\n", R);
+  printf("radius of curvature is %f\n", R);
     
   rgrand=(R+distLimb)/R;
   rsmall=(R-distLimb)/R;
@@ -115,42 +105,42 @@ double IKManager::getTurnParams(double turn_angle, double amplitude, int side, i
     case 0:
     
         final_amplitude = amplitude;
-        ACE_OS::printf("Nothing to compute (torso or head)\n");
+        printf("Nothing to compute (torso or head)\n");
         
         break;
     
-    case 1:  //left
+    case 1:  //left arm
     
-        if(turnWhere==1)//left
+        if(turnWhere==1)//turning left
         {
             final_amplitude=amplitude*rsmall;
-            ACE_OS::printf("Left side turning left, ");
+            printf("Left side turning left, ");
         }
-        if(turnWhere==-1)//right
+        if(turnWhere==-1)//turning right
         {
             final_amplitude=amplitude*rgrand;
-            ACE_OS::printf("Left side turning right,  ");
+            printf("Left side turning right,  ");
         }
         
         break;
     
-    case 2://right 
+    case 2://right arm
     
-        if(turnWhere==1)
+        if(turnWhere==1)//turning left
         {
             final_amplitude=amplitude*rgrand;
-            ACE_OS::printf("Right side turning left, ");
+            printf("Right side turning left, ");
         }
-        if(turnWhere==-1)
+        if(turnWhere==-1)//turning right
         {
             final_amplitude=amplitude*rsmall;
-            ACE_OS::printf("Right side turning right,  ");
+            printf("Right side turning right,  ");
         }
         
         break;
   }
   
-  ACE_OS::printf("final amplitude: %f\n", final_amplitude);
+  printf("final amplitude: %f\n", final_amplitude);
  
   return final_amplitude;
 }

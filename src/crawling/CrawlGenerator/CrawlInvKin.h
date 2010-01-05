@@ -1,8 +1,6 @@
 #ifndef CRAWL_INV_KIN__H
 #define CRAWL_INV_KIN__H
 
-#include <ace/OS.h>
-
 #include <yarp/os/Network.h>
 #include <yarp/os/Module.h>
 #include <yarp/os/BufferedPort.h>
@@ -51,8 +49,7 @@ class IKManager
 
     
     protected:
-    iCubArm *leftArm, *rightArm;
-    iCubLeg *leftLeg, *rightLeg;   
+    iCubArm *leftArm;  
     iKinChain *chain;
         
     

@@ -17,7 +17,7 @@
 
 #include "cpgs.h"
 #include <iostream>
-#include <ace/OS.h>
+
 using namespace std;
 
 cpgs::cpgs(int nbDOFs, int nbLIMBs){
@@ -146,36 +146,12 @@ void cpgs::integrate_step(double *y, double *at_states)
 
 	//************ getting open parameters******************
 
-<<<<<<< .mine
-    if(m[0]>0.0)
-    {
-        if(partName=="left_arm" || partName=="right_arm")
-        {
-            if(y[3]<0.0)
-            {
-                g[3] -= 2.0*y[3];
-                g[1] -= 0.5*y[3];
-            }
-        }
-=======
 	for(int i=0; i<nbDOFs;i++)
 	{
 		m[i]= parameters[2*i];
 		g[i]= parameters[2*i+1]/ampl[i];
->>>>>>> .r1229
-
-<<<<<<< .mine
-    if(partName=="left_leg" || partName=="right_leg")
-        {
-            if(y[3]<0.0)
-            {
-                g[1] -= 2.5*y[3];
-            }
-        }
-    }
-=======
 	}
->>>>>>> .r1229
+
 
 	if(partName=="torso" && fabs(turnAngle)>0.01)
 	{
@@ -189,8 +165,8 @@ void cpgs::integrate_step(double *y, double *at_states)
 			if(y[3]<0.0)//if the shoulder is swinging
 			{
 				//the swing is a composition of discrete movements for ab/ad should and elbow
-				g[3] -= 2.0*y[3];//do the swing
-				g[1] -= 1.5*y[3];//do the swing
+				g[3] -= 3.0*y[3];//do the swing
+				g[1] -= 2.0*y[3];//do the swing
 			}
 		}
 
@@ -198,7 +174,7 @@ void cpgs::integrate_step(double *y, double *at_states)
 		{
 			if(y[3]<0.0)
 			{
-				g[1] -= 3.0*y[3];///TODO ??
+				g[1] -= 2.5*y[3];///TODO ??
 			}
 		}
 	}
@@ -310,42 +286,42 @@ void cpgs::integrate_step(double *y, double *at_states)
 void cpgs::printInternalVariables()
 {
 
-	ACE_OS::printf("nbDOFs %d, cpgs_size %d, controlled param %d\n",
+	printf("nbDOFs %d, cpgs_size %d, controlled param %d\n",
 			nbDOFs,cpgs_size,controlled_param);
-	ACE_OS::printf("a %f, b %f, m_off %f, m_on %f, b_go %f, u_go %f, dt %f\n",
+	printf("a %f, b %f, m_off %f, m_on %f, b_go %f, u_go %f, dt %f\n",
 			a,b,m_off,m_on,b_go,u_go,dt);
-	ACE_OS::printf("omStance %f, omSwing %f\n",om_stance,om_swing);
+	printf("omStance %f, omSwing %f\n",om_stance,om_swing);
 
 	for(int i=0;i<nbDOFs;i++)
 	{
-		ACE_OS::printf("for DOF %d, mu=%f and g=%f - ampl=%f\n",i,parameters[2*i],parameters[2*i+1],ampl[i]);
-		ACE_OS::printf("coupling strength");
+		printf("for DOF %d, mu=%f and g=%f - ampl=%f\n",i,parameters[2*i],parameters[2*i+1],ampl[i]);
+		printf("coupling strength");
 
 		for(int j=0;j<nbDOFs;j++)
-			ACE_OS::printf(" - %f",epsilon[i][j]);
+			printf(" - %f",epsilon[i][j]);
 
-		ACE_OS::printf("\n");
-		ACE_OS::printf("phase diff");
+		printf("\n");
+		printf("phase diff");
 
 		for(int j=0;j<nbDOFs;j++)
-			ACE_OS::printf(" - %f",theta[i][j]);
+			printf(" - %f",theta[i][j]);
 
-		ACE_OS::printf("\n");
+		printf("\n");
 	}
 
-	ACE_OS::printf("next external coupling");
+	printf("next external coupling");
 
 	for(int j=0;j<nbLIMBs;j++)
-		ACE_OS::printf(" - %f",next_external_coupling[j]);
+		printf(" - %f",next_external_coupling[j]);
 
-	ACE_OS::printf("\n");
+	printf("\n");
 
-	ACE_OS::printf("external coupling");
+	printf("external coupling");
 
 	for(int j=0;j<nbLIMBs;j++)
-		ACE_OS::printf(" - %f", external_coupling[j]);
+		printf(" - %f", external_coupling[j]);
 
-	ACE_OS::printf("\n");
+	printf("\n");
 
 }
 

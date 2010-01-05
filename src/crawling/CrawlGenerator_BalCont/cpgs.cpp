@@ -165,8 +165,8 @@ void cpgs::integrate_step(double *y, double *at_states)
 			if(y[3]<0.0)//if the shoulder is swinging
 			{
 				//the swing is a composition of discrete movements for ab/ad should and elbow
-				g[3] -= 2.0*y[3];//do the swing
-				g[1] -= 1.5*y[3];//do the swing
+				g[3] -= 3.0*y[3];//do the swing
+				g[1] -= 2.5*y[3];//do the swing
 			}
 		}
 
