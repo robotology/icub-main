@@ -124,6 +124,7 @@ private:
 	int watchDOG;
 	Stamp info;
 	double time, time0;
+	int countTime, countTime0;
 
 	Vector *datas;
     
@@ -184,6 +185,7 @@ public:
 
 		  watchDOG = 0;
 		  time = time0 = 0.0;
+		  countTime = countTime0 = 0;
 	  }
 	  bool threadInit()
 	  {
@@ -191,6 +193,8 @@ public:
 		  FTs.zero();
 		  count = 0;
 
+		  /* Decommentare...
+		  
 		  for(int i=0;i<ARM_JNT;i++)
 			  ipos->positionMove(i,initPosition[i]);
 
@@ -207,6 +211,7 @@ public:
 				  Time::delay(0.1);
 			  }
 		  }
+		  */
 		  
 		  Time::delay(1.0);
 
@@ -227,14 +232,15 @@ public:
 		  else if(verbose) fprintf(stderr,"ERROR: no read from encoders\n");
 
 		  port_FT.getEnvelope(info);
-		  time = info.getTime();
+		  //time = info.getTime();
+		  countTime = info.getCount()
 
 		  int connected = CONNECTION_OK;
 
-		  if(time - time0 > 0.0) 
+		  if(countTime - countTime0 > 0.0) 
 		  {
 			  connected = CONNECTION_OK;
-			  time0 = time;
+			  countTime0 = countTime;
 			  watchDOG = 0;
 		  }
 		  else   
