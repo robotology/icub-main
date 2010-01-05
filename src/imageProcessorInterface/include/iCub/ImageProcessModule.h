@@ -117,7 +117,7 @@ private:
 	/**
 	* command port of the module
 	*/
-    Port cmdPort;
+    BufferedPort<Bottle > cmdPort;
 	/**
 	* counter of the module
 	*/
@@ -267,6 +267,10 @@ public:
 	* flag that control if the inputImage has been ever read
 	*/
 	bool inputImage_flag;
+    /** 
+    * reference to the string refering to the last command to send
+    */
+    std::string* command;
 };
 
 #endif //_IMAGEPROCESSMODULE_H_

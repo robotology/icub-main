@@ -46,9 +46,11 @@ bool ImageProcessModule::open(Searchable& config) {
     //ConstString portName2 = options.check("name",Value("/worker2")).asString();
     port2.open(getName("edges"));
     port_plane.open(getName("blue"));
-    cmdPort.open(getName("cmd")); // optional command port
-    attach(cmdPort); // cmdPort will work just like terminal
+    cmdPort.open(getName("cmd:o")); // optional command port
+    //attach(cmdPort); // cmdPort will work just like terminal
 	//this->createMainWindow();
+    command=new std::string("");
+
 
 	// create a new window
 	this->createObjects();
@@ -77,6 +79,7 @@ bool ImageProcessModule::interruptModule() {
 	port.interrupt();
 	port2.interrupt();
 	port_plane.interrupt();
+    cmdPort.interrupt();
 	return true;
 }
 
@@ -320,7 +323,8 @@ bool ImageProcessModule::openPorts(){
 
 bool ImageProcessModule::outPorts(){
 	bool ret = false;
-	if((processor1->canProcess_flag)&&(processor2->canProcess_flag)&&(processor3->canProcess_flag))
+	//if((processor1->canProcess_flag)&&(processor2->canProcess_flag)&&(processor3->canProcess_flag))
+    if(false)
 	{
 		//printf("Entered in outPorts \n");
 		this->_pOutPort->prepare()=*(this->processor1->portImage);
@@ -332,7 +336,8 @@ bool ImageProcessModule::outPorts(){
 		this->_pOutPort3->write();
 		//printf("Entered in outPorts \n");
 	}
-	if((currentProcessor->blueYellow_flag)&&(currentProcessor->redGreen_flag)&&(currentProcessor->greenRed_flag)){
+	//if((currentProcessor->blueYellow_flag)&&(currentProcessor->redGreen_flag)&&(currentProcessor->greenRed_flag)){
+    if(false){
 		//if(currentProcessor->redGreen_yarp!=0xcdcdcdcd)
 		this->portRg->prepare()=*(this->currentProcessor->redGreen_yarp);
 		//if((unsigned int)currentProcessor->greenRed_yarp!=0xcdcdcdcd)
@@ -356,6 +361,18 @@ bool ImageProcessModule::outPorts(){
 		this->portBluePlane->write();
 	}
 	
+    command->assign("help");
+    if(strcmp(command->c_str(),"")){
+		Bottle& outBot1=cmdPort.prepare();
+		//bOptions.addString("to");
+		//bOptions.addString("Layer0");
+		outBot1.fromString(command->c_str());
+		//outBot1.addList()=bOptions;
+		this->cmdPort.writeStrict();
+		command->clear();
+		//bOptions.clear();
+	}
+
 	return ret;
 }
 
@@ -444,6 +461,7 @@ static void callback( GtkWidget *widget,gpointer   data ){
 		printf("OUTPUTPORT3");
 		imageProcessModule->currentProcessor=imageProcessModule->processor3;
 	}
+    imageProcessModule->outPorts();
 }
 
 static gint menuFileQuit_CB(GtkWidget *widget, gpointer data)
@@ -479,11 +497,11 @@ static gint expose_CB (GtkWidget *widget, GdkEventExpose *event, gpointer data)
 						imageProcessModule->currentProcessor->resizeImages(_inputImg.width(),_inputImg.height());
 				}
 
-				_outputImage=imageProcessModule->currentProcessor->process(&_inputImg); //findEdges(&_inputImg,1,0);
+				/*_outputImage=imageProcessModule->currentProcessor->process(&_inputImg); //findEdges(&_inputImg,1,0);
                 printf("_outputImage: 0x%08x\n", _outputImage);
 				if(_outputImage==NULL){
 					return FALSE;
-				}
+				}*/
 
 				_semaphore.wait();
 				bool result=yarpImage2Pixbuf(_outputImage, frame);
