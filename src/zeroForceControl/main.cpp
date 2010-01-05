@@ -397,7 +397,7 @@ public:
 		if(!ok)
 		{
 			fprintf(stderr,"ERROR: one or more devices has not been viewed\nreturning...");
-			return 0;
+			return false;
 		}
 
 		int jnts;
@@ -451,7 +451,13 @@ public:
 		Options.put("remote",(fwdSlash+robot+fwdSlash+part).c_str());
 
 		PolyDriver dd(Options);
-		if(!createDriver(dd)) return 0;
+		if(!createDriver(dd)) 
+		{
+			fprintf(stderr,"ERROR: unable to create device driver...quitting\n");
+			return false;
+		}
+		else
+			fprintf(stderr,"device driver created\n");
 
 		port_FT.open((PortName+"/FT:i").c_str());
 		ft_control = new ftControl(SAMPLER_RATE, &dd, port_FT, rf);
