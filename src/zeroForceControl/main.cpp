@@ -233,7 +233,7 @@ public:
 
 		  port_FT.getEnvelope(info);
 		  //time = info.getTime();
-		  countTime = info.getCount()
+		  countTime = info.getCount();
 
 		  int connected = CONNECTION_OK;
 
