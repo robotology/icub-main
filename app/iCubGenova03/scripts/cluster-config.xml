@@ -1,0 +1,8 @@
+<cluster name="icub03" user="icub">
+
+<nameserver namespace="/icub03" node="icub17"> </nameserver>
+
+<node>pc104</node>
+<node display="yes">icub17</node>
+</cluster>
+
