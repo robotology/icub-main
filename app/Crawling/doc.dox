@@ -5,7 +5,7 @@
 
 \section intro_sec Introduction
 
-The Crawling application consists of a set of modules that are used for crawling, steering and reaching on all fours, please refer to \link http://www.robotcub.org/index.php/robotcub/content/download/1340/4673/file/Deliverable_3_8_EPFL.pdf Deliverable 3.8. 
+The Crawling application consists of a set of modules that are used for crawling, steering and reaching on all fours, please refer to \link http://www.robotcub.org/index.php/robotcub/content/download/1340/4673/file/Deliverable_3_8_EPFL.pdf Deliverable 3.8. \endlink
 
 The implementation is as below
 
