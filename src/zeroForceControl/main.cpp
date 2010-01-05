@@ -142,6 +142,7 @@ public:
 		  int nJnt;
 		  iencs->getAxes(&nJnt);
 		  encoders.resize(nJnt);
+		  //fprintf(stderr, "number of joints: %d", nJnt);
 		  iencs->getEncoders(encoders.data());
 
 		  // Elbow to FT sensor variables
@@ -227,9 +228,15 @@ public:
 	  {
 		  datas=port_FT.read(false);
 		  
-		  if(iencs->getEncoders(encoders.data()))
-		          arm->setAng(encoders);
-		  else if(verbose) fprintf(stderr,"ERROR: no read from encoders\n");
+		  //if(iencs->getEncoders(encoders.data()))
+		  iencs->getEncoders(encoders.data());
+		  //fprintf(stderr,"encoders length = %d\n", encoders.length());
+		  Vector angs(4);
+		  for(int i=0; i<4;i++)
+			  angs(i) = encoders(i);
+
+		          arm->setAng(angs);
+		  //else if(verbose) fprintf(stderr,"ERROR: no read from encoders\n");
 
 		  port_FT.getEnvelope(info);
 		  //time = info.getTime();
@@ -254,13 +261,13 @@ public:
 			  if (verbose) fprintf(stderr,"WARNING: possible connection problem. watchdog:%d\n\n",watchDOG);
 		  }
 
-		  switch(connected)
-		  { 
-			  case CONNECTION_ERROR:
-				  FT=0.0;
-				  fprintf(stderr,"ERROR: connection lost\n\n");
-				  break;
-			  case CONNECTION_OK:
+		  //switch(connected)
+		  //{ 
+			//  case CONNECTION_ERROR:
+			//	  FT=0.0;
+			//	  fprintf(stderr,"ERROR: connection lost\n\n");
+			//	  break;
+			//  case CONNECTION_OK:
 				  if(count>=CPRNT && verbose)
 					  fprintf(stderr,"Connection ok...\n\n");
 				  if(datas!=0)  
@@ -290,16 +297,16 @@ public:
 						  FTs_init=0.0;
 					  }
 				  }
-				  break;
+				 // break;
 			  
-		  }
+		  //}
 		  
 
 		  double k=1.0; //to be tuned
 		  Matrix K;
 		  K=k*eye(ARM_JNT,ARM_JNT);
 
-		  Vector tau = K*(arm->GeoJacobian(encoders).transposed())*FT;
+		  /*Vector tau = K*(arm->GeoJacobian(encoders).transposed())*FT;
 		  tauSafe = tau;
 		  tauSafe = checkLimits(encoders, tau); 
 
@@ -317,7 +324,7 @@ public:
 
 			  count = 0;
 		  }
-		  count++;
+		  count++;*/
 	  }
 
 	  void threadRelease()
@@ -367,6 +374,7 @@ class ft_ControlModule: public RFModule
 {
 private:
 	Property Options;
+	PolyDriver *dd;
 	ftControl *ft_control;
 	BufferedPort<Vector> port_FT;
     	int mod_count;
@@ -376,9 +384,10 @@ public:
 		mod_count = 0;
 	}
 
-	virtual bool createDriver(PolyDriver &_dd)
+	virtual bool createDriver(PolyDriver *_dd)
 	{
-		if(!(_dd).isValid())
+		/*********************************************/
+	    if(!dd || !(dd->isValid()))
 		{
 			fprintf(stderr,"It is not possible to instantiate the device driver\nreturning...");
 			return 0;
@@ -391,11 +400,11 @@ public:
 		IAmplifierControl *amps;
 
 		bool ok = true;
-		ok = ok & _dd.view(pos);
-		ok = ok & _dd.view(vels);
-		ok = ok & _dd.view(encs);
-		ok = ok & _dd.view(pids);
-		ok = ok & _dd.view(amps);
+		ok = ok & dd->view(pos);
+		ok = ok & dd->view(vels);
+		ok = ok & dd->view(encs);
+		ok = ok & dd->view(pids);
+		ok = ok & dd->view(amps);
 		if(!ok)
 		{
 			fprintf(stderr,"ERROR: one or more devices has not been viewed\nreturning...");
@@ -410,6 +419,7 @@ public:
 			amps->enableAmp(i);
 			pids->enablePid(i);
 		}
+		/***********************************************/
 		return true;
 	}
 
@@ -453,7 +463,7 @@ public:
 		Options.put("local",((fwdSlash+robot)+"/ftControl/client").c_str());
 		Options.put("remote",(fwdSlash+robot+fwdSlash+part).c_str());
 
-		PolyDriver dd(Options);
+		dd = new PolyDriver(Options);
 		if(!createDriver(dd)) 
 		{
 			fprintf(stderr,"ERROR: unable to create device driver...quitting\n");
@@ -461,10 +471,11 @@ public:
 		}
 		else
 			fprintf(stderr,"device driver created\n");
+		
 
 		port_FT.open((PortName+"/FT:i").c_str());
 		fprintf(stderr,"input port opened...\n");
-		ft_control = new ftControl(SAMPLER_RATE, &dd, port_FT, rf);
+		ft_control = new ftControl(SAMPLER_RATE, dd, port_FT, rf);
 		fprintf(stderr,"ft thread istantiated...\n");
 		ft_control->start();
 		fprintf(stderr,"thread started\n");
@@ -498,6 +509,9 @@ int main(int argc, char * argv[])
 {
     //initialize yarp network
     Network yarp;
+	
+    //create your module
+    ft_ControlModule ft_controlmodule;
 
     // prepare and configure the resource finder
     ResourceFinder rf;
@@ -515,8 +529,6 @@ int main(int argc, char * argv[])
         return 0;
     }
 
-    //create your module
-    ft_ControlModule ft_controlmodule;
 
     cout<<"Configure module..."<<endl;
     ft_controlmodule.configure(rf);
