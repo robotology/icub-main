@@ -57,6 +57,7 @@ private:
     BufferedPort<Matrix>    mFrameOfRefPort;
     BufferedPort<Vector>    mOutputPort;
     
+    bool                    bFake;
     bool                    bRunning;
     
 public:

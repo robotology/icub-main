@@ -2,7 +2,7 @@
 #define IKGROUPSOLVER_H_
 
 #include "MathLib.h"
-#include "IKSolver.h"
+#include "IKSubSolver.h"
 
 #ifdef USE_MATHLIB_NAMESPACE
 namespace MathLib {
@@ -32,21 +32,66 @@ public:
             /// Allows to print out debug message
             void    SetVerbose(bool verbose=true);
 
-            int     AddSolverItem(IKSolver* solver, const vector<int> & dofsIndex, int priority);
+            void    SetSizes(int dofs);
+        
+            /// Sets the weights on the degrees of freedom (useful if the redundancies are on the DOFs)
+            void    SetDofsWeights(Matrix &m);
+            void    SetDofsWeights(Vector &v);
 
-            void    SetPriority(int solverId, int priority);
+            /// Add a solver item with given constraints size and return the sovler id
+            int     AddSolverItem(const int constraintsSize);
+            /// Set jacobian dofs indices for the given solver
+            void    SetDofsIndices(const vector<int> & dofsIndex, int solverId = 0);
+            /// Set the priority of the given solver
+            void    SetPriority(int priority, int solverId = 0);
+            /// Set the thresholds for the given solver (all by default)
+            void    SetThresholds(REALTYPE loose, REALTYPE cut, int solverId = -1);
+
+            /// Sets the jacobian for the given solver (if provided, dofs indices will be used)
+            void    SetJacobian(Matrix & j, int solverId = 0);
+            
+            /// Sets the weights on the constraints for the given solver (useful if the redundancies are on the constraints)
+            void    SetConstraintsWeights(Matrix &m, int solverId = 0);
+            void    SetConstraintsWeights(Vector &v, int solverId = 0);
+
+            /// Sets the target values to reach for the given solver
+            void    SetTarget(Vector &v, int solverId = 0);
+
+            /// Removes all constraints limits on the outputs
+            void    ClearLimits();
+            
+            /**
+             * \brief Sets the constraints limits on the putput
+             * \param low      Vector for low bounds values
+             * \param high     Vector for high bounds values
+             */  
+            void    SetLimits(Vector &low, Vector &high);
         
             void    ComputePriorities();
         
             void    Solve();
         
             void    Resize();
-        
+            
+            /// Get the result
+            Vector&     GetOutput();        
+            /// Get the error between produced target and the requested one
+            Vector&     GetTargetError(int solverId = 0);        
+            /// Get the actual target that output values produces
+            Vector&     GetTargetOutput(int solverId = 0);
+            /// Get the squared norm of the error between produced target and the requested one
+            REALTYPE    GetTargetErrorNorm();
+            REALTYPE    GetTargetErrorNorm2();
 protected:
     typedef struct{
-        IKSolver*       mIKSolver;
+        IKSubSolver     mSolver;
         IndicesVector   mDofsIndex;
         int             mPriority;
+        Vector          mDesiredTarget;
+        Vector          mActualTarget;
+        Vector          mOutputTarget;
+        Vector          mErrorTarget;
+        Vector          mOutput;
     }IKSolverItem;
     
     vector<IKSolverItem>    mIKItems;
@@ -60,19 +105,19 @@ protected:
     int                     mConstraintsSize;
     int                     mDofs;
         
-    Vector              mLimits[2]; 
-    Vector              mCurrLimits[2];
-    Vector              mLimitsOffset;
+    Vector                  mLimits[2]; 
+    Vector                  mCurrLimits[2];
+    Vector                  mLimitsOffset;
 
-    Matrix              mInputDofsWeights;
-    Matrix              mWeights;        
+    Matrix                  mDofsWeights;
+    Matrix                  mCurrDofsWeights;        
+    Matrix                  mCurrWeights;        
 
-    Vector              mDesiredTarget;
+    
     Vector              mLimitsOffsetTarget;
 
-    Vector              mOutputTarget;
-    Vector              mStepOutput;
     Vector              mOutput;
+    Vector              mStepOutput;
     Vector              mOutputOffset;
     Vector              mOutputLimitsError;  
 };

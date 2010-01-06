@@ -1,6 +1,6 @@
 SET(PM_PROJECT_NAME IKTest)
 SET(PM_PROJECT_TYPE Executable)
-SET(PM_PROJECT_DEPS MathLib)
+SET(PM_PROJECT_DEPS StdTools MathLib)
 
 cmake_minimum_required(VERSION 2.6)
 

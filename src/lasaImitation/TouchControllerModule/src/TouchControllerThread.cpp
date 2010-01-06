@@ -63,13 +63,17 @@ bool TouchControllerThread::threadInit()
         cerr << "Error: Unable to open Mice Driver..."<<endl;
         return false;
     }
-    
-    mMiceDriver.SetBaseMiceName(mDeviceName);
-    if(mMiceDriver.GetNumValidDevices()<=0){
-        cerr << "Error: No device named <"<<mDeviceName<<"> found..."<<endl;
-        return false;
+    if(strncmp(mDeviceName,"fake",256)!=0){
+        bFake = false;
+        mMiceDriver.SetBaseMiceName(mDeviceName);
+        if(mMiceDriver.GetNumValidDevices()<=0){
+            cerr << "Error: No device named <"<<mDeviceName<<"> found..."<<endl;
+            return false;
+        }
+    }else{
+        bFake = true;
+        mMiceDriver.SetBaseMiceName(mDeviceName);
     }
-    
     switch(mType){
     case 0:
         mMiceDriver.SetMode(MMiceDeviceDriver::MMM_RELTOABS);
@@ -142,43 +146,47 @@ void TouchControllerThread::run()
     // Write data to output port
     Vector &outputVec = mOutputPort.prepare();
 
-    mMiceDriver.Update();
-    //if(mMiceDriver.HasMouseChanged(0))
-    //    cout << "touched"<<endl;
+    if(!bFake)
+        mMiceDriver.Update();
+
     if(mType==1){
         mCoefs[0] = mCoefs[1] = mCoefs[2] = mTransGain;
         mCoefs[4] = mCoefs[5] = mCoefs[6] = mRotGain;
-        mTouchController.Set6DOFSensingCoefs(mCoefs);
-        mTouchController.SetOutputLimits(mTransLimit,mRotLimit);
-        mTouchController.SetOrientationFrame(mFrameOfRef);
-        
-        mTouchController.Update();
-        
+        if(!bFake){
+            mTouchController.Set6DOFSensingCoefs(mCoefs);
+            mTouchController.SetOutputLimits(mTransLimit,mRotLimit);
+            mTouchController.SetOrientationFrame(mFrameOfRef);
+            
+            mTouchController.Update();
+        }
         outputVec.resize(6);
-        mTouchController.GetOrientationFrameOutput(outputVec);
+        if(!bFake)
+            mTouchController.GetOrientationFrameOutput(outputVec);
     }else if(mType == 0){
-        MMiceDeviceDriver::MouseEventSummary *mouse3d = mMiceDriver.GetMouseData(0);
         outputVec.resize(6);
-        outputVec[0] = -mouse3d->mAbs.Y     * mTransGain;
-        outputVec[1] = -mouse3d->mAbs.X     * mTransGain;
-        outputVec[2] = -mouse3d->mAbs.Z     * mTransGain;
-        outputVec[3] = -mouse3d->mAbs.RY    * mRotGain;
-        outputVec[4] = -mouse3d->mAbs.RX    * mRotGain;
-        outputVec[5] = -mouse3d->mAbs.RZ    * mRotGain;
-        
-        MathLib::Matrix mat3(3,3);
-        YarpMatrixToMatrix(mFrameOfRef,mat3);
-        MathLib::Vector vec(3),vec2(3);
-        vec[0] = outputVec[0]; vec[1] = outputVec[1]; vec[2] = outputVec[2];
-        mat3.Mult(vec,vec2);
-        outputVec[0] = TRUNC(vec[0],-mTransLimit,mTransLimit); outputVec[1] = TRUNC(vec[1],-mTransLimit,mTransLimit); outputVec[2] = TRUNC(vec[2],-mTransLimit,mTransLimit); 
-        vec[0] = outputVec[3]; vec[1] = outputVec[4]; vec[2] = outputVec[5];
-        mat3.Mult(vec,vec2);
-        outputVec[3] = TRUNC(vec[0],-mRotLimit,mRotLimit); outputVec[4] = TRUNC(vec[1],-mRotLimit,mRotLimit); outputVec[5] = TRUNC(vec[2],-mRotLimit,mRotLimit); 
+        if(!bFake){
+            MMiceDeviceDriver::MouseEventSummary *mouse3d = mMiceDriver.GetMouseData(0);
+            outputVec[0] = -mouse3d->mAbs.Y     * mTransGain;
+            outputVec[1] = -mouse3d->mAbs.X     * mTransGain;
+            outputVec[2] = -mouse3d->mAbs.Z     * mTransGain;
+            outputVec[3] = -mouse3d->mAbs.RY    * mRotGain;
+            outputVec[4] = -mouse3d->mAbs.RX    * mRotGain;
+            outputVec[5] = -mouse3d->mAbs.RZ    * mRotGain;
+            
+            MathLib::Matrix mat3(3,3);
+            YarpMatrixToMatrix(mFrameOfRef,mat3);
+            MathLib::Vector vec(3),vec2(3);
+            vec[0] = outputVec[0]; vec[1] = outputVec[1]; vec[2] = outputVec[2];
+            mat3.Mult(vec,vec2);
+            outputVec[0] = TRUNC(vec[0],-mTransLimit,mTransLimit); outputVec[1] = TRUNC(vec[1],-mTransLimit,mTransLimit); outputVec[2] = TRUNC(vec[2],-mTransLimit,mTransLimit); 
+            vec[0] = outputVec[3]; vec[1] = outputVec[4]; vec[2] = outputVec[5];
+            mat3.Mult(vec,vec2);
+            outputVec[3] = TRUNC(vec[0],-mRotLimit,mRotLimit); outputVec[4] = TRUNC(vec[1],-mRotLimit,mRotLimit); outputVec[5] = TRUNC(vec[2],-mRotLimit,mRotLimit); 
+        }
     }
 
     
-    if(!bRunning)
+    if((!bRunning)||(bFake))
         outputVec.zero();
     cout << outputVec.toString().c_str()<<endl;        
     

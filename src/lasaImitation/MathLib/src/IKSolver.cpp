@@ -266,7 +266,7 @@ void    IKSolver::GetOutput(Vector &output){
     output = mOutput;
 }
 void    IKSolver::GetTargetError(Vector &error){
-    mFullOutputTarget.Sub(mFullDesiredTarget,error);   
+    mFullDesiredTarget.Sub(mFullOutputTarget,error);   
 }
 REALTYPE IKSolver::GetTargetError(){
     Vector tmp;

@@ -15,32 +15,96 @@ IKGroupSolver::IKGroupSolver(){
 }
 
 IKGroupSolver::~IKGroupSolver(){
-    for(size_t i=0;i<mIKItems.size();i++)
-        if(mIKItems[i].mIKSolver!=NULL) delete mIKItems[i].mIKSolver;
     mIKItems.clear();
     mSortedPriorityIds.clear();
 }
 
 void    IKGroupSolver::SetVerbose(bool verbose){
     bVerbose = verbose;
+    for(size_t i=0;i<mIKItems.size();i++){
+        IKSolverItem &item = mIKItems[i];
+        item.mSolver.SetVerbose(verbose);
+    }
+}
+void    IKGroupSolver::SetSizes(int dofs){
+    mDofs = MAX(0,dofs);
+    Resize();
 }
 
-int     IKGroupSolver::AddSolverItem(IKSolver* solver, const vector<int> & dofsIndex, int priority){
+int     IKGroupSolver::AddSolverItem(const int constraintsSize){
     mIKItems.resize(mIKItems.size()+1);
     IKSolverItem &item = mIKItems[mIKItems.size()-1];
-    item.mIKSolver = solver;
-    item.mPriority = priority;    
-    for(size_t i=0;i<dofsIndex.size();i++)
-        item.mDofsIndex.push_back(dofsIndex[i]);
+    
+    item.mSolver.SetSizes(mDofs,constraintsSize);
+    item.mDofsIndex.clear();
+    item.mPriority = 0;
+    item.mDesiredTarget.Resize(constraintsSize,false);
+    item.mDesiredTarget.Zero();
+    item.mOutputTarget.Resize(constraintsSize,false);
+    item.mOutputTarget.Zero();
+    item.mOutput.Resize(mDofs,false);
+    item.mOutput.Zero();
+    
     bComputePriorities = true;
 }
 
-void    IKGroupSolver::SetPriority(int solverId, int priority){
+void    IKGroupSolver::SetDofsIndices(const vector<int> & dofsIndex, int solverId){
     if((solverId>=0)&&(solverId<int(mIKItems.size()))){
-        mIKItems[solverId].mPriority = priority;
+        IKSolverItem &item = mIKItems[solverId];
+        item.mDofsIndex.clear();
+        for(size_t i=0;i<dofsIndex.size();i++)
+            item.mDofsIndex.push_back(dofsIndex[i]);
+    }
+}
+void    IKGroupSolver::SetPriority(int priority, int solverId){
+    if((solverId>=0)&&(solverId<int(mIKItems.size()))){
+        IKSolverItem &item = mIKItems[solverId];
+        item.mPriority = priority;
         bComputePriorities = true;
     }
 }
+
+void    IKGroupSolver::SetThresholds(REALTYPE loose, REALTYPE cut, int solverId){
+    if(solverId<0){
+        for(size_t i=0;i<mIKItems.size();i++){
+            mIKItems[i].mSolver.SetThresholds(loose,cut);
+        }
+    }else if((solverId>=0)&&(solverId<int(mIKItems.size()))){
+        IKSolverItem &item = mIKItems[solverId];
+        item.mSolver.SetThresholds(loose,cut);
+    }    
+}
+
+void    IKGroupSolver::SetJacobian(Matrix & j, int solverId){
+    if((solverId>=0)&&(solverId<int(mIKItems.size()))){
+        IKSolverItem &item = mIKItems[solverId];
+        if(item.mDofsIndex.size()>0){
+            item.mSolver.GetJacobian().Zero();
+            item.mSolver.GetJacobian().SetColumnSpace(item.mDofsIndex, j);
+        }else
+            item.mSolver.SetJacobian(j);
+    }
+}
+void    IKGroupSolver::SetConstraintsWeights(Matrix &m, int solverId){
+    if((solverId>=0)&&(solverId<int(mIKItems.size()))){
+        IKSolverItem &item = mIKItems[solverId];
+        item.mSolver.SetConstraintsWeights(m);
+    }
+}
+void    IKGroupSolver::SetConstraintsWeights(Vector &v, int solverId){
+    if((solverId>=0)&&(solverId<int(mIKItems.size()))){
+        IKSolverItem &item = mIKItems[solverId];
+        item.mSolver.SetConstraintsWeights(v);
+    }
+}
+void    IKGroupSolver::SetTarget(Vector &v, int solverId){
+    if((solverId>=0)&&(solverId<int(mIKItems.size()))){
+        IKSolverItem &item = mIKItems[solverId];
+        item.mDesiredTarget = v;
+    }
+}
+
+
 
 void    IKGroupSolver::ComputePriorities(){
     if(bVerbose) cerr << "IKGroupSolver: Computing Priorities"<<endl;
@@ -51,6 +115,17 @@ void    IKGroupSolver::ComputePriorities(){
     bComputePriorities = false;
 }
 
+void    IKGroupSolver::SetDofsWeights(Matrix &m){
+    mDofsWeights = m;
+}
+void    IKGroupSolver::SetDofsWeights(Vector &v){
+    mDofsWeights.Resize(mDofs,mDofs,false);
+    mDofsWeights.Zero();    
+    int len = MIN(v.Size(),mDofs);
+    for(int i=0;i<len;i++){
+        mDofsWeights(i,i) = v(i);
+    }
+}
 
 void    IKGroupSolver::Solve(){
     if(bVerbose) cerr << "IKGroupSolver: Solving"<<endl;
@@ -58,7 +133,7 @@ void    IKGroupSolver::Solve(){
     if(bComputePriorities)
         ComputePriorities();
     
-    mWeights       = mInputDofsWeights;
+    mCurrDofsWeights = mDofsWeights;
     mCurrLimits[0] = mLimits[0];
     mCurrLimits[1] = mLimits[1];
 
@@ -67,20 +142,17 @@ void    IKGroupSolver::Solve(){
     // Compute constraints size
     mConstraintsSize = 0;
     for(size_t i=0;i<mSortedPriorityIds.size();i++){
-        IKSolver* cSolver = mIKItems[mSortedPriorityIds[i]].mIKSolver;
-        mConstraintsSize += cSolver->mConstraintsSize;
+        IKSubSolver& cSolver = mIKItems[mSortedPriorityIds[i]].mSolver;
+        mConstraintsSize += cSolver.mConstraintsSize;
     }
     
-    // Set global target vector
-    cCnt = 0;
+    // Set target vectors
     for(size_t i=0;i<mSortedPriorityIds.size();i++){
-        IKSolver* cSolver = mIKItems[mSortedPriorityIds[i]].mIKSolver;
-        mDesiredTarget.SetSubVector(cCnt,cSolver->mFullDesiredTarget);    
-        cCnt += cSolver->mConstraintsSize;
+        IKSolverItem &item = mIKItems[mSortedPriorityIds[i]];
+        item.mSolver.SetTarget(item.mDesiredTarget);
     }
     
     mOutput.Zero();
-    mOutputTarget.Zero();
 
     // Check initial limits
     bool bHasInitialLimits = false;
@@ -108,25 +180,35 @@ void    IKGroupSolver::Solve(){
     if(bHasInitialLimits){
         mLimitsOffsetTarget.Zero();
         for(size_t i=0;i<mSortedPriorityIds.size();i++){
-            IKSolver* cSolver = mIKItems[mSortedPriorityIds[i]].mIKSolver;
-            mLimitsOffsetTarget += cSolver->mJacobian.Mult(mLimitsOffset,tmpCsV);
+            IKSubSolver& cSolver = mIKItems[mSortedPriorityIds[i]].mSolver;
+            cSolver.mJacobian.Mult(mLimitsOffset,mLimitsOffsetTarget);
+            cSolver.mDesiredTarget  -= mLimitsOffsetTarget;
         }
-        mDesiredTarget  -= mLimitsOffsetTarget;
         mOutput         += mLimitsOffset;
     }
     
     int stepCnt =0;
     while(1){
-        if(bVerbose) cerr << "IKSolver: Pass <"<< stepCnt <<">"<<endl;
+        if(bVerbose) cerr << "IKGroupSolver: Pass <"<< stepCnt <<">"<<endl;
         
+        mStepOutput.Zero();
+        
+        mCurrWeights   = mCurrDofsWeights;
+
         // Solve each sub system
         for(size_t i=0;i<mSortedPriorityIds.size();i++){
-            IKSolverItem* cItem = &mIKItems[mSortedPriorityIds[i]];
-            cItem->mIKSolver->StepSolve();
+            IKSolverItem &item = mIKItems[mSortedPriorityIds[i]];
+            item.mActualTarget = item.mSolver.mDesiredTarget;
+            if(i>0){
+                item.mSolver.mDesiredTarget -= item.mSolver.mJacobian * mStepOutput;
+            }
+            item.mSolver.SetDofsWeights(mCurrWeights);
+            item.mSolver.Solve();
             // Retrieve each sub output
-            tmpDsV.Zero();
-            tmpDsV.SetSubVector(cItem->mDofsIndex, cItem->mIKSolver->mStepOutput);
-            mStepOutput += tmpDsV;
+            mStepOutput += item.mSolver.mOutput;
+            Matrix tmp(mCurrWeights);
+            tmp.Mult(item.mSolver.GetNullSpace(),mCurrWeights);
+            item.mSolver.mDesiredTarget = item.mActualTarget;
         }
         
         // Checking Limits
@@ -152,7 +234,8 @@ void    IKGroupSolver::Solve(){
             for(int i=0;i<mDofs;i++){
                 if(minOutputLimitError == mOutputLimitsError[i]){
                     if(bVerbose) cerr << "IKGroupSolver: Pass <"<< stepCnt <<"> Locking DOF <"<<i<<">"<<endl;
-                    mWeights(i,i) = 0.0;
+                    for(int j=0;j<mDofs;j++)
+                        mCurrDofsWeights(i,j) = 0.0;
                 }
             }
         }
@@ -162,18 +245,17 @@ void    IKGroupSolver::Solve(){
             else if(mStepOutput[i]<0) mCurrLimits[0][i] -= mStepOutput[i];
             mCurrLimits[1][i] = MAX(0,mCurrLimits[1][i]); 
             mCurrLimits[0][i] = MIN(0,mCurrLimits[0][i]); 
-        }        
-
+        }
+        
         if(minOutputLimitError==1.0){
             mOutput += mStepOutput;
             if(bVerbose) cerr << "IKGroupSolver: Pass <"<< stepCnt <<"> Success"<<endl;
-            break;
+                break;
         }else{
             stepCnt ++;
             for(size_t i=0;i<mSortedPriorityIds.size();i++){
-                IKSolverItem* cItem = &mIKItems[mSortedPriorityIds[i]];
-                mStepOutput.GetSubVector(cItem->mDofsIndex,cItem->mIKSolver->mStepOutput);
-                cItem->mIKSolver->mDesiredTarget -= cItem->mIKSolver->mJacobian * cItem->mIKSolver->mStepOutput;    
+                IKSolverItem &item = mIKItems[mSortedPriorityIds[i]];
+                item.mSolver.mDesiredTarget -= item.mSolver.mJacobian * mStepOutput;    
             }            
             // Update desired target
             mOutput += mStepOutput;
@@ -182,6 +264,45 @@ void    IKGroupSolver::Solve(){
     
     if(bVerbose) cerr << "IKGroupSolver: Done"<<endl;
 }
+void    IKGroupSolver::ClearLimits(){
+    mLimits[0].Zero();  mLimits[0] += 1.0;
+    mLimits[1].Zero();  mLimits[1] -= 1.0;
+}
+
+void    IKGroupSolver::SetLimits(Vector &low,Vector &high){
+    int len;
+    mLimits[0].Zero();
+    mLimits[0].SetSubVector(0,low);
+    mLimits[1].Zero();
+    mLimits[1].SetSubVector(0,high);
+}
+Vector&     IKGroupSolver::GetOutput(){
+    return mOutput;
+}
+Vector&     IKGroupSolver::GetTargetError(int solverId){
+    if((solverId>=0)&&(solverId<int(mIKItems.size()))){
+        IKSolverItem &item = mIKItems[solverId];
+        item.mOutputTarget = item.mSolver.mJacobian * mOutput;    
+        item.mErrorTarget  = item.mDesiredTarget - item.mOutputTarget;
+        return item.mErrorTarget;
+    }
+    return mIKItems[0].mErrorTarget;
+}
+Vector&     IKGroupSolver::GetTargetOutput(int solverId){
+    if((solverId>=0)&&(solverId<int(mIKItems.size()))){
+        IKSolverItem &item = mIKItems[solverId];
+        item.mOutputTarget = item.mSolver.mJacobian * mOutput;    
+        item.mErrorTarget  = item.mDesiredTarget - item.mOutputTarget;
+        return item.mOutputTarget;
+    }
+    return mIKItems[0].mOutputTarget;
+}
+REALTYPE    IKGroupSolver::GetTargetErrorNorm(){
+    return 0;
+}
+REALTYPE    IKGroupSolver::GetTargetErrorNorm2(){
+    return 0;    
+}
 
 void IKGroupSolver::Resize(){  
   
@@ -189,15 +310,17 @@ void IKGroupSolver::Resize(){
     mLimits[1].Resize(mDofs);
     mLimitsOffset.Resize(mDofs);
 
-    mInputDofsWeights.Resize(mDofs,mDofs,false);
-    mWeights.Resize(mDofs,mDofs,false);
-    mInputDofsWeights.Identity();
+    mDofsWeights.Resize(mDofs,mDofs,false);
+    mCurrDofsWeights.Resize(mDofs,mDofs,false);
+    mCurrWeights.Resize(mDofs,mDofs,false);
+    mDofsWeights.Identity();
 
 
     mOutputLimitsError.Resize(mDofs,false);
 
 
     mOutput.Resize(mDofs,false);
+    mStepOutput.Resize(mDofs,false);
     mOutputOffset.Resize(mDofs,false);
     mStepOutput.Resize(mDofs,false);
 }

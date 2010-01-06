@@ -504,6 +504,26 @@ public:
     return result;     
   }
 
+  /**
+   * \brief Set a specified column set of the matrix with columns of the source matrix
+   * \param ids      The indices of the desired columns
+   * \param source   The source matrix
+   * \return         The resulting matrix
+   */  
+  inline Matrix& SetColumnSpace(const IndicesVector& ids, const Matrix &source)
+  {
+    const unsigned int k      = MIN(ids.size(),source.column);
+    const unsigned int r      = MIN(row,source.row);
+    for(unsigned int i=0;i<k;i++){
+      const unsigned int g = ids[i];
+      if(g<column){
+        for(unsigned int j=0;j<r;j++)
+          _[j*column+g] = source._[j*source.column+i];
+      }
+    }
+    return *this;     
+  }
+
 
   inline Matrix& InsertSubRow(unsigned int startRow, unsigned int startColumn, 
                               const Matrix& matrix, 
@@ -1026,6 +1046,7 @@ public:
     return Mult(matrix,result);
   }  
 
+  /*
   /// Matrix multiplication
   inline Matrix& Mult(const Matrix &matrix, Matrix &result) const
   {
@@ -1042,8 +1063,38 @@ public:
     }    
     return result;
   }
+  */
+  /// Matrix multiplication
+  inline Matrix& Mult(const Matrix &matrix, Matrix &result) const
+  {
+    result.Resize(row,matrix.column,false);
+    result.Zero();
+    //const unsigned int rrow = result.row;
+    const unsigned int rcol = result.column;
+    const unsigned int kk = (column<=matrix.row?column:matrix.row);
 
+    REALTYPE *cP1   = _; 
+    REALTYPE *eP1   = cP1 + row*column;    
+    REALTYPE *cD    = result._;
 
+    while(cP1!=eP1){
+        REALTYPE *currP1  = cP1; 
+        REALTYPE *endP1   = currP1 + kk;
+        REALTYPE *currP2  = matrix._; 
+        while(currP1!=endP1){
+            REALTYPE *currPD  = cD; 
+            REALTYPE  curr1   = *currP1;
+            REALTYPE *endP2   = currP2 + rcol;    
+            while(currP2!=endP2){
+                (*currPD++) += curr1 * (*(currP2++));
+            }
+            currP1++;
+        }
+        cD  += rcol;
+        cP1 += column;
+    }        
+    return result;
+  }
 
   /// Set a diagonal matrix given a vector of diagonal elements
   inline Matrix& Diag(const Vector &vector)
@@ -1066,11 +1117,11 @@ public:
   }
 
   /// Return the transpose of a matrix
-	inline Matrix Transpose() const
-	{
+    inline Matrix Transpose() const
+    {
     Matrix result(column,row,false);
     return Transpose(result);    
-	}
+    }
 
   /// Computr the transpose of a matrix
   inline Matrix& Transpose(Matrix &result) const
@@ -1513,7 +1564,7 @@ public:
     const int n = column;
     int m,l,iter,i,k;
     REALTYPE s,r,p,g,f,dd,c,b;
-    
+    int cumIter = 0;
     for(i=1;i<n;i++) e._[i-1] = e._[i];
     e._[n-1] = R_ZERO;
 
@@ -1526,7 +1577,6 @@ public:
         }
         if(m!=l){
           if(iter++==maxIter) {
-            fprintf(stderr,"Error: too many ierations...\n");
             bInverseOk = false;
             break;
           }
@@ -1562,9 +1612,12 @@ public:
           e._[m] = R_ZERO;
         }        
       }while(m!=l); 
+      cumIter+=iter;
     } 
-       
-    return iter;
+    if(!bInverseOk){
+        fprintf(stderr,"Error: too many ierations...%f/%d\n",REALTYPE(cumIter)/REALTYPE(n),maxIter);
+    }
+    return cumIter;
   }
 
   /*
