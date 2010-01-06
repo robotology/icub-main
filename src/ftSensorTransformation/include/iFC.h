@@ -299,9 +299,21 @@ public:
 
 	~iFB()
 	{
-		if (Limb) delete Limb;
-		if (Sensore) delete Sensore;
-		if (EndEffector) delete EndEffector;
+		if (Limb)
+		{
+			delete Limb;
+			Limb = 0;
+		}
+		if (Sensore) 
+		{
+			delete Sensore;
+			Sensore = 0;
+		}
+		if (EndEffector) 
+		{
+			delete EndEffector;
+			EndEffector = 0;
+		}
 	}
 	void attach(iKin::iKinLimb *_Limb);
 	void attach(iFTransform *_sensore);
