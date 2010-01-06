@@ -80,31 +80,66 @@
 	<connection>
       	<from>/colourPU/rg:o</from>
 			<to>/imagePU/rg:i</to>
+			<protocol>tcp</protocol>
 	</connection>
 	<connection>
       	<from>/colourPU/gr:o</from>
 			<to>/imagePU/gr:i</to>
+			<protocol>tcp</protocol>
 	</connection>
 	<connection>
       	<from>/colourPU/by:o</from>
 			<to>/imagePU/by:i</to>
+			<protocol>tcp</protocol>
 	</connection>
 	<connection>
       	<from>/colourPU/rg:o</from>
 			<to>/rgView</to>
+			<protocol>tcp</protocol>
 	</connection>
 	<connection>
       	<from>/colourPU/gr:o</from>
 			<to>/grView</to>
+			<protocol>tcp</protocol>
 	</connection>
 	<connection>
       	<from>/colourPU/by:o</from>
 			<to>/byView</to>
+			<protocol>tcp</protocol>
 	</connection>
-
 	<connection>
       	<from>/imagePU/edges:o</from>
 			<to>/edgesView</to>
+			<protocol>tcp</protocol>
 	</connection>
-
+	<connection>
+      	<from>/colourPU/rg:o</from>
+			<to>/blobFinder/rg:i</to>
+			<protocol>tcp</protocol>
+	</connection>
+	<connection>
+      	<from>/colourPU/gr:o</from>
+			<to>//blobFinder/gr:i</to>
+			<protocol>tcp</protocol>
+	</connection>
+	<connection>
+      	<from>/colourPU/by:o</from>
+			<to>/blobFinder/by:i</to>
+			<protocol>tcp</protocol>
+	</connection>
+	<connection>
+      	<from>/colourPU/red:o</from>
+			<to>/blobFinder/red:i</to>
+			<protocol>tcp</protocol>
+	</connection>
+	<connection>
+      	<from>/colourPU/green:o</from>
+			<to>/blobFinder/green:i</to>
+			<protocol>tcp</protocol>
+	</connection>
+	<connection>
+      	<from>/colourPU/blue:o</from>
+			<to>/blobFinder/blue:i</to>
+			<protocol>tcp</protocol>
+	</connection>
 </application>
