@@ -15,6 +15,7 @@
 		<parameters>--file colourProcessor.ini</parameters>
 		<tag>colourPU</tag>
 		<node>/surfer</node>
+		<stdio>lightHouse</stdio>
 	</module>
 	<module>
 		<name>imageProcessor</name>
@@ -110,6 +111,11 @@
 	<connection>
       	<from>/imagePU/edges:o</from>
 			<to>/edgesView</to>
+			<protocol>tcp</protocol>
+	</connection>
+	<connection>
+      	<from>/imagePU/edges:o</from>
+			<to>/blobFinder/image:i</to>
 			<protocol>tcp</protocol>
 	</connection>
 	<connection>
