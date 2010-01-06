@@ -122,13 +122,13 @@ private:
 public:
 
 	/**
-    * Constructor of the GeneratorThread class.
+    * Constructor of the MultiMarkerTracker class.
     * Does nothing.
     */
     MultiMarkerTracker();
 
 	/**
-    * Destructor of the GeneratorThread class.
+    * Destructor of the MultiMarkerTracker class.
     * Does nothing.
     */
     ~MultiMarkerTracker();
