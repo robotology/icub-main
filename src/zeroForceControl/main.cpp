@@ -114,7 +114,7 @@ private:
 	Matrix Rs;
 	Vector ps;
 
-	BufferedPort<Vector> port_FT;
+	BufferedPort<Vector> *port_FT;
 	Vector Datum;
 	bool first;
 
@@ -130,9 +130,10 @@ private:
     
 
 public:
-	ftControl(int _rate, PolyDriver *_dd, BufferedPort<Vector> &_port_FT, ResourceFinder &_rf):	  
-	  RateThread(_rate), dd(_dd)
+	ftControl(int _rate, PolyDriver *_dd, BufferedPort<Vector> *_port_FT, ResourceFinder &_rf):	  
+	  RateThread(_rate), dd(_dd) 
 	  {
+		  port_FT = _port_FT;
 		  dd->view(ipos);
 		  dd->view(ivels);
 		  dd->view(iencs);
@@ -226,7 +227,7 @@ public:
 	  }
 	  void run()
 	  {
-		  datas=port_FT.read(false);
+		  datas=port_FT->read(false);
 		  
 		  //if(iencs->getEncoders(encoders.data()))
 		  iencs->getEncoders(encoders.data());
@@ -238,7 +239,7 @@ public:
 		          arm->setAng(angs);
 		  //else if(verbose) fprintf(stderr,"ERROR: no read from encoders\n");
 
-		  port_FT.getEnvelope(info);
+		  port_FT->getEnvelope(info);
 		  //time = info.getTime();
 		  countTime = info.getCount();
 
@@ -258,7 +259,7 @@ public:
 		  if(watchDOG>=20) 
 		  {
 			  connected = CONNECTION_ERROR;
-			  if (verbose) fprintf(stderr,"WARNING: possible connection problem. watchdog:%d\n\n",watchDOG);
+			  //if (verbose) fprintf(stderr,"WARNING: possible connection problem. watchdog:%d\n\n",watchDOG);
 		  }
 
 		  //switch(connected)
@@ -308,23 +309,33 @@ public:
 
 		  /*Vector tau = K*(arm->GeoJacobian(encoders).transposed())*FT;
 		  tauSafe = tau;
-		  tauSafe = checkLimits(encoders, tau); 
+		  tauSafe = checkLimits(encoders, tau); */
 
 		  if(count>=CPRNT)
 		  {
-			  fprintf(stderr,"tau = ");
-			  for(int i=0;i<4;i++)
-				  fprintf(stderr,"%.3lf\t", tau(i));
+			  fprintf(stderr,"FT = ");
+			  for(int i=0;i<6;i++)
+				  fprintf(stderr,"%.3lf\t", FT(i));
 			  fprintf(stderr,"\n");
 
-			  fprintf(stderr,"safeTau = ");
+			  fprintf(stderr,"FTs = ");
+			  for(int i=0;i<6;i++)
+				  fprintf(stderr,"%.3lf\t", FTs(i)-FTs_init(i));
+			  fprintf(stderr,"\n");
+
+			  fprintf(stderr,"encs = ");
+			  for(int i=0;i<4;i++)
+				  fprintf(stderr,"%.3lf\t", angs(i));
+			  fprintf(stderr,"\n");
+
+			  /*fprintf(stderr,"safeTau = ");
 			  for(int i=0;i<4;i++)
 				  fprintf(stderr,"%.3lf\t", tauSafe(i));
-			  fprintf(stderr,"\n\n\n");
+			  fprintf(stderr,"\n\n\n");*/
 
 			  count = 0;
 		  }
-		  count++;*/
+		  count++;
 	  }
 
 	  void threadRelease()
@@ -359,8 +370,7 @@ public:
 
 	  Vector readFT()
 	  {
-		  Vector Datum = *datas;
-		  Vector FTtmp = *Datum.data();
+		  Vector FTtmp = *datas;
 		  FTtmp(2) = -FTtmp(2);
 		  FTtmp(4) = -FTtmp(4);
 		  return FTtmp;
@@ -476,7 +486,7 @@ public:
 
 		port_FT.open((PortName+"/FT:i").c_str());
 		fprintf(stderr,"input port opened...\n");
-		ft_control = new ftControl(SAMPLER_RATE, dd, port_FT, rf);
+		ft_control = new ftControl(SAMPLER_RATE, dd, &port_FT, rf);
 		fprintf(stderr,"ft thread istantiated...\n");
 		ft_control->start();
 		fprintf(stderr,"thread started\n");
@@ -496,11 +506,11 @@ public:
 	{
 		fprintf(stderr,"closing...don't know why :S ");
 		if (ft_control) ft_control->stop();
-		port_FT.interrupt();
-		port_FT.close();
-
 		if (ft_control) delete ft_control;
 		if (dd) delete dd;
+
+		//port_FT.interrupt();
+		//port_FT.close();
 		return true;
 	}
 };
