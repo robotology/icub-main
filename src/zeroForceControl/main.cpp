@@ -333,10 +333,12 @@ public:
 			  ipids->disablePid(i);
 		  for(int i=0;i<ARM_JNT;i++)
 			  ipids->resetPid(i);
-			
-		  delete sensor;
-		  delete FTB;
-		  delete arm;
+
+		  if(datas) delete datas;
+		  if(FTB) delete FTB;
+		  if(sensor) delete sensor;
+		  if(chain) delete chain;
+		  if(arm) delete arm;
 	  }
 
 	  /*bool checkSinglePosition(double qd, double q)
