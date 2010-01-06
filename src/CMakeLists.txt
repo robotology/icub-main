@@ -210,6 +210,11 @@ ENDIF (ARTOOLKITPLUS_FOUND)
 
   # optical flow modules
   #ADD_SUBDIRECTORY(optFlow) //does not compile on LINUX yet
+  
+  IF(IPOPT_FOUND) 
+	ADD_SUBDIRECTORY(crawling)
+	ADD_SUBDIRECTORY(drummingEPFL)
+  ENDIF(IPOPT_FOUND) 
 
 
   IF(GSL_FOUND AND IPOPT_FOUND AND ADD_IPOPT)    
