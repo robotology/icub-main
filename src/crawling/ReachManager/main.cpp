@@ -22,7 +22,7 @@
  *
  * \defgroup icub_ReachManager ReachManager
  *
- *This module is part of the application \ref icub_Crawling "Crawling"
+ * This module is part of the application \ref icub_Crawling "Crawling"
  *
  *\section intro_sec Description 
  *
