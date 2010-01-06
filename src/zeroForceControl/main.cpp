@@ -381,7 +381,9 @@ private:
 public:
 	ft_ControlModule()
 	{
-		mod_count = 0;
+		dd         = 0;
+		ft_control = 0;
+		mod_count  = 0;
 	}
 
 	virtual bool createDriver(PolyDriver *_dd)
@@ -494,12 +496,12 @@ public:
 	bool close()
 	{
 		fprintf(stderr,"closing...don't know why :S ");
-		ft_control->stop();
+		if (ft_control) ft_control->stop();
 		port_FT.interrupt();
 		port_FT.close();
 
-		delete ft_control;
-		delete dd;
+		if (ft_control) delete ft_control;
+		if (dd) delete dd;
 		return true;
 	}
 };
