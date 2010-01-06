@@ -147,7 +147,7 @@ void SalienceOperator::RemoveNonValidNoRange(int last_tag, const int max_size, c
 	for (int i = 1; i <= last_tag;i++) {
 		if (m_boxes[i].valid) {
 			//__OLD//int area = TotalArea(m_boxes[i]);
-			int area = m_boxes[i].areaCart;
+			int area = (int)floor(m_boxes[i].areaCart);
 			// eliminare i blob troppo piccoli nn è molto utile se
 			// i blob vengono comunque ordinati x grandezza.
 			if ( area < min_size ||	area > max_size ) {

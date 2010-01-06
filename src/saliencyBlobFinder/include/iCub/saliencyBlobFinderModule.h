@@ -3,7 +3,7 @@
 #define _SALIENCYBLOBFINDERMODULE_H_
 
 //within project includes
-
+#include <iCub/blobFinderThread.h>
 
 //IPP include
 #include <ippi.h>
@@ -76,19 +76,28 @@ none
 \section portsc_sec Ports Created
 <name>/cmd
 <name>/image:i
-<name>/red:o
-<name>/green:o
-<name>/blue:o
-
+<name>/red:i
+<name>/green:i
+<name>/blue:i
+<name>/rg:i
+<name>/gr:i
+<name>/by:i
+<name>/saliencyMap:o
 
 
 Output ports:
-- <name>/red:o: streams out a yarp::sig::ImageOf<PixelMono> which is the red plane
-- <name>/green:o:  streams out a yarp::sig::Image<PixelMono> which is the green plane
-- <name>/blue:o:  streams out a yarp::sig::Image<PixelMono> which is the blue plane
+- <name>/saliencyMap:o: map of the most salient blobs
 
 Input ports:
 - <name>/image:i: input ports which takes as input a yarp::sig::ImageOf<PixelRgb>
+- <name>/red:i: reads out a yarp::sig::ImageOf<PixelMono> which is the red plane
+- <name>/green:i:  reads out a yarp::sig::Image<PixelMono> which is the green plane
+- <name>/blue:i:  reads out a yarp::sig::Image<PixelMono> which is the blue plane
+- <name>/rg:i: acquires the input stream of the R+G- opponency map
+- <name>/gr:i: acquires the input stream of the G+R- opponency map
+- <name>/by:i: acquires the input stream of th B+Y- opponency map
+
+InOut ports
 - <name>/cmd : port for the input rpc commands
 
 \section in_files_sec Input Data Files
@@ -181,6 +190,10 @@ private:
     * input image
     */
     ImageOf<PixelRgb> *img;
+    /**
+    * main thread responsable to process the input images and produce an output
+    */
+    blobFinderThread* blobFinder;
 
     //_________ private methods ____________
     

@@ -329,17 +329,17 @@ public:
 	*/
 	YARPIntegralImage *integralBY;
 	/**
-	* one channel image representing the fovea blob
-	*/
-	ImageOf<PixelMono>* foveaBlob;
-	/**
-	* image of the most salient blob
-	*/
-	ImageOf<PixelMono>* maxSalienceBlob_img;
-	/**
 	* colour quantization image
 	*/
 	ImageOf<PixelBgr>* colorVQ_img;
+    /**
+	* one channel image representing the fovea blob
+	*/
+	ImageOf<PixelMono>* foveaBlob;
+    /**
+	* image of the most salient blob
+	*/
+	ImageOf<PixelMono>* maxSalienceBlob_img;
 	/**
 	* center of the max saliency blob, x coordinate
 	*/

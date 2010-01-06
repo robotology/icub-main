@@ -5,6 +5,8 @@ using namespace std;
 
 saliencyBlobFinderModule::saliencyBlobFinderModule(){
     reinit_flag=false;
+
+    blobFinder=0;
 }
 
 
@@ -16,13 +18,13 @@ bool saliencyBlobFinderModule::open(Searchable& config) {
     //ConstString portName2 = options.check("name",Value("/worker2")).asString();
     inputPort.open(getName("image:i"));
     
-    redPort.open(getName("red:o"));
-    greenPort.open(getName("green:o"));
-    bluePort.open(getName("blue:o"));
+    redPort.open(getName("red:i"));
+    greenPort.open(getName("green:i"));
+    bluePort.open(getName("blue:i"));
 
-    rgPort.open(getName("rg:o"));
-    grPort.open(getName("gr:o"));
-    byPort.open(getName("by:o"));
+    rgPort.open(getName("rg:i"));
+    grPort.open(getName("gr:i"));
+    byPort.open(getName("by:i"));
 
     
     cmdPort.open(getName("cmd"));
@@ -84,6 +86,14 @@ void saliencyBlobFinderModule::setOptions(yarp::os::Property opt){
         printf("|||  Module named as :%s \n", name.c_str());
         this->setName(name.c_str());
     }
+    ConstString value=opt.find("name").asString();
+    if(value!=""){
+        printf("|||  Module operating mode :%s \n", value.c_str());
+        /*if(value=="MEANCOLOURS"){
+            
+        }*/
+        
+    }
 }
 
 bool saliencyBlobFinderModule::updateModule() {
@@ -115,6 +125,9 @@ bool saliencyBlobFinderModule::updateModule() {
 	    srcsize.width=img->width();
         reinitialise(img->width(), img->height());
         reinit_flag=true;
+        //initialization of the main thread
+        blobFinder=new blobFinderThread();
+        
     }
 
     //copy the inputImg into a buffer

@@ -17,7 +17,7 @@ using namespace yarp::os;
 using namespace yarp::sig;
 
 
-class blobFinderThread : public Module{
+class blobFinderThread : public RateThread{
 private:
     /**
     * port where the input image is read from
@@ -51,6 +51,19 @@ private:
     * port where the yellow plane of the image is streamed
     */
     BufferedPort<ImageOf<PixelMono> > yellowPort;
+    
+    /**
+	* image result of the function outContrastLP
+	*/
+	ImageOf<PixelMono> *outContrastLP;
+    /**
+	* image which is plotted in the drawing area
+	*/
+	ImageOf<PixelRgb> *image_out; //
+	/**
+	* image result of the function meanColourLP;
+	*/
+	ImageOf<PixelBgr> *outMeanColourLP;
     /**
     * ipp reference to the size of the input image
     */
@@ -64,9 +77,55 @@ private:
     */
     int height;
     /**
+	* maxBLOB dimension
+	*/
+	int maxBLOB;
+	/**
+	* minBLOB dimension
+	*/
+	int minBLOB;
+    
+    /**
     * flag that indicates when the reinitiazation has already be done
     */
     bool reinit_flag;
+    //---------- flags --------------------------
+	/**
+	* flag for drawing contrastLP
+	*/
+	bool contrastLP_flag;
+	/**
+	* flag for drawing meanColourImage
+	*/
+	bool meanColour_flag;
+	/**
+	* flag for drawing blobCatalog
+	*/
+	bool blobCataloged_flag;
+	/**
+	* flag for drawing foveaBlob
+	*/
+	bool foveaBlob_flag;
+	/**
+	* flag for drawing colorVQ
+	*/
+	bool colorVQ_flag;
+	/**
+	* flag for drawing maxSaliencyBlob
+	*/
+	bool maxSaliencyBlob_flag;
+	/**
+	* flag for drawing blobList
+	*/
+	bool blobList_flag;
+	/**
+	* flag for the drawings
+	*/
+	bool tagged_flag;
+	/**
+	* flag for drawing watershed image
+	*/
+	bool watershed_flag;
     /**
      * semaphore for the respond function
      */
@@ -92,9 +151,17 @@ private:
 	*/
 	int max_tag;
     /**
+	* vector of boolean which tells whether there is a blob or not
+	*/
+	char* blobList;
+    /**
     * pointer to the output image of the watershed algorithm
     */
-    ImageOf<yarp::sig::PixelMono>* _outputImage;
+    ImageOf<PixelMono>* _outputImage;
+    /**
+    * pointer to the 3 channels output image of the watershed algorithm
+    */
+    ImageOf<PixelRgb>* _outputImage3;
     /**
     * pointer to the input image
     */
@@ -138,15 +205,71 @@ private:
     /**
     * pointer to the image of tags
     */
-    ImageOf<PixelInt> *ptr_tagged;
+    ImageOf<PixelInt> *ptr_tagged;    
     /**
-	* flag for drawing blobCatalog
+	* pointer to the input image of the red plane
 	*/
-	bool blobCataloged_flag;
+	yarp::sig::ImageOf<yarp::sig::PixelMono> *ptr_inputRed; //
+	/**
+	* pointer to the input image of the green plane
+	*/
+	yarp::sig::ImageOf<yarp::sig::PixelMono> *ptr_inputGreen; //
+	/**
+	* pointer to the input image of the blue plane
+	*/
+	yarp::sig::ImageOf<yarp::sig::PixelMono> *ptr_inputBlue; //
+	/**
+	* pointer to the input image of the R+G- colour opponency
+	*/
+	yarp::sig::ImageOf<yarp::sig::PixelMono> *ptr_inputRG;  //
+	/**
+	* pointer to the input image of the G+R- colour opponency
+	*/
+	yarp::sig::ImageOf<yarp::sig::PixelMono> *ptr_inputGR;  //
+	/**
+	* pointer to the input image of the B+Y- colour opponency
+	*/
+	yarp::sig::ImageOf<yarp::sig::PixelMono> *ptr_inputBY; //
     /**
 	*vector of tags to the sequence of blobs
 	*/
 	ImageOf<PixelInt>* tagged;
+    /**
+	* image of the fovea blob
+	*/
+	ImageOf<PixelMono> *blobFov;
+    /**
+	* saliencyTOT linear combination Ktd coefficient (TOP DOWN saliency weight)
+	*/
+	double salienceTD;
+	/**
+	* saliencyTOT linear combination Kbu coefficient (BOTTOM-UP saliency weight)
+	*/
+	double salienceBU;
+    /**
+	* red intensity of the target that has been found 
+	*/
+	double targetRED;
+	/**
+	* green intensity of the target that has been found 
+	*/
+	double targetGREEN;
+	/**
+	* blue intensity of the target that has been found 
+	*/
+	double targetBLUE;
+    /**
+	* R+G- value for the search
+	*/
+	int searchRG;
+	/**
+	* G+R- value for the search
+	*/
+	int searchGR;
+	/**
+	* B+Y- value for the search
+	*/
+	int searchBY;
     /**
 	* flag that indicates if the images have been resized
 	*/
@@ -159,7 +282,11 @@ private:
     * @param height height of the input image
     */
     void resizeImages(int width, int height);
-    
+    /**
+    * function that extracts characteristics of all the blobs in the catalogue and save them
+    * @param stable parameters that enable some lines of code for the stable version
+    */
+    void drawAllBlobs(bool stable);    
 public:
     /**
     * default constructor
@@ -193,7 +320,10 @@ public:
     void rain();
 
     //_________ public attributes _______________
-    
+    /**
+    * pointer to the most salient blob
+    */
+    YARPBox* max_boxes;
    
 };
 
