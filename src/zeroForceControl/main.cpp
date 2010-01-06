@@ -336,7 +336,6 @@ public:
 
 		  if(datas) delete datas;
 		  if(FTB) delete FTB;
-		  if(chain) delete chain;
 	  }
 
 	  /*bool checkSinglePosition(double qd, double q)
