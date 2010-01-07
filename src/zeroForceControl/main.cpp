@@ -301,7 +301,7 @@ public:
 				 // break;
 			  
 		  //}
-		  
+				  Vector Fe=FTB->getFe();
 
 		  double k=1.0; //to be tuned
 		  Matrix K;
@@ -321,6 +321,11 @@ public:
 			  fprintf(stderr,"FTs = ");
 			  for(int i=0;i<6;i++)
 				  fprintf(stderr,"%.3lf\t", FTs(i)-FTs_init(i));
+			  fprintf(stderr,"\n");
+
+			  fprintf(stderr,"FTe = ");
+			  for(int i=0;i<6;i++)
+				  fprintf(stderr,"%.3lf\t", Fe(i));
 			  fprintf(stderr,"\n");
 
 			  fprintf(stderr,"encs = ");
