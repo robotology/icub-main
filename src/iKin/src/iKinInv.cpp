@@ -31,7 +31,7 @@ iKinCtrl::iKinCtrl(iKinChain &c, unsigned int _ctrlPose, const Vector &q0) : cha
     q    =_q0;
     q_old=q;
 
-    inTargetTol    =1e-3;
+    inTargetTol    =5e-3;
     watchDogTol    =1e-4;
     watchDogMaxIter=200;
 
