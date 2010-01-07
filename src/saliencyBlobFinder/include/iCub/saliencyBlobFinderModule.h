@@ -159,6 +159,10 @@ private:
     */
     BufferedPort<ImageOf<PixelMono> > yellowPort;
     /**
+    * port that returns the image output
+    */
+    BufferedPort<ImageOf<PixelRgb> > outputPort;
+    /**
     * port necessary for rpc commands
     */
     BufferedPort<Bottle> cmdPort;
@@ -196,6 +200,14 @@ private:
     blobFinderThread* blobFinder;
 
     //_________ private methods ____________
+    /**
+    * function that reads the ports for colour RGB opponency maps
+    */
+    void getOpponecies();
+    /**
+    * function that reads the ports for the RGB planes
+    */
+    void getPlanes();
     
 public:
     /**

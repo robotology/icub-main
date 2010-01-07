@@ -56,10 +56,7 @@ private:
 	* image result of the function outContrastLP
 	*/
 	ImageOf<PixelMono> *outContrastLP;
-    /**
-	* image which is plotted in the drawing area
-	*/
-	ImageOf<PixelRgb> *image_out; //
+    
 	/**
 	* image result of the function meanColourLP;
 	*/
@@ -162,10 +159,7 @@ private:
     * pointer to the 3 channels output image of the watershed algorithm
     */
     ImageOf<PixelRgb>* _outputImage3;
-    /**
-    * pointer to the input image
-    */
-    ImageOf<yarp::sig::PixelRgb> *ptr_inputImg;
+   
     /**
     * pointer to the red plane input image
     */
@@ -313,7 +307,7 @@ public:
     * @param height height of the input image
     * @param width width of the input image
     */
-    void reinitialise(int height, int width);
+    void reinitialise(int width,int height);
     /**
     * function the applies the watershed (rain falling) algorithm
     */
@@ -324,6 +318,14 @@ public:
     * pointer to the most salient blob
     */
     YARPBox* max_boxes;
+    /**
+	* image which is plotted in the drawing area
+	*/
+	ImageOf<PixelRgb> *image_out; //
+     /**
+    * pointer to the input image
+    */
+    ImageOf<yarp::sig::PixelRgb> *ptr_inputImg;
    
 };
 

@@ -59,12 +59,19 @@ blobFinderThread::blobFinderThread():RateThread(THREAD_RATE){
     _outputImage3=new ImageOf<PixelRgb>;
     _outputImage=new ImageOf<PixelMono>;
 
+    ptr_inputImg=new ImageOf<yarp::sig::PixelRgb>; //pointer to the input image
     ptr_inputRed=new ImageOf<yarp::sig::PixelMono>; //pointer to the input image of the red plane
     ptr_inputGreen= new ImageOf<yarp::sig::PixelMono>; //pointer to the input image of the green plane
     ptr_inputBlue= new ImageOf<yarp::sig::PixelMono>; //pointer to the input image of the blue plane
+    ptr_inputImgRed=new ImageOf<yarp::sig::PixelMono>; //pointer to the input image of the red plane
+    ptr_inputImgGreen= new ImageOf<yarp::sig::PixelMono>; //pointer to the input image of the green plane
+    ptr_inputImgBlue= new ImageOf<yarp::sig::PixelMono>; //pointer to the input image of the blue plane
     ptr_inputRG= new ImageOf<yarp::sig::PixelMono>; //pointer to the input image of the R+G- colour opponency
     ptr_inputGR= new ImageOf<yarp::sig::PixelMono>; //pointer to the input image of the G+R- colour opponency
     ptr_inputBY= new ImageOf<yarp::sig::PixelMono>; //pointer to the input image of the B+Y- colour opponency
+    ptr_inputImgRG= new ImageOf<yarp::sig::PixelMono>; //pointer to the input image of the R+G- colour opponency
+    ptr_inputImgGR= new ImageOf<yarp::sig::PixelMono>; //pointer to the input image of the G+R- colour opponency
+    ptr_inputImgBY= new ImageOf<yarp::sig::PixelMono>; //pointer to the input image of the B+Y- colour opponency
     
     _inputImgRGS=new ImageOf<PixelMono>;
     _inputImgGRS=new ImageOf<PixelMono>;
@@ -99,7 +106,8 @@ void blobFinderThread::resizeImages(int width, int height){
     this->width=width;
     this->height=height;
 
-    int widthstep=256;
+    //int widthstep=256;
+    int widthstep=320;
 
     ptr_tagged = new yarp::sig::ImageOf<yarp::sig::PixelInt>;
     ptr_tagged->resize(widthstep,height);
@@ -127,7 +135,7 @@ void blobFinderThread::resizeImages(int width, int height){
     _inputImgRGS->resize(width,height);
     _inputImgGRS->resize(width,height);
     _inputImgBYS->resize(width,height);
-    //blobFov->resize(width,height);
+    blobFov->resize(width,height);
 
     blobList = new char [width*height+1];
 
@@ -165,6 +173,9 @@ bool blobFinderThread::threadInit(){
 * active loop of the thread
 */
 void blobFinderThread::run(){
+    if(!freetorun)
+        return;
+
     bool conversion=false;
     rain();
     if(this->foveaBlob_flag){
@@ -226,11 +237,15 @@ void blobFinderThread::run(){
             ippiCopy_8u_C3R(this->outMeanColourLP->getRawImage(),this->outMeanColourLP->getRowSize(),_outputImage3->getRawImage(),_outputImage3->getRowSize(),srcsize);	
             conversion=false;
         }
-        else
-        _outputImage=wOperator->getPlane(&_inputImg); //the input is a RGB image, whereas the watershed is working with a mono image
+        else{
+            _outputImage=wOperator->getPlane(&_inputImg); //the input is a RGB image, whereas the watershed is working with a mono image
+            conversion=true;
+        }
     }
-    else
-    _outputImage=wOperator->getPlane(&_inputImg); //the input is a RGB image, whereas the watershed is working with a mono image
+    else{
+        _outputImage=wOperator->getPlane(&_inputImg); //the input is a RGB image, whereas the watershed is working with a mono image
+        conversion=true;
+    }
 
     //-------
     

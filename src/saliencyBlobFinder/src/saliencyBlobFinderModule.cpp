@@ -26,7 +26,8 @@ bool saliencyBlobFinderModule::open(Searchable& config) {
     grPort.open(getName("gr:i"));
     byPort.open(getName("by:i"));
 
-    
+    outputPort.open(getName("image:o"));
+
     cmdPort.open(getName("cmd"));
     attach(cmdPort);
     
@@ -37,6 +38,7 @@ bool saliencyBlobFinderModule::open(Searchable& config) {
 * tries to interrupt any communications or resource usage
 */
 bool saliencyBlobFinderModule::interruptModule() {
+    printf("module interrupted .... \n");
     inputPort.interrupt();
     
     redPort.interrupt();
@@ -46,6 +48,8 @@ bool saliencyBlobFinderModule::interruptModule() {
     rgPort.interrupt();
     grPort.interrupt();
     byPort.interrupt();
+
+    outputPort.interrupt();
 
     cmdPort.interrupt();
     
@@ -71,7 +75,10 @@ bool saliencyBlobFinderModule::close(){
     printf("B+Y- colourOpponency port closing .... \n");
     byPort.close();
 
-    
+    printf("closing outputport .... \n");
+    outputPort.close();
+
+    printf("closing command port .... \n");
     cmdPort.close();
    
     return true;
@@ -127,18 +134,41 @@ bool saliencyBlobFinderModule::updateModule() {
         reinit_flag=true;
         //initialization of the main thread
         blobFinder=new blobFinderThread();
-        
+        blobFinder->reinitialise(img->width(), img->height());
+        blobFinder->start();
+        blobFinder->ptr_inputImg=img;
     }
 
     //copy the inputImg into a buffer
 //    ippiCopy_8u_C3R(img->getRawImage(), img->getRowSize(),inputImg->getRawImage(), inputImg->getRowSize(),srcsize);
+    getOpponencies();
+    getPlanes();
    
   
     outPorts();
     return true;
 }
 
+/**
+* function that reads the ports for colour RGB opponency maps
+*/
+void getOpponecies(){
+    
+}
+
+/**
+* function that reads the ports for the RGB planes
+*/
+void getPlanes(){
+    
+}
+
+
 void saliencyBlobFinderModule::outPorts(){
+    if((0!=blobFinder->image_out)&&(outputPort.getOutputCount())){
+        outputPort.prepare() = *(blobFinder->image_out);		
+        outputPort.write();
+    }
 }
 
 
