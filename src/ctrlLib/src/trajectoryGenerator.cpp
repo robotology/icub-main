@@ -90,7 +90,7 @@ void minJerkTrajGen::compute(const double T, const Vector &xd, const Vector &fb,
         t+=dt;        
 
     double tau=(t-t0)/fT;
-    if (tau>=0.1)
+    if (tau>=0.5)
     {
         if (norm(xd-fb)<tol)
         {
