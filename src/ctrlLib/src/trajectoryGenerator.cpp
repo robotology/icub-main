@@ -30,7 +30,8 @@ minJerkTrajGen::minJerkTrajGen(const double _Ts, const Vector &x0) :
     }
 
     TOld=fT=t0=t=0.0;
-    Tmin=10*Ts;
+    //Tmin=10*Ts;
+    Tmin=0.8;
 
     vtau[0]=1.0;
 
@@ -89,7 +90,7 @@ void minJerkTrajGen::compute(const double T, const Vector &xd, const Vector &fb,
         t+=dt;        
 
     double tau=(t-t0)/fT;
-    if (tau>=0.5)
+    if (tau>=0.1)
     {
         if (norm(xd-fb)<tol)
         {
@@ -97,6 +98,14 @@ void minJerkTrajGen::compute(const double T, const Vector &xd, const Vector &fb,
             v=a=0.0;
             state=MINJERK_STATE_REACHED;
         }
+	else if (state==MINJERK_STATE_REACHED)
+	{
+            calcCoeff(T,xd,fb);
+            fT=T;
+            t0=t;
+            tau=0.0;
+            state=MINJERK_STATE_STARTING;
+	} 
         else if (norm(x-fb)>tol)
         {
             fT=fT*(1.0-tau);            
