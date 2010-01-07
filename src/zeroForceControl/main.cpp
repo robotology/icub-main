@@ -236,7 +236,7 @@ public:
 		  for(int i=0; i<4;i++)
 			  angs(i) = encoders(i);
 
-		          arm->setAng(angs);
+		  arm->setAng(angs);
 		  //else if(verbose) fprintf(stderr,"ERROR: no read from encoders\n");
 
 		  port_FT->getEnvelope(info);
@@ -345,7 +345,7 @@ public:
 		  for(int i=0;i<ARM_JNT;i++)
 			  ipids->resetPid(i);
 
-		  if(datas) delete datas;
+	//	  if(datas) delete datas;
 		  if(FTB) delete FTB;
 	  }
 
@@ -385,8 +385,8 @@ private:
 	Property Options;
 	PolyDriver *dd;
 	ftControl *ft_control;
-	BufferedPort<Vector> port_FT;
-    	int mod_count;
+	BufferedPort<Vector>* port_FT;
+    int mod_count;
 public:
 	ft_ControlModule()
 	{
@@ -483,10 +483,10 @@ public:
 		else
 			fprintf(stderr,"device driver created\n");
 		
-
-		port_FT.open((PortName+"/FT:i").c_str());
+		port_FT=new BufferedPort<Vector>;
+		port_FT->open((PortName+"/FT:i").c_str());
 		fprintf(stderr,"input port opened...\n");
-		ft_control = new ftControl(SAMPLER_RATE, dd, &port_FT, rf);
+		ft_control = new ftControl(SAMPLER_RATE, dd, port_FT, rf);
 		fprintf(stderr,"ft thread istantiated...\n");
 		ft_control->start();
 		fprintf(stderr,"thread started\n");
@@ -504,11 +504,11 @@ public:
 	
 	bool close()
 	{
-		fprintf(stderr,"closing...don't know why :S ");
+		fprintf(stderr,"closing...don't know why :S \n");
 		if (ft_control) ft_control->stop();
-		if (ft_control) delete ft_control;
-		if (dd) delete dd;
-
+		if (ft_control) {delete ft_control; ft_control=0;}
+		if (dd) {delete dd; dd=0;}
+		if (port_FT) {delete port_FT; port_FT=0;}
 		//port_FT.interrupt();
 		//port_FT.close();
 		return true;
@@ -523,7 +523,7 @@ int main(int argc, char * argv[])
     Network yarp;
 	
     //create your module
-    ft_ControlModule ft_controlmodule;
+    ft_ControlModule* ft_controlmodule = new ft_ControlModule;
 
     // prepare and configure the resource finder
     ResourceFinder rf;
@@ -543,12 +543,18 @@ int main(int argc, char * argv[])
 
 
     cout<<"Configure module..."<<endl;
-    ft_controlmodule.configure(rf);
+    ft_controlmodule->configure(rf);
     cout<<"Start module..."<<endl;
-    ft_controlmodule.runModule();
+    ft_controlmodule->runModule();
 
     cout<<"Main returning..."<<endl;
-		  // Connect the ports so that anything written from /out arrives to /in
+	if (ft_controlmodule) ft_controlmodule->close();
+	delete ft_controlmodule;
+	ft_controlmodule=0;
+
+
+
+	// Connect the ports so that anything written from /out arrives to /in
 		  
 
     return 0;
