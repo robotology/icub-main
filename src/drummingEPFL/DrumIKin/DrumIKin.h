@@ -48,7 +48,7 @@ protected:
     BufferedPort<Bottle> inPort;
     BufferedPort<Bottle> outPort;
 	map<string, IKinPort *> iKinPorts;
-	map<string, ArmCartesianSolver *> iKSolvers;
+	map<string, iCubArmCartesianSolver *> iKSolvers;
 	map<string, Value *> parameters;
 	map<int, string> armMarkerMapping;
 	Vector leftOrientation, rightOrientation;

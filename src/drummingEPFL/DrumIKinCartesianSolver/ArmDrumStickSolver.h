@@ -7,12 +7,12 @@ using namespace yarp::os;
 #include <string>
 using namespace std;
 
-class ArmDrumStickSolver : public ArmCartesianSolver
+class ArmDrumStickSolver : public iCubArmCartesianSolver
 {
 protected:
     // we're required just to instantiate the iCubArmDrumStick object
     virtual PartDescriptor *getPartDesc(Searchable &options);
     
 public:
-    ArmDrumStickSolver(const string &_slvName="ArmDrumStickSolver") : ArmCartesianSolver(_slvName) { }
+    ArmDrumStickSolver(const string &_slvName="ArmDrumStickSolver") : iCubArmCartesianSolver(_slvName) { }
 };

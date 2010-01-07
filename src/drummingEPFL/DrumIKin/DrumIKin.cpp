@@ -2,7 +2,8 @@
 
 #include <yarp/math/Math.h>
 using namespace yarp::math;
-//#include "ctrlMath.h";
+#include <iCub/ctrlMath.h>
+using namespace ctrl;
 
 #include <iCub/iKinVocabs.h>
 
@@ -440,7 +441,7 @@ Vector DrumIKin::Solve(const Vector &xd, string partName, double &precision)
 	
 	cout << "SOLVING WITH " << partName << endl;
 
-	ArmCartesianSolver::addTargetOption(cmd,xd);
+	iCubArmCartesianSolver::addTargetOption(cmd,xd);
 
 	iKinPorts[partName]->out.write(cmd);
 	iKinPorts[partName]->in.wait(reply);

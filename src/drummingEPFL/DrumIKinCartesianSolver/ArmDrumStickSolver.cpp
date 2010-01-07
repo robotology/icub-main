@@ -5,7 +5,7 @@
 
 PartDescriptor *ArmDrumStickSolver::getPartDesc(Searchable &options)
 {
-	// standard option processing copied from the ArmCartesianSolver (parent) class
+	// standard option processing copied from the iCubArmCartesianSolver (parent) class
 	type="right";
 	if (options.check("type"))
 	{    
