@@ -122,7 +122,7 @@ SET(LIBTOSEARCH
 	"pangomm"
 	"glibmm"
 	"sigc"
-	"gthread-2.0"
+	"gthread"
 	"cairomm"
 )
 
