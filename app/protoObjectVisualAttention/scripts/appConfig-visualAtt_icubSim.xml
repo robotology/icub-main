@@ -65,6 +65,12 @@
 		<tag>logpolarforward</tag>
 		<node>/lightHouse</node>
 	</module>
+	<module>
+		<name>yarpview</name>
+		<parameters>--name /saliencyMapView --x 1100 --y 400 --synch</parameters>
+		<tag>saliencymapview</tag>
+		<node>/lightHouse</node>
+	</module>
  
 	<connection>
       	<output>/icubSim/cam/right</output>
@@ -125,7 +131,7 @@
 	</connection>
 	<connection>
       	<from>/colourPU/gr:o</from>
-			<to>//blobFinder/gr:i</to>
+			<to>/blobFinder/gr:i</to>
 			<protocol>tcp</protocol>
 	</connection>
 	<connection>
@@ -146,6 +152,11 @@
 	<connection>
       	<from>/colourPU/blue:o</from>
 			<to>/blobFinder/blue:i</to>
+			<protocol>tcp</protocol>
+	</connection>
+	<connection>
+      	<from>/blobFinder/image:o</from>
+			<to>/salinecyMapView</to>
 			<protocol>tcp</protocol>
 	</connection>
 </application>
