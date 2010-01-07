@@ -332,6 +332,7 @@ public:
 	void setTse();
 	yarp::sig::Vector getFB();
 	yarp::sig::Vector setFe();
+	yarp::sig::Vector getFe();
 
 	//void setFB(yarp::sig::Vector _q);
 	//void setFB(yarp::sig::Vector _q, yarp::sig::Vector _FT);

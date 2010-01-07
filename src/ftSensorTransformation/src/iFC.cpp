@@ -326,6 +326,10 @@ yarp::sig::Vector iFB::setFe()
 {
 	return Fe=Tse*Fs;
 }
+yarp::sig::Vector iFB::getFe()
+{
+	return Fe;
+}
 void iFB::setTse()
 {	
 	S=0.0;
