@@ -1,3 +1,7 @@
+# Copyright: (C) 2009 RobotCub Consortium
+# Authors: Giorgio Metta, Lorenzo Natale
+# CopyPolicy: Released under the terms of the GNU GPL v2.0.
+
 # Creates:
 # GTKMM_INCLUDE_DIR   - Directories to include to use GTKMM
 # GTKMM_LINK_FLAGS    - Files to link against to use GTKMM

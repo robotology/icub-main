@@ -1,3 +1,7 @@
+# Copyright: (C) 2009 RobotCub Consortium
+# Authors: Giorgio Metta, Lorenzo Natale
+# CopyPolicy: Released under the terms of the GNU GPL v2.0.
+
 #
 # Searches and hopefully finds gtkmm on windows -- by alessandro and giorgio.
 # Assumes that the environment variable GTKMM_BASEPATH is set to the place
@@ -112,7 +116,7 @@ ENDIF (MSVC_VERSION EQUAL 1400)
 # I'd like to search for an unspecified version and pattern of library name (new format vs. old format)
 FILE(GLOB ALL_GTK_LIBS ${GTKMM_DIR}/lib/*.lib)
 
-# MM specific libraries.
+#### MM specific libraries, all here except gthread, see later
 SET(LIBTOSEARCH 
 	"xml++"
 	"atkmm"
@@ -122,38 +126,52 @@ SET(LIBTOSEARCH
 	"pangomm"
 	"glibmm"
 	"sigc"
-	"gthread"
 	"cairomm"
 )
-
 # new version
 IF (GTKMMVER EQUAL "2.14.3")
     SET(LIBTOSEARCH ${LIBTOSEARCH} "giomm")
 ENDIF (GTKMMVER EQUAL "2.14.3")
 
 FOREACH (i ${LIBTOSEARCH})
-    SET (GTKMM_TMP GTKMM_TMP-NOTFOUND CACHE INTERNAL "")
+    SET (GTKMM_TMP_REL GTKMM_TMP-NOTFOUND CACHE INTERNAL "")
+    SET (GTKMM_TMP_DBG GTKMM_TMP-NOTFOUND CACHE INTERNAL "")
+    
     STRING(REPLACE "++" "[+][+]" j ${i})
     STRING(REGEX MATCHALL "${j}${REGEX_GTKMM}([0-9]([_]|[.])[0-9])+" LINK_LIBRARIES_WITH_PREFIX "${ALL_GTK_LIBS}")
     STRING(REGEX MATCHALL "(${j}${REGEX_GTKMM}([d][-])+([0-9]([_]|[.])[0-9])+)|(${j}([0-9]([_]|[.])[0-9])+([d])+)" LINK_LIBRARIES_WITH_PREFIX_DEBUG "${ALL_GTK_LIBS}")
-    FIND_LIBRARY(GTKMM_TMP NAMES ${LINK_LIBRARIES_WITH_PREFIX} PATHS ${GTKMM_DIR}/lib)
-    IF (GTKMM_TMP)
-        LIST(APPEND GTKMM_LINK_FLAGS optimized ${GTKMM_TMP})
-    ELSE (GTKMM_TMP)
+    
+    FIND_LIBRARY(GTKMM_TMP_REL NAMES ${LINK_LIBRARIES_WITH_PREFIX} PATHS ${GTKMM_DIR}/lib)
+    IF (GTKMM_TMP_REL)
+        LIST(APPEND GTKMM_LINK_FLAGS optimized ${GTKMM_TMP_REL})
+    ELSE (GTKMM_TMP_REL)
         SET(GtkMM_FOUND FALSE)
         MESSAGE("Library ${i} optimized version not found, GtkMM doesn't seem to be available")
-    ENDIF (GTKMM_TMP)
+    ENDIF (GTKMM_TMP_REL)
 	
-    FIND_LIBRARY(GTKMM_TMP NAMES ${LINK_LIBRARIES_WITH_PREFIX_DEBUG} PATHS ${GTKMM_DIR}/lib)
-    IF (GTKMM_TMP)
-        LIST(APPEND GTKMM_LINK_FLAGS debug ${GTKMM_TMP})
-    ELSE (GTKMM_TMP)
+    FIND_LIBRARY(GTKMM_TMP_DBG NAMES ${LINK_LIBRARIES_WITH_PREFIX_DEBUG} PATHS ${GTKMM_DIR}/lib)
+    IF (GTKMM_TMP_DBG)
+        LIST(APPEND GTKMM_LINK_FLAGS debug ${GTKMM_TMP_DBG})
+    ELSE (GTKMM_TMP_DBG)
         SET(GtkMM_FOUND FALSE)
         MESSAGE("Library ${i} debug version not found, GtkMM doesn't seem to be available")
-    ENDIF (GTKMM_TMP)
+    ENDIF (GTKMM_TMP_DBG)
 ENDFOREACH (i)
+
+############### gthread does not have debug version
+### I'll use gtk_tmp_rel variable for convenience
+SET (GTKMM_TMP_REL GTKMM_TMP-NOTFOUND CACHE INTERNAL "")
+FIND_LIBRARY(GTKMM_TMP_REL NAMES gthread-2.0 PATHS ${GTKMM_DIR}/lib)
+IF (GTKMM_TMP_REL)
+    LIST(APPEND GTKMM_LINK_FLAGS optimized ${GTKMM_TMP_REL})
+ELSE (GTKMM_TMP_REL)
+    SET(GtkMM_FOUND FALSE)
+    MESSAGE("Library gthread not found, GtkMM doesn't seem to be available")
+ENDIF (GTKMM_TMP_REL)
 
 # complete list of link flags.
 LIST(APPEND GTKMM_LINK_FLAGS ${GTKPLUS_LINK_FLAGS})
+# MESSAGE("${GTKMM_LINK_FLAGS}")
+SET (GTKMM_TMP_DBG GTKMM_TMP_REL-NOTFOUND CACHE INTERNAL "")
+SET (GTKMM_TMP_REL GTKMM_TMP_DBG-NOTFOUND CACHE INTERNAL "")
 SET (GTKMM_TMP GTKMM_TMP-NOTFOUND CACHE INTERNAL "")
-SET (GTKMM_TMP2 GTKMM_TMP2-NOTFOUND CACHE INTERNAL "")
