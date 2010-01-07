@@ -31,7 +31,7 @@ minJerkTrajGen::minJerkTrajGen(const double _Ts, const Vector &x0) :
 
     TOld=fT=t0=t=0.0;
     //Tmin=10*Ts;
-    Tmin=0.8;
+    Tmin=0.8; // value with good margin to control iCub in feedback
 
     vtau[0]=1.0;
 
