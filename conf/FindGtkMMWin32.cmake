@@ -122,6 +122,8 @@ SET(LIBTOSEARCH
 	"pangomm"
 	"glibmm"
 	"sigc"
+	"gthread-2.0"
+	"cairomm"
 )
 
 # new version
