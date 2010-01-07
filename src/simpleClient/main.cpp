@@ -64,12 +64,12 @@ int main(int argc, char *argv[])
         options.put("device", "remote_controlboard");
     }
     if (!options.check("local", val)) {
-		name+="/"+std::string(v.asString().c_str())+"/"+std::string(part.asString().c_str())+"/client";
+		name="/"+std::string(v.asString().c_str())+"/"+std::string(part.asString().c_str())+"/client";
         //sprintf(&name[0], "/%s/%s/client", v.asString().c_str(), part.asString().c_str());
         options.put("local", name.c_str());
     }
     if (!options.check("remote", val)) {
-        name+="/"+std::string(v.asString().c_str())+"/"+std::string(part.asString().c_str());    
+        name="/"+std::string(v.asString().c_str())+"/"+std::string(part.asString().c_str());    
 		//sprintf(&name[0], "/%s/%s", v.asString().c_str(), part.asString().c_str());
         options.put("remote", name.c_str());
     }
