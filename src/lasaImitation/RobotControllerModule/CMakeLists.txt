@@ -1,6 +1,6 @@
 SET(PM_PROJECT_NAME RobotControllerModule)
 SET(PM_PROJECT_TYPE Executable)
-SET(PM_PROJECT_DEPS ICUB IKIN)
+SET(PM_PROJECT_DEPS ICUB IKIN YarpTools MathLib)
 
 cmake_minimum_required(VERSION 2.6)
 

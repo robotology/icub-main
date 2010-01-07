@@ -41,15 +41,11 @@ This module is an revisited version of the velocity controler module with some u
 \section parameters_sec Parameters
 
 \verbatim
---robot <string>:   the name ofthe robot to be controlled (icubSim by default)
---name <string>:    the module base name for port creation (VelocityController by default)
---period <double>:  control loop period (0.01 sec by default)
---right_arm:        do you want to instantiate the right arm?
---left_arm:         do you want to instantiate the left arm?
---head:             ...
---torso:            ...
---right_leg:        ...
---left_leg:         ...
+--robot <string>:      the name ofthe robot to be controlled (icubSim by default)
+--name <string>:       the module base name for port creation (VelocityController by default)
+--period <double>:     control loop period (0.01 sec by default)
+--part: <string list>: which parts do you want to instantiate (multiple instances is possible)?
+                        [right_arm | left_arm | right_leg | left_leg | head | torso]+
 \endverbatim
 
 \section portsa_sec Ports Accessed

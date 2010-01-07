@@ -92,6 +92,77 @@ bool VelocityControllerModule::open(Searchable &s){
 
     bool hasValidDriver = false;
     
+    if(!mParams.check("part")){
+        fprintf(stderr, "No parts specifed or they where unable to open");
+        fprintf(stderr, "  Please choose and check at least one:\n");
+        fprintf(stderr, "    --part \"right_arm | left_arm | right_leg | left_leg | head | torso\" \n");
+        return false;    
+    }else{
+        char partList[512];
+        strcpy(partList,mParams.find("part").asString().c_str());
+        int partPos = 0;
+        int partPosEnd = 0;
+        while(partList[partPos]!=0){
+            partPosEnd = partPos;
+            while((partList[partPosEnd]!=0)&&(partList[partPosEnd]!=' ')){
+                partPosEnd++;
+            }
+            if(partPosEnd!=partPos){
+                int partId = -1;
+                for(int i=0;i<6;i++){
+                    if(strncmp(partsName[i],partList+partPos,partPosEnd-partPos)==0){
+                        partId = i;
+                        break;
+                    }
+                }
+                if(partId>=0){
+                    Property options("");
+                    options.put("device","remote_controlboard");
+                    sprintf(txtBuffer,"/%s/%s",mRobotName,partsName[partId]);
+                    options.put("remote",txtBuffer);
+                    sprintf(txtBuffer,"/%s/%s",mModuleName,partsName[partId]);
+                    options.put("local",txtBuffer);    
+                    PolyDriver *driver = new PolyDriver(options);
+                    if(!driver->isValid()){
+                        driver->close();
+                        delete driver;
+                        driver = NULL;                
+                    }
+                    if((driver!=NULL)||(bFakeDrivers)){
+                        hasValidDriver = true;
+                        VelocityController* vc = new VelocityController;
+                        vc->Init(driver,partsName[partId],mModuleName);
+                        if((strcmp(partsName[partId],"right_arm")==0)||
+                           (strcmp(partsName[partId],"left_arm")==0)){
+                            vc->SetShoulderDecoupling(true);
+                        }
+                        mControllers.push_back(vc);    
+                    }
+                    mDrivers.push_back(driver);
+                }
+            }
+            if(partList[partPosEnd]==0)
+                break;
+            partPos = partPosEnd+1;
+        }
+        if(hasValidDriver){    
+            sprintf(txtBuffer,"/%s/rpc",mModuleName);
+            mRpcPort.open(txtBuffer);
+            attach(mRpcPort,true);
+
+            mThread = new VelocityControllerThread(int(floor(mPeriod*1000.0)),mModuleName,&mControllers);
+            mThread->start();
+
+            return true;        
+        }else{
+            fprintf(stderr, "No parts specifed or they where unable to open");
+            fprintf(stderr, "  Please choose and check at least one:\n");
+            fprintf(stderr, "    --part \"right_arm | left_arm | right_leg | left_leg | head | torso\" \n");
+            return false;
+        }
+
+    }
+    /*
     for(int i=0;i<6;i++){
         if(mParams.check(partsName[i])){
             Property options("");
@@ -137,6 +208,7 @@ bool VelocityControllerModule::open(Searchable &s){
             fprintf(stderr, "    --right_arm\n    --left_arm\n    --right_leg\n    --left_leg\n    --head\n    --torso \n");
         return false;
     }
+    */
 }
 
 bool VelocityControllerModule::close(){

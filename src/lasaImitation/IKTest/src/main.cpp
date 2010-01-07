@@ -25,14 +25,14 @@ int main(int argc, char **argv){
     IKSolver  IK;
     IK.SetVerbose(true);
 
-    IK.SetSizes(8,6);
+    IK.SetSizes(8,4);
     IK.SetThresholds(0.00005,0.00001);    
     
     limitsLow.Resize(8); limitsLow.Zero(); limitsLow -= 1;
     limitsHig.Resize(8); limitsHig.Zero(); limitsHig += 1;
     IK.SetLimits(limitsLow,limitsHig);
     
-    jacobian.Resize(6,8);
+    jacobian.Resize(4,8);
     jacobian.Random();
     jacobian-=0.5;
     IK.SetJacobian(jacobian);
@@ -44,10 +44,11 @@ int main(int argc, char **argv){
         if(i==1){
             //dofWeights(0) = 0.1;
             //dofWeights(3) = 0.1;
-            //dofWeights(1) = 0.0;            
+            dofWeights(0) = 0.0;            
+            dofWeights(1) = 0.0;            
 
-            limitsLow[0] =  0.1;
-            limitsHig[1] = -0.0;
+            //limitsLow[0] =  0.1;
+            //limitsHig[1] = -0.0;
             IK.SetLimits(limitsLow,limitsHig);
         }
         IK.SetDofsWeights(dofWeights);
@@ -82,9 +83,9 @@ int main(int argc, char **argv){
     Vector target;
     Vector result;
 
-    int dof = 17;
-    int c1 = 6;
-    int c2 = 6;
+    int dof = 10;
+    int c1 = 1;
+    int c2 = 1;
     int c0 = c1+c2;
     
     limitsLow.Resize(dof); limitsLow.Zero(); limitsLow -= 1;
@@ -115,14 +116,18 @@ int main(int argc, char **argv){
     IKG.SetSizes(dof);
     IKG.AddSolverItem(c1);
     IKG.AddSolverItem(c2);
-    IKG.SetVerbose(false);
+    IKG.SetVerbose(true);
     IKG.SetThresholds(0.00005,0.00001);        
     IKG.SetLimits(limitsLow,limitsHig);
     IKG.SetJacobian(jacobian1,0);
     IKG.SetJacobian(jacobian2,1);
-    
+    IKG.SetPriority(1,0);
+    IKG.SetPriority(0,1);
+    IKG.Enable(false,1);
     dofWeights.Resize(dof);
     dofWeights.One();
+    dofWeights(0)=sqrt(1.0);
+    dofWeights(3)=2.0;
     IK.SetDofsWeights(dofWeights);
     IKG.SetDofsWeights(dofWeights);
     
@@ -136,21 +141,28 @@ int main(int argc, char **argv){
     ctrWeights.One();
     IKG.SetConstraintsWeights(ctrWeights,1);
     
-    target.Resize(c0); target.Zero(); target += 0.1;
+    target.Resize(c0); target.Zero(); target += 0.0;
     IK.SetTarget(target);
-    target.Resize(c1); target.Zero(); target += 0.1;
+    target.Resize(c1); target.Zero(); target += 1.0;
     IKG.SetTarget(target,0);
-    target.Resize(c2); target.Zero(); target += 0.1;
+    target.Resize(c2); target.Zero(); target += -1.0;
     IKG.SetTarget(target,1);
+    
+    target.Resize(dof); target.Zero(); target += 0.1;
+    IKG.SetNullTarget(target);
     
     Chrono mChrono;
     mChrono.Start();
-    int NI = 1000;
+    int NI = 1;
     for(int i=0;i<NI;i++){
         jacobian1.Resize(c1,dof);
         jacobian1.Random();
         jacobian1-=0.5;
-
+        jacobian1.Zero();
+        jacobian1(0,0) = 1.0;
+        jacobian1(0,1) = 0.5;
+        jacobian1(0,2) = -1.5;
+        
         jacobian2.Resize(c2,dof);
         jacobian2.Random();
         jacobian2-=0.5;
@@ -159,12 +171,15 @@ int main(int argc, char **argv){
         jacobian.SetRowSpace(jacobian1,0);
         jacobian.SetRowSpace(jacobian2,c1);
         
-        //IK.Solve();   
+        IKG.SetJacobian(jacobian1,0);
+        IKG.SetJacobian(jacobian2,1);
+
+        IK.Solve();   
         IKG.Solve();   
     }
     double time = double(mChrono.ElapsedTimeUs());
     cout <<time/1000000.0<<" "<<time/1000000.0/double(NI)<<endl;
-    return 0;
+    //return 0;
     cout << "****************************************"<<endl;
     cout << "Output"<<endl;
     IK.GetOutput(result);

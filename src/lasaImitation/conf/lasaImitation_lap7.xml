@@ -1,0 +1,39 @@
+<application>
+<name>Cameras</name>
+<dependencies>
+      <port>/root</port>
+</dependencies> 
+<module>
+      <name>VelocityControllerExt</name>
+      <parameters> --name VelocityController --robot icubSim --period 0.02 --part 'right_arm left_arm torso' </parameters>
+	  <node>lasalap7</node>
+	<tag>VC</tag>
+   </module>
+   <module>
+      <name>RobotControllerModule</name>
+	  <parameters>--period 0.01 </parameters>
+	  <tag>RC</tag>
+	  <node>lasalap7</node>
+   </module>
+<connection>
+  <output>/VelocityController/position</output>
+  <input>/RobotController/currentJointPosition</input>
+  <protocol>tcp</protocol>
+</connection>
+<connection>
+  <output>/VelocityController/velocity</output>
+  <input>/RobotController/currentJointVelocity</input>
+  <protocol>tcp</protocol>
+</connection>
+<connection>
+  <output>/RobotController/targetJointPosition</output>
+  <input>/VelocityController/targetPosition</input>
+  <protocol>tcp</protocol>
+</connection>
+<connection>
+  <output>/RobotController/targetJointVelocity</output>
+  <input>/VelocityController/targetVelocity</input>
+  <protocol>tcp</protocol>
+</connection>
+</application>
+

@@ -33,7 +33,10 @@ using namespace yarp::sig;
 #include <iCub/iKinFwd.h>
 #include <iCub/iKinIpOpt.h>
 
+#include "MathLib/IKGroupSolver.h"
+
 #include "iCubAddKinChain.h"
+
 
 class RobotControllerThread: public RateThread
 {
@@ -47,6 +50,9 @@ private:
     char                    mBaseName[256];
 
     State                   mState;
+
+    double                  mTime;
+    double                  mPrevTime;
     
     int                     mJointSize;
     Vector                  mTargetJointPos;
@@ -54,14 +60,34 @@ private:
     Vector                  mCurrentJointPos;
     Vector                  mCurrentJointVel;
     
+    Vector                  mJointsLimits[2];
+
+    Vector                  mIKJointsRest;
+    Vector                  mIKJointsPos;
 
     iKin::iCubWrist         *mFwdKinWrist[2];
     iKin::iCubArm           *mFwdKinArm[2];
 
-//    iKin::iKinChain         *mFwdKinWristChain[2];
-//    iKin::iKinChain         *mFwdKinArmChain[2];
+    Vector                   mFwdKinWristJoints[2];
+    Vector                   mFwdKinArmJoints[2];
+
+    Vector                   mFwdKinWristPose[2];
+    Vector                   mFwdKinArmPose[2];
+
+    Matrix                   mFwdKinWristJacobian[2];
+    Matrix                   mFwdKinArmJacobian[2];
+
+    Matrix                   mFwdKinWristRef[2];
+    Matrix                   mFwdKinArmRef[2];
+
+    MathLib::IKGroupSolver   mIKSolver;
     
-    
+    vector<unsigned int>    mSrcToArmIndices[2];
+    vector<unsigned int>    mSrcToWristIndices[2];
+    vector<unsigned int>    mArmToIKSIndices[2];
+    vector<unsigned int>    mWristToIKSIndices[2];
+    vector<unsigned int>    mSrcToIKSIndices;
+
     
     BufferedPort<Vector>    mTargetJointPosPort;
     BufferedPort<Vector>    mTargetJointVelPort;

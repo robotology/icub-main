@@ -227,7 +227,7 @@ void  IKSolver::StepSolve(){
   // Get the null space
   mEigenVectors.GetColumnSpace(mRank,mEigenVectors.ColumnSize()-mRank,mNullEigenVectors);
   mEigenVectorsTranspose.GetRowSpace(mRank,mEigenVectorsTranspose.RowSize()-mRank,mNullEigenVectorsTranspose);
- 
+  //if(bVerbose) mNullEigenVectors.Print();
 }
 void    IKSolver::ClearLimits(){
     mLimits[0].Zero();  mLimits[0] += 1.0;
