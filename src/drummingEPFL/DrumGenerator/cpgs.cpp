@@ -260,8 +260,9 @@ void cpg_manager::integrate_step(double *y, double *at_states)
   
 //*******SOUND FEEDBACK*********
 
-	if(drumHit==-1 && y[4+cpgs_size]*up_down<up_down*0.9)
+	if(drumHit==-1 && y[4+cpgs_size]*up_down>up_down*0.9)
 	{
+		ACE_OS::printf("feedback enabled again\n");
 		drumHit=0;
 	}
 
@@ -328,7 +329,7 @@ void cpg_manager::integrate_step(double *y, double *at_states)
 					ACE_OS::printf("FEEDBACK OFF\n");
 					ACE_OS::printf("stuck value %f, target value %f, observer %f\n", stuckPos[0], y[4], y[4+cpgs_size]);
 					drumHit=-1;
-					stuckCounter=-1;
+					stuckCounter=0;
             
 					for(int i=0;i<cpgs_size;i++)//we adapt the observer to the current state of the oscillator
 					{

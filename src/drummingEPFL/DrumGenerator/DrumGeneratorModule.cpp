@@ -3,7 +3,7 @@
 #include "DrumGeneratorModule.h"
 #include <ace/OS.h>
 
-#define DEBUG 1
+#define DEBUG 0
 
 
 generatorThread::generatorThread(int period) : RateThread(period)
@@ -19,18 +19,20 @@ void generatorThread::checkJointLimits()
     for(int i=0;i<nbDOFs;i++)
         {
             if(states[i] > joint_limit_up[i] - LIMIT_TOL)
-                {
-                    ACE_OS::printf("warning exceeded pos %f to joint %d, cutting to %f\n",
-                                   states[i],i,joint_limit_up[i]-LIMIT_TOL);
-                    states[i] = joint_limit_up[i] - LIMIT_TOL;
-                }
+            {
+                ACE_OS::printf("warning exceeded pos %f to joint %d, cutting to %f\n",
+                               states[i],i,joint_limit_up[i]-LIMIT_TOL);
+                states[i] = joint_limit_up[i] - LIMIT_TOL;
+            }
             else
+            {
                 if(states[i] < joint_limit_down[i] + LIMIT_TOL)
                     {
                         ACE_OS::printf("warning exceeded pos %f to joint %d, cutting to %f\n",
                                        states[i],i,joint_limit_down[i]+LIMIT_TOL);
                         states[i] = joint_limit_down[i] + LIMIT_TOL;
                     }
+			}
         }
 }
 
@@ -88,10 +90,10 @@ void generatorThread::getParameters()
                 }
                 //ACE_OS::printf("\n");
                 
-                if(myManager->parameters[1]!=myManager->next_parameters[1])
+               if(myManager->parameters[1]!=myManager->next_parameters[1])
                 {
                     y_cpgs[nbDOFs*4+2]=0.0; //reset go command
-                    y_cpgs[2*(nbDOFs*4+3)-1]=0.0;//go command of the observer
+                   y_cpgs[2*(nbDOFs*4+3)-1]=0.0;//go command of the observer
                 }
 
                 double freq = command->get(2*nbDOFs).asDouble();
@@ -122,48 +124,48 @@ void generatorThread::getParameters()
 }
 
 void generatorThread::getHit()
-{
-	if(myManager->drumHit==0)
-	{
-		if(partName=="left_arm" || partName=="right_arm")
-		{
-			double force_threshold;
-			if(partName=="left_arm")
-			{
-				force_threshold=LEFT_THRESHOLD;
-			}
-			else
-			{
-				force_threshold=RIGHT_THRESHOLD;
-			}
-			Bottle *force = ForceSensor_port.read(false);
-			if(force!=NULL)
-			{
-				double force_value = 0;
-				if(moving_average.size()==MOV_AV)
-				{
-					moving_average.pop_front();
-				}
-				moving_average.push_back(force->get(4).asDouble());
-				for(list<double>::iterator it=moving_average.begin(); it!=moving_average.end(); it++)
-				{
-					force_value += *it;
-				}
+{	
+	//	if(myManager->drumHit==0)
+	//	{
+	//		if(partName=="left_arm" || partName=="right_arm")
+	//		{
+	//			double force_threshold;
+	//			if(partName=="left_arm")
+	//			{
+	//				force_threshold=LEFT_THRESHOLD;
+	//			}
+	//			else
+	//			{
+	//				force_threshold=RIGHT_THRESHOLD;
+	//			}
+	//			Bottle *force = ForceSensor_port.read(false);
+	//			if(force!=NULL)
+	//			{
+	//				double force_value = 0;
+	//				if(moving_average.size()==MOV_AV)
+	//				{
+	//					moving_average.pop_front();
+	//				}
+	//				moving_average.push_back(force->get(4).asDouble());
+	//				for(list<double>::iterator it=moving_average.begin(); it!=moving_average.end(); it++)
+	//				{
+	//					force_value += *it;
+	//				}
+					
+	//				force_value=force_value/moving_average.size();
 				
-				force_value=force_value/moving_average.size();
-			
-				if(force_value < force_threshold)
-				{
-					myManager->drumHit=1;
-					//myManager->stuckCounter=0;                                          
-					fprintf(feedback_file, "%f \n", Time::now()/*-original_time*/);
-					ACE_OS::printf("FEEDBACK ENABLED FOR PART %s, sensor value %f\n", partName.c_str(), force_value); 
-				}
-			}
-		}
-	}
-	
-	if(partName=="left_arm" || partName=="right_arm")
+	//				if(force_value < force_threshold)
+	//				{
+	//					myManager->drumHit=1;
+	//					//myManager->stuckCounter=0;                                          
+	//					fprintf(feedback_file, "%f \n", Time::now()/*-original_time*/);
+	//					ACE_OS::printf("FEEDBACK ENABLED FOR PART %s, sensor value %f\n", partName.c_str(), force_value); 
+	//				}
+	//			}
+	//		}
+	//	}
+		
+		if(partName=="left_leg" || partName=="right_leg")
 	{
     Bottle *hit =sound_port.read(false);
     if(hit!=NULL)
@@ -246,11 +248,11 @@ void generatorThread::run()
     ///we get encoders
 
     if(!getEncoders())
-        {
+    {
             ACE_OS::printf("Error getting encoders positions\n");
             this->stop();
             return;
-        }
+    }
 
 #endif
 
@@ -288,8 +290,8 @@ void generatorThread::run()
         //ACE_OS::printf("current beat: %d\n", beat);
         beat++;
         lastBeat_time = time_now;
-        //y_cpgs[nbDOFs*4+2]=0.0; //reset go command
-        //y_cpgs[2*(nbDOFs*4+3)-1]=0.0;//go command of the observer
+        y_cpgs[nbDOFs*4+2]=0.0; //reset go command
+        y_cpgs[2*(nbDOFs*4+3)-1]=0.0;//go command of the observer
 
         ///////send status to manager
 
@@ -595,39 +597,39 @@ bool generatorThread::init(Searchable &s)
         return false;
     }
 
-    if(partName=="left_arm")
-    {    
-		sprintf(tmp1,"/%s/forcesensor/in",partName.c_str());
+//    if(partName=="left_arm")
+//    {    
+//		sprintf(tmp1,"/%s/forcesensor/in",partName.c_str());
 
-		if(!ForceSensor_port.open(tmp1))
-        {
-            ACE_OS::printf("Cannot open ForceSensor port of %s\n",partName.c_str());
-            return false;
-        }
+//		if(!ForceSensor_port.open(tmp1))
+//        {
+//            ACE_OS::printf("Cannot open ForceSensor port of %s\n",partName.c_str());
+//            return false;
+//        }
 
-		if(!Network::connect("/icub/leftarm/analog:o",tmp1,"udp"))
-        {
-            ACE_OS::printf("Cannot connect to force sensor port of %s\n",partName.c_str());
-            return false;
-        }
-	}
+//		if(!Network::connect("/icub/leftarm/analog:o",tmp1,"udp"))
+//        {
+//            ACE_OS::printf("Cannot connect to force sensor port of %s\n",partName.c_str());
+//            return false;
+//        }
+//	}
 	
-	if(partName=="right_arm")
-    {    
-		sprintf(tmp1,"/%s/forcesensor/in",partName.c_str());
+//	if(partName=="right_arm")
+//    {    
+//		sprintf(tmp1,"/%s/forcesensor/in",partName.c_str());
 
-		if(!ForceSensor_port.open(tmp1))
-        {
-            ACE_OS::printf("Cannot open ForceSensor port of %s\n",partName.c_str());
-            return false;
-        }
+//		if(!ForceSensor_port.open(tmp1))
+//        {
+//            ACE_OS::printf("Cannot open ForceSensor port of %s\n",partName.c_str());
+//            return false;
+//        }
 
-		if(!Network::connect("/icub/rightarm/analog:o",tmp1,"udp"))
-        {
-            ACE_OS::printf("Cannot connect to force sensor port of %s\n",partName.c_str());
-            return false;
-        }
-	}
+//		if(!Network::connect("/icub/rightarm/analog:o",tmp1,"udp"))
+//        {
+//            ACE_OS::printf("Cannot connect to force sensor port of %s\n",partName.c_str());
+//            return false;
+//        }
+//	}
 
 #endif
 
