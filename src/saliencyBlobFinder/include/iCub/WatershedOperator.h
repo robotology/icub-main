@@ -110,7 +110,7 @@ public:
 	*/
 	WatershedOperator(const bool lp, const int width1, const int height1, const int wstep, const PixelMono th);
 	/*
-	* resize
+	* resize all the image attributes of the class watershedOperator
 	*/
 	void resize(const int width1, const int height1, const int wstep, const PixelMono th);
 	/**

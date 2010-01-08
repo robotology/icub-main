@@ -203,11 +203,11 @@ private:
     /**
     * function that reads the ports for colour RGB opponency maps
     */
-    void getOpponecies();
+    bool getOpponencies();
     /**
     * function that reads the ports for the RGB planes
     */
-    void getPlanes();
+    bool getPlanes();
     
 public:
     /**

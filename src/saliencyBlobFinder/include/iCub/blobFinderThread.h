@@ -151,39 +151,14 @@ private:
 	* vector of boolean which tells whether there is a blob or not
 	*/
 	char* blobList;
-    /**
-    * pointer to the output image of the watershed algorithm
-    */
-    ImageOf<PixelMono>* _outputImage;
+    
+    
     /**
     * pointer to the 3 channels output image of the watershed algorithm
     */
     ImageOf<PixelRgb>* _outputImage3;
-   
-    /**
-    * pointer to the red plane input image
-    */
-    ImageOf<PixelMono> *ptr_inputImgRed;
-    /**
-    * pointer to the green plane input image
-    */
-    ImageOf<PixelMono> *ptr_inputImgGreen;
-    /**
-    * pointer to the input blue plane image
-    */
-    ImageOf<PixelMono> *ptr_inputImgBlue;
-    /**
-    * pointer to the input image R+G-
-    */
-    ImageOf<PixelMono> *ptr_inputImgRG;
-    /**
-    * pointer to the input image G+R-
-    */
-    ImageOf<PixelMono> *ptr_inputImgGR;
-    /**
-    * pointer to the input image B+Y-
-    */
-    ImageOf<PixelMono> *ptr_inputImgBY;
+    
+    
     /**
 	* input image of the opponency R+G-
 	*/
@@ -319,14 +294,55 @@ public:
     */
     YARPBox* max_boxes;
     /**
+    * flag that allows the thread to run since all the inputs are ready
+    */
+    bool freetorun;
+    /**
 	* image which is plotted in the drawing area
 	*/
 	ImageOf<PixelRgb> *image_out; //
+    /**
+	* image which is plotted in the drawing area
+	*/
+	ImageOf<PixelRgb> *image_out2;
      /**
     * pointer to the input image
     */
     ImageOf<yarp::sig::PixelRgb> *ptr_inputImg;
-   
+    /**
+    * pointer to the red plane input image
+    */
+    ImageOf<PixelMono> *ptr_inputImgRed;
+    /**
+    * pointer to the green plane input image
+    */
+    ImageOf<PixelMono> *ptr_inputImgGreen;
+    /**
+    * pointer to the input blue plane image
+    */
+    ImageOf<PixelMono> *ptr_inputImgBlue;
+    /**
+    * pointer to the input image R+G-
+    */
+    ImageOf<PixelMono> *ptr_inputImgRG;
+    /**
+    * pointer to the input image G+R-
+    */
+    ImageOf<PixelMono> *ptr_inputImgGR;
+    /**
+    * pointer to the input image B+Y-
+    */
+    ImageOf<PixelMono> *ptr_inputImgBY;
+    
+   /**
+    * pointer to the output image of the watershed algorithm
+    */
+    ImageOf<PixelRgb>* _procImage;
+    /**
+    * pointer to the output image of the watershed algorithm
+    */
+    ImageOf<PixelMono>* _outputImage;
+    
 };
 
 #endif //__BLOBFINDERTHREAD_H_

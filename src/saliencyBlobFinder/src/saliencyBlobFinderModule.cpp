@@ -140,11 +140,12 @@ bool saliencyBlobFinderModule::updateModule() {
     }
 
     //copy the inputImg into a buffer
-//    ippiCopy_8u_C3R(img->getRawImage(), img->getRowSize(),inputImg->getRawImage(), inputImg->getRowSize(),srcsize);
-    getOpponencies();
-    getPlanes();
-   
-  
+    ippiCopy_8u_C3R(img->getRawImage(), img->getRowSize(),blobFinder->ptr_inputImg->getRawImage(), blobFinder->ptr_inputImg->getRowSize(),srcsize);
+    bool ret1=true,ret2=true;
+    ret1=getOpponencies();
+    ret2=getPlanes();
+    if(ret1&&ret2)
+        blobFinder->freetorun=true;
     outPorts();
     return true;
 }
@@ -152,20 +153,40 @@ bool saliencyBlobFinderModule::updateModule() {
 /**
 * function that reads the ports for colour RGB opponency maps
 */
-void getOpponecies(){
-    
+bool saliencyBlobFinderModule::getOpponencies(){
+    bool ret=true;
+    blobFinder->ptr_inputImgRG=rgPort.read(false);
+    if(blobFinder->ptr_inputImgRG==0)
+        ret=false;
+    blobFinder->ptr_inputImgGR=grPort.read(false);
+    if(blobFinder->ptr_inputImgGR==0)
+        ret=false;
+    blobFinder->ptr_inputImgBY=byPort.read(false);
+    if(blobFinder->ptr_inputImgBY==0)
+        ret=false;
+    return ret;
 }
 
 /**
 * function that reads the ports for the RGB planes
 */
-void getPlanes(){
-    
+bool saliencyBlobFinderModule::getPlanes(){
+    bool ret=true;
+    blobFinder->ptr_inputImgRed=redPort.read(false);
+    if(blobFinder->ptr_inputImgRed==0)
+        ret=false;
+    blobFinder->ptr_inputImgGreen=greenPort.read(false);
+    if(blobFinder->ptr_inputImgGreen==0)
+        ret=false;
+    blobFinder->ptr_inputImgBlue=bluePort.read(false);
+    if(blobFinder->ptr_inputImgBlue==0)
+        ret=false;
+    return ret;
 }
 
 
-void saliencyBlobFinderModule::outPorts(){
-    if((0!=blobFinder->image_out)&&(outputPort.getOutputCount())){
+void saliencyBlobFinderModule::outPorts(){ 
+    if(0!=blobFinder->image_out){  //&&(outputPort.getOutputCount()
         outputPort.prepare() = *(blobFinder->image_out);		
         outputPort.write();
     }

@@ -56,6 +56,7 @@ blobFinderThread::blobFinderThread():RateThread(THREAD_RATE){
     max_boxes = new YARPBox[3];
     //initializing the image plotted out int the drawing area
     image_out=new ImageOf<PixelRgb>;
+    _procImage=new ImageOf<PixelRgb>;
     _outputImage3=new ImageOf<PixelRgb>;
     _outputImage=new ImageOf<PixelMono>;
 
@@ -105,9 +106,12 @@ void blobFinderThread::reinitialise(int width, int height){
 void blobFinderThread::resizeImages(int width, int height){
     this->width=width;
     this->height=height;
+    srcsize.height=height;
+    srcsize.width=width;
 
     //int widthstep=256;
-    int widthstep=320;
+    double divider=ceil(width/32.0);
+    int widthstep=divider*32;
 
     ptr_tagged = new yarp::sig::ImageOf<yarp::sig::PixelInt>;
     ptr_tagged->resize(widthstep,height);
@@ -122,6 +126,7 @@ void blobFinderThread::resizeImages(int width, int height){
     outContrastLP->resize(width,height);
 
     image_out->resize(width,height);
+    _procImage->resize(width,height);
     _outputImage->resize(width,height);
     _outputImage3->resize(width,height);
 
@@ -176,7 +181,8 @@ void blobFinderThread::run(){
     if(!freetorun)
         return;
 
-    bool conversion=false;
+    bool conversion=true;
+   _outputImage=wOperator->getPlane(&_inputImg);
     rain();
     if(this->foveaBlob_flag){
         this->salience->drawFoveaBlob(*this->salience->foveaBlob,*this->tagged);
@@ -201,10 +207,6 @@ void blobFinderThread::run(){
     }
     else if(this->blobList_flag){
         this->drawAllBlobs(false);
-        /*if(this->blobList!=""){
-            ippiCopy_8u_C1R((unsigned char*)this->blobList,320,_outputImage->getRawImage(),320,srcsize);
-            conversion=true;
-        }*/
     }
     else if(this->maxSaliencyBlob_flag){
         this->drawAllBlobs(false);
@@ -253,13 +255,14 @@ void blobFinderThread::run(){
         int psb;
         int width=this->width;
         int height=this->height;
+        
         Ipp8u* im_out = ippiMalloc_8u_C1(width,height,&psb);
         //Ipp8u* im_tmp0 = ippiMalloc_8u_C1(width,height,&psb);
         //Ipp8u* im_tmp1= ippiMalloc_8u_C1(width,height,&psb);
         //Ipp8u* im_tmp2 = ippiMalloc_8u_C1(width,height,&psb);
         //two copies in order to have 2 conversions
         //the first transform the yarp mono into a 4-channel image
-        ippiCopy_8u_C1R(_outputImage->getRawImage(), _outputImage->getRowSize(),im_out,psb,srcsize);
+        ippiCopy_8u_C1R(_outputImage->getRawImage(),_outputImage->getRowSize(),im_out,psb,srcsize);
 
         //ippiCopy_8u_C1R(im_out, width,im_tmp0,psb,srcsize);
         //ippiCopy_8u_C1R(im_out, width,im_tmp1,psb,srcsize);
@@ -274,7 +277,7 @@ void blobFinderThread::run(){
         Ipp8u* im_tmp[3]={im_out,im_out,im_out};
         //Ipp8u* im_tmp[3]={_outputImage->getRawImage(),_outputImage->getRawImage(),_outputImage->getRawImage()};
         //the second transforms the 4-channel image into colorImage for yarp
-        ippiCopy_8u_P3C3R(im_tmp,psb,this->image_out->getRawImage(),this->image_out->getRowSize(),srcsize);
+        ippiCopy_8u_P3C3R(im_tmp,psb,image_out->getRawImage(),image_out->getRowSize(),srcsize);
         ippiFree(im_out);
         //printf("freeing im_tmp0  \n");	
         //ippiFree(im_tmp0);
@@ -418,7 +421,8 @@ void blobFinderThread::drawAllBlobs(bool stable)
     searchGR=((targetGREEN-targetRED+255)/510)*255;
     PixelMono addRG=((targetRED+targetGREEN)/510)*255;
     searchBY=((targetBLUE-addRG+255)/510)*255;
-    int psb32s,psb8u;
+    int psb32s;
+    //int psb8u;
     Ipp32s* _inputImgRGS32=ippiMalloc_32s_C1(this->width,this->height,&psb32s);
     Ipp32s* _inputImgGRS32=ippiMalloc_32s_C1(this->width,this->height,&psb32s);
     Ipp32s* _inputImgBYS32=ippiMalloc_32s_C1(this->width,this->height,&psb32s);

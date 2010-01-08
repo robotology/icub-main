@@ -1012,6 +1012,8 @@ ImageOf<PixelMono>* WatershedOperator::getPlane(ImageOf<PixelRgb>* inputImage){
     srcsize.height=inputImage->height();
     srcsize.width=inputImage->width();
     Ipp8u* shift[3];
+    
+    
     shift[0]=ippiMalloc_8u_C1(width,height,&psb); 
     shift[1]=ippiMalloc_8u_C1(width,height,&psb);
     shift[2]=ippiMalloc_8u_C1(width,height,&psb);
@@ -1020,6 +1022,7 @@ ImageOf<PixelMono>* WatershedOperator::getPlane(ImageOf<PixelRgb>* inputImage){
     ippiFree(shift[0]);
     ippiFree(shift[1]);
     ippiFree(shift[2]);
+    
     return outputImage;
 }
 
