@@ -106,7 +106,7 @@ bool EsdCan::canRead(CanBuffer &msgs,
     if ( (res==NTCAN_SUCCESS)||(res==NTCAN_RX_TIMEOUT))
         return true;
 
-    fprintf(stderr, "Error: canRead returned with code:%.4X\n", res);
+    fprintf(stderr, "Error: canRead returned with code:%.8X\n", res);
     return false;
 }
 
@@ -134,7 +134,7 @@ bool EsdCan::canWrite(const CanBuffer &msgs,
 
     if (res!=NTCAN_SUCCESS)
         {
-            fprintf(stderr, "Error: canWrite returned with code:%.4X\n", res);
+            fprintf(stderr, "Error: canWrite returned with code:%.8X\n", res);
             return false;
         }
 
