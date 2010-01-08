@@ -1,7 +1,7 @@
 // -*- mode:C++; tab-width:4; c-basic-offset:4; indent-tabs-mode:nil -*-
 
 #include "CrawlManagerModule.h"
-#include <ace/OS.h>
+//#include <ace/OS.h>
 
 #define DEBUG 1
 
@@ -164,8 +164,6 @@ bool CrawlManagerModule::open(Searchable &s)
 	}
     else
     {
-    	//ludo: we get the absolute path according to the environment variable (safer since we can run this module from anywhere
-    	//done to avoid relative path problems
     	char *cubPath;
     	cubPath = getenv("ICUB_DIR");
     	if(cubPath == NULL) {

@@ -39,7 +39,7 @@
  *
  * No parameters. 
 *
-* They are read by default from the file app/Crawling/config/managerConfig.ini, another file \a newFile.ini can be used through the command :
+* They are read by default from the file \in app/Crawling/config/managerConfig.ini, another file \a newFile.ini can be used through the command :
 *   --config-path  newFile.ini
  *
  *\section portssa_sec Ports Accessed 
