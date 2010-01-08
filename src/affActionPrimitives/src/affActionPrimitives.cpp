@@ -5,7 +5,7 @@
 
 #include <gsl/gsl_math.h>
 
-#include <iCub/common.h>
+#include <iCub/ctrlMath.h>
 #include <iCub/affActionPrimitives.h>
 
 #include <stdio.h>
@@ -24,6 +24,7 @@ using namespace yarp::os;
 using namespace yarp::dev;
 using namespace yarp::sig;
 using namespace yarp::math;
+using namespace ctrl;
 
 
 /************************************************************************/
@@ -47,9 +48,6 @@ affActionPrimitives::affActionPrimitives(Property &opt) :
 void affActionPrimitives::init()
 {
     polyHand=polyCart=NULL;
-
-    handMetrics=NULL;
-    fs=NULL;
 
     mutex=NULL;
     motionDoneEvent=NULL;
@@ -255,31 +253,13 @@ bool affActionPrimitives::open(Property &opt)
         return false;
     }
 
-    if (!opt.check("hand_calibration_file"))
-    {
-        printMessage("ERROR: option \"hand_calibration_file\" is missing\n");
-        return false;
-    }
-
     local=opt.find("local").asString().c_str();
     string robot=opt.check("robot",Value("icub")).asString().c_str();
     string part=opt.check("part",Value("right_arm")).asString().c_str();
     int period=opt.check("thread_period",Value(ACTIONPRIM_DEFAULT_PER)).asInt();
     double traj_time=opt.check("traj_time",Value(ACTIONPRIM_DEFAULT_TRAJTIME)).asDouble();
     double reach_tol=opt.check("reach_tol",Value(ACTIONPRIM_DEFAULT_REACHTOL)).asDouble();    
-    string sensingCalibFile=opt.find("hand_calibration_file").asString().c_str();
     string fwslash="/";
-
-    // get params from config file
-    Property sensingCalibProp;
-    sensingCalibProp.fromConfigFile(sensingCalibFile.c_str());
-    Bottle &sensingCalib=sensingCalibProp.findGroup(part.c_str());
-
-    if (sensingCalib.isNull())
-    {
-        close();
-        return false;
-    }
 
     // get hand sequence motions (if any)
     configHandSeq(opt);
@@ -309,9 +289,6 @@ bool affActionPrimitives::open(Property &opt)
     }
 
     // open views
-    polyHand->view(encCtrl);
-    polyHand->view(pidCtrl);
-    polyHand->view(ampCtrl);
     polyHand->view(posCtrl);
     polyCart->view(cartCtrl);
 
@@ -328,16 +305,6 @@ bool affActionPrimitives::open(Property &opt)
     handleTorsoDOF(opt,"torso_pitch",0);
     handleTorsoDOF(opt,"torso_roll",1);
     handleTorsoDOF(opt,"torso_yaw",2);
-
-    // create hand metrix
-    readMatrices(sensingCalib,sensingConstants);
-    thresholds=sensingConstants["thresholds"].getRow(0);
-
-    printMessage("creating hand metrics...\n");
-    //handMetrics=new HandMetrics(encCtrl,pidCtrl,ampCtrl,sensingConstants);
-
-    printMessage("creating hand smoother...\n");
-    //fs=new FunctionSmoother(thresholds);
 
     // get grasp detection thresholds
     graspDetectionThres.resize(5,0.0);
@@ -397,18 +364,6 @@ void affActionPrimitives::close()
     {
         printMessage("stopping thread ...\n");        
         stop();
-    }
-
-    if (fs!=NULL)
-    {    
-        printMessage("disposing hand smoother ...\n");
-        delete fs;
-    }
-
-    if (handMetrics!=NULL)
-    {
-        printMessage("disposing hand metrics ...\n");
-        delete handMetrics;
     }
 
     if (polyHand!=NULL)
@@ -481,57 +436,6 @@ bool affActionPrimitives::isGraspEnded()
         return false;
     else
         return true;
-}
-
-
-/************************************************************************/
-void affActionPrimitives::stopBlockedJoints()
-{
-	Vector smoothedError;	
-	fs->smooth(handMetrics->getError(),smoothedError,handMetrics->getTimeInterval());
-
-    // latch the current moving fingers set
-    set<int> tmpSet=fingersMovingJntsSet;
-
-	for (set<int>::iterator itr=fingersMovingJntsSet.begin(); itr!=fingersMovingJntsSet.end(); ++itr)
-    {
-		int i=*itr;
-
-		if (i>=thresholds.length() || i<0)
-            printMessage("WARNING: No thresholds for joint #%d specified.\n",i);
-        else 
-        {
-			bool isOpening=thresholds[i]>0;
-
-			if ((isOpening && smoothedError[i]>thresholds[i]) || (!isOpening && smoothedError[i]<thresholds[i])) 
-            {
-				posCtrl->stop(i);
-				tmpSet.erase(i);
-                printMessage("joint #%d blocked\n",i);
-			}
-		}
-	}
-
-    // update the moving fingers set
-    fingersMovingJntsSet=tmpSet;
-}
-
-
-/************************************************************************/
-bool affActionPrimitives::handMotionDone()
-{
-	Vector v=handMetrics->getVelocity();
-
-	for (set<int>::iterator itr=fingersMovingJntsSet.begin(); itr!=fingersMovingJntsSet.end(); ++itr)
-    {
-		bool b;
-		posCtrl->checkMotionDone(*itr,&b);
-
-        if (fabs(v[*itr])>0.01 && !b)
-            return false;
-	}
-
-	return true;
 }
 
 
@@ -789,20 +693,9 @@ void affActionPrimitives::run()
 
     if (!handMoveDone)
     {
-        // model-based grasp detection
-        handMoveDone=isGraspEnded();
-
-        // old-fashioned approach
-        if (!handMoveDone)
-        {
-            //handMetrics->snapshot();
-            //stopBlockedJoints();
-            //handMoveDone=handMotionDone();
-        }
-
         // check whether all the remaining active joints have come
         // to a complete stop
-        if (handMoveDone)
+        if (handMoveDone=isGraspEnded())
         {    
             printMessage("hand WP reached\n");
             execPendingHandSequences();    // here handMoveDone may switch false again

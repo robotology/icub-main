@@ -5,12 +5,11 @@ PROJECT(${PROJECTNAME})
 FIND_PACKAGE(YARP)
 FIND_PACKAGE(ICUB)
 
-SET(folder_source src/affActionPrimitives.cpp
-                  src/handMetrics.cpp
-                  src/common.cpp)
-SET(folder_header include/iCub/affActionPrimitives.h
-                  include/iCub/handMetrics.h
-                  include/iCub/common.h)
+FIND_PACKAGE(CTRLLIB REQUIRED)
+INCLUDE_DIRECTORIES(${CTRLLIB_INCLUDE_DIRS})
+
+SET(folder_source src/affActionPrimitives.cpp)
+SET(folder_header include/iCub/affActionPrimitives.h)
 
 SOURCE_GROUP("Source Files" FILES ${folder_source})
 SOURCE_GROUP("Header Files" FILES ${folder_header})

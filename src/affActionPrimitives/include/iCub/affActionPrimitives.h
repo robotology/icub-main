@@ -58,8 +58,6 @@
 #include <yarp/dev/ControlBoardInterfaces.h>
 #include <yarp/sig/Vector.h>
 
-#include <iCub/handMetrics.h>
-
 #include <deque>
 #include <set>
 #include <map>
@@ -81,9 +79,6 @@ protected:
 
     yarp::dev::PolyDriver        *polyHand;
     yarp::dev::PolyDriver        *polyCart;
-    yarp::dev::IEncoders         *encCtrl;
-    yarp::dev::IPidControl       *pidCtrl;
-    yarp::dev::IAmplifierControl *ampCtrl;
     yarp::dev::IPositionControl  *posCtrl;
     yarp::dev::ICartesianControl *cartCtrl;
 
@@ -112,11 +107,6 @@ protected:
     std::set<int>          fingersJntsSet;
     std::set<int>          fingersMovingJntsSet;
     std::multimap<int,int> jnts2FingersMap;
-
-    std::map<const std::string, yarp::sig::Matrix> sensingConstants;
-    yarp::sig::Vector thresholds;
-    HandMetrics      *handMetrics;
-    FunctionSmoother *fs;
 
     struct HandWayPoint
     {
@@ -153,8 +143,6 @@ protected:
     virtual bool cmdHand(const HandWayPoint &handWP);
     virtual bool wait(const double tmo);
     virtual bool isGraspEnded();
-    virtual void stopBlockedJoints();
-    virtual bool handMotionDone();
 
     void init();    
     bool execQueuedAction();
@@ -190,6 +178,9 @@ public:
     *  
     * \note Available options are: 
     *  
+    * \b local <string>: specify a stem name used to open local 
+    *    ports and to highlight messages printed on the screen. 
+    *  
     * \b robot <string>: the robot name to connect to (e.g. icub). 
     *  
     * \b part <string>:  the arm to be controlled (e.g. left_arm). 
@@ -200,9 +191,6 @@ public:
     * \b traj_time <double>: the arm movement execution time [s]. 
     *  
     * \b reach_tol <double>: the reaching tolerance [m]. 
-    *  
-    * \b local <string>: specify a stem name used to open local 
-    *    ports and to highlight messages printed on the screen.
     *
     * \b torso_pitch <string>: if "on" it enables the control of the 
     *    pitch of the torso.
@@ -231,9 +219,6 @@ public:
     *    thresholds used for model-based grasp detection. Indeed, a
     *    port is open called /<local>/<part>/detectGrasp:i to
     *    acquire data provided by \ref icub_graspDetector module.
-    *  
-    * \b hand_calibration_file <string>: complete path to the hand 
-    *    calibration file.
     *  
     * \b hand_sequences_file <string>: complete path to the file 
     *    containing the hand motions sequences.<br />Here is the

@@ -77,10 +77,6 @@ None.
 None. 
  
 \section conf_file_sec Configuration Files 
---hand_calibration_file \e file 
-- specify the path to the hand calibration file relative to the 
-  current context ( \ref affActionPrimitives ).
- 
 --hand_sequences_file \e file 
 - specify the path to the file containing the hand motion 
   sequences relative to the current context ( \ref
@@ -330,7 +326,6 @@ public:
         }
 
         option.put("local",name.c_str());
-        option.put("hand_calibration_file",rf.findFile("hand_calibration_file"));
         option.put("hand_sequences_file",rf.findFile("hand_sequences_file"));
 
         Property optionL(option); optionL.put("part","left_arm");
@@ -531,7 +526,6 @@ int main(int argc, char *argv[])
     rf.setVerbose(true);
     rf.setDefaultContext("affActionPrimitives/conf");
     rf.setDefaultConfigFile("config.ini");
-    rf.setDefault("hand_calibration_file","object_sensing.ini");
     rf.setDefault("hand_sequences_file","hand_sequences.ini");
     rf.setDefault("name","affActionPrimitivesMod");
     rf.configure("ICUB_ROOT",argc,argv);
