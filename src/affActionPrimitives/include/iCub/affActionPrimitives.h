@@ -118,13 +118,13 @@ protected:
     HandMetrics      *handMetrics;
     FunctionSmoother *fs;
 
-    typedef struct
+    struct HandWayPoint
     {
         yarp::sig::Vector poss;
         yarp::sig::Vector vels;
-    } HandWayPoint;
+    };
 
-    typedef struct
+    struct Action
     {
         // wait action
         bool waitState;
@@ -136,7 +136,7 @@ protected:
         // hand action
         bool execHand;
         HandWayPoint handWP;
-    } Action;
+    };
 
     std::deque<Action> actionsQueue;
     std::map<std::string,std::deque<HandWayPoint> > handSeqMap;
