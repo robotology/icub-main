@@ -38,7 +38,7 @@ Cpgs::Cpgs(int nbDOFs, int nbLIMBs):
 	m_on(1.0), // value to turn on the oscillations
 	b_go(0.5), //rate of conv. of the go command (for the discrete system)
 	u_go(4.0), //max value of the go command
-	dt(0.001), //integration step in seconds
+	dt(0.0001), //integration step in seconds
 	c(100.0),//parameter for the swing/stance switching
 	om_stance(0.2), //stance frequency in Hz
 	om_swing(om_stance) //stance frequency in Hz
@@ -282,8 +282,14 @@ void Cpgs::integrate_step(double *y, double *at_states)
 
 
 	//***** SETTING TARGET POSITION
-	for(int i=0;i<nbDOFs;i++) {
+	for(int i=0;i<nbDOFs;i++) 
+	{
 		at_states[i] = ampl[i]*180.0/M_PI*y[4*i+2];
+		if(at_states[i] != at_states[i])
+		{
+			printf("FATAL ERROR : CPG has diverged above the DOUBLE_MAX value, check the CPG parameters");
+			exit(0);
+		}
 	}
 }
 
