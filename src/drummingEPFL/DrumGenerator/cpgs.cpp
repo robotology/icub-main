@@ -374,6 +374,11 @@ void cpg_manager::integrate_step(double *y, double *at_states)
     for(int i=0;i<nbDOFs;i++)
     {
         at_states[i]= ampl[i]*180/M_PI*(y[4*i+4]+y[4*i+2]);
+		if(at_states[i] != at_states[i])
+		{
+			printf("FATAL ERROR : CPG has diverged above the DOUBLE_MAX value, check the CPG parameters");
+			exit(0);
+		}
     }
 }
 
