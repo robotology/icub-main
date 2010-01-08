@@ -68,7 +68,7 @@ desired orientation and \f$ \mathit{K_x}\,\! \f$ and \f$ \mathit{K_{\alpha}}\,\!
 the forward kinematic maps for the position and orientation part, respectively;
 \f$ \mathfb{q}_{rest}\,\! \f$ is used to keep torso as close as possible (weighting
 with a positive factor \f$ \mathit{w}<1\,\! \f$) to the vertical position while reaching
-and \f$ \epsilon\,\! \f$ is a small number in the range of \f$ 10^{-4}÷10^{-5}\,\! \f$.
+and \f$ \epsilon\,\! \f$ is a small number in the range of \f$ 10^{-4}\,\! \f$ ÷ \f$ 10^{-5}\,\! \f$.
 
 \subsection controller_sec 2. The Controller
 The generation of velocity profile is achieved by applying the concept of
