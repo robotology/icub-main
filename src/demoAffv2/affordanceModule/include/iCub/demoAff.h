@@ -34,25 +34,37 @@
 #include <yarp/os/Module.h>
 
 
+#include <yarp/os/Network.h>
+#include <yarp/os/RFModule.h>
+#include <yarp/os/BufferedPort.h>
+#include <yarp/sig/Vector.h>
+#include <yarp/math/Math.h>
+#include <iCub/affActionPrimitives.h>
+
 #include "affordances.h"
 #include "processobjdata.h"
+#include "objSupport.h"
 
 #define MAXNODES 10
 #define MAXLOCATIONS 3
 #define NUMEFF 2
 
+using namespace std;
 using namespace yarp;
 using namespace yarp::os;
 using namespace yarp::sig;
-using namespace std;
+using namespace yarp::dev;
+using namespace yarp::math;
 
-namespace iCub {
-     namespace contrib {
-         class demoAff;
-     }
+/*namespace iCub {
+  namespace contrib {
+    class DemoAff;
+  }
 }
 
+
 using namespace iCub::contrib;
+*/
 
 /**
  *
@@ -61,6 +73,11 @@ using namespace iCub::contrib;
  * \see icub_demoaff
  *
  */
+
+
+
+
+
 class DemoAff : public Module {
 
 private:
@@ -71,8 +88,8 @@ private:
   BufferedPort<Bottle> port_sync;
   
   // object_segmentator
-  BufferedPort<Bottle> port_askobj;
   BufferedPort<Bottle> port_descriptor;
+  BufferedPort<Bottle> port_track_info;
 
   // motion primitives
   BufferedPort<Bottle> port_primitives;
@@ -104,15 +121,15 @@ private:
   // objects data
   processobjdata processdata;
 
-  const int max_obj = 10;
+  static const int max_obj = 10;
 
   // Demonstration data
-  int democolor, demoshape;
+  int democolor, demoshape, demosize;
   int demoeffects[NUMEFF];
 
 
   bool InitAff(Searchable& config);
-  bool restartTracker(double *pos, double width);
+  bool restartTracker(TrackInfo obj);
 
   int numObservedObj;
   int substate;
@@ -124,17 +141,64 @@ private:
 
   double objpos[max_obj][2];
 
-  int shape[max_obj];
-  int color[max_obj];
-  int size[max_obj];
+  int shapeObj[max_obj];
+  int colorObj[max_obj];
+  int sizeObj[max_obj];
 
-   
+  BlobInfo   *objDescTable;
+  TrackInfo *trackDescTable;              
+  int       numObjs;
+  int       maxObjects; 
+  int       numBlobs;
+  int       numTracks;
+
+  double table_az, table_el;
+
   int OK_MSG;
  
   bool respond(const Bottle &command,Bottle &reply);
   bool readDetectorInput(Bottle *Input, string name, double *cx, double *cy);
-  bool getObjDesc(Bootle * input_obj);
 
+  bool getObjInfo();
+  bool getBlobInfo(const Bottle *msg);
+  bool getTrackerInfo(const Bottle *msg);
+
+
+  // Deprecated functions
+  bool readEffect();
+  bool getObjDesc(Bottle * input_obj);
+
+protected:
+  string partUsed;
+
+  affActionPrimitivesLayer1 *actionL;
+  affActionPrimitivesLayer1 *actionR;
+  affActionPrimitivesLayer1 *action;
+  BufferedPort<Bottle>       inPort;
+  Port                       rpcPort;
+  
+  Vector graspOrienL, graspOrienR;
+  Vector graspDispL,  graspDispR;
+  Vector dOffsL,      dOffsR;
+  Vector dLiftL,      dLiftR;
+  Vector home_xL,     home_xR;
+  Vector home_oL,     home_oR;
+  
+  Vector *graspOrien;
+  Vector *graspDisp;
+  Vector *dOffs;
+  Vector *dLift;
+  Vector *home_x;
+  Vector *home_o;
+  
+  bool openPorts;
+
+  bool InitAffPrimitives();
+  bool configureAffPrimitives(ResourceFinder &rf);
+  void useArm(const int arm);
+  void getArmDependentOptions(Bottle &b, Vector &_gOrien, Vector &_gDisp,
+			      Vector &_dOffs, Vector &_dLift, Vector &_home_x,
+			      Vector &_home_o);
 public:
 
     DemoAff();
@@ -146,9 +210,8 @@ public:
     virtual bool interruptModule();
     virtual bool updateModule();
 
-public:
-
 };
+
 
 
 #endif

@@ -70,7 +70,16 @@ using namespace yarp::os;
 int main(int argc, char *argv[]) {
 
     Network yarp;
+
+    /* prepare and configure Resource Finder */
+    /*    ResourceFinder rf;
+    rf.setVerbose(true);
+    rf.setDefaultConfigFile("demoAffv2.ini");  // overridden by --from parameter
+    rf.setDefaultContext("demoAffv2/conf");    // overridden by --context parameter
+    rf.configure("ICUB_ROOT", argc, argv);
+    */
     DemoAff module;
     module.setName("/demoAff"); // set default name of module
+    //return module.runModule(rf);
     return module.runModule(argc,argv);
 }

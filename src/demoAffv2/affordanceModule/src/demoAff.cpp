@@ -3,9 +3,13 @@
 
 #include <iCub/processobjdata.h>
 
+#define USE_LEFT    0
+#define USE_RIGHT   1
+
 enum stateenum {
   FIRSTINIT,
   IDLE,
+  INIT,
   GETOBJDESC,
   WAITINGDEMO,
   ONDEMO,
@@ -65,17 +69,71 @@ double objposreach[2];
 DemoAff::DemoAff(){
   state=IDLE;
   substate=0;
-  detectedlocations=0;
+
   printf("After constructor\n");
   trrest=0;
   OK_MSG=0;
-  detectedlocations=0;
+
+
+  numObjs = 0;
+
+  objDescTable = new BlobInfo[maxObjects];
+  trackDescTable = new TrackInfo[maxObjects]; 
+
+  table_az=0;
+  table_el=0;
+  InitAffPrimitives();
+}
+
+bool DemoAff::InitAffPrimitives() {
+  // Action related initialization
+  
+  graspOrienL.resize(4);    graspOrienR.resize(4);
+  graspDispL.resize(4);     graspDispR.resize(3);
+  dOffsL.resize(3);         dOffsR.resize(3);
+  dLiftL.resize(3);         dLiftR.resize(3);
+  home_xL.resize(3);        home_xR.resize(3);
+  home_oL.resize(4);        home_oR.resize(4);
+  
+  // default values for arm-dependent quantities
+  graspOrienL[0]=-0.171542; graspOrienR[0]=-0.0191;
+  graspOrienL[1]= 0.124396; graspOrienR[1]=-0.983248;
+  graspOrienL[2]=-0.977292; graspOrienR[2]= 0.181269;
+  graspOrienL[3]= 3.058211; graspOrienR[3]= 3.093746;
+  
+  graspDispL[0]= 0.0;       graspDispR[0]= 0.0; 
+  graspDispL[1]= 0.0;       graspDispR[1]= 0.0; 
+  graspDispL[2]= 0.05;      graspDispR[2]= 0.05;
+  
+  dOffsL[0]=-0.03;          dOffsR[0]=-0.03;
+  dOffsL[1]=-0.07;          dOffsR[1]=-0.07;
+  dOffsL[2]=-0.02;          dOffsR[2]=-0.02;
+  
+  dLiftL[0]= 0.0;           dLiftR[0]= 0.0;  
+  dLiftL[1]= 0.0;           dLiftR[1]= 0.0;  
+  dLiftL[2]= 0.15;          dLiftR[2]= 0.15; 
+  
+  home_xL[0]=-0.29;         home_xR[0]=-0.29;
+  home_xL[1]=-0.21;         home_xR[1]= 0.24;
+  home_xL[2]= 0.11;         home_xR[2]= 0.07;
+  home_oL[0]=-0.029976;     home_oR[0]=-0.193426;
+  home_oL[1]= 0.763076;     home_oR[1]=-0.63989;
+  home_oL[2]=-0.645613;     home_oR[2]= 0.743725;
+  home_oL[3]= 2.884471;     home_oR[3]= 2.995693;
+  
+  action=actionL=actionR=NULL;
+  graspOrien=NULL;
+  graspDisp=NULL;
+  dOffs=NULL;
+  dLift=NULL;
+  home_x=NULL;
+  home_o=NULL;
+  
+  openPorts=false;
+
 }
 
 DemoAff::~DemoAff(){ 
-  port_obj.close();
-  port_sync.close();
-
 
 }
 
@@ -249,35 +307,253 @@ bool DemoAff::open(Searchable& config){
 
   ok = InitAff(prop);
 
+  configureAffPrimitives(rf);
+
   // open camshiftplus ports: data and sync
   ok &= port_eff.open("/demoAffv2/effect");
   ok &= port_sync.open("/demoAffv2/synccamshift");
   ok &= port_descriptor.open("/demoAffv2/objsdesc");
-  ok &= port_askobj.open("/demoAffv2/");
+  ok &= port_track_info.open("/demoAffv2/trackdesc");
   ok &= port_primitives.open("/demoAffv2/motioncmd");
-  ok &= port_gaze.open("/demoAffv2/gazecmd");
+  ok &= port_gaze_out.open("/demoAffv2/gazecmd");
   ok &= port_behavior_in.open("/demoAffv2/behavior:i");
   ok &= port_behavior_out.open("/demoAffv2/behavior:o");
   ok &= port_output.open("/demoAffv2/out");
-  ok &= port_emotions.open("/demoAffv2/out");
+  ok &= port_emotions.open("/demoAffv2/emotion");
   return ok;
+
+  
 }
 
+bool DemoAff::configureAffPrimitives(ResourceFinder &rf)
+{
+  string name=rf.find("name").asString().c_str();
+  // *** CHECK **** setName(name.c_str());
+  
+  partUsed=rf.check("part",yarp::os::Value("both_arms")).asString().c_str();
+  if (partUsed!="both_arms" && partUsed!="left_arm" && partUsed!="right_arm")
+    {
+      cout<<"Invalid part requested !"<<endl;
+      return false;
+    }        
+  
+  Property config; config.fromConfigFile(rf.findFile("from").c_str());
+  Bottle &bGeneral=config.findGroup("general");
+  if (bGeneral.isNull())
+    {
+      cout<<"Error: group general is missing!"<<endl;
+      return false;
+    }
+  
+  // parsing general config options
+  Property option;
+  for (int i=1; i<bGeneral.size(); i++)
+    {
+      Bottle *pB=bGeneral.get(i).asList();
+      if (pB->size()==2)
+	option.put(pB->get(0).asString().c_str(),pB->get(1));
+      else
+	{
+	  cout<<"Error: invalid option!"<<endl;
+	  return false;
+	}
+    }
+  
+  option.put("local",name.c_str());
+  option.put("hand_calibration_file",rf.findFile("hand_calibration_file"));
+  option.put("hand_sequences_file",rf.findFile("hand_sequences_file"));
+  
+  Property optionL(option); optionL.put("part","left_arm");
+  Property optionR(option); optionR.put("part","right_arm");
+
+  // parsing left_arm config options
+  Bottle &bLeft=config.findGroup("left_arm");
+  if (bLeft.isNull())
+    {
+      cout<<"Error: group left_arm is missing!"<<endl;
+      return false;
+    }
+  else 
+    getArmDependentOptions(bLeft,graspOrienL,graspDispL,
+			   dOffsL,dLiftL,home_xL,home_oL);
+  
+  // parsing right_arm config options
+  Bottle &bRight=config.findGroup("right_arm");
+  if (bRight.isNull())
+    {
+      cout<<"Error: group right_arm is missing!"<<endl;
+      return false;
+    }
+  else
+    getArmDependentOptions(bRight,graspOrienR,graspDispR,
+			   dOffsR,dLiftR,home_xR,home_oR);
+  
+  if (partUsed=="both_arms" || partUsed=="left_arm")
+    {    
+      cout<<"***** Instantiating primitives for left_arm"<<endl;
+      actionL=new affActionPrimitivesLayer1(optionL);
+      
+      if (!actionL->isValid())
+	{
+	  delete actionL;
+	  return false;
+	}
+      else
+	useArm(USE_LEFT);
+    }
+  
+  if (partUsed=="both_arms" || partUsed=="right_arm")
+    {    
+      cout<<"***** Instantiating primitives for right_arm"<<endl;
+      actionR=new affActionPrimitivesLayer1(optionR);
+      
+      if (!actionR->isValid())
+	{
+	  delete actionR;
+	  
+	  // remind to check to delete the left as well (if any)
+	  if (actionL)
+	    delete actionL;
+	  
+	  return false;
+	}
+      else
+	useArm(USE_RIGHT);
+    }
+  
+  deque<string> q=action->getHandSeqList();
+  cout<<"***** List of available hand sequence keys:"<<endl;
+  for (size_t i=0; i<q.size(); i++)
+    cout<<q[i]<<endl;
+  
+  string fwslash="/";
+  inPort.open((fwslash+name+"/in").c_str());
+  rpcPort.open((fwslash+name+"/rpc").c_str());
+  attach(rpcPort);
+  
+  openPorts=true;
+  
+  return true;
+}
+
+void DemoAff::getArmDependentOptions(Bottle &b, Vector &_gOrien, Vector &_gDisp,
+                                Vector &_dOffs, Vector &_dLift, Vector &_home_x,
+                                Vector &_home_o)
+{
+  if (Bottle *pB=b.find("grasp_orientation").asList())
+    {
+      int sz=pB->size();
+      int len=_gOrien.length();
+      int l=len<sz?len:sz;
+      
+      for (int i=0; i<l; i++)
+	_gOrien[i]=pB->get(i).asDouble();
+    }
+  
+  if (Bottle *pB=b.find("grasp_displacement").asList())
+    {
+      int sz=pB->size();
+      int len=_gDisp.length();
+      int l=len<sz?len:sz;
+      
+      for (int i=0; i<l; i++)
+	_gDisp[i]=pB->get(i).asDouble();
+    }
+  
+  if (Bottle *pB=b.find("systematic_error_displacement").asList())
+    {
+      int sz=pB->size();
+      int len=_dOffs.length();
+      int l=len<sz?len:sz;
+      
+      for (int i=0; i<l; i++)
+	_dOffs[i]=pB->get(i).asDouble();
+    }
+  
+  if (Bottle *pB=b.find("lifting_displacement").asList())
+    {
+      int sz=pB->size();
+      int len=_dLift.length();
+      int l=len<sz?len:sz;
+      
+      for (int i=0; i<l; i++)
+	_dLift[i]=pB->get(i).asDouble();
+    }
+  
+  if (Bottle *pB=b.find("home_position").asList())
+    {
+      int sz=pB->size();
+      int len=_home_x.length();
+      int l=len<sz?len:sz;
+      
+      for (int i=0; i<l; i++)
+	_home_x[i]=pB->get(i).asDouble();
+    }
+  
+  if (Bottle *pB=b.find("home_orientation").asList())
+    {
+      int sz=pB->size();
+      int len=_home_o.length();
+      int l=len<sz?len:sz;
+      
+      for (int i=0; i<l; i++)
+	_home_o[i]=pB->get(i).asDouble();
+    }
+}
 
 bool DemoAff::close(){
 
   port_eff.close();
   port_sync.close();
   port_descriptor.close();
-  port_askobj.close();
+  port_track_info.close();
   port_primitives.close();
-  port_gaze.close();
+  port_gaze_out.close();
   port_behavior_in.close();
   port_behavior_out.close();
   port_output.close();
   port_emotions.close();
 
+  // AffActionPrimitives
+  if (actionL!=NULL)
+    delete actionL;
+  
+  if (actionR!=NULL)
+    delete actionR;
+  
+  if (openPorts)
+    {
+      inPort.close();
+      rpcPort.close();
+    }
+  
   return true;
+}
+
+
+void DemoAff::useArm(const int arm) {
+  if (arm==USE_LEFT)
+    {
+      action=actionL;
+      
+      graspOrien=&graspOrienL;
+      graspDisp=&graspDispL;
+      dOffs=&dOffsL;
+      dLift=&dLiftL;
+      home_x=&home_xL;
+      home_o=&home_oL;
+    }
+  else if (arm==USE_RIGHT)
+    {
+      action=actionR;
+      
+      graspOrien=&graspOrienR;
+      graspDisp=&graspDispR;
+      dOffs=&dOffsR;
+      dLift=&dLiftR;
+      home_x=&home_xR;
+      home_o=&home_oR;
+    }
 }
 
 bool DemoAff::interruptModule(){
@@ -285,16 +561,17 @@ bool DemoAff::interruptModule(){
   port_eff.interrupt();
   port_sync.interrupt();
   port_descriptor.interrupt();
-  port_askobj.interrupt();
+  port_track_info.interrupt();
   port_primitives.interrupt();
-  port_gaze.interrupt();
+  port_gaze_out.interrupt();
   port_behavior_in.interrupt();
   port_behavior_out.interrupt();
   port_output.interrupt();
   port_emotions.interrupt();
 
-  return true;
+  return true; 
 }
+
 
 bool DemoAff::updateModule(){
 
@@ -314,6 +591,7 @@ bool DemoAff::updateModule(){
   switch (state){
 
   case IDLE:      
+    {
       Bottle *input_obj=port_behavior_in.read(true);
     
       if (input_obj!=NULL) {
@@ -323,88 +601,88 @@ bool DemoAff::updateModule(){
 	if (cmd==1)
 	  state=INIT;
 	else {
-	  cout << "Got " << input_obj.toSting.c_str() << "from behavior. Ignoring." << endl;
-
 	  state=IDLE;
 	}
-      }    
+      }
+    }    
     break;
   
   case INIT:
     {
-      // Ask for segmentation
-      Bottle& output = port_askobj.prepare();
-      output.clear();
-      output.addVocab(Vocab::encode("do"));
-      output.addVocab(Vocab::encode("seg"));
-      cout << "sending to askobj: " << output.toString().c_str() << " " << output.size() << endl;
-      port_askobj.write();
-      
+
       // Set expression
       Bottle& output = port_emotions.prepare();
       output.clear();
       output.addVocab(Vocab::encode("set all neutral"));
       cout << "sending expression: " << output.toString().c_str() << " " << output.size() << endl;
-      port_askobj.write();
-      
-      int trials=10;
-      
-      state=IDLE;
-      while (trials) {
-	yarp::os::Time::delay(0.5);      
-	Bottle *input_obj=port_descriptor.read(false);
+      port_emotions.write();
+
+      getObjInfo();
+
+      if (numObjs>0) {
+	// Select object closer to the center
+	float max_dist=10000;
+	int selobj;
+
+	for (int i=0; i<numObjs; i++) {
+	  float dist = objDescTable[i].roi_x*objDescTable[i].roi_x + objDescTable[i].roi_y*objDescTable[i].roi_y;
+	  if (dist<max_dist) {
+	    selobj=i;
+	    max_dist=dist;
+	  }
+	}	
+
+	// Keep info about the selected object 
+	democolor = processdata.classifycolor(objDescTable[selobj].hist);
+	demoshape = processdata.classifyshape(objDescTable[selobj]);
+	demosize = processdata.classifysize(objDescTable[selobj]);
 	
-	if (input_obj!=NULL) {       
-	  getObjDesc(input_obj);
-	  trials=-1;
-	  
-	  if (num_obj<=0){
-	    // Stop aff demo and notify behavior
-	    Bottle& output = port_beharior_out.prepare();
-	    output.clear();
-	    output.addVocab(Vocab::encode("off"));
-	    port_behavior_out.write();
-	    
-	    state=IDLE;
-	  }
-	  else {
-	    // Select object closer to the center
-	    float max_dist=10000;
-	    for (int i=0; i<num_obj; i++) {
-	      float dist = objpos[i][0]*objpos[i][0] + objpos[i][1]*objpos[i][1];
-	      if (dist<max_dist) {
-		selobj=i;
-		max_dist=dist;
-	      }
-	    }	
-	    
-	  }
-	}
-	else trials--;
-      }
-      
-      if (trials==-1 && num_obj>0) {
 	// Init tracker on fixated obj (if any)
 	// We have to re implement the init tracker to send the histogram 
 	// and the region provided by the segmentation
-	restartTracker(objpos[selobj],objsize[selobj]);
-	demoshape=shape[selobj];
-	demosize=size[selobj];
-	democolor=color[selobj];
+	restartTracker(trackDescTable[selobj]);
 	
-	
-	while (processdata.detectActionInit()!=1) {
-	  yarp::os::Time::delay(0.1);                 
-	}
-	processdata.restartDataAcquisition();
-	
-	printf("ACTION STARTED ON A %s %s OBJECT\n",colors[color],shapes[demoshape]);
-	
-	state = ONDEMO;
+	state = WAITINGDEMO;
+
+      }
+      else {
+	// No obj change to attention
+	 Bottle& output = port_behavior_out.prepare();
+	 output.clear();
+	 output.addVocab(Vocab::encode("off"));
+	 port_behavior_out.write();
+	 
+	 state=IDLE;
       }
     }
     break;
   
+
+  case WAITINGDEMO: 
+    {
+
+      double data[5];
+      
+      yarp::os::Time::delay(0.1);                 
+      Bottle *input_obj=port_eff.read(true);
+      
+      if (input_obj!=NULL) {
+	for(int cnt = 0;cnt<input_obj->size();cnt++)
+	  data[cnt] = input_obj->get(cnt).asDouble();
+	
+	retaddpoint = processdata.addDataPoint((double*)data);
+	
+	if (processdata.detectActionInit()==1) {	
+	  processdata.restartDataAcquisition();
+	  state=ONDEMO;
+	  printf("ACTION STARTED ON A %s %s OBJECT\n",colors[color],shapes[demoshape]);
+	}
+      }
+      else {
+	cout << "No data from tracker" << endl;
+      }
+    }
+    break;
 
   case ONDEMO:
     
@@ -425,16 +703,27 @@ bool DemoAff::updateModule(){
       numObservedObj=0;
       substate=LOOK;     
     }
-    else
-      yarp::os::Time::delay(0.1);                 
+    else {
+      Bottle *input_obj=port_eff.read(true);
+      
+      if (input_obj!=NULL) {
+	for(int cnt = 0;cnt<input_obj->size();cnt++)
+	  data[cnt] = input_obj->get(cnt).asDouble();
+	
+	retaddpoint = processdata.addDataPoint((double*)data);
+	
+	yarp::os::Time::delay(0.1);                 
+      }
+    }
     break;	    
     
   case OBJSELEC: 
     {
-      Bottle& output = port_gaze_out.prepare();
-      output.clear();
-      output.addDouble(table_az);
-      output.addDouble(table_el);
+      // Look for objects
+      Bottle& outputGaze = port_gaze_out.prepare();
+      outputGaze.clear();
+      outputGaze.addDouble(table_az);
+      outputGaze.addDouble(table_el);
       port_behavior_out.write();
       
       
@@ -443,54 +732,42 @@ bool DemoAff::updateModule(){
       bool done=false;
       Bottle *input_obj;
       while (!done) {
+	// Deberia ser algo de motor port_gaze_in
 	input_obj=port_descriptor.read(true);
 	done = input_obj->get(0).asInt()==5;	
       }
-      
-      // Ask for segmentation
-      Bottle& output = port_askobj.prepare();
-      output.clear();
-      output.addVocab(Vocab::encode("do"));
-      output.addVocab(Vocab::encode("seg"));
-      cout << "sending to askobj: " << output.toString().c_str() << " " << output.size() << endl;
-      port_askobj.write();
       
       // Set expression
       Bottle& output = port_emotions.prepare();
       output.clear();
       output.addVocab(Vocab::encode("set all neutral"));
       cout << "sending expression: " << output.toString().c_str() << " " << output.size() << endl;
-      port_askobj.write();
+      port_emotions.write();
+
+
+      getObjInfo();
       
-      int trials=10;
-      
-      while (trials) {
-	yarp::os::Time::delay(0.5);      
-	Bottle *input_obj=port_descriptor.read(false);
+      if (numObjs<=0){
+	// Stop aff demo and notify behavior
+	Bottle& output = port_behavior_out.prepare();
+	output.clear();
+	output.addVocab(Vocab::encode("off"));
+	port_behavior_out.write();
 	
-	if (input_obj!=NULL) {       
-	  getObjDesc(input_obj);
-	  
-	  if (num_obj<=0){
-	    // Stop aff demo and notify behavior
-	    Bottle& output = port_beharior_out.prepare();
-	    output.clear();
-	    output.addVocab(Vocab::encode("off"));
-	    port_behavior_out.write();
-	    
-	    trials=-1;
-	    state=IDLE;
-	    
-	    // Put sad expression TBD move head a bit do sth damn it!
-	    
-	  }
-	  else {
-	    // Select object according to effect
-	    trials=-1;
-	    state=DECISION;
-	  }
+	state=IDLE;
+	
+	// Put sad expression TBD move head a bit do sth damn it!
+	
+      }
+      else {
+
+	for (int i=0; i<numObjs; i++) {
+	  colorObj[i] = processdata.classifycolor(objDescTable[i].hist);
+	  shapeObj[i] = processdata.classifyshape(objDescTable[i]);
+	  sizeObj[i] = processdata.classifysize(objDescTable[i]);	  
 	}
-	else trials--;
+	// Move to next state to select object according to effect	
+	state=DECISION;
       }
     }
     break;
@@ -514,9 +791,9 @@ bool DemoAff::updateModule(){
       // Test action, object combinations to find the best pair
       float jeffectprob[4];
       float bestprob=0.0;
-      for (int i=0; i<numObservedObj;i++) {
+      for (int i=0; i<numObjs;i++) {
 	for (int j=0; j<3; j++) {
-	  ev[0]=j; ev[1]= shapeobj[i]; ev[2]=-1;ev[3]=-1;
+	  ev[0]=j; ev[1]= shapeObj[i]; ev[2]=-1;ev[3]=-1;
 	  nquery=2; query[0]=2; query[1]=3;
 	  affBN.SolveQueryPerfectObs(ev, nquery, query, jeffectprob);
 	  
@@ -534,228 +811,142 @@ bool DemoAff::updateModule(){
       }
       else {
 	// 	    head.look2object(selectedobj);
+	
+	switch (selectedaction){
+	case GRASP: state=GRASPING; break;
+	case TAP: state=TAPPING; break;
+	case TOUCH: state=GRASPING; break;
+	}
+	
+	// Select the appropriate arm
+	
+	// Select the object position
+	objposreach[0] = imgobjpos[selectedobj][0];
+	objposreach[1] = imgobjpos[selectedobj][1];
+	printf("\n\n\n\n\n\n\n\n\n\n\n\n\n");
+	printf("Selected a %s on the %s %s located at pos %d <%g %g>\n", 
+	       actions[selectedaction], colors[colorObj[selectedobj]], 
+	       shapes[shapeObj[selectedobj]], selectedobj,objposreach[0],
+	       objposreach[1]);
+      }
+      while (OK_MSG==0) yarp::os::Time::delay(0.04);
+      OK_MSG=0;
+    }  
+    break;
+    
+  case REACHING:
+    {
+      // We will have different reachings or there is an initial common reaching phase?
+      switch (selectedaction){
+      case GRASP: state=GRASPING; 
+	  break;
+      case TAP: state=TAPPING; 
+	break;
+      case TOUCH: state=TOUCHING; 
+	break;
+	}
+    }
+   
+    break;
+  case GRASPING:
+    {
+      Vector xd(3);
+      bool f;
 
-	       switch (selectedaction){
-	       case GRASP: state=GRASPING; nMoves=0; break;
-	       case TAP: state=TAPPING; nMoves=0; break;
-	       case TOUCH: state=GRASPING; break;
-	       }
+      xd[0]=0.1; //b->get(0).asDouble();
+      xd[1]=0.1; //b->get(1).asDouble();
+      xd[2]=0.1; //b->get(2).asDouble();
+      
+      // switch only if it's allowed
+      if (partUsed=="both_arms")
+	{
+	  if (xd[1]>0.0)
+                    useArm(USE_RIGHT);
+	  else
+	    useArm(USE_LEFT);
+	}
+      
+      // apply systematic offset
+      // due to uncalibrated kinematic
+      xd=xd+*dOffs;
+      
+      // safe thresholding
+      xd[0]=xd[0]>-0.1?-0.1:xd[0];
+      
+      // grasp it (wait until it's done)
+      action->grasp(xd,*graspOrien,*graspDisp);
+      action->checkActionsDone(f,true);
+      
+      // lift the object (wait until it's done)
+      action->pushAction(xd+*dLift,*graspOrien);
+      action->checkActionsDone(f,true);
+      
+      // release the object (wait until it's done)
+      action->pushAction("open_hand");
+      action->checkActionsDone(f,true);
+      
+      // go home :)
+      action->pushAction(*home_x,*home_o);
+    }		
+    
+    break;
 
-#endif
-	       if (selectedobj==0)
-		 selectArm('r');
-	       else if ( selectedobj==1)
-		 selectArm('l');
+  case TAPPING:
+    {
+      printf("eliminar cuanto antes");
+      
+      
+    }
+    break;
 
-	       objposreach[0] = imgobjpos[selectedobj][0];
-               objposreach[1] = imgobjpos[selectedobj][1];
-	       printf("\n\n\n\n\n\n\n\n\n\n\n\n\n");
-	       printf("Selected a %s on the %s %s located at pos %d <%g %g>\n", actions[selectedaction],
-		      colors[colorobj[selectedobj]], shapes[shapeobj[selectedobj]],
-		      selectedobj,objposreach[0],objposreach[1]);
-	     }
-	     while (OK_MSG==0) yarp::os::Time::delay(0.04);
-	     OK_MSG=0;
-	     }  
-	   break;
-
-	   case REACHING:
-	     {
-	       int detHand;
-	       double handpos[2];
-	       Bottle *input = port_detector.read(true);
-
-	       if(input != NULL)
-		 {
-		   double cx, cy;
-		   if (readDetectorInput(input, "pessoa", &cx, &cy)) {
-		     handpos[0] = cx; 
-		     handpos[1] = cy; 
-		     detHand = 1;
-		     printf("Hand detected at %f %f\n ",handpos[0],handpos[1]);
-		   }
-		   else {
-		     detHand = 0;
-		     printf("Hand not detected\n");
-		   }
-		 }
-	       else
-		 {
-		   detHand = 0;
-		   printf("Hand not detected\n");
-		 }
-
-
-	    if (!detHand) { // We lost track of the hand
-#ifdef BALTAZAR
-	         arm.StopArm();
-#else
-             a_ivel->stop();
-	     // LA al_ivel->stop();
-#endif
-		 state=INIT;
-	    }
-	    else {
-	         // Compute vsError
-	      printf("Height: %g\n", height);
-#ifdef BALTAZAR
-	      if (arm.VisualServoing((objposreach[0]-handpos[0]),-(objposreach[1]-handpos[1]),height))
-#else
-		if (1)
-#endif
-		       switch (selectedaction){
- 		        case GRASP: state=GRASPING; break;
- 		        case TAP: state=TAPPING; break;
- 		        case TOUCH: state=TOUCHING; break;
-		       }
-		 
-	      printf("I should be moving ... %g %g %g %g\n",objposreach[0],objposreach[1],handpos[0],handpos[1]);
-	    }
-	     }
- 	break;
- 	case GRASPING:
-	  {
-
-#ifdef BALTAZAR
-	    if (arm.Grasp())
-		      state=UNGRASP;
-#else
-	    if (encNoMotion(a_ipos, _numArmAxes,"not known")) {
-	      if (nMoves<numGraspVecArm) {
-		printf("Performing grasp. Go to step %d/%d\n", nMoves,numGraspVecArm);
-		a_ipos->setRefSpeeds(graspVecVelArm[nMoves]);
-		a_ipos->positionMove(graspVecArm[nMoves]);
-		nMoves++;
-	      }
-	      else {
-		state=INIT;
-	      }
-	    }
-	    else {
-	      printf("GGG: \n");
-	      yarp::os::Time::delay(0.04);
-	    }
-#endif
-	  }
- 	break;
-        case UNGRASP:
-	  {
-            printf("eliminar cuanto antes");
-#ifdef BALTAZAR
-	    if (arm.Ungrasp())
-		      state=INIT;
-#else
-#endif
-	  
-	  }
-        break;
- 	case TAPPING:
-	  {
-            printf("eliminar cuanto antes");
-#ifdef BALTAZAR
-	    if (arm.Tap())
- 			state=UNTAP;
-#else
-	    if (encNoMotion(a_ipos, _numArmAxes,"not known")) {
-              if (nMoves<numTapVecArm) {
-                printf("Performing grasp. Go to step %d/%d\n", nMoves,numTapVecArm);
-		a_ipos->setRefSpeeds(tapVecVelArm[nMoves]);
-                a_ipos->positionMove(tapVecArm[nMoves]);
-		nMoves++;
-	      }
-              else {
-                state=INIT;
-              }
-            }
-            else {
-	      yarp::os::Time::delay(0.04);
-            }
-
-#endif
-	  }
- 	break;
-        case UNTAP:
-	  {
-            printf("eliminar cuanto antes");
-#ifdef BALTAZAR
-	    if (arm.FinalTap())
-		        state=INIT;
-#else
-#endif
-	   }
-        break;
- 	case TOUCHING:
-	  {
-            printf("eliminar cuanto antes");
-#ifdef BALTAZAR
-	    if (arm.Touch())
- 			state=UNTOUCH;
-#else
-#endif
-	  }
- 	break;
-        case UNTOUCH:
-	  {
-            printf("eliminar cuanto antes");
-#ifdef BALTAZAR
-	    if (arm.FinalTouch())
-		        state=INIT;
-#else
-#endif
-	    }
-       break;
-		case DETECTMARKS:
-			{
-				//read mark detection from port
-				double errx, erry;
-				double headvel[2];
-
-#ifdef BALTAZAR
-				if( headServo( errx, erry, headvel, (float)0.1) )
-#else
-#endif
-				{
-					//read headpos
-					double pos[2];
-					saveLocation( pos, detectedlocations);
-					detectedlocations++;
-				}	
-				if(detectedlocations==MAXLOCATIONS)
-					state = INIT;
-			}
-			break;
-
-     }
-
-
-    return true;
+  case TOUCHING:
+    {
+      printf("eliminar cuanto antes");
+    }
+    break;
+    
+  }
+  
+  
+  return true;
 }
 
-bool DemoAff::restartTracker(double *pos, double width) {
-	Bottle& output = port_sync.prepare();
-	output.clear();
-	output.addDouble(pos[0]);
-      	output.addDouble(-pos[1]);
-	output.addDouble(width);
-	output.addDouble(width);
-	cout << "writing " << output.toString().c_str() << " " << output.size() << endl;
-	port_sync.write();
+bool DemoAff::restartTracker(TrackInfo obj) {
 
-	// flag to signal tracker has been restarted
-	trrest=1;
-	prevwo=10000; prevho=10000;
+  Stamp writestamp;
+  Bottle& bot = port_sync.prepare();
+
+  bot.clear();
+  bot.addInt(obj.roi_x);
+  bot.addInt(obj.roi_y);
+  bot.addInt(obj.roi_width);
+  bot.addInt(obj.roi_height);
+  for (int i=0; i<16; i++)
+    bot.addInt(obj.hist[i]);
+  bot.addInt(obj.v_min);
+  bot.addInt(obj.v_max);
+  bot.addInt(obj.s_min);
+  port_sync.setEnvelope(writestamp);
+  port_sync.write();
+  
+  cout << "writing " << bot.toString().c_str() << " " << bot.size() << endl;
+
+  
+  // flag to signal tracker has been restarted
+  trrest=1;
+  prevwo=10000; prevho=10000;
 }
 
 
 
 
- bool DemoAff::getObjDesc(Bootle * input_obj) {
+ bool DemoAff::getObjDesc(Bottle * input_obj) {
 
-
+   /*
    if (input_obj->size()<2)
-     numobj=0;
+     numObjs=0;
    else {
-     numobj=input_obj->get(1).asInt();
+     numObjs=input_obj->get(1).asInt();
      nelems=input_obj-<get(2).asInt();
 
      double data[nelems];
@@ -773,15 +964,16 @@ bool DemoAff::restartTracker(double *pos, double width) {
        hist = processdata.getshapehist(data);
        shape[nobj] = processdata.classifyshape( hist );
        
-       size[nobj}= data[2]*data[3];
+       size[nobj]= data[2]*data[3];
        printf("Obj %d at %g %g %d %d\n",objpos[nobj][0],objpos[nobj][1],color[nobj],shape[nobj]);
      }
    }
+   */
  }
 
 
 bool DemoAff::readEffect() { 
-
+  /*
   // Read data from CamShiftPlus
   Bottle *input_obj=port_eff.read(false);
   
@@ -828,7 +1020,7 @@ bool DemoAff::readEffect() {
       printf("No data\n");
       yarp::os::Time::delay(0.005);
     }
-  
+  */  
 }
 
  bool DemoAff::readDetectorInput(Bottle *Input, string name, double *cx, double *cy)
@@ -858,3 +1050,108 @@ bool DemoAff::readEffect() {
  }
  
 
+bool DemoAff::getBlobInfo(const Bottle *msg) {
+  /* This functino reads from a port written by BlobDescriptorModule.h
+     Check there for details
+  */
+
+  // Read number of objects
+  numBlobs=msg->get(0).asInt();
+
+  for (int i=0; i<numObjs; i++) {
+    // center coordinates
+    //objDescTable[i].center.x = msg.get(i*29+1).asDouble();
+    //objDescTable[i].center.y = msg.get(i*29+2).asDouble();
+    // width and height
+    objDescTable[i].roi_x = msg->get(i*29+1).asDouble();
+    objDescTable[i].roi_y = msg->get(i*29+2).asDouble();
+    objDescTable[i].roi_width = msg->get(i*29+3).asDouble();
+    objDescTable[i].roi_height = msg->get(i*29+4).asDouble();
+    objDescTable[i].angle = msg->get(i*29+5).asDouble();
+
+    for (int j=0; j<16; j++) {
+      objDescTable[i].hist[j]= msg->get(i*29+8+j).asDouble();
+    }
+
+    objDescTable[i].area = msg->get(i*29+24).asDouble();
+    objDescTable[i].convexity = msg->get(i*29+25).asDouble();
+    objDescTable[i].eccentricity = msg->get(i*29+26).asDouble();    
+    objDescTable[i].compactness = msg->get(i*29+27).asDouble();
+    objDescTable[i].circleness = msg->get(i*29+28).asDouble();
+    objDescTable[i].squareness = msg->get(i*29+29).asDouble();    
+  }
+  
+
+}
+
+
+bool DemoAff::getTrackerInfo(const Bottle *msg) {
+  /* This functino reads from a port written by BlobDescriptorModule.h
+     Check there for details
+  */
+
+  int cnt=0;
+  // Read number of objects
+  numTracks=msg->get(cnt).asInt(); cnt++;
+
+  for (int i=0; i<numObjs; i++) {
+    // x, y, width and height
+    trackDescTable[i].roi_x = msg->get(cnt).asInt();
+    cnt++;
+    trackDescTable[i].roi_y = msg->get(cnt).asInt();
+    cnt++;
+    trackDescTable[i].roi_width = msg->get(i*23+3).asInt();
+    cnt++;
+    trackDescTable[i].roi_height = msg->get(i*23+4).asInt();
+    cnt++;
+
+    // 16 bin histogram
+    for (int j=0; j<16; j++) {
+      trackDescTable[i].hist[j]= msg->get(cnt).asInt();
+      cnt++;
+    }
+
+    trackDescTable[i].v_min = msg->get(cnt).asInt();
+    cnt++;
+    trackDescTable[i].v_max = msg->get(cnt).asInt();
+    cnt++;
+    trackDescTable[i].s_min = msg->get(cnt).asInt();
+    cnt++;    
+  }
+  
+}
+
+
+bool DemoAff::getObjInfo() {
+  
+  Stamp objstamp, trackstamp; 
+  Bottle *objbottle = port_descriptor.read(true);
+  Bottle *trackbottle = port_track_info.read(true);
+ 
+  
+  /* check that both ports have timestamps */
+  if( !port_descriptor.getEnvelope(objstamp) || !port_track_info.getEnvelope(trackstamp) )    {
+    cout << getName() << ": this module requires ports with valid timestamp data. Stamps are missing. Exiting..." << endl;
+    return false;
+  }
+  /* synchronize the obj and track descriptors, if one of them is delayed, so that they correspond */
+  while( objstamp.getCount() < trackstamp.getCount() )	{
+    objbottle = port_descriptor.read(true);
+    port_descriptor.getEnvelope(objstamp);
+  }
+  while( objstamp.getCount() > trackstamp.getCount() )	{
+    trackbottle = port_track_info.read(true);
+    port_track_info.getEnvelope(trackstamp);
+  }
+  
+  getBlobInfo(objbottle);
+  getTrackerInfo(trackbottle);
+  
+  if (numBlobs!=numTracks)	{
+    cout << getName() << "Perception non synchronized: #blobs not equal to #tracks" << endl;
+    numObjs=0;
+  }
+  else numObjs=numBlobs;
+
+  return true;
+}
