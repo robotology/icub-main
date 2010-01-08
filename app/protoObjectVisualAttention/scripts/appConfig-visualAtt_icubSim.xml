@@ -156,7 +156,7 @@
 	</connection>
 	<connection>
       	<from>/blobFinder/image:o</from>
-			<to>/salinecyMapView</to>
+			<to>/saliencyMapView</to>
 			<protocol>tcp</protocol>
 	</connection>
 </application>
