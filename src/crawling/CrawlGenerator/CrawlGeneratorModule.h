@@ -36,7 +36,7 @@
 
 #include <stdio.h>
 #include <iostream>
-#include "cpgs.h"
+#include "Cpgs.h"
 #include "CrawlInvKin.h"
 
 using namespace yarp::os;
