@@ -32,7 +32,7 @@
 using namespace yarp::os;
 #include <yarp/sig/Vector.h>
 using namespace yarp::sig;
-#include <yarp/dev/Polydriver.h>
+#include <yarp/dev/PolyDriver.h>
 using namespace yarp::dev;
 
 #include <iCub/iKinSlv.h>
