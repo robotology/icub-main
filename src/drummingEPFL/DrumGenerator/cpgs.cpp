@@ -27,6 +27,7 @@ cpg_manager::cpg_manager(int nbDOFs){
   this->nbDOFs = nbDOFs;
   cpgs_size = 4*nbDOFs + 3;
   controlled_param = 2*nbDOFs;
+  
 
   //we initialize coupling strength and phase angle and set everything to 0
   epsilon = new double*[nbDOFs];
@@ -190,19 +191,19 @@ void cpg_manager::integrate_step(double *y, double *at_states)
   for(int i = 0;i<nbDOFs;i++)
     for(int j=0;j<nbDOFs+1;j++)
       {
-	int indice;
-	if(j == 0)
-	  {
-	    dydt[i*4+4] += epsilon[i][j]*(cos(theta[i][j])*y[0] - sin(theta[i][j])*y[1]);
-	    dydt[i*4+5] +=  epsilon[i][j]*(sin(theta[i][j])*y[0] + cos(theta[i][j])*y[1]);
-	  }
-	else
-	  {
-	    indice = j*4;
+        int indice;
+        if(j == 0)
+        {
+            dydt[i*4+4] += epsilon[i][j]*(cos(theta[i][j])*y[0] - sin(theta[i][j])*y[1]);
+            dydt[i*4+5] +=  epsilon[i][j]*(sin(theta[i][j])*y[0] + cos(theta[i][j])*y[1]);
+        }
+        else
+        {
+            indice = j*4;
 	    
-	    dydt[i*4+4] += epsilon[i][j]*(cos(theta[i][j])*(y[indice]) - sin(theta[i][j])*y[indice+1]);
-	    dydt[i*4+5] +=  epsilon[i][j]*(sin(theta[i][j])*(y[indice]) + cos(theta[i][j])*y[indice+1]);
-	  }
+            dydt[i*4+4] += epsilon[i][j]*(cos(theta[i][j])*(y[indice]) - sin(theta[i][j])*y[indice+1]);
+            dydt[i*4+5] +=  epsilon[i][j]*(sin(theta[i][j])*(y[indice]) + cos(theta[i][j])*y[indice+1]);
+        }
       }
 
   //*********OBSERVER***************
@@ -259,6 +260,11 @@ void cpg_manager::integrate_step(double *y, double *at_states)
   
 //*******SOUND FEEDBACK*********
 
+	if(drumHit==-1 && y[4+cpgs_size]*up_down<up_down*0.9)
+	{
+		drumHit=0;
+	}
+
     if(drumHit==1)
     {
         if(stuckCounter==0)
@@ -269,47 +275,83 @@ void cpg_manager::integrate_step(double *y, double *at_states)
                 disStuckPos[i]=y[4*i+2];                 
             }
 
-        if(y[5]>0)
-        {
-            up_down=1;
-        } //arm is going up
-        else
-        {
-            up_down=-1;
-        }
+			if(y[5]>0)
+			{
+				up_down=1;
+			} //arm is going up
+        
+			else
+			{
+				up_down=-1;
+			}
 
-        stuckCounter=1;
-        ACE_OS::printf("FEEDBACK ON\n");
-        ACE_OS::printf("stuck value %f, target value %f, observer %f\n", stuckPos[0], y[4], y[4+cpgs_size]);
-	} 
-
-    else
-    {
-        if(stuckCounter>10 && up_down*y[4+cpgs_size]>up_down*stuckPos[0])
-        {
-            ACE_OS::printf("FEEDBACK OFF\n");
-            ACE_OS::printf("stuck value %f, target value %f, observer %f\n", stuckPos[0], y[4], y[4+cpgs_size]);
-            drumHit=0;
-            stuckCounter=0;
+			stuckCounter=1;
+			ACE_OS::printf("FEEDBACK ON\n");
+			ACE_OS::printf("stuck value %f, target value %f, observer %f\n", stuckPos[0], y[4], y[4+cpgs_size]);
+		} 
+			
+		if(stuckCounter>0)
+		{
+			if(part_name=="right_leg" || part_name=="left_leg")
+			{
+				if(stuckCounter>10 && up_down*y[4+cpgs_size]>up_down*stuckPos[0])
+				{
+					ACE_OS::printf("FEEDBACK OFF\n");
+					ACE_OS::printf("stuck value %f, target value %f, observer %f\n", stuckPos[0], y[4], y[4+cpgs_size]);
+					drumHit=0;
+					stuckCounter=-1;
             
-            for(int i=0;i<cpgs_size;i++)//we adapt the observer to the current state of the oscillator
-            {
-                y[i+cpgs_size] = y[i];
-                dydt[i+cpgs_size] = dydt[i]; 
-            } 
-	}
-    //else{
-      
-    for(int i=0;i<nbDOFs;i++)
-    {
-        stuckCounter++;
-        dydt[i*4+4] += alpha_x*(stuckPos[i]-(y[4*i+4]));
-        dydt[i*4+5] = dydt[i*4+5]/(1+alpha_y*(stuckPos[i]-(y[4*i+4]))*(stuckPos[i]-(y[4*i+4])));
-        dydt[i*4+2] += alpha_x*(disStuckPos[i]-y[4*i+2]);
-        dydt[i*4+3] = dydt[i*4+3]/(1+alpha_y*(disStuckPos[i]-y[4*i+2])*(disStuckPos[i]-y[4*i+2]));
+					for(int i=0;i<cpgs_size;i++)//we adapt the observer to the current state of the oscillator
+					{
+						y[i+cpgs_size] = y[i];
+						dydt[i+cpgs_size] = dydt[i]; 
+					}	
+				}
+				
+				else
+				{
+					for(int i=0;i<nbDOFs;i++)
+					{
+						stuckCounter++;
+						dydt[i*4+4] += alpha_x*(stuckPos[i]-(y[4*i+4]));
+						dydt[i*4+5] = dydt[i*4+5]/(1+alpha_y*(stuckPos[i]-(y[4*i+4]))*(stuckPos[i]-(y[4*i+4])));
+						dydt[i*4+2] += alpha_x*(disStuckPos[i]-y[4*i+2]);
+						dydt[i*4+3] = dydt[i*4+3]/(1+alpha_y*(disStuckPos[i]-y[4*i+2])*(disStuckPos[i]-y[4*i+2]));
+					}
+				}
+			}
+			
+			if(part_name=="right_arm" || part_name=="left_arm")
+			{
+				if(stuckCounter>5 && up_down*y[4+cpgs_size]>up_down*stuckPos[0])
+				{
+					ACE_OS::printf("FEEDBACK OFF\n");
+					ACE_OS::printf("stuck value %f, target value %f, observer %f\n", stuckPos[0], y[4], y[4+cpgs_size]);
+					drumHit=-1;
+					stuckCounter=-1;
+            
+					for(int i=0;i<cpgs_size;i++)//we adapt the observer to the current state of the oscillator
+					{
+						y[i+cpgs_size] = y[i];
+						dydt[i+cpgs_size] = dydt[i]; 
+					}	
+				}
+				
+				else
+				{
+					for(int i=0;i<nbDOFs;i++)
+					{
+						stuckCounter++;
+						dydt[i*4+4] += alpha_x*(stuckPos[i]-(y[4*i+4]));
+						dydt[i*4+5] = dydt[i*4+5]/(1+alpha_y*(stuckPos[i]-(y[4*i+4]))*(stuckPos[i]-(y[4*i+4])));
+						dydt[i*4+2] += alpha_x*(disStuckPos[i]-y[4*i+2]);
+						dydt[i*4+3] = dydt[i*4+3]/(1+alpha_y*(disStuckPos[i]-y[4*i+2])*(disStuckPos[i]-y[4*i+2]));
+					}
+				}
+			}
+		}
+    
     }
-
-    }}
       
   /* if(drumHit==0 && stuckCounter==1)
     {

@@ -5,6 +5,7 @@
 
 #define DEBUG 1
 
+
 generatorThread::generatorThread(int period) : RateThread(period)
 {
     this->period = ((double)period)/1000.0;
@@ -42,8 +43,9 @@ bool generatorThread::getEncoders()
 
             fprintf(encoder_file,"%f ",encoders[i]);
         }
-
+    fprintf(encoder_file,"%f ", Time::now());
     fprintf(encoder_file,"\n");
+    
 
     return true;
 }
@@ -57,10 +59,12 @@ bool generatorThread::sendFastJointCommand()
     cmd.clear();
 
     for(int i=0;i<nbDOFs;i++)
-        {
-            cmd.addInt(jointMapping[i]);
-            cmd.addDouble(states[i]);
-        }
+	{
+		cmd.addInt(jointMapping[i]);
+		cmd.addDouble(states[i]);
+		cmd.addInt(jointMapping[i] + VELOCITY_INDEX_OFFSET);
+		cmd.addDouble(dstates[i]);
+	}
 
     vcFastCommand_port.write(true);
 
@@ -77,18 +81,18 @@ void generatorThread::getParameters()
             {
                 //ACE_OS::printf("Receiving parameters for part %s:\n ", partName.c_str());
                 for (int i=0; i<2*nbDOFs; i++)
-                    {
-                        myManager->next_parameters[i]= command->get(i).asDouble();
-                        fprintf(parameters_file,"%f \t", myManager->next_parameters[i]);
+                {
+                    myManager->next_parameters[i]= command->get(i).asDouble();
+                    fprintf(parameters_file,"%f \t", myManager->next_parameters[i]);
                         //ACE_OS::printf("%f \t", myManager->next_parameters[i]);
-                    }
+                }
                 //ACE_OS::printf("\n");
                 
-                //if(myManager->parameters[1]!=myManager->next_parameters[1])
-                //{
-                    //y_cpgs[nbDOFs*4+2]=0.0; //reset go command
-                    //y_cpgs[2*(nbDOFs*4+3)-1]=0.0;//go command of the observer
-                //}
+                if(myManager->parameters[1]!=myManager->next_parameters[1])
+                {
+                    y_cpgs[nbDOFs*4+2]=0.0; //reset go command
+                    y_cpgs[2*(nbDOFs*4+3)-1]=0.0;//go command of the observer
+                }
 
                 double freq = command->get(2*nbDOFs).asDouble();
 
@@ -119,31 +123,74 @@ void generatorThread::getParameters()
 
 void generatorThread::getHit()
 {
+	if(myManager->drumHit==0)
+	{
+		if(partName=="left_arm" || partName=="right_arm")
+		{
+			double force_threshold;
+			if(partName=="left_arm")
+			{
+				force_threshold=LEFT_THRESHOLD;
+			}
+			else
+			{
+				force_threshold=RIGHT_THRESHOLD;
+			}
+			Bottle *force = ForceSensor_port.read(false);
+			if(force!=NULL)
+			{
+				double force_value = 0;
+				if(moving_average.size()==MOV_AV)
+				{
+					moving_average.pop_front();
+				}
+				moving_average.push_back(force->get(4).asDouble());
+				for(list<double>::iterator it=moving_average.begin(); it!=moving_average.end(); it++)
+				{
+					force_value += *it;
+				}
+				
+				force_value=force_value/moving_average.size();
+			
+				if(force_value < force_threshold)
+				{
+					myManager->drumHit=1;
+					//myManager->stuckCounter=0;                                          
+					fprintf(feedback_file, "%f \n", Time::now()/*-original_time*/);
+					ACE_OS::printf("FEEDBACK ENABLED FOR PART %s, sensor value %f\n", partName.c_str(), force_value); 
+				}
+			}
+		}
+	}
+	
+	if(partName=="left_arm" || partName=="right_arm")
+	{
     Bottle *hit =sound_port.read(false);
     if(hit!=NULL)
-        {
-            int check=hit->get(3).asInt();
-            int NoteID;
+	{
+		int check=hit->get(3).asInt();
+		int NoteID;
 
-            if(check>0)
-                {
-                    NoteID=hit->get(2).asInt();
-                    if (NoteID>0)
-                        {
-                            for(int i=0; i<3;i++)
-                                {
-                                    if(NoteID == notes[i])
-                                        {
-                                            myManager->drumHit=1;
-                                            myManager->stuckCounter=0;                                           
-                                            fprintf(feedback_file, "%f \n", Time::now()/*-original_time*/);
-                                            ACE_OS::printf("FEEDBACK ENABLED FOR PART %s\n", partName.c_str()); 
-                                        }
-                                }
-                        }
-                }          
-            
-        }
+		if(check>0)
+		{
+			NoteID=hit->get(2).asInt();
+			if (NoteID>0)
+			{
+				for(int i=0; i<3;i++)
+				{
+					if(NoteID == notes[i])
+					{
+						myManager->drumHit=1;
+						myManager->stuckCounter=0;                                           
+						fprintf(feedback_file, "%f \n", Time::now()/*-original_time*/);
+						ACE_OS::printf("FEEDBACK ENABLED FOR PART %s\n", partName.c_str()); 
+					}
+				}
+			}
+		}          
+		
+	}
+	}        
 }
 
 bool generatorThread::getExternalClock()
@@ -154,8 +201,8 @@ bool generatorThread::getExternalClock()
         {
             static int count1=0;
             count1++;
-            // if(count1%10==0)
-            //     ACE_OS::printf("cannot get clock\n");
+            if(count1%10==0)
+                 ACE_OS::printf("cannot get clock\n");
 
             return false;
         }
@@ -214,7 +261,7 @@ void generatorThread::run()
 
     //we get the clock
 
-    //getExternalClock();
+    getExternalClock();
 
     if(myManager->nu<0)
     {
@@ -241,8 +288,8 @@ void generatorThread::run()
         //ACE_OS::printf("current beat: %d\n", beat);
         beat++;
         lastBeat_time = time_now;
-        y_cpgs[nbDOFs*4+2]=0.0; //reset go command
-        y_cpgs[2*(nbDOFs*4+3)-1]=0.0;//go command of the observer
+        //y_cpgs[nbDOFs*4+2]=0.0; //reset go command
+        //y_cpgs[2*(nbDOFs*4+3)-1]=0.0;//go command of the observer
 
         ///////send status to manager
 
@@ -274,6 +321,7 @@ void generatorThread::run()
 
     for(int i=0; i<nbDOFs; i++)
         {
+			dstates[i] = (states[i] - previous_states[i]) / (period+time_residue);
             previous_states[i]=states[i];
             fprintf(target_file,"%f \t", states[i]);
         }
@@ -401,6 +449,7 @@ void generatorThread::threadRelease()
         
     vcControl_port.close();
     vcFastCommand_port.close();
+    ForceSensor_port.close();
 
 #endif
 
@@ -413,6 +462,7 @@ void generatorThread::threadRelease()
 
     delete[] y_cpgs;
     delete[] states;
+    delete[] dstates;
     delete[] previous_states;
     delete[] encoders;
 
@@ -540,10 +590,44 @@ bool generatorThread::init(Searchable &s)
 
   
     if(!Network::connect(tmp1,tmp2,"udp"))
+    {
+        ACE_OS::printf("Cannot connect to vc/fastCommand port of %s\n",partName.c_str());
+        return false;
+    }
+
+    if(partName=="left_arm")
+    {    
+		sprintf(tmp1,"/%s/forcesensor/in",partName.c_str());
+
+		if(!ForceSensor_port.open(tmp1))
         {
-            ACE_OS::printf("Cannot connect to vc/fastCommand port of %s\n",partName.c_str());
+            ACE_OS::printf("Cannot open ForceSensor port of %s\n",partName.c_str());
             return false;
         }
+
+		if(!Network::connect("/icub/leftarm/analog:o",tmp1,"udp"))
+        {
+            ACE_OS::printf("Cannot connect to force sensor port of %s\n",partName.c_str());
+            return false;
+        }
+	}
+	
+	if(partName=="right_arm")
+    {    
+		sprintf(tmp1,"/%s/forcesensor/in",partName.c_str());
+
+		if(!ForceSensor_port.open(tmp1))
+        {
+            ACE_OS::printf("Cannot open ForceSensor port of %s\n",partName.c_str());
+            return false;
+        }
+
+		if(!Network::connect("/icub/rightarm/analog:o",tmp1,"udp"))
+        {
+            ACE_OS::printf("Cannot connect to force sensor port of %s\n",partName.c_str());
+            return false;
+        }
+	}
 
 #endif
 
@@ -624,6 +708,8 @@ bool generatorThread::init(Searchable &s)
 
     ///we create the manager
     myManager = new cpg_manager(nbDOFs);
+    
+    myManager->part_name = partName;
 
 
     if(!options.check("Notes"))
@@ -985,6 +1071,7 @@ bool generatorThread::init(Searchable &s)
 
     y_cpgs = new double[2*(nbDOFs*4+3)];
     states = new double[nbDOFs];
+    dstates = new double[nbDOFs];
     previous_states = new double[nbDOFs];
     encoders = new double[nbDOFs];
 
@@ -1006,7 +1093,7 @@ bool generatorThread::init(Searchable &s)
 
             y_cpgs[4*i+4]=0.0/180.0*3.1415/myManager->ampl[i];
 
-            y_cpgs[4*i+5]=0.01;
+            y_cpgs[4*i+5]=0.0;
 
 
             y_cpgs[4*i+2+nbDOFs*4+3]=0.0/180.0*3.1415/myManager->ampl[i];
@@ -1015,7 +1102,7 @@ bool generatorThread::init(Searchable &s)
 
             y_cpgs[4*i+4+nbDOFs*4+3]=0.0/180.0*3.1415/myManager->ampl[i];
 
-            y_cpgs[4*i+5+nbDOFs*4+3]=0.01;
+            y_cpgs[4*i+5+nbDOFs*4+3]=0.0;
 
         }
 
@@ -1047,7 +1134,7 @@ bool generatorThread::init(Searchable &s)
 
             y_cpgs[4*i+4+nbDOFs*4+3]=encoders[i]/180.0*3.1415/myManager->ampl[i];
 
-            y_cpgs[4*i+5+nbDOFs*4+3]=0.01;
+            y_cpgs[4*i+5+nbDOFs*4+3]=0.0;
 
             y_cpgs[4*i+2]=encoders[i]/180.0*3.1415/myManager->ampl[i];
 
@@ -1055,7 +1142,7 @@ bool generatorThread::init(Searchable &s)
 
             y_cpgs[4*i+4]=encoders[i]/180.0*3.1415/myManager->ampl[i];
 
-            y_cpgs[4*i+5]=0.01;
+            y_cpgs[4*i+5]=0.0;
 
 
         }
@@ -1071,15 +1158,14 @@ bool generatorThread::init(Searchable &s)
     y_cpgs[nbDOFs*4+3]=0.0;
 
     y_cpgs[nbDOFs*4+4]=1.0;
+    
     //the go command
 
     y_cpgs[nbDOFs*4+3-1]=0.0;
 
     y_cpgs[2*(nbDOFs*4+3)-1]=0.0;
 
-  
-
-  
+ 
 
     //we get the coupling parameters
 

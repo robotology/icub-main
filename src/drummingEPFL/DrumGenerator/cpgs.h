@@ -12,10 +12,10 @@
 
 #include <math.h>
 #include <vector>
+#include <yarp/os/all.h>
+#include <yarp/String.h>
 
 using namespace std;
-
-#define matrix vector<vector<int>>
 
 class cpg_manager
 {
@@ -28,6 +28,8 @@ public:
 	//parameters of the equations
 	double nu;	//frequency of the oscillations 
 	double next_nu;
+	
+	yarp::String part_name;
 	
 	double *ampl; //output amplitude of the oscillations	
 
@@ -45,6 +47,8 @@ public:
 	double r_clock;
 	double r_clock2;
 	double nuStance;
+	
+	double force_threshold;
 
 	//open parameters
 	double *g;//targets 
