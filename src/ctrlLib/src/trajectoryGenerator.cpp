@@ -98,14 +98,14 @@ void minJerkTrajGen::compute(const double T, const Vector &xd, const Vector &fb,
             v=a=0.0;
             state=MINJERK_STATE_REACHED;
         }
-	else if (state==MINJERK_STATE_REACHED)
-	{
+    	else if (state==MINJERK_STATE_REACHED)
+    	{
             calcCoeff(T,xd,fb);
             fT=T;
             t0=t;
             tau=0.0;
             state=MINJERK_STATE_STARTING;
-	} 
+    	} 
         else if (norm(x-fb)>tol)
         {
             fT=fT*(1.0-tau);            
