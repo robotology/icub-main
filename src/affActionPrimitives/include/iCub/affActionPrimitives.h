@@ -77,6 +77,8 @@
 class affActionPrimitives : public yarp::os::RateThread
 {
 protected:
+    std::string local;
+
     yarp::dev::PolyDriver        *polyHand;
     yarp::dev::PolyDriver        *polyCart;
     yarp::dev::IEncoders         *encCtrl;
@@ -139,6 +141,7 @@ protected:
     std::deque<Action> actionsQueue;
     std::map<std::string,std::deque<HandWayPoint> > handSeqMap;
 
+    virtual int  printMessage(const char *format, ...);
     virtual bool handleTorsoDOF(yarp::os::Property &opt, const std::string &key,
                                 const int j);
     virtual bool configHandSeq(yarp::os::Property &opt);
@@ -198,7 +201,7 @@ public:
     * \b reach_tol <double>: the reaching tolerance [m]. 
     *  
     * \b local <string>: specify a stem name used to open local 
-    *    ports.
+    *    ports and to highlight messages printed on the screen.
     *
     * \b torso_pitch <string>: if "on" it enables the control of the 
     *    pitch of the torso.

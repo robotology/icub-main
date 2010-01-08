@@ -71,6 +71,20 @@ bool affActionPrimitives::isValid()
 
 
 /************************************************************************/
+int affActionPrimitives::printMessage(const char *format, ...)
+{
+    fprintf(stdout,"*** %s: ",local.c_str());
+
+    va_list ap;
+    va_start(ap,format);    
+    int ret=vfprintf(stdout,format,ap);
+    va_end(ap);
+    
+    return ret;
+}
+
+
+/************************************************************************/
 bool affActionPrimitives::handleTorsoDOF(Property &opt, const string &key,
                                          const int j)
 {
@@ -82,7 +96,7 @@ bool affActionPrimitives::handleTorsoDOF(Property &opt, const string &key,
         newDof.resize(3,2);
         newDof[j]=sw?1:0;
 
-        fprintf(stdout,"%s %s\n",key.c_str(),sw?"enabled":"disabled");
+        printMessage("%s %s\n",key.c_str(),sw?"enabled":"disabled");
         cartCtrl->setDOF(newDof,dummyRet);
 
         if (sw)
@@ -99,7 +113,7 @@ bool affActionPrimitives::handleTorsoDOF(Property &opt, const string &key,
             cartCtrl->setLimits(j,min,max);
             cartCtrl->getLimits(j,&min,&max);
 
-            fprintf(stdout,"%s limits: [%g,%g] deg\n",key.c_str(),min,max);
+            printMessage("%s limits: [%g,%g] deg\n",key.c_str(),min,max);
             
         }
 
@@ -118,20 +132,20 @@ bool affActionPrimitives::configHandSeq(Property &opt)
         string handSeqFile=opt.find("hand_sequences_file").asString().c_str();
         Property handSeqProp;
 
-        fprintf(stdout,"Processing %s file\n",handSeqFile.c_str());
+        printMessage("Processing %s file\n",handSeqFile.c_str());
         handSeqProp.fromConfigFile(handSeqFile.c_str());
     
         // GENERAL group
         Bottle &bGeneral=handSeqProp.findGroup("GENERAL");
         if (bGeneral.isNull())
         {
-            fprintf(stdout,"WARNING: \"GENERAL\" group is missing\n");    
+            printMessage("WARNING: \"GENERAL\" group is missing\n");    
             return false;
         }
 
         if (!bGeneral.check("numSequences"))
         {
-            fprintf(stdout,"WARNING: \"numSequences\" option is missing\n");    
+            printMessage("WARNING: \"numSequences\" option is missing\n");    
             return false;
         }
 
@@ -146,13 +160,13 @@ bool affActionPrimitives::configHandSeq(Property &opt)
             Bottle &bSeq=handSeqProp.findGroup(seq);
             if (bSeq.isNull())
             {
-                fprintf(stdout,"WARNING: \"%s\" group is missing\n",seq);    
+                printMessage("WARNING: \"%s\" group is missing\n",seq);    
                 return false;
             }
 
             if (!bSeq.check("key"))
             {
-                fprintf(stdout,"WARNING: \"key\" option is missing\n");    
+                printMessage("WARNING: \"key\" option is missing\n");    
                 return false;
             }
 
@@ -160,7 +174,7 @@ bool affActionPrimitives::configHandSeq(Property &opt)
 
             if (!bSeq.check("numWayPoints"))
             {
-                fprintf(stdout,"WARNING: \"numWayPoints\" option is missing\n");    
+                printMessage("WARNING: \"numWayPoints\" option is missing\n");    
                 return false;
             }
 
@@ -174,19 +188,19 @@ bool affActionPrimitives::configHandSeq(Property &opt)
                 Bottle &bWP=bSeq.findGroup(wp);
                 if (bWP.isNull())
                 {
-                    fprintf(stdout,"WARNING: \"%s\" entry is missing\n",wp);    
+                    printMessage("WARNING: \"%s\" entry is missing\n",wp);    
                     return false;
                 }
 
                 if (!bWP.check("poss"))
                 {
-                    fprintf(stdout,"WARNING: \"poss\" option is missing\n");    
+                    printMessage("WARNING: \"poss\" option is missing\n");    
                     return false;
                 }
 
                 if (!bWP.check("vels"))
                 {
-                    fprintf(stdout,"WARNING: \"vels\" option is missing\n");    
+                    printMessage("WARNING: \"vels\" option is missing\n");    
                     return false;
                 }
 
@@ -218,13 +232,13 @@ bool affActionPrimitives::open(Property &opt)
 {
     if (!opt.check("local"))
     {
-        fprintf(stdout,"ERROR: option \"local\" is missing\n");
+        printMessage("ERROR: option \"local\" is missing\n");
         return false;
     }
 
     if (!opt.check("hand_calibration_file"))
     {
-        fprintf(stdout,"ERROR: option \"hand_calibration_file\" is missing\n");
+        printMessage("ERROR: option \"hand_calibration_file\" is missing\n");
         return false;
     }
 
@@ -233,7 +247,7 @@ bool affActionPrimitives::open(Property &opt)
     int period=opt.check("thread_period",Value(ACTIONPRIM_DEFAULT_PER)).asInt();
     double traj_time=opt.check("traj_time",Value(ACTIONPRIM_DEFAULT_TRAJTIME)).asDouble();
     double reach_tol=opt.check("reach_tol",Value(ACTIONPRIM_DEFAULT_REACHTOL)).asDouble();
-    string local=opt.find("local").asString().c_str();
+    local=opt.find("local").asString().c_str();
     string sensingCalibFile=opt.find("hand_calibration_file").asString().c_str();
     string fwslash="/";
 
@@ -300,10 +314,10 @@ bool affActionPrimitives::open(Property &opt)
     readMatrices(sensingCalib,sensingConstants);
     thresholds=sensingConstants["thresholds"].getRow(0);
 
-    fprintf(stdout,"creating hand metrics...\n");
+    printMessage("creating hand metrics...\n");
     //handMetrics=new HandMetrics(encCtrl,pidCtrl,ampCtrl,sensingConstants);
 
-    fprintf(stdout,"creating hand smoother...\n");
+    printMessage("creating hand smoother...\n");
     //fs=new FunctionSmoother(thresholds);
 
     // get grasp detection thresholds
@@ -362,31 +376,31 @@ void affActionPrimitives::close()
 
     if (isRunning())
     {
-        fprintf(stdout,"stopping thread ...\n");
+        printMessage("stopping thread ...\n");        
         stop();
     }
 
     if (fs!=NULL)
     {    
-        fprintf(stdout,"disposing hand smoother ...\n");
+        printMessage("disposing hand smoother ...\n");
         delete fs;
     }
 
     if (handMetrics!=NULL)
     {
-        fprintf(stdout,"disposing hand metrics ...\n");
+        printMessage("disposing hand metrics ...\n");
         delete handMetrics;
     }
 
     if (polyHand!=NULL)
     {
-        fprintf(stdout,"closing hand driver ...\n");
+        printMessage("closing hand driver ...\n");
         delete polyHand;
     }
 
     if (polyCart!=NULL)
     {
-        fprintf(stdout,"closing cartesian driver ...\n"); 
+        printMessage("closing cartesian driver ...\n"); 
         delete polyCart;
     }
 
@@ -404,7 +418,7 @@ void affActionPrimitives::close()
 
     closed=true;
 
-    fprintf(stdout,"closing complete!\n");
+    printMessage("closing complete!\n");
 }
 
 
@@ -465,7 +479,7 @@ void affActionPrimitives::stopBlockedJoints()
 		int i=*itr;
 
 		if (i>=thresholds.length() || i<0)
-            fprintf(stdout,"WARNING: No thresholds for joint #%d specified.\n",i);
+            printMessage("WARNING: No thresholds for joint #%d specified.\n",i);
         else 
         {
 			bool isOpening=thresholds[i]>0;
@@ -474,7 +488,7 @@ void affActionPrimitives::stopBlockedJoints()
             {
 				posCtrl->stop(i);
 				tmpSet.erase(i);
-                fprintf(stdout,"joint #%d blocked\n",i);
+                printMessage("joint #%d blocked\n",i);
 			}
 		}
 	}
@@ -569,8 +583,8 @@ bool affActionPrimitives::pushAction(const Vector &x, const Vector &o,
         }
         else
         {
-            fprintf(stdout,"WARNING: \"%s\" hand sequence key not found\n",
-                    handSeqKey.c_str());    
+            printMessage("WARNING: \"%s\" hand sequence key not found\n",
+                         handSeqKey.c_str());    
 
             return false;
         }
@@ -613,8 +627,8 @@ bool affActionPrimitives::pushAction(const string &handSeqKey)
         }
         else
         {
-            fprintf(stdout,"WARNING: \"%s\" hand sequence key not found\n",
-                    handSeqKey.c_str());    
+            printMessage("WARNING: \"%s\" hand sequence key not found\n",
+                         handSeqKey.c_str());    
 
             return false;
         }
@@ -657,9 +671,9 @@ bool affActionPrimitives::reach(const Vector &x, const Vector &o)
 
         latchArmMoveDone=armMoveDone=false;
 
-        fprintf(stdout,"reach for [%s], [%s]\n",
-                const_cast<Vector&>(x).toString().c_str(),
-                const_cast<Vector&>(o).toString().c_str());
+        printMessage("reach for [%s], [%s]\n",
+                     const_cast<Vector&>(x).toString().c_str(),
+                     const_cast<Vector&>(o).toString().c_str());
 
         t0=Time::now();
 
@@ -740,8 +754,8 @@ void affActionPrimitives::run()
 
         if (t-t0>ACTIONPRIM_DUMP_PERIOD)
         {
-            fprintf(stdout,"reaching... xdcap=%s |e|=%.3f [m]\n",
-                    xdcap.toString().c_str(),norm(xdcap-x));
+            printMessage("reaching... xdcap=%s |e|=%.3f [m]\n",
+                         xdcap.toString().c_str(),norm(xdcap-x));
 
             t0=t;
         }
@@ -749,7 +763,7 @@ void affActionPrimitives::run()
         cartCtrl->checkMotionDone(&armMoveDone);
 
         if (armMoveDone)
-            fprintf(stdout,"reaching complete\n");            
+            printMessage("reaching complete\n");            
     }
 
     if (!handMoveDone)
@@ -769,7 +783,7 @@ void affActionPrimitives::run()
         // to a complete stop
         if (handMoveDone)
         {    
-            fprintf(stdout,"hand WP reached\n");
+            printMessage("hand WP reached\n");
             execPendingHandAction();    // here handMoveDone may switch false again
         }
     }
@@ -795,7 +809,7 @@ bool affActionPrimitives::wait(const double tmo)
 {
     if (configured)
     {        
-        fprintf(stdout,"wait for %g seconds\n",tmo);
+        printMessage("wait for %g seconds\n",tmo);
         waitTmo=tmo;
         latchTimer=Time::now();
 
@@ -813,15 +827,15 @@ bool affActionPrimitives::cmdArm(const Vector &x, const Vector &o)
     {
         if (!cartCtrl->goToPoseSync(x,o))
         {
-            fprintf(stdout,"reach error\n");
+            printMessage("reach error\n");
             return false;
         }
 
         latchArmMoveDone=armMoveDone=false;
 
-        fprintf(stdout,"reach for [%s], [%s]\n",
-                const_cast<Vector&>(x).toString().c_str(),
-                const_cast<Vector&>(o).toString().c_str());
+        printMessage("reach for [%s], [%s]\n",
+                     const_cast<Vector&>(x).toString().c_str(),
+                     const_cast<Vector&>(o).toString().c_str());
 
         t0=Time::now();
 
@@ -850,7 +864,7 @@ bool affActionPrimitives::cmdHand(const HandWayPoint &handWP)
         }
 
         latchHandMoveDone=handMoveDone=false;
-        fprintf(stdout,"moving hand to WP: [%s]\n",const_cast<Vector&>(handWP.poss).toString().c_str());
+        printMessage("moving hand to WP: [%s]\n",const_cast<Vector&>(handWP.poss).toString().c_str());
 
         return true;
     }
@@ -1004,7 +1018,7 @@ bool affActionPrimitivesLayer1::grasp(const Vector &x, const Vector &o, const Ve
 {
     if (configured)
     {
-        fprintf(stdout,"start grasping\n");
+        printMessage("start grasping\n");
         pushAction(x+d,o,"open_hand");
         pushAction(x,o);
         pushAction("close_hand");
@@ -1021,7 +1035,7 @@ bool affActionPrimitivesLayer1::touch(const Vector &x, const Vector &o, const Ve
 {
     if (configured)
     {
-        fprintf(stdout,"start touching\n");
+        printMessage("start touching\n");
         pushAction(x+d,o,"open_hand");
         pushAction(x,o);
 
@@ -1038,7 +1052,7 @@ bool affActionPrimitivesLayer1::tap(const Vector &x1, const Vector &o1,
 {
     if (configured)
     {
-        fprintf(stdout,"start tapping\n");
+        printMessage("start tapping\n");
         pushAction(x1,o1,"open_hand");
         pushAction(x2,o2);
         pushAction(x1,o1);
