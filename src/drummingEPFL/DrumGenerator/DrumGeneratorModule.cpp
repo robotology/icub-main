@@ -39,8 +39,9 @@ bool generatorThread::checkJointLimits()
                         states[i] = joint_limit_down[i] + LIMIT_TOL;
                     }
 			}
-			return true;
+			
         }
+	return true;
 }
 
 bool generatorThread::getEncoders()
