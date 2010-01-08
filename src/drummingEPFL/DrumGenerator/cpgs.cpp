@@ -80,13 +80,13 @@ cpg_manager::cpg_manager(int nbDOFs){
   //********fixed parameters********* 
 
   //equation
-  a = 10.0; //rate of convergence of the rhythmic system
+  a = 2.0; //rate of convergence of the rhythmic system
   b = 5.0;//rate of convergence of the discrete system
   m_off = -5.0; //value to turn of the oscillations 
   m_on = 1.0; // value to turn on the oscillations
   b_go = 0.5; //rate of conv. of the go command (for the discrete system)
   u_go = 4.0; //max value of the go command
-  dt = 0.001; //integration step in seconds
+  dt = 0.0001; //integration step in seconds
   alpha_x = 100.0; //gain of the feedback on the position
   alpha_y = 100.0;//gain of the feedback on the speed
   c = 100.0;//parameter of for the swing/stance switching
@@ -372,7 +372,9 @@ void cpg_manager::integrate_step(double *y, double *at_states)
 
     //***** SETTING TARGET POSITION
     for(int i=0;i<nbDOFs;i++)
+    {
         at_states[i]= ampl[i]*180/M_PI*(y[4*i+4]+y[4*i+2]);
+    }
 }
 
 

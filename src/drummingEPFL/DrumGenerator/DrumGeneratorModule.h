@@ -77,7 +77,7 @@ class generatorThread : public yarp::os::RateThread
 
     bool sendJointCommand();
     bool sendFastJointCommand();
-    void checkJointLimits();
+    bool checkJointLimits();
     bool getEncoders();
     bool getExternalClock();
     bool getNewBeat();

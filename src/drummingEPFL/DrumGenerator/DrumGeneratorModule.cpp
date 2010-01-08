@@ -14,10 +14,16 @@ generatorThread::generatorThread(int period) : RateThread(period)
 generatorThread::~generatorThread()
 {}
 
-void generatorThread::checkJointLimits()
+bool generatorThread::checkJointLimits()
 {
     for(int i=0;i<nbDOFs;i++)
         {
+			if(states[i]!=states[i])
+			{
+				ACE_OS::printf("ERROR value for joint %d undefined (NaN)", i);
+				return false;
+			}
+			
             if(states[i] > joint_limit_up[i] - LIMIT_TOL)
             {
                 ACE_OS::printf("warning exceeded pos %f to joint %d, cutting to %f\n",
@@ -33,6 +39,7 @@ void generatorThread::checkJointLimits()
                         states[i] = joint_limit_down[i] + LIMIT_TOL;
                     }
 			}
+			return true;
         }
 }
 
@@ -55,7 +62,12 @@ bool generatorThread::getEncoders()
 
 bool generatorThread::sendFastJointCommand()   
 {
-    checkJointLimits();
+    if(!checkJointLimits())
+    {
+		return false;
+	}
+	
+	
     Bottle& cmd = vcFastCommand_port.prepare();
 
     cmd.clear();
@@ -1148,6 +1160,13 @@ bool generatorThread::init(Searchable &s)
 
 
         }
+        
+        for(int i=0; i<nbDOFs; i++)
+        {
+            fprintf(target_file,"%f \t", states[i]);
+        }
+        
+    fprintf(target_file,"%f %f \t", y_cpgs[0], y_cpgs[1]);
 
 #endif
 
