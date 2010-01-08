@@ -158,7 +158,7 @@ protected:
 
     void init();    
     bool execQueuedAction();
-    bool execPendingHandAction();
+    bool execPendingHandSequences();
     virtual void run();    
 
 public:

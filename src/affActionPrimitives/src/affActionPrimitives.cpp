@@ -261,12 +261,12 @@ bool affActionPrimitives::open(Property &opt)
         return false;
     }
 
+    local=opt.find("local").asString().c_str();
     string robot=opt.check("robot",Value("icub")).asString().c_str();
     string part=opt.check("part",Value("right_arm")).asString().c_str();
     int period=opt.check("thread_period",Value(ACTIONPRIM_DEFAULT_PER)).asInt();
     double traj_time=opt.check("traj_time",Value(ACTIONPRIM_DEFAULT_TRAJTIME)).asDouble();
-    double reach_tol=opt.check("reach_tol",Value(ACTIONPRIM_DEFAULT_REACHTOL)).asDouble();
-    local=opt.find("local").asString().c_str();
+    double reach_tol=opt.check("reach_tol",Value(ACTIONPRIM_DEFAULT_REACHTOL)).asDouble();    
     string sensingCalibFile=opt.find("hand_calibration_file").asString().c_str();
     string fwslash="/";
 
@@ -594,6 +594,7 @@ bool affActionPrimitives::pushAction(const Vector &x, const Vector &o,
                              
                 pushAction(true,x,o,true,q[0]);
 
+                // decompose hand action in sum of fingers sequences
                 for (size_t i=1; i<q.size(); i++)
                     pushAction(false,dummy,dummy,true,q[i]);
             }
@@ -639,6 +640,7 @@ bool affActionPrimitives::pushAction(const string &handSeqKey)
             deque<HandWayPoint> &q=itr->second;
             Vector dummy(1);
 
+            // decompose hand action in sum of fingers sequences
             for (size_t i=0; i<q.size(); i++)
                 pushAction(false,dummy,dummy,true,q[i]);
 
@@ -735,7 +737,7 @@ bool affActionPrimitives::execQueuedAction()
 
 
 /************************************************************************/
-bool affActionPrimitives::execPendingHandAction()
+bool affActionPrimitives::execPendingHandSequences()
 {
     bool exec=false;
     Action action;
@@ -803,7 +805,7 @@ void affActionPrimitives::run()
         if (handMoveDone)
         {    
             printMessage("hand WP reached\n");
-            execPendingHandAction();    // here handMoveDone may switch false again
+            execPendingHandSequences();    // here handMoveDone may switch false again
         }
     }
 
