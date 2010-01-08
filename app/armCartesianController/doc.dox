@@ -57,9 +57,7 @@ which is a public domain software package designed for large-scale nonlinear
 optimization problems and is applied here to find solutions for the inverse
 problem as follows:
 
-\f[
-\mathbf{q}=\arg\min_{\mathbf{q}\in\mathbb{R}^{10}}\left(\left\|\mathbf{\alpha}_d-\mathit{K_{\alpha}}\left(\mathbf{q}\right)\right\|^2+\mathit{w}\cdot\left\|\mathbf{q}_{rest}-\mathbf{q}\right\|^2\right) \quad s.t.\,\left\{\begin{array}{l}\left\|\mathbf{x}_d-\mathit{K_x}\left(\mathbf{q}\right)\right\|^2<\epsilon\\\mathbf{q}_L<\mathbf{q}<\mathbf{q}_U\end{array}\right.\,\!
-\f]
+\f$ \mathbf{q}=\arg\min_{\mathbf{q}\in\mathbb{R}^{10}}\left(\left\|\mathbf{\alpha}_d-\mathit{K_{\alpha}}\left(\mathbf{q}\right)\right\|^2+\mathit{w}\cdot\left\|\mathbf{q}_{rest}-\mathbf{q}\right\|^2\right) \quad s.t.\,\left\{\begin{array}{l}\left\|\mathbf{x}_d-\mathit{K_x}\left(\mathbf{q}\right)\right\|^2<\epsilon\\\mathbf{q}_L<\mathbf{q}<\mathbf{q}_U\end{array}\right.\,\! \f$
 
 Where the solution \f$ \mathbf{q}\,\! \f$ is the joints vector with 10 components
 (7 joints for arm, 3 joints for torso or any other number of joints depending
@@ -70,7 +68,7 @@ desired orientation and \f$ \mathit{K_x}\,\! \f$ and \f$ \mathit{K_{\alpha}}\,\!
 the forward kinematic maps for the position and orientation part, respectively;
 \f$ \mathfb{q}_{rest}\,\! \f$ is used to keep torso as close as possible (weighting
 with a positive factor \f$ \mathit{w}<1\,\! \f$) to the vertical position while reaching
-and \f$ \epsilon\,\! \f$ is a small number in the range of \f$ \left[10^{-5},10^{-4}\right]\,\! \f$.
+and \f$ \epsilon\,\! \f$ is a small number in the range of \f$ \left[10^{-5},10^{-4}\right]\,\! \f$ .
 
 \subsection controller_sec 2. The Controller
 The generation of velocity profile is achieved by applying the concept of
