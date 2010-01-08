@@ -43,7 +43,7 @@ TouchControllerThread::TouchControllerThread(int period, const char* baseName)
     mCoefs[0] = mCoefs[1] = mCoefs[2] = mTransGain;
     mCoefs[4] = mCoefs[5] = mCoefs[6] = mRotGain;
     
-    bRunning = false;
+    bRunning = true;
 }
 
 TouchControllerThread::~TouchControllerThread()
@@ -54,6 +54,13 @@ void TouchControllerThread::SetDevice(const char* deviceName,int type){
     mType = type;
 }
 
+void TouchControllerThread::LoadMap(){
+    int l = strlen(mBaseName)+1;
+    for(int i=0;i<l;i++) if(mBaseName[i]=='/') l = i;
+    char filename[256];
+    snprintf(filename,256,"mice_%s.map",mBaseName+l+1);
+    mMiceDriver.LoadMap(filename);    
+}
 
 bool TouchControllerThread::threadInit()
 {
@@ -77,8 +84,8 @@ bool TouchControllerThread::threadInit()
     switch(mType){
     case 0:
         mMiceDriver.SetMode(MMiceDeviceDriver::MMM_RELTOABS);
-        mTransGain = 0.003;
-        mRotGain   = 0.0001;
+        mTransGain = 0.0003;
+        mRotGain   = 0.001;
         break;
     case 1:
         {
@@ -96,11 +103,7 @@ bool TouchControllerThread::threadInit()
         return false;
         break;
     }
-    int l = strlen(mBaseName)+1;
-    for(int i=0;i<l;i++) if(mBaseName[i]=='/') l = i;
-    char filename[256];
-    snprintf(filename,256,"mice_%s.map",mBaseName+l+1);
-    mMiceDriver.LoadMap(filename);    
+
 
     
     /*

@@ -80,6 +80,8 @@ private:
     Matrix                   mFwdKinWristRef[2];
     Matrix                   mFwdKinArmRef[2];
 
+    Vector                   mDesiredCartVel[2];
+    
     MathLib::IKGroupSolver   mIKSolver;
     
     vector<unsigned int>    mSrcToArmIndices[2];
@@ -95,9 +97,9 @@ private:
     BufferedPort<Vector>    mCurrentJointPosPort;
     BufferedPort<Vector>    mCurrentJointVelPort;
 
-    BufferedPort<Vector>    mInputPort;
-    BufferedPort<Vector>    mOutputPort;
-    
+    BufferedPort<Vector>    mDesiredCartVelRPort;
+    BufferedPort<Vector>    mDesiredCartVelLPort;
+
 public:
             RobotControllerThread(int period, const char* baseName);
     virtual ~RobotControllerThread();

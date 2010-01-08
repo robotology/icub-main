@@ -1,0 +1,52 @@
+<application>
+    <name>LasaImitation</name>
+    <dependencies>
+        <port>/root</port>
+    </dependencies> 
+    <module>
+        <name>VelocityControllerExt</name>
+        <parameters>--name VelocityController --robot icubSim --period 0.02 --part right_arm+left_arm+torso </parameters>
+        <node>lasapcicub</node>
+        <stdio>lasapcicub</stdio>
+        <tag>VC</tag>
+    </module>
+    <module>
+        <name>RobotControllerModule</name>
+        <parameters>--period 0.08 </parameters>
+        <tag>RC</tag>
+        <stdio>lasapcicub</stdio>
+        <node>lasapcicub</node>
+   </module>
+    <module>
+        <name>TouchControllerModule</name>
+        <parameters>--name 3DMouse --type 3Dmouse --device 3Dconnexion --load</parameters>
+        <tag>TC1</tag>
+        <stdio>lasapcicub</stdio>
+        <node>lasapcicub</node>
+   </module>
+    <connection protocol="tcp">
+        <output>/VelocityController/position</output>
+        <input>/RobotController/currentJointPosition</input>
+    </connection>
+    <connection protocol="tcp">
+        <output>/VelocityController/velocity</output>
+        <input>/RobotController/currentJointVelocity</input>
+     </connection>
+    <connection protocol="tcp">
+        <output>/RobotController/targetJointPosition</output>
+        <input>/VelocityController/targetPosition</input>
+    </connection>
+    <connection protocol="tcp">
+        <output>/RobotController/targetJointVelocity</output>
+        <input>/VelocityController/targetVelocity</input>
+    </connection>
+    <connection protocol="tcp">
+        <output>/TouchController/3DMouse/velocity</output>
+        <input>/RobotController/desiredCartVelocityR</input>
+    </connection>
+    <connection protocol="tcp">
+        <output>/TouchController/3DMouse/velocity</output>
+        <input>/RobotController/desiredCartVelocityL</input>
+    </connection>    
+</application>
+

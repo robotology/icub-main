@@ -103,6 +103,10 @@ bool TouchControllerModule::open(Searchable &s){
     if(!mThread->start()){
         return false;
     }
+
+    if(mParams.check("load")){
+        mThread->LoadMap();
+    }
     
     bIsReady = true;
     return bIsReady;
@@ -184,6 +188,10 @@ bool TouchControllerModule::respond(const Bottle& command, Bottle& reply) {
                 }else{
                     retVal = false;
                 }
+                break;
+            case VOCAB4('l','o','a','d'):
+                mThread->LoadMap();
+                index++;
                 break;
             default:
                 retVal      = Module::respond(command,reply);

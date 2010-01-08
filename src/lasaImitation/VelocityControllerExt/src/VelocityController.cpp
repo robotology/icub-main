@@ -103,6 +103,8 @@ bool VelocityController::Init(PolyDriver *driver, const char* name, const char* 
         mJointsRange[i] = mJointsPosLimits[1][i] - mJointsPosLimits[0][i];
     }
     
+    mJointsRest.resize(mJointsSize);
+    
     mJointsKp = 2.0;
     mJointsKd = 0;    
     
@@ -134,6 +136,8 @@ bool VelocityController::Init(PolyDriver *driver, const char* name, const char* 
     bPosTimeoutPause        = false;
     bVelTimeoutPause        = false;
     bUseShoulderDecoupling  = false;
+    
+    bMoveToRest = false;
     bFirst      = true;
     bIsReady    = true;
     
@@ -194,6 +198,7 @@ void VelocityController::Update(double dt){
     
     if(bFirst){
         mDecouplingBox.ResetSetPoint(mJointsPos);
+        mJointsRest = mJointsPos;
         bFirst = false;
     }
 
@@ -238,7 +243,10 @@ void VelocityController::Update(double dt){
         }                    
     }    
 
-
+    if(bMoveToRest){
+        mJointsTargetPos = mJointsRest;
+        mJointsTargetVel = 0.0; 
+    }
 
     for(int i=0;i<mJointsSize;i++){
         double currError = 0.0;
@@ -283,7 +291,9 @@ void VelocityController::Update(double dt){
         mDecouplingBox.mDecFactors[0] = -0.002335;
         mDecouplingBox.mDecFactors[1] = -0.001662;
         mDecouplingBox.mDecFactors[2] =  0.001196;
-        mDecouplingBox.Decouple(mJointsOutputVel, mJointsOutputVel, dt);
+        //Vector ov = mJointsOutputVel;
+        mDecouplingBox.Decouple(mJointsOutputVel, mJointsOutputVel, dt);        
+        //cout <<ov[0]-mJointsOutputVel[0]<<" "<<ov[1]-mJointsOutputVel[1]<<" "<<ov[2]-mJointsOutputVel[2]<<" " <<endl;
     }
 
     
@@ -372,6 +382,7 @@ void    VelocityController::SetMaskNone(){
      
 void    VelocityController::SetControlMode(VCMode mode){
     mMutex.wait();
+    bMoveToRest = false;
     for(int i=0;i<mJointsSize;i++){
         if(mJointsMask[i]!=0.0){
             if(mMode[i] != mode){
@@ -418,3 +429,6 @@ int     VelocityController::GetJointsSize(){
     return mJointsSize;    
 }
 
+void    VelocityController::MoveToRest(){
+    bMoveToRest = true;
+}

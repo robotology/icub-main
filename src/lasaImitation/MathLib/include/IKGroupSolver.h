@@ -41,7 +41,7 @@ public:
             /// Add a solver item with given constraints size and return the sovler id
             int     AddSolverItem(const int constraintsSize);
             /// Set jacobian dofs indices for the given solver
-            void    SetDofsIndices(const vector<int> & dofsIndex, int solverId = 0);
+            void    SetDofsIndices(const vector<unsigned int> & dofsIndex, int solverId = 0);
             /// Set the priority of the given solver
             void    SetPriority(int priority, int solverId = 0);
             /// Set the thresholds for the given solver (all by default)
@@ -55,7 +55,7 @@ public:
             void    SetConstraintsWeights(Vector &v, int solverId = 0);
 
             /// Sets the target values to reach for the given solver
-            void    SetTarget(Vector &v, int solverId = 0);
+            void    SetTarget(const Vector &v, int solverId = 0);
             /// Enable or disable the given solver
             void    Enable(bool enable=true, int solverId = 0);
 

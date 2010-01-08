@@ -95,7 +95,7 @@ bool VelocityControllerModule::open(Searchable &s){
     if(!mParams.check("part")){
         fprintf(stderr, "No parts specifed or they where unable to open");
         fprintf(stderr, "  Please choose and check at least one:\n");
-        fprintf(stderr, "    --part \"right_arm | left_arm | right_leg | left_leg | head | torso\" \n");
+        fprintf(stderr, "    e.g. --part (right_arm+left_arm+right_leg+left_leg+head+torso \n");
         return false;    
     }else{
         char partList[512];
@@ -104,7 +104,7 @@ bool VelocityControllerModule::open(Searchable &s){
         int partPosEnd = 0;
         while(partList[partPos]!=0){
             partPosEnd = partPos;
-            while((partList[partPosEnd]!=0)&&(partList[partPosEnd]!=' ')){
+            while((partList[partPosEnd]!=0)&&(partList[partPosEnd]!='+')){
                 partPosEnd++;
             }
             if(partPosEnd!=partPos){
@@ -269,6 +269,12 @@ bool VelocityControllerModule::respond(const Bottle& command, Bottle& reply) {
             for(int i=0;i<int(mControllers.size());i++){
                 mControllers[i]->SetControlMode(VelocityController::VC_IDLE);
             }            
+            break;
+        case VOCAB4('r','e','s','t'):
+            for(int i=0;i<int(mControllers.size());i++){
+                mControllers[i]->SetControlMode(VelocityController::VC_ACTIVE);
+                mControllers[i]->MoveToRest();
+            }
             break;
         case VOCAB2('k','p'):
             if(cmdSize==2){

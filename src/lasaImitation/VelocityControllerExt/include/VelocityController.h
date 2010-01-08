@@ -79,6 +79,8 @@ private:
     Vector                      mJointsVelLimits[2];
     Vector                      mJointsRange;   
     
+    Vector                      mJointsRest;   
+    
     Vector                      mJointsError;
     
     Vector                      mJointsMask;
@@ -90,6 +92,8 @@ private:
     bool                        bUseShoulderDecoupling;
     
     bool                        bFirst;
+    
+    bool                        bMoveToRest;
 
 public:
 
@@ -125,6 +129,8 @@ public:
     int     GetJointsSize();
     
     void    SetShoulderDecoupling(bool set);
+    
+    void    MoveToRest();
 };
 
 

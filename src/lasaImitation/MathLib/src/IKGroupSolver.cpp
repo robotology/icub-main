@@ -53,7 +53,7 @@ int     IKGroupSolver::AddSolverItem(const int constraintsSize){
     bComputePriorities = true;
 }
 
-void    IKGroupSolver::SetDofsIndices(const vector<int> & dofsIndex, int solverId){
+void    IKGroupSolver::SetDofsIndices(const vector<unsigned int> & dofsIndex, int solverId){
     if((solverId>=0)&&(solverId<int(mIKItems.size()))){
         IKSolverItem &item = mIKItems[solverId];
         item.mDofsIndex.clear();
@@ -86,6 +86,7 @@ void    IKGroupSolver::SetJacobian(const Matrix & j, int solverId){
         if(item.mDofsIndex.size()>0){
             item.mSolver.GetJacobian().Zero();
             item.mSolver.GetJacobian().SetColumnSpace(item.mDofsIndex, j);
+            //item.mSolver.GetJacobian().Print();
         }else
             item.mSolver.GetJacobian()=j;
     }
@@ -102,7 +103,7 @@ void    IKGroupSolver::SetConstraintsWeights(Vector &v, int solverId){
         item.mSolver.SetConstraintsWeights(v);
     }
 }
-void    IKGroupSolver::SetTarget(Vector &v, int solverId){
+void    IKGroupSolver::SetTarget(const Vector &v, int solverId){
     if((solverId>=0)&&(solverId<int(mIKItems.size()))){
         IKSolverItem &item = mIKItems[solverId];
         item.mDesiredTarget = v;
@@ -157,7 +158,7 @@ void    IKGroupSolver::SetDofsWeights(Vector &v){
     int len = MIN(v.Size(),mDofs);
     for(int i=0;i<len;i++){
         mDofsWeights(i,i) = v(i);
-        mInvDofsWeights(i,i) = 1.0/v(i);
+        //mInvDofsWeights(i,i) = 1.0/v(i);
     }
 }
 
@@ -248,7 +249,10 @@ void    IKGroupSolver::Solve(){
             item.mSolver.mDesiredTarget = item.mActualTarget;
         }
         mCurrWeights.Transpose(mCurrWeightsTranspose);
-        mStepOutput += mCurrWeights*(mCurrWeightsTranspose * ((mInvDofsWeights*mInvDofsWeights)*(mNullTarget-mOutput-mStepOutput)));
+        //mStepOutput += mCurrWeights*(mCurrWeightsTranspose * ((mInvDofsWeights*mInvDofsWeights)*(mNullTarget-mOutput-mStepOutput)));
+        //mStepOutput += mCurrWeights*(mCurrWeightsTranspose * ((mNullTarget-mOutput-mStepOutput)));
+        mStepOutput += mCurrWeights*(mCurrWeightsTranspose * ((mNullTarget)));
+        //;
         //(mCurrDofsWeights*mCurrDofsWeights).Print();
         // Checking Limits
         for(int i=0;i<mDofs;i++){

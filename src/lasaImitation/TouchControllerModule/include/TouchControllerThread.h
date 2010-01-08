@@ -72,6 +72,8 @@ public:
             void    SetRotGain(double gain);
             void    SetRotLimit(double gain);
     
+            void    LoadMap();
+    
     virtual void run();
     virtual bool threadInit();
     virtual void threadRelease();

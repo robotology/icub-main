@@ -64,6 +64,7 @@ Input ports:
     - /moduleName/rpc: single general command entry port to the module
           - [run]: run the controller
           - [susp]: suspend the controller (command zero velocity)
+          - [rest]: move back to the original robot position (that seen first when the controller was run)
           - [quit]: quit the module (exit)
           - [mask all]: set active mask to all joints (useful for setting position kp and kd gain values)
           - [mask none]: set inactive mask to all joints
