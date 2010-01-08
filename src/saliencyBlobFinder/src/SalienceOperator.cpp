@@ -16,8 +16,9 @@ SalienceOperator::SalienceOperator(const int width1, const int height1)//:_gaze(
 	colorVQ_img->resize(width1,height1);
 
 	colorVQ=new ColorVQ(width1,height1,10);
-	_angShiftMap = (double *) malloc (152 * sizeof(double));
-	for(int i=0;i<152;i++){
+    //_angShiftMap = (double *) malloc (152 * sizeof(double));
+	_angShiftMap = (double *) malloc (height1 * sizeof(double));
+	for(int i=0;i<height1;i++){
 		_angShiftMap[i]=0.0;
 	}
 

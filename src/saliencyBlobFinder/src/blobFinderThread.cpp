@@ -27,7 +27,7 @@ blobFinderThread::blobFinderThread():RateThread(THREAD_RATE){
     ct=0;
 
     //inputImage_flag=false;
-
+    freetorun=false;
     meanColour_flag=true;
     contrastLP_flag=false;
     blobCataloged_flag=true;
@@ -168,7 +168,7 @@ bool blobFinderThread::threadInit(){
 	colorVQ_flag=false;
 	maxSaliencyBlob_flag=false;
 	blobList_flag=false;
-    tagged_flag=false;
+    tagged_flag=true;
 	watershed_flag=false;
 
     return true;
