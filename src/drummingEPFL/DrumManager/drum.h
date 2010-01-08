@@ -28,7 +28,7 @@ using namespace std;
 #define LEFT_LEG 2
 #define RIGHT_LEG 3
 #define HEAD 4
-   
+                            
 class drum{
 
  public:

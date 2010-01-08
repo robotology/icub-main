@@ -28,6 +28,7 @@ void clockThread::run()
 {
     double time_now = Time::now();
     double time_residue = time_now - original_time - theoretical_time;
+    
     getParameters();
       
     theoretical_time += period + time_residue;

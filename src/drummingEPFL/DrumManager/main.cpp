@@ -118,15 +118,27 @@ int main(int argc,char **argv)
 
     Property prop;
     prop.fromCommand(argc, argv);
-
-    if (!prop.check("config-path"))
-        {
-            fprintf(stderr, "Please specify --config-path path to config files\n");
-            return -1;
-        }
     
-    sprintf(MyGMP->pathToConfig, "%s", prop.find("config-path").asString().c_str());
-    fprintf(stderr, "Using config files from %s\n",MyGMP->pathToConfig);
+    if(prop.check("config-path"))
+    {
+		sprintf(MyGMP->pathToConfig, "%s", prop.find("config-path").asString().c_str());
+		fprintf(stderr, "Using config files from %s\n",MyGMP->pathToConfig);
+	}
+	else
+    {
+    	char *cubPath;
+    	cubPath = getenv("ICUB_DIR");
+    	if(cubPath == NULL) 
+    	{
+    		ACE_OS::printf("ERROR getting the environment variable ICUB_DIR, exiting\n");
+    		return false;
+    	}
+    	yarp::String cubPathStr(cubPath);
+        sprintf(MyGMP->pathToConfig, "%s", (cubPathStr + "/app/drummingEpfl/conf").c_str());
+		fprintf(stderr, "Using config files from %s\n",MyGMP->pathToConfig);
+	}
+    
+
 
     //initialize
     ACE_OS::printf("connecting ports....\n");

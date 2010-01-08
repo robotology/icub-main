@@ -4,14 +4,12 @@
 
 using namespace std;
 
+                        
 double  mu_on[5][4] =   {{1.0,-5.0,-5.0,1.0}, //left arm 
                         {1.0, -5.0, -5.0, 1.0}, //right arm
                         {1.0, -5.0, -5.0, 1.0}, //left leg
                         {1.0, -5.0, -5.0, 1.0}, //right leg
-                        {-5.0, -5.0, 1.0, -5.0}}; //head
-                        
-                        
-
+                        {-5.0, -5.0, 1.0, -5.0}}; //head 
 drum::drum()
 {
     parts[0]="left_arm";
@@ -352,7 +350,7 @@ void drum::getConfig()
             bool confFile;
             char partName[255];
             sprintf(partName, "%s/%sConfig.ini", pathToConfig, parts[i].c_str());
-           
+            
             Property partConf;
             confFile=partConf.fromConfigFile(partName);
            
@@ -444,29 +442,29 @@ void drum::getConfig()
             printf("\n");
             Target3.clear();
             
-            cout << "getting ids... " << endl; 
-            ACE_OS::printf("Ids: ");
-            Bottle& Target4 = drum.findGroup("Ids");
-            nbIds[i]=Target4.size()-1; 
-            id_pos_found[i]=new bool[nbIds[i]];
-            for (int k=0; k<Target4.size()-1; k++) 
-            {               
-                id[i][k]=Target4.get(k+1).asInt();
-                printf("%d ", id[i][k]);
+//            cout << "getting ids... " << endl; 
+//            ACE_OS::printf("Ids: ");
+//            Bottle& Target4 = drum.findGroup("Ids");
+//            nbIds[i]=Target4.size()-1; 
+//            id_pos_found[i]=new bool[nbIds[i]];
+//            for (int k=0; k<Target4.size()-1; k++) 
+//            {               
+//                id[i][k]=Target4.get(k+1).asInt();
+//                printf("%d ", id[i][k]);
 
-                if(i==HEAD)
-                {
-                    if(id[HEAD][k]<0)
-                    {
-                        scan = k+1; 
-                        ACE_OS::printf(" SCAN = %d", scan);
-                    }
-                }
-            }
-            printf("\n");
-            Target4.clear();            
+//                if(i==HEAD)
+//                {
+//                    if(id[HEAD][k]<0)
+//                    {
+//                        scan = k+1; 
+//                        ACE_OS::printf(" SCAN = %d", scan);
+//                    }
+//                }
+//            }
+//            printf("\n");
+//            Target4.clear();            
         }
-    }
+    }	
 }
 
 
@@ -794,6 +792,8 @@ void drum::run()
     //{
         //getPosition();
     //}
+    
+    bool init_score = false;
         
     while(true)
     {
@@ -805,11 +805,11 @@ void drum::run()
         }  
         
         //***** gets frequency and sends it to the generators
-        keep=getRhythm();      
-                            
+		keep=getRhythm(); 
+                                    
         //******gets scores and phase_shifts from the gui*****************
         getScore();
-                
+              
         //******sends scores to the generators*********
         sendScore();
         
