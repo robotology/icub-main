@@ -229,8 +229,8 @@ public:
     *  
     * \b grasp_detection_thresholds <5 double>: specify the fingers
     *    thresholds used for model-based grasp detection. Indeed, a
-    *    port is open called /<local>/detectGrasp:i to acquire data
-    *    provided by \ref icub_graspDetector module.
+    *    port is open called /<local>/<part>/detectGrasp:i to
+    *    acquire data provided by \ref icub_graspDetector module.
     *  
     * \b hand_calibration_file <string>: complete path to the hand 
     *    calibration file.
