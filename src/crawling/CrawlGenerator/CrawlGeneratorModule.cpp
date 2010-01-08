@@ -152,8 +152,8 @@ void GeneratorThread::getParameters()
 			myCpg->printInternalVariables();	
 
 
-			//myCpg->ampl[0]= myIK->getTurnParams(myCpg->turnAngle, amplit, side, limb);
-			//myIK->getTurnParams(myCpg->turnAngle, amplit, side, limb);
+			myCpg->ampl[0]= myIK->getTurnParams(myCpg->turnAngle, amplit, side, limb);
+			myIK->getTurnParams(myCpg->turnAngle, amplit, side, limb);
 
 			fprintf(parameters_file,"%f %f %f",myCpg->om_stance,myCpg->om_swing, myCpg->turnAngle);
 			fprintf(parameters_file,"%f \n",Time::now()/*-original_time*/);
@@ -447,7 +447,7 @@ void GeneratorThread::threadRelease()
 	delete[] initPos;
 
 	delete myCpg;
-	//delete myIK;
+	delete myIK;
 
 	fclose(target_file);
 	fclose(parameters_file);
@@ -466,7 +466,7 @@ bool GeneratorThread::init(Searchable &s)
 	current_action = false;
 	previous_quadrant= 0;
 
-	//myIK = new IKManager;
+	myIK = new IKManager;
 
 	//getting part to interface with
 	Property options;
@@ -769,7 +769,7 @@ bool GeneratorThread::init(Searchable &s)
 
 	if(partName=="left_arm" || partName=="right_arm")
 	{
-		//myCpg->ampl[0]=myIK->getArmAmplitude(initPos, myCpg->ampl[0]);
+		myCpg->ampl[0]=myIK->getArmAmplitude(initPos, myCpg->ampl[0]);
 	}
 
 	printf("amplitude is %f\n", myCpg->ampl[0]);

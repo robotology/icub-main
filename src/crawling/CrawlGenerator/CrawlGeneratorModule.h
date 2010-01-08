@@ -154,7 +154,7 @@ class GeneratorThread : public yarp::os::RateThread
     Cpgs *myCpg; /**< The CPG of the controlled part */
     PolyDriver *ddPart; /**< The Polydriver of the controlled part */
     IEncoders *PartEncoders; /**< Missing Description */
-    //IKManager *myIK;/**< Missing Description */
+    IKManager *myIK;/**< Missing Description */
 
     BufferedPort<Bottle> vcControl_port; /**< Port of the velocity controller */
     BufferedPort<Bottle> vcFastCommand_port; /**< The velocity controller FastCommand port. MISSING */
