@@ -301,10 +301,10 @@ bool affActionPrimitives::open(Property &opt)
     thresholds=sensingConstants["thresholds"].getRow(0);
 
     fprintf(stdout,"creating hand metrics...\n");
-    handMetrics=new HandMetrics(encCtrl,pidCtrl,ampCtrl,sensingConstants);
+    //handMetrics=new HandMetrics(encCtrl,pidCtrl,ampCtrl,sensingConstants);
 
     fprintf(stdout,"creating hand smoother...\n");
-    fs=new FunctionSmoother(thresholds);
+    //fs=new FunctionSmoother(thresholds);
 
     // get grasp detection thresholds
     graspDetectionThres.resize(5,0.0);
@@ -711,7 +711,7 @@ bool affActionPrimitives::execPendingHandAction()
     if (actionsQueue.size())
     {
         // polling on the first action in the queue
-        action=actionsQueue.front();        
+        action=actionsQueue.front();
 
         // if it is an hand-action then execute and update queue
         if (action.execHand && !action.execArm && !action.waitState)
@@ -760,9 +760,9 @@ void affActionPrimitives::run()
         // old-fashioned approach
         if (!handMoveDone)
         {
-            handMetrics->snapshot();
-            stopBlockedJoints();
-            handMoveDone=handMotionDone();
+            //handMetrics->snapshot();
+            //stopBlockedJoints();
+            //handMoveDone=handMotionDone();
         }
 
         // check whether all the remaining active joints have come
