@@ -81,7 +81,7 @@
  *
  *\section example_sec Example Instantiation of the Module
  *
- * ReachManager --file "C:\iCub\app\Crawling\config\tracker\config.ini"
+ * MultiMarkerTracker --file "C:\iCub\app\Crawling\config\tracker\config.ini"
 
  * This file can be edited at \in src/crawling/MultiMarkerTracker/main.cpp 
  *

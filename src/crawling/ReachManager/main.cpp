@@ -93,7 +93,7 @@ using namespace yarp::os;
 using namespace yarp::sig;
 
 
-#include "ReachManagerModule.h"
+#include "ReachManager.h"
 
 int main(int argc, char *argv[])
 {
@@ -102,7 +102,7 @@ int main(int argc, char *argv[])
     if (!yarp.checkNetwork())
         return -1;
 
-	ReachManagerModule reachManagerModule;
+	ReachManager reachManagerModule;
 	
 	return reachManagerModule.runModule(argc, argv);;
 }

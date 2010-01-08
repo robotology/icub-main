@@ -19,7 +19,7 @@ int main(int argc, char* argv[])
     PlannerSupervisor supervisor(dispatcher, lockMutex, visionM_PIpe, potentialVectorM_PIpe);  
     if (!supervisor.start()) 
     {
-        throw std::runtime_error("Couldn't start my thread!");
+        throw std::runtime_error("Couldn't start supervisor thread!");
     }
 
     Gui myGui(dispatcher, lockMutex, visionM_PIpe, potentialVectorM_PIpe);

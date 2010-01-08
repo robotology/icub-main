@@ -1,4 +1,4 @@
-/** @file MultiMarkerTracker.h Header file the CrawlGeneratorModule class.
+/** @file MultiMarkerTracker.h Header file the MultiMarkerTracker class.
 *
 * Version information : 1.0
 *

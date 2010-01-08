@@ -1,10 +1,13 @@
-#include "ReachManagerModule.h"
+#include "ReachManager.h"
 
 #include <yarp/math/Math.h>
 using namespace yarp::math;
-//#include "ctrlMath.h";
+#include <iCub/ctrlMath.h>;
+using namespace ctrl;
 
-ReachManagerModule::ReachManagerModule()
+#include <iCub/iKinVocabs.h>
+
+ReachManager::ReachManager()
 {
 	Matrix leftRotMat(3,3); leftRotMat=0.0;
 	Matrix rightRotMat(3,3); rightRotMat= 0.0;
@@ -22,11 +25,11 @@ ReachManagerModule::ReachManagerModule()
 	cout << "left orientation " << leftOrientation.toString() << endl;
 }
 
-ReachManagerModule::~ReachManagerModule(void)
+ReachManager::~ReachManager(void)
 {
 }
 
-bool ReachManagerModule::open(Searchable& config)
+bool ReachManager::open(Searchable& config)
 {
 	cout << "config : " << config.toString() << endl;
 	parameters["input_port"] = GetValueFromConfig(config, "input_port");
@@ -62,7 +65,7 @@ bool ReachManagerModule::open(Searchable& config)
 }
 
 
-bool ReachManagerModule::close()
+bool ReachManager::close()
 {
 	CloseIKSolver("left");
 	CloseIKSolver("right");
@@ -79,7 +82,7 @@ bool ReachManagerModule::close()
 }
 
 
-bool ReachManagerModule::updateModule(void)
+bool ReachManager::updateModule(void)
 {
     Vector xd(7);
 	Bottle *visionBottle = inPort.read();
@@ -203,12 +206,12 @@ bool ReachManagerModule::updateModule(void)
 	return true;
 }
 
-double ReachManagerModule::getPeriod(void)
+double ReachManager::getPeriod(void)
 {
 	return MODULE_PERIOD;
 }
 
-void ReachManagerModule::OpenIKSolver(string arm)
+void ReachManager::OpenIKSolver(string arm)
 {
 	cout << "=====================================" << endl;
 	cout << "Opening IKin Catesian Solver for " << arm << " arm." << endl;
@@ -254,7 +257,7 @@ void ReachManagerModule::OpenIKSolver(string arm)
 }
 
 
-void ReachManagerModule::CloseIKSolver(string arm)
+void ReachManager::CloseIKSolver(string arm)
 {
 	/*iKSolvers[arm]->close();*/
 	iKinPorts[arm]->in.close();
@@ -262,7 +265,7 @@ void ReachManagerModule::CloseIKSolver(string arm)
 	iKinPorts[arm]->rpc.close();
 }
 
-Value ReachManagerModule::GetValueFromConfig(Searchable& config, string valueName)
+Value ReachManager::GetValueFromConfig(Searchable& config, string valueName)
 {
 	if(!config.check(valueName.c_str()))
 	{
@@ -272,7 +275,7 @@ Value ReachManagerModule::GetValueFromConfig(Searchable& config, string valueNam
 	return config.find(valueName.c_str());
 }
 
-void ReachManagerModule::InitPositionControl(string partName)
+void ReachManager::InitPositionControl(string partName)
 {
 	Property options;
     options.put("device", "remote_controlboard");
@@ -317,7 +320,7 @@ void ReachManagerModule::InitPositionControl(string partName)
     }
 }
 
-void ReachManagerModule::RobotPositionControl(string partName, const Vector &jointAngles)
+void ReachManager::RobotPositionControl(string partName, const Vector &jointAngles)
 {
 	IPositionControl *pos;
     IEncoders *encs;
@@ -367,13 +370,13 @@ void ReachManagerModule::RobotPositionControl(string partName, const Vector &joi
 }
 
 
-void ReachManagerModule::ClosePositionControl(string partName)
+void ReachManager::ClosePositionControl(string partName)
 {
 	polydrivers[partName]->close();
 	delete polydrivers[partName];
 }
 
-Vector ReachManagerModule::Solve(const sig::Vector &xd, string partName, string &resultPart)
+Vector ReachManager::Solve(const Vector &xd, string partName, string &resultPart)
 {
 	double minNorm2;
 	Bottle *resultQBottle;

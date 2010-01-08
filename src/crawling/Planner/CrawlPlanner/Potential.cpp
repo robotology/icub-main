@@ -10,8 +10,6 @@ Potential::Potential(void)
 
 Potential::Potential(double x, double y, double myRadius, double myPotential) : position(x,y), radius(myRadius), potential(myPotential)//, reached(false)
 {
-	//position.x = x;
-	//position.y = y;
 }
 
 

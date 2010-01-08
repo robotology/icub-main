@@ -15,7 +15,8 @@ ENDIF(NOT IPOPT_FOUND)
 
 ADD_SUBDIRECTORY(CrawlGenerator)
 ADD_SUBDIRECTORY(CrawlManager)
-#ADD_SUBDIRECTORY(ReachManager)
-#ADD_SUBDIRECTORY(artkpTrackMultipleMarker)
+ADD_SUBDIRECTORY(ReachManager)
+ADD_SUBDIRECTORY(MultiMarkerTracker)
+ADD_SUBDIRECTORY(Planner)
 
 

@@ -1,4 +1,4 @@
-/** @file ReachManager.h Header file the CrawlGeneratorModule class.
+/** @file ReachManager.h Header file the ReachManager class.
 *
 * Version information : 1.0
 *
@@ -30,9 +30,16 @@
 
 #include <yarp/os/all.h>
 using namespace yarp::os;
+#include <yarp/sig/Vector.h>
+using namespace yarp::sig;
+#include <yarp/dev/Polydriver.h>
+using namespace yarp::dev;
 
 #include <iCub/iKinSlv.h>
 using namespace iKin;
+
+#include <map>
+using namespace std;
 
 #include "SuperPort.h"
 
@@ -119,7 +126,7 @@ private:
 	void RobotPositionControl(string partName, const Vector &jointAngles);
 	void InitPositionControl(string partName);
 	void ClosePositionControl(string partName);
-	Vector Solve(const sig::Vector &xd, string partName, string &resultPart);
+	Vector Solve(const Vector &xd, string partName, string &resultPart);
 
 
 };

@@ -36,6 +36,11 @@ bool CrawlPlanner::close()
 		iter->second->close();
 		delete iter->second;
 	}
+
+	for (map<string, Value *>::iterator it = parameters.begin(); it!=parameters.end(); ++it)
+	{
+		delete it->second;
+	}
 	return true;
 }
 
