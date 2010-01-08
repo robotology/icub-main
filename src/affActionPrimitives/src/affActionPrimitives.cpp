@@ -352,7 +352,7 @@ bool affActionPrimitives::open(Property &opt)
     }
 
     // open port for grasp detection
-    graspDetectionPort.open((fwslash+local+fwslash+part+fwslash+"/detectGrasp:i").c_str());
+    graspDetectionPort.open((fwslash+local+fwslash+part+fwslash+"detectGrasp:i").c_str());
 
     jHandMin=7;                     // hand first joint
     posCtrl->getAxes(&jHandMax);    // hand last joint
