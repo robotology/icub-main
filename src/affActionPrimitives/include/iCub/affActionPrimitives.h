@@ -141,6 +141,7 @@ protected:
     std::deque<Action> actionsQueue;
     std::map<std::string,std::deque<HandWayPoint> > handSeqMap;
 
+    virtual std::string toCompactString(const yarp::sig::Vector &v);
     virtual int  printMessage(const char *format, ...);
     virtual bool handleTorsoDOF(yarp::os::Property &opt, const std::string &key,
                                 const int j);

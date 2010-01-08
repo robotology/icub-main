@@ -69,6 +69,25 @@ bool affActionPrimitives::isValid()
     return configured;
 }
 
+/************************************************************************/
+string affActionPrimitives::toCompactString(const Vector &v)
+{
+    char buf[255];
+    string ret;
+    int i;
+
+    for (i=0; i<v.length()-1; i++)
+    {
+        sprintf(buf,"%g ",v[i]);
+        ret+=buf;
+    }
+
+    sprintf(buf,"%g",v[i]);
+    ret+=buf;
+
+    return ret;
+}
+
 
 /************************************************************************/
 int affActionPrimitives::printMessage(const char *format, ...)
@@ -672,8 +691,8 @@ bool affActionPrimitives::reach(const Vector &x, const Vector &o)
         latchArmMoveDone=armMoveDone=false;
 
         printMessage("reach for [%s], [%s]\n",
-                     const_cast<Vector&>(x).toString().c_str(),
-                     const_cast<Vector&>(o).toString().c_str());
+                     toCompactString(x).c_str(),
+                     toCompactString(o).c_str());
 
         t0=Time::now();
 
@@ -754,8 +773,8 @@ void affActionPrimitives::run()
 
         if (t-t0>ACTIONPRIM_DUMP_PERIOD)
         {
-            printMessage("reaching... xdcap=%s |e|=%.3f [m]\n",
-                         xdcap.toString().c_str(),norm(xdcap-x));
+            printMessage("reaching... xdcap=[%s] |e|=%.3f [m]\n",
+                         toCompactString(xdcap).c_str(),norm(xdcap-x));
 
             t0=t;
         }
@@ -834,8 +853,8 @@ bool affActionPrimitives::cmdArm(const Vector &x, const Vector &o)
         latchArmMoveDone=armMoveDone=false;
 
         printMessage("reach for [%s], [%s]\n",
-                     const_cast<Vector&>(x).toString().c_str(),
-                     const_cast<Vector&>(o).toString().c_str());
+                     toCompactString(x).c_str(),
+                     toCompactString(o).c_str());
 
         t0=Time::now();
 
@@ -864,7 +883,7 @@ bool affActionPrimitives::cmdHand(const HandWayPoint &handWP)
         }
 
         latchHandMoveDone=handMoveDone=false;
-        printMessage("moving hand to WP: [%s]\n",const_cast<Vector&>(handWP.poss).toString().c_str());
+        printMessage("moving hand to WP: [%s]\n",toCompactString(handWP.poss).c_str());
 
         return true;
     }
