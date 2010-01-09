@@ -84,6 +84,7 @@ protected:
 
     yarp::dev::PolyDriver        *polyHand;
     yarp::dev::PolyDriver        *polyCart;
+    yarp::dev::IEncoders         *encCtrl;
     yarp::dev::IPositionControl  *posCtrl;
     yarp::dev::ICartesianControl *cartCtrl;
 
@@ -146,9 +147,10 @@ protected:
     virtual bool pushAction(const bool execArm, const yarp::sig::Vector &x,
                             const yarp::sig::Vector &o, const double execTime,
                             const bool execHand, const HandWayPoint &handWP);
+    virtual bool stopJntTraj(const int jnt);
+    virtual bool wait(const Action &action);
     virtual bool cmdArm(const Action &action);
     virtual bool cmdHand(const Action &action);
-    virtual bool wait(const Action &action);
     virtual bool isGraspEnded();
 
     void init();    

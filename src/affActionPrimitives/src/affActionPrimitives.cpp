@@ -290,6 +290,7 @@ bool affActionPrimitives::open(Property &opt)
     }
 
     // open views
+    polyHand->view(encCtrl);
     polyHand->view(posCtrl);
     polyCart->view(cartCtrl);
 
@@ -428,7 +429,7 @@ bool affActionPrimitives::isGraspEnded()
                     // stop and remove if not done yet
                     if (tmpSet.find(jnt)!=tmpSet.end())
                     {
-                        posCtrl->stop(jnt);
+                        stopJntTraj(jnt);
                         tmpSet.erase(jnt);
                     }
                 }
@@ -731,6 +732,18 @@ affActionPrimitives::~affActionPrimitives()
 
 
 /************************************************************************/
+bool affActionPrimitives::stopJntTraj(const int jnt)
+{
+    double v;
+
+    if (encCtrl->getEncoder(jnt,&v))
+        return posCtrl->positionMove(jnt,v);
+    else
+        return false;
+}
+
+
+/************************************************************************/
 bool affActionPrimitives::wait(const Action &action)
 {
     if (configured)
@@ -882,7 +895,7 @@ bool affActionPrimitives::stopControl()
         cartCtrl->stopControl();
 
         for (set<int>::iterator itr=fingersJntsSet.begin(); itr!=fingersJntsSet.end(); ++itr)
-            posCtrl->stop(*itr);
+            stopJntTraj(*itr);
 
         armMoveDone =latchArmMoveDone =true;
         handMoveDone=latchHandMoveDone=true;
