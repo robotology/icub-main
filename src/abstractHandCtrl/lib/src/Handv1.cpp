@@ -84,8 +84,6 @@ Handv1::Handv1(PolyDriver& controlBoard, map<const string, Matrix>& constants) :
 }
 
 void Handv1::defineHandMetrics() {
-	// TODO: change call of defineHandMetrics in Hand-constructor
-
 	bool isValid = true;
 	isValid &= controlBoard.view(encoders);
 	isValid &= controlBoard.view(pidControl);

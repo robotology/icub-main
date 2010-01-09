@@ -16,6 +16,8 @@
 
 #include "iCub/vislab/HandModule.h"
 
+#include <algorithm>
+
 using namespace std;
 
 using namespace yarp::os;

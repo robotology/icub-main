@@ -144,9 +144,7 @@ void Hand::JointMonitor::waitMotionDone() {
 
 bool Hand::JointMonitor::start() {
 	if (!isRunning()) {
-		//TODO: cout << "wait" << endl;
 		mutex.wait();
-		//TODO: cout << "resume" << endl;
 		if (!RateThread::start()) {
 			mutex.post();
 			return false;
