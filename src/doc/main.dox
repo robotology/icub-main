@@ -21,7 +21,7 @@ Topics:
   - <a href="http://eris.liralab.it/wiki/Licensing"> Licensing </A> - have you declared your authorship, and rights granted?
   - <a href="http://eris.liralab.it/wiki/Manual#Eleven._Guidelines"> Coding guidelines </A> - some tips on how to write your code
   - <a href="http://eris.liralab.it/wiki/Manual#Ten._Standardization_of_methods"> Modules and CMake</A> - some tips on how to make your code compilable
-  - <a href=http://eris.liralab.it/wiki/Committing_changes_to_the_software_repository"> Committing to the repository </A> - things to check before committing files to the repository 
+  - <a href="http://eris.liralab.it/wiki/Committing_changes_to_the_software_repository"> Committing to the repository </A> - things to check before committing files to the repository 
  - Reference material:
   - The <a href="http://eris.liralab.it/wiki/Manual">The iCub manual</a>
   - The <a href="http://www.robotcub.org/">RobotCub Website</a>.
