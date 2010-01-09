@@ -58,6 +58,7 @@
 #include <yarp/dev/ControlBoardInterfaces.h>
 #include <yarp/sig/Vector.h>
 
+#include <string>
 #include <deque>
 #include <set>
 #include <map>
