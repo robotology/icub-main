@@ -40,6 +40,7 @@
 #include <yarp/sig/Vector.h>
 #include <yarp/math/Math.h>
 #include <iCub/affActionPrimitives.h>
+#include <iCub/vislab/EyeTableProjection.h>
 
 #include "affordances.h"
 #include "processobjdata.h"
@@ -55,16 +56,8 @@ using namespace yarp::os;
 using namespace yarp::sig;
 using namespace yarp::dev;
 using namespace yarp::math;
+using namespace vislab::math;
 
-/*namespace iCub {
-  namespace contrib {
-    class DemoAff;
-  }
-}
-
-
-using namespace iCub::contrib;
-*/
 
 /**
  *
@@ -78,7 +71,7 @@ using namespace iCub::contrib;
 
 
 
-class DemoAff : public Module {
+class DemoAff : public RFModule {
 
 private:
 
@@ -169,6 +162,8 @@ private:
   bool getObjDesc(Bottle * input_obj);
 
 protected:
+
+  // affActionPrimitive member variable
   string partUsed;
 
   affActionPrimitivesLayer1 *actionL;
@@ -193,22 +188,34 @@ protected:
   
   bool openPorts;
 
+  // affActionPrimitive methods
   bool InitAffPrimitives();
-  bool configureAffPrimitives(ResourceFinder &rf);
+  bool configureAffPrimitives(Searchable &config, 
+			      yarp::os::ConstString handSeqFile, 
+			      string name);
   void useArm(const int arm);
   void getArmDependentOptions(Bottle &b, Vector &_gOrien, Vector &_gDisp,
 			      Vector &_dOffs, Vector &_dLift, Vector &_home_x,
 			      Vector &_home_o);
+
+
+  // Eye2World member variables
+  std::map<const std::string, yarp::os::Property*> cameras;
+  std::map<const std::string, EyeTableProjection*> projections;
+
+  // Eye2World member methods
+  bool configureEye2World(yarp::os::ConstString calibrationFilename);  
+
 public:
 
-    DemoAff();
-    virtual ~DemoAff();
-    
-    /** Passes config on to iCub::contrib::CalibTool */
-    virtual bool open(Searchable& config);
-    virtual bool close();
-    virtual bool interruptModule();
-    virtual bool updateModule();
+  DemoAff();
+  virtual ~DemoAff();
+  
+  /** Passes config on to iCub::contrib::CalibTool */
+  virtual bool configure(ResourceFinder &rf);
+  virtual bool close();
+  virtual bool interruptModule();
+  virtual bool updateModule();
 
 };
 
