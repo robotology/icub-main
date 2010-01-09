@@ -152,7 +152,7 @@
  *
  * - \c /episodicMemory/image:i
  * - \c /episodicMemory/imageId:i
- * - \c /proceduralMemory/action:i 
+ * - \c /episodicMemory/action:i 
  * - \c /episodicMemory/head:i \n
  *   This port needs to be connected to \c /icub/head/state:o to get the gaze values.
  *

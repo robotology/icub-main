@@ -189,11 +189,13 @@ ENDIF (ARTOOLKITPLUS_FOUND)
   # cognitive architecture modules
   ADD_SUBDIRECTORY(logPolarTransform)
   ADD_SUBDIRECTORY(demoAAM)
+  ADD_SUBDIRECTORY(affectiveState) 
+  ADD_SUBDIRECTORY(actionSelection)
+  ADD_SUBDIRECTORY(endogenousSalience)
+  ADD_SUBDIRECTORY(proceduralMemory)
   IF (OPENCV_FOUND)
      ADD_SUBDIRECTORY(autoAssociativeMemory)
      ADD_SUBDIRECTORY(episodicMemory)
-     ADD_SUBDIRECTORY(proceduralMemory)
-     ADD_SUBDIRECTORY(endogenousSalience)
   ENDIF (OPENCV_FOUND)
 
   # utility modules

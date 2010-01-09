@@ -532,8 +532,8 @@ void EpisodicMemoryThread::run(){
          imageIdOutPort->write();
 
          if (debug) {
-            cout << "EpisodicMemoryThread::run: image retrieved " << imageId         << " " << imageMatch         << " " <<  gazeAzimuth         << " " << gazeElevation << endl;
-            cout << "                           image previous  " << imageIdPrevious << " " << imageMatchPrevious << " " <<  gazeAzimuthPrevious << " " << gazeElevationPrevious << endl;
+            cout << "EpisodicMemoryThread::run: imageId retrieved " << imageId         << " " << imageMatch         << " " <<  gazeAzimuth         << " " << gazeElevation << endl;
+            cout << "                           imageId previous  " << imageIdPrevious << " " << imageMatchPrevious << " " <<  gazeAzimuthPrevious << " " << gazeElevationPrevious << endl;
          }
 
       }
