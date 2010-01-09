@@ -8,7 +8,8 @@
 
 <module>
    <name>camCalibConf</name>
-   <parameters>--name /camCalibConf --file C:/iCub/app/cameraCalibration/conf/icubEyes.ini --group CAMERA_CALIBRATION_CONFIGURATION_RIGHT</parameters>
+   <parameters>--name /camCalibConf --group CAMERA_CALIBRATION_CONFIGURATION_RIGHT</parameters>
+   <stdio>icub14</stdio>
    <node>icub1</node>
    <tag>camCalibConf</tag>
 </module>
