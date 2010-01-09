@@ -1,1 +1,2 @@
 ADD_SUBDIRECTORY(behaviorControl)
+ADD_SUBDIRECTORY(affordanceModule)

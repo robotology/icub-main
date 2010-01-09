@@ -73,6 +73,11 @@ bool Behavior::respond(const Bottle &command,Bottle &reply){
     return ok;
 }
 
+/*bool Behavior::configure(ResourceFinder &rf) {
+
+}
+*/
+
 bool Behavior::open(Searchable& config){
    
 	// locate configuration file
@@ -169,7 +174,7 @@ bool Behavior::updateModule(){
 	    remoteAtt.setInhibitOutput(true);
 
 	    // Switch attention
-	    state=ATTENTION;
+	    state=AFFORDANCES;
 	  }
 	}
       

@@ -6,13 +6,6 @@
 #define USE_LEFT    0
 #define USE_RIGHT   1
 
-using namespace std;
-using namespace yarp;
-using namespace yarp::os;
-using namespace yarp::sig;
-using namespace yarp::dev;
-using namespace yarp::math;
-using namespace vislab::math;
 
  
 enum stateenum {
@@ -71,7 +64,7 @@ double imgdemopos[2];
 double imgobjpos[2][2];
 int shape1, shape2;
 double prevwo, prevho;
-double objposreach[2];
+
 
 
 
@@ -79,24 +72,27 @@ DemoAff::DemoAff(){
   state=IDLE;
   substate=0;
 
-  printf("After constructor\n");
   trrest=0;
   OK_MSG=0;
-
+  maxObjects = 10;
 
   numObjs = 0;
-
   objDescTable = new BlobInfo[maxObjects];
+
   trackDescTable = new TrackInfo[maxObjects]; 
 
   table_az=0;
   table_el=0;
+
   InitAffPrimitives();
+
+  printf("After constructor\n");
+
 }
 
 bool DemoAff::InitAffPrimitives() {
   // Action related initialization
-  
+
   graspOrienL.resize(4);    graspOrienR.resize(4);
   graspDispL.resize(4);     graspDispR.resize(3);
   dOffsL.resize(3);         dOffsR.resize(3);
@@ -137,9 +133,6 @@ bool DemoAff::InitAffPrimitives() {
   dLift=NULL;
   home_x=NULL;
   home_o=NULL;
-  
-  openPorts=false;
-
 }
 
 DemoAff::~DemoAff(){ 
@@ -298,6 +291,20 @@ bool DemoAff::configure(ResourceFinder &rf){
 
   bool ok;
 
+  cout << 1 << endl;
+
+  zOffset = rf.check("z_offset",yarp::os::Value(0.06)).asDouble();
+  usedEye = rf.check("obj_eye",yarp::os::Value("left")).asString().c_str();
+  if (usedEye!="left" && usedEye!="right") {
+    cerr << "Invalide usedEye parameter: " << usedEye << endl;
+    return false;
+  }
+
+  table_el = rf.check("table_el",yarp::os::Value(0.00)).asDouble();
+  table_az = rf.check("table_az",yarp::os::Value(0.00)).asDouble();
+
+  cout << 2 << endl;
+
   Property prop; prop.fromConfigFile(rf.findFile("affordance_database").c_str());
   ok = InitAff(prop);
 
@@ -306,7 +313,7 @@ bool DemoAff::configure(ResourceFinder &rf){
 
   configureAffPrimitives(config,rf.findFile("hand_sequences_file").c_str(), name);
 
-  configureEye2World(rf.findFile("camera_calib_file").c_str());
+  configureEye2World(rf.findFile("camera_calib_file").c_str(), rf.findFile("table_configuration").c_str());
 
   // open camshiftplus ports: data and sync
   string fwslash="/";
@@ -320,8 +327,14 @@ bool DemoAff::configure(ResourceFinder &rf){
   ok &= port_behavior_out.open( (fwslash+name+"/behavior:o").c_str());
   ok &= port_output.open( (fwslash+name+"/out").c_str());
   ok &= port_emotions.open( (fwslash+name+"/emotion").c_str());
+
   ok &= inPort.open((fwslash+name+"/in").c_str());
   ok &= rpcPort.open((fwslash+name+"/rpc").c_str());
+  
+  ok &= port_head_state.open((fwslash+name+"/headState").c_str());
+  ok &= port_torso_state.open((fwslash+name+"/torsoState").c_str());
+
+
   attach(rpcPort);
   
   openPorts=true;
@@ -332,12 +345,16 @@ bool DemoAff::configure(ResourceFinder &rf){
   
 }
 
-bool DemoAff::configureEye2World(yarp::os::ConstString calibrationFilename) {
+bool DemoAff::configureEye2World(yarp::os::ConstString calibrationFilename,
+				 yarp::os::ConstString tableConfiguration) {
 
   Property config;
   if (!config.fromConfigFile(calibrationFilename)) {
     return false;
   }
+
+  Property rightEyeCalibration;
+  Property leftEyeCalibration;
   rightEyeCalibration.fromString(config.findGroup("CAMERA_CALIBRATION_RIGHT").toString());
   leftEyeCalibration.fromString(config.findGroup("CAMERA_CALIBRATION_LEFT").toString());
   
@@ -348,15 +365,17 @@ bool DemoAff::configureEye2World(yarp::os::ConstString calibrationFilename) {
   if (!tableConfig.fromConfigFile(tableConfiguration)) {
     cerr << "Unable to read table configuration. Assuming 0 vector as 3D offset." << endl;
   }
+
+  Property tabletopPosition;
   tabletopPosition.fromString(tableConfig.findGroup("POSITION").toString());
 
   Vector v(3);
-  v[0] = table.find("x").asDouble();
-  v[1] = table.find("y").asDouble();
-  v[2] = table.find("z").asDouble();
+  v[0] = tabletopPosition.find("x").asDouble();
+  v[1] = tabletopPosition.find("y").asDouble();
+  v[2] = tabletopPosition.find("z").asDouble();
   
   map<const string, Property*>::const_iterator itr;
-  for (itr = cams.begin(); itr != cams.end(); ++itr) {
+  for (itr = cameras.begin(); itr != cameras.end(); ++itr) {
     
     const string key = itr->first;
     Property calib = *itr->second;
@@ -546,6 +565,8 @@ bool DemoAff::close(){
   port_behavior_out.close();
   port_output.close();
   port_emotions.close();
+  port_head_state.close();
+  port_torso_state.close();
 
   // AffActionPrimitives
   if (actionL!=NULL)
@@ -601,6 +622,8 @@ bool DemoAff::interruptModule(){
   port_behavior_out.interrupt();
   port_output.interrupt();
   port_emotions.interrupt();
+  port_head_state.interrupt();
+  port_torso_state.interrupt();
 
   return true; 
 }
@@ -857,6 +880,7 @@ bool DemoAff::updateModule(){
 	// Select the appropriate arm
 	
 	// Select the object position
+	objposreach.resize(2);
 	objposreach[0] = imgobjpos[selectedobj][0];
 	objposreach[1] = imgobjpos[selectedobj][1];
 	printf("\n\n\n\n\n\n\n\n\n\n\n\n\n");
@@ -872,15 +896,49 @@ bool DemoAff::updateModule(){
     
   case REACHING:
     {
+      Vector head6d(6);
+      Vector torso3d(3);
+      double prevZOffset = 0;
+      
+      bool positionUpdated = false;
+      bool transformationAvailable = false;
+      
+      Bottle* headPosition = port_head_state.read(!transformationAvailable);
+      if (headPosition != NULL && headPosition->size() >= 6) {
+	//get data and convert from degrees to radiant
+	for (unsigned int i = 0; i < 6; i++) {
+	  head6d[i] = headPosition->get(i).asDouble() * M_PI / 180.0;
+	}
+	positionUpdated = true;
+      }
+      
+      Bottle* torsoPosition = port_torso_state.read(!transformationAvailable);
+      if (torsoPosition != NULL && torsoPosition->size() >= 3) {
+	//get data and convert from degrees to radiant
+	for (unsigned int i = 0; i < 3; i++) {
+	  torso3d[i] = torsoPosition->get(i).asDouble() * M_PI / 180.0;
+	}
+	positionUpdated = true;
+      }
+      
+      if (positionUpdated || !transformationAvailable) { // The 2nd one is just to be sure ;)
+	projections[usedEye]->setHeightOffset(zOffset, false);
+	projections[usedEye]->setBaseTransformation(torso3d, head6d);
+	transformationAvailable = true;
+      }
+      
+      object3d.resize(3);
+      projections[usedEye]->project(objposreach, object3d);
+      
       // We will have different reachings or there is an initial common reaching phase?
       switch (selectedaction){
       case GRASP: state=GRASPING; 
-	  break;
+	break;
       case TAP: state=TAPPING; 
 	break;
       case TOUCH: state=TOUCHING; 
 	break;
-	}
+      }
     }
    
     break;
@@ -889,6 +947,7 @@ bool DemoAff::updateModule(){
       Vector xd(3);
       bool f;
 
+      
       xd[0]=0.1; 
       xd[1]=0.1; 
       xd[2]=0.1; 

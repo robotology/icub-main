@@ -1,4 +1,4 @@
-SET(KEYWORD "demoAffv2")
+SET(KEYWORD "behaviorController")
 
 PROJECT(${KEYWORD})
 
