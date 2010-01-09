@@ -69,7 +69,7 @@ is the positional part of the desired pose, \f$ \mathbf{\alpha}_d \f$ is the
 desired orientation and \f$ \mathit{K_x} \f$ and \f$ \mathit{K_{\alpha}} \f$ are
 the forward kinematic maps for the position and orientation part, respectively;
 \f$ \mathbf{q}_{rest} \f$ is used to keep torso as close as possible (weighting
-with a positive factor \f$ \mathit{w}<1 \f$) to the vertical position while reaching
+with a positive factor \f$ \mathit{w} < 1 \f$) to the vertical position while reaching
 and \f$ \epsilon \f$ is a small number in the range of \f$ \left[10^{-5},10^{-4}\right] \f$.
 
 \subsection controller_sec 2. The Controller
