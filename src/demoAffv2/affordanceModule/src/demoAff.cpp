@@ -6,6 +6,15 @@
 #define USE_LEFT    0
 #define USE_RIGHT   1
 
+using namespace std;
+using namespace yarp;
+using namespace yarp::os;
+using namespace yarp::sig;
+using namespace yarp::dev;
+using namespace yarp::math;
+using namespace vislab::math;
+
+ 
 enum stateenum {
   FIRSTINIT,
   IDLE,
@@ -25,7 +34,7 @@ enum stateenum {
   DETECTMARKS,
   NUMSTATES
 };
-char statename[NUMSTATES][20]={"firstinit","idle","getobjdesc","waitingdemo","ondemo","objselec","decision","reaching","tapping","grasping","touching","ungrasp","untap","untouch","detectmarks"};
+char statename[NUMSTATES][20]={"firstinit","idle","init","getobjdesc","waitingdemo","ondemo","objselec","decision","reaching","tapping","grasping","touching","ungrasp","untap","untouch","detectmarks"};
 
 enum processdatastates {
   GRASP,
@@ -142,22 +151,23 @@ bool DemoAff::respond(const Bottle &command,Bottle &reply){
     bool ok = false; // command executed successfully
 
   switch (command.get(0).asVocab()) {
-      case VOCAB_OBJS:
-	printf("VOCAB OBJS\n ");
-	reply.addVocab(VOCAB_OK);
-	ok = true;
-	OK_MSG = 1;
-      break;
-      case VOCAB_QUIT:
-	reply.addVocab(VOCAB_OK);
-	ok = true;
-      break;
-      default:
-	printf("VOCAB default\n ");
-	reply.addVocab(VOCAB_FAILED);
-    }
+  case VOCAB_OBJS:
+    printf("VOCAB OBJS\n ");
+    reply.addVocab(VOCAB_OK);
+    ok = true;
+    OK_MSG = 1;
+    break;
+  case VOCAB_QUIT:
+    reply.addVocab(VOCAB_OK);
+    ok = true;
+    break;
+    
+  default:
+    printf("VOCAB default\n ");
+    reply.addVocab(VOCAB_FAILED);
+  }
 
-    ok = Module::respond(command,reply); // will add message 'not recognized' if not recognized
+    ok = RFModule::respond(command,reply); // will add message 'not recognized' if not recognized
 
     return ok;
 }
@@ -280,64 +290,94 @@ bool DemoAff::InitAff(Searchable& config){
   return true;
 }
 
-bool DemoAff::open(Searchable& config){
 
-  // locate configuration file
-  ResourceFinder rf;        
-  if (config.check("context")){
-    rf.setDefaultContext(config.find("context").asString());
-  }
-  if (config.check("from")){
-    rf.setDefaultConfigFile(config.find("from").asString());
-  }
-  else if (config.check("file")){
-    rf.setDefaultConfigFile(config.find("file").asString());
-  }
-  else{
-    rf.setDefaultConfigFile("icubDemoAff.ini");
-  }
-  rf.configure("ICUB_ROOT",0,NULL);
-  Property prop(rf.toString());
-  prop.fromString(config.toString(), false);
-  prop.setMonitor(config.getMonitor());
-   
+bool DemoAff::configure(ResourceFinder &rf){
+
+  string name=rf.find("name").asString().c_str();
+  setName(name.c_str());
 
   bool ok;
 
-
+  Property prop; prop.fromConfigFile(rf.findFile("affordance_database").c_str());
   ok = InitAff(prop);
 
-  configureAffPrimitives(rf);
+  Property config; config.fromConfigFile(rf.findFile("aff_action_primitives").c_str());
+  
+
+  configureAffPrimitives(config,rf.findFile("hand_sequences_file").c_str(), name);
+
+  configureEye2World(rf.findFile("camera_calib_file").c_str());
 
   // open camshiftplus ports: data and sync
-  ok &= port_eff.open("/demoAffv2/effect");
-  ok &= port_sync.open("/demoAffv2/synccamshift");
-  ok &= port_descriptor.open("/demoAffv2/objsdesc");
-  ok &= port_track_info.open("/demoAffv2/trackdesc");
-  ok &= port_primitives.open("/demoAffv2/motioncmd");
-  ok &= port_gaze_out.open("/demoAffv2/gazecmd");
-  ok &= port_behavior_in.open("/demoAffv2/behavior:i");
-  ok &= port_behavior_out.open("/demoAffv2/behavior:o");
-  ok &= port_output.open("/demoAffv2/out");
-  ok &= port_emotions.open("/demoAffv2/emotion");
+  string fwslash="/";
+  ok &= port_eff.open( (fwslash+name+"/effect").c_str());
+  ok &= port_sync.open( (fwslash+name+"/synccamshift").c_str());
+  ok &= port_descriptor.open( (fwslash+name+"/objsdesc").c_str());
+  ok &= port_track_info.open( (fwslash+name+"/trackdesc").c_str());
+  ok &= port_primitives.open( (fwslash+name+"/motioncmd").c_str());
+  ok &= port_gaze_out.open( (fwslash+name+"/gazecmd").c_str());
+  ok &= port_behavior_in.open( (fwslash+name+"/behavior:i").c_str());
+  ok &= port_behavior_out.open( (fwslash+name+"/behavior:o").c_str());
+  ok &= port_output.open( (fwslash+name+"/out").c_str());
+  ok &= port_emotions.open( (fwslash+name+"/emotion").c_str());
+  ok &= inPort.open((fwslash+name+"/in").c_str());
+  ok &= rpcPort.open((fwslash+name+"/rpc").c_str());
+  attach(rpcPort);
+  
+  openPorts=true;
+
+  attachTerminal();
   return ok;
 
   
 }
 
-bool DemoAff::configureAffPrimitives(ResourceFinder &rf)
-{
-  string name=rf.find("name").asString().c_str();
-  // *** CHECK **** setName(name.c_str());
+bool DemoAff::configureEye2World(yarp::os::ConstString calibrationFilename) {
+
+  Property config;
+  if (!config.fromConfigFile(calibrationFilename)) {
+    return false;
+  }
+  rightEyeCalibration.fromString(config.findGroup("CAMERA_CALIBRATION_RIGHT").toString());
+  leftEyeCalibration.fromString(config.findGroup("CAMERA_CALIBRATION_LEFT").toString());
   
-  partUsed=rf.check("part",yarp::os::Value("both_arms")).asString().c_str();
+  cameras["right"] = &rightEyeCalibration;
+  cameras["left"] = &leftEyeCalibration;
+  
+  Property tableConfig;
+  if (!tableConfig.fromConfigFile(tableConfiguration)) {
+    cerr << "Unable to read table configuration. Assuming 0 vector as 3D offset." << endl;
+  }
+  tabletopPosition.fromString(tableConfig.findGroup("POSITION").toString());
+
+  Vector v(3);
+  v[0] = table.find("x").asDouble();
+  v[1] = table.find("y").asDouble();
+  v[2] = table.find("z").asDouble();
+  
+  map<const string, Property*>::const_iterator itr;
+  for (itr = cams.begin(); itr != cams.end(); ++itr) {
+    
+    const string key = itr->first;
+    Property calib = *itr->second;
+    
+    projections[key] = new EyeTableProjection(key.c_str(), calib, &v);
+  }
+
+}
+
+bool DemoAff::configureAffPrimitives(Searchable &config, 
+				     yarp::os::ConstString handSeqFile, 
+				     string name)
+{
+  
+  partUsed=config.check("part",yarp::os::Value("both_arms")).asString().c_str();
   if (partUsed!="both_arms" && partUsed!="left_arm" && partUsed!="right_arm")
     {
       cout<<"Invalid part requested !"<<endl;
       return false;
     }        
   
-  Property config; config.fromConfigFile(rf.findFile("from").c_str());
   Bottle &bGeneral=config.findGroup("general");
   if (bGeneral.isNull())
     {
@@ -360,8 +400,7 @@ bool DemoAff::configureAffPrimitives(ResourceFinder &rf)
     }
   
   option.put("local",name.c_str());
-  option.put("hand_calibration_file",rf.findFile("hand_calibration_file"));
-  option.put("hand_sequences_file",rf.findFile("hand_sequences_file"));
+  option.put("hand_sequences_file",handSeqFile);
   
   Property optionL(option); optionL.put("part","left_arm");
   Property optionR(option); optionR.put("part","right_arm");
@@ -426,12 +465,6 @@ bool DemoAff::configureAffPrimitives(ResourceFinder &rf)
   for (size_t i=0; i<q.size(); i++)
     cout<<q[i]<<endl;
   
-  string fwslash="/";
-  inPort.open((fwslash+name+"/in").c_str());
-  rpcPort.open((fwslash+name+"/rpc").c_str());
-  attach(rpcPort);
-  
-  openPorts=true;
   
   return true;
 }
@@ -592,7 +625,7 @@ bool DemoAff::updateModule(){
 
   case IDLE:      
     {
-      Bottle *input_obj=port_behavior_in.read(true);
+      Bottle *input_obj=port_behavior_in.read(false);
     
       if (input_obj!=NULL) {
 	int cmd;
@@ -605,6 +638,9 @@ bool DemoAff::updateModule(){
 	}
       }
     }    
+    state=GRASPING;
+    
+
     break;
   
   case INIT:
@@ -853,19 +889,20 @@ bool DemoAff::updateModule(){
       Vector xd(3);
       bool f;
 
-      xd[0]=0.1; //b->get(0).asDouble();
-      xd[1]=0.1; //b->get(1).asDouble();
-      xd[2]=0.1; //b->get(2).asDouble();
+      xd[0]=0.1; 
+      xd[1]=0.1; 
+      xd[2]=0.1; 
       
       // switch only if it's allowed
       if (partUsed=="both_arms")
 	{
 	  if (xd[1]>0.0)
-                    useArm(USE_RIGHT);
+	    useArm(USE_RIGHT);
 	  else
 	    useArm(USE_LEFT);
 	}
-      
+
+      cout << " after arm selection" << endl;
       // apply systematic offset
       // due to uncalibrated kinematic
       xd=xd+*dOffs;
@@ -873,20 +910,31 @@ bool DemoAff::updateModule(){
       // safe thresholding
       xd[0]=xd[0]>-0.1?-0.1:xd[0];
       
+       cout << " before first push" << endl;      
+
       // grasp it (wait until it's done)
       action->grasp(xd,*graspOrien,*graspDisp);
+      cout << " push in wainting" << endl;      
       action->checkActionsDone(f,true);
       
+      cout << " first push" << endl;      
+
       // lift the object (wait until it's done)
       action->pushAction(xd+*dLift,*graspOrien);
       action->checkActionsDone(f,true);
       
+      cout << " second push" << endl;      
+
       // release the object (wait until it's done)
       action->pushAction("open_hand");
       action->checkActionsDone(f,true);
       
+      cout << " after releasing" << endl;
+
       // go home :)
       action->pushAction(*home_x,*home_o);
+
+      cout << "gooing back home" << endl;
     }		
     
     break;

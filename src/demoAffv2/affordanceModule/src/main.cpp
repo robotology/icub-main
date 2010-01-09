@@ -62,6 +62,10 @@
 // iCub
 #include <iCub/demoAff.h>
 
+#ifdef USE_ICUB_MOD
+    #include "drivers.h"
+#endif
+
 using namespace std;
 using namespace yarp::os;
 //using namespace iCub::contrib;
@@ -71,15 +75,28 @@ int main(int argc, char *argv[]) {
 
     Network yarp;
 
+
     /* prepare and configure Resource Finder */
-    /*    ResourceFinder rf;
+    ResourceFinder rf;
     rf.setVerbose(true);
     rf.setDefaultConfigFile("demoAffv2.ini");  // overridden by --from parameter
     rf.setDefaultContext("demoAffv2/conf");    // overridden by --context parameter
+    rf.setDefault("hand_calibration_file","object_sensing.ini");
+    rf.setDefault("hand_sequences_file","hand_sequences.ini");
+    rf.setDefault("affordance_database","BNaffordances.txt");
+    rf.setDefault("aff_action_primitives","affActionPrimitives.ini");
+    rf.setDefault("name","demoAffv2");
+
     rf.configure("ICUB_ROOT", argc, argv);
-    */
+    
+
+
+#ifdef USE_ICUB_MOD
+    DriverCollection dev;
+#endif
+
     DemoAff module;
-    module.setName("/demoAff"); // set default name of module
-    //return module.runModule(rf);
-    return module.runModule(argc,argv);
+    //module.setName("/demoAff"); // set default name of module
+    return module.runModule(rf);
+    
 }
