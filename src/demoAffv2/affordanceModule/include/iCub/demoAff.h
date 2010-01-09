@@ -101,6 +101,10 @@ private:
   // Expressions
   BufferedPort<Bottle> port_emotions;
 
+  // Head and torso confgiruations
+  BufferedPort<Bottle> port_head_state;
+  BufferedPort<Bottle> port_torso_state;
+
   
   int state; // Current state of the FSM
 
@@ -133,6 +137,8 @@ private:
   int selectedobj;
 
   double objpos[max_obj][2];
+
+  Vector objposreach;
 
   int shapeObj[max_obj];
   int colorObj[max_obj];
@@ -202,9 +208,12 @@ protected:
   // Eye2World member variables
   std::map<const std::string, yarp::os::Property*> cameras;
   std::map<const std::string, EyeTableProjection*> projections;
-
+  double zOffset;
+  string usedEye;
+  Vector object3d;
+  
   // Eye2World member methods
-  bool configureEye2World(yarp::os::ConstString calibrationFilename);  
+  bool configureEye2World(yarp::os::ConstString calibrationFilename,yarp::os::ConstString tableConfiguration);  
 
 public:
 
