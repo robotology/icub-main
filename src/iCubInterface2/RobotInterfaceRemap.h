@@ -32,11 +32,15 @@
 #include <yarp/os/RateThread.h>
 #include <yarp/os/BufferedPort.h>
 #include <yarp/sig/Vector.h>
+#include <yarp/os/Stamp.h>
+
 class ServerGenericSensor: public yarp::os::RateThread
 {
     yarp::dev::IGenericSensor *is;
     yarp::os::BufferedPort<yarp::sig::Vector> port;
     std::string name;
+	yarp::os::Stamp lastStateStamp;
+
 public:
     ServerGenericSensor(const char *n, int rate=20): RateThread(rate)
     {
@@ -67,7 +71,11 @@ public:
         yarp::sig::Vector &v=port.prepare();
         if (is!=0)
         {
-            is->read(v);
+            if (is->read(v))
+				{
+					lastStateStamp.update();
+				}
+			port.setEnvelope (lastStateStamp);
             port.write();
         }
     }
