@@ -14,7 +14,7 @@
 #define RES_EVENT(x)                    (static_cast<ACE_Auto_Event*>(x))
 
 #define ACTIONPRIM_DEFAULT_PER          50      // [ms]
-#define ACTIONPRIM_DEFAULT_TRAJTIME     1.5     // [s]
+#define ACTIONPRIM_DEFAULT_EXECTIME     2.0     // [s]
 #define ACTIONPRIM_DEFAULT_REACHTOL     0.005   // [m]
 #define ACTIONPRIM_DUMP_PERIOD          1.0     // [s]
 
@@ -254,10 +254,11 @@ bool affActionPrimitives::open(Property &opt)
     }
 
     local=opt.find("local").asString().c_str();
+    default_exec_time=opt.check("default_exec_time",Value(ACTIONPRIM_DEFAULT_EXECTIME)).asDouble();
+
     string robot=opt.check("robot",Value("icub")).asString().c_str();
     string part=opt.check("part",Value("right_arm")).asString().c_str();
-    int period=opt.check("thread_period",Value(ACTIONPRIM_DEFAULT_PER)).asInt();
-    double traj_time=opt.check("traj_time",Value(ACTIONPRIM_DEFAULT_TRAJTIME)).asDouble();
+    int period=opt.check("thread_period",Value(ACTIONPRIM_DEFAULT_PER)).asInt();    
     double reach_tol=opt.check("reach_tol",Value(ACTIONPRIM_DEFAULT_REACHTOL)).asDouble();    
     string fwslash="/";
 
@@ -291,9 +292,6 @@ bool affActionPrimitives::open(Property &opt)
     // open views
     polyHand->view(posCtrl);
     polyCart->view(cartCtrl);
-
-    // set trajectory time
-    cartCtrl->setTrajTime(traj_time);
 
     // set tolerance
     cartCtrl->setInTargetTol(reach_tol);
@@ -457,7 +455,8 @@ bool affActionPrimitives::clearActionsQueue()
 
 /************************************************************************/
 bool affActionPrimitives::pushAction(const bool execArm, const Vector &x, const Vector &o,
-                                     const bool execHand, const HandWayPoint &handWP)
+                                     const double execTime, const bool execHand,
+                                     const HandWayPoint &handWP)
 {
     if (configured)
     {
@@ -468,6 +467,7 @@ bool affActionPrimitives::pushAction(const bool execArm, const Vector &x, const 
         action.execArm=execArm;
         action.x=x;
         action.o=o;
+        action.execTime=execTime;
         action.execHand=execHand;
         action.handWP=handWP;
     
@@ -483,7 +483,7 @@ bool affActionPrimitives::pushAction(const bool execArm, const Vector &x, const 
 
 /************************************************************************/
 bool affActionPrimitives::pushAction(const Vector &x, const Vector &o,
-                                     const string &handSeqKey)
+                                     const string &handSeqKey, const double execTime)
 {
     if (configured)
     {
@@ -496,11 +496,11 @@ bool affActionPrimitives::pushAction(const Vector &x, const Vector &o,
             {   
                 Vector dummy(1);
                              
-                pushAction(true,x,o,true,q[0]);
+                pushAction(true,x,o,execTime,true,q[0]);
 
                 // decompose hand action in sum of fingers sequences
                 for (size_t i=1; i<q.size(); i++)
-                    pushAction(false,dummy,dummy,true,q[i]);
+                    pushAction(false,dummy,dummy,ACTIONPRIM_DISABLE_EXECTIME,true,q[i]);
             }
 
             return true;
@@ -519,12 +519,13 @@ bool affActionPrimitives::pushAction(const Vector &x, const Vector &o,
 
 
 /************************************************************************/
-bool affActionPrimitives::pushAction(const Vector &x, const Vector &o)
+bool affActionPrimitives::pushAction(const Vector &x, const Vector &o,
+                                     const double execTime)
 {
     if (configured)
     {
         HandWayPoint dummy;
-        pushAction(true,x,o,false,dummy);
+        pushAction(true,x,o,execTime,false,dummy);
 
         return true;
     }
@@ -546,7 +547,7 @@ bool affActionPrimitives::pushAction(const string &handSeqKey)
 
             // decompose hand action in sum of fingers sequences
             for (size_t i=0; i<q.size(); i++)
-                pushAction(false,dummy,dummy,true,q[i]);
+                pushAction(false,dummy,dummy,ACTIONPRIM_DISABLE_EXECTIME,true,q[i]);
 
             return true;
         }
@@ -588,15 +589,17 @@ bool affActionPrimitives::pushWaitState(const double tmo)
 
 
 /************************************************************************/
-bool affActionPrimitives::reach(const Vector &x, const Vector &o)
+bool affActionPrimitives::reach(const Vector &x, const Vector &o,
+                                const double execTime)
 {
     if (configured)
     {
-        cartCtrl->goToPose(x,o);
+        const double t=execTime>0.0?execTime:default_exec_time;
+        cartCtrl->goToPose(x,o,t);
 
         latchArmMoveDone=armMoveDone=false;
 
-        printMessage("reach for [%s], [%s]\n",
+        printMessage("reach at %g [s] for [%s], [%s]\n",t,
                      toCompactString(x).c_str(),
                      toCompactString(o).c_str());
 
@@ -627,13 +630,13 @@ bool affActionPrimitives::execQueuedAction()
     if (exec)
     {
         if (action.waitState)
-            wait(action.tmo);
+            wait(action);
 
         if (action.execArm)
-            cmdArm(action.x,action.o);
+            cmdArm(action);
 
         if (action.execHand)
-            cmdHand(action.handWP);
+            cmdHand(action);
     }
 
     return exec;
@@ -656,7 +659,7 @@ bool affActionPrimitives::execPendingHandSequences()
         if (action.execHand && !action.execArm && !action.waitState)
         {    
             actionsQueue.pop_front();
-            cmdHand(action.handWP);
+            cmdHand(action);
             exec=true;
         }
     }
@@ -719,12 +722,12 @@ affActionPrimitives::~affActionPrimitives()
 
 
 /************************************************************************/
-bool affActionPrimitives::wait(const double tmo)
+bool affActionPrimitives::wait(const Action &action)
 {
     if (configured)
     {        
-        printMessage("wait for %g seconds\n",tmo);
-        waitTmo=tmo;
+        printMessage("wait for %g seconds\n",action.tmo);
+        waitTmo=action.tmo;
         latchTimer=Time::now();
 
         return true;
@@ -735,11 +738,15 @@ bool affActionPrimitives::wait(const double tmo)
 
 
 /************************************************************************/
-bool affActionPrimitives::cmdArm(const Vector &x, const Vector &o)
+bool affActionPrimitives::cmdArm(const Action &action)
 {
     if (configured)
     {
-        if (!cartCtrl->goToPoseSync(x,o))
+        const Vector &x=action.x;
+        const Vector &o=action.o;
+        const double t=action.execTime>0.0?action.execTime:default_exec_time;
+
+        if (!cartCtrl->goToPoseSync(x,o,t))
         {
             printMessage("reach error\n");
             return false;
@@ -747,7 +754,7 @@ bool affActionPrimitives::cmdArm(const Vector &x, const Vector &o)
 
         latchArmMoveDone=armMoveDone=false;
 
-        printMessage("reach for [%s], [%s]\n",
+        printMessage("reach at %g [s] for [%s], [%s]\n",t,
                      toCompactString(x).c_str(),
                      toCompactString(o).c_str());
 
@@ -761,24 +768,27 @@ bool affActionPrimitives::cmdArm(const Vector &x, const Vector &o)
 
 
 /************************************************************************/
-bool affActionPrimitives::cmdHand(const HandWayPoint &handWP)
+bool affActionPrimitives::cmdHand(const Action &action)
 {
     if (configured)
     {        
+        const Vector &poss=action.handWP.poss;
+        const Vector &vels=action.handWP.vels;
+
         fingersMovingJntsSet=fingersJntsSet;
         for (set<int>::iterator itr=fingersJntsSet.begin(); itr!=fingersJntsSet.end(); ++itr)
         {   
             int j=*itr-jHandMin;
 
-            if (j>=handWP.poss.length() || j>=handWP.vels.length())
+            if (j>=poss.length() || j>=vels.length())
                 break;
 
-            posCtrl->setRefSpeed(*itr,handWP.vels[j]);
-            posCtrl->positionMove(*itr,handWP.poss[j]);
+            posCtrl->setRefSpeed(*itr,vels[j]);
+            posCtrl->positionMove(*itr,poss[j]);
         }
 
         latchHandMoveDone=handMoveDone=false;
-        printMessage("moving hand to WP: [%s]\n",toCompactString(handWP.poss).c_str());
+        printMessage("moving hand to WP: [%s]\n",toCompactString(poss).c_str());
 
         return true;
     }

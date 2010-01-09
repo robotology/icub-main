@@ -62,6 +62,7 @@
 #include <set>
 #include <map>
 
+#define ACTIONPRIM_DISABLE_EXECTIME    -1
 
 /**
 * \ingroup affActionPrimitives
@@ -96,6 +97,7 @@ protected:
     bool closed;
     bool checkEnabled;
 
+    double default_exec_time;
     double waitTmo;
     double latchTimer;
     double t0;
@@ -123,6 +125,7 @@ protected:
         bool execArm;
         yarp::sig::Vector x;
         yarp::sig::Vector o;
+        double execTime;
         // hand action
         bool execHand;
         HandWayPoint handWP;
@@ -137,11 +140,11 @@ protected:
                                 const int j);
     virtual bool configHandSeq(yarp::os::Property &opt);
     virtual bool pushAction(const bool execArm, const yarp::sig::Vector &x,
-                            const yarp::sig::Vector &o, const bool execHand,
-                            const HandWayPoint &handWP);
-    virtual bool cmdArm(const yarp::sig::Vector &x, const yarp::sig::Vector &o);
-    virtual bool cmdHand(const HandWayPoint &handWP);
-    virtual bool wait(const double tmo);
+                            const yarp::sig::Vector &o, const double execTime,
+                            const bool execHand, const HandWayPoint &handWP);
+    virtual bool cmdArm(const Action &action);
+    virtual bool cmdHand(const Action &action);
+    virtual bool wait(const Action &action);
     virtual bool isGraspEnded();
 
     void init();    
@@ -188,7 +191,8 @@ public:
     * \b thread_period <int>: the thread period [ms] which selects 
     *    the time granularity as well.
     *  
-    * \b traj_time <double>: the arm movement execution time [s]. 
+    * \b default_exec_time <double>: the arm movement execution time
+    *    [s].
     *  
     * \b reach_tol <double>: the reaching tolerance [m]. 
     *
@@ -258,7 +262,9 @@ public:
     * @param x the 3-d target position [m]. 
     * @param o the 4-d hand orientation used while reaching (given 
     *          in axis-angle representation) [rad].
-    * @param handSeqKey the hand sequence key.  
+    * @param handSeqKey the hand sequence key. 
+    * @param execTime the arm action execution time [s] (to be 
+    *          specified iff different from default value)
     * @return true/false on success/fail. 
     *  
     * \note Some examples: 
@@ -269,7 +275,8 @@ public:
     * items in the queue will have been served. 
     */
     bool pushAction(const yarp::sig::Vector &x, const yarp::sig::Vector &o, 
-                    const std::string &handSeqKey);
+                    const std::string &handSeqKey,
+                    const double execTime=ACTIONPRIM_DISABLE_EXECTIME);
 
     /**
     * Insert the arm-primitive action reach for target in the 
@@ -277,9 +284,12 @@ public:
     * @param x the 3-d target position [m]. 
     * @param o the 4-d hand orientation used while reaching (given 
     *          in axis-angle representation) [rad].
+    * @param execTime the arm action execution time [s] (to be 
+    *          specified iff different from default value)
     * @return true/false on success/fail. 
     */
-    bool pushAction(const yarp::sig::Vector &x, const yarp::sig::Vector &o);
+    bool pushAction(const yarp::sig::Vector &x, const yarp::sig::Vector &o,
+                    const double execTime=ACTIONPRIM_DISABLE_EXECTIME);
 
     /**
     * Insert a hand-primitive action in the actions queue.
@@ -302,11 +312,14 @@ public:
     * @param x the 3-d target position [m]. 
     * @param o the 4-d hand orientation used while reaching (given 
     *          in axis-angle representation) [rad].
+    * @param execTime the arm action execution time [s] (to be 
+    *          specified iff different from default value)
     * @return true/false on success/fail. 
     *  
     * \note The intended use is for tracking moving targets. 
     */
-    bool reach(const yarp::sig::Vector &x, const yarp::sig::Vector &o);
+    bool reach(const yarp::sig::Vector &x, const yarp::sig::Vector &o,
+               const double execTime=ACTIONPRIM_DISABLE_EXECTIME);
 
     /**
     * Empty the actions queue. 

@@ -93,7 +93,7 @@ should look like as follows:
 [general]
 // options used to open a affActionPrimitives object 
 robot                           icub
-traj_time                       1.5
+default_exec_time               3.0
 reach_tol                       0.007
 torso_pitch                     on
 torso_roll                      off
