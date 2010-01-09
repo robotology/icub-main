@@ -4,13 +4,13 @@
 
 \image html icub_small.gif "Welcome to my brain!"
 
-This is a collection of documentation extracted from
-the iCub software repository.  
-Its intended audience is developers within the RobotCub
-consortium.  This is not an official publication; 
-it is updated by an automatic process that at any
-moment might be inaccurate, out of date, or downright
-broken.  Enjoy!  Topics:
+This is the iCub online code documentation (the iCub manual can be found
+elsewhere: http://eris.liralab.it/wiki/Manual). This is not an official
+publication, it is the result of an automatic process that parses
+the doxygen documentation in the repository. For this reason the information
+here at times can be innaccurate or completely broken!
+
+Topics:
 
  - \ref icub_module \endref - a list of documented modules
  - \ref icub_applications \endref - a list of documented applications 
@@ -18,16 +18,13 @@ broken.  Enjoy!  Topics:
  - \ref icub_tutorials \endref - a set of tutorials to learn how to use the software
  - Programmer's checklist:
   - \ref compile_status \endref - check if your code is compiling on a test server
-  - \ref copyright_and_license \endref - have you declared your authorship, and rights granted?
-  - \ref coding_standards \endref - some tips on how to organize your code
-  - \ref cmake_usage \endref - some tips on how to make your code compilable
-  - \ref module_standards \endref - some tips on how to make our modules act similarly
-  - \ref module_documentation \endref - a template for documenting modules
-  - \ref application_documentation \endref - a template for documenting applications
- - Reference material:
+  - <a href="http://eris.liralab.it/wiki/Licensing"> Licensing </A> - have you declared your authorship, and rights granted?
+  - <a href="http://eris.liralab.it/wiki/Manual#Eleven._Guidelines"> Coding guidelines </A> - some tips on how to write your code
+  - <a href="http://eris.liralab.it/wiki/Manual#Ten._Standardization_of_methods"> Modules and CMake</A> - some tips on how to make your code compilable
+  - <a href=http://eris.liralab.it/wiki/Committing_changes_to_the_software_repository"> Committing to the repository </A> - things to check before committing files to the repository 
+  - Reference material:
+  - The <a href="http://eris.liralab.it/wiki">iCub wiki (including manual)</a>
   - The <a href="http://www.robotcub.org/">RobotCub Website</a>.
-  - The <a href="http://eris.liralab.it/wiki/Main_Page">RobotCub Wiki</a>.
-  - <a href="http://eris.liralab.it/wiki/ICub_YARP_module_specifications">Module Specifications</A>.
   - Getting the software from <a href="http://eris.liralab.it/wiki/Getting_the_iCub_software_svn">SVN</a>.
   - Our software architecture, <a href="http://yarp0.sourceforge.net/">YARP</a>.
 
