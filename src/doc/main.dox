@@ -22,8 +22,8 @@ Topics:
   - <a href="http://eris.liralab.it/wiki/Manual#Eleven._Guidelines"> Coding guidelines </A> - some tips on how to write your code
   - <a href="http://eris.liralab.it/wiki/Manual#Ten._Standardization_of_methods"> Modules and CMake</A> - some tips on how to make your code compilable
   - <a href=http://eris.liralab.it/wiki/Committing_changes_to_the_software_repository"> Committing to the repository </A> - things to check before committing files to the repository 
-  - Reference material:
-  - The <a href="http://eris.liralab.it/wiki">iCub wiki (including manual)</a>
+ - Reference material:
+  - The <a href="http://eris.liralab.it/wiki/Manual">The iCub manual</a>
   - The <a href="http://www.robotcub.org/">RobotCub Website</a>.
   - Getting the software from <a href="http://eris.liralab.it/wiki/Getting_the_iCub_software_svn">SVN</a>.
   - Our software architecture, <a href="http://yarp0.sourceforge.net/">YARP</a>.
