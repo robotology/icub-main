@@ -53,9 +53,12 @@ void velControlThread::run()
 		for(int i=0;i<size;i++)
 		{
 			int ind = bot->get(2*i).asInt();
-			if(ind < VELOCITY_INDEX_OFFSET) {//this is a position command
+			if(ind < VELOCITY_INDEX_OFFSET) 
+			{//this is a position command
 				targets(ind) = bot->get(2*i+1).asDouble();
-			} else {//this is a velocity command
+			} 
+			else 
+			{//this is a velocity command
 				ffVelocities(ind - VELOCITY_INDEX_OFFSET) = bot->get(2*i+1).asDouble();
 			}
 			//fprintf(stderr, "for joint *%d, received %f, \t", ind, targets(ind));
@@ -301,6 +304,11 @@ void velControlThread::limitSpeed(Vector &v)
 {
 	for(int k=0; k<nJoints;k++)
 	{
+		if(command(k)!=command(k))//check not Nan
+		{
+			command(k)=0.0;
+			fprintf(stderr,"WARNING::Receiving NaN values\n");
+		}
 		if (fabs(command(k))>maxVel(k))
 		{
 			if (command(k)>0)
