@@ -52,6 +52,13 @@
       <tag>eye2worldGaze</tag>
   </module>
 
+  <module>
+      <name>graspDetector</name>
+      <parameters>--context graspDetector/conf --from left_armGraspDetector.ini</parameters>
+      <node>pwrNode4</node>
+      <tag>graspDetector_leftarm</tag>
+  </module>
+
   <connection>
       <from>/icub/cam/left</from>
       <to>/viewer/inputGrasp/img:i</to>
@@ -100,6 +107,11 @@
   <connection>
       <from>/eye2worldGaze/out</from>
       <to>/iKinGazeCtrl/head/xd:i</to>
+  </connection>
+
+  <connection>
+      <from>/icub/lefthand/analog:o/fingerDetector/status:o</from>
+      <to>/affActionPrimitivesMod/left_arm/detectGrasp:i</to>
   </connection>
 
 </application>

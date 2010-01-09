@@ -44,6 +44,9 @@
  * execute the grasping task as a harmonious combination of a 
  * reaching movement and fingers actuations, complying with the 
  * time requirements of the synchronized sequence. 
+ *  
+ * To detect contacts among fingers and objects the \ref 
+ * icub_graspDetector module is employed.
  */ 
 
 #ifndef __AFFACTIONPRIMITIVES_H__

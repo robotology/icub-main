@@ -92,6 +92,7 @@ For further details about:
 - <b>homography</b> please refer to \ref icub_eye2world documentation.
 - <b>executing motor primitives</b> such as the grasp please refer to \ref affActionPrimitives documentation.
 - <b>controlling the gaze</b> please refer to \ref iKinGazeCtrl documentation.
+- <b>detecting contacts with objects</b> please refer to \ref icub_graspDetector documentation.
 
 \section dep_sec Dependencies
 Assumes \ref icub_iCubInterface (with cartesian control implemented) is running.
@@ -102,6 +103,8 @@ Assumes \ref icub_iCubInterface (with cartesian control implemented) is running.
 - \ref affActionPrimitivesExample
 
 - \ref iKinGazeCtrl
+
+- \ref icub_graspDetector
 
 \section config_sec Configuration Files
 - ./conf/table.ini provides the 3-d position of the table where
