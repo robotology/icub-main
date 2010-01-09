@@ -29,11 +29,6 @@ IF (NOT ODE_FOUND)
    MESSAGE(STATUS "Skipping modules using ODE (Open Dynamics Engine)")
 ENDIF (NOT ODE_FOUND)
 
-find_package(LIBVISLAB QUIET)
-if(NOT LIBVISLAB_FOUND)
-   message(STATUS "Skipping modules using OpenVislab (http://OpenVislab.sf.net) libraries")
-endif(NOT LIBVISLAB_FOUND)
-
 FIND_PACKAGE(SDL QUIET)
 
 # SDL_FOUND variable seems unreliable!
@@ -227,6 +222,14 @@ ENDIF (ARTOOLKITPLUS_FOUND)
   ADD_SUBDIRECTORY(iKinArmCtrlIF)
   ADD_SUBDIRECTORY(affActionPrimitives)
   ADD_SUBDIRECTORY(affActionPrimitives/example)
+
+
+  add_subdirectory(libvislab-snapshot)
+
+  find_package(LIBVISLAB QUIET)
+  if(NOT LIBVISLAB_FOUND)
+     message(STATUS "Skipping modules using OpenVislab (http://OpenVislab.sf.net) libraries snapshot")
+  endif(NOT LIBVISLAB_FOUND)
 
   if(LIBVISLAB_FOUND)
     add_subdirectory(abstractHandCtrl)
