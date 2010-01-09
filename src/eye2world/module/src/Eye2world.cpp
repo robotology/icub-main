@@ -44,7 +44,7 @@ bool Eye2world::configure(ResourceFinder &rf) {
 	addModuleOption(new Option("heightOffset", str, Option::NUMERIC, Value(0.0)));
 	str
 			= "This value is added to the z coordinate of the transformation to the projection plane but is again subtracted from the result afterwards.";
-	addModuleOption(new Option("motor2eye", str, Option::NUMERIC, Value(0.06)));
+	addModuleOption(new Option("motor2eye", str, Option::NUMERIC, Value(0.0)));
 	str
 			= "A scale with is applied to the results. This might be used to compensate calibration issues.";
 	addModuleOption(new Option("scale", str, Option::NUMERIC, Value(1.0)));
