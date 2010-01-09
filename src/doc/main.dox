@@ -2,13 +2,13 @@
 /**
   * \mainpage iCub Software Repository Documentation
 
-\image html icub_small.gif "Welcome to my brain!"
+\image html icub_small_new.gif "Welcome to my brain!"
 
 This is the iCub online code documentation (the iCub manual can be found
-elsewhere: http://eris.liralab.it/wiki/Manual). This is not an official
-publication, it is the result of an automatic process that parses
-the doxygen documentation in the repository. For this reason the information
-here at times can be innaccurate or completely broken!
+elsewhere: http://eris.liralab.it/wiki/Manual). This is the result of an 
+automatic process that parses the doxygen documentation in the repository. 
+For this reason the information here at times can be innaccurate or 
+completely broken!
 
 Topics:
 
