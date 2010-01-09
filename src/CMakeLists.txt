@@ -225,6 +225,8 @@ ENDIF (ARTOOLKITPLUS_FOUND)
   ADD_SUBDIRECTORY(affActionPrimitives)
   ADD_SUBDIRECTORY(affActionPrimitives/example)
 
+  ADD_SUBDIRECTORY(graspDetectorConf)
+  ADD_SUBDIRECTORY(graspDetector)
 
   add_subdirectory(libvislab-snapshot)
 
