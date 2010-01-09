@@ -66,8 +66,8 @@ int main(int argc, char *argv[]) {
 	Network yarp;
 	ResourceFinder rf;
 	rf.setVerbose(true);
-	rf.setDefaultConfigFile("camCalibConf.ini"); //overridden by --from parameter
-	rf.setDefaultContext("camCalibConf"); //overridden by --context parameter
+	rf.setDefaultConfigFile("icubEyes.ini"); //overridden by --from parameter
+	rf.setDefaultContext("cameraCalibration/conf"); //overridden by --context parameter
 	rf.configure("ICUB_ROOT", argc, argv);
     CamCalibConfModule module;
     return module.runModule(rf);   
