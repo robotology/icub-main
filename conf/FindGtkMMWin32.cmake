@@ -139,7 +139,7 @@ FOREACH (i ${LIBTOSEARCH})
     
     STRING(REPLACE "++" "[+][+]" j ${i})
     STRING(REGEX MATCHALL "${j}${REGEX_GTKMM}([0-9]([_]|[.])[0-9])+" LINK_LIBRARIES_WITH_PREFIX "${ALL_GTK_LIBS}")
-    STRING(REGEX MATCHALL "(${j}${REGEX_GTKMM}([d][-])+([0-9]([_]|[.])[0-9])+)|(${j}([0-9]([_]|[.])[0-9])+([d])+)" LINK_LIBRARIES_WITH_PREFIX_DEBUG "${ALL_GTK_LIBS}")
+    STRING(REGEX MATCHALL "(${j}${REGEX_GTKMM}([-]?[d][-])+([0-9]([_]|[.])[0-9])+)|(${j}([0-9]([_]|[.])[0-9])+([d])+)" LINK_LIBRARIES_WITH_PREFIX_DEBUG "${ALL_GTK_LIBS}")
     
     FIND_LIBRARY(GTKMM_TMP_REL NAMES ${LINK_LIBRARIES_WITH_PREFIX} PATHS ${GTKMM_DIR}/lib)
     IF (GTKMM_TMP_REL)
