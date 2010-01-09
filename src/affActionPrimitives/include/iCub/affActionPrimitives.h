@@ -109,7 +109,7 @@ protected:
     yarp::sig::Vector      graspDetectionThres;
     std::set<int>          fingersJntsSet;
     std::set<int>          fingersMovingJntsSet;
-    std::multimap<int,int> jnts2FingersMap;
+    std::multimap<int,int> fingers2JntsMap;
 
     struct HandWayPoint
     {

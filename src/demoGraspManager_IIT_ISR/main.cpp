@@ -249,7 +249,7 @@ protected:
 
     set<int> fingersSet;
     set<int> fingersMovingSet;
-    multimap<int,int> jnts2FingersMap;
+    multimap<int,int> fingers2JntsMap;
 
     Vector targetPos;
     Vector leftDetectGrasp;
@@ -784,7 +784,8 @@ protected:
 
     bool isGraspEnded()
     {
-        set<int> tmpSet=fingersMovingSet;  // latch the current moving fingers set
+        // latch the current moving fingers set
+        set<int> tmpSet=fingersMovingSet;
 
         for (set<int>::iterator i=fingersMovingSet.begin(); i!=fingersMovingSet.end(); ++i)
         {
@@ -793,24 +794,33 @@ protected:
 
             if (flag)
                 tmpSet.erase(*i);
-            else
-            {
-                pair<multimap<int,int>::iterator,multimap<int,int>::iterator> jnt=jnts2FingersMap.equal_range(*i);
-                int fng=jnt.first->second;
+        }
 
-                if ((*detectGrasp)[fng]>graspModelDistThres)
+        // span over fingers
+        for (int fng=0; fng<5; fng++)
+        {
+            // detect contact on the finger
+            if ((*detectGrasp)[fng]>graspModelDistThres)
+            {
+                // take joints belonging to the finger
+                pair<multimap<int,int>::iterator,multimap<int,int>::iterator> i=fingers2JntsMap.equal_range(fng);
+
+                for (multimap<int,int>::iterator j=i.first; j!=i.second; ++j)
                 {
-                    // stop and remove all joints belonging to the finger                    
-                    for (multimap<int,int>::iterator j=jnt.first; j!=jnt.second; ++j)
+                    int jnt=j->second;
+
+                    // stop and remove if not done yet
+                    if (tmpSet.find(jnt)!=tmpSet.end())
                     {
-                        posArm->stop(j->first);
-                        tmpSet.erase(j->first);
+                        posArm->stop(jnt);
+                        tmpSet.erase(jnt);
                     }
                 }
             }
         }
 
-        fingersMovingSet=tmpSet;    // update the moving fingers set
+        // update the moving fingers set
+        fingersMovingSet=tmpSet;
 
         if (fingersMovingSet.size())
             return false;
@@ -1185,15 +1195,15 @@ public:
             fingersSet.insert(i);
 
         // map from hand joints to fingers
-        jnts2FingersMap.insert(pair<int,int>(8,0));
-        jnts2FingersMap.insert(pair<int,int>(9,0));
-        jnts2FingersMap.insert(pair<int,int>(10,0));
-        jnts2FingersMap.insert(pair<int,int>(11,1));
-        jnts2FingersMap.insert(pair<int,int>(12,1));
-        jnts2FingersMap.insert(pair<int,int>(13,2));
-        jnts2FingersMap.insert(pair<int,int>(14,2));
-        jnts2FingersMap.insert(pair<int,int>(15,3));
-        jnts2FingersMap.insert(pair<int,int>(15,4));
+        fingers2JntsMap.insert(pair<int,int>(0,8));
+        fingers2JntsMap.insert(pair<int,int>(0,9));
+        fingers2JntsMap.insert(pair<int,int>(0,10));
+        fingers2JntsMap.insert(pair<int,int>(1,11));
+        fingers2JntsMap.insert(pair<int,int>(1,12));
+        fingers2JntsMap.insert(pair<int,int>(2,13));
+        fingers2JntsMap.insert(pair<int,int>(2,14));
+        fingers2JntsMap.insert(pair<int,int>(3,15));
+        fingers2JntsMap.insert(pair<int,int>(4,15));
 
         targetPos.resize(3,0.0);
         leftDetectGrasp.resize(5,0.0);
