@@ -347,6 +347,8 @@ inline CanBusResources& RES(void *res) { return *(CanBusResources *)res; }
 AnalogSensor::AnalogSensor():
 data(0)
 {
+	timeStamp=0;
+	status=ANALOG_IDLE;
 	useCalibration=0;
 	scaleFactor=0;
 }
@@ -402,6 +404,23 @@ bool AnalogSensor::read(yarp::sig::Vector &out)
         mutex.post();
         return false;
     }
+
+	if (status<0) 
+	{
+		//Sensor with status < 0 means error
+		switch (status)
+		{
+			case ANALOG_SATURATION:
+				fprintf(stderr, "Warning strain sensor: saturation\n");
+			case ANALOG_ERROR:
+				fprintf(stderr, "Warning strain sensor: unknown state\n");
+			case ANALOG_NOT_RESPONDING:
+				fprintf(stderr, "Error: analog sensor is not responding\n");
+			break;
+		}
+        mutex.post();
+        return false;
+	}
 
     out.resize(data->size());
     for(int k=0;k<data->size();k++)
@@ -507,7 +526,6 @@ bool AnalogSensor::handleAnalog(void *canbus)
 {
     CanBusResources& r = RES (canbus);
 
-    double before=Time::now();
     unsigned int i=0;
     const int _networkN=r._networkN;
 
@@ -515,6 +533,7 @@ bool AnalogSensor::handleAnalog(void *canbus)
 
     mutex.wait();
 
+	double timeNow=Time::now();
     for (i = 0; i < r._readMessages; i++)
     {
         unsigned int len=0;
@@ -525,42 +544,52 @@ bool AnalogSensor::handleAnalog(void *canbus)
         msgid=m.getId();
         len=m.getLen();
         
+		status=ANALOG_IDLE;
         const char type=((msgid&0x700)>>8);
         const char id=((msgid&0x0f0)>>4);
 
         if (type==0x03) //analog data
             {
-            if (id==boardId)
-            {
-                switch (dataFormat)
-                {
-                    case ANALOG_FORMAT_8:
-                        ret=decode8(buff, msgid, data->getBuffer());
-                        break;
-                    case ANALOG_FORMAT_16:
-						if (len==6) 
-						{
-							ret=decode16(buff, msgid, data->getBuffer());
-						}
-						else
-						{
-							if (len==7 && buff[6] == 1)
+				if (id==boardId)
+				{
+					timeStamp=Time::now();
+					switch (dataFormat)
+					{
+						case ANALOG_FORMAT_8:
+							ret=decode8(buff, msgid, data->getBuffer());
+							status=ANALOG_OK;
+							break;
+						case ANALOG_FORMAT_16:
+							if (len==6) 
 							{
-								fprintf(stderr, "Warning strain sensor: saturation");
+								ret=decode16(buff, msgid, data->getBuffer());
+								status=ANALOG_OK;
 							}
 							else
 							{
-								fprintf(stderr, "Warning strain sensor: unknown state");
+								if (len==7 && buff[6] == 1)
+								{
+									status=ANALOG_SATURATION;
+								}
+								else
+								{
+									status=ANALOG_ERROR;
+								}
+								ret=decode16(buff, msgid, data->getBuffer());
 							}
-							ret=decode16(buff, msgid, data->getBuffer());
-						}
-                        break;
-                    default:
-                        ret=false;
-                }
-            }
+							break;
+						default:
+							ret=false;
+					}
+				}
             }
     }
+
+	//if 100ms have passed since the last received message
+	if (timeStamp+0.1<timeNow)
+		{
+			status=ANALOG_NOT_RESPONDING;
+		}
 
     mutex.post();
     return ret;

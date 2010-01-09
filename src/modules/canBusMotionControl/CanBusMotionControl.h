@@ -157,8 +157,19 @@ public:
         ANALOG_FORMAT_16,
     };
 
+	enum SensorStatus
+    {
+        ANALOG_IDLE=0,
+        ANALOG_OK=1,
+		ANALOG_NOT_RESPONDING=-1,
+		ANALOG_SATURATION=-2,
+		ANALOG_ERROR=-3,
+    };
+
 private:
     AnalogData *data;
+	short status;
+	double timeStamp;
 	double* scaleFactor;
     yarp::os::Semaphore mutex;
     AnalogDataFormat dataFormat;
@@ -177,6 +188,9 @@ public:
 
     short getId()
     { return boardId;}
+
+	short getStatus()
+    { return status;}
 
     bool isOpen()
     {
