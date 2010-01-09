@@ -51,13 +51,14 @@ using namespace iCub::contrib;
  * \see icub_demoaff
  *
  */
-class Behavior : public Module {
+class Behavior : public RFModule {
 
 private:
 
   // ports
   BufferedPort<Bottle> port_gaze;
   BufferedPort<Bottle> port_aff; 
+  BufferedPort<Bottle> port_in; 
   
   
   int state; // Current state of the FSM
@@ -77,8 +78,7 @@ public:
     Behavior();
     virtual ~Behavior();
     
-    /** Passes config on to iCub::contrib::CalibTool */
-    virtual bool open(Searchable& config);
+    virtual bool configure(ResourceFinder &config);
     virtual bool close();
     virtual bool interruptModule();
     virtual bool updateModule();

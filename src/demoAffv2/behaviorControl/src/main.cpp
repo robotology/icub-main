@@ -79,7 +79,16 @@ using namespace yarp::os;
 int main(int argc, char *argv[]) {
 
     Network yarp;
+
+    /* prepare and configure Resource Finder */
+    ResourceFinder rf;
+    rf.setVerbose(true);
+    rf.setDefaultConfigFile("behavior.ini");  // overridden by --from parameter
+    rf.setDefaultContext("demoAffv2/conf");    // overridden by --context parameter
+    rf.setDefault("name","/demoAffv2/behavior");
+
+    rf.configure("ICUB_ROOT", argc, argv);
+
     Behavior module;
-    module.setName("/demoAff/behavior"); // set default name of module
-    return module.runModule(argc,argv);
+    return module.runModule(rf);
 }

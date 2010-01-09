@@ -69,7 +69,7 @@ double prevwo, prevho;
 
 
 DemoAff::DemoAff(){
-  state=IDLE;
+  state=INIT;
   substate=0;
 
   trrest=0;
@@ -712,7 +712,9 @@ bool DemoAff::updateModule(){
 	 port_behavior_out.write();
 	 
 	 state=IDLE;
+	 state=INIT;
       }
+
     }
     break;
   
@@ -788,12 +790,12 @@ bool DemoAff::updateModule(){
       
       yarp::os::Time::delay(0.1);                 
       
-      bool done=false;
+      bool done=true;
       Bottle *input_obj;
       while (!done) {
 	// Deberia ser algo de motor port_gaze_in
-	input_obj=port_descriptor.read(true);
-	done = input_obj->get(0).asInt()==5;	
+	//input_obj=port_sth.read(true);
+	//done = input_obj->get(0).asInt()==5;	
       }
       
       // Set expression
@@ -871,6 +873,7 @@ bool DemoAff::updateModule(){
       else {
 	// 	    head.look2object(selectedobj);
 	
+	selectedaction=GRASP;
 	switch (selectedaction){
 	case GRASP: state=GRASPING; break;
 	case TAP: state=TAPPING; break;
@@ -889,8 +892,7 @@ bool DemoAff::updateModule(){
 	       shapes[shapeObj[selectedobj]], selectedobj,objposreach[0],
 	       objposreach[1]);
       }
-      while (OK_MSG==0) yarp::os::Time::delay(0.04);
-      OK_MSG=0;
+
     }  
     break;
     
@@ -944,13 +946,12 @@ bool DemoAff::updateModule(){
     break;
   case GRASPING:
     {
-      Vector xd(3);
       bool f;
+      Vector xd(3);
+      xd[0]=object3d[0];
+      xd[1]=object3d[1];      
+      xd[2]=object3d[2];
 
-      
-      xd[0]=0.1; 
-      xd[1]=0.1; 
-      xd[2]=0.1; 
       
       // switch only if it's allowed
       if (partUsed=="both_arms")
@@ -969,9 +970,10 @@ bool DemoAff::updateModule(){
       // safe thresholding
       xd[0]=xd[0]>-0.1?-0.1:xd[0];
       
-       cout << " before first push" << endl;      
-
+      cout << " before first push" << endl;      
+      
       // grasp it (wait until it's done)
+      cout << 
       action->grasp(xd,*graspOrien,*graspDisp);
       cout << " push in wainting" << endl;      
       action->checkActionsDone(f,true);
@@ -994,8 +996,9 @@ bool DemoAff::updateModule(){
       action->pushAction(*home_x,*home_o);
 
       cout << "gooing back home" << endl;
+
+      state=INIT;
     }		
-    
     break;
 
   case TAPPING:
@@ -1036,7 +1039,7 @@ bool DemoAff::restartTracker(TrackInfo obj) {
   port_sync.setEnvelope(writestamp);
   port_sync.write();
   
-  cout << "writing " << bot.toString().c_str() << " " << bot.size() << endl;
+  cout << "writing to port_sync " << bot.toString().c_str() << " " << bot.size() << endl;
 
   
   // flag to signal tracker has been restarted
@@ -1165,30 +1168,38 @@ bool DemoAff::getBlobInfo(const Bottle *msg) {
   // Read number of objects
   numBlobs=msg->get(0).asInt();
 
-  for (int i=0; i<numObjs; i++) {
-    // center coordinates
-    //objDescTable[i].center.x = msg.get(i*29+1).asDouble();
-    //objDescTable[i].center.y = msg.get(i*29+2).asDouble();
+  cout << "Number blobs" << numBlobs << endl; 
+
+  if (numBlobs>maxObjects)
+    numBlobs=maxObjects;
+
+  for (int i=0; i<numBlobs; i++) {
+    yarp::os::Value& element = msg->get(i+1);
+    
+    Bottle *objbot=element.asList();
+
+    printf("list of %d elements\n", objbot->size());
+
     // width and height
-    objDescTable[i].roi_x = msg->get(i*29+1).asDouble();
-    objDescTable[i].roi_y = msg->get(i*29+2).asDouble();
-    objDescTable[i].roi_width = msg->get(i*29+3).asDouble();
-    objDescTable[i].roi_height = msg->get(i*29+4).asDouble();
-    objDescTable[i].angle = msg->get(i*29+5).asDouble();
+    objDescTable[i].roi_x = objbot->get(0).asDouble();
+    objDescTable[i].roi_y = objbot->get(1).asDouble();
+    objDescTable[i].roi_width = objbot->get(2).asDouble();
+    objDescTable[i].roi_height = objbot->get(3).asDouble();
+    objDescTable[i].angle = objbot->get(4).asDouble();
 
     for (int j=0; j<16; j++) {
-      objDescTable[i].hist[j]= msg->get(i*29+8+j).asDouble();
+      objDescTable[i].hist[j]= objbot->get(7+j).asDouble();
     }
 
-    objDescTable[i].area = msg->get(i*29+24).asDouble();
-    objDescTable[i].convexity = msg->get(i*29+25).asDouble();
-    objDescTable[i].eccentricity = msg->get(i*29+26).asDouble();    
-    objDescTable[i].compactness = msg->get(i*29+27).asDouble();
-    objDescTable[i].circleness = msg->get(i*29+28).asDouble();
-    objDescTable[i].squareness = msg->get(i*29+29).asDouble();    
+    objDescTable[i].area = objbot->get(23).asDouble();
+    objDescTable[i].convexity = objbot->get(24).asDouble();
+    objDescTable[i].eccentricity = objbot->get(25).asDouble();    
+    objDescTable[i].compactness = objbot->get(26).asDouble();
+    objDescTable[i].circleness = objbot->get(27).asDouble();
+    objDescTable[i].squareness = objbot->get(28).asDouble();    
+
   }
   
-
 }
 
 
@@ -1201,29 +1212,34 @@ bool DemoAff::getTrackerInfo(const Bottle *msg) {
   // Read number of objects
   numTracks=msg->get(cnt).asInt(); cnt++;
 
-  for (int i=0; i<numObjs; i++) {
+  cout << "Number blobs" << numBlobs << endl; 
+
+  if (numTracks>maxObjects)
+    numTracks=maxObjects;
+
+
+  for (int i=0; i<numTracks; i++) {
+    yarp::os::Value& element = msg->get(i+1);
+    
+    Bottle *objbot=element.asList();
+
+    printf("list of %d elements\n", objbot->size());
+
     // x, y, width and height
-    trackDescTable[i].roi_x = msg->get(cnt).asInt();
-    cnt++;
-    trackDescTable[i].roi_y = msg->get(cnt).asInt();
-    cnt++;
-    trackDescTable[i].roi_width = msg->get(i*23+3).asInt();
-    cnt++;
-    trackDescTable[i].roi_height = msg->get(i*23+4).asInt();
-    cnt++;
+    trackDescTable[i].roi_x = objbot->get(0).asInt();
+    trackDescTable[i].roi_y = objbot->get(1).asInt();
+    trackDescTable[i].roi_width = objbot->get(2).asInt();
+    trackDescTable[i].roi_height = objbot->get(3).asInt();
 
     // 16 bin histogram
     for (int j=0; j<16; j++) {
-      trackDescTable[i].hist[j]= msg->get(cnt).asInt();
-      cnt++;
+      trackDescTable[i].hist[j]= objbot->get(4+j).asInt();
     }
 
-    trackDescTable[i].v_min = msg->get(cnt).asInt();
-    cnt++;
-    trackDescTable[i].v_max = msg->get(cnt).asInt();
-    cnt++;
-    trackDescTable[i].s_min = msg->get(cnt).asInt();
-    cnt++;    
+    trackDescTable[i].v_min = objbot->get(20).asInt();
+    trackDescTable[i].v_max = objbot->get(21).asInt();
+    trackDescTable[i].s_min = objbot->get(22).asInt();
+
   }
   
 }

@@ -44,32 +44,32 @@ Behavior::~Behavior(){
 
 bool Behavior::respond(const Bottle &command,Bottle &reply){
     bool ok = false; // command executed successfully
-
-  switch (command.get(0).asVocab()) {
-      case VOCAB_QUIT:
-	reply.addVocab(VOCAB_OK);
-	ok = true;
-	OK_MSG = 1;
-      break;
-      case VOCAB_STOP:
-	reply.addVocab(VOCAB_OK);
-	ok = true;
-	next_state=IDLE;
-	OK_MSG = 1;
-      break;
-      case VOCAB_CONT:
-	reply.addVocab(VOCAB_OK);
-	ok = true;
-	next_state=ATTENTION;
-	OK_MSG = 1;
-      break;
-      default:
-	printf("VOCAB default\n ");
-	reply.addVocab(VOCAB_FAILED);
+    
+    switch (command.get(0).asVocab()) {
+    case VOCAB_QUIT:
+        reply.addVocab(VOCAB_OK);
+        ok = true;
+        OK_MSG = 1;
+        break;
+    case VOCAB_STOP:
+        reply.addVocab(VOCAB_OK);
+        ok = true;
+        next_state=IDLE;
+        OK_MSG = 1;
+        break;
+    case VOCAB_CONT:
+        reply.addVocab(VOCAB_OK);
+        ok = true;
+        next_state=ATTENTION;
+        OK_MSG = 1;
+        break;
+    default:
+        printf("VOCAB default\n ");
+        reply.addVocab(VOCAB_FAILED);
     }
 
-    ok = Module::respond(command,reply); // will add message 'not recognized' if not recognized
-
+    ok = RFModule::respond(command,reply); // will add message 'not recognized' if not recognized
+    
     return ok;
 }
 
@@ -78,51 +78,34 @@ bool Behavior::respond(const Bottle &command,Bottle &reply){
 }
 */
 
-bool Behavior::open(Searchable& config){
-   
-	// locate configuration file
-    ResourceFinder rf;        
-	if (config.check("context")){
-        rf.setDefaultContext(config.find("context").asString());
-	}
-	if (config.check("from")){
-        rf.setDefaultConfigFile(config.find("from").asString());
-	}
-	else if (config.check("file")){
-        rf.setDefaultConfigFile(config.find("file").asString());
-	}
-	else{
-        rf.setDefaultConfigFile("icubDemoAffBehavior.ini");
-	}
-    rf.configure("ICUB_ROOT",0,NULL);
-	Property prop(rf.toString());
-	prop.fromString(config.toString(), false);
-	prop.setMonitor(config.getMonitor());
-
+bool Behavior::configure(ResourceFinder& rf){
     bool ok=true;
 
-  ConstString str = prop.check("motorboard","/baltaHead","Name of the control board").asString();
+    cg_az_max = rf.check("cg_az_max",yarp::os::Value(0.0)).asDouble();
+    cg_az_min = rf.check("cg_az_min",yarp::os::Value(0.0)).asDouble();
+    cg_el_max = rf.check("cg_el_max",yarp::os::Value(0.0)).asDouble();
+    cg_el_min = rf.check("cg_el_min",yarp::os::Value(0.0)).asDouble();
+    
+    
 
-  // used a reference here - otherwise check for null doesn't work
-  // (cannot copy a null bottle)
-  //framerate = config.check("FrameRate", yarp::os::Value(20.0), "FrameRate").asDouble();
-
-
-  // Ports
-  // open camshiftplus ports: data and sync
-  ok &= port_gaze.open("/demoAffv2/behavior/gaze");
-  ok &= port_aff.open("/demoAffv2/behavior/aff");
-  ok &= remoteAtt.open("/demoAffv2/behavior/att");
-  return ok;
+    
+    // Ports
+    // open camshiftplus ports: data and sync
+    ok &= port_gaze.open("/demoAffv2/behavior/gaze");
+    ok &= port_aff.open("/demoAffv2/behavior/aff");
+    ok &= remoteAtt.open("/demoAffv2/behavior/att");
+    ok &= port_in.open("/demoAffv2/behavior/in");
+    return ok;
 }
 
 
 bool Behavior::close(){
-
-  port_gaze.close();
-  port_aff.close();
-
-  return true;
+    
+    port_gaze.close();
+    port_aff.close();
+    port_in.close();
+    
+    return true;
 }
 
 bool Behavior::interruptModule(){
@@ -130,7 +113,8 @@ bool Behavior::interruptModule(){
 
   port_gaze.interrupt();
   port_aff.interrupt();
-
+  port_in.close();
+  
     return true;
 }
 
@@ -141,6 +125,17 @@ bool Behavior::updateModule(){
   
   
   cout << "state: " << state << statename[state] << endl;
+
+  
+  Bottle *input=port_in.read(false);
+  string cmd=input->get(0).asString().c_str();
+
+  if (cmd=="att")
+      state=ATTENTION;
+  else if (cmd=="aff")
+      state=AFFORDANCES;
+  else cout << "Message ignored: " << cmd << endl;
+
   switch (state){
   case FIRSTINIT: 
     {
