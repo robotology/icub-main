@@ -225,9 +225,6 @@ ENDIF (ARTOOLKITPLUS_FOUND)
   ADD_SUBDIRECTORY(affActionPrimitives)
   ADD_SUBDIRECTORY(affActionPrimitives/example)
 
-  ADD_SUBDIRECTORY(graspDetectorConf)
-  ADD_SUBDIRECTORY(graspDetector)
-
   add_subdirectory(libvislab-snapshot)
 
   find_package(LIBVISLAB QUIET)
@@ -244,6 +241,10 @@ ENDIF (ARTOOLKITPLUS_FOUND)
       add_subdirectory(eye2world)
     endif(IKIN_FOUND)
   endif(LIBVISLAB_FOUND)
+
+  add_subdirectory(graspDetectorConf)
+  add_subdirectory(graspDetector)
+
 
   # add here modules you want to test for compilation
   # these modules will only be compiled by automated
