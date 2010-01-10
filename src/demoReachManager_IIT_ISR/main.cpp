@@ -17,8 +17,8 @@ This module collects the 3-d object positions estimated by the
 particle filter and sends data to the head and arm controllers 
 in order to gaze at and reach for the target. 
  
-\note A video on iCub performing grasp-priming can be seen at
-      http://eris.liralab.it/misc/icubvideos/reaching_IIT_ISR.wmv
+\note A video on iCub performing grasp-priming can be seen <a 
+      href="http://eris.liralab.it/misc/icubvideos/reaching_IIT_ISR.wmv">here</a>.
 
 \section lib_sec Libraries 
 - YARP libraries. 

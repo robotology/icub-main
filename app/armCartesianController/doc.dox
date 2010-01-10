@@ -34,6 +34,8 @@ Once grasped, the object is lifted and then released, while the hand moves to
 the home position. Note that the only feedback part consists of contact detection,
 no adjustments for correcting grasp positions are given by vision system.
 
+\note A video on iCub grasping objects can be seen <a href="http://eris.liralab.it/misc/icubvideos/icub_grasps_sponges.wmv">here</a>.
+
 \section cartesianController_sec Summary of Cartesian Controller Implementation
 Given the cartesian position of an object to be grasped as result of a visual
 recognition process, the complexity of the reaching task is tackled with a modular

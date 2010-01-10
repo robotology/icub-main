@@ -119,7 +119,7 @@
  * \b q property: contains the joints configuration which 
  *    achieve x (DOF-components vector in deg).
  *  
- * \b tok property: contains the token that the client may 
+ * \b tok property: contains the token that the client may have 
  *    added to the request.
  *  
  * Date: first release 20/06/2009
