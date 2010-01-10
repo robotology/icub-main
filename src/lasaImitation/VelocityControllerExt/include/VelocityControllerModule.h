@@ -46,6 +46,7 @@ This module is an revisited version of the velocity controler module with some u
 --period <double>:     control loop period (0.01 sec by default)
 --part: <string list>: which parts do you want to instantiate (multiple instances is possible)?
                         [right_arm | left_arm | right_leg | left_leg | head | torso]+
+--amp:                 optional speed amplitude factor (1.0 by default)
 \endverbatim
 
 \section portsa_sec Ports Accessed

@@ -22,6 +22,8 @@
 
 #include <string.h>
 
+#include <iostream>
+using namespace std;
 
 ImitationApplicationThread::ImitationApplicationThread(int period, const char* baseName)
 :RateThread(period)
@@ -36,19 +38,20 @@ ImitationApplicationThread::~ImitationApplicationThread()
 bool ImitationApplicationThread::threadInit()
 {
     char portName[256];
-    snprintf(portName,256,"/%s/input",mBaseName);
-    mInputPort.open(portName);
+    //snprintf(portName,256,"/%s/input",mBaseName);
+    //mInputPort.open(portName);
 
-    snprintf(portName,256,"/%s/output",mBaseName);
-    mOutputPort.open(portName);
+    snprintf(portName,256,"/%s/VC",mBaseName);
+    mVelocityControllerPort.open(portName);
 
     return true;
 }
 
 void ImitationApplicationThread::threadRelease()
 {
-    mInputPort.close();
-    mOutputPort.close();
+    mVelocityControllerPort.close();
+    //mInputPort.close();
+    //mOutputPort.close();
 }
 
 void ImitationApplicationThread::run()
@@ -56,13 +59,44 @@ void ImitationApplicationThread::run()
     mMutex.wait();
     
     // Read data from input port
-    Vector *inputVec = mInputPort.read(false);
-    if(inputVec!=NULL){}
+    //Vector *inputVec = mInputPort.read(false);
+    //if(inputVec!=NULL){}
 
     // Write data to output port
-    Vector &outputVec = mOutputPort.prepare();
-    mOutputPort.write();
+    //Vector &outputVec = mOutputPort.prepare();
+    //mOutputPort.write();
 
     mMutex.post();
 }
 
+
+    
+int ImitationApplicationThread::respond(const Bottle& command, Bottle& reply){
+    int  cmdSize    = command.size();
+    int  retVal     = -1;
+    
+    if(cmdSize<=0){
+        retVal = -1;
+    }else{
+        switch(command.get(0).asVocab()) {
+        case VOCAB4('i','n','i','t'):
+            retVal = 1;
+            break;
+        case VOCAB3('r','u','n'):
+            {
+                Bottle &vcCmd = mVelocityControllerPort.prepare();
+                vcCmd.addString("run");
+                mVelocityControllerPort.write();
+                retVal = 1;
+            }
+            break;
+        case VOCAB4('s','t','o','p'):
+            retVal = 1;
+            break;
+        }
+    }
+    if(retVal>0){
+        reply.addVocab(Vocab::encode("ack"));
+    }
+    return retVal;
+}

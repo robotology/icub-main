@@ -95,6 +95,7 @@ private:
     
     bool                        bMoveToRest;
 
+    double                      mSpeedFactor;
 public:
 
     VelocityController();
@@ -131,6 +132,8 @@ public:
     void    SetShoulderDecoupling(bool set);
     
     void    MoveToRest();
+    
+    void    SetSpeedFactor(double fact);
 };
 
 

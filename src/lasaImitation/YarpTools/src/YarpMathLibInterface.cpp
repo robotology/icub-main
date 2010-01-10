@@ -73,3 +73,40 @@ bool SaveYarpMatrix(const char* filename, yarp::sig::Matrix &mat){
     bool res = tmp.Save(filename);
     return res;
 }
+
+
+MathLib::Vector& YarpPose7ToPose6(yarp::sig::Vector &pose, MathLib::Vector &result){
+    result.Resize(6);
+    result(0) = pose(0);
+    result(1) = pose(1);
+    result(2) = pose(2);
+    result(3) = pose(3)*pose(6);
+    result(4) = pose(4)*pose(6);
+    result(5) = pose(5)*pose(6);
+}
+
+void YarpPose7ToPose6(yarp::sig::Vector &pose, MathLib::Vector3 &pos, MathLib::Vector3 &ori){
+    pos(0) = pose(0);
+    pos(1) = pose(1);
+    pos(2) = pose(2);
+    ori(3) = pose(3)*pose(6);
+    ori(4) = pose(4)*pose(6);
+    ori(5) = pose(5)*pose(6);
+}
+void YarpPose6ToPose6(yarp::sig::Vector &pose, MathLib::Vector3 &pos, MathLib::Vector3 &ori){
+    pos(0) = pose(0);
+    pos(1) = pose(1);
+    pos(2) = pose(2);
+    ori(3) = pose(3);
+    ori(4) = pose(4);
+    ori(5) = pose(5);
+}
+void Pose6ToYarpPose6(MathLib::Vector3 &pos, MathLib::Vector3 &ori, yarp::sig::Vector &pose){
+    pose(0) = pos(0);
+    pose(1) = pos(1);
+    pose(2) = pos(2);
+    pose(3) = ori(0);
+    pose(4) = ori(1);
+    pose(5) = ori(2);
+}
+

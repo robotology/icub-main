@@ -80,9 +80,27 @@ private:
     Matrix                   mFwdKinWristRef[2];
     Matrix                   mFwdKinArmRef[2];
 
+    double                   mDesiredCartGain;
+    double                   mDesiredCartOriGain;
+    bool                     bUseDesiredCartPos[2];
+    
+    Vector                   mDesiredCartPos[2];
     Vector                   mDesiredCartVel[2];
+    Vector                   mDesiredCartWristVel[2];
     
     MathLib::IKGroupSolver   mIKSolver;
+    
+    enum SolverID{
+        IKWristPosR=0,
+        IKWristPosL,
+        IKWristOriR,
+        IKWristOriL,
+        IKArmPosR,
+        IKArmPosL,
+        IKArmOriR,
+        IKArmOriL,
+        IKSize};
+        
     
     vector<unsigned int>    mSrcToArmIndices[2];
     vector<unsigned int>    mSrcToWristIndices[2];
@@ -97,8 +115,14 @@ private:
     BufferedPort<Vector>    mCurrentJointPosPort;
     BufferedPort<Vector>    mCurrentJointVelPort;
 
+    BufferedPort<Vector>    mDesiredCartPosRPort;
+    BufferedPort<Vector>    mDesiredCartPosLPort;
+
     BufferedPort<Vector>    mDesiredCartVelRPort;
     BufferedPort<Vector>    mDesiredCartVelLPort;
+
+    BufferedPort<Vector>    mDesiredCartWristVelRPort;
+    BufferedPort<Vector>    mDesiredCartWristVelLPort;
 
 public:
             RobotControllerThread(int period, const char* baseName);
@@ -108,6 +132,9 @@ public:
             void    Init();
             void    Free();
 
+            void    SetIKSolverSet(int setId);
+            void    SetJointControlMode(int mode);
+    
     virtual void    run();
     virtual bool    threadInit();
     virtual void    threadRelease();

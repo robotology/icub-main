@@ -1,39 +1,52 @@
 <application>
-<name>Cameras</name>
-<dependencies>
-      <port>/root</port>
-</dependencies> 
-<module>
-      <name>VelocityControllerExt</name>
-      <parameters> --name VelocityController --robot icubSim --period 0.02 --part 'right_arm left_arm torso' </parameters>
-	  <node>lasalap7</node>
-	<tag>VC</tag>
+    <name>LasaImitation</name>
+    <dependencies>
+        <port>/root</port>
+    </dependencies> 
+    <module>
+        <name>VelocityControllerExt</name>
+        <parameters>--name VelocityController --robot icubSim --amp 10.0 --period 0.02 --part right_arm+left_arm+torso </parameters>
+        <node>lasalap7</node>
+        <stdio>lasalap7</stdio>
+        <tag>VC</tag>
+    </module>
+    <module>
+        <name>RobotControllerModule</name>
+        <parameters>--period 0.08 </parameters>
+        <tag>RC</tag>
+        <stdio>lasalap7</stdio>
+        <node>lasalap7</node>
    </module>
-   <module>
-      <name>RobotControllerModule</name>
-	  <parameters>--period 0.01 </parameters>
-	  <tag>RC</tag>
-	  <node>lasalap7</node>
+    <module>
+        <name>TouchControllerModule</name>
+        <parameters>--name 3DMouse --period 0.1 --type 3Dmouse --device 3Dconnexion --load</parameters>
+        <tag>TC1</tag>
+        <stdio>lasalap7</stdio>
+        <node>lasalap7</node>
    </module>
-<connection>
-  <output>/VelocityController/position</output>
-  <input>/RobotController/currentJointPosition</input>
-  <protocol>tcp</protocol>
-</connection>
-<connection>
-  <output>/VelocityController/velocity</output>
-  <input>/RobotController/currentJointVelocity</input>
-  <protocol>tcp</protocol>
-</connection>
-<connection>
-  <output>/RobotController/targetJointPosition</output>
-  <input>/VelocityController/targetPosition</input>
-  <protocol>tcp</protocol>
-</connection>
-<connection>
-  <output>/RobotController/targetJointVelocity</output>
-  <input>/VelocityController/targetVelocity</input>
-  <protocol>tcp</protocol>
-</connection>
+    <connection protocol="tcp">
+        <output>/VelocityController/position</output>
+        <input>/RobotController/currentJointPosition</input>
+    </connection>
+    <connection protocol="tcp">
+        <output>/VelocityController/velocity</output>
+        <input>/RobotController/currentJointVelocity</input>
+     </connection>
+    <connection protocol="tcp">
+        <output>/RobotController/targetJointPosition</output>
+        <input>/VelocityController/targetPosition</input>
+    </connection>
+    <connection protocol="tcp">
+        <output>/RobotController/targetJointVelocity</output>
+        <input>/VelocityController/targetVelocity</input>
+    </connection>
+    <connection protocol="tcp">
+        <output>/TouchController/3DMouse/velocity</output>
+        <input>/RobotController/desiredCartVelocityR</input>
+    </connection>
+    <connection protocol="tcp">
+        <output>/TouchController/3DMouse/velocity</output>
+        <input>/RobotController/desiredCartVelocityL</input>
+    </connection>    
 </application>
 

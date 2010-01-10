@@ -63,7 +63,18 @@ bool RobotControllerThread::threadInit()
 
     snprintf(portName,256,"/%s/desiredCartVelocityL",mBaseName);
     mDesiredCartVelLPort.open(portName);
-    
+
+    snprintf(portName,256,"/%s/desiredCartPositionR",mBaseName);
+    mDesiredCartPosRPort.open(portName);
+
+    snprintf(portName,256,"/%s/desiredCartPositionL",mBaseName);
+    mDesiredCartPosLPort.open(portName);
+
+    snprintf(portName,256,"/%s/desiredCartWristVelocityR",mBaseName);
+    mDesiredCartWristVelRPort.open(portName);
+
+    snprintf(portName,256,"/%s/desiredCartWristVelocityL",mBaseName);
+    mDesiredCartWristVelLPort.open(portName);
 
     return true;
 }
@@ -76,6 +87,10 @@ void RobotControllerThread::threadRelease()
     mCurrentJointVelPort.close();
     mDesiredCartVelRPort.close();
     mDesiredCartVelLPort.close();
+    mDesiredCartPosRPort.close();
+    mDesiredCartPosLPort.close();
+    mDesiredCartWristVelRPort.close();
+    mDesiredCartWristVelLPort.close();
 }
 
 void    RobotControllerThread::Init(){
@@ -86,8 +101,12 @@ void    RobotControllerThread::Init(){
     mTargetJointVel.resize(mJointSize);
     mCurrentJointPos.resize(mJointSize);
     mCurrentJointVel.resize(mJointSize);
+    mDesiredCartPos[0].resize(6); mDesiredCartPos[0] = 0;
+    mDesiredCartPos[1].resize(6); mDesiredCartPos[1] = 0;
     mDesiredCartVel[0].resize(6); mDesiredCartVel[0] = 0;
     mDesiredCartVel[1].resize(6); mDesiredCartVel[1] = 0;
+    mDesiredCartWristVel[0].resize(6); mDesiredCartWristVel[0] = 0;
+    mDesiredCartWristVel[1].resize(6); mDesiredCartWristVel[1] = 0;
     
     mFwdKinArm[0]       = new iKin::iCubArm("right");
     mFwdKinWrist[0]     = new iKin::iCubWrist("right");
@@ -151,26 +170,25 @@ void    RobotControllerThread::Init(){
     cout << endl;
     }
     mIKSolver.SetSizes(2*7+3);
-    mIKSolver.AddSolverItem(6);
-    mIKSolver.AddSolverItem(6);
-    //mIKSolver.AddSolverItem(3);
-    //mIKSolver.AddSolverItem(3);
+    for(int i=0;i<IKSize;i++)
+        mIKSolver.AddSolverItem(3);
+
     mIKSolver.SetVerbose(false);
     mIKSolver.SetThresholds(0.0005,0.0001);        
 
-    mIKSolver.SetPriority(0,0);
-    mIKSolver.SetPriority(1,1);
-    mIKSolver.SetPriority(2,2);
-    mIKSolver.SetPriority(3,3);
-    mIKSolver.Enable(true,0);
-    mIKSolver.Enable(true,1);
-    
-    mIKSolver.SetDofsIndices(mArmToIKSIndices[0],0);
-    mIKSolver.SetDofsIndices(mArmToIKSIndices[1],1);
-    //mIKSolver.SetDofsIndices(mWristToIKSIndices[0],0);
-    //mIKSolver.SetDofsIndices(mWristToIKSIndices[1],1);
-    //mIKSolver.SetDofsIndices(mArmToIKSIndices[0],2);
-    //mIKSolver.SetDofsIndices(mArmToIKSIndices[1],3);
+    for(int i=0;i<IKSize;i++){
+        mIKSolver.SetPriority(i,i);
+        mIKSolver.Enable(false,i);
+    }
+
+    mIKSolver.SetDofsIndices(mArmToIKSIndices[0],IKArmPosR);
+    mIKSolver.SetDofsIndices(mArmToIKSIndices[1],IKArmPosL);
+    mIKSolver.SetDofsIndices(mArmToIKSIndices[0],IKArmOriR);
+    mIKSolver.SetDofsIndices(mArmToIKSIndices[1],IKArmOriL);
+    mIKSolver.SetDofsIndices(mWristToIKSIndices[0],IKWristPosR);
+    mIKSolver.SetDofsIndices(mWristToIKSIndices[1],IKWristPosL);
+    mIKSolver.SetDofsIndices(mWristToIKSIndices[0],IKWristOriR);
+    mIKSolver.SetDofsIndices(mWristToIKSIndices[1],IKWristOriL);
     
     mJointsLimits[0].resize(2*16+3);
     mJointsLimits[1].resize(2*16+3);
@@ -180,17 +198,21 @@ void    RobotControllerThread::Init(){
     for(int i=0;i<(2*16+3);i++){
         mJointsLimits[0][i] = limLow[i];
         mJointsLimits[1][i] = limHigh[i];
-        
     }
     
     mIKJointsRest.resize(2*7+3);
     mIKJointsPos.resize(2*7+3);
     for(size_t i=0;i<mSrcToIKSIndices.size();i++)
         mIKJointsRest[i] = (mJointsLimits[0][mSrcToIKSIndices[i]]+(mJointsLimits[1][mSrcToIKSIndices[i]]-mJointsLimits[0][mSrcToIKSIndices[i]])*0.5)*(PI/180.0);
-    mIKJointsRest[0] = 0.0;
-    //cout << mJointsLimits[0].toString()<<endl;
-    //cout << mJointsLimits[1].toString()<<endl;
     
+    double rest[] = { 0.0, 0.0, 0.0, -10.0, 20.0, 40.0, 30.0, -40.0, 0.0, 0.0,-10.0, 20.0, 40.0, 30.0, -40.0, 0.0, 0.0};
+    for(size_t i=0;i<mSrcToIKSIndices.size();i++)
+        mIKJointsRest[i] = rest [i] * (PI/180.0);
+
+    mDesiredCartGain        = 1.0;
+    bUseDesiredCartPos[0]   = false;
+    bUseDesiredCartPos[1]   = false;
+
     mTime               = 0.0;
     mPrevTime           =-1.0;    
 }
@@ -227,6 +249,22 @@ void RobotControllerThread::run()
         if(inputVec->size()==mJointSize) mCurrentJointVel = *inputVec;
         else cerr << "Bad vector size on port <currentJointVelocity>: " << inputVec->size() << "!="<< mJointSize << endl;
     }
+    inputVec = mDesiredCartPosRPort.read(false);
+    if(inputVec!=NULL){
+        if(inputVec->size()==6){
+            mDesiredCartPos[0] = *inputVec;
+        }else if(inputVec->size()==3){
+            mDesiredCartPos[0] = 0; mDesiredCartPos[0][0] = (*inputVec)[0]; mDesiredCartPos[0][1] = (*inputVec)[1]; mDesiredCartPos[0][2] = (*inputVec)[2];
+        }else cerr << "Bad vector size on port <desiredCartPosR>: " << inputVec->size() << "!= 3 or 6"<< endl;
+    }
+    inputVec = mDesiredCartPosLPort.read(false);
+    if(inputVec!=NULL){
+        if(inputVec->size()==6){
+            mDesiredCartPos[1] = *inputVec;
+        }else if(inputVec->size()==3){
+            mDesiredCartPos[1] = 0; mDesiredCartPos[1][0] = (*inputVec)[0]; mDesiredCartPos[1][1] = (*inputVec)[1]; mDesiredCartPos[1][2] = (*inputVec)[2];
+        }else cerr << "Bad vector size on port <desiredCartPosL>: " << inputVec->size() << "!= 3 or 6"<< endl;
+    }
 
     inputVec = mDesiredCartVelRPort.read(false);
     if(inputVec!=NULL){
@@ -243,6 +281,22 @@ void RobotControllerThread::run()
         }else if(inputVec->size()==3){
             mDesiredCartVel[1] = 0; mDesiredCartVel[1][0] = (*inputVec)[0]; mDesiredCartVel[1][1] = (*inputVec)[1]; mDesiredCartVel[1][2] = (*inputVec)[2];
         }else cerr << "Bad vector size on port <desiredCartVelL>: " << inputVec->size() << "!= 3 or 6"<< endl;
+    }
+    inputVec = mDesiredCartWristVelRPort.read(false);
+    if(inputVec!=NULL){
+        if(inputVec->size()==6){
+            mDesiredCartWristVel[0] = *inputVec;
+        }else if(inputVec->size()==3){
+            mDesiredCartWristVel[0] = 0; mDesiredCartWristVel[0][0] = (*inputVec)[0]; mDesiredCartWristVel[0][1] = (*inputVec)[1]; mDesiredCartWristVel[0][2] = (*inputVec)[2];
+        }else cerr << "Bad vector size on port <desiredCartWristVelR>: " << inputVec->size() << "!= 3 or 6"<< endl;
+    }
+    inputVec = mDesiredCartWristVelLPort.read(false);
+    if(inputVec!=NULL){
+        if(inputVec->size()==6){
+            mDesiredCartWristVel[1] = *inputVec;
+        }else if(inputVec->size()==3){
+            mDesiredCartWristVel[1] = 0; mDesiredCartWristVel[1][0] = (*inputVec)[0]; mDesiredCartWristVel[1][1] = (*inputVec)[1]; mDesiredCartWristVel[1][2] = (*inputVec)[2];
+        }else cerr << "Bad vector size on port <desiredCartWristVelL>: " << inputVec->size() << "!= 3 or 6"<< endl;
     }
     
     
@@ -268,16 +322,15 @@ void RobotControllerThread::run()
         mFwdKinArmJacobian[j]   = mFwdKinArm[j]->GeoJacobian();
         mFwdKinArmRef[j]        = mFwdKinArm[j]->getH();        
     }
-    //cout <<mFwdKinArmJoints[0].toString()<<endl;
-    //YarpMatrixToMatrix(mFwdKinArmJacobian[0]).Print();
-    //Update IK    
-    //MathLib::Matrix tmpM;
-    //for(int i=0;i<2;i++){
-    //    mIKSolver.SetJacobian(YarpMatrixToMatrix(mFwdKinWristJacobian[i],tmpM), 0+i);
-    //    mIKSolver.SetJacobian(YarpMatrixToMatrix(mFwdKinArmJacobian[i],tmpM),   2+i);
-    //}
-    mIKSolver.SetJacobian(YarpMatrixToMatrix(mFwdKinArmJacobian[0]),   0);
-    mIKSolver.SetJacobian(YarpMatrixToMatrix(mFwdKinArmJacobian[1]),   1);
+    mIKSolver.SetJacobian(YarpMatrixToMatrix(mFwdKinArmJacobian[0]), IKArmPosR);
+    mIKSolver.SetJacobian(YarpMatrixToMatrix(mFwdKinArmJacobian[1]), IKArmPosL);
+    mIKSolver.SetJacobian(YarpMatrixToMatrix(mFwdKinArmJacobian[0]), IKArmOriR);
+    mIKSolver.SetJacobian(YarpMatrixToMatrix(mFwdKinArmJacobian[1]), IKArmOriL);
+    mIKSolver.SetJacobian(YarpMatrixToMatrix(mFwdKinWristJacobian[0]), IKWristPosR);
+    mIKSolver.SetJacobian(YarpMatrixToMatrix(mFwdKinWristJacobian[1]), IKWristPosL);
+    mIKSolver.SetJacobian(YarpMatrixToMatrix(mFwdKinWristJacobian[0]), IKWristOriR);
+    mIKSolver.SetJacobian(YarpMatrixToMatrix(mFwdKinWristJacobian[1]), IKWristOriL);
+
 
     // Limiting output: Max 60 deg per seconds
     Vector lim1; lim1.resize(2*7+3); lim1=-(60.0 *(M_PI/180.0));
@@ -296,70 +349,64 @@ void RobotControllerThread::run()
     mIKSolver.SetLimits(YarpVectorToVector(lim1),YarpVectorToVector(lim2));
     
 
-    MathLib::Vector dofWeights;
-    dofWeights.Resize(17);
+    MathLib::Vector dofWeights(17), invDofWeights(17);
     dofWeights.One();
     dofWeights(0)=dofWeights(1)=dofWeights(2)=0.3;
     mIKSolver.SetDofsWeights(dofWeights);
-
-
-    //Vector asd = mJointsRest - 
-    for(size_t i=0;i<mSrcToIKSIndices.size();i++){
+    for(int i=0;i<17;i++){
+        if(dofWeights(i)>0.05) invDofWeights(i) = 1.0/(dofWeights(i)*dofWeights(i));
+        else invDofWeights(i) = 0.0;
+    }
+    invDofWeights.Print();
+    for(size_t i=0;i<mSrcToIKSIndices.size();i++)
         mIKJointsPos(i) = mCurrentJointPos(mSrcToIKSIndices[i])*(PI/180.0);
-    }    
-    mIKSolver.SetNullTarget((YarpVectorToVector(mIKJointsRest)-YarpVectorToVector(mIKJointsPos))*0.2);
-
-    //mIKSolver.Enable(true,0);
-    //mIKSolver.Enable(true,2);
-    //mIKSolver.Enable(false,3);
-    mIKSolver.Enable(true,0);
-    mIKSolver.Enable(false,1);
-    Vector ikt; ikt.resize(6);
-    ikt = 0;
-    ikt(1) = 0.02;
-    mIKSolver.SetTarget(YarpVectorToVector(mDesiredCartVel[0]),0);
-    mIKSolver.SetTarget(YarpVectorToVector(mDesiredCartVel[1]),1);
     
+    mIKSolver.SetNullTarget((YarpVectorToVector(mIKJointsRest)-YarpVectorToVector(mIKJointsPos))^invDofWeights);
+
+    for(int i=0;i<2;i++){
+        if(bUseDesiredCartPos[i]){
+            
+            MathLib::Vector3 vel,avel,pos,ori,cpos,cori;
+            YarpPose7ToPose6(mFwdKinArmPose[i], cpos,cori);
+            YarpPose6ToPose6(mDesiredCartPos[i],pos, ori);
+            
+            pos.Sub(cpos,vel);
+            vel *= mDesiredCartGain;
+            
+            MathLib::Matrix3 src,dst,res;
+            src.RotationV(cori);
+            dst.RotationV(ori);
+            dst.Mult(src.Transpose(),res);
+            res.GetExactRotationAxis(avel);
+            
+            avel *= mDesiredCartGain; 
+            
+            Pose6ToYarpPose6(vel,avel,mDesiredCartVel[i]);
+        }
+    }
+    
+    mIKSolver.SetTarget(YarpVectorToVector(mDesiredCartVel[0]),                        IKArmPosR);
+    mIKSolver.SetTarget(YarpVectorToVector(mDesiredCartVel[1]),                        IKArmPosL);
+    mIKSolver.SetTarget(YarpVectorToVector(mDesiredCartVel[0]).GetSubVector(3,3),      IKArmOriR);
+    mIKSolver.SetTarget(YarpVectorToVector(mDesiredCartVel[1]).GetSubVector(3,3),      IKArmOriL);
+    mIKSolver.SetTarget(YarpVectorToVector(mDesiredCartWristVel[0]),                   IKWristPosR);
+    mIKSolver.SetTarget(YarpVectorToVector(mDesiredCartWristVel[1]),                   IKWristPosL);
+    mIKSolver.SetTarget(YarpVectorToVector(mDesiredCartWristVel[0]).GetSubVector(3,3), IKWristOriR);
+    mIKSolver.SetTarget(YarpVectorToVector(mDesiredCartWristVel[1]).GetSubVector(3,3), IKWristOriL);
+
 
     mIKSolver.Solve();
     
-    //mIKSolver.GetOutput().Print();
-    //mIKSolver.GetTargetOutput(0).Print();
-    
-    //mIKJointsRest = 0;
+
     Vector ikOutput;
     VectorToYarpVector(mIKSolver.GetOutput(),ikOutput);
-    //VectorToYarpVector((YarpVectorToVector(mIKJointsRest)-YarpVectorToVector(mIKJointsPos)*0.1),ikOutput);
     
     mTargetJointVel = 0;
     for(size_t i=0;i<mSrcToIKSIndices.size();i++){
         mTargetJointVel(mSrcToIKSIndices[i]) = ikOutput[i]*(180.0/PI);
     }
-    //cout << ikOutput.toString()<<endl;
     mTargetJointPos = mCurrentJointPos;
     
-    /*
-    cout <<"pos ";
-    for(int i=0;i<mSrcToIKSIndices.size();i++){
-        cout << mCurrentJointPos[mSrcToIKSIndices[i]]<<" ";
-    }
-    cout << endl;
-    cout <<"rst ";
-    for(int i=0;i<mSrcToIKSIndices.size();i++){
-        cout << mIKJointsRest[i] *180.0/PI<<" ";
-    }
-    cout << endl;
-    cout <<"pos ";
-    for(int i=0;i<mSrcToIKSIndices.size();i++){
-        cout << mIKJointsPos[i] *180.0/PI<<" ";
-    }
-    cout << endl;
-    cout <<"vel ";
-    for(int i=0;i<mSrcToIKSIndices.size();i++){
-        cout << mTargetJointVel[mSrcToIKSIndices[i]]<<" ";
-    }
-    cout << endl;
-    */
     
     switch(mState){
     case RCS_IDLE:

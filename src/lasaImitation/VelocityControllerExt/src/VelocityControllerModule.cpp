@@ -79,6 +79,10 @@ bool VelocityControllerModule::open(Searchable &s){
     if(bFakeDrivers){
        fprintf(stderr, "Using fake drivers if necessay\n"); 
     }
+    double speedFact=1.0;
+    if(mParams.check("amp")){
+        speedFact = mParams.find("amp").asDouble();
+    }    
 
     char partsName[8][256];
     strcpy(partsName[0],"right_arm");
@@ -136,6 +140,7 @@ bool VelocityControllerModule::open(Searchable &s){
                            (strcmp(partsName[partId],"left_arm")==0)){
                             vc->SetShoulderDecoupling(true);
                         }
+                        vc->SetSpeedFactor(speedFact);
                         mControllers.push_back(vc);    
                     }
                     mDrivers.push_back(driver);
@@ -148,6 +153,7 @@ bool VelocityControllerModule::open(Searchable &s){
         if(hasValidDriver){    
             sprintf(txtBuffer,"/%s/rpc",mModuleName);
             mRpcPort.open(txtBuffer);
+            mRpcPort.setStrict();
             attach(mRpcPort,true);
 
             mThread = new VelocityControllerThread(int(floor(mPeriod*1000.0)),mModuleName,&mControllers);
@@ -162,53 +168,6 @@ bool VelocityControllerModule::open(Searchable &s){
         }
 
     }
-    /*
-    for(int i=0;i<6;i++){
-        if(mParams.check(partsName[i])){
-            Property options("");
-            options.put("device","remote_controlboard");
-            sprintf(txtBuffer,"/%s/%s",mRobotName,partsName[i]);
-            options.put("remote",txtBuffer);
-            sprintf(txtBuffer,"/%s/%s",mModuleName,partsName[i]);
-            options.put("local",txtBuffer);    
-            PolyDriver *driver = new PolyDriver(options);
-            if(!driver->isValid()){
-                driver->close();
-                delete driver;
-                driver = NULL;                
-            }
-            if((driver!=NULL)||(bFakeDrivers)){
-                hasValidDriver = true;
-                VelocityController* vc = new VelocityController;
-                vc->Init(driver,partsName[i],mModuleName);
-                if((strcmp(partsName[0],"right_arm")==0)||
-                   (strcmp(partsName[0],"left_arm")==0)){
-                    vc->SetShoulderDecoupling(true);
-                }
-                mControllers.push_back(vc);    
-            }
-            mDrivers.push_back(driver);
-        }
-    }
-
-    bIsReady = true;
-    
-    if(hasValidDriver){    
-        sprintf(txtBuffer,"/%s/rpc",mModuleName);
-        mRpcPort.open(txtBuffer);
-        attach(mRpcPort,true);
-
-        mThread = new VelocityControllerThread(int(floor(mPeriod*1000.0)),mModuleName,&mControllers);
-        mThread->start();
-
-        return true;        
-    }else{
-        fprintf(stderr, "No parts specifed or they where unable to open");
-        fprintf(stderr, "  Please choose and check at least one:\n");
-            fprintf(stderr, "    --right_arm\n    --left_arm\n    --right_leg\n    --left_leg\n    --head\n    --torso \n");
-        return false;
-    }
-    */
 }
 
 bool VelocityControllerModule::close(){
@@ -238,6 +197,7 @@ bool VelocityControllerModule::respond(const Bottle& command, Bottle& reply) {
     bool retVal = true;
     
     if(cmdSize>0){
+        //cout << "Cmd: "<<command.get(0).asString().c_str()<<endl;
         switch(command.get(0).asVocab())  {
         case VOCAB4('m','a','s','k'):
             if(cmdSize==2){

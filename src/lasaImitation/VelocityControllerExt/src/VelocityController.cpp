@@ -137,6 +137,8 @@ bool VelocityController::Init(PolyDriver *driver, const char* name, const char* 
     bVelTimeoutPause        = false;
     bUseShoulderDecoupling  = false;
     
+    mSpeedFactor = 1.0;
+    
     bMoveToRest = false;
     bFirst      = true;
     bIsReady    = true;
@@ -296,6 +298,8 @@ void VelocityController::Update(double dt){
         //cout <<ov[0]-mJointsOutputVel[0]<<" "<<ov[1]-mJointsOutputVel[1]<<" "<<ov[2]-mJointsOutputVel[2]<<" " <<endl;
     }
 
+    for(int i=0;i<mJointsSize;i++)
+        mJointsOutputVel[i] *= mSpeedFactor;
     
     if(mVelocityController)
         mVelocityController->velocityMove(mJointsOutputVel.data());
@@ -431,4 +435,7 @@ int     VelocityController::GetJointsSize(){
 
 void    VelocityController::MoveToRest(){
     bMoveToRest = true;
+}
+void    VelocityController::SetSpeedFactor(double fact){
+    mSpeedFactor = fact;
 }

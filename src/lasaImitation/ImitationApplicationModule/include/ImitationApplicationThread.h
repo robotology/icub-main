@@ -38,17 +38,18 @@ private:
     int                     mPeriod;
     char                    mBaseName[256];
     
-    BufferedPort<Vector>    mInputPort;
-    BufferedPort<Vector>    mOutputPort;
+    //BufferedPort<Vector>    mInputPort;
+    BufferedPort<Bottle>    mVelocityControllerPort;
     
 public:
     ImitationApplicationThread(int period, const char* baseName);
     virtual ~ImitationApplicationThread();
 
+            int     respond(const Bottle& command, Bottle& reply);
 
-    virtual void run();
-    virtual bool threadInit();
-    virtual void threadRelease();
+    virtual void    run();
+    virtual bool    threadInit();
+    virtual void    threadRelease();
 };
 
 #endif
