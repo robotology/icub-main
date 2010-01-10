@@ -97,32 +97,32 @@ using namespace iCub::contrib;
  * To convert from pixel coordinates to azimuth and elevation angles we need the intrinsic parameters of the cameras. 
  * These are the parameters that result from camCalibConf. The file should be something like this: 
  * ------------------------------------------------
- * [CAMERA_CALIBRATION_RIGHT]
- * projection pinhole
- * drawCenterCross 0
- * w  320
- * h  240
- * fx 224.34
- * fy 223.723
- * cx 178.58
- * cy 92.5934
- * k1 -0.381097
- * k2 0.153629
- * p1 0.0011246
- * p2 -0.00120395
- * [CAMERA_CALIBRATION_LEFT]
- * projection pinhole
- * drawCenterCross 0
- * w  320
- * h  240
- * fx 214.953
- * fy 213.455
- * cx 166.773 
- * cy 125.505
- * k1 -0.358372
- * k2 0.116527
- * p1 -0.000603539
- * p2 -0.000591796 
+ * - [CAMERA_CALIBRATION_RIGHT]
+ * - projection pinhole
+ * - drawCenterCross 0
+ * - w  320
+ * - h  240
+ * - fx 224.34
+ * - fy 223.723
+ * - cx 178.58
+ * - cy 92.5934
+ * - k1 -0.381097
+ * - k2 0.153629
+ * - p1 0.0011246
+ * - p2 -0.00120395
+ * - [CAMERA_CALIBRATION_LEFT]
+ * - projection pinhole
+ * - drawCenterCross 0
+ * - w  320
+ * - h  240
+ * - fx 214.953
+ * - fy 213.455
+ * - cx 166.773 
+ * - cy 125.505
+ * - k1 -0.358372
+ * - k2 0.116527
+ * - p1 -0.000603539
+ * - p2 -0.000591796 
  * ----------------------------------------------------
  * If the images come from camCalib modules, the optical distortion parameters (k1, k2, p1, p2) should be put to 0. 
  *
@@ -148,15 +148,15 @@ using namespace iCub::contrib;
  * 
  * Other Parameters and Defaults
  *
- * pidON	          0
- * pidGAIN	  5.0
- * vorON	          0
- * log	          0
- * K                0.04 0 -0.08 -0.024 0 -0.056
- * FrameRate	  20
- * ControlRate      50
- * limitResetTime   3.0
- * headSaccadeDelay 3.0
+ * - pidON	          0
+ * - pidGAIN	  5.0
+ * - vorON	          0
+ * - log	          0
+ * - K                0.04 0 -0.08 -0.024 0 -0.056
+ * - FrameRate	  20
+ * - ControlRate      50
+ * - limitResetTime   3.0
+ * - headSaccadeDelay 3.0
  * 
  * These could go to a initialization file (e.g. controlgaze2.ini)and invoked by:
  * - --file controlgaze2.ini
@@ -217,12 +217,12 @@ using namespace iCub::contrib;
  * You can issue the previous actuation commands from a module sending appropriate bottles to the /controlGaze2/conf port. 
  * For instance the following code will send a bottle instructing controlGaze2 to move to 10 degrees azimuth and 10 degrees elevation: 
  *
- * Bottle &bot = my_output_port.prepare();
- * bot.addVocab( Vocab::encode("sac") );
- * bot.addVocab( Vocab::encode("abs") );    
- * bot.addDouble(10.0);
- * bot.addDouble(10.0);
- * my_output_port.write();
+ * - Bottle &bot = my_output_port.prepare();
+ * - bot.addVocab( Vocab::encode("sac") );
+ * - bot.addVocab( Vocab::encode("abs") );    
+ * - bot.addDouble(10.0);
+ * - bot.addDouble(10.0);
+ * - my_output_port.write();
  *
  * However, these commands use the RPC protocols and thus cannot be issued very fast (there is a delay due to the acknowledge/reply protocol). 
  * If you want to do send high frequency and low latency commands to the module, please use the streaming ports, described below. 
