@@ -9,29 +9,29 @@
 </dependencies>
 <module>
       <name>demoAffv2</name>
-      <parameters>--context demoAffv2/confSimLaptop</parameters>
-      <node>icub-b11</node>
+      <parameters>--context demoAffv2/conf</parameters>
+      <node>medusa</node>
       <stdio>icub14</stdio>
       <tag>demoAffv2</tag>
 </module>
 <module>
       <name>edisonSegmentation</name>
-      <parameters>--context demoAffv2/confSimLaptop</parameters>
+      <parameters>--context demoAffv2/conf</parameters>
       <node>icub-b12</node>
       <stdio>icub14</stdio>
       <tag>edison_segmentation</tag>
 </module>
 <module>
       <name>blobDescriptor</name>
-      <parameters>--context demoAffv2/confSimLaptop</parameters>
+      <parameters>--context demoAffv2/conf</parameters>
       <node>icub-b11</node>
       <stdio>icub14</stdio>
       <tag>blob_descriptor</tag>
 </module>
 <module>
       <name>effectDetector</name>
-      <parameters>--context demoAffv2/confSimLaptop</parameters>
-      <node>icub-13</node>
+      <parameters>--context demoAffv2/conf</parameters>
+      <node>icub-b13</node>
       <stdio>icub14</stdio>
       <tag>effect_detector</tag>
 </module>
