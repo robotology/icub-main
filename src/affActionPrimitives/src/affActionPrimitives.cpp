@@ -136,8 +136,7 @@ bool affActionPrimitives::handleTorsoDOF(Property &opt, const string &key,
             cartCtrl->setLimits(j,min,max);
             cartCtrl->getLimits(j,&min,&max);
 
-            printMessage("%s limits: [%g,%g] deg\n",key.c_str(),min,max);
-            
+            printMessage("%s limits: [%g,%g] deg\n",key.c_str(),min,max);            
         }
 
         return true;
