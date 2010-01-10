@@ -162,26 +162,29 @@
 
 
 #include "graspDetector.h"
-//ACE
-#include <ace/OS.h>
-#include <ace/Log_Msg.h>
+
 //YARP
-#include <yarp/String.h>
 #include <yarp/os/impl/String.h>
 #include <yarp/os/ResourceFinder.h>
 #include <yarp/os/Module.h>
 
+#include <string>
+#include <sstream>
+#include <stdio.h>
 
-using namespace yarp::os::impl;
 
 //
 bool getNumberFingers(Property p, int &n)
 {
-    yarp::String s((size_t)1024);
+    std::string s;
+
     int i = 0;
     while(true)
         {
-            ACE_OS::sprintf(&s[0], "FINGER%d", i);
+            std::ostringstream oss;
+            oss<<"FINGER"<<i;
+            s=std::string(oss.str());
+            // sprintf(&s[0], "FINGER%d", i);
             //fprintf(stderr, "%s\n", s.c_str());
             //fprintf(stderr, "%s\n", p.toString().c_str());
             if (p.findGroup(s.c_str()).isNull())
@@ -209,11 +212,14 @@ bool getNumberFingers(Property p, int &n)
 
 bool getParamFingers(Property p, Bottle *h, double* a, double* b, Bottle *q0, Bottle *q1, double *minT, double *maxT, int n)
 {
-    yarp::String s((size_t)1024);
+    std::string s;
     for (int i=0; i<n; i++)
         {
             //fprintf(stderr, "Getting another position\n");
-            ACE_OS::sprintf(&s[0], "FINGER%d", i);
+            std::ostringstream oss;
+            oss<<"FINGER"<<i;
+            s=std::string(oss.str());
+            // sprintf(&s[0], "FINGER%d", i);
             Bottle &xtmp = p.findGroup(&s[0]).findGroup("min");
             //fprintf(stderr, "min is: %s @ cycle %d\n", xtmp.toString().c_str(), i);
             if (!p.findGroup(s.c_str()).findGroup("min").isNull()) 
@@ -354,7 +360,7 @@ public:
         options.fromString(rf.toString());
         if (!options.check("robot") 
             || !options.check("part")) {
-            ACE_OS::printf("Missing either --robot or --part options\n");
+            printf("Missing either --robot or --part options\n");
             return false;
         }
 
@@ -362,7 +368,8 @@ public:
         Network::init();
         fprintf(stderr, "ok\n");
     
-        yarp::String name((size_t)1024);
+        std::string name;
+
         Value& robot = options.find("robot");
         Value& part = options.find("part");
         Value& analogInput = options.find("name");
@@ -376,7 +383,12 @@ public:
         analogInputPort = new BufferedPort<Bottle>[nFingers];
         for (int i = 0; i < nFingers; i++)
             {
-                ACE_OS::sprintf(&name[0], "%s/fingerDetector/finger%d/%s", analogInput.asString().c_str(), i, part.asString().c_str());
+                std::ostringstream oss;
+                oss<<analogInput.asString().c_str();
+                oss<<"/fingerDetector/finger/"<<i<<"/";
+                oss<<part.asString().c_str();
+                name=std::string(oss.str());
+                // sprintf(&name[0], "%s/fingerDetector/finger%d/%s", analogInput.asString().c_str(), i, part.asString().c_str());
                 //fprintf(stderr, "Trying to open port %s\n", name.c_str());
                 analogInputPort[i].open(name.c_str());
                 //fprintf(stderr, "Port %s opened correctly\n", name.c_str());
@@ -414,7 +426,9 @@ public:
             }
 
         //starting the thread for processing the hand status (i.e. all fingers status)
-        ACE_OS::sprintf(&name[0], "%s/fingerDetector/status:o", analogInput.asString().c_str());
+        name=std::string(analogInput.asString().c_str());
+        name.append("/fingerDetector/status:o");
+        //  sprintf(&name[0], "%s/fingerDetector/status:o", analogInput.asString().c_str());
         statusPort.open(name.c_str());
         gd = new graspDetector(nFingers, fd, &statusPort, 100);
 

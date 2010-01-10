@@ -155,7 +155,7 @@ void graspDetectorConf::run()
     if (collect!=0)
         {
             while(!(lastBottle=analogPort->read()))
-                ACE_OS::printf("Empty read\n");
+                printf("Empty read\n");
             if(lastBottle!=NULL)
                 {    
                     //ACE_OS::printf("Getting something\n");

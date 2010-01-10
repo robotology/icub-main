@@ -150,16 +150,13 @@
 
 
 #include "graspDetectorConf.h"
-//ACE
-#include <ace/OS.h> 
-#include <ace/Log_Msg.h>
 //YARP
 #include <yarp/os/Bottle.h>
-#include <yarp/os/impl/String.h>
 #include <yarp/os/ResourceFinder.h>
 #include <yarp/os/Network.h>
 #include <yarp/os/Time.h>
 #include <yarp/os/Module.h>
+#include <yarp/os/Os.h>
 
 /* itoa example */
 #include <stdio.h>
@@ -170,14 +167,14 @@ using namespace yarp::os::impl;
 //
 bool getNumberFingers(Property p, int &n)
 {
-    yarp::String s((size_t)1024);
+    char s[1024];
     int i = 0;
     while(true)
         {
-            ACE_OS::sprintf(&s[0], "FINGER%d", i);
+            sprintf(&s[0], "FINGER%d", i);
             //fprintf(stderr, "%s\n", s.c_str());
             //fprintf(stderr, "%s\n", p.toString().c_str());
-            if (p.findGroup(s.c_str()).isNull())
+            if (p.findGroup(s).isNull())
                 {
                     fprintf(stderr, "Terminating ellipses acquisitions \n");
                     break;
@@ -202,14 +199,15 @@ bool getNumberFingers(Property p, int &n)
 
 bool getParamFingers(Property p, int* a, double *b, Bottle *h, int n)
 {
-    yarp::String s((size_t)1024);
+    //    yarp::String s((size_t)1024);
+    char s[1024];
     for (int i=0; i<n; i++)
         {
             //fprintf(stderr, "Getting another position\n");
-            ACE_OS::sprintf(&s[0], "FINGER%d", i);
+            sprintf(&s[0], "FINGER%d", i);
             Bottle &xtmp = p.findGroup(&s[0]).findGroup("joint");
             //fprintf(stderr, "joint is: %s @ cycle %d\n", xtmp.toString().c_str(), i);
-            if (!p.findGroup(s.c_str()).findGroup("joint").isNull()) 
+            if (!p.findGroup(s).findGroup("joint").isNull()) 
                 {
                     xtmp = p.findGroup(&s[0]).findGroup("joint");
                     a[i] = xtmp.get(1).asInt();
@@ -279,13 +277,13 @@ public:
     {
         char string[1024];
 
-        ACE_OS::sprintf(string, "robot\t%s\n", r.asString().c_str());
+        sprintf(string, "robot\t%s\n", r.asString().c_str());
         fputs (string,pFile);
 
-        ACE_OS::sprintf(string, "part\t%s\n", p.asString().c_str());
+        sprintf(string, "part\t%s\n", p.asString().c_str());
         fputs (string,pFile);
 
-        ACE_OS::sprintf(string, "name\t%s\n", a.asString().c_str());
+        sprintf(string, "name\t%s\n", a.asString().c_str());
         fputs (string,pFile);
     }
     virtual bool configure(ResourceFinder &rf)
@@ -296,7 +294,7 @@ public:
         options.fromString(rf.toString());
         if (!options.check("robot") 
             || !options.check("part")) {
-            ACE_OS::printf("Missing either --robot or --part options\n");
+            printf("Missing either --robot or --part options\n");
             return false;
         }
 
@@ -304,7 +302,7 @@ public:
         Network::init();
         Time::turboBoost();
     
-        yarp::String name((size_t)1024);
+        char name[1024];
         Value& robot = options.find("robot");
         Value& part = options.find("part");
         Value& analogInput = options.find("name");
@@ -312,7 +310,8 @@ public:
 
         //opening the output file
         char outputFileName[1024];
-        sprintf(outputFileName, "%s/app/graspDetector/conf/%sGraspDetector.ini", ACE_OS::getenv("ICUB_ROOT"), part.asString().c_str());
+        
+        sprintf(outputFileName, "%s/app/graspDetector/conf/%sGraspDetector.ini", yarp::os::getenv("ICUB_ROOT"), part.asString().c_str());
         //fprintf(stderr, "Opening the output file: %s...", outputFileName);
         pFile = fopen (outputFileName,"w");
         //fprintf(stderr, "ok!\n");
@@ -340,11 +339,11 @@ public:
         Property ddOptions;
         ddOptions.put("device", "remote_controlboard");
     
-        ACE_OS::sprintf(&name[0], "/%s/graspDetectorConf/%s", robot.asString().c_str(), part.asString().c_str());
-        ddOptions.put("local", name.c_str());
+        sprintf(&name[0], "/%s/graspDetectorConf/%s", robot.asString().c_str(), part.asString().c_str());
+        ddOptions.put("local", name);
 
-        ACE_OS::sprintf(&name[0], "/%s/%s", robot.asString().c_str(), part.asString().c_str());
-        ddOptions.put("remote", name.c_str());
+        sprintf(&name[0], "/%s/%s", robot.asString().c_str(), part.asString().c_str());
+        ddOptions.put("remote", name);
     
         //fprintf(stderr, "%s", ddOptions.toString().c_str());
 
@@ -352,8 +351,8 @@ public:
         // create a device arm
         ddArm.open(ddOptions);
         if (!ddArm.isValid()) {
-            ACE_OS::printf("Device arm not available.  Here are the known devices:\n");
-            ACE_OS::printf("%s", Drivers::factory().toString().c_str());
+            printf("Device arm not available.  Here are the known devices:\n");
+            printf("%s", Drivers::factory().toString().c_str());
             Network::fini();
             return false;
         }
@@ -377,9 +376,9 @@ public:
         for(int i=0; i < nFingers; i++)
             {
                 //connect to analog input port
-                ACE_OS::sprintf(&name[0], "%s/graspDetectorConf/finger%d/%s", analogInput.asString().c_str(), i, part.asString().c_str());
-                analogInputPort[i].open(name.c_str());
-                if(Network::connect(analogInput.asString().c_str(), name.c_str()))
+                sprintf(&name[0], "%s/graspDetectorConf/finger%d/%s", analogInput.asString().c_str(), i, part.asString().c_str());
+                analogInputPort[i].open(name);
+                if(Network::connect(analogInput.asString().c_str(), name))
                     fprintf(stderr, "Input connection to analog was successfull\n");
                 else
                     {
@@ -395,28 +394,28 @@ public:
     void dumpPatternToFile(Vector q0, Vector q1, double m, double M, double t, double T, int i)
     {
         char string[1024];
-        ACE_OS::sprintf(string, "[FINGER%d]\n", i);
+        sprintf(string, "[FINGER%d]\n", i);
         fputs (string,pFile);
 
-        ACE_OS::sprintf(string, "joint\t%d\n", joint[i]);
+        sprintf(string, "joint\t%d\n", joint[i]);
         fputs (string,pFile);
 
-        ACE_OS::sprintf(string, "analogs\t(%s)\n", analogs[i].toString().c_str());
+        sprintf(string, "analogs\t(%s)\n", analogs[i].toString().c_str());
         fputs (string,pFile);
 
-        ACE_OS::sprintf(string, "q0\t(%s)\n", q0.toString().c_str());
+        sprintf(string, "q0\t(%s)\n", q0.toString().c_str());
         fputs (string,pFile);
 
-        ACE_OS::sprintf(string, "q1\t(%s)\n", q1.toString().c_str());
+        sprintf(string, "q1\t(%s)\n", q1.toString().c_str());
         fputs (string,pFile);
 
-        ACE_OS::sprintf(string, "min\t%.2f\nmax\t%.2f\n", m, M);
+        sprintf(string, "min\t%.2f\nmax\t%.2f\n", m, M);
         fputs (string,pFile);
 
-        ACE_OS::sprintf(string, "minT\t%.2f\nmaxT\t%.2f\n", t, T);
+        sprintf(string, "minT\t%.2f\nmaxT\t%.2f\n", t, T);
         fputs (string,pFile);
 
-        ACE_OS::sprintf(string, "\n", i);
+        sprintf(string, "\n", i);
         fputs (string,pFile);
     }
 
@@ -460,7 +459,7 @@ public:
                 gd[i]->getPattern(q0, q1, minD, maxD, minT, maxT);
 
                 //printing the results
-                ACE_OS::printf("Spanned vector space was:\n q0=%s\n q1=%s\n min=%f, max=%f\n", q0.toString().c_str(), q1.toString().c_str(), minD, maxD);
+                printf("Spanned vector space was:\n q0=%s\n q1=%s\n min=%f, max=%f\n", q0.toString().c_str(), q1.toString().c_str(), minD, maxD);
                 dumpPatternToFile(q0, q1, minD, maxD, minT, maxT, i);
             }   
         //fprintf(stderr, "Time diff is: %f\n", Time::now()-tStart);

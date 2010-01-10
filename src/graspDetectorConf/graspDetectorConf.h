@@ -40,8 +40,6 @@
  * This file can be edited at src/graspDetectorConf/main.cpp.
  */
 
-#include <ace/OS.h>
-#include <ace/Log_Msg.h>
 #include <math.h>
 
 #include <yarp/os/Network.h>
@@ -49,7 +47,6 @@
 #include <yarp/os/Bottle.h>
 #include <yarp/os/Time.h>
 
-#include <yarp/String.h> 
 #include <yarp/math/Math.h>
 #include <yarp/math/SVD.h>
 
@@ -64,7 +61,6 @@ using namespace yarp::math;
 using namespace yarp::sig;
 using namespace yarp::dev;
 using namespace yarp::os;
-using namespace yarp;
 
 #define PI 3.14
 #define N_DATA 3000

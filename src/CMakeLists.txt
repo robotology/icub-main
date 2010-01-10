@@ -119,7 +119,7 @@ ENDIF (ARTOOLKITPLUS_FOUND)
       ADD_SUBDIRECTORY(controlGaze2)
       ADD_SUBDIRECTORY(egoSphere)
       ADD_SUBDIRECTORY(attentionLogger)
-      ADD_SUBDIRECTORY(demoAffv2)   
+      #ADD_SUBDIRECTORY(demoAffv2)   
     ENDIF (GSL_FOUND)
     
     #   ADD_SUBDIRECTORY(histTracker)
