@@ -25,6 +25,9 @@ if(NOT PNL_FOUND)
   endif(PNL_DIR)
 
   findLibrary(pnl "pnl_dll.hpp")
+  findLibrary(pnlcxcore "opencx/cxcore.h")
+  
+  mergeFindResults(PNL pnl pnlcxcore)
 
   if(PNL_FOUND)
     message(STATUS "FindPNL found: ${PNL_LIBRARIES}")
