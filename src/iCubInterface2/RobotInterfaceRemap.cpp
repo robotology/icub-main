@@ -628,7 +628,7 @@ bool RobotInterfaceRemap::initialize20(const std::string &inifile)
             }
             else
             {
-                IGenericSensor *iTmp;
+                IAnalogSensor *iTmp;
                 selectedNet->driver.view(iTmp);
                 selectedNet->iAnalog=iTmp;
                 if (selectedNet->iAnalog)
@@ -640,7 +640,7 @@ bool RobotInterfaceRemap::initialize20(const std::string &inifile)
                     name+=selectedNet->id;
                     name+="/analog:o";
 
-                    selectedNet->iAnalogServer=new ServerGenericSensor(name.c_str());
+                    selectedNet->iAnalogServer=new AnalogServer(name.c_str());
                     selectedNet->iAnalogServer->setRate(period);
                     selectedNet->iAnalogServer->attach(iTmp);
                     selectedNet->iAnalogServer->start();

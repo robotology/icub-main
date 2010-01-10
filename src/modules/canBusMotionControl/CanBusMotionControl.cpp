@@ -348,7 +348,7 @@ AnalogSensor::AnalogSensor():
 data(0)
 {
 	timeStamp=0;
-	status=ANALOG_IDLE;
+	status=IAnalogSensor::AS_OK;
 	useCalibration=0;
 	scaleFactor=0;
 }
@@ -359,6 +359,11 @@ AnalogSensor::~AnalogSensor()
         delete data;
 	if (!scaleFactor)
 		delete scaleFactor;
+}
+
+int AnalogSensor::getState(int ch)
+{
+    return status;
 }
 
 bool AnalogSensor::open(int channels, AnalogDataFormat f, short bId, short useCalib)
@@ -389,13 +394,12 @@ bool AnalogSensor::open(int channels, AnalogDataFormat f, short bId, short useCa
 }
 
 
-bool AnalogSensor::getChannels(int *nc)
+int AnalogSensor::getChannels()
 {
-    *nc=data->size();
-    return true;
+    return data->size();
 }
 
-bool AnalogSensor::read(yarp::sig::Vector &out)
+int AnalogSensor::read(yarp::sig::Vector &out)
 {
     mutex.wait();
 
@@ -410,16 +414,16 @@ bool AnalogSensor::read(yarp::sig::Vector &out)
 		//Sensor with status < 0 means error
 		switch (status)
 		{
-			case ANALOG_SATURATION:
-				fprintf(stderr, "Warning strain sensor: saturation\n");
-			case ANALOG_ERROR:
-				fprintf(stderr, "Warning strain sensor: unknown state\n");
-			case ANALOG_NOT_RESPONDING:
+            case IAnalogSensor::AS_OVF:
+				fprintf(stderr, "Warning strain sensor: saturated\n");
+			case IAnalogSensor::AS_ERROR:
+				fprintf(stderr, "Warning strain sensor: unknown error\n");
+			case IAnalogSensor::AS_TIMEOUT:
 				fprintf(stderr, "Error: analog sensor is not responding\n");
 			break;
 		}
         mutex.post();
-        return false;
+        return status;
 	}
 
     out.resize(data->size());
@@ -429,7 +433,7 @@ bool AnalogSensor::read(yarp::sig::Vector &out)
     }
     
     mutex.post();
-    return true;
+    return status;
 }
  
 bool AnalogSensor::calibrate(int ch, double v)
@@ -544,7 +548,7 @@ bool AnalogSensor::handleAnalog(void *canbus)
         msgid=m.getId();
         len=m.getLen();
         
-		status=ANALOG_IDLE;
+		status=IAnalogSensor::AS_OK;
         const char type=((msgid&0x700)>>8);
         const char id=((msgid&0x0f0)>>4);
 
@@ -557,23 +561,23 @@ bool AnalogSensor::handleAnalog(void *canbus)
 					{
 						case ANALOG_FORMAT_8:
 							ret=decode8(buff, msgid, data->getBuffer());
-							status=ANALOG_OK;
+                            status=IAnalogSensor::AS_OK;
 							break;
 						case ANALOG_FORMAT_16:
 							if (len==6) 
 							{
 								ret=decode16(buff, msgid, data->getBuffer());
-								status=ANALOG_OK;
+								status=IAnalogSensor::AS_OK;
 							}
 							else
 							{
 								if (len==7 && buff[6] == 1)
 								{
-									status=ANALOG_SATURATION;
+									status=IAnalogSensor::AS_OVF;
 								}
 								else
 								{
-									status=ANALOG_ERROR;
+                                    status=IAnalogSensor::AS_ERROR;
 								}
 								ret=decode16(buff, msgid, data->getBuffer());
 							}
@@ -588,7 +592,7 @@ bool AnalogSensor::handleAnalog(void *canbus)
 	//if 100ms have passed since the last received message
 	if (timeStamp+0.1<timeNow)
 		{
-			status=ANALOG_NOT_RESPONDING;
+            status=IAnalogSensor::AS_TIMEOUT;
 		}
 
     mutex.post();
@@ -3689,17 +3693,18 @@ bool CanBusMotionControl::_readWord16Array (int msg, double *out)
     return true;
 }
 
-bool CanBusMotionControl::read(yarp::sig::Vector &out)
+int CanBusMotionControl::read(yarp::sig::Vector &out)
 {
     return analogSensor.read(out);
 }
 
-bool CanBusMotionControl::getChannels(int *nc)
+int CanBusMotionControl::getChannels()
 {
-    return analogSensor.getChannels(nc);
+    return analogSensor.getChannels();
 }
 
-bool CanBusMotionControl::calibrate(int ch, double v)
+int CanBusMotionControl::getState(int ch)
 {
-    return analogSensor.calibrate(ch, v);
+    //not really implemented
+    return IAnalogSensor::AS_OK;
 }

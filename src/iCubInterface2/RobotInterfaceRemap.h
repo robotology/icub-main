@@ -20,6 +20,7 @@
 
 #include <yarp/dev/ControlBoardInterfaces.h>
 #include <yarp/dev/GenericSensorInterfaces.h>
+#include <yarp/dev/IAnalogSensor.h>
 #include <yarp/dev/PolyDriver.h>
 #include <yarp/dev/Wrapper.h>
 
@@ -34,21 +35,21 @@
 #include <yarp/sig/Vector.h>
 #include <yarp/os/Stamp.h>
 
-class ServerGenericSensor: public yarp::os::RateThread
+class AnalogServer: public yarp::os::RateThread
 {
-    yarp::dev::IGenericSensor *is;
+    yarp::dev::IAnalogSensor *is;
     yarp::os::BufferedPort<yarp::sig::Vector> port;
     std::string name;
 	yarp::os::Stamp lastStateStamp;
 
 public:
-    ServerGenericSensor(const char *n, int rate=20): RateThread(rate)
+    AnalogServer(const char *n, int rate=20): RateThread(rate)
     {
         is=0;
         name=std::string(n);
     }
 
-    void attach(yarp::dev::IGenericSensor *s)
+    void attach(yarp::dev::IAnalogSensor *s)
     {
         is=s;
     }
@@ -68,15 +69,22 @@ public:
 
     void run()
     {
-        yarp::sig::Vector &v=port.prepare();
         if (is!=0)
         {
-            if (is->read(v))
-				{
-					lastStateStamp.update();
-				}
-			port.setEnvelope (lastStateStamp);
-            port.write();
+            yarp::sig::Vector &v=port.prepare();
+            int ret=is->read(v);
+
+            if (ret==yarp::dev::IAnalogSensor::AS_OK)
+            {
+                lastStateStamp.update();
+                port.setEnvelope(lastStateStamp);
+                port.write();
+            }
+            else
+            {
+                //todo release
+            }
+
         }
     }
 };
@@ -199,8 +207,8 @@ public:
     std::string             id;
 
     yarp::dev::IControlCalibration2  *iCalib;
-    yarp::dev::IGenericSensor        *iAnalog;
-    ServerGenericSensor              *iAnalogServer;
+    yarp::dev::IAnalogSensor         *iAnalog;
+    AnalogServer                     *iAnalogServer;
 
     bool isValid()
     {

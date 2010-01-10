@@ -32,7 +32,7 @@
 #include <yarp/dev/DeviceDriver.h>
 #include <yarp/dev/ControlBoardInterfaces.h>
 #include <yarp/dev/ControlBoardInterfacesImpl.h>
-#include <yarp/dev/GenericSensorInterfaces.h>
+#include <yarp/dev/IAnalogSensor.h>
 #include <yarp/dev/CanBusInterface.h>
 #include <yarp/os/Semaphore.h>
 #include <yarp/os/RateThread.h>
@@ -148,7 +148,7 @@ public:
 #include <yarp/os/Semaphore.h>
 typedef int AnalogDataFormat;
 
-class AnalogSensor: public yarp::dev::IGenericSensor
+class AnalogSensor: public yarp::dev::IAnalogSensor
 {
 public:
     enum AnalogDataFormat
@@ -211,9 +211,10 @@ public:
 
     bool open(int channels, AnalogDataFormat f, short bId, short useCalib);
 
-    //IGenericSensor interface
-    virtual bool read(yarp::sig::Vector &out);
-    virtual bool getChannels(int *nc);
+    //IAnalogSensor interface
+    virtual int read(yarp::sig::Vector &out);
+    virtual int getState(int ch);
+    virtual int getChannels();
     virtual bool calibrate(int ch, double v);
     /////////////////////////////////
 };
@@ -241,7 +242,7 @@ class yarp::dev::CanBusMotionControl:public DeviceDriver,
             public ImplementControlLimits<CanBusMotionControl, IControlLimits>,
 			public ImplementTorqueControl,
             public ImplementControlMode,
-            public IGenericSensor
+            public IAnalogSensor
 {
 private:
     CanBusMotionControl(const CanBusMotionControl&);
@@ -417,11 +418,10 @@ public:
     //
     /////////////// END AMPLIFIER INTERFACE
 
-    ///// GENERIC SENSOR
-    virtual bool read(yarp::sig::Vector &out);
-    virtual bool getChannels(int *nc);
-    virtual bool calibrate(int ch, double v);
-
+    ///// Analog Sensor
+    virtual int read(yarp::sig::Vector &out);
+    virtual int getChannels();
+    virtual int getState(int ch);
 
     ////// calibration
     virtual bool calibrateRaw(int j, double p);
