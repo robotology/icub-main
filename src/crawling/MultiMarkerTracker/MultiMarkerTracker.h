@@ -53,7 +53,7 @@ using namespace yarp::sig;
 using namespace std;
 using namespace yarp::dev;
 
-#define Z_OFFSET 0.03
+#define Z_OFFSET 0.0
 
 // ARToolkitPlus
 #include "ARToolKitPlus/TrackerSingleMarker.h"

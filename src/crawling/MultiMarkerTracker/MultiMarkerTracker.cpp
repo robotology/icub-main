@@ -88,8 +88,8 @@ bool MultiMarkerTracker::open(Searchable& config)
 	//opens some ports
 	imagePort.open(getName("image"));
 	viewPort.open(getName("view"));
-	markersPort.open(getName("3DPos"));
-	visionPort.open(getName("2DPos"));
+	markersPort.open(getName("RootPos"));
+	visionPort.open(getName("EyePos"));
 
 	//creates the polydriver used to get the robot current kinematic configuration.
 	drivers["head"] = CreatePolyDriver("head");
