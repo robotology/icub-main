@@ -5,8 +5,9 @@
  * \defgroup icub_framegrabbergui frameGrabberGui
  *
  * A graphical interface to set gain, shutter, brightness and color balance on a remote framegrabber.
- * Run without options to see help on usage. Note: this module is now obsolete have a look at
- * see \ref icub_framegrabbergui2 instead.
+ * Run without options to see help on usage. 
+ *
+ * Important: this module is now obsolete see \ref icub_framegrabbergui2 instead.
  *
  * The frameGrabberGui module opens one port connected to a RemoteFrameGrabber control port.
  * The name of the local and remote ports are provided as command arguments.

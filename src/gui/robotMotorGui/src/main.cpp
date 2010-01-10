@@ -7,7 +7,7 @@
 
 /**
  *
- * @ingroup icub_module
+ * @ingroup icub_guis
  * \defgroup icub_robotMotorGui robotMotorGui
  *
  * A simple graphical interface for moving all
