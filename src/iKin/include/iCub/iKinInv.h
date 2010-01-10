@@ -741,7 +741,7 @@ public:
 * A class derived from iKinCtrl solving the minimization task:
 *  
 * \f[ 
-* min_q\left(\frac{1}{2}\cdot\left|x_d-x\right|^2+\sum_{i}\frac{1}{2}\cdot\left|qf_i-q_i\right|^2\right) 
+* min_q\left(\frac{1}{2}\cdot\left\|x_d-x\right\|^2+\sum_{i}\frac{1}{2}\cdot\left\|qf_i-q_i\right\|^2\right) 
 * \f] 
 *  
 * Implemented algorithms relying on GSL library are:
