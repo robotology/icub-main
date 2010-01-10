@@ -18,10 +18,16 @@ GeneratorThread::~GeneratorThread()
 {   
 }
 ///this function checks if the joint limits are respected and adapt the commands if needed
-void GeneratorThread::checkJointLimits()
+bool GeneratorThread::checkJointLimits()
 {
 	for(int i=0;i<nbDOFs;i++)
 	{
+		if(states[i]!=states[i])
+			{
+				ACE_OS::printf("ERROR value for joint %d undefined (NaN)", i);
+				return false;
+	    }
+	    
 		if(states[i] > joint_limit_up[i] - LIMIT_TOL)
 		{
 			//printf("warning exceeded pos %f to joint %d, cutting to %f\n",
@@ -36,6 +42,7 @@ void GeneratorThread::checkJointLimits()
 				states[i] = joint_limit_down[i] + LIMIT_TOL;
 			}
 	}
+	return true;
 }
 
 ///this function sends the speed component of the rhythmic system to the manager
@@ -82,7 +89,10 @@ bool GeneratorThread::getEncoders()
 /// sends the command the velocity controllers
 bool GeneratorThread::sendFastJointCommand()   
 {
-	checkJointLimits();
+	if(!checkJointLimits())
+	{
+		return false;
+	}
 	Bottle& cmd = vcFastCommand_port.prepare();
 
 	cmd.clear();
@@ -301,7 +311,8 @@ void GeneratorThread::run()
 		//we send the current status of the cpgs to the higher instance
 		sendStatusForManager();
 	}
-	else {//try to connect to other limbs
+	else 
+	{//try to connect to other limbs
 		connectToOtherLimbs();
 	}
 
@@ -500,8 +511,6 @@ bool GeneratorThread::init(Searchable &s)
 	}
 	else
 	{
-		//ludo: we get the absolute path according to the environment variable (safer since we can run this module from anywhere
-		//done to avoid relative path problems
 		char *cubPath;
 		cubPath = getenv("ICUB_DIR");
 		if(cubPath == NULL) {

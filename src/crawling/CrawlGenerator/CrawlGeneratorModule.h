@@ -194,7 +194,7 @@ class GeneratorThread : public yarp::os::RateThread
     * If joint limits have not been exceeded, puts the states back inside the joint limits.
     * @see sendFastJointCommand()
     */
-    void checkJointLimits();
+    bool checkJointLimits();
 
     /**
     * Missing Description.

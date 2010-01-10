@@ -90,7 +90,7 @@ cpgs::cpgs(int nbDOFs, int nbLIMBs){
   m_on = 1.0; // value to turn on the oscillations
   b_go = 0.5; //rate of conv. of the go command (for the discrete system)
   u_go = 4.0; //max value of the go command
-  dt = 0.001; //integration step in seconds
+  dt = 0.0001; //integration step in seconds
   c = 100.0;//parameter of for the swing/stance switching
 
   //frequency and amplitude

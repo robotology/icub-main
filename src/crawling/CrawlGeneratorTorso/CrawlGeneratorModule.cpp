@@ -19,25 +19,33 @@ generatorThread::~generatorThread()
 {   
 }
 ///this function checks if the joint limits are respected and adapt the commands if needed
-void generatorThread::checkJointLimits()
+bool generatorThread::checkJointLimits()
 {
 	for(int i=0;i<nbDOFs;i++)
 	{
+		if(states[i]!=states[i])
+			{
+				ACE_OS::printf("ERROR value for joint %d undefined (NaN)", i);
+				return false;
+	    }
+	    
 		if(states[i] > joint_limit_up[i] - LIMIT_TOL)
 		{
-			//ACE_OS::printf("warning exceeded pos %f to joint %d, cutting to %f\n",
+			//printf("warning exceeded pos %f to joint %d, cutting to %f\n",
 			//               states[i],i,joint_limit_up[i]-LIMIT_TOL);
 			states[i] = joint_limit_up[i] - LIMIT_TOL;
 		}
 		else
 			if(states[i] < joint_limit_down[i] + LIMIT_TOL)
 			{
-				//ACE_OS::printf("warning exceeded pos %f to joint %d, cutting to %f\n",
+				//printf("warning exceeded pos %f to joint %d, cutting to %f\n",
 				//              states[i],i,joint_limit_down[i]+LIMIT_TOL);
 				states[i] = joint_limit_down[i] + LIMIT_TOL;
 			}
 	}
+	return true;
 }
+
 
 ///this function sends the speed component of the rhythmic system to the manager
 void generatorThread::sendStatusForManager()
@@ -83,7 +91,10 @@ bool generatorThread::getEncoders()
 /// sends the command the velocity controllers
 bool generatorThread::sendFastJointCommand()   
 {
-	checkJointLimits();
+	if(!checkJointLimits())
+	{
+		return false;
+	}
 	Bottle& cmd = vcFastCommand_port.prepare();
 
 	cmd.clear();
