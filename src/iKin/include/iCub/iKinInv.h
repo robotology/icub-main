@@ -676,8 +676,8 @@ public:
 * \ingroup iKinInv
 *
 * A class derived from LMCtrl implementing the Gradient 
-* Projection Method according to the paper available at
-* http://robotics.hanyang.ac.kr/new/papers/TA02-4.pdf . 
+* Projection Method according to the paper available <a 
+* href="http://robotics.hanyang.ac.kr/new/papers/TA02-4.pdf">here</a>. 
 */
 class LMCtrl_GPM : public LMCtrl
 {
@@ -860,8 +860,8 @@ public:
 * \ingroup iKinInv
 *
 * A class derived from iKinCtrl implementing the 
-* multi-referential approach described at
-* http://infoscience.epfl.ch/record/114045 . 
+* multi-referential approach (<a 
+* href="http://infoscience.epfl.ch/record/114045">PDF</a>). 
 * \note Minimum-Jerk time-based generators in Task Space and 
 *       Joint Space are used instead of VITE coupled
 *       controllers.
