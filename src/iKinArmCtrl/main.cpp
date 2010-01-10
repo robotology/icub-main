@@ -3,9 +3,9 @@
  
 @ingroup icub_module  
  
-Multi-Referential Dynamical Systems Control together with IPOPT 
-applied to iCub arm to solve the velocities trajectories 
-planning task (reaching). 
+Multi-Referential framework together with IPOPT applied to iCub 
+arm to solve the velocities trajectories planning task 
+(reaching). 
 
 Copyright (C) 2008 RobotCub Consortium
  
@@ -16,25 +16,26 @@ CopyPolicy: Released under the terms of the GNU GPL v2.0.
 \section intro_sec Description
 
 This module provides a controller for the iCub arm which 
-implements the multi-referential dynamical systems approach 
-based on the paper from Micha Hersch available 
-<a href="http://infoscience.epfl.ch/record/114045">here</a>. 
-Essentially, the generated trajectories of end-effector are 
-quasi-straight similar to the ones measured in human reaching 
-movements. The controller is capable of handling the complete 
-pose (xyz cartesian position + orientation in axis/angle mode). 
+implements the multi-referential approach based on the paper 
+from Micha Hersch available <a 
+href="http://infoscience.epfl.ch/record/114045">here</a>. Unlike
+the Micha Hersch baseline, the VITE's controllers are 
+substituted with time-base minimum jerk generators. Essentially,
+the generated trajectories of end-effector are quasi-straight 
+similar to the ones measured in human reaching movements. The 
+controller is capable of handling the complete pose (xyz 
+cartesian position + orientation in axis/angle mode). 
  
 The module can be selected to control a usual 7-DOF arm or the 
 extended 10-DOF arm which includes the torso structure.
  
 The approach untertaken herein is to discouple the kinematic 
-Solver part (running the IPOPT algorithm in this 
-implementation) from the Controller part. The 
-underlying reason is that the Solver may require some 
-computational effort from time to time depending on the current 
-pose to be attained and the chosen algorithm, it should not 
-interrupt the Controller and, finally, it can be called at 
-different rate. 
+Solver part (running the IPOPT algorithm in this implementation) 
+from the Controller part. The underlying reason is that the 
+Solver may require some computational effort from time to time 
+depending on the current pose to be attained and the chosen 
+algorithm, it should not interrupt the Controller and, finally, 
+it can be called at different rate. 
  
 \note A video on iCub performing grasp-priming can be seen <a 
       href="http://eris.liralab.it/misc/icubvideos/reaching_IIT_ISR.wmv">here</a>.
