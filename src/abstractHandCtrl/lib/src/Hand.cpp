@@ -16,6 +16,8 @@
 
 #include "iCub/vislab/Hand.h"
 
+#include <cassert>
+
 using namespace std;
 using namespace yarp::sig;
 using namespace yarp::dev;
