@@ -1,5 +1,5 @@
 /**
-*
+* @ingroup icub_module
 * \defgroup icub_hardware_modules iCub hardware modules
 *
 * $ICUB_ROOT/src/modules stores hardware modules
@@ -10,6 +10,7 @@
 * Documentation for each module goes in each 
 * directory.
 *
+* @ingroup icub_module
 * \defgroup icub_calibrators iCub calibrator classes
 * These modules are classes that contain the routines
 * for calibrating the robot at startup. They are very 
