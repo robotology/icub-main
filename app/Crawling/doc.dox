@@ -1,5 +1,6 @@
 /**
 @ingroup  icub_applications
+
 \defgroup icub_Crawling crawlingDemo
 
 A set of modules for crawling and reaching on all fours. 

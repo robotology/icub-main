@@ -1,5 +1,4 @@
 
-
 #!/bin/bash
 
 MYSHELL="bash -c"
@@ -20,7 +19,7 @@ case "$1" in
 		sleep 1
 		$MYSHELL "CrawlGeneratorTorso --part right_leg"&
 		sleep 1
-		$MYSHELL "CrawlGeneratorTorso --part torso > output.txt" &
+		$MYSHELL "CrawlGeneratorTorso --part torso"&
         sleep 1
 		$MYSHELL "CrawlGeneratorTorso --part head"&
 		sleep 1
