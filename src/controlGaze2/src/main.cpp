@@ -89,10 +89,8 @@ using namespace iCub::contrib;
  * - controlGaze2 <parameters>
  * The following parameters are accepted:
  * 
- * \defgroup configCamera
- */
- /*@{*/
- /**
+ * configCamera
+ *
  * --configCamera iCubEyes.ini
  * 
  * A file with camera parameters. 
@@ -127,41 +125,29 @@ using namespace iCub::contrib;
  * p2 -0.000591796 
  * ----------------------------------------------------
  * If the images come from camCalib modules, the optical distortion parameters (k1, k2, p1, p2) should be put to 0. 
- /*@}*/
- /**
- * \defgroup appPath
- */
- /*@{*/
- /**
+ *
+ * appPath
+ * 
  * --appPath c:/icub/app/myapp
  * 
  * The folder name where to find the configuration files. This is subject to change in the new ResourceFinder specification. 
- /*@}*/
- /**
- * \defgroup imageSize
- */
- /*@{*/
- /**
+ * 
+ * imageSize
+ *
  * --imageSize 160x120
  * 
  * If the image size is different from the specified in the calibration file, this allows rescaling the intrinsic parameters. 
  * If this is not specified, the module will use the image dimension specified in the calibration file.
- /*@}*/
- /**
- * \defgroup motorBoard
- */
- /*@{*/
- /**
+ * 
+ * motorBoard
+ *
  * --motorBoard /icub/head
  * 
  * This specifies the prefix of the port names made available by the control board to the head device. 
  * If you use ICubInterface, this is usually /icub/head. 
- /*@}*/
- /**
- * \defgroup Other Parameters and Defaults
- */
- /*@{*/
- /**
+ * 
+ * Other Parameters and Defaults
+ *
  * pidON	          0
  * pidGAIN	  5.0
  * vorON	          0
@@ -175,8 +161,7 @@ using namespace iCub::contrib;
  * These could go to a initialization file (e.g. controlgaze2.ini)and invoked by:
  * - --file controlgaze2.ini
  * This is probably going to change in future version due to the new ResourceFinder's methods. 
- /*@}*/
- /**
+ *
  * TESTING THE MODULE FROM THE CONSOLE
  * 
  * The module has a console interface where you can issue the following commands.
@@ -247,10 +232,8 @@ using namespace iCub::contrib;
  * Beyond /controlGaze2/conf, that receives the console commands, the other ports opened by controlGaze2 are of the streaming type. 
  * They do not provide replies or acknowledges.
  * 
- * \defgroup /controlGaze2/pos
- */
- /*@{*/
- /**
+ * /controlGaze2/pos
+ *
  * This port accepts gaze position commands. 
  * The iCub head will perform a fast redirection of gaze (saccade), first moving the eyes quickly to the final heading. 
  * Then it will move the head, while the eyes counter-rotate to keep the image stabilized.
@@ -269,12 +252,8 @@ using namespace iCub::contrib;
  * type_behav (optional)- just use 's', if you what to specify the following argument.
  * saccade_id (optional) - a increasing number specifying the saccade order. In some cases saccade commands can be out of order. This is sometimes the case if you stream saccade commands. The attention system uses this. Most probably you will not need it. 
  *  
- /*@}*/
- /**
- * \defgroup /controlGaze2/vel
- */
- /*@{*/
- /**
+ * /controlGaze2/vel
+ *
  * This port accepts commands that implement the smooth pursuit behavior. 
  * The behavior is similar to the position commands but the eye does not saccade faster: both eyes and head move slower. 
  * The port accepts a fast stream of commands. Each command is a Vector of 3 floats:
@@ -286,54 +265,29 @@ using namespace iCub::contrib;
  * -# 'p' (cast to float)- the command is given in normalized image coordinates (-1,1).
  * -# 'i' (cast to float)- the command is given in image pixel coordinates. 
  *
-/*@}*/
- /**
- * \defgroup /controlGaze2/dis
- */
- /*@{*/
- /**
+ *
  * This port accepts gaze vergence commands. Each command is a vector of 1 float:
  * - x - the horizontal image disparity in normalized image coordinates (-1, 1) 
  *
- /*@}*/
- /**
- * \defgroup /controlGaze2/imgcoord
- */
- /*@{*/
- /**
+ *
  * This port was made purposefully to connect directly viewer clicks. Will send the gaze direction to the clicked position in the viewer. 
  *
- /*@}*/
- /**
- * \defgroup /controlGaze2/imu
- */
- /*@{*/
- /**
+ * /controlGaze2/imu
+ *
  * Connects to the output of the inertial sensor a compensates for external body motions.
- /*@}*/
- /**
- * \defgroup /controlGaze2/trackersignal/bot:o 
- */
- /*@{*/
- /**
+ * 
+ * /controlGaze2/trackersignal/bot:o 
+ *
  * Not working. Used once to indicate the end of a saccade, meaning there is a new object to track. 
  * Please advice if interested in this feature. 
  *
- /*@}*/
- /**
- * \defgroup /controlGaze2/possibledirections/vec:o 
- */
- /*@{*/
- /**
+ * /controlGaze2/possibledirections/vec:o 
+ *
  * Experimental. Tells external modules about direction that cannot be reached due to head-eye mechanical limits. 
  * Please advice if interested in this feature.
  * 
- /*@}*/
- /**
- * \defgroup /controlGaze2/status:o 
- */
- /*@{*/
- /**
+ * /controlGaze2/status:o 
+ *
  * Outputs the state of the controller and the current azimuth and elevation gaze direction coordinates (degrees).
  * The port sends bottles with three elements:
  * - status - an integer specifying the state of the controller:
@@ -344,7 +298,7 @@ using namespace iCub::contrib;
  * -# 5 - Resting.
  * -# 6 - Starting smooth pursuit. 
  * - azimuth - a floating point number with the gaze direction azimuth (in degrees).
- * - elevation - a floating point number with the gaze direction azimuth (in degrees). 
+ * - elevation - a floating point number with the gaze direction elevation (in degrees). 
  *
  *
  * SUMMARY:
@@ -436,7 +390,8 @@ using namespace iCub::contrib;
  * - set lrt         : ser joint limit reset time
  * - get mst         : get minimum saccade time (a.k.a head saccade delay)
  * - get lrt         : get joint limit reset time
-
+ *
+ *
  *   
  * \dot
  * digraph module_camcalib_example {
