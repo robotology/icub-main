@@ -1,4 +1,6 @@
-#pragma once
+#ifndef PATCH_H
+#define PATCH_H
+
 #include "Thing.h"
 #include "GlobalStuff.h"
 
@@ -24,5 +26,7 @@ public:
     void TransformToWindowCoordinates(int originX, int originY, double scalingFactor);
     virtual void Draw(Cairo::RefPtr<Cairo::Context> myCr) const;
     double GetPotential(void) const;
-    //virtual void Scale(double scalingFactor);
+
 };
+
+#endif //PATCH_H

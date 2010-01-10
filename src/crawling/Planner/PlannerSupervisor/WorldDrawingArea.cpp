@@ -2,18 +2,14 @@
 #include <cairomm/context.h>
 #include <math.h>
 
-#include <glm/glm.hpp>
-#include <glm/gtc/double_float.hpp>
-using namespace glm;
-#include <glm/gtx/norm.hpp>
-using namespace gtx::norm;
 
 
 #include "Patch.h"
 
 WorldDrawingArea::WorldDrawingArea(int myWidth, int myHeight)
-: vision(NULL), potentialVector(0,0)
+: vision(NULL), potentialVector(Vector(2))
 {
+	potentialVector.zero();
 }
 
 WorldDrawingArea::~WorldDrawingArea(void)
@@ -41,7 +37,7 @@ void WorldDrawingArea::SetVision(Vision *myVision)
 	vision = myVision;
 }
 
-void WorldDrawingArea::SetPotentialVector(const dvec2 &myPotentialVector)
+void WorldDrawingArea::SetPotentialVector(const Vector &myPotentialVector)
 {
     potentialVector = myPotentialVector;
 }
@@ -58,13 +54,13 @@ bool WorldDrawingArea::on_expose_event(GdkEventExpose* event)
         int visionOriginX = get_width()/2;
         double scalingFactor = (get_height() - visionOriginY - 10) / VIEW_FAR;
 
-        potentialVector.x = visionOriginX + scalingFactor*potentialVector.x;
-        potentialVector.y = visionOriginY - scalingFactor*potentialVector.y;
+        potentialVector[0] = visionOriginX + scalingFactor * potentialVector[0];
+        potentialVector[1] = visionOriginY - scalingFactor * potentialVector[1];
 
         cr->arc(visionOriginX, visionOriginY, 5, 0.0, 2 * M_PI);
         cr->fill();
         cr->move_to(visionOriginX, visionOriginY);
-        cr->line_to(potentialVector.x, potentialVector.y);
+        cr->line_to(potentialVector[0], potentialVector[1]);
         cr->stroke();
 
         if(vision != NULL)
@@ -80,60 +76,3 @@ bool WorldDrawingArea::on_expose_event(GdkEventExpose* event)
 
     return true;
 }
-
-
-        /*if(vision != NULL)
-        {
-            for(unsigned int i=0; i < vision->size(); ++i)
-            {
-                (* vision)[i]->TransformToWindowCoordinates(visionOriginX, visionOriginY, scalingFactor); 
-            }
-            int x=0; 
-            int width = get_width();
-            int height = get_height();
-            while(x<width)
-            {
-                int y=0;
-                while(y<height)
-                {
-                    dvec2 position(x,y);
-                    double totalPotential=0;
-                    for(unsigned int i=0; i < vision->size(); ++i)
-                    {
-                        dvec2 patchPosition = (* vision)[i]->GetPosition();
-                        double distance = sqrt(distance2(patchPosition, position))  / (scalingFactor);
-                        if(((Potential *)(* vision)[i])->GetPotential()>0)
-                        {
-                            if(distance<d0)
-                            {
-                                totalPotential += POSITIVE_GRADIENT_EXPRESSION;
-                            }
-                        }
-                        else
-                        {
-                            totalPotential -= NEGATIVE_GRADIENT_EXPRESSION;
-                        }
-                    }
-                    
-					if(totalPotential<-EPSILON)
-					{
-						cr->set_source_rgb(0,-totalPotential,1);
-					}
-					else if(totalPotential>EPSILON)
-					{
-						cr->set_source_rgb(totalPotential,0,1);
-					}
-					else
-					{
-						cr->set_source_rgb(0,0,1);
-					}
-
-                    
-                    cr->arc(x, y, 5, 0.0, 2 * M_PI);
-                    cr->fill();
-
-                    y+=DRAWING_STEP;
-                }
-                x+=DRAWING_STEP;
-            }
-        }*/

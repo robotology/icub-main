@@ -6,7 +6,7 @@
 using namespace std;
 #include "Patch.h"
 
-PlannerSupervisor::PlannerSupervisor(Glib::Dispatcher &myDispatcher, Glib::Mutex &myLockMutex, queue<Vision *> &myVisionPipe, queue<dvec2> &myPotentialVectorPipe)
+PlannerSupervisor::PlannerSupervisor(Glib::Dispatcher &myDispatcher, Glib::Mutex &myLockMutex, queue<Vision *> &myVisionPipe, queue<Vector> &myPotentialVectorPipe)
     : dispatcher(myDispatcher), lockMutex(myLockMutex), visionPipe(myVisionPipe), potentialVectorPipe(myPotentialVectorPipe)
 {
     myPort.open(PORT_NAME);
@@ -31,7 +31,9 @@ void PlannerSupervisor::run(void)
         Bottle *readBottle = myPort.read();
         
         Bottle *potentialVectorBottle = readBottle->get(0).asList();
-        dvec2 potentialVector(potentialVectorBottle->get(0).asDouble(), potentialVectorBottle->get(1).asDouble());
+        Vector potentialVector(2);
+		potentialVector[0] = potentialVectorBottle->get(0).asDouble();
+		potentialVector[1] = potentialVectorBottle->get(1).asDouble();
 
         for(int i=1; i < readBottle->size() ; ++i)
         {

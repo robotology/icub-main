@@ -12,12 +12,12 @@ public:
     WorldDrawingArea(int myWidth, int myHeight);
     virtual ~WorldDrawingArea(void);
     void SetVision(Vision *myVision);
-    void SetPotentialVector(const dvec2 &myPotentialVector);
+    void SetPotentialVector(const Vector &myPotentialVector);
     
 
 protected:
     Vision *vision;
-    dvec2 potentialVector;
+    Vector potentialVector;
     virtual bool on_expose_event(GdkEventExpose* event);
     Cairo::RefPtr<Cairo::Context> cr;
 };

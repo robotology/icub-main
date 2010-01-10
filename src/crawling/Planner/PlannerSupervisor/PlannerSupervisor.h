@@ -49,7 +49,7 @@ public:
 	 * Constructor of the PlannerSupervisor class.
 	 * Opens ports and connects to the planner.
 	 */
-    PlannerSupervisor(Glib::Dispatcher &myDispatcher, Glib::Mutex &myLockMutex, queue<Vision *> &myVisionM_PIpe, queue<dvec2> &myPotentialVectorM_PIpe);
+    PlannerSupervisor(Glib::Dispatcher &myDispatcher, Glib::Mutex &myLockMutex, queue<Vision *> &myVisionM_PIpe, queue<Vector> &myPotentialVectorM_PIpe);
     
 	/**
 	 * Destructor of the PlannerSupervisor class.
@@ -68,7 +68,7 @@ protected:
     Glib::Dispatcher &dispatcher;  //the signal to send data to the GUI process.
     Glib::Mutex &lockMutex; //mutex to protect the movementsM_PIpe shared queue.
     queue<Vision *> &visionPipe;//shared queue to transmit the vision from this thread to the GUI.
-    queue<dvec2> &potentialVectorPipe;//shared queue to transmit the vision rotated to fit the body frame from this thread to the GUI.
+    queue<Vector> &potentialVectorPipe;//shared queue to transmit the vision rotated to fit the body frame from this thread to the GUI.
 };
 
 #endif //PLANNERSUPERVISOR__H

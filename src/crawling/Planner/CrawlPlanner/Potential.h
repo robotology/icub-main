@@ -27,10 +27,6 @@
 #ifndef POTENTIAL__H
 #define POTENTIAL__H
 
-#include <glm/glm.hpp>
-#include <glm/gtc/double_float.hpp>
-using namespace glm;
-
 
 #define d0 1
 #define kp 2
@@ -39,10 +35,13 @@ using namespace glm;
 #define NEGATIVE_GRADIENT_EXPRESSION (1 / pow(distance, kn)) // the gradient at point P is inversely proportional to distance^kn.
 #define EPSILON_LENGTH 0.01
 
+#include <yarp/sig/Vector.h>
+using namespace yarp::sig;
+
 class Potential
 {
 private:
-	dvec2 position;
+	Vector position;
     double radius;
 	double potential;
 
@@ -71,7 +70,7 @@ public:
 	/**
     * Returns the position of the potential in the reference frame of the robot.
     */
-	const dvec2 &GetPosition(void) const;
+	const Vector &GetPosition(void) const;
 
 	/**
     * Returns the radius of the potential
@@ -86,12 +85,12 @@ public:
 	/**
     * Computes the force vector defining the influence of the potential on the robot.
     */
-	dvec2 GetPotentialVector(void) const;
+	Vector GetPotentialVector(void) const;
 
 	/**
     * Translates the potential in the robot reference frame
     */
-	void Translate(const dvec2 &t);
+	void Translate(const Vector &t);
 
 	/**
     * Rotates the potential around the robot position.

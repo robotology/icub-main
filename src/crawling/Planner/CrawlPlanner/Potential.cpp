@@ -1,15 +1,21 @@
 #include "Potential.h"
 #include <math.h>
+#include <yarp/math/Math.h>
+using namespace yarp::math;
+#include <iCub/ctrlMath.h>
+using namespace ctrl;
 
-#include <glm/gtx.hpp>
-using namespace gtx::norm;
+#include "Common.h"
 
 Potential::Potential(void)
 {
 }
 
-Potential::Potential(double x, double y, double myRadius, double myPotential) : position(x,y), radius(myRadius), potential(myPotential)//, reached(false)
+Potential::Potential(double x, double y, double myRadius, double myPotential) : radius(myRadius), potential(myPotential)//, reached(false)
 {
+	position = Vector(2);
+	position[0] = x;
+	position[1] = y;
 }
 
 
@@ -17,14 +23,14 @@ Potential::~Potential(void)
 {
 }
 
-const dvec2 &Potential::GetPosition(void) const
+const Vector &Potential::GetPosition(void) const
 {
 	return position;
 }
 
-dvec2 Potential::GetPotentialVector(void) const
+Vector Potential::GetPotentialVector(void) const
 {
-    dvec2 potentialVector;
+    Vector potentialVector;
 
     //if(reached)
     //{
@@ -33,10 +39,12 @@ dvec2 Potential::GetPotentialVector(void) const
     //    return potentialVector;
     //}
 
-	dvec2 normalizedPotentialVector;
-    normalizedPotentialVector = -potential * normalize(position);
+	Vector normalizedPotentialVector;
+	double positionNorm = norm(position);
+    normalizedPotentialVector = Normalize(-potential * position);
 
-    double distance = sqrt(length2(position)) - radius;
+    double distance = positionNorm - radius;
+
     if(potential < 0)
     {
         potentialVector = normalizedPotentialVector * NEGATIVE_GRADIENT_EXPRESSION;
@@ -45,7 +53,7 @@ dvec2 Potential::GetPotentialVector(void) const
     {
         if(distance > d0)
         {
-            potentialVector = dvec2(0,0);
+            potentialVector.zero();
         }
         else
         {
@@ -53,28 +61,23 @@ dvec2 Potential::GetPotentialVector(void) const
         }
     }
 
-    //if(length2(potentialVector)<EPSILON_LENGTH)
-    //{
-    //    return dvec2(0,0);
-    //}
-
 	return potentialVector;
 }
 
-void Potential::Translate(const dvec2 &t)
+void Potential::Translate(const Vector &t)
 {
-    position += t;
+    position = position + t;
 }
 
 void Potential::Rotate(double angle)
 {
 	double teta = radians(angle);
 	double xPrime, yPrime;
-	xPrime = position.x * cos(teta) - position.y * sin(teta);
-	yPrime = position.y * cos(teta) + position.x * sin(teta);
+	xPrime = position[0] * cos(teta) - position[1] * sin(teta);
+	yPrime = position[1] * cos(teta) + position[0] * sin(teta);
 
-	position.x = xPrime;
-	position.y = yPrime;
+	position[0] = xPrime;
+	position[1] = yPrime;
 }
 
 void Potential::SetReached(void)
@@ -96,6 +99,6 @@ double Potential::GetPotential(void) const
 
 void Potential::MoveTo(double x, double y)
 {
-	position.x = x;
-	position.y = y;
+	position[0] = x;
+	position[1] = y;
 }

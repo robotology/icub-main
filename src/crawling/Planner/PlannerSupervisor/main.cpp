@@ -14,7 +14,7 @@ int main(int argc, char* argv[])
     Glib::Dispatcher dispatcher;
     Glib::Mutex lockMutex;
     queue<Vision *> visionM_PIpe;
-    queue<dvec2> potentialVectorM_PIpe;
+    queue<Vector> potentialVectorM_PIpe;
 
     PlannerSupervisor supervisor(dispatcher, lockMutex, visionM_PIpe, potentialVectorM_PIpe);  
     if (!supervisor.start()) 

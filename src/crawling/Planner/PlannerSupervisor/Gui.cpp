@@ -1,7 +1,7 @@
 #include "Gui.h"
 #include <iostream>
 using namespace std;
-Gui::Gui(Glib::Dispatcher &myDispatcher, Glib::Mutex &myLockMutex, queue<Vision *> &myVisionPipe, queue<dvec2> &myPotentialVectorPipe) 
+Gui::Gui(Glib::Dispatcher &myDispatcher, Glib::Mutex &myLockMutex, queue<Vision *> &myVisionPipe, queue<Vector> &myPotentialVectorPipe) 
     : dispatcher(myDispatcher), lockMutex(myLockMutex), visionPipe(myVisionPipe), potentialVectorPipe(myPotentialVectorPipe)//: btnQuit("Quit")
 {
     set_title(WINDOW_TITLE);
@@ -20,7 +20,7 @@ Gui::~Gui(void)
 void Gui::OnReceiveStuff(void)
 {
     Vision *vision;
-    dvec2 potentialVector;
+    Vector potentialVector;
     //Vision *bodyVision;
     {
         Glib::Mutex::Lock lock(lockMutex);
@@ -31,15 +31,6 @@ void Gui::OnReceiveStuff(void)
         //bodyVision = bodyFrameVisionPipe.front();
         //bodyFrameVisionPipe.pop();
     }
-#if _DEBUG
-	//cout << "Received displacement : (" << movement.translation.x << "," << movement.translation.y << ")  angle : " << movement.rotationAngle << endl;
-#endif
-
-    //for(unsigned int i=0; i<bodyVision->size(); ++i)
-    //{
-    //    vision->push_back((*bodyVision)[i]);
-    //}
-
 	worldDrawingArea->SetVision(vision);
     worldDrawingArea->SetPotentialVector(potentialVector);
 	worldDrawingArea->queue_draw();

@@ -5,8 +5,10 @@ Thing::Thing(void)
 }
 
 Thing::Thing(double myX, double myY, double myOrientationAngle) :
-	orientationAngle(myOrientationAngle), scalingFactor(1), position(myX, myY)
+	orientationAngle(myOrientationAngle), scalingFactor(1), position(Vector(2))
 {
+	position[0] = myX;
+	position[1] = myY;
 }
 
 Thing::~Thing(void)
@@ -15,32 +17,32 @@ Thing::~Thing(void)
 
 void Thing::TransformToWindowCoordinates(int originX, int originY, double scalingFactor)
 {
-    position.x = originX + (position.x*scalingFactor);
-    position.y = originY - (position.y*scalingFactor);
+    position[0] = originX + (position[0] * scalingFactor);
+    position[1] = originY - (position[1] * scalingFactor);
 }
 
 
 void Thing::TransformContext(Cairo::RefPtr<Cairo::Context> myCr) const
 {
     myCr->scale(scalingFactor, scalingFactor);
-	myCr->translate(position.x, position.y);
+	myCr->translate(position[0], position[1]);
 	myCr->rotate_degrees(-orientationAngle);
 }
 
 void Thing::RestoreContext(Cairo::RefPtr<Cairo::Context> myCr) const
 {
 	myCr->rotate_degrees(-orientationAngle);
-	myCr->translate(-position.x, -position.y);
+	myCr->translate(-position[0], -position[1]);
     myCr->scale(1/scalingFactor, 1/scalingFactor);
 }
     
-const dvec2 &Thing::GetPosition(void) const
+const Vector &Thing::GetPosition(void) const
 {
     return position;
 }
 
 
-void Thing::SetPosition(const dvec2 &newPosition)
+void Thing::SetPosition(const Vector &newPosition)
 {
     position = newPosition;
 }
@@ -63,8 +65,8 @@ void Thing::Rotate(double angle)
 	}
 }
 
-void Thing::Translate(const dvec2 &vector)
+void Thing::Translate(const Vector &vector)
 {
-	position.x += vector.x;
-	position.y += vector.y;
+	position[0] += vector[0];
+	position[1] += vector[1];
 }

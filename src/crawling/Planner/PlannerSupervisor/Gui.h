@@ -51,7 +51,7 @@ public:
  * Constructor of the Gui class
  * Initializes the Window and the drawing area.
  */
-Gui(Glib::Dispatcher &myDispatcher, Glib::Mutex &myLockMutex, queue<Vision *> &myVisionPipe, queue<dvec2> &myPotentialVectorPipe);
+Gui(Glib::Dispatcher &myDispatcher, Glib::Mutex &myLockMutex, queue<Vision *> &myVisionPipe, queue<Vector> &myPotentialVectorPipe);
     virtual ~Gui(void);
 
 protected:
@@ -66,7 +66,7 @@ Glib::Dispatcher &dispatcher;
 sigc::connection connection;
 Glib::Mutex &lockMutex;
 queue<Vision *> &visionPipe;
-queue<dvec2> &potentialVectorPipe;
+queue<Vector> &potentialVectorPipe;
 
 //Member widgets:
 //Gtk::Button btnQuit;
