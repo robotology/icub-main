@@ -26,7 +26,7 @@
  * The current level of a motivation is a weighted sum of recent spiking activity, with weighting being biased 
  * towards most recent spikes. 
  *
- *  The number of time intervals over which the sum is taken is provided as a parameter to the module.
+ * The number of time intervals over which the sum is taken is provided as a parameter to the module.
  * 
  * Curiousity and experimentation have different spiking functions.
  * 
@@ -45,8 +45,7 @@
  *
  * The affectiveState module has the following inputs: 
  * 
- * - image vector containing 
- *
+ * - image vector containing eight numbers
  *   -# an image id. number for the matched image
  *   -# a match value r, 0 <= r <= 1, for the matched image
  *   -# the azimuth angle of the gaze at which the image was acquired
@@ -59,7 +58,6 @@
  *   This is typically input from the episodicMemory module.
  *
  * - mode vector containing a single value denoting the mode of operation
- *
  *   - 0 (learning)
  *   - 1 (prediction) 
  *   - 2 (reconstruction) 
@@ -67,9 +65,7 @@
  *   This is typically input from the actionSelection module.
  *
  *
- * The affectiveState module has the following outputs: 
- * 
- * - affective state vector containing 
+ * The affectiveState module has one outputs: affective state vector containing four numbers
  *
  *    -# the current curiousity level 
  *    -# the instantaneous rate of change of curiousity level

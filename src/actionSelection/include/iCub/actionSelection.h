@@ -12,20 +12,16 @@
  * is higher than the experimentation level; otherwise the prediction mode is selected. 
  *
  *
- * The actionSelection module has the following inputs: 
- * 
- * - affective state vector containing 
+ * The actionSelection module has one inputs: an affective state vector containing four numbers
  *
  *    -# the current curiousity level 
  *    -# the instantaneous rate of change of curiousity level
  *    -# the current experimentation level 
  *    -# the instantaneous rate of change of experimentation level
  *
- *   This is typically input from the affectiveState module.
+ *    This is typically input from the affectiveState module.
  *
- * The actionSelection module has the following outputs: 
- *
- * - mode vector containing a single value denoting the mode of operation
+ * The actionSelection module has one outputs: mode vector containing a single value denoting the mode of operation
  *
  *   - 0 (learning)
  *   - 1 (prediction) 
