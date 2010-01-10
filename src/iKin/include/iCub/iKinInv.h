@@ -739,17 +739,15 @@ public:
 * \ingroup iKinInv
 *
 * A class derived from iKinCtrl solving the minimization 
-* task: 
-*  
-* min( 1/2*|xd-x|^2 + Sum_on_some_i( 1/2*|qfi-qi|^2 ) ) 
-*  
-* Implemented algorithms relying on GSL library are: 
-*  
-* 1) Steepest Descent Gradient 
-* 2) Conjugate Gradient FR (Fletcher-Reeves) 
-* 3) Conjugate Gradient PR (Polak-Ribiere)
-* 4) Quasi Newton BFGS (Broyden-Fletcher-Goldfarb-Shanno) 
-* 5) Nelder-Mead Simplex
+* task <br /> \f[ 
+* min_q\left(\frac{1}{2}\cdot\left|x_d-x\right|^2+\sum_{i}\frac{1}{2}\cdot\left|qf_i-q_i\right|^2\right) 
+* \f] <br />
+* Implemented algorithms relying on GSL library are: <br/>
+* -# Steepest Descent Gradient 
+* -# Conjugate Gradient FR (Fletcher-Reeves) 
+* -# Conjugate Gradient PR (Polak-Ribiere) 
+* -# Quasi Newton BFGS (Broyden-Fletcher-Goldfarb-Shanno) 
+* -# Nelder-Mead Simplex 
 */ 
 class GSLMinCtrl : public iKinCtrl
 {
