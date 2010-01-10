@@ -109,4 +109,20 @@ void Pose6ToYarpPose6(MathLib::Vector3 &pos, MathLib::Vector3 &ori, yarp::sig::V
     pose(4) = ori(1);
     pose(5) = ori(2);
 }
-
+void AddPose6ToYarpPose6(MathLib::Vector3 &pos, MathLib::Vector3 &ori, yarp::sig::Vector &pose){
+    pose(0) += pos(0);
+    pose(1) += pos(1);
+    pose(2) += pos(2);
+    
+    MathLib::Matrix3 srcM,oriM,res;
+    MathLib::Vector3 srcV(pose(3),pose(4),pose(5));
+    oriM.RotationV(ori);
+    srcM.RotationV(srcV);
+    oriM.Mult(srcM,res);
+    MathLib::Vector3 resV;
+    res.GetExactRotationAxis(resV);
+    
+    pose(3) = resV(0);
+    pose(4) = resV(1);
+    pose(5) = resV(2);
+}

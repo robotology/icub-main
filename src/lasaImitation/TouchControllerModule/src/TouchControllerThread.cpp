@@ -36,8 +36,8 @@ TouchControllerThread::TouchControllerThread(int period, const char* baseName)
     mFrameOfRef(0,0) = mFrameOfRef(1,1) = mFrameOfRef(2,2) = 1.0;
     mTransGain  = 0.0;
     mRotGain    = 0.0;
-    mTransLimit = 0.05;
-    mRotLimit   = 20.0*(M_PI/180.0);
+    mTransLimit = 0.1;
+    mRotLimit   = 40.0*(M_PI/180.0);
 
     mCoefs.resize(6);
     mCoefs[0] = mCoefs[1] = mCoefs[2] = mTransGain;
@@ -93,8 +93,8 @@ bool TouchControllerThread::threadInit()
         mMiceDriver.LinkMiceButtons(ids,4);
         mMiceDriver.SetMode(MMiceDeviceDriver::MMM_STANDARD);
         mTouchController.SetMMiceDriver(&mMiceDriver);
-        mTransGain = 0.01;
-        mRotGain   = 0.07;
+        mTransGain = 0.03;
+        mRotGain   = 0.25;
         mTouchController.SetDecayFactor(0.3);
         }
         break;
@@ -142,7 +142,7 @@ void TouchControllerThread::run()
     // Read data from input port
     Matrix *inputMat = mFrameOfRefPort.read(false);
     if(inputMat!=NULL){
-        if((inputMat->rows()==3)&&(inputMat->cols()==3))
+        if(((inputMat->rows()==3)&&(inputMat->cols()==3))||((inputMat->rows()==4)&&(inputMat->cols()==4)))
             mFrameOfRef = *inputMat;
     }
     
@@ -154,7 +154,7 @@ void TouchControllerThread::run()
 
     if(mType==1){
         mCoefs[0] = mCoefs[1] = mCoefs[2] = mTransGain;
-        mCoefs[4] = mCoefs[5] = mCoefs[6] = mRotGain;
+        mCoefs[3] = mCoefs[4] = mCoefs[5] = mRotGain;
         if(!bFake){
             mTouchController.Set6DOFSensingCoefs(mCoefs);
             mTouchController.SetOutputLimits(mTransLimit,mRotLimit);
@@ -162,9 +162,25 @@ void TouchControllerThread::run()
             
             mTouchController.Update();
         }
-        outputVec.resize(6);
-        if(!bFake)
-            mTouchController.GetOrientationFrameOutput(outputVec);
+        outputVec.resize(11);
+        outputVec = 0;
+        if(!bFake){
+            Vector tmpOutput;
+            mTouchController.GetOrientationFrameOutput(tmpOutput);
+            for(int i=0;i<6;i++)
+                outputVec[i] = tmpOutput[i];
+            
+            Vector optOut; optOut.size(2); 
+            mTouchController.Get2DOFSensingOutput(optOut);
+            outputVec[6] = optOut[0];
+            outputVec[7] = optOut[1];
+            if(mTouchController.GetLastMouseTouch())
+                outputVec[8] = 1.0;
+            if(mTouchController.TouchDetected())
+                outputVec[9] = 1.0;
+            if(mTouchController.ResetDetected())
+                outputVec[10] = 1.0;
+        }
     }else if(mType == 0){
         outputVec.resize(6);
         if(!bFake){
@@ -178,6 +194,7 @@ void TouchControllerThread::run()
             
             MathLib::Matrix mat3(3,3);
             YarpMatrixToMatrix(mFrameOfRef,mat3);
+            mat3.Resize(3,3,true);
             MathLib::Vector vec(3),vec2(3);
             vec[0] = outputVec[0]; vec[1] = outputVec[1]; vec[2] = outputVec[2];
             mat3.Mult(vec,vec2);

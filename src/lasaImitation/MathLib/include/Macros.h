@@ -130,7 +130,7 @@
 /// AN arbitrary mimimal error bound
 #ifndef EPSILON
   #ifdef MATHLIB_USE_DOUBLE_AS_REAL
-    #define EPSILON   (1e-6)
+    #define EPSILON   (1e-12)
   #else
     #define EPSILON   (1e-6f)
   #endif

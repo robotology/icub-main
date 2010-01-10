@@ -74,6 +74,7 @@ private:
     Vector                      mJointsTargetPos;
     Vector                      mJointsTargetVel;
     Vector                      mJointsOutputVel;
+    Vector                      mJointsPrevOutputVel;
     
     Vector                      mJointsPosLimits[2];
     Vector                      mJointsVelLimits[2];

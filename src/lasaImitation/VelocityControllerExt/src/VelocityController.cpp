@@ -87,6 +87,7 @@ bool VelocityController::Init(PolyDriver *driver, const char* name, const char* 
     mJointsTargetPos.resize(mJointsSize);
     mJointsTargetVel.resize(mJointsSize);
     mJointsOutputVel.resize(mJointsSize);
+    mJointsPrevOutputVel.resize(mJointsSize);
     mJointsMask.resize(mJointsSize);
     mJointsError.resize(mJointsSize);
     mJointsKp.resize(mJointsSize);
@@ -201,6 +202,7 @@ void VelocityController::Update(double dt){
     if(bFirst){
         mDecouplingBox.ResetSetPoint(mJointsPos);
         mJointsRest = mJointsPos;
+        mJointsPrevOutputVel = 0.0;
         bFirst = false;
     }
 
@@ -254,16 +256,21 @@ void VelocityController::Update(double dt){
         double currError = 0.0;
         double kdPart    = 0.0;
         double kpPart    = 0.0;
-         
+        
+        double mVelTau   = 0.1;
+        double dtOnTau   = dt/mVelTau;
+        
         switch(mMode[i]){
         case VC_IDLE:
+            mDecouplingBox.ResetSetPoint(mJointsPos);
             mJointsTargetPos[i] = mJointsPos[i];
             mJointsTargetVel[i] = 0.0;
             mJointsOutputVel[i] = 0.0;
             break;
         case  VC_ACTIVE:
-            // Velocity control            
-            mJointsOutputVel[i] = mJointsTargetVel[i];
+            // Velocity control
+            double outputVel =  mJointsTargetVel[i];
+            //mJointsOutputVel[i] =
             
             // Position control
             if(mJointsTargetPos[i]<mJointsPosLimits[0][i]){
@@ -278,17 +285,37 @@ void VelocityController::Update(double dt){
                 
             mJointsError[i]     = currError;
             kpPart = mJointsKp[i]*(mJointsError[i]);
-            
-            mJointsOutputVel[i] += kpPart + kdPart;
+            //cout << kdPart<<" ";
+            outputVel += kpPart + kdPart;
 
-            if(mJointsOutputVel[i]<mJointsVelLimits[0][i]){
-                mJointsOutputVel[i] = mJointsVelLimits[0][i];
-            }else if(mJointsOutputVel[i]>mJointsVelLimits[1][i]){
-                mJointsOutputVel[i] = mJointsVelLimits[1][i];
+            mJointsOutputVel[i] = mJointsPrevOutputVel[i] + (-mJointsPrevOutputVel[i] + outputVel)*dtOnTau;
+            //mJointsPrevOutputVel[i]
+            
+            double minVelLimit = mJointsVelLimits[0][i];
+            double maxVelLimit = mJointsVelLimits[1][i];
+            
+            if(mJointsPos[i]-mJointsPosLimits[0][i]<5.0){
+                if(mJointsPos[i]-mJointsPosLimits[0][i]<0.0) minVelLimit = 0.0;
+                else minVelLimit *= (mJointsPos[i]-mJointsPosLimits[0][i])/5.0;
+            }else if(mJointsPosLimits[1][i]-mJointsPos[i]<5.0){
+                if(mJointsPosLimits[1][i]-mJointsPos[i]<0.0) maxVelLimit = 0.0;
+                else maxVelLimit *= (mJointsPosLimits[1][i]-mJointsPos[i])/5.0; 
+            }
+
+            if(mJointsOutputVel[i]<minVelLimit){
+                mJointsOutputVel[i] = minVelLimit;
+            }else if(mJointsOutputVel[i]>maxVelLimit){
+                mJointsOutputVel[i] = maxVelLimit;
             }
             break;
         }
     }
+    //cout << endl;
+    
+    mJointsPrevOutputVel = mJointsOutputVel;
+    //cout << " ------------"<<endl;
+    //cout << mJointsOutputVel.toString()<<endl;
+
     if(bUseShoulderDecoupling){
         mDecouplingBox.mDecFactors[0] = -0.002335;
         mDecouplingBox.mDecFactors[1] = -0.001662;
@@ -297,13 +324,16 @@ void VelocityController::Update(double dt){
         mDecouplingBox.Decouple(mJointsOutputVel, mJointsOutputVel, dt);        
         //cout <<ov[0]-mJointsOutputVel[0]<<" "<<ov[1]-mJointsOutputVel[1]<<" "<<ov[2]-mJointsOutputVel[2]<<" " <<endl;
     }
+    //cout << mJointsOutputVel.toString()<<endl;
 
+    
     for(int i=0;i<mJointsSize;i++)
         mJointsOutputVel[i] *= mSpeedFactor;
     
     if(mVelocityController)
         mVelocityController->velocityMove(mJointsOutputVel.data());
 
+    
     mMutex.post();
 }
 

@@ -24,5 +24,6 @@ MathLib::Vector&    YarpPose7ToPose6(yarp::sig::Vector &pose, MathLib::Vector &r
 void                YarpPose7ToPose6(yarp::sig::Vector &pose, MathLib::Vector3 &pos, MathLib::Vector3 &ori);
 void                YarpPose6ToPose6(yarp::sig::Vector &pose, MathLib::Vector3 &pos, MathLib::Vector3 &ori);
 void                Pose6ToYarpPose6(MathLib::Vector3 &pos, MathLib::Vector3 &ori, yarp::sig::Vector &pose);
+void                AddPose6ToYarpPose6(MathLib::Vector3 &pos, MathLib::Vector3 &ori, yarp::sig::Vector &pose);
 
 #endif /*YARPMATHLIBINTERFACE_H_*/

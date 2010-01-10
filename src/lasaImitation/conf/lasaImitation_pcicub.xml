@@ -5,7 +5,7 @@
     </dependencies> 
     <module>
         <name>VelocityControllerExt</name>
-        <parameters>--name VelocityController --robot icubSim --period 0.02 --part right_arm+left_arm+torso </parameters>
+        <parameters>--name VelocityController --robot icubSim --amp 10.0 --period 0.02 --part right_arm+left_arm+torso </parameters>
         <node>lasapcicub</node>
         <stdio>lasapcicub</stdio>
         <tag>VC</tag>
@@ -19,7 +19,7 @@
    </module>
     <module>
         <name>TouchControllerModule</name>
-        <parameters>--name 3DMouse --type 3Dmouse --device 3Dconnexion --load</parameters>
+        <parameters>--name 3DMouse --period 0.1 --type 3Dmouse --device 3Dconnexion --load</parameters>
         <tag>TC1</tag>
         <stdio>lasapcicub</stdio>
         <node>lasapcicub</node>

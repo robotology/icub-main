@@ -12,15 +12,22 @@
     </module>
     <module>
         <name>RobotControllerModule</name>
-        <parameters>--period 0.08 </parameters>
+        <parameters>--period 0.04 </parameters>
         <tag>RC</tag>
+        <stdio>lasapcicub</stdio>
+        <node>lasapcicub</node>
+    </module>
+    <module>
+        <name>TouchControllerModule</name>
+        <parameters>--name 3DMouse --period 0.1 --type 3Dmouse --device 3Dconnexion --load</parameters>
+        <tag>TC1</tag>
         <stdio>lasapcicub</stdio>
         <node>lasapcicub</node>
    </module>
     <module>
         <name>TouchControllerModule</name>
-        <parameters>--name 3DMouse --type 3Dmouse --device 3Dconnexion --load</parameters>
-        <tag>TC1</tag>
+        <parameters>--name Touchpad --period 0.1 --type touchpad --device Cirque --load</parameters>
+        <tag>TC2</tag>
         <stdio>lasapcicub</stdio>
         <node>lasapcicub</node>
    </module>
@@ -41,9 +48,16 @@
         <input>/VelocityController/targetVelocity</input>
     </connection>
     <connection protocol="tcp">
-        <output>/TouchController/3DMouse/velocity</output>
-        <input>/RobotController/desiredCartVelocityR</input>
+        <output>/TouchController/Touchpad/velocity</output>
+        <input>/RobotController/desiredCartWristVelocityR</input>
     </connection>
-
+    <connection protocol="tcp">
+        <output>/RobotController/currentWristRefR</output>
+        <input>/TouchController/Touchpad/frameOfRef</input>
+    </connection>
+    <connection protocol="tcp">
+        <output>/TouchController/3DMouse/velocity</output>
+        <input>/RobotController/desiredCartVelocityL</input>
+    </connection>    
 </application>
 

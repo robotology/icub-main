@@ -95,7 +95,7 @@ void    TouchControllerImpl::Update(){
     
     double timeNow = Time::now();
     double dt      = timeNow - mLastTime;
-    if(dt>0.1) dt = 0.0;
+    if(dt>0.5) dt = 0.0;
     
     for(int i=0;i<6;i++){
         m6DofSensorsOutput[i] = 0.0;    
@@ -338,7 +338,7 @@ void    TouchControllerImpl::Update(){
     dtTau = MIN(0.5,dtTau);
     mTransCompOut  += (-mTransCompOut  + mTransComp )*dtTau;
     for(int i=0;i<2;i++){
-        m2DofCompOut[i] += (-m2DofCompOut[i] + m2DofSensorsOutput[i])*dtTau;
+        m2DofCompOut[i] += (-m2DofCompOut[i] + 0.5*m2DofSensorsOutput[i])*dtTau;
     } 
     
     

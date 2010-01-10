@@ -58,13 +58,13 @@ bool TouchControllerModule::open(Searchable &s){
     
     if(!mParams.check("period")){
         mParams.put("period",0.05);
-        fprintf(stderr, "No module period specifed, using <0.01> ms as default\n");
+        fprintf(stderr, "No module period specifed, using <0.05> ms as default\n");
         fprintf(stderr, "  usage: --period time (e.g. 0.01)\n");
     }
     mPeriod = mParams.find("period").asDouble();
     if(mPeriod<=0.0){
-        fprintf(stderr, "Period specifed, %f<0, using <0.01> ms as default\n",mPeriod);
-        mPeriod = 0.01;
+        fprintf(stderr, "Period specifed, %f<0, using <0.05> ms as default\n",mPeriod);
+        mPeriod = 0.05;
     }
 
     if(!mParams.check("type")){
