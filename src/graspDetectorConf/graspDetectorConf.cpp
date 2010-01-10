@@ -138,7 +138,7 @@ void graspDetectorConf::buildPattern()
     collect = 0;
 }
 
-bool graspDetectorConf::getPattern(Vector &q_0, Vector &q_1, double &m, double &M, double &t, double &T)
+void graspDetectorConf::getPattern(Vector &q_0, Vector &q_1, double &m, double &M, double &t, double &T)
 {
     t = minT;
     T = maxT;
@@ -146,7 +146,6 @@ bool graspDetectorConf::getPattern(Vector &q_0, Vector &q_1, double &m, double &
     M = maxError;
     q_0 = q0;
     q_1 = q1;
-    return true;
 }
     
 

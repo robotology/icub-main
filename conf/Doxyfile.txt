@@ -496,7 +496,8 @@ EXCLUDE_SYMLINKS       = NO
 
 # armSimple... contains too much stuff
 # firmware contains a lot of stuff too
-EXCLUDE_PATTERNS       = */firmware/* /*armSimpleAnticollisionFilter/*
+# .svn useless directory. Not sure they are parsed by doxygen, but ... just in case
+EXCLUDE_PATTERNS       = */firmware/* /*armSimpleAnticollisionFilter/* /*primateVision/* /*.svn/*
 
 # The EXAMPLE_PATH tag can be used to specify one or more files or 
 # directories that contain example code fragments that are included (see 

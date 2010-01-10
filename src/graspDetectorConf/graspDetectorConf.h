@@ -120,7 +120,7 @@ public:
     * @param t (output) the value of \f$ t_{min}\f$
     * @param T (output) the value of \f$ t_{max}\f$
     */
-    bool getPattern(Vector& q0, Vector& q1, double& m, double& M, double& t, double& T);
+    void getPattern(Vector& q0, Vector& q1, double& m, double& M, double& t, double& T);
     
 private:
     int joint;
