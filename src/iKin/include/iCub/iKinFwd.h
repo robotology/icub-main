@@ -11,7 +11,8 @@
  *
  * \section dep_sec Dependencies 
  * - ctrlLib 
- * - IPOPT: see http://eris.liralab.it/wiki/Installing_IPOPT .
+   - IPOPT: see the <a
+     href="http://eris.liralab.it/wiki/Installing_IPOPT">wiki</a>.
  *  
  * \author Ugo Pattacini 
  *  
