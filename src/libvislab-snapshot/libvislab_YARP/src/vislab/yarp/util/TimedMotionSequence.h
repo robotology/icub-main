@@ -22,8 +22,6 @@
 #include <yarp/sig/all.h>
 #include <yarp/os/all.h>
 
-#include <ace/OS.h>
-
 #include "common.h"
 
 namespace vislab {
