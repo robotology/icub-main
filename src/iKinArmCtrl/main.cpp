@@ -127,14 +127,15 @@ following ports:
  
 \section coor_sys_sec Coordinate System 
 Positions (meters) and orientation (radians) refer to the root 
-reference frame attached to the waist as in 
-http://eris.liralab.it/wiki/ICubForwardKinematics . 
+reference frame attached to the waist as in the <a 
+href="http://eris.liralab.it/wiki/ICubForwardKinematics">wiki</a>. 
  
 To specify a target orientation you shall provide three 
 components for the rotation axis (whose norm is 1) and a fourth 
 component for the rotation angle in radians as required by the 
-axis/angle notation (see http://en.wikipedia.org/wiki/Axis_angle
-). The reference axes still belong to the root frame; as result,
+axis/angle notation (click <a 
+href="http://en.wikipedia.org/wiki/Axis_angle">here</a>). The 
+reference axes still belong to the root frame; as result, 
 commanding for instance a target orientation of [0 1 0 
 30*pi/180] will steer the axes attached to the end-effector in a 
 way to attain a final orientation equal to the rotation of the 
