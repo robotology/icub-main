@@ -513,8 +513,8 @@ bool BlobDescriptorModule::updateModule()
 			double w = _objDescTable[i].enclosing_rect.size.width;
 			double h = _objDescTable[i].enclosing_rect.size.height;
 
-			double norm_x = (x-w/2)/(w/2); //between -1 and 1 
-			double norm_y = (y-h/2)/(h/2); //between -1 and 1 
+			double norm_x = (x-_w/2)/(_w/2); //between -1 and 1 
+			double norm_y = (y-_h/2)/(_h/2); //between -1 and 1 
 			double norm_w = (w/_w);        //between 0 and 1 
 			double norm_h = (h/_h);		   //between 0 and 1 	
 
