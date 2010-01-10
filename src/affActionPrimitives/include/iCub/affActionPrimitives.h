@@ -242,7 +242,6 @@ public:
     *  key ***
     *  numWayPoints ***
     *  wp_0  (poss (10 ...)) (vels (20 ...)) (thres (1 2 3 4 5))
-    *        
     *  wp_1  ***
     *  ...
     *  
