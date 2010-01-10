@@ -78,6 +78,7 @@ bool GeneratorThread::getEncoders()
 	else
 	{
 		cout << "there was an error getting the encoders" << endl;
+		ACE_OS::printf("for part %s", partName.c_str());
 		delete[] tmp_enc;
 		return false;
 	}
