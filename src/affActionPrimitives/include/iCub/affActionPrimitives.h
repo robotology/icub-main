@@ -241,16 +241,17 @@ public:
     *  [SEQ_0]
     *  key ***
     *  numWayPoints ***
-    *  wp_0  (poss (10.0 20.0 ...)) (vels (20.0 20.0 ...))
-    *        (thres (1.0 2.0 3.0 4.0 5.0))
+    *  wp_0  (poss (10 ...)) (vels (20 ...)) (thres (1 2 3 4 5))
+    *        
     *  wp_1  ***
     *  ...
     *  
     *  [SEQ_1]
     *  ...
     *  
-    *  // the "thres" key specifies fingers thresholds
-    *  // used for model-based grasp detection.
+    *  // the "poss" and "vels" keys specify 9 joints positions and
+    *  // velocities whereas the "thres" key specifies 5 fingers
+    *  // thresholds used for model-based contact detection
     *  \endcode
     *  
     * \note A port called <i> /<local>/<part>/detectGrasp:i </i> is 
