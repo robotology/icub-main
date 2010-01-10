@@ -204,6 +204,12 @@ public:
     *  
     * \b reach_tol <double>: the reaching tolerance [m]. 
     *  
+    * \b tracking_mode <string>: enable/disable the tracking mode; 
+    *    possible values: "true"/"false".
+    * \note In tracking mode the cartesian position is mantained on 
+    *       the reached target; in non-tracking mode the joints
+    *       positions are kept once the target is attained.
+    *  
     * \b verbosity <string>: enable/disable the verbose mode; 
     *    possible values: "on"/"off".
     *
@@ -396,6 +402,17 @@ public:
     * \note it empty out the actions queue. 
     */
     virtual bool stopControl();
+
+    /**
+    * Set the task space controller in tracking or non-tracking 
+    * mode. 
+    * @param f: true for tracking mode, false otherwise. 
+    * \note In tracking mode the cartesian position is mantained on 
+    *       the reached target; in non-tracking mode the joints
+    *       positions are kept once the target is attained.
+    * @return true/false on success/failure.
+    */
+    virtual bool setTrackingMode(const bool f);
 
     /**
     * Check whether the action is accomplished or still ongoing.
