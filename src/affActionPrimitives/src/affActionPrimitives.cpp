@@ -216,13 +216,19 @@ bool affActionPrimitives::configHandSeq(Property &opt)
 
                 if (!bWP.check("poss"))
                 {
-                    printMessage("WARNING: \"poss\" option is missing\n");    
+                    printMessage("WARNING: \"poss\" option is missing\n");
                     return false;
                 }
 
                 if (!bWP.check("vels"))
                 {
-                    printMessage("WARNING: \"vels\" option is missing\n");    
+                    printMessage("WARNING: \"vels\" option is missing\n");
+                    return false;
+                }
+
+                if (!bWP.check("thres"))
+                {
+                    printMessage("WARNING: \"thres\" option is missing\n");
                     return false;
                 }
 
@@ -238,7 +244,15 @@ bool affActionPrimitives::configHandSeq(Property &opt)
                 for (int k=0; k<vels.length(); k++)
                     vels[k]=bVels->get(k).asDouble();
 
-                addHandSeqWP(key,poss,vels);
+                Bottle *bThres=bWP.find("thres").asList();
+                Vector thres(bThres->size());
+
+                for (int k=0; k<thres.length(); k++)
+                    thres[k]=bThres->get(k).asDouble();
+
+                if (!addHandSeqWP(key,poss,vels,thres))
+                    printMessage("WARNING: \"%s\" entry is invalid,\
+                                 not added to \"%s\"\n",wp,key.c_str());
             }
         }
     
@@ -310,18 +324,6 @@ bool affActionPrimitives::open(Property &opt)
     handleTorsoDOF(opt,"torso_pitch",0);
     handleTorsoDOF(opt,"torso_roll",1);
     handleTorsoDOF(opt,"torso_yaw",2);
-
-    // get grasp detection thresholds
-    graspDetectionThres.resize(5,0.0);
-    if (Bottle *pB=opt.find("grasp_detection_thresholds").asList())
-    {
-        int sz=pB->size();
-        int len=graspDetectionThres.length();
-        int l=len<sz?len:sz;
-
-        for (int i=0; i<l; i++)
-            graspDetectionThres[i]=pB->get(i).asDouble();
-    }
 
     // open port for grasp detection
     graspDetectionPort.open((fwslash+local+fwslash+part+fwslash+"detectGrasp:i").c_str());
@@ -423,8 +425,10 @@ bool affActionPrimitives::isGraspEnded()
         for (int fng=0; fng<5; fng++)
         {
             // detect contact on the finger
-            if (pB->get(fng).asDouble()>graspDetectionThres[fng])
+            if (pB->get(fng).asDouble()>curGraspDetectionThres[fng])
             {
+                printMessage("contact detected on finger %d\n",fng);
+
                 // take joints belonging to the finger
                 pair<multimap<int,int>::iterator,multimap<int,int>::iterator> i=fingers2JntsMap.equal_range(fng);
                 
@@ -438,7 +442,7 @@ bool affActionPrimitives::isGraspEnded()
                         stopJntTraj(jnt);
                         tmpSet.erase(jnt);
                     }
-                }
+                }                
             }
         }
     }
@@ -802,8 +806,10 @@ bool affActionPrimitives::cmdHand(const Action &action)
     {        
         const Vector &poss=action.handWP.poss;
         const Vector &vels=action.handWP.vels;
+        const Vector &thres=action.handWP.thres;
 
         fingersMovingJntsSet=fingersJntsSet;
+        curGraspDetectionThres=thres;
         for (set<int>::iterator itr=fingersJntsSet.begin(); itr!=fingersJntsSet.end(); ++itr)
         {   
             int j=*itr-jHandMin;
@@ -816,7 +822,9 @@ bool affActionPrimitives::cmdHand(const Action &action)
         }
 
         latchHandMoveDone=handMoveDone=false;
-        printMessage("moving hand to WP: [%s]\n",toCompactString(poss).c_str());
+        printMessage("moving hand to WP: [%s] (thres = [%s])\n",
+                     toCompactString(poss).c_str(),
+                     toCompactString(thres).c_str());
 
         return true;
     }
@@ -826,16 +834,23 @@ bool affActionPrimitives::cmdHand(const Action &action)
 
 
 /************************************************************************/
-bool affActionPrimitives::addHandSeqWP(const string &handSeqKey,
-                                       const Vector &poss, const Vector vels)
+bool affActionPrimitives::addHandSeqWP(const string &handSeqKey, const Vector &poss,
+                                       const Vector &vels, const Vector &thres)
 {
-    HandWayPoint handWP;
-    handWP.poss=poss;
-    handWP.vels=vels;
+    if (poss.length()==9 && vels.length()==9 && thres.length()==5)
+    {
+        HandWayPoint handWP;
 
-    handSeqMap[handSeqKey].push_back(handWP);
+        handWP.poss=poss;
+        handWP.vels=vels;
+        handWP.thres=thres;
+    
+        handSeqMap[handSeqKey].push_back(handWP);
 
-    return true;
+        return true;
+    }
+    else
+        return false;
 }
 
 

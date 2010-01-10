@@ -111,7 +111,7 @@ protected:
     int jHandMin;
     int jHandMax;
 
-    yarp::sig::Vector      graspDetectionThres;
+    yarp::sig::Vector      curGraspDetectionThres;
     std::set<int>          fingersJntsSet;
     std::set<int>          fingersMovingJntsSet;
     std::multimap<int,int> fingers2JntsMap;
@@ -120,6 +120,7 @@ protected:
     {
         yarp::sig::Vector poss;
         yarp::sig::Vector vels;
+        yarp::sig::Vector thres;
     };
 
     struct Action
@@ -229,11 +230,6 @@ public:
     *  
     * \b torso_yaw_max <double>: set the yaw maximum value [deg]. 
     *  
-    * \b grasp_detection_thresholds <5 double>: specify the fingers
-    *    thresholds used for model-based grasp detection. Indeed, a
-    *    port is open called /<local>/<part>/detectGrasp:i to
-    *    acquire data provided by \ref icub_graspDetector module.
-    *  
     * \b hand_sequences_file <string>: complete path to the file 
     *    containing the hand motions sequences.<br />Here is the
     *    format of motion sequences:
@@ -246,12 +242,20 @@ public:
     *  key ***
     *  numWayPoints ***
     *  wp_0  (poss (10.0 20.0 ...)) (vels (20.0 20.0 ...))
+    *        (thres (1.0 2.0 3.0 4.0 5.0))
     *  wp_1  ***
     *  ...
     *  
     *  [SEQ_1]
     *  ...
+    *  
+    *  // the "thres" key specifies fingers thresholds
+    *  // used for model-based grasp detection.
     *  \endcode
+    *  
+    * \note A port called <i> /<local>/<part>/detectGrasp:i </i> is 
+    *       open to acquire data provided by \ref icub_graspDetector
+    *       module.
     */
     bool open(yarp::os::Property &opt);
 
@@ -341,17 +345,20 @@ public:
     * Define an hand WayPoint (WP) to be added at the bottom of the 
     * hand motion sequence pointed by the key. 
     * @param handSeqKey the hand sequence key.
-    * @param poss the fingers WP positions to be attained [deg].
-    * @param vels the fingers velocities [deg/s].
+    * @param poss the 9 fingers joints WP positions to be attained 
+    *             [deg].
+    * @param vels the 9 fingers joints velocities [deg/s]. 
+    * @param thres the 5 fingers thresholds used for grasp 
+    *              detection.
     * @return true/false on success/fail. 
     *  
     * \note this method creates a new empty sequence referred by the
     *       passed key if the key does not point to any valid
-    *       sequence; hence the couple (poss,vels) will be the first
-    *       WP of the new sequence.
+    *       sequence; hence the triplet (poss,vels,thres) will be
+    *       the first WP of the new sequence.
     */
     bool addHandSeqWP(const std::string &handSeqKey, const yarp::sig::Vector &poss,
-                      const yarp::sig::Vector vels);
+                      const yarp::sig::Vector &vels, const yarp::sig::Vector &thres);
 
     /**
     * Check whether a sequence key is defined.
