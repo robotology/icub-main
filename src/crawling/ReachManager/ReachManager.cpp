@@ -7,20 +7,22 @@ using namespace ctrl;
 
 #include <iCub/iKinVocabs.h>
 
+#define TEST
+
 ReachManager::ReachManager()
 {
-	Matrix leftRotMat(3,3); leftRotMat=0.0;
-	Matrix rightRotMat(3,3); rightRotMat= 0.0;
-	leftRotMat(0,2) = 1;
-	leftRotMat(1,1) = -1;
-	leftRotMat(2,0) = 1;
-	rightRotMat(0,2) = -1;
-	rightRotMat(1,1) = 1;
-	rightRotMat(2,0) = 1;
-	lastPosition = Vector(3);
+	//Matrix leftRotMat(3,3); leftRotMat=0.0;
+	//Matrix rightRotMat(3,3); rightRotMat= 0.0;
+	//leftRotMat(0,2) = 1;
+	//leftRotMat(1,1) = -1;
+	//leftRotMat(2,0) = 1;
+	//rightRotMat(0,2) = -1;
+	//rightRotMat(1,1) = 1;
+	//rightRotMat(2,0) = 1;
+	//lastPosition = Vector(3);
 
-	leftOrientation = dcm2axis(leftRotMat);
-	rightOrientation = dcm2axis(rightRotMat);
+	//leftOrientation = dcm2axis(leftRotMat);
+	//rightOrientation = dcm2axis(rightRotMat);
 
 	cout << "left orientation " << leftOrientation.toString() << endl;
 }
@@ -32,30 +34,30 @@ ReachManager::~ReachManager(void)
 bool ReachManager::open(Searchable& config)
 {
 	cout << "config : " << config.toString() << endl;
-	parameters["input_port"] = GetValueFromConfig(config, "input_port");
-	parameters["output_port"] = GetValueFromConfig(config, "output_port");
-	parameters["robot"] = GetValueFromConfig(config, "robot");
-	parameters["num_dof"] = GetValueFromConfig(config, "num_dof");
-	parameters["reach_command_code"] = GetValueFromConfig(config, "reach_command_code");
-	parameters["max_error"] = GetValueFromConfig(config, "max_error");
-	parameters["solver_name"] = GetValueFromConfig(config, "solver_name");
-	parameters["enabled_arm"] = GetValueFromConfig(config, "enabled_arm");
-	parameters["pos_vel_cont"] = GetValueFromConfig(config, "pos_vel_cont");
-	parameters["min_reach_dist"] = GetValueFromConfig(config, "min_reach_dist");
-	cout << "min reach dist : " << parameters["min_reach_dist"].asDouble() << endl;
-	parameters["reach_mode_dist"] = GetValueFromConfig(config, "reach_mode_dist");
-	cout << "reach mode dist : " << parameters["reach_mode_dist"].asDouble() << endl;
+	parameters["input_port"] = new Value(GetValueFromConfig(config, "input_port"));
+	parameters["output_port"] = new Value(GetValueFromConfig(config, "output_port"));
+	parameters["robot"] = new Value(GetValueFromConfig(config, "robot"));
+	parameters["num_dof"] = new Value(GetValueFromConfig(config, "num_dof"));
+	parameters["reach_command_code"] = new Value(GetValueFromConfig(config, "reach_command_code"));
+	parameters["max_error"] = new Value(GetValueFromConfig(config, "max_error"));
+	parameters["solver_name"] = new Value(GetValueFromConfig(config, "solver_name"));
+	parameters["enabled_arm"] = new Value(GetValueFromConfig(config, "enabled_arm"));
+	parameters["pos_vel_cont"] = new Value(GetValueFromConfig(config, "pos_vel_cont"));
+	parameters["min_reach_dist"] = new Value(GetValueFromConfig(config, "min_reach_dist"));
+	cout << "min reach dist : " << parameters["min_reach_dist"]->asDouble() << endl;
+	parameters["reach_mode_dist"] = new Value(GetValueFromConfig(config, "reach_mode_dist"));
+	cout << "reach mode dist : " << parameters["reach_mode_dist"]->asDouble() << endl;
 
-	
-	inPort.open(parameters["input_port"].asString().c_str());
-	outPort.open(parameters["output_port"].asString().c_str());
+	//cout << "cool !" << endl;
+	inPort.open(parameters["input_port"]->asString().c_str());
+	outPort.open(parameters["output_port"]->asString().c_str());
 
-	Network::connect(outPort.getName().c_str(), "/manager");
+	//Network::connect(outPort.getName().c_str(), "/manager");
 
 	OpenIKSolver("right");
 	OpenIKSolver("left");
 
-	if(parameters["pos_vel_cont"].asInt())
+	if(parameters["pos_vel_cont"]->asInt())
 	{
 
 		InitPositionControl("right");
@@ -73,7 +75,7 @@ bool ReachManager::close()
     inPort.close();
 	delete iKinPorts["left"];
 	delete iKinPorts["right"];
-	if(parameters["pos_vel_cont"].asInt())
+	if(parameters["pos_vel_cont"]->asInt())
 	{
 		ClosePositionControl("left");
 		ClosePositionControl("right");
@@ -84,11 +86,12 @@ bool ReachManager::close()
 
 bool ReachManager::updateModule(void)
 {
-    Vector xd(7);
+    Vector xd(3);
 	Bottle *visionBottle = inPort.read();
 	double minDistanceSQR = 999999;
 	bool patchToReach = false;
 
+#ifndef TEST
 	for(int i=0; i<visionBottle->size(); ++i)
 	{
 		Bottle *patchBottle=visionBottle->get(i).asList();
@@ -113,7 +116,7 @@ bool ReachManager::updateModule(void)
 
 		if(distanceSQR<minDistanceSQR)
 		{
-			if(position[0]>-parameters["min_reach_dist"].asDouble())
+			if(position[0]>-parameters["min_reach_dist"]->asDouble())
 			{
 				continue;
 			}
@@ -140,29 +143,27 @@ bool ReachManager::updateModule(void)
 		return true;
 	}
 
-	/*Property test;
-	if(!test.fromConfigFile("test.ini"))
-	{
-		cout << "no bene !!!" << endl;
-	}
+#else
 
-	xd[0] = test.find("xdx").asDouble();
-	xd[1] = test.find("xdy").asDouble();
-	xd[2] = test.find("xdz").asDouble();*/
+	xd[0] = visionBottle->get(0).asDouble();
+	xd[1] = visionBottle->get(1).asDouble();
+	xd[2] = visionBottle->get(2).asDouble();
+#endif
+
 
 	string bestArm;
-	xd[3] = leftOrientation[0];
-	xd[4] = leftOrientation[1];
-	xd[5] = leftOrientation[2];
-	xd[6] = leftOrientation[3];
+	//xd[3] = leftOrientation[0];
+	//xd[4] = leftOrientation[1];
+	//xd[5] = leftOrientation[2];
+	//xd[6] = leftOrientation[3];
 
-	Vector resultQ = Solve(xd, ((string)parameters["enabled_arm"].toString()), bestArm);
+	Vector resultQ = Solve(xd, ((string)parameters["enabled_arm"]->asString()), bestArm);
 	
 	lastPosition = xd;
 
 	cout << "distance : " << sqrt(minDistanceSQR) << endl;
-	cout << "min distance : " << parameters["reach_mode_dist"].asDouble() << endl;
-	if(minDistanceSQR<pow(parameters["reach_mode_dist"].asDouble(),2))
+	cout << "min distance : " << parameters["reach_mode_dist"]->asDouble() << endl;
+	if(minDistanceSQR<pow(parameters["reach_mode_dist"]->asDouble(),2))
 	{
 		double headPitchAngle = -atan((xd[2]-L)/xd[0]);
 		double headYawAngle = atan((xd[1]+0.1)/xd[0]);
@@ -183,7 +184,7 @@ bool ReachManager::updateModule(void)
 
 	//cout << "result : " << resultQ.toString();
 
-	if(parameters["pos_vel_cont"].asInt())
+	if(parameters["pos_vel_cont"]->asInt())
 	{
 		RobotPositionControl(bestArm, resultQ);
 	}
@@ -192,14 +193,19 @@ bool ReachManager::updateModule(void)
 		//setting crawling to init position and reach.
 		Bottle &outBottle = outPort.prepare();
 		outBottle.clear();
-		outBottle.addInt(parameters["reach_command_code"].asInt());
+		outBottle.addInt(parameters["reach_command_code"]->asInt());
 		Bottle reachCommand;
 		reachCommand.addString((bestArm + "_arm").c_str());
-		for(int i=0; i<parameters["num_dof"].asInt(); ++i)
+		for(int i=0; i<parameters["num_dof"]->asInt(); ++i)
 		{
 			reachCommand.addDouble(resultQ[i]);
 		}
+		//reachCommand.addDouble(-1.57);
+		//reachCommand.addDouble(0.26);
+		//reachCommand.addDouble(0.26);
+		//reachCommand.addDouble(1.57);
 		outBottle.addList() = reachCommand;
+		cout << "Sending : " << outBottle.toString() << endl;
 		outPort.write();
 	}
 
@@ -217,7 +223,7 @@ void ReachManager::OpenIKSolver(string arm)
 	cout << "Opening IKin Catesian Solver for " << arm << " arm." << endl;
 	cout << "=====================================" << endl;
 	// declare the on-line arm solver called "solver"
-	string solverName = ((string)parameters["solver_name"].asString()) + "/" + arm + "_arm";
+	string solverName = ((string)parameters["solver_name"]->asString()) + "/" + arm + "_arm";
  //   iKSolvers[arm] = new iCubArmCartesianSolver(solverName.c_str());
 	//Property options;
  //   // it will operate on the simulator (which is supposed to be already running)
@@ -281,7 +287,7 @@ void ReachManager::InitPositionControl(string partName)
     options.put("device", "remote_controlboard");
 	options.put("local", ("/reach_manager/position_control/" + partName).c_str());   //local port names
 
-	string remotePortName = "/" + (string)parameters["robot"].asString() + "/" + partName + "_arm";
+	string remotePortName = "/" + (string)parameters["robot"]->asString() + "/" + partName + "_arm";
 	options.put("remote", remotePortName.c_str());         //where we connect to
 
     // create a device
@@ -454,14 +460,14 @@ Vector ReachManager::Solve(const Vector &xd, string partName, string &resultPart
 		}
 
 		minNorm2 = min(deltaLeftNorm2, deltaRightNorm2);
-		if(minNorm2>(pow(parameters["max_error"].asDouble(),2)))
+		if(minNorm2>(pow(parameters["max_error"]->asDouble(),2)))
 		{
 			resultPart = "none";
 			return resultQ;
 		}
 
 		for(int i =0; i<7; ++i)
-			resultQ[i] = resultQBottle->get(i).asDouble();
+			resultQ[i] = resultQBottle->get(i).asDouble() * M_PI/180;
 	}
 	else
 	{
@@ -496,14 +502,14 @@ Vector ReachManager::Solve(const Vector &xd, string partName, string &resultPart
 		cout << "q [rad] =" << qBottle->toString()<<endl;
 		cout << endl;
 
-		if(deltaNorm2>(pow(parameters["max_error"].asDouble(),2)))
+		if(deltaNorm2>(pow(parameters["max_error"]->asDouble(),2)))
 		{
 			resultPart = "none";
 			return resultQ;
 		}
 	
 		for(int i =0; i<7; ++i)
-			resultQ[i] = qBottle->get(i).asDouble();
+			resultQ[i] = qBottle->get(i).asDouble() * M_PI/180;
 	}
 
 	//cout << "MAX ERROR " << parameters["max_error"].asDouble() << endl;

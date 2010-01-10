@@ -113,7 +113,7 @@ private:
     BufferedPort<Bottle> outPort;
 	map<string, IKinPort *> iKinPorts;
 	map<string, iCubArmCartesianSolver *> iKSolvers;
-	map<string, Value> parameters;
+	map<string, Value *> parameters;
 	Vector leftOrientation, rightOrientation;
 	map<string, PolyDriver *> polydrivers;
 	map<string, int> nbJoints;
