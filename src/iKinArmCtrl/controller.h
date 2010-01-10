@@ -50,14 +50,12 @@ protected:
     unsigned int period;
     unsigned int ctrlPose;
     unsigned int ctrlTorso;
-    unsigned int dwnFactor;
     double execTime;
     double Ts;    
     bool Robotable;
     int  nJointsTorso;
     int  nJointsArm;
     int  nJoints;
-    int  sendCnt;
 
     Vector fb;
     Vector vOld;
@@ -65,8 +63,7 @@ protected:
 public:
     Controller(PolyDriver *_drvTorso, PolyDriver *_drvArm, exchangeData *_commData,
                const string &_localName, const string &partName, double _execTime,
-               unsigned int _ctrlTorso, unsigned int _ctrlPose, unsigned int _period,
-               unsigned int _dwnFactor);
+               unsigned int _ctrlTorso, unsigned int _ctrlPose, unsigned int _period);
 
     void stopLimbsVel();
     void suspend();

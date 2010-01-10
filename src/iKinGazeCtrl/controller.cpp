@@ -5,11 +5,11 @@
 /************************************************************************/
 Controller::Controller(PolyDriver *_drvTorso, PolyDriver *_drvHead, exchangeData *_commData,
                        const string &_robotName, const string &_localName, double _neckTime,
-                       double _eyesTime, unsigned int _period, unsigned int _dwnFactor) :
+                       double _eyesTime, unsigned int _period) :
                        RateThread(_period),   drvTorso(_drvTorso),   drvHead(_drvHead),
                        commData(_commData),   robotName(_robotName), localName(_localName),
                        neckTime(_neckTime),   eyesTime(_eyesTime),   period(_period),
-                       dwnFactor(_dwnFactor), Ts(_period/1000.0),    printAccTime(0.0)
+                       Ts(_period/1000.0),    printAccTime(0.0)
 {
     Robotable=drvTorso&&drvHead;
 
@@ -110,8 +110,6 @@ Controller::Controller(PolyDriver *_drvTorso, PolyDriver *_drvHead, exchangeData
 
     v.resize(nJointsHead,0.0);
     vdegOld=v;
-
-    sendCnt=0;
 }
 
 
@@ -265,37 +263,30 @@ void Controller::run()
     printIter(xd,fp,qddeg,qdeg,vdeg,1.0);
 
     // send qd,x,q,v through YARP ports
-    // at a downsampled rate to reduce
-    // bandwidth usage
-    if (++sendCnt>=(int)dwnFactor)
-    {
-        Vector &x  =port_x->prepare();
-        Vector &qd1=port_qd->prepare();
-        Vector &q1 =port_q->prepare();
-        Vector &v1 =port_v->prepare();
-    
-        qd1.resize(nJointsTorso+nJointsHead);
-        q1.resize(nJointsTorso+nJointsHead);
-    
-        int j;
-        for (j=0; j<nJointsTorso; j++)
-            qd1[j]=q1[j]=(180.0/M_PI)*fbTorso[j];
-        for (; j<nJointsTorso+nJointsHead; j++)
-        {
-            qd1[j]=qddeg[j-nJointsTorso];
-            q1[j] =qdeg[j-nJointsTorso];
-        }
-    
-        x=fp;
-        v1=vdeg;
-    
-        port_x->write();
-        port_qd->write();
-        port_q->write();
-        port_v->write();
+    Vector &x  =port_x->prepare();
+    Vector &qd1=port_qd->prepare();
+    Vector &q1 =port_q->prepare();
+    Vector &v1 =port_v->prepare();
 
-        sendCnt=0;
+    qd1.resize(nJointsTorso+nJointsHead);
+    q1.resize(nJointsTorso+nJointsHead);
+
+    int j;
+    for (j=0; j<nJointsTorso; j++)
+        qd1[j]=q1[j]=(180.0/M_PI)*fbTorso[j];
+    for (; j<nJointsTorso+nJointsHead; j++)
+    {
+        qd1[j]=qddeg[j-nJointsTorso];
+        q1[j] =qdeg[j-nJointsTorso];
     }
+
+    x=fp;
+    v1=vdeg;
+
+    port_x->write();
+    port_qd->write();
+    port_q->write();
+    port_v->write();
 
     // update joints angles
     fbHead=Int->integrate(v);

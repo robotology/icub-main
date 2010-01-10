@@ -52,11 +52,9 @@ protected:
     string robotName;
     string localName;
     unsigned int period;
-    unsigned int dwnFactor;
     bool Robotable;
     int nJointsTorso;
     int nJointsHead;
-    int sendCnt;
     double printAccTime;
     double neckTime;
     double eyesTime;
@@ -70,7 +68,7 @@ protected:
 public:
     Controller(PolyDriver *_drvTorso, PolyDriver *_drvHead, exchangeData *_commData,
                const string &_robotName, const string &_localName, double _neckTime,
-               double _eyesTime, unsigned int _period, unsigned int _dwnFactor);
+               double _eyesTime, unsigned int _period);
 
     void stopLimbsVel();
     void suspend();

@@ -5,12 +5,11 @@
 /************************************************************************/
 Controller::Controller(PolyDriver *_drvTorso, PolyDriver *_drvArm, exchangeData *_commData,
                        const string &_localName, const string &partName, double _execTime,
-                       unsigned int _ctrlTorso, unsigned int _ctrlPose, unsigned int _period,
-                       unsigned int _dwnFactor) :
+                       unsigned int _ctrlTorso, unsigned int _ctrlPose, unsigned int _period) :
                        RateThread(_period),   drvTorso(_drvTorso),   drvArm(_drvArm),
                        commData(_commData),   localName(_localName), execTime(_execTime),
                        ctrlTorso(_ctrlTorso), ctrlPose(_ctrlPose),   period(_period),
-                       dwnFactor(_dwnFactor), Ts(_period/1000.0)
+                       Ts(_period/1000.0)
 {
     Robotable=drvTorso&&drvArm;
 
@@ -74,8 +73,6 @@ Controller::Controller(PolyDriver *_drvTorso, PolyDriver *_drvArm, exchangeData 
 
     fb.resize(nJoints,0.0);
     vOld.resize(nJoints,0.0);
-
-    sendCnt=0;
 }
 
 
@@ -208,42 +205,35 @@ void Controller::run()
     }
 
     // send x,q,qdot through YARP ports
-    // at a downsampled rate to reduce
-    // bandwidth usage
-    if (++sendCnt>=(int)dwnFactor)
+    Vector &q1=port_q->prepare();
+    Vector &v1=port_v->prepare();
+    Vector &x =port_x->prepare();
+
+    if (ctrlTorso)
     {
-        Vector &q1=port_q->prepare();
-        Vector &v1=port_v->prepare();
-        Vector &x =port_x->prepare();
-
-        if (ctrlTorso)
-        {
-            q1=q;
-            v1=v;
-        }
-        else
-        {
-            q1.resize(nJointsTorso+chain->getDOF());
-            v1.resize(nJointsTorso+chain->getDOF(),0.0);
-
-            for (int i=0; i<nJointsTorso; i++)
-                q1[i]=(180.0/M_PI)*chain->getAng(i);
-
-            for (unsigned int i=0; i<chain->getDOF(); i++)
-            {    
-                q1[nJointsTorso+i]=q[i];
-                v1[nJointsTorso+i]=v[i];
-            }
-        }
-
-        x=ctrl->get_x();
-
-        port_x->write();
-        port_q->write();
-        port_v->write();
-
-        sendCnt=0;
+        q1=q;
+        v1=v;
     }
+    else
+    {
+        q1.resize(nJointsTorso+chain->getDOF());
+        v1.resize(nJointsTorso+chain->getDOF(),0.0);
+
+        for (int i=0; i<nJointsTorso; i++)
+            q1[i]=(180.0/M_PI)*chain->getAng(i);
+
+        for (unsigned int i=0; i<chain->getDOF(); i++)
+        {    
+            q1[nJointsTorso+i]=q[i];
+            v1[nJointsTorso+i]=v[i];
+        }
+    }
+
+    x=ctrl->get_x();
+
+    port_x->write();
+    port_q->write();
+    port_v->write();
 
     commData->set_q(chain->getAng());    
 }
