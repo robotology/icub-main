@@ -101,6 +101,7 @@ protected:
     bool configured;
     bool closed;
     bool checkEnabled;
+    bool verbose;
 
     double default_exec_time;
     double waitTmo;
@@ -201,6 +202,9 @@ public:
     *    [s].
     *  
     * \b reach_tol <double>: the reaching tolerance [m]. 
+    *  
+    * \b verbosity <string>: enable/disable the verbose mode; 
+    *    possible values: "on"/"off".
     *
     * \b torso_pitch <string>: if "on" it enables the control of the 
     *    pitch of the torso.

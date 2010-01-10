@@ -95,6 +95,7 @@ should look like as follows:
 robot                           icub
 default_exec_time               3.0
 reach_tol                       0.007
+verbosity                       on 
 torso_pitch                     on
 torso_roll                      off
 torso_yaw                       on

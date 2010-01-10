@@ -17,6 +17,7 @@
 #define ACTIONPRIM_DEFAULT_EXECTIME     2.0     // [s]
 #define ACTIONPRIM_DEFAULT_REACHTOL     0.005   // [m]
 #define ACTIONPRIM_DUMP_PERIOD          1.0     // [s]
+#define ACTIONPRIM_DEFAULT_VERBOSITY    "off"
 
 using namespace std;
 using namespace yarp;
@@ -90,14 +91,19 @@ string affActionPrimitives::toCompactString(const Vector &v)
 /************************************************************************/
 int affActionPrimitives::printMessage(const char *format, ...)
 {
-    fprintf(stdout,"*** %s: ",local.c_str());
-
-    va_list ap;
-    va_start(ap,format);    
-    int ret=vfprintf(stdout,format,ap);
-    va_end(ap);
+    if (verbose)
+    {
+        fprintf(stdout,"*** %s: ",local.c_str());
     
-    return ret;
+        va_list ap;
+        va_start(ap,format);    
+        int ret=vfprintf(stdout,format,ap);
+        va_end(ap);
+        
+        return ret;
+    }
+    else
+        return -1;
 }
 
 
@@ -255,6 +261,7 @@ bool affActionPrimitives::open(Property &opt)
 
     local=opt.find("local").asString().c_str();
     default_exec_time=opt.check("default_exec_time",Value(ACTIONPRIM_DEFAULT_EXECTIME)).asDouble();
+    verbose=opt.check("verbosity",Value(ACTIONPRIM_DEFAULT_VERBOSITY)).asString()=="on"?true:false;
 
     string robot=opt.check("robot",Value("icub")).asString().c_str();
     string part=opt.check("part",Value("right_arm")).asString().c_str();
