@@ -404,7 +404,7 @@ void affActionPrimitives::close()
 
 
 /************************************************************************/
-bool affActionPrimitives::isGraspEnded()
+bool affActionPrimitives::isHandSeqEnded()
 {
     // latch the current moving fingers set
     set<int> tmpSet=fingersMovingJntsSet;
@@ -718,7 +718,7 @@ void affActionPrimitives::run()
     {
         // check whether all the remaining active joints have come
         // to a complete stop
-        if (handMoveDone=isGraspEnded())
+        if (handMoveDone=isHandSeqEnded())
         {    
             printMessage("hand WP reached\n");
             execPendingHandSequences();    // here handMoveDone may switch false again

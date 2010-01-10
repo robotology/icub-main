@@ -153,7 +153,7 @@ protected:
     virtual bool wait(const Action &action);
     virtual bool cmdArm(const Action &action);
     virtual bool cmdHand(const Action &action);
-    virtual bool isGraspEnded();
+    virtual bool isHandSeqEnded();
 
     void init();    
     bool execQueuedAction();
