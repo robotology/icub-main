@@ -61,7 +61,6 @@ static const char actions[3][16]={"grasp","tap","touch"};
 
 int trrest;
 double imgdemopos[2];
-double imgobjpos[2][2];
 int shape1, shape2;
 double prevwo, prevho;
 
@@ -293,7 +292,7 @@ bool DemoAff::configure(ResourceFinder &rf){
 
   cout << 1 << endl;
 
-  zOffset = rf.check("z_offset",yarp::os::Value(0.06)).asDouble();
+  zOffset = rf.check("z_offset",yarp::os::Value(0.1)).asDouble();
   usedEye = rf.check("obj_eye",yarp::os::Value("left")).asString().c_str();
   if (usedEye!="left" && usedEye!="right") {
     cerr << "Invalide usedEye parameter: " << usedEye << endl;
@@ -773,7 +772,6 @@ bool DemoAff::updateModule(){
 	
 	retaddpoint = processdata.addDataPoint((double*)data);
 	
-	yarp::os::Time::delay(0.1);                 
       }
     }
     break;	    
@@ -848,6 +846,8 @@ bool DemoAff::updateModule(){
       nquery=1; query[0]=0;
       affBN.SolveQueryPerfectObs(ev, nquery, query, actprob);
       printf("------------------\nAction probabilities: %f %f %f\n",actprob[0],actprob[1],actprob[2]);
+
+      yarp::os::Time::delay(1);
       
       // Test action, object combinations to find the best pair
       float jeffectprob[4];
@@ -865,7 +865,10 @@ bool DemoAff::updateModule(){
 	  }
 	}
       }
-      
+
+      yarp::os::Time::delay(1);
+      printf("The decision is ... \n");
+
       if (bestprob==0.0) {
 	printf("No good option. Let's try again and this time, do not cheat on me!!\n");
 	state=INIT;
@@ -883,14 +886,15 @@ bool DemoAff::updateModule(){
 	// Select the appropriate arm
 	
 	// Select the object position
-	objposreach.resize(2);
-	objposreach[0] = imgobjpos[selectedobj][0];
-	objposreach[1] = imgobjpos[selectedobj][1];
+	objposreach.resize(2);	
+	objposreach[0] = trackDescTable[selectedobj].roi_x;
+	objposreach[1] = trackDescTable[selectedobj].roi_y;
 	printf("\n\n\n\n\n\n\n\n\n\n\n\n\n");
 	printf("Selected a %s on the %s %s located at pos %d <%g %g>\n", 
 	       actions[selectedaction], colors[colorObj[selectedobj]], 
 	       shapes[shapeObj[selectedobj]], selectedobj,objposreach[0],
 	       objposreach[1]);
+	state=REACHING;
       }
 
     }  
@@ -906,6 +910,14 @@ bool DemoAff::updateModule(){
       bool transformationAvailable = false;
       
       Bottle* headPosition = port_head_state.read(!transformationAvailable);
+      
+
+
+      printf("Selected pos <%g %g>\n", 
+	       objposreach[0], objposreach[1]);
+      
+      yarp::os::Time::delay(1.0);
+
       if (headPosition != NULL && headPosition->size() >= 6) {
 	//get data and convert from degrees to radiant
 	for (unsigned int i = 0; i < 6; i++) {
@@ -932,6 +944,8 @@ bool DemoAff::updateModule(){
       object3d.resize(3);
       projections[usedEye]->project(objposreach, object3d);
       
+      printf("Grasping %f %f %f\n", object3d[0], object3d[1], object3d[2]);
+
       // We will have different reachings or there is an initial common reaching phase?
       switch (selectedaction){
       case GRASP: state=GRASPING; 
@@ -941,6 +955,7 @@ bool DemoAff::updateModule(){
       case TOUCH: state=TOUCHING; 
 	break;
       }
+      state=INIT;
     }
    
     break;
@@ -948,11 +963,13 @@ bool DemoAff::updateModule(){
     {
       bool f;
       Vector xd(3);
+      
       xd[0]=object3d[0];
       xd[1]=object3d[1];      
       xd[2]=object3d[2];
-
       
+      printf("Grasping %f %f %f\n", xd[0], xd[1], xd[2]);
+
       // switch only if it's allowed
       if (partUsed=="both_arms")
 	{

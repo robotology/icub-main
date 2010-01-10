@@ -12,7 +12,7 @@ using namespace std;
 
 processobjdata::processobjdata(void)
 {
-	maxnsamples = 30;
+	maxnsamples = 10;
 	index = 0;
 	npoints = 0;
 
