@@ -98,7 +98,7 @@ public:
 
 /**
 *
-@ingroup icub_module
+@ingroup icub_hardware_modules
 \defgroup icub_dragonfly2 dragonfly2
 The dragonfly2 framegrabber device driver can acquire RGB color images in 320x240 or 640x480 resolutions.
 
