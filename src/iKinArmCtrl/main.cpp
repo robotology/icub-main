@@ -17,12 +17,12 @@ CopyPolicy: Released under the terms of the GNU GPL v2.0.
 
 This module provides a controller for the iCub arm which 
 implements the multi-referential dynamical systems approach 
-based on the paper from Micha Hersch available at  
-http://infoscience.epfl.ch/record/114045 . Essentially, the  
-generated trajectories of end-effector are quasi-straight  
-similar to the ones measured in human reaching movements. The  
-controller is capable of handling the complete pose (xyz  
-cartesian position + orientation in axis/angle mode). 
+based on the paper from Micha Hersch available 
+<a href="http://infoscience.epfl.ch/record/114045">here</a>. 
+Essentially, the generated trajectories of end-effector are 
+quasi-straight similar to the ones measured in human reaching 
+movements. The controller is capable of handling the complete 
+pose (xyz cartesian position + orientation in axis/angle mode). 
  
 The module can be selected to control a usual 7-DOF arm or the 
 extended 10-DOF arm which includes the torso structure.
@@ -36,16 +36,16 @@ pose to be attained and the chosen algorithm, it should not
 interrupt the Controller and, finally, it can be called at 
 different rate. 
  
-\note A video on iCub performing grasp-priming can be seen at
-      http://eris.liralab.it/misc/icubvideos/reaching_IIT_ISR.wmv
+\note A video on iCub performing grasp-priming can be seen <a 
+      href="http://eris.liralab.it/misc/icubvideos/reaching_IIT_ISR.wmv">here</a>.
  
-\note A video on iCub courting my sister :) can be seen at
-      http://eris.liralab.it/misc/icubvideos/icub_courting.wmv
+\note A video on iCub courting my sister :) can be seen <a 
+      href="http://eris.liralab.it/misc/icubvideos/icub_courting.wmv">here</a>.
  
 \section lib_sec Libraries 
 - YARP libraries. 
-- \ref iKin "iKin" library (it requires IPOPT lib: see 
-  http://eris.liralab.it/wiki/Installing_IPOPT ).
+- \ref iKin "iKin" library (it requires IPOPT lib: see the <a 
+  href="http://eris.liralab.it/wiki/Installing_IPOPT">wiki</a>).
 
 \section parameters_sec Parameters
 --ctrlName \e name 

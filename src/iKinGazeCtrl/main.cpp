@@ -25,13 +25,13 @@ can convert the relative position of the target in the two image
 planes in relative displacement in 3D task space with respect to 
 the actual fixation point. 
  
-\note A video on iCub gazing at a target can be seen at
-      http://eris.liralab.it/misc/icubvideos/gazing_IIT_ISR.wmv
+\note A video on iCub gazing at a target can be seen <a 
+      href="http://eris.liralab.it/misc/icubvideos/gazing_IIT_ISR.wmv">here</a>.
 
 \section lib_sec Libraries 
 - YARP libraries. 
-- \ref iKin "iKin" library (it requires IPOPT lib: see 
-  http://eris.liralab.it/wiki/Installing_IPOPT ).
+- \ref iKin "iKin" library (it requires IPOPT lib: see the <a 
+  href="http://eris.liralab.it/wiki/Installing_IPOPT">wiki</a>).
 
 \section parameters_sec Parameters
 --ctrlName \e name 
@@ -135,8 +135,8 @@ following ports:
  
 \section coor_sys_sec Coordinate System 
 Positions (meters) refer to the root reference frame attached to
-the waist as in 
-http://eris.liralab.it/wiki/ICubForwardKinematics . 
+the waist as in the <a 
+href="http://eris.liralab.it/wiki/ICubForwardKinematics">wiki</a>. 
 
 \section in_files_sec Input Data Files
 None.

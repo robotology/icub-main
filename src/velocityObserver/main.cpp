@@ -5,9 +5,8 @@
  
 Estimates the first and second derivatives of incoming data 
 vector through a least-squares based algorithm on a adpative 
-window (see 
-http://ieeexplore.ieee.org/iel5/87/19047/00880606.pdf ) 
-
+window
+ 
 Copyright (C) 2008 RobotCub Consortium
  
 Author: Ugo Pattacini 
@@ -21,7 +20,9 @@ CopyPolicy: Released under the terms of the GNU GPL v2.0.
 This module computes the first derivative (velocity) and the 
 second derivative (acceleration) of vector acquired through an 
 input YARP port and provides them to output YARP ports. The 
-estimation is perfomed relying on a least-squares algorithm
+estimation is perfomed relying on a least-squares algorithm 
+(<a 
+href="http://ieeexplore.ieee.org/iel5/87/19047/00880606.pdf">PDF</a>) 
 which finds the best linear or quadratic regressor upon a 
 certain window of the input samples. The window's length is 
 adaptable, i.e. it varies according the smoothness of the input 
@@ -43,7 +44,8 @@ latencies.
 The figure below shows a snapshot of the estimated velocity and 
 acceleration along with a comparison between the proposed 
 algorithm and a simple moving average filter: 
-\image html velocityObserver.jpg 
+\image html velocityObserver.jpg "Least-square vs. moving
+       average estimation"
  
 \section lib_sec Libraries 
 - YARP libraries. 
