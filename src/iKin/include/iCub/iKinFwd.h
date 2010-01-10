@@ -6,8 +6,8 @@
  * Classes for forward-inverse kinematics of serial-links chains
  * of revolute joints and iCub limbs 
  *  
- * \note SI units adopted: meters for lengths and radians for
- *       angles.
+ * \note <b>SI units adopted</b>: meters for lengths and radians
+ *       for angles.
  *
  * \section dep_sec Dependencies 
  * - ctrlLib 
