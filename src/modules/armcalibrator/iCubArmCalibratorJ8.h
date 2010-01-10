@@ -1,16 +1,18 @@
 // -*- mode:C++; tab-width:4; c-basic-offset:4; indent-tabs-mode:nil -*-
 
 /**
- * @ingroup icub_hardware_modules 
- * \defgroup icubarmcalibrator icubarmcalibrator 
+ * @ingroup icub_calibrators 
+ * \defgroup icubarmcalibratorj8 icubarmcalibratorj8 
  *
- * Implement calibration routines for the iCub arm(s).
+ * Implement calibration routines for the iCub arm(s) (version 1.2).
  *
  * Copyright (C) 2007 RobotCub Consortium.
  *
  * Authors: Lorenzo Natale, Francesco Nori and Marco Maggiali
  *
  * CopyPolicy: Released under the terms of the GNU GPL v2.0.
+ *
+ * This file can be edited at src/modules/armcalibrator/iCubArmCalibratorJ8.h
  *
  */
 

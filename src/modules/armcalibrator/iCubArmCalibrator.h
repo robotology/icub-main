@@ -1,10 +1,10 @@
 // -*- mode:C++; tab-width:4; c-basic-offset:4; indent-tabs-mode:nil -*-
 
 /**
- * @ingroup icub_hardware_modules 
+ * @ingroup icub_calibrators
  * \defgroup icubarmcalibrator icubarmcalibrator 
  *
- * Implement calibration routines for the iCub arm(s).
+ * Implement calibration routines for the iCub arm(s) (vesion 1.0).
  *
  * Copyright (C) 2007 RobotCub Consortium.
  *
@@ -12,6 +12,7 @@
  *
  * CopyPolicy: Released under the terms of the GNU GPL v2.0.
  *
+ * This file can be edited at src/modules/armcalibrator/iCubArmCalibrator.h
  */
 
 #ifndef __ICUB_ARM_CALIBRATOR__

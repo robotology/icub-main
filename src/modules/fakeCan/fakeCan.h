@@ -16,6 +16,7 @@
  *
  * CopyPolicy: Released under the terms of the GNU GPL v2.0.
  *
+ * This file can be edited at src/modules/fakeCan/fakeCan.h
  */
 
 #ifndef __FAKECAN__

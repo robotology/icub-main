@@ -5,12 +5,15 @@
  * \defgroup ecan ecan
  *
  * Implements ICanBus interface for a esd usb-can bus board.
+ * This is the ecan device.
  *
  * Copyright (C) 2008 RobotCub Consortium.
  *
  * Author: Lorenzo Natale
  *
  * CopyPolicy: Released under the terms of the GNU GPL v2.0.
+ *
+ * This file can be edited at src/modules/esdCan/EsdCan.h
  *
  */
 

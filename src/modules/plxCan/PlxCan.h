@@ -5,13 +5,16 @@
  * \defgroup pcan pcan
  *
  * Implements ICanBus interface for a "plx based"
- * can bus device (cfw pc104 card).
+ * can bus device (cfw pc104 card). This is the pcan
+ * device.
  *
  * Copyright (C) 2008 RobotCub Consortium.
  *
  * Author: Lorenzo Natale
  *
  * CopyPolicy: Released under the terms of the GNU GPL v2.0.
+ *
+ * This file can be edited at src/modules/plxcan/PlxCan.h
  *
  */
 

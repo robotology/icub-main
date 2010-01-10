@@ -1,7 +1,7 @@
 // -*- mode:C++; tab-width:4; c-basic-offset:4; indent-tabs-mode:nil -*-
 
 /**
- * @ingroup icub_hardware_modules 
+ * @ingroup icub_calibrators
  * \defgroup icubtorsoonlycalibrator icubtorsoonlycalibrator
  *
  * Implement calibration routines for the iCub torso. Notice: this 
@@ -16,6 +16,7 @@
  *
  * CopyPolicy: Released under the terms of the GNU GPL v2.0.
  *
+ * This file can be edited at src/modules/torsoonlycalibrator/iCubTorsoOnlyCalibrator.h
  */
 
 #ifndef __ICUB_TORSOONLY_CALIBRATOR__

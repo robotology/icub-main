@@ -10,6 +10,7 @@
  *
  * CopyPolicy: Released under the terms of the GNU GPL v2.0.
  *
+ * This file can be edited at src/modules/xsensmtx/XSensMTx.h
  */
 
 #ifndef __XSENSMTX__

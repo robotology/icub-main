@@ -1,7 +1,7 @@
 // -*- mode:C++; tab-width:4; c-basic-offset:4; indent-tabs-mode:nil -*-
 
 /**
- * @ingroup icub_hardware_modules 
+ * @ingroup icub_calibrators 
  * \defgroup icublegscalibrator icublegscalibrator
  *
  * Implement calibration routines for the iCub legs.
@@ -12,6 +12,7 @@
  *
  * CopyPolicy: Released under the terms of the GNU GPL v2.0.
  *
+ * This file can be edited at src/modules/legscalibrator/iCubLegsCalibrator.h
  */
 
 #ifndef __ICUB_LEGS_CALIBRATOR__
