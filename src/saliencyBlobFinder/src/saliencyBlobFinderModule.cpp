@@ -130,6 +130,8 @@ bool saliencyBlobFinderModule::updateModule() {
     if(!reinit_flag){    
 	    srcsize.height=img->height();
 	    srcsize.width=img->width();
+        this->height=img->height();
+        this->width=img->width();
         reinitialise(img->width(), img->height());
         reinit_flag=true;
         //initialization of the main thread
@@ -154,34 +156,50 @@ bool saliencyBlobFinderModule::updateModule() {
 * function that reads the ports for colour RGB opponency maps
 */
 bool saliencyBlobFinderModule::getOpponencies(){
-    bool ret=true;
-    blobFinder->ptr_inputImgRG=rgPort.read(false);
+    bool temp;
+    ImageOf<PixelMono> *tmpImage=new ImageOf<PixelMono>;
+    tmpImage->resize(this->width,this->height);
+    temp=rgPort.read(false);
+    if(temp)
+        ippiCopy_8u_C1R(tmpImage->getRawImage(),tmpImage->getRowSize(),blobFinder->ptr_inputImgRG->getRawImage(), blobFinder->ptr_inputImgRG->getRowSize(),srcsize);
     if(blobFinder->ptr_inputImgRG==0)
-        ret=false;
-    blobFinder->ptr_inputImgGR=grPort.read(false);
+        return false;
+   
+    temp=grPort.read(false);
+    if(temp)
+        ippiCopy_8u_C1R(tmpImage->getRawImage(),tmpImage->getRowSize(),blobFinder->ptr_inputImgGR->getRawImage(), blobFinder->ptr_inputImgGR->getRowSize(),srcsize);
     if(blobFinder->ptr_inputImgGR==0)
-        ret=false;
-    blobFinder->ptr_inputImgBY=byPort.read(false);
+        return false;
+    temp=byPort.read(false);
+    if(temp)
+        ippiCopy_8u_C1R(tmpImage->getRawImage(),tmpImage->getRowSize(),blobFinder->ptr_inputImgBY->getRawImage(), blobFinder->ptr_inputImgBY->getRowSize(),srcsize);
     if(blobFinder->ptr_inputImgBY==0)
-        ret=false;
-    return ret;
+        return false;
+    return true;
 }
 
 /**
 * function that reads the ports for the RGB planes
 */
 bool saliencyBlobFinderModule::getPlanes(){
-    bool ret=true;
-    blobFinder->ptr_inputImgRed=redPort.read(false);
+    bool temp;
+    ImageOf<PixelMono> *tmpImage=new ImageOf<PixelMono>;tmpImage->resize(this->width,this->height);
+    temp=redPort.read(false);
+    if(temp)
+        ippiCopy_8u_C1R(tmpImage->getRawImage(),tmpImage->getRowSize(),blobFinder->ptr_inputImgRed->getRawImage(), blobFinder->ptr_inputImgRed->getRowSize(),srcsize);
     if(blobFinder->ptr_inputImgRed==0)
-        ret=false;
-    blobFinder->ptr_inputImgGreen=greenPort.read(false);
+        return false;
+    temp=greenPort.read(false);
+    if(temp)
+        ippiCopy_8u_C1R(tmpImage->getRawImage(),tmpImage->getRowSize(),blobFinder->ptr_inputImgGreen->getRawImage(), blobFinder->ptr_inputImgGreen->getRowSize(),srcsize);
     if(blobFinder->ptr_inputImgGreen==0)
-        ret=false;
-    blobFinder->ptr_inputImgBlue=bluePort.read(false);
+        return false;
+    temp=bluePort.read(false);
+    if(temp)
+        ippiCopy_8u_C1R(tmpImage->getRawImage(),tmpImage->getRowSize(),blobFinder->ptr_inputImgBlue->getRawImage(), blobFinder->ptr_inputImgBlue->getRowSize(),srcsize);
     if(blobFinder->ptr_inputImgBlue==0)
-        ret=false;
-    return ret;
+        return false;
+    return true;
 }
 
 

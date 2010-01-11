@@ -15,9 +15,6 @@ using namespace std;
 
 #define _tagged (*(ptr_tagged))
 
-#define _inputImgRG (*(ptr_inputImgRG))
-#define _inputImgGR (*(ptr_inputImgGR))
-#define _inputImgBY (*(ptr_inputImgBY))
 
 const int THREAD_RATE=30;
 
@@ -161,14 +158,14 @@ void blobFinderThread::resizeImages(int width, int height){
 *	initialization of the thread 
 */
 bool blobFinderThread::threadInit(){
-	contrastLP_flag=false;
+	contrastLP_flag=true;
 	meanColour_flag=false;
 	blobCataloged_flag=false;
 	foveaBlob_flag=false;
 	colorVQ_flag=false;
 	maxSaliencyBlob_flag=false;
 	blobList_flag=false;
-    tagged_flag=true;
+    tagged_flag=false;
 	watershed_flag=false;
 
     return true;
