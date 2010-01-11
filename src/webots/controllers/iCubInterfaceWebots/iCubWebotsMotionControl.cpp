@@ -322,7 +322,7 @@ bool iCubWebotsMotionControl::open(yarp::os::Searchable& config) {
 			
 				
 		
-			init_pos[i]=0;//servo_initial_position[i];
+			init_pos[i]=servo_initial_position[i];
             current_pos[i] = init_pos[i];
             next_pos[i] = init_pos[i];
             
