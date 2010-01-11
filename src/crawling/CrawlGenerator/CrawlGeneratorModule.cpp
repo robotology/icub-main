@@ -75,6 +75,7 @@ bool GeneratorThread::getEncoders()
 			fprintf(encoder_file,"%f ",encoders[i]);
 		}
 		fprintf(encoder_file,"\n");
+		fflush(encoder_file);
 	}
 	else
 	{
