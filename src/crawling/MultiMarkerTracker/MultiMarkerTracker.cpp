@@ -42,8 +42,6 @@ bool MultiMarkerTracker::open(Searchable& config)
         return false;
     }
     
-	rf.configure("ICUB_ROOT",0,NULL);
-	//initializes the context and config files
     ResourceFinder rf;
     if (config.check("context"))
 	{
@@ -62,6 +60,8 @@ bool MultiMarkerTracker::open(Searchable& config)
 	{
         rf.setDefaultConfigFile("config.ini");
 	}
+	rf.configure("ICUB_ROOT",0,NULL);
+	//initializes the context and config files
 
 	//gets parameters 
 	parameters["robot"] =  new Value(rf.find("robot"));
