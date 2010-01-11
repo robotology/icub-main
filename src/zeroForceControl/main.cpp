@@ -43,7 +43,7 @@ const int ARM_JNT = 4;
 
 const bool verbose = 1;
 const int CPRNT = 10;
-const int CALIBRATION_OK = false; // should be true when FT calibration will be ok
+const int CALIBRATION_OK = true; // should be true when FT calibration will be ok
 
 const double initPosition[4] = {0.0, 0.0, 0.0, 0.0};
 
@@ -154,6 +154,7 @@ public:
 		  ps.resize(3);
 		  ps=0.0;
 		  ps(1) = 0.10;
+		  //ps(2) = 0.10;
 
 		  arm= new iCubArm4DOF("Left");
 		  sensor = new iFTransform(Rs,ps);
@@ -275,8 +276,9 @@ public:
 				  { 
 					  if(CALIBRATION_OK)
 					  {
-						  Vector Datum = *datas;
-						  FTs = *Datum.data();
+						  //Vector Datum = *datas;
+						  //FTs = *Datum.data();
+						  FTs = *datas;
 					  } else
 						  FTs = readFT();
 
@@ -376,8 +378,9 @@ public:
 	  Vector readFT()
 	  {
 		  Vector FTtmp = *datas;
-		  FTtmp(2) = -FTtmp(2);
+		  FTtmp(1) = -FTtmp(1);
 		  FTtmp(4) = -FTtmp(4);
+		  FTtmp(5) = -FTtmp(5);
 		  return FTtmp;
 	  }
 		  
@@ -597,7 +600,8 @@ void iCubArm4DOF::_allocate_limb(const string &_type)
     H0(2,0)=1;
     H0(3,3)=1;
 
-    linkList.resize(8);
+ //   linkList.resize(8);
+    linkList.resize(7);
 
     if (type=="right")
     {
@@ -608,7 +612,7 @@ void iCubArm4DOF::_allocate_limb(const string &_type)
         linkList[4]=new iKinLink(       0.0,      0.0, -M_PI/2.0,         -M_PI/2.0,              0.0, 160.8*M_PI/180.0);
         linkList[5]=new iKinLink(       0.0, -0.15228, -M_PI/2.0, -105.0*M_PI/180.0, -37.0*M_PI/180.0,  90.0*M_PI/180.0);
         linkList[6]=new iKinLink(     0.015,      0.0,  M_PI/2.0,               0.0,   0.0*M_PI/180.0, 106.0*M_PI/180.0);
-        linkList[7]=new iKinLink(       0.0,  -0.1373,  M_PI/2.0,         -M_PI/2.0, -90.0*M_PI/180.0,  90.0*M_PI/180.0);
+        //linkList[7]=new iKinLink(       0.0,  -0.1373,  M_PI/2.0,         -M_PI/2.0, -90.0*M_PI/180.0,  90.0*M_PI/180.0);
         }
     else
     {
@@ -619,7 +623,7 @@ void iCubArm4DOF::_allocate_limb(const string &_type)
         linkList[4]=new iKinLink(       0.0,      0.0,  M_PI/2.0,         -M_PI/2.0,              0.0, 160.8*M_PI/180.0);
         linkList[5]=new iKinLink(       0.0,  0.15228, -M_PI/2.0,   75.0*M_PI/180.0, -37.0*M_PI/180.0,  90.0*M_PI/180.0);
         linkList[6]=new iKinLink(    -0.015,      0.0,  M_PI/2.0,               0.0,   0.0*M_PI/180.0, 106.0*M_PI/180.0);
-        linkList[7]=new iKinLink(       0.0,   0.1373,  M_PI/2.0,         -M_PI/2.0, -90.0*M_PI/180.0,  90.0*M_PI/180.0);
+      //  linkList[7]=new iKinLink(       0.0,   0.1373,  M_PI/2.0,         -M_PI/2.0, -90.0*M_PI/180.0,  90.0*M_PI/180.0);
         }
 
     for (unsigned int i=0; i<linkList.size(); i++)
@@ -628,7 +632,7 @@ void iCubArm4DOF::_allocate_limb(const string &_type)
     blockLink(0,0.0);
     blockLink(1,0.0);
     blockLink(2,0.0);
-    blockLink(7,0.0);
+   // blockLink(7,0.0);
 }
 
 
