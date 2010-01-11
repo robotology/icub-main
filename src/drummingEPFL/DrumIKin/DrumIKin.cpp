@@ -8,7 +8,6 @@ using namespace ctrl;
 #include <iCub/iKinVocabs.h>
 
 
-#define TEST
 
 DrumIKin::DrumIKin()
 {
@@ -79,12 +78,15 @@ bool DrumIKin::updateModule(void)
 {
 	Bottle *visionBottle = inPort.read();
 
+	Bottle &outBottle = outPort.prepare();
+	outBottle.clear();
+
 	for(int i=0; i<visionBottle->size(); ++i)
 	{
 		Vector xp(3);
 		int markerID;
 
-#ifdef TEST
+#ifdef _DEBUG
 		xp[0] = visionBottle->get(0).asDouble();
 		xp[1] = visionBottle->get(1).asDouble();
 		xp[2] = visionBottle->get(2).asDouble();
@@ -107,17 +109,21 @@ bool DrumIKin::updateModule(void)
 		//get the target vector;
 		Vector xd = GetTargetVector(xp, armMarkerMapping[markerID]);
 
+		double distance = SHRT_MAX;
+		if(previousPosition.find(markerID) != previousPosition.end())
+		{
+			distance = norm(xd - previousPosition[markerID]);
+		}
+
+		
+		if(distance < MIN_DIFFERENCE)
+		{
+			continue;
+		}
+
+		previousPosition[markerID] = xd;
 		cout<< "Solving position : " << xd.toString() << endl;
 
-	/*Property test;
-	if(!test.fromConfigFile("test.ini"))
-	{
-		cout << "no bene !!!" << endl;
-	}
-
-	xd[0] = test.find("xdx").asDouble();
-	xd[1] = test.find("xdy").asDouble();
-	xd[2] = test.find("xdz").asDouble();*/
 
 		double precision;
 		Vector resultQ = Solve(xd, armMarkerMapping[markerID], precision);
@@ -131,31 +137,27 @@ bool DrumIKin::updateModule(void)
 
 		if(parameters["pos_vel_cont"]->asInt())
 		{
-			RobotPositionControl(armMarkerMapping[markerID], resultQ);
+			//RobotPositionControl(armMarkerMapping[markerID], resultQ);
 		}
 		else
 		{
 			//setting crawling to init position and reach.
-			Bottle &outBottle = outPort.prepare();
-			outBottle.clear();
-			//outBottle.addInt(parameters["reach_command_code"].asInt());
+			
+			//outBottle.addInt(parameters["reach_command_code"]->asInt());
 			Bottle jointsAnglesBottle;
 			jointsAnglesBottle.addInt(markerID);
-		/*	for(int i=0; i<parameters["num_dof"]->asInt(); ++i)
+			for(int i=0; i<parameters["num_dof"]->asInt(); ++i)
 			{
 				jointsAnglesBottle.addDouble(resultQ[i]);
-			}*/
-			jointsAnglesBottle.addDouble(resultQ[0]);
-			jointsAnglesBottle.addDouble(resultQ[1] * 0.91);
-			jointsAnglesBottle.addDouble(resultQ[2] * 0.86);
-			jointsAnglesBottle.addDouble(resultQ[3]);
+			}
 
 
 			outBottle.addList() = jointsAnglesBottle;
 			cout << " ============== sending : " << outBottle.toString() << " ===================" << endl;
-			outPort.write();
 		}
-		Time::delay(0.5);
+		//Time::delay(0.5);
+		outPort.write();
+		visionBottle->clear();
 	}
 
 	return true;
@@ -466,12 +468,12 @@ Vector DrumIKin::Solve(const Vector &xd, string partName, double &precision)
 		cout << "q [deg] =" ;
 		for (int i=0; i<qBottle->size(); ++i)
 		{
-			cout << 180/M_PI*qBottle->get(i).asDouble()<<" , ";
+			cout << qBottle->get(i).asDouble()<<" , ";
 		}
 		cout << endl;
 	}
 	for(int i =0; i<7; ++i)
-		resultQ[i] = qBottle->get(i).asDouble();
+		resultQ[i] = qBottle->get(i).asDouble() * M_PI/180;
 
 	return resultQ;
 }

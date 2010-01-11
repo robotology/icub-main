@@ -16,7 +16,7 @@ using namespace iKin;
 #include <map>
 using namespace std;
 
-#define MODULE_PERIOD 0.0
+#define MODULE_PERIOD 0.2
 #define MIN_DIFFERENCE 0.02
 #define MODULE_NAME "DrumIKin"
 
@@ -64,6 +64,7 @@ private:
 	void InitPositionControl(string partName);
 	void ClosePositionControl(string partName);
 	Vector Solve(const Vector &xd, string partName, double &precision);
+	map<int, Vector> previousPosition;
 
 
 };
