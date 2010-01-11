@@ -120,13 +120,13 @@ Customize the file ./scripts/*.template for your specific platform
 before launching them.
 
 - ./scripts/armCartesianController.xml.template
-  proides grasping with both arms.
+  provides grasping with both arms.
 
 - ./scripts/armCartesianController_left.xml.template
-  proides grasping using only the left arm.
+  provides grasping using only the left arm.
 
 - ./scripts/armCartesianController_right.xml.template
-  proides grasping using only the right arm.
+  provides grasping using only the right arm.
 
 \author Ugo Pattacini
 
