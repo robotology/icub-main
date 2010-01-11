@@ -495,7 +495,7 @@ public:
             action->checkActionsDone(f,true);
 
             // go home :) (wait until it's done, since
-            // we may use two arms)
+            // we may use two arms that share the torso)
             action->pushAction(*home_x,*home_o);
             action->checkActionsDone(f,true);
 		}		
