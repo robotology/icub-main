@@ -5,7 +5,7 @@ using namespace yarp::math;
 #include <iCub/ctrlMath.h>
 using namespace ctrl;
 
-#include "Common.h"
+#include "../Common/Common.h"
 
 Potential::Potential(void)
 {
