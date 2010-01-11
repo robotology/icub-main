@@ -31,7 +31,7 @@ using namespace yarp::sig::draw;
 
 /**
 * Operator that manages the watershed operations (rain falling) and extracts blobs
-* \author Francesco Rea
+* @author Francesco Rea
 */
 class WatershedOperator {
 	bool logpolar;
@@ -39,15 +39,34 @@ class WatershedOperator {
 	int *neigh;
 	int *neighL;
 	int *neighR;
-	int padding;
-	int imageSize;
+	/**
+    * value of the padding considering the input image
+    */
+    int padding;
+	/**
+    * size of the input image
+    */
+    int imageSize;
+    /**
+    * temporary input image
+    */
 	int* tempRegion;
 	/**
 	* intensity value considered as a threshold
 	*/
 	PixelMono threshold;
-	bool neighborhood8;
-	int height, width;
+	/** 
+    * flag that indicates if the neighborhood has dimension 8
+    */
+    bool neighborhood8;
+    /**
+    * height on the input image
+    */
+	int height;
+    /**
+    * width on the input image
+    */
+    int width;
 	int widthStep;
 	int watershedColor;
 	int basinColor;
@@ -122,8 +141,13 @@ public:
 	* get the first plane of the input image
 	*/
 	ImageOf<PixelMono>* getPlane ( ImageOf<PixelRgb>* src ); //
-	// public attributes
+	/*
+    * public attribute that represent the input image
+    */
 	ImageOf<PixelMono> tSrc;
+    /**
+    * public attribute that represent the output image
+    */
 	ImageOf<PixelMono>* outputImage;
 };
 

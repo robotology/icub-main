@@ -10,13 +10,13 @@ TrackerThread::TrackerThread(Property &op):RateThread(THREAD_RATE)
     {
         options=op;
         joints=0;
-		v_l=NULL;
-		v_r=NULL;
+        v_l=NULL;
+        v_r=NULL;
 
-		//targetLeft=0; 
-		//targetRight=0;
-		//trackingPort=0;
-		//inertial=0;
+        //targetLeft=0; 
+        //targetRight=0;
+        //trackingPort=0;
+        //inertial=0;
 
         enableVOR=true;
         enableTracking=true;
@@ -28,13 +28,13 @@ TrackerThread::~TrackerThread(){}
 bool TrackerThread::threadInit()
 {
     just_eyes=false;
-	fprintf(stderr, "Starting thread\n");
+    fprintf(stderr, "Starting thread\n");
     dd.open(options);
     if (!dd.isValid()) 
         {
             printf("Device not available.  Here are the known devices:\n");
             printf("%s", Drivers::factory().toString().c_str());
-			
+            
             return false;
         }
 
@@ -99,8 +99,8 @@ void TrackerThread::run()
 {
     iencs->getEncoders(encoders);
     //Vector *vr=targetRight->read(0);
-	Vector *vr=v_r;
-	Vector *vl=v_l;
+    Vector *vr=v_r;
+    Vector *vl=v_l;
     //Vector *vl=targetLeft->read(0);
     Vector *gyro=inertial->read(0);
     double timeNow=Time::now();
@@ -131,38 +131,38 @@ void TrackerThread::run()
         {                           
             //binocular
             double d=targetR(0)-targetL(0);
-			command[4]=Kpan*(0.7*targetR(0)+0.3*targetL(0));
-			command[5]=Kvergence*d;
-			command[3]=Ktilt*0.5*(targetL(1)+targetR(1));
-			if(!just_eyes){
-				command[0]=Kn_tilt*(encoders[3]);
-				command[2]=Kn_pan*(encoders[4]);
-			}
+            command[4]=Kpan*(0.7*targetR(0)+0.3*targetL(0));
+            command[5]=Kvergence*d;
+            command[3]=Ktilt*0.5*(targetL(1)+targetR(1));
+            if(!just_eyes){
+                command[0]=Kn_tilt*(encoders[3]);
+                command[2]=Kn_pan*(encoders[4]);
+            }
             timeStampTO=timeNow;
             enableVOR=true;
         }
     else if (delayR<TIMEOUT)
         {
             //monocular
-			command[4]=Kpan*targetR(0); //targetR(0) goal velocity for pan axis
-			command[5]=0.1*Kvergence*(encoders[5]-10);  //encoders[5] eyes vergence
-			command[3]=Ktilt*targetR(1); //targetR(1) goal velocity for tilt axis
-			if(!just_eyes){
-				command[0]=Kn_tilt*(encoders[3]); //encoders[3] eyes tilt
-				command[2]=Kn_pan*(encoders[4]); //encoders[4] eyes pan
-			}
+            command[4]=Kpan*targetR(0); //targetR(0) goal velocity for pan axis
+            command[5]=0.1*Kvergence*(encoders[5]-10);  //encoders[5] eyes vergence
+            command[3]=Ktilt*targetR(1); //targetR(1) goal velocity for tilt axis
+            if(!just_eyes){
+                command[0]=Kn_tilt*(encoders[3]); //encoders[3] eyes tilt
+                command[2]=Kn_pan*(encoders[4]); //encoders[4] eyes pan
+            }
             timeStampTO=timeNow;
             enableVOR=true;
         }
     else if (delayL<TIMEOUT)
         {
-			command[4]=Kpan*targetL(0);
-			command[5]=0.1*Kvergence*(encoders[5]-10);
-			command[3]=Ktilt*targetL(1);
-			if(!just_eyes){
-				command[0]=Kn_tilt*(encoders[3]);
-				command[2]=Kn_pan*(encoders[4]);
-			}
+            command[4]=Kpan*targetL(0);
+            command[5]=0.1*Kvergence*(encoders[5]-10);
+            command[3]=Ktilt*targetL(1);
+            if(!just_eyes){
+                command[0]=Kn_tilt*(encoders[3]);
+                command[2]=Kn_pan*(encoders[4]);
+            }
             timeStampTO=timeNow;
             enableVOR=true;
         }
@@ -228,28 +228,28 @@ void TrackerThread::threadRelease()
 }
 
 void TrackerThread::setLeftVector(double a, double b, double c){
-	double *p=new double;
-	p[0]=a;
-	p[1]=b;
-	p[2]=c;
-	v_l=new Vector(3,p);
+    double *p=new double;
+    p[0]=a;
+    p[1]=b;
+    p[2]=c;
+    v_l=new Vector(3,p);
 }
 
 void TrackerThread::setRightVector(double a, double b, double c){
-	double *p=new double;
-	p[0]=a;
-	p[1]=b;
-	p[2]=c;
-	v_r=new Vector(3,p);
+    double *p=new double;
+    p[0]=a;
+    p[1]=b;
+    p[2]=c;
+    v_r=new Vector(3,p);
 }
 
 void TrackerThread::resetVector(){
-	enableVOR=false;
+    enableVOR=false;
     command[4]=0;
     command[5]=0;
     command[3]=0;
     command[0]=0;
     command[2]=0;
-	v_r=0;
-	v_l=0;
+    v_r=0;
+    v_l=0;
 }

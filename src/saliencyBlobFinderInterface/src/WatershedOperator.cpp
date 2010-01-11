@@ -477,9 +477,10 @@ int WatershedOperator::markMinimas(ImageOf<PixelInt>& result)
 }
   
 /** 
-*function that applies the watershed (rainfalling algorithm)
-*		input: downPos2 previously developed
-*		output: result image of PixelInt result of the watershed algorithm
+*@fn letsRain
+*@brief function that applies the watershed (rainfalling algorithm)
+*@param downPos2 previously developed
+*@result result image of PixelInt result of the watershed algorithm
 */
 void WatershedOperator::letsRain(ImageOf<PixelInt>& result)
 {
@@ -510,7 +511,8 @@ void WatershedOperator::letsRain(ImageOf<PixelInt>& result)
 }
 
 /**
-* finds the lower neighbour for every pixel in the src file
+* @brief finds the lower neighbour for every pixel in the src file 
+*           and it produces the downPos image 
 */
 void WatershedOperator::findLowerNeigh(const ImageOf<PixelMono>& src)
 {
@@ -888,7 +890,7 @@ void WatershedOperator::createTmpImage(const ImageOf<PixelMono>& src)
             p++;
         }
         for(i=0;i<padding;i++){
-            p_downPos2[p] = lokalMin;
+            //p_downPos2[p] = p_downPos[p];
             p++;
         }
     }
@@ -952,7 +954,12 @@ void WatershedOperator::createTmpImage(const ImageOf<PixelMono>& src)
 }*/
 
 /**
-* applies the rain watershed from the edge picture, and returns the tagged image of integers
+* @fn apply 
+* @brief applies the rain watershed from the edge picture, and returns the tagged image of integers
+* @param src input image where the watershed will be applied
+* @param tagged all the blobs are tagged
+* @return value of the success
+* @warning none
 */
 int WatershedOperator::apply(const ImageOf<PixelMono> &src, ImageOf<PixelInt> &tagged)
 {
@@ -980,7 +987,7 @@ int WatershedOperator::apply(const ImageOf<PixelMono> &src, ImageOf<PixelInt> &t
     * http://telin.rug.ac.be/ipi/watershed
     */
 
-    //findLowerNeigh(src);
+    findLowerNeigh(src);
     //creates tmp images and copy the src input file into the tSrc file
     createTmpImage(src);
     num_tags=markMinimas(tagged);
