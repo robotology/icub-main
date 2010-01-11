@@ -1271,7 +1271,7 @@ bool ServerCartesianController::connectToSolver()
         Vector curDof, tmpDof;
         getDOF(curDof);
         setDOF(curDof,tmpDof);
-        setTrackingMode(false);
+        setTrackingMode(trackingMode);
         alignJointsBounds();
         
         return true;

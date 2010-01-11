@@ -99,7 +99,8 @@ verbosity                       on
 torso_pitch                     on
 torso_roll                      off
 torso_yaw                       on
-torso_pitch_max                 30.0
+torso_pitch_max                 30.0 
+tracking_mode                   false 
 
 [left_arm]
 grasp_orientation               (-0.171542 0.124396 -0.977292 3.058211)
@@ -495,6 +496,7 @@ public:
 
             // go home :)
             action->pushAction(*home_x,*home_o);
+            action->checkActionsDone(f,true);
 		}		
 
 		return true;
