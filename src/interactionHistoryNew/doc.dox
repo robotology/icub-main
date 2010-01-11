@@ -1,15 +1,15 @@
 /**
  * @ingroup icub_module
  *
- * \defgroup icub_iha_module Interaction History Architecture (IHA) Modules
+ * \defgroup icub_iha2_module Interaction History Architecture Version 2.0 (IHA2) Modules
  *
  * \brief In this architecture a metric space of experiences accumulated over ontogeny related using informational measures is used to direct future experiences.
 
-For running the application see \ref icub_iha_app
+For running the application see \ref icub_iha2
 
-\author Naeem Assif Mirza
+\author Frank Broz and Naeem Assif Mirza
 
-Copyright (C) 2008 RobotCub Consortium
+Copyright (C) 2009 RobotCub Consortium
 
 CopyPolicy: Released under the terms of the GNU GPL v2.0.
 
@@ -19,11 +19,11 @@ This file can be edited at \in src/interactionHistory/doc.dox
 
 /**
 
-\page iha_configured_actions Actions configured in the IHA
+\page iha2_configured_actions Actions configured in the IHA
 
-\section iha_actions_intro Configured Actions for the Interaction History Architecture
+\section iha2_actions_intro Configured Actions for the Interaction History Architecture
 
-See \link icub_iha_module Interaction History Architecture \endlink
+See \link icub_iha2_module Interaction History Architecture Verion 2.0 \endlink
 
 The following table shows the configured actions available on the iCub implementation of the Peekaboo game using the IHA.  
 These are configured using Sequence files.  \see iCub::iha::Actions
