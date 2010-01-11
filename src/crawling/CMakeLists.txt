@@ -24,6 +24,5 @@ ELSEIF (ARTOOLKITPLUS_FOUND)
   MESSAGE(STATUS "Skipping module MultiMarkerTracker using ARToolkitPlus")
 ENDIF (ARTOOLKITPLUS_FOUND)
 ADD_SUBDIRECTORY(Planner)
-ADD_SUBDIRECTORY(Webots/controllers/iCubInterfaceWebots)
 
 
