@@ -34,6 +34,12 @@ using namespace yarp::sig;
 #define COMMAND_VOCAB_NUM_BLUR_PASSES VOCAB2('s','2')
 #define COMMAND_VOCAB_RGB_PROCESSOR VOCAB3('r','g','b')
 #define COMMAND_VOCAB_YUV_PROCESSOR VOCAB3('y','u','v')
+// command vocab for the output produced
+#define COMMAND_VOCAB_MEANCOLOURS VOCAB3('m','e','a')
+#define COMMAND_VOCAB_TAGGED VOCAB3('t','a','g')
+#define COMMAND_VOCAB_MAXSALIENCY VOCAB3('m','a','x')
+#define COMMAND_VOCAB_CONTRASTLP VOCAB3('c','l','p')
+
 // directional saliency filter vocab's
 #define COMMAND_VOCAB_DIRECTIONAL_NUM_DIRECTIONS VOCAB3('d','n','d')
 #define COMMAND_VOCAB_DIRECTIONAL_NUM_SCALES VOCAB3('d','n','s')
@@ -198,6 +204,15 @@ private:
     * main thread responsable to process the input images and produce an output
     */
     blobFinderThread* blobFinder;
+    /**
+    * bottle where the command received is saved ready for the respond
+    */
+    Bottle* command;
+    /**
+    * bottle where the reply will be stored for further purpose
+    */
+    Bottle* reply;
+
 
     //_________ private methods ____________
     /**

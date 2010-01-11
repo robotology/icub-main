@@ -175,6 +175,8 @@ bool blobFinderThread::threadInit(){
 * active loop of the thread
 */
 void blobFinderThread::run(){
+
+
     if(!freetorun)
         return;
 

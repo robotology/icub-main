@@ -5,7 +5,7 @@ using namespace std;
 
 saliencyBlobFinderModule::saliencyBlobFinderModule(){
     reinit_flag=false;
-
+    reply=new Bottle();
     blobFinder=0;
 }
 
@@ -105,7 +105,15 @@ void saliencyBlobFinderModule::setOptions(yarp::os::Property opt){
 
 bool saliencyBlobFinderModule::updateModule() {
     
-   
+    command=cmdPort.read(false);
+    if(command!=0){
+        //Bottle* tmpBottle=cmdPort.read(false);
+        ConstString str= command->toString();
+        printf("command received: %s \n", str.c_str());
+        this->respond(*command,*reply);
+        printf("module reply: %s \n",reply->toString().c_str());
+    }
+    
     /*Bottle *bot=portTarget.read(false);
     if(bot!=NULL){
         int intValues[4];    
@@ -281,26 +289,29 @@ bool saliencyBlobFinderModule::respond(const Bottle &command,Bottle &reply){
                 double thr = command.get(2).asDouble();
             }
                 break;
-            case COMMAND_VOCAB_NUM_BLUR_PASSES:{
+            case COMMAND_VOCAB_MAXSALIENCY:{
                 int nb = command.get(2).asInt();
+                printf("most salient blob as output has been selected \n");
                 //reply.addString("connection 2");
-              
                 ok=true;
             }
                 break;
-            /*case COMMAND_VOCAB_TEMPORAL_BLUR:{
-                int size = command.get(2).asInt();
-                ok = this->setTemporalBlur(size);
-            }*/
+            case COMMAND_VOCAB_CONTRASTLP:{
+                printf("image of the saliency (grayscale) \n");
+
+                ok =true;
+            }
                 break;
-            case COMMAND_VOCAB_NAME:{
+            case COMMAND_VOCAB_MEANCOLOURS:{
                 string s(command.get(2).asString().c_str());
-                reply.addString("connection 1");
+                printf("image composed by mean colour blobs \n");
+                //reply.addString("connection 1");
                 ok=true;
             }
                 break;
-            case COMMAND_VOCAB_CHILD_NAME:{
+            case COMMAND_VOCAB_TAGGED:{
                 int j = command.get(2).asInt();
+                printf("image of tags(unsigned char) given to blobs  \n");
                 string s(command.get(3).asString().c_str());
             }
                 break;
