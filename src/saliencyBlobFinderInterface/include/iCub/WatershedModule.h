@@ -290,9 +290,9 @@ public:
 	*/
 	yarp::os::BufferedPort<ImageOf<PixelRgb> > *_pOutPort3;
 	/**
-	* port for streaming the centroid of the most salient blob
+	* port for eventually streaming the command
 	*/
-	yarp::os::BufferedPort<Bottle > *_centroidPort;
+	yarp::os::BufferedPort<Bottle > *commandPort;
 	/**
 	*Output Bottle Container
 	*/

@@ -961,16 +961,16 @@ bool WatershedModule::outPorts(){
     this->_pOutPort2->prepare()=*(this->image_out);
     this->_pOutPort2->write();
     
-    if(ct%100==0){
-        //streams out the centroid x and y coordinate
-        Bottle& _outBottle=_centroidPort->prepare();
-        _outBottle.clear();
-        //_outBottle.addString("centroid:");
-        _outBottle.addInt(this->salience->centroid_x);
-        _outBottle.addInt(this->salience->centroid_y);
-        _outBottle.addInt(this->salience->centroid_x);
-        _outBottle.addInt(this->salience->centroid_y);
-        _centroidPort->writeStrict();
+    
+    if(true){
+        Bottle& commandBottle=new Bottle();
+        commandBottle.clear();
+        commandBottle.addString("bottle");
+        //commandBottle.addInt(this->salience->centroid_x);
+        //commandBottle.addInt(this->salience->centroid_y);
+        //commandBottle.addInt(this->salience->centroid_x);
+        //commandBottle.addInt(this->salience->centroid_y);
+        commandPort->writeStrict();
         ct=1;
     }
 
