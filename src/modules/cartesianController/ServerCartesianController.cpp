@@ -241,7 +241,14 @@ bool ServerCartesianController::respond(const Bottle &command, Bottle &reply)
         {
             case IKINCARTCTRL_VOCAB_CMD_STOP:
             {   
+                // begin of critical code
+                mutex->wait();
+
                 stopControl();
+
+                // end of critical code
+                mutex->post();
+
                 break;
             }
 
@@ -646,9 +653,6 @@ void ServerCartesianController::newController()
 
     stopControl();
 
-    // begin of critical code
-    mutex->wait();
-
     // if it already exists, destroy old controller
     if (ctrl)
         delete ctrl;
@@ -668,9 +672,6 @@ void ServerCartesianController::newController()
 
     // set task execution time
     trajTime=ctrl->set_execTime(trajTime,true);
-
-    // end of critical code
-    mutex->post();
 }
 
 
@@ -1185,14 +1186,14 @@ bool ServerCartesianController::attachAll(const PolyDriverList &p)
         (*RES_VEL(lVel))[i]->setRefAccelerations(maxAcc.data());
     }
 
+    // create controller
+    newController();
+
     // this line shall be put before any
     // call to attached-dependent methods
     attached=true;
 
     connectToSolver();
-
-    // create controller
-    newController();
 
     start();
 
@@ -1507,7 +1508,7 @@ bool ServerCartesianController::setDOF(const Vector &newDof, Vector &curDof)
             mutex->post();
             return false;
         }
-    
+
         // update chain's links
         // skip the first ack/nack vocab
         Bottle *dofPart=reply.get(1).asList();
@@ -1517,12 +1518,12 @@ bool ServerCartesianController::setDOF(const Vector &newDof, Vector &curDof)
                 chain->releaseLink(i);
             else
                 chain->blockLink(i);
-
-        // end of critical code
-        mutex->post();
             
         // update controller
         newController();
+
+        // end of critical code
+        mutex->post();
         
         return true;
     }
@@ -1659,9 +1660,6 @@ bool ServerCartesianController::stopControl()
 {
     if (connected)
     {
-        // begin of critical code
-        mutex->wait();
-
         executingTraj=false;
         motionDone   =true;
 
@@ -1671,9 +1669,6 @@ bool ServerCartesianController::stopControl()
         txTokenLatched=txToken;
         skipSlvRes=true;
 
-        // end of critical code
-        mutex->post();
-    
         return true;
     }
     else
