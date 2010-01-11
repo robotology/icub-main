@@ -1,7 +1,7 @@
 <application>
 <name>demoAffv2</name>
 <dependencies>
-      <port>/icub/cam/left</port>
+      <port>/icub/camcalib/left/out</port>
       <port>/icub/cartesianController/right_arm/state:o</port>
       <port>/icub/cartesianController/left_arm/state:o</port>
       <port>/icub/head/state:o</port>
@@ -24,7 +24,7 @@
 <module>
       <name>blobDescriptor</name>
       <parameters>--context demoAffv2/conf</parameters>
-      <node>icub-b11</node>
+      <node>icub-b13</node>
       <stdio>icub14</stdio>
       <tag>blob_descriptor</tag>
 </module>
@@ -48,11 +48,11 @@
       <tag>labeled_image</tag>
 </module>
 <connection>
-      <from>/icub/cam/left</from>
+      <from>/icub/camcalib/left/out</from>
       <to>/edisonSegm/rawImg:i</to>
 </connection>
 <connection>
-      <from>/icub/cam/left</from>
+      <from>/icub/camcalib/left/out</from>
       <to>/userSelection:view</to>
 </connection>
 <connection>
@@ -72,7 +72,7 @@
       <to>/blobDescriptor/userSelection:i</to>
 </connection>
 <connection>
-      <from>/icub/cam/left</from>
+      <from>/icub/camcalib/left/out</from>
       <to>/effectDetector/rawcurrimg</to>
 </connection>
 <connection>
@@ -96,11 +96,11 @@
       <to>/demoAffv2/effect</to>
 </connection>
 <connection>
-      <from>/icubSim/head/state:o</from> 
+      <from>/icub/head/state:o</from> 
       <to>/demoAffv2/headState</to>
 </connection>
 <connection>
-      <from>/icubSim/torso/state:o</from> 
+      <from>/icub/torso/state:o</from> 
       <to>/demoAffv2/torsoState</to>
 </connection>
 </application>
