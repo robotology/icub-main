@@ -93,12 +93,12 @@ void saliencyBlobFinderModule::setOptions(yarp::os::Property opt){
         printf("|||  Module named as :%s \n", name.c_str());
         this->setName(name.c_str());
     }
-    ConstString value=opt.find("name").asString();
+    ConstString value=opt.find("mode").asString();
     if(value!=""){
         printf("|||  Module operating mode :%s \n", value.c_str());
-        /*if(value=="MEANCOLOURS"){
-            
-        }*/
+        if(value=="MEA"){
+            printf("meancolour image as output selected \n");
+        }
         
     }
 }
@@ -231,6 +231,7 @@ bool saliencyBlobFinderModule::respond(const Bottle &command,Bottle &reply){
     bool rec = false; // is the command recognized?
 
     mutex.wait();
+    
     switch (command.get(0).asVocab()) {
     case COMMAND_VOCAB_HELP:
         rec = true;
@@ -304,7 +305,7 @@ bool saliencyBlobFinderModule::respond(const Bottle &command,Bottle &reply){
                 break;
             case COMMAND_VOCAB_MEANCOLOURS:{
                 string s(command.get(2).asString().c_str());
-                printf("image composed by mean colour blobs \n");
+                printf("image composed by mean colour blobs selected as output\n");
                 //reply.addString("connection 1");
                 ok=true;
             }
