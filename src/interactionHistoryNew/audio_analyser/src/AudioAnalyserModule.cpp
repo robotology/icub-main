@@ -19,15 +19,22 @@
  * Public License for more details
  */
 
-#include <iCub/iha/AudioAnalyserModule.h>
+#include <iCub/iha2/AudioAnalyserModule.h>
 
-#include <iCub/iha/iha_utils.h>
+#include <iCub/iha2/iha_utils.h>
 
 /**
- * @addtogroup icub_iha_AudioAnalyser
+ * @addtogroup icub_iha2_AudioAnalyser
  *
 \section intro_sec Description
-Audio Analyser for IHA
+Audio Analyser for IHA 2.0
+
+This module connects to a yarp sound server device and analyses
+it for drumbeat-like periods of noise. The rate at which messages
+are output (in ms) is set from the config file or the command
+line. The output is a bottle containing a list of the number of beats 
+detected since the last message was sent and the duration of 
+time between those beats.
 
 \section lib_sec Libraries
 - YARP libraries.
@@ -38,15 +45,18 @@ Audio Analyser for IHA
 --dbg <INT>                : debug printing level
 --name <STR>               : process name for ports
 --file <STR>               : configuration from given file
-
---connect_to_coords <STR>  : connect to specified port for face
+--connect_to_soundgrabber [STR]  : autoconnect to specified port for sound
+--soundsensorrate [INT]  : sensor data rate (in ms), default 100 gives 10 frames/s
+--soundgain [FLT]        : multiplier for sound level" << 
 \endverbatim
 
 \section portsa_sec Ports Accessed
 
 \section portsc_sec Ports Created
 
-- /iha/sm/quit  - module quit port
+sndsensor:out - audio message output port
+sndsensor:in  - yarp sound input port
+quit          - module quit port
  
 \section conf_file_sec Configuration Files
 conf/ihaAudioAnalyser.ini
@@ -63,13 +73,13 @@ ihaAudioAnalyser --file conf/ihaAudioAnalyser.ini
 
 \see iCub::contrib::AudioAnalyserModule
 
-\author Assif Mirza
+\author Frank Broz and Hatice Kose-Bagci
 
-Copyright (C) 2008 RobotCub Consortium
+Copyright (C) 2009 RobotCub Consortium
 
 CopyPolicy: Released under the terms of the GNU GPL v2.0.
 
-This file can be edited at \in src/interactionHistory/audio_analyser/src/AudioAnalyserModule.cpp.
+This file can be edited at \in src/interactionHistoryNew/audio_analyser/src/AudioAnalyserModule.cpp.
 */
 
 AudioAnalyserModule::AudioAnalyserModule(){
