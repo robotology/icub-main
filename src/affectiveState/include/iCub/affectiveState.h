@@ -181,7 +181,7 @@
  * 
  * CopyPolicy: Released under the terms of the GNU GPL v2.0.
  * 
- * This file can be edited at \c $ICUB_ROOT/src/rectification/include/iCub/affectiveState.h
+ * This file can be edited at \c $ICUB_ROOT/src/affectiveState/include/iCub/affectiveState.h
  * 
  */
 
