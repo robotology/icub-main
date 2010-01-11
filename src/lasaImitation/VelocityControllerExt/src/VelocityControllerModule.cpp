@@ -141,6 +141,9 @@ bool VelocityControllerModule::open(Searchable &s){
                             vc->SetShoulderDecoupling(true);
                         }
                         vc->SetSpeedFactor(speedFact);
+                        if((strcmp(partsName[partId],"head")==0)){
+                            vc->SetSpeedFactor(speedFact*5.0);
+                        }
                         mControllers.push_back(vc);    
                     }
                     mDrivers.push_back(driver);

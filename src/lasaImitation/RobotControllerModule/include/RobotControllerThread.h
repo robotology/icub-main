@@ -55,6 +55,7 @@ private:
     double                  mPrevTime;
     
     int                     mJointSize;
+    int                     mIKJointSize;
     Vector                  mTargetJointPos;
     Vector                  mTargetJointVel;
     Vector                  mCurrentJointPos;
@@ -67,18 +68,23 @@ private:
 
     iKin::iCubWrist         *mFwdKinWrist[2];
     iKin::iCubArm           *mFwdKinArm[2];
+    iKin::iCubThirdEye      *mFwdKinEye;
 
     Vector                   mFwdKinWristJoints[2];
     Vector                   mFwdKinArmJoints[2];
+    Vector                   mFwdKinEyeJoints;
 
     Vector                   mFwdKinWristPose[2];
     Vector                   mFwdKinArmPose[2];
+    Vector                   mFwdKinEyePose;
 
     Matrix                   mFwdKinWristJacobian[2];
     Matrix                   mFwdKinArmJacobian[2];
+    Matrix                   mFwdKinEyeJacobian;
 
     Matrix                   mFwdKinWristRef[2];
     Matrix                   mFwdKinArmRef[2];
+    Matrix                   mFwdKinEyeRef;
 
     double                   mRestGain;
     
@@ -90,7 +96,12 @@ private:
     Vector                   mDesiredCartVel[2];
     Vector                   mDesiredCartWristVel[2];
     Vector                   mDesiredWristOpt[2];
+
+    Vector                   mDesiredCartEyeInEyePos;
     
+    Vector                   mDesiredCartEyePos;
+    Vector                   mDesiredCartEyeVel;
+
     MathLib::IKGroupSolver   mIKSolver;
     
     enum SolverID{
@@ -100,13 +111,16 @@ private:
         IKArmPosL,
         IKArmOriR,
         IKArmOriL,
+        IKEye,
         IKSize};
         
     
     vector<unsigned int>    mSrcToArmIndices[2];
     vector<unsigned int>    mSrcToWristIndices[2];
+    vector<unsigned int>    mSrcToEyeIndices;
     vector<unsigned int>    mArmToIKSIndices[2];
     vector<unsigned int>    mWristToIKSIndices[2];
+    vector<unsigned int>    mEyeToIKSIndices;
     vector<unsigned int>    mSrcToIKSIndices;
 
     
@@ -125,6 +139,10 @@ private:
     BufferedPort<Vector>    mDesiredCartWristVelRPort;
     BufferedPort<Vector>    mDesiredCartWristVelLPort;
 
+    BufferedPort<Vector>    mDesiredCartEyeInEyePort;
+    
+    
+    //Output port
     BufferedPort<Matrix>    mCurrentWristRefRPort;
     BufferedPort<Matrix>    mCurrentWristRefLPort;
 

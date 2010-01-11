@@ -26,4 +26,7 @@ void                YarpPose6ToPose6(yarp::sig::Vector &pose, MathLib::Vector3 &
 void                Pose6ToYarpPose6(MathLib::Vector3 &pos, MathLib::Vector3 &ori, yarp::sig::Vector &pose);
 void                AddPose6ToYarpPose6(MathLib::Vector3 &pos, MathLib::Vector3 &ori, yarp::sig::Vector &pose);
 
+MathLib::Matrix3&    YarpMatrix4ToMatrix3  (const yarp::sig::Matrix &ymat, MathLib::Matrix3& result);
+MathLib::Matrix4&    YarpMatrix4ToMatrix4  (const yarp::sig::Matrix &ymat, MathLib::Matrix4& result);
+
 #endif /*YARPMATHLIBINTERFACE_H_*/

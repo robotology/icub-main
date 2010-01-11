@@ -126,3 +126,26 @@ void AddPose6ToYarpPose6(MathLib::Vector3 &pos, MathLib::Vector3 &ori, yarp::sig
     pose(4) = resV(1);
     pose(5) = resV(2);
 }
+
+MathLib::Matrix3&    YarpMatrix4ToMatrix3  (const yarp::sig::Matrix &ymat, MathLib::Matrix3& result){
+    result.Zero();
+    int r = MIN(ymat.rows(),3);
+    int c = MIN(ymat.cols(),3);
+    for(int i=0;i<r;i++){
+        for(int j=0;j<c;j++){
+            result(i,j) = ymat(i,j);       
+        }
+    }
+    return result;    
+}
+MathLib::Matrix4&    YarpMatrix4ToMatrix4  (const yarp::sig::Matrix &ymat, MathLib::Matrix4& result){
+    result.Zero();
+    int r = MIN(ymat.rows(),4);
+    int c = MIN(ymat.cols(),4);
+    for(int i=0;i<r;i++){
+        for(int j=0;j<c;j++){
+            result(i,j) = ymat(i,j);       
+        }
+    }
+    return result;    
+}

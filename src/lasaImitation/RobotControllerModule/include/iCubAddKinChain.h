@@ -25,7 +25,9 @@
 namespace iKin
 {
     class iCubWrist;
+    class iCubThirdEye;
 };
+
 class iKin::iCubWrist : public iKin::iKinLimb
 {
 protected:
@@ -48,7 +50,32 @@ public:
     * Creates a new Arm from an already existing Arm object.
     * @param arm is the Arm to be copied.
     */
-    iCubWrist(const iCubWrist &arm);
+    iCubWrist(const iCubWrist &wrist);
+};
+
+class iKin::iCubThirdEye : public iKin::iKinLimb
+{
+protected:
+    virtual void _allocate_limb(const std::string &_type);
+
+public:
+    /**
+    * Default constructor. 
+    */
+    iCubThirdEye();
+
+    /**
+    * Constructor. 
+    * @param _type is a string to discriminate between "left" and 
+    *              "right" arm
+    */
+    iCubThirdEye(const std::string &_type);
+
+    /**
+    * Creates a new Arm from an already existing Arm object.
+    * @param arm is the Arm to be copied.
+    */
+    iCubThirdEye(const iCubThirdEye &eye);
 };
 
 

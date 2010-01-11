@@ -5,7 +5,7 @@
     </dependencies> 
     <module>
         <name>VelocityControllerExt</name>
-        <parameters>--name VelocityController --robot icub --period 0.02 --part right_arm+left_arm+torso </parameters>
+        <parameters>--name VelocityController --robot icub --period 0.02 --part right_arm+left_arm+torso+head </parameters>
         <node>lasapcicub</node>
         <stdio>lasapcicub</stdio>
         <tag>VC</tag>
