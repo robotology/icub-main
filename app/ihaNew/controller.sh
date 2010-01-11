@@ -41,7 +41,7 @@ CONFIG_PATH=`eval echo $CNAME`
 
 XTERM_WRAP="xterm -fg white -bg darkblue -title controller -geometry $CONTROLLER_GEOM -e bash -l -c "
 
-CMD="$EXEC --name $CONTROLLER_NAME --robot $NAME_ROBOT --file $CONFIG_PATH/$CONFIG_FILE --action_defs $CONFIG_PATH/$ACTIONDEFS_FILE --sequence_dir $CONFIG_PATH/$SEQUENCE_DIR --speed_multiplier 1 $*"
+CMD="$EXEC --name $CONTROLLER_NAME --robot $NAME_ROBOT --file $CONFIG_PATH/$CONFIG_FILE --action_defs $CONFIG_PATH/$ACTIONDEFS_FILE --speed_multiplier 1 $*"
 #CMD="$EXEC --name $CONTROLLER_NAME --robot $NAME_ROBOT --file $CONFIG_PATH/$CONFIG_FILE --action_defs $CONFIG_PATH/$ACTIONDEFS_FILE --sequence_dir $CONFIG_PATH/$SEQUENCE_DIR --speed_multiplier 1 $*"
 # 
 ################################################################################

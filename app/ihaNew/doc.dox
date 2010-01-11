@@ -1,24 +1,28 @@
 /**
  * @ingroup icub_applications
  *
- * \defgroup icub_iha iha 
+ * \defgroup icub_ihaNew ihaNew 
 
  *
- * \brief  Interaction History Architecture (IHA) Application
+ * \brief  Interaction History Architecture (IHA), Version 2.0  Application
  
-In this architecture a metric space of experiences accumulated over ontogeny related using informational measures is used to direct future experiences.
+In this architecture a metric space of experiences accumulated over ontogeny related using informational measures is used to direct future experiences. This application is a branch from the original version of IHA (also in the repository). This new version adds several new modules to support the use of human gaze and an electronic drum as input and to further support the learning of turn-taking behavior sequences using a short-term memory. Additionally, the organization of the modules and how they connect to one another has been changed for the sake of clarity and simplicity.
 
-This application consists of a number of scripts and configuration files that are used to start and stop a number of interconnecting processes.  See \ref icub_iha_module.
+This application consists of a number of scripts and configuration files that are used to start and stop a number of interconnecting processes.  See \ref icub_ihaNew_module. Because of the way IHA logs data, the modules may not all be started using the xml application manager. Supporting modules may be started through the application manager, but the core IHA modules must be started via scripts. This process will be explained in detail below.
 
-\section iha_intro Introduction
+\section ihaNew_intro Introduction
 
 An interaction history is a collection of past "experiences" of a robot that can be used to generate future action based on its new experiences. At the heart of the architecture is a "metric space of experiences" where an experience can be compared with any other in terms of their informational-theoretic relationships. This comparison is a metric and so experiences can be "placed" in a space with distances relative to each other.
 
 The Interaction History Architecture selects those experiences from the history that are "closest" to the current experience. Then it chooses one of those experiences and the action that was executed in the past just after that experience, and executes that action. The choice is determined by proximity in the metric space as well as the subjective value of the experience in relation to the reward received in the past.
 
-\image html IHAArchitectureV5.jpg
+This new version of IHA is intended to be used by a human wearing a gaze tracking device. Data from this device provides one of the sources of reward feedback to the robot. There are command-line flags for all the core modules that will run the application without gaze input if such a device is not available.
+
+\image html IHANewArchitecture.jpg
 
 The architecture also includes mechanisms for "forgetting" and formation of proto-typical experiences. The first simply deletes those experiences with low subjective value, and the second merges together experiences based on their proximity in the space. 
+
+In order to make use of sequential information about recently experienced data (which is relevant to behaviors that involve turn-taking), a short term memory module has been added to the application. This short term memory is used to compute an additional source of reward feedback for the robot.
 
 You can find out more about the architecture and existing experiments in the following 
 \link http://www.robotcub.net/index.php/robotcub/more_information/deliverables/ RobotCub Deliverables
@@ -36,30 +40,31 @@ You can find out more about the architecture and existing experiments in the fol
 
 \section iha_process_flow Process Flow
 
-The Interaction History Architecture consists of a number of interoperating processes implemented as modules (deriving from yarp::os::Module class). Their relationship is described (for the iCub) in the following diagram.
+The New Interaction History Architecture consists of a number of interoperating processes implemented as modules (deriving from yarp::os::Module class). Their relationship is described (for the iCub) in the following diagram.
 
-\image html IHAFlow_iCub_800.jpg
+\image html IHANewFlow_iCub.jpg
 
 \section dep_sec Dependencies
 -# When connecting to a physical robot:
   - This module assumes \ref icub_iCubInterface "iCubInterface" is already running.
-    - note: <em> at time of writing this is the version contained in iCubInterface2, at some point this will be merged into the main code.</em>
   - Assumes that the cameras have been started. The low-res camera device is sufficient.
   - Also assumes that the facedevice.sh script has been started on the PC104 to provide the raw interface for the facial expressions.
--# When connecting to the simulator:
-  - The simulator should be started with the head, arms and hands activated along with the fixed_hip and cameras.
-  - The facial_expressions simulator module should also be started and connected.
+  - By default, assumes that a gaze tracking system is serving data. This option may be turned off using command-line flags. The system has been tested with an ASL MobileEye gaze tracker, but the drivers for the tracker contain proprietary code and are not a part of the iCub software release. Any gaze tracker which is capable of providing a scene image and gaze coordinates in a scene image pixel format may be used instead.
+-This version of IHA is not intended for use in the simulator because way that gaze tracking is used cannot be replicated in simulation.
 
 \section modules_sec Instantiated Modules
 List here the modules that are instantiated by this application:
-- \ref icub_iha_ExperienceMetricSpace Experience Metric Space Module (IHA)
-- \ref icub_iha_ActionSelection Action Selection (IHA)
-- \ref icub_iha_IcubControl iCub Control Module (IHA)
-- \ref icub_iha_IhaFaceDetect Face Detection (IHA)
-- \ref icub_iha_Dynamics Motivation Dynamics (IHA)
-- \ref icub_iha_SensorMotorInterface Sensor Motor Interface (IHA)
-- \ref icub_iha_SoundSensor Sound Sensor (IHA)
-- \ref icub_iha_StatusMonitor Status Monitor (IHA)
+- \ref icub_ihaNew_ExperienceMetricSpace Experience Metric Space Module (IHA)
+- \ref icub_ihaNew_ActionSelection Action Selection (IHA)
+- \ref icub_ihaNew_AudioAnalyser Audio Analyser (IHA)
+- \ref icub_ihaNew_IcubControl iCub Control Module (IHA)
+- \ref icub_ihaNew_IhaFaceDetect Face Detection (IHA)
+- \ref icub_ihaNew_Dynamics Motivation Dynamics (IHA)
+- \ref icub_ihaNew_Mobileeye Gaze Tracking (IHA)
+- \ref icub_ihaNew_SensorMotorInterface Sensor Motor Interface (IHA)
+- \ref icub_ihaNew_ShortTermMemory Short Term Memory (IHA)
+- \ref icub_ihaNew_SoundSensor Sound Sensor (IHA)
+- \ref icub_ihaNew_StatusMonitor Status Monitor (IHA)
 
 \section parameters_sec Parameters
 Application parameters are contained in the files config_ports.sh and config_machines.sh
@@ -72,19 +77,26 @@ Application parameters are contained in the files config_ports.sh and config_mac
 
 \section config_sec Configuration Files
 
+- Action definitions, referenced by multiple modules 
+ - conf/iha_actiondefs.ini         
 - \ref icub_iha_IcubControl iCub Control Module (IHA)
  - conf/ihaIcubControl.ini
 - \ref icub_iha_ActionSelection Action Selection (IHA)
  - conf/ihaActionSelection.ini
- - conf/iha_actiondefs.ini         
+- \ref icub_iha_AudioAnalyser Audio Analyser (IHA)
+ - conf/ihaAudioAnalyser.ini
 - \ref icub_iha_ExperienceMetricSpace Experience Metric Space Module (IHA)
  - conf/ihaExperienceMetricSpace.ini
 - \ref icub_iha_IhaFaceDetect Face Detection (IHA)
  - conf/ihaIhaFaceDetect.ini
+- \ref icub_iha_IhaSelfFaceDetect Self Face Detection (IHA)
+ - conf/ihaIhaSelfFaceDetect.ini
 - \ref icub_iha_Dynamics Motivation Dynamics (IHA)
  - conf/ihaMotivationDynamics.ini
 - \ref icub_iha_SensorMotorInterface Sensor Motor Interface (IHA)
  - conf/ihaSensorMotorInterface.ini
+- \ref icub_iha_ShortTermMemory Short Term Memory (IHA)
+ - conf/ihaShortTermMemory.ini
 - \ref icub_iha_SoundSensor Sound Sensor (IHA)
  - conf/ihaSoundSensor.ini
 - \ref icub_iha_StatusMonitor Status Monitor (IHA)
@@ -97,18 +109,23 @@ Application parameters are contained in the files config_ports.sh and config_mac
  
 <b> GENERAL NOTES ON USAGE </b>
 
--#  To start and stop the system you only really need to use the "numbered scripts"
- s follows
-  - 10_run_supporting.sh
-  - 20_connect_supporting.sh
+
+
+-#  To start and stop the system you first need to run and connect the supporting modules which are configured in the supporting*.xml file. Versions exist that will configure the modules to run either with or without the gaze tracker.
+
+-# The core modules may then be started and stopped using the "numbered scripts" as follows. Where necessary separate versions exist to run the application with or without gaze tracker input.
+  - 10_run_supporting.sh (deprecated)
+  - 20_connect_supporting.sh (deprecated)
   - 30_run_and_connect_iha_processes.sh
+  - 30_run_and_connect_iha_processes_wo_gaze.sh
   - 40_run_controller.sh
   - 70_stop_controller.sh
   - 80_stop_iha_processes.sh
-  - 90_stop_supporting.sh
+  - 80_stop_iha_processes_wo_gaze.sh
+  - 90_stop_supporting.sh (deprecated)
 -#  To run different processes on different machines, change the processor map in 
-      config_machines.sh
--#  The recommended way to stop individual processes is to use the modular scripts
+      config_machines.sh and in the xml files
+-#  The recommended way to stop individual processes (that are not already under control of the application manager) is to use the modular scripts
       e.g. facedetector.sh stop
 	  In extreme cases there is also usually a kill option. 
 -#  There are two config scripts containing variables. The first is the machine 
@@ -138,13 +155,13 @@ Application parameters are contained in the files config_ports.sh and config_mac
   or remember what should be started first.  They consist of lists of init scripts.
 
 
-\author Naeem Assif Mirza
+\author Frank Broz and Naeem Assif Mirza
 
-Copyright (C) 2008 RobotCub Consortium
+Copyright (C) 2009 RobotCub Consortium
 
 CopyPolicy: Released under the terms of the GNU GPL v2.0.
 
-This file can be edited at \in app/iha/doc.dox
+This file can be edited at \in app/ihaNew/doc.dox
  *
  */
 
