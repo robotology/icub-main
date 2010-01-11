@@ -834,222 +834,91 @@ static void cb_draw_value( GtkToggleButton *button )
         else
             wModule->BY_flag=false;
     }
-    else if(!strcmp(button->button.label_text,"Red1-->")){
+    else if(!strcmp(button->button.label_text,"Red-->")){
         if(button->active){
             //imageProcessModule->processor1->redPlane_flag=1;
             //imageProcessModule->processor1->greenPlane_flag=0;
             //imageProcessModule->processor1->bluePlane_flag=0;
         }
     }
-    else if(!strcmp(button->button.label_text,"Green1-->")){
+    else if(!strcmp(button->button.label_text,"Green-->")){
         if(button->active){
             //imageProcessModule->processor1->redPlane_flag=0;
             //imageProcessModule->processor1->greenPlane_flag=1;
             //imageProcessModule->processor1->bluePlane_flag=0;
         }
     }
-    else if(!strcmp(button->button.label_text,"Blue1-->")){
+    else if(!strcmp(button->button.label_text,"Blue-->")){
         if(button->active){
             //imageProcessModule->processor1->redPlane_flag=0;
             //imageProcessModule->processor1->greenPlane_flag=0;
             //imageProcessModule->processor1->bluePlane_flag=1;
         }
     }
-    if(!strcmp(button->button.label_text,"Red2-->")){
-        if(button->active){
-            //imageProcessModule->processor2->redPlane_flag=1;
-            //imageProcessModule->processor2->greenPlane_flag=0;
-            //imageProcessModule->processor2->bluePlane_flag=0;
-        }
-    }
-    else if(!strcmp(button->button.label_text,"Green2-->")){
-        if(button->active){
-            //imageProcessModule->processor2->redPlane_flag=0;
-            //imageProcessModule->processor2->greenPlane_flag=1;
-            //imageProcessModule->processor2->bluePlane_flag=0;
-        }
-    }
-    else if(!strcmp(button->button.label_text,"Blue2-->")){
-        if(button->active){
-            //imageProcessModule->processor2->redPlane_flag=0;
-            //imageProcessModule->processor2->greenPlane_flag=0;
-            //imageProcessModule->processor2->bluePlane_flag=1;
-        }
-    }
-    if(!strcmp(button->button.label_text,"Red3-->")){
-        if(button->active){
-            //imageProcessModule->processor3->redPlane_flag=1;
-            //imageProcessModule->processor3->greenPlane_flag=0;
-            //imageProcessModule->processor3->bluePlane_flag=0;
-        }
-    }
-    else if(!strcmp(button->button.label_text,"Green3-->")){
-        if(button->active){
-            //imageProcessModule->processor3->redPlane_flag=0;
-            //imageProcessModule->processor3->greenPlane_flag=1;
-            //imageProcessModule->processor3->bluePlane_flag=0;
-        }
-
-    }
-    else if(!strcmp(button->button.label_text,"Blue3-->")){
-        if(button->active){
-            //imageProcessModule->processor3->redPlane_flag=0;
-            //imageProcessModule->processor3->greenPlane_flag=0;
-            //imageProcessModule->processor3->bluePlane_flag=1;
-        }
-    }
-    else if(!strcmp(button->button.label_text,"ContrastLP1-->")){
+    
+    else if(!strcmp(button->button.label_text,"ContrastLP-->")){
         if(button->active)
             wModule->contrastLP_flag=true;
         else
             wModule->contrastLP_flag=false;
     }
-    else if(!strcmp(button->button.label_text,"ContrastLP2-->")){
-        if(button->active)
-            wModule->contrastLP_flag=true;
-        else
-            wModule->contrastLP_flag=false;
-        
-    }
-    else if(!strcmp(button->button.label_text,"ContrastLP3-->")){
-        if(button->active)
-            wModule->contrastLP_flag=true;
-        else
-            wModule->contrastLP_flag=false;	
-    }
-    else if(!strcmp(button->button.label_text,"MeanColoursLP1-->")){
+    
+    else if(!strcmp(button->button.label_text,"MeanColoursLP-->")){
         if(button->active)
             wModule->meanColour_flag=true;
         else
             wModule->meanColour_flag=false;
             
     }
-    else if(!strcmp(button->button.label_text,"MeanColoursLP2-->")){
-        if(button->active)
-            wModule->meanColour_flag=true;
-        else
-            wModule->meanColour_flag=false;
-    }
-    else if(!strcmp(button->button.label_text,"MeanColoursLP3-->")){
-        if(button->active)
-            wModule->meanColour_flag=true;
-        else
-            wModule->meanColour_flag=false;
-    }
-    else if(!strcmp(button->button.label_text,"MaxSaliencyBlob1-->")){
+    
+    else if(!strcmp(button->button.label_text,"MaxSaliencyBlob-->")){
         if(button->active)
             wModule->maxSaliencyBlob_flag=true;
         else
             wModule->maxSaliencyBlob_flag=false;
             
     }
-    else if(!strcmp(button->button.label_text,"MaxSaliencyBlob2-->")){
-        if(button->active)
-            wModule->maxSaliencyBlob_flag=true;
-        else
-            wModule->maxSaliencyBlob_flag=false;
-    }
-    else if(!strcmp(button->button.label_text,"MaxSaliencyBlob3-->")){
-        if(button->active)
-            wModule->maxSaliencyBlob_flag=true;
-        else
-            wModule->maxSaliencyBlob_flag=false;
-    }
-    else if(!strcmp(button->button.label_text,"FoveaBlob1-->")){
+    
+    else if(!strcmp(button->button.label_text,"FoveaBlob-->")){
         if(button->active)
             wModule->foveaBlob_flag=true;
         else
             wModule->foveaBlob_flag=false;
             
     }
-    else if(!strcmp(button->button.label_text,"FoveaBlob2-->")){
-        if(button->active)
-            wModule->foveaBlob_flag=true;
-        else
-            wModule->foveaBlob_flag=false;
-    }
-    else if(!strcmp(button->button.label_text,"FoveaBlob3-->")){
-        if(button->active)
-            wModule->foveaBlob_flag=true;
-        else
-            wModule->foveaBlob_flag=false;
-    }
-    else if(!strcmp(button->button.label_text,"ColorVQ1-->")){
+    
+    else if(!strcmp(button->button.label_text,"ColorVQ-->")){
         if(button->active)
             wModule->colorVQ_flag=true;
         else
             wModule->colorVQ_flag=false;
             
     }
-    else if(!strcmp(button->button.label_text,"ColorVQ2-->")){
-        if(button->active)
-            wModule->colorVQ_flag=true;
-        else
-            wModule->colorVQ_flag=false;
-    }
-    else if(!strcmp(button->button.label_text,"ColorVQ3-->")){
-        if(button->active)
-            wModule->colorVQ_flag=true;
-        else
-            wModule->colorVQ_flag=false;
-    }
-    else if(!strcmp(button->button.label_text,"BlobList1-->")){
+    
+    else if(!strcmp(button->button.label_text,"BlobList-->")){
         if(button->active)
             wModule->blobList_flag=true;
         else
             wModule->blobList_flag=false;
             
     }
-    else if(!strcmp(button->button.label_text,"BlobList2-->")){
-        if(button->active)
-            wModule->blobList_flag=true;
-        else
-            wModule->blobList_flag=false;
-    }
-    else if(!strcmp(button->button.label_text,"BlobList3-->")){
-        if(button->active)
-            wModule->blobList_flag=true;
-        else
-            wModule->blobList_flag=false;
-    }
-    else if(!strcmp(button->button.label_text,"Tagged1-->")){
+    
+    else if(!strcmp(button->button.label_text,"Tagged-->")){
         if(button->active)
             wModule->tagged_flag=true;
         else
             wModule->tagged_flag=false;
             
     }
-    else if(!strcmp(button->button.label_text,"Tagged2-->")){
-        if(button->active)
-            wModule->tagged_flag=true;
-        else
-            wModule->tagged_flag=false;
-    }
-    else if(!strcmp(button->button.label_text,"Tagged3-->")){
-        if(button->active)
-            wModule->tagged_flag=true;
-        else
-            wModule->tagged_flag=false;
-    }
-    else if(!strcmp(button->button.label_text,"Watershed1-->")){
+    
+    else if(!strcmp(button->button.label_text,"Watershed-->")){
         if(button->active)
             wModule->watershed_flag=true;
         else
             wModule->watershed_flag=false;
             
     }
-    else if(!strcmp(button->button.label_text,"Watershed2-->")){
-        if(button->active)
-            wModule->watershed_flag=true;
-        else
-            wModule->watershed_flag=false;
-    }
-    else if(!strcmp(button->button.label_text,"Watershed3-->")){
-        if(button->active)
-            wModule->watershed_flag=true;
-        else
-            wModule->watershed_flag=false;
-    }
+    
 }
 
 bool WatershedModule::outPorts(){
@@ -1968,65 +1837,65 @@ GtkWidget* WatershedModule::createMainWindow(void)
     box4=  gtk_vbox_new (FALSE, 0);
     
     // A checkbutton to control whether the value is displayed or not
-    buttonCheck = gtk_check_button_new_with_label("Watershed1-->");
+    buttonCheck = gtk_check_button_new_with_label("Watershed-->");
     gtk_toggle_button_set_active (GTK_TOGGLE_BUTTON (buttonCheck), FALSE);
-    g_signal_connect (G_OBJECT (buttonCheck), "toggled",G_CALLBACK (cb_draw_value),(gpointer) "Watershed1");
+    g_signal_connect (G_OBJECT (buttonCheck), "toggled",G_CALLBACK (cb_draw_value),(gpointer) "Watershed");
     gtk_box_pack_start (GTK_BOX (box4), buttonCheck, TRUE, TRUE, 0);
     gtk_widget_show (buttonCheck);
     
     // A checkbutton to control whether the value is displayed or not
-    buttonCheck = gtk_check_button_new_with_label("Tagged1-->");
+    buttonCheck = gtk_check_button_new_with_label("Tagged-->");
     gtk_toggle_button_set_active (GTK_TOGGLE_BUTTON (buttonCheck), FALSE);
-    g_signal_connect (G_OBJECT (buttonCheck), "toggled",G_CALLBACK (cb_draw_value),(gpointer) "Tagged1");
+    g_signal_connect (G_OBJECT (buttonCheck), "toggled",G_CALLBACK (cb_draw_value),(gpointer) "Tagged");
     gtk_box_pack_start (GTK_BOX (box4), buttonCheck, TRUE, TRUE, 0);
     gtk_widget_show (buttonCheck);
 
     // A checkbutton to control whether the value is displayed or not
-    buttonCheck = gtk_check_button_new_with_label("BlobList1-->");
+    buttonCheck = gtk_check_button_new_with_label("BlobList-->");
     gtk_toggle_button_set_active (GTK_TOGGLE_BUTTON (buttonCheck), FALSE);
-    g_signal_connect (G_OBJECT (buttonCheck), "toggled",G_CALLBACK (cb_draw_value),(gpointer) "BlobList1");
+    g_signal_connect (G_OBJECT (buttonCheck), "toggled",G_CALLBACK (cb_draw_value),(gpointer) "BlobList");
     gtk_box_pack_start (GTK_BOX (box4), buttonCheck, TRUE, TRUE, 0);
     gtk_widget_show (buttonCheck);
 
     // A checkbutton to control whether the value is displayed or not
-    buttonCheck = gtk_check_button_new_with_label("ContrastLP1-->");
+    buttonCheck = gtk_check_button_new_with_label("ContrastLP-->");
     gtk_toggle_button_set_active (GTK_TOGGLE_BUTTON (buttonCheck), FALSE);
-    g_signal_connect (G_OBJECT (buttonCheck), "toggled",G_CALLBACK (cb_draw_value),(gpointer) "ContrastLP1");
+    g_signal_connect (G_OBJECT (buttonCheck), "toggled",G_CALLBACK (cb_draw_value),(gpointer) "ContrastLP");
     gtk_box_pack_start (GTK_BOX (box4), buttonCheck, TRUE, TRUE, 0);
     gtk_widget_show (buttonCheck);
 
     // A checkbutton to control whether the value is displayed or not
-    buttonCheck = gtk_check_button_new_with_label("MeanColoursLP1-->");
+    buttonCheck = gtk_check_button_new_with_label("MeanColoursLP-->");
     gtk_toggle_button_set_active (GTK_TOGGLE_BUTTON (buttonCheck), TRUE);
-    g_signal_connect (G_OBJECT (buttonCheck), "toggled",G_CALLBACK (cb_draw_value),(gpointer) "MeanColoursLP1");
+    g_signal_connect (G_OBJECT (buttonCheck), "toggled",G_CALLBACK (cb_draw_value),(gpointer) "MeanColoursLP");
     gtk_box_pack_start (GTK_BOX (box4), buttonCheck, TRUE, TRUE, 0);
     gtk_widget_show (buttonCheck);
 
     // A checkbutton to control whether the value is displayed or not
-    buttonCheck = gtk_check_button_new_with_label("FoveaBlob1-->");
+    buttonCheck = gtk_check_button_new_with_label("FoveaBlob-->");
     gtk_toggle_button_set_active (GTK_TOGGLE_BUTTON (buttonCheck), FALSE);
-    g_signal_connect (G_OBJECT (buttonCheck), "toggled",G_CALLBACK (cb_draw_value),(gpointer) "FoveaBlob1");
+    g_signal_connect (G_OBJECT (buttonCheck), "toggled",G_CALLBACK (cb_draw_value),(gpointer) "FoveaBlob");
     gtk_box_pack_start (GTK_BOX (box4), buttonCheck, TRUE, TRUE, 0);
     gtk_widget_show (buttonCheck);
 
     // A checkbutton to control whether the value is displayed or not 
-    buttonCheck = gtk_check_button_new_with_label("ColorVQ1-->");
+    buttonCheck = gtk_check_button_new_with_label("ColorVQ-->");
     gtk_toggle_button_set_active (GTK_TOGGLE_BUTTON (buttonCheck), FALSE);
-    g_signal_connect (G_OBJECT (buttonCheck), "toggled",G_CALLBACK (cb_draw_value),(gpointer) "ColorVQ1");
+    g_signal_connect (G_OBJECT (buttonCheck), "toggled",G_CALLBACK (cb_draw_value),(gpointer) "ColorVQ");
     gtk_box_pack_start (GTK_BOX (box4), buttonCheck, TRUE, TRUE, 0);
     gtk_widget_show (buttonCheck);
 
     // A checkbutton to control whether the value is displayed or not 
-    buttonCheck = gtk_check_button_new_with_label("ContrastLP1-->");
+    buttonCheck = gtk_check_button_new_with_label("ContrastLP-->");
     gtk_toggle_button_set_active (GTK_TOGGLE_BUTTON (buttonCheck), FALSE);
-    g_signal_connect (G_OBJECT (buttonCheck), "toggled",G_CALLBACK (cb_draw_value),(gpointer) "ContrastLP1");
+    g_signal_connect (G_OBJECT (buttonCheck), "toggled",G_CALLBACK (cb_draw_value),(gpointer) "ContrastLP");
     gtk_box_pack_start (GTK_BOX (box4), buttonCheck, TRUE, TRUE, 0);
     gtk_widget_show (buttonCheck);
 
     // A checkbutton to control whether the value is displayed or not 
-    buttonCheck = gtk_check_button_new_with_label("MaxSaliencyBlob1-->");
+    buttonCheck = gtk_check_button_new_with_label("MaxSaliencyBlob-->");
     gtk_toggle_button_set_active (GTK_TOGGLE_BUTTON (buttonCheck), FALSE);
-    g_signal_connect (G_OBJECT (buttonCheck), "toggled",G_CALLBACK (cb_draw_value),(gpointer) "MaxSaliencyBlob1");
+    g_signal_connect (G_OBJECT (buttonCheck), "toggled",G_CALLBACK (cb_draw_value),(gpointer) "MaxSaliencyBlob");
     gtk_box_pack_start (GTK_BOX (box4), buttonCheck, TRUE, TRUE, 0);
     gtk_widget_show (buttonCheck);
 
