@@ -176,8 +176,6 @@ ENDIF (ARTOOLKITPLUS_FOUND)
     ADD_SUBDIRECTORY(velocityObserver)  
     ADD_SUBDIRECTORY(scriptSequencer)
     ADD_SUBDIRECTORY(demoReachManager_IIT_ISR)
-
-    #problem spotted with icubmod dependences
     ADD_SUBDIRECTORY(demoGraspManager_IIT_ISR)
   ENDIF (GSL_FOUND)
   
