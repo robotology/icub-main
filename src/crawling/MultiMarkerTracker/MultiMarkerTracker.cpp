@@ -7,14 +7,13 @@
  *
  */
 
-//FOR DEBUGGING ONLY
-#include <string>
+
 #include <iostream>
 using namespace std;
 
 #include "MultiMarkerTracker.h"
 
-#include "ARToolKitPlus/TrackerSingleMarkerImpl.h"
+#include <ARToolKitPlus/TrackerSingleMarkerImpl.h>
 
 #include <iCub/iKinFwd.h>
 using namespace iKin;
@@ -23,11 +22,7 @@ using namespace iKin;
 
 MultiMarkerTracker::MultiMarkerTracker(): frame(NULL)
 {
-#ifdef _DEBUG
-	numIter = 0;
-	twoDFile.open("2D.dat");
-	threeDFile.open("3D.dat");
-#endif
+
 }
 
 MultiMarkerTracker::~MultiMarkerTracker()
@@ -47,6 +42,7 @@ bool MultiMarkerTracker::open(Searchable& config)
         return false;
     }
     
+	rf.configure("ICUB_ROOT",0,NULL);
 	//initializes the context and config files
     ResourceFinder rf;
     if (config.check("context"))
@@ -66,7 +62,6 @@ bool MultiMarkerTracker::open(Searchable& config)
 	{
         rf.setDefaultConfigFile("config.ini");
 	}
-	rf.configure("ICUB_ROOT",0,NULL);
 
 	//gets parameters 
 	parameters["robot"] =  new Value(rf.find("robot"));
@@ -219,22 +214,6 @@ bool MultiMarkerTracker::close()
 	markersPort.close();
 	visionPort.close();
 
-#ifdef _DEBUG
-	twoDFile.close();
-	threeDFile.close();
-#endif
-
-	// also delete the allocated image...
-	if(frame!=NULL)
-	{
-		delete frame;
-	}
-
-	if(tracker!=NULL)
-	{
-		delete tracker;
-	}
-
     return true;
 }
 
@@ -257,10 +236,6 @@ bool MultiMarkerTracker::updateModule()
 	{
         return true;
 	}
-
-	/*if(cycles == 0)
-		_timestart = yarp::os::Time::now();
-	cycles++;*/
 
     unsigned char *dataPtr;
 	ARMarkerInfo *markerInfo;
@@ -380,14 +355,6 @@ bool MultiMarkerTracker::updateModule()
 			markerBottleRoot.addInt(markerInfo[i].id);
 			markersBottle.addList() = markerBottleRoot;
 
-#ifdef _DEBUG
-			if(markerNum == 1)
-			{
-				twoDFile << numIter << "\t" << objectPosition[0] << "\t" << objectPosition[1] << "\t" << objectPosition[2] << endl;
-				threeDFile << numIter << "\t" << rootPosition[0] << "\t" << rootPosition[1] << "\t" << rootPosition[2] << endl;
-				numIter++;
-			}
-#endif
 		}
 		if(markersBottle.size() >0)
 		{
