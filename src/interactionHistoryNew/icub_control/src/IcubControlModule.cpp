@@ -2,9 +2,8 @@
 // vim:expandtab:tabstop=4:shiftwidth=4:softtabstop=4:
 
 /*
- * Copyright (C) 2008 RobotCub Consortium, European Commission FP6 Project IST-004370
- * Author: Assif Mirza
- * email:   assif.mirza@robotcub.org
+ * Copyright (C) 2009 RobotCub Consortium, European Commission FP6 Project IST-004370
+ * Author: Assif Mirza, modified by Frank Broz
  * website: www.robotcub.org
  * Permission is granted to copy, distribute, and/or modify this program
  * under the terms of the GNU General Public License, version 2 or any
@@ -20,8 +19,18 @@
  */
 
 /**
- * @addtogroup icub_iha_IcubControl
+ * @addtogroup icub_ihaNew_IcubControl
  *
+
+\section intro_sec Description
+Icub Controller for IHA 2.0
+
+This module sends action sequence messages to the robot to move it.
+Changes from IHA 1.0 include removing code to control the facial
+expressions (which is now handled by the motivation dynamics module)
+and accessing the sequences through the action definition file
+rather than specifying the sequence dir on the command line.
+
 \section lib_sec Libraries
 - YARP libraries.
 - IHA Debug Library
@@ -34,7 +43,6 @@
 
 --robot [STR]                : prefix of robot ports e.g. icubSim
 --action_defs [STR]          : file defining actions
---sequence_dir [STR]         : directory where seqeunce files are
 --motor_motion_timeout [INT] : time (ms) to wait for a motor to move
 --sensor_output_rate [INT]   : sensor rate
 --speed_multiplier [FLT]     : movement speed multiplier
@@ -42,12 +50,10 @@
 \endverbatim
 
 \section portsa_sec Ports Accessed
-- /icub/face/raw/in
 
 \section portsc_sec Ports Created
 - /iha/controller/action:cmd  for sending action commands
 - /iha/controller/encoders:out for processes to recieve encoder values
-- /iha/controller/expressions:in (internal) for sending expressions to the raw port
  
 - /iha/sm/quit  - module quit port
 
@@ -74,8 +80,6 @@ right_leg 0
 # Actions
 #
 action_defs conf/iha_actiondefs.ini
-sequence_dir conf/sequences
-num_actions 21
 #
 ############################################################
 
@@ -93,22 +97,22 @@ always_set_speed TRUE
 Linux
 
 \section example_sec Example Instantiation of the Module
-ihaIcubControl --name /iha/controller --robot iCub --file conf/ihaIcubControl.ini --action_defs conf/iha_actiondefs.ini --sequence_dir conf/sequences/ --speed_multiplier 3 --connect_to_expression /icub/face/raw/in
+ihaIcubControl --name /iha/controller --robot iCub --file conf/ihaIcubControl.ini --action_defs conf/iha_actiondefs.ini --speed_multiplier 1
 
-See script $ICUB_ROOT/app/iha_manual/controller.sh
+See script $ICUB_ROOT/app/ihaNew/controller.sh
 
 \see iCub::iha::ActionSelect
 \see iCub::iha::Actions
 \see iCub::contrib::IcubControlModule
 \see iCub::iha::EncodersOutputThread
 
-\author Assif Mirza
+\author Assif Mirza, modified by Frank Broz
 
-Copyright (C) 2008 RobotCub Consortium
+Copyright (C) 2009 RobotCub Consortium
 
 CopyPolicy: Released under the terms of the GNU GPL v2.0.
 
-This file can be edited at \in src/interactionHistory/icub_control/src/IcubControlModule.cpp.
+This file can be edited at \in src/interactionHistoryNew/icub_control/src/IcubControlModule.cpp.
 */
 
 #include <yarp/String.h>
@@ -120,9 +124,9 @@ This file can be edited at \in src/interactionHistory/icub_control/src/IcubContr
 yarp::os::ConstString partName[numParts] = {"Head","LArm","RArm","Torso","LLeg","RLeg"};
 yarp::os::ConstString partConfigName[numParts] = {"head","left_arm","right_arm","torso","left_leg","right_leg"};
 
-#include <iCub/iha/IcubControlModule.h>
-#include <iCub/iha/iha_utils.h>
-using namespace iCub::iha;
+#include <iCub/ihaNew/IcubControlModule.h>
+#include <iCub/ihaNew/iha_utils.h>
+using namespace iCub::ihaNew;
 
 // MODULE Implementation ================================================================
 
@@ -140,7 +144,6 @@ bool IcubControlModule::open(Searchable& config){
 		<< "---------------------------------------------------------------------------" << "\n"
 		<< "  --robot [STR]                : prefix of robot ports e.g. icubSim" << "\n"
         << "  --action_defs [STR]          : file defining actions" << "\n"
-        << "  --sequence_dir [STR]         : directory where seqeunce files are" << "\n"
         << "  --motor_motion_timeout [INT] : time (ms) to wait for a motor to move" << "\n"
         << "  --sensor_output_rate [INT]   : sensor rate" << "\n"
         << "  --speed_multiplier [FLT]     : movement speed multiplier" << "\n"
@@ -155,7 +158,6 @@ bool IcubControlModule::open(Searchable& config){
     //------------------------------------------------------
 	// get all the configured actions
 	ConstString action_defs_file = config.check("action_defs",Value("conf/action_defs.ini")).asString();
-	//ConstString sequence_directory = config.check("sequence_dir",Value(".")).asString();
 
 	// create the action defs object and read the actions
 	// from the config file
