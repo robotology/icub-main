@@ -3,10 +3,20 @@
 
 #include <iCub/iha/debug.h>
 
-#include <iCub/iha2/AudioAnalyserModule.h>
+#include <iCub/iha/AudioAnalyserModule.h>
 
 using namespace std;
 using namespace yarp::os;
+
+/**
+ * @ingroup icub_iha2_module
+ *
+ * \defgroup icub_iha2_AudioAnalyser Audio Analyser Module (IHA2)
+ *
+ * \brief Process that analyses sound input and reports drumbeats at a fixed rate
+ *
+ *
+ */
 
 
 int main(int argc, char *argv[]) {

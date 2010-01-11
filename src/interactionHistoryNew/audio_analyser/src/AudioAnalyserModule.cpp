@@ -1,27 +1,5 @@
-// -*- mode:C++; tab-width:4; c-basic-offset:4; indent-tabs-mode:nil -*-
-// vim:expandtab:tabstop=4:shiftwidth=4:softtabstop=4:
-
-/*
- * Copyright (C) 2008 RobotCub Consortium, European Commission FP6 Project IST-004370
- * Author: Assif Mirza
- * email:   assif.mirza@robotcub.org
- * website: www.robotcub.org
- * Permission is granted to copy, distribute, and/or modify this program
- * under the terms of the GNU General Public License, version 2 or any
- * later version published by the Free Software Foundation.
- *
- * A copy of the license can be found at
- * http://www.robotcub.org/icub/license/gpl.txt
- *
- * This program is distributed in the hope that it will be useful, but
- * WITHOUT ANY WARRANTY; without even the implied warranty of
- * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the GNU General
- * Public License for more details
- */
-
-#include <iCub/iha2/AudioAnalyserModule.h>
-
-#include <iCub/iha2/iha_utils.h>
+#include <iCub/iha/AudioAnalyserModule.h>
+#include <iCub/iha/iha_utils.h>
 
 /**
  * @addtogroup icub_iha2_AudioAnalyser
@@ -42,21 +20,24 @@ time between those beats.
 
 \section parameters_sec Parameters
 \verbatim
---dbg <INT>                : debug printing level
---name <STR>               : process name for ports
---file <STR>               : configuration from given file
+--dbg <INT>                      : debug printing level
+--name <STR>                     : process name for ports
+--file <STR>                     : configuration from given file
 --connect_to_soundgrabber [STR]  : autoconnect to specified port for sound
---soundsensorrate [INT]  : sensor data rate (in ms), default 100 gives 10 frames/s
---soundgain [FLT]        : multiplier for sound level" << 
+--soundsensorrate [INT]          : sensor data rate (in ms), 
+                                   default 100 gives 10 frames/s
+--soundgain [FLT]                : multiplier for sound level 
 \endverbatim
 
 \section portsa_sec Ports Accessed
 
+ - expects input from a yarp sound grabber device
+
 \section portsc_sec Ports Created
 
-sndsensor:out - audio message output port
-sndsensor:in  - yarp sound input port
-quit          - module quit port
+ - sndsensor:out - audio message output port
+ - sndsensor:in  - yarp sound input port
+ - quit          - module quit port
  
 \section conf_file_sec Configuration Files
 conf/ihaAudioAnalyser.ini
