@@ -123,7 +123,7 @@ bool CrawlPlanner::updateModule(void)
 		
 		potentialField.clear();
 
-        if(abs(angle - previousRotationAngle) < EPSILON_ANGLE)
+        if(fabs(angle - previousRotationAngle) < EPSILON_ANGLE)
         {
 			cout << "No need to turn : angle : " << angle << endl;
             return true;
@@ -132,7 +132,7 @@ bool CrawlPlanner::updateModule(void)
 
         Bottle& managerBottle = ports["manager_out"]->prepare();
         managerBottle.clear();
-        if(abs(angle) < EPSILON_ANGLE)
+        if(fabs(angle) < EPSILON_ANGLE)
         {
 			cout << "No need to turn (angle = " << angle << ")" << endl;
 			managerBottle.addInt(parameters["crawl_command"]->asInt());
@@ -164,7 +164,7 @@ double CrawlPlanner::ComputeRobotRotation(void) const
 	u[1] = 1;
     double angle = orientedAngle(u, potentialGradient);
 
-    if(abs(angle) < EPSILON_ANGLE)
+    if(fabs(angle) < EPSILON_ANGLE)
     {
         return 0;
     }
