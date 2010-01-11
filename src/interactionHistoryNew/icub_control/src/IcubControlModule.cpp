@@ -19,7 +19,7 @@
  */
 
 /**
- * @addtogroup icub_ihaNew_IcubControl
+ * @addtogroup icub_iha2_IcubControl
  *
 
 \section intro_sec Description
