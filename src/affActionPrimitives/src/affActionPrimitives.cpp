@@ -17,7 +17,6 @@
 #define ACTIONPRIM_DEFAULT_EXECTIME         2.0     // [s]
 #define ACTIONPRIM_DEFAULT_REACHTOL         0.005   // [m]
 #define ACTIONPRIM_DUMP_PERIOD              1.0     // [s]
-#define ACTIONPRIM_DEFAULT_TRACKINGMODE     "false"
 #define ACTIONPRIM_DEFAULT_VERBOSITY        "off"
 
 using namespace std;
@@ -281,7 +280,6 @@ bool affActionPrimitives::open(Property &opt)
     string part=opt.check("part",Value("right_arm")).asString().c_str();
     int period=opt.check("thread_period",Value(ACTIONPRIM_DEFAULT_PER)).asInt();    
     double reach_tol=opt.check("reach_tol",Value(ACTIONPRIM_DEFAULT_REACHTOL)).asDouble();    
-    bool tracking_mode=opt.check("tracking_mode",Value(ACTIONPRIM_DEFAULT_TRACKINGMODE)).asString()=="on"?true:false;
     string fwslash="/";
 
     // get hand sequence motions (if any)
@@ -320,7 +318,7 @@ bool affActionPrimitives::open(Property &opt)
     cartCtrl->setInTargetTol(reach_tol);
 
     // set tracking mode
-    cartCtrl->setTrackingMode(tracking_mode);
+    cartCtrl->setTrackingMode(false);
 
     // handle torso DOF's
     handleTorsoDOF(opt,"torso_pitch",0);
@@ -929,13 +927,6 @@ bool affActionPrimitives::stopControl()
     }
     else
         return false;
-}
-
-
-/************************************************************************/
-bool affActionPrimitives::setTrackingMode(const bool f)
-{
-    return cartCtrl->setTrackingMode(f);
 }
 
 
