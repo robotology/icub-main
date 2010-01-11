@@ -644,6 +644,11 @@ void ServerCartesianController::newController()
     if (!chain)
         return;
 
+    stopControl();
+
+    // begin of critical code
+    mutex->wait();
+
     // if it already exists, destroy old controller
     if (ctrl)
         delete ctrl;
@@ -663,6 +668,9 @@ void ServerCartesianController::newController()
 
     // set task execution time
     trajTime=ctrl->set_execTime(trajTime,true);
+
+    // end of critical code
+    mutex->post();
 }
 
 
@@ -1177,14 +1185,14 @@ bool ServerCartesianController::attachAll(const PolyDriverList &p)
         (*RES_VEL(lVel))[i]->setRefAccelerations(maxAcc.data());
     }
 
-    // create controller
-    newController();    
-
     // this line shall be put before any
     // call to attached-dependent methods
     attached=true;
 
     connectToSolver();
+
+    // create controller
+    newController();
 
     start();
 
@@ -1509,13 +1517,13 @@ bool ServerCartesianController::setDOF(const Vector &newDof, Vector &curDof)
                 chain->releaseLink(i);
             else
                 chain->blockLink(i);
+
+        // end of critical code
+        mutex->post();
             
         // update controller
         newController();
-    
-        // end of critical code
-        mutex->post();
-    
+        
         return true;
     }
     else
