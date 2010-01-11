@@ -494,7 +494,8 @@ public:
             action->pushAction("open_hand");
             action->checkActionsDone(f,true);
 
-            // go home :)
+            // go home :) (wait until it's done, since
+            // we may use two arms)
             action->pushAction(*home_x,*home_o);
             action->checkActionsDone(f,true);
 		}		

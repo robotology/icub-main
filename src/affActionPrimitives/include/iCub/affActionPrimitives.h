@@ -81,6 +81,7 @@ class affActionPrimitives : public yarp::os::RateThread
 {
 protected:
     std::string local;
+    std::string part;
 
     yarp::dev::PolyDriver        *polyHand;
     yarp::dev::PolyDriver        *polyCart;
@@ -101,6 +102,8 @@ protected:
     bool configured;
     bool closed;
     bool checkEnabled;
+    bool tracking_mode;
+    bool torsoActive;
     bool verbose;
 
     double default_exec_time;
@@ -110,6 +113,9 @@ protected:
 
     int jHandMin;
     int jHandMax;
+
+    yarp::sig::Vector      enableTorsoSw;
+    yarp::sig::Vector      disableTorsoSw;
 
     yarp::sig::Vector      curGraspDetectionThres;
     std::set<int>          fingersJntsSet;
@@ -150,6 +156,8 @@ protected:
                             const yarp::sig::Vector &o, const double execTime,
                             const bool execHand, const HandWayPoint &handWP);
     virtual bool stopJntTraj(const int jnt);
+    virtual void enableTorsoDof();
+    virtual void disableTorsoDof();
     virtual bool wait(const Action &action);
     virtual bool cmdArm(const Action &action);
     virtual bool cmdHand(const Action &action);
@@ -203,6 +211,12 @@ public:
     *    [s].
     *  
     * \b reach_tol <double>: the reaching tolerance [m]. 
+    *  
+    * \b tracking_mode <string>: enable/disable the tracking mode; 
+    *    possible values: "true"/"false".
+    * \note In tracking mode the cartesian position is mantained on 
+    *       the reached target; in non-tracking mode the joints
+    *       positions are kept once the target is attained.
     *  
     * \b verbosity <string>: enable/disable the verbose mode; 
     *    possible values: "on"/"off".
@@ -396,6 +410,23 @@ public:
     * \note it empty out the actions queue. 
     */
     virtual bool stopControl();
+
+    /**
+    * Set the task space controller in tracking or non-tracking 
+    * mode. 
+    * @param f: true for tracking mode, false otherwise. 
+    * \note In tracking mode the cartesian position is mantained on 
+    *       the reached target; in non-tracking mode the joints
+    *       positions are kept once the target is attained.
+    * @return true/false on success/failure.
+    */
+    virtual bool setTrackingMode(const bool f);
+
+    /**
+    * Get the current controller mode.
+    * @return true/false on tracking/non-tracking mode. 
+    */
+    virtual bool getTrackingMode();
 
     /**
     * Check whether the action is accomplished or still ongoing.

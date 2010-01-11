@@ -363,7 +363,7 @@ void CartesianSolver::alignJointsBounds()
     double min, max;
     int cnt=0;
 
-    fprintf(stdout,"Aligning joints bounds ...\n");
+    fprintf(stdout,"%s: aligning joints bounds ...\n",slvName.c_str());
 
     for (int i=0; i<prt->num; i++)
     {
@@ -437,13 +437,24 @@ void CartesianSolver::latchUncontrolledJoints(Vector &joints)
 
 
 /************************************************************************/
-void CartesianSolver::getFeedback()
+void CartesianSolver::getFeedback(const bool wait)
 {
     Vector fbTmp(maxPartJoints);
-    int chainCnt=0;
+    int chainCnt=0;    
 
     for (int i=0; i<prt->num; i++)
-        if (enc[i]->getEncoders(fbTmp.data()))
+    {    
+        bool flag;
+
+        if (wait)
+        {
+            while (!enc[i]->getEncoders(fbTmp.data()));
+            flag=true;
+        }
+        else
+            flag=enc[i]->getEncoders(fbTmp.data());
+
+        if (flag)
             for (int j=0; j<jnt[i]; j++)
             {
                 double tmp=(M_PI/180.0)*fbTmp[rmp[i][j]];
@@ -457,13 +468,14 @@ void CartesianSolver::getFeedback()
             }
         else
             chainCnt+=jnt[i];
+    }
 }
 
 
 /************************************************************************/
 void CartesianSolver::initPos()
 {
-    getFeedback();    
+    getFeedback(true);  // wait until all joints are acquired   
     latchUncontrolledJoints(unctrlJointsOld);
 
     inPort->reset_xd(prt->chn->EndEffPose());
@@ -1200,14 +1212,11 @@ void CartesianSolver::afterStart(bool s)
 void CartesianSolver::run()
 {
     // init conditions
-    bool dofChanged=false;
     bool doSolve=false;
 
-    // handle changeDOF() safely and trigger
-    // dofChanged event (if any)
+    // handle changeDOF() safely
     lock();
-    if (changeDOF(inPort->get_dof()))
-        dofChanged=true;    
+    changeDOF(inPort->get_dof());
     unlock();
 
     // wake up sleeping threads
@@ -1223,19 +1232,19 @@ void CartesianSolver::run()
         latchUncontrolledJoints(unctrlJoints);
     
         // detect movements of uncontrolled links
-        double distExtMoves=(180.0/M_PI)*norm(unctrlJoints-unctrlJointsOld);
+        double distExtMoves=norm((180.0/M_PI)*(unctrlJoints-unctrlJointsOld));
         unctrlJointsOld=unctrlJoints;
     
         // run the solver if movements of uncontrolled links 
         // are detected and mode==continuous
-        doSolve|=inPort->get_contMode() && distExtMoves>1.0;
+        doSolve|=inPort->get_contMode() && distExtMoves>0.1;
         if (doSolve && verbosity)
-            fprintf(stdout,"Detected movements on uncontrolled links\
-                            (norm=%g deg) ...\n",distExtMoves);
+            fprintf(stdout,"%s: detected movements on uncontrolled links (norm=%g deg)\n",
+                    slvName.c_str(),distExtMoves);
     }
 
-    // run the solver if any input is received or dof is changed in continuous mode
-    if (inPort->isNewDataEvent() || dofChanged && inPort->get_contMode())
+    // run the solver if any input is received
+    if (inPort->isNewDataEvent())
     {    
         // update optimizer's options
         slv->set_ctrlPose(ctrlPose=inPort->get_pose());
@@ -1369,8 +1378,8 @@ bool iCubArmCartesianSolver::decodeDOF(const Vector &_dof)
         // they all shall be on or off
         newDOF[3]=newDOF[4]=newDOF[5]=dof[3];
 
-        fprintf(stdout,"Warning on shoulder:\
-                        attempt to set one joint differently from others\n");
+        fprintf(stdout,"%s: attempt to set one shoulder's joint differently from others\n",
+                 slvName.c_str());
     }
 
     return CartesianSolver::decodeDOF(newDOF);

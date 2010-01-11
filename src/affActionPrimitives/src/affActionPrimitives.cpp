@@ -17,6 +17,8 @@
 #define ACTIONPRIM_DEFAULT_EXECTIME         2.0     // [s]
 #define ACTIONPRIM_DEFAULT_REACHTOL         0.005   // [m]
 #define ACTIONPRIM_DUMP_PERIOD              1.0     // [s]
+#define ACTIONPRIM_DEFAULT_PART             "right_arm"
+#define ACTIONPRIM_DEFAULT_TRACKINGMODE     "false"
 #define ACTIONPRIM_DEFAULT_VERBOSITY        "off"
 
 using namespace std;
@@ -57,6 +59,7 @@ void affActionPrimitives::init()
     handMoveDone=latchHandMoveDone=true;
     configured=closed=false;
     checkEnabled=true;
+    torsoActive=true;
 
     latchTimer=waitTmo=0.0;
 }
@@ -93,7 +96,7 @@ int affActionPrimitives::printMessage(const char *format, ...)
 {
     if (verbose)
     {
-        fprintf(stdout,"*** %s: ",local.c_str());
+        fprintf(stdout,"*** %s: ",(local+"/"+part).c_str());
     
         va_list ap;
         va_start(ap,format);    
@@ -273,11 +276,12 @@ bool affActionPrimitives::open(Property &opt)
     }
 
     local=opt.find("local").asString().c_str();
+    part=opt.check("part",Value(ACTIONPRIM_DEFAULT_PART)).asString().c_str();
     default_exec_time=opt.check("default_exec_time",Value(ACTIONPRIM_DEFAULT_EXECTIME)).asDouble();
+    tracking_mode=opt.check("tracking_mode",Value(ACTIONPRIM_DEFAULT_TRACKINGMODE)).asString()=="true"?true:false;
     verbose=opt.check("verbosity",Value(ACTIONPRIM_DEFAULT_VERBOSITY)).asString()=="on"?true:false;
 
-    string robot=opt.check("robot",Value("icub")).asString().c_str();
-    string part=opt.check("part",Value("right_arm")).asString().c_str();
+    string robot=opt.check("robot",Value("icub")).asString().c_str();    
     int period=opt.check("thread_period",Value(ACTIONPRIM_DEFAULT_PER)).asInt();    
     double reach_tol=opt.check("reach_tol",Value(ACTIONPRIM_DEFAULT_REACHTOL)).asDouble();    
     string fwslash="/";
@@ -318,12 +322,23 @@ bool affActionPrimitives::open(Property &opt)
     cartCtrl->setInTargetTol(reach_tol);
 
     // set tracking mode
-    cartCtrl->setTrackingMode(false);
+    setTrackingMode(tracking_mode);
 
     // handle torso DOF's
     handleTorsoDOF(opt,"torso_pitch",0);
     handleTorsoDOF(opt,"torso_roll",1);
     handleTorsoDOF(opt,"torso_yaw",2);
+
+    Vector curDof;
+    cartCtrl->getDOF(curDof);
+
+    enableTorsoSw.resize(3,0);
+    disableTorsoSw.resize(3,0);
+    for (int i=0; i<3; i++)
+        enableTorsoSw[i]=curDof[i];
+
+    // start with torso disabled
+    disableTorsoDof();    
 
     // open port for grasp detection
     graspDetectionPort.open((fwslash+local+fwslash+part+fwslash+"detectGrasp:i").c_str());
@@ -615,6 +630,9 @@ bool affActionPrimitives::reach(const Vector &x, const Vector &o,
     if (configured)
     {
         const double t=execTime>0.0?execTime:default_exec_time;
+
+        enableTorsoDof();
+
         cartCtrl->goToPose(x,o,t);
 
         latchArmMoveDone=armMoveDone=false;
@@ -711,7 +729,10 @@ void affActionPrimitives::run()
         cartCtrl->checkMotionDone(&armMoveDone);
 
         if (armMoveDone)
-            printMessage("reaching complete\n");            
+        {    
+            printMessage("reaching complete\n");
+            disableTorsoDof();
+        }
     }
 
     if (!handMoveDone)
@@ -754,6 +775,36 @@ bool affActionPrimitives::stopJntTraj(const int jnt)
 
 
 /************************************************************************/
+void affActionPrimitives::enableTorsoDof()
+{
+    // enable torso joints, if any
+    if (!torsoActive && norm(enableTorsoSw))
+    {
+        Vector dummyRet;
+
+        cartCtrl->setDOF(enableTorsoSw,dummyRet);
+
+        torsoActive=true;
+    }
+}
+
+
+/************************************************************************/
+void affActionPrimitives::disableTorsoDof()
+{
+    // disable torso joints, if any
+    if (torsoActive && norm(enableTorsoSw))
+    {
+        Vector dummyRet;
+
+        cartCtrl->setDOF(disableTorsoSw,dummyRet);
+
+        torsoActive=false;
+    }
+}
+
+
+/************************************************************************/
 bool affActionPrimitives::wait(const Action &action)
 {
     if (configured)
@@ -777,6 +828,8 @@ bool affActionPrimitives::cmdArm(const Action &action)
         const Vector &x=action.x;
         const Vector &o=action.o;
         const double t=action.execTime>0.0?action.execTime:default_exec_time;
+
+        enableTorsoDof();
 
         if (!cartCtrl->goToPoseSync(x,o,t))
         {
@@ -927,6 +980,26 @@ bool affActionPrimitives::stopControl()
     }
     else
         return false;
+}
+
+
+/************************************************************************/
+bool affActionPrimitives::setTrackingMode(const bool f)
+{
+    if (cartCtrl->setTrackingMode(f))
+    {
+        tracking_mode=f;
+        return true;
+    }
+    else
+        return false;
+}
+
+
+/************************************************************************/
+bool affActionPrimitives::getTrackingMode()
+{
+    return tracking_mode;
 }
 
 

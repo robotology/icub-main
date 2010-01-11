@@ -280,7 +280,7 @@ protected:
     bool   setLimits(int axis, double min, double max);
     void   countUncontrolledJoints();
     void   latchUncontrolledJoints(yarp::sig::Vector &joints);
-    void   getFeedback();
+    void   getFeedback(const bool wait=false);
     void   initPos();
     void   lock();
     void   unlock();    

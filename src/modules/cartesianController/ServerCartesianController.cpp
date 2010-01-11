@@ -265,7 +265,7 @@ bool ServerCartesianController::respond(const Bottle &command, Bottle &reply)
                         xd[i]=v->get(i).asDouble();
 
                     bool ret;
-    
+
                     if (pose==IKINCARTCTRL_VOCAB_VAL_POSE_FULL)
                         ret=goTo(IKINCTRL_POSE_FULL,xd,t);
                     else if (pose==IKINCARTCTRL_VOCAB_VAL_POSE_XYZ)
@@ -579,7 +579,7 @@ void ServerCartesianController::alignJointsBounds()
 {
     if (connected)
     {           
-        fprintf(stdout,"Getting joints bounds from cartesian solver...\n");
+        fprintf(stdout,"Getting joints bounds from cartesian solver %s ...\n",slvName.c_str());
     
         for (unsigned int i=0; i<chain->getN(); i++)
         {
@@ -680,19 +680,13 @@ bool ServerCartesianController::getNewTarget()
 {
     if (Bottle *b1=portSlvIn->read(false))
     {
-        // the token shall be in
-        if (!CartesianHelper::getTokenOption(*b1,&rxToken))
-        {
-            fprintf(stdout,"%s warning: skipped message from solver\
-                            due to missing token\n",ctrlName.c_str());
-            return false;
-        }
+        bool tokened=CartesianHelper::getTokenOption(*b1,&rxToken);
 
-        // ... and not greater than the trasmitted one
-        if (rxToken>txToken)
+        // token shall be not greater than the trasmitted one
+        if (tokened && rxToken>txToken)
         {
-            fprintf(stdout,"%s warning: skipped message from solver\
-                            due to invalid token\n",ctrlName.c_str());
+            fprintf(stdout,"%s warning: skipped message from solver due to invalid token (rx=%g)>(thr=%g)\n",
+                    ctrlName.c_str(),rxToken,txToken);
             return false;
         }
 
@@ -700,8 +694,12 @@ bool ServerCartesianController::getNewTarget()
         // any message with token smaller than the threshold
         if (skipSlvRes)
         {
-            if (rxToken<=txTokenLatched)
+            if (tokened && !trackingMode && rxToken<=txTokenLatched)
+            {
+                fprintf(stdout,"%s warning: skipped message from solver since controller has been stopped (rx=%g)<=(thr=%g)\n",
+                        ctrlName.c_str(),rxToken,txTokenLatched);
                 return false;
+            }
             else
                 skipSlvRes=false;
         }
@@ -817,7 +815,7 @@ void ServerCartesianController::run()
         getFeedback(fb);
         ctrl->set_q(fb);
         
-        if (executingTraj || trackingMode)
+        if (executingTraj)
         {
             // limb control loop
             ctrl->iterate(xdes,qdes);
@@ -830,14 +828,13 @@ void ServerCartesianController::run()
             {
                 executingTraj=false;
                 motionDone   =true;
+
+                stopLimbVel();
     
+                // switch the solver status to one shot mode
+                // if it is the case
                 if (!trackingMode && (rxToken==txToken))
-                {
-                    stopLimbVel();
-    
-                    // switch the solver status to one shot mode
                     setTrackingMode(false);
-                }
             }
         }
     
@@ -1310,7 +1307,8 @@ bool ServerCartesianController::goTo(unsigned int _ctrlPose, const Vector &xd, c
         CartesianHelper::addModeOption(b,true);
         // token part
         CartesianHelper::addTokenOption(b,txToken=Time::now());
-    
+
+        skipSlvRes=false;
         portSlvOut->writeStrict();
 
         return true;
@@ -1403,7 +1401,7 @@ bool ServerCartesianController::goToPose(const Vector &xd, const Vector &od, con
     
         for (int i=0; i<od.length(); i++)
             _xd[xd.length()+i]=od[i];
-    
+
         return goTo(IKINCTRL_POSE_FULL,_xd,t);
     }
     else
@@ -1664,7 +1662,6 @@ bool ServerCartesianController::stopControl()
         motionDone   =true;
 
         stopLimbVel();
-        setTrackingMode(false);
 
         txTokenLatched=txToken;
         skipSlvRes=true;
