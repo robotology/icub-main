@@ -47,10 +47,10 @@ double *maxptr;
 int processobjdata::classifyshape(BlobInfo &obj)
 {
   //	if( (obj.eccentricity>0.75) && (obj.circleness>0.65))
-  if ( (obj.circleness>0.60))
-		return 0;
+  if ( (obj.circleness>0.70))
+		return BALL;
 	else
-		return 1;
+		return BOX;
 }
 
 int processobjdata::classifysize(BlobInfo &obj)

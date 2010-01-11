@@ -11,6 +11,9 @@ public:
 	processobjdata(void);
 	~processobjdata(void);
 
+	static const int BALL=0;
+	static const int BOX=1;
+ 
 	int readdata();
 	int classifycolor(double* colorhist);
 	int classifysize(BlobInfo &obj);

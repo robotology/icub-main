@@ -1,18 +1,19 @@
 #include <stdio.h>
 #include <iCub/demoAff.h>
-
+#include <iCub/ctrlMath.h>
 #include <iCub/processobjdata.h>
 
 #define USE_LEFT    0
 #define USE_RIGHT   1
 
 
+using namespace ctrl;
  
 enum stateenum {
   FIRSTINIT,
   IDLE,
   INIT,
-  GETOBJDESC,
+  GETDEMOOBJS,
   WAITINGDEMO,
   ONDEMO,
   OBJSELEC,
@@ -25,9 +26,10 @@ enum stateenum {
   UNTAP,
   UNTOUCH,
   DETECTMARKS,
+  JUSTACT,
   NUMSTATES
 };
-char statename[NUMSTATES][20]={"firstinit","idle","init","getobjdesc","waitingdemo","ondemo","objselec","decision","reaching","tapping","grasping","touching","ungrasp","untap","untouch","detectmarks"};
+char statename[NUMSTATES][20]={"firstinit","idle","init","getdemoobjs","waitingdemo","ondemo","objselec","decision","reaching","tapping","grasping","touching","ungrasp","untap","untouch","detectmarks","justact"};
 
 enum processdatastates {
   GRASP,
@@ -65,8 +67,6 @@ int shape1, shape2;
 double prevwo, prevho;
 
 
-
-
 DemoAff::DemoAff(){
   state=INIT;
   substate=0;
@@ -83,6 +83,16 @@ DemoAff::DemoAff(){
   table_az=0;
   table_el=0;
 
+  for (int i=0; i<6; i++) {
+    headActPos[i]=0;
+    headObsPos[i]=0;
+  }
+
+  for (int i=0; i<3; i++) {
+    torsoActPos[i]=0;
+    torsoObsPos[i]=0;
+  }
+    
   InitAffPrimitives();
 
   printf("After constructor\n");
@@ -109,9 +119,9 @@ bool DemoAff::InitAffPrimitives() {
   graspDispL[1]= 0.0;       graspDispR[1]= 0.0; 
   graspDispL[2]= 0.05;      graspDispR[2]= 0.05;
   
-  dOffsL[0]=-0.03;          dOffsR[0]=-0.03;
-  dOffsL[1]=-0.07;          dOffsR[1]=-0.07;
-  dOffsL[2]=-0.02;          dOffsR[2]=-0.02;
+  dOffsL[0]=-0.0;           dOffsR[0]=-0.0;
+  dOffsL[1]=-0.0;           dOffsR[1]=-0.0;
+  dOffsL[2]=0.02;          dOffsR[2]=0.02;
   
   dLiftL[0]= 0.0;           dLiftR[0]= 0.0;  
   dLiftL[1]= 0.0;           dLiftR[1]= 0.0;  
@@ -299,6 +309,34 @@ bool DemoAff::configure(ResourceFinder &rf){
     return false;
   }
 
+  headPosActAz = rf.check("head_pos_act_az",yarp::os::Value(0.0)).asDouble();
+  headPosActEl = rf.check("head_pos_act_el",yarp::os::Value(0.0)).asDouble();
+  headActPos[0]= headPosActEl;
+  headActPos[2]= headPosActAz;
+
+
+  torsoPosActPitch = rf.check("torso_pos_act_p",yarp::os::Value(20.0)).asDouble();
+  torsoPosActRoll = rf.check("torso_pos_act_r",yarp::os::Value(0.0)).asDouble();
+  torsoPosActYaw = rf.check("torso_pos_act_y",yarp::os::Value(0.0)).asDouble();
+  
+  cout << "FROM FILE: " << torsoPosActYaw << torsoPosActRoll << torsoPosActPitch << endl;
+
+  torsoActPos[0]= torsoPosActYaw;
+  torsoActPos[1]= torsoPosActRoll;
+  torsoActPos[2]= torsoPosActPitch;
+
+  headPosObsAz = rf.check("head_pos_obs_az",yarp::os::Value(0.0)).asDouble();
+  headPosObsEl = rf.check("head_pos_obs_el",yarp::os::Value(0.0)).asDouble();
+  headObsPos[0]= headPosObsEl;
+  headObsPos[2]= headPosObsAz;
+
+  torsoPosObsPitch = rf.check("torso_pos_obs_p",yarp::os::Value(0.0)).asDouble();
+  torsoPosObsRoll = rf.check("torso_pos_obs_r",yarp::os::Value(0.0)).asDouble();
+  torsoPosObsYaw = rf.check("torso_pos_obs_y",yarp::os::Value(0.0)).asDouble();
+  torsoObsPos[0]= torsoPosObsYaw;
+  torsoObsPos[1]= torsoPosObsRoll;
+  torsoObsPos[2]= torsoPosObsPitch;
+
   table_el = rf.check("table_el",yarp::os::Value(0.00)).asDouble();
   table_az = rf.check("table_az",yarp::os::Value(0.00)).asDouble();
 
@@ -310,9 +348,20 @@ bool DemoAff::configure(ResourceFinder &rf){
   Property config; config.fromConfigFile(rf.findFile("aff_action_primitives").c_str());
   
 
-  configureAffPrimitives(config,rf.findFile("hand_sequences_file").c_str(), name);
+  ok &= configureAffPrimitives(config,rf.findFile("hand_sequences_file").c_str(), name);
+  if (!ok) {
+    cerr << "AffPrimitives failed to initialize" << endl;
+    return false;
+  }
 
-  configureEye2World(rf.findFile("camera_calib_file").c_str(), rf.findFile("table_configuration").c_str());
+  ok &= configureEye2World(rf.findFile("camera_calib_file").c_str(), rf.findFile("table_configuration").c_str());
+  if (!ok){
+    cerr << "Eye2World failed to initialize" << endl;
+    return false;
+  }
+
+  InitTorso();
+  InitHead();
 
   // open camshiftplus ports: data and sync
   string fwslash="/";
@@ -320,10 +369,13 @@ bool DemoAff::configure(ResourceFinder &rf){
   ok &= port_sync.open( (fwslash+name+"/synccamshift").c_str());
   ok &= port_descriptor.open( (fwslash+name+"/objsdesc").c_str());
   ok &= port_track_info.open( (fwslash+name+"/trackdesc").c_str());
-  ok &= port_primitives.open( (fwslash+name+"/motioncmd").c_str());
-  ok &= port_gaze_out.open( (fwslash+name+"/gazecmd").c_str());
+
+  ok &= port_gazepos_out.open( (fwslash+name+"/gazeposcmd").c_str());
+  ok &= port_gazevel_out.open( (fwslash+name+"/gazevelcmd").c_str());
+  
   ok &= port_behavior_in.open( (fwslash+name+"/behavior:i").c_str());
   ok &= port_behavior_out.open( (fwslash+name+"/behavior:o").c_str());
+
   ok &= port_output.open( (fwslash+name+"/out").c_str());
   ok &= port_emotions.open( (fwslash+name+"/emotion").c_str());
 
@@ -382,6 +434,7 @@ bool DemoAff::configureEye2World(yarp::os::ConstString calibrationFilename,
     projections[key] = new EyeTableProjection(key.c_str(), calib, &v);
   }
 
+  return true;
 }
 
 bool DemoAff::configureAffPrimitives(Searchable &config, 
@@ -558,8 +611,8 @@ bool DemoAff::close(){
   port_sync.close();
   port_descriptor.close();
   port_track_info.close();
-  port_primitives.close();
-  port_gaze_out.close();
+  port_gazepos_out.close();
+  port_gazevel_out.close();
   port_behavior_in.close();
   port_behavior_out.close();
   port_output.close();
@@ -580,6 +633,23 @@ bool DemoAff::close(){
       rpcPort.close();
     }
   
+  double vels[20];
+  if (_numHeadAxes > 0){
+      for (int i=0; i<_numHeadAxes; i++){
+        ipos->positionMove( i, 0);
+        vels[i]=0.0;
+      }
+      ivel->velocityMove( vels );
+  }
+
+  if (_numTorsoAxes > 0){
+      for (int i=0; i<_numTorsoAxes; i++){
+        t_ipos->positionMove( i, 0);
+        vels[i]=0.0;
+      }
+      t_ivel->velocityMove( vels );
+  }
+
   return true;
 }
 
@@ -611,12 +681,14 @@ void DemoAff::useArm(const int arm) {
 
 bool DemoAff::interruptModule(){
 
+  action->syncCheckInterrupt(true);        
+
   port_eff.interrupt();
   port_sync.interrupt();
   port_descriptor.interrupt();
   port_track_info.interrupt();
-  port_primitives.interrupt();
-  port_gaze_out.interrupt();
+  port_gazepos_out.interrupt();
+  port_gazevel_out.interrupt();
   port_behavior_in.interrupt();
   port_behavior_out.interrupt();
   port_output.interrupt();
@@ -660,6 +732,7 @@ bool DemoAff::updateModule(){
 	}
       }
     }    
+
     state=GRASPING;
     
 
@@ -668,6 +741,25 @@ bool DemoAff::updateModule(){
   case INIT:
     {
 
+
+      // Go to initPos
+      //t_ipos->positionMove(torsoObsPos);
+      //ipos->positionMove(headObsPos);
+
+      //printf("To obs pos\n");
+      
+      t_ipos->positionMove(torsoActPos);
+      ipos->positionMove(headActPos);
+      printf("To act pos\n");
+      cout << torsoActPos[0] << torsoActPos[1]<< torsoActPos[2] << endl;
+
+      yarp::os::Time::delay(4.0);
+
+      state=JUSTACT;
+    }
+    break;
+  case GETDEMOOBJS:
+    {
       // Set expression
       Bottle& output = port_emotions.prepare();
       output.clear();
@@ -705,13 +797,15 @@ bool DemoAff::updateModule(){
       }
       else {
 	// No obj change to attention
-	 Bottle& output = port_behavior_out.prepare();
-	 output.clear();
-	 output.addVocab(Vocab::encode("off"));
-	 port_behavior_out.write();
-	 
-	 state=IDLE;
-	 state=INIT;
+	
+	printf("GOing to attention\n");
+	Bottle& output = port_behavior_out.prepare();
+	output.clear();
+	output.addVocab(Vocab::encode("off"));
+	port_behavior_out.write();
+	
+	state=IDLE;
+	state=INIT;
       }
 
     }
@@ -779,10 +873,11 @@ bool DemoAff::updateModule(){
   case OBJSELEC: 
     {
       // Look for objects
-      Bottle& outputGaze = port_gaze_out.prepare();
+      Bottle& outputGaze = port_gazepos_out.prepare();
       outputGaze.clear();
-      outputGaze.addDouble(table_az);
-      outputGaze.addDouble(table_el);
+      outputGaze.addDouble(headPosActAz);
+      outputGaze.addDouble(headPosActEl);
+      outputGaze.addDouble(0.0);
       port_behavior_out.write();
       
       
@@ -899,7 +994,51 @@ bool DemoAff::updateModule(){
 
     }  
     break;
-    
+
+  case JUSTACT:
+    {
+      getObjInfo();
+
+      if (numObjs>0) {
+	// Select object closer to the center
+	float max_dist=10000;
+	int selobj;
+
+	for (int i=0; i<numObjs; i++) {
+	  objDescTable[i].printBlob();
+	  float dist = objDescTable[i].roi_x*objDescTable[i].roi_x + objDescTable[i].roi_y*objDescTable[i].roi_y;
+	  if (dist<max_dist) {
+	    selobj=i;
+	    selectedobj=i;
+	    max_dist=dist;
+	  }
+	}	
+
+	// Keep info about the selected object 
+
+	yarp::os::Time::delay(4.0);
+
+	democolor = processdata.classifycolor(objDescTable[selobj].hist);
+	demoshape = processdata.classifyshape(objDescTable[selobj]);
+	demosize = processdata.classifysize(objDescTable[selobj]);
+
+	cout << "trying to grasp a " << shapes[demoshape] << "!!!!!!!" << endl;
+
+	// Init tracker on fixated obj (if any)
+	// We have to re implement the init tracker to send the histogram 
+	// and the region provided by the segmentation
+	restartTracker(trackDescTable[selobj]);
+      
+	// Select the object position
+	objposreach.resize(2);	
+	objposreach[0] = trackDescTable[selobj].roi_x;
+	objposreach[1] = trackDescTable[selobj].roi_y;
+	state=REACHING;
+	selectedaction=GRASP;
+      }
+
+    }
+    break;
   case REACHING:
     {
       Vector head6d(6);
@@ -944,6 +1083,8 @@ bool DemoAff::updateModule(){
       object3d.resize(3);
       projections[usedEye]->project(objposreach, object3d);
       
+
+
       printf("Grasping %f %f %f\n", object3d[0], object3d[1], object3d[2]);
 
       // We will have different reachings or there is an initial common reaching phase?
@@ -955,7 +1096,7 @@ bool DemoAff::updateModule(){
       case TOUCH: state=TOUCHING; 
 	break;
       }
-      state=INIT;
+      //state=INIT;
     }
    
     break;
@@ -963,22 +1104,71 @@ bool DemoAff::updateModule(){
     {
       bool f;
       Vector xd(3);
-      
+      double demoangle;
+
       xd[0]=object3d[0];
       xd[1]=object3d[1];      
       xd[2]=object3d[2];
+      demoangle=objDescTable[selectedobj].angle;
       
       printf("Grasping %f %f %f\n", xd[0], xd[1], xd[2]);
 
       // switch only if it's allowed
-      if (partUsed=="both_arms")
-	{
-	  if (xd[1]>0.0)
-	    useArm(USE_RIGHT);
-	  else
-	    useArm(USE_LEFT);
+      if (partUsed=="both_arms") {
+	// COmpute the orientation	  	
+	Matrix rotz(3,3);
+	rotz.zero();
+	rotz(0,0)=cos(M_PI);
+	rotz(0,2)=sin(M_PI);
+	rotz(2,0)=-rotz(0,2);
+	rotz(2,2)=rotz(0,0);
+	rotz(1,1)=1.0;
+ 
+	if (xd[1]>0.0) {
+	  useArm(USE_RIGHT);
+	  if (demoshape==processobjdata::BOX){
+	    Matrix rot(3,3);
+	    rot.zero();
+	    double angdeg= -M_PI*(45-demoangle)/180;	    
+	    rot(0,0)=cos(angdeg);
+	    rot(0,1)=-sin(angdeg);
+	    rot(1,0)=-rot(0,1);
+	    rot(1,1)=rot(0,0);
+	    rot(2,2)=1.0;
+	    
+	    *graspOrien = dcm2axis(rotz*rot);		
+	    
+	    cout << graspOrien->toString() << endl;
+	  }
 	}
+	// COmpute the orientation
+	else {	 
+	  useArm(USE_LEFT);
+	  if (demoshape==processobjdata::BOX){
 
+	    Matrix rotx(3,3);
+	    rotx.zero();
+	    rotx(0,0)=1.0;
+	    rotx(1,1)=cos(M_PI);
+	    rotx(1,2)=-sin(M_PI);
+	    rotx(2,1)=-rotx(1,2);
+	    rotx(2,2)=rotx(1,1);
+
+	    Matrix rot(3,3);
+	    rot.zero();
+	    double angdeg= -M_PI*(45-demoangle)/180;
+	    rot(0,0)=cos(angdeg);
+	    rot(0,1)=-sin(angdeg);
+	    rot(1,0)=-rot(0,1);
+	    rot(1,1)=rot(0,0);
+	    rot(2,2)=1.0; 
+
+	    *graspOrien = dcm2axis(rotz*rotx*rot);		
+
+	    cout << graspOrien->toString() << endl;
+	  }	  
+	}
+      }
       cout << " after arm selection" << endl;
       // apply systematic offset
       // due to uncalibrated kinematic
@@ -1013,7 +1203,8 @@ bool DemoAff::updateModule(){
       action->pushAction(*home_x,*home_o);
 
       cout << "gooing back home" << endl;
-
+      action->checkActionsDone(f,true);
+      
       state=INIT;
     }		
     break;
@@ -1185,7 +1376,7 @@ bool DemoAff::getBlobInfo(const Bottle *msg) {
   // Read number of objects
   numBlobs=msg->get(0).asInt();
 
-  cout << "Number blobs" << numBlobs << endl; 
+  //cout << "Number blobs" << numBlobs << endl; 
 
   if (numBlobs>maxObjects)
     numBlobs=maxObjects;
@@ -1229,7 +1420,7 @@ bool DemoAff::getTrackerInfo(const Bottle *msg) {
   // Read number of objects
   numTracks=msg->get(cnt).asInt(); cnt++;
 
-  cout << "Number blobs" << numBlobs << endl; 
+  //cout << "Number tracks" << numBlobs << endl; 
 
   if (numTracks>maxObjects)
     numTracks=maxObjects;
@@ -1295,3 +1486,118 @@ bool DemoAff::getObjInfo() {
 
   return true;
 }
+
+
+// This may be removed if we can use the ControlGaze properly
+bool DemoAff::InitHead(){
+
+	Property propBoard;
+
+	propBoard.put("device", "remote_controlboard");
+	propBoard.put("remote" , "/icub/head");
+	//cout << strRemoteControlboard << endl;
+	propBoard.put("local", "/demoAff/head");
+	dd.open(propBoard);
+	if(!dd.view(ipos)){
+		cout << "No position control... " << endl;
+		return false;
+	}
+	if(!dd.view(ivel)){
+		cout << "No velocity control... " << endl;
+		return false;
+	}
+	if(!dd.view(ienc)){
+		cout << "No encoders.. " << endl;
+		return false;
+	}
+
+
+	if(!dd.view(ilim)){
+		cout << "No limits.. " << endl;
+		return false;
+	}
+	if(!dd.view(iamp)){
+		cout << "No amplifier.. " << endl;
+		return false;
+	}
+
+	if(!dd.view(ipid)){
+		cout << "No pid.. " << endl;
+		return false;
+	}
+
+    ipos->getAxes(&_numHeadAxes);
+    if (_numHeadAxes == 0){
+        cout << "*** Controlboard provides no axes. Probably connection to server controlboard was not established properly. Check your motorboard configuration value." << endl;
+         return false;
+    }
+
+    for (int i=0; i<_numHeadAxes; i++){
+        iamp->enableAmp(i);
+        ipid->enablePid(i);
+        //ipos->positionMove( i, 0);
+        ivel->velocityMove( i, 0);
+        ivel->setRefAcceleration(i, 100);
+        ipos->setRefSpeed(i, 20);
+        ipos->setRefAcceleration(i, 100);
+    }
+
+    return true;
+}
+
+// This may be removed if we can use the ControlGaze properly
+bool DemoAff::InitTorso(){
+
+	Property propBoard;
+
+	propBoard.put("device", "remote_controlboard");
+	propBoard.put("remote" , "/icub/torso");
+	//cout << strRemoteControlboard << endl;
+	propBoard.put("local", "/demoAff/torso");
+	t_dd.open(propBoard);
+	if(!t_dd.view(t_ipos)){
+		cout << "No position control... " << endl;
+		return false;
+	}
+	if(!t_dd.view(t_ivel)){
+		cout << "No velocity control... " << endl;
+		return false;
+	}
+	if(!t_dd.view(t_ienc)){
+		cout << "No encoders.. " << endl;
+		return false;
+	}
+
+	if(!t_dd.view(t_ilim)){
+		cout << "No limits.. " << endl;
+		return false;
+	}
+	if(!t_dd.view(t_iamp)){
+		cout << "No amplifier.. " << endl;
+		return false;
+	}
+
+	if(!t_dd.view(t_ipid)){
+		cout << "No pid.. " << endl;
+		return false;
+	}
+
+    t_ipos->getAxes(&_numTorsoAxes);
+    if (_numTorsoAxes == 0){
+        cout << "*** Controlboard provides no axes. Probably connection to server controlboard was not established properly. Check your motorboard configuration value." << endl;
+         return false;
+    }
+
+    for (int i=0; i<_numTorsoAxes; i++){
+        t_iamp->enableAmp(i);
+        t_ipid->enablePid(i);
+        //ipos->positionMove( i, 0);
+        t_ivel->velocityMove( i, 0);
+        t_ivel->setRefAcceleration(i, 100);
+        t_ipos->setRefSpeed(i, 10);
+        t_ipos->setRefAcceleration(i, 100);
+    }
+
+    return true;
+}
+

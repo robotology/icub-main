@@ -84,12 +84,10 @@ private:
   BufferedPort<Bottle> port_descriptor;
   BufferedPort<Bottle> port_track_info;
 
-  // motion primitives
-  BufferedPort<Bottle> port_primitives;
 
   // control gaze
-  BufferedPort<Bottle> port_gaze_in;
-  BufferedPort<Bottle> port_gaze_out;
+  BufferedPort<Bottle> port_gazepos_out;
+  BufferedPort<Bottle> port_gazevel_out;
 
   // behavior
   BufferedPort<Bottle> port_behavior_in;
@@ -214,6 +212,46 @@ protected:
   
   // Eye2World member methods
   bool configureEye2World(yarp::os::ConstString calibrationFilename,yarp::os::ConstString tableConfiguration);  
+
+
+  // position configurations
+  double headPosActAz,headPosActEl;
+  double torsoPosActPitch, torsoPosActRoll, torsoPosActYaw;
+
+  double headPosObsAz,headPosObsEl;
+  double torsoPosObsPitch, torsoPosObsRoll, torsoPosObsYaw;
+
+  double headActPos[6];
+  double torsoActPos[3];
+
+  double headObsPos[6];
+  double torsoObsPos[3];
+
+  Vector rotVec;
+
+  // head interface
+  yarp::dev::PolyDriver                           dd;
+  yarp::dev::IPositionControl                     *ipos;
+  yarp::dev::IVelocityControl                     *ivel;
+  yarp::dev::IEncoders                            *ienc;
+  yarp::dev::IAmplifierControl                  *iamp;
+  yarp::dev::IPidControl                          *ipid;
+  yarp::dev::IControlLimits                       *ilim;
+
+  // Torso interface
+  yarp::dev::PolyDriver                           t_dd;
+  yarp::dev::IPositionControl                     *t_ipos;
+  yarp::dev::IVelocityControl                     *t_ivel;
+  yarp::dev::IEncoders                            *t_ienc;
+  yarp::dev::IAmplifierControl                    *t_iamp;
+  yarp::dev::IPidControl                          *t_ipid;
+  yarp::dev::IControlLimits                       *t_ilim;
+
+  bool InitTorso();
+  bool InitHead();
+
+  int _numHeadAxes,_numTorsoAxes;
+
 
 public:
 
