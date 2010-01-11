@@ -1,4 +1,4 @@
-SET(KEYWORD "watershedModule")
+SET(KEYWORD "saliencyBlobFinderInterface")
 
 PROJECT(${KEYWORD})
 
