@@ -44,8 +44,7 @@ latencies.
 The figure below shows a snapshot of the estimated velocity and 
 acceleration along with a comparison between the proposed 
 algorithm and a simple moving average filter: 
-\image html velocityObserver.jpg "Least-square vs. moving
-       average estimation"
+\image html velocityObserver.jpg
  
 \section lib_sec Libraries 
 - YARP libraries. 
