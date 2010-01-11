@@ -9,9 +9,6 @@ project(CrawlPlanner)
 FIND_PACKAGE(YARP REQUIRED)
 FIND_PACKAGE(ICUB)
 
-
-add_definitions( /wd4250 )
-
 SET(COMPILE_CRAWL_SUPERVISOR_GUI FALSE CACHE BOOL "Do you want to build the optional gui to display the potiential field when planning ?")
 
 add_subdirectory(CrawlPlanner)

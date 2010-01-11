@@ -17,6 +17,10 @@ ADD_SUBDIRECTORY(CrawlGenerator)
 ADD_SUBDIRECTORY(CrawlManager)
 ADD_SUBDIRECTORY(ReachManager)
 
+IF(MSVC)
+	add_definitions( /wd4250 )
+ENDIF(MSVC)
+
 FIND_PACKAGE(ARToolkitPlus QUIET)
 IF (ARTOOLKITPLUS_FOUND)
   ADD_SUBDIRECTORY(MultiMarkerTracker)
