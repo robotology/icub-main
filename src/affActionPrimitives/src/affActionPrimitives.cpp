@@ -380,7 +380,10 @@ void affActionPrimitives::close()
         return;
 
     if (polyHand!=NULL && polyCart!=NULL)
+    {    
         stopControl();
+        setTrackingMode(false);
+    }
 
     if (isRunning())
     {
