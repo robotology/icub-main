@@ -21,6 +21,14 @@ using namespace yarp::sig;
 using namespace yarp::sig::draw;
 
 
+// We need a macro for efficient switching.
+// Use as, for example, VOCAB('s','e','t')
+#define VOCAB(a,b,c,d) ((((int)(d))<<24)+(((int)(c))<<16)+(((int)(b))<<8)+((int)(a)))
+#define VOCAB4(a,b,c,d) VOCAB((a),(b),(c),(d))
+#define VOCAB3(a,b,c) VOCAB((a),(b),(c),(0))
+#define VOCAB2(a,b) VOCAB((a),(b),(0),(0))
+#define VOCAB1(a) VOCAB((a),(0),(0),(0))
+
 #define BLOB_MAXSIZE 4096
 #define BLOB_MINSIZE 100
 
@@ -104,6 +112,8 @@ static WatershedModule *wModule;
 WatershedModule::WatershedModule(){
     ct=0;
 
+    message=new std::string();
+
     inputImage_flag=false;
 
     meanColour_flag=true;
@@ -125,6 +135,7 @@ WatershedModule::WatershedModule(){
     noPlanes_flag=true;
     resized_flag=false;
     //----
+
     maxSalienceBlob_img=new ImageOf<PixelMono>;
     outContrastLP=new ImageOf<PixelMono>;
     outMeanColourLP=new ImageOf<PixelBgr>;
@@ -857,8 +868,10 @@ static void cb_draw_value( GtkToggleButton *button )
     }
     
     else if(!strcmp(button->button.label_text,"ContrastLP-->")){
-        if(button->active)
+        if(button->active){
             wModule->contrastLP_flag=true;
+            wModule->message->assign("set CLP");
+        }
         else
             wModule->contrastLP_flag=false;
     }
@@ -950,33 +963,37 @@ bool WatershedModule::outPorts(){
     //this->_pOutPort2->prepare()=*(this->processor2->portImage);
     //this->_pOutPort3->prepare()=*(this->processor3->portImage);
     //printf("After prepares \n");
-    ImageOf<PixelRgb>* out=new ImageOf<PixelRgb>;
+    /*ImageOf<PixelRgb>* out=new ImageOf<PixelRgb>;
     out->resize(this->width,this->height);
     IppiSize srcsize={this->width,this->height};
-    ippiCopy_8u_C3R(wModule->outMeanColourLP->getRawImage(),wModule->outMeanColourLP->getRowSize(),out->getRawImage(),out->getRowSize(),srcsize);	
+    ippiCopy_8u_C3R(wModule->outMeanColourLP->getRawImage(),wModule->outMeanColourLP->getRowSize(),out->getRawImage(),out->getRowSize(),srcsize);	*/
 
     //prepare the output on ports
-    this->_pOutPort3->prepare()=*out;
+    /*this->_pOutPort3->prepare()=*out;
     this->_pOutPort3->write();
     this->_pOutPort2->prepare()=*(this->image_out);
-    this->_pOutPort2->write();
+    this->_pOutPort2->write();*/
     
     
-    if(true){
-        Bottle& commandBottle=new Bottle();
+    
+    if(strcmp("",message->c_str())){
+        Bottle& commandBottle=commandPort->prepare();
         commandBottle.clear();
-        commandBottle.addString("bottle");
+        commandBottle.addVocab(VOCAB3('s','e','t'));
+        commandBottle.addVocab(VOCAB3('c','l','p'));
+        //commandBottle.addString(message->c_str());
         //commandBottle.addInt(this->salience->centroid_x);
         //commandBottle.addInt(this->salience->centroid_y);
         //commandBottle.addInt(this->salience->centroid_x);
         //commandBottle.addInt(this->salience->centroid_y);
         commandPort->writeStrict();
         ct=1;
+        message->assign("");
     }
 
 
     //deallocation
-    delete out;
+    //delete out;
     //ippiFree(im_out);
     //ippiFree(im_tmp_tmp);
     //ippiFree(im_tmp);
@@ -1116,7 +1133,7 @@ static gint timeout_CB (gpointer data){
             wModule->inputImage_flag=true;
     }
     updateStatusbar(GTK_STATUSBAR (statusbar));
-    if(wModule->inputImage_flag)
+    if(true)
         wModule->outPorts();
     return TRUE;
 }
@@ -1337,9 +1354,9 @@ bool WatershedModule::openPorts(){
                     g_print("ERROR: Port registration failed.\nQuitting, sorry.\n");
                     return false;
                 }
-            _centroidPort = new yarp::os::BufferedPort<Bottle >;
-            g_print("Registering port %s on network %s...\n", "/rea/Watershed/centroid:o","default");
-            ok = _centroidPort->open("/rea/Watershed/centroid:o");
+            commandPort = new yarp::os::BufferedPort<Bottle >;
+            g_print("Registering port %s on network %s...\n", "/rea/Watershed/command:o","default");
+            ok = commandPort->open("/rea/Watershed/command:o");
             if  (ok)
                 g_print("Port registration succeed!\n");
             else 
@@ -1376,7 +1393,7 @@ bool WatershedModule::closePorts(){
             g_print("Closing port %s on network %s...\n", "/rea/Watershed/outBlobs:o","default");
             _pOutPort3->close();
             g_print("Closing port %s on network %s...\n", "/rea/Watershed/outView:o","default");
-            _centroidPort->close();
+            commandPort->close();
             g_print("Closing port %s on network %s...\n", "/rea/Watershed/centroid:o","default");
         }
 

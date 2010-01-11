@@ -26,10 +26,13 @@
 //within Project Include
 #include <iCub/WatershedOperator.h>
 #include <iCub/SalienceOperator.h>
+#include <string>
+
 
 using namespace yarp::os;
 using namespace yarp::sig;
 using namespace yarp::sig::draw;
+
 
 
 /**
@@ -37,27 +40,23 @@ using namespace yarp::sig::draw;
 @ingroup icub_module
 \defgroup icub_watershedModule watershedModule
 
-Module that applies Watershed techinique (rain falling) on the image buffered on the input port
+Module graphical interface for saliencyBlobFinder
 
 \section intro_sec Description
-This module receives an edge image and the respective red plane, green plane and yellow plane.
-It needs the opponency maps composed as R+G-, G+R-, B+Y-.
-The module applies the watershed technique in order to extract all the blob and calculates a saliency map based on the mean color of the blob,
-its dimension and the the color distance to the target object
-
+This module is purely an interface towards the module saliencyBlobFinder. It sends commands via /command:o port as bottles.
+The protocol respects the directives that the saliencyBlobFinder requires.
+In addition this interface is able to draw an image. This useful functionality allows the user to visualise straigh away important information 
+and result of his/her interaction
 
 The module does:
--   stream the mean color image of all the blobs
--   stream the image of the fovea blob
--   strean the saliency map as a gray scale image
--	stream the most salient blob
+-   stream the command to the saliencyBlobFinder module
+-   visualise an image in the graphics interface
 
 
-\image html EXAMPLE.jpg
+\image html saliencyBlobFinderInterface.jpeg
 
 \section lib_sec Libraries
 YARP
-OPENCV
 GTK
 
 \section parameters_sec Parameters
@@ -65,28 +64,14 @@ GTK
 
  
 \section portsa_sec Ports Accessed
-ImageProcessor/outImage:o
-ImageProcessor/outRed:o
-ImageProcessor/outGreen:o
-ImageProcessor/outBlue:o
-ImageProcessor/outRG:o
-ImageProcessor/outGR:o
-ImageProcessor/outBY:o
+/blobFinder/cmd
 
 
 \section portsc_sec Ports Created
 Input ports:
-- /watershed/inputImage:i
-- /watershed/inRed:i
-- /watershed/inGreen:i
-- /watershed/inBlue:i
-- /watershed/inRG:i
-- /watershed/inGR:i
-- /watershed/inBY:i
+none
 Outports
-- /watershed/outBlobs:o
-- /watershed/outView:o
-- /watershed/outImage:o
+- /watershed/command:o
 
 \section in_files_sec Input Data Files
 none
@@ -96,13 +81,12 @@ none
  
 \section conf_file_sec Configuration Files
 none
---file.
 
 \section tested_os_sec Tested OS
 Linux and Windows.
 
 \section example_sec Example Instantiation of the Module
-watershedModule --name
+saliencyBlobFinderInterface 
 
 
 \author Francesco Rea
@@ -156,12 +140,11 @@ private:
 	* port where the commands are sent
 	*/
     Port cmdPort;
-	
 	/**
 	* options of the connection
 	*/
 	Property options;	//
-	
+    
 public:
 	//------------------ PUBLIC METHODS -----------------------------------
 
@@ -461,7 +444,16 @@ public:
 
 	//----checkButtons
 	GtkWidget *buttonCheckGreen,*buttonCheckRed,*buttonCheckBlue;
+    /**
+    * max saliency blob
+    */
 	YARPBox* max_boxes;
+
+    /**
+    * string for the the command
+    */
+    std::string* message;
+	
 	
 };
 
