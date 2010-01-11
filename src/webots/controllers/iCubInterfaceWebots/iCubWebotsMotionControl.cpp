@@ -134,7 +134,6 @@ bool iCubWebotsMotionControl::open(yarp::os::Searchable& config) {
 
     current_pos = allocAndCheck<double>(njoints);
     next_pos = allocAndCheck<double>(njoints);
-    init_pos=allocAndCheck<double>(njoints);
 
     next_sp = allocAndCheck<double>(njoints);
     for(int i = 0;i<njoints;i++)
@@ -294,9 +293,9 @@ bool iCubWebotsMotionControl::open(yarp::os::Searchable& config) {
     
 
     WbNodeRef *nodes = new WbNodeRef[njoints];
-    WbFieldRef *servo_position = new WbFieldRef[njoints];
+    //WbFieldRef *servo_position = new WbFieldRef[njoints];
     
-    double *servo_initial_position = new double[njoints];
+    //double *servo_initial_position = new double[njoints];
 
     for(int i =0;i<njoints;i++)
         {
@@ -317,22 +316,21 @@ bool iCubWebotsMotionControl::open(yarp::os::Searchable& config) {
                     return false;
                 }    
                 
-			servo_position[i]=wb_supervisor_node_get_field(nodes[i], "position");
-			servo_initial_position[i]=wb_supervisor_field_get_sf_float(servo_position[i]);
+			/*servo_position[i]=wb_supervisor_node_get_field(nodes[i], "position");
+			servo_initial_position[i]=wb_supervisor_field_get_sf_float(servo_position[i]);*/
 			
 				
 		
-			init_pos[i]=servo_initial_position[i];
-            current_pos[i] = init_pos[i];
-            next_pos[i] = init_pos[i];
+            current_pos[i] = 0;
+            next_pos[i] = 0;
             
             servo_minPos[i]=wb_supervisor_node_get_field(nodes[i],"minPosition");
 			minPos[i]=wb_supervisor_field_get_sf_float(servo_minPos[i]);
-			wb_supervisor_field_set_sf_float(servo_minPos[i],minPos[i]-init_pos[i]);
+			wb_supervisor_field_set_sf_float(servo_minPos[i],minPos[i]);
 		
 			servo_maxPos[i]=wb_supervisor_node_get_field(nodes[i],"maxPosition");
 			maxPos[i]=wb_supervisor_field_get_sf_float(servo_maxPos[i]);
-			wb_supervisor_field_set_sf_float(servo_maxPos[i],maxPos[i]-init_pos[i]);
+			wb_supervisor_field_set_sf_float(servo_maxPos[i],maxPos[i]);
         }
 
     //we point to the webots common instance
@@ -389,7 +387,6 @@ bool iCubWebotsMotionControl::close (void)
     
     checkAndDestroy<double>(current_pos);
     checkAndDestroy<double>(next_pos);
-    checkAndDestroy<double>(init_pos);
     delete[] joint_dev;
 
     checkAndDestroy<double>(angleToEncoder);
@@ -439,7 +436,7 @@ void iCubWebotsMotionControl::run ()
             for(int i = 0;i<njoints;i++)
                 {
                 	int sign=1;
-                    current_pos[i] = (double)wb_servo_get_position(joint_dev[i])+init_pos[i];
+                    current_pos[i] = (double)wb_servo_get_position(joint_dev[i]);
                     //if(motor_on[i]){
                         wb_servo_set_velocity(joint_dev[i],next_sp[i]);  
                         wb_servo_set_position(joint_dev[i],next_pos[i]);                      

@@ -215,9 +215,6 @@ protected:
     //current position of the joints
     double *current_pos;
     
-    //initial position of the joints
-    double *init_pos;
-    
     // next speed of the servos
     double *next_sp;
 
