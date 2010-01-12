@@ -84,7 +84,8 @@ using namespace iCub::contrib;
  *
  * In pursuit mode, the heading direction can be specified at any time step and the controller must recompute the controls. 
  * This puts some stability issues because the trajectories become dependent of the rate commands are sent to the controller. 
- * The default gains have been tuned for a command refresh rate of 20 ms (50 Hz). 
+ * The default gains have been tuned for internal control loop rate of 20 ms (50 Hz) and a pursuit command refresh rate 
+ * (visual loop) of 50ms (20Hz). 
  * 
  * CURRENT STATUS:
  * 
@@ -94,6 +95,7 @@ using namespace iCub::contrib;
  * 
  * To start controlGaze2 type execute the following command:
  * - controlGaze2 <parameters>
+ *
  * The following parameters are accepted:
  * 
  * configCamera
@@ -130,7 +132,9 @@ using namespace iCub::contrib;
  * - k2 0.116527
  * - p1 -0.000603539
  * - p2 -0.000591796 
+ *
  * ----------------------------------------------------
+ *
  * If the images come from camCalib modules, the optical distortion parameters (k1, k2, p1, p2) should be put to 0. 
  *
  * appPath
@@ -152,28 +156,44 @@ using namespace iCub::contrib;
  * 
  * This specifies the prefix of the port names made available by the control board to the head device. 
  * If you use ICubInterface, this is usually /icub/head. 
+ *
+ * --velocity_gain 
+ * 
+ * Let you tune the speed of the controller. Play with care: this may lead to unstability. Never deviate too much from the defaults.
+ * 
+ * --fake_velocity_control
+ *
+ * This specifies that the internal rate control loop will use relative position control rather than velocity control.
+ * This is useful to use with the simulator.
+ *
+ * --fake_velocity_gain
+ * 
+ * Velocity gain for the fake velocity controller. Play with care: this may lead to unstability. Never deviate too much from the defaults.
  * 
  * Other Parameters and Defaults
  *
  * - pidON	          0
- * - pidGAIN	  5.0
+ * - pidGAIN	      5.0
  * - vorON	          0
  * - log	          0
  * - K                0.04 0 -0.08 -0.024 0 -0.056
- * - FrameRate	  20
+ * - FrameRate	      20
  * - ControlRate      50
  * - limitResetTime   3.0
  * - headSaccadeDelay 3.0
  * 
  * These could go to a initialization file (e.g. controlgaze2.ini)and invoked by:
  * - --file controlgaze2.ini
+ *
  * This is probably going to change in future version due to the new ResourceFinder's methods. 
  *
  * TESTING THE MODULE FROM THE CONSOLE
  * 
- * The module has a console interface where you can issue the following commands.
- * If you have access to the console window, you can just type the commands there. Otherwise open a command window and type:
+ * The module has a console interface where you can issue several commands.
+ * If you have access to the console window, you can just type the commands there. 
+ * Otherwise open a command window and type:
  * - yarp rpc /controlGaze2/conf
+ * 
  * Then just type the required commands in the console.
  * 
  * ACTUATION COMMANDS
@@ -217,6 +237,7 @@ using namespace iCub::contrib;
  * 
  * For instance, if you issue the command:
  * - sac abs 10 10
+ * 
  * The head-eye system will move to 10 degrees azimuth and 10 degrees elevation. 
  *
  * SENDING COMMANDS FROM OTHER MODULES 
@@ -252,12 +273,12 @@ using namespace iCub::contrib;
  * - horz_coord - the gaze value for the horizontal direction
  * - vert_coord - the gaze value for the vertical direction
  * - coord_sys - the type of coordinates/units related to the gaze values.
- * -#  'a' (cast to float)- the command is the absolute orientation (degrees).
- * -#   o 'r' (cast to float)- the command is the orientation relative to the current one (degrees).
- * -#   o 'p' (cast to float)- the command is given in normalized image coordinates (-1,1).
- * -#   o 'i' (cast to float)- the command is given in image pixel coordinates. 
- * type_behav (optional)- just use 's', if you what to specify the following argument.
- * saccade_id (optional) - a increasing number specifying the saccade order. In some cases saccade commands can be out of order. This is sometimes the case if you stream saccade commands. The attention system uses this. Most probably you will not need it. 
+ * - . 'a' (cast to float)- the command is the absolute orientation (degrees).
+ * - . 'r' (cast to float)- the command is the orientation relative to the current one (degrees).
+ * - . 'p' (cast to float)- the command is given in normalized image coordinates (-1,1).
+ * - . 'i' (cast to float)- the command is given in image pixel coordinates. 
+ * - type_behav (optional)- just use 's', if you what to specify the following argument.
+ * - saccade_id (optional) - a increasing number specifying the saccade order. In some cases saccade commands can be out of order. This is sometimes the case if you stream saccade commands. The attention system uses this. Most probably you will not need it. 
  *  
  * /controlGaze2/vel
  *
@@ -267,10 +288,10 @@ using namespace iCub::contrib;
  * - horz_coord- the gaze value for the horizontal direction
  * - vert_coord - the gaze value for the vertical direction
  * - coord_sys - the type of coordinates/units related to the gaze values.
- * -# 'a' (cast to float)- the command is the absolute orientation (degrees).
- * -# 'r' (cast to float)- the command is the orientation relative to the current one (degrees).
- * -# 'p' (cast to float)- the command is given in normalized image coordinates (-1,1).
- * -# 'i' (cast to float)- the command is given in image pixel coordinates. 
+ * - . 'a' (cast to float)- the command is the absolute orientation (degrees).
+ * - . 'r' (cast to float)- the command is the orientation relative to the current one (degrees).
+ * - . 'p' (cast to float)- the command is given in normalized image coordinates (-1,1).
+ * - . 'i' (cast to float)- the command is given in image pixel coordinates. 
  *
  *
  * This port accepts gaze vergence commands. Each command is a vector of 1 float:
@@ -298,12 +319,12 @@ using namespace iCub::contrib;
  * Outputs the state of the controller and the current azimuth and elevation gaze direction coordinates (degrees).
  * The port sends bottles with three elements:
  * - status - an integer specifying the state of the controller:
- * -# 1 - starting a saccade (eye phase).
- * -# 2 - Continuing a saccade (neck phase).
- * -# 3 - Doing smooth pursuit.
- * -# 4 - Stuck in a limit.
- * -# 5 - Resting.
- * -# 6 - Starting smooth pursuit. 
+ * - . 1 - starting a saccade (eye phase).
+ * - . 2 - Continuing a saccade (neck phase).
+ * - . 3 - Doing smooth pursuit.
+ * - . 4 - Stuck in a limit.
+ * - . 5 - Resting.
+ * - . 6 - Starting smooth pursuit. 
  * - azimuth - a floating point number with the gaze direction azimuth (in degrees).
  * - elevation - a floating point number with the gaze direction elevation (in degrees). 
  *
@@ -337,44 +358,89 @@ using namespace iCub::contrib;
  *
  * Parameters:
  * - appPath (string - defaults to "")
+ * 
  *   Absolute path to the application folder.
+ * 
  * - configCamera (string - defaults to "")
+ * 
  *   Configuration file with camera parameters.
+ *
  * - imageSize (int,int)
+ *
  *   Actual image size (not calibration size)
+ *
  * - motorboard (string - defaults to "")
+ *
  *   Port name of the remote (server) control board.
+ *
  * - limitResetTime (double - defaults to 4)
+ *
  *   Time from start of saccade until looking back to center 
  *   if saccade reaches a joint limit.
+ *
  * - headSaccadeDelay (double - defaults to 0.0)
+ *
  *   Minimum time between saccades.
+ *
  * - FrameRate (double - defaults to 20 [Hz])
+ *
  *   Expected rate (samples per second) of input data in velocity mode (smooth pursuit)
+ *
  * - Control rate (double - defaults to 50 [Hz])
+ *
  *   Rate of the control thread. 
  *   Limited by the motor control board rates (50Hz is about the maximum).
+ *
  * - K (double[6]).
+ *
  *   Gains of the rate controller for head-eye coordination.
+ *
+ * - velocity_gain
+ *
+ * Gain to tune the speed of the velocity controller.
+ *
+ * - fake_velocity_control
+ *
+ * Replaces velocity control by position increment control. 
+ *
+ * - fake_velocity_gain
+ *
+ * Gain to tune the speed of the fake velocity controller.
+ *
  * - egosphereVisualUpdateThreshold (double - defaults to 1)
+ *
  *   Threshold to check when a saccade reaches the end. 
  *   When the gaze error squared norm (azimuth_error^2+elevation_error^2) 
  *   is below this value, a message is sent to notify the end of the saccade.
+ *
  * - log (bool - defaults to false)
+ *
  *   If true, a log file is created with several important status variables.
+ *
  * - logfilename (string - defaults to "log")
+ *
  *   Name of the file where to log information.
+ *
  * - pidON (bool - defaults to false)
+ * 
  *   EXPERIMENTAL. Turns on integral control.
+ *
  * - pidGAIN (double - defaults to 5)
+ *
  *   EXPERIMENTAL. Sets the gain for integral control.
+ *
  * - vorON (bool - defaults to false)
+ *
  *   EXPERIMENTAL. Turns on the vestibular (inertial) system.
+ *
  * - configPredictors (string - defaults to "")
+ *
  *   EXPERIMENTAL. Configuration file for model based predictors.
+ *
  * Commands:
  *
  * 	-- ACTUATION COMMANDS
+ *
  * - sac abs <x> <y> : saccade in absolute angles
  * - set pos <x> <y> : same as before
  * - sac rel <x> <y> : saccade in head relative angles
@@ -384,7 +450,9 @@ using namespace iCub::contrib;
  * - pur rel <x> <y> : pursuit in head relative angles
  * - pur img <x> <y> : pursuit in camera normalized relative coordinastes
  * - pur pix <x> <y> : pursuit in image pixel relative coordinates
+ *
  *  -- STATUS COMMANDS
+ *
  * - rset            : resets the state of the controller
  * - get st          : get time from last saccade
  * - get stat        : get controller status
@@ -392,7 +460,9 @@ using namespace iCub::contrib;
  * - get dh          : get current head gaze
  * - get der         : get current right eye gaze
  * - get del         : get current left eye gaze
+ *
  *  -- CONFIGURATION COMMANDS
+ *
  * - set mst         : set minimum saccade time (a.k.a head saccade delay)
  * - set lrt         : ser joint limit reset time
  * - get mst         : get minimum saccade time (a.k.a head saccade delay)
@@ -416,7 +486,7 @@ using namespace iCub::contrib;
  *
  * \see iCub::contrib::Control_GazeModule
  *
- * \author Manuel Lopes, Alexandre Bernardino
+ * \author Manuel Lopes, Alexandre Bernardino, Jonas Ruesch
  *
  */
 

@@ -215,7 +215,8 @@ private:
 	/* Added by alex Mon Jan 11 2010 */
 	double torsopos[8];
 	bool _fake_velocity_control;
-
+	double _fake_velocity_gain;
+	double _velocity_gain;
 
 
 public:

@@ -131,6 +131,12 @@ bool Control_GazeModule::configure(yarp::os::ResourceFinder &rf){
 	{
 		_fake_velocity_control = false;
 	}
+
+	//this is only used if _fake_velocity_control is true.
+	_fake_velocity_gain = rf.check("fake_velocity_gain", Value(5.0), "Gain for the fake velocity controller. Set with care: this may lead to unstability.").asDouble();
+
+	//otherwise use this
+	_velocity_gain = rf.check("velocity_gain", Value(1.0), "Gain for the velocity controller. Set with care: this may lead to unstability.").asDouble();
 	
 	// getting predictors properties
 	bool use_pred=true;
@@ -214,6 +220,7 @@ bool Control_GazeModule::configure(yarp::os::ResourceFinder &rf){
                              Value(20.0),
                              "Expected rate of velocity commands").asDouble();
 	
+
 	vergenceGain = rf.check("vergenceGain", Value(0.02), "Gain for Vergence Controller").asDouble();
 	//init head controller with saccade gains
 	head.setGazeControllerGain(  controlrate );
@@ -1607,6 +1614,8 @@ int Control_GazeModule::velmove(double *vels)
 	}
 	else
 	{
+		for(int i = 0; i < 6; i++ )
+			vels[i] *= _velocity_gain;
 		ivel->velocityMove( vels );
 	}
 
@@ -1623,7 +1632,7 @@ int Control_GazeModule::relmove(double *delta)
 
 	for(int i = 0; i < 5; i++)
 	{
-		newpos[i] = headpos[i]+delta[i]/(controlrate/2);
+		newpos[i] = headpos[i]+_fake_velocity_gain*delta[i]/controlrate;
 	}
 
 	ipos->positionMove( newpos );
