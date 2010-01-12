@@ -1,7 +1,7 @@
 /** 
-@ingroup icub_module  
 \defgroup icub_pf3dTracker pf3dTracker
- 
+@ingroup icub_module   
+
 An object 3d position tracker implementing the particle filter.
 
 Copyright (C) 2009 RobotCub Consortium
