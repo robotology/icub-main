@@ -18,7 +18,7 @@
 #define ACTIONPRIM_DEFAULT_REACHTOL         0.005   // [m]
 #define ACTIONPRIM_DUMP_PERIOD              1.0     // [s]
 #define ACTIONPRIM_DEFAULT_PART             "right_arm"
-#define ACTIONPRIM_DEFAULT_TRACKINGMODE     "false"
+#define ACTIONPRIM_DEFAULT_TRACKINGMODE     "off"
 #define ACTIONPRIM_DEFAULT_VERBOSITY        "off"
 
 using namespace std;
@@ -278,7 +278,7 @@ bool affActionPrimitives::open(Property &opt)
     local=opt.find("local").asString().c_str();
     part=opt.check("part",Value(ACTIONPRIM_DEFAULT_PART)).asString().c_str();
     default_exec_time=opt.check("default_exec_time",Value(ACTIONPRIM_DEFAULT_EXECTIME)).asDouble();
-    tracking_mode=opt.check("tracking_mode",Value(ACTIONPRIM_DEFAULT_TRACKINGMODE)).asString()=="true"?true:false;
+    tracking_mode=opt.check("tracking_mode",Value(ACTIONPRIM_DEFAULT_TRACKINGMODE)).asString()=="on"?true:false;
     verbose=opt.check("verbosity",Value(ACTIONPRIM_DEFAULT_VERBOSITY)).asString()=="on"?true:false;
 
     string robot=opt.check("robot",Value("icub")).asString().c_str();    

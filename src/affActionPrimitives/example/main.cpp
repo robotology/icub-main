@@ -100,7 +100,8 @@ torso_pitch                     on
 torso_roll                      off
 torso_yaw                       on
 torso_pitch_max                 30.0 
-tracking_mode                   false 
+tracking_mode                   off 
+verbosity                       on 
 
 [left_arm]
 grasp_orientation               (-0.171542 0.124396 -0.977292 3.058211)

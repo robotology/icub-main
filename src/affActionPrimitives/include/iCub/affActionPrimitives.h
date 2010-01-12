@@ -213,7 +213,7 @@ public:
     * \b reach_tol <double>: the reaching tolerance [m]. 
     *  
     * \b tracking_mode <string>: enable/disable the tracking mode; 
-    *    possible values: "true"/"false".
+    *    possible values: "on"/"off".
     * \note In tracking mode the cartesian position is mantained on 
     *       the reached target; in non-tracking mode the joints
     *       positions are kept once the target is attained.
