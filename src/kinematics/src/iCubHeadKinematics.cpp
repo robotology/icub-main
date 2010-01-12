@@ -18,14 +18,12 @@ using namespace std;
 using namespace yarp::sig;
 using namespace yarp::os;
 
-#include <iCub/iKinFwd.h>
-using namespace iKin;
 
 /**
 	Construct the kinematic structure using modified Denavitt-Hartenberg parameters.
 	Compatible with Matlab robotics toolbox.
 */
-iCubHeadKinematics::iCubHeadKinematics() : eyeL("left"), eyeR("right")
+iCubHeadKinematics::iCubHeadKinematics()
 {
 // the limits should be read from a configuration file
 // and maybe also the geometry
@@ -715,55 +713,6 @@ int iCubHeadKinematics::HeadGaze(double *hgazy, double *hgelev, double *headpos)
 }
 int iCubHeadKinematics::Gaze(double *gazazy, double *gazelev, double *headpos, char weye)
 {
-	//Testing Ugo classes
-	double fbTorso[]={0.0,0.0,0.0};
-	double fbHead[]={0.0,0.0,0.0,0.0,0.0,0.0};
-	fbHead[0] = headpos[0];
-	fbHead[1] = headpos[1];
-	fbHead[2] = headpos[2];
-	fbHead[3] = headpos[3];
-	fbHead[4] = headpos[4];
-	fbHead[5] = headpos[5];
-	//iCubEye eyeL("left"); //class objects
-	//iCubEye eyeR("right");
-	Vector eyeLData(8), eyeRData(8);
-	// units shall be in radians
-	// remind that the torso is in reverse order:
-	// their joints are sent assuming the neck as kinematic origin
-	// and not the waist, hence we've got to invert them!
-	eyeLData[0]=eyeRData[0]=(M_PI/180.0)*fbTorso[2];	
-	eyeLData[1]=eyeRData[1]=(M_PI/180.0)*fbTorso[1];
-	eyeLData[2]=eyeRData[2]=(M_PI/180.0)*fbTorso[0];
-	// neck part
-	eyeLData[3]=eyeRData[3]=(M_PI/180.0)*fbHead[0];
-	eyeLData[4]=eyeRData[4]=(M_PI/180.0)*fbHead[1];
-	eyeLData[5]=eyeRData[5]=(M_PI/180.0)*fbHead[2];
-	// eyes part
-	// fbHead[3]=gaze tilt
-	// fbHead[4]=gaze version
-	// fbHead[5]=gaze vergence
-	eyeLData[6]=eyeRData[6]=(M_PI/180.0)*fbHead[3];	// eye tilt
-	eyeLData[7]=(M_PI/180.0)*(fbHead[4]+fbHead[5]/2.0);	// left eye pan
-	eyeRData[7]=(M_PI/180.0)*(fbHead[4]-fbHead[5]/2.0);  // right eye pan
-	//In fact we only want the vergence angle
-	eyeLData[7]=eyeRData[7] = (M_PI/180.0)*fbHead[4];
-	// set the joints
-	eyeL.setAng(eyeLData);
-	eyeR.setAng(eyeRData);
-	//To send data to iCub you need to set:
-	//Head[3]=(180.0/M_PI)*eyeL.getAng(6);
-	//Head[4]= (180.0/M_PI)*(eyeL.getAng(7)-eyeR.getAng(7));
-	//Head[5]= (180.0/M_PI)*((eyeL.getAng(7)+eyeR.getAng(7))/2.0);
-	//Get Trasformation matriz
-	yarp::sig::Matrix rightH = eyeR.getH();
-	//Get gaze direction - the camera frame Z axis expressed in the body frame
-	yarp::sig::Vector gazeVector(3);
-	gazeVector(0) = rightH(0,2);
-	gazeVector(1) = rightH(1,2);
-	gazeVector(2) = rightH(2,2);
-	double gazeAzimuth, gazeElevation;
-	gazeVector2AzimuthElevation(gazeVector, gazeAzimuth, gazeElevation);
-	// End Testing Ugo classes
 	
 	double aux1, aux2;
 	aux1 = headpos[4];  //version  (half sum of the two eye angles)

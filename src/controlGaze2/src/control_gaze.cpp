@@ -328,8 +328,8 @@ bool Control_GazeModule::configure(yarp::os::ResourceFinder &rf){
 //	maxL(0)=maxL(1)=maxL(2)=maxL(3)=maxL(4)=maxL(5)=maxL(6)=maxL(7)=50;
 //	minL(0)=minL(1)=minL(2)=minL(3)=minL(4)=minL(5)=minL(6)=minL(7)=-50;
 
-	head.initEyeKin(maxL, minL);
-	head.initInertialKin(maxL, minL);
+	initEyeKinematics(maxL, minL);
+	initInertialKinematics(maxL, minL);
 	
 	_smoothInput_port.open( getName("/vel"));
 	_saccadeInput_port.open( getName("/pos"));
@@ -992,8 +992,8 @@ bool Control_GazeModule::updateModule() //this runs every
 	//Here I have to convert from absolute coordinates to neck based coordinates.
 	//The head controller works on neck based coordinates,
 	//but the target coordinates are computed in absolute.
-	Matrix DesRotWaist = head.getRotationMatrixFromRollPitchYawAngles(0, _abs_ref_el, _abs_ref_az);
-	Matrix Neck2Waist = head.getNeck2WaistTransf(torsopos);
+	Matrix DesRotWaist = getRotationMatrixFromRollPitchYawAngles(0, _abs_ref_el, _abs_ref_az);
+	Matrix Neck2Waist = getNeck2WaistTransf(torsopos);
 	Matrix Waist2Neck = Neck2Waist.transposed();
 	//this matrix is to rotate the neck such that roll, pitch, yaw angles can be computed as usual.
 	Matrix NeckNorm(3,3);
@@ -1002,7 +1002,7 @@ bool Control_GazeModule::updateModule() //this runs every
 	NeckNorm(2,0) = 0; NeckNorm(2,1) = 1; NeckNorm(2,2) = 0;
 	Matrix DesRotNeck = NeckNorm * Waist2Neck * DesRotWaist; 
 	double temp;
-	head.getRollPitchYawAnglesFromRotationMatrix(DesRotNeck, temp, _targ_elev, _targ_azy);
+	getRollPitchYawAnglesFromRotationMatrix(DesRotNeck, temp, _targ_elev, _targ_azy);
 
 	desazy = _targ_azy;
 	deselev = _targ_elev;
@@ -1551,7 +1551,7 @@ bool Control_GazeModule::updateAbsoluteGazeReference2(double coord1,
 			DesPoseEye(1,0)= 0; DesPoseEye(1,1)= 1; DesPoseEye(1,2)= 0; DesPoseEye(1,3)= ymetric;
 			DesPoseEye(2,0)= 0; DesPoseEye(2,1)= 0; DesPoseEye(2,2)= 1; DesPoseEye(2,3)= 1;
 			DesPoseEye(3,0)= 0; DesPoseEye(3,1)= 0; DesPoseEye(3,2)= 0; DesPoseEye(3,3)= 0;
-			Matrix Eye2Waist = head.getCyclopPose(cyclopData);
+			Matrix Eye2Waist = getCyclopPose(cyclopData);
 			Matrix DesPoseWaist = Eye2Waist * DesPoseEye;
 			Vector DesOrient = DesPoseWaist.getCol(3);
 			head.gazeVector2AzimuthElevation(DesOrient, new_azy, new_elev);

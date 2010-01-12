@@ -45,6 +45,9 @@
 #include <iCub/head/iCubHeadKinematics.h>
 #include <iCub/kinematics/gsl_aux.h>
 
+#include <iCub/iKinFwd.h>
+using namespace iKin;
+
 #if USE_PREDICTIVE_CONTROL
 	#include <iCub/predictors.h>
 #endif
@@ -218,6 +221,124 @@ private:
 	double _fake_velocity_gain;
 	double _velocity_gain;
 
+	//for testing Ugo's classes
+protected: 
+	iCubEye eyeKinematics; 
+	iCubInertialSensor inertialKinematics; 
+   
+	void initInertialKinematics(Vector &maxL, Vector &minL)
+	{
+		for (int j = 0; j < 3; j++) 
+			inertialKinematics.releaseLink(j);
+			
+		iKinChain* inertialChain = inertialKinematics.asChain();
+
+		int n = inertialKinematics.getDOF();
+
+		for(int i = 0; i < n; i++)
+		{
+			(*inertialChain)[i].setMin((M_PI/180.0)*minL(i));
+			(*inertialChain)[i].setMax((M_PI/180.0)*maxL(i));
+		}
+	}
+	void initEyeKinematics(Vector &maxL, Vector &minL)
+	{
+		for (int j = 0; j < 3; j++) {
+			eyeKinematics.releaseLink(j);
+		}
+
+		iKinChain* eyeChain = eyeKinematics.asChain();
+		
+		for(int i = 0; i < 8; i++)
+		{
+			(*eyeChain)[i].setMin((M_PI/180.0)*minL(i));
+			(*eyeChain)[i].setMax((M_PI/180.0)*maxL(i));
+		}
+	};
+	Matrix getNeck2WaistTransf(double *torsoEncoders )
+	{
+		Matrix tNeck2Waist;
+		Vector torsoData(6);  //will use the inertial sensor kinematic chain
+		// torsoEncoders in degrees
+		// torsoData units shall be in radians
+		// remind that the torso is in reverse order:
+		// their joints are sent assuming the neck as kinematic origin
+		// and not the waist, hence we've got to invert them!
+		torsoData[0]=(M_PI/180.0)*torsoEncoders[2];	
+		torsoData[1]=(M_PI/180.0)*torsoEncoders[1];
+		torsoData[2]=(M_PI/180.0)*torsoEncoders[0];
+		//the remaining ones no not matter- can be set to zero
+		torsoData[3] = 0.0;
+		torsoData[4] = 0.0;
+		torsoData[5] = 0.0;
+		inertialKinematics.setAng(torsoData);
+		tNeck2Waist = inertialKinematics.getH(2);
+		return tNeck2Waist;
+	}
+
+	Matrix getCyclopPose(Vector &cyclopData)
+	{
+		eyeKinematics.setAng(cyclopData);
+		return eyeKinematics.getH();
+	}
+
+	//Using Craig's formulae
+	Matrix getRotationMatrixFromRollPitchYawAngles(double roll, double pitch, double yaw)
+	{
+		double gamma = roll*(M_PI/180);
+		double beta = pitch*(M_PI/180);
+		double alpha = yaw*(M_PI/180);
+		double ca = cos(alpha);
+		double cb = cos(beta);
+		double cg = cos(gamma);
+		double sa = sin(alpha);
+		double sb = sin(beta);
+		double sg = sin(gamma);
+		Matrix R(3,3);
+		R(0,0) = ca*cb; 
+		R(0,1) = ca*sb*sg-sa*cg;
+		R(0,2) = ca*sb*cg-sa*sg;
+		R(1,0) = sa*cb;
+		R(1,1) = sa*sb*sg+ca*cg;
+		R(1,2) = sa*sb*cg-ca*sg;
+		R(2,0) = -sb;
+		R(2,1) = cb*sg;
+		R(2,2) = cb*cg;
+		return R;
+	}
+	void getRollPitchYawAnglesFromRotationMatrix( Matrix &R, double &roll, double &pitch, double &yaw )
+	{
+		double gamma = atan2(R(2,1),R(2,2));
+		double beta = atan2(-R(2,0), sqrt(R(0,0)*R(0,0)+R(1,0)*R(1,0)));
+		double alpha = atan2(R(1,0),R(0,0));
+		roll = gamma*(180/M_PI);
+		pitch = beta*(180/M_PI);
+		yaw = alpha*(180/M_PI);
+	}
+	void getHeadRollPitchYawAnglesWRTWaist(double *head_encoders, double *torso_encoders, double &roll, double &pitch, double &yaw)
+	{
+		Vector headData(8);
+		// units shall be in radians
+		// remind that the torso is in reverse order:
+		// their joints are sent assuming the neck as kinematic origin
+		// and not the waist, hence we've got to invert them!
+		headData[0]=(M_PI/180.0)*torso_encoders[2];	
+		headData[1]=(M_PI/180.0)*torso_encoders[1];
+		headData[2]=(M_PI/180.0)*torso_encoders[0];
+		// neck part
+		headData[3]=(M_PI/180.0)*head_encoders[0];
+		headData[4]=(M_PI/180.0)*head_encoders[1];
+		headData[5]=(M_PI/180.0)*head_encoders[2];
+		// set the joints
+		inertialKinematics.setAng(headData);
+		//Get Trasformation matriz
+		yarp::sig::Matrix headH = inertialKinematics.getH();
+		//Get rotation submatrix
+		Matrix headR = headH.submatrix(0,2,0,2);
+		//Get roll, pitch, yaw angles
+		double temp;
+		getRollPitchYawAnglesFromRotationMatrix(headR, temp, pitch, yaw);		
+	}
 
 public:
 
