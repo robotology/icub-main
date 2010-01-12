@@ -30,11 +30,11 @@ using namespace std;
 using namespace yarp::os;
 
 /**
- * @ingroup icub_iha_module
+ * @ingroup icub_iha2_module
  *
- * \defgroup icub_iha_IhaFaceDetect Face Detection (IHA)
+ * \defgroup icub_iha2_IhaFaceDetect Face Detection (IHA2)
  *
- * \brief An implementation of the OpenCV HAAR Face detector for the IHA
+ * \brief An implementation of the OpenCV HAAR Face detector (optionally with Camshift tracking) for the IHA
  *
  *
  */

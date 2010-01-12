@@ -1,24 +1,3 @@
-// -*- mode:C++; tab-width:4; c-basic-offset:4; indent-tabs-mode:nil -*-
-// vim:expandtab:tabstop=4:shiftwidth=4:softtabstop=4:
-
-/*
- * Copyright (C) 2008 RobotCub Consortium, European Commission FP6 Project IST-004370
- * Author: Assif Mirza
- * email:   assif.mirza@robotcub.org
- * website: www.robotcub.org
- * Permission is granted to copy, distribute, and/or modify this program
- * under the terms of the GNU General Public License, version 2 or any
- * later version published by the Free Software Foundation.
- *
- * A copy of the license can be found at
- * http://www.robotcub.org/icub/license/gpl.txt
- *
- * This program is distributed in the hope that it will be useful, but
- * WITHOUT ANY WARRANTY; without even the implied warranty of
- * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the GNU General
- * Public License for more details
- */
-
 #include <iCub/iha/ShortTermMemoryModule.h>
 
 #include <iCub/iha/iha_utils.h>
@@ -28,10 +7,20 @@ using namespace iCub::iha;
 using namespace std;
 
 /**
- * @addtogroup icub_iha_ShortTermMemory
+ * @addtogroup icub_iha2_Memory
  *
-\section intro_sec Description
-Short Term Memory for IHA
+
+This module receives data for a few specified variables from \ref icub_iha_SensorMotorInterface. The data
+reported is:
+ - iCub's current action
+ - whether the human's face is detected (estimate of hiding behavior)
+ - number of current drumbeats (estimate of drumming behavior)
+
+This data is stored for a short window of time of a number of seconds specified by the user. How
+frequently the data is stored into this memory is also user specified. The relationship
+between the robot's action and the human's behavior is used to produce task-specific scores for 
+peek-a-boo and drumming based on the current contents of the short term memory. These
+scores are sent to \ref icub_iha2_Dynamics to be used in computing the reward.
 
 \section lib_sec Libraries
 - YARP libraries.
@@ -43,37 +32,51 @@ Short Term Memory for IHA
 --name <STR>               : process name for ports
 --file <STR>               : configuration from given file
 
---connect_to_coords <STR>  : connect to specified port for face
+--resolution [INT]  : number of times per second to record data 
+--mem_length [INT]  : number of seconds of memory to store
+
+--connect_to_data [STR]       : connect to sensor data input
 \endverbatim
 
 \section portsa_sec Ports Accessed
+ - memsensor:out - data output from \ref icub_iha2_SensorMotorInterface
+
 
 \section portsc_sec Ports Created
+ - data:in - get data input
+ - score:out - send scores for drumming and peek-a-boo
 
-- /iha/sm/quit  - module quit port
+ - /iha/sm/quit  - module quit port
  
 \section conf_file_sec Configuration Files
 conf/ihaShortTermMemory.ini
 
 Sample INI file:
 \verbatim
+dbg 40
+name iha
+
+action_defs /usr/local/src/robot/iCub/app/ihaNew/conf/iha_actiondefs.ini
+
+#data stored per second
+resolution 20
+#length of memory (in seconds)
+mem_length 4
 \endverbatim
 
 \section tested_os_sec Tested OS
 Linux
 
 \section example_sec Example Instantiation of the Module
-ihaShortTermMemory --file conf/ihaShortTermMemory.ini
+ihaNewShortTermMemory --file conf/ihaShortTermMemory.ini
 
-\see iCub::contrib::ShortTermMemoryModule
+\author Frank Broz
 
-\author Assif Mirza
-
-Copyright (C) 2008 RobotCub Consortium
+Copyright (C) 2009 RobotCub Consortium
 
 CopyPolicy: Released under the terms of the GNU GPL v2.0.
 
-This file can be edited at \in src/interactionHistory/short_term_memory/src/ShortTermMemoryModule.cpp.
+This file can be edited at \in src/interactionHistoryNew/short_term_memory/src/ShortTermMemoryModule.cpp.
 */
 
 ShortTermMemoryModule::ShortTermMemoryModule(){
@@ -95,7 +98,10 @@ bool ShortTermMemoryModule::open(Searchable& config){
              << "  --name [STR]  : process name for ports" << "\n"
              << "  --file [STR]  : config file" << "\n"
              << "---------------------------------------------------------------------------" << "\n"
-             << "  --connect_to_coords [STR]       : connect to specified port for face" << "\n"
+             << "  --resolution [INT]  : number of times per second to record data " << "\n"
+             << "  --mem_length [INT]  : number of seconds of memory to store" << "\n"
+             << "---------------------------------------------------------------------------" << "\n"
+             << "  --connect_to_data [STR]       : connect to sensor data input" << "\n"
              << "---------------------------------------------------------------------------" << "\n"
              << "\n";
         return false;

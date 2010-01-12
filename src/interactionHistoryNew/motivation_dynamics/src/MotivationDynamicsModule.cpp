@@ -1,43 +1,35 @@
-// -*- mode:C++; tab-width:4; c-basic-offset:4; indent-tabs-mode:nil -*-
-// vim:expandtab:tabstop=4:shiftwidth=4:softtabstop=4:
-
-/*
- * Copyright (C) 2008 RobotCub Consortium, European Commission FP6 Project IST-004370
- * Author: Assif Mirza
- * email:   assif.mirza@robotcub.org
- * website: www.robotcub.org
- * Permission is granted to copy, distribute, and/or modify this program
- * under the terms of the GNU General Public License, version 2 or any
- * later version published by the Free Software Foundation.
- *
- * A copy of the license can be found at
- * http://www.robotcub.org/icub/license/gpl.txt
- *
- * This program is distributed in the hope that it will be useful, but
- * WITHOUT ANY WARRANTY; without even the implied warranty of
- * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the GNU General
- * Public License for more details
- */
-
 #include <cmath>
 #include <iCub/iha/MotivationDynamicsModule.h>
 #include <iCub/iha/iha_utils.h>
 using namespace iCub::iha;
 
  /**
-  * @addtogroup icub_iha_Dynamics
+  * @addtogroup icub_iha2_Dynamics
 
 \section iha_motiv_reward Reward
 
-Motivation feedback (reward) is provided through two mechanisms: observation of a face, and audio feedback.
-\subsection iha_motiv_face Face
+Motivation feedback (reward) is provided through multiple mechanisms: 
+ - observation of a face 
+ - visual attention through gaze direction
+ - presence of sound
+ - reward from short term memory (calculated in \ref icub_iha2_Memory)
+
+The contribution of each reward source may be set at the command line. The maximum
+combined reward is capped to fall between 0 and 1.
+
+\subsection iha2_motiv_face Face
 
 A face can be detected in the robot's camera image using OpenCV HAAR Cascades, and this provides direct positive reward. Habituation causes this reward to drop-off over time.
 
 The reward for face detection, \f$R_{f}\f$, constrained to be in the range [0,1], is a function of the number of consecutive timesteps a face is seen. 
 First the reward rises linearly, then holds at 1 for a period before decaying towards 0. \f$R_{f}\f$ is calculated incrementally
 
-\subsection iha_motiv_sound Sound
+\subsection iha2_motiv_gaze Visual Attention
+
+This reward is based on whether or not the interacting human is looking at the robot at
+this timestep. Without scaling, the value is either 0 or 1.
+
+\subsection iha2_motiv_sound Sound
 
 Sound is captured from a microphone using \b Portaudio \b v1.9, and used both as an additional sensory signal as well as providing further environmental reward. 
 The "energy" of the sound over the period of a timestep, \f$\varepsilon_{sound}\f$, provides a sensory input to the robot. 
@@ -46,14 +38,17 @@ It is calculated as the sum of the amplitude of the sound signal for every sound
 In converting \f$\varepsilon_{sound}\f$ to a reward signal \f$R_{s}\f$, low level background noise is attenuated by taking the square of the sound sensor variable for all values below a threshold \f$T_{sound}\f$, above which the reward value is set to 1. 
 Taking the square of the sound signal results in a greater attenuation of smaller values of the variable than larger ones thus effectively reducing background noise and emphasizing the reward when the sound is above the threshold.
 
+\subsection iha2_motive_turntake Drumming and Hiding
+
+Drumming and hiding are task-based scores that are receieved from the \ref icub_iha2_Memory. See that module for
+details about their meaning and how they are calculated. 
 
 \subsection iha_motiv_result Resulting Reward Signal
 
-The final reward signal is a combination of the sound and face reward signals, as follows:
+The final reward signal is a combination of the selected reward signals, as follows:
 
-\f[ R = \max( 1, \alpha ( R_{f} + R_{s} ) ) \f]
+\f[ R = \max( 1,( R_{1} + R_{2} + ... ) ) \f]
 
-where \f$\alpha\f$, in the range [0,1] attenuates the reward signal. With \f$\alpha\f$=0.5, R is the average of the reward signals, and with \f$\alpha\f$=1, either of the reward signals can result in a maximum resulting reward. A reasonable setting is, \f$\alpha\f$=0.75, meaning that neither reward signal on its own can result in a maximum \f$R\f$, but requires support from the other reward signal. 
 
 \section lib_sec Libraries
 - YARP libraries.
@@ -64,43 +59,80 @@ where \f$\alpha\f$, in the range [0,1] attenuates the reward signal. With \f$\al
 --dbg [INT]   : debug printing level
 --name [STR]  : process name for ports
 --file [STR]  : configuration file
---connect_to_coords [STR]       : autoconnect to specified port for data
---connect_to_mem [STR]  : autoconnect to specified port for short term memory
+
+--connect_to_data [STR]       : autoconnect to specified port for sensor data
+--connect_to_mem [STR]       : autoconnect to specified port for short term memory
+--connect_to_expression [STR]  : connect to port for sending emotion actions
+
 --face_response_attack [INT]  : face response, increase period
 --face_response_level [INT]   : face response, level off period
 --face_response_decay [INT]   : face response, decay period
---sound_catch_threshold [FLT] : level at which sound is heard
 --face_lost_count [INT]       : time after which face is considered lost
+--sound_catch_threshold [FLT] : level at which sound is heard
+
 --reward_contrib_face [FLT]   : contribution of face to reward
 --reward_contrib_sound [FLT]  : contribution of sound to reward
+--reward_contrib_gaze [FLT]  : contribution of gaze to reward
+--reward_contrib_drum [FLT]  : contribution of drumming to reward
+--reward_contrib_hide [FLT]  : contribution of hiding to reward
+
+--th_ehi [FLT]              : threshold for high reward
+--th_elo [FLT]              : threshold for low reward
 \endverbatim
 
 \section portsa_sec Ports Accessed
 
+ - /icub/face/raw/in Raw expression port for the robot
+
 \section portsc_sec Ports Created
+ 
+ - data:in reads sensor data from sensor motor interface
+ - mem:in reads task-based scores for drumming and hiding from short term memory
+
+ - expression:out sends raw expression commands as feedback for current reward value
+ - reward:out sends combined reward value
+
  
 \section conf_file_sec Configuration Files
 conf/ihaMotivationDynamics.ini
 
 Sample INI file:
 \verbatim
-dbg 40
 name iha
+dbg 40
+
+
+#Make the sensor list and bin values accessible 
+[include "ihaSensorMotorInterface.ini"]
 
 # Controls face response envelope
-face_response_attack 4
-face_response_level 3
-face_response_decay 20
+#4
+face_response_attack 10
+face_response_level 20
+face_response_decay 50
 
 # level at which sound is heard
-sound_catch_threshold 0.67
+sound_catch_threshold 0.7
 
 # time after which face is considered lost
-face_lost_count 3
+face_lost_count 4
 
 # relative contributions to reward
-reward_contrib_face 0.75
-reward_contrib_sound 0.75
+reward_contrib_face 1.0
+reward_contrib_sound 0.60
+
+# Physical Display ON/OFF
+reward_display TRUE
+
+###########################################################
+# emotion actions
+#
+# Hi/Lo/Mid Actions
+# Thresholds
+th_ehi 0.7
+th_elo 0.3
+#
+###########################################################
 \endverbatim
 
 \section tested_os_sec Tested OS
@@ -109,23 +141,18 @@ Linux
 \section example_sec Example Instantiation of the Module
 ihaMotivationDynamics --name /iha/dynamics --file conf/ihaMotivationDynamics.ini
 
-See also the script $ICUB_ROOT/app/iha_manual/dynamics.sh
+See also the script $ICUB_ROOT/app/ihaNew/dynamics.sh
 
-\see \ref icub_iha_IhaFaceDetect
-\see iCub::contrib::IhaFaceDetectModule
-\see \ref icub_iha_SoundSensor
-\see iCub::contrib::SoundSensorModule
+\see \ref icub_iha2_IhaFaceDetect
+\see \ref icub_iha2_SoundSensor
 
-\see iCub::contrib::MotivationDynamicsModule
+\author Frank Broz and Assif Mirza
 
-\author Assif Mirza
-
-Copyright (C) 2008 RobotCub Consortium
+Copyright (C) 2009 RobotCub Consortium
 
 CopyPolicy: Released under the terms of the GNU GPL v2.0.
 
 This file can be edited at \in src/interactionHistory/motivation_dynamics/src/MotivationDynamicsModule.cpp.
-\author Assif Mirza
  *
  */
 MotivationDynamicsModule::MotivationDynamicsModule(){
@@ -161,9 +188,9 @@ bool MotivationDynamicsModule::open(Searchable& config){
         << "  --face_lost_count [INT]       : time after which face is considered lost" << "\n"
         << "  --reward_contrib_face [FLT]   : contribution of face to reward" << "\n"
         << "  --reward_contrib_sound [FLT]  : contribution of sound to reward" << "\n"
-        << "  --action_ehi [INT]          : action to execute on high reward" << "\n"
-        << "  --action_elo [INT]          : action to execute on low reward" << "\n"
-        << "  --action_emid [INT]         : action to execute on medium reward" << "\n"
+        << "  --reward_contrib_gaze [FLT]  : contribution of gaze to reward" << "\n"
+        << "  --reward_contrib_drum [FLT]  : contribution of drumming to reward" << "\n"
+        << "  --reward_contrib_hide [FLT]  : contribution of hiding to reward" << "\n"
         << "  --th_ehi [FLT]              : threshold for high reward" << "\n"
         << "  --th_elo [FLT]              : threshold for low reward" << "\n"
 		<< "---------------------------------------------------------------------------" << "\n"

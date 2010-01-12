@@ -1,14 +1,87 @@
-// -*- mode:C++; tab-width:4; c-basic-offset:4; indent-tabs-mode:nil -*-
-
-/*
- *
- */
- 
 #include <iCub/iha/MobileEyeModule.h>
-
 #include <iCub/iha/iha_utils.h>
 
-//using namespace iCub::iha;
+using namespace iCub::iha;
+
+
+ /**
+  * @addtogroup icub_iha2_MobileEye
+
+This module is used to combine information from a gaze tracker and a face detection 
+algorithm so as to allow information about the relationship between the current
+gaze direction and the location of a face in the gaze tracker's scene image to be used
+by other programs. In the \ref icub_iha2 application, the face in the scene image is
+assumed to be the iCub's face, as the gaze tracker used in the demo is worn by a
+person engaged in a one-on-one interaction with the robot.
+
+This module takes as input:
+ - gaze direction (in scene image pixel coordinates)
+ - face detected in the scene image (in output format given by /ref icub_iha2_IhaFaceDetect)
+ - the scene image
+
+The scene image is displayed with both the gaze direction and face detection information
+on it, and outputs the gaze and face coordinates in a single message.
+
+Drivers for a specific gaze tracking system are not provided, as they are likely to 
+contain propriety source code. This module is written in to be able to interface 
+with any gaze tracking system that can provide the required input.
+
+Note that this module does not take in timestamped messages for the gaze and face 
+detection inputs (because not all gaze trackers output timestamped data and images). As
+a result, the assumption is made that the face detection can run in real time. If this
+assumption is violated, the face detection coordinates and gaze direction coordinates
+may be out of sync and incorrectly associated.
+
+\section lib_sec Libraries
+- YARP libraries.
+- IHA Debug Library
+
+\section parameters_sec Parameters
+\verbatim
+--dbg [INT]   : debug printing level
+--name [STR]  : process name for ports
+--file [STR]  : configuration file
+
+--NTSC [TRUE/FALSE]  : input image from NTSC device (false assumes PAL)
+
+--drawMobileEyeGaze  : draw gaze location crosshair on image 
+\endverbatim
+
+\section portsa_sec Ports Accessed
+
+ - assumes a yarp framegrabber device outputs gaze tracker scene images
+ - assumes \ref icub_iha2_IhaFaceDetect is run on these scene images
+ - assumes gaze coordinate port from gaze tracker
+
+\section portsc_sec Ports Created
+ 
+ - mobileeye:in - input scene image from gaze tracker
+ - mobileeye:gaze - input gaze direction coordinates from gaze tracker
+ - mobileeye:face - input face detection coordinates from 
+ - mobileeye:out - output image with gaze and face coordinates drawn on
+ - mobileeye:coords - output gaze and face coordinates in single message
+
+
+
+\section tested_os_sec Tested OS
+Linux
+
+\section example_sec Example Instantiation of the Module
+ ihaNewMobileEye --name /iha/mobileeye --NTSC TRUE --drawMobileEyeGaze
+
+See also the script $ICUB_ROOT/app/ihaNew/mobileeye.sh
+
+\see \ref icub_iha2_IhaFaceDetect
+
+\author Frank Broz 
+
+Copyright (C) 2009 RobotCub Consortium
+
+CopyPolicy: Released under the terms of the GNU GPL v2.0.
+
+This file can be edited at \in src/interactionHistoryNew/mobileeye/src/MobileEyeModule.cpp.
+ *
+ */
 
 MobileEyeModule::MobileEyeModule(){
 
@@ -20,8 +93,22 @@ MobileEyeModule::~MobileEyeModule(){
 
 bool MobileEyeModule::open(Searchable& config)    {
     
+
+	if (config.check("dbg")) { IhaDebug::setLevel(config.find("dbg").asInt()); }
+ 	ACE_OS::fprintf(stderr, "Debug level : %d\n",IhaDebug::getLevel());
+
     if (config.check("help","if present, display usage message")) {
-        printf("Call with --name /prefix ");
+        cerr << "Usage : " << "\n"
+		<< "------------------------------------------" << "\n"
+		<< "  --dbg [INT]   : debug printing level" << "\n"
+		<< "  --name [STR]  : process name for ports" << "\n"
+		<< "  --file [STR]  : config file" << "\n"
+		<< "---------------------------------------------------------------------------" << "\n"
+        << "  --NTSC [TRUE/false]  : input image from NTSC device (false assumes PAL)"<< "\n"
+		<< "---------------------------------------------------------------------------" << "\n"
+        << "  --drawMobileEyeGaze  : draw gaze location crosshair on image "<< "\n"
+		<< "---------------------------------------------------------------------------" << "\n"
+		<< "\n";
         return false;
     }
 

@@ -1,24 +1,3 @@
-// -*- mode:C++; tab-width:4; c-basic-offset:4; indent-tabs-mode:nil -*-
-// vim:expandtab:tabstop=4:shiftwidth=4:softtabstop=4:
-
-/*
- * Copyright (C) 2008 RobotCub Consortium, European Commission FP6 Project IST-004370
- * Author: Assif Mirza
- * email:   assif.mirza@robotcub.org
- * website: www.robotcub.org
- * Permission is granted to copy, distribute, and/or modify this program
- * under the terms of the GNU General Public License, version 2 or any
- * later version published by the Free Software Foundation.
- *
- * A copy of the license can be found at
- * http://www.robotcub.org/icub/license/gpl.txt
- *
- * This program is distributed in the hope that it will be useful, but
- * WITHOUT ANY WARRANTY; without even the implied warranty of
- * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the GNU General
- * Public License for more details
- */
-
 #include <iCub/iha/camshift_wrapper.h>
 #include <iCub/iha/IhaFaceDetectModule.h>
 
@@ -26,7 +5,7 @@
 #include <iCub/iha/mem_util.h>
 
 /**
- * @addtogroup icub_iha_IhaFaceDetect
+ * @addtogroup icub_iha2_IhaFaceDetect
  *
 \section lib_sec Libraries
 - YARP libraries.
@@ -40,6 +19,8 @@
 --file [STR]  : config file - must contain a CASCADES group
 
 --output_image [TRUE/false]  : output an image with faces outlined
+
+--use_tracker [TRUE/false]   : use camshift-based color histogram tracking 
 \endverbatim
 
 \section portsa_sec Ports Accessed
@@ -58,6 +39,8 @@ Sample INI file:
 \verbatim
 name iha
 
+use_tracker TRUE
+
 [CASCADES]
 cascade1 conf/haarcascade_frontalface_alt2.xml
 \endverbatim
@@ -72,14 +55,13 @@ or
 
 ihaIhaFaceDetect --name /iha/fd --CASCADES \"(cascade1 conf/haarcascade_frontalface_alt2.xml)\"
 
-See also the script $ICUB_ROOT/app/iha_manual/facedetector.sh
+See also the script $ICUB_ROOT/app/ihaNew/facedetector.sh
 
 \see iCub::contrib::IhaFaceDetectModule
-\see \ref icub_iha_Dynamics
 
-\author Assif Mirza
+\author Frank Broz and Assif Mirza
 
-Copyright (C) 2008 RobotCub Consortium
+Copyright (C) 2009 RobotCub Consortium
 
 CopyPolicy: Released under the terms of the GNU GPL v2.0.
 
@@ -278,7 +260,7 @@ bool IhaFaceDetectModule::detectFaces( IplImage* img, CvHaarClassifierCascade** 
         CvRect r = Camshift->track(img);
         //if the tracked face is below a certain size or over twice as wide as it
         //is tall, determine the tracker to have failed
-        if((r.width < 20) || (r.height < 20) || 
+        if(((r.width < 60) && (r.height < 60)) || 
            (r.width > (2*r.height)) ||
            (r.width == img->width) || (r.height == img->height)) {
             num_faces = 0;
