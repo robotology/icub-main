@@ -14,6 +14,8 @@ SalienceOperator::SalienceOperator(const int width1, const int height1)//:_gaze(
 	foveaBlob->resize(width1,height1);
 	colorVQ_img=new ImageOf<PixelBgr>;
 	colorVQ_img->resize(width1,height1);
+    maxSalienceBlob_img=new ImageOf<PixelMono>;
+    maxSalienceBlob_img->resize(width1,height1);
 
 	colorVQ=new ColorVQ(width1,height1,10);
     //_angShiftMap = (double *) malloc (152 * sizeof(double));
@@ -168,9 +170,12 @@ void SalienceOperator::ComputeMeanColors(int last_tag)
 			// note that I should cast to double and add 0.5 to the result to round
 			// but the presence of noise in the image has the same effect
 			// and in this way it is faster!
-			m_boxes[i].meanColors.r = (double)m_boxes[i].rSum / m_boxes[i].areaLP + 0.5;
-			m_boxes[i].meanColors.g = (double)m_boxes[i].gSum / m_boxes[i].areaLP + 0.5;
-			m_boxes[i].meanColors.b = (double)m_boxes[i].bSum / m_boxes[i].areaLP + 0.5;
+            double value=m_boxes[i].rSum / m_boxes[i].areaLP + 0.5;
+			m_boxes[i].meanColors.r = (unsigned char)value;
+            value=m_boxes[i].gSum / m_boxes[i].areaLP + 0.5;
+			m_boxes[i].meanColors.g = (unsigned char)value;
+            value=m_boxes[i].bSum / m_boxes[i].areaLP + 0.5;
+			m_boxes[i].meanColors.b = (unsigned char)value;
 		}
 }
 
@@ -190,8 +195,9 @@ void SalienceOperator::DrawMeanColorsLP(ImageOf<PixelBgr>& id, ImageOf<PixelInt>
 	return numBlob;*/
 
 	for (int r=0; r<height; r++)
-		for (int c=0; c<width; c++)
-			id(c,r)=m_boxes[tagged(c,r)].meanColors;
+        for (int c=0; c<width; c++){
+          id(c,r)=m_boxes[tagged(c,r)].meanColors;
+        }
 }
 
 void SalienceOperator::DrawMaxSaliencyBlob(ImageOf<PixelMono>& id,int max_tag,ImageOf<PixelInt>& tagged)
@@ -876,7 +882,8 @@ void SalienceOperator::blobCatalog(ImageOf<PixelInt>& tagged,
 			m_boxes[tag_index].grSum += gr(c, r);
 			m_boxes[tag_index].bySum += by(c, r);
 
-			m_boxes[tag_index].rSum += r1(c, r);
+			unsigned char value=r1(c, r);
+            m_boxes[tag_index].rSum += r1(c, r);
 			m_boxes[tag_index].gSum += g1(c, r);
 			m_boxes[tag_index].bSum += b1(c, r);
 		}

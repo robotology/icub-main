@@ -201,6 +201,10 @@ private:
     */
     ImageOf<PixelRgb> *img;
     /**
+    * buffer image for received image
+    */
+    ImageOf<PixelMono> *tmpImage;
+    /**
     * main thread responsable to process the input images and produce an output
     */
     blobFinderThread* blobFinder;

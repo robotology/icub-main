@@ -5,6 +5,7 @@ using namespace std;
 
 saliencyBlobFinderModule::saliencyBlobFinderModule(){
     reinit_flag=false;
+    tmpImage=new ImageOf<PixelMono>;
     reply=new Bottle();
     blobFinder=0;
 
@@ -22,15 +23,15 @@ saliencyBlobFinderModule::saliencyBlobFinderModule(){
 
 void saliencyBlobFinderModule::copyFlags(){
 
-    contrastLP_flag=blobFinder->contrastLP_flag;
-    meanColour_flag=blobFinder->meanColour_flag;
-    blobCataloged_flag=blobFinder->blobCataloged_flag;
-    foveaBlob_flag=blobFinder->foveaBlob_flag;
-    colorVQ_flag=blobFinder->colorVQ_flag;
-    maxSaliencyBlob_flag=blobFinder->maxSaliencyBlob_flag;
-    blobList_flag=blobFinder->blobList_flag;
-    tagged_flag=blobFinder->tagged_flag;
-    watershed_flag=blobFinder->watershed_flag;
+    blobFinder->contrastLP_flag=contrastLP_flag;
+    blobFinder->meanColour_flag=meanColour_flag;
+    blobFinder->blobCataloged_flag=blobCataloged_flag;
+    blobFinder->foveaBlob_flag=foveaBlob_flag;
+    blobFinder->colorVQ_flag=colorVQ_flag;
+    blobFinder->maxSaliencyBlob_flag=maxSaliencyBlob_flag;
+    blobFinder->blobList_flag=blobList_flag;
+    blobFinder->tagged_flag=tagged_flag;
+    blobFinder->watershed_flag=watershed_flag;
 }
 
 /**
@@ -166,6 +167,7 @@ bool saliencyBlobFinderModule::updateModule() {
         this->width=img->width();
         reinitialise(img->width(), img->height());
         reinit_flag=true;
+        tmpImage->resize(this->width,this->height);
         //initialization of the main thread
         blobFinder=new blobFinderThread();
         blobFinder->reinitialise(img->width(), img->height());
@@ -190,25 +192,23 @@ bool saliencyBlobFinderModule::updateModule() {
 * function that reads the ports for colour RGB opponency maps
 */
 bool saliencyBlobFinderModule::getOpponencies(){
-    bool temp;
-    ImageOf<PixelMono> *tmpImage=new ImageOf<PixelMono>;
-    tmpImage->resize(this->width,this->height);
-    temp=rgPort.read(false);
-    if(temp)
+
+    
+    
+
+    tmpImage=rgPort.read(false);
+    if(tmpImage!=NULL)
         ippiCopy_8u_C1R(tmpImage->getRawImage(),tmpImage->getRowSize(),blobFinder->ptr_inputImgRG->getRawImage(), blobFinder->ptr_inputImgRG->getRowSize(),srcsize);
-    if(blobFinder->ptr_inputImgRG==0)
-        return false;
+    
    
-    temp=grPort.read(false);
-    if(temp)
+    tmpImage=grPort.read(false);
+    if(tmpImage!=NULL)
         ippiCopy_8u_C1R(tmpImage->getRawImage(),tmpImage->getRowSize(),blobFinder->ptr_inputImgGR->getRawImage(), blobFinder->ptr_inputImgGR->getRowSize(),srcsize);
-    if(blobFinder->ptr_inputImgGR==0)
-        return false;
-    temp=byPort.read(false);
-    if(temp)
+    
+    tmpImage=byPort.read(false);
+    if(tmpImage!=NULL)
         ippiCopy_8u_C1R(tmpImage->getRawImage(),tmpImage->getRowSize(),blobFinder->ptr_inputImgBY->getRawImage(), blobFinder->ptr_inputImgBY->getRowSize(),srcsize);
-    if(blobFinder->ptr_inputImgBY==0)
-        return false;
+    
     return true;
 }
 
@@ -216,23 +216,19 @@ bool saliencyBlobFinderModule::getOpponencies(){
 * function that reads the ports for the RGB planes
 */
 bool saliencyBlobFinderModule::getPlanes(){
-    bool temp;
-    ImageOf<PixelMono> *tmpImage=new ImageOf<PixelMono>;tmpImage->resize(this->width,this->height);
-    temp=redPort.read(false);
-    if(temp)
+    
+    tmpImage=redPort.read(false);
+    if(tmpImage!=NULL)
         ippiCopy_8u_C1R(tmpImage->getRawImage(),tmpImage->getRowSize(),blobFinder->ptr_inputImgRed->getRawImage(), blobFinder->ptr_inputImgRed->getRowSize(),srcsize);
-    if(blobFinder->ptr_inputImgRed==0)
-        return false;
-    temp=greenPort.read(false);
-    if(temp)
+   
+    tmpImage=greenPort.read(false);
+    if(tmpImage!=NULL)
         ippiCopy_8u_C1R(tmpImage->getRawImage(),tmpImage->getRowSize(),blobFinder->ptr_inputImgGreen->getRawImage(), blobFinder->ptr_inputImgGreen->getRowSize(),srcsize);
-    if(blobFinder->ptr_inputImgGreen==0)
-        return false;
-    temp=bluePort.read(false);
-    if(temp)
+    
+    tmpImage=bluePort.read(false);
+    if(tmpImage!=NULL)
         ippiCopy_8u_C1R(tmpImage->getRawImage(),tmpImage->getRowSize(),blobFinder->ptr_inputImgBlue->getRawImage(), blobFinder->ptr_inputImgBlue->getRowSize(),srcsize);
-    if(blobFinder->ptr_inputImgBlue==0)
-        return false;
+    
     return true;
 }
 

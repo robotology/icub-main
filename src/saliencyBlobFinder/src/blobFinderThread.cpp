@@ -24,8 +24,9 @@ blobFinderThread::blobFinderThread():RateThread(THREAD_RATE){
     ct=0;
 
     //inputImage_flag=false;
-    /*freetorun=false;
-    meanColour_flag=true;
+    freetorun=false;
+
+    /*meanColour_flag=true;
     contrastLP_flag=false;
     blobCataloged_flag=true;
     foveaBlob_flag=false;
@@ -34,6 +35,7 @@ blobFinderThread::blobFinderThread():RateThread(THREAD_RATE){
     maxSaliencyBlob_flag=false;
     tagged_flag=false;
     watershed_flag=false;*/
+
     //bluePlane_flag=false;
     //redPlane_flag=false;
     //greenPlane_flag=false;
@@ -58,15 +60,15 @@ blobFinderThread::blobFinderThread():RateThread(THREAD_RATE){
     _outputImage=new ImageOf<PixelMono>;
 
     ptr_inputImg=new ImageOf<yarp::sig::PixelRgb>; //pointer to the input image
-    ptr_inputRed=new ImageOf<yarp::sig::PixelMono>; //pointer to the input image of the red plane
-    ptr_inputGreen= new ImageOf<yarp::sig::PixelMono>; //pointer to the input image of the green plane
-    ptr_inputBlue= new ImageOf<yarp::sig::PixelMono>; //pointer to the input image of the blue plane
+    //ptr_inputRed=new ImageOf<yarp::sig::PixelMono>; //pointer to the input image of the red plane
+    //ptr_inputGreen= new ImageOf<yarp::sig::PixelMono>; //pointer to the input image of the green plane
+    //ptr_inputBlue= new ImageOf<yarp::sig::PixelMono>; //pointer to the input image of the blue plane
     ptr_inputImgRed=new ImageOf<yarp::sig::PixelMono>; //pointer to the input image of the red plane
     ptr_inputImgGreen= new ImageOf<yarp::sig::PixelMono>; //pointer to the input image of the green plane
     ptr_inputImgBlue= new ImageOf<yarp::sig::PixelMono>; //pointer to the input image of the blue plane
-    ptr_inputRG= new ImageOf<yarp::sig::PixelMono>; //pointer to the input image of the R+G- colour opponency
-    ptr_inputGR= new ImageOf<yarp::sig::PixelMono>; //pointer to the input image of the G+R- colour opponency
-    ptr_inputBY= new ImageOf<yarp::sig::PixelMono>; //pointer to the input image of the B+Y- colour opponency
+    //ptr_inputRG= new ImageOf<yarp::sig::PixelMono>; //pointer to the input image of the R+G- colour opponency
+    //ptr_inputGR= new ImageOf<yarp::sig::PixelMono>; //pointer to the input image of the G+R- colour opponency
+    //ptr_inputBY= new ImageOf<yarp::sig::PixelMono>; //pointer to the input image of the B+Y- colour opponency
     ptr_inputImgRG= new ImageOf<yarp::sig::PixelMono>; //pointer to the input image of the R+G- colour opponency
     ptr_inputImgGR= new ImageOf<yarp::sig::PixelMono>; //pointer to the input image of the G+R- colour opponency
     ptr_inputImgBY= new ImageOf<yarp::sig::PixelMono>; //pointer to the input image of the B+Y- colour opponency
@@ -127,12 +129,12 @@ void blobFinderThread::resizeImages(int width, int height){
     _outputImage->resize(width,height);
     _outputImage3->resize(width,height);
 
-    ptr_inputRed->resize(width,height);
-    ptr_inputGreen->resize(width,height);
-    ptr_inputBlue->resize(width,height);
-    ptr_inputRG->resize(width,height);
-    ptr_inputGR->resize(width,height);
-    ptr_inputBY->resize(width,height);
+    //ptr_inputRed->resize(width,height);
+    //ptr_inputGreen->resize(width,height);
+    //ptr_inputBlue->resize(width,height);
+    //ptr_inputRG->resize(width,height);
+    //ptr_inputGR->resize(width,height);
+    //ptr_inputBY->resize(width,height);
 
     _inputImgRGS->resize(width,height);
     _inputImgGRS->resize(width,height);
@@ -192,10 +194,46 @@ void blobFinderThread::run(){
     if(!freetorun)
         return;
 
-    bool conversion=true;
-   _outputImage=wOperator->getPlane(&_inputImg);
+    meanColour_flag=true;
+    blobCataloged_flag=true;
+    bool redPlane_flag=false;
+    bool greenPlane_flag=false;
+    bool bluePlane_flag=false;
+    bool RG_flag=false;
+    bool GR_flag=false;
+    bool BY_flag=false;
+
+    
+
+    /*bool conversion=true;
+    _outputImage=wOperator->getPlane(&_inputImg);
     rain();
-    if(this->foveaBlob_flag){
+    if(redPlane_flag){
+        ippiCopy_8u_C1R(this->ptr_inputImgRed->getRawImage(),this->ptr_inputImgRed->getRowSize(),_outputImage->getRawImage(),_outputImage->getRowSize(),srcsize);
+        conversion=true;
+    }
+    else if(greenPlane_flag){
+        ippiCopy_8u_C1R(this->ptr_inputImgGreen->getRawImage(),this->ptr_inputImgGreen->getRowSize(),_outputImage->getRawImage(),_outputImage->getRowSize(),srcsize);
+        conversion=true;
+    }
+    else if(bluePlane_flag){
+        ippiCopy_8u_C1R(this->ptr_inputImgBlue->getRawImage(),this->ptr_inputImgBlue->getRowSize(),_outputImage->getRawImage(),_outputImage->getRowSize(),srcsize);
+        conversion=true;
+    }
+    else if(RG_flag){
+        ippiCopy_8u_C1R(this->ptr_inputImgRG->getRawImage(),this->ptr_inputImgRG->getRowSize(),_outputImage->getRawImage(),_outputImage->getRowSize(),srcsize);
+        conversion=true;
+    }
+    else if(GR_flag){
+        ippiCopy_8u_C1R(this->ptr_inputImgGR->getRawImage(),this->ptr_inputImgGR->getRowSize(),_outputImage->getRawImage(),_outputImage->getRowSize(),srcsize);
+        conversion=true;
+    }
+    else if(BY_flag){
+        ippiCopy_8u_C1R(this->ptr_inputImgBY->getRawImage(),this->ptr_inputImgBY->getRowSize(),_outputImage->getRawImage(),_outputImage->getRowSize(),srcsize);
+        conversion=true;
+    }
+
+    else if(this->foveaBlob_flag){
         this->salience->drawFoveaBlob(*this->salience->foveaBlob,*this->tagged);
         ippiCopy_8u_C1R(this->salience->foveaBlob->getRawImage(),this->salience->foveaBlob->getRowSize(),_outputImage->getRawImage(),_outputImage->getRowSize(),srcsize);
         conversion=true;
@@ -217,16 +255,20 @@ void blobFinderThread::run(){
         conversion=true;
     }
     else if(this->blobList_flag){
-        this->drawAllBlobs(false);
+        this->drawAllBlobs(true);
+        if(true){
+            ippiCopy_8u_C1R((unsigned char*)this->blobList,320,_outputImage->getRawImage(),320,srcsize);
+           conversion=true;
+        }
     }
     else if(this->maxSaliencyBlob_flag){
-        this->drawAllBlobs(false);
+        this->drawAllBlobs(true);
         this->salience->DrawMaxSaliencyBlob(*this->salience->maxSalienceBlob_img,this->max_tag,*this->tagged);
         ippiCopy_8u_C1R(salience->maxSalienceBlob_img->getRawImage(),salience->maxSalienceBlob_img->getRowSize(),_outputImage->getRawImage(),_outputImage->getRowSize(),srcsize);
         conversion=true;
     }
     else if(this->contrastLP_flag){
-        this->drawAllBlobs(false);
+        this->drawAllBlobs(true);
         //ippiCopy_8u_C3R(this->outMeanColourLP->getRawImage(),320*3,_outputImage3->getRawImage(),320*3,srcsize);	
         ippiCopy_8u_C1R(this->outContrastLP->getRawImage(),this->outContrastLP->getRowSize(),_outputImage->getRawImage(),_outputImage->getRowSize(),srcsize);
         conversion=true;
@@ -238,15 +280,14 @@ void blobFinderThread::run(){
     }
     else if(this->blobCataloged_flag){
         if(this->contrastLP_flag){
-            this->drawAllBlobs(false);
-            //ippiCopy_8u_C3R(this->outMeanColourLP->getRawImage(),320*3,_outputImage3->getRawImage(),320*3,srcsize);	
+            this->drawAllBlobs(true);
             ippiCopy_8u_C1R(this->outContrastLP->getRawImage(),this->outContrastLP->getRowSize(),_outputImage->getRawImage(),_outputImage->getRowSize(),srcsize);
             conversion=true;
         }
         else if(this->meanColour_flag){
             //_outputImage=_wOperator->getPlane(&_inputImg); 
             //rain();
-            this->drawAllBlobs(false);
+            this->drawAllBlobs(true);
             ippiCopy_8u_C3R(this->outMeanColourLP->getRawImage(),this->outMeanColourLP->getRowSize(),_outputImage3->getRawImage(),_outputImage3->getRowSize(),srcsize);	
             conversion=false;
         }
@@ -299,7 +340,7 @@ void blobFinderThread::run(){
         //printf("freeing ended  \n");	
     }
     else
-        ippiCopy_8u_C3R(_outputImage3->getRawImage(),_outputImage3->getRowSize(),this->image_out->getRawImage(),this->image_out->getRowSize(),srcsize);
+        ippiCopy_8u_C3R(_outputImage3->getRawImage(),_outputImage3->getRowSize(),this->image_out->getRawImage(),this->image_out->getRowSize(),srcsize);*/
 }
 /**
 *	releases the thread
@@ -370,7 +411,7 @@ void blobFinderThread::drawAllBlobs(bool stable)
 {
     salience->ComputeSalienceAll(this->max_tag,this->max_tag);
     //extracts the PixelBgr color of a particular blob identified by the id (last parameter)
-    PixelBgr varFoveaBlob = salience->varBlob(*tagged, *ptr_inputRG, *ptr_inputGR, *ptr_inputBY, 1);
+    PixelBgr varFoveaBlob = salience->varBlob(*tagged, *ptr_inputImgRG, *ptr_inputImgGR, *ptr_inputImgBY, 1);
 
     salience->drawFoveaBlob(*blobFov, *tagged);
     //__OLD//salience.drawBlobList(blobFov, tagged, blobList, max_tag, 127);
@@ -401,7 +442,7 @@ void blobFinderThread::drawAllBlobs(bool stable)
             wOperator->findNeighborhood(*tagged, 0, 0, blobList);
             const int minBoundingArea=15*15;
             int count=salience->countSmallBlobs(*tagged, blobList, max_tag, minBoundingArea);
-            printf("Count of small blobs: %d \n",count);
+            //printf("Count of small blobs: %d \n",count);
             blobList[1]=0;
             salience->mergeBlobs(*tagged, blobList, max_tag, 1);
         }

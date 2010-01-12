@@ -142,27 +142,27 @@ private:
     /**
 	* pointer to the input image of the red plane
 	*/
-	yarp::sig::ImageOf<yarp::sig::PixelMono> *ptr_inputRed; //
+	//yarp::sig::ImageOf<yarp::sig::PixelMono> *ptr_inputRed; //
 	/**
 	* pointer to the input image of the green plane
 	*/
-	yarp::sig::ImageOf<yarp::sig::PixelMono> *ptr_inputGreen; //
+	//yarp::sig::ImageOf<yarp::sig::PixelMono> *ptr_inputGreen; //
 	/**
 	* pointer to the input image of the blue plane
 	*/
-	yarp::sig::ImageOf<yarp::sig::PixelMono> *ptr_inputBlue; //
+	//yarp::sig::ImageOf<yarp::sig::PixelMono> *ptr_inputBlue; //
 	/**
 	* pointer to the input image of the R+G- colour opponency
 	*/
-	yarp::sig::ImageOf<yarp::sig::PixelMono> *ptr_inputRG;  //
+	//yarp::sig::ImageOf<yarp::sig::PixelMono> *ptr_inputRG;  //
 	/**
 	* pointer to the input image of the G+R- colour opponency
 	*/
-	yarp::sig::ImageOf<yarp::sig::PixelMono> *ptr_inputGR;  //
+	//yarp::sig::ImageOf<yarp::sig::PixelMono> *ptr_inputGR;  //
 	/**
 	* pointer to the input image of the B+Y- colour opponency
 	*/
-	yarp::sig::ImageOf<yarp::sig::PixelMono> *ptr_inputBY; //
+	//yarp::sig::ImageOf<yarp::sig::PixelMono> *ptr_inputBY; //
     /**
 	*vector of tags to the sequence of blobs
 	*/
