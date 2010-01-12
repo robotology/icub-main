@@ -23,7 +23,7 @@
  * desired orientation and \f$ \mathit{K_x} \f$ and \f$ \mathit{K_{\alpha}} \f$ are
  * the forward kinematic maps for the position and orientation part, respectively;
  * \f$ \mathbf{q}_{rest} \f$ is used to keep the solution as close as possible to a given rest
- * position in the joints space (weighting with a positive factor \f$ \mathit{w} < 1 \f$ and also
+ * position in the joint space (weighting with a positive factor \f$ \mathit{w} < 1 \f$ and also
  * through \f$ \mathbf{w}_{rest} \f$ which allows to select a specific weight for each joint)
  * and \f$ \epsilon \f$ is a small number in the range of \f$ \left[10^{-5},10^{-4}\right] \f$.
  *  
