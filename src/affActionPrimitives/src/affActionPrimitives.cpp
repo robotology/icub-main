@@ -864,6 +864,7 @@ bool affActionPrimitives::cmdHand(const Action &action)
 {
     if (configured)
     {        
+        const string &tag=action.handWP.tag;
         const Vector &poss=action.handWP.poss;
         const Vector &vels=action.handWP.vels;
         const Vector &thres=action.handWP.thres;
@@ -882,8 +883,8 @@ bool affActionPrimitives::cmdHand(const Action &action)
         }
 
         latchHandMoveDone=handMoveDone=false;
-        printMessage("moving hand to WP: [%s] (thres = [%s])\n",
-                     toCompactString(poss).c_str(),
+        printMessage("\"%s\" WP: [%s] (thres = [%s])\n",
+                     tag.c_str(),toCompactString(poss).c_str(),
                      toCompactString(thres).c_str());
 
         return true;
@@ -901,6 +902,7 @@ bool affActionPrimitives::addHandSeqWP(const string &handSeqKey, const Vector &p
     {
         HandWayPoint handWP;
 
+        handWP.tag=handSeqKey;
         handWP.poss=poss;
         handWP.vels=vels;
         handWP.thres=thres;

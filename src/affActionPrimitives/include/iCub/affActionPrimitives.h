@@ -124,6 +124,7 @@ protected:
 
     struct HandWayPoint
     {
+        std::string       tag;
         yarp::sig::Vector poss;
         yarp::sig::Vector vels;
         yarp::sig::Vector thres;
