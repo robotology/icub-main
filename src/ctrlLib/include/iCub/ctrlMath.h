@@ -1,7 +1,7 @@
 /**
  * \defgroup ctrlLib ctrlLib
  *  
- * @ingroup icub_module 
+ * @ingroup icub_libraries 
  *  
  * Classes for control engineering: filtering, fitting, Kalman
  * estimation, PIDs and more topics are expected to be covered 

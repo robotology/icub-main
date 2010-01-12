@@ -1,7 +1,7 @@
 /**
  * \defgroup iKin iKin
  *  
- * @ingroup icub_module 
+ * @ingroup icub_libraries 
  *  
  * Classes for forward-inverse kinematics of serial-links chains
  * of revolute joints and iCub limbs 

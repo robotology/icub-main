@@ -1,22 +1,10 @@
-
-/**
-* \defgroup icub_modules_all iCub software
-* 
-*/
-
-/**
-* \defgroup icub_tools iCub tools
-* @ingroup icub_modules_all
-* This is a list of icub basic tools.
-*/
-
 /**
 * \defgroup icub_module iCub modules
 * @ingroup icub_modules_all
 *
 *
-* This is a list of iCub modules.  
-* These are programs in the $ICUB_ROOT/src directory.
+* This is the list of iCub modules.  
+* These are executables in the $ICUB_ROOT/src directory.
 * To add your own module to this list,
 * just add a comment like the following anywhere in your source
 * code (replacing "your_module_name" with the name of your module):
@@ -39,28 +27,76 @@
 
 /**
 * \defgroup icub_guis Graphic User Interfaces
-* @ingroup icub_modules_all
+* @ingroup icub_module
 *
-* This is a list of Graphic User Interfaces.
+* This is a list of Graphic User Interfaces. Usually in $ICUB_ROOT/src/guis.
+*
+* To add a module to this group add this to your code:
+*
+\verbatim
+  /**
+   * @ingroup icub_guis
+   *
+   * \defgroup icub_your_gui your_gui
+   *
+   */
+\endverbatim
 *
 * (This page can be edited at $ICUB_ROOT/src/doc/groups.dox)
+*
 *
 */
  
 /**
-* \defgroup icub_mod_library iCub modules library
+* \defgroup icub_libraries iCub Libraries
+* @ingroup icub_modules
+*
+* This is a list of static libraries. Usually in $ICUB_ROOT/src, 
+* they are collected here in a group to separate them from the 
+* executables (in \ref icub_module \endref).
+*
+* To add a new library to this group add this to your code:
+*
+\verbatim
+  /**
+   * @ingroup icub_libraries
+   *
+   * \defgroup icub_your_library your_library
+   *
+   */
+\endverbatim
+*
+* (This page can be edited at $ICUB_ROOT/src/doc/groups.dox)
+*
+*
+*/
+
+/**
+* \defgroup icub_mod_library iCub mod library
 * @ingroup icub_modules_all
 *
 * Objects that can be conditionally compiled in the main build. 
 * All these objects are compiled in a single library called 
-* icubmod_dev; they can be instantiated from the icubmoddev
+* icubmod; they can be instantiated from the icubmoddev
 * executable or in the code by calling the polydriver.
 *
-* These objects are classes that wrap vendor's
-* libraries for hardware devices (dragonfly cameras, or the can bus),
-* and the calibrator classes of the robot.
+* These objects are classes that implement one or more YARP virtual 
+* interfaces. Most often they wrap vendor's libraries for hardware 
+* devices (dragonfly cameras, or the can bus),
+* and the calibrator classes of the robot. 
 * 
 * Each object is stored in a directory within $ICUB_ROOT/src/modules. 
+*
+* To add a module to this list please add this in the source code:
+*
+\verbatim
+  /**
+   * @ingroup icub_mod_library
+   *
+   * \defgroup icub_your_mod_library your_mod_library
+   *
+   */
+\endverbatim
 *
 * (This page can be edited at $ICUB_ROOT/src/doc/groups.dox)
 */
@@ -70,6 +106,17 @@
 * @ingroup icub_mod_library
 *
 * Objects that provide access to the robot hardware. 
+*
+* To add a module to this list please add this in the source code:
+*
+\verbatim
+  /**
+   * @ingroup icub_hardware_modules
+   *
+   * \defgroup icub_your_mod_library your_mod_library
+   *
+   */
+\endverbatim
 *
 * (This page can be edited at $ICUB_ROOT/src/doc/groups.dox)
 */
@@ -82,8 +129,37 @@
 * for calibrating the robot at startup. They are very 
 * iCub specific.
 *
+* To add a module to this group add this in the source code:
+*
+\verbatim
+  /**
+   * @ingroup icub_calibrators
+   *
+   * \defgroup icub_your_calibrator your_calibrator
+   *
+   */
+\endverbatim
+*
 * (This page can be edited at $ICUB_ROOT/src/doc/groups.dox)
 */
+
+/**
+* \defgroup icub_tools iCub tools
+* @ingroup icub_modules_all
+*
+* This is a list of iCub basic tools.
+*
+\verbatim
+  /**
+   * @ingroup icub_tools
+   *
+   * \defgroup icub_your_tool your_tool
+   *
+   */
+\endverbatim
+*
+*/
+
 
 
 

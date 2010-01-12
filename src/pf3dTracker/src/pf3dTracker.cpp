@@ -1,3 +1,19 @@
+
+/*
+* @ingroup icub_libraries
+* /defgroup icub_pf3dtracker Pf3dTracker
+* 
+* Library of the 3d position tracker implementing the particle filter.
+* See \
+*
+* Copyright (C) 2009 RobotCub Consortium
+*
+* Author: Matteo Taiana
+*
+* CopyPolicy: Released under the terms of the GNU GPL v2.0.
+*
+*/
+
 //
 //
 //

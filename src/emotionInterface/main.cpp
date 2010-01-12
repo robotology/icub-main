@@ -1,11 +1,5 @@
 // -*- mode:C++; tab-width:4; c-basic-offset:4; indent-tabs-mode:nil -*-
 
-/*
- * Copyright (C) 2007 Alex Bernardino 
- * CopyPolicy: Released under the terms of the GNU GPL v2.0.
- *
- */
-
 // yarp
 #include <yarp/os/Network.h>
 #include <yarp/os/Module.h>
@@ -18,13 +12,16 @@ using namespace yarp::os;
 using namespace iCub::contrib;
 
 /**
- * @ingroup icub_module
+ * @ingroup icub_tools
  *
  * \defgroup icub_emotioninterface emotioninterface.
  *
  * Commands facial expressions
  *
  * \author Alexandre Bernardino
+ *
+ * Copyright (C) 2007 Alex Bernardino 
+ * CopyPolicy: Released under the terms of the GNU GPL v2.0.
  *
  */
 
