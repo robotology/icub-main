@@ -1,5 +1,5 @@
 /** 
-\defgroup pf3dTracker pf3dTracker
+\defgroup icub_pf3dTracker pf3dTracker
  
 @ingroup icub_module  
  

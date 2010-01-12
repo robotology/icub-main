@@ -1,6 +1,25 @@
 #ifndef __RFWR__
 #define __RFWR__
 
+/**
+*
+@ingroup icub_libraries
+\defgroup icub_rfwr Rfwr
+
+Receptive field weighted regression.
+
+\section intro_sec Description
+Implement RFWR neural network.
+
+\author Alessandra Sciutti and Lorenzo Natale
+
+Copyright (C) 2008 RobotCub Consortium
+
+CopyPolicy: Released under the terms of the GNU GPL v2.0.
+
+This file can be edited at src/rfwr/Rf.h
+**/
+
 // A wrapper for RFWR for YARP2
 // nat, May 07
 

@@ -1,10 +1,10 @@
 
 /*
-* @ingroup icub_libraries
-* /defgroup icub_pf3dtracker Pf3dTracker
+* @ingroup icub_pf3dTracker 
+* /defgroup icub_pf3dtracker_lib Pf3dTracker Lib
 * 
 * Library of the 3d position tracker implementing the particle filter.
-* See \
+* See \ref icub_pf3dtracker \endref
 *
 * Copyright (C) 2009 RobotCub Consortium
 *

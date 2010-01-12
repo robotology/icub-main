@@ -5,6 +5,26 @@
 
 using namespace yarp::sig;
 
+/**
+*
+@ingroup icub_rfwr
+\defgroup icub_rfwr_test Rfwr test module.
+
+Receptive field weighted regression test module.
+
+\section intro_sec Description
+Simple example to show how to train a RFWR network.
+To be improved.
+
+\author Lorenzo Natale
+
+Copyright (C) 2007 RobotCub Consortium
+
+CopyPolicy: Released under the terms of the GNU GPL v2.0.
+
+This file can be edited at src/rfwr/example.cpp
+**/
+
 // Simple example to show how to train a RFWR network.
 // To be improved.
 // May 07 -- nat

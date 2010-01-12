@@ -1,6 +1,6 @@
 /**
 *
-@ingroup icub_module
+@ingroup icub_tools
 \defgroup icub_testStereoMatch testStereoMatch
 
 Test how much left and right images are aligned.
