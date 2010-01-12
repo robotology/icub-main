@@ -171,6 +171,18 @@ bool blobFinderThread::threadInit(){
     return true;
 }
 
+void blobFinderThread::resetFlags(){
+    contrastLP_flag=false;
+	meanColour_flag=false;
+	blobCataloged_flag=false;
+	foveaBlob_flag=false;
+	colorVQ_flag=false;
+	maxSaliencyBlob_flag=false;
+	blobList_flag=false;
+    tagged_flag=false;
+	watershed_flag=false;
+}
+
 /**
 * active loop of the thread
 */

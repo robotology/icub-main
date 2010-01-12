@@ -246,8 +246,8 @@ bool saliencyBlobFinderModule::respond(const Bottle &command,Bottle &reply){
             reply.addString("set s1 <s> \t: general set command \n");
 
             reply.addString("\n");
-            reply.addString("run rgb : run the rgb processor \n");
-            reply.addString("run yuv : run the yuv processor");
+            reply.addString("set mea : plots the meancolour image \n");
+            reply.addString("set clp : streams out the contrast LP image");
             
 
             reply.addString("\n");
@@ -306,6 +306,8 @@ bool saliencyBlobFinderModule::respond(const Bottle &command,Bottle &reply){
             case COMMAND_VOCAB_MEANCOLOURS:{
                 string s(command.get(2).asString().c_str());
                 printf("image composed by mean colour blobs selected as output\n");
+                this->blobFinder->resetFlags();
+                this->blobFinder->meanColour_flag=true;
                 //reply.addString("connection 1");
                 ok=true;
             }

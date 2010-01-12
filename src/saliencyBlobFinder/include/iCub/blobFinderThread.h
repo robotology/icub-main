@@ -86,43 +86,7 @@ private:
     * flag that indicates when the reinitiazation has already be done
     */
     bool reinit_flag;
-    //---------- flags --------------------------
-	/**
-	* flag for drawing contrastLP
-	*/
-	bool contrastLP_flag;
-	/**
-	* flag for drawing meanColourImage
-	*/
-	bool meanColour_flag;
-	/**
-	* flag for drawing blobCatalog
-	*/
-	bool blobCataloged_flag;
-	/**
-	* flag for drawing foveaBlob
-	*/
-	bool foveaBlob_flag;
-	/**
-	* flag for drawing colorVQ
-	*/
-	bool colorVQ_flag;
-	/**
-	* flag for drawing maxSaliencyBlob
-	*/
-	bool maxSaliencyBlob_flag;
-	/**
-	* flag for drawing blobList
-	*/
-	bool blobList_flag;
-	/**
-	* flag for the drawings
-	*/
-	bool tagged_flag;
-	/**
-	* flag for drawing watershed image
-	*/
-	bool watershed_flag;
+    
     /**
      * semaphore for the respond function
      */
@@ -287,6 +251,10 @@ public:
     * function the applies the watershed (rain falling) algorithm
     */
     void rain();
+    /**
+    * function that resets all the flags for the desired output
+    */
+    void resetFlags();
 
     //_________ public attributes _______________
     /**
@@ -342,6 +310,43 @@ public:
     * pointer to the output image of the watershed algorithm
     */
     ImageOf<PixelMono>* _outputImage;
+    //---------- flags --------------------------
+	/**
+	* flag for drawing contrastLP
+	*/
+	bool contrastLP_flag;
+	/**
+	* flag for drawing meanColourImage
+	*/
+	bool meanColour_flag;
+	/**
+	* flag for drawing blobCatalog
+	*/
+	bool blobCataloged_flag;
+	/**
+	* flag for drawing foveaBlob
+	*/
+	bool foveaBlob_flag;
+	/**
+	* flag for drawing colorVQ
+	*/
+	bool colorVQ_flag;
+	/**
+	* flag for drawing maxSaliencyBlob
+	*/
+	bool maxSaliencyBlob_flag;
+	/**
+	* flag for drawing blobList
+	*/
+	bool blobList_flag;
+	/**
+	* flag for the drawings
+	*/
+	bool tagged_flag;
+	/**
+	* flag for drawing watershed image
+	*/
+	bool watershed_flag;
     
 };
 
