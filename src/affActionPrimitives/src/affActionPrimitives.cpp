@@ -297,7 +297,7 @@ bool affActionPrimitives::open(Property &opt)
     polyHand=new PolyDriver;
     if (!polyHand->open(optPolyHand))
     {
-        close();    
+        close();
         return false;
     }
 
@@ -309,7 +309,7 @@ bool affActionPrimitives::open(Property &opt)
     polyCart=new PolyDriver;
     if (!polyCart->open(optPolyCart))
     {
-        close();    
+        close();
         return false;
     }
 
@@ -379,7 +379,7 @@ void affActionPrimitives::close()
     if (closed)
         return;
 
-    if (polyHand!=NULL && polyCart!=NULL)
+    if (polyHand->isValid() && polyCart->isValid())
     {    
         stopControl();
         setTrackingMode(false);
