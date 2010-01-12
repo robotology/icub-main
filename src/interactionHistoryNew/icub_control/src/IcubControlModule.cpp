@@ -124,9 +124,9 @@ This file can be edited at \in src/interactionHistoryNew/icub_control/src/IcubCo
 yarp::os::ConstString partName[numParts] = {"Head","LArm","RArm","Torso","LLeg","RLeg"};
 yarp::os::ConstString partConfigName[numParts] = {"head","left_arm","right_arm","torso","left_leg","right_leg"};
 
-#include <iCub/ihaNew/IcubControlModule.h>
-#include <iCub/ihaNew/iha_utils.h>
-using namespace iCub::ihaNew;
+#include <iCub/iha/IcubControlModule.h>
+#include <iCub/iha/iha_utils.h>
+using namespace iCub::iha;
 
 // MODULE Implementation ================================================================
 
