@@ -121,16 +121,21 @@ public:
 /************************************************************************/
 bool RpcProcessor::read(ConnectionReader &connection)
 {
-    Bottle cmd, reply;
-
-    if (!cmd.read(connection))
+    if (!slv->isClosed())
+    {
+        Bottle cmd, reply;
+    
+        if (!cmd.read(connection))
+            return false;
+    
+        if (slv->respond(cmd,reply))
+            if (ConnectionWriter *writer=connection.getWriter())
+                reply.write(*writer);
+    
+        return true;
+    }
+    else
         return false;
-
-    if (slv->respond(cmd,reply))
-        if (ConnectionWriter *writer=connection.getWriter())
-            reply.write(*writer);
-
-    return true;
 }
 
 
@@ -1135,11 +1140,6 @@ void CartesianSolver::close()
     if (isRunning())
         stop();
 
-    rpcPort->interrupt();
-    rpcPort->close();
-    delete rpcPort;
-    delete cmdProcessor;
-
     delete RES_EVENT(dofEvent);
 
     if (inPort)
@@ -1299,6 +1299,11 @@ void CartesianSolver::threadRelease()
 CartesianSolver::~CartesianSolver()
 {
     close();
+
+    rpcPort->interrupt();
+    rpcPort->close();
+    delete rpcPort;
+    delete cmdProcessor;
 }
 
 

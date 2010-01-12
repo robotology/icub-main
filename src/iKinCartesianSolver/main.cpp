@@ -202,8 +202,18 @@ public:
         return true;
     }
 
-    virtual double getPeriod()    { return 1.0;  }
-    virtual bool   updateModule() { return true; }
+    virtual double getPeriod()
+    {
+        return 1.0;
+    }
+
+    virtual bool updateModule()
+    {
+        if (slv->isClosed())
+            return false;
+        else
+            return true;
+    }
 };
 
 

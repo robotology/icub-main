@@ -382,6 +382,13 @@ public:
     virtual void close();
 
     /**
+    * To be called to check whether the solver has received a [quit]
+    * request. 
+    * @return true/false if closed or not. 
+    */
+    virtual bool isClosed() { return closed; }
+
+    /**
     * Default destructor.
     */
     virtual ~CartesianSolver();
