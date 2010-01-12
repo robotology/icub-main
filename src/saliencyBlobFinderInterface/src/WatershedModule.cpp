@@ -1248,8 +1248,8 @@ bool WatershedModule::openPorts(){
     //int res = 0;
     // Registering Port(s)
     //reduce verbosity --paulfitz
-    g_print("Registering port %s on network %s...\n", "/rea/Watershed/in","default");
-    ret = _imgRecv.Connect("/rea/Watershed/image:i","default");
+    g_print("Registering port %s on network %s...\n", getName("in"),"default");
+    ret = _imgRecv.Connect((char*)getName("image:i").c_str(),"default");
     if (ret == true)
         {
             g_print("Port registration succeed!\n");
@@ -1260,7 +1260,7 @@ bool WatershedModule::openPorts(){
             return false;
         }
     //--------
-    ret = _imgRecvRed.Connect("/rea/Watershed/inRed:i","default");
+    ret = _imgRecvRed.Connect((char*)getName("inRed:i").c_str(),"default");
     if (ret == true)
         {
             //reduce verbosity --paulfitz
@@ -1271,7 +1271,7 @@ bool WatershedModule::openPorts(){
             g_print("ERROR: Port registration failed.\nQuitting, sorry.\n");
             return false;
         }
-    ret = _imgRecvGreen.Connect("/rea/Watershed/inGreen:i","default");
+    ret = _imgRecvGreen.Connect((char*)getName("inGreen:i").c_str(),"default");
     if (ret == true)
         {
             //reduce verbosity --paulfitz
@@ -1282,7 +1282,7 @@ bool WatershedModule::openPorts(){
             g_print("ERROR: Port registration failed.\nQuitting, sorry.\n");
             return false;
         }
-    ret = _imgRecvBlue.Connect("/rea/Watershed/inBlue:i","default");
+    ret = _imgRecvBlue.Connect((char*)getName("inBlue:i").c_str(),"default");
     if (ret == true)
         {
             //reduce verbosity --paulfitz
@@ -1294,7 +1294,7 @@ bool WatershedModule::openPorts(){
             return false;
         }
     //--------
-    ret = _imgRecvRG.Connect("/rea/Watershed/inRG:i","default");
+    ret = _imgRecvRG.Connect((char*)getName("inRG:i").c_str(),"default");
     if (ret == true)
         {
             //reduce verbosity --paulfitz
@@ -1305,7 +1305,7 @@ bool WatershedModule::openPorts(){
             g_print("ERROR: Port registration failed.\nQuitting, sorry.\n");
             return false;
         }
-    ret = _imgRecvGR.Connect("/rea/Watershed/inGR:i","default");
+    ret = _imgRecvGR.Connect((char*)getName("inGR:i").c_str(),"default");
     if (ret == true)
         {
             //reduce verbosity --paulfitz
@@ -1316,7 +1316,7 @@ bool WatershedModule::openPorts(){
             g_print("ERROR: Port registration failed.\nQuitting, sorry.\n");
             return false;
         }
-    ret = _imgRecvBY.Connect("/rea/Watershed/inBY:i","default");
+    ret = _imgRecvBY.Connect((char*)getName("inBY:i").c_str(),"default");
     if (ret == true)
         {
             //reduce verbosity --paulfitz
@@ -1331,8 +1331,8 @@ bool WatershedModule::openPorts(){
     if (true)
         {		
             _pOutPort = new yarp::os::BufferedPort<yarp::os::Bottle>;
-            g_print("Registering port %s on network %s...\n", "/rea/Watershed/outputImage:o","default");
-            bool ok = _pOutPort->open("/rea/Watershed/outputImage:o");
+            g_print("Registering port %s on network %s...\n", getName("outputImage:o"),"default");
+            bool ok = _pOutPort->open(getName("outputImage:o"));
             if  (ok)
                 g_print("Port registration succeed!\n");
             else 
@@ -1341,8 +1341,8 @@ bool WatershedModule::openPorts(){
                     return false;
                 }
             _pOutPort2 = new yarp::os::BufferedPort<ImageOf<PixelRgb> >;
-            g_print("Registering port %s on network %s...\n", "/rea/Watershed/outBlobs:o","default");
-            ok = _pOutPort2->open("/rea/Watershed/outBlobs:o");
+            g_print("Registering port %s on network %s...\n", getName("outBlobs:o"),"default");
+            ok = _pOutPort2->open(getName("outBlobs:o"));
             if  (ok)
                 g_print("Port registration succeed!\n");
             else 
@@ -1351,8 +1351,8 @@ bool WatershedModule::openPorts(){
                     return false;
                 }
             _pOutPort3 = new yarp::os::BufferedPort<ImageOf<PixelRgb> >;
-            g_print("Registering port %s on network %s...\n", "/rea/Watershed/outView:o","default");
-            ok = _pOutPort3->open("/rea/Watershed/outView:o");
+            g_print("Registering port %s on network %s...\n", getName("outView:o"),"default");
+            ok = _pOutPort3->open(getName("outView:o"));
             if  (ok)
                 g_print("Port registration succeed!\n");
             else 
@@ -1361,8 +1361,8 @@ bool WatershedModule::openPorts(){
                     return false;
                 }
             commandPort = new yarp::os::BufferedPort<Bottle >;
-            g_print("Registering port %s on network %s...\n", "/rea/Watershed/command:o","default");
-            ok = commandPort->open("/rea/Watershed/command:o");
+            g_print("Registering port %s on network %s...\n", getName("command:o"),"default");
+            ok = commandPort->open(getName("command:o"));
             if  (ok)
                 g_print("Port registration succeed!\n");
             else 
@@ -1380,7 +1380,7 @@ bool WatershedModule::closePorts(){
     //int res = 0;
     // Registering Port(s)
     //reduce verbosity --paulfitz
-    g_print("Closing port %s on network %s...\n", "/rea/Watershed/in","default");
+    g_print("Closing port %s on network %s...\n", getName("in"),"default");
     ret = _imgRecv.Disconnect();
     //--------
     ret = _imgRecvRed.Disconnect(); //("/rea/Watershed/inRed","default");
@@ -1394,13 +1394,13 @@ bool WatershedModule::closePorts(){
     if (true)
         {		
             _pOutPort->close();
-            g_print("Closing port %s on network %s...\n", "/rea/Watershed/out","default");
+            g_print("Closing port %s on network %s...\n", getName("out"),"default");
             _pOutPort2->close();
-            g_print("Closing port %s on network %s...\n", "/rea/Watershed/outBlobs:o","default");
+            g_print("Closing port %s on network %s...\n", getName("outBlobs:o"),"default");
             _pOutPort3->close();
-            g_print("Closing port %s on network %s...\n", "/rea/Watershed/outView:o","default");
+            g_print("Closing port %s on network %s...\n", getName("outView:o"),"default");
             commandPort->close();
-            g_print("Closing port %s on network %s...\n", "/rea/Watershed/centroid:o","default");
+            g_print("Closing port %s on network %s...\n", getName("centroid:o"),"default");
         }
 
     return true;
