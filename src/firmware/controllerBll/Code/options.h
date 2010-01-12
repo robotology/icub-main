@@ -16,7 +16,7 @@
 
 //#define SERIAL_MENU_OPTION    1       /* if on, enables serial menu interface */
 
-#define DEBUG_CAN_MSG 			1		/* conditional compile for printing can info */
+//#define DEBUG_CAN_MSG 			1		/* conditional compile for printing can info */
 //#define DEBUG_CONTROL_RATE		1 		/* for debugging control cycle rate */
 //#define DEBUG_TRAJECTORY 			1		/* print encoder/joint position */
 //#define DEBUG_SERIAL				1		/* for debugging through terminal */
