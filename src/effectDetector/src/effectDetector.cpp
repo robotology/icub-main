@@ -259,156 +259,192 @@ bool EffectDetector::respond(const Bottle & command, Bottle & reply)
   yarpImg=rawSegmImgPort.read(); //warning: blocking read.
   tempImg1 = (IplImage*)yarpImg->getIplImage(); //the memory is somehow shared by the OpenCV and the YARP image... I should not release this memory
 
-  //check if the memory for the tempImg2 buffer has already been allocated, otherwise allocate it now.
-  if(tempImg2==NULL)
+  //FIX: the selected ROI can be outside of the image: trim it to the image limits.
+  if(width>(tempImg1->width-1-u))
   {
-    tempImg2 = cvCreateImage(cvSize(tempImg1->width, tempImg1->height), tempImg1->depth, tempImg1->nChannels);
+    width=tempImg1->width-1-u;
+    cout<<"new width="<<width<<endl;
   }
-  //check if the memory for rawSegmImg has already been allocated, otherwise allocate it now.
-  if(rawSegmImg==NULL)
+  if(height>(tempImg1->height-1-v))
   {
-    rawSegmImg = cvCreateImage(cvSize(tempImg1->width, tempImg1->height), tempImg1->depth, tempImg1->nChannels);
+    height=tempImg1->height-1-v;
+    cout<<"new height="<<height<<endl;
   }
-
-  cvCvtColor( tempImg1, tempImg2, CV_RGB2BGR);  //RGB->BGR //this function does not allocate memory, right?
-  cvCvtColor( tempImg2, rawSegmImg, CV_BGR2HSV);//BGR->HSV //this function does not allocate memory, right?
-
-
-
-  //******************************************************************
-  //2. if needed, read rawCurrImg, convert it to HSV and OpenCV format.
-  //******************************************************************
-  if(rawCurrImg==NULL)
+  if((height<=0)||(width<=0))
   {
-    yarpImg=rawCurrImgPort.read(); //warning: blocking read.
-    tempImg1 = (IplImage*)yarpImg->getIplImage(); //the memory is somehow shared by the OpenCV and the YARP image... I shouldn't release this memory
+    cout<<"One of the sizes of the ROI is NULL on negative: I cannot initialize the tracker like this."<<endl;
+    cout<<"height="<<height<<endl;
+    cout<<"width="<<width<<endl;
+    reply.addInt(0);
+    state=NOTPROCESSING;
 
-    //check if the memory for the tempImg2 buffer has already been allocated, otherwise allocate it now.
-    if(tempImg2==NULL)
-    {
-      tempImg2 = cvCreateImage(cvSize(tempImg1->width, tempImg1->height), tempImg1->depth, tempImg1->nChannels);
-    }
-    //check if the memory for rawCurrImg has already been allocated, otherwise allocate it now.
-    if(rawCurrImg==NULL)
-    {
-      rawCurrImg = cvCreateImage(cvSize(tempImg1->width, tempImg1->height), tempImg1->depth, tempImg1->nChannels);
-    }
-    
-    cvCvtColor( tempImg1, tempImg2, CV_RGB2BGR);  //RGB->BGR //this function does not allocate memory, right?
-    cvCvtColor( tempImg2, rawCurrImg, CV_BGR2HSV);//BGR->HSV //this function does not allocate memory, right?
-  }
-
-  //cvSaveImage("currImg.jpeg", rawCurrImg); //save with false colors: OpenCV assumes the images are coded as BGR.
-  //cvSaveImage("segmImg.jpeg", rawSegmImg); //save with false colors: OpenCV assumes the images are coded as BGR.
-
-
-  //************************************************************
-  //3. compute the similarity between the ROI on the two images.
-  //************************************************************
-
-  //similarity assumes the HSV pixels have minimum values of [0,0,0] and maximum values of [255,255,255]
-  similarity=computeSimilarity(rawSegmImg, rawCurrImg, u, v, width, height);
-  
-  cout<<"RESPOND(): similarity= "<<similarity<<endl;
-
-
-
-  //*****************************************************
-  //4. set new state, reply to the init message. in case,
-  //   create the new initial histogram and set limits   
-  //*****************************************************
-  if(similarity>simThreshold)
-  {
- 
-    //??? !!! ??? not sure if this is right ??? !!! ???
-    hranges_arr[0] = 0;
-    hranges_arr[1] = 180;
-    hranges = hranges_arr;
-    //create the histogram
-    hist = cvCreateHist( 1, &hdims, CV_HIST_ARRAY, &hranges, 1 );
-    //fill the histogram with the values received from the port
-    int count;
-    for(count=0;count<hdims;count++)
-    {
-      *(cvGetHistValue_1D(hist, count))=(command.get(count+4)).asDouble(); //start with the fift value in the bottle
-    }
-
-    //rescale the histogram so that it covers the range [0..255]
-    //should I do it? ??? !!! ???
-    //cvGetMinMaxHistValue( hist, 0, &max_val, 0, 0 );
-    //cvConvertScale( hist->bins, hist->bins, max_val ? 255. / max_val : 0., 0 );
-
-    //set data that's going to be used in the update() method.
-	if(_default_vmin)
-		_vmin = _default_vmin;
-	else
-		_vmin = (command.get(20)).asDouble();
-    _vmax = (command.get(21)).asDouble();
-    _smin = (command.get(22)).asDouble();
-    vmin=_vmin; //global variables, needed by the callback functions
-    vmax=_vmax; //global variables, needed by the callback functions
-    smin=_smin; //global variables, needed by the callback functions
-    _w = tempImg1->width;
-    _h = tempImg1->height;
-    track_window.width=width; //data that will initialize the area for the tracker
-    track_window.height=height;
-    track_window.x=u;
-    track_window.y=v;
-    
-    //if it is the first time that we decide to start tracking, initialize the stuff OpenCV needs for meanShift
-    if(firstImageEver)
-    {
-      cvNamedWindow( "Histogram", 1 );
-      cvNamedWindow( "CamShift", 1 );
-      cvNamedWindow( "vFilter", 1 );
-      cvSetMouseCallback( "CamShift", on_mouse, 0 );
-      cvCreateTrackbar( "Vmin", "CamShift", &vmin, 256, 0 );
-      cvCreateTrackbar( "Vmax", "CamShift", &vmax, 256, 0 );
-      cvCreateTrackbar( "Smin", "CamShift", &smin, 256, 0 );
-  
-      CvSize sz = cvSize(_w,_h);
-      buffer = cvCreateImage(sz, 8, 3 );
-      image = cvCreateImage( sz, 8, 3 );
-      imagetodisplay = cvCreateImage( sz, 8, 3 );
-      hsv = cvCreateImage( sz, 8, 3 );
-      hue = cvCreateImage( sz, 8, 1 );
-      mask = cvCreateImage( sz, 8, 1 );
-      maskTEST = cvCreateImage( sz, 8, 1 );
-      
-      //cout<<"RESPOND(): mask = "<<mask<<endl;
-      histimg = cvCreateImage( cvSize(320,200), 8, 3 );
-  
-      out.resize(_w,_h);
-      backproject = (IplImage*)out.getIplImage(); //backproject (opencv image) is associated with out (yarp image)
-      //so that when backproject is computed, also out is ready to be sent out.
-      
-
-      refreshDelay = 10;
-      timeToRefresh = 10;
-      overlaydisplay = false;
-      firstImageEver = false;
-    }
-
-    //Prepares histogram image buffer
-    cvZero( histimg );
-    //prepare histogram image
-    bin_w = histimg->width / hdims;
-    for( i = 0; i < hdims; i++ )
-    {
-      cout<<"RESPOND(): histogram "<<cvGetReal1D(hist->bins,i)<<"\n";
-      int val = cvRound( cvGetReal1D(hist->bins,i)*histimg->height/255 );
-      CvScalar color = hsv2rgb(i*180.f/hdims);
-      cvRectangle( histimg, cvPoint(i*bin_w,histimg->height),
-      cvPoint((i+1)*bin_w,histimg->height - val),
-      color, -1, 8, 0 );
-    }
-    reply.addInt(1);
-    state=PROCESSING;
   }
   else
   {
-    reply.addInt(0);
-    state=NOTPROCESSING;
+    if((u<0)||(v<0)||(u>=tempImg1->width)||(v>=tempImg1->height))
+    {
+      cout<<"The top-left corner of the specified ROI is outside the image: I cannot initialize the tracker like this."<<endl;
+      cout<<"left="<<u<<endl;
+      cout<<"top="<<v<<endl;
+      reply.addInt(0);
+      state=NOTPROCESSING;
+    }
+    else
+    {
+      //check if the memory for the tempImg2 buffer has already been allocated, otherwise allocate it now.
+      if(tempImg2==NULL)
+      {
+	tempImg2 = cvCreateImage(cvSize(tempImg1->width, tempImg1->height), tempImg1->depth, tempImg1->nChannels);
+      }
+      //check if the memory for rawSegmImg has already been allocated, otherwise allocate it now.
+      if(rawSegmImg==NULL)
+      {
+	rawSegmImg = cvCreateImage(cvSize(tempImg1->width, tempImg1->height), tempImg1->depth, tempImg1->nChannels);
+      }
+
+      cvCvtColor( tempImg1, tempImg2, CV_RGB2BGR);  //RGB->BGR //this function does not allocate memory, right?
+      cvCvtColor( tempImg2, rawSegmImg, CV_BGR2HSV);//BGR->HSV //this function does not allocate memory, right?
+
+
+
+      //******************************************************************
+      //2. if needed, read rawCurrImg, convert it to HSV and OpenCV format.
+      //******************************************************************
+      if(rawCurrImg==NULL)
+      {
+	yarpImg=rawCurrImgPort.read(); //warning: blocking read.
+	tempImg1 = (IplImage*)yarpImg->getIplImage(); //the memory is somehow shared by the OpenCV and the YARP image... I shouldn't release this memory
+
+	//check if the memory for the tempImg2 buffer has already been allocated, otherwise allocate it now.
+	if(tempImg2==NULL)
+	{
+	  tempImg2 = cvCreateImage(cvSize(tempImg1->width, tempImg1->height), tempImg1->depth, tempImg1->nChannels);
+	}
+	//check if the memory for rawCurrImg has already been allocated, otherwise allocate it now.
+	if(rawCurrImg==NULL)
+	{
+	  rawCurrImg = cvCreateImage(cvSize(tempImg1->width, tempImg1->height), tempImg1->depth, tempImg1->nChannels);
+	}
+	
+	cvCvtColor( tempImg1, tempImg2, CV_RGB2BGR);  //RGB->BGR //this function does not allocate memory, right?
+	cvCvtColor( tempImg2, rawCurrImg, CV_BGR2HSV);//BGR->HSV //this function does not allocate memory, right?
+      }
+
+      //cvSaveImage("currImg.jpeg", rawCurrImg); //save with false colors: OpenCV assumes the images are coded as BGR.
+      //cvSaveImage("segmImg.jpeg", rawSegmImg); //save with false colors: OpenCV assumes the images are coded as BGR.
+
+
+      //************************************************************
+      //3. compute the similarity between the ROI on the two images.
+      //************************************************************
+
+      //similarity assumes the HSV pixels have minimum values of [0,0,0] and maximum values of [255,255,255]
+      similarity=computeSimilarity(rawSegmImg, rawCurrImg, u, v, width, height);
+      
+      cout<<"RESPOND(): similarity= "<<similarity<<endl;
+
+
+
+      //*****************************************************
+      //4. set new state, reply to the init message. in case,
+      //   create the new initial histogram and set limits   
+      //*****************************************************
+      if(similarity>simThreshold)
+      {
+    
+	//??? !!! ??? not sure if this is right ??? !!! ???
+	hranges_arr[0] = 0;
+	hranges_arr[1] = 180;
+	hranges = hranges_arr;
+	//create the histogram
+	hist = cvCreateHist( 1, &hdims, CV_HIST_ARRAY, &hranges, 1 );
+	//fill the histogram with the values received from the port
+	int count;
+	for(count=0;count<hdims;count++)
+	{
+	  *(cvGetHistValue_1D(hist, count))=(command.get(count+4)).asDouble(); //start with the fift value in the bottle
+	}
+
+	//rescale the histogram so that it covers the range [0..255]
+	//should I do it? ??? !!! ???
+	//cvGetMinMaxHistValue( hist, 0, &max_val, 0, 0 );
+	//cvConvertScale( hist->bins, hist->bins, max_val ? 255. / max_val : 0., 0 );
+
+	//set data that's going to be used in the update() method.
+	    if(_default_vmin)
+		    _vmin = _default_vmin;
+	    else
+		    _vmin = (command.get(20)).asDouble();
+	_vmax = (command.get(21)).asDouble();
+	_smin = (command.get(22)).asDouble();
+	vmin=_vmin; //global variables, needed by the callback functions
+	vmax=_vmax; //global variables, needed by the callback functions
+	smin=_smin; //global variables, needed by the callback functions
+	_w = tempImg1->width;
+	_h = tempImg1->height;
+
+	//tracking window initialization: position of the upper left corner and size.
+	track_window.x=u;
+	track_window.y=v;
+	track_window.width=width;
+	track_window.height=height;
+	
+	//if it is the first time that we decide to start tracking, initialize the stuff OpenCV needs for meanShift
+	if(firstImageEver)
+	{
+	  cvNamedWindow( "Histogram", 1 );
+	  cvNamedWindow( "CamShift", 1 );
+	  cvNamedWindow( "vFilter", 1 );
+	  cvSetMouseCallback( "CamShift", on_mouse, 0 );
+	  cvCreateTrackbar( "Vmin", "CamShift", &vmin, 256, 0 );
+	  cvCreateTrackbar( "Vmax", "CamShift", &vmax, 256, 0 );
+	  cvCreateTrackbar( "Smin", "CamShift", &smin, 256, 0 );
+      
+	  CvSize sz = cvSize(_w,_h);
+	  buffer = cvCreateImage(sz, 8, 3 );
+	  image = cvCreateImage( sz, 8, 3 );
+	  imagetodisplay = cvCreateImage( sz, 8, 3 );
+	  hsv = cvCreateImage( sz, 8, 3 );
+	  hue = cvCreateImage( sz, 8, 1 );
+	  mask = cvCreateImage( sz, 8, 1 );
+	  maskTEST = cvCreateImage( sz, 8, 1 );
+	  
+	  //cout<<"RESPOND(): mask = "<<mask<<endl;
+	  histimg = cvCreateImage( cvSize(320,200), 8, 3 );
+      
+	  out.resize(_w,_h);
+	  backproject = (IplImage*)out.getIplImage(); //backproject (opencv image) is associated with out (yarp image)
+	  //so that when backproject is computed, also out is ready to be sent out.
+	  
+
+	  refreshDelay = 10;
+	  timeToRefresh = 10;
+	  overlaydisplay = false;
+	  firstImageEver = false;
+	}
+
+	//Prepares histogram image buffer
+	cvZero( histimg );
+	//prepare histogram image
+	bin_w = histimg->width / hdims;
+	for( i = 0; i < hdims; i++ )
+	{
+	  cout<<"RESPOND(): histogram "<<cvGetReal1D(hist->bins,i)<<"\n";
+	  int val = cvRound( cvGetReal1D(hist->bins,i)*histimg->height/255 );
+	  CvScalar color = hsv2rgb(i*180.f/hdims);
+	  cvRectangle( histimg, cvPoint(i*bin_w,histimg->height),
+	  cvPoint((i+1)*bin_w,histimg->height - val),
+	  color, -1, 8, 0 );
+	}
+	reply.addInt(1);
+	state=PROCESSING;
+      }
+      else
+      {
+	reply.addInt(0);
+	state=NOTPROCESSING;
+      }
+    }
   }
   
   cout<<"RESPOND(): returning.\n";
