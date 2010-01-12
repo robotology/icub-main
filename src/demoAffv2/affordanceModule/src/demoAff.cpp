@@ -1214,8 +1214,8 @@ bool DemoAff::updateModule(){
       bool b;
 
       // TODO: That should go directly after the action selection
-      useArm(xd[1] > 0.0 ? USE_RIGHT : USE_LEFT);
-      string usePart = (partUsed == "both_parts" ? (xd[1] > 0.0 ? "right_arm" : "left_arm") : partUsed);
+      useArm(object3d[1] > 0.0 ? USE_RIGHT : USE_LEFT);
+      string usePart = (partUsed == "both_parts" ? (object3d[1] > 0.0 ? "right_arm" : "left_arm") : partUsed);
 
       double startOffset = 0.2;
       startOffset = (usePart == "right_arm" ? startOffset : -startOffset);
@@ -1226,10 +1226,10 @@ bool DemoAff::updateModule(){
       handOrientation[1] = -1;
       handOrientation[3] = M_PI;
 
-      Vector startPos = xd;
+      Vector startPos = object3d;
       startPos[1] += startOffset;
 
-      action->tap(startPos, handOrientation, xd, handOrientation);
+      action->tap(startPos, handOrientation, object3d, handOrientation);
       action->checkActionsDone(b, true);
 
       state=INIT;
