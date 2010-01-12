@@ -1534,8 +1534,9 @@ GtkWidget* WatershedModule::createMainWindow(void)
     g_signal_connect (G_OBJECT (button), "clicked",G_CALLBACK (callback), (gpointer) "output1");
     g_signal_connect (G_OBJECT (button2), "clicked",G_CALLBACK (callback), (gpointer) "output2");
     /* This calls our box creating func tion */
-    boxButton = xpm_label_box (NULL, "output1");
-    boxButton2= xpm_label_box (NULL, "output2");
+    
+    boxButton = xpm_label_box (NULL,(gchar*)"output1");
+    boxButton2= xpm_label_box (NULL, (gchar*)"output2");
     /* Pack and show all our widgets */
     gtk_widget_show (boxButton);
     gtk_container_add (GTK_CONTAINER (button), boxButton);
