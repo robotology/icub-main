@@ -46,8 +46,8 @@ double *maxptr;
 
 int processobjdata::classifyshape(BlobInfo &obj)
 {
-  //	if( (obj.eccentricity>0.75) && (obj.circleness>0.65))
-  if ( (obj.circleness>0.70))
+  if( (obj.eccentricity>0.7) && (obj.circleness>0.7))
+  //if ( (obj.circleness>0.70))
 		return BALL;
 	else
 		return BOX;
