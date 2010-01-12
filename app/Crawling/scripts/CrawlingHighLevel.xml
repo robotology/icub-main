@@ -1,0 +1,139 @@
+<application>
+<name>CrawlingHighLevel (EPFL)</name>  
+        <module>
+                <name>MultiMarkerTracker</name>
+                <parameters>--from C:\Progra~1\iCub\app\Crawling\config\tracker\config.ini</parameters>
+                <node>seb</node>
+                <tag>tracker</tag>
+        </module> 
+
+		
+		<module>
+                <name>yarpview</name>
+                <parameters>--name /trackerViewer</parameters>
+                <node>seb</node>
+                <tag>trackerViewer</tag>
+        </module>
+		
+		<module>
+                <name>yarp read</name>
+                <parameters>/trackerOutputRoot</parameters>
+                <node>seb</node>
+				<stdio>seb</stdio>
+                <tag>trackerOutputRoot</tag>
+        </module>
+		
+		<module>
+                <name>yarp read</name>
+                <parameters>/trackerOutputEye</parameters>
+                <node>seb</node>
+				<stdio>seb</stdio>
+                <tag>trackerOutputEye</tag>
+        </module>
+		
+		<connection>
+                <from>/icub/cam/right</from>
+                <to>/MultiMarkerTracker/image</to>
+                <protocol>tcp</protocol>
+        </connection>
+		
+		<connection>
+                <from>/MultiMarkerTracker/view</from>
+                <to>/trackerViewer</to>
+                <protocol>tcp</protocol>
+        </connection>
+		
+		<connection>
+                <from>/MultiMarkerTracker/RootPos</from>
+                <to>/trackerOutputRoot</to>
+                <protocol>tcp</protocol>
+        </connection>
+		
+		<connection>
+                <from>/MultiMarkerTracker/EyePos</from>
+                <to>/trackerOutputEye</to>
+                <protocol>tcp</protocol>
+        </connection>
+		
+		<module>
+                <name>iKinCartesianSolver</name>
+                <parameters>--part left_arm --verbose --from C:\\Progra~1\\iCub\\app\\Crawling\\config\\IKinSolver\\config.ini</parameters>
+                <node>icub11</node>
+                <tag>iKinCartLeft</tag>
+        </module>
+		
+		<module>
+                <name>iKinCartesianSolver</name>
+                <parameters>--part right_arm --verbose --from C:\\Progra~1\\iCub\\app\\Crawling\\config\\IKinSolver\\config.ini</parameters>
+                <node>icub11</node>
+                <tag>iKinCartRight</tag>
+        </module>
+		
+		<module>
+                <name>ReachManager</name>
+                <parameters>--file C:\\Progra~1\\iCub\\app\\Crawling\\config\\reach\\config.ini</parameters>
+                <node>seb</node>
+				<stdio>seb</stdio>
+                <tag>reachManager</tag>
+        </module> 
+		
+		<module>
+                <name>CrawlHeadControl</name>
+                <parameters>--file C:\\Progra~1\\iCub\\app\\Crawling\\config\\headControl\\config.ini</parameters>
+                <node>seb</node>
+                <tag>headControl</tag>
+        </module> 
+		
+		<connection>
+                <from>/MultiMarkerTracker/RootPos</from>
+                <to>/ReachManager/in</to>
+                <protocol>tcp</protocol>
+        </connection>
+		
+		<connection>
+                <from>/MultiMarkerTracker/EyePos</from>
+                <to>/CrawlHeadControl/in</to>
+                <protocol>tcp</protocol>
+        </connection>
+		
+		<connection>
+                <from>/ReachManager/out</from>
+                <to>/manager/in</to>
+                <protocol>tcp</protocol>
+        </connection>
+		
+		<connection>
+                <from>/CrawlHeadControl/out</from>
+                <to>/manager/in</to>
+                <protocol>tcp</protocol>
+        </connection>
+		
+		<module>
+                <name>CrawlPlanner</name>
+                <parameters>--file C:\Progra~1\iCub\app\Crawling\config\planner\config.ini</parameters>
+                <node>seb</node>
+                <tag>crawlPlanner</tag>
+        </module> 
+		
+		<module>
+                <name>PlannerSupervisor</name>
+                <parameters></parameters>
+                <node>seb</node>
+                <tag>plannerSupervisor</tag>
+        </module> 
+		
+		<connection>
+                <from>/MultiMarkerTracker/RootPos</from>
+                <to>/CrawlPlanner/in</to>
+                <protocol>tcp</protocol>
+        </connection>
+		
+		<connection>
+                <from>/CrawlPlanner/out</from>
+                <to>/manager/in</to>
+                <protocol>tcp</protocol>
+        </connection>
+		
+
+</application>
+
