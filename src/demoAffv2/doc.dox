@@ -4,7 +4,7 @@
  * \defgroup icub_demoAffv2 demoAffv2
  *
  *
- * All the module mentioned above depend on Probabilistic Network Library (PNL -- http://sourceforge.net/projects/openpnl/).
+ * The modules of the Affordance Demo depend on Probabilistic Network Library (PNL -- http://sourceforge.net/projects/openpnl/).
  * To successfully install and use it in the iCub project, there are a few additional step necessary. Subsequently the
  * installation procedure is described step-by-step for linux/unix systems:
  * \code
@@ -25,11 +25,13 @@
  *
  * \endcode
  *
- * <strong>ATTENTION!</strong> make sure you installation prefix doesn't interfer with our OpenCV installation.
+ * <strong>ATTENTION!</strong> Make sure your installation prefix doesn't interfere with your OpenCV installation.
  * Renaming that library only serves the purpose of allowing our CMake find script to differ between the PNL version
  * of the library and the one that comes with OpenCV.
  *
  * The libraries dependency on GCC-3 requires one to compile the module with the same compiler. 
  *
+ *
+ * An alternative to the usage of GCC-3 is to fix the headers of the PNLibrary.
  *
  */
