@@ -1,10 +1,22 @@
 /**
+*
+* \defgroup icub_modules_all Software
+*
+* A container for all software in $ICUB_ROOT/src. For clarity 
+* this is further divided in groups.
+*
+*
+* (This page can be edited at $ICUB_ROOT/src/doc/groups.dox)
+*
+*/
+
+/**
 * \defgroup icub_module iCub modules
 * @ingroup icub_modules_all
 *
 *
-* This is the list of iCub modules.  
-* These are executables in the $ICUB_ROOT/src directory.
+* This is the list of iCub modules, i.e. executables 
+* in the $ICUB_ROOT/src directory.
 * To add your own module to this list,
 * just add a comment like the following anywhere in your source
 * code (replacing "your_module_name" with the name of your module):
@@ -27,7 +39,7 @@
 
 /**
 * \defgroup icub_guis Graphic User Interfaces
-* @ingroup icub_module
+* @ingroup icub_module_all
 *
 * This is a list of Graphic User Interfaces. Usually in $ICUB_ROOT/src/guis.
 *
@@ -48,8 +60,8 @@
 */
  
 /**
-* \defgroup icub_libraries iCub Libraries
-* @ingroup icub_modules
+* \defgroup icub_libraries Libraries
+* @ingroup icub_modules_all
 *
 * This is a list of static libraries. Usually in $ICUB_ROOT/src, 
 * they are collected here in a group to separate them from the 
@@ -102,7 +114,7 @@
 */
 
 /**
-* \defgroup icub_hardware_modules iCub hardware modules
+* \defgroup icub_hardware_modules Hardware modules
 * @ingroup icub_mod_library
 *
 * Objects that provide access to the robot hardware. 
@@ -122,7 +134,7 @@
 */
 
 /**
-* \defgroup icub_calibrators iCub calibrator classes
+* \defgroup icub_calibrators Calibrator classes
 * @ingroup icub_mod_library
 *
 * Objects that contain the routines
@@ -144,7 +156,7 @@
 */
 
 /**
-* \defgroup icub_tools iCub tools
+* \defgroup icub_tools Tools
 * @ingroup icub_modules_all
 *
 * This is a list of iCub basic tools.
@@ -158,8 +170,30 @@
    */
 \endverbatim
 *
+* (This page can be edited at $ICUB_ROOT/src/doc/groups.dox)
+*
 */
 
 
-
-
+/**
+*
+* \defgroup icub_applications Applications
+*
+* $ICUB_ROOT/app/ stores directories which group
+* sets of configuration files and scripts to run
+* a certain group of modules together. Each one 
+* of them is what we call an application. In other
+* words, an application is an instantiation of
+* a set of modules that run at the same time.
+*
+* Some of these applications are iCub capabilities, 
+* others might just be nice demos or experiments.
+*
+* Documentation for each application goes in each 
+* directory.
+*
+* Ideally these directories will contain only scripts 
+* and ini/txt files. Use src to store source code. 
+*
+* This file can be edited at \in src/doc/groups.dox
+*/

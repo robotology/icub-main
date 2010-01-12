@@ -2,7 +2,7 @@
 /**
   * \mainpage iCub Software Repository Documentation
 
-\image html icub_small_new.gif "Welcome to my brain!"
+\image html icub_small_new-white.gif "Welcome to my brain!"
 
 This is the iCub online code documentation (the iCub manual can be found
 elsewhere: http://eris.liralab.it/wiki/Manual). This is the result of an 
@@ -12,7 +12,7 @@ completely broken!
 
 Topics:
 
- - \ref icub_modules_all \endref - the iCub software (including modules)
+ - \ref icub_modules_all \endref - most of the software (including \ref icub_modules \endref)
  - \ref icub_applications \endref - a list of documented applications 
    (collections of modules)
  - \ref icub_tutorials \endref - a set of tutorials to learn how to use the software

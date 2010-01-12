@@ -3,7 +3,7 @@
 /**
  * @ingroup icub_tools
  *
- * \defgroup icub_simple_client simple_client
+ * \defgroup icub_simple_client simpleClient
  *
  * A basic remote interface to a controller.
  * Call with no arguments for usage information.
