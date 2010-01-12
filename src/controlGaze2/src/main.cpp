@@ -293,11 +293,13 @@ using namespace iCub::contrib;
  * - . 'p' (cast to float)- the command is given in normalized image coordinates (-1,1).
  * - . 'i' (cast to float)- the command is given in image pixel coordinates. 
  *
+ * /controlGaze/dis
  *
  * This port accepts gaze vergence commands. Each command is a vector of 1 float:
  * - x - the horizontal image disparity in normalized image coordinates (-1, 1) 
  *
- *
+ * /controlGaze/imgcoord
+ * 
  * This port was made purposefully to connect directly viewer clicks. Will send the gaze direction to the clicked position in the viewer. 
  *
  * /controlGaze2/imu
