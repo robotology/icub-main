@@ -22,11 +22,10 @@ as the directory it is placed in.  If you've a good reason
 to do something different, of course you can do that too.
 
 (This page can be edited at $ICUB_ROOT/src/doc/groups.dox)
-
  *
  */
 
-/**
+ /**
  * \defgroup icub_guis Graphic User Interfaces
  * @ingroup icub_module
  *
@@ -36,4 +35,44 @@ This is a list of Graphic User Interfaces.
 
  *
  */
+ 
+ /**
+* \defgroup icub_mod_library iCub modules library
+* @ingroup icub_module
+*
+* Objects that can be conditionally compiled in the main build. 
+* All these objects are compiled in a single library called 
+* icubmod_dev; they can be instantiated from the icubmoddev
+* executable or in the code by calling the polydriver.
+*
+* These objects are classes that wrap vendor's
+* libraries for hardware devices (dragonfly cameras, or the can bus),
+* and the calibrator classes of the robot.
+* 
+* Each object is stored in a directory within $ICUB_ROOT/src/modules. 
+*
+* (This page can be edited at $ICUB_ROOT/src/doc/groups.dox)
+*/
+
+/**
+* \defgroup icub_hardware_modules iCub hardware modules
+* @ingroup icub_mod_library
+*
+* Objects that provide access to the robot hardware. 
+*
+* (This page can be edited at $ICUB_ROOT/src/doc/groups.dox)
+*/
+
+/**
+* \defgroup icub_calibrators iCub calibrator classes
+* @ingroup icub_mod_library
+*
+* Objects that contain the routines
+* for calibrating the robot at startup. They are very 
+* iCub specific.
+*
+* (This page can be edited at $ICUB_ROOT/src/doc/groups.dox)
+*/
+
+
 
