@@ -19,25 +19,37 @@
   <name>ihaNewSoundSensor</name>
   <parameters>--name /iha/sound --file /usr/local/src/robot/iCub/app/ihaNew/conf/ihaSoundSensor.ini</parameters>
   <node>icub3</node>
-  <stdio>icub12</stdio>
+  <stdio>icub3</stdio>
   <tag>soundserver</tag>
+</module>
+<module>
+  <name>ihaNewAudioAnalyzer</name>
+  <parameters>--name /iha/beat --file /usr/local/src/robot/iCub/app/ihaNew/conf/ihaAudioAnalyser.ini</parameters>
+  <node>icub3</node>
+  <stdio>icub15</stdio>
+  <tag>audioanalyser</tag>
 </module>
 <module>
   <name>ihaNewIhaFaceDetect</name>
   <parameters>--name /iha/fd --file /usr/local/src/robot/iCub/app/ihaNew/conf/ihaFaceDetect.ini</parameters>
-  <node>icub12</node>
-  <stdio>icub12</stdio>
+  <node>icub11</node>
+  <stdio>icub15</stdio>
   <tag>facedetect</tag>
 </module>
 <module>
   <name>yarpview</name>
   <parameters>--name /view/facedetect --x 0 --y 10 --synch</parameters>
-  <node>icub12</node>
+  <node>icub15</node>
   <tag>viewfd</tag>
 </module>
 <connection>
   <output>/iha/sound_grabber</output>
   <input>/iha/sound/sndsensor:in</input>
+  <protocol>tcp</protocol>
+</connection>
+<connection>
+  <output>/iha/sound_grabber</output>
+  <input>/iha/beat/sndsensor:in</input>
   <protocol>tcp</protocol>
 </connection>
 <connection>
