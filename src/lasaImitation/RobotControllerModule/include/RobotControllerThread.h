@@ -64,8 +64,11 @@ private:
     Vector                  mJointsLimits[2];
 
     Vector                  mIKJointsRest;
+    Vector                  mIKJointsTarget;
     Vector                  mIKJointsPos;
-
+    MathLib::Vector         mIKDofWeights;
+    MathLib::Vector         mIKInvDofWeights;
+    
     iKin::iCubWrist         *mFwdKinWrist[2];
     iKin::iCubArm           *mFwdKinArm[2];
     iKin::iCubThirdEye      *mFwdKinEye;
@@ -154,12 +157,28 @@ public:
             void    Init();
             void    Free();
 
-            void    SetIKSolverSet(int setId);
+            enum IKSetID{
+                IKS_None = 0,
+                IKS_RightArm,
+                IKS_RightArmPos,
+                IKS_RightWrist,
+                IKS_LeftArm,
+                IKS_LeftArmPos,
+                IKS_LeftWrist,
+                IKS_Eye
+            };
+            void    SetIKSolverSet(IKSetID setId);
+            
             void    SetJointControlMode(int mode);
     
     virtual void    run();
     virtual bool    threadInit();
     virtual void    threadRelease();
+
+            void    ReadPorts();
+            void    UpdateKinChains();
+            void    PrepareIKSolver();
+            void    ApplyIKSolver();
 };
 
 #endif

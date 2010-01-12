@@ -30,6 +30,10 @@
 using namespace yarp::os;
 using namespace yarp::sig;
 
+#include <vector>
+#include <string>
+
+using namespace std;
 
 class ImitationApplicationThread: public RateThread
 {
@@ -38,12 +42,64 @@ private:
     int                     mPeriod;
     char                    mBaseName[256];
     
-    //BufferedPort<Vector>    mInputPort;
     BufferedPort<Bottle>    mVelocityControllerPort;
+    BufferedPort<Bottle>    mRobotControllerPort;
+    BufferedPort<Bottle>    m3DMouseControllerPort;
+    BufferedPort<Bottle>    mTouchpadControllerPort;
+
+    enum PortId{
+        PID_Velocity = 0,
+        PID_Robot,
+        PID_3DMouse,
+        PID_Touchpad,
+        PID_SIZE,
+    };
     
+    
+    enum SrcPortId{
+        SPID_Test1 = 0,
+        SPID_SIZE
+    };
+    enum DstPortId{
+        DPID_Test1 = 0,
+        DPID_SIZE
+    };
+    char                    mSrcPortName[SPID_SIZE][256];
+    char                    mDstPortName[DPID_SIZE][256];
+    
+    vector<int>             mCommandsType;
+    vector<SrcPortId>       mConnexionsSrcPort;
+    vector<DstPortId>       mConnexionsDstPort;
+    vector<string>          mCommands;
+    vector<PortId>          mCommandsPort;
+    
+    BufferedPort<Bottle>   *mPorts[PID_SIZE];
+    
+    enum State{
+        IA_IDLE=0,
+        IA_INIT,
+        IA_STOP,
+        IA_REST,
+        IA_RUN
+    };
+    
+    State                   mState;
+    State                   mPrevState;
+    State                   mNextState;
+
 public:
     ImitationApplicationThread(int period, const char* baseName);
     virtual ~ImitationApplicationThread();
+
+            void    ConnectToNetwork(bool bConnect);
+
+            void    ClearCommands();
+            void    SendCommands();
+            void    AddCommand(PortId port, const char *cmd);
+            void    AddConnexion(SrcPortId src, DstPortId dst);
+            void    RemConnexion(SrcPortId src, DstPortId dst);
+    
+            void    PrepareToStop();
 
             int     respond(const Bottle& command, Bottle& reply);
 

@@ -83,6 +83,10 @@ bool VelocityControllerModule::open(Searchable &s){
     if(mParams.check("amp")){
         speedFact = mParams.find("amp").asDouble();
     }    
+    bool bDecouple = false;
+    if(mParams.check("decouple")){
+        bDecouple = true;
+    }    
 
     char partsName[8][256];
     strcpy(partsName[0],"right_arm");
@@ -138,12 +142,12 @@ bool VelocityControllerModule::open(Searchable &s){
                         vc->Init(driver,partsName[partId],mModuleName);
                         if((strcmp(partsName[partId],"right_arm")==0)||
                            (strcmp(partsName[partId],"left_arm")==0)){
-                            vc->SetShoulderDecoupling(true);
+                            vc->SetShoulderDecoupling(bDecouple);
                         }
                         vc->SetSpeedFactor(speedFact);
-                        if((strcmp(partsName[partId],"head")==0)){
-                            vc->SetSpeedFactor(speedFact*5.0);
-                        }
+                        //if((strcmp(partsName[partId],"head")==0)){
+                        //    vc->SetSpeedFactor(speedFact*5.0);
+                        //}
                         mControllers.push_back(vc);    
                     }
                     mDrivers.push_back(driver);
@@ -200,7 +204,10 @@ bool VelocityControllerModule::respond(const Bottle& command, Bottle& reply) {
     bool retVal = true;
     
     if(cmdSize>0){
-        //cout << "Cmd: "<<command.get(0).asString().c_str()<<endl;
+        cout << "Cmd: ";
+        for(int i=0;i<cmdSize;i++)
+            cout <<command.get(i).asString().c_str()<<" ";
+        cout <<endl;
         switch(command.get(0).asVocab())  {
         case VOCAB4('m','a','s','k'):
             if(cmdSize==2){

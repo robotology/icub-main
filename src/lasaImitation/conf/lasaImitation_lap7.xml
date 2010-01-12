@@ -4,23 +4,37 @@
         <port>/root</port>
     </dependencies> 
     <module>
+        <name>ImitationApplicationModule</name>
+        <parameters></parameters>
+        <node>lasalap7</node>
+        <stdio>lasalap7</stdio>
+        <tag>IA</tag>
+    </module>
+    <module>
         <name>VelocityControllerExt</name>
-        <parameters>--name VelocityController --robot icubSim --amp 10.0 --period 0.02 --part right_arm+left_arm+torso </parameters>
+        <parameters>--name VelocityController --robot icubSim --period 0.02 --amp 10 --part right_arm+left_arm+torso+head </parameters>
         <node>lasalap7</node>
         <stdio>lasalap7</stdio>
         <tag>VC</tag>
     </module>
     <module>
         <name>RobotControllerModule</name>
-        <parameters>--period 0.08 </parameters>
+        <parameters>--period 0.04 </parameters>
         <tag>RC</tag>
+        <stdio>lasalap7</stdio>
+        <node>lasalap7</node>
+    </module>
+    <module>
+        <name>TouchControllerModule</name>
+        <parameters>--name 3DMouse --period 0.1 --type 3Dmouse --device 3Dconnexion --load</parameters>
+        <tag>TC1</tag>
         <stdio>lasalap7</stdio>
         <node>lasalap7</node>
    </module>
     <module>
         <name>TouchControllerModule</name>
-        <parameters>--name 3DMouse --period 0.1 --type 3Dmouse --device 3Dconnexion --load</parameters>
-        <tag>TC1</tag>
+        <parameters>--name Touchpad --period 0.1 --type touchpad --device Cirque --load</parameters>
+        <tag>TC2</tag>
         <stdio>lasalap7</stdio>
         <node>lasalap7</node>
    </module>
@@ -41,8 +55,12 @@
         <input>/VelocityController/targetVelocity</input>
     </connection>
     <connection protocol="tcp">
-        <output>/TouchController/3DMouse/velocity</output>
-        <input>/RobotController/desiredCartVelocityR</input>
+        <output>/TouchController/Touchpad/velocity</output>
+        <input>/RobotController/desiredCartWristVelocityR</input>
+    </connection>
+    <connection protocol="tcp">
+        <output>/RobotController/currentWristRefR</output>
+        <input>/TouchController/Touchpad/frameOfRef</input>
     </connection>
     <connection protocol="tcp">
         <output>/TouchController/3DMouse/velocity</output>

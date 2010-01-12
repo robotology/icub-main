@@ -74,6 +74,7 @@ bool RobotControllerModule::open(Searchable &s){
         snprintf(portName,255,"/RobotController/%s/rpc",getName().c_str());
 
     mControlPort.open(portName);
+    mControlPort.setStrict();
     attach(mControlPort,true);
     
     if(strlen(getName().c_str())==0)

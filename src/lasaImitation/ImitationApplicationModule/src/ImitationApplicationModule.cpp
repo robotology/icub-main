@@ -23,6 +23,7 @@
 using namespace yarp::os;
 
 #include <math.h>
+#include <string.h>
 
 int main(int argc, char *argv[])
 {
@@ -49,8 +50,8 @@ bool ImitationApplicationModule::open(Searchable &s){
         return true;
 
     if(!mParams.check("name")){
-        mParams.put("name","ImitationApplication000");
-        fprintf(stderr, "No module base name specifed, using <ImitationApplication000> as default\n");
+        mParams.put("name","");
+        fprintf(stderr, "No module base name specifed, using <> as default\n");
         fprintf(stderr, "  usage: --name name (e.g. test)\n");
     }
     setName(mParams.find("name").asString());
@@ -67,11 +68,18 @@ bool ImitationApplicationModule::open(Searchable &s){
     }
     
     char portName[255];
-    snprintf(portName,255,"/ImitationApplication/%s/rpc",getName().c_str());
+    if(strlen(getName().c_str())==0)
+        snprintf(portName,255,"ImitationApplication/rpc",getName().c_str());
+    else
+        snprintf(portName,255,"/ImitationApplication/%s/rpc",getName().c_str());
     mControlPort.open(portName);
     attach(mControlPort,true);
     
-    snprintf(portName,255,"ImitationApplication/%s",getName().c_str());
+    if(strlen(getName().c_str())==0)
+        snprintf(portName,255,"ImitationApplication",getName().c_str());
+    else
+        snprintf(portName,255,"ImitationApplication/%s",getName().c_str());
+    
     mThread = new ImitationApplicationThread(int(floor(mPeriod*1000)),portName);
     mThread->start();
     
@@ -85,6 +93,7 @@ bool ImitationApplicationModule::close(){
     
     mControlPort.close();
 
+    mThread->PrepareToStop();
     mThread->stop();
     delete mThread;
     mThread = NULL;
@@ -103,7 +112,7 @@ bool ImitationApplicationModule::respond(const Bottle& command, Bottle& reply) {
             reply.addVocab(Vocab::encode("ack"));
         }
     }else{
-        retVal = (res>0);
+        retVal = (res>=0);
     }
     return retVal;
 }
