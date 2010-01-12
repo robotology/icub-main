@@ -79,11 +79,21 @@
  *    [verb].
  *  
  * \b dof request: example [set] [dof] (1 2 1 0 ...), [get] 
- *    [dof]. The reply will contain in both case the current dof
- *    as result of the reconfiguration. The result may differ
- *    from the request since on certain limb (e.g. arm) some
- *    links are considered to form a unique super-link (e.g. the
- *    shoulder) whose components cannot be actuated separately.
+ *    [dof]. The reply will contain in both cases the current
+ *    dof as result of the reconfiguration. The result may
+ *    differ from the request since on certain limb (e.g. arm)
+ *    some links are considered to form a unique super-link
+ *    (e.g. the shoulder) whose components cannot be actuated
+ *    separately.
+ *  
+ * <b>Arm-dependent solvers options</b>:
+ *  
+ * \b rest request: example [set] [rest] (20.0 0.0 0.0), [get]
+ *    [rest]. Set/get the torso rest position in degrees for
+ *    pitch/roll/yaw angles. The reply will contain in both
+ *    cases the current rest position but the result may differ
+ *    from the request since the rest position shall lie within
+ *    the torso joints limits.
  *  
  * Commands concerning the thread status: 
  *  
@@ -288,13 +298,13 @@ protected:
     void   waitDOFHandling();
     void   postDOFHandling();
     void   fillDOFInfo(yarp::os::Bottle &reply);
-    double getNorm(const yarp::sig::Vector &v, const std::string &typ);
-    bool   respond(const yarp::os::Bottle &command, yarp::os::Bottle &reply);
+    double getNorm(const yarp::sig::Vector &v, const std::string &typ);    
     void   send(const yarp::sig::Vector &xd, double *tok);
     void   send(const yarp::sig::Vector &xd, const yarp::sig::Vector &x, const yarp::sig::Vector &q, double *tok);
     void   printInfo(const yarp::sig::Vector &xd, const yarp::sig::Vector &x, const yarp::sig::Vector &q,
                      const double t);    
 
+    virtual bool respond(const yarp::os::Bottle &command, yarp::os::Bottle &reply);
     virtual bool threadInit();
     virtual void afterStart(bool);
     virtual void run();
@@ -406,6 +416,7 @@ class iCubArmCartesianSolver : public CartesianSolver
 protected:
     yarp::sig::Vector torsoRest;
 
+    virtual bool respond(const yarp::os::Bottle &command, yarp::os::Bottle &reply);
     virtual PartDescriptor *getPartDesc(yarp::os::Searchable &options);
     virtual bool decodeDOF(const yarp::sig::Vector &_dof);
     virtual yarp::sig::Vector solve(yarp::sig::Vector &xd);

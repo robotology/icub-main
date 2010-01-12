@@ -323,7 +323,7 @@ void InputPort::onRead(Bottle &b)
 /************************************************************************/
 void SolverCallback::exec(Vector xd, Vector q)
 {
-    slv->send(xd,slv->prt->chn->EndEffPose(),q,slv->pToken);
+    slv->send(xd,slv->prt->chn->EndEffPose(),(180/M_PI)*q,slv->pToken);
 }
 
 
@@ -806,10 +806,8 @@ bool CartesianSolver::respond(const Bottle &command, Bottle &reply)
                 break;
             }
 
-             default:
-             {
+            default:
                 reply.addVocab(IKINSLV_VOCAB_REP_NACK);
-             }
         }
     }
     else
@@ -1368,7 +1366,13 @@ bool iCubArmCartesianSolver::open(Searchable &options)
             int l=sz>len?len:sz;
     
             for (int i=0; i<l; i++)
-                torsoRest[i]=(M_PI/180.0)*v->get(i).asDouble();
+            {
+                double val=(M_PI/180.0)*v->get(i).asDouble();
+                double min=(*prt->chn)[i].getMin();
+                double max=(*prt->chn)[i].getMax();
+
+                torsoRest[i]=val<min?min:(val>max?max:val);
+            }
         }
 
         // Identify the elbow xyz position to be used as 2nd task
@@ -1376,6 +1380,92 @@ bool iCubArmCartesianSolver::open(Searchable &options)
     }
 
     return configured;
+}
+
+
+/************************************************************************/
+bool iCubArmCartesianSolver::respond(const Bottle &command, Bottle &reply)
+{
+    if (command.size())
+    {
+        int vcb=command.get(0).asVocab();
+
+        if (!configured && vcb!=IKINSLV_VOCAB_CMD_CFG)
+            reply.addVocab(IKINSLV_VOCAB_REP_NACK);
+        else switch (vcb)
+        {
+            case IKINSLV_VOCAB_CMD_GET:
+            {
+                if (command.size()>1)
+                    switch (command.get(1).asVocab())
+                    {
+                        case IKINSLV_VOCAB_OPT_TORSO_REST:
+                        {
+                            reply.addVocab(IKINSLV_VOCAB_REP_ACK);
+                            Bottle &restPart=reply.addList();
+                            restPart.addDouble((180/M_PI)*torsoRest[0]);
+                            restPart.addDouble((180/M_PI)*torsoRest[1]);
+                            restPart.addDouble((180/M_PI)*torsoRest[2]);
+                            break;
+                        }
+
+                        default:
+                            CartesianSolver::respond(command,reply);
+                    }
+                else
+                    CartesianSolver::respond(command,reply);
+
+                break;
+            }
+
+            case IKINSLV_VOCAB_CMD_SET:
+            {
+                if (command.size()>2)
+                    switch (command.get(1).asVocab())
+                    {
+                        case IKINSLV_VOCAB_OPT_TORSO_REST:
+                        {
+                            Bottle *v=command.get(2).asList();
+
+                            int sz=v->size();
+                            int len=torsoRest.length();
+                            int l=sz>len?len:sz;
+
+                            for (int i=0; i<l; i++)
+                            {
+                                double val=(M_PI/180.0)*v->get(i).asDouble();
+                                double min=(*prt->chn)[i].getMin();
+                                double max=(*prt->chn)[i].getMax();
+
+                                torsoRest[i]=val<min?min:(val>max?max:val);
+                            }
+
+                            reply.addVocab(IKINSLV_VOCAB_REP_ACK);
+                            Bottle &restPart=reply.addList();
+                            restPart.addDouble((180/M_PI)*torsoRest[0]);
+                            restPart.addDouble((180/M_PI)*torsoRest[1]);
+                            restPart.addDouble((180/M_PI)*torsoRest[2]);
+
+                            break;
+                        }
+
+                        default:
+                            CartesianSolver::respond(command,reply);
+                    }
+                else
+                    CartesianSolver::respond(command,reply);
+
+                break;
+            }
+
+            default:
+                CartesianSolver::respond(command,reply);
+        }
+    }
+    else
+        reply.addVocab(IKINSLV_VOCAB_REP_NACK);
+
+    return true;
 }
 
 

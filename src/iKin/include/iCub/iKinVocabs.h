@@ -19,6 +19,7 @@
 #define IKINSLV_VOCAB_OPT_Q             VOCAB1('q')
 #define IKINSLV_VOCAB_OPT_TOKEN         VOCAB3('t','o','k')
 #define IKINSLV_VOCAB_OPT_VERB          VOCAB4('v','e','r','b')
+#define IKINSLV_VOCAB_OPT_TORSO_REST    VOCAB4('r','e','s','t')
 #define IKINSLV_VOCAB_VAL_POSE_FULL     VOCAB4('f','u','l','l')
 #define IKINSLV_VOCAB_VAL_POSE_XYZ      VOCAB3('x','y','z')
 #define IKINSLV_VOCAB_VAL_MODE_TRACK    VOCAB4('c','o','n','t')
