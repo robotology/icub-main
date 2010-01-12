@@ -10,8 +10,8 @@
 * Documentation for each module goes in each 
 * directory.
 *
-* @ingroup icub_module
 * \defgroup icub_calibrators iCub calibrator classes
+* @ingroup icub_module
 * These modules are classes that contain the routines
 * for calibrating the robot at startup. They are very 
 * iCub specific.
