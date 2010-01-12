@@ -1,24 +1,3 @@
-// -*- mode:C++; tab-width:4; c-basic-offset:4; indent-tabs-mode:nil -*-
-// vim:expandtab:tabstop=4:shiftwidth=4:softtabstop=4:
-
-/*
- * Copyright (C) 2008 RobotCub Consortium, European Commission FP6 Project IST-004370
- * Author: Assif Mirza
- * email:   assif.mirza@robotcub.org
- * website: www.robotcub.org
- * Permission is granted to copy, distribute, and/or modify this program
- * under the terms of the GNU General Public License, version 2 or any
- * later version published by the Free Software Foundation.
- *
- * A copy of the license can be found at
- * http://www.robotcub.org/icub/license/gpl.txt
- *
- * This program is distributed in the hope that it will be useful, but
- * WITHOUT ANY WARRANTY; without even the implied warranty of
- * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the GNU General
- * Public License for more details
- */
-
 #include <iCub/iha/SensorMotorInterfaceModule.h>
 
 #include <iCub/iha/iha_utils.h>
@@ -32,27 +11,33 @@
 using namespace iCub::iha;
 
 /**
- * @addtogroup icub_iha_SensorMotorInterface
+ * @addtogroup icub_iha2_SensorMotorInterface
  *
 
 This module collects the following data from supporting IHA processes:
-- the icub_iha_IcubControl process
+#- the \ref icub_iha2_IcubControl process
   - provides the timestep to be used as the timestep for the output.
   - The rate of the output from the sensor motor interface process should be the same as the rate of the IcubControl encoders value process.
   - unnormalized encoders values from the robot motors
   - the current action number
-- the robot camera images port
+#- the robot camera images port
   - These are processed to produce "sensor" values by pixelating the image and providing a "luminance" value for each larger pixel.
   - Luminance is calculated as 0.3 R + 0.59 G + 0.11 B. See the function imageToSensorArray()
   - the pixelation detail is controlled by the parameters \c --num_image_sensors_x and \c --num_image_sensors_y
-- the icub_iha_IhaFaceDetect process
+#- the \ref icub_iha2_IhaFaceDetect process
   - although this receives the coordinate of the face, the output is either 0="no face" or 1="face detected"
-- the icub_iha_SoundSensor process
+#- the \ref icub_iha2_MobileEye process
+  - although this receives the coordinates for gaze direction and robot face location in the scene image. The output is either 0="person not looking at robot's face" or 1="person looking at robot's face"
+#- the \ref icub_iha_SoundSensor process
   - value of sound intensity between [0,1]
-- the icub_iha_MotivationDynamics process
-  - provides the consolidated reward value
+#- the \ref icub_iha2_AudioAnalyser process
+ - receives and record the number of beats currently detected 
 
-Additionally this process can provide a reward feedback as a facial expression that can serve to assist in the interaction between robot and human partner. It can be turned on and off using the \c --reward_display switch and the individual expression actions executed are given by \c --action_ehi \c --action_emid \c --action_elo. The switching thresholds are set using \c --th_ehi and \c --th_elo.
+This process passes the sensor data on to \ref icub_iha2_Dynamics, where the values are
+used to compute the current reward. Special sensor data that has been specified to be
+relevant to the drumming and peek-a-boo turn-taking tasks are passed to \ref icub_iha2_Memory
+for processing.
+
 
 \section lib_sec Libraries
 - YARP libraries.
@@ -66,42 +51,41 @@ Additionally this process can provide a reward feedback as a facial expression t
 
 --connect_to_image [STR]       : connect to specified port for images
 --connect_to_coords [STR]      : connect to specified port for detected face coordinates
---connect_to_reward [STR]      : connect to specified port for consolidated reward value
+--connect_to_gaze_coords [STR]      : connect to specified port for gaze coordinates
 --connect_to_soundsensor [STR] : connect to specified port for sound sensor value
 --connect_to_encoders [STR]    : connect to specified port for encoders
---connect_to_action [STR]      : connect to port for sending emotion actions
 
---num_image_sensors_x [INT] : image pixelation
---num_image_sensors_y [INT] : image pixelation
---action_ehi [INT]          : action to execute on high reward
---action_elo [INT]          : action to execute on low reward
---action_emid [INT]         : action to execute on medium reward
---th_ehi [FLT]              : threshold for high reward
---th_elo [FLT]              : threshold for low reward
---reward_display [STR]      : TRUE/FALSE generate actions based on reward
---echo_output [STR]          : TRUE/FALSE print sensor output
+ --num_image_sensors_x [INT] : image pixelation
+ --num_image_sensors_y [INT] : image pixelation
+ --echo_output [STR]          : TRUE/FALSE print sensor output
+ --gaze_input [STR]          : TRUE/FALSE use gaze sensor
+ --beat_input [STR]          : TRUE/FALSE use audio analyser
 \endverbatim
 
 \section portsa_sec Ports Accessed
-- /iha/controller/action:cmd 
-- /iha/controller/encoders:out
-- /iCub/cam/left (or any other camera image port)
-- /iha/fd/facedetect:coords
-- /iha/sound/sndsensor:out
+ - /iCub/cam/left (or any other camera image port)
+ - action:cmd - action output from \ref icub_iha2_IcubControl 
+ - encoders:out - encoder output from \ref icub_iha2_IcubControl
+ - facedetect:coords - face coords from \ref icub_iha2_IhaFaceDetect
+ - mobileeye:coords - gaze coords from \ref icub_iha2_MobileEye
+ - sndsensor:out - beat message from \ref icub_iha2_AudioAnalyser
+ - sndsensor:out - sound value from \ref icub_iha_SoundSensor
 
-- /iha/status/monitor:in - status information collection port
+- monitor:in - status information collection port from \ref icub_iha_StatusMonitor
 
 \section portsc_sec Ports Created
-- /iha/sm/sensor:out - consolidated sensor stream
-- /iha/sm/actions:out - to send expression actions (should be connected to the IcubActionControl process)
+ - sensor:out - consolidated sensor stream
+ - memsensor:out - sensor data for short term memory
  
-- /iha/sm/image:in  - to recieve images
-- /iha/sm/coords:in - to receive face detect coords
-- /iha/sm/soundsendor:in - to receive sound intensity value
-- /iha/sm/encoders:in - to recieve motor positions
+ - image:in  - to recieve images
+ - facecoords:in - to receive face detect coords
+ - gazecoords:in - to receive gaze and visual attention coords
+ - soundsensor:in - to receive sound intensity value
+ - beat:in - to receive beats from audio analyser
+ - encoders:in - to recieve motor positions
 
-- /iha/sm/status:out - to write status info for monitor process
-- /iha/sm/quit  - module quit port
+ - status:out - to write status info for monitor process
+ - quit  - module quit port
 
 \section conf_file_sec Configuration Files
 conf/ihaSensorMotorInterface.ini
@@ -109,47 +93,59 @@ conf/ihaSensorMotorInterface.ini
 Sample INI file:
 \verbatim
 name iha
+dbg 40
 
-###########################################################
-# emotion actions
-#
-# Physical Display ON/OFF
-reward_display TRUE
-# Hi/Lo/Mid Actions
-action_ehi 1
-action_elo 16
-action_emid 2
-# Thresholds
-th_ehi 0.8
-th_elo 0.4
-#
-###########################################################
+############################################################
+# section has the names of the sensors and the hi/lo range
+# to allow binning calculations
+# remember to put reward and action as last two items
+
+SENSORS HEAD_PITCH HEAD_YAW HEAD_PAN EYES_UD EYES_RL EYES_CD LSH_ROT LSH_ELV LSH_TWST LELB_FLX LELB_TWST LWR_ABD LWR_FLX LDIG_1 LDIG_2 LDIG_3 LDIG_4 LDIG_5 LDIG_6 LDIG_7 LDIG_8 LDIG_9 RSH_ROT RSH_ELV RSH_TWST RELB_FLX RELB_TWST RWR_ABD RWR_FLX RDIG_1 RDIG_2 RDIG_3 RDIG_4 RDIG_5 RDIG_6 RDIG_7 RDIG_8 RDIG_9 FACE SOUNDS GAZE ACTION REWARD
+
+#          0   1   2   3   4   5   6   7   8   9  10  11  12  13  14  15  16  17  18  19  20  21  22  23  24  25  26  27  28  29  30  31  32  33  34  35  36  37 38  39  40  41  42
+
+LIMIT_HI  30  60  55  15  52  45  90 161 100 106  90  10  40  30 105  90  90  90  90  90  90 120  90 161 100 106  90  10  40  30 105  90  90  90  90  90  90 120  1   1	 10  21   1
+LIMIT_LO -40 -70 -55 -35 -50  -1 -96  -5 -39  -2 -90 -90 -20 -10 -15  -2  -2  -2  -2  -2  -2  -2 -96  -5 -39  -2 -90 -90 -20 -10 -15  -2  -2  -2  -2  -2  -2  -2  0   0	  0   0   0
+
+ts_offset 1
+
+num_encoders 38
+face_offset 38
+sound_offset 39
+gaze_offset 40
+action_offset 41
+reward_offset 42
+
+
+#Note that joint names and their corresponding motor indices
+#are listed in iha_actiondefs.ini. Not all motor encoders are
+#in the sensor list
 
 
 ###########################################################
 # For image pixelation
-num_image_sensors_x 4
-num_image_sensors_y 4
+num_image_sensors_x 8
+num_image_sensors_y 8
 #
 ###########################################################
 \endverbatim
+
+
 \section tested_os_sec Tested OS
 Linux
 
 \section example_sec Example Instantiation of the Module
-ihaSensorMotorInterface --name /iha/sm --file conf/ihaSensorMotorInterface.ini  --connect_to_image /iCub/cam/left --connect_to_coords /iha/fd/facedetect:coords --connect_to_reward /iha/dynamics/reward:out --connect_to_soundsensor /iha/sound/sndsensor:out --connect_to_encoders /iha/controller/encoders:out --connect_to_action /iha/controller/action:cmd --dbg 50
+ihaNewSensorMotorInterface --name /iha/sm --file /usr/local/src/robot/iCub/app/ihaNew/conf/ihaSensorMotorInterface.ini --connect_to_image /icub/cam/left --connect_to_face_coords /iha/fd/facedetect:coords --connect_to_gaze_coords /iha/me/mobileeye:coords --connect_to_soundsensor /iha/sound/sndsensor:out --connect_to_encoders /iha/controller/encoders:out --gaze_input TRUE
 
-See also the script $ICUB_ROOT/app/iha_manual/iha_smi.sh
+See also the script $ICUB_ROOT/app/ihaNew/iha_smi.sh
 
-\see iCub::contrib::SensorMotorInterfaceModule
+\author Assif Mirza and Frank Broz
 
-\author Assif Mirza
-
-Copyright (C) 2008 RobotCub Consortium
+Copyright (C) 2009 RobotCub Consortium
 
 CopyPolicy: Released under the terms of the GNU GPL v2.0.
 
-This file can be edited at \in src/interactionHistory/sensor_motor_interface/src/SensorMotorInterfaceModule.cpp.
+This file can be edited at \in src/interactionHistoryNew/sensor_motor_interface/src/SensorMotorInterfaceModule.cpp.
 */
 
 SensorMotorInterfaceModule::SensorMotorInterfaceModule(){
@@ -178,14 +174,12 @@ bool SensorMotorInterfaceModule::open(Searchable& config){
         << "  --connect_to_gaze_coords [STR]      : connect to specified port for gaze coordinates" << "\n"
         << "  --connect_to_soundsensor [STR] : connect to specified port for sound sensor value" << "\n"
         << "  --connect_to_encoders [STR]    : connect to specified port for encoders" << "\n"
-        << "  --connect_to_action [STR]      : connect to port for sending emotion actions" << "\n"
-        << "  --connect_to_expression [STR]  : connect to port for sending emotion actions" << "\n"
 		<< "---------------------------------------------------------------------------" << "\n"
         << "  --num_image_sensors_x [INT] : image pixelation" << "\n"
         << "  --num_image_sensors_y [INT] : image pixelation" << "\n"
-        << "  --reward_display [STR]      : TRUE/FALSE generate actions based on reward" << "\n"
         << "  --echo_output [STR]          : TRUE/FALSE print sensor output" << "\n"
         << "  --gaze_input [STR]          : TRUE/FALSE use gaze sensor" << "\n"
+        << "  --beat_input [STR]          : TRUE/FALSE use audio analyser" << "\n"
 		<< "---------------------------------------------------------------------------" << "\n"
 		<< "\n";
         return false;
@@ -216,14 +210,6 @@ bool SensorMotorInterfaceModule::open(Searchable& config){
     memset(imageSensorarray,0,sizeof(int)*num_image_sensors_x*num_image_sensors_y);
 
   
-	//------------------------------------------------------
-	// open the output port where we write action advice
-    // this should be connected to the robot controller
-    //ConstString actionPortOutName = getName("action:out");
-	//IhaDebug::pmesg(DBGL_INFO,"Writing actions to port %s\n",actionPortOutName.c_str());
-	//actionPortOut.open(actionPortOutName.c_str());
-	//------------------------------------------------------
-
 
 	//------------------------------------------------------
     // Main Sensor Output Port
