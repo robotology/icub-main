@@ -32,7 +32,13 @@
 	<module>
 		<name>saliencyBlobFinder</name>
 		<parameters>--file saliencyBlobFinder.ini</parameters>
-		<tag>salinecyBlobFinder</tag>
+		<tag>saliencyBlobFinder</tag>
+		<node>/surfer</node>
+	</module>
+	<module>
+		<name>saliencyBlobFinderInterface</name>
+		<parameters></parameters>
+		<tag>saliencyBlobFinderInterface</tag>
 		<node>/surfer</node>
 	</module>
 	<module>
@@ -152,6 +158,11 @@
 	<connection>
       	<from>/colourPU/blue:o</from>
 			<to>/blobFinder/blue:i</to>
+			<protocol>tcp</protocol>
+	</connection>
+	<connection>
+      	<from>/blobFinderInterface/command:o</from>
+			<to>/blobFinder/cmd</to>
 			<protocol>tcp</protocol>
 	</connection>
 	<connection>
