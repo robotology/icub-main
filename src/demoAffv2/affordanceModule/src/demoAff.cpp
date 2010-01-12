@@ -1231,12 +1231,12 @@ bool DemoAff::updateModule(){
       handOrientation[3] = M_PI;
 
       Vector endPos = object3d;
-      endPost[2] += heightOffset;
+      endPos[2] += heightOffset;
 
       Vector startPos = endPos;
       startPos[1] += startOffset;
 
-      action->tap(startPos, handOrientation, object3d, handOrientation);
+      action->tap(startPos, handOrientation, endPos, handOrientation);
       action->checkActionsDone(b, true);
 
       state=INIT;
