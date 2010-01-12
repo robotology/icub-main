@@ -5,7 +5,7 @@
  *
  *
  * The modules of the Affordance Demo depend on Probabilistic Network Library (PNL -- http://sourceforge.net/projects/openpnl/).
- * To successfully install and use it in the iCub project, there are a few additional step necessary. Subsequently the
+ * To successfully install and use it in the iCub project, there are a few additional steps necessary. Subsequently the
  * installation procedure is described step-by-step for linux/unix systems:
  * \code
  * # get the latest release from http://sourceforge.net/projects/openpnl/files
