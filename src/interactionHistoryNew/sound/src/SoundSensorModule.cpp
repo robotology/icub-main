@@ -143,9 +143,6 @@ bool SoundSensorModule::open(Searchable& config){
 
 	//------------------------------------------------------
 	// create input sound port port name
-	//char soundportname[30];
-	//ACE_OS::sprintf(soundportname,"/%s/sndsensor:in",name.c_str());
-
     ConstString soundPortName = getName("sndsensor:in");
 	// open the sound input port - don't drop any samples
 	soundPort.setStrict();
