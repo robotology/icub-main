@@ -9,8 +9,8 @@ WorldInfo {
   runRealTime TRUE
 }
 Viewpoint {
-  orientation 0.772601 0.63478 -0.0119042 5.93355
-  position -0.57495 0.967162 4.9761
+  orientation 0.547126 0.835054 0.0577724 5.7527
+  position -0.70827 0.985817 4.60076
   follow "icub"
 }
 Background {
@@ -32,21 +32,45 @@ DEF GROUND Solid {
   translation -10 0 -10
   children [
     Shape {
-      geometry ElevationGrid {
-        color Color {
-          color [
-            1 0.752941 0.796078
-            0.498039 0.498039 0.498039
+      appearance Appearance {
+        material Material {
+          ambientIntensity 0.9
+          diffuseColor 0.694118 0.541176 0.372549
+          emissiveColor 0.556863 0.447059 0.215686
+        }
+        texture ImageTexture {
+          url [
+            "ground.jpg"
           ]
         }
-        colorPerVertex FALSE
-        xDimension 50
-        xSpacing 0.4
-        zDimension 50
-        zSpacing 0.4
+      }
+      geometry IndexedFaceSet {
+        coord Coordinate {
+          point [
+            50 0 50
+            -50 0 50
+            -50 0 -50
+            50 0 -50
+          ]
+        }
+        texCoord TextureCoordinate {
+          point [
+            20 20
+            20 -20
+            -20 -20
+            -20 20
+          ]
+        }
+        coordIndex [
+          3, 2, 1, 0
+        ]
+        texCoordIndex [
+          0, 1, 2, 3
+        ]
       }
     }
   ]
+  name "Ground"
   boundingObject Shape {
     geometry IndexedFaceSet {
       coord Coordinate {
@@ -64,9 +88,19 @@ DEF GROUND Solid {
   }
 }
 DEF icub Supervisor {
-  translation 0.209938 0.241318 2.88576
-  rotation 1 -0.000100991 0.000110799 -1.52553
+  translation 0.2 0.25 2.89411
+  rotation 1 0 0 -1.55
   children [
+    Shape {
+      appearance DEF COLOR Appearance {
+        material Material {
+          ambientIntensity 1
+          diffuseColor 0.0823529 0.0823529 0.0823529
+          shininess 1
+          specularColor 0.501961 0.501961 0.501961
+        }
+      }
+    }
     DEF receiver1 Receiver {
       name "receiver1"
       channel 1
@@ -83,16 +117,9 @@ DEF icub Supervisor {
           translation 0 0.04 0
           children [
             Shape {
-              appearance DEF _Appearance Appearance {
-                material Material {
-                  ambientIntensity 1
-                  diffuseColor 0.468 0.567 0.729
-                  shininess 0.5
-                  specularColor 0.5 0.5 0.5
-                }
-              }
+              appearance USE COLOR
               geometry Box {
-                size 0.15 0.08 0.05
+                size 0.1 0.08 0.03
               }
             }
           ]
@@ -122,14 +149,7 @@ DEF icub Supervisor {
                                   translation 0 0 0.015
                                   children [
                                     Shape {
-                                      appearance DEF _Appearance Appearance {
-                                        material Material {
-                                          ambientIntensity 1
-                                          diffuseColor 0.468 0.567 0.729
-                                          shininess 0.5
-                                          specularColor 0.5 0.5 0.5
-                                        }
-                                      }
+                                      appearance USE COLOR
                                       geometry Sphere {
                                         radius 0.03
                                         subdivision 100
@@ -151,14 +171,7 @@ DEF icub Supervisor {
                                             Group {
                                               children [
                                                 Shape {
-                                                  appearance DEF _Appearance Appearance {
-                                                    material Material {
-                                                      ambientIntensity 1
-                                                      diffuseColor 0.468 0.567 0.729
-                                                      shininess 0.5
-                                                      specularColor 0.5 0.5 0.5
-                                                    }
-                                                  }
+                                                  appearance USE COLOR
                                                   geometry IndexedFaceSet {
                                                     coord Coordinate {
                                                       point [
@@ -646,14 +659,7 @@ DEF icub Supervisor {
                                             Group {
                                               children [
                                                 Shape {
-                                                  appearance DEF _Appearance Appearance {
-                                                    material Material {
-                                                      ambientIntensity 1
-                                                      diffuseColor 0.468 0.567 0.729
-                                                      shininess 0.5
-                                                      specularColor 0.5 0.5 0.5
-                                                    }
-                                                  }
+                                                  appearance USE COLOR
                                                   geometry IndexedFaceSet {
                                                     coord Coordinate {
                                                       point [
@@ -730,14 +736,7 @@ DEF icub Supervisor {
                                             Group {
                                               children [
                                                 Shape {
-                                                  appearance DEF _Appearance Appearance {
-                                                    material Material {
-                                                      ambientIntensity 1
-                                                      diffuseColor 0.468 0.567 0.729
-                                                      shininess 0.5
-                                                      specularColor 0.5 0.5 0.5
-                                                    }
-                                                  }
+                                                  appearance USE COLOR
                                                   geometry IndexedFaceSet {
                                                     coord Coordinate {
                                                       point [
@@ -1213,14 +1212,7 @@ DEF icub Supervisor {
                                             Group {
                                               children [
                                                 Shape {
-                                                  appearance DEF _Appearance Appearance {
-                                                    material Material {
-                                                      ambientIntensity 1
-                                                      diffuseColor 0.468 0.567 0.729
-                                                      shininess 0.5
-                                                      specularColor 0.5 0.5 0.5
-                                                    }
-                                                  }
+                                                  appearance USE COLOR
                                                   geometry IndexedFaceSet {
                                                     coord Coordinate {
                                                       point [
@@ -1708,14 +1700,7 @@ DEF icub Supervisor {
                                             Group {
                                               children [
                                                 Shape {
-                                                  appearance DEF _Appearance Appearance {
-                                                    material Material {
-                                                      ambientIntensity 1
-                                                      diffuseColor 0.468 0.567 0.729
-                                                      shininess 0.5
-                                                      specularColor 0.5 0.5 0.5
-                                                    }
-                                                  }
+                                                  appearance USE COLOR
                                                   geometry IndexedFaceSet {
                                                     coord Coordinate {
                                                       point [
@@ -1792,14 +1777,7 @@ DEF icub Supervisor {
                                             Group {
                                               children [
                                                 Shape {
-                                                  appearance DEF _Appearance Appearance {
-                                                    material Material {
-                                                      ambientIntensity 1
-                                                      diffuseColor 0.468 0.567 0.729
-                                                      shininess 0.5
-                                                      specularColor 0.5 0.5 0.5
-                                                    }
-                                                  }
+                                                  appearance USE COLOR
                                                   geometry IndexedFaceSet {
                                                     coord Coordinate {
                                                       point [
@@ -2297,14 +2275,7 @@ DEF icub Supervisor {
                                                               translation 0 0.015 0
                                                               children [
                                                                 Shape {
-                                                                  appearance DEF _Appearance Appearance {
-                                                                    material Material {
-                                                                      ambientIntensity 1
-                                                                      diffuseColor 0.468 0.567 0.729
-                                                                      shininess 0.5
-                                                                      specularColor 0.5 0.5 0.5
-                                                                    }
-                                                                  }
+                                                                  appearance USE COLOR
                                                                   geometry Sphere {
                                                                     radius 0.008
                                                                   }
@@ -2312,14 +2283,7 @@ DEF icub Supervisor {
                                                               ]
                                                             }
                                                             Shape {
-                                                              appearance DEF _Appearance Appearance {
-                                                                material Material {
-                                                                  ambientIntensity 1
-                                                                  diffuseColor 0.468 0.567 0.729
-                                                                  shininess 0.5
-                                                                  specularColor 0.5 0.5 0.5
-                                                                }
-                                                              }
+                                                              appearance USE COLOR
                                                               geometry Cylinder {
                                                                 height 0.03
                                                                 radius 0.008
@@ -2334,14 +2298,7 @@ DEF icub Supervisor {
                                                       rotation 0 0 1 1.57
                                                       children [
                                                         Shape {
-                                                          appearance DEF _Appearance Appearance {
-                                                            material Material {
-                                                              ambientIntensity 1
-                                                              diffuseColor 0.468 0.567 0.729
-                                                              shininess 0.5
-                                                              specularColor 0.5 0.5 0.5
-                                                            }
-                                                          }
+                                                          appearance USE COLOR
                                                           geometry Cylinder {
                                                             height 0.015
                                                             radius 0.025
@@ -2350,14 +2307,7 @@ DEF icub Supervisor {
                                                       ]
                                                     }
                                                     DEF palm Shape {
-                                                      appearance DEF _Appearance Appearance {
-                                                        material Material {
-                                                          ambientIntensity 1
-                                                          diffuseColor 0.468 0.567 0.729
-                                                          shininess 0.5
-                                                          specularColor 0.5 0.5 0.5
-                                                        }
-                                                      }
+                                                      appearance USE COLOR
                                                       geometry Box {
                                                         size 0.015 0.05 0.05
                                                       }
@@ -2367,14 +2317,7 @@ DEF icub Supervisor {
                                                       rotation 0 0 1 1.57
                                                       children [
                                                         Shape {
-                                                          appearance DEF _Appearance Appearance {
-                                                            material Material {
-                                                              ambientIntensity 1
-                                                              diffuseColor 0.468 0.567 0.729
-                                                              shininess 0.5
-                                                              specularColor 0.5 0.5 0.5
-                                                            }
-                                                          }
+                                                          appearance USE COLOR
                                                           geometry Cylinder {
                                                             height 0.015
                                                             radius 0.025
@@ -2419,7 +2362,7 @@ DEF icub Supervisor {
                                                 density -1
                                                 mass 0.25
                                               }
-                                              position 0.000785879
+                                              position 0.00123377
                                               minPosition -0.436332
                                               maxPosition 0.436332
                                             }
@@ -2432,7 +2375,7 @@ DEF icub Supervisor {
                                             density -1
                                             mass 0.1
                                           }
-                                          position -1.09992
+                                          position -1.09661
                                           minPosition -1.8
                                           maxPosition 0.174533
                                         }
@@ -2451,7 +2394,7 @@ DEF icub Supervisor {
                                         density -1
                                         mass 0.75
                                       }
-                                      position 1.29998
+                                      position 1.29805
                                       minPosition -0.872665
                                       maxPosition 0.872665
                                     }
@@ -2469,7 +2412,7 @@ DEF icub Supervisor {
                                   }
                                   maxVelocity 120
                                   maxForce 20
-                                  position 0.870169
+                                  position 0.87961
                                   minPosition 0.096
                                   maxPosition 1.85005
                                 }
@@ -2480,14 +2423,7 @@ DEF icub Supervisor {
                                     Group {
                                       children [
                                         Shape {
-                                          appearance DEF _Appearance Appearance {
-                                            material Material {
-                                              ambientIntensity 1
-                                              diffuseColor 0.468 0.567 0.729
-                                              shininess 0.5
-                                              specularColor 0.5 0.5 0.5
-                                            }
-                                          }
+                                          appearance USE COLOR
                                           geometry IndexedFaceSet {
                                             coord Coordinate {
                                               point [
@@ -2968,14 +2904,7 @@ DEF icub Supervisor {
                                     Group {
                                       children [
                                         Shape {
-                                          appearance DEF _Appearance Appearance {
-                                            material Material {
-                                              ambientIntensity 1
-                                              diffuseColor 0.468 0.567 0.729
-                                              shininess 0.5
-                                              specularColor 0.5 0.5 0.5
-                                            }
-                                          }
+                                          appearance USE COLOR
                                           geometry IndexedFaceSet {
                                             coord Coordinate {
                                               point [
@@ -3052,14 +2981,7 @@ DEF icub Supervisor {
                                     Group {
                                       children [
                                         Shape {
-                                          appearance DEF _Appearance Appearance {
-                                            material Material {
-                                              ambientIntensity 1
-                                              diffuseColor 0.468 0.567 0.729
-                                              shininess 0.5
-                                              specularColor 0.5 0.5 0.5
-                                            }
-                                          }
+                                          appearance USE COLOR
                                           geometry IndexedFaceSet {
                                             coord Coordinate {
                                               point [
@@ -3533,14 +3455,7 @@ DEF icub Supervisor {
                                     Group {
                                       children [
                                         Shape {
-                                          appearance DEF _Appearance Appearance {
-                                            material Material {
-                                              ambientIntensity 1
-                                              diffuseColor 0.468 0.567 0.729
-                                              shininess 0.5
-                                              specularColor 0.5 0.5 0.5
-                                            }
-                                          }
+                                          appearance USE COLOR
                                           geometry IndexedFaceSet {
                                             coord Coordinate {
                                               point [
@@ -4021,14 +3936,7 @@ DEF icub Supervisor {
                                     Group {
                                       children [
                                         Shape {
-                                          appearance DEF _Appearance Appearance {
-                                            material Material {
-                                              ambientIntensity 1
-                                              diffuseColor 0.468 0.567 0.729
-                                              shininess 0.5
-                                              specularColor 0.5 0.5 0.5
-                                            }
-                                          }
+                                          appearance USE COLOR
                                           geometry IndexedFaceSet {
                                             coord Coordinate {
                                               point [
@@ -4105,14 +4013,7 @@ DEF icub Supervisor {
                                     Group {
                                       children [
                                         Shape {
-                                          appearance DEF _Appearance Appearance {
-                                            material Material {
-                                              ambientIntensity 1
-                                              diffuseColor 0.468 0.567 0.729
-                                              shininess 0.5
-                                              specularColor 0.5 0.5 0.5
-                                            }
-                                          }
+                                          appearance USE COLOR
                                           geometry IndexedFaceSet {
                                             coord Coordinate {
                                               point [
@@ -4605,7 +4506,7 @@ DEF icub Supervisor {
                               }
                               maxVelocity 120
                               maxForce 34
-                              position -2.90133e-005
+                              position -0.00130729
                               minPosition -0.645772
                               maxPosition 1.39
                             }
@@ -4622,7 +4523,7 @@ DEF icub Supervisor {
                           }
                           maxVelocity 120
                           maxForce 40
-                          position 0.400071
+                          position 0.402724
                           maxPosition 2.80649
                         }
                       ]
@@ -4638,7 +4539,7 @@ DEF icub Supervisor {
                       }
                       maxVelocity 120
                       maxForce 34
-                      position -1.00002
+                      position -1.00218
                       minPosition -1.74
                       maxPosition 0.17
                     }
@@ -4651,7 +4552,7 @@ DEF icub Supervisor {
                   }
                   maxVelocity 0
                   maxForce 9999
-                  position -0.000311589
+                  position -0.0149311
                 }
                 DEF left_shoulder_fake Servo {
                   translation 0 0.143 0
@@ -4673,14 +4574,7 @@ DEF icub Supervisor {
                                   rotation 0 -1 0 0
                                   children [
                                     Shape {
-                                      appearance DEF _Appearance Appearance {
-                                        material Material {
-                                          ambientIntensity 1
-                                          diffuseColor 0.468 0.567 0.729
-                                          shininess 0.5
-                                          specularColor 0.5 0.5 0.5
-                                        }
-                                      }
+                                      appearance USE COLOR
                                       geometry Sphere {
                                         radius 0.03
                                         subdivision 100
@@ -4739,14 +4633,7 @@ DEF icub Supervisor {
                                                               translation 0 0.015 0
                                                               children [
                                                                 Shape {
-                                                                  appearance DEF _Appearance Appearance {
-                                                                    material Material {
-                                                                      ambientIntensity 1
-                                                                      diffuseColor 0.468 0.567 0.729
-                                                                      shininess 0.5
-                                                                      specularColor 0.5 0.5 0.5
-                                                                    }
-                                                                  }
+                                                                  appearance USE COLOR
                                                                   geometry Sphere {
                                                                     radius 0.008
                                                                   }
@@ -4754,14 +4641,7 @@ DEF icub Supervisor {
                                                               ]
                                                             }
                                                             Shape {
-                                                              appearance DEF _Appearance Appearance {
-                                                                material Material {
-                                                                  ambientIntensity 1
-                                                                  diffuseColor 0.468 0.567 0.729
-                                                                  shininess 0.5
-                                                                  specularColor 0.5 0.5 0.5
-                                                                }
-                                                              }
+                                                              appearance USE COLOR
                                                               geometry Cylinder {
                                                                 height 0.03
                                                                 radius 0.008
@@ -4776,14 +4656,7 @@ DEF icub Supervisor {
                                                       rotation 0 0 1 1.57
                                                       children [
                                                         Shape {
-                                                          appearance DEF _Appearance Appearance {
-                                                            material Material {
-                                                              ambientIntensity 1
-                                                              diffuseColor 0.468 0.567 0.729
-                                                              shininess 0.5
-                                                              specularColor 0.5 0.5 0.5
-                                                            }
-                                                          }
+                                                          appearance USE COLOR
                                                           geometry Cylinder {
                                                             height 0.015
                                                             radius 0.025
@@ -4792,14 +4665,7 @@ DEF icub Supervisor {
                                                       ]
                                                     }
                                                     DEF palm Shape {
-                                                      appearance DEF _Appearance Appearance {
-                                                        material Material {
-                                                          ambientIntensity 1
-                                                          diffuseColor 0.468 0.567 0.729
-                                                          shininess 0.5
-                                                          specularColor 0.5 0.5 0.5
-                                                        }
-                                                      }
+                                                      appearance USE COLOR
                                                       geometry Box {
                                                         size 0.015 0.05 0.05
                                                       }
@@ -4809,7 +4675,7 @@ DEF icub Supervisor {
                                                       rotation 0 0 1 1.57
                                                       children [
                                                         Shape {
-                                                          appearance USE _Appearance
+                                                          appearance USE COLOR
                                                           geometry Cylinder {
                                                             height 0.015
                                                             radius 0.025
@@ -4833,7 +4699,7 @@ DEF icub Supervisor {
                                                 density -1
                                                 mass 0.25
                                               }
-                                              position 0.00999982
+                                              position 0.0102959
                                               minPosition -0.436332
                                               maxPosition 0.436332
                                             }
@@ -4846,7 +4712,7 @@ DEF icub Supervisor {
                                             density -1
                                             mass 0.1
                                           }
-                                          position -1.09992
+                                          position -1.09662
                                           minPosition -1.8
                                           maxPosition 0.174533
                                         }
@@ -4857,14 +4723,7 @@ DEF icub Supervisor {
                                             Group {
                                               children [
                                                 Shape {
-                                                  appearance DEF _Appearance Appearance {
-                                                    material Material {
-                                                      ambientIntensity 1
-                                                      diffuseColor 0.468 0.567 0.729
-                                                      shininess 0.5
-                                                      specularColor 0.5 0.5 0.5
-                                                    }
-                                                  }
+                                                  appearance USE COLOR
                                                   geometry IndexedFaceSet {
                                                     coord Coordinate {
                                                       point [
@@ -5352,14 +5211,7 @@ DEF icub Supervisor {
                                             Group {
                                               children [
                                                 Shape {
-                                                  appearance DEF _Appearance Appearance {
-                                                    material Material {
-                                                      ambientIntensity 1
-                                                      diffuseColor 0.468 0.567 0.729
-                                                      shininess 0.5
-                                                      specularColor 0.5 0.5 0.5
-                                                    }
-                                                  }
+                                                  appearance USE COLOR
                                                   geometry IndexedFaceSet {
                                                     coord Coordinate {
                                                       point [
@@ -5436,14 +5288,7 @@ DEF icub Supervisor {
                                             Group {
                                               children [
                                                 Shape {
-                                                  appearance DEF _Appearance Appearance {
-                                                    material Material {
-                                                      ambientIntensity 1
-                                                      diffuseColor 0.468 0.567 0.729
-                                                      shininess 0.5
-                                                      specularColor 0.5 0.5 0.5
-                                                    }
-                                                  }
+                                                  appearance USE COLOR
                                                   geometry IndexedFaceSet {
                                                     coord Coordinate {
                                                       point [
@@ -5919,14 +5764,7 @@ DEF icub Supervisor {
                                             Group {
                                               children [
                                                 Shape {
-                                                  appearance DEF _Appearance Appearance {
-                                                    material Material {
-                                                      ambientIntensity 1
-                                                      diffuseColor 0.468 0.567 0.729
-                                                      shininess 0.5
-                                                      specularColor 0.5 0.5 0.5
-                                                    }
-                                                  }
+                                                  appearance USE COLOR
                                                   geometry IndexedFaceSet {
                                                     coord Coordinate {
                                                       point [
@@ -6414,14 +6252,7 @@ DEF icub Supervisor {
                                             Group {
                                               children [
                                                 Shape {
-                                                  appearance DEF _Appearance Appearance {
-                                                    material Material {
-                                                      ambientIntensity 1
-                                                      diffuseColor 0.468 0.567 0.729
-                                                      shininess 0.5
-                                                      specularColor 0.5 0.5 0.5
-                                                    }
-                                                  }
+                                                  appearance USE COLOR
                                                   geometry IndexedFaceSet {
                                                     coord Coordinate {
                                                       point [
@@ -6498,7 +6329,14 @@ DEF icub Supervisor {
                                             Group {
                                               children [
                                                 Shape {
-                                                  appearance USE _Appearance
+                                                  appearance DEF _Appearance Appearance {
+                                                    material Material {
+                                                      ambientIntensity 1
+                                                      diffuseColor 0.468 0.567 0.729
+                                                      shininess 0.5
+                                                      specularColor 0.5 0.5 0.5
+                                                    }
+                                                  }
                                                   geometry IndexedFaceSet {
                                                     coord Coordinate {
                                                       point [
@@ -6988,7 +6826,7 @@ DEF icub Supervisor {
                                         density -1
                                         mass 0.75
                                       }
-                                      position 1.29998
+                                      position 1.298
                                       minPosition -0.872665
                                       maxPosition 0.872665
                                     }
@@ -7006,7 +6844,7 @@ DEF icub Supervisor {
                                   }
                                   maxVelocity 120
                                   maxForce 20
-                                  position 0.870165
+                                  position 0.879243
                                   minPosition 0.096
                                   maxPosition 1.85005
                                 }
@@ -7017,14 +6855,7 @@ DEF icub Supervisor {
                                     Group {
                                       children [
                                         Shape {
-                                          appearance DEF _Appearance Appearance {
-                                            material Material {
-                                              ambientIntensity 1
-                                              diffuseColor 0.468 0.567 0.729
-                                              shininess 0.5
-                                              specularColor 0.5 0.5 0.5
-                                            }
-                                          }
+                                          appearance USE COLOR
                                           geometry IndexedFaceSet {
                                             coord Coordinate {
                                               point [
@@ -7505,14 +7336,7 @@ DEF icub Supervisor {
                                     Group {
                                       children [
                                         Shape {
-                                          appearance DEF _Appearance Appearance {
-                                            material Material {
-                                              ambientIntensity 1
-                                              diffuseColor 0.468 0.567 0.729
-                                              shininess 0.5
-                                              specularColor 0.5 0.5 0.5
-                                            }
-                                          }
+                                          appearance USE COLOR
                                           geometry IndexedFaceSet {
                                             coord Coordinate {
                                               point [
@@ -7589,14 +7413,7 @@ DEF icub Supervisor {
                                     Group {
                                       children [
                                         Shape {
-                                          appearance DEF _Appearance Appearance {
-                                            material Material {
-                                              ambientIntensity 1
-                                              diffuseColor 0.468 0.567 0.729
-                                              shininess 0.5
-                                              specularColor 0.5 0.5 0.5
-                                            }
-                                          }
+                                          appearance USE COLOR
                                           geometry IndexedFaceSet {
                                             coord Coordinate {
                                               point [
@@ -8070,14 +7887,7 @@ DEF icub Supervisor {
                                     Group {
                                       children [
                                         Shape {
-                                          appearance DEF _Appearance Appearance {
-                                            material Material {
-                                              ambientIntensity 1
-                                              diffuseColor 0.468 0.567 0.729
-                                              shininess 0.5
-                                              specularColor 0.5 0.5 0.5
-                                            }
-                                          }
+                                          appearance USE COLOR
                                           geometry IndexedFaceSet {
                                             coord Coordinate {
                                               point [
@@ -8558,7 +8368,7 @@ DEF icub Supervisor {
                                     Group {
                                       children [
                                         Shape {
-                                          appearance USE _Appearance
+                                          appearance USE COLOR
                                           geometry IndexedFaceSet {
                                             coord Coordinate {
                                               point [
@@ -8635,7 +8445,7 @@ DEF icub Supervisor {
                                     Group {
                                       children [
                                         Shape {
-                                          appearance USE _Appearance
+                                          appearance USE COLOR
                                           geometry IndexedFaceSet {
                                             coord Coordinate {
                                               point [
@@ -9128,7 +8938,7 @@ DEF icub Supervisor {
                               }
                               maxVelocity 120
                               maxForce 34
-                              position -3.14035e-005
+                              position -0.00120901
                               minPosition -0.645772
                               maxPosition 1.4
                             }
@@ -9145,7 +8955,7 @@ DEF icub Supervisor {
                           }
                           maxVelocity 120
                           maxForce 40
-                          position 0.400079
+                          position 0.402282
                           maxPosition 2.80649
                         }
                       ]
@@ -9161,7 +8971,7 @@ DEF icub Supervisor {
                       }
                       maxVelocity 120
                       maxForce 34
-                      position -1.00002
+                      position -1.00173
                       minPosition -1.74
                       maxPosition 0.17
                     }
@@ -9174,7 +8984,7 @@ DEF icub Supervisor {
                   }
                   maxVelocity 0
                   maxForce 9999
-                  position -0.000317145
+                  position -0.0143367
                 }
                 DEF neck_pitch Servo {
                   translation 0 0.193 -0.00231
@@ -9216,11 +9026,9 @@ DEF icub Supervisor {
                                         Shape {
                                           appearance Appearance {
                                             material Material {
-                                              ambientIntensity 1
-                                              diffuseColor 0.755922 0.734235 0.675373
-                                              emissiveColor 0.200941 0.195176 0.179529
-                                              shininess 0.21
-                                              specularColor 0.842039 0.817882 0.752314
+                                              diffuseColor 0.752941 0.752941 0.752941
+                                              emissiveColor 0.501961 0.501961 0.501961
+                                              specularColor 1 1 1
                                             }
                                           }
                                           geometry IndexedFaceSet {
@@ -10679,10 +10487,9 @@ DEF icub Supervisor {
                                           appearance Appearance {
                                             material Material {
                                               ambientIntensity 1
-                                              diffuseColor 0.755922 0.734235 0.675373
-                                              emissiveColor 0.200941 0.195176 0.179529
+                                              diffuseColor 0.0823529 0.0823529 0.0823529
                                               shininess 0.21
-                                              specularColor 0.842039 0.817882 0.752314
+                                              specularColor 1 1 1
                                             }
                                           }
                                           geometry IndexedFaceSet {
@@ -11504,6 +11311,7 @@ DEF icub Supervisor {
                                           name "RIGHT_CAM"
                                           width 320
                                           height 240
+                                          pixelSize 0
                                           antiAliasing TRUE
                                         }
                                         Solid {
@@ -11597,6 +11405,7 @@ DEF icub Supervisor {
                                           name "LEFT_CAM"
                                           width 320
                                           height 240
+                                          pixelSize 0
                                           antiAliasing TRUE
                                         }
                                       ]
@@ -11631,6 +11440,7 @@ DEF icub Supervisor {
                         mass 0.15
                       }
                       maxVelocity 120
+                      position 2.10734e-007
                       minPosition -1.1
                       maxPosition 1.15
                     }
@@ -11644,7 +11454,7 @@ DEF icub Supervisor {
                     mass 0.15
                   }
                   maxVelocity 120
-                  position 0.259963
+                  position 0.257978
                   minPosition -0.61
                   maxPosition 0.33
                 }
@@ -11652,14 +11462,7 @@ DEF icub Supervisor {
                   translation 0 0.1 0
                   children [
                     Shape {
-                      appearance DEF _Appearance Appearance {
-                        material Material {
-                          ambientIntensity 1
-                          diffuseColor 0.468 0.567 0.729
-                          shininess 0.5
-                          specularColor 0.5 0.5 0.5
-                        }
-                      }
+                      appearance USE COLOR
                       geometry Box {
                         size 0.19 0.17 0.07
                       }
@@ -11668,17 +11471,10 @@ DEF icub Supervisor {
                       translation 0 0.1 0
                       children [
                         Shape {
-                          appearance DEF _Appearance Appearance {
-                            material Material {
-                              ambientIntensity 1
-                              diffuseColor 0.468 0.567 0.729
-                              shininess 0.5
-                              specularColor 0.5 0.5 0.5
-                            }
-                          }
+                          appearance USE COLOR
                           geometry Cylinder {
                             height 0.1
-                            radius 0.035
+                            radius 0.022
                           }
                         }
                       ]
@@ -11703,7 +11499,7 @@ DEF icub Supervisor {
               }
               maxVelocity 120
               maxForce 50
-              position 1.09848e-005
+              position 0.00403631
               minPosition -0.68
               maxPosition 0.42
             }
@@ -11718,7 +11514,7 @@ DEF icub Supervisor {
           }
           maxVelocity 120
           maxForce 50
-          position -1.76025e-005
+          position -0.00655792
           minPosition -0.82
           maxPosition 0.82
         }
@@ -11740,7 +11536,7 @@ DEF icub Supervisor {
       }
       maxVelocity 120
       maxForce 36
-      position -0.150475
+      position -0.175085
       minPosition -0.9
       maxPosition 0.9
     }
@@ -11793,14 +11589,7 @@ DEF icub Supervisor {
                                 Group {
                                   children [
                                     Shape {
-                                      appearance DEF _Appearance Appearance {
-                                        material Material {
-                                          ambientIntensity 1
-                                          diffuseColor 0.468 0.567 0.729
-                                          shininess 0.5
-                                          specularColor 0.5 0.5 0.5
-                                        }
-                                      }
+                                      appearance USE COLOR
                                       geometry IndexedFaceSet {
                                         coord Coordinate {
                                           point [
@@ -11887,14 +11676,7 @@ DEF icub Supervisor {
                                 Group {
                                   children [
                                     Shape {
-                                      appearance DEF _Appearance Appearance {
-                                        material Material {
-                                          ambientIntensity 1
-                                          diffuseColor 0.468 0.567 0.729
-                                          shininess 0.5
-                                          specularColor 0.5 0.5 0.5
-                                        }
-                                      }
+                                      appearance USE COLOR
                                       geometry IndexedFaceSet {
                                         coord Coordinate {
                                           point [
@@ -11964,14 +11746,7 @@ DEF icub Supervisor {
                                 Group {
                                   children [
                                     Shape {
-                                      appearance DEF _Appearance Appearance {
-                                        material Material {
-                                          ambientIntensity 1
-                                          diffuseColor 0.468 0.567 0.729
-                                          shininess 0.5
-                                          specularColor 0.5 0.5 0.5
-                                        }
-                                      }
+                                      appearance USE COLOR
                                       geometry IndexedFaceSet {
                                         coord Coordinate {
                                           point [
@@ -12071,7 +11846,7 @@ DEF icub Supervisor {
                                 Group {
                                   children [
                                     Shape {
-                                      appearance USE _Appearance
+                                      appearance USE COLOR
                                       geometry IndexedFaceSet {
                                         coord Coordinate {
                                           point [
@@ -12131,7 +11906,7 @@ DEF icub Supervisor {
                                 Group {
                                   children [
                                     Shape {
-                                      appearance USE _Appearance
+                                      appearance USE COLOR
                                       geometry IndexedFaceSet {
                                         coord Coordinate {
                                           point [
@@ -12163,7 +11938,7 @@ DEF icub Supervisor {
                                 Group {
                                   children [
                                     Shape {
-                                      appearance USE _Appearance
+                                      appearance USE COLOR
                                       geometry IndexedFaceSet {
                                         coord Coordinate {
                                           point [
@@ -12264,7 +12039,7 @@ DEF icub Supervisor {
                                 Group {
                                   children [
                                     Shape {
-                                      appearance USE _Appearance
+                                      appearance USE COLOR
                                       geometry IndexedFaceSet {
                                         coord Coordinate {
                                           point [
@@ -12296,7 +12071,7 @@ DEF icub Supervisor {
                                 Group {
                                   children [
                                     Shape {
-                                      appearance USE _Appearance
+                                      appearance USE COLOR
                                       geometry IndexedFaceSet {
                                         coord Coordinate {
                                           point [
@@ -12378,7 +12153,7 @@ DEF icub Supervisor {
                                 Group {
                                   children [
                                     Shape {
-                                      appearance USE _Appearance
+                                      appearance USE COLOR
                                       geometry IndexedFaceSet {
                                         coord Coordinate {
                                           point [
@@ -12768,7 +12543,7 @@ DEF icub Supervisor {
                                 Group {
                                   children [
                                     Shape {
-                                      appearance USE _Appearance
+                                      appearance USE COLOR
                                       geometry IndexedFaceSet {
                                         coord Coordinate {
                                           point [
@@ -13192,7 +12967,7 @@ DEF icub Supervisor {
                         centerOfMass 0 -0.02 -0.05
                       }
                       maxForce 24
-                      position 0.499993
+                      position 0.499644
                       minPosition -0.733038
                       maxPosition 0.366519
                     }
@@ -13204,7 +12979,7 @@ DEF icub Supervisor {
                         Group {
                           children [
                             Shape {
-                              appearance USE _Appearance
+                              appearance USE COLOR
                               geometry IndexedFaceSet {
                                 coord Coordinate {
                                   point [
@@ -13704,7 +13479,7 @@ DEF icub Supervisor {
                         Group {
                           children [
                             Shape {
-                              appearance USE _Appearance
+                              appearance USE COLOR
                               geometry IndexedFaceSet {
                                 coord Coordinate {
                                   point [
@@ -13781,7 +13556,7 @@ DEF icub Supervisor {
                         Group {
                           children [
                             Shape {
-                              appearance USE _Appearance
+                              appearance USE COLOR
                               geometry IndexedFaceSet {
                                 coord Coordinate {
                                   point [
@@ -14271,7 +14046,7 @@ DEF icub Supervisor {
                         Group {
                           children [
                             Shape {
-                              appearance USE _Appearance
+                              appearance USE COLOR
                               geometry IndexedFaceSet {
                                 coord Coordinate {
                                   point [
@@ -14771,7 +14546,7 @@ DEF icub Supervisor {
                         Group {
                           children [
                             Shape {
-                              appearance USE _Appearance
+                              appearance USE COLOR
                               geometry IndexedFaceSet {
                                 coord Coordinate {
                                   point [
@@ -14848,7 +14623,7 @@ DEF icub Supervisor {
                         Group {
                           children [
                             Shape {
-                              appearance USE _Appearance
+                              appearance USE COLOR
                               geometry IndexedFaceSet {
                                 coord Coordinate {
                                   point [
@@ -15357,7 +15132,7 @@ DEF icub Supervisor {
                   }
                   maxVelocity 120
                   maxForce 30
-                  position -1.99983
+                  position -1.99037
                   minPosition -2.18166
                   maxPosition 0.401426
                 }
@@ -15369,7 +15144,7 @@ DEF icub Supervisor {
                     Group {
                       children [
                         Shape {
-                          appearance USE _Appearance
+                          appearance USE COLOR
                           geometry IndexedFaceSet {
                             coord Coordinate {
                               point [
@@ -15873,7 +15648,7 @@ DEF icub Supervisor {
                     Group {
                       children [
                         Shape {
-                          appearance USE _Appearance
+                          appearance USE COLOR
                           geometry IndexedFaceSet {
                             coord Coordinate {
                               point [
@@ -15953,7 +15728,7 @@ DEF icub Supervisor {
                     Group {
                       children [
                         Shape {
-                          appearance USE _Appearance
+                          appearance USE COLOR
                           geometry IndexedFaceSet {
                             coord Coordinate {
                               point [
@@ -16448,7 +16223,7 @@ DEF icub Supervisor {
                     Group {
                       children [
                         Shape {
-                          appearance USE _Appearance
+                          appearance USE COLOR
                           geometry IndexedFaceSet {
                             coord Coordinate {
                               point [
@@ -16952,7 +16727,7 @@ DEF icub Supervisor {
                     Group {
                       children [
                         Shape {
-                          appearance USE _Appearance
+                          appearance USE COLOR
                           geometry IndexedFaceSet {
                             coord Coordinate {
                               point [
@@ -17032,7 +16807,7 @@ DEF icub Supervisor {
                     Group {
                       children [
                         Shape {
-                          appearance USE _Appearance
+                          appearance USE COLOR
                           geometry IndexedFaceSet {
                             coord Coordinate {
                               point [
@@ -17546,7 +17321,7 @@ DEF icub Supervisor {
               }
               maxVelocity 120
               maxForce 40
-              position 7.41116e-005
+              position 0.00700752
               minPosition -1.37881
               maxPosition 1.37881
             }
@@ -17563,7 +17338,7 @@ DEF icub Supervisor {
           }
           maxVelocity 120
           maxForce 50
-          position 0.400454
+          position 0.42515
           minPosition -0.436
           maxPosition 2.07694
         }
@@ -17580,7 +17355,7 @@ DEF icub Supervisor {
       }
       maxVelocity 120
       maxForce 50
-      position 1.57025
+      position 1.58439
       minPosition -0.767945
       maxPosition 2.30383
     }
@@ -17631,14 +17406,7 @@ DEF icub Supervisor {
                                 Group {
                                   children [
                                     Shape {
-                                      appearance DEF _Appearance Appearance {
-                                        material Material {
-                                          ambientIntensity 1
-                                          diffuseColor 0.468 0.567 0.729
-                                          shininess 0.5
-                                          specularColor 0.5 0.5 0.5
-                                        }
-                                      }
+                                      appearance USE COLOR
                                       geometry IndexedFaceSet {
                                         coord Coordinate {
                                           point [
@@ -17725,14 +17493,7 @@ DEF icub Supervisor {
                                 Group {
                                   children [
                                     Shape {
-                                      appearance DEF _Appearance Appearance {
-                                        material Material {
-                                          ambientIntensity 1
-                                          diffuseColor 0.468 0.567 0.729
-                                          shininess 0.5
-                                          specularColor 0.5 0.5 0.5
-                                        }
-                                      }
+                                      appearance USE COLOR
                                       geometry IndexedFaceSet {
                                         coord Coordinate {
                                           point [
@@ -17802,14 +17563,7 @@ DEF icub Supervisor {
                                 Group {
                                   children [
                                     Shape {
-                                      appearance DEF _Appearance Appearance {
-                                        material Material {
-                                          ambientIntensity 1
-                                          diffuseColor 0.468 0.567 0.729
-                                          shininess 0.5
-                                          specularColor 0.5 0.5 0.5
-                                        }
-                                      }
+                                      appearance USE COLOR
                                       geometry IndexedFaceSet {
                                         coord Coordinate {
                                           point [
@@ -17909,14 +17663,7 @@ DEF icub Supervisor {
                                 Group {
                                   children [
                                     Shape {
-                                      appearance DEF _Appearance Appearance {
-                                        material Material {
-                                          ambientIntensity 1
-                                          diffuseColor 0.468 0.567 0.729
-                                          shininess 0.5
-                                          specularColor 0.5 0.5 0.5
-                                        }
-                                      }
+                                      appearance USE COLOR
                                       geometry IndexedFaceSet {
                                         coord Coordinate {
                                           point [
@@ -17976,14 +17723,7 @@ DEF icub Supervisor {
                                 Group {
                                   children [
                                     Shape {
-                                      appearance DEF _Appearance Appearance {
-                                        material Material {
-                                          ambientIntensity 1
-                                          diffuseColor 0.468 0.567 0.729
-                                          shininess 0.5
-                                          specularColor 0.5 0.5 0.5
-                                        }
-                                      }
+                                      appearance USE COLOR
                                       geometry IndexedFaceSet {
                                         coord Coordinate {
                                           point [
@@ -18015,7 +17755,7 @@ DEF icub Supervisor {
                                 Group {
                                   children [
                                     Shape {
-                                      appearance USE _Appearance
+                                      appearance USE COLOR
                                       geometry IndexedFaceSet {
                                         coord Coordinate {
                                           point [
@@ -18116,7 +17856,7 @@ DEF icub Supervisor {
                                 Group {
                                   children [
                                     Shape {
-                                      appearance USE _Appearance
+                                      appearance USE COLOR
                                       geometry IndexedFaceSet {
                                         coord Coordinate {
                                           point [
@@ -18148,7 +17888,7 @@ DEF icub Supervisor {
                                 Group {
                                   children [
                                     Shape {
-                                      appearance USE _Appearance
+                                      appearance USE COLOR
                                       geometry IndexedFaceSet {
                                         coord Coordinate {
                                           point [
@@ -18230,7 +17970,7 @@ DEF icub Supervisor {
                                 Group {
                                   children [
                                     Shape {
-                                      appearance USE _Appearance
+                                      appearance USE COLOR
                                       geometry IndexedFaceSet {
                                         coord Coordinate {
                                           point [
@@ -18620,7 +18360,7 @@ DEF icub Supervisor {
                                 Group {
                                   children [
                                     Shape {
-                                      appearance USE _Appearance
+                                      appearance USE COLOR
                                       geometry IndexedFaceSet {
                                         coord Coordinate {
                                           point [
@@ -19044,7 +18784,7 @@ DEF icub Supervisor {
                         centerOfMass 0 -0.02 -0.05
                       }
                       maxForce 24
-                      position 0.499993
+                      position 0.499644
                       minPosition -0.733038
                       maxPosition 0.366519
                     }
@@ -19056,7 +18796,7 @@ DEF icub Supervisor {
                         Group {
                           children [
                             Shape {
-                              appearance USE _Appearance
+                              appearance USE COLOR
                               geometry IndexedFaceSet {
                                 coord Coordinate {
                                   point [
@@ -19556,7 +19296,7 @@ DEF icub Supervisor {
                         Group {
                           children [
                             Shape {
-                              appearance USE _Appearance
+                              appearance USE COLOR
                               geometry IndexedFaceSet {
                                 coord Coordinate {
                                   point [
@@ -19633,7 +19373,7 @@ DEF icub Supervisor {
                         Group {
                           children [
                             Shape {
-                              appearance USE _Appearance
+                              appearance USE COLOR
                               geometry IndexedFaceSet {
                                 coord Coordinate {
                                   point [
@@ -20123,7 +19863,7 @@ DEF icub Supervisor {
                         Group {
                           children [
                             Shape {
-                              appearance USE _Appearance
+                              appearance USE COLOR
                               geometry IndexedFaceSet {
                                 coord Coordinate {
                                   point [
@@ -20623,7 +20363,7 @@ DEF icub Supervisor {
                         Group {
                           children [
                             Shape {
-                              appearance USE _Appearance
+                              appearance USE COLOR
                               geometry IndexedFaceSet {
                                 coord Coordinate {
                                   point [
@@ -20700,7 +20440,7 @@ DEF icub Supervisor {
                         Group {
                           children [
                             Shape {
-                              appearance USE _Appearance
+                              appearance USE COLOR
                               geometry IndexedFaceSet {
                                 coord Coordinate {
                                   point [
@@ -21209,7 +20949,7 @@ DEF icub Supervisor {
                   }
                   maxVelocity 120
                   maxForce 30
-                  position -1.99983
+                  position -1.99036
                   minPosition -2.18166
                   maxPosition 0.401426
                 }
@@ -21221,7 +20961,7 @@ DEF icub Supervisor {
                     Group {
                       children [
                         Shape {
-                          appearance USE _Appearance
+                          appearance USE COLOR
                           geometry IndexedFaceSet {
                             coord Coordinate {
                               point [
@@ -21725,7 +21465,7 @@ DEF icub Supervisor {
                     Group {
                       children [
                         Shape {
-                          appearance USE _Appearance
+                          appearance USE COLOR
                           geometry IndexedFaceSet {
                             coord Coordinate {
                               point [
@@ -21805,7 +21545,7 @@ DEF icub Supervisor {
                     Group {
                       children [
                         Shape {
-                          appearance USE _Appearance
+                          appearance USE COLOR
                           geometry IndexedFaceSet {
                             coord Coordinate {
                               point [
@@ -22300,7 +22040,7 @@ DEF icub Supervisor {
                     Group {
                       children [
                         Shape {
-                          appearance USE _Appearance
+                          appearance USE COLOR
                           geometry IndexedFaceSet {
                             coord Coordinate {
                               point [
@@ -22804,7 +22544,7 @@ DEF icub Supervisor {
                     Group {
                       children [
                         Shape {
-                          appearance USE _Appearance
+                          appearance USE COLOR
                           geometry IndexedFaceSet {
                             coord Coordinate {
                               point [
@@ -22884,7 +22624,7 @@ DEF icub Supervisor {
                     Group {
                       children [
                         Shape {
-                          appearance USE _Appearance
+                          appearance USE COLOR
                           geometry IndexedFaceSet {
                             coord Coordinate {
                               point [
@@ -23398,7 +23138,7 @@ DEF icub Supervisor {
               }
               maxVelocity 120
               maxForce 40
-              position 7.41472e-005
+              position 0.00710773
               minPosition -1.37881
               maxPosition 1.37881
             }
@@ -23415,7 +23155,7 @@ DEF icub Supervisor {
           }
           maxVelocity 120
           maxForce 50
-          position 0.400451
+          position 0.425592
           minPosition -0.436
           maxPosition 2.07694
         }
@@ -23432,7 +23172,7 @@ DEF icub Supervisor {
       }
       maxVelocity 120
       maxForce 50
-      position 1.57025
+      position 1.58461
       minPosition -0.767945
       maxPosition 2.30383
     }
@@ -23440,14 +23180,7 @@ DEF icub Supervisor {
       translation 0 -0.04 0
       children [
         Shape {
-          appearance DEF _Appearance Appearance {
-            material Material {
-              ambientIntensity 1
-              diffuseColor 0.468 0.567 0.729
-              shininess 0.5
-              specularColor 0.5 0.5 0.5
-            }
-          }
+          appearance USE COLOR
           geometry Box {
             size 0.2 0.13 0.07
           }
@@ -23456,14 +23189,7 @@ DEF icub Supervisor {
           translation 0.068 -0.073 0
           children [
             Shape {
-              appearance DEF _Appearance Appearance {
-                material Material {
-                  ambientIntensity 1
-                  diffuseColor 0.468 0.567 0.729
-                  shininess 0.5
-                  specularColor 0.5 0.5 0.5
-                }
-              }
+              appearance USE COLOR
               geometry Sphere {
                 radius 0.035
                 subdivision 100
@@ -23475,14 +23201,7 @@ DEF icub Supervisor {
           translation -0.068 -0.073 0
           children [
             Shape {
-              appearance DEF _Appearance Appearance {
-                material Material {
-                  ambientIntensity 1
-                  diffuseColor 0.468 0.567 0.729
-                  shininess 0.5
-                  specularColor 0.5 0.5 0.5
-                }
-              }
+              appearance USE COLOR
               geometry Sphere {
                 radius 0.035
                 subdivision 100
@@ -23509,4 +23228,175 @@ DEF icub Supervisor {
     forceDependentSlip 0.005
   }
   controller "iCubInterfaceWebots"
+}
+Solid {
+  translation 0.2 0.4 0.5
+  children [
+    DEF Patch Solid {
+      translation 0 -0.38 0.11
+      rotation 1 0 0 1.57
+      children [
+        Shape {
+          appearance Appearance {
+            material Material {
+              emissiveColor 1 1 1
+            }
+            texture ImageTexture {
+              url [
+                "markers\\SimpleStd_003.png"
+              ]
+            }
+          }
+          geometry IndexedFaceSet {
+            coord Coordinate {
+              point [
+                0.015 0 0.015
+                0.015 0 -0.015
+                -0.015 0 -0.015
+                -0.015 0 0.015
+              ]
+            }
+            texCoord TextureCoordinate {
+              point [
+                1 0
+                1 1
+                0 1
+                0 0
+              ]
+            }
+            coordIndex [
+              0, 1, 2, 3
+            ]
+            texCoordIndex [
+              0, 1, 2, 3
+            ]
+          }
+        }
+      ]
+    }
+    Shape {
+      appearance Appearance {
+        material Material {
+          emissiveColor 1 0 0
+        }
+      }
+      geometry Box {
+        size 0.2 0.8 0.2
+      }
+    }
+  ]
+}
+Solid {
+  translation 1.1 0.4 0
+  children [
+    DEF Patch Solid {
+      translation 0 -0.38 0.11
+      rotation 1 0 0 1.57
+      children [
+        Shape {
+          appearance Appearance {
+            material Material {
+              emissiveColor 1 1 1
+            }
+            texture ImageTexture {
+              url [
+                "markers\\SimpleStd_003.png"
+              ]
+            }
+          }
+          geometry IndexedFaceSet {
+            coord Coordinate {
+              point [
+                0.015 0 0.015
+                0.015 0 -0.015
+                -0.015 0 -0.015
+                -0.015 0 0.015
+              ]
+            }
+            texCoord TextureCoordinate {
+              point [
+                1 0
+                1 1
+                0 1
+                0 0
+              ]
+            }
+            coordIndex [
+              0, 1, 2, 3
+            ]
+            texCoordIndex [
+              0, 1, 2, 3
+            ]
+          }
+        }
+      ]
+    }
+    Shape {
+      appearance Appearance {
+        material Material {
+          emissiveColor 1 0 0
+        }
+      }
+      geometry Box {
+        size 0.2 0.8 0.2
+      }
+    }
+  ]
+}
+Solid {
+  translation 0.5 0.01 -0.3
+  children [
+    DEF Patch Solid {
+      translation 0 0.011 0
+      rotation 1 0 0 0
+      children [
+        Shape {
+          appearance Appearance {
+            material Material {
+              emissiveColor 1 1 1
+            }
+            texture ImageTexture {
+              url [
+                "markers\\SimpleStd_076.png"
+              ]
+            }
+          }
+          geometry IndexedFaceSet {
+            coord Coordinate {
+              point [
+                0.015 0 0.015
+                0.015 0 -0.015
+                -0.015 0 -0.015
+                -0.015 0 0.015
+              ]
+            }
+            texCoord TextureCoordinate {
+              point [
+                1 0
+                1 1
+                0 1
+                0 0
+              ]
+            }
+            coordIndex [
+              0, 1, 2, 3
+            ]
+            texCoordIndex [
+              0, 1, 2, 3
+            ]
+          }
+        }
+      ]
+    }
+    Shape {
+      appearance Appearance {
+        material Material {
+          emissiveColor 0 0.501961 0
+        }
+      }
+      geometry Box {
+        size 0.1 0.02 0.1
+      }
+    }
+  ]
 }
