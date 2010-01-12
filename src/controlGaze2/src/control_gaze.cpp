@@ -16,12 +16,14 @@
  * Public License for more details
  */
 
-#define USE_PREDICTIVE_CONTROL 0
-
 // capitalization problem on linux
 #include <iCub/control_gaze.h>
 
+#include <iCub/iKinFwd.h>
+
 using namespace std;
+using namespace iKin;
+using namespace yarp::math;
 
 
 
@@ -119,6 +121,16 @@ bool Control_GazeModule::configure(yarp::os::ResourceFinder &rf){
 		strCamConfigFile = strAppPath + std::string("/conf/") + strCamConfigFile;
 		strPredConfigFile = strAppPath + std::string("/conf/") + strPredConfigFile;
 	}
+
+	//fake_velocity_control is good for use with the simulator
+	if(rf.check("fake_velocity_control"))
+	{
+		_fake_velocity_control = true;
+	}
+	else
+	{
+		_fake_velocity_control = false;
+	}
 	
 	// getting predictors properties
 	bool use_pred=true;
@@ -134,7 +146,9 @@ bool Control_GazeModule::configure(yarp::os::ResourceFinder &rf){
 			return false;
 		}
 		// open camera instance
+		#if USE_PREDICTIVE_CONTROL
 		_pred.open(propPredictors);
+		#endif
 	}
 
 	// getting camera properties
@@ -280,6 +294,36 @@ bool Control_GazeModule::configure(yarp::os::ResourceFinder &rf){
         // return false;
     }
 
+	//setting the limits for eye/head/torso chain. 
+	double mi, ma;
+	Vector maxL(8), minL(8);
+	maxL(0) = 80; //torso 1
+	maxL(1) = 80; //torso 2
+	maxL(2) = 80; //torso 3
+	minL(0) = -80; //torso 1
+	minL(1) = -80; //torso 2
+	minL(2) = -80; //torso 3
+	ilim->getLimits(0, &mi, &ma); //neck tilt
+	maxL(3) = ma; minL(3) = mi;
+	ilim->getLimits(1, &mi, &ma); //neck swing
+	maxL(4) = ma; minL(4) = mi;
+	ilim->getLimits(2, &mi, &ma); //neck pan
+	maxL(5) = ma; minL(5) = mi;
+	ilim->getLimits(3, &mi, &ma); //eye tilt
+	// limit eye's tilt due to eyelids
+    if (mi<-28.0)
+          mi=-28.0;
+    if (ma>12.0)
+          ma=12.0;
+	maxL(6) = ma; minL(6) = mi;
+	ilim->getLimits(4, &mi, &ma); //eye pan - assume identical for both eyes
+	maxL(7) = ma; minL(7) = mi;
+//	maxL(0)=maxL(1)=maxL(2)=maxL(3)=maxL(4)=maxL(5)=maxL(6)=maxL(7)=50;
+//	minL(0)=minL(1)=minL(2)=minL(3)=minL(4)=minL(5)=minL(6)=minL(7)=-50;
+
+	head.initEyeKin(maxL, minL);
+	head.initInertialKin(maxL, minL);
+	
 	_smoothInput_port.open( getName("/vel"));
 	_saccadeInput_port.open( getName("/pos"));
 	_imageCoordPort.open( getName("/imgcoord"));
@@ -296,14 +340,16 @@ bool Control_GazeModule::configure(yarp::os::ResourceFinder &rf){
 	//INITIAL COMMAND AND STATE
 	_targ_azy = 0; 
 	_targ_elev = 0;
+	_abs_ref_az = 0;
+	_abs_ref_el = 0;
 //	_targ_verg = 0;
 
 	desazy = 0;	
 	deselev = 0;
 //	desverg = 0;
 
-	desazy_oe = 0;	
-	deselev_oe = 0;
+//	desazy_oe = 0;	
+//	deselev_oe = 0;
 //	desverg_oe = 0;
 
 	currenterror=0;
@@ -332,7 +378,8 @@ bool Control_GazeModule::configure(yarp::os::ResourceFinder &rf){
 	oldW = gsl_vector_calloc(3);
 	inertialW = gsl_vector_calloc(3);
 
-	torsoW = gsl_vector_calloc(3);
+	for(int i = 0; i < 8; i++)
+		torsopos[i] = 0.0;
 
 	egosphere.open(getName("/remoteEgoSphere"));
 
@@ -374,60 +421,17 @@ bool Control_GazeModule::configure(yarp::os::ResourceFinder &rf){
 
     
 	// Initializing Velocity Interface
-    ivel->velocityMove( 0, 0);
-    yarp::os::Time().delay(0.1);printf(".");
-    ivel->velocityMove( 1, 0);
-    yarp::os::Time().delay(0.1);printf(".");
-    ivel->velocityMove( 2, 0);
-    yarp::os::Time().delay(0.1);printf(".");
-    ivel->velocityMove( 3, 0);
-    yarp::os::Time().delay(0.1);printf(".");
-    ivel->velocityMove( 4, 0);
-    yarp::os::Time().delay(0.1);printf(".");
-    ivel->velocityMove( 5, 0);
-    yarp::os::Time().delay(0.1);printf(".");
-    
-	    	
-    ivel->setRefAcceleration(0, 1000);
-    yarp::os::Time().delay(0.1);printf(".");
-    ivel->setRefAcceleration(1, 1000);
-    yarp::os::Time().delay(0.1);printf(".");
-    ivel->setRefAcceleration(2, 1000);
-    yarp::os::Time().delay(0.1);printf(".");
-    ivel->setRefAcceleration(3, 1000);
-    yarp::os::Time().delay(0.1);printf(".");
-    ivel->setRefAcceleration(4, 1000);
-    yarp::os::Time().delay(0.1);printf(".");
-    ivel->setRefAcceleration(5, 1000);
-    yarp::os::Time().delay(0.1);printf(".");
-    
-
-	// Initializing Position Interface
-	ipos->setRefSpeed(0, 200);
-	yarp::os::Time().delay(0.1);printf(".");
-	ipos->setRefSpeed(1, 200);
-	yarp::os::Time().delay(0.1);printf(".");
-	ipos->setRefSpeed(2, 200);
-	yarp::os::Time().delay(0.1);printf(".");
-	ipos->setRefSpeed(3, 200);
-	yarp::os::Time().delay(0.1);printf(".");
-	ipos->setRefSpeed(4, 200);
-	yarp::os::Time().delay(0.1);printf(".");
-	ipos->setRefSpeed(5, 200);
+	double accs[] = {1000, 1000, 1000, 1000, 1000, 1000, 1000, 1000};
+	ivel->setRefAccelerations(accs);
 	yarp::os::Time().delay(0.1);printf(".");
 	
-	ipos->setRefAcceleration(0, 1000);
+	// Initializing Position Interface
+	double spds[] = {2000, 200, 200, 200, 200, 200, 200, 200};
+	ipos->setRefSpeeds(spds);
 	yarp::os::Time().delay(0.1);printf(".");
-	ipos->setRefAcceleration(1, 1000);
+	ipos->setRefAccelerations(accs);
 	yarp::os::Time().delay(0.1);printf(".");
-	ipos->setRefAcceleration(2, 1000);
-	yarp::os::Time().delay(0.1);printf(".");
-	ipos->setRefAcceleration(3, 1000);
-	yarp::os::Time().delay(0.1);printf(".");
-	ipos->setRefAcceleration(4, 1000);
-	yarp::os::Time().delay(0.1);printf(".");
-	ipos->setRefAcceleration(5, 1000);
-
+	
 	//doing some test motions to check all motors are OK
 
 	/*
@@ -465,7 +469,7 @@ bool Control_GazeModule::configure(yarp::os::ResourceFinder &rf){
 
 
 	// GO !
-
+	printf("\n> ");
 	ncycles = 0;
     timesaccadeid = 0;
 	start = Time::now();
@@ -520,7 +524,7 @@ bool Control_GazeModule::close(){
     printf("6\n");
 	gsl_vector_free( oldW );
 	gsl_vector_free( inertialW );
-	gsl_vector_free( torsoW );
+	//gsl_vector_free( torsoW );
     printf("7\n");
 	dd.close();
     printf("8\n");
@@ -784,15 +788,14 @@ bool Control_GazeModule::updateModule() //this runs every
 	Vector *posinput = NULL;
 	Vector *velinput = NULL;
 	Vector *dispinput = NULL;
-	Vector *inertialmeas = NULL;
-	Vector *torsovel = NULL;
+	
 
+	// READ COMMAND PORTS
 	imgcoordinput = _imageCoordPort.read(false);
 	posinput = _saccadeInput_port.read( false );
 	velinput = _smoothInput_port.read( false );
 	dispinput = _disparityInput_port.read( false );
-	inertialmeas = _inertialInput_port.read( false );
-	torsovel = _torsoInput_port.read(false);
+	
 	
 
 	//Update state
@@ -807,37 +810,6 @@ bool Control_GazeModule::updateModule() //this runs every
 		disparity = (*dispinput)(0);
 	else
 		disparity = 0;
-
-	if( !inertialmeas ) {
-		gsl_vector_set_zero( inertialW );
-	}
-	else {
-		double aux = (*inertialmeas)(7);
-		aux = saturatevalues( aux, 0.03);
-		gsl_vector_set( inertialW, 0, -aux * 180/3.1415);
-		
-		aux = (*inertialmeas)(6);
-		aux = saturatevalues( aux, 0.03);
-		gsl_vector_set( inertialW, 1, aux * 180/3.1415);
-		
-		aux = (*inertialmeas)(8);
-		aux = saturatevalues( aux, 0.03);
-		gsl_vector_set( inertialW, 2, aux * 180/3.1415);
-
-		gsl_print_vector( inertialW, "inertialW");
-	}
-
-	if( !torsovel ) {
-		gsl_vector_set_zero( torsoW );
-	}
-	else {
-		gsl_vector_set(torsoW, 0, (*torsovel)(0));
-		gsl_vector_set(torsoW, 1, (*torsovel)(1));
-		gsl_vector_set(torsoW, 2, (*torsovel)(2));
-		gsl_print_vector( torsoW, "torsoW");
-	}
-
-
 
 	// COMMAND PROCESSOR
 	//_cmd = NONE;   This goes to the end because the response() function may have received a command
@@ -949,16 +921,82 @@ bool Control_GazeModule::updateModule() //this runs every
 	while( ! (validData = ienc->getEncoders( headpos )) )
 		yarp::os::Time::delay(0.002);
 
-	head.HeadGaze( &_neck_azy, &_neck_elev, headpos);
+	Vector *inertialmeas = NULL;
+	inertialmeas = _inertialInput_port.read( false );
+	if( !inertialmeas ) {
+		gsl_vector_set_zero( inertialW );
+	}
+	else {
+		double aux = (*inertialmeas)(7);
+		aux = saturatevalues( aux, 0.03);
+		gsl_vector_set( inertialW, 0, -aux * 180/3.1415);
+		
+		aux = (*inertialmeas)(6);
+		aux = saturatevalues( aux, 0.03);
+		gsl_vector_set( inertialW, 1, aux * 180/3.1415);
+		
+		aux = (*inertialmeas)(8);
+		aux = saturatevalues( aux, 0.03);
+		gsl_vector_set( inertialW, 2, aux * 180/3.1415);
+
+		gsl_print_vector( inertialW, "inertialW");
+	}
+
+	Vector *torsopos_temp = NULL;
+	torsopos_temp = _torsoInput_port.read( false );
+	if(torsopos_temp) //update torsopos
+	{
+		for(int i = 0; i < torsopos_temp->length(); i++ )
+		{
+			torsopos[i] = (*torsopos_temp)[i];
+		}
+	}
+
+	/*DEBUGGING*/
+	/*for(int i = 0; i < 8; i++)
+	{
+		headpos[i] = 0;
+		torsopos[i] = 0;
+	}
+	torsopos[2] = 10;*/
+
+
+	head.HeadGaze( &_head_azy, &_head_elev, headpos);
 	head.Gaze( &_eye_azy, &_eye_elev, headpos);
-	
+
 	// If we had a valid timely command, update the desired gaze
+
+	//JUST FOR DEBUGGING
+	/*_cmd = SACCADE;
+	_command_x = 0;
+	_command_y = 0;
+	_coord = ABSOLUTE_ANGLE;*/
+	
 	if(_cmd != NONE )
         {
-            updateAbsoluteGazeReference(_command_x, _command_y, headpos, _eye_azy, _eye_elev,
-										_targ_azy, _targ_elev, _cmd, _coord);
+            /*updateAbsoluteGazeReference(_command_x, _command_y, headpos, _eye_azy, _eye_elev,
+										_targ_azy, _targ_elev, _cmd, _coord);*/
+
+			updateAbsoluteGazeReference2(_command_x, _command_y, headpos, torsopos, _eye_azy, _eye_elev,
+										_abs_ref_az, _abs_ref_el, _cmd, _coord);
         }
 	
+	//Angles are in degrees.
+	//Here I have to convert from absolute coordinates to neck based coordinates.
+	//The head controller works on neck based coordinates,
+	//but the target coordinates are computed in absolute.
+	Matrix DesRotWaist = head.getRotationMatrixFromRollPitchYawAngles(0, _abs_ref_el, _abs_ref_az);
+	Matrix Neck2Waist = head.getNeck2WaistTransf(torsopos);
+	Matrix Waist2Neck = Neck2Waist.transposed();
+	//this matrix is to rotate the neck such that roll, pitch, yaw angles can be computed as usual.
+	Matrix NeckNorm(3,3);
+	NeckNorm(0,0) = -1; NeckNorm(0,1) = 0; NeckNorm(0,2) = 0;
+	NeckNorm(1,0) = 0; NeckNorm(1,1) = 0; NeckNorm(1,2) = 1;
+	NeckNorm(2,0) = 0; NeckNorm(2,1) = 1; NeckNorm(2,2) = 0;
+	Matrix DesRotNeck = NeckNorm * Waist2Neck * DesRotWaist; 
+	double temp;
+	head.getRollPitchYawAnglesFromRotationMatrix(DesRotNeck, temp, _targ_elev, _targ_azy);
+
 	desazy = _targ_azy;
 	deselev = _targ_elev;
 
@@ -1051,11 +1089,6 @@ bool Control_GazeModule::updateModule() //this runs every
 		case REST: 
 		case LIMIT:
 			currenterror = head.HeadGazeController(desazy, deselev, X, pert, oldW, vels, headpos, inertialW, 0,controlType);
-			//TEST TORSO COMPENSATION
-			vels[0] = vels[0] - (*torsovel)(2);
-			vels[1] = vels[1] - (*torsovel)(1);
-			vels[2] = vels[2] - (*torsovel)(0);
-
 			//printf("%f %f %f %f \n", vels[0], vels[2], vels[3], vels[4] );
 
             vels[5]=-vergenceGain*disparity;
@@ -1085,11 +1118,7 @@ bool Control_GazeModule::updateModule() //this runs every
 
 		case SACCADE_2: //saccade continuation (combined neck/eye phase)
 			currenterror = head.HeadGazeController(desazy, deselev, X, pert, oldW, vels, headpos, inertialW, 0,controlType);
-			//TEST TORSO COMPENSATION
-			vels[0] = vels[0] - (*torsovel)(2);
-			vels[1] = vels[1] - (*torsovel)(1);
-			vels[2] = vels[2] - (*torsovel)(0);
-
+			
 
             vels[5]=-vergenceGain*disparity;
 			//printf("%f %f %f %f \n", vels[0], vels[2], vels[3], vels[4] );
@@ -1121,7 +1150,9 @@ bool Control_GazeModule::updateModule() //this runs every
 
 		case START_PURSUIT: //start pursuit mode
 			printf("STARTING PURSUIT");
+			#if USE_PREDICTIVE_CONTROL
 			_pred.reset(realpos); 
+			#endif
 			head.setGazeControllerGain(  framerate );
 			_behav = CONTINUE_PURSUIT;
 			//Initialize here other pursuit initialization stuff (filters, predictors);
@@ -1131,25 +1162,17 @@ bool Control_GazeModule::updateModule() //this runs every
 			if( _cmd == PURSUIT)
                 {
                     
-                    if(USE_PREDICTIVE_CONTROL)
-                        {
+					#if USE_PREDICTIVE_CONTROL
                             _prediction = _pred.predict(realpos, 1, 1);
                             desazy = _prediction[0];
                             deselev = _prediction[1];
-                        }
-                    else
-                        {
+					#else                        
                             desazy = _targ_azy;
                             deselev = _targ_elev;
-                        }
-                }
+					#endif
+                 }
 			currenterror = head.HeadGazeController(desazy, deselev, X, pert, oldW, vels, headpos, inertialW, 0,controlType);
 			//printf("%f %f %f %f \n", vels[0], vels[2], vels[3], vels[4] );
-			//TEST TORSO COMPENSATION
-			vels[0] = vels[0] - (*torsovel)(2);
-			vels[1] = vels[1] - (*torsovel)(1);
-			vels[2] = vels[2] - (*torsovel)(0);
-
 
             vels[5]=-vergenceGain*disparity;
 			velmove(vels); //velocity control is smoother
@@ -1207,7 +1230,7 @@ bool Control_GazeModule::updateModule() //this runs every
             printf("x: %02.2f y: %02.2f \n", _command_x, _command_y);
 
             // the current state
-            printf("ref azy:%02.2f neck azy:%02.2f eye azy:%02.2f ref elev:%02.2f neck elev:%02.2f eye elev:%02.2f\n", desazy, _neck_azy, _eye_azy, deselev, _neck_elev, _eye_elev);
+            printf("ref azy:%02.2f head azy:%02.2f eye azy:%02.2f ref elev:%02.2f head elev:%02.2f eye elev:%02.2f\n", desazy, _head_azy, _eye_azy, deselev, _head_elev, _eye_elev);
         }
 
     //status port (required by attentionSelection)
@@ -1251,7 +1274,7 @@ bool Control_GazeModule::updateModule() //this runs every
                 }
             fprintf(fp, "%03.3f %03.3f\n", _command_x, _command_y);
             //report gaze directions
-            fprintf(fp, "gaz: %03.3f %03.3f %03.3f %03.3f %03.3f %03.3f\n", _neck_azy, _neck_elev, _eye_azy, _eye_elev, _targ_azy, _targ_elev);
+            fprintf(fp, "gaz: %03.3f %03.3f %03.3f %03.3f %03.3f %03.3f\n", _head_azy, _head_elev, _eye_azy, _eye_elev, _targ_azy, _targ_elev);
             //report encoder readings
             fprintf(fp, "enc: %03.3f %03.3f %03.3f %03.3f %03.3f %03.3f\n", headpos[0], headpos[1], headpos[2], headpos[3], headpos[4], headpos[5] );
             //report motor commands
@@ -1259,7 +1282,7 @@ bool Control_GazeModule::updateModule() //this runs every
             //report inertial measurements
             fprintf(fp, "imu: %03.3f %03.3f %03.3f\n", gsl_vector_get(inertialW,0), gsl_vector_get(inertialW,1), gsl_vector_get(inertialW,2));
 			//report torso velocity measurements
-			fprintf(fp, "tor: %03.3f %03.3f %03.3f\n", gsl_vector_get(torsoW,0), gsl_vector_get(inertialW,1), gsl_vector_get(inertialW,2));
+			//fprintf(fp, "tor: %03.3f %03.3f %03.3f\n", gsl_vector_get(torsoW,0), gsl_vector_get(inertialW,1), gsl_vector_get(inertialW,2));
             //report prediction values
             if(USE_PREDICTIVE_CONTROL)
                 fprintf(fp, "pre: %03.3f %03.3f %03.3f\n", _prediction[0], _prediction[1], _prediction[2]);
@@ -1421,9 +1444,11 @@ bool Control_GazeModule::updateAbsoluteGazeReference(double coord1,
                 }
 
 
-            //printf("convertion from camera to absolute\n");
+            //printf("conversion from camera to absolute\n");
             RobMatrix T05 = head.fkine( headpos, 'l');
-            //convert error in image (frame 5) to body (frame 0) 
+			//T05.print();
+
+            //convert error in image (frame 5) to base (frame 0) 
             RobMatrix des5 = RobMatrix( 1, xmetric, ymetric, 0);
             RobMatrix desM0 = T05 * des5;
             gsl_vector *des0 = desM0.getvector(0,3,3);
@@ -1431,12 +1456,105 @@ bool Control_GazeModule::updateAbsoluteGazeReference(double coord1,
             gsl_vector_free( des0 );
 
             //Now for the other eye - DO WE NEED THIS
-            RobMatrix T05r = head.fkine( headpos, 'r');
+            /*RobMatrix T05r = head.fkine( headpos, 'r');
             RobMatrix des5r = RobMatrix( 1, desazy_oe, deselev_oe, 0);
             RobMatrix desM0r = T05r * des5r;
             gsl_vector *des0r = desM0r.getvector(0,3,3);
             head.gazevector2azyelev( des0r, &desazy_oe, &deselev_oe);
-            gsl_vector_free( des0r );
+            gsl_vector_free( des0r );*/
+        }
+	return true;
+}
+
+bool Control_GazeModule::updateAbsoluteGazeReference2(double coord1, 
+													 double coord2, 
+													 double *headpos, 
+													 double *torsopos,
+													 double cur_azy,
+													 double cur_elev,
+													 double &new_azy,
+													 double &new_elev,
+													 Command cmd, 
+													 Coordinate coord)
+
+{
+	if(coord == ABSOLUTE_ANGLE)
+        {
+            new_azy = coord1;
+            new_elev = coord2;
+        }
+	else if(coord == RELATIVE_ANGLE)
+        {
+            new_azy = cur_azy + coord1;
+            new_elev = cur_elev + coord2; 
+        }
+	else
+        {
+            double xmetric, ymetric;
+            //going to represent a direction as a vector (xmetric,ymetric,1)	
+            if(coord == NORMALIZED_PIXEL)  
+                {
+                    _cam.norm2metric(coord1,coord2,xmetric,ymetric);
+                }  
+            else if(coord == IMAGE_PIXEL)
+                {
+                    _cam.pixel2metric(coord1,coord2,xmetric,ymetric);
+                }
+            // Direction is now represented by a vector
+            // TESTING : SHOULD FIND A BETTER WAY TO DO THIS LATTER
+            if(cmd == PURSUIT)
+                {
+                    xmetric *= 1.0;
+                    ymetric *= 1.0;
+                    //printf("DANGER: EMPIRICAL TESTING MODE\n");
+                }
+
+
+            //printf("conversion from camera to absolute\n");
+            /*RobMatrix T05 = head.fkine( headpos, 'l');
+			T05.print();
+
+            //convert error in image (frame 5) to base (frame 0) 
+            RobMatrix des5 = RobMatrix( 1, xmetric, ymetric, 0);
+            RobMatrix desM0 = T05 * des5;
+            gsl_vector *des0 = desM0.getvector(0,3,3);
+            head.gazevector2azyelev( des0, &new_azy, &new_elev);
+            gsl_vector_free( des0 );*/
+
+			Vector cyclopData(8);
+			// units shall be in radians
+			// remind that the torso is in reverse order:
+			// their joints are sent assuming the neck as kinematic origin
+			// and not the waist, hence we've got to invert them!
+			cyclopData[0]=(M_PI/180.0)*torsopos[2];	
+			cyclopData[1]=(M_PI/180.0)*torsopos[1];
+			cyclopData[2]=(M_PI/180.0)*torsopos[0];
+			// neck part
+			cyclopData[3]=(M_PI/180.0)*headpos[0];
+			cyclopData[4]=(M_PI/180.0)*headpos[1];
+			cyclopData[5]=(M_PI/180.0)*headpos[2];
+			// eyes part
+			// fbHead[3]=gaze tilt
+			// fbHead[4]=gaze version
+			// fbHead[5]=gaze vergence
+			cyclopData[6] = (M_PI/180.0)*headpos[3];	// eye tilt
+			cyclopData[7] = (M_PI/180.0)*cyclopData[4]; // eye version
+			Matrix DesPoseEye(4,4);
+			DesPoseEye(0,0)= 1; DesPoseEye(0,1)= 0; DesPoseEye(0,2)= 0; DesPoseEye(0,3)= xmetric;
+			DesPoseEye(1,0)= 0; DesPoseEye(1,1)= 1; DesPoseEye(1,2)= 0; DesPoseEye(1,3)= ymetric;
+			DesPoseEye(2,0)= 0; DesPoseEye(2,1)= 0; DesPoseEye(2,2)= 1; DesPoseEye(2,3)= 1;
+			DesPoseEye(3,0)= 0; DesPoseEye(3,1)= 0; DesPoseEye(3,2)= 0; DesPoseEye(3,3)= 0;
+			Matrix Eye2Waist = head.getCyclopPose(cyclopData);
+			Matrix DesPoseWaist = Eye2Waist * DesPoseEye;
+			Vector DesOrient = DesPoseWaist.getCol(3);
+			head.gazeVector2AzimuthElevation(DesOrient, new_azy, new_elev);
+			/*cout << "DesPoseEye: "<< DesPoseEye.toString() << endl;
+			cout << "Eye2Waist: "<< Eye2Waist.toString() << endl;
+			cout << "DesPoseWaist: "<< DesPoseWaist.toString() << endl;
+			cout << "DesOrient: " << DesOrient.toString() << endl;*/
+
+			new_azy = new_azy*(180/M_PI);
+			new_elev = new_elev*(180/M_PI);
         }
 	return true;
 }
@@ -1483,10 +1601,36 @@ int Control_GazeModule::velmove(double *vels)
     vels[1] = 0; // no swing
     // vels[5] = -2;
 
-    ivel->velocityMove( vels );
+	if(_fake_velocity_control) //useful for using the simulator
+	{
+		relmove(vels);
+	}
+	else
+	{
+		ivel->velocityMove( vels );
+	}
 
     return 0;
 }
+
+int Control_GazeModule::relmove(double *delta)
+{
+    bool ret = false;
+	double speeds[] = {200,200,200,200,200,200,200,200};
+	double newpos[6];
+
+	ipos->setRefSpeeds(speeds);
+
+	for(int i = 0; i < 5; i++)
+	{
+		newpos[i] = headpos[i]+delta[i]/(controlrate/2);
+	}
+
+	ipos->positionMove( newpos );
+
+    return ret;
+}
+
 
 /****** INTERFACE FUNCTIONS *********/
 
@@ -1745,8 +1889,8 @@ bool Control_GazeModule::getDirectionEyeLeft(double &azimuth, double &elevation)
 
 bool Control_GazeModule::getDirectionHead(double &azimuth, double &elevation){
 	_mutex.wait();
-    azimuth = _neck_azy;
-    elevation = _neck_elev;
+    azimuth = _head_azy;
+    elevation = _head_elev;
 	_mutex.post();
     return true;
 }

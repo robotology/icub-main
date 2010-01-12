@@ -41,6 +41,7 @@ using namespace iCub::contrib;
  * - Specify the gaze direction of the robot in (azimuth,elevation,vergence) angles rather that raw head/eye joints.
  * - Provide a biological look to the dynamics of Head/Eye coordination.
  * - Provide a transparent and intuitive interface for controlling iCub's head, abtracting from low level control details. 
+ *
  * The module allows changing the gaze direction by:
  * - Specifying the absolute azimuth and elevation angles (in degrees).
  * - Specifying the azimuth and elevation angles relative to the current gaze direction.
@@ -52,15 +53,20 @@ using namespace iCub::contrib;
  * The module controls simultaneously head gaze and vergence. Head gaze control has two modalities:
  * - Saccades
  * - Smooth Pursuit 
+ *
  * Saccades are controlled in two phases:
  * - Fast phase - the eyes are driven very quickly to the destination position
  * - Slow phase - the neck moves toward the final position in a slower velocity and the eyes counter-rotate to keep the image stable. 
+ *
  * A new saccade is accepted only when the previous one has finished. 
  * This is the typical operation in humans where saccades are used to change the object of interest.
+ *
  * Smooth pursuit only operates in the slow phase, but it accepts a continuous stream of commands. 
  * It is meant to emulate the human behavior when tracking an object.
+ *
  * A single set of gains suits both the saccade and smooth pursuit modes. 
  * These gains specify both the speed of the motions and the amount of motion that is performed by the eyes and by the neck.
+ *
  * Vergence also operates in a single phase. There is an independent gain for the vergence controller.
  *
  * OPERATION:
@@ -72,18 +78,19 @@ using namespace iCub::contrib;
  * - Relative - add azimuth and elevation angles to the current gaze direction.
  * - Pixel - this is a relative modality, but the relative angles are derived from the image pixel positions.
  * - Normalized - the same as before in normalized image coordinates [-1,1]. 
+ *
  * Usually there are no stability problems when controlling the module with saccade motions. 
  * The module does not accept new commands while the gaze has not reached the reference values. 
+ *
  * In pursuit mode, the heading direction can be specified at any time step and the controller must recompute the controls. 
  * This puts some stability issues because the trajectories become dependent of the rate commands are sent to the controller. 
- * The default gains have been tuned for a command refresh rate of 50 ms (20 Hz). 
+ * The default gains have been tuned for a command refresh rate of 20 ms (50 Hz). 
  * 
  * CURRENT STATUS:
  * 
  * The following sections describe the current state of controlGaze2. 
- * A new module, controlGaze3 is under preparation to better cope with the new standards for application management, as well as for improvements in the interfaces.
  *
- * STARTING CONTROL GAZE 
+ * STARTING THE MODULE 
  * 
  * To start controlGaze2 type execute the following command:
  * - controlGaze2 <parameters>

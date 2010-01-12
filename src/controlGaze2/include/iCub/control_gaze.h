@@ -21,6 +21,9 @@
 #ifndef __CONTROL_GAZE__
 #define __CONTROL_GAZE__
 
+
+#define USE_PREDICTIVE_CONTROL 0
+
  // std
 #include <iostream>
 #include <stdio.h>
@@ -29,6 +32,7 @@
 
 // yarp
 #include <yarp/sig/Vector.h>
+#include <yarp/sig/Matrix.h>
 
 #include <yarp/os/all.h>
 #include <yarp/sig/all.h>
@@ -40,7 +44,10 @@
 #include <iCub/camera.h>
 #include <iCub/head/iCubHeadKinematics.h>
 #include <iCub/kinematics/gsl_aux.h>
-#include <iCub/predictors.h>
+
+#if USE_PREDICTIVE_CONTROL
+	#include <iCub/predictors.h>
+#endif
 
 
 // to turn attention off
@@ -111,25 +118,28 @@ private:
 	//int processposinput(double coord1, double coord2, double *headpos, char type, char behav);
 	int posmove(double *pos);
 	int velmove(double *vels);
+	int relmove(double *deltas);
 	int mycheckmotion( int axis, double target);
 
 
 	iCub::contrib::iCubHeadKinematics	head;
-    double _eye_azy;    // neck to eye
-    double _eye_elev;   // neck to eye
-    double _neck_azy;   // neck to head
-    double _neck_elev;  // neck to head
-	double _targ_azy;
-	double _targ_elev;
-	double	desazy;			/** current desired gaze for saccades */
-	double	deselev;		/** current desired gaze for saccades */
+    double _eye_azy;		// eye azimuth w.r.t. the neck base reference frame
+    double _eye_elev;		// eye elevation w.r.t. the neck base reference frame
+    double _head_azy;		// head azimuth w.r.t. the neck base reference frame
+    double _head_elev;		// head elevation w.r.t. the neck base reference frame
+	double _targ_azy;		// target azimuth w.r.t. the neck base reference frame
+	double _targ_elev;		// target elevation w.r.t. the neck base reference frame
+	double _abs_ref_az;		// reference azimuth w.r.t. the waist reference frame (absolute)
+	double _abs_ref_el;		// reference elevation w.r.t. the waist reference frame (absolute)
+	double	desazy;			// current desired gaze azimuth w.r.t. the neck base reference frame
+	double	deselev;		// current desired gaze elevation w.r.t. the neck base reference frame
 	double currenterror;	/** current error */
 
     double vergenceGain;
 
 	/* other eye */
-	double	desazy_oe;
-	double	deselev_oe;
+	//double	desazy_oe;      // is this really needed ?
+	//double	deselev_oe;     // is this really needed ?
 
 	double *_prediction;
 
@@ -141,15 +151,16 @@ private:
 	gsl_vector				*oldW;
 	gsl_vector				*inertialW;
 
-	/** used with the torso velocity */
-	gsl_vector              *torsoW;
-
     enum Behaviour { SACCADE_1 = 1 , SACCADE_2 = 2, CONTINUE_PURSUIT = 3, LIMIT = 4, REST = 5, START_PURSUIT = 6 };
 	enum Command {NONE = 0, SACCADE = 1, PURSUIT = 2, INTERRUPT = 3};
     enum Coordinate {ABSOLUTE_ANGLE = 1, RELATIVE_ANGLE = 2, NORMALIZED_PIXEL = 3, IMAGE_PIXEL = 4};
 
 	
 	bool updateAbsoluteGazeReference(double coord1, double coord2, double *headpos, 
+		double curr_azy, double cur_elev, double &new_azy, double &new_elev, 
+		Command cmd, Coordinate coord);
+
+	bool updateAbsoluteGazeReference2(double coord1, double coord2, double *headpos, double *torsopos,
 		double curr_azy, double cur_elev, double &new_azy, double &new_elev, 
 		Command cmd, Coordinate coord);
 
@@ -190,7 +201,9 @@ private:
 	double controlrate;
     /* Added by Alex 20/7/2007 */
     Camera _cam;
+	#if USE_PREDICTIVE_CONTROL
 	predictors _pred;
+	#endif
     /* End Addition ************/
 
     /* Added by Jonas 070723 */
@@ -198,6 +211,11 @@ private:
 
     /* Added by paulfitz Wed Aug 15 16:55:46 CEST 2007 */
     double headpos[8];
+
+	/* Added by alex Mon Jan 11 2010 */
+	double torsopos[8];
+	bool _fake_velocity_control;
+
 
 
 public:

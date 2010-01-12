@@ -13,12 +13,19 @@ using namespace std;
 #include <iCub/kinematics/gsl_aux.h>
 
 #include <yarp/sig/Matrix.h>
+#include <yarp/sig/Vector.h>
+#include <yarp/os/Time.h>
+using namespace yarp::sig;
+using namespace yarp::os;
+
+#include <iCub/iKinFwd.h>
+using namespace iKin;
 
 /**
 	Construct the kinematic structure using modified Denavitt-Hartenberg parameters.
 	Compatible with Matlab robotics toolbox.
 */
-iCubHeadKinematics::iCubHeadKinematics()
+iCubHeadKinematics::iCubHeadKinematics() : eyeL("left"), eyeR("right")
 {
 // the limits should be read from a configuration file
 // and maybe also the geometry
@@ -229,7 +236,8 @@ int iCubHeadKinematics::opticalaxisdirection(const double *neckposition, double 
     cout << "j0" << auxneckposition[0] << "j1" << auxneckposition[1] << "j2" << auxneckposition[2] << "j3" << auxneckposition[3] << endl;
     
     RobMatrix T05 = Rl->fk( auxneckposition );
-    T05.print();
+    //T05.print();
+
 	double d = sqrt( T05.M[1][0] * T05.M[1][0] +  T05.M[1][1] * T05.M[1][1]);
 
 	gaze[0] = atan2( -T05.M[1][2], d);
@@ -320,6 +328,10 @@ int iCubHeadKinematics::invkin_eyes2(const double *direction, const double *eyep
 	return 1;
 }
 
+// Computes azimuth and elevation in the body frame given the gaze direction as the X axis vector of the camera frame expressed in the body frame.
+// Camera frame at rest is: X to the front, Y to the right and Z down.
+// Body Frame is: X is up, Y to the back of the robot and Z to the right of the robot
+// Elevation is positive up, azimuth is positive to the left
 void iCubHeadKinematics::gazevector2azyelev(gsl_vector *gaze, double *azy, double *elev)
 {
 double x,y,z;
@@ -340,6 +352,19 @@ double x,y,z;
 
 
 	//cout << "X:" << x << " Y:" << y << " Z:" << z << " E:" << *elev << " A:" << *azy << endl; 
+}
+
+// Computes azimuth and elevation in the body frame given the gaze direction as the Z axis vector of the camera frame expressed in the body frame.
+// Camera frame at rest is: Z to the front, X to the right, Y down. 
+// Body Frame is: X to the back of the robot, Y to the right of the robot, Z up
+// Elevation is positive up, azimuth is positive to the left.
+void iCubHeadKinematics::gazeVector2AzimuthElevation(Vector &gaze, double &azi, double &elev)
+{
+	double x = gaze(0);
+	double y = gaze(1);
+	double z = gaze(2);
+	azi = atan2(-y,-x);
+	elev = atan2(z,sqrt(x*x+y*y));
 }
 
 RobMatrix iCubHeadKinematics::fkine(const double *neckposition, int joint)
@@ -673,39 +698,100 @@ gsl_vector *ax;
 
 int iCubHeadKinematics::HeadGaze(double *hgazy, double *hgelev, double *headpos)
 {
-double headpos_rad[6];
-for(int cnt=0;cnt<5;cnt++)
-  headpos_rad[cnt] = headpos[cnt]*M_PI/180;
-
+	double headpos_rad[6];
+	for(int cnt=0;cnt<5;cnt++)
+		headpos_rad[cnt] = headpos[cnt]*M_PI/180;
 
 	RobMatrix T03 = Rl->fk( headpos_rad, 3);
 	//T03.print();
 
 	gsl_vector *neckgaze;
 	neckgaze = T03.getvector(0,0,3);
-	
+
 	gazevector2azyelev( neckgaze, hgazy, hgelev);
-
 	gsl_vector_free( neckgaze );
-
+   
 	return 0;
 }
 int iCubHeadKinematics::Gaze(double *gazazy, double *gazelev, double *headpos, char weye)
 {
+	//Testing Ugo classes
+	double fbTorso[]={0.0,0.0,0.0};
+	double fbHead[]={0.0,0.0,0.0,0.0,0.0,0.0};
+	fbHead[0] = headpos[0];
+	fbHead[1] = headpos[1];
+	fbHead[2] = headpos[2];
+	fbHead[3] = headpos[3];
+	fbHead[4] = headpos[4];
+	fbHead[5] = headpos[5];
+	//iCubEye eyeL("left"); //class objects
+	//iCubEye eyeR("right");
+	Vector eyeLData(8), eyeRData(8);
+	// units shall be in radians
+	// remind that the torso is in reverse order:
+	// their joints are sent assuming the neck as kinematic origin
+	// and not the waist, hence we've got to invert them!
+	eyeLData[0]=eyeRData[0]=(M_PI/180.0)*fbTorso[2];	
+	eyeLData[1]=eyeRData[1]=(M_PI/180.0)*fbTorso[1];
+	eyeLData[2]=eyeRData[2]=(M_PI/180.0)*fbTorso[0];
+	// neck part
+	eyeLData[3]=eyeRData[3]=(M_PI/180.0)*fbHead[0];
+	eyeLData[4]=eyeRData[4]=(M_PI/180.0)*fbHead[1];
+	eyeLData[5]=eyeRData[5]=(M_PI/180.0)*fbHead[2];
+	// eyes part
+	// fbHead[3]=gaze tilt
+	// fbHead[4]=gaze version
+	// fbHead[5]=gaze vergence
+	eyeLData[6]=eyeRData[6]=(M_PI/180.0)*fbHead[3];	// eye tilt
+	eyeLData[7]=(M_PI/180.0)*(fbHead[4]+fbHead[5]/2.0);	// left eye pan
+	eyeRData[7]=(M_PI/180.0)*(fbHead[4]-fbHead[5]/2.0);  // right eye pan
+	//In fact we only want the vergence angle
+	eyeLData[7]=eyeRData[7] = (M_PI/180.0)*fbHead[4];
+	// set the joints
+	eyeL.setAng(eyeLData);
+	eyeR.setAng(eyeRData);
+	//To send data to iCub you need to set:
+	//Head[3]=(180.0/M_PI)*eyeL.getAng(6);
+	//Head[4]= (180.0/M_PI)*(eyeL.getAng(7)-eyeR.getAng(7));
+	//Head[5]= (180.0/M_PI)*((eyeL.getAng(7)+eyeR.getAng(7))/2.0);
+	//Get Trasformation matriz
+	yarp::sig::Matrix rightH = eyeR.getH();
+	//Get gaze direction - the camera frame Z axis expressed in the body frame
+	yarp::sig::Vector gazeVector(3);
+	gazeVector(0) = rightH(0,2);
+	gazeVector(1) = rightH(1,2);
+	gazeVector(2) = rightH(2,2);
+	double gazeAzimuth, gazeElevation;
+	gazeVector2AzimuthElevation(gazeVector, gazeAzimuth, gazeElevation);
+	// End Testing Ugo classes
 	
-	double aux;
-	aux = headpos[5];
-	//we need this because the eyes are coupled
-	headpos[5]=headpos[4];
+	double aux1, aux2;
+	aux1 = headpos[4];  //version  (half sum of the two eye angles)
+	aux2 = headpos[5];  //vergence (half difference between the two eye angles)
+	//we need this because only the version angle matters
+	headpos[5]=headpos[4]=aux1;
 	RobMatrix T05 = fkine( headpos, weye );
-	headpos[5] = aux;
+	//T05.print();
+
+	//restore the raw angle values
+	headpos[4] = aux1;
+	headpos[5] = aux2;
 
 	gsl_vector *eyegaze;
 	eyegaze = T05.getvector(0,0,3);
-
+	
 	gazevector2azyelev( eyegaze, gazazy, gazelev);
 
+	/*
+	cout << "-----------------------------------------" << endl;
+	cout << *gazazy << " : " << gazeAzimuth*180/M_PI << endl;
+	cout << *gazelev << " : " << gazeElevation*180/M_PI << endl;
+	cout << "-----------------------------------------" << endl;
+	yarp::os::Time::delay(0.5);
+    */
+
 	gsl_vector_free( eyegaze );
+	
 
 	return 0;
 }
