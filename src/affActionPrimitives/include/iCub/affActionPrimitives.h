@@ -1,7 +1,7 @@
 /**
  * \defgroup affActionPrimitives affActionPrimitives
  *  
- * @ingroup icub_module 
+ * @ingroup icub_libraries 
  *  
  * Definition of primitive actions for dealing with affordances 
  * and more. 
