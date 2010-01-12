@@ -1097,13 +1097,14 @@ bool affActionPrimitivesLayer1::touch(const Vector &x, const Vector &o, const Ve
 
 /************************************************************************/
 bool affActionPrimitivesLayer1::tap(const Vector &x1, const Vector &o1,
-                                    const Vector &x2, const Vector &o2)
+                                    const Vector &x2, const Vector &o2,
+                                    const double execTime)
 {
     if (configured)
     {
         printMessage("start tapping\n");
         pushAction(x1,o1,"open_hand");
-        pushAction(x2,o2);
+        pushAction(x2,o2,execTime);
         pushAction(x1,o1);
 
         return true;

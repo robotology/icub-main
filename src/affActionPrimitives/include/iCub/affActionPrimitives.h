@@ -293,7 +293,7 @@ public:
     *          in axis-angle representation) [rad].
     * @param handSeqKey the hand sequence key. 
     * @param execTime the arm action execution time [s] (to be 
-    *          specified iff different from default value)
+    *          specified iff different from default value).
     * @return true/false on success/fail. 
     *  
     * \note Some examples: 
@@ -314,7 +314,7 @@ public:
     * @param o the 4-d hand orientation used while reaching (given 
     *          in axis-angle representation) [rad].
     * @param execTime the arm action execution time [s] (to be 
-    *          specified iff different from default value)
+    *          specified iff different from default value).
     * @return true/false on success/fail. 
     */
     bool pushAction(const yarp::sig::Vector &x, const yarp::sig::Vector &o,
@@ -342,7 +342,7 @@ public:
     * @param o the 4-d hand orientation used while reaching (given 
     *          in axis-angle representation) [rad].
     * @param execTime the arm action execution time [s] (to be 
-    *          specified iff different from default value)
+    *          specified iff different from default value).
     * @return true/false on success/fail. 
     *  
     * \note The intended use is for tracking moving targets. 
@@ -543,12 +543,15 @@ public:
     * @param x2 the second 3-d target position [m]. 
     * @param o2 the second 4-d hand orientation (given in axis-angle
     *           representation) [rad].
+    * @param execTime the arm action execution time only while 
+    *          tapping [s] (to be specified iff different from
+    *          default value).
     * @return true/false on success/fail. 
     *  
     * \note internal implementation: 
     * ...
     * pushAction(x1,o1,"open_hand");
-    * pushAction(x2,o2);
+    * pushAction(x2,o2,execTime);
     * pushAction(x1,o1); 
     * ...
     *  
@@ -556,7 +559,8 @@ public:
     * for (x1,o1).
     */
     virtual bool tap(const yarp::sig::Vector &x1, const yarp::sig::Vector &o1,
-                     const yarp::sig::Vector &x2, const yarp::sig::Vector &o2);
+                     const yarp::sig::Vector &x2, const yarp::sig::Vector &o2,
+                     const double execTime=ACTIONPRIM_DISABLE_EXECTIME);
 };
 
 
