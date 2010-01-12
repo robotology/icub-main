@@ -1,4 +1,8 @@
 
+2010-01-12 Ugo Pattacini <ugo.pattacini@iit.it>
+	   * iKinSlv.h,.cpp: added options for torso rest positions
+                         bug fixes for continuous mode
+
 2009-12-20 Ugo Pattacini <ugo.pattacini@iit.it>
 	   * iKinFwd.h,.cpp: iKinLimb class extended with new methods
                          for creating limb from a list of links properties.
