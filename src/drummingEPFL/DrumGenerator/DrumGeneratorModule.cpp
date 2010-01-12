@@ -38,10 +38,9 @@ bool generatorThread::checkJointLimits()
                                        states[i],i,joint_limit_down[i]+LIMIT_TOL);
                         states[i] = joint_limit_down[i] + LIMIT_TOL;
                     }
-			}
-			
+			}			
         }
-	return true;
+    return true;
 }
 
 bool generatorThread::getEncoders()
@@ -103,9 +102,9 @@ void generatorThread::getParameters()
                 }
                 //ACE_OS::printf("\n");
                 
-               if(myManager->parameters[1]!=myManager->next_parameters[1])
+               if(partName!="head" && myManager->parameters[1]!=myManager->next_parameters[1])
                 {
-                    y_cpgs[nbDOFs*4+2]=0.0; //reset go command
+                   y_cpgs[nbDOFs*4+2]=0.0; //reset go command
                    y_cpgs[2*(nbDOFs*4+3)-1]=0.0;//go command of the observer
                 }
 
@@ -138,45 +137,45 @@ void generatorThread::getParameters()
 
 void generatorThread::getHit()
 {	
-	//	if(myManager->drumHit==0)
-	//	{
-	//		if(partName=="left_arm" || partName=="right_arm")
-	//		{
-	//			double force_threshold;
-	//			if(partName=="left_arm")
-	//			{
-	//				force_threshold=LEFT_THRESHOLD;
-	//			}
-	//			else
-	//			{
-	//				force_threshold=RIGHT_THRESHOLD;
-	//			}
-	//			Bottle *force = ForceSensor_port.read(false);
-	//			if(force!=NULL)
-	//			{
-	//				double force_value = 0;
-	//				if(moving_average.size()==MOV_AV)
-	//				{
-	//					moving_average.pop_front();
-	//				}
-	//				moving_average.push_back(force->get(4).asDouble());
-	//				for(list<double>::iterator it=moving_average.begin(); it!=moving_average.end(); it++)
-	//				{
-	//					force_value += *it;
-	//				}
+		if(myManager->drumHit==0)
+		{
+			if(partName=="left_arm" || partName=="right_arm")
+			{
+				double force_threshold;
+				if(partName=="left_arm")
+				{
+					force_threshold=LEFT_THRESHOLD;
+				}
+				else
+				{
+					force_threshold=RIGHT_THRESHOLD;
+				}
+				Bottle *force = ForceSensor_port.read(false);
+				if(force!=NULL)
+				{
+					double force_value = 0;
+					if(moving_average.size()==MOV_AV)
+					{
+						moving_average.pop_front();
+					}
+					moving_average.push_back(force->get(4).asDouble());
+					for(list<double>::iterator it=moving_average.begin(); it!=moving_average.end(); it++)
+					{
+						force_value += *it;
+					}
 					
-	//				force_value=force_value/moving_average.size();
+					force_value=force_value/moving_average.size();
 				
-	//				if(force_value < force_threshold)
-	//				{
-	//					myManager->drumHit=1;
-	//					//myManager->stuckCounter=0;                                          
-	//					fprintf(feedback_file, "%f \n", Time::now()/*-original_time*/);
-	//					ACE_OS::printf("FEEDBACK ENABLED FOR PART %s, sensor value %f\n", partName.c_str(), force_value); 
-	//				}
-	//			}
-	//		}
-	//	}
+					if(force_value < force_threshold)
+					{
+						myManager->drumHit=1;
+						myManager->stuckCounter=0;                                          
+						fprintf(feedback_file, "%f \n", Time::now()/*-original_time*/);
+						ACE_OS::printf("FEEDBACK ENABLED FOR PART %s, sensor value %f\n", partName.c_str(), force_value); 
+					}
+				}
+			}
+		}
 		
 		if(partName=="left_leg" || partName=="right_leg")
 	{
@@ -346,6 +345,7 @@ void generatorThread::run()
     ///save time stamp
 
     fprintf(target_file,"%f \n",Time::now()/*-original_time*/);
+    fflush(target_file);
 
 
 #if !DEBUG  
@@ -493,26 +493,32 @@ void generatorThread::threadRelease()
 
 bool generatorThread::init(Searchable &s)
 {
-    Property options(s.toString());
+    Property arguments(s.toString());
+	Property options;
+	
     Time::turboBoost();
+	if(arguments.check("part"))
+	{
+		partName=arguments.find("part").asString().c_str();
+		printf("module taking care of part %s\n",partName.c_str());
+	}
+    if(arguments.check("file"))
+	{
+		arguments.fromConfigFile(arguments.find("file").asString().c_str());
+	}
+	else
+	{
+		char *cubPath;
+		cubPath = getenv("ICUB_DIR");
+		if(cubPath == NULL) {
+			ACE_OS::printf("ERROR getting the environment variable ICUB_DIR, exiting\n");
+			return false;
+		}
+		yarp::String cubPathStr(cubPath);
+		options.fromConfigFile((cubPathStr + "/app/drummingEpfl/conf/" + partName + "Config.ini").c_str());
+		printf("config file %s\n",(cubPathStr + "/app/drummingEpfl/conf/" + partName + "Config.ini").c_str());
+	}
 
-    ///init period
-
-    //period = 0.05; //in sec
-
-
-    //////getting part to interface with
-
-    if(options.check("part"))
-        {
-            partName = options.find("part").asString().c_str();
-            ACE_OS::printf("module taking care of part %s\n",partName.c_str());
-        }
-    else
-        {
-            ACE_OS::printf("Please specify part to control (e.g. --part head)\n");
-            return false;
-        }
 
   
     char tmp1[255],tmp2[255];
@@ -609,40 +615,30 @@ bool generatorThread::init(Searchable &s)
         ACE_OS::printf("Cannot connect to vc/fastCommand port of %s\n",partName.c_str());
         return false;
     }
-
-//    if(partName=="left_arm")
-//    {    
-//		sprintf(tmp1,"/%s/forcesensor/in",partName.c_str());
-
-//		if(!ForceSensor_port.open(tmp1))
-//        {
-//            ACE_OS::printf("Cannot open ForceSensor port of %s\n",partName.c_str());
-//            return false;
-//        }
-
-//		if(!Network::connect("/icub/leftarm/analog:o",tmp1,"udp"))
-//        {
-//            ACE_OS::printf("Cannot connect to force sensor port of %s\n",partName.c_str());
-//            return false;
-//        }
-//	}
 	
-//	if(partName=="right_arm")
-//    {    
-//		sprintf(tmp1,"/%s/forcesensor/in",partName.c_str());
-
-//		if(!ForceSensor_port.open(tmp1))
-//        {
-//            ACE_OS::printf("Cannot open ForceSensor port of %s\n",partName.c_str());
-//            return false;
-//        }
-
-//		if(!Network::connect("/icub/rightarm/analog:o",tmp1,"udp"))
-//        {
-//            ACE_OS::printf("Cannot connect to force sensor port of %s\n",partName.c_str());
-//            return false;
-//        }
-//	}
+	if(partName=="right_arm" || partName=="left_arm")
+    { 
+		if(partName=="right_arm")
+		{
+			sprintf(tmp2,"/icub/rightarm/analog:o");
+		} 
+		if(partName=="left_arm")
+		{
+			sprintf(tmp2,"/icub/leftarm/analog:o");
+		}  
+		
+		sprintf(tmp1,"/%s/forcesensor/in",partName.c_str());
+		ForceSensor_port.open(tmp1);
+		bool force_ok = Network::connect(tmp2, tmp1, "tcp");
+		if(!force_ok)
+		{
+			ACE_OS::printf("ForceFeedback OFF\n");
+		}
+		else
+		{
+			ACE_OS::printf("ForceFeedback ON\n");
+		}
+	}
 
 #endif
 
@@ -684,8 +680,14 @@ bool generatorThread::init(Searchable &s)
     ok= sound_port.open(tmp2);
     sound_port.setStrict(true);
     bool feed_ok = Network::connect("/midiDrum/server/out", tmp2, "tcp");
-    if(!feed_ok){ACE_OS::printf("Feedback OFF\n");}
-    else{ACE_OS::printf("Feedback ON\n");}
+    if(!feed_ok)
+    {
+		ACE_OS::printf("Auditive Feedback OFF\n");
+	}
+    else
+    {
+		ACE_OS::printf("Feedback Auditive ON\n");
+	}
 
 
     ////////////////////////////////////////////////////////////////
@@ -1161,13 +1163,6 @@ bool generatorThread::init(Searchable &s)
 
 
         }
-        
-        for(int i=0; i<nbDOFs; i++)
-        {
-            fprintf(target_file,"%f \t", states[i]);
-        }
-        
-    fprintf(target_file,"%f %f \t", y_cpgs[0], y_cpgs[1]);
 
 #endif
 
@@ -1305,27 +1300,26 @@ bool DrumGeneratorModule::close()
 
 bool DrumGeneratorModule::open(yarp::os::Searchable &s)
 {
-    Property options(s.toString());
-    int period = 50; // in ms
+	Property options(s.toString());
+	int period = 25; // in ms
 
-    if(options.check("period"))
-        {
-            period = options.find("period").asInt();
-        }
+	if(options.check("period"))
+	{
+		period = options.find("period").asInt();
+	}
 
-    if(options.check("part"))
-        {
-            partName=options.find("part").asString().c_str();
-            ACE_OS::printf("module taking care of part %s\n",partName.c_str());
-        }
 
-  
-    theThread = new generatorThread(period);
-    if(!theThread->init(s))
-        return false;
+	theThread = new generatorThread(period);
+	if(!theThread->init(s))
+	{
+		printf("Failed to initialize the thread\n");
+		fflush(stdout);
+		return false;
+	}
 
-    theThread->start();
-    return true;
+	theThread->start();
+
+	return true;
 
 }
 
