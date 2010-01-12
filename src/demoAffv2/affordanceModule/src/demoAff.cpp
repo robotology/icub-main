@@ -1034,7 +1034,7 @@ bool DemoAff::updateModule(){
 	objposreach[0] = trackDescTable[selobj].roi_x;
 	objposreach[1] = trackDescTable[selobj].roi_y;
 	state=REACHING;
-	selectedaction=GRASP;
+	selectedaction=TAP; //GRASP;
       }
 
     }
