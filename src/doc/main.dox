@@ -12,7 +12,7 @@ completely broken!
 
 Topics:
 
- - \ref icub_module \endref - a list of documented modules
+ - \ref icub_modules_all \endref - the iCub software (including modules)
  - \ref icub_applications \endref - a list of documented applications 
    (collections of modules)
  - \ref icub_tutorials \endref - a set of tutorials to learn how to use the software

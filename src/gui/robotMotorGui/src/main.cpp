@@ -7,6 +7,7 @@
 
 /**
  *
+ * @ingroup icub_tools
  * @ingroup icub_guis
  * \defgroup icub_robotMotorGui robotMotorGui
  *

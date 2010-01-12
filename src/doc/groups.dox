@@ -1,13 +1,25 @@
 
 /**
- * \defgroup icub_module iCub modules
- *
+* \defgroup icub_modules_all iCub software
+* 
+*/
 
-This is a list of iCub modules.  
-These are programs in the $ICUB_ROOT/src directory.
-To add your own module to this list,
-just add a comment like the following anywhere in your source
-code (replacing "your_module_name" with the name of your module):
+/**
+* \defgroup icub_tools iCub tools
+* @ingroup icub_modules_all
+* This is a list of icub basic tools.
+*/
+
+/**
+* \defgroup icub_module iCub modules
+* @ingroup icub_modules_all
+*
+*
+* This is a list of iCub modules.  
+* These are programs in the $ICUB_ROOT/src directory.
+* To add your own module to this list,
+* just add a comment like the following anywhere in your source
+* code (replacing "your_module_name" with the name of your module):
 \verbatim
   /**
    * @ingroup icub_module
@@ -16,29 +28,28 @@ code (replacing "your_module_name" with the name of your module):
    *
    */
 \endverbatim
+*
+* For convenience, try to keep the module name the same
+* as the directory it is placed in.  If you've a good reason
+* to do something different, of course you can do that too.
+*
+* (This page can be edited at $ICUB_ROOT/src/doc/groups.dox)
+*
+*/
 
-For convenience, try to keep the module name the same
-as the directory it is placed in.  If you've a good reason
-to do something different, of course you can do that too.
-
-(This page can be edited at $ICUB_ROOT/src/doc/groups.dox)
- *
- */
-
- /**
- * \defgroup icub_guis Graphic User Interfaces
- * @ingroup icub_module
- *
-This is a list of Graphic User Interfaces.
-
-(This page can be edited at $ICUB_ROOT/src/doc/groups.dox)
-
- *
- */
+/**
+* \defgroup icub_guis Graphic User Interfaces
+* @ingroup icub_modules_all
+*
+* This is a list of Graphic User Interfaces.
+*
+* (This page can be edited at $ICUB_ROOT/src/doc/groups.dox)
+*
+*/
  
- /**
+/**
 * \defgroup icub_mod_library iCub modules library
-* @ingroup icub_module
+* @ingroup icub_modules_all
 *
 * Objects that can be conditionally compiled in the main build. 
 * All these objects are compiled in a single library called 

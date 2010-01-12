@@ -2,6 +2,7 @@
 
 /**
  * @ingroup icub_guis
+ * @ingroup icub_tools
  *
  * \defgroup icub_framegrabbergui2 frameGrabberGui2
  *

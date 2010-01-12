@@ -2,7 +2,8 @@
 
 /**
 *
-@ingroup icub_module
+@ingroup icub_tools
+@ingroup icub_guis
 \defgroup icub_canLoader canLoader
 
 Use this application to download your firmware in DSP boards.
