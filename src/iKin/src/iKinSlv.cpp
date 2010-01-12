@@ -806,8 +806,10 @@ bool CartesianSolver::respond(const Bottle &command, Bottle &reply)
                 break;
             }
 
-            default:
+             default:
+             {
                 reply.addVocab(IKINSLV_VOCAB_REP_NACK);
+             }
         }
     }
     else
