@@ -1814,7 +1814,7 @@ GtkWidget* WatershedModule::createMainWindow(void)
     /* Connect the "clicked" signal of the button to our callback */
     g_signal_connect (G_OBJECT (button), "clicked",G_CALLBACK (callback), (gpointer) "Rain1");
     /* This calls our box creating func tion */
-    boxButton = xpm_label_box (NULL, "Rain1");
+    boxButton = xpm_label_box (NULL, (gchar*)"Rain1");
     /* Pack and show all our widgets */
     gtk_widget_show (boxButton);
     gtk_container_add (GTK_CONTAINER (button), boxButton);
@@ -1935,7 +1935,7 @@ GtkWidget* WatershedModule::createMainWindow(void)
     /* Connect the "clicked" signal of the button to our callback */
     g_signal_connect (G_OBJECT (button), "clicked",G_CALLBACK (callback), (gpointer) "DrawAllBlobs1");
     /* This calls our box creating func tion */
-    boxButton = xpm_label_box (NULL, "DrawAllBlobs1");
+    boxButton = xpm_label_box (NULL, (gchar*)"DrawAllBlobs1");
     /* Pack and show all our widgets */
     gtk_widget_show (boxButton);
     gtk_container_add (GTK_CONTAINER (button), boxButton);
@@ -1947,7 +1947,7 @@ GtkWidget* WatershedModule::createMainWindow(void)
     /* Connect the "clicked" signal of the button to our callback */
     g_signal_connect (G_OBJECT (button), "clicked",G_CALLBACK (callback), (gpointer) "drawFoveaBlob1");
     /* This calls our box creating func tion */
-    boxButton = xpm_label_box (NULL, "drawFoveaBlob1");
+    boxButton = xpm_label_box (NULL, (gchar*)"drawFoveaBlob1");
     /* Pack and show all our widgets */
     gtk_widget_show (boxButton);
     gtk_container_add (GTK_CONTAINER (button), boxButton);
@@ -1959,7 +1959,7 @@ GtkWidget* WatershedModule::createMainWindow(void)
     /* Connect the "clicked" signal of the button to our callback */
     g_signal_connect (G_OBJECT (button), "clicked",G_CALLBACK (callback), (gpointer) "drawVQColor1");
     /* This calls our box creating func tion */
-    boxButton = xpm_label_box (NULL, "drawVQColor1");
+    boxButton = xpm_label_box (NULL, (gchar*)"drawVQColor1");
     /* Pack and show all our widgets */
     gtk_widget_show (boxButton);
     gtk_container_add (GTK_CONTAINER (button), boxButton);
@@ -1971,7 +1971,7 @@ GtkWidget* WatershedModule::createMainWindow(void)
     /* Connect the "clicked" signal of the button to our callback */
     g_signal_connect (G_OBJECT (button), "clicked",G_CALLBACK (callback), (gpointer) "maxSalienceBlob1");
     /* This calls our box creating func tion */
-    boxButton = xpm_label_box (NULL, "maxSalienceBlob1");
+    boxButton = xpm_label_box (NULL,(gchar*) "maxSalienceBlob1");
     /* Pack and show all our widgets */
     gtk_widget_show (boxButton);
     gtk_container_add (GTK_CONTAINER (button), boxButton);
