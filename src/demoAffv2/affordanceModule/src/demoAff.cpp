@@ -1538,7 +1538,7 @@ bool DemoAff::InitHead(){
         //ipos->positionMove( i, 0);
         ivel->velocityMove( i, 0);
         ivel->setRefAcceleration(i, 100);
-        ipos->setRefSpeed(i, 20);
+        ipos->setRefSpeed(i, 10);
         ipos->setRefAcceleration(i, 100);
     }
 
