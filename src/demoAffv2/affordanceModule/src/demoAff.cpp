@@ -3,6 +3,8 @@
 #include <iCub/ctrlMath.h>
 #include <iCub/processobjdata.h>
 
+#include <cmath>
+
 #define USE_LEFT    0
 #define USE_RIGHT   1
 
@@ -303,6 +305,7 @@ bool DemoAff::configure(ResourceFinder &rf){
   cout << 1 << endl;
 
   zOffset = rf.check("z_offset",yarp::os::Value(0.1)).asDouble();
+  zOffset = max(0.0, zOffset); // Don't reach below the table
   usedEye = rf.check("obj_eye",yarp::os::Value("left")).asString().c_str();
   if (usedEye!="left" && usedEye!="right") {
     cerr << "Invalide usedEye parameter: " << usedEye << endl;
@@ -1219,14 +1222,18 @@ bool DemoAff::updateModule(){
 
       double startOffset = 0.2;
       startOffset = (usePart == "right_arm" ? startOffset : -startOffset);
-        
+
+      double heightOffset = max(0.0, 0.2 -zOffset);
 
       Vector handOrientation(4);
       handOrientation.zero();
       handOrientation[1] = -1;
       handOrientation[3] = M_PI;
 
-      Vector startPos = object3d;
+      Vector endPos = object3d;
+      endPost[2] += heightOffset;
+
+      Vector startPos = endPos;
       startPos[1] += startOffset;
 
       action->tap(startPos, handOrientation, object3d, handOrientation);
