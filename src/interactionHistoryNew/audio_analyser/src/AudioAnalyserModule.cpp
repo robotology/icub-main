@@ -10,7 +10,9 @@ Audio Analyser for IHA 2.0
 This module connects to a yarp sound server device and analyses
 it for drumbeat-like periods of noise. The rate at which messages
 are output (in ms) is set from the config file or the command
-line. The output is a bottle containing a list of the number of beats 
+line. The output is a bottle containing a list of the number of beats  ihaNewAudioAnalyzer --name /iha/beat --file /usr/local/src/robot/iCub/app/ihaNew/conf/ihaAudioAnalyser.ini 
+
+
 detected since the last message was sent and the duration of 
 time between those beats.
 
@@ -165,7 +167,7 @@ bool AudioAnalyserModule::open(Searchable& config){
         durArray[i]=0;
     mode=0;//1 play 0 listen
     stop=0;
-    Threshold1=0.4;
+    Threshold1=0.6;//0.4;
     Threshold2=1.0;//sends beats if human stays silent from 1 sec.
     
     //maybe these should be set somewhere outside of the 
@@ -241,6 +243,10 @@ bool AudioAnalyserModule::updateModule(){
                             //dur = (double)(ft - st) / CLOCKS_PER_SEC;
                             dur = ft - st;
                             durArr[beatNo]=dur;
+                            //  double dur1 = ft - st;
+                            //  printf("dur1=%lf ft=%lf st11=%lf st111=%lf ",dur1, ft,  st, durArr[beatNo]);
+                            // durArr[beatNo]=ft - durArr[beatNo];//HKB DLETE
+                            //printf("%d dur=%lf diff=%lf\n",beatNo, dur, durArr[beatNo]);
                         }
                     }
                 }
@@ -259,13 +265,16 @@ bool AudioAnalyserModule::updateModule(){
                         count2=count2-2;//window[2], window[3]
                         avg=avg/count2;
                         vlow=window[1];
+                        printf("f=%lf avg=%lf ", f, avg);//HKB DELETE
                         //time(&ftime1);
                         //st=clock();
                         timeval tim;
                         gettimeofday(&tim, NULL);
                         double st=tim.tv_sec+(tim.tv_usec/1000000.0);
                         //st = yarp::os::Time::now();
+                        //printf("st1=%lf  ", st);//HKB DELETE
                         beatNo++;
+                        //durArr[beatNo]=st;//HKB
                         high=-AUDIO_MAX_VAL;
                         low=AUDIO_MAX_VAL;
                         avg=0;
@@ -296,7 +305,8 @@ bool AudioAnalyserModule::updateModule(){
     //printf("duration: %lf %lf\n", duration_double,Threshold2);
     if ( duration_double > Threshold2) { 
         //printf("TH1 %lf", Threshold2);
-        printf("%lf TH %lf ", duration_double, Threshold2);
+        // printf("%lf TH %lf ", duration_double, Threshold2);
+        // printf("%lf fs=%4.2lf ss=%4.2lf", duration_double, fs, ss);//HKB DELETE
         stop=1;
         ss=fs;
         
@@ -306,6 +316,8 @@ bool AudioAnalyserModule::updateModule(){
         bot.addInt(beatNo);
         for (int i=1; i<beatNo; i++) {
             duration = (int)(durArr[i]*AUDIO_MAX_VAL);
+            durArr[i]=0;//HKB
+            //   printf("%d %lf ",i, durArr[i] );//HKB DELETE
             bot.addInt(duration);//duration
         }
         //reset beats to zero
