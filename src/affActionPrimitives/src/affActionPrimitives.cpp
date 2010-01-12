@@ -442,10 +442,14 @@ bool affActionPrimitives::isHandSeqEnded()
         // span over fingers
         for (int fng=0; fng<5; fng++)
         {
+            double val=pB->get(fng).asDouble();
+            double thres=curGraspDetectionThres[fng];
+
             // detect contact on the finger
-            if (pB->get(fng).asDouble()>curGraspDetectionThres[fng])
+            if (val>thres)
             {
-                printMessage("contact detected on finger %d\n",fng);
+                printMessage("contact detected on finger %d: (%g>%g)\n",
+                             fng,val,thres);
 
                 // take joints belonging to the finger
                 pair<multimap<int,int>::iterator,multimap<int,int>::iterator> i=fingers2JntsMap.equal_range(fng);
