@@ -846,8 +846,8 @@ bool affActionPrimitives::cmdArm(const Action &action)
 
         latchArmMoveDone=armMoveDone=false;
 
-        printMessage("reach at %g [s] for [%s], [%s]\n",t,
-                     toCompactString(x).c_str(),
+        printMessage("reach at %g [s] for [%s], [%s]\n",
+                     t,toCompactString(x).c_str(),
                      toCompactString(o).c_str());
 
         t0=Time::now();
