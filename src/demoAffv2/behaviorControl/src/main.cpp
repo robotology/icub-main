@@ -9,7 +9,7 @@
 /**
  * @ingroup icub_demoAffv2
  *
- * \defgroup icub_behaviorControl
+ * \defgroup icub_behaviorControl behaviorControl
  *
  * This module is part of the application \ref demoAffv2 "demoAffv2"
  *
