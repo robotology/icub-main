@@ -102,7 +102,8 @@ torso_yaw                       on
 torso_pitch_max                 30.0 
 tracking_mode                   off 
 verbosity                       on 
-
+ 
+// arm-dependent options 
 [left_arm]
 grasp_orientation               (-0.171542 0.124396 -0.977292 3.058211)
 grasp_displacement              (0.0 0.0 0.05)
