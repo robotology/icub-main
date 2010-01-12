@@ -1181,7 +1181,7 @@ bool DemoAff::updateModule(){
       
       // grasp it (wait until it's done)
       cout << 
-      action->grasp(xd,*graspOrien,*graspDisp);
+      action->grasp(  ,*graspOrien,*graspDisp);
       cout << " push in wainting" << endl;      
       action->checkActionsDone(f,true);
       
@@ -1211,9 +1211,26 @@ bool DemoAff::updateModule(){
 
   case TAPPING:
     {
-      printf("eliminar cuanto antes");
-      
-      
+      // TODO: That should go directly after the action selection
+      useArm(xd[1] > 0.0 ? USE_RIGHT : USE_LEFT);
+      string usePart = (partUsed == "both_parts" ? (xd[1] > 0.0 ? "right_arm" : "left_arm") : partUsed);
+
+      int startOffset = 0.2;
+      startOffset = (usePart == "right_arm" ? startOffset : -startOffset);
+        
+
+      Vector handOrientation(4);
+      handOrientation.zero();
+      handOrientation[1] = -1;
+      handOrientation[3] = M_PI;
+
+      Vector startPos = xd;
+      startPos[1] += startOffset;
+
+      action->tap(startPos, handOrientation, xd, handOrientation);
+      action->checkActionsDone(f, true);
+
+      state=INIT;
     }
     break;
 
