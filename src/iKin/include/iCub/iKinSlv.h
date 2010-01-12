@@ -60,7 +60,7 @@
  *  
  * \b "/<solverName>/rpc" accepts a vocab-like bottle containing
  *    the following requests, executes them and replies with
- *    [ack]/[nack] and/or some usuful info:
+ *    [ack]/[nack] and/or some useful info:
  *  
  * Commands issued through [set]/[get] vocab: 
  *  
