@@ -1,6 +1,6 @@
 /**
- * @ingroup icub_hardware_modules 
  * \defgroup clientcartesiancontroller clientcartesiancontroller
+ * @ingroup icub_hardware_modules 
  *  
  * Implements the client part of the <a 
  * href="http://eris.liralab.it/yarpdoc/dd/de6/classyarp_1_1dev_1_1ICartesianControl.html">Cartesian 
