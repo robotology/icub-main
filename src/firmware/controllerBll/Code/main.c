@@ -297,6 +297,9 @@ void main(void)
 // BUS_OFF check
 		if (getCanBusOffstatus() )
 		{
+			#ifdef DEBUG_CAN_MSG
+				can_printf("DIASBLE BUS OFF");
+			#endif	
 			for (i=0; i<JN; i++) _control_mode[i]=MODE_IDLE;
 			led1_off
 		}
