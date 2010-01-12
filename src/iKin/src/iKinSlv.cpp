@@ -1184,6 +1184,8 @@ void CartesianSolver::close()
         delete prt;
     }
 
+    fprintf(stdout,"%s closed\n",slvName.c_str());
+
     closed=true;
 }
 
@@ -1291,7 +1293,7 @@ void CartesianSolver::run()
 /************************************************************************/
 void CartesianSolver::threadRelease()
 {    
-    fprintf(stdout,"Stopping %s\n",slvName.c_str());
+    fprintf(stdout,"Stopping %s ...\n",slvName.c_str());
 }
 
 
