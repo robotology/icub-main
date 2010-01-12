@@ -877,16 +877,20 @@ static void cb_draw_value( GtkToggleButton *button )
     }
     
     else if(!strcmp(button->button.label_text,"MeanColoursLP-->")){
-        if(button->active)
+        if(button->active){
             wModule->meanColour_flag=true;
+            wModule->message->assign("set MEA");
+        }
         else
             wModule->meanColour_flag=false;
             
     }
     
     else if(!strcmp(button->button.label_text,"MaxSaliencyBlob-->")){
-        if(button->active)
+        if(button->active){
             wModule->maxSaliencyBlob_flag=true;
+            wModule->message->assign("set MAX");
+        }
         else
             wModule->maxSaliencyBlob_flag=false;
             
@@ -917,8 +921,10 @@ static void cb_draw_value( GtkToggleButton *button )
     }
     
     else if(!strcmp(button->button.label_text,"Tagged-->")){
-        if(button->active)
+        if(button->active){
             wModule->tagged_flag=true;
+            wModule->message->assign("set TAG");
+        }
         else
             wModule->tagged_flag=false;
             
