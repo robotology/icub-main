@@ -221,8 +221,6 @@ void VelocityController::Update(double dt){
         mLastVelCommandTime += dt;        
     }
     
-    bool bHasValidPos = true;
-    bool bHasValidVel = true;
     
     // Check for last command time
     if(mLastPosCommandTime>mCommandTimeout){
@@ -230,7 +228,6 @@ void VelocityController::Update(double dt){
             cout << mBaseName<<"/"<<mName<<": Timeout: pausing position control..."<<endl;
             bPosTimeoutPause = true;            
         }
-        bHasValidPos     = false;
         mJointsTargetPos = mJointsPos;
     }else{
         if(bPosTimeoutPause){
@@ -244,7 +241,6 @@ void VelocityController::Update(double dt){
             cout << mBaseName<<"/"<<mName<<": Timeout: pausing velocity control..."<<endl;
             bVelTimeoutPause = true;            
         }
-        bHasValidVel     = false;
         mJointsTargetVel = 0.0;
     }else{
         if(bVelTimeoutPause){
@@ -256,7 +252,6 @@ void VelocityController::Update(double dt){
     if(bMoveToRest){
         mJointsTargetPos = mJointsRest;
         mJointsTargetVel = 0.0; 
-        bHasValidPos     = true;
     }
 
     for(int i=0;i<mJointsSize;i++){
@@ -276,30 +271,25 @@ void VelocityController::Update(double dt){
             break;
         case  VC_ACTIVE:
             // Velocity control
-            double outputVel =  0;
-            if(bHasValidVel)
-                outputVel = mJointsTargetVel[i];
-            //mJointsOutputVel[i] =
-            
-            if(bHasValidPos){
-                // Position control
-                if(mJointsTargetPos[i]<mJointsPosLimits[0][i]){
-                    mJointsTargetPos[i] = mJointsPosLimits[0][i];
-                }else if(mJointsTargetPos[i]>mJointsPosLimits[1][i]){
-                    mJointsTargetPos[i] = mJointsPosLimits[1][i];
-                }
-                
-                currError    = mJointsTargetPos[i]-mJointsPos[i];
-                if(fabs(currError)<0.5) currError = 0.0;
-                kdPart = mJointsKd[i]*(currError - mJointsError[i])*invDt;
-                    
-                mJointsError[i]     = currError;
-                kpPart = mJointsKp[i]*(mJointsError[i]);
-                //cout << mJointsKd[i]<<" "<<kdPart<<" ";
-                outputVel += kpPart + kdPart;
+            double outputVel = mJointsTargetVel[i];
+
+            // Position control
+            if(mJointsTargetPos[i]<mJointsPosLimits[0][i]){
+                mJointsTargetPos[i] = mJointsPosLimits[0][i];
+            }else if(mJointsTargetPos[i]>mJointsPosLimits[1][i]){
+                mJointsTargetPos[i] = mJointsPosLimits[1][i];
             }
+            
+            currError    = mJointsTargetPos[i]-mJointsPos[i];
+            if(fabs(currError)<0.5) currError = 0.0;
+            kdPart = mJointsKd[i]*(currError - mJointsError[i])*invDt;
+                
+            mJointsError[i]     = currError;
+            kpPart = mJointsKp[i]*(mJointsError[i]);
+            //cout << mJointsKd[i]<<" "<<kdPart<<" ";
+            outputVel += kpPart + kdPart;
+
             mJointsOutputVel[i] = mJointsPrevOutputVel[i] + (-mJointsPrevOutputVel[i] + outputVel)*dtOnTau;
-            //mJointsPrevOutputVel[i]
             
             double minVelLimit = mJointsVelLimits[0][i];
             double maxVelLimit = mJointsVelLimits[1][i];

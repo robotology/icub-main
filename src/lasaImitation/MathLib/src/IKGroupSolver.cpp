@@ -117,7 +117,11 @@ void    IKGroupSolver::SetNullTarget(const Vector &null){
 void    IKGroupSolver::Enable(bool enable, int solverId){
     if((solverId>=0)&&(solverId<int(mIKItems.size()))){
         IKSolverItem &item = mIKItems[solverId];
-        item.bEnabled = enable;
+        if(item.bEnabled != enable){
+            bComputePriorities = true;
+            item.bEnabled = enable;
+        }
+        
     }    
 }
 

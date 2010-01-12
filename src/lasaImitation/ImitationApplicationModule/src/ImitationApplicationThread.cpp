@@ -27,6 +27,7 @@ using namespace std;
 #include <yarp/os/Network.h>
 using namespace yarp::os;
 
+#include "StdTools/Various.h"
 
 ImitationApplicationThread::ImitationApplicationThread(int period, const char* baseName)
 :RateThread(period)
@@ -56,13 +57,32 @@ bool ImitationApplicationThread::threadInit()
     mPorts[PID_3DMouse]     = &m3DMouseControllerPort;
     mPorts[PID_Touchpad]    = &mTouchpadControllerPort;
 
-    snprintf(mSrcPortName[SPID_Test1],256,"/test");
+    snprintf(mSrcPortName[SPID_Touchpad],           256,"/TouchController/Touchpad/velocity");
+    snprintf(mSrcPortName[SPID_3DMouse],            256,"/TouchController/3DMouse/velocity");
+    snprintf(mSrcPortName[SPID_RWristRef],          256,"/RobotController/currentWristRefR");
+    snprintf(mSrcPortName[SPID_LWristRef],          256,"/RobotController/currentWristRefL");
+    snprintf(mSrcPortName[SPID_RArmCartPos],        256,"/RobotController/currentCartPositionR");
+    snprintf(mSrcPortName[SPID_LArmCartPos],        256,"/RobotController/currentCartPositionL");
+    snprintf(mSrcPortName[SPID_SIZE],               256,"");
+
     
-    snprintf(mDstPortName[DPID_Test1],256,"/test");
-    
+    snprintf(mDstPortName[DPID_Touchpad],           256,"/TouchController/Touchpad/frameOfRef");
+    snprintf(mDstPortName[DPID_3DMouse],            256,"/TouchController/3DMouse/frameOfRef");
+    snprintf(mDstPortName[DPID_RArmDesCartVel],     256,"/RobotController/desiredCartVelocityR");
+    snprintf(mDstPortName[DPID_LArmDesCartVel],     256,"/RobotController/desiredCartVelocityL");
+    snprintf(mDstPortName[DPID_RArmDesCartPos],     256,"/RobotController/desiredCartPositionR");
+    snprintf(mDstPortName[DPID_LArmDesCartPos],     256,"/RobotController/desiredCartPositionL");
+    snprintf(mDstPortName[DPID_RWristDesCartVel],   256,"/RobotController/desiredCartWristVelocityR");
+    snprintf(mDstPortName[DPID_LWristDesCartVel],   256,"/RobotController/desiredCartWristVelocityL");
+    snprintf(mDstPortName[DPID_EyeInEyeDesCartPos], 256,"/RobotController/desiredCartEyeInEyePosition");
+    snprintf(mDstPortName[DPID_EyeDesCartPos],      256,"/RobotController/desiredCartEyePosition");
+    snprintf(mDstPortName[DPID_SIZE],               256,"");
+
     
     mState = mPrevState = mNextState = IA_IDLE;
 
+    mBasicCommand = BC_NONE;
+    
     return true;
 }
 void ImitationApplicationThread::PrepareToStop(){
@@ -91,6 +111,81 @@ void ImitationApplicationThread::run()
     mMutex.wait();
     ClearCommands();
     
+    switch(mBasicCommand){
+    case BC_NONE:
+        break;
+    case BC_INIT:
+        ConnectToNetwork(true);
+        AddCommand(PID_Velocity,"kd 0.1");
+        AddCommand(PID_Robot,"iks None");
+        break;
+    case BC_CLEAR:
+        RemAllConnexions();
+        ConnectToNetwork(false);
+        break;
+    case BC_RUN:
+        AddCommand(PID_Robot,   "run");
+        AddCommand(PID_Velocity,"run");
+        break;
+    case BC_STOP:
+        AddCommand(PID_Velocity,"susp");
+        AddCommand(PID_Robot,   "susp");
+        break;
+    case BC_REST:
+        AddCommand(PID_Velocity,"rest");
+        AddCommand(PID_Robot,   "susp");
+        break;
+    case BC_3DMOUSE_TO_NONE:
+        RemConnexion(SPID_3DMouse, DPID_RArmDesCartVel);
+        RemConnexion(SPID_3DMouse, DPID_LArmDesCartVel);
+        break;
+    case BC_3DMOUSE_TO_RIGHTARM_NONE:
+        RemConnexion(SPID_3DMouse, DPID_RArmDesCartVel);
+        AddCommand(PID_Robot,"iku RightArm");
+        break;
+    case BC_3DMOUSE_TO_LEFTARM_NONE:
+        RemConnexion(SPID_3DMouse, DPID_LArmDesCartVel);
+        AddCommand(PID_Robot,"iku LeftArm");
+        break;
+    case BC_3DMOUSE_TO_RIGHTARM:
+        RemAllSrcConnexions(DPID_3DMouse);
+        AddConnexion(SPID_3DMouse, DPID_RArmDesCartVel);
+        AddCommand(PID_Robot,"iks RightArm");
+        break;
+    case BC_3DMOUSE_TO_LEFTARM:
+        RemAllSrcConnexions(DPID_3DMouse);
+        AddConnexion(SPID_3DMouse, DPID_LArmDesCartVel);
+        AddCommand(PID_Robot,"iks LeftArm");
+        break;
+    case BC_TOUCHPAD_TO_RIGHTARM_NONE:
+        RemConnexion(SPID_RWristRef, DPID_Touchpad);
+        RemConnexion(SPID_Touchpad, DPID_RWristDesCartVel);
+        AddCommand(PID_Robot,"iku RightWrist");
+        break;
+    case BC_TOUCHPAD_TO_RIGHTARM:
+        AddConnexion(SPID_RWristRef, DPID_Touchpad);
+        AddConnexion(SPID_Touchpad, DPID_RWristDesCartVel);
+        AddCommand(PID_Robot,"iks RightWrist");
+        break;
+    case BC_TRACK_NONE:
+        RemAllSrcConnexions(DPID_EyeDesCartPos);
+        RemAllSrcConnexions(DPID_EyeInEyeDesCartPos);
+        AddCommand(PID_Robot,"iku Eye");
+        break;
+    case BC_TRACK_RIGHTARM:
+        AddConnexion(SPID_RArmCartPos, DPID_EyeDesCartPos);
+        AddCommand(PID_Robot,"iks Eye");
+        break;
+    case BC_TRACK_LEFTARM:
+        AddConnexion(SPID_LArmCartPos, DPID_EyeDesCartPos);
+        AddCommand(PID_Robot,"iks Eye");
+        break;
+        
+    }
+    
+    mBasicCommand = BC_NONE;
+
+    /*
     if(mNextState!=mState)
         mState = mNextState;
     
@@ -107,20 +202,27 @@ void ImitationApplicationThread::run()
         if(bStateChanged){
             ConnectToNetwork(true);
             AddCommand(PID_Velocity,"kd 0.1");
-            AddConnexion(SPID_Test1,DPID_Test1);
+            //AddConnexion(SPID_Test1,DPID_Test1);
         }
         break;
     case IA_STOP:
     case IA_REST:
-        if(bStateChanged && (mPrevState!=IA_IDLE)){
+        if(bStateChanged){
             AddCommand(PID_Velocity,"mask all");
             if(mState==IA_REST) AddCommand(PID_Velocity,"rest");
             else                AddCommand(PID_Velocity,"susp");
+            AddCommand(PID_Robot,"susp");
+            RemAllConnexions();
         }
         mNextState = IA_IDLE;
         break;
     case IA_RUN:
         if(bStateChanged){
+            AddConnexion(SPID_3DMouse, DPID_LArmDesCartVel);
+            
+            AddCommand(PID_Robot,   "run");
+            AddCommand(PID_Robot,   "iks LeftArm");
+
             AddCommand(PID_Velocity,"run");
         }
         break;
@@ -128,7 +230,8 @@ void ImitationApplicationThread::run()
     
     mPrevState  = mState;
     mState      = mNextState;
-
+    */
+    
     SendCommands();
     mMutex.post();
     
@@ -179,7 +282,10 @@ void ImitationApplicationThread::AddCommand(PortId port, const char *cmd){
     }
 }
 
-void    ImitationApplicationThread::AddConnexion(SrcPortId src, DstPortId dst){
+void    ImitationApplicationThread::AddConnexion(SrcPortId src, DstPortId dst, bool bUnique){
+    if(bUnique)
+        RemAllSrcConnexions(dst);
+    
     mCommandsType.push_back(1);
     mConnexionsSrcPort.push_back(src);
     mConnexionsDstPort.push_back(dst);
@@ -188,6 +294,19 @@ void    ImitationApplicationThread::RemConnexion(SrcPortId src, DstPortId dst){
     mCommandsType.push_back(2);
     mConnexionsSrcPort.push_back(src);
     mConnexionsDstPort.push_back(dst);
+}
+void    ImitationApplicationThread::RemAllSrcConnexions(DstPortId dst){
+    for(int i=0;i<SPID_SIZE;i++)
+        RemConnexion(SrcPortId(i),dst);
+}
+void    ImitationApplicationThread::RemAllDstConnexions(SrcPortId src){
+    for(int i=0;i<DPID_SIZE;i++)
+        RemConnexion(src,DstPortId(i));
+}
+void    ImitationApplicationThread::RemAllConnexions(){
+    for(int i=0;i<SPID_SIZE;i++)
+        for(int j=0;j<DPID_SIZE;j++)
+            RemConnexion(SrcPortId(i),DstPortId(j));
 }
 
 void ImitationApplicationThread::SendCommands(){
@@ -200,9 +319,11 @@ void ImitationApplicationThread::SendCommands(){
             {
                 Bottle &cmd = mPorts[mCommandsPort[cmdCnt]]->prepare();
                 cmd.clear();
-                cmd.addString(mCommands[cmdCnt].c_str());
+                vector<string> currCmds = Tokenize(RemoveSpaces(mCommands[cmdCnt]));
+                for(size_t j=0;j<currCmds.size();j++)
+                    cmd.addString(currCmds[j].c_str());
+                
                 mPorts[mCommandsPort[cmdCnt]]->writeStrict();
-                //cout << "Sending: "<< mCommands[cmdCnt].c_str()<<endl;
                 cmdCnt++;
                 break;
             }
@@ -233,11 +354,72 @@ int ImitationApplicationThread::respond(const Bottle& command, Bottle& reply){
     mMutex.wait();
 
     int  cmdSize    = command.size();
-    int  retVal     = -1;
+    int  retVal     = 1;
     
     if(cmdSize<=0){
         retVal = -1;
     }else{
+        switch(command.get(0).asVocab()) {
+        case VOCAB4('i','n','i','t'):
+            mBasicCommand = BC_INIT;
+            break;
+        case VOCAB3('c','l','r'):
+            mBasicCommand = BC_CLEAR;
+            break;
+        case VOCAB3('r','u','n'):
+            mBasicCommand = BC_RUN;
+            break;
+        case VOCAB4('s','t','o','p'):
+            mBasicCommand = BC_STOP;
+            break;
+        case VOCAB4('r','e','s','t'):
+            mBasicCommand = BC_REST;
+            break;
+        case VOCAB2('d','o'):
+            if(cmdSize>1){
+                ConstString str = command.get(1).asString();
+                      if(str == "3DR"){
+                    mBasicCommand = BC_3DMOUSE_TO_RIGHTARM;
+                }else if(str == "3DRN"){
+                    mBasicCommand = BC_3DMOUSE_TO_RIGHTARM_NONE;
+                }else if(str == "3DL"){
+                    mBasicCommand = BC_3DMOUSE_TO_LEFTARM;
+                }else if(str == "3DLN"){
+                    mBasicCommand = BC_3DMOUSE_TO_LEFTARM_NONE;
+                }else if(str == "3DN"){
+                    mBasicCommand = BC_3DMOUSE_TO_NONE;
+                }else if(str == "Touch"){
+                    mBasicCommand = BC_TOUCHPAD_TO_RIGHTARM;
+                }else if(str == "TouchN"){
+                    mBasicCommand = BC_TOUCHPAD_TO_RIGHTARM_NONE;
+                }else{
+                    retVal = 0;
+                }
+            }else{
+                retVal = 0;
+            }
+            break;
+        case VOCAB3('t','r','k'):
+            if(cmdSize>1){
+                ConstString str = command.get(1).asString();
+                      if(str == "None"){
+                    mBasicCommand = BC_TRACK_NONE;
+                }else if(str == "RArm"){
+                    mBasicCommand = BC_TRACK_RIGHTARM;
+                }else if(str == "LArm"){
+                    mBasicCommand = BC_TRACK_LEFTARM;
+                }else{
+                    retVal = 0;
+                }
+            }else{
+                retVal = 0;
+            }
+            break;
+        default:
+            retVal = -1;
+            break;
+        }
+        /*
         switch(command.get(0).asVocab()) {
         case VOCAB4('i','n','i','t'):
             if(mState == IA_IDLE){ 
@@ -264,6 +446,7 @@ int ImitationApplicationThread::respond(const Bottle& command, Bottle& reply){
             retVal = 1;
             break;
         }
+        */
     }
     if(retVal>0){
         reply.addVocab(Vocab::encode("ack"));

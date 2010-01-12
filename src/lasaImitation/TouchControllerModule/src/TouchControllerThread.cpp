@@ -42,7 +42,7 @@ TouchControllerThread::TouchControllerThread(int period, const char* baseName)
     mCoefs.resize(6);
     mCoefs[0] = mCoefs[1] = mCoefs[2] = mTransGain;
     mCoefs[4] = mCoefs[5] = mCoefs[6] = mRotGain;
-    
+    bDisplay = false;
     bRunning = true;
 }
 
@@ -208,7 +208,8 @@ void TouchControllerThread::run()
     
     if((!bRunning)||(bFake))
         outputVec.zero();
-    cout << outputVec.toString().c_str()<<endl;        
+    if(bDisplay)
+        cout << outputVec.toString().c_str()<<endl;        
     
     // Write data to output port
     mOutputPort.write();
@@ -234,4 +235,7 @@ void    TouchControllerThread::SetRotGain(double gain){
 }
 void    TouchControllerThread::SetRotLimit(double gain){
     mRotLimit = MAX(0.0,gain);
+}
+void    TouchControllerThread::SetDisplay(bool disp){
+    bDisplay = disp;
 }

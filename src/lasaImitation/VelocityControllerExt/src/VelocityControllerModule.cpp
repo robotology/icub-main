@@ -204,10 +204,10 @@ bool VelocityControllerModule::respond(const Bottle& command, Bottle& reply) {
     bool retVal = true;
     
     if(cmdSize>0){
-        cout << "Cmd: ";
+        cerr << "Cmd: ";
         for(int i=0;i<cmdSize;i++)
-            cout <<command.get(i).asString().c_str()<<" ";
-        cout <<endl;
+            cerr <<command.get(i).asString().c_str()<<" ";
+        cerr <<endl;
         switch(command.get(0).asVocab())  {
         case VOCAB4('m','a','s','k'):
             if(cmdSize==2){

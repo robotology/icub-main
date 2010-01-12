@@ -59,6 +59,7 @@ private:
     
     bool                    bFake;
     bool                    bRunning;
+    bool                    bDisplay;
     
 public:
     TouchControllerThread(int period, const char* baseName);
@@ -73,6 +74,8 @@ public:
             void    SetRotLimit(double gain);
     
             void    LoadMap();
+    
+            void    SetDisplay(bool disp);
     
     virtual void run();
     virtual bool threadInit();

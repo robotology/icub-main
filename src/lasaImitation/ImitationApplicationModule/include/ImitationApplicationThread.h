@@ -55,13 +55,26 @@ private:
         PID_SIZE,
     };
     
-    
     enum SrcPortId{
-        SPID_Test1 = 0,
+        SPID_Touchpad = 0,
+        SPID_3DMouse,
+        SPID_RWristRef,
+        SPID_LWristRef,
+        SPID_RArmCartPos,
+        SPID_LArmCartPos,
         SPID_SIZE
     };
     enum DstPortId{
-        DPID_Test1 = 0,
+        DPID_Touchpad = 0,
+        DPID_3DMouse,
+        DPID_RArmDesCartVel,
+        DPID_LArmDesCartVel,
+        DPID_RArmDesCartPos,
+        DPID_LArmDesCartPos,
+        DPID_RWristDesCartVel,
+        DPID_LWristDesCartVel,
+        DPID_EyeInEyeDesCartPos,
+        DPID_EyeDesCartPos,
         DPID_SIZE
     };
     char                    mSrcPortName[SPID_SIZE][256];
@@ -86,6 +99,26 @@ private:
     State                   mState;
     State                   mPrevState;
     State                   mNextState;
+    
+    enum BasicCommand{
+        BC_NONE = 0,
+        BC_INIT,
+        BC_CLEAR,
+        BC_RUN,
+        BC_STOP,
+        BC_REST,
+        BC_3DMOUSE_TO_NONE,
+        BC_3DMOUSE_TO_RIGHTARM_NONE,
+        BC_3DMOUSE_TO_RIGHTARM,
+        BC_3DMOUSE_TO_LEFTARM_NONE,
+        BC_3DMOUSE_TO_LEFTARM,
+        BC_TOUCHPAD_TO_RIGHTARM_NONE,
+        BC_TOUCHPAD_TO_RIGHTARM,
+        BC_TRACK_NONE,
+        BC_TRACK_RIGHTARM,
+        BC_TRACK_LEFTARM,
+    };
+    BasicCommand            mBasicCommand;
 
 public:
     ImitationApplicationThread(int period, const char* baseName);
@@ -96,8 +129,11 @@ public:
             void    ClearCommands();
             void    SendCommands();
             void    AddCommand(PortId port, const char *cmd);
-            void    AddConnexion(SrcPortId src, DstPortId dst);
+            void    AddConnexion(SrcPortId src, DstPortId dst, bool bUnique = true);
             void    RemConnexion(SrcPortId src, DstPortId dst);
+            void    RemAllSrcConnexions(DstPortId dst);
+            void    RemAllDstConnexions(SrcPortId src);
+            void    RemAllConnexions();
     
             void    PrepareToStop();
 

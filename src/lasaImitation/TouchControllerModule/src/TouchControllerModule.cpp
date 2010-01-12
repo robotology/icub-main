@@ -193,6 +193,14 @@ bool TouchControllerModule::respond(const Bottle& command, Bottle& reply) {
                 mThread->LoadMap();
                 index++;
                 break;
+            case VOCAB4('s','h','o','w'):
+                mThread->SetDisplay(true);
+                index++;
+                break;
+            case VOCAB4('h','i','d','e'):
+                mThread->SetDisplay(false);
+                index++;
+                break;
             default:
                 retVal      = Module::respond(command,reply);
                 defRetVal   = true;

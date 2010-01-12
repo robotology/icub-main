@@ -37,6 +37,7 @@ using namespace yarp::sig;
 
 #include "iCubAddKinChain.h"
 
+#define INPUTS_TIMEOUT 0.5
 
 class RobotControllerThread: public RateThread
 {
@@ -89,7 +90,9 @@ private:
     Matrix                   mFwdKinArmRef[2];
     Matrix                   mFwdKinEyeRef;
 
-    double                   mRestGain;
+    bool                     bIKUseNullSpace;
+    bool                     bIKUseRestNullSpace;
+    double                   mNullSpaceGain;
     
     double                   mDesiredCartGain;
     double                   mDesiredCartOriGain;
@@ -101,7 +104,6 @@ private:
     Vector                   mDesiredWristOpt[2];
 
     Vector                   mDesiredCartEyeInEyePos;
-    
     Vector                   mDesiredCartEyePos;
     Vector                   mDesiredCartEyeVel;
 
@@ -133,6 +135,7 @@ private:
     BufferedPort<Vector>    mCurrentJointPosPort;
     BufferedPort<Vector>    mCurrentJointVelPort;
 
+
     BufferedPort<Vector>    mDesiredCartPosRPort;
     BufferedPort<Vector>    mDesiredCartPosLPort;
 
@@ -143,19 +146,28 @@ private:
     BufferedPort<Vector>    mDesiredCartWristVelLPort;
 
     BufferedPort<Vector>    mDesiredCartEyeInEyePort;
+    BufferedPort<Vector>    mDesiredCartEyePort;
     
+    
+    double                  mDesiredCartPosRLastTime;
+    double                  mDesiredCartPosLLastTime;
+    double                  mDesiredCartVelRLastTime;
+    double                  mDesiredCartVelLLastTime;
+    double                  mDesiredCartWristVelRLastTime;
+    double                  mDesiredCartWristVelLLastTime;
+    double                  mDesiredCartEyeInEyeLastTime;
+    double                  mDesiredCartEyeLastTime;
     
     //Output port
     BufferedPort<Matrix>    mCurrentWristRefRPort;
     BufferedPort<Matrix>    mCurrentWristRefLPort;
 
+    BufferedPort<Vector>    mCurrentCartPosRPort;
+    BufferedPort<Vector>    mCurrentCartPosLPort;
+
 public:
             RobotControllerThread(int period, const char* baseName);
     virtual ~RobotControllerThread();
-
-
-            void    Init();
-            void    Free();
 
             enum IKSetID{
                 IKS_None = 0,
@@ -165,20 +177,35 @@ public:
                 IKS_LeftArm,
                 IKS_LeftArmPos,
                 IKS_LeftWrist,
-                IKS_Eye
+                IKS_Eye,
+                IKS_Joints,
+                IKS_Rest
             };
-            void    SetIKSolverSet(IKSetID setId);
+            
+            IKSetID IKStringToIKSet(string str);
+            void    SetIKSolverSet(IKSetID setId, bool enable);
             
             void    SetJointControlMode(int mode);
+    
+            void    SetState(State state);
     
     virtual void    run();
     virtual bool    threadInit();
     virtual void    threadRelease();
 
-            void    ReadPorts();
+protected:
+            void    Init();
+            void    Free();
+
+            void    ReadFromPorts();
+            void    CheckInputsTimeout();
+            void    WriteToPorts();
             void    UpdateKinChains();
             void    PrepareIKSolver();
             void    ApplyIKSolver();
+    
+            void    ConvertEyeInEyeTarget();
+            void    ComputeVelocities();
 };
 
 #endif

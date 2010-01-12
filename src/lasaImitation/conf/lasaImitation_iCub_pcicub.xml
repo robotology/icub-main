@@ -4,8 +4,15 @@
         <port>/root</port>
     </dependencies> 
     <module>
+        <name>ImitationApplicationModule</name>
+        <parameters>--period 0.5</parameters>
+        <node>lasapcicub</node>
+        <stdio>lasapcicub</stdio>
+        <tag>IA</tag>
+    </module>
+    <module>
         <name>VelocityControllerExt</name>
-        <parameters>--name VelocityController --robot icub --period 0.02 --part right_arm+left_arm+torso+head </parameters>
+        <parameters>--name VelocityController --robot icub --period 0.02 --decouple --part right_arm+left_arm+torso+head </parameters>
         <node>lasapcicub</node>
         <stdio>lasapcicub</stdio>
         <tag>VC</tag>
@@ -47,17 +54,5 @@
         <output>/RobotController/targetJointVelocity</output>
         <input>/VelocityController/targetVelocity</input>
     </connection>
-    <connection protocol="tcp">
-        <output>/TouchController/Touchpad/velocity</output>
-        <input>/RobotController/desiredCartWristVelocityR</input>
-    </connection>
-    <connection protocol="tcp">
-        <output>/RobotController/currentWristRefR</output>
-        <input>/TouchController/Touchpad/frameOfRef</input>
-    </connection>
-    <connection protocol="tcp">
-        <output>/TouchController/3DMouse/velocity</output>
-        <input>/RobotController/desiredCartVelocityL</input>
-    </connection>    
 </application>
 
