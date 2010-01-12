@@ -404,6 +404,8 @@ public:
 class iCubArmCartesianSolver : public CartesianSolver
 {
 protected:
+    yarp::sig::Vector torsoRest;
+
     virtual PartDescriptor *getPartDesc(yarp::os::Searchable &options);
     virtual bool decodeDOF(const yarp::sig::Vector &_dof);
     virtual yarp::sig::Vector solve(yarp::sig::Vector &xd);
@@ -418,6 +420,20 @@ public:
     */
     iCubArmCartesianSolver(const std::string &_slvName="armCartSolver") : CartesianSolver(_slvName) { }
 
+    /**
+    * Configure the arm solver and start it up. 
+    * @param options contains the set of options in form of a 
+    *                Property object.
+    *  
+    * Further available options are:
+    *  
+    * \b torso_rest_pos : example (torso_rest_pos (20.0 0.0 0.0)), 
+    *    specifies in degrees the rest position for the torso
+    *    pitch/roll/yaw angles (if used); default values are (0.0
+    *    0.0 0.0).
+    *  
+    * @return true/false if successful/failed
+    */
     virtual bool open(yarp::os::Searchable &options);
 };
 

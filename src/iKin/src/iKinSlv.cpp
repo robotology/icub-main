@@ -1358,6 +1358,19 @@ bool iCubArmCartesianSolver::open(Searchable &options)
     // call father's open() method
     if (CartesianSolver::open(options))
     {
+        torsoRest.resize(3,0.0);
+
+        // handle torso rest position from options
+        if (Bottle *v=options.find("torso_rest_pos").asList())
+        {            
+            int sz=v->size();
+            int len=torsoRest.length();
+            int l=sz>len?len:sz;
+    
+            for (int i=0; i<l; i++)
+                torsoRest[i]=(M_PI/180.0)*v->get(i).asDouble();
+        }
+
         // Identify the elbow xyz position to be used as 2nd task
         slv->specify2ndTaskEndEff(6);
     }
@@ -1409,20 +1422,25 @@ Vector iCubArmCartesianSolver::solve(Vector &xd)
     Vector qd_3rd=dummyVector;
     Vector w_3rd=dummyVector;
 
-    // minimize the torso displacement wrt rest position (0,0,0)
+    // minimize the torso displacement wrt rest position
     if (!(*prt->chn)[0].isBlocked() ||
         !(*prt->chn)[1].isBlocked() ||
         !(*prt->chn)[2].isBlocked())
     {
         weight3rdTask=0.01;
 
-        qd_3rd.resize(prt->chn->getDOF(),0.0);
-        w_3rd=qd_3rd;
+        w_3rd.resize(prt->chn->getDOF(),0.0);
+        qd_3rd=w_3rd;
 
         int offs=0;
-        for (int i=0; i<3; i++)
+        for (int i=0; i<torsoRest.length(); i++)
             if (!(*prt->chn)[i].isBlocked())
-                w_3rd[offs++]=1.0;
+            {    
+                qd_3rd[offs]=torsoRest[offs];
+                w_3rd[offs]=1.0;
+
+                offs++;
+            }
     }
 
     // call the solver and start the convergence from the current point
