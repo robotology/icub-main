@@ -1,4 +1,7 @@
 
+2010-01-13 Ugo Pattacini <ugo.pattacini@iit.it>
+	   * iKinSlv.h,.cpp: rest position option extended
+
 2010-01-12 Ugo Pattacini <ugo.pattacini@iit.it>
 	   * iKinSlv.h,.cpp: added options for torso rest positions
                          bug fixes for continuous mode
