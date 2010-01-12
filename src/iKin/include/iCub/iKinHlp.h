@@ -49,6 +49,15 @@ public:
     static void addDOFOption(yarp::os::Bottle &b, const yarp::sig::Vector &dof);
 
     /**
+    * Appends to a bottle all data needed to modify torso rest 
+    * position. 
+    * @param b is the bottle where to append the data.
+    * @param torsoRest is the vector of new torso rest position for 
+    *                  pitch/roll/yaw angles [deg].
+    */
+    static void addTorsoRestOption(yarp::os::Bottle &b, const yarp::sig::Vector &torsoRest);
+
+    /**
     * Appends to a bottle all data needed to change the pose mode.
     * @param b is the bottle where to append the data.
     * @param pose is the new pose mode. 

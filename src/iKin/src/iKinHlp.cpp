@@ -36,6 +36,13 @@ void CartesianHelper::addDOFOption(Bottle &b, const Vector &dof)
 
 
 /************************************************************************/
+void CartesianHelper::addTorsoRestOption(Bottle &b, const Vector &torsoRest)
+{
+    addVectorOption(b,IKINSLV_VOCAB_OPT_TORSO_REST,torsoRest);
+}
+
+
+/************************************************************************/
 void CartesianHelper::addPoseOption(Bottle &b, const unsigned int pose)
 {
     Bottle &posePart=b.addList();
