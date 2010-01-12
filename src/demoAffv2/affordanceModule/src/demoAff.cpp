@@ -1220,7 +1220,7 @@ bool DemoAff::updateModule(){
       useArm(object3d[1] > 0.0 ? USE_RIGHT : USE_LEFT);
       string usePart = (partUsed == "both_parts" ? (object3d[1] > 0.0 ? "right_arm" : "left_arm") : partUsed);
 
-      double startOffset = 0.2;
+      double startOffset = 0.1;
       startOffset = (usePart == "right_arm" ? startOffset : -startOffset);
 
       double heightOffset = max(0.0, 0.2 -zOffset);
@@ -1228,7 +1228,7 @@ bool DemoAff::updateModule(){
       Vector handOrientation(4);
       handOrientation.zero();
       handOrientation[1] = -1;
-      handOrientation[3] = M_PI;
+      handOrientation[3] = 0;
 
       Vector endPos = object3d;
       endPos[2] += heightOffset;
