@@ -102,7 +102,7 @@ public:
 protected:
     BufferedPort<Bottle> inPort;
     BufferedPort<Bottle> outPort;
-	map<string, Value> parameters;
+	map<string, Value *> parameters;
 	PolyDriver *polydriver;
 	int nbJoints;
 

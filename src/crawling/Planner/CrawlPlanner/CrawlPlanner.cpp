@@ -307,20 +307,20 @@ void CrawlPlanner::SendToSupervisor(void)
 
 bool CrawlPlanner::ScanFinished(double neckAngle)
 {
- //   bool scanFinished = false;
- //   double tetaDot = neckAngle - previousNeckAngle;
+    bool scanFinished = false;
+    double tetaDot = neckAngle - previousNeckAngle;
 
- //   //we define the start/end of the scan period as the point
- //   //where the head is at it's maximum on the left or on the right
-	////i.e. the angle variation changes sign.
- //   if(tetaDot * previousTetaDot < 0)
- //   {
- //       scanFinished = true;
-	//	cout << "===============SCAN FINISHED==================" << endl;
- //   }
- //   
- //   previousTetaDot = tetaDot;
- //   return scanFinished;
+    //we define the start/end of the scan period as the point
+    //where the head is at it's maximum on the left or on the right
+	//i.e. the angle variation changes sign.
+    if(tetaDot * previousTetaDot < 0)
+    {
+        scanFinished = true;
+		cout << "===============SCAN FINISHED==================" << endl;
+    }
+    
+    previousTetaDot = tetaDot;
+    return scanFinished;
 	return true;
 }
 

@@ -2,12 +2,13 @@
 
 #include <yarp/math/Math.h>
 using namespace yarp::math;
+
 #include <iCub/ctrlMath.h>;
 using namespace ctrl;
 
 #include <iCub/iKinVocabs.h>
 
-#define TEST
+//#define TEST
 
 ReachManager::ReachManager()
 {
@@ -47,6 +48,7 @@ bool ReachManager::open(Searchable& config)
 	cout << "min reach dist : " << parameters["min_reach_dist"]->asDouble() << endl;
 	parameters["reach_mode_dist"] = new Value(GetValueFromConfig(config, "reach_mode_dist"));
 	cout << "reach mode dist : " << parameters["reach_mode_dist"]->asDouble() << endl;
+	parameters["object_ID"] = new Value(GetValueFromConfig(config, "object_ID"));
 
 	//cout << "cool !" << endl;
 	inPort.open(parameters["input_port"]->asString().c_str());
@@ -88,6 +90,7 @@ bool ReachManager::updateModule(void)
 {
     Vector xd(3);
 	Bottle *visionBottle = inPort.read();
+	cout << "GOt Patch " << endl;
 	double minDistanceSQR = 999999;
 	bool patchToReach = false;
 
@@ -101,7 +104,7 @@ bool ReachManager::updateModule(void)
 			return true;
 		}
 
-		if(patchBottle->get(3).asString() != "green")
+		if(patchBottle->get(3).asInt() != parameters["object_ID"]->asInt())
 		{
 			continue;
 		}
@@ -114,18 +117,27 @@ bool ReachManager::updateModule(void)
 		cout<< "Solving position : " << position.toString() << endl;
 		double distanceSQR = position[0]*position[0] + position[1]*position[1] + position[2]*position[2];
 
-		if(distanceSQR<minDistanceSQR)
+		if(distanceSQR < minDistanceSQR)
 		{
-			if(position[0]>-parameters["min_reach_dist"]->asDouble())
+			//the object is too far to even try reaching it.
+			if(position[2] > parameters["reach_mode_dist"]->asDouble())
 			{
 				continue;
 			}
+			//tue object is too near. it is dangerous to reach it.
+			if(position[0] > -parameters["min_reach_dist"]->asDouble())
+			{
+				continue;
+			}
+
+			//everything looks fine.
 			xd[0] = position[0];
 			xd[1] = position[1];
 			xd[2] = position[2];
 			patchToReach = true;
 			minDistanceSQR = distanceSQR;
 		}
+		
 	}
 
 	if(!patchToReach)
@@ -163,19 +175,19 @@ bool ReachManager::updateModule(void)
 
 	cout << "distance : " << sqrt(minDistanceSQR) << endl;
 	cout << "min distance : " << parameters["reach_mode_dist"]->asDouble() << endl;
-	if(minDistanceSQR<pow(parameters["reach_mode_dist"]->asDouble(),2))
-	{
-		double headPitchAngle = -atan((xd[2]-L)/xd[0]);
-		double headYawAngle = atan((xd[1]+0.1)/xd[0]);
-		cout << "Head angle pitch : " << headPitchAngle << endl;
-		cout << "Head angle Yaw : " << headYawAngle << endl;
-		Bottle &outBottle = outPort.prepare();
-		outBottle.clear();
-		outBottle.addInt(55);
-		outBottle.addDouble(headPitchAngle);
-		outBottle.addDouble(headYawAngle);
-		outPort.write();
-	}
+	//if(minDistanceSQR < pow(parameters["reach_mode_dist"]->asDouble(),2))
+	//{
+	//	double headPitchAngle = -atan((xd[2]-L)/xd[0]);
+	//	double headYawAngle = atan((xd[1]+0.1)/xd[0]);
+	//	cout << "Head angle pitch : " << headPitchAngle << endl;
+	//	cout << "Head angle Yaw : " << headYawAngle << endl;
+	//	Bottle &outBottle = outPort.prepare();
+	//	outBottle.clear();
+	//	outBottle.addInt(55);
+	//	outBottle.addDouble(headPitchAngle);
+	//	outBottle.addDouble(headYawAngle);
+	//	outPort.write();
+	//}
 
 	if(bestArm == "none")
 	{
@@ -184,7 +196,7 @@ bool ReachManager::updateModule(void)
 
 	//cout << "result : " << resultQ.toString();
 
-	if(parameters["pos_vel_cont"]->asInt())
+	if(false)//parameters["pos_vel_cont"]->asInt())
 	{
 		RobotPositionControl(bestArm, resultQ);
 	}
@@ -504,6 +516,7 @@ Vector ReachManager::Solve(const Vector &xd, string partName, string &resultPart
 
 		if(deltaNorm2>(pow(parameters["max_error"]->asDouble(),2)))
 		{
+			cout << "TOO BIG ERROR !!! " << endl;
 			resultPart = "none";
 			return resultQ;
 		}

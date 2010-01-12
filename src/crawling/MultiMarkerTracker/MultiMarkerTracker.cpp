@@ -396,9 +396,10 @@ sig::Vector MultiMarkerTracker::GetJointAngles(string partName)
 	{
 		for(int i=0; i<nbJoints[partName]; ++i)
 		{
-			//if(i==0)
+			//if(i==5)
 			//{
-			//	jointAngles[i] = (encoders[i] + 3)* M_PI/180; // has to be deleted at some point.
+			//	jointAngles[i] = 0;//(encoders[i] + 3.5)* M_PI/180; // has to be deleted at some point.
+			//	cout << "EYE VERGENCE : " << encoders[i] + 3.5 << endl;
 			//}
 			//else if(i==3)
 			//{
@@ -408,8 +409,8 @@ sig::Vector MultiMarkerTracker::GetJointAngles(string partName)
 			//{
 			//	jointAngles[i] = 0.5 * encoders[i]* M_PI/180;
 			//}
-			//else
-			//{
+			/*else
+			{*/
 			jointAngles[i] = encoders[i]* M_PI/180;
 			//}
 		}

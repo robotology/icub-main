@@ -21,15 +21,16 @@ CrawlHeadControl::~CrawlHeadControl(void)
 bool CrawlHeadControl::open(Searchable& config)
 {
 	cout << "config : " << config.toString() << endl;
-	parameters["input_port"] = GetValueFromConfig(config, "input_port");
-	parameters["output_port"] = GetValueFromConfig(config, "output_port");
-	parameters["robot"] = GetValueFromConfig(config, "robot");
-	parameters["head_control_command_code"] = GetValueFromConfig(config, "head_control_command_code");
-	parameters["head_control_mode_dist"] = GetValueFromConfig(config, "head_control_mode_dist");
-	cout << "head_control_mode_dist : " << parameters["head_control_mode_dist"].asDouble() << endl;
+	parameters["input_port"] = new Value(GetValueFromConfig(config, "input_port"));
+	parameters["output_port"] = new Value(GetValueFromConfig(config, "output_port"));
+	parameters["robot"] = new Value(GetValueFromConfig(config, "robot"));
+	parameters["head_control_command_code"] = new Value(GetValueFromConfig(config, "head_control_command_code"));
+	parameters["head_control_mode_dist"] = new Value(GetValueFromConfig(config, "head_control_mode_dist"));
+	parameters["object_ID"] = new Value(GetValueFromConfig(config, "object_ID"));
+	cout << "head_control_mode_dist : " << parameters["head_control_mode_dist"]->asDouble() << endl;
 	
-	inPort.open(parameters["input_port"].asString().c_str());
-	outPort.open(parameters["output_port"].asString().c_str());
+	inPort.open(parameters["input_port"]->asString().c_str());
+	outPort.open(parameters["output_port"]->asString().c_str());
 
 	InitPolydriver();
 
@@ -62,7 +63,7 @@ bool CrawlHeadControl::updateModule(void)
 			return true;
 		}
 
-		if(patchBottle->get(3).asString() != "green")
+		if(patchBottle->get(3).asInt() != parameters["object_ID"]->asInt())
 		{
 			continue;
 		}
@@ -91,9 +92,10 @@ bool CrawlHeadControl::updateModule(void)
 
 	map<string, double> headAngles = GetHeadAngles();
 
+
 	cout << "distance : " << sqrt(minDistanceSQR) << endl;
-	cout << "min distance : " << parameters["head_control_mode_dist"].asDouble() << endl;
-	if(minDistanceSQR<pow(parameters["head_control_mode_dist"].asDouble(),2))
+	cout << "min distance : " << parameters["head_control_mode_dist"]->asDouble() << endl;
+	if(minDistanceSQR<pow(parameters["head_control_mode_dist"]->asDouble(),2))
 	{
 		if(nearestPatchPosition[2]<0.001 && nearestPatchPosition[2]>-0.001)
 		{
@@ -111,7 +113,7 @@ bool CrawlHeadControl::updateModule(void)
 		cout << "Head angle Yaw : " << headYawAngle << endl;
 		Bottle &outBottle = outPort.prepare();
 		outBottle.clear();
-		outBottle.addInt(parameters["head_control_command_code"].asInt());
+		outBottle.addInt(parameters["head_control_command_code"]->asInt());
 		outBottle.addDouble(headPitchAngle);
 		outBottle.addDouble(headYawAngle);
 		outPort.write();
@@ -143,7 +145,7 @@ void CrawlHeadControl::InitPolydriver()
     options.put("device", "remote_controlboard");
 	options.put("local", "/head_control/head");   //local port names
 
-	string remotePortName = "/" + (string)parameters["robot"].asString() + "/head";
+	string remotePortName = "/" + (string)parameters["robot"]->asString() + "/head";
 	options.put("remote", remotePortName.c_str());         //where we connect to
 
     // create a device
