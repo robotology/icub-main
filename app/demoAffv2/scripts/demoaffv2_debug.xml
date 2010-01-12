@@ -10,7 +10,7 @@
 <module>
       <name>demoAffv2</name>
       <parameters>--context demoAffv2/conf</parameters>
-      <node>medusa</node>
+      <node>icub-vm1</node>
       <stdio>icub14</stdio>
       <tag>demoAffv2</tag>
 </module>
