@@ -7,9 +7,9 @@
  */
 
 /**
- * @ingroup icub_module
+ * @ingroup icub_demoAffv2
  *
- * \defgroup icub_demoAffv2
+ * \defgroup icub_behaviorControl
  *
  * This module is part of the application \ref demoAffv2 "demoAffv2"
  *
@@ -19,7 +19,7 @@
  *
  *\section lib_sec Libraries
  *
- *
+ * Probabilistic Network Library (PNL)
  *
  *
  *\section parameters_sec Parameters
