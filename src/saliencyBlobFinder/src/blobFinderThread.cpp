@@ -24,7 +24,7 @@ blobFinderThread::blobFinderThread():RateThread(THREAD_RATE){
     ct=0;
 
     //inputImage_flag=false;
-    freetorun=false;
+    /*freetorun=false;
     meanColour_flag=true;
     contrastLP_flag=false;
     blobCataloged_flag=true;
@@ -33,7 +33,7 @@ blobFinderThread::blobFinderThread():RateThread(THREAD_RATE){
     blobList_flag=false;
     maxSaliencyBlob_flag=false;
     tagged_flag=false;
-    watershed_flag=false;
+    watershed_flag=false;*/
     //bluePlane_flag=false;
     //redPlane_flag=false;
     //greenPlane_flag=false;
@@ -158,7 +158,7 @@ void blobFinderThread::resizeImages(int width, int height){
 *	initialization of the thread 
 */
 bool blobFinderThread::threadInit(){
-	contrastLP_flag=true;
+	/*contrastLP_flag=true;
 	meanColour_flag=false;
 	blobCataloged_flag=false;
 	foveaBlob_flag=false;
@@ -166,7 +166,7 @@ bool blobFinderThread::threadInit(){
 	maxSaliencyBlob_flag=false;
 	blobList_flag=false;
     tagged_flag=false;
-	watershed_flag=false;
+	watershed_flag=false;*/
 
     return true;
 }

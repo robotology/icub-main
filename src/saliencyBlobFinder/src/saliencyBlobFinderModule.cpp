@@ -7,8 +7,31 @@ saliencyBlobFinderModule::saliencyBlobFinderModule(){
     reinit_flag=false;
     reply=new Bottle();
     blobFinder=0;
+
+    //---------- flags --------------------------
+	contrastLP_flag=false;
+	meanColour_flag=false;
+	blobCataloged_flag=false;
+	foveaBlob_flag=false;
+	colorVQ_flag=false;
+	maxSaliencyBlob_flag=false;
+	blobList_flag=false;
+	tagged_flag=false;
+	watershed_flag=false;
 }
 
+void saliencyBlobFinderModule::copyFlags(){
+
+    contrastLP_flag=blobFinder->contrastLP_flag;
+    meanColour_flag=blobFinder->meanColour_flag;
+    blobCataloged_flag=blobFinder->blobCataloged_flag;
+    foveaBlob_flag=blobFinder->foveaBlob_flag;
+    colorVQ_flag=blobFinder->colorVQ_flag;
+    maxSaliencyBlob_flag=blobFinder->maxSaliencyBlob_flag;
+    blobList_flag=blobFinder->blobList_flag;
+    tagged_flag=blobFinder->tagged_flag;
+    watershed_flag=blobFinder->watershed_flag;
+}
 
 /**
 *function that opens the module
@@ -97,6 +120,7 @@ void saliencyBlobFinderModule::setOptions(yarp::os::Property opt){
     if(value!=""){
         printf("|||  Module operating mode :%s \n", value.c_str());
         if(value=="MEA"){
+            meanColour_flag=true;
             printf("meancolour image as output selected \n");
         }
         
@@ -147,6 +171,8 @@ bool saliencyBlobFinderModule::updateModule() {
         blobFinder->reinitialise(img->width(), img->height());
         blobFinder->start();
         blobFinder->ptr_inputImg=img;
+        //passes the value of flags
+        copyFlags();
     }
 
     //copy the inputImg into a buffer

@@ -223,6 +223,10 @@ private:
     * function that reads the ports for the RGB planes
     */
     bool getPlanes();
+    /**
+    * function that copies flags to the blobFinder thread
+    */
+    void copyFlags();
     
 public:
     /**
@@ -272,8 +276,46 @@ public:
     */
     void outPorts();
 
+
     //_________ public attributes _______________
     
+    //---------- flags --------------------------
+	/**
+	* flag for drawing contrastLP
+	*/
+	bool contrastLP_flag;
+	/**
+	* flag for drawing meanColourImage
+	*/
+	bool meanColour_flag;
+	/**
+	* flag for drawing blobCatalog
+	*/
+	bool blobCataloged_flag;
+	/**
+	* flag for drawing foveaBlob
+	*/
+	bool foveaBlob_flag;
+	/**
+	* flag for drawing colorVQ
+	*/
+	bool colorVQ_flag;
+	/**
+	* flag for drawing maxSaliencyBlob
+	*/
+	bool maxSaliencyBlob_flag;
+	/**
+	* flag for drawing blobList
+	*/
+	bool blobList_flag;
+	/**
+	* flag for the drawings
+	*/
+	bool tagged_flag;
+	/**
+	* flag for drawing watershed image
+	*/
+	bool watershed_flag;
    
 };
 
