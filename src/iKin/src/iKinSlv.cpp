@@ -317,6 +317,9 @@ void InputPort::onRead(Bottle &b)
         if (!handleMode(b.find(Vocab::decode(IKINSLV_VOCAB_OPT_MODE)).asVocab()))
             fprintf(stdout,"%s: got incomplete %s command\n",slv->slvName.c_str(),
                     Vocab::decode(IKINSLV_VOCAB_OPT_MODE).c_str());
+
+    slv->handleJointsRestPosition(b.find(Vocab::decode(IKINSLV_VOCAB_OPT_REST_POS)).asList());
+    slv->handleJointsRestWeights(b.find(Vocab::decode(IKINSLV_VOCAB_OPT_REST_WEIGHTS)).asList());
 }
 
 
@@ -540,7 +543,7 @@ void CartesianSolver::postDOFHandling()
 void CartesianSolver::fillDOFInfo(Bottle &reply)
 {
     for (unsigned int i=0; i<prt->chn->getN(); i++)
-        reply.addInt(!(*prt->chn)[i].isBlocked());
+        reply.addInt(int(!(*prt->chn)[i].isBlocked()));
 }
 
 
@@ -690,6 +693,20 @@ bool CartesianSolver::respond(const Bottle &command, Bottle &reply)
                             break;
                         }
 
+                        case IKINSLV_VOCAB_OPT_REST_POS:
+                        {
+                            reply.addVocab(IKINSLV_VOCAB_REP_ACK);
+                            handleJointsRestPosition(NULL,&reply);
+                            break;
+                        }
+
+                        case IKINSLV_VOCAB_OPT_REST_WEIGHTS:
+                        {
+                            reply.addVocab(IKINSLV_VOCAB_REP_ACK);
+                            handleJointsRestWeights(NULL,&reply);
+                            break;
+                        }
+
                         default:
                             reply.addVocab(IKINSLV_VOCAB_REP_NACK);
                     }
@@ -770,6 +787,36 @@ bool CartesianSolver::respond(const Bottle &command, Bottle &reply)
                                 reply.addVocab(IKINSLV_VOCAB_REP_ACK);
                                 Bottle &dofPart=reply.addList();
                                 fillDOFInfo(dofPart);
+                            }
+                            else
+                                reply.addVocab(IKINSLV_VOCAB_REP_NACK);
+
+                            break;
+                        }
+
+                        case IKINSLV_VOCAB_OPT_REST_POS:
+                        {
+                            Bottle restPart;
+
+                            if (handleJointsRestPosition(command.get(2).asList(),&restPart))
+                            {    
+                                reply.addVocab(IKINSLV_VOCAB_REP_ACK);
+                                reply.append(restPart);
+                            }
+                            else
+                                reply.addVocab(IKINSLV_VOCAB_REP_NACK);
+
+                            break;
+                        }
+    
+                        case IKINSLV_VOCAB_OPT_REST_WEIGHTS:
+                        {
+                            Bottle restPart;
+
+                            if (handleJointsRestWeights(command.get(2).asList(),&restPart))
+                            {    
+                                reply.addVocab(IKINSLV_VOCAB_REP_ACK);
+                                reply.append(restPart);
                             }
                             else
                                 reply.addVocab(IKINSLV_VOCAB_REP_NACK);
@@ -900,7 +947,74 @@ bool CartesianSolver::decodeDOF(const Vector &_dof)
         else
             prt->chn->blockLink(i);
 
+    prepareJointsRestTask();
+
     return true;
+}
+
+
+/************************************************************************/
+bool CartesianSolver::handleJointsRestPosition(const Bottle *options, Bottle *reply)
+{
+    bool ret=false;
+
+    if (options)
+    {            
+        int sz=options->size();
+        int len=restJntPos.length();
+        int l=sz>len?len:sz;
+
+        for (int i=0; i<l; i++)
+        {
+            double val=(M_PI/180.0)*options->get(i).asDouble();
+            double min=(*prt->chn)[i].getMin();
+            double max=(*prt->chn)[i].getMax();
+
+            restJntPos[i]=val<min?min:(val>max?max:val);
+        }
+
+        ret=true;
+    }
+
+    if (reply)
+    {
+        Bottle &b=reply->addList();
+        for (int i=0; i<restJntPos.length(); i++)
+            b.addDouble((180/M_PI)*restJntPos[i]);
+    }
+
+    return ret;
+}
+
+
+/************************************************************************/
+bool CartesianSolver::handleJointsRestWeights(const Bottle *options, Bottle *reply)
+{
+    bool ret=false;
+
+    if (options)
+    {            
+        int sz=options->size();
+        int len=restWeights.length();
+        int l=sz>len?len:sz;
+
+        for (int i=0; i<l; i++)
+        {
+            double val=options->get(i).asInt();
+            restWeights[i]=val<0.0?0.0:val;
+        }
+
+        ret=true;
+    }
+
+    if (reply)
+    {
+        Bottle &b=reply->addList();
+        for (int i=0; i<restWeights.length(); i++)
+            b.addDouble(restWeights[i]);
+    }
+
+    return ret;
 }
 
 
@@ -983,7 +1097,14 @@ bool CartesianSolver::open(Searchable &options)
         enc.push_back(pEnc);
         jnt.push_back(joints);
         rmp.push_back(rmpTmp);
-    }    
+    }
+
+    // handle joints rest position and weights
+    restJntPos.resize(prt->chn->getN(),0.0);
+    restWeights.resize(prt->chn->getN(),0);
+    handleJointsRestPosition(options.find("rest_pos").asList());
+    handleJointsRestWeights(options.find("rest_weights").asList());
+    prepareJointsRestTask();
 
     // dof here is not defined yet, so define it
     encodeDOF();
@@ -1120,13 +1241,41 @@ bool CartesianSolver::changeDOF(const Vector &_dof)
 
 
 /************************************************************************/
+void CartesianSolver::prepareJointsRestTask()
+{
+    int offs=0;
+    
+    qd_RestTask.resize(prt->chn->getDOF());
+    w_RestTask.resize(prt->chn->getDOF());    
+
+    for (unsigned int i=0; i<prt->chn->getN(); i++)
+    {
+        if (!(*prt->chn)[i].isBlocked())
+        {            
+            qd_RestTask[offs]=restJntPos[i];
+            w_RestTask[offs]=restWeights[i];
+
+            offs++;
+        }
+    }
+
+    // enable rest position task only if it's the case
+    if (norm(w_RestTask))
+        weightRestTask=0.01;
+    else
+        weightRestTask=0.0;
+}
+
+
+/************************************************************************/
 Vector CartesianSolver::solve(Vector &xd)
 {
     Vector dummy(1);
 
+    // call the solver and start the convergence from the current point
     return slv->solve(prt->chn->getAng(),xd,
                       0.0,dummy,dummy,
-                      0.0,dummy,dummy,
+                      weightRestTask,qd_RestTask,w_RestTask,
                       NULL,NULL,clb);
 }
 
@@ -1356,116 +1505,11 @@ bool iCubArmCartesianSolver::open(Searchable &options)
     // call father's open() method
     if (CartesianSolver::open(options))
     {
-        torsoRest.resize(3,0.0);
-
-        // handle torso rest position from options
-        if (Bottle *v=options.find("torso_rest_pos").asList())
-        {            
-            int sz=v->size();
-            int len=torsoRest.length();
-            int l=sz>len?len:sz;
-    
-            for (int i=0; i<l; i++)
-            {
-                double val=(M_PI/180.0)*v->get(i).asDouble();
-                double min=(*prt->chn)[i].getMin();
-                double max=(*prt->chn)[i].getMax();
-
-                torsoRest[i]=val<min?min:(val>max?max:val);
-            }
-        }
-
         // Identify the elbow xyz position to be used as 2nd task
         slv->specify2ndTaskEndEff(6);
     }
 
     return configured;
-}
-
-
-/************************************************************************/
-bool iCubArmCartesianSolver::respond(const Bottle &command, Bottle &reply)
-{
-    if (command.size())
-    {
-        int vcb=command.get(0).asVocab();
-
-        if (!configured && vcb!=IKINSLV_VOCAB_CMD_CFG)
-            reply.addVocab(IKINSLV_VOCAB_REP_NACK);
-        else switch (vcb)
-        {
-            case IKINSLV_VOCAB_CMD_GET:
-            {
-                if (command.size()>1)
-                    switch (command.get(1).asVocab())
-                    {
-                        case IKINSLV_VOCAB_OPT_TORSO_REST:
-                        {
-                            reply.addVocab(IKINSLV_VOCAB_REP_ACK);
-                            Bottle &restPart=reply.addList();
-                            restPart.addDouble((180/M_PI)*torsoRest[0]);
-                            restPart.addDouble((180/M_PI)*torsoRest[1]);
-                            restPart.addDouble((180/M_PI)*torsoRest[2]);
-                            break;
-                        }
-
-                        default:
-                            CartesianSolver::respond(command,reply);
-                    }
-                else
-                    CartesianSolver::respond(command,reply);
-
-                break;
-            }
-
-            case IKINSLV_VOCAB_CMD_SET:
-            {
-                if (command.size()>2)
-                    switch (command.get(1).asVocab())
-                    {
-                        case IKINSLV_VOCAB_OPT_TORSO_REST:
-                        {
-                            Bottle *v=command.get(2).asList();
-
-                            int sz=v->size();
-                            int len=torsoRest.length();
-                            int l=sz>len?len:sz;
-
-                            for (int i=0; i<l; i++)
-                            {
-                                double val=(M_PI/180.0)*v->get(i).asDouble();
-                                double min=(*prt->chn)[i].getMin();
-                                double max=(*prt->chn)[i].getMax();
-
-                                torsoRest[i]=val<min?min:(val>max?max:val);
-                            }
-
-                            reply.addVocab(IKINSLV_VOCAB_REP_ACK);
-                            Bottle &restPart=reply.addList();
-                            restPart.addDouble((180/M_PI)*torsoRest[0]);
-                            restPart.addDouble((180/M_PI)*torsoRest[1]);
-                            restPart.addDouble((180/M_PI)*torsoRest[2]);
-
-                            break;
-                        }
-
-                        default:
-                            CartesianSolver::respond(command,reply);
-                    }
-                else
-                    CartesianSolver::respond(command,reply);
-
-                break;
-            }
-
-            default:
-                CartesianSolver::respond(command,reply);
-        }
-    }
-    else
-        reply.addVocab(IKINSLV_VOCAB_REP_NACK);
-
-    return true;
 }
 
 
@@ -1491,7 +1535,7 @@ bool iCubArmCartesianSolver::decodeDOF(const Vector &_dof)
         newDOF[3]=newDOF[4]=newDOF[5]=dof[3];
 
         fprintf(stdout,"%s: attempt to set one shoulder's joint differently from others\n",
-                 slvName.c_str());
+                slvName.c_str());
     }
 
     return CartesianSolver::decodeDOF(newDOF);
@@ -1501,42 +1545,15 @@ bool iCubArmCartesianSolver::decodeDOF(const Vector &_dof)
 /************************************************************************/
 Vector iCubArmCartesianSolver::solve(Vector &xd)
 {
-    Vector dummyVector(1);
-
     // try to keep elbow height as low as possible
     double weight2ndTask=0.01;
     Vector xdElb(3); xdElb=0.0; xdElb[2]=-1.0;
     Vector w_2nd(3); w_2nd=0.0; w_2nd[2]=1.0;
 
-    double weight3rdTask=0.0;
-    Vector qd_3rd=dummyVector;
-    Vector w_3rd=dummyVector;
-
-    // minimize the torso displacement wrt rest position
-    if (!(*prt->chn)[0].isBlocked() ||
-        !(*prt->chn)[1].isBlocked() ||
-        !(*prt->chn)[2].isBlocked())
-    {
-        weight3rdTask=0.01;
-
-        w_3rd.resize(prt->chn->getDOF(),0.0);
-        qd_3rd=w_3rd;
-
-        int offs=0;
-        for (int i=0; i<torsoRest.length(); i++)
-            if (!(*prt->chn)[i].isBlocked())
-            {    
-                qd_3rd[offs]=torsoRest[offs];
-                w_3rd[offs]=1.0;
-
-                offs++;
-            }
-    }
-
     // call the solver and start the convergence from the current point
     return slv->solve(prt->chn->getAng(),xd,
                       weight2ndTask,xdElb,w_2nd,
-                      weight3rdTask,qd_3rd,w_3rd,
+                      weightRestTask,qd_RestTask,w_RestTask,
                       NULL,NULL,clb);
 }
 

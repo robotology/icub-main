@@ -8,8 +8,24 @@
  * which connect to the robot to retrieve information on the 
  * current joints configuration (along with the bounds) and by 
  * requesting a desired pose with queries made through YARP 
- * ports they return the corresponding target joints. 
- *  
+ * ports they return the corresponding target joints.
+ *
+ * The task to be solved is:
+ *
+ * \f[
+ * \mathbf{q}=\arg\min_{\mathbf{q}\in R^{n} }\left(\frac{1}{2}\left\|\mathbf{\alpha}_d-\mathit{K_{\alpha}}\left(\mathbf{q}\right)\right\|^2+\mathit{w}\cdot\frac{1}{2}\left\|\mathbf{w}_{rest}.*\left(\mathbf{q}_{rest}-\mathbf{q}\right)\right\|^2\right) \quad s.t.\,\left\{\begin{array}{l}\left\|\mathbf{x}_d-\mathit{K_x}\left(\mathbf{q}\right)\right\|^2<\epsilon\\\mathbf{q}_L<\mathbf{q}<\mathbf{q}_U\end{array}\right.
+ * \f]
+ *
+ * Where the solution \f$ \mathbf{q} \f$ is the joints vector with n components (depending
+ * on the task and the current dof configuration) that is guaranteed to be found within the physical 
+ * bounds expressed by \f$ \mathbf{q}_L \f$ and \f$ \mathbf{q}_U \f$; \f$ \mathbf{x}_d\equiv\left(x,y,d\right)_d \f$
+ * is the positional part of the desired pose, \f$ \mathbf{\alpha}_d \f$ is the
+ * desired orientation and \f$ \mathit{K_x} \f$ and \f$ \mathit{K_{\alpha}} \f$ are
+ * the forward kinematic maps for the position and orientation part, respectively;
+ * \f$ \mathbf{q}_{rest} \f$ is used to keep the solution as close as possible to a given rest
+ * position in the joints space (weighting with a positive factor \f$ \mathit{w} < 1 \f$ and also
+ * through \f$ \mathbf{w}_{rest} \f$ which allows to select a specific weight for each joint)
+ * and \f$ \epsilon \f$ is a small number in the range of \f$ \left[10^{-5},10^{-4}\right] \f$.
  *  
  * \section protocol_sec Solver protocol
  *  
@@ -17,7 +33,7 @@
  * can communicate and exchange information according to the 
  * following rules: 
  *  
- * \b "/<solverName>/in" accepts a properties-like bottle 
+ * <b> /<solverName>/in </b> accepts a properties-like bottle 
  *    containing the following requests in streaming mode:
  *  
  * \b xd request: example ([xd] (x y z ax ay az theta)), 
@@ -34,7 +50,10 @@
  * \b mode request: example ([mode] [cont]), selects the solver 
  *    mode between [cont] which implements a continuous tracking
  *    and [shot] which does not compensate for movements induced
- *    on unacatuated joints.
+ *    on unacatuated joints. Indeed, in continuous mode the
+ *    solver yields a new solution whenever a detected movements
+ *    on uncontrolled links determines a displacement from the
+ *    desired target.
  *  
  * \b dof request: example ([dof] (1 1 0 1 ...)), specifies 
  *    which dof of the chain are actuated (by putting 1 in the
@@ -43,24 +62,35 @@
  *    number of chain's dof. The special value 2 is used to keep
  *    the link status unchanged and proceed to next link.
  *  
+ * \b resp request: example ([resp] (20.0 0.0 0.0 ...)), 
+ *    specifies for each joint the rest position in degrees. The
+ *    reply will contain the rest position resulting from the
+ *    application of joints limits.
+ *  
+ * \b resw request: example ([resw] (1.0 0.0 1.0 ...)), 
+ *    specifies for each joint the weight used to compute the
+ *    rest position minimization task. The reply will contain
+ *    the weights as result of a saturation over zero.
+ *  
  * \b tok synchro: a double may be added to the request which 
  *    will be in turn sent back by the solver for
  *    synchronization purpose.
  *  
  * \note One single command sent to the streaming input port can 
  *       contain multiple requests: e.g. ([pose] [xyz]) ([dof]
- *       (1 0 1 2 1)) ([xd] (-0.1 0.1 0.1) ([tok] 1.234))
+ *       (1 0 1 2 1)) ([xd] (-0.1 0.1 0.1) ([tok] 1.234) ...)
  *  
  * \note Remind that the intended use of this port is in 
  *       streaming mode, thus it might happen that one request
  *       is dropped in favour of the most recent one. Therefore,
  *       as a general remark, rely on this port for xd requests
- *       and use rpc for dof, mode, pose requests (see below).
+ *       and use rpc for dof, mode, pose, ... requests (see
+ *       below).
  *
  *  
- * \b "/<solverName>/rpc" accepts a vocab-like bottle containing
- *    the following requests, executes them and replies with
- *    [ack]/[nack] and/or some useful info:
+ * <b> /<solverName>/rpc </b> accepts a vocab-like bottle 
+ *    containing the following requests, executes them and
+ *    replies with [ack]/[nack] and/or some useful info:
  *  
  * Commands issued through [set]/[get] vocab: 
  *  
@@ -79,21 +109,22 @@
  *    [verb].
  *  
  * \b dof request: example [set] [dof] (1 2 1 0 ...), [get] 
- *    [dof]. The reply will contain in both cases the current
- *    dof as result of the reconfiguration. The result may
- *    differ from the request since on certain limb (e.g. arm)
- *    some links are considered to form a unique super-link
- *    (e.g. the shoulder) whose components cannot be actuated
- *    separately.
+ *    [dof]. The reply will contain the current dof as result of
+ *    the reconfiguration. The result may differ from the
+ *    request since on certain limb (e.g. arm) some links are
+ *    considered to form a unique super-link (e.g. the shoulder)
+ *    whose components cannot be actuated separately.
  *  
- * <b>Arm-dependent solvers options</b>:
+ * \b resp request: example [set] [resp] (20.0 0.0 0.0 ...), 
+ *    [get] [resp]. Set/get for each joint the rest position in
+ *    degrees. The reply will contain the rest position
+ *    resulting from the application of joints limits.
  *  
- * \b rest request: example [set] [rest] (20.0 0.0 0.0), [get]
- *    [rest]. Set/get the torso rest position in degrees for
- *    pitch/roll/yaw angles. The reply will contain in both
- *    cases the current rest position but the result may differ
- *    from the request since the rest position shall lie within
- *    the torso joints limits.
+ * \b resw request: example [set] [resw] (1.0 0.0 1.0 ...), 
+ *    [get] [resw]. Set/get for each joint the weight used to
+ *    compute the rest position minimization task. The reply
+ *    will contain the weights as result of a saturation over
+ *    zero.
  *  
  * Commands concerning the thread status: 
  *  
@@ -115,8 +146,8 @@
  *    please see the documentation of open() method.
  *  
  *  
- * \b "/<solverName>/out" streams out a bottle containing the 
- *    result of optimization instance. The format is ([xd]
+ * <b> /<solverName>/out </b> streams out a bottle containing 
+ *    the result of optimization instance. The format is ([xd]
  *    (...)) ([x] (...)) ([q] (...) ([tok] ...)) as following:
  *  
  * \b xd property: contains the desired cartesian pose to be 
@@ -274,15 +305,28 @@ protected:
     yarp::sig::Vector unctrlJointsOld;
     yarp::sig::Vector dof;
 
+    yarp::sig::Vector restJntPos;
+    yarp::sig::Vector restWeights;
+
+    double weightRestTask;
+    yarp::sig::Vector qd_RestTask;
+    yarp::sig::Vector w_RestTask;
+
     yarp::os::Bottle solutionBottle;
 
     void *dofEvent;
 
     virtual PartDescriptor *getPartDesc(yarp::os::Searchable &options)=0;
-    virtual bool decodeDOF(const yarp::sig::Vector &_dof);
     virtual yarp::sig::Vector solve(yarp::sig::Vector &xd);
 
-    yarp::sig::Vector &encodeDOF();
+    virtual yarp::sig::Vector &encodeDOF();
+    virtual bool decodeDOF(const yarp::sig::Vector &_dof);
+
+    virtual bool handleJointsRestPosition(const yarp::os::Bottle *options,
+                                          yarp::os::Bottle *reply=NULL);
+    virtual bool handleJointsRestWeights(const yarp::os::Bottle *options,
+                                         yarp::os::Bottle *reply=NULL);    
+    
     bool   isNewDOF(const yarp::sig::Vector &_dof);
     bool   changeDOF(const yarp::sig::Vector &_dof);
 
@@ -290,7 +334,7 @@ protected:
     bool   setLimits(int axis, double min, double max);
     void   countUncontrolledJoints();
     void   latchUncontrolledJoints(yarp::sig::Vector &joints);
-    void   getFeedback(const bool wait=false);
+    void   getFeedback(const bool wait=false);    
     void   initPos();
     void   lock();
     void   unlock();    
@@ -304,6 +348,7 @@ protected:
     void   printInfo(const yarp::sig::Vector &xd, const yarp::sig::Vector &x, const yarp::sig::Vector &q,
                      const double t);    
 
+    virtual void prepareJointsRestTask();
     virtual bool respond(const yarp::os::Bottle &command, yarp::os::Bottle &reply);
     virtual bool threadInit();
     virtual void afterStart(bool);
@@ -348,8 +393,20 @@ public:
     *    the chain are actuated (by putting 1 in the corresponding
     *    position) and which not (with 0). The length of the
     *    provided list of 1's and 0's should match the number of
-    *    chain's dof. The special value 2 is used to keep the link
+    *    chain's links. The special value 2 is used to keep the link
     *    status unchanged and proceed to next link.
+    *  
+    * \b rest_pos : example (rest_pos (20.0 0.0 0.0 ...)), specifies
+    *    in degrees the joints rest position used as secondary task
+    *    in the minimization. The lenght of the provided list should
+    *    match the number of chain's links. Default values are (0.0
+    *    0.0 0.0 ...).
+    *  
+    * \b rest_weights : example (rest_weights (1.0 0.0 0.0 1.0 
+    *    ...)), specifies for each link the weights used for the
+    *    secondary task minimization. The length of the provided
+    *    list should match the number of the chain's links. Default
+    *    values are (0.0 0.0 0.0 ...).
     *  
     * \b period : example (period 30), specifies the thread period 
     *    in ms.
@@ -414,9 +471,6 @@ public:
 class iCubArmCartesianSolver : public CartesianSolver
 {
 protected:
-    yarp::sig::Vector torsoRest;
-
-    virtual bool respond(const yarp::os::Bottle &command, yarp::os::Bottle &reply);
     virtual PartDescriptor *getPartDesc(yarp::os::Searchable &options);
     virtual bool decodeDOF(const yarp::sig::Vector &_dof);
     virtual yarp::sig::Vector solve(yarp::sig::Vector &xd);
@@ -431,20 +485,6 @@ public:
     */
     iCubArmCartesianSolver(const std::string &_slvName="armCartSolver") : CartesianSolver(_slvName) { }
 
-    /**
-    * Configure the arm solver and start it up. 
-    * @param options contains the set of options in form of a 
-    *                Property object.
-    *  
-    * Further available options are:
-    *  
-    * \b torso_rest_pos : example (torso_rest_pos (20.0 0.0 0.0)), 
-    *    specifies in degrees the rest position for the torso
-    *    pitch/roll/yaw angles (if used); default values are (0.0
-    *    0.0 0.0).
-    *  
-    * @return true/false if successful/failed
-    */
     virtual bool open(yarp::os::Searchable &options);
 };
 

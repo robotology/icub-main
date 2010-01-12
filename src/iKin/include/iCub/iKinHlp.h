@@ -49,13 +49,21 @@ public:
     static void addDOFOption(yarp::os::Bottle &b, const yarp::sig::Vector &dof);
 
     /**
-    * Appends to a bottle all data needed to modify torso rest 
+    * Appends to a bottle all data needed to modify joints rest 
     * position. 
     * @param b is the bottle where to append the data.
-    * @param torsoRest is the vector of new torso rest position for 
-    *                  pitch/roll/yaw angles [deg].
+    * @param restPos is the vector of new joints rest position 
+    *                expressed in [deg].
     */
-    static void addTorsoRestOption(yarp::os::Bottle &b, const yarp::sig::Vector &torsoRest);
+    static void addJointsResPosOption(yarp::os::Bottle &b, const yarp::sig::Vector &restPos);
+
+    /**
+    * Appends to a bottle all data needed to modify joints rest 
+    * weights. 
+    * @param b is the bottle where to append the data.
+    * @param restWeights is the vector of new joints rest weights. 
+                                                                    */
+    static void addJointsRestWeightsOption(yarp::os::Bottle &b, const yarp::sig::Vector &restWeights);
 
     /**
     * Appends to a bottle all data needed to change the pose mode.

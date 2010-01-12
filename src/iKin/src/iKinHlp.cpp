@@ -36,9 +36,16 @@ void CartesianHelper::addDOFOption(Bottle &b, const Vector &dof)
 
 
 /************************************************************************/
-void CartesianHelper::addTorsoRestOption(Bottle &b, const Vector &torsoRest)
+void CartesianHelper::addJointsResPosOption(Bottle &b, const Vector &restPos)
 {
-    addVectorOption(b,IKINSLV_VOCAB_OPT_TORSO_REST,torsoRest);
+    addVectorOption(b,IKINSLV_VOCAB_OPT_REST_POS,restPos);
+}
+
+
+/************************************************************************/
+void CartesianHelper::addJointsRestWeightsOption(Bottle &b, const Vector &restWeights)
+{
+    addVectorOption(b,IKINSLV_VOCAB_OPT_REST_WEIGHTS,restWeights);
 }
 
 
