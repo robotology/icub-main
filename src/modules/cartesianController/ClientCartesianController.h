@@ -1,5 +1,20 @@
-// -*- mode:C++; tab-width:4; c-basic-offset:4; indent-tabs-mode:nil -*-
-// Developed by Ugo Pattacini
+/**
+ * @ingroup icub_hardware_modules 
+ * \defgroup clientcartesiancontroller clientcartesiancontroller
+ *  
+ * Implements the client part of the <a 
+ * href="http://eris.liralab.it/yarpdoc/dd/de6/classyarp_1_1dev_1_1ICartesianControl.html">Cartesian 
+ * Interface</a>.
+ *
+ * Copyright (C) 2009 RobotCub Consortium.
+ *
+ * Author: Ugo Pattacini
+ *
+ * CopyPolicy: Released under the terms of the GNU GPL v2.0.
+ *
+ * This file can be edited at 
+ * src/modules/cartesianController/ClientCartesianController.h 
+ */
 
 #ifndef __CLIENTCARTESIANCONTROLLER_H__
 #define __CLIENTCARTESIANCONTROLLER_H__
