@@ -271,6 +271,14 @@ bool ImageProcessModule::startImageProcessor(){
     return true;
 }
 
+void ImageProcessModule::resetFlags(){
+    currentProcessor->CONVFILTER=false;
+    currentProcessor->CONVMAX=false;
+    currentProcessor->CONVSEQ=false;
+    currentProcessor->IPPISOBEL=false;
+    currentProcessor->OPENCVSOBEL=false;
+}
+
 bool ImageProcessModule::respond(const Bottle &command,Bottle &reply){
         
     bool ok = false;
@@ -288,13 +296,22 @@ bool ImageProcessModule::respond(const Bottle &command,Bottle &reply){
             
 
             reply.addString("\n");
-            reply.addString("set s1 <s> \t: general set command \n");
+            reply.addString("run s1 <s> \t: general run command \n");
 
             reply.addString("\n");
             reply.addString("run rgb : run the rgb processor \n");
             reply.addString("run yuv : run the yuv processor");
-            
 
+            reply.addString("\n");
+            reply.addString("set s1 <s> \t: general run command \n");
+
+            reply.addString("\n");
+            reply.addString("set fil : set the convolution filter mode \n");
+            reply.addString("set max : set the convolution max filter mode \n");
+            reply.addString("set ocv : set the sobel mode (opencv algorightm) \n");
+            reply.addString("set ipp : set the sobel mode(ipp algorithm) \n");
+            reply.addString("set seq : set convolution in sequence mode \n");
+            
             reply.addString("\n");
 
 
@@ -341,12 +358,37 @@ bool ImageProcessModule::respond(const Bottle &command,Bottle &reply){
               
                 ok=true;
             }
-                break;
-            /*case COMMAND_VOCAB_TEMPORAL_BLUR:{
-                int size = command.get(2).asInt();
-                ok = this->setTemporalBlur(size);
-            }*/
-                break;
+            break;
+            case COMMAND_VOCAB_FIL:{
+                resetFlags();
+                this->currentProcessor->CONVFILTER=true;
+                ok = true;
+            }
+            break;
+            case COMMAND_VOCAB_MAX:{
+                resetFlags();
+                this->currentProcessor->CONVMAX=true;
+                ok = true;
+            }
+            break;
+            case COMMAND_VOCAB_SEQ:{
+                resetFlags();
+                this->currentProcessor->CONVSEQ=true;
+                ok = true;
+            }
+            break;
+            case COMMAND_VOCAB_IPP:{
+                resetFlags();
+                this->currentProcessor->IPPISOBEL=true;
+                ok = true;
+            }
+            break;
+            case COMMAND_VOCAB_OCV:{
+                resetFlags();
+                this->currentProcessor->OPENCVSOBEL=true;
+                ok = true;
+            }
+            break;
             case COMMAND_VOCAB_NAME:{
                 string s(command.get(2).asString().c_str());
                 reply.addString("connection 1");

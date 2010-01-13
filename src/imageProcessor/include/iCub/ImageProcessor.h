@@ -214,12 +214,18 @@ class ImageProcessor:public RateThread
         //ImageOf<PixelMono>* findEdgesRed (); //finds the edges in the red plane
         /**
         * finds the edges in the green plane
+        * @return the edge image of the green plane
         */
         ImageOf<PixelMono>* findEdgesGreen (); //
         /**
         * finds the edges in the blue plane
         */
-        ImageOf<PixelMono>* findEdgesBlue (); //
+        ImageOf<PixelMono>* findEdgesBlue ();
+        /**
+        * function that blanks out the border of a given image
+        * @param the input image which is modified by the function
+        */
+        void blankBorder(Ipp8u* image);
         /**
         * gets as output the outputImage (last image produced)
         */

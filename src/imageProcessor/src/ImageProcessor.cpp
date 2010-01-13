@@ -389,65 +389,7 @@ ImageOf<PixelMono>* ImageProcessor::findEdges(){
     return outputEdges;
 }
 
-/*ImageOf<PixelMono>* ImageProcessor::findEdgesBlueOpponency(){
-    int psb;
-    //1.gets the redGreen, greenRed and blueYellow from the this class
-    int width=this->redGreen_yarp->width();
-    int height=this->redGreen_yarp->height();
-    IppiSize srcsize ={width,height};
-    //2. convolve every colour opponency with the sobel in order to get edges
-    Ipp8u src2[3*3]={0, 1 ,2,-1,0,1,-2,-1,0};
-    //Ipp8u* outputRedGreen = ippiMalloc_8u_C1(width,height,&psb);
-    //Ipp8u* outputGreenRed = ippiMalloc_8u_C1(width,height,&psb);
-    Ipp8u* output = ippiMalloc_8u_C1(width,height,&psb);
-    Ipp8u dst2[2*2];
-    Ipp8u *pointer=NULL;
-    //*pointer=src1[0];
-    IppiSize src1Size = { 4, 4 };
-    IppiSize src2Size = { 3, 3 };
-    int divisor = 2;
-    int sign = 1;
-    //------------------------------
-    //ippiGenSobelKernel_16s ((Ipp16s *) src2, 9, 1, sign); // using "Sobel" kernel
-    //printf("the sizeof(IPP8u) is %d  while psb= %d\n",sizeof(Ipp8u),psb);
-    //ippiConvFull_16s_C1R (pointer, 8*sizeof(Ipp16s), src1Size, src2,3*sizeof(Ipp16s), src2Size, dst2, 2*sizeof(Ipp16s), 2 );
-    //ippiConvFull_8u_C1R(pointer,8*sizeof(Ipp8u),src1Size,src2,3*sizeof(Ipp8u),src2Size,dst,2*sizeof(Ipp8u),2);
-    //printf("redGreen_yarp: 0x%08x\n", redGreen_yarp->getPixelAddress(0,0));
-    //ippiConvValid_8u_C1R(redGreen_yarp->getPixelAddress(0,0),width,srcsize,src2,3,src2Size,&outputRedGreen[1 + width*1],psb,10);
-    //ippiConvValid_8u_C1R(greenRed_yarp->getPixelAddress(0,0),width,srcsize,src2,3,src2Size,&outputGreenRed[1 + width*1],psb,10);
-    //--------->   ippiConvValid_8u_C1R(blueYellow_yarp->getPixelAddress(0,0),width,srcsize,src2,3,src2Size,&outputBlueYellow[1 + width*1],psb,10);
-    //ippiFilterSobelCross_8s16s_C1R(redGreen_ippi,width,src2,3*sizeof(Ipp16s),srcs,ippMskSize5x5);
-    //printf("result of the computation [%d,%d,%d;%d,%d,%d;;%d,%d,%d]",src2[0],src2[1],src2[2],src2[3],src2[4],src2[5],src2[6],src2[7],src2[8]);
-    //5. save the output into the outputImage
-    //--------------------
-    
-    this->cannyOperator->proc(blueYellow_ippi,width,40,50);
-    output=this->cannyOperator->get_edgemap();
-    IppiMorphState* ppState;
-    Ipp8u pMask5x5[5*5] =
-       {1, 1, 1, 1, 1,
-        1, 1, 1, 1, 1,
-        1, 1, 1, 1, 1,
-        1, 1, 1, 1, 1,
-        1, 1, 1, 1, 1};
-    Ipp8u pMask3x3[3*3] =
-       {0, 1, 0,
-        1, 1, 1,
-        0, 1, 0,};
-    IppiSize maskSize5x5 = {5, 5};
-    IppiSize maskSize3x3 = {3, 3};
-    IppiPoint anchor = {1, 1};
-    ippiMorphologyInitAlloc_8u_C1R( srcsize.width, pMask3x3, maskSize3x3, anchor,&ppState);
-    //ippiDilate3x3_8u_C1IR(output,psb,srcsize);
-    //ippiDilate_8u_C1IR(output,psb,srcsize,pMask,maskSize,anchor);
-    //ippiDilateBorderReplicate_8u_C1R(output,psb,outputImage->getPixelAddress(0,0),width,srcsize,ippBorderRepl, ppState);
-    //ImageOf<PixelMono>* edges=new ImageOf<PixelMono>;
-    //edges->resize(width,height);
-    //ippiCopy_8u_C1R(outputRedGreen,width,redGreenEdges_yarp->getPixelAddress(0,0),width,srcsize);
-    //ippiCopy_8u_C1R(outputGreenRed,width,greenRedEdges_yarp->getPixelAddress(0,0),width,srcsize);
-    ippiCopy_8u_C1R(output,width,outputImage->getPixelAddress(0,0),width,srcsize);
-    return outputImage;
-}*/
+
 
 ImageOf<PixelMono>* ImageProcessor::findEdgesBlueOpponency(){
     int psb,psb32;
@@ -509,158 +451,160 @@ ImageOf<PixelMono>* ImageProcessor::findEdgesBlueOpponency(){
     //conv_8u_to_32f(blueYellow_yarp->getPixelAddress(0,0),width,inputBlueYellow32,psb32,srcsize);
     //ippiConvert_8u32f_C1R(blueYellow_yarp->getPixelAddress(0,0),width,inputBlueYellow32,psb32,srcsize);
 
-if(CONVSEQ){
-    //convolution of the previous convolution
-    int CONVSEQ_TH=700;
-    /*ippiConvValid_32f_C1R(inputBlueYellow32,psb32,srcsize,src0,3,src2Size,&outputBlueYellow32[1 + psb32*1],psb32);
-    ippiCopy_32f_C1R(outputBlueYellow32,psb32,outputBlueYellow32B,psb32,srcsize);
-    ippiConvValid_32f_C1R(outputBlueYellow32B,psb32,srcsize,src1,3,src2Size,&outputBlueYellow32[1 + psb32*1],psb32);
-    ippiCopy_32f_C1R(outputBlueYellow32,psb32,outputBlueYellow32B,psb32,srcsize);
-    ippiConvValid_32f_C1R(outputBlueYellow32B,psb32,srcsize,src2,3,src2Size,&outputBlueYellow32[1 + psb32*1],psb32);
-    ippiCopy_32f_C1R(outputBlueYellow32,psb32,outputBlueYellow32B,psb32,srcsize);
-    ippiConvValid_32f_C1R(outputBlueYellow32B,psb32,srcsize,src3,3,src2Size,&outputBlueYellow32[1 + psb32*1],psb32);
-    ippiCopy_32f_C1R(outputBlueYellow32,psb32,outputBlueYellow32B,psb32,srcsize);
-    ippiConvValid_32f_C1R(outputBlueYellow32B,psb32,srcsize,src4,3,src2Size,&outputBlueYellow32[1 + psb32*1],psb32);
-    ippiCopy_32f_C1R(outputBlueYellow32,psb32,outputBlueYellow32B,psb32,srcsize);
-    ippiConvValid_32f_C1R(outputBlueYellow32B,psb32,srcsize,src5,3,src2Size,&outputBlueYellow32[1 + psb32*1],psb32);
-    ippiCopy_32f_C1R(outputBlueYellow32,psb32,outputBlueYellow32B,psb32,srcsize);
-    ippiConvValid_32f_C1R(outputBlueYellow32B,psb32,srcsize,src6,3,src2Size,&outputBlueYellow32[1 + psb32*1],psb32);
-    ippiCopy_32f_C1R(outputBlueYellow32,psb32,outputBlueYellow32B,psb32,srcsize);
-    ippiConvValid_32f_C1R(outputBlueYellow32B,psb32,srcsize,src7,3,src2Size,&outputBlueYellow32[1 + psb32*1],psb32);*/
-}
-
-if(CONVMAX){
-    int CONVMAX_TH=700;
-    ippiConvValid_32f_C1R(inputBlueYellow32,psb32,srcsize,&src0f[0],3,src2Size,&outputBlueYellow32[1 + psb32*1],psb32);
-    ippiConvValid_32f_C1R(inputBlueYellow32,psb32,srcsize,&src1f[0],3,src2Size,&outputBlueYellow32B[1 + psb32*1],psb32);
-    for(int i=0; i<320*240;i++){
-        if(outputBlueYellow32[i]<outputBlueYellow32B[i])
-            outputBlueYellow32[i]=outputBlueYellow32B[i];
-    }
-    ippiConvValid_32f_C1R(inputBlueYellow32,psb32,srcsize,&src2f[0],3,src2Size,&outputBlueYellow32B[1 + psb32*1],psb32);
-    for(int i=0; i<320*240;i++){
-        if(outputBlueYellow32[i]<outputBlueYellow32B[i])
-            outputBlueYellow32[i]=outputBlueYellow32B[i];
-    }
-    ippiConvValid_32f_C1R(inputBlueYellow32,psb32,srcsize,&src3f[0],3,src2Size,&outputBlueYellow32B[1 + psb32*1],psb32);
-    for(int i=0; i<320*240;i++){
-        if(outputBlueYellow32[i]<outputBlueYellow32B[i])
-            outputBlueYellow32[i]=outputBlueYellow32B[i];
-    }
-    ippiConvValid_32f_C1R(inputBlueYellow32,psb32,srcsize,&src4f[0],3,src2Size,&outputBlueYellow32B[1 + psb32*1],psb32);
-    for(int i=0; i<320*240;i++){
-        if(outputBlueYellow32[i]<outputBlueYellow32B[i])
-            outputBlueYellow32[i]=outputBlueYellow32B[i];
-    }
-    ippiConvValid_32f_C1R(inputBlueYellow32,psb32,srcsize,&src5f[0],3,src2Size,&outputBlueYellow32B[1 + psb32*1],psb32);
-    for(int i=0; i<320*240;i++){
-        if(outputBlueYellow32[i]<outputBlueYellow32B[i])
-            outputBlueYellow32[i]=outputBlueYellow32B[i];
-    }
-    ippiConvValid_32f_C1R(inputBlueYellow32,psb32,srcsize,&src6f[0],3,src2Size,&outputBlueYellow32B[1 + psb32*1],psb32);
-    for(int i=0; i<320*240;i++){
-        if(outputBlueYellow32[i]<outputBlueYellow32B[i])
-            outputBlueYellow32[i]=outputBlueYellow32B[i];
-    }
-    ippiConvValid_32f_C1R(inputBlueYellow32,psb32,srcsize,&src7f[0],3,src2Size,&outputBlueYellow32B[1 + psb32*1],psb32);
-    for(int i=0; i<320*240;i++){
-        if(outputBlueYellow32[i]<outputBlueYellow32B[i])
-            outputBlueYellow32[i]=outputBlueYellow32B[i];
-    }
-}
-
-if (CONVFILTER){
-    int CONVFILTER_TH=20;
-    //ippiFilterSobelHoriz_32f_C1R(inputRedGreen32,psb32,outputRedGreen32B,psb32,srcsize);
-    //ippiFilterSobelHoriz_8u_C1R(redGreen_yarp->getPixelAddress(0,0),width,inputRedGreen,psb,srcsize);
-    //ippiFilter_32f_C1R(inputRedGreen32,psb32,outputRedGreen32B,psb32,dstsize,src1,src2Size,anchor);
-    //ippiFilterGauss_32f_C1R(inputRedGreen32,psb32,outputRedGreen32B,psb32,srcsize,ippMskSize5x5);
-    //ippiFilterGauss_8u_C1R(redGreen_yarp->getPixelAddress(0,0),width,outputRedGreen,psb,srcsize,ippMskSize5x5);
-    //ippiFilterSobelHoriz_8u_C1R(redGreen_yarp->getPixelAddress(0,0),width,outputRedGreen,psb,srcsize);
-
-    ippiFilter_8u_C1R(blueYellow_yarp->getPixelAddress(0,0),width,outputBlueYellow,psb,dstsize,&src0s[0],src2Size,anchor,CONVFILTER_TH);
-    ippiFilter_8u_C1R(blueYellow_yarp->getPixelAddress(0,0),width,outputBlueYellow2,psb,dstsize,&src1s[0],src2Size,anchor,CONVFILTER_TH);
-    for(int i=0; i<320*240;i++){
-        if(outputBlueYellow[i]<outputBlueYellow2[i])
-            outputBlueYellow[i]=outputBlueYellow2[i];
-    }
-    ippiFilter_8u_C1R(blueYellow_yarp->getPixelAddress(0,0),width,outputBlueYellow2,psb,dstsize,&src2s[0],src2Size,anchor,CONVFILTER_TH);
-    for(int i=0; i<320*240;i++){
-        if(outputBlueYellow[i]<outputBlueYellow2[i])
-            outputBlueYellow[i]=outputBlueYellow2[i];
-    }
-    ippiFilter_8u_C1R(blueYellow_yarp->getPixelAddress(0,0),width,outputBlueYellow2,psb,dstsize,&src3s[0],src2Size,anchor,CONVFILTER_TH);
-    for(int i=0; i<320*240;i++){
-        if(outputBlueYellow[i]<outputBlueYellow2[i])
-            outputBlueYellow[i]=outputBlueYellow2[i];
-    }
-    ippiFilter_8u_C1R(blueYellow_yarp->getPixelAddress(0,0),width,outputBlueYellow2,psb,dstsize,&src4s[0],src2Size,anchor,CONVFILTER_TH);
-    for(int i=0; i<320*240;i++){
-        if(outputBlueYellow[i]<outputBlueYellow2[i])
-            outputBlueYellow[i]=outputBlueYellow2[i];
-    }
-    ippiFilter_8u_C1R(blueYellow_yarp->getPixelAddress(0,0),width,outputBlueYellow2,psb,dstsize,&src5s[0],src2Size,anchor,CONVFILTER_TH);
-    for(int i=0; i<320*240;i++){
-        if(outputBlueYellow[i]<outputBlueYellow2[i])
-            outputBlueYellow[i]=outputBlueYellow2[i];
-    }
-    ippiFilter_8u_C1R(blueYellow_yarp->getPixelAddress(0,0),width,outputBlueYellow2,psb,dstsize,&src6s[0],src2Size,anchor,CONVFILTER_TH);
-    for(int i=0; i<320*240;i++){
-        if(outputBlueYellow[i]<outputBlueYellow2[i])
-            outputBlueYellow[i]=outputBlueYellow2[i];
-    }
-    ippiFilter_8u_C1R(blueYellow_yarp->getPixelAddress(0,0),width,outputBlueYellow2,psb,dstsize,&src7s[0],src2Size,anchor,CONVFILTER_TH);
-    for(int i=0; i<320*240;i++){
-        if(outputBlueYellow[i]<outputBlueYellow2[i])
-            outputBlueYellow[i]=outputBlueYellow2[i];
+    if(CONVSEQ){
+        //convolution of the previous convolution
+        int CONVSEQ_TH=700;
+        ippiConvValid_32f_C1R(inputBlueYellow32,psb32,srcsize,src0f,3,src2Size,&outputBlueYellow32[1 + psb32*1],psb32);
+        ippiCopy_32f_C1R(outputBlueYellow32,psb32,outputBlueYellow32B,psb32,srcsize);
+        ippiConvValid_32f_C1R(outputBlueYellow32B,psb32,srcsize,src1f,3,src2Size,&outputBlueYellow32[1 + psb32*1],psb32);
+        ippiCopy_32f_C1R(outputBlueYellow32,psb32,outputBlueYellow32B,psb32,srcsize);
+        ippiConvValid_32f_C1R(outputBlueYellow32B,psb32,srcsize,src2f,3,src2Size,&outputBlueYellow32[1 + psb32*1],psb32);
+        ippiCopy_32f_C1R(outputBlueYellow32,psb32,outputBlueYellow32B,psb32,srcsize);
+        ippiConvValid_32f_C1R(outputBlueYellow32B,psb32,srcsize,src3f,3,src2Size,&outputBlueYellow32[1 + psb32*1],psb32);
+        ippiCopy_32f_C1R(outputBlueYellow32,psb32,outputBlueYellow32B,psb32,srcsize);
+        ippiConvValid_32f_C1R(outputBlueYellow32B,psb32,srcsize,src4f,3,src2Size,&outputBlueYellow32[1 + psb32*1],psb32);
+        ippiCopy_32f_C1R(outputBlueYellow32,psb32,outputBlueYellow32B,psb32,srcsize);
+        ippiConvValid_32f_C1R(outputBlueYellow32B,psb32,srcsize,src5f,3,src2Size,&outputBlueYellow32[1 + psb32*1],psb32);
+        ippiCopy_32f_C1R(outputBlueYellow32,psb32,outputBlueYellow32B,psb32,srcsize);
+        ippiConvValid_32f_C1R(outputBlueYellow32B,psb32,srcsize,src6f,3,src2Size,&outputBlueYellow32[1 + psb32*1],psb32);
+        ippiCopy_32f_C1R(outputBlueYellow32,psb32,outputBlueYellow32B,psb32,srcsize);
+        ippiConvValid_32f_C1R(outputBlueYellow32B,psb32,srcsize,src7f,3,src2Size,&outputBlueYellow32[1 + psb32*1],psb32);
     }
 
-    //ippiCopy_32f_C1R(inputRedGreen32,psb32,outputBlueYellow32B,psb32,srcsize);
-}
-if (IPPISOBEL){
-    ippiFilterSobelHoriz_8u_C1R(blueYellow_yarp->getPixelAddress(0,0),width,outputBlueYellow3,psb,srcsize);
-    ippiFilterSobelVert_8u_C1R(blueYellow_yarp->getPixelAddress(0,0),width,outputBlueYellow2,psb,srcsize);
-    
-    for(int i=0; i<320*240;i++){
-        if(outputBlueYellow3==NULL){
-            printf("outputBlueYellow3 NULL");
-            break;
+    if(CONVMAX){
+        int CONVMAX_TH=700;
+        ippiConvValid_32f_C1R(inputBlueYellow32,psb32,srcsize,&src0f[0],3,src2Size,&outputBlueYellow32[1 + psb32*1],psb32);
+        ippiConvValid_32f_C1R(inputBlueYellow32,psb32,srcsize,&src1f[0],3,src2Size,&outputBlueYellow32B[1 + psb32*1],psb32);
+        for(int i=0; i<320*240;i++){
+            if(outputBlueYellow32[i]<outputBlueYellow32B[i])
+                outputBlueYellow32[i]=outputBlueYellow32B[i];
         }
-        if(outputBlueYellow2==NULL){ 
-            printf("outputBlueYellow2 NULL");
-            break;
+        ippiConvValid_32f_C1R(inputBlueYellow32,psb32,srcsize,&src2f[0],3,src2Size,&outputBlueYellow32B[1 + psb32*1],psb32);
+        for(int i=0; i<320*240;i++){
+            if(outputBlueYellow32[i]<outputBlueYellow32B[i])
+                outputBlueYellow32[i]=outputBlueYellow32B[i];
         }
-        if(outputBlueYellow3[i]<outputBlueYellow2[i])
-            outputBlueYellow3[i]=outputBlueYellow2[i];
+        ippiConvValid_32f_C1R(inputBlueYellow32,psb32,srcsize,&src3f[0],3,src2Size,&outputBlueYellow32B[1 + psb32*1],psb32);
+        for(int i=0; i<320*240;i++){
+            if(outputBlueYellow32[i]<outputBlueYellow32B[i])
+                outputBlueYellow32[i]=outputBlueYellow32B[i];
+        }
+        ippiConvValid_32f_C1R(inputBlueYellow32,psb32,srcsize,&src4f[0],3,src2Size,&outputBlueYellow32B[1 + psb32*1],psb32);
+        for(int i=0; i<320*240;i++){
+            if(outputBlueYellow32[i]<outputBlueYellow32B[i])
+                outputBlueYellow32[i]=outputBlueYellow32B[i];
+        }
+        ippiConvValid_32f_C1R(inputBlueYellow32,psb32,srcsize,&src5f[0],3,src2Size,&outputBlueYellow32B[1 + psb32*1],psb32);
+        for(int i=0; i<320*240;i++){
+            if(outputBlueYellow32[i]<outputBlueYellow32B[i])
+                outputBlueYellow32[i]=outputBlueYellow32B[i];
+        }
+        ippiConvValid_32f_C1R(inputBlueYellow32,psb32,srcsize,&src6f[0],3,src2Size,&outputBlueYellow32B[1 + psb32*1],psb32);
+        for(int i=0; i<320*240;i++){
+            if(outputBlueYellow32[i]<outputBlueYellow32B[i])
+                outputBlueYellow32[i]=outputBlueYellow32B[i];
+        }
+        ippiConvValid_32f_C1R(inputBlueYellow32,psb32,srcsize,&src7f[0],3,src2Size,&outputBlueYellow32B[1 + psb32*1],psb32);
+        for(int i=0; i<320*240;i++){
+            if(outputBlueYellow32[i]<outputBlueYellow32B[i])
+                outputBlueYellow32[i]=outputBlueYellow32B[i];
+        }
+}
+
+    if (CONVFILTER){
+        int CONVFILTER_TH=20;
+        //ippiFilterSobelHoriz_32f_C1R(inputRedGreen32,psb32,outputRedGreen32B,psb32,srcsize);
+        //ippiFilterSobelHoriz_8u_C1R(redGreen_yarp->getPixelAddress(0,0),width,inputRedGreen,psb,srcsize);
+        //ippiFilter_32f_C1R(inputRedGreen32,psb32,outputRedGreen32B,psb32,dstsize,src1,src2Size,anchor);
+        //ippiFilterGauss_32f_C1R(inputRedGreen32,psb32,outputRedGreen32B,psb32,srcsize,ippMskSize5x5);
+        //ippiFilterGauss_8u_C1R(redGreen_yarp->getPixelAddress(0,0),width,outputRedGreen,psb,srcsize,ippMskSize5x5);
+        //ippiFilterSobelHoriz_8u_C1R(redGreen_yarp->getPixelAddress(0,0),width,outputRedGreen,psb,srcsize);
+
+        ippiFilter_8u_C1R(blueYellow_yarp->getPixelAddress(0,0),width,outputBlueYellow,psb,dstsize,&src0s[0],src2Size,anchor,CONVFILTER_TH);
+        ippiFilter_8u_C1R(blueYellow_yarp->getPixelAddress(0,0),width,outputBlueYellow2,psb,dstsize,&src1s[0],src2Size,anchor,CONVFILTER_TH);
+        for(int i=0; i<320*240;i++){
+            if(outputBlueYellow[i]<outputBlueYellow2[i])
+                outputBlueYellow[i]=outputBlueYellow2[i];
+        }
+        ippiFilter_8u_C1R(blueYellow_yarp->getPixelAddress(0,0),width,outputBlueYellow2,psb,dstsize,&src2s[0],src2Size,anchor,CONVFILTER_TH);
+        for(int i=0; i<320*240;i++){
+            if(outputBlueYellow[i]<outputBlueYellow2[i])
+                outputBlueYellow[i]=outputBlueYellow2[i];
+        }
+        ippiFilter_8u_C1R(blueYellow_yarp->getPixelAddress(0,0),width,outputBlueYellow2,psb,dstsize,&src3s[0],src2Size,anchor,CONVFILTER_TH);
+        for(int i=0; i<320*240;i++){
+            if(outputBlueYellow[i]<outputBlueYellow2[i])
+                outputBlueYellow[i]=outputBlueYellow2[i];
+        }
+        ippiFilter_8u_C1R(blueYellow_yarp->getPixelAddress(0,0),width,outputBlueYellow2,psb,dstsize,&src4s[0],src2Size,anchor,CONVFILTER_TH);
+        for(int i=0; i<320*240;i++){
+            if(outputBlueYellow[i]<outputBlueYellow2[i])
+                outputBlueYellow[i]=outputBlueYellow2[i];
+        }
+        ippiFilter_8u_C1R(blueYellow_yarp->getPixelAddress(0,0),width,outputBlueYellow2,psb,dstsize,&src5s[0],src2Size,anchor,CONVFILTER_TH);
+        for(int i=0; i<320*240;i++){
+            if(outputBlueYellow[i]<outputBlueYellow2[i])
+                outputBlueYellow[i]=outputBlueYellow2[i];
+        }
+        ippiFilter_8u_C1R(blueYellow_yarp->getPixelAddress(0,0),width,outputBlueYellow2,psb,dstsize,&src6s[0],src2Size,anchor,CONVFILTER_TH);
+        for(int i=0; i<320*240;i++){
+            if(outputBlueYellow[i]<outputBlueYellow2[i])
+                outputBlueYellow[i]=outputBlueYellow2[i];
+        }
+        ippiFilter_8u_C1R(blueYellow_yarp->getPixelAddress(0,0),width,outputBlueYellow2,psb,dstsize,&src7s[0],src2Size,anchor,CONVFILTER_TH);
+        for(int i=0; i<320*240;i++){
+            if(outputBlueYellow[i]<outputBlueYellow2[i])
+                outputBlueYellow[i]=outputBlueYellow2[i];
+        }
+
+        //ippiCopy_32f_C1R(inputRedGreen32,psb32,outputBlueYellow32B,psb32,srcsize);
+    }
+         
+    if (IPPISOBEL){
+        ippiFilterSobelHoriz_8u_C1R(blueYellow_yarp->getPixelAddress(0,0),width,outputBlueYellow3,psb,srcsize);
+        ippiFilterSobelVert_8u_C1R(blueYellow_yarp->getPixelAddress(0,0),width,outputBlueYellow2,psb,srcsize);
+        
+        for(int i=0; i<320*240;i++){
+            if(outputBlueYellow3==NULL){
+                printf("outputBlueYellow3 NULL");
+                break;
+            }
+            if(outputBlueYellow2==NULL){ 
+                printf("outputBlueYellow2 NULL");
+                break;
+            }
+            if(outputBlueYellow3[i]<outputBlueYellow2[i])
+                outputBlueYellow3[i]=outputBlueYellow2[i];
+        }
+
+        IppiSize msksize={3,3};
+        Ipp8u src[3*3]={1,1,1,1,1,1,1,1,1};
+        ippiConvValid_8u_C1R(outputBlueYellow3,psb,srcsize,src,3,msksize,&outputBlueYellow[1 + width*1],psb,10);
+        /*conv_8u_to_32f(blueYellow_yarp->getPixelAddress(0,0),width,outputBlueYellow32,psb32,srcsize);
+        ippiFilterSobelCross_32f_C1R(outputBlueYellow32,psb32,outputBlueYellow32B,psb32,srcsize,ippMskSize3x3);
+        conv_32f_to_8u(outputBlueYellow32B,psb32,outputBlueYellow2,psb,srcsize);
+        for(int i=0; i<320*240;i++){
+            if(outputBlueYellow[i]<outputBlueYellow2[i])
+                outputBlueYellow[i]=outputBlueYellow2[i];
+        }*/
     }
 
-    IppiSize msksize={3,3};
-    Ipp8u src[3*3]={1,1,1,1,1,1,1,1,1};
-    ippiConvValid_8u_C1R(outputBlueYellow3,psb,srcsize,src,3,msksize,&outputBlueYellow[1 + width*1],psb,10);
-    /*conv_8u_to_32f(blueYellow_yarp->getPixelAddress(0,0),width,outputBlueYellow32,psb32,srcsize);
-    ippiFilterSobelCross_32f_C1R(outputBlueYellow32,psb32,outputBlueYellow32B,psb32,srcsize,ippMskSize3x3);
-    conv_32f_to_8u(outputBlueYellow32B,psb32,outputBlueYellow2,psb,srcsize);
-    for(int i=0; i<320*240;i++){
-        if(outputBlueYellow[i]<outputBlueYellow2[i])
-            outputBlueYellow[i]=outputBlueYellow2[i];
-    }*/
-}
-if(OPENCVSOBEL){
-    IppiSize msksize={3,3};
-    if(blueYellow_flag){
-        cvSobel(blueYellow_yarp->getIplImage(),cvImage16,1,1,3);
-        cvConvertScale(cvImage16,cvImage8);
-    }
-    else
-        cvImage8=cvCreateImage(cvSize(width,height),IPL_DEPTH_8U,1);
+    if(OPENCVSOBEL){
+        IppiSize msksize={3,3};
+        if(blueYellow_flag){
+            cvSobel(blueYellow_yarp->getIplImage(),cvImage16,1,1,3);
+            cvConvertScale(cvImage16,cvImage8);
+        }
+        else
+            cvImage8=cvCreateImage(cvSize(width,height),IPL_DEPTH_8U,1);
 
-    ippiCopy_8u_C1R((unsigned char*)cvImage8->imageData,cvImage8->widthStep,outputBlueYellow2,psb,srcsize);
-    Ipp8u src[3*3]={1,maskSeed,1,
-                    maskSeed,maskTop,maskSeed,
-                    1,maskSeed,1};
-    ippiConvValid_8u_C1R(outputBlueYellow2,psb,srcsize,src,3,msksize,&outputBlueYellow[1 + width*1],psb,1);
-    //ippiFilterMedian_8u_C1R((unsigned char*)cvImage->imageData,width,outputBlueYellow,psb,srcsize,msksize,anchor);
-}
+        ippiCopy_8u_C1R((unsigned char*)cvImage8->imageData,cvImage8->widthStep,outputBlueYellow2,psb,srcsize);
+        Ipp8u src[3*3]={1,maskSeed,1,
+                        maskSeed,maskTop,maskSeed,
+                        1,maskSeed,1};
+        ippiConvValid_8u_C1R(outputBlueYellow2,psb,srcsize,src,3,msksize,&outputBlueYellow[1 + width*1],psb,1);
+        //ippiFilterMedian_8u_C1R((unsigned char*)cvImage->imageData,width,outputBlueYellow,psb,srcsize,msksize,anchor);
+    }
 
     
 
@@ -749,44 +693,7 @@ ImageOf<PixelMono>* ImageProcessor::findEdgesBlue(){
     return outputImage;
 }
 
-/*ImageOf<PixelMono>* ImageProcessor::findEdgesGreenOpponency(){
-    int psb;
-    //1.gets the redGreen, greenRed and blueYellow from the this class
-    int width=this->redGreen_yarp->width();
-    int height=this->redGreen_yarp->height();
-    IppiSize srcsize ={width,height};
-    //2. convolve every colour opponency with the sobel in order to get edges
-    Ipp8u src2[3*3]={0, 1 ,2,-1,0,1,-2,-1,0};
-    //Ipp8u* outputRedGreen = ippiMalloc_8u_C1(width,height,&psb);
-    Ipp8u* output = ippiMalloc_8u_C1(width,height,&psb);
-    //Ipp8u* outputBlueYellow = ippiMalloc_8u_C1(width,height,&psb);
-    Ipp8u dst2[2*2];
-    Ipp8u *pointer=NULL;
-    //*pointer=src1[0];
-    IppiSize src1Size = { 4, 4 };
-    IppiSize src2Size = { 3, 3 };
-    int divisor = 2;
-    int sign = 1;
-    //------------
-    //ippiGenSobelKernel_16s ((Ipp16s *) src2, 9, 1, sign); // using "Sobel" kernel
-    //printf("the sizeof(IPP8u) is %d  while psb= %d\n",sizeof(Ipp8u),psb);
-    //ippiConvFull_16s_C1R (pointer, 8*sizeof(Ipp16s), src1Size, src2,3*sizeof(Ipp16s), src2Size, dst2, 2*sizeof(Ipp16s), 2 );
-    //ippiConvFull_8u_C1R(pointer,8*sizeof(Ipp8u),src1Size,src2,3*sizeof(Ipp8u),src2Size,dst,2*sizeof(Ipp8u),2);
-    //printf("redGreen_yarp: 0x%08x\n", redGreen_yarp->getPixelAddress(0,0));
-    //ippiConvValid_8u_C1R(redGreen_yarp->getPixelAddress(0,0),width,srcsize,src2,3,src2Size,&outputRedGreen[1 + width*1],psb,10);
-    //----------->  ippiConvValid_8u_C1R(greenRed_yarp->getPixelAddress(0,0),width,srcsize,src2,3,src2Size,&outputGreenRed[1 + width*1],psb,10);
-    //ippiConvValid_8u_C1R(blueYellow_yarp->getPixelAddress(0,0),width,srcsize,src2,3,src2Size,&outputBlueYellow[1 + width*1],psb,10);
-    //ippiFilterSobelCross_8s16s_C1R(redGreen_ippi,width,src2,3*sizeof(Ipp16s),srcs,ippMskSize5x5);
-    //printf("result of the computation [%d,%d,%d;%d,%d,%d;;%d,%d,%d]",src2[0],src2[1],src2[2],src2[3],src2[4],src2[5],src2[6],src2[7],src2[8]);
-    //5. save the output into the outputImage
-    //--------------------
-    this->cannyOperator->proc(greenRed_ippi,width,40,50);
-    output=this->cannyOperator->get_edgemap();
-    
-    //ippiCopy_8u_C1R(outputRedGreen,width,redGreenEdges_yarp->getPixelAddress(0,0),width,srcsize);
-    ippiCopy_8u_C1R(output,width,outputImage->getPixelAddress(0,0),width,srcsize);
-    return outputImage;
-}*/
+
 
 ImageOf<PixelMono>* ImageProcessor::findEdgesGreenOpponency(){
     int psb,psb32;
@@ -848,155 +755,155 @@ ImageOf<PixelMono>* ImageProcessor::findEdgesGreenOpponency(){
 
     if(CONVSEQ){
         //convolution of the previous convolution
-        /*ippiConvValid_32f_C1R(inputGreenRed32,psb32,srcsize,src0,3,src2Size,&outputGreenRed32[1 + psb32*1],psb32);
+        ippiConvValid_32f_C1R(inputGreenRed32,psb32,srcsize,src0f,3,src2Size,&outputGreenRed32[1 + psb32*1],psb32);
         ippiCopy_32f_C1R(outputGreenRed32,psb32,outputGreenRed32B,psb32,srcsize);
-        ippiConvValid_32f_C1R(outputGreenRed32B,psb32,srcsize,src1,3,src2Size,&outputGreenRed32[1 + psb32*1],psb32);
+        ippiConvValid_32f_C1R(outputGreenRed32B,psb32,srcsize,src1f,3,src2Size,&outputGreenRed32[1 + psb32*1],psb32);
         ippiCopy_32f_C1R(outputGreenRed32,psb32,outputGreenRed32B,psb32,srcsize);
-        ippiConvValid_32f_C1R(outputGreenRed32B,psb32,srcsize,src2,3,src2Size,&outputGreenRed32[1 + psb32*1],psb32);
+        ippiConvValid_32f_C1R(outputGreenRed32B,psb32,srcsize,src2f,3,src2Size,&outputGreenRed32[1 + psb32*1],psb32);
         ippiCopy_32f_C1R(outputGreenRed32,psb32,outputGreenRed32B,psb32,srcsize);
-        ippiConvValid_32f_C1R(outputGreenRed32B,psb32,srcsize,src3,3,src2Size,&outputGreenRed32[1 + psb32*1],psb32);
+        ippiConvValid_32f_C1R(outputGreenRed32B,psb32,srcsize,src3f,3,src2Size,&outputGreenRed32[1 + psb32*1],psb32);
         ippiCopy_32f_C1R(outputGreenRed32,psb32,outputGreenRed32B,psb32,srcsize);
-        ippiConvValid_32f_C1R(outputGreenRed32B,psb32,srcsize,src4,3,src2Size,&outputGreenRed32[1 + psb32*1],psb32);
+        ippiConvValid_32f_C1R(outputGreenRed32B,psb32,srcsize,src4f,3,src2Size,&outputGreenRed32[1 + psb32*1],psb32);
         ippiCopy_32f_C1R(outputGreenRed32,psb32,outputGreenRed32B,psb32,srcsize);
-        ippiConvValid_32f_C1R(outputGreenRed32B,psb32,srcsize,src5,3,src2Size,&outputGreenRed32[1 + psb32*1],psb32);
+        ippiConvValid_32f_C1R(outputGreenRed32B,psb32,srcsize,src5f,3,src2Size,&outputGreenRed32[1 + psb32*1],psb32);
         ippiCopy_32f_C1R(outputGreenRed32,psb32,outputGreenRed32B,psb32,srcsize);
-        ippiConvValid_32f_C1R(outputGreenRed32B,psb32,srcsize,src6,3,src2Size,&outputGreenRed32[1 + psb32*1],psb32);
+        ippiConvValid_32f_C1R(outputGreenRed32B,psb32,srcsize,src6f,3,src2Size,&outputGreenRed32[1 + psb32*1],psb32);
         ippiCopy_32f_C1R(outputGreenRed32,psb32,outputGreenRed32B,psb32,srcsize);
-        ippiConvValid_32f_C1R(outputGreenRed32B,psb32,srcsize,src7,3,src2Size,&outputGreenRed32[1 + psb32*1],psb32);*/
+        ippiConvValid_32f_C1R(outputGreenRed32B,psb32,srcsize,src7f,3,src2Size,&outputGreenRed32[1 + psb32*1],psb32);
     }
 
-if(CONVMAX){
-    int CONVMAX_TH=700;
-    ippiConvValid_32f_C1R(inputGreenRed32,width,srcsize,&src0f[0],3,src2Size,&outputGreenRed32[1 + width*1],psb32);
-    ippiConvValid_32f_C1R(inputGreenRed32,width,srcsize,&src1f[0],3,src2Size,&outputGreenRed32B[1 + width*1],psb32);
-    for(int i=0; i<320*240;i++){
-        if(outputGreenRed32[i]<outputGreenRed32B[i])
-            outputGreenRed32[i]=outputGreenRed32B[i];
-    }
-    ippiConvValid_32f_C1R(inputGreenRed32,width,srcsize,&src2f[0],3,src2Size,&outputGreenRed32B[1 + width*1],psb32);
-    for(int i=0; i<320*240;i++){
-        if(outputGreenRed32[i]<outputGreenRed32B[i])
-            outputGreenRed32[i]=outputGreenRed32B[i];
-    }
-    ippiConvValid_32f_C1R(inputGreenRed32,width,srcsize,&src3f[0],3,src2Size,&outputGreenRed32B[1 + width*1],psb32);
-    for(int i=0; i<320*240;i++){
-        if(outputGreenRed32[i]<outputGreenRed32B[i])
-            outputGreenRed32[i]=outputGreenRed32B[i];
-    }
-    ippiConvValid_32f_C1R(inputGreenRed32,width,srcsize,&src4f[0],3,src2Size,&outputGreenRed32B[1 + width*1],psb32);
-    for(int i=0; i<320*240;i++){
-        if(outputGreenRed32[i]<outputGreenRed32B[i])
-            outputGreenRed32[i]=outputGreenRed32B[i];
-    }
-    ippiConvValid_32f_C1R(inputGreenRed32,width,srcsize,&src5f[0],3,src2Size,&outputGreenRed32B[1 + width*1],psb32);
-    for(int i=0; i<320*240;i++){
-        if(outputGreenRed32[i]<outputGreenRed32B[i])
-            outputGreenRed32[i]=outputGreenRed32B[i];
-    }
-    ippiConvValid_32f_C1R(inputGreenRed32,width,srcsize,&src6f[0],3,src2Size,&outputGreenRed32B[1 + width*1],psb32);
-    for(int i=0; i<320*240;i++){
-        if(outputGreenRed32[i]<outputGreenRed32B[i])
-            outputGreenRed32[i]=outputGreenRed32B[i];
-    }
-    ippiConvValid_32f_C1R(inputGreenRed32,width,srcsize,&src7f[0],3,src2Size,&outputGreenRed32B[1 + width*1],psb32);
-    for(int i=0; i<320*240;i++){
-        if(outputGreenRed32[i]<outputGreenRed32B[i])
-            outputGreenRed32[i]=outputGreenRed32B[i];
-    }
-}
-if (CONVFILTER){
-    int CONVFILTER_TH=20;
-    //ippiFilterSobelHoriz_32f_C1R(inputRedGreen32,psb32,outputRedGreen32B,psb32,srcsize);
-    //ippiFilterSobelHoriz_8u_C1R(redGreen_yarp->getPixelAddress(0,0),width,inputRedGreen,psb,srcsize);
-    //ippiFilter_32f_C1R(inputRedGreen32,psb32,outputRedGreen32B,psb32,dstsize,src1,src2Size,anchor);
-    //ippiFilterGauss_32f_C1R(inputRedGreen32,psb32,outputRedGreen32B,psb32,srcsize,ippMskSize5x5);
-    //ippiFilterGauss_8u_C1R(redGreen_yarp->getPixelAddress(0,0),width,outputRedGreen,psb,srcsize,ippMskSize5x5);
-    
-
-    ippiFilter_8u_C1R(greenRed_yarp->getPixelAddress(0,0),width,outputGreenRed,psb,dstsize,&src0s[0],src2Size,anchor,CONVFILTER_TH);
-    ippiFilter_8u_C1R(greenRed_yarp->getPixelAddress(0,0),width,outputGreenRed2,psb,dstsize,&src1s[0],src2Size,anchor,CONVFILTER_TH);
-    for(int i=0; i<320*240;i++){
-        if(outputGreenRed[i]<outputGreenRed2[i])
-            outputGreenRed[i]=outputGreenRed2[i];
-    }
-    ippiFilter_8u_C1R(greenRed_yarp->getPixelAddress(0,0),width,outputGreenRed2,psb,dstsize,&src2s[0],src2Size,anchor,CONVFILTER_TH);
-    for(int i=0; i<320*240;i++){
-        if(outputGreenRed[i]<outputGreenRed2[i])
-            outputGreenRed[i]=outputGreenRed2[i];
-    }
-    ippiFilter_8u_C1R(greenRed_yarp->getPixelAddress(0,0),width,outputGreenRed2,psb,dstsize,&src3s[0],src2Size,anchor,CONVFILTER_TH);
-    for(int i=0; i<320*240;i++){
-        if(outputGreenRed[i]<outputGreenRed2[i])
-            outputGreenRed[i]=outputGreenRed2[i];
-    }
-    ippiFilter_8u_C1R(greenRed_yarp->getPixelAddress(0,0),width,outputGreenRed2,psb,dstsize,&src4s[0],src2Size,anchor,CONVFILTER_TH);
-    for(int i=0; i<320*240;i++){
-        if(outputGreenRed[i]<outputGreenRed2[i])
-            outputGreenRed[i]=outputGreenRed2[i];
-    }
-    ippiFilter_8u_C1R(greenRed_yarp->getPixelAddress(0,0),width,outputGreenRed2,psb,dstsize,&src5s[0],src2Size,anchor,CONVFILTER_TH);
-    for(int i=0; i<320*240;i++){
-        if(outputGreenRed[i]<outputGreenRed2[i])
-            outputGreenRed[i]=outputGreenRed2[i];
-    }
-    ippiFilter_8u_C1R(greenRed_yarp->getPixelAddress(0,0),width,outputGreenRed2,psb,dstsize,&src6s[0],src2Size,anchor,CONVFILTER_TH);
-    for(int i=0; i<320*240;i++){
-        if(outputGreenRed[i]<outputGreenRed2[i])
-            outputGreenRed[i]=outputGreenRed2[i];
-    }
-    ippiFilter_8u_C1R(greenRed_yarp->getPixelAddress(0,0),width,outputGreenRed2,psb,dstsize,&src7s[0],src2Size,anchor,CONVFILTER_TH);
-    for(int i=0; i<320*240;i++){
-        if(outputGreenRed[i]<outputGreenRed2[i])
-            outputGreenRed[i]=outputGreenRed2[i];
-    }
-    //ippiCopy_32f_C1R(inputRedGreen32,psb32,outputGreenRed32B,psb32,srcsize);
-}
-
-if (IPPISOBEL){
-    ippiFilterSobelHoriz_8u_C1R(greenRed_yarp->getPixelAddress(0,0),width,outputGreenRed3,psb,srcsize);
-    ippiFilterSobelVert_8u_C1R(greenRed_yarp->getPixelAddress(0,0),width,outputGreenRed2,psb,srcsize);
-    for(int i=0; i<320*240;i++){
-        if(outputGreenRed==NULL){
-            printf("outputGreenRed NULL");
-            break;
+    if(CONVMAX){
+        int CONVMAX_TH=700;
+        ippiConvValid_32f_C1R(inputGreenRed32,width,srcsize,&src0f[0],3,src2Size,&outputGreenRed32[1 + width*1],psb32);
+        ippiConvValid_32f_C1R(inputGreenRed32,width,srcsize,&src1f[0],3,src2Size,&outputGreenRed32B[1 + width*1],psb32);
+        for(int i=0; i<320*240;i++){
+            if(outputGreenRed32[i]<outputGreenRed32B[i])
+                outputGreenRed32[i]=outputGreenRed32B[i];
         }
-        if(outputGreenRed2==NULL){
-            printf("outputGreenRed2 NULL");
-            break;
+        ippiConvValid_32f_C1R(inputGreenRed32,width,srcsize,&src2f[0],3,src2Size,&outputGreenRed32B[1 + width*1],psb32);
+        for(int i=0; i<320*240;i++){
+            if(outputGreenRed32[i]<outputGreenRed32B[i])
+                outputGreenRed32[i]=outputGreenRed32B[i];
         }
-        if(outputGreenRed3[i]<outputGreenRed2[i])
-            outputGreenRed3[i]=outputGreenRed2[i];
+        ippiConvValid_32f_C1R(inputGreenRed32,width,srcsize,&src3f[0],3,src2Size,&outputGreenRed32B[1 + width*1],psb32);
+        for(int i=0; i<320*240;i++){
+            if(outputGreenRed32[i]<outputGreenRed32B[i])
+                outputGreenRed32[i]=outputGreenRed32B[i];
+        }
+        ippiConvValid_32f_C1R(inputGreenRed32,width,srcsize,&src4f[0],3,src2Size,&outputGreenRed32B[1 + width*1],psb32);
+        for(int i=0; i<320*240;i++){
+            if(outputGreenRed32[i]<outputGreenRed32B[i])
+                outputGreenRed32[i]=outputGreenRed32B[i];
+        }
+        ippiConvValid_32f_C1R(inputGreenRed32,width,srcsize,&src5f[0],3,src2Size,&outputGreenRed32B[1 + width*1],psb32);
+        for(int i=0; i<320*240;i++){
+            if(outputGreenRed32[i]<outputGreenRed32B[i])
+                outputGreenRed32[i]=outputGreenRed32B[i];
+        }
+        ippiConvValid_32f_C1R(inputGreenRed32,width,srcsize,&src6f[0],3,src2Size,&outputGreenRed32B[1 + width*1],psb32);
+        for(int i=0; i<320*240;i++){
+            if(outputGreenRed32[i]<outputGreenRed32B[i])
+                outputGreenRed32[i]=outputGreenRed32B[i];
+        }
+        ippiConvValid_32f_C1R(inputGreenRed32,width,srcsize,&src7f[0],3,src2Size,&outputGreenRed32B[1 + width*1],psb32);
+        for(int i=0; i<320*240;i++){
+            if(outputGreenRed32[i]<outputGreenRed32B[i])
+                outputGreenRed32[i]=outputGreenRed32B[i];
+        }
+    }
+    if (CONVFILTER){
+        int CONVFILTER_TH=20;
+        //ippiFilterSobelHoriz_32f_C1R(inputRedGreen32,psb32,outputRedGreen32B,psb32,srcsize);
+        //ippiFilterSobelHoriz_8u_C1R(redGreen_yarp->getPixelAddress(0,0),width,inputRedGreen,psb,srcsize);
+        //ippiFilter_32f_C1R(inputRedGreen32,psb32,outputRedGreen32B,psb32,dstsize,src1,src2Size,anchor);
+        //ippiFilterGauss_32f_C1R(inputRedGreen32,psb32,outputRedGreen32B,psb32,srcsize,ippMskSize5x5);
+        //ippiFilterGauss_8u_C1R(redGreen_yarp->getPixelAddress(0,0),width,outputRedGreen,psb,srcsize,ippMskSize5x5);
+        
+
+        ippiFilter_8u_C1R(greenRed_yarp->getPixelAddress(0,0),width,outputGreenRed,psb,dstsize,&src0s[0],src2Size,anchor,CONVFILTER_TH);
+        ippiFilter_8u_C1R(greenRed_yarp->getPixelAddress(0,0),width,outputGreenRed2,psb,dstsize,&src1s[0],src2Size,anchor,CONVFILTER_TH);
+        for(int i=0; i<320*240;i++){
+            if(outputGreenRed[i]<outputGreenRed2[i])
+                outputGreenRed[i]=outputGreenRed2[i];
+        }
+        ippiFilter_8u_C1R(greenRed_yarp->getPixelAddress(0,0),width,outputGreenRed2,psb,dstsize,&src2s[0],src2Size,anchor,CONVFILTER_TH);
+        for(int i=0; i<320*240;i++){
+            if(outputGreenRed[i]<outputGreenRed2[i])
+                outputGreenRed[i]=outputGreenRed2[i];
+        }
+        ippiFilter_8u_C1R(greenRed_yarp->getPixelAddress(0,0),width,outputGreenRed2,psb,dstsize,&src3s[0],src2Size,anchor,CONVFILTER_TH);
+        for(int i=0; i<320*240;i++){
+            if(outputGreenRed[i]<outputGreenRed2[i])
+                outputGreenRed[i]=outputGreenRed2[i];
+        }
+        ippiFilter_8u_C1R(greenRed_yarp->getPixelAddress(0,0),width,outputGreenRed2,psb,dstsize,&src4s[0],src2Size,anchor,CONVFILTER_TH);
+        for(int i=0; i<320*240;i++){
+            if(outputGreenRed[i]<outputGreenRed2[i])
+                outputGreenRed[i]=outputGreenRed2[i];
+        }
+        ippiFilter_8u_C1R(greenRed_yarp->getPixelAddress(0,0),width,outputGreenRed2,psb,dstsize,&src5s[0],src2Size,anchor,CONVFILTER_TH);
+        for(int i=0; i<320*240;i++){
+            if(outputGreenRed[i]<outputGreenRed2[i])
+                outputGreenRed[i]=outputGreenRed2[i];
+        }
+        ippiFilter_8u_C1R(greenRed_yarp->getPixelAddress(0,0),width,outputGreenRed2,psb,dstsize,&src6s[0],src2Size,anchor,CONVFILTER_TH);
+        for(int i=0; i<320*240;i++){
+            if(outputGreenRed[i]<outputGreenRed2[i])
+                outputGreenRed[i]=outputGreenRed2[i];
+        }
+        ippiFilter_8u_C1R(greenRed_yarp->getPixelAddress(0,0),width,outputGreenRed2,psb,dstsize,&src7s[0],src2Size,anchor,CONVFILTER_TH);
+        for(int i=0; i<320*240;i++){
+            if(outputGreenRed[i]<outputGreenRed2[i])
+                outputGreenRed[i]=outputGreenRed2[i];
+        }
+        //ippiCopy_32f_C1R(inputRedGreen32,psb32,outputGreenRed32B,psb32,srcsize);
     }
 
-    IppiSize msksize={3,3};
-    Ipp8u src[3*3]={1,1,1,1,1,1,1,1,1};
-    ippiConvValid_8u_C1R(outputGreenRed3,psb,srcsize,src,3,msksize,&outputGreenRed[1 + width*1],psb,5);
-    
-    /*conv_8u_to_32f(greenRed_yarp->getPixelAddress(0,0),width,outputGreenRed32,psb32,srcsize);
-    ippiFilterSobelCross_32f_C1R(outputGreenRed32,psb32,outputGreenRed32B,psb32,srcsize,ippMskSize3x3);
-    conv_32f_to_8u(outputGreenRed32B,psb32,outputGreenRed2,psb,srcsize);
-    for(int i=0; i<320*240;i++){
-        if(outputGreenRed[i]<outputGreenRed2[i])
-            outputGreenRed[i]=outputGreenRed2[i];
-    }*/
+    if (IPPISOBEL){
+        ippiFilterSobelHoriz_8u_C1R(greenRed_yarp->getPixelAddress(0,0),width,outputGreenRed3,psb,srcsize);
+        ippiFilterSobelVert_8u_C1R(greenRed_yarp->getPixelAddress(0,0),width,outputGreenRed2,psb,srcsize);
+        for(int i=0; i<320*240;i++){
+            if(outputGreenRed==NULL){
+                printf("outputGreenRed NULL");
+                break;
+            }
+            if(outputGreenRed2==NULL){
+                printf("outputGreenRed2 NULL");
+                break;
+            }
+            if(outputGreenRed3[i]<outputGreenRed2[i])
+                outputGreenRed3[i]=outputGreenRed2[i];
+        }
 
-}
+        IppiSize msksize={3,3};
+        Ipp8u src[3*3]={1,1,1,1,1,1,1,1,1};
+        ippiConvValid_8u_C1R(outputGreenRed3,psb,srcsize,src,3,msksize,&outputGreenRed[1 + width*1],psb,5);
+        
+        /*conv_8u_to_32f(greenRed_yarp->getPixelAddress(0,0),width,outputGreenRed32,psb32,srcsize);
+        ippiFilterSobelCross_32f_C1R(outputGreenRed32,psb32,outputGreenRed32B,psb32,srcsize,ippMskSize3x3);
+        conv_32f_to_8u(outputGreenRed32B,psb32,outputGreenRed2,psb,srcsize);
+        for(int i=0; i<320*240;i++){
+            if(outputGreenRed[i]<outputGreenRed2[i])
+                outputGreenRed[i]=outputGreenRed2[i];
+        }*/
 
-if (OPENCVSOBEL){
-    IppiSize msksize={3,3};
-    if(greenRed_flag){
-        cvSobel(greenRed_yarp->getIplImage(),cvImage16,1,1,3);
-        cvConvertScale(cvImage16,cvImage8);
     }
-    else
-        cvImage8=cvCreateImage(cvSize(320,240),IPL_DEPTH_8U,1);
-    ippiCopy_8u_C1R((unsigned char*)cvImage8->imageData,cvImage8->widthStep,outputGreenRed2,psb,srcsize);
-    Ipp8u src[3*3]={1,maskSeed,1,
-                    maskSeed,maskTop,maskSeed,
-                    1,maskSeed,1};
-    ippiConvValid_8u_C1R(outputGreenRed2,psb,srcsize,src,3,msksize,&outputGreenRed[1 + width*1],psb,1);
-    //ippiFilterMedian_8u_C1R((unsigned char*)cvImage->imageData,width,outputGreenRed,psb,srcsize,msksize,anchor);
-}
+
+    if (OPENCVSOBEL){
+        IppiSize msksize={3,3};
+        if(greenRed_flag){
+            cvSobel(greenRed_yarp->getIplImage(),cvImage16,1,1,3);
+            cvConvertScale(cvImage16,cvImage8);
+        }
+        else
+            cvImage8=cvCreateImage(cvSize(320,240),IPL_DEPTH_8U,1);
+        ippiCopy_8u_C1R((unsigned char*)cvImage8->imageData,cvImage8->widthStep,outputGreenRed2,psb,srcsize);
+        Ipp8u src[3*3]={1,maskSeed,1,
+                        maskSeed,maskTop,maskSeed,
+                        1,maskSeed,1};
+        ippiConvValid_8u_C1R(outputGreenRed2,psb,srcsize,src,3,msksize,&outputGreenRed[1 + width*1],psb,1);
+        //ippiFilterMedian_8u_C1R((unsigned char*)cvImage->imageData,width,outputGreenRed,psb,srcsize,msksize,anchor);
+    }
 
 
 
@@ -1137,158 +1044,158 @@ ImageOf<PixelMono>* ImageProcessor::findEdgesRedOpponency(){
     //ippiConvert_8u32f_C1R(redGreen_yarp->getPixelAddress(0,0),width,inputRedGreen32,psb32,srcsize);
     //conv_8u_to_32f(redGreen_yarp->getPixelAddress(0,0),width,inputRedGreen32,psb32,srcsize);
 
-if(CONVSEQ){
-    int CONVSEQ_TH=600;
-    //convolution of the previous convolution
-    /*ippiConvValid_32f_C1R(inputRedGreen32,psb32,srcsize,src0,3,src2Size,&outputRedGreen32[1 + psb32*1],psb32);
-    ippiCopy_32f_C1R(outputRedGreen32,psb32,outputRedGreen32B,psb32,srcsize);
-    ippiConvValid_32f_C1R(outputRedGreen32B,psb32,srcsize,src1,3,src2Size,&outputRedGreen32[1 + psb32*1],psb32);
-    ippiCopy_32f_C1R(outputRedGreen32,psb32,outputRedGreen32B,psb32,srcsize);
-    ippiConvValid_32f_C1R(outputRedGreen32B,psb32,srcsize,src2,3,src2Size,&outputRedGreen32[1 + psb32*1],psb32);
-    ippiCopy_32f_C1R(outputRedGreen32,psb32,outputRedGreen32B,psb32,srcsize);
-    ippiConvValid_32f_C1R(outputRedGreen32B,psb32,srcsize,src3,3,src2Size,&outputRedGreen32[1 + psb32*1],psb32);
-    ippiCopy_32f_C1R(outputRedGreen32,psb32,outputRedGreen32B,psb32,srcsize);
-    ippiConvValid_32f_C1R(outputRedGreen32B,psb32,srcsize,src4,3,src2Size,&outputRedGreen32[1 + psb32*1],psb32);
-    ippiCopy_32f_C1R(outputRedGreen32,psb32,outputRedGreen32B,psb32,srcsize);
-    ippiConvValid_32f_C1R(outputRedGreen32B,psb32,srcsize,src5,3,src2Size,&outputRedGreen32[1 + psb32*1],psb32);
-    ippiCopy_32f_C1R(outputRedGreen32,psb32,outputRedGreen32B,psb32,srcsize);
-    ippiConvValid_32f_C1R(outputRedGreen32B,psb32,srcsize,src6,3,src2Size,&outputRedGreen32[1 + psb32*1],psb32);
-    ippiCopy_32f_C1R(outputRedGreen32,psb32,outputRedGreen32B,psb32,srcsize);
-    ippiConvValid_32f_C1R(outputRedGreen32B,psb32,srcsize,src7,3,src2Size,&outputRedGreen32[1 + psb32*1],psb32);*/
-}
-
-if(CONVMAX){
-    int CONVMAX_TH=700;
-    ippiConvValid_32f_C1R(inputRedGreen32,psb32,srcsize,&src0f[0],3,src2Size,&outputRedGreen32[1 + psb32*1],psb32);
-    ippiConvValid_32f_C1R(inputRedGreen32,psb32,srcsize,&src1f[0],3,src2Size,&outputRedGreen32B[1 + psb32*1],psb32);
-    /*for(int i=0; i<320*240;i++){
-        if(outputRedGreen32[i]<outputRedGreen32B[i])
-            outputRedGreen32[i]=outputRedGreen32B[i];
-    }*/
-    /*ippiConvValid_32f_C1R(inputRedGreen32,psb32,srcsize,src2,3,src2Size,&outputRedGreen32B[1 + psb32*1],psb32);
-    for(int i=0; i<320*240;i++){
-        if(outputRedGreen32[i]<outputRedGreen32B[i])
-            outputRedGreen32[i]=outputRedGreen32B[i];
-    }
-    ippiConvValid_32f_C1R(inputRedGreen32,psb32,srcsize,src3,3,src2Size,&outputRedGreen32B[1 + psb32*1],psb32);
-    for(int i=0; i<320*240;i++){
-        if(outputRedGreen32[i]<outputRedGreen32B[i])
-            outputRedGreen32[i]=outputRedGreen32B[i];
-    }
-    ippiConvValid_32f_C1R(inputRedGreen32,psb32,srcsize,src4,3,src2Size,&outputRedGreen32B[1 + psb32*1],psb32);
-    for(int i=0; i<320*240;i++){
-        if(outputRedGreen32[i]<outputRedGreen32B[i])
-            outputRedGreen32[i]=outputRedGreen32B[i];
-    }
-    ippiConvValid_32f_C1R(inputRedGreen32,psb32,srcsize,src5,3,src2Size,&outputRedGreen32B[1 + psb32*1],psb32);
-    for(int i=0; i<320*240;i++){
-        if(outputRedGreen32[i]<outputRedGreen32B[i])
-            outputRedGreen32[i]=outputRedGreen32B[i];
-    }
-    ippiConvValid_32f_C1R(inputRedGreen32,psb32,srcsize,src6,3,src2Size,&outputRedGreen32B[1 + psb32*1],psb32);
-    for(int i=0; i<320*240;i++){
-        if(outputRedGreen32[i]<outputRedGreen32B[i])
-            outputRedGreen32[i]=outputRedGreen32B[i];
-    }
-    ippiConvValid_32f_C1R(inputRedGreen32,psb32,srcsize,src7,3,src2Size,&outputRedGreen32B[1 + psb32*1],psb32);
-    
-        if(outputRedGreen32[i]<outputRedGreen32B[i])
-            outputRedGreen32[i]=outputRedGreen32B[i];
-    }*/
-}
-
-if (CONVFILTER){
-    int CONVFILTER_TH=5;
-    //ippiFilterSobelHoriz_32f_C1R(inputRedGreen32,psb32,outputRedGreen32B,psb32,srcsize);
-    //ippiFilterSobelHoriz_8u_C1R(redGreen_yarp->getPixelAddress(0,0),width,inputRedGreen,psb,srcsize);
-    //ippiFilter_32f_C1R(inputRedGreen32,psb32,outputRedGreen32B,psb32,dstsize,src1,src2Size,anchor);
-    //ippiFilterGauss_32f_C1R(inputRedGreen32,psb32,outputRedGreen32B,psb32,srcsize,ippMskSize5x5);
-    //ippiFilterGauss_8u_C1R(redGreen_yarp->getPixelAddress(0,0),width,outputRedGreen,psb,srcsize,ippMskSize5x5);
-    //ippiFilterSobelHoriz_8u_C1R(redGreen_yarp->getPixelAddress(0,0),width,outputRedGreen,psb,srcsize);
-
-    ippiFilter_8u_C1R(redGreen_yarp->getPixelAddress(0,0),width,outputRedGreen,psb,dstsize,&src0s[0],src2Size,anchor,CONVFILTER_TH);
-    ippiFilter_8u_C1R(redGreen_yarp->getPixelAddress(0,0),width,outputRedGreen2,psb,dstsize,&src1s[0],src2Size,anchor,CONVFILTER_TH);
-    for(int i=0; i<320*240;i++){
-        if(outputRedGreen[i]<outputRedGreen2[i])
-            outputRedGreen[i]=outputRedGreen2[i];
-    }
-    ippiFilter_8u_C1R(redGreen_yarp->getPixelAddress(0,0),width,outputRedGreen2,psb,dstsize,&src2s[0],src2Size,anchor,CONVFILTER_TH);
-    for(int i=0; i<320*240;i++){
-        if(outputRedGreen[i]<outputRedGreen2[i])
-            outputRedGreen[i]=outputRedGreen2[i];
-    }
-    ippiFilter_8u_C1R(redGreen_yarp->getPixelAddress(0,0),width,outputRedGreen2,psb,dstsize,&src3s[0],src2Size,anchor,CONVFILTER_TH);
-    for(int i=0; i<320*240;i++){
-        if(outputRedGreen[i]<outputRedGreen2[i])
-            outputRedGreen[i]=outputRedGreen2[i];
-    }
-    ippiFilter_8u_C1R(redGreen_yarp->getPixelAddress(0,0),width,outputRedGreen2,psb,dstsize,&src4s[0],src2Size,anchor,CONVFILTER_TH);
-    for(int i=0; i<320*240;i++){
-        if(outputRedGreen[i]<outputRedGreen2[i])
-            outputRedGreen[i]=outputRedGreen2[i];
-    }
-    ippiFilter_8u_C1R(redGreen_yarp->getPixelAddress(0,0),width,outputRedGreen2,psb,dstsize,&src5s[0],src2Size,anchor,CONVFILTER_TH);
-    for(int i=0; i<320*240;i++){
-        if(outputRedGreen[i]<outputRedGreen2[i])
-            outputRedGreen[i]=outputRedGreen2[i];
-    }
-    ippiFilter_8u_C1R(redGreen_yarp->getPixelAddress(0,0),width,outputRedGreen2,psb,dstsize,&src6s[0],src2Size,anchor,CONVFILTER_TH);
-    for(int i=0; i<320*240;i++){
-        if(outputRedGreen[i]<outputRedGreen2[i])
-            outputRedGreen[i]=outputRedGreen2[i];
-    }
-    ippiFilter_8u_C1R(redGreen_yarp->getPixelAddress(0,0),width,outputRedGreen2,psb,dstsize,&src7s[0],src2Size,anchor,CONVFILTER_TH);
-    for(int i=0; i<320*240;i++){
-        if(outputRedGreen[i]<outputRedGreen2[i])
-            outputRedGreen[i]=outputRedGreen2[i];
+    if(CONVSEQ){
+        int CONVSEQ_TH=600;
+        //convolution of the previous convolution
+        ippiConvValid_32f_C1R(inputRedGreen32,psb32,srcsize,src0f,3,src2Size,&outputRedGreen32[1 + psb32*1],psb32);
+        ippiCopy_32f_C1R(outputRedGreen32,psb32,outputRedGreen32B,psb32,srcsize);
+        ippiConvValid_32f_C1R(outputRedGreen32B,psb32,srcsize,src1f,3,src2Size,&outputRedGreen32[1 + psb32*1],psb32);
+        ippiCopy_32f_C1R(outputRedGreen32,psb32,outputRedGreen32B,psb32,srcsize);
+        ippiConvValid_32f_C1R(outputRedGreen32B,psb32,srcsize,src2f,3,src2Size,&outputRedGreen32[1 + psb32*1],psb32);
+        ippiCopy_32f_C1R(outputRedGreen32,psb32,outputRedGreen32B,psb32,srcsize);
+        ippiConvValid_32f_C1R(outputRedGreen32B,psb32,srcsize,src3f,3,src2Size,&outputRedGreen32[1 + psb32*1],psb32);
+        ippiCopy_32f_C1R(outputRedGreen32,psb32,outputRedGreen32B,psb32,srcsize);
+        ippiConvValid_32f_C1R(outputRedGreen32B,psb32,srcsize,src4f,3,src2Size,&outputRedGreen32[1 + psb32*1],psb32);
+        ippiCopy_32f_C1R(outputRedGreen32,psb32,outputRedGreen32B,psb32,srcsize);
+        ippiConvValid_32f_C1R(outputRedGreen32B,psb32,srcsize,src5f,3,src2Size,&outputRedGreen32[1 + psb32*1],psb32);
+        ippiCopy_32f_C1R(outputRedGreen32,psb32,outputRedGreen32B,psb32,srcsize);
+        ippiConvValid_32f_C1R(outputRedGreen32B,psb32,srcsize,src6f,3,src2Size,&outputRedGreen32[1 + psb32*1],psb32);
+        ippiCopy_32f_C1R(outputRedGreen32,psb32,outputRedGreen32B,psb32,srcsize);
+        ippiConvValid_32f_C1R(outputRedGreen32B,psb32,srcsize,src7f,3,src2Size,&outputRedGreen32[1 + psb32*1],psb32);
     }
 
-    //ippiCopy_32f_C1R(inputRedGreen32,psb32,outputRedGreen32B,psb32,srcsize);
-}
-
-if (IPPISOBEL){
-    ippiFilterSobelHoriz_8u_C1R(redGreen_yarp->getPixelAddress(0,0),width,outputRedGreen3,psb,srcsize);
-    ippiFilterSobelVert_8u_C1R(redGreen_yarp->getPixelAddress(0,0),width,outputRedGreen2,psb,srcsize);
-    for(int i=0; i<320*240;i++){
-        if(outputRedGreen==NULL){
-            printf("outputRedGreen NULL");
-            break;
+    if(CONVMAX){
+        int CONVMAX_TH=700;
+        ippiConvValid_32f_C1R(inputRedGreen32,psb32,srcsize,&src0f[0],3,src2Size,&outputRedGreen32[1 + psb32*1],psb32);
+        ippiConvValid_32f_C1R(inputRedGreen32,psb32,srcsize,&src1f[0],3,src2Size,&outputRedGreen32B[1 + psb32*1],psb32);
+        for(int i=0; i<320*240;i++){
+            if(outputRedGreen32[i]<outputRedGreen32B[i])
+                outputRedGreen32[i]=outputRedGreen32B[i];
         }
-        if(outputRedGreen2==NULL){
-            printf("outputRedGreen2 NULL");
-            break;
+        ippiConvValid_32f_C1R(inputRedGreen32,psb32,srcsize,&src2f[0],3,src2Size,&outputRedGreen32B[1 + psb32*1],psb32);
+        for(int i=0; i<320*240;i++){
+            if(outputRedGreen32[i]<outputRedGreen32B[i])
+                outputRedGreen32[i]=outputRedGreen32B[i];
         }
-        if(outputRedGreen3[i]<outputRedGreen2[i])
-            outputRedGreen3[i]=outputRedGreen2[i];
+        ippiConvValid_32f_C1R(inputRedGreen32,psb32,srcsize,&src3f[0],3,src2Size,&outputRedGreen32B[1 + psb32*1],psb32);
+        for(int i=0; i<320*240;i++){
+            if(outputRedGreen32[i]<outputRedGreen32B[i])
+                outputRedGreen32[i]=outputRedGreen32B[i];
+        }
+        ippiConvValid_32f_C1R(inputRedGreen32,psb32,srcsize,&src4f[0],3,src2Size,&outputRedGreen32B[1 + psb32*1],psb32);
+        for(int i=0; i<320*240;i++){
+            if(outputRedGreen32[i]<outputRedGreen32B[i])
+                outputRedGreen32[i]=outputRedGreen32B[i];
+        }
+        ippiConvValid_32f_C1R(inputRedGreen32,psb32,srcsize,&src5f[0],3,src2Size,&outputRedGreen32B[1 + psb32*1],psb32);
+        for(int i=0; i<320*240;i++){
+            if(outputRedGreen32[i]<outputRedGreen32B[i])
+                outputRedGreen32[i]=outputRedGreen32B[i];
+        }
+        ippiConvValid_32f_C1R(inputRedGreen32,psb32,srcsize,&src6f[0],3,src2Size,&outputRedGreen32B[1 + psb32*1],psb32);
+        for(int i=0; i<320*240;i++){
+            if(outputRedGreen32[i]<outputRedGreen32B[i])
+                outputRedGreen32[i]=outputRedGreen32B[i];
+        }
+        ippiConvValid_32f_C1R(inputRedGreen32,psb32,srcsize,&src7f[0],3,src2Size,&outputRedGreen32B[1 + psb32*1],psb32);
+        for(int i=0; i<320*240;i++){
+            if(outputRedGreen32[i]<outputRedGreen32B[i])
+                outputRedGreen32[i]=outputRedGreen32B[i];
+        }
     }
 
-    IppiSize msksize={3,3};
-    Ipp8u src[3*3]={1,1,1,1,1,1,1,1,1};
-    ippiConvValid_8u_C1R(outputRedGreen3,psb,srcsize,src,3,msksize,&outputRedGreen[1 + width*1],psb,5);
-    /*conv_8u_to_32f(redGreen_yarp->getPixelAddress(0,0),width,outputRedGreen32,psb32,srcsize);
-    ippiFilterSobelCross_32f_C1R(outputRedGreen32,psb32,outputRedGreen32B,psb32,srcsize,ippMskSize3x3);
-    conv_32f_to_8u(outputRedGreen32B,psb32,outputRedGreen2,psb,srcsize);
-    for(int i=0; i<320*240;i++){
-        if(outputRedGreen[i]<outputRedGreen2[i])
-            outputRedGreen[i]=outputRedGreen2[i];
-    }*/
-}
+    if (CONVFILTER){
+        int CONVFILTER_TH=5;
+        //ippiFilterSobelHoriz_32f_C1R(inputRedGreen32,psb32,outputRedGreen32B,psb32,srcsize);
+        //ippiFilterSobelHoriz_8u_C1R(redGreen_yarp->getPixelAddress(0,0),width,inputRedGreen,psb,srcsize);
+        //ippiFilter_32f_C1R(inputRedGreen32,psb32,outputRedGreen32B,psb32,dstsize,src1,src2Size,anchor);
+        //ippiFilterGauss_32f_C1R(inputRedGreen32,psb32,outputRedGreen32B,psb32,srcsize,ippMskSize5x5);
+        //ippiFilterGauss_8u_C1R(redGreen_yarp->getPixelAddress(0,0),width,outputRedGreen,psb,srcsize,ippMskSize5x5);
+        //ippiFilterSobelHoriz_8u_C1R(redGreen_yarp->getPixelAddress(0,0),width,outputRedGreen,psb,srcsize);
 
-if (OPENCVSOBEL){
-    IppiSize msksize={3,3};
-    if(redGreen_flag){
-        cvSobel(redGreen_yarp->getIplImage(),cvImage16,1,1,3);
-        cvConvertScale(cvImage16,cvImage8);
+        ippiFilter_8u_C1R(redGreen_yarp->getPixelAddress(0,0),width,outputRedGreen,psb,dstsize,&src0s[0],src2Size,anchor,CONVFILTER_TH);
+        ippiFilter_8u_C1R(redGreen_yarp->getPixelAddress(0,0),width,outputRedGreen2,psb,dstsize,&src1s[0],src2Size,anchor,CONVFILTER_TH);
+        for(int i=0; i<320*240;i++){
+            if(outputRedGreen[i]<outputRedGreen2[i])
+                outputRedGreen[i]=outputRedGreen2[i];
+        }
+        ippiFilter_8u_C1R(redGreen_yarp->getPixelAddress(0,0),width,outputRedGreen2,psb,dstsize,&src2s[0],src2Size,anchor,CONVFILTER_TH);
+        for(int i=0; i<320*240;i++){
+            if(outputRedGreen[i]<outputRedGreen2[i])
+                outputRedGreen[i]=outputRedGreen2[i];
+        }
+        ippiFilter_8u_C1R(redGreen_yarp->getPixelAddress(0,0),width,outputRedGreen2,psb,dstsize,&src3s[0],src2Size,anchor,CONVFILTER_TH);
+        for(int i=0; i<320*240;i++){
+            if(outputRedGreen[i]<outputRedGreen2[i])
+                outputRedGreen[i]=outputRedGreen2[i];
+        }
+        ippiFilter_8u_C1R(redGreen_yarp->getPixelAddress(0,0),width,outputRedGreen2,psb,dstsize,&src4s[0],src2Size,anchor,CONVFILTER_TH);
+        for(int i=0; i<320*240;i++){
+            if(outputRedGreen[i]<outputRedGreen2[i])
+                outputRedGreen[i]=outputRedGreen2[i];
+        }
+        ippiFilter_8u_C1R(redGreen_yarp->getPixelAddress(0,0),width,outputRedGreen2,psb,dstsize,&src5s[0],src2Size,anchor,CONVFILTER_TH);
+        for(int i=0; i<320*240;i++){
+            if(outputRedGreen[i]<outputRedGreen2[i])
+                outputRedGreen[i]=outputRedGreen2[i];
+        }
+        ippiFilter_8u_C1R(redGreen_yarp->getPixelAddress(0,0),width,outputRedGreen2,psb,dstsize,&src6s[0],src2Size,anchor,CONVFILTER_TH);
+        for(int i=0; i<320*240;i++){
+            if(outputRedGreen[i]<outputRedGreen2[i])
+                outputRedGreen[i]=outputRedGreen2[i];
+        }
+        ippiFilter_8u_C1R(redGreen_yarp->getPixelAddress(0,0),width,outputRedGreen2,psb,dstsize,&src7s[0],src2Size,anchor,CONVFILTER_TH);
+        for(int i=0; i<320*240;i++){
+            if(outputRedGreen[i]<outputRedGreen2[i])
+                outputRedGreen[i]=outputRedGreen2[i];
+        }
+
+        //ippiCopy_32f_C1R(inputRedGreen32,psb32,outputRedGreen32B,psb32,srcsize);
     }
-    else
-        cvImage8=cvCreateImage(cvSize(320,240),IPL_DEPTH_8U,1);
-    ippiCopy_8u_C1R((unsigned char*)cvImage8->imageData,cvImage8->widthStep,outputRedGreen2,psb,srcsize);
-    Ipp8u src[3*3]={1,maskSeed,1,
-                    maskSeed,maskTop,maskSeed,
-                    1,maskSeed,1};
-    ippiConvValid_8u_C1R(outputRedGreen2,psb,srcsize,src,3,msksize,&outputRedGreen[1 + width*1],psb,1);
-    //ippiFilterMedian_8u_C1R((unsigned char*)cvImage->imageData,width,outputRedGreen,psb,srcsize,msksize,anchor);
-}
+
+    if (IPPISOBEL){
+        ippiFilterSobelHoriz_8u_C1R(redGreen_yarp->getPixelAddress(0,0),width,outputRedGreen3,psb,srcsize);
+        ippiFilterSobelVert_8u_C1R(redGreen_yarp->getPixelAddress(0,0),width,outputRedGreen2,psb,srcsize);
+        for(int i=0; i<320*240;i++){
+            if(outputRedGreen==NULL){
+                printf("outputRedGreen NULL");
+                break;
+            }
+            if(outputRedGreen2==NULL){
+                printf("outputRedGreen2 NULL");
+                break;
+            }
+            if(outputRedGreen3[i]<outputRedGreen2[i])
+                outputRedGreen3[i]=outputRedGreen2[i];
+        }
+
+        IppiSize msksize={3,3};
+        Ipp8u src[3*3]={1,1,1,1,1,1,1,1,1};
+        ippiConvValid_8u_C1R(outputRedGreen3,psb,srcsize,src,3,msksize,&outputRedGreen[1 + width*1],psb,5);
+        /*conv_8u_to_32f(redGreen_yarp->getPixelAddress(0,0),width,outputRedGreen32,psb32,srcsize);
+        ippiFilterSobelCross_32f_C1R(outputRedGreen32,psb32,outputRedGreen32B,psb32,srcsize,ippMskSize3x3);
+        conv_32f_to_8u(outputRedGreen32B,psb32,outputRedGreen2,psb,srcsize);
+        for(int i=0; i<320*240;i++){
+            if(outputRedGreen[i]<outputRedGreen2[i])
+                outputRedGreen[i]=outputRedGreen2[i];
+        }*/
+    }
+
+    if (OPENCVSOBEL){
+        IppiSize msksize={3,3};
+        if(redGreen_flag){
+            cvSobel(redGreen_yarp->getIplImage(),cvImage16,1,1,3);
+            cvConvertScale(cvImage16,cvImage8);
+        }
+        else
+            cvImage8=cvCreateImage(cvSize(320,240),IPL_DEPTH_8U,1);
+        ippiCopy_8u_C1R((unsigned char*)cvImage8->imageData,cvImage8->widthStep,outputRedGreen2,psb,srcsize);
+        Ipp8u src[3*3]={1,maskSeed,1,
+                        maskSeed,maskTop,maskSeed,
+                        1,maskSeed,1};
+        ippiConvValid_8u_C1R(outputRedGreen2,psb,srcsize,src,3,msksize,&outputRedGreen[1 + width*1],psb,1);
+        //ippiFilterMedian_8u_C1R((unsigned char*)cvImage->imageData,width,outputRedGreen,psb,srcsize,msksize,anchor);
+    }
 
 
     //ippiConvValid_8u_C1R(redGreen_yarp->getPixelAddress(0,0),width,srcsize,src2,3,src2Size,&outputBlueYellow[1 + width*1],psb,10);
@@ -1328,6 +1235,11 @@ if (OPENCVSOBEL){
     ippiFree(inputRedGreen32);
 
     return redGreenEdges;
+}
+
+void ImageProcessor::blankBorder(Ipp8u* image){
+   
+    
 }
 
 
@@ -2146,3 +2058,7 @@ void ImageProcessor::convertRGB(IppiSize sze,Ipp8u * rgba_orig, int psb_o){
     ippiCopy_8u_C4P4R(yuva_orig,psb_4,pyuva,psb,srcsize);
     //ippiCopy_8u_C4R(rgba_orig,psb_o,qrgb->bits(),width*4,srcsize);*/
 } 
+
+
+//----- end-of-file --- ( next line intentionally left blank ) ------------------
+

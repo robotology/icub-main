@@ -49,6 +49,12 @@ using namespace yarp::sig::draw;
 #define COMMAND_VOCAB_DIRECTIONAL_DBG_DIRECTION_INDEX VOCAB3('d','d','i')
 #define COMMAND_VOCAB_DIRECTIONAL_DBG_IMAGE_ARRAY_NAMES VOCAB4('d','a','n','s')
 #define COMMAND_VOCAB_DIRECTIONAL_DBG_IMAGE_ARRAY_NAME VOCAB3('d','a','n')
+//option for the set command
+#define COMMAND_VOCAB_FIL VOCAB3('f','i','l')
+#define COMMAND_VOCAB_MAX VOCAB3('m','a','x')
+#define COMMAND_VOCAB_OCV VOCAB3('o','c','v')
+#define COMMAND_VOCAB_IPP VOCAB3('i','p','p')
+#define COMMAND_VOCAB_SEQ VOCAB3('s','e','q')
 
 /**
 *
@@ -215,6 +221,11 @@ private:
     * input image reference
     */
     ImageOf<PixelMono> *tmp;
+
+    /**
+    * function that resets all the mode flags
+    */
+    void resetFlags();
 public:
     /**
     *open the ports of the module
