@@ -56,6 +56,8 @@ main=$doc/index.html
 echo > $main
 echo "<html><head><title>iCub module status</title></head><body>" >> $main
 date >> $main
+cat lastRevision.txt >> $main
+echo "" >> $main
 echo "<TABLE>" >> $main
 col_0="eeffff"
 col_1="ffffcc"
@@ -133,9 +135,6 @@ for m in $targets; do
 done
 echo "</TABLE>" >> $main
 (
-    echo "<h2>Tips</h2>"
-    echo "If you want a directory ignored, place a file called omit.txt in it."
-
     echo "<h2>Compile environment</h2>"
     echo "<pre>"
     echo -n "Operating system: "
