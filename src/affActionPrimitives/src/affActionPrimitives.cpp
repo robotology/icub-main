@@ -1103,7 +1103,7 @@ bool affActionPrimitivesLayer1::tap(const Vector &x1, const Vector &o1,
     if (configured)
     {
         printMessage("start tapping\n");
-        pushAction(x1,o1,"open_hand");
+        pushAction(x1,o1,"karate_hand");
         pushAction(x2,o2,execTime);
         pushAction(x1,o1);
 

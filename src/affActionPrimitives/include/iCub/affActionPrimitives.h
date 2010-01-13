@@ -468,8 +468,9 @@ public:
 * affActionPrimitives father class. 
 *  
 * It internally predeclares (without actually defining) a set of
-* hand sequence motions key ("open_hand" and "close_hand") that 
-* are used for grasp(), touch() and tap() actions. 
+* hand sequence motions key ("open_hand", "close_hand" and 
+* "karate_hand" :) that are used for grasp(), touch() and tap() 
+* actions. 
 *  
 * \note Given as an example of how primitive actions can be 
 *       combined in higher level actions, thus how further
@@ -550,7 +551,7 @@ public:
     *  
     * \note internal implementation: 
     * ...
-    * pushAction(x1,o1,"open_hand");
+    * pushAction(x1,o1,"karate_hand");
     * pushAction(x2,o2,execTime);
     * pushAction(x1,o1); 
     * ...
