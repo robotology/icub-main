@@ -19,18 +19,16 @@ Some tips for developers:
    that don't show up on Windows.  For example, you need to use
    FIND_LIBRARY(OpenCV) rather than FIND_LIBRARY(OPENCV).
    And you'll need to capitalize your include files consistently.
+   
+ - Different  compilers catch different errors, if something compiles on 
+   Visual Studio does not mean it will compile on gcc (or the other way around).
+   Also, remember that newer compilers might be stricter than older ones.   
 
- - If you wish a module omitted from testing, add a file "omit.txt" to
-   its directory.  The file can contain anything you like.
-
-  - For how to properly create or link to libraries within the 
-    repository, see \ref cmake_usage \endref
-
- - If you need software installed, please send email to
-   robotcub-hackers.  The current list of packages you can rely on 
+ - The current list of packages you can rely on 
    being present is listed at the end of the compile report for each
-   platform.
-
+   platform. See the Dependencies chapter of the manual to see the official list 
+   of dependencies.
+   
  - Don't forget environment variables. See the manual for more informations
    on this.
 
