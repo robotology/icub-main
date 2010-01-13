@@ -69,7 +69,7 @@ int shape1, shape2;
 double prevwo, prevho;
 
 
-const map<string, Matrix> DemoAff::palmOrientations = DemoAff::computePalmOrientation();
+const map<string, Matrix> DemoAff::palmOrientations = DemoAff::computePalmOrientations();
 
 map<string, Matrix> DemoAff::computePalmOrientations() {
   map<string, Matrix> m;
@@ -1267,8 +1267,6 @@ bool DemoAff::updateModule(){
       startOffset = (usePart == "right_arm" ? startOffset : -startOffset);
 
       double heightOffset = max(0.0, 0.2 -zOffset);
-
-      Matrix m = computePalmBaseOrientation("left_arm");
 
       string str = usePart.substr(0, usePart.find('_')) + "_base";
       cout << "Used hand orientation: " << str << endl;
