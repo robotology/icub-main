@@ -207,6 +207,7 @@ protected:
 
     IEncoders         *encTorso;
     IPositionControl  *posTorso;
+    IEncoders         *encArm;
     IPositionControl  *posArm;
     ICartesianControl *cartArm;
 
@@ -444,6 +445,16 @@ protected:
         fprintf(stdout,")\n");
     }
 
+    bool stopJntTraj(const int jnt)
+    {
+        double v;
+
+        if (encArm->getEncoder(jnt,&v))
+            return posArm->positionMove(jnt,v);
+        else
+            return false;
+    }
+
     void getSensorData()
     {
         if (encTorso->getEncoders(torso.data()))
@@ -646,6 +657,7 @@ protected:
             
                 if (armSel==LEFTARM)
                 {
+                    drvLeftArm->view(encArm);
                     drvLeftArm->view(posArm);
                     drvCartLeftArm->view(cartArm);
                     armReachOffs=&leftArmReachOffs;
@@ -656,6 +668,7 @@ protected:
                 }
                 else
                 {
+                    drvRightArm->view(encArm);
                     drvRightArm->view(posArm);
                     drvCartRightArm->view(cartArm);
                     armReachOffs=&rightArmReachOffs;
@@ -812,7 +825,7 @@ protected:
                     // stop and remove if not done yet
                     if (tmpSet.find(jnt)!=tmpSet.end())
                     {
-                        posArm->stop(jnt);
+                        stopJntTraj(jnt);
                         tmpSet.erase(jnt);
                     }
                 }
@@ -1140,6 +1153,7 @@ public:
 
         if (useLeftArm)
         {
+            drvLeftArm->view(encArm);
             drvLeftArm->view(posArm);
             drvCartLeftArm->view(cartArm);
             armReachOffs=&leftArmReachOffs;
@@ -1151,6 +1165,7 @@ public:
         }
         else if (useRightArm)
         {
+            drvRightArm->view(encArm);
             drvRightArm->view(posArm);
             drvCartRightArm->view(cartArm);
             armReachOffs=&rightArmReachOffs;
@@ -1162,6 +1177,7 @@ public:
         }
         else
         {
+            encArm=NULL;
             posArm=NULL;
             cartArm=NULL;
             armReachOffs=NULL;
