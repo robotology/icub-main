@@ -9,9 +9,6 @@
 
 // YARP
 
-#include <ace/OS.h>
-#include <ace/Log_Msg.h>
-
 #include <yarp/os/Network.h>
 #include <yarp/os/Port.h>
 #include <yarp/os/Bottle.h>
