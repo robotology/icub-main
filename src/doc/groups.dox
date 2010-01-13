@@ -22,9 +22,9 @@
 * code (replacing "your_module_name" with the name of your module):
 \verbatim
   /**
-   * @ingroup icub_module
    *
    * \defgroup icub_your_module_name your_module_name
+   * @ingroup icub_module
    *
    */
 \endverbatim
@@ -39,7 +39,7 @@
 
 /**
 * \defgroup icub_guis Graphic User Interfaces
-* @ingroup icub_module_all
+* @ingroup icub_modules_all
 *
 * This is a list of Graphic User Interfaces. Usually in $ICUB_ROOT/src/guis.
 *
@@ -47,9 +47,8 @@
 *
 \verbatim
   /**
-   * @ingroup icub_guis
-   *
    * \defgroup icub_your_gui your_gui
+   * @ingroup icub_guis
    *
    */
 \endverbatim
@@ -71,9 +70,8 @@
 *
 \verbatim
   /**
-   * @ingroup icub_libraries
-   *
    * \defgroup icub_your_library your_library
+   * @ingroup icub_libraries
    *
    */
 \endverbatim
@@ -103,9 +101,8 @@
 *
 \verbatim
   /**
-   * @ingroup icub_mod_library
-   *
    * \defgroup icub_your_mod_library your_mod_library
+   * @ingroup icub_mod_library
    *
    */
 \endverbatim
@@ -123,9 +120,8 @@
 *
 \verbatim
   /**
-   * @ingroup icub_hardware_modules
-   *
    * \defgroup icub_your_mod_library your_mod_library
+   * @ingroup icub_hardware_modules
    *
    */
 \endverbatim
@@ -145,9 +141,8 @@
 *
 \verbatim
   /**
-   * @ingroup icub_calibrators
-   *
    * \defgroup icub_your_calibrator your_calibrator
+   * @ingroup icub_calibrators
    *
    */
 \endverbatim
@@ -163,9 +158,8 @@
 *
 \verbatim
   /**
-   * @ingroup icub_tools
-   *
    * \defgroup icub_your_tool your_tool
+   * @ingroup icub_tools
    *
    */
 \endverbatim

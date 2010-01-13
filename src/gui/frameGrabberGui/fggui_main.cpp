@@ -1,8 +1,8 @@
 // -*- mode:C++; tab-width:4; c-basic-offset:4; indent-tabs-mode:nil -*-
 
 /**
- * @ingroup icub_guis
  * \defgroup icub_framegrabbergui frameGrabberGui
+ * @ingroup icub_guis
  *
  * A graphical interface to set gain, shutter, brightness and color balance on a remote framegrabber.
  * Run without options to see help on usage. 

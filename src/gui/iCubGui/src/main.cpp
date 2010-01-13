@@ -1,7 +1,7 @@
 /*
 *
-* @ingroup icub_guis
 * \defgroup icub_iCubGui iCubGui
+* @ingroup icub_guis
 *
 * A gui that shows the full state of the robot. At the moment
 * encoders and inertial sensors.
