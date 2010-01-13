@@ -83,6 +83,8 @@ private:
   // Emotion interface
   bool emotionCtrl(const yarp::os::ConstString cmd);
 
+  std::string armToBeUsed;
+
   // ports
   // Camshiftplus provides only the effects
   BufferedPort<Bottle> port_eff;
@@ -215,8 +217,9 @@ protected:
   std::map<const std::string, yarp::os::Property*> cameras;
   std::map<const std::string, EyeTableProjection*> projections;
   double zOffset;
-  string usedEye;
-  Vector object3d;
+  std::string usedEye;
+  yarp::sig::Vector object3d;
+  yarp::sig::Vector tableTop;
   
   // Eye2World member methods
   bool configureEye2World(yarp::os::ConstString calibrationFilename,yarp::os::ConstString tableConfiguration);  

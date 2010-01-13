@@ -523,10 +523,10 @@ bool DemoAff::configureEye2World(yarp::os::ConstString calibrationFilename,
   Property tabletopPosition;
   tabletopPosition.fromString(tableConfig.findGroup("POSITION").toString());
 
-  Vector v(3);
-  v[0] = tabletopPosition.find("x").asDouble();
-  v[1] = tabletopPosition.find("y").asDouble();
-  v[2] = tabletopPosition.find("z").asDouble();
+  tableTop.resize(3);
+  tableTop[0] = tabletopPosition.find("x").asDouble();
+  tableTop[1] = tabletopPosition.find("y").asDouble();
+  tableTop[2] = tabletopPosition.find("z").asDouble();
   
   map<const string, Property*>::const_iterator itr;
   for (itr = cameras.begin(); itr != cameras.end(); ++itr) {
@@ -534,7 +534,7 @@ bool DemoAff::configureEye2World(yarp::os::ConstString calibrationFilename,
     const string key = itr->first;
     Property calib = *itr->second;
     
-    projections[key] = new EyeTableProjection(key.c_str(), calib, &v);
+    projections[key] = new EyeTableProjection(key.c_str(), calib, &tableTop);
   }
 
   return true;
@@ -1107,7 +1107,7 @@ bool DemoAff::updateModule(){
 
   case JUSTACT:
     {
-      emotionCtrl("set all neu");
+      emotionCtrl("neu");
       getObjInfo();
 
       if (numObjs>0) {
@@ -1200,164 +1200,121 @@ bool DemoAff::updateModule(){
 
       // We will have different reachings or there is an initial common reaching phase?
       switch (selectedaction){
-      case GRASP: state=GRASPING; 
-	break;
-      case TAP: state=TAPPING; 
-	break;
-      case TOUCH: state=TOUCHING; 
-	break;
+        case GRASP:
+          state = GRASPING; 
+        	break;
+        case TAP:
+          state=TAPPING;
+          break;
+        case TOUCH:
+          state=TOUCHING;
+          break;
       }
-      //state=INIT;
+      //state = INIT;
+
+      useArm(object3d[1] > 0.0 ? USE_RIGHT : USE_LEFT);
+      armToBeUsed = (partUsed != "both_parts" ? (object3d[1] > 0.0 ? "right" : "left") : partUsed.substr(0, partUsed.find('_')));
     }
-   
     break;
+
   case GRASPING:
     {
-      bool f;
-      Vector xd(3);
-      double demoangle;
+      if (armToBeUsed != "") {
+        emotionCtrl("shy");
 
-      xd[0]=object3d[0];
-      xd[1]=object3d[1];      
-      xd[2]=object3d[2];
-      demoangle=objDescTable[selectedobj].angle;
-      
-      printf("Grasping %f %f %f\n", xd[0], xd[1], xd[2]);
+        bool b;
+        printf("Grasping %f %f %f\n", object3d[0], object3d[1], object3d[2]);
 
-      // switch only if it's allowed
-      if (partUsed=="both_arms") {
-	// COmpute the orientation	  	
-	Matrix rotz(3,3);
-	rotz.zero();
-	rotz(0,0)=cos(M_PI);
-	rotz(0,2)=sin(M_PI);
-	rotz(2,0)=-rotz(0,2);
-	rotz(2,2)=rotz(0,0);
-	rotz(1,1)=1.0;
- 
-	if (xd[1]>0.0) {
-	  useArm(USE_RIGHT);
-	  if (demoshape==processobjdata::BOX){
-	    Matrix rot(3,3);
-	    rot.zero();
-	    double angdeg= -M_PI*(45-demoangle)/180;	    
-	    rot(0,0)=cos(angdeg);
-	    rot(0,1)=-sin(angdeg);
-	    rot(1,0)=-rot(0,1);
-	    rot(1,1)=rot(0,0);
-	    rot(2,2)=1.0;
-	    
-	    *graspOrien = dcm2axis(rotz*rot);		
-	    
-	    cout << graspOrien->toString() << endl;
-	  }
-	}
-	// COmpute the orientation
-	else {	 
-	  useArm(USE_LEFT);
-	  if (demoshape==processobjdata::BOX){
+    	  if (demoshape == processobjdata::BOX) {
+          double alpha = -M_PI * (45 - objDescTable[selectedobj].angle) / 180;
 
-	    Matrix rotx(3,3);
-	    rotx.zero();
-	    rotx(0,0)=1.0;
-	    rotx(1,1)=cos(M_PI);
-	    rotx(1,2)=-sin(M_PI);
-	    rotx(2,1)=-rotx(1,2);
-	    rotx(2,2)=rotx(1,1);
+          Matrix Rz(3,3);
+          Rz.zero();
+          Rz(0,0) = cos(alpha);
+          Rz(0,1) = -sin(alpha);
+          Rz(1,0) = -Rz(0,1);
+          Rz(1,1) = Rz(0,0);
+          Rz(2,2) = 1.0; 
 
-	    Matrix rot(3,3);
-	    rot.zero();
-	    double angdeg= -M_PI*(45-demoangle)/180;
-	    rot(0,0)=cos(angdeg);
-	    rot(0,1)=-sin(angdeg);
-	    rot(1,0)=-rot(0,1);
-	    rot(1,1)=rot(0,0);
-	    rot(2,2)=1.0; 
+          *graspOrient = dcm2axis(palmOrientations[armToBeUsed +"_down"]);
+    	  }
 
-	    *graspOrien = dcm2axis(rotz*rotx*rot);		
+        // apply systematic offset due to uncalibrated kinematic
+        Vector graspPosition = object3d + *dOffs;
+        // safe thresholding
+        graspPosition[0] = min(-0.1, graspPosition[0]);
 
-	    cout << graspOrien->toString() << endl;
-	  }	  
-	}
+        // graspPosition[2] = action->determineHeight();
+
+        // grasp it (wait until it's done)
+        action->grasp(graspPosition ,*graspOrien,*graspDisp);
+        action->checkActionsDone(b, true);
+
+        // TODO: check successful grasp
+        emotionCtrl("hap");
+
+        // lift the object (wait until it's done)
+        action->pushAction(graspPosition + *dLift, *graspOrien);
+        action->checkActionsDone(b, true);
+
+        // release the object (wait until it's done)
+        action->pushAction("open_hand");
+        action->checkActionsDone(b, true);
+
       }
-      cout << " after arm selection" << endl;
-      // apply systematic offset
-      // due to uncalibrated kinematic
-      xd=xd+*dOffs;
-      
-      // safe thresholding
-      xd[0]=xd[0]>-0.1?-0.1:xd[0];
-      
-      cout << " before first push" << endl;      
-      
-      // grasp it (wait until it's done)
-      cout << 
-      action->grasp(xd ,*graspOrien,*graspDisp);
-      cout << " push in wainting" << endl;      
-      action->checkActionsDone(f,true);
-      
-      cout << " first push" << endl;      
-
-      // lift the object (wait until it's done)
-      action->pushAction(xd+*dLift,*graspOrien);
-      action->checkActionsDone(f,true);
-      
-      cout << " second push" << endl;      
-
-      // release the object (wait until it's done)
-      action->pushAction("open_hand");
-      action->checkActionsDone(f,true);
-      
-      cout << " after releasing" << endl;
-
-      state=INIT;
+      state = INIT;
     }		
     break;
 
   case TAPPING:
     {      
-      emotionCtrl("set all hap");
+      if (armToBeUsed != "") {
+        emotionCtrl("hap");
 
-      bool b;
+        bool b;
+        double startOffset = 0.1, endOffset = 0.05;
+        startOffset = (armToBeUsed == "right" ? startOffset : -startOffset);
+        endOffset = (armToBeUsed == "right" ? -endOffset : endOffset);
 
-      // TODO: That should go directly after the action selection
-      useArm(object3d[1] > 0.0 ? USE_RIGHT : USE_LEFT);
-      string usePart = (partUsed != "both_parts" ? (object3d[1] > 0.0 ? "right_arm" : "left_arm") : partUsed);
+        double heightOffset = max(0.0, 0.1 -zOffset);
 
+        Vector startOrientation = dcm2axis(palmOrientations[armToBeUsed +"_starttap"]);
+        Vector stopOrientation = dcm2axis(palmOrientations[armToBeUsed +"_stoptap"]);
 
-      double startOffset = 0.1, endOffset = 0.05;
-      startOffset = (usePart == "right_arm" ? startOffset : -startOffset);
-      endOffset = (usePart == "right_arm" ? -endOffset : endOffset);
+        Vector endPos = object3d;
+        endPos[1] += endOffset;
+        endPos[2] += heightOffset;
 
-      double heightOffset = max(0.0, 0.1 -zOffset);
-      string side = usePart.substr(0, usePart.find('_')) + "_";
-
-      Vector startOrientation = dcm2axis(palmOrientations[side +"starttap"]);
-      Vector stopOrientation = dcm2axis(palmOrientations[side +"stoptap"]);
-
-      Vector endPos = object3d;
-      endPos[1] += endOffset;
-      endPos[2] += heightOffset;
-
-      Vector startPos = object3d;
-      startPos[1] += startOffset;
-      startPos[2] += heightOffset;
+        Vector startPos = object3d;
+        startPos[1] += startOffset;
+        startPos[2] += heightOffset;
 
 
-      action->tap(startPos, startOrientation, endPos, stopOrientation, 1.0);
-      action->checkActionsDone(b, true);
+        action->tap(startPos, startOrientation, endPos, stopOrientation, 1.0);
+        action->checkActionsDone(b, true);
 
-      Vector baseOrientation = dcm2axis(palmOrientations[side +"base"]);
-      action->pushAction(startPos, baseOrientation);
-      action->checkActionsDone(b, true);
+        Vector baseOrientation = dcm2axis(palmOrientations[armToBeUsed +"_base"]);
+        action->pushAction(startPos, baseOrientation);
+        action->checkActionsDone(b, true);
 
+      }
       state=INIT;
     }
     break;
 
   case TOUCHING:
     {
-      printf("eliminar cuanto antes");
+      if (armToBeUsed != "") {
+        emotionCtrl("shy");
+
+        bool b;
+        double height = tableTop[2]; /* = action->determineHeight(); */
+        action->checkActionsDone(b, true);
+
+        // signal a successful touch
+        emotionCtrl(height >= tableTop[2] + 0.01 ? "hap" : "sad");
+      }
+      state = INIT;
     }
     break;
     
