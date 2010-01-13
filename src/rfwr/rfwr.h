@@ -17,7 +17,7 @@ Copyright (C) 2008 RobotCub Consortium
 
 CopyPolicy: Released under the terms of the GNU GPL v2.0.
 
-This file can be edited at src/rfwr/Rf.h
+This file can be edited at src/rfwr/rfwr.h
 **/
 
 // A wrapper for RFWR for YARP2
