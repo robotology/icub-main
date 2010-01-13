@@ -69,6 +69,49 @@ int shape1, shape2;
 double prevwo, prevho;
 
 
+const map<string, Matrix> palmOrientations = computePalmOrientation();
+
+map<string, Matrix> DemoAff::computePalmOrientations() {
+  map<string, Matrix> m;
+
+	Matrix Rz(3, 3);
+	Rz.zero();
+	Rz(0, 0) = cos(M_PI);
+	Rz(0, 2) = sin(M_PI);
+	Rz(1, 1) = 1.0;
+	Rz(2, 0) = -Rz(0, 2);
+	Rz(2, 2) = Rz(0, 0);
+
+  map["right_down"] = Rz;
+
+  Matrix Rx(3, 3);
+  Rx.zero();
+  Rx(0, 0) = 1.0;
+  Rx(1, 1) = cos(-M_PI/2);
+  Rx(1, 2) = -sin(-M_PI/2);
+  Rx(2, 1) = -Rx(1, 2);
+  Rx(2, 2) = Rx(1, 1);
+
+  map["right_base"] = Rz * Rx;
+
+  Rx(1, 1) = cos(M_PI);
+  Rx(1, 2) = -sin(M_PI);
+  Rx(2, 1) = -Rx(1, 2);
+  Rx(2, 2) = Rx(1, 1);
+
+  map["left_down"] = Rz * Rx;
+
+  Rx(1, 1) = cos(M_PI/2);
+  Rx(1, 2) = -sin(M_PI/2);
+  Rx(2, 1) = -Rx(1, 2);
+  Rx(2, 2) = Rx(1, 1);
+
+  map["left_base"] = Rz * Rx;
+
+  return m;
+}
+
+
 DemoAff::DemoAff(){
   state=INIT;
   substate=0;
@@ -1218,17 +1261,18 @@ bool DemoAff::updateModule(){
 
       // TODO: That should go directly after the action selection
       useArm(object3d[1] > 0.0 ? USE_RIGHT : USE_LEFT);
-      string usePart = (partUsed == "both_parts" ? (object3d[1] > 0.0 ? "right_arm" : "left_arm") : partUsed);
+      string usePart = (partUsed != "both_parts" ? (object3d[1] > 0.0 ? "right_arm" : "left_arm") : partUsed);
 
       double startOffset = 0.1;
       startOffset = (usePart == "right_arm" ? startOffset : -startOffset);
 
       double heightOffset = max(0.0, 0.2 -zOffset);
 
-      Vector handOrientation(4);
-      handOrientation.zero();
-      handOrientation[1] = -1;
-      handOrientation[3] = 0;
+      Matrix m = computePalmBaseOrientation("left_arm");
+
+      string str = usePart.substr(0, usePart.find('_')) + "_base";
+      cout << "Used hand orientation: " << str << endl;
+      Vector handOrientation = dcm2axis(palmOrientations[str]);
 
       Vector endPos = object3d;
       endPos[2] += heightOffset;

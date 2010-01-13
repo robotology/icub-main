@@ -21,6 +21,7 @@
  // std
 #include <stdio.h>
 #include <string>
+#include <map>
 #include <iostream>
 
 // yarp
@@ -74,6 +75,9 @@ using namespace vislab::math;
 class DemoAff : public RFModule {
 
 private:
+  // Hand orientations
+  const static std::map<std::string, yarp::sig::Matrix> palmOrientations;
+  static std::map<std::string, yarp::sig::Matrix> computePalmOrientations();
 
   // ports
   // Camshiftplus provides only the effects
