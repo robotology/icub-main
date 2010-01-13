@@ -1236,7 +1236,7 @@ bool DemoAff::updateModule(){
           Rz(1,1) = Rz(0,0);
           Rz(2,2) = 1.0; 
 
-          *graspOrient = dcm2axis(palmOrientations[armToBeUsed +"_down"]);
+          *graspOrien = dcm2axis(palmOrientations[armToBeUsed +"_down"]);
     	  }
 
         // apply systematic offset due to uncalibrated kinematic
