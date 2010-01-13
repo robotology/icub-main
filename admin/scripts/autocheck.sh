@@ -13,7 +13,7 @@ rm -f should_report.txt
 
 std_timeout 600 svn update > svnlog.txt
 cat svnlog.txt | grep -v "svn update" | egrep -v "^\? " | egrep -v "^M " > svnlog2.txt
-cat svnlog2.txt | grep "Updated to revision" >> lastRevision.txt
+cat svnlog2.txt | grep "At revision\|Updated to revision" > lastRevision.txt
 
 SOURCE=$PWD
 echo Working in directory $SOURCE | tee should_report.txt
