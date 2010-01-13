@@ -69,7 +69,7 @@ int shape1, shape2;
 double prevwo, prevho;
 
 
-const map<string, Matrix> palmOrientations = computePalmOrientation();
+const map<string, Matrix> DemoAff::palmOrientations = DemoAff::computePalmOrientation();
 
 map<string, Matrix> DemoAff::computePalmOrientations() {
   map<string, Matrix> m;
@@ -82,7 +82,7 @@ map<string, Matrix> DemoAff::computePalmOrientations() {
 	Rz(2, 0) = -Rz(0, 2);
 	Rz(2, 2) = Rz(0, 0);
 
-  map["right_down"] = Rz;
+  m["right_down"] = Rz;
 
   Matrix Rx(3, 3);
   Rx.zero();
@@ -92,21 +92,21 @@ map<string, Matrix> DemoAff::computePalmOrientations() {
   Rx(2, 1) = -Rx(1, 2);
   Rx(2, 2) = Rx(1, 1);
 
-  map["right_base"] = Rz * Rx;
+  m["right_base"] = Rz * Rx;
 
   Rx(1, 1) = cos(M_PI);
   Rx(1, 2) = -sin(M_PI);
   Rx(2, 1) = -Rx(1, 2);
   Rx(2, 2) = Rx(1, 1);
 
-  map["left_down"] = Rz * Rx;
+  m["left_down"] = Rz * Rx;
 
   Rx(1, 1) = cos(M_PI/2);
   Rx(1, 2) = -sin(M_PI/2);
   Rx(2, 1) = -Rx(1, 2);
   Rx(2, 2) = Rx(1, 1);
 
-  map["left_base"] = Rz * Rx;
+  m["left_base"] = Rz * Rx;
 
   return m;
 }
