@@ -1840,7 +1840,6 @@ public:
 
     virtual bool setTorques(const double *t)
     {
-
         bool ret=true;
 
         for(int l=0;l<controlledJoints;l++)
@@ -1880,117 +1879,433 @@ public:
 
     virtual bool setTorquePid(int j, const Pid &pid)
     {
+        int off=device.lut[j].offset;
+        int subIndex=device.lut[j].deviceEntry;
+
+        SubDevice *p=device.getSubdevice(subIndex);
+        if (!p)
+            return false;
+
+        if (p->iTorque)
+        {
+            return p->iTorque->setTorquePid(off+base, pid);
+        }        
+        
         return false;
     }
 
     virtual bool getTorque(int j, double *t)
     {
+        int off=device.lut[j].offset;
+        int subIndex=device.lut[j].deviceEntry;
+
+        SubDevice *p=device.getSubdevice(subIndex);
+        if (!p)
+            return false;
+
+        if (p->iTorque)
+        {
+            return p->iTorque->getTorque(off+base, t);
+        }        
+
         return false;
     }
 
     virtual bool getTorques(double *t)
     {
+        bool ret=true;
 
-        return false;
-    }
+        for(int l=0;l<controlledJoints;l++)
+        {
+            int off=device.lut[l].offset;
+            int subIndex=device.lut[l].deviceEntry;
+
+            SubDevice *p=device.getSubdevice(subIndex);
+            if (!p)
+                return false;
+
+            if (p->iTorque)
+            {
+                ret=ret&&p->iTorque->getTorque(off+base, t+l);
+            }
+            else
+                ret=false;
+        }
+        return ret;
+     }
 
     virtual bool setTorquePids(const Pid *pids)
     {
-        return false;
+        bool ret=true;
+
+        for(int l=0;l<controlledJoints;l++)
+        {
+            int off=device.lut[l].offset;
+            int subIndex=device.lut[l].deviceEntry;
+
+            SubDevice *p=device.getSubdevice(subIndex);
+            if (!p)
+                return false;
+
+            if (p->iTorque)
+            {
+                ret=ret&&p->iTorque->setTorquePid(off+base, pids[l]);
+            }
+            else
+                ret=false;
+        }
+        return ret;
     }
 
     virtual bool setTorqueErrorLimit(int j, double limit)
     {
+        int off=device.lut[j].offset;
+        int subIndex=device.lut[j].deviceEntry;
+
+        SubDevice *p=device.getSubdevice(subIndex);
+        if (!p)
+            return false;
+
+        if (p->iTorque)
+        {
+            return p->iTorque->setTorqueErrorLimit(off+base, limit);
+        }        
+
         return false;
     }
 
     virtual bool setTorqueErrorLimits(const double *limits)
-    {
-        return false;
+    { 
+        bool ret=true;
+
+        for(int l=0;l<controlledJoints;l++)
+        {
+            int off=device.lut[l].offset;
+            int subIndex=device.lut[l].deviceEntry;
+
+            SubDevice *p=device.getSubdevice(subIndex);
+            if (!p)
+                return false;
+
+            if (p->iTorque)
+            {
+                ret=ret&&p->iTorque->setTorqueErrorLimit(off+base, limits[l]);
+            }
+            else
+                ret=false;
+        }
+        return ret;
     }
 
     virtual bool getTorqueError(int j, double *err)
     {
+        int off=device.lut[j].offset;
+        int subIndex=device.lut[j].deviceEntry;
+
+        SubDevice *p=device.getSubdevice(subIndex);
+        if (!p)
+            return false;
+
+        if (p->iTorque)
+        {
+            return p->iTorque->getTorqueError(off+base, err);
+        }        
+
         return false;
     }
 
     virtual bool getTorqueErrors(double *errs)
     {
-        return false;
+        bool ret=true;
+
+        for(int l=0;l<controlledJoints;l++)
+        {
+            int off=device.lut[l].offset;
+            int subIndex=device.lut[l].deviceEntry;
+
+            SubDevice *p=device.getSubdevice(subIndex);
+            if (!p)
+                return false;
+
+            if (p->iTorque)
+            {
+                ret=ret&&p->iTorque->getTorqueError(off+base, errs+l);
+            }
+            else
+                ret=false;
+        }
+        return ret;
     }
 
     virtual bool getTorquePidOutput(int j, double *out)
     {
+        int off=device.lut[j].offset;
+        int subIndex=device.lut[j].deviceEntry;
+
+        SubDevice *p=device.getSubdevice(subIndex);
+        if (!p)
+            return false;
+
+        if (p->iTorque)
+        {
+            return p->iTorque->getTorquePidOutput(off+base, out);
+        }        
+
         return false;
     }
 
     virtual bool getTorquePidOutputs(double *outs)
     {
-        return false;
+        bool ret=true;
+
+        for(int l=0;l<controlledJoints;l++)
+        {
+            int off=device.lut[l].offset;
+            int subIndex=device.lut[l].deviceEntry;
+
+            SubDevice *p=device.getSubdevice(subIndex);
+            if (!p)
+                return false;
+
+            if (p->iTorque)
+            {
+                ret=ret&&p->iTorque->getTorquePidOutput(off+base, outs+l);
+            }
+            else
+                ret=false;
+        }
+        return ret;
     }
 
     virtual bool getTorquePid(int j, Pid *pid)
     {
+        int off=device.lut[j].offset;
+        int subIndex=device.lut[j].deviceEntry;
+
+        SubDevice *p=device.getSubdevice(subIndex);
+        if (!p)
+            return false;
+
+        if (p->iTorque)
+        {
+            return p->iTorque->getTorquePid(off+base, pid);
+        }        
+
         return false;
     }
 
     virtual bool getTorquePids(Pid *pids)
     {
-        return false;
+         bool ret=true;
+
+        for(int l=0;l<controlledJoints;l++)
+        {
+            int off=device.lut[l].offset;
+            int subIndex=device.lut[l].deviceEntry;
+
+            SubDevice *p=device.getSubdevice(subIndex);
+            if (!p)
+                return false;
+
+            if (p->iTorque)
+            {
+                ret=ret&&p->iTorque->getTorquePid(off+base, pids+l);
+            }
+            else
+                ret=false;
+        }
+        return ret;
     }
 
     virtual bool getTorqueErrorLimit(int j, double *limit)
     {
+        int off=device.lut[j].offset;
+        int subIndex=device.lut[j].deviceEntry;
+
+        SubDevice *p=device.getSubdevice(subIndex);
+        if (!p)
+            return false;
+
+        if (p->iTorque)
+        {
+            return p->iTorque->getTorqueErrorLimit(off+base, limit);
+        }        
+
         return false;
     }
 
     virtual bool getTorqueErrorLimits(double *limits)
     {
-        return false;
+        bool ret=true;
+
+        for(int l=0;l<controlledJoints;l++)
+        {
+            int off=device.lut[l].offset;
+            int subIndex=device.lut[l].deviceEntry;
+
+            SubDevice *p=device.getSubdevice(subIndex);
+            if (!p)
+                return false;
+
+            if (p->iTorque)
+            {
+                ret=ret&&p->iTorque->getTorqueErrorLimit(off+base, limits+l);
+            }
+            else
+                ret=false;
+        }
+        return ret;
     }
 
     virtual bool resetTorquePid(int j)
     {
+        int off=device.lut[j].offset;
+        int subIndex=device.lut[j].deviceEntry;
+
+        SubDevice *p=device.getSubdevice(subIndex);
+        if (!p)
+            return false;
+
+        if (p->iTorque)
+        {
+            return p->iTorque->resetTorquePid(off+base);
+        }        
+
         return false;
     }
 
     virtual bool disableTorquePid(int j)
     {
+        int off=device.lut[j].offset;
+        int subIndex=device.lut[j].deviceEntry;
+
+        SubDevice *p=device.getSubdevice(subIndex);
+        if (!p)
+            return false;
+
+        if (p->iTorque)
+        {
+            return p->iTorque->disableTorquePid(off+base);
+        }        
+
         return false;
     }
 
     virtual bool enableTorquePid(int j)
     {
+         int off=device.lut[j].offset;
+        int subIndex=device.lut[j].deviceEntry;
+
+        SubDevice *p=device.getSubdevice(subIndex);
+        if (!p)
+            return false;
+
+        if (p->iTorque)
+        {
+            return p->iTorque->enableTorquePid(off+base);
+        }        
+
         return false;
     }
 
     virtual bool setTorqueOffset(int j, double v)   
     {
+         int off=device.lut[j].offset;
+        int subIndex=device.lut[j].deviceEntry;
+
+        SubDevice *p=device.getSubdevice(subIndex);
+        if (!p)
+            return false;
+
+        if (p->iTorque)
+        {
+            return p->iTorque->setTorqueOffset(off+base,v);
+        }        
+
         return false;
     }
 
     virtual bool setPositionMode(int j)
     {
+        int off=device.lut[j].offset;
+        int subIndex=device.lut[j].deviceEntry;
+
+        SubDevice *p=device.getSubdevice(subIndex);
+        if (!p)
+            return false;
+
+        if (p->iMode)
+        {
+            return p->iMode->setPositionMode(off+base);
+        }        
+
         return false;
     }
 
     virtual bool setTorqueMode(int j)
     {
+        int off=device.lut[j].offset;
+        int subIndex=device.lut[j].deviceEntry;
+
+        SubDevice *p=device.getSubdevice(subIndex);
+        if (!p)
+            return false;
+
+        if (p->iMode)
+        {
+            return p->iMode->setTorqueMode(off+base);
+        }        
+
         return false;
     }
 
     virtual bool setVelocityMode(int j)
     {
+        int off=device.lut[j].offset;
+        int subIndex=device.lut[j].deviceEntry;
+
+        SubDevice *p=device.getSubdevice(subIndex);
+        if (!p)
+            return false;
+
+        if (p->iMode)
+        {
+            return p->iMode->setVelocityMode(off+base);
+        }        
+
         return false;
     }
 
 	virtual bool setOpenLoopMode(int j)
     {
+        int off=device.lut[j].offset;
+        int subIndex=device.lut[j].deviceEntry;
+
+        SubDevice *p=device.getSubdevice(subIndex);
+        if (!p)
+            return false;
+
+        if (p->iMode)
+        {
+            return p->iMode->setOpenLoopMode(off+base);
+        }        
+
         return false;
     }
 
     virtual bool getControlMode(int j, int *mode)
     {
+        int off=device.lut[j].offset;
+        int subIndex=device.lut[j].deviceEntry;
+
+        SubDevice *p=device.getSubdevice(subIndex);
+        if (!p)
+            return false;
+
+        if (p->iMode)
+        {
+            return p->iMode->getControlMode(off+base, mode);
+        }        
         return false;
     }
 
@@ -2010,7 +2325,7 @@ public:
         return false;
     }
 
-   virtual bool setOutputs(const double *outs) {
+    virtual bool setOutputs(const double *outs) {
         bool ret=true;
 
         for(int l=0;l<controlledJoints;l++)

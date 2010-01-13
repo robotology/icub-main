@@ -1976,7 +1976,7 @@ bool CanBusMotionControl::setOpenLoopModeRaw(int j)
 
 	DEBUG("Calling SET_CONTROL_MODE (position)\n");
 	//@@@ I'M SETTING HERE THE 0x50 CAN MESSAGE
-	return _writeByte8(CAN_SET_CONTROL_MODE,j,0x50);
+	return _writeByte8(CAN_SET_CONTROL_MODE,j,MODE_OPENLOOP);
 }
 
 bool CanBusMotionControl::setVelocityModeRaw(int j)
