@@ -153,6 +153,8 @@ InputPort::InputPort(CartesianSolver *_slv)
     pose=IKINCTRL_POSE_FULL;
     contMode=false;
     isNew=false;
+    dofChanged=false;
+    restPosChanged=false;
     token=0.0;
     pToken=NULL;
 }
@@ -190,13 +192,15 @@ bool InputPort::handleTarget(Bottle *b)
         for (int i=0; i<l; i++)
             xd[i]=b->get(i).asDouble();
 
-        if (xd==xdOld)
-            slv->send(xd,pToken);
-        else
+        if (!(xd==xdOld) || dofChanged || restPosChanged)
         {
             isNew=true;
             xdOld=xd;
+            dofChanged=false;
+            restPosChanged=false;
         }
+        else
+            slv->send(xd,pToken);
 
         return true;
     }
@@ -218,6 +222,8 @@ bool InputPort::handleDOF(Bottle *b)
 
         for (int i=0; i<len; i++)
             dof[i]=b->get(i).asInt();
+
+        dofChanged=true;
 
         slv->unlock();
 
@@ -309,6 +315,8 @@ void InputPort::onRead(Bottle &b)
         slv->lock();
         slv->prepareJointsRestTask();
         slv->unlock();
+
+        restPosChanged=true;
     }
 
     // shall be the last handling
