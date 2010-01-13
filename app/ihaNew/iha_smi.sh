@@ -41,7 +41,7 @@ XTERM_WRAP="xterm -hold -fg white -bg darkslategray -title iha_smi -geometry $SM
 #CMD="$EXEC --name $SMI_INTERFACE_NAME --file $CONFIG_PATH/$SMI_INTERFACE_CONFIG_FILE  --connect_to_image $CAMERA --connect_to_coords $FACEDETECT_PORT_DETECT --connect_to_reward $DYNAMICS_PORT_REWARD_OUT --connect_to_soundsensor $SOUNDSERVER_PORT_OUT --connect_to_encoders $CONTROLLER_ENCODERS_OUT --connect_to_expression $EXPRESSION_RAW_PORT $*"
 #CMD="$EXEC --name $SMI_INTERFACE_NAME --file $CONFIG_PATH/$CONFIG_FILE  --connect_to_image $SALIENCE_PORT_OUT --connect_to_coords $FACEDETECT_PORT_DETECT --connect_to_reward $DYNAMICS_PORT_REWARD_OUT --connect_to_soundsensor $SOUNDSERVER_PORT_OUT --connect_to_encoders $CONTROLLER_ENCODERS_OUT --connect_to_expression $EXPRESSION_RAW_PORT $*"
 #CMD="$EXEC --name $SMI_INTERFACE_NAME --file $CONFIG_PATH/$CONFIG_FILE  --connect_to_image $SALIENCE_PORT_OUT --connect_to_coords $FACEDETECT_PORT_DETECT --connect_to_soundsensor $SOUNDSERVER_PORT_OUT --connect_to_encoders $CONTROLLER_ENCODERS_OUT --connect_to_expression $EXPRESSION_RAW_PORT $*"
-CMD="$EXEC --name $SMI_INTERFACE_NAME --file $CONFIG_PATH/$CONFIG_FILE  --connect_to_image $SALIENCE_PORT_OUT --connect_to_face_coords $FACEDETECT_PORT_DETECT --connect_to_reward $DYNAMICS_PORT_REWARD_OUT --connect_to_soundsensor $SOUNDSERVER_PORT_OUT --connect_to_encoders $CONTROLLER_ENCODERS_OUT --gaze_input TRUE $*"
+CMD="$EXEC --name $SMI_INTERFACE_NAME --file $CONFIG_PATH/$CONFIG_FILE  --connect_to_image $CAMERA --connect_to_face_coords $FACEDETECT_PORT_DETECT --connect_to_reward $DYNAMICS_PORT_REWARD_OUT --connect_to_soundsensor $SOUNDSERVER_PORT_OUT --connect_to_encoders $CONTROLLER_ENCODERS_OUT --connect_to_beat $AUDIOANALYSER_PORT_OUT --gaze_input TRUE --beat_input TRUE $*"
 # 
 ################################################################################
 
@@ -51,7 +51,7 @@ case "$scriptcmd" in
 		stop_process $NAME $RUNNAME $MACHINE
 		;;
 	stop)
-		yarp disconnect $SALIENCE_PORT_OUT $SMI_INTERFACE_IMAGE_IN
+		#yarp disconnect $ $SMI_INTERFACE_IMAGE_IN
 		yarp disconnect $FACEDETECT_PORT_DETECT $SMI_INTERFACE_FACE_IN
 		#yarp disconnect $DYNAMICS_PORT_REWARD_OUT $SMI_INTERFACE_NAME/reward:in
 		yarp disconnect $SOUNDSERVER_PORT_OUT $SMI_INTERFACE_SOUND_IN
@@ -60,13 +60,11 @@ case "$scriptcmd" in
 		;;
 
         connect)
-                yarp wait $SALIENCE_PORT_OUT 
                 yarp wait $SMI_INTERFACE_IMAGE_IN
 		yarp wait $FACEDETECT_PORT_DETECT 
                 yarp wait $SMI_INTERFACE_FACE_IN
 		yarp wait $SOUNDSERVER_PORT_OUT 
 		#yarp wait $SMI_INTERFACE_SOUND_IN
-		yarp connect $SALIENCE_PORT_OUT $SMI_INTERFACE_IMAGE_IN
 		yarp connect $FACEDETECT_PORT_DETECT $SMI_INTERFACE_FACE_IN
 		#yarp disconnect $DYNAMICS_PORT_REWARD_OUT $SMI_INTERFACE_NAME/reward:in
 		yarp connect $SOUNDSERVER_PORT_OUT $SMI_INTERFACE_SOUND_IN

@@ -1,4 +1,5 @@
 ./iha_smi.sh start
+./iha_stm.sh start
 ./dynamics.sh start
 ./filewriter.sh start
 ./iha_datastore.sh start

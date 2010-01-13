@@ -28,47 +28,54 @@
   <name>mobileEyeCoordServer</name>
   <parameters> --name /iha/mobeyeserver</parameters>
   <node>kaspar2</node>
-  <stdio>icub12</stdio>
+  <stdio>icub15</stdio>
   <tag>mcs</tag>
 </module>
 <module>
   <name>ihaNewSoundSensor</name>
   <parameters>--name /iha/sound --file /usr/local/src/robot/iCub/app/ihaNew/conf/ihaSoundSensor.ini</parameters>
   <node>icub3</node>
-  <stdio>icub12</stdio>
+  <stdio>icub15</stdio>
   <tag>soundserver</tag>
+</module>
+<module>
+  <name>ihaNewAudioAnalyzer</name>
+  <parameters>--name /iha/beat --file /usr/local/src/robot/iCub/app/ihaNew/conf/ihaAudioAnalyser.ini</parameters>
+  <node>icub3</node>
+  <stdio>icub15</stdio>
+  <tag>audioanalyser</tag>
 </module>
 <module>
   <name>ihaNewIhaFaceDetect</name>
   <parameters>--name /iha/fd --file /usr/local/src/robot/iCub/app/ihaNew/conf/ihaFaceDetect.ini</parameters>
-  <node>icub12</node>
-  <stdio>icub12</stdio>
+  <node>icub11</node>
+  <stdio>icub15</stdio>
   <tag>facedetect</tag>
 </module>
 <module>
   <name>ihaNewIhaFaceDetect</name>
   <parameters>--name /iha/sfd --file /usr/local/src/robot/iCub/app/ihaNew/conf/ihaSelfFaceDetect.ini --output_image FALSE</parameters>
-  <node>icub12</node>
-  <stdio>icub12</stdio>
+  <node>icub15</node>
+  <stdio>icub15</stdio>
   <tag>selffacedetect</tag>
 </module>
 <module>
   <name>ihaNewMobileEye</name>
   <parameters>--name /iha/me --file /usr/local/src/robot/iCub/app/ihaNew/conf/ihaMobileEye.ini --NTSC</parameters>
-  <node>icub12</node>
-  <stdio>icub12</stdio>
+  <node>icub15</node>
+  <stdio>icub15</stdio>
   <tag>mobileeye</tag>
 </module>
 <module>
   <name>yarpview</name>
   <parameters>--name /view/facedetect --x 0 --y 10 --synch</parameters>
-  <node>icub12</node>
+  <node>icub15</node>
   <tag>viewfd</tag>
 </module>
 <module>
   <name>yarpview</name>
   <parameters>--name /view/gaze --x 0 --y 10 --synch</parameters>
-  <node>icub12</node>
+  <node>icub15</node>
   <tag>viewgaze</tag>
 </module>
 <connection>
@@ -77,20 +84,24 @@
   <protocol>tcp</protocol>
 </connection>
 <connection>
+  <output>/iha/sound_grabber</output>
+  <input>/iha/beat/sndsensor:in</input>
+  <protocol>tcp</protocol>
+</connection>
+<connection>
   <output>/icub/cam/left</output>
   <input>/iha/fd/facedetect:in</input>
+  <protocol>tcp</protocol>
+</connection>
+<connection>
+  <output>/iha/fd/facedetect:out</output>
+  <input>/view/facedetect</input>
   <protocol>tcp</protocol>
 </connection>
 <connection>
   <output>/iha/gdv</output>
   <input>/iha/sfd/facedetect:in</input>
   <protocol>tcp</protocol>
-</connection>
-<connection>
-  <output>/iha/fd/facedetect:out</output>
-  <input>/view/facedetect</input>
-  <!--why use udp? that's what is used in the icub camera app manager-->
-  <protocol>udp</protocol>
 </connection>
 <connection>
   <output>/iha/me/mobileeye:out</output>
