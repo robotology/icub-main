@@ -1203,6 +1203,7 @@ ImplementControlCalibration2<CanBusMotionControl, IControlCalibration2>(this),
 ImplementAmplifierControl<CanBusMotionControl, IAmplifierControl>(this),
 ImplementControlLimits<CanBusMotionControl, IControlLimits>(this),
 ImplementTorqueControl(this),
+ImplementOpenLoopControl(this),
 ImplementControlMode(this),
 _mutex(1),
 _done(0)
@@ -1968,6 +1969,16 @@ bool CanBusMotionControl::setPositionModeRaw(int j)
 	return _writeByte8(CAN_SET_CONTROL_MODE,j,1);
 }
 
+bool CanBusMotionControl::setOpenLoopModeRaw(int j)
+{
+	if (!(j >= 0 && j <= (CAN_MAX_CARDS-1)*2))
+        return false;
+
+	DEBUG("Calling SET_CONTROL_MODE (position)\n");
+	//@@@ I'M SETTING HERE THE 0x50 CAN MESSAGE
+	return _writeByte8(CAN_SET_CONTROL_MODE,j,0x50);
+}
+
 bool CanBusMotionControl::setVelocityModeRaw(int j)
 {
     fprintf(stderr, "setVelocityModeRaw(): not yet implemented\n");
@@ -2499,6 +2510,27 @@ bool CanBusMotionControl::setOffsetRaw(int axis, double v)
 
 }
 
+bool CanBusMotionControl::setOutputsRaw(const double *v)
+{
+    CanBusResources& r = RES(system_resources);
+
+    int i;
+    for (i = 0; i < r.getJoints(); i++) {
+		setOutputRaw(i,v[i]);
+    }
+
+    return true;
+}
+
+bool CanBusMotionControl::setOutputRaw(int axis, double v)
+{
+    if (!(axis >= 0 && axis <= (CAN_MAX_CARDS-1)*2))
+        return false;
+
+    return _writeWord16 (CAN_SET_OFFSET, axis, S_16(v));
+
+}
+
 bool CanBusMotionControl::setTorqueOffsetRaw(int axis, double v)
 {
     return NOT_YET_IMPLEMENTED("setTorqueOffsetRaw");
@@ -2514,7 +2546,17 @@ bool CanBusMotionControl::disablePidRaw(int axis)
 
 bool CanBusMotionControl::setPositionMode()
 {
-    return NOT_YET_IMPLEMENTED("setPositionModeRaw");
+    return NOT_YET_IMPLEMENTED("setPositionMode");
+}
+
+/*bool CanBusMotionControl::setOpenLoopModeRaw()
+{
+    return NOT_YET_IMPLEMENTED("setOpenLoopModeRaw");
+}*/
+
+bool CanBusMotionControl::setOpenLoopMode(int axis)
+{
+    return NOT_YET_IMPLEMENTED("setOpenLoopMode");
 }
 
 bool CanBusMotionControl::setTorqueModeRaw()

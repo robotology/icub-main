@@ -231,6 +231,7 @@ class yarp::dev::CanBusMotionControl:public DeviceDriver,
             public IControlDebug,
             public IControlLimitsRaw,
 			public ITorqueControlRaw,
+			public IOpenLoopControlRaw,
             public IControlModeRaw,
             public ImplementPositionControl<CanBusMotionControl, IPositionControl>,
             public ImplementVelocityControl<CanBusMotionControl, IVelocityControl>,
@@ -241,6 +242,7 @@ class yarp::dev::CanBusMotionControl:public DeviceDriver,
             public ImplementAmplifierControl<CanBusMotionControl, IAmplifierControl>,
             public ImplementControlLimits<CanBusMotionControl, IControlLimits>,
 			public ImplementTorqueControl,
+			public ImplementOpenLoopControl,
             public ImplementControlMode,
             public IAnalogSensor
 {
@@ -378,7 +380,18 @@ public:
     virtual bool setPositionModeRaw(int j);
     virtual bool setVelocityModeRaw(int j);
     virtual bool setTorqueModeRaw(int j);
+	virtual bool setOpenLoopModeRaw(int j);
     virtual bool getControlModeRaw(int j, int *v);
+
+	///////////// OpenLoop control interface raw
+    ///
+	virtual bool setOpenLoopMode(int axis);
+    virtual bool setOutputRaw(int axis, double v);
+    virtual bool setOutputsRaw(const double *v);
+    //virtual bool getOutputRaw(int j, double *out); //already in PID interface
+    //virtual bool getOutputsRaw(double *outs);      //already in PID interface
+    //
+    /////////////////////////////// END Velocity Control INTERFACE
 
     ///////////// Velocity control interface raw
     ///
