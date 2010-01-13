@@ -25,7 +25,7 @@ void BeatReadLoop::run() {
 	currentBeat=0;
 
 	while (!isStopping()) {
-        IhaDebug::pmesg(DBGL_STATUSLINE,"In beat read loop\n");
+        //IhaDebug::pmesg(DBGL_STATUSLINE,"In beat read loop\n");
 		Bottle* bot = beatport->read(true);
 		if (bot==NULL) {
             break;
@@ -35,7 +35,7 @@ void BeatReadLoop::run() {
 		}
 
 		Value val=bot->get(0);
-        IhaDebug::pmesg(DBGL_STATUSLINE,"Beats: %s\n",bot->toString().c_str());
+        IhaDebug::pmesg(DBGL_DEBUG1,"Beats: %s\n",bot->toString().c_str());
 		if (!val.isNull() && val.isInt()) {
 			beatMutex.wait();
 			currentBeat = val.asInt();
@@ -54,7 +54,7 @@ int BeatReadLoop::getCurrentBeat()
     beatMutex.wait();
     retval=currentBeat;
     beatMutex.post();
-    IhaDebug::pmesg(DBGL_DEBUG1,"Beats: %d\n",currentBeat);
+    //IhaDebug::pmesg(DBGL_DEBUG1,"Beats: %d\n",currentBeat);
     
     return retval;
 }

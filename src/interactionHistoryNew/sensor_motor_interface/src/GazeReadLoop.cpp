@@ -45,38 +45,50 @@ void GazeReadLoop::run() {
         int ux = bot->get(5).asInt();
         int uy = bot->get(6).asInt();
 
+        IhaDebug::pmesg(DBGL_DEBUG1,"gx %d gy %d lx %d ly %d  ux %d uy %d\n",gx,gy,lx,ly,ux,uy);
+
         double gazestate;
 
         if ((gx < 0) || (gy < 0) || (lx < 0) || (ly < 0) || (ux < 0) || (uy < 0)) {
             //there is an error in part of the gaze reading
             gazestate = -1.0;
+            //IhaDebug::pmesg(DBGL_DEBUG1,"State: err\n");
         } else if ((gx > lx) && (gx < ux) && (gy > ly) && (gy < uy)) {
             //the gaze is inside the face bounding box
             gazestate = 1.0;
+            //IhaDebug::pmesg(DBGL_DEBUG1,"State: inside\n");
         } else if ((gx > lx) && (gx < ux) && (gy < ly)) {
             //the gaze is below the face (at the body)
             gazestate = 0.0;
+            //IhaDebug::pmesg(DBGL_DEBUG1,"State: body\n");
         } else if ((gx < lx) && (gy < ly)) {
             //the gaze is to the lower left of the face
             gazestate = 0.0;
+            //IhaDebug::pmesg(DBGL_DEBUG1,"State: lower left\n");
         } else if ((gx > ux) && (gy < ly)) {
             //the gaze is to the lower right of the face
             gazestate = 0.0;
+            //IhaDebug::pmesg(DBGL_DEBUG1,"State: lower right\n");
         } else if ((gx > lx) && (gx < ux) && (gy > uy)) {
             //the gaze is above the face 
             gazestate = 0.0;
+            //IhaDebug::pmesg(DBGL_DEBUG1,"State: above\n");
         } else if ((gx < lx) && (gy > uy)) {
             //the gaze is to the upper left of the face
             gazestate = 0.0;
+            //IhaDebug::pmesg(DBGL_DEBUG1,"State: upper left\n");
         } else if ((gx > ux) && (gy > uy)) {
             //the gaze is to the upper right of the face
             gazestate = 0.0;
+            //IhaDebug::pmesg(DBGL_DEBUG1,"State: upper right\n");
         } else if ((gx < lx) && (gy > ly) && (gy < uy)) {
             //gaze is to the left of the face
             gazestate = 0.0;
+            //IhaDebug::pmesg(DBGL_DEBUG1,"State: left\n");
         } else if ((gx > ux) && (gy > ly) && (gy < uy)) {
             //gaze is to the right of the face
             gazestate = 0.0;
+            //IhaDebug::pmesg(DBGL_DEBUG1,"State: right\n");
         }
 
         
