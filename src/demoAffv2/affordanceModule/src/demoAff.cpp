@@ -136,6 +136,19 @@ map<string, Matrix> DemoAff::computePalmOrientations() {
   return m;
 }
 
+bool DemoAff::emotionCtrl(const ConstString cmd) {
+	Bottle out, in;
+	out.clear();
+	out.addVocab(Vocab::encode(cmd));
+	emotionInterface.write(out, in);
+	bool b = (in.get(0).asVocab() == VOCAB2('o', 'k'));
+
+#ifdef DEBUG
+	cout << "EmotionInterface command: " << cmd.c_str() << " ......." << (b ? "ok" : "x") << endl;
+#endif
+	return b;
+}
+
 
 DemoAff::DemoAff(){
   state=INIT;
@@ -811,7 +824,7 @@ bool DemoAff::updateModule(){
   
   case INIT:
     {
-
+      emotionCtrl("set all neu");
 
       // Go to initPos
       //t_ipos->positionMove(torsoObsPos);
@@ -832,11 +845,12 @@ bool DemoAff::updateModule(){
   case GETDEMOOBJS:
     {
       // Set expression
-      Bottle& output = port_emotions.prepare();
-      output.clear();
-      output.addVocab(Vocab::encode("set all neutral"));
-      cout << "sending expression: " << output.toString().c_str() << " " << output.size() << endl;
-      port_emotions.write();
+      // TODO: test and use emotionCtrl(.)
+      // Bottle& output = port_emotions.prepare();
+      // output.clear();
+      // output.addVocab(Vocab::encode("set all neutral"));
+      // cout << "sending expression: " << output.toString().c_str() << " " << output.size() << endl;
+      // port_emotions.write();
 
       getObjInfo();
 
@@ -963,11 +977,12 @@ bool DemoAff::updateModule(){
       }
       
       // Set expression
-      Bottle& output = port_emotions.prepare();
-      output.clear();
-      output.addVocab(Vocab::encode("set all neutral"));
-      cout << "sending expression: " << output.toString().c_str() << " " << output.size() << endl;
-      port_emotions.write();
+      // TODO: test and use emotionCtrl(.)
+      // Bottle& output = port_emotions.prepare();
+      // output.clear();
+      // output.addVocab(Vocab::encode("set all neutral"));
+      // cout << "sending expression: " << output.toString().c_str() << " " << output.size() << endl;
+      // port_emotions.write();
 
 
       getObjInfo();
@@ -1281,7 +1296,9 @@ bool DemoAff::updateModule(){
     break;
 
   case TAPPING:
-    {
+    {      
+      emotionCtrl("set all hap");
+
       bool b;
 
       // TODO: That should go directly after the action selection

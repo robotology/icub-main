@@ -75,11 +75,17 @@ using namespace vislab::math;
 class DemoAff : public RFModule {
 
 private:
+  // TODO: sorry for squeezing everything to the top :]
   // Hand orientations
   static std::map<std::string, yarp::sig::Matrix> palmOrientations;
   static std::map<std::string, yarp::sig::Matrix> computePalmOrientations();
 
+  // Emotion interface
+  bool emotionCtrl(const yarp::os::ConstString cmd);
+
   // ports
+  Port emotionInterface;
+
   // Camshiftplus provides only the effects
   BufferedPort<Bottle> port_eff;
   BufferedPort<Bottle> port_sync;
