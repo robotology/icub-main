@@ -62,7 +62,7 @@
 #define STRAIN_RELEASE     0x03
 
 #define MAIS_BUILD         0x01
-#define STRAIN_BUILD       0x02
+#define STRAIN_BUILD       0x03
 
 #ifdef STRAIN 
   char VERSION=   		STRAIN_VERSION;
@@ -166,6 +166,7 @@ struct s_eeprom BoardConfig = {0};
 
 int  CurrentTare[6] = {0,0,0,0,0,0};
 char UseCalibration = 1;
+char DebugCalibration = 0;
 char filter_enable = 0;
 char can_enable = 0;
 char mux_enable = 1;
@@ -395,6 +396,8 @@ void T2(void)
   // 
   // ForceData and TorqueData are defined as 8 bytes arrays, but only 6 bytes are used.
   // The remainaing two should be not trasmitted, unless a particular event occurs (i.e:debug message, saturation warning etc.)
+  unsigned char ForceDataCalib[8], TorqueDataCalib[8]; 
+  unsigned char ForceDataUncalib[8], TorqueDataUncalib[8]; 
   unsigned char ForceData[8], TorqueData[8]; 
   static unsigned char ChToTransmit=1; 
   unsigned char saturation = 0;
@@ -412,7 +415,7 @@ void T2(void)
   // from dsp library shares some common resources
 //@@@
   //DisableIntT3;
-
+/*
   // 15usec 
   MatrixMultiply(
   6, // int numRows1,
@@ -470,6 +473,89 @@ void T2(void)
   SID = (CAN_MSG_CLASS_PERIODIC) | ((BoardConfig.EE_CAN_BoardAddress)<<4) | (CAN_CMD_TORQUE_VECTOR) ;
   CAN1SendMessage((CAN_TX_SID(SID)) & CAN_TX_EID_DIS & CAN_SUB_NOR_TX_REQ, (CAN_TX_EID(0x0)) & CAN_NOR_TX_REQ, TorqueData,length,1); // buffer 1 
   
+*/
+
+  VectorAdd (6, BoardConfig.EE_AN_ChannelValue, BoardConfig.EE_AN_ChannelValue, BoardConfig.EE_CalibrationTare);
+  MatrixMultiply(
+  6, // int numRows1,
+  6, // int numCols1Rows2,
+  1, // int numCols2,
+  &BoardConfig.EE_TF_TorqueValue[0],   // fractional* dstM,
+  &BoardConfig.EE_TF_TMatrix[0][0],    // fractional* srcM1,
+  (int*) &BoardConfig.EE_AN_ChannelValue[0]); // fractional* srcM2 
+
+	//calculate Data for calibrated values...
+//	VectorAdd (6, BoardConfig.EE_TF_TorqueValue, BoardConfig.EE_TF_TorqueValue, BoardConfig.EE_CalibrationTare);
+	VectorAdd (6, BoardConfig.EE_TF_TorqueValue, BoardConfig.EE_TF_TorqueValue, CurrentTare);
+	BoardConfig.EE_TF_TorqueValue[0]+=0x7FFF;
+	BoardConfig.EE_TF_TorqueValue[1]+=0x7FFF;
+	BoardConfig.EE_TF_TorqueValue[2]+=0x7FFF;
+	BoardConfig.EE_TF_TorqueValue[3]+=0x7FFF;
+	BoardConfig.EE_TF_TorqueValue[4]+=0x7FFF;
+	BoardConfig.EE_TF_TorqueValue[5]+=0x7FFF;
+	memcpy(ForceDataCalib,BoardConfig.EE_TF_TorqueValue,6);
+	memcpy(TorqueDataCalib,BoardConfig.EE_TF_ForceValue,6);
+	//...and for not calibrated ones
+	BoardConfig.EE_AN_ChannelValue[0]+=0x7FFF;
+	BoardConfig.EE_AN_ChannelValue[1]+=0x7FFF;
+	BoardConfig.EE_AN_ChannelValue[2]+=0x7FFF;
+	BoardConfig.EE_AN_ChannelValue[3]+=0x7FFF;
+	BoardConfig.EE_AN_ChannelValue[4]+=0x7FFF;
+	BoardConfig.EE_AN_ChannelValue[5]+=0x7FFF;
+	memcpy(ForceDataUncalib,BoardConfig.EE_AN_ChannelValue,6);
+	memcpy(TorqueDataUncalib,&BoardConfig.EE_AN_ChannelValue[3],6);
+
+  // memcpy(ForceData,BoardConfig.EE_AN_ChannelValue,6);
+  // memcpy(TorqueData,&BoardConfig.EE_AN_ChannelValue[3],6);
+
+  // Load message ID , Data into transmit buffer and set transmit request bit
+  // class, source, type for periodoc messages
+  if (saturation!=0)
+  {
+	 length=7;
+	 ForceDataCalib[6]=1;
+	 TorqueDataCalib[6]=1;	
+	 ForceDataUncalib[6]=1;
+	 TorqueDataUncalib[6]=1;
+  }
+
+  // force data 
+
+  if (DebugCalibration==1)
+  {
+	  SID = (CAN_MSG_CLASS_PERIODIC) | ((BoardConfig.EE_CAN_BoardAddress)<<4) | (0XA) ;
+	  CAN1SendMessage((CAN_TX_SID(SID)) & CAN_TX_EID_DIS & CAN_SUB_NOR_TX_REQ, (CAN_TX_EID(0x0)) & CAN_NOR_TX_REQ, ForceDataCalib,length,0); // buffer 0 
+
+	  SID = (CAN_MSG_CLASS_PERIODIC) | ((BoardConfig.EE_CAN_BoardAddress)<<4) | (0XB) ;
+	  CAN1SendMessage((CAN_TX_SID(SID)) & CAN_TX_EID_DIS & CAN_SUB_NOR_TX_REQ, (CAN_TX_EID(0x0)) & CAN_NOR_TX_REQ, TorqueDataCalib,length,1); // buffer 1 
+  	  while(!CAN1IsTXReady(0));
+	  while(!CAN1IsTXReady(1)); 
+	  SID = (CAN_MSG_CLASS_PERIODIC) | ((BoardConfig.EE_CAN_BoardAddress)<<4) | (0x8) ;
+	  CAN1SendMessage((CAN_TX_SID(SID)) & CAN_TX_EID_DIS & CAN_SUB_NOR_TX_REQ, (CAN_TX_EID(0x0)) & CAN_NOR_TX_REQ, ForceDataUncalib,length,0); // buffer 0 
+
+	  SID = (CAN_MSG_CLASS_PERIODIC) | ((BoardConfig.EE_CAN_BoardAddress)<<4) | (0x9) ;
+	  CAN1SendMessage((CAN_TX_SID(SID)) & CAN_TX_EID_DIS & CAN_SUB_NOR_TX_REQ, (CAN_TX_EID(0x0)) & CAN_NOR_TX_REQ, TorqueDataUncalib,length,1); // buffer 1 
+  }
+else
+{
+  if (UseCalibration==1)
+	{
+	  SID = (CAN_MSG_CLASS_PERIODIC) | ((BoardConfig.EE_CAN_BoardAddress)<<4) | (CAN_CMD_FORCE_VECTOR) ;
+	  CAN1SendMessage((CAN_TX_SID(SID)) & CAN_TX_EID_DIS & CAN_SUB_NOR_TX_REQ, (CAN_TX_EID(0x0)) & CAN_NOR_TX_REQ, ForceDataCalib,length,0); // buffer 0 
+	  // torque data 
+	  SID = (CAN_MSG_CLASS_PERIODIC) | ((BoardConfig.EE_CAN_BoardAddress)<<4) | (CAN_CMD_TORQUE_VECTOR) ;
+	  CAN1SendMessage((CAN_TX_SID(SID)) & CAN_TX_EID_DIS & CAN_SUB_NOR_TX_REQ, (CAN_TX_EID(0x0)) & CAN_NOR_TX_REQ, TorqueDataCalib,length,1); // buffer 1 
+	}
+  else
+	{
+	  SID = (CAN_MSG_CLASS_PERIODIC) | ((BoardConfig.EE_CAN_BoardAddress)<<4) | (CAN_CMD_FORCE_VECTOR) ;
+	  CAN1SendMessage((CAN_TX_SID(SID)) & CAN_TX_EID_DIS & CAN_SUB_NOR_TX_REQ, (CAN_TX_EID(0x0)) & CAN_NOR_TX_REQ, ForceDataUncalib,length,0); // buffer 0 
+	  // torque data 
+	  SID = (CAN_MSG_CLASS_PERIODIC) | ((BoardConfig.EE_CAN_BoardAddress)<<4) | (CAN_CMD_TORQUE_VECTOR) ;
+	  CAN1SendMessage((CAN_TX_SID(SID)) & CAN_TX_EID_DIS & CAN_SUB_NOR_TX_REQ, (CAN_TX_EID(0x0)) & CAN_NOR_TX_REQ, TorqueDataUncalib,length,1); // buffer 1 
+	}  
+}
+
   // Wait till message is transmitted completely
   //  while(!CAN1IsTXReady(0)) 
   //    ;
