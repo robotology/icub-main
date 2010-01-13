@@ -25,11 +25,16 @@ SubDevice::SubDevice()
     calib2 = 0;
     iTimed= 0;
     info = 0;
-    subdevice=0;
+    iOpenLoop=0;
+
+    iTorque=0;
+    iMode=0;
 
     base=-1;
     top=-1;
     axes=0;
+
+    subdevice=0;
 
     configuredF=false;
     attachedF=false;
@@ -83,6 +88,7 @@ void SubDevice::detach()
     iTorque=0;
     iMode=0;
     iTimed=0;
+    iOpenLoop=0;
 
     configuredF=false;
     attachedF=false;
@@ -125,6 +131,7 @@ bool SubDevice::attach(yarp::dev::PolyDriver *d, const std::string &k)
         subdevice->view(iTimed);
         subdevice->view(iTorque);
         subdevice->view(iMode);
+        subdevice->view(iOpenLoop);
     }
     else
     {

@@ -1422,7 +1422,7 @@ public:
 	virtual bool setOutput(int j, double v)
     {
         if (iOpenLoop)
-           // return iOpenLoop->setOutput(j+base, v);
+           return iOpenLoop->setOutput(j+base, v);
         return false;
     }
 
@@ -1430,8 +1430,8 @@ public:
         bool ret=false;
         if (iOpenLoop) {
             ret=true;
-			for(int l=0;l<controlledJoints;l++){}
-          //      ret=ret&&iOpenLoop->setOutput(l+base,v[l]);
+			for(int l=0;l<controlledJoints;l++)
+                ret=ret&&iOpenLoop->setOutput(l+base,v[l]);
         }
 
         return ret;

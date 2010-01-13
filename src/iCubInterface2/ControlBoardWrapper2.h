@@ -1993,6 +1993,46 @@ public:
         return false;
     }
 
+    virtual bool setOutput(int j, double v)
+    {
+        int off=device.lut[j].offset;
+        int subIndex=device.lut[j].deviceEntry;
+
+        SubDevice *p=device.getSubdevice(subIndex);
+        if (!p)
+            return false;
+
+        if (p->iOpenLoop)
+        {
+            return p->iOpenLoop->setOutput(off+base, v);
+        }		
+        return false;
+    }
+
+   virtual bool setOutputs(const double *outs) {
+        bool ret=true;
+
+        for(int l=0;l<controlledJoints;l++)
+        {
+            int off=device.lut[l].offset;
+            int subIndex=device.lut[l].deviceEntry;
+
+            SubDevice *p=device.getSubdevice(subIndex);
+            if (!p)
+                return false;
+
+            if (p->iOpenLoop)
+            {
+                ret=ret&&p->iOpenLoop->setOutput(off+base, outs[l]);
+            }
+            else
+                ret=false;
+        }
+        return ret;
+    }
+
+
+
 };
 
 #endif
