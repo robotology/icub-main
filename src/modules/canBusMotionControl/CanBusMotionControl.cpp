@@ -1443,7 +1443,7 @@ bool CanBusMotionControl::close (void)
             /// default initialization for this device driver.
             int i;
             for(i = 0; i < res.getJoints(); i++)
-                setBCastMessages(i, double(0x00));
+                setBCastMessages(i, 0x00);
         }
 
         RateThread::stop ();/// stops the thread first (joins too).
@@ -2611,7 +2611,7 @@ bool CanBusMotionControl::positionMoveRaw(int axis, double ref)
     r.addMessage (CAN_POSITION_MOVE, axis);
 
     _ref_positions[axis] = ref;
-    *((int*)(r._writeBuffer[0].getData()+1))F = S_32(_ref_positions[axis]);/// pos
+    *((int*)(r._writeBuffer[0].getData()+1)) = S_32(_ref_positions[axis]);/// pos
     *((short*)(r._writeBuffer[0].getData()+5)) = S_16(_ref_speeds[axis]);/// speed
     r._writeBuffer[0].setLen(7);
 
@@ -3318,11 +3318,12 @@ bool CanBusMotionControl::saveBootMemory ()
 /// e.g. 0x02 activates the broadcast of position information
 /// 0x04 activates the broadcast of velocity ...
 ///
-bool CanBusMotionControl::setBCastMessages (int axis, double v)
+bool CanBusMotionControl::setBCastMessages (int axis, unsigned int v)
 {
     if (!(axis >= 0 && axis <= (CAN_MAX_CARDS-1)*2))
         return false;
 
+    // why S_32??
     return _writeDWord (CAN_SET_BCAST_POLICY, axis, S_32(v));
 }
 

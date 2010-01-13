@@ -451,7 +451,7 @@ public:
     virtual bool getLimitsRaw(int axis, double *min, double *max);
 
 protected:
-    bool setBCastMessages (int axis, double v);
+    bool setBCastMessages (int axis, unsigned int v);
 
 protected:
     void *system_resources;
