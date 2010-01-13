@@ -158,7 +158,7 @@
  *    vector).
  *  
  * \b q property: contains the joints configuration which 
- *    achieve x (DOF-components vector in deg).
+ *    achieves x (DOF-components vector in degrees).
  *  
  * \b tok property: contains the token that the client may have 
  *    added to the request.
