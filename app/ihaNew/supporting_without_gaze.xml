@@ -19,7 +19,7 @@
   <name>ihaNewSoundSensor</name>
   <parameters>--name /iha/sound --file /usr/local/src/robot/iCub/app/ihaNew/conf/ihaSoundSensor.ini</parameters>
   <node>icub3</node>
-  <stdio>icub3</stdio>
+  <stdio>icub15</stdio>
   <tag>soundserver</tag>
 </module>
 <module>
