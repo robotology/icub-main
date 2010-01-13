@@ -1,6 +1,6 @@
 SET(PM_PROJECT_NAME GaussianMixtureModelModule)
 SET(PM_PROJECT_TYPE Executable)
-SET(PM_PROJECT_DEPS ICUB)
+SET(PM_PROJECT_DEPS YARP YarpTools MathLib StdTools)
 
 cmake_minimum_required(VERSION 2.6)
 

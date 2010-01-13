@@ -63,6 +63,7 @@ bool ImitationApplicationThread::threadInit()
     snprintf(mSrcPortName[SPID_LWristRef],          256,"/RobotController/currentWristRefL");
     snprintf(mSrcPortName[SPID_RArmCartPos],        256,"/RobotController/currentCartPositionR");
     snprintf(mSrcPortName[SPID_LArmCartPos],        256,"/RobotController/currentCartPositionL");
+    snprintf(mSrcPortName[SPID_EyeCartPos],        256,"/RobotController/currentCartEyeTargetPosition");
     snprintf(mSrcPortName[SPID_SIZE],               256,"");
 
     
@@ -180,7 +181,23 @@ void ImitationApplicationThread::run()
         AddConnexion(SPID_LArmCartPos, DPID_EyeDesCartPos);
         AddCommand(PID_Robot,"iks Eye");
         break;
-        
+    case BC_HAND_OPENRIGHT:
+        AddCommand(PID_Robot,"rh open");
+        break;
+    case BC_HAND_OPENLEFT:
+        AddCommand(PID_Robot,"lh open");
+        break;
+    case BC_HAND_CLOSERIGHT:
+        AddCommand(PID_Robot,"rh close");
+        break;
+    case BC_HAND_CLOSELEFT:
+        AddCommand(PID_Robot,"lh close");
+        break;
+    case BC_EYETARGET_TO_RIGHTARM:
+        AddConnexion(SPID_EyeCartPos    , DPID_RArmDesCartPos);
+        break;
+    case BC_EYETARGET_TO_LEFTARM:
+        break;
     }
     
     mBasicCommand = BC_NONE;
@@ -415,6 +432,24 @@ int ImitationApplicationThread::respond(const Bottle& command, Bottle& reply){
                 retVal = 0;
             }
             break;
+        case VOCAB4('h','a','n','d'):
+            if(cmdSize>1){
+                ConstString str = command.get(1).asString();
+                      if(str == "ro"){
+                    mBasicCommand = BC_HAND_OPENRIGHT;
+                }else if(str == "rc"){
+                    mBasicCommand = BC_HAND_CLOSERIGHT;
+                }else if(str == "lo"){
+                    mBasicCommand = BC_HAND_OPENLEFT;
+                }else if(str == "lc"){
+                    mBasicCommand = BC_HAND_CLOSELEFT;
+                }else{
+                    retVal = 0;
+                }
+            }else{
+                retVal = 0;
+            }
+            break;
         default:
             retVal = -1;
             break;
@@ -450,9 +485,13 @@ int ImitationApplicationThread::respond(const Bottle& command, Bottle& reply){
     }
     if(retVal>0){
         reply.addVocab(Vocab::encode("ack"));
+        cout << "*ACK*"<<endl;
     }else if (retVal == 0){
         reply.addVocab(Vocab::encode("fail"));
+        cout << "*FAIL*"<<endl;
     }
+    
+
 
     mMutex.post();
     return retVal;

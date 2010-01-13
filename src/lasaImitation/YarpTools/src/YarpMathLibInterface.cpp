@@ -174,3 +174,4 @@ yarp::sig::Vector&  Vector3ToYarpVector3  (const MathLib::Vector3 &vec, yarp::si
     result(2) = vec.cz();       
     return result;       
 }
+

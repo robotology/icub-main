@@ -30,26 +30,83 @@
 using namespace yarp::os;
 using namespace yarp::sig;
 
+#include "MathLib/MathLib.h"
+#include "MathLib/GMR.h"
+
+
 
 class GaussianMixtureModelThread: public RateThread
 {
 private:    
-    Semaphore               mMutex;
-    int                     mPeriod;
-    char                    mBaseName[256];
+    Semaphore                   mMutex;
+    int                         mPeriod;
+    char                        mBaseName[256];
+
+    double                      mTime;
+    double                      mPrevTime;
+
+    BufferedPort<Vector>        mInputPort;
+    BufferedPort<Vector>        mOutputPort;
+    double                      mInputLastTime;
     
-    BufferedPort<Vector>    mInputPort;
-    BufferedPort<Vector>    mOutputPort;
+    int                         mIOSize;
+    int                         mGMMIOSize;
+    MathLib::Vector             mInputVector;
+    MathLib::Vector             mOutputVector;
     
+    enum State{
+        GMM_IDLE = 0,
+        GMM_REPRO_INIT,
+        GMM_REPRO_RUN,
+        GMM_REPRO_END
+    };
+    
+    State                       mPrevState;
+    State                       mState;
+    State                       mNextState;
+    
+    
+    MathLib::GaussianMixture    mGMM;
+    bool                        bGMMIsReady;
+    
+    double                      mGMMTime;
+    double                      mGMMInternalTimeSpan;
+    double                      mGMMReproTime;
+
+    MathLib::Matrix             mGMMInput;
+    MathLib::Vector             mGMMInputV;
+    MathLib::Vector             mGMMLambda;
+    MathLib::Matrix             mGMMTarget;
+    MathLib::Vector             mGMMTargetV;
+    MathLib::Matrix            *mGMMSigmas;
+    
+    MathLib::Vector             mGMMInComp;
+    MathLib::Vector             mGMMOutComp;
+
+    MathLib::Vector             mGMMCurrState;
+    
+    double                      mGMMLambdaTreshold;
+    double                      mGMMLambdaTau;
+
 public:
     GaussianMixtureModelThread(int period, const char* baseName);
     virtual ~GaussianMixtureModelThread();
 
+            void    Init();
+            void    Free();
+            void    Load(const char* modelFilename);
+            void    Save(const char* modelFilename);
 
     virtual void run();
     virtual bool threadInit();
     virtual void threadRelease();
 };
+
+
+MathLib::Vector& AxisToQuat  (const MathLib::Vector& axis,  MathLib::Vector& quat, bool inv = false);
+MathLib::Vector& QuatToAxis  (const MathLib::Vector& quat,  MathLib::Vector& axis);
+MathLib::Vector& Pose6ToQPose(const MathLib::Vector& pose,  MathLib::Vector& qpose,bool inv = false);
+MathLib::Vector& QPoseToPose6(const MathLib::Vector& qpose, MathLib::Vector& pose);
 
 #endif
 

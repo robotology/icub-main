@@ -137,6 +137,26 @@ bool RobotControllerModule::respond(const Bottle& command, Bottle& reply) {
                 }
             }
             break;
+        case VOCAB2('r','h'):
+            if(cmdSize>1){
+                for(int i=1;i<cmdSize;i++){
+                    if(command.get(i).asString()=="close")
+                        mThread->SetHandPose(true,false);
+                    else if(command.get(i).asString()=="open")
+                        mThread->SetHandPose(true,true);
+                }
+            }
+            break;
+        case VOCAB2('l','h'):
+            if(cmdSize>1){
+                for(int i=1;i<cmdSize;i++){
+                    if(command.get(i).asString()=="close")
+                        mThread->SetHandPose(false,false);
+                    else if(command.get(i).asString()=="open")
+                        mThread->SetHandPose(false,true);
+                }
+            }
+            break;
         default:
             retVal = false;
             break;            

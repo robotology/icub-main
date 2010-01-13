@@ -62,6 +62,7 @@ private:
         SPID_LWristRef,
         SPID_RArmCartPos,
         SPID_LArmCartPos,
+        SPID_EyeCartPos,
         SPID_SIZE
     };
     enum DstPortId{
@@ -117,6 +118,12 @@ private:
         BC_TRACK_NONE,
         BC_TRACK_RIGHTARM,
         BC_TRACK_LEFTARM,
+        BC_HAND_OPENRIGHT,
+        BC_HAND_OPENLEFT,
+        BC_HAND_CLOSERIGHT,
+        BC_HAND_CLOSELEFT,
+        BC_EYETARGET_TO_RIGHTARM,
+        BC_EYETARGET_TO_LEFTARM
     };
     BasicCommand            mBasicCommand;
 

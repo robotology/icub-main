@@ -64,6 +64,10 @@ private:
     
     Vector                  mJointsLimits[2];
 
+    Vector                  mHandPoses[2];
+    bool                    hHandState[2];
+    double                  mHandGain;
+    
     Vector                  mIKJointsRest;
     Vector                  mIKJointsTarget;
     Vector                  mIKJointsPos;
@@ -164,6 +168,7 @@ private:
 
     BufferedPort<Vector>    mCurrentCartPosRPort;
     BufferedPort<Vector>    mCurrentCartPosLPort;
+    BufferedPort<Vector>    mCurrentCarEyeTargetPort;
 
 public:
             RobotControllerThread(int period, const char* baseName);
@@ -186,8 +191,8 @@ public:
             void    SetIKSolverSet(IKSetID setId, bool enable);
             
             void    SetJointControlMode(int mode);
-    
             void    SetState(State state);
+            void    SetHandPose(bool rightHand, bool open);
     
     virtual void    run();
     virtual bool    threadInit();

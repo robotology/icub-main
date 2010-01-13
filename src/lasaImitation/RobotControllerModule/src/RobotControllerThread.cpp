@@ -94,7 +94,9 @@ bool RobotControllerThread::threadInit()
 
     snprintf(portName,256,"/%s/currentCartPositionL",mBaseName);
     mCurrentCartPosLPort.open(portName);
-    
+
+    snprintf(portName,256,"/%s/currentCartEyeTargetPosition",mBaseName);
+    mCurrentCarEyeTargetPort.open(portName);
     return true;
 }
 
@@ -116,6 +118,7 @@ void RobotControllerThread::threadRelease()
     mDesiredCartEyePort.close();
     mCurrentCartPosRPort.close();
     mCurrentCartPosLPort.close();
+    mCurrentCarEyeTargetPort.close();
 }
 
 void    RobotControllerThread::Init(){
@@ -270,6 +273,31 @@ void    RobotControllerThread::Init(){
     mIKDofWeights.One();
     mIKInvDofWeights.One();
     
+    mHandPoses[0].resize(9);
+    mHandPoses[0][0] = 40;
+    mHandPoses[0][1] = 0;
+    mHandPoses[0][2] = 0;
+    mHandPoses[0][3] = 0;
+    mHandPoses[0][4] = 0;
+    mHandPoses[0][5] = 0;
+    mHandPoses[0][6] = 0;
+    mHandPoses[0][7] = 0;
+    mHandPoses[0][8] = 0;
+    mHandPoses[1].resize(9);
+    mHandPoses[1][0] = 40;
+    mHandPoses[1][1] = 40;
+    mHandPoses[1][2] = 30;
+    mHandPoses[1][3] = 45;
+    mHandPoses[1][4] = 30;
+    mHandPoses[1][5] = 40;
+    mHandPoses[1][6] = 40;
+    mHandPoses[1][7] = 40;
+    mHandPoses[1][8] = 70;
+
+    hHandState[0] = false;
+    hHandState[1] = false;
+    
+    
     bIKUseNullSpace         = true;
     bIKUseRestNullSpace     = true;
     
@@ -279,6 +307,8 @@ void    RobotControllerThread::Init(){
     bUseDesiredCartPos[0]   = 0;
     bUseDesiredCartPos[1]   = 0;
 
+    mHandGain               = 1.0;
+    
     mTime               = 0.0;
     mPrevTime           =-1.0;
 
@@ -387,6 +417,13 @@ void RobotControllerThread::run()
         mTargetJointVel[mSrcToIKSIndices[15]] += mDesiredWristOpt[1][0]*(180.0/PI);
         mTargetJointVel[mSrcToIKSIndices[16]] += mDesiredWristOpt[1][1]*(180.0/PI);
 
+        // Hand and fingers
+        for(int i=0;i<9;i++){
+            mTargetJointVel[   7+i] = mHandGain * (mHandPoses[(hHandState[0]?0:1)][i] - mCurrentJointPos[   7+i]);
+            mTargetJointVel[16+7+i] = mHandGain * (mHandPoses[(hHandState[1]?0:1)][i] - mCurrentJointPos[16+7+i]);
+        }
+        cout << mTargetJointVel.toString()<<endl;
+        
         mTargetJointPos = mCurrentJointPos;
         
         
@@ -727,6 +764,11 @@ void    RobotControllerThread::WriteToPorts(){
         YarpPose7ToYarpPose6(mFwdKinArmPose[1],outputVec);
         mCurrentCartPosLPort.write();
     }
+    {
+        Vector &outputVec = mCurrentCarEyeTargetPort.prepare();
+        outputVec = mDesiredCartEyePos;
+        mCurrentCarEyeTargetPort.write();
+    }
     
 }
 void    RobotControllerThread::SetState(State state){
@@ -790,3 +832,7 @@ void    RobotControllerThread::ComputeVelocities(){
         }
     }
 }
+void    RobotControllerThread::SetHandPose(bool rightHand, bool open){
+    hHandState[(rightHand?0:1)] = open;
+}
+
