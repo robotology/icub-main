@@ -185,17 +185,17 @@ gboolean timer_func (gpointer data)
 	gtk_range_set_value (GTK_RANGE(slider_gain[4]),(offset[4]));
 	gtk_range_set_value (GTK_RANGE(slider_gain[5]),(offset[5]));
 
-	sprintf(tempbuf,"%d",adc[0]);
-	gtk_label_set_text(GTK_LABEL(curr_measure[0]),tempbuf);
-	sprintf(tempbuf,"%d",adc[1]);
+	sprintf(tempbuf,"%d",adc[0]-0x7fff); //@@@@ changed here
+	gtk_label_set_text(GTK_LABEL(curr_measure[0]),tempbuf); 
+	sprintf(tempbuf,"%d",adc[1]-0x7fff);
 	gtk_label_set_text(GTK_LABEL(curr_measure[1]),tempbuf);
-	sprintf(tempbuf,"%d",adc[2]);
+	sprintf(tempbuf,"%d",adc[2]-0x7fff);
 	gtk_label_set_text(GTK_LABEL(curr_measure[2]),tempbuf);
-	sprintf(tempbuf,"%d",adc[3]);
+	sprintf(tempbuf,"%d",adc[3]-0x7fff);
 	gtk_label_set_text(GTK_LABEL(curr_measure[3]),tempbuf);
-	sprintf(tempbuf,"%d",adc[4]);
+	sprintf(tempbuf,"%d",adc[4]-0x7fff);
 	gtk_label_set_text(GTK_LABEL(curr_measure[4]),tempbuf);
-	sprintf(tempbuf,"%d",adc[5]);
+	sprintf(tempbuf,"%d",adc[5]-0x7fff);
 	gtk_label_set_text(GTK_LABEL(curr_measure[5]),tempbuf);
 
 	if (bool_raw)
@@ -254,18 +254,40 @@ gboolean timer_func (gpointer data)
 		sprintf(tempbuf,"%+.3f N/m",(int(adc[5])-0x7fff)/float(calib_const));
 		gtk_label_set_text(GTK_LABEL(newton_measure[5]),tempbuf);*/
 
-		sprintf(tempbuf,"%+.3f N",(int(adc[0])-0x7fff)/float(0x7fff)*500);
-		gtk_label_set_text(GTK_LABEL(newton_measure[0]),tempbuf);
-		sprintf(tempbuf,"%+.3f N",(int(adc[1])-0x7fff)/float(0x7fff)*500);
-		gtk_label_set_text(GTK_LABEL(newton_measure[1]),tempbuf);
-		sprintf(tempbuf,"%+.3f N",(int(adc[2])-0x7fff)/float(0x7fff)*1000);
-		gtk_label_set_text(GTK_LABEL(newton_measure[2]),tempbuf);
-		sprintf(tempbuf,"%+.3f N/m",(int(adc[3])-0x7fff)/float(0x7fff)*8);
-		gtk_label_set_text(GTK_LABEL(newton_measure[3]),tempbuf);
-		sprintf(tempbuf,"%+.3f N/m",(int(adc[4])-0x7fff)/float(0x7fff)*8);
-		gtk_label_set_text(GTK_LABEL(newton_measure[4]),tempbuf);
-		sprintf(tempbuf,"%+.3f N/m",(int(adc[5])-0x7fff)/float(0x7fff)*8);
-		gtk_label_set_text(GTK_LABEL(newton_measure[5]),tempbuf);
+		bool skip_display_calib=false;
+		for (int i=0; i<6; i++)
+		{
+			if (full_scale_const[i]==0)
+			{
+				printf("Error getting the full scale %d from the sensor\n",i);
+				skip_display_calib=true;
+			}
+		}
+
+		if (skip_display_calib==false)
+		{
+			sprintf(tempbuf,"%+.3f N",(int(adc[0])-0x7fff)/float(0x7fff)*full_scale_const[0]);
+			gtk_label_set_text(GTK_LABEL(newton_measure[0]),tempbuf);
+			sprintf(tempbuf,"%+.3f N",(int(adc[1])-0x7fff)/float(0x7fff)*full_scale_const[1]);
+			gtk_label_set_text(GTK_LABEL(newton_measure[1]),tempbuf);
+			sprintf(tempbuf,"%+.3f N",(int(adc[2])-0x7fff)/float(0x7fff)*full_scale_const[2]);
+			gtk_label_set_text(GTK_LABEL(newton_measure[2]),tempbuf);
+			sprintf(tempbuf,"%+.3f N/m",(int(adc[3])-0x7fff)/float(0x7fff)*full_scale_const[3]);
+			gtk_label_set_text(GTK_LABEL(newton_measure[3]),tempbuf);
+			sprintf(tempbuf,"%+.3f N/m",(int(adc[4])-0x7fff)/float(0x7fff)*full_scale_const[4]);
+			gtk_label_set_text(GTK_LABEL(newton_measure[4]),tempbuf);
+			sprintf(tempbuf,"%+.3f N/m",(int(adc[5])-0x7fff)/float(0x7fff)*full_scale_const[5]);
+			gtk_label_set_text(GTK_LABEL(newton_measure[5]),tempbuf);
+		}
+		else
+		{
+			gtk_label_set_text(GTK_LABEL(newton_measure[0]),"ERROR");
+			gtk_label_set_text(GTK_LABEL(newton_measure[1]),"ERROR");			
+			gtk_label_set_text(GTK_LABEL(newton_measure[2]),"ERROR");			
+			gtk_label_set_text(GTK_LABEL(newton_measure[3]),"ERROR");			
+			gtk_label_set_text(GTK_LABEL(newton_measure[4]),"ERROR");
+			gtk_label_set_text(GTK_LABEL(newton_measure[5]),"ERROR");
+		}
 	}
 	else
 	{
@@ -349,7 +371,7 @@ void slider_changed (GtkButton *button,	gpointer ch_p)
 //*********************************************************************************
 void file_save_click (GtkButton *button,	gpointer ch_p)
 { 
-	std::string filename = "C:\\Software\\randazSVN\\ATI\\Code ATI Sensor\\data\\CanLoaderData.dat";
+	std::string filename = "CanLoaderDataV2.dat";
 	fstream filestr;
 	filestr.open (filename.c_str(), fstream::out);
 	int i=0;
@@ -506,7 +528,7 @@ void file_load_click (GtkButton *button,	gpointer ch_p)
 					gtk_entry_set_text (GTK_ENTRY (edit_matrix[ri][ci]), buffer);
 					gtk_widget_modify_base (edit_matrix[ri][ci],GTK_STATE_NORMAL, NULL );
 				}
-
+	drv_sleep (1000);
 	int count_ok=0;
 	for (i=0;i<36; i++)
 	{
@@ -515,6 +537,10 @@ void file_load_click (GtkButton *button,	gpointer ch_p)
 		if (calib_matrix[ri][ci]==matrix[ri][ci])
 		{
 			count_ok++;
+		}
+		else
+		{
+			printf ("Found 1 error on element %d,%d !!\n",ri, ci);
 		}
 	}
 	if (count_ok==36)
@@ -588,7 +614,7 @@ void file_import_click (GtkButton *button,	gpointer ch_p)
 					gtk_entry_set_text (GTK_ENTRY (edit_matrix[ri][ci]), buffer);
 					gtk_widget_modify_base (edit_matrix[ri][ci],GTK_STATE_NORMAL, NULL );
 				}
-
+	drv_sleep (1000);
 	int count_ok=0;
 	for (i=0;i<36; i++)
 	{
@@ -597,6 +623,10 @@ void file_import_click (GtkButton *button,	gpointer ch_p)
 		if (calib_matrix[ri][ci]==matrix[ri][ci])
 		{
 			count_ok++;
+		}
+		else
+		{
+			printf ("Found 1 error on element %d,%d !!\n",ri, ci);
 		}
 	}
 	if (count_ok==36)
