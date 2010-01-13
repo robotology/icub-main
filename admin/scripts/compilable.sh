@@ -142,9 +142,9 @@ echo "</TABLE>" >> $main
     echo -n "Date: "
     date
     echo
-    if [ -e "./scripts/$SYSTEM_DESCRIPTION_FILE" ]
+    if [ -e "./admin/scripts/$SYSTEM_DESCRIPTION_FILE" ]
     then
-	bash ./scripts/$SYSTEM_DESCRIPTION_FILE
+	bash ./admin/scripts/$SYSTEM_DESCRIPTION_FILE
     else
 	echo "No system description file found on server"
     fi
