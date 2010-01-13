@@ -153,7 +153,6 @@ InputPort::InputPort(CartesianSolver *_slv)
     pose=IKINCTRL_POSE_FULL;
     contMode=false;
     isNew=false;
-    dofChanged=false;
     token=0.0;
     pToken=NULL;
 }
@@ -191,15 +190,13 @@ bool InputPort::handleTarget(Bottle *b)
         for (int i=0; i<l; i++)
             xd[i]=b->get(i).asDouble();
 
-        if (!(xd==xdOld) || dofChanged)
+        if (xd==xdOld)
+            slv->send(xd,pToken);
+        else
         {
             isNew=true;
             xdOld=xd;
-
-            dofChanged=false;
         }
-        else
-            slv->send(xd,pToken);
 
         return true;
     }
@@ -221,8 +218,6 @@ bool InputPort::handleDOF(Bottle *b)
 
         for (int i=0; i<len; i++)
             dof[i]=b->get(i).asInt();
-
-        dofChanged=true;
 
         slv->unlock();
 
@@ -285,7 +280,7 @@ void InputPort::onRead(Bottle &b)
     bool poseOptIn=b.check(Vocab::decode(IKINSLV_VOCAB_OPT_POSE));
     bool modeOptIn=b.check(Vocab::decode(IKINSLV_VOCAB_OPT_MODE));
 
-    if (xdOptIn || dofOptIn)
+    if (xdOptIn)
     {
         if (CartesianHelper::getTokenOption(b,&token))
             pToken=&token;

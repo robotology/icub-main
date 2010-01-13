@@ -98,7 +98,6 @@ int main()
     cout<<endl;
 
     // ask the same but with torso enabled
-    cmd.clear();
     Vector dof(3);
     dof=1;
     iCubArmCartesianSolver::addDOFOption(cmd,dof);

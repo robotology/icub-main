@@ -213,7 +213,6 @@ protected:
 
     bool contMode;
     bool isNew;
-    bool dofChanged;
     int  maxLen;
     int  pose;
 
