@@ -8,6 +8,7 @@ echo "libgsl0-dev"
 echo "libncurses5-dev"
 echo "libgtkmm-2.4-dev"
 echo "libcv-dev"
+echo "libqt3-mt-dev"
 echo
 echo "Simulator related packages:"
 echo "libglut3"
