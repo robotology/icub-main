@@ -1,4 +1,6 @@
-/*
+/**
+* \defgroup icub_pf3dtracker_supp_lib pf3dTracker Support Library
+* @ingroup icub_libraries
 * 
 * Support Library of the 3d position tracker implementing the particle filter.
 * See \ref icub_pf3dtracker \endref

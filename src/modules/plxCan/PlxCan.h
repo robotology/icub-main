@@ -4,7 +4,8 @@
  * @ingroup icub_hardware_modules 
  * \defgroup pcan pcan
  *
- * Implements ICanBus interface for a "plx based"
+ * Implements <a href="http://eris.liralab.it/yarpdoc/d3/d5b/classyarp_1_1dev_1_1ICanBus.html"> 
+ * ICanBus interface <\a> for a "plx based"
  * can bus device (cfw pc104 card). This is the pcan
  * device.
  *

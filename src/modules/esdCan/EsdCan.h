@@ -4,7 +4,8 @@
  * @ingroup icub_hardware_modules 
  * \defgroup ecan ecan
  *
- * Implements ICanBus interface for a esd usb-can bus board.
+ * Implements <a href="http://eris.liralab.it/yarpdoc/d3/d5b/classyarp_1_1dev_1_1ICanBus.html"> 
+ * ICanBus interface <\a> for a esd can bus board.
  * This is the ecan device.
  *
  * Copyright (C) 2008 RobotCub Consortium.
