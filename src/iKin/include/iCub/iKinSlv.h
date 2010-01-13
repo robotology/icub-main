@@ -16,6 +16,8 @@
  * \mathbf{q}=\arg\min_{\mathbf{q}\in R^{n} }\left(\frac{1}{2}\left\|\mathbf{\alpha}_d-\mathit{K_{\alpha}}\left(\mathbf{q}\right)\right\|^2+\mathit{w}\cdot\frac{1}{2}\left\|\mathbf{w}_{rest}\otimes\left(\mathbf{q}_{rest}-\mathbf{q}\right)\right\|^2\right) \quad s.t.\,\left\{\begin{array}{l}\left\|\mathbf{x}_d-\mathit{K_x}\left(\mathbf{q}\right)\right\|^2<\epsilon\\\mathbf{q}_L<\mathbf{q}<\mathbf{q}_U\end{array}\right.
  * \f]
  *
+ * \note \f$ \otimes \f$ operation is a element-wise multiplication between vectors.
+ *
  * Where the solution \f$ \mathbf{q} \f$ is the joints vector with n components (depending
  * on the task and the current dof configuration) that is guaranteed to be found within the physical 
  * bounds expressed by \f$ \mathbf{q}_L \f$ and \f$ \mathbf{q}_U \f$; \f$ \mathbf{x}_d\equiv\left(x,y,d\right)_d \f$
