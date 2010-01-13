@@ -621,8 +621,9 @@ public:
     yarp::sig::Matrix GeoJacobian(const yarp::sig::Vector &q);
 
     /**
-    * Returns the 6x1 vector \f$ frac{\partial ^2 
-    * F\left(q\right\)}{\partial q_i \partial q_j}, \f$ where 
+    * Returns the 6x1 vector \f$ 
+    * \frac{\partial{^2}F\left(q\right)}{\partial q_i \partial q_j},
+    * \f$ where 
     * \f$ F\left(q\right) \f$ is the forward kinematic function and 
     * \f$ \left(q_i,q_j\right) \f$ is the DOF couple. 
     * @param i is the index of the first DOF. 
@@ -639,8 +640,9 @@ public:
     void prepareForHessian();
 
     /**
-    * Returns the 6x1 vector \f$ frac{\partial ^2 
-    * F\left(q\right\)}{\partial q_i \partial q_j}, \f$ where 
+    * Returns the 6x1 vector \f$ 
+    * \frac{\partial{^2}F\left(q\right)}{\partial q_i \partial q_j},
+    * \f$ where 
     * \f$ F\left(q\right) \f$ is the forward kinematic function and 
     * \f$ \left(q_i,q_j\right) \f$ is the DOF couple. 
     * <i>Fast Version</i>: to be used in conjunction with 
