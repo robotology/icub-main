@@ -37,16 +37,15 @@ using namespace iFC;
 using namespace iKin;
 
 
-const int SAMPLER_RATE = 50;
+const int SAMPLER_RATE = 10;
 const int FT_VALUES = 6;
 const int ARM_JNT = 4;
 
-const bool verbose = false;
+const bool verbose = true;
 const int CPRNT = 10;
 const int CALIBRATION_OK = true; // should be true when FT calibration will be ok
 
-//const double initPosition[4] = {-30.0, 30.0, 0.0, 40.0};
-const double initPosition[4] = {10.0, 90.0, 0.0, 40.0};
+const double initPosition[4] = {-30.0, 30.0, 0.0, 40.0};
 
 const double MAX_JNT_LIMITS[4] = {2.0, 120.0, 90.0, 90.0};
 const double MIN_JNT_LIMITS[4] = {-85.0, 0.0, -20.0, 10.0};
@@ -161,14 +160,22 @@ public:
 		  ps(1) = 0.10;
 
 		  //Shoulder motors parameters:
-		  R0 = 0.8967; K0 = 0.05; Jm0 = 8.47e-6;
-		  R1 = R2 = 0.8363; K1 = K2 = 0.0280; Jm1 = Jm2 = 5.15e-6;
-		  a = 40/65;
+		  R0 = 0.8967; K0 = 0.05; Jm0 = 8.47E-6;
+		  R1 = R2 = 0.8363; K1 = K2 = 0.0280; Jm1 = Jm2 = 5.15E-6;
+		  a = 40.0/65.0;
 		  T.resize(3,3);
-		  T = 0.0;
-		  T(0,0) = R0/K0*Jm0; T(1,0) = R1/K1*Jm1/a; T(1,1) = -T(1,0); T(2,0) = -R2/K2*Jm2/a; T(2,1) = T(2,2) = -T(2,0); T(3,3) = 1;
-		  T = pinv(T)*T.transposed();
+		  T_all.resize(4,4);
+		  T = 0.0; //T = Tvt*Tjm'
+		  T_all = 0.0;
+		  T(0,0) = R0/K0; 
+		  T(0,1) = R0/K0; 
+		  T(1,1) = R1/K1*a; 
+		  T(2,0) = 0; 
+		  T(2,1) = -R1/K1*a;
+		  T(2,2) = R2/K2*a;
+		  T = 0.056*T;//pinv(T)*T.transposed();
 
+		  
 		  for(int i=0;i<3;i++)
 			  for(int j=0;j<3;j++)
 				  T_all(i,j) = T(i,j);
@@ -217,7 +224,10 @@ public:
 		  count = 0;
 		  
 		  for(int i=0;i<ARM_JNT;i++)
+		  {
 			  ipos->positionMove(i,initPosition[i]);
+		  }
+			  
 
 		  bool check = false;
 		  //int count;
@@ -238,7 +248,7 @@ public:
 		  for(int i=0;i<ARM_JNT;i++)
 		  {
 			  //ipids->setPid(i,FTPid[i]);  // iCub is now controllable using setOffset
-			  ipids->setPid(3,FTPid[3]);  // iCub is now controllable using setOffset
+			  ipids->setPid(i,FTPid[i]);  // iCub is now controllable using setOffset
 		  }
 		  
 		  count =0;
@@ -322,7 +332,7 @@ public:
 		  Matrix K;
 		  K=eye(ARM_JNT,ARM_JNT);
 		  Vector kp(4);
-		  kp(0) = 1;	kp(1) = 1;	kp(2) = 1;	kp(3) = -75;
+		  kp(0) = -25;	kp(1) = -25;	kp(2) = -25;	kp(3) = -50;
 		  for(int i=0;i<4;i++) K(i,i) = kp(i);
 
 		  //CONTROL: to be checked
@@ -336,7 +346,12 @@ public:
 			  tauSafe(i)=(tauSafe(i)>sat)?sat:tauSafe(i);
 			  tauSafe(i)=(tauSafe(i)<-sat)?-sat:tauSafe(i);
 		  }
-		  ipids->setOffset(3,tauSafe(3));
+
+		  for(int i=0;i<4;i++)
+		  {
+			  ipids->setOffset(i,tauSafe(i));
+		  }
+		  
 
 		  
 
@@ -418,30 +433,17 @@ public:
 			  for(int i=0;i<4;i++)
 				  fprintf(stderr,"%+.3lf\t", angs(i)*180/M_PI);
 			  fprintf(stderr,"\n");
+			  
+			  fprintf(stderr,"tau = ");
+			  for(int i=0;i<4;i++)
+				  fprintf(stderr,"%+.3lf\t", tau(i));
+			  fprintf(stderr,"\n");
 
-			  fprintf(stderr,"safeTau = ");
+			  fprintf(stderr,"tauM = ");
 			  for(int i=0;i<4;i++)
 				  fprintf(stderr,"%+.3lf\t", tauSafe(i));
 			  fprintf(stderr,"\n\n\n");
-
-			  fprintf(stderr,"J = \n");
-			  for(int i=0;i<6;i++)
-			  {
-				  for(int j=0;j<4;j++)
-					  fprintf(stderr,"%+.3lf\t", J(i,j));
-				  fprintf(stderr,"\n");
-			  }
-
-			  fprintf(stderr,"T = \n");
-			  Matrix H = arm->getH(3,true);
-			  for(int i=0;i<4;i++)
-			  {
-				  for(int j=0;j<4;j++)
-					  fprintf(stderr,"%+.3lf\t", H(i,j));
-				  fprintf(stderr,"\n");
-			  }
-			  
-				fprintf(stderr,"\n\n");
+			  fprintf(stderr,"\n\n");
 
 			  count = 0;
 		  }
