@@ -2,8 +2,7 @@
  * @ingroup icub_hardware_modules 
  * \defgroup fakecan fakecan
  *
- * Implements <a href="http://eris.liralab.it/yarpdoc/d3/d5b/classyarp_1_1dev_1_1ICanBus.html"> 
- * ICanBus <\a> interface for a software (fake) can bus board.
+ * Implements <a href="http://eris.liralab.it/yarpdoc/d3/d5b/classyarp_1_1dev_1_1ICanBus.html"> ICanBus <\a> interface for a software (fake) can bus board.
  * It accepts the same parameter file that can be passed to the real hw 
  * (you just need to replace ecan or pcan with fakecan). Useful for debugging 
  * robot code in absence of real hw.
