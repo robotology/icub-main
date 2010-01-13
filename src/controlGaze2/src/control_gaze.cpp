@@ -901,7 +901,7 @@ bool Control_GazeModule::updateModule() //this runs every
                             behav_id = 's';
                             temp_id = saccadeid + 1;
                         }
-                    else if(posinput->length() == 3)
+                    else if(posinput->length() == 2)
                         {
                             coord_id = 'i';
                             behav_id = 's';
