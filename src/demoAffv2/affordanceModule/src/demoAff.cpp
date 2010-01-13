@@ -116,37 +116,55 @@ map<string, Matrix> DemoAff::computePalmOrientations() {
   Rz(1, 1) = Rz(0, 0);
   Rz(2, 2) = 1.0;
 
-  m["right_starttap"] = m["right_base"] * Rz;
-  m["left_starttap"] =  m["left_base"]  * Rz;
+  m["right_starttap"] = m["right_base"];// * Rz;
+  m["left_starttap"] =  m["left_base"];//  * Rz;
 
   Rx(1, 1) = cos(M_PI/8);
   Rx(1, 2) = -sin(M_PI/8);
   Rx(2, 1) = -Rx(1, 2);
   Rx(2, 2) = Rx(1, 1);
 
-  m["right_stoptap"] = m["right_starttap"] * Rx;
+  m["right_stoptap"] = m["right_starttap"];// * Rx;
 
   Rx(1, 1) = cos(-M_PI/8);
   Rx(1, 2) = -sin(-M_PI/8);
   Rx(2, 1) = -Rx(1, 2);
   Rx(2, 2) = Rx(1, 1);
 
-  m["left_stoptap"] =  m["left_starttap"]  * Rx;
+  m["left_stoptap"] =  m["left_starttap"];// * Rx;
 
   return m;
 }
 
+#define DEBUG
+
 bool DemoAff::emotionCtrl(const ConstString cmd) {
-	Bottle out, in;
-	out.clear();
-	out.addVocab(Vocab::encode(cmd));
-	emotionInterface.write(out, in);
-	bool b = (in.get(0).asVocab() == VOCAB2('o', 'k'));
+
+  bool b = true;
+  NetInt32 response;
+
+
+  Bottle& out = port_emotions.prepare();
+  out.clear();
+  out.addVocab(Vocab::encode(cmd));
+  port_emotions.write();
+
+/*
+  Bottle out, in;
+  out.clear();
+  out.addVocab(Vocab::encode(cmd));
+  port_emotions.write(out, in);
+  response = in.get(0).asVocab();
+  b = (response == VOCAB2('o', 'k'));
+*/
 
 #ifdef DEBUG
-	cout << "EmotionInterface command: " << cmd.c_str() << " ......." << (b ? "ok" : "x") << endl;
+  cout << "EmotionInterface command: " << cmd.c_str() << " ... " << (b ? "ok" : "x") << endl;
+  if (!b) {
+    cout << "  Response was: " << Vocab::decode(response).c_str() << endl;
+  }
 #endif
-	return b;
+  return b;
 }
 
 
@@ -824,7 +842,12 @@ bool DemoAff::updateModule(){
   
   case INIT:
     {
-      emotionCtrl("set all neu");
+      bool b;
+
+      // go home :)
+      action->pushAction(*home_x, *home_o);
+      action->checkActionsDone(b, true);
+
 
       // Go to initPos
       //t_ipos->positionMove(torsoObsPos);
@@ -1083,6 +1106,7 @@ bool DemoAff::updateModule(){
 
   case JUSTACT:
     {
+      emotionCtrl("set all neu");
       getObjInfo();
 
       if (numObjs>0) {
@@ -1285,12 +1309,6 @@ bool DemoAff::updateModule(){
       
       cout << " after releasing" << endl;
 
-      // go home :)
-      action->pushAction(*home_x,*home_o);
-
-      cout << "gooing back home" << endl;
-      action->checkActionsDone(f,true);
-      
       state=INIT;
     }		
     break;
@@ -1306,11 +1324,11 @@ bool DemoAff::updateModule(){
       string usePart = (partUsed != "both_parts" ? (object3d[1] > 0.0 ? "right_arm" : "left_arm") : partUsed);
 
 
-      double startOffset = 0.1, endOffset = 0.0;
+      double startOffset = 0.1, endOffset = 0.05;
       startOffset = (usePart == "right_arm" ? startOffset : -startOffset);
       endOffset = (usePart == "right_arm" ? -endOffset : endOffset);
 
-      double heightOffset = max(0.0, 0.15 -zOffset);
+      double heightOffset = max(0.0, 0.1 -zOffset);
       string side = usePart.substr(0, usePart.find('_')) + "_";
 
       Vector startOrientation = dcm2axis(palmOrientations[side +"starttap"]);
@@ -1325,7 +1343,7 @@ bool DemoAff::updateModule(){
       startPos[2] += heightOffset;
 
 
-      action->tap(startPos, startOrientation, endPos, stopOrientation, 2.0);
+      action->tap(startPos, startOrientation, endPos, stopOrientation, 1.0);
       action->checkActionsDone(b, true);
 
       Vector baseOrientation = dcm2axis(palmOrientations[side +"base"]);

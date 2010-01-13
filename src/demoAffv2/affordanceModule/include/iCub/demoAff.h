@@ -84,8 +84,6 @@ private:
   bool emotionCtrl(const yarp::os::ConstString cmd);
 
   // ports
-  Port emotionInterface;
-
   // Camshiftplus provides only the effects
   BufferedPort<Bottle> port_eff;
   BufferedPort<Bottle> port_sync;
@@ -107,7 +105,7 @@ private:
   BufferedPort<Bottle> port_output;
 
   // Expressions
-  BufferedPort<Bottle> port_emotions;
+  BufferedPort<Bottle> /*Port*/ port_emotions;
 
   // Head and torso confgiruations
   BufferedPort<Bottle> port_head_state;
