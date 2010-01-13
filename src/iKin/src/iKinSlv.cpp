@@ -263,12 +263,12 @@ bool InputPort::handlePose(const int newPose)
 bool InputPort::handleMode(const int newMode)
 {
     if (newMode==IKINSLV_VOCAB_VAL_MODE_TRACK)
-    {    
+    {
         contMode=true;
         return true;
     }
     else if (newMode==IKINSLV_VOCAB_VAL_MODE_SINGLE)
-    {    
+    {
         contMode=false;
         return true;
     }
@@ -293,15 +293,10 @@ void InputPort::onRead(Bottle &b)
             pToken=NULL;
     }
 
-    if (xdOptIn)
-    {    
-        if (!handleTarget(b.find(Vocab::decode(IKINSLV_VOCAB_OPT_XD)).asList()))
-            fprintf(stdout,"%s: expected %s data\n",slv->slvName.c_str(),
-                    Vocab::decode(IKINSLV_VOCAB_OPT_XD).c_str());
-    }
-    else
-        fprintf(stdout,"%s: missing %s data; it shall be present\n",
-                slv->slvName.c_str(),Vocab::decode(IKINSLV_VOCAB_OPT_XD).c_str());
+    if (modeOptIn)
+        if (!handleMode(b.find(Vocab::decode(IKINSLV_VOCAB_OPT_MODE)).asVocab()))
+            fprintf(stdout,"%s: got incomplete %s command\n",slv->slvName.c_str(),
+                    Vocab::decode(IKINSLV_VOCAB_OPT_MODE).c_str());
 
     if (dofOptIn)
         if (!handleDOF(b.find(Vocab::decode(IKINSLV_VOCAB_OPT_DOF)).asList()))
@@ -313,13 +308,24 @@ void InputPort::onRead(Bottle &b)
             fprintf(stdout,"%s: got incomplete %s command\n",slv->slvName.c_str(),
                     Vocab::decode(IKINSLV_VOCAB_OPT_POSE).c_str());
 
-    if (modeOptIn)
-        if (!handleMode(b.find(Vocab::decode(IKINSLV_VOCAB_OPT_MODE)).asVocab()))
-            fprintf(stdout,"%s: got incomplete %s command\n",slv->slvName.c_str(),
-                    Vocab::decode(IKINSLV_VOCAB_OPT_MODE).c_str());
+    if (slv->handleJointsRestPosition(b.find(Vocab::decode(IKINSLV_VOCAB_OPT_REST_POS)).asList()) ||
+        slv->handleJointsRestWeights(b.find(Vocab::decode(IKINSLV_VOCAB_OPT_REST_WEIGHTS)).asList()))
+    {
+        slv->lock();
+        slv->prepareJointsRestTask();
+        slv->unlock();
+    }
 
-    slv->handleJointsRestPosition(b.find(Vocab::decode(IKINSLV_VOCAB_OPT_REST_POS)).asList());
-    slv->handleJointsRestWeights(b.find(Vocab::decode(IKINSLV_VOCAB_OPT_REST_WEIGHTS)).asList());
+    // shall be the last handling
+    if (xdOptIn)
+    {    
+        if (!handleTarget(b.find(Vocab::decode(IKINSLV_VOCAB_OPT_XD)).asList()))
+            fprintf(stdout,"%s: expected %s data\n",slv->slvName.c_str(),
+                    Vocab::decode(IKINSLV_VOCAB_OPT_XD).c_str());
+    }
+    else
+        fprintf(stdout,"%s: missing %s data; it shall be present\n",
+                slv->slvName.c_str(),Vocab::decode(IKINSLV_VOCAB_OPT_XD).c_str());
 }
 
 
@@ -483,7 +489,7 @@ void CartesianSolver::getFeedback(const bool wait)
 /************************************************************************/
 void CartesianSolver::initPos()
 {
-    getFeedback(true);  // wait until all joints are acquired   
+    getFeedback(true);  // wait until all joints are acquired
     latchUncontrolledJoints(unctrlJointsOld);
 
     inPort->reset_xd(prt->chn->EndEffPose());
@@ -734,7 +740,10 @@ bool CartesianSolver::respond(const Bottle &command, Bottle &reply)
                         case IKINSLV_VOCAB_OPT_MODE:
                         {
                             if (inPort->handleMode(command.get(2).asVocab()))
+                            {
+                                initPos();
                                 reply.addVocab(IKINSLV_VOCAB_REP_ACK);
+                            }
                             else
                                 reply.addVocab(IKINSLV_VOCAB_REP_NACK);
 
@@ -799,7 +808,11 @@ bool CartesianSolver::respond(const Bottle &command, Bottle &reply)
                             Bottle restPart;
 
                             if (handleJointsRestPosition(command.get(2).asList(),&restPart))
-                            {    
+                            {
+                                lock();
+                                prepareJointsRestTask();
+                                unlock();
+
                                 reply.addVocab(IKINSLV_VOCAB_REP_ACK);
                                 reply.append(restPart);
                             }
@@ -814,7 +827,11 @@ bool CartesianSolver::respond(const Bottle &command, Bottle &reply)
                             Bottle restPart;
 
                             if (handleJointsRestWeights(command.get(2).asList(),&restPart))
-                            {    
+                            {
+                                lock();
+                                prepareJointsRestTask();
+                                unlock();
+
                                 reply.addVocab(IKINSLV_VOCAB_REP_ACK);
                                 reply.append(restPart);
                             }
