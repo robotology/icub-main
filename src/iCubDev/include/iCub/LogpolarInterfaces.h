@@ -1,8 +1,6 @@
 // -*- mode:C++; tab-width:4; c-basic-offset:4; indent-tabs-mode:nil -*-
 
 /*
- * \defgroup icub_logpolarinterface Logpolar Interfaces
- * @ingroup icub_libraries
  * 
  * A basic library with devices of common use on the robot. To be populated.
  *
