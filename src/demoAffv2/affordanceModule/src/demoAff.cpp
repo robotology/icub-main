@@ -74,13 +74,13 @@ map<string, Matrix> DemoAff::palmOrientations = DemoAff::computePalmOrientations
 map<string, Matrix> DemoAff::computePalmOrientations() {
   map<string, Matrix> m;
 
-	Matrix Ry(3, 3);
-	Ry.zero();
-	Ry(0, 0) = cos(M_PI);
-	Ry(0, 2) = sin(M_PI);
-	Ry(1, 1) = 1.0;
-	Ry(2, 0) = -Ry(0, 2);
-	Ry(2, 2) = Ry(0, 0);
+  Matrix Ry(3, 3);
+  Ry.zero();
+  Ry(0, 0) = cos(M_PI);
+  Ry(0, 2) = sin(M_PI);
+  Ry(1, 1) = 1.0;
+  Ry(2, 0) = -Ry(0, 2);
+  Ry(2, 2) = Ry(0, 0);
 
   m["right_down"] = Ry;
 
@@ -94,13 +94,19 @@ map<string, Matrix> DemoAff::computePalmOrientations() {
 
   m["left_down"] = Ry * Rx;
 
+  Rx(1, 1) = cos(M_PI/2);
+  Rx(1, 2) = -sin(M_PI/2);
+  Rx(2, 1) = -Rx(1, 2);
+  Rx(2, 2) = Rx(1, 1);
+
+  m["right_base"] = m["right_down"] * Rx;
+
   Rx(1, 1) = cos(-M_PI/2);
   Rx(1, 2) = -sin(-M_PI/2);
   Rx(2, 1) = -Rx(1, 2);
   Rx(2, 2) = Rx(1, 1);
 
-  m["right_base"] = Ry * Rx;
-  m["left_base"]  = Ry * Rx;
+  m["left_base"]  = m["left_down"] * Rx;
 
   Matrix Rz(3, 3);
   Rz.zero();
@@ -110,11 +116,22 @@ map<string, Matrix> DemoAff::computePalmOrientations() {
   Rz(1, 1) = Rz(0, 0);
   Rz(2, 2) = 1.0;
 
-  m["right_starttap"] = Ry * Rx * Rz;
-  m["left_starttap"] = Ry * Rx * Rz;
+  m["right_starttap"] = m["right_base"] * Rz;
+  m["left_starttap"] =  m["left_base"]  * Rz;
 
-  m["right_stoptap"] = Ry * Rx * Rz;
-  m["left_stoptap"] = Ry * Rx * Rz;
+  Rx(1, 1) = cos(M_PI/8);
+  Rx(1, 2) = -sin(M_PI/8);
+  Rx(2, 1) = -Rx(1, 2);
+  Rx(2, 2) = Rx(1, 1);
+
+  m["right_stoptap"] = m["right_starttap"] * Rx;
+
+  Rx(1, 1) = cos(-M_PI/8);
+  Rx(1, 2) = -sin(-M_PI/8);
+  Rx(2, 1) = -Rx(1, 2);
+  Rx(2, 2) = Rx(1, 1);
+
+  m["left_stoptap"] =  m["left_starttap"]  * Rx;
 
   return m;
 }
@@ -1272,22 +1289,30 @@ bool DemoAff::updateModule(){
       string usePart = (partUsed != "both_parts" ? (object3d[1] > 0.0 ? "right_arm" : "left_arm") : partUsed);
 
 
-      double startOffset = 0.1;
+      double startOffset = 0.1, endOffset = 0.0;
       startOffset = (usePart == "right_arm" ? startOffset : -startOffset);
+      endOffset = (usePart == "right_arm" ? -endOffset : endOffset);
 
-      double heightOffset = max(0.0, 0.3 -zOffset);
-      string side = usePart.substr(0, usePart.find('_'));
+      double heightOffset = max(0.0, 0.15 -zOffset);
+      string side = usePart.substr(0, usePart.find('_')) + "_";
 
       Vector startOrientation = dcm2axis(palmOrientations[side +"starttap"]);
       Vector stopOrientation = dcm2axis(palmOrientations[side +"stoptap"]);
 
       Vector endPos = object3d;
+      endPos[1] += endOffset;
       endPos[2] += heightOffset;
 
-      Vector startPos = endPos;
+      Vector startPos = object3d;
       startPos[1] += startOffset;
+      startPos[2] += heightOffset;
 
-      action->tap(startPos, startOrientation, endPos, stopOrientation);
+
+      action->tap(startPos, startOrientation, endPos, stopOrientation, 2.0);
+      action->checkActionsDone(b, true);
+
+      Vector baseOrientation = dcm2axis(palmOrientations[side +"base"]);
+      action->pushAction(startPos, baseOrientation);
       action->checkActionsDone(b, true);
 
       state=INIT;
