@@ -2611,7 +2611,7 @@ bool CanBusMotionControl::positionMoveRaw(int axis, double ref)
     r.addMessage (CAN_POSITION_MOVE, axis);
 
     _ref_positions[axis] = ref;
-    *((int*)(r._writeBuffer[0].getData()+1)) = S_32(_ref_positions[axis]);/// pos
+    *((int*)(r._writeBuffer[0].getData()+1))F = S_32(_ref_positions[axis]);/// pos
     *((short*)(r._writeBuffer[0].getData()+5)) = S_16(_ref_speeds[axis]);/// speed
     r._writeBuffer[0].setLen(7);
 
