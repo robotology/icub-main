@@ -194,7 +194,7 @@ public:
     * @param opt the Property used to configure the object after its
     *            creation.
     *  
-    * \note  to be called after object creation. 
+    * \note To be called after object creation. 
     *  
     * \note Available options are: 
     *  
@@ -272,7 +272,7 @@ public:
     *       open to acquire data provided by \ref icub_graspDetector
     *       module.
     */
-    bool open(yarp::os::Property &opt);
+    virtual bool open(yarp::os::Property &opt);
 
     /**
     * Check if the object is initialized correctly. 
@@ -283,7 +283,7 @@ public:
     /**
     * Deallocate the object.
     */
-    void close();
+    virtual void close();
 
     /**
     * Insert a combination of arm and hand primitive actions in the 
@@ -303,9 +303,9 @@ public:
     * queue; the action will be executed as soon as all the previous 
     * items in the queue will have been served. 
     */
-    bool pushAction(const yarp::sig::Vector &x, const yarp::sig::Vector &o, 
-                    const std::string &handSeqKey,
-                    const double execTime=ACTIONPRIM_DISABLE_EXECTIME);
+    virtual bool pushAction(const yarp::sig::Vector &x, const yarp::sig::Vector &o, 
+                            const std::string &handSeqKey,
+                            const double execTime=ACTIONPRIM_DISABLE_EXECTIME);
 
     /**
     * Insert the arm-primitive action reach for target in the 
@@ -317,22 +317,22 @@ public:
     *          specified iff different from default value).
     * @return true/false on success/fail. 
     */
-    bool pushAction(const yarp::sig::Vector &x, const yarp::sig::Vector &o,
-                    const double execTime=ACTIONPRIM_DISABLE_EXECTIME);
+    virtual bool pushAction(const yarp::sig::Vector &x, const yarp::sig::Vector &o,
+                            const double execTime=ACTIONPRIM_DISABLE_EXECTIME);
 
     /**
     * Insert a hand-primitive action in the actions queue.
     * @param handSeqKey the hand sequence key.   
     * @return true/false on success/fail. 
     */
-    bool pushAction(const std::string &handSeqKey);
+    virtual bool pushAction(const std::string &handSeqKey);
 
     /**
     * Insert a wait state in the actions queue.
     * @param tmo is the wait timeout [s]. 
     * @return true/false on success/fail. 
     */
-    bool pushWaitState(const double tmo);
+    virtual bool pushWaitState(const double tmo);
 
     /**
     * Immediately update the current reaching target (without 
@@ -347,14 +347,14 @@ public:
     *  
     * \note The intended use is for tracking moving targets. 
     */
-    bool reach(const yarp::sig::Vector &x, const yarp::sig::Vector &o,
-               const double execTime=ACTIONPRIM_DISABLE_EXECTIME);
+    virtual bool reach(const yarp::sig::Vector &x, const yarp::sig::Vector &o,
+                       const double execTime=ACTIONPRIM_DISABLE_EXECTIME);
 
     /**
     * Empty the actions queue. 
     * @return true/false on success/fail.
     */
-    bool clearActionsQueue();
+    virtual bool clearActionsQueue();
 
     /**
     * Define an hand WayPoint (WP) to be added at the bottom of the 
@@ -372,22 +372,22 @@ public:
     *       sequence; hence the triplet (poss,vels,thres) will be
     *       the first WP of the new sequence.
     */
-    bool addHandSeqWP(const std::string &handSeqKey, const yarp::sig::Vector &poss,
-                      const yarp::sig::Vector &vels, const yarp::sig::Vector &thres);
+    virtual bool addHandSeqWP(const std::string &handSeqKey, const yarp::sig::Vector &poss,
+                              const yarp::sig::Vector &vels, const yarp::sig::Vector &thres);
 
     /**
     * Check whether a sequence key is defined.
     * @param handSeqKey the hand sequence key.
     * @return true iff valid key. 
     */
-    bool isValidHandSeq(const std::string &handSeqKey);
+    virtual bool isValidHandSeq(const std::string &handSeqKey);
 
     /**
     * Remove an already existing hand motion sequence.
     * @param handSeqKey the hand sequence key.
     * @return true/false on success/fail. 
     */
-    bool removeHandSeq(const std::string &handSeqKey);
+    virtual bool removeHandSeq(const std::string &handSeqKey);
 
     /**
     * Return the whole list of available hand sequence keys.
@@ -568,6 +568,52 @@ public:
     virtual bool tap(const yarp::sig::Vector &x1, const yarp::sig::Vector &o1,
                      const yarp::sig::Vector &x2, const yarp::sig::Vector &o2,
                      const double execTime=ACTIONPRIM_DISABLE_EXECTIME);
+};
+
+
+/**
+* \ingroup affActionPrimitives
+*
+* A class that inherits from affActionPrimitivesLayer1 modifying 
+* the grasp() and touch() primitives in the following way: 
+*  
+* While reaching for the object, one wrist joint is kept fixed 
+* (exploting however the torso dof the orientation of the hand 
+* can be still fully controlled) in order to detect contact by 
+* thresholding the low-level output signal. As soon as the 
+* contact is detected the reaching is suddenly stopped. 
+*  
+* \note Unlike the previous implementation of grasp() and 
+* touch(), the height of the object can be known just 
+* approximately. 
+*/
+class affActionPrimitivesLayer2 : public affActionPrimitivesLayer1
+{
+public:
+    affActionPrimitivesLayer2() : affActionPrimitivesLayer1() { }
+    affActionPrimitivesLayer2(yarp::os::Property &opt) : affActionPrimitivesLayer1(opt) { }
+
+    /**
+    * Configure the object.
+    * @param opt the Property used to configure the object after its
+    *            creation.
+    *  
+    * \note To be called after object creation. 
+    *  
+    * \note Further available options are: 
+    *  
+    * \b wrist_joint (<int> <double>): specify the wrist joint to be 
+    *    blocked while grasping/touching and the corresponding
+    *    threshold for the output signal to detect contact with
+    *    object.
+    * 
+    */
+    virtual bool open(yarp::os::Property &opt);
+
+    virtual bool grasp(const yarp::sig::Vector &x, const yarp::sig::Vector &o,
+                       const yarp::sig::Vector &d);
+    virtual bool touch(const yarp::sig::Vector &x, const yarp::sig::Vector &o,
+                       const yarp::sig::Vector &d);
 };
 
 

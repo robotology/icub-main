@@ -1114,4 +1114,23 @@ bool affActionPrimitivesLayer1::tap(const Vector &x1, const Vector &o1,
 }
 
 
+/************************************************************************/
+bool affActionPrimitivesLayer2::open(Property &opt)
+{
+    return affActionPrimitivesLayer1::open(opt);
+}
+
+
+/************************************************************************/
+bool affActionPrimitivesLayer2::grasp(const Vector &x, const Vector &o, const Vector &d)
+{
+    return affActionPrimitivesLayer1::grasp(x,o,d);
+}
+
+
+/************************************************************************/
+bool affActionPrimitivesLayer2::touch(const Vector &x, const Vector &o, const Vector &d)
+{
+    return affActionPrimitivesLayer1::touch(x,o,d);
+}
 
