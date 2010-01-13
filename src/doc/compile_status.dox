@@ -22,7 +22,7 @@ Some tips for developers:
    
  - Different  compilers catch different errors, if something compiles on 
    Visual Studio does not mean it will compile on gcc (or the other way around).
-   Also, remember that newer compilers might be stricter than older ones.   
+   Also, remember that newer compilers might be stricter than old ones.   
 
  - The current list of packages you can rely on 
    being present is listed at the end of the compile report for each
