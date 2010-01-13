@@ -24,6 +24,8 @@
 #define MODE_HANDLE_HARD_STOPS		0x30
 #define MODE_MARGIN_REACHED    		0x40
 
+#define MODE_OPENLOOP               0x50
+
 #define MODE_CONTROLLED				1
 #define MODE_CALIB					2
 /*
@@ -96,7 +98,7 @@
 #define CAN_SET_MAX_VELOCITY		68
 #define CAN_GET_MAX_VELOCITY		69
 
-/* special messages for inter board communication/synchronization */
+// special messages for inter board communication/synchronization 
 //#define CAN_GET_ACTIVE_ENCODER_POSITION 70
 //#define CAN_SET_ACTIVE_ENCODER_POSITION 71
 
@@ -120,7 +122,6 @@
 
 #define NUM_OF_MESSAGES				86
 
-
 /* error status values */
 #define ERROR_NONE					0			/* no error, all ok */
 #define ERROR_UNSPECIFIED			1			/* generic error */
@@ -141,7 +142,8 @@
 #define CAN_BCAST_OVERFLOW			5
 #define CAN_BCAST_PRINT				6
 #define CAN_BCAST_VELOCITY			7
+#define CAN_BCAST_TRQ_PID			8
 
-#define CAN_BCAST_MAX_MSGS			8
+#define CAN_BCAST_MAX_MSGS			9
 
 #endif

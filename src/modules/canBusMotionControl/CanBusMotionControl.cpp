@@ -2002,7 +2002,29 @@ bool CanBusMotionControl::getControlModeRaw(int j, int *v)
     short s;
 
     DEBUG("Calling GET_CONTROL_MODE\n");
-    _readWord16 (CAN_GET_CONTROL_MODE, j, s); *v = int(s);
+    _readWord16 (CAN_GET_CONTROL_MODE, j, s); 
+  
+    switch (s)
+    {
+    case MODE_IDLE:
+        *v=VOCAB_CM_IDLE;
+        break;
+    case MODE_POSITION:
+        *v=VOCAB_CM_POSITION;
+        break;				
+    case MODE_VELOCITY:
+        *v=VOCAB_CM_VELOCITY;
+        break;
+    case MODE_TORQUE:
+        *v=VOCAB_CM_TORQUE;
+        break;
+    case MODE_OPENLOOP:
+        *v=VOCAB_CM_OPENLOOP;
+        break;
+    default:
+        *v=VOCAB_CM_UNKNOWN;
+        break;
+    }
 
 	return true;
 }

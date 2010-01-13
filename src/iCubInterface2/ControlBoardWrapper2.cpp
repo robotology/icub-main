@@ -192,6 +192,7 @@ DriverCreator *createControlBoardWrapper2() {
 ImplementCallbackHelper2::ImplementCallbackHelper2(ControlBoardWrapper2 *x) {
     pos = dynamic_cast<yarp::dev::IPositionControl *> (x);
     vel = dynamic_cast<yarp::dev::IVelocityControl *> (x);
+    iOpenLoop=dynamic_cast<yarp::dev::IOpenLoopControl *> (x);
 }
 
 void CommandsHelper2::handleControlModeMsg(const yarp::os::Bottle& cmd, 
@@ -223,7 +224,7 @@ void CommandsHelper2::handleControlModeMsg(const yarp::os::Bottle& cmd,
 						break;
 						case VOCAB_CM_VELOCITY:
 							p=2;
-							//*ok = iMode->setVelocityMode(axis);
+							*ok = iMode->setVelocityMode(axis);
 						break;
 						case VOCAB_CM_TORQUE:
 							p=3;
@@ -231,7 +232,7 @@ void CommandsHelper2::handleControlModeMsg(const yarp::os::Bottle& cmd,
 						break;
 						case VOCAB_CM_OPENLOOP:
 							p=50;
-							*ok = iMode->setTorqueMode(axis);
+							*ok = iMode->setOpenLoopMode(axis);
 						break;
 						default:
 							p=-1;
@@ -251,29 +252,9 @@ void CommandsHelper2::handleControlModeMsg(const yarp::os::Bottle& cmd,
 
                     response.addVocab(VOCAB_IS);
 					response.addInt(axis);
-                    response.addVocab(VOCAB_CM_CONTROL_MODE);
-
-					switch (p)
-					{
-						case 0: //IDLE
-							response.addVocab(VOCAB_CM_UNKNOWN);
-						break;
-						case 1:
-							response.addVocab(VOCAB_CM_POSITION);
-						break;				
-						case 2:
-							response.addVocab(VOCAB_CM_VELOCITY);
-						break;
-						case 3:
-							response.addVocab(VOCAB_CM_TORQUE);
-						break;
-						case 4: // IMPEDANCE
-							response.addVocab(VOCAB_CM_UNKNOWN);
-						break;
-						default:
-							response.addVocab(VOCAB_CM_UNKNOWN);
-						break;
-					}
+                    response.addVocab(VOCAB_CM_CONTROL_MODE);       
+                    response.addVocab(p);
+			
                     *rec=true;
                 }
             }
@@ -285,6 +266,7 @@ void CommandsHelper2::handleControlModeMsg(const yarp::os::Bottle& cmd,
             break;
     }
 }
+
 
 void CommandsHelper2::handleTorqueMsg(const yarp::os::Bottle& cmd, 
         yarp::os::Bottle& response, bool *rec, bool *ok) 
@@ -578,6 +560,7 @@ void CommandsHelper2::handleTorqueMsg(const yarp::os::Bottle& cmd,
 	//torque->
 }
 
+
 void ImplementCallbackHelper2::onRead(CommandMessage& v) 
 {
     //printf("Data received on the control channel of size: %d\n", v.body.size());
@@ -589,7 +572,7 @@ void ImplementCallbackHelper2::onRead(CommandMessage& v)
     switch (b.get(0).asVocab())
     {
     case VOCAB_POSITION_MODE: 
-    case VOCAB_POSITION_MOVES: 
+    case VOCAB_POSITION_MOVES:
         {
             //printf("Received a position command\n");
             //for (int i = 0; i < v.body.size(); i++)
@@ -600,7 +583,7 @@ void ImplementCallbackHelper2::onRead(CommandMessage& v)
             {
                 bool ok = pos->positionMove(&(v.body[0]));
                 if (!ok)
-                    printf("Issues while trying to start a position move\n");
+                    fprintf(stderr, "Issues while trying to start a position move\n");
             }
 
         }
@@ -617,13 +600,22 @@ void ImplementCallbackHelper2::onRead(CommandMessage& v)
             {
                 bool ok = vel->velocityMove(&(v.body[0]));
                 if (!ok)
-                    printf("Issues while trying to start a velocity move\n");
+                    fprintf(stderr, "Issues while trying to start a velocity move\n");
             }
         }
         break;
+    case VOCAB_OUTPUTS:
+        {
+            if (iOpenLoop)
+            {
+                bool ok=iOpenLoop->setOutputs(&(v.body[0]));
+                if (!ok)
+                    fprintf(stderr, "Issues while trying to command an open loop message\n");
+            }
+        }
     default: 
         {
-            printf("Unrecognized message while receiving on command port\n");
+            fprintf(stderr, "Unrecognized message while receiving on command port\n");
         }
         break;
     }
@@ -634,6 +626,7 @@ void ImplementCallbackHelper2::onRead(CommandMessage& v)
     //        printf("%.3f ", v[i]);
     //    printf("\n");
 }
+
 
 bool CommandsHelper2::respond(const yarp::os::Bottle& cmd, 
                               yarp::os::Bottle& response) 
@@ -714,6 +707,31 @@ bool CommandsHelper2::respond(const yarp::os::Bottle& cmd,
 
             switch(cmd.get(1).asVocab()) 
             {
+            case VOCAB_OUTPUT:
+                {
+                    double v;
+                    int j = cmd.get(2).asInt();
+                    v=cmd.get(3).asDouble();
+                    ok = iOpenLoop->setOutput(j, v);
+                }
+                break;
+
+            case VOCAB_OUTPUTS: 
+                {
+                    Bottle& b = *(cmd.get(2).asList());
+                    int i;
+                    const int njs = b.size();
+                    if (njs==controlledJoints)
+                    {
+                        double *p = new double[njs];    // LATER: optimize to avoid allocation. 
+                        for (i = 0; i < njs; i++)
+                            p[i] = b.get(i).asDouble();
+                        ok = iOpenLoop->setOutputs(p);
+                        delete[] p;
+                    }
+                }
+                break;
+
             case VOCAB_OFFSET:
                 {
                     double v;
@@ -1349,6 +1367,7 @@ bool CommandsHelper2::respond(const yarp::os::Bottle& cmd,
     return ok;
 }
 
+
 bool CommandsHelper2::initialize() {
     bool ok = false;
     if (pos) 
@@ -1399,6 +1418,7 @@ CommandsHelper2::CommandsHelper2(ControlBoardWrapper2 *x) {
     ical2= dynamic_cast<yarp::dev::IControlCalibration2 *> (caller);
     controlledJoints = 0;
 }
+
 
 
 bool ControlBoardWrapper2::open(Searchable& prop)

@@ -107,6 +107,7 @@ class ImplementCallbackHelper2 : public TypedReaderCallback<CommandMessage> {
 protected:
     IPositionControl *pos;
     IVelocityControl *vel;
+    IOpenLoopControl *iOpenLoop;
 
 public:
     /**
