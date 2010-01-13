@@ -870,7 +870,7 @@ static void cb_draw_value( GtkToggleButton *button )
     else if(!strcmp(button->button.label_text,"ContrastLP-->")){
         if(button->active){
             wModule->contrastLP_flag=true;
-            wModule->message->assign("set CLP");
+            wModule->message->assign("set clp");
         }
         else
             wModule->contrastLP_flag=false;
@@ -879,7 +879,7 @@ static void cb_draw_value( GtkToggleButton *button )
     else if(!strcmp(button->button.label_text,"MeanColoursLP-->")){
         if(button->active){
             wModule->meanColour_flag=true;
-            wModule->message->assign("set MEA");
+            wModule->message->assign("set mea");
         }
         else
             wModule->meanColour_flag=false;
@@ -889,7 +889,7 @@ static void cb_draw_value( GtkToggleButton *button )
     else if(!strcmp(button->button.label_text,"MaxSaliencyBlob-->")){
         if(button->active){
             wModule->maxSaliencyBlob_flag=true;
-            wModule->message->assign("set MAX");
+            wModule->message->assign("set max");
         }
         else
             wModule->maxSaliencyBlob_flag=false;
@@ -923,7 +923,7 @@ static void cb_draw_value( GtkToggleButton *button )
     else if(!strcmp(button->button.label_text,"Tagged-->")){
         if(button->active){
             wModule->tagged_flag=true;
-            wModule->message->assign("set TAG");
+            wModule->message->assign("set tag");
         }
         else
             wModule->tagged_flag=false;
@@ -931,8 +931,10 @@ static void cb_draw_value( GtkToggleButton *button )
     }
     
     else if(!strcmp(button->button.label_text,"Watershed-->")){
-        if(button->active)
+        if(button->active){
             wModule->watershed_flag=true;
+            wModule->message->assign("set wat");
+        }
         else
             wModule->watershed_flag=false;
             
@@ -986,7 +988,13 @@ bool WatershedModule::outPorts(){
         Bottle& commandBottle=commandPort->prepare();
         commandBottle.clear();
         commandBottle.addVocab(VOCAB3(message->at(0),message->at(1),message->at(2)));
-        commandBottle.addVocab(VOCAB3(message->at(3),message->at(4),message->at(5)));
+        commandBottle.addVocab(VOCAB3(message->at(4),message->at(5),message->at(6)));
+        if(message->length()>7){
+            std::string sub=message->substr(7,message->length()-6);
+            double value=atof(sub.c_str());
+            commandBottle.addDouble(value);
+        }
+
         
         commandPort->writeStrict();
         ct=1;
@@ -1046,6 +1054,7 @@ static void cb_digits_scale( GtkAdjustment *adj )
     /* Set the number of decimal places to which adj->value is rounded */
     wModule->salienceBU=adj->value;
     printf("salienceBU: %f",wModule->salienceBU/100);
+    wModule->message->assign("set kbu 5.0");
 }
 
 static void cb_digits_scale2( GtkAdjustment *adj )
