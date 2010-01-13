@@ -74,39 +74,47 @@ map<string, Matrix> DemoAff::palmOrientations = DemoAff::computePalmOrientations
 map<string, Matrix> DemoAff::computePalmOrientations() {
   map<string, Matrix> m;
 
-	Matrix Rz(3, 3);
-	Rz.zero();
-	Rz(0, 0) = cos(M_PI);
-	Rz(0, 2) = sin(M_PI);
-	Rz(1, 1) = 1.0;
-	Rz(2, 0) = -Rz(0, 2);
-	Rz(2, 2) = Rz(0, 0);
+	Matrix Ry(3, 3);
+	Ry.zero();
+	Ry(0, 0) = cos(M_PI);
+	Ry(0, 2) = sin(M_PI);
+	Ry(1, 1) = 1.0;
+	Ry(2, 0) = -Ry(0, 2);
+	Ry(2, 2) = Ry(0, 0);
 
   m["right_down"] = Rz;
 
   Matrix Rx(3, 3);
   Rx.zero();
   Rx(0, 0) = 1.0;
-  Rx(1, 1) = cos(-M_PI/2);
-  Rx(1, 2) = -sin(-M_PI/2);
-  Rx(2, 1) = -Rx(1, 2);
-  Rx(2, 2) = Rx(1, 1);
-
-  m["right_base"] = Rz * Rx;
-
   Rx(1, 1) = cos(M_PI);
   Rx(1, 2) = -sin(M_PI);
   Rx(2, 1) = -Rx(1, 2);
   Rx(2, 2) = Rx(1, 1);
 
-  m["left_down"] = Rz * Rx;
+  m["left_down"] = Ry * Rx;
 
-  Rx(1, 1) = cos(M_PI/2);
-  Rx(1, 2) = -sin(M_PI/2);
+  Rx(1, 1) = cos(-M_PI/2);
+  Rx(1, 2) = -sin(-M_PI/2);
   Rx(2, 1) = -Rx(1, 2);
   Rx(2, 2) = Rx(1, 1);
 
-  m["left_base"] = Rz * Rx;
+  m["right_base"] = Ry * Rx;
+  m["left_base"]  = Ry * Rx;
+
+  Matrix Rz(3, 3);
+  Rz.zero();
+  Rz(0, 0) = cos(M_PI/4);
+  Rz(0, 1) = -sin(M_PI/4);
+  Rz(1, 0) = -Rz(0, 1);
+  Rz(1, 1) = Rz(0, 0);
+  Rz(2, 2) = 1.0;
+
+  m["right_starttap"] = Ry * Rx * Rz;
+  m["left_starttap"] = Ry * Rx * Rz;
+
+  m["right_stoptap"] = Ry * Rx * Rz;
+  m["left_stoptap"] = Ry * Rx * Rz;
 
   return m;
 }
@@ -1263,14 +1271,15 @@ bool DemoAff::updateModule(){
       useArm(object3d[1] > 0.0 ? USE_RIGHT : USE_LEFT);
       string usePart = (partUsed != "both_parts" ? (object3d[1] > 0.0 ? "right_arm" : "left_arm") : partUsed);
 
+
       double startOffset = 0.1;
       startOffset = (usePart == "right_arm" ? startOffset : -startOffset);
 
-      double heightOffset = max(0.0, 0.2 -zOffset);
+      double heightOffset = max(0.0, 0.3 -zOffset);
+      string side = usePart.substr(0, usePart.find('_'));
 
-      string str = usePart.substr(0, usePart.find('_')) + "_base";
-      cout << "Used hand orientation: " << str << endl;
-      Vector handOrientation = dcm2axis(palmOrientations[str]);
+      Vector startOrientation = dcm2axis(palmOrientations[side +"starttap"]);
+      Vector stopOrientation = dcm2axis(palmOrientations[side +"stoptap"]);
 
       Vector endPos = object3d;
       endPos[2] += heightOffset;
@@ -1278,7 +1287,7 @@ bool DemoAff::updateModule(){
       Vector startPos = endPos;
       startPos[1] += startOffset;
 
-      action->tap(startPos, handOrientation, endPos, handOrientation);
+      action->tap(startPos, startOrientation, endPos, stopOrientation);
       action->checkActionsDone(b, true);
 
       state=INIT;
