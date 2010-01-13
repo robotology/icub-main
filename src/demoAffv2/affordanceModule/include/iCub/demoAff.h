@@ -76,7 +76,7 @@ class DemoAff : public RFModule {
 
 private:
   // Hand orientations
-  const static std::map<std::string, yarp::sig::Matrix> palmOrientations;
+  static std::map<std::string, yarp::sig::Matrix> palmOrientations;
   static std::map<std::string, yarp::sig::Matrix> computePalmOrientations();
 
   // ports

@@ -69,7 +69,7 @@ int shape1, shape2;
 double prevwo, prevho;
 
 
-const map<string, Matrix> DemoAff::palmOrientations = DemoAff::computePalmOrientations();
+map<string, Matrix> DemoAff::palmOrientations = DemoAff::computePalmOrientations();
 
 map<string, Matrix> DemoAff::computePalmOrientations() {
   map<string, Matrix> m;
