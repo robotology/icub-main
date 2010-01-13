@@ -502,11 +502,13 @@ public:
     * @return true/false on success/fail. 
     *  
     * \note internal implementation: 
+    * \code 
     * ... 
     * pushAction(x+d,o,"open_hand"); 
     * pushAction(x,o); 
     * pushAction("close_hand") 
-    * ...
+    * ... 
+    * \endcode 
     *  
     * It reachs for (x+d,o) opening the hand, then reachs for (x,o)
     * and finally closes the hand. 
@@ -525,10 +527,12 @@ public:
     * @return true/false on success/fail. 
     *  
     * \note internal implementation: 
+    * \code 
     * ... 
     * pushAction(x+d,o,"open_hand"); 
     * pushAction(x,o); 
     * ... 
+    * \endcode 
     *  
     * It reachs for (x+d,o), then reachs for (x,o). 
     * Similar to grasp but without final hand action. 
@@ -550,11 +554,13 @@ public:
     * @return true/false on success/fail. 
     *  
     * \note internal implementation: 
+    * \code 
     * ...
     * pushAction(x1,o1,"karate_hand");
     * pushAction(x2,o2,execTime);
     * pushAction(x1,o1); 
-    * ...
+    * ... 
+    * \endcode 
     *  
     * It reachs for (x1,o1), then reachs for (x2,o2) and then again
     * for (x1,o1).
