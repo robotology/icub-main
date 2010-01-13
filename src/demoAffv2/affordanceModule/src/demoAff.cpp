@@ -143,20 +143,21 @@ bool DemoAff::emotionCtrl(const ConstString cmd) {
   bool b = true;
   NetInt32 response;
 
-
+/*
   Bottle& out = port_emotions.prepare();
   out.clear();
   out.addVocab(Vocab::encode(cmd));
   port_emotions.write();
+*/
 
-/*
   Bottle out, in;
   out.clear();
+  out.addVocab(Vocab::encode("set"));
+  out.addVocab(Vocab::encode("all"));
   out.addVocab(Vocab::encode(cmd));
   port_emotions.write(out, in);
   response = in.get(0).asVocab();
   b = (response == VOCAB2('o', 'k'));
-*/
 
 #ifdef DEBUG
   cout << "EmotionInterface command: " << cmd.c_str() << " ... " << (b ? "ok" : "x") << endl;

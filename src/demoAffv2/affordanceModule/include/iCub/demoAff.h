@@ -105,7 +105,7 @@ private:
   BufferedPort<Bottle> port_output;
 
   // Expressions
-  BufferedPort<Bottle> /*Port*/ port_emotions;
+  /*BufferedPort<Bottle>*/ Port port_emotions;
 
   // Head and torso confgiruations
   BufferedPort<Bottle> port_head_state;
