@@ -129,7 +129,6 @@ void saliencyBlobFinderModule::setOptions(yarp::os::Property opt){
 }
 
 bool saliencyBlobFinderModule::updateModule() {
-    
     command=cmdPort.read(false);
     if(command!=0){
         //Bottle* tmpBottle=cmdPort.read(false);

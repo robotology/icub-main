@@ -205,7 +205,7 @@ void blobFinderThread::run(){
 
     
 
-    /*bool conversion=true;
+    bool conversion=true;
     _outputImage=wOperator->getPlane(&_inputImg);
     rain();
     if(redPlane_flag){
@@ -340,7 +340,7 @@ void blobFinderThread::run(){
         //printf("freeing ended  \n");	
     }
     else
-        ippiCopy_8u_C3R(_outputImage3->getRawImage(),_outputImage3->getRowSize(),this->image_out->getRawImage(),this->image_out->getRowSize(),srcsize);*/
+        ippiCopy_8u_C3R(_outputImage3->getRawImage(),_outputImage3->getRowSize(),this->image_out->getRawImage(),this->image_out->getRowSize(),srcsize);
 }
 /**
 *	releases the thread
