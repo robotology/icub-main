@@ -1115,9 +1115,39 @@ bool affActionPrimitivesLayer1::tap(const Vector &x1, const Vector &o1,
 
 
 /************************************************************************/
+void affActionPrimitivesLayer2::init()
+{
+    // default values
+    wrist_joint=8;
+    wrist_thres=1e9;
+}
+
+
+/************************************************************************/
 bool affActionPrimitivesLayer2::open(Property &opt)
 {
-    return affActionPrimitivesLayer1::open(opt);
+    if (affActionPrimitivesLayer1::open(opt))
+    {    
+        if (Bottle *b=opt.find("wrist_joint").asList())
+        {
+            if (b->size()>1)
+            {
+                wrist_joint=b->get(0).asInt();
+                wrist_thres=b->get(1).asDouble();
+            }
+            else
+                printMessage("WARNING: invalid \"wrist_joint\" option\n");
+        }
+
+        // check wrist params
+        // ...
+
+        polyHand->view(pidCtrl);
+
+        return true;
+    }
+    else
+        return false;
 }
 
 

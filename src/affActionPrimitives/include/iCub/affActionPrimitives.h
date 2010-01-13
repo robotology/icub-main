@@ -164,9 +164,9 @@ protected:
     virtual bool cmdHand(const Action &action);
     virtual bool isHandSeqEnded();
 
-    void init();    
-    bool execQueuedAction();
-    bool execPendingHandSequences();
+    virtual void init();
+    virtual bool execQueuedAction();
+    virtual bool execPendingHandSequences();
     virtual void run();    
 
 public:
@@ -586,9 +586,19 @@ public:
 * \note Unlike the previous implementation of grasp() and 
 * touch(), the height of the object can be known just 
 * approximately. 
+*  
+* \note Given as an example 
 */
 class affActionPrimitivesLayer2 : public affActionPrimitivesLayer1
 {
+protected:
+    int    wrist_joint;
+    double wrist_thres;
+
+    yarp::dev::IPidControl *pidCtrl;
+
+    virtual void init();
+
 public:
     affActionPrimitivesLayer2() : affActionPrimitivesLayer1() { }
     affActionPrimitivesLayer2(yarp::os::Property &opt) : affActionPrimitivesLayer1(opt) { }
