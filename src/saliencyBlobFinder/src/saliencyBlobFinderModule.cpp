@@ -269,7 +269,9 @@ bool saliencyBlobFinderModule::respond(const Bottle &command,Bottle &reply){
             reply.addString("\n");
             reply.addString("set mea : plots the meancolour image \n");
             reply.addString("set clp : streams out the contrast LP image");
-            
+            reply.addString("set max : streams out the max saliency blob");
+            reply.addString("set tag : streams out the image of blobs coloured by the associated tag value");
+
 
             reply.addString("\n");
 
@@ -314,13 +316,16 @@ bool saliencyBlobFinderModule::respond(const Bottle &command,Bottle &reply){
             case COMMAND_VOCAB_MAXSALIENCY:{
                 int nb = command.get(2).asInt();
                 printf("most salient blob as output has been selected \n");
+                this->blobFinder->resetFlags();
+                this->blobFinder->maxSaliencyBlob_flag=true;
                 //reply.addString("connection 2");
                 ok=true;
             }
                 break;
             case COMMAND_VOCAB_CONTRASTLP:{
                 printf("image of the saliency (grayscale) \n");
-
+                this->blobFinder->resetFlags();
+                this->blobFinder->contrastLP_flag=true;
                 ok =true;
             }
                 break;
@@ -334,16 +339,19 @@ bool saliencyBlobFinderModule::respond(const Bottle &command,Bottle &reply){
             }
                 break;
             case COMMAND_VOCAB_TAGGED:{
-                int j = command.get(2).asInt();
+                //int j = command.get(2).asInt();
                 printf("image of tags(unsigned char) given to blobs  \n");
+                this->blobFinder->resetFlags();
+                this->blobFinder->tagged_flag=true;
                 string s(command.get(3).asString().c_str());
             }
                 break;
-            case COMMAND_VOCAB_WEIGHT:{
+            case COMMAND_VOCAB_KBU:{
                 double w = command.get(2).asDouble();
+                printf("%f",w);
             }
                 break;
-            case COMMAND_VOCAB_CHILD_WEIGHT:{
+            case COMMAND_VOCAB_KTD:{
                 int j = command.get(2).asInt();
                 double w = command.get(3).asDouble();
             }
@@ -417,18 +425,18 @@ bool saliencyBlobFinderModule::respond(const Bottle &command,Bottle &reply){
                 ok = true;
             }
                 break;
-            case COMMAND_VOCAB_WEIGHT:{
+            /*case COMMAND_VOCAB_WEIGHT:{
                 double w = 0.0;
                 reply.addDouble(w);
                 ok = true;
-            }
+            }*/
                 break;
-            case COMMAND_VOCAB_CHILD_WEIGHT:{
+            /*case COMMAND_VOCAB_CHILD_WEIGHT:{
                 int j = command.get(2).asInt();
                 double w = 0.0;
                 reply.addDouble(w);
                 ok = true;
-            }
+            }*/
                 break;
             case COMMAND_VOCAB_CHILD_WEIGHTS:{
                 Bottle weights;

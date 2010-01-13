@@ -25,9 +25,7 @@ using namespace yarp::sig;
 #define COMMAND_VOCAB_FAILED VOCAB4('f','a','i','l')
 #define COMMAND_VOCAB_OK VOCAB2('o','k')
 #define COMMAND_VOCAB_CHILD_COUNT VOCAB2('c','c')
-#define COMMAND_VOCAB_WEIGHT VOCAB1('w')
-#define COMMAND_VOCAB_CHILD_WEIGHT VOCAB2('c','w')
-#define COMMAND_VOCAB_CHILD_WEIGHTS VOCAB3('c','w','s')
+
 #define COMMAND_VOCAB_NAME VOCAB2('s','1')
 #define COMMAND_VOCAB_CHILD_NAME VOCAB2('c','n')
 #define COMMAND_VOCAB_SALIENCE_THRESHOLD VOCAB2('t','h')
@@ -39,6 +37,10 @@ using namespace yarp::sig;
 #define COMMAND_VOCAB_TAGGED VOCAB3('t','a','g')
 #define COMMAND_VOCAB_MAXSALIENCY VOCAB3('m','a','x')
 #define COMMAND_VOCAB_CONTRASTLP VOCAB3('c','l','p')
+
+#define COMMAND_VOCAB_KBU VOCAB3('k','b','u')
+#define COMMAND_VOCAB_KTD VOCAB3('k','t','d')
+#define COMMAND_VOCAB_CHILD_WEIGHTS VOCAB3('c','w','s')
 
 // directional saliency filter vocab's
 #define COMMAND_VOCAB_DIRECTIONAL_NUM_DIRECTIONS VOCAB3('d','n','d')
@@ -77,7 +79,7 @@ Here is a  comprehensive list of the parameters you can pass to the module.
 
  
 \section portsa_sec Ports Accessed
-none
+-/blobFinderInterface/command:o : once manually connected to the <name>/cmd the graphical interface is able to control this module (for further information press Help Button in the interface)
 
 \section portsc_sec Ports Created
 <name>/cmd
@@ -104,7 +106,7 @@ Input ports:
 - <name>/by:i: acquires the input stream of th B+Y- opponency map
 
 InOut ports
-- <name>/cmd : port for the input rpc commands
+- <name>/cmd : port for the input rpc commands (for further command send Help command)
 
 \section in_files_sec Input Data Files
 none
