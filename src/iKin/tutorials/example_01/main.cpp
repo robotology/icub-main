@@ -71,10 +71,9 @@ int main()
     rpc.write(cmd,reply);
     cout<<"got mode: "<<reply.toString()<<endl;
 
-    // change to tracking mode so that when we
-    // reconfigure chain's dof or any movements
-    // induced on unactuated joints are detected
-    // the solver is able to react
+    // change to tracking mode so that when
+    // any movement induced on unactuated joints
+    // is detected the solver is able to react
     cmd.clear();
     cmd.addVocab(IKINSLV_VOCAB_CMD_SET);
     cmd.addVocab(IKINSLV_VOCAB_OPT_MODE);
