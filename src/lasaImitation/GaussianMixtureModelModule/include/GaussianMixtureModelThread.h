@@ -57,7 +57,9 @@ private:
     enum State{
         GMM_IDLE = 0,
         GMM_REPRO_INIT,
+        GMM_REPRO_INIT_PAUSE,
         GMM_REPRO_RUN,
+        GMM_REPRO_PAUSE,
         GMM_REPRO_END
     };
     
@@ -87,6 +89,37 @@ private:
     
     double                      mGMMLambdaTreshold;
     double                      mGMMLambdaTau;
+    
+    // Learning
+public:
+    enum ProcessMode{
+        PM_NONE = 0,
+        PM_SIMPLE,
+        PM_WEIGHTED
+    };
+    enum InitMode{
+        IM_NONE = 0,
+        IM_TIMESPLIT,
+        IM_KMEANS,
+        IM_RAND
+    };
+    
+private:
+    ProcessMode                 mEMProcessMode;
+    InitMode                    mEMInitMode;
+    int                         mEMNbComponents;
+    int                         mEMNbDemos;
+    int                         mEMNbCorrDemos;
+    int                         mEMNbDimensions;
+    int                         mEMDemoLength;
+    
+    double                      mEMTimeSpan;
+    
+    char                        mEMDemosPath    [256];
+    char                        mEMCorrDemosPath[256];
+    
+    MathLib::Matrix             mEMWeights;
+
 
 public:
     GaussianMixtureModelThread(int period, const char* baseName);
@@ -94,12 +127,31 @@ public:
 
             void    Init();
             void    Free();
-            void    Load(const char* modelFilename);
-            void    Save(const char* modelFilename);
+            void    Load(const char* modelPath);
+            void    Save(const char* modelPath);
 
+            void    InitRepro();
+            void    StartRepro();
+            void    PauseRepro();
+            void    ResumeRepro();
+            void    StopRepro();
+    
+            void    SetEMDemosPath(const char* path);
+            void    SetEMCorrDemosPath(const char* path);
+            void    SetEMProcessingMode(ProcessMode mode);
+            void    SetEMInitialisationMode(InitMode mode);
+            void    SetEMNbComponents(int nb);
+            void    SetEMDemoLength(int len);
+
+            bool    Learn();
+
+            bool    ProcessRawDemos();
+    
     virtual void run();
     virtual bool threadInit();
     virtual void threadRelease();
+
+
 };
 
 
@@ -107,6 +159,13 @@ MathLib::Vector& AxisToQuat  (const MathLib::Vector& axis,  MathLib::Vector& qua
 MathLib::Vector& QuatToAxis  (const MathLib::Vector& quat,  MathLib::Vector& axis);
 MathLib::Vector& Pose6ToQPose(const MathLib::Vector& pose,  MathLib::Vector& qpose,bool inv = false);
 MathLib::Vector& QPoseToPose6(const MathLib::Vector& qpose, MathLib::Vector& pose);
+
+MathLib::Matrix& AxisToQuat  (const MathLib::Matrix& axis,  MathLib::Matrix& quat, bool inv = false);
+
+MathLib::Matrix& SmoothQuatStream(MathLib::Matrix& qstream);
+MathLib::Matrix& AlignQuatStreamEnd(MathLib::Matrix& qstream, const MathLib::Vector& end);
+MathLib::Matrix& Resample(const MathLib::Matrix& src, MathLib::Matrix& result, int length);
+MathLib::Matrix& Pose6ToQPose(const MathLib::Matrix& pose,  MathLib::Matrix& qpose);
 
 #endif
 

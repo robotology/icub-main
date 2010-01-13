@@ -94,130 +94,110 @@ bool GaussianMixtureModelModule::close(){
 }
 
 bool GaussianMixtureModelModule::respond(const Bottle& command, Bottle& reply) {
-    int  index      = 0;
-    int  cmdSize    = command.size();
-    bool retVal     = true;
-    bool defRetVal  = false;
-    
-    
-    if(cmdSize<=0){
-        retVal = false;
-    }else{
-        while(cmdSize>0){
-            int prevIndex = index;
-            
-            switch(command.get(index).asVocab()) {
-            /*
-            case VOCAB3('r','u','n'):
-                if(cmdSize>=2){
-                          if(command.get(index+1).asString() == "start"){
-                                mThread->SetLoop(false);
-                                mThread->Start();
-                                index+=2;
-                    }else if(command.get(index+1).asString() == "loop"){
-                                mThread->SetLoop(true);
-                                mThread->Start();
-                                index+=2;
-                    }else if(command.get(index+1).asString() == "stop"){
-                                mThread->Stop();
-                                index+=2;
-                    }else if(command.get(index+1).asString() == "pause"){
-                                mThread->Pause();
-                                index+=2;
-                    }else if(command.get(index+1).asString() == "resume"){
-                                mThread->Resume();
-                                index+=2;
-                    }else{
-                        retVal = false;
-                    }
-                }else{
-                    retVal = false;
-                }
-                break;
-                
-            case VOCAB3('r','e','c'):
-                if(cmdSize>=2){
-                          if(command.get(index+1).asString() == "set"){
-                                mThread->SetRecordMode(true);
-                                index+=2;
-                    }else if(command.get(index+1).asString() == "unset"){
-                                mThread->SetRecordMode(false);
-                                index+=2;
-                    }else{
-                        retVal = false;
-                    }
-                }else{
-                    retVal = false;
-                }
-                break;
+    int index = 0;
+    int cmdSize = command.size();
 
-            case VOCAB4('d','a','t','a'):
-                if(cmdSize>=2){
-                          if(command.get(index+1).asString() == "lineSize"){
-                                if(cmdSize>=3){
-                                    mThread->SetStreamLineSize(command.get(index+2).asInt());
-                                    index+=3;
-                                }else{
-                                    retVal = false;
-                                }
-                    }else if(command.get(index+1).asString() == "maxSize"){
-                                if(cmdSize>=3){
-                                    mThread->SetStreamMaxSize(command.get(index+2).asInt());
-                                    index+=3;
-                                }else{
-                                    retVal = false;
-                                }
-                    }else if(command.get(index+1).asString() == "load"){
-                                if(cmdSize>=3){
-                                    mThread->Load(command.get(index+2).asString().c_str());
-                                    index+=3;
-                                }else{
-                                    retVal = false;
-                                }
-                    }else if(command.get(index+1).asString() == "save"){
-                                if(cmdSize>=3){
-                                    mThread->Save(command.get(index+2).asString().c_str());
-                                    index+=3;
-                                }else{
-                                    retVal = false;
-                                }
-                    }else if(command.get(index+1).asString() == "timeOn"){
-                                mThread->SetUseTime(true);
-                                index+=2;
-                    }else if(command.get(index+1).asString() == "timeOff"){
-                                mThread->SetUseTime(false);
-                                index+=2;
-                    }else if(command.get(index+1).asString() == "clear"){
-                                mThread->Clear();
-                                index+=2;
+    bool retVal = true;
+    
+    if(cmdSize>0){
+        cerr << "Cmd: ";
+        for(int i=0;i<cmdSize;i++)
+            cerr <<"*"<<command.get(i).asString().c_str()<<"*";
+        cerr <<endl;
+
+        switch(command.get(0).asVocab())  {
+            void    InitRepro();
+            void    StartRepro();
+            void    PauseRepro();
+            void    ResumeRepro();
+            void    StopRepro();        
+        case VOCAB3('r','u','n'):
+            if(cmdSize>1){
+                     if(command.get(1).asString()=="learn"){
+                    mThread->Learn();
+                }else if(command.get(1).asString()=="init"){
+                    mThread->InitRepro();
+                }else if(command.get(1).asString()=="start"){
+                    mThread->StartRepro();
+                }else if(command.get(1).asString()=="pause"){
+                    mThread->PauseRepro();
+                }else if(command.get(1).asString()=="resume"){
+                    mThread->ResumeRepro();
+                }else if(command.get(1).asString()=="stop"){
+                    mThread->StopRepro();
+                }else{
+                    retVal = false;
+                }
+            }else{
+                retVal = false;
+            }
+            break;
+        /*
+        case VOCAB4('s','u','s','p'):
+            mThread->SetState(RobotControllerThread::RCS_IDLE);
+            break;
+        */
+        case VOCAB4('l','o','a','d'):
+            if(cmdSize>1){
+                mThread->Load(command.get(1).asString().c_str());
+            }else{
+                retVal = false;
+            }
+            break;
+        case VOCAB4('s','a','v','e'):
+            if(cmdSize>1){
+                mThread->Save(command.get(1).asString().c_str());
+            }else{
+                retVal = false;
+            }
+            break;
+        case VOCAB3('s','e','t'):
+            if(cmdSize>2){
+                      if(command.get(1).asString()=="demoPath"){
+                    mThread->SetEMDemosPath(command.get(2).asString().c_str());
+                }else if(command.get(1).asString()=="corrPath"){
+                    mThread->SetEMCorrDemosPath(command.get(2).asString().c_str());
+                }else if(command.get(1).asString()=="k"){
+                    mThread->SetEMNbComponents(command.get(2).asInt());
+                }else if(command.get(1).asString()=="pmode"){
+                          if(command.get(2).asString()=="simple"){
+                        mThread->SetEMProcessingMode(GaussianMixtureModelThread::PM_SIMPLE);
+                    }else if(command.get(2).asString()=="weighted"){
+                        mThread->SetEMProcessingMode(GaussianMixtureModelThread::PM_WEIGHTED);
+                    }else{
+                        retVal = false;
+                    }
+                }else if(command.get(1).asString()=="imode"){
+                          if(command.get(2).asString()=="load"){
+                        mThread->SetEMInitialisationMode(GaussianMixtureModelThread::IM_NONE);
+                    }else if(command.get(2).asString()=="timesplit"){
+                        mThread->SetEMInitialisationMode(GaussianMixtureModelThread::IM_TIMESPLIT);
+                    }else if(command.get(2).asString()=="kmeans"){
+                        mThread->SetEMInitialisationMode(GaussianMixtureModelThread::IM_KMEANS);
+                    }else if(command.get(2).asString()=="random"){
+                        mThread->SetEMInitialisationMode(GaussianMixtureModelThread::IM_RAND);
                     }else{
                         retVal = false;
                     }
                 }else{
                     retVal = false;
                 }
-                break;
-            */
-            default:
-                retVal      = Module::respond(command,reply);
-                defRetVal   = true;
-                break;
-            }
-            
-            if(defRetVal){
-                return retVal;
             }else{
-                if(retVal){
-                    cmdSize -= index-prevIndex;
-                }else{
-                    break;
-                }
+                retVal = false;
             }
-        }
+            break;
+        default:
+            retVal = false;
+            break;            
+        }         
+    }else{
+        retVal = false;
     }
 
     if(retVal){
         reply.addVocab(Vocab::encode("ack"));
+    }else{
+        return Module::respond(command,reply);
     }
     return retVal;
 }

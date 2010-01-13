@@ -127,6 +127,7 @@ class stereoVisualTracker : public yarp::os::Module, public Stereovision {
  protected:
 
     virtual void SendOutput(VisionServer *port, double *position); 
+    double mPeriod;
  public:
     /**
      * grabs the two frames and performs the processing
@@ -140,6 +141,8 @@ class stereoVisualTracker : public yarp::os::Module, public Stereovision {
      */
     
     virtual bool InitGrabber(int i);
+    
+    virtual double 	getPeriod ();
 };
 
 #endif

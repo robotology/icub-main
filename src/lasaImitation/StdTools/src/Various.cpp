@@ -1,6 +1,8 @@
 #include "Various.h"
 
 #include <stdio.h>
+#include <dirent.h>
+#include <string.h>
 
 #ifdef WIN32
 #pragma warning( disable : 4996)
@@ -259,4 +261,40 @@ vector<string> AutoCompletion(vector<string> & choices, string & target){
   }
 
   return result;
+}
+
+
+int GetConsecutiveFileCount(const char * dir, const char *nameTag, int maxS){
+    DIR *dirp;
+    struct dirent *dent;
+    int i;
+    
+    dirp = opendir(dir);
+    if (!dirp)
+        return 0;
+
+    int res = 0;
+
+    for(int i=0;i<maxS;i++){
+        char cName[256];
+        sprintf(cName,nameTag,i);
+    
+        bool bFound = false;
+        seekdir(dirp,0);
+        while ((dent = readdir(dirp)) != NULL)
+        {
+            if(strcmp(cName,dent->d_name)==0){
+                bFound = true;
+                break;    
+            }
+        }
+        if(bFound){
+            res = i+1;    
+        }else{
+            break;
+        }
+    }
+
+    closedir(dirp);
+    return res;
 }

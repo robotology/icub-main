@@ -4,7 +4,9 @@
 #include "basicMath.h"
 #include "locator3D.h"
 #include "quatMath.h"
-
+#include "Vector3.h"
+#include "Matrix3.h"
+#include "Matrix4.h"
 
 using namespace std;
 
@@ -149,7 +151,8 @@ int Locator3D::Calibrate(IplImage **img, const CvCamera *cam[], CvSize checkerbo
     isCalibrated=1;
     nb_points =0;
     cout<<"calibration done"<<endl;
-        PrintParams();//for checking
+        //PrintParams();//for checking
+        CenterOrigin(false);
     return 1;
   }
   else{
@@ -209,20 +212,25 @@ void Locator3D::PrintParams(int k){
 	   if(j<3 && k<3){
 	     rotmat[j*3+k] =camInfos[i].mat[j][k];
 	   }
-           if(j==0)      transmat[j*4+k] =camInfos[i].mat[j][k]*camera_intrinsics[i].focal_length[0];
-           else if(j==1) transmat[j*4+k] =camInfos[i].mat[j][k]*camera_intrinsics[i].focal_length[1];
+           if(k==0)      transmat[j*4+k] =camInfos[i].mat[j][k]*camera_intrinsics[i].focal_length[0];
+           else if(k==1) transmat[j*4+k] =camInfos[i].mat[j][k]*camera_intrinsics[i].focal_length[1];
            else          transmat[j*4+k] =camInfos[i].mat[j][k];
 	 }
 	 cout<<endl;
       }
       cout<<endl;
       cout<<"Tansform matrix"<<endl;
+      float sum[]= {0,0,0,0};
       for(int j=0;j<4;j++){
 	 for(int k=0;k<4;k++){
 	   cout<<transmat[j*4+k]<<" ";
+	
+	   if(j<4) sum[k] +=transmat[j*4+k]*transmat[j*4+k];
 	 }
-      cout<<endl;
+        cout<<endl;
       }
+      for(int j=0;j<4;j++)
+	      cout<<sum[j]<<" ";
       cout<<endl;
       Quat q;
       float angle =q.fromMatrix(rotmat); 
@@ -237,12 +245,181 @@ void Locator3D::PrintParams(int k){
   }
 }
 
-void Locator3D::CenterOrigin(){
-   float center[3];
+void Locator3D::CenterOrigin(bool apply){
+   /*float center[3];
    float val = (camInfos[0].mat[3][0]-camInfos[1].mat[3][0])*(camInfos[0].mat[3][0]-camInfos[1].mat[3][0]);
    val      += (camInfos[0].mat[3][1]-camInfos[1].mat[3][1])*(camInfos[0].mat[3][1]-camInfos[1].mat[3][1]);
    val      += (camInfos[0].mat[3][2]-camInfos[1].mat[3][2])*(camInfos[0].mat[3][2]-camInfos[1].mat[3][2]);
-  cout << sqrt(val)<<endl;
+   cout << sqrt(val)<<endl;
+   */
+    cout << "*****************************"<<endl;
+    cout << "Centering Origin..."<<endl;
+
+    if((!camInfos[0].valid)||(!camInfos[1].valid)){
+        cout << "Error: Cameras not calibrated yet..."<<endl;
+        return;
+    }
+
+    Matrix4 camMat[2];
+    Matrix3 rotMat[2];
+    Vector3 transV[2];
+    
+    
+
+    cout<<"Dumping extrinsic parameters..."<<endl;
+    for(int i=0;i<2;i++){
+        cout<<"-Camera <"<<i<<">: (fx,fy) = ("<<camera_intrinsics[i].focal_length[0]<<","<<camera_intrinsics[i].focal_length[1]<<")"<<endl;
+        for(int j=0;j<4;j++){
+	        for(int k=0;k<4;k++){
+	            camMat[i](j,k) = camInfos[i].mat[j][k];
+	        }
+	    }
+	    camMat[i].Print();
+	    cout << endl;
+	}
+
+    cout <<"Extracting orientation and translation"<<endl;
+    for(int i=0;i<2;i++){
+        cout<<"-Camera <"<<i<<">:"<<endl;
+        Vector3 tmpV;
+        for(int j=0;j<3;j++){
+	        for(int k=0;k<3;k++){
+                if(j==0)      rotMat[i](j,k) = -camMat[i](j,k) * camera_intrinsics[i].focal_length[0];
+                else if(j==1) rotMat[i](j,k) = -camMat[i](j,k) * camera_intrinsics[i].focal_length[1];
+                else          rotMat[i](j,k) = -camMat[i](j,k);
+                
+                cout << rotMat[i](j,k)<<" ";
+	        }
+	        cout<<"| "<<rotMat[i].GetRow(j).Norm()<<endl;
+            
+            tmpV(j) = -camMat[i](3,j);
+	    }
+        rotMat[i].Mult(tmpV,transV[i]);
+	    cout <<"--------------------------------"<<endl;
+        for(int j=0;j<3;j++){
+            cout<<rotMat[i].GetColumn(j).Norm()<<" ";
+        }
+	    cout << endl<<endl;
+        for(int j=0;j<3;j++){
+	        cout <<transV[i](j)<<" ";
+	    }
+	    cout << endl;
+	    cout << endl;
+	}
+    cout << endl;
+    
+    
+    Vector3 transD = transV[1]-transV[0];
+    cout <<"-----------------------"<<endl;
+    cout << "Dist: "<< transD.Norm()<<" ("<< transD[0]<<","<< transD[1]<<","<< transD[2] <<")"<<endl;
+    
+    Matrix4 ncamMat[2];
+    Matrix3 nrotMat[2];
+    Vector3 ntransV[2];
+
+
+    Matrix3 rotDistMat;
+    Vector3 rotDist;
+    rotMat[1].Mult(rotMat[0].Transpose(),rotDistMat);
+    rotDistMat.GetExactRotationAxis(rotDist);
+    cout << "AngDist: "<<rotDist.Norm()*(180.0/3.141)<<endl;
+    cout <<"-----------------------"<<endl;
+    
+    Matrix3 halfRotDist,meanRot;
+    halfRotDist.RotationV(rotDist*0.5);
+    halfRotDist.Mult(rotMat[0],meanRot);
+    //meanRot.Print();
+
+    //meanRot.Transpose().Mult(transD*(-0.5),ntransV[0]);
+    //meanRot.Transpose().Mult(transD*(+0.5),ntransV[1]);
+    ntransV[0] = transD*(-0.5);
+    ntransV[1] = transD*(+0.5);
+
+    nrotMat[0].RotationV(rotDist*(-0.5));
+    nrotMat[1].RotationV(rotDist*(+0.5));
+    
+    
+    Matrix4 camMat0[2];
+    Matrix4 camMat1[2];
+    Matrix4 camMat2[2];
+    Matrix4 camMat3[2];
+    for(int i=0;i<2;i++){
+        camMat0[i].Identity();
+        camMat1[i].Identity();
+        for(int k=0;k<3;k++){
+	        camMat0[i](3,k) = ntransV[i](k);
+        }
+        for(int j=0;j<3;j++){
+	        for(int k=0;k<3;k++){
+    	        camMat1[i](j,k) = nrotMat[i](j,k);
+            }
+        }        
+
+        camMat2[i].Identity();
+        camMat2[i](0,0)=camMat2[i](1,1)=camMat2[i](2,2)=-1.0;
+
+        camMat0[i].Mult(camMat1[i],camMat3[i]);
+        camMat3[i].Mult(camMat2[i],camMat0[i]);
+
+        camMat2[i](0,0)=1.0/camera_intrinsics[i].focal_length[0];
+        camMat2[i](1,1)=1.0/camera_intrinsics[i].focal_length[1];
+        camMat2[i](2,2)=1.0;
+        
+        camMat2[i].Mult(camMat0[i],ncamMat[i]);
+        
+        //camMat[i].Print();
+        //camMat1[i].Print();
+    }
+    if(apply){
+        for(int i=0;i<2;i++){
+            for(int j=0;j<4;j++){
+	            for(int k=0;k<4;k++){
+	                camInfos[i].mat[j][k] = ncamMat[i](j,k);
+	            }
+	        }
+	        //ncamMat[i].Print();
+	    }    
+	    cout << "Center Origin: Applied..."<<endl;
+	}
+	
+	
+	/*
+	   cout<<camInfos[i].mat[j][k]<<" ";
+	   if(j<3 && k<3){
+	     rotmat[j*3+k] =camInfos[i].mat[j][k];
+	   }
+           if(k==0)      transmat[j*4+k] =camInfos[i].mat[j][k]*camera_intrinsics[i].focal_length[0];
+           else if(k==1) transmat[j*4+k] =camInfos[i].mat[j][k]*camera_intrinsics[i].focal_length[1];
+           else          transmat[j*4+k] =camInfos[i].mat[j][k];
+	 }
+	 cout<<endl;
+      }
+      cout<<endl;
+      cout<<"Tansform matrix"<<endl;
+      float sum[]= {0,0,0,0};
+      for(int j=0;j<4;j++){
+	 for(int k=0;k<4;k++){
+	   cout<<transmat[j*4+k]<<" ";
+	
+	   if(j<4) sum[k] +=transmat[j*4+k]*transmat[j*4+k];
+	 }
+        cout<<endl;
+      }
+      for(int j=0;j<4;j++)
+	      cout<<sum[j]<<" ";
+      cout<<endl;
+      Quat q;
+      float angle =q.fromMatrix(rotmat); 
+      cout<<"angle "<<angle*180/PIf;
+      angle = 1.f/sin(angle*0.5);
+      cout<<": "<<q.x*angle<<" "<<q.y*angle<<" "<<q.z*angle<<endl;
+      cout<<endl;
+
+
+     
+    }
+  }*/
+    cout << "*****************************"<<endl;
 }
 
 void Locator3D::SetDefaultTranslation(float dist){

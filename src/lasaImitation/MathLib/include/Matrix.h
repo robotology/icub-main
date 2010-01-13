@@ -622,6 +622,14 @@ public:
     return result;
   }
   
+  inline Matrix& SMinus()
+  {
+    for (unsigned int j = 0; j < row*column; j++)
+        _[j] = -_[j];
+    return *this;
+  }
+  
+  
   inline virtual Matrix& operator = (const Matrix &matrix)
   {
     Resize(matrix.row,matrix.column,false);

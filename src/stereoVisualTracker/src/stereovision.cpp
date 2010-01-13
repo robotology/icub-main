@@ -255,13 +255,16 @@ void Stereovision::ProcessNextFrame(){
             const double *chess_p = dc[0]->GetChessboardParams();
             cam[0] =  dc[0]->GetCameraParams();
             cam[1] =  dc[1]->GetCameraParams();
-            while(!loc->IsCalibrated()){
+            char key = 0;
+            while((!loc->IsCalibrated())||(key!=' ')){
                 for(i=0;i<2;i++){
                     cvShowImage(wname[i],img[i]);
                     grabber[i]->GrabFrame(&(img[i]),0);
+                    //dc[i]->Apply(img[i]);	
                 }//maybe it should not be -1
                 loc->Calibrate(img,cam,cvSize((int)chess_p[0]-1,(int)chess_p[1]-1),chess_p[2]); 
-                if('q' == cvWaitKey(5)){
+                key = cvWaitKey(5);
+                if('q' == key){
                     cout<<"exiting calibration"<<endl;
                     break;
                 }
@@ -469,6 +472,9 @@ void Stereovision::ExecuteCommand(int key)
     case 'H':
         loc->SetDefaultParams(0,0,68);
         loc->PrintParams();
+        break;
+    case 'j':
+        loc->CenterOrigin();
         break;
     case 'u': // sends/stops sending the 3d locations throug yarp 
         if((comm = 1-comm)){

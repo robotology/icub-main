@@ -193,10 +193,19 @@ void ImitationApplicationThread::run()
     case BC_HAND_CLOSELEFT:
         AddCommand(PID_Robot,"lh close");
         break;
+    case BC_EYETARGET_TO_NONE:
+        RemConnexion(SPID_EyeCartPos, DPID_RArmDesCartPos);
+        RemConnexion(SPID_EyeCartPos, DPID_LArmDesCartPos);
+        break;
     case BC_EYETARGET_TO_RIGHTARM:
-        AddConnexion(SPID_EyeCartPos    , DPID_RArmDesCartPos);
+        AddConnexion(SPID_EyeCartPos, DPID_RArmDesCartPos);
+        AddCommand(PID_Robot,"iku RightArm");
+        AddCommand(PID_Robot,"iks RightArmPos");
         break;
     case BC_EYETARGET_TO_LEFTARM:
+        AddConnexion(SPID_EyeCartPos, DPID_LArmDesCartPos);
+        AddCommand(PID_Robot,"iku LeftArm");
+        AddCommand(PID_Robot,"iks LeftArmPos");
         break;
     }
     
@@ -443,6 +452,22 @@ int ImitationApplicationThread::respond(const Bottle& command, Bottle& reply){
                     mBasicCommand = BC_HAND_OPENLEFT;
                 }else if(str == "lc"){
                     mBasicCommand = BC_HAND_CLOSELEFT;
+                }else{
+                    retVal = 0;
+                }
+            }else{
+                retVal = 0;
+            }
+            break;
+        case VOCAB4('e','y','e','t'):
+            if(cmdSize>1){
+                ConstString str = command.get(1).asString();
+                      if(str == "None"){
+                    mBasicCommand = BC_EYETARGET_TO_NONE;
+                }else if(str == "RArm"){
+                    mBasicCommand = BC_EYETARGET_TO_RIGHTARM;
+                }else if(str == "LArm"){
+                    mBasicCommand = BC_EYETARGET_TO_LEFTARM;
                 }else{
                     retVal = 0;
                 }

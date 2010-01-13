@@ -87,6 +87,12 @@ bool stereoVisualTracker::open(Searchable& config){
           writer[1] = new AviWriter("mov1.avi");
       }
 #endif
+
+    mPeriod = 0;
+    Value& p = config.find("period");
+    if(!p.isNull()){
+        mPeriod = p.asDouble();
+    }
   return true;
 }
 
@@ -110,7 +116,9 @@ void stereoVisualTracker::SendOutput(VisionServer *port, double *position){//to 
     port->setEnvelope(((YarpFrameGrabber *)grabber[0])->stamp);
     port->SendPosition(position[0],position[1],position[2]);
 }
-
+double 	stereoVisualTracker::getPeriod (){
+    return mPeriod;
+}
 int main(int argc, char *argv[]){
   stereoVisualTracker svt;
   svt.openFromCommand(argc,argv,true);

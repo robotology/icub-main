@@ -72,7 +72,33 @@ public:
   Matrix3& RotationZY(float angleZ, float angleY);
   */
   Matrix3& RotationYXZ(float angleX, float angleY, float angleZ);
-  Matrix3& RotationV(float angle, const Vector3 &axis);
+
+    inline Matrix3& RotationV(float angle, const Vector3 &axis)
+    {    
+      float n = axis.Norm();
+      if(n<=EPSILON){
+        Identity();      
+      }else{
+        n = 1.0/n;  
+        const float c = cosf(angle);
+        const float s = sinf(angle);
+        const float u = (1-c);
+        const float x = axis._[0]*n;
+        const float y = axis._[1]*n;
+        const float z = axis._[2]*n;
+        
+        _[0][0] = x*x*u+  c;
+        _[0][1] = x*y*u-z*s;
+        _[0][2] = x*z*u+y*s;
+        _[1][0] = x*y*u+z*s;
+        _[1][1] = y*y*u+  c;
+        _[1][2] = y*z*u-x*s;
+        _[2][0] = x*z*u-y*s;
+        _[2][1] = y*z*u+x*s;
+        _[2][2] = z*z*u+  c;
+      }
+      return *this;
+    }
   
   inline Vector3  GetRotationAxis(){
     Vector3 result;

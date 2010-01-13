@@ -274,7 +274,7 @@ void    RobotControllerThread::Init(){
     mIKInvDofWeights.One();
     
     mHandPoses[0].resize(9);
-    mHandPoses[0][0] = 40;
+    mHandPoses[0][0] = 30;
     mHandPoses[0][1] = 0;
     mHandPoses[0][2] = 0;
     mHandPoses[0][3] = 0;
@@ -284,7 +284,7 @@ void    RobotControllerThread::Init(){
     mHandPoses[0][7] = 0;
     mHandPoses[0][8] = 0;
     mHandPoses[1].resize(9);
-    mHandPoses[1][0] = 40;
+    mHandPoses[1][0] = 20;
     mHandPoses[1][1] = 40;
     mHandPoses[1][2] = 30;
     mHandPoses[1][3] = 45;
@@ -294,8 +294,8 @@ void    RobotControllerThread::Init(){
     mHandPoses[1][7] = 40;
     mHandPoses[1][8] = 70;
 
-    hHandState[0] = false;
-    hHandState[1] = false;
+    hHandState[0] = true;
+    hHandState[1] = true;
     
     
     bIKUseNullSpace         = true;
@@ -422,7 +422,7 @@ void RobotControllerThread::run()
             mTargetJointVel[   7+i] = mHandGain * (mHandPoses[(hHandState[0]?0:1)][i] - mCurrentJointPos[   7+i]);
             mTargetJointVel[16+7+i] = mHandGain * (mHandPoses[(hHandState[1]?0:1)][i] - mCurrentJointPos[16+7+i]);
         }
-        cout << mTargetJointVel.toString()<<endl;
+        
         
         mTargetJointPos = mCurrentJointPos;
         
@@ -456,7 +456,7 @@ RobotControllerThread::IKSetID RobotControllerThread::IKStringToIKSet(string str
     else if(str == "RightArmPos")   return IKS_RightArmPos;
     else if(str == "RightWrist")    return IKS_RightWrist;
     else if(str == "LeftArm")       return IKS_LeftArm;
-    else if(str == "leftArmPos")    return IKS_LeftArmPos;
+    else if(str == "LeftArmPos")    return IKS_LeftArmPos;
     else if(str == "LeftWrist")     return IKS_LeftWrist;
     else if(str == "Eye")           return IKS_Eye;
     else if(str == "Joints")        return IKS_Joints;

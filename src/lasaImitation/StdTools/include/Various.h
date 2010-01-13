@@ -22,6 +22,7 @@ string Serialize(vector<string>, int start=0, int cnt=-1);
 string RemoveSpaces(string s);
 
 string GetPathFromFilename(string fname);
+int    GetConsecutiveFileCount(const char * dir, const char *nameTag, int maxS=20);
 
 #ifdef WIN32          // Linux Wrap for Win32
 #define usleep(X)     Sleep((X) / 1000)
