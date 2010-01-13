@@ -985,13 +985,9 @@ bool WatershedModule::outPorts(){
     if(strcmp("",message->c_str())){
         Bottle& commandBottle=commandPort->prepare();
         commandBottle.clear();
-        commandBottle.addVocab(VOCAB3('s','e','t'));
-        commandBottle.addVocab(VOCAB3('c','l','p'));
-        //commandBottle.addString(message->c_str());
-        //commandBottle.addInt(this->salience->centroid_x);
-        //commandBottle.addInt(this->salience->centroid_y);
-        //commandBottle.addInt(this->salience->centroid_x);
-        //commandBottle.addInt(this->salience->centroid_y);
+        commandBottle.addVocab(VOCAB3(message->at(0),message->at(1),message->at(2)));
+        commandBottle.addVocab(VOCAB3(message->at(3),message->at(4),message->at(5)));
+        
         commandPort->writeStrict();
         ct=1;
         message->assign("");
