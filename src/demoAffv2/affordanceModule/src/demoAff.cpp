@@ -82,7 +82,7 @@ map<string, Matrix> DemoAff::computePalmOrientations() {
 	Ry(2, 0) = -Ry(0, 2);
 	Ry(2, 2) = Ry(0, 0);
 
-  m["right_down"] = Rz;
+  m["right_down"] = Ry;
 
   Matrix Rx(3, 3);
   Rx.zero();
