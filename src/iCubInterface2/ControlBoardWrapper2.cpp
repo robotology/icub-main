@@ -222,6 +222,10 @@ void CommandsHelper2::handleControlModeMsg(const yarp::os::Bottle& cmd,
 							p=3;
 							*ok = iMode->setTorqueMode(axis);
 						break;
+						case VOCAB_CM_OPENLOOP:
+							p=50;
+							*ok = iMode->setTorqueMode(axis);
+						break;
 						default:
 							p=-1;
 							*ok = false;

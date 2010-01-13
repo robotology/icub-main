@@ -64,8 +64,9 @@ protected:
     yarp::dev::IControlLimits       *lim;
     yarp::dev::ITorqueControl       *torque;
     yarp::dev::IAxisInfo            *info;
-    yarp::dev::IControlCalibration2   *ical2;
-    yarp::dev::IControlMode       *iControlMode;
+    yarp::dev::IControlCalibration2 *ical2;
+    yarp::dev::IControlMode         *iControlMode;
+	yarp::dev::IOpenLoopControl     *iOpenLoop;
     int controlledJoints;
     Vector vect;
 
@@ -140,6 +141,7 @@ class ControlBoardWrapper :
     public IMultipleWrapper,
 	public ITorqueControl,
     public IControlMode,
+	public IOpenLoopControl,
     public IAxisInfo
     // convenient to put these here just to make sure all
     // methods get implemented
@@ -186,6 +188,7 @@ private:
     IPreciselyTimed      *iTimed;
     IAxisInfo          *info;
     IControlMode        *iControlMode;
+	IOpenLoopControl   *iOpenLoop;
 
     bool closeMain() {
         if (RateThread::isRunning()) {
@@ -219,6 +222,7 @@ public:
         info = NULL;
         torque=NULL;
         iControlMode=0;
+		iOpenLoop=0;
         controlledJoints = 0;
         deviceJoints=0;
         thread_period = 20; // ms.
@@ -1393,6 +1397,13 @@ public:
         return false;
     }
 
+	virtual bool setOpenLoopMode(int j)
+    {
+        if (iControlMode)
+            return iControlMode->setOpenLoopMode(j+base);
+        return false;
+    }
+
     virtual bool setVelocityMode(int j)
     {
         if (iControlMode)
@@ -1405,6 +1416,25 @@ public:
         if (iControlMode)
             return iControlMode->getControlMode(j+base, mode);
         return false;
+    }
+
+	
+	virtual bool setOutput(int j, double v)
+    {
+        if (iOpenLoop)
+           // return iOpenLoop->setOutput(j+base, v);
+        return false;
+    }
+
+	virtual bool setOutputs(const double *v) {
+        bool ret=false;
+        if (iOpenLoop) {
+            ret=true;
+			for(int l=0;l<controlledJoints;l++){}
+          //      ret=ret&&iOpenLoop->setOutput(l+base,v[l]);
+        }
+
+        return ret;
     }
 };
 

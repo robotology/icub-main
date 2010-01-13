@@ -67,6 +67,7 @@ protected:
     yarp::dev::IControlMode         *iMode;
     yarp::dev::IAxisInfo            *info;
     yarp::dev::IControlCalibration2   *ical2;
+	yarp::dev::IOpenLoopControl     *iOpenLoop;
     int controlledJoints;
     Vector vect;
 
@@ -143,6 +144,7 @@ public:
     IControlCalibration2 *calib2;
     IPreciselyTimed      *iTimed;
     ITorqueControl       *iTorque;
+	IOpenLoopControl     *iOpenLoop;
     IControlMode         *iMode;
     IAxisInfo          *info;
 
@@ -207,7 +209,8 @@ class ControlBoardWrapper2 : public DeviceDriver,
     public IControlLimits,
     public IControlCalibration,
     public IControlCalibration2,
-    public IMultipleWrapper,
+	public IOpenLoopControl,
+	public IMultipleWrapper,
     public IAxisInfo
                              //    public ITorqueControl,
                              //    public IControlMode
@@ -1976,6 +1979,11 @@ public:
     }
 
     virtual bool setVelocityMode(int j)
+    {
+        return false;
+    }
+
+	virtual bool setOpenLoopMode(int j)
     {
         return false;
     }
