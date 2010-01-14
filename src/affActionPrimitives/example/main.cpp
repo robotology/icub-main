@@ -497,10 +497,14 @@ public:
             // something, so lift it up!
             if (!action->areFingersInPosition())
             {
+                cout<<"Wow, got something!"<<endl;
+
                 // lift the object (wait until it's done)
     			action->pushAction(xd+*dLift,*graspOrien);
                 action->checkActionsDone(f,true);
             }
+            else
+                cout<<"Sorry :( ... nothing to grasp"<<endl;
 
             // release the object or just open the
             // hand (wait until it's done)
