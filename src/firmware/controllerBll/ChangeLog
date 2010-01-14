@@ -95,3 +95,7 @@
 	* Added "if" conditions: do not update position if abs_encoder fails.
 	* Checks timeout on the presence of coupled information. 
 	* Current build 34.
+
+2010-11-January  Francesco Nori and Randaz <iron@liralab.it>
+	* Stops sending both encoders if one fails (avoid troubles with coupled boards)
+	* Current build 35.
