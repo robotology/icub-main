@@ -1335,11 +1335,16 @@ bool CanBusMotionControl::open (Searchable &config)
 		int analogCalibration=analogConfig.find("UseCalibration").asInt();
 
         Bottle *initMsg=analogConfig.find("InitMessage").asList();
+		Bottle *speedMsg=analogConfig.find("SpeedMessage").asList();
         Bottle *finiMsg=analogConfig.find("CloseMessage").asList();
 
         if (initMsg)
         {
             analogSensor.getInitMsg()=*initMsg;
+        }
+		if (speedMsg)
+        {
+            analogSensor.getSpeedMsg()=*speedMsg;
         }
         if (finiMsg)
         {
@@ -1359,9 +1364,23 @@ bool CanBusMotionControl::open (Searchable &config)
 		if (analogSensor.getUseCalibration()==1 &&
 			analogChannels==6)
 		{
-			//get the scale factors
-			
+			//get the scale factors		
 		}
+
+		if (analogSensor.getSpeedMsg().size()>0)
+        {
+            res.startPacket();
+            int tmp=analogSensor.getSpeedMsg().get(0).asInt();
+            res._writeBuffer[0].setId(tmp);
+            int k=0;
+            for (k=0;k<analogSensor.getSpeedMsg().size()-1;k++)
+            {
+                res._writeBuffer[0].getData()[k]=analogSensor.getSpeedMsg().get(k+1).asInt();
+            }
+            res._writeBuffer[0].setLen(k);
+            res._writeMessages++;
+            res.writePacket();
+        }
 
         if (analogSensor.getInitMsg().size()>0)
         {
