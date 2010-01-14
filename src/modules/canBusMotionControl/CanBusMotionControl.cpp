@@ -22,6 +22,10 @@
 #include <yarp/dev/PolyDriver.h>
 #include <yarp/String.h>
 
+//the following activates the DEBUG macro in canControlUtil.h
+//#define CAN_DEBUG
+//#define CANBUSMC_DEBUG
+
 #include "ThreadTable2.h"
 #include "ThreadPool2.h"
 
@@ -38,8 +42,6 @@
 #include "../src/ControlBoardInterfacesImpl.inl"
 
 #include "canControlConstants.h"
-//#define DEBUG
-//#define CANBUSMC_DEBUG
 #include "canControlUtils.h"
 
 const int REPORT_PERIOD=6; //seconds
@@ -1288,8 +1290,8 @@ bool CanBusMotionControl::open (Searchable &config)
         initialize(p._njoints, p._axisMap, p._angleToEncoder, p._zeros);
 
     ImplementControlMode::initialize(p._njoints, p._axisMap);
-
 	ImplementTorqueControl::initialize(p._njoints, p._axisMap, p._angleToEncoder, p._zeros);
+    ImplementOpenLoopControl::initialize(p._njoints, p._axisMap);
 	
     // temporary variables used by the ddriver.
     _ref_positions = allocAndCheck<double>(p._njoints);
@@ -1459,6 +1461,7 @@ bool CanBusMotionControl::close (void)
 
         ImplementControlMode::uninitialize();
         ImplementTorqueControl::uninitialize();
+        ImplementOpenLoopControl::uninitialize();
     }
 
     if (threadPool != 0)

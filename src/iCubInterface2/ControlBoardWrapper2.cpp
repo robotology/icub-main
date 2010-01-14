@@ -152,6 +152,15 @@ bool SubDevice::attach(yarp::dev::PolyDriver *d, const std::string &k)
     if (iTimed!=0)
         std::cout << id << ":using IPreciselyTimed interface"<<endl;
 
+    if (iMode!=0)
+        DEBUG_CW2("--> Warning iMode not valid interface\n");
+
+    if (iTorque!=0)
+        DEBUG_CW2("--> Warning iTorque not valid interface\n");
+
+    if (iOpenLoop!=0)
+        DEBUG_CW2("--> Warning iOpenLoop not valid interface\n");
+
     int deviceJoints=0;
 
     if (pos!=0||vel!=0) 
@@ -207,8 +216,9 @@ ImplementCallbackHelper2::ImplementCallbackHelper2(ControlBoardWrapper2 *x) {
 void CommandsHelper2::handleControlModeMsg(const yarp::os::Bottle& cmd, 
                                            yarp::os::Bottle& response, bool *rec, bool *ok)
 {
-    fprintf(stderr, "Handling IControlMode message\n");
-    if (!iMode)
+    if (caller->verbose())
+        fprintf(stderr, "Handling IControlMode message\n");
+     if (!iMode)
         {
             fprintf(stderr, "Error I do not have a valid interface\n");
             *ok=false;
@@ -223,28 +233,26 @@ void CommandsHelper2::handleControlModeMsg(const yarp::os::Bottle& cmd,
         {
         case VOCAB_SET:
             {
+                if (caller->verbose())
+                    fprintf(stderr, "handleControlModeMsg::VOCAB_SET command\n");
 				int p=-1;
 				int axis = cmd.get(3).asInt();
+                int mode=cmd.get(2).asVocab();
 				switch (cmd.get(2).asInt())
 					{
                     case VOCAB_CM_POSITION:
-                        p=1;
                         *ok = iMode->setPositionMode(axis);
 						break;
                     case VOCAB_CM_VELOCITY:
-                        p=2;
                         *ok = iMode->setVelocityMode(axis);
 						break;
                     case VOCAB_CM_TORQUE:
-                        p=3;
                         *ok = iMode->setTorqueMode(axis);
 						break;
                     case VOCAB_CM_OPENLOOP:
-                        p=50;
                         *ok = iMode->setOpenLoopMode(axis);
 						break;
                     default:
-                        p=-1;
                         *ok = false;
 						break;
 					}
@@ -253,8 +261,13 @@ void CommandsHelper2::handleControlModeMsg(const yarp::os::Bottle& cmd,
             break;
         case VOCAB_GET:
             {
+                if (caller->verbose())
+                    fprintf(stderr, "GET command\n");
                 if (cmd.get(2).asVocab()==VOCAB_CM_CONTROL_MODE)
                     {
+                        if (caller->verbose())
+                            fprintf(stderr, "getControlMode\n");
+  
                         int p=-1;
                         int axis = cmd.get(3).asInt();
                         *ok = iMode->getControlMode(axis, &p);
@@ -281,8 +294,10 @@ void CommandsHelper2::handleControlModeMsg(const yarp::os::Bottle& cmd,
 void CommandsHelper2::handleTorqueMsg(const yarp::os::Bottle& cmd, 
                                       yarp::os::Bottle& response, bool *rec, bool *ok) 
 {
-    fprintf(stderr, "Handling ITorque messages\n");
-	if (!torque)
+    if (caller->verbose())
+        fprintf(stderr, "Handling ITorqueControl message\n");
+	
+    if (!torque)
         {
             fprintf(stderr, "Error, I do not have a valid ITorque interface\n");
             *ok=false;
@@ -568,10 +583,6 @@ void CommandsHelper2::handleTorqueMsg(const yarp::os::Bottle& cmd,
 			}
             break;
         }
-    //rec --> true se il comando e' riconosciuto
-    //ok --> contiene il return value della chiamata all'interfaccia
-    // ...*ok=torque->setPid();
-	//torque->
 }
 
 
@@ -656,11 +667,11 @@ bool CommandsHelper2::respond(const yarp::os::Bottle& cmd,
 
 	if ((cmd.size()>1) && (cmd.get(1).asVocab()==VOCAB_TORQUE))
         {
-            //            handleTorqueMsg(cmd, response, &rec, &ok);
+            handleTorqueMsg(cmd, response, &rec, &ok);
         }
     else if ((cmd.size()>1) && (cmd.get(0).asVocab()==VOCAB_ICONTROLMODE))
         {
-            //            handleControlModeMsg(cmd, response, &rec, &ok);
+            handleControlModeMsg(cmd, response, &rec, &ok);
         }
     else
         {
@@ -1444,6 +1455,7 @@ bool ControlBoardWrapper2::open(Searchable& prop)
     //cout << prop.toString().c_str()<<endl;
 
     verb = (prop.check("verbose","if present, give detailed output"));
+    verb=true;
     if (verb)
         cout<<"running with verbose output\n";
 

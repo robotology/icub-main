@@ -34,6 +34,26 @@
 #include <string>
 #include <vector>
 
+//
+#define CONTROLBOARDWRAPPER2_DEBUG
+const int DEBUG_PRINTF_BUFFER_LENGTH=255;
+#include <stdarg.h>
+inline void DEBUG_CW2(const char *fmt, ...)
+{
+#ifdef CONTROLBOARDWRAPPER2_DEBUG
+    va_list ap; 
+    va_start(ap, fmt);
+    char buffer[DEBUG_PRINTF_BUFFER_LENGTH];
+#ifdef WIN32
+    _vsnprintf(buffer, DEBUG_PRINTF_BUFFER_LENGTH, fmt, ap); 
+#else
+    vsnprintf(buffer, DEBUG_PRINTF_BUFFER_LENGTH, fmt, ap); 
+#endif
+    fprintf(stderr, "%s", buffer);
+    va_end(ap);
+#endif
+}
+
 #include "ControlBoardWrapper.h"
 
 using namespace yarp::os;
@@ -2303,6 +2323,7 @@ public:
 
         if (p->iMode)
         {
+            DEBUG_CW2("Calling GET_CONTROL_MODE\n");
             return p->iMode->getControlMode(off+base, mode);
         }        
         return false;
