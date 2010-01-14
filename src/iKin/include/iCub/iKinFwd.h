@@ -642,8 +642,9 @@ public:
     /**
     * Returns the 6x1 vector \f$ 
     * \left(\partial{^2}F\left(q\right)\right)/\left(\partial q_i 
-    *      q_j\right), \f$ where \f$ F\left(q\right) \f$ is the
-    *      forward kinematic function and \f$ \left(q_i,q_j\right)
+    *      \partial q_j\right), \f$ where \f$ F\left(q\right) \f$ is
+    *      the forward kinematic function and \f$
+    *      \left(q_i,q_j\right)
     *      \f$ is the DOF couple.
     * @param i is the index of the first DOF. 
     * @param j is the index of the second DOF.
@@ -661,8 +662,9 @@ public:
     /**
     * Returns the 6x1 vector \f$ 
     * \left(\partial{^2}F\left(q\right)\right)/\left(\partial q_i 
-    *      q_j\right), \f$ where \f$ F\left(q\right) \f$ is the
-    *      forward kinematic function and \f$ \left(q_i,q_j\right)
+    *      \partial q_j\right), \f$ where \f$ F\left(q\right) \f$ is
+    *      the forward kinematic function and \f$
+    *      \left(q_i,q_j\right)
     *      \f$ is the DOF couple.
     * <i>Fast Version</i>: to be used in conjunction with 
     * prepareForHessian(). 
