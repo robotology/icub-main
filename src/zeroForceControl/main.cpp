@@ -37,18 +37,18 @@ using namespace iFC;
 using namespace iKin;
 
 
-const int SAMPLER_RATE = 10;
+const int SAMPLER_RATE = 20;
 const int FT_VALUES = 6;
 const int ARM_JNT = 4;
 
-const bool verbose = true;
-const int CPRNT = 10;
+const bool verbose = false;
+const int CPRNT = 250;
 const int CALIBRATION_OK = true; // should be true when FT calibration will be ok
 
 const double initPosition[4] = {-30.0, 30.0, 0.0, 40.0};
 
-const double MAX_JNT_LIMITS[4] = {2.0, 120.0, 90.0, 90.0};
-const double MIN_JNT_LIMITS[4] = {-85.0, 0.0, -20.0, 10.0};
+const double MAX_JNT_LIMITS[4] = {2.0, 120.0, 90.0, 95.0};
+const double MIN_JNT_LIMITS[4] = {-95.0, 0.0, -20.0, 10.0};
 
 #define CONNECTION_ERROR 0
 #define CONNECTION_OK	 1
@@ -131,10 +131,11 @@ private:
 	int countTime, countTime0;
 
 	Vector *datas;
+    Vector kp;
     
 
 public:
-	ftControl(int _rate, PolyDriver *_dd, BufferedPort<Vector> *_port_FT, ResourceFinder &_rf):	  
+	ftControl(int _rate, PolyDriver *_dd, BufferedPort<Vector> *_port_FT, ResourceFinder &_rf, string limb):	  
 	  RateThread(_rate), dd(_dd) 
 	  {
 		  port_FT = _port_FT;
@@ -150,14 +151,12 @@ public:
 		  //fprintf(stderr, "number of joints: %d", nJnt);
 		  iencs->getEncoders(encoders.data());
 
+
 		  // Elbow to FT sensor variables
-		  Rs.resize(3,3);
-		  Rs=0.0;
-		  Rs(0,0) = Rs(2,1) = 1.0;
-		  Rs(1,2) = -1.0;
-		  ps.resize(3);
-		  ps=0.0;
-		  ps(1) = 0.10;
+		  Rs.resize(3,3);     Rs=0.0;
+		  ps.resize(3);		  ps=0.0;
+          kp.resize(4);       kp=0.0;
+
 
 		  //Shoulder motors parameters:
 		  R0 = 0.8967; K0 = 0.05; Jm0 = 8.47E-6;
@@ -182,7 +181,29 @@ public:
 		  T_all(3,3) = 1.0; //added elbow
 
 		  //arm= new iCubArm("left");
-		  arm= new iCubArm4DOF("left");
+          if (strcmp(limb.c_str(), "left_arm")==0)
+              {
+                  Rs(0,0) = Rs(2,1) = 1.0;  Rs(1,2) = -1.0;
+                  ps(1) = 0.10;
+                  kp(0) = -25;	kp(1) = -25;	kp(2) = -25;	kp(3) = -50;
+                  arm= new iCubArm4DOF("left");
+                  fprintf(stderr, "Opening left arm ... \n");
+
+              }
+          else
+              if (strcmp(limb.c_str(), "right_arm")==0)
+                  {
+                      Rs(0,0) = -1.0; Rs(2,1) = 1.0;  Rs(1,2) = 1.0;
+                      ps(1) = -0.10;
+                      kp(0) =  25;	kp(1) =  25;	kp(2) =  25;	kp(3) =  50;
+                      arm= new iCubArm4DOF("right");
+                      fprintf(stderr, "Opening right arm ... \n");
+                  }
+              else
+                  {
+                      fprintf(stderr, "nothing will be opened ... \n");
+                  }
+
 		  sensor = new iFTransform(Rs,ps);
 		  chain = arm->asChain();
 		  arm->setAllConstraints(false);
@@ -248,7 +269,7 @@ public:
 		  for(int i=0;i<ARM_JNT;i++)
 		  {
 			  //ipids->setPid(i,FTPid[i]);  // iCub is now controllable using setOffset
-			  ipids->setPid(i,FTPid[i]);  // iCub is now controllable using setOffset
+			  //ipids->setPid(i,FTPid[i]);  // iCub is now controllable using setOffset
 		  }
 		  
 		  count =0;
@@ -331,8 +352,6 @@ public:
 		  //GAINS: to be tuned
 		  Matrix K;
 		  K=eye(ARM_JNT,ARM_JNT);
-		  Vector kp(4);
-		  kp(0) = -25;	kp(1) = -25;	kp(2) = -25;	kp(3) = -50;
 		  for(int i=0;i<4;i++) K(i,i) = kp(i);
 
 		  //CONTROL: to be checked
@@ -340,7 +359,7 @@ public:
 		  Vector tau = K*(J.transposed())*FT;
 		  tauSafe = T_all*tau;
 		  tauSafe = checkLimits(encoders, T_all*tau); /**/
-		  const int sat=200;
+		  const int sat=50;
 		  for(int i=0;i<ARM_JNT;i++)
 		  {
 			  tauSafe(i)=(tauSafe(i)>sat)?sat:tauSafe(i);
@@ -349,7 +368,7 @@ public:
 
 		  for(int i=0;i<4;i++)
 		  {
-			  ipids->setOffset(i,tauSafe(i));
+			  //ipids->setOffset(i,tauSafe(i));
 		  }
 		  
 
@@ -442,8 +461,13 @@ public:
 			  fprintf(stderr,"tauM = ");
 			  for(int i=0;i<4;i++)
 				  fprintf(stderr,"%+.3lf\t", tauSafe(i));
+			  fprintf(stderr,"\n");
+
+              fprintf(stderr,"J:\n %s \n", J.toString().c_str());
 			  fprintf(stderr,"\n\n\n");
 			  fprintf(stderr,"\n\n");
+
+
 
 			  count = 0;
 		  }
@@ -581,15 +605,14 @@ public:
 		}
         else
 		{
-			fprintf(stderr,"Device not found\n");
-            PortName=PortName+"/left_arm";
-			part = "left_arm";
+			fprintf(stderr,"Could not find part in the config file\n");
+            return false;
 		}
 
 		Options.put("robot",robot.c_str());
 		Options.put("part",part.c_str());
 		Options.put("device","remote_controlboard");
-		Options.put("local",((fwdSlash+robot)+"/ftControl/client").c_str());
+		Options.put("local",((fwdSlash+robot+fwdSlash+part)+"/ftControl/client").c_str());
 		Options.put("remote",(fwdSlash+robot+fwdSlash+part).c_str());
 
 		dd = new PolyDriver(Options);
@@ -604,7 +627,7 @@ public:
 		port_FT=new BufferedPort<Vector>;
 		port_FT->open((PortName+"/FT:i").c_str());
 		fprintf(stderr,"input port opened...\n");
-		ft_control = new ftControl(SAMPLER_RATE, dd, port_FT, rf);
+		ft_control = new ftControl(SAMPLER_RATE, dd, port_FT, rf, part);
 		fprintf(stderr,"ft thread istantiated...\n");
 		ft_control->start();
 		fprintf(stderr,"thread started\n");
@@ -646,15 +669,15 @@ int main(int argc, char * argv[])
     // prepare and configure the resource finder
     ResourceFinder rf;
     rf.setVerbose();
-	rf.setDefaultContext("ftSensorCalibration/conf");
-	rf.setDefaultConfigFile("leftArmFTCal.ini");
+	rf.setDefaultContext("zeroForceControl/conf");
+	rf.setDefaultConfigFile("leftArmFT.ini");
 
     rf.configure("ICUB_ROOT", argc, argv);
 
 	if (rf.check("help"))
     {
         cout << "Options:" << endl << endl;
-		cout << "\t--context   context: where to find the called resource (referred to $ICUB_ROOT\\app: default FTSensorCalibration\\conf)"                << endl;
+		cout << "\t--context   context: where to find the called resource (referred to $ICUB_ROOT\\app: default zeroForceControl\\conf)"                << endl;
         cout << "\t--from      from: The name of the file.ini to be used for calibration"          << endl;
         return 0;
     }
