@@ -113,18 +113,20 @@ bool GaussianMixtureModelModule::respond(const Bottle& command, Bottle& reply) {
             void    StopRepro();        
         case VOCAB3('r','u','n'):
             if(cmdSize>1){
-                     if(command.get(1).asString()=="learn"){
+                     if(command.get(1).asString()=="learning"){
                     mThread->Learn();
+                }else if(command.get(1).asString()=="test"){
+                    mThread->GenerateDefaultRegression();
                 }else if(command.get(1).asString()=="init"){
-                    mThread->InitRepro();
+                    mThread->InitRun();
                 }else if(command.get(1).asString()=="start"){
-                    mThread->StartRepro();
+                    mThread->StartRun();
                 }else if(command.get(1).asString()=="pause"){
-                    mThread->PauseRepro();
+                    mThread->PauseRun();
                 }else if(command.get(1).asString()=="resume"){
-                    mThread->ResumeRepro();
+                    mThread->ResumeRun();
                 }else if(command.get(1).asString()=="stop"){
-                    mThread->StopRepro();
+                    mThread->StopRun();
                 }else{
                     retVal = false;
                 }
@@ -159,6 +161,8 @@ bool GaussianMixtureModelModule::respond(const Bottle& command, Bottle& reply) {
                     mThread->SetEMCorrDemosPath(command.get(2).asString().c_str());
                 }else if(command.get(1).asString()=="k"){
                     mThread->SetEMNbComponents(command.get(2).asInt());
+                }else if(command.get(1).asString()=="ts"){
+                    mThread->SetEMTimeSpan(command.get(2).asDouble());
                 }else if(command.get(1).asString()=="pmode"){
                           if(command.get(2).asString()=="simple"){
                         mThread->SetEMProcessingMode(GaussianMixtureModelThread::PM_SIMPLE);
@@ -176,6 +180,16 @@ bool GaussianMixtureModelModule::respond(const Bottle& command, Bottle& reply) {
                         mThread->SetEMInitialisationMode(GaussianMixtureModelThread::IM_KMEANS);
                     }else if(command.get(2).asString()=="random"){
                         mThread->SetEMInitialisationMode(GaussianMixtureModelThread::IM_RAND);
+                    }else{
+                        retVal = false;
+                    }
+                }else if(command.get(1).asString()=="rmode"){
+                          if(command.get(2).asString()=="rec"){
+                        mThread->SetRunMode(GaussianMixtureModelThread::RM_REC);
+                    }else if(command.get(2).asString()=="repro"){
+                        mThread->SetRunMode(GaussianMixtureModelThread::RM_REPRO);
+                    }else if(command.get(2).asString()=="corr"){
+                        mThread->SetRunMode(GaussianMixtureModelThread::RM_CORR);
                     }else{
                         retVal = false;
                     }

@@ -1,6 +1,6 @@
 SET(PM_PROJECT_NAME VelocityControllerExt)
 SET(PM_PROJECT_TYPE Executable)
-SET(PM_PROJECT_DEPS ICUB YarpTools)
+SET(PM_PROJECT_DEPS ICUB)
 
 cmake_minimum_required(VERSION 2.6)
 

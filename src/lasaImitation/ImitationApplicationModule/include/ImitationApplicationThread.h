@@ -58,6 +58,8 @@ private:
     enum SrcPortId{
         SPID_Touchpad = 0,
         SPID_3DMouse,
+        SPID_TouchpadSignal,
+        SPID_3DMouseSignal,
         SPID_RWristRef,
         SPID_LWristRef,
         SPID_RArmCartPos,

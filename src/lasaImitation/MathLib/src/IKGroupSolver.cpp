@@ -49,7 +49,8 @@ int     IKGroupSolver::AddSolverItem(const int constraintsSize){
     
     item.mOutput.Resize(mDofs,false);
     item.mOutput.Zero();
-    item.bEnabled = true;
+    item.bEnabled   = true;
+    item.bSuspended = false;
     bComputePriorities = true;
 }
 
@@ -118,11 +119,38 @@ void    IKGroupSolver::Enable(bool enable, int solverId){
     if((solverId>=0)&&(solverId<int(mIKItems.size()))){
         IKSolverItem &item = mIKItems[solverId];
         if(item.bEnabled != enable){
-            bComputePriorities = true;
-            item.bEnabled = enable;
+            bComputePriorities  = true;
+            item.bEnabled       = enable;
         }
-        
-    }    
+        if(enable){
+            if(item.bSuspended){
+                bComputePriorities  = true;
+                item.bSuspended     = false;
+            }
+        }else{
+            if(!item.bSuspended){
+                bComputePriorities  = true;
+                item.bSuspended     = true;
+            }
+        }
+    }
+}
+bool    IKGroupSolver::IsEnabled(int solverId){
+    if((solverId>=0)&&(solverId<int(mIKItems.size()))){
+        IKSolverItem &item = mIKItems[solverId];
+        return item.bEnabled;
+    }
+    return false;
+}
+
+void    IKGroupSolver::Suspend(bool suspend, int solverId){
+    if((solverId>=0)&&(solverId<int(mIKItems.size()))){
+        IKSolverItem &item = mIKItems[solverId];
+        if(item.bSuspended != suspend){
+            bComputePriorities = true;
+            item.bSuspended = suspend;
+        }
+    }
 }
 
 
@@ -130,7 +158,7 @@ void    IKGroupSolver::ComputePriorities(){
     if(bVerbose) cerr << "IKGroupSolver: Computing Priorities"<<endl;
     mSortedPriorityIds.clear();
     for(size_t i=0;i<mIKItems.size();i++){
-        if(mIKItems[i].bEnabled)
+        if((mIKItems[i].bEnabled)&&(!mIKItems[i].bSuspended))
             mSortedPriorityIds.push_back(i);
     }
     for(size_t i=0;i<mSortedPriorityIds.size();i++){

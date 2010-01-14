@@ -6,14 +6,14 @@
     <module>
         <name>ImitationApplicationModule</name>
         <parameters>--period 0.5</parameters>
-        <node>lasapcicub</node>
-        <stdio>lasapcicub</stdio>
+        <node>lasapc18</node>
+        <stdio>lasapc18</stdio>
         <tag>IA</tag>
     </module>
     <module>
         <name>VelocityControllerExt</name>
         <parameters>--name VelocityController --robot icub --period 0.02 --decouple --part right_arm+left_arm+torso+head </parameters>
-        <node>lasapcicub</node>
+        <node>pc104</node>
         <stdio>lasapcicub</stdio>
         <tag>VC</tag>
     </module>
@@ -37,22 +37,51 @@
         <tag>TC2</tag>
         <stdio>lasapcicub</stdio>
         <node>lasapcicub</node>
+        <workdir>/home/icub/asd</workdir>
    </module>
+    <module>
+        <name>GaussianMixtureModelModule</name>
+        <parameters>--name asd --period 0.1</parameters>
+        <node>lasapcicub</node>
+        <stdio>lasapcicub</stdio>
+        <tag>GMM</tag>
+        <workdir>/home/icub/asd</workdir>
+    </module>
+    <module>
+        <name>DataStreamerModule</name>
+        <parameters>--name asd --period 0.05</parameters>
+        <node>lasapcicub</node>
+        <stdio>lasapcicub</stdio>
+        <tag>DS</tag>
+        <workdir>/home/icub/asd</workdir>
+    </module>
     <connection protocol="tcp">
-        <output>/VelocityController/position</output>
-        <input>/RobotController/currentJointPosition</input>
+        <from>/VelocityController/position</from>
+        <to>/RobotController/currentJointPosition</to>
     </connection>
     <connection protocol="tcp">
-        <output>/VelocityController/velocity</output>
-        <input>/RobotController/currentJointVelocity</input>
+        <from>/VelocityController/velocity</from>
+        <to>/RobotController/currentJointVelocity</to>
      </connection>
     <connection protocol="tcp">
-        <output>/RobotController/targetJointPosition</output>
-        <input>/VelocityController/targetPosition</input>
+        <from>/RobotController/targetJointPosition</from>
+        <to>/VelocityController/targetPosition</to>
     </connection>
     <connection protocol="tcp">
-        <output>/RobotController/targetJointVelocity</output>
-        <input>/VelocityController/targetVelocity</input>
+        <from>/RobotController/targetJointVelocity</from>
+        <to>/VelocityController/targetVelocity</to>
+    </connection>
+    <connection protocol="tcp">
+        <from>/GaussianMixtureModel/asd/dataStreamRpc</from>
+        <to>/DataStreamer/asd/rpc</to>
+    </connection>
+    <connection protocol="tcp">
+        <from>/GaussianMixtureModel/asd/dataStreamOutput</from>
+        <to>/DataStreamer/asd/input</to>
+     </connection>
+    <connection protocol="tcp">
+        <from>/RobotController/currentCartPositionR</from>
+        <to>/GaussianMixtureModel/asd/input</to>
     </connection>
 </application>
 

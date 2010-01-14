@@ -1,0 +1,31 @@
+<application>
+    <name>LasaImitation</name>
+    <dependencies>
+        <port>/root</port>
+    </dependencies> 
+    <module>
+        <name>GaussianMixtureModelModule</name>
+        <parameters>--name asd --period 0.1</parameters>
+        <node>lasapcicub</node>
+        <stdio>lasapcicub</stdio>
+        <tag>GMM</tag>
+        <workdir>/home/icub/asd</workdir>
+    </module>
+    <module>
+        <name>DataStreamerModule</name>
+        <parameters>--name asd --period 0.05</parameters>
+        <node>lasapcicub</node>
+        <stdio>lasapcicub</stdio>
+        <tag>DS</tag>
+        <workdir>/home/icub/asd</workdir>
+    </module>
+    <connection protocol="tcp">
+        <from>/GaussianMixtureModel/asd/dataStreamRpc</from>
+        <to>/DataStreamer/asd/rpc</to>
+    </connection>
+    <connection protocol="tcp">
+        <from>/GaussianMixtureModel/asd/dataStreamOutput</from>
+        <to>/DataStreamer/asd/input</to>
+     </connection>
+</application>
+

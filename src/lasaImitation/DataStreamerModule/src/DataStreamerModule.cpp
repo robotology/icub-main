@@ -63,6 +63,7 @@ bool DataStreamerModule::open(Searchable &s){
     char portName[255];
     snprintf(portName,255,"/DataStreamer/%s/rpc",getName().c_str());
     mControlPort.open(portName);
+    mControlPort.setStrict();
     attach(mControlPort,true);
     
     snprintf(portName,255,"DataStreamer/%s",getName().c_str());
@@ -88,129 +89,109 @@ bool DataStreamerModule::close(){
 }
 
 bool DataStreamerModule::respond(const Bottle& command, Bottle& reply) {
-    int  index      = 0;
-    int  cmdSize    = command.size();
-    bool retVal     = true;
-    bool defRetVal  = false;
-    
-    
-    if(cmdSize<=0){
-        retVal = false;
-    }else{
-        while(cmdSize>0){
-            int prevIndex = index;
-            
-            switch(command.get(index).asVocab()) {
-            case VOCAB3('r','u','n'):
-                if(cmdSize>=2){
-                          if(command.get(index+1).asString() == "start"){
-                                mThread->SetLoop(false);
-                                mThread->Start();
-                                index+=2;
-                    }else if(command.get(index+1).asString() == "loop"){
-                                mThread->SetLoop(true);
-                                mThread->Start();
-                                index+=2;
-                    }else if(command.get(index+1).asString() == "stop"){
-                                mThread->Stop();
-                                index+=2;
-                    }else if(command.get(index+1).asString() == "pause"){
-                                mThread->Pause();
-                                index+=2;
-                    }else if(command.get(index+1).asString() == "resume"){
-                                mThread->Resume();
-                                index+=2;
-                    }else{
-                        retVal = false;
-                    }
-                }else{
-                    retVal = false;
-                }
-                break;
-                
-            case VOCAB3('r','e','c'):
-                if(cmdSize>=2){
-                          if(command.get(index+1).asString() == "set"){
-                                mThread->SetRecordMode(true);
-                                index+=2;
-                    }else if(command.get(index+1).asString() == "unset"){
-                                mThread->SetRecordMode(false);
-                                index+=2;
-                    }else{
-                        retVal = false;
-                    }
-                }else{
-                    retVal = false;
-                }
-                break;
+    int index = 0;
+    int cmdSize = command.size();
 
-            case VOCAB4('d','a','t','a'):
-                if(cmdSize>=2){
-                          if(command.get(index+1).asString() == "lineSize"){
-                                if(cmdSize>=3){
-                                    mThread->SetStreamLineSize(command.get(index+2).asInt());
-                                    index+=3;
-                                }else{
-                                    retVal = false;
-                                }
-                    }else if(command.get(index+1).asString() == "maxSize"){
-                                if(cmdSize>=3){
-                                    mThread->SetStreamMaxSize(command.get(index+2).asInt());
-                                    index+=3;
-                                }else{
-                                    retVal = false;
-                                }
-                    }else if(command.get(index+1).asString() == "load"){
-                                if(cmdSize>=3){
-                                    mThread->Load(command.get(index+2).asString().c_str());
-                                    index+=3;
-                                }else{
-                                    retVal = false;
-                                }
-                    }else if(command.get(index+1).asString() == "save"){
-                                if(cmdSize>=3){
-                                    mThread->Save(command.get(index+2).asString().c_str());
-                                    index+=3;
-                                }else{
-                                    retVal = false;
-                                }
-                    }else if(command.get(index+1).asString() == "timeOn"){
-                                mThread->SetUseTime(true);
-                                index+=2;
-                    }else if(command.get(index+1).asString() == "timeOff"){
-                                mThread->SetUseTime(false);
-                                index+=2;
-                    }else if(command.get(index+1).asString() == "clear"){
-                                mThread->Clear();
-                                index+=2;
-                    }else{
-                        retVal = false;
-                    }
+    bool retVal = true;
+    
+    if(cmdSize>0){
+        cerr << "Cmd: ";
+        for(int i=0;i<cmdSize;i++)
+            cerr <<"*"<<command.get(i).asString().c_str()<<"*";
+        cerr <<endl;
+            
+        switch(command.get(0).asVocab()) {
+        case VOCAB3('r','u','n'):
+            if(cmdSize>=2){
+                      if(command.get(1).asString() == "start"){
+                            mThread->SetLoop(false);
+                            mThread->Start();
+                }else if(command.get(1).asString() == "loop"){
+                            mThread->SetLoop(true);
+                            mThread->Start();
+                }else if(command.get(1).asString() == "stop"){
+                            mThread->Stop();
+                }else if(command.get(1).asString() == "pause"){
+                            mThread->Pause();
+                }else if(command.get(1).asString() == "resume"){
+                            mThread->Resume();
                 }else{
                     retVal = false;
                 }
-                break;
-
-            default:
-                retVal      = Module::respond(command,reply);
-                defRetVal   = true;
-                break;
-            }
-            
-            if(defRetVal){
-                return retVal;
             }else{
-                if(retVal){
-                    cmdSize -= index-prevIndex;
-                }else{
-                    break;
-                }
+                retVal = false;
             }
-        }
-    }
+            break;
+            
+        case VOCAB3('r','e','c'):
+            if(cmdSize>=2){
+                      if(command.get(1).asString() == "set"){
+                            mThread->SetRecordMode(true);
+                }else if(command.get(1).asString() == "unset"){
+                            mThread->SetRecordMode(false);
+                }else{
+                    retVal = false;
+                }
+            }else{
+                retVal = false;
+            }
+            break;
 
+        case VOCAB4('d','a','t','a'):
+            if(cmdSize>=2){
+                      if(command.get(1).asString() == "lineSize"){
+                            if(cmdSize>=3){
+                                mThread->SetStreamLineSize(command.get(2).asInt());
+                            }else{
+                                retVal = false;
+                            }
+                }else if(command.get(1).asString() == "maxSize"){
+                            if(cmdSize>=3){
+                                mThread->SetStreamMaxSize(command.get(2).asInt());
+                            }else{
+                                retVal = false;
+                            }
+                }else if(command.get(1).asString() == "load"){
+                            if(cmdSize>=3){
+                                mThread->Load(command.get(2).asString().c_str());
+                            }else{
+                                retVal = false;
+                            }
+                }else if(command.get(1).asString() == "save"){
+                            if(cmdSize>=3){
+                                mThread->Save(command.get(2).asString().c_str());
+                            }else{
+                                retVal = false;
+                            }
+                }else if(command.get(1).asString() == "timeOn"){
+                            mThread->SetUseTime(true);
+                }else if(command.get(1).asString() == "timeOff"){
+                            mThread->SetUseTime(false);
+                }else if(command.get(1).asString() == "clear"){
+                            mThread->Clear();
+                }else{
+                    retVal = false;
+                }
+            }else{
+                retVal = false;
+            }
+            break;
+
+        default:
+            retVal = false;
+            break;            
+        }         
+    }else{
+        retVal = false;
+    }
+    if(retVal)
+        cerr << "*ACK*"<<endl;
+    else 
+        cerr << "*FAIL*"<<endl;
     if(retVal){
         reply.addVocab(Vocab::encode("ack"));
+    }else{
+        return Module::respond(command,reply);
     }
     return retVal;
 }

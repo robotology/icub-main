@@ -58,6 +58,11 @@ public:
             void    SetTarget(const Vector &v, int solverId = 0);
             /// Enable or disable the given solver
             void    Enable(bool enable=true, int solverId = 0);
+            /// Suspend or resume the given solver (used in conjunction with Enable)
+            void    Suspend(bool suspend=true, int solverId = 0);
+            /// Get if the given solver is enabled
+            bool    IsEnabled(int solverId = 0);
+        
 
             /// Sets the target for the null space (Size given by the number of DOFs)
             void    SetNullTarget(const Vector &null);
@@ -98,6 +103,7 @@ protected:
         Vector          mErrorTarget;
         Vector          mOutput;
         bool            bEnabled;
+        bool            bSuspended;
     }IKSolverItem;
     
     vector<IKSolverItem>    mIKItems;

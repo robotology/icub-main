@@ -75,10 +75,16 @@ void DataStreamerThread::run()
         if(bUseTime){
             mInputVector.Resize(inputVec->size()+1);
             mInputVector(0) = mCurrTime;
-            for(int i=0;i<inputVec->size();i++){
+            for(int i=0;i<inputVec->size();i++)
                 mInputVector(i+1) = (*inputVec)[i];
-            }
+        }else{
+            mInputVector.Resize(inputVec->size());
+            for(int i=0;i<inputVec->size();i++)
+                mInputVector(i) = (*inputVec)[i];
         }
+    }else{
+        if(bUseTime)
+            mInputVector(0) = mCurrTime;
     }
 
     bool bWriteData = false;
@@ -87,12 +93,16 @@ void DataStreamerThread::run()
     case DS_IDLE:
         break;
     case DS_RUN:
-        //cout << mCurrTime<<" "<< mCurrentLine <<" "<<mStreamSize<<" "<<mStreamMaxSize<<endl;
+        cout << "Time: "<<mCurrTime<<", line: "<< mCurrentLine <<"/"<<mStreamSize+1<<", max:"<<mStreamMaxSize<<" ";
 
         if(bRecord){
-            if(inputVec!=NULL){
-                mData.SetRow(mInputVector,mCurrentLine);
-            }
+            //if(inputVec!=NULL){
+            mData.SetRow(mInputVector,mCurrentLine);
+            //}
+            cout <<"REC: ";
+            for(int i=0;i<mStreamLineSize;i++)
+                cout << mData(mCurrentLine,i)<<" ";
+            cout << endl;
         }
     
         bWriteData = true;
@@ -124,8 +134,16 @@ void DataStreamerThread::run()
                     }
                 }
             }
+            cout <<"PLAY: ";
+            for(int i=0;i<mStreamLineSize;i++)
+                cout << mData(mCurrentLine,i)<<" ";
+            cout << endl;
+            
         }else{
             mCurrentLine++;
+            if(mCurrentLine>=mStreamSize)
+                mStreamSize++;
+        
             if(mCurrentLine>=mStreamMaxSize){
                 if(!bLoop){
                     mCurrentLine = mStreamMaxSize-1;
@@ -135,6 +153,7 @@ void DataStreamerThread::run()
                 
             }
         }
+        cout << endl;
         break;
     case DS_PAUSE:
         break;    
@@ -170,7 +189,8 @@ void    DataStreamerThread::Start(){
         mStartTime      = Time::now();
         mCurrentLine    = 0;
         // Add start stuff here
-        
+        mInputVector.Resize(mStreamLineSize);
+        mInputVector.Zero();
     }
     mMutex.post();
 }
@@ -213,7 +233,7 @@ void    DataStreamerThread::Save(const char* filename){
     Stop();
     mMutex.wait();
     MathLib::Matrix data;
-    mData.GetRowSpace(0, mCurrentLine,data);
+    mData.GetRowSpace(0, mStreamSize,data);
     data.Save(filename);
     mMutex.post();
 }
@@ -258,6 +278,12 @@ void    DataStreamerThread::SetUseTime(bool useTime){
     Stop();
     mMutex.wait();
     bUseTime = useTime;
+    if(bUseTime){
+        if(mStreamLineSize==0){
+            mStreamLineSize = 1;
+            mData.Resize(mStreamMaxSize,mStreamLineSize,true);
+        }
+    }
     // Fill in stuff...
     mMutex.post();
 }

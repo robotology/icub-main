@@ -105,20 +105,16 @@ bool TouchControllerThread::threadInit()
     }
 
 
-    
-    /*
-    if (!mMiceDriver.open()) {
-        printf("Unable to open MultipleMice Driver.\n");
-        //return false;
-    }
-    mMiceDriver.SetBaseMiceName("Cirque Corporation USB GlidePoint");
-    */
     char portName[256];
     snprintf(portName,256,"/%s/frameOfRef",mBaseName);
     mFrameOfRefPort.open(portName);
 
     snprintf(portName,256,"/%s/velocity",mBaseName);
     mOutputPort.open(portName);
+
+    snprintf(portName,256,"/%s/signals",mBaseName);
+    mSignalPort.open(portName);
+    
 
     return true;
 }
@@ -133,6 +129,8 @@ void TouchControllerThread::threadRelease()
 
     mFrameOfRefPort.close();
     mOutputPort.close();
+    mSignalPort.close();
+
 }
 
 void TouchControllerThread::run()
@@ -148,7 +146,11 @@ void TouchControllerThread::run()
     
     // Write data to output port
     Vector &outputVec = mOutputPort.prepare();
-
+    Vector &signalVec = mSignalPort.prepare();
+    
+    signalVec.resize(3);
+    signalVec = 0;
+    
     if(!bFake)
         mMiceDriver.Update();
 
@@ -162,7 +164,7 @@ void TouchControllerThread::run()
             
             mTouchController.Update();
         }
-        outputVec.resize(11);
+        outputVec.resize(9);
         outputVec = 0;
         if(!bFake){
             Vector tmpOutput;
@@ -174,12 +176,14 @@ void TouchControllerThread::run()
             mTouchController.Get2DOFSensingOutput(optOut);
             outputVec[6] = optOut[0];
             outputVec[7] = optOut[1];
-            if(mTouchController.GetLastMouseTouch())
+            if(mTouchController.GetLastMouseTouch()){
                 outputVec[8] = 1.0;
+                signalVec[2] = 1.0;
+            }
             if(mTouchController.TouchDetected())
-                outputVec[9] = 1.0;
+                signalVec[0] = 1.0;
             if(mTouchController.ResetDetected())
-                outputVec[10] = 1.0;
+                signalVec[1] = 1.0;
         }
     }else if(mType == 0){
         outputVec.resize(6);
@@ -202,6 +206,13 @@ void TouchControllerThread::run()
             vec[0] = outputVec[3]; vec[1] = outputVec[4]; vec[2] = outputVec[5];
             mat3.Mult(vec,vec2);
             outputVec[3] = TRUNC(vec[0],-mRotLimit,mRotLimit); outputVec[4] = TRUNC(vec[1],-mRotLimit,mRotLimit); outputVec[5] = TRUNC(vec[2],-mRotLimit,mRotLimit); 
+            
+            if(mouse3d->btnState>0)
+                signalVec[1] = signalVec[2] = 1.0;
+            double norm = 0.0;
+            for(int i=0;i<6;i++) norm += outputVec[i]*outputVec[i];
+            if(norm>0.0001)
+                signalVec[0] = 1.0;
         }
     }
 
@@ -209,10 +220,11 @@ void TouchControllerThread::run()
     if((!bRunning)||(bFake))
         outputVec.zero();
     if(bDisplay)
-        cout << outputVec.toString().c_str()<<endl;        
+        cout << outputVec.toString().c_str()<< "***" << signalVec.toString() <<endl;        
     
     // Write data to output port
     mOutputPort.write();
+    mSignalPort.write();
 
     mMutex.post();
 }

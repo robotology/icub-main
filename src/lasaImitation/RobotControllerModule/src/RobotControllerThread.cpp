@@ -136,8 +136,8 @@ void    RobotControllerThread::Init(){
     mDesiredCartVel[1].resize(6); mDesiredCartVel[1] = 0;
     mDesiredCartWristVel[0].resize(6); mDesiredCartWristVel[0] = 0;
     mDesiredCartWristVel[1].resize(6); mDesiredCartWristVel[1] = 0;
-    mDesiredWristOpt[0].resize(5); mDesiredWristOpt[0] = 0;
-    mDesiredWristOpt[1].resize(5); mDesiredWristOpt[1] = 0;
+    mDesiredWristOpt[0].resize(3); mDesiredWristOpt[0] = 0;
+    mDesiredWristOpt[1].resize(3); mDesiredWristOpt[1] = 0;
     mDesiredCartEyePos.resize(3); mDesiredCartEyePos = 0;
     mDesiredCartEyeVel.resize(3); mDesiredCartEyeVel = 0;
     mDesiredCartEyeInEyePos.resize(3); mDesiredCartEyeInEyePos = 0; mDesiredCartEyeInEyePos[2] = 0.2;
@@ -672,11 +672,11 @@ void    RobotControllerThread::ReadFromPorts(){
         }else if(inputVec->size()==3){
             mDesiredCartWristVel[0] = 0; mDesiredCartWristVel[0][0] = (*inputVec)[0]; mDesiredCartWristVel[0][1] = (*inputVec)[1]; mDesiredCartWristVel[0][2] = (*inputVec)[2];
             mDesiredCartWristVelRLastTime = mTime;
-        }else if(inputVec->size()==11){
+        }else if(inputVec->size()==9){
             for(int i=0;i<6;i++) mDesiredCartWristVel[0][i] = (*inputVec)[i];
-            for(int i=0;i<5;i++) mDesiredWristOpt[0][i]     = (*inputVec)[i+6];
+            for(int i=0;i<3;i++) mDesiredWristOpt[0][3]     = (*inputVec)[i+6];
             mDesiredCartWristVelRLastTime = mTime;
-        }else cerr << "Bad vector size on port <desiredCartWristVelR>: " << inputVec->size() << "!= 3 or 6 or 11"<< endl;
+        }else cerr << "Bad vector size on port <desiredCartWristVelR>: " << inputVec->size() << "!= 3 or 6 or 9"<< endl;
     }
     inputVec = mDesiredCartWristVelLPort.read(false);
     if(inputVec!=NULL){
@@ -686,11 +686,11 @@ void    RobotControllerThread::ReadFromPorts(){
         }else if(inputVec->size()==3){
             mDesiredCartWristVel[1] = 0; mDesiredCartWristVel[1][0] = (*inputVec)[0]; mDesiredCartWristVel[1][1] = (*inputVec)[1]; mDesiredCartWristVel[1][2] = (*inputVec)[2];
             mDesiredCartWristVelLLastTime = mTime;
-        }else if(inputVec->size()==11){
+        }else if(inputVec->size()==9){
             for(int i=0;i<6;i++) mDesiredCartWristVel[1][i] = (*inputVec)[i];
-            for(int i=0;i<5;i++) mDesiredWristOpt[1][i]     = (*inputVec)[i+6];
+            for(int i=0;i<3;i++) mDesiredWristOpt[1][i]     = (*inputVec)[i+6];
             mDesiredCartWristVelLLastTime = mTime;
-        }else cerr << "Bad vector size on port <desiredCartWristVelL>: " << inputVec->size() << "!= 3 or 6 or 11"<< endl;
+        }else cerr << "Bad vector size on port <desiredCartWristVelL>: " << inputVec->size() << "!= 3 or 6 or 9"<< endl;
     }
 
     inputVec = mDesiredCartEyeInEyePort.read(false);
@@ -721,6 +721,7 @@ void    RobotControllerThread::CheckInputsTimeout(){
     if(mTime-mDesiredCartPosLLastTime        >= INPUTS_TIMEOUT)  YarpPose7ToYarpPose6(mFwdKinArmPose[1],mDesiredCartPos[1]);
     if(mTime-mDesiredCartVelRLastTime        >= INPUTS_TIMEOUT)  mDesiredCartVel[0]      = 0.0;
     if(mTime-mDesiredCartVelLLastTime        >= INPUTS_TIMEOUT)  mDesiredCartVel[1]      = 0.0;
+
     if(mTime-mDesiredCartWristVelRLastTime   >= INPUTS_TIMEOUT)  mDesiredCartWristVel[0] = 0.0;
     if(mTime-mDesiredCartWristVelLLastTime   >= INPUTS_TIMEOUT)  mDesiredCartWristVel[1] = 0.0;
 
@@ -729,6 +730,28 @@ void    RobotControllerThread::CheckInputsTimeout(){
             mDesiredCartEyeInEyePos = 0; mDesiredCartEyeInEyePos[2] = 0.2;
         }  
         ConvertEyeInEyeTarget();
+    }
+
+    // Disable arm control if nothing to do and wrist control is enabled
+    if((mTime-mDesiredCartPosRLastTime        >= INPUTS_TIMEOUT)&&
+       (mTime-mDesiredCartVelRLastTime        >= INPUTS_TIMEOUT)){
+        if(mIKSolver.IsEnabled(IKWristR)){
+            mIKSolver.Suspend(true,IKArmPosR);
+            mIKSolver.Suspend(true,IKArmOriR);
+        }
+    }else{
+        mIKSolver.Suspend(false,IKArmPosR);
+        mIKSolver.Suspend(false,IKArmOriR);
+    }
+    if((mTime-mDesiredCartPosLLastTime        >= INPUTS_TIMEOUT)&&
+       (mTime-mDesiredCartVelLLastTime        >= INPUTS_TIMEOUT)){
+        if(mIKSolver.IsEnabled(IKWristL)){
+            mIKSolver.Suspend(true,IKArmPosL);
+            mIKSolver.Suspend(true,IKArmOriL);
+        }
+    }else{
+        mIKSolver.Suspend(false,IKArmPosL);
+        mIKSolver.Suspend(false,IKArmOriL);
     }
 }
 

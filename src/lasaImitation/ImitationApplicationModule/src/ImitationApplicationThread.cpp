@@ -344,11 +344,12 @@ void ImitationApplicationThread::SendCommands(){
         case 0:
             {
                 Bottle &cmd = mPorts[mCommandsPort[cmdCnt]]->prepare();
-                cmd.clear();
+                cmd.fromString(mCommands[cmdCnt].c_str());
+                /*cmd.clear();
                 vector<string> currCmds = Tokenize(RemoveSpaces(mCommands[cmdCnt]));
                 for(size_t j=0;j<currCmds.size();j++)
                     cmd.addString(currCmds[j].c_str());
-                
+                */
                 mPorts[mCommandsPort[cmdCnt]]->writeStrict();
                 cmdCnt++;
                 break;

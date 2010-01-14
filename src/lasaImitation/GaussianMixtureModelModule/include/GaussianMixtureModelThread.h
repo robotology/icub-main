@@ -48,24 +48,32 @@ private:
     BufferedPort<Vector>        mInputPort;
     BufferedPort<Vector>        mOutputPort;
     double                      mInputLastTime;
+
+    BufferedPort<Vector>        mSignalPort;
+    BufferedPort<Vector>        mDSOutputPort;
+    BufferedPort<Bottle>        mDSRpcPort;
+
+    Vector                      mSignalVector;
     
     int                         mIOSize;
     int                         mGMMIOSize;
     MathLib::Vector             mInputVector;
     MathLib::Vector             mOutputVector;
+    MathLib::Vector             mDSOutputVector;
     
     enum State{
-        GMM_IDLE = 0,
-        GMM_REPRO_INIT,
-        GMM_REPRO_INIT_PAUSE,
-        GMM_REPRO_RUN,
-        GMM_REPRO_PAUSE,
-        GMM_REPRO_END
+        GMMS_IDLE = 0,
+        GMMS_INIT,
+        GMMS_INIT_PAUSE,
+        GMMS_RUN,
+        GMMS_PAUSE,
+        GMMS_END
     };
     
     State                       mPrevState;
     State                       mState;
     State                       mNextState;
+    
     
     
     MathLib::GaussianMixture    mGMM;
@@ -90,6 +98,7 @@ private:
     double                      mGMMLambdaTreshold;
     double                      mGMMLambdaTau;
     
+    int                         mCurrDemoId;
     // Learning
 public:
     enum ProcessMode{
@@ -103,8 +112,16 @@ public:
         IM_KMEANS,
         IM_RAND
     };
+    enum RunMode{
+        RM_NONE = 0,
+        RM_REC,
+        RM_REPRO,
+        RM_CORR
+    };
     
 private:
+    RunMode                     mRunMode;
+
     ProcessMode                 mEMProcessMode;
     InitMode                    mEMInitMode;
     int                         mEMNbComponents;
@@ -117,6 +134,7 @@ private:
     
     char                        mEMDemosPath    [256];
     char                        mEMCorrDemosPath[256];
+    char                        mEMCurrModelPath[256];
     
     MathLib::Matrix             mEMWeights;
 
@@ -130,11 +148,13 @@ public:
             void    Load(const char* modelPath);
             void    Save(const char* modelPath);
 
-            void    InitRepro();
-            void    StartRepro();
-            void    PauseRepro();
-            void    ResumeRepro();
-            void    StopRepro();
+            void    SetRunMode(RunMode mode);
+    
+            void    InitRun();
+            void    StartRun();
+            void    PauseRun();
+            void    ResumeRun();
+            void    StopRun();
     
             void    SetEMDemosPath(const char* path);
             void    SetEMCorrDemosPath(const char* path);
@@ -142,15 +162,21 @@ public:
             void    SetEMInitialisationMode(InitMode mode);
             void    SetEMNbComponents(int nb);
             void    SetEMDemoLength(int len);
-
+            void    SetEMTimeSpan(double timeSpan);
+            void    SetCorrectionMode(bool mode);
+    
             bool    Learn();
 
             bool    ProcessRawDemos();
+    
+            void    GenerateDefaultRegression();
     
     virtual void run();
     virtual bool threadInit();
     virtual void threadRelease();
 
+protected:
+            void SendCommandToDataStreamer(const char *cmd);
 
 };
 

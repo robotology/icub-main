@@ -24,6 +24,7 @@
 
 #include <string.h>
 
+#define INPUT_TIMEOUT 0.4
 
 GaussianMixtureModelThread::GaussianMixtureModelThread(int period, const char* baseName)
 :RateThread(period)
@@ -65,13 +66,6 @@ void    GaussianMixtureModelThread::Init(){
     mGMMLambdaTreshold  = 2.0;
     mGMMLambdaTau       = 0.5;
     
-    
-    
-    
-    
-    
-    
-    
     mEMProcessMode  = PM_NONE;
     mEMInitMode     = IM_NONE;
     mEMNbComponents = 6;
@@ -80,7 +74,12 @@ void    GaussianMixtureModelThread::Init(){
     mEMNbDimensions = 0;
     strncpy(mEMDemosPath,    "./data/DemoTest/demo",256);
     strncpy(mEMCorrDemosPath,"./data/DemoTest/corr",256);
+    strncpy(mEMCurrModelPath,"./data/DemoTest",256);
     mEMTimeSpan     = 1.0;
+    
+    mCurrDemoId     = 0;
+    
+    mRunMode        = RM_NONE;
 
 }
 void    GaussianMixtureModelThread::Free(){
@@ -98,6 +97,18 @@ bool GaussianMixtureModelThread::threadInit()
     snprintf(portName,256,"/%s/output",mBaseName);
     mOutputPort.open(portName);
 
+    snprintf(portName,256,"/%s/signals",mBaseName);
+    mSignalPort.open(portName);
+    
+    snprintf(portName,256,"/%s/dataStreamOutput",mBaseName);
+    mDSOutputPort.open(portName);
+    
+    snprintf(portName,256,"/%s/dataStreamRpc",mBaseName);
+    mDSRpcPort.open(portName);
+
+    mSignalVector.resize(3);
+    mSignalVector = 0;
+    
     mTime               = 0.0;
     mPrevTime           =-1.0;
 
@@ -112,6 +123,10 @@ void GaussianMixtureModelThread::threadRelease()
     
     mInputPort.close();
     mOutputPort.close();
+    mSignalPort.close();
+    mDSOutputPort.close();
+    mDSRpcPort.close();
+    
 }
 
 void GaussianMixtureModelThread::run()
@@ -129,16 +144,24 @@ void GaussianMixtureModelThread::run()
     mMutex.wait();
 
     // Read data from input port
-    Vector *inputVec = mInputPort.read(false);
+    Vector *inputVec;
+    inputVec = mInputPort.read(false);
     if(inputVec!=NULL){
         if(inputVec->size()==mIOSize){
             YarpVectorToVector(*inputVec,mInputVector);
+            Pose6ToQPose(mInputVector, mDSOutputVector,false);
             mInputLastTime = mTime;
         }else cerr << "Error: Bad input size: "<<inputVec->size()<<" != "<<mIOSize<<endl;
     }
+    inputVec = mSignalPort.read(false);
+    if(inputVec!=NULL){
+        if(inputVec->size()==3){
+            mSignalVector = *inputVec;
+        }else cerr << "Error: Bad signal size: "<<inputVec->size()<<" != 3"<<endl;
+    }
     
-    if(mTime-mInputLastTime > 0.5)
-        mState = GMM_IDLE;
+    //if(mTime-mInputLastTime >= INPUT_TIMEOUT)
+    //    mNextState = GMMS_IDLE;
         
     bool bGMMIsRunning = false;
     
@@ -153,40 +176,38 @@ void GaussianMixtureModelThread::run()
     
     mNextState = mState;
     switch(mState){
-    case GMM_IDLE:
+    case GMMS_IDLE:
         break;
-    case GMM_REPRO_INIT:
-    case GMM_REPRO_INIT_PAUSE:
-        mGMMTime        = 0.0;
-        mGMMInputV(0)   = mGMMInternalTimeSpan*mGMMTime/mGMMReproTime;
-        mGMMInput(0,0)  = mGMMInputV(0); 
-        {
-            MathLib::Vector lambda1,lambda2;
+    case GMMS_INIT:
+    case GMMS_INIT_PAUSE:
+        if((mRunMode == RM_REPRO)||(mRunMode == RM_CORR)){
+            mGMMTime        = 0.0;
+            mGMMInputV(0)   = mGMMInternalTimeSpan*mGMMTime/mGMMReproTime;
+            mGMMInput(0,0)  = mGMMInputV(0); 
+            {
+                MathLib::Vector lambda1,lambda2;
+                
+                // Choosing best regression quaternion
+                Pose6ToQPose(mInputVector, mGMMCurrState,false);
+                lambda1 = mGMM.getRegressionOffset(mGMMInputV, mGMMCurrState, mGMMInComp, mGMMOutComp);
+
+                Pose6ToQPose(mInputVector, mGMMCurrState,true);
+                lambda2 = mGMM.getRegressionOffset(mGMMInputV, mGMMCurrState, mGMMInComp, mGMMOutComp);
             
-            // Choosing best regression quaternion
-            Pose6ToQPose(mInputVector, mGMMCurrState,false);
-            lambda1 = mGMM.getRegressionOffset(mGMMInputV, mGMMCurrState, mGMMInComp, mGMMOutComp);
-
-            Pose6ToQPose(mInputVector, mGMMCurrState,true);
-            lambda2 = mGMM.getRegressionOffset(mGMMInputV, mGMMCurrState, mGMMInComp, mGMMOutComp);
-        
-            if(lambda1.Norm2()<lambda2.Norm2()) mGMMLambda = lambda1;
-            else                                mGMMLambda = lambda2;
+                if(lambda1.Norm2()<lambda2.Norm2()) mGMMLambda = lambda1;
+                else                                mGMMLambda = lambda2;
+            }
+            bGMMIsRunning = true;
         }
-        bGMMIsRunning = true;
-        if(mState == GMM_REPRO_INIT)
-            mNextState = GMM_REPRO_RUN;
+        if(mState == GMMS_INIT)
+            mNextState = GMMS_RUN;
         break;
 
-    case GMM_REPRO_RUN:
-        mGMMTime       += dt;
-        if(mGMMTime>=mGMMReproTime)
-            mNextState = GMM_REPRO_END;
-
-    case GMM_REPRO_PAUSE:
-        mGMMInputV(0)   = mGMMInternalTimeSpan*mGMMTime/mGMMReproTime;
-        mGMMInput(0,0)  = mGMMInputV(0); 
-        {
+    case GMMS_RUN:
+        if((mRunMode == RM_REPRO)||(mRunMode == RM_CORR)){
+            mGMMTime       += dt;
+            mGMMInputV(0)   = mGMMInternalTimeSpan*mGMMTime/mGMMReproTime;
+            mGMMInput(0,0)  = mGMMInputV(0); 
             double norm = mGMMLambda.Norm();
             if(norm > mGMMLambdaTreshold){
                 mGMMLambda += (mGMMLambda*(mGMMLambdaTreshold/norm-1.0))*dt/mGMMLambdaTau;
@@ -194,17 +215,24 @@ void GaussianMixtureModelThread::run()
                 //for(int i=0;i<7;i++)
                 //    mGMMLambda(i) += (-mGMMLambda(i) + mGMMLambda(i)/(norm/2.0))*dt/1.0;
             }
+            if(mGMMTime>=mGMMReproTime)
+                mNextState = GMMS_END;
+            bGMMIsRunning = true;
         }
-        bGMMIsRunning = true;
-
+        break;
+    case GMMS_PAUSE:
+        if((mRunMode == RM_REPRO)||(mRunMode == RM_CORR)){
+        }
         break;
 
-    case GMM_REPRO_END:
-        mGMMTime        = mGMMReproTime;
-        mGMMInputV(0)   = mGMMInternalTimeSpan;
-        mGMMInput(0,0)  = mGMMInputV(0); 
-        
-        bGMMIsRunning = true;
+    case GMMS_END:
+        if((mRunMode == RM_REPRO)||(mRunMode == RM_CORR)){
+            mGMMTime        = mGMMReproTime;
+            mGMMInputV(0)   = mGMMInternalTimeSpan;
+            mGMMInput(0,0)  = mGMMInputV(0); 
+            
+            bGMMIsRunning = true;
+        }
         break;
     }
     
@@ -223,6 +251,13 @@ void GaussianMixtureModelThread::run()
         VectorToYarpVector(mGMMTargetV,outputVec);
         mOutputPort.write();
     }
+    
+    if(mTime-mInputLastTime < INPUT_TIMEOUT){
+        Vector &outputVec = mDSOutputPort.prepare();
+        VectorToYarpVector(mDSOutputVector,outputVec);
+        mDSOutputPort.write();
+    }
+
     mMutex.post();
 }
 
@@ -233,6 +268,7 @@ void    GaussianMixtureModelThread::Load(const char* modelPath){
     bGMMIsReady = mGMM.loadParams(filename);
     if(!bGMMIsReady) cerr << "Error while loading file "<<filename<<endl;
     else cerr << "File "<<filename<<" sucessfully loaded"<<endl;
+    strncpy(mEMCurrModelPath,modelPath,256);
     mMutex.post();
 }
 
@@ -246,34 +282,78 @@ void    GaussianMixtureModelThread::Save(const char* modelPath){
     }else{
         cerr << "Error while saving file "<<filename<<endl;
     }
+    strncpy(mEMCurrModelPath,modelPath,256);
     mMutex.post();
 }
 
-void    GaussianMixtureModelThread::InitRepro(){
+void    GaussianMixtureModelThread::SetRunMode(GaussianMixtureModelThread::RunMode mode){
+    mRunMode = mode;
+}
+
+void    GaussianMixtureModelThread::InitRun(){
     mMutex.wait();
-    mNextState = GMM_REPRO_INIT_PAUSE;
+    mNextState = GMMS_INIT_PAUSE;
+
+    char txt[256];
+    if((mRunMode == RM_REC)||(mRunMode == RM_CORR)){
+        SendCommandToDataStreamer("run stop");
+        SendCommandToDataStreamer("rec set");
+        snprintf(txt,256,"data lineSize %d",mGMMIOSize+1+(mRunMode==RM_REC?0:1));
+        SendCommandToDataStreamer(txt);
+        snprintf(txt,256,"data maxSize %d",4096);
+        SendCommandToDataStreamer(txt);
+        SendCommandToDataStreamer("data timeOn");
+        SendCommandToDataStreamer("data clear");
+    }
     mMutex.post();
 }
-void    GaussianMixtureModelThread::StartRepro(){
+void    GaussianMixtureModelThread::StartRun(){
     mMutex.wait();
-    mNextState = GMM_REPRO_INIT;
+    mNextState = GMMS_INIT;
+    char txt[256];
+    if((mRunMode == RM_REC)||(mRunMode == RM_CORR)){
+        SendCommandToDataStreamer("run stop");
+        SendCommandToDataStreamer("rec set");
+        snprintf(txt,256,"data lineSize %d",mGMMIOSize+1+(mRunMode==RM_REC?0:1));
+        SendCommandToDataStreamer(txt);
+        snprintf(txt,256,"data maxSize %d",4096);
+        SendCommandToDataStreamer(txt);
+        SendCommandToDataStreamer("data timeOn");
+        SendCommandToDataStreamer("data clear");
+        SendCommandToDataStreamer("run start");
+    }
     mMutex.post();
 }
-void    GaussianMixtureModelThread::PauseRepro(){
+void    GaussianMixtureModelThread::PauseRun(){
     mMutex.wait();
-    if(mState == GMM_REPRO_RUN)
-        mNextState = GMM_REPRO_PAUSE;
+    if(mState == GMMS_RUN){
+        mNextState = GMMS_PAUSE;
+        if((mRunMode == RM_REC)||(mRunMode == RM_CORR)){
+            SendCommandToDataStreamer("run pause");
+        }
+    }
     mMutex.post();
 }
-void    GaussianMixtureModelThread::ResumeRepro(){
+void    GaussianMixtureModelThread::ResumeRun(){
     mMutex.wait();
-    if(mState == GMM_REPRO_PAUSE)
-        mNextState = GMM_REPRO_RUN;
+    if(mState == GMMS_PAUSE){
+        mNextState = GMMS_RUN;
+        if((mRunMode == RM_REC)||(mRunMode == RM_CORR)){
+            SendCommandToDataStreamer("run resume");
+        }
+    }
     mMutex.post();
 }
-void    GaussianMixtureModelThread::StopRepro(){
+void    GaussianMixtureModelThread::StopRun(){
     mMutex.wait();
-    mNextState = GMM_IDLE;
+    mNextState = GMMS_IDLE;
+    if((mRunMode == RM_REC)||(mRunMode == RM_CORR)){
+        SendCommandToDataStreamer("run stop");
+        char txt[256];
+        snprintf(txt,256,"data save %s/datalog%03d.txt",(mRunMode==RM_REC?mEMDemosPath:mEMCorrDemosPath),mCurrDemoId);
+        SendCommandToDataStreamer(txt);
+    }
+
     mMutex.post();
 }
 
@@ -306,6 +386,11 @@ void    GaussianMixtureModelThread::SetEMNbComponents(int nb){
 void    GaussianMixtureModelThread::SetEMDemoLength(int len){
     mMutex.wait();
     mEMDemoLength = len;
+    mMutex.post();
+}
+void    GaussianMixtureModelThread::SetEMTimeSpan(double timeSpan){
+    mMutex.wait();
+    mEMTimeSpan = timeSpan;
     mMutex.post();
 }
 
@@ -453,9 +538,11 @@ bool    GaussianMixtureModelThread::Learn(){
     if(mEMProcessMode==PM_SIMPLE){
         mGMM.doEM(fullData);
         snprintf(filename,256,"%s/gmmParams.txt",mEMDemosPath);
+        strncpy(mEMCurrModelPath,mEMDemosPath,256);
     }else{
         mGMM.doEM(fullData,fullWeights);
         snprintf(filename,256,"%s/gmmParams.txt",mEMCorrDemosPath);        
+        strncpy(mEMCurrModelPath,mEMCorrDemosPath,256);
     }
     
     cout << "Saving model: "<<filename<<endl;
@@ -464,6 +551,38 @@ bool    GaussianMixtureModelThread::Learn(){
     bGMMIsReady = true;
     mMutex.post();
     return true;
+}
+
+void GaussianMixtureModelThread::GenerateDefaultRegression(){
+    if(!bGMMIsReady) return;
+
+    mMutex.wait();
+    
+    MathLib::Matrix in(mEMDemoLength,1);
+    for(int j=0;j<mEMDemoLength;j++)
+        in(j,0) = mEMTimeSpan*double(j)/double(mEMDemoLength-1);
+
+    
+    MathLib::Matrix *sigmas; 
+    sigmas = new MathLib::Matrix[mEMDemoLength];
+    MathLib::Matrix res = mGMM.doRegression(in,sigmas,mGMMInComp,mGMMOutComp);
+
+    int D = mGMMOutComp.Size();
+    MathLib::Matrix sig(mEMDemoLength,D);
+    for(int i=0;i<mEMDemoLength;i++){
+        for(int j=0;j<D;j++){
+            sig(i,j) = sigmas[i](j,j);    
+        }
+    }
+    delete [] sigmas;
+
+    char filename[256];
+    snprintf(filename,256,"%s/regMean.txt",mEMCurrModelPath);
+    res.Save(filename);
+    snprintf(filename,256,"%s/regSigma.txt",mEMCurrModelPath);
+    sig.Save(filename);
+
+    mMutex.post();
 }
 
 bool    GaussianMixtureModelThread::ProcessRawDemos(){
@@ -530,11 +649,16 @@ bool    GaussianMixtureModelThread::ProcessRawDemos(){
 
 
 
-
-
-
-
-
+void GaussianMixtureModelThread::SendCommandToDataStreamer(const char *cmd){
+    Bottle &cmdBottle = mDSRpcPort.prepare();
+    /*cmdBottle.clear();
+    vector<string> currCmds = Tokenize(RemoveSpaces(cmd));
+    for(size_t j=0;j<currCmds.size();j++)
+        cmdBottle.addString(currCmds[j].c_str());
+    */
+    cmdBottle.fromString(cmd);
+    mDSRpcPort.writeStrict();
+}
 
 
 

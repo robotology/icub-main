@@ -114,12 +114,12 @@ private:
     MathLib::IKGroupSolver   mIKSolver;
     
     enum SolverID{
-        IKWristR=0,
-        IKWristL,
-        IKArmPosR,
+        IKArmPosR = 0,
         IKArmPosL,
         IKArmOriR,
         IKArmOriL,
+        IKWristR,
+        IKWristL,
         IKEye,
         IKSize};
         

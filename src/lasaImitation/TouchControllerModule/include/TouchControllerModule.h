@@ -63,12 +63,15 @@ Input ports:
           - [limt] lim: set limit values for translational feedback
           - [limr] lim: set limit values for rotational feedback
           - [sid] id: set the next touched mouse with given id
-
+          - [load]: load previousely saved mice map (saves on exit)
+          - [show]: show output on terminal
+          - [hide]: hide outout on terminal
     - /TouchController/moduleName/frameOfRef: externally provided frame of reference for the touch device
 
 Output ports:
 
     - /TouchController/moduleName/velocity: a vector of size 6 providing sensed velocities for 6-dof
+    - /TouchController/moduleName/signal:   a vector of size 3 providing the follwing signals: touch detected, reset (tap anywhere), click (on last pad)
 
 
 \section in_files_sec Input Data Files
