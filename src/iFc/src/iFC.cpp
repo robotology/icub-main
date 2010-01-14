@@ -1,6 +1,6 @@
 #include <iostream>
 #include <iomanip>
-#include "include/iFC.h"
+#include "iFC.h"
 
 using namespace std;
 using namespace yarp;
