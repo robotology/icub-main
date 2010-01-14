@@ -447,12 +447,12 @@ bool ClientCartesianController::setDOF(const Vector &newDof, Vector &curDof)
 
     if (reply.get(0).asVocab()==IKINCARTCTRL_VOCAB_REP_ACK)
     {        
-        if (Bottle *dofDof=reply.get(1).asList())
+        if (Bottle *dofPart=reply.get(1).asList())
         {                        
-            curDof.resize(dofDof->size());
+            curDof.resize(dofPart->size());
 
-            for (int i=0; i<dofDof->size(); i++)
-                curDof[i]=dofDof->get(i).asDouble();
+            for (int i=0; i<dofPart->size(); i++)
+                curDof[i]=dofPart->get(i).asDouble();
 
             return true;
         }
