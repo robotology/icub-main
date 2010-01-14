@@ -1,4 +1,4 @@
- /**
+  /**
    * @ingroup icub_module
    *
    * \defgroup zeroForceControl zeroForceControl
@@ -42,7 +42,7 @@ const int FT_VALUES = 6;
 const int ARM_JNT = 4;
 
 const bool verbose = false;
-const int CPRNT = 250;
+const int CPRNT = 100;
 const int CALIBRATION_OK = true; // should be true when FT calibration will be ok
 
 const double initPosition[4] = {-30.0, 30.0, 0.0, 40.0};
@@ -246,7 +246,7 @@ public:
 		  
 		  for(int i=0;i<ARM_JNT;i++)
 		  {
-			  ipos->positionMove(i,initPosition[i]);
+			  //ipos->positionMove(i,initPosition[i]);
 		  }
 			  
 
@@ -256,7 +256,7 @@ public:
 		  {
 			  check=false;
 			  count=0;
-			  while(!check && count < 100)
+			  while(!check && count < 10)
 			  {
 				  ipos->checkMotionDone(i,&check);
 				  count++;
@@ -477,11 +477,11 @@ public:
 	  void threadRelease()
 	  {
 		  fprintf(stderr,"disabling amps...\n");
-		  for(int i=0;i<ARM_JNT;i++)
-			  iamps->disableAmp(i);
-		  fprintf(stderr,"disabling pids...\n");
-		  for(int i=0;i<ARM_JNT;i++)
-			  ipids->disablePid(i);
+		  //for(int i=0;i<ARM_JNT;i++)
+          //	  iamps->disableAmp(i);
+		  //fprintf(stderr,"disabling pids...\n");
+		  //for(int i=0;i<ARM_JNT;i++)
+          //	  ipids->disablePid(i);
 		  fprintf(stderr,"setting old PIDS...\n");
 		  for(int i=0;i<ARM_JNT;i++)
 			  ipids->setPid(i,iCubPid[i]);

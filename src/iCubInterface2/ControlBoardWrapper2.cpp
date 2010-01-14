@@ -152,13 +152,13 @@ bool SubDevice::attach(yarp::dev::PolyDriver *d, const std::string &k)
     if (iTimed!=0)
         std::cout << id << ":using IPreciselyTimed interface"<<endl;
 
-    if (iMode!=0)
+    if (iMode==0)
         DEBUG_CW2("--> Warning iMode not valid interface\n");
 
-    if (iTorque!=0)
+    if (iTorque==0)
         DEBUG_CW2("--> Warning iTorque not valid interface\n");
 
-    if (iOpenLoop!=0)
+    if (iOpenLoop==0)
         DEBUG_CW2("--> Warning iOpenLoop not valid interface\n");
 
     int deviceJoints=0;

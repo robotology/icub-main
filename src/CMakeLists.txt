@@ -177,6 +177,8 @@ ENDIF (ARTOOLKITPLUS_FOUND)
     ADD_SUBDIRECTORY(scriptSequencer)
     ADD_SUBDIRECTORY(demoReachManager_IIT_ISR)
     ADD_SUBDIRECTORY(demoGraspManager_IIT_ISR)
+    ADD_SUBDIRECTORY(ftSensorTransformation)
+	ADD_SUBDIRECTORY(zeroForceControl)
   ENDIF (GSL_FOUND)
   
   IF (ODE_FOUND)
