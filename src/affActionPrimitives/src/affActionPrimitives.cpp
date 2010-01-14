@@ -271,6 +271,12 @@ bool affActionPrimitives::configHandSeq(Property &opt)
 /************************************************************************/
 bool affActionPrimitives::open(Property &opt)
 {
+    if (configured)
+    {
+        printMessage("WARNING: already configured\n");
+        return true;
+    }
+
     if (!opt.check("local"))
     {
         printMessage("ERROR: option \"local\" is missing\n");
@@ -1159,16 +1165,17 @@ affActionPrimitivesLayer2::affActionPrimitivesLayer2(Property &opt) :
 
 /************************************************************************/
 void affActionPrimitivesLayer2::init()
-{
-    // default values
-    wrist_joint=8;
-    wrist_thres=1e9;
-
+{    
     skipFatherPart=false;
+    meConfigured=false;
     enableWristCheck=false;
 
     disableWristDof=NULL;
     enableWristDof=NULL;
+
+    // default values
+    wrist_joint=8;
+    wrist_thres=1e9;
 }
 
 
@@ -1200,8 +1207,14 @@ void affActionPrimitivesLayer2::run()
 /************************************************************************/
 bool affActionPrimitivesLayer2::open(Property &opt)
 {
-    if (!configured && !skipFatherPart)
+    if (!skipFatherPart)
         affActionPrimitivesLayer1::open(opt);
+
+    if (meConfigured)
+    {
+        printMessage("WARNING: already configured\n");
+        return true;
+    }
 
     if (configured)
     {    
@@ -1237,7 +1250,7 @@ bool affActionPrimitivesLayer2::open(Property &opt)
 
         polyHand->view(pidCtrl);
 
-        return true;
+        return meConfigured=true;
     }
     else
         return false;

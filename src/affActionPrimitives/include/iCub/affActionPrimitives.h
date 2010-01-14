@@ -631,6 +631,7 @@ protected:
     double wrist_thres;
 
     bool skipFatherPart;
+    bool meConfigured;
     bool enableWristCheck;
 
     yarp::dev::IPidControl *pidCtrl;
