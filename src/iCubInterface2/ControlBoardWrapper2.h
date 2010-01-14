@@ -35,7 +35,7 @@
 #include <vector>
 
 //
-#define CONTROLBOARDWRAPPER2_DEBUG
+//#define CONTROLBOARDWRAPPER2_DEBUG
 const int DEBUG_PRINTF_BUFFER_LENGTH=255;
 #include <stdarg.h>
 inline void DEBUG_CW2(const char *fmt, ...)
