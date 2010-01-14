@@ -515,7 +515,7 @@ bool affActionPrimitives::pushAction(const bool execArm, const Vector &x, const 
         action.execHand=execHand;
         action.handWP=handWP;
         action.clb=clb;
-    
+
         actionsQueue.push_back(action);
         mutex->post();
 
@@ -542,9 +542,8 @@ bool affActionPrimitives::pushAction(const Vector &x, const Vector &o,
             {   
                 Vector dummy(1);
 
-                // reserve the callback only for the reaching part
-                // since it will be executed whenever the combined action
-                // is accomplished
+                // action is combined, hence it's ok to resever
+                // the callback at the end of reaching part
                 pushAction(true,x,o,execTime,true,q[0],clb);
 
                 // decompose hand action in sum of fingers sequences
@@ -602,7 +601,8 @@ bool affActionPrimitives::pushAction(const string &handSeqKey,
                 pushAction(false,dummy,dummy,ACTIONPRIM_DISABLE_EXECTIME,true,q[i],NULL);
 
             // reserve the callback whenever the last hand WP is achieved
-            pushAction(false,dummy,dummy,ACTIONPRIM_DISABLE_EXECTIME,true,q[i],clb);
+            if (i<q.size())
+                pushAction(false,dummy,dummy,ACTIONPRIM_DISABLE_EXECTIME,true,q[i],clb);
 
             return true;
         }
@@ -773,17 +773,17 @@ void affActionPrimitives::run()
     latchHandMoveDone=handMoveDone;
 
     if (latchArmMoveDone && latchHandMoveDone && (t-latchTimer>waitTmo))
-        if (!execQueuedAction())
-        {    
-            RES_EVENT(motionDoneEvent)->signal();
-
-            // execute action-end callback
-            if (actionClb)
-            {    
-                actionClb->exec();
-                actionClb=NULL;
-            }
+    {
+        // execute action-end callback
+        if (actionClb)
+        {            
+            actionClb->exec();
+            actionClb=NULL;
         }
+    
+        if (!execQueuedAction())
+            RES_EVENT(motionDoneEvent)->signal();
+    }
 }
 
 
@@ -1140,6 +1140,23 @@ bool affActionPrimitivesLayer1::tap(const Vector &x1, const Vector &o1,
 
 
 /************************************************************************/
+affActionPrimitivesLayer2::affActionPrimitivesLayer2() :
+                           affActionPrimitivesLayer1()
+{
+    init();
+}
+
+
+/************************************************************************/
+affActionPrimitivesLayer2::affActionPrimitivesLayer2(Property &opt) :
+                           affActionPrimitivesLayer1(opt)
+{
+    init();
+    open(opt);
+}
+
+
+/************************************************************************/
 void affActionPrimitivesLayer2::init()
 {
     // default values
@@ -1163,9 +1180,14 @@ void affActionPrimitivesLayer2::run()
         if (pidCtrl->getOutput(wrist_joint,&out))
         {
             out=out<0.0?-out:out;
-    
+
             if (out>wrist_thres)
+            {
+                printMessage("contact detected on the wrist joint %d: (%g>%g)\n",
+                             wrist_joint,out,wrist_thres);
+
                 cartCtrl->stopControl();
+            }
         }
     }
 
@@ -1176,7 +1198,7 @@ void affActionPrimitivesLayer2::run()
 /************************************************************************/
 bool affActionPrimitivesLayer2::open(Property &opt)
 {
-    if (affActionPrimitivesLayer1::open(opt))
+    if (configured)
     {    
         if (Bottle *bWrist=opt.find("wrist_joint").asList())
         {

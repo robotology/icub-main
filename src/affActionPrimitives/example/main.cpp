@@ -147,6 +147,8 @@ Windows, Linux
 #define USE_LEFT    0
 #define USE_RIGHT   1
 
+#define AFFACTIONPRIMITIVESLAYER    affActionPrimitivesLayer1
+
 using namespace std;
 using namespace yarp;
 using namespace yarp::os;
@@ -160,11 +162,11 @@ class exampleModule: public RFModule
 protected:
     string partUsed;
 
-	affActionPrimitivesLayer1 *actionL;
-    affActionPrimitivesLayer1 *actionR;
-    affActionPrimitivesLayer1 *action;
-	BufferedPort<Bottle>       inPort;
-    Port                       rpcPort;
+	AFFACTIONPRIMITIVESLAYER *actionL;
+    AFFACTIONPRIMITIVESLAYER *actionR;
+    AFFACTIONPRIMITIVESLAYER *action;
+	BufferedPort<Bottle>      inPort;
+    Port                      rpcPort;
 
     Vector graspOrienL, graspOrienR;
     Vector graspDispL,  graspDispR;
@@ -359,7 +361,7 @@ public:
         if (partUsed=="both_arms" || partUsed=="left_arm")
         {    
             cout<<"***** Instantiating primitives for left_arm"<<endl;
-            actionL=new affActionPrimitivesLayer1(optionL);
+            actionL=new AFFACTIONPRIMITIVESLAYER(optionL);
 
             if (!actionL->isValid())
             {
@@ -373,7 +375,7 @@ public:
         if (partUsed=="both_arms" || partUsed=="right_arm")
         {    
             cout<<"***** Instantiating primitives for right_arm"<<endl;
-            actionR=new affActionPrimitivesLayer1(optionR);
+            actionR=new AFFACTIONPRIMITIVESLAYER(optionR);
 
             if (!actionR->isValid())
             {

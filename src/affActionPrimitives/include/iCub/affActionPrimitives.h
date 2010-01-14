@@ -649,7 +649,9 @@ protected:
         {
             yarp::sig::Vector dummyRet;
             cartCtrl->setDOF(sw,dummyRet);
-            *checkFlag=!*checkFlag;
+
+            if (checkFlag)
+                *checkFlag=!*checkFlag;
         }
     };
 
@@ -660,10 +662,23 @@ protected:
     virtual void run();
 
 public:
-    affActionPrimitivesLayer2() : affActionPrimitivesLayer1() { }
+    /**
+    * Default Constructor. 
+    */
+    affActionPrimitivesLayer2();
 
-    affActionPrimitivesLayer2(yarp::os::Property &opt) : affActionPrimitivesLayer1(opt) { }
+    /**
+    * Constructor. 
+    * @param opt the Property used to configure the object after its
+    *            creation.
+    */
+    affActionPrimitivesLayer2(yarp::os::Property &opt);
 
+    /**
+    * Destructor. 
+    *  
+    * \note it calls the close() method. 
+    */
     virtual ~affActionPrimitivesLayer2();
 
     /**
