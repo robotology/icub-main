@@ -20,9 +20,9 @@
 
 #include <iostream>
 #include <iomanip>
-#include <string>
+#include <string.h>
 
-#include "iFC.h"
+#include "iCub/iFC.h"
 #include "iCub/iKinFwd.h"
 
 using namespace yarp;

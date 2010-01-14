@@ -124,6 +124,8 @@ Eye2world::WorkerThread::WorkerThread(const OptionManager& moduleOptions,
 	v[1] = table.find("y").asDouble();
 	v[2] = table.find("z").asDouble();
 
+	cout << "Table position: " << v.toString() << endl;
+
 	map<const string, Property*>::const_iterator itr;
 	for (itr = cams.begin(); itr != cams.end(); ++itr) {
 
