@@ -2026,6 +2026,7 @@ bool CanBusMotionControl::getControlModeRaw(int j, int *v)
         break;
     }
 
+    DEBUG("Returning %d %d\n", *v, s);
 	return true;
 }
 

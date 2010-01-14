@@ -201,21 +201,20 @@ public:
 * Allows also deferred attach/detach of a subdevice.
 */
 class ControlBoardWrapper2 : public DeviceDriver, 
-    public RateThread,
-    public IPidControl,
-    public IPositionControl,
-    public IVelocityControl,
-    public IEncoders,
-    public IAmplifierControl,
-    public IControlLimits,
-    public IControlCalibration,
-    public IControlCalibration2,
-	public IOpenLoopControl,
-	public IMultipleWrapper,
-    public IAxisInfo
-                             //    public ITorqueControl,
-                             //    public IControlMode
-
+                             public RateThread,
+                             public IPidControl,
+                             public IPositionControl,
+                             public IVelocityControl,
+                             public IEncoders,
+                             public IAmplifierControl,
+                             public IControlLimits,
+                             public IControlCalibration,
+                             public IControlCalibration2,
+                             public IOpenLoopControl,
+                             public ITorqueControl,
+                             public IControlMode,
+                             public IMultipleWrapper,
+                             public IAxisInfo
 {
 private:
     bool spoke;
