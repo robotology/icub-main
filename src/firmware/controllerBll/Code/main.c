@@ -37,7 +37,7 @@
 byte	_board_ID = 16;	
 char    _additional_info [32];
 UInt8    mainLoopOVF=0;
-word    _build_number = 33;
+word    _build_number = 34;
 int     _countBoardStatus =0;
 Int16   _flash_version=0; 
 UInt8   BUS_OFF=false;
@@ -62,6 +62,7 @@ extern sDutyControlBL DutyCycleReq[2];
 //********************
 
 void decouple_positions(void);
+void check_range(byte, Int16, Int32 *);
 void decouple_dutycycle(Int32 *);
 
 #ifndef VERSION
@@ -98,7 +99,6 @@ void main(void)
 	Int32 kpp=1;
 	Int16 test =0;
 	byte first_step=0;
-	UInt32 TrqLimitCount =0;
 	
 	//velocity and acceleration estimation
 	byte j=0;
@@ -326,14 +326,19 @@ void main(void)
 	    // untill the joint limit is reached
 #if   VERSION == 0x0153 || VERSION == 0x0157 || VERSION == 0x0173 
 		_position_old[0]=_position[0]; 
-		_position[0]=Filter_Bit (get_relative_position_abs_ssi(0));
-		_position_old[1]=_position[1]; 
-		_position[1]=Filter_Bit (get_position_abs_ssi(1));
+		if(!get_error_abs_ssi(0)==ERR_ABS_SSI)
+			_position[0]=Filter_Bit (get_relative_position_abs_ssi(0));
+		
+		_position_old[1]=_position[1];
+		if(!get_error_abs_ssi(1)==ERR_ABS_SSI) 
+			_position[1]=Filter_Bit (get_position_abs_ssi(1));
 #elif VERSION == 0x0172
-		_position_old[0]=_position[0]; 
-		_position[0]=Filter_Bit (get_relative_position_abs_ssi(0));
-		_position_old[1]=_position[1]; 
-		_position[1]=Filter_Bit (get_relative_position_abs_ssi(1));
+		_position_old[0]=_position[0];
+		if(!get_error_abs_ssi(0)==ERR_ABS_SSI) 
+			_position[0]=Filter_Bit (get_relative_position_abs_ssi(0));
+		_position_old[1]=_position[1];
+		if(!get_error_abs_ssi(1)==ERR_ABS_SSI) 
+			_position[1]=Filter_Bit (get_relative_position_abs_ssi(1));
 #elif VERSION ==0x0155
 		_position_old[0]=_position[0];
 		_position[0]=Filter_Bit (get_position_abs_ssi(0));
@@ -343,7 +348,8 @@ void main(void)
 	 	for (i=0; i<JN; i++) 
 		{
 		_position_old[i]=_position[i];
-		_position[i]=Filter_Bit (get_position_abs_ssi(i));
+		if(!get_error_abs_ssi(i)==ERR_ABS_SSI)
+			_position[i]=Filter_Bit (get_position_abs_ssi(i));
 		}
 #endif 
 
@@ -435,141 +441,8 @@ void main(void)
 		//for (i=0; i<JN; i++) check_in_position_calib(i); 
 	
 //******************************************* POSITION LIMIT CHECK ***************************/
-	/* check for position in range */
- 		for (i=0; i<JN; i++)
- 		{
- 			if (_control_mode[i] == MODE_POSITION)
- 			{
- 	     		if  (_position[i] > (_max_position[i]-_safeband[i]) ||  (_position[i] < (_min_position[i]+_safeband[i])))   
-	 			{			
-					_ko[i]=0;   //remove the PWM offset if it is out of limits 
-					#ifdef DEBUG_CONTROL_MODE
-					can_printf("OUT of LIMITS ax:%d", i);	
-					#endif
-					
-					if (_safeband[i]>0)
-					{
-						if  ((_position[i] > (_max_position[i]-_safeband[i])) && (_desired[i]>(_max_position[i]-_safeband[i])))
-						{
-							_desired[i]=(_max_position[i]-_safeband[i]); 
-							_integral[i] = 0; 
-							_set_point[i] = _desired[i];
-							init_trajectory (i, _desired[i], _desired[i], 1); 
-						}
-						
-						if  ((_position[i] < (_min_position[i]+_safeband[i])) && (_desired[i]<(_min_position[i]+_safeband[i])))
-						{
-							_desired[i]=(_min_position[i]+_safeband[i]); 
-							_integral[i] = 0; 
-							_set_point[i] = _desired[i];
-							init_trajectory (i, _desired[i], _desired[i], 1); 
-						}
-					}
-					else	
-					{
-						if  ((_position[i] > (_max_position[i]+_safeband[i])) && (_desired[i]>(_max_position[i]-_safeband[i])))
-						{
-							#ifdef DEBUG_CONTROL_MODE
-							can_printf("OUT of LIMITS MAX ax:%d", i);	
-							#endif
-							_desired[i]=_max_position[i]; 
-							_integral[i] = 0; 
-							_set_point[i] = _desired[i];
-							init_trajectory (i, _desired[i], _desired[i], 1); 
-						}
-						
-						if  ((_position[i] < (_min_position[i]-_safeband[i])) && (_desired[i]<(_min_position[i]+_safeband[i])))
-						{
-							#ifdef DEBUG_CONTROL_MODE
-							can_printf("OUT of LIMITS MIN ax:%d", i);	
-							#endif
-							_desired[i]=_min_position[i]; 
-							_integral[i] = 0; 
-							_set_point[i] = _desired[i];
-							init_trajectory (i, _desired[i], _desired[i], 1); 
-						}
-						
-					}
-	 			} 
- 			}
- 			if (_control_mode[i] == MODE_OPENLOOP)
- 			{
-	 			if  (_position[i] > (_max_position[i]-_safeband[i]) ||  (_position[i] < (_min_position[i]+_safeband[i])))   
-	 			{			
-	 				_control_mode[i] = MODE_POSITION; //	
-					_ko[i]=0;  //remove the PWM offset if it is out of limits
-					if (_safeband[i]>0)
-					{
-						if  ((_position[i] > (_max_position[i]-_safeband[i])) && (_desired[i]>(_max_position[i]-_safeband[i])))
-						{
-							_desired[i]=(_max_position[i]-_safeband[i]); 
-							_integral[i] = 0; 
-							_set_point[i] = _desired[i];
-							init_trajectory (i, _desired[i], _desired[i], 1); 
-						}
-						
-						if  ((_position[i] < (_min_position[i]+_safeband[i])) && (_desired[i]<(_min_position[i]+_safeband[i])))
-						{
-							_desired[i]=(_min_position[i]+_safeband[i]); 
-							_integral[i] = 0; 
-							_set_point[i] = _desired[i];
-							init_trajectory (i, _desired[i], _desired[i], 1); 
-						}
-					}
-					else	
-					{
-						if  ((_position[i] > (_max_position[i]+_safeband[i])) && (_desired[i]>(_max_position[i]-_safeband[i])))
-						{
-							#ifdef DEBUG_CONTROL_MODE
-							can_printf("OUT of LIMITS MAX ax:%d", i);	
-							#endif
-							_desired[i]=_max_position[i]; 
-							_integral[i] = 0; 
-							_set_point[i] = _desired[i];
-							init_trajectory (i, _desired[i], _desired[i], 1); 
-						}
-						
-						if  ((_position[i] < (_min_position[i]-_safeband[i])) && (_desired[i]<(_min_position[i]+_safeband[i])))
-						{
-							#ifdef DEBUG_CONTROL_MODE
-							can_printf("OUT of LIMITS MIN ax:%d", i);	
-							#endif
-							_desired[i]=_min_position[i]; 
-							_integral[i] = 0; 
-							_set_point[i] = _desired[i];
-							init_trajectory (i, _desired[i], _desired[i], 1); 
-						}
-					}
-					#ifdef DEBUG_CONTROL_MODE
-					can_printf("MODE CHANGED TO POSITION, OUT of LIMITS ax:%d", i);	
-	 			    #endif 
-	 			} 				
- 			}
- 			
- 			//************************** TO BE CHANGED!!!! 	*******************************/		
-            #ifdef TORQUE_CNTRL
- 
- 			if (_control_mode[i] == MODE_TORQUE ||
-			 	_control_mode[i] == MODE_IMPEDANCE)
- 			{
-	 			if  (_position[i] > _max_position[i] ||
-	 			     _position[i] < _min_position[i])   
-	 			{			
-					PWMoutput[i] = 0;
-					TrqLimitCount++;
-					if (TrqLimitCount>=500)
-					{
-					#ifdef DEBUG_CONTROL_MODE
-						can_printf("MODE TORQUE OUT LIMITS ax:%d", i);	
-						TrqLimitCount=0;
-				    #endif 
-					}
-	 			} 				
- 			}
-			#endif		
- 		}
 
-
+		for (i=0; i<JN; i++)  check_range(i, _safeband[i], PWMoutput);
 
 //******************************************* COMPUTES CONTROLS ***************************/
 		
@@ -750,6 +623,142 @@ void main(void)
 		
 	} /* end for(;;) */
 }
+
+void check_range(byte i, Int16 band, Int32 *PWM)
+{
+	static UInt32 TrqLimitCount =0;
+	/* check for position in range */
+ 
+ 			if (_control_mode[i] == MODE_POSITION)
+ 			{
+ 	     		if  (_position[i] > (_max_position[i]-band) ||  (_position[i] < (_min_position[i]+band)))   
+	 			{			
+					_ko[i]=0;   //remove the PWM offset if it is out of limits 
+					#ifdef DEBUG_CONTROL_MODE
+					can_printf("OUT of LIMITS ax:%d", i);	
+					#endif
+					
+					if (band>0)
+					{
+						if  ((_position[i] > (_max_position[i]-band)) && (_desired[i]>(_max_position[i]-band)))
+						{
+							_desired[i]=(_max_position[i]-band); 
+							_integral[i] = 0; 
+							_set_point[i] = _desired[i];
+							init_trajectory (i, _desired[i], _desired[i], 1); 
+						}
+						
+						if  ((_position[i] < (_min_position[i]+band)) && (_desired[i]<(_min_position[i]+band)))
+						{
+							_desired[i]=(_min_position[i]+band); 
+							_integral[i] = 0; 
+							_set_point[i] = _desired[i];
+							init_trajectory (i, _desired[i], _desired[i], 1); 
+						}
+					}
+					else	
+					{
+						if  ((_position[i] > (_max_position[i]+band)) && (_desired[i]>(_max_position[i]-band)))
+						{
+							#ifdef DEBUG_CONTROL_MODE
+							can_printf("OUT of LIMITS MAX ax:%d", i);	
+							#endif
+							_desired[i]=_max_position[i]; 
+							_integral[i] = 0; 
+							_set_point[i] = _desired[i];
+							init_trajectory (i, _desired[i], _desired[i], 1); 
+						}
+						
+						if  ((_position[i] < (_min_position[i]-band)) && (_desired[i]<(_min_position[i]+band)))
+						{
+							#ifdef DEBUG_CONTROL_MODE
+							can_printf("OUT of LIMITS MIN ax:%d", i);	
+							#endif
+							_desired[i]=_min_position[i]; 
+							_integral[i] = 0; 
+							_set_point[i] = _desired[i];
+							init_trajectory (i, _desired[i], _desired[i], 1); 
+						}
+						
+					}
+	 			} 
+ 			}
+ 			if (_control_mode[i] == MODE_OPENLOOP)
+ 			{
+	 			if  (_position[i] > (_max_position[i]-band) ||  (_position[i] < (_min_position[i]+band)))   
+	 			{			
+	 				_control_mode[i] = MODE_POSITION; //	
+					_ko[i]=0;  //remove the PWM offset if it is out of limits
+					if (band>0)
+					{
+						if  ((_position[i] > (_max_position[i]-band)) && (_desired[i]>(_max_position[i]-band)))
+						{
+							_desired[i]=(_max_position[i]-band); 
+							_integral[i] = 0; 
+							_set_point[i] = _desired[i];
+							init_trajectory (i, _desired[i], _desired[i], 1); 
+						}
+						
+						if  ((_position[i] < (_min_position[i]+band)) && (_desired[i]<(_min_position[i]+band)))
+						{
+							_desired[i]=(_min_position[i]+band); 
+							_integral[i] = 0; 
+							_set_point[i] = _desired[i];
+							init_trajectory (i, _desired[i], _desired[i], 1); 
+						}
+					}
+					else	
+					{
+						if  ((_position[i] > (_max_position[i]+band)) && (_desired[i]>(_max_position[i]-band)))
+						{
+							#ifdef DEBUG_CONTROL_MODE
+							can_printf("OUT of LIMITS MAX ax:%d", i);	
+							#endif
+							_desired[i]=_max_position[i]; 
+							_integral[i] = 0; 
+							_set_point[i] = _desired[i];
+							init_trajectory (i, _desired[i], _desired[i], 1); 
+						}
+						
+						if  ((_position[i] < (_min_position[i]-band)) && (_desired[i]<(_min_position[i]+band)))
+						{
+							#ifdef DEBUG_CONTROL_MODE
+							can_printf("OUT of LIMITS MIN ax:%d", i);	
+							#endif
+							_desired[i]=_min_position[i]; 
+							_integral[i] = 0; 
+							_set_point[i] = _desired[i];
+							init_trajectory (i, _desired[i], _desired[i], 1); 
+						}
+					}
+					#ifdef DEBUG_CONTROL_MODE
+					can_printf("MODE CHANGED TO POSITION, OUT of LIMITS ax:%d", i);	
+	 			    #endif 
+	 			} 				
+ 			}
+ 			
+ 			//************************** TO BE CHANGED!!!! 	*******************************/		
+            #ifdef TORQUE_CNTRL
+ 
+ 			if (_control_mode[i] == MODE_TORQUE ||
+			 	_control_mode[i] == MODE_IMPEDANCE)
+ 			{
+	 			if  (_position[i] > _max_position[i] ||
+	 			     _position[i] < _min_position[i])   
+	 			{			
+					PWM[i] = 0;
+					TrqLimitCount++;
+					if (TrqLimitCount>=500)
+					{
+					#ifdef DEBUG_CONTROL_MODE
+						can_printf("MODE TORQUE OUT LIMITS ax:%d", i);	
+						TrqLimitCount=0;
+				    #endif 
+					}
+	 			} 				
+ 			}
+			#endif		
+}
 	
 /***************************************************************************/
 /**
@@ -757,8 +766,15 @@ void main(void)
  ***************************************************************************/
 void decouple_positions(void)
 {
-		
+	byte timeout_cpl_pos = 100;
+#ifdef DEBUG_CAN_MSG
+	static UInt8 count=0;
+#endif			
+	
 #if   VERSION == 0x0153
+	_cpl_pos_counter++;
+	if (_cpl_pos_counter < timeout_cpl_pos)
+	{
 		/* beware of the first cycle when _old has no meaning */		
 		_position[0] = _position[0]+ (float) (((float) _cpl_pos_prediction[0])*1.625F);  
 		_position[0] = _position[0]- (float) (((float) _cpl_pos_prediction[1])*1.625F);
@@ -769,8 +785,26 @@ void decouple_positions(void)
 		*/
 		_cpl_pos_prediction[0] = L_add(_cpl_pos_prediction[0], _cpl_pos_delta[0]);
 		_cpl_pos_prediction[1] = L_add(_cpl_pos_prediction[1], _cpl_pos_delta[1]);
-
+	}
+	else
+	{
+		_control_mode[0] = MODE_IDLE;	
+		_pad_enabled[0] = false;
+		PWM_outputPadDisable(0);
+	
+		#ifdef DEBUG_CAN_MSG
+		if(count==255)
+		{
+			can_printf("No cpl pos info");
+			count=0;
+		}			
+		count++;				
+		#endif			
+	}
 #elif   VERSION == 0x0157
+	_cpl_pos_counter++;
+	if (_cpl_pos_counter < timeout_cpl_pos)
+	{
 		/* beware of the first cycle when _old has no meaning */		
 		_position[0] = (((float) _position[0])*0.6153F);  
 		_position[0] = _position[0]+ _cpl_pos_prediction[0];
@@ -782,9 +816,26 @@ void decouple_positions(void)
 		*/
 		_cpl_pos_prediction[0] = L_add(_cpl_pos_prediction[0], _cpl_pos_delta[0]);
 		_cpl_pos_prediction[1] = L_add(_cpl_pos_prediction[1], _cpl_pos_delta[1]);
+	}
+	else
+	{
+		_control_mode[0] = MODE_IDLE;	
+		_pad_enabled[0] = false;
+		PWM_outputPadDisable(0);
 
-
+		#ifdef DEBUG_CAN_MSG
+		if(count==255)
+		{
+			can_printf("No cpl pos info");
+			count=0;
+		}			
+		count++;				
+		#endif			
+	}
 #elif VERSION == 0x0173
+	_cpl_pos_counter++;
+	if (_cpl_pos_counter < timeout_cpl_pos)
+	{
 		/* beware of the first cycle when _old has no meaning */		
 		_position[0] = (((float) _position[0])*0.6153F);  
 		_position[0] = _position[0]+ _cpl_pos_prediction[0];
@@ -796,7 +847,22 @@ void decouple_positions(void)
 		*/
 		_cpl_pos_prediction[0] = L_add(_cpl_pos_prediction[0], _cpl_pos_delta[0]);
 		_cpl_pos_prediction[1] = L_add(_cpl_pos_prediction[1], _cpl_pos_delta[1]);
-						
+	}
+	else
+	{
+		_control_mode[0] = MODE_IDLE;	
+		_pad_enabled[0] = false;
+		PWM_outputPadDisable(0);
+
+		#ifdef DEBUG_CAN_MSG
+		if(count==255)
+		{
+			can_printf("No cpl pos info");
+			count=0;
+		}			
+		count++;				
+		#endif			
+	}
 #elif VERSION == 0x0155
 //		_position[0] = _position[0] - _position[1];
 //		_position[1] = _position[0] + 2*_position[1];	
@@ -818,6 +884,7 @@ void decouple_dutycycle(Int32 *pwm)
 	float tempf;
 	Int32 temp32 = 0;
 	static UInt8 count=0;
+	byte timeout_cpl_pid = 100;
 
 #if VERSION == 0x0150
 
@@ -916,8 +983,7 @@ void decouple_dutycycle(Int32 *pwm)
 	_pd[0] = (_pd[0] - _pd[1])>>1;
 	_pd[1] = (temp32   + _pd[1])>>1;
 		
-#elif VERSION == 0x0153
-
+#elif VERSION == 0x0153 || VERSION == 0x0157
 	/* Version 0x0153 relizes the shoulder coupling (here '_c' denotes 
 	 * the coupled board variables).The applied coupling is the following:
 	 *
@@ -961,96 +1027,47 @@ void decouple_dutycycle(Int32 *pwm)
 	 * Jm 	: motor inertia
 	 * tau_m: motor torque 
 	 */
-	if (_control_mode[0] == MODE_POSITION)
+	_cpl_pid_counter++;
+	if (_cpl_pid_counter < timeout_cpl_pid)
 	{
-   		tempf = (float)(_pd[0]);
-		tempf = tempf * 1.6455F;
-	    temp32 = (Int32) _cpl_pid_prediction[1] + (Int32) (tempf);
-	    _pd[0] += temp32;
-	    
-		tempf = (float)(pwm[0]);
-		tempf = tempf * 1.6455F;
-		temp32 = (Int32) _cpl_pid_prediction[1] + (Int32) (tempf);
-	    pwm[0] += temp32;	    
-		#ifdef DEBUG_CPL_BOARD
-			if(count==255)
-			{
-				can_printf("cplPid:%d(%d,%d)", (Int16) pwm[0], (Int16) (tempf), _cpl_pid_prediction[1]);
-				count=0;
-			}			
-			count++;
-		#endif	
-	    //update the prediction for coupled board duty
-	    _cpl_pid_prediction[0] = _cpl_pid_prediction[0] + _cpl_pid_delta[0];
-	    _cpl_pid_prediction[1] = _cpl_pid_prediction[1] + _cpl_pid_delta[1];
+		if (_control_mode[0] == MODE_POSITION)
+		{
+	   		tempf = (float)(_pd[0]);
+			tempf = tempf * 1.6455F;
+		    temp32 = (Int32) _cpl_pid_prediction[1] + (Int32) (tempf);
+		    _pd[0] += temp32;
+		    
+			tempf = (float)(pwm[0]);
+			tempf = tempf * 1.6455F;
+			temp32 = (Int32) _cpl_pid_prediction[1] + (Int32) (tempf);
+		    pwm[0] += temp32;	    
+			#ifdef DEBUG_CPL_BOARD
+				if(count==255)
+				{
+					can_printf("cplPid:%d(%d,%d)", (Int16) pwm[0], (Int16) (tempf), _cpl_pid_prediction[1]);
+					count=0;
+				}			
+				count++;
+			#endif	
+		    //update the prediction for coupled board duty
+		    _cpl_pid_prediction[0] = _cpl_pid_prediction[0] + _cpl_pid_delta[0];
+		    _cpl_pid_prediction[1] = _cpl_pid_prediction[1] + _cpl_pid_delta[1];
+		}
 	}
-#elif VERSION == 0x0157
-
-	/* Version 0x0157 relizes the shoulder coupling (here '_c' denotes 
-	 * the coupled board variables).The applied coupling is the following:
-	 *
-	 * 			[    Jm1,      0,      0]
-	 * tau_m = 	[ -Jm2/a,  Jm2/a,      0] tau_j
-	 * 			[ -Jm3/a,  Jm3/a,  Jm3/a]
-	 *
-	 * 			[    R1/K1,      0,      0]
-	 * u_m = 	[        0,  R2/K2,      0] tau_m
-	 * 			[        0,      0,  R3/K3]
-	 *
-	 *			[    R1/K1*Jm1,            0,            0]                    			[1         0         0]
-	 * u_m =	[ -R2/K2*Jm2/a,  R2/K2*Jm2/a,            0] tau_j =  1.0e-03 * 0.1519 * [-1.73    1.73       0]
-	 *			[ -R3/K3*Jm3/a,  R3/K3*Jm3/a,  R3/K3*Jm3/a]                    			[-1.73    1.73    1.73]
-	 *
-	 * where:
-	 * tau_m 	: torques applied by the motors (tau_m_c[0], tau_m_c[1], tau_m[0])
-	 * tau_j 	: virtual torque at the joints  (tau_j_c[0], tau_j_c[1], tau_j[0])
-	 * R		: motor resitance (mean of the three phases) R1=0.8967 VS R2=R3=0.8363
-	 * K		: motor constant torque K1=0.0500  K2=K3=0.0280
-	 * Jm		: inertia of the motors Jm1=8.47E-06 Jm2=Jm3=5.15E-06 
-	 * 
-	 * This solution follows from the following coupling:
-	 *		[  1,  0,  0]
-	 * qj =	[  1,  a,  0] qm = Tjm qm
-	 *		[  0, -a,  a]
-	 * where:
-	 *
-	 * qm 	: position of the motors (qm_c[0], qm_c[1], qm[0])
-	 * qj 	: position of the motors (qj_c[0], qj_c[1], qj[0])
-	 * 
-	 * and from the assumption that dynamics of motors are not
-	 * effected by the kinematic coupling (due to high gear boxes):
-	 *
-	 *	[  Jm1,    0,    0]
-	 * 	[    0,  Jm2,    0] d2qm = tau_m
-	 *	[    0,    0,  Jm3]
-	 *
-	 * where:
-	 *
-	 * Jm 	: motor inertia
-	 * tau_m: motor torque 
-	 */
-	if (_control_mode[0] == MODE_POSITION)
+	else
 	{
-   		tempf = (float)(_pd[0]);
-		tempf = tempf * 1.6455F;
-	    temp32 = (Int32) _cpl_pid_prediction[1] + (Int32) (tempf);
-	    _pd[0] += temp32;
-	    
-		tempf = (float)(pwm[0]);
-		tempf = tempf * 1.6455F;
-		temp32 = (Int32) _cpl_pid_prediction[1] + (Int32) (tempf);
-	    pwm[0] += temp32;	    
-		#ifdef DEBUG_CPL_BOARD
-			if(count==255)
-			{
-				can_printf("cplPid:%d(%d,%d)", (Int16) pwm[0], (Int16) (tempf), _cpl_pid_prediction[1]);
-				count=0;
-			}			
-			count++;
-		#endif	
-	    //update the prediction for coupled board duty
-	    _cpl_pid_prediction[0] = _cpl_pid_prediction[0] + _cpl_pid_delta[0];
-	    _cpl_pid_prediction[1] = _cpl_pid_prediction[1] + _cpl_pid_delta[1];
+		_control_mode[0] = MODE_IDLE;	
+		_pad_enabled[0] = false;
+		PWM_outputPadDisable(0);
+
+		#ifdef DEBUG_CAN_MSG
+		if(count==255)
+		{
+			can_printf("No cpl pid info");
+			count=0;
+		}			
+		count++;				
+		#endif			
 	}
 #endif			
 }

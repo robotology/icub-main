@@ -173,10 +173,12 @@ extern Int32  _pd_current[JN] ;         // pd portion of the current pid
 extern Int32  _cpl_pos_received[JN] ;		// the position of the synchronized card 
 extern Int32  _cpl_pos_prediction[JN] ;			// the actual adjustment (compensation) 
 extern Int32  _cpl_pos_delta[JN] ;			// velocity over the adjustment 
+extern Int16  _cpl_pos_counter ;			// the adjustment step
 extern Int16  _cpl_err[JN] ;        // the error of the syncronized card
 extern Int16  _cpl_pid_received[JN] ;   	    // the duty of the syncronized card
 extern Int16  _cpl_pid_prediction[JN] ;			// the predicted adjustment
 extern Int16  _cpl_pid_delta[JN] ;			// the adjustment step 
+extern Int16  _cpl_pid_counter ;			// the adjustment step
 #endif
 
 

@@ -262,6 +262,9 @@ extern char    _additional_info [32];
 	long value; \
 	if (CAN_LEN == 8) \
 	{ \
+		\
+		_cpl_pos_counter = 0; \
+		\
 		value = BYTE_C(CAN_DATA[0], CAN_DATA[1], CAN_DATA[2], CAN_DATA[3]); \
 		_cpl_pos_delta[0] = L_sub (value, _cpl_pos_received[0]) >> 2; \
 		_cpl_pos_prediction[0] = value; \
@@ -288,6 +291,7 @@ extern char    _additional_info [32];
 	Int16 value; \
 	if (CAN_LEN == 8) \
 	{ \
+		_cpl_pid_counter = 0; \
 		value = BYTE_W(CAN_DATA[4], CAN_DATA[5]); \
 		_cpl_pid_delta[0] = (value - _cpl_pid_received[0]) >> 2; \
 		_cpl_pid_prediction[0] = value; \

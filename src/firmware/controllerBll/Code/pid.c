@@ -143,10 +143,12 @@ Int32  _pd_current[JN] = INIT_ARRAY (0);        // pd portion of the current pid
 Int32  _cpl_pos_received[JN] = INIT_ARRAY (0);	// the position of the synchronized card 
 Int32  _cpl_pos_prediction[JN] = INIT_ARRAY (0);		// the actual adjustment (compensation) 
 Int32  _cpl_pos_delta[JN] = INIT_ARRAY (0);			// velocity over the adjustment 
+Int16  _cpl_pos_counter = 0;					// counter to check when last _cpl_pos_ was received  
 Int16  _cpl_err[JN] = INIT_ARRAY (0);    	// the error of the syncronized card
 Int16  _cpl_pid_received[JN] = INIT_ARRAY (0);    	// the duty of the syncronized card
 Int16  _cpl_pid_prediction[JN] = INIT_ARRAY (0);			// the predicted adjustment
-Int16  _cpl_pid_delta[JN] = INIT_ARRAY (0);		// the adjustment step 
+Int16  _cpl_pid_delta[JN] = INIT_ARRAY (0);		// the adjustment step
+Int16   _cpl_pid_counter = 0;					// counter to check when last _cpl_pid_ was received  
 #endif
 
 
