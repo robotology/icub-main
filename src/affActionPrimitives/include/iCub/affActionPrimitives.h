@@ -647,8 +647,8 @@ public:
 * contact is detected the reaching is suddenly stopped. 
 *  
 * \note The benefit is that unlike the previous implementation 
-* of grasp() and touch(), the height of the object can be known 
-* just approximately. 
+* of grasp() and touch(), the height of the objects to be 
+* attained can be known just approximately. 
 *  
 * \note Given as an example 
 */
@@ -703,7 +703,7 @@ public:
     *  
     * \b wrist_joint <int>: specify the wrist joint to be blocked
     *    while grasping/touching.
-    * \note the kinematic order shall be accounted for, i.e. an 
+    * \note the kinematic order shall be taken into account, i.e. an
     *       offset of 3 (the torso joints) shall be added to the arm
     *       part order.
     *  
