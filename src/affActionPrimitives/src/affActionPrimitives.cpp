@@ -799,10 +799,11 @@ void affActionPrimitives::run()
         // execute action-end callback
         if (actionClb)
         {
-            printMessage("executing action callback ...\n");
-            actionClb->exec();
+            printMessage("executing action-end callback ...\n");
+            actionClb->exec();            
+            printMessage("... action-end callback executed\n");
+
             actionClb=NULL;
-            printMessage("... action callback executed\n");
         }
 
         if (!execQueuedAction())
