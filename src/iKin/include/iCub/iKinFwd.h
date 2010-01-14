@@ -646,7 +646,9 @@ public:
     * function and \f$ \left(q_i,q_j\right) \f$ is the DOF couple. 
     * @param i is the index of the first DOF. 
     * @param j is the index of the second DOF.
-    * @return the 6x1 vector d2F/dqidqj.
+    * @return the 6x1 vector \f$ 
+    *         \partial{^2}F\left(q\right)/\partial q_i \partial q_j.
+    *                 \f$
     */
     yarp::sig::Vector Hessian_ij(const unsigned int i, const unsigned int j);
 
@@ -669,7 +671,9 @@ public:
     * \see prepareForHessian 
     * @param i is the index of the first DOF. 
     * @param j is the index of the second DOF.
-    * @return the 6x1 vector d2F/dqidqj.
+    * @return the 6x1 vector \f$ 
+    *         \partial{^2}F\left(q\right)/\partial q_i \partial q_j.
+    *                 \f$
     */
     yarp::sig::Vector fastHessian_ij(const unsigned int i, const unsigned int j);
 
