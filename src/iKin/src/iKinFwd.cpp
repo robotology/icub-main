@@ -746,7 +746,7 @@ Matrix iKinChain::getH(const unsigned int i, const bool allLink)
 /************************************************************************/
 Matrix iKinChain::getH()
 {
-    // may be different from DOF since one blocked link may lay
+    // may be different from DOF since one blocked link may lie
     // at the end of the chain.
     size_t n=quickList.size();
     Matrix H=H0;
@@ -867,6 +867,52 @@ Vector iKinChain::EndEffPose(const Vector &q, const bool axisRep)
 
 
 /************************************************************************/
+Matrix iKinChain::AnaJacobian(const unsigned int i, unsigned int col)
+{
+    if (i>=N)
+    {
+        cerr << "AnaJacobian() failed due to out of range index: ";
+        cerr << i << ">=" << N << endl;
+
+        return Matrix(0,0);
+    }
+
+    col=col>3 ? 3 : col;
+
+    Matrix J(6,i);
+    Matrix H,dH,_H;
+    Vector dr;
+
+    for (unsigned int j=0; j<i; j++)
+    {
+        H=dH=H0;
+
+        for (unsigned int k=0; k<i; k++)
+        {
+            _H=allList[k]->getH();
+            H=H*_H;
+
+            if (j==k)
+                dH=dH*allList[k]->getDnH();
+            else
+                dH=dH*_H;
+        }
+
+        dr=dRotAng(H,dH);
+
+        J(0,j)=dH(0,col);
+        J(1,j)=dH(1,col);
+        J(2,j)=dH(2,col);
+        J(3,j)=dr[0];
+        J(4,j)=dr[1];
+        J(5,j)=dr[2];
+    }
+
+    return J;
+}
+
+
+/************************************************************************/
 Matrix iKinChain::AnaJacobian(unsigned int col)
 {
     if (!DOF)
@@ -878,7 +924,7 @@ Matrix iKinChain::AnaJacobian(unsigned int col)
 
     col=col>3 ? 3 : col;
 
-    // may be different from DOF since one blocked link may lay
+    // may be different from DOF since one blocked link may lie
     // at the end of the chain.
     size_t n=quickList.size();
     Matrix J(6,DOF);
@@ -892,7 +938,6 @@ Matrix iKinChain::AnaJacobian(unsigned int col)
         for (unsigned int j=0; j<n; j++)
         {
             _H=quickList[j]->getH();
-
             H=H*_H;
 
             if (hash_dof[i]==j)
@@ -928,6 +973,46 @@ Matrix iKinChain::AnaJacobian(const Vector &q, unsigned int col)
         cerr << "AnaJacobian() failed: " << DOF << " joint angles needed" << endl;
 
     return Matrix(0,0);
+}
+
+
+/************************************************************************/
+Matrix iKinChain::GeoJacobian(const unsigned int i)
+{
+    if (i>=N)
+    {
+        cerr << "GeoJacobian() failed due to out of range index: ";
+        cerr << i << ">=" << N << endl;
+
+        return Matrix(0,0);
+    }
+
+    Matrix J(6,i);
+    Matrix Pn,Z;
+    Vector w;
+
+    deque<Matrix> intH;
+    intH.push_back(H0);
+
+    for (unsigned int j=0; j<i; j++)
+        intH.push_back(intH[j]*allList[j]->getH(true));
+
+    Pn=intH[i];
+
+    for (unsigned int j=0; j<i; j++)
+    {
+        Z=intH[j];
+        w=cross(Z,2,Pn-Z,3,verbose);
+
+        J(0,j)=w[0];
+        J(1,j)=w[1];
+        J(2,j)=w[2];
+        J(3,j)=Z(0,2);
+        J(4,j)=Z(1,2);
+        J(5,j)=Z(2,2);
+    }
+
+    return J;
 }
 
 

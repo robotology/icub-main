@@ -589,7 +589,17 @@ public:
     yarp::sig::Vector EndEffPose(const yarp::sig::Vector &q, const bool axisRep=true);
 
     /**
-    * Returns the analitical Jacobian. 
+    * Returns the analitical Jacobian of the ith link.
+    * @param i is the Link position. 
+    * @param col selects the part of the derived homogeneous matrix 
+    *            to be put in the upper side of the Jacobian
+    *            matrix: 0 => x, 1 => y, 2 => z, 3 => p (default)
+    * @return the analitical Jacobian.
+    */
+    yarp::sig::Matrix AnaJacobian(const unsigned int i, unsigned int col);
+
+    /**
+    * Returns the analitical Jacobian of the end-effector.
     * @param col selects the part of the derived homogeneous matrix 
     *            to be put in the upper side of the Jacobian
     *            matrix: 0 => x, 1 => y, 2 => z, 3 => p (default)
@@ -598,7 +608,8 @@ public:
     yarp::sig::Matrix AnaJacobian(unsigned int col=3);
 
     /**
-    * Returns the analitical Jacobian computed in q. 
+    * Returns the analitical Jacobian of the end-effector computed 
+    * in q. 
     * @param q is the vector of new DOF values. 
     * @param col selects the part of the derived homogeneous matrix 
     *            to be put in the upper side of the Jacobian
@@ -608,13 +619,21 @@ public:
     yarp::sig::Matrix AnaJacobian(const yarp::sig::Vector &q, unsigned int col=3);
 
     /**
-    * Returns the geometric Jacobian.
+    * Returns the geometric Jacobian of the ith link. 
+    * @param i is the Link position.
+    * @return the geometric Jacobian.
+    */
+    yarp::sig::Matrix GeoJacobian(const unsigned int i);
+
+    /**
+    * Returns the geometric Jacobian of the end-effector.
     * @return the geometric Jacobian.
     */
     yarp::sig::Matrix GeoJacobian();
 
     /**
-    * Returns the geometric Jacobian computed in q. 
+    * Returns the geometric Jacobian of the end-effector computed in
+    * q. 
     * @param q is the vector of new DOF values. 
     * @return the geometric Jacobian.
     */

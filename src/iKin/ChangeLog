@@ -1,4 +1,7 @@
 
+2010-01-14 Ugo Pattacini <ugo.pattacini@iit.it>
+	   * iKinFwd.h,.cpp: provided Jacobians for generic ith link
+
 2010-01-13 Ugo Pattacini <ugo.pattacini@iit.it>
 	   * iKinSlv.h,.cpp: rest position option extended
 
@@ -8,7 +11,7 @@
 
 2009-12-20 Ugo Pattacini <ugo.pattacini@iit.it>
 	   * iKinFwd.h,.cpp: iKinLimb class extended with new methods
-                         for creating limb from a list of links properties.
+                         for creating limb from a list of links properties
 
 2009-12-18 Ugo Pattacini <ugo.pattacini@iit.it>
 	   * iKinFwd.h,.cpp: iCubInertialSensor class added
