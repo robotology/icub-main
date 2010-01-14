@@ -492,11 +492,18 @@ public:
 			action->grasp(xd,*graspOrien,*graspDisp);
             action->checkActionsDone(f,true);
 
-            // lift the object (wait until it's done)
-			action->pushAction(xd+*dLift,*graspOrien);
-            action->checkActionsDone(f,true);
+            // if fingers are not in position,
+            // it's likely that we've just grasped
+            // something, so lift it up!
+            if (!action->areFingersInPosition())
+            {
+                // lift the object (wait until it's done)
+    			action->pushAction(xd+*dLift,*graspOrien);
+                action->checkActionsDone(f,true);
+            }
 
-            // release the object (wait until it's done)
+            // release the object or just open the
+            // hand (wait until it's done)
             action->pushAction("open_hand");
             action->checkActionsDone(f,true);
 

@@ -66,6 +66,7 @@ void affActionPrimitives::init()
     checkEnabled=true;
     torsoActive=true;
     handSeqTerminator=false;
+    fingersInPosition=true;
 
     latchTimer=waitTmo=0.0;
 }
@@ -462,6 +463,8 @@ bool affActionPrimitives::isHandSeqEnded()
             {
                 printMessage("contact detected on finger %d: (%g>%g)\n",
                              fng,val,thres);
+
+                fingersInPosition=false;
 
                 // take joints belonging to the finger
                 pair<multimap<int,int>::iterator,multimap<int,int>::iterator> i=fingers2JntsMap.equal_range(fng);
@@ -933,6 +936,7 @@ bool affActionPrimitives::cmdHand(const Action &action)
 
         latchHandMoveDone=handMoveDone=false;
         handSeqTerminator=action.handSeqTerminator;
+        fingersInPosition=true;
         printMessage("\"%s\" WP: [%s] (thres = [%s])\n",
                      tag.c_str(),toCompactString(poss).c_str(),
                      toCompactString(thres).c_str());
@@ -1013,6 +1017,20 @@ bool affActionPrimitives::getPose(Vector &x, Vector &o)
         return cartCtrl->getPose(x,o);
     else
         return false;
+}
+
+
+/************************************************************************/
+bool affActionPrimitives::areFingersMoving()
+{
+    return latchHandMoveDone;
+}
+
+
+/************************************************************************/
+bool affActionPrimitives::areFingersInPosition()
+{
+    return fingersInPosition;
 }
 
 

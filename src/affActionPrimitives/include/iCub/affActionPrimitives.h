@@ -123,6 +123,8 @@ protected:
     bool handMoveDone;
     bool latchArmMoveDone;
     bool latchHandMoveDone;
+    bool handSeqTerminator;
+    bool fingersInPosition;
 
     bool configured;
     bool closed;
@@ -174,7 +176,6 @@ protected:
     };
 
     affActionPrimitivesCallback *actionClb;
-    bool handSeqTerminator;
 
     std::deque<Action> actionsQueue;
     std::map<std::string,std::deque<HandWayPoint> > handSeqMap;
@@ -322,7 +323,7 @@ public:
     * actions queue. 
     * @param x the 3-d target position [m]. 
     * @param o the 4-d hand orientation used while reaching (given 
-    *          in axis-angle representation) [rad].
+    *          in axis-angle representation: ax ay az angle in rad).
     * @param handSeqKey the hand sequence key. 
     * @param execTime the arm action execution time [s] (to be 
     *          specified iff different from default value).
@@ -347,7 +348,7 @@ public:
     * actions queue. 
     * @param x the 3-d target position [m]. 
     * @param o the 4-d hand orientation used while reaching (given 
-    *          in axis-angle representation) [rad].
+    *          in axis-angle representation: ax ay az angle in rad).
     * @param execTime the arm action execution time [s] (to be 
     *          specified iff different from default value).
     * @param clb action callback that is executed when the action 
@@ -384,7 +385,7 @@ public:
     * actions queue is empty).
     * @param x the 3-d target position [m]. 
     * @param o the 4-d hand orientation used while reaching (given 
-    *          in axis-angle representation) [rad].
+    *          in axis-angle representation: ax ay az angle in rad).
     * @param execTime the arm action execution time [s] (to be 
     *          specified iff different from default value).
     * @return true/false on success/fail. 
@@ -443,10 +444,28 @@ public:
     * Return the current end-effector position. 
     * @param x the current 3-d hand position [m].
     * @param o the current 4-d hand orientation (given in the 
-    *          axis-angle representation) [rad].
+    *          axis-angle representation: ax ay az angle in rad).
     * @return true/false on success/fail.
     */
     virtual bool getPose(yarp::sig::Vector &x, yarp::sig::Vector &o);
+
+    /**
+    * Query if fingers are moving.
+    * @return true/false on moving/non-moving fingers.
+    */
+    virtual bool areFingersMoving();
+
+    /**
+    * Query if fingers are in position.
+    * @return true iff fingers are in position. 
+    *  
+    * \note Fingers are intended to be in position if they have 
+    *       attained the desired position or while moving they
+    *       follow the desired trajectory. Any possible contact
+    *       among fingers or with objects causes the method to
+    *       return false.
+    */
+    virtual bool areFingersInPosition();
 
     /**
     * Stop any ongoing arm/hand movements.
@@ -539,7 +558,8 @@ public:
     * Grasp the given target (combined action).
     * @param x the 3-d target position [m]. 
     * @param o the 4-d hand orientation used while reaching/grasping
-    *          (given in axis-angle representation) [rad].
+    *          (given in axis-angle representation: ax ay az angle
+    *          in rad).
     * @param d the displacement [m] wrt the target position that 
     *          identifies a location to be reached prior to
     *          grasping.
@@ -564,7 +584,8 @@ public:
     * Touch the given target (combined action).
     * @param x the 3-d target position [m]. 
     * @param o the 4-d hand orientation used while reaching/touching
-    *          (given in axis-angle representation) [rad].
+    *          (given in axis-angle representation: ax ay az angle
+    *          in rad).
     * @param d the displacement [m] wrt the target position that 
     *          identifies a location to be reached prior to
     *          touching.
@@ -588,10 +609,10 @@ public:
     * Tap the given target (combined action).
     * @param x1 the fisrt 3-d target position [m]. 
     * @param o1 the first 4-d hand orientation (given in axis-angle 
-    *           representation) [rad].
+    *           representation: ax ay az angle in rad).
     * @param x2 the second 3-d target position [m]. 
     * @param o2 the second 4-d hand orientation (given in axis-angle
-    *           representation) [rad].
+    *           representation: ax ay az angle in rad).
     * @param execTime the arm action execution time only while 
     *          tapping [s] (to be specified iff different from
     *          default value).
