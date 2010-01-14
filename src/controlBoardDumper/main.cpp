@@ -10,7 +10,7 @@
  * and sending them trough a yarp port. These data can then
  * be dumped to a file using the \ref dataDumper. Time stamp
  * is forwarded if present in the collected data. If not present
- * a time stamp is added. <bf> Remark: </bf> all collected data
+ * a time stamp is added. <b> Remark: </b> all collected data
  * are obtained by a remoteControlBoard connected with a controlBoard.
  * Therefore, collected data needs to be available to the controlBoard.
  * When using the iCub canbus protocol this is not necessary guaranteed
