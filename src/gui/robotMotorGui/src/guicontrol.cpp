@@ -67,6 +67,17 @@ static void guiControl::radio_click_pos(GtkWidget* radio , gtkClassData* current
 {
 	if (gtk_toggle_button_get_active (GTK_TOGGLE_BUTTON(radio))==true)
 	{
+		fprintf(stderr, "joint: %d in OPENLOOP mode!\n", *joint);
+		icntrl->setOpenLoopMode(*joint);
+	}
+	else
+	{
+	}
+}
+static void guiControl::radio_click_open(GtkWidget* radio , gtkClassData* currentClassData)
+{
+	if (gtk_toggle_button_get_active (GTK_TOGGLE_BUTTON(radio))==true)
+	{
 		fprintf(stderr, "joint: %d in POSITION mode!\n", *joint);
 		icntrl->setPositionMode(*joint);
 	}
@@ -161,11 +172,12 @@ void guiControl::guiControl(void *button, void* data)
   
   label_title = gtk_label_new (title);
 
-  radiobutton_mode_idl = gtk_radio_button_new_with_label  (NULL, "idle");
-  radiobutton_mode_pos = gtk_radio_button_new_with_label_from_widget  (GTK_RADIO_BUTTON (radiobutton_mode_idl), "position");
-  radiobutton_mode_vel = gtk_radio_button_new_with_label_from_widget  (GTK_RADIO_BUTTON (radiobutton_mode_idl), "velocity");
-  radiobutton_mode_trq = gtk_radio_button_new_with_label_from_widget  (GTK_RADIO_BUTTON (radiobutton_mode_idl), "torque");
-  radiobutton_mode_imp = gtk_radio_button_new_with_label_from_widget  (GTK_RADIO_BUTTON (radiobutton_mode_idl), "impedance");
+  radiobutton_mode_idl  = gtk_radio_button_new_with_label  (NULL, "idle");
+  radiobutton_mode_pos  = gtk_radio_button_new_with_label_from_widget  (GTK_RADIO_BUTTON (radiobutton_mode_idl), "position");
+  radiobutton_mode_vel  = gtk_radio_button_new_with_label_from_widget  (GTK_RADIO_BUTTON (radiobutton_mode_idl), "velocity");
+  radiobutton_mode_trq  = gtk_radio_button_new_with_label_from_widget  (GTK_RADIO_BUTTON (radiobutton_mode_idl), "torque");
+  radiobutton_mode_imp  = gtk_radio_button_new_with_label_from_widget  (GTK_RADIO_BUTTON (radiobutton_mode_idl), "impedance");
+  radiobutton_mode_open = gtk_radio_button_new_with_label_from_widget  (GTK_RADIO_BUTTON (radiobutton_mode_idl), "openloop");
 
   gtk_fixed_put	(GTK_FIXED(inv), label_title,  10,  10    );
   gtk_fixed_put	(GTK_FIXED(inv), radiobutton_mode_idl,  10, 30    );
@@ -173,17 +185,19 @@ void guiControl::guiControl(void *button, void* data)
   gtk_fixed_put	(GTK_FIXED(inv), radiobutton_mode_vel,  10, 70    );
   gtk_fixed_put	(GTK_FIXED(inv), radiobutton_mode_trq,  10, 90    );
   gtk_fixed_put	(GTK_FIXED(inv), radiobutton_mode_imp,  10, 110    );
+  gtk_fixed_put	(GTK_FIXED(inv), radiobutton_mode_open,  10, 130    );
 
   int control_mode=VOCAB_CM_UNKNOWN;
   bool ret = icntrl->getControlMode(*joint, &control_mode);
   update_menu(control_mode);
  
   //Rememeber: these signal_connect MUST be placed after the update_menu!
-  g_signal_connect (radiobutton_mode_idl, "clicked",G_CALLBACK (radio_click_idl), &radiobutton_mode_idl);
-  g_signal_connect (radiobutton_mode_pos, "clicked",G_CALLBACK (radio_click_pos), &radiobutton_mode_pos);
-  g_signal_connect (radiobutton_mode_vel, "clicked",G_CALLBACK (radio_click_vel), &radiobutton_mode_vel);
-  g_signal_connect (radiobutton_mode_trq, "clicked",G_CALLBACK (radio_click_trq), &radiobutton_mode_trq);
-  g_signal_connect (radiobutton_mode_imp, "clicked",G_CALLBACK (radio_click_imp), &radiobutton_mode_imp);
+  g_signal_connect (radiobutton_mode_idl,  "clicked",G_CALLBACK (radio_click_idl), &radiobutton_mode_idl);
+  g_signal_connect (radiobutton_mode_pos,  "clicked",G_CALLBACK (radio_click_pos), &radiobutton_mode_pos);
+  g_signal_connect (radiobutton_mode_vel,  "clicked",G_CALLBACK (radio_click_vel), &radiobutton_mode_vel);
+  g_signal_connect (radiobutton_mode_trq,  "clicked",G_CALLBACK (radio_click_trq), &radiobutton_mode_trq);
+  g_signal_connect (radiobutton_mode_imp,  "clicked",G_CALLBACK (radio_click_imp), &radiobutton_mode_imp);
+  g_signal_connect (radiobutton_mode_open, "clicked",G_CALLBACK (radio_click_open), &radiobutton_mode_open);
 
   //connection to the destroyer
   g_signal_connect (pos_winPid, "destroy",G_CALLBACK (destroy_main), &pos_winPid);
