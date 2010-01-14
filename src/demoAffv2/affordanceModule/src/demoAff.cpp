@@ -1740,8 +1740,8 @@ void DemoAff::controlGazePursuitPixel(double x, double y)
 {
 	Vector &vctVel = port_gazevel_out.prepare();
     vctVel.resize(3);
-    vctPos(0) = x;
-    vctPos(1) = y;
+    vctVel(0) = x;
+    vctVel(1) = y;
 	vctVel(2) = (double)(int)'i';
     // write output vector
     port_gazepos_out.write(); 
