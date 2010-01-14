@@ -89,4 +89,9 @@
 	
 2009-28-December  Marco Maggiali <marco.maggiali@iit.it>
 	* Version 0x0157 for joints 2 and 3 of the shoulder for icub V1.1. 
-	* Current build 33.	
+	* Current build 33.
+
+2010-11-January  Francesco Nori <iron@liralab.it>
+	* Added "if" conditions: do not update position if abs_encoder fails.
+	* Checks timeout on the presence of coupled information. 
+	* Current build 34.
