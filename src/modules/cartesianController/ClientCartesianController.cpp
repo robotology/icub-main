@@ -447,12 +447,161 @@ bool ClientCartesianController::setDOF(const Vector &newDof, Vector &curDof)
 
     if (reply.get(0).asVocab()==IKINCARTCTRL_VOCAB_REP_ACK)
     {        
-        if (Bottle *rcvDof=reply.get(1).asList())
+        if (Bottle *dofDof=reply.get(1).asList())
         {                        
-            curDof.resize(rcvDof->size());
+            curDof.resize(dofDof->size());
 
-            for (int i=0; i<rcvDof->size(); i++)
-                curDof[i]=rcvDof->get(i).asDouble();
+            for (int i=0; i<dofDof->size(); i++)
+                curDof[i]=dofDof->get(i).asDouble();
+
+            return true;
+        }
+        else
+            return false;
+    }
+    else
+        return false;
+}
+
+
+/************************************************************************/
+bool ClientCartesianController::getRestPos(Vector &curRestPos)
+{
+    Bottle command, reply;
+
+    // prepare command
+    command.addVocab(IKINCARTCTRL_VOCAB_CMD_GET);
+    command.addVocab(IKINCARTCTRL_VOCAB_OPT_REST_POS);
+
+    // send command and wait for reply
+    if (!portRpc->write(command,reply))
+    {
+        fprintf(stdout,"Error: unable to get reply from server!\n");
+        return false;
+    }
+
+    if (reply.get(0).asVocab()==IKINCARTCTRL_VOCAB_REP_ACK)
+    {
+        if (Bottle *restPart=reply.get(1).asList())
+        {
+            curRestPos.resize(restPart->size());
+            
+            for (int i=0; i<restPart->size(); i++)
+                curRestPos[i]=restPart->get(i).asDouble();
+
+            return true;
+        }
+        else
+            return false;
+    }
+    else
+        return false;
+}
+
+
+/************************************************************************/
+bool ClientCartesianController::setRestPos(const Vector &newRestPos, Vector &curRestPos)
+{
+    Bottle command, reply;
+
+    // prepare command
+    command.addVocab(IKINCARTCTRL_VOCAB_CMD_SET);
+    command.addVocab(IKINCARTCTRL_VOCAB_OPT_REST_POS);
+    Bottle &restPart=command.addList();
+
+    for (int i=0; i<newRestPos.length(); i++)
+        restPart.addDouble(newRestPos[i]);
+
+    // send command and wait for reply
+    if (!portRpc->write(command,reply))
+    {
+        fprintf(stdout,"Error: unable to get reply from server!\n");
+        return false;
+    }
+
+    if (reply.get(0).asVocab()==IKINCARTCTRL_VOCAB_REP_ACK)
+    {        
+        if (Bottle *restPart=reply.get(1).asList())
+        {                        
+            curRestPos.resize(restPart->size());
+
+            for (int i=0; i<restPart->size(); i++)
+                curRestPos[i]=restPart->get(i).asDouble();
+
+            return true;
+        }
+        else
+            return false;
+    }
+    else
+        return false;
+}
+
+
+/************************************************************************/
+bool ClientCartesianController::getRestWeights(Vector &curRestWeights)
+{
+    Bottle command, reply;
+
+    // prepare command
+    command.addVocab(IKINCARTCTRL_VOCAB_CMD_GET);
+    command.addVocab(IKINCARTCTRL_VOCAB_OPT_REST_WEIGHTS);
+
+    // send command and wait for reply
+    if (!portRpc->write(command,reply))
+    {
+        fprintf(stdout,"Error: unable to get reply from server!\n");
+        return false;
+    }
+
+    if (reply.get(0).asVocab()==IKINCARTCTRL_VOCAB_REP_ACK)
+    {
+        if (Bottle *restPart=reply.get(1).asList())
+        {
+            curRestWeights.resize(restPart->size());
+            
+            for (int i=0; i<restPart->size(); i++)
+                curRestWeights[i]=restPart->get(i).asDouble();
+
+            return true;
+        }
+        else
+            return false;
+    }
+    else
+        return false;
+}
+
+
+/************************************************************************/
+bool ClientCartesianController::setRestWeights(const Vector &newRestWeights,
+                                               Vector &curRestWeights)
+{
+    Bottle command, reply;
+
+    // prepare command
+    command.addVocab(IKINCARTCTRL_VOCAB_CMD_SET);
+    command.addVocab(IKINCARTCTRL_VOCAB_OPT_REST_WEIGHTS);
+    Bottle &restPart=command.addList();
+
+    for (int i=0; i<newRestWeights.length(); i++)
+        restPart.addDouble(newRestWeights[i]);
+
+    // send command and wait for reply
+    if (!portRpc->write(command,reply))
+    {
+        fprintf(stdout,"Error: unable to get reply from server!\n");
+        return false;
+    }
+
+    if (reply.get(0).asVocab()==IKINCARTCTRL_VOCAB_REP_ACK)
+    {        
+        if (Bottle *restPart=reply.get(1).asList())
+        {                        
+            curRestWeights.resize(restPart->size());
+
+            for (int i=0; i<restPart->size(); i++)
+                curRestWeights[i]=restPart->get(i).asDouble();
 
             return true;
         }

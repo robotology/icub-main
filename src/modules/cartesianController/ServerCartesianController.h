@@ -170,6 +170,10 @@ public:
     virtual bool getDesired(yarp::sig::Vector &xdcap, yarp::sig::Vector &odcap,yarp::sig::Vector &qdcap);
     virtual bool getDOF(yarp::sig::Vector &curDof);
     virtual bool setDOF(const yarp::sig::Vector &newDof, yarp::sig::Vector &curDof);
+    virtual bool getRestPos(yarp::sig::Vector &curRestPos);
+    virtual bool setRestPos(const yarp::sig::Vector &newRestPos, yarp::sig::Vector &curRestPos);
+    virtual bool getRestWeights(yarp::sig::Vector &curRestWeights);
+    virtual bool setRestWeights(const yarp::sig::Vector &newRestWeights, yarp::sig::Vector &curRestWeights);
     virtual bool getLimits(int axis, double *min, double *max);
     virtual bool setLimits(int axis, const double min, const double max);
     virtual bool getTrajTime(double *t);

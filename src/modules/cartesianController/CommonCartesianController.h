@@ -14,6 +14,8 @@
 #define IKINCARTCTRL_VOCAB_OPT_TIME         VOCAB4('t','i','m','e')
 #define IKINCARTCTRL_VOCAB_OPT_TOL          VOCAB3('t','o','l')
 #define IKINCARTCTRL_VOCAB_OPT_DOF          VOCAB3('d','o','f')
+#define IKINCARTCTRL_VOCAB_OPT_REST_POS     VOCAB4('r','e','s','p')
+#define IKINCARTCTRL_VOCAB_OPT_REST_WEIGHTS VOCAB4('r','e','s','w')
 #define IKINCARTCTRL_VOCAB_OPT_DES          VOCAB3('d','e','s')
 #define IKINCARTCTRL_VOCAB_OPT_LIM          VOCAB3('l','i','m')
 #define IKINCARTCTRL_VOCAB_OPT_X            VOCAB1('x')
