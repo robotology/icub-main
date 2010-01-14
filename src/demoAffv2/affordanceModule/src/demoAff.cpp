@@ -465,7 +465,8 @@ bool DemoAff::configure(ResourceFinder &rf){
   }
 
   InitTorso();
-  InitHead();
+  //This is not needed when using controlGaze2
+  //InitHead();
 
   // open camshiftplus ports: data and sync
   string fwslash="/";
