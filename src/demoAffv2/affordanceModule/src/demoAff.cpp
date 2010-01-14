@@ -605,7 +605,7 @@ bool DemoAff::configureAffPrimitives(Searchable &config,
   if (partUsed=="both_arms" || partUsed=="left_arm")
     {    
       cout<<"***** Instantiating primitives for left_arm"<<endl;
-      actionL=new affActionPrimitivesLayer1(optionL);
+      actionL=new affActionPrimitivesLayer(optionL);
       
       if (!actionL->isValid())
 	{
@@ -619,7 +619,7 @@ bool DemoAff::configureAffPrimitives(Searchable &config,
   if (partUsed=="both_arms" || partUsed=="right_arm")
     {    
       cout<<"***** Instantiating primitives for right_arm"<<endl;
-      actionR=new affActionPrimitivesLayer1(optionR);
+      actionR=new affActionPrimitivesLayer(optionR);
       
       if (!actionR->isValid())
 	{

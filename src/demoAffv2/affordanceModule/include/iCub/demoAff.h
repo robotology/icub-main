@@ -50,6 +50,7 @@
 #define MAXNODES 10
 #define MAXLOCATIONS 3
 #define NUMEFF 2
+#define affActionPrimitivesLayer affActionPrimitivesLayer2
 
 using namespace std;
 using namespace yarp;
@@ -180,9 +181,9 @@ protected:
   // affActionPrimitive member variable
   string partUsed;
 
-  actions::affActionPrimitivesLayer1 *actionL;
-  actions::affActionPrimitivesLayer1 *actionR;
-  actions::affActionPrimitivesLayer1 *action;
+  actions::affActionPrimitivesLayer *actionL;
+  actions::affActionPrimitivesLayer *actionR;
+  actions::affActionPrimitivesLayer *action;
   BufferedPort<Bottle>       inPort;
   Port                       rpcPort;
   
