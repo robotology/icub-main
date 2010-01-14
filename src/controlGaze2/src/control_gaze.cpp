@@ -1635,6 +1635,9 @@ int Control_GazeModule::relmove(double *delta)
 		newpos[i] = headpos[i]+_fake_velocity_gain*delta[i]/controlrate;
 	}
 
+	//no swing
+	newpos[1] = 0; 
+
 	ipos->positionMove( newpos );
 
     return ret;
