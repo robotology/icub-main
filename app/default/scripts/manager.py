@@ -454,11 +454,18 @@ class App:
         node=mod.entryNode.get()
         parameters=mod.parameters
         name=mod.entryName.get()
+        workdir=mod.workdir
         
         if (stdioNode == "none"):
-            cmd=['yarprun', '--cmd', '\"'+name+' '+parameters+'\"', '--on', '/'+node, '--as', tag]
+            if(workdir == ""):
+                cmd=['yarprun', '--cmd', '\"'+name+' '+parameters+'\"', '--on', '/'+node, '--as', tag]
+            else:
+                cmd=['yarprun', '--cmd', '\"'+name+' '+parameters+'\"', '--on', '/'+node, '--as', tag, '--workdir',workdir]
         else:
-            cmd=['yarprun', '--cmd', '\"'+name+' '+parameters+'\"', '--on', '/'+node, '--as', tag, '--stdio', '/'+stdioNode]
+            if(workdir == ""):
+                cmd=['yarprun', '--cmd', '\"'+name+' '+parameters+'\"', '--on', '/'+node, '--as', tag, '--stdio', '/'+stdioNode]
+            else:
+                cmd=['yarprun', '--cmd', '\"'+name+' '+parameters+'\"', '--on', '/'+node, '--as', tag, '--stdio', '/'+stdioNode, '--workdir',workdir]
 
         print cmd
         ret=subprocess.Popen(cmd).wait()
