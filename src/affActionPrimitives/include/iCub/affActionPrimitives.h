@@ -641,9 +641,9 @@ public:
 * thresholding the low-level output signal. As soon as the 
 * contact is detected the reaching is suddenly stopped. 
 *  
-* \note Unlike the previous implementation of grasp() and 
-* touch(), the height of the object can be known just 
-* approximately. 
+* \note The benefit is that unlike the previous implementation 
+* of grasp() and touch(), the height of the object can be known 
+* just approximately. 
 *  
 * \note Given as an example 
 */
