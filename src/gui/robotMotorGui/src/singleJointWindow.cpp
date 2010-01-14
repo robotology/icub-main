@@ -184,6 +184,8 @@ bool partMover::entry_update(partMover *currentPart)
   GdkColor color_green;
   GdkColor color_red;
   GdkColor color_indaco;
+  GdkColor color_white;
+  GdkColor color_blue;
   
   color_red.red=219*255;
   color_red.green=166*255;
@@ -193,9 +195,17 @@ bool partMover::entry_update(partMover *currentPart)
   color_grey.green=220*255;
   color_grey.blue=220*255;
 
+  color_white.red=250*255;
+  color_white.green=250*255;
+  color_white.blue=250*255;
+
   color_green.red=149*255;
   color_green.green=221*255;
   color_green.blue=186*255;
+
+  color_blue.red=170*255;
+  color_blue.green=170*255;
+  color_blue.blue=230*255;
 
   color_indaco.red=219*255;
   color_indaco.green=196*255;
@@ -267,7 +277,7 @@ bool partMover::entry_update(partMover *currentPart)
   //control_mode++; if (control_mode>4) control_mode=0;
   switch (control_mode)
   {
-	  case MODE_IDLE:
+	  case VOCAB_CM_IDLE:
 		  pColor=&color_yellow;
 		  gtk_widget_modify_bg (colorback[k], GTK_STATE_NORMAL, pColor);
 	  break;
@@ -276,6 +286,10 @@ bool partMover::entry_update(partMover *currentPart)
 
 		  gtk_frame_set_label   (GTK_FRAME(currentPart->frame_slider1[k]),"Position:");
           gtk_frame_set_label   (GTK_FRAME(currentPart->frame_slider2[k]),"Velocity:");
+		  gtk_widget_modify_bg (colorback[k], GTK_STATE_NORMAL, pColor);
+	  break;
+	  case VOCAB_CM_VELOCITY:
+		  pColor=&color_blue;
 		  gtk_widget_modify_bg (colorback[k], GTK_STATE_NORMAL, pColor);
 	  break;
 	  case VOCAB_CM_TORQUE:
@@ -287,6 +301,10 @@ bool partMover::entry_update(partMover *currentPart)
 		  break;
 	  case MODE_IMPEDANCE:
 		  pColor=&color_indaco;
+		  gtk_widget_modify_bg (colorback[k], GTK_STATE_NORMAL, pColor);
+	  break;
+	  case VOCAB_CM_OPENLOOP:
+		  pColor=&color_white;
 		  gtk_widget_modify_bg (colorback[k], GTK_STATE_NORMAL, pColor);
 	  break;
 	  default:
