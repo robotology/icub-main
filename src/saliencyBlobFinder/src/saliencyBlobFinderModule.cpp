@@ -344,11 +344,13 @@ bool saliencyBlobFinderModule::respond(const Bottle &command,Bottle &reply){
                 this->blobFinder->resetFlags();
                 this->blobFinder->tagged_flag=true;
                 string s(command.get(3).asString().c_str());
+                ok=true;
             }
                 break;
             case COMMAND_VOCAB_KBU:{
                 double w = command.get(2).asDouble();
                 printf("%f",w);
+                ok=true;
             }
                 break;
             case COMMAND_VOCAB_KTD:{
