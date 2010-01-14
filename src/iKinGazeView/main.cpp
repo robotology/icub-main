@@ -1,7 +1,7 @@
 /** 
 \defgroup iKinGazeView iKinGazeView
  
-@ingroup icub_module 
+@ingroup icub_guis 
  
 A viewer for the iCub gaze implemented in MATLAB.
 

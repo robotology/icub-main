@@ -1,7 +1,7 @@
 /** 
 \defgroup iKinArmView iKinArmView
  
-@ingroup icub_module 
+@ingroup icub_guis 
  
 A viewer for the iCub arm implemented in MATLAB.
 
