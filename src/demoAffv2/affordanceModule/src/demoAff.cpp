@@ -737,6 +737,8 @@ bool DemoAff::close(){
       rpcPort.close();
     }
   
+  // This is not needed when using controlGaze2
+  /*
   double vels[20];
   if (_numHeadAxes > 0){
       for (int i=0; i<_numHeadAxes; i++){
@@ -745,6 +747,7 @@ bool DemoAff::close(){
       }
       ivel->velocityMove( vels );
   }
+  */
 
   if (_numTorsoAxes > 0){
       for (int i=0; i<_numTorsoAxes; i++){
@@ -860,8 +863,9 @@ bool DemoAff::updateModule(){
 
       //printf("To obs pos\n");
       
-      t_ipos->positionMove(torsoActPos);
-      ipos->positionMove(headActPos);
+	  // This is not needed when using controlGaze2
+      //ipos->positionMove(headActPos);
+	  t_ipos->positionMove(torsoActPos);
       printf("To act pos\n");
       cout << torsoActPos[0] << torsoActPos[1]<< torsoActPos[2] << endl;
 
@@ -1254,13 +1258,23 @@ bool DemoAff::updateModule(){
         action->grasp(graspPosition ,*graspOrien,*graspDisp);
         action->checkActionsDone(b, true);
 
-        // TODO: check successful grasp
-        emotionCtrl("hap");
 
-        // lift the object (wait until it's done)
-        action->pushAction(graspPosition + *dLift, *graspOrien);
-        action->checkActionsDone(b, true);
-
+        // check successful grasp
+		// if fingers are not in position,
+        // it's likely that we've just grasped
+        // something, so lift it up!
+        if (!action->areFingersInPosition())
+        {
+			emotionCtrl("hap");    
+            // lift the object (wait until it's done)
+			action->pushAction(graspPosition + *dLift, *graspOrien);
+			action->checkActionsDone(b, true);
+        }
+        else
+		{
+            emotionCtrl("sad");      
+		}
+        
         // release the object (wait until it's done)
         action->pushAction("open_hand");
         action->checkActionsDone(b, true);
@@ -1588,6 +1602,7 @@ bool DemoAff::getObjInfo() {
 
 
 // This may be removed if we can use the ControlGaze properly
+/*
 bool DemoAff::InitHead(){
 
 	Property propBoard;
@@ -1643,6 +1658,7 @@ bool DemoAff::InitHead(){
 
     return true;
 }
+*/
 
 // This may be removed if we can use the ControlGaze properly
 bool DemoAff::InitTorso(){
@@ -1700,3 +1716,36 @@ bool DemoAff::InitTorso(){
     return true;
 }
 
+// Functions to command controlGaze2
+void DemoAff::controlGazeSaccadeAbsolute(double az, double el)
+{
+	VectorOf<double> &vctPos = port_gazepos_out.prepare();
+    vctPos.resize(3);
+    vctPos(0) = az;
+    vctPos(1) = el;
+	vctPos(2) = (double)(int)'a';
+    // write output vector
+    port_gazepos_out.write(); 
+}
+
+void DemoAff::controlGazeSaccadePixel(double x, double y)
+{
+	VectorOf<double> &vctPos = port_gazepos_out.prepare();
+    vctPos.resize(2);
+    vctPos(0) = x;
+    vctPos(1) = y;
+    // write output vector
+    port_gazepos_out.write(); 
+}
+
+
+void DemoAff::controlGazePursuitPixel(double x, double y)
+{
+	VectorOf<double> &vctVel = port_gazevel_out.prepare();
+    vctVel.resize(3);
+    vctPos(0) = x;
+    vctPos(1) = y;
+	vctVel(2) = (double)(int)'i';
+    // write output vector
+    port_gazepos_out.write(); 
+}

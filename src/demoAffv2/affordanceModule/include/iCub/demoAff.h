@@ -76,6 +76,11 @@ using namespace vislab::math;
 class DemoAff : public RFModule {
 
 private:
+
+  // Functions to command controlGaze2
+  void controlGazeSaccadeAbsolute(double az, double el);
+  void controlGazeSaccadePixel(double x, double y);
+  void controlGazePursuitPixel(double x, double y);
   // TODO: sorry for squeezing everything to the top :]
   // Hand orientations
   static std::map<std::string, yarp::sig::Matrix> palmOrientations;
@@ -97,8 +102,8 @@ private:
 
 
   // control gaze
-  BufferedPort<Bottle> port_gazepos_out;
-  BufferedPort<Bottle> port_gazevel_out;
+  BufferedPort<Vector> port_gazepos_out;
+  BufferedPort<Vector> port_gazevel_out;
 
   // behavior
   BufferedPort<Bottle> port_behavior_in;
@@ -242,6 +247,8 @@ protected:
   Vector rotVec;
 
   // head interface
+  // This is not needed when using controlGaze2
+  /*
   yarp::dev::PolyDriver                           dd;
   yarp::dev::IPositionControl                     *ipos;
   yarp::dev::IVelocityControl                     *ivel;
@@ -249,6 +256,7 @@ protected:
   yarp::dev::IAmplifierControl                  *iamp;
   yarp::dev::IPidControl                          *ipid;
   yarp::dev::IControlLimits                       *ilim;
+  */
 
   // Torso interface
   yarp::dev::PolyDriver                           t_dd;
@@ -260,9 +268,10 @@ protected:
   yarp::dev::IControlLimits                       *t_ilim;
 
   bool InitTorso();
-  bool InitHead();
-
-  int _numHeadAxes,_numTorsoAxes;
+  int _numTorsoAxes;
+  // This is not needed when using controlGaze2
+  //bool InitHead();
+  int _numHeadAxes;
 
 
 public:
