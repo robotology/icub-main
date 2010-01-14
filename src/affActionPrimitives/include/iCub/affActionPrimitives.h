@@ -45,6 +45,9 @@
  * reaching movement and fingers actuations, complying with the 
  * time requirements of the synchronized sequence. 
  *  
+ * It is also given the option to execute a callback whenever an
+ * action is accomplished. 
+ *  
  * To detect contacts among fingers and objects the \ref 
  * icub_graspDetector module is employed.
  */ 
