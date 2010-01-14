@@ -180,9 +180,9 @@ protected:
   // affActionPrimitive member variable
   string partUsed;
 
-  affActionPrimitivesLayer1 *actionL;
-  affActionPrimitivesLayer1 *actionR;
-  affActionPrimitivesLayer1 *action;
+  actions::affActionPrimitivesLayer1 *actionL;
+  actions::affActionPrimitivesLayer1 *actionR;
+  actions::affActionPrimitivesLayer1 *action;
   BufferedPort<Bottle>       inPort;
   Port                       rpcPort;
   

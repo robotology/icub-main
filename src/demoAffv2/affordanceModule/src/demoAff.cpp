@@ -10,6 +10,7 @@
 
 
 using namespace ctrl;
+using namespace actions;
  
 enum stateenum {
   FIRSTINIT,
@@ -60,7 +61,7 @@ enum objselectsubstates {
 
 static const char colors[16][16]={"red","red","orange","orange","yellow","yellow","green","green","green","blue","blue","blue","indigo","indigo","violet","violet"};
 static const char shapes[2][16]={"ball","box"};
-static const char actions[3][16]={"grasp","tap","touch"};
+static const char affActions[3][16]={"grasp","tap","touch"};
 
 
 int trrest;
@@ -1097,7 +1098,7 @@ bool DemoAff::updateModule(){
 	objposreach[1] = trackDescTable[selectedobj].roi_y;
 	printf("\n\n\n\n\n\n\n\n\n\n\n\n\n");
 	printf("Selected a %s on the %s %s located at pos %d <%g %g>\n", 
-	       actions[selectedaction], colors[colorObj[selectedobj]], 
+	       affActions[selectedaction], colors[colorObj[selectedobj]], 
 	       shapes[shapeObj[selectedobj]], selectedobj,objposreach[0],
 	       objposreach[1]);
 	state=REACHING;
