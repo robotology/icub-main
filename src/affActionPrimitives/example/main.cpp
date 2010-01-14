@@ -93,6 +93,7 @@ should look like as follows:
 [general]
 // options used to open a affActionPrimitives object 
 robot                           icub
+thread_period                   50
 default_exec_time               3.0
 reach_tol                       0.007
 verbosity                       on 
@@ -155,6 +156,7 @@ using namespace yarp::os;
 using namespace yarp::sig;
 using namespace yarp::dev;
 using namespace yarp::math;
+using namespace actions;
 
 
 class exampleModule: public RFModule

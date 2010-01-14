@@ -68,6 +68,10 @@
 
 #define ACTIONPRIM_DISABLE_EXECTIME    -1
 
+
+namespace actions
+{
+
 /**
 * \ingroup affActionPrimitives
 *
@@ -606,6 +610,25 @@ public:
 };
 
 
+// forward declaration
+class affActionPrimitivesLayer2;
+
+
+// class for switching on/off the wrist joint
+class switchingWristDof : public affActionCallback
+{
+protected:
+    affActionPrimitivesLayer2 *action;
+    yarp::sig::Vector sw;
+
+public:
+    switchingWristDof(affActionPrimitivesLayer2 *_action, yarp::sig::Vector &_sw) :
+                      action(_action), sw(_sw) { }
+
+    virtual void exec();
+};
+
+
 /**
 * \ingroup affActionPrimitives
 *
@@ -636,32 +659,13 @@ protected:
 
     yarp::dev::IPidControl *pidCtrl;
 
-    class switchingWristDof : public affActionCallback
-    {
-    protected:
-        yarp::dev::ICartesianControl *cartCtrl;
-        yarp::sig::Vector sw;
-        bool *checkFlag;
-    public:
-        switchingWristDof(yarp::dev::ICartesianControl *_cartCtrl,
-                          yarp::sig::Vector _sw,
-                          bool *_checkFlag) : 
-                          cartCtrl(_cartCtrl), sw(_sw), checkFlag(_checkFlag) { }
-        virtual void exec()
-        {
-            yarp::sig::Vector dummyRet;
-            cartCtrl->setDOF(sw,dummyRet);
-
-            if (checkFlag)
-                *checkFlag=!*checkFlag;
-        }
-    };
-
     switchingWristDof *disableWristDof; 
     switchingWristDof *enableWristDof;
 
     virtual void init();
     virtual void run();
+
+    friend class switchingWristDof;
 
 public:
     /**
@@ -692,10 +696,12 @@ public:
     *  
     * \note Further available options are: 
     *  
-    * \b wrist_joint (<int> <double>): specify the wrist joint to be 
-    *    blocked while grasping/touching and the corresponding
-    *    threshold for the output signal to detect contact with
-    *    object.
+    * \b wrist_joint <int>: specify the wrist joint to be blocked
+    *    while grasping/touching.
+    *  
+    * \b wrist_thres <double>: specify the threshold for the output 
+    *    signal to detect contact between wrist and objects while
+    *    grasping/touching.
     * 
     */
     virtual bool open(yarp::os::Property &opt);
@@ -706,6 +712,7 @@ public:
                        const yarp::sig::Vector &d);
 };
 
+}
 
 #endif
 

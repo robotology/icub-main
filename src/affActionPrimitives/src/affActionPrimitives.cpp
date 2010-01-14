@@ -17,6 +17,8 @@
 #define ACTIONPRIM_DEFAULT_EXECTIME         2.0     // [s]
 #define ACTIONPRIM_DEFAULT_REACHTOL         0.005   // [m]
 #define ACTIONPRIM_DUMP_PERIOD              1.0     // [s]
+#define ACTIONPRIM_DEFAULT_WRIST_JOINT      8
+#define ACTIONPRIM_DEFAULT_WRIST_THRES      1e9
 #define ACTIONPRIM_DEFAULT_PART             "right_arm"
 #define ACTIONPRIM_DEFAULT_TRACKINGMODE     "off"
 #define ACTIONPRIM_DEFAULT_VERBOSITY        "off"
@@ -28,6 +30,7 @@ using namespace yarp::dev;
 using namespace yarp::sig;
 using namespace yarp::math;
 using namespace ctrl;
+using namespace actions;
 
 
 /************************************************************************/
@@ -779,17 +782,18 @@ void affActionPrimitives::run()
     latchHandMoveDone=handMoveDone;
 
     if (latchArmMoveDone && latchHandMoveDone && (t-latchTimer>waitTmo))
-    {
-        // execute action-end callback
-        if (actionClb)
-        {            
-            actionClb->exec();
-            actionClb=NULL;
-        }
-    
         if (!execQueuedAction())
+        {    
             RES_EVENT(motionDoneEvent)->signal();
-    }
+
+            // execute action-end callback
+            if (actionClb)
+            {
+                printMessage("executing action callback\n");
+                actionClb->exec();
+                actionClb=NULL;
+            }
+        }
 }
 
 
@@ -1146,6 +1150,19 @@ bool affActionPrimitivesLayer1::tap(const Vector &x1, const Vector &o1,
 
 
 /************************************************************************/
+void switchingWristDof::exec()
+{
+    action->printMessage("%s the wrist joint %d\n",
+                         sw[action->wrist_joint]?"enabling":"disabling",
+                         action->wrist_joint);
+
+    yarp::sig::Vector dummyRet;
+    action->cartCtrl->setDOF(sw,dummyRet);
+    action->enableWristCheck=!action->enableWristCheck;
+}
+
+
+/************************************************************************/
 affActionPrimitivesLayer2::affActionPrimitivesLayer2() :
                            affActionPrimitivesLayer1()
 {
@@ -1172,10 +1189,6 @@ void affActionPrimitivesLayer2::init()
 
     disableWristDof=NULL;
     enableWristDof=NULL;
-
-    // default values
-    wrist_joint=8;
-    wrist_thres=1e9;
 }
 
 
@@ -1218,16 +1231,8 @@ bool affActionPrimitivesLayer2::open(Property &opt)
 
     if (configured)
     {    
-        if (Bottle *bWrist=opt.find("wrist_joint").asList())
-        {
-            if (bWrist->size()>1)
-            {
-                wrist_joint=bWrist->get(0).asInt();
-                wrist_thres=bWrist->get(1).asDouble();
-            }
-            else
-                printMessage("WARNING: invalid \"wrist_joint\" option\n");
-        }
+        wrist_joint=opt.check("wrist_joint",Value(ACTIONPRIM_DEFAULT_WRIST_JOINT)).asInt();
+        wrist_thres=opt.check("wrist_thres",Value(ACTIONPRIM_DEFAULT_WRIST_THRES)).asDouble();
 
         // check wrist params
         Vector curDof;
@@ -1245,8 +1250,8 @@ bool affActionPrimitivesLayer2::open(Property &opt)
         enableWristSw[wrist_joint]=1;
 
         // create callbacks
-        disableWristDof=new switchingWristDof(cartCtrl,disableWristSw,&enableWristCheck);
-        enableWristDof =new switchingWristDof(cartCtrl,enableWristSw,&enableWristCheck);
+        disableWristDof=new switchingWristDof(this,disableWristSw);
+        enableWristDof =new switchingWristDof(this,enableWristSw);
 
         polyHand->view(pidCtrl);
 
