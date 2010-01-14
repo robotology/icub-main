@@ -1,7 +1,7 @@
 /** 
 \defgroup signalScope signalScope
  
-@ingroup icub_module 
+@ingroup icub_guis
  
 A MATLAB scope which displays signal acquired form a YARP port 
 along with its FFT. 
