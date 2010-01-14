@@ -738,9 +738,10 @@ bool DemoAff::close(){
       rpcPort.close();
     }
   
+  double vels[20];
+  
   // This is not needed when using controlGaze2
   /*
-  double vels[20];
   if (_numHeadAxes > 0){
       for (int i=0; i<_numHeadAxes; i++){
         ipos->positionMove( i, 0);
@@ -992,15 +993,9 @@ bool DemoAff::updateModule(){
   case OBJSELEC: 
     {
       // Look for objects
-      Bottle& outputGaze = port_gazepos_out.prepare();
-      outputGaze.clear();
-      outputGaze.addDouble(headPosActAz);
-      outputGaze.addDouble(headPosActEl);
-      outputGaze.addDouble(0.0);
-      port_behavior_out.write();
+      controlGazeSaccadeAbsolute(headPosActAz, headPosActEl);
       
-      
-      yarp::os::Time::delay(0.1);                 
+	  yarp::os::Time::delay(0.1);                 
       
       bool done=true;
       Bottle *input_obj;
@@ -1721,7 +1716,7 @@ bool DemoAff::InitTorso(){
 // Functions to command controlGaze2
 void DemoAff::controlGazeSaccadeAbsolute(double az, double el)
 {
-	VectorOf<double> &vctPos = port_gazepos_out.prepare();
+	Vector &vctPos = port_gazepos_out.prepare();
     vctPos.resize(3);
     vctPos(0) = az;
     vctPos(1) = el;
@@ -1732,7 +1727,7 @@ void DemoAff::controlGazeSaccadeAbsolute(double az, double el)
 
 void DemoAff::controlGazeSaccadePixel(double x, double y)
 {
-	VectorOf<double> &vctPos = port_gazepos_out.prepare();
+	Vector &vctPos = port_gazepos_out.prepare();
     vctPos.resize(2);
     vctPos(0) = x;
     vctPos(1) = y;
@@ -1743,7 +1738,7 @@ void DemoAff::controlGazeSaccadePixel(double x, double y)
 
 void DemoAff::controlGazePursuitPixel(double x, double y)
 {
-	VectorOf<double> &vctVel = port_gazevel_out.prepare();
+	Vector &vctVel = port_gazevel_out.prepare();
     vctVel.resize(3);
     vctPos(0) = x;
     vctPos(1) = y;
