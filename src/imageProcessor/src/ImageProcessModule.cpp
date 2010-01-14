@@ -204,15 +204,7 @@ void ImageProcessModule::reinitialise(int weight, int height){
 
 
 bool ImageProcessModule::updateModule() {
-    //check for any possible command
-    Bottle* command=cmdPort.read(false);
-    if(command!=0){
-        //Bottle* tmpBottle=cmdPort.read(false);
-        ConstString str= command->toString();
-        printf("command received: %s \n", str.c_str());
-        Bottle* reply=new Bottle();
-        this->respond(*command,*reply);
-    }
+    
 
     /*this->inputImg = this->inImagePort.read(false);
     if(0==inputImg)
@@ -254,6 +246,17 @@ bool ImageProcessModule::updateModule() {
     if(0!=currentProcessor->greenRed_yarp){
         currentProcessor->greenRed_flag=true;
         currentProcessor->greenRedEdges_yarp=currentProcessor->findEdgesGreenOpponency();
+    }
+
+    //check for any possible command
+    Bottle* command=cmdPort.read(false);
+    if(command!=0){
+        //Bottle* tmpBottle=cmdPort.read(false);
+        ConstString str= command->toString();
+        printf("command received: %s \n", str.c_str());
+        Bottle* reply=new Bottle();
+        this->respond(*command,*reply);
+        command->clear();
     }
 
     if((currentProcessor->redGreen_flag)&&(currentProcessor->greenRed_flag)&&(currentProcessor->blueYellow_flag)){

@@ -162,6 +162,7 @@ class ImageProcessor:public RateThread
         */
         int height; //
         
+        
     public:
         /**
         * default constructor
@@ -225,7 +226,7 @@ class ImageProcessor:public RateThread
         * function that blanks out the border of a given image
         * @param the input image which is modified by the function
         */
-        void blankBorder(Ipp8u* image);
+        void blankBorder(Ipp8u* image, int maxLines=3);
         /**
         * gets as output the outputImage (last image produced)
         */

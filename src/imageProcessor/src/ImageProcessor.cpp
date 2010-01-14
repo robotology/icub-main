@@ -425,11 +425,10 @@ ImageOf<PixelMono>* ImageProcessor::findEdgesBlueOpponency(){
                     -2,-1, 0};*/
     
     Ipp32f* inputBlueYellow32 = ippiMalloc_32f_C1(width,height,&psb32);
-    Ipp32f* outputBlueYellow32 = ippiMalloc_32f_C1(width,height,&psb32);
     Ipp8u* outputBlueYellow = ippiMalloc_8u_C1(width,height,&psb);
     Ipp8u* outputBlueYellow2 = ippiMalloc_8u_C1(width,height,&psb);
     Ipp8u* outputBlueYellow3 = ippiMalloc_8u_C1(width,height,&psb);
-    Ipp32f* outputBlueYellow32B = ippiMalloc_32f_C1(width,height,&psb32);
+    
 
     //Ipp8u dst2[2*2];
     Ipp8u *pointer=NULL;
@@ -452,6 +451,8 @@ ImageOf<PixelMono>* ImageProcessor::findEdgesBlueOpponency(){
     //ippiConvert_8u32f_C1R(blueYellow_yarp->getPixelAddress(0,0),width,inputBlueYellow32,psb32,srcsize);
 
     if(CONVSEQ){
+        Ipp32f* outputBlueYellow32 = ippiMalloc_32f_C1(width,height,&psb32);
+        Ipp32f* outputBlueYellow32B = ippiMalloc_32f_C1(width,height,&psb32);
         //convolution of the previous convolution
         int CONVSEQ_TH=700;
         ippiConvValid_32f_C1R(inputBlueYellow32,psb32,srcsize,src0f,3,src2Size,&outputBlueYellow32[1 + psb32*1],psb32);
@@ -469,9 +470,13 @@ ImageOf<PixelMono>* ImageProcessor::findEdgesBlueOpponency(){
         ippiConvValid_32f_C1R(outputBlueYellow32B,psb32,srcsize,src6f,3,src2Size,&outputBlueYellow32[1 + psb32*1],psb32);
         ippiCopy_32f_C1R(outputBlueYellow32,psb32,outputBlueYellow32B,psb32,srcsize);
         ippiConvValid_32f_C1R(outputBlueYellow32B,psb32,srcsize,src7f,3,src2Size,&outputBlueYellow32[1 + psb32*1],psb32);
+        ippiFree(&outputBlueYellow32[1 + psb32*1]);
+        ippiFree(outputBlueYellow32B);
     }
 
     if(CONVMAX){
+        Ipp32f* outputBlueYellow32 = ippiMalloc_32f_C1(width,height,&psb32);
+        Ipp32f* outputBlueYellow32B = ippiMalloc_32f_C1(width,height,&psb32);
         int CONVMAX_TH=700;
         ippiConvValid_32f_C1R(inputBlueYellow32,psb32,srcsize,&src0f[0],3,src2Size,&outputBlueYellow32[1 + psb32*1],psb32);
         ippiConvValid_32f_C1R(inputBlueYellow32,psb32,srcsize,&src1f[0],3,src2Size,&outputBlueYellow32B[1 + psb32*1],psb32);
@@ -509,6 +514,8 @@ ImageOf<PixelMono>* ImageProcessor::findEdgesBlueOpponency(){
             if(outputBlueYellow32[i]<outputBlueYellow32B[i])
                 outputBlueYellow32[i]=outputBlueYellow32B[i];
         }
+        ippiFree(&outputBlueYellow32[1 + psb32*1]);
+        ippiFree(outputBlueYellow32B);
 }
 
     if (CONVFILTER){
@@ -631,6 +638,7 @@ ImageOf<PixelMono>* ImageProcessor::findEdgesBlueOpponency(){
     //ippiThreshold_8u_C1R(outputRedGreen,psb,redGreenEdges->getPixelAddress(0,0),psb,srcsize,(Ipp8u) 50 ,ippCmpGreater);
     //5. save the output into the outputImage
     //ippiThreshold_8u_C1IR(outputRedGreen,psb,srcsize,100,ippCmpGreater);
+    blankBorder(outputBlueYellow);
     ippiCopy_8u_C1R(outputBlueYellow,psb,blueYellowEdges->getRawImage(),psb,srcsize);
     
     //ippiAdd_8u_C1IRSfs(redGreenEdges->getPixelAddress(0,0),width,redGreenEdges->getPixelAddress(0,0),width,srcsize,0.5);
@@ -640,8 +648,8 @@ ImageOf<PixelMono>* ImageProcessor::findEdgesBlueOpponency(){
     ippiFree(outputBlueYellow);
     ippiFree(outputBlueYellow2);
     ippiFree(outputBlueYellow3);
-    ippiFree(outputBlueYellow32);
-    ippiFree(outputBlueYellow32B);
+    //ippiFree(outputBlueYellow32);
+    //ippiFree(outputBlueYellow32B);
     ippiFree(inputBlueYellow32);
 
 
@@ -728,12 +736,13 @@ ImageOf<PixelMono>* ImageProcessor::findEdgesGreenOpponency(){
                     -1, 0, 1,
                     -2,-1, 0};*/
     
-    Ipp32f* outputGreenRed32 = ippiMalloc_32f_C1(width,height,&psb32);
-    Ipp32f* inputGreenRed32 = ippiMalloc_32f_C1(width,height,&psb32);
+    
+     Ipp32f* inputGreenRed32 = ippiMalloc_32f_C1(width,height,&psb32);
     Ipp8u* outputGreenRed = ippiMalloc_8u_C1(width,height,&psb);
     Ipp8u* outputGreenRed2 = ippiMalloc_8u_C1(width,height,&psb);
     Ipp8u* outputGreenRed3 = ippiMalloc_8u_C1(width,height,&psb);
-    Ipp32f* outputGreenRed32B = ippiMalloc_32f_C1(width,height,&psb32);
+    
+
     //Ipp8u dst2[2*2];
     Ipp8u *pointer=NULL;
     //*pointer=src1[0];
@@ -754,6 +763,8 @@ ImageOf<PixelMono>* ImageProcessor::findEdgesGreenOpponency(){
     //ippiConvert_8u32f_C1R(greenRed_yarp->getPixelAddress(0,0),width,inputGreenRed32,psb32,srcsize);
 
     if(CONVSEQ){
+        Ipp32f* outputGreenRed32 = ippiMalloc_32f_C1(width,height,&psb32);
+        Ipp32f* outputGreenRed32B = ippiMalloc_32f_C1(width,height,&psb32);
         //convolution of the previous convolution
         ippiConvValid_32f_C1R(inputGreenRed32,psb32,srcsize,src0f,3,src2Size,&outputGreenRed32[1 + psb32*1],psb32);
         ippiCopy_32f_C1R(outputGreenRed32,psb32,outputGreenRed32B,psb32,srcsize);
@@ -770,9 +781,13 @@ ImageOf<PixelMono>* ImageProcessor::findEdgesGreenOpponency(){
         ippiConvValid_32f_C1R(outputGreenRed32B,psb32,srcsize,src6f,3,src2Size,&outputGreenRed32[1 + psb32*1],psb32);
         ippiCopy_32f_C1R(outputGreenRed32,psb32,outputGreenRed32B,psb32,srcsize);
         ippiConvValid_32f_C1R(outputGreenRed32B,psb32,srcsize,src7f,3,src2Size,&outputGreenRed32[1 + psb32*1],psb32);
+        ippiFree(&outputGreenRed32[1 + psb32*1]);
+        ippiFree(outputGreenRed32B);
     }
 
     if(CONVMAX){
+        Ipp32f* outputGreenRed32 = ippiMalloc_32f_C1(width,height,&psb32);
+        Ipp32f* outputGreenRed32B = ippiMalloc_32f_C1(width,height,&psb32);
         int CONVMAX_TH=700;
         ippiConvValid_32f_C1R(inputGreenRed32,width,srcsize,&src0f[0],3,src2Size,&outputGreenRed32[1 + width*1],psb32);
         ippiConvValid_32f_C1R(inputGreenRed32,width,srcsize,&src1f[0],3,src2Size,&outputGreenRed32B[1 + width*1],psb32);
@@ -810,6 +825,8 @@ ImageOf<PixelMono>* ImageProcessor::findEdgesGreenOpponency(){
             if(outputGreenRed32[i]<outputGreenRed32B[i])
                 outputGreenRed32[i]=outputGreenRed32B[i];
         }
+        ippiFree(&outputGreenRed32[1 + psb32*1]);
+        ippiFree(outputGreenRed32B);
     }
     if (CONVFILTER){
         int CONVFILTER_TH=20;
@@ -930,6 +947,7 @@ ImageOf<PixelMono>* ImageProcessor::findEdgesGreenOpponency(){
     //ippiThreshold_8u_C1R(outputRedGreen,psb,redGreenEdges->getPixelAddress(0,0),psb,srcsize,(Ipp8u) 50 ,ippCmpGreater);
     //5. save the output into the outputImage
     //ippiThreshold_8u_C1IR(outputRedGreen,psb,srcsize,100,ippCmpGreater);
+    blankBorder(outputGreenRed);
     ippiCopy_8u_C1R(outputGreenRed,psb,greenRedEdges->getRawImage(),psb,srcsize);
     //ippiAdd_8u_C1IRSfs(redGreenEdges->getPixelAddress(0,0),width,redGreenEdges->getPixelAddress(0,0),width,srcsize,0.5);
     //ippiCopy_8u_C1R(outputGreenRed,width,greenRedEdges_yarp->getPixelAddress(0,0),width,srcsize);
@@ -938,8 +956,7 @@ ImageOf<PixelMono>* ImageProcessor::findEdgesGreenOpponency(){
     ippiFree(outputGreenRed);
     ippiFree(outputGreenRed2);
     ippiFree(outputGreenRed3);
-    ippiFree(outputGreenRed32);
-    ippiFree(outputGreenRed32B);
+    
     ippiFree(inputGreenRed32);
 
     return greenRedEdges;
@@ -1020,11 +1037,12 @@ ImageOf<PixelMono>* ImageProcessor::findEdgesRedOpponency(){
                     -2,-1, 0};*/
     
     Ipp32f* inputRedGreen32 = ippiMalloc_32f_C1(width,height,&psb32);
-    Ipp32f* outputRedGreen32 = ippiMalloc_32f_C1(width,height,&psb32);
+   
     Ipp8u* outputRedGreen = ippiMalloc_8u_C1(width,height,&psb);
     Ipp8u* outputRedGreen2 = ippiMalloc_8u_C1(width,height,&psb);
     Ipp8u* outputRedGreen3 = ippiMalloc_8u_C1(width,height,&psb);
-    Ipp32f* outputRedGreen32B = ippiMalloc_32f_C1(width,height,&psb32);
+   
+    
     //printf("psb:%d /n",psb);
     //Ipp8u dst2[2*2];
     //Ipp8u *pointer=NULL;
@@ -1045,6 +1063,8 @@ ImageOf<PixelMono>* ImageProcessor::findEdgesRedOpponency(){
     //conv_8u_to_32f(redGreen_yarp->getPixelAddress(0,0),width,inputRedGreen32,psb32,srcsize);
 
     if(CONVSEQ){
+        Ipp32f* outputRedGreen32 = ippiMalloc_32f_C1(width,height,&psb32);
+        Ipp32f* outputRedGreen32B = ippiMalloc_32f_C1(width,height,&psb32); 
         int CONVSEQ_TH=600;
         //convolution of the previous convolution
         ippiConvValid_32f_C1R(inputRedGreen32,psb32,srcsize,src0f,3,src2Size,&outputRedGreen32[1 + psb32*1],psb32);
@@ -1062,10 +1082,14 @@ ImageOf<PixelMono>* ImageProcessor::findEdgesRedOpponency(){
         ippiConvValid_32f_C1R(outputRedGreen32B,psb32,srcsize,src6f,3,src2Size,&outputRedGreen32[1 + psb32*1],psb32);
         ippiCopy_32f_C1R(outputRedGreen32,psb32,outputRedGreen32B,psb32,srcsize);
         ippiConvValid_32f_C1R(outputRedGreen32B,psb32,srcsize,src7f,3,src2Size,&outputRedGreen32[1 + psb32*1],psb32);
+        ippiFree(&outputRedGreen32[1 + psb32*1]);
+        ippiFree(outputRedGreen32B);
     }
 
     if(CONVMAX){
         int CONVMAX_TH=700;
+        Ipp32f* outputRedGreen32 = ippiMalloc_32f_C1(width,height,&psb32);
+        Ipp32f* outputRedGreen32B = ippiMalloc_32f_C1(width,height,&psb32);
         ippiConvValid_32f_C1R(inputRedGreen32,psb32,srcsize,&src0f[0],3,src2Size,&outputRedGreen32[1 + psb32*1],psb32);
         ippiConvValid_32f_C1R(inputRedGreen32,psb32,srcsize,&src1f[0],3,src2Size,&outputRedGreen32B[1 + psb32*1],psb32);
         for(int i=0; i<320*240;i++){
@@ -1102,6 +1126,8 @@ ImageOf<PixelMono>* ImageProcessor::findEdgesRedOpponency(){
             if(outputRedGreen32[i]<outputRedGreen32B[i])
                 outputRedGreen32[i]=outputRedGreen32B[i];
         }
+        ippiFree(&outputRedGreen32[1 + psb32*1]);
+        ippiFree(outputRedGreen32B);
     }
 
     if (CONVFILTER){
@@ -1221,6 +1247,7 @@ ImageOf<PixelMono>* ImageProcessor::findEdgesRedOpponency(){
     //ippiThreshold_8u_C1R(outputRedGreen,psb,redGreenEdges->getPixelAddress(0,0),psb,srcsize,(Ipp8u) 50 ,ippCmpGreater);
     //5. save the output into the outputImage
     //ippiThreshold_8u_C1IR(outputRedGreen,psb,srcsize,100,ippCmpGreater);
+    blankBorder(outputRedGreen);
     ippiCopy_8u_C1R(outputRedGreen,psb,redGreenEdges->getRawImage(),redGreenEdges->getRowSize(),srcsize);
     
     //ippiAdd_8u_C1IRSfs(redGreenEdges->getPixelAddress(0,0),width,redGreenEdges->getPixelAddress(0,0),width,srcsize,0.5);
@@ -1230,16 +1257,28 @@ ImageOf<PixelMono>* ImageProcessor::findEdgesRedOpponency(){
     ippiFree(outputRedGreen);
     ippiFree(outputRedGreen2);
     ippiFree(outputRedGreen3);
-    ippiFree(outputRedGreen32);
-    ippiFree(outputRedGreen32B);
     ippiFree(inputRedGreen32);
 
     return redGreenEdges;
 }
 
-void ImageProcessor::blankBorder(Ipp8u* image){
-   
+/**
+*blank maxk numbers of rows from the top and the bottom of the image
+* @param image input image
+* @param maxk number of lines removed both from the top and the bottm
+*/
+void ImageProcessor::blankBorder(Ipp8u* image, int maxk){
+    int height=320;
+    int width=240;
+
     
+    int y0=0,ylast=height-1;
+    
+    for(int x=0;x<width;x++)
+     for(int k=0;k<maxk;k++){
+        image[x+(y0+k)*width]=(Ipp8u)0;
+        image[x+(ylast-k)*width]=(Ipp8u)0;
+    }
 }
 
 
@@ -1253,6 +1292,7 @@ void ImageProcessor::blankBorder(Ipp8u* image){
     //2. convolve every colour opponency with the sobel in order to get edges
     Ipp8u src2[3*3]={0, 1 ,2,-1,0,1,-2,-1,0};
     //Ipp8u* outputRedGreen = ippiMalloc_8u_C1(width,height,&psb);
+
     Ipp8u* output = ippiMalloc_8u_C1(width,height,&psb);
     //Ipp8u* outputBlueYellow = ippiMalloc_8u_C1(width,height,&psb);
     Ipp8u dst2[2*2];
@@ -1977,7 +2017,7 @@ ImageOf<PixelMono>* ImageProcessor::combineMax(){
     /*ippiAdd_8u_C1IRSfs(edgesGreen_ippi,psb,edgesOutput->getPixelAddress(0,0),width,srcsize,1);
     ippiAdd_8u_C1IRSfs(edgesRed_ippi,psb,edgesOutput->getPixelAddress(0,0),width,srcsize,1);
     ippiAdd_8u_C1IRSfs(edgesBlue_ippi,psb,edgesOutput->getPixelAddress(0,0),width,srcsize,1);*/
-
+    blankBorder(edgesOutput_ippi);
     ippiCopy_8u_C1R(edgesOutput_ippi,psb,edgesOutput->getRawImage(),edgesOutput->getRowSize(),srcsize);
     //edgesOutput->setExternal((unsigned char*)pointerRed,height,width);
 
