@@ -11,13 +11,12 @@
 #define __ICUB_TEST_XML_PRINTER_01122009__
 
 #include <vector>
-
-#include <yarp/os/impl/String.h>
+#include <string>
 
 class XMLPrinter
 {
 public:
-    XMLPrinter(yarp::os::impl::String& filename)
+    XMLPrinter(std::string& filename)
     {
         m_pFile=fopen(filename.c_str(),"wb");
 
@@ -35,7 +34,7 @@ public:
         m_Stack.clear();
     }
     
-    void XML(char* tag,yarp::os::impl::String data)
+    void XML(char* tag,std::string data)
     {
         Tabs();
         fprintf(m_pFile,"<%s>%s</%s>\n",tag,data.c_str(),tag);
@@ -43,7 +42,7 @@ public:
     void XMLopen(char *tag)
     {
         Tabs(1);
-        m_Stack.push_back(yarp::os::impl::String(tag));
+        m_Stack.push_back(std::string(tag));
         fprintf(m_pFile,"<%s>\n",tag);
     }
     void XMLclose()
@@ -56,7 +55,7 @@ public:
 protected:
     FILE *m_pFile;
     int m_Tabs;
-    std::vector<yarp::os::impl::String> m_Stack;
+    std::vector<std::string> m_Stack;
 
     void Tabs(int move=0)
     {

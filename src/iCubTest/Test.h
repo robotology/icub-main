@@ -10,9 +10,19 @@
 #ifndef __ICUB_TEST_01122009__
 #define __ICUB_TEST_01122009__
 
-#include <vector>
+// sostituire stringhe // OK
+// nome classe file    // OK
+// ritornare i report come return di run()
+// risultato dei test su consolle
+// numero di fallimenti nei valori di ritorno dei test
+// criticità nei fallimenti
+// nome: iCubDriver
+// 
 
-#include <yarp/os/impl/String.h>
+#include <vector>
+#include <string>
+#include <time.h>
+
 #include <yarp/os/Searchable.h>
 #include <yarp/os/Value.h>
 
@@ -57,7 +67,7 @@ public:
         struct tm * timeinfo;
         time(&rawtime);
         timeinfo=localtime(&rawtime);
-        m_sDateTime=yarp::os::impl::String(asctime(timeinfo));
+        m_sDateTime=std::string(asctime(timeinfo));
     }
 
     void PrintReport(XMLPrinter& printer)
@@ -68,7 +78,7 @@ public:
                 printer.XML("datetime",m_sDateTime);
                 printer.XML("part",m_sPart);
             printer.XMLclose();
-            printer.XML("outcome",yarp::os::impl::String(m_bSuccess?"SUCCESS":"FAILURE"));
+            printer.XML("outcome",std::string(m_bSuccess?"SUCCESS":"FAILURE"));
 
             for (unsigned int i=0; i<m_aOutput.size(); ++i)
             {
@@ -81,10 +91,10 @@ public:
 
 protected:
     bool m_bSuccess;
-    yarp::os::impl::String m_sName;
-    yarp::os::impl::String m_sDateTime;
-    yarp::os::impl::String m_sDescription;
-    yarp::os::impl::String m_sPart;
+    std::string m_sName;
+    std::string m_sDateTime;
+    std::string m_sDescription;
+    std::string m_sPart;
 
     std::vector<iCubTestOutput> m_aOutput;
 };

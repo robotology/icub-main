@@ -1,17 +1,18 @@
 PROJECT(iCubTest)
 
 IF(WIN32)
-	CMAKE_MINIMUM_REQUIRED (VERSION 2.6.0)
+    CMAKE_MINIMUM_REQUIRED (VERSION 2.6.0)
+    ADD_DEFINITIONS(-D_CRT_SECURE_NO_DEPRECATE)
 ELSE(WIN32)
-	CMAKE_MINIMUM_REQUIRED (VERSION 2.4.0)
+    CMAKE_MINIMUM_REQUIRED (VERSION 2.4.0)
 ENDIF(WIN32)
 
 FIND_PACKAGE(YARP)
 FIND_PACKAGE(ICUB QUIET)
 
 IF (NOT ICUB_FOUND)
-   MESSAGE (STATUS "ICUB repository not found; assuming distributed build.")
-   MESSAGE (STATUS "If this is not what you want, set ICUB_DIR variable.")
+    MESSAGE (STATUS "ICUB repository not found; assuming distributed build.")
+    MESSAGE (STATUS "If this is not what you want, set ICUB_DIR variable.")
 ENDIF (NOT ICUB_FOUND)
 
 INCLUDE_DIRECTORIES(${PROJECT_SOURCE_DIR})

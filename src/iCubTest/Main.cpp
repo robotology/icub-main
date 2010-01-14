@@ -1,4 +1,6 @@
 #include <yarp/os/ResourceFinder.h>
+#include <yarp/os/Value.h>
+#include <yarp/os/Bottle.h>
 
 #include "TestSet.h"
 #include "TestPart.h"
@@ -18,24 +20,43 @@ int main(int argc,char* argv[])
     if (!robot.isNull())
     {
         printf("robot=%s\n",robot.asString().c_str());
-        iCubMotorDriver::SetRobot(robot.asString());
+        iCubDriver::SetRobot(robot.asString());
     }
 
     iCubTestSet ts(references);
 
-    yarp::os::Bottle test_set=rf.findGroup("TESTS").tail();
+    yarp::os::Bottle testSet=rf.findGroup("TESTS").tail();
 
-    for (int t=0; t<test_set.size(); ++t)
-    {
-        yarp::os::impl::String file_name(test_set.get(t).toString());
-        printf("%s\n",file_name.c_str());
+    for (int t=0; t<testSet.size(); ++t)
+    {       
+        yarp::os::Bottle test(testSet.get(t).toString());
+        std::string testType(test.get(0).asString());
+        std::string fileName(test.get(1).asString());
 
-        yarp::os::ResourceFinder test_rf;
-        test_rf.setDefaultContext("tutorials/icubtest");
-        test_rf.setDefaultConfigFile(file_name.c_str());
-        test_rf.configure("ICUB_ROOT",argc,argv);
+        printf("*%s\n",testType.c_str());
+        printf("*%s\n",fileName.c_str());
 
-        ts.AddTest(new iCubTestPart(test_rf));
+        yarp::os::ResourceFinder testRf;
+        testRf.setDefaultContext("tutorials/icubtest");
+        testRf.setDefaultConfigFile(fileName.c_str());
+        testRf.configure("ICUB_ROOT",argc,argv);
+
+        if (testType=="iCubTestPart")
+        {
+            ts.AddTest(new iCubTestPart(testRf));
+        }
+        else if (testType=="iCubTestCamera")
+        {
+            //ts.AddTest(new iCubTestCamera(testRf));
+        }
+        else if (testType=="iCubTestInertial")
+        {
+            //ts.AddTest(new iCubTestInertial(testRf));
+        }
+        else if (testType=="iCubTestForceTorque")
+        {
+            //ts.AddTest(new iCubTestForceTorque(testRf));
+        }
     }
 
     ts.run();

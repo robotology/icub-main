@@ -10,7 +10,7 @@
 #ifndef __ICUB_TEST_OUTPUT_01122009__
 #define __ICUB_TEST_OUTPUT_01122009__
 
-#include <yarp/os/impl/String.h>
+#include <string>
 
 #include "TestXMLPrinter.h"
 
@@ -21,21 +21,21 @@ public:
     void Print(XMLPrinter& printer)
     {
         printer.XMLopen("output");
-            if (!m_sName.is_empty())   printer.XML("name",m_sName.c_str());
-            if (!m_sResult.is_empty()) printer.XML("result",m_sResult.c_str());
-            if (!m_sTarget.is_empty()) printer.XML("target",m_sTarget.c_str());
-            if (!m_sValue.is_empty())  printer.XML("value",m_sValue.c_str());
-            if (!m_sMinVal.is_empty()) printer.XML("rangemin",m_sMinVal.c_str());
-            if (!m_sMaxVal.is_empty()) printer.XML("rangemax",m_sMaxVal.c_str());
+            if (!m_sName.empty())   printer.XML("name",m_sName.c_str());
+            if (!m_sResult.empty()) printer.XML("result",m_sResult.c_str());
+            if (!m_sTarget.empty()) printer.XML("target",m_sTarget.c_str());
+            if (!m_sValue.empty())  printer.XML("value",m_sValue.c_str());
+            if (!m_sMinVal.empty()) printer.XML("rangemin",m_sMinVal.c_str());
+            if (!m_sMaxVal.empty()) printer.XML("rangemax",m_sMaxVal.c_str());
         printer.XMLclose(); 
     }
 
-    yarp::os::impl::String m_sName;
-    yarp::os::impl::String m_sResult;
-    yarp::os::impl::String m_sTarget;
-    yarp::os::impl::String m_sValue;
-    yarp::os::impl::String m_sMinVal;
-    yarp::os::impl::String m_sMaxVal;
+    std::string m_sName;
+    std::string m_sResult;
+    std::string m_sTarget;
+    std::string m_sValue;
+    std::string m_sMinVal;
+    std::string m_sMaxVal;
 };
 
 #endif

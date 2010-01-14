@@ -7,18 +7,18 @@
  * Author Alessandro Scalzo alessandro@liralab.it
  */
 
-#ifndef __ICUB_MOTOR_DRIVER_01122009__
-#define __ICUB_MOTOR_DRIVER_01122009__
+#ifndef __ICUB_DRIVER_01122009__
+#define __ICUB_DRIVER_01122009__
 
 #include <vector>
+#include <string>
 
-#include <yarp/os/impl/String.h>
 #include <yarp/os/Time.h>
 #include <yarp/os/Searchable.h>
 #include <yarp/dev/PolyDriver.h>
 #include <yarp/dev/ControlBoardInterfaces.h>
 
-class iCubMotorDriver
+class iCubDriver
 {
 public:
     enum iCubPart {TORSO,HEAD,LEFT_ARM,RIGHT_ARM,LEFT_LEG,RIGHT_LEG,NUM_ICUB_PARTS};
@@ -48,9 +48,9 @@ public:
         IENC_GETACC_FAILED          =-18
     };
 
-    static iCubMotorDriver* Instance()
+    static iCubDriver* Instance()
     {
-        static iCubMotorDriver singleton;
+        static iCubDriver singleton;
         return &singleton; 
 
     }
@@ -192,7 +192,7 @@ protected:
 
     int iCubPartNumJoints[NUM_ICUB_PARTS];
     
-    iCubMotorDriver()
+    iCubDriver()
     {
         for (int part=TORSO; part<NUM_ICUB_PARTS; ++part)
         {
@@ -229,7 +229,7 @@ protected:
         }
     }
 
-    ~iCubMotorDriver()
+    ~iCubDriver()
     { 
         Close(); 
     }
@@ -246,14 +246,14 @@ protected:
         }
     }
 
-    yarp::dev::PolyDriver* OpenDriver(yarp::os::impl::String part)
+    yarp::dev::PolyDriver* OpenDriver(std::string part)
     {
-        yarp::os::impl::String robot("/icubSim");
+        std::string robot("/icubSim");
 
         yarp::os::Property options;
         options.put("robot",m_sRobot.c_str());
         options.put("device","remote_controlboard");
-        options.put("local",(yarp::os::impl::String("/iCubTest/")+part).c_str());
+        options.put("local",(std::string("/iCubTest/")+part).c_str());
         options.put("remote",(m_sRobot+"/"+part).c_str());
    
         yarp::dev::PolyDriver *pDriver=new yarp::dev::PolyDriver(options);
@@ -268,8 +268,8 @@ protected:
         return pDriver;
     }
 
-    iCubMotorDriver(const iCubMotorDriver&);
-    iCubMotorDriver& operator=(const iCubMotorDriver&);
+    iCubDriver(const iCubDriver&);
+    iCubDriver& operator=(const iCubDriver&);
 
     yarp::dev::PolyDriver *apDriver[NUM_ICUB_PARTS];
 
@@ -279,7 +279,7 @@ protected:
     yarp::dev::IPositionControl  *apPos[NUM_ICUB_PARTS];
     yarp::dev::IVelocityControl  *apVel[NUM_ICUB_PARTS];
 
-    static yarp::os::impl::String m_sRobot;
+    static std::string m_sRobot;
 };
 
 #endif

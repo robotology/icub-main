@@ -10,8 +10,8 @@
 #ifndef __ICUB_TEST_SET_01122009__
 #define __ICUB_TEST_SET_01122009__
 
-#include <yarp/os/impl/String.h>
-//#include <yarp/os/Time.h>
+#include <string>
+
 #include <yarp/os/Searchable.h>
 #include <yarp/os/Value.h>
 
@@ -73,7 +73,7 @@ public:
         printer.XMLopen("report");
             printer.XML("user",m_sUser);
             printer.XML("comment",m_sComment);
-            printer.XML("success",yarp::os::impl::String(m_bSuccess?"YES":"NO"));
+            printer.XML("success",std::string(m_bSuccess?"YES":"NO"));
 
             for (unsigned int i=0; i<m_apTest.size(); ++i)
             {
@@ -85,9 +85,9 @@ public:
 
 protected:
     bool m_bSuccess;
-    yarp::os::impl::String m_sComment;
-    yarp::os::impl::String m_sUser;
-    yarp::os::impl::String m_sOutfile;
+    std::string m_sComment;
+    std::string m_sUser;
+    std::string m_sOutfile;
     std::vector<iCubTest*> m_apTest;
 };
 

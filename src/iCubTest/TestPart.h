@@ -11,8 +11,8 @@
 #define __ICUB_TEST_PART_01122009__
 
 #include <vector>
+#include <string>
 
-#include <yarp/os/impl/String.h>
 #include <yarp/os/Searchable.h>
 #include <yarp/os/Value.h>
 
@@ -34,25 +34,25 @@ public:
         yarp::os::Value val;
         yarp::os::Bottle bot;
 
-        m_iPart=(iCubMotorDriver::iCubPart)0;
+        m_iPart=(iCubDriver::iCubPart)0;
 
         val=configuration.find("device");
 
         if (!val.isNull())
         {
-            yarp::os::impl::String device(val.asString());
+            std::string device(val.asString());
 
-            for (int p=0; p<iCubMotorDriver::NUM_ICUB_PARTS; ++p)
+            for (int p=0; p<iCubDriver::NUM_ICUB_PARTS; ++p)
             {
-                if (device==iCubMotorDriver::iCubPartName[p])
+                if (device==iCubDriver::iCubPartName[p])
                 {
-                    m_iPart=(iCubMotorDriver::iCubPart)p;
+                    m_iPart=(iCubDriver::iCubPart)p;
                     break;
                 }
             }
         }
         
-        m_nJoints=iCubMotorDriver::Instance()->GetNumOfJoints(m_iPart);
+        m_nJoints=iCubDriver::Instance()->GetNumOfJoints(m_iPart);
 
         ///////////////////////////////////////////////////////////////
         /*
@@ -159,7 +159,7 @@ public:
         
         m_bSuccess=true;
 
-        for (int joint=0; joint<iCubMotorDriver::Instance()->GetNumOfJoints(iCubMotorDriver::LEFT_ARM); ++joint)
+        for (int joint=0; joint<iCubDriver::Instance()->GetNumOfJoints(iCubDriver::LEFT_ARM); ++joint)
         {
             iCubTestOutput output;
             
@@ -169,7 +169,7 @@ public:
             output.m_sName+=sJoint;
             output.m_sName+=" position";
             sprintf(sPos,"%f",m_dTargetVal[joint]);
-            output.m_sTarget=yarp::os::impl::String(sPos);
+            output.m_sTarget=std::string(sPos);
 
             output.m_sValue="N/A";
             
@@ -179,28 +179,28 @@ public:
             sprintf(sPos,"%f",m_dMaxVal[joint]);
             output.m_sMaxVal=sPos;
 
-            iCubMotorDriver::ResultCode result=iCubMotorDriver::Instance()->SetPos(m_iPart,joint,m_dTargetVal[joint]);//,m_dRefVel[joint],m_dRefAcc[joint]);
+            iCubDriver::ResultCode result=iCubDriver::Instance()->SetPos(m_iPart,joint,m_dTargetVal[joint]);//,m_dRefVel[joint],m_dRefAcc[joint]);
 
             bool bSuccess=false;
 
             switch (result)
             {
-            case iCubMotorDriver::DRIVER_FAILED:
+            case iCubDriver::DRIVER_FAILED:
                 output.m_sResult="FAILED: !PolyDriver";
                 break;
-            case iCubMotorDriver::IPOS_FAILED:
+            case iCubDriver::IPOS_FAILED:
                 output.m_sResult="FAILED: !IPositionControl";
                 break;
-            case iCubMotorDriver::IPOS_POSMOVE_FAILED:
+            case iCubDriver::IPOS_POSMOVE_FAILED:
                 output.m_sResult="FAILED: IPositionControl->positionMove";
                 break;
-            case iCubMotorDriver::IPOS_SETREFSPEED_FAILED:
+            case iCubDriver::IPOS_SETREFSPEED_FAILED:
                 output.m_sResult="FAILED: IPositionControl->setRefSpeed";
                 break;
-            case iCubMotorDriver::IPOS_SETREFACC_FAILED:
+            case iCubDriver::IPOS_SETREFACC_FAILED:
                 output.m_sResult="FAILED: IPositionControl->setRefAcceleration";
                 break;
-            case iCubMotorDriver::IPOS_POSMOVE_OK:
+            case iCubDriver::IPOS_POSMOVE_OK:
                 bSuccess=true;
             }
 
@@ -213,22 +213,22 @@ public:
 
             // only if success
 
-            result=iCubMotorDriver::Instance()->WaitPos(m_iPart,joint,m_dTimeout[joint]);
+            result=iCubDriver::Instance()->WaitPos(m_iPart,joint,m_dTimeout[joint]);
 
             bSuccess=false;
 
             switch (result)
             {
-            case iCubMotorDriver::IPOS_FAILED:
+            case iCubDriver::IPOS_FAILED:
                 output.m_sResult="FAILED: !IPositionControl";
                 break;
-            case iCubMotorDriver::IPOS_CHECKMOTIONDONE_FAILED:
+            case iCubDriver::IPOS_CHECKMOTIONDONE_FAILED:
                 output.m_sResult="FAILED: IPositionControl->checkMotionDone";
                 break;
-            case iCubMotorDriver::IPOS_CHECKMOTIONDONE_TIMEOUT:
+            case iCubDriver::IPOS_CHECKMOTIONDONE_TIMEOUT:
                 output.m_sResult="FAILED: Timeout in IPositionControl->positionMove";
                 break;
-            case iCubMotorDriver::IPOS_CHECKMOTIONDONE_OK:
+            case iCubDriver::IPOS_CHECKMOTIONDONE_OK:
                 bSuccess=true;
             }
 
@@ -240,19 +240,19 @@ public:
             }
 
             double pos;
-            result=iCubMotorDriver::Instance()->GetEncPos(m_iPart,joint,pos);
+            result=iCubDriver::Instance()->GetEncPos(m_iPart,joint,pos);
 
             bSuccess=false;
 
             switch (result)
             {
-            case iCubMotorDriver::IENC_FAILED:
+            case iCubDriver::IENC_FAILED:
                 output.m_sResult="FAILED: !IEncoders";
                 break;
-            case iCubMotorDriver::IENC_GETPOS_FAILED:
+            case iCubDriver::IENC_GETPOS_FAILED:
                 output.m_sResult="FAILED: IEncoders->getEncoder";
 				break;
-            case iCubMotorDriver::IENC_GETPOS_OK:
+            case iCubDriver::IENC_GETPOS_OK:
                 bSuccess=true;
             }
 
@@ -283,7 +283,7 @@ public:
     }
 
 protected:
-    iCubMotorDriver::iCubPart m_iPart;
+    iCubDriver::iCubPart m_iPart;
     int m_nJoints;
     double *m_dTargetVal,*m_dMaxVal,*m_dMinVal;
     double *m_dRefVel,*m_dRefAcc,*m_dTimeout;
