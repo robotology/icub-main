@@ -55,6 +55,8 @@ void affActionPrimitives::init()
     mutex=NULL;
     motionDoneEvent=NULL;
 
+    actionClb=NULL;
+
     armMoveDone =latchArmMoveDone =true;
     handMoveDone=latchHandMoveDone=true;
     configured=closed=false;
@@ -498,7 +500,7 @@ bool affActionPrimitives::clearActionsQueue()
 /************************************************************************/
 bool affActionPrimitives::pushAction(const bool execArm, const Vector &x, const Vector &o,
                                      const double execTime, const bool execHand,
-                                     const HandWayPoint &handWP)
+                                     const HandWayPoint &handWP, affActionCallback *clb)
 {
     if (configured)
     {
@@ -512,6 +514,7 @@ bool affActionPrimitives::pushAction(const bool execArm, const Vector &x, const 
         action.execTime=execTime;
         action.execHand=execHand;
         action.handWP=handWP;
+        action.clb=clb;
     
         actionsQueue.push_back(action);
         mutex->post();
@@ -525,7 +528,8 @@ bool affActionPrimitives::pushAction(const bool execArm, const Vector &x, const 
 
 /************************************************************************/
 bool affActionPrimitives::pushAction(const Vector &x, const Vector &o,
-                                     const string &handSeqKey, const double execTime)
+                                     const string &handSeqKey, const double execTime,
+                                     affActionCallback *clb)
 {
     if (configured)
     {
@@ -537,12 +541,15 @@ bool affActionPrimitives::pushAction(const Vector &x, const Vector &o,
             if (q.size())
             {   
                 Vector dummy(1);
-                             
-                pushAction(true,x,o,execTime,true,q[0]);
+
+                // reserve the callback only for the reaching part
+                // since it will be executed whenever the combined action
+                // is accomplished
+                pushAction(true,x,o,execTime,true,q[0],clb);
 
                 // decompose hand action in sum of fingers sequences
-                for (size_t i=1; i<q.size(); i++)
-                    pushAction(false,dummy,dummy,ACTIONPRIM_DISABLE_EXECTIME,true,q[i]);
+                for (unsigned int i=1; i<q.size(); i++)
+                    pushAction(false,dummy,dummy,ACTIONPRIM_DISABLE_EXECTIME,true,q[i],NULL);
             }
 
             return true;
@@ -562,12 +569,13 @@ bool affActionPrimitives::pushAction(const Vector &x, const Vector &o,
 
 /************************************************************************/
 bool affActionPrimitives::pushAction(const Vector &x, const Vector &o,
-                                     const double execTime)
+                                     const double execTime,
+                                     affActionCallback *clb)
 {
     if (configured)
     {
         HandWayPoint dummy;
-        pushAction(true,x,o,execTime,false,dummy);
+        pushAction(true,x,o,execTime,false,dummy,clb);
 
         return true;
     }
@@ -577,7 +585,8 @@ bool affActionPrimitives::pushAction(const Vector &x, const Vector &o,
 
 
 /************************************************************************/
-bool affActionPrimitives::pushAction(const string &handSeqKey)
+bool affActionPrimitives::pushAction(const string &handSeqKey,
+                                     affActionCallback *clb)
 {
     if (configured)
     {
@@ -585,11 +594,15 @@ bool affActionPrimitives::pushAction(const string &handSeqKey)
         if (itr!=handSeqMap.end())
         {
             deque<HandWayPoint> &q=itr->second;
+            unsigned int i;
             Vector dummy(1);
 
             // decompose hand action in sum of fingers sequences
-            for (size_t i=0; i<q.size(); i++)
-                pushAction(false,dummy,dummy,ACTIONPRIM_DISABLE_EXECTIME,true,q[i]);
+            for (i=0; i<q.size()-1; i++)
+                pushAction(false,dummy,dummy,ACTIONPRIM_DISABLE_EXECTIME,true,q[i],NULL);
+
+            // reserve the callback whenever the last hand WP is achieved
+            pushAction(false,dummy,dummy,ACTIONPRIM_DISABLE_EXECTIME,true,q[i],clb);
 
             return true;
         }
@@ -607,7 +620,7 @@ bool affActionPrimitives::pushAction(const string &handSeqKey)
 
 
 /************************************************************************/
-bool affActionPrimitives::pushWaitState(const double tmo)
+bool affActionPrimitives::pushWaitState(const double tmo, affActionCallback *clb)
 {
     if (configured)
     {
@@ -619,6 +632,7 @@ bool affActionPrimitives::pushWaitState(const double tmo)
         action.tmo=tmo;
         action.execArm=false;
         action.execHand=false;
+        action.clb=clb;
 
         actionsQueue.push_back(action);
         mutex->post();
@@ -682,6 +696,8 @@ bool affActionPrimitives::execQueuedAction()
 
         if (action.execHand)
             cmdHand(action);
+
+        actionClb=action.clb;
     }
 
     return exec;
@@ -758,7 +774,16 @@ void affActionPrimitives::run()
 
     if (latchArmMoveDone && latchHandMoveDone && (t-latchTimer>waitTmo))
         if (!execQueuedAction())
+        {    
             RES_EVENT(motionDoneEvent)->signal();
+
+            // execute action-end callback
+            if (actionClb)
+            {    
+                actionClb->exec();
+                actionClb=NULL;
+            }
+        }
 }
 
 
@@ -1120,6 +1145,31 @@ void affActionPrimitivesLayer2::init()
     // default values
     wrist_joint=8;
     wrist_thres=1e9;
+
+    enableWristCheck=false;
+
+    disableWristDof=NULL;
+    enableWristDof=NULL;
+}
+
+
+/************************************************************************/
+void affActionPrimitivesLayer2::run()
+{
+    if (enableWristCheck)
+    {
+        double out;
+
+        if (pidCtrl->getOutput(wrist_joint,&out))
+        {
+            out=out<0.0?-out:out;
+    
+            if (out>wrist_thres)
+                cartCtrl->stopControl();
+        }
+    }
+
+    affActionPrimitivesLayer1::run();
 }
 
 
@@ -1128,19 +1178,35 @@ bool affActionPrimitivesLayer2::open(Property &opt)
 {
     if (affActionPrimitivesLayer1::open(opt))
     {    
-        if (Bottle *b=opt.find("wrist_joint").asList())
+        if (Bottle *bWrist=opt.find("wrist_joint").asList())
         {
-            if (b->size()>1)
+            if (bWrist->size()>1)
             {
-                wrist_joint=b->get(0).asInt();
-                wrist_thres=b->get(1).asDouble();
+                wrist_joint=bWrist->get(0).asInt();
+                wrist_thres=bWrist->get(1).asDouble();
             }
             else
                 printMessage("WARNING: invalid \"wrist_joint\" option\n");
         }
 
         // check wrist params
-        // ...
+        Vector curDof;
+        cartCtrl->getDOF(curDof);
+        int max=curDof.length()-1;
+        wrist_joint=wrist_joint<0?0:(wrist_joint>max?max:wrist_joint);
+        wrist_thres=wrist_thres<0.0?0.0:wrist_thres;
+        
+        Vector disableWristSw;
+        disableWristSw.resize(wrist_joint+1,2);
+        disableWristSw[wrist_joint]=0;
+
+        Vector enableWristSw;
+        enableWristSw.resize(wrist_joint+1,2);
+        enableWristSw[wrist_joint]=1;
+
+        // create callbacks
+        disableWristDof=new switchingWristDof(cartCtrl,disableWristSw,&enableWristCheck);
+        enableWristDof =new switchingWristDof(cartCtrl,enableWristSw,&enableWristCheck);
 
         polyHand->view(pidCtrl);
 
@@ -1154,13 +1220,44 @@ bool affActionPrimitivesLayer2::open(Property &opt)
 /************************************************************************/
 bool affActionPrimitivesLayer2::grasp(const Vector &x, const Vector &o, const Vector &d)
 {
-    return affActionPrimitivesLayer1::grasp(x,o,d);
+    if (configured)
+    {
+        printMessage("start grasping\n");
+        pushAction(x+d,o,"open_hand",ACTIONPRIM_DISABLE_EXECTIME,disableWristDof);
+        pushAction(x,o,ACTIONPRIM_DISABLE_EXECTIME,enableWristDof);
+        pushAction("close_hand");
+
+        return true;
+    }
+    else
+        return false;
 }
 
 
 /************************************************************************/
 bool affActionPrimitivesLayer2::touch(const Vector &x, const Vector &o, const Vector &d)
 {
-    return affActionPrimitivesLayer1::touch(x,o,d);
+    if (configured)
+    {
+        printMessage("start touching\n");
+        pushAction(x+d,o,"open_hand",ACTIONPRIM_DISABLE_EXECTIME,disableWristDof);
+        pushAction(x,o,ACTIONPRIM_DISABLE_EXECTIME,enableWristDof);
+
+        return true;
+    }
+    else
+        return false;
 }
+
+
+/************************************************************************/
+affActionPrimitivesLayer2::~affActionPrimitivesLayer2()
+{
+    if (disableWristDof)
+        delete disableWristDof;
+
+    if (enableWristDof)
+        delete enableWristDof;
+}
+
 

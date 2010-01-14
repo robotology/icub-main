@@ -71,6 +71,24 @@
 /**
 * \ingroup affActionPrimitives
 *
+* Class for defining routines to be called when action is 
+* completed. 
+*/
+class affActionCallback
+{
+public:
+    affActionCallback() { }
+
+    /**
+    * Defines the callback body to be called at the action end.
+    */ 
+    virtual void exec() = 0;
+};
+
+
+/**
+* \ingroup affActionPrimitives
+*
 * The base class defining actions. 
 *  
 * It allows to execute arm (in task-space, e.g. reach()) and 
@@ -143,7 +161,11 @@ protected:
         // hand action
         bool execHand;
         HandWayPoint handWP;
+        // action callback
+        affActionCallback *clb;
     };
+
+    affActionCallback *actionClb;
 
     std::deque<Action> actionsQueue;
     std::map<std::string,std::deque<HandWayPoint> > handSeqMap;
@@ -155,7 +177,8 @@ protected:
     virtual bool configHandSeq(yarp::os::Property &opt);
     virtual bool pushAction(const bool execArm, const yarp::sig::Vector &x,
                             const yarp::sig::Vector &o, const double execTime,
-                            const bool execHand, const HandWayPoint &handWP);
+                            const bool execHand, const HandWayPoint &handWP,
+                            affActionCallback *clb);
     virtual bool stopJntTraj(const int jnt);
     virtual void enableTorsoDof();
     virtual void disableTorsoDof();
@@ -167,7 +190,7 @@ protected:
     virtual void init();
     virtual bool execQueuedAction();
     virtual bool execPendingHandSequences();
-    virtual void run();    
+    virtual void run();
 
 public:
     /**
@@ -294,6 +317,8 @@ public:
     * @param handSeqKey the hand sequence key. 
     * @param execTime the arm action execution time [s] (to be 
     *          specified iff different from default value).
+    * @param clb action callback that is executed when the action 
+    *            ends; none by default.
     * @return true/false on success/fail. 
     *  
     * \note Some examples: 
@@ -305,7 +330,8 @@ public:
     */
     virtual bool pushAction(const yarp::sig::Vector &x, const yarp::sig::Vector &o, 
                             const std::string &handSeqKey,
-                            const double execTime=ACTIONPRIM_DISABLE_EXECTIME);
+                            const double execTime=ACTIONPRIM_DISABLE_EXECTIME,
+                            affActionCallback *clb=NULL);
 
     /**
     * Insert the arm-primitive action reach for target in the 
@@ -315,24 +341,33 @@ public:
     *          in axis-angle representation) [rad].
     * @param execTime the arm action execution time [s] (to be 
     *          specified iff different from default value).
+    * @param clb action callback that is executed when the action 
+    *            ends; none by default.
     * @return true/false on success/fail. 
     */
     virtual bool pushAction(const yarp::sig::Vector &x, const yarp::sig::Vector &o,
-                            const double execTime=ACTIONPRIM_DISABLE_EXECTIME);
+                            const double execTime=ACTIONPRIM_DISABLE_EXECTIME,
+                            affActionCallback *clb=NULL);
 
     /**
     * Insert a hand-primitive action in the actions queue.
-    * @param handSeqKey the hand sequence key.   
+    * @param handSeqKey the hand sequence key. 
+    * @param clb action callback that is executed when the action 
+    *            ends; none by default. 
     * @return true/false on success/fail. 
     */
-    virtual bool pushAction(const std::string &handSeqKey);
+    virtual bool pushAction(const std::string &handSeqKey,
+                            affActionCallback *clb=NULL);
 
     /**
     * Insert a wait state in the actions queue.
     * @param tmo is the wait timeout [s]. 
+    * @param clb callback that is executed when the timeout expires;
+    *            none by default.
     * @return true/false on success/fail. 
     */
-    virtual bool pushWaitState(const double tmo);
+    virtual bool pushWaitState(const double tmo,
+                               affActionCallback *clb=NULL);
 
     /**
     * Immediately update the current reaching target (without 
@@ -595,13 +630,41 @@ protected:
     int    wrist_joint;
     double wrist_thres;
 
+    bool enableWristCheck;
+
     yarp::dev::IPidControl *pidCtrl;
 
+    class switchingWristDof : public affActionCallback
+    {
+    protected:
+        yarp::dev::ICartesianControl *cartCtrl;
+        yarp::sig::Vector sw;
+        bool *checkFlag;
+    public:
+        switchingWristDof(yarp::dev::ICartesianControl *_cartCtrl,
+                          yarp::sig::Vector _sw,
+                          bool *_checkFlag) : 
+                          cartCtrl(_cartCtrl), sw(_sw), checkFlag(_checkFlag) { }
+        virtual void exec()
+        {
+            yarp::sig::Vector dummyRet;
+            cartCtrl->setDOF(sw,dummyRet);
+            *checkFlag=!*checkFlag;
+        }
+    };
+
+    switchingWristDof *disableWristDof; 
+    switchingWristDof *enableWristDof;
+
     virtual void init();
+    virtual void run();
 
 public:
     affActionPrimitivesLayer2() : affActionPrimitivesLayer1() { }
+
     affActionPrimitivesLayer2(yarp::os::Property &opt) : affActionPrimitivesLayer1(opt) { }
+
+    virtual ~affActionPrimitivesLayer2();
 
     /**
     * Configure the object.
