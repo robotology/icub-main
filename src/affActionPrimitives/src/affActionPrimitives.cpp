@@ -18,7 +18,7 @@
 #define ACTIONPRIM_DEFAULT_REACHTOL         0.005   // [m]
 #define ACTIONPRIM_DUMP_PERIOD              1.0     // [s]
 #define ACTIONPRIM_DEFAULT_WRIST_JOINT      8
-#define ACTIONPRIM_DEFAULT_WRIST_THRES      1e9
+#define ACTIONPRIM_DEFAULT_WRIST_THRES      -1e9
 #define ACTIONPRIM_DEFAULT_PART             "right_arm"
 #define ACTIONPRIM_DEFAULT_TRACKINGMODE     "off"
 #define ACTIONPRIM_DEFAULT_VERBOSITY        "off"
@@ -1233,17 +1233,13 @@ void affActionPrimitivesLayer2::run()
         double out;
 
         if (pidCtrl->getOutput(wrist_joint,&out))
-        {
-            out=out<0.0?-out:out;
-
-            if (out>wrist_thres)
+            if (out<wrist_thres)
             {
-                printMessage("contact detected on the wrist joint %d: (%g>%g)\n",
+                printMessage("contact detected on the wrist joint %d: (%g<%g)\n",
                              wrist_joint,out,wrist_thres);
 
                 cartCtrl->stopControl();
             }
-        }
     }
 
     affActionPrimitivesLayer1::run();
@@ -1272,7 +1268,6 @@ bool affActionPrimitivesLayer2::open(Property &opt)
         cartCtrl->getDOF(curDof);
         int max=curDof.length()-1;
         wrist_joint=wrist_joint<0?0:(wrist_joint>max?max:wrist_joint);
-        wrist_thres=wrist_thres<0.0?0.0:wrist_thres;
         
         Vector disableWristSw;
         disableWristSw.resize(wrist_joint+1,2);
