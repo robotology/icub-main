@@ -65,6 +65,7 @@ void affActionPrimitives::init()
     configured=closed=false;
     checkEnabled=true;
     torsoActive=true;
+    handSeqTerminator=false;
 
     latchTimer=waitTmo=0.0;
 }
@@ -509,7 +510,8 @@ bool affActionPrimitives::clearActionsQueue()
 /************************************************************************/
 bool affActionPrimitives::pushAction(const bool execArm, const Vector &x, const Vector &o,
                                      const double execTime, const bool execHand,
-                                     const HandWayPoint &handWP, affActionCallback *clb)
+                                     const HandWayPoint &handWP, const bool handSeqTerminator,
+                                     affActionPrimitivesCallback *clb)
 {
     if (configured)
     {
@@ -523,6 +525,7 @@ bool affActionPrimitives::pushAction(const bool execArm, const Vector &x, const 
         action.execTime=execTime;
         action.execHand=execHand;
         action.handWP=handWP;
+        action.handSeqTerminator=handSeqTerminator;
         action.clb=clb;
 
         actionsQueue.push_back(action);
@@ -538,7 +541,7 @@ bool affActionPrimitives::pushAction(const bool execArm, const Vector &x, const 
 /************************************************************************/
 bool affActionPrimitives::pushAction(const Vector &x, const Vector &o,
                                      const string &handSeqKey, const double execTime,
-                                     affActionCallback *clb)
+                                     affActionPrimitivesCallback *clb)
 {
     if (configured)
     {
@@ -549,15 +552,22 @@ bool affActionPrimitives::pushAction(const Vector &x, const Vector &o,
 
             if (q.size())
             {   
-                Vector dummy(1);
+                // combined action
+                pushAction(true,x,o,execTime,true,q[0],q.size()==1,q.size()==1?clb:NULL);
 
-                // action is combined, hence it's ok to resever
-                // the callback at the end of reaching part
-                pushAction(true,x,o,execTime,true,q[0],clb);
+                if (q.size()>1)
+                {
+                    unsigned int i;
+                    Vector dummy(1);
 
-                // decompose hand action in sum of fingers sequences
-                for (unsigned int i=1; i<q.size(); i++)
-                    pushAction(false,dummy,dummy,ACTIONPRIM_DISABLE_EXECTIME,true,q[i],NULL);
+                    // decompose hand action in sum of fingers sequences
+                    for (i=1; i<q.size()-1; i++)
+                        pushAction(false,dummy,dummy,ACTIONPRIM_DISABLE_EXECTIME,true,q[i],false,NULL);
+    
+                    // reserve the callback whenever the last hand WP is achieved
+                    if (i<q.size())
+                        pushAction(false,dummy,dummy,ACTIONPRIM_DISABLE_EXECTIME,true,q[i],true,clb);
+                }
             }
 
             return true;
@@ -578,12 +588,12 @@ bool affActionPrimitives::pushAction(const Vector &x, const Vector &o,
 /************************************************************************/
 bool affActionPrimitives::pushAction(const Vector &x, const Vector &o,
                                      const double execTime,
-                                     affActionCallback *clb)
+                                     affActionPrimitivesCallback *clb)
 {
     if (configured)
     {
         HandWayPoint dummy;
-        pushAction(true,x,o,execTime,false,dummy,clb);
+        pushAction(true,x,o,execTime,false,dummy,false,clb);
 
         return true;
     }
@@ -594,7 +604,7 @@ bool affActionPrimitives::pushAction(const Vector &x, const Vector &o,
 
 /************************************************************************/
 bool affActionPrimitives::pushAction(const string &handSeqKey,
-                                     affActionCallback *clb)
+                                     affActionPrimitivesCallback *clb)
 {
     if (configured)
     {
@@ -607,11 +617,11 @@ bool affActionPrimitives::pushAction(const string &handSeqKey,
 
             // decompose hand action in sum of fingers sequences
             for (i=0; i<q.size()-1; i++)
-                pushAction(false,dummy,dummy,ACTIONPRIM_DISABLE_EXECTIME,true,q[i],NULL);
+                pushAction(false,dummy,dummy,ACTIONPRIM_DISABLE_EXECTIME,true,q[i],false,NULL);
 
             // reserve the callback whenever the last hand WP is achieved
             if (i<q.size())
-                pushAction(false,dummy,dummy,ACTIONPRIM_DISABLE_EXECTIME,true,q[i],clb);
+                pushAction(false,dummy,dummy,ACTIONPRIM_DISABLE_EXECTIME,true,q[i],true,clb);
 
             return true;
         }
@@ -629,7 +639,7 @@ bool affActionPrimitives::pushAction(const string &handSeqKey,
 
 
 /************************************************************************/
-bool affActionPrimitives::pushWaitState(const double tmo, affActionCallback *clb)
+bool affActionPrimitives::pushWaitState(const double tmo, affActionPrimitivesCallback *clb)
 {
     if (configured)
     {
@@ -641,6 +651,7 @@ bool affActionPrimitives::pushWaitState(const double tmo, affActionCallback *clb
         action.tmo=tmo;
         action.execArm=false;
         action.execHand=false;
+        action.handSeqTerminator=false;
         action.clb=clb;
 
         actionsQueue.push_back(action);
@@ -774,7 +785,9 @@ void affActionPrimitives::run()
         if (handMoveDone=isHandSeqEnded())
         {    
             printMessage("hand WP reached\n");
-            execPendingHandSequences();    // here handMoveDone may switch false again
+
+            if (!handSeqTerminator)
+                execPendingHandSequences();    // here handMoveDone may switch false again
         }
     }
 
@@ -782,18 +795,18 @@ void affActionPrimitives::run()
     latchHandMoveDone=handMoveDone;
 
     if (latchArmMoveDone && latchHandMoveDone && (t-latchTimer>waitTmo))
-        if (!execQueuedAction())
-        {    
-            RES_EVENT(motionDoneEvent)->signal();
-
-            // execute action-end callback
-            if (actionClb)
-            {
-                printMessage("executing action callback\n");
-                actionClb->exec();
-                actionClb=NULL;
-            }
+    {    
+        // execute action-end callback
+        if (actionClb)
+        {
+            printMessage("executing action callback\n");
+            actionClb->exec();
+            actionClb=NULL;
         }
+
+        if (!execQueuedAction())
+            RES_EVENT(motionDoneEvent)->signal();
+    }
 }
 
 
@@ -880,7 +893,6 @@ bool affActionPrimitives::cmdArm(const Action &action)
         }
 
         latchArmMoveDone=armMoveDone=false;
-
         printMessage("reach at %g [s] for [%s], [%s]\n",
                      t,toCompactString(x).c_str(),
                      toCompactString(o).c_str());
@@ -898,16 +910,16 @@ bool affActionPrimitives::cmdArm(const Action &action)
 bool affActionPrimitives::cmdHand(const Action &action)
 {
     if (configured)
-    {        
+    {
         const string &tag=action.handWP.tag;
         const Vector &poss=action.handWP.poss;
         const Vector &vels=action.handWP.vels;
         const Vector &thres=action.handWP.thres;
-
+        
         fingersMovingJntsSet=fingersJntsSet;
         curGraspDetectionThres=thres;
         for (set<int>::iterator itr=fingersJntsSet.begin(); itr!=fingersJntsSet.end(); ++itr)
-        {   
+        {
             int j=*itr-jHandMin;
 
             if (j>=poss.length() || j>=vels.length())
@@ -918,6 +930,7 @@ bool affActionPrimitives::cmdHand(const Action &action)
         }
 
         latchHandMoveDone=handMoveDone=false;
+        handSeqTerminator=action.handSeqTerminator;
         printMessage("\"%s\" WP: [%s] (thres = [%s])\n",
                      tag.c_str(),toCompactString(poss).c_str(),
                      toCompactString(thres).c_str());
@@ -1230,7 +1243,7 @@ bool affActionPrimitivesLayer2::open(Property &opt)
     }
 
     if (configured)
-    {    
+    {
         wrist_joint=opt.check("wrist_joint",Value(ACTIONPRIM_DEFAULT_WRIST_JOINT)).asInt();
         wrist_thres=opt.check("wrist_thres",Value(ACTIONPRIM_DEFAULT_WRIST_THRES)).asDouble();
 

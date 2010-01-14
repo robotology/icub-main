@@ -78,10 +78,10 @@ namespace actions
 * Class for defining routines to be called when action is 
 * completed. 
 */
-class affActionCallback
+class affActionPrimitivesCallback
 {
 public:
-    affActionCallback() { }
+    affActionPrimitivesCallback() { }
 
     /**
     * Defines the callback body to be called at the action end.
@@ -165,11 +165,13 @@ protected:
         // hand action
         bool execHand;
         HandWayPoint handWP;
+        bool handSeqTerminator;
         // action callback
-        affActionCallback *clb;
+        affActionPrimitivesCallback *clb;
     };
 
-    affActionCallback *actionClb;
+    affActionPrimitivesCallback *actionClb;
+    bool handSeqTerminator;
 
     std::deque<Action> actionsQueue;
     std::map<std::string,std::deque<HandWayPoint> > handSeqMap;
@@ -182,7 +184,7 @@ protected:
     virtual bool pushAction(const bool execArm, const yarp::sig::Vector &x,
                             const yarp::sig::Vector &o, const double execTime,
                             const bool execHand, const HandWayPoint &handWP,
-                            affActionCallback *clb);
+                            const bool handSeqTerminator, affActionPrimitivesCallback *clb);
     virtual bool stopJntTraj(const int jnt);
     virtual void enableTorsoDof();
     virtual void disableTorsoDof();
@@ -335,7 +337,7 @@ public:
     virtual bool pushAction(const yarp::sig::Vector &x, const yarp::sig::Vector &o, 
                             const std::string &handSeqKey,
                             const double execTime=ACTIONPRIM_DISABLE_EXECTIME,
-                            affActionCallback *clb=NULL);
+                            affActionPrimitivesCallback *clb=NULL);
 
     /**
     * Insert the arm-primitive action reach for target in the 
@@ -351,7 +353,7 @@ public:
     */
     virtual bool pushAction(const yarp::sig::Vector &x, const yarp::sig::Vector &o,
                             const double execTime=ACTIONPRIM_DISABLE_EXECTIME,
-                            affActionCallback *clb=NULL);
+                            affActionPrimitivesCallback *clb=NULL);
 
     /**
     * Insert a hand-primitive action in the actions queue.
@@ -361,7 +363,7 @@ public:
     * @return true/false on success/fail. 
     */
     virtual bool pushAction(const std::string &handSeqKey,
-                            affActionCallback *clb=NULL);
+                            affActionPrimitivesCallback *clb=NULL);
 
     /**
     * Insert a wait state in the actions queue.
@@ -371,7 +373,7 @@ public:
     * @return true/false on success/fail. 
     */
     virtual bool pushWaitState(const double tmo,
-                               affActionCallback *clb=NULL);
+                               affActionPrimitivesCallback *clb=NULL);
 
     /**
     * Immediately update the current reaching target (without 
@@ -615,7 +617,7 @@ class affActionPrimitivesLayer2;
 
 
 // class for switching on/off the wrist joint
-class switchingWristDof : public affActionCallback
+class switchingWristDof : public affActionPrimitivesCallback
 {
 protected:
     affActionPrimitivesLayer2 *action;
