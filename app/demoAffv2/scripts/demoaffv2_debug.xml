@@ -6,6 +6,7 @@
       <port>/icub/cartesianController/left_arm/state:o</port>
       <port>/icub/head/state:o</port>
       <port>/icub/torso/state:o</port>
+	  <port>/icub/controlGaze/status:o</port>
 </dependencies>
 <module>
       <name>demoAffv2</name>
@@ -123,6 +124,18 @@
       <from>/demoAffv2/emotion</from> 
       <to>/icub/face/emotions/in</to>
       <protocol>tcp</protocol>
+   </connection>
+   
+   <connection>
+      <from>/demoAffv2/gazeposcmd</from> 
+      <to>/icub/controlGaze/pos</to>
+      <protocol>udp</protocol>
+   </connection>
+
+   <connection>
+      <from>/demoAffv2/gazevelcmd</from> 
+      <to>/icub/controlGaze/vel</to>
+      <protocol>udp</protocol>
    </connection>
 
 </application>
