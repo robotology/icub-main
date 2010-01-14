@@ -865,6 +865,7 @@ bool DemoAff::updateModule(){
       
 	  // This is not needed when using controlGaze2
       //ipos->positionMove(headActPos);
+	  controlGazeSaccadeAbsolute(headPosActAz, headPosActEl);
 	  t_ipos->positionMove(torsoActPos);
       printf("To act pos\n");
       cout << torsoActPos[0] << torsoActPos[1]<< torsoActPos[2] << endl;
