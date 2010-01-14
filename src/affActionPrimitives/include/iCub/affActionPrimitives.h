@@ -703,6 +703,9 @@ public:
     *  
     * \b wrist_joint <int>: specify the wrist joint to be blocked
     *    while grasping/touching.
+    * \note the kinematic order shall be accounted for, i.e. an 
+    *       offset of 3 (the torso joints) shall be added to the arm
+    *       part order.
     *  
     * \b wrist_thres <double>: specify the threshold for the output 
     *    signal to detect contact between wrist and objects while
