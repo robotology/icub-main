@@ -554,7 +554,8 @@ void can_send_broadcast(void)
 		
 		_canmsg.CAN_length = 8;
 		_canmsg.CAN_frameType = DATA_FRAME;
-		CAN1_send (_canmsg.CAN_messID, _canmsg.CAN_frameType, _canmsg.CAN_length, _canmsg.CAN_data);
+		if((get_error_abs_ssi(0)==ERR_OK) && (get_error_abs_ssi(1)==ERR_OK))
+			CAN1_send (_canmsg.CAN_messID, _canmsg.CAN_frameType, _canmsg.CAN_length, _canmsg.CAN_data);
 	}
 
 	if ((broadcast_mask & (1<<(CAN_BCAST_PID_VAL-1)) )  && _counter == 1)
