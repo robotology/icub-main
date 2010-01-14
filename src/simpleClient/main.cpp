@@ -145,7 +145,7 @@ int main(int argc, char *argv[])
         if ((p.size()>1) && (p.get(1).asVocab()==VOCAB_TORQUE))
         {
             handleTorqueMsg(itorque, p, response, &rec, &ok);
-            printf("%s\n", response.toString());
+            printf("%s\n", response.toString().c_str());
         }
         else
         switch(p.get(0).asVocab()) {      
@@ -228,7 +228,7 @@ int main(int argc, char *argv[])
         case VOCAB_ICONTROLMODE:
             {
                 handleControlModeMsg(icm, p, response, &rec, &ok);
-                printf("%s\n", response.toString());
+                printf("%s\n", response.toString().c_str());
                 break;
             }
         case VOCAB_GET:
@@ -826,7 +826,7 @@ void handleTorqueMsg(ITorqueControl *torque, const yarp::os::Bottle& cmd,
 void handleControlModeMsg(IControlMode *iMode, const yarp::os::Bottle& cmd, 
                           yarp::os::Bottle& response, bool *rec, bool *ok)
 {
-    fprintf(stderr, "Handling IControlMode message %s\n", cmd.toString());
+    fprintf(stderr, "Handling IControlMode message %s\n", cmd.toString().c_str());
     if (!iMode)
         {
             fprintf(stderr, "Error I do not have a valid interface\n");
