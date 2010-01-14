@@ -47,7 +47,7 @@ int main(int argc, char *argv[]) {
 	module->processor2=new ImageProcessor();
 	module->processor3=new ImageProcessor();
 	module->currentProcessor=module->processor1;
-    module->setName("/rea/imageProcessor");
+    module->setName("/imageProcessorInterface");
 	
 	//initialise Yarp Network
     Network yarp;
