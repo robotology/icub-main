@@ -846,7 +846,8 @@ bool DemoAff::updateModule(){
       bool b;
 
       // go home :)
-      action->pushAction(*home_x, *home_o);
+      action->pushAction(home_xL, home_oL);
+      action->pushAction(home_xR, home_oR);
       action->checkActionsDone(b, true);
 
 
@@ -1145,7 +1146,7 @@ bool DemoAff::updateModule(){
 	objposreach[0] = trackDescTable[selobj].roi_x;
 	objposreach[1] = trackDescTable[selobj].roi_y;
 	state=REACHING;
-	selectedaction=TAP; //GRASP;
+	selectedaction=GRASP; //TAP; //GRASP;
       }
 
     }
@@ -1244,7 +1245,7 @@ bool DemoAff::updateModule(){
         // safe thresholding
         graspPosition[0] = min(-0.1, graspPosition[0]);
 
-        // graspPosition[2] = action->determineHeight();
+        //TODO: graspPosition[2] = action->determineHeight();
 
         // grasp it (wait until it's done)
         action->grasp(graspPosition ,*graspOrien,*graspDisp);
@@ -1308,7 +1309,7 @@ bool DemoAff::updateModule(){
         emotionCtrl("shy");
 
         bool b;
-        double height = tableTop[2]; /* = action->determineHeight(); */
+        double height = tableTop[2]; /* TODO: = action->determineHeight(); */
         action->checkActionsDone(b, true);
 
         // signal a successful touch
