@@ -174,7 +174,8 @@ private:
     yarp::os::Semaphore mutex;
     AnalogDataFormat dataFormat;
     yarp::os::Bottle initMsg;
-    yarp::os::Bottle closeMsg;
+    yarp::os::Bottle speedMsg;
+	yarp::os::Bottle closeMsg;
     short boardId;
 	short useCalibration;
 
@@ -201,7 +202,9 @@ public:
     }
 
     yarp::os::Bottle &getInitMsg()
-        {return initMsg;}
+        {return initMsg;}    
+	yarp::os::Bottle &getSpeedMsg()
+        {return speedMsg;}
     yarp::os::Bottle &getCloseMsg()
         {return closeMsg;}
 	short getUseCalibration()
