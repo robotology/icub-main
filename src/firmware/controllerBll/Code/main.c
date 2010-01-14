@@ -326,18 +326,19 @@ void main(void)
 	    // untill the joint limit is reached
 #if   VERSION == 0x0153 || VERSION == 0x0157 || VERSION == 0x0173 
 		_position_old[0]=_position[0]; 
-		if(!get_error_abs_ssi(0)==ERR_ABS_SSI)
+		if(get_error_abs_ssi(0)==ERR_OK)
 			_position[0]=Filter_Bit (get_relative_position_abs_ssi(0));
 		
 		_position_old[1]=_position[1];
-		if(!get_error_abs_ssi(1)==ERR_ABS_SSI) 
+		if(get_error_abs_ssi(1)==ERR_OK) 
 			_position[1]=Filter_Bit (get_position_abs_ssi(1));
 #elif VERSION == 0x0172
 		_position_old[0]=_position[0];
-		if(!get_error_abs_ssi(0)==ERR_ABS_SSI) 
+		if(get_error_abs_ssi(0)==ERR_OK) 
 			_position[0]=Filter_Bit (get_relative_position_abs_ssi(0));
+		
 		_position_old[1]=_position[1];
-		if(!get_error_abs_ssi(1)==ERR_ABS_SSI) 
+		if(get_error_abs_ssi(1)==ERR_OK) 
 			_position[1]=Filter_Bit (get_relative_position_abs_ssi(1));
 #elif VERSION ==0x0155
 		_position_old[0]=_position[0];
@@ -348,7 +349,7 @@ void main(void)
 	 	for (i=0; i<JN; i++) 
 		{
 		_position_old[i]=_position[i];
-		if(!get_error_abs_ssi(i)==ERR_ABS_SSI)
+		if(get_error_abs_ssi(i)==ERR_OK)
 			_position[i]=Filter_Bit (get_position_abs_ssi(i));
 		}
 #endif 
@@ -773,7 +774,7 @@ void decouple_positions(void)
 	
 #if   VERSION == 0x0153
 	_cpl_pos_counter++;
-	if (_cpl_pos_counter < timeout_cpl_pos)
+	if (_cpl_pos_counter < timeout_cpl_pos && (get_error_abs_ssi(0)==ERR_OK))
 	{
 		/* beware of the first cycle when _old has no meaning */		
 		_position[0] = _position[0]+ (float) (((float) _cpl_pos_prediction[0])*1.625F);  
@@ -785,6 +786,16 @@ void decouple_positions(void)
 		*/
 		_cpl_pos_prediction[0] = L_add(_cpl_pos_prediction[0], _cpl_pos_delta[0]);
 		_cpl_pos_prediction[1] = L_add(_cpl_pos_prediction[1], _cpl_pos_delta[1]);
+		
+		#ifdef DEBUG_CPL_BOARD
+		if(count==255)
+		{
+			can_printf("cplPos:(%d,%d)", (Int16) _cpl_pos_prediction[0], (Int16) _cpl_pos_prediction[1]);
+			count=0;
+		}			
+		count++;
+		#endif	
+
 	}
 	else
 	{
@@ -803,7 +814,7 @@ void decouple_positions(void)
 	}
 #elif   VERSION == 0x0157
 	_cpl_pos_counter++;
-	if (_cpl_pos_counter < timeout_cpl_pos)
+	if (_cpl_pos_counter < timeout_cpl_pos && && (get_error_abs_ssi(0)==ERR_OK)
 	{
 		/* beware of the first cycle when _old has no meaning */		
 		_position[0] = (((float) _position[0])*0.6153F);  
@@ -834,7 +845,7 @@ void decouple_positions(void)
 	}
 #elif VERSION == 0x0173
 	_cpl_pos_counter++;
-	if (_cpl_pos_counter < timeout_cpl_pos)
+	if (_cpl_pos_counter < timeout_cpl_pos && (get_error_abs_ssi(0)==ERR_OK))
 	{
 		/* beware of the first cycle when _old has no meaning */		
 		_position[0] = (((float) _position[0])*0.6153F);  
