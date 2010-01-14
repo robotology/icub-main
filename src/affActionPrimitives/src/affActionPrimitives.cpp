@@ -1152,6 +1152,7 @@ affActionPrimitivesLayer2::affActionPrimitivesLayer2(Property &opt) :
                            affActionPrimitivesLayer1(opt)
 {
     init();
+    skipFatherPart=true;
     open(opt);
 }
 
@@ -1163,6 +1164,7 @@ void affActionPrimitivesLayer2::init()
     wrist_joint=8;
     wrist_thres=1e9;
 
+    skipFatherPart=false;
     enableWristCheck=false;
 
     disableWristDof=NULL;
@@ -1198,6 +1200,9 @@ void affActionPrimitivesLayer2::run()
 /************************************************************************/
 bool affActionPrimitivesLayer2::open(Property &opt)
 {
+    if (!configured && !skipFatherPart)
+        affActionPrimitivesLayer1::open(opt);
+
     if (configured)
     {    
         if (Bottle *bWrist=opt.find("wrist_joint").asList())
