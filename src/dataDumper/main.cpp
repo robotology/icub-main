@@ -22,8 +22,13 @@ with the same name as the service port (or with a proper suffix
 appended if other data is present in the current path). In this 
 folder the file 'data.log' contains the information (taken from 
 the envelope field of the port) line by line as follows: 
-
-Packet Number, Time Stamp, Received Vector (or image file name) 
+ 
+\code 
+<b>pck id</b> <b>stamp</b>, <b>vector (or image_file_name)</b> 
+   0             1.234         0 1 2 3 ...
+   1             1.235         4 5 6 7 ...
+   ...           ...           ...
+\endcode 
  
 Note that if the envelope is not valid, then the Time Stamp is 
 the reference time of the machine where the service is running. 
