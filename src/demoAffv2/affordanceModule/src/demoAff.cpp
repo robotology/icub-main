@@ -847,8 +847,10 @@ bool DemoAff::updateModule(){
       bool b;
 
       // go home :)
-      action->pushAction(home_xL, home_oL);
-      action->pushAction(home_xR, home_oR);
+      useArm(USE_RIGHT);
+      action->pushAction(*home_x, *home_o);
+      useArm(USE_LEFT);
+      action->pushAction(*home_x, *home_o);
       action->checkActionsDone(b, true);
 
 
