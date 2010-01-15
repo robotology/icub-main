@@ -78,6 +78,7 @@ public: //everything public for a start
 	double minor_axis;
 	double rect_area;
 	CvBox2D enclosing_rect; 
+	CvRect bounding_rect;
 
 /* shape descriptors for the affordances */
 	double convexity;

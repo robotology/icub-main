@@ -454,6 +454,7 @@ bool BlobDescriptorModule::updateModule()
 			_objDescTable[i].major_axis = (_objDescTable[i].enclosing_rect.size.width > _objDescTable[i].enclosing_rect.size.height ? _objDescTable[i].enclosing_rect.size.width : _objDescTable[i].enclosing_rect.size.height);
 			_objDescTable[i].minor_axis = (_objDescTable[i].enclosing_rect.size.width > _objDescTable[i].enclosing_rect.size.height ? _objDescTable[i].enclosing_rect.size.height : _objDescTable[i].enclosing_rect.size.width);
 			_objDescTable[i].rect_area = _objDescTable[i].major_axis*_objDescTable[i].minor_axis;
+			_objDescTable[i].bounding_rect = cvBoundingRect(_objDescTable[i].contours,0);
 		
 			CvPoint2D32f center;
 			float radius;
@@ -523,8 +524,14 @@ bool BlobDescriptorModule::updateModule()
 			/*2*/objbot.addDouble(norm_w);
 			/*3*/objbot.addDouble(norm_h);
 			/*4*/objbot.addDouble(_objDescTable[i].enclosing_rect.angle);
-			/*5*/objbot.addDouble(x);
-			/*6*/objbot.addDouble(y+h/2);
+			double br_x, br_y, br_w, br_h;
+			br_x = _objDescTable[i].bounding_rect.x;
+			br_y = _objDescTable[i].bounding_rect.y;
+			br_w = _objDescTable[i].bounding_rect.width;
+			br_h = _objDescTable[i].bounding_rect.height;
+			//estimate of the point over the table
+			/*5*/objbot.addDouble(br_x+br_w/2);
+			/*6*/objbot.addDouble(br_y+br_h);
 
 
 			/*7*/objbot.addDouble((double)cvQueryHistValue_1D(_objDescTable[i].objHist, 0));
@@ -686,8 +693,14 @@ bool BlobDescriptorModule::updateModule()
 			//Draw also center point in table for debug
 			//double x = _objDescTable[i].enclosing_rect.center.x;
 			//double y = _objDescTable[i].enclosing_rect.center.y + _objDescTable[i].enclosing_rect.size.height/2;
-			CvRect r = cvBoundingRect(_objDescTable[i].contours,0);
-			cvCircle(opencvViewImg, cvPoint(r.x+r.width/2, r.y+r.height), 5, cvScalar(255,255,255,255), 3 );
+			//CvRect r = cvBoundingRect(_objDescTable[i].contours,0);
+			//cvCircle(opencvViewImg, cvPoint(r.x+r.width/2, r.y+r.height), 5, cvScalar(255,255,255,255), 3 );
+			double br_x, br_y, br_w, br_h;
+			br_x = _objDescTable[i].bounding_rect.x;
+			br_y = _objDescTable[i].bounding_rect.y;
+			br_w = _objDescTable[i].bounding_rect.width;
+			br_h = _objDescTable[i].bounding_rect.height;
+			cvCircle(opencvViewImg, cvPoint(br_x+br_w/2, br_y+br_h), 5, cvScalar(255,255,255,255), 3 );
 		}
 		else 	//invalid objects - white contours
 		{
