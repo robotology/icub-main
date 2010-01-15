@@ -207,6 +207,7 @@ protected:
   
   Vector *graspOrien;
   Vector *graspDisp;
+  Vector *graspRelief;
   Vector *dOffs;
   Vector *dLift;
   Vector *home_x;
