@@ -60,6 +60,10 @@ using namespace yarp::dev;
 using namespace yarp::math;
 using namespace vislab::math;
 
+using namespace ctrl;
+using namespace actions;
+
+
 
 /**
  *
@@ -189,6 +193,7 @@ protected:
   actions::affActionPrimitivesLayer *actionL;
   actions::affActionPrimitivesLayer *actionR;
   actions::affActionPrimitivesLayer *action;
+  yarp::dev::ICartesianControl *cartIF;
   BufferedPort<Bottle>       inPort;
   Port                       rpcPort;
   

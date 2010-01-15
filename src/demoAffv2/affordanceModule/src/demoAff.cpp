@@ -635,6 +635,12 @@ bool DemoAff::configureAffPrimitives(Searchable &config,
       else
 	useArm(USE_RIGHT);
     }
+
+  if( !action->getCartesianIF(cartIF) ) 
+  {
+	  cout <<"Problem acquiring cartesian interface. Exiting..."<<endl;
+	  return false;
+  }
   
   deque<string> q=action->getHandSeqList();
   cout<<"***** List of available hand sequence keys:"<<endl;
@@ -851,6 +857,11 @@ bool DemoAff::updateModule(){
     {
       bool b;
 
+	  //Set torso rest position leaned over the table
+	  Vector newRestPos(1);
+	  newRestPos[0] = torsoActPos[0]
+	  cartIF->setRestPos(newRestPos);
+
       // go home :)
       useArm(USE_RIGHT);
       action->pushAction(*home_x, *home_o);
@@ -870,7 +881,7 @@ bool DemoAff::updateModule(){
 	  // This is not needed when using controlGaze2
       //ipos->positionMove(headActPos);
 	  controlGazeSaccadeAbsolute(headPosActAz, headPosActEl);
-	  t_ipos->positionMove(torsoActPos);
+	  //t_ipos->positionMove(torsoActPos);
       printf("To act pos\n");
       cout << torsoActPos[0] << torsoActPos[1]<< torsoActPos[2] << endl;
 
