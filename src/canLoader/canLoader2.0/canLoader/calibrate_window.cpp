@@ -14,7 +14,7 @@ int curr_bias[6]={0,0,0,0,0,0};
 unsigned int minadc[6]={65535,65535,65535,65535,65535,65535};
 unsigned int matrix[6][6];
 unsigned int calib_matrix[6][6];
-guint  timer_refresh;   
+guint  timer_refresh = 0;   
 GtkWidget* curr_measure[6];
 GtkWidget* max_measure[6];
 GtkWidget* min_measure[6];
@@ -47,7 +47,7 @@ bool matrix_changed;
 bool something_changed;
 		
 #define START_TIMER timer_refresh = g_timeout_add (500, timer_func, NULL);
-#define STOP_TIMER g_source_remove(timer_refresh);
+#define STOP_TIMER {if (timer_refresh>0) g_source_remove(timer_refresh); timer_refresh=0;}
 
 
 //*********************************************************************************
