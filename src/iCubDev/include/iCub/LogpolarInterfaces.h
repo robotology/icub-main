@@ -4,7 +4,8 @@
  * \defgroup icub_icubDev iCubDev
  * @ingroup icub_libraries
  *
- * A basic library with devices of common use on the robot. To be populated.
+ * A library that collects device interfaces. This is similar to the 
+ * libYARP_dev in YARP. To be populated.
  *
  * Author: Giorgio Metta
  * Copyright (C) 2009 RobotCub Consortium
