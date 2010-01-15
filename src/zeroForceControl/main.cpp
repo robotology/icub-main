@@ -246,7 +246,7 @@ public:
 		  
 		  for(int i=0;i<ARM_JNT;i++)
 		  {
-			  //ipos->positionMove(i,initPosition[i]);
+			  ipos->positionMove(i,initPosition[i]);
 		  }
 			  
 
@@ -268,7 +268,7 @@ public:
 
 		  for(int i=0;i<ARM_JNT;i++)
 		  {
-			  //ipids->setPid(i,FTPid[i]);  // iCub is now controllable using setOffset
+			  ipids->setPid(i,FTPid[i]);  // iCub is now controllable using setOffset
 			  //ipids->setPid(i,FTPid[i]);  // iCub is now controllable using setOffset
 		  }
 		  
@@ -368,7 +368,7 @@ public:
 
 		  for(int i=0;i<4;i++)
 		  {
-			  //ipids->setOffset(i,tauSafe(i));
+			  ipids->setOffset(i,tauSafe(i));
 		  }
 		  
 
@@ -477,14 +477,20 @@ public:
 	  void threadRelease()
 	  {
 		  fprintf(stderr,"disabling amps...\n");
-		  //for(int i=0;i<ARM_JNT;i++)
-          //	  iamps->disableAmp(i);
-		  //fprintf(stderr,"disabling pids...\n");
-		  //for(int i=0;i<ARM_JNT;i++)
-          //	  ipids->disablePid(i);
+		  for(int i=0;i<ARM_JNT;i++)
+          	  iamps->disableAmp(i);
+		  fprintf(stderr,"disabling pids...\n");
+		  for(int i=0;i<ARM_JNT;i++)
+          	  ipids->disablePid(i);
 		  fprintf(stderr,"setting old PIDS...\n");
 		  for(int i=0;i<ARM_JNT;i++)
 			  ipids->setPid(i,iCubPid[i]);
+		  fprintf(stderr,"enabling amps...\n");
+		  for(int i=0;i<ARM_JNT;i++)
+          	  iamps->enableAmp(i);
+		  fprintf(stderr,"enabling pids...\n");
+		  for(int i=0;i<ARM_JNT;i++)
+          	  ipids->enablePid(i);
 
 	//	  if(datas) delete datas;
 		  if(FTB) delete FTB;
