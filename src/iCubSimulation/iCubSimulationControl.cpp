@@ -55,7 +55,7 @@ private:
 	std::string unit;
     dJointID *joint;
     dReal *speed;
-    double speedSetpoint;
+    double speedSetpoint;iCubSimulationControl.cpp
     bool hinged;
     int universal;
     int sign;
@@ -76,7 +76,7 @@ public:
         active = false;
         left = NULL;
         right = NULL;
-        verge = 0;
+        verge = 0;iCubSimulationControl.cpp
         speedSetpoint = 0;
         number = -1;
         vel = 1;
@@ -115,7 +115,7 @@ public:
         active = true;
         verge = sgn;
         sign = 1;
-        this->left = &left;
+        this->left = &left;iCubSimulationControl.cpp
         this->right = &right;
         this->peer = &peer;
     }
@@ -213,7 +213,7 @@ public:
             } else {
                 return 0;
             }
-        } else {
+        } else {iCubSimulationControl.cpp
             double result = (left->getAngleRaw() + 
                              verge*right->getAngleRaw());
             //printf("verger %d angle %g\n", verge, result);
@@ -465,9 +465,9 @@ static void linkController() {
 		if (odeinit._iCub->actTorso == "on"){
 		  int torso = PART_TORSO;
 		  const char *torsoName = "torso";
-          getController(torso,0).init(torsoName,"hinge",2,+1);
+          getController(torso,0).init(torsoName,"hinge",0,-1);
 		  getController(torso,1).init(torsoName,"hinge",1,+1);
-		  getController(torso,2).init(torsoName,"hinge",0,-1);
+		  getController(torso,2).init(torsoName,"hinge",2,+1);
 		}
         simLinked = true;
     }
