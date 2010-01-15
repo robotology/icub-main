@@ -33,6 +33,7 @@
  *
  * \defgroup icub_stereoVisualTracker  stereoVisualTracker  
  *
+ * This module performs color-based 3d tracking with stereovision.
  *
  * \section intro_sec Description
  * This module performs color-based 3d tracking with stereovision.
