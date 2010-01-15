@@ -228,7 +228,7 @@ bool ShortTermMemoryModule::updateModule(){
         
         int curr_act = int(memory["action"].front());
         //int human_drum = int(memory["sound"].front() > sound_thresh);
-        int human_drum = int(memory["beat"].front() > sound_thresh);
+        int human_drum = int(memory["beat"].front() > 0.0);
         int robot_drum = int(curr_act == drum_act);
         int both_drum = int(human_drum && robot_drum);
         int robot_hide = int(curr_act == hide_act);
@@ -282,14 +282,22 @@ bool ShortTermMemoryModule::updateModule(){
     //uninterrupted drumming
     double drum_score = (0.5* (memory_sum["robot_drum"] + memory_sum["human_drum"]) \
                          - memory_sum["both_drum"])/(resolution*mem_length);
-    //for peekaboo, if the robot or the person is hiding for too long
+    //for peekaboo, if the person is hiding for too long
     //(over a couple of seconds), they are probably not being tracked
     // by the face-tracker, not hiding
     double hide_score = 0;
-    if (memory_sum["robot_hide"] < (2.5*resolution))
-        hide_score += memory_sum["robot_hide"];
-    if (memory_sum["human_only_hide"] < (2.5*resolution))
-        hide_score += memory_sum["human_only_hide"];
+    //for peekaboo, if the person is hiding for too long
+    //(over a couple of seconds), they are probably not being tracked
+    // by the face-tracker, not hiding
+    //similarly, if too short, might be a tracking err
+    //if (memory_sum["human_only_hide"] < (2.5*resolution))
+    //if person was hiding (not lost), give robot more reward
+    if((memory_sum["human_only_hide"] < (resolution*2.5)) && (memory_sum["human_only_hide"] > (0.1*resolution*mem_length))){
+      hide_score += memory_sum["human_only_hide"];
+      hide_score += memory_sum["robot_hide"];
+    } else {
+      hide_score += 0.25*memory_sum["robot_hide"];
+    }
     hide_score = hide_score/(resolution*mem_length);
     
     //send the memory-based reward to motivation dynamics
