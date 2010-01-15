@@ -1,13 +1,6 @@
+
 <application>
 <name>demoAffv2</name>
-<dependencies>
-      <port>/icub/camcalib/left/out</port>
-      <port>/icub/cartesianController/right_arm/state:o</port>
-      <port>/icub/cartesianController/left_arm/state:o</port>
-      <port>/icub/head/state:o</port>
-      <port>/icub/torso/state:o</port>
-	  <port>/icub/controlGaze/status:o</port>
-</dependencies>
 <module>
       <name>demoAffv2</name>
       <parameters>--context demoAffv2/conf</parameters>
@@ -15,6 +8,20 @@
       <stdio>icub14</stdio>
       <tag>demoAffv2</tag>
 </module>
+
+<module>
+  <name>graspDetector</name>
+  <parameters>--context graspDetector/conf --from left_armGraspDetector.ini</parameters>
+  <node>icub-b13</node>
+  <tag>graspdetectorleft</tag>
+</module>
+<module>
+  <name>graspDetector</name>
+  <parameters>--context graspDetector/conf --from right_armGraspDetector.ini</parameters>
+  <node>icub-b13</node>
+  <tag>graspdetectorright</tag>
+</module>
+
 <module>
       <name>edisonSegmentation</name>
       <parameters>--context demoAffv2/conf</parameters>
@@ -136,6 +143,17 @@
       <from>/demoAffv2/gazevelcmd</from> 
       <to>/icub/controlGaze/vel</to>
       <protocol>udp</protocol>
+   </connection>
+
+   <connection>
+      <from>/icub/lefthand/analog:o/fingerDetector/status:o</from> 
+      <to>/demoAffv2/left_arm/detectGrasp:i</to>
+      <protocol>tcp</protocol>
+   </connection>
+   <connection>
+      <from>/icub/righthand/analog:o/fingerDetector/status:o</from> 
+      <to>/demoAffv2/right_arm/detectGrasp:i</to>
+      <protocol>tcp</protocol>
    </connection>
 
 </application>

@@ -1,0 +1,115 @@
+<application>
+<name>Visual_Attention</name>
+<dependencies>
+        <port>/icub/head/rpc:i</port> 
+        <port>/icub/cam/right</port>
+	<port>/icub/camcalib/right/out</port>
+</dependencies>
+<module>
+        <name>salience</name>
+        <parameters>--name /icub/salience/right --context demoAffv2/conf/attention --from icubSalience.ini</parameters>
+        <tag>salience</tag>
+        <node>icub-b11</node>
+</module>
+<module>
+        <name>egoSphere</name>
+        <parameters>--name /icub/egoSphere --context demoAffv2/conf/attention --from icubEyes.ini --controlboard /icub/head</parameters>
+        <tag>egosphere</tag>
+        <node>icub-b11</node>
+</module>
+<module>
+        <name>attentionSelection</name>
+        <parameters>--name /icub/attentionSelection --context demoAffv2/conf/attention --from icubAttentionSelection.ini --remoteEgoSphere /icub/egoSphere/conf</parameters>
+        <tag>attentionselection</tag>
+        <node>icub-b11</node>
+</module>
+<module>
+        <name>controlGaze2</name>
+        <parameters>--configCamera icubEyes.ini --name /icub/controlGaze --context demoAffv2/conf/attention --from icubControlGaze2.ini --motorboard /icub/head --fake_velocity_control --fake_velocity_gain 6</parameters>
+        <tag>controlgaze</tag>
+        <stdio>icub14</stdio>
+        <node>icub-b11</node>
+</module>
+<module>
+        <name>applicationGui</name>
+        <parameters>--context demoAffv2/conf/attention --from guiApplication.ini</parameters>
+        <tag>application-gui</tag>
+        <node>icub14</node>
+</module> 
+<connection>
+        <from>/icub/cam/right</from>
+        <to>/icub/guiCameraRight/image_in</to>
+</connection>
+<connection>
+        <from>/icub/cam/right</from>
+        <to>/icub/camcalib/right/in</to>
+</connection>
+<connection>
+        <from>/icub/camcalib/right/out</from>
+        <to>/icub/guiCamCalibRight/viewer/image_in</to>
+</connection>
+<connection>
+      	<from>/icub/camcalib/right/out</from>
+        <to>/icub/salience/right/view</to>
+</connection>
+<connection>
+        <from>/icub/salience/right/map</from>
+        <to>/icub/guiSalienceRight/viewer/image_in</to>
+</connection>
+<connection>
+        <from>/icub/guiSalienceRight/salienceControls/conf</from>
+        <to>/icub/salience/right/conf</to>
+</connection>
+<connection>
+      	<from>/icub/salience/right/map</from>
+        <to>/icub/egoSphere/mapVisual/map_in</to>
+</connection>
+<connection>
+        <from>/icub/camcalib/right/out</from>
+        <to>/icub/egoSphere/mapVisual/rgb_in</to>
+</connection>
+<connection>
+        <from>/icub/guiAttentionSelection/viewer/click_out</from>
+        <to>/icub/egoSphere/mapVisual/click_in</to>
+</connection>
+<connection>
+        <from>/icub/guiEgoSphere/viewer/click_out</from>
+        <to>/icub/egoSphere/mapVisual/click_in</to>
+</connection>
+<connection>
+        <from>/icub/egoSphere/map_out</from>
+        <to>/icub/guiAttentionSelection/viewer/image_in</to>
+</connection>
+<connection>
+        <from>/icub/egoSphere/mapVisual/rgb_out</from>
+        <to>/icub/guiEgoSphere/viewer/image_in</to>
+</connection>
+<connection>
+        <from>/icub/egoSphere/map_out</from>
+        <to>/icub/attentionSelection/i:map</to>
+</connection>
+<connection>
+        <from>/icub/attentionSelection/o:position</from>
+        <to>/icub/controlGaze/pos</to>
+</connection>
+<connection>
+        <from>/icub/attentionSelection/o:velocity</from>
+        <to>/icub/controlGaze/vel</to>
+</connection>
+<connection>
+        <from>/icub/attentionSelection/remoteEgoSphere</from>
+        <to>/icub/egoSphere/conf</to>
+</connection>
+<connection>
+        <from>/icub/controlGaze/status:o</from>
+        <to>/icub/attentionSelection/i:gaze</to> 
+</connection>
+<connection>
+        <from>/icub/controlGaze/remoteEgoSphere</from>
+        <to>/icub/egoSphere/conf</to>
+</connection>
+<connection>
+        <from>/icub/torso/state:o</from>
+        <to>/icub/controlGaze/torso</to>
+</connection>
+</application>
