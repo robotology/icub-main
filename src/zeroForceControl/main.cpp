@@ -45,7 +45,7 @@ const bool verbose = false;
 const int CPRNT = 100;
 const int CALIBRATION_OK = true; // should be true when FT calibration will be ok
 
-const double initPosition[4] = {-30.0, 30.0, 0.0, 40.0};
+const double initPosition[4] = {-10.0, 20.0, 15.0, 15.0};
 
 const double MAX_JNT_LIMITS[4] = {2.0, 120.0, 90.0, 95.0};
 const double MIN_JNT_LIMITS[4] = {-95.0, 0.0, -20.0, 10.0};
