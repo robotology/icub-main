@@ -221,7 +221,7 @@ protected:
 			      yarp::os::ConstString handSeqFile, 
 			      string name);
   void useArm(const int arm);
-  void getArmDependentOptions(Bottle &b, Vector &_gOrien, Vector &_gDisp,
+  void getArmDependentOptions(Bottle &b, Vector &_gOrien, Vector &_gDisp, Vector &_gRelief,
 			      Vector &_dOffs, Vector &_dLift, Vector &_home_x,
 			      Vector &_home_o);
 

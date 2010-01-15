@@ -599,7 +599,7 @@ bool DemoAff::configureAffPrimitives(Searchable &config,
       return false;
     }
   else 
-    getArmDependentOptions(bLeft,graspOrienL,graspDispL,
+    getArmDependentOptions(bLeft,graspOrienL,graspDispL,graspReliefL,
 			   dOffsL,dLiftL,home_xL,home_oL);
   
   // parsing right_arm config options
@@ -610,7 +610,7 @@ bool DemoAff::configureAffPrimitives(Searchable &config,
       return false;
     }
   else
-    getArmDependentOptions(bRight,graspOrienR,graspDispR,
+    getArmDependentOptions(bRight,graspOrienR,graspDispR, graspReliefL,
 			   dOffsR,dLiftR,home_xR,home_oR);
   
   if (partUsed=="both_arms" || partUsed=="left_arm")
@@ -661,7 +661,7 @@ bool DemoAff::configureAffPrimitives(Searchable &config,
   return true;
 }
 
-void DemoAff::getArmDependentOptions(Bottle &b, Vector &_gOrien, Vector &_gDisp,
+void DemoAff::getArmDependentOptions(Bottle &b, Vector &_gOrien, Vector &_gDisp, Vector &_gRelief,
                                 Vector &_dOffs, Vector &_dLift, Vector &_home_x,
                                 Vector &_home_o)
 {
@@ -684,6 +684,16 @@ void DemoAff::getArmDependentOptions(Bottle &b, Vector &_gOrien, Vector &_gDisp,
       for (int i=0; i<l; i++)
 	_gDisp[i]=pB->get(i).asDouble();
     }
+
+  if (Bottle *pB=b.find("grasp_relief").asList())
+    {
+      int sz=pB->size();
+      int len=_gRelief.length();
+      int l=len<sz?len:sz;
+      for (int i=0; i<l; i++)
+	_gRelief[i]=pB->get(i).asDouble();
+    }
+  
   
   if (Bottle *pB=b.find("systematic_error_displacement").asList())
     {
@@ -1292,7 +1302,7 @@ bool DemoAff::updateModule(){
 		// if fingers are not in position,
         // it's likely that we've just grasped
         // something, so lift it up!
-       /* if (!action->areFingersInPosition())
+        if (!action->areFingersInPosition())
         {
 			emotionCtrl("hap");    
             // lift the object (wait until it's done)
@@ -1303,7 +1313,7 @@ bool DemoAff::updateModule(){
 		{
             emotionCtrl("sad");      
 		}
-        */
+       
         // release the object (wait until it's done)
         action->pushAction("open_hand");
         action->checkActionsDone(b, true);
