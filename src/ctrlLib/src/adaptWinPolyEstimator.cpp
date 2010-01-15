@@ -154,9 +154,15 @@ Vector AWPolyEstimator::estimate()
 
 
 /***************************************************************************/
-AWPolyEstimator::~AWPolyEstimator()
+void AWPolyEstimator::reset()
 {
-    elemList.clear();
+    if (elemList.size())
+    {
+        size_t dim=elemList[0].data.length();
+
+        winLen.resize(dim,N);
+        elemList.clear();
+    }
 }
 
 

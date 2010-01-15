@@ -1,4 +1,7 @@
 
+2010-01-15 Ugo Pattacini <ugo.pattacini@iit.it>
+	   * adaptWinPolyEstimator: reset() method added 
+
 2009-12-22 Ugo Pattacini <ugo.pattacini@iit.it>
 	   * trajectoryGenerator: new feedback sampling algorithm 
 

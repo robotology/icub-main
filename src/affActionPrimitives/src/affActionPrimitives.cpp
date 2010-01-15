@@ -17,8 +17,8 @@
 #define ACTIONPRIM_DEFAULT_EXECTIME         2.0     // [s]
 #define ACTIONPRIM_DEFAULT_REACHTOL         0.005   // [m]
 #define ACTIONPRIM_DUMP_PERIOD              1.0     // [s]
-#define ACTIONPRIM_DEFAULT_WRIST_JOINT      8
-#define ACTIONPRIM_DEFAULT_WRIST_THRES      -1e9
+#define ACTIONPRIM_DEFAULT_WRIST_JOINT      5
+#define ACTIONPRIM_DEFAULT_WRIST_THRES      1e9
 #define ACTIONPRIM_DEFAULT_PART             "right_arm"
 #define ACTIONPRIM_DEFAULT_TRACKINGMODE     "off"
 #define ACTIONPRIM_DEFAULT_VERBOSITY        "off"
@@ -1191,7 +1191,11 @@ void switchingWristDof::exec()
 
     yarp::sig::Vector dummyRet;
     action->cartCtrl->setDOF(sw,dummyRet);
+
     action->enableWristCheck=!action->enableWristCheck;
+
+    action->t0=Time::now();
+    action->outputDerivative->reset();
 }
 
 
@@ -1222,24 +1226,32 @@ void affActionPrimitivesLayer2::init()
 
     disableWristDof=NULL;
     enableWristDof=NULL;
+    outputDerivative=NULL;
 }
 
 
 /************************************************************************/
 void affActionPrimitivesLayer2::run()
 {
-    if (enableWristCheck)
+    double out;
+
+    if (pidCtrl->getOutput(wrist_joint,&out))
     {
-        double out;
+        AWPolyElement item;
+        item.time=Time::now();
+        item.data.resize(1,out);
 
-        if (pidCtrl->getOutput(wrist_joint,&out))
-            if (out<wrist_thres)
-            {
-                printMessage("contact detected on the wrist joint %d: (%g<%g)\n",
-                             wrist_joint,out,wrist_thres);
+        outputDerivative->feedData(item);
+        Vector outDer=outputDerivative->estimate();
+        outDer[0]=outDer[0]<0.0?-outDer[0]:outDer[0];
 
-                cartCtrl->stopControl();
-            }
+        if (enableWristCheck && (Time::now()-t0>default_exec_time/2.0) && (outDer[0]>wrist_thres))
+        {
+            printMessage("contact detected on the wrist joint %d: (%g>%g)\n",
+                         wrist_joint,outDer[0],wrist_thres);
+
+            cartCtrl->stopControl();
+        }
     }
 
     affActionPrimitivesLayer1::run();
@@ -1270,17 +1282,21 @@ bool affActionPrimitivesLayer2::open(Property &opt)
         wrist_joint=wrist_joint<0?0:(wrist_joint>max?max:wrist_joint);
         
         Vector disableWristSw;
-        disableWristSw.resize(wrist_joint+1,2);
-        disableWristSw[wrist_joint]=0;
+        disableWristSw.resize(wrist_joint+3+1,2);
+        disableWristSw[3+wrist_joint]=0;
 
         Vector enableWristSw;
-        enableWristSw.resize(wrist_joint+1,2);
-        enableWristSw[wrist_joint]=1;
+        enableWristSw.resize(wrist_joint+3+1,2);
+        enableWristSw[3+wrist_joint]=1;
 
         // create callbacks
         disableWristDof=new switchingWristDof(this,disableWristSw);
         enableWristDof =new switchingWristDof(this,enableWristSw);
 
+        // create output derivative estimator
+        outputDerivative=new AWLinEstimator(40,5.0);
+
+        // open pid view
         polyHand->view(pidCtrl);
 
         return meConfigured=true;
@@ -1331,6 +1347,9 @@ affActionPrimitivesLayer2::~affActionPrimitivesLayer2()
 
     if (enableWristDof)
         delete enableWristDof;
+
+    if (outputDerivative)
+        delete outputDerivative;
 }
 
 

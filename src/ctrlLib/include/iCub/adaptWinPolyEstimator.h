@@ -46,7 +46,11 @@ protected:
     unsigned int N;
     double D;
 
-    yarp::sig::Vector t,x,coeff,winLen;
+    yarp::sig::Vector t;
+    yarp::sig::Vector x;
+    yarp::sig::Vector coeff;
+    yarp::sig::Vector winLen;
+
     bool firstRun;
 
     /**
@@ -110,9 +114,16 @@ public:
     yarp::sig::Vector estimate();
 
     /**
+    * Reinitializes the internal state. 
+    * \note Windows lenghts are brought to the maximum value N and 
+    *       output remains zero as long as fed data size reaches N.
+    */
+    void reset();
+
+    /**
      * Destructor.
      */
-    ~AWPolyEstimator();
+    virtual ~AWPolyEstimator() { }
 };
 
 

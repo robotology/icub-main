@@ -64,6 +64,8 @@
 #include <yarp/dev/ControlBoardInterfaces.h>
 #include <yarp/sig/Vector.h>
 
+#include <iCub/adaptWinPolyEstimator.h>
+
 #include <string>
 #include <deque>
 #include <set>
@@ -678,12 +680,14 @@ class affActionPrimitivesLayer2 : public affActionPrimitivesLayer1
 protected:
     int    wrist_joint;
     double wrist_thres;
+    double t0;
 
     bool skipFatherPart;
     bool meConfigured;
     bool enableWristCheck;
 
     yarp::dev::IPidControl *pidCtrl;
+    ctrl::AWLinEstimator   *outputDerivative;
 
     switchingWristDof *disableWristDof; 
     switchingWristDof *enableWristDof;
@@ -724,13 +728,10 @@ public:
     *  
     * \b wrist_joint <int>: specify the wrist joint to be blocked
     *    while grasping/touching.
-    * \note the kinematic order shall be taken into account, i.e. an
-    *       offset of 3 (the torso joints) shall be added to the arm
-    *       part order.
     *  
-    * \b wrist_thres <double>: specify the threshold for the output 
-    *    signal to detect contact between wrist and objects while
-    *    grasping/touching.
+    * \b wrist_thres <double>: specify the threshold for the 
+    *    derivative of the output signal in order to detect contact
+    *    between wrist and objects while grasping/touching.
     * 
     */
     virtual bool open(yarp::os::Property &opt);
