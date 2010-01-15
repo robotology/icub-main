@@ -1011,16 +1011,6 @@ deque<string> affActionPrimitives::getHandSeqList()
 
 
 /************************************************************************/
-bool affActionPrimitives::getPose(Vector &x, Vector &o)
-{
-    if (configured)
-        return cartCtrl->getPose(x,o);
-    else
-        return false;
-}
-
-
-/************************************************************************/
 bool affActionPrimitives::areFingersMoving()
 {
     return latchHandMoveDone;
@@ -1031,6 +1021,19 @@ bool affActionPrimitives::areFingersMoving()
 bool affActionPrimitives::areFingersInPosition()
 {
     return fingersInPosition;
+}
+
+
+/************************************************************************/
+bool affActionPrimitives::getCartesianIF(ICartesianControl *&ctrl)
+{
+    if (configured)
+    {
+        ctrl=cartCtrl;
+        return true;
+    }
+    else
+        return false;
 }
 
 

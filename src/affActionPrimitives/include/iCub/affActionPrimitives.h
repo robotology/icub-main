@@ -443,15 +443,6 @@ public:
     std::deque<std::string> getHandSeqList();
 
     /**
-    * Return the current end-effector position. 
-    * @param x the current 3-d hand position [m].
-    * @param o the current 4-d hand orientation (given in the 
-    *          axis-angle representation: ax ay az angle in rad).
-    * @return true/false on success/fail.
-    */
-    virtual bool getPose(yarp::sig::Vector &x, yarp::sig::Vector &o);
-
-    /**
     * Query if fingers are moving.
     * @return true/false on moving/non-moving fingers.
     */
@@ -468,6 +459,13 @@ public:
     *       return false.
     */
     virtual bool areFingersInPosition();
+
+    /**
+    * Return the cartesian interface used to control the limb.
+    * @param ctrl 
+    * @return true/false on success/fail.
+    */
+    virtual bool getCartesianIF(yarp::dev::ICartesianControl *&ctrl);
 
     /**
     * Stop any ongoing arm/hand movements.
