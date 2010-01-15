@@ -100,12 +100,12 @@ dbg 40
 # to allow binning calculations
 # remember to put reward and action as last two items
 
-SENSORS HEAD_PITCH HEAD_YAW HEAD_PAN EYES_UD EYES_RL EYES_CD LSH_ROT LSH_ELV LSH_TWST LELB_FLX LELB_TWST LWR_ABD LWR_FLX LDIG_1 LDIG_2 LDIG_3 LDIG_4 LDIG_5 LDIG_6 LDIG_7 LDIG_8 LDIG_9 RSH_ROT RSH_ELV RSH_TWST RELB_FLX RELB_TWST RWR_ABD RWR_FLX RDIG_1 RDIG_2 RDIG_3 RDIG_4 RDIG_5 RDIG_6 RDIG_7 RDIG_8 RDIG_9 FACE SOUNDS GAZE ACTION REWARD
+SENSORS HEAD_PITCH HEAD_YAW HEAD_PAN EYES_UD EYES_RL EYES_CD LSH_ROT LSH_ELV LSH_TWST LELB_FLX LELB_TWST LWR_ABD LWR_FLX LDIG_1 LDIG_2 LDIG_3 LDIG_4 LDIG_5 LDIG_6 LDIG_7 LDIG_8 LDIG_9 RSH_ROT RSH_ELV RSH_TWST RELB_FLX RELB_TWST RWR_ABD RWR_FLX RDIG_1 RDIG_2 RDIG_3 RDIG_4 RDIG_5 RDIG_6 RDIG_7 RDIG_8 RDIG_9 FACE SOUNDS GAZE BEAT DRUM_MEM HIDE_MEM ACTION REWARD
 
-#          0   1   2   3   4   5   6   7   8   9  10  11  12  13  14  15  16  17  18  19  20  21  22  23  24  25  26  27  28  29  30  31  32  33  34  35  36  37 38  39  40  41  42
+#          0   1   2   3   4   5   6   7   8   9  10  11  12  13  14  15  16  17  18  19  20  21  22  23  24  25  26  27  28  29  30  31  32  33  34  35  36  37 38  39  40  41  42 43 44 45
 
-LIMIT_HI  30  60  55  15  52  45  90 161 100 106  90  10  40  30 105  90  90  90  90  90  90 120  90 161 100 106  90  10  40  30 105  90  90  90  90  90  90 120  1   1	 10  21   1
-LIMIT_LO -40 -70 -55 -35 -50  -1 -96  -5 -39  -2 -90 -90 -20 -10 -15  -2  -2  -2  -2  -2  -2  -2 -96  -5 -39  -2 -90 -90 -20 -10 -15  -2  -2  -2  -2  -2  -2  -2  0   0	  0   0   0
+LIMIT_HI  30  60  55  15  52  45  90 161 100 106  90  10  40  30 105  90  90  90  90  90  90 120  90 161 100 106  90  10  40  30 105  90  90  90  90  90  90 120  1   1	 1   10	 1  1  21 1
+LIMIT_LO -40 -70 -55 -35 -50  -1 -96  -5 -39  -2 -90 -90 -20 -10 -15  -2  -2  -2  -2  -2  -2  -2 -96  -5 -39  -2 -90 -90 -20 -10 -15  -2  -2  -2  -2  -2  -2  -2  0   0	 0   0	 -1 -1 0  0
 
 ts_offset 1
 
@@ -113,8 +113,10 @@ num_encoders 38
 face_offset 38
 sound_offset 39
 gaze_offset 40
-action_offset 41
-reward_offset 42
+beat_offset 41
+action_offset 42
+reward_offset 43
+insert_offset 42
 
 
 #Note that joint names and their corresponding motor indices
@@ -431,12 +433,15 @@ bool SensorMotorInterfaceModule::updateModule(){
         outData.addDouble(0.0);
     
     //get something from the audio analyser
-    //currently only sending to memory, need to fix
+    outMemData.addString("beat");
     if(use_beats){ 
-        outMemData.addString("beat");
-        outMemData.addDouble(double(beatReadLoop->getCurrentBeat()));
+	double b = double(beatReadLoop->getCurrentBeat());
+        outMemData.addDouble(b);
+        outData.addDouble(b);
+    } else {
+      outMemData.addDouble(0);
+      outData.addDouble(0);
     }
-
 
 
     // current action value

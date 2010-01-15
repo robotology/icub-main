@@ -94,8 +94,10 @@ private:
     int face_index;
     int sound_index;
     int gaze_index;  
+    int beat_index;  
     int action_index;                
     int reward_index;
+    int insert_index;
 
     double *last_enc; //pointer for array to store previous timestep encoder values
 
@@ -104,7 +106,8 @@ private:
     int acc;          // accumulating consecutive timesteps seeing face
 
     double faceReward;
-
+    double gazeReward;
+    double gazeAlpha;
     void sendExpression(int expr);
 
 

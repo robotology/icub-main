@@ -159,6 +159,8 @@ MotivationDynamicsModule::MotivationDynamicsModule(){
     resetcount=0;
     acc=0;
     faceReward=0.0;
+    gazeReward=0.0;
+    gazeAlpha=0.0;
 }
 
 MotivationDynamicsModule::~MotivationDynamicsModule(){ 
@@ -232,10 +234,14 @@ bool MotivationDynamicsModule::open(Searchable& config){
     sound_index = v->asInt() + ts_offset;
     config.check("gaze_offset",v);
     gaze_index = v->asInt() + ts_offset;
+    config.check("beat_offset",v);
+    beat_index = v->asInt() + ts_offset;
     config.check("action_offset",v);
     action_index = v->asInt() + ts_offset;
     config.check("reward_offset",v);
     reward_index = v->asInt() + ts_offset;
+    config.check("insert_offset",v);
+    insert_index = v->asInt() + ts_offset;
 
     last_enc= new double[num_encoders];
 
@@ -400,11 +406,13 @@ bool MotivationDynamicsModule::updateModule(){
     IhaDebug::pmesg(DBGL_DEBUG1,"Read from mem port \n");
 
     reward_names.push_back("drum");
-    rewards.push_back(mb->get(1).asDouble());
+    double drumscore = mb->get(1).asDouble();
+    rewards.push_back(drumscore);
     reward_contribs.push_back(reward_contrib_drum);
     num_rewards++;
     reward_names.push_back("hide");
-    rewards.push_back(mb->get(3).asDouble());
+    double hidescore = mb->get(3).asDouble();
+    rewards.push_back(hidescore);
     reward_contribs.push_back(reward_contrib_hide);
     num_rewards++;
 
@@ -413,152 +421,161 @@ bool MotivationDynamicsModule::updateModule(){
     Bottle* db = dataPort.read(true);
     IhaDebug::pmesg(DBGL_DEBUG1,"Read from data port \n");
     if (db!=NULL) {
-        //accumulate the face sensor, resetting when we dont see it
-        IhaDebug::pmesg(DBGL_DEBUG1,"Face %lf %d \n",db->get(face_index).asDouble(),(int)db->get(face_index).asDouble());
-        if (((int) db->get(face_index).asDouble()) == 0 ) {
-           if (resetcount >= face_lost_count) {
-                acc=0;
-                resetcount=0;
-           } else {
-                resetcount++;
-           }
-        } else {
-            acc++;
-            resetcount=0;
-        }
-        // calc reward due to face:
-        // final value will be between 0 and 1
-        // When a face is seen, the reward increases linearly for a time face_response_attack 
-        // until it reaches its maximum.
-        // It stays at maximum for a further face_response_level  timesteps.
-        // Then it starts to decay back to 0 over time face_response_decay (geometric)
+
+      double action = db->get(action_index).asDouble();
+      
+      //accumulate the face sensor, resetting when we dont see it
+      IhaDebug::pmesg(DBGL_DEBUG1,"Face %lf %d \n",db->get(face_index).asDouble(),(int)db->get(face_index).asDouble());
+      if (((int) db->get(face_index).asDouble()) == 0 ) {
+	if (resetcount >= face_lost_count) {
+	  acc=0;
+	  resetcount=0;
+	} else {
+	  resetcount++;
+	}
+      } else {
+	acc++;
+	resetcount=0;
+      }
+      // calc reward due to face:
+      // final value will be between 0 and 1
+      // When a face is seen, the reward increases linearly for a time face_response_attack 
+      // until it reaches its maximum.
+      // It stays at maximum for a further face_response_level  timesteps.
+      // Then it starts to decay back to 0 over time face_response_decay (geometric)
         //double faceReward = 0;
-        if (acc==0)  //  Zero at all times there is no face 
+      if (acc==0)  //  Zero at all times there is no face 
         {
-            faceReward = faceReward - face_decay_rate;  // changed to decay
-            IhaDebug::pmesg(DBGL_DEBUG1,"Face acc/rwd: %04d %06.4f decaying 1 \n",acc,faceReward);
+	  faceReward = faceReward - face_decay_rate;  // changed to decay
+	  IhaDebug::pmesg(DBGL_DEBUG1,"Face acc/rwd: %04d %06.4f decaying 1 \n",acc,faceReward);
         } 
-        else if (acc<face_response_attack) // Increase linearly for Attack phase
+      else if (acc<face_response_attack) // Increase linearly for Attack phase
         {
-            faceReward = faceReward + face_attack_rate;
-            IhaDebug::pmesg(DBGL_DEBUG1,"Face acc/rwd: %04d %06.4f increasing %d %lf \n",acc,faceReward, face_response_attack, face_attack_rate);
+	  faceReward = faceReward + face_attack_rate;
+	  IhaDebug::pmesg(DBGL_DEBUG1,"Face acc/rwd: %04d %06.4f increasing %d %lf \n",acc,faceReward, face_response_attack, face_attack_rate);
         } 
-        else if ( acc < face_response_level ) // stay level
+      else if ( acc < face_response_level ) // stay level
         {
-            IhaDebug::pmesg(DBGL_DEBUG1,"Face acc/rwd: %04d %06.4f level %d \n",acc,faceReward, face_response_level);
-            faceReward = 1.0;
+	  IhaDebug::pmesg(DBGL_DEBUG1,"Face acc/rwd: %04d %06.4f level %d \n",acc,faceReward, face_response_level);
+	  faceReward = 1.0;
         }
-        else // Linear decrease
+      else // Linear decrease
         {
-            faceReward = faceReward - face_decay_rate;
-            IhaDebug::pmesg(DBGL_DEBUG1,"Face acc/rwd: %04d %06.4f decaying 2 \n",acc,faceReward);
+	  faceReward = faceReward - face_decay_rate;
+	  IhaDebug::pmesg(DBGL_DEBUG1,"Face acc/rwd: %04d %06.4f decaying 2 \n",acc,faceReward);
         }
-
-        if (faceReward<0.0) faceReward=0.0;
-        if (faceReward>1.0) faceReward=1.0;
-
-        reward_names.push_back("face");
-        rewards.push_back(faceReward);
-        reward_contribs.push_back(reward_contrib_face);
-        num_rewards++;
-
-        double sndval = db->get(sound_index).asDouble();
-
-        // reward for sound is additive with face, maximum 1
-        // the sound value is squared in order to attenuate low values
-        double soundReward = 0;
-        if (sndval > sound_catch_threshold) 
-        {
-            soundReward = 1.0;
-        }
-        else
-        {
-            soundReward = sndval*sndval;
-        }
-
-        reward_names.push_back("sound");
-        rewards.push_back(soundReward);
-        reward_contribs.push_back(reward_contrib_sound);
-        num_rewards++;
-
-        //need to save and compare the last set of encoder values to
-        //compute both the motion and the turn-taking rewards
-        //how do I find out how many values are for the encoders at this point?
-        //need a way to label the data
-
-        //this assumes that the encoders are always the first values in the sensor array
-        double enc_diff = 0.0;
-        for(int i = 0; i < num_encoders; i++) {
-            double e = db->get(i + ts_offset).asDouble();
-            enc_diff += fabs(e - last_enc[i]);
-            last_enc[i] = e;
-        }
-        IhaDebug::pmesg(DBGL_DEBUG1,"Encoder diff %06.4f \n",enc_diff);
-
-        //Frank: new sources of reward
-        //motion
-        //have robot get reward for moving? How to do habituation correctly?
-        //Aim for giving max reward when there is some movement, but not "too much"
-
-
-        //mutual gaze
-        //reward mutual gaze 
-        double gazeReward = db->get(gaze_index).asDouble();
-        reward_names.push_back("gaze");
-        rewards.push_back(gazeReward);
-        reward_contribs.push_back(reward_contrib_gaze);
-        num_rewards++;
+      
+      if (faceReward<0.0) faceReward=0.0;
+      if (faceReward>1.0) faceReward=1.0;
+      
+      reward_names.push_back("face");
+      rewards.push_back(faceReward);
+      reward_contribs.push_back(reward_contrib_face);
+      num_rewards++;
+      
+      double sndval = db->get(sound_index).asDouble();
+      
+      // reward for sound is additive with face, maximum 1
+      // the sound value is squared in order to attenuate low values
+      double soundReward = 0;
+      if (sndval > sound_catch_threshold) 
+	{
+	  soundReward = 1.0;
+	}
+      else
+	{
+	  soundReward = sndval*sndval;
+	}
+      
+      reward_names.push_back("sound");
+      rewards.push_back(soundReward);
+      reward_contribs.push_back(reward_contrib_sound);
+      num_rewards++;
+      
+      //need to save and compare the last set of encoder values to
+      //compute both the motion and the turn-taking rewards
+      //how do I find out how many values are for the encoders at this point?
+      //need a way to label the data
+      
+      //this assumes that the encoders are always the first values in the sensor array
+      double enc_diff = 0.0;
+      for(int i = 0; i < num_encoders; i++) {
+	double e = db->get(i + ts_offset).asDouble();
+	enc_diff += fabs(e - last_enc[i]);
+	last_enc[i] = e;
+      }
+      IhaDebug::pmesg(DBGL_DEBUG1,"Encoder diff %06.4f \n",enc_diff);
+      
+      //Frank: new sources of reward
+      //motion
+      //have robot get reward for moving? How to do habituation correctly?
+      //Aim for giving max reward when there is some movement, but not "too much"
+      
+      
+      //mutual gaze
+      //reward visual attention 
+      double gaze = db->get(gaze_index).asDouble();
+      gazeReward = gazeAlpha*gaze + (1 - gazeAlpha)*gazeReward;
+      reward_names.push_back("gaze");
+      rewards.push_back(gazeReward);
+      reward_contribs.push_back(reward_contrib_gaze);
+      num_rewards++;
         
 
-        //compute reward from a vector of arbitrary length
-        double totalReward = 0.0;
-        for(int i=0; i < num_rewards; i++) {
-            totalReward += rewards[i]*reward_contribs[i];
-        }
-        //double totalReward = faceReward*reward_contrib_face + soundReward*reward_contrib_sound;
-        if (totalReward>1.0) totalReward=1.0;
-
-        string astr="";
-        if (totalReward==1) {
-            astr.append("\E[31m**********\E[39m");
-        } else {
-            astr.append("===========",(int)(totalReward*10));
-            astr.append("           ",10-(int)(totalReward*10));
-        }
-
-        for(int i=0; i < num_rewards; i++) {
-            IhaDebug::pmesg(DBGL_DEBUG1,"%s rwd: %06.4f contrib: %06.4f \n",reward_names[i].c_str(),rewards[i],reward_contribs[i]);
-        }
-        IhaDebug::pmesg(DBGL_DEBUG1,"TotalRwd: %06.4f : %d \n",totalReward, num_rewards);
-
-        // add the reward to the sensor output in the right place
-        //indicies from ExMetSpace.ini (need to fix this)
-        Bottle out;
-        out.copy(*db,0,reward_index);
-        out.addDouble(totalReward);
-        Bottle tmp;
-        tmp.copy(*db,reward_index,db->size()-reward_index);
-        out.append(tmp);
-        outPort.write(out);
-        IhaDebug::pmesg(DBGL_DEBUG1,"Wrote output to port\n");
-
-        if (reward_display) {
-			if (totalReward >= th_ehi) {
-				new_eout=action_ehi;
-			} else if (totalReward < th_elo) {
-				new_eout=action_elo;
-			} else {
-				new_eout=action_emid;
-			}
-			
-			if (current_eout != new_eout) {
-				IhaDebug::pmesg(DBGL_STATUS1,"============ Emote action %d\n",new_eout);
-				sendExpression(new_eout);
-				IhaDebug::pmesg(DBGL_DEBUG1,"============ Emote action %d done\n",new_eout);
-			}
-			current_eout = new_eout;
-		}
-        
+      //compute reward from a vector of arbitrary length
+      double totalReward = 0.0;
+      for(int i=0; i < num_rewards; i++) {
+	totalReward += rewards[i]*reward_contribs[i];
+      }
+      //double totalReward = faceReward*reward_contrib_face + soundReward*reward_contrib_sound;
+      if (totalReward>1.0) totalReward=1.0;
+      if (totalReward<0.0) totalReward=0.0;
+      
+      //string astr="";
+      //if (totalReward==1) {
+      //     astr.append("\E[31m**********\E[39m");
+      //} else {
+      //    astr.append("===========",(int)(totalReward*10));
+      //    astr.append("           ",10-(int)(totalReward*10));
+      //}
+      
+      for(int i=0; i < num_rewards; i++) {
+	IhaDebug::pmesg(DBGL_DEBUG1,"%s rwd: %06.4f contrib: %06.4f \n",reward_names[i].c_str(),rewards[i],reward_contribs[i]);
+      }
+      IhaDebug::pmesg(DBGL_DEBUG1,"TotalRwd: %06.4f : %d \n",totalReward, num_rewards);
+      
+      // add the reward to the sensor output in the right place
+      //indicies from ExMetSpace.ini 
+      Bottle out;
+      out.copy(*db,0,insert_index);
+      out.addDouble(drumscore);
+      out.addDouble(hidescore);
+      out.addDouble(action);
+      out.addDouble(totalReward);
+      Bottle tmp;
+      tmp.copy(*db,insert_index+1,db->size()-insert_index-1); //skip action since 
+                                                              //inserted above 
+      out.append(tmp);
+      outPort.write(out);
+      IhaDebug::pmesg(DBGL_DEBUG1,"Wrote output to port\n");
+      
+      if (reward_display) {
+	if (totalReward >= th_ehi) {
+	  new_eout=action_ehi;
+	} else if (totalReward < th_elo) {
+	  new_eout=action_elo;
+	} else {
+	  new_eout=action_emid;
+	}
+	
+	if (current_eout != new_eout) {
+	  IhaDebug::pmesg(DBGL_STATUS1,"============ Emote action %d\n",new_eout);
+	  sendExpression(new_eout);
+	  IhaDebug::pmesg(DBGL_DEBUG1,"============ Emote action %d done\n",new_eout);
+	}
+	current_eout = new_eout;
+      }
+      
     }
 
     return true;

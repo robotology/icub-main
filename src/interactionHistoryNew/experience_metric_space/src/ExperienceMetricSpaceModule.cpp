@@ -539,7 +539,7 @@ bool ExperienceMetricSpaceModule::open(Searchable& config){
 	// read the number of the reward and action data fields
     int ts_offset = config.find("ts_offset").asInt();
 	reward_index = config.find("reward_offset").asInt() + ts_offset;
-	action_index = config.find("action_offset").asInt() + ts_offset;
+	action_index = reward_index - 1; //must compute this way index in config no longer valid
 
 	//------------------------------------------------------
 	// read limits
