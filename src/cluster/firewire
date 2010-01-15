@@ -1,9 +1,0 @@
-
-# temporary vvv script to set up firewire
-
-sudo modprobe ieee1394 raw1394 ohci1394 video1394
-test -e /dev/raw1394 || sudo mknod -m 666 /dev/raw1394 c 171 0
-test -e /dev/video1394 || sudo mkdir /dev/video1394
-test -e /dev/video1394/0 || sudo mknod -m 666 /dev/video1394/0 c 171 16
-sudo modprobe video1394
-
