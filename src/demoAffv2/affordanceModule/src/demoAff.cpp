@@ -171,7 +171,7 @@ bool DemoAff::emotionCtrl(const ConstString cmd) {
 
 
 DemoAff::DemoAff(){
-  state=INIT;
+  state=FIRSTINIT;
   substate=0;
 
   trrest=0;
@@ -496,6 +496,9 @@ bool DemoAff::configure(ResourceFinder &rf){
   openPorts=true;
 
   attachTerminal();
+
+  //Should connect to the hardwre ports here...
+ 
   return ok;
 
   
@@ -855,46 +858,42 @@ bool DemoAff::updateModule(){
 
     break;
   
-  case INIT:
+  case FIRSTINIT:
     {
       bool b;
 
-      //Set torso rest position leaned over the table
+      //Prepare torso rest position leaned over the table
       Vector newRestPos(1), currRestPos;
-      newRestPos[0] = torsoActPos[0];
-      cartIF->setRestPos(newRestPos,currRestPos);
-      
+      newRestPos[0] = torsoPosActPitch;
+      ICartesianControl *cif;
 
-      // go home :)
       useArm(USE_RIGHT);
+      action->getCartesianIF(cif);
+      cif->setRestPos(newRestPos,currRestPos);
       action->pushAction(*home_x, *home_o);
       action->checkActionsDone(b, true);
 
-      //Set torso rest position leaned 
-      
       useArm(USE_LEFT);
+      action->getCartesianIF(cif);
+      cif->setRestPos(newRestPos, currRestPos); 
       action->pushAction(*home_x, *home_o);
       action->checkActionsDone(b, true);
 
 
-      // Go to initPos
-      //t_ipos->positionMove(torsoObsPos);
-      //ipos->positionMove(headObsPos);
-
-      //printf("To obs pos\n");
-      
-	  // This is not needed when using controlGaze2
-      //ipos->positionMove(headActPos);
-	  controlGazeSaccadeAbsolute(headPosActAz, headPosActEl);
-	  //t_ipos->positionMove(torsoActPos);
-      printf("To act pos\n");
-      cout << torsoActPos[0] << torsoActPos[1]<< torsoActPos[2] << endl;
-
-      yarp::os::Time::delay(4.0);
+      //controlGazeSaccadeAbsolute(headPosActAz, headPosActEl);
+      yarp::os::Time::delay(2.0);
 
       state=JUSTACT;
     }
     break;
+  case INIT:
+  {
+     bool b;
+     action->pushAction(*home_x,*home_o);
+     action->checkActionsDone(b,true);
+     yarp::os::Time::delay(2.0);
+     state = JUSTACT;
+  }
   case GETDEMOOBJS:
     {
       // Set expression
@@ -1277,7 +1276,7 @@ bool DemoAff::updateModule(){
 		// if fingers are not in position,
         // it's likely that we've just grasped
         // something, so lift it up!
-        if (!action->areFingersInPosition())
+       /* if (!action->areFingersInPosition())
         {
 			emotionCtrl("hap");    
             // lift the object (wait until it's done)
@@ -1288,7 +1287,7 @@ bool DemoAff::updateModule(){
 		{
             emotionCtrl("sad");      
 		}
-        
+        */
         // release the object (wait until it's done)
         action->pushAction("open_hand");
         action->checkActionsDone(b, true);
