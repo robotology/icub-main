@@ -687,7 +687,8 @@ public:
 * of grasp() and touch(), the height of the objects to be 
 * attained can be known just approximately. 
 *  
-* \note Given as an example 
+* <b>Important note</b> From within the robot configuration file
+* remind to enable the option to read the voltage output signal.
 */
 class affActionPrimitivesLayer2 : public affActionPrimitivesLayer1
 {
