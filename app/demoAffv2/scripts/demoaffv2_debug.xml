@@ -37,7 +37,7 @@
 <module>
       <name>effectDetector</name>
       <parameters>--context demoAffv2/conf</parameters>
-      <node>icub-b13</node>
+      <node>icub14</node>
       <stdio>icub14</stdio>
       <tag>effect_detector</tag>
 </module>
