@@ -206,7 +206,8 @@ bool DemoAff::InitAffPrimitives() {
   // Action related initialization
 
   graspOrienL.resize(4);    graspOrienR.resize(4);
-  graspDispL.resize(4);     graspDispR.resize(3);
+  graspDispL.resize(3);     graspDispR.resize(3);
+  graspReliefL.resize(3);   graspReliefR.resize(3);
   dOffsL.resize(3);         dOffsR.resize(3);
   dLiftL.resize(3);         dLiftR.resize(3);
   home_xL.resize(3);        home_xR.resize(3);
@@ -220,7 +221,12 @@ bool DemoAff::InitAffPrimitives() {
   
   graspDispL[0]= 0.0;       graspDispR[0]= 0.0; 
   graspDispL[1]= 0.0;       graspDispR[1]= 0.0; 
-  graspDispL[2]= 0.05;      graspDispR[2]= 0.05;
+  //graspDispL[2]= 0.05;      graspDispR[2]= 0.05;
+  graspDispL[2]= 0.15;      graspDispR[2]= 0.15;
+  //new paramenter for grasp
+  graspReliefL[0]= 0.0;       graspReliefR[0]= 0.0; 
+  graspReliefL[1]= 0.0;       graspReliefR[1]= 0.0; 
+  graspReliefL[2]= 0.03;    graspReliefR[2]= 0.03;
   
   dOffsL[0]=-0.0;           dOffsR[0]=-0.0;
   dOffsL[1]=-0.0;           dOffsR[1]=-0.0;
@@ -241,6 +247,7 @@ bool DemoAff::InitAffPrimitives() {
   action=actionL=actionR=NULL;
   graspOrien=NULL;
   graspDisp=NULL;
+  graspRelief= NULL;
   dOffs=NULL;
   dLift=NULL;
   home_x=NULL;
@@ -781,6 +788,7 @@ void DemoAff::useArm(const int arm) {
       
       graspOrien=&graspOrienL;
       graspDisp=&graspDispL;
+	  graspRelief=&graspReliefL;
       dOffs=&dOffsL;
       dLift=&dLiftL;
       home_x=&home_xL;
@@ -792,6 +800,7 @@ void DemoAff::useArm(const int arm) {
       
       graspOrien=&graspOrienR;
       graspDisp=&graspDispR;
+	  graspRelief=&graspReliefR;
       dOffs=&dOffsR;
       dLift=&dLiftR;
       home_x=&home_xR;
@@ -1113,8 +1122,14 @@ bool DemoAff::updateModule(){
 	
 	// Select the object position
 	objposreach.resize(2);	
+	// This code was the original
+	//objposreach[0] = trackDescTable[selectedobj].roi_x;
+	//objposreach[1] = trackDescTable[selectedobj].roi_y;
+	//This is the new code - selects a point in the bottom of the object
 	objposreach[0] = trackDescTable[selectedobj].roi_x;
-	objposreach[1] = trackDescTable[selectedobj].roi_y;
+	objposreach[1] = trackDescTable[selectedobj].roi_y + trackDescTable[selectedobj].roi_height/2;
+
+
 	printf("\n\n\n\n\n\n\n\n\n\n\n\n\n");
 	printf("Selected a %s on the %s %s located at pos %d <%g %g>\n", 
 	       affActions[selectedaction], colors[colorObj[selectedobj]], 
@@ -1164,7 +1179,8 @@ bool DemoAff::updateModule(){
 	// Select the object position
 	objposreach.resize(2);	
 	objposreach[0] = trackDescTable[selobj].roi_x;
-	objposreach[1] = trackDescTable[selobj].roi_y;
+	//Add hald the object height - get a point in the table
+	objposreach[1] = trackDescTable[selobj].roi_y + trackDescTable[selectedobj].roi_height/2;
 	state=REACHING;
 	selectedaction=GRASP; //TAP; //GRASP;
       }
@@ -1268,7 +1284,7 @@ bool DemoAff::updateModule(){
         //TODO: graspPosition[2] = action->determineHeight();
 
         // grasp it (wait until it's done)
-        action->grasp(graspPosition ,*graspOrien,*graspDisp);
+        action->grasp(graspPosition ,*graspOrien,*graspDisp,*graspRelief);
         action->checkActionsDone(b, true);
 
 

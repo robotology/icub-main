@@ -199,6 +199,7 @@ protected:
   
   Vector graspOrienL, graspOrienR;
   Vector graspDispL,  graspDispR;
+  Vector graspReliefL, graspReliefR;
   Vector dOffsL,      dOffsR;
   Vector dLiftL,      dLiftR;
   Vector home_xL,     home_xR;
