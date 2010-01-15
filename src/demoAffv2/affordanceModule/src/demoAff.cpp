@@ -1136,8 +1136,24 @@ bool DemoAff::updateModule(){
 	//objposreach[0] = trackDescTable[selectedobj].roi_x;
 	//objposreach[1] = trackDescTable[selectedobj].roi_y;
 	//This is the new code - selects a point in the bottom of the object
-	objposreach[0] = trackDescTable[selectedobj].roi_x;
-	objposreach[1] = trackDescTable[selectedobj].roi_y + trackDescTable[selectedobj].roi_height/2;
+	double xn = objDescTable[selectedobj].roi_x;
+	double yn = objDescTable[selectedobj].roi_y;
+	double wn = objDescTable[selectedobj].roi_width;
+	double hn = objDescTable[selectedobj].roi_height;
+	//These are normalized coordinates. Must denormalize. 
+    // WARNING: This only works for 320 x 240 images !!!!!
+	double x = xn*160+160;
+	double y = 120 - yn*120;
+	double w = wn*320;
+	double h = hn*240;
+	objposreach[0] = x;
+	objposreach[1] = y+h/2;
+	
+	cout << "===================================================================" << endl;
+	cout << "===================================================================" << endl;
+	cout << "Bottom Point Coordinates (x,y):" << objposreach[0] << ", " << objposreach[1];
+	cout << "===================================================================" << endl;
+	cout << "===================================================================" << endl;
 
 
 	printf("\n\n\n\n\n\n\n\n\n\n\n\n\n");
@@ -1188,9 +1204,29 @@ bool DemoAff::updateModule(){
       
 	// Select the object position
 	objposreach.resize(2);	
-	objposreach[0] = trackDescTable[selobj].roi_x;
-	//Add hald the object height - get a point in the table
-	objposreach[1] = trackDescTable[selobj].roi_y + trackDescTable[selectedobj].roi_height/2;
+	//Old code
+	//objposreach[0] = trackDescTable[selobj].roi_x;
+	//objposreach[1] = trackDescTable[selobj].roi_y;
+	//This is the new code - selects a point in the bottom of the object
+	double xn = objDescTable[selectedobj].roi_x;
+	double yn = objDescTable[selectedobj].roi_y;
+	double wn = objDescTable[selectedobj].roi_width;
+	double hn = objDescTable[selectedobj].roi_height;
+	//These are normalized coordinates. Must denormalize. 
+    // WARNING: This only works for 320 x 240 images !!!!!
+	double x = xn*160+160;
+	double y = 120 - yn*120;
+	double w = wn*320;
+	double h = hn*240;
+	objposreach[0] = x;
+	objposreach[1] = y+h/2;
+	
+	cout << "===================================================================" << endl;
+	cout << "===================================================================" << endl;
+	cout << "Bottom Point Coordinates (x,y):" << objposreach[0] << ", " << objposreach[1];
+	cout << "===================================================================" << endl;
+	cout << "===================================================================" << endl;
+
 	state=REACHING;
 	selectedaction=GRASP; //TAP; //GRASP;
       }
