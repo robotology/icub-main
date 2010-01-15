@@ -72,7 +72,7 @@ bool ImageSource::configure(yarp::os::ResourceFinder &rf)
                            Value("/gaze:o"),
                            "Output gaze port (string)").asString();
 
-   /* get the complete name of the gaze output port */
+   /* get the complete name of the encoder state output port */
 
    encoderPortName       = rf.check("encoderPort", 
                            Value("/icub/head/state:o"),

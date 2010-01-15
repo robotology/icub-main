@@ -75,7 +75,7 @@ bool AffectiveState::configure(yarp::os::ResourceFinder &rf)
                                    );
    
    duration                      = rf.check("duration",
-				                   Value("3"),
+				                   Value(3),
     			                   "number of time samples for weighted average spiking rate (int)").asInt(); 
 
    if (debug) {
@@ -265,6 +265,8 @@ bool AffectiveStateThread::threadInit()
    numberOfSpikes = 0;
    lastEvent = 0;
 
+   mode = LEARNING_MODE;
+
    return true;
 }
 
@@ -324,9 +326,10 @@ void AffectiveStateThread::run(){
 
       /* Determine which mode we are in: learning, exploration, or reconstruction */
 
-      modeIn = modeInPort->read(true);              // read a vector containing the mode; do block
-      mode = (int) (*modeIn)[0];
-
+      modeIn = modeInPort->read(false);                // read a vector containing the mode; don't block
+      if (modeIn != NULL) {
+         mode = (int) (*modeIn)[0];                    // if there is nothing there; assume the same mode as before
+      }
 
       /* get the episodic memory data */
 
@@ -384,6 +387,15 @@ void AffectiveStateThread::run(){
          }
       }
 
+      if (debug) {
+         cout << "AffectiveStateThread::run: eventHistory:      " ;
+         for (i=0; i<=lastEvent; i++) {
+            cout << eventHistory[i] << " ";
+         }
+         cout << endl;
+      }
+
+
       /* insert the spike into the spike stream */
 
       for (i=0; i<numberOfSpikes-1; i++) {
@@ -397,7 +409,13 @@ void AffectiveStateThread::run(){
          curiousitySpikes[numberOfSpikes-1] = 0;
       }
 
-
+      if (debug) {
+         cout << "AffectiveStateThread::run: curiousitySpikes:      " ;
+         for (i=0; i<numberOfSpikes; i++) {
+            cout << curiousitySpikes[i] << " ";
+         }
+         cout << endl;
+      }
 
       /* 
        * Step 3: Determine whether there is an experimentation spike
@@ -414,7 +432,7 @@ void AffectiveStateThread::run(){
 
       eSpike = false;
 
-      if ((mode == PREDICTION_MODE) || (mode == RECONSTRUCTION_MODE)) {
+      if ((mode == LEARNING_MODE) || (mode == PREDICTION_MODE) || (mode == RECONSTRUCTION_MODE)) {
          if (imageIdCurrent == imageIdPrevious) {
             eSpike = true;
          }
@@ -433,7 +451,13 @@ void AffectiveStateThread::run(){
          experimentationSpikes[numberOfSpikes-1] = 0;
       }
 
-
+      if (debug) {
+         cout << "AffectiveStateThread::run: experimentationSpikes: " ;
+         for (i=0; i<numberOfSpikes; i++) {
+            cout << experimentationSpikes[i] << " ";
+         }
+         cout << endl;
+      }
       /* 
        * Step 4: Compute the curiousity and experimentation levels and write out
        * ==========================================================================

@@ -51,7 +51,7 @@
  *   The complete output port name to which the gaze angles should be streamed
  *
  * - \c encoderPort \c /icub/head/state:o   \n  
- *   The complete output port name to which the gaze angles should be streamed
+ *   The complete output port name to which the encoder values should be streamed
  *
  * - \c imageFile \c image.ppm \n
  *   specifies the image filename

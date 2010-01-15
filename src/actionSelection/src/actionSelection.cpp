@@ -68,7 +68,7 @@ bool ActionSelection::configure(yarp::os::ResourceFinder &rf)
                                    );
  
    mode                          = rf.check("mode",
-				                   Value("0"),
+				                   Value(0),
     			                   "default mode (int)").asInt(); 
 
    if (debug) {
@@ -217,7 +217,7 @@ bool ActionSelectionThread::threadInit()
 {
    /* initialize variables and create data-structures if needed */
 
-   debug = true;
+   debug = false;
 
    curiousityLevel = 0;
    deltaCuriousityLevel = 0; 
@@ -241,7 +241,7 @@ void ActionSelectionThread::run(){
 
       /* read the affective state levels and determine which mode we are in: learning, exploration, or reconstruction */
   
-      stateIn = stateInPort->read(false);       // read a vector containing the state data; don't block
+      stateIn = stateInPort->read(true);       // read a vector containing the state data; do block
 
       if (stateIn != NULL) {
          curiousityLevel            = (*stateIn)[0];
@@ -249,7 +249,7 @@ void ActionSelectionThread::run(){
          experimentationLevel       = (*stateIn)[2];
          deltaExperimentationLevel  = (*stateIn)[3];
 
-         if (curiousityLevel > experimentationLevel) {
+         if (curiousityLevel >= experimentationLevel) {
             *modeValue = 0; // learning
          }
          else {

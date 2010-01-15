@@ -5,7 +5,7 @@
  * @ingroup icub_module
  * \defgroup icub_episodicMemory episodicMemory
  *
- * The episodicMemory module effects the following functionality: 
+ * The episodicMemory module maintains as associative memory of images: 
  *
  * -  when an image is presented to the memory, it attempts to recall that image; 
  * -  if a previously-stored image matches the presented image sufficiently well, the stored image is recalled.
@@ -15,7 +15,7 @@
  *    -# an image identification number and the match value for the presented image  
  *    -# an image identification number and the match value for whatever image was previously presented 
  * -  Alternatively, when an image identification number is presented to the memory, 
- *    the associated image is recalled and all the above four outputs are generated.
+ *    the associated image is retrieved.  
  *    If both image and image identification number are presented, the image identification number takes precedence.
  *   
  * Since images are streamed continuously, the module reads an image with a pre-set but definable frequency.
@@ -39,7 +39,6 @@
  * 
  * - recalled/stored image
  * - recalled/stored image vector containing 
- *
  *   -# an image id. number for the matched image
  *   -# a match value r, 0 <= r <= 1, for the matched image
  *   -# the azimuth angle of the gaze at which the image was acquired
@@ -48,6 +47,7 @@
  *   -# a match value r, 0 <= r <= 1, for the previously matched image
  *   -# the azimuth angle of the gaze at which the previously image was acquired
  *   -# the elevation angle of the gaze at which the previously image was acquired
+ * - retrieved image (i.e. the image indexed by the image id. number)
  *
  * \section lib_sec Libraries
  *
@@ -78,37 +78,40 @@
  * (they can also be specified as command-line parameters if you so wish). 
  * The value part can be changed to suit your needs; the default values are shown below. 
  * 
- * - \c imageInPort         \c /image:i  \n
+ * - \c imageInPort           \c /image:i  \n
  *   specifies the port for input of an image
  *
- * - \c imageIdInPort       \c /imageId:i  \n
+ * - \c imageIdInPort         \c /imageId:i  \n
  *   specifies the port for input of an image identification number
  *
- * - \c actionInPort        \c /action:i        \n  
+ * - \c actionInPort          \c /action:i        \n  
  *   The input port name for the gaze angles; the action tag value is not yet implemented
  *
- * - \c headPort            \c /head:i   \n  
+ * - \c headPort              \c /head:i   \n  
  *   specifies the input port name for the head encoder values used to check that the iCub head has stopped moving
  * 
- * - \c imageOutPort        \c /image:o  \n
+ * - \c recalledImageOutPort \c /recalledImage:o  \n
  *   specifies the image output port
  *
- * - \c imageIdOutPort      \c /imageId:o  \n
+ * - \c retrievedImageOutPort \c /retrievedImage:o  \n
+ *   specifies the image output port
+ *
+ * - \c imageIdOutPort        \c /imageId:o  \n
  *   specifies the port for output of the image identification number corresponding to the output image
  *
- * - \c database            \c episodicDatabase  \n
+ * - \c database              \c episodicDatabase  \n
  *   specifies the directory name in which the database of images will be stored
  * 
- * - \c path                \c ~/iCub/app/episodicMemory  \n
+ * - \c path                  \c ~/iCub/app/episodicMemory  \n
  *   specifies the path the to directory in which the database of images will be stored
  *
- * - \c threshold           \c 0.75  \n
+ * - \c threshold             \c 0.75  \n
  *   specifies the value defining whether or not an input image matches adequately matches a stored image   
  *
- * - \c frequency           \c 2     \n         
+ * - \c frequency             \c 2     \n         
  *   specifies the number of images to be streamed per second. 
  * 
- * - \c offline             \c 0     \n         
+ * - \c offline               \c 0     \n         
  *   The check on the robot gaze is switched off if this value is not zero. 
  * 
  * The database parameter specifies the name of the directory in which the database of images is stored. 
@@ -159,7 +162,8 @@
  * <b>Output ports</b> 
  *
  *  - \c /episodicMemory
- *  - \c /episodicMemory/image:o
+ *  - \c /episodicMemory/recalledImage:o
+ *  - \c /episodicMemory/retrievedImage:o
  *  - \c /episodicMemory/imageId:o
  *
  * The functional specification only names the ports to be used to communicate with the module 
@@ -171,7 +175,8 @@
  * - \c BufferedPort<ImageOf<PixelRgb> > \c imageInPort;
  * - \c BufferedPort<VectorOf<double> >  \c imageIdInPort;          \c // \c image_id 
  * - \c BufferedPort<VectorOf<double> >  \c actionInPort;           \c // \c azimuth,  \c elevation \c 'a' \c 0 \c 0
- * - \c BufferedPort<ImageOf<PixelRgb> > \c imageOutPort;
+ * - \c BufferedPort<ImageOf<PixelRgb> > \c recalledImageOutPort;
+ * - \c BufferedPort<ImageOf<PixelRgb> > \c retrievedImageOutPort;
  * - \c BufferedPort<VectorOf<double> >  \c imageIdOutPort;         \c // \c image_id, \c match_value, \c azimuth, \c elevation, \c previous_image_id, \c match_value, \c azimuth, \c elevation
  * - \c BufferedPort<Vector>             \c headPort;            
  *
@@ -218,7 +223,7 @@
  * 25/11/09  Recall is now triggered by action input, typically by the attentionSelection module
  *           ImageId for the current and previous images are now output on the same port, together with the 
  *           azimuth and gaze angles at which each image was acquired
- *  
+ * 13/01/10  Added retrievedImage in addition to recalledImage 
  */ 
 
 /* 
@@ -336,7 +341,8 @@ private:
    BufferedPort<ImageOf<PixelRgb> > *imageInPort;
    BufferedPort<VectorOf<double> >  *imageIdInPort;
    BufferedPort<VectorOf<double> >  *actionInPort;
-   BufferedPort<ImageOf<PixelRgb> > *imageOutPort;
+   BufferedPort<ImageOf<PixelRgb> > *recalledImageOutPort;
+   BufferedPort<ImageOf<PixelRgb> > *retrievedImageOutPort;
    BufferedPort<VectorOf<double> >  *imageIdOutPort;
    BufferedPort<Vector>             *robotPort;
    string                           *databaseNameValue;
@@ -351,7 +357,8 @@ public:
    EpisodicMemoryThread (BufferedPort<ImageOf<PixelRgb> > *imageIn,
                          BufferedPort<VectorOf<double> >   *imageIdIn,
                          BufferedPort<VectorOf<double> >  *actionIn,
-                         BufferedPort<ImageOf<PixelRgb> > *imageOut,
+                         BufferedPort<ImageOf<PixelRgb> > *recalledImageOut,
+                         BufferedPort<ImageOf<PixelRgb> > *retrievedImageOut,
                          BufferedPort<VectorOf<double> >  *imageIdOut,
                          BufferedPort<Vector>             *robotPort,
                          string                           *databaseName,
@@ -378,7 +385,8 @@ private:
    string imageInPortName;
    string imageIdInPortName;
    string actionInputPortName;
-   string imageOutPortName;
+   string recalledImageOutPortName;
+   string retrievedImageOutPortName;
    string imageIdOutPortName;
    string handlerPortName;
    string robotPortName;  
@@ -397,7 +405,8 @@ private:
    BufferedPort<ImageOf<PixelRgb> > imageIn;
    BufferedPort<VectorOf<double> >  imageIdIn;
    BufferedPort<VectorOf<double> >  actionIn;
-   BufferedPort<ImageOf<PixelRgb> > imageOut;
+   BufferedPort<ImageOf<PixelRgb> > recalledImageOut;
+   BufferedPort<ImageOf<PixelRgb> > retrievedImageOut;
    BufferedPort<VectorOf<double> >  imageIdOut;
    BufferedPort<Vector>             robotPort;
    Port                             handlerPort; 

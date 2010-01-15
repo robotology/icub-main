@@ -346,7 +346,7 @@ bool EndogenousSalienceThread::threadInit()
 {
    /* initialize variables and create data-structures if needed */
 
-    debug = true;
+    debug = false;
     encoderPositions = NULL;
     cartesianInput   = NULL;
     logpolarInput    = NULL;
@@ -599,7 +599,7 @@ void EndogenousSalienceThread::run(){
    
       salience_bottle.addList() = match_bottle;
         
-      cout << "salience_bottle " << salience_bottle.toString() << endl;
+      if (debug) cout << "salience_bottle " << salience_bottle.toString() << endl;
 
       saliencePortOut->prepare() = salience_bottle;
       saliencePortOut->write();

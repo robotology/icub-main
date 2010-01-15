@@ -275,7 +275,7 @@ bool ProceduralMemoryThread::threadInit()
 {
    /* initialize variables and create data-structures if needed */
 
-    debug = true;
+    debug = false;
 
     width  = 0;
     height = 0;
@@ -306,10 +306,6 @@ bool ProceduralMemoryThread::threadInit()
 }
 
 void ProceduralMemoryThread::run(){
-
-   double temp1;
-   double temp2;
-   int    temp3;
 
    /* 
     * start the procedural memory operating 
@@ -369,8 +365,8 @@ void ProceduralMemoryThread::run(){
          data.updateWeights(imageIdPrevious, azimuthDelta, elevationDelta, imageIdCurrent); 
 
          // for testing only
-         data.predict(imageIdPrevious, temp1, temp2, temp3, coupling); 
-         data.reconstruct(temp3, temp1, temp2, imageIdCurrent, coupling); 
+         //data.predict(imageIdPrevious, temp1, temp2, temp3, coupling); 
+         //data.reconstruct(temp3, temp1, temp2, imageIdCurrent, coupling); 
          
          ImageOf<PixelRgb> &weightsImage = weightsOutPort->prepare();
          weightsImage.resize(data.getNumberOfImages(), data.getNumberOfImages());
@@ -806,7 +802,7 @@ void ProceduralMemoryData::predict(int previousImageId, double & deltaHorizontal
       eventCoupling = coupling(previousImageId, maxj, nextImageId);
    }
 
-   cout << "ProceduralMemoryData::predict     "  << previousImageId << " (" << deltaHorizontalGaze << ", " << deltaVerticalGaze << ") " << nextImageId  <<  ": " << eventCoupling << endl;
+   // cout << "ProceduralMemoryData::predict     "  << previousImageId << " (" << deltaHorizontalGaze << ", " << deltaVerticalGaze << ") " << nextImageId  <<  ": " << eventCoupling << endl;
 
 }
 
@@ -853,7 +849,7 @@ void ProceduralMemoryData::reconstruct(int & previousImageId, double & deltaHori
       eventCoupling = coupling(previousImageId, maxj, nextImageId);
    }
 
-   cout << "ProceduralMemoryData::reconstruct "  << previousImageId << " (" << deltaHorizontalGaze << ", " << deltaVerticalGaze << ") " << nextImageId << ": " << eventCoupling << endl;
+   // cout << "ProceduralMemoryData::reconstruct "  << previousImageId << " (" << deltaHorizontalGaze << ", " << deltaVerticalGaze << ") " << nextImageId << ": " << eventCoupling << endl;
 }
 
 

@@ -248,7 +248,7 @@ using namespace yarp::dev;
 #define RECONSTRUCTION_MODE                    2
 #define MAX_DURATION                         100
 #define MAX_NUMBER_OF_EVENTS                 300
-#define MAX_EVENT_AGE                         10
+#define MAX_EVENT_AGE                         3
 
 
 class AffectiveStateThread : public Thread

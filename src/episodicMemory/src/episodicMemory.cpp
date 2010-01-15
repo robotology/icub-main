@@ -58,6 +58,9 @@
  * Added a configuration key-value pair - offline - to allow the memory to be used without checking
  * that the robot gaze is stable
  * David Vernon 21/11/09
+ *
+ * Added recalledImage (indexed by imageId) in addition to the recalledImage (recalled by association)
+ * David Vernon 13/01/10
  */
 
  
@@ -204,10 +207,17 @@ bool EpisodicMemory::configure(yarp::os::ResourceFinder &rf)
                            "saccade and action tag port (string)").asString()
                            );
   
-    imageOutPortName     = "/";
-    imageOutPortName    += getName(
-                           rf.check("imageOutPort",
-				           Value("/image:o"),
+    recalledImageOutPortName  = "/";
+    recalledImageOutPortName += getName(
+                           rf.check("recalledImageOutPort",
+				           Value("/recalledImage:o"),
+				           "Output image port (string)").asString()
+                           );
+
+    retrievedImageOutPortName  = "/";
+    retrievedImageOutPortName += getName(
+                           rf.check("retrievedImageOutPort",
+				           Value("/retrievedImage:o"),
 				           "Output image port (string)").asString()
                            );
 
@@ -246,11 +256,12 @@ bool EpisodicMemory::configure(yarp::os::ResourceFinder &rf)
                            "turn off check on robot gaze if non-zero (int)").asInt();
 
 
-    printf("episodicMemory: parameters are \n%s\n%s\n%s\n%s\n%s\n%s\n%s\n%s\n%f\n%d\n%d\n\n",
+    printf("episodicMemory: parameters are \n%s\n%s\n%s\n%s\n%s\n%s\n%s\n%s\n%s\n%f\n%d\n%d\n\n",
            imageInPortName.c_str(),
            imageIdInPortName.c_str(), 
            actionInputPortName.c_str(),
-           imageOutPortName.c_str(), 
+           recalledImageOutPortName.c_str(), 
+           retrievedImageOutPortName.c_str(), 
            imageIdOutPortName.c_str(), 
            robotPortName.c_str(),
            databaseName.c_str(), 
@@ -264,7 +275,8 @@ bool EpisodicMemory::configure(yarp::os::ResourceFinder &rf)
     imageIn.open(imageInPortName.c_str());
     imageIdIn.open(imageIdInPortName.c_str());
     actionIn.open(actionInputPortName.c_str());
-    imageOut.open(imageOutPortName.c_str());
+    recalledImageOut.open(recalledImageOutPortName.c_str());
+    retrievedImageOut.open(retrievedImageOutPortName.c_str());
     imageIdOut.open(imageIdOutPortName.c_str());
     
    if (!robotPort.open(robotPortName.c_str())) {           
@@ -289,7 +301,8 @@ bool EpisodicMemory::configure(yarp::os::ResourceFinder &rf)
    episodicMemoryThread = new EpisodicMemoryThread(&imageIn,
                                                    &imageIdIn,
                                                    &actionIn, 
-                                                   &imageOut,
+                                                   &recalledImageOut,
+                                                   &retrievedImageOut,
                                                    &imageIdOut,
                                                    &robotPort,
                                                    &databaseName,
@@ -317,7 +330,8 @@ bool EpisodicMemory::interruptModule()
     imageIn.interrupt();
     imageIdIn.interrupt();
     actionIn.interrupt();
-    imageOut.interrupt();
+    recalledImageOut.interrupt();
+    retrievedImageOut.interrupt();
     imageIdOut.interrupt();
     robotPort.interrupt();
     handlerPort.interrupt();
@@ -336,7 +350,8 @@ bool EpisodicMemory::close()
     imageIn.close();
     imageIdIn.close();
     actionIn.close();
-    imageOut.close();
+    recalledImageOut.close();
+    retrievedImageOut.close();
     imageIdOut.close();
     robotPort.close();
     handlerPort.close();
@@ -391,7 +406,8 @@ bool EpisodicMemory::respond(const Bottle& command, Bottle& reply)
 EpisodicMemoryThread::EpisodicMemoryThread(BufferedPort<ImageOf<PixelRgb> > *imageIn,
                                            BufferedPort<VectorOf<double> >  *imageIdIn,
                                            BufferedPort<VectorOf<double> >  *actionIn,
-                                           BufferedPort<ImageOf<PixelRgb> > *imageOut,
+                                           BufferedPort<ImageOf<PixelRgb> > *recalledImageOut,
+                                           BufferedPort<ImageOf<PixelRgb> > *retrievedImageOut,
                                            BufferedPort<VectorOf<double> >  *imageIdOut,
                                            BufferedPort<Vector>             *robotPortInOut,
                                            string                           *databaseName,
@@ -402,16 +418,17 @@ EpisodicMemoryThread::EpisodicMemoryThread(BufferedPort<ImageOf<PixelRgb> > *ima
 {
    debug = false;
 
-   imageInPort          = imageIn;
-   imageIdInPort        = imageIdIn;
-   actionInPort         = actionIn;
-   imageOutPort         = imageOut;
-   imageIdOutPort       = imageIdOut;
-   robotPort            = robotPortInOut;
-   databaseNameValue    = databaseName;
-   pathValue            = path;
-   thresholdValue       = threshold;
-   offlineValue         = offline;
+   imageInPort           = imageIn;
+   imageIdInPort         = imageIdIn;
+   actionInPort          = actionIn;
+   recalledImageOutPort  = recalledImageOut;
+   retrievedImageOutPort = retrievedImageOut;
+   imageIdOutPort        = imageIdOut;
+   robotPort             = robotPortInOut;
+   databaseNameValue     = databaseName;
+   pathValue             = path;
+   thresholdValue        = threshold;
+   offlineValue          = offline;
 
    if (debug) {
       cout << "EpisodicMemoryThread: database name  " << *databaseNameValue << endl;
@@ -466,6 +483,7 @@ bool EpisodicMemoryThread::threadInit()
 
 void EpisodicMemoryThread::run(){
 
+   debug = false;
 
    if (false) {
       cout << "EpisodicMemoryThread::run: database name  " << *databaseNameValue << endl;
@@ -516,8 +534,8 @@ void EpisodicMemoryThread::run(){
          gazeAzimuthPrevious    = gazeAzimuth;
          gazeElevationPrevious  = gazeElevation;
  
-         imageOutPort->prepare() = matchImage;
-         imageOutPort->write();
+         retrievedImageOutPort->prepare() = matchImage;
+         retrievedImageOutPort->write();
    
          VectorOf<double>& out = imageIdOutPort->prepare();
          out.resize(8,0);
@@ -683,8 +701,8 @@ void EpisodicMemoryThread::run(){
             imageMatchPrevious = imageMatch;
             imageMatch         = matchValue;
 
-            imageOutPort->prepare() = matchImage;
-            imageOutPort->write();
+            recalledImageOutPort->prepare() = matchImage;
+            recalledImageOutPort->write();
         
             VectorOf<double>& out = imageIdOutPort->prepare();
             out.resize(8,0);
@@ -707,8 +725,8 @@ void EpisodicMemoryThread::run(){
     
             //add the image to the database in memory, then into the filesystem.
             images.push_back(img);
-            imageOutPort->prepare() = img;
-            imageOutPort->write();
+            recalledImageOutPort->prepare() = img;
+            recalledImageOutPort->write();
     
             //create a filename that is imageXX.jpg
 
