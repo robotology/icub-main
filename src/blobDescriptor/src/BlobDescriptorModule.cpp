@@ -684,9 +684,10 @@ bool BlobDescriptorModule::updateModule()
 				cvPoint(0, 0)	   // ROI offset
 			);
 			//Draw also center point in table for debug
-			double x = _objDescTable[i].enclosing_rect.center.x;
-			double y = _objDescTable[i].enclosing_rect.center.y + _objDescTable[i].enclosing_rect.size.height/2;
-			cvCircle(opencvViewImg, cvPoint(x,y), 5, cvScalar(255,255,255,255), 0 );
+			//double x = _objDescTable[i].enclosing_rect.center.x;
+			//double y = _objDescTable[i].enclosing_rect.center.y + _objDescTable[i].enclosing_rect.size.height/2;
+			CvRect r = cvBoundingRect(_objDescTable[i].contours,0);
+			cvCircle(opencvViewImg, cvPoint(r.x+r.width/2, r.y+r.height), 5, cvScalar(255,255,255,255), 3 );
 		}
 		else 	//invalid objects - white contours
 		{
