@@ -20,7 +20,7 @@ int main(int argc,char* argv[])
     if (!robot.isNull())
     {
         printf("robot=%s\n",robot.asString().c_str());
-        iCubDriver::SetRobot(robot.asString());
+        iCubDriver::setRobot(robot.asString());
     }
 
     iCubTestSet ts(references);
@@ -43,7 +43,7 @@ int main(int argc,char* argv[])
 
         if (testType=="iCubTestPart")
         {
-            ts.AddTest(new iCubTestPart(testRf));
+            ts.addTest(new iCubTestPart(testRf));
         }
         else if (testType=="iCubTestCamera")
         {
@@ -60,7 +60,7 @@ int main(int argc,char* argv[])
     }
 
     ts.run();
-    ts.PrintReport();
+    ts.printReport();
 
     return 0;
 }

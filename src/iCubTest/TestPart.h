@@ -24,17 +24,19 @@ class iCubTestPart : public iCubTest
 public:
     iCubTestPart(yarp::os::Searchable& configuration) : iCubTest(configuration)
     {
-        m_dTargetVal=NULL;
-        m_dMaxVal=NULL;
-        m_dMinVal=NULL;
-        m_dRefVel=NULL;
-        m_dRefAcc=NULL;
-        m_dTimeout=NULL;
-
         yarp::os::Value val;
         yarp::os::Bottle bot;
 
-        m_iPart=(iCubDriver::iCubPart)0;
+        m_Configuration=configuration;
+
+        m_aTargetVal=NULL;
+        m_aMaxVal=NULL;
+        m_aMinVal=NULL;
+        m_aRefVel=NULL;
+        m_aRefAcc=NULL;
+        m_aTimeout=NULL;
+
+        m_Part=(iCubDriver::iCubPart)0;
 
         val=configuration.find("device");
 
@@ -44,15 +46,15 @@ public:
 
             for (int p=0; p<iCubDriver::NUM_ICUB_PARTS; ++p)
             {
-                if (device==iCubDriver::iCubPartName[p])
+                if (device==iCubDriver::m_aiCubPartName[p])
                 {
-                    m_iPart=(iCubDriver::iCubPart)p;
+                    m_Part=(iCubDriver::iCubPart)p;
                     break;
                 }
             }
         }
         
-        m_nJoints=iCubDriver::Instance()->GetNumOfJoints(m_iPart);
+        m_NumJoints=iCubDriver::instance()->getNumOfJoints(m_Part);
 
         ///////////////////////////////////////////////////////////////
         /*
@@ -67,25 +69,25 @@ public:
         bot=configuration.findGroup("target").tail();
         if (!bot.isNull())
         {
-            m_dTargetVal=new double[m_nJoints];
-            int n=m_nJoints<bot.size()?m_nJoints:bot.size();
+            m_aTargetVal=new double[m_NumJoints];
+            int n=m_NumJoints<bot.size()?m_NumJoints:bot.size();
             
             for (int i=0; i<n; ++i)
             {
-                if (bot.get(i).isDouble()) m_dTargetVal[i]=bot.get(i).asDouble();
+                if (bot.get(i).isDouble()) m_aTargetVal[i]=bot.get(i).asDouble();
             }
         }
 
         bot=configuration.findGroup("min");
         if (!bot.isNull())
         {
-            m_dMinVal=new double[m_nJoints];
+            m_aMinVal=new double[m_NumJoints];
             bot=bot.tail();
-            int n=m_nJoints<bot.size()?m_nJoints:bot.size();
+            int n=m_NumJoints<bot.size()?m_NumJoints:bot.size();
             
             for (int i=0; i<n; ++i)
             {
-                if (bot.get(i).isDouble()) m_dMinVal[i]=bot.get(i).asDouble();
+                if (bot.get(i).isDouble()) m_aMinVal[i]=bot.get(i).asDouble();
             }
         }
 
@@ -93,112 +95,131 @@ public:
         bot=configuration.findGroup("max");
         if (!bot.isNull())
         {
-            m_dMaxVal=new double[m_nJoints];
+            m_aMaxVal=new double[m_NumJoints];
             bot=bot.tail();
-            int n=m_nJoints<bot.size()?m_nJoints:bot.size();
+            int n=m_NumJoints<bot.size()?m_NumJoints:bot.size();
             
             for (int i=0; i<n; ++i)
             {
-                if (bot.get(i).isDouble()) m_dMaxVal[i]=bot.get(i).asDouble();
+                if (bot.get(i).isDouble()) m_aMaxVal[i]=bot.get(i).asDouble();
             }
         }
 
         bot=configuration.findGroup("refvel");
         if (!bot.isNull())
         {
-            m_dRefVel=new double[m_nJoints];
+            m_aRefVel=new double[m_NumJoints];
             bot=bot.tail();
-            int n=m_nJoints<bot.size()?m_nJoints:bot.size();
+            int n=m_NumJoints<bot.size()?m_NumJoints:bot.size();
             
             for (int i=0; i<n; ++i)
             {
-                if (bot.get(i).isDouble()) m_dRefVel[i]=bot.get(i).asDouble();
+                if (bot.get(i).isDouble()) m_aRefVel[i]=bot.get(i).asDouble();
             }
         }
 
         bot=configuration.findGroup("refacc");
         if (!bot.isNull())
         {
-            m_dRefAcc=new double[m_nJoints];
+            m_aRefAcc=new double[m_NumJoints];
             bot=bot.tail();
-            int n=m_nJoints<bot.size()?m_nJoints:bot.size();
+            int n=m_NumJoints<bot.size()?m_NumJoints:bot.size();
             
             for (int i=0; i<n; ++i)
             {
-                if (bot.get(i).isDouble()) m_dRefAcc[i]=bot.get(i).asDouble();
+                if (bot.get(i).isDouble()) m_aRefAcc[i]=bot.get(i).asDouble();
             }
         }
 
         bot=configuration.findGroup("timeout");
         if (!bot.isNull())
         {
-            m_dTimeout=new double[m_nJoints];
+            m_aTimeout=new double[m_NumJoints];
             bot=bot.tail();
-            int n=m_nJoints<bot.size()?m_nJoints:bot.size();
+            int n=m_NumJoints<bot.size()?m_NumJoints:bot.size();
             
             for (int i=0; i<n; ++i)
             {
-                if (bot.get(i).isDouble()) m_dTimeout[i]=bot.get(i).asDouble();
+                if (bot.get(i).isDouble()) m_aTimeout[i]=bot.get(i).asDouble();
             }
         }
     }
 
     virtual ~iCubTestPart()
     {		
-        if (m_dTargetVal) delete [] m_dTargetVal;
-        if (m_dMaxVal) delete [] m_dMaxVal;
-        if (m_dMinVal) delete [] m_dMinVal;
-        if (m_dRefVel) delete [] m_dRefVel;
-        if (m_dRefAcc) delete [] m_dRefAcc;
-        if (m_dTimeout) delete [] m_dTimeout;
+        if (m_aTargetVal)
+        {
+            delete [] m_aTargetVal;
+        }
+        if (m_aMaxVal)
+        {
+            delete [] m_aMaxVal;
+        }
+        if (m_aMinVal)
+        {
+            delete [] m_aMinVal;
+        }
+        if (m_aRefVel)
+        {
+            delete [] m_aRefVel;
+        }
+        if (m_aRefAcc)
+        {
+            delete [] m_aRefAcc;
+        }
+        if (m_aTimeout)
+        {
+            delete [] m_aTimeout;
+        }
     }
 
-    bool run()
+    iCubTestReport run()
     {
-        SetDateTime();
-        
+        iCubTestReport testReport(m_Configuration);
+            
         m_bSuccess=true;
 
-        for (int joint=0; joint<iCubDriver::Instance()->GetNumOfJoints(iCubDriver::LEFT_ARM); ++joint)
+        for (int joint=0; joint<iCubDriver::instance()->getNumOfJoints(iCubDriver::LEFT_ARM); ++joint)
         {
             iCubTestOutput output;
-            
-            output.m_sName="Joint ";
-            char sJoint[8],sPos[64];
-            sprintf(sJoint,"%d",joint);
-            output.m_sName+=sJoint;
-            output.m_sName+=" position";
-            sprintf(sPos,"%f",m_dTargetVal[joint]);
-            output.m_sTarget=std::string(sPos);
+            char jointName[8];
+            char posString[64];
 
-            output.m_sValue="N/A";
-            
-            sprintf(sPos,"%f",m_dMinVal[joint]);
-            output.m_sMinVal=sPos;
-            
-            sprintf(sPos,"%f",m_dMaxVal[joint]);
-            output.m_sMaxVal=sPos;
+            output.m_Name="Joint ";
+            sprintf(jointName,"%d",joint);
+            output.m_Name+=jointName;
+            output.m_Name+=" position";
+            sprintf(posString,"%f",m_aTargetVal[joint]);
+            output.m_Target=std::string(posString);
 
-            iCubDriver::ResultCode result=iCubDriver::Instance()->SetPos(m_iPart,joint,m_dTargetVal[joint]);//,m_dRefVel[joint],m_dRefAcc[joint]);
+            output.m_Value="N/A";
+            
+            sprintf(posString,"%f",m_aMinVal[joint]);
+            output.m_MinVal=posString;
+            
+            sprintf(posString,"%f",m_aMaxVal[joint]);
+            output.m_MaxVal=posString;
+
+            iCubDriver::ResultCode result=iCubDriver::instance()->setPos(m_Part,joint,m_aTargetVal[joint]);//,m_dRefVel[joint],m_dRefAcc[joint]);
 
             bool bSuccess=false;
 
             switch (result)
             {
             case iCubDriver::DRIVER_FAILED:
-                output.m_sResult="FAILED: !PolyDriver";
+                output.m_Result="FAILED: !PolyDriver";
                 break;
             case iCubDriver::IPOS_FAILED:
-                output.m_sResult="FAILED: !IPositionControl";
+                output.m_Result="FAILED: !IPositionControl";
                 break;
             case iCubDriver::IPOS_POSMOVE_FAILED:
-                output.m_sResult="FAILED: IPositionControl->positionMove";
+                output.m_Result="FAILED: IPositionControl->positionMove";
                 break;
             case iCubDriver::IPOS_SETREFSPEED_FAILED:
-                output.m_sResult="FAILED: IPositionControl->setRefSpeed";
+                output.m_Result="FAILED: IPositionControl->setRefSpeed";
                 break;
             case iCubDriver::IPOS_SETREFACC_FAILED:
-                output.m_sResult="FAILED: IPositionControl->setRefAcceleration";
+                output.m_Result="FAILED: IPositionControl->setRefAcceleration";
                 break;
             case iCubDriver::IPOS_POSMOVE_OK:
                 bSuccess=true;
@@ -207,26 +228,26 @@ public:
             if (!bSuccess)
             {
                 m_bSuccess=false;
-                m_aOutput.push_back(output);
+                testReport.addEntry(output);
                 continue;
             }
 
             // only if success
 
-            result=iCubDriver::Instance()->WaitPos(m_iPart,joint,m_dTimeout[joint]);
+            result=iCubDriver::instance()->waitPos(m_Part,joint,m_aTimeout[joint]);
 
             bSuccess=false;
 
             switch (result)
             {
             case iCubDriver::IPOS_FAILED:
-                output.m_sResult="FAILED: !IPositionControl";
+                output.m_Result="FAILED: !IPositionControl";
                 break;
             case iCubDriver::IPOS_CHECKMOTIONDONE_FAILED:
-                output.m_sResult="FAILED: IPositionControl->checkMotionDone";
+                output.m_Result="FAILED: IPositionControl->checkMotionDone";
                 break;
             case iCubDriver::IPOS_CHECKMOTIONDONE_TIMEOUT:
-                output.m_sResult="FAILED: Timeout in IPositionControl->positionMove";
+                output.m_Result="FAILED: Timeout in IPositionControl->positionMove";
                 break;
             case iCubDriver::IPOS_CHECKMOTIONDONE_OK:
                 bSuccess=true;
@@ -240,17 +261,17 @@ public:
             }
 
             double pos;
-            result=iCubDriver::Instance()->GetEncPos(m_iPart,joint,pos);
+            result=iCubDriver::instance()->getEncPos(m_Part,joint,pos);
 
             bSuccess=false;
 
             switch (result)
             {
             case iCubDriver::IENC_FAILED:
-                output.m_sResult="FAILED: !IEncoders";
+                output.m_Result="FAILED: !IEncoders";
                 break;
             case iCubDriver::IENC_GETPOS_FAILED:
-                output.m_sResult="FAILED: IEncoders->getEncoder";
+                output.m_Result="FAILED: IEncoders->getEncoder";
 				break;
             case iCubDriver::IENC_GETPOS_OK:
                 bSuccess=true;
@@ -263,17 +284,17 @@ public:
                 continue;
             }
 
-            sprintf(sPos,"%f",pos);
-            output.m_sValue=sPos;
+            sprintf(posString,"%f",pos);
+            output.m_Value=posString;
 
-            if (pos>=m_dMinVal[joint] && pos<=m_dMaxVal[joint])
+            if (pos>=m_aMinVal[joint] && pos<=m_aMaxVal[joint])
             {
-                output.m_sResult="SUCCESS";
+                output.m_Result="SUCCESS";
             }
             else
             {
                 m_bSuccess=false;
-                output.m_sResult="FAILED: value out of range";
+                output.m_Result="FAILED: value out of range";
             }
 
             m_aOutput.push_back(output);
@@ -283,10 +304,15 @@ public:
     }
 
 protected:
-    iCubDriver::iCubPart m_iPart;
-    int m_nJoints;
-    double *m_dTargetVal,*m_dMaxVal,*m_dMinVal;
-    double *m_dRefVel,*m_dRefAcc,*m_dTimeout;
+    yarp::os::Searchable m_Configuration;
+    iCubDriver::iCubPart m_Part;
+    int m_NumJoints;
+    double *m_aTargetVal;
+    double *m_aMaxVal;
+    double *m_aMinVal;
+    double *m_aRefVel;
+    double *m_aRefAcc;
+    double *m_aTimeout;
 };
 
 #endif

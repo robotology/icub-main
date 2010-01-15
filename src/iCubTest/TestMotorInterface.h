@@ -48,33 +48,33 @@ public:
         IENC_GETACC_FAILED          =-18
     };
 
-    static iCubDriver* Instance()
+    static iCubDriver* instance()
     {
         static iCubDriver singleton;
         return &singleton; 
 
     }
 
-    static void SetRobot(yarp::os::ConstString robot)
+    static void setRobot(yarp::os::ConstString robotName)
     {
-        m_sRobot=robot;
+        m_RobotName=robotName;
     }
 
-    ResultCode SetPos(int part,int joint,double position,double speed=0.0,double acc=0.0)
+    ResultCode setPos(int part,int joint,double position,double speed=0.0,double acc=0.0)
     {
-        if (!apDriver[part])
+        if (!m_apDriver[part])
         {
             return DRIVER_FAILED;
         }
         
-        if (!apPos[part])
+        if (!m_apPos[part])
         {
             return IPOS_FAILED;
         }
         
         if (acc!=0.0)
         {
-            if (!apPos[part]->setRefAcceleration(joint,acc))
+            if (!m_apPos[part]->setRefAcceleration(joint,acc))
             {
                 return IPOS_SETREFACC_FAILED;
             }
@@ -82,13 +82,13 @@ public:
         
         if (speed!=0.0)
         {
-            if (!apPos[part]->setRefSpeed(joint,speed))
+            if (!m_apPos[part]->setRefSpeed(joint,speed))
             {
                 return IPOS_SETREFSPEED_FAILED;
             }
         }
         
-        if (apPos[part]->positionMove(joint,position))
+        if (m_apPos[part]->positionMove(joint,position))
         {
             return IPOS_POSMOVE_OK;
         }
@@ -96,19 +96,19 @@ public:
         return IPOS_POSMOVE_FAILED;
     }
 
-    ResultCode WaitPos(int part,int joint,double timeout)
+    ResultCode waitPos(int part,int joint,double timeout)
     {
         static const double dTimeStep=0.1;
         bool bFlag;
 
-        if (!apPos[part])
+        if (!m_apPos[part])
         {
             return IPOS_FAILED;
         }
 
         for (double dTimeElaps=0.0; dTimeElaps<timeout; dTimeElaps+=dTimeStep)
         {
-            bool bSuccess=apPos[part]->checkMotionDone(joint,&bFlag);
+            bool bSuccess=m_apPos[part]->checkMotionDone(joint,&bFlag);
             
             if (!bSuccess)
             {
@@ -126,9 +126,9 @@ public:
         return IPOS_CHECKMOTIONDONE_TIMEOUT;
     }
 
-    ResultCode GetPIDError(int part,int joint,double &err)
+    ResultCode getPIDError(int part,int joint,double &err)
     {
-        if (apPid[part]->getError(joint,&err))
+        if (m_apPid[part]->getError(joint,&err))
         {
             return IPID_GETERROR_OK;
         }
@@ -136,14 +136,14 @@ public:
         return IPID_GETERROR_FAILED;
     }
 
-    ResultCode GetEncPos(int part,int joint,double &pos)
+    ResultCode getEncPos(int part,int joint,double &pos)
     {
-        if (!apEnc[part])
+        if (!m_apEnc[part])
         {
             return IENC_FAILED;
         }
         
-        if (apEnc[part]->getEncoder(joint,&pos))
+        if (m_apEnc[part]->getEncoder(joint,&pos))
         {
             return IENC_GETPOS_OK;
         }
@@ -151,14 +151,14 @@ public:
         return IENC_GETPOS_FAILED;
     }
 
-    ResultCode GetEncSpeed(int part,int joint,double &spd)
+    ResultCode getEncSpeed(int part,int joint,double &spd)
     {
-        if (!apEnc[part])
+        if (!m_apEnc[part])
         {
             return IENC_FAILED;
         }
 
-        if (apEnc[part]->getEncoderSpeed(joint,&spd))
+        if (m_apEnc[part]->getEncoderSpeed(joint,&spd))
         {
             return IENC_GETSPEED_OK;
         }
@@ -166,14 +166,14 @@ public:
         return IENC_GETSPEED_FAILED;
     }
 
-    ResultCode GetEncAcc(int part,int joint,double &acc)
+    ResultCode getEncAcc(int part,int joint,double &acc)
     {
-        if (!apEnc[part])
+        if (!m_apEnc[part])
         {
             return IENC_FAILED;
         }
 
-        if (apEnc[part]->getEncoderAcceleration(joint,&acc))
+        if (m_apEnc[part]->getEncoderAcceleration(joint,&acc))
         {
             return IENC_GETACC_OK;
         }
@@ -181,48 +181,47 @@ public:
         return IENC_GETACC_FAILED;
     }
 
-    int GetNumOfJoints(int part)
+    int getNumOfJoints(int part)
     {
-        return iCubPartNumJoints[part];
+        return m_aiCubPartNumJoints[part];
     }
 
-    static const char *iCubPartName[NUM_ICUB_PARTS];
+    static const char *m_aiCubPartName[NUM_ICUB_PARTS];
 
 protected:
-
-    int iCubPartNumJoints[NUM_ICUB_PARTS];
+    int m_aiCubPartNumJoints[NUM_ICUB_PARTS];
     
     iCubDriver()
     {
         for (int part=TORSO; part<NUM_ICUB_PARTS; ++part)
         {
-            iCubPartNumJoints[part]=0;
+            m_aiCubPartNumJoints[part]=0;
 
-            apDriver[part]=OpenDriver(iCubPartName[part]);
+            m_apDriver[part]=openDriver(m_aiCubPartName[part]);
 
-            if (apDriver[part])
+            if (m_apDriver[part])
             {
-                apDriver[part]->view(apEnc[part]);
-                apDriver[part]->view(apPid[part]);
-                apDriver[part]->view(apAmp[part]);
-                apDriver[part]->view(apPos[part]);
-                apDriver[part]->view(apVel[part]);
+                m_apDriver[part]->view(m_apEnc[part]);
+                m_apDriver[part]->view(m_apPid[part]);
+                m_apDriver[part]->view(m_apAmp[part]);
+                m_apDriver[part]->view(m_apPos[part]);
+                m_apDriver[part]->view(m_apVel[part]);
 
-                if (apEnc[part])
+                if (m_apEnc[part])
                 {
-                    apEnc[part]->getAxes(&iCubPartNumJoints[part]);
+                    m_apEnc[part]->getAxes(&m_aiCubPartNumJoints[part]);
                 }
 
-                for (int j=0; j<iCubPartNumJoints[part]; ++j)
+                for (int j=0; j<m_aiCubPartNumJoints[part]; ++j)
                 {
-                    if (apPid[part])
+                    if (m_apPid[part])
                     {
-                        apPid[part]->enablePid(j);
+                        m_apPid[part]->enablePid(j);
                     }
 
-                    if (apAmp[part])
+                    if (m_apAmp[part])
                     {
-                        apAmp[part]->enableAmp(j);
+                        m_apAmp[part]->enableAmp(j);
                     }
                 }
             }
@@ -231,38 +230,39 @@ protected:
 
     ~iCubDriver()
     { 
-        Close(); 
+        close(); 
     }
 
-    void Close()
+    void close()
     {
         for (int part=TORSO; part<NUM_ICUB_PARTS; ++part)
         {
-            for (int j=0; j<iCubPartNumJoints[part]; ++j)
+            for (int j=0; j<m_aiCubPartNumJoints[part]; ++j)
             {
-                apPid[part]->disablePid(j);
-                apAmp[part]->disableAmp(j);
+                m_apPid[part]->disablePid(j);
+                m_apAmp[part]->disableAmp(j);
             }
         }
     }
 
-    yarp::dev::PolyDriver* OpenDriver(std::string part)
+    yarp::dev::PolyDriver* openDriver(std::string part)
     {
         std::string robot("/icubSim");
+        yarp::dev::PolyDriver *pDriver=NULL;
 
         yarp::os::Property options;
-        options.put("robot",m_sRobot.c_str());
+        options.put("robot",m_RobotName.c_str());
         options.put("device","remote_controlboard");
         options.put("local",(std::string("/iCubTest/")+part).c_str());
-        options.put("remote",(m_sRobot+"/"+part).c_str());
+        options.put("remote",(m_RobotName+"/"+part).c_str());
    
-        yarp::dev::PolyDriver *pDriver=new yarp::dev::PolyDriver(options);
+        pDriver=new yarp::dev::PolyDriver(options);
    
         if (!pDriver->isValid()) 
         {
             pDriver->close();
             delete pDriver;
-            pDriver=0; 
+            pDriver=NULL; 
         }
    
         return pDriver;
@@ -271,15 +271,15 @@ protected:
     iCubDriver(const iCubDriver&);
     iCubDriver& operator=(const iCubDriver&);
 
-    yarp::dev::PolyDriver *apDriver[NUM_ICUB_PARTS];
+    yarp::dev::PolyDriver *m_apDriver[NUM_ICUB_PARTS];
 
-    yarp::dev::IEncoders         *apEnc[NUM_ICUB_PARTS];
-    yarp::dev::IPidControl       *apPid[NUM_ICUB_PARTS];
-    yarp::dev::IAmplifierControl *apAmp[NUM_ICUB_PARTS];
-    yarp::dev::IPositionControl  *apPos[NUM_ICUB_PARTS];
-    yarp::dev::IVelocityControl  *apVel[NUM_ICUB_PARTS];
+    yarp::dev::IEncoders         *m_apEnc[NUM_ICUB_PARTS];
+    yarp::dev::IPidControl       *m_apPid[NUM_ICUB_PARTS];
+    yarp::dev::IAmplifierControl *m_apAmp[NUM_ICUB_PARTS];
+    yarp::dev::IPositionControl  *m_apPos[NUM_ICUB_PARTS];
+    yarp::dev::IVelocityControl  *m_apVel[NUM_ICUB_PARTS];
 
-    static std::string m_sRobot;
+    static std::string m_RobotName;
 };
 
 #endif

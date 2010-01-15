@@ -18,24 +18,24 @@ class iCubTestOutput
 {
 public:
     iCubTestOutput(){}
-    void Print(XMLPrinter& printer)
+    void print(XMLPrinter& printer)
     {
-        printer.XMLopen("output");
-            if (!m_sName.empty())   printer.XML("name",m_sName.c_str());
-            if (!m_sResult.empty()) printer.XML("result",m_sResult.c_str());
-            if (!m_sTarget.empty()) printer.XML("target",m_sTarget.c_str());
-            if (!m_sValue.empty())  printer.XML("value",m_sValue.c_str());
-            if (!m_sMinVal.empty()) printer.XML("rangemin",m_sMinVal.c_str());
-            if (!m_sMaxVal.empty()) printer.XML("rangemax",m_sMaxVal.c_str());
-        printer.XMLclose(); 
+        printer.xmlOpen("output");
+            if (!m_Name.empty())   printer.xml("name",m_Name.c_str());
+            if (!m_Result.empty()) printer.xml("result",m_Result.c_str());
+            if (!m_Target.empty()) printer.xml("target",m_Target.c_str());
+            if (!m_Value.empty())  printer.xml("value",m_Value.c_str());
+            if (!m_MinVal.empty()) printer.xml("rangemin",m_MinVal.c_str());
+            if (!m_MaxVal.empty()) printer.xml("rangemax",m_MaxVal.c_str());
+        printer.xmlClose(); 
     }
 
-    std::string m_sName;
-    std::string m_sResult;
-    std::string m_sTarget;
-    std::string m_sValue;
-    std::string m_sMinVal;
-    std::string m_sMaxVal;
+    std::string m_Name;
+    std::string m_Result;
+    std::string m_Target;
+    std::string m_Value;
+    std::string m_MinVal;
+    std::string m_MaxVal;
 };
 
 #endif

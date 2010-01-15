@@ -34,20 +34,20 @@ public:
         m_Stack.clear();
     }
     
-    void XML(char* tag,std::string data)
+    void xml(char* tag,std::string data)
     {
-        Tabs();
+        tabs();
         fprintf(m_pFile,"<%s>%s</%s>\n",tag,data.c_str(),tag);
     }
-    void XMLopen(char *tag)
+    void xmlOpen(char *tag)
     {
-        Tabs(1);
+        tabs(1);
         m_Stack.push_back(std::string(tag));
         fprintf(m_pFile,"<%s>\n",tag);
     }
-    void XMLclose()
+    void xmlClose()
     {
-        Tabs(-1);
+        tabs(-1);
         fprintf(m_pFile,"</%s>\n",m_Stack.back().c_str());
         m_Stack.pop_back();
     }
@@ -57,7 +57,7 @@ protected:
     int m_Tabs;
     std::vector<std::string> m_Stack;
 
-    void Tabs(int move=0)
+    void tabs(int move=0)
     {
         if (move<0)
         {

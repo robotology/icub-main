@@ -30,28 +30,29 @@ public:
         yarp::os::Value user=configuration.find("user");
         if (!user.isNull())
         {
-            m_sUser=user.asString();
+            m_User=user.asString();
         }
 
         yarp::os::Value comment=configuration.find("comment");
         if (!comment.isNull())
         {
-            m_sComment=comment.asString();
+            m_Comment=comment.asString();
         }
 
         yarp::os::Value outfile=configuration.find("outfile");
         if (!outfile.isNull())
         {
-            m_sOutfile=outfile.asString();
+            m_Outfile=outfile.asString();
         }
     }
     
     ~iCubTestSet()
     {
         m_apTest.clear();
+        m_aReport.clear();
     }
     
-    void AddTest(iCubTest* pTest)
+    void addTest(iCubTest* pTest)
     {
         m_apTest.push_back(pTest);
     }
@@ -59,36 +60,46 @@ public:
     void run()
     {
         m_bSuccess=true;
+
+        m_aReport.clear();
         
         for (unsigned int i=0; i<m_apTest.size(); ++i)
         {
-            m_bSuccess = m_bSuccess && m_apTest[i]->run();
+            m_aReport.push_back(m_apTest[i]->run());
+
+            m_bSuccess = m_bSuccess && m_apTest[i]->getSuccess();
+
+            if (!m_apTest[i]->getSuccess() && m_apTest[i]->isCritical())
+            {
+                return;
+            }
         }
     }
 
-    void PrintReport()
+    void printReport()
     {
-        XMLPrinter printer(m_sOutfile);
+        XMLPrinter printer(m_Outfile);
 
-        printer.XMLopen("report");
-            printer.XML("user",m_sUser);
-            printer.XML("comment",m_sComment);
-            printer.XML("success",std::string(m_bSuccess?"YES":"NO"));
+        printer.xmlOpen("report");
+            printer.xml("user",m_User);
+            printer.xml("comment",m_Comment);
+            printer.xml("success",std::string(m_bSuccess?"YES":"NO"));
 
-            for (unsigned int i=0; i<m_apTest.size(); ++i)
+            for (unsigned int i=0; i<m_aReport.size(); ++i)
             {
-                m_apTest[i]->PrintReport(printer);   
+                m_aReport[i].printReport(printer);   
             }
 
-        printer.XMLclose();
+        printer.xmlClose();
     }
 
 protected:
     bool m_bSuccess;
-    std::string m_sComment;
-    std::string m_sUser;
-    std::string m_sOutfile;
+    std::string m_Comment;
+    std::string m_User;
+    std::string m_Outfile;
     std::vector<iCubTest*> m_apTest;
+    std::vector<iCubTestReport> m_aReport;
 };
 
 #endif
