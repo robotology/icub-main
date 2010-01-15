@@ -4,6 +4,7 @@
  *
  * \defgroup icub_camshiftplus camshiftplus
  *
+ * A wrapper of the \ref camshift tracker in OpenCV.
  *
  *\section intro_sec Description 
  *
