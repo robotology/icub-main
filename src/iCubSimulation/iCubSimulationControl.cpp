@@ -55,7 +55,7 @@ private:
 	std::string unit;
     dJointID *joint;
     dReal *speed;
-    double speedSetpoint;iCubSimulationControl.cpp
+    double speedSetpoint;
     bool hinged;
     int universal;
     int sign;
@@ -76,7 +76,7 @@ public:
         active = false;
         left = NULL;
         right = NULL;
-        verge = 0;iCubSimulationControl.cpp
+        verge = 0;
         speedSetpoint = 0;
         number = -1;
         vel = 1;
@@ -115,7 +115,7 @@ public:
         active = true;
         verge = sgn;
         sign = 1;
-        this->left = &left;iCubSimulationControl.cpp
+        this->left = &left;
         this->right = &right;
         this->peer = &peer;
     }
@@ -213,7 +213,7 @@ public:
             } else {
                 return 0;
             }
-        } else {iCubSimulationControl.cpp
+        } else {
             double result = (left->getAngleRaw() + 
                              verge*right->getAngleRaw());
             //printf("verger %d angle %g\n", verge, result);
