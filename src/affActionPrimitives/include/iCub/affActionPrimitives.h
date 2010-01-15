@@ -575,7 +575,7 @@ public:
     * ... 
     * pushAction(x+d,o,"open_hand"); 
     * pushAction(x,o); 
-    * pushAction("close_hand") 
+    * pushAction("close_hand"); 
     * ... 
     * \endcode 
     *  
@@ -739,8 +739,36 @@ public:
     */
     virtual bool open(yarp::os::Property &opt);
 
+    /**
+    * Grasp the given target by lifting up a bit the hand after the 
+    * contact. 
+    * @param x the 3-d target position [m]. 
+    * @param o the 4-d hand orientation used while reaching/grasping
+    *          (given in axis-angle representation: ax ay az angle
+    *          in rad).
+    * @param d1 the displacement [m] wrt the target position that 
+    *          identifies a location to be reached prior to
+    *          grasping.
+    * @param d2 the displacement [m] that identifies the amount of 
+    *           the lift after the contact.
+    * @return true/false on success/fail. 
+    *  
+    * \note internal implementation: 
+    * \code 
+    * ... 
+    * pushAction(x+d1,o,"open_hand"); 
+    * pushAction(x,o); 
+    * pushAction(x+d2,o);
+    * pushAction("close_hand"); 
+    * ... 
+    * \endcode 
+    */
+    virtual bool grasp(const yarp::sig::Vector &x, const yarp::sig::Vector &o,
+                       const yarp::sig::Vector &d1, const yarp::sig::Vector &d2);
+
     virtual bool grasp(const yarp::sig::Vector &x, const yarp::sig::Vector &o,
                        const yarp::sig::Vector &d);
+
     virtual bool touch(const yarp::sig::Vector &x, const yarp::sig::Vector &o,
                        const yarp::sig::Vector &d);
 };

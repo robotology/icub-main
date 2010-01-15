@@ -1310,6 +1310,25 @@ bool affActionPrimitivesLayer2::open(Property &opt)
 
 
 /************************************************************************/
+bool affActionPrimitivesLayer2::grasp(const Vector &x, const Vector &o,
+                                      const Vector &d1, const Vector &d2)
+{
+    if (configured)
+    {
+        printMessage("start grasping\n");
+        pushAction(x+d1,o,"open_hand",ACTIONPRIM_DISABLE_EXECTIME,disableWristDof);
+        pushAction(x,o,ACTIONPRIM_DISABLE_EXECTIME,enableWristDof);
+        pushAction(x+d2,o);
+        pushAction("close_hand");
+
+        return true;
+    }
+    else
+        return false;
+}
+
+
+/************************************************************************/
 bool affActionPrimitivesLayer2::grasp(const Vector &x, const Vector &o, const Vector &d)
 {
     if (configured)
