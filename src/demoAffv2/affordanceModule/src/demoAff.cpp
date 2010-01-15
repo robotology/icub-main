@@ -464,7 +464,7 @@ bool DemoAff::configure(ResourceFinder &rf){
     return false;
   }
 
-  InitTorso();
+  //InitTorso();
   //This is not needed when using controlGaze2
   //InitHead();
 
@@ -757,6 +757,7 @@ bool DemoAff::close(){
   }
   */
 
+ /*
   if (_numTorsoAxes > 0){
       for (int i=0; i<_numTorsoAxes; i++){
         t_ipos->positionMove( i, 0);
@@ -764,6 +765,7 @@ bool DemoAff::close(){
       }
       t_ivel->velocityMove( vels );
   }
+*/
 
   return true;
 }
@@ -857,16 +859,19 @@ bool DemoAff::updateModule(){
     {
       bool b;
 
-	  //Set torso rest position leaned over the table
-	  Vector newRestPos(1);
-	  newRestPos[0] = torsoActPos[0]
-	  cartIF->setRestPos(newRestPos);
+      //Set torso rest position leaned over the table
+      Vector newRestPos(1), currRestPos;
+      newRestPos[0] = torsoActPos[0];
+      cartIF->setRestPos(newRestPos,currRestPos);
+      
 
       // go home :)
       useArm(USE_RIGHT);
       action->pushAction(*home_x, *home_o);
-	  action->checkActionsDone(b, true);
+      action->checkActionsDone(b, true);
 
+      //Set torso rest position leaned 
+      
       useArm(USE_LEFT);
       action->pushAction(*home_x, *home_o);
       action->checkActionsDone(b, true);
@@ -1712,6 +1717,7 @@ bool DemoAff::InitTorso(){
          return false;
     }
 
+    /*
     for (int i=0; i<_numTorsoAxes; i++){
         t_iamp->enableAmp(i);
         t_ipid->enablePid(i);
@@ -1721,7 +1727,7 @@ bool DemoAff::InitTorso(){
         t_ipos->setRefSpeed(i, 10);
         t_ipos->setRefAcceleration(i, 100);
     }
-
+    */
     return true;
 }
 
