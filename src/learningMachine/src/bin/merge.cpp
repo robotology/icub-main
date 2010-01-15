@@ -667,8 +667,12 @@ public:
 };
 
 /**
+ * \ingroup icub_libLM_modules
+ *
  * The MergeModule merges data from several input ports into a single output
  * port.
+ *
+ * \author Arjan Gijsberts
  */
 class MergeModule : public RFModule {
 protected:

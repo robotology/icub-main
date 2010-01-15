@@ -1,11 +1,20 @@
 /*
- * Copyright (C) 2007-2009 Arjan Gijsberts @ Italian Institute of Technology
- * CopyPolicy: Released under the terms of the GNU GPL v2.0.
+ * Copyright (C) 2007-2010 RobotCub Consortium, European Commission FP6 Project IST-004370
+ * author:  Arjan Gijsberts
+ * email:   arjan.gijsberts@iit.it
+ * website: www.robotcub.org
+ * Permission is granted to copy, distribute, and/or modify this program
+ * under the terms of the GNU General Public License, version 2 or any
+ * later version published by the Free Software Foundation.
  *
- * Abstract base class for all MachineLearner modules.
+ * A copy of the license can be found at
+ * http://www.robotcub.org/icub/license/gpl.txt
  *
+ * This program is distributed in the hope that it will be useful, but
+ * WITHOUT ANY WARRANTY; without even the implied warranty of
+ * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the GNU General
+ * Public License for more details
  */
-
 
 #ifndef LM_IMACHINELEARNERMODULE__
 #define LM_IMACHINELEARNERMODULE__
@@ -25,6 +34,18 @@ namespace iCub {
 namespace learningmachine {
 
 /**
+ * \defgroup icub_libLM_modules Modules
+ *
+ * \ingroup icub_libLearningMachine
+ *
+ * Modules to train and predict with learning machines and to use preprocessors.
+ *
+ * \author Arjan Gijsberts
+ */
+
+/**
+ * \ingroup icub_libLM_modules
+ *
  * An abstract base module for the machine learning YARP interface. This
  * abstract class contains base functionality that is shared by
  * PredictModule, TrainModule and TransformModule.

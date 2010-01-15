@@ -180,6 +180,14 @@ public:
     }
 };
 
+/**
+ * \ingroup icub_libLM_modules
+ *
+ * The MachineLearnerTestModule is used to feed datasets loaded from a file to
+ * the learning machines and transformers.
+ *
+ * \author Arjan Gijsberts
+ */
 
 class MachineLearnerTestModule : public RFModule {
 private:

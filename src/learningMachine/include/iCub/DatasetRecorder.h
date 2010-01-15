@@ -1,9 +1,19 @@
 /*
- * Copyright (C) 2007-2009 Arjan Gijsberts @ Italian Institute of Technology
- * CopyPolicy: Released under the terms of the GNU GPL v2.0.
+ * Copyright (C) 2007-2010 RobotCub Consortium, European Commission FP6 Project IST-004370
+ * author:  Arjan Gijsberts
+ * email:   arjan.gijsberts@iit.it
+ * website: www.robotcub.org
+ * Permission is granted to copy, distribute, and/or modify this program
+ * under the terms of the GNU General Public License, version 2 or any
+ * later version published by the Free Software Foundation.
  *
- * Raw dataset recorder using the MachineLearner interface.
+ * A copy of the license can be found at
+ * http://www.robotcub.org/icub/license/gpl.txt
  *
+ * This program is distributed in the hope that it will be useful, but
+ * WITHOUT ANY WARRANTY; without even the implied warranty of
+ * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the GNU General
+ * Public License for more details
  */
 
 #ifndef LM_DATASETRECORDER__
@@ -23,8 +33,9 @@ namespace iCub {
 namespace learningmachine {
 
 /**
+ * \ingroup icub_libLM_learning_machines
  *
- * This 'machine learner' demonstrates how the IMachineLearner interface can 
+ * This 'machine learner' demonstrates how the IMachineLearner interface can
  * be used to easily record samples to a file.
  *
  * \see iCub::contrib::IMachineLearner
@@ -61,12 +72,12 @@ public:
     DatasetRecorder() : filename("dataset.dat"), precision(8), sampleCount(0) {
         this->setName("Recorder");
     }
-    
+
     /**
      * Copy constructor.
      */
-    DatasetRecorder(const DatasetRecorder& other) 
-      : IMachineLearner(other), precision(other.precision), 
+    DatasetRecorder(const DatasetRecorder& other)
+      : IMachineLearner(other), precision(other.precision),
         sampleCount(other.sampleCount), filename(other.filename) {
     }
 
@@ -78,12 +89,12 @@ public:
             this->stream.close();
         }
     }
-    
+
     /**
      * Assignment operator.
      */
     DatasetRecorder& operator=(const DatasetRecorder& other);
-    
+
     /*
      * Inherited from IMachineLearner.
      */
@@ -97,7 +108,7 @@ public:
     /*
      * Inherited from IMachineLearner.
      */
-    Vector predict(const Vector& input) { 
+    Vector predict(const Vector& input) {
         return Vector();
     }
 

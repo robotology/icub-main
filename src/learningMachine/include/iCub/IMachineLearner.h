@@ -1,9 +1,19 @@
 /*
- * Copyright (C) 2007-2009 Arjan Gijsberts @ Italian Institute of Technology
- * CopyPolicy: Released under the terms of the GNU GPL v2.0.
+ * Copyright (C) 2007-2010 RobotCub Consortium, European Commission FP6 Project IST-004370
+ * author:  Arjan Gijsberts
+ * email:   arjan.gijsberts@iit.it
+ * website: www.robotcub.org
+ * Permission is granted to copy, distribute, and/or modify this program
+ * under the terms of the GNU General Public License, version 2 or any
+ * later version published by the Free Software Foundation.
  *
- * Generalized interfaces for learning machines (both offline and online)
+ * A copy of the license can be found at
+ * http://www.robotcub.org/icub/license/gpl.txt
  *
+ * This program is distributed in the hope that it will be useful, but
+ * WITHOUT ANY WARRANTY; without even the implied warranty of
+ * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the GNU General
+ * Public License for more details
  */
 
 #ifndef LM_IMACHINELEARNER__
@@ -24,6 +34,32 @@ namespace iCub {
 namespace learningmachine {
 
 /**
+ * \defgroup icub_libLearningMachine learningMachine
+ *
+ * \ingroup icub_libraries
+ *
+ * A library containing learning machines and data transformers (preprocessors).
+ *
+ * \section icub_lm_dep Dependencies
+ * - YARP
+ * - Gnu Scientific Library
+ *
+ * \author Arjan Gijsberts
+ */
+
+/**
+ * \defgroup icub_libLM_learning_machines Learning Machines
+ *
+ * \ingroup icub_libLearningMachine
+ *
+ * A collection of machine learning algorithms.
+ *
+ * \author Arjan Gijsberts
+ *
+ */
+
+/**
+ * \ingroup icub_libLM_learning_machines
  *
  * A generalized interface for a learning machine for offline and
  * online learning machines (e.g. SVM, LSSVM, ANN). This interface
