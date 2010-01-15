@@ -292,11 +292,12 @@ bool ShortTermMemoryModule::updateModule(){
     //similarly, if too short, might be a tracking err
     //if (memory_sum["human_only_hide"] < (2.5*resolution))
     //if person was hiding (not lost), give robot more reward
-    if((memory_sum["human_only_hide"] < (resolution*2.5)) && (memory_sum["human_only_hide"] > (0.1*resolution*mem_length))){
+    if((memory_sum["human_only_hide"] < (resolution*2.5)) && (memory_sum["human_only_hide"] > (resolution*0.5))){
       hide_score += memory_sum["human_only_hide"];
       hide_score += memory_sum["robot_hide"];
     } else {
-      hide_score += 0.25*memory_sum["robot_hide"];
+        //no reward
+        //hide_score += 0.25*memory_sum["robot_hide"];
     }
     hide_score = hide_score/(resolution*mem_length);
     

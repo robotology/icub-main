@@ -427,9 +427,10 @@ bool SensorMotorInterfaceModule::updateModule(){
     outMemData.addDouble(soundSensorReadLoop->getCurrentSoundSensor());
 
     //get something from the gaze tracker here
-    if(use_gaze)
+    if(use_gaze) {
+        IhaDebug::pmesg(DBGL_STATUS1,"gaze %lf\n",gazeReadLoop->getCurrentGaze());   
         outData.addDouble(gazeReadLoop->getCurrentGaze());
-    else
+    }else
         outData.addDouble(0.0);
     
     //get something from the audio analyser

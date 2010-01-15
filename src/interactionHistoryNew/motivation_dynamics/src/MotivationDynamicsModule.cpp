@@ -160,7 +160,8 @@ MotivationDynamicsModule::MotivationDynamicsModule(){
     acc=0;
     faceReward=0.0;
     gazeReward=0.0;
-    gazeAlpha=0.0;
+    gazeAlpha=0.5;
+    current_eout = -1;
 }
 
 MotivationDynamicsModule::~MotivationDynamicsModule(){ 
@@ -343,16 +344,16 @@ void MotivationDynamicsModule::sendExpression(int expr) {
     Bottle out;
     // hard coded for now
     if (expr==action_ehi) {
-        out.add("L04");
+        out.add("L04");                   //controls left eyebrow
         expressionRawPort.write(out);
         out.clear();
-        out.add("R04");
+        out.add("R04");                   //controls right eyebrow
         expressionRawPort.write(out);
         out.clear();
-        out.add("M0B");
+        out.add("M0B");                   //controls mouth
         expressionRawPort.write(out);
         out.clear();
-        out.add("S7F");
+        out.add("S7F");                 //controls eyelids
         expressionRawPort.write(out);
         out.clear();
     }
@@ -366,7 +367,7 @@ void MotivationDynamicsModule::sendExpression(int expr) {
         out.add("M08");
         expressionRawPort.write(out);
         out.clear();
-        out.add("S7F");
+        out.add("S7F");              
         expressionRawPort.write(out);
         out.clear();
     }
@@ -381,7 +382,7 @@ void MotivationDynamicsModule::sendExpression(int expr) {
         out.add("M38");
         expressionRawPort.write(out);
         out.clear();
-        out.add("S5B");
+        out.add("S7F");
         expressionRawPort.write(out);
         out.clear();
     }
@@ -419,7 +420,7 @@ bool MotivationDynamicsModule::updateModule(){
 
     IhaDebug::pmesg(DBGL_DEBUG1,"Reading from data port \n");
     Bottle* db = dataPort.read(true);
-    IhaDebug::pmesg(DBGL_DEBUG1,"Read from data port \n");
+    IhaDebug::pmesg(DBGL_DEBUG1,"Read from data port, length %d \n",db->size());
     if (db!=NULL) {
 
       double action = db->get(action_index).asDouble();
@@ -515,12 +516,13 @@ bool MotivationDynamicsModule::updateModule(){
       //mutual gaze
       //reward visual attention 
       double gaze = db->get(gaze_index).asDouble();
-      gazeReward = gazeAlpha*gaze + (1 - gazeAlpha)*gazeReward;
+      gazeReward = gazeAlpha*gaze + (1.0 - gazeAlpha)*gazeReward;
       reward_names.push_back("gaze");
       rewards.push_back(gazeReward);
       reward_contribs.push_back(reward_contrib_gaze);
       num_rewards++;
-        
+
+        IhaDebug::pmesg(DBGL_DEBUG1,"safely read gaze val %lf \n",gazeReward);
 
       //compute reward from a vector of arbitrary length
       double totalReward = 0.0;
@@ -546,6 +548,10 @@ bool MotivationDynamicsModule::updateModule(){
       
       // add the reward to the sensor output in the right place
       //indicies from ExMetSpace.ini 
+
+      IhaDebug::pmesg(DBGL_DEBUG1,"Before adding mem and reward %d \n", db->size());
+      IhaDebug::pmesg(DBGL_DEBUG1," %lf %lf %lf \n", drumscore,hidescore,action);
+      
       Bottle out;
       out.copy(*db,0,insert_index);
       out.addDouble(drumscore);
@@ -556,24 +562,25 @@ bool MotivationDynamicsModule::updateModule(){
       tmp.copy(*db,insert_index+1,db->size()-insert_index-1); //skip action since 
                                                               //inserted above 
       out.append(tmp);
+      IhaDebug::pmesg(DBGL_DEBUG1,"After adding mem and reward %d \n", out.size());
       outPort.write(out);
       IhaDebug::pmesg(DBGL_DEBUG1,"Wrote output to port\n");
       
       if (reward_display) {
-	if (totalReward >= th_ehi) {
-	  new_eout=action_ehi;
-	} else if (totalReward < th_elo) {
-	  new_eout=action_elo;
-	} else {
-	  new_eout=action_emid;
-	}
+          if (totalReward >= th_ehi) {
+              new_eout=action_ehi;
+          } else if (totalReward < th_elo) {
+              new_eout=action_elo;
+          } else {
+              new_eout=action_emid;
+          }
 	
-	if (current_eout != new_eout) {
-	  IhaDebug::pmesg(DBGL_STATUS1,"============ Emote action %d\n",new_eout);
-	  sendExpression(new_eout);
-	  IhaDebug::pmesg(DBGL_DEBUG1,"============ Emote action %d done\n",new_eout);
-	}
-	current_eout = new_eout;
+          if (current_eout != new_eout) {
+              IhaDebug::pmesg(DBGL_DEBUG1,"============ Emote action %d\n",new_eout);
+              sendExpression(new_eout);
+              IhaDebug::pmesg(DBGL_DEBUG1,"============ Emote action %d done\n",new_eout);
+          }
+          current_eout = new_eout;
       }
       
     }

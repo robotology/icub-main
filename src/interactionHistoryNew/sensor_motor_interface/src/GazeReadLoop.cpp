@@ -45,13 +45,13 @@ void GazeReadLoop::run() {
         int ux = bot->get(5).asInt();
         int uy = bot->get(6).asInt();
 
-        IhaDebug::pmesg(DBGL_DEBUG1,"gx %d gy %d lx %d ly %d  ux %d uy %d\n",gx,gy,lx,ly,ux,uy);
+        //IhaDebug::pmesg(DBGL_DEBUG1,"gx %d gy %d lx %d ly %d  ux %d uy %d\n",gx,gy,lx,ly,ux,uy);
 
         double gazestate;
 
         if ((gx < 0) || (gy < 0) || (lx < 0) || (ly < 0) || (ux < 0) || (uy < 0)) {
             //there is an error in part of the gaze reading
-            gazestate = -1.0;
+            gazestate = 0.0;
             //IhaDebug::pmesg(DBGL_DEBUG1,"State: err\n");
         } else if ((gx > lx) && (gx < ux) && (gy > ly) && (gy < uy)) {
             //the gaze is inside the face bounding box
