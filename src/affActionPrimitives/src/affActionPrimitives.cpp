@@ -1199,6 +1199,9 @@ void switchingWristDof::exec()
 
     action->t0=Time::now();
     action->outputDerivative->reset();
+
+    Vector o;
+    action->cartCtrl->getPose(action->real_x,o);
 }
 
 
@@ -1318,7 +1321,7 @@ bool affActionPrimitivesLayer2::grasp(const Vector &x, const Vector &o,
         printMessage("start grasping\n");
         pushAction(x+d1,o,"open_hand",ACTIONPRIM_DISABLE_EXECTIME,disableWristDof);
         pushAction(x,o,ACTIONPRIM_DISABLE_EXECTIME,enableWristDof);
-        pushAction(x+d2,o);
+        pushAction(real_x+d2,o);    // real_x is read within the callback
         pushAction("close_hand");
 
         return true;

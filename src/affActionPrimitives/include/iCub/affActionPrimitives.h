@@ -570,7 +570,7 @@ public:
     *          grasping.
     * @return true/false on success/fail. 
     *  
-    * \note internal implementation: 
+    * \note internal implementation (pseudo-code): 
     * \code 
     * ... 
     * pushAction(x+d,o,"open_hand"); 
@@ -596,7 +596,7 @@ public:
     *          touching.
     * @return true/false on success/fail. 
     *  
-    * \note internal implementation: 
+    * \note internal implementation (pseudo-code): 
     * \code 
     * ... 
     * pushAction(x+d,o,"open_hand"); 
@@ -623,7 +623,7 @@ public:
     *          default value).
     * @return true/false on success/fail. 
     *  
-    * \note internal implementation: 
+    * \note internal implementation (pseudo-code): 
     * \code 
     * ...
     * pushAction(x1,o1,"karate_hand");
@@ -695,6 +695,8 @@ protected:
     switchingWristDof *disableWristDof; 
     switchingWristDof *enableWristDof;
 
+    yarp::sig::Vector real_x;
+
     virtual void init();
     virtual void run();
 
@@ -753,12 +755,13 @@ public:
     *           the lift after the contact.
     * @return true/false on success/fail. 
     *  
-    * \note internal implementation: 
+    * \note internal implementation (pseudo-code): 
     * \code 
     * ... 
     * pushAction(x+d1,o,"open_hand"); 
-    * pushAction(x,o); 
-    * pushAction(x+d2,o);
+    * pushAction(x,o);  
+    * getPose(real_x);  // real_x is read in callback 
+    * pushAction(real_x+d2,o);
     * pushAction("close_hand"); 
     * ... 
     * \endcode 
