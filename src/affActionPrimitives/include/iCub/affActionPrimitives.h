@@ -462,8 +462,10 @@ public:
 
     /**
     * Return the cartesian interface used to control the limb.
-    * @param ctrl 
-    * @return true/false on success/fail.
+    * @param ctrl the cartesian interface.
+    * @return true/false on success/fail. 
+    *  
+    * \note Useful to access solver's options (\ref iKinSlv).
     */
     virtual bool getCartesianIF(yarp::dev::ICartesianControl *&ctrl);
 
