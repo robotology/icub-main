@@ -756,8 +756,9 @@ public:
     virtual bool open(yarp::os::Property &opt);
 
     /**
-    * Grasp the given target by lifting up a bit the hand after the 
-    * contact. 
+    * More evolute version of grasp. It exploits the contact 
+    * detection in order to lift up a bit the hand prior to 
+    * grasping. 
     * @param x the 3-d target position [m]. 
     * @param o the 4-d hand orientation used while reaching/grasping
     *          (given in axis-angle representation: ax ay az angle
