@@ -1,10 +1,20 @@
-  /**
-   * @ingroup icub_module
-   *
-   * \defgroup zeroForceControl zeroForceControl
-   *
-   */
 
+/**
+* @ingroup icub_module
+*
+* \defgroup zeroForceControl zeroForceControl
+*
+*
+* Perform zero force control on the iCub arms.
+*
+* \author Matteo Fumagalli
+*
+* Copyright (C) 2010 RobotCub Consortium
+*
+* CopyPolicy: Released under the terms of the GNU GPL v2.0.
+*
+* This file can be edited at src/myModule/main.cpp.
+**/
 
 #include <yarp/os/BufferedPort.h>
 #include <yarp/os/RFModule.h>
