@@ -461,7 +461,8 @@ public:
     virtual bool areFingersInPosition();
 
     /**
-    * Return the cartesian interface used to control the limb.
+    * Return the cartesian interface used internally to control the 
+    * limb. 
     * @param ctrl the cartesian interface.
     * @return true/false on success/fail. 
     *  
