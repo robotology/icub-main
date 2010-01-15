@@ -55,14 +55,14 @@
 <module>
   <name>ihaNewIhaFaceDetect</name>
   <parameters>--name /iha/sfd --file /usr/local/src/robot/iCub/app/ihaNew/conf/ihaSelfFaceDetect.ini --output_image FALSE</parameters>
-  <node>icub15</node>
+  <node>icub10</node>
   <stdio>icub15</stdio>
   <tag>selffacedetect</tag>
 </module>
 <module>
   <name>ihaNewMobileEye</name>
   <parameters>--name /iha/me --file /usr/local/src/robot/iCub/app/ihaNew/conf/ihaMobileEye.ini --NTSC</parameters>
-  <node>icub15</node>
+  <node>icub10</node>
   <stdio>icub15</stdio>
   <tag>mobileeye</tag>
 </module>
