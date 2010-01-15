@@ -467,8 +467,8 @@ public:
     * @return true/false on success/fail. 
     *  
     * \note Useful to access solver's options through the <a 
-    *       href="http://eris.liralab.it/yarpdoc/dd/de6/classyarp_1_1dev_1_1ICartesianControl.html">ICartesianControl</a>
-    *       interface.
+    *       href="http://eris.liralab.it/yarpdoc/dd/de6/classyarp_1_1dev_1_1ICartesianControl.html">Cartesian
+    *       Interface</a>.
     */
     virtual bool getCartesianIF(yarp::dev::ICartesianControl *&ctrl);
 
