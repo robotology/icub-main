@@ -523,8 +523,8 @@ bool BlobDescriptorModule::updateModule()
 			/*2*/objbot.addDouble(norm_w);
 			/*3*/objbot.addDouble(norm_h);
 			/*4*/objbot.addDouble(_objDescTable[i].enclosing_rect.angle);
-			/*5*/objbot.addDouble(0);
-			/*6*/objbot.addDouble(0);
+			/*5*/objbot.addDouble(x);
+			/*6*/objbot.addDouble(y+h/2);
 
 
 			/*7*/objbot.addDouble((double)cvQueryHistValue_1D(_objDescTable[i].objHist, 0));
@@ -659,6 +659,7 @@ bool BlobDescriptorModule::updateModule()
 	{
 		//user selection - blue outline
 		if(userselection == i)
+		{
 			cvDrawContours(
 				opencvViewImg, 
 				_objDescTable[userselection].affcontours, 
@@ -669,7 +670,9 @@ bool BlobDescriptorModule::updateModule()
 				CV_AA, 
 				cvPoint(0, 0)	           // ROI offset
 			);
+		}
 		else if( _objDescTable[i].valid)   //valid objects red contours
+		{
 			cvDrawContours(
 				opencvViewImg, 
 				_objDescTable[i].contours, 
@@ -680,7 +683,13 @@ bool BlobDescriptorModule::updateModule()
 				CV_AA, 
 				cvPoint(0, 0)	   // ROI offset
 			);
+			//Draw also center point in table for debug
+			double x = _objDescTable[i].enclosing_rect.center.x;
+			double y = _objDescTable[i].enclosing_rect.center.y + _objDescTable[i].enclosing_rect.size.height/2;
+			cvCircle(opencvViewImg, cvPoint(x,y), 5, cvScalar(255,255,255,255), 0 );
+		}
 		else 	//invalid objects - white contours
+		{
 			cvDrawContours(
 				opencvViewImg, 
 				_objDescTable[i].contours, 
@@ -691,6 +700,7 @@ bool BlobDescriptorModule::updateModule()
 				CV_AA, 
 				cvPoint(0, 0)	 // ROI offset
 			);
+		}
 	}
 	
 	/* output the original image */
