@@ -1,0 +1,18 @@
+<application>
+<name>Control_Gaze</name>
+<dependencies>
+        <port>/icub/head/rpc:i</port> 
+        <port>/icub/torso/rpc:i</port>
+</dependencies>
+<module>
+        <name>controlGaze2</name>
+        <parameters>--configCamera icubEyes.ini --name /icub/controlGaze --context demoAffv2/conf/attention --from icubControlGaze2.ini --motorboard /icub/head --fake_velocity_control --fake_velocity_gain 6</parameters>
+        <tag>controlgaze</tag>
+        <stdio>icub14</stdio>
+        <node>icub-b13</node>
+</module>
+<connection>
+        <from>/icub/torso/state:o</from>
+        <to>/icub/controlGaze/torso</to>
+</connection>
+</application>
