@@ -120,7 +120,8 @@
  * \b resp request: example [set] [resp] (20.0 0.0 0.0 ...), 
  *    [get] [resp]. Set/get for each joint the rest position in
  *    degrees. The reply will contain the rest position
- *    resulting from the application of joints limits.
+ *    resulting from the application of joints limits (lim
+ *    request does affect the range).
  *  
  * \b resw request: example [set] [resw] (1.0 0.0 1.0 ...), 
  *    [get] [resw]. Set/get for each joint the weight used to
