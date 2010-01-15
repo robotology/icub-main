@@ -26,6 +26,9 @@ void                YarpPose6ToPose6(yarp::sig::Vector &pose, MathLib::Vector3 &
 void                Pose6ToYarpPose6(MathLib::Vector3 &pos, MathLib::Vector3 &ori, yarp::sig::Vector &pose);
 void                AddPose6ToYarpPose6(MathLib::Vector3 &pos, MathLib::Vector3 &ori, yarp::sig::Vector &pose);
 
+MathLib::Vector &   AddPose6ToPose6(MathLib::Vector &pose, const MathLib::Vector &offset);
+MathLib::Vector &   GetDeltaPose6FromPose6(const MathLib::Vector &src, const MathLib::Vector &target, MathLib::Vector &delta);
+
 void                YarpPose7ToYarpPose6(yarp::sig::Vector &pose, yarp::sig::Vector &result);
 
 MathLib::Matrix3&   YarpMatrix4ToMatrix3  (const yarp::sig::Matrix &ymat, MathLib::Matrix3& result);

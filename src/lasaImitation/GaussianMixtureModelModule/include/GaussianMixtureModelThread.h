@@ -50,6 +50,8 @@ private:
     double                      mInputLastTime;
 
     BufferedPort<Vector>        mSignalPort;
+    double                      mSignalLastTime;
+
     BufferedPort<Vector>        mDSOutputPort;
     BufferedPort<Bottle>        mDSRpcPort;
 
@@ -137,7 +139,9 @@ private:
     char                        mEMCurrModelPath[256];
     
     MathLib::Matrix             mEMWeights;
-
+    
+    double                      mCurrCorrWeight;
+    MathLib::Vector             mCurrOffset;
 
 public:
     GaussianMixtureModelThread(int period, const char* baseName);
@@ -152,8 +156,8 @@ public:
     
             void    InitRun();
             void    StartRun();
-            void    PauseRun();
-            void    ResumeRun();
+            void    PauseRun(bool useMutex = true);
+            void    ResumeRun(bool useMutex = true);
             void    StopRun();
     
             void    SetEMDemosPath(const char* path);
@@ -164,12 +168,15 @@ public:
             void    SetEMDemoLength(int len);
             void    SetEMTimeSpan(double timeSpan);
             void    SetCorrectionMode(bool mode);
+            
+            void    SetCurrDemoId(int id);
     
             bool    Learn();
 
             bool    ProcessRawDemos();
     
             void    GenerateDefaultRegression();
+            void    GenerateGnuplotScript();
     
     virtual void run();
     virtual bool threadInit();

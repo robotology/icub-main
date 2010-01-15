@@ -51,19 +51,29 @@ bool ImitationApplicationThread::threadInit()
     m3DMouseControllerPort.open(portName);
     snprintf(portName,256,"/%s/TCTP",mBaseName);
     mTouchpadControllerPort.open(portName);
+    snprintf(portName,256,"/%s/GMMR",mBaseName);
+    mGMMRightPort.open(portName);
+    snprintf(portName,256,"/%s/GMML",mBaseName);
+    mGMMLeftPort.open(portName);
 
     mPorts[PID_Velocity]    = &mVelocityControllerPort;
     mPorts[PID_Robot]       = &mRobotControllerPort;
     mPorts[PID_3DMouse]     = &m3DMouseControllerPort;
     mPorts[PID_Touchpad]    = &mTouchpadControllerPort;
+    mPorts[PID_GMMRight]    = &mGMMRightPort;
+    mPorts[PID_GMMLeft]     = &mGMMLeftPort;
 
     snprintf(mSrcPortName[SPID_Touchpad],           256,"/TouchController/Touchpad/velocity");
     snprintf(mSrcPortName[SPID_3DMouse],            256,"/TouchController/3DMouse/velocity");
+    snprintf(mSrcPortName[SPID_TouchpadSignal],     256,"/TouchController/Touchpad/signal");
+    snprintf(mSrcPortName[SPID_3DMouseSignal],      256,"/TouchController/3DMouse/signal");
     snprintf(mSrcPortName[SPID_RWristRef],          256,"/RobotController/currentWristRefR");
     snprintf(mSrcPortName[SPID_LWristRef],          256,"/RobotController/currentWristRefL");
     snprintf(mSrcPortName[SPID_RArmCartPos],        256,"/RobotController/currentCartPositionR");
     snprintf(mSrcPortName[SPID_LArmCartPos],        256,"/RobotController/currentCartPositionL");
-    snprintf(mSrcPortName[SPID_EyeCartPos],        256,"/RobotController/currentCartEyeTargetPosition");
+    snprintf(mSrcPortName[SPID_EyeCartPos],         256,"/RobotController/currentCartEyeTargetPosition");
+    snprintf(mSrcPortName[SPID_GMMRightCartPos],    256,"/GaussianMixtureModel/Right/output");
+    snprintf(mSrcPortName[SPID_GMMLeftCartPos],     256,"/GaussianMixtureModel/Left/output");
     snprintf(mSrcPortName[SPID_SIZE],               256,"");
 
     
@@ -105,6 +115,8 @@ void ImitationApplicationThread::threadRelease()
     mRobotControllerPort.close();
     m3DMouseControllerPort.close();
     mTouchpadControllerPort.close();
+    mGMMRightPort.close();
+    mGMMLeftPort.close();
 }
 
 void ImitationApplicationThread::run()
@@ -207,10 +219,59 @@ void ImitationApplicationThread::run()
         AddCommand(PID_Robot,"iku LeftArm");
         AddCommand(PID_Robot,"iks LeftArmPos");
         break;
+    case BC_LEARN_RIGHT:
+    case BC_LEARN_LEFT:
+        {PortId pid = (mBasicCommand==BC_LEARN_RIGHT?PID_GMMRight:PID_GMMLeft);
+        AddCommand(pid,"set k 5");
+        AddCommand(pid,"set ts 1.0");
+        AddCommand(pid,"set pmode simple");
+        AddCommand(pid,"set imode timesplit");
+        AddCommand(pid,"set demoLength 100");
+        AddCommand(pid,"run process");
+        AddCommand(pid,"run learning");
+        AddCommand(pid,"run test");
+        AddCommand(pid,"run gnuplot");}
+        break;
+    case BC_REC_RIGHT_START:
+    case BC_REC_LEFT_START:
+        {PortId pid = (mBasicCommand==BC_REC_RIGHT_START?PID_GMMRight:PID_GMMLeft);
+        if(mBasicCommandParams.length()>0)
+            AddCommand(pid,"set demoId",mBasicCommandParams.c_str());
+        AddCommand(pid,"set rmode rec");
+        AddCommand(pid,"run start");}
+        break;
+    case BC_REC_RIGHT_STOP:
+    case BC_REC_LEFT_STOP:
+        {PortId pid = (mBasicCommand==BC_REC_RIGHT_STOP?PID_GMMRight:PID_GMMLeft);
+        AddCommand(pid,"run stop");}
+        break;
+    case BC_REPRO_RIGHT_START:
+    case BC_REPRO_LEFT_START:
+        {PortId pid = (mBasicCommand==BC_REPRO_RIGHT_START?PID_GMMRight:PID_GMMLeft);
+        if(pid == PID_GMMRight){
+            AddConnexion(SPID_GMMRightCartPos, DPID_RArmDesCartPos);
+            AddCommand(PID_Robot,"iks RightArm");
+        }else{
+            AddConnexion(SPID_GMMLeftCartPos, DPID_LArmDesCartPos);
+            AddCommand(PID_Robot,"iks LeftArm");
+        }
+        AddCommand(pid,"set rmode repro");
+        AddCommand(pid,"run start");}
+        break;
+    case BC_REPRO_RIGHT_STOP:
+    case BC_REPRO_LEFT_STOP:
+        {PortId pid = (mBasicCommand==BC_REPRO_RIGHT_STOP?PID_GMMRight:PID_GMMLeft);
+        if(pid == PID_GMMRight){
+            RemConnexion(SPID_GMMRightCartPos, DPID_RArmDesCartPos);
+        }else{
+            RemConnexion(SPID_GMMLeftCartPos, DPID_LArmDesCartPos);
+        }
+        AddCommand(pid,"run stop");}
+        break;
     }
     
-    mBasicCommand = BC_NONE;
-
+    mBasicCommand       = BC_NONE;
+    mBasicCommandParams = "";
     /*
     if(mNextState!=mState)
         mState = mNextState;
@@ -275,9 +336,13 @@ void ImitationApplicationThread::ConnectToNetwork(bool bConnect){
     snprintf(dstPortName[2],256,"/TouchController/3DMouse/rpc");
     snprintf(srcPortName[3],256,"/%s/TCTP",mBaseName);
     snprintf(dstPortName[3],256,"/TouchController/Touchpad/rpc");
+    snprintf(srcPortName[4],256,"/%s/GMMR",mBaseName);
+    snprintf(dstPortName[4],256,"/GaussianMixtureModel/Right/rpc");
+    snprintf(srcPortName[5],256,"/%s/GMML",mBaseName);
+    snprintf(dstPortName[5],256,"/GaussianMixtureModel/Left/rpc");
 
     
-    int nbConn = 4;
+    int nbConn = 6;
     for(int i=0;i<nbConn;i++){
         if(bConnect){
             if(!Network::isConnected(srcPortName[i],dstPortName[i]))
@@ -298,11 +363,19 @@ void ImitationApplicationThread::ClearCommands(){
     mConnexionsDstPort.clear();
 }
 
-void ImitationApplicationThread::AddCommand(PortId port, const char *cmd){
+void ImitationApplicationThread::AddCommand(PortId port, const char *cmd, const char *params){
     if(cmd!=NULL){
         if(cmd[0]!=0){
             mCommandsType.push_back(0);
-            mCommands.push_back(cmd);
+            if((params!=NULL)&&(params[0]!=0)){
+                char cmd2[512];
+                snprintf(cmd2,512,"%s %s",cmd,params);
+                mCommands.push_back(cmd2);
+                cout << "Adding command with params: "<<cmd2<<endl;
+            }else{
+                mCommands.push_back(cmd);
+                cout << "Adding command: "<<cmd<<endl;
+            }
             mCommandsPort.push_back(port);
         }
     }
@@ -338,7 +411,6 @@ void    ImitationApplicationThread::RemAllConnexions(){
 void ImitationApplicationThread::SendCommands(){
     int cmdCnt = 0;
     int conCnt = 0;
-    
     for(size_t i=0;i<mCommandsType.size();i++){
         switch(mCommandsType[i]){
         case 0:
@@ -350,12 +422,14 @@ void ImitationApplicationThread::SendCommands(){
                 for(size_t j=0;j<currCmds.size();j++)
                     cmd.addString(currCmds[j].c_str());
                 */
+                cout << "Sending: "<<mCommands[cmdCnt]<<endl;
                 mPorts[mCommandsPort[cmdCnt]]->writeStrict();
                 cmdCnt++;
                 break;
             }
         case 1:
             {
+                cout << "connecting... "<<mSrcPortName[mConnexionsSrcPort[conCnt]]<<" to "<<mDstPortName[mConnexionsDstPort[conCnt]]<<endl;
                 if(!Network::isConnected(mSrcPortName[mConnexionsSrcPort[conCnt]],mDstPortName[mConnexionsDstPort[conCnt]]))
                     if(!Network::connect(mSrcPortName[mConnexionsSrcPort[conCnt]],mDstPortName[mConnexionsDstPort[conCnt]]))
                         cerr << "Error: Unable to connect "<<mSrcPortName[mConnexionsSrcPort[conCnt]] <<" to "<<mDstPortName[mConnexionsDstPort[conCnt]]<<endl;                
@@ -364,6 +438,7 @@ void ImitationApplicationThread::SendCommands(){
             break;
         case 2:
             {
+                cout << "disconnecting... "<<mSrcPortName[mConnexionsSrcPort[conCnt]]<<" to "<<mDstPortName[mConnexionsDstPort[conCnt]]<<endl;
                 if(Network::isConnected(mSrcPortName[mConnexionsSrcPort[conCnt]],mDstPortName[mConnexionsDstPort[conCnt]]))
                     Network::disconnect(mSrcPortName[mConnexionsSrcPort[conCnt]],mDstPortName[mConnexionsDstPort[conCnt]]);
                 conCnt++;
@@ -382,6 +457,8 @@ int ImitationApplicationThread::respond(const Bottle& command, Bottle& reply){
 
     int  cmdSize    = command.size();
     int  retVal     = 1;
+    
+    
     
     if(cmdSize<=0){
         retVal = -1;
@@ -476,6 +553,35 @@ int ImitationApplicationThread::respond(const Bottle& command, Bottle& reply){
                 retVal = 0;
             }
             break;
+        case VOCAB3('g','m','m'):
+            if(cmdSize>1){
+                ConstString str = command.get(1).asString();
+                      if(str == "LearnRight"){
+                    mBasicCommand = BC_LEARN_RIGHT;
+                }else if(str == "DemoRight"){
+                    mBasicCommand = BC_REC_RIGHT_START;
+                    if(cmdSize>2) mBasicCommandParams = command.get(2).toString();
+                }else if(str == "StopRight"){
+                    mBasicCommand = BC_REC_RIGHT_STOP;
+                }else if(str == "ReproRight"){
+                    mBasicCommand = BC_REPRO_RIGHT_START;
+                }else if(str == "LearnLeft"){
+                    mBasicCommand = BC_LEARN_LEFT;
+                }else if(str == "DemoLeft"){
+                    mBasicCommand = BC_REC_LEFT_START;
+                    if(cmdSize>2) mBasicCommandParams = command.get(2).toString();
+                }else if(str == "StopLeft"){
+                    mBasicCommand = BC_REC_LEFT_STOP;
+                }else if(str == "ReproLeft"){
+                    mBasicCommand = BC_REPRO_LEFT_START;
+                }else{
+                    
+                    retVal = 0;
+                }
+            }else{
+                retVal = 0;
+            }
+            break;
         default:
             retVal = -1;
             break;
@@ -515,10 +621,10 @@ int ImitationApplicationThread::respond(const Bottle& command, Bottle& reply){
     }else if (retVal == 0){
         reply.addVocab(Vocab::encode("fail"));
         cout << "*FAIL*"<<endl;
+    }else{
+        cout << "*BIG_FAIL*"<<endl;
     }
     
-
-
     mMutex.post();
     return retVal;
 }

@@ -224,15 +224,15 @@ void    RobotControllerThread::Init(){
     cout << endl;
     }
     mIKSolver.SetSizes(mIKJointSize);
+    mIKSolver.AddSolverItem(3);
+    mIKSolver.AddSolverItem(3);
+    mIKSolver.AddSolverItem(3);
+    mIKSolver.AddSolverItem(3);
     mIKSolver.AddSolverItem(6);
     mIKSolver.AddSolverItem(6);
-    mIKSolver.AddSolverItem(3);
-    mIKSolver.AddSolverItem(3);
-    mIKSolver.AddSolverItem(3);
-    mIKSolver.AddSolverItem(3);
     mIKSolver.AddSolverItem(3);
 
-    mIKSolver.SetVerbose(false);
+    mIKSolver.SetVerbose(true);
     mIKSolver.SetThresholds(0.001,0.00001);
 
     for(int i=0;i<IKSize;i++){
@@ -838,6 +838,8 @@ void    RobotControllerThread::ComputeVelocities(){
             YarpPose7ToPose6(mFwdKinArmPose[i], cpos,cori);
             YarpPose6ToPose6(mDesiredCartPos[i],pos, ori);
             
+            cout << cori[0]<<" "<< cori[1]<<" "<< cori[2]<<endl;
+            cout << ori[0]<<" "<< ori[1]<<" "<< ori[2]<<endl;
             pos.Sub(cpos,vel);
             vel *= mDesiredCartGain;
             
@@ -851,7 +853,13 @@ void    RobotControllerThread::ComputeVelocities(){
             //if(bUseDesiredCartPos[i]==1)
             //Pose6ToYarpPose6(vel,avel,mDesiredCartVel[i]);
             //else
+            cout << mDesiredCartGain<< " *** "<<avel[0]<<" "<<avel[0]<<" "<<avel[0]<<" "<<endl;
+            cout <<mFwdKinArmPose[i].toString()<<endl;
+            cout << cori[0]<<" "<< cori[1]<<" "<< cori[2]<<endl;
+            cout << ori[0]<<" "<< ori[1]<<" "<< ori[2]<<endl;
+            cout << mDesiredCartVel[i].toString()<<endl;
             AddPose6ToYarpPose6(vel,avel,mDesiredCartVel[i]);
+            cout << mDesiredCartVel[i].toString()<<endl;
         }
     }
 }

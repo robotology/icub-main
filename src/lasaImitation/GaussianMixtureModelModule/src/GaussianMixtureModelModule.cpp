@@ -69,6 +69,7 @@ bool GaussianMixtureModelModule::open(Searchable &s){
     char portName[255];
     snprintf(portName,255,"/GaussianMixtureModel/%s/rpc",getName().c_str());
     mControlPort.open(portName);
+    mControlPort.setStrict();
     attach(mControlPort,true);
     
     snprintf(portName,255,"GaussianMixtureModel/%s",getName().c_str());
@@ -106,17 +107,16 @@ bool GaussianMixtureModelModule::respond(const Bottle& command, Bottle& reply) {
         cerr <<endl;
 
         switch(command.get(0).asVocab())  {
-            void    InitRepro();
-            void    StartRepro();
-            void    PauseRepro();
-            void    ResumeRepro();
-            void    StopRepro();        
         case VOCAB3('r','u','n'):
             if(cmdSize>1){
                      if(command.get(1).asString()=="learning"){
                     mThread->Learn();
+                }else if(command.get(1).asString()=="process"){
+                    mThread->ProcessRawDemos();
                 }else if(command.get(1).asString()=="test"){
                     mThread->GenerateDefaultRegression();
+                }else if(command.get(1).asString()=="gnuplot"){
+                    mThread->GenerateGnuplotScript();
                 }else if(command.get(1).asString()=="init"){
                     mThread->InitRun();
                 }else if(command.get(1).asString()=="start"){
@@ -133,7 +133,7 @@ bool GaussianMixtureModelModule::respond(const Bottle& command, Bottle& reply) {
             }else{
                 retVal = false;
             }
-            break;
+            break;  
         /*
         case VOCAB4('s','u','s','p'):
             mThread->SetState(RobotControllerThread::RCS_IDLE);
@@ -163,6 +163,10 @@ bool GaussianMixtureModelModule::respond(const Bottle& command, Bottle& reply) {
                     mThread->SetEMNbComponents(command.get(2).asInt());
                 }else if(command.get(1).asString()=="ts"){
                     mThread->SetEMTimeSpan(command.get(2).asDouble());
+                }else if(command.get(1).asString()=="demoId"){
+                    mThread->SetCurrDemoId(command.get(2).asInt());
+                }else if(command.get(1).asString()=="demoLength"){
+                    mThread->SetEMDemoLength(command.get(2).asInt());
                 }else if(command.get(1).asString()=="pmode"){
                           if(command.get(2).asString()=="simple"){
                         mThread->SetEMProcessingMode(GaussianMixtureModelThread::PM_SIMPLE);

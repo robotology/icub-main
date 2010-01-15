@@ -46,12 +46,16 @@ private:
     BufferedPort<Bottle>    mRobotControllerPort;
     BufferedPort<Bottle>    m3DMouseControllerPort;
     BufferedPort<Bottle>    mTouchpadControllerPort;
+    BufferedPort<Bottle>    mGMMRightPort;
+    BufferedPort<Bottle>    mGMMLeftPort;
 
     enum PortId{
         PID_Velocity = 0,
         PID_Robot,
         PID_3DMouse,
         PID_Touchpad,
+        PID_GMMRight,
+        PID_GMMLeft,
         PID_SIZE,
     };
     
@@ -65,6 +69,8 @@ private:
         SPID_RArmCartPos,
         SPID_LArmCartPos,
         SPID_EyeCartPos,
+        SPID_GMMRightCartPos,
+        SPID_GMMLeftCartPos,
         SPID_SIZE
     };
     enum DstPortId{
@@ -126,9 +132,20 @@ private:
         BC_HAND_CLOSELEFT,
         BC_EYETARGET_TO_NONE,
         BC_EYETARGET_TO_RIGHTARM,
-        BC_EYETARGET_TO_LEFTARM
+        BC_EYETARGET_TO_LEFTARM,
+        BC_LEARN_RIGHT,
+        BC_LEARN_LEFT,
+        BC_REC_RIGHT_START,
+        BC_REC_RIGHT_STOP,
+        BC_REC_LEFT_START,
+        BC_REC_LEFT_STOP,
+        BC_REPRO_RIGHT_START,
+        BC_REPRO_RIGHT_STOP,
+        BC_REPRO_LEFT_START,
+        BC_REPRO_LEFT_STOP
     };
     BasicCommand            mBasicCommand;
+    string                  mBasicCommandParams;
 
 public:
     ImitationApplicationThread(int period, const char* baseName);
@@ -138,7 +155,7 @@ public:
 
             void    ClearCommands();
             void    SendCommands();
-            void    AddCommand(PortId port, const char *cmd);
+            void    AddCommand(PortId port, const char *cmd, const char *params=NULL);
             void    AddConnexion(SrcPortId src, DstPortId dst, bool bUnique = true);
             void    RemConnexion(SrcPortId src, DstPortId dst);
             void    RemAllSrcConnexions(DstPortId dst);

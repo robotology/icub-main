@@ -8,52 +8,67 @@
         <parameters>--period 0.5</parameters>
         <node>lasapc18</node>
         <stdio>lasapc18</stdio>
-        <tag>IA</tag>
+        <tag>Application</tag>
     </module>
     <module>
         <name>VelocityControllerExt</name>
         <parameters>--name VelocityController --robot icub --period 0.02 --decouple --part right_arm+left_arm+torso+head </parameters>
         <node>pc104</node>
         <stdio>lasapcicub</stdio>
-        <tag>VC</tag>
+        <tag>VCExt</tag>
     </module>
     <module>
         <name>RobotControllerModule</name>
         <parameters>--period 0.04 </parameters>
-        <tag>RC</tag>
+        <tag>RobotCtrl</tag>
         <stdio>lasapcicub</stdio>
         <node>lasapcicub</node>
     </module>
     <module>
         <name>TouchControllerModule</name>
         <parameters>--name 3DMouse --period 0.1 --type 3Dmouse --device 3Dconnexion --load</parameters>
-        <tag>TC1</tag>
+        <tag>TC3DMouse</tag>
         <stdio>lasapcicub</stdio>
         <node>lasapcicub</node>
+        <workdir>/home/icub/Projects/iCubDemoFiles/TouchControllers</workdir>
    </module>
     <module>
         <name>TouchControllerModule</name>
         <parameters>--name Touchpad --period 0.1 --type touchpad --device Cirque --load</parameters>
-        <tag>TC2</tag>
+        <tag>TCTouchpad</tag>
         <stdio>lasapcicub</stdio>
         <node>lasapcicub</node>
-        <workdir>/home/icub/asd</workdir>
+        <workdir>/home/icub/Projects/iCubDemoFiles/TouchControllers</workdir>
    </module>
     <module>
         <name>GaussianMixtureModelModule</name>
-        <parameters>--name asd --period 0.1</parameters>
-        <node>lasapcicub</node>
-        <stdio>lasapcicub</stdio>
-        <tag>GMM</tag>
-        <workdir>/home/icub/asd</workdir>
+        <parameters>--name Right --period 0.1</parameters>
+        <node>lasapc18</node>
+        <tag>GMMRight</tag>
+        <workdir>/home/icub/Projects/iCubDemoFiles/GMM</workdir>
     </module>
     <module>
         <name>DataStreamerModule</name>
-        <parameters>--name asd --period 0.05</parameters>
-        <node>lasapcicub</node>
-        <stdio>lasapcicub</stdio>
-        <tag>DS</tag>
-        <workdir>/home/icub/asd</workdir>
+        <parameters>--name Right --period 0.05</parameters>
+        <node>lasapc18</node>
+        <tag>DSRight</tag>
+        <workdir>/home/icub/Projects/iCubDemoFiles/GMM</workdir>
+    </module>
+    <module>
+        <name>GaussianMixtureModelModule</name>
+        <parameters>--name Left --period 0.1</parameters>
+        <node>lasapc18</node>
+        <stdio>lasapc18</stdio>
+        <tag>GMMLeft</tag>
+        <workdir>/home/icub/Projects/iCubDemoFiles/GMM</workdir>
+    </module>
+    <module>
+        <name>DataStreamerModule</name>
+        <parameters>--name Left --period 0.05</parameters>
+        <node>lasapc18</node>
+        <stdio>lasapc18</stdio>
+        <tag>DSLeft</tag>
+        <workdir>/home/icub/Projects/iCubDemoFiles/GMM</workdir>
     </module>
     <connection protocol="tcp">
         <from>/VelocityController/position</from>
@@ -72,16 +87,28 @@
         <to>/VelocityController/targetVelocity</to>
     </connection>
     <connection protocol="tcp">
-        <from>/GaussianMixtureModel/asd/dataStreamRpc</from>
-        <to>/DataStreamer/asd/rpc</to>
+        <from>/GaussianMixtureModel/Right/dataStreamRpc</from>
+        <to>/DataStreamer/Right/rpc</to>
     </connection>
     <connection protocol="tcp">
-        <from>/GaussianMixtureModel/asd/dataStreamOutput</from>
-        <to>/DataStreamer/asd/input</to>
+        <from>/GaussianMixtureModel/Right/dataStreamOutput</from>
+        <to>/DataStreamer/Right/input</to>
      </connection>
     <connection protocol="tcp">
         <from>/RobotController/currentCartPositionR</from>
-        <to>/GaussianMixtureModel/asd/input</to>
+        <to>/GaussianMixtureModel/Right/input</to>
+    </connection>
+    <connection protocol="tcp">
+        <from>/GaussianMixtureModel/Left/dataStreamRpc</from>
+        <to>/DataStreamer/Left/rpc</to>
+    </connection>
+    <connection protocol="tcp">
+        <from>/GaussianMixtureModel/Left/dataStreamOutput</from>
+        <to>/DataStreamer/Left/input</to>
+     </connection>
+    <connection protocol="tcp">
+        <from>/RobotController/currentCartPositionL</from>
+        <to>/GaussianMixtureModel/Left/input</to>
     </connection>
 </application>
 

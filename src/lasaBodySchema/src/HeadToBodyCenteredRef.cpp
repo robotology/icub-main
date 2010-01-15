@@ -102,7 +102,7 @@ bool HeadToBodyCenteredRef::updateModule(){
     float d = visionPosHead.Norm();
     // this is where you can change the signs, but do the same in BodySchemaLearning.cpp
     visionPosHead.GetArray()[0] *= -1;
-    visionPosHead.GetArray()[2] *= -1;
+    visionPosHead.GetArray()[1] *= -1;
     if(d < 1000 && visionPosHead.GetArray()[2] > 100){ //exclude vision outliers 
     visionPosHead.Print();
  

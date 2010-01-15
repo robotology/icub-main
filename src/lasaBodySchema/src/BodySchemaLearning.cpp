@@ -78,6 +78,16 @@ bool BodySchemaLearningModule::open(Searchable& s){
   head = body->GetChain(2); 
   arm = body->GetChain(3);
 
+#define FOR_ERIC //who does not want to learn the head body schema
+#ifdef FOR_ERIC  // quick and dirty before the demo
+  string jnames[4] = {"neck_tilt","neck_swing","neck_pan","eye_tilt"};
+  for(int i=0;i<4;i++){
+      body->GetArticulatedTree()->FindJoint(jnames[i])->GetJoint()->NoLearning();
+  }
+#endif
+
+
+
   if(!loadChain(head,s,"head_base","head_end","neck_tilt","r_eye")){
       head=NULL;
   }
@@ -290,7 +300,7 @@ bool BodySchemaLearningModule::updateBody(){
         if(vision.ReadPosition(visualPosition.GetArray())){
             //only for this calibration
             visualPosition[0] *= -1;
-            visualPosition[2] *= -1;
+            visualPosition[1] *= -1;
             Stamp stamp;
             if(vision.getEnvelope(stamp)){
                 ind_h = head_buffer->lookFor(stamp.getTime());

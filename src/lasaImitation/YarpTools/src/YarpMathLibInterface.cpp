@@ -89,17 +89,17 @@ void YarpPose7ToPose6(yarp::sig::Vector &pose, MathLib::Vector3 &pos, MathLib::V
     pos(0) = pose(0);
     pos(1) = pose(1);
     pos(2) = pose(2);
-    ori(3) = pose(3)*pose(6);
-    ori(4) = pose(4)*pose(6);
-    ori(5) = pose(5)*pose(6);
+    ori(0) = pose(3)*pose(6);
+    ori(1) = pose(4)*pose(6);
+    ori(2) = pose(5)*pose(6);
 }
 void YarpPose6ToPose6(yarp::sig::Vector &pose, MathLib::Vector3 &pos, MathLib::Vector3 &ori){
     pos(0) = pose(0);
     pos(1) = pose(1);
     pos(2) = pose(2);
-    ori(3) = pose(3);
-    ori(4) = pose(4);
-    ori(5) = pose(5);
+    ori(0) = pose(3);
+    ori(1) = pose(4);
+    ori(2) = pose(5);
 }
 void Pose6ToYarpPose6(MathLib::Vector3 &pos, MathLib::Vector3 &ori, yarp::sig::Vector &pose){
     pose(0) = pos(0);
@@ -173,5 +173,45 @@ yarp::sig::Vector&  Vector3ToYarpVector3  (const MathLib::Vector3 &vec, yarp::si
     result(1) = vec.cy();       
     result(2) = vec.cz();       
     return result;       
+}
+
+MathLib::Vector &   AddPose6ToPose6(MathLib::Vector &pose, const MathLib::Vector &offset){
+    pose(0) += offset.At(0);
+    pose(1) += offset.At(1);
+    pose(2) += offset.At(2);
+    
+    MathLib::Matrix3 srcM,oriM,res;
+    MathLib::Vector3 srcV(pose(3),pose(4),pose(5));
+    MathLib::Vector3 oriV(offset.At(3),offset.At(4),offset.At(5));
+    oriM.RotationV(oriV);
+    srcM.RotationV(srcV);
+    oriM.Mult(srcM,res);
+    MathLib::Vector3 resV;
+    res.GetExactRotationAxis(resV);
+    
+    pose(3) = resV(0);
+    pose(4) = resV(1);
+    pose(5) = resV(2);
+    return pose;
+}
+MathLib::Vector &   GetDeltaPose6FromPose6(const MathLib::Vector &src, const MathLib::Vector &target, MathLib::Vector &delta){
+    delta.Resize(6);
+    delta(0) = target.At(0) - src.At(0);    
+    delta(1) = target.At(1) - src.At(1);    
+    delta(2) = target.At(2) - src.At(2);    
+
+    MathLib::Matrix3 srcM,trgM,res;
+    MathLib::Vector3 srcV(src.At(3),src.At(4),src.At(5));
+    MathLib::Vector3 trgV(target.At(3),target.At(4),target.At(5));
+    trgM.RotationV(trgV);
+    srcM.RotationV(srcV);
+    res = trgM*srcM.Transpose();
+    MathLib::Vector3 resV;
+    res.GetExactRotationAxis(resV);
+    
+    delta(3) = resV(0);
+    delta(4) = resV(1);
+    delta(5) = resV(2);
+    return delta;
 }
 

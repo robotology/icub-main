@@ -227,7 +227,7 @@ bool ReachingThread::init(Searchable &s){
 
   ///normal connection
 #ifndef NO_OUTPUT_CONNECTION
-  sprintf(tmp2,"/icub/vc/%s/fastCommand",partName.c_str());
+  sprintf(tmp2,"/icub/vc/%s/command",partName.c_str());//was fastCommand
     if(!Network::connect(tmp1,tmp2,"udp")){
     ACE_OS::printf("Cannot connect port %s to port %s\n",tmp1,tmp2);
     return false;
@@ -479,8 +479,14 @@ void ReachingThread::run(){
   //  cout<<"listen..."<<endl;
   if(++listen_cnt == 20){
       listen();
-      listen_cnt=0;
-  }
+      listen_cnt=0; 
+}
+  // debug micha
+  joint_vec_t ta;
+  reach->GetTargetAngle(ta);
+  cout<<"target ";ta.Print();
+  // end debig micha
+
   if(active_mode){
     float integration_time = (time_now-time_last)*1000 - 0.5*time_granularity; //
     for(float tim=0; tim<integration_time; tim+=time_granularity){
@@ -490,6 +496,8 @@ void ReachingThread::run(){
         case 2: reach->PureJointControl();new_schema++;break;
         case 3: reach->HybridControl();new_schema=0;break;
         } 
+        
+        
         reach->ReachingStep(time_granularity);
         // reach->ReachingStep();
     }

@@ -23,8 +23,10 @@
 #include "StdTools/Various.h"
 
 #include <string.h>
+#include <fstream>
 
 #define INPUT_TIMEOUT 0.4
+#define SIGNAL_TIMEOUT 1.0
 
 GaussianMixtureModelThread::GaussianMixtureModelThread(int period, const char* baseName)
 :RateThread(period)
@@ -72,12 +74,16 @@ void    GaussianMixtureModelThread::Init(){
     mEMNbDemos      = 0;
     mEMNbCorrDemos  = 0;
     mEMNbDimensions = 0;
-    strncpy(mEMDemosPath,    "./data/DemoTest/demo",256);
-    strncpy(mEMCorrDemosPath,"./data/DemoTest/corr",256);
-    strncpy(mEMCurrModelPath,"./data/DemoTest",256);
+    strncpy(mEMDemosPath,    ".",256);
+    strncpy(mEMCorrDemosPath,".",256);
+    strncpy(mEMCurrModelPath,".",256);
     mEMTimeSpan     = 1.0;
     
     mCurrDemoId     = 0;
+    
+    mCurrCorrWeight = 0;
+    mCurrOffset.Resize(6);
+    mCurrOffset.Zero();
     
     mRunMode        = RM_NONE;
 
@@ -113,7 +119,7 @@ bool GaussianMixtureModelThread::threadInit()
     mPrevTime           =-1.0;
 
     mInputLastTime      =-1.0;
-    
+    mSignalLastTime     =-1.0;
     return true;
 }
 
@@ -157,8 +163,12 @@ void GaussianMixtureModelThread::run()
     if(inputVec!=NULL){
         if(inputVec->size()==3){
             mSignalVector = *inputVec;
+            mSignalLastTime = mTime;
         }else cerr << "Error: Bad signal size: "<<inputVec->size()<<" != 3"<<endl;
     }
+    if(mTime-mSignalLastTime < SIGNAL_TIMEOUT)
+        mSignalVector = 0;
+    
     
     //if(mTime-mInputLastTime >= INPUT_TIMEOUT)
     //    mNextState = GMMS_IDLE;
@@ -197,6 +207,8 @@ void GaussianMixtureModelThread::run()
                 if(lambda1.Norm2()<lambda2.Norm2()) mGMMLambda = lambda1;
                 else                                mGMMLambda = lambda2;
             }
+            mCurrCorrWeight = 0.0;
+            mCurrOffset.Zero();
             bGMMIsRunning = true;
         }
         if(mState == GMMS_INIT)
@@ -217,11 +229,24 @@ void GaussianMixtureModelThread::run()
             }
             if(mGMMTime>=mGMMReproTime)
                 mNextState = GMMS_END;
+            
+            if(mRunMode == RM_CORR){
+                if(mSignalVector[0]>0.0){
+                    mCurrCorrWeight += 1.0;
+                    PauseRun(false);
+                }
+            }
             bGMMIsRunning = true;
         }
         break;
     case GMMS_PAUSE:
         if((mRunMode == RM_REPRO)||(mRunMode == RM_CORR)){
+            if(mRunMode == RM_CORR){
+                GetDeltaPose6FromPose6(mGMMTargetV, mInputVector, mCurrOffset);
+                if(mSignalVector[1]>0.0){
+                    ResumeRun(false);
+                }
+            }
         }
         break;
 
@@ -242,6 +267,7 @@ void GaussianMixtureModelThread::run()
     if(bGMMIsRunning){
         mGMMTarget = mGMM.doOffsetRegression(mGMMInput, mGMMLambda, mGMMSigmas, mGMMInComp, mGMMOutComp);
         QPoseToPose6(mGMMTarget.GetRow(0),mGMMTargetV);
+        AddPose6ToPose6(mGMMTargetV,mCurrOffset);
         mGMMTargetV.Print();
     }
     
@@ -254,7 +280,15 @@ void GaussianMixtureModelThread::run()
     
     if(mTime-mInputLastTime < INPUT_TIMEOUT){
         Vector &outputVec = mDSOutputPort.prepare();
-        VectorToYarpVector(mDSOutputVector,outputVec);
+        if(mRunMode != RM_CORR){
+            VectorToYarpVector(mDSOutputVector,outputVec);
+        }else{
+            MathLib::Vector tmpV(mDSOutputVector.Size()+1);
+            tmpV.SetSubVector(0,mDSOutputVector);
+            tmpV(mDSOutputVector.Size()) = mCurrCorrWeight;
+            
+            VectorToYarpVector(mDSOutputVector,outputVec);
+        }
         mDSOutputPort.write();
     }
 
@@ -324,25 +358,25 @@ void    GaussianMixtureModelThread::StartRun(){
     }
     mMutex.post();
 }
-void    GaussianMixtureModelThread::PauseRun(){
-    mMutex.wait();
+void    GaussianMixtureModelThread::PauseRun(bool useMutex){
+    if(useMutex) mMutex.wait();
     if(mState == GMMS_RUN){
         mNextState = GMMS_PAUSE;
         if((mRunMode == RM_REC)||(mRunMode == RM_CORR)){
             SendCommandToDataStreamer("run pause");
         }
     }
-    mMutex.post();
+    if(useMutex) mMutex.post();
 }
-void    GaussianMixtureModelThread::ResumeRun(){
-    mMutex.wait();
+void    GaussianMixtureModelThread::ResumeRun(bool useMutex){
+    if(useMutex) mMutex.wait();
     if(mState == GMMS_PAUSE){
         mNextState = GMMS_RUN;
         if((mRunMode == RM_REC)||(mRunMode == RM_CORR)){
             SendCommandToDataStreamer("run resume");
         }
     }
-    mMutex.post();
+    if(useMutex) mMutex.post();
 }
 void    GaussianMixtureModelThread::StopRun(){
     mMutex.wait();
@@ -394,6 +428,11 @@ void    GaussianMixtureModelThread::SetEMTimeSpan(double timeSpan){
     mMutex.post();
 }
 
+void    GaussianMixtureModelThread::SetCurrDemoId(int id){
+    mMutex.wait();
+    mCurrDemoId = id;
+    mMutex.post();
+}
 bool    GaussianMixtureModelThread::Learn(){
     mMutex.wait();
 
@@ -579,6 +618,7 @@ void GaussianMixtureModelThread::GenerateDefaultRegression(){
     char filename[256];
     snprintf(filename,256,"%s/regMean.txt",mEMCurrModelPath);
     res.Save(filename);
+    
     snprintf(filename,256,"%s/regSigma.txt",mEMCurrModelPath);
     sig.Save(filename);
 
@@ -598,7 +638,9 @@ bool    GaussianMixtureModelThread::ProcessRawDemos(){
     MathLib::Matrix quatData;
     MathLib::Matrix tmpData;
     MathLib::Vector quatRef(4);
-
+    MathLib::Vector weights;
+    MathLib::Matrix weightsMat;
+    
     // Original demos
     cout << "Loading raw demo files..."<<endl;
     mEMNbDemos = GetConsecutiveFileCount(mEMDemosPath,"datalog%03d.txt");
@@ -616,27 +658,67 @@ bool    GaussianMixtureModelThread::ProcessRawDemos(){
         bSuccess = rawData.Load(filename);
         if(!bSuccess){cout << "Error..."<<endl; mMutex.post(); return false;}
         
-        Resample(rawData, tmpData, mEMDemoLength);
-        
-        tmpData.GetColumnSpace(4,3,axisData);
-        
-        AxisToQuat(axisData, quatData);
-        
+        Resample(rawData, data, mEMDemoLength);
+
+        data.GetColumnSpace(4,4,quatData);
         SmoothQuatStream(quatData);
-        
         if(i==0){
             quatData.GetRow(mEMDemoLength-1,quatRef);
         }else{
             AlignQuatStreamEnd(quatData,quatRef);
         }
         
-        data.Resize(mEMDemoLength,8,false);
-        data.SetColumnSpace(tmpData,0);
         data.SetColumnSpace(quatData,4);
-
-        snprintf(filename,256,"%s/dataTest%03d.txt",mEMDemosPath,i);
+        snprintf(filename,256,"%s/data%03d.txt",mEMDemosPath,i);
         cout << "Saving file: "<<filename<<endl;
         data.Save(filename);
+    }
+    
+    if(mEMProcessMode==PM_WEIGHTED){
+        // Correction demos
+        cout << "Loading raw corr demo files..."<<endl;
+        mEMNbCorrDemos = GetConsecutiveFileCount(mEMCorrDemosPath,"datalog%03d.txt");
+        cout << "Raw demos found: "<<mEMNbCorrDemos <<endl;
+        bSuccess = (mEMNbCorrDemos>0);
+        if(!bSuccess){cout << "Error..."<<endl; mMutex.post(); return false;}
+
+        weightsMat.Resize(mEMDemoLength,mEMNbCorrDemos,false);
+        weightsMat.Zero();
+
+        for(int i=0;i<mEMNbCorrDemos;i++){
+            snprintf(filename,256,"%s/datalog%03d.txt",mEMCorrDemosPath,i);
+            cout << "Loading file: "<<filename<<endl;
+            bSuccess = rawData.Load(filename);
+            if(!bSuccess){cout << "Error..."<<endl; mMutex.post(); return false;}
+
+            Resample(rawData, data, mEMDemoLength);
+            data.GetColumnSpace(4,4,quatData);
+            SmoothQuatStream(quatData);
+            AlignQuatStreamEnd(quatData,quatRef);
+            
+            data.SetColumnSpace(quatData,4);
+            data.GetColumn(8,weights);
+            
+            double wMax = weights.Max();
+            if(wMax>1e-6)
+                weights *= (1.0/wMax);
+            
+            weightsMat.SetColumn(weights,i);
+            
+            data.Resize(mEMDemoLength,7,true);
+            
+            snprintf(filename,256,"%s/data%03d.txt",mEMDemosPath,i);
+            cout << "Saving file: "<<filename<<endl;
+            data.Save(filename);
+        }
+        //Processing weights;
+        for(int i=0;i<mEMDemoLength;i++){
+            weights(i) = weightsMat.GetColumn(i).Sum();
+        }
+        double wMax = weights.Max();
+        if(wMax>1e-6)
+            weights *= (1.0/wMax);
+        
     }
     
     mMutex.post();
@@ -645,7 +727,52 @@ bool    GaussianMixtureModelThread::ProcessRawDemos(){
 
 
 
+void GaussianMixtureModelThread::GenerateGnuplotScript(){
+    char filename[256];
+    ofstream file;
+    snprintf(filename,256,"%s/plot.gp",mEMDemosPath);
+    cout << "Generating gnuplot script: "<<filename<<endl;
+    file.open(filename);
+    if(file.is_open()){
+        file << "set style line 1 lt 1 lw 3"<<endl;
+        file << "set style line 2 lt 3 lw 2"<<endl;
+        file << "set style line 3 lt 2 lw 1"<<endl;
+        file << "set noxtic"<<endl;
+        file << "set ytics 0.1"<<endl;
+        file << "set mytics 0.01"<<endl;
+        file << "set rmargin 0"<<endl;
+        file << "set lmargin 0"<<endl;
+        file << "set tmargin 0"<<endl;
+        file << "set bmargin 0"<<endl;
+        file << "set multiplot"<<endl;
+        file << "boxspace = "<< double(1)/double(7) << endl;
+        file << "space    = "<< double(1)/double(7) * 0.95 << endl;
+        file << "offspace = (boxspace-space)*0.5"<<endl;
+        file << "set size 0.9,space"<<endl;
+        for(int i=0;i<7;i++){
+            file << "set origin 0.05,"<<i<<"*boxspace+offspace"<<endl;
+            file << "plot \"< paste regMean.txt regSigma.txt\" using ($"<<i+1<<")           with lines linestyle 1 title \"\", \\"<<endl;
+            file << "     \"< paste regMean.txt regSigma.txt\" using ($"<<i+1<<"+sqrt($"<<i+8<<"))           with lines linestyle 2 title \"\", \\"<<endl;
+            file << "     \"< paste regMean.txt regSigma.txt\" using ($"<<i+1<<"-sqrt($"<<i+8<<"))           with lines linestyle 2 title \"\" ";
+            if(mEMNbDemos==0)   file <<endl;
+            else                file <<", \\"<<endl;                
+            for(int j=0;j<mEMNbDemos;j++){
+                char txt[64]; snprintf(txt,16,"data%03d.txt",j);
+                file << "     \""<<txt<<"\"                      using ($"<<i+2<<")           with lines linestyle 3 title \"\"";
+                if(j<mEMNbDemos-1) file <<", \\"<<endl;
+                else file << endl;
+            }
+            file << endl;
+        }
 
+        file << "set nomultiplot"<<endl;
+        file.close();
+        snprintf(filename,256,"gnuplot -persist %s/plot.gp",mEMDemosPath);
+        int res = system(filename);
+    }else{
+        cout << "Failed..."<<endl;
+    }
+}
 
 
 
@@ -774,10 +901,11 @@ MathLib::Matrix& Resample(const MathLib::Matrix& src, MathLib::Matrix& result, i
     
     MathLib::Vector tmp(D);
     
-    result.Resize(length,D);
+    result.Resize(length,D,false);
     for(int i=0;i<length;i++){
-        int i2 = (i*D)/length;
-        i2 = MIN(length-1,i2);
+        int i2 = (i*N)/length;
+        //cout << i << "/"<<length<<" : "<<i2<<"/"<<N<<endl;
+        i2 = MIN(N-1,i2);
         result.SetRow(src.GetRow(i2,tmp),i);
     }
     return result;

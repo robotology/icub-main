@@ -152,7 +152,7 @@ int Locator3D::Calibrate(IplImage **img, const CvCamera *cam[], CvSize checkerbo
     nb_points =0;
     cout<<"calibration done"<<endl;
         //PrintParams();//for checking
-        CenterOrigin(false);
+        CenterOrigin(true);
     return 1;
   }
   else{
