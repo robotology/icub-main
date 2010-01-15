@@ -1189,7 +1189,7 @@ bool affActionPrimitivesLayer1::tap(const Vector &x1, const Vector &o1,
 void switchingWristDof::exec()
 {
     action->printMessage("%s the wrist joint %d\n",
-                         sw[action->wrist_joint]?"enabling":"disabling",
+                         sw[action->wrist_joint+3]?"enabling":"disabling",
                          action->wrist_joint);
 
     yarp::sig::Vector dummyRet;
@@ -1199,9 +1199,26 @@ void switchingWristDof::exec()
 
     action->t0=Time::now();
     action->outputDerivative->reset();
+}
 
-    Vector o;
-    action->cartCtrl->getPose(action->real_x,o);
+
+/************************************************************************/
+void enablingWristDofAndGrasp::exec()
+{
+    action->printMessage("enabling the wrist joint %d\n",action->wrist_joint);
+
+    yarp::sig::Vector dummyRet;
+    action->cartCtrl->setDOF(sw,dummyRet);
+
+    action->enableWristCheck=false;
+
+    Vector x,o;
+    action->cartCtrl->getPose(x,o);
+    action->printMessage("logged 3-d pos: [%s]\n",
+                         action->toCompactString(x).c_str());
+
+    action->pushAction(x+action->grasp_d2,action->grasp_o);
+    action->pushAction("close_hand"); 
 }
 
 
@@ -1298,6 +1315,7 @@ bool affActionPrimitivesLayer2::open(Property &opt)
         // create callbacks
         disableWristDof=new switchingWristDof(this,disableWristSw);
         enableWristDof =new switchingWristDof(this,enableWristSw);
+        execGrasp      =new enablingWristDofAndGrasp(this,enableWristSw);
 
         // create output derivative estimator
         outputDerivative=new AWLinEstimator(40,5.0);
@@ -1320,9 +1338,12 @@ bool affActionPrimitivesLayer2::grasp(const Vector &x, const Vector &o,
     {
         printMessage("start grasping\n");
         pushAction(x+d1,o,"open_hand",ACTIONPRIM_DISABLE_EXECTIME,disableWristDof);
-        pushAction(x,o,ACTIONPRIM_DISABLE_EXECTIME,enableWristDof);
-        pushAction(real_x+d2,o);    // real_x is read within the callback
-        pushAction("close_hand");
+        pushAction(x,o,ACTIONPRIM_DISABLE_EXECTIME,execGrasp);
+        // the remaining part is done in the callback
+
+        // save data
+        grasp_d2=d2;
+        grasp_o=o;
 
         return true;
     }
@@ -1372,6 +1393,9 @@ affActionPrimitivesLayer2::~affActionPrimitivesLayer2()
 
     if (enableWristDof)
         delete enableWristDof;
+
+    if (execGrasp)
+        delete execGrasp;
 
     if (outputDerivative)
         delete outputDerivative;

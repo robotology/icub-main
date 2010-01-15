@@ -660,6 +660,17 @@ public:
 };
 
 
+// class for enabling the wrist joint and executing final grasp
+class enablingWristDofAndGrasp : public switchingWristDof
+{
+public:
+    enablingWristDofAndGrasp(affActionPrimitivesLayer2 *_action, yarp::sig::Vector &_sw) :
+                             switchingWristDof(_action,_sw) { }
+
+    virtual void exec();
+};
+
+
 /**
 * \ingroup affActionPrimitives
 *
@@ -669,8 +680,8 @@ public:
 * While reaching for the object, one wrist joint is kept fixed 
 * (exploting however the torso dof the orientation of the hand 
 * can be still fully controlled) in order to detect contact by 
-* thresholding the low-level output signal. As soon as the 
-* contact is detected the reaching is suddenly stopped. 
+* checking the low-level output signal. As soon as the contact 
+* is detected the reaching can be suddenly stopped. 
 *  
 * \note The benefit is that unlike the previous implementation 
 * of grasp() and touch(), the height of the objects to be 
@@ -689,18 +700,21 @@ protected:
     bool meConfigured;
     bool enableWristCheck;
 
-    yarp::dev::IPidControl *pidCtrl;
-    ctrl::AWLinEstimator   *outputDerivative;
+    yarp::dev::IPidControl   *pidCtrl;
+    ctrl::AWLinEstimator     *outputDerivative;
 
-    switchingWristDof *disableWristDof; 
-    switchingWristDof *enableWristDof;
+    switchingWristDof        *disableWristDof; 
+    switchingWristDof        *enableWristDof;
+    enablingWristDofAndGrasp *execGrasp;
 
-    yarp::sig::Vector real_x;
+    yarp::sig::Vector grasp_d2;
+    yarp::sig::Vector grasp_o;
 
     virtual void init();
     virtual void run();
 
     friend class switchingWristDof;
+    friend class enablingWristDofAndGrasp;
 
 public:
     /**
@@ -754,17 +768,6 @@ public:
     * @param d2 the displacement [m] that identifies the amount of 
     *           the lift after the contact.
     * @return true/false on success/fail. 
-    *  
-    * \note internal implementation (pseudo-code): 
-    * \code 
-    * ... 
-    * pushAction(x+d1,o,"open_hand"); 
-    * pushAction(x,o);  
-    * getPose(real_x);  // real_x is read in callback 
-    * pushAction(real_x+d2,o);
-    * pushAction("close_hand"); 
-    * ... 
-    * \endcode 
     */
     virtual bool grasp(const yarp::sig::Vector &x, const yarp::sig::Vector &o,
                        const yarp::sig::Vector &d1, const yarp::sig::Vector &d2);
