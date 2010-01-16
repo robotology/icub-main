@@ -2,12 +2,10 @@
 
 /**
 *
-@ingroup icub_module
-\defgroup icub_canbussniffer canBusSniffer
+Connect to the canbus, read messages and dump to file. Based on 
+code by Lorenzo Natale adn Alberto Parmiggiani.
 
-Connect to the canbus, read messages and dump to file.
-
-\author Lorenzo Natale and Alberto Parmiggiani
+\author Unknown
 
 Copyright (C) 2008 RobotCub Consortium
 

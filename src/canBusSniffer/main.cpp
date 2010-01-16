@@ -2,12 +2,26 @@
 
 /**
 *
-@ingroup icub_module
+@ingroup icub_tools
 \defgroup icub_canbussniffer canBusSniffer
 
-Connect to the canbus, read all messages and dump to file.
+A canbus sniffer.
 
-\author Lorenzo Natale
+\section intro_sec Description
+Connect to a canbus network and dump all messages to file.
+
+\section lib_sec Libraries
+
+- YARP libraries. 
+- A device implementing ICanBus interface (e.g. ecan or pcan).
+
+\section parameters_sec Parameters
+--device device_name: name of the device (e.g. ecan/pcan...)
+
+\section tested_os_sec Tested OS
+Linux and Windows.
+
+\author Lorenzo Natale and Alberto Parmiggiani
 
 Copyright (C) 2008 RobotCub Consortium
 
@@ -44,15 +58,17 @@ class SnifferThread: public RateThread
     ICanBus *iCanBus;
     ICanBufferFactory *iBufferFactory;
     CanBuffer readBuffer;
-
+    std::string devname;
 public:
-    SnifferThread(int r=SNIFFER_THREAD_RATE): RateThread(r)
-    {}
+    SnifferThread(std::string dname, int r=SNIFFER_THREAD_RATE): RateThread(r)
+    {
+        devname=dname;   
+    }
 
     bool threadInit()
     {
         Property prop;
-        prop.put("device", "ecan");
+        prop.put("device", devname.c_str());
 
         prop.put("CanTxTimeout", 500);
         prop.put("CanRxTimeout", 500);
@@ -97,9 +113,27 @@ public:
 
 int main(int argc, char *argv[]) 
 {
-    SnifferThread thread;
+    if (argc!=3)
+    {
+        std::cout<<"Usage: --device device_name {ecan|pcan}\n";
+        return -1;
+    }
 
-    thread.start();
+    std::string p1=std::string(argv[1]);
+    std::string p2=std::string(argv[2]);
+    if (p1!="--device")
+    {
+        std::cout<<"Usage: --device device_name {ecan|pcan}\n";
+        return -1;
+    }
+  
+    SnifferThread thread(p2);
+
+    if (!thread.start())
+    {
+        std::cerr<<"Error thread did not start, quitting\n";
+        return -1;
+    }
 
     std::string input;
     bool done=false;
@@ -111,4 +145,5 @@ int main(int argc, char *argv[])
     }
 
     thread.stop();
+    return 0;
 }
