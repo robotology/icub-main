@@ -24,7 +24,7 @@
  * different tasks according to its internal selector: 
  *  
  * -# It can ask to steer the arm to a specified pose, hence 
- * performing a motion in the task space.
+ * performing a motion in the operational space.
  * -# It can command the execution of some predefined 
  * fingers sequences in the joint space identified by a tag. 
  * -# It can ask the system to wait for a specified time 
