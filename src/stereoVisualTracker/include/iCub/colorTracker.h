@@ -33,6 +33,8 @@ class ColorTracker :public ColorDetect{
   void SetGrabber(FrameGrabber *grab){grabber=grab;}
   int IncrementSigma(f32 inc=0.5);
   int DecrementSigma(f32 inc=0.5);
+  int IncrementThreshold(f32 inc=10);
+  int DecrementThreshold(f32 inc=10);
   static mouseParam_t GetSelectionParams(int index=0);
 
 

@@ -49,6 +49,7 @@ ColorDetect::ColorDetect()
 	nbHist = 1;
 	prevNbHist = 0;
 	editing = 0;
+	threshold = 0;
 }
 
 ColorDetect::~ColorDetect()
@@ -247,6 +248,8 @@ void ColorDetect::Apply(IplImage *image)
 		IMKILL(vmsk);
 	}
 	cvMorphologyEx(mask, mask, 0, 0, CV_MOP_CLOSE,2);
+	
+	cvThreshold(mask,mask, threshold,255,CV_THRESH_TOZERO);
 	FOR(x, mask->width)
 	{
 		rgb(mask, x) = 0; // zeroes the edges
@@ -279,14 +282,46 @@ void ColorDetect::DrawMask(IplImage *image)
 	}
 	if(bDrawAdd){
 		if(image->nChannels==3){
+		    float mxm = 0.0;
+		    float mnm = 1.0;
 			FOR(i, image->width*image->height)
 			{
-				float mult = 1 + (float)(u8)rgb(mask,i) / 255.f;
-				FOR(c,3){
-					float pixel = float((u8)rgb(image,i*3+c))*(mult);
-					rgb(image,i*3+c) = (u8)min(255,(pixel));
-				}
+				float mult = max(0.0,min(1.0,(((float)(u8)rgb(mask,i)) / 255.f)));
+
+				float pixelR = float((u8)rgb(image,i*3+0));
+				float pixelB = float((u8)rgb(image,i*3+1));
+				float pixelG = float((u8)rgb(image,i*3+2));
+				float pixelM = 0.4f*(pixelR +  pixelG + pixelB)/3.0f;
+
+                //if(mult<0.5){
+                if(mult>0.5){
+                    pixelR = (1.0-mult)*255.0f;
+                    pixelG = 0.0;
+                    pixelB = (mult)*255.0f;
+                    //pixelR = (1.0-mult) * pixelM + mult*pixelR;
+                    //pixelG = (1.0-mult) * pixelM + mult*pixelG;
+                    //pixelB = (1.0-mult) * pixelM + mult*pixelB;
+                //}//else if(mult>0.01){
+                   // pixelR = 0.0;
+                   // pixelG = 1.0;
+                   // pixelB = 0.0;
+                }else{
+                    rgb(mask,i) = 0;
+                    pixelR = pixelG = pixelB = pixelM;
+                    pixelR = pixelM;
+                    pixelG = pixelM;
+                    pixelB = pixelM;
+                }
+                
+				rgb(image,i*3+0) = (u8)max(0,min(255,((u8)(pixelR))));
+				rgb(image,i*3+1) = (u8)max(0,min(255,((u8)(pixelG))));
+				rgb(image,i*3+2) = (u8)max(0,min(255,((u8)(pixelB))));
+				//FOR(c,3){
+				//	float pixel = float((u8)rgb(image,i*3+c))*(mult);
+				//	rgb(image,i*3+c) = (u8)max(0,min(255,((u8)(pixel))));
+				//}
 			}
+			//printf("%f %f\n",mxm,mnm);
 		}
 		else
 		{
@@ -296,7 +331,7 @@ void ColorDetect::DrawMask(IplImage *image)
 				rgb(image,i) = (u8)((u8)rgb(image,i)*(mult));
 			}
 		}
-		cvAdd(image, image, image, mask);
+		//cvAdd(image, image, image, mask);
 	}
 	else{
 		IplImage *img = cvCreateImage(cvGetSize(image),image->depth,image->nChannels);

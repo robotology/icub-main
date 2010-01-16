@@ -674,7 +674,7 @@ void    RobotControllerThread::ReadFromPorts(){
             mDesiredCartWristVelRLastTime = mTime;
         }else if(inputVec->size()==9){
             for(int i=0;i<6;i++) mDesiredCartWristVel[0][i] = (*inputVec)[i];
-            for(int i=0;i<3;i++) mDesiredWristOpt[0][3]     = (*inputVec)[i+6];
+            for(int i=0;i<3;i++) mDesiredWristOpt[0][i]     = (*inputVec)[i+6];
             mDesiredCartWristVelRLastTime = mTime;
         }else cerr << "Bad vector size on port <desiredCartWristVelR>: " << inputVec->size() << "!= 3 or 6 or 9"<< endl;
     }

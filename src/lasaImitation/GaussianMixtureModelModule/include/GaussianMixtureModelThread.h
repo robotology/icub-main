@@ -76,6 +76,7 @@ private:
     State                       mState;
     State                       mNextState;
     
+    bool                        bRunPaused;
     
     
     MathLib::GaussianMixture    mGMM;
@@ -142,6 +143,7 @@ private:
     
     double                      mCurrCorrWeight;
     MathLib::Vector             mCurrOffset;
+    MathLib::Vector             mGlobalOffset;
 
 public:
     GaussianMixtureModelThread(int period, const char* baseName);
@@ -157,7 +159,7 @@ public:
             void    InitRun();
             void    StartRun();
             void    PauseRun(bool useMutex = true);
-            void    ResumeRun(bool useMutex = true);
+            void    ResumeRun(bool useMutex = true, bool once = false);
             void    StopRun();
     
             void    SetEMDemosPath(const char* path);
@@ -199,6 +201,10 @@ MathLib::Matrix& SmoothQuatStream(MathLib::Matrix& qstream);
 MathLib::Matrix& AlignQuatStreamEnd(MathLib::Matrix& qstream, const MathLib::Vector& end);
 MathLib::Matrix& Resample(const MathLib::Matrix& src, MathLib::Matrix& result, int length);
 MathLib::Matrix& Pose6ToQPose(const MathLib::Matrix& pose,  MathLib::Matrix& qpose);
+
+MathLib::Vector& FilterSW(const MathLib::Vector& src, MathLib::Vector& result, int windowLength);
+MathLib::Matrix& FilterQuatSW(const MathLib::Matrix& src, MathLib::Matrix& result, int windowLength);
+MathLib::Matrix& FilterQPoseSW(const MathLib::Matrix& src, MathLib::Matrix& result, int windowLength);
 
 #endif
 

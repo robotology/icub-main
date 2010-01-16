@@ -40,10 +40,11 @@ bool DataStreamerThread::threadInit()
     mCurrTime           = 0.0;
     mStartTime          = 0.0;
     mPauseTime          = 0.0;
+    mDelayTime          = 0.0;
     mStreamSize         = 0;
     mStreamMaxSize      = 8;
     mStreamLineSize     = 16;
-
+    bOnce               = false;
 
     char portName[256];
     snprintf(portName,256,"/%s/input",mBaseName);
@@ -94,7 +95,10 @@ void DataStreamerThread::run()
         break;
     case DS_RUN:
         cout << "Time: "<<mCurrTime<<", line: "<< mCurrentLine <<"/"<<mStreamSize+1<<", max:"<<mStreamMaxSize<<" ";
-
+        if(mCurrTime<0.0){
+            cout << endl;
+            break;
+        }
         if(bRecord){
             //if(inputVec!=NULL){
             mData.SetRow(mInputVector,mCurrentLine);
@@ -153,6 +157,11 @@ void DataStreamerThread::run()
                 
             }
         }
+        if(bOnce){
+            mState      = DS_PAUSE;
+            mPauseTime  = mCurrTime;
+            bOnce       = false;
+        }
         cout << endl;
         break;
     case DS_PAUSE:
@@ -182,12 +191,14 @@ void DataStreamerThread::run()
     mMutex.post();
 }
 
-void    DataStreamerThread::Start(){
+void    DataStreamerThread::Start(double delay){
     mMutex.wait();
     if(mState!=DS_RUN){
         mState          = DS_RUN;
         mStartTime      = Time::now();
         mCurrentLine    = 0;
+        mDelayTime      = MAX(0.0,delay);
+        mStartTime     += mDelayTime;
         // Add start stuff here
         mInputVector.Resize(mStreamLineSize);
         mInputVector.Zero();
@@ -211,11 +222,12 @@ void    DataStreamerThread::Pause(){
     }
     mMutex.post();
 }
-void    DataStreamerThread::Resume(){
+void    DataStreamerThread::Resume(bool once){
     mMutex.wait();
     if(mState==DS_PAUSE){
         mState      = DS_RUN;
         mStartTime  = mStartTime + (Time::now()-mPauseTime);
+        bOnce       = once;
         // add pause stuff here
     }
     mMutex.post();

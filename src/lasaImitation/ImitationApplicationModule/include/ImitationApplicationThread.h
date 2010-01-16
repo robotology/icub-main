@@ -56,7 +56,7 @@ private:
         PID_Touchpad,
         PID_GMMRight,
         PID_GMMLeft,
-        PID_SIZE,
+        PID_SIZE
     };
     
     enum SrcPortId{
@@ -84,10 +84,14 @@ private:
         DPID_LWristDesCartVel,
         DPID_EyeInEyeDesCartPos,
         DPID_EyeDesCartPos,
+        DPID_GMMRightSignal,
+        DPID_GMMLeftSignal,
         DPID_SIZE
     };
     char                    mSrcPortName[SPID_SIZE][256];
     char                    mDstPortName[DPID_SIZE][256];
+    char                    mSrcCtrlPortName[PID_SIZE][256];
+    char                    mDstCtrlPortName[PID_SIZE][256];
     
     vector<int>             mCommandsType;
     vector<SrcPortId>       mConnexionsSrcPort;
@@ -133,16 +137,24 @@ private:
         BC_EYETARGET_TO_NONE,
         BC_EYETARGET_TO_RIGHTARM,
         BC_EYETARGET_TO_LEFTARM,
-        BC_LEARN_RIGHT,
-        BC_LEARN_LEFT,
-        BC_REC_RIGHT_START,
-        BC_REC_RIGHT_STOP,
-        BC_REC_LEFT_START,
-        BC_REC_LEFT_STOP,
-        BC_REPRO_RIGHT_START,
-        BC_REPRO_RIGHT_STOP,
-        BC_REPRO_LEFT_START,
-        BC_REPRO_LEFT_STOP
+        BC_GMM_LEARN_RIGHT,
+        BC_GMM_LEARN_LEFT,
+        BC_GMM_LEARN_CORR_RIGHT,
+        BC_GMM_LEARN_CORR_LEFT,
+        BC_GMM_REC_RIGHT_START,
+        BC_GMM_REC_LEFT_START,
+        BC_GMM_RIGHT_STOP,
+        BC_GMM_LEFT_STOP,
+        BC_GMM_REPRO_RIGHT_START,
+        BC_GMM_REPRO_LEFT_START,
+        BC_GMM_LOAD_RIGHT,
+        BC_GMM_LOAD_LEFT,
+        BC_GMM_CORR_RIGHT_START,
+        BC_GMM_CORR_LEFT_START,
+        BC_GMM_DEMONAME_RIGHT,
+        BC_GMM_CORRNAME_RIGHT,
+        BC_GMM_DEMONAME_LEFT,
+        BC_GMM_CORRNAME_LEFT
     };
     BasicCommand            mBasicCommand;
     string                  mBasicCommandParams;

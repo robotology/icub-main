@@ -14,7 +14,6 @@
         <name>VelocityControllerExt</name>
         <parameters>--name VelocityController --robot icub --period 0.02 --decouple --part right_arm+left_arm+torso+head </parameters>
         <node>pc104</node>
-        <stdio>lasapcicub</stdio>
         <tag>VCExt</tag>
     </module>
     <module>
@@ -28,7 +27,6 @@
         <name>TouchControllerModule</name>
         <parameters>--name 3DMouse --period 0.1 --type 3Dmouse --device 3Dconnexion --load</parameters>
         <tag>TC3DMouse</tag>
-        <stdio>lasapcicub</stdio>
         <node>lasapcicub</node>
         <workdir>/home/icub/Projects/iCubDemoFiles/TouchControllers</workdir>
    </module>
@@ -36,7 +34,6 @@
         <name>TouchControllerModule</name>
         <parameters>--name Touchpad --period 0.1 --type touchpad --device Cirque --load</parameters>
         <tag>TCTouchpad</tag>
-        <stdio>lasapcicub</stdio>
         <node>lasapcicub</node>
         <workdir>/home/icub/Projects/iCubDemoFiles/TouchControllers</workdir>
    </module>
@@ -44,6 +41,7 @@
         <name>GaussianMixtureModelModule</name>
         <parameters>--name Right --period 0.1</parameters>
         <node>lasapc18</node>
+        <stdio>lasapc18</stdio>
         <tag>GMMRight</tag>
         <workdir>/home/icub/Projects/iCubDemoFiles/GMM</workdir>
     </module>
@@ -51,6 +49,7 @@
         <name>DataStreamerModule</name>
         <parameters>--name Right --period 0.05</parameters>
         <node>lasapc18</node>
+        <stdio>lasapc18</stdio>
         <tag>DSRight</tag>
         <workdir>/home/icub/Projects/iCubDemoFiles/GMM</workdir>
     </module>

@@ -130,11 +130,11 @@ void BlobTracker::Apply(IplImage *image, int index)
 
 
 
-void BlobTracker::DrawBlobs(IplImage *image, u32 bLine)
+void BlobTracker::DrawBlobs(IplImage *image, u32 bLine, u32 thick,CvScalar  color)
 {
 	FOR(i,maxBlobs){
 		if(track_boxes[i].size.width > 1 && track_boxes[i].size.height > 1)
-			cvEllipseBox(image, track_boxes[i], CV_RGB(255,255,255), 1, CV_AA, 0);
+			cvEllipseBox(image, track_boxes[i], color, thick, CV_AA, 0);
 		if(bLine) cvLine(image, cvPoint((u32)track_boxes[i].center.x, (u32)track_boxes[i].center.y),
 			cvPoint((u32)track_boxes[i].center.x, (u32)track_boxes[i].center.y),
 			CV_RGB(255,0,0), 2, CV_AA, 0);

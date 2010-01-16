@@ -50,10 +50,12 @@ private:
     bool                    bRecord;
     bool                    bUseTime;
     bool                    bLoop;
+    bool                    bOnce;
 
     double                  mCurrTime;
     double                  mStartTime;
     double                  mPauseTime;
+    double                  mDelayTime;
 
     BufferedPort<Vector>    mInputPort;
     BufferedPort<Vector>    mOutputPort;    
@@ -70,10 +72,10 @@ public:
             DataStreamerThread(int period, const char* baseName);
     virtual ~DataStreamerThread();
 
-    void    Start();
+    void    Start(double delay = 0.0);
     void    Stop();
     void    Pause();
-    void    Resume();
+    void    Resume(bool once = false);
     void    SetRecordMode(bool rec = true);
     void    SetUseTime(bool useTime = true);
     void    Save(const char* filename);

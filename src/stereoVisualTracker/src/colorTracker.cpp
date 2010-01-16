@@ -29,6 +29,19 @@ int  ColorTracker::DecrementSigma(f32 inc){
     return 0;
   }
 }
+int  ColorTracker::IncrementThreshold(f32 inc){
+  threshold += inc;
+  threshold = max(0,min(255,threshold));
+  printf("threshold: %f\n",threshold);
+  return 1;
+}
+
+int  ColorTracker::DecrementThreshold(f32 inc){  
+  threshold -= inc;
+  threshold = max(0,min(255,threshold));
+  printf("threshold: %f\n",threshold);
+  return 1;
+}
 
 
 mouseParam_t ColorTracker::GetSelectionParams(int index){

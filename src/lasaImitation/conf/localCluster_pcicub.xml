@@ -2,7 +2,7 @@
 
 <nameserver namespace="/root" node="icubsrv"> </nameserver>
 
-<node>icubsrv</node>
+<node display="true">icubsrv</node>
 <node>pc104</node>
 <node display="true">lasapcicub</node>
 <node display="true">lasapc18</node>

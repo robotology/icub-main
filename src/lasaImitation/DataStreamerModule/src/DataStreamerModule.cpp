@@ -105,7 +105,11 @@ bool DataStreamerModule::respond(const Bottle& command, Bottle& reply) {
             if(cmdSize>=2){
                       if(command.get(1).asString() == "start"){
                             mThread->SetLoop(false);
-                            mThread->Start();
+                            if(cmdSize>=3){
+                                mThread->Start(command.get(2).asDouble());
+                            }else{
+                                mThread->Start();
+                            }
                 }else if(command.get(1).asString() == "loop"){
                             mThread->SetLoop(true);
                             mThread->Start();
@@ -115,6 +119,8 @@ bool DataStreamerModule::respond(const Bottle& command, Bottle& reply) {
                             mThread->Pause();
                 }else if(command.get(1).asString() == "resume"){
                             mThread->Resume();
+                }else if(command.get(1).asString() == "resumeOnce"){
+                            mThread->Resume(true);
                 }else{
                     retVal = false;
                 }

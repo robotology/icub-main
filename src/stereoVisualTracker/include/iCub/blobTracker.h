@@ -115,8 +115,9 @@ public:
 		Overlays the position of the tracked blobs over the input image
 		\param image the input image
 		\param bLine if set, draws a line from the center of the image to the center of the blobs
+		\param thick line thickness
 	*/
-	void DrawBlobs(IplImage *image, u32 bLine=0);
+	void DrawBlobs(IplImage *image, u32 bLine=0, u32 thick=1, CvScalar color = CV_RGB(255,255,255));
 
 	/*!
 		The Configuration function, adds a new blob to the tracker

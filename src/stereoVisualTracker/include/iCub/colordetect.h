@@ -26,6 +26,7 @@ protected:
 	int editing;
 	bool bActive;
 	float weights[9];
+	double threshold;
 	f32 density;
 	f32 rDensity;
 	f32 sigma;

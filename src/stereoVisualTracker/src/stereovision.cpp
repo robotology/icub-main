@@ -208,7 +208,7 @@ void Stereovision::ProcessNextFrame(){
                     }
                 }
             }
-            blob[i]->DrawBlobs(img[i]);	 
+            blob[i]->DrawBlobs(img[i],false,2);	 
         }
         cvShowImage(wname[i],img[i]);
     }
@@ -391,14 +391,14 @@ void Stereovision::ExecuteCommand(int key)
         //       }
         cout<< ColorTracker::displayed_color<<endl;
         break;
-    case '+': // increments color variance (lower selectivity)
+    case '=': // increments color variance (lower selectivity)
         for(i=0;i<MAX_CAM;i++){
-            colorfinder[i][ColorTracker::displayed_color]->IncrementSigma();
+            colorfinder[i][ColorTracker::displayed_color]->IncrementThreshold();
         }
         break;
     case '-': // decrements color variance (higher selectivity)
         for(i=0;i<MAX_CAM;i++){
-            colorfinder[i][ColorTracker::displayed_color]->DecrementSigma();
+            colorfinder[i][ColorTracker::displayed_color]->DecrementThreshold();
         }
         break;
     case 'c': //calibrates the cameras intrinsics params

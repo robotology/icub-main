@@ -484,8 +484,13 @@ public:
   /// Normalize the vector to 1
 	inline void Normalize()
 	{
-		REALTYPE scalar = R_ONE / Norm();
-    (*this)*=scalar;
+        REALTYPE norm = Norm();
+        if(norm>EPSILON){
+            REALTYPE scalar = R_ONE / Norm();
+            (*this)*=scalar;
+        }else{
+            Zero();
+        }
 	}
   
   /// The distance between two vectors  
@@ -698,7 +703,7 @@ public:
    * \param startPos The starting index
    * \param len      The length of data to be copied
    */  
-  inline Vector GetSubVector(unsigned int startPos, unsigned int len)
+  inline Vector GetSubVector(unsigned int startPos, unsigned int len) const
   {
     Vector result(len,false);
     return GetSubVector(startPos,len,result);
@@ -711,7 +716,7 @@ public:
    * \param len      The length of data to be copied
    * \param result   The output vector 
    */  
-  inline Vector& GetSubVector(unsigned int startPos, unsigned int len, Vector &result)
+  inline Vector& GetSubVector(unsigned int startPos, unsigned int len, Vector &result) const
   {
     result.Resize(len,false);    
     if(startPos<row){

@@ -69,7 +69,7 @@ bool ImitationApplicationModule::open(Searchable &s){
     
     char portName[255];
     if(strlen(getName().c_str())==0)
-        snprintf(portName,255,"ImitationApplication/rpc",getName().c_str());
+        snprintf(portName,255,"/ImitationApplication/rpc",getName().c_str());
     else
         snprintf(portName,255,"/ImitationApplication/%s/rpc",getName().c_str());
     mControlPort.open(portName);

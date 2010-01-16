@@ -211,11 +211,14 @@ bool GaussianMixtureModelModule::respond(const Bottle& command, Bottle& reply) {
     }else{
         retVal = false;
     }
-
-    if(retVal){
+    if(retVal>0){
         reply.addVocab(Vocab::encode("ack"));
+        cout << "*ACK*"<<endl;
+    }else if (retVal == 0){
+        reply.addVocab(Vocab::encode("fail"));
+        cout << "*FAIL*"<<endl;
     }else{
-        return Module::respond(command,reply);
+        cout << "*BIG_FAIL*"<<endl;
     }
     return retVal;
 }
