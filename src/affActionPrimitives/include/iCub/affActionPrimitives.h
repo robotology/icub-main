@@ -688,7 +688,8 @@ public:
 * attained can be known just approximately. 
 *  
 * <b>Important note</b> From within the robot configuration file
-* remind to enable the option to read the voltage output signal.
+* remind to enable the option to read the voltage output signal 
+* of the wrist joint. 
 */
 class affActionPrimitivesLayer2 : public affActionPrimitivesLayer1
 {
