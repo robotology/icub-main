@@ -1381,6 +1381,7 @@ bool DemoAff::updateModule(){
             printf("Object out of range (%f<%f)\n", graspPosition[0], MAX_ARM_RANGE);
             action->pushAction(graspPosition, *graspOrien, "point_hand");
             action->pushWaitState(1.5);
+            action->checkActionsDone(b, true);
             state=INIT;
             break;
         }
@@ -1452,6 +1453,7 @@ bool DemoAff::updateModule(){
             reachPosition[2]=max(tableTop[2],reachPosition[2]);
             action->pushAction(reachPosition, *graspOrien, "point_hand");
             action->pushWaitState(1.5);
+            action->checkActionsDone(b, true);
             state=INIT;
             break;
         }
@@ -1507,6 +1509,7 @@ bool DemoAff::updateModule(){
             printf("Object out of range (%f<%f)\n", graspPosition[0], MAX_ARM_RANGE);
             action->pushAction(graspPosition, *graspOrien, "point_hand");
             action->pushWaitState(1.5);
+            action->checkActionsDone(b, true);
             state=INIT;
             break;
         }
