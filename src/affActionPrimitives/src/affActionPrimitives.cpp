@@ -264,8 +264,8 @@ bool affActionPrimitives::configHandSeq(Property &opt)
                     thres[k]=bThres->get(k).asDouble();
 
                 if (!addHandSeqWP(key,poss,vels,thres))
-                    printMessage("WARNING: \"%s\" entry is invalid,\
-                                 not added to \"%s\"\n",wp,key.c_str());
+                    printMessage("WARNING: \"%s\" entry is invalid, not added to \"%s\"\n",
+                                 wp,key.c_str());
             }
         }
     
@@ -955,6 +955,14 @@ bool affActionPrimitives::cmdHand(const Action &action)
 bool affActionPrimitives::addHandSeqWP(const string &handSeqKey, const Vector &poss,
                                        const Vector &vels, const Vector &thres)
 {
+    if (isValidHandSeq(handSeqKey))
+    {
+        printMessage("WARNING: \"%s\" sequence already present, not added to the list\n",
+                     handSeqKey.c_str());
+
+        return false;
+    }
+
     if (poss.length()==9 && vels.length()==9 && thres.length()==5)
     {
         HandWayPoint handWP;
