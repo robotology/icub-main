@@ -674,10 +674,10 @@ public:
 * the grasp() and touch() primitives in the following way: 
 *  
 * While reaching for the object, one wrist joint is kept fixed 
-* (exploting however the torso dof the orientation of the hand 
-* can be still fully controlled) in order to detect contact by 
-* checking the low-level output signal. As soon as the contact 
-* is detected the reaching can be suddenly stopped. 
+* (however by exploting the torso dof the orientation of the 
+* hand can be still fully controlled) in order to detect 
+* contacts by checking the low-level output signal. As soon as 
+* the contact is detected the reaching is suddenly stopped. 
 *  
 * \note The benefit is that unlike the previous implementation 
 * of grasp() and touch(), the height of the objects to be 
