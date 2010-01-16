@@ -5,8 +5,9 @@
 
 #include <cmath>
 
-#define USE_LEFT    0
-#define USE_RIGHT   1
+#define USE_LEFT        0
+#define USE_RIGHT       1
+#define MAX_ARM_RANGE   -0.4
 
 
 using namespace ctrl;
@@ -653,12 +654,6 @@ bool DemoAff::configureAffPrimitives(Searchable &config,
 	useArm(USE_RIGHT);
     }
 
-  /*if( !action->getCartesianIF(cartIF) ) 
-  {
-	  cout <<"Problem acquiring cartesian interface. Exiting..."<<endl;
-	  return false;
-  }*/
-  
   deque<string> q=actionL->getHandSeqList();
   cout<<"***** List of available left hand sequence keys:"<<endl;
   for (size_t i=0; i<q.size(); i++)
@@ -899,25 +894,30 @@ bool DemoAff::updateModule(){
       ICartesianControl *cif;
 
       useArm(USE_RIGHT);
-      action->getCartesianIF(cif);
-      cif->setRestPos(newRestPos,currRestPos);
-      currTrackingMode = action->getTrackingMode();      
+      bool curTrackingModeR = action->getTrackingMode();
       action->setTrackingMode(true);
 
+      useArm(USE_LEFT);
+      bool curTrackingModeL = action->getTrackingMode();
+      action->setTrackingMode(true);
+
+      useArm(USE_RIGHT);
+      action->getCartesianIF(cif);
+      cif->setRestPos(newRestPos,currRestPos);
       action->pushAction(*home_x, *home_o);
       action->checkActionsDone(b, true);
-      action->setTrackingMode(currTrackingMode);
 
       useArm(USE_LEFT);
       action->getCartesianIF(cif);
       cif->setRestPos(newRestPos, currRestPos); 
-      currTrackingMode = action->getTrackingMode();      
-      action->setTrackingMode(true);
-
       action->pushAction(*home_x, *home_o);
       action->checkActionsDone(b, true);
-      action->setTrackingMode(currTrackingMode);
 
+      useArm(USE_RIGHT);
+      action->setTrackingMode(curTrackingModeR);
+
+      useArm(USE_LEFT);
+      action->setTrackingMode(curTrackingModeL);
 
       //controlGazeSaccadeAbsolute(headPosActAz, headPosActEl);
       yarp::os::Time::delay(1.0);
@@ -1279,14 +1279,6 @@ bool DemoAff::updateModule(){
       object3d.resize(3);
       projections[usedEye]->project(objposreach, object3d);
       
-      //If object is out of reach, do nothing
-      if( object3d[0] < -0.4 )
-      {
-         state = INIT;
-         printf("Aborting  %f %f %f  OUT OF REACH\n", object3d[0], object3d[1], object3d[2]);
-         break;
-      }
-
       printf("Grasping %f %f %f\n", object3d[0], object3d[1], object3d[2]);
 
       // We will have different reachings or there is an initial common reaching phase?
@@ -1340,6 +1332,14 @@ bool DemoAff::updateModule(){
         graspPosition = graspPosition + *dOffs;
 
         //TODO: graspPosition[2] = action->determineHeight();
+
+        if (graspPosition[0]<MAX_ARM_RANGE)
+        {
+            printf("Object out of range (%f<%f)\n", graspPosition[0], MAX_ARM_RANGE);
+            action->pushAction(graspPosition, *graspOrien, "open_hand");
+            action->pushWaitState(1.5);
+            break;
+        }
 
         // grasp it (wait until it's done)
         //action->grasp(graspPosition ,*graspOrien,*graspDisp,*graspRelief);
@@ -1399,6 +1399,15 @@ bool DemoAff::updateModule(){
         startPos[1] += startOffset;
         startPos[2] += heightOffset;
 
+        if (object3d[0]<MAX_ARM_RANGE)
+        {
+            printf("Object out of range (%f<%f)\n", object3d[0], MAX_ARM_RANGE);
+            Vector reachPosition=object3d;
+            reachPosition[2]=max(tableTop[2],reachPosition[2]);
+            action->pushAction(reachPosition, *graspOrien, "open_hand");
+            action->pushWaitState(1.5);
+            break;
+        }
 
         action->tap(startPos, startOrientation, endPos, stopOrientation, 1.0);
         action->checkActionsDone(b, true);
@@ -1446,8 +1455,16 @@ bool DemoAff::updateModule(){
 
         //TODO: graspPosition[2] = action->determineHeight();
 
+        if (graspPosition[0]<MAX_ARM_RANGE)
+        {
+            printf("Object out of range (%f<%f)\n", graspPosition[0], MAX_ARM_RANGE);
+            action->pushAction(graspPosition, *graspOrien, "open_hand");
+            action->pushWaitState(1.5);
+            break;
+        }
+
         // grasp it (wait until it's done)
-        action->touch(graspPosition ,*graspOrien,*graspDisp);
+        action->touch(graspPosition ,*graspOrien, *graspDisp);
         action->checkActionsDone(b, true);
         action->pushWaitState(1.5);
         action->checkActionsDone(b, true);
