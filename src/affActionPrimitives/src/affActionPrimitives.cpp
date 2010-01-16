@@ -78,6 +78,7 @@ bool affActionPrimitives::isValid()
     return configured;
 }
 
+
 /************************************************************************/
 string affActionPrimitives::toCompactString(const Vector &v)
 {
