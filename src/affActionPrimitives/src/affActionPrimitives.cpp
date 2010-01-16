@@ -1249,6 +1249,7 @@ void affActionPrimitivesLayer2::init()
 
     disableWristDof=NULL;
     enableWristDof=NULL;
+    execGrasp=NULL;
     outputDerivative=NULL;
 }
 
