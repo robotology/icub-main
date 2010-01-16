@@ -922,7 +922,8 @@ bool DemoAff::updateModule(){
       //controlGazeSaccadeAbsolute(headPosActAz, headPosActEl);
       yarp::os::Time::delay(1.0);
 
-      state=JUSTACT;
+      //state=JUSTACT;
+      state=IDLE;
     }
     break;
   case INIT:
@@ -977,11 +978,12 @@ bool DemoAff::updateModule(){
 	printf("GOing to attention\n");
 	Bottle& output = port_behavior_out.prepare();
 	output.clear();
-	output.addVocab(Vocab::encode("off"));
+	//output.addVocab(Vocab::encode("off"));
+        output.addInt(1);
 	port_behavior_out.write();
 	
 	state=IDLE;
-	state=INIT;
+	//state=INIT;
       }
 
     }
@@ -1076,7 +1078,8 @@ bool DemoAff::updateModule(){
 	// Stop aff demo and notify behavior
 	Bottle& output = port_behavior_out.prepare();
 	output.clear();
-	output.addVocab(Vocab::encode("off"));
+	//output.addVocab(Vocab::encode("off"));
+        output.addInt(1);
 	port_behavior_out.write();
 	
 	state=IDLE;

@@ -218,7 +218,8 @@ protected:
   // affActionPrimitive methods
   bool InitAffPrimitives();
   bool configureAffPrimitives(Searchable &config, 
-			      yarp::os::ConstString handSeqFile, 
+			      yarp::os::ConstString handSeqFileLeft,
+                              yarp::os::ConstString handSeqFileRight, 
 			      string name);
   void useArm(const int arm);
   void getArmDependentOptions(Bottle &b, Vector &_gOrien, Vector &_gDisp, Vector &_gRelief,

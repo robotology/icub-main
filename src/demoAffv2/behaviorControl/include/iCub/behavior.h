@@ -68,6 +68,9 @@ private:
   float cg_az_max, cg_az_min;
   float cg_el_max, cg_el_min;
 
+  double min_attention_time;
+  double attention_time;
+
   int OK_MSG;
   int nMoves;
 
@@ -85,7 +88,7 @@ public:
     virtual bool updateModule();
 
 private:
-  RemoteAttentionSelection remoteAtt;
+    RemoteAttentionSelection remoteAtt;
 };
 
 

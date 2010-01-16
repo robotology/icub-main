@@ -8,6 +8,8 @@ public:
   double roi_width;
   double roi_height;
   double angle;
+  double special_point_x; //good point to grasp
+  double special_point_y;
 
   double hist[16];
 

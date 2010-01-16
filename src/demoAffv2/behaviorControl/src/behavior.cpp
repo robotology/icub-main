@@ -86,7 +86,14 @@ bool Behavior::configure(ResourceFinder& rf){
     cg_az_min = rf.check("cg_az_min",yarp::os::Value(0.0)).asDouble();
     cg_el_max = rf.check("cg_el_max",yarp::os::Value(0.0)).asDouble();
     cg_el_min = rf.check("cg_el_min",yarp::os::Value(0.0)).asDouble();
+    min_attention_time = rf.check("min_attention_time",yarp::os::Value(0.0)).asDouble();
 
+
+    cout << "cg_az_max: " << cg_az_max << endl;
+    cout << "cg_az_min: " << cg_az_min << endl;
+    cout << "cg_el_max: " << cg_el_max << endl;
+    cout << "cg_el_min: " << cg_el_min << endl;
+    cout << "min_attention_time: " << min_attention_time << endl;
     
     // Ports
     // open camshiftplus ports: data and sync
@@ -132,11 +139,25 @@ bool Behavior::updateModule()
 		string cmd=input->get(0).asString().c_str();
 
 		if (cmd=="att")
+		{
 			state=ATTENTION;
+                        attention_time = yarp::os::Time::now();
+			remoteAtt.setInhibitOutput(false);
+		}
 		else if (cmd=="aff")
+		{
 			state=AFFORDANCES;
+                        remoteAtt.setInhibitOutput(true);
+			// Tell affordances to start
+			Bottle& output = port_aff_out.prepare();
+			output.clear();
+			output.addInt(1);
+			port_aff_out.write();
+		}
 		else 
+		{
 			cout << "Message ignored: " << cmd << endl;
+		}
 		cout << "state change: " << state << statename[state] << endl;
 	}
 
@@ -147,6 +168,7 @@ bool Behavior::updateModule()
 		case FIRSTINIT: 
 		{
 			state=ATTENTION;
+                        attention_time = yarp::os::Time::now();
 		}
 		break;
 
@@ -166,13 +188,19 @@ bool Behavior::updateModule()
 					cg_state = input_obj->get(0).asInt();
 					cg_az = input_obj->get(3).asDouble();
 					cg_el = input_obj->get(4).asDouble();
+                                        cout << "cg_state: " << cg_state << endl;
+                                        cout << "cg_az: " << cg_az << endl;
+                                        cout << "cg_el: " << cg_el << endl;
+
 				}
 				else 
 				{
 					// generate an error and quit
 				}
 
-				if( (cg_state == 5 || cg_state == 4) && 
+				double currTime = yarp::os::Time::now();
+				if(     (currTime - attention_time > min_attention_time ) &&
+                                        (cg_state == 5 || cg_state == 4) && 
 					cg_az < cg_az_max && 
 					cg_az > cg_az_min && 
 					cg_el < cg_el_max && 
@@ -215,6 +243,7 @@ bool Behavior::updateModule()
 				{
 					remoteAtt.setInhibitOutput(false);
 					state=ATTENTION;
+                                        attention_time = yarp::os::Time::now();
 				}
 			}
 		}
