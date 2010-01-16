@@ -1435,18 +1435,20 @@ bool DemoAff::updateModule(){
         Vector startOrientation = dcm2axis(palmOrientations[armToBeUsed +"_starttap"]);
         Vector stopOrientation = dcm2axis(palmOrientations[armToBeUsed +"_stoptap"]);
 
-        Vector endPos = object3d;
+        Vector reachPosition=object3d;
+        reachPosition[0] = min(-0.1, reachPosition[0]);
+
+        Vector endPos = reachPosition;
         endPos[1] += endOffset;
         endPos[2] += heightOffset;
 
-        Vector startPos = object3d;
+        Vector startPos = reachPosition;
         startPos[1] += startOffset;
         startPos[2] += heightOffset;
 
-        if (object3d[0]<MAX_ARM_RANGE)
+        if (reachPosition[0]<MAX_ARM_RANGE)
         {
             printf("Object out of range (%f<%f)\n", object3d[0], MAX_ARM_RANGE);
-            Vector reachPosition=object3d;
             reachPosition[2]=max(tableTop[2],reachPosition[2]);
             action->pushAction(reachPosition, *graspOrien, "point_hand");
             action->pushWaitState(1.5);
