@@ -280,8 +280,21 @@ bool ShortTermMemoryModule::updateModule(){
     //same time that the human does
     //need a model of duration and start and end of 
     //uninterrupted drumming
-    double drum_score = (0.5* (memory_sum["robot_drum"] + memory_sum["human_drum"]) \
-                         - memory_sum["both_drum"])/(resolution*mem_length);
+    double drum_score = 0;
+
+    if(!memory_process["robot_hide"].front()) {
+        if(memory_sum["human_drum"] > 0) {
+            drum_score = (0.5* (memory_sum["robot_drum"] + memory_sum["human_drum"]) - memory_sum["both_drum"])/(resolution*mem_length);
+        } 
+    } else {
+        //penalize for hiding when person drums
+        if(memory_process["human_drum"].front())
+            drum_score = -0.5;
+    }
+    
+
+    //double drum_score = (0.5* (memory_sum["robot_drum"] + memory_sum["human_drum"]) \
+    //                   - memory_sum["both_drum"])/(resolution*mem_length);
     //for peekaboo, if the person is hiding for too long
     //(over a couple of seconds), they are probably not being tracked
     // by the face-tracker, not hiding
