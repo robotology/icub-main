@@ -516,7 +516,7 @@ public:
             // safe thresholding
 			xd[0]=xd[0]>-0.1?-0.1:xd[0];
 
-            // grasp it (wait until it's done)
+            // grasp (wait until it's done)
 			action->grasp(xd,*graspOrien,*graspDisp);
             action->checkActionsDone(f,true);
 
@@ -550,7 +550,11 @@ public:
 
 	bool interruptModule()
 	{
+        // since a call to checkActionsDone() blocks
+        // the execution until it's done, we need to 
+        // take control and exit from the waiting state
 		action->syncCheckInterrupt(true);        
+
         inPort.interrupt();
         rpcPort.interrupt();
 
