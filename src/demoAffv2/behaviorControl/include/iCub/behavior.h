@@ -57,7 +57,8 @@ private:
 
   // ports
   BufferedPort<Bottle> port_gaze;
-  BufferedPort<Bottle> port_aff; 
+  BufferedPort<Bottle> port_aff_in;
+  BufferedPort<Bottle> port_aff_out;
   BufferedPort<Bottle> port_in; 
   
   

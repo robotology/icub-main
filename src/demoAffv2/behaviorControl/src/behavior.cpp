@@ -38,7 +38,8 @@ Behavior::Behavior(){
 Behavior::~Behavior(){ 
 
   port_gaze.close();
-  port_aff.close();
+  port_aff_in.close();
+  port_aff_out.close();
 
 }
 
@@ -85,14 +86,13 @@ bool Behavior::configure(ResourceFinder& rf){
     cg_az_min = rf.check("cg_az_min",yarp::os::Value(0.0)).asDouble();
     cg_el_max = rf.check("cg_el_max",yarp::os::Value(0.0)).asDouble();
     cg_el_min = rf.check("cg_el_min",yarp::os::Value(0.0)).asDouble();
-    
-    
 
     
     // Ports
     // open camshiftplus ports: data and sync
     ok &= port_gaze.open("/demoAffv2/behavior/gaze");
-    ok &= port_aff.open("/demoAffv2/behavior/aff");
+    ok &= port_aff_in.open("/demoAffv2/behavior/aff_in");
+	ok &= port_aff_out.open("/demoAffv2/behavior/aff_out");
     ok &= remoteAtt.open("/demoAffv2/behavior/att");
     ok &= port_in.open("/demoAffv2/behavior/in");
     return ok;
@@ -102,7 +102,8 @@ bool Behavior::configure(ResourceFinder& rf){
 bool Behavior::close(){
     
     port_gaze.close();
-    port_aff.close();
+    port_aff_in.close();
+	port_aff_out.close();
     port_in.close();
     
     return true;
@@ -112,103 +113,124 @@ bool Behavior::interruptModule(){
 
 
   port_gaze.interrupt();
-  port_aff.interrupt();
+  port_aff_in.interrupt();
+  port_aff_out.interrupt();
   port_in.close();
   
     return true;
 }
 
-bool Behavior::updateModule(){
-
-  printf(".");fflush(stdout);
-
+bool Behavior::updateModule()
+{
+	printf(".");fflush(stdout); 
   
-  
-  cout << "state: " << state << statename[state] << endl;
+	cout << "state: " << state << statename[state] << endl;
 
-  
-  Bottle *input=port_in.read(false);
-  string cmd=input->get(0).asString().c_str();
-
-  if (cmd=="att")
-      state=ATTENTION;
-  else if (cmd=="aff")
-      state=AFFORDANCES;
-  else cout << "Message ignored: " << cmd << endl;
-
-  switch (state){
-  case FIRSTINIT: 
-    {
-      state=ATTENTION;
-    }
-    break;
-  case ATTENTION:
-    {
-      // Read data from Gaze Control
-      yarp::os::Time::delay(0.04);
-      Bottle *input_obj=port_gaze.read(false);
-      
-      if (input_obj!=NULL)
+	Bottle *input=port_in.read(false);
+	if(input != NULL)
 	{
-	  int cg_state;
-	  float cg_az, cg_el;
+		string cmd=input->get(0).asString().c_str();
 
-	  if (input_obj->size()==3) {
-	    cg_state= input_obj->get(0).asInt();
-	    cg_az = input_obj->get(1).asDouble();
-	    cg_el = input_obj->get(2).asDouble();
-	  }
-	  else {
-	    // generate an error and quit
-	  }
+		if (cmd=="att")
+			state=ATTENTION;
+		else if (cmd=="aff")
+			state=AFFORDANCES;
+		else 
+			cout << "Message ignored: " << cmd << endl;
+		cout << "state change: " << state << statename[state] << endl;
+	}
 
-	  if (cg_state==5 && cg_az<cg_az_max && cg_az>cg_az_min && 
-	      cg_el<cg_el_max && cg_el>cg_el_min) {
+
+	switch (state)
+	{
+
+		case FIRSTINIT: 
+		{
+			state=ATTENTION;
+		}
+		break;
+
+		case ATTENTION:
+		{
+			// Read data from Gaze Control
+			yarp::os::Time::delay(0.04);
+			Bottle *input_obj=port_gaze.read(false);
+      
+			if (input_obj!=NULL)
+			{
+				int cg_state;
+				float cg_az, cg_el;
+
+				if (input_obj->size()==5) 
+				{
+					cg_state = input_obj->get(0).asInt();
+					cg_az = input_obj->get(3).asDouble();
+					cg_el = input_obj->get(4).asDouble();
+				}
+				else 
+				{
+					// generate an error and quit
+				}
+
+				if( (cg_state == 5 || cg_state == 4) && 
+					cg_az < cg_az_max && 
+					cg_az > cg_az_min && 
+					cg_el < cg_el_max && 
+					cg_el > cg_el_min   ) 
+				{
 	
-	    // Send inhibition to the attention system
-	    remoteAtt.setInhibitOutput(true);
+					// Send inhibition to the attention system
+					remoteAtt.setInhibitOutput(true);
 
-	    // Switch attention
-	    state=AFFORDANCES;
-	  }
-	}
-      
-    }
-    
-    break;
-  case IDLE:
-    {
-      yarp::os::Time::delay(0.04);
-      
-    }
-    break;
-  case AFFORDANCES:
-    {
-      // Read data from Gaze Control
-      yarp::os::Time::delay(0.04);
-      Bottle *input_obj=port_aff.read(false);
-      
-      if (input_obj!=NULL) {
-	int aff_state;
-	aff_state= input_obj->get(0).asInt();
-	if (aff_state==1) {
-	  remoteAtt.setInhibitOutput(false);
-	  state=ATTENTION;
-	}
-      }
-    }
-      break;
-      default:
-	cout << "Strange state moving to IDLE" << endl;
+					// Switch attention
+					state=AFFORDANCES;
 
-  }
+					// Tell affordances to start
+					Bottle& output = port_aff_out.prepare();
+					output.clear();
+					output.addInt(1);
+					port_aff_out.write();
+				}
+			}
+		}
+		break;
+
+		case IDLE:
+		{
+			yarp::os::Time::delay(0.04);      
+		}
+		break;
+
+		case AFFORDANCES:
+		{
+			// Read data from Affordances
+			yarp::os::Time::delay(0.04);
+			Bottle *input_obj=port_aff_in.read(false);
+      
+			if (input_obj!=NULL) 
+			{
+				int aff_state;
+				aff_state = input_obj->get(0).asInt();
+				if (aff_state == 1)
+				{
+					remoteAtt.setInhibitOutput(false);
+					state=ATTENTION;
+				}
+			}
+		}
+		break;
+	
+		default:
+			cout << "Strange state moving to IDLE" << endl;
+	}
   
-  if (OK_MSG==1) {
-    state=next_state;
-    OK_MSG==0;
-  }
+	if (OK_MSG == 1) 
+	{
+		state=next_state;
+		OK_MSG == 0;
+	}
   
-  return true;
+	return true;
 }
 
 
