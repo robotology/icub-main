@@ -266,8 +266,7 @@ private:
 			  kp.resize(limbJnt);
 			  if (filter_enabled)
 			  {
-				double larm_div = 0.35;
-				kp(0) = -25.0/larm_div;	kp(1) = -20.0/larm_div;	kp(2) = -25.0/larm_div;	kp(3) = -40.0/larm_div;
+				kp(0) = -62.0;	kp(1) = -50.0;	kp(2) = -62.0;	kp(3) = -100;
 			  }
 			  else
 			  {
@@ -288,8 +287,7 @@ private:
 			  kp.resize(limbJnt);
 			  if (filter_enabled)
 			  {
-				double rarm_div = 0.35;
-				kp(0) =  25.0/rarm_div;	kp(1) =  20.0/rarm_div;	kp(2) =  25.0/rarm_div;	kp(3) =  40.0/rarm_div;
+				kp(0) =  62.0;	kp(1) =  50.0;	kp(2) =  62.0;	kp(3) =  100;
 			  }
 			  else
 			  {
