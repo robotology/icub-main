@@ -459,7 +459,8 @@ bool DemoAff::configure(ResourceFinder &rf){
   Property config; config.fromConfigFile(rf.findFile("aff_action_primitives").c_str());
   
 
-  ok &= configureAffPrimitives(config,rf.findFile("hand_sequences_file").c_str(), name);
+  ok &= configureAffPrimitives(config,rf.findFile("hand_sequences_file_left").c_str(), 
+                                      rf.findFile("hand_sequences_file_right").c_str(), name);
   if (!ok) {
     cerr << "AffPrimitives failed to initialize" << endl;
     return false;
@@ -553,7 +554,8 @@ bool DemoAff::configureEye2World(yarp::os::ConstString calibrationFilename,
 }
 
 bool DemoAff::configureAffPrimitives(Searchable &config, 
-				     yarp::os::ConstString handSeqFile, 
+				     yarp::os::ConstString handSeqFileLeft,
+                                     yarp::os::ConstString handSeqFileRight, 
 				     string name)
 {
   
@@ -586,10 +588,14 @@ bool DemoAff::configureAffPrimitives(Searchable &config,
     }
   
   option.put("local",name.c_str());
-  option.put("hand_sequences_file",handSeqFile);
   
-  Property optionL(option); optionL.put("part","left_arm");
-  Property optionR(option); optionR.put("part","right_arm");
+  Property optionL(option); 
+  optionL.put("part","left_arm");optionL.put("hand_sequences_file_left",handSeqFileLeft);
+  Property optionR(option); 
+  optionR.put("part","right_arm");optionR.put("hand_sequences_file_right",handSeqFileRight);
+
+  cout << "optionL: " << optionL.toString() << endl;
+  cout << "optionR: " << optionR.toString() << endl;
 
   // parsing left_arm config options
   Bottle &bLeft=config.findGroup("left_arm");
@@ -646,14 +652,19 @@ bool DemoAff::configureAffPrimitives(Searchable &config,
 	useArm(USE_RIGHT);
     }
 
-  if( !action->getCartesianIF(cartIF) ) 
+  /*if( !action->getCartesianIF(cartIF) ) 
   {
 	  cout <<"Problem acquiring cartesian interface. Exiting..."<<endl;
 	  return false;
-  }
+  }*/
   
-  deque<string> q=action->getHandSeqList();
-  cout<<"***** List of available hand sequence keys:"<<endl;
+  deque<string> q=actionL->getHandSeqList();
+  cout<<"***** List of available left hand sequence keys:"<<endl;
+  for (size_t i=0; i<q.size(); i++)
+    cout<<q[i]<<endl;
+
+  q=actionR->getHandSeqList();
+  cout<<"***** List of available right hand sequence keys:"<<endl;
   for (size_t i=0; i<q.size(); i++)
     cout<<q[i]<<endl;
   

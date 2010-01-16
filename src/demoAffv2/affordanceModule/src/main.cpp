@@ -86,7 +86,8 @@ int main(int argc, char *argv[]) {
     rf.setDefaultConfigFile("demoAffv2.ini");  // overridden by --from parameter
     rf.setDefaultContext("demoAffv2/conf");    // overridden by --context parameter
     rf.setDefault("hand_calibration_file","object_sensing.ini");
-    rf.setDefault("hand_sequences_file","hand_sequences.ini");
+    rf.setDefault("hand_sequences_file_left","hand_sequences_left.ini");
+    rf.setDefault("hand_sequences_file_right","hand_sequences_right.ini");
     rf.setDefault("affordance_database","BNaffordances.txt");
     rf.setDefault("aff_action_primitives","affActionPrimitives.ini");
     rf.setDefault("name","demoAffv2");
