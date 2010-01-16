@@ -878,7 +878,7 @@ bool DemoAff::updateModule(){
       }
     }    
 
-    state=GRASPING;
+    //state=GRASPING;
     
 
     break;
@@ -888,7 +888,55 @@ bool DemoAff::updateModule(){
       bool b;
       bool currTrackingMode;
 
-      //Prepare torso rest position leaned over the table
+      //Prepare torso rest position
+      Vector newRestPos(1), currRestPos;
+      newRestPos[0] = torsoPosObsPitch;
+      ICartesianControl *cif;
+
+      useArm(USE_RIGHT);
+      bool curTrackingModeR = action->getTrackingMode();
+      action->setTrackingMode(true);
+
+      useArm(USE_LEFT);
+      bool curTrackingModeL = action->getTrackingMode();
+      action->setTrackingMode(true);
+
+      useArm(USE_RIGHT);
+      action->getCartesianIF(cif);
+      cif->setRestPos(newRestPos,currRestPos);
+      action->pushAction(*home_x, *home_o);
+      action->checkActionsDone(b, true);
+
+      useArm(USE_LEFT);
+      action->getCartesianIF(cif);
+      cif->setRestPos(newRestPos, currRestPos); 
+      action->pushAction(*home_x, *home_o);
+      action->checkActionsDone(b, true);
+
+      useArm(USE_RIGHT);
+      action->setTrackingMode(curTrackingModeR);
+
+      useArm(USE_LEFT);
+      action->setTrackingMode(curTrackingModeL);
+
+      controlGazeSaccadeAbsolute(headPosObsAz, headPosObsEl);
+      yarp::os::Time::delay(1.0);
+
+      //state=JUSTACT;
+      state=IDLE;
+    }
+    break;
+  case INIT:
+  {
+     //bool b;
+     //action->pushAction(*home_x,*home_o);
+     //action->checkActionsDone(b,true);
+     //yarp::os::Time::delay(1.0);
+
+      bool b;
+      bool currTrackingMode;
+
+      //Prepare torso rest position
       Vector newRestPos(1), currRestPos;
       newRestPos[0] = torsoPosActPitch;
       ICartesianControl *cif;
@@ -919,20 +967,11 @@ bool DemoAff::updateModule(){
       useArm(USE_LEFT);
       action->setTrackingMode(curTrackingModeL);
 
-      //controlGazeSaccadeAbsolute(headPosActAz, headPosActEl);
+      controlGazeSaccadeAbsolute(headPosActAz, headPosActEl);
       yarp::os::Time::delay(1.0);
 
-      //state=JUSTACT;
-      state=IDLE;
-    }
-    break;
-  case INIT:
-  {
-     bool b;
-     action->pushAction(*home_x,*home_o);
-     action->checkActionsDone(b,true);
-     yarp::os::Time::delay(1.0);
-     state = JUSTACT;
+      state = JUSTACT;
+
   }
   case GETDEMOOBJS:
     {
@@ -972,7 +1011,8 @@ bool DemoAff::updateModule(){
 	state = WAITINGDEMO;
 
       }
-      else {
+      else 
+      {
 	// No obj change to attention
 	
 	printf("GOing to attention\n");
@@ -981,8 +1021,8 @@ bool DemoAff::updateModule(){
 	//output.addVocab(Vocab::encode("off"));
         output.addInt(1);
 	port_behavior_out.write();
-	
-	state=IDLE;
+	state=FIRSTINIT;
+	//state=IDLE;
 	//state=INIT;
       }
 
@@ -1082,7 +1122,7 @@ bool DemoAff::updateModule(){
         output.addInt(1);
 	port_behavior_out.write();
 	
-	state=IDLE;
+	state=FIRSTINIT;
 	
 	// Put sad expression TBD move head a bit do sth damn it!
 	
