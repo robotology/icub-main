@@ -260,7 +260,7 @@ double DrumIKin::getPeriod(void)
 void DrumIKin::OpenIKSolver(string arm)
 {
 	cout << "=====================================" << endl;
-	cout << "Opening IKin Catesian Solver for " << arm << " arm." << endl;
+	cout << "Opening IKin Catesian Solver for " << arm  << endl;
 	cout << "=====================================" << endl;
 	// declare the on-line arm solver
 	string solverName = ((string)parameters["solver_name"]->asString()) + "/" + arm ;
@@ -283,23 +283,23 @@ void DrumIKin::OpenIKSolver(string arm)
     iKinPorts[arm]->rpc.write(cmd,reply);
 	cout<<reply.size()<<endl;  
 
-	cmd.clear();
-    cmd.addVocab(IKINSLV_VOCAB_CMD_SET);
-    cmd.addVocab(IKINSLV_VOCAB_OPT_LIM);
-    cmd.addInt(3);
-	cmd.addDouble(-89);
-	cmd.addDouble(0);
-    iKinPorts[arm]->rpc.write(cmd,reply);
-	cout<<reply.size()<<endl;  
+	//cmd.clear();
+ //   cmd.addVocab(IKINSLV_VOCAB_CMD_SET);
+ //   cmd.addVocab(IKINSLV_VOCAB_OPT_LIM);
+ //   cmd.addInt(3);
+	//cmd.addDouble(-89);
+	//cmd.addDouble(0);
+ //   iKinPorts[arm]->rpc.write(cmd,reply);
+	//cout<<reply.size()<<endl;  
 
-	cmd.clear();
-    cmd.addVocab(IKINSLV_VOCAB_CMD_SET);
-    cmd.addVocab(IKINSLV_VOCAB_OPT_LIM);
-    cmd.addInt(4);
-	cmd.addDouble(0.02);
-	cmd.addDouble(25);
-    iKinPorts[arm]->rpc.write(cmd,reply);
-	cout<<reply.size()<<endl;  
+	//cmd.clear();
+ //   cmd.addVocab(IKINSLV_VOCAB_CMD_SET);
+ //   cmd.addVocab(IKINSLV_VOCAB_OPT_LIM);
+ //   cmd.addInt(4);
+	//cmd.addDouble(0.02);
+	//cmd.addDouble(25);
+ //   iKinPorts[arm]->rpc.write(cmd,reply);
+	//cout<<reply.size()<<endl;  
 
 	cmd.clear();
 	cmd.addVocab(IKINSLV_VOCAB_CMD_GET);

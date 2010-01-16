@@ -13,7 +13,6 @@ void ICubArmDrumStick::_allocate_limb(const string &_type, double drumStickLengt
     linkList.resize(8);
     //linkList.resize(10);
 
-	double totalForearm = 0.1373 + drumStickLength;
     if (type=="right")
     {
         // link 0-9 are the standard links for the right arm
@@ -24,13 +23,7 @@ void ICubArmDrumStick::_allocate_limb(const string &_type, double drumStickLengt
         linkList[4] =new iKinLink(       0.0,      0.0, -M_PI/2.0,         -M_PI/2.0,              0.0, 45*M_PI/180.0);
         linkList[5] =new iKinLink(       0.0, -0.15228, -M_PI/2.0, -105.0*M_PI/180.0, -37.0*M_PI/180.0,  90.0*M_PI/180.0);
         linkList[6] =new iKinLink(     0.015,      0.0,  M_PI/2.0,               0.0,   5.5*M_PI/180.0, 106.0*M_PI/180.0);
-        linkList[7] =new iKinLink(       0.0,  -0.1373,  M_PI/2.0,         -M_PI/2.0, -90.0*M_PI/180.0,  90.0*M_PI/180.0);
-        linkList[8]=new iKinLink(  drumStickLength, 0.0, M_PI/2.0, M_PI/2.0,     -10*M_PI/180.0,    10*M_PI/180.0);
-       /* linkList[8] =new iKinLink(       0.0,      0.0,  M_PI/2.0,          M_PI/2.0, -90.0*M_PI/180.0,   0.0*M_PI/180.0);
-        linkList[9] =new iKinLink(    0.0625,    0.016,       0.0,              M_PI, -20.0*M_PI/180.0,  40.0*M_PI/180.0);*/
-
-        //link 10 is the drumming stick
-        //linkList[10]=new iKinLink(  drumStickLength, 0.0, 0.0, M_PI/2.0,     M_PI/2,     M_PI/2);
+        linkList[7] =new iKinLink(       0.0,  -0.1373 - drumStickLength,  M_PI/2.0,         -M_PI/2.0, -90.0*M_PI/180.0,  90.0*M_PI/180.0);
     }
     else // the same for the left arm
     {
@@ -42,12 +35,6 @@ void ICubArmDrumStick::_allocate_limb(const string &_type, double drumStickLengt
         linkList[5] =new iKinLink(       0.0,  0.15228, -M_PI/2.0,   75.0*M_PI/180.0, -37.0*M_PI/180.0,  90.0*M_PI/180.0);
         linkList[6] =new iKinLink(    -0.015,      0.0,  M_PI/2.0,               0.0,   5.5*M_PI/180.0, 106.0*M_PI/180.0);
         linkList[7] =new iKinLink(       0.0,   0.1373 + drumStickLength ,  M_PI/2.0,         -M_PI/2.0, -90.0*M_PI/180.0,  90.0*M_PI/180.0);
-        //linkList[8]=new iKinLink(  drumStickLength, 0.0, M_PI/2.0, M_PI/2.0,     -10*M_PI/180.0,    10*M_PI/180.0);
-        /*linkList[8] =new iKinLink(       0.0,      0.0,  M_PI/2.0,          M_PI/2.0, -90.0*M_PI/180.0,   0.0*M_PI/180.0);
-        linkList[9] =new iKinLink(    0.0625,   -0.016,       0.0,               0.0, -20.0*M_PI/180.0,  40.0*M_PI/180.0);*/
-        
-		//drumming stick
-        //linkList[10]=new iKinLink(  -drumStickLength, 0.0, 0.0, 0.0,     -10*M_PI/180.0,     10*M_PI/180.0);
     }
 
     // here the chain is actually built by pushing back the links in the list
