@@ -185,6 +185,7 @@ protected:
     Vector *home_o;
 
     bool openPorts;
+    bool firstRun;
 
 public:
     exampleModule()
@@ -231,6 +232,7 @@ public:
         home_o=NULL;
 
         openPorts=false;
+        firstRun=true;
 	}
 
     void getArmDependentOptions(Bottle &b, Vector &_gOrien, Vector &_gDisp,
@@ -456,10 +458,30 @@ public:
         }
     }
 
+    void init()
+    {
+        bool f;
+
+        useArm(USE_RIGHT);
+        action->pushAction(*home_x,*home_o);
+        action->checkActionsDone(f,true);
+
+        useArm(USE_LEFT);
+        action->pushAction(*home_x,*home_o);
+        action->checkActionsDone(f,true);
+    }
+
     // we don't need a thread since the actions library already
     // incapsulates one inside dealing with all the tight time constraints
     virtual bool updateModule()
-	{		
+	{
+        // do it only once
+        if (firstRun)
+        {
+            init();
+            firstRun=false;
+        }
+
         // get a target object position from a YARP port
 		Bottle *b=inPort.read();	// blocking call
 
