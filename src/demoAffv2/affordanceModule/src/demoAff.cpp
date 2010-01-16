@@ -215,6 +215,7 @@ bool DemoAff::InitAffPrimitives() {
   
   // default values for arm-dependent quantities
   graspOrienL[0]=-0.171542; graspOrienR[0]=-0.0191;
+
   graspOrienL[1]= 0.124396; graspOrienR[1]=-0.983248;
   graspOrienL[2]=-0.977292; graspOrienR[2]= 0.181269;
   graspOrienL[3]= 3.058211; graspOrienR[3]= 3.093746;
@@ -862,7 +863,6 @@ bool DemoAff::updateModule(){
   printf(".");fflush(stdout);
   
   
-  
   char chin;
   cout << "state: " << state << statename[state] << endl;
   switch (state){
@@ -891,6 +891,7 @@ bool DemoAff::updateModule(){
   case FIRSTINIT:
     {
       bool b;
+      bool currTrackingMode;
 
       //Prepare torso rest position leaned over the table
       Vector newRestPos(1), currRestPos;
@@ -900,18 +901,26 @@ bool DemoAff::updateModule(){
       useArm(USE_RIGHT);
       action->getCartesianIF(cif);
       cif->setRestPos(newRestPos,currRestPos);
+      currTrackingMode = action->getTrackingMode();      
+      action->setTrackingMode(true);
+
       action->pushAction(*home_x, *home_o);
       action->checkActionsDone(b, true);
+      action->setTrackingMode(currTrackingMode);
 
       useArm(USE_LEFT);
       action->getCartesianIF(cif);
       cif->setRestPos(newRestPos, currRestPos); 
+      currTrackingMode = action->getTrackingMode();      
+      action->setTrackingMode(true);
+
       action->pushAction(*home_x, *home_o);
       action->checkActionsDone(b, true);
+      action->setTrackingMode(currTrackingMode);
 
 
       //controlGazeSaccadeAbsolute(headPosActAz, headPosActEl);
-      yarp::os::Time::delay(2.0);
+      yarp::os::Time::delay(1.0);
 
       state=JUSTACT;
     }
@@ -921,7 +930,7 @@ bool DemoAff::updateModule(){
      bool b;
      action->pushAction(*home_x,*home_o);
      action->checkActionsDone(b,true);
-     yarp::os::Time::delay(2.0);
+     yarp::os::Time::delay(1.0);
      state = JUSTACT;
   }
   case GETDEMOOBJS:
@@ -1040,7 +1049,8 @@ bool DemoAff::updateModule(){
   case OBJSELEC: 
     {
       // Look for objects
-      controlGazeSaccadeAbsolute(headPosActAz, headPosActEl);
+      //controlGazeSaccadeAbsolute(headPosActAz, headPosActEl);
+
 	  yarp::os::Time::delay(0.1);                 
       
       bool done=true;
@@ -1103,7 +1113,7 @@ bool DemoAff::updateModule(){
       affBN.SolveQueryPerfectObs(ev, nquery, query, actprob);
       printf("------------------\nAction probabilities: %f %f %f\n",actprob[0],actprob[1],actprob[2]);
 
-      yarp::os::Time::delay(1);
+      //yarp::os::Time::delay(1);
       
       // Test action, object combinations to find the best pair
       float jeffectprob[4];
@@ -1122,7 +1132,7 @@ bool DemoAff::updateModule(){
 	}
       }
 
-      yarp::os::Time::delay(1);
+      //yarp::os::Time::delay(1);
       printf("The decision is ... \n");
 
       if (bestprob==0.0) {
@@ -1144,21 +1154,11 @@ bool DemoAff::updateModule(){
 	// Select the object position
 	objposreach.resize(2);	
 	// This code was the original
-	//objposreach[0] = trackDescTable[selectedobj].roi_x;
-	//objposreach[1] = trackDescTable[selectedobj].roi_y;
-	//This is the new code - selects a point in the bottom of the object
-	double xn = objDescTable[selectedobj].roi_x;
-	double yn = objDescTable[selectedobj].roi_y;
-	double wn = objDescTable[selectedobj].roi_width;
-	double hn = objDescTable[selectedobj].roi_height;
-	//These are normalized coordinates. Must denormalize. 
-    // WARNING: This only works for 320 x 240 images !!!!!
-	double x = xn*160+160;
-	double y = 120 - yn*120;
-	double w = wn*320;
-	double h = hn*240;
-	objposreach[0] = x;
-	objposreach[1] = y+h/2;
+	objposreach[0] = trackDescTable[selectedobj].roi_x;
+	objposreach[1] = trackDescTable[selectedobj].roi_y;
+        // New code
+        //objposreach[0] = objDescTable[selectedobj].special_point_x;
+        //objposreach[1] = objDescTable[selectedobj].special_point_y;
 	
 	cout << "===================================================================" << endl;
 	cout << "===================================================================" << endl;
@@ -1181,7 +1181,8 @@ bool DemoAff::updateModule(){
   case JUSTACT:
     {
       emotionCtrl("neu");
-      getObjInfo();
+ 
+     getObjInfo();
 
       if (numObjs>0) {
 	// Select object closer to the center
@@ -1200,7 +1201,7 @@ bool DemoAff::updateModule(){
 
 	// Keep info about the selected object 
 
-	yarp::os::Time::delay(4.0);
+	//yarp::os::Time::delay(4.0);
 
 	democolor = processdata.classifycolor(objDescTable[selobj].hist);
 	demoshape = processdata.classifyshape(objDescTable[selobj]);
@@ -1216,21 +1217,11 @@ bool DemoAff::updateModule(){
 	// Select the object position
 	objposreach.resize(2);	
 	//Old code
-	//objposreach[0] = trackDescTable[selobj].roi_x;
-	//objposreach[1] = trackDescTable[selobj].roi_y;
+	objposreach[0] = trackDescTable[selobj].roi_x;
+	objposreach[1] = trackDescTable[selobj].roi_y;
 	//This is the new code - selects a point in the bottom of the object
-	double xn = objDescTable[selectedobj].roi_x;
-	double yn = objDescTable[selectedobj].roi_y;
-	double wn = objDescTable[selectedobj].roi_width;
-	double hn = objDescTable[selectedobj].roi_height;
-	//These are normalized coordinates. Must denormalize. 
-    // WARNING: This only works for 320 x 240 images !!!!!
-	double x = xn*160+160;
-	double y = 120 - yn*120;
-	double w = wn*320;
-	double h = hn*240;
-	objposreach[0] = x;
-	objposreach[1] = y+h/2;
+        //objposreach[0] = objDescTable[selectedobj].special_point_x;
+        //objposreach[1] = objDescTable[selectedobj].special_point_y;
 	
 	cout << "===================================================================" << endl;
 	cout << "===================================================================" << endl;
@@ -1239,7 +1230,7 @@ bool DemoAff::updateModule(){
 	cout << "===================================================================" << endl;
 
 	state=REACHING;
-	selectedaction=GRASP; //TAP; //GRASP;
+	selectedaction=TOUCH;//TAP; //GRASP;
       }
 
     }
@@ -1260,7 +1251,7 @@ bool DemoAff::updateModule(){
       printf("Selected pos <%g %g>\n", 
 	       objposreach[0], objposreach[1]);
       
-      yarp::os::Time::delay(1.0);
+      //yarp::os::Time::delay(1.0);
 
       if (headPosition != NULL && headPosition->size() >= 6) {
 	//get data and convert from degrees to radiant
@@ -1288,7 +1279,13 @@ bool DemoAff::updateModule(){
       object3d.resize(3);
       projections[usedEye]->project(objposreach, object3d);
       
-
+      //If object is out of reach, do nothing
+      if( object3d[0] < -0.4 )
+      {
+         state = INIT;
+         printf("Aborting  %f %f %f  OUT OF REACH\n", object3d[0], object3d[1], object3d[2]);
+         break;
+      }
 
       printf("Grasping %f %f %f\n", object3d[0], object3d[1], object3d[2]);
 
@@ -1333,15 +1330,20 @@ bool DemoAff::updateModule(){
           *graspOrien = dcm2axis(palmOrientations[armToBeUsed +"_down"]);
     	  }
 
-        // apply systematic offset due to uncalibrated kinematic
-        Vector graspPosition = object3d + *dOffs;
+        Vector graspPosition = object3d;
         // safe thresholding
         graspPosition[0] = min(-0.1, graspPosition[0]);
+        //graspPosition[2] = max(tableTop[2]+0.1, graspPosition[2]);
+        graspPosition[2] = max(tableTop[2], graspPosition[2]);
+
+        // apply systematic offset due to uncalibrated kinematic
+        graspPosition = graspPosition + *dOffs;
 
         //TODO: graspPosition[2] = action->determineHeight();
 
         // grasp it (wait until it's done)
-        action->grasp(graspPosition ,*graspOrien,*graspDisp,*graspRelief);
+        //action->grasp(graspPosition ,*graspOrien,*graspDisp,*graspRelief);
+        action->grasp(graspPosition ,*graspOrien,*graspDisp);
         action->checkActionsDone(b, true);
 
 
@@ -1376,11 +1378,15 @@ bool DemoAff::updateModule(){
         emotionCtrl("hap");
 
         bool b;
-        double startOffset = 0.1, endOffset = 0.05;
+        double startOffset = 0.1, endOffset = 0.05; 
+        double heightOffsetLeft = 0.11;
+        double heightOffsetRight = 0.125;
+        double heightOffset, heightOffsetArm; 
+
         startOffset = (armToBeUsed == "right" ? startOffset : -startOffset);
         endOffset = (armToBeUsed == "right" ? -endOffset : endOffset);
-
-        double heightOffset = max(0.0, 0.1 -zOffset);
+        heightOffsetArm = (armToBeUsed == "right" ? heightOffsetRight : heightOffsetLeft );
+        heightOffset = max(0.0, heightOffsetArm - zOffset);
 
         Vector startOrientation = dcm2axis(palmOrientations[armToBeUsed +"_starttap"]);
         Vector stopOrientation = dcm2axis(palmOrientations[armToBeUsed +"_stoptap"]);
@@ -1411,12 +1417,52 @@ bool DemoAff::updateModule(){
       if (armToBeUsed != "") {
         emotionCtrl("shy");
 
+// NEW STUFF
         bool b;
-        double height = tableTop[2]; /* TODO: = action->determineHeight(); */
+        printf("Touching %f %f %f\n", object3d[0], object3d[1], object3d[2]);
+
+    	  if (demoshape == processobjdata::BOX) {
+          double alpha = -M_PI * (45 - objDescTable[selectedobj].angle) / 180;
+
+          Matrix Rz(3,3);
+          Rz.zero();
+          Rz(0,0) = cos(alpha);
+          Rz(0,1) = -sin(alpha);
+          Rz(1,0) = -Rz(0,1);
+          Rz(1,1) = Rz(0,0);
+          Rz(2,2) = 1.0; 
+
+          *graspOrien = dcm2axis(palmOrientations[armToBeUsed +"_down"]);
+    	  }
+
+        Vector graspPosition = object3d;
+        // safe thresholding
+        graspPosition[0] = min(-0.1, graspPosition[0]);
+        //graspPosition[2] = max(tableTop[2]+0.1, graspPosition[2]);
+        graspPosition[2] = max(tableTop[2], graspPosition[2]-0.02);
+
+        // apply systematic offset due to uncalibrated kinematic
+        graspPosition = graspPosition + *dOffs;
+
+        //TODO: graspPosition[2] = action->determineHeight();
+
+        // grasp it (wait until it's done)
+        action->touch(graspPosition ,*graspOrien,*graspDisp);
+        action->checkActionsDone(b, true);
+        action->pushWaitState(1.5);
         action->checkActionsDone(b, true);
 
+
+
+// OLD STUFF
+
+
+//        bool b;
+//        double height = tableTop[2]; /* TODO: = action->determineHeight(); */
+//        action->checkActionsDone(b, true);
+
         // signal a successful touch
-        emotionCtrl(height >= tableTop[2] + 0.01 ? "hap" : "sad");
+//        emotionCtrl(height >= tableTop[2] + 0.01 ? "hap" : "sad");
       }
       state = INIT;
     }
@@ -1593,6 +1639,9 @@ bool DemoAff::getBlobInfo(const Bottle *msg) {
     objDescTable[i].roi_width = objbot->get(2).asDouble();
     objDescTable[i].roi_height = objbot->get(3).asDouble();
     objDescTable[i].angle = objbot->get(4).asDouble();
+    objDescTable[i].special_point_x = objbot->get(5).asDouble();
+    objDescTable[i].special_point_y = objbot->get(6).asDouble();
+
 
     for (int j=0; j<16; j++) {
       objDescTable[i].hist[j]= objbot->get(7+j).asDouble();
@@ -1657,7 +1706,6 @@ bool DemoAff::getObjInfo() {
   Stamp objstamp, trackstamp; 
   Bottle *objbottle = port_descriptor.read(true);
   Bottle *trackbottle = port_track_info.read(true);
- 
   
   /* check that both ports have timestamps */
   if( !port_descriptor.getEnvelope(objstamp) || !port_track_info.getEnvelope(trackstamp) )    {
