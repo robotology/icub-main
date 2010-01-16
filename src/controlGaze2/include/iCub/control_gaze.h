@@ -47,6 +47,7 @@
 
 #include <iCub/iKinFwd.h>
 using namespace iKin;
+using namespace yarp::math;
 
 #if USE_PREDICTIVE_CONTROL
 	#include <iCub/predictors.h>
@@ -132,10 +133,16 @@ private:
     double _head_elev;		// head elevation w.r.t. the neck base reference frame
 	double _targ_azy;		// target azimuth w.r.t. the neck base reference frame
 	double _targ_elev;		// target elevation w.r.t. the neck base reference frame
-	double _abs_ref_az;		// reference azimuth w.r.t. the waist reference frame (absolute)
-	double _abs_ref_el;		// reference elevation w.r.t. the waist reference frame (absolute)
 	double	desazy;			// current desired gaze azimuth w.r.t. the neck base reference frame
 	double	deselev;		// current desired gaze elevation w.r.t. the neck base reference frame
+	
+	double _abs_eye_az;
+	double _abs_eye_el;
+	double _abs_head_az;
+	double _abs_head_el;
+	double _abs_ref_az;		// reference azimuth w.r.t. the waist reference frame (absolute)
+	double _abs_ref_el;		// reference elevation w.r.t. the waist reference frame (absolute)
+	
 	double currenterror;	/** current error */
 
     double vergenceGain;
@@ -315,6 +322,39 @@ protected:
 		pitch = beta*(180/M_PI);
 		yaw = alpha*(180/M_PI);
 	}
+	void getEyeRollPitchYawAnglesWRTWaist(double *head_encoders, double *torso_encoders, double &roll, double &pitch, double &yaw)
+	{
+		Vector headData(8);
+		// units shall be in radians
+		// remind that the torso is in reverse order:
+		// their joints are sent assuming the neck as kinematic origin
+		// and not the waist, hence we've got to invert them!
+		headData[0]=(M_PI/180.0)*torso_encoders[2];	
+		headData[1]=(M_PI/180.0)*torso_encoders[1];
+		headData[2]=(M_PI/180.0)*torso_encoders[0];
+		// neck part
+		headData[3]=(M_PI/180.0)*head_encoders[0];
+		headData[4]=(M_PI/180.0)*head_encoders[1];
+		headData[5]=(M_PI/180.0)*head_encoders[2];
+		// eye part
+		headData[6] = (M_PI/180.0)*head_encoders[3];
+		headData[7] = (M_PI/180.0)*head_encoders[4];
+		// set the joints
+		eyeKinematics.setAng(headData);
+		//Get Trasformation matriz
+		yarp::sig::Matrix eyeH = eyeKinematics.getH();
+		//Get rotation submatrix
+		Matrix headR = eyeH.submatrix(0,2,0,2);
+		//Trasform to suitable (Base) coordinates for Roll Pitch Yaw computation
+		Matrix RT(3,3);
+		RT(0,0)=0; RT(0,1)=1; RT(0,2)=0;
+		RT(1,0)=0; RT(1,1)=0; RT(1,2)=-1;
+		RT(2,0)=-1; RT(2,1)=0; RT(2,2)=0;
+		Matrix headRT = headR*RT;
+		//Get roll, pitch, yaw angles
+		double temp;
+		getRollPitchYawAnglesFromRotationMatrix(headRT, temp, pitch, yaw);		
+	}
 	void getHeadRollPitchYawAnglesWRTWaist(double *head_encoders, double *torso_encoders, double &roll, double &pitch, double &yaw)
 	{
 		Vector headData(8);
@@ -370,9 +410,13 @@ public:
     virtual bool getControllerStatus(string &status);
     virtual bool getSaccadeTime(double &time);
     virtual bool getReference(double &azimuth, double &elevation);
+	//virtual bool getReferenceToWaist(double &azimuth, double &elevation);
     virtual bool getDirectionEyeRight(double &azimuth, double &elevation);
+	//virtual bool getDirectionEyeRightToWaist(double &azimuth, double &elevation);
     virtual bool getDirectionEyeLeft(double &azimuth, double &elevation);
+	//virtual bool getDirectionEyeLeftToWaist(double &azimuth, double &elevation);
     virtual bool getDirectionHead(double &azimuth, double &elevation);
+	//virtual bool getDirectionHeadToWaist(double &azimuth, double &elevation);
     virtual bool getLimitResetTime(double &time);
     virtual bool getMinSaccadeTime(double &time);
     virtual bool setLimitResetTime(double time);

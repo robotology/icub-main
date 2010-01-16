@@ -970,6 +970,9 @@ bool Control_GazeModule::updateModule() //this runs every
 
 	head.HeadGaze( &_head_azy, &_head_elev, headpos);
 	head.Gaze( &_eye_azy, &_eye_elev, headpos);
+    double temp;
+	getHeadRollPitchYawAnglesWRTWaist(headpos, torsopos, temp, _abs_head_el, _abs_head_az );
+    getEyeRollPitchYawAnglesWRTWaist(headpos, torsopos, temp, _abs_eye_el, _abs_eye_az );
 
 	// If we had a valid timely command, update the desired gaze
 
@@ -1001,7 +1004,6 @@ bool Control_GazeModule::updateModule() //this runs every
 	NeckNorm(1,0) = 0; NeckNorm(1,1) = 0; NeckNorm(1,2) = 1;
 	NeckNorm(2,0) = 0; NeckNorm(2,1) = 1; NeckNorm(2,2) = 0;
 	Matrix DesRotNeck = NeckNorm * Waist2Neck * DesRotWaist; 
-	double temp;
 	getRollPitchYawAnglesFromRotationMatrix(DesRotNeck, temp, _targ_elev, _targ_azy);
 
 	desazy = _targ_azy;
@@ -1096,7 +1098,7 @@ bool Control_GazeModule::updateModule() //this runs every
 		case REST: 
 		case LIMIT:
 			currenterror = head.HeadGazeController(desazy, deselev, X, pert, oldW, vels, headpos, inertialW, 0,controlType);
-			//printf("%f %f %f %f \n", vels[0], vels[2], vels[3], vels[4] );
+			printf("%f %f %f %f \n", vels[0], vels[2], vels[3], vels[4] );
 
             vels[5]=-vergenceGain*disparity;
 			velmove(vels); //velocity control is smoother
@@ -1237,7 +1239,8 @@ bool Control_GazeModule::updateModule() //this runs every
             printf("x: %02.2f y: %02.2f \n", _command_x, _command_y);
 
             // the current state
-            printf("ref azy:%02.2f head azy:%02.2f eye azy:%02.2f ref elev:%02.2f head elev:%02.2f eye elev:%02.2f\n", desazy, _head_azy, _eye_azy, deselev, _head_elev, _eye_elev);
+			printf("NECK: ref az:%02.2f head az:%02.2f eye az:%02.2f ref el:%02.2f head el:%02.2f eye el:%02.2f\n", desazy, _head_azy, _eye_azy, deselev, _head_elev, _eye_elev);
+			printf("WAIST: ref az:%02.2f head az:%02.2f eye az:%02.2f ref el:%02.2f head el:%02.2f eye el:%02.2f\n", _abs_ref_az, _abs_head_az, _abs_eye_az, _abs_ref_el, _abs_head_el, _abs_eye_el);
         }
 
     //status port (required by attentionSelection)
@@ -1246,6 +1249,8 @@ bool Control_GazeModule::updateModule() //this runs every
     bot.addInt(_behav);
     bot.addDouble(_eye_azy);
     bot.addDouble(_eye_elev);
+	bot.addDouble(_abs_eye_az);
+	bot.addDouble(_abs_eye_el);
 	_status_port.write();
 
 	if( _bLog )

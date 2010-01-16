@@ -327,8 +327,10 @@ using namespace iCub::contrib;
  * - . 4 - Stuck in a limit.
  * - . 5 - Resting.
  * - . 6 - Starting smooth pursuit. 
- * - azimuth - a floating point number with the gaze direction azimuth (in degrees).
- * - elevation - a floating point number with the gaze direction elevation (in degrees). 
+ * - azimuth wrt neck base    - a floating point number with the gaze direction azimuth with respect to the neck base reference frame (in degrees).
+ * - elevation wrt neck base  - a floating point number with the gaze direction elevation with respect to the neck base reference frame (in degrees). 
+ * - azimuth wrt waist base   - a floating point number with the gaze direction azimuth with respect to the neck base reference frame (in degrees).
+ * - elevation wrt waist base - a floating point number with the gaze direction elevation with respect to the neck base reference frame (in degrees). 
  *
  *
  * SUMMARY:
