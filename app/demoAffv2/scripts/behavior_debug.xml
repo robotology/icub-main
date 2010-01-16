@@ -1,0 +1,32 @@
+<application>
+<name>Behavior_Control</name>
+<dependencies>
+        <port>/icub/attentionSelection/conf</port> 
+        <port>/icub/controlGaze/status:o</port>
+        <port>/demoAffv2/port_behavior_in</port>
+        <port>/demoAffv2/port_behavior_out</port>
+</dependencies>
+<module>
+        <name>behaviorController</name>
+        <parameters>--context demoAffv2/conf</parameters>
+        <tag>controlgaze</tag>
+        <stdio>icub14</stdio>
+        <node>icub-vm1</node>
+</module>
+<connection>
+        <from>/icub/controlGaze/status:o</from>
+        <to>/demoAffv2/behavior/gaze</to>
+</connection>
+<connection>
+        <from>/demoAffv2/behavior/att</from>
+        <to>/icub/attentionSelection/conf</to>
+</connection>
+<connection>
+        <from>/demoAffv2/port_behavior_out</from>
+        <to>/demoAffv2/behavior/port_aff_in</to>
+</connection>
+<connection>
+        <from>/demoAffv2/behavior/port_aff_out</from>
+        <to>/demoAffv2/port_behavior_in</to>
+</connection>
+</application>
