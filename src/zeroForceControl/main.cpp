@@ -216,7 +216,7 @@ private:
 
 	void initializePositionAndLimits(string limb)
 	{
-		if(limbJnt!=NULL)
+		if(limbJnt!=0)
 		{
 			if (strcmp(limb.c_str(), "left_arm")==0)
 			{
@@ -266,12 +266,12 @@ private:
 			  kp.resize(limbJnt);
 			  if (filter_enabled)
 			  {
-				double larm_div = 1.0;
-				kp(0) = -25.0/larm_div;	kp(1) = -25.0/larm_div;	kp(2) = -25.0/larm_div;	kp(3) = -50.0/larm_div;
+				double larm_div = 0.35;
+				kp(0) = -25.0/larm_div;	kp(1) = -20.0/larm_div;	kp(2) = -25.0/larm_div;	kp(3) = -40.0/larm_div;
 			  }
 			  else
 			  {
-				kp(0) = -25.0;	kp(1) = -25.0;	kp(2) = -25.0;	kp(3) = -50.0;
+				kp(0) = -25.0;	kp(1) = -25.0;	kp(2) = -25.0;	kp(3) = -30.0;
 			  }
               fprintf(stderr, "Opening left arm ... \n");
 		  }
@@ -288,12 +288,12 @@ private:
 			  kp.resize(limbJnt);
 			  if (filter_enabled)
 			  {
-				double rarm_div = 1.0;
-				kp(0) =  25.0/rarm_div;	kp(1) =  25.0/rarm_div;	kp(2) =  25.0/rarm_div;	kp(3) =  50.0/rarm_div;
+				double rarm_div = 0.35;
+				kp(0) =  25.0/rarm_div;	kp(1) =  20.0/rarm_div;	kp(2) =  25.0/rarm_div;	kp(3) =  40.0/rarm_div;
 			  }
 			  else
 			  {
-				kp(0) =  25.0;	kp(1) =  25.0;	kp(2) =  25.0;	kp(3) =  50.0;
+				kp(0) =  25.0;	kp(1) =  25.0;	kp(2) =  25.0;	kp(3) =  30.0;
 			  }
               fprintf(stderr, "Opening right arm ... \n");
 		  } 
@@ -310,8 +310,8 @@ private:
 			  //GAINS gains
 			  if (filter_enabled)
 			  {
-			    double lleg_div=1.5;
-				kp(0) =  30.0/lleg_div;	kp(1) =  -20.0/lleg_div;	kp(2) =  140.0/lleg_div;	kp(3) =  -140.0/lleg_div; 
+			    double lleg_div=1.0;
+				kp(0) =  20.0;	kp(1) =  -14.0/lleg_div;	kp(2) =  94.0/lleg_div;	kp(3) =  -94.0/lleg_div; 
 			  }
 			  else
 			  {

@@ -9,7 +9,7 @@ FIND_PACKAGE(ICUB)
 FIND_PACKAGE(IFC REQUIRED)
 INCLUDE_DIRECTORIES(${IFC_INCLUDE_DIRS})
 
-SET(folder_source main.cpp)
+SET(folder_source main.cpp filter.cpp)
 SOURCE_GROUP("Source Files" FILES ${folder_source})
 
 ADD_EXECUTABLE(zeroForceControl ${folder_source})
