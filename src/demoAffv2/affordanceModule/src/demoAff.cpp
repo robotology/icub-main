@@ -590,9 +590,9 @@ bool DemoAff::configureAffPrimitives(Searchable &config,
   option.put("local",name.c_str());
   
   Property optionL(option); 
-  optionL.put("part","left_arm");optionL.put("hand_sequences_file_left",handSeqFileLeft);
+  optionL.put("part","left_arm");optionL.put("hand_sequences_file",handSeqFileLeft);
   Property optionR(option); 
-  optionR.put("part","right_arm");optionR.put("hand_sequences_file_right",handSeqFileRight);
+  optionR.put("part","right_arm");optionR.put("hand_sequences_file",handSeqFileRight);
 
   cout << "optionL: " << optionL.toString() << endl;
   cout << "optionR: " << optionR.toString() << endl;
