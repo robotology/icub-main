@@ -700,6 +700,7 @@ protected:
     bool skipFatherPart;
     bool meConfigured;
     bool enableWristCheck;
+    bool wristContact;
 
     yarp::dev::IPidControl   *pidCtrl;
     ctrl::AWLinEstimator     *outputDerivative;
@@ -759,7 +760,7 @@ public:
     /**
     * More evolute version of grasp. It exploits the contact 
     * detection in order to lift up a bit the hand prior to 
-    * grasping. 
+    * grasping (this happens only after contact).
     * @param x the 3-d target position [m]. 
     * @param o the 4-d hand orientation used while reaching/grasping
     *          (given in axis-angle representation: ax ay az angle

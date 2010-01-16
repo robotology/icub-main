@@ -461,9 +461,6 @@ bool affActionPrimitives::isHandSeqEnded()
             // detect contact on the finger
             if (val>thres)
             {
-                printMessage("contact detected on finger %d: (%g>%g)\n",
-                             fng,val,thres);
-
                 fingersInPosition=false;
 
                 // take joints belonging to the finger
@@ -476,6 +473,9 @@ bool affActionPrimitives::isHandSeqEnded()
                     // stop and remove if not done yet
                     if (tmpSet.find(jnt)!=tmpSet.end())
                     {
+                        printMessage("contact detected on finger %d: (%g>%g) => stopping joint %d\n",
+                                     fng,val,thres,jnt);
+
                         stopJntTraj(jnt);
                         tmpSet.erase(jnt);
                     }
@@ -1212,12 +1212,17 @@ void enablingWristDofAndGrasp::exec()
 
     action->enableWristCheck=false;
 
-    Vector x,o;
-    action->cartCtrl->getPose(x,o);
-    action->printMessage("logged 3-d pos: [%s]\n",
-                         action->toCompactString(x).c_str());
+    // lift up the hand if contact detected
+    if (action->wristContact)
+    {
+        Vector x,o;
+        action->cartCtrl->getPose(x,o);
+        action->printMessage("logged 3-d pos: [%s]\n",
+                             action->toCompactString(x).c_str());
+    
+        action->pushAction(x+action->grasp_d2,action->grasp_o);
+    }
 
-    action->pushAction(x+action->grasp_d2,action->grasp_o);
     action->pushAction("close_hand"); 
 }
 
@@ -1246,6 +1251,7 @@ void affActionPrimitivesLayer2::init()
     skipFatherPart=false;
     meConfigured=false;
     enableWristCheck=false;
+    wristContact=false;
 
     disableWristDof=NULL;
     enableWristDof=NULL;
@@ -1275,6 +1281,7 @@ void affActionPrimitivesLayer2::run()
                          wrist_joint,outDer[0],wrist_thres);
 
             cartCtrl->stopControl();
+            wristContact=true;
         }
     }
 
@@ -1338,6 +1345,8 @@ bool affActionPrimitivesLayer2::grasp(const Vector &x, const Vector &o,
     if (configured)
     {
         printMessage("start grasping\n");
+
+        wristContact=false;
         pushAction(x+d1,o,"open_hand",ACTIONPRIM_DISABLE_EXECTIME,disableWristDof);
         pushAction(x,o,ACTIONPRIM_DISABLE_EXECTIME,execGrasp);
         // the remaining part is done in the callback
@@ -1359,6 +1368,8 @@ bool affActionPrimitivesLayer2::grasp(const Vector &x, const Vector &o, const Ve
     if (configured)
     {
         printMessage("start grasping\n");
+
+        wristContact=false;
         pushAction(x+d,o,"open_hand",ACTIONPRIM_DISABLE_EXECTIME,disableWristDof);
         pushAction(x,o,ACTIONPRIM_DISABLE_EXECTIME,enableWristDof);
         pushAction("close_hand");
@@ -1376,6 +1387,8 @@ bool affActionPrimitivesLayer2::touch(const Vector &x, const Vector &o, const Ve
     if (configured)
     {
         printMessage("start touching\n");
+
+        wristContact=false;
         pushAction(x+d,o,"open_hand",ACTIONPRIM_DISABLE_EXECTIME,disableWristDof);
         pushAction(x,o,ACTIONPRIM_DISABLE_EXECTIME,enableWristDof);
 
