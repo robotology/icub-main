@@ -10,8 +10,8 @@ WorldInfo {
   runRealTime TRUE
 }
 Viewpoint {
-  orientation 0.0179791 0.993393 0.113344 3.1559
-  position 1.1654 1.10699 0.0421481
+  orientation 0.999993 -0.000379976 -0.00362461 4.80574
+  position 0.996418 2.12928 1.98191
   follow "icub"
 }
 Background {
@@ -89,8 +89,8 @@ DEF GROUND Solid {
   }
 }
 DEF icub Supervisor {
-  translation 1.03359 0.7 2.13776
-  rotation 1 0 0 0
+  translation 1.03244 0.7 2.21556
+  rotation 0.00126937 -0.0253297 0.999678 -0
   children [
     Shape {
       appearance DEF COLOR Appearance {
@@ -4522,6 +4522,7 @@ DEF icub Supervisor {
                               }
                               maxVelocity 120
                               maxForce 34
+                              position -1.23445e-008
                               minPosition -0.645772
                               maxPosition 1.39
                             }
@@ -4538,6 +4539,7 @@ DEF icub Supervisor {
                           }
                           maxVelocity 120
                           maxForce 40
+                          position -4.21468e-008
                           maxPosition 2.80649
                         }
                       ]
@@ -4553,6 +4555,7 @@ DEF icub Supervisor {
                       }
                       maxVelocity 120
                       maxForce 34
+                      position -2.98023e-008
                       minPosition -1.74
                       maxPosition 0.17
                     }
@@ -4565,6 +4568,7 @@ DEF icub Supervisor {
                   }
                   maxVelocity 0
                   maxForce 9999
+                  position 1.29619e-013
                 }
                 DEF left_shoulder_fake Servo {
                   translation 0 0.143 0
@@ -8966,6 +8970,7 @@ DEF icub Supervisor {
                               }
                               maxVelocity 120
                               maxForce 34
+                              position 1.60982e-015
                               minPosition -0.645772
                               maxPosition 1.4
                             }
@@ -23244,12 +23249,211 @@ DEF icub Supervisor {
   }
   controller "iCubInterfaceWebots"
 }
-Solid {
-  translation 1.02668 0.7 1.82774
+DEF DRUM Solid {
+  translation 0.933883 0.7 1.75403
+  rotation 0 -1 0 5.92008
   children [
     Solid {
+      translation 0 0.07 -0.13
+      rotation 1 0 0 1
       children [
         Shape {
+          appearance Appearance {
+            material Material {
+              emissiveColor 1 1 1
+            }
+            texture ImageTexture {
+              url [
+                "markers\\SimpleStd_076.png"
+              ]
+            }
+          }
+          geometry IndexedFaceSet {
+            coord Coordinate {
+              point [
+                0.05 0 0.05
+                0.05 0 -0.05
+                -0.05 0 -0.05
+                -0.05 0 0.05
+              ]
+            }
+            texCoord TextureCoordinate {
+              point [
+                1 0
+                1 1
+                0 1
+                0 0
+              ]
+            }
+            coordIndex [
+              0, 1, 2, 3
+            ]
+            texCoordIndex [
+              0, 1, 2, 3
+            ]
+          }
+        }
+      ]
+    }
+    Shape {
+      geometry Cylinder {
+        height 0.05
+        radius 0.1
+      }
+    }
+  ]
+}
+DEF DRUM Solid {
+  translation 0.768021 0.7 1.86537
+  rotation 0 1 0 0.687671
+  children [
+    Solid {
+      translation 0 0.07 -0.13
+      rotation 1 0 0 1
+      children [
+        Shape {
+          appearance Appearance {
+            material Material {
+              emissiveColor 1 1 1
+            }
+            texture ImageTexture {
+              url [
+                "markers\\SimpleStd_076.png"
+              ]
+            }
+          }
+          geometry IndexedFaceSet {
+            coord Coordinate {
+              point [
+                0.05 0 0.05
+                0.05 0 -0.05
+                -0.05 0 -0.05
+                -0.05 0 0.05
+              ]
+            }
+            texCoord TextureCoordinate {
+              point [
+                1 0
+                1 1
+                0 1
+                0 0
+              ]
+            }
+            coordIndex [
+              0, 1, 2, 3
+            ]
+            texCoordIndex [
+              0, 1, 2, 3
+            ]
+          }
+        }
+      ]
+    }
+    Shape {
+      geometry Cylinder {
+        height 0.05
+        radius 0.1
+      }
+    }
+  ]
+}
+DEF DRUM Solid {
+  translation 1.30464 0.7 1.84686
+  rotation 0 -1 0 0.484792
+  children [
+    Solid {
+      translation 0 0.07 -0.13
+      rotation 1 0 0 1
+      children [
+        Shape {
+          appearance Appearance {
+            material Material {
+              emissiveColor 1 1 1
+            }
+            texture ImageTexture {
+              url [
+                "markers\\SimpleStd_076.png"
+              ]
+            }
+          }
+          geometry IndexedFaceSet {
+            coord Coordinate {
+              point [
+                0.05 0 0.05
+                0.05 0 -0.05
+                -0.05 0 -0.05
+                -0.05 0 0.05
+              ]
+            }
+            texCoord TextureCoordinate {
+              point [
+                1 0
+                1 1
+                0 1
+                0 0
+              ]
+            }
+            coordIndex [
+              0, 1, 2, 3
+            ]
+            texCoordIndex [
+              0, 1, 2, 3
+            ]
+          }
+        }
+      ]
+    }
+    Shape {
+      geometry Cylinder {
+        height 0.05
+        radius 0.1
+      }
+    }
+  ]
+}
+DEF DRUM Solid {
+  translation 1.13152 0.7 1.74905
+  rotation 0 -1 0 0.118645
+  children [
+    Solid {
+      translation 0 0.07 -0.13
+      rotation 1 0 0 1
+      children [
+        Shape {
+          appearance Appearance {
+            material Material {
+              emissiveColor 1 1 1
+            }
+            texture ImageTexture {
+              url [
+                "markers\\SimpleStd_076.png"
+              ]
+            }
+          }
+          geometry IndexedFaceSet {
+            coord Coordinate {
+              point [
+                0.05 0 0.05
+                0.05 0 -0.05
+                -0.05 0 -0.05
+                -0.05 0 0.05
+              ]
+            }
+            texCoord TextureCoordinate {
+              point [
+                1 0
+                1 1
+                0 1
+                0 0
+              ]
+            }
+            coordIndex [
+              0, 1, 2, 3
+            ]
+            texCoordIndex [
+              0, 1, 2, 3
+            ]
+          }
         }
       ]
     }
