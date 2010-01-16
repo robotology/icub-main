@@ -904,13 +904,13 @@ bool DemoAff::updateModule(){
       useArm(USE_RIGHT);
       action->getCartesianIF(cif);
       cif->setRestPos(newRestPos,currRestPos);
-      action->pushAction(*home_x, *home_o);
+      action->pushAction(*home_x, *home_o, "open_hand");
       action->checkActionsDone(b, true);
 
       useArm(USE_LEFT);
       action->getCartesianIF(cif);
       cif->setRestPos(newRestPos, currRestPos); 
-      action->pushAction(*home_x, *home_o);
+      action->pushAction(*home_x, *home_o, "open_hand");
       action->checkActionsDone(b, true);
 
       useArm(USE_RIGHT);
@@ -952,13 +952,13 @@ bool DemoAff::updateModule(){
       useArm(USE_RIGHT);
       action->getCartesianIF(cif);
       cif->setRestPos(newRestPos,currRestPos);
-      action->pushAction(*home_x, *home_o);
+      action->pushAction(*home_x, *home_o, "open_hand");
       action->checkActionsDone(b, true);
 
       useArm(USE_LEFT);
       action->getCartesianIF(cif);
       cif->setRestPos(newRestPos, currRestPos); 
-      action->pushAction(*home_x, *home_o);
+      action->pushAction(*home_x, *home_o, "open_hand");
       action->checkActionsDone(b, true);
 
       useArm(USE_RIGHT);
