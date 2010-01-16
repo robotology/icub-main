@@ -12,6 +12,13 @@
 * 
 * Display a kinematic model of the robot from the encoders. It also
 * shows a representation of the output of the inertial sensor.
+* 
+* \image html icubgui1.jpg
+* \image latex icubgui1.eps "iCubGui running on Linux" width=10cm
+*
+* \image html icubgui2.jpg
+* \image latex icubgui2.eps "iCubGui running on Linux" width=10cm
+*
 *
 * \section lib_sec Libraries
 *  - YARP
