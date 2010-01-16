@@ -746,7 +746,7 @@ public:
     *  
     * \note To be called after object creation. 
     *  
-    * \note Further available options are: 
+    * Further available options are: 
     *  
     * \b wrist_joint <int>: specify the wrist joint to be blocked
     *    while grasping/touching.
