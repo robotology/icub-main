@@ -11,17 +11,19 @@
 #include <stdio.h>
 #include <string>
 
-#define RES_EVENT(x)                        (static_cast<ACE_Auto_Event*>(x))
-                                            
-#define ACTIONPRIM_DEFAULT_PER              50      // [ms]
-#define ACTIONPRIM_DEFAULT_EXECTIME         2.0     // [s]
-#define ACTIONPRIM_DEFAULT_REACHTOL         0.005   // [m]
-#define ACTIONPRIM_DUMP_PERIOD              1.0     // [s]
-#define ACTIONPRIM_DEFAULT_WRIST_JOINT      5
-#define ACTIONPRIM_DEFAULT_WRIST_THRES      1e9
-#define ACTIONPRIM_DEFAULT_PART             "right_arm"
-#define ACTIONPRIM_DEFAULT_TRACKINGMODE     "off"
-#define ACTIONPRIM_DEFAULT_VERBOSITY        "off"
+#define RES_EVENT(x)                                (static_cast<ACE_Auto_Event*>(x))
+                                                    
+#define ACTIONPRIM_DEFAULT_PER                      50      // [ms]
+#define ACTIONPRIM_DEFAULT_EXECTIME                 2.0     // [s]
+#define ACTIONPRIM_DEFAULT_REACHTOL                 0.005   // [m]
+#define ACTIONPRIM_DUMP_PERIOD                      1.0     // [s]
+#define ACTIONPRIM_DEFAULT_WRIST_JOINT              5
+#define ACTIONPRIM_DEFAULT_WRIST_THRES              1e9
+#define ACTIONPRIM_DEFAULT_WRIST_DOUT_ESTPOLY_N     40
+#define ACTIONPRIM_DEFAULT_WRIST_DOUT_ESTPOLY_D     5.0
+#define ACTIONPRIM_DEFAULT_PART                     "right_arm"
+#define ACTIONPRIM_DEFAULT_TRACKINGMODE             "off"
+#define ACTIONPRIM_DEFAULT_VERBOSITY                "off"
 
 using namespace std;
 using namespace yarp;
@@ -1306,6 +1308,8 @@ bool affActionPrimitivesLayer2::open(Property &opt)
     {
         wrist_joint=opt.check("wrist_joint",Value(ACTIONPRIM_DEFAULT_WRIST_JOINT)).asInt();
         wrist_thres=opt.check("wrist_thres",Value(ACTIONPRIM_DEFAULT_WRIST_THRES)).asDouble();
+        wrist_Dout_estPoly_N=opt.check("wrist_Dout_estPoly_N",Value(ACTIONPRIM_DEFAULT_WRIST_DOUT_ESTPOLY_N)).asInt();
+        wrist_Dout_estPoly_D=opt.check("wrist_Dout_estPoly_D",Value(ACTIONPRIM_DEFAULT_WRIST_DOUT_ESTPOLY_D)).asDouble();
 
         // check wrist params
         Vector curDof;
@@ -1327,7 +1331,7 @@ bool affActionPrimitivesLayer2::open(Property &opt)
         execGrasp      =new enablingWristDofAndGrasp(this,enableWristSw);
 
         // create output derivative estimator
-        outputDerivative=new AWLinEstimator(40,5.0);
+        outputDerivative=new AWLinEstimator(wrist_Dout_estPoly_N,wrist_Dout_estPoly_D);
 
         // open pid view
         polyHand->view(pidCtrl);

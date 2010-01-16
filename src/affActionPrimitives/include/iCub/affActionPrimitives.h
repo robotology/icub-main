@@ -694,6 +694,8 @@ class affActionPrimitivesLayer2 : public affActionPrimitivesLayer1
 protected:
     int    wrist_joint;
     double wrist_thres;
+    int    wrist_Dout_estPoly_N;
+    double wrist_Dout_estPoly_D;
     double t0;
 
     bool skipFatherPart;
@@ -752,7 +754,16 @@ public:
     * \b wrist_thres <double>: specify the threshold for the 
     *    derivative of the output signal in order to detect contact
     *    between wrist and objects while grasping/touching.
+    *  
+    * \b wrist_Dout_estPoly_N <int>: specify the parameter N of the 
+    *    least-squares polynomial estimator used to compute the
+    *    derivative of the output signal (see \ref
+    *    adaptWinPolyEstimator for further details).
     * 
+    * \b wrist_Dout_estPoly_D <double>: specify the parameter D of 
+    *    the least-squares polynomial estimator used to compute the
+    *    derivative of the output signal (see \ref
+    *    adaptWinPolyEstimator for further details).
     */
     virtual bool open(yarp::os::Property &opt);
 
