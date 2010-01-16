@@ -251,8 +251,7 @@ public:
     * \b tracking_mode <string>: enable/disable the tracking mode; 
     *    possible values: "on"/"off".
     * \note In tracking mode the cartesian position is mantained on 
-    *       the reached target; in non-tracking mode the joints
-    *       positions are kept once the target is attained.
+    *       the reached target.
     *  
     * \b verbosity <string>: enable/disable the verbose mode; 
     *    possible values: "on"/"off".
@@ -485,8 +484,7 @@ public:
     * mode. 
     * @param f: true for tracking mode, false otherwise. 
     * \note In tracking mode the cartesian position is mantained on 
-    *       the reached target; in non-tracking mode the joints
-    *       positions are kept once the target is attained.
+    *       the reached target.
     * @return true/false on success/failure.
     */
     virtual bool setTrackingMode(const bool f);
