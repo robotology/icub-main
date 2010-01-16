@@ -32,6 +32,7 @@
 #include <iomanip>
 #include <string.h>
 
+#include "filter.h"
 #include "iCub/iFC.h"
 #include "iCub/iKinFwd.h"
 
@@ -47,22 +48,18 @@ using namespace iFC;
 using namespace iKin;
 
 
-const int SAMPLER_RATE = 20;
+const int SAMPLER_RATE = 10;
 const int FT_VALUES = 6;
-const int ARM_JNT = 4;
 
 const bool verbose = false;
 const int CPRNT = 100;
 const int CALIBRATION_OK = true; // should be true when FT calibration will be ok
-
-const double initPosition[4] = {-10.0, 20.0, 15.0, 15.0};
-
-const double MAX_JNT_LIMITS[4] = {2.0, 120.0, 90.0, 95.0};
-const double MIN_JNT_LIMITS[4] = {-95.0, 0.0, -20.0, 10.0};
+bool  filter_enabled=true;
 
 #define CONNECTION_ERROR 0
 #define CONNECTION_OK	 1
 
+#define CONTROL_ON 1
 
 /**
 *
@@ -93,6 +90,38 @@ public:
     iCubArm4DOF(const iCubArm4DOF &arm);
 };
 
+
+/**
+* \ingroup iKinFwd
+*
+* A class for defining the 6-DOF iCub Leg
+*/
+class iCubLeg4DOF : public iKinLimb
+{
+protected:
+    virtual void _allocate_limb(const std::string &_type);
+
+public:
+    /**
+    * Default constructor. 
+    */
+    iCubLeg4DOF();
+
+    /**
+    * Constructor. 
+    * @param _type is a string to discriminate between "left" and 
+    *              "right" leg
+    */
+    iCubLeg4DOF(const std::string &_type);
+
+    /**
+    * Creates a new Leg from an already existing Leg object.
+    * @param leg is the Leg to be copied.
+    */
+    iCubLeg4DOF(const iCubLeg4DOF &leg);
+};
+
+
 // class dataCollector: class for reading from Vrow and providing for FT on an output port
 class ftControl: public RateThread
 {
@@ -106,27 +135,34 @@ private:
 	IAmplifierControl *iamps;
 
 	// Pids
-	Pid iCubPid[ARM_JNT]; //needed when the program stops
-	Pid FTPid[ARM_JNT]; // to be set to zero
+	Pid *iCubPid; //needed when the program stops
+	Pid *FTPid; // to be set to zero
 
 	Vector encoders;
+	Vector initPosition;
+
+	Vector maxJntLimits;
+	Vector minJntLimits;
 
 	Vector FTs;
 	Vector FTs_init;
 	Vector FT;
 	int count;
 	//iCubArm *arm;
-	iCubArm4DOF *arm;
+	iKinLimb *iCubLimb;
+	//iCubArm4DOF *arm;
 	iKinChain *chain;
+	
+	int limbJnt;
 
 	iFB *FTB;
 	iFTransform *sensor;
+	int sensorLink;
 
 	Matrix Rs;
 	Vector ps;
 
-	double R0, R1, R2, K0, K1, K2, Jm0, Jm1, Jm2, a;
-	Matrix T, T_all;
+	Matrix T_all;
 
 	BufferedPort<Vector> *port_FT;
 	Vector Datum;
@@ -134,6 +170,7 @@ private:
 
 	Vector tau;
 	Vector tauSafe;
+	Vector tauFilt;
 
 	int watchDOG;
 	Stamp info;
@@ -142,38 +179,20 @@ private:
 
 	Vector *datas;
     Vector kp;
-    
-
-public:
-	ftControl(int _rate, PolyDriver *_dd, BufferedPort<Vector> *_port_FT, ResourceFinder &_rf, string limb):	  
-	  RateThread(_rate), dd(_dd) 
-	  {
-		  port_FT = _port_FT;
-		  dd->view(ipos);
-		  dd->view(ivels);
-		  dd->view(iencs);
-		  dd->view(ipids);
-		  dd->view(iamps);
-
-		  int nJnt;
-		  iencs->getAxes(&nJnt);
-		  encoders.resize(nJnt);
-		  //fprintf(stderr, "number of joints: %d", nJnt);
-		  iencs->getEncoders(encoders.data());
 
 
-		  // Elbow to FT sensor variables
-		  Rs.resize(3,3);     Rs=0.0;
-		  ps.resize(3);		  ps=0.0;
-          kp.resize(4);       kp=0.0;
 
-
-		  //Shoulder motors parameters:
+	void shoulderCouplingInit()
+	{
+		  double R0, R1, R2, K0, K1, K2, Jm0, Jm1, Jm2, a;
+		  Matrix T; 
+	
+		//Shoulder motors parameters:
 		  R0 = 0.8967; K0 = 0.05; Jm0 = 8.47E-6;
 		  R1 = R2 = 0.8363; K1 = K2 = 0.0280; Jm1 = Jm2 = 5.15E-6;
 		  a = 40.0/65.0;
 		  T.resize(3,3);
-		  T_all.resize(4,4);
+		  T_all.resize(limbJnt,limbJnt);
 		  T = 0.0; //T = Tvt*Tjm'
 		  T_all = 0.0;
 		  T(0,0) = R0/K0; 
@@ -184,42 +203,161 @@ public:
 		  T(2,2) = R2/K2*a;
 		  T = 0.056*T;//pinv(T)*T.transposed();
 
-		  
 		  for(int i=0;i<3;i++)
 			  for(int j=0;j<3;j++)
 				  T_all(i,j) = T(i,j);
-		  T_all(3,3) = 1.0; //added elbow
+		  if(limbJnt>3)
+		  {
+		  for(int i=3;i<limbJnt;i++)
+			  for(int j=3;j<limbJnt;j++)
+				  T_all(i,j) = 1.0; //added elbow
+		  }
+	}
 
-		  //arm= new iCubArm("left");
-          if (strcmp(limb.c_str(), "left_arm")==0)
-              {
-                  Rs(0,0) = Rs(2,1) = 1.0;  Rs(1,2) = -1.0;
-                  ps(1) = 0.10;
-                  kp(0) = -25;	kp(1) = -25;	kp(2) = -25;	kp(3) = -50;
-                  arm= new iCubArm4DOF("left");
-                  fprintf(stderr, "Opening left arm ... \n");
+	void initializePositionAndLimits(string limb)
+	{
+		if(limbJnt!=NULL)
+		{
+			if (strcmp(limb.c_str(), "left_arm")==0)
+			{
+				initPosition.resize(limbJnt);
+				initPosition = 0.0;
+				initPosition(0) = -10.0; initPosition(1) = 20.0; initPosition(2) = 15.0; initPosition(3) = 15.0;
+				maxJntLimits.resize(4);
+				maxJntLimits(0) = 2.0; maxJntLimits(1) = 120.0; maxJntLimits(2) = 90.0; maxJntLimits(3) = 95.0;
+				minJntLimits.resize(4);
+				minJntLimits(0) = -95.0; minJntLimits(1) = 0.0; minJntLimits(2) = -20.0; minJntLimits(3) = 10.0;
+			}
+			else if (strcmp(limb.c_str(), "right_arm")==0)
+			{
+				initPosition.resize(limbJnt);
+				initPosition = 0.0;
+				initPosition(0) = -10.0; initPosition(1) = 20.0; initPosition(2) = 15.0; initPosition(3) = 15.0;
+				maxJntLimits.resize(4);
+				maxJntLimits(0) = 2.0; maxJntLimits(1) = 120.0; maxJntLimits(2) = 90.0; maxJntLimits(3) = 95.0;
+				minJntLimits.resize(4);
+				minJntLimits(0) = -95.0; minJntLimits(1) = 0.0; minJntLimits(2) = -20.0; minJntLimits(3) = 10.0;
+			}
+			else if (strcmp(limb.c_str(), "left_leg")==0)
+			{
+				initPosition.resize(limbJnt);
+				initPosition = 0.0;
+				initPosition(0) = 15.0; initPosition(1) = 15.0; initPosition(2) = 0.0; initPosition(3) = -15.0;
+				maxJntLimits.resize(4);
+				maxJntLimits(0) = 130.0; maxJntLimits(1) = 100.0; maxJntLimits(2) = 70.0; maxJntLimits(3) = -10.0;
+				minJntLimits.resize(4);
+				minJntLimits(0) = -30.0; minJntLimits(1) = 0.0; minJntLimits(2) = -70.0; minJntLimits(3) = -110.0;
+			}
+		}
+	}
 
-              }
-          else
-              if (strcmp(limb.c_str(), "right_arm")==0)
-                  {
-                      Rs(0,0) = -1.0; Rs(2,1) = 1.0;  Rs(1,2) = 1.0;
-                      ps(1) = -0.10;
-                      kp(0) =  25;	kp(1) =  25;	kp(2) =  25;	kp(3) =  50;
-                      arm= new iCubArm4DOF("right");
-                      fprintf(stderr, "Opening right arm ... \n");
-                  }
-              else
-                  {
-                      fprintf(stderr, "nothing will be opened ... \n");
-                  }
+	void initLimb(string limb)
+	{
+		if (strcmp(limb.c_str(), "left_arm")==0)
+		  {			  
+			  limbJnt = 4;
+			  sensorLink = 2;
+			  shoulderCouplingInit();
+			  iCubPid = new Pid[limbJnt];
+			  FTPid = new Pid[limbJnt];
+			  iCubLimb = new iCubArm4DOF("left");
+              Rs(0,0) = Rs(2,1) = 1.0;  Rs(1,2) = -1.0;
+              ps(1) = 0.10;
+			  kp.resize(limbJnt);
+			  if (filter_enabled)
+			  {
+				double larm_div = 1.0;
+				kp(0) = -25.0/larm_div;	kp(1) = -25.0/larm_div;	kp(2) = -25.0/larm_div;	kp(3) = -50.0/larm_div;
+			  }
+			  else
+			  {
+				kp(0) = -25.0;	kp(1) = -25.0;	kp(2) = -25.0;	kp(3) = -50.0;
+			  }
+              fprintf(stderr, "Opening left arm ... \n");
+		  }
+		  else if (strcmp(limb.c_str(), "right_arm")==0)
+		  {  
+			  limbJnt = 4;
+			  sensorLink = 2;
+			  shoulderCouplingInit();
+			  iCubPid = new Pid[limbJnt];
+			  FTPid = new Pid[limbJnt];
+			  iCubLimb = new iCubArm4DOF("right");
+              Rs(0,0) = -1.0; Rs(2,1) = 1.0;  Rs(1,2) = 1.0;
+              ps(1) = -0.10;
+			  kp.resize(limbJnt);
+			  if (filter_enabled)
+			  {
+				double rarm_div = 1.0;
+				kp(0) =  25.0/rarm_div;	kp(1) =  25.0/rarm_div;	kp(2) =  25.0/rarm_div;	kp(3) =  50.0/rarm_div;
+			  }
+			  else
+			  {
+				kp(0) =  25.0;	kp(1) =  25.0;	kp(2) =  25.0;	kp(3) =  50.0;
+			  }
+              fprintf(stderr, "Opening right arm ... \n");
+		  } 
+		  else if (strcmp(limb.c_str(), "left_leg")==0)
+		  {
+			  limbJnt = 4;
+			  sensorLink = 1;
+			  iCubPid = new Pid[limbJnt];
+			  FTPid = new Pid[limbJnt];
+			  iCubLimb = new iCubLeg4DOF("left");
+              Rs(1,0) = -1.0; Rs(0,1) = -1.0;  Rs(2,2) = -1.0;
+              ps(2) = -0.10;
+			  kp.resize(limbJnt);
+			  //GAINS gains
+			  if (filter_enabled)
+			  {
+			    double lleg_div=1.5;
+				kp(0) =  30.0/lleg_div;	kp(1) =  -20.0/lleg_div;	kp(2) =  140.0/lleg_div;	kp(3) =  -140.0/lleg_div; 
+			  }
+			  else
+			  {
+				 kp(0) =  10;	kp(1) =  -5;	kp(2) =  40;	kp(3) =  -50; 
+			  }
+			  T_all=eye(limbJnt,limbJnt);
+			  fprintf(stderr, "Opening left leg ... \n");
+		  }
+		  else
+          {
+              fprintf(stderr, "nothing will be opened ... \n");
+          }
+		  initializePositionAndLimits(limb);
+	}
 
+    
+public:
+	ftControl(int _rate, PolyDriver *_dd, BufferedPort<Vector> *_port_FT, ResourceFinder &_rf, string limb):	  
+	  RateThread(_rate), dd(_dd) 
+	  {
+		  iCubPid = 0;
+		  FTPid = 0;
+		  port_FT = _port_FT;
+		  dd->view(ipos);
+		  dd->view(ivels);
+		  dd->view(iencs);
+		  dd->view(ipids);
+		  dd->view(iamps);
+
+		  int nJnt;
+		  iencs->getAxes(&nJnt);
+		  encoders.resize(nJnt);
+		  iencs->getEncoders(encoders.data());
+
+		  // Elbow to FT sensor variables
+		  Rs.resize(3,3);     Rs=0.0;
+		  ps.resize(3);		  ps=0.0;
+          kp=0.0;
+
+		  initLimb(limb);
 		  sensor = new iFTransform(Rs,ps);
-		  chain = arm->asChain();
-		  arm->setAllConstraints(false);
+		  chain = iCubLimb->asChain();
+		  iCubLimb->setAllConstraints(false);
 
-		  FTB = new iFB(2);
-		  FTB->attach(arm);
+		  FTB = new iFB(sensorLink);
+		  FTB->attach(iCubLimb);
 		  FTB->attach(sensor);
 
 		  first = true;
@@ -227,7 +365,7 @@ public:
 		  FTs_init.resize(FT_VALUES);
 		  FT.resize(FT_VALUES);
 
-		  for(int i=0;i<ARM_JNT;i++)
+		  for(int i=0;i<limbJnt;i++)
 		  {
 			  // Get a copy of iCub Pid values...
 			  ipids->getPid(i,iCubPid+i);
@@ -239,8 +377,9 @@ public:
 			  FTPid[i].setOffset(0.0);	
 			  // Setting the FTPid, iCub is controllable using setOffset
 		  }
-		  tau.resize(4);
-		  tauSafe.resize(4);
+		  tau.resize(limbJnt);
+		  tauSafe.resize(limbJnt);
+		  tauFilt.resize(limbJnt);
 		  tau=0.0;
 		  tauSafe=0.0;
 
@@ -253,16 +392,18 @@ public:
 		  FT.zero();
 		  FTs.zero();
 		  count = 0;
-		  
-		  for(int i=0;i<ARM_JNT;i++)
+
+#ifdef CONTROL_ON		  
+		  // Put the robot in the starting position
+		  for(int i=0;i<limbJnt;i++)
 		  {
 			  ipos->positionMove(i,initPosition[i]);
 		  }
-			  
+#endif			  
 
 		  bool check = false;
 		  //int count;
-		  for(int i=0;i<ARM_JNT;i++)
+		  for(int i=0;i<limbJnt;i++)
 		  {
 			  check=false;
 			  count=0;
@@ -275,18 +416,25 @@ public:
 		  }
 		  
 		  //Time::delay(1.0);
-
-		  for(int i=0;i<ARM_JNT;i++)
+#ifdef CONTROL_ON
+		  // Set the Pids to zero in order to control using setOffset		  
+		  for(int i=0;i<limbJnt;i++)
 		  {
-			  ipids->setPid(i,FTPid[i]);  // iCub is now controllable using setOffset
-			  //ipids->setPid(i,FTPid[i]);  // iCub is now controllable using setOffset
+			  	  ipids->setPid(i,FTPid[i]);  
 		  }
-		  
+		 // ipids->setPid(0,FTPid[0]); // use this on a single joint
+#endif		  
 		  count =0;
 		  return true;
 	  }
 	  void run()
 	  {
+		  static double told=0;
+		  static double t=0;
+		  told=t;
+		  t=Time::now();
+          double tdiff=t-told;
+
 		  datas=port_FT->read(false);
 		  
 		  //if(iencs->getEncoders(encoders.data()))
@@ -296,7 +444,7 @@ public:
 		  for(int i=0; i<4;i++)
 			  angs(i) = encoders(i)*M_PI/180;
 
-		  arm->setAng(angs);
+		  iCubLimb->setAng(angs);
 		  //else if(verbose) fprintf(stderr,"ERROR: no read from encoders\n");
 
 		  port_FT->getEnvelope(info);
@@ -338,6 +486,8 @@ public:
 
 					  if(first) FTs_init = FTs;
 					  FT = FTB->getFB(FTs-FTs_init);
+
+					  	
 					  first = false;
 				  }
 				  else
@@ -359,28 +509,50 @@ public:
 				  
 		  Vector Fe=FTB->getFe();
 
-		  //GAINS: to be tuned
+		  //gains: to be tuned
 		  Matrix K;
-		  K=eye(ARM_JNT,ARM_JNT);
-		  for(int i=0;i<4;i++) K(i,i) = kp(i);
+		  K=eye(limbJnt,limbJnt);
+		  for(int i=0;i<limbJnt;i++) K(i,i) = kp(i);
 
-		  //CONTROL: to be checked
-		  Matrix J = arm->GeoJacobian();
+		  //control: to be checked
+		  Matrix J = iCubLimb->GeoJacobian();
 		  Vector tau = K*(J.transposed())*FT;
-		  tauSafe = T_all*tau;
-		  tauSafe = checkLimits(encoders, T_all*tau); /**/
-		  const int sat=50;
-		  for(int i=0;i<ARM_JNT;i++)
+		  Vector tauC= T_all*tau;
+		  int siz= tauC.size();
+
+		  //filtering
+		  for(int i=0;i<limbJnt;i++)
+			  {
+				  tauFilt(i) = lpf_ord1_3hz(tauC(i), i);
+			  }
+		  if (filter_enabled)
 		  {
-			  tauSafe(i)=(tauSafe(i)>sat)?sat:tauSafe(i);
-			  tauSafe(i)=(tauSafe(i)<-sat)?-sat:tauSafe(i);
+			  for(int i=0;i<limbJnt;i++)
+			  {
+				  tauC(i) = tauFilt(i);
+			  }
 		  }
 
-		  for(int i=0;i<4;i++)
+		  //Limits check
+		  tauSafe = checkLimits(encoders, tauC); 
+
+		  //saturation
+		  Vector sat(4);
+		  sat(0) = 300; sat(1) = 300; sat(2) = 300; sat(3) = 300;
+		  for(int i=0;i<limbJnt;i++)
+		  {
+			  tauSafe(i)=(tauSafe(i)>sat(i))?sat(i):tauSafe(i);
+			  tauSafe(i)=(tauSafe(i)<-sat(i))?-sat(i):tauSafe(i);
+		  }
+
+#ifdef CONTROL_ON
+		  //Set the control offsets to the motors
+		  for(int i=0;i<limbJnt;i++)
 		  {
 			  ipids->setOffset(i,tauSafe(i));
-		  }
-		  
+		  }	
+	//	  ipids->setOffset(0,tauSafe(0));  // use this on single joint
+#endif		  
 
 		  
 
@@ -443,6 +615,7 @@ public:
 		  */
 		  if(count>=CPRNT)
 		  {
+			  fprintf(stderr,"Cycle duration=%f s\n",tdiff);
 			  fprintf(stderr,"FT = ");
 			  for(int i=0;i<6;i++)
 				  fprintf(stderr,"%+.3lf\t", FT(i));
@@ -459,26 +632,37 @@ public:
 			  fprintf(stderr,"\n");
 
 			  fprintf(stderr,"encs = ");
-			  for(int i=0;i<4;i++)
+			  for(int i=0;i<limbJnt;i++)
 				  fprintf(stderr,"%+.3lf\t", angs(i)*180/M_PI);
 			  fprintf(stderr,"\n");
 			  
-			  fprintf(stderr,"tau = ");
-			  for(int i=0;i<4;i++)
+			  fprintf(stderr,"tau  = ");
+			  for(int i=0;i<limbJnt;i++)
 				  fprintf(stderr,"%+.3lf\t", tau(i));
 			  fprintf(stderr,"\n");
 
+			  fprintf(stderr,"tauF = ");
+			  for(int i=0;i<limbJnt;i++)
+				  fprintf(stderr,"%+.3lf\t", tauFilt(i));
+			  fprintf(stderr,"\n");
+
 			  fprintf(stderr,"tauM = ");
-			  for(int i=0;i<4;i++)
+			  for(int i=0;i<limbJnt;i++)
 				  fprintf(stderr,"%+.3lf\t", tauSafe(i));
 			  fprintf(stderr,"\n");
 
-              fprintf(stderr,"J:\n %s \n", J.toString().c_str());
+              fprintf(stderr,"J:\n");
+			  
+			  for(int i=0;i<J.rows();i++)
+			  {
+				  for(int j=0;j<J.cols();j++)
+					  fprintf(stderr,"%+.3lf\t", J(i,j));
+				  fprintf(stderr,"\n");
+			  }
 			  fprintf(stderr,"\n\n\n");
 			  fprintf(stderr,"\n\n");
 
-
-
+			 
 			  count = 0;
 		  }
 		  count++;
@@ -486,24 +670,35 @@ public:
 
 	  void threadRelease()
 	  {
+
 		  fprintf(stderr,"disabling amps...\n");
-		  for(int i=0;i<ARM_JNT;i++)
+		  for(int i=0;i<limbJnt;i++)
           	  iamps->disableAmp(i);
 		  fprintf(stderr,"disabling pids...\n");
-		  for(int i=0;i<ARM_JNT;i++)
+		  for(int i=0;i<limbJnt;i++)
           	  ipids->disablePid(i);
 		  fprintf(stderr,"setting old PIDS...\n");
-		  for(int i=0;i<ARM_JNT;i++)
+
+#ifdef CONTROL_ON
+		  //set again the original saved PIDS to the ICub
+		  for(int i=0;i<limbJnt;i++)
+		  {
 			  ipids->setPid(i,iCubPid[i]);
+		  }
+		  //ipids->setPid(3,iCubPid[3]); //use this on single joint
+#endif
 		  fprintf(stderr,"enabling amps...\n");
-		  for(int i=0;i<ARM_JNT;i++)
+		  for(int i=0;i<limbJnt;i++)
           	  iamps->enableAmp(i);
 		  fprintf(stderr,"enabling pids...\n");
-		  for(int i=0;i<ARM_JNT;i++)
+		  for(int i=0;i<limbJnt;i++)
           	  ipids->enablePid(i);
 
 	//	  if(datas) delete datas;
+
 		  if(FTB) delete FTB;
+		  if(iCubPid) delete[] iCubPid;
+		  if(FTPid) delete[] FTPid;
 	  }
 
 	  /*bool checkSinglePosition(double qd, double q)
@@ -514,12 +709,12 @@ public:
 	  Vector checkLimits(Vector q, Vector TAO)
 	  {
 		  Vector t = TAO;
-		  for(int i=0;i<ARM_JNT;i++)
+		  for(int i=0;i<limbJnt;i++)
 		  {
-			  if((q(i)<=MIN_JNT_LIMITS[i]) || (q(i)>=MAX_JNT_LIMITS[i]))
+			  if((q(i)<=minJntLimits[i]) || (q(i)>=maxJntLimits[i]))
 			  {
 				  t(i) = 0.0;
-				  if(verbose) fprintf(stderr,"Joint %d over limits %.2lf (%.2lf - %.2lf)\n", i, q(i), MIN_JNT_LIMITS[i], MAX_JNT_LIMITS[i]);
+				  if(verbose) fprintf(stderr,"Joint %d over limits %.2lf (%.2lf - %.2lf)\n", i, q(i), minJntLimits[i], maxJntLimits[i]);
 			  }
 		  }
 		  return t;
@@ -599,6 +794,7 @@ public:
 		string robot;
 		string fwdSlash = "/";
 		PortName = fwdSlash;
+		port_FT= 0;
 
 		ConstString robotName=rf.find("robot").asString();
 		if (rf.check("robot"))
@@ -686,7 +882,7 @@ int main(int argc, char * argv[])
     ResourceFinder rf;
     rf.setVerbose();
 	rf.setDefaultContext("zeroForceControl/conf");
-	rf.setDefaultConfigFile("leftArmFT.ini");
+	rf.setDefaultConfigFile("defautFT.ini");
 
     rf.configure("ICUB_ROOT", argc, argv);
 
@@ -698,11 +894,14 @@ int main(int argc, char * argv[])
         return 0;
     }
 
-
     cout<<"Configure module..."<<endl;
-    ft_controlmodule->configure(rf);
-    cout<<"Start module..."<<endl;
-    ft_controlmodule->runModule();
+    bool ret = ft_controlmodule->configure(rf);
+    
+	if (ret)
+	{
+		cout<<"Start module..."<<endl;
+		ft_controlmodule->runModule();
+	}
 
     cout<<"Main returning..."<<endl;
 	if (ft_controlmodule) ft_controlmodule->close();
@@ -786,4 +985,75 @@ void iCubArm4DOF::_allocate_limb(const string &_type)
     blockLink(7,0.0);//
 }
 
+
+
+
+//*******************************************************/
+//ICUB LEG 4 DOF
+
+
+/************************************************************************/
+iCubLeg4DOF::iCubLeg4DOF()
+{
+    _allocate_limb("right");
+}
+
+
+/************************************************************************/
+iCubLeg4DOF::iCubLeg4DOF(const string &_type)
+{
+    _allocate_limb(_type);
+}
+
+
+/************************************************************************/
+iCubLeg4DOF::iCubLeg4DOF(const iCubLeg4DOF &leg)
+{
+    _copy_limb(leg);
+}
+
+
+/************************************************************************/
+void iCubLeg4DOF::_allocate_limb(const string &_type)
+{
+    iKinLimb::_allocate_limb(_type);
+
+    H0.zero();
+    H0(0,0)=1;
+    H0(1,2)=1;    
+    H0(2,1)=-1;
+    H0(2,3)=-0.1199;
+    H0(3,3)=1;
+
+    linkList.resize(6);
+
+    if (type=="right")
+    {
+        H0(1,3)=0.0681;
+
+        linkList[0]=new iKinLink(   0.0,     0.0,  M_PI/2.0,  M_PI/2.0,  -44.0*M_PI/180.0, 132.0*M_PI/180.0);
+        linkList[1]=new iKinLink(   0.0,     0.0,  M_PI/2.0,  M_PI/2.0, -119.0*M_PI/180.0,  17.0*M_PI	/180.0);
+        linkList[2]=new iKinLink(   0.0,  0.2236, -M_PI/2.0, -M_PI/2.0,  -79.0*M_PI/180.0,  79.0*M_PI/180.0);
+        linkList[3]=new iKinLink(-0.213,     0.0,      M_PI,  M_PI/2.0, -125.0*M_PI/180.0,  23.0*M_PI/180.0);
+        linkList[4]=new iKinLink(   0.0,     0.0,  M_PI/2.0,       0.0,  -42.0*M_PI/180.0,  21.0*M_PI/180.0);
+        linkList[5]=new iKinLink(-0.041,     0.0,      M_PI,       0.0,  -24.0*M_PI/180.0,  24.0*M_PI/180.0);
+    }
+    else
+    {
+        H0(1,3)=-0.0681;
+
+        linkList[0]=new iKinLink(   0.0,     0.0, -M_PI/2.0,  M_PI/2.0,  -44.0*M_PI/180.0, 132.0*M_PI/180.0);
+        linkList[1]=new iKinLink(   0.0,     0.0, -M_PI/2.0,  M_PI/2.0, -119.0*M_PI/180.0,  17.0*M_PI/180.0);
+        linkList[2]=new iKinLink(   0.0, -0.2236,  M_PI/2.0, -M_PI/2.0,  -79.0*M_PI/180.0,  79.0*M_PI/180.0);
+        linkList[3]=new iKinLink(-0.213,     0.0,      M_PI,  M_PI/2.0, -125.0*M_PI/180.0,  23.0*M_PI/180.0);
+        linkList[4]=new iKinLink(   0.0,     0.0, -M_PI/2.0,       0.0,  -42.0*M_PI/180.0,  21.0*M_PI/180.0);
+        linkList[5]=new iKinLink(-0.041,     0.0,       0.0,       0.0,  -24.0*M_PI/180.0,  24.0*M_PI/180.0);
+    }
+
+    for (unsigned int i=0; i<linkList.size(); i++)
+        *this << *linkList[i];
+
+	blockLink(4,0.0);
+	blockLink(5,0.0);
+}
 
