@@ -645,7 +645,7 @@ public:
 class affActionPrimitivesLayer2;
 
 
-// class for switching on/off the wrist joint
+// callback for switching on/off the wrist joint
 class switchingWristDof : public affActionPrimitivesCallback
 {
 protected:
@@ -660,7 +660,7 @@ public:
 };
 
 
-// class for enabling the wrist joint and executing final grasp
+// callback for enabling the wrist joint and executing final grasp
 class enablingWristDofAndGrasp : public switchingWristDof
 {
 public:
