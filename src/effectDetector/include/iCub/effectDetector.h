@@ -95,6 +95,7 @@ class EffectDetector : public RFModule
     BufferedPort< ImageOf<PixelRgb> > rawCurrImgPort; // Input
     BufferedPort< ImageOf<PixelRgb> > rawSegmImgPort; // Input
     BufferedPort<Bottle> effectPort;                  // Output: (u,v) position
+    BufferedPort<Bottle> controlGazePort;             // Output: (normalized u, normalized v,"p") 
     BufferedPort<Bottle> errorPort;                   // Output: 0 means the module is working well, not(0) means there's some kind of problem.
     
     Bottle initMessage; //initialization message, received on /effectDetector/init

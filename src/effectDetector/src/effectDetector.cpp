@@ -173,12 +173,13 @@ bool EffectDetector::configure(ResourceFinder &config) // equivalent to Module::
     firstImageEver = true; //this will be turnet to false when the OpenCV image buffers are created.
 
     
-    initPort.open(      getName("/init")      );
-    rawCurrImgPort.open(getName("/rawcurrimg"));
-    rawSegmImgPort.open(getName("/rawsegmimg"));
-    effectPort.open(    getName("/effect")    );
-    errorPort.open(     getName("/error")     );             
-    
+    initPort.open(        getName("/init")                   );
+    rawCurrImgPort.open(  getName("/rawcurrimg")             );
+    rawSegmImgPort.open(  getName("/rawsegmimg")             );
+    effectPort.open(      getName("/effect")                 ); 
+    errorPort.open(       getName("/error")                  );             
+    controlGazePort.open( getName("/effect2ControlGaze")     );             // Output: (normalized u, normalized v,"p") 
+
     rawCurrImg=NULL; //Make sure this pointer is initialized
     rawSegmImg=NULL; //Make sure this pointer is initialized
     tempImg1=NULL;   //Make sure this pointer is initialized
@@ -222,7 +223,16 @@ bool EffectDetector::configure(ResourceFinder &config) // equivalent to Module::
         
     
     
-        
+    cvNamedWindow( "CamShift", 1 );
+    cvResizeWindow( "CamShift", 640, 480);
+    cvMoveWindow( "CamShift", 1400, 5);
+    cvNamedWindow( "Histogram", 1 );
+    cvResizeWindow( "Histogram", 320, 240);
+    cvMoveWindow( "Histogram", 1400, 850);
+    cvNamedWindow( "vFilter", 1 );
+    cvResizeWindow( "vFilter", 320, 240);
+    cvMoveWindow( "vFilter", 1400, 500);
+    
     return true;
 };
 
@@ -392,9 +402,6 @@ bool EffectDetector::respond(const Bottle & command, Bottle & reply)
 	//if it is the first time that we decide to start tracking, initialize the stuff OpenCV needs for meanShift
 	if(firstImageEver)
 	{
-	  cvNamedWindow( "Histogram", 1 );
-	  cvNamedWindow( "CamShift", 1 );
-	  cvNamedWindow( "vFilter", 1 );
 	  cvSetMouseCallback( "CamShift", on_mouse, 0 );
 	  cvCreateTrackbar( "Vmin", "CamShift", &vmin, 256, 0 );
 	  cvCreateTrackbar( "Vmax", "CamShift", &vmax, 256, 0 );
@@ -463,7 +470,7 @@ bool EffectDetector::close()
     rawSegmImgPort.close();
     effectPort.close();
     errorPort.close();             
-
+    controlGazePort.close();
     
     //fclose(fp);
 
@@ -480,7 +487,8 @@ bool EffectDetector::interruptModule()
     rawSegmImgPort.interrupt();
     effectPort.interrupt();
     errorPort.interrupt();             
-
+    controlGazePort.interrupt();
+    
     return true;
 };
 
@@ -510,6 +518,7 @@ CvScalar EffectDetector::hsv2rgb( float hue )
 
 bool EffectDetector::updateModule()
 {
+  cvWaitKey(1);
 
   //read the new image, if there is one.
   yarpImg=rawCurrImgPort.read(false); //non-blocking read.
@@ -581,6 +590,14 @@ bool EffectDetector::updateModule()
       output.addDouble(track_box.center.y);
       effectPort.write();
 
+      //Write data to Control Gaze
+      Bottle& outputCG=controlGazePort.prepare();
+      outputCG.clear();
+      outputCG.addDouble(xnorm);
+      outputCG.addDouble(ynorm);
+      outputCG.addDouble((double)(int)('p'));
+      controlGazePort.write();
+
       cvSetTrackbarPos( "Vmin", "CamShift", vmin );
       cvSetTrackbarPos( "Vmax", "CamShift", vmax );
       cvSetTrackbarPos( "Smin", "CamShift", smin );
@@ -597,7 +614,7 @@ bool EffectDetector::updateModule()
       cvShowImage( "CamShift", image );
       cvShowImage( "Histogram", histimg );
       //c = cvWaitKey(1);
-      c = cvWaitKey(200);
+      c = cvWaitKey(1);
   
 
   }
