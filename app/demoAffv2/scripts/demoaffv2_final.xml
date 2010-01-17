@@ -4,6 +4,8 @@
 <dependencies>
         <port>/icub/attentionSelection/conf</port>
         <port>/icub/controlGaze/status:o</port>
+        <port>/cartesianSolver/left_arm/out</port>
+        <port>/cartesianSolver/right_arm/out</port>
         <port>/icub/camcalib/left/out</port>
         <port>/icub/face/emotions/in</port>
 </dependencies>
