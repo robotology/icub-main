@@ -942,6 +942,8 @@ bool affActionPrimitives::cmdHand(const Action &action)
 
             posCtrl->setRefSpeed(*itr,vels[j]);
             posCtrl->positionMove(*itr,poss[j]);
+            // debug
+            printMessage("DEBUG ----------------- %d %g %g\n",*itr,vels[j],poss[j]);
         }
 
         latchHandMoveDone=handMoveDone=false;
@@ -1149,6 +1151,7 @@ bool affActionPrimitivesLayer1::grasp(const Vector &x, const Vector &o, const Ve
     if (configured)
     {
         printMessage("start grasping\n");
+
         pushAction(x+d,o,"open_hand");
         pushAction(x,o);
         pushAction("close_hand");
@@ -1166,6 +1169,7 @@ bool affActionPrimitivesLayer1::touch(const Vector &x, const Vector &o, const Ve
     if (configured)
     {
         printMessage("start touching\n");
+
         pushAction(x+d,o,"karate_hand");
         pushAction(x,o);
 
@@ -1184,6 +1188,7 @@ bool affActionPrimitivesLayer1::tap(const Vector &x1, const Vector &o1,
     if (configured)
     {
         printMessage("start tapping\n");
+
         pushAction(x1,o1,"karate_hand");
         pushAction(x2,o2,execTime);
         pushAction(x1,o1);
