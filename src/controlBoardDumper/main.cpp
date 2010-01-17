@@ -50,17 +50,15 @@
  *
  * \code
  *
- * robot        icub             //the robot name
+ * robot        icub             //the robot name [default: icub]
  *
- * part         p                //the robot part to be dumped
+ * part         p                //the robot part to be dumped [default: head]
  *
- * rate         r                //[ms] the sampling time for collected data
+ * rate         r                //[ms] the sampling time for collected data [default: 500]
  *
- * nJoints      n                //joints to be read. Has to be the length of 'joints'
+ * joints       (i1 i2 i3...iN)  //indexes of the joints to be read [default: (0 1)]
  *
- * joints       (i1 i2 i3...iN)  //indexes of the joints to be read
- *
- * dataToDump   (data1...dataN)  //type of data to be collected
+ * dataToDump   (data1...dataN)  //type of data to be collected [default: all possible data]
  *
  * \endcode
  * 
@@ -84,13 +82,27 @@
  * GetData with a method getData which can be used to instantiate
  * a thread controlBoardDumper which does not depend on the specific
  * interface (e.g. IPositionControl) or function (e.g. getEncoders).
+ *
+ * The module can also be executed from a command line with the following
+ * format:
+ * \code
+ *
+ * controlBoardDumper --robot r --part p --rate r --joints (i1 i2 i3...iN) --dataToDump (data1...dataN)
+ *
+ * \endcode
+ * and the example is:
+ * \code
+ *
+ * controlBoardDumper --robot icub --part head --rate 20 --joints "(0 1 2)" --dataToDump (getCurrents getOutputs)
+ *
+ * \endcode
 
  * \section portsa_sec Ports Accessed
  * For each part initalized (e.g. right_arm):
  * <ul>
  * <li> /icub/right_arm/rpc:i 
  * <li> /icub/right_arm/command:i
- * <li> /icub/gui/right_arm/state:i
+ * <li> /icub/right_arm/state:i
  * </ul>
  *
  * \section portsc_sec Ports Created
@@ -129,13 +141,15 @@ void getRate(Property p, int &r)
 
 int getNumberUsedJoints(Property p, int &n)
 {
-    if (!p.check("nJoints"))
+    if (!p.check("joints"))
         {
-            fprintf(stderr, "Missing option 'nJoints' in given config file\n");
+            fprintf(stderr, "Missing option 'joints' in given config file\n");
             return 0;
         }
-    Value& nJoints = p.find("nJoints");
-    n = nJoints.asInt();
+    Value& joints =  p.find("joints");
+    Bottle *pJoints = joints.asList();
+    n = pJoints->size();
+
     return 1;
 }
 
@@ -506,8 +520,6 @@ int main(int argc, char *argv[])
 
     if (!p.check("rate"))
         p.put("rate", 500);
-    if (!p.check("nJoints"))
-        p.put("nJoints", 2);
     if (!p.check("joints"))
         {
             Value v;
