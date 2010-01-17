@@ -35,6 +35,21 @@
 #include "iCub/iFC.h"
 #include "iCub/iKinFwd.h"
 
+const int SAMPLER_RATE = 10;
+const int FT_VALUES = 6;
+
+const bool verbose = false;
+const int CPRNT = 100;
+const int CALIBRATION_OK = true; // should be true when FT calibration will be ok
+enum {ZEROFORCECONTROL=0, IMPEDANCE=1};
+int   control_mode=ZEROFORCECONTROL;
+bool  filter_enabled=true;
+
+#define CONNECTION_ERROR 0
+#define CONNECTION_OK	 1
+
+#define CONTROL_ON  1
+
 using namespace yarp;
 using namespace yarp::os;
 using namespace yarp::sig;
@@ -45,22 +60,6 @@ using namespace std;
 
 using namespace iFC;
 using namespace iKin;
-
-
-const int SAMPLER_RATE = 10;
-const int FT_VALUES = 6;
-
-const bool verbose = false;
-const int CPRNT = 100;
-const int CALIBRATION_OK = true; // should be true when FT calibration will be ok
-const enum {ZEROFORCECONTROL=0, IMPEDANCE=1};
-int   control_mode=ZEROFORCECONTROL;
-bool  filter_enabled=true;
-
-#define CONNECTION_ERROR 0
-#define CONNECTION_OK	 1
-
-#define CONTROL_ON  1
 
 /**
 *
