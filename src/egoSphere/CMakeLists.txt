@@ -34,7 +34,7 @@ FILE(GLOB folder_source
 FILE(GLOB folder_header 
 	include/iCub/AcousticMap.h
 	include/iCub/EgoSphereInterfaces.h
-	srcinclude/iCubEgoSphereModule.h
+	include/iCub/EgoSphereModule.h
 	include/iCub/Framerate.h
 	include/iCub/IModalityMap.h
 	include/iCub/ObjectMap.h

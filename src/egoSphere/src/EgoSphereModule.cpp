@@ -7,13 +7,6 @@
 
 #include <iCub/EgoSphereModule.h>
 
-using namespace yarp;
-using namespace yarp::os;
-using namespace yarp::sig;
-using namespace yarp::dev;
-using namespace std;
-using namespace iCub::contrib;
-
 EgoSphereModule::EgoSphereModule(){
 
     _encoders = NULL;
@@ -36,7 +29,6 @@ EgoSphereModule::EgoSphereModule(){
 	_gazeREye = new double[3]; // 1x3
 	_gazeLEye = new double[3]; // 1x3
 	_gazeHead = new double[3]; // 1x3
-    _framerate.init(50);
 }
 
 EgoSphereModule::~EgoSphereModule(){
@@ -97,12 +89,17 @@ bool EgoSphereModule::configure(yarp::os::ResourceFinder &rf){
     _egoImgSize.height = botConfig.check("resy",
                                         Value(600),
                                         "Height of ego-sphere image (int)").asInt();
+	// framerate
+	_intFPS = botConfig.check("fps", Value(20), "Try to achieve this number of frames per second (int).").asInt();
+	_intPrintFPSAfterNumFrames = botConfig.check("fpsOutputFrequency", Value(20), "Print the achieved framerate after this number of frames (int).").asInt();
+	_dblTPF = 1.0f/((float)_intFPS);
+	_intFPSAchieved = 0;
+	_intFC = 0;
+	_dblTPFAchieved = 0.0;
+	_dblStartTime = 0.0;
     _blnSaccadicSuppression = (bool)botConfig.check("saccadicSuppression",
                                         Value(0),
-                                        "Inhibit projection of visual input into sphere and writing of output map (int [0|1]).").asInt();
-    _refreshTime = botConfig.check("refreshTime",
-                                    Value(0.05),
-                                    "Target refresh time of the module update loop (double in sec.).").asDouble();
+                                        "Inhibit projection of visual input into sphere and writing of output map (int [0|1]).").asInt();    
     _thresholdSalience = (float)botConfig.check("thresholdSalience",
                                     Value(20.0),
                                     "Threshold applied when updating salience map (double).").asDouble();
@@ -267,9 +264,21 @@ bool EgoSphereModule::reset(){
 
 bool EgoSphereModule::updateModule(){
 
-    _framerate.addStartTime(yarp::os::Time::now());
-
-    double timeStart = Time::now();
+    // framerate stuff
+	_intFC++;
+	if(_intPrintFPSAfterNumFrames <= _intFC && _intPrintFPSAfterNumFrames > 0){
+		std::cout << "FPS: " << _intFPSAchieved << std::endl;
+		_intFC = 0;
+	}
+	_dblTPFAchieved = ((float)(yarp::os::Time::now() - _dblStartTime));
+	if(_dblTPFAchieved < _dblTPF){
+		yarp::os::Time::delay(_dblTPF-_dblTPFAchieved);
+		_intFPSAchieved = _intFPS;
+	}
+	else{
+		_intFPSAchieved = (int)::floor((1.0 / _dblTPFAchieved) + 0.5);
+	}
+	_dblStartTime = yarp::os::Time::now();
 
     // map read
 	for(int i = 0; i < (int)_vctMap.size(); i++){
@@ -366,17 +375,7 @@ bool EgoSphereModule::updateModule(){
 		_vctMap[i]->write(_blnSaccadicSuppression);
 	}
 
-    _semaphore.post();
-
-    // wait if update rate too high
-    double timeEnd = Time::now();
-    if ((timeEnd - timeStart) < _refreshTime)
-        Time::delay(_refreshTime - (timeEnd - timeStart));
-
-    _framerate.addEndTime(yarp::os::Time::now());
-    if(_framerate.hasNewFramerate()){
-        cout << _framerate.getFramerate() << " fps" << endl; 
-    }
+    _semaphore.post(); 
 
     return true;
 }

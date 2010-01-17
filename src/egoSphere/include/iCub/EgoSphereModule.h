@@ -39,7 +39,6 @@
 #include <iCub/AcousticMap.h>
 #include <iCub/VisualMap.h>
 #include <iCub/ObjectMap.h>
-#include <iCub/Framerate.h>
 #include <iCub/IModalityMap.h>
 
 namespace iCub {
@@ -109,8 +108,7 @@ private:
     ImageOf<PixelFloat>                 _yrpImgFloatEgo;    // final aggregated egosphere
     
     CvSize                              _egoImgSize;
-    bool                                _blnSaccadicSuppression;
-    double                              _refreshTime;
+    bool                                _blnSaccadicSuppression;    
     float                               _thresholdSalience;
 
     bool                                _activateIOR;
@@ -123,7 +121,14 @@ private:
 
     Semaphore                           _semaphore;
 
-	Framerate							_framerate;
+	// framerate
+    int _intFPS;
+	int _intFPSAchieved;
+	int _intPrintFPSAfterNumFrames;
+	int _intFC; // frame counter
+	double _dblTPF; // time per frame (ms)
+	double _dblTPFAchieved; // actual time per frame 
+	double _dblStartTime;
 
     void processClick();
     // camera2world 3x3, gaze 1x3
