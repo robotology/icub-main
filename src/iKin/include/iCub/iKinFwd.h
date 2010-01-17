@@ -789,7 +789,7 @@ public:
     iKinLimb &operator=(const iKinLimb &limb);
 
     /**
-    * Returns a pointer to the Limb seen a Chain object. 
+    * Returns a pointer to the Limb seen as Chain object. 
     * Useful to to operate on the Links of Limb.
     * @return a pointer to a Chain object with the same Links of 
     *         Limb.
