@@ -13,7 +13,7 @@ using namespace yarp::sig;
 using namespace iCub::contrib;
 
 SalienceModule::SalienceModule(){
-	_framerate.init(50);
+
 }
 
 SalienceModule::~SalienceModule(){
@@ -29,6 +29,15 @@ bool SalienceModule::configure(yarp::os::ResourceFinder &rf){
 	ConstString str = rf.check("name", Value("/salience"), "module name (string)").asString();
 	setName(str.c_str()); // modulePortName  
 	attachTerminal();
+
+	// framerate
+	_intFPS = rf.check("fps", Value(20), "Try to achieve this number of frames per second (int).").asInt();
+	_intPrintFPSAfterNumFrames = rf.check("fpsOutputFrequency", Value(20), "Print the achieved framerate after this number of frames (int).").asInt();
+	_dblTPF = 1.0f/((float)_intFPS);
+	_intFPSAchieved = 0;
+	_intFC = 0;
+	_dblTPFAchieved = 0.0;
+	_dblStartTime = 0.0;
 
     numBlurPasses = rf.check("numBlurPasses",
                                     Value(0),
@@ -112,92 +121,100 @@ bool SalienceModule::interruptModule() {
 
 bool SalienceModule::updateModule(){
 	
-	_framerate.addStartTime(yarp::os::Time::now());
+	// framerate stuff
+	_intFC++;
+	if(_intPrintFPSAfterNumFrames <= _intFC && _intPrintFPSAfterNumFrames > 0){
+		std::cout << "FPS: " << _intFPSAchieved << std::endl;
+		_intFC = 0;
+	}
+	_dblTPFAchieved = ((float)(yarp::os::Time::now() - _dblStartTime));
+	if(_dblTPFAchieved < _dblTPF){
+		yarp::os::Time::delay(_dblTPF-_dblTPFAchieved);
+		_intFPSAchieved = _intFPS;
+	}
+	else{
+		_intFPSAchieved = (int)::floor((1.0 / _dblTPFAchieved) + 0.5);
+	}
+	_dblStartTime = yarp::os::Time::now();
 
     // read image from port
-    ImageOf<PixelRgb> *img = imgPort.read();
-    if (img==NULL) return false;
+    ImageOf<PixelRgb> *img = imgPort.read(false);
+	if (img != NULL){
 
-    // if image size changes, need to resize buffered images
-    if (img->width() != oldSizeX || img->height() != oldSizeY || needInit){
-        //resizeBufferedImages(img->width(), img->height());
-        needInit = false;
-    }
-
-    ImageOf<PixelRgb> &imgView = imgPort.prepare();
-    ImageOf<PixelFloat> &imgMap = filteredPort.prepare();
-    mutex.wait();
-
-    // apply the specified filter
-    filter->apply(*img, imgView, imgMap);
-
-    // smooth output if requested
-    for (int i = 0; i < numBlurPasses; i++)
-        cvSmooth(imgMap.getIplImage(), imgMap.getIplImage());
-
-    // threshold output map: if src(x,y) < threshold src(x,y) = 0
-    if (thresholdSalience > 0.0)
-        cvThreshold(imgMap.getIplImage(), imgMap.getIplImage(), thresholdSalience, 0.0, CV_THRESH_TOZERO);
-    
-    // most salient location
-    int peakX = -1;
-    int peakY = -1;
-	float peakXNorm = -2.0f; // normalized to a range of [-1.0,1.0]
-	float peakYNorm = -2.0f; // normalized to a range of [-1.0,1.0]
-    float peakV = -1.0f;
-
-    if (activateIOR){
-        ior.applyIOR(imgMap);
-    }
-
-	//Always compute peak to stream peak coordinates (Alex, 31/05/08)
-    getPeak(imgMap, peakX, peakY, peakV);
-	// Compute normalized peak positions (Jonas, 09/07/09)
-	peakXNorm = 2.0f*((float)peakX)/((float)imgMap.width()) - 1.0f;
-	peakYNorm = 2.0f*((float)peakY)/((float)imgMap.height()) - 1.0f;
-
-    if (activateIOR){
-        ior.updateIOR(peakX, peakY);
-    }
-
-    // create image view from current image map
-    drawRgbFromFloat(imgMap, imgView, 1.0f);
-    //imgView.zero();
-
-    // draw crosshair at most salient location to imgView if requestd
-    if (drawSaliencePeak){
-		if( peakX >= 0 && peakY >= 0)
-		{
-			PixelRgb pix = PixelRgb(255,255,255);
-			yarp::sig::draw::addCrossHair(imgView, pix, peakX, peakY, 10);
+		// if image size changes, need to resize buffered images
+		if (img->width() != oldSizeX || img->height() != oldSizeY || needInit){
+			//resizeBufferedImages(img->width(), img->height());
+			needInit = false;
 		}
-    }
 
-    mutex.post();
+		ImageOf<PixelRgb> &imgView = imgPort.prepare();
+		ImageOf<PixelFloat> &imgMap = filteredPort.prepare();
+		mutex.wait();
 
-	// write peak to port (Alex, 31/05/08)
-	Bottle &peak = peakPort.prepare();
-	peak.clear();
-	peak.addInt(peakX);
-	peak.addInt(peakY);
-	// add normalized peak positions (Jonas, 09/07/09)
-	peak.addDouble(peakXNorm);
-	peak.addDouble(peakYNorm); 
-	peakPort.write();
+		// apply the specified filter
+		filter->apply(*img, imgView, imgMap);
 
-    // write images to ports
-    filteredPort.write();
-    imgPort.write();
+		// smooth output if requested
+		for (int i = 0; i < numBlurPasses; i++)
+			cvSmooth(imgMap.getIplImage(), imgMap.getIplImage());
 
-    oldSizeX = img->width();
-    oldSizeY = img->height();
+		// threshold output map: if src(x,y) < threshold src(x,y) = 0
+		if (thresholdSalience > 0.0)
+			cvThreshold(imgMap.getIplImage(), imgMap.getIplImage(), thresholdSalience, 0.0, CV_THRESH_TOZERO);
+	    
+		// most salient location
+		int peakX = -1;
+		int peakY = -1;
+		float peakXNorm = -2.0f; // normalized to a range of [-1.0,1.0]
+		float peakYNorm = -2.0f; // normalized to a range of [-1.0,1.0]
+		float peakV = -1.0f;
 
-	_framerate.addEndTime(yarp::os::Time::now());
-    if(_framerate.hasNewFramerate()){
-        cout << _framerate.getFramerate() << " fps" << endl; 
-    }
+		if (activateIOR){
+			ior.applyIOR(imgMap);
+		}
 
-	fflush(stdout);
+		//Always compute peak to stream peak coordinates (Alex, 31/05/08)
+		getPeak(imgMap, peakX, peakY, peakV);
+		// Compute normalized peak positions (Jonas, 09/07/09)
+		peakXNorm = 2.0f*((float)peakX)/((float)imgMap.width()) - 1.0f;
+		peakYNorm = 2.0f*((float)peakY)/((float)imgMap.height()) - 1.0f;
+
+		if (activateIOR){
+			ior.updateIOR(peakX, peakY);
+		}
+
+		// create image view from current image map
+		drawRgbFromFloat(imgMap, imgView, 1.0f);
+		//imgView.zero();
+
+		// draw crosshair at most salient location to imgView if requestd
+		if (drawSaliencePeak){
+			if( peakX >= 0 && peakY >= 0)
+			{
+				PixelRgb pix = PixelRgb(255,255,255);
+				yarp::sig::draw::addCrossHair(imgView, pix, peakX, peakY, 10);
+			}
+		}
+
+		mutex.post();
+
+		// write peak to port (Alex, 31/05/08)
+		Bottle &peak = peakPort.prepare();
+		peak.clear();
+		peak.addInt(peakX);
+		peak.addInt(peakY);
+		// add normalized peak positions (Jonas, 09/07/09)
+		peak.addDouble(peakXNorm);
+		peak.addDouble(peakYNorm); 
+		peakPort.write();
+
+		// write images to ports
+		filteredPort.write();
+		imgPort.write();
+
+		oldSizeX = img->width();
+		oldSizeY = img->height();
+	}	
 
     return true;
 }

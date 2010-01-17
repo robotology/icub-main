@@ -28,7 +28,6 @@
 #include <iCub/SalienceFactory.h>
 #include <iCub/SalienceInterfaces.h>
 #include <iCub/IOR.h>
-#include <iCub/Framerate.h>
 
 namespace iCub {
     namespace contrib {
@@ -61,8 +60,16 @@ private:
     int oldSizeX, oldSizeY;
     bool needInit;
     IOR ior;
-	Framerate _framerate;
-    //virtual void resizeBufferedImages(int w, int h);
+	
+	// framerate
+    int _intFPS;
+	int _intFPSAchieved;
+	int _intPrintFPSAfterNumFrames;
+	int _intFC; // frame counter
+	double _dblTPF; // time per frame (ms)
+	double _dblTPFAchieved; // actual time per frame 
+	double _dblStartTime;
+    
     virtual void drawRgbFromFloat(yarp::sig::ImageOf<yarp::sig::PixelFloat> &imgFloat, 
                                       yarp::sig::ImageOf<yarp::sig::PixelRgb> &imgRgb, 
                                       float scale);
