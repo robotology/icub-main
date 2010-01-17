@@ -595,7 +595,7 @@ public:
     * \note internal implementation (pseudo-code): 
     * \code 
     * ... 
-    * pushAction(x+d,o,"open_hand"); 
+    * pushAction(x+d,o,"karate_hand"); 
     * pushAction(x,o); 
     * ... 
     * \endcode 

@@ -1166,7 +1166,7 @@ bool affActionPrimitivesLayer1::touch(const Vector &x, const Vector &o, const Ve
     if (configured)
     {
         printMessage("start touching\n");
-        pushAction(x+d,o,"open_hand");
+        pushAction(x+d,o,"karate_hand");
         pushAction(x,o);
 
         return true;
@@ -1401,7 +1401,7 @@ bool affActionPrimitivesLayer2::touch(const Vector &x, const Vector &o, const Ve
         printMessage("start touching\n");
 
         wristContact=false;
-        pushAction(x+d,o,"open_hand",ACTIONPRIM_DISABLE_EXECTIME,disableWristDof);
+        pushAction(x+d,o,"karate_hand",ACTIONPRIM_DISABLE_EXECTIME,disableWristDof);
         pushAction(x,o,ACTIONPRIM_DISABLE_EXECTIME,enableWristDof);
 
         return true;
