@@ -19,6 +19,8 @@
     <to>/icub/face/raw/in</to>
 </connection>
 
-<!-- the /demoAffv2/emotion to /icub/face/emotions/in connection goes to demoAffv2 xml -->
+<!-- note that the
+        /demoAffv2/emotion to /icub/face/emotions/in
+     connection goes to demoaffv2_final.xml -->
 
 </application>
