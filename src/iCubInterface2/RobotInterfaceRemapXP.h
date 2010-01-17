@@ -1,11 +1,11 @@
-#ifndef EXPERIMENTAL
+#ifdef EXPERIMENTAL
 
 // -*- mode:C++; tab-width:4; c-basic-offset:4; indent-tabs-mode:nil -*-
 
 /**
 * \author Lorenzo Natale
 *
-* Copyright (C) 2008 RobotCub Consortium
+* Copyright (C) 2010 RobotCub Consortium
 *
 * CopyPolicy: Released under the terms of the GNU GPL v2.0.
 *
@@ -51,6 +51,12 @@ public:
         name=std::string(n);
     }
 
+    ~AnalogServer()
+    {
+        threadRelease();
+        is=0;
+    }
+
     void attach(yarp::dev::IAnalogSensor *s)
     {
         is=s;
@@ -73,11 +79,13 @@ public:
     {
         if (is!=0)
         {
-            yarp::sig::Vector &v=port.prepare();
+            yarp::sig::Vector v;
             int ret=is->read(v);
-
+            
             if (ret==yarp::dev::IAnalogSensor::AS_OK)
             {
+                yarp::sig::Vector &pv=port.prepare();
+                pv=v;
                 lastStateStamp.update();
                 port.setEnvelope(lastStateStamp);
                 port.write();
@@ -195,7 +203,7 @@ class RobotNetworkEntry
 {
 public:
     RobotNetworkEntry()
-    { iCalib=0; iAnalog=0; iAnalogServer=0;}
+    { iCalib=0; }
     
     ~RobotNetworkEntry()
     {
@@ -209,8 +217,8 @@ public:
     std::string             id;
 
     yarp::dev::IControlCalibration2  *iCalib;
-    yarp::dev::IAnalogSensor         *iAnalog;
-    AnalogServer                     *iAnalogServer;
+    std::list<yarp::dev::IAnalogSensor *> analogSensors;
+    std::list<AnalogServer  *> analogServers;
 
     bool isValid()
     {
@@ -219,14 +227,18 @@ public:
 
     void close()
     {
-        if (iAnalogServer)
-            {
-                iAnalogServer->stop();
-                delete iAnalogServer;
-                iAnalogServer=0;
-            }
+        std::list<AnalogServer *>::iterator it=analogServers.begin();
 
-        iAnalog=0;
+        while(it!=analogServers.end())
+        {
+            if ( (*it) )
+            {
+                (*it)->stop();
+                delete (*it);
+                (*it)=0;
+            }
+            it++;
+        }
 
         if (isValid())
             driver.close();
@@ -352,7 +364,7 @@ public:
 typedef std::list<CartesianController *>::iterator CartesianControllersIt;
 typedef std::list<CartesianController *> CartesianControllers;
 
-class RobotInterfaceRemap: public IRobotInterface
+class RobotInterfaceRemapXP: public IRobotInterface
 {
 protected:
     RobotNetwork  networks;
@@ -375,8 +387,8 @@ protected:
 
 public:
     // default constructor.
-    RobotInterfaceRemap();
-    ~RobotInterfaceRemap();
+    RobotInterfaceRemapXP();
+    ~RobotInterfaceRemapXP();
 
     /**
     * Initializes all robot devices. Depending on the
@@ -454,4 +466,4 @@ protected:
     bool forceNetworkId(yarp::os::Property& op, int n);
 };
 
-#endif
+#endif //experimental

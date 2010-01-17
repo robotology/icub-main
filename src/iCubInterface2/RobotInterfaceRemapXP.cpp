@@ -1,6 +1,6 @@
 // -*- mode:C++; tab-width:4; c-basic-offset:4; indent-tabs-mode:nil -*-
-#ifndef EXPERIMENTAL
-#include "RobotInterfaceRemap.h"
+
+#include "RobotInterfaceRemapXP.h"
 #include "extractPath.h"
 
 #include <sstream>
@@ -11,6 +11,8 @@
 
 #include "ControlBoardWrapper.h"
 #include "ControlBoardWrapper2.h"
+
+#include <iCub/FactoryInterface.h>
 
 using namespace yarp::dev;
 using namespace yarp::os;
@@ -87,9 +89,9 @@ RobotPartEntry *RobotParts::find(const string &pName)
 }
 
 
-// implementation of the RobotInterfaceRemap class
+// implementation of the RobotInterfaceRemapXP class
 
-RobotInterfaceRemap::RobotInterfaceRemap() 
+RobotInterfaceRemapXP::RobotInterfaceRemapXP() 
 {
     gyro_i = 0; 
 
@@ -100,14 +102,14 @@ RobotInterfaceRemap::RobotInterfaceRemap()
     abortF=false;
 }  
 
-RobotInterfaceRemap::~RobotInterfaceRemap()
+RobotInterfaceRemapXP::~RobotInterfaceRemapXP()
 {
 
 }
 
-void RobotInterfaceRemap::park(bool wait)
+void RobotInterfaceRemapXP::park(bool wait)
 {
-    std::cout<<"RobotInterfaceRemap::park\n";
+    std::cout<<"RobotInterfaceRemapXP::park\n";
 
     if (abortF)
         return;
@@ -134,7 +136,7 @@ void RobotInterfaceRemap::park(bool wait)
     isParking=false;
 }    
 
-void RobotInterfaceRemap::calibrate(bool wait)
+void RobotInterfaceRemapXP::calibrate(bool wait)
 {
     if (abortF)
         return;
@@ -161,7 +163,7 @@ void RobotInterfaceRemap::calibrate(bool wait)
     isCalibrating=false;
 }    
 
-bool RobotInterfaceRemap::initialize(const std::string &inifile)
+bool RobotInterfaceRemapXP::initialize(const std::string &inifile)
 {
     std::string filename;
     std::string portname;
@@ -234,7 +236,7 @@ bool RobotInterfaceRemap::initialize(const std::string &inifile)
 
 }
 
-bool RobotInterfaceRemap::initCart(const::string &file)
+bool RobotInterfaceRemapXP::initCart(const::string &file)
 {
     Property options;
     options.fromConfigFile(file.c_str());
@@ -293,7 +295,7 @@ bool RobotInterfaceRemap::initCart(const::string &file)
     return true;
 }
 
-bool RobotInterfaceRemap::fnitCart()
+bool RobotInterfaceRemapXP::fnitCart()
 {
     CartesianControllersIt it=cartesianControllers.begin();
 
@@ -305,7 +307,7 @@ bool RobotInterfaceRemap::fnitCart()
     return true;
 }
 
-bool RobotInterfaceRemap::initialize10(const std::string &inifile)
+bool RobotInterfaceRemapXP::initialize10(const std::string &inifile)
 {
     fprintf(stderr, "Going to initialize the robot with a file\n");
 
@@ -442,7 +444,7 @@ bool RobotInterfaceRemap::initialize10(const std::string &inifile)
     return true;
 }
 
-bool RobotInterfaceRemap::initialize20(const std::string &inifile)
+bool RobotInterfaceRemapXP::initialize20(const std::string &inifile)
 {
     fprintf(stderr, "Initialization from file, new version 2.0\n");
 
@@ -619,34 +621,50 @@ bool RobotInterfaceRemap::initialize20(const std::string &inifile)
             else
                 std::cout<<"Warning: could not find period using default value ("<<period<<")\n";
 
-            std::cout<<"Instantiating analog device on "<< netid << endl;
-        
-            RobotNetworkEntry *selectedNet=networks.find(netid);
-            if (selectedNet==0)
-            {
-                std::cerr<<"Sorry "<<netid<<" has not been instantiated, skipping"<<endl;
-            }
-            else
-            {
-                IAnalogSensor *iTmp;
-                selectedNet->driver.view(iTmp);
-                selectedNet->iAnalog=iTmp;
-                if (selectedNet->iAnalog)
+            Bottle *analogIds=robotOptions.findGroup(analogid.c_str()).find("deviceId").asList();
+            if (analogIds!=0)
+                for(int k=0;k<analogIds->size();k++)
                 {
-                    std::string name;
-                    name+="/";
-                    name+=robotName;
-                    name+="/";
-                    name+=selectedNet->id;
-                    name+="/analog:o";
+                    std::string deviceId=analogIds->get(k).asString().c_str();
+                    std::cout<<"Instantiating analog device " << deviceId << " on "<< netid << endl;
 
-                    selectedNet->iAnalogServer=new AnalogServer(name.c_str());
-                    selectedNet->iAnalogServer->setRate(period);
-                    selectedNet->iAnalogServer->attach(iTmp);
-                    selectedNet->iAnalogServer->start();
+                    RobotNetworkEntry *selectedNet=networks.find(netid);
+                    if (selectedNet==0)
+                    {
+                        std::cerr<<"Sorry "<<netid<<" has not been instantiated, skipping"<<endl;
+                    }
+                    else
+                    {
+                        DeviceDriver *dTmp;
+                        yarp::dev::IFactoryInterface *iFactory;
+                        selectedNet->driver.view(iFactory);
+                        yarp::os::Property prop;
+                        prop.put("device", "analog");
+                        prop.put("deviceid", deviceId.c_str());
+                        dTmp=iFactory->createDevice(prop);
+
+                        IAnalogSensor *iTmp=dynamic_cast<IAnalogSensor *>(dTmp);
+
+                        selectedNet->analogSensors.push_back(iTmp);
+                        if (iTmp)
+                        {
+                            std::string name;
+                            name+="/";
+                            name+=robotName;
+                            name+="/";
+                            name+=deviceId.c_str();
+                            name+="/analog:o";
+
+                            AnalogServer *tmp=new AnalogServer(name.c_str());
+                            tmp->setRate(period);
+                            tmp->attach(iTmp);
+                            tmp->start();
+
+                            selectedNet->analogServers.push_back(tmp);
+                        }
+                    }
                 }
-            }
-         }
+        }
     }
     else
     {
@@ -660,7 +678,7 @@ bool RobotInterfaceRemap::initialize20(const std::string &inifile)
     return true;
 }
 
-bool RobotInterfaceRemap::instantiateNetwork(std::string &path, Property &robotOptions, RobotNetworkEntry &net)
+bool RobotInterfaceRemapXP::instantiateNetwork(std::string &path, Property &robotOptions, RobotNetworkEntry &net)
 {
     std::string file=robotOptions.find("file").asString().c_str();
     std::string fullFilename;
@@ -740,7 +758,7 @@ bool RobotInterfaceRemap::instantiateNetwork(std::string &path, Property &robotO
     return true;
 } 
 
-bool RobotInterfaceRemap::instantiateInertial(Property &options)
+bool RobotInterfaceRemapXP::instantiateInertial(Property &options)
 {
     fprintf(stderr, "Instantiating an INERTIAL device\n");
 
@@ -782,7 +800,7 @@ bool RobotInterfaceRemap::instantiateInertial(Property &options)
 }
 
 
-bool RobotInterfaceRemap::instantiateInertial(const std::string &path, Property &options)
+bool RobotInterfaceRemapXP::instantiateInertial(const std::string &path, Property &options)
 {
     //    std::cout<<"Path: "<<path<<" Property list: "<<options.toString().c_str();
     std::string file=options.find("file").asString().c_str();
@@ -820,7 +838,7 @@ bool RobotInterfaceRemap::instantiateInertial(const std::string &path, Property 
     return ok;
 }
 
-bool RobotInterfaceRemap::finalize()
+bool RobotInterfaceRemapXP::finalize()
 { 
     RobotPartEntry *tmpPart;
     int n=parts.size();
@@ -864,7 +882,7 @@ bool RobotInterfaceRemap::finalize()
 
 // check if automatically discovered network id matches the one 
 // in the Property, substitute it if necessary.
-bool RobotInterfaceRemap::forceNetworkId(yarp::os::Property& op, int autoN)
+bool RobotInterfaceRemapXP::forceNetworkId(yarp::os::Property& op, int autoN)
 {
     bool ret=true;
     if (autoN==-1)
@@ -881,7 +899,7 @@ bool RobotInterfaceRemap::forceNetworkId(yarp::os::Property& op, int autoN)
 }
 
 
-void RobotInterfaceRemap::abort()
+void RobotInterfaceRemapXP::abort()
 {
     if (isParking)
     {
@@ -904,5 +922,3 @@ void RobotInterfaceRemap::abort()
 
     abortF=true;
 }
-
-#endif
