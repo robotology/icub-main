@@ -1,6 +1,6 @@
-
 <application>
-<name>demoAffv2 Debug</name>
+<name>demoAffv2 Final</name>
+
 <module>
       <name>demoAffv2</name>
       <parameters>--context demoAffv2/conf</parameters>
@@ -41,6 +41,7 @@
       <stdio>icub14</stdio>
       <tag>effect_detector</tag>
 </module>
+
 <module>
       <name>yarpview</name>
       <parameters>--name /userSelection:view --out /userSelection:o --synch</parameters>
@@ -53,20 +54,6 @@
       <node>icub14</node>
       <tag>labeled_image</tag>
 </module>
-
-<!-- in the final version, these 2 expression modules go to face_expressions.xml -->
-   <module>
-      <name>yarpdev</name>
-      <parameters>--name /icub/face/raw --device serial --subdevice serialport --file /usr/local/src/robot/iCub/app/faceExpressions/conf/serialport.ini</parameters>
-      <node>pc104</node>
-      <tag>face_device</tag>
-   </module>
-   <module>
-      <name>emotionInterface</name>
-      <parameters>--name /icub/face/emotions --file /usr/local/src/robot/iCub/app/demoAffv2/conf/emotions.ini</parameters>
-      <node>icub14</node>
-      <tag>emotionInterface</tag>
-   </module>
 
 <connection>
       <from>/icub/camcalib/left/out</from>
@@ -125,40 +112,35 @@
       <to>/demoAffv2/torsoState</to>
 </connection>
 
-<!-- this goes to face_expressions.xml -->
-   <connection>
-      <from>/icub/face/emotions/out</from> 
-      <to>/icub/face/raw/in</to>
-   </connection>
-
-<!-- this stays here -->
-   <connection>
+<!-- the other emotion connection (/icub/face/emotions/out to /icub/face/raw/in)
+     belongs to face_expressions.xml -->
+<connection>
       <from>/demoAffv2/emotion</from> 
       <to>/icub/face/emotions/in</to>
       <protocol>tcp</protocol>
-   </connection>
+</connection>
    
-   <connection>
+<connection>
       <from>/demoAffv2/gazeposcmd</from> 
       <to>/icub/controlGaze/pos</to>
       <protocol>udp</protocol>
-   </connection>
+</connection>
 
-   <connection>
+<connection>
       <from>/demoAffv2/gazevelcmd</from> 
       <to>/icub/controlGaze/vel</to>
       <protocol>udp</protocol>
-   </connection>
+</connection>
 
-   <connection>
+<connection>
       <from>/icub/lefthand/analog:o/fingerDetector/status:o</from> 
       <to>/demoAffv2/left_arm/detectGrasp:i</to>
       <protocol>tcp</protocol>
-   </connection>
-   <connection>
+</connection>
+<connection>
       <from>/icub/righthand/analog:o/fingerDetector/status:o</from> 
       <to>/demoAffv2/right_arm/detectGrasp:i</to>
       <protocol>tcp</protocol>
-   </connection>
+</connection>
 
 </application>
