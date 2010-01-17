@@ -34,7 +34,9 @@ namespace yarp{
 #define VOCAB_OVERLAP VOCAB3('o','v','l')
 
 /*
- * A logpolar frame grabber interfaces (specialized for the logpolar images).
+ * @ingroup icub_icubDev
+ * /defgroup icub_logpolarframegrabberimage LogPolar FrameGrabberImage
+ * Logpolar frame grabber interfaces (specialized for the logpolar images).
  */
 class yarp::dev::ILogpolarFrameGrabberImage {
 public:
@@ -80,7 +82,9 @@ public:
 };
 
 /**
- * interface to the logpolar library/API.
+ * @ingroup icub_icubDev
+ * /defgroup icub_logpolarapi LogPolar API
+ * Interface to the logpolar library/API.
  */
 class yarp::dev::ILogpolarAPI {
 public:
