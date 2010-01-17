@@ -81,12 +81,12 @@
         <to>/icub/attentionSelection/conf</to>
 </connection>
 <connection>
-        <from>/demoAffv2/port_behavior_out</from>
-        <to>/demoAffv2/behavior/port_aff_in</to>
+        <from>/demoAffv2/behavior/aff_out</from>
+        <to>/demoAffv2/behavior:i</to>
 </connection>
 <connection>
-        <from>/demoAffv2/behavior/port_aff_out</from>
-        <to>/demoAffv2/port_behavior_in</to>
+        <from>/demoAffv2/behavior:o</from>
+        <to>/demoAffv2/behavior/aff_in</to>
 </connection>
 
 <!-- vision connections -->
