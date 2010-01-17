@@ -518,12 +518,13 @@ CvScalar EffectDetector::hsv2rgb( float hue )
 
 bool EffectDetector::updateModule()
 {
-  cvWaitKey(1);
+  cvWaitKey(10);
 
   //read the new image, if there is one.
   yarpImg=rawCurrImgPort.read(false); //non-blocking read.
   if(yarpImg!=NULL)
   {
+    //cout<<"I read an image\n";
     tempImg1 = (IplImage*)yarpImg->getIplImage(); //the memory is somehow shared by the OpenCV and the YARP image... I shouldn't release this memory
 
     //check if the memory for the tempImg2 buffer has already been allocated, otherwise allocate it now.
@@ -544,6 +545,7 @@ bool EffectDetector::updateModule()
 
     if(state==PROCESSING)
     {
+	//cout<<"I am processing\n";
 	_vmin=vmin;
 	_vmax=vmax;
 	_smin=smin;
@@ -569,7 +571,15 @@ bool EffectDetector::updateModule()
 	// Returns:
 	//    track_window - contains object bounding box
 	//    track box - contains object size and orientation
-        cout<<"Track window X="<<track_window.x<<" Y="<<track_window.y<<" Width="<<track_window.width<<" Height="<<track_window.height<<"      ";
+        if(track_window.width<3)
+	{
+	  track_window.width=3;
+	}
+        if(track_window.height<3)
+	{
+	  track_window.height=3;
+	}
+        cout<<"Track window X="<<track_window.x<<" Y="<<track_window.y<<" Width="<<track_window.width<<" Height="<<track_window.height<<"   Track Box Center X="<<track_box.center.x<<" Y="<<track_box.center.y<<" Width="<<track_box.size.width<<" Height="<<track_box.size.height<<"    ";
 	cvCamShift( backproject, track_window,
 				cvTermCriteria( CV_TERMCRIT_EPS | CV_TERMCRIT_ITER, 10, 1 ),
 				&track_comp, &track_box );
@@ -608,7 +618,9 @@ bool EffectDetector::updateModule()
 	{
 	track_box.angle = -track_box.angle;
 	}
-	cvEllipseBox( image, track_box, CV_RGB(255,0,0), 3, CV_AA, 0 );
+
+	//cvEllipseBox( image, track_box, CV_RGB(255,0,0), 3, CV_AA, 0 );
+        cvCircle(image, cvPoint(track_box.center.x,track_box.center.y), 20, cvScalar(0,0,255), 3);
 
 
 	cvShowImage( "CamShift", image );
