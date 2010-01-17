@@ -1565,6 +1565,7 @@ void CanBusMotionControl::handleBroadcasts()
                         int string_id = cstring[addr].add_string(&r._readBuffer[i]);
                         if (string_id != -1) 
                         {
+                            fprintf(stderr, "%s [%d] ", canDevName.c_str(), _networkN);
                             cstring[addr].print(string_id);
                             cstring[addr].clear_string(string_id);
                         }
