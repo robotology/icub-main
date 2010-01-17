@@ -10,8 +10,7 @@
 
 CamCalibModule::CamCalibModule(){
 
-    _calibTool = NULL;
-	_framerate.init(50);
+    _calibTool = NULL;	
 }
 
 CamCalibModule::~CamCalibModule(){
@@ -27,6 +26,15 @@ bool CamCalibModule::configure(yarp::os::ResourceFinder &rf){
     // pass configuration over to bottle
     Bottle botConfig(rf.toString().c_str());
     botConfig.setMonitor(rf.getMonitor());	
+
+	// framerate
+	_intFPS = rf.check("fps", Value(20), "Try to achieve this number of frames per second (int).").asInt();
+	_intPrintFPSAfterNumFrames = rf.check("fpsOutputFrequency", Value(20), "Print the achieved framerate after this number of frames (int).").asInt();
+	_dblTPF = 1.0f/((float)_intFPS);
+	_intFPSAchieved = 0;
+	_intFC = 0;
+	_dblTPFAchieved = 0.0;
+	_dblStartTime = 0.0;
 
     // Load from configuration group ([<group_name>]), if group option present
     Value *valGroup; // check assigns pointer to reference
@@ -86,30 +94,31 @@ bool CamCalibModule::interruptModule(){
 
 bool CamCalibModule::updateModule(){	
 
-    _framerate.addStartTime(yarp::os::Time::now());
+    // framerate stuff
+	_intFC++;
+	if(_intPrintFPSAfterNumFrames <= _intFC && _intPrintFPSAfterNumFrames > 0){
+		std::cout << "FPS: " << _intFPSAchieved << std::endl;
+		_intFC = 0;
+	}
+	_dblTPFAchieved = ((float)(yarp::os::Time::now() - _dblStartTime));
+	if(_dblTPFAchieved < _dblTPF){
+		yarp::os::Time::delay(_dblTPF-_dblTPFAchieved);
+		_intFPSAchieved = _intFPS;
+	}
+	else{
+		_intFPSAchieved = (int)::floor((1.0 / _dblTPFAchieved) + 0.5);
+	}
+	_dblStartTime = yarp::os::Time::now();
 
-    yarp::sig::ImageOf<PixelRgb> *yrpImgIn;
-
-    yrpImgIn = _prtImgIn.read();  
- 
-    if (yrpImgIn == NULL)   // this is the case if module is requested to quit while waiting for image
-        return true;
-
-    _semaphore.wait();
-    yarp::sig::ImageOf<PixelRgb>& yrpImgOut = _prtImgOut.prepare();
-
-    _calibTool->apply(*yrpImgIn, yrpImgOut);
-
-    _prtImgOut.write();
-    _semaphore.post();
-
-    _framerate.addEndTime(yarp::os::Time::now());
-    if(_framerate.hasNewFramerate()){
-        cout << _framerate.getFramerate() << " fps" << endl; 
-		
-    }
-
-	fflush(stdout);
+	// calibration
+    yarp::sig::ImageOf<PixelRgb> *yrpImgIn = _prtImgIn.read(false);
+	if (yrpImgIn != NULL) {        
+		_semaphore.wait();
+		yarp::sig::ImageOf<PixelRgb>& yrpImgOut = _prtImgOut.prepare();
+		_calibTool->apply(*yrpImgIn, yrpImgOut);
+		_prtImgOut.write();
+		_semaphore.post();  
+	}	
     return true;
 }
 

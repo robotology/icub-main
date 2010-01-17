@@ -58,7 +58,14 @@ private:
 
     Semaphore                           _semaphore;
 
-    Framerate _framerate;
+	// framerate
+    int _intFPS;
+	int _intFPSAchieved;
+	int _intPrintFPSAfterNumFrames;
+	int _intFC; // frame counter
+	double _dblTPF; // time per frame (ms)
+	double _dblTPFAchieved; // actual time per frame 
+	double _dblStartTime;
 
 public:
 
