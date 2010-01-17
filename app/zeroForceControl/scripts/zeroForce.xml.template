@@ -27,6 +27,14 @@
 			<stdio>console</stdio>
    	</module>
 
+	<module>
+      		<name>zeroForceControl</name>
+      		<parameters>--from rightLegFT.ini</parameters>
+			<node>pc104</node>
+			<tag>right_leg_zfc</tag>
+			<stdio>console</stdio>
+   	</module>
+
 <!-- <module>     		<name>genericFTCalibrator</name>      		<parameters></parameters>	<node>icub14</node>		<stdio>icub14</stdio>		<tag>genFTcal</tag>
    	</module> -->
 
@@ -41,8 +49,13 @@
                 <protocol>udp</protocol>
         </connection>
         <connection>
-                <from>/icub/legs/analog:o</from>
+                <from>/icub/leftleg/analog:o</from>
                 <to>/icub/left_leg/FT:i</to>
+                <protocol>udp</protocol>
+        </connection>
+        <connection>
+                <from>/icub/rightleg/analog:o</from>
+                <to>/icub/right_leg/FT:i</to>
                 <protocol>udp</protocol>
         </connection>
 <!-- <connection>             <from>/icub/left_arm/FT:o</from>                <to>/icub/left_arm/FT:i</to>                 <protocol>udp</protocol>        </connection> -->
