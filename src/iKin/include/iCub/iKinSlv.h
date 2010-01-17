@@ -5,7 +5,7 @@
  *
  * Classes for on-line solution of inverse kinematic of iCub 
  * limbs based on <a 
- * href="http://eris.liralab.it/wiki/Installing_IPOPT">IpOpt<>. 
+ * href="http://eris.liralab.it/wiki/Installing_IPOPT">IpOpt</a>.
  * The solvers run as on-line daemons which connect to the robot 
  * to retrieve information on the current joints configuration 
  * (along with the bounds) and by requesting a desired pose with 
