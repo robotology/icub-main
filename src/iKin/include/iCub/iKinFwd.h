@@ -268,7 +268,7 @@ public:
     /**
     * Default destructor. 
     */
-    ~iKinLink() { };
+    virtual ~iKinLink() { };
 };
 
 
@@ -680,7 +680,7 @@ public:
     /**
     * Destructor. 
     */
-    ~iKinChain();
+    virtual ~iKinChain();
 };
 
 
@@ -839,7 +839,7 @@ public:
     /**
     * Destructor. 
     */
-    ~iKinLimb();
+    virtual ~iKinLimb();
 };
 
 
