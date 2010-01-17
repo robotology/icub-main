@@ -1380,10 +1380,14 @@ bool affActionPrimitivesLayer2::grasp(const Vector &x, const Vector &o, const Ve
     if (configured)
     {
         printMessage("start grasping\n");
+//
+//      wristContact=false;
+//      pushAction(x+d,o,"open_hand",ACTIONPRIM_DISABLE_EXECTIME,disableWristDof);
+//      pushAction(x,o,ACTIONPRIM_DISABLE_EXECTIME,enableWristDof);
+//      pushAction("close_hand");
 
-        wristContact=false;
-        pushAction(x+d,o,"open_hand",ACTIONPRIM_DISABLE_EXECTIME,disableWristDof);
-        pushAction(x,o,ACTIONPRIM_DISABLE_EXECTIME,enableWristDof);
+        pushAction(x+d,o,"open_hand");
+        pushAction(x,o);
         pushAction("close_hand");
 
         return true;
