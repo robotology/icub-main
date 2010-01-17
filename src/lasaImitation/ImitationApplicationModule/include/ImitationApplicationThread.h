@@ -41,6 +41,15 @@ private:
     Semaphore               mMutex;
     int                     mPeriod;
     char                    mBaseName[256];
+
+    enum Mode{
+        MODE_BASICCOMMAND = 0,
+        MODE_STATEMACHINE
+    };
+    Mode                    mMode;
+
+    BufferedPort<Vector>    mWiimotePort;
+
     
     BufferedPort<Bottle>    mVelocityControllerPort;
     BufferedPort<Bottle>    mRobotControllerPort;
@@ -102,16 +111,28 @@ private:
     BufferedPort<Bottle>   *mPorts[PID_SIZE];
     
     enum State{
-        IA_IDLE=0,
-        IA_INIT,
-        IA_STOP,
-        IA_REST,
-        IA_RUN
+        IAS_IDLE=0,
+        IAS_INIT,
+        IAS_RUN,
+        IAS_PAUSE,
+        IAS_STOP,
+        IAS_SIZE
     };
     
     State                   mState;
     State                   mPrevState;
     State                   mNextState;
+    
+    char                    mStateName[IAS_SIZE][256];
+    
+    enum StateSignal{
+        SSIG_NONE = 0,
+        SSIG_OK,
+        SSIG_ABORT,
+        SSIG_NEXT,
+        SSIG_PREV
+    };
+    StateSignal             mStateSignal;
     
     enum BasicCommand{
         BC_NONE = 0,
@@ -159,6 +180,12 @@ private:
     BasicCommand            mBasicCommand;
     string                  mBasicCommandParams;
 
+    void                    ProcessBasicCommand();
+    void                    ProcessStateMachine();
+    
+    bool                    ProcessWiimote(bool flush = false);
+    Vector                  mWiimoteEvent;
+    
 public:
     ImitationApplicationThread(int period, const char* baseName);
     virtual ~ImitationApplicationThread();
@@ -176,7 +203,11 @@ public:
     
             void    PrepareToStop();
 
+            void    InitStateMachine();
+    
             int     respond(const Bottle& command, Bottle& reply);
+            int     respondToBasicCommand(const Bottle& command, Bottle& reply);
+            int     respondToStateMachine(const Bottle& command, Bottle& reply);
 
     virtual void    run();
     virtual bool    threadInit();

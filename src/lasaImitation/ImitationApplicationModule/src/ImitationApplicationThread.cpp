@@ -41,6 +41,13 @@ ImitationApplicationThread::~ImitationApplicationThread()
 
 bool ImitationApplicationThread::threadInit()
 {
+    mMode = MODE_BASICCOMMAND;
+    
+    char portname[256];
+    snprintf(portname,        256,"/%s/Wiimote",mBaseName);
+    mWiimotePort.open(portname);
+    mWiimotePort.setStrict();
+    
     snprintf(mSrcCtrlPortName[PID_Velocity],        256,"/%s/VC",mBaseName);
     snprintf(mSrcCtrlPortName[PID_Robot],           256,"/%s/RC",mBaseName);
     snprintf(mSrcCtrlPortName[PID_3DMouse],         256,"/%s/TC3D",mBaseName);
@@ -100,28 +107,32 @@ bool ImitationApplicationThread::threadInit()
     snprintf(mDstPortName[DPID_GMMRightSignal],     256,"/GaussianMixtureModel/Right/signals");
     snprintf(mDstPortName[DPID_GMMLeftSignal],      256,"/GaussianMixtureModel/Left/signals");
 
-    
-    mState = mPrevState = mNextState = IA_IDLE;
+    InitStateMachine();
 
     mBasicCommand = BC_NONE;
     
+    mWiimoteEvent.resize(11);
+    mWiimoteEvent = 0;
+
     return true;
 }
 void ImitationApplicationThread::PrepareToStop(){
-    mMutex.wait();
+    /*mMutex.wait();
     mNextState = IA_STOP;
     mMutex.post();
     while(mState != IA_IDLE){
         Time::delay(double(mPeriod)*0.001);
         if(mState != IA_IDLE)
             cerr<<"Waiting to quit"<<endl;
-    }
+    }*/
 }
 
 void ImitationApplicationThread::threadRelease()
 {
     ConnectToNetwork(false);
     
+    mWiimotePort.close();
+
     mVelocityControllerPort.close();
     mRobotControllerPort.close();
     m3DMouseControllerPort.close();
@@ -134,7 +145,52 @@ void ImitationApplicationThread::run()
 {
     mMutex.wait();
     ClearCommands();
+
+    ProcessWiimote();
+
+    if(mMode == MODE_BASICCOMMAND){
+        ProcessBasicCommand();
+    }else{
+        ProcessStateMachine();
+    }
     
+    SendCommands();
+    mMutex.post();
+    
+}
+
+bool ImitationApplicationThread::ProcessWiimote(bool flush){
+    // Read data from input port
+    bool res = false;
+    mWiimoteEvent = 0;
+    Vector *inputVec = mWiimotePort.read(false);
+    while(inputVec!=NULL){
+        mWiimoteEvent = *inputVec;
+        cout << "Wiimote says: "<<mWiimoteEvent.toString()<<endl;
+        res = true;
+        if(!flush) break;
+        inputVec = mWiimotePort.read(false);
+    }
+    if(res){
+        if(mMode == MODE_STATEMACHINE){
+            bool bCmd = false;
+            Bottle cmd; 
+            if(mWiimoteEvent[0]>0.0){ cmd.fromString("ok");   bCmd = true;}
+            if(mWiimoteEvent[8]>0.0){ cmd.fromString("abrt"); bCmd = true;}
+            if(mWiimoteEvent[4]>0.0){ cmd.fromString("next"); bCmd = true;}
+            if(mWiimoteEvent[5]>0.0){ cmd.fromString("prev"); bCmd = true;}
+            if(bCmd){
+                Bottle rep;
+                respondToStateMachine(cmd,rep);
+            }
+        }
+        
+    }
+    
+    return res;
+}
+
+void ImitationApplicationThread::ProcessBasicCommand(){
     switch(mBasicCommand){
     case BC_NONE:
         break;
@@ -313,57 +369,45 @@ void ImitationApplicationThread::run()
     
     mBasicCommand       = BC_NONE;
     mBasicCommandParams = "";
-    /*
+}
+
+void ImitationApplicationThread::ProcessStateMachine(){
+    if(mStateSignal!=SSIG_NONE)
+        cout << "SSIG: "<<mStateSignal<<endl;
+
     if(mNextState!=mState)
         mState = mNextState;
     
     bool bStateChanged = (mPrevState != mState);
     if(bStateChanged){
-        cout << "State change: <"<<mPrevState<<"> -> <"<<mState<<">"<<endl;
+        cout << "State change: <"<<mStateName[mPrevState]<<">("<<mPrevState<<") -> <"<<mStateName[mState]<<">("<<mState<<")"<<endl; 
     }
     
     mNextState = mState;
     switch(mState){
-    case IA_IDLE:
+    case IAS_IDLE:
         break;
-    case IA_INIT:
+    case IAS_INIT:
+        break;
+    case IAS_RUN:
         if(bStateChanged){
-            ConnectToNetwork(true);
-            AddCommand(PID_Velocity,"kd 0.1");
-            //AddConnexion(SPID_Test1,DPID_Test1);
         }
         break;
-    case IA_STOP:
-    case IA_REST:
-        if(bStateChanged){
-            AddCommand(PID_Velocity,"mask all");
-            if(mState==IA_REST) AddCommand(PID_Velocity,"rest");
-            else                AddCommand(PID_Velocity,"susp");
-            AddCommand(PID_Robot,"susp");
-            RemAllConnexions();
-        }
-        mNextState = IA_IDLE;
+    case IAS_PAUSE:
         break;
-    case IA_RUN:
-        if(bStateChanged){
-            AddConnexion(SPID_3DMouse, DPID_LArmDesCartVel);
-            
-            AddCommand(PID_Robot,   "run");
-            AddCommand(PID_Robot,   "iks LeftArm");
-
-            AddCommand(PID_Velocity,"run");
-        }
+    case IAS_STOP:
+        break;
+    default:
         break;
     }
     
     mPrevState  = mState;
     mState      = mNextState;
-    */
+
     
-    SendCommands();
-    mMutex.post();
-    
+    mStateSignal = SSIG_NONE;
 }
+
 
 void ImitationApplicationThread::ConnectToNetwork(bool bConnect){
     cout << (bConnect?"Connecting to network":"Disonnecting from network")<<endl;
@@ -475,24 +519,82 @@ void ImitationApplicationThread::SendCommands(){
             break;
         }        
     }
-    /*if(cmdCnt+conCnt>0)
-        cerr <<"Sending done..."<<endl;*/
+    if(mCommandsType.size()>0)
+        cerr <<"Sending done..."<<endl;
 
 }
 
-
 int ImitationApplicationThread::respond(const Bottle& command, Bottle& reply){
     mMutex.wait();
+    int res = 0;
+    if(mMode == MODE_BASICCOMMAND){
+        res = respondToBasicCommand(command, reply);
+    }else{
+        res = respondToStateMachine(command, reply);
+    }
+    mMutex.post();
+    return res;
+}
 
+int ImitationApplicationThread::respondToStateMachine(const Bottle& command, Bottle& reply){
     int  cmdSize    = command.size();
     int  retVal     = 1;
-    
-    
-    
+
     if(cmdSize<=0){
         retVal = -1;
     }else{
         switch(command.get(0).asVocab()) {
+        case VOCAB3('b','c','m'):
+            mMode = MODE_BASICCOMMAND;
+            break;
+        case VOCAB3('s','m','m'):
+            mMode = MODE_STATEMACHINE;
+            break;
+        case VOCAB4('n','e','x','t'):
+            mStateSignal = SSIG_NEXT;
+            break;
+        case VOCAB4('p','r','e','v'):
+            mStateSignal = SSIG_PREV;
+            break;
+        case VOCAB2('o','k'):
+            mStateSignal = SSIG_OK;
+            break;
+        case VOCAB4('a','b','r','t'):
+            mStateSignal = SSIG_ABORT;
+            break;
+        default:
+            retVal = -1;
+            break;
+        }
+    }
+    if(retVal>0){
+        reply.addVocab(Vocab::encode("ack"));
+        cout << "*ACK*"<<endl;
+    }else if (retVal == 0){
+        reply.addVocab(Vocab::encode("fail"));
+        cout << "*FAIL*"<<endl;
+    }else{
+        cout << "*BIG_FAIL*"<<endl;
+    }
+    
+    return retVal;
+}
+
+int ImitationApplicationThread::respondToBasicCommand(const Bottle& command, Bottle& reply){
+
+    int  cmdSize    = command.size();
+    int  retVal     = 1;
+
+    if(cmdSize<=0){
+        retVal = -1;
+    }else{
+        switch(command.get(0).asVocab()) {
+        case VOCAB3('b','c','m'):
+            mMode = MODE_BASICCOMMAND;
+            break;
+        case VOCAB3('s','m','m'):
+            mMode = MODE_STATEMACHINE;
+            break;
         case VOCAB4('i','n','i','t'):
             mBasicCommand = BC_INIT;
             break;
@@ -655,34 +757,6 @@ int ImitationApplicationThread::respond(const Bottle& command, Bottle& reply){
             retVal = -1;
             break;
         }
-        /*
-        switch(command.get(0).asVocab()) {
-        case VOCAB4('i','n','i','t'):
-            if(mState == IA_IDLE){ 
-                mNextState = IA_INIT;
-                retVal = 1;
-            }else{
-                retVal = 0;
-            }
-            break;
-        case VOCAB3('r','u','n'):
-            if(mState == IA_INIT){ 
-                mNextState = IA_RUN;
-                retVal = 1;
-            }else{
-                retVal = 0;
-            }
-            break;
-        case VOCAB4('s','t','o','p'):
-            mNextState = IA_STOP;
-            retVal = 1;
-            break;
-        case VOCAB4('r','e','s','t'):
-            mNextState = IA_REST;
-            retVal = 1;
-            break;
-        }
-        */
     }
     if(retVal>0){
         reply.addVocab(Vocab::encode("ack"));
@@ -694,6 +768,25 @@ int ImitationApplicationThread::respond(const Bottle& command, Bottle& reply){
         cout << "*BIG_FAIL*"<<endl;
     }
     
-    mMutex.post();
     return retVal;
 }
+
+void ImitationApplicationThread::InitStateMachine(){
+    for(int i=0;i<IAS_SIZE;i++)
+        mStateName[i][0] = 0;
+
+    snprintf(mStateName[IAS_IDLE],              256,"IDLE");
+    snprintf(mStateName[IAS_INIT],              256,"INIT");
+    snprintf(mStateName[IAS_RUN],               256,"RUN");
+    snprintf(mStateName[IAS_PAUSE],             256,"PAUSE");
+    snprintf(mStateName[IAS_STOP],              256,"STOP");
+
+    mState = mPrevState = mNextState = IAS_IDLE;
+    mStateSignal = SSIG_NONE;
+
+    cout << "State names: "<<endl;
+    cout << "*******************"<<endl;
+    for(int i=0;i<IAS_SIZE;i++)
+        cout <<"  "<<i<<":" <<mStateName[i]<<endl;
+}
+
