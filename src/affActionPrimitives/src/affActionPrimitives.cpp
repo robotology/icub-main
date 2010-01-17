@@ -1378,6 +1378,14 @@ bool affActionPrimitivesLayer2::grasp(const Vector &x, const Vector &o,
 
 
 /************************************************************************/
+bool affActionPrimitivesLayer2::grasp(const Vector &x, const Vector &o,
+                                      const Vector &d)
+{
+    return affActionPrimitivesLayer1::grasp(x,o,d);
+}
+
+
+/************************************************************************/
 bool affActionPrimitivesLayer2::touch(const Vector &x, const Vector &o, const Vector &d)
 {
     if (configured)

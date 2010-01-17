@@ -784,6 +784,20 @@ public:
                        const yarp::sig::Vector &d1, const yarp::sig::Vector &d2);
 
     /**
+    * The usual grasp is still available.
+    * @param x the 3-d target position [m]. 
+    * @param o the 4-d hand orientation used while reaching/grasping
+    *          (given in axis-angle representation: ax ay az angle
+    *          in rad).
+    * @param d the displacement [m] wrt the target position that 
+    *          identifies a location to be reached prior to
+    *          grasping.
+    * @return true/false on success/fail. 
+    */
+    virtual bool grasp(const yarp::sig::Vector &x, const yarp::sig::Vector &o,
+                       const yarp::sig::Vector &d);
+
+    /**
     * More evolute version of touch. It exploits the contact 
     * detection in order to stop the arm. 
     * @param x the 3-d target position [m]. 
