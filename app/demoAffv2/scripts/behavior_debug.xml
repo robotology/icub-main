@@ -5,13 +5,14 @@
 <dependencies>
         <port>/icub/attentionSelection/conf</port> 
         <port>/icub/controlGaze/status:o</port>
+        <!-- ignore these two: -->
         <port>/demoAffv2/port_behavior_in</port>
         <port>/demoAffv2/port_behavior_out</port>
 </dependencies>
 <module>
         <name>behaviorController</name>
         <parameters>--context demoAffv2/conf</parameters>
-        <tag>controlgaze</tag>
+        <tag>controlgaze</tag> <!-- I don't think so! -Giovanni -->
         <stdio>icub14</stdio>
         <node>icub-vm1</node>
 </module>

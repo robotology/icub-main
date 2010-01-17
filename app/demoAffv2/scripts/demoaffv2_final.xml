@@ -9,13 +9,20 @@
 </dependencies>
 
 <module>
+        <name>behaviorController</name>
+        <parameters>--context demoAffv2/conf</parameters>
+        <tag>behavior_controller</tag>
+        <stdio>icub14</stdio>
+        <node>icub-vm1</node>
+</module>
+
+<module>
       <name>demoAffv2</name>
       <parameters>--context demoAffv2/conf</parameters>
       <node>icub-vm1</node>
       <stdio>icub14</stdio>
       <tag>demoAffv2</tag>
 </module>
-
 <module>
   <name>graspDetector</name>
   <parameters>--context graspDetector/conf --from left_armGraspDetector.ini</parameters>
@@ -29,6 +36,7 @@
   <tag>graspdetectorright</tag>
 </module>
 
+<!-- vision modules -->
 <module>
       <name>edisonSegmentation</name>
       <parameters>--context demoAffv2/conf</parameters>
@@ -48,7 +56,6 @@
       <stdio>icub14</stdio>
       <tag>effect_detector</tag>
 </module>
-
 <module>
       <name>yarpview</name>
       <parameters>--name /userSelection:view --out /userSelection:o --synch</parameters>
@@ -62,6 +69,25 @@
       <tag>labeled_image</tag>
 </module>
 
+<!-- behavior control connections -->
+<connection>
+        <from>/icub/controlGaze/status:o</from>
+        <to>/demoAffv2/behavior/gaze</to>
+</connection>
+<connection>
+        <from>/demoAffv2/behavior/att</from>
+        <to>/icub/attentionSelection/conf</to>
+</connection>
+<connection>
+        <from>/demoAffv2/port_behavior_out</from>
+        <to>/demoAffv2/behavior/port_aff_in</to>
+</connection>
+<connection>
+        <from>/demoAffv2/behavior/port_aff_out</from>
+        <to>/demoAffv2/port_behavior_in</to>
+</connection>
+
+<!-- vision connections -->
 <connection>
       <from>/icub/camcalib/left/out</from>
       <to>/edisonSegm/rawImg:i</to>
@@ -119,20 +145,20 @@
       <to>/demoAffv2/torsoState</to>
 </connection>
 
-<!-- the other emotion connection (/icub/face/emotions/out to /icub/face/raw/in)
-     belongs to face_expressions.xml -->
+<!-- emotion connections -->
 <connection>
       <from>/demoAffv2/emotion</from> 
       <to>/icub/face/emotions/in</to>
       <protocol>tcp</protocol>
 </connection>
-   
+<!-- note that the other emotion connection (/icub/face/emotions/out to /icub/face/raw/in)
+     is in face_expressions.xml -->
+
 <connection>
       <from>/demoAffv2/gazeposcmd</from> 
       <to>/icub/controlGaze/pos</to>
       <protocol>udp</protocol>
 </connection>
-
 <connection>
       <from>/demoAffv2/gazevelcmd</from> 
       <to>/icub/controlGaze/vel</to>
