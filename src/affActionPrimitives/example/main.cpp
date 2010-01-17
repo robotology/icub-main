@@ -465,14 +465,14 @@ public:
         if (partUsed=="both_arms" || partUsed=="right_arm")
         {
             useArm(USE_RIGHT);
-            action->pushAction(*home_x,*home_o);
+            action->pushAction(*home_x,*home_o,"open_hand");
             action->checkActionsDone(f,true);
         }
 
         if (partUsed=="both_arms" || partUsed=="left_arm")
         {
             useArm(USE_LEFT);
-            action->pushAction(*home_x,*home_o);
+            action->pushAction(*home_x,*home_o,"open_hand");
             action->checkActionsDone(f,true);
         }
     }

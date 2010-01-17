@@ -195,21 +195,28 @@ bool affActionPrimitives::configHandSeq(Property &opt)
             Bottle &bSeq=handSeqProp.findGroup(seq);
             if (bSeq.isNull())
             {
-                printMessage("WARNING: \"%s\" group is missing\n",seq);    
+                printMessage("WARNING: \"%s\" group is missing\n",seq);
                 return false;
             }
 
             if (!bSeq.check("key"))
             {
-                printMessage("WARNING: \"key\" option is missing\n");    
+                printMessage("WARNING: \"key\" option is missing\n");
                 return false;
             }
 
             string key=bSeq.find("key").asString().c_str();
 
+            if (isValidHandSeq(key))
+            {
+                printMessage("WARNING: the sequence \"%s\" is already defined: skipping ...\n",
+                             key.c_str());
+                continue;
+            }
+
             if (!bSeq.check("numWayPoints"))
             {
-                printMessage("WARNING: \"numWayPoints\" option is missing\n");    
+                printMessage("WARNING: \"numWayPoints\" option is missing\n");
                 return false;
             }
 
