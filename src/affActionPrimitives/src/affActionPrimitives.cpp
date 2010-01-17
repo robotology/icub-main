@@ -942,8 +942,6 @@ bool affActionPrimitives::cmdHand(const Action &action)
 
             posCtrl->setRefSpeed(*itr,vels[j]);
             posCtrl->positionMove(*itr,poss[j]);
-            // debug
-            printMessage("DEBUG ----------------- %d %g %g\n",*itr,vels[j],poss[j]);
         }
 
         latchHandMoveDone=handMoveDone=false;
@@ -1371,29 +1369,6 @@ bool affActionPrimitivesLayer2::grasp(const Vector &x, const Vector &o,
         // save data
         grasp_d2=d2;
         grasp_o=o;
-
-        return true;
-    }
-    else
-        return false;
-}
-
-
-/************************************************************************/
-bool affActionPrimitivesLayer2::grasp(const Vector &x, const Vector &o, const Vector &d)
-{
-    if (configured)
-    {
-        printMessage("start grasping\n");
-//
-//      wristContact=false;
-//      pushAction(x+d,o,"open_hand",ACTIONPRIM_DISABLE_EXECTIME,disableWristDof);
-//      pushAction(x,o,ACTIONPRIM_DISABLE_EXECTIME,enableWristDof);
-//      pushAction("close_hand");
-
-        pushAction(x+d,o,"open_hand");
-        pushAction(x,o);
-        pushAction("close_hand");
 
         return true;
     }
