@@ -881,6 +881,7 @@ bool DemoAff::updateModule(){
       bool b;
       bool currTrackingMode;
 
+     
       //Prepare torso rest position
       Vector newRestPos(1), currRestPos;
       newRestPos[0] = torsoPosObsPitch;
@@ -915,7 +916,12 @@ bool DemoAff::updateModule(){
       controlGazeSaccadeAbsolute(headPosObsAz, headPosObsEl);
       yarp::os::Time::delay(1.0);
 
-      //state=JUSTACT;
+      printf("GOing to attention\n");
+      Bottle& output = port_behavior_out.prepare();
+      output.clear();
+      output.addInt(1);
+      port_behavior_out.write();
+
       state=IDLE;
     }
     break;
@@ -964,8 +970,9 @@ bool DemoAff::updateModule(){
       yarp::os::Time::delay(1.0);
 
       state = JUSTACT;
-
+      cout << "TO JUSTACTTTTTTTTTTTTT" << endl << endl;
   }
+  break;
   case GETDEMOOBJS:
     {
       // Set expression
@@ -1006,17 +1013,7 @@ bool DemoAff::updateModule(){
       }
       else 
       {
-	// No obj change to attention
-	
-	printf("GOing to attention\n");
-	Bottle& output = port_behavior_out.prepare();
-	output.clear();
-	//output.addVocab(Vocab::encode("off"));
-        output.addInt(1);
-	port_behavior_out.write();
 	state=FIRSTINIT;
-	//state=IDLE;
-	//state=INIT;
       }
 
     }
@@ -1108,12 +1105,6 @@ bool DemoAff::updateModule(){
       getObjInfo();
       
       if (numObjs<=0){
-	// Stop aff demo and notify behavior
-	Bottle& output = port_behavior_out.prepare();
-	output.clear();
-	//output.addVocab(Vocab::encode("off"));
-        output.addInt(1);
-	port_behavior_out.write();
 	
 	state=FIRSTINIT;
 	
@@ -1303,14 +1294,8 @@ bool DemoAff::updateModule(){
 	else selectedaction=TAP;
       }
       else {
-	printf("GOing to attention\n");
-	Bottle& output = port_behavior_out.prepare();
-	output.clear();
-	//output.addVocab(Vocab::encode("off"));
-        output.addInt(1);
-	port_behavior_out.write();
 	
-	state=IDLE;
+	state=FIRSTINIT;
       }
 
     }
@@ -1419,7 +1404,7 @@ bool DemoAff::updateModule(){
             action->pushAction(graspPosition, *graspOrien, "point_hand");
             action->pushWaitState(1.5);
             action->checkActionsDone(b, true);
-            state=INIT;
+            state=FIRSTINIT;
             break;
         }
 
@@ -1450,7 +1435,7 @@ bool DemoAff::updateModule(){
         action->checkActionsDone(b, true);
 
       }
-      state = INIT;
+      state = FIRSTINIT;
     }		
     break;
 
@@ -1491,7 +1476,7 @@ bool DemoAff::updateModule(){
             action->pushAction(reachPosition, *graspOrien, "point_hand");
             action->pushWaitState(1.5);
             action->checkActionsDone(b, true);
-            state=INIT;
+            state=FIRSTINIT;
             break;
         }
 
@@ -1503,7 +1488,7 @@ bool DemoAff::updateModule(){
         action->checkActionsDone(b, true);
 
       }
-      state=INIT;
+      state=FIRSTINIT;
     }
     break;
 
@@ -1547,7 +1532,7 @@ bool DemoAff::updateModule(){
             action->pushAction(graspPosition, *graspOrien, "point_hand");
             action->pushWaitState(1.5);
             action->checkActionsDone(b, true);
-            state=INIT;
+            state=FIRSTINIT;
             break;
         }
 
@@ -1569,7 +1554,7 @@ bool DemoAff::updateModule(){
         // signal a successful touch
 //        emotionCtrl(height >= tableTop[2] + 0.01 ? "hap" : "sad");
       }
-      state = INIT;
+      state = FIRSTINIT;
     }
     break;
     
@@ -1993,3 +1978,4 @@ void DemoAff::controlGazePursuitPixel(double x, double y)
   // write output vector
   port_gazepos_out.write(); 
 }
+

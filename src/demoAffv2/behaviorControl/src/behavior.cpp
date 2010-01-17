@@ -168,7 +168,8 @@ bool Behavior::updateModule()
 		case FIRSTINIT: 
 		{
 			state=ATTENTION;
-                        attention_time = yarp::os::Time::now();
+            attention_time = yarp::os::Time::now();
+            remoteAtt.setInhibitOutput(false);
 		}
 		break;
 
@@ -243,7 +244,7 @@ bool Behavior::updateModule()
 				{
 					remoteAtt.setInhibitOutput(false);
 					state=ATTENTION;
-                                        attention_time = yarp::os::Time::now();
+                    attention_time = yarp::os::Time::now();
 				}
 			}
 		}
