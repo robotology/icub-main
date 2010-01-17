@@ -7663,17 +7663,18 @@ void fft(float *image, float *real, float *imaginary, int width, int height,
 
 void pause(int milliseconds) {
 
-   struct _timeb tb; // time buffer
+  portable_timeb_ tb;
+
    long int s1, s2;
    long int ms1, ms2;
    long elapsed;
 
-   _ftime(&tb); 
+   portable_ftime(&tb); 
    s1=(long) tb.time; 
    ms1=tb.millitm;
 
    do {
-     _ftime(&tb); 
+     portable_ftime(&tb); 
      s2=(long) tb.time; 
      ms2=tb.millitm; 
      elapsed =(s2*1000+ms2)-(s1*1000+ms1);
