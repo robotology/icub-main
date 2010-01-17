@@ -21,10 +21,10 @@ through the iKinArmCtrl module.
  
 The robot will gaze around until it will find a face and then it 
 will remain on the last detected face (even in presence of more 
-than one face). 
+than one). 
  
-\note A video on iCub tracking a face can be seen at
-      http://eris.liralab.it/misc/icubvideos/faceTracker.avi
+\note A video on iCub tracking a face can be seen <a 
+      href="http://eris.liralab.it/misc/icubvideos/faceTracker.avi">here</a>.
 
 \section lib_sec Libraries 
 - YARP libraries. 
@@ -364,8 +364,7 @@ public:
     {
         if (ARMISTRACKING(armCmdState))
         {
-            Vector &x=portReachPoint->prepare();
-            x=fp;
+            portReachPoint->prepare()=fp;
             portReachPoint->write();
         }
         else
@@ -377,6 +376,7 @@ public:
 //      if (ARMISTRACKING(armCmdState))
 //      {
 //          Vector &x=portReachPoint->prepare();
+//          x.resize(3);
 //          x[0]=-0.27;
 //          x[1]=+0.00;
 //          x[2]=+0.10;

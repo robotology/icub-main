@@ -14,7 +14,7 @@
     </module> 
     <module>
       <name>iKinArmCtrl</name>
-      <parameters>--onlyXYZ</parameters> 
+      <parameters>--onlyXYZ --DOF8</parameters> 
       <node>pwrNode2</node>
       <tag>armCtrl</tag>
     </module> 
