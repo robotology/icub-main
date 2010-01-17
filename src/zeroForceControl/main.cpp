@@ -1,4 +1,3 @@
-
 /**
 * @ingroup icub_module
 *
@@ -248,6 +247,16 @@ private:
 				minJntLimits.resize(4);
 				minJntLimits(0) = -30.0; minJntLimits(1) = 0.0; minJntLimits(2) = -70.0; minJntLimits(3) = -110.0;
 			}
+			else if (strcmp(limb.c_str(), "right_leg")==0)
+			{
+				initPosition.resize(limbJnt);
+				initPosition = 0.0;
+				initPosition(0) = 15.0; initPosition(1) = 15.0; initPosition(2) = 0.0; initPosition(3) = -15.0;
+				maxJntLimits.resize(4);
+				maxJntLimits(0) = 130.0; maxJntLimits(1) = 100.0; maxJntLimits(2) = 70.0; maxJntLimits(3) = -10.0;
+				minJntLimits.resize(4);
+				minJntLimits(0) = -30.0; minJntLimits(1) = 0.0; minJntLimits(2) = -70.0; minJntLimits(3) = -110.0;
+			}
 		}
 	}
 
@@ -308,8 +317,7 @@ private:
 			  //GAINS gains
 			  if (filter_enabled)
 			  {
-			    double lleg_div=1.0;
-				kp(0) =  20.0;	kp(1) =  -14.0/lleg_div;	kp(2) =  94.0/lleg_div;	kp(3) =  -94.0/lleg_div; 
+				kp(0) =  20.0;	kp(1) =  -14.0;	kp(2) =  94.0;	kp(3) =  -94.0; 
 			  }
 			  else
 			  {
@@ -317,6 +325,28 @@ private:
 			  }
 			  T_all=eye(limbJnt,limbJnt);
 			  fprintf(stderr, "Opening left leg ... \n");
+		  }
+		  else if (strcmp(limb.c_str(), "right_leg")==0)
+		  {
+			  limbJnt = 4;
+			  sensorLink = 1;
+			  iCubPid = new Pid[limbJnt];
+			  FTPid = new Pid[limbJnt];
+			  iCubLimb = new iCubLeg4DOF("right");
+              Rs(1,0) = -1.0; Rs(0,1) = 1.0;  Rs(2,2) = 1.0;
+              ps(2) = 0.10;
+			  kp.resize(limbJnt);
+			  //GAINS gains
+			  if (filter_enabled)
+			  {
+				kp(0) =  0.0;	kp(1) =  0.0;	kp(2) =  0.0;	kp(3) =  0.0; 
+			  }
+			  else
+			  {
+				 kp(0) =  10;	kp(1) =  -5;	kp(2) =  40;	kp(3) =  -50; 
+			  }
+			  T_all=eye(limbJnt,limbJnt);
+			  fprintf(stderr, "Opening right leg ... \n");
 		  }
 		  else
           {
