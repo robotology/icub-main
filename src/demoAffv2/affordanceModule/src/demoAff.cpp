@@ -917,6 +917,9 @@ bool DemoAff::updateModule(){
       yarp::os::Time::delay(1.0);
 
       printf("GOing to attention\n");
+      controlGazeSaccadeAbsolute(0.0, 0.0);
+      yarp::os::Time::delay(1.0);
+
       Bottle& output = port_behavior_out.prepare();
       output.clear();
       output.addInt(1);
@@ -1404,6 +1407,9 @@ bool DemoAff::updateModule(){
             action->pushAction(graspPosition, *graspOrien, "point_hand");
             action->pushWaitState(1.5);
             action->checkActionsDone(b, true);
+	    action->pushAction(*home_x, *home_o, "open_hand");
+	    action->checkActionsDone(b, true);
+
             state=FIRSTINIT;
             break;
         }
@@ -1476,6 +1482,9 @@ bool DemoAff::updateModule(){
             action->pushAction(reachPosition, *graspOrien, "point_hand");
             action->pushWaitState(1.5);
             action->checkActionsDone(b, true);
+	    action->pushAction(*home_x, *home_o, "open_hand");
+	    action->checkActionsDone(b, true);
+
             state=FIRSTINIT;
             break;
         }
@@ -1532,6 +1541,9 @@ bool DemoAff::updateModule(){
             action->pushAction(graspPosition, *graspOrien, "point_hand");
             action->pushWaitState(1.5);
             action->checkActionsDone(b, true);
+	    action->pushAction(*home_x, *home_o, "open_hand");
+	    action->checkActionsDone(b, true);
+	    
             state=FIRSTINIT;
             break;
         }
