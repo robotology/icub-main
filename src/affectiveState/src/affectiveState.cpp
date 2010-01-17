@@ -20,7 +20,8 @@
 /*
  * Audit Trail
  * -----------
- * 07/01/010  Started development.  DV
+ * 07/01/10  Started development.  DV
+ * 15/01/10  Completed version 1.  DV
  */ 
 
 #include "iCub/affectiveState.h"
@@ -78,13 +79,18 @@ bool AffectiveState::configure(yarp::os::ResourceFinder &rf)
 				                   Value(3),
     			                   "number of time samples for weighted average spiking rate (int)").asInt(); 
 
+   expiryAge                     = rf.check("expiry",
+				                   Value(10),
+    			                   "number of time samples after which an image expires (int)").asInt(); 
+
    if (debug) {
       printf("affectiveState: module name is %s\n",moduleName.c_str());
-      printf("affectiveState: parameters are\n%s\n%s\n%s\n%d\n\n",   
+      printf("affectiveState: parameters are\n%s\n%s\n%s\n%d\n%d\n\n",   
               imageIdInputPortName.c_str(),
               modeInputPortName.c_str(),
               stateOutputPortName.c_str(),
-              duration
+              duration,
+              expiryAge
             );
    }
     
@@ -131,7 +137,8 @@ bool AffectiveState::configure(yarp::os::ResourceFinder &rf)
    affectiveStateThread = new AffectiveStateThread(&imageIdIn, 
                                                    &modeIn, 
                                                    &stateOut, 
-                                                   &duration);
+                                                   &duration,
+                                                   &expiryAge);
 
    /* now start the thread to do the work */
 
@@ -186,6 +193,17 @@ bool AffectiveState::respond(const Bottle& command, Bottle& reply)
       cout << helpMessage;
       reply.addString("ok");
    }
+   else if (command.get(0).asString()=="set") {
+      if (command.get(1).asString()=="len") {
+         duration = command.get(2).asInt(); // set parameter value
+         reply.addString("ok");
+      }
+      else if (command.get(1).asString()=="exp") {
+         expiryAge = command.get(2).asInt(); // set parameter value
+         reply.addString("ok");
+      }
+   }
+
 
    return true;
 }
@@ -212,12 +230,14 @@ double AffectiveState::getPeriod()
 AffectiveStateThread::AffectiveStateThread(BufferedPort<VectorOf<double> >  *imageIdIn,
                                            BufferedPort<VectorOf<double> >  *modeIn,
                                            BufferedPort<VectorOf<double> >  *stateOut,
-                                           int                              *duration)
+                                           int                              *duration,
+                                           int                              *expiryAge)
 {
    imageIdInPort         = imageIdIn;
    modeInPort            = modeIn;
    stateOutPort          = stateOut;
    durationValue         = duration;
+   expiryAgeValue        = expiryAge;
 
    for (int i=0; i<MAX_DURATION; i++){
       curiousitySpikes[i] = 0;
@@ -259,7 +279,7 @@ bool AffectiveStateThread::threadInit()
    }
 
    for (i=0; i<MAX_NUMBER_OF_EVENTS; i++) {
-      eventHistory[i] = MAX_EVENT_AGE;
+      eventHistory[i] = *expiryAgeValue;
    }
 
    numberOfSpikes = 0;
@@ -367,7 +387,7 @@ void AffectiveStateThread::run(){
 
          /*  old event */
 
-         if (eventHistory[imageIdCurrent] == MAX_EVENT_AGE) {
+         if (eventHistory[imageIdCurrent] == *expiryAgeValue) {
 
             /* event has expired ... not recently recalled */
 
@@ -382,7 +402,7 @@ void AffectiveStateThread::run(){
       /* now update the ages of all events */
 
       for (i=0; i<=lastEvent; i++) {
-         if (eventHistory[i] < MAX_EVENT_AGE) {
+         if (eventHistory[i] < *expiryAgeValue) {
             eventHistory[i]++;
          }
       }
@@ -432,7 +452,11 @@ void AffectiveStateThread::run(){
 
       eSpike = false;
 
-      if ((mode == LEARNING_MODE) || (mode == PREDICTION_MODE) || (mode == RECONSTRUCTION_MODE)) {
+      if (
+          //(mode == LEARNING_MODE) || 
+          (mode == PREDICTION_MODE) || 
+          (mode == RECONSTRUCTION_MODE)
+          ) {
          if (imageIdCurrent == imageIdPrevious) {
             eSpike = true;
          }
@@ -504,9 +528,9 @@ void AffectiveStateThread::run(){
          //cout << "AffectiveStateThread::run: elevationPrevious         " << elevationPrevious         << endl;
          //cout << "AffectiveStateThread::run: elevationCurrent          " << elevationCurrent          << endl;
          cout << "AffectiveStateThread::run: curiousityLevel           " << curiousityLevel           << endl;
-         cout << "AffectiveStateThread::run: deltaCuriousityLevel      " << deltaCuriousityLevel      << endl;
+         //cout << "AffectiveStateThread::run: deltaCuriousityLevel      " << deltaCuriousityLevel      << endl;
          cout << "AffectiveStateThread::run: experimentationLevel      " << experimentationLevel      << endl;
-         cout << "AffectiveStateThread::run: deltaExperimentationLevel " << deltaExperimentationLevel << endl;
+         //cout << "AffectiveStateThread::run: deltaExperimentationLevel " << deltaExperimentationLevel << endl;
          cout << endl;
       }
    }

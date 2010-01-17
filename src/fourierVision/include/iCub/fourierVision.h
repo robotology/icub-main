@@ -329,6 +329,7 @@ void rectify(DVimage *input_image_left, DVimage *input_image_right,
              float fx_left,  float fy_left,  float px_left,  float py_left,  float theta_y_left,
              float fx_right, float fy_right, float px_right, float py_right, float theta_y_right,
              DVimage *output_image_left,  DVimage *output_image_right);
+void pause(int milliseconds);
 
 /*** Numerical Recipes in C prototypes ***/
 

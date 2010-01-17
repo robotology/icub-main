@@ -80,10 +80,10 @@
  * - \c saturationTolerance \c 10 \n           
  *   specifies the percentage tolerance on the saturation value used to segment the image
  *
- * - \c hueBins \c 10 \n           
+ * - \c hueBins \c 32 \n           
  *   specifies the number of hue bins in the HS histogram used to determing the modal HS value
  *
- * - \c saturationBins \c 10 \n           
+ * - \c saturationBins \c 32 \n           
  *   specifies the number of saturation bins in the HS histogram used to determing the modal HS value
  *
  * - \c filterRadius \c 1 \n           

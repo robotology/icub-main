@@ -1,0 +1,28 @@
+<application>
+
+<name>Attention Network Test (ANT) by Posner</name>
+
+<dependencies>
+</dependencies>
+
+<module>
+   <name>attentionNetworkTest</name>
+   <parameters>--context attentionNetworkTest/conf</parameters>
+   <tag>attentionNetworkTest</tag>
+   <node>icub1</node>
+</module>
+ 
+<module>
+   <name>yarpview</name>
+   <parameters>--name /ANTimage --x 0 --y 10 --synch</parameters>
+   <node>icub1</node>
+   <tag>ANTimage</tag>
+</module>
+
+<connection>
+  <from>/attentionNetworkTest/ANTimage:o</from>
+  <to>/ANTimage</to>
+  <protocol>tcp</protocol>
+</connection>
+
+</application>

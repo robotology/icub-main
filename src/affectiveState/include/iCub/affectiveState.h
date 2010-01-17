@@ -24,7 +24,8 @@
  * 
  * Both motives are modelled as a temporal series of event-related spikes.
  * The current level of a motivation is a weighted sum of recent spiking activity, with weighting being biased 
- * towards most recent spikes. 
+ * towards most recent spikes.  Specifically, the weighting function decreases linearly from 1 to 0 as a function
+ * of the time.  
  *
  * The number of time intervals over which the sum is taken is provided as a parameter to the module.
  * 
@@ -32,6 +33,9 @@
  * 
  * A curiousity spike occurs when either a new event is recorded in the episodic memory 
  * or when an event that has not recently been recalled is accessed in the episodic memory.
+ *
+ * The number of time slots that determine the expiry of an event (and hence whether or not is has been recently recalled)
+ * is provided as a parameter to the module.
  * 
  * An experimentation spike occurs when an event / image which is predicted or reconstructed by the procedural memory 
  * and recalled by the episodic memory is subsequently recalled again by the episodic memory, typically as a result of
@@ -112,6 +116,10 @@
  * - \c duration            \c 3              \n
  *   specifies the number of time samples to be used when computing the weighted average spiking rate.
  *
+ * - \c expiry              \c 10              \n
+ *   specifies the number of time samples after which an image expires (and, hence, will be interpreted as a new event
+ *   for the purposes of determining the occurence of a curiousity spike).
+ *
  *
  * \section portsa_sec Ports Accessed
  * 
@@ -127,6 +135,9 @@
  * 
  *   \c help \n
  *   \c quit
+ *   \c set \c len \c <n>   ... set the number of time intervals over which the spike stream sum is computed.
+ *   \c set \c exp \c <n>   ... set the number of time intervals after which an image expires.
+ *   (where \c <n> is an integer number in the range [0,100] and m is an integer number >= 0)
  *
  *   Note that the name of this port mirrors whatever is provided by the \c --name parameter value
  *   The port is attached to the terminal so that you can type in commands and receive replies.
@@ -209,6 +220,7 @@
  * Audit Trail
  * -----------
  * 07/01/10  Began development      DV
+ * 15/01/10  Completed version 1    DV
  */ 
 
 
@@ -248,8 +260,6 @@ using namespace yarp::dev;
 #define RECONSTRUCTION_MODE                    2
 #define MAX_DURATION                         100
 #define MAX_NUMBER_OF_EVENTS                 300
-#define MAX_EVENT_AGE                         3
-
 
 class AffectiveStateThread : public Thread
 {
@@ -295,6 +305,7 @@ private:
    BufferedPort<VectorOf<double> >   *modeInPort;
    BufferedPort<VectorOf<double> >   *stateOutPort;
    int                               *durationValue;
+   int                               *expiryAgeValue;
 
 public:
 
@@ -303,7 +314,8 @@ public:
    AffectiveStateThread(BufferedPort<VectorOf<double> >  *imgIdIn,
                         BufferedPort<VectorOf<double> >  *modeIn,
                         BufferedPort<VectorOf<double> >  *stateOut,
-                        int                              *duration
+                        int                              *duration,
+                        int                              *expiryAge
                        );
    bool threadInit();     
    void threadRelease();
@@ -328,6 +340,8 @@ class AffectiveState:public RFModule
    /* parameters */
 
    int duration;
+   int expiryAge;
+
 
 
    /* ports */

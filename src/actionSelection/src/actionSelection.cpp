@@ -249,7 +249,7 @@ void ActionSelectionThread::run(){
          experimentationLevel       = (*stateIn)[2];
          deltaExperimentationLevel  = (*stateIn)[3];
 
-         if (curiousityLevel >= experimentationLevel) {
+         if (curiousityLevel > experimentationLevel) {
             *modeValue = 0; // learning
          }
          else {
