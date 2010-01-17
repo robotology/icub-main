@@ -539,84 +539,84 @@ bool EffectDetector::updateModule()
     
     cvCvtColor( tempImg1, tempImg2, CV_RGB2BGR);  //RGB->BGR //this function does not allocate memory, right?
     cvCvtColor( tempImg2, rawCurrImg, CV_BGR2HSV);//BGR->HSV //this function does not allocate memory, right?
-  }
 
 
 
-  if(state==PROCESSING)
-  {
-      _vmin=vmin;
-      _vmax=vmax;
-      _smin=smin;
-      cout<<"vmin= "<<_vmin<<" vmax="<<_vmax<<" smin="<<_smin<<endl;
-      // thresholds the saturation channel - creates a mask indicating pixels with "good" saturation. 
-      cvInRangeS( rawCurrImg, cvScalar(0,_smin,MIN(_vmin,_vmax+1),0),
-			      cvScalar(180,256,MAX(_vmin,_vmax+1),0), mask );
-      // splits the hue channel from the color image
-      cvSplit( rawCurrImg, hue, 0, 0, 0 );
+    if(state==PROCESSING)
+    {
+	_vmin=vmin;
+	_vmax=vmax;
+	_smin=smin;
+	cout<<"vmin= "<<_vmin<<" vmax="<<_vmax<<" smin="<<_smin<<endl;
+	// thresholds the saturation channel - creates a mask indicating pixels with "good" saturation. 
+	cvInRangeS( rawCurrImg, cvScalar(0,_smin,MIN(_vmin,_vmax+1),0),
+				cvScalar(180,256,MAX(_vmin,_vmax+1),0), mask );
+	// splits the hue channel from the color image
+	cvSplit( rawCurrImg, hue, 0, 0, 0 );
 
-      //TEST: which pixels have V==255?
-      cvInRangeS( rawCurrImg, cvScalar(0,0,255,0),
-			      cvScalar(181,256,256,0), maskTEST );
-      cvShowImage( "vFilter", maskTEST );
-
-
-      // segments image pixels with good match to the histogram
-      cvCalcBackProject( &hue, backproject, hist );
-      //cvSaveImage("backprojectec.jpeg",backproject);
-      cvAnd( backproject, mask, backproject, 0 );
-
-      // searches iterativelly for the closest center of mass to the current search window 
-      // Returns:
-      //    track_window - contains object bounding box
-      //    track box - contains object size and orientation
-      cvCamShift( backproject, track_window,
-			      cvTermCriteria( CV_TERMCRIT_EPS | CV_TERMCRIT_ITER, 10, 1 ),
-			      &track_comp, &track_box );
-
-      // set the search window for the next time
-      track_window = track_comp.rect;
-
-      //what are these? Jonas's coordinates?
-      double xnorm, ynorm;
-      xnorm = 2*track_box.center.x/_w - 1;
-      ynorm = 2*track_box.center.y/_h - 1;
-      cout<<"Update: X="<<track_box.center.x<<" Y="<<track_box.center.y<<"\n";
-
-      //Write data on the output port
-      Bottle& output=effectPort.prepare();
-      output.clear();
-      output.addDouble(track_box.center.x);
-      output.addDouble(track_box.center.y);
-      effectPort.write();
-
-      //Write data to Control Gaze
-      Bottle& outputCG=controlGazePort.prepare();
-      outputCG.clear();
-      outputCG.addDouble(xnorm);
-      outputCG.addDouble(ynorm);
-      outputCG.addDouble((double)(int)('p'));
-      controlGazePort.write();
-
-      cvSetTrackbarPos( "Vmin", "CamShift", vmin );
-      cvSetTrackbarPos( "Vmax", "CamShift", vmax );
-      cvSetTrackbarPos( "Smin", "CamShift", smin );
-
-      //prepare image to be shown
-      cvCvtColor( backproject, image, CV_GRAY2BGR );
-      if( !image->origin )
-      {
-       track_box.angle = -track_box.angle;
-      }
-      cvEllipseBox( image, track_box, CV_RGB(255,0,0), 3, CV_AA, 0 );
+	//TEST: which pixels have V==255?
+	cvInRangeS( rawCurrImg, cvScalar(0,0,255,0),
+				cvScalar(181,256,256,0), maskTEST );
+	cvShowImage( "vFilter", maskTEST );
 
 
-      cvShowImage( "CamShift", image );
-      cvShowImage( "Histogram", histimg );
-      //c = cvWaitKey(1);
-      c = cvWaitKey(1);
-  
+	// segments image pixels with good match to the histogram
+	cvCalcBackProject( &hue, backproject, hist );
+	//cvSaveImage("backprojectec.jpeg",backproject);
+	cvAnd( backproject, mask, backproject, 0 );
 
+	// searches iterativelly for the closest center of mass to the current search window 
+	// Returns:
+	//    track_window - contains object bounding box
+	//    track box - contains object size and orientation
+	cvCamShift( backproject, track_window,
+				cvTermCriteria( CV_TERMCRIT_EPS | CV_TERMCRIT_ITER, 10, 1 ),
+				&track_comp, &track_box );
+
+	// set the search window for the next time
+	track_window = track_comp.rect;
+
+	//what are these? Jonas's coordinates?
+	double xnorm, ynorm;
+	xnorm = 2*track_box.center.x/_w - 1;
+	ynorm = 2*track_box.center.y/_h - 1;
+	cout<<"Update: X="<<track_box.center.x<<" Y="<<track_box.center.y<<"\n";
+
+	//Write data on the output port
+	Bottle& output=effectPort.prepare();
+	output.clear();
+	output.addDouble(track_box.center.x);
+	output.addDouble(track_box.center.y);
+	effectPort.write();
+
+	//Write data to Control Gaze
+	Bottle& outputCG=controlGazePort.prepare();
+	outputCG.clear();
+	outputCG.addDouble(xnorm);
+	outputCG.addDouble(ynorm);
+	outputCG.addDouble((double)(int)('p'));
+	controlGazePort.write();
+
+	cvSetTrackbarPos( "Vmin", "CamShift", vmin );
+	cvSetTrackbarPos( "Vmax", "CamShift", vmax );
+	cvSetTrackbarPos( "Smin", "CamShift", smin );
+
+	//prepare image to be shown
+	cvCvtColor( backproject, image, CV_GRAY2BGR );
+	if( !image->origin )
+	{
+	track_box.angle = -track_box.angle;
+	}
+	cvEllipseBox( image, track_box, CV_RGB(255,0,0), 3, CV_AA, 0 );
+
+
+	cvShowImage( "CamShift", image );
+	cvShowImage( "Histogram", histimg );
+	//c = cvWaitKey(1);
+	c = cvWaitKey(1);
+    
+
+    }
   }
   
 
