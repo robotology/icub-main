@@ -145,13 +145,6 @@ bool DemoAff::emotionCtrl(const ConstString cmd) {
   bool b = true;
   NetInt32 response;
 
-/*
-  Bottle& out = port_emotions.prepare();
-  out.clear();
-  out.addVocab(Vocab::encode(cmd));
-  port_emotions.write();
-*/
-
   Bottle out, in;
   out.clear();
   out.addVocab(Vocab::encode("set"));
@@ -865,7 +858,7 @@ bool DemoAff::updateModule(){
   case IDLE:      
     {
       Bottle *input_obj=port_behavior_in.read(false);
-    
+
       if (input_obj!=NULL) {
 	int cmd;
 	
@@ -873,14 +866,14 @@ bool DemoAff::updateModule(){
 	if (cmd==1)
 	  state=INIT;
 	else {
+	  emotionCtrl("sad");      	
 	  state=IDLE;
 	}
       }
-    }    
-
-    //state=GRASPING;
+      yarp::os::Time::delay(0.05);
+    }
+ 
     
-
     break;
   
   case FIRSTINIT:
@@ -1224,8 +1217,30 @@ bool DemoAff::updateModule(){
   case JUSTACT:
     {
       emotionCtrl("neu");
- 
-     getObjInfo();
+      int cntTrials=0;
+      
+      getObjInfo();
+
+      while (numObjs==0 && cntTrials<3) {
+
+	emotionCtrl("neu");      	
+	yarp::os::Time::delay(.25);
+
+	// move head to right
+	if (cntTrials%2==0) {
+	  
+	  controlGazeSaccadePixel(-yarp::os::Random::uniform(),0);
+	}
+	else controlGazeSaccadePixel(yarp::os::Random::uniform(),0);
+	  
+	emotionCtrl("cun");      	
+	yarp::os::Time::delay(.25);
+	Bottle *input_obj=port_behavior_in.read(false);
+
+	cntTrials++;	
+	getObjInfo();
+      }
+
 
       if (numObjs>0) {
 	// Select object closer to the center
@@ -1256,7 +1271,9 @@ bool DemoAff::updateModule(){
 	// We have to re implement the init tracker to send the histogram 
 	// and the region provided by the segmentation
 	restartTracker(trackDescTable[selobj]);
-      
+
+	//yarp::os::Network::connect(effectCG,CG);
+
 	// Select the object position
 	objposreach.resize(2);	
 	//Old code
@@ -1272,8 +1289,24 @@ bool DemoAff::updateModule(){
 	cout << "===================================================================" << endl;
 	cout << "===================================================================" << endl;
 
+
 	state=REACHING;
-	selectedaction=TOUCH;//TAP; //GRASP;
+	double rndNumber=yarp::os::Random::uniform(); 
+	if (rndNumber<0.3)
+	  selectedaction=TOUCH;
+	else if (rndNumber<0.66)
+	  selectedaction=GRASP;
+	else selectedaction=TAP;
+      }
+      else {
+	printf("GOing to attention\n");
+	Bottle& output = port_behavior_out.prepare();
+	output.clear();
+	//output.addVocab(Vocab::encode("off"));
+        output.addInt(1);
+	port_behavior_out.write();
+	
+	state=IDLE;
       }
 
     }
@@ -1922,33 +1955,37 @@ bool DemoAff::InitTorso(){
 // Functions to command controlGaze2
 void DemoAff::controlGazeSaccadeAbsolute(double az, double el)
 {
-	Vector &vctPos = port_gazepos_out.prepare();
-    vctPos.resize(3);
-    vctPos(0) = az;
-    vctPos(1) = el;
-	vctPos(2) = (double)(int)'a';
-    // write output vector
-    port_gazepos_out.write(); 
+  Vector &vctPos = port_gazepos_out.prepare();
+  vctPos.resize(3);
+  vctPos(0) = az;
+  vctPos(1) = el;
+  vctPos(2) = (double)(int)'a';
+  // write output vector
+  port_gazepos_out.write(); 
 }
 
-void DemoAff::controlGazeSaccadePixel(double x, double y)
+void DemoAff::controlGazeSaccadePixel(double x, double y, bool normCoord)
 {
-	Vector &vctPos = port_gazepos_out.prepare();
-    vctPos.resize(2);
-    vctPos(0) = x;
-    vctPos(1) = y;
-    // write output vector
+  Vector &vctPos = port_gazepos_out.prepare();
+  vctPos.resize(3);
+  vctPos(0) = x;
+  vctPos(1) = y;
+  if (normCoord)
+    vctPos(2) = (double)(int)'p';
+  else
+    vctPos(2) = (double)(int)'i';
+  // write output vector
     port_gazepos_out.write(); 
 }
 
 
 void DemoAff::controlGazePursuitPixel(double x, double y)
 {
-	Vector &vctVel = port_gazevel_out.prepare();
-    vctVel.resize(3);
-    vctVel(0) = x;
-    vctVel(1) = y;
-	vctVel(2) = (double)(int)'i';
-    // write output vector
-    port_gazepos_out.write(); 
+  Vector &vctVel = port_gazevel_out.prepare();
+  vctVel.resize(3);
+  vctVel(0) = x;
+  vctVel(1) = y;
+  vctVel(2) = (double)(int)'i';
+  // write output vector
+  port_gazepos_out.write(); 
 }

@@ -83,7 +83,7 @@ private:
 
   // Functions to command controlGaze2
   void controlGazeSaccadeAbsolute(double az, double el);
-  void controlGazeSaccadePixel(double x, double y);
+  void controlGazeSaccadePixel(double x, double y, bool normCoord=true);
   void controlGazePursuitPixel(double x, double y);
   // TODO: sorry for squeezing everything to the top :]
   // Hand orientations
