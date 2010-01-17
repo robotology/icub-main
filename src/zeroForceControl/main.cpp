@@ -53,6 +53,8 @@ const int FT_VALUES = 6;
 const bool verbose = false;
 const int CPRNT = 100;
 const int CALIBRATION_OK = true; // should be true when FT calibration will be ok
+const enum {ZEROFORCECONTROL=0, IMPEDANCE=1};
+int   control_mode=ZEROFORCECONTROL;
 bool  filter_enabled=true;
 
 #define CONNECTION_ERROR 0
@@ -139,6 +141,7 @@ private:
 
 	Vector encoders;
 	Vector initPosition;
+	Vector desPosition;
 
 	Vector maxJntLimits;
 	Vector minJntLimits;
@@ -180,6 +183,7 @@ private:
 
 	Vector *datas;
     Vector kp;
+	Vector kspr;
 
 
 
@@ -222,8 +226,10 @@ private:
 			if (strcmp(limb.c_str(), "left_arm")==0)
 			{
 				initPosition.resize(limbJnt);
+				desPosition.resize(limbJnt);
 				initPosition = 0.0;
 				initPosition(0) = -10.0; initPosition(1) = 20.0; initPosition(2) = 15.0; initPosition(3) = 15.0;
+				desPosition=initPosition;
 				maxJntLimits.resize(4);
 				maxJntLimits(0) = 2.0; maxJntLimits(1) = 120.0; maxJntLimits(2) = 90.0; maxJntLimits(3) = 95.0;
 				minJntLimits.resize(4);
@@ -232,8 +238,10 @@ private:
 			else if (strcmp(limb.c_str(), "right_arm")==0)
 			{
 				initPosition.resize(limbJnt);
+				desPosition.resize(limbJnt);
 				initPosition = 0.0;
 				initPosition(0) = -10.0; initPosition(1) = 20.0; initPosition(2) = 15.0; initPosition(3) = 15.0;
+				desPosition=initPosition;
 				maxJntLimits.resize(4);
 				maxJntLimits(0) = 2.0; maxJntLimits(1) = 120.0; maxJntLimits(2) = 90.0; maxJntLimits(3) = 95.0;
 				minJntLimits.resize(4);
@@ -242,8 +250,10 @@ private:
 			else if (strcmp(limb.c_str(), "left_leg")==0)
 			{
 				initPosition.resize(limbJnt);
+				desPosition.resize(limbJnt);
 				initPosition = 0.0;
 				initPosition(0) = 15.0; initPosition(1) = 15.0; initPosition(2) = 0.0; initPosition(3) = -20.0;
+				desPosition=initPosition;
 				maxJntLimits.resize(4);
 				maxJntLimits(0) = 130.0; maxJntLimits(1) = 100.0; maxJntLimits(2) = 70.0; maxJntLimits(3) = -10.0;
 				minJntLimits.resize(4);
@@ -252,8 +262,10 @@ private:
 			else if (strcmp(limb.c_str(), "right_leg")==0)
 			{
 				initPosition.resize(limbJnt);
+				desPosition.resize(limbJnt);
 				initPosition = 0.0;
 				initPosition(0) = 15.0; initPosition(1) = 15.0; initPosition(2) = 0.0; initPosition(3) = -20.0;
+				desPosition=initPosition;
 				maxJntLimits.resize(4);
 				maxJntLimits(0) = 130.0; maxJntLimits(1) = 100.0; maxJntLimits(2) = 70.0; maxJntLimits(3) = -10.0;
 				minJntLimits.resize(4);
@@ -275,6 +287,8 @@ private:
               Rs(0,0) = Rs(2,1) = 1.0;  Rs(1,2) = -1.0;
               ps(1) = 0.10;
 			  kp.resize(limbJnt);
+			  kspr.resize(limbJnt);
+			  kspr(0) = 0.3;	kspr(1) = 0.3;	kspr(2) = 0.3;	kspr(3) = 0.3;
 			  if (filter_enabled)
 			  {
 				kp(0) = -62.0;	kp(1) = -50.0;	kp(2) = -62.0;	kp(3) = -100;
@@ -296,6 +310,8 @@ private:
               Rs(0,0) = -1.0; Rs(2,1) = 1.0;  Rs(1,2) = 1.0;
               ps(1) = -0.10;
 			  kp.resize(limbJnt);
+			  kspr.resize(limbJnt);
+			  kspr(0) = 0.3;	kspr(1) = 0.3;	kspr(2) = 0.3;	kspr(3) = 0.3;
 			  if (filter_enabled)
 			  {
 				kp(0) =  62.0;	kp(1) =  50.0;	kp(2) =  62.0;	kp(3) =  100;
@@ -316,7 +332,9 @@ private:
               Rs(1,0) = -1.0; Rs(0,1) = -1.0;  Rs(2,2) = -1.0;
               ps(2) = -0.10;
 			  kp.resize(limbJnt);
+			  kspr.resize(limbJnt);
 			  //GAINS gains
+			  kspr(0) = 0.3;	kspr(1) = 0.3;	kspr(2) = 0.3;	kspr(3) = 0.3;
 			  if (filter_enabled)
 			  {
 				kp(0) =  20.0;	kp(1) =  -14.0;	kp(2) =  94.0;	kp(3) =  -94.0; 
@@ -338,14 +356,16 @@ private:
               Rs(1,0) = -1.0; Rs(0,1) = 1.0;  Rs(2,2) = 1.0;
               ps(2) = 0.10;
 			  kp.resize(limbJnt);
+			  kspr.resize(limbJnt);
 			  //GAINS gains
+			  kspr(0) = 0.3;	kspr(1) = 0.3;	kspr(2) = 0.3;	kspr(3) = 0.3;
 			  if (filter_enabled)
 			  {
-				kp(0) =  0.0;	kp(1) =  0.0;	kp(2) =  0.0;	kp(3) =  0.0; 
+				kp(0) = -20.0;	kp(1) =  14.0;	kp(2) =  -94.0;	kp(3) =  94.0; 
 			  }
 			  else
 			  {
-				 kp(0) =  10;	kp(1) =  -5;	kp(2) =  40;	kp(3) =  -50; 
+				 kp(0) =  -10;	kp(1) =   5;	kp(2) =  -40;	kp(3) =  50; 
 			  }
 			  T_all=eye(limbJnt,limbJnt);
 			  fprintf(stderr, "Opening right leg ... \n");
@@ -359,6 +379,12 @@ private:
 
     
 public:
+	void setDesiredPositions()			
+	{
+		for (int i=0; i<limbJnt; i++)
+			desPosition(i)=encoders(i);
+	}
+
 	ftControl(int _rate, PolyDriver *_dd, BufferedPort<Vector> *_port_FT, ResourceFinder &_rf, string limb):	  
 	  RateThread(_rate), dd(_dd) 
 	  {
@@ -380,6 +406,7 @@ public:
 		  Rs.resize(3,3);     Rs=0.0;
 		  ps.resize(3);		  ps=0.0;
           kp=0.0;
+		  kspr=0.0;
 
 		  initLimb(limb);
 		  sensor = new iFTransform(Rs,ps);
@@ -550,16 +577,22 @@ public:
 
 		  //gains: to be tuned
 		  Matrix K;
+		  Matrix Kspring;
 		  K=eye(limbJnt,limbJnt);
-		  for(int i=0;i<limbJnt;i++) K(i,i) = kp(i);
+		  Kspring=eye(limbJnt,limbJnt);
+		  for(int i=0;i<limbJnt;i++) {K(i,i) = kp(i); Kspring(i,i) = kspr(i);}
 
 		  //control: to be checked
 		  Matrix J = iCubLimb->GeoJacobian();
-          const double Kspring=0.3;
-		  tauDes=Kspring*((180.0/M_PI)*angs-initPosition); 
+          const double Kspringc=0.3;
+		  Vector tau(4);
+		  tau=0.0;
+		  tauDes=Kspringc*((180.0/M_PI)*angs-desPosition); 
 		  FTj=J.transposed()*FT;
-		  Vector tau = K*(FTj);        //USE THIS FOR ZERO FORCE CONTROL
-	//	  Vector tau = K*(FTj-tauDes); //USE THIS FOR IMPEDANCE CONTROL
+		  if (control_mode==IMPEDANCE)
+			{tau = K*(FTj-tauDes);} //USE THIS FOR IMPEDANCE CONTROL
+		  else 
+			{tau = K*(FTj);}        //USE THIS FOR ZERO FORCE CONTROL
 		  Vector tauC= T_all*tau;
 
 		  //filtering
@@ -662,9 +695,13 @@ public:
 		  {
 			  fprintf(stderr,"Cycle duration=%f s\n",tdiff);
 #ifdef CONTROL_ON
-			  fprintf(stderr,"Control ON\n",tdiff);
+			  fprintf(stderr,"Control ON:");
+			  if (control_mode==IMPEDANCE) fprintf(stderr,"Impedance\n");
+			  else fprintf(stderr,"Zero Force Control\n");
 #else
 			  fprintf(stderr,"Debug Mode, CONTROL_ON macro is not defined \n",tdiff);
+			  if (control_mode==IMPEDANCE) fprintf(stderr," (impedance off)\n");
+			  else fprintf(stderr,"(Zero Force Control off)\n");
 #endif
 			  fprintf(stderr,"FT = ");
 			  for(int i=0;i<6;i++)
@@ -695,7 +732,12 @@ public:
 			  for(int i=0;i<limbJnt;i++)
 				  fprintf(stderr,"%+.3lf\t", angs(i)*180/M_PI);
 			  fprintf(stderr,"\n");
-			  
+
+			  fprintf(stderr,"encd = ");
+			  for(int i=0;i<limbJnt;i++)
+				  fprintf(stderr,"%+.3lf\t", desPosition(i));
+			  fprintf(stderr,"\n");
+
 			  fprintf(stderr,"tau  = ");
 			  for(int i=0;i<limbJnt;i++)
 				  fprintf(stderr,"%+.3lf\t", tau(i));
@@ -710,9 +752,9 @@ public:
 			  for(int i=0;i<limbJnt;i++)
 				  fprintf(stderr,"%+.3lf\t", tauSafe(i));
 			  fprintf(stderr,"\n");
-
+			  /*
+			  // debug only
               fprintf(stderr,"J:\n");
-			  
 			  for(int i=0;i<J.rows();i++)
 			  {
 				  for(int j=0;j<J.cols();j++)
@@ -720,8 +762,9 @@ public:
 				  fprintf(stderr,"\n");
 			  }
 			  fprintf(stderr,"\n\n\n");
-			  fprintf(stderr,"\n\n");
+			  */
 
+			  fprintf(stderr,"\n\n");
 			 
 			  count = 0;
 		  }
@@ -803,6 +846,8 @@ private:
 	ftControl *ft_control;
 	BufferedPort<Vector>* port_FT;
     int mod_count;
+	string handlerPortName;
+    Port handlerPort;      //a port to handle messages 
 public:
 	ft_ControlModule()
 	{
@@ -813,7 +858,6 @@ public:
 
 	virtual bool createDriver(PolyDriver *_dd)
 	{
-		/*********************************************/
 	    if(!dd || !(dd->isValid()))
 		{
 			fprintf(stderr,"It is not possible to instantiate the device driver\nreturning...");
@@ -846,10 +890,46 @@ public:
 			amps->enableAmp(i);
 			pids->enablePid(i);
 		}
-		/***********************************************/
 		return true;
 	}
 
+	bool respond(const Bottle& command, Bottle& reply) 
+	{
+	  string helpMessage =  string(getName().c_str()) + 
+							" commands are: \n" +  
+							"help        to display this message\n" + 
+							"set zfc     to set the zfc behaviour \n" + 
+							"set imp     to set the impedance behaviour) \n";
+
+	  reply.clear(); 
+
+	   if (command.get(0).asString()=="help")
+	   {
+		  cout << helpMessage;
+		  reply.addString(helpMessage.c_str());
+	   }
+   	   /*else if (command.get(0).asString()=="quit")
+	   {
+		   reply.addString("quitting");
+		   return false;     
+	   }*/
+	   else if (command.get(0).asString()=="set")
+	   {
+		  //int jnt = command.get(2).asInt(); 
+		  if (command.get(1).asString()=="imp")
+		  {
+		     control_mode= IMPEDANCE;
+			 reply.addString("ok, setting impedance mode");
+			 ft_control->setDesiredPositions();
+		  }
+		  else if (command.get(1).asString()=="zfc")
+		  {
+			 control_mode= ZEROFORCECONTROL;
+			 reply.addString("ok, setting zero force control mode");
+		  }
+	   }
+	   return true;
+	}
 	bool configure(ResourceFinder &rf)
 	{
 		string PortName;
@@ -884,6 +964,15 @@ public:
             return false;
 		}
 
+		// Create the terminal
+		handlerPortName = "/zfcTerminal/";
+		handlerPortName += partName;
+		if (!handlerPort.open(handlerPortName.c_str())) {           
+		cout << getName() << ": Unable to open port " << handlerPortName << endl;  
+		return false;
+		}
+		attach(handlerPort);                  // attach to port
+		attachTerminal();                     // attach to terminal
 		Options.put("robot",robot.c_str());
 		Options.put("part",part.c_str());
 		Options.put("device","remote_controlboard");
@@ -921,6 +1010,7 @@ public:
 	bool close()
 	{
 		fprintf(stderr,"closing...don't know why :S \n");
+		handlerPort.close();
 		if (ft_control) ft_control->stop();
 		if (ft_control) {delete ft_control; ft_control=0;}
 		if (dd) {delete dd; dd=0;}
