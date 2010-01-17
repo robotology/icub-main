@@ -25,17 +25,7 @@ bool CamCalibModule::configure(yarp::os::ResourceFinder &rf){
 
     // pass configuration over to bottle
     Bottle botConfig(rf.toString().c_str());
-    botConfig.setMonitor(rf.getMonitor());	
-
-	// framerate
-	_intFPS = rf.check("fps", Value(20), "Try to achieve this number of frames per second (int).").asInt();
-	_intPrintFPSAfterNumFrames = rf.check("fpsOutputFrequency", Value(20), "Print the achieved framerate after this number of frames (int).").asInt();
-	_dblTPF = 1.0f/((float)_intFPS);
-	_intFPSAchieved = 0;
-	_intFC = 0;
-	_dblTPFAchieved = 0.0;
-	_dblStartTime = 0.0;
-
+    botConfig.setMonitor(rf.getMonitor());		
     // Load from configuration group ([<group_name>]), if group option present
     Value *valGroup; // check assigns pointer to reference
     if(botConfig.check("group", valGroup, "Configuration group to load module options from (string).")){
@@ -50,6 +40,15 @@ bool CamCalibModule::configure(yarp::os::ResourceFinder &rf){
             return false;
         }
     }
+
+	// framerate
+	_intFPS = botConfig.check("fps", Value(20), "Try to achieve this number of frames per second (int).").asInt();
+	_intPrintFPSAfterNumFrames = botConfig.check("fpsOutputFrequency", Value(20), "Print the achieved framerate after this number of frames (int).").asInt();
+	_dblTPF = 1.0f/((float)_intFPS);
+	_intFPSAchieved = 0;
+	_intFC = 0;
+	_dblTPFAchieved = 0.0;
+	_dblStartTime = 0.0;
 
     string calibToolName = botConfig.check("projection",
                                          Value("pinhole"),

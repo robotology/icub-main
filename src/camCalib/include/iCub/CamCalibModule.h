@@ -24,7 +24,6 @@
 #include <iCub/SphericalCalibTool.h>
 #include <iCub/CalibToolFactory.h>
 #include <iCub/ICalibTool.h>
-#include <iCub/Framerate.h>
 
 using namespace yarp::os;
 using namespace yarp::sig;
