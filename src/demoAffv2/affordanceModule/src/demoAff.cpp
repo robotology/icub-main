@@ -1216,26 +1216,30 @@ bool DemoAff::updateModule(){
 
   case JUSTACT:
     {
+
       emotionCtrl("neu");
       int cntTrials=0;
-      
+
+      yarp::os::Time::delay(2);
+      cout << endl << endl << "JUSTACT" << endl;
       getObjInfo();
 
       while (numObjs==0 && cntTrials<3) {
 
 	emotionCtrl("neu");      	
-	yarp::os::Time::delay(.25);
 
 	// move head to right
 	if (cntTrials%2==0) {
-	  
+	  cout<< "Send look right"  << endl;
 	  controlGazeSaccadePixel(-yarp::os::Random::uniform(),0);
 	}
-	else controlGazeSaccadePixel(yarp::os::Random::uniform(),0);
-	  
+	else {
+	  controlGazeSaccadePixel(yarp::os::Random::uniform(),0);
+	  cout<< "Send look left"  << endl;
+	}  
+
 	emotionCtrl("cun");      	
-	yarp::os::Time::delay(.25);
-	Bottle *input_obj=port_behavior_in.read(false);
+	yarp::os::Time::delay(1.25);
 
 	cntTrials++;	
 	getObjInfo();
