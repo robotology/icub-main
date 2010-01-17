@@ -53,6 +53,8 @@
       <node>icub14</node>
       <tag>labeled_image</tag>
 </module>
+
+<!-- in the final version, these 2 expression modules go to face_expressions.xml -->
    <module>
       <name>yarpdev</name>
       <parameters>--name /icub/face/raw --device serial --subdevice serialport --file /usr/local/src/robot/iCub/app/faceExpressions/conf/serialport.ini</parameters>
@@ -123,10 +125,13 @@
       <to>/demoAffv2/torsoState</to>
 </connection>
 
+<!-- this goes to face_expressions.xml -->
    <connection>
       <from>/icub/face/emotions/out</from> 
       <to>/icub/face/raw/in</to>
    </connection>
+
+<!-- this stays here -->
    <connection>
       <from>/demoAffv2/emotion</from> 
       <to>/icub/face/emotions/in</to>
