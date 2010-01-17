@@ -226,12 +226,12 @@ bool EffectDetector::configure(ResourceFinder &config) // equivalent to Module::
     cvNamedWindow( "CamShift", 1 );
     cvResizeWindow( "CamShift", 640, 480);
     cvMoveWindow( "CamShift", 1400, 5);
-    cvNamedWindow( "Histogram", 1 );
+/*    cvNamedWindow( "Histogram", 1 );
     cvResizeWindow( "Histogram", 320, 240);
     cvMoveWindow( "Histogram", 1400, 850);
     cvNamedWindow( "vFilter", 1 );
     cvResizeWindow( "vFilter", 320, 240);
-    cvMoveWindow( "vFilter", 1400, 500);
+    cvMoveWindow( "vFilter", 1400, 500);*/
     
     return true;
 };
@@ -430,7 +430,7 @@ bool EffectDetector::respond(const Bottle & command, Bottle & reply)
 	  firstImageEver = false;
 	}
 
-	//Prepares histogram image buffer
+/*	//Prepares histogram image buffer
 	cvZero( histimg );
 	//prepare histogram image
 	bin_w = histimg->width / hdims;
@@ -442,7 +442,7 @@ bool EffectDetector::respond(const Bottle & command, Bottle & reply)
 	  cvRectangle( histimg, cvPoint(i*bin_w,histimg->height),
 	  cvPoint((i+1)*bin_w,histimg->height - val),
 	  color, -1, 8, 0 );
-	}
+	}*/
 	reply.addInt(1);
 	state=PROCESSING;
       }
@@ -547,7 +547,7 @@ bool EffectDetector::updateModule()
 	_vmin=vmin;
 	_vmax=vmax;
 	_smin=smin;
-	cout<<"vmin= "<<_vmin<<" vmax="<<_vmax<<" smin="<<_smin<<endl;
+	//cout<<"vmin= "<<_vmin<<" vmax="<<_vmax<<" smin="<<_smin<<endl;
 	// thresholds the saturation channel - creates a mask indicating pixels with "good" saturation. 
 	cvInRangeS( rawCurrImg, cvScalar(0,_smin,MIN(_vmin,_vmax+1),0),
 				cvScalar(180,256,MAX(_vmin,_vmax+1),0), mask );
@@ -555,9 +555,9 @@ bool EffectDetector::updateModule()
 	cvSplit( rawCurrImg, hue, 0, 0, 0 );
 
 	//TEST: which pixels have V==255?
-	cvInRangeS( rawCurrImg, cvScalar(0,0,255,0),
-				cvScalar(181,256,256,0), maskTEST );
-	cvShowImage( "vFilter", maskTEST );
+// 	cvInRangeS( rawCurrImg, cvScalar(0,0,255,0),
+// 				cvScalar(181,256,256,0), maskTEST );
+// 	cvShowImage( "vFilter", maskTEST );
 
 
 	// segments image pixels with good match to the histogram
@@ -569,6 +569,7 @@ bool EffectDetector::updateModule()
 	// Returns:
 	//    track_window - contains object bounding box
 	//    track box - contains object size and orientation
+        cout<<"Track window X="<<track_window.x<<" Y="<<track_window.y<<" Width="<<track_window.width<<" Height="<<track_window.height<<"      ";
 	cvCamShift( backproject, track_window,
 				cvTermCriteria( CV_TERMCRIT_EPS | CV_TERMCRIT_ITER, 10, 1 ),
 				&track_comp, &track_box );
@@ -611,7 +612,7 @@ bool EffectDetector::updateModule()
 
 
 	cvShowImage( "CamShift", image );
-	cvShowImage( "Histogram", histimg );
+	//cvShowImage( "Histogram", histimg );
 	//c = cvWaitKey(1);
 	c = cvWaitKey(1);
     
