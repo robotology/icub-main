@@ -58,7 +58,7 @@ bool  filter_enabled=true;
 #define CONNECTION_ERROR 0
 #define CONNECTION_OK	 1
 
-#define CONTROL_ON 1
+#define CONTROL_ON  1
 
 /**
 *
@@ -146,6 +146,7 @@ private:
 	Vector FTs;
 	Vector FTs_init;
 	Vector FT;
+	Vector FTj;
 	int count;
 	//iCubArm *arm;
 	iKinLimb *iCubLimb;
@@ -168,6 +169,7 @@ private:
 	bool first;
 
 	Vector tau;
+	Vector tauDes;
 	Vector tauSafe;
 	Vector tauFilt;
 
@@ -241,7 +243,7 @@ private:
 			{
 				initPosition.resize(limbJnt);
 				initPosition = 0.0;
-				initPosition(0) = 15.0; initPosition(1) = 15.0; initPosition(2) = 0.0; initPosition(3) = -15.0;
+				initPosition(0) = 15.0; initPosition(1) = 15.0; initPosition(2) = 0.0; initPosition(3) = -20.0;
 				maxJntLimits.resize(4);
 				maxJntLimits(0) = 130.0; maxJntLimits(1) = 100.0; maxJntLimits(2) = 70.0; maxJntLimits(3) = -10.0;
 				minJntLimits.resize(4);
@@ -251,7 +253,7 @@ private:
 			{
 				initPosition.resize(limbJnt);
 				initPosition = 0.0;
-				initPosition(0) = 15.0; initPosition(1) = 15.0; initPosition(2) = 0.0; initPosition(3) = -15.0;
+				initPosition(0) = 15.0; initPosition(1) = 15.0; initPosition(2) = 0.0; initPosition(3) = -20.0;
 				maxJntLimits.resize(4);
 				maxJntLimits(0) = 130.0; maxJntLimits(1) = 100.0; maxJntLimits(2) = 70.0; maxJntLimits(3) = -10.0;
 				minJntLimits.resize(4);
@@ -392,6 +394,7 @@ public:
 		  FTs.resize(FT_VALUES);
 		  FTs_init.resize(FT_VALUES);
 		  FT.resize(FT_VALUES);
+		  FTj.resize(limbJnt);
 
 		  for(int i=0;i<limbJnt;i++)
 		  {
@@ -406,10 +409,13 @@ public:
 			  // Setting the FTPid, iCub is controllable using setOffset
 		  }
 		  tau.resize(limbJnt);
+		  tauDes.resize(limbJnt);
 		  tauSafe.resize(limbJnt);
 		  tauFilt.resize(limbJnt);
 		  tau=0.0;
+		  tauDes=0.0;
 		  tauSafe=0.0;
+		  tauFilt=0.0;
 
 		  watchDOG = 0;
 		  time = time0 = 0.0;
@@ -419,6 +425,7 @@ public:
 	  {
 		  FT.zero();
 		  FTs.zero();
+		  FTj.zero();
 		  count = 0;
 
 #ifdef CONTROL_ON		  
@@ -450,7 +457,10 @@ public:
 		  {
 			  	  ipids->setPid(i,FTPid[i]);  
 		  }
-		 // ipids->setPid(0,FTPid[0]); // use this on a single joint
+//		  ipids->setPid(3,FTPid[3]); // use this on a single joint
+//		  ipids->setPid(2,FTPid[2]); // use this on a single joint
+//		  ipids->setPid(1,FTPid[1]); // use this on a single joint
+//		  ipids->setPid(0,FTPid[0]); // use this on a single joint
 #endif		  
 		  count =0;
 		  return true;
@@ -528,6 +538,7 @@ public:
 					  {
 						  FT=0.0;
 						  FTs=0.0;
+						  FTj=0.0;
 						  FTs_init=0.0;
 					  }
 				  }
@@ -544,9 +555,12 @@ public:
 
 		  //control: to be checked
 		  Matrix J = iCubLimb->GeoJacobian();
-		  Vector tau = K*(J.transposed())*FT;
+          const double Kspring=0.3;
+		  tauDes=Kspring*((180.0/M_PI)*angs-initPosition); 
+		  FTj=J.transposed()*FT;
+		  Vector tau = K*(FTj);        //USE THIS FOR ZERO FORCE CONTROL
+	//	  Vector tau = K*(FTj-tauDes); //USE THIS FOR IMPEDANCE CONTROL
 		  Vector tauC= T_all*tau;
-		  int siz= tauC.size();
 
 		  //filtering
 		  for(int i=0;i<limbJnt;i++)
@@ -579,6 +593,9 @@ public:
 		  {
 			  ipids->setOffset(i,tauSafe(i));
 		  }	
+	//	  ipids->setOffset(3,tauSafe(3));  // use this on single joint
+	//	  ipids->setOffset(2,tauSafe(2));  // use this on single joint
+	//	  ipids->setOffset(1,tauSafe(1));  // use this on single joint
 	//	  ipids->setOffset(0,tauSafe(0));  // use this on single joint
 #endif		  
 
@@ -644,6 +661,11 @@ public:
 		  if(count>=CPRNT)
 		  {
 			  fprintf(stderr,"Cycle duration=%f s\n",tdiff);
+#ifdef CONTROL_ON
+			  fprintf(stderr,"Control ON\n",tdiff);
+#else
+			  fprintf(stderr,"Debug Mode, CONTROL_ON macro is not defined \n",tdiff);
+#endif
 			  fprintf(stderr,"FT = ");
 			  for(int i=0;i<6;i++)
 				  fprintf(stderr,"%+.3lf\t", FT(i));
@@ -657,6 +679,16 @@ public:
 			  fprintf(stderr,"FTe = ");
 			  for(int i=0;i<6;i++)
 				  fprintf(stderr,"%+.3lf\t", Fe(i));
+			  fprintf(stderr,"\n");
+
+			  fprintf(stderr,"FTj = ");
+			  for(int i=0;i<limbJnt;i++)
+				  fprintf(stderr,"%+.3lf\t", FTj(i));
+			  fprintf(stderr,"\n");
+
+			   fprintf(stderr,"tauD = ");
+			  for(int i=0;i<limbJnt;i++)
+				  fprintf(stderr,"%+.3lf\t", tauDes(i));
 			  fprintf(stderr,"\n");
 
 			  fprintf(stderr,"encs = ");
@@ -713,7 +745,10 @@ public:
 		  {
 			  ipids->setPid(i,iCubPid[i]);
 		  }
-		  //ipids->setPid(3,iCubPid[3]); //use this on single joint
+	//	  ipids->setPid(3,iCubPid[3]); //use this on single joint
+	//	  ipids->setPid(2,iCubPid[2]); //use this on single joint
+	//	  ipids->setPid(1,iCubPid[1]); //use this on single joint
+	//	  ipids->setPid(0,iCubPid[0]); //use this on single joint
 #endif
 		  fprintf(stderr,"enabling amps...\n");
 		  for(int i=0;i<limbJnt;i++)
