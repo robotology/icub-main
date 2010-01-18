@@ -1,0 +1,47 @@
+/**
+*
+@ingroup demoSSSA
+\defgroup demoSSSA demoSSSA
+
+This application shows a predictive smooth pursuit behavior: during maintained smooth pursuit, the lag in eye movement can be reduced or even cancelled if the target trajectory can be predicted.
+This application uses the ISR 3D Particle Filter for the tracking of the object.
+When an occluder is put between the target and the robot, this application detects the occluder and switches the gaze with one saccade at the opposite site of the occluder slightly before the object.
+
+\section intro_sec Description
+
+This application launches all the required modules in order to detect and track the position (in degree) and the velocity (in degree/sec) of a target. The predictor modules is based on Recursive Least Square (RLS) algorithm in order to predict the target velocity based on the history of the target state.
+In presence of the occluder the predictor module uses the learned internal model of the target trajectory to predict the point where the object will reappear. Then switches the gaze slightly before the object.
+
+\section dep_sec Dependencies
+
+This application assumes \ref ICubInterface2 "iCubInterface2" is already running.
+
+
+\section modules_sec Instantiated Modules
+
+- \ref camCalib "camCalib"
+- \ref pf3dTracker "pf3dTracker"
+- \ref yarpview "yarpview"
+- \ref velocityObserver "velocityObserver"
+- \ref retinalSlipBridge "retinalSlipBridge"
+
+
+\section config_sec Configuration Files
+
+The file ICUB_ROOT/conf/camCalib.ini contain the platform specific parameters for camCalib module.
+The file ./scripts/set_camera_parameters.sh initialize the correct parameters for the camera to track the target.
+
+\section example_sec How to run the application
+
+Launch ./demoSSSA.xml.template check dependencies, run modules and connect.
+Launch predictiveSP module.
+ 
+\author Egidio Falotico and Davide Zambrano
+
+Copyright (C) 2008 RobotCub Consortium
+
+CopyPolicy: Released under the terms of the GNU GPL v2.0.
+
+
+This file can be edited at \in app/exampleApplication/doc.dox
+**/
