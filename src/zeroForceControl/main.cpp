@@ -839,16 +839,16 @@ public:
 			  {
 				  //if(verbose) 
 				  {
-					  fprintf(stderr,"J%d over limits %.2lf (%.2lf - %.2lf) ", i, q(i), minJntLimits[i], maxJntLimits[i]);
+                      //  fprintf(stderr,"J%d over limits %.2lf (%.2lf - %.2lf) ", i, q(i), minJntLimits[i], maxJntLimits[i]);
 					  if (dir(i)>0)
 					  {
 						  //t(i) = t(i)/2; //for safety
-						  fprintf(stderr,"Dir %.3lf>0,safe\n",dir(i));
+                          //  fprintf(stderr,"Dir %.3lf>0,safe\n",dir(i));
 					  }
 					  else
 					  {
 						  t(i) = 0.0;
-						  fprintf(stderr,"Dir %.3lf<0,STOPPING\n",dir(i));
+                          // fprintf(stderr,"Dir %.3lf<0,STOPPING\n",dir(i));
 					  }
 				  }
 			  }
@@ -856,16 +856,16 @@ public:
 			  {
 				  //if(verbose) 
 				  {
-					  fprintf(stderr,"J%d over limits %.2lf (%.2lf - %.2lf) ", i, q(i), minJntLimits[i], maxJntLimits[i]);
+                      // fprintf(stderr,"J%d over limits %.2lf (%.2lf - %.2lf) ", i, q(i), minJntLimits[i], maxJntLimits[i]);
 					  if (dir(i)<0)
 					  {
 						  //t(i) = t(i)/2; //for safety
-						  fprintf(stderr,"Dir %.3lf>0,safe\n",dir(i));
+                          //  fprintf(stderr,"Dir %.3lf>0,safe\n",dir(i));
 					  }
 					  else
 					  {
 						  t(i) = 0.0;
-						  fprintf(stderr,"Dir %.3lf<0,STOPPING\n",dir(i));
+                          // fprintf(stderr,"Dir %.3lf<0,STOPPING\n",dir(i));
 					  }
 				  }
 			  }
