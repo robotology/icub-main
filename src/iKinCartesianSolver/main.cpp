@@ -18,8 +18,9 @@ See \ref iKinSlv "Cartesian Solver" for documentation.
  
 \section lib_sec Libraries 
 - YARP libraries. 
-- \ref iKin "iKin" library (it requires IPOPT lib: see 
-  http://eris.liralab.it/wiki/Installing_IPOPT ).
+- \ref iKin "iKin" library (it requires IPOPT: see the 
+  <a
+  href="http://eris.liralab.it/wiki/Installing_IPOPT">wiki</a>).
 
 \section parameters_sec Parameters
 --part \e type [mandatory]
@@ -28,9 +29,9 @@ See \ref iKinSlv "Cartesian Solver" for documentation.
 
 --context \e directory [optional]
 - allow to specify a different path where to search the 
-  configuration file in the form of \e
-  $ICUB_ROOT/app/<directory>. Directory default value is \e
-  cartesianSolver/conf.
+  configuration file in the form of
+  <i> $ICUB_ROOT/app/<directory></i>. Directory default value is
+  \e cartesianSolver/conf.
  
 --from \e file [optional]
 - allow to specify a different configuration file from the 
@@ -47,8 +48,7 @@ previously open.
 - /<solverName>/rpc : for requests and replies.
 - /<solverName>/out : for output streaming. 
  
-\note for a detailed description, see \ref iKinSlv "Cartesian 
-      Solver".
+\note for a detailed description, see \ref iKinSlv.
  
 \section conf_file_sec Configuration Files
  
@@ -67,7 +67,9 @@ verbosity   off
 maxIter     200
 tol         0.001
 xyzTol      0.000001
-interPoints off
+interPoints off 
+rest_pos       (0.0 0.0 0.0 0.0 0.0 0.0 0.0 0.0 0.0 0.0)
+rest_weights   (1.0 1.0 1.0 0.0 0.0 0.0 0.0 0.0 0.0 0.0) 
  
 [right_arm]
 robot       icub
@@ -81,7 +83,9 @@ verbosity   off
 maxIter     200
 tol         0.001   
 xyzTol      0.000001
-interPoints off
+interPoints off 
+rest_pos       (0.0 0.0 0.0 0.0 0.0 0.0 0.0 0.0 0.0 0.0)
+rest_weights   (1.0 1.0 1.0 0.0 0.0 0.0 0.0 0.0 0.0 0.0) 
 
 [left_leg]
 robot       icub
@@ -95,7 +99,9 @@ verbosity   off
 maxIter     200
 tol         0.001   
 xyzTol      0.000001
-interPoints off
+interPoints off 
+rest_pos       (0.0 0.0 0.0 0.0 0.0 0.0)
+rest_weights   (0.0 0.0 0.0 0.0 0.0 0.0) 
 
 [right_leg]
 robot       icub
@@ -109,7 +115,9 @@ verbosity   off
 maxIter     200
 tol         0.001   
 xyzTol      0.000001
-interPoints off
+interPoints off 
+rest_pos       (0.0 0.0 0.0 0.0 0.0 0.0)
+rest_weights   (0.0 0.0 0.0 0.0 0.0 0.0) 
 \endcode 
  
 \note for a detailed description of options, see \ref iKinSlv
