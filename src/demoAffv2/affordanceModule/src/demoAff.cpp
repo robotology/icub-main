@@ -1375,8 +1375,7 @@ bool DemoAff::updateModule(){
       }
       //state = INIT;
 
-      //useArm(object3d[1] > 0.0 ? USE_RIGHT : USE_LEFT);
-      useArm(USE_LEFT); // prevent right arm damage until final review demo :)
+      useArm(object3d[1] > 0.0 ? USE_RIGHT : USE_LEFT);
       armToBeUsed = (partUsed != "both_parts" ? (object3d[1] > 0.0 ? "right" : "left") : partUsed.substr(0, partUsed.find('_')));
     }
     break;
