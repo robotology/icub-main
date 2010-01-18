@@ -127,6 +127,10 @@ Vector ctrl::dcm2axis(const Matrix &R, unsigned int verbose)
         Matrix U(3,3), V(3,3);
         Vector S(3);
 
+        // A = I + sin(theta)*M+(1-cos(theta))*M^2
+        // where M is the skew matrix
+        // we have to find the vector associated to
+        // the 0 singular value
         SVD(A-eye(3,3),U,S,V);
 
         v[0]=V(0,2);
@@ -164,22 +168,22 @@ Matrix ctrl::axis2dcm(const Vector &v, unsigned int verbose)
     double s=sin(theta);
     double C=1-c;
 
-    double xs =v[0]*s;   
-    double ys =v[1]*s;   
+    double xs =v[0]*s;
+    double ys =v[1]*s;
     double zs =v[2]*s;
-    double xC =v[0]*C;   
-    double yC =v[1]*C;   
+    double xC =v[0]*C;
+    double yC =v[1]*C;
     double zC =v[2]*C;
-    double xyC=v[0]*yC; 
-    double yzC=v[1]*zC; 
-    double zxC=v[2]*xC;    
+    double xyC=v[0]*yC;
+    double yzC=v[1]*zC;
+    double zxC=v[2]*xC;
     
     R(0,0)=v[0]*xC+c;
     R(0,1)=xyC-zs;
-    R(0,2)=zxC+ys; 
+    R(0,2)=zxC+ys;
     R(1,0)=xyC+zs;
     R(1,1)=v[1]*yC+c;
-    R(1,2)=yzC-xs; 
+    R(1,2)=yzC-xs;
     R(2,0)=zxC-ys;
     R(2,1)=yzC+xs;
     R(2,2)=v[2]*zC+c;
