@@ -257,7 +257,9 @@ ENDIF (ARTOOLKITPLUS_FOUND)
   # add here modules you want to test for compilation
   # these modules will only be compiled by automated
   # compilation scripts
-  IF (COMPILE_FOR_TESTING)
+   IF (COMPILE_FOR_TESTING)
+
+	add_subdirectory(predictiveSP)
 
   ENDIF(COMPILE_FOR_TESTING)
 
