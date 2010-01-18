@@ -6,7 +6,7 @@ using namespace std;
 
 double lpf_ord1_3hz(double input, int j)
 { 
-	if (j<0 || j> MAX_JN)
+	if (j<0 || j>= MAX_JN)
 	{
 		cout<<"Received an invalid joint index to filter"<<endl;
 		return 0;
