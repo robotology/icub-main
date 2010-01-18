@@ -70,6 +70,13 @@ bool PinholeCalibTool::configure (Searchable &config){
     CV_MAT_ELEM( *_intrinsic_matrix, float, 2, 1) = 0.0f;
     CV_MAT_ELEM( *_intrinsic_matrix, float, 2, 2) = 1.0f;
 
+    fprintf(stdout,"fx=%g\n",config.find("fx").asDouble());
+    fprintf(stdout,"fy=%g\n",config.find("fy").asDouble());
+    fprintf(stdout,"cx=%g\n",config.find("cx").asDouble());
+    fprintf(stdout,"cy=%g\n",config.find("cy").asDouble());
+
+    
+
     // copy to scaled matrix ;)
     CV_MAT_ELEM( *_intrinsic_matrix_scaled , float, 0, 0) = CV_MAT_ELEM( *_intrinsic_matrix , float, 0, 0);
     CV_MAT_ELEM( *_intrinsic_matrix_scaled , float, 0, 1) = CV_MAT_ELEM( *_intrinsic_matrix , float, 0, 1);
