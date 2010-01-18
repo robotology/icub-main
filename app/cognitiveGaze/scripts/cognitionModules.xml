@@ -1,0 +1,114 @@
+<application>
+<name>cognitiveGaze Demo - Cognition Sub-system Modules</name>
+
+<!-- change the offline argument to 0 to run online -->
+
+<module>
+   <name>episodicMemory</name>
+   <parameters>--context cognitiveGaze/conf --offline 1</parameters>
+   <node>icub1</node>
+   <tag>episodicMemory</tag>
+</module>
+
+<module>
+   <name>proceduralMemory</name>
+   <parameters>--context cognitiveGaze/conf</parameters>
+   <node>icub1</node>
+   <tag>proceduralMemory</tag>
+</module>
+
+<module>
+   <name>endogenousSalience</name>
+   <parameters>--context cognitiveGaze/conf </parameters>
+   <node>icub1</node>
+   <tag>endogenousSalience</tag>
+</module>
+
+<module>
+   <name>affectiveState</name>
+   <parameters>--context cognitiveGaze/conf </parameters>
+   <node>icub1</node>
+   <tag>affectiveState</tag>
+</module>
+
+<module>
+   <name>actionSelection</name>
+   <parameters>--context cognitiveGaze/conf </parameters>
+   <node>icub1</node>
+   <tag>actionSelection</tag>
+</module>
+
+<module>
+   <name>logPolarTransform</name>
+   <parameters>--context cognitiveGaze/conf</parameters>
+   <node>icub1</node>
+   <tag>logPolarTransform</tag>
+</module>
+
+<module>
+   <name>logPolarTransform</name>
+   <parameters>--name inverseLogPolarTransformA --direction LOGPOLAR2CARTESIAN --context cognitiveGaze/conf</parameters>
+   <node>icub1</node>
+   <tag>inverseLogPolarTransformA</tag>
+</module>
+
+<module>
+   <name>logPolarTransform</name>
+   <parameters>--name inverseLogPolarTransformB --direction LOGPOLAR2CARTESIAN --context cognitiveGaze/conf</parameters>
+   <node>icub1</node>
+   <tag>inverseLogPolarTransformB</tag>
+</module>
+
+<module>
+   <name>logPolarTransform</name>
+   <parameters>--name inverseLogPolarTransformC --direction LOGPOLAR2CARTESIAN --context cognitiveGaze/conf</parameters>
+   <node>icub1</node>
+   <tag>inverseLogPolarTransformC</tag>
+</module>
+
+<module>
+   <name>yarpview</name>
+   <parameters>--name /inputImage --x 0 --y 000 --w 320 --h 318 --synch</parameters>
+   <node>icub1</node>
+   <tag>inputImage</tag>
+</module>
+
+<module>
+   <name>yarpview</name>
+   <parameters>--name /recalledImage --x 340 --y 000 --w 320 --h 318 --synch</parameters>
+   <node>icub1</node>
+   <tag>recalledImage</tag>
+</module>
+
+<module>
+   <name>yarpview</name>
+   <parameters>--name /retrievedImage --x 340 --y 360 --w 320 --h 318 --synch</parameters>
+   <node>icub1</node>
+   <tag>retrievedImage</tag>
+</module>
+
+<module>
+   <name>yarpview</name>
+   <parameters>--name /segmentedImage --x 680 --y 000 --w 320 --h 318 --synch</parameters>
+   <node>icub1</node>
+   <tag>segmentedImage</tag>
+</module>
+
+
+<module>
+   <name>yarpview</name>
+   <parameters>--name /logpolarImage --x 680 --y 360 --w 320 --h 318 --synch</parameters>
+   <node>icub1</node>
+   <tag>logpolarImage</tag>
+</module>
+
+<module>
+   <name>yarpview</name>
+   <parameters>--name /weightsImage --x 1020 --y 000 --w 320 --h 318 --synch</parameters>
+   <node>icub1</node>
+   <tag>weightsImage</tag>
+</module>
+
+
+
+</application>

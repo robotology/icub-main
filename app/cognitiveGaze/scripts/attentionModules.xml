@@ -1,0 +1,122 @@
+<application>
+	<name>cognitiveGaze Demo - Attention Sub-system</name>
+
+        <dependencies>
+	     <!-- <port>/icub/head/rpc:i</port>  -->
+	     <!-- <port>/icub/cam/right</port>   -->
+	</dependencies>
+
+        <!-- the following section is based directly on the attentionDistributed application: appConfig-visual.xml.template -->
+        <!-- the only changes are the name of the nodes (icub1),  the context (cognitiveGaze/conf),                         -->
+        <!-- and the fps parameter has been set to 1 in salience, egoSphere, and actionSelection                            -->
+
+	<module>
+		<name>camCalib</name>
+		<parameters>--name /icub/camcalib/right --context cognitiveGaze/conf --from icubEyes.ini --group CAMERA_CALIBRATION_RIGHT --fps 1</parameters>
+		<tag>camcalib</tag>
+		<node>icub1</node>
+	</module>
+	<module>
+		<name>salience</name>
+		<parameters>--name /icub/salience/right --context cognitiveGaze/conf --from icubSalience.ini --fps 1</parameters>
+		<tag>salience</tag>
+		<node>icub17</node>
+	</module>
+	<module>
+		<name>egoSphere</name>
+		<parameters>--name /icub/egoSphere --context cognitiveGaze/conf --from icubEyes.ini --controlboard /icub/head  --fps 1</parameters>
+		<tag>egosphere</tag>
+		<node>icub17</node>
+	</module>
+	<module>
+		<name>attentionSelection</name>
+		<parameters>--name /icub/attentionSelection --context cognitiveGaze/conf --from icubAttentionSelection.ini --remoteEgoSphere /icub/egoSphere/conf  --fps 1</parameters>
+		<tag>attentionselection</tag>
+		<node>icub1</node>
+	</module>
+	<module>
+		<name>controlGaze2</name>
+		<parameters>--configCamera icubEyes.ini --name /icub/controlGaze --context cognitiveGaze/conf --from icubControlGaze2.ini --motorboard /icub/head</parameters>
+		<tag>controlgaze</tag>
+		<node>icub1</node>
+	</module>
+	<module>
+		<name>applicationGui</name>
+		<parameters>--context cognitiveGaze/conf --from guiApplication.ini</parameters>
+		<tag>application-gui</tag>
+		<node>icub1</node>
+	</module>
+ 
+ <connection>
+  <output>/icub/cam/right</output>
+  <input>/icub/guiCameraRight/image_in</input>
+ </connection>
+ <connection>
+      	<output>/icub/cam/right</output>
+		<input>/icub/camcalib/right/in</input>
+	</connection>
+	<connection>
+      	        <output>/icub/camcalib/right/out</output>
+		<input>/icub/guiCamCalibRight/viewer/image_in</input>
+	</connection>
+	<connection>
+      	        <output>/icub/camcalib/right/out</output>
+		<input>/icub/salience/right/view</input>
+	</connection>
+	<connection>
+      	        <output>/icub/salience/right/map</output>
+		<input>/icub/guiSalienceRight/viewer/image_in</input>
+	</connection>
+        <connection>
+                <output>/icub/guiSalienceRight/salienceControls/conf</output>
+                <input>/icub/salience/right/conf</input>
+        </connection>
+	<connection>
+      	<output>/icub/salience/right/map</output>
+		<input>/icub/egoSphere/mapVisual/map_in</input>
+	</connection>
+	<connection>
+      	<output>/icub/camcalib/right/out</output>
+		<input>/icub/egoSphere/mapVisual/rgb_in</input>
+	</connection>
+	<connection>
+      	<output>/icub/guiAttentionSelection/viewer/click_out</output>
+		<input>/icub/egoSphere/mapVisual/click_in</input>
+	</connection>
+	<connection>
+      	<output>/icub/guiEgoSphere/viewer/click_out</output>
+		<input>/icub/egoSphere/mapVisual/click_in</input>
+	</connection>
+	<connection>
+      	<output>/icub/egoSphere/map_out</output>
+		<input>/icub/guiAttentionSelection/viewer/image_in</input>
+	</connection>
+	<connection>
+      	<output>/icub/egoSphere/mapVisual/rgb_out</output>
+		<input>/icub/guiEgoSphere/viewer/image_in</input>
+	</connection>
+	<connection>
+      	<output>/icub/egoSphere/map_out</output>
+		<input>/icub/attentionSelection/i:map</input>
+	</connection>
+	<connection>
+      	<output>/icub/attentionSelection/o:position</output>
+		<input>/icub/controlGaze/pos</input>
+	</connection>
+	<connection>
+      	<output>/icub/attentionSelection/o:velocity</output>
+		<input>/icub/controlGaze/vel</input>
+	</connection>
+	<connection>
+      	<output>/icub/attentionSelection/remoteEgoSphere</output>
+		<input>/icub/egoSphere/conf</input>
+	</connection>
+	<connection>
+      	<output>/icub/controlGaze/status:o</output>
+		<input>/icub/attentionSelection/i:gaze</input> 
+	</connection>
+	<connection>
+      	<output>/icub/controlGaze/remoteEgoSphere</output>
+		<input>/icub/egoSphere/conf</input>
+	</connection>
+</application>

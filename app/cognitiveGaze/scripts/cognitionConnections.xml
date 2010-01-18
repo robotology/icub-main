@@ -1,0 +1,230 @@
+<application>
+<name>cognitiveGaze Demo - Cognition Sub-system Connections</name>
+
+<dependencies>
+   <!-- <port>/icub/head/state:o</port>               -->
+   <!-- <port>/icub/camcalib/right/out</port>             -->
+   <!-- <port>/icub/attentionSelection/o:position</port>   -->
+</dependencies>
+
+
+<!-- CONNECT UP logPolarTransforms -->
+ 
+<connection>
+   <from>/icub/camcalib/right/out</from>
+   <to>/logPolarTransform/image:i</to>
+</connection>
+
+<connection>
+   <from>/logPolarTransform/image:o</from>
+   <to>/inverseLogPolarTransformA/image:i</to>
+</connection>
+
+<connection>
+  <from>/inverseLogPolarTransformA/image:o</from>
+  <to>/inputImage</to>
+</connection>
+
+<connection>
+   <from>/inverseLogPolarTransformB/image:o</from>
+   <to>/recalledImage</to>
+ </connection>
+
+<connection>
+   <from>/inverseLogPolarTransformC/image:o</from>
+   <to>/retrievedImage</to>
+ </connection>
+
+<connection>
+   <from>/episodicMemory/retrievedImage:o</from>
+   <to>/logpolarImage</to>
+ </connection>
+
+<!-- CONNECT UP episodicMemory    -->
+
+
+<!-- Input to the episodicMemory -->
+
+<connection>
+   <from>/logPolarTransform/image:o</from>
+   <to>/episodicMemory/image:i</to>
+</connection>
+
+<connection>
+   <from>/icub/attentionSelection/o:position</from>
+   <to>/episodicMemory/action:i</to>
+ </connection>
+
+<connection>
+  <from>/icub/head/state:o</from>
+  <to>/episodicMemory/head:i</to>
+</connection>
+
+<connection>
+   <from>/proceduralMemory/imageId:o</from>
+   <to>/episodicMemory/imageId:i</to>
+ </connection>
+
+
+<!-- Output from the episodicMemory -->
+
+<connection>
+   <from>/episodicMemory/recalledImage:o</from>
+   <to>/inverseLogPolarTransformB/image:i</to>
+</connection>
+
+<connection>
+   <from>/episodicMemory/retrievedImage:o</from>
+   <to>/inverseLogPolarTransformC/image:i</to>
+</connection>
+ 
+<connection>
+   <from>/episodicMemory/retrievedImage:o</from>
+   <to>/endogenousSalience/logpolarImage:i</to>
+</connection>
+
+<connection>
+   <from>/episodicMemory/imageId:o</from>
+   <to>/proceduralMemory/imageId:i</to>
+ </connection>
+
+<connection>
+  <from>/episodicMemory/imageId:o</from>
+  <to>/affectiveState/imageId:i</to>
+</connection>
+
+
+<!-- CONNECT UP proceduralMemory  -->
+
+<!-- Input to the proceduralMemory -->
+
+<!-- Already connected 
+<connection>
+   <from>/episodicMemory/imageId:o</from>
+   <to>/proceduralMemory/imageId:i</to>
+ </connection>
+-->
+
+<connection>
+   <from>/actionSelection/mode:o</from>
+   <to>/proceduralMemory/mode:i</to>
+ </connection>
+
+
+ <!-- Output from the procedural memory -->
+
+<connection>
+   <from>/proceduralMemory/weights:o</from>
+   <to>/weightsImage</to>
+</connection>
+
+<connection>
+   <from>/proceduralMemory/action:o</from>
+   <to>/icub/controlGaze/pos</to>
+</connection>
+
+<connection>
+   <from>/proceduralMemory/imageId:o</from>
+   <to>/episodicMemory/imageId:i</to>
+ </connection>
+
+
+<!-- CONNECT UP endogenousSalience -->
+
+<!-- Input to the endogenousSalience-->
+
+<!-- Already connected 
+<connection>
+  <from>/episodicMemory/retrievedImage:o</from>
+  <to>/endogenousSalience/logpolarImage:i</to>
+  <protocol>tcp</protocol>
+</connection>
+-->
+
+<connection>
+  <from>/icub/camcalib/right/out</from>
+  <to>/endogenousSalience/cartesianImage:i</to>
+  <protocol>tcp</protocol>
+</connection>
+
+<connection>
+  <from>/icub/head/state:o</from>
+  <to>/endogenousSalience/head:i</to>
+  <protocol>tcp</protocol>
+</connection>
+
+
+<!-- Output from the endogenousSalience -->
+
+<connection>
+  <from>/endogenousSalience/salience:o</from>
+  <to>/icub/egoSphere/mapObject/bottle-in</to>
+  <protocol>tcp</protocol>
+</connection>
+
+<connection>
+  <from>/endogenousSalience/segmentedImage:o</from>
+  <to>/segmentedImage</to>
+  <protocol>tcp</protocol>
+</connection>
+
+
+
+
+
+<!-- CONNECT UP affectiveState    -->
+
+<!-- Input to the affectiveState -->
+
+<!-- Already connected 
+<connection>
+  <from>/episodicMemory/imageId:o</from>
+  <to>/affectiveState/imageId:i</to>
+</connection>
+-->
+
+<connection>
+  <from>/actionSelection/mode:o</from>
+  <to>/affectiveState/mode:i</to>
+</connection>
+
+<!-- Output from the affectiveState -->
+
+<connection>
+  <from>/affectiveState/state:o</from>
+  <to>/actionSelection/state:i</to>
+</connection>
+
+
+
+
+<!-- CONNECT UP actionSelection   -->
+
+<!-- Input to the actionSelection -->
+
+<!-- Already connected 
+<connection>
+  <from>/affectiveState/state:o</from>
+  <to>/actionSelection/state:i</to>
+</connection>
+-->
+
+
+<!-- Output from the actionSelection-->
+
+<!-- Already connected 
+<connection>
+  <from>/actionSelection/mode:o</from>
+  <to>/affectiveState/mode:i</to>
+</connection>
+-->
+
+<!-- already connected 
+<connection>
+  <from>/actionSelection/mode:o</from>
+  <to>/proceduralMemory/mode:i</to>
+</connection>
+-->
+
+
+</application>
