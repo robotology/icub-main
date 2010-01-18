@@ -146,7 +146,7 @@ bool VelocityControllerModule::open(Searchable &s){
                         }
                         vc->SetSpeedFactor(speedFact);
                         //if((strcmp(partsName[partId],"head")==0)){
-                        //    vc->SetSpeedFactor(speedFact*5.0);
+                            //vc->SetSpeedFactor(speedFact*2.0);
                         //}
                         mControllers.push_back(vc);    
                     }

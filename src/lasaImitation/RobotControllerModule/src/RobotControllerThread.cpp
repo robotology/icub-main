@@ -83,6 +83,17 @@ bool RobotControllerThread::threadInit()
     snprintf(portName,256,"/%s/currentWristRefL",mBaseName);
     mCurrentWristRefLPort.open(portName);
 
+    snprintf(portName,256,"/%s/desiredHandPosR",mBaseName);
+    mDesiredHandPosRPort.open(portName);
+    snprintf(portName,256,"/%s/desiredHandPosL",mBaseName);
+    mDesiredHandPosLPort.open(portName);
+
+    snprintf(portName,256,"/%s/desiredArmJointsR",mBaseName);
+    mDesiredArmJointsRPort.open(portName);
+    snprintf(portName,256,"/%s/desiredArmJointsL",mBaseName);
+    mDesiredArmJointsLPort.open(portName);
+
+    
     snprintf(portName,256,"/%s/desiredCartEyeInEyePosition",mBaseName);
     mDesiredCartEyeInEyePort.open(portName);
 
@@ -114,6 +125,10 @@ void RobotControllerThread::threadRelease()
     mDesiredCartWristVelLPort.close();
     mCurrentWristRefRPort.close();
     mCurrentWristRefLPort.close();
+    mDesiredHandPosRPort.close();
+    mDesiredHandPosLPort.close();
+    mDesiredArmJointsRPort.close();
+    mDesiredArmJointsLPort.close();
     mDesiredCartEyeInEyePort.close();
     mDesiredCartEyePort.close();
     mCurrentCartPosRPort.close();
@@ -125,7 +140,7 @@ void    RobotControllerThread::Init(){
     mState = RCS_IDLE;
     
     mJointSize      = 16+16+3+6;
-    mIKJointSize    = 3+7+7+3;
+    mIKJointSize    = 3+7+7+4;
     mTargetJointPos.resize(mJointSize);
     mTargetJointVel.resize(mJointSize);
     mCurrentJointPos.resize(mJointSize);
@@ -152,8 +167,11 @@ void    RobotControllerThread::Init(){
             mFwdKinWrist[j]->releaseLink(i);
             if(j==0) mFwdKinEye->releaseLink(i);
         }
-        for(int i=6;i<8;i++){
-            if(j==0) mFwdKinEye->blockLink(i,0.0);
+        //for(int i=6;i<8;i++){
+        //    if(j==0) mFwdKinEye->blockLink(i,0.0);
+        //}
+        if(j==0){
+            mFwdKinEye->blockLink(7,0.0);
         }
     }
 
@@ -196,7 +214,8 @@ void    RobotControllerThread::Init(){
             mArmToIKSIndices[j].push_back(7*j+3+i);
         }
         if(j==0){
-            for(unsigned int i=0;i<3;i++){
+            // 3->4
+            for(unsigned int i=0;i<4;i++){
                 mSrcToEyeIndices.push_back(2*16+3+i);
                 mEyeToIKSIndices.push_back(2*7+3+i);
             }
@@ -208,7 +227,8 @@ void    RobotControllerThread::Init(){
         mSrcToIKSIndices.push_back(i);
     for(unsigned int i=0;i<7;i++)
         mSrcToIKSIndices.push_back(16+i);
-    for(unsigned int i=0;i<3;i++)
+    // 3->4
+    for(unsigned int i=0;i<4;i++)
         mSrcToIKSIndices.push_back(2*16+3+i);
 
     {
@@ -262,7 +282,7 @@ void    RobotControllerThread::Init(){
     mIKJointsTarget.resize(mIKJointSize);
     mIKJointsPos.resize(mIKJointSize);
     
-    double rest[] = { 0.0, 0.0, 0.0, -10.0, 20.0, 40.0, 30.0, -40.0, 0.0, 0.0,-10.0, 20.0, 40.0, 30.0, -40.0, 0.0, 0.0, 0.0, 0.0, 0.0};
+    double rest[] = { 0.0, 0.0, 0.0, -30.0, 30.0, 0.0, 45.0, 0.0, 0.0, 0.0,-30.0, 30.0, 0.0, 45.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0};
     for(size_t i=0;i<mSrcToIKSIndices.size();i++)
         mIKJointsRest[i] = rest [i] * (PI/180.0);
 
@@ -293,7 +313,10 @@ void    RobotControllerThread::Init(){
     mHandPoses[1][6] = 40;
     mHandPoses[1][7] = 40;
     mHandPoses[1][8] = 70;
-
+    mHandPoses[2].resize(9);
+    mHandPoses[2] = mHandPoses[0];
+    mHandPoses[3].resize(9);
+    mHandPoses[3] = mHandPoses[0];
     hHandState[0] = true;
     hHandState[1] = true;
     
@@ -301,7 +324,7 @@ void    RobotControllerThread::Init(){
     bIKUseNullSpace         = true;
     bIKUseRestNullSpace     = true;
     
-    mNullSpaceGain          = 0.3;
+    mNullSpaceGain          = 1.5;
     mDesiredCartGain        = 1.0;
     mDesiredCartOriGain     = 1.0;
     bUseDesiredCartPos[0]   = 0;
@@ -320,6 +343,10 @@ void    RobotControllerThread::Init(){
     mDesiredCartWristVelLLastTime   = -1.0;
     mDesiredCartEyeInEyeLastTime    = -1.0;
     mDesiredCartEyeLastTime         = -1.0;
+    mDesiredHandPosRLastTime        = -1.0;
+    mDesiredHandPosLLastTime        = -1.0;
+    mDesiredArmJointsRLastTime       = -1.0;
+    mDesiredArmJointsLLastTime       = -1.0;
 }
 
 void    RobotControllerThread::Free(){
@@ -418,10 +445,16 @@ void RobotControllerThread::run()
         mTargetJointVel[mSrcToIKSIndices[16]] += mDesiredWristOpt[1][1]*(180.0/PI);
 
         // Hand and fingers
+        if(mTime-mDesiredHandPosRLastTime   >= INPUTS_TIMEOUT)
+            mHandPoses[2] = mHandPoses[(hHandState[0]?0:1)];
+        if(mTime-mDesiredHandPosRLastTime   >= INPUTS_TIMEOUT)
+            mHandPoses[3] = mHandPoses[(hHandState[1]?0:1)];
+    
         for(int i=0;i<9;i++){
-            mTargetJointVel[   7+i] = mHandGain * (mHandPoses[(hHandState[0]?0:1)][i] - mCurrentJointPos[   7+i]);
-            mTargetJointVel[16+7+i] = mHandGain * (mHandPoses[(hHandState[1]?0:1)][i] - mCurrentJointPos[16+7+i]);
+            mTargetJointVel[   7+i] = mHandGain * (mHandPoses[2][i] - mCurrentJointPos[   7+i]);
+            mTargetJointVel[16+7+i] = mHandGain * (mHandPoses[3][i] - mCurrentJointPos[16+7+i]);
         }
+        
         
         
         mTargetJointPos = mCurrentJointPos;
@@ -573,6 +606,7 @@ void    RobotControllerThread::PrepareIKSolver(){
     
     mIKDofWeights.One();
     mIKDofWeights(0)=mIKDofWeights(1)=mIKDofWeights(2)=0.;
+    mIKDofWeights(20) = 1.4;
     mIKDofWeights(18) = 0.0;
     mIKSolver.SetDofsWeights(mIKDofWeights);
 
@@ -583,6 +617,11 @@ void    RobotControllerThread::PrepareIKSolver(){
         }
     }else{
         mIKInvDofWeights.Zero();
+        //Head
+        for(int i=17;i<21;i++){
+            if(mIKDofWeights(i)>0.05) mIKInvDofWeights(i) = mNullSpaceGain/(mIKDofWeights(i)*mIKDofWeights(i));
+            else mIKInvDofWeights(i) = 0.0;
+        }
     }
     for(size_t i=0;i<mSrcToIKSIndices.size();i++)
         mIKJointsPos(i) = mCurrentJointPos(mSrcToIKSIndices[i])*(PI/180.0);
@@ -693,6 +732,37 @@ void    RobotControllerThread::ReadFromPorts(){
         }else cerr << "Bad vector size on port <desiredCartWristVelL>: " << inputVec->size() << "!= 3 or 6 or 9"<< endl;
     }
 
+    inputVec = mDesiredHandPosRPort.read(false);
+    if(inputVec!=NULL){
+        if(inputVec->size()==9){
+            mHandPoses[2] = *inputVec;
+            mDesiredHandPosRLastTime = mTime;
+        }else cerr << "Bad vector size on port <handposeR>: " << inputVec->size() << "!= 9"<< endl;
+    }
+    inputVec = mDesiredHandPosLPort.read(false);
+    if(inputVec!=NULL){
+        if(inputVec->size()==9){
+            mHandPoses[3] = *inputVec;
+            mDesiredHandPosLLastTime = mTime;
+        }else cerr << "Bad vector size on port <handposeL>: " << inputVec->size() << "!= 9"<< endl;
+    }
+
+    inputVec = mDesiredArmJointsRPort.read(false);
+    if(inputVec!=NULL){
+        if(inputVec->size()==7){
+            for(int i=0;i<7;i++) mIKJointsTarget[3+i] = (*inputVec)[i]*(PI/180.0);
+            mDesiredArmJointsRLastTime = mTime;
+        }else cerr << "Bad vector size on port <jointsR>: " << inputVec->size() << "!= 7"<< endl;
+    }
+    inputVec = mDesiredArmJointsLPort.read(false);
+    if(inputVec!=NULL){
+        if(inputVec->size()==7){
+            for(int i=0;i<7;i++) mIKJointsTarget[3+7+i] = (*inputVec)[i]*(PI/180.0);
+            mDesiredArmJointsLLastTime = mTime;
+        }else cerr << "Bad vector size on port <jointsL>: " << inputVec->size() << "!= 7"<< endl;
+    }
+    
+    
     inputVec = mDesiredCartEyeInEyePort.read(false);
     if(inputVec!=NULL){
         if(inputVec->size()==3){
@@ -732,6 +802,11 @@ void    RobotControllerThread::CheckInputsTimeout(){
         ConvertEyeInEyeTarget();
     }
 
+    if(mTime-mDesiredArmJointsRLastTime   >= INPUTS_TIMEOUT){
+        for(int i=0;i<7;i++) mIKJointsTarget[3+i] = mIKJointsRest[3+i];}
+    if(mTime-mDesiredArmJointsLLastTime   >= INPUTS_TIMEOUT){
+        for(int i=0;i<7;i++) mIKJointsTarget[3+7+i] = mIKJointsRest[3+7+i];}
+    
     // Disable arm control if nothing to do and wrist control is enabled
     if((mTime-mDesiredCartPosRLastTime        >= INPUTS_TIMEOUT)&&
        (mTime-mDesiredCartVelRLastTime        >= INPUTS_TIMEOUT)){
@@ -753,6 +828,7 @@ void    RobotControllerThread::CheckInputsTimeout(){
         mIKSolver.Suspend(false,IKArmPosL);
         mIKSolver.Suspend(false,IKArmOriL);
     }
+    
 }
 
 void    RobotControllerThread::WriteToPorts(){

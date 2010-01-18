@@ -57,6 +57,8 @@ private:
     BufferedPort<Bottle>    mTouchpadControllerPort;
     BufferedPort<Bottle>    mGMMRightPort;
     BufferedPort<Bottle>    mGMMLeftPort;
+    BufferedPort<Bottle>    mRefTransRightPort;
+    BufferedPort<Bottle>    mRefTransLeftPort;
 
     enum PortId{
         PID_Velocity = 0,
@@ -65,6 +67,8 @@ private:
         PID_Touchpad,
         PID_GMMRight,
         PID_GMMLeft,
+        PID_RefTransRight,
+        PID_RefTransLeft,
         PID_SIZE
     };
     
@@ -80,6 +84,10 @@ private:
         SPID_EyeCartPos,
         SPID_GMMRightCartPos,
         SPID_GMMLeftCartPos,
+        SPID_MotionSensorsArm,
+        SPID_MotionSensorsHand,
+        SPID_Vision0,
+        SPID_Vision1,
         SPID_SIZE
     };
     enum DstPortId{
@@ -91,6 +99,10 @@ private:
         DPID_LArmDesCartPos,
         DPID_RWristDesCartVel,
         DPID_LWristDesCartVel,
+        DPID_RArmHandPos,
+        DPID_LArmHandPos,
+        DPID_RArmJointsPos,
+        DPID_LArmJointsPos,
         DPID_EyeInEyeDesCartPos,
         DPID_EyeDesCartPos,
         DPID_GMMRightSignal,
@@ -111,17 +123,43 @@ private:
     BufferedPort<Bottle>   *mPorts[PID_SIZE];
     
     enum State{
-        IAS_IDLE=0,
+        IAS_NONE=0,
+        IAS_IDLE,
         IAS_INIT,
         IAS_RUN,
         IAS_PAUSE,
+        IAS_DELAY,
         IAS_STOP,
+        
+        IAS_DEVTPAD,
+        IAS_DEVTPAD_INIT,
+        IAS_DEVTPAD_RUN,
+        IAS_DEVTPAD_STOP,
+        
+        IAS_DEV3DM,
+        IAS_DEV3DM_INIT,
+        IAS_DEV3DM_RUN,
+        IAS_DEV3DM_STOP,
+        
+        IAS_DEVSENSORS,
+        IAS_DEVSENSORS_INIT,
+        IAS_DEVSENSORS_READY,
+        IAS_DEVSENSORS_RUN,
+        IAS_DEVSENSORS_STOP,
+        
+        IAS_DEMO,
+        IAS_DEMO_INIT,
+        IAS_DEMO_RUN,
+        IAS_DEMO_STOP,
+        
         IAS_SIZE
     };
     
     State                   mState;
     State                   mPrevState;
     State                   mNextState;
+    State                   mDelayedState;
+    double                  mDelayedStateTime;
     
     char                    mStateName[IAS_SIZE][256];
     
@@ -148,6 +186,8 @@ private:
         BC_3DMOUSE_TO_LEFTARM,
         BC_TOUCHPAD_TO_RIGHTARM_NONE,
         BC_TOUCHPAD_TO_RIGHTARM,
+        BC_SENSORS_TO_LEFTARM,
+        BC_SENSORS_TO_LEFTARM_NONE,
         BC_TRACK_NONE,
         BC_TRACK_RIGHTARM,
         BC_TRACK_LEFTARM,
@@ -204,6 +244,8 @@ public:
             void    PrepareToStop();
 
             void    InitStateMachine();
+            void    SendBasicCommand(const char* cmd);
+            void    DelayNextState(State nextState, double delay);
     
             int     respond(const Bottle& command, Bottle& reply);
             int     respondToBasicCommand(const Bottle& command, Bottle& reply);

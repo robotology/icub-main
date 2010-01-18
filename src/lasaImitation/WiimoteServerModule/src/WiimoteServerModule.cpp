@@ -97,7 +97,7 @@ bool WiimoteServerModule::open(Searchable &s){
     //wiiuse_set_leds(WiimoteServerThread::sWiimotes[0], WIIMOTE_LED_1|WIIMOTE_LED_2|WIIMOTE_LED_3|WIIMOTE_LED_4);
     usleep(200000);
     wiiuse_rumble(WiimoteServerThread::sWiimotes[0], 0);
-    wiiuse_set_leds(WiimoteServerThread::sWiimotes[0], 0);
+    wiiuse_set_leds(WiimoteServerThread::sWiimotes[0], WIIMOTE_LED_2|WIIMOTE_LED_3);
 
     char portName[255];
     snprintf(portName,255,"/WiimoteServer/%s/rpc",getName().c_str());

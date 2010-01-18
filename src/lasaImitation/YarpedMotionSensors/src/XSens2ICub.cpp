@@ -19,6 +19,9 @@
 
 #include "XSens2ICub.h"
 
+double mTime;
+double mPrevTime;
+
 
 int Init(int argc, char* argv[]){
     
@@ -102,7 +105,8 @@ int Init(int argc, char* argv[]){
   
   refreshPeriod = 66;
   refreshTimer.Start(refreshPeriod);
-
+  
+  mTime = Time::now();
 
   for(int i=0;i<BID_SIZE;i++){
     mSensorBody.mBodyMatrices[i].Identity();
@@ -154,7 +158,7 @@ int Init(int argc, char* argv[]){
     
 mSensorBody.mBodyMatricesIndex[BID_LEFTSHOULDER]     = 7372;
   mSensorBody.mBodyMatricesIndex[BID_LEFTELBOW]        = 7392;
-  mSensorBody.mBodyMatricesIndex[BID_LEFTWRIST]        = 7371;
+  mSensorBody.mBodyMatricesIndex[BID_LEFTWRIST]        = 7357;
   mSensorBody.mBodyMatricesIndex[BID_RIGHTSHOULDER]    = 7415;
   mSensorBody.mBodyMatricesIndex[BID_RIGHTELBOW]       = 7391;
   mSensorBody.mBodyMatricesIndex[BID_RIGHTWRIST]       = 7035;
@@ -970,7 +974,7 @@ void OnMouseMotion(int x, int y){
 }
 
 void OnIdle(){
-  usleep(1000);
+  usleep(20000);
   if(bCalibRequest){
     if(calibTimer.IsDone()){
       bCalibRequest = false;    

@@ -128,6 +128,7 @@ using namespace std;
 #include <yarp/os/Network.h>
 #include <yarp/os/BufferedPort.h>
 #include <yarp/os/Bottle.h>
+#include <yarp/os/Time.h>
 #include <yarp/sig/Vector.h>
 
 using namespace yarp;

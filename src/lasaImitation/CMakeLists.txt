@@ -38,6 +38,7 @@ ELSE(BUILD_EXT_VC_ONLY)
                        GaussianMixtureModelModule
                        RobotControllerModule
                        ImitationApplicationModule
+                       RefTransformModule
   )
 
   IF (BUILD_MOTIONSSENSORS)

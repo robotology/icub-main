@@ -5,15 +5,22 @@
     </dependencies> 
     <module>
         <name>ImitationApplicationModule</name>
-        <parameters>--period 0.5</parameters>
+        <parameters>--period 0.1</parameters>
         <node>lasapc18</node>
         <stdio>lasapc18</stdio>
         <tag>Application</tag>
     </module>
     <module>
+        <name>WiimoteServerModule</name>
+        <parameters>--period 0.1 --name WiiOne</parameters>
+        <node>lasapc18</node>
+        <tag>Wiimote</tag>
+    </module>
+    <module>
         <name>VelocityControllerExt</name>
         <parameters>--name VelocityController --robot icub --period 0.02 --decouple --part right_arm+left_arm+torso+head </parameters>
         <node>pc104</node>
+        <stdio>lasapcicub</stdio>
         <tag>VCExt</tag>
     </module>
     <module>
@@ -36,7 +43,14 @@
         <tag>TCTouchpad</tag>
         <node>lasapcicub</node>
         <workdir>/home/icub/Projects/iCubDemoFiles/TouchControllers</workdir>
-   </module>
+    </module>
+    <module>
+        <name>RefTransformModule</name>
+        <parameters>--name Right --period 0.05</parameters>
+        <node>lasapc18</node>
+        <stdio>lasapc18</stdio>
+        <tag>RTRight</tag>
+    </module>
     <module>
         <name>GaussianMixtureModelModule</name>
         <parameters>--name Right --period 0.1</parameters>
@@ -54,6 +68,13 @@
         <workdir>/home/icub/Projects/iCubDemoFiles/GMM</workdir>
     </module>
     <module>
+        <name>RefTransformModule</name>
+        <parameters>--name Left --period 0.05</parameters>
+        <node>lasapc18</node>
+        <stdio>lasapc18</stdio>
+        <tag>RTLeft</tag>
+    </module>
+    <module>
         <name>GaussianMixtureModelModule</name>
         <parameters>--name Left --period 0.1</parameters>
         <node>lasapc18</node>
@@ -69,6 +90,12 @@
         <tag>DSLeft</tag>
         <workdir>/home/icub/Projects/iCubDemoFiles/GMM</workdir>
     </module>
+
+    <connection protocol="tcp">
+        <from>/WiimoteServer/WiiOne/output</from>
+        <to>/ImitationApplication/Wiimote</to>
+    </connection>
+
     <connection protocol="tcp">
         <from>/VelocityController/position</from>
         <to>/RobotController/currentJointPosition</to>
@@ -85,6 +112,7 @@
         <from>/RobotController/targetJointVelocity</from>
         <to>/VelocityController/targetVelocity</to>
     </connection>
+
     <connection protocol="tcp">
         <from>/GaussianMixtureModel/Right/dataStreamRpc</from>
         <to>/DataStreamer/Right/rpc</to>
@@ -95,8 +123,14 @@
      </connection>
     <connection protocol="tcp">
         <from>/RobotController/currentCartPositionR</from>
+        <to>/RefTransform/Right/inputPose</to>
+    </connection>
+    <connection protocol="tcp">
+        <from>/RefTransform/Right/outputPoseInRef</from>
         <to>/GaussianMixtureModel/Right/input</to>
     </connection>
+
+
     <connection protocol="tcp">
         <from>/GaussianMixtureModel/Left/dataStreamRpc</from>
         <to>/DataStreamer/Left/rpc</to>
@@ -107,6 +141,10 @@
      </connection>
     <connection protocol="tcp">
         <from>/RobotController/currentCartPositionL</from>
+        <to>/RefTransform/Left/inputPose</to>
+    </connection>
+    <connection protocol="tcp">
+        <from>/RefTransform/Left/outputPoseInRef</from>
         <to>/GaussianMixtureModel/Left/input</to>
     </connection>
 </application>

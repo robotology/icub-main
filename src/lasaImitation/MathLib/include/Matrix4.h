@@ -201,15 +201,20 @@ public:
   inline Matrix4& Transform(const Matrix4 &matrix, Matrix4 & result) const
   {
     result.Identity();
-    for(unsigned int k = 0; k< 4; k++){          
-      for (unsigned int j = 0; j < 3; j++)
-      {
+    for(unsigned int k = 0; k< 3; k++){          
+      for (unsigned int j = 0; j < 3; j++){
         result._[j][k] = 0.0f;
         for (unsigned int i = 0; i < 3; i++)
           result._[j][k] += _[j][i] * matrix._[i][k];
-        result._[j][k] += _[j][3];  
       }
     }
+    for (unsigned int j = 0; j < 3; j++){
+      result._[j][3] = 0.0f;
+      for (unsigned int i = 0; i < 3; i++)
+        result._[j][3] += _[j][i] * matrix._[i][3];
+      result._[j][3] += _[j][3];  
+    }
+        //
     return result;
   } 
      

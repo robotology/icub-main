@@ -42,6 +42,7 @@ ImitationApplicationThread::~ImitationApplicationThread()
 bool ImitationApplicationThread::threadInit()
 {
     mMode = MODE_BASICCOMMAND;
+    mMode = MODE_STATEMACHINE;
     
     char portname[256];
     snprintf(portname,        256,"/%s/Wiimote",mBaseName);
@@ -54,6 +55,10 @@ bool ImitationApplicationThread::threadInit()
     snprintf(mSrcCtrlPortName[PID_Touchpad],        256,"/%s/TCTP",mBaseName);
     snprintf(mSrcCtrlPortName[PID_GMMRight],        256,"/%s/GMMR",mBaseName);
     snprintf(mSrcCtrlPortName[PID_GMMLeft],         256,"/%s/GMML",mBaseName);
+    snprintf(mSrcCtrlPortName[PID_RefTransRight],   256,"/%s/RefR",mBaseName);
+    snprintf(mSrcCtrlPortName[PID_RefTransLeft],    256,"/%s/RefL",mBaseName);
+    
+    
     
     snprintf(mDstCtrlPortName[PID_Velocity],        256,"/VelocityController/rpc");
     snprintf(mDstCtrlPortName[PID_Robot],           256,"/RobotController/rpc");
@@ -61,6 +66,8 @@ bool ImitationApplicationThread::threadInit()
     snprintf(mDstCtrlPortName[PID_Touchpad],        256,"/TouchController/Touchpad/rpc");
     snprintf(mDstCtrlPortName[PID_GMMRight],        256,"/GaussianMixtureModel/Right/rpc");
     snprintf(mDstCtrlPortName[PID_GMMLeft],         256,"/GaussianMixtureModel/Left/rpc");
+    snprintf(mDstCtrlPortName[PID_RefTransRight],   256,"/RefTransform/Right/rpc");
+    snprintf(mDstCtrlPortName[PID_RefTransLeft],    256,"/RefTransform/Left/rpc");
 
     //for(int i=0;i<PID_SIZE;i++){
     //    cout << mSrcCtrlPortName[i] << " "<<mDstCtrlPortName[i]<<endl;
@@ -72,13 +79,17 @@ bool ImitationApplicationThread::threadInit()
     mTouchpadControllerPort.open(   mSrcCtrlPortName[PID_Touchpad]);
     mGMMRightPort.open(             mSrcCtrlPortName[PID_GMMRight]);
     mGMMLeftPort.open(              mSrcCtrlPortName[PID_GMMLeft]);
+    mRefTransRightPort.open(        mSrcCtrlPortName[PID_RefTransRight]);
+    mRefTransLeftPort.open(         mSrcCtrlPortName[PID_RefTransLeft]);
 
-    mPorts[PID_Velocity]    = &mVelocityControllerPort;
-    mPorts[PID_Robot]       = &mRobotControllerPort;
-    mPorts[PID_3DMouse]     = &m3DMouseControllerPort;
-    mPorts[PID_Touchpad]    = &mTouchpadControllerPort;
-    mPorts[PID_GMMRight]    = &mGMMRightPort;
-    mPorts[PID_GMMLeft]     = &mGMMLeftPort;
+    mPorts[PID_Velocity]        = &mVelocityControllerPort;
+    mPorts[PID_Robot]           = &mRobotControllerPort;
+    mPorts[PID_3DMouse]         = &m3DMouseControllerPort;
+    mPorts[PID_Touchpad]        = &mTouchpadControllerPort;
+    mPorts[PID_GMMRight]        = &mGMMRightPort;
+    mPorts[PID_GMMLeft]         = &mGMMLeftPort;
+    mPorts[PID_RefTransRight]   = &mRefTransRightPort;
+    mPorts[PID_RefTransLeft]    = &mRefTransLeftPort;
 
     
     snprintf(mSrcPortName[SPID_Touchpad],           256,"/TouchController/Touchpad/velocity");
@@ -92,6 +103,11 @@ bool ImitationApplicationThread::threadInit()
     snprintf(mSrcPortName[SPID_EyeCartPos],         256,"/RobotController/currentCartEyeTargetPosition");
     snprintf(mSrcPortName[SPID_GMMRightCartPos],    256,"/GaussianMixtureModel/Right/output");
     snprintf(mSrcPortName[SPID_GMMLeftCartPos],     256,"/GaussianMixtureModel/Left/output");
+    snprintf(mSrcPortName[SPID_MotionSensorsArm],   256,"/MotionSensors/left_arm");
+    snprintf(mSrcPortName[SPID_MotionSensorsHand],  256,"/MotionSensors/left_glove");
+    snprintf(mSrcPortName[SPID_Vision0],            256,"/vision/vision0:o");
+    snprintf(mSrcPortName[SPID_Vision1],            256,"/vision/vision1:o");
+        
 
     
     snprintf(mDstPortName[DPID_Touchpad],           256,"/TouchController/Touchpad/frameOfRef");
@@ -102,6 +118,10 @@ bool ImitationApplicationThread::threadInit()
     snprintf(mDstPortName[DPID_LArmDesCartPos],     256,"/RobotController/desiredCartPositionL");
     snprintf(mDstPortName[DPID_RWristDesCartVel],   256,"/RobotController/desiredCartWristVelocityR");
     snprintf(mDstPortName[DPID_LWristDesCartVel],   256,"/RobotController/desiredCartWristVelocityL");
+    snprintf(mDstPortName[DPID_RArmHandPos],        256,"/RobotController/desiredHandPosR");
+    snprintf(mDstPortName[DPID_LArmHandPos],        256,"/RobotController/desiredHandPosL");
+    snprintf(mDstPortName[DPID_RArmJointsPos],      256,"/RobotController/desiredArmJointsR");
+    snprintf(mDstPortName[DPID_LArmJointsPos],      256,"/RobotController/desiredArmJointsL");
     snprintf(mDstPortName[DPID_EyeInEyeDesCartPos], 256,"/RobotController/desiredCartEyeInEyePosition");
     snprintf(mDstPortName[DPID_EyeDesCartPos],      256,"/RobotController/desiredCartEyePosition");
     snprintf(mDstPortName[DPID_GMMRightSignal],     256,"/GaussianMixtureModel/Right/signals");
@@ -139,6 +159,9 @@ void ImitationApplicationThread::threadRelease()
     mTouchpadControllerPort.close();
     mGMMRightPort.close();
     mGMMLeftPort.close();
+    mRefTransRightPort.close();
+    mRefTransLeftPort.close();
+
 }
 
 void ImitationApplicationThread::run()
@@ -166,7 +189,7 @@ bool ImitationApplicationThread::ProcessWiimote(bool flush){
     Vector *inputVec = mWiimotePort.read(false);
     while(inputVec!=NULL){
         mWiimoteEvent = *inputVec;
-        cout << "Wiimote says: "<<mWiimoteEvent.toString()<<endl;
+        //cout << "Wiimote says: "<<mWiimoteEvent.toString()<<endl;
         res = true;
         if(!flush) break;
         inputVec = mWiimotePort.read(false);
@@ -177,8 +200,8 @@ bool ImitationApplicationThread::ProcessWiimote(bool flush){
             Bottle cmd; 
             if(mWiimoteEvent[0]>0.0){ cmd.fromString("ok");   bCmd = true;}
             if(mWiimoteEvent[8]>0.0){ cmd.fromString("abrt"); bCmd = true;}
-            if(mWiimoteEvent[4]>0.0){ cmd.fromString("next"); bCmd = true;}
-            if(mWiimoteEvent[5]>0.0){ cmd.fromString("prev"); bCmd = true;}
+            if(mWiimoteEvent[4]>0.0){ cmd.fromString("prev"); bCmd = true;}
+            if(mWiimoteEvent[5]>0.0){ cmd.fromString("next"); bCmd = true;}
             if(bCmd){
                 Bottle rep;
                 respondToStateMachine(cmd,rep);
@@ -204,6 +227,7 @@ void ImitationApplicationThread::ProcessBasicCommand(){
         ConnectToNetwork(false);
         break;
     case BC_RUN:
+        AddCommand(PID_Robot,   "iks None");
         AddCommand(PID_Robot,   "run");
         AddCommand(PID_Velocity,"run");
         break;
@@ -246,6 +270,18 @@ void ImitationApplicationThread::ProcessBasicCommand(){
         AddConnexion(SPID_RWristRef, DPID_Touchpad);
         AddConnexion(SPID_Touchpad, DPID_RWristDesCartVel);
         AddCommand(PID_Robot,"iks RightWrist");
+        break;
+    case BC_SENSORS_TO_LEFTARM:
+        AddConnexion(SPID_MotionSensorsArm, DPID_RArmJointsPos);
+        AddConnexion(SPID_MotionSensorsHand, DPID_RArmHandPos);        
+        AddCommand(PID_Robot,"iku RightArm");
+        AddCommand(PID_Robot,"iku RightWrist");
+        AddCommand(PID_Robot,"iks Joints");
+        break;
+    case BC_SENSORS_TO_LEFTARM_NONE:
+        RemConnexion(SPID_MotionSensorsArm, DPID_RArmJointsPos);
+        RemConnexion(SPID_MotionSensorsHand, DPID_RArmHandPos);        
+        AddCommand(PID_Robot,"iks Rest");
         break;
     case BC_TRACK_NONE:
         RemAllSrcConnexions(DPID_EyeDesCartPos);
@@ -371,42 +407,6 @@ void ImitationApplicationThread::ProcessBasicCommand(){
     mBasicCommandParams = "";
 }
 
-void ImitationApplicationThread::ProcessStateMachine(){
-    if(mStateSignal!=SSIG_NONE)
-        cout << "SSIG: "<<mStateSignal<<endl;
-
-    if(mNextState!=mState)
-        mState = mNextState;
-    
-    bool bStateChanged = (mPrevState != mState);
-    if(bStateChanged){
-        cout << "State change: <"<<mStateName[mPrevState]<<">("<<mPrevState<<") -> <"<<mStateName[mState]<<">("<<mState<<")"<<endl; 
-    }
-    
-    mNextState = mState;
-    switch(mState){
-    case IAS_IDLE:
-        break;
-    case IAS_INIT:
-        break;
-    case IAS_RUN:
-        if(bStateChanged){
-        }
-        break;
-    case IAS_PAUSE:
-        break;
-    case IAS_STOP:
-        break;
-    default:
-        break;
-    }
-    
-    mPrevState  = mState;
-    mState      = mNextState;
-
-    
-    mStateSignal = SSIG_NONE;
-}
 
 
 void ImitationApplicationThread::ConnectToNetwork(bool bConnect){
@@ -569,12 +569,12 @@ int ImitationApplicationThread::respondToStateMachine(const Bottle& command, Bot
     }
     if(retVal>0){
         reply.addVocab(Vocab::encode("ack"));
-        cout << "*ACK*"<<endl;
+        //cout << "*ACK*"<<endl;
     }else if (retVal == 0){
         reply.addVocab(Vocab::encode("fail"));
-        cout << "*FAIL*"<<endl;
+        //cout << "*FAIL*"<<endl;
     }else{
-        cout << "*BIG_FAIL*"<<endl;
+        //cout << "*BIG_FAIL*"<<endl;
     }
     
     return retVal;
@@ -627,6 +627,10 @@ int ImitationApplicationThread::respondToBasicCommand(const Bottle& command, Bot
                     mBasicCommand = BC_TOUCHPAD_TO_RIGHTARM;
                 }else if(str == "TouchN"){
                     mBasicCommand = BC_TOUCHPAD_TO_RIGHTARM_NONE;
+                }else if(str == "SensL"){
+                    mBasicCommand = BC_SENSORS_TO_LEFTARM;
+                }else if(str == "SensLN"){
+                    mBasicCommand = BC_SENSORS_TO_LEFTARM_NONE;
                 }else{
                     retVal = 0;
                 }
@@ -771,22 +775,207 @@ int ImitationApplicationThread::respondToBasicCommand(const Bottle& command, Bot
     return retVal;
 }
 
+void ImitationApplicationThread::SendBasicCommand(const char* cmd){
+    if(cmd!=NULL){
+        Bottle bottleCmd;
+        bottleCmd.fromString(cmd);
+        Bottle rep;
+        respondToBasicCommand(cmd,rep);
+        ProcessBasicCommand();
+    }
+}
+
 void ImitationApplicationThread::InitStateMachine(){
     for(int i=0;i<IAS_SIZE;i++)
         mStateName[i][0] = 0;
 
-    snprintf(mStateName[IAS_IDLE],              256,"IDLE");
-    snprintf(mStateName[IAS_INIT],              256,"INIT");
-    snprintf(mStateName[IAS_RUN],               256,"RUN");
-    snprintf(mStateName[IAS_PAUSE],             256,"PAUSE");
-    snprintf(mStateName[IAS_STOP],              256,"STOP");
+    snprintf(mStateName[IAS_NONE],                  256,"NONE");
+    snprintf(mStateName[IAS_IDLE],                  256,"IDLE");
+    snprintf(mStateName[IAS_INIT],                  256,"INIT");
+    snprintf(mStateName[IAS_RUN],                   256,"RUN");
+    snprintf(mStateName[IAS_PAUSE],                 256,"PAUSE");
+    snprintf(mStateName[IAS_DELAY],                 256,"DELAY");
+    snprintf(mStateName[IAS_STOP],                  256,"STOP");
+    
 
-    mState = mPrevState = mNextState = IAS_IDLE;
+    snprintf(mStateName[IAS_DEVTPAD],               256,"MENU TouchPad");
+    snprintf(mStateName[IAS_DEVTPAD_INIT],          256,"TouchPad Init");
+    snprintf(mStateName[IAS_DEVTPAD_RUN],           256,"TouchPad Run");
+    snprintf(mStateName[IAS_DEVTPAD_STOP],          256,"TouchPad Stop");
+
+    snprintf(mStateName[IAS_DEV3DM],                256,"MENU 3DMouse");
+    snprintf(mStateName[IAS_DEV3DM_INIT],           256,"3DMouse Init");
+    snprintf(mStateName[IAS_DEV3DM_RUN],            256,"3DMouse Run");
+    snprintf(mStateName[IAS_DEV3DM_STOP],           256,"3DMouse Stop");
+
+    snprintf(mStateName[IAS_DEVSENSORS],            256,"MENU Dev MotionSensors");
+    snprintf(mStateName[IAS_DEVSENSORS_INIT],       256,"MotionSensors Init");
+    snprintf(mStateName[IAS_DEVSENSORS_READY],      256,"MotionSensors Ready");
+    snprintf(mStateName[IAS_DEVSENSORS_RUN],        256,"MotionSensors Run");
+    snprintf(mStateName[IAS_DEVSENSORS_STOP],       256,"MotionSensors Stop");
+
+    snprintf(mStateName[IAS_DEMO],                  256,"MENU Demo");
+    snprintf(mStateName[IAS_DEMO_INIT],             256,"Demo Init");
+    snprintf(mStateName[IAS_DEMO_RUN],              256,"Demo Run");
+    snprintf(mStateName[IAS_DEMO_STOP],             256,"Demo Stop");
+
+    mState = mPrevState = mNextState = mDelayedState = IAS_NONE;
     mStateSignal = SSIG_NONE;
+    mDelayedStateTime   = 0.0;
 
     cout << "State names: "<<endl;
     cout << "*******************"<<endl;
     for(int i=0;i<IAS_SIZE;i++)
         cout <<"  "<<i<<":" <<mStateName[i]<<endl;
+    cout << "*******************"<<endl;
 }
+void ImitationApplicationThread::DelayNextState(State nextState, double delay){
+    mNextState          = IAS_DELAY;
+    mDelayedState       = nextState;
+    mDelayedStateTime   = Time::now() + delay;
+}
+void ImitationApplicationThread::ProcessStateMachine(){
+    //if(mStateSignal!=SSIG_NONE)
+    //    cout << "Recieved Signal: "<<mStateSignal<<endl;
 
+    if(mNextState!=mState)
+        mState = mNextState;
+    
+    bool bStateChanged = (mPrevState != mState);
+    if(bStateChanged){
+        cout << "************************************************************************************************"<<endl;
+        cout << "* New State:  <"<<mStateName[mState]<<">("<<mState<<")                      (from <"<<mStateName[mPrevState]<<">("<<mPrevState<<"))"<<endl; 
+        cout << "************************************************************************************************"<<endl;
+    }
+    
+    mNextState = mState;
+    switch(mState){
+    case IAS_NONE:
+        mNextState = IAS_IDLE;
+        break;
+    case IAS_IDLE:
+        if(bStateChanged){
+            SendBasicCommand("stop");
+            SendBasicCommand("clr");
+        }
+        if(mStateSignal == SSIG_OK)    mNextState = IAS_INIT;
+        break;
+    case IAS_INIT:
+        if(bStateChanged){
+            SendBasicCommand("init");
+            SendBasicCommand("run");
+        }
+        mNextState = IAS_DEVTPAD;
+        break;
+    case IAS_RUN:
+        break;
+    case IAS_PAUSE:
+        break;
+    case IAS_DELAY:
+        if(Time::now() > mDelayedStateTime)
+            mNextState = mDelayedState;
+        break;
+    case IAS_STOP:
+        if(bStateChanged){
+            SendBasicCommand("rest");
+        }
+        DelayNextState(IAS_IDLE,5.0);
+        break;
+
+
+//---------------------------------------------------------
+
+    case IAS_DEVTPAD:
+             if(mStateSignal == SSIG_OK)    mNextState = IAS_DEVTPAD_INIT;
+        else if(mStateSignal == SSIG_ABORT) mNextState = IAS_STOP;
+        else if(mStateSignal == SSIG_NEXT)  mNextState = IAS_DEV3DM;
+        else if(mStateSignal == SSIG_PREV)  mNextState = IAS_DEMO;
+        break;
+    case IAS_DEV3DM:
+             if(mStateSignal == SSIG_OK)    mNextState = IAS_DEV3DM_INIT;
+        else if(mStateSignal == SSIG_ABORT) mNextState = IAS_STOP;
+        else if(mStateSignal == SSIG_NEXT)  mNextState = IAS_DEVSENSORS;
+        else if(mStateSignal == SSIG_PREV)  mNextState = IAS_DEVTPAD;
+        break;
+    case IAS_DEVSENSORS:
+             if(mStateSignal == SSIG_OK)    mNextState = IAS_DEVSENSORS_INIT;
+        else if(mStateSignal == SSIG_ABORT) mNextState = IAS_STOP;
+        else if(mStateSignal == SSIG_NEXT)  mNextState = IAS_DEMO;
+        else if(mStateSignal == SSIG_PREV)  mNextState = IAS_DEV3DM;
+        break;
+    case IAS_DEMO:
+             if(mStateSignal == SSIG_OK)    mNextState = IAS_DEMO_INIT;
+        else if(mStateSignal == SSIG_ABORT) mNextState = IAS_STOP;
+        else if(mStateSignal == SSIG_NEXT)  mNextState = IAS_DEVTPAD;
+        else if(mStateSignal == SSIG_PREV)  mNextState = IAS_DEVSENSORS;
+        break;
+
+
+//---------------------------------------------------------
+
+    case IAS_DEVTPAD_INIT:
+        SendBasicCommand("run");
+        SendBasicCommand("do Touch");
+        mNextState = IAS_DEVTPAD_RUN;
+        break;
+    case IAS_DEVTPAD_RUN:
+        if(mStateSignal == SSIG_OK)    mNextState = IAS_DEVTPAD_STOP;
+        break;
+    case IAS_DEVTPAD_STOP:
+        SendBasicCommand("do TouchN");
+        mNextState = IAS_DEVTPAD;
+        break;
+
+//---------------------------------------------------------
+
+    case IAS_DEV3DM_INIT:
+        SendBasicCommand("run");
+        SendBasicCommand("do 3DL");
+        mNextState = IAS_DEV3DM_RUN;
+        break;
+    case IAS_DEV3DM_RUN:
+        if(mStateSignal == SSIG_OK)    mNextState = IAS_DEV3DM_STOP;
+        break;
+    case IAS_DEV3DM_STOP:
+        SendBasicCommand("do 3DLN");
+        mNextState = IAS_DEV3DM;
+        break;
+
+//---------------------------------------------------------
+
+    case IAS_DEVSENSORS_INIT:
+        if(mStateSignal == SSIG_OK)    mNextState = IAS_DEVSENSORS_READY;
+        break;
+    case IAS_DEVSENSORS_READY:
+        SendBasicCommand("run");
+        SendBasicCommand("do SensL");
+    case IAS_DEVSENSORS_RUN:
+        if(mStateSignal == SSIG_OK)    mNextState = IAS_DEVSENSORS_STOP;
+        break;
+    case IAS_DEVSENSORS_STOP:
+        SendBasicCommand("do SensLN");
+        mNextState = IAS_DEVSENSORS;
+        break;
+
+//---------------------------------------------------------
+/*
+    case IAS_DEVTPAD_INIT:
+        break;
+    case IAS_DEVTPAD_RUN:
+        break;
+    case IAS_DEVTPAD_STOP:
+        break;
+*/
+//---------------------------------------------------------
+
+
+    default:
+        break;
+    }
+    
+    mPrevState  = mState;
+    mState      = mNextState;
+
+    
+    mStateSignal = SSIG_NONE;
+}

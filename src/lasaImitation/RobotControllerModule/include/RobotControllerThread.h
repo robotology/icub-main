@@ -64,7 +64,7 @@ private:
     
     Vector                  mJointsLimits[2];
 
-    Vector                  mHandPoses[2];
+    Vector                  mHandPoses[4];
     bool                    hHandState[2];
     double                  mHandGain;
     
@@ -149,6 +149,12 @@ private:
     BufferedPort<Vector>    mDesiredCartWristVelRPort;
     BufferedPort<Vector>    mDesiredCartWristVelLPort;
 
+    BufferedPort<Vector>    mDesiredHandPosRPort;
+    BufferedPort<Vector>    mDesiredHandPosLPort;
+
+    BufferedPort<Vector>    mDesiredArmJointsRPort;
+    BufferedPort<Vector>    mDesiredArmJointsLPort;
+
     BufferedPort<Vector>    mDesiredCartEyeInEyePort;
     BufferedPort<Vector>    mDesiredCartEyePort;
     
@@ -159,6 +165,10 @@ private:
     double                  mDesiredCartVelLLastTime;
     double                  mDesiredCartWristVelRLastTime;
     double                  mDesiredCartWristVelLLastTime;
+    double                  mDesiredArmJointsRLastTime;
+    double                  mDesiredArmJointsLLastTime;
+    double                  mDesiredHandPosRLastTime;
+    double                  mDesiredHandPosLLastTime;
     double                  mDesiredCartEyeInEyeLastTime;
     double                  mDesiredCartEyeLastTime;
     
