@@ -38,7 +38,7 @@
 const int SAMPLER_RATE = 10;
 const int FT_VALUES = 6;
 
-const bool verbose = false;
+bool verbose = false;
 const int CPRNT = 100;
 const int CALIBRATION_OK = true; // should be true when FT calibration will be ok
 enum {ZEROFORCECONTROL=0, IMPEDANCE=1};
@@ -509,7 +509,7 @@ public:
           double tdiff=t-told;
 
 		  datas=port_FT->read(false);
-		  
+
 		  //if(iencs->getEncoders(encoders.data()))
 		  iencs->getEncoders(encoders.data());
 		  //fprintf(stderr,"encoders length = %d\n", encoders.length());
@@ -528,7 +528,11 @@ public:
 
 		  int connected = CONNECTION_OK;
 
-		  if(countTime - countTime0 > 0.0) 
+		  if(countTime0>=32000 && countTime<16000)
+		  {
+			  countTime0=0;
+		  }
+		  if(countTime - countTime0 > 0) 
 		  {
 			  connected = CONNECTION_OK;
 			  countTime0 = countTime;
@@ -544,6 +548,22 @@ public:
 			  connected = CONNECTION_ERROR;
 		  }
 
+		  if(count>=CPRNT)
+		  {
+			  fprintf(stderr,"Cycle duration=%f s, watchdog:%d ",tdiff, watchDog);
+			  if (verbose) fprintf(stderr,"c:%d c0:%d", countTime, countTime0);
+			  fprintf(stderr,"\n");
+			  if (connected == CONNECTION_ERROR) fprintf(stderr,"Connection error with the sensor\n");
+#ifdef CONTROL_ON
+			  fprintf(stderr,"Control ON:");
+			  if (control_mode==IMPEDANCE) fprintf(stderr,"Impedance\n");
+			  else fprintf(stderr,"Zero Force Control\n");
+#else
+			  fprintf(stderr,"Debug Mode, CONTROL_ON macro is not defined \n",tdiff);
+			  if (control_mode==IMPEDANCE) fprintf(stderr," (impedance off)\n");
+			  else fprintf(stderr,"(Zero Force Control off)\n");
+#endif
+		  }
 		  //switch(connected)
 		  //{ 
 			//  case CONNECTION_ERROR:
@@ -551,8 +571,6 @@ public:
 			//	  fprintf(stderr,"ERROR: connection lost\n\n");
 			//	  break;
 			//  case CONNECTION_OK:
-				  if(count>=CPRNT && verbose)
-					  fprintf(stderr,"Connection ok...\n\n");
 				  if(datas!=0)  
 				  { 
 					  if(CALIBRATION_OK)  FTs = *datas;
@@ -706,70 +724,71 @@ public:
 		  */
 		  if(count>=CPRNT)
 		  {
-			  fprintf(stderr,"Cycle duration=%f s, watchdog:%d \n", tdiff, watchDog);
-#ifdef CONTROL_ON
-			  fprintf(stderr,"Control ON:");
-			  if (control_mode==IMPEDANCE) fprintf(stderr,"Impedance\n");
-			  else fprintf(stderr,"Zero Force Control\n");
-#else
-			  fprintf(stderr,"Debug Mode, CONTROL_ON macro is not defined \n",tdiff);
-			  if (control_mode==IMPEDANCE) fprintf(stderr," (impedance off)\n");
-			  else fprintf(stderr,"(Zero Force Control off)\n");
-#endif
-			  fprintf(stderr,"FT = ");
+			  if (verbose)
+			  {fprintf(stderr,"FT = ");
 			  for(int i=0;i<6;i++)
 				  fprintf(stderr,"%+.3lf\t", FT(i));
-			  fprintf(stderr,"\n");
+			  fprintf(stderr,"\n");}
 
-			  fprintf(stderr,"FTs = ");
+			  //if (verbose)
+			  {fprintf(stderr,"FTs = ");
 			  for(int i=0;i<6;i++)
 				  fprintf(stderr,"%+.3lf\t", FTs(i)-FTs_init(i));
-			  fprintf(stderr,"\n");
+			  fprintf(stderr,"\n");}
 
-			  fprintf(stderr,"FTe = ");
+			  if (verbose)
+			  {fprintf(stderr,"FTe = ");
 			  for(int i=0;i<6;i++)
 				  fprintf(stderr,"%+.3lf\t", Fe(i));
-			  fprintf(stderr,"\n");
+			  fprintf(stderr,"\n");}
 
-			  fprintf(stderr,"FTj = ");
+			  if (verbose)
+			  {fprintf(stderr,"FTj = ");
 			  for(int i=0;i<limbJnt;i++)
 				  fprintf(stderr,"%+.3lf\t", FTj(i));
-			  fprintf(stderr,"\n");
+			  fprintf(stderr,"\n");}
 
-			   fprintf(stderr,"tauD = ");
+			  if (verbose)
+			  {fprintf(stderr,"tauD = ");
 			  for(int i=0;i<limbJnt;i++)
 				  fprintf(stderr,"%+.3lf\t", tauDes(i));
-			  fprintf(stderr,"\n");
+			  fprintf(stderr,"\n");}
 
-			  fprintf(stderr,"encs = ");
+			  if (verbose)
+			  {fprintf(stderr,"encs = ");
 			  for(int i=0;i<limbJnt;i++)
 				  fprintf(stderr,"%+.3lf\t", angs(i)*180/M_PI);
-			  fprintf(stderr,"\n");
+			  fprintf(stderr,"\n");}
 
-			  fprintf(stderr,"encd = ");
+			  if (verbose)
+			  {fprintf(stderr,"encd = ");
 			  for(int i=0;i<limbJnt;i++)
 				  fprintf(stderr,"%+.3lf\t", desPosition(i));
-			  fprintf(stderr,"\n");
+			  fprintf(stderr,"\n");}
 
-			  fprintf(stderr,"spds = ");
+			  if (verbose)
+			  {fprintf(stderr,"spds = ");
 			  for(int i=0;i<limbJnt;i++)
 				  fprintf(stderr,"%+.3lf\t", speeds(i));
-			  fprintf(stderr,"\n");
+			  fprintf(stderr,"\n");}
 
-			  fprintf(stderr,"tau  = ");
+			  if (verbose)
+			  {fprintf(stderr,"tau  = ");
 			  for(int i=0;i<limbJnt;i++)
 				  fprintf(stderr,"%+.3lf\t", tau(i));
-			  fprintf(stderr,"\n");
+			  fprintf(stderr,"\n");}
 
-			  fprintf(stderr,"tauF = ");
+			  if (verbose)
+			  {fprintf(stderr,"tauF = ");
 			  for(int i=0;i<limbJnt;i++)
 				  fprintf(stderr,"%+.3lf\t", tauFilt(i));
-			  fprintf(stderr,"\n");
+			  fprintf(stderr,"\n");}
 
-			  fprintf(stderr,"tauM = ");
+			  //if (verbose)
+			  {fprintf(stderr,"tauM = ");
 			  for(int i=0;i<limbJnt;i++)
 				  fprintf(stderr,"%+.3lf\t", tauSafe(i));
-			  fprintf(stderr,"\n");
+			  fprintf(stderr,"\n");}
 			  /*
 			  // debug only
               fprintf(stderr,"J:\n");
@@ -839,16 +858,16 @@ public:
 			  {
 				  //if(verbose) 
 				  {
-                      //  fprintf(stderr,"J%d over limits %.2lf (%.2lf - %.2lf) ", i, q(i), minJntLimits[i], maxJntLimits[i]);
+                      if(count>=CPRNT)  fprintf(stderr,"J%d over limits %.2lf (%.2lf ; %.2lf) ", i, q(i), minJntLimits[i], maxJntLimits[i]);
 					  if (dir(i)>0)
 					  {
 						  //t(i) = t(i)/2; //for safety
-                          //  fprintf(stderr,"Dir %.3lf>0,safe\n",dir(i));
+                          if(count>=CPRNT) fprintf(stderr,"Dir %.3lf > 0.0,safe\n",dir(i));
 					  }
 					  else
 					  {
 						  t(i) = 0.0;
-                          // fprintf(stderr,"Dir %.3lf<0,STOPPING\n",dir(i));
+						  if(count>=CPRNT) fprintf(stderr,"Dir %.3lf < 0.0,STOPPING\n",dir(i));
 					  }
 				  }
 			  }
@@ -856,16 +875,16 @@ public:
 			  {
 				  //if(verbose) 
 				  {
-                      // fprintf(stderr,"J%d over limits %.2lf (%.2lf - %.2lf) ", i, q(i), minJntLimits[i], maxJntLimits[i]);
+                      if(count>=CPRNT) fprintf(stderr,"J%d over limits %.2lf (%.2lf ; %.2lf) ", i, q(i), minJntLimits[i], maxJntLimits[i]);
 					  if (dir(i)<0)
 					  {
 						  //t(i) = t(i)/2; //for safety
-                          //  fprintf(stderr,"Dir %.3lf>0,safe\n",dir(i));
+                          if(count>=CPRNT) fprintf(stderr,"Dir %.3lf > 0.0, safe\n",dir(i));
 					  }
 					  else
 					  {
 						  t(i) = 0.0;
-                          // fprintf(stderr,"Dir %.3lf<0,STOPPING\n",dir(i));
+                          if(count>=CPRNT) fprintf(stderr,"Dir %.3lf < 0.0, STOPPING\n",dir(i));
 					  }
 				  }
 			  }
@@ -945,6 +964,7 @@ public:
 	  string helpMessage =  string(getName().c_str()) + 
 							" commands are: \n" +  
 							"help        to display this message\n" + 
+							"verbose     to display debug variables\n" + 
 							"set zfc     to set the zfc behaviour \n" + 
 							"set imp     to set the impedance behaviour) \n";
 
@@ -955,11 +975,12 @@ public:
 		  cout << helpMessage;
 		  reply.addString(helpMessage.c_str());
 	   }
-   	   /*else if (command.get(0).asString()=="quit")
+   	   else if (command.get(0).asString()=="verbose")
 	   {
-		   reply.addString("quitting");
-		   return false;     
-	   }*/
+		  if (verbose) reply.addString("setting verbose mode OFF");
+		  else  reply.addString("ok, setting verbose mode ON");
+		  verbose = !(verbose);
+	   }
 	   else if (command.get(0).asString()=="set")
 	   {
 		  //int jnt = command.get(2).asInt(); 
