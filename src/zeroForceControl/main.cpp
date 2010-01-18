@@ -583,10 +583,10 @@ public:
 
 		  //control: to be checked
 		  Matrix J = iCubLimb->GeoJacobian();
-          const double Kspringc=0.3;
+         // const double Kspringc=0.3;
 		  Vector tau(4);
 		  tau=0.0;
-		  tauDes=Kspringc*((180.0/M_PI)*angs-desPosition); 
+		  tauDes=Kspring*((180.0/M_PI)*angs-desPosition); 
 		  FTj=J.transposed()*FT;
 		  if (control_mode==IMPEDANCE)
 			{tau = K*(FTj-tauDes);} //USE THIS FOR IMPEDANCE CONTROL
