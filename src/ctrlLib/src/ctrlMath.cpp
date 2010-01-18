@@ -121,13 +121,13 @@ Vector ctrl::dcm2axis(const Matrix &R, unsigned int verbose)
     double r=ctrl::norm(v);
     double theta=atan2(0.5*r,0.5*(R(0,0)+R(1,1)+R(2,2)-1));
 
-    if (r<1e-3)
+    if (r<1e-9)
     {
         Matrix A=R.submatrix(0,2,0,2);
         Matrix U(3,3), V(3,3);
         Vector S(3);
 
-        SVD(eye(3,3)-A,U,S,V);
+        SVD(A-eye(3,3),U,S,V);
 
         v[0]=V(0,2);
         v[1]=V(1,2);
