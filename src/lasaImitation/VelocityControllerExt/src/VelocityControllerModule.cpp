@@ -88,13 +88,20 @@ bool VelocityControllerModule::open(Searchable &s){
         bDecouple = true;
     }    
 
-    char partsName[8][256];
-    strcpy(partsName[0],"right_arm");
-    strcpy(partsName[1],"left_arm");
-    strcpy(partsName[2],"head");
-    strcpy(partsName[3],"torso");
-    strcpy(partsName[4],"right_leg");
-    strcpy(partsName[5],"left_leg");
+    int nbParts = 12;
+    char partsName[nbParts][256];
+    strcpy(partsName[ 0],"right_arm");
+    strcpy(partsName[ 1],"left_arm");
+    strcpy(partsName[ 2],"head");
+    strcpy(partsName[ 3],"torso");
+    strcpy(partsName[ 4],"right_leg");
+    strcpy(partsName[ 5],"left_leg");
+    strcpy(partsName[ 6],"fake_right_arm");
+    strcpy(partsName[ 7],"fake_left_arm");
+    strcpy(partsName[ 8],"fake_head");
+    strcpy(partsName[ 9],"fake_torso");
+    strcpy(partsName[10],"fake_right_leg");
+    strcpy(partsName[11],"fake_left_leg");
     
     char txtBuffer[256];         
 
@@ -117,7 +124,7 @@ bool VelocityControllerModule::open(Searchable &s){
             }
             if(partPosEnd!=partPos){
                 int partId = -1;
-                for(int i=0;i<6;i++){
+                for(int i=0;i<nbParts;i++){
                     if(strncmp(partsName[i],partList+partPos,partPosEnd-partPos)==0){
                         partId = i;
                         break;
@@ -136,7 +143,7 @@ bool VelocityControllerModule::open(Searchable &s){
                         delete driver;
                         driver = NULL;                
                     }
-                    if((driver!=NULL)||(bFakeDrivers)){
+                    if((driver!=NULL)||(bFakeDrivers)||(partId>=6)){
                         hasValidDriver = true;
                         VelocityController* vc = new VelocityController;
                         vc->Init(driver,partsName[partId],mModuleName);

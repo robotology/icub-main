@@ -71,7 +71,21 @@ bool VelocityController::Init(PolyDriver *driver, const char* name, const char* 
         mVelocityController->getAxes(&mJointsSize);
     }else{
         fprintf(stderr,"  Fake one...\n");
-        mJointsSize = 1;
+              if (strcmp(mName,"fake_right_arm")==0){
+            mJointsSize = 16;
+        }else if (strcmp(mName,"fake_left_arm")==0){
+            mJointsSize = 16;
+        }else if (strcmp(mName,"fake_head")==0){
+            mJointsSize = 6;
+        }else if (strcmp(mName,"fake_torso")==0){
+            mJointsSize = 3;
+        }else if (strcmp(mName,"fake_right_leg")==0){
+            mJointsSize = 6;
+        }else if (strcmp(mName,"fake_left_leg")==0){
+            mJointsSize = 6;
+        }else{
+            mJointsSize = 1;
+        }
     }
     fprintf(stderr,"  # Joints: %d\n",mJointsSize);
 
@@ -129,8 +143,8 @@ bool VelocityController::Init(PolyDriver *driver, const char* name, const char* 
     mLastPosCommandTime = mCommandTimeout + 0.1;
     mLastVelCommandTime = mCommandTimeout + 0.1;
     
-    mJointsVelLimits[0] = -60.0;
-    mJointsVelLimits[1] = +60.0;
+    mJointsVelLimits[0] = -40.0;
+    mJointsVelLimits[1] = +40.0;
     
     bPosTargetSet           = false;
     bVelTargetSet           = false;
@@ -259,7 +273,7 @@ void VelocityController::Update(double dt){
         double kdPart    = 0.0;
         double kpPart    = 0.0;
         
-        double mVelTau   = 0.1;
+        double mVelTau   = 0.2;
         double dtOnTau   = dt/mVelTau;
         
         switch(mMode[i]){

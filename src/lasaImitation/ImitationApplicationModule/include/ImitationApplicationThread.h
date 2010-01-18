@@ -84,6 +84,8 @@ private:
         SPID_EyeCartPos,
         SPID_GMMRightCartPos,
         SPID_GMMLeftCartPos,
+        SPID_RRefTransOutput,
+        SPID_LRefTransOutput,
         SPID_MotionSensorsArm,
         SPID_MotionSensorsHand,
         SPID_Vision0,
@@ -107,6 +109,8 @@ private:
         DPID_EyeDesCartPos,
         DPID_GMMRightSignal,
         DPID_GMMLeftSignal,
+        DPID_RRefTransRef,
+        DPID_LRefTransRef,
         DPID_SIZE
     };
     char                    mSrcPortName[SPID_SIZE][256];
@@ -152,6 +156,57 @@ private:
         IAS_DEMO_RUN,
         IAS_DEMO_STOP,
         
+        IAS_DEMO_SENSORS,
+        IAS_DEMO_SENSORS_INIT,
+        IAS_DEMO_SENSORS_OBJTRK,
+        IAS_DEMO_SENSORS_OBJLOCK,
+        IAS_DEMO_SENSORS_STARTSENSORS,
+        IAS_DEMO_SENSORS_STARTDEMO,
+        IAS_DEMO_SENSORS_ACCEPTDEMO,
+        IAS_DEMO_SENSORS_NEXTDEMO,
+        IAS_DEMO_SENSORS_LEARN,
+        IAS_DEMO_SENSORS_STOP,
+        
+        
+        
+        IAS_DEMO_REFINE,
+        IAS_DEMO_REFINE_INIT,
+        IAS_DEMO_REFINE_OBJTRK,
+        IAS_DEMO_REFINE_OBJLOCK,
+        IAS_DEMO_REFINE_STARTCORR,
+        IAS_DEMO_REFINE_ACCEPTCORR,
+        IAS_DEMO_REFINE_NEXTDEMO,
+        IAS_DEMO_REFINE_LEARN,
+        IAS_DEMO_REFINE_STOP,
+
+        IAS_DEMO_REPROONE,
+        IAS_DEMO_REPROONE_INIT,
+        IAS_DEMO_REPROONE_OBJTRK,
+        IAS_DEMO_REPROONE_OBJLOCK,
+        IAS_DEMO_REPROONE_STARTREPRO,
+        IAS_DEMO_REPROONE_STOPREPRO,
+        IAS_DEMO_REPROONE_STOP,
+
+        IAS_DEMO_REUSE,
+        
+        IAS_DEMO_REPROTWO,
+        IAS_DEMO_REPROTWO_INIT,
+        IAS_DEMO_REPROTWO_INIT2,
+        IAS_DEMO_REPROTWO_STOP,
+
+        IAS_TEST,
+        IAS_TEST_INIT,
+        IAS_TEST_RUN,
+        IAS_TEST_STOP,
+
+        IAS_REPRO,
+        IAS_REPRO_INIT,
+        IAS_REPRO_OBJTRK,
+        IAS_REPRO_OBJLOCK,
+        IAS_REPRO_STARTREPRO,
+        IAS_REPRO_STOPREPRO,
+        IAS_REPRO_STOP,
+
         IAS_SIZE
     };
     
@@ -162,6 +217,26 @@ private:
     double                  mDelayedStateTime;
     
     char                    mStateName[IAS_SIZE][256];
+    
+    int                     mCurrDemoId;
+    
+    
+    
+    State                   mReproState;
+    State                   mReproPrevState;
+    State                   mReproNextState;
+    State                   mReproInState;
+    State                   mReproOutState;
+    char                    mReproName[256];
+    bool                    bReproRight;
+    bool                    bReproDemo;
+    int                     mReproObjId;
+    bool                    bReproSkipObjTrk;
+    bool                    bReproLoop;
+    bool                    bReproInHandState;
+    bool                    bReproOutHandState;
+    bool                    bReproStopGMM;
+    bool                    bReproLockRef;
     
     enum StateSignal{
         SSIG_NONE = 0,
@@ -188,9 +263,13 @@ private:
         BC_TOUCHPAD_TO_RIGHTARM,
         BC_SENSORS_TO_LEFTARM,
         BC_SENSORS_TO_LEFTARM_NONE,
+        BC_SENSORS_TO_RIGHTARM,
+        BC_SENSORS_TO_RIGHTARM_NONE,
         BC_TRACK_NONE,
         BC_TRACK_RIGHTARM,
         BC_TRACK_LEFTARM,
+        BC_TRACK_OBJECT0,
+        BC_TRACK_OBJECT1,
         BC_HAND_OPENRIGHT,
         BC_HAND_OPENLEFT,
         BC_HAND_CLOSERIGHT,
@@ -198,6 +277,18 @@ private:
         BC_EYETARGET_TO_NONE,
         BC_EYETARGET_TO_RIGHTARM,
         BC_EYETARGET_TO_LEFTARM,
+        BC_REF_RIGHT_NONE,
+        BC_REF_RIGHT_OBJ0,
+        BC_REF_RIGHT_OBJ1,
+        BC_REF_RIGHT_LEFTHAND,
+        BC_REF_RIGHT_LOCK,
+        BC_REF_RIGHT_UNLOCK,
+        BC_REF_LEFT_NONE,
+        BC_REF_LEFT_OBJ0,
+        BC_REF_LEFT_OBJ1,
+        BC_REF_LEFT_RIGHTHAND,
+        BC_REF_LEFT_LOCK,
+        BC_REF_LEFT_UNLOCK,
         BC_GMM_LEARN_RIGHT,
         BC_GMM_LEARN_LEFT,
         BC_GMM_LEARN_CORR_RIGHT,
@@ -246,6 +337,24 @@ public:
             void    InitStateMachine();
             void    SendBasicCommand(const char* cmd);
             void    DelayNextState(State nextState, double delay);
+
+            void    InitReproStateMachine(  State inState,
+                                            State outState,
+                                            const char *reproName,
+                                            bool bRightHand,
+                                            bool bUseDemo,
+                                            int  objId,
+                                            bool loop,
+                                            bool skipObjTrk,
+                                            bool inHandState,
+                                            bool outHandState,
+                                            bool lockRef,
+                                            bool stopGMM);
+            void    ProcessReproStateMachine();
+
+    
+    
+    
     
             int     respond(const Bottle& command, Bottle& reply);
             int     respondToBasicCommand(const Bottle& command, Bottle& reply);

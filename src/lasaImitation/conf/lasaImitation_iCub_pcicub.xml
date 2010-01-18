@@ -18,7 +18,7 @@
     </module>
     <module>
         <name>VelocityControllerExt</name>
-        <parameters>--name VelocityController --robot icub --period 0.02 --decouple --part right_arm+left_arm+torso+head </parameters>
+        <parameters>--name VelocityController --robot icub --period 0.02 --decouple --part right_arm+left_arm+torso+head</parameters>
         <node>pc104</node>
         <stdio>lasapcicub</stdio>
         <tag>VCExt</tag>
@@ -129,6 +129,10 @@
         <from>/RefTransform/Right/outputPoseInRef</from>
         <to>/GaussianMixtureModel/Right/input</to>
     </connection>
+    <connection protocol="tcp">
+        <from>/GaussianMixtureModel/Right/output</from>
+        <to>/RefTransform/Right/inputPoseInRef</to>
+    </connection>
 
 
     <connection protocol="tcp">
@@ -147,5 +151,10 @@
         <from>/RefTransform/Left/outputPoseInRef</from>
         <to>/GaussianMixtureModel/Left/input</to>
     </connection>
+    <connection protocol="tcp">
+        <from>/GaussianMixtureModel/Left/output</from>
+        <to>/RefTransform/Left/inputPoseInRef</to>
+    </connection>
+
 </application>
 

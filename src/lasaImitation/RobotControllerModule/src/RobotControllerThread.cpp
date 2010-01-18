@@ -324,9 +324,9 @@ void    RobotControllerThread::Init(){
     bIKUseNullSpace         = true;
     bIKUseRestNullSpace     = true;
     
-    mNullSpaceGain          = 1.5;
-    mDesiredCartGain        = 1.0;
-    mDesiredCartOriGain     = 1.0;
+    mNullSpaceGain          = 0.5;
+    mDesiredCartGain        = 0.5;
+    mDesiredCartOriGain     = 0.5;
     bUseDesiredCartPos[0]   = 0;
     bUseDesiredCartPos[1]   = 0;
 
@@ -579,8 +579,8 @@ void    RobotControllerThread::PrepareIKSolver(){
 
     
     // Limiting output: Max 45 deg per seconds
-    Vector lim1; lim1.resize(mIKJointSize); lim1=-(45.0 *(M_PI/180.0));
-    Vector lim2; lim2.resize(mIKJointSize); lim2= (45.0 *(M_PI/180.0));
+    Vector lim1; lim1.resize(mIKJointSize); lim1=-(35.0 *(M_PI/180.0));
+    Vector lim2; lim2.resize(mIKJointSize); lim2= (35.0 *(M_PI/180.0));
     for(int i=0;i<mIKJointSize;i++){
         // Limiting speed when approaching 10 deg from joint range
         unsigned int j = mSrcToIKSIndices[i];
@@ -877,6 +877,9 @@ void    RobotControllerThread::SetState(State state){
 }
 
 void    RobotControllerThread::ConvertEyeInEyeTarget(){
+    mDesiredCartEyeInEyePos[0] = TRUNC(mDesiredCartEyeInEyePos[0],-0.5,0.5);
+    mDesiredCartEyeInEyePos[1] = TRUNC(mDesiredCartEyeInEyePos[1],-0.5,0.5);
+    mDesiredCartEyeInEyePos[2] = TRUNC(mDesiredCartEyeInEyePos[2],0.2,1.2);
     MathLib::Matrix4 eyeRef;
     YarpMatrix4ToMatrix4(mFwdKinEyeRef,eyeRef);
     MathLib::Vector3 inEyeTarget,inRootEyeTarget;
@@ -900,7 +903,11 @@ void    RobotControllerThread::ComputeVelocities(){
     res2 = (hrot*res1.Transpose());
     res2.GetExactRotationAxis(wTarget);
     Vector3ToYarpVector3(wTarget,mDesiredCartEyeVel);
-
+    if(mTime-mDesiredCartEyeLastTime            > INPUTS_TIMEOUT){
+        if(mTime-mDesiredCartEyeInEyeLastTime       > INPUTS_TIMEOUT){
+            mDesiredCartEyeVel = 0.0;
+        }
+    }
     
     // Hand velocities
     bool bUseDesiredCartPos[2];

@@ -162,6 +162,8 @@ public:
             void    ResumeRun(bool useMutex = true, bool once = false);
             void    StopRun();
     
+            void    SetGMRReproTime(double time);
+    
             void    SetEMDemosPath(const char* path);
             void    SetEMCorrDemosPath(const char* path);
             void    SetEMProcessingMode(ProcessMode mode);

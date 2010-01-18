@@ -240,9 +240,23 @@ void GaussianMixtureModelThread::run()
             }
             mGMMInputV(0)   = mGMMInternalTimeSpan*mGMMTime/mGMMReproTime;
             mGMMInput(0,0)  = mGMMInputV(0); 
+            {
+                MathLib::Vector lambda1,lambda2;
+                
+                // Choosing best regression quaternion
+                Pose6ToQPose(mInputVector, mGMMCurrState,false);
+                lambda1 = mGMM.getRegressionOffset(mGMMInputV, mGMMCurrState, mGMMInComp, mGMMOutComp);
+
+                Pose6ToQPose(mInputVector, mGMMCurrState,true);
+                lambda2 = mGMM.getRegressionOffset(mGMMInputV, mGMMCurrState, mGMMInComp, mGMMOutComp);
+            
+                if(lambda1.Norm2()<lambda2.Norm2()) mGMMLambda = lambda1;
+                else                                mGMMLambda = lambda2;
+            }
             double norm = mGMMLambda.Norm();
             if(norm > mGMMLambdaTreshold){
-                mGMMLambda += (mGMMLambda*(mGMMLambdaTreshold/norm-1.0))*dt/mGMMLambdaTau;
+                //mGMMLambda += (mGMMLambda*(mGMMLambdaTreshold/norm-1.0))*dt/mGMMLambdaTau;
+                mGMMLambda*=(mGMMLambdaTreshold/norm);
                 //mGMMLambda += (-mGMMLambda + mGMMLambda*(mGMMLambdaTreshold/norm))*dt/mGMMLambdaTau;
                 //for(int i=0;i<7;i++)
                 //    mGMMLambda(i) += (-mGMMLambda(i) + mGMMLambda(i)/(norm/2.0))*dt/1.0;
@@ -278,7 +292,24 @@ void GaussianMixtureModelThread::run()
             mGMMTime        = mGMMReproTime;
             mGMMInputV(0)   = mGMMInternalTimeSpan;
             mGMMInput(0,0)  = mGMMInputV(0); 
+            {
+                MathLib::Vector lambda1,lambda2;
+                
+                // Choosing best regression quaternion
+                Pose6ToQPose(mInputVector, mGMMCurrState,false);
+                lambda1 = mGMM.getRegressionOffset(mGMMInputV, mGMMCurrState, mGMMInComp, mGMMOutComp);
+
+                Pose6ToQPose(mInputVector, mGMMCurrState,true);
+                lambda2 = mGMM.getRegressionOffset(mGMMInputV, mGMMCurrState, mGMMInComp, mGMMOutComp);
             
+                if(lambda1.Norm2()<lambda2.Norm2()) mGMMLambda = lambda1;
+                else                                mGMMLambda = lambda2;
+            }
+            double norm = mGMMLambda.Norm();
+            if(norm > mGMMLambdaTreshold){
+                //mGMMLambda += (mGMMLambda*(mGMMLambdaTreshold/norm-1.0))*dt/mGMMLambdaTau;
+                mGMMLambda*=(mGMMLambdaTreshold/norm);
+            }
             bGMMIsRunning = true;
         }
         break;
@@ -422,7 +453,11 @@ void    GaussianMixtureModelThread::StopRun(){
 
     mMutex.post();
 }
-
+void    GaussianMixtureModelThread::SetGMRReproTime(double time){
+    mMutex.wait();
+    mGMMReproTime = MAX(0.0,time);
+    mMutex.post();
+}
 void    GaussianMixtureModelThread::SetEMDemosPath(const char* path){
     mMutex.wait();
     strncpy(mEMDemosPath,path,256);
@@ -458,7 +493,8 @@ void    GaussianMixtureModelThread::SetEMDemoLength(int len){
 }
 void    GaussianMixtureModelThread::SetEMTimeSpan(double timeSpan){
     mMutex.wait();
-    mEMTimeSpan = timeSpan;
+    mEMTimeSpan          = timeSpan;
+    mGMMInternalTimeSpan = timeSpan;
     mMutex.post();
 }
 
@@ -856,7 +892,7 @@ void GaussianMixtureModelThread::GenerateGnuplotScript(){
             file << "set yrange [0:1]"<<endl;
             file << "set ytics 0.5"<<endl;
                 
-            file << "plot \"< weights.txt\" using ($1)           with lines linestyle 1 title \"\" "<<endl<<endl;
+            file << "plot \"weights.txt\" using ($1)           with lines linestyle 1 title \"\" "<<endl<<endl;
         }
 
         file << "set nomultiplot"<<endl;

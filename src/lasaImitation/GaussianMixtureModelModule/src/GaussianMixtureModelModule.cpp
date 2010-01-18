@@ -163,6 +163,8 @@ bool GaussianMixtureModelModule::respond(const Bottle& command, Bottle& reply) {
                     mThread->SetEMNbComponents(command.get(2).asInt());
                 }else if(command.get(1).asString()=="ts"){
                     mThread->SetEMTimeSpan(command.get(2).asDouble());
+                }else if(command.get(1).asString()=="reproTime"){
+                    mThread->SetGMRReproTime(command.get(2).asDouble());
                 }else if(command.get(1).asString()=="demoId"){
                     mThread->SetCurrDemoId(command.get(2).asInt());
                 }else if(command.get(1).asString()=="demoLength"){
