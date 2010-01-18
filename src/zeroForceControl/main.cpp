@@ -139,6 +139,9 @@ private:
 	Pid *FTPid; // to be set to zero
 
 	Vector encoders;
+	Vector angs;
+	Vector angs_old;
+	Vector speeds;
 	Vector initPosition;
 	Vector desPosition;
 
@@ -175,7 +178,7 @@ private:
 	Vector tauSafe;
 	Vector tauFilt;
 
-	int watchDOG;
+	int watchDog;
 	Stamp info;
 	double time, time0;
 	int countTime, countTime0;
@@ -254,9 +257,9 @@ private:
 				initPosition(0) = 15.0; initPosition(1) = 15.0; initPosition(2) = 0.0; initPosition(3) = -20.0;
 				desPosition=initPosition;
 				maxJntLimits.resize(4);
-				maxJntLimits(0) = 130.0; maxJntLimits(1) = 100.0; maxJntLimits(2) = 70.0; maxJntLimits(3) = -10.0;
+				maxJntLimits(0) = 130.0; maxJntLimits(1) = 100.0; maxJntLimits(2) = 30.0; maxJntLimits(3) = -10.0;
 				minJntLimits.resize(4);
-				minJntLimits(0) = -30.0; minJntLimits(1) = 0.0; minJntLimits(2) = -70.0; minJntLimits(3) = -110.0;
+				minJntLimits(0) = -30.0; minJntLimits(1) = 0.0; minJntLimits(2) = -30.0; minJntLimits(3) = -110.0;
 			}
 			else if (strcmp(limb.c_str(), "right_leg")==0)
 			{
@@ -266,9 +269,9 @@ private:
 				initPosition(0) = 15.0; initPosition(1) = 15.0; initPosition(2) = 0.0; initPosition(3) = -20.0;
 				desPosition=initPosition;
 				maxJntLimits.resize(4);
-				maxJntLimits(0) = 130.0; maxJntLimits(1) = 100.0; maxJntLimits(2) = 70.0; maxJntLimits(3) = -10.0;
+				maxJntLimits(0) = 130.0; maxJntLimits(1) = 100.0; maxJntLimits(2) = 30.0; maxJntLimits(3) = -10.0;
 				minJntLimits.resize(4);
-				minJntLimits(0) = -30.0; minJntLimits(1) = 0.0; minJntLimits(2) = -70.0; minJntLimits(3) = -110.0;
+				minJntLimits(0) = -30.0; minJntLimits(1) = 0.0; minJntLimits(2) = -30.0; minJntLimits(3) = -110.0;
 			}
 		}
 	}
@@ -422,6 +425,12 @@ public:
 		  FT.resize(FT_VALUES);
 		  FTj.resize(limbJnt);
 
+		  angs.resize(limbJnt);
+		  angs_old.resize(limbJnt);
+		  speeds.resize(limbJnt);
+		  angs=0.0;
+		  angs_old=0.0;
+		  speeds=0.0;
 		  for(int i=0;i<limbJnt;i++)
 		  {
 			  // Get a copy of iCub Pid values...
@@ -443,7 +452,7 @@ public:
 		  tauSafe=0.0;
 		  tauFilt=0.0;
 
-		  watchDOG = 0;
+		  watchDog = 0;
 		  time = time0 = 0.0;
 		  countTime = countTime0 = 0;
 	  }
@@ -504,9 +513,11 @@ public:
 		  //if(iencs->getEncoders(encoders.data()))
 		  iencs->getEncoders(encoders.data());
 		  //fprintf(stderr,"encoders length = %d\n", encoders.length());
-		  Vector angs(4);
-		  for(int i=0; i<4;i++)
-			  angs(i) = encoders(i)*M_PI/180;
+		  for(int i=0; i<limbJnt;i++)
+			{
+				angs_old(i) = angs(i);
+				angs(i) = encoders(i)*M_PI/180;
+			}
 
 		  iCubLimb->setAng(angs);
 		  //else if(verbose) fprintf(stderr,"ERROR: no read from encoders\n");
@@ -521,17 +532,16 @@ public:
 		  {
 			  connected = CONNECTION_OK;
 			  countTime0 = countTime;
-			  watchDOG = 0;
+			  watchDog = 0;
 		  }
 		  else   
 		  {
-			  watchDOG+=1;
+			  watchDog+=1;
 		  }
 
-		  if(watchDOG>=20) 
+		  if(watchDog>=20) 
 		  {
 			  connected = CONNECTION_ERROR;
-			  //if (verbose) fprintf(stderr,"WARNING: possible connection problem. watchdog:%d\n\n",watchDOG);
 		  }
 
 		  //switch(connected)
@@ -608,7 +618,11 @@ public:
 		  }
 
 		  //Limits check
-		  tauSafe = checkLimits(encoders, tauC); 
+		  for (int i=0; i<limbJnt; i++)
+		  {
+			  speeds(i) = (angs(i) - angs_old(i))/tdiff;
+		  }
+		  tauSafe = checkLimits(encoders, tauC, speeds); 
 
 		  //saturation
 		  Vector sat(4);
@@ -692,7 +706,7 @@ public:
 		  */
 		  if(count>=CPRNT)
 		  {
-			  fprintf(stderr,"Cycle duration=%f s\n",tdiff);
+			  fprintf(stderr,"Cycle duration=%f s, watchdog:%d \n", tdiff, watchDog);
 #ifdef CONTROL_ON
 			  fprintf(stderr,"Control ON:");
 			  if (control_mode==IMPEDANCE) fprintf(stderr,"Impedance\n");
@@ -735,6 +749,11 @@ public:
 			  fprintf(stderr,"encd = ");
 			  for(int i=0;i<limbJnt;i++)
 				  fprintf(stderr,"%+.3lf\t", desPosition(i));
+			  fprintf(stderr,"\n");
+
+			  fprintf(stderr,"spds = ");
+			  for(int i=0;i<limbJnt;i++)
+				  fprintf(stderr,"%+.3lf\t", speeds(i));
 			  fprintf(stderr,"\n");
 
 			  fprintf(stderr,"tau  = ");
@@ -811,15 +830,44 @@ public:
 		  if(abs(qd-q)<=1.0) return true;
 		  else return false;
 	  }*/
-	  Vector checkLimits(Vector q, Vector TAO)
+	  Vector checkLimits(Vector q, Vector TAO, Vector dir)
 	  {
 		  Vector t = TAO;
 		  for(int i=0;i<limbJnt;i++)
 		  {
-			  if((q(i)<=minJntLimits[i]) || (q(i)>=maxJntLimits[i]))
+			  if(q(i)<=minJntLimits[i])
 			  {
-				  t(i) = 0.0;
-				  if(verbose) fprintf(stderr,"Joint %d over limits %.2lf (%.2lf - %.2lf)\n", i, q(i), minJntLimits[i], maxJntLimits[i]);
+				  //if(verbose) 
+				  {
+					  fprintf(stderr,"J%d over limits %.2lf (%.2lf - %.2lf) ", i, q(i), minJntLimits[i], maxJntLimits[i]);
+					  if (dir(i)>0)
+					  {
+						  //t(i) = t(i)/2; //for safety
+						  fprintf(stderr,"Dir %.3lf>0,safe\n",dir(i));
+					  }
+					  else
+					  {
+						  t(i) = 0.0;
+						  fprintf(stderr,"Dir %.3lf<0,STOPPING\n",dir(i));
+					  }
+				  }
+			  }
+			  if(q(i)>=maxJntLimits[i])
+			  {
+				  //if(verbose) 
+				  {
+					  fprintf(stderr,"J%d over limits %.2lf (%.2lf - %.2lf) ", i, q(i), minJntLimits[i], maxJntLimits[i]);
+					  if (dir(i)<0)
+					  {
+						  //t(i) = t(i)/2; //for safety
+						  fprintf(stderr,"Dir %.3lf>0,safe\n",dir(i));
+					  }
+					  else
+					  {
+						  t(i) = 0.0;
+						  fprintf(stderr,"Dir %.3lf<0,STOPPING\n",dir(i));
+					  }
+				  }
 			  }
 		  }
 		  return t;
