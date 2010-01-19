@@ -1,5 +1,5 @@
 /**
-@ingroup icub_module
+@ingroup icub_tools
 
 \defgroup velocityObserver velocityObserver
  
