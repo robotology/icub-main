@@ -133,9 +133,6 @@ void saliencyBlobFinderModule::setOptions(yarp::os::Property opt){
 
 bool saliencyBlobFinderModule::updateModule() {
 
-    /*ACE_OS::signal(SIGINT, (ACE_SignalHandler) handler);
-    ACE_OS::signal(SIGTERM, (ACE_SignalHandler) handler);*/
-
     command=cmdPort.read(false);
     if(command!=0){
         //Bottle* tmpBottle=cmdPort.read(false);
@@ -246,11 +243,13 @@ void saliencyBlobFinderModule::outPorts(){
     }
     if(centroidPort.getOutputCount()){
         Bottle &bot = centroidPort.prepare(); 
+        bot.clear();
         bot.addVocab( Vocab::encode("sac") ); 
         bot.addVocab( Vocab::encode("img") ); 
         bot.addDouble(blobFinder->salience->centroid_x/this->width); 
         bot.addDouble(blobFinder->salience->centroid_y/this->height); 
         centroidPort.write(); 
+        
     }
 
      /*Bottle& _outBottle=_centroidPort->prepare();
