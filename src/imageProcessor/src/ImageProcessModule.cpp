@@ -78,6 +78,8 @@ void ImageProcessModule::setOptions(yarp::os::Property opt){
     if(value!=""){
        if(value=="OPENCVSOBEL")
         this->OPENCVSOBEL=true;
+       else if(value=="IPPSOBEL")
+        this->IPPISOBEL=true;
     }
 }
 
