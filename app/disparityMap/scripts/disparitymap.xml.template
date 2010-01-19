@@ -1,0 +1,146 @@
+<application>
+<name>Cameras</name>
+<dependencies>
+      <port>/root</port>
+</dependencies> 
+
+<module>
+      <name>icubinterface</name>
+      <parameters></parameters>
+	  <node>pc1</node>
+	<tag>/icub/head </tag>
+   </module>
+
+<module>
+      <name>icubmoddev</name>
+      <parameters>--device dragonfly2 --d 1 --width 320 --height 240 --white_balance 0.43 0.99 --brightness 0.5 --shutter 0.6 --gain 0.21 --name /icub/cam/left </parameters>
+	  <node>pc1</node>
+	<tag>camera_left</tag>
+   </module>
+   <module>
+      <name>icubmoddev</name>
+      <parameters>--device dragonfly2 --d 0 --width 320 --height 240 --white_balance 0.43 0.99 --brightness 0.5 --shutter 0.6 --gain 0.21 --name /icub/cam/right </parameters>
+      <node>pc1</node>
+	<tag>camera_right</tag>
+   </module>
+   <module>
+      <name>yarpview</name>
+      <parameters>--name /icub/view/left --x 0 --y 0 --synch</parameters>
+      <node>pc1</node>
+	<tag>viewleft</tag>
+   </module>
+   <module>
+      <name>yarpview</name>
+      <parameters>--name /icub/view/right --x 320 --y 0 --synch</parameters>
+      <node>pc1</node>
+	<tag>viewright</tag>
+   </module>
+
+   <module>
+      <name>yarpview</name>
+      <parameters>--name /icub/view/leftTr --x 640 --y 0 --synch</parameters>
+      <node>pc1</node>
+	<tag>viewleftTr</tag>
+   </module>
+   <module>
+      <name>yarpview</name>
+      <parameters>--name /icub/view/rightTr --x 980 --y 0 --synch</parameters>
+      <node>pc1</node>
+	<tag>viewrightTr</tag>
+   </module>
+
+   <module>
+      <name>yarpview</name>
+      <parameters>--name /icub/view/colorMap --x 0 --y 320 --synch</parameters>
+      <node>pc1</node>
+	<tag>viewcolormap</tag>
+   </module>
+   <module>
+      <name>yarpview</name>
+      <parameters>--name /icub/view/grayMap --x 320 --y 320 --synch</parameters>
+      <node>pc1</node>
+	<tag>viewgraymap</tag>
+   </module>
+
+   <module>
+      <name>frameGrabberGui2</name>
+	  <parameters>--local /icub/fggui/left --remote /icub/cam/left --x 0 --y 350 --width 350 --height 500</parameters>
+	  <tag>fggui_left</tag>
+	  <node>pc1</node>
+   </module>
+   <module>
+      <name>frameGrabberGui2</name>
+	  <parameters>--local /icub/fggui/right --remote /icub/cam/right --x 320 --y 350 --width 350 --height 500</parameters>
+	  <tag>fggui_right</tag>
+	  <node>pc1</node>
+   </module>
+   <module>
+      <name>disparitymap</name>
+      <parameters>--nameControlboard /icub/head --file E:/RobotCub/iCub/conf/disparitymap.ini </parameters>
+	  <node>pc1</node>
+	<tag>disparitymap</tag>
+   </module>	
+
+   <module>
+      <name>robotMotorGui</name>
+      <parameters>--context iCubZurich01/conf </parameters>
+	  <node>pc1</node>
+	<tag>motorgui</tag>
+   </module>	
+
+
+
+<connection>
+  <output>/icub/cam/left</output>
+  <input>/icub/view/left</input>
+  <protocol>tcp</protocol>
+</connection>
+<connection>
+  <output>/icub/cam/right</output>
+  <input>/icub/view/right</input>
+  <protocol>tcp</protocol>
+</connection>
+
+
+<connection>
+  <output>/disparitymap/outColor </output>
+  <input>/icub/view/colorMap </input>
+  <protocol>tcp</protocol>
+</connection>
+
+<connection>
+  <output>/disparitymap/mapOpenCv </output>
+  <input>/icub/view/grayMap </input>
+  <protocol>tcp</protocol>
+</connection>
+
+
+<connection>
+  <output>/disparitymap/transformright </output>
+  <input>/icub/view/rightTr </input>
+  <protocol>tcp</protocol>
+</connection>
+
+<connection>
+  <output>/disparitymap/transformleft </output>
+  <input>/icub/view/leftTr </input>
+  <protocol>tcp</protocol>
+</connection>
+
+
+
+<connection>
+  <output>/icub/cam/left</output>
+  <input>/disparitymap/left</input>
+  <protocol>tcp</protocol>
+</connection>
+
+<connection>
+  <output>/icub/cam/right</output>
+  <input>/disparitymap/right</input>
+  <protocol>tcp</protocol>
+</connection>
+
+
+</application>
+

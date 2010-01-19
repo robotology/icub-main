@@ -1,0 +1,27 @@
+/**
+*
+@ingroup icub_applications
+\defgroup icub_disparityMapApp Disparity Map Application
+
+This application instatiates the disparity map module.
+
+\section modules_sec Instantiated Modules
+List here the modules that are instantiated by this application. This is useful to 
+browse the documentation of other modules. Example:
+- \ref icub_iCubInterface "iCubInterface"
+- cameras, both eyes
+
+\section config_sec Configuration Files
+- disparityMap/conf/disparitymap.ini
+- disparityMap.xml.template
+  
+\author Harold Martinez
+
+Copyright (C) 2008 RobotCub Consortium
+
+CopyPolicy: Released under the terms of the GNU GPL v2.0.
+
+
+This file can be edited at \in app/exampleApplication/doc.dox
+**/
+
