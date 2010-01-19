@@ -98,8 +98,8 @@ compiled with option icubmod_cartesiancontrollerserver active.
 
 \subsection sec_settingupcameras Setting up and running the Cameras
 
-Adjust and install the camera_calib.xml.template from $ICUB_ROOT/app/default/scripts<code> for your robot. 
-Adjust everything tagged as 'CHANGE' (nodes, contexts, config files). Use <code>camCalibConfig to determine the 
+Adjust and install the camera_calib.xml.template from $ICUB_ROOT/app/default/scripts for your robot. 
+Adjust everything tagged as 'CHANGE' (nodes, contexts, config files). Use camCalibConfig to determine the 
 calibration parameters. 
 Start the cameras_calib.xml application using the manager.py script. 
 camera_calib.xml starts the cameras, framegrabber GUIs, image viewers and 
