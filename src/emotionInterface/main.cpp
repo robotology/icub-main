@@ -14,15 +14,16 @@ using namespace iCub::contrib;
 /**
  * @ingroup icub_tools
  *
- * \defgroup icub_emotioninterface Emotion Interface module
+ * \defgroup icub_emotioninterface emotioninterface
  *
- * Commands facial expressions
+ * Emotion interface module: commands facial expressions
  *
  * \author Alexandre Bernardino
  *
  * Copyright (C) 2007 Alex Bernardino 
  * CopyPolicy: Released under the terms of the GNU GPL v2.0.
  *
+ * This file can be edited at src/emotioninterface/main.cpp.
  */
 
 int main(int argc, char *argv[]) {
