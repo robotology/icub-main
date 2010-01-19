@@ -2,7 +2,7 @@
 /**
 *
 @ingroup icub_module
-\defgroup retinalSlupBridge retinalSlupBridge
+\defgroup icub_retinalSlipBridge retinalSlipBridge
 
 Covert the pixel value of a target in azimut angle by using the camera parameters, and send this value to a velocityObserver module.
 
