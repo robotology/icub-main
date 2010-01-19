@@ -14,7 +14,7 @@ using namespace iCub::contrib;
 /**
  * @ingroup icub_tools
  *
- * \defgroup icub_emotioninterface emotioninterface.
+ * \defgroup icub_emotioninterface Emotion Interface module
  *
  * Commands facial expressions
  *
