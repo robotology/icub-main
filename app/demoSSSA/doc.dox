@@ -1,6 +1,6 @@
 /**
 *
-@ingroup demoSSSA
+@ingroup icub_applications
 \defgroup demoSSSA demoSSSA
 
 This application shows a predictive smooth pursuit behavior: during maintained smooth pursuit, the lag in eye movement can be reduced or even cancelled if the target trajectory can be predicted.
