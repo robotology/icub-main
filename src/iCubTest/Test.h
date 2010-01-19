@@ -1,23 +1,26 @@
 // -*- mode:C++; tab-width:4; c-basic-offset:4; indent-tabs-mode:nil -*-
 
-/*
- * Copyright (C) 2009 Robotcub Consortium
- * CopyPolicy: Released under the terms of the GNU GPL v2.0.
+/* 
+ * Copyright (C) 2010 RobotCub Consortium, European Commission FP6 Project IST-004370
+ * Author: Alessandro Scalzo
+ * email: alessandro.scalzo@iit.it
+ * website: www.robotcub.org
+ * Permission is granted to copy, distribute, and/or modify this program
+ * under the terms of the GNU General Public License, version 2 or any
+ * later version published by the Free Software Foundation.
  *
- * Author Alessandro Scalzo alessandro@liralab.it
- */
+ * A copy of the license can be found at
+ * http://www.robotcub.org/icub/license/gpl.txt
+ *
+ * This program is distributed in the hope that it will be useful, but
+ * WITHOUT ANY WARRANTY; without even the implied warranty of
+ * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the GNU General
+ * Public License for more details
+*/
+
 
 #ifndef __ICUB_TEST_01122009__
 #define __ICUB_TEST_01122009__
-
-// sostituire stringhe // OK
-// nome classe file    // OK
-// ritornare i report come return di run() // OK
-// risultato dei test su consolle
-// numero di fallimenti nei valori di ritorno dei test // OK
-// criticità nei fallimenti // oK
-// nome: iCubDriver // OK
-// 
 
 #include <vector>
 #include <string>
@@ -63,7 +66,7 @@ public:
     {
     }
     
-    virtual iCubTestReport run()=0;
+    virtual iCubTestReport* run()=0;
 
     bool getSuccess()
     {

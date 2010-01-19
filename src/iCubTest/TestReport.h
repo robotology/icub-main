@@ -18,6 +18,8 @@
 #include <yarp/os/Value.h>
 
 #include "TestReportEntry.h"
+#include "TestPartReportEntry.h"
+
 
 class iCubTestReport
 {
@@ -36,6 +38,8 @@ public:
 
         m_bSuccess=false;
         m_Failures=0;
+        
+        m_apEntries.clear();
 
         fprintf(stderr,"*************************\n");
         fprintf(stderr,"test name: %s\n",m_Name.c_str());
@@ -57,7 +61,11 @@ public:
     {
         for (unsigned int i=0; i<m_apEntries.size(); ++i)
         {
-            delete m_apEntries[i];
+            if (m_apEntries[i])
+            {
+                delete m_apEntries[i];
+                m_apEntries[i]=NULL;
+            }
         }
 
         m_apEntries.clear();
@@ -74,7 +82,7 @@ public:
                 printer.xml("part",m_PartCode);
             printer.xmlClose();
             printer.xml("outcome",std::string(m_bSuccess?"SUCCESS":"FAILURE"));
-            sprintf(failuresStr,"%d");
+            sprintf(failuresStr,"%d",m_Failures);
             printer.xml("failures",std::string(failuresStr));
 
             for (unsigned int i=0; i<m_apEntries.size(); ++i)

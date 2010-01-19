@@ -34,12 +34,12 @@ public:
         m_Stack.clear();
     }
     
-    void xml(char* tag,std::string data)
+    void xml(const char* tag,std::string data)
     {
         tabs();
         fprintf(m_pFile,"<%s>%s</%s>\n",tag,data.c_str(),tag);
     }
-    void xmlOpen(char *tag)
+    void xmlOpen(const char *tag)
     {
         tabs(1);
         m_Stack.push_back(std::string(tag));

@@ -104,11 +104,10 @@ public:
             }
         }
 
-        bot=configuration.findGroup("refvel");
-        if (!bot.isNull())
+        if (configuration.check("refvel"))
         {
             m_aRefVel=new double[m_NumJoints];
-            bot=bot.tail();
+            bot=configuration.findGroup("refvel").tail();
             int n=m_NumJoints<bot.size()?m_NumJoints:bot.size();
             
             for (int i=0; i<n; ++i)
@@ -117,11 +116,13 @@ public:
             }
         }
 
-        bot=configuration.findGroup("refacc");
-        if (!bot.isNull())
+        
+        if (configuration.check("refacc"))
         {
+            printf("################# FOUND refacc ###################\n");
             m_aRefAcc=new double[m_NumJoints];
-            bot=bot.tail();
+            bot=configuration.findGroup("refacc").tail();
+            
             int n=m_NumJoints<bot.size()?m_NumJoints:bot.size();
             
             for (int i=0; i<n; ++i)
@@ -172,15 +173,16 @@ public:
         }
     }
 
-    iCubTestReport run()
+    iCubTestReport* run()
     {
-        iCubTestReport testReport(m_Name,m_PartCode,m_Description);
+        iCubTestReport* pTestReport=new iCubTestReport(m_Name,m_PartCode,m_Description);
             
         m_bSuccess=true;
 
         for (int joint=0; joint<iCubDriver::instance()->getNumOfJoints(iCubDriver::LEFT_ARM); ++joint)
         {
-            iCubTestPartReportEntry *pOutput=new iCubTestPartReportEntry;
+            iCubTestPartReportEntry *pOutput=new iCubTestPartReportEntry();
+            
             char jointName[8];
             char posString[64];
 
@@ -199,7 +201,7 @@ public:
             sprintf(posString,"%f",m_aMaxVal[joint]);
             pOutput->m_MaxVal=posString;
 
-            iCubDriver::ResultCode result=iCubDriver::instance()->setPos(m_Part,joint,m_aTargetVal[joint],m_aRefVel[joint],m_aRefAcc[joint]);
+            iCubDriver::ResultCode result=iCubDriver::instance()->setPos(m_Part,joint,m_aTargetVal[joint],m_aRefVel?m_aRefVel[joint]:0.0,m_aRefAcc?m_aRefAcc[joint]:0.0);
 
             bool bSuccess=false;
 
@@ -227,8 +229,8 @@ public:
             if (!bSuccess)
             {
                 m_bSuccess=false;
-                testReport.incFailures();
-                testReport.addEntry(pOutput);
+                pTestReport->incFailures();
+                pTestReport->addEntry(pOutput);
                 continue;
             }
 
@@ -256,8 +258,8 @@ public:
             if (!bSuccess)
             {
                 m_bSuccess=false;
-                testReport.incFailures();
-                testReport.addEntry(pOutput);
+                pTestReport->incFailures();
+                pTestReport->addEntry(pOutput);
                 continue;
             }
 
@@ -281,8 +283,8 @@ public:
             if (!bSuccess)
             {
                 m_bSuccess=false;
-                testReport.incFailures();
-                testReport.addEntry(pOutput);
+                pTestReport->incFailures();
+                pTestReport->addEntry(pOutput);
                 continue;
             }
 
@@ -296,14 +298,14 @@ public:
             else
             {
                 m_bSuccess=false;
-                testReport.incFailures();
+                pTestReport->incFailures();
                 pOutput->m_Result="FAILED: value out of range";
             }
 
-            testReport.addEntry(pOutput);
+            pTestReport->addEntry(pOutput);
         }
         
-        return testReport;
+        return pTestReport;
     }
 
 protected:

@@ -73,6 +73,7 @@ public:
         
         if (acc!=0.0)
         {
+            printf("************ ACC != 0.0 ***************\n");
             if (!m_apPos[part]->setRefAcceleration(joint,acc))
             {
                 return IPOS_SETREFACC_FAILED;

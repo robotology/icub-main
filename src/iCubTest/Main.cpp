@@ -60,7 +60,14 @@ int main(int argc,char* argv[])
     }
 
     ts.run();
+    
+    printf("culo 0\n");
+    fflush(stdout);
+    
     ts.printReport();
 
+    printf("culo 1\n");
+    fflush(stdout);
+    
     return 0;
 }
