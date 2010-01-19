@@ -18,12 +18,11 @@ This application assumes \ref ICubInterface2 "iCubInterface2" is already running
 
 \section modules_sec Instantiated Modules
 
-- \ref camCalib "camCalib"
-- \ref pf3dTracker "pf3dTracker"
+- \ref icub_camCalib "camCalib"
+- \ref icub_pf3dTracker "pf3dTracker"
 - \ref yarpview "yarpview"
-- \ref velocityObserver "velocityObserver"
-- \ref retinalSlipBridge "retinalSlipBridge"
-
+- \ref icub_velocityObserver "velocityObserver"
+- \ref icub_retinalSlipBridge "retinalSlipBridge"
 
 \section config_sec Configuration Files
 
