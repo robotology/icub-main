@@ -21,7 +21,7 @@ This application assumes \ref ICubInterface2 "iCubInterface2" is already running
 - \ref icub_camCalib "camCalib"
 - \ref icub_pf3dTracker "pf3dTracker"
 - \ref yarpview "yarpview"
-- \ref icub_velocityObserver "velocityObserver"
+- \ref velocityObserver "velocityObserver"
 - \ref icub_retinalSlipBridge "retinalSlipBridge"
 
 \section config_sec Configuration Files
