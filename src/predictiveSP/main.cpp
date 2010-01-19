@@ -64,13 +64,8 @@ following ports:
 \section tested_os_sec Tested OS
 Windows
 */  
-#include <ace/config.h>
+
 #include <stdio.h>
-
-#include <cv.h>
-#include <cvaux.h>
-#include <highgui.h>
-
 
 #include <yarp/sig/all.h>
 #include <yarp/os/Network.h>
@@ -95,9 +90,6 @@ using namespace yarp;
 using namespace yarp::os;
 using namespace yarp::dev;
 using namespace yarp::sig;
-
-
-
 
 class CtrlModule: public Module
 {
