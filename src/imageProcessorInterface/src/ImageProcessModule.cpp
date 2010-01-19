@@ -256,12 +256,12 @@ bool getImage(){
 
 void ImageProcessModule::setUp()
 {
-    if (true)
+    if (false)
         _imgRecv.SetLogopolar(false);
     else
         _imgRecv.SetLogopolar(true);
     
-    if (true)
+    if (false)
         _imgRecv.SetFovea(false);
     else
         _imgRecv.SetFovea(true);
