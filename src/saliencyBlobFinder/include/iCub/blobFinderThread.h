@@ -103,10 +103,7 @@ private:
 	* reference to the watershed operator
 	*/
 	WatershedOperator *wOperator;
-	/**
-	* reference to the salience operator
-	*/
-	SalienceOperator *salience;
+	
     /**
 	* number of blobs
 	*/
@@ -115,14 +112,10 @@ private:
 	* vector of boolean which tells whether there is a blob or not
 	*/
 	char* blobList;
-    
-    
     /**
     * pointer to the 3 channels output image of the watershed algorithm
     */
     ImageOf<PixelRgb>* _outputImage3;
-    
-    
     /**
 	* input image of the opponency R+G-
 	*/
@@ -257,6 +250,10 @@ public:
     void resetFlags();
 
     //_________ public attributes _______________
+    /**
+	* reference to the salience operator
+	*/
+	SalienceOperator *salience;
     /**
     * pointer to the most salient blob
     */

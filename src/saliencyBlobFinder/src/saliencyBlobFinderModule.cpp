@@ -51,7 +51,7 @@ bool saliencyBlobFinderModule::open(Searchable& config) {
     byPort.open(getName("by:i"));
 
     outputPort.open(getName("image:o"));
-
+    centroidPort.open(getName("centroid:o"));
     cmdPort.open(getName("cmd"));
     attach(cmdPort);
     
@@ -74,7 +74,7 @@ bool saliencyBlobFinderModule::interruptModule() {
     byPort.interrupt();
 
     outputPort.interrupt();
-
+    centroidPort.interrupt();
     cmdPort.interrupt();
     
     return true;
@@ -104,6 +104,9 @@ bool saliencyBlobFinderModule::close(){
 
     printf("closing command port .... \n");
     cmdPort.close();
+    
+    printf("closing centroid port .... \n");
+    centroidPort.close();
    
     return true;
 }
@@ -129,6 +132,10 @@ void saliencyBlobFinderModule::setOptions(yarp::os::Property opt){
 }
 
 bool saliencyBlobFinderModule::updateModule() {
+
+    /*ACE_OS::signal(SIGINT, (ACE_SignalHandler) handler);
+    ACE_OS::signal(SIGTERM, (ACE_SignalHandler) handler);*/
+
     command=cmdPort.read(false);
     if(command!=0){
         //Bottle* tmpBottle=cmdPort.read(false);
@@ -233,10 +240,27 @@ bool saliencyBlobFinderModule::getPlanes(){
 
 
 void saliencyBlobFinderModule::outPorts(){ 
-    if(0!=blobFinder->image_out){  //&&(outputPort.getOutputCount()
+    if((0!=blobFinder->image_out)&&(outputPort.getOutputCount())){ 
         outputPort.prepare() = *(blobFinder->image_out);		
         outputPort.write();
     }
+    if(centroidPort.getOutputCount()){
+        Bottle &bot = centroidPort.prepare(); 
+        bot.addVocab( Vocab::encode("sac") ); 
+        bot.addVocab( Vocab::encode("img") ); 
+        bot.addDouble(blobFinder->salience->centroid_x/this->width); 
+        bot.addDouble(blobFinder->salience->centroid_y/this->height); 
+        centroidPort.write(); 
+    }
+
+     /*Bottle& _outBottle=_centroidPort->prepare();
+     _outBottle.clear();
+    //_outBottle.addString("centroid:");
+    _outBottle.addInt(this->sasalience->centroid_x);
+    _outBottle.addInt(this->salience->centroid_y);
+    _outBottle.addInt(this->salience->centroid_x);
+    _outBottle.addInt(this->salience->centroid_y);
+    _centroidPort->writeStrict();*/
 }
 
 

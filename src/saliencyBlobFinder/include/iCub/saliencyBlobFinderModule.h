@@ -68,6 +68,9 @@ The module does:
 -   stream the saliency map as a gray scale image
 -	stream the most salient blob
 
+\image html saliencyBlobFinder.jpg
+
+
 
 \section lib_sec Libraries
 YARP 
@@ -80,6 +83,13 @@ Here is a  comprehensive list of the parameters you can pass to the module.
  
 \section portsa_sec Ports Accessed
 -/blobFinderInterface/command:o : once manually connected to the <name>/cmd the graphical interface is able to control this module (for further information press Help Button in the interface)
+-/colourPU/red:o
+-/colourPU/green:o
+-/colourPU/blue:o
+-/colourPU/rg:o
+-/colourPU/gr:o
+-/colourPU/by:o
+-/imagePU/edges:o
 
 \section portsc_sec Ports Created
 <name>/cmd
@@ -90,11 +100,14 @@ Here is a  comprehensive list of the parameters you can pass to the module.
 <name>/rg:i
 <name>/gr:i
 <name>/by:i
-<name>/saliencyMap:o
+<name>/image:o
+<name>/centroid:o
 
 
 Output ports:
-- <name>/saliencyMap:o: map of the most salient blobs
+- <name>/image:o: image output
+- <name>/centroid:o : position of the cog of the most salient blob
+
 
 Input ports:
 - <name>/image:i: input ports which takes as input a yarp::sig::ImageOf<PixelRgb>
@@ -174,6 +187,10 @@ private:
     * port necessary for rpc commands
     */
     BufferedPort<Bottle> cmdPort;
+    /**
+    * port necessary for rpc commands
+    */
+    BufferedPort<Bottle> centroidPort;
     /**
     * ipp reference to the size of the input image
     */
