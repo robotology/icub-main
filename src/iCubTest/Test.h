@@ -18,49 +18,19 @@
  * Public License for more details
 */
 
-
 #ifndef __ICUB_TEST_01122009__
 #define __ICUB_TEST_01122009__
 
-#include <vector>
 #include <string>
-#include <time.h>
 
 #include <yarp/os/Searchable.h>
-#include <yarp/os/Value.h>
 
 #include "TestReport.h"
 
 class iCubTest
 {
 public:
-    iCubTest(yarp::os::Searchable& configuration)
-    {
-        yarp::os::Value name;
-        yarp::os::Value part;
-        yarp::os::Value description;
-
-        name=configuration.find("name");
-        if (!name.isNull())
-        {
-            m_Name=name.asString();
-        }
-
-        part=configuration.find("part");
-        if (!part.isNull())
-        {
-            m_PartCode=part.asString();
-        }
-        
-        description=configuration.find("description");
-        if (!description.isNull())
-        {
-            m_Description=description.asString();
-        }
-
-        m_bIsCritical=configuration.check("critical");
-        m_bSuccess=false;
-    }
+    iCubTest(yarp::os::Searchable& configuration);
 
     virtual ~iCubTest()
     {
