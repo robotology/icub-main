@@ -49,7 +49,7 @@ Both sybsystems and the behavior controller are lauched via scripts (.xml files)
   - Assumes that the cameras have been started, with corresponding camera calibration modules. The demonstration works with a resolution of 320x480. The attention system receives images from the right camera that should have a wide angle lens to provide an extended view field for the visual search (tests used a 2.8mm lens). The affordances subsystem receives images from the left camera that should have and a zoom lens of (tests used a 6mm lens) to provide good image descriptors of the objects' shape. A good calibration of the intrinsic parameters of the left camera is required to precisely locate the objects in cartesian coordinates. Also having a dark table, non-frontal illumination and a good color balance setting is essential for good object segmentation. Test have used the following settings for the left camera with good results.  Features: Shutter = 0.65, RED = 0.478, BLUE = 0.648: Features (adv): Saturation = 0.6. 
 
   
--# It has not been tested in the simulator:
+-# It has not been tested on the simulator.
 
 - It depends on the following external libraries:
 -# opencv
@@ -77,28 +77,33 @@ The affordances subsystem instantiates the following modules:
 \section Parameters
 N/A
 
-\section Configuration Files
+\section sec_configFiles Configuration Files
 Configuration files are located in the ICUB_ROOT/app/demoAffv2/conf folder.
 
- 
-\section example_sec How to run the application
+\section sec_example How to run the application
 
 As mentioned previously, the application is composed by sub applications that can be run by executing the xml scripts in $ICUB_ROOT/app/demoAffv2. In the following subsections we describe in more detail how to setup and run the whole system.
 
-\subsection Setting up and running the motor control system.
+\subsection sec_settingupmotors Setting up and running the motor control system.
 
-The manipulation modules rely on the ICartesianControl interface, hence to compile it you need to enable the module icubmod_cartesiancontrollerclient in CMake while compiling the iCub repository, and to make this switch visible you have to tick the USE_ICUB_MOD just before.
+The manipulation modules rely on the ICartesianControl interface, hence to compile it you need to 
+enable the module icubmod_cartesiancontrollerclient in CMake while compiling the iCub repository, 
+and to make this switch visible you have to tick the USE_ICUB_MOD just before.
 
-Attention: perform CMake configure/generate operations twice in a row prior to compiling the new module, due to a CMake bug; moreover, do not remove the CMake cache between the first and the second configuration.
+To enable the cartesian features on the PC104, you have to launch iCubInterface pointing to the 
+iCubInterfaceCartesian.ini file. Just afterwards you need to launch the solvers through the 
+Application Manager XML file located under $ICUB_ROOT/app/cartesianSolver/scripts. PC104 code must be 
+compiled with option icubmod_cartesiancontrollerserver active.
 
-To enable the cartesian features on the PC104, you have to launch iCubInterface pointing to the iCubInterfaceCartesian.ini file. Just afterwards you need to launch the solvers through the Application Manager XML file located under $ICUB_ROOT/app/cartesianSolver/scripts. PC104 code must be compiled with option icubmod_cartesiancontrollerserver active.
 
+\subsection sec_settingupcameras Setting up and running the Cameras
 
-\subsection Setting up and running the Cameras
-
-Adjust and install the camera_calib.xml.template from $ICUB_ROOT/app/default/scripts<code> for your robot. Adjust everything tagged as 'CHANGE' (nodes, contexts, config files). Use <code>camCalibConfig to determine the calibration parameters. 
+Adjust and install the camera_calib.xml.template from $ICUB_ROOT/app/default/scripts<code> for your robot. 
+Adjust everything tagged as 'CHANGE' (nodes, contexts, config files). Use <code>camCalibConfig to determine the 
+calibration parameters. 
 Start the cameras_calib.xml application using the manager.py script. 
-camera_calib.xml starts the cameras, framegrabber GUIs, image viewers and camera calibration modules.
+camera_calib.xml starts the cameras, framegrabber GUIs, image viewers and 
+camera calibration modules.
 Check that you obtain the calibrated images. 
 
 In the framegrabber GUI for the left camera select the Features tab and set:
@@ -107,15 +112,25 @@ In the Features (adv) tab set:
 Saturation = 0.6. 
 
 
-\subsection Setting up and running the Attention subsystem
+\subsection sec_settingupattention Setting up and running the Attention subsystem
 
-Adjust and install the attention.xml.template from $ICUB_ROOT/app/demoAffv2/scripts. Adjust everything tagged as 'CHANGE' (mainly nodes). Make sure you compiled the Qt user interface at least on your local machine used for graphical interaction. This subpplication depends on the camera_calib.xml (cameras and camera calibration ports) and on the icub/head motor controlboard (dependencies are listed by the manager.py). 
-Start the attention.xml application using the manager.py script. Check that all modules and ports are up and ready. You should see now the Qt user interface (applicationGui) on the machine you configured it to run on. You can then either connect all the listed connections shown in the manager.py user interface or use the applicationGui to connect them one by one. Note: You need to initialize the salience filter user interface by pressing the button 'initialize', this loads user interface controls for the available filters the salience module is running. Set at least one filter weight to non-zero, to start the attention system. 
+Adjust and install the attention.xml.template from $ICUB_ROOT/app/demoAffv2/scripts. Adjust 
+everything tagged as 'CHANGE' (mainly nodes). Make sure you compiled the Qt user interface at 
+least on your local machine used for graphical interaction. This subpplication depends on the 
+camera_calib.xml (cameras and camera calibration ports) and on the icub/head motor controlboard 
+(dependencies are listed by the manager.py). 
+Start the attention.xml application using the manager.py script. Check that all modules and ports 
+are up and ready. You should see now the Qt user interface (applicationGui) on the machine 
+you configured it to run on. You can then either connect all the listed connections shown in 
+the manager.py user interface or use the applicationGui to connect them one by one. Note: You need 
+to initialize the salience filter user interface by pressing the button 'initialize', this loads user 
+interface controls for the available filters the salience module is running. Set at least one filter 
+weight to non-zero, to start the attention system. 
 
-\subsection Setting up and running the Affordance Based Imitation subsystem
+\subsection sec_settingupaffordances Setting up and running the Affordance Based Imitation subsystem
 
-Adjust and install the affordance_imitation.xml.template from $ICUB_ROOT/app/demoAffv2/scripts. Adjust everything tagged as 'CHANGE' (mainly nodes). TO BE COMPLETED
-
+Adjust and install the affordance_imitation.xml.template from $ICUB_ROOT/app/demoAffv2/scripts. 
+Adjust everything tagged as 'CHANGE' (mainly nodes). 
 
 \author Luis Montesano, Manuel Lopes, Jonas Ruesch, Matteo Taiana, Giovanni Saponaro, Ugo Pattacini, Christian Wressnegger, Alexandre Bernardino.
 
