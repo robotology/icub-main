@@ -62,7 +62,7 @@ The attention sybsystem instantiates the following modules:
 - \ref icub_egoSphere "egoSphere"
 - \ref icub_attentionSelection "attentionSelection"
 - \ref icub_controlGaze2 "controlGaze2"
-- \ref icub_applicationGui "applicationGui"
+- \ref icub_applicationgui "applicationgui"
 
 The affordances subsystem instantiates the following modules:
 
