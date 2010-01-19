@@ -13,8 +13,12 @@ browse the documentation of other modules. Example:
 
 \section config_sec Configuration Files
 - disparityMap/conf/disparitymap.ini
-- disparityMap.xml.template
-  
+
+\section howto How to run the Application
+\code
+Customize and run ./scripts/disparityMap.xml.template
+\endcode
+
 \author Harold Martinez
 
 Copyright (C) 2008 RobotCub Consortium
