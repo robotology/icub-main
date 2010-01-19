@@ -1,6 +1,11 @@
 // -*- mode:C++; tab-width:4; c-basic-offset:4; indent-tabs-mode:nil -*-
 
 /*
+ * @inmodule icub_module
+ * /defgroup icub_effectDetector effectDetector
+ *
+ * Detect effect of an action on objects. Used in the affordance application.
+ *
  * Copyright (C) 2007 Alex Bernardino (VisLab/ISR/IST)
  */
 
