@@ -202,6 +202,7 @@ bool ImageProcessModule::closePorts(){
 void ImageProcessModule::reinitialise(int weight, int height){
     inputImg=new ImageOf<PixelRgb>;
     inputImg->resize(weight,height);
+    
 }
 
 

@@ -52,7 +52,7 @@ ImageProcessor::ImageProcessor():RateThread(THREAD_RATE){
     //this->portImage->resize(320,240);
 
     edges_yarp=new ImageOf<PixelMono>;
-    
+    edgesOutput=new ImageOf<PixelMono>;    
 
     redPlane=new ImageOf<PixelMono>;
     greenPlane=new ImageOf<PixelMono>;
@@ -220,6 +220,8 @@ ImageProcessor::~ImageProcessor(){
     //---->cvImage16
     //---->cvImage8
 
+
+
         
 }
 
@@ -238,20 +240,18 @@ ImageProcessor::ImageProcessor(ImageOf<PixelRgb>* inputImage):RateThread(THREAD_
     normalize_flag=0;
     combineMax_flag=0;
 
-    IppiSize srcsize={320,240};
+    //IppiSize srcsize={320,240};
     
+    edgesOutput=new ImageOf<PixelMono>;
     portImage=new ImageOf<PixelRgb>;
-    this->portImage->resize(320,240);
+    
     tmp=new ImageOf<PixelMono>;
-    tmp->resize(320,240);
+    
     redGreen_yarp=new ImageOf<PixelMono>;
-    redGreen_yarp->resize(320,240);
     greenRed_yarp=new ImageOf<PixelMono>;
-    greenRed_yarp->resize(320,240);
     blueYellow_yarp=new ImageOf<PixelMono>;
-    blueYellow_yarp->resize(320,240);
-
-    this->cannyOperator=new CANNY(srcsize);
+    
+    
 }
 /**
 * 
@@ -262,8 +262,13 @@ void ImageProcessor::resizeImages(int width,int height){
 
     
     IppiSize srcsize={width,height};
-    this->portImage->resize(width,height);
+    tmp->resize(width,height);
+    portImage->resize(width,height);
+    redGreen_yarp->resize(width,height);
+    greenRed_yarp->resize(width,height);
+    blueYellow_yarp->resize(width,height);
 
+    edgesOutput->resize(width,height);
     edges_yarp->resize(width,height);
     redPlane->resize(width,height);
     greenPlane->resize(width,height);
@@ -308,6 +313,7 @@ void ImageProcessor::resizeImages(int width,int height){
     cvImage16= cvCreateImage(cvSize(width,height),IPL_DEPTH_16S,1);
     cvImage8= cvCreateImage(cvSize(width,height),IPL_DEPTH_8U,1);
     this->cannyOperator=new CANNY(srcsize);
+    
 
     //redGreen opponency
     inputRedGreen32 = ippiMalloc_32f_C1(width,height,&psb32);
@@ -1801,8 +1807,8 @@ ImageOf<PixelMono>* ImageProcessor::combineMax(){
     int i=0,r=0,c=0;
     
     
-    edgesOutput=new ImageOf<PixelMono>;
-    edgesOutput->resize(width,height);
+    /*edgesOutput=new ImageOf<PixelMono>;
+    edgesOutput->resize(width,height);*/
    
     
     
