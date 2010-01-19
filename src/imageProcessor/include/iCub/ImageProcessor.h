@@ -32,6 +32,14 @@ class ImageProcessor:public RateThread
 {
     private:
         /**
+        * width step of 8u images
+        */
+        int psb;
+        /**
+        * width step of 32f images
+        */
+        int psb32;
+        /**
         * green 1-channel image second plane of the input image
         */
         ImageOf<PixelMono>* green_yarp;//
@@ -161,7 +169,29 @@ class ImageProcessor:public RateThread
         * height of the input image
         */
         int height; //
-        
+        //redGreen opponency
+        Ipp32f* inputRedGreen32; //  = ippiMalloc_32f_C1(width,height,&psb32);
+        Ipp8u* outputRedGreen2; // = ippiMalloc_8u_C1(width,height,&psb);
+        Ipp8u* outputRedGreen; // = ippiMalloc_8u_C1(width,height,&psb);
+        Ipp8u* outputRedGreen3; // = ippiMalloc_8u_C1(width,height,&psb);
+        Ipp32f* outputRedGreen32B; // = ippiMalloc_32f_C1(width,height,&psb32); 
+        Ipp32f* outputRedGreen32; // = ippiMalloc_32f_C1(width,height,&psb32);
+
+        //greenRed opponency
+        Ipp32f* inputGreenRed32; // = ippiMalloc_32f_C1(width,height,&psb32);
+        Ipp8u* outputGreenRed2; // = ippiMalloc_8u_C1(width,height,&psb);
+        Ipp8u* outputGreenRed; // = ippiMalloc_8u_C1(width,height,&psb);
+        Ipp8u* outputGreenRed3; // = ippiMalloc_8u_C1(width,height,&psb);
+        Ipp32f* outputGreenRed32; // = ippiMalloc_32f_C1(width,height,&psb32);
+        Ipp32f* outputGreenRed32B; // = ippiMalloc_32f_C1(width,height,&psb32);
+       
+        //blueYellow opponency temporary images
+        Ipp32f* outputBlueYellow32; // = ippiMalloc_32f_C1(width,height,&psb32);
+        Ipp32f* outputBlueYellow32B; // = ippiMalloc_32f_C1(width,height,&psb32);
+        Ipp32f* inputBlueYellow32; // = ippiMalloc_32f_C1(width,height,&psb32);
+        Ipp8u* outputBlueYellow; // = ippiMalloc_8u_C1(width,height,&psb);
+        Ipp8u* outputBlueYellow2; // = ippiMalloc_8u_C1(width,height,&psb);
+        Ipp8u* outputBlueYellow3; // = ippiMalloc_8u_C1(width,height,&psb);
         
     public:
         /**
