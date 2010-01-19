@@ -1,0 +1,37 @@
+<application>
+	<name>GazePerformer</name>
+ 	<dependencies>
+		<port>/icubSim/head/rpc:i</port> 
+		<port>/icubSim/cam/right</port>
+	</dependencies>
+
+	<module>
+		<name>controlGaze2</name>
+		<parameters>--configCamera iCubEyes.ini --file icubControlGaze2.ini --motorboard /icubSim/head</parameters>
+		<tag>gazecontroller</tag>
+		<node>/lightHouse</node>
+	</module>
+	
+ 	<module>
+		<name>yarpview</name>
+		<parameters>--name /edgesView --x 500 --y 400 --synch</parameters>
+		<tag>view1</tag>
+		<node>/lightHouse</node>
+	</module>
+
+	<module>
+		<name>yarpview</name>
+		<parameters>--name /logPolarForwardView --x 800 --y 400 --synch</parameters>
+		<tag>view2</tag>
+		<node>/lightHouse</node>
+	</module>
+	
+ 
+	<connection>
+      	<output>/blobFinder/centroid:o</output>
+			<input>/controlGaze/conf</input>
+			<protocol>tcp</protocol>
+	</connection>
+	
+	
+</application>

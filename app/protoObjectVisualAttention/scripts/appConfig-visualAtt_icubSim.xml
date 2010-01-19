@@ -126,6 +126,11 @@
 			<protocol>tcp</protocol>
 	</connection>
 	<connection>
+      	<from>/imageProcessorInterface/command:o</from>
+			<to>/imagePU/cmd</to>
+			<protocol>tcp</protocol>
+	</connection>
+	<connection>
       	<from>/imagePU/edges:o</from>
 			<to>/blobFinder/image:i</to>
 			<protocol>tcp</protocol>
