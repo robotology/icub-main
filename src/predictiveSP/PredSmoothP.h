@@ -65,7 +65,7 @@ protected:
    
 
 public:
-	PredSmoothP::PredSmoothP( PolyDriver *_drvHead, const string &_localName,unsigned int _period,unsigned int _joint);
+	PredSmoothP( PolyDriver *_drvHead, const string &_localName,unsigned int _period,unsigned int _joint);
 
    
     virtual bool threadInit();
