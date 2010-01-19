@@ -1098,7 +1098,7 @@ bool Control_GazeModule::updateModule() //this runs every
 		case REST: 
 		case LIMIT:
 			currenterror = head.HeadGazeController(desazy, deselev, X, pert, oldW, vels, headpos, inertialW, 0,controlType);
-			printf("%f %f %f %f \n", vels[0], vels[2], vels[3], vels[4] );
+			//printf("%f %f %f %f \n", vels[0], vels[2], vels[3], vels[4] );
 
             vels[5]=-vergenceGain*disparity;
 			velmove(vels); //velocity control is smoother

@@ -24,13 +24,6 @@
         <node>icub-b11</node>
 </module>
 <module>
-        <name>controlGaze2</name>
-        <parameters>--configCamera icubEyes.ini --name /icub/controlGaze --context demoAffv2/conf/attention --from icubControlGaze2.ini --motorboard /icub/head --fake_velocity_control --fake_velocity_gain 6</parameters>
-        <tag>controlgaze</tag>
-        <stdio>icub14</stdio>
-        <node>icub-b11</node>
-</module>
-<module>
         <name>applicationGui</name>
         <parameters>--context demoAffv2/conf/attention --from guiApplication.ini</parameters>
         <tag>application-gui</tag>

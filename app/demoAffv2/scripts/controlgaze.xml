@@ -6,7 +6,7 @@
 </dependencies>
 <module>
         <name>controlGaze2</name>
-        <parameters>--configCamera icubEyes.ini --name /icub/controlGaze --context demoAffv2/conf/attention --from icubControlGaze2.ini --motorboard /icub/head --fake_velocity_control --fake_velocity_gain 6</parameters>
+        <parameters>--configCamera icubEyes.ini --name /icub/controlGaze --context demoAffv2/conf/attention --from icubControlGaze2.ini --motorboard /icub/head </parameters>
         <tag>controlgaze</tag>
         <stdio>icub14</stdio>
         <node>icub-b13</node>

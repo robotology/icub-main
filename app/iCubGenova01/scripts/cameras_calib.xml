@@ -5,13 +5,13 @@
 </dependencies>
 <module>
       <name>icubmoddev</name>
-      <parameters>--device grabber --subdevice dragonfly2 --width 320 --height 240 --video_type 1 --white_balance 0.5 0.5 --gain 0 --shutter 0.915 --name /icub/cam/left  --brightness 0 --DR2 --stamp --d 0 --sharpness 0.5 --hue 0.48 --gamma 0.4 --saturation 0.6 --framerate 30</parameters>
+      <parameters>--device grabber --subdevice dragonfly2 --width 320 --height 240 --video_type 1 --white_balance 0.5 0.5 --gain 0 --shutter 0.7 --name /icub/cam/left  --brightness 0.1 --DR2 --stamp --d 0 --sharpness 0.5 --hue 0.5 --gamma 0.5 --saturation 0.5 --framerate 30</parameters>
 	  <node>pc104</node>
 	<tag>camera_left</tag>
    </module>
    <module>
       <name>icubmoddev</name>
-      <parameters>--device grabber --subdevice dragonfly2 --width 320 --height 240 --video_type 1 --white_balance 0.5 0.5 --gain 0 --shutter 0.915 --name /icub/cam/right  --brightness 0 --DR2 --stamp --d 1 --sharpness 0.5 --hue 0.48 --gamma 0.4 --saturation 0.6 --framerate 30</parameters>
+      <parameters>--device grabber --subdevice dragonfly2 --width 320 --height 240 --video_type 1 --white_balance 0.5 0.5 --gain 0 --shutter 0.7 --name /icub/cam/right  --brightness 0.1 --DR2 --stamp --d 1 --sharpness 0.5 --hue 0.5 --gamma 0.5 --saturation 0.5 --framerate 30</parameters>
       <node>pc104</node>
 	<tag>camera_right</tag>
    </module>
