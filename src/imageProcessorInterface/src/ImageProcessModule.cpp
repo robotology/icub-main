@@ -59,14 +59,16 @@ bool ImageProcessModule::open(Searchable& config) {
     //attach(cmdPort); // cmdPort will work just like terminal
     //this->createMainWindow();
     command=new std::string("");
-
+    printf("created the null command \n");
 
     // create a new window
     this->createObjects();
+    printf("created the objects \n");
     this->setUp();
+    printf("setUp command executed \n");
     this->setAdjs();
+    printf("adjustment set \n");
     mainWindow = this->createMainWindow();
-    
 
     // Shows all widgets in main Window
     gtk_widget_show_all (mainWindow);
