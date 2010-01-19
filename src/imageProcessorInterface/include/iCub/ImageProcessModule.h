@@ -48,7 +48,7 @@ The module does:
 -	stream the colour opponency maps (R+G-, G+R-, B+Y-)
 -	allow the user to visually check the process
 
-\image html EXAMPLE.jpg
+\image html imageProcessor.jpg
 
 \section lib_sec Libraries
 YARP
