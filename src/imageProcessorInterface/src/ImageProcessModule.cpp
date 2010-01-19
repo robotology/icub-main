@@ -278,7 +278,8 @@ bool ImageProcessModule::openPorts(){
     // Registering Port(s)
     //reduce verbosity --paulfitz
     printf("trying to open ports \n");
-    printf("Registering port %s on network %s...\n", getName("/in"),"default");
+    printf("Registering port %s on network %s...\n", "/in","default");
+    printf("\s",getName("/in"));
     ret = _imgRecv.Connect((char*)getName("/in").c_str(),"default");
     if (ret == true)
         {
