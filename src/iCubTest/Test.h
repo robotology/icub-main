@@ -12,11 +12,11 @@
 
 // sostituire stringhe // OK
 // nome classe file    // OK
-// ritornare i report come return di run()
+// ritornare i report come return di run() // OK
 // risultato dei test su consolle
-// numero di fallimenti nei valori di ritorno dei test
-// criticità nei fallimenti
-// nome: iCubDriver
+// numero di fallimenti nei valori di ritorno dei test // OK
+// criticità nei fallimenti // oK
+// nome: iCubDriver // OK
 // 
 
 #include <vector>
@@ -33,8 +33,30 @@ class iCubTest
 public:
     iCubTest(yarp::os::Searchable& configuration)
     {
-        m_bSuccess=false;
+        yarp::os::Value name;
+        yarp::os::Value part;
+        yarp::os::Value description;
+
+        name=configuration.find("name");
+        if (!name.isNull())
+        {
+            m_Name=name.asString();
+        }
+
+        part=configuration.find("part");
+        if (!part.isNull())
+        {
+            m_PartCode=part.asString();
+        }
+        
+        description=configuration.find("description");
+        if (!description.isNull())
+        {
+            m_Description=description.asString();
+        }
+
         m_bIsCritical=configuration.check("critical");
+        m_bSuccess=false;
     }
 
     virtual ~iCubTest()
@@ -56,6 +78,10 @@ public:
 protected:
     bool m_bSuccess;
     bool m_bIsCritical;
+
+    std::string m_Name;
+    std::string m_Description;
+    std::string m_PartCode;
 };
 
 #endif

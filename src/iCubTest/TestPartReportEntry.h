@@ -7,18 +7,18 @@
  * Author Alessandro Scalzo alessandro@liralab.it
  */
 
-#ifndef __ICUB_TEST_OUTPUT_01122009__
-#define __ICUB_TEST_OUTPUT_01122009__
+#ifndef __ICUB_TEST_PART_REPORT_ENTRY_01122009__
+#define __ICUB_TEST_PART_REPORT_ENTRY_01122009__
 
-#include <string>
+#include "TestReportEntry.h"
 
-#include "TestXMLPrinter.h"
-
-class iCubTestOutput
+class iCubTestPartReportEntry : public iCubTestReportEntry
 {
 public:
-    iCubTestOutput(){}
-    void print(XMLPrinter& printer)
+    iCubTestPartReportEntry(){}
+    virtual ~iCubTestPartReportEntry(){}
+
+    virtual void print(XMLPrinter& printer)
     {
         printer.xmlOpen("output");
             if (!m_Name.empty())   printer.xml("name",m_Name.c_str());
@@ -28,6 +28,17 @@ public:
             if (!m_MinVal.empty()) printer.xml("rangemin",m_MinVal.c_str());
             if (!m_MaxVal.empty()) printer.xml("rangemax",m_MaxVal.c_str());
         printer.xmlClose(); 
+    }
+    
+    virtual void printStdio()
+    {
+        fprintf(stderr,"+\n");
+        if (!m_Name.empty())   fprintf(stderr,"name %s\n",m_Name.c_str());
+        if (!m_Result.empty()) fprintf(stderr,"result %s\n",m_Result.c_str());
+        if (!m_Target.empty()) fprintf(stderr,"target %s\n",m_Target.c_str());
+        if (!m_Value.empty())  fprintf(stderr,"value %s\n",m_Value.c_str());
+        if (!m_MinVal.empty()) fprintf(stderr,"rangemin %s\n",m_MinVal.c_str());
+        if (!m_MaxVal.empty()) fprintf(stderr,"rangemax %s\n",m_MaxVal.c_str());
     }
 
     std::string m_Name;

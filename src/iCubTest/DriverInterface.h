@@ -51,8 +51,7 @@ public:
     static iCubDriver* instance()
     {
         static iCubDriver singleton;
-        return &singleton; 
-
+        return &singleton;
     }
 
     static void setRobot(yarp::os::ConstString robotName)
@@ -62,7 +61,7 @@ public:
 
     ResultCode setPos(int part,int joint,double position,double speed=0.0,double acc=0.0)
     {
-        if (!m_apDriver[part])
+        if (!m_apDriver[part])        
         {
             return DRIVER_FAILED;
         }

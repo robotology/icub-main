@@ -17,54 +17,69 @@
 #include <yarp/os/Searchable.h>
 #include <yarp/os/Value.h>
 
-#include "TestOutput.h"
+#include "TestReportEntry.h"
 
 class iCubTestReport
 {
 public:
-    iCubTestReport(yarp::os::Searchable& configuration)
+    iCubTestReport(std::string name,std::string part,std::string description)
     {
-        setDateTime();
+        time_t rawTime;
+        struct tm * timeInfo;
+        time(&rawTime);
+        timeInfo=localtime(&rawTime);
+
+        m_DateTime=std::string(asctime(timeInfo));
+        m_Name=name;
+        m_PartCode=part;
+        m_Description=description;
 
         m_bSuccess=false;
-            
-        yarp::os::Value name=configuration.find("name");
-        if (!name.isNull())
-        {
-            m_Name=name.asString();
-        }
+        m_Failures=0;
 
-        yarp::os::Value part=configuration.find("part");
-        if (!part.isNull())
-        {
-            m_Part=part.asString();
-        }
+        fprintf(stderr,"*************************\n");
+        fprintf(stderr,"test name: %s\n",m_Name.c_str());
+        fprintf(stderr,"part code: %s\n",m_PartCode.c_str());
+        fprintf(stderr,"description: %s\n",m_Description.c_str());
+    }
 
-        yarp::os::Value description=configuration.find("description");
-        if (!description.isNull())
-        {
-            m_Description=description.asString();
-        }
+    void incFailures()
+    {
+        ++m_Failures;
+    }
+
+    int getFailures()
+    {
+        return m_Failures;
     }
 
     virtual ~iCubTestReport()
     {
-        m_aOutput.clear();
+        for (unsigned int i=0; i<m_apEntries.size(); ++i)
+        {
+            delete m_apEntries[i];
+        }
+
+        m_apEntries.clear();
     }
 
     void printReport(XMLPrinter& printer)
     {
+        char failuresStr[16];
+
         printer.xmlOpen("test");
             printer.xml("description",m_Description);
             printer.xmlOpen("references");
                 printer.xml("datetime",m_DateTime);
-                printer.xml("part",m_Part);
+                printer.xml("part",m_PartCode);
             printer.xmlClose();
             printer.xml("outcome",std::string(m_bSuccess?"SUCCESS":"FAILURE"));
+            sprintf(failuresStr,"%d");
+            printer.xml("failures",std::string(failuresStr));
 
-            for (unsigned int i=0; i<m_aOutput.size(); ++i)
+            for (unsigned int i=0; i<m_apEntries.size(); ++i)
             {
-                m_aOutput[i].print(printer);
+                m_apEntries[i]->print(printer);
             }
 
         printer.xmlClose();
@@ -75,29 +90,23 @@ public:
         m_bSuccess=success;
     }
 
-    void setDateTime()
+    void addEntry(iCubTestReportEntry* pEntry)
     {
-        time_t rawTime;
-        struct tm * timeInfo;
-        time(&rawTime);
-        timeInfo=localtime(&rawTime);
-        m_DateTime=std::string(asctime(timeInfo));
-    }
-
-    void addEntry(iCubTestOutput& output)
-    {
-        m_aOutput.push_back(output);
+        m_apEntries.push_back(pEntry);
+        pEntry->printStdio();
     }
 
 protected:
     bool m_bSuccess;
 
+    int m_Failures;
+
     std::string m_Name;
     std::string m_DateTime;
     std::string m_Description;
-    std::string m_Part;
+    std::string m_PartCode;
 
-    std::vector<iCubTestOutput> m_aOutput;
+    std::vector<iCubTestReportEntry*> m_apEntries;
 };
 
 #endif

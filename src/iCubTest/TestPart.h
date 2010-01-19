@@ -16,8 +16,9 @@
 #include <yarp/os/Searchable.h>
 #include <yarp/os/Value.h>
 
-#include "TestMotorInterface.h"
+#include "DriverInterface.h"
 #include "Test.h"
+#include "TestPartReportEntry.h"
 
 class iCubTestPart : public iCubTest
 {
@@ -26,8 +27,6 @@ public:
     {
         yarp::os::Value val;
         yarp::os::Bottle bot;
-
-        m_Configuration=configuration;
 
         m_aTargetVal=NULL;
         m_aMaxVal=NULL;
@@ -175,51 +174,51 @@ public:
 
     iCubTestReport run()
     {
-        iCubTestReport testReport(m_Configuration);
+        iCubTestReport testReport(m_Name,m_PartCode,m_Description);
             
         m_bSuccess=true;
 
         for (int joint=0; joint<iCubDriver::instance()->getNumOfJoints(iCubDriver::LEFT_ARM); ++joint)
         {
-            iCubTestOutput output;
+            iCubTestPartReportEntry *pOutput=new iCubTestPartReportEntry;
             char jointName[8];
             char posString[64];
 
-            output.m_Name="Joint ";
+            pOutput->m_Name="Joint ";
             sprintf(jointName,"%d",joint);
-            output.m_Name+=jointName;
-            output.m_Name+=" position";
+            pOutput->m_Name+=jointName;
+            pOutput->m_Name+=" position";
             sprintf(posString,"%f",m_aTargetVal[joint]);
-            output.m_Target=std::string(posString);
+            pOutput->m_Target=std::string(posString);
 
-            output.m_Value="N/A";
+            pOutput->m_Value="N/A";
             
             sprintf(posString,"%f",m_aMinVal[joint]);
-            output.m_MinVal=posString;
+            pOutput->m_MinVal=posString;
             
             sprintf(posString,"%f",m_aMaxVal[joint]);
-            output.m_MaxVal=posString;
+            pOutput->m_MaxVal=posString;
 
-            iCubDriver::ResultCode result=iCubDriver::instance()->setPos(m_Part,joint,m_aTargetVal[joint]);//,m_dRefVel[joint],m_dRefAcc[joint]);
+            iCubDriver::ResultCode result=iCubDriver::instance()->setPos(m_Part,joint,m_aTargetVal[joint],m_aRefVel[joint],m_aRefAcc[joint]);
 
             bool bSuccess=false;
 
             switch (result)
             {
             case iCubDriver::DRIVER_FAILED:
-                output.m_Result="FAILED: !PolyDriver";
+                pOutput->m_Result="FAILED: !PolyDriver";
                 break;
             case iCubDriver::IPOS_FAILED:
-                output.m_Result="FAILED: !IPositionControl";
+                pOutput->m_Result="FAILED: !IPositionControl";
                 break;
             case iCubDriver::IPOS_POSMOVE_FAILED:
-                output.m_Result="FAILED: IPositionControl->positionMove";
+                pOutput->m_Result="FAILED: IPositionControl->positionMove";
                 break;
             case iCubDriver::IPOS_SETREFSPEED_FAILED:
-                output.m_Result="FAILED: IPositionControl->setRefSpeed";
+                pOutput->m_Result="FAILED: IPositionControl->setRefSpeed";
                 break;
             case iCubDriver::IPOS_SETREFACC_FAILED:
-                output.m_Result="FAILED: IPositionControl->setRefAcceleration";
+                pOutput->m_Result="FAILED: IPositionControl->setRefAcceleration";
                 break;
             case iCubDriver::IPOS_POSMOVE_OK:
                 bSuccess=true;
@@ -228,7 +227,8 @@ public:
             if (!bSuccess)
             {
                 m_bSuccess=false;
-                testReport.addEntry(output);
+                testReport.incFailures();
+                testReport.addEntry(pOutput);
                 continue;
             }
 
@@ -241,13 +241,13 @@ public:
             switch (result)
             {
             case iCubDriver::IPOS_FAILED:
-                output.m_Result="FAILED: !IPositionControl";
+                pOutput->m_Result="FAILED: !IPositionControl";
                 break;
             case iCubDriver::IPOS_CHECKMOTIONDONE_FAILED:
-                output.m_Result="FAILED: IPositionControl->checkMotionDone";
+                pOutput->m_Result="FAILED: IPositionControl->checkMotionDone";
                 break;
             case iCubDriver::IPOS_CHECKMOTIONDONE_TIMEOUT:
-                output.m_Result="FAILED: Timeout in IPositionControl->positionMove";
+                pOutput->m_Result="FAILED: Timeout in IPositionControl->positionMove";
                 break;
             case iCubDriver::IPOS_CHECKMOTIONDONE_OK:
                 bSuccess=true;
@@ -256,7 +256,8 @@ public:
             if (!bSuccess)
             {
                 m_bSuccess=false;
-                m_aOutput.push_back(output);
+                testReport.incFailures();
+                testReport.addEntry(pOutput);
                 continue;
             }
 
@@ -268,10 +269,10 @@ public:
             switch (result)
             {
             case iCubDriver::IENC_FAILED:
-                output.m_Result="FAILED: !IEncoders";
+                pOutput->m_Result="FAILED: !IEncoders";
                 break;
             case iCubDriver::IENC_GETPOS_FAILED:
-                output.m_Result="FAILED: IEncoders->getEncoder";
+                pOutput->m_Result="FAILED: IEncoders->getEncoder";
 				break;
             case iCubDriver::IENC_GETPOS_OK:
                 bSuccess=true;
@@ -280,31 +281,32 @@ public:
             if (!bSuccess)
             {
                 m_bSuccess=false;
-                m_aOutput.push_back(output);
+                testReport.incFailures();
+                testReport.addEntry(pOutput);
                 continue;
             }
 
             sprintf(posString,"%f",pos);
-            output.m_Value=posString;
+            pOutput->m_Value=posString;
 
             if (pos>=m_aMinVal[joint] && pos<=m_aMaxVal[joint])
             {
-                output.m_Result="SUCCESS";
+                pOutput->m_Result="SUCCESS";
             }
             else
             {
                 m_bSuccess=false;
-                output.m_Result="FAILED: value out of range";
+                testReport.incFailures();
+                pOutput->m_Result="FAILED: value out of range";
             }
 
-            m_aOutput.push_back(output);
+            testReport.addEntry(pOutput);
         }
         
-        return m_bSuccess;
+        return testReport;
     }
 
 protected:
-    yarp::os::Searchable m_Configuration;
     iCubDriver::iCubPart m_Part;
     int m_NumJoints;
     double *m_aTargetVal;

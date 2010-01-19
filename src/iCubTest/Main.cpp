@@ -4,13 +4,13 @@
 
 #include "TestSet.h"
 #include "TestPart.h"
-#include "TestMotorInterface.h"
+#include "DriverInterface.h"
 
 int main(int argc,char* argv[])
 {
     yarp::os::ResourceFinder rf;
     //rf.setVerbose();
-    rf.setDefaultContext("tutorials/icubtest");
+    rf.setDefaultContext("tutorials/iCubTest");
     rf.setDefaultConfigFile("test.ini");
     rf.configure("ICUB_ROOT",argc,argv);
     
@@ -33,9 +33,6 @@ int main(int argc,char* argv[])
         std::string testType(test.get(0).asString());
         std::string fileName(test.get(1).asString());
 
-        printf("*%s\n",testType.c_str());
-        printf("*%s\n",fileName.c_str());
-
         yarp::os::ResourceFinder testRf;
         testRf.setDefaultContext("tutorials/icubtest");
         testRf.setDefaultConfigFile(fileName.c_str());
@@ -48,14 +45,17 @@ int main(int argc,char* argv[])
         else if (testType=="iCubTestCamera")
         {
             //ts.AddTest(new iCubTestCamera(testRf));
+            fprintf(stderr,"iCubTestCamera not implemented\n");
         }
         else if (testType=="iCubTestInertial")
         {
             //ts.AddTest(new iCubTestInertial(testRf));
+            fprintf(stderr,"iCubTestInertial not implemented\n");
         }
         else if (testType=="iCubTestForceTorque")
         {
             //ts.AddTest(new iCubTestForceTorque(testRf));
+            fprintf(stderr,"iCubTestForceTorque not implemented\n");
         }
     }
 

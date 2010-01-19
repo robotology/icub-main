@@ -78,12 +78,24 @@ public:
 
     void printReport()
     {
+        int numFailures=0;
+        char failuresStr[16];
+
         XMLPrinter printer(m_Outfile);
 
         printer.xmlOpen("report");
             printer.xml("user",m_User);
             printer.xml("comment",m_Comment);
             printer.xml("success",std::string(m_bSuccess?"YES":"NO"));
+
+            for (unsigned int i=0; i<m_aReport.size(); ++i)
+            {
+                numFailures+=m_aReport[i].getFailures();   
+            }
+
+            sprintf(failuresStr,"%d",numFailures);
+
+            printer.xml("failures-total",std::string(failuresStr));
 
             for (unsigned int i=0; i<m_aReport.size(); ++i)
             {
