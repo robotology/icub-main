@@ -728,7 +728,7 @@ void SalienceOperator::maxSalienceBlob(ImageOf<PixelInt>& tagged, int max_tag, Y
 	box.centroid_y=ycart;
 	this->centroid_x=xcart;
 	this->centroid_y=ycart;
-
+    printf("%f-%f /n", centroid_x,centroid_y);
 	//_gaze.computeRay(YARPBabybotHeadKin::KIN_LEFT_PERI, box.elev, box.az, (int)box.centroid_x, (int)box.centroid_y);
 }
 

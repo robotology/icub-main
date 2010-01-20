@@ -127,7 +127,10 @@ void saliencyBlobFinderModule::setOptions(yarp::os::Property opt){
             meanColour_flag=true;
             printf("meancolour image as output selected \n");
         }
-        
+        if(value=="MAX"){
+            maxSaliencyBlob_flag=true;
+            printf("max_saliency image as output selected \n");
+        }
     }
 }
 
