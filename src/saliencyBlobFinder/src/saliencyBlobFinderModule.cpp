@@ -251,7 +251,6 @@ void saliencyBlobFinderModule::outPorts(){
         centroidPort.write(); 
         
     }
-
      /*Bottle& _outBottle=_centroidPort->prepare();
      _outBottle.clear();
     //_outBottle.addString("centroid:");
