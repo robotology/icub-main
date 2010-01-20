@@ -28,7 +28,7 @@ YARP_ROOT=/home/babybot/svn/yarp2
 ACE_ROOT undefined
 ODE_DIR=/home/babybot/ode-0.11
 SDLDIR undefined
-OPENVC_DIR undefined
+OPENCV_DIR undefined
 GSL_DIR undefined
 GTK_BASEPATH undefined
 GTKMM_BASEPATH undefined
@@ -63,7 +63,7 @@ YARP_ROOT=C:\cygwin\home\babybot\svn\yarp2
 ACE_ROOT=C:\cygwin\home\babybot\ACE_wrappers
 ODE_DIR=C:/ode
 SLDDIR=C:/SDL-1.2.13
-OPENVC_DIR undefined
+OPENCV_DIR undefined
 GSL_DIR=c:\gsl\gsl-1.8-win
 GTK_BASEPATH=C:\GTKMM
 GTKMM_BASEPATH=C:\GTKMM
