@@ -245,9 +245,9 @@ void saliencyBlobFinderModule::outPorts(){
         Bottle &bot = centroidPort.prepare(); 
         bot.clear();
         bot.addVocab( Vocab::encode("sac") ); 
-        bot.addVocab( Vocab::encode("img") ); 
-        bot.addDouble(blobFinder->salience->centroid_x/this->width); 
-        bot.addDouble(blobFinder->salience->centroid_y/this->height); 
+        bot.addVocab( Vocab::encode("pix") ); 
+        bot.addDouble(blobFinder->salience->centroid_x); 
+        bot.addDouble(blobFinder->salience->centroid_y); 
         centroidPort.write(); 
         
     }
