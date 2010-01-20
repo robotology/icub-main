@@ -158,7 +158,7 @@
 
 <connection>
   <from>/endogenousSalience/salience:o</from>
-  <to>/icub/egoSphere/mapObject/bottle-in</to>
+  <to>/icub/egoSphere/mapObject/bottle_in</to>
   <protocol>tcp</protocol>
 </connection>
 

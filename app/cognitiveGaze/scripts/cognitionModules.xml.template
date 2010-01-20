@@ -5,7 +5,7 @@
 
 <module>
    <name>episodicMemory</name>
-   <parameters>--context cognitiveGaze/conf --offline 1</parameters>
+   <parameters>--context cognitiveGaze/conf --offline 0 --frequency 5</parameters>
    <node>icub1</node>
    <tag>episodicMemory</tag>
 </module>

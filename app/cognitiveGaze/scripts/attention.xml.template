@@ -9,10 +9,12 @@
         <!-- the following section is based directly on the attentionDistributed application: appConfig-visual.xml.template -->
         <!-- the only changes are the name of the nodes (icub1),  the context (cognitiveGaze/conf),                         -->
         <!-- and the fps parameter has been set to 1 in salience, egoSphere, and actionSelection                            -->
+        <!-- Note that the egoSphere fps parameter value seems to be overridden by the egoSphere.ini fps parameter value    -->
+        <!-- Note also that the camCalib fps parameter value seems to have no effect                                        -->
 
 	<module>
 		<name>camCalib</name>
-		<parameters>--name /icub/camcalib/right --context cognitiveGaze/conf --from icubEyes.ini --group CAMERA_CALIBRATION_RIGHT --fps 1</parameters>
+		<parameters>--name /icub/camcalib/right --context cognitiveGaze/conf --from icubEyes.ini --group CAMERA_CALIBRATION_RIGHT --fps 15</parameters>
 		<tag>camcalib</tag>
 		<node>icub1</node>
 	</module>
@@ -20,13 +22,13 @@
 		<name>salience</name>
 		<parameters>--name /icub/salience/right --context cognitiveGaze/conf --from icubSalience.ini --fps 1</parameters>
 		<tag>salience</tag>
-		<node>icub17</node>
+		<node>icub1</node>
 	</module>
 	<module>
 		<name>egoSphere</name>
 		<parameters>--name /icub/egoSphere --context cognitiveGaze/conf --from icubEyes.ini --controlboard /icub/head  --fps 1</parameters>
 		<tag>egosphere</tag>
-		<node>icub17</node>
+		<node>icub1</node>
 	</module>
 	<module>
 		<name>attentionSelection</name>
@@ -36,7 +38,7 @@
 	</module>
 	<module>
 		<name>controlGaze2</name>
-		<parameters>--configCamera icubEyes.ini --name /icub/controlGaze --context cognitiveGaze/conf --from icubControlGaze2.ini --motorboard /icub/head</parameters>
+		<parameters>--configCamera icubEyes.ini --name /icub/controlGaze --context cognitiveGaze/conf --from icubControlGaze2.ini --motorboard /icub/head --FrameRate 1</parameters>
 		<tag>controlgaze</tag>
 		<node>icub1</node>
 	</module>
