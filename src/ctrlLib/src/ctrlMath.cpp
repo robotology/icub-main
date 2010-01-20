@@ -123,6 +123,10 @@ Vector ctrl::dcm2axis(const Matrix &R, unsigned int verbose)
 
     if (r<1e-9)
     {
+        // if we enter here, then 
+        // R is symmetric; this can
+        // happen only if the rotation
+        // angle is 0 (R=I) or 180 degrees
         Matrix A=R.submatrix(0,2,0,2);
         Matrix U(3,3), V(3,3);
         Vector S(3);
