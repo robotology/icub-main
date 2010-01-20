@@ -207,6 +207,10 @@
 #include <sstream>
 #include <string>
 
+#include <sys/types.h>
+#include <sys/timeb.h>
+
+
 using namespace std;
 using namespace yarp;
 using namespace yarp::os;
@@ -215,6 +219,7 @@ using namespace yarp::sig;
 
 void pause(int ms); // defined in fourierVision.lib
 
+#define FPS 10 // frames per second; the number of images sent per second
 
 /*
  * Histogram Matching data holder class. Stores information that will be used by the ANT implementation of the attentionNetworkTest. 
