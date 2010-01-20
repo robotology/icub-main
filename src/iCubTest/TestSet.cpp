@@ -28,22 +28,17 @@ iCubTestSet::iCubTestSet(yarp::os::Searchable& configuration)
     m_bSuccess=false;
     m_numFailures=0;
 
-    yarp::os::Value user=configuration.find("user");
-    if (!user.isNull())
+    if (configuration.check("user"))
     {
-        m_User=user.asString();
+        m_User=configuration.find("user").asString();
     }
-
-    yarp::os::Value comment=configuration.find("comment");
-    if (!comment.isNull())
+    if (configuration.check("comment"))
     {
-        m_Comment=comment.asString();
+        m_Comment=configuration.find("comment").asString();
     }
-
-    yarp::os::Value outfile=configuration.find("outfile");
-    if (!outfile.isNull())
+    if (configuration.check("outfile"))
     {
-        m_Outfile=outfile.asString();
+        m_Outfile=configuration.find("outfile").asString();
     }
 }
 

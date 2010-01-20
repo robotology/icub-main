@@ -18,9 +18,9 @@
  * Public License for more details
 */
 
-#include "TestPart.h"
+#include "TestMotors.h"
 
-iCubTestPart::iCubTestPart(yarp::os::Searchable& configuration) : iCubTest(configuration)
+iCubTestMotors::iCubTestMotors(yarp::os::Searchable& configuration) : iCubTest(configuration)
 {
     m_aTargetVal=NULL;
     m_aMaxVal=NULL;
@@ -142,7 +142,7 @@ iCubTestPart::iCubTestPart(yarp::os::Searchable& configuration) : iCubTest(confi
     }
 }
 
-iCubTestPart::~iCubTestPart()
+iCubTestMotors::~iCubTestMotors()
 {		
     if (m_aTargetVal)
     {
@@ -170,7 +170,7 @@ iCubTestPart::~iCubTestPart()
     }
 }
 
-iCubTestReport* iCubTestPart::run()
+iCubTestReport* iCubTestMotors::run()
 {
     iCubTestReport* pTestReport=new iCubTestReport(m_Name,m_PartCode,m_Description);
 

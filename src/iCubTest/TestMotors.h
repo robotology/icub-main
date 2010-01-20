@@ -18,8 +18,8 @@
  * Public License for more details
 */
 
-#ifndef __ICUB_TEST_PART_01122009__
-#define __ICUB_TEST_PART_01122009__
+#ifndef __ICUB_TEST_MOTORS_01122009__
+#define __ICUB_TEST_MOTORS_01122009__
 
 #include <vector>
 #include <string>
@@ -29,14 +29,14 @@
 
 #include "DriverInterface.h"
 #include "Test.h"
-#include "TestPartReportEntry.h"
+#include "TestMotorsReportEntry.h"
 
-class iCubTestPart : public iCubTest
+class iCubTestMotors : public iCubTest
 {
 public:
-    iCubTestPart(yarp::os::Searchable& configuration);
+    iCubTestMotors(yarp::os::Searchable& configuration);
 
-    virtual ~iCubTestPart();
+    virtual ~iCubTestMotors();
 
     iCubTestReport* run();
 
