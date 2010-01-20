@@ -339,7 +339,6 @@ public:
         string rpcPortName=localHeadName+"/rpc";
         rpcPort.open(rpcPortName.c_str());
         attach(rpcPort);
-        attachTerminal();
 
         return true;
     }

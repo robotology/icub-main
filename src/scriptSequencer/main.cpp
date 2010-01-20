@@ -22,11 +22,11 @@ Implemented ports are of streaming and position type, but it is
 straightforward to add new types: just inherit from the abstract
 father class and define few methods as detailed within the code.
  
-Type "help" from within the console for a list of available 
-commands. 
-Basically, at start-up the thread is suspended; you can 
-therefore choose the mode (between the self-explaining "shot" 
-and "cyc") and then issue a "run". 
+Connect to the rpc port to communicate with the thread. Type 
+"help" for a list of available commands. Basically, at start-up 
+the thread is suspended; you can therefore choose the mode 
+(between the self-explaining "shot" and "cyc") and then issue a 
+"run". 
  
 \section lib_sec Libraries 
 - YARP libraries. 
@@ -686,9 +686,8 @@ public:
 
         rpcPort.open(getName("rpc"));
         attach(rpcPort);
-        attachTerminal();
 
-        cout << "***** type ""help"" for commands list" << endl;
+        cout << "***** connect to rpc port and type \"help\" for commands list" << endl;
 
         return true;
     }
