@@ -171,7 +171,7 @@ echo "</TABLE>" >> $main
 	echo "SLDDIR=$SDLDIR"
     fi
     if [ "k$OPENCV_DIR" = "k" ]; then
-	echo "OPENVC_DIR undefined"
+	echo "OPENCV_DIR undefined"
     else
 	echo "OPENCV_DIR=$OPENCV_DIR"
     fi
