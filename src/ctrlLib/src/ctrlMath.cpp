@@ -127,10 +127,12 @@ Vector ctrl::dcm2axis(const Matrix &R, unsigned int verbose)
         Matrix U(3,3), V(3,3);
         Vector S(3);
 
-        // A = I + sin(theta)*M+(1-cos(theta))*M^2
-        // where M is the skew matrix
-        // we have to find the vector associated to
-        // the 0 singular value
+        // A=I+sin(theta)*S+(1-cos(theta))*S^2
+        // where S is the skew matrix.
+        // Given a point x, A*x is the rotated one,
+        // hence if Ax=x then x belongs on the rotation
+        // axis. We have therefore to find the kernel of
+        // the linear application (A-I).
         SVD(A-eye(3,3),U,S,V);
 
         v[0]=V(0,2);
