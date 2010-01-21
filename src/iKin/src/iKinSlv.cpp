@@ -10,7 +10,8 @@
 #define RES_EVENT(x)            (static_cast<ACE_Auto_Event*>(x))
 
 #define SHOULDER_MAXABDUCTION   (100.0*(M_PI/180.0))
-#define CARTSLV_DEFAULT_PER     20
+#define CARTSLV_DEFAULT_PER     20      // [ms]
+#define CARTSLV_DEFAULT_TMO     1000    // [ms]
 
 namespace iKin
 {
@@ -347,6 +348,7 @@ CartesianSolver::CartesianSolver(const string &_slvName) : RateThread(CARTSLV_DE
     configured=false;
     closed=false;
     verbosity=false;
+    auto_shut_down=false;
     maxPartJoints=0;
     unctrlJointsNum=0;
 
@@ -454,7 +456,7 @@ void CartesianSolver::latchUncontrolledJoints(Vector &joints)
 
 
 /************************************************************************/
-void CartesianSolver::getFeedback(const bool wait)
+bool CartesianSolver::getFeedback(const bool wait)
 {
     Vector fbTmp(maxPartJoints);
     int chainCnt=0;    
@@ -472,20 +474,34 @@ void CartesianSolver::getFeedback(const bool wait)
             flag=enc[i]->getEncoders(fbTmp.data());
 
         if (flag)
+        {    
             for (int j=0; j<jnt[i]; j++)
             {
                 double tmp=(M_PI/180.0)*fbTmp[rmp[i][j]];
-
+            
                 if ((*prt->chn)[chainCnt].isBlocked())
                     prt->chn->setBlockingValue(chainCnt,tmp);
                 else
                     prt->chn->setAng(chainCnt,tmp);
-
+            
                 chainCnt++;
             }
+
+            tmo[i]=0;
+        }
         else
             chainCnt+=jnt[i];
+
+        if (++tmo[i]>CARTSLV_DEFAULT_TMO/CARTSLV_DEFAULT_PER)
+        {
+            fprintf(stdout,"%s: timeout detected on part %s!\n",
+                    slvName.c_str(),prt->prp[i].find("part").asString().c_str());
+
+            return false;
+        }
     }
+
+    return true;
 }
 
 
@@ -1082,7 +1098,10 @@ bool CartesianSolver::open(Searchable &options)
         if (!pDrv->isValid())
         {
             fprintf(stdout,"Device driver not available!\n");
+
+            delete pDrv;
             close();
+
             return false;
         }
 
@@ -1120,6 +1139,7 @@ bool CartesianSolver::open(Searchable &options)
         enc.push_back(pEnc);
         jnt.push_back(joints);
         rmp.push_back(rmpTmp);
+        tmo.push_back(0);
     }
 
     // handle joints rest position and weights
@@ -1165,6 +1185,10 @@ bool CartesianSolver::open(Searchable &options)
     if (options.check("verbosity"))
         if (options.find("verbosity").asVocab()==IKINSLV_VOCAB_VAL_ON)
             verbosity=true;
+
+    if (options.check("auto_shut_down"))
+        if (options.find("auto_shut_down").asVocab()==IKINSLV_VOCAB_VAL_ON)
+            auto_shut_down=true;
 
     double tol=1e-3;
     if (options.check("tol"))
@@ -1397,7 +1421,13 @@ void CartesianSolver::run()
     postDOFHandling();
 
     // get current configuration
-    getFeedback();
+    // and handle timeout
+    if (!getFeedback())
+        if (auto_shut_down)
+        {
+            close();
+            return;
+        }
 
     // acquire uncontrolled joints configuration
     if (!fullDOF)

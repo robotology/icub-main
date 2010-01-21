@@ -285,6 +285,7 @@ protected:
     std::deque<yarp::dev::IEncoders*>      enc;
     std::deque<int>                        jnt;
     std::deque<int*>                       rmp;
+    std::deque<int>                        tmo;
 
     iKinIpOptMin   *slv;
     SolverCallback *clb;
@@ -303,6 +304,7 @@ protected:
     bool          configured;
     bool          closed;
     bool          verbosity;
+    bool          auto_shut_down;
     int           maxPartJoints;
     int           unctrlJointsNum;
     double        token;
@@ -340,7 +342,7 @@ protected:
     bool   setLimits(int axis, double min, double max);
     void   countUncontrolledJoints();
     void   latchUncontrolledJoints(yarp::sig::Vector &joints);
-    void   getFeedback(const bool wait=false);    
+    bool   getFeedback(const bool wait=false);    
     void   initPos();
     void   lock();
     void   unlock();    
@@ -444,6 +446,11 @@ public:
     *    force or not the solver to output on the port all
     *    intermediate points of optimization instance; allowed
     *    values are [on] or [off].
+    *  
+    * \b auto_shut_down : example (auto_shut_down on), if enabled it
+    *    specifies to automatically shut down the thread whenever a
+    *    communication timeout is detected while gathering data from
+    *    the robot.
     *  
     * @return true/false if successful/failed
     */
