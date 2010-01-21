@@ -25,6 +25,10 @@ bool ImageProcessModule::open(Searchable& config) {
     ct = 0;
 	inputImage_flag=false;
     reinit_flag=false;
+
+    //flags for the mode
+    IPPISOBEL=false;
+    OPENCVSOBEL=false;
 	
 	currentProcessor=0;
 
@@ -226,6 +230,7 @@ bool ImageProcessModule::updateModule() {
         currentProcessor=new ImageProcessor();
         //passes the temporary variable for the mode
         currentProcessor->OPENCVSOBEL=OPENCVSOBEL;
+        currentProcessor->IPPISOBEL=IPPISOBEL;
         currentProcessor->resizeImages(tmp->width(),tmp->height());
         startImageProcessor();
     }

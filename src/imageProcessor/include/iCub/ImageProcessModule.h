@@ -91,7 +91,9 @@ IPP
 
  
 \section portsa_sec Ports Accessed
-
+/colurPU/rg:o
+/colurPU/gr:o
+/colurPU/by:o
 
 
 \section portsc_sec Ports Created
