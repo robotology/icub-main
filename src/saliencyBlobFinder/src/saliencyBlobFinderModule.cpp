@@ -253,8 +253,8 @@ void saliencyBlobFinderModule::outPorts(){
         /*bot.addDouble(blobFinder->salience->maxc); 
         bot.addDouble(blobFinder->salience->maxr); */
         //logPolarMapper iCub driver
-        bot.addDouble(cos(blobFinder->salience->maxc)*blobFinder->salience->maxr); //reference to the relative azimuth angle 
-        bot.addDouble(sin(blobFinder->salience->maxc)*blobFinder->salience->maxr); //reference to the relative elevation angle
+        bot.addDouble(cos(blobFinder->salience->maxc)*blobFinder->salience->maxr/10); //reference to the relative azimuth angle 
+        bot.addDouble(sin(blobFinder->salience->maxc)*blobFinder->salience->maxr/10); //reference to the relative elevation angle
         centroidPort.write(); 
         
     }
@@ -300,7 +300,14 @@ bool saliencyBlobFinderModule::respond(const Bottle &command,Bottle &reply){
             reply.addString("set clp : streams out the contrast LP image");
             reply.addString("set max : streams out the max saliency blob");
             reply.addString("set tag : streams out the image of blobs coloured by the associated tag value");
-
+            reply.addString("\n");
+            reply.addString("set kbu : set coefficient k of the bottom-up saliency calculation ");
+            reply.addString("set ktd : set coefficient k of the top-down saliency calculation ");
+            reply.addString("set Mdb : set maximum dimension allowed for blobs ");
+            reply.addString("set mdb : set minimum dimension allowed for blobs");
+            reply.addString("set rin : set red intensity value for the target to be sought");
+            reply.addString("set gin : set green intensity value for the target to be sought");
+            reply.addString("set bin : set blue intensity value for the target to be sought");
 
             reply.addString("\n");
 
@@ -383,14 +390,39 @@ bool saliencyBlobFinderModule::respond(const Bottle &command,Bottle &reply){
             }
                 break;
             case COMMAND_VOCAB_KTD:{
-                int j = command.get(2).asInt();
-                double w = command.get(3).asDouble();
+                double w = command.get(2).asDouble();
+                printf("%f",w);
+                ok=true;
             }
                 break;
-            case COMMAND_VOCAB_CHILD_WEIGHTS:{
-                Bottle weights;
-                for (int i = 2; i < command.size(); i++)
-                    weights.addDouble(command.get(i).asDouble());
+            case COMMAND_VOCAB_RIN:{
+                double w = command.get(2).asDouble();
+                printf("%f",w);
+                ok=true;
+            }
+                break;
+            case COMMAND_VOCAB_GIN:{
+                double w = command.get(2).asDouble();
+                printf("%f",w);
+                ok=true;
+            }
+                break;
+            case COMMAND_VOCAB_BIN:{
+                double w = command.get(2).asDouble();
+                printf("%f",w);
+                ok=true;
+            }
+                break;
+            case COMMAND_VOCAB_MAXDB:{
+                double w = command.get(2).asDouble();
+                printf("%f",w);
+                ok=true;
+            }
+                break;
+            case COMMAND_VOCAB_MINDB:{
+                double w = command.get(2).asDouble();
+                printf("%f",w);
+                ok=true;
             }
                 break;
             default:

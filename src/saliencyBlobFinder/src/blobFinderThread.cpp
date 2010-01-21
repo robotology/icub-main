@@ -262,7 +262,7 @@ void blobFinderThread::run(){
         }
     }
     else if(this->maxSaliencyBlob_flag){
-        this->drawAllBlobs(true);
+        this->drawAllBlobs(false);
         this->salience->DrawMaxSaliencyBlob(*this->salience->maxSalienceBlob_img,this->max_tag,*this->tagged);
         ippiCopy_8u_C1R(salience->maxSalienceBlob_img->getRawImage(),salience->maxSalienceBlob_img->getRowSize(),_outputImage->getRawImage(),_outputImage->getRowSize(),srcsize);
         conversion=true;

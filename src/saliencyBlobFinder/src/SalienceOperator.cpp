@@ -207,6 +207,7 @@ void SalienceOperator::DrawMaxSaliencyBlob(ImageOf<PixelMono>& id,int max_tag,Im
     PixelMono pixelColour=255;
     YARPBox box;
     maxSalienceBlob(tagged,max_tag,box);
+    printf("id: %d \n",box.id);
     for (int r=0; r<height; r++)
         for (int c=0; c<width; c++){
             //printf("%d ",tagged(c,r));
@@ -540,7 +541,7 @@ int SalienceOperator::DrawContrastLP2(ImageOf<PixelMono>& rg, ImageOf<PixelMono>
                 maxSalienceTD=salienceTD;
         }
     }
-    //coefficients for BU (a1,b1)
+    //coefficients for normalisation of BU (a1,b1)
     if (maxSalienceBU!=minSalienceBU) {
         //__OLD//a1=255.*(maxDest-1)/(maxSalienceBU-minSalienceBU);
         a1=254./(maxSalienceBU-minSalienceBU);
@@ -549,7 +550,7 @@ int SalienceOperator::DrawContrastLP2(ImageOf<PixelMono>& rg, ImageOf<PixelMono>
         a1=0;
         b1=0;
     }
-    //coefficient for TD (a2,b2)
+    //coefficient for normalisation of TD (a2,b2)
     if (maxSalienceTD!=minSalienceTD) {
         //__OLD//a2=255.*(maxDest-1)/(maxSalienceTD-minSalienceTD);
         a2=254./(maxSalienceTD-minSalienceTD);
@@ -558,7 +559,7 @@ int SalienceOperator::DrawContrastLP2(ImageOf<PixelMono>& rg, ImageOf<PixelMono>
         a2=0;
         b2=0;
     }
-    //for every blobs ....
+    //for every blobs calculates the salienceTotal
     for (int i = 1; i < numBlob; i++) {
             if (m_boxes[i].valid) {
             //calculates the salience total
@@ -570,7 +571,7 @@ int SalienceOperator::DrawContrastLP2(ImageOf<PixelMono>& rg, ImageOf<PixelMono>
                 maxSalienceTot=m_boxes[i].salienceTotal;
         }
     }
-    //calculate coefficient for SalienceTOT (a3,b3)
+    //normalise the value into the range of grayscale image (a3,b3)
     if (maxSalienceTot!=minSalienceTot) {
         a3=((double)(maxDest-1))/(maxSalienceTot-minSalienceTot);
         b3=1.-a3*minSalienceTot;
@@ -578,14 +579,14 @@ int SalienceOperator::DrawContrastLP2(ImageOf<PixelMono>& rg, ImageOf<PixelMono>
         a3=0;
         b3=0;
     }
-
+    //creates the image composed of the value of saliency of every blob
     for (int i = 1; i < numBlob; i++) {
         if (m_boxes[i].valid) {
             //__OLD//if ((m_boxes[i].salienceBU==maxSalienceBU && pBU==1) || (m_boxes[i].salienceTD==maxSalienceTD && pTD==1))
             //if ((m_boxes[i].salienceBU==maxSalienceBU && pBU==1)||(m_boxes[i].salienceTD==maxSalienceTD && pTD==1))
             if (m_boxes[i].salienceTotal==maxSalienceTot)
                 m_boxes[i].salienceTotal=255;
-            else
+            else 
                 m_boxes[i].salienceTotal=a3*m_boxes[i].salienceTotal+b3;
 
             //for the whole blob in this loop
@@ -714,7 +715,7 @@ void SalienceOperator::maxSalienceBlob(ImageOf<PixelInt>& tagged, int max_tag, Y
     for (int m = 1; m < max_tag; m++){
         //printf("blob number %d:",m);
         if (m_boxes[m].valid){
-            printf(" valid %d ---> %d \n",m,m_boxes[m].salienceTotal);
+            //printf(" valid %d ---> %f \n",m,m_boxes[m].salienceTotal);
             if (m_boxes[m].salienceTotal>m_boxes[max].salienceTotal)
                 max=m;
         }
@@ -722,13 +723,15 @@ void SalienceOperator::maxSalienceBlob(ImageOf<PixelInt>& tagged, int max_tag, Y
             //printf(" non valid");
         }
     }
+
+    box=m_boxes[max];
+    printf("%d, ",max);
     if(max==1){
         printf("max saliency correspond to the fovea blob \n");
         maxr=0;
         maxc=0;
     }
     else{
-        box=m_boxes[max];
         centerOfMassAndMass(tagged, box.id, &xcart, &ycart, &box.areaCart);
         box.centroid_x=xcart;
         box.centroid_y=ycart;

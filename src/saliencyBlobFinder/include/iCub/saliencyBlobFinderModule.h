@@ -38,9 +38,14 @@ using namespace yarp::sig;
 #define COMMAND_VOCAB_MAXSALIENCY VOCAB3('m','a','x')
 #define COMMAND_VOCAB_CONTRASTLP VOCAB3('c','l','p')
 
-#define COMMAND_VOCAB_KBU VOCAB3('k','b','u')
-#define COMMAND_VOCAB_KTD VOCAB3('k','t','d')
-#define COMMAND_VOCAB_CHILD_WEIGHTS VOCAB3('c','w','s')
+#define COMMAND_VOCAB_KBU VOCAB3('k','b','u') //weight of the bottom-up algorithm
+#define COMMAND_VOCAB_KTD VOCAB3('k','t','d') //weight of top-down algorithm
+#define COMMAND_VOCAB_RIN VOCAB3('r','i','n') //red intensity value
+#define COMMAND_VOCAB_GIN VOCAB3('g','i','n') //green intensity value
+#define COMMAND_VOCAB_BIN VOCAB3('b','i','n') //blue intensity value
+#define COMMAND_VOCAB_MAXDB VOCAB3('M','d','b') //Maximum dimension of the blob drawn
+#define COMMAND_VOCAB_MINDB VOCAB3('m','d','b') //minimum dimension of the blob drawn
+
 
 // directional saliency filter vocab's
 #define COMMAND_VOCAB_DIRECTIONAL_NUM_DIRECTIONS VOCAB3('d','n','d')
