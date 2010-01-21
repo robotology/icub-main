@@ -119,6 +119,8 @@ int main()
     // ...see the result
     qf=chain->setAng(qf);
     cout << "Actual joints set to " << ((180.0/M_PI)*qf).toString() << endl;
+    // anyway user can disable the constraints checking by calling
+    // the chain method setAllConstraints(false)
 
     // there are three links for the torso which do not belong to the
     // DOF set since they are blocked. User can access them through [] operators
@@ -135,7 +137,7 @@ int main()
     chain->blockLink(0);
     cout << chain->getDOF() << " DOFs available" << endl;
 
-    // retrieve end-effector pose.
+    // retrieve the end-effector pose.
     // Translational part is in meters.
     // Rotational part is in axis-angle representation
     xf=chain->EndEffPose();
