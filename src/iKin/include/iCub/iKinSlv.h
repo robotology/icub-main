@@ -451,8 +451,8 @@ public:
     *    values are [on] or [off].
     *  
     * \b ping_robot_tmo <double>: example (ping_robot_tmo 2.0), 
-    *    specifies a "timein" in seconds during which robot state
-    *    ports are pinged prior to connecting; a timein equal to
+    *    specifies a timeout in seconds during which robot state
+    *    ports are pinged prior to connecting; a timeout equal to
     *    zero disables this option.
     *  
     * \b auto_shut_down <vocab>: example (auto_shut_down on), if 
