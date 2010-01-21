@@ -57,19 +57,19 @@ Provide a comprehensive list of the parameters you can pass to the module. For e
 
 \section portsa_sec Ports Accessed
 
-<part>: torso, head, left_arm, right_arm, left_leg, right_leg.
+part: torso, head, left_arm, right_arm, left_leg, right_leg.
 
-/icubXX/<part>/command:i
-/icubXX/<part>/rpc:i
-/icubXX/<part>/state:o
+/icubXX/part/command:i <br>
+/icubXX/part/rpc:i <br>
+/icubXX/part/state:o
 
 \section portsc_sec Ports Created
 
-<part>: torso, head, left_arm, right_arm, left_leg, right_leg.
+part: torso, head, left_arm, right_arm, left_leg, right_leg.
 
-/iCubTest/<part>/command:o
-/iCubTest/<part>/rpc:o
-/iCubTest/<part>/state:i
+/iCubTest/part/command:o <br>
+/iCubTest/part/rpc:o <br>
+/iCubTest/part/state:i
 
 \section out_data_sec Output Data Files
 
@@ -107,14 +107,14 @@ Example:
 			<rangemin>-27.000000</rangemin>
 			<rangemax>-33.000000</rangemax>
 		</output>
-        ...
-        ...
-        ...
+            ...
+            ...
+            ...
     </test>
     <test>
-    ...
-    ...
-    ...
+        ...
+        ...
+        ...
     </test>
     ...
     ...
@@ -145,7 +145,8 @@ iCubTestMotors test_right_arm.ini
 \e outfile report file name
 \e comment textual comment
 
-\e iCubTestMotors test type \e test_left_arm.ini test configuration file
+\e iCubTestMotors test type 
+\e test_left_arm.ini test configuration file
 
 \section tested_os_sec Tested OS
 
