@@ -23,8 +23,8 @@
 iCubTestMotors::iCubTestMotors(yarp::os::Searchable& configuration) : iCubTest(configuration)
 {
     m_aTargetVal=NULL;
-    m_aMaxVal=NULL;
-    m_aMinVal=NULL;
+    m_aMaxErr=NULL;
+    m_aMinErr=NULL;
     m_aRefVel=NULL;
     m_aRefAcc=NULL;
     m_aTimeout=NULL;
@@ -77,11 +77,11 @@ iCubTestMotors::iCubTestMotors(yarp::os::Searchable& configuration) : iCubTest(c
 
         int n=m_NumJoints<bot.size()?m_NumJoints:bot.size();
 
-        m_aMinVal=new double[m_NumJoints];
+        m_aMinErr=new double[m_NumJoints];
 
         for (int i=0; i<n; ++i)
         {
-            if (bot.get(i).isDouble()) m_aMinVal[i]=bot.get(i).asDouble();
+            if (bot.get(i).isDouble()) m_aMinErr[i]=bot.get(i).asDouble();
         }
     }
 
@@ -91,11 +91,11 @@ iCubTestMotors::iCubTestMotors(yarp::os::Searchable& configuration) : iCubTest(c
 
         int n=m_NumJoints<bot.size()?m_NumJoints:bot.size();
 
-        m_aMaxVal=new double[m_NumJoints];
+        m_aMaxErr=new double[m_NumJoints];
 
         for (int i=0; i<n; ++i)
         {
-            if (bot.get(i).isDouble()) m_aMaxVal[i]=bot.get(i).asDouble();
+            if (bot.get(i).isDouble()) m_aMaxErr[i]=bot.get(i).asDouble();
         }
     }
 
@@ -148,13 +148,13 @@ iCubTestMotors::~iCubTestMotors()
     {
         delete [] m_aTargetVal;
     }
-    if (m_aMaxVal)
+    if (m_aMaxErr)
     {
-        delete [] m_aMaxVal;
+        delete [] m_aMaxErr;
     }
-    if (m_aMinVal)
+    if (m_aMinErr)
     {
-        delete [] m_aMinVal;
+        delete [] m_aMinErr;
     }
     if (m_aRefVel)
     {
@@ -192,10 +192,10 @@ iCubTestReport* iCubTestMotors::run()
 
         pOutput->m_Value="N/A";
 
-        sprintf(posString,"%f",m_aMinVal[joint]);
+        sprintf(posString,"%f",m_aMinErr[joint]);
         pOutput->m_MinVal=posString;
 
-        sprintf(posString,"%f",m_aMaxVal[joint]);
+        sprintf(posString,"%f",m_aMaxErr[joint]);
         pOutput->m_MaxVal=posString;
 
         iCubDriver::ResultCode result=iCubDriver::instance()->setPos(m_Part,joint,m_aTargetVal[joint],m_aRefVel?m_aRefVel[joint]:0.0,m_aRefAcc?m_aRefAcc[joint]:0.0);
@@ -288,7 +288,7 @@ iCubTestReport* iCubTestMotors::run()
         sprintf(posString,"%f",pos);
         pOutput->m_Value=posString;
 
-        if (pos>=m_aMinVal[joint] && pos<=m_aMaxVal[joint])
+        if (pos>=m_aTargetVal[joint]+m_aMinErr[joint] && pos<=m_aTargetVal[joint]+m_aMaxErr[joint])
         {
             pOutput->m_Result="SUCCESS";
         }

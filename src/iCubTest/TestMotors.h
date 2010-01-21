@@ -44,8 +44,8 @@ protected:
     iCubDriver::iCubPart m_Part;
     int m_NumJoints;
     double *m_aTargetVal;
-    double *m_aMaxVal;
-    double *m_aMinVal;
+    double *m_aMaxErr;
+    double *m_aMinErr;
     double *m_aRefVel;
     double *m_aRefAcc;
     double *m_aTimeout;
