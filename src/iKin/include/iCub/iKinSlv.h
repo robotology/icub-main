@@ -307,6 +307,7 @@ protected:
     bool          auto_shut_down;
     int           maxPartJoints;
     int           unctrlJointsNum;
+    double        ping_robot_tmo;
     double        token;
     double       *pToken;
 
@@ -338,6 +339,7 @@ protected:
     bool   isNewDOF(const yarp::sig::Vector &_dof);
     bool   changeDOF(const yarp::sig::Vector &_dof);
 
+    void   waitPart(const yarp::os::Property &partOpt);
     void   alignJointsBounds();
     bool   setLimits(int axis, double min, double max);
     void   countUncontrolledJoints();
@@ -391,66 +393,73 @@ public:
     *  
     * Available options are: 
     *  
-    * \b robot : example (robot icub), specifies the name of the 
-    *    robot to connect to.
+    * \b robot <string>: example (robot icub), specifies the name of
+    *    the robot to connect to.
     *  
-    * \b type : example (type right), specifies the type of the limb 
-    *    to be instantiated; it can be "left" or "right".
+    * \b type <string>: example (type right), specifies the type of 
+    *    the limb to be instantiated; it can be "left" or "right".
     *  
-    * \b dof : example (dof (1 1 0 1 ...)), specifies which dof of 
-    *    the chain are actuated (by putting 1 in the corresponding
-    *    position) and which not (with 0). The length of the
-    *    provided list of 1's and 0's should match the number of
-    *    chain's links. The special value 2 is used to keep the link
-    *    status unchanged and proceed to next link.
+    * \b dof <list of int>: example (dof (1 1 0 1 ...)), specifies 
+    *    which dof of the chain are actuated (by putting 1 in the
+    *    corresponding position) and which not (with 0). The length
+    *    of the provided list of 1's and 0's should match the number
+    *    of chain's links. The special value 2 is used to keep the
+    *    link status unchanged and proceed to next link.
     *  
-    * \b rest_pos : example (rest_pos (20.0 0.0 0.0 ...)), specifies
-    *    in degrees the joints rest position used as secondary task
-    *    in the minimization. The lenght of the provided list should
-    *    match the number of chain's links. Default values are (0.0
-    *    0.0 0.0 ...).
+    * \b rest_pos <list of double>: example (rest_pos (20.0 0.0 0.0 
+    *    ...)), specifies in degrees the joints rest position used
+    *    as secondary task in the minimization. The lenght of the
+    *    provided list should match the number of chain's links.
+    *    Default values are (0.0 0.0 0.0 ...).
     *  
-    * \b rest_weights : example (rest_weights (1.0 0.0 0.0 1.0 
-    *    ...)), specifies for each link the weights used for the
-    *    secondary task minimization. The length of the provided
-    *    list should match the number of the chain's links. Default
-    *    values are (0.0 0.0 0.0 ...).
+    * \b rest_weights <list of double>: example (rest_weights (1.0 
+    *    0.0 0.0 1.0 ...)), specifies for each link the weights used
+    *    for the secondary task minimization. The length of the
+    *    provided list should match the number of the chain's links.
+    *    Default values are (0.0 0.0 0.0 ...).
     *  
-    * \b period : example (period 30), specifies the thread period 
-    *    in ms.
+    * \b period <int>: example (period 30), specifies the thread 
+    *    period in ms.
     *  
-    * \b pose : example (pose full), specifies the end-effector pose
-    *    the user wants to achieve; it can be [full]
-    *    (position+orientation) or [xyz] (only position).
+    * \b pose <vocab>: example (pose full), specifies the 
+    *    end-effector pose the user wants to achieve; it can be
+    *    [full] (position+orientation) or [xyz] (only position).
     *  
     * \b mode : example (mode cont), selects the solver mode between 
     *    [cont] which implements a continuous tracking and [shot]
     *    which does not compensate for movements induced on
     *    unacatuated joints.
     *  
-    * \b verbosity : example (verbosity on), selects whether to 
-    *    report or not on the screen the result of each optimization
-    *    instance; allowed values are [on] or [off].
+    * \b verbosity <vocab>: example (verbosity on), selects whether 
+    *    to report or not on the screen the result of each
+    *    optimization instance; allowed values are [on] or [off].
     *  
-    * \b maxIter : example (maxIter 200), specifies the maximum 
+    * \b maxIter <int>: example (maxIter 200), specifies the maximum
     *    number of iterations allowed for one optimization instance.
     *  
-    * \b tol : example (tol 1e-3), specifies the desired tolerance 
-    *    on the task function to be minimized.
+    * \b tol <double>: example (tol 1e-3), specifies the desired 
+    *    tolerance on the task function to be minimized.
     *  
-    * \b xyzTol : example (xyzTol 1e-6), specifies the desired 
-    *    tolerance on the positional part of the task function to be
-    *    minimized whenever the "full" pose requirement is raised.
+    * \b xyzTol <double>: example (xyzTol 1e-6), specifies the 
+    *    desired tolerance on the positional part of the task
+    *    function to be minimized whenever the "full" pose
+    *    requirement is raised.
     *  
-    * \b interPoints : example (interPoints on), selects whether to 
-    *    force or not the solver to output on the port all
-    *    intermediate points of optimization instance; allowed
+    * \b interPoints <vocab>: example (interPoints on), selects 
+    *    whether to force or not the solver to output on the port
+    *    all intermediate points of optimization instance; allowed
     *    values are [on] or [off].
     *  
-    * \b auto_shut_down : example (auto_shut_down on), if enabled it
-    *    specifies to automatically shut down the thread whenever a
-    *    communication timeout is detected while gathering data from
-    *    the robot.
+    * \b ping_robot_tmo <double>: example (ping_robot_tmo 2.0), 
+    *    specifies a "timein" in seconds during which robot state
+    *    ports are pinged prior to connecting; a timein equal to
+    *    zero disables this option.
+    *  
+    * \b auto_shut_down <vocab>: example (auto_shut_down on), if 
+    *    enabled specifies to automatically shut down the thread
+    *    whenever a communication timeout is detected while
+    *    gathering data from the robot; allowed values are [on] or
+    *    [off].
     *  
     * @return true/false if successful/failed
     */

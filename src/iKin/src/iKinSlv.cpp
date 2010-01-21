@@ -1,6 +1,8 @@
 
 #include <ace/Auto_Event.h>
 #include <yarp/os/Time.h>
+#include <yarp/os/impl/NameClient.h>
+#include <yarp/os/impl/Carriers.h>
 
 #include <stdio.h>
 
@@ -21,6 +23,7 @@ namespace iKin
 using namespace std;
 using namespace yarp;
 using namespace yarp::os;
+using namespace yarp::os::impl;
 using namespace yarp::sig;
 using namespace yarp::dev;
 using namespace yarp::math;
@@ -348,9 +351,10 @@ CartesianSolver::CartesianSolver(const string &_slvName) : RateThread(CARTSLV_DE
     configured=false;
     closed=false;
     verbosity=false;
-    auto_shut_down=false;
+    auto_shut_down=false; 
     maxPartJoints=0;
     unctrlJointsNum=0;
+    ping_robot_tmo=0.0;
 
     prt=NULL;
     slv=NULL;
@@ -373,6 +377,51 @@ CartesianSolver::CartesianSolver(const string &_slvName) : RateThread(CARTSLV_DE
 
     // request high resolution scheduling
     Time::turboBoost();
+}
+
+
+/************************************************************************/
+void CartesianSolver::waitPart(const Property &partOpt)
+{
+    string robotName=const_cast<Property&>(partOpt).find("robot").asString();
+    string partName=const_cast<Property&>(partOpt).find("part").asString();
+    string portName="/"+robotName+"/"+partName+"/state:o";
+    double t0=Time::now();
+
+    while (Time::now()-t0<ping_robot_tmo)
+    {   
+        fprintf(stdout,"%s: Checking if %s port is active ... ",
+                slvName.c_str(),portName.c_str());
+    
+        NameClient &nic=NameClient::getNameClient();
+        Address address=nic.queryName(portName.c_str());
+        bool ret;
+    
+        if (address.isValid())
+        {    
+            if (OutputProtocol *out=Carriers::connect(address))
+            {
+                out->close();
+                delete out;
+    
+                ret=true;
+            }
+            else
+                ret=false;
+        }
+        else
+            ret=false;
+    
+        fprintf(stdout,"%s\n",ret?"ok":"not yet");
+
+        if (ret)
+            return;
+        else
+        {
+            double t1=Time::now();
+            while (Time::now()-t1<CARTSLV_DEFAULT_TMO/1000.0);
+        }
+    }
 }
 
 
@@ -1084,14 +1133,19 @@ bool CartesianSolver::open(Searchable &options)
     }
 
     prt=getPartDesc(options);
-
     int remainingJoints=prt->chn->getN();
+    
+    if (options.check("ping_robot_tmo"))
+        ping_robot_tmo=options.find("ping_robot_tmo").asDouble();
 
     // open drivers
     for (int i=0; i<prt->num; i++)
     {
         fprintf(stdout,"Allocating device driver for %s ...\n",
                 prt->prp[i].find("part").asString().c_str());
+
+        if (ping_robot_tmo>0.0)
+            waitPart(prt->prp[i]);
 
         PolyDriver *pDrv=new PolyDriver(prt->prp[i]);
 
