@@ -26,10 +26,6 @@ bool ImageProcessModule::open(Searchable& config) {
 	inputImage_flag=false;
     reinit_flag=false;
 
-    //flags for the mode
-    IPPISOBEL=false;
-    OPENCVSOBEL=false;
-	
 	currentProcessor=0;
 
     this->openPorts();   
@@ -82,8 +78,13 @@ void ImageProcessModule::setOptions(yarp::os::Property opt){
     if(value!=""){
        if(value=="OPENCVSOBEL")
         this->OPENCVSOBEL=true;
-       else if(value=="IPPSOBEL")
+       else
+        this->OPENCVSOBEL=false;
+       if(value=="IPPISOBEL")
         this->IPPISOBEL=true;
+       else
+        this->IPPISOBEL=false;
+
     }
 }
 
