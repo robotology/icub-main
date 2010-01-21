@@ -348,6 +348,14 @@ public:
 	* center of the max saliency blob, x coordinate
 	*/
 	double centroid_y;
+    /**
+	* center of the max saliency blob, logpolar c coordinate
+	*/
+	double maxc;
+	/**
+	* center of the max saliency blob, logpolar r coordinate
+	*/
+	double maxr;
 
 };
 

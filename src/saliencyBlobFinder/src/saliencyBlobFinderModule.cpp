@@ -248,9 +248,13 @@ void saliencyBlobFinderModule::outPorts(){
         Bottle &bot = centroidPort.prepare(); 
         bot.clear();
         bot.addVocab( Vocab::encode("sac") ); 
-        bot.addVocab( Vocab::encode("pix") ); 
-        bot.addDouble(blobFinder->salience->centroid_x); 
-        bot.addDouble(blobFinder->salience->centroid_y); 
+        bot.addVocab( Vocab::encode("rel") ); 
+        // temporary implementation for opencvLogPolar
+        /*bot.addDouble(blobFinder->salience->maxc); 
+        bot.addDouble(blobFinder->salience->maxr); */
+        //logPolarMapper iCub driver
+        bot.addDouble(cos(blobFinder->salience->maxc)*blobFinder->salience->maxr); //reference to the relative azimuth angle 
+        bot.addDouble(sin(blobFinder->salience->maxc)*blobFinder->salience->maxr); //reference to the relative elevation angle
         centroidPort.write(); 
         
     }
