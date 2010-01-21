@@ -399,22 +399,22 @@ public:
     * \b type <string>: example (type right), specifies the type of 
     *    the limb to be instantiated; it can be "left" or "right".
     *  
-    * \b dof <list of int>: example (dof (1 1 0 1 ...)), specifies 
+    * \b dof <(int int ...)>: example (dof (1 1 0 1 ...)), specifies
     *    which dof of the chain are actuated (by putting 1 in the
     *    corresponding position) and which not (with 0). The length
     *    of the provided list of 1's and 0's should match the number
     *    of chain's links. The special value 2 is used to keep the
     *    link status unchanged and proceed to next link.
     *  
-    * \b rest_pos <list of double>: example (rest_pos (20.0 0.0 0.0 
-    *    ...)), specifies in degrees the joints rest position used
-    *    as secondary task in the minimization. The lenght of the
-    *    provided list should match the number of chain's links.
+    * \b rest_pos <(double double ...)>: example (rest_pos (20.0 0.0
+    *    0.0 ...)), specifies in degrees the joints rest position
+    *    used as secondary task in the minimization. The lenght of
+    *    the provided list should match the number of chain's links.
     *    Default values are (0.0 0.0 0.0 ...).
     *  
-    * \b rest_weights <list of double>: example (rest_weights (1.0 
-    *    0.0 0.0 1.0 ...)), specifies for each link the weights used
-    *    for the secondary task minimization. The length of the
+    * \b rest_weights <(double double ...)>: example (rest_weights 
+    *    (1.0 0.0 0.0 1.0 ...)), specifies for each link the weights
+    *    used for the secondary task minimization. The length of the
     *    provided list should match the number of the chain's links.
     *    Default values are (0.0 0.0 0.0 ...).
     *  
