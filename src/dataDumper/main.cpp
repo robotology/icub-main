@@ -50,13 +50,13 @@ YARP libraries and OpenCV (if found)
   specified \e vector is assumed. Note that images are stored as
   ppm files. If \e video is choosen then only the file
   'video.avi' is produced neither 'data.log' nor the single
-  images.
-  \note \e video option is available iff OpenCV is found.
+  images. The option \e video is available iff OpenCV is found.
  
---addVideo (available iff OpenCV is found)
+--addVideo
 - In case images are acquired with this option enabled, a video 
   called 'video.avi' is also produced at the same time (the
-  codec used is MPEG-4).
+  codec used is MPEG-4). This option is available iff OpenCV is
+  found.
  
 --downsample \e n 
 - With this option it is possibile to reduce the storing rate by 
