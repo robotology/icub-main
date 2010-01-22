@@ -7,16 +7,40 @@
  * 
  * \section intro_sec Description
  * 
- * Riccati can be used for optimal control based on Discrete Algebraic Riccati Equation (DARE).
- * In the following, the basics of a LQR (linear quadratic regulation) problem are reported.
+ * The class Riccati can be used for optimal control based on Discrete Algebraic Riccati Equation (DARE).
  * The DARE is used to compute the linear gain matrix of the feedback controls. 
- * 
+ * In the following, the basics of a LQR (linear quadratic regulation) problem are reported.
+ *
+ * Given the linear system:
+ * \f[ x_{i+1} = A x_i + B u_i \ , \ i=0,1,\ldots,N-1 \f]
+ * with the known initial state \f$ x_0 = \hat{x} \f$ , and the 
+ * quadratic cost \f$ J \f$ : 
+ * \f[ J = \sum^{N-1}_{i=0} \left[ x^\top_i V x_i + u^\top_i P u_i \right] + x^\top_N V_N x_N \f]
+ * with \f$ V=V^\top \geq 0 \f$ , \f$ V_N=V^\top_N \geq 0 \f$ , 
+ * \f$ P=P^\top>0 \f$ , the problem is to find the sequence of 
+ * optimal controls \f$ u^\circ_0, \ldots, u^\circ_{N-1} \f$ 
+ * minimizing \f$ J \f$ . The optimal controls can be found via 
+ * dynamic programming, and a closed form solution can be found. 
+ * At time instant \f$ i \f$ the optimal cost-to-go and control 
+ * are: 
+ * \f[ \begin{align*}
+ * J^\circ(x_{i}) &= x^\top_{i} \ T_{i} \ x_{i} \\
+ * u^\circ_{i} &= - L_i \ x_{i}
+ * \end{align*} \f]
+ * where \f$ L_i \f$ is:
+ * \f[ L_i = (P+B^\top T_{i+1} B)^{-1} B^\top T_{i+1} A \f]
+ * whilst \f$ T_i \f$ is computed after the ``discrete time algebraic Riccati equation'':
+ * \f[ \begin{align*}T_N &= V_N \\
+ * T_i &= V + A^\top [ T_{i+1} - T_{i+1} B (P+B^\top T_{i+1} B)^{-1} B^\top T_{i+1} ] A
+ * \end{align*} \f]
+ *
+ *
  * \section example_sec Example
  *  
  * \code 
  * Riccati r(A,B,V,P,VN,true);
  * r.solveRiccati(steps);
- * for(int i=0; i<steps; i++)
+ * for(i=0; i<steps; i++)
  * {
  *    u=r.doLQcontrol(i,x);
  *    x=A*x+B*u;
@@ -26,6 +50,7 @@
  * \author Serena Ivaldi
  * 
  * Copyright (C) 2010 RobotCub Consortium
+ * 
  * CopyPolicy: Released under the terms of the GNU GPL v2.0.
  * 
  **/ 
@@ -42,9 +67,9 @@ namespace ctrl
 {
 
 /**
-* \ingroup Riccati
+* \ingroup optimalControl
 *
-* Classic Riccati recursive formula for optimal control of a LQ problem
+* Classic Riccati recursive formula for optimal control in a LQ problem
 */
 class Riccati
 {
