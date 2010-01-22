@@ -56,68 +56,72 @@ Here's how the configuration file will look like:
  
 \code 
 [left_arm]
-robot       icub
-name        cartesianSolver/left_arm
-type        left
-period      20
-dof         (0 0 0 1 1 1 1 1 1 1)
-pose        full
-mode        shot
-verbosity   off
-maxIter     200
-tol         0.001
-xyzTol      0.000001
-interPoints off 
+robot          icub
+name           cartesianSolver/left_arm
+type           left
+period         20
+dof            (0 0 0 1 1 1 1 1 1 1)
 rest_pos       (0.0 0.0 0.0 0.0 0.0 0.0 0.0 0.0 0.0 0.0)
 rest_weights   (1.0 1.0 1.0 0.0 0.0 0.0 0.0 0.0 0.0 0.0) 
+pose           full
+mode           shot
+verbosity      off
+maxIter        200
+tol            0.001
+xyzTol         0.000001
+interPoints    off 
+ping_robot_tmo 20.0 
  
 [right_arm]
-robot       icub
-name        cartesianSolver/right_arm
-type        right
-period      20
-dof         (0 0 0 1 1 1 1 1 1 1)
-pose        full
-mode        shot
-verbosity   off
-maxIter     200
-tol         0.001   
-xyzTol      0.000001
-interPoints off 
+robot          icub
+name           cartesianSolver/right_arm
+type           right
+period         20
+dof            (0 0 0 1 1 1 1 1 1 1)
 rest_pos       (0.0 0.0 0.0 0.0 0.0 0.0 0.0 0.0 0.0 0.0)
 rest_weights   (1.0 1.0 1.0 0.0 0.0 0.0 0.0 0.0 0.0 0.0) 
-
+pose           full
+mode           shot
+verbosity      off
+maxIter        200
+tol            0.001   
+xyzTol         0.000001
+interPoints    off 
+ping_robot_tmo 20.0 
+ 
 [left_leg]
-robot       icub
-name        cartesianSolver/left_leg
-type        left
-period      20
-dof         (1 1 1 1 1 1)
-pose        full
-mode        shot
-verbosity   off
-maxIter     200
-tol         0.001   
-xyzTol      0.000001
-interPoints off 
+robot          icub
+name           cartesianSolver/left_leg
+type           left
+period         20
+dof            (1 1 1 1 1 1)
 rest_pos       (0.0 0.0 0.0 0.0 0.0 0.0)
 rest_weights   (0.0 0.0 0.0 0.0 0.0 0.0) 
+pose           full
+mode           shot
+verbosity      off
+maxIter        200
+tol            0.001   
+xyzTol         0.000001
+interPoints    off
+ping_robot_tmo 20.0 
 
 [right_leg]
-robot       icub
-name        cartesianSolver/right_leg
-type        right
-period      20
-dof         (1 1 1 1 1 1)
-pose        full
-mode        shot
-verbosity   off
-maxIter     200
-tol         0.001   
-xyzTol      0.000001
-interPoints off 
+robot          icub
+name           cartesianSolver/right_leg
+type           right
+period         20
+dof            (1 1 1 1 1 1)
 rest_pos       (0.0 0.0 0.0 0.0 0.0 0.0)
 rest_weights   (0.0 0.0 0.0 0.0 0.0 0.0) 
+pose           full
+mode           shot
+verbosity      off
+maxIter        200
+tol            0.001   
+xyzTol         0.000001
+interPoints    off
+ping_robot_tmo 20.0 
 \endcode 
  
 \note for a detailed description of options, see \ref iKinSlv
