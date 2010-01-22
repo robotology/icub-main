@@ -15,11 +15,6 @@
 #define CARTSLV_DEFAULT_PER     20      // [ms]
 #define CARTSLV_DEFAULT_TMO     1000    // [ms]
 
-namespace iKin
-{
-    class iCubShoulderConstr;
-}
-
 using namespace std;
 using namespace yarp;
 using namespace yarp::os;
@@ -31,7 +26,10 @@ using namespace ctrl;
 using namespace iKin;
 
 
-class iKin::iCubShoulderConstr : public iKinLinIneqConstr
+namespace iKin
+{
+
+class iCubShoulderConstr : public iKinLinIneqConstr
 {
 protected:    
     double joint1_0, joint1_1;
@@ -120,6 +118,8 @@ public:
         }
     }
 };
+
+}
 
 
 /************************************************************************/
