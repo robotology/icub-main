@@ -3,7 +3,7 @@
 #include <yarp/math/Math.h>
 using namespace yarp::math;
 
-#include <iCub/ctrlMath.h>;
+#include <iCub/ctrlMath.h>
 using namespace ctrl;
 
 #include <iCub/iKinVocabs.h>
