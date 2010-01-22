@@ -105,10 +105,8 @@ bool getFeedback(Vector &fb, iKinChain *chain, IEncoders *encTorso,
                  IEncoders *encArm, int nJointsTorso, int nJointsArm,
                  bool ctrlTorso)
 {
-    static unsigned int tmoCntTorso=0;
-    static unsigned int tmoCntArm  =0;
-
-    unsigned int offs=ctrlTorso ? nJointsTorso : 0;    
+    unsigned int offs=ctrlTorso ? nJointsTorso : 0;
+    bool ret=true;
     
     // filled in reversed order
     Vector fbTorso(nJointsTorso);
@@ -120,23 +118,18 @@ bool getFeedback(Vector &fb, iKinChain *chain, IEncoders *encTorso,
             else
                 for (int i=0; i<nJointsTorso; i++)
                     chain->setBlockingValue(i,(M_PI/180.0)*fbTorso[nJointsTorso-i-1]);
-
-        tmoCntTorso=0;
     }
+    else
+        ret=false;
 
     Vector fbArm(nJointsArm);
     if (encArm->getEncoders(fbArm.data()))
-    {
         for (int i=0; i<nJointsArm; i++)
             fb[offs+i]=(M_PI/180.0)*fbArm[i];
-
-        tmoCntArm=0;
-    }
-
-    if (++tmoCntTorso>10 || ++tmoCntArm>10)
-        return false;
     else
-        return true;
+        ret=false;
+
+    return ret;
 }
 
 

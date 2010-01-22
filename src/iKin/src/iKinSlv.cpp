@@ -508,21 +508,22 @@ void CartesianSolver::latchUncontrolledJoints(Vector &joints)
 bool CartesianSolver::getFeedback(const bool wait)
 {
     Vector fbTmp(maxPartJoints);
-    int chainCnt=0;    
+    int chainCnt=0;
+    bool ret=true;    
 
     for (int i=0; i<prt->num; i++)
     {    
-        bool flag;
+        bool ok;
 
         if (wait)
         {
             while (!enc[i]->getEncoders(fbTmp.data()));
-            flag=true;
+            ok=true;
         }
         else
-            flag=enc[i]->getEncoders(fbTmp.data());
+            ok=enc[i]->getEncoders(fbTmp.data());
 
-        if (flag)
+        if (ok)
         {    
             for (int j=0; j<jnt[i]; j++)
             {
@@ -535,22 +536,18 @@ bool CartesianSolver::getFeedback(const bool wait)
             
                 chainCnt++;
             }
-
-            tmo[i]=0;
         }
         else
-            chainCnt+=jnt[i];
-
-        if (++tmo[i]>CARTSLV_DEFAULT_TMO/CARTSLV_DEFAULT_PER)
-        {
+        {    
             fprintf(stdout,"%s: timeout detected on part %s!\n",
                     slvName.c_str(),prt->prp[i].find("part").asString().c_str());
 
-            return false;
+            chainCnt+=jnt[i];
+            ret=false;
         }
     }
 
-    return true;
+    return ret;
 }
 
 
@@ -1193,7 +1190,6 @@ bool CartesianSolver::open(Searchable &options)
         enc.push_back(pEnc);
         jnt.push_back(joints);
         rmp.push_back(rmpTmp);
-        tmo.push_back(0);
     }
 
     // handle joints rest position and weights

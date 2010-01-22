@@ -285,7 +285,6 @@ protected:
     std::deque<yarp::dev::IEncoders*>      enc;
     std::deque<int>                        jnt;
     std::deque<int*>                       rmp;
-    std::deque<int>                        tmo;
 
     iKinIpOptMin   *slv;
     SolverCallback *clb;

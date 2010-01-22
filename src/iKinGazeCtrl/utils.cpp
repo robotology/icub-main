@@ -153,28 +153,21 @@ void updateNeckBlockedJoints(iKinChain *chain, Vector &fbNeck)
 /************************************************************************/
 bool getFeedback(Vector &fbTorso, Vector &fbHead, IEncoders *encTorso, IEncoders *encHead)
 {
-    static unsigned int tmoCntTorso=0;
-    static unsigned int tmoCntHead =0;
-    
     Vector fb(6);
+    bool ret=true;
+    
     if (encTorso->getEncoders(fb.data()))
-    {
         for (int i=0; i<3; i++)
             fbTorso[i]=(M_PI/180.0)*fb[2-i];    // reversed order
-
-        tmoCntTorso=0;
-    }
+    else
+        ret=false;
 
     if (encHead->getEncoders(fb.data()))
-    {
         fbHead=(M_PI/180.0)*fb;
-        tmoCntHead=0;
-    }
-
-    if (++tmoCntTorso>20 || ++tmoCntHead>20)
-        return false;
     else
-        return true;
+        ret=false;
+
+    return ret;
 }
 
 
