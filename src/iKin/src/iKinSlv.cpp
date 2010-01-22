@@ -383,8 +383,8 @@ CartesianSolver::CartesianSolver(const string &_slvName) : RateThread(CARTSLV_DE
 /************************************************************************/
 void CartesianSolver::waitPart(const Property &partOpt)
 {
-    string robotName=const_cast<Property&>(partOpt).find("robot").asString();
-    string partName=const_cast<Property&>(partOpt).find("part").asString();
+    string robotName=const_cast<Property&>(partOpt).find("robot").asString().c_str();
+    string partName=const_cast<Property&>(partOpt).find("part").asString().c_str();
     string portName="/"+robotName+"/"+partName+"/state:o";
     double t0=Time::now();
 
