@@ -19,14 +19,12 @@
  * with \f$ V=V^\top \geq 0 \f$, \f$ V_N=V^\top_N \geq 0 \f$, \f$ P=P^\top>0 \f$, the problem is to find the sequence of 
  * optimal controls \f$ u^\circ_0, \ldots, u^\circ_{N-1} \f$ minimizing \f$J\f$. 
  * The optimal controls can be found via dynamic programming, and a closed form solution can be found.
- * At time instant \f$i\f$ the optimal cost-to-go and control are:
- * \f[ \begin{array}J^\circ(x_{i}) = x^\top_{i} \ T_{i} \ x_{i} 
- * \\ u^\circ_{i} = - L_i \ x_{i} \end{array} \f] where \f$ L_i 
- * \f$ is: 
+ * At time instant \f$ i \f$ the optimal cost-to-go and control are:
+ * \f[ \begin{array}{l} J^\circ \left(x_{i}\right) = x^\top_{i} T_{i}x_{i} \\ u^\circ_{i} = - L_i x_{i} \end{array} \f]
+ * where \f$ L_i \f$ is: 
  * \f[ L_i = (P+B^\top T_{i+1} B)^{-1} B^\top T_{i+1} A \f]
- * whilst \f$ T_i \f$ is computed after the <b>discrete time 
- * algebraic Riccati equation</b>: 
- * \f[ T_N = V_N \ , \ T_i = V + A^\top [ T_{i+1} - T_{i+1} B (P+B^\top T_{i+1} B)^{-1} B^\top T_{i+1} ] A \f]
+ * whilst \f$ T_i \f$ is computed after the <b>discrete time algebraic Riccati equation</b>: 
+ * \f[ \begin{array}{l} T_N = V_N \\ T_i = V + A^\top \left[ T_{i+1} - T_{i+1} B \left(P+B^\top T_{i+1} B\rigth)^{-1} B^\top T_{i+1} \right] A \end{array} \f]
  *
  *
  * \section code_example_sec Example
