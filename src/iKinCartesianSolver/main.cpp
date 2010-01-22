@@ -217,7 +217,7 @@ public:
 
     virtual bool updateModule()
     {
-        if (slv->isClosed() || slv->getTimeoutDetected())
+        if (slv->isClosed() || slv->getTimeoutFlag())
             return false;
         else
             return true;

@@ -478,7 +478,7 @@ public:
     * \note At first timeout detection the flag is set and is never 
     *       reset again.
     */
-    virtual bool &getTimeoutDetected() { return timeout_detected; }
+    virtual bool &getTimeoutFlag() { return timeout_detected; }
 
     /**
     * Default destructor.
