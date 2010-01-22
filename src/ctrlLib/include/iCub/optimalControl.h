@@ -35,7 +35,7 @@
  * \end{align*} \f]
  *
  *
- * \section example_sec Example
+ * \section code_example_sec Example
  *  
  * \code 
  * Riccati r(A,B,V,P,VN,true);
