@@ -55,12 +55,17 @@ private:
     double                  mTime;
     double                  mPrevTime;
     
+    bool                    bOpenLoopControl;
+    Vector                  mOpenLoopJointPos;
+    bool                    bPauseOpenLoopControl;
+    
     int                     mJointSize;
     int                     mIKJointSize;
     Vector                  mTargetJointPos;
     Vector                  mTargetJointVel;
     Vector                  mCurrentJointPos;
     Vector                  mCurrentJointVel;
+
     
     Vector                  mJointsLimits[2];
 
@@ -158,6 +163,9 @@ private:
     BufferedPort<Vector>    mDesiredCartEyeInEyePort;
     BufferedPort<Vector>    mDesiredCartEyePort;
     
+    
+    
+    double                  mCurrentJointPosLastTime;
     
     double                  mDesiredCartPosRLastTime;
     double                  mDesiredCartPosLLastTime;

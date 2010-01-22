@@ -347,6 +347,12 @@ void    RobotControllerThread::Init(){
     mDesiredHandPosLLastTime        = -1.0;
     mDesiredArmJointsRLastTime       = -1.0;
     mDesiredArmJointsLLastTime       = -1.0;
+
+    mCurrentJointPosLastTime        = -1.0;
+
+    bOpenLoopControl        = false;
+    bPauseOpenLoopControl   = true;
+    mOpenLoopJointPos.resize(mJointSize);
 }
 
 void    RobotControllerThread::Free(){
@@ -371,6 +377,32 @@ void RobotControllerThread::run()
     mMutex.wait();
 
     ReadFromPorts();
+
+    if(bOpenLoopControl){
+        if(mState != RCS_IDLE){
+            if(mTime-mCurrentJointPosLastTime        >= INPUTS_TIMEOUT){
+                bPauseOpenLoopControl = true;
+                cout << "****PAUSED****"<<endl;
+                //mCurrentJointPos = mOpenLoopJointPos;
+            }else{
+                if(bPauseOpenLoopControl){
+                    mOpenLoopJointPos = mCurrentJointPos;
+                    bPauseOpenLoopControl = false;
+                }else{
+                    for(int i=0;i<mOpenLoopJointPos.size()-6;i++){
+                    //ES for(int i=0;i<mOpenLoopJointPos.size();i++){
+                        mCurrentJointPos[i] = mOpenLoopJointPos[i];
+                    }
+                    //mCurrentJointPos = mOpenLoopJointPos;
+                }
+            }
+        }else{
+            mOpenLoopJointPos       = mCurrentJointPos;
+            bPauseOpenLoopControl   = true;
+        }
+    }
+
+
     
     mTargetJointPos = mCurrentJointPos;
     mTargetJointVel = 0;
@@ -459,18 +491,17 @@ void RobotControllerThread::run()
         
         mTargetJointPos = mCurrentJointPos;
         
-        
-        switch(mState){
-        case RCS_IDLE:
-            /*for(int i=0;i<mJointSize;i++){
-                mTargetJointPos(i) = mCurrentJointPos(i)-5;
-            }*/
-            break;
-        case RCS_RUN:
-            //mTargetJointPos = mCurrentJointPos;
-            //mTargetJointVel = 0;
-            break;
+        if(bOpenLoopControl){
+            for(int i=0;i<mOpenLoopJointPos.size()-6;i++){
+            //ESfor(int i=0;i<mOpenLoopJointPos.size();i++){
+                mOpenLoopJointPos[i] = mOpenLoopJointPos[i] + mTargetJointVel[i]*dt;
+                mOpenLoopJointPos[i] = TRUNC(mOpenLoopJointPos[i],mJointsLimits[0][i],mJointsLimits[1][i]);
+                mTargetJointPos[i]   = mOpenLoopJointPos[i];
+                mTargetJointVel[i]   = 0.0;
+            }
         }
+
+        
     
     }else{
         mTargetJointPos = mCurrentJointPos;
@@ -479,7 +510,13 @@ void RobotControllerThread::run()
     
     
     
-    WriteToPorts();
+    if(bOpenLoopControl){
+        if(!bPauseOpenLoopControl){
+            WriteToPorts();
+        }
+    }else{
+        WriteToPorts();
+    }
 
     mMutex.post();
 }
@@ -650,7 +687,10 @@ void    RobotControllerThread::ReadFromPorts(){
     Vector *inputVec;
     inputVec = mCurrentJointPosPort.read(false);
     if(inputVec!=NULL){
-        if(inputVec->size()==mJointSize) mCurrentJointPos = *inputVec;
+        if(inputVec->size()==mJointSize){
+            mCurrentJointPos = *inputVec;
+            mCurrentJointPosLastTime = mTime;
+        }
         else cerr << "Bad vector size on port <currentJointPosition>: " << inputVec->size() << "!="<< mJointSize << endl;
     }
     for(int i=0;i<mCurrentJointPos.size();i++){
@@ -766,10 +806,11 @@ void    RobotControllerThread::ReadFromPorts(){
     inputVec = mDesiredCartEyeInEyePort.read(false);
     if(inputVec!=NULL){
         if(inputVec->size()==3){
-            mDesiredCartEyeInEyePos = *inputVec;
+            //mDesiredCartEyeInEyePos = *inputVec;
+            mDesiredCartEyeInEyePos[0] = (*inputVec)[0]*0.001; mDesiredCartEyeInEyePos[1] = (*inputVec)[1]*0.001; mDesiredCartEyeInEyePos[2] = (*inputVec)[2]*0.001; 
             mDesiredCartEyeInEyeLastTime = mTime;
         }else if(inputVec->size()==6){
-            mDesiredCartEyeInEyePos[0] = (*inputVec)[0]; mDesiredCartEyeInEyePos[1] = (*inputVec)[1]; mDesiredCartEyeInEyePos[2] = (*inputVec)[2]; 
+            mDesiredCartEyeInEyePos[0] = (*inputVec)[0]*0.001; mDesiredCartEyeInEyePos[1] = (*inputVec)[1]*0.001; mDesiredCartEyeInEyePos[2] = (*inputVec)[2]*0.001; 
             mDesiredCartEyeInEyeLastTime = mTime;
         }else cerr << "Bad vector size on port <desiredCartEyeInEye>: " << inputVec->size() << "!= 3 or 6"<< endl;
     }
@@ -833,16 +874,17 @@ void    RobotControllerThread::CheckInputsTimeout(){
 
 void    RobotControllerThread::WriteToPorts(){
     // Write data to output port
-    {
-        //Vector &outputVec = mTargetJointPosPort.prepare();
-        //outputVec = mTargetJointPos;
-        //mTargetJointPosPort.write();
-    }
+    if(bOpenLoopControl){
+        Vector &outputVec = mTargetJointPosPort.prepare();
+        outputVec = mTargetJointPos;
+        mTargetJointPosPort.write();
+    }//else //ES
     {
         Vector &outputVec = mTargetJointVelPort.prepare();
         outputVec = mTargetJointVel;
         mTargetJointVelPort.write();
     }
+
     {
         Matrix &outputMat = mCurrentWristRefRPort.prepare();
         outputMat = mFwdKinWristRef[0];

@@ -29,6 +29,9 @@ using namespace yarp::os;
 
 #include "StdTools/Various.h"
 
+//#define FAKE_NETWORK
+
+
 ImitationApplicationThread::ImitationApplicationThread(int period, const char* baseName)
 :RateThread(period)
 {
@@ -107,8 +110,8 @@ bool ImitationApplicationThread::threadInit()
     snprintf(mSrcPortName[SPID_LRefTransOutput],    256,"/RefTransform/Left/outputPose");
     snprintf(mSrcPortName[SPID_MotionSensorsArm],   256,"/MotionSensors/left_arm");
     snprintf(mSrcPortName[SPID_MotionSensorsHand],  256,"/MotionSensors/left_glove");
-    snprintf(mSrcPortName[SPID_Vision0],            256,"/vision/vision0:o");
-    snprintf(mSrcPortName[SPID_Vision1],            256,"/vision/vision1:o");
+    snprintf(mSrcPortName[SPID_Vision0],            256,"/micha/vision0:o");
+    snprintf(mSrcPortName[SPID_Vision1],            256,"/micha/vision1:o");
         
 
     
@@ -286,7 +289,7 @@ void ImitationApplicationThread::ProcessBasicCommand(){
     case BC_SENSORS_TO_RIGHTARM_NONE:
         RemConnexion(SPID_MotionSensorsArm, DPID_RArmJointsPos);
         RemConnexion(SPID_MotionSensorsHand, DPID_RArmHandPos);        
-        AddCommand(PID_Robot,"iks Rest");
+        AddCommand(PID_Robot,"iku Joints");
         break;
     case BC_SENSORS_TO_LEFTARM:
         AddConnexion(SPID_MotionSensorsArm, DPID_LArmJointsPos);
@@ -298,7 +301,8 @@ void ImitationApplicationThread::ProcessBasicCommand(){
     case BC_SENSORS_TO_LEFTARM_NONE:
         RemConnexion(SPID_MotionSensorsArm, DPID_LArmJointsPos);
         RemConnexion(SPID_MotionSensorsHand, DPID_LArmHandPos);        
-        AddCommand(PID_Robot,"iks Rest");
+        AddCommand(PID_Robot,"iku Joints");
+        //AddCommand(PID_Robot,"iks Rest");
         break;
     case BC_TRACK_NONE:
         RemAllSrcConnexions(DPID_EyeDesCartPos);
@@ -410,7 +414,7 @@ void ImitationApplicationThread::ProcessBasicCommand(){
             AddConnexion(SPID_LRefTransOutput, DPID_LArmDesCartPos);
             AddCommand(PID_Robot,"iks LeftArm");
         }
-        AddCommand(pid,"set reproTime 10.0");
+        //AddCommand(pid,"set reproTime 10.0");
         AddCommand(pid,"set rmode repro");
         AddCommand(pid,"run start");}
         break;
@@ -490,6 +494,7 @@ void ImitationApplicationThread::ConnectToNetwork(bool bConnect){
     cout << (bConnect?"Connecting to network":"Disonnecting from network")<<endl;
     for(int i=0;i<PID_SIZE;i++){
         cout << "  From: "<< mSrcCtrlPortName[i] <<" to: "<< mDstCtrlPortName[i] <<endl;
+#ifndef FAKE_NETWORK    
         if(bConnect){
             if(!Network::isConnected(mSrcCtrlPortName[i],mDstCtrlPortName[i]))
                 if(!Network::connect(mSrcCtrlPortName[i],mDstCtrlPortName[i]))
@@ -498,6 +503,7 @@ void ImitationApplicationThread::ConnectToNetwork(bool bConnect){
             if( Network::isConnected(mSrcCtrlPortName[i],mDstCtrlPortName[i]))
                 Network::disconnect(mSrcCtrlPortName[i],mDstCtrlPortName[i]);
         }
+#endif
     }
     cout << "Done..."<<endl;
 }
@@ -555,6 +561,7 @@ void    ImitationApplicationThread::RemAllConnexions(){
             RemConnexion(SrcPortId(i),DstPortId(j));
 }
 
+
 void ImitationApplicationThread::SendCommands(){
     int cmdCnt = 0;
     int conCnt = 0;
@@ -565,32 +572,32 @@ void ImitationApplicationThread::SendCommands(){
         switch(mCommandsType[i]){
         case 0:
             {
+#ifndef FAKE_NETWORK
                 Bottle &cmd = mPorts[mCommandsPort[cmdCnt]]->prepare();
                 cmd.fromString(mCommands[cmdCnt].c_str());
-                /*cmd.clear();
-                vector<string> currCmds = Tokenize(RemoveSpaces(mCommands[cmdCnt]));
-                for(size_t j=0;j<currCmds.size();j++)
-                    cmd.addString(currCmds[j].c_str());
-                */
-                cout << "  Sending: <"<<mCommands[cmdCnt]<<"> to: "<< mDstCtrlPortName[mCommandsPort[cmdCnt]] <<endl;
                 mPorts[mCommandsPort[cmdCnt]]->writeStrict();
+#endif
+                cout << "  Sending: <"<<mCommands[cmdCnt]<<"> to: "<< mDstCtrlPortName[mCommandsPort[cmdCnt]] <<endl;
                 cmdCnt++;
                 break;
             }
         case 1:
             {
                 cout << "  Connecting: "<<mSrcPortName[mConnexionsSrcPort[conCnt]]<<" to "<<mDstPortName[mConnexionsDstPort[conCnt]]<<endl;
+#ifndef FAKE_NETWORK
                 if(!Network::isConnected(mSrcPortName[mConnexionsSrcPort[conCnt]],mDstPortName[mConnexionsDstPort[conCnt]]))
                     if(!Network::connect(mSrcPortName[mConnexionsSrcPort[conCnt]],mDstPortName[mConnexionsDstPort[conCnt]]))
                         cerr << "Error: Unable to connect "<<mSrcPortName[mConnexionsSrcPort[conCnt]] <<" to "<<mDstPortName[mConnexionsDstPort[conCnt]]<<endl;                
+#endif
                 conCnt++;
             }
             break;
         case 2:
             {
-                //cout << "disconnecting... "<<mSrcPortName[mConnexionsSrcPort[conCnt]]<<" to "<<mDstPortName[mConnexionsDstPort[conCnt]]<<endl;
+#ifndef FAKE_NETWORK
                 if(Network::isConnected(mSrcPortName[mConnexionsSrcPort[conCnt]],mDstPortName[mConnexionsDstPort[conCnt]]))
                     Network::disconnect(mSrcPortName[mConnexionsSrcPort[conCnt]],mDstPortName[mConnexionsDstPort[conCnt]]);
+#endif
                 conCnt++;
             }
             break;
@@ -942,57 +949,75 @@ void ImitationApplicationThread::InitStateMachine(){
     snprintf(mStateName[IAS_DEMO_RUN],              256,"Demo Run");
     snprintf(mStateName[IAS_DEMO_STOP],             256,"Demo Stop");
 
-    snprintf(mStateName[IAS_DEMO_SENSORS],          256,"SUB MENU Demo Sensors");
-    snprintf(mStateName[IAS_DEMO_REFINE],           256,"SUB MENU Demo Refine");
-    snprintf(mStateName[IAS_DEMO_REPROONE],         256,"SUB MENU Demo Repro One");
-    snprintf(mStateName[IAS_DEMO_REUSE],            256,"SUB MENU Demo Reuse");
-    snprintf(mStateName[IAS_DEMO_REPROTWO],         256,"SUB MENU Demo Repro Two");
-
-
-    snprintf(mStateName[IAS_DEMO_SENSORS_INIT],         256,"INIT Demo Sensors");
-    snprintf(mStateName[IAS_DEMO_SENSORS_OBJTRK],       256,"TRACK Demo Sensors");
-    snprintf(mStateName[IAS_DEMO_SENSORS_OBJLOCK],      256,"LOCK Demo Sensors");
-    snprintf(mStateName[IAS_DEMO_SENSORS_STARTSENSORS], 256,"SENSORS Demo Sensors");
-    snprintf(mStateName[IAS_DEMO_SENSORS_STARTDEMO],    256,"DEMO Demo Sensors");
-    snprintf(mStateName[IAS_DEMO_SENSORS_ACCEPTDEMO],   256,"ACK Demo Sensors");
-    snprintf(mStateName[IAS_DEMO_SENSORS_NEXTDEMO],     256,"NEXT Demo Sensors");
-    snprintf(mStateName[IAS_DEMO_SENSORS_LEARN],        256,"LEARN Demo Sensors");
-    snprintf(mStateName[IAS_DEMO_SENSORS_STOP],         256,"STOP Demo Sensors");
-
-    snprintf(mStateName[IAS_DEMO_REPROONE_INIT],        256,"INIT Demo ReproONE");
-    snprintf(mStateName[IAS_DEMO_REPROONE_OBJTRK],      256,"TRACK Demo ReproONE");
-    snprintf(mStateName[IAS_DEMO_REPROONE_OBJLOCK],     256,"LOCK Demo ReproONE");
-    snprintf(mStateName[IAS_DEMO_REPROONE_STARTREPRO],  256,"STARTRepro Demo ReproONE");
-    snprintf(mStateName[IAS_DEMO_REPROONE_STOPREPRO],   256,"STOPRepro Demo ReproONE");
-    snprintf(mStateName[IAS_DEMO_REPROONE_STOP],        256,"STOP Demo ReproONE");
-
-    snprintf(mStateName[IAS_DEMO_REFINE_INIT],         256,"INIT Demo Refine");
-    snprintf(mStateName[IAS_DEMO_REFINE_OBJTRK],       256,"TRACK Demo Refine");
-    snprintf(mStateName[IAS_DEMO_REFINE_OBJLOCK],      256,"LOCK Demo Refine");
-    snprintf(mStateName[IAS_DEMO_REFINE_STARTCORR],    256,"CORR Demo Refine");
-    snprintf(mStateName[IAS_DEMO_REFINE_ACCEPTCORR],   256,"ACK Demo Refine");
-    snprintf(mStateName[IAS_DEMO_REFINE_NEXTDEMO],     256,"NEXT Demo Refine");
-    snprintf(mStateName[IAS_DEMO_REFINE_LEARN],        256,"LEARN Demo Refine");
-    snprintf(mStateName[IAS_DEMO_REFINE_STOP],         256,"STOP Demo Refine");
-
-    snprintf(mStateName[IAS_DEMO_REPROTWO_INIT],        256,"INIT Demo ReproTWO");
-
-
-
-
-    snprintf(mStateName[IAS_REPRO],             256,"REPRO");
-    snprintf(mStateName[IAS_REPRO_INIT],        256,"INIT REPRO");
-    snprintf(mStateName[IAS_REPRO_OBJTRK],      256,"TRACK REPRO");
-    snprintf(mStateName[IAS_REPRO_OBJLOCK],     256,"LOCK REPRO");
-    snprintf(mStateName[IAS_REPRO_STARTREPRO],  256,"STARTRepro REPRO");
-    snprintf(mStateName[IAS_REPRO_STOPREPRO],   256,"STOPRepro REPRO");
-    snprintf(mStateName[IAS_REPRO_STOP],        256,"STOP REPRO");
-
-
     snprintf(mStateName[IAS_TEST],                  256,"MENU Test");
-    snprintf(mStateName[IAS_TEST_INIT],             256,"Test Init");
-    snprintf(mStateName[IAS_TEST_RUN],              256,"Test Run");
-    snprintf(mStateName[IAS_TEST_STOP],             256,"Test Stop");
+
+
+    snprintf(mStateName[IAS_DEMO_LEARNING_SENSORS],     256,"SUB MENU Sensors Learning");
+    snprintf(mStateName[IAS_DEMO_LEARNING_3DM],         256,"SUB MENU 3DM Learning");
+    snprintf(mStateName[IAS_DEMO_REPROONE],             256,"SUB MENU Repro *ONE*");
+    snprintf(mStateName[IAS_DEMO_REFINE],               256,"SUB MENU Refine");
+    snprintf(mStateName[IAS_DEMO_REPROTWO],             256,"SUB MENU Repro *TWO*");
+    snprintf(mStateName[IAS_DEMO_REUSE],                256,"SUB MENU Reuse");
+    snprintf(mStateName[IAS_DEMO_REPROTHREE],           256,"SUB MENU Repro *THREE*");
+    snprintf(mStateName[IAS_DEMO_FINAL],                256,"SUB MENU *FINAL*");
+
+
+
+    snprintf(mStateName[IAS_DEMO_LEARNING_SENSORS_INIT],     256,"SUB INIT Sensors Learning");
+    snprintf(mStateName[IAS_DEMO_LEARNING_SENSORS_STOP],     256,"SUB STOP Sensors Learning");
+
+    snprintf(mStateName[IAS_DEMO_LEARNING_3DM_INIT],         256,"SUB INIT 3DM Learning");
+    snprintf(mStateName[IAS_DEMO_LEARNING_3DM_STOP],         256,"SUB STOP 3DM Learning");
+
+    snprintf(mStateName[IAS_DEMO_REPROONE_INIT],             256,"SUB INIT Repro *ONE*");
+    snprintf(mStateName[IAS_DEMO_REPROONE_STOP],             256,"SUB STOP Repro *ONE*");
+
+    snprintf(mStateName[IAS_DEMO_REFINE_INIT],               256,"SUB INIT Refine");
+    snprintf(mStateName[IAS_DEMO_REFINE_STOP],               256,"SUB STOP Refine");
+
+    snprintf(mStateName[IAS_DEMO_REPROTWO_INIT],             256,"SUB INIT Repro *TWO*");
+    snprintf(mStateName[IAS_DEMO_REPROTWO_STOP],             256,"SUB STOP Repro *TWO*");
+
+    snprintf(mStateName[IAS_DEMO_REUSE_INIT],                256,"SUB INIT Reuse");
+    snprintf(mStateName[IAS_DEMO_REUSE_STOP],                256,"SUB STOP Reuse");
+
+    snprintf(mStateName[IAS_DEMO_REPROTHREE_INIT],           256,"SUB INIT Repro *THREE*");
+    snprintf(mStateName[IAS_DEMO_REPROTHREE_STOP],           256,"SUB STOP Repro *THREE*");
+
+    snprintf(mStateName[IAS_DEMO_FINAL_INIT],                256,"SUB INIT *FINAL*");
+    snprintf(mStateName[IAS_DEMO_FINAL_STOP],                256,"SUB STOP *FINAL*");
+        
+
+
+    snprintf(mStateName[IAS_DEMO_LEARNING],              256,"Learning");
+    snprintf(mStateName[IAS_DEMO_LEARNING_INIT],         256,"INIT  Learning");
+    snprintf(mStateName[IAS_DEMO_LEARNING_OBJTRK],       256,"TRACK Learning");
+    snprintf(mStateName[IAS_DEMO_LEARNING_OBJLOCK],      256,"LOCK  Learning");
+    snprintf(mStateName[IAS_DEMO_LEARNING_STARTSENSORS], 256,"SENS  Learning");
+    snprintf(mStateName[IAS_DEMO_LEARNING_STARTDEMO],    256,"DEMO  Learning");
+    snprintf(mStateName[IAS_DEMO_LEARNING_ACCEPTDEMO],   256,"ACK   Learning");
+    snprintf(mStateName[IAS_DEMO_LEARNING_NEXTDEMO],     256,"NEXT  Learning");
+    snprintf(mStateName[IAS_DEMO_LEARNING_LEARN],        256,"LEARN Learning");
+    snprintf(mStateName[IAS_DEMO_LEARNING_STOP],         256,"STOP  Learning");
+
+    snprintf(mStateName[IAS_DEMO_REFINEREUSE],              256,"RefineReuse");
+    snprintf(mStateName[IAS_DEMO_REFINEREUSE_INIT],         256,"INIT  RefineReuse");
+    snprintf(mStateName[IAS_DEMO_REFINEREUSE_OBJTRK],       256,"TRACK RefineReuse");
+    snprintf(mStateName[IAS_DEMO_REFINEREUSE_OBJLOCK],      256,"LOCK  RefineReuse");
+    snprintf(mStateName[IAS_DEMO_REFINEREUSE_STARTCORR],    256,"CORR  RefineReuse");
+    snprintf(mStateName[IAS_DEMO_REFINEREUSE_ACCEPTCORR],   256,"ACK   RefineReuse");
+    snprintf(mStateName[IAS_DEMO_REFINEREUSE_NEXTDEMO],     256,"NEXT  RefineReuse");
+    snprintf(mStateName[IAS_DEMO_REFINEREUSE_LEARN],        256,"LEARN RefineReuse");
+    snprintf(mStateName[IAS_DEMO_REFINEREUSE_STOP],         256,"STOP  RefineReuse");
+
+    snprintf(mStateName[IAS_REPRO],             256,"Repro");
+    snprintf(mStateName[IAS_REPRO_INIT],        256,"INIT  Repro");
+    snprintf(mStateName[IAS_REPRO_OBJTRK],      256,"TRACK Repro");
+    snprintf(mStateName[IAS_REPRO_OBJLOCK],     256,"LOCK  Repro");
+    snprintf(mStateName[IAS_REPRO_STARTREPRO],  256,"STAR  Repro");
+    snprintf(mStateName[IAS_REPRO_STOPREPRO],   256,"STOP  Repro");
+    snprintf(mStateName[IAS_REPRO_STOP],        256,"QUIT  Repro");
+
 
     mState = mPrevState = mNextState = mDelayedState = IAS_NONE;
     mStateSignal = SSIG_NONE;
@@ -1087,7 +1112,7 @@ void ImitationApplicationThread::ProcessStateMachine(){
         else if(mStateSignal == SSIG_PREV)  mNextState = IAS_DEVSENSORS;
         break;
     case IAS_TEST:
-             if(mStateSignal == SSIG_OK)    mNextState = IAS_TEST_INIT;
+             if(mStateSignal == SSIG_OK)    mNextState = IAS_TEST;
         else if(mStateSignal == SSIG_ABORT) mNextState = IAS_STOP;
         else if(mStateSignal == SSIG_NEXT)  mNextState = IAS_DEVTPAD;
         else if(mStateSignal == SSIG_PREV)  mNextState = IAS_DEMO;
@@ -1113,14 +1138,14 @@ void ImitationApplicationThread::ProcessStateMachine(){
 
     case IAS_DEV3DM_INIT:
         SendBasicCommand("run");
-        SendBasicCommand("do 3DL");
+        SendBasicCommand("do 3DR");
         mNextState = IAS_DEV3DM_RUN;
         break;
     case IAS_DEV3DM_RUN:
         if(mStateSignal == SSIG_OK)    mNextState = IAS_DEV3DM_STOP;
         break;
     case IAS_DEV3DM_STOP:
-        SendBasicCommand("do 3DLN");
+        SendBasicCommand("do 3DRN");
         mNextState = IAS_DEV3DM;
         break;
 
@@ -1136,51 +1161,93 @@ void ImitationApplicationThread::ProcessStateMachine(){
         break;
     case IAS_DEVSENSORS_READY:
         SendBasicCommand("run");
-        SendBasicCommand("do SensL");
+        SendBasicCommand("do SensR");
         mNextState = IAS_DEVSENSORS_RUN;
         break;
     case IAS_DEVSENSORS_RUN:
         if(mStateSignal == SSIG_OK)    mNextState = IAS_DEVSENSORS_STOP;
         break;
     case IAS_DEVSENSORS_STOP:
-        SendBasicCommand("do SensLN");
+        SendBasicCommand("do SensRN");
         mNextState = IAS_DEVSENSORS;
         break;
 
 
 //---------------------------------------------------------
     case IAS_DEMO_INIT:
-        mNextState = IAS_DEMO_SENSORS;
+        mNextState = IAS_DEMO_LEARNING_SENSORS;
         break;
-    case IAS_DEMO_SENSORS:
-             if(mStateSignal == SSIG_OK)    mNextState = IAS_DEMO_SENSORS_INIT;
+    case IAS_DEMO_LEARNING_SENSORS:
+             if(mStateSignal == SSIG_PREV)  mNextState = IAS_DEMO_FINAL;
+        else if(mStateSignal == SSIG_OK)    mNextState = IAS_DEMO_LEARNING_SENSORS_INIT;
         else if(mStateSignal == SSIG_ABORT) mNextState = IAS_DEMO_STOP;
-        else if(mStateSignal == SSIG_PREV)  mNextState = IAS_DEMO_REPROTWO;
-        else if(mStateSignal == SSIG_NEXT)  mNextState = IAS_DEMO_REFINE;
+        else if(mStateSignal == SSIG_NEXT)  mNextState = IAS_DEMO_LEARNING_3DM;
         break;
-    case IAS_DEMO_REFINE:
-             if(mStateSignal == SSIG_OK)    mNextState = IAS_DEMO_REFINE_INIT;
+    case IAS_DEMO_LEARNING_3DM:
+             if(mStateSignal == SSIG_PREV)  mNextState = IAS_DEMO_LEARNING_SENSORS;
+        else if(mStateSignal == SSIG_OK)    mNextState = IAS_DEMO_LEARNING_3DM_INIT;
         else if(mStateSignal == SSIG_ABORT) mNextState = IAS_DEMO_STOP;
-        else if(mStateSignal == SSIG_PREV)  mNextState = IAS_DEMO_SENSORS;
         else if(mStateSignal == SSIG_NEXT)  mNextState = IAS_DEMO_REPROONE;
         break;
     case IAS_DEMO_REPROONE:
-             if(mStateSignal == SSIG_OK)    mNextState = IAS_DEMO_REPROONE_INIT;
+        if(bStateChanged){
+            SendBasicCommand("hand ro");
+            SendBasicCommand("hand lo");
+        }
+             if(mStateSignal == SSIG_PREV)  mNextState = IAS_DEMO_LEARNING_3DM;
+        else if(mStateSignal == SSIG_OK)    mNextState = IAS_DEMO_REPROONE_INIT;
         else if(mStateSignal == SSIG_ABORT) mNextState = IAS_DEMO_STOP;
-        else if(mStateSignal == SSIG_PREV)  mNextState = IAS_DEMO_REFINE;
-        else if(mStateSignal == SSIG_NEXT)  mNextState = IAS_DEMO_REUSE;
+        else if(mStateSignal == SSIG_NEXT)  mNextState = IAS_DEMO_REFINE;
         break;
-    case IAS_DEMO_REUSE:
-             if(mStateSignal == SSIG_OK)    mNextState = IAS_DEMO_REUSE;
+    case IAS_DEMO_REFINE:
+        if(bStateChanged){
+            SendBasicCommand("hand ro");
+            SendBasicCommand("hand lo");
+        }
+             if(mStateSignal == SSIG_PREV)  mNextState = IAS_DEMO_REPROONE;
+        else if(mStateSignal == SSIG_OK)    mNextState = IAS_DEMO_REFINE_INIT;
         else if(mStateSignal == SSIG_ABORT) mNextState = IAS_DEMO_STOP;
-        else if(mStateSignal == SSIG_PREV)  mNextState = IAS_DEMO_REPROONE;
         else if(mStateSignal == SSIG_NEXT)  mNextState = IAS_DEMO_REPROTWO;
         break;
     case IAS_DEMO_REPROTWO:
-             if(mStateSignal == SSIG_OK)    mNextState = IAS_DEMO_REPROTWO_INIT;
+        if(bStateChanged){
+            SendBasicCommand("hand ro");
+            SendBasicCommand("hand lo");
+        }
+             if(mStateSignal == SSIG_PREV)  mNextState = IAS_DEMO_REFINE;
+        else if(mStateSignal == SSIG_OK)    mNextState = IAS_DEMO_REPROTWO_INIT;
         else if(mStateSignal == SSIG_ABORT) mNextState = IAS_DEMO_STOP;
-        else if(mStateSignal == SSIG_PREV)  mNextState = IAS_DEMO_REUSE;
-        else if(mStateSignal == SSIG_NEXT)  mNextState = IAS_DEMO_SENSORS;
+        else if(mStateSignal == SSIG_NEXT)  mNextState = IAS_DEMO_REUSE;
+        break;
+    case IAS_DEMO_REUSE:
+        if(bStateChanged){
+            SendBasicCommand("hand ro");
+            SendBasicCommand("hand lo");
+        }
+             if(mStateSignal == SSIG_PREV)  mNextState = IAS_DEMO_REPROTWO;
+        else if(mStateSignal == SSIG_OK)    mNextState = IAS_DEMO_REUSE_INIT;
+        else if(mStateSignal == SSIG_ABORT) mNextState = IAS_DEMO_STOP;
+        else if(mStateSignal == SSIG_NEXT)  mNextState = IAS_DEMO_REPROTHREE;
+        break;
+    case IAS_DEMO_REPROTHREE:
+        if(bStateChanged){
+            SendBasicCommand("hand ro");
+            SendBasicCommand("hand lo");
+        }
+             if(mStateSignal == SSIG_PREV)  mNextState = IAS_DEMO_REUSE;
+        else if(mStateSignal == SSIG_OK)    mNextState = IAS_DEMO_REPROTHREE_INIT;
+        else if(mStateSignal == SSIG_ABORT) mNextState = IAS_DEMO_STOP;
+        else if(mStateSignal == SSIG_NEXT)  mNextState = IAS_DEMO_FINAL;
+        break;
+    case IAS_DEMO_FINAL:
+        if(bStateChanged){
+            SendBasicCommand("hand ro");
+            SendBasicCommand("hand lo");
+        }
+             if(mStateSignal == SSIG_PREV)  mNextState = IAS_DEMO_REPROTHREE;
+        else if(mStateSignal == SSIG_OK)    mNextState = IAS_DEMO_FINAL_INIT;
+        else if(mStateSignal == SSIG_ABORT) mNextState = IAS_DEMO_STOP;
+        else if(mStateSignal == SSIG_NEXT)  mNextState = IAS_DEMO_LEARNING_SENSORS;
         break;
     case IAS_DEMO_STOP:
         mNextState = IAS_DEMO;
@@ -1188,19 +1255,24 @@ void ImitationApplicationThread::ProcessStateMachine(){
     
 //---------------------------------------------------------
 
-/*
-    case IAS_DEMO_SENSORS_INIT:
+    case IAS_DEMO_LEARNING:
+        mNextState = IAS_DEMO_LEARNING_INIT;
+        break;
+    case IAS_DEMO_LEARNING_INIT:
         if(bStateChanged){
             cout << "**************************************"<<endl;
-            cout << "* Starting Sensors Demo              *"<<endl;
+            cout << "* Starting Learning Demo              *"<<endl;
             cout << "**************************************"<<endl;
-            SendBasicCommand("gmm DemoNameRight ./demo");
+            snprintf(txt,256,"gmm DemoNameRight %s/demo",mLearningDemoName);
+            SendBasicCommand(txt);
+            snprintf(txt,256,"gmm CorrNameRight %s/corr",mLearningCorrName);
+            SendBasicCommand(txt);
         }
         mCurrDemoId = 0;
 
-        mNextState = IAS_DEMO_SENSORS_OBJTRK;
+        mNextState = IAS_DEMO_LEARNING_OBJTRK;
         break;
-    case IAS_DEMO_SENSORS_OBJTRK:
+    case IAS_DEMO_LEARNING_OBJTRK:
         if(bStateChanged){
             cout << "**************************************"<<endl;
             cout << "* Place, track object and press OK   *"<<endl;
@@ -1210,27 +1282,28 @@ void ImitationApplicationThread::ProcessStateMachine(){
             SendBasicCommand("ref RightUnlock");
             SendBasicCommand("ref RightObj0");
         }
-        if(mStateSignal == SSIG_OK)    mNextState = IAS_DEMO_SENSORS_OBJLOCK;
+        if(mStateSignal == SSIG_OK)    mNextState = IAS_DEMO_LEARNING_OBJLOCK;
         break;
-    case IAS_DEMO_SENSORS_OBJLOCK:
+    case IAS_DEMO_LEARNING_OBJLOCK:
         if(bStateChanged){
             cout << "**************************************"<<endl;
             cout << "* Get the senors ready and press OK  *"<<endl;
             cout << "**************************************"<<endl;
             SendBasicCommand("ref RightLock");
         }
-        if(mStateSignal == SSIG_OK)    mNextState = IAS_DEMO_SENSORS_STARTSENSORS;
+        if(mStateSignal == SSIG_OK)    mNextState = IAS_DEMO_LEARNING_STARTSENSORS;
         break;
-    case IAS_DEMO_SENSORS_STARTSENSORS:
+    case IAS_DEMO_LEARNING_STARTSENSORS:
         if(bStateChanged){
             cout << "**************************************"<<endl;
             cout << "* Press OK to start demo: "<< mCurrDemoId <<"          *"<<endl;
             cout << "**************************************"<<endl;
-            SendBasicCommand("do 3DR");
+            if(mRecSensorType==0) SendBasicCommand("do 3DR");
+            else                  SendBasicCommand("do SensR");
         }
-        if(mStateSignal == SSIG_OK)    mNextState = IAS_DEMO_SENSORS_STARTDEMO;
+        if(mStateSignal == SSIG_OK)    mNextState = IAS_DEMO_LEARNING_STARTDEMO;
         break;
-    case IAS_DEMO_SENSORS_STARTDEMO:
+    case IAS_DEMO_LEARNING_STARTDEMO:
         if(bStateChanged){
             cout << "**************************************"<<endl;
             cout << "* Press OK to stop demo              *"<<endl;
@@ -1238,9 +1311,9 @@ void ImitationApplicationThread::ProcessStateMachine(){
             snprintf(txt,256,"gmm DemoRight %d",mCurrDemoId);
             SendBasicCommand(txt);
         }
-        if(mStateSignal == SSIG_OK)    mNextState = IAS_DEMO_SENSORS_ACCEPTDEMO;
+        if(mStateSignal == SSIG_OK)    mNextState = IAS_DEMO_LEARNING_ACCEPTDEMO;
         break;
-    case IAS_DEMO_SENSORS_ACCEPTDEMO:
+    case IAS_DEMO_LEARNING_ACCEPTDEMO:
         if(bStateChanged){
             cout << "**************************************"<<endl;
             cout << "* OK to accept demo, ABORT to not    *"<<endl;
@@ -1249,34 +1322,36 @@ void ImitationApplicationThread::ProcessStateMachine(){
         }
         if(mStateSignal == SSIG_OK)    mCurrDemoId++;
         if((mStateSignal == SSIG_OK)||
-          (mStateSignal == SSIG_ABORT))mNextState = IAS_DEMO_SENSORS_NEXTDEMO;
+          (mStateSignal == SSIG_ABORT))mNextState = IAS_DEMO_LEARNING_NEXTDEMO;
         break;
-    case IAS_DEMO_SENSORS_NEXTDEMO:
+    case IAS_DEMO_LEARNING_NEXTDEMO:
         if(bStateChanged){
             cout << "**************************************"<<endl;
             cout << "* OK for next demo, ABORT to learn   *"<<endl;
             cout << "**************************************"<<endl;
-            SendBasicCommand("do 3DRN");
+            if(mRecSensorType==0) SendBasicCommand("do 3DRN");
+            else                  SendBasicCommand("do SensRN");
         }
-        if(mStateSignal == SSIG_OK)    mNextState = IAS_DEMO_SENSORS_OBJTRK;
-        if(mStateSignal == SSIG_ABORT) mNextState = IAS_DEMO_SENSORS_LEARN;
+        if(mStateSignal == SSIG_OK)    mNextState = IAS_DEMO_LEARNING_OBJTRK;
+        if(mStateSignal == SSIG_ABORT) mNextState = IAS_DEMO_LEARNING_LEARN;
         break;
-    case IAS_DEMO_SENSORS_LEARN:
+    case IAS_DEMO_LEARNING_LEARN:
         if(bStateChanged){
             cout << "**************************************"<<endl;
             cout << "* Learning, OK to end                *"<<endl;
             cout << "**************************************"<<endl;
             SendBasicCommand("gmm LearnRight");
         }
-        if(mStateSignal == SSIG_OK)    mNextState = IAS_DEMO_SENSORS_STOP;
+        if(mStateSignal == SSIG_OK)    mNextState = IAS_DEMO_LEARNING_STOP;
         break;
-    case IAS_DEMO_SENSORS_STOP:
-        SendBasicCommand("rest");
-        mNextState = IAS_DEMO_SENSORS;
+    case IAS_DEMO_LEARNING_STOP:
+        //SendBasicCommand("rest");
+        mNextState = mGeneralOutState;;
         break;
-*/
+
         
-    case IAS_DEMO_SENSORS_INIT:
+/*
+    case IAS_DEMO_LEARNING_INIT:
         if(bStateChanged){
             cout << "**************************************"<<endl;
             cout << "* Starting Sensors Demo              *"<<endl;
@@ -1285,9 +1360,9 @@ void ImitationApplicationThread::ProcessStateMachine(){
         }
         mCurrDemoId = 0;
 
-        mNextState = IAS_DEMO_SENSORS_OBJTRK;
+        mNextState = IAS_DEMO_LEARNING_OBJTRK;
         break;
-    case IAS_DEMO_SENSORS_OBJTRK:
+    case IAS_DEMO_LEARNING_OBJTRK:
         if(bStateChanged){
             cout << "**************************************"<<endl;
             cout << "* Place, track object and press OK   *"<<endl;
@@ -1297,27 +1372,27 @@ void ImitationApplicationThread::ProcessStateMachine(){
             SendBasicCommand("ref LeftUnlock");
             SendBasicCommand("ref LeftHand");
         }
-        if(mStateSignal == SSIG_OK)    mNextState = IAS_DEMO_SENSORS_OBJLOCK;
+        if(mStateSignal == SSIG_OK)    mNextState = IAS_DEMO_LEARNING_OBJLOCK;
         break;
-    case IAS_DEMO_SENSORS_OBJLOCK:
+    case IAS_DEMO_LEARNING_OBJLOCK:
         if(bStateChanged){
             cout << "**************************************"<<endl;
             cout << "* Get the senors ready and press OK  *"<<endl;
             cout << "**************************************"<<endl;
             SendBasicCommand("ref LeftLock");
         }
-        if(mStateSignal == SSIG_OK)    mNextState = IAS_DEMO_SENSORS_STARTSENSORS;
+        if(mStateSignal == SSIG_OK)    mNextState = IAS_DEMO_LEARNING_STARTSENSORS;
         break;
-    case IAS_DEMO_SENSORS_STARTSENSORS:
+    case IAS_DEMO_LEARNING_STARTSENSORS:
         if(bStateChanged){
             cout << "**************************************"<<endl;
             cout << "* Press OK to start demo: "<< mCurrDemoId <<"          *"<<endl;
             cout << "**************************************"<<endl;
             SendBasicCommand("do 3DL");
         }
-        if(mStateSignal == SSIG_OK)    mNextState = IAS_DEMO_SENSORS_STARTDEMO;
+        if(mStateSignal == SSIG_OK)    mNextState = IAS_DEMO_LEARNING_STARTDEMO;
         break;
-    case IAS_DEMO_SENSORS_STARTDEMO:
+    case IAS_DEMO_LEARNING_STARTDEMO:
         if(bStateChanged){
             cout << "**************************************"<<endl;
             cout << "* Press OK to stop demo              *"<<endl;
@@ -1325,9 +1400,9 @@ void ImitationApplicationThread::ProcessStateMachine(){
             snprintf(txt,256,"gmm DemoLeft %d",mCurrDemoId);
             SendBasicCommand(txt);
         }
-        if(mStateSignal == SSIG_OK)    mNextState = IAS_DEMO_SENSORS_ACCEPTDEMO;
+        if(mStateSignal == SSIG_OK)    mNextState = IAS_DEMO_LEARNING_ACCEPTDEMO;
         break;
-    case IAS_DEMO_SENSORS_ACCEPTDEMO:
+    case IAS_DEMO_LEARNING_ACCEPTDEMO:
         if(bStateChanged){
             cout << "**************************************"<<endl;
             cout << "* OK to accept demo, ABORT to not    *"<<endl;
@@ -1336,38 +1411,39 @@ void ImitationApplicationThread::ProcessStateMachine(){
         }
         if(mStateSignal == SSIG_OK)    mCurrDemoId++;
         if((mStateSignal == SSIG_OK)||
-          (mStateSignal == SSIG_ABORT))mNextState = IAS_DEMO_SENSORS_NEXTDEMO;
+          (mStateSignal == SSIG_ABORT))mNextState = IAS_DEMO_LEARNING_NEXTDEMO;
         break;
-    case IAS_DEMO_SENSORS_NEXTDEMO:
+    case IAS_DEMO_LEARNING_NEXTDEMO:
         if(bStateChanged){
             cout << "**************************************"<<endl;
             cout << "* OK for next demo, ABORT to learn   *"<<endl;
             cout << "**************************************"<<endl;
             SendBasicCommand("do 3DLN");
         }
-        if(mStateSignal == SSIG_OK)    mNextState = IAS_DEMO_SENSORS_OBJTRK;
-        if(mStateSignal == SSIG_ABORT) mNextState = IAS_DEMO_SENSORS_LEARN;
+        if(mStateSignal == SSIG_OK)    mNextState = IAS_DEMO_LEARNING_OBJTRK;
+        if(mStateSignal == SSIG_ABORT) mNextState = IAS_DEMO_LEARNING_LEARN;
         break;
-    case IAS_DEMO_SENSORS_LEARN:
+    case IAS_DEMO_LEARNING_LEARN:
         if(bStateChanged){
             cout << "**************************************"<<endl;
             cout << "* Learning, OK to end                *"<<endl;
             cout << "**************************************"<<endl;
             SendBasicCommand("gmm LearnLeft");
         }
-        if(mStateSignal == SSIG_OK)    mNextState = IAS_DEMO_SENSORS_STOP;
+        if(mStateSignal == SSIG_OK)    mNextState = IAS_DEMO_LEARNING_STOP;
         break;
-    case IAS_DEMO_SENSORS_STOP:
+    case IAS_DEMO_LEARNING_STOP:
         //SendBasicCommand("rest");
-        mNextState = IAS_DEMO_SENSORS;
+        mNextState = IAS_DEMO_LEARNING;
         break;
-
+*/
     
     
     
     
     
 //---------------------------------------------------------
+/*
     case IAS_DEMO_REPROONE_INIT:
         if(bStateChanged){
             cout << "**************************************"<<endl;
@@ -1428,24 +1504,33 @@ void ImitationApplicationThread::ProcessStateMachine(){
         SendBasicCommand("rest");
         mNextState = IAS_DEMO_REPROONE;
         break;
-
+*/
     
 //---------------------------------------------------------
 
-    case IAS_DEMO_REFINE_INIT:
+    case IAS_DEMO_REFINEREUSE:
+        mNextState = IAS_DEMO_REFINEREUSE_INIT;
+        break;
+    case IAS_DEMO_REFINEREUSE_INIT:
         if(bStateChanged){
             cout << "**************************************"<<endl;
             cout << "* Starting Refinement Demo           *"<<endl;
             cout << "**************************************"<<endl;
-            SendBasicCommand("gmm DemoNameRight ./demo");
-            SendBasicCommand("gmm LoadRight     ./demo");
-            SendBasicCommand("gmm CorrNameRight ./corr");
+            snprintf(txt,256,"gmm DemoNameRight %s/demo",mLearningDemoName);
+            SendBasicCommand(txt);
+            snprintf(txt,256,"gmm LoadRight %s/demo",mLearningDemoName);
+            SendBasicCommand(txt);
+            snprintf(txt,256,"gmm CorrNameRight %s/corr",mLearningCorrName);
+            SendBasicCommand(txt);
+            //SendBasicCommand("gmm DemoNameRight ./demo");
+            //SendBasicCommand("gmm LoadRight     ./demo");
+            //SendBasicCommand("gmm CorrNameRight ./corr");
             mCurrDemoId = 0;
         }
 
-        mNextState = IAS_DEMO_REFINE_OBJTRK;
+        mNextState = IAS_DEMO_REFINEREUSE_OBJTRK;
         break;
-    case IAS_DEMO_REFINE_OBJTRK:
+    case IAS_DEMO_REFINEREUSE_OBJTRK:
         if(bStateChanged){
             cout << "**************************************"<<endl;
             cout << "* Place, track object and press OK   *"<<endl;
@@ -1457,18 +1542,18 @@ void ImitationApplicationThread::ProcessStateMachine(){
             SendBasicCommand("do Touch");
             //SendBasicCommand("do 3DR");
         }
-        if(mStateSignal == SSIG_OK)    mNextState = IAS_DEMO_REFINE_OBJLOCK;
+        if(mStateSignal == SSIG_OK)    mNextState = IAS_DEMO_REFINEREUSE_OBJLOCK;
         break;
-    case IAS_DEMO_REFINE_OBJLOCK:
+    case IAS_DEMO_REFINEREUSE_OBJLOCK:
         if(bStateChanged){
             cout << "**************************************"<<endl;
             cout << "* Press OK to start CORRECTION: "<< mCurrDemoId <<"    *"<<endl;
             cout << "**************************************"<<endl;
             SendBasicCommand("ref RightLock");
         }
-        if(mStateSignal == SSIG_OK)    mNextState = IAS_DEMO_REFINE_STARTCORR;
+        if(mStateSignal == SSIG_OK)    mNextState = IAS_DEMO_REFINEREUSE_STARTCORR;
         break;
-    case IAS_DEMO_REFINE_STARTCORR:
+    case IAS_DEMO_REFINEREUSE_STARTCORR:
         if(bStateChanged){
             cout << "**************************************"<<endl;
             cout << "* Press OK to STOP CORRECTION        *"<<endl;
@@ -1478,9 +1563,9 @@ void ImitationApplicationThread::ProcessStateMachine(){
             snprintf(txt,256,"gmm CorrRight %d",mCurrDemoId);
             SendBasicCommand(txt);
         }
-        if(mStateSignal == SSIG_OK)    mNextState = IAS_DEMO_REFINE_ACCEPTCORR;
+        if(mStateSignal == SSIG_OK)    mNextState = IAS_DEMO_REFINEREUSE_ACCEPTCORR;
         break;
-    case IAS_DEMO_REFINE_ACCEPTCORR:
+    case IAS_DEMO_REFINEREUSE_ACCEPTCORR:
         if(bStateChanged){
             cout << "**************************************"<<endl;
             cout << "* OK to accept corr, ABORT to not    *"<<endl;
@@ -1489,43 +1574,295 @@ void ImitationApplicationThread::ProcessStateMachine(){
         }
         if(mStateSignal == SSIG_OK)    mCurrDemoId++;
         if((mStateSignal == SSIG_OK)||
-          (mStateSignal == SSIG_ABORT))mNextState = IAS_DEMO_REFINE_NEXTDEMO;
+          (mStateSignal == SSIG_ABORT))mNextState = IAS_DEMO_REFINEREUSE_NEXTDEMO;
         break;
-    case IAS_DEMO_REFINE_NEXTDEMO:
+    case IAS_DEMO_REFINEREUSE_NEXTDEMO:
         if(bStateChanged){
             cout << "**************************************"<<endl;
             cout << "* OK for next corr, ABORT to learn   *"<<endl;
             cout << "**************************************"<<endl;
         }
-        if(mStateSignal == SSIG_OK)    mNextState = IAS_DEMO_REFINE_OBJTRK;
-        if(mStateSignal == SSIG_ABORT) mNextState = IAS_DEMO_REFINE_LEARN;
+        if(mStateSignal == SSIG_OK)    mNextState = IAS_DEMO_REFINEREUSE_OBJTRK;
+        if(mStateSignal == SSIG_ABORT) mNextState = IAS_DEMO_REFINEREUSE_LEARN;
         break;
-    case IAS_DEMO_REFINE_LEARN:
+    case IAS_DEMO_REFINEREUSE_LEARN:
         if(bStateChanged){
             cout << "**************************************"<<endl;
             cout << "* Learning, OK to end                *"<<endl;
             cout << "**************************************"<<endl;
             SendBasicCommand("gmm LearnCorrRight");
         }
-        if(mStateSignal == SSIG_OK)    mNextState = IAS_DEMO_REFINE_STOP;
+        if(mStateSignal == SSIG_OK)    mNextState = IAS_DEMO_REFINEREUSE_STOP;
         break;
-    case IAS_DEMO_REFINE_STOP:
-        SendBasicCommand("rest");
+    case IAS_DEMO_REFINEREUSE_STOP:
+        //SendBasicCommand("rest");
         SendBasicCommand("do TouchN");
         //SendBasicCommand("do 3DRN");
+        mNextState = mGeneralOutState;
+        break;
+//---------------------------------------------------------
+
+    
+//---------------------------------------------------------
+    case IAS_DEMO_LEARNING_SENSORS_INIT:
+        snprintf(mLearningDemoName,256,"./GraspBall");
+        snprintf(mLearningCorrName,256,"./GraspBall");
+        mRecSensorType      = 1;
+        mGeneralOutState    = IAS_DEMO_LEARNING_SENSORS_STOP;
+
+        mNextState          = IAS_DEMO_LEARNING;
+        break;
+    case IAS_DEMO_LEARNING_SENSORS_STOP:
+        mNextState = IAS_DEMO_LEARNING_SENSORS;
+        break;
+//---------------------------------------------------------
+
+//---------------------------------------------------------
+    case IAS_DEMO_LEARNING_3DM_INIT:
+        snprintf(mLearningDemoName,256,"./GraspBall");
+        snprintf(mLearningCorrName,256,"./GraspBall");
+        mRecSensorType      = 0;
+        mGeneralOutState    = IAS_DEMO_LEARNING_3DM_STOP;
+
+        mNextState          = IAS_DEMO_LEARNING;
+        break;
+    case IAS_DEMO_LEARNING_3DM_STOP:
+        mNextState = IAS_DEMO_LEARNING_3DM;
+        break;
+//---------------------------------------------------------
+
+//---------------------------------------------------------
+    case IAS_DEMO_REFINE_INIT:
+        snprintf(mLearningDemoName,256,"./GraspBall");
+        snprintf(mLearningCorrName,256,"./GraspBall");
+        mRecSensorType      = 1;
+        mGeneralOutState    = IAS_DEMO_REFINE_STOP;
+
+        mNextState          = IAS_DEMO_REFINEREUSE;
+        break;
+    case IAS_DEMO_REFINE_STOP:
         mNextState = IAS_DEMO_REFINE;
         break;
+//---------------------------------------------------------
+
+//---------------------------------------------------------
+    case IAS_DEMO_REUSE_INIT:
+        snprintf(mLearningDemoName,256,"./GraspBall");
+        snprintf(mLearningCorrName,256,"./GraspBottle");
+        mRecSensorType      = 1;
+        mGeneralOutState    = IAS_DEMO_REUSE_STOP;
+
+        mNextState          = IAS_DEMO_REFINEREUSE;
+        break;
+    case IAS_DEMO_REUSE_STOP:
+        mNextState = IAS_DEMO_REUSE;
+        break;
+//---------------------------------------------------------
+
+//---------------------------------------------------------
+    case IAS_DEMO_REPROONE_INIT:
+        if(bStateChanged){
+            InitReproStateMachine(  IAS_DEMO_REPROONE_INIT,
+                                    IAS_DEMO_REPROONE_STOP,
+                                    "./GraspBall",
+                                    true,       // bRightHand
+                                    true,       // bUseDemo or corr (false)
+                                    0,          // objId (0,1: obj, -1: world, 2: opp hand)
+                                    true,       // loop
+                                    false,      // skipObjTrk
+                                    false,      // inHandState
+                                    true,       // outHandState
+                                    true,       // lockRef
+                                    true,       // stopGMM
+                                    true,      // use3DM
+                                    6.0);
+        }
+        ProcessReproStateMachine();
+        break;
+    case IAS_DEMO_REPROONE_STOP:
+        mNextState = IAS_DEMO_REPROONE;
+        break;
+//---------------------------------------------------------
 
 //---------------------------------------------------------
     case IAS_DEMO_REPROTWO_INIT:
         if(bStateChanged){
-            InitReproStateMachine(IAS_DEMO_REPROTWO_INIT,IAS_DEMO_REPROTWO_STOP,"./CleanBottle",false,true,2,true,false,true,true,true,false);
+            InitReproStateMachine(  IAS_DEMO_REPROTWO_INIT,
+                                    IAS_DEMO_REPROTWO_STOP,
+                                    "./GraspBall",
+                                    true,       // bRightHand
+                                    false,      // bUseDemo or corr (false)
+                                    0,          // objId (0,1: obj, -1: world, 2: opp hand)
+                                    true,       // loop
+                                    true,       // skipObjTrk
+                                    false,      // inHandState
+                                    true,       // outHandState
+                                    true,       // lockRef
+                                    true,       // stopGMM
+                                    true,      // use3DM
+                                    6.0);
+
         }
         ProcessReproStateMachine();
         break;
-    case IAS_DEMO_REPROTWO_INIT2:
+    case IAS_DEMO_REPROTWO_STOP:
+        mNextState = IAS_DEMO_REPROTWO;
+        break;
+//---------------------------------------------------------
+
+//---------------------------------------------------------
+    case IAS_DEMO_REPROTHREE_INIT:
         if(bStateChanged){
-            InitReproStateMachine(IAS_DEMO_REPROTWO_INIT2,IAS_DEMO_REPROTWO_STOP,".",true,false,0,true,true,true,false,true,true);
+            InitReproStateMachine(  IAS_DEMO_REPROTHREE_INIT,
+                                    IAS_DEMO_REPROTHREE_STOP,
+                                    "./GraspBottle",
+                                    true,       // bRightHand
+                                    false,      // bUseDemo or corr (false)
+                                    0,          // objId (0,1: obj, -1: world, 2: opp hand)
+                                    true,       // loop
+                                    false,      // skipObjTrk
+                                    false,      // inHandState
+                                    true,       // outHandState
+                                    true,       // lockRef
+                                    true,       // stopGMM
+                                    true,      // use3DM
+                                    6.0);
+        }
+        ProcessReproStateMachine();
+        break;
+    case IAS_DEMO_REPROTHREE_STOP:
+        mNextState = IAS_DEMO_REPROTHREE;
+        break;
+//---------------------------------------------------------
+
+//---------------------------------------------------------
+    case IAS_DEMO_FINAL_INIT:
+        if(bStateChanged){
+            cout << "**************************************"<<endl;
+            cout << "* FINAL DEMO                         *"<<endl;
+            cout << "**************************************"<<endl;
+            SendBasicCommand("rest");
+        }
+        if(mStateSignal == SSIG_OK)    mNextState = IAS_DEMO_FINAL_REPRO_1;
+        break;
+    case IAS_DEMO_FINAL_REPRO_1:
+        if(bStateChanged){
+            InitReproStateMachine(  IAS_DEMO_FINAL_REPRO_1,
+                                    IAS_DEMO_FINAL_REPRO_2_INIT,
+                                    "./GraspSponge",
+                                    false,      // bRightHand
+                                    true,       // bUseDemo or corr (false)
+                                    1,          // objId (0,1: obj, -1: world, 2: opp hand)
+                                    false,      // loop
+                                    false,      // skipObjTrk
+                                    false,      // inHandState
+                                    true,       // outHandState
+                                    true,       // lockRef
+                                    true,       // stopGMM
+                                    true,      // use3DM
+                                    6.0);
+        }
+        ProcessReproStateMachine();
+        break;
+    case IAS_DEMO_FINAL_REPRO_2_INIT:
+        if(mStateSignal == SSIG_OK)    mNextState = IAS_DEMO_FINAL_REPRO_2;
+        break;
+    case IAS_DEMO_FINAL_REPRO_2:
+        if(bStateChanged){
+            InitReproStateMachine(  IAS_DEMO_FINAL_REPRO_2,
+                                    IAS_DEMO_FINAL_REPRO_3_INIT,
+                                    "./GraspSpongeReady",
+                                    false,      // bRightHand
+                                    true,       // bUseDemo or corr (false)
+                                    -1,          // objId (0,1: obj, -1: world, 2: opp hand)
+                                    false,      // loop
+                                    false,      // skipObjTrk
+                                    true,      // inHandState
+                                    true,       // outHandState
+                                    true,       // lockRef
+                                    true,       // stopGMM
+                                    true,      // use3DM
+                                    6.0);
+        }
+        ProcessReproStateMachine();
+        break;
+    case IAS_DEMO_FINAL_REPRO_3_INIT:
+        if(mStateSignal == SSIG_OK)    mNextState = IAS_DEMO_FINAL_REPRO_3;
+        break;
+    case IAS_DEMO_FINAL_REPRO_3:
+        if(bStateChanged){
+            InitReproStateMachine(  IAS_DEMO_FINAL_REPRO_3,
+                                    IAS_DEMO_FINAL_REPRO_5_INIT,
+                                    "./GraspBottle",
+                                    true,       // bRightHand
+                                    false,      // bUseDemo or corr (false)
+                                    0,          // objId (0,1: obj, -1: world, 2: opp hand)
+                                    false,      // loop
+                                    false,      // skipObjTrk
+                                    false,      // inHandState
+                                    true,       // outHandState
+                                    true,       // lockRef
+                                    true,       // stopGMM
+                                    true,      // use3DM
+                                    6.0);
+        }
+        ProcessReproStateMachine();
+        break;
+    case IAS_DEMO_FINAL_REPRO_4_INIT:
+        if(mStateSignal == SSIG_OK)    mNextState = IAS_DEMO_FINAL_REPRO_4;
+        break;
+    case IAS_DEMO_FINAL_REPRO_4:
+        if(bStateChanged){
+            InitReproStateMachine(  IAS_DEMO_FINAL_REPRO_4,
+                                    IAS_DEMO_FINAL_REPRO_5_INIT,
+                                    "./PlaceBottle",
+                                    true,      // bRightHand
+                                    true,       // bUseDemo or corr (false)
+                                    0,          // objId (0,1: obj, -1: world, 2: opp hand)
+                                    false,      // loop
+                                    false,      // skipObjTrk
+                                    true,      // inHandState
+                                    true,       // outHandState
+                                    true,       // lockRef
+                                    false,       // stopGMM
+                                    true,      // use3DM
+                                    6.0);
+        }
+        ProcessReproStateMachine();
+        break;
+    case IAS_DEMO_FINAL_REPRO_5_INIT:
+        if(mStateSignal == SSIG_OK)    mNextState = IAS_DEMO_FINAL_REPRO_5;
+        break;
+    case IAS_DEMO_FINAL_REPRO_5:
+        if(bStateChanged){
+            SendBasicCommand("do 3DR");
+            InitReproStateMachine(  IAS_DEMO_FINAL_REPRO_5,
+                                    IAS_DEMO_FINAL_STOP,
+                                    "./CleanBottle",
+                                    false,      // bRightHand
+                                    true,       // bUseDemo or corr (false)
+                                    2,          // objId (0,1: obj, -1: world, 2: opp hand)
+                                    true,       // loop
+                                    false,      // skipObjTrk
+                                    true,      // inHandState
+                                    true,       // outHandState
+                                    true,       // stopGMM
+                                    false,       // lockRef
+                                    false,      // use3DM
+                                    10.0);
+        }
+        ProcessReproStateMachine();
+        break;
+    case IAS_DEMO_FINAL_STOP:
+        mNextState = IAS_DEMO_FINAL;
+        break;
+//---------------------------------------------------------
+
+//---------------------------------------------------------
+/*
+    case IAS_DEMO_REPROTWO_INIT:
+        if(bStateChanged){
+            InitReproStateMachine(IAS_DEMO_REPROTWO_INIT,IAS_DEMO_REPROTWO_STOP,"./CleanBottle",false,true,2,true,false,true,true,true,false,true);
         }
         ProcessReproStateMachine();
         break;
@@ -1533,6 +1870,7 @@ void ImitationApplicationThread::ProcessStateMachine(){
         //SendBasicCommand("rest");
         mNextState = IAS_DEMO_REPROTWO;
         break;
+*/
 //---------------------------------------------------------
 /*
     case IAS_DEVTPAD_INIT:
@@ -1546,6 +1884,11 @@ void ImitationApplicationThread::ProcessStateMachine(){
 
 
     default:
+        if(bStateChanged){
+            cout << "**************************************"<<endl;
+            cout << "* ERROR: NOT HANDLED STATE           *"<<endl;
+            cout << "**************************************"<<endl;
+        }
         break;
     }
     
@@ -1567,7 +1910,9 @@ void ImitationApplicationThread::InitReproStateMachine( ImitationApplicationThre
                                                         bool inHandState,
                                                         bool outHandState,
                                                         bool stopGMM,
-                                                        bool lockRef
+                                                        bool lockRef,
+                                                        bool use3DM,
+double time
 ){
     mReproInState       = inState;
     mReproOutState      = outState;
@@ -1581,6 +1926,8 @@ void ImitationApplicationThread::InitReproStateMachine( ImitationApplicationThre
     bReproOutHandState  = outHandState;
     bReproStopGMM       = stopGMM;
     bReproLockRef       = lockRef;
+    bReproUse3DM        = use3DM;
+    mReproTime          = time;
 
     mReproPrevState = mReproNextState = mReproState = IAS_REPRO;
 }
@@ -1630,7 +1977,9 @@ void ImitationApplicationThread::ProcessReproStateMachine(){
             cout << "**************************************"<<endl;
             cout << "* Place, track object and press OK   *"<<endl;
             cout << "**************************************"<<endl;
+        
             SendBasicCommand("run");
+        
             snprintf(txt,256,"hand %s%s",(bReproRight?"r":"l"),(bReproInHandState?"c":"o"));
             SendBasicCommand(txt);
 
@@ -1657,9 +2006,11 @@ void ImitationApplicationThread::ProcessReproStateMachine(){
                 snprintf(txt,256,"ref %sUnlock",(bReproRight?"Right":"Left"));
                 SendBasicCommand(txt);
             }
-            //SendBasicCommand("do 3DR");
-            snprintf(txt,256,"do 3D%s",(bReproRight?"R":"L"));
-            SendBasicCommand(txt);
+            if(bReproUse3DM){
+                //SendBasicCommand("do 3DR");
+                snprintf(txt,256,"do 3D%s",(bReproRight?"R":"L"));
+                SendBasicCommand(txt);
+            }
         }
         if(!bReproSkipObjTrk){
             if(mStateSignal == SSIG_OK)    mReproNextState = IAS_REPRO_OBJLOCK;
@@ -1688,6 +2039,10 @@ void ImitationApplicationThread::ProcessReproStateMachine(){
             cout << "* Press OK to STOP reproduction      *"<<endl;
             cout << "**************************************"<<endl;
             //SendBasicCommand("gmm ReproRight");
+            {PortId pid = (bReproRight?PID_GMMRight:PID_GMMLeft);
+            snprintf(txt,256,"set reproTime %f",mReproTime);
+                AddCommand(pid,txt);
+            }
             snprintf(txt,256,"gmm Repro%s",(bReproRight?"Right":"Left"));
             SendBasicCommand(txt);
         }
@@ -1716,9 +2071,11 @@ void ImitationApplicationThread::ProcessReproStateMachine(){
         }
         break;
     case IAS_REPRO_STOP:
-        SendBasicCommand("do 3DRN");
-        snprintf(txt,256,"do 3D%s",(bReproRight?"R":"L"));
-        SendBasicCommand(txt);
+        if(bReproUse3DM){
+            //SendBasicCommand("do 3DRN");
+            snprintf(txt,256,"do 3D%sN",(bReproRight?"R":"L"));
+            SendBasicCommand(txt);
+        }
         //SendBasicCommand("rest");
         mNextState = mReproOutState;
         break;

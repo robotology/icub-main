@@ -32,7 +32,7 @@
     </module>
     <module>
         <name>TouchControllerModule</name>
-        <parameters>--name 3DMouse --period 0.1 --type 3Dmouse --device 3Dconnexion --load</parameters>
+        <parameters>--name 3DMouse --period 0.03 --type 3Dmouse --device 3Dconnexion --load</parameters>
         <tag>TC3DMouse</tag>
         <node>lasapcicub</node>
         <workdir>/home/icub/Projects/iCubDemoFiles/TouchControllers</workdir>

@@ -93,9 +93,9 @@ bool TouchControllerThread::threadInit()
         mMiceDriver.LinkMiceButtons(ids,4);
         mMiceDriver.SetMode(MMiceDeviceDriver::MMM_STANDARD);
         mTouchController.SetMMiceDriver(&mMiceDriver);
-        mTransGain = 0.03;
-        mRotGain   = 0.25;
-        mTouchController.SetDecayFactor(0.3);
+        mTransGain = 0.06;
+        mRotGain   = 0.40;
+        mTouchController.SetDecayFactor(0.1);
         }
         break;
     default:

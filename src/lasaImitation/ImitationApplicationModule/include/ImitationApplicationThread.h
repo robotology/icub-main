@@ -134,7 +134,9 @@ private:
         IAS_PAUSE,
         IAS_DELAY,
         IAS_STOP,
-        
+
+        IAS_TEST,
+
         IAS_DEVTPAD,
         IAS_DEVTPAD_INIT,
         IAS_DEVTPAD_RUN,
@@ -155,49 +157,28 @@ private:
         IAS_DEMO_INIT,
         IAS_DEMO_RUN,
         IAS_DEMO_STOP,
-        
-        IAS_DEMO_SENSORS,
-        IAS_DEMO_SENSORS_INIT,
-        IAS_DEMO_SENSORS_OBJTRK,
-        IAS_DEMO_SENSORS_OBJLOCK,
-        IAS_DEMO_SENSORS_STARTSENSORS,
-        IAS_DEMO_SENSORS_STARTDEMO,
-        IAS_DEMO_SENSORS_ACCEPTDEMO,
-        IAS_DEMO_SENSORS_NEXTDEMO,
-        IAS_DEMO_SENSORS_LEARN,
-        IAS_DEMO_SENSORS_STOP,
-        
-        
-        
-        IAS_DEMO_REFINE,
-        IAS_DEMO_REFINE_INIT,
-        IAS_DEMO_REFINE_OBJTRK,
-        IAS_DEMO_REFINE_OBJLOCK,
-        IAS_DEMO_REFINE_STARTCORR,
-        IAS_DEMO_REFINE_ACCEPTCORR,
-        IAS_DEMO_REFINE_NEXTDEMO,
-        IAS_DEMO_REFINE_LEARN,
-        IAS_DEMO_REFINE_STOP,
 
-        IAS_DEMO_REPROONE,
-        IAS_DEMO_REPROONE_INIT,
-        IAS_DEMO_REPROONE_OBJTRK,
-        IAS_DEMO_REPROONE_OBJLOCK,
-        IAS_DEMO_REPROONE_STARTREPRO,
-        IAS_DEMO_REPROONE_STOPREPRO,
-        IAS_DEMO_REPROONE_STOP,
 
-        IAS_DEMO_REUSE,
+        IAS_DEMO_LEARNING,
+        IAS_DEMO_LEARNING_INIT,
+        IAS_DEMO_LEARNING_OBJTRK,
+        IAS_DEMO_LEARNING_OBJLOCK,
+        IAS_DEMO_LEARNING_STARTSENSORS,
+        IAS_DEMO_LEARNING_STARTDEMO,
+        IAS_DEMO_LEARNING_ACCEPTDEMO,
+        IAS_DEMO_LEARNING_NEXTDEMO,
+        IAS_DEMO_LEARNING_LEARN,
+        IAS_DEMO_LEARNING_STOP,
         
-        IAS_DEMO_REPROTWO,
-        IAS_DEMO_REPROTWO_INIT,
-        IAS_DEMO_REPROTWO_INIT2,
-        IAS_DEMO_REPROTWO_STOP,
-
-        IAS_TEST,
-        IAS_TEST_INIT,
-        IAS_TEST_RUN,
-        IAS_TEST_STOP,
+        IAS_DEMO_REFINEREUSE,
+        IAS_DEMO_REFINEREUSE_INIT,
+        IAS_DEMO_REFINEREUSE_OBJTRK,
+        IAS_DEMO_REFINEREUSE_OBJLOCK,
+        IAS_DEMO_REFINEREUSE_STARTCORR,
+        IAS_DEMO_REFINEREUSE_ACCEPTCORR,
+        IAS_DEMO_REFINEREUSE_NEXTDEMO,
+        IAS_DEMO_REFINEREUSE_LEARN,
+        IAS_DEMO_REFINEREUSE_STOP,
 
         IAS_REPRO,
         IAS_REPRO_INIT,
@@ -207,6 +188,51 @@ private:
         IAS_REPRO_STOPREPRO,
         IAS_REPRO_STOP,
 
+
+
+
+        IAS_DEMO_LEARNING_SENSORS,
+        IAS_DEMO_LEARNING_SENSORS_INIT,
+        IAS_DEMO_LEARNING_SENSORS_STOP,
+
+        IAS_DEMO_LEARNING_3DM,
+        IAS_DEMO_LEARNING_3DM_INIT,
+        IAS_DEMO_LEARNING_3DM_STOP,
+
+        IAS_DEMO_REPROONE,
+        IAS_DEMO_REPROONE_INIT,
+        IAS_DEMO_REPROONE_STOP,
+
+        IAS_DEMO_REFINE,
+        IAS_DEMO_REFINE_INIT,
+        IAS_DEMO_REFINE_STOP,
+
+        IAS_DEMO_REPROTWO,
+        IAS_DEMO_REPROTWO_INIT,
+        IAS_DEMO_REPROTWO_STOP,
+
+        IAS_DEMO_REUSE,
+        IAS_DEMO_REUSE_INIT,
+        IAS_DEMO_REUSE_STOP,
+
+        IAS_DEMO_REPROTHREE,
+        IAS_DEMO_REPROTHREE_INIT,
+        IAS_DEMO_REPROTHREE_STOP,
+
+        IAS_DEMO_FINAL,
+        IAS_DEMO_FINAL_INIT,
+        IAS_DEMO_FINAL_REPRO_1,
+        IAS_DEMO_FINAL_REPRO_2_INIT,
+        IAS_DEMO_FINAL_REPRO_2,
+        IAS_DEMO_FINAL_REPRO_3_INIT,
+        IAS_DEMO_FINAL_REPRO_3,
+        IAS_DEMO_FINAL_REPRO_4_INIT,
+        IAS_DEMO_FINAL_REPRO_4,
+        IAS_DEMO_FINAL_REPRO_5_INIT,
+        IAS_DEMO_FINAL_REPRO_5,
+        IAS_DEMO_FINAL_STOP,
+
+        
         IAS_SIZE
     };
     
@@ -218,9 +244,13 @@ private:
     
     char                    mStateName[IAS_SIZE][256];
     
+    int                     mRecSensorType;
+    char                    mLearningDemoName[256];
+    char                    mLearningCorrName[256];
+    State                   mGeneralOutState;
+    
     int                     mCurrDemoId;
-    
-    
+
     
     State                   mReproState;
     State                   mReproPrevState;
@@ -237,6 +267,8 @@ private:
     bool                    bReproOutHandState;
     bool                    bReproStopGMM;
     bool                    bReproLockRef;
+    bool                    bReproUse3DM;
+    double                  mReproTime;
     
     enum StateSignal{
         SSIG_NONE = 0,
@@ -349,7 +381,9 @@ public:
                                             bool inHandState,
                                             bool outHandState,
                                             bool lockRef,
-                                            bool stopGMM);
+                                            bool stopGMM,
+                                            bool use3DM,
+                                            double time);
             void    ProcessReproStateMachine();
 
     
