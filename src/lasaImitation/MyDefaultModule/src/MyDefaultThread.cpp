@@ -42,6 +42,9 @@ bool MyDefaultThread::threadInit()
     snprintf(portName,256,"/%s/output",mBaseName);
     mOutputPort.open(portName);
 
+    mTime               = 0.0;
+    mPrevTime           =-1.0;
+
     return true;
 }
 
@@ -54,7 +57,18 @@ void MyDefaultThread::threadRelease()
 void MyDefaultThread::run()
 {
     mMutex.wait();
-    
+
+    if(mPrevTime<0.0){
+        mPrevTime = Time::now();
+        mMutex.post();
+        return;
+    }else{
+        mPrevTime = mTime;    
+    }    
+    mTime       = Time::now();
+    double dt   = mTime - mPrevTime;
+
+
     // Read data from input port
     Vector *inputVec = mInputPort.read(false);
     if(inputVec!=NULL){}

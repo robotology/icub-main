@@ -100,6 +100,8 @@ class Stereovision{
   int skip;
   int trackbar[2];
 
+  int movieIndex;
+  bool  bMakeMovie;
 
 
   mouseParam_t mparam[2];

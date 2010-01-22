@@ -64,6 +64,9 @@ Stereovision::Stereovision(int argc, char *argv[]){
         sprintf(tmp,"/vision%d:o",j);
         port[j].SetPortName(tmp);
     }
+    movieIndex = 0;
+    bMakeMovie = false;
+
 }
 
 
@@ -187,6 +190,13 @@ void Stereovision::ProcessNextFrame(){
             cvCopy(img[i],tmp1_img[i]);
         }
         dc[i]->Apply(img[i]);	
+        if(bSaveMovie){
+            char txt[256];
+            sprintf(txt,"./movie/frame_%d_%04d.png",i,mMovieIndex);
+            cvSaveImage(txt,img[i]);
+            if(i==MAX_CAM-1)
+              mMovieIndex++;
+        }
         if(diff){
             cvSub(img[i],tmp1_img[i],tmp2_img[i]);
             cvShowImage(diff_name[i],tmp2_img[i]);  
@@ -195,9 +205,19 @@ void Stereovision::ProcessNextFrame(){
             for(j=0;j<nb_obj;j++){
                 if(j!=skip){
                     colorfinder[i][j]->Apply(img[i]);
-                    if(j==ColorTracker::displayed_color){
-                        colorfinder[i][j]->DrawMask(img[i]);
-                    }
+                }
+            }
+            for(j=0;j<nb_obj;j++){
+                if(j!=ColorTracker::displayed_color){
+                    //if(j==ColorTracker::displayed_color){
+                    colorfinder[i][j]->DrawMask(img[i],false,-1);
+                }
+            }
+            colorfinder[i][ColorTracker::displayed_color]->DrawMask(img[i],true,ColorTracker::displayed_color);
+            
+            for(j=0;j<nb_obj;j++){
+                if(j!=skip){
+                    //}
                     blob[i]->Apply(colorfinder[i][j]->GetMask(),j);
                     if(!blob[i]->Found(j)){
                         gmm[i]->Randomize();
@@ -303,6 +323,12 @@ void Stereovision::ExecuteCommand(int key)
                 delete kal[i];
             }
         }
+        break;
+    case 'f':
+        movieIndex = 0;
+        bMakeMovie = !bMakeMovie;
+        if(bMakeMovie) cout << "Saving movie"<<endl;
+        else cout << "Stoping saving movie"<<endl;
         break;
     case 'M':
         if(kalman){

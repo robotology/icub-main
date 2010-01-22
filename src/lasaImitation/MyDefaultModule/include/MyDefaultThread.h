@@ -37,7 +37,10 @@ private:
     Semaphore               mMutex;
     int                     mPeriod;
     char                    mBaseName[256];
-    
+
+    double                  mTime;
+    double                  mPrevTime;
+
     BufferedPort<Vector>    mInputPort;
     BufferedPort<Vector>    mOutputPort;
     

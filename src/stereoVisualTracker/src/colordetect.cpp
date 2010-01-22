@@ -274,7 +274,7 @@ IplImage *ColorDetect::Process(IplImage *image)
 	return GetMask();
 }
 
-void ColorDetect::DrawMask(IplImage *image)
+void ColorDetect::DrawMask(IplImage *image, bool darken, int col)
 {
 	if(bVerbose){
 		cvNamedWindow("asd");
@@ -295,9 +295,17 @@ void ColorDetect::DrawMask(IplImage *image)
 
                 //if(mult<0.5){
                 if(mult>0.5){
-                    pixelR = (1.0-mult)*255.0f;
-                    pixelG = 0.0;
-                    pixelB = (mult)*255.0f;
+                    if(col==0){
+                        pixelR = (1.0-mult)*255.0f;
+                        pixelG = 0.0;
+                        pixelB = (mult)*255.0f;
+                    }else if(col==1){
+                        pixelR = (1.0-mult)*255.0f;
+                        pixelG = (mult)*255.0f;
+                        pixelB = 0.0;
+                    }else{
+                        pixelR = pixelG = pixelB =(mult)*255.0f;
+                    }
                     //pixelR = (1.0-mult) * pixelM + mult*pixelR;
                     //pixelG = (1.0-mult) * pixelM + mult*pixelG;
                     //pixelB = (1.0-mult) * pixelM + mult*pixelB;
@@ -305,17 +313,20 @@ void ColorDetect::DrawMask(IplImage *image)
                    // pixelR = 0.0;
                    // pixelG = 1.0;
                    // pixelB = 0.0;
+				    rgb(image,i*3+0) = (u8)max(0,min(255,((u8)(pixelR))));
+				    rgb(image,i*3+1) = (u8)max(0,min(255,((u8)(pixelG))));
+				    rgb(image,i*3+2) = (u8)max(0,min(255,((u8)(pixelB))));                 
                 }else{
                     rgb(mask,i) = 0;
-                    pixelR = pixelG = pixelB = pixelM;
-                    pixelR = pixelM;
-                    pixelG = pixelM;
-                    pixelB = pixelM;
+                    if(darken){
+                        //pixelR = pixelG = pixelB = pixelM;
+                        //pixelR = pixelM;
+                        //pixelG = pixelM;
+                        //pixelB = pixelM;
+				        rgb(image,i*3+0) = rgb(image,i*3+1) = rgb(image,i*3+2) = (u8)max(0,min(255,((u8)(pixelM))));
+				    }
                 }
                 
-				rgb(image,i*3+0) = (u8)max(0,min(255,((u8)(pixelR))));
-				rgb(image,i*3+1) = (u8)max(0,min(255,((u8)(pixelG))));
-				rgb(image,i*3+2) = (u8)max(0,min(255,((u8)(pixelB))));
 				//FOR(c,3){
 				//	float pixel = float((u8)rgb(image,i*3+c))*(mult);
 				//	rgb(image,i*3+c) = (u8)max(0,min(255,((u8)(pixel))));
@@ -445,7 +456,7 @@ CvHistogram *ColorDetect::getHist(IplImage* img1, IplImage* img2, IplImage* img3
 	CvHistogram* hist = 0;
 	int cteHistDim    = BINS;
 	int dims[]        = {cteHistDim, cteHistDim, cteHistDim};
-	float ranges1[]  = {10, 250};
+	float ranges1[]  = {20, 170};
 	float ranges2[]  = {0, 255};
 	float ranges3[]  = {0, 255};
 	float* ranges[]   = {ranges1, ranges2, ranges3};

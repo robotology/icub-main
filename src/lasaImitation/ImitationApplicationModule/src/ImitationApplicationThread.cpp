@@ -262,12 +262,12 @@ void ImitationApplicationThread::ProcessBasicCommand(){
     case BC_3DMOUSE_TO_RIGHTARM:
         RemAllSrcConnexions(DPID_3DMouse);
         AddConnexion(SPID_3DMouse, DPID_RArmDesCartVel);
-        AddCommand(PID_Robot,"iks RightArm");
+        AddCommand(PID_Robot,"iks RightArmSeq");
         break;
     case BC_3DMOUSE_TO_LEFTARM:
         RemAllSrcConnexions(DPID_3DMouse);
         AddConnexion(SPID_3DMouse, DPID_LArmDesCartVel);
-        AddCommand(PID_Robot,"iks LeftArm");
+        AddCommand(PID_Robot,"iks LeftArmSeq");
         break;
     case BC_TOUCHPAD_TO_RIGHTARM_NONE:
         RemConnexion(SPID_RWristRef, DPID_Touchpad);
@@ -391,7 +391,7 @@ void ImitationApplicationThread::ProcessBasicCommand(){
         if(pid == PID_GMMRight){
             AddConnexion(SPID_TouchpadSignal, DPID_GMMRightSignal);
             AddConnexion(SPID_RRefTransOutput, DPID_RArmDesCartPos);
-            AddCommand(PID_Robot,"iks RightArm");
+            AddCommand(PID_Robot,"iks RightArmSeq");
         }else{
             
         }
@@ -409,10 +409,10 @@ void ImitationApplicationThread::ProcessBasicCommand(){
         {PortId pid = (mBasicCommand==BC_GMM_REPRO_RIGHT_START?PID_GMMRight:PID_GMMLeft);
         if(pid == PID_GMMRight){
             AddConnexion(SPID_RRefTransOutput, DPID_RArmDesCartPos);
-            AddCommand(PID_Robot,"iks RightArm");
+            AddCommand(PID_Robot,"iks RightArmSeq");
         }else{
             AddConnexion(SPID_LRefTransOutput, DPID_LArmDesCartPos);
-            AddCommand(PID_Robot,"iks LeftArm");
+            AddCommand(PID_Robot,"iks LeftArmSeq");
         }
         //AddCommand(pid,"set reproTime 10.0");
         AddCommand(pid,"set rmode repro");

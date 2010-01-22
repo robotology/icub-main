@@ -244,6 +244,8 @@ void    RobotControllerThread::Init(){
     cout << endl;
     }
     mIKSolver.SetSizes(mIKJointSize);
+    mIKSolver.AddSolverItem(6);
+    mIKSolver.AddSolverItem(6);
     mIKSolver.AddSolverItem(3);
     mIKSolver.AddSolverItem(3);
     mIKSolver.AddSolverItem(3);
@@ -260,6 +262,8 @@ void    RobotControllerThread::Init(){
         mIKSolver.Enable(false,i);
     }
 
+    mIKSolver.SetDofsIndices(mArmToIKSIndices[0],IKArmPosOriR);
+    mIKSolver.SetDofsIndices(mArmToIKSIndices[1],IKArmPosOriL);
     mIKSolver.SetDofsIndices(mWristToIKSIndices[0],IKWristR);
     mIKSolver.SetDofsIndices(mWristToIKSIndices[1],IKWristL);
     mIKSolver.SetDofsIndices(mArmToIKSIndices[0],IKArmPosR);
@@ -321,8 +325,8 @@ void    RobotControllerThread::Init(){
     hHandState[1] = true;
     
     
-    bIKUseNullSpace         = true;
-    bIKUseRestNullSpace     = true;
+    bIKUseNullSpace         = false;
+    bIKUseRestNullSpace     = false;
     
     mNullSpaceGain          = 0.5;
     mDesiredCartGain        = 0.5;
@@ -383,7 +387,6 @@ void RobotControllerThread::run()
             if(mTime-mCurrentJointPosLastTime        >= INPUTS_TIMEOUT){
                 bPauseOpenLoopControl = true;
                 cout << "****PAUSED****"<<endl;
-                //mCurrentJointPos = mOpenLoopJointPos;
             }else{
                 if(bPauseOpenLoopControl){
                     mOpenLoopJointPos = mCurrentJointPos;
@@ -393,7 +396,6 @@ void RobotControllerThread::run()
                     //ES for(int i=0;i<mOpenLoopJointPos.size();i++){
                         mCurrentJointPos[i] = mOpenLoopJointPos[i];
                     }
-                    //mCurrentJointPos = mOpenLoopJointPos;
                 }
             }
         }else{
@@ -414,63 +416,14 @@ void RobotControllerThread::run()
     if(mState != RCS_IDLE){
     
         
-
-
-        /*
-        mDesiredCartPos[0][0] = mDesiredCartPos[1][0] = inRootEyeTarget[0];
-        mDesiredCartPos[0][1] = mDesiredCartPos[1][1] = inRootEyeTarget[1];
-        mDesiredCartPos[0][2] = mDesiredCartPos[1][2] = inRootEyeTarget[2];
-        */
-            
-        
-
-        // EyeTarget
-        /*
-        MathLib::Matrix4 eyeRef;
-        YarpMatrix4ToMatrix4(mFwdKinEyeRef,eyeRef);
-        MathLib::Vector3 inEyeTarget,inRootEyeTarget;
-        inEyeTarget(0) = -mDesiredCartEyeInEyePos[0];inEyeTarget(1) = -mDesiredCartEyeInEyePos[1];inEyeTarget(2) = -mDesiredCartEyeInEyePos[2];
-        eyeRef.Transform(inEyeTarget,inRootEyeTarget);
-        */
-        /*
-        mDesiredCartEyePos[0] = mFwdKinEyePose[0]-1;
-        mDesiredCartEyePos[1] = mFwdKinEyePose[1];
-        mDesiredCartEyePos[2] = mFwdKinEyePose[2]+1;
-        mDesiredCartEyePos[0] = mFwdKinArmPose[1][0];
-        mDesiredCartEyePos[1] = mFwdKinArmPose[1][1];
-        mDesiredCartEyePos[2] = mFwdKinArmPose[1][2];
-        */
-        //mDesiredCartEyePos[0] = inRootEyeTarget[0];
-        //mDesiredCartEyePos[1] = inRootEyeTarget[1];
-        //mDesiredCartEyePos[2] = inRootEyeTarget[2];
-        
-        
-
-        //mIKSolver.Enable(true,IKArmPosR);
-        //mIKSolver.Enable(true,IKArmOriR);
-        //mIKSolver.Enable(true,IKArmPosL);
-        //mIKSolver.Enable(true,IKArmOriL);
-        //mIKSolver.Enable(true,IKArmPosR);
-        //mIKSolver.Enable(true,IKArmOriR);
-        //mIKSolver.Enable(true,IKWristR);
-        //mIKSolver.Enable(true,IKEye);
-
-        //YarpPose7ToPose6(mFwdKinArmPose[0],pose);
-        //pose.Print();
-        //cout << "------------------"<<endl;
-        //cout << mFwdKinArmPose[0].toString()<<endl;;
-        //cout << mFwdKinWristPose[0].toString()<<endl;;
-
         ComputeVelocities();
         
         PrepareIKSolver();
         
         ApplyIKSolver();
-        
-        //cout <<mDesiredCartEyeVel.toString()<<endl;
-        //mIKSolver.GetTargetOutput(IKEye).Print();
 
-
+    
+        // Temporary hack for handling touch control for last 2 DOFs
         mTargetJointVel[mSrcToIKSIndices[ 8]] += mDesiredWristOpt[0][0]*(180.0/PI);
         mTargetJointVel[mSrcToIKSIndices[ 9]] += mDesiredWristOpt[0][1]*(180.0/PI);
         mTargetJointVel[mSrcToIKSIndices[15]] += mDesiredWristOpt[1][0]*(180.0/PI);
@@ -523,9 +476,11 @@ void RobotControllerThread::run()
 
 RobotControllerThread::IKSetID RobotControllerThread::IKStringToIKSet(string str){
          if(str == "RightArm")      return IKS_RightArm;
+    else if(str == "RightArmSeq")   return IKS_RightArmSeq;
     else if(str == "RightArmPos")   return IKS_RightArmPos;
     else if(str == "RightWrist")    return IKS_RightWrist;
     else if(str == "LeftArm")       return IKS_LeftArm;
+    else if(str == "LeftArmSeq")    return IKS_LeftArmSeq;
     else if(str == "LeftArmPos")    return IKS_LeftArmPos;
     else if(str == "LeftWrist")     return IKS_LeftWrist;
     else if(str == "Eye")           return IKS_Eye;
@@ -545,21 +500,37 @@ void    RobotControllerThread::SetIKSolverSet(IKSetID setId, bool enable){
         bIKUseNullSpace = false;
         break;
     case IKS_RightArm:
+        mIKSolver.Enable(enable,IKArmPosOriR);
+        mIKSolver.Enable(false,IKArmPosR);
+        mIKSolver.Enable(false,IKArmOriR);
+        break;
+    case IKS_RightArmSeq:
+        mIKSolver.Enable(false,IKArmPosOriR);    
         mIKSolver.Enable(enable,IKArmPosR);
         mIKSolver.Enable(enable,IKArmOriR);
         break;
     case IKS_RightArmPos:
+        mIKSolver.Enable(false,IKArmPosOriR);    
         mIKSolver.Enable(enable,IKArmPosR);
+        mIKSolver.Enable(false,IKArmOriR);
         break;
     case IKS_RightWrist:
         mIKSolver.Enable(enable,IKWristR);
         break;
     case IKS_LeftArm:
+        mIKSolver.Enable(enable,IKArmPosOriL);
+        mIKSolver.Enable(false,IKArmPosL);
+        mIKSolver.Enable(false,IKArmOriL);
+        break;
+    case IKS_LeftArmSeq:
+        mIKSolver.Enable(false,IKArmPosOriL);
         mIKSolver.Enable(enable,IKArmPosL);
         mIKSolver.Enable(enable,IKArmOriL);
         break;
     case IKS_LeftArmPos:
+        mIKSolver.Enable(false,IKArmPosOriL);
         mIKSolver.Enable(enable,IKArmPosL);
+        mIKSolver.Enable(false,IKArmOriL);
         break;
     case IKS_LeftWrist:
         mIKSolver.Enable(enable,IKWristL);
@@ -606,6 +577,8 @@ void    RobotControllerThread::UpdateKinChains(){
 }
 
 void    RobotControllerThread::PrepareIKSolver(){
+    mIKSolver.SetJacobian(YarpMatrixToMatrix(mFwdKinArmJacobian[0]),                  IKArmPosOriR);
+    mIKSolver.SetJacobian(YarpMatrixToMatrix(mFwdKinArmJacobian[1]),                  IKArmPosOriL);
     mIKSolver.SetJacobian(YarpMatrixToMatrix(mFwdKinArmJacobian[0]),                  IKArmPosR);
     mIKSolver.SetJacobian(YarpMatrixToMatrix(mFwdKinArmJacobian[1]),                  IKArmPosL);
     mIKSolver.SetJacobian(YarpMatrixToMatrix(mFwdKinArmJacobian[0]).GetRowSpace(3,3), IKArmOriR);
@@ -632,6 +605,8 @@ void    RobotControllerThread::PrepareIKSolver(){
     mIKSolver.SetLimits(YarpVectorToVector(lim1),YarpVectorToVector(lim2));
 
 
+    mIKSolver.SetTarget(YarpVectorToVector(mDesiredCartVel[0]),                        IKArmPosOriR);
+    mIKSolver.SetTarget(YarpVectorToVector(mDesiredCartVel[1]),                        IKArmPosOriL);
     mIKSolver.SetTarget(YarpVectorToVector(mDesiredCartVel[0]),                        IKArmPosR);
     mIKSolver.SetTarget(YarpVectorToVector(mDesiredCartVel[1]),                        IKArmPosL);
     mIKSolver.SetTarget(YarpVectorToVector(mDesiredCartVel[0]).GetSubVector(3,3),      IKArmOriR);
@@ -852,20 +827,24 @@ void    RobotControllerThread::CheckInputsTimeout(){
     if((mTime-mDesiredCartPosRLastTime        >= INPUTS_TIMEOUT)&&
        (mTime-mDesiredCartVelRLastTime        >= INPUTS_TIMEOUT)){
         if(mIKSolver.IsEnabled(IKWristR)){
+            mIKSolver.Suspend(true,IKArmPosOriR);
             mIKSolver.Suspend(true,IKArmPosR);
             mIKSolver.Suspend(true,IKArmOriR);
         }
     }else{
+        mIKSolver.Suspend(false,IKArmPosOriR);
         mIKSolver.Suspend(false,IKArmPosR);
         mIKSolver.Suspend(false,IKArmOriR);
     }
     if((mTime-mDesiredCartPosLLastTime        >= INPUTS_TIMEOUT)&&
        (mTime-mDesiredCartVelLLastTime        >= INPUTS_TIMEOUT)){
         if(mIKSolver.IsEnabled(IKWristL)){
+            mIKSolver.Suspend(true,IKArmPosOriL);
             mIKSolver.Suspend(true,IKArmPosL);
             mIKSolver.Suspend(true,IKArmOriL);
         }
     }else{
+        mIKSolver.Suspend(false,IKArmPosOriL);
         mIKSolver.Suspend(false,IKArmPosL);
         mIKSolver.Suspend(false,IKArmOriL);
     }

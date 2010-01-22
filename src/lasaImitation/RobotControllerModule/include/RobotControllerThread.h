@@ -119,7 +119,9 @@ private:
     MathLib::IKGroupSolver   mIKSolver;
     
     enum SolverID{
-        IKArmPosR = 0,
+        IKArmPosOriR = 0,
+        IKArmPosOriL,
+        IKArmPosR,
         IKArmPosL,
         IKArmOriR,
         IKArmOriL,
@@ -195,9 +197,11 @@ public:
             enum IKSetID{
                 IKS_None = 0,
                 IKS_RightArm,
+                IKS_RightArmSeq,
                 IKS_RightArmPos,
                 IKS_RightWrist,
                 IKS_LeftArm,
+                IKS_LeftArmSeq,
                 IKS_LeftArmPos,
                 IKS_LeftWrist,
                 IKS_Eye,

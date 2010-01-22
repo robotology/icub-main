@@ -39,8 +39,8 @@ ELSE(BUILD_EXT_VC_ONLY)
                        RobotControllerModule
                        ImitationApplicationModule
                        RefTransformModule
+                       ChickenModule
   )
-
   IF (BUILD_MOTIONSSENSORS)
     SET(SUBPROJECTS_LIST ${SUBPROJECTS_LIST} YarpedMotionSensors)
   ENDIF (BUILD_MOTIONSSENSORS)

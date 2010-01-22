@@ -157,7 +157,7 @@ public:
 		Draws the mask on the input image, either masking or highlighting the selected pixels
 		\param image the input image, will be modified
 	*/
-	void DrawMask(IplImage *image);
+	void DrawMask(IplImage *image, bool darken = true, int col = 0);
 
 	/*!
 		Changes the drawing mode from masking to highlighting

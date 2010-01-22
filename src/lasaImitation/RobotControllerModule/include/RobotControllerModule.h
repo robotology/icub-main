@@ -35,6 +35,8 @@ If several constraints are simultaneously activated, the following priority is t
 This module can also receive and process information provided by external sources such as touch sensors or other 3D devices through 
 specific ports. It then acts accordingly to provoke motions on arm joints of the robot.
 
+The target provided by input ports are only executed as long as an input stream of information ios given to them (for security reason). The timeout value is of 0.5 sec.
+
 Actually, this module controls both robot arms.
 
 In brief, this is the core robot controller. 
@@ -61,36 +63,59 @@ Input ports:
           - [run]: run the controller
           - [susp]: suspend the controller (send zero output)
           - [quit]: quit the module (exit)
-          - [jnt] <L/R>: activate/suspend joint control for left or right arm
-          - [cart] <L/R>: activate/suspend cartesian control for left or right arm
-          - [wrst] <L/R>: activate/suspend wrist control for left or right arm
-          - [kj]  k: set gain value joint control
-          - [kc]  k: set gain value cartesian control
-          - [kw]  k: set gain value wrist control
+          - [iks] <string>: enable inverse kinematkcs for given part:
+          - [iku] <string>: disable inverse kinematkcs for given part:
+            - RightArm: position+orientation for right arm
+            - RightArmSeq: position+orientation for right arm in a hierarchical manner
+            - RightArmPos: position for right arm in a hierarchical
+            - RightWrist: position+orientation for right wrist
+            - LeftArm: position+orientation for left arm
+            - LeftArmSeq: position+orientation for left arm in a hierarchical manner
+            - LeftArmPos: position for left arm in a hierarchical
+            - LeftWrist: position+orientation for left wrist
+            - Eye: eye tracking
+            - Joints: enable joints optimization in null space
+            - Rest: enable joints optimization in null space with a predefined rest position
+            - None: disable everything
+          - [rh] [open|close]: open or close right hand
+          - [lh] [open|close]: open or close left hand
 
-    - /RobotController/moduleName/currentJointPosition: current joint position for both arm 
-    - /RobotController/moduleName/currentJointVelocity: current joint velocity for both arm 
 
-    - /RobotController/moduleName/desiredJointPositionL: desired joint position for the left arm 
-    - /RobotController/moduleName/desiredJointPositionR: desired joint position for the right arm
 
-    - /RobotController/moduleName/desiredCartPositionL: desired cartesian position and orientation for the left arm end effector
-    - /RobotController/moduleName/desiredCartPositionR: desired cartesian position and orientation for the right arm end effector
+    - /RobotController/moduleName/currentJointPosition: current joint position for both arm (16 (right arm) + 16 (left arm) + 3 (torso) + 6 (head+eyes)
+    - /RobotController/moduleName/currentJointVelocity: current joint velocity for both arm (16+16+3+6)
 
-    - /RobotController/moduleName/desiredWristCartPositionL: desired cartesian position and orientation for the left arm wrist
-    - /RobotController/moduleName/desiredWristCartPositionR: desired cartesian position and orientation for the right arm wrist
+    - /RobotController/moduleName/desiredArmJointsL: desired joint position for the left arm (7 dof in degrees)
+    - /RobotController/moduleName/desiredArmJointsR: desired joint position for the right arm (7 dof in degrees)
+
+    - /RobotController/moduleName/desiredHandPosL: desired joint position for the left hand (9 dof in degrees)
+    - /RobotController/moduleName/desiredHandPosR: desired joint position for the right hand (9 dof in degrees)
+
+    - /RobotController/moduleName/desiredCartPositionL: desired cartesian position and orientation for the left arm end effector (3 cart pos + (optional 3 axis-angle (in radians)))
+    - /RobotController/moduleName/desiredCartPositionR: desired cartesian position and orientation for the right arm end effector (3+(3))
+
+    - /RobotController/moduleName/desiredCartVelocityL: desired cartesian and angular velocity for the left arm end effector (3 cart pos + (optional 3 axis-angle (in radians)))
+    - /RobotController/moduleName/desiredCartVelocityR: desired cartesian and angular velocity for the right arm end effector (3+(3))
+
+    - /RobotController/moduleName/desiredCartWristVelocityL: desired cartesian and angular velocity for the left wrist (3 cart pos + (optional 3 axis-angle))
+    - /RobotController/moduleName/desiredCartWristVelocityR: desired cartesian and angular velocityfor the right wrist (3+(3))
+
+    - /RobotController/moduleName/desiredCartEyeInEyePosition: desired look at position in eye centered coordinates (3 cart values). This has precedence on the port desiredCartEyePosition
+    - /RobotController/moduleName/desiredCartEyePosition: desired look at position in body centered coordinates (3 cart values).
 
 
 Output ports:
 
-    - /RobotController/moduleName/targetJointPosition: target joint position for both arm (to the velocity controller)
-    - /RobotController/moduleName/targetJointVelocity: target joint velocity for both arm (to the velocity controller)
+    - /RobotController/moduleName/targetJointPosition: target joint position for both arm (to the velocity controller 6+6+3+7 dofs)
+    - /RobotController/moduleName/targetJointVelocity: target joint velocity for both arm (to the velocity controller 6+6+3+7 dofs)
 
-    - /RobotController/moduleName/currentCartPositionL: current cartesian position and orientation of the left arm end effector
-    - /RobotController/moduleName/currentCartPositionR: current cartesian position and orientation of the right arm end effector
+    - /RobotController/moduleName/currentCartPositionL: current cartesian position and orientation of the left arm end effector (3 pos + 3 orient)
+    - /RobotController/moduleName/currentCartPositionR: current cartesian position and orientation of the right arm end effector (3 pos + 3 orient)
 
-    - /RobotController/moduleName/currentWristPositionL: current cartesian position and orientation of the left arm wrist
-    - /RobotController/moduleName/currentWristPositionR: current cartesian position and orientation of the right arm wrist
+    - /RobotController/moduleName/currentWristRefL: current cartesian position and orientation of the left arm wrist (3 pos + 3 orient)
+    - /RobotController/moduleName/currentWristRefR: current cartesian position and orientation of the right arm wrist (3 pos + 3 orient)
+
+    - /RobotController/moduleName/currentCartEyeTargetPosition: current cartesian position of the eye target (3 pos)
 
 \section in_files_sec Input Data Files
 

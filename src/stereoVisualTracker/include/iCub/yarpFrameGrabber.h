@@ -65,7 +65,7 @@ class YarpFrameGrabber : public FrameGrabber
   * @param index not used
   */
   void GrabFrame(IplImage **frame, u32 index=0)
-    {image = port.read(true);port.getEnvelope(stamp);*frame = (IplImage *)image->getIplImage();}
+    {image = port.read(true);port.getEnvelope(stamp);*frame = (IplImage *)image->getIplImage();cvConvertImage(*frame, *frame, CV_CVTIMG_SWAP_RB);}
  
   /**
    * closes the port
