@@ -13,16 +13,19 @@
  *
  * Given the linear system:
  * \f[ x_{i+1} = A x_i + B u_i \ , \ i=0,1,\ldots,N-1 \f]
- * with the known initial state \f$ x_0 = \hat{x} \f$, and the quadratic cost $J$:
+ * with the known initial state \f$ x_0 = \hat{x} \f$, and the 
+ * quadratic cost \f$ J \f$: 
  * \f[ J = \sum^{N-1}_{i=0} \left[ x^\top_i V x_i + u^\top_i P u_i \right] + x^\top_N V_N x_N \f]
  * with \f$ V=V^\top \geq 0 \f$, \f$ V_N=V^\top_N \geq 0 \f$, \f$ P=P^\top>0 \f$, the problem is to find the sequence of 
  * optimal controls \f$ u^\circ_0, \ldots, u^\circ_{N-1} \f$ minimizing \f$J\f$. 
  * The optimal controls can be found via dynamic programming, and a closed form solution can be found.
  * At time instant \f$i\f$ the optimal cost-to-go and control are:
- * \f[ J^\circ(x_{i}) = x^\top_{i} \ T_{i} \ x_{i} \, u^\circ_{i} = - L_i \ x_{i} \f]
- * where \f$ L_i \f$ is:
+ * \f[ \begin{array}J^\circ(x_{i}) = x^\top_{i} \ T_{i} \ x_{i} 
+ * \\ u^\circ_{i} = - L_i \ x_{i} \end{array} \f] where \f$ L_i 
+ * \f$ is: 
  * \f[ L_i = (P+B^\top T_{i+1} B)^{-1} B^\top T_{i+1} A \f]
- * whilst \f$ T_i \f$ is computed after the ``discrete time algebraic Riccati equation'':
+ * whilst \f$ T_i \f$ is computed after the <b>discrete time 
+ * algebraic Riccati equation</b>: 
  * \f[ T_N = V_N \ , \ T_i = V + A^\top [ T_{i+1} - T_{i+1} B (P+B^\top T_{i+1} B)^{-1} B^\top T_{i+1} ] A \f]
  *
  *
