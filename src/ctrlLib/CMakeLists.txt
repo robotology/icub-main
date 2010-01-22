@@ -11,7 +11,8 @@ SET(folder_source src/ctrlMath.cpp
                   src/pids.cpp
                   src/adaptWinPolyEstimator.cpp                  
                   src/trajectoryGenerator.cpp
-                  src/functionEncoder.cpp)
+                  src/functionEncoder.cpp
+                  src/optimalControl.cpp)
 
 SET(folder_header include/iCub/ctrlMath.h
                   include/iCub/filters.h
@@ -19,7 +20,8 @@ SET(folder_header include/iCub/ctrlMath.h
                   include/iCub/pids.h
                   include/iCub/adaptWinPolyEstimator.h                  
                   include/iCub/trajectoryGenerator.h
-                  include/iCub/functionEncoder.h)
+                  include/iCub/functionEncoder.h
+                  include/iCub/optimalControl.h)
 
 SOURCE_GROUP("Source Files" FILES ${folder_source})
 SOURCE_GROUP("Header Files" FILES ${folder_header})

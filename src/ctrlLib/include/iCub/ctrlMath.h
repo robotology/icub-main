@@ -7,7 +7,7 @@
  * estimation, PIDs and more topics are expected to be covered 
  * :) 
  *  
- * \author Ugo Pattacini 
+ * \author Ugo Pattacini, Serena Ivaldi
  *  
  * \defgroup Maths Maths 
  *  

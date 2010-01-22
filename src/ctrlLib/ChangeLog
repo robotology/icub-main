@@ -1,4 +1,7 @@
 
+2010-01-22 Serena Ivaldi <serena.ivaldi@iit.it>
+	   * optimalControl module added
+
 2010-01-15 Ugo Pattacini <ugo.pattacini@iit.it>
 	   * adaptWinPolyEstimator: reset() method added 
 
