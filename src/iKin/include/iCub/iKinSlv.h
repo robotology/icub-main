@@ -303,7 +303,7 @@ protected:
     bool          configured;
     bool          closed;
     bool          verbosity;
-    bool          auto_shut_down;
+    bool          timeout_detected;
     int           maxPartJoints;
     int           unctrlJointsNum;
     double        ping_robot_tmo;
@@ -343,7 +343,7 @@ protected:
     bool   setLimits(int axis, double min, double max);
     void   countUncontrolledJoints();
     void   latchUncontrolledJoints(yarp::sig::Vector &joints);
-    bool   getFeedback(const bool wait=false);    
+    void   getFeedback(const bool wait=false);    
     void   initPos();
     void   lock();
     void   unlock();    
@@ -454,12 +454,6 @@ public:
     *    ports are pinged prior to connecting; a timeout equal to
     *    zero disables this option.
     *  
-    * \b auto_shut_down <vocab>: example (auto_shut_down on), if 
-    *    enabled specifies to automatically shut down the thread
-    *    whenever a communication timeout is detected while
-    *    gathering data from the robot; allowed values are [on] or
-    *    [off].
-    *  
     * @return true/false if successful/failed
     */
     virtual bool open(yarp::os::Searchable &options);
@@ -475,6 +469,16 @@ public:
     * @return true/false if closed or not. 
     */
     virtual bool isClosed() { return closed; }
+
+    /**
+    * To be called to check whether communication timeout has been 
+    * detected. 
+    * @return reference to the internal flag. 
+    *  
+    * \note At first timeout detection the flag is set and is never 
+    *       reset again.
+    */
+    virtual bool &getTimeoutDetected() { return timeout_detected; }
 
     /**
     * Default destructor.

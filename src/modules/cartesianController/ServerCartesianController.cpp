@@ -3,8 +3,8 @@
 
 #include <ace/config.h>
 #include <ace/Vector_T.h>
-#include <yarp/os/Network.h>
 #include <yarp/os/Time.h>
+#include <yarp/os/Network.h>
 #include <yarp/os/impl/NameClient.h>
 #include <yarp/os/impl/Carriers.h>
 

@@ -351,7 +351,7 @@ CartesianSolver::CartesianSolver(const string &_slvName) : RateThread(CARTSLV_DE
     configured=false;
     closed=false;
     verbosity=false;
-    auto_shut_down=false; 
+    timeout_detected=false;
     maxPartJoints=0;
     unctrlJointsNum=0;
     ping_robot_tmo=0.0;
@@ -505,11 +505,10 @@ void CartesianSolver::latchUncontrolledJoints(Vector &joints)
 
 
 /************************************************************************/
-bool CartesianSolver::getFeedback(const bool wait)
+void CartesianSolver::getFeedback(const bool wait)
 {
     Vector fbTmp(maxPartJoints);
     int chainCnt=0;
-    bool ret=true;    
 
     for (int i=0; i<prt->num; i++)
     {    
@@ -542,12 +541,10 @@ bool CartesianSolver::getFeedback(const bool wait)
             fprintf(stdout,"%s: timeout detected on part %s!\n",
                     slvName.c_str(),prt->prp[i].find("part").asString().c_str());
 
+            timeout_detected=true;
             chainCnt+=jnt[i];
-            ret=false;
         }
     }
-
-    return ret;
 }
 
 
@@ -1236,10 +1233,6 @@ bool CartesianSolver::open(Searchable &options)
         if (options.find("verbosity").asVocab()==IKINSLV_VOCAB_VAL_ON)
             verbosity=true;
 
-    if (options.check("auto_shut_down"))
-        if (options.find("auto_shut_down").asVocab()==IKINSLV_VOCAB_VAL_ON)
-            auto_shut_down=true;
-
     double tol=1e-3;
     if (options.check("tol"))
         tol=options.find("tol").asDouble();
@@ -1471,13 +1464,7 @@ void CartesianSolver::run()
     postDOFHandling();
 
     // get current configuration
-    // and handle timeout
-    if (!getFeedback())
-        if (auto_shut_down)
-        {
-            close();
-            return;
-        }
+    getFeedback();
 
     // acquire uncontrolled joints configuration
     if (!fullDOF)
