@@ -60,13 +60,13 @@ YARP libraries and OpenCV (if found)
   found.
  
 --downsample \e n 
-- With this option it is possibile to reduce the storing rate by 
+- With this option it is possible to reduce the storing rate by 
   a factor \e n, i.e. the parameter \e n specifies how many
   items (vectors or images) shall be skipped after one
   acquisition.
 
 --rxTime
-- With this option it is possibile to select which Time Stamp to
+- With this option it is possible to select which Time Stamp to
   assign to the dumped data: normally the sender time is the
   reference, but if this option is enabled, the time of the
   receiving machine on which the service is running will be the
