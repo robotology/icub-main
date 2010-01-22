@@ -2,7 +2,7 @@
 // Firmware Version 1.0 Build Number 0 
 // 
 // Compiled  with C30 V3_20
-*/ MP
+*/ 
 
 
 
@@ -301,7 +301,7 @@ int main(void)
 //
     for (;;)
     {
-
+		led0=1;
         if (flag==1)
         {
             flag=0;
@@ -704,13 +704,13 @@ void FillCanMessages8bit(unsigned char Channel,unsigned char triangleN)
 	    {
 	        if (_pCapOffset[triangleN][i]>=AD7147Registers[triangleN][ADCRESULT_S0+i])
 	        {
-	            val=((_pCapOffset[triangleN][i]-AD7147Registers[triangleN][ADCRESULT_S0+i])>>2);
+	            val=((_pCapOffset[triangleN][i]-AD7147Registers[triangleN][ADCRESULT_S0+i])>>3);
 	            if (val>=10) txdata[i]=255;
 	            else
 	                txdata[i]=val+244;
 	        } else
 	        {
-	            val=((AD7147Registers[triangleN][ADCRESULT_S0+i]-_pCapOffset[triangleN][i])>>2);
+	            val=((AD7147Registers[triangleN][ADCRESULT_S0+i]-_pCapOffset[triangleN][i])>>3);
 	            if (val>=243)   txdata[i]=1;
 	            else
 	                txdata[i]=244-val;
@@ -746,13 +746,13 @@ void FillCanMessages8bit_all(unsigned char Channel,unsigned char triangleN)
 			i=0;
 	        if (_pCapOffset_all[triangleN][i]>=AD7147Registers[triangleN][ADCRESULT_S0+i])
 	        {
-	            val=(_pCapOffset_all[triangleN][i]-AD7147Registers[triangleN][ADCRESULT_S0+i])>>2;
+	            val=(_pCapOffset_all[triangleN][i]-AD7147Registers[triangleN][ADCRESULT_S0+i])>>3;
 	            if (val>=10) txdata[i]=255;
 	            else
 	                txdata[i]=val+244;
 	        } else
 	        {
-	            val=(AD7147Registers[triangleN][ADCRESULT_S0+i]-_pCapOffset_all[triangleN][i])>>2;
+	            val=(AD7147Registers[triangleN][ADCRESULT_S0+i]-_pCapOffset_all[triangleN][i])>>3;
 	            if (val>=243)   txdata[i]=1;
 	            else
 	                txdata[i]=244-val;
@@ -775,13 +775,13 @@ void FillCanMessages8bit_three(unsigned char Channel,unsigned char triangleN)
 	    {
 	        if (_pCapOffset_all[triangleN][i]>=AD7147Registers[triangleN][ADCRESULT_S0+i])
 	        {
-	            val=(_pCapOffset_all[triangleN][i]-AD7147Registers[triangleN][ADCRESULT_S0+i])>>2;
+	            val=(_pCapOffset_all[triangleN][i]-AD7147Registers[triangleN][ADCRESULT_S0+i])>>3;
 	            if (val>=10) txdata[i]=255;
 	            else
 	                txdata[i]=val+244;
 	        } else
 	        {
-	            val=(AD7147Registers[triangleN][ADCRESULT_S0+i]-_pCapOffset_all[triangleN][i])>>2;
+	            val=(AD7147Registers[triangleN][ADCRESULT_S0+i]-_pCapOffset_all[triangleN][i])>>3;
 	            if (val>=243)   txdata[i]=1;
 	            else
 	                txdata[i]=244-val;

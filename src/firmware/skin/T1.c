@@ -5,6 +5,11 @@ void T1_Init(unsigned int match_value)
 {
 	#warning "it has to be changed"
 	// int match_value=0xFFFF;//0X9FFF; //value of the timer it correspond to 20 ms
+	// timer=1/20000*64*matchvalue*1000=0.0032*matchvalue
+	// matchvalue=timer*312.5   
+
+	// matchvalue=(unsigned int) ms_time*312.5;
+	    
 	//==================================== INIT TIMER ================================
 	ConfigIntTimer1(T1_INT_PRIOR_1 & T1_INT_ON);
 	WriteTimer1(0);

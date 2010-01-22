@@ -415,6 +415,7 @@ int CAN1_handleRx (unsigned int board_id)
 					
 					//main();
 					board_MODE=CALIB;
+					T1_Init(TIMER_VALUE);
 					EnableIntT1;
 				}
 				break;
