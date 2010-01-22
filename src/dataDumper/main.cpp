@@ -50,7 +50,8 @@ YARP libraries and OpenCV (if found)
   specified \e vector is assumed. Note that images are stored as
   ppm files. If \e video is choosen then only the file
   'video.avi' is produced neither 'data.log' nor the single
-  images. The option \e video is available iff OpenCV is found.
+  images. The data type \e video is available iff OpenCV is
+  found.
  
 --addVideo
 - In case images are acquired with this option enabled, a video 
