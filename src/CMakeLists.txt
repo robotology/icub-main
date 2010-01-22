@@ -203,7 +203,8 @@ ENDIF (ARTOOLKITPLUS_FOUND)
   IF (OPENCV_FOUND)
      ADD_SUBDIRECTORY(autoAssociativeMemory)
      ADD_SUBDIRECTORY(episodicMemory)
-     ADD_SUBDIRECTORY(attentionNetworkTest)
+     # not portable modules
+     #ADD_SUBDIRECTORY(attentionNetworkTest)
   ENDIF (OPENCV_FOUND)
 
   # utility modules
