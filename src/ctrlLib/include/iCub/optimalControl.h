@@ -108,7 +108,9 @@ public:
                          const yarp::sig::Matrix &_VN);
 
 	 /**
-     * Solve recursively discrete algebraic Riccati equation (DARE), and stores matrices Ti and Li, where i=0,...,N-1 is the time index 
+     * Solve recursively discrete algebraic Riccati equation (DARE) 
+     * and stores matrices Ti and Li, where i=0,...,N-1 is the time 
+     * index 
      * 
      * @param steps The number N of steps of the finite horizon controller
      */
