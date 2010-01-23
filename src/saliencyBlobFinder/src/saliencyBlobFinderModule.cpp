@@ -253,8 +253,11 @@ void saliencyBlobFinderModule::outPorts(){
         /*bot.addDouble(blobFinder->salience->maxc); 
         bot.addDouble(blobFinder->salience->maxr); */
         //logPolarMapper iCub driver
-        bot.addDouble(cos(blobFinder->salience->maxc)*blobFinder->salience->maxr/10); //reference to the relative azimuth angle 
-        bot.addDouble(sin(blobFinder->salience->maxc)*blobFinder->salience->maxr/10); //reference to the relative elevation angle
+
+        double rho=2.0;
+        double theta=((blobFinder->salience->maxr / this->height)-0.5)*180;
+        bot.addDouble(cos(theta)*rho); //reference to the relative azimuth angle 
+        bot.addDouble(sin(theta)*rho); //reference to the relative elevation angle
         centroidPort.write(); 
         
     }
@@ -501,13 +504,7 @@ bool saliencyBlobFinderModule::respond(const Bottle &command,Bottle &reply){
                 ok = true;
             }*/
                 break;
-            case COMMAND_VOCAB_CHILD_WEIGHTS:{
-                Bottle weights;
-                //ok = filter->getChildWeights(&weights);
-                for (int k = 0; k < weights.size(); k++)
-                    reply.addDouble(0.0);
-            }
-                break;
+            
             default:
                 cout << "received an unknown request after a SALIENCE_VOCAB_GET" << endl;
                 break;
