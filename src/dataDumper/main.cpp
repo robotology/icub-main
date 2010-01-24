@@ -151,6 +151,7 @@ This file can be edited at \in src/dataDumper/main.cpp.
 #endif
 
 #include <stdio.h>
+#include <string.h>
 #include <fstream>
 #include <iostream>
 #include <iomanip>
