@@ -21,9 +21,8 @@
  * The optimal controls can be found via dynamic programming, and a closed form solution can be found.
  * At time instant \f$ i \f$ the optimal cost-to-go and control are:
  * \f[ \begin{array}{l} J^\circ \left(x_{i}\right) = x^\top_{i} T_{i}x_{i} \\ u^\circ_{i} = - L_i x_{i} \end{array} \f]
- * where \f$ L_i \f$ is: 
- * \f[ L_i = \left(P+B^\top T_{i+1} B\right)^{-1} B^\top T_{i+1} A \f]
- * whilst \f$ T_i \f$ is computed after the <b>discrete time algebraic Riccati equation</b>: 
+ * where \f$ L_i = \left(P+B^\top T_{i+1} B\right)^{-1} B^\top T_{i+1} A \f$, whilst \f$ T_i \f$
+ * is computed after the <b>discrete time algebraic Riccati equation</b>: 
  * \f[ \begin{array}{l} T_N = V_N \\ T_i = V + A^\top \left[ T_{i+1} - T_{i+1} B \left(P+B^\top T_{i+1} B\right)^{-1} B^\top T_{i+1} \right] A \end{array} \f]
  *
  *
