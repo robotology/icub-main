@@ -3,7 +3,6 @@
 
 #include <list>
 
-#include <ace/OS.h>      //handle
 #include <ace/Log_Msg.h> //ace assert
 #include "yarp/dev/CanBusInterface.h"
 

@@ -1,7 +1,7 @@
 // -*- mode:C++; tab-width:4; c-basic-offset:4; indent-tabs-mode:nil -*-
 
 #include "DrumGeneratorModule.h"
-#include <ace/OS.h>
+#include <yarp/os/Os.h>
 
 #define DEBUG 0
 
@@ -508,8 +508,8 @@ bool generatorThread::init(Searchable &s)
 	}
 	else
 	{
-		char *cubPath;
-		cubPath = getenv("ICUB_DIR");
+		const char *cubPath;
+		cubPath = yarp::os::getenv("ICUB_DIR");
 		if(cubPath == NULL) {
 			ACE_OS::printf("ERROR getting the environment variable ICUB_DIR, exiting\n");
 			return false;
@@ -733,7 +733,7 @@ bool generatorThread::init(Searchable &s)
         {
             ACE_OS::printf("Drums ID not found for part %s\n", partName.c_str());
            Network::fini();
-            exit(-1);
+            yarp::os::exit(-1);
         }
     
     else

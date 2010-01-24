@@ -1,6 +1,6 @@
 #include "drum.h"
 #include <iostream>
-#include <ace/OS.h>
+#include <yarp/os/Os.h>
 
 using namespace std;
 
@@ -248,7 +248,7 @@ void drum::scanHeadPosition()
                         ACE_OS::printf("ERROR: receiving unconsistent number of angles (%d) for part %s\n",
                                         temp.size()-1, parts[HEAD].c_str());
                         Network::fini();
-                        exit(-1);
+                        yarp::os::exit(-1);
                     }
                     id_found++;
                     for(int m=0; m<temp.size()-1; m++)
@@ -266,7 +266,7 @@ void drum::scanHeadPosition()
             {
                 ACE_OS::printf("WARNING: patch id %d could not be linked to any drum\n", temp_id);
                 Network::fini();
-                exit(-1);
+                yarp::os::exit(-1);
             }
         }
     }   
@@ -301,7 +301,7 @@ void drum::scanDrumPosition()
                             ACE_OS::printf("ERROR: receiving unconsistent number of angles (%d) for part %s\n",
                                                     temp.size()-1, parts[j].c_str());
                             Network::fini();
-                            exit(-1);
+                            yarp::os::exit(-1);
                         }
                         id_found++;
                         
@@ -327,14 +327,14 @@ void drum::scanDrumPosition()
             {
                 ACE_OS::printf("WARNING: patch id %d could not be linked to any drum\n", temp_id);
                 Network::fini();
-                exit(-1);
+                yarp::os::exit(-1);
             }
             
             if(id_found>1)
             {
                 ACE_OS::printf("WARNING: patch id %d was linked to more than one drum\n", temp_id);
                 Network::fini();
-                exit(-1);
+                yarp::os::exit(-1);
             }                    
         }
     }
@@ -359,7 +359,7 @@ void drum::getConfig()
                 ACE_OS::printf("Config file \"%s\" not found for part %s\n", 
                                 partName, parts[i].c_str());
                 Network::fini();
-                exit(-1);
+                yarp::os::exit(-1);
             }
            
             controlled_dofs[i] = partConf.find("nbDOFs").asInt();
@@ -391,7 +391,7 @@ void drum::getConfig()
                 ACE_OS::printf("Target positions file \"%s\" not found for part %s\n", 
                                 temp, parts[i].c_str());
                 Network::fini();
-                exit(-1);
+                yarp::os::exit(-1);
             }
             
             nbDrums[i] = drum.find("NbDrums").asInt();

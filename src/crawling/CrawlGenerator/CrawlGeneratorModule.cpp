@@ -1,7 +1,7 @@
 
 #include "CrawlGeneratorModule.h"
 
-#include <ace/OS.h>
+#include <yarp/os/Os.h>
 
 #define DEBUG 0
 
@@ -514,8 +514,8 @@ bool GeneratorThread::init(Searchable &s)
 	}
 	else
 	{
-		char *cubPath;
-		cubPath = getenv("ICUB_DIR");
+                const char *cubPath;
+		cubPath = yarp::os::getenv("ICUB_DIR");
 		if(cubPath == NULL) {
 			printf("GeneratorThread::init>> ERROR getting the environment variable ICUB_DIR, exiting\n");
 			return false;

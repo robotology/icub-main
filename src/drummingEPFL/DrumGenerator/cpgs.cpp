@@ -17,7 +17,7 @@
 
 #include "cpgs.h"
 #include <iostream>
-#include <ace/OS.h>
+#include <yarp/os/Os.h>
 using namespace std;
 
 

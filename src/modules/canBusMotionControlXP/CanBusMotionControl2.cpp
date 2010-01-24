@@ -13,10 +13,6 @@
 
 /// general purpose stuff.
 #include <yarp/os/Time.h>
-#include <ace/config.h>
-#include <ace/OS.h>
-#include <ace/Log_Msg.h> 
-#include <ace/Sched_Params.h>
 #include <stdarg.h>
 #include <stdio.h>
 #include <yarp/dev/PolyDriver.h>

@@ -8,7 +8,7 @@
 #include <yarp/os/Vocab.h>
 #include <yarp/String.h>
 
-#include <ace/OS.h>
+#include <yarp/os/Os.h>
 #include <ace/Log_Msg.h>
 #include <ace/Sched_Params.h>
 

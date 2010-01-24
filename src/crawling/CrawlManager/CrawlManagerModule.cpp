@@ -1,7 +1,7 @@
 // -*- mode:C++; tab-width:4; c-basic-offset:4; indent-tabs-mode:nil -*-
 
 #include "CrawlManagerModule.h"
-#include <ace/OS.h>
+#include <yarp/os/Os.h>
 
 #define DEBUG 1
 
@@ -164,8 +164,8 @@ bool CrawlManagerModule::open(Searchable &s)
 	}
     else
     {
-    	char *cubPath;
-    	cubPath = getenv("ICUB_DIR");
+    	const char *cubPath;
+    	cubPath = yarp::os::getenv("ICUB_DIR");
     	if(cubPath == NULL) {
     		ACE_OS::printf("generatorThread::init>> ERROR getting the environment variable ICUB_DIR, exiting\n");
     		return false;

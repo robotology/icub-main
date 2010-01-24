@@ -126,8 +126,8 @@ int main(int argc,char **argv)
 	}
 	else
     {
-    	char *cubPath;
-    	cubPath = getenv("ICUB_DIR");
+    	const char *cubPath;
+    	cubPath = yarp::os::getenv("ICUB_DIR");
     	if(cubPath == NULL) 
     	{
     		ACE_OS::printf("ERROR getting the environment variable ICUB_DIR, exiting\n");
