@@ -24,7 +24,7 @@
  * where \f$ L_i \f$ is: 
  * \f[ L_i = \left(P+B^\top T_{i+1} B\right)^{-1} B^\top T_{i+1} A \f]
  * whilst \f$ T_i \f$ is computed after the <b>discrete time algebraic Riccati equation</b>: 
- * \f[ \begin{array}{l} T_N = V_N \\ T_i = V + A^\top \left[ T_{i+1} - T_{i+1} B \left(P+B^\top T_{i+1} B\rigth)^{-1} B^\top T_{i+1} \right] A \end{array} \f]
+ * \f[ \begin{array}{l} T_N = V_N \\ T_i = V + A^\top \left[ T_{i+1} - T_{i+1} B \left(P+B^\top T_{i+1} B\right)^{-1} B^\top T_{i+1} \right] A \end{array} \f]
  *
  *
  * \section code_example_sec Example
