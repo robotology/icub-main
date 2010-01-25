@@ -203,12 +203,13 @@ ENDIF (ARTOOLKITPLUS_FOUND)
   IF (OPENCV_FOUND)
      ADD_SUBDIRECTORY(autoAssociativeMemory)
      ADD_SUBDIRECTORY(episodicMemory)
+     ADD_SUBDIRECTORY(attentionNetworkTest)
   ENDIF (OPENCV_FOUND)
 
   # utility modules
   ADD_SUBDIRECTORY(imageSource)
-  ADD_SUBDIRECTORY(sampleVideo)
-
+  ADD_SUBDIRECTORY(sampleVideo) 
+   
   # example module that is compliant with iCub configuration, coding, and documentation standards
   ADD_SUBDIRECTORY(myModule)
 
