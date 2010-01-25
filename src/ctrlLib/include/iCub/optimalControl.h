@@ -15,8 +15,8 @@
  * \f[ x_{i+1} = A x_i + B u_i \ , \ i=0,1,\ldots,N-1 \f]
  * with the known initial state \f$ x_0 = \hat{x} \f$, and the 
  * quadratic cost \f$ J \f$: 
- * \f[ J = \sum^{N-1}_{i=0} \left[ x^\top_i V x_i + u^\top_i P u_i \right] + x^\top_N V_N x_N \f]
- * with \f$ V=V^\top \geq 0 \f$, \f$ V_N=V^\top_N \geq 0 \f$, \f$ P=P^\top>0 \f$, the problem is to find the sequence of 
+ * \f[ J = \sum^{N-1}_{i=0} \left[ x^{\top}_i V x_i + u^{\top}_i P u_i \right] + x^{\top}_N V_N x_N \f]
+ * with \f$ V=V^\top \geq 0 \f$, \f$ V_N=V^{\top}_N \geq 0 \f$, \f$ P=P^\top>0 \f$, the problem is to find the sequence of 
  * optimal controls \f$ u^\circ_0, \ldots, u^\circ_{N-1} \f$ minimizing \f$ J \f$. 
  * The optimal controls can be found via dynamic programming, and a closed form solution can be found.
  * At time instant \f$ i \f$ the optimal cost-to-go and control are:
