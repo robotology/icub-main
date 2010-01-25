@@ -318,17 +318,11 @@ void AttentionNetworkTestThread::run(){
    */
 
 
-   struct _timeb tb; // time buffer
-   long int s1, s2;
-   long int ms1, ms2;
-   long elapsed;
-
-
    while (isStopping() != true) { // the thread continues to run until isStopping() returns true
 
       std::vector<ImageOf<PixelRgb> >& images = data.images();
 
-      for (cueCondition = 3; cueCondition < 4; cueCondition++) {
+      for (cueCondition = 0; cueCondition < 4; cueCondition++) {
          for (location = 0; location <2 ; location++) {
             for (direction = 0; direction < 2; direction++) {
                for (flankerCondition = 0; flankerCondition <3; flankerCondition++) {
@@ -338,15 +332,9 @@ void AttentionNetworkTestThread::run(){
                   imageId = 0;
             	  it = images.begin() + imageId; // set the iterator
             	  ANTimage = *it;                // retrieve the image
-
-                  _ftime(&tb); s1=(long) tb.time;  ms1=tb.millitm;
-                  do {
-                     ANTimageOutPort->prepare() = ANTimage;
-                     ANTimageOutPort->write();  // write image
-                     pause(1000/FPS);           // wait to force the required frames per second
-                     _ftime(&tb); s2=(long) tb.time; ms2=tb.millitm; 
-                     elapsed =(s2*1000+ms2)-(s1*1000+ms1);
-                  } while (elapsed < *d1Value);
+                  ANTimageOutPort->prepare() = ANTimage;
+                  ANTimageOutPort->write();  // write image
+                  pause(*d1Value);          
 
                   /* cue */
 
@@ -361,30 +349,19 @@ void AttentionNetworkTestThread::run(){
 
 	              it = images.begin() + imageId; // set the iterator
 	              ANTimage = *it;                // retrieve the image
-                  
-                  _ftime(&tb); s1=(long) tb.time;  ms1=tb.millitm;
-                  do {
-                     ANTimageOutPort->prepare() = ANTimage;
-                     ANTimageOutPort->write();  // write image
-                     pause(1000/FPS);           // wait to force the required frames per second
-                     _ftime(&tb); s2=(long) tb.time; ms2=tb.millitm; 
-                     elapsed =(s2*1000+ms2)-(s1*1000+ms1);
-                  } while (elapsed < *d2Value);
+                  ANTimageOutPort->prepare() = ANTimage;
+                  ANTimageOutPort->write();  // write image
+                  pause(*d2Value);          
+
 
                   /* fixation */
 
                   imageId = 0;
 	              it = images.begin() + imageId; // set the iterator
 	              ANTimage = *it;                // retrieve the image
-
-                  _ftime(&tb); s1=(long) tb.time;  ms1=tb.millitm;
-                  do {
-                     ANTimageOutPort->prepare() = ANTimage;
-                     ANTimageOutPort->write();  // write image
-                     pause(1000/FPS);           // wait to force the required frames per second
-                     _ftime(&tb); s2=(long) tb.time; ms2=tb.millitm; 
-                     elapsed =(s2*1000+ms2)-(s1*1000+ms1);
-                  } while (elapsed < *d3Value);
+                  ANTimageOutPort->prepare() = ANTimage;
+                  ANTimageOutPort->write();  // write image
+                  pause(*d3Value);          
 
                   /* target */
 
@@ -392,31 +369,18 @@ void AttentionNetworkTestThread::run(){
 
 	              it = images.begin() + imageId; // set the iterator
 	              ANTimage = *it;                // retrieve the image
-                                    
-                  _ftime(&tb); s1=(long) tb.time;  ms1=tb.millitm;
-                  do {
-                     ANTimageOutPort->prepare() = ANTimage;
-                     ANTimageOutPort->write();  // write image
-                     pause(1000/FPS);           // wait to force the required frames per second
-                     _ftime(&tb); s2=(long) tb.time; ms2=tb.millitm; 
-                     elapsed =(s2*1000+ms2)-(s1*1000+ms1);
-                  } while (elapsed < *d4Value);
-
+                  ANTimageOutPort->prepare() = ANTimage;
+                  ANTimageOutPort->write();  // write image
+                  pause(*d4Value);          
 
                   /* fixation */
 
                   imageId = 0;
 	              it = images.begin() + imageId; // set the iterator
 	              ANTimage = *it;                // retrieve the image
-
-                  _ftime(&tb); s1=(long) tb.time;  ms1=tb.millitm;
-                  do {
-                     ANTimageOutPort->prepare() = ANTimage;
-                     ANTimageOutPort->write();  // write image
-                     pause(1000/FPS);           // wait to force the required frames per second
-                     _ftime(&tb); s2=(long) tb.time; ms2=tb.millitm; 
-                     elapsed =(s2*1000+ms2)-(s1*1000+ms1);
-                  } while (elapsed < *d5Value);
+                  ANTimageOutPort->prepare() = ANTimage;
+                  ANTimageOutPort->write();  // write image
+                  pause(*d5Value);          
                }
             }
          }
