@@ -135,7 +135,7 @@ void saliencyBlobFinderModule::setOptions(yarp::os::Property opt){
 }
 
 bool saliencyBlobFinderModule::updateModule() {
-
+    ct++;
     command=cmdPort.read(false);
     if(command!=0){
         //Bottle* tmpBottle=cmdPort.read(false);
@@ -247,16 +247,31 @@ void saliencyBlobFinderModule::outPorts(){
     if(centroidPort.getOutputCount()){
         Bottle &bot = centroidPort.prepare(); 
         bot.clear();
-        bot.addVocab( Vocab::encode("sac") ); 
-        bot.addVocab( Vocab::encode("img") ); 
+        
         // temporary implementation for opencvLogPolar
         /*bot.addDouble(blobFinder->salience->maxc); 
         bot.addDouble(blobFinder->salience->maxr); */
         //logPolarMapper iCub driver
-        bot.addDouble((blobFinder->salience->centroid_y-height/2)/(height/2)); //reference to the relative azimuth angle 
-        bot.addDouble((blobFinder->salience->centroid_x-width/2)/(width/2)); //reference to the relative elevation angle
-        centroidPort.write(); 
-        
+        if(ct%100<80){
+            bot.addVocab( Vocab::encode("sac") ); 
+            bot.addVocab( Vocab::encode("img") ); 
+            double xrel=(blobFinder->salience->centroid_y-height/2)/(height/2);
+            double yrel=(blobFinder->salience->centroid_x-width/2)/(width/2);
+            printf("%f,%f \n",xrel,yrel);
+            bot.addDouble(xrel);  
+            bot.addDouble(yrel); 
+            centroidPort.write();
+        }    
+        else{
+            printf(".");
+            bot.addVocab( Vocab::encode("sac") ); 
+            bot.addVocab( Vocab::encode("abs") ); 
+            bot.addDouble(0);  
+            bot.addDouble(0); 
+            centroidPort.write();
+        }
+        if(ct%100==0)
+            ct=0;
     }
      /*Bottle& _outBottle=_centroidPort->prepare();
      _outBottle.clear();
