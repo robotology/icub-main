@@ -121,7 +121,6 @@ This file can be edited at
 \in src/iKinGazeView/main.cpp. 
 */ 
 
-#include <ace/OS.h>
 #include <yarp/os/Network.h>
 #include <yarp/os/RFModule.h>
 #include <yarp/os/RateThread.h>
@@ -216,6 +215,13 @@ public:
 
         xdOld.resize(3);
         xdOld=0.0;
+
+        port_q=NULL;
+        port_xd=NULL;
+
+        ep=NULL;
+        mlBuffer=NULL;
+        mlIdx=NULL;
     }
 
     void getAlignH(Property &par, const string &type, Matrix &H)
@@ -253,6 +259,15 @@ public:
 
     virtual bool threadInit()
     {
+        port_q=new rxPort(dim);
+        port_q->useCallback();
+        string n1=portName+"/q:i";
+        port_q->open(n1.c_str());
+
+        port_xd=new BufferedPort<Vector>();
+        string n2=portName+"/xd:o";
+        port_xd->open(n2.c_str());
+
     #ifdef WIN32
         int retstatus;
         if (!(ep=engOpenSingleUse(NULL,NULL,&retstatus)))
@@ -261,6 +276,7 @@ public:
     #endif
         {
             cerr << "Opening MATLAB engine failed!" << endl;
+            dispose();
             return false;
         }
 
@@ -295,39 +311,30 @@ public:
         else
         {
             cerr << "Unable to create mxMatrix" << endl;
-            engClose(ep);
+            dispose();
             return false;
         }
 
         if (!runViewer(ep))
         {
             cerr << "Unable to locate MATLAB script" << endl;
-            engClose(ep);
+            dispose();
             return false;
         }
 
         if (!(mlBuffer=mxCreateDoubleMatrix(N,dim+1,mxREAL)))
         {
             cerr << "Unable to create mxMatrix" << endl;
-            engClose(ep);
+            dispose();
             return false;
         }
 
         if (!(mlIdx=mxCreateDoubleScalar(idx)))
         {
             cerr << "Unable to create mxMatrix" << endl;
-            engClose(ep);
+            dispose();
             return false;
         }
-
-        port_q=new rxPort(dim);
-        port_q->useCallback();
-        string n1=portName+"/q:i";
-        port_q->open(n1.c_str());
-
-        port_xd=new BufferedPort<Vector>();
-        string n2=portName+"/xd:o";
-        port_xd->open(n2.c_str());
 
         cout << "Starting main thread..." << endl;
 
@@ -396,19 +403,33 @@ public:
 
     virtual void threadRelease()
     {
-        port_xd->interrupt();
-        port_q->interrupt();
+        dispose();
+    }
 
-        port_xd->close();
-        port_q->close();
+    void dispose()
+    {
+        if (port_q)
+        {
+            port_q->interrupt();
+            port_q->close();
+            delete port_q;
+        }
 
-        delete port_q;
-        delete port_xd;
+        if (port_xd)
+        {
+            port_xd->interrupt();
+            port_xd->close();
+            delete port_xd;
+        }
 
-        mxDestroyArray(mlBuffer);
-        mxDestroyArray(mlIdx);
+        if (mlBuffer)
+            mxDestroyArray(mlBuffer);
 
-        engClose(ep);
+        if (mlIdx)
+            mxDestroyArray(mlIdx);
+
+        if (ep)
+            engClose(ep);
     }
 };
 
