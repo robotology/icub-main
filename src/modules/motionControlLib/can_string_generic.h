@@ -97,7 +97,7 @@ int can_string_generic::add_string(void* can_packet)
 
 	if (string_id>=MAX_STRINGS) 
 	{
-		ACE_OS::printf("msg from board %d contains an ERROR! (>MAX_STRINGS)\n",data[string_id ].board_id);
+		printf("msg from board %d contains an ERROR! (>MAX_STRINGS)\n",data[string_id ].board_id);
 		return -1;
 	}
 
