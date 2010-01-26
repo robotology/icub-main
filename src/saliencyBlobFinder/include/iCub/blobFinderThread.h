@@ -73,14 +73,7 @@ private:
     * height of the input image
     */
     int height;
-    /**
-	* maxBLOB dimension
-	*/
-	int maxBLOB;
-	/**
-	* minBLOB dimension
-	*/
-	int minBLOB;
+    
     
     /**
     * flag that indicates when the reinitiazation has already be done
@@ -164,26 +157,7 @@ private:
 	* image of the fovea blob
 	*/
 	ImageOf<PixelMono> *blobFov;
-    /**
-	* saliencyTOT linear combination Ktd coefficient (TOP DOWN saliency weight)
-	*/
-	double salienceTD;
-	/**
-	* saliencyTOT linear combination Kbu coefficient (BOTTOM-UP saliency weight)
-	*/
-	double salienceBU;
-    /**
-	* red intensity of the target that has been found 
-	*/
-	double targetRED;
-	/**
-	* green intensity of the target that has been found 
-	*/
-	double targetGREEN;
-	/**
-	* blue intensity of the target that has been found 
-	*/
-	double targetBLUE;
+    
     /**
 	* R+G- value for the search
 	*/
@@ -344,6 +318,36 @@ public:
 	* flag for drawing watershed image
 	*/
 	bool watershed_flag;
+
+    //------------parameters modified by the interface
+    /**
+	* maxBLOB dimension
+	*/
+	int maxBLOB;
+	/**
+	* minBLOB dimension
+	*/
+	int minBLOB;
+    /**
+	* saliencyTOT linear combination Ktd coefficient (TOP DOWN saliency weight)
+	*/
+	double salienceTD;
+	/**
+	* saliencyTOT linear combination Kbu coefficient (BOTTOM-UP saliency weight)
+	*/
+	double salienceBU;
+    /**
+	* red intensity of the target that has been found 
+	*/
+	double targetRED;
+	/**
+	* green intensity of the target that has been found 
+	*/
+	double targetGREEN;
+	/**
+	* blue intensity of the target that has been found 
+	*/
+	double targetBLUE;
     
 };
 

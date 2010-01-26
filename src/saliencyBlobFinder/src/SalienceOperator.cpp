@@ -927,17 +927,27 @@ void SalienceOperator::blobCatalog(ImageOf<PixelInt>& tagged,
 
 /**
 * set paramenters of the saliency operator
+* @param SXO size along x axis of the original image
+* @param SYO size of the original image along y axis
+* @param SXR size of the reconstruvtion image along x axis
+* @param SYR size of the resulting image along y axis
+* @param rho rho of logPolar conversion
+* @param theta theta of the logPolar conversion
+* @param fovea fovea size
+* @param resolution resolution of the image
+* @param LPMode logPolar modality (GIOTTO1, GIOTTO2, CUST)
+* @param ZoomLevel level of the zoom
 */
 Image_Data SalienceOperator::Set_Param(
-                     int SXO,  //size along x axis of the original image
-                     int SYO,   //size of the original image along y axis
-                     int SXR, //size of the resulting image along x axis
-                     int SYR, //size of the resulting image along y axis
-                     int rho, //rho of logPolar conversion
-                     int theta, //theta of the logPolar conversion
-                     int fovea, //fovea size
-                     int resolution, //resolution
-                     int LPMode,  //logPolar modality (GIOTTO1, GIOTTO2, CUST)
+                     int SXO,  //
+                     int SYO,   //
+                     int SXR, //
+                     int SYR, //
+                     int rho, //
+                     int theta, //
+                     int fovea, //
+                     int resolution, //
+                     int LPMode,  //
                      double ZoomLevel  //level of the zoom
                      )
 {

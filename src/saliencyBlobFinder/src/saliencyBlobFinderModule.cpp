@@ -54,6 +54,8 @@ bool saliencyBlobFinderModule::open(Searchable& config) {
     centroidPort.open(getName("centroid:o"));
     cmdPort.open(getName("cmd"));
     attach(cmdPort);
+
+    time (&start);
     
     return true;
 }
@@ -135,7 +137,7 @@ void saliencyBlobFinderModule::setOptions(yarp::os::Property opt){
 }
 
 bool saliencyBlobFinderModule::updateModule() {
-    ct++;
+  
     command=cmdPort.read(false);
     if(command!=0){
         //Bottle* tmpBottle=cmdPort.read(false);
@@ -161,7 +163,7 @@ bool saliencyBlobFinderModule::updateModule() {
         printf("%s \n", commandTOT->c_str());
     }*/
     
-    
+    ct++;
     img = this->inputPort.read(false);
     if(0==img)
         return true;
@@ -199,13 +201,9 @@ bool saliencyBlobFinderModule::updateModule() {
 */
 bool saliencyBlobFinderModule::getOpponencies(){
 
-    
-    
-
     tmpImage=rgPort.read(false);
     if(tmpImage!=NULL)
         ippiCopy_8u_C1R(tmpImage->getRawImage(),tmpImage->getRowSize(),blobFinder->ptr_inputImgRG->getRawImage(), blobFinder->ptr_inputImgRG->getRowSize(),srcsize);
-    
    
     tmpImage=grPort.read(false);
     if(tmpImage!=NULL)
@@ -252,26 +250,31 @@ void saliencyBlobFinderModule::outPorts(){
         /*bot.addDouble(blobFinder->salience->maxc); 
         bot.addDouble(blobFinder->salience->maxr); */
         //logPolarMapper iCub driver
-        if(ct%100<80){
+        time (&end);
+        double dif = difftime (end,start);
+        if((dif>10)&&(dif<=20)){
             bot.addVocab( Vocab::encode("sac") ); 
             bot.addVocab( Vocab::encode("img") ); 
-            double xrel=(blobFinder->salience->centroid_y-height/2)/(height/2);
-            double yrel=(blobFinder->salience->centroid_x-width/2)/(width/2);
-            printf("%f,%f \n",xrel,yrel);
+            double xrel=(blobFinder->salience->centroid_y-width/2)/(width/2);
+            double yrel=(blobFinder->salience->centroid_x-height/2)/(height/2);
+            printf("%f>%f,%f \n",dif,xrel,yrel);
             bot.addDouble(xrel);  
             bot.addDouble(yrel); 
             centroidPort.write();
-        }    
+            
+        }
+        else if(dif>20){
+            time (&start);
+        }
         else{
-            printf(".");
+            printf("%f.",dif);
             bot.addVocab( Vocab::encode("sac") ); 
             bot.addVocab( Vocab::encode("abs") ); 
             bot.addDouble(0);  
             bot.addDouble(0); 
             centroidPort.write();
         }
-        if(ct%100==0)
-            ct=0;
+        
     }
      /*Bottle& _outBottle=_centroidPort->prepare();
      _outBottle.clear();
@@ -400,43 +403,43 @@ bool saliencyBlobFinderModule::respond(const Bottle &command,Bottle &reply){
                 break;
             case COMMAND_VOCAB_KBU:{
                 double w = command.get(2).asDouble();
-                printf("%f",w);
+                this->blobFinder->salienceBU=w;
                 ok=true;
             }
                 break;
             case COMMAND_VOCAB_KTD:{
                 double w = command.get(2).asDouble();
-                printf("%f",w);
+                blobFinder->salienceTD=w;
                 ok=true;
             }
                 break;
             case COMMAND_VOCAB_RIN:{
                 double w = command.get(2).asDouble();
-                printf("%f",w);
+                blobFinder->targetRED=w;
                 ok=true;
             }
                 break;
             case COMMAND_VOCAB_GIN:{
                 double w = command.get(2).asDouble();
-                printf("%f",w);
+                blobFinder->targetGREEN=w;
                 ok=true;
             }
                 break;
             case COMMAND_VOCAB_BIN:{
                 double w = command.get(2).asDouble();
-                printf("%f",w);
+                blobFinder->targetBLUE=w;
                 ok=true;
             }
                 break;
             case COMMAND_VOCAB_MAXDB:{
                 double w = command.get(2).asDouble();
-                printf("%f",w);
+                blobFinder->maxBLOB=w;
                 ok=true;
             }
                 break;
             case COMMAND_VOCAB_MINDB:{
                 double w = command.get(2).asDouble();
-                printf("%f",w);
+                blobFinder->minBLOB=w;
                 ok=true;
             }
                 break;

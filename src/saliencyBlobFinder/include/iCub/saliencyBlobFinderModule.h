@@ -2,6 +2,9 @@
 #ifndef _SALIENCYBLOBFINDERMODULE_H_
 #define _SALIENCYBLOBFINDERMODULE_H_
 
+#include <time.h>
+
+
 //within project includes
 #include <iCub/blobFinderThread.h>
 
@@ -240,6 +243,15 @@ private:
     * bottle where the reply will be stored for further purpose
     */
     Bottle* reply;
+    /**
+    * time variable
+    */
+    time_t start;
+    /**
+    * time variable
+    */
+    time_t end;
+
 
 
     //_________ private methods ____________
