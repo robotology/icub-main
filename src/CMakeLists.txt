@@ -154,13 +154,7 @@ ENDIF (ARTOOLKITPLUS_FOUND)
   ADD_SUBDIRECTORY(canLoader)
   # assorted GUIs, internally check available libraries
   ADD_SUBDIRECTORY(gui)
-  
-  # some less tested modules, only compiled if ICUB_TEST is set in environment
-  # removed to avoid prolification of cmake conditionals -- Lorenzo Natale
-  #SET (ICUB_TEST "$ENV{ICUB_TEST}")
-  #IF (ICUB_TEST)
-  #ENDIF (ICUB_TEST)
-  
+    
   # libraries -- adding them last to test if CMake reorders correctly
   ADD_SUBDIRECTORY(rfwr)
   ADD_SUBDIRECTORY(yarpMath)
@@ -233,6 +227,29 @@ ENDIF (ARTOOLKITPLUS_FOUND)
   ADD_SUBDIRECTORY(affActionPrimitives)
   ADD_SUBDIRECTORY(affActionPrimitives/example)
 
+  add_subdirectory(graspDetector)
+  add_subdirectory(graspDetectorConf)
+  add_subdirectory(predictiveSP)
+
+  # add here modules you want to test for compilation
+  # these modules will only be compiled by automated
+  # compilation scripts
+   IF (COMPILE_FOR_TESTING)
+    ADD_SUBDIRECTORY(iCubTest) 
+
+  ENDIF(COMPILE_FOR_TESTING)
+
+IF(OPENCV_FOUND AND GSL_FOUND)
+    ADD_SUBDIRECTORY(pf3dTracker)
+ENDIF(OPENCV_FOUND AND GSL_FOUND)
+
+# vision modules for object affordances
+IF(OPENCV_FOUND)
+    ADD_SUBDIRECTORY(edisonSegmentation)
+    ADD_SUBDIRECTORY(blobDescriptor)
+    ADD_SUBDIRECTORY(effectDetector)
+ENDIF(OPENCV_FOUND)
+
   add_subdirectory(libvislab-snapshot)
 
   find_package(LIBVISLAB QUIET)
@@ -249,30 +266,6 @@ ENDIF (ARTOOLKITPLUS_FOUND)
       add_subdirectory(eye2world)
     endif(IKIN_FOUND)
   endif(LIBVISLAB_FOUND)
-
-  add_subdirectory(graspDetectorConf)
-  add_subdirectory(graspDetector)
-
-
-  # add here modules you want to test for compilation
-  # these modules will only be compiled by automated
-  # compilation scripts
-   IF (COMPILE_FOR_TESTING)
-
-	add_subdirectory(predictiveSP)
-
-  ENDIF(COMPILE_FOR_TESTING)
-
-IF(OPENCV_FOUND AND GSL_FOUND)
-    ADD_SUBDIRECTORY(pf3dTracker)
-ENDIF(OPENCV_FOUND AND GSL_FOUND)
-
-# vision modules for object affordances
-IF(OPENCV_FOUND)
-    ADD_SUBDIRECTORY(edisonSegmentation)
-    ADD_SUBDIRECTORY(blobDescriptor)
-    ADD_SUBDIRECTORY(effectDetector)
-ENDIF(OPENCV_FOUND)
   
 ENDIF(BUILD_FOR_RELEASE)
 
