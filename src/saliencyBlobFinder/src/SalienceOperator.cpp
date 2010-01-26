@@ -730,6 +730,8 @@ void SalienceOperator::maxSalienceBlob(ImageOf<PixelInt>& tagged, int max_tag, Y
         printf("max saliency correspond to the fovea blob \n");
         maxr=0;
         maxc=0;
+        centroid_x=width/2;
+        centroid_y=height/2;
     }
     else{
         centerOfMassAndMass(tagged, box.id, &xcart, &ycart, &box.areaCart);
@@ -740,7 +742,8 @@ void SalienceOperator::maxSalienceBlob(ImageOf<PixelInt>& tagged, int max_tag, Y
         this->maxc=(box.cmax+box.cmin)/2;
         this->maxr=(box.rmax+box.rmin)/2;
     }
-    printf("rho:%f,theta:%f \n",maxc,maxr);
+    //printf("rho:%f,theta:%f \n",maxc,maxr);
+    printf("centroidx:%f,centroid_y:%f \n",centroid_x,centroid_y);
     //_gaze.computeRay(YARPBabybotHeadKin::KIN_LEFT_PERI, box.elev, box.az, (int)box.centroid_x, (int)box.centroid_y);
 }
 
