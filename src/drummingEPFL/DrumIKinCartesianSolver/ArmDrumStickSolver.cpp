@@ -31,12 +31,16 @@ PartDescriptor *ArmDrumStickSolver::getPartDesc(Searchable &options)
 	string localTorso ="/"+slvName+"/"+partTorso;
 	optTorso.put("remote",remoteTorso.c_str());
 	optTorso.put("local",localTorso.c_str());
+    optTorso.put("robot",robot.c_str());
+    optTorso.put("part",partTorso.c_str());
 
 	string partArm = type=="left" ? "left_arm" : "right_arm";
 	string remoteArm="/"+robot+"/"+partArm;
 	string localArm ="/"+slvName+"/"+partArm;
 	optArm.put("remote",remoteArm.c_str());
 	optArm.put("local",localArm.c_str());
+    optArm.put("robot",robot.c_str());
+    optArm.put("part",partArm.c_str());
 
 	PartDescriptor *p=new PartDescriptor;
 
