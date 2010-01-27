@@ -92,6 +92,8 @@ extern bool viewParam1,viewParam2;
 
 extern void sendTouch(Bottle& report);
 extern bool shouldSendTouch();
+extern void sendInertial(Bottle& report);
+extern bool shouldSendInertial();
 static Semaphore ODE_access(1);
 extern void sendVision();
 
@@ -638,14 +640,61 @@ assert(o1);
 		drawSkyDome(0,0,0,50,50,50); // Draw the Skybox		
 	}
 
-	void clearBuffer(){
+    void clearBuffer(){
 		glClear(GL_COLOR_BUFFER_BIT|GL_DEPTH_BUFFER_BIT); // refresh opengl
 	}
+
+    static void retreiveInertialData(Bottle& inertialReport){
+        static dReal OldLinearVel[3], LinearVel[3], LinearAccel[3], roll, pitch, yaw;
+        inertialReport.clear();
+        //this prepares a bottle of 12 doubles to be sent on the /icubSim/inertial port
+        
+        roll = dBodyGetRotation(odeinit._iCub->head)[1] ;
+        pitch = dBodyGetRotation(odeinit._iCub->head)[6] ;
+        yaw = dBodyGetRotation(odeinit._iCub->head)[2] ;
+        //Add Euler angles roll pitch yaw
+        inertialReport.addDouble( roll * 180/M_PI); // roll 
+        inertialReport.addDouble( pitch * 180/M_PI); // pitch
+        inertialReport.addDouble( yaw * 180/M_PI); // yaw
+        		
+        //in order to calculate linear acceleration (make sure of body) Inertial Measurement Unit IMU
+		LinearVel[0] = dBodyGetLinearVel(odeinit._iCub->head)[0];
+		LinearVel[1] = dBodyGetLinearVel(odeinit._iCub->head)[1];
+		LinearVel[2] = dBodyGetLinearVel(odeinit._iCub->head)[2];
+		//// a = dv/dt = ( t - t_old ) / dt
+		LinearAccel[0] = ( LinearVel[0] - OldLinearVel[0] ) / 0.02;
+		LinearAccel[1] = ( LinearVel[1] - OldLinearVel[1] ) / 0.02;
+		LinearAccel[2] = ( LinearVel[2] - OldLinearVel[2] ) / 0.02;
+		OldLinearVel[0] = LinearVel[0];
+		OldLinearVel[1] = LinearVel[1];
+		OldLinearVel[2] = LinearVel[2];
+        
+		////Add linear acceleration -------- this is used for free acceleration without taking into account the gravity
+        /*
+        inertialReport.addDouble( LinearAccel[0] );
+        inertialReport.addDouble( LinearAccel[1] );
+        inertialReport.addDouble( LinearAccel[2] ); 
+        */
+        inertialReport.addDouble( -(sin(pitch) * cos(roll)) * 9.8 );
+        inertialReport.addDouble( (sin(roll)) * 9.8 );
+        inertialReport.addDouble( (cos(pitch) * cos(roll)) * 9.8 );
+		
+        //Add angular velocity
+        inertialReport.addDouble(-dBodyGetAngularVel(odeinit._iCub->head)[2] / 10);
+        inertialReport.addDouble(-dBodyGetAngularVel(odeinit._iCub->head)[0] / 10);
+        inertialReport.addDouble( dBodyGetAngularVel(odeinit._iCub->head)[1] / 10);
+        
+    
+        //Add magnetic fields
+        inertialReport.addDouble(0.0);
+        inertialReport.addDouble(0.0);
+        inertialReport.addDouble(0.0);
+
+    }
+
 	static Uint32 ODE_process(Uint32 interval, void *param){
 		//static clock_t startTimeODE= clock(), finishTimeODE= clock();
-		//static dReal OldLinearVel[3], LinearVel[3], LinearAccel[3];
 		//startTimeODE = clock();
-
 		
 		odeinit.mutex.wait();
 		dSpaceCollide(odeinit.space,0,&nearCallback);
@@ -660,27 +709,11 @@ assert(o1);
 
 		dJointGroupEmpty (odeinit.contactgroup);
 
-		//angular velocity
-		//printf("%lf   %lf    %lf \n",dBodyGetAngularVel(odeinit._iCub->torso[2])[0],dBodyGetAngularVel(odeinit._iCub->torso[2])[1],dBodyGetAngularVel(odeinit._iCub->torso[2])[2]);
-
-		//in order to calculate linear acceleration (make sure of body) Inertial Measurement Unit IMU
-		//if (odeinit._iCub->actTorso == "on"){
-		//LinearVel[0] = dBodyGetLinearVel(odeinit._iCub->torso[2])[0];
-		//LinearVel[1] = dBodyGetLinearVel(odeinit._iCub->torso[2])[1];
-		//LinearVel[2] = dBodyGetLinearVel(odeinit._iCub->torso[2])[2];
-
-		//// a = dv/dt = ( t - t_old ) / dt
-		//LinearAccel[0] = (LinearVel[0] - OldLinearVel[0])/0.02;
-		//LinearAccel[1] = (LinearVel[1] - OldLinearVel[1])/0.02;
-		//LinearAccel[2] = (LinearVel[2] - OldLinearVel[2])/0.02;
-
-		//OldLinearVel[0] = LinearVel[0];
-		//OldLinearVel[1] = LinearVel[1];
-		//OldLinearVel[2] = LinearVel[2];
-		////linear acceleration
-		////printf("%lf   %lf    %lf \n",LinearAccel[0],LinearAccel[1],LinearAccel[2]);
-		//}
-
+        if (shouldSendInertial()) {
+            Bottle inertialReport;
+            retreiveInertialData(inertialReport);
+            sendInertial(inertialReport);
+        }
 		setJointSpeed();
 		//setJointTorques();
 		//finishTimeODE = clock() ;

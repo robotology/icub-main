@@ -82,7 +82,7 @@
  *
  * - /icubSim/world : port to manipulate the environment
  * - /icubSim/touch : streams out a sequence the touch sensors for both hands
- *
+ * - /icubSim/inertial : streams out a sequence of inertial data taken from the head
  * - /icubSim/texture : port to receive texture data to place on an object (e.g. data from a webcam etc...)
  *
  * \section in_files_sec Input Data Files
@@ -125,7 +125,6 @@
 #include <yarp/sig/ImageFile.h>
 #include <yarp/sig/ImageDraw.h>
 #include <yarp/os/Os.h>
-
 
 #include <stdio.h>
 #include <string.h>
@@ -170,6 +169,7 @@ private:
 	BufferedPort<ImageOf<PixelRgb> > portLeft, portRight, portWide;
 	Port cmdPort;
 	BufferedPort<Bottle> tactilePort;
+    BufferedPort<Bottle> inertialPort;
 
     int _argc;
     char **_argv;
@@ -215,6 +215,15 @@ public:
 		return tactilePort.getOutputCount()>0;
 	}
 
+    void sendInertial(Bottle& report){
+		inertialPort.prepare() = report;
+		inertialPort.write();
+	}
+
+    bool shouldSendInertial(){
+		return inertialPort.getOutputCount()>0;
+	}
+
     bool closeModule() {
    		printf("Closing module...\n");
         interruptModule();
@@ -232,6 +241,7 @@ public:
         portWide.close();
 
         tactilePort.close();
+        inertialPort.close();
         cmdPort.close();
 
         fprintf(stderr, "Successfully terminated...bye...\n");
@@ -946,6 +956,14 @@ bool shouldSendTouch() {
 	return simulatorModule->shouldSendTouch();
 }
 
+void sendInertial(Bottle& report) {
+	simulatorModule->sendInertial(report);
+}
+
+bool shouldSendInertial() {
+	return simulatorModule->shouldSendInertial();
+}
+
 
 void sendVision(){
 simulatorModule->displayStep(0);
@@ -1040,6 +1058,7 @@ bool SimulatorModule::open() {
 	cmdPort.setReader(*this);
 	cmdPort.open("/icubSim/world");
 	tactilePort.open("/icubSim/touch");
+    inertialPort.open("/icubSim/inertial");
 
     if (odeinit._iCub->actVision=="on") {
         initImagePorts();
