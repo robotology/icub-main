@@ -107,6 +107,7 @@
  **/
 
 #include "drum.h"
+#include <stdio.h>
 #undef main 
 
 int main(int argc,char **argv) 
@@ -130,7 +131,7 @@ int main(int argc,char **argv)
     	cubPath = yarp::os::getenv("ICUB_DIR");
     	if(cubPath == NULL) 
     	{
-    		ACE_OS::printf("ERROR getting the environment variable ICUB_DIR, exiting\n");
+    		printf("ERROR getting the environment variable ICUB_DIR, exiting\n");
     		return false;
     	}
     	yarp::String cubPathStr(cubPath);
@@ -141,18 +142,18 @@ int main(int argc,char **argv)
 
 
     //initialize
-    ACE_OS::printf("connecting ports....\n");
+    printf("connecting ports....\n");
     MyGMP->doConnect(); //connect ports
-    ACE_OS::printf("...done\n getting parameters...\n");
+    printf("...done\n getting parameters...\n");
     MyGMP->getConfig(); //get info from files
-    ACE_OS::printf("...done\n");
+    printf("...done\n");
     
 
     //run
     MyGMP->run();
 
     //close     
-    ACE_OS::printf("Closing...\n");
+    printf("Closing...\n");
     delete MyGMP;
 
     return 1;

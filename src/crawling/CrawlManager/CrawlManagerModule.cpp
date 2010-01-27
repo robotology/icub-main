@@ -2,6 +2,7 @@
 
 #include "CrawlManagerModule.h"
 #include <yarp/os/Os.h>
+#include <stdio.h>
 
 #define DEBUG 1
 
@@ -167,7 +168,7 @@ bool CrawlManagerModule::open(Searchable &s)
     	const char *cubPath;
     	cubPath = yarp::os::getenv("ICUB_DIR");
     	if(cubPath == NULL) {
-    		ACE_OS::printf("generatorThread::init>> ERROR getting the environment variable ICUB_DIR, exiting\n");
+    		printf("generatorThread::init>> ERROR getting the environment variable ICUB_DIR, exiting\n");
     		return false;
     	}
     	yarp::String cubPathStr(cubPath);
@@ -210,13 +211,13 @@ bool CrawlManagerModule::open(Searchable &s)
             bool ok = parts_port[i].open(tmp2);
             if(!ok)
             {
-                ACE_OS::printf("unable to open %s\n",tmp2);
+                printf("unable to open %s\n",tmp2);
                 return false;
             }
             ok = Network::connect(tmp2,tmp1);
             if(!ok)
             {
-                ACE_OS::printf("unable to connect %s with %s\n",tmp2,tmp1);
+                printf("unable to connect %s with %s\n",tmp2,tmp1);
                 return false;
             }
                     
@@ -227,13 +228,13 @@ bool CrawlManagerModule::open(Searchable &s)
             ok = check_port[i].open(tmp1);
             if(!ok)
             {
-                ACE_OS::printf("unable to open %s\n",tmp1);
+                printf("unable to open %s\n",tmp1);
                 return false;
             }
             ok = Network::connect(tmp2,tmp1);
             if(!ok)
             { 
-                ACE_OS::printf("unable to connect %s with %s\n",tmp2,tmp1);
+                printf("unable to connect %s with %s\n",tmp2,tmp1);
                 return false;
             }
         }
@@ -241,7 +242,7 @@ bool CrawlManagerModule::open(Searchable &s)
 		{
         	connected_part[i] = false;
         	printf("%c[1m",ESC); 
-			ACE_OS::printf("***ERROR*** PART %s NOT DETECTED \n", part_names[i].c_str());
+			printf("***ERROR*** PART %s NOT DETECTED \n", part_names[i].c_str());
 			printf("%c[0m",ESC); 
 		}
 			  
@@ -253,7 +254,7 @@ bool CrawlManagerModule::open(Searchable &s)
             
             Bottle& bot1=bot.findGroup("nbJoints");
             nbDOFs[i] =bot1.get(1).asInt();
-            ACE_OS::printf("nbJoints %d\n", nbDOFs[i]);
+            printf("nbJoints %d\n", nbDOFs[i]);
 
 			om_swing.push_back(bot.find("omSwing").asDouble());
 			om_stance.push_back(bot.find("omStance").asDouble());
@@ -262,7 +263,7 @@ bool CrawlManagerModule::open(Searchable &s)
             Bottle& bot3 = bot.findGroup("setPoints_crawl");
             if(bot2.isNull() || bot3.isNull() || bot2.size()<nbDOFs[i]+1 || bot3.size()<nbDOFs[i]+1)
             {
-                ACE_OS::printf("please specify crawl config for %s\n",part_names[i].c_str());
+                printf("please specify crawl config for %s\n",part_names[i].c_str());
                 return false;
             }
                 
@@ -282,7 +283,7 @@ bool CrawlManagerModule::open(Searchable &s)
             Bottle& bot7 = bot.findGroup("setPoints_left_crawl");
             if(bot6.isNull() || bot7.isNull() || bot6.size()<nbDOFs[i]+1 || bot7.size()<nbDOFs[i]+1)
             {
-                ACE_OS::printf("please specify left crawl config for %s\n",part_names[i].c_str());
+                printf("please specify left crawl config for %s\n",part_names[i].c_str());
                 return false;
             }
                 
@@ -302,7 +303,7 @@ bool CrawlManagerModule::open(Searchable &s)
             Bottle& bot9 = bot.findGroup("setPoints_right_crawl");
             if(bot8.isNull() || bot9.isNull() || bot8.size()<nbDOFs[i]+1 || bot9.size()<nbDOFs[i]+1)
             {
-                ACE_OS::printf("please specify right crawl config for %s\n",part_names[i].c_str());
+                printf("please specify right crawl config for %s\n",part_names[i].c_str());
                 return false;
             }
                 
@@ -322,7 +323,7 @@ bool CrawlManagerModule::open(Searchable &s)
             Bottle& bot5 = bot.findGroup("setPoints_init");
             if(bot4.isNull() || bot5.isNull() || bot4.size()<nbDOFs[i]+1 || bot5.size()<nbDOFs[i]+1)
             {
-                ACE_OS::printf("please specify init config for %s\n",part_names[i].c_str());
+                printf("please specify init config for %s\n",part_names[i].c_str());
                 return false;
             }
             for(int j=0;j<nbDOFs[i];j++)
@@ -337,7 +338,7 @@ bool CrawlManagerModule::open(Searchable &s)
             init_target.clear();
 
         
-            ACE_OS::printf("crawl parameters for part %s\n", part_names[i].c_str());
+            printf("crawl parameters for part %s\n", part_names[i].c_str());
             printf("amplitudes ( ");
             for(int j=0; j<nbDOFs[i]; j++) 
                 printf("%f ", crawl_parameters[2*i][j]);
@@ -346,7 +347,7 @@ bool CrawlManagerModule::open(Searchable &s)
                 printf("%f ", crawl_parameters[2*i+1][j]);
             printf(")\n", om_stance[i], om_swing[i]); 
             
-            ACE_OS::printf("crawl left parameters for part %s\n", part_names[i].c_str());
+            printf("crawl left parameters for part %s\n", part_names[i].c_str());
             printf("amplitudes ( ");
             for(int j=0; j<nbDOFs[i]; j++) 
                 printf("%f ", crawl_left_parameters[2*i][j]);
@@ -355,7 +356,7 @@ bool CrawlManagerModule::open(Searchable &s)
                 printf("%f ", crawl_left_parameters[2*i+1][j]);
             printf(")\n", om_stance[i], om_swing[i]); 
             
-            ACE_OS::printf("crawl right parameters for part %s\n", part_names[i].c_str());
+            printf("crawl right parameters for part %s\n", part_names[i].c_str());
             printf("amplitudes ( ");
             for(int j=0; j<nbDOFs[i]; j++) 
                 printf("%f ", crawl_right_parameters[2*i][j]);
@@ -364,7 +365,7 @@ bool CrawlManagerModule::open(Searchable &s)
                 printf("%f ", crawl_right_parameters[2*i+1][j]);
             printf(")\n", om_stance[i], om_swing[i]); 
             
-            ACE_OS::printf("init parameters for part %s\n", part_names[i].c_str());
+            printf("init parameters for part %s\n", part_names[i].c_str());
             printf("amplitudes ( ");
             for(int j=0; j<nbDOFs[i]; j++) 
                 printf("%f ", init_parameters[2*i][j]);
@@ -375,7 +376,7 @@ bool CrawlManagerModule::open(Searchable &s)
         }
         else
         {
-			ACE_OS::printf("please specify config for %s\n",part_names[i].c_str());
+			printf("please specify config for %s\n",part_names[i].c_str());
 			return false;
         }
     }
@@ -406,14 +407,14 @@ int CrawlManagerModule::getSwingingArm()
         Bottle *command = check_port[i].read(false);
         if(command!=NULL)
         {
-            ACE_OS::printf("getting info from the generators\n");
+            printf("getting info from the generators\n");
             y_speed[i] = command->get(0).asDouble();
             y_speed[i]>0.0 ? swing[i] = false : swing[i] = true;
         }
-        else ACE_OS::printf("no info\n");
+        else printf("no info\n");
     }
     
-    ACE_OS::printf("y_speed %f %f %f %f\n", 
+    printf("y_speed %f %f %f %f\n", 
                             y_speed[0], y_speed[1], y_speed[2], y_speed[3]);
     
     if(swing[0] || swing[3] || !swing[1] ||!swing[2]) side = LEFT_ARM;
@@ -458,7 +459,7 @@ double CrawlManagerModule::getPeriod()
  
 bool CrawlManagerModule::close()
 {
-	ACE_OS::printf( "crawl manager module closing...");
+	printf( "crawl manager module closing...");
     for(int i=0;i<6;i++)
         if(connected_part[i]==true) 
 		{
@@ -543,12 +544,12 @@ void CrawlManagerModule::Crawl(double desiredTurnAngle, double stanceIncrement)
 	if(desiredTurnAngle > MAX_TURN_ANGLE)
 	{
 		desiredTurnAngle = MAX_TURN_ANGLE;
-        ACE_OS::printf("Already at MAX TURN ANGLE %d\n", MAX_TURN_ANGLE);  
+        printf("Already at MAX TURN ANGLE %d\n", MAX_TURN_ANGLE);  
 	}
 	else if(desiredTurnAngle < -MAX_TURN_ANGLE)
 	{
 		desiredTurnAngle = -MAX_TURN_ANGLE;
-        ACE_OS::printf("Already at MIN TURN ANGLE %d\n", -MAX_TURN_ANGLE);  
+        printf("Already at MIN TURN ANGLE %d\n", -MAX_TURN_ANGLE);  
 
 	}
 
@@ -618,9 +619,9 @@ void CrawlManagerModule::Crawl(double desiredTurnAngle, double stanceIncrement)
 
 void CrawlManagerModule::Reach(Bottle *reachingCommand)
 {
-	ACE_OS::printf("command : %s\n",reachingCommand->toString().c_str());
+	printf("command : %s\n",reachingCommand->toString().c_str());
 	ConstString reachingPart = reachingCommand->get(0).asString();
-	ACE_OS::printf( "REACHING WITH PART %s\n", reachingPart.c_str());
+	printf( "REACHING WITH PART %s\n", reachingPart.c_str());
 
 	if(STATE!=CRAWL)
     {

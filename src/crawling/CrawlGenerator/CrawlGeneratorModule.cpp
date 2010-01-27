@@ -2,6 +2,7 @@
 #include "CrawlGeneratorModule.h"
 
 #include <yarp/os/Os.h>
+#include <stdio.h>
 
 #define DEBUG 0
 
@@ -25,7 +26,7 @@ bool GeneratorThread::checkJointLimits()
 	{
 		if(states[i]!=states[i])
 			{
-				ACE_OS::printf("ERROR value for joint %d undefined (NaN)", i);
+				printf("ERROR value for joint %d undefined (NaN)", i);
 				return false;
 	    }
 	    
@@ -80,7 +81,7 @@ bool GeneratorThread::getEncoders()
 	else
 	{
 		cout << "there was an error getting the encoders" << endl;
-		ACE_OS::printf("for part %s", partName.c_str());
+		printf("for part %s", partName.c_str());
 		delete[] tmp_enc;
 		return false;
 	}

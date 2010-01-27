@@ -1,6 +1,7 @@
 #include "drum.h"
 #include <iostream>
 #include <yarp/os/Os.h>
+#include <stdio.h>
 
 using namespace std;
 
@@ -108,12 +109,12 @@ void drum::sendNewParameterSet(int i)
     Bottle& paramBot = param_port[i].prepare();
     paramBot.clear();  
 
-    //ACE_OS::printf("Parameters sent for part %s ", 
+    //printf("Parameters sent for part %s ", 
                         //parts[i].c_str()); 
                         
     for(int j=0;j<controlled_dofs[i];j++)
     {
-        /*ACE_OS::printf("joint %d: (%4.2f, %4.2f) ", 
+        /*printf("joint %d: (%4.2f, %4.2f) ", 
                             j, 
                             mu[i][j], 
                             g[i][j]);*/
@@ -122,7 +123,7 @@ void drum::sendNewParameterSet(int i)
         paramBot.addDouble(g[i][j]);//g
     }
     
-    /*ACE_OS::printf("freq %4.2f, phase shift %4.2f\n", 
+    /*printf("freq %4.2f, phase shift %4.2f\n", 
                             frequency[beat[i]],    
                             phase_shift[i][beat[i]]);*/
                             
@@ -159,7 +160,7 @@ void drum::openPort(int i, BufferedPort<Bottle> *port, ConstString port_name, in
             if(!ok[i]) 
                 {
                     port[i].close();
-                    ACE_OS::printf("Failed to connect to %s for part %s\n", port_name.c_str(), parts[i].c_str());
+                    printf("Failed to connect to %s for part %s\n", port_name.c_str(), parts[i].c_str());
                 }
         }
 }
@@ -201,7 +202,7 @@ void drum::sendSoundFeedback()
                 soundfeed.addInt(1); 
                 fprintf(feedback_file, "%4.2f \n", Time::now());
                 drumHit=0;
-                ACE_OS::printf("FEEDBACK ON FOR PART %s\n", parts[i].c_str());
+                printf("FEEDBACK ON FOR PART %s\n", parts[i].c_str());
             }
             else
             {
@@ -245,7 +246,7 @@ void drum::scanHeadPosition()
                     id_pos_found[HEAD][k]=true;
                     if(temp.size()!= controlled_dofs[HEAD]+1)
                     {
-                        ACE_OS::printf("ERROR: receiving unconsistent number of angles (%d) for part %s\n",
+                        printf("ERROR: receiving unconsistent number of angles (%d) for part %s\n",
                                         temp.size()-1, parts[HEAD].c_str());
                         Network::fini();
                         yarp::os::exit(-1);
@@ -254,9 +255,9 @@ void drum::scanHeadPosition()
                     for(int m=0; m<temp.size()-1; m++)
                     {
                         G[HEAD][k][m]=temp.get(m+1).asDouble();
-                        ACE_OS::printf("Received new angles for part %s, drum %d, id %d:  ",
+                        printf("Received new angles for part %s, drum %d, id %d:  ",
                                                         parts[HEAD].c_str(), k, temp_id);
-                        ACE_OS::printf("0: %4.2f, 1: %4.2f, 2: %4.2f, 3: %4.2f\n", 
+                        printf("0: %4.2f, 1: %4.2f, 2: %4.2f, 3: %4.2f\n", 
                                         G[HEAD][k][0],G[HEAD][k][1],G[HEAD][k][2],G[HEAD][k][3]);
                     }
                 }
@@ -264,7 +265,7 @@ void drum::scanHeadPosition()
             
             if(id_found==0)
             {
-                ACE_OS::printf("WARNING: patch id %d could not be linked to any drum\n", temp_id);
+                printf("WARNING: patch id %d could not be linked to any drum\n", temp_id);
                 Network::fini();
                 yarp::os::exit(-1);
             }
@@ -277,18 +278,18 @@ void drum::scanHeadPosition()
 
 void drum::scanDrumPosition()
 {
-    //ACE_OS::printf("SCANNING\n");
+    //printf("SCANNING\n");
     Bottle *Position= scan_port.read(false);
     if(Position!=NULL)
     {
         int nb_scan_drums=Position->size();
-        ACE_OS::printf("receiving information for %d ids\n", nb_scan_drums);
+        printf("receiving information for %d ids\n", nb_scan_drums);
         for(int i=0; i<nb_scan_drums; i++)
         {            
             Bottle& temp= *(Position->get(i).asList());
             int temp_id = temp.get(0).asInt();
             int id_found=0;
-            ACE_OS::printf("id %d\n", temp_id);
+            printf("id %d\n", temp_id);
             for(int j=0; j<(nbparts-1); j++) //all parts but the head
              {
                 for(int k=0; k<nbIds[j]; k++)
@@ -298,7 +299,7 @@ void drum::scanDrumPosition()
                         id_pos_found[j][k]=true;
                         if(temp.size()!= controlled_dofs[j]+1)
                         {
-                            ACE_OS::printf("ERROR: receiving unconsistent number of angles (%d) for part %s\n",
+                            printf("ERROR: receiving unconsistent number of angles (%d) for part %s\n",
                                                     temp.size()-1, parts[j].c_str());
                             Network::fini();
                             yarp::os::exit(-1);
@@ -315,9 +316,9 @@ void drum::scanDrumPosition()
                         }
                         sendNewParameterSet(j);
                         
-                        ACE_OS::printf("Received new angles for part %s, drum %d, id %d:  ",
+                        printf("Received new angles for part %s, drum %d, id %d:  ",
                                                         parts[j].c_str(), k, temp_id);
-                        ACE_OS::printf("0: %4.2f, 1: %4.2f, 2: %4.2f, 3: %4.2f\n", 
+                        printf("0: %4.2f, 1: %4.2f, 2: %4.2f, 3: %4.2f\n", 
                                                         G[j][k][0],G[j][k][1],G[j][k][2],G[j][k][3]);
                     }
                 }
@@ -325,14 +326,14 @@ void drum::scanDrumPosition()
             
             if(id_found==0)
             {
-                ACE_OS::printf("WARNING: patch id %d could not be linked to any drum\n", temp_id);
+                printf("WARNING: patch id %d could not be linked to any drum\n", temp_id);
                 Network::fini();
                 yarp::os::exit(-1);
             }
             
             if(id_found>1)
             {
-                ACE_OS::printf("WARNING: patch id %d was linked to more than one drum\n", temp_id);
+                printf("WARNING: patch id %d was linked to more than one drum\n", temp_id);
                 Network::fini();
                 yarp::os::exit(-1);
             }                    
@@ -356,7 +357,7 @@ void drum::getConfig()
            
             if(!confFile)
             {
-                ACE_OS::printf("Config file \"%s\" not found for part %s\n", 
+                printf("Config file \"%s\" not found for part %s\n", 
                                 partName, parts[i].c_str());
                 Network::fini();
                 yarp::os::exit(-1);
@@ -372,7 +373,7 @@ void drum::getConfig()
                 mu[i][j]=m_off;
             }
                         
-            ACE_OS::printf( "\nPart %s (%d dofs)\n", 
+            printf( "\nPart %s (%d dofs)\n", 
                             parts[i].c_str(),controlled_dofs[i]);
 
 
@@ -388,14 +389,14 @@ void drum::getConfig()
             
             if(!file)
             {
-                ACE_OS::printf("Target positions file \"%s\" not found for part %s\n", 
+                printf("Target positions file \"%s\" not found for part %s\n", 
                                 temp, parts[i].c_str());
                 Network::fini();
                 yarp::os::exit(-1);
             }
             
             nbDrums[i] = drum.find("NbDrums").asInt();
-            ACE_OS::printf("nb drums %d\n",nbDrums[i]);  
+            printf("nb drums %d\n",nbDrums[i]);  
             
             G[i] = new double*[nbDrums[i]+1];
             
@@ -411,7 +412,7 @@ void drum::getConfig()
             for (int k=0; k<Target2.size()-1; k++) 
             {
                 G[i][0][k]=3.14/180.0*Target2.get(k+1).asDouble();
-                ACE_OS::printf("%4.2f ", G[i][0][k]);
+                printf("%4.2f ", G[i][0][k]);
             }                    
             printf("\n");
             Target2.clear();
@@ -424,15 +425,15 @@ void drum::getConfig()
                 for (int k=0; k<Target.size()-1; k++) 
                 {
                     G[i][j][k]=3.14/180.0*Target.get(k+1).asDouble();
-                    ACE_OS::printf("%4.2f ", G[i][j][k]);
+                    printf("%4.2f ", G[i][j][k]);
                 }
                 
-                ACE_OS::printf("\n");
+                printf("\n");
                 Target.clear();
             }   
                         
             cout << "getting notes... " << endl; 
-            ACE_OS::printf("Notes: ");
+            printf("Notes: ");
             Bottle& Target3 = drum.findGroup("Notes");
             for (int k=0; k<Target3.size()-1; k++) 
             {
@@ -443,7 +444,7 @@ void drum::getConfig()
             Target3.clear();
             
 //            cout << "getting ids... " << endl; 
-//            ACE_OS::printf("Ids: ");
+//            printf("Ids: ");
 //            Bottle& Target4 = drum.findGroup("Ids");
 //            nbIds[i]=Target4.size()-1; 
 //            id_pos_found[i]=new bool[nbIds[i]];
@@ -457,7 +458,7 @@ void drum::getConfig()
 //                    if(id[HEAD][k]<0)
 //                    {
 //                        scan = k+1; 
-//                        ACE_OS::printf(" SCAN = %d", scan);
+//                        printf(" SCAN = %d", scan);
 //                    }
 //                }
 //            }
@@ -475,12 +476,12 @@ void drum::doConnect()
 {
     for(int i=0; i<nbparts; i++)
     {
-        ACE_OS::printf("ports for part %s...", parts[i].c_str());
+        printf("ports for part %s...", parts[i].c_str());
         openPort(i,param_port,"parameters",1,1);// OUT sends parameters to the generator
   
         if(ok[i])
         {
-            ACE_OS::printf("Using part %s\n", parts[i].c_str());
+            printf("Using part %s\n", parts[i].c_str());
 
             //opening ports and connecting with the DrumGenerator modules
             openPort(i,check_port, "check_motion",0,1);  // IN receives beat 
@@ -494,17 +495,17 @@ void drum::doConnect()
         else
         {
             param_port[i].close();
-            ACE_OS::printf("Not using %s\n", parts[i].c_str());
+            printf("Not using %s\n", parts[i].c_str());
         }
     }
 
     //connecting with the clock
     clock_port.open("/clock/parameters/out");
     bool okClock=Network::connect("/clock/parameters/out","/clock/parameters/in", "tcp");
-    if(!okClock)ACE_OS::printf("troubles connecting with the clock\n");
+    if(!okClock)printf("troubles connecting with the clock\n");
     beat_clock_port.open("/clock/check_motion/in");
     bool okClock2=Network::connect("/clock/check_motion/out","/clock/check_motion/in", "tcp");
-    if(!okClock2)ACE_OS::printf("troubles connecting with the clock\n");
+    if(!okClock2)printf("troubles connecting with the clock\n");
 
     //opening port to get frequency and couplings from the DrumManager
     interactive_port.open("/interactive/in");
@@ -512,28 +513,28 @@ void drum::doConnect()
     bool check=scan_port.open("/scan/in");
     if(!check)
     {
-        ACE_OS::printf("fail to open scan port\n");
+        printf("fail to open scan port\n");
     }
     //head_port.open("/headPort/in");
 
-    ACE_OS::printf("connecting ports for ikin");
+    printf("connecting ports for ikin");
     fflush(stdout);
     
     bool scan=Network::connect("/drumsarah/out","/scan/in");
     //head = Network::connect("/DrumHeadControl/out","/headPort/in", "udp");
     
-    ACE_OS::printf("... done\n");
+    printf("... done\n");
     fflush(stdout);
 
     //if(head && scan)
     if(scan)
     {
-        ACE_OS::printf( "Visual feedback enabled\n");
+        printf( "Visual feedback enabled\n");
         visualFeedback=true;
     }
     else
     {
-       ACE_OS::printf(  "No visual feedback \n");
+       printf(  "No visual feedback \n");
        //(scan %d, head %d)\n"(int) scan, (int) head ); 
     }
     
@@ -568,19 +569,19 @@ bool drum::getRhythm()
             }	  
         }
 
-        ACE_OS::printf("Receiving frequency: ");
+        printf("Receiving frequency: ");
         
         for (int j=0; j<size; j++) 
         {
             int indiceScore=(beat_clock+j)%size;
             frequency[indiceScore]= Rhythm->get(j).asDouble();
-            ACE_OS::printf("%4.2f ", frequency[indiceScore]);
+            printf("%4.2f ", frequency[indiceScore]);
         }
-        ACE_OS::printf("\n");
+        printf("\n");
 
         if(frequency[beat_clock]<0.0)
         {
-            ACE_OS::printf("Closing command received from the gui...\n");
+            printf("Closing command received from the gui...\n");
             return 0; 
         }    
     }
@@ -599,7 +600,7 @@ void drum::getScore() //get score parameters from the gui
             {				                
                 if(beat[i]==-1)//getting beat of the generator
                 {
-                    ACE_OS::printf("Initial score received\n");
+                    printf("Initial score received\n");
                     sizeScore=newScore->size();
         
                     Bottle *time_init=check_port[i].read();
@@ -614,16 +615,16 @@ void drum::getScore() //get score parameters from the gui
                     Score[i]= new int [sizeScore];
                 }
                 
-                ACE_OS::printf("Score for part %s: ",parts[i].c_str());
+                printf("Score for part %s: ",parts[i].c_str());
                     
                 for (int j=0; j<sizeScore; j++) 
                 {
                     int indiceScore = (j+beat[i])%sizeScore;
                     Score[i][indiceScore]= newScore->get(j).asInt();
-                    ACE_OS::printf("%d ",Score[i][indiceScore], newScore->get(j).asInt());
+                    printf("%d ",Score[i][indiceScore], newScore->get(j).asInt());
                 }
 			      	
-                ACE_OS::printf("\n");
+                printf("\n");
             }
 	     
             if(beat[i]!=-1)
@@ -631,19 +632,19 @@ void drum::getScore() //get score parameters from the gui
                 Bottle *newPhase = phase_port[i].read(false); 
                 if(newPhase!=NULL) 
                 {
-                    ACE_OS::printf("receiving new information on the phase\n");
+                    printf("receiving new information on the phase\n");
                     for(int j=0; j<sizeScore; j++) 
                     {
                         int indiceScore = (j+beat[i])%sizeScore;
                         phase_shift[i][indiceScore]= newPhase->get(j).asDouble();
                     }
             
-                    ACE_OS::printf("Phase shifts for part %s: ",parts[i].c_str());
+                    printf("Phase shifts for part %s: ",parts[i].c_str());
                     for (int j=0; j<sizeScore; j++) 
                     {
-                        ACE_OS::printf("%4.2f ", phase_shift[i][j]);
+                        printf("%4.2f ", phase_shift[i][j]);
                     } 					                    
-                    ACE_OS::printf("... done!\n");
+                    printf("... done!\n");
                 }
             }
         }
@@ -662,7 +663,7 @@ void drum::sendScore()
             {
                 current_beat[i] = answer->get(0).asInt();
                 beat[i]=(current_beat[i]-drum_beat[i])%sizeScore;
-                ACE_OS::printf("Current beat for part %s is %d\n",
+                printf("Current beat for part %s is %d\n",
                                 parts[i].c_str(),
                                 beat[i]);
                     
@@ -712,7 +713,7 @@ void drum::sendScore()
         {
             int current_clock= be->get(0).asInt();
             beat_clock=(current_clock-drum_beat_clock)%sizeScore;		      
-            ACE_OS::printf("beat %d for clock\n", beat_clock);
+            printf("beat %d for clock\n", beat_clock);
             
             Bottle& HeadBot = clock_port.prepare();
             HeadBot.clear();  
@@ -728,11 +729,11 @@ void drum::getPosition()
     Bottle& paramBot = param_port[HEAD].prepare();
     paramBot.clear();  
 
-    ACE_OS::printf("\nSCANNING: Parameters sent to part HEAD (SCAN=%d)\n", scan);
+    printf("\nSCANNING: Parameters sent to part HEAD (SCAN=%d)\n", scan);
                                                 
     for(int j=0;j<controlled_dofs[HEAD];j++)
     {
-        ACE_OS::printf("joint %d: (%4.2f, %4.2f) ", 
+        printf("joint %d: (%4.2f, %4.2f) ", 
                             j, mu_on[HEAD][j], G[HEAD][scan][j]);
         paramBot.addDouble(mu_on[HEAD][j]);//mu
         paramBot.addDouble(G[HEAD][scan][j]);//g
@@ -743,12 +744,12 @@ void drum::getPosition()
 
     param_port[HEAD].write();
     
-    ACE_OS::printf("... \n");
+    printf("... \n");
     
 
     //while(true)
     //{
-        //ACE_OS::printf("... ");
+        //printf("... ");
         
         //scanDrumPosition();
         //scanHeadPosition();
@@ -776,7 +777,7 @@ void drum::getPosition()
         
         //if(check[LEFT_ARM]==nbDrums[LEFT_ARM] && check[RIGHT_ARM]==nbDrums[RIGHT_ARM] && check[2]==nbDrums[HEAD])
         //{
-            //ACE_OS::printf(" done\n");
+            //printf(" done\n");
             //break;
         //}
         

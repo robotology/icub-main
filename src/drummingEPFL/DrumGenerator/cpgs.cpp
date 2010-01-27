@@ -18,6 +18,7 @@
 #include "cpgs.h"
 #include <iostream>
 #include <yarp/os/Os.h>
+#include <stdio.h>
 using namespace std;
 
 
@@ -262,7 +263,7 @@ void cpg_manager::integrate_step(double *y, double *at_states)
 
 	if(drumHit==-1 && (y[4+cpgs_size]-y[2+cpgs_size])*up_down>up_down*0.9)
 	{
-		ACE_OS::printf("feedback enabled again\n");
+		printf("feedback enabled again\n");
 		drumHit=0;
 	}
 
@@ -287,8 +288,8 @@ void cpg_manager::integrate_step(double *y, double *at_states)
 			}//arm is going down
 
 			stuckCounter=1;
-			ACE_OS::printf("FEEDBACK ON\n");
-			ACE_OS::printf("stuck value %f, target value %f, observer %f\n", stuckPos[0], y[4], y[4+cpgs_size]);
+			printf("FEEDBACK ON\n");
+			printf("stuck value %f, target value %f, observer %f\n", stuckPos[0], y[4], y[4+cpgs_size]);
 		} 
 			
 		if(stuckCounter>0)
@@ -298,8 +299,8 @@ void cpg_manager::integrate_step(double *y, double *at_states)
 			{
 				if(stuckCounter>10 && up_down*(y[4+cpgs_size]-y[2+cpgs_size])>up_down*stuckPos[0])
 				{
-					ACE_OS::printf("FEEDBACK OFF\n");
-					ACE_OS::printf("stuck value %f, target value %f, observer %f\n", stuckPos[0], y[4], y[4+cpgs_size]);
+					printf("FEEDBACK OFF\n");
+					printf("stuck value %f, target value %f, observer %f\n", stuckPos[0], y[4], y[4+cpgs_size]);
 					drumHit=0;
 					stuckCounter=-1;
             
@@ -328,8 +329,8 @@ void cpg_manager::integrate_step(double *y, double *at_states)
 			{
 				if(stuckCounter>5 && up_down*(y[4+cpgs_size]-y[2+cpgs_size])>up_down*stuckPos[0])
 				{
-					ACE_OS::printf("FEEDBACK OFF\n");
-					ACE_OS::printf("stuck value %f, target value %f, observer %f\n", stuckPos[0], y[4]-y[2], y[4+cpgs_size]-y[2+cpgs_size]);
+					printf("FEEDBACK OFF\n");
+					printf("stuck value %f, target value %f, observer %f\n", stuckPos[0], y[4]-y[2], y[4+cpgs_size]-y[2+cpgs_size]);
 					drumHit=-1;
 					stuckCounter=0;
             
@@ -358,7 +359,7 @@ void cpg_manager::integrate_step(double *y, double *at_states)
       
   /* if(drumHit==0 && stuckCounter==1)
     {
-      ACE_OS::printf("FEEDBACK OFF\n");
+      printf("FEEDBACK OFF\n");
       stuckCounter=0;
     }
   */
@@ -388,27 +389,27 @@ void cpg_manager::integrate_step(double *y, double *at_states)
 void cpg_manager::printInternalVariables()
 {
 
- ACE_OS::printf("freq: %f\n",nu);
- ACE_OS::printf("nbDOFs %d, cpgs_size %d, controlled param %d\n",
+ printf("freq: %f\n",nu);
+ printf("nbDOFs %d, cpgs_size %d, controlled param %d\n",
 		nbDOFs,cpgs_size,controlled_param);
- ACE_OS::printf("a %f, b %f, m_off %f, m_on %f, b_go %f, u_go %f, dt %f\n",
+ printf("a %f, b %f, m_off %f, m_on %f, b_go %f, u_go %f, dt %f\n",
 		a,b,m_off,m_on,b_go,u_go,dt);
 
  for(int i=0;i<nbDOFs;i++)
    {
-     ACE_OS::printf("for DOF %d, mu=%f and g=%f - ampl=%f\n",i,parameters[2*i],parameters[2*i+1],ampl[i]);
-     ACE_OS::printf("coupling strength");
+     printf("for DOF %d, mu=%f and g=%f - ampl=%f\n",i,parameters[2*i],parameters[2*i+1],ampl[i]);
+     printf("coupling strength");
 
      for(int j=0;j<nbDOFs+1;j++)
-       ACE_OS::printf(" - %f",epsilon[i][j]); 
+       printf(" - %f",epsilon[i][j]); 
 
-     ACE_OS::printf("\n");
-     ACE_OS::printf("phase diff");
+     printf("\n");
+     printf("phase diff");
 
      for(int j=0;j<nbDOFs+1;j++)
-       ACE_OS::printf(" - %f",theta[i][j]); 
+       printf(" - %f",theta[i][j]); 
 
-     ACE_OS::printf("\n");
+     printf("\n");
    }
 }
 
