@@ -29,7 +29,7 @@
 #include <iostream>
 
 /// specific to this device driver.
-#include "CanBusMotionControl2.h"
+#include "CanBusMotionControl.h"
 
 #include "can_string_generic.h"
 /// get the message types from the DSP code.
