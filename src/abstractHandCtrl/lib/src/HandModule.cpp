@@ -17,6 +17,7 @@
 #include "iCub/vislab/HandModule.h"
 
 #include <algorithm>
+#include <cmath>
 
 using namespace std;
 
@@ -229,10 +230,8 @@ const map<const string, MotionSequence>& HandModule::HandWorkerThread::getMotion
 
 void HandModule::HandWorkerThread::setSensingConstants(::yarp::os::Searchable& s) {
   if (handType != v1) {
-    cout
-        << "Warning: You are trying to set sensing constants which is not \
-			    	 necessary/ meant for the type of hand you specified."
-        << endl;
+    cout << "Warning: You are trying to set sensing constants which is not"
+        << " necessary/ meant for the type of hand you specified." << endl;
   }
 
   Bottle b(s.toString());
@@ -257,7 +256,7 @@ void HandModule::HandWorkerThread::setSensingConstants(::yarp::os::Searchable& s
       cout << "Warning: The expected size of `" << osValueNames[i] << "` is "
           << HandMetrics::numAxes << ", but it was " << m.cols()
           << ". The sizes will be automatically adopted!" << endl;
-      resize(m, m.rows(), HandMetrics::numAxes);
+      resize(m, max(1, m.rows()), HandMetrics::numAxes);
     }
   }
   createHand();
