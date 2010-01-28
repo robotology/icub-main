@@ -59,14 +59,14 @@ using namespace yarp::sig::draw;
 /**
 *
 @ingroup icub_module
-\defgroup icub_watershedModule visualAttentionB09
+\defgroup icub_imageProcessor imageProcessor
 
-Module that performs image processing on the input image
+Module that performs image processing on the input image.
 The module has been mainly developed to extract the edges from the input image but it can be used for other operations
 of image processing
 
 \section intro_sec Description
-This module reads from a buffered port the input image. It straight away produces an output image based on the standard
+This module reads from a buffered port the input image. It immediately produces an output image based on the standard
 parameters configuration. However these parameters can be modified any time in order to process the inputimage differently.
 
 
@@ -75,9 +75,7 @@ The module does:
 -   process the input image based on the actual configuration
 -   allow the user to change the undertaken processing
 -   stream the outimage out
--	stream the colour planes of the image
--	stream the colour opponency maps (R+G-, G+R-, B+Y-)
--	allow the user to visually check the process
+
 
 \image html imageProcessor.jpg
 
@@ -91,9 +89,9 @@ IPP
 
  
 \section portsa_sec Ports Accessed
-/colurPU/rg:o
-/colurPU/gr:o
-/colurPU/by:o
+- /colurPU/rg:o: colourOpponency Map 
+- /colurPU/gr:o
+- /colurPU/by:o
 
 
 \section portsc_sec Ports Created
