@@ -25,10 +25,7 @@ using namespace yarp::sig::draw;
   * The module is able to produce a fake output image composed of coloured circles
   * in order to help the processing downward in the module chain.
   * @author Francesco Rea
-
-
   * 
-
  */
 
 /**
