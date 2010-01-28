@@ -21,7 +21,6 @@ BEGIN_DEVICE_LIBRARY(icubmod)
   ADD_SUBDIRECTORY(logpolarClient)
 
   ADD_SUBDIRECTORY(canBusMotionControl)
-  ADD_SUBDIRECTORY(canBusMotionControlXP)
   ADD_SUBDIRECTORY(plxCan)
   ADD_SUBDIRECTORY(esdCan)
   ADD_SUBDIRECTORY(esdSniffer)
