@@ -29,7 +29,7 @@
 #include <iostream>
 
 /// specific to this device driver.
-#include "CanBusMotionControl.h"
+#include "CanBusMotionControl2.h"
 
 #include "can_string_generic.h"
 /// get the message types from the DSP code.
@@ -349,6 +349,10 @@ data(0)
 	status=IAnalogSensor::AS_OK;
 	useCalibration=0;
 	scaleFactor=0;
+
+    counterSat=0;
+    counterError=0;
+    counterTimeout=0;
 }
 
 AnalogSensor::~AnalogSensor()
@@ -399,6 +403,7 @@ int AnalogSensor::getChannels()
 
 int AnalogSensor::read(yarp::sig::Vector &out)
 {
+    // print errors
     mutex.wait();
 
     if (!data)
@@ -407,18 +412,29 @@ int AnalogSensor::read(yarp::sig::Vector &out)
         return false;
     }
 
-	if (status<0) 
+ 	if (status!=IAnalogSensor::AS_OK) 
 	{
-		//Sensor with status < 0 means error
 		switch (status)
 		{
             case IAnalogSensor::AS_OVF:
-				fprintf(stderr, "Warning strain sensor: saturated\n");
+                {
+                    counterSat++;
+                }
+                break;
 			case IAnalogSensor::AS_ERROR:
-				fprintf(stderr, "Warning strain sensor: unknown error\n");
+                {
+                    counterError++;
+                }
+                break;
 			case IAnalogSensor::AS_TIMEOUT:
-				fprintf(stderr, "Error: analog sensor is not responding\n");
-			break;
+                {
+                   counterTimeout++;
+                }
+                break;
+            default:
+            {
+                counterError++;
+            }
 		}
         mutex.post();
         return status;
@@ -1321,10 +1337,47 @@ bool CanBusMotionControl::open (Searchable &config)
         disableAmp(i);
     }
 
-    Bottle analogConfig=config.findGroup("ANALOG");
+    Bottle *analogList=config.findGroup("CAN").find("analog").asList();
+    if (analogList!=0)
+        if (analogList->size()>0)
+        {
+            for(int k=0;k<analogList->size();k++)
+            {
+                std::string analogId=analogList->get(k).asString().c_str();;
+
+                AnalogSensor *as=instantiateAnalog(config, analogId);
+                if (as!=0)
+                    analogSensors.push_back(as);
+            }
+
+        }
+
+    threadPool = new ThreadPool2(res.iBufferFactory);
+
+    RateThread::setRate(p._polling_interval);
+    RateThread::start();
+
+    _opened = true;
+
+    DEBUG("CanBusMotionControl::open returned true\n");
+    return true;
+}
+
+AnalogSensor *CanBusMotionControl::instantiateAnalog(yarp::os::Searchable& config, std::string deviceid)
+{
+    CanBusResources& res = RES (system_resources);
+    AnalogSensor *analogSensor=0;
+
+    std::string groupName=std::string("ANALOG-");
+    groupName+=deviceid;
+    Bottle analogConfig=config.findGroup(groupName.c_str());
     if (analogConfig.size()>0)
     {
-        fprintf(stderr, "--> Initializing analog device\n");
+        fprintf(stderr, "--> Initializing analog device %s\n", deviceid.c_str());
+        
+        analogSensor=new AnalogSensor;
+        analogSensor->setDeviceId(deviceid);
+
         char analogId=analogConfig.find("CanAddress").asInt();
         char analogFormat=analogConfig.find("Format").asInt();
         int analogChannels=analogConfig.find("Channels").asInt();
@@ -1336,57 +1389,57 @@ bool CanBusMotionControl::open (Searchable &config)
 
         if (initMsg)
         {
-            analogSensor.getInitMsg()=*initMsg;
+            analogSensor->getInitMsg()=*initMsg;
         }
 		if (speedMsg)
         {
-            analogSensor.getSpeedMsg()=*speedMsg;
+            analogSensor->getSpeedMsg()=*speedMsg;
         }
         if (finiMsg)
         {
-            analogSensor.getCloseMsg()=*finiMsg;
+            analogSensor->getCloseMsg()=*finiMsg;
         }
 
         switch (analogFormat)
         {
             case 8:
-                analogSensor.open(analogChannels, AnalogSensor::ANALOG_FORMAT_8, analogId, analogCalibration);
+                analogSensor->open(analogChannels, AnalogSensor::ANALOG_FORMAT_8, analogId, analogCalibration);
                 break;
             case 16:
-                analogSensor.open(analogChannels, AnalogSensor::ANALOG_FORMAT_16, analogId, analogCalibration);
+                analogSensor->open(analogChannels, AnalogSensor::ANALOG_FORMAT_16, analogId, analogCalibration);
                 break;
         }
 
-		if (analogSensor.getUseCalibration()==1 &&
+		if (analogSensor->getUseCalibration()==1 &&
 			analogChannels==6)
 		{
 			//get the scale factors		
 		}
 
-		if (analogSensor.getSpeedMsg().size()>0)
+		if (analogSensor->getSpeedMsg().size()>0)
         {
             res.startPacket();
-            int tmp=analogSensor.getSpeedMsg().get(0).asInt();
+            int tmp=analogSensor->getSpeedMsg().get(0).asInt();
             res._writeBuffer[0].setId(tmp);
             int k=0;
-            for (k=0;k<analogSensor.getSpeedMsg().size()-1;k++)
+            for (k=0;k<analogSensor->getSpeedMsg().size()-1;k++)
             {
-                res._writeBuffer[0].getData()[k]=analogSensor.getSpeedMsg().get(k+1).asInt();
+                res._writeBuffer[0].getData()[k]=analogSensor->getSpeedMsg().get(k+1).asInt();
             }
             res._writeBuffer[0].setLen(k);
             res._writeMessages++;
             res.writePacket();
         }
 
-        if (analogSensor.getInitMsg().size()>0)
+        if (analogSensor->getInitMsg().size()>0)
         {
             res.startPacket();
-            int tmp=analogSensor.getInitMsg().get(0).asInt();
+            int tmp=analogSensor->getInitMsg().get(0).asInt();
             res._writeBuffer[0].setId(tmp);
             int k=0;
-            for (k=0;k<analogSensor.getInitMsg().size()-1;k++)
+            for (k=0;k<analogSensor->getInitMsg().size()-1;k++)
             {
-                res._writeBuffer[0].getData()[k]=analogSensor.getInitMsg().get(k+1).asInt();
+                res._writeBuffer[0].getData()[k]=analogSensor->getInitMsg().get(k+1).asInt();
             }
             res._writeBuffer[0].setLen(k);
             res._writeMessages++;
@@ -1403,36 +1456,23 @@ bool CanBusMotionControl::open (Searchable &config)
             res.writePacket();
         }
     }
-
-    threadPool = new ThreadPool2(res.iBufferFactory);
-
-    RateThread::setRate(p._polling_interval);
-    RateThread::start();
-
-    _opened = true;
-
-    DEBUG("CanBusMotionControl::open returned true\n");
-    return true;
+    return analogSensor;
 }
 
-
-bool CanBusMotionControl::close (void)
+void CanBusMotionControl::finiAnalog(AnalogSensor *analogSensor)
 {
-    CanBusResources& res = RES(system_resources);
+    CanBusResources& res = RES (system_resources);
 
-    //fprintf(stderr, "CanBusMotionControl::close\n");
-
-    if (_opened) {
-        if (analogSensor.isOpen())
-            if (analogSensor.getCloseMsg().size()>0)
+    if (analogSensor->isOpen())
+            if (analogSensor->getCloseMsg().size()>0)
             {
                 res.startPacket();
-                int tmp=analogSensor.getCloseMsg().get(0).asInt();
+                int tmp=analogSensor->getCloseMsg().get(0).asInt();
                 res._writeBuffer[0].setId(tmp);
                 int k=0;
-                for (k=0;k<analogSensor.getCloseMsg().size()-1;k++)
+                for (k=0;k<analogSensor->getCloseMsg().size()-1;k++)
                 {
-                    res._writeBuffer[0].getData()[k]=analogSensor.getCloseMsg().get(k+1).asInt();
+                    res._writeBuffer[0].getData()[k]=analogSensor->getCloseMsg().get(k+1).asInt();
                 }
                 res._writeBuffer[0].setLen(k);
                 res._writeMessages++;
@@ -1447,7 +1487,15 @@ bool CanBusMotionControl::close (void)
 #endif
                 res.writePacket();
             }
+}
 
+bool CanBusMotionControl::close (void)
+{
+    CanBusResources& res = RES(system_resources);
+
+    //fprintf(stderr, "CanBusMotionControl::close\n");
+
+    if (_opened) {
         // disable the controller, pid controller & pwm off
         int i;
         for (i = 0; i < res._njoints; i++) {
@@ -1477,6 +1525,21 @@ bool CanBusMotionControl::close (void)
         ImplementControlMode::uninitialize();
         ImplementTorqueControl::uninitialize();
         ImplementOpenLoopControl::uninitialize();
+
+        
+        //stop analog sensors
+        std::list<AnalogSensor *>::iterator it=analogSensors.begin();
+        while(it!=analogSensors.end())
+        {
+            if ((*it))
+            {
+                finiAnalog(*it);
+                delete (*it);
+                (*it)=0;
+            }
+            it++;
+        }
+        
     }
 
     if (threadPool != 0)
@@ -1561,7 +1624,6 @@ void CanBusMotionControl::handleBroadcasts()
                         int string_id = cstring[addr].add_string(&r._readBuffer[i]);
                         if (string_id != -1) 
                         {
-                            fprintf(stderr, "%s [%d] ", canDevName.c_str(), _networkN);
                             cstring[addr].print(string_id);
                             cstring[addr].clear_string(string_id);
                         }
@@ -1737,7 +1799,6 @@ bool CanBusMotionControl::threadInit()
 void CanBusMotionControl::threadRelease()
 {
     //doing nothing
-
 }
 
 void CanBusMotionControl:: run()
@@ -1755,7 +1816,8 @@ void CanBusMotionControl:: run()
     // check timeout on messages
     std::list<CanRequest> timedout;
     for(int j=0;j<r.requestsQueue->getNJoints();j++)
-        for(int m=0;m<r.requestsQueue->getNMessages();m++)
+        {
+            for(int m=0;m<r.requestsQueue->getNMessages();m++)
             {
                 ThreadFifo &fifo=r.requestsQueue->getFifo(j,m);
                 std::list<ThreadId>::iterator it=fifo.begin();
@@ -1782,6 +1844,7 @@ void CanBusMotionControl:: run()
                             ++it;
                     }
             }
+        }
 
     //now go through the list of timedout requests and wake up waiting threads
     std::list<CanRequest>::iterator it=timedout.begin();
@@ -1895,6 +1958,30 @@ void CanBusMotionControl:: run()
 
                 }
 
+            ///////////////////check analog
+            std::list<AnalogSensor *>::iterator analogIt=analogSensors.begin();
+            while(analogIt!=analogSensors.end())
+            {
+                AnalogSensor *pAnalog=(*analogIt);
+                if (pAnalog)
+                {
+                    unsigned int sat;
+                    unsigned int err;
+                    unsigned int tout; 
+                    pAnalog->getCounters(sat, err, tout);
+                    if (sat+err+tout!=0)
+                    {
+                        fprintf(stderr, "%s [%d] analog %s saturated:%u errors: %u timeout:%u\n",
+                                canDevName.c_str(),
+                                r._networkN,
+                                pAnalog->getDeviceId().c_str(),
+                                sat, err, tout);
+                    }
+                    pAnalog->resetCounters();
+                }
+                analogIt++;
+            }
+
             myCount=0;
             lastReportTime=currentRun;
             averagePeriod=0;
@@ -1912,11 +1999,25 @@ void CanBusMotionControl:: run()
     // (class 1, 8 bits of the ID used to define the message type and source address).
 
     handleBroadcasts();
-    if (!analogSensor.handleAnalog(system_resources))
-        {
-            fprintf(stderr, "%s [%d] analog sensor received unexpected class 0x03 messages\n", canDevName.c_str(), r._networkN);
-        }
 
+    std::list<AnalogSensor *>::iterator analogIt=analogSensors.begin();
+    while(analogIt!=analogSensors.end())
+    {
+        AnalogSensor *pAnalog=(*analogIt);
+        if (pAnalog)
+        {
+            //fprintf(stderr, "Passing messages to analog device %s\n", pAnalog->getDeviceId().c_str());
+            if (!pAnalog->handleAnalog(system_resources))
+            {
+                fprintf(stderr, "%s [%d] analog sensor received unexpected class 0x03 messages\n", canDevName.c_str(), r._networkN);
+            }
+        }
+        else
+            fprintf(stderr, "Warning: got null pointer this is unusual\n");
+            
+        analogIt++;
+    }
+ 
     //
     // handle class 0 messages - polling messages.
     // (class 0, 8 bits of the ID used to represent the source and destination).
@@ -3778,18 +3879,35 @@ bool CanBusMotionControl::_readWord16Array (int msg, double *out)
     return true;
 }
 
-int CanBusMotionControl::read(yarp::sig::Vector &out)
+yarp::dev::DeviceDriver *CanBusMotionControl::createDevice(yarp::os::Searchable& config)
 {
-    return analogSensor.read(out);
-}
+    //analogSensor
+    std::string deviceType=config.find("device").asString().c_str();
+    std::string deviceId=config.find("deviceid").asString().c_str();
 
-int CanBusMotionControl::getChannels()
-{
-    return analogSensor.getChannels();
-}
+    
+    std::cout<<"CanBusMotionControl::createDevice() looking for device " << deviceType;
+    std::cout<< " with id " << deviceId<<std::endl;
 
-int CanBusMotionControl::getState(int ch)
-{
-    //not really implemented
-    return IAnalogSensor::AS_OK;
+    if (deviceType=="analog")
+    {
+        std::list<AnalogSensor *>::iterator it=analogSensors.begin();
+        while(it!=analogSensors.end())
+        {
+            std::cout<<"CanBusMotionControl::createDevice() inspecting "<< (*it)->getDeviceId() << std::endl; 
+
+            if ((*it)->getDeviceId()==deviceId)
+            {
+                std::cout<<"CanBusMotionControl::createDevice() found valid device"<<std::endl; 
+                return (*it);
+            }
+            it++;
+        }
+    }
+    else
+    {
+        std::cout<<"CanBusMotionControl::createDevice() only works for analog kind of devices\n";
+    }
+
+    return 0;
 }

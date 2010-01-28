@@ -13,7 +13,7 @@
  * Comunication with the CAN bus is done through the standard
  * YARP ICanBus interface.
  *
- * Copyright (C) 2008 RobotCub Consortium.
+ * Copyright (C) 2010 RobotCub Consortium.
  *
  * Author: Lorenzo Natale
  *
@@ -37,6 +37,10 @@
 #include <yarp/os/Semaphore.h>
 #include <yarp/os/RateThread.h>
 #include <yarp/os/Stamp.h>
+#include <string>
+#include <list>
+
+#include <iCub/FactoryInterface.h>
 
 
 namespace yarp{
@@ -148,7 +152,8 @@ public:
 #include <yarp/os/Semaphore.h>
 typedef int AnalogDataFormat;
 
-class AnalogSensor: public yarp::dev::IAnalogSensor
+class AnalogSensor: public yarp::dev::IAnalogSensor,
+                    public yarp::dev::DeviceDriver
 {
 public:
     enum AnalogDataFormat
@@ -167,6 +172,12 @@ public:
     };
 
 private:
+    // debug messages
+    unsigned int counterSat;
+    unsigned int counterError;
+    unsigned int counterTimeout;
+
+    ////////////////////
     AnalogData *data;
 	short status;
 	double timeStamp;
@@ -176,6 +187,7 @@ private:
     yarp::os::Bottle initMsg;
     yarp::os::Bottle speedMsg;
 	yarp::os::Bottle closeMsg;
+    std::string deviceIdentifier;
     short boardId;
 	short useCalibration;
 
@@ -186,6 +198,30 @@ public:
     AnalogSensor();
     ~AnalogSensor();
     bool handleAnalog(void *);
+
+    void resetCounters()
+    {
+        counterSat=0;
+        counterError=0;
+        counterTimeout=0;
+    }
+
+    void getCounters(unsigned int &sat, unsigned int &err, unsigned int &to)
+    {
+        sat=counterSat;
+        err=counterError;
+        to=counterTimeout;
+    }
+
+    void setDeviceId(std::string id)
+    {
+        deviceIdentifier=id;
+    }
+
+    std::string getDeviceId()
+    {
+        return deviceIdentifier;
+    }
 
     short getId()
     { return boardId;}
@@ -247,7 +283,7 @@ class yarp::dev::CanBusMotionControl:public DeviceDriver,
 			public ImplementTorqueControl,
 			public ImplementOpenLoopControl,
             public ImplementControlMode,
-            public IAnalogSensor
+            public IFactoryInterface
 {
 private:
     CanBusMotionControl(const CanBusMotionControl&);
@@ -263,8 +299,12 @@ private:
     double lastReportTime;
     os::Stamp stampEncoders;
 
-    AnalogSensor analogSensor;
+    std::list<AnalogSensor *> analogSensors;
+
     yarp::os::ConstString canDevName;
+
+    AnalogSensor *instantiateAnalog(yarp::os::Searchable& config, std::string id);
+    void finiAnalog(AnalogSensor *s);
 
 public:
     /**
@@ -299,6 +339,9 @@ public:
     */
     virtual bool close(void);
 
+    ////////////// IFactoryInterface
+    yarp::dev::DeviceDriver *createDevice(yarp::os::Searchable& config);
+    
     ///////////// PID INTERFACE
     //
     virtual bool setPidRaw(int j, const Pid &pid);
@@ -433,11 +476,6 @@ public:
     virtual bool getAmpStatusRaw(int *st);
     //
     /////////////// END AMPLIFIER INTERFACE
-
-    ///// Analog Sensor
-    virtual int read(yarp::sig::Vector &out);
-    virtual int getChannels();
-    virtual int getState(int ch);
 
     ////// calibration
     virtual bool calibrateRaw(int j, double p);

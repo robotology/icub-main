@@ -206,11 +206,12 @@ public:
     ThreadFifo &getFifo(int j, int msg)
     {
         unsigned int i=msg&0x7F;
-        //   DEBUG("Asking FIFO for joint:%d msg:%d\n", j, i);
+        // fprintf(stderr, "Asking FIFO for joint:%d msg:%d\n", j, i);
         int index=j*num_of_messages+i;
         DEBUG("%d %d\n", index, elements);
         if ( (index<0) || (index>=elements))
-            DEBUG("%d %d %d\n", j, num_of_messages, i);
+            fprintf(stderr, "%d %d %d\n", j, num_of_messages, i);
+
 
         ACE_ASSERT((index>=0)&&(index<elements));
         return requests[index];
