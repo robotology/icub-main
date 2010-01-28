@@ -69,10 +69,11 @@ IF (BUILD_FOR_RELEASE)
   ADD_SUBDIRECTORY(gui/robotMotorGui)
 ELSE (BUILD_FOR_RELEASE)
 
+ADD_SUBDIRECTORY(iCubDev)
+
 # icub modules, added by default.
 IF (USE_ICUB_MOD)
   ADD_SUBDIRECTORY(modules)
-  ADD_SUBDIRECTORY(iCubDev)
   IF (NOT SKIP_logpolarclient)
     ADD_SUBDIRECTORY(logpolarRemapper)
   ENDIF (NOT SKIP_logpolarclient)
