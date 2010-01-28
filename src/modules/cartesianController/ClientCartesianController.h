@@ -31,7 +31,9 @@ class ClientCartesianController : public yarp::dev::DeviceDriver,
 {
 protected:
     bool closed;
-    bool gotPose;
+
+    double timeout;
+    double lastPoseMsgArrivalTime;
 
     yarp::sig::Vector pose;
 

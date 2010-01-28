@@ -2,12 +2,15 @@
 // Developed by Ugo Pattacini
 
 #include <yarp/os/Network.h>
+#include <yarp/os/Time.h>
 #include <yarp/math/Math.h>
 
 #include <stdio.h>
 
 #include "CommonCartesianController.h"
 #include "ClientCartesianController.h"
+
+#define CARTCTRL_DEFAULT_TMO    0.1 // [s]
 
 using namespace yarp;
 using namespace yarp::os;
@@ -24,7 +27,9 @@ ClientCartesianController::ClientCartesianController()
     portRpc  =NULL;
 
     closed=false;
-    gotPose=false;
+
+    timeout=CARTCTRL_DEFAULT_TMO;
+    lastPoseMsgArrivalTime=0.0;
 
     pose.resize(7,0.0);
 }
@@ -57,6 +62,9 @@ bool ClientCartesianController::open(Searchable &config)
         local=config.find("local").asString();
     else
         return false;
+
+    if (config.check("timeout"))
+        timeout=config.find("timeout").asDouble();
 
     portCmd=new BufferedPort<Bottle>;
     portCmd->open((local+"/command:o").c_str());
@@ -200,11 +208,13 @@ bool ClientCartesianController::getTrackingMode(bool *f)
 /************************************************************************/
 bool ClientCartesianController::getPose(Vector &x, Vector &o)
 {
+    double now=Time::now();
+
     // receive from network in streaming mode (non-blocking)
     if (Vector *v=portState->read(false))
     {
-        gotPose=true;
         pose=*v;
+        lastPoseMsgArrivalTime=now;
     }
 
     x.resize(3);
@@ -216,7 +226,7 @@ bool ClientCartesianController::getPose(Vector &x, Vector &o)
     for (int i=0; i<pose.length(); i++)
         o[i]=pose[3+i];
 
-    return gotPose;
+    return (now-lastPoseMsgArrivalTime<timeout);
 }
 
 
