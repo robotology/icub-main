@@ -29,24 +29,18 @@ using namespace yarp::sig::draw;
 /**
 *
 @ingroup icub_module
-\defgroup icub_watershedModule visualAttentionB09
+\defgroup icub_imageProcessorInterface imageProcessorInterface
 
-Module that performs image processing on the input image
-The module has been developed to be first stage of the protoObjectVisualAttention
+This module provides a graphical interface for imageProcessor module.
 
 \section intro_sec Description
-This module reads from a buffered port the input image. It straight away produces an output image based on the standard
-parameters configuration. However these parameters can be modified any time in order to process the inputimage differently.
-
+This module sends commands as bottle to the imageProcessor module. The command respect a communication stardard based
+on bottle composed of vocabols
 
 
 The module does:
--   process the input image based on the actual configuration
--   allow the user to change the undertaken processing
--   stream the outimage out
--	stream the colour planes of the image
--	stream the colour opponency maps (R+G-, G+R-, B+Y-)
--	allow the user to visually check the process
+- send commands to the imageProcessor module
+- plot on the window drawing area image of an input image
 
 \image html imageProcessor.jpg
 
@@ -56,24 +50,19 @@ OPENCV
 GTK
 
 \section parameters_sec Parameters
---name : name of the module and relative port name
-
+none
  
 \section portsa_sec Ports Accessed
-
+- /imageProcessor/cmd 
 
 
 \section portsc_sec Ports Created
 Input ports:
-- /imageProcessor/inputImage:i
+- /imageProcessorInterface/img:i
 Outports
-- /ImageProcessor/outImage:o
-- /ImageProcessor/outRed:o 
-- /ImageProcessor/outGreen:o
-- /ImageProcessor/outBlue:o
-- /ImageProcessor/outRG:o
-- /ImageProcessor/outGR:o
-- /ImageProcessor/outBY:o
+- /imageProcessorInterface/cmd
+
+
 
 \section in_files_sec Input Data Files
 none
@@ -83,13 +72,13 @@ none
  
 \section conf_file_sec Configuration Files
 none
---file.
+
 
 \section tested_os_sec Tested OS
 Linux and Windows.
 
 \section example_sec Example Instantiation of the Module
-visualAttentionB09 
+imageProcessorInterface
 
 
 \author Francesco Rea

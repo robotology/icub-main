@@ -27,26 +27,6 @@ using namespace yarp::os;
 using namespace yarp::sig;
 using namespace yarp::sig::draw;
 
-/*
-  This code groups together a series of useful function that can be used for ImageProcessing
-
-
-  Suppose we have an image source on port /source such as:
-    yarpdev --device test_grabber --name /source --mode line --framerate 10
-
-  And suppose we have an image viewer on port /view:
-    yarpview --name /view
-
-  Then we can hook this program up in between as follows:
-    ./image_process --name /worker
-    yarp connect /source /worker
-    yarp connect /worker /view
-
-  You should see the normal scrolling line of test_grabber, with a moving
-  circle overlaid.
-
- */
-
 
 class ImageProcessor
 {
