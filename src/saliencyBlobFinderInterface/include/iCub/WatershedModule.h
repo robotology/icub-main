@@ -53,7 +53,7 @@ The module does:
 -   visualise an image in the graphics interface
 
 
-\image html saliencyBlobFinder.jpg
+\image html saliencyBlobFinder.png
 
 \section lib_sec Libraries
 YARP

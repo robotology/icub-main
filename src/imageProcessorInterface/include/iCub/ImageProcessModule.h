@@ -42,7 +42,7 @@ The module does:
 - send commands to the imageProcessor module
 - plot on the window drawing area image of an input image
 
-\image html imageProcessor.jpg
+\image html imageProcessor.png
 
 \section lib_sec Libraries
 YARP

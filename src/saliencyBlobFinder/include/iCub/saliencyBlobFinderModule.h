@@ -78,7 +78,7 @@ The module does:
 -   stream the saliency map as a gray scale image
 -	stream the most salient blob
 
-\image html saliencyBlobFinder.jpg
+\image html saliencyBlobFinder.png
 
 
 

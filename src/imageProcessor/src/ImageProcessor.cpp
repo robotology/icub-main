@@ -674,7 +674,7 @@ ImageOf<PixelMono>* ImageProcessor::findEdgesBlueOpponency(){
     //ippiThreshold_8u_C1R(outputRedGreen,psb,redGreenEdges->getPixelAddress(0,0),psb,srcsize,(Ipp8u) 50 ,ippCmpGreater);
     //5. save the output into the outputImage
     //ippiThreshold_8u_C1IR(outputRedGreen,psb,srcsize,100,ippCmpGreater);
-    blankBorder(outputBlueYellow);
+    //blankBorder(outputBlueYellow);
     ippiCopy_8u_C1R(outputBlueYellow,psb,blueYellowEdges->getRawImage(),psb,srcsize);
     
     //ippiAdd_8u_C1IRSfs(redGreenEdges->getPixelAddress(0,0),width,redGreenEdges->getPixelAddress(0,0),width,srcsize,0.5);
@@ -970,7 +970,7 @@ ImageOf<PixelMono>* ImageProcessor::findEdgesGreenOpponency(){
     
     //6. save the output into the outputImage
     //ippiThreshold_8u_C1IR(outputRedGreen,psb,srcsize,100,ippCmpGreater);
-    blankBorder(outputGreenRed);
+    //blankBorder(outputGreenRed);
     ippiCopy_8u_C1R(outputGreenRed,psb,greenRedEdges->getRawImage(),psb,srcsize);
     //ippiAdd_8u_C1IRSfs(redGreenEdges->getPixelAddress(0,0),width,redGreenEdges->getPixelAddress(0,0),width,srcsize,0.5);
     //ippiCopy_8u_C1R(outputGreenRed,width,greenRedEdges_yarp->getPixelAddress(0,0),width,srcsize);
@@ -1273,7 +1273,7 @@ ImageOf<PixelMono>* ImageProcessor::findEdgesRedOpponency(){
     //ippiThreshold_8u_C1R(outputRedGreen,psb,redGreenEdges->getPixelAddress(0,0),psb,srcsize,(Ipp8u) 50 ,ippCmpGreater);
     //5. save the output into the outputImage
     //ippiThreshold_8u_C1IR(outputRedGreen,psb,srcsize,100,ippCmpGreater);
-    blankBorder(outputRedGreen);
+    //blankBorder(outputRedGreen);
     ippiCopy_8u_C1R(outputRedGreen,psb,redGreenEdges->getRawImage(),redGreenEdges->getRowSize(),srcsize);
     
     //ippiAdd_8u_C1IRSfs(redGreenEdges->getPixelAddress(0,0),width,redGreenEdges->getPixelAddress(0,0),width,srcsize,0.5);
@@ -1859,7 +1859,7 @@ ImageOf<PixelMono>* ImageProcessor::combineMax(){
     /*ippiAdd_8u_C1IRSfs(edgesGreen_ippi,psb,edgesOutput->getPixelAddress(0,0),width,srcsize,1);
     ippiAdd_8u_C1IRSfs(edgesRed_ippi,psb,edgesOutput->getPixelAddress(0,0),width,srcsize,1);
     ippiAdd_8u_C1IRSfs(edgesBlue_ippi,psb,edgesOutput->getPixelAddress(0,0),width,srcsize,1);*/
-    blankBorder(edgesOutput_ippi);
+    //blankBorder(edgesOutput_ippi);
     ippiCopy_8u_C1R(edgesOutput_ippi,psb,edgesOutput->getRawImage(),edgesOutput->getRowSize(),srcsize);
     //edgesOutput->setExternal((unsigned char*)pointerRed,height,width);
 

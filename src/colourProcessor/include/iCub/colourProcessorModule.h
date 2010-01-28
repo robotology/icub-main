@@ -70,6 +70,8 @@ The module does:
 -   for the intensity channel and the chrominance channel it applies a gaussian filter (todo)
 
 
+\image html colourProcessor.png
+
 \section lib_sec Libraries
 YARP 
 IPP

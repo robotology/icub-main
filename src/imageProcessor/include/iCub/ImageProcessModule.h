@@ -59,7 +59,7 @@ using namespace yarp::sig::draw;
 /**
 *
 @ingroup icub_module
-\defgroup icub_imageProcessor imageProcessor
+\defgroup icub_imageprocessor imageProcessor
 
 Module that performs image processing on the input image.
 The module has been mainly developed to extract the edges from the input image but it can be used for other operations
@@ -77,7 +77,7 @@ The module does:
 -   stream the outimage out
 
 
-\image html imageProcessor.jpg
+\image html imageProcessor.png
 
 \section lib_sec Libraries
 YARP
