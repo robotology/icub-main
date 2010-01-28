@@ -3,7 +3,9 @@
 
 #include <string.h>
 #include <iostream>
+
 using namespace std;
+using namespace yarp::sig;
 
 colourProcessorModule::colourProcessorModule(){
     reinit_flag=false;

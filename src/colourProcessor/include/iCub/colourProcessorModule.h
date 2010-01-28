@@ -48,9 +48,14 @@ using namespace yarp::sig;
 @ingroup icub_module
 \defgroup icub_colourProcessor colourProcessor
 
-This module processes the input image and always extracts the R G B channels.
-Starting from those channels it can produce the corrispective YUV channels if the user selects the option.
-If not selected the YUV channels are not computed and the module remains light.
+This module processes the input image and colour information from this.
+Starting from RGB channels it can produce the corrispective YUV channels if the user selects the option.
+If not selected the YUV channels are not computed and the module does not require extra computation power.
+All these channels are made available to other users via ports.
+Colour quantization is performed in order to reduce the effect of the input noise. After the yellow channel is 
+extracted the four channels are combined together to create three color opponent channels similar to those in retina.
+These are normally indicated with the names R+G-,G+R-, B+Y- and they have a center surround receptive field with
+spectrally opponent colour responses
 
 \section intro_sec Description
 
@@ -60,7 +65,8 @@ The module does:
 -   reads commands from rpc
 -	always, the RED, GREEN BLUE planes are streamed out on ports.
 -	if the yuv processor is on, the Y, U+V  planes are streamed out on ports
--   for every rgb channel, the rgb processor applies a gaussian filter (todo)
+-   the yellow channel is extracted and provided
+-   the colour opponency maps are calculated and streamed out on ports
 -   for the intensity channel and the chrominance channel it applies a gaussian filter (todo)
 
 
@@ -84,6 +90,11 @@ none
 <name>/blue:o
 <name>/ychannel:o
 <name>/uvchannel:o
+<name>/uchannel:o
+<name>/vchannel:o
+<name>/rg:o
+<name>/gr:o
+<name>/by:o
 
 
 Output ports:
@@ -92,11 +103,16 @@ Output ports:
 - <name>/blue:o:  streams out a yarp::sig::Image<PixelMono> which is the blue plane
 - <name>/ychannel:o: streams out a yarp::sig::ImageOf<PixelMono> which is the intensity information
 - <name>/uvchannel:o:  streams out a yarp::sig::Image<PixelMono> which is the chrominance information
+- <name>/uchannel:o:    streams out a yarp::sig::Image<PixelMono> which corrispond to the u channel
+- <name>/vchannel:o:    streams out a yarp::sig::Image<PixelMono> which corrispond to the v channel     
+- <name>/rg:o:  streams out a yarp::sig::Image<PixelMono> which corrispond to the colourOpponency Map defined as R+G-
+- <name>/gr:o:  streams out a yarp::sig::Image<PixelMono> which corrispond to the colourOpponency Map defined as G+R-
+- <name>/by:o:  streams out a yarp::sig::Image<PixelMono> which corrispond to the colourOpponency Map defined as B+Y-
 
 
 Input ports:
 - <name>/image:i: input ports which takes as input a yarp::sig::ImageOf<PixelRgb>
-- <name>/cmd:i : port for the input rpc commands
+- <name>/cmd : port for the input rpc commands
 
 \section in_files_sec Input Data Files
 none
