@@ -38,7 +38,7 @@ using namespace yarp::sig::draw;
 /**
 *
 @ingroup icub_module
-\defgroup icub_watershedModule watershedModule
+\defgroup icub_saliencyBlobFinderInterface saliencyBlobFinderInterface
 
 Module graphical interface for saliencyBlobFinder
 

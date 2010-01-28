@@ -901,7 +901,6 @@ static void cb_draw_value( GtkToggleButton *button )
         if(button->active){
             wModule->foveaBlob_flag=true;
             wModule->message->assign("set fov");
-
          }
         else
             wModule->foveaBlob_flag=false;
@@ -2592,7 +2591,7 @@ void WatershedModule::drawAllBlobs(bool stable)
     YARPBox fovBox;
     fovBox=salience->getBlobNum(1);
     //__OLD//salience.removeBlobList(blobList, max_tag);
-    salience->removeFoveaBlob(*tagged);
+    //----->salience->removeFoveaBlob(*tagged);
     //__OLD//salience.updateFoveaBlob(tagged, blobList, max_tag);
 
     if (stable) {
