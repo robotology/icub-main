@@ -40,6 +40,8 @@ using namespace yarp::sig;
 #define COMMAND_VOCAB_TAGGED VOCAB3('t','a','g')
 #define COMMAND_VOCAB_MAXSALIENCY VOCAB3('m','a','x')
 #define COMMAND_VOCAB_CONTRASTLP VOCAB3('c','l','p')
+#define COMMAND_VOCAB_FOVEA VOCAB3('f','o','v')
+
 
 #define COMMAND_VOCAB_KBU VOCAB3('k','b','u') //weight of the bottom-up algorithm
 #define COMMAND_VOCAB_KTD VOCAB3('k','t','d') //weight of top-down algorithm
