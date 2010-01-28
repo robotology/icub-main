@@ -85,18 +85,18 @@ Here is a  comprehensive list of the parameters you can pass to the module.
 none
 
 \section portsc_sec Ports Created
-<name>/cmd:i
-<name>/image:i
-<name>/red:o
-<name>/green:o
-<name>/blue:o
-<name>/ychannel:o
-<name>/uvchannel:o
-<name>/uchannel:o
-<name>/vchannel:o
-<name>/rg:o
-<name>/gr:o
-<name>/by:o
+- <name>/cmd:i
+- <name>/image:i
+- <name>/red:o
+- <name>/green:o
+- <name>/blue:o
+- <name>/ychannel:o
+- <name>/uvchannel:o
+- <name>/uchannel:o
+- <name>/vchannel:o
+- <name>/rg:o
+- <name>/gr:o
+- <name>/by:o
 
 
 Output ports:
@@ -129,7 +129,7 @@ none
 Linux and Windows.
 
 \section example_sec Example Instantiation of the Module
-colourProcessor --name /colourPU 
+colourProcessor --file colourProcessor.ini
 
 \author Francesco Rea
 

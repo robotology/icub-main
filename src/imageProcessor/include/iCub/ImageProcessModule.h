@@ -103,7 +103,8 @@ Input ports:
 - rg:i
 - gr:i
 - by:i
-Outports
+
+Outports:
 - outImage:o
 - outRed:o 
 - outGreen:o
@@ -111,7 +112,8 @@ Outports
 - outRG:o
 - outGR:o
 - outBY:o
-InOut ports
+
+InOut ports:
 -cmd
 
 
@@ -128,7 +130,7 @@ none
 Linux and Windows.
 
 \section example_sec Example Instantiation of the Module
-visualAttentionB09 
+imageProcessor --file imageProcessor.ini 
 
 
 \author Francesco Rea

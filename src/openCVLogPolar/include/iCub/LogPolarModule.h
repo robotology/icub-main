@@ -59,14 +59,14 @@ Here is a  comprehensive list of the parameters you can pass to the module.
 none
 
 \section portsc_sec Ports Created
-<name>/image:i
-<name>/image:o
-<name>/simulation:o
-<name>/inverse:o
-<name>/cvLogPolarR/cog:o active at tc
-<name>/cvLogPolarR/target:i active at
-<name>/cvLogPolarR/cmd:i active at tc
-<name>/cvLogPolarR/sim:o active at tc
+- <name>/image:i
+- <name>/image:o
+- <name>/simulation:o
+- <name>/inverse:o
+- <name>/cog:o active at tc
+- <name>/target:i active at
+- <name>/cmd:i active at tc
+- <name>/sim:o active at tc
 
 
 Output ports:
@@ -90,7 +90,7 @@ none
 Linux and Windows.
 
 \section example_sec Example Instantiation of the Module
-openCVLogPolar --name /LogPolar/ --mode FORWARD
+openCVLogPolar --name /LogPolar --mode FORWARD
 
 \author Francesco Rea
 

@@ -92,26 +92,26 @@ Here is a  comprehensive list of the parameters you can pass to the module.
 
  
 \section portsa_sec Ports Accessed
--/blobFinderInterface/command:o : once manually connected to the <name>/cmd the graphical interface is able to control this module (for further information press Help Button in the interface)
--/colourPU/red:o
--/colourPU/green:o
--/colourPU/blue:o
--/colourPU/rg:o
--/colourPU/gr:o
--/colourPU/by:o
--/imagePU/edges:o
+- /blobFinderInterface/command:o : once manually connected to the <name>/cmd the graphical interface is able to control this module (for further information press Help Button in the interface)
+- /colourPU/red:o
+- /colourPU/green:o
+- /colourPU/blue:o
+- /colourPU/rg:o
+- /colourPU/gr:o
+- /colourPU/by:o
+- /imagePU/edges:o
 
 \section portsc_sec Ports Created
-<name>/cmd
-<name>/image:i
-<name>/red:i
-<name>/green:i
-<name>/blue:i
-<name>/rg:i
-<name>/gr:i
-<name>/by:i
-<name>/image:o
-<name>/centroid:o
+- <name>/cmd
+- <name>/image:i
+- <name>/red:i
+- <name>/green:i
+- <name>/blue:i
+- <name>/rg:i
+- <name>/gr:i
+- <name>/by:i
+- <name>/image:o
+- <name>/centroid:o
 
 
 Output ports:
@@ -128,7 +128,7 @@ Input ports:
 - <name>/gr:i: acquires the input stream of the G+R- opponency map
 - <name>/by:i: acquires the input stream of th B+Y- opponency map
 
-InOut ports
+InOut ports:
 - <name>/cmd : port for the input rpc commands (for further command send Help command)
 
 \section in_files_sec Input Data Files
@@ -138,13 +138,13 @@ none
 none
  
 \section conf_file_sec Configuration Files
-saliencyBlobFinder
+saliencyBlobFinder.ini
 
 \section tested_os_sec Tested OS
 Linux and Windows.
 
 \section example_sec Example Instantiation of the Module
-saliencyBlobFinderProcessor --name /blobFinder 
+saliencyBlobFinder --file saliencyBlobFinder.ini
 
 \author Francesco Rea
 
