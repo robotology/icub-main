@@ -600,8 +600,8 @@ ImageOf<PixelMono>* ImageProcessor::findEdgesBlueOpponency(){
 
     else if (IPPISOBEL){
         
-        ippiFilterSobelHoriz_8u_C1R(blueYellow_yarp->getPixelAddress(0,0),width,outputBlueYellow3,psb,srcsize);
-        ippiFilterSobelVert_8u_C1R(blueYellow_yarp->getPixelAddress(0,0),width,outputBlueYellow2,psb,srcsize);
+        ippiFilterSobelHoriz_8u_C1R(blueYellow_yarp->getPixelAddress(0,0),blueYellow_yarp->getRowSize(),outputBlueYellow3,psb,srcsize);
+        ippiFilterSobelVert_8u_C1R(blueYellow_yarp->getPixelAddress(0,0),blueYellow_yarp->getRowSize(),outputBlueYellow2,psb,srcsize);
         
         for(int i=0; i<width*height;i++){
             if(outputBlueYellow3==NULL){
@@ -894,8 +894,8 @@ ImageOf<PixelMono>* ImageProcessor::findEdgesGreenOpponency(){
 
     else if (IPPISOBEL){
         
-        ippiFilterSobelHoriz_8u_C1R(greenRed_yarp->getPixelAddress(0,0),width,outputGreenRed3,psb,srcsize);
-        ippiFilterSobelVert_8u_C1R(greenRed_yarp->getPixelAddress(0,0),width,outputGreenRed2,psb,srcsize);
+        ippiFilterSobelHoriz_8u_C1R(greenRed_yarp->getPixelAddress(0,0),greenRed_yarp->getRowSize(),outputGreenRed3,psb,srcsize);
+        ippiFilterSobelVert_8u_C1R(greenRed_yarp->getPixelAddress(0,0),greenRed_yarp->getRowSize(),outputGreenRed2,psb,srcsize);
         for(int i=0; i<width*height;i++){
             if(outputGreenRed==NULL){
                 printf("outputGreenRed NULL");
@@ -1202,8 +1202,8 @@ ImageOf<PixelMono>* ImageProcessor::findEdgesRedOpponency(){
 
     else if (IPPISOBEL){
         
-        ippiFilterSobelHoriz_8u_C1R(redGreen_yarp->getPixelAddress(0,0),width,outputRedGreen3,psb,srcsize);
-        ippiFilterSobelVert_8u_C1R(redGreen_yarp->getPixelAddress(0,0),width,outputRedGreen2,psb,srcsize);
+        ippiFilterSobelHoriz_8u_C1R(redGreen_yarp->getPixelAddress(0,0),redGreen_yarp->getRowSize(),outputRedGreen3,psb,srcsize);
+        ippiFilterSobelVert_8u_C1R(redGreen_yarp->getPixelAddress(0,0),redGreen_yarp->getRowSize(),outputRedGreen2,psb,srcsize);
         for(int i=0; i<width*height;i++){
             if(outputRedGreen==NULL){
                 printf("outputRedGreen NULL");
@@ -1294,8 +1294,8 @@ ImageOf<PixelMono>* ImageProcessor::findEdgesRedOpponency(){
 * @param maxk number of lines removed both from the top and the bottm
 */
 void ImageProcessor::blankBorder(Ipp8u* image, int maxk){
-    int height=320;
-    int width=240;
+   // int height=320;
+   // int width=240;
 
     
     int y0=0,ylast=height-1;
@@ -1828,7 +1828,7 @@ ImageOf<PixelMono>* ImageProcessor::combineMax(){
 
 
     for(int i=0; i<width*height;i++){
-        //edgesOutput_ippi[i]=edgesGreen_ippi[i];
+        //edgesOutput_ippi[i]=edgesRed_ippi[i];
 
         if(edgesGreen_ippi[i]<edgesRed_ippi[i])
             if(edgesRed_ippi[i]<edgesBlue_ippi[i])
