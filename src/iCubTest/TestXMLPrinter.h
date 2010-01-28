@@ -24,6 +24,10 @@
 #include <vector>
 #include <string>
 
+//only needed by fopen, can be removed once inlines
+//are moved to cpp files
+#include <stdio.h>
+
 class XMLPrinter
 {
 public:

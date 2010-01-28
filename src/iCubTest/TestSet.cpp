@@ -23,6 +23,8 @@
 #include "TestXMLPrinter.h"
 #include "TestSet.h"
 
+#include <stdio.h>
+
 iCubTestSet::iCubTestSet(yarp::os::Searchable& configuration)
 {   
     m_bSuccess=false;
