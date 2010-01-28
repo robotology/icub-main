@@ -255,11 +255,7 @@ This file can be edited at src/iCubInterface2/main.cpp.
 
 #include "RobotInterface.h" 
 
-#ifdef EXPERIMENTAL
-    #include "RobotInterfaceRemapXP.h"
-#else
-    #include "RobotInterfaceRemap.h"
-#endif 
+#include "RobotInterfaceRemap.h"
 
 #include "ControlBoardWrapper2.h"
 #include "ControlBoardWrapper.h"
@@ -417,11 +413,7 @@ int main(int argc, char *argv[])
 	IRobotInterface *i;
 	if (remap)
 	{
-#ifdef EXPERIMENTAL
-		i=new RobotInterfaceRemapXP;
-#else
         i=new RobotInterfaceRemap;
-#endif
 	}
 	else
 	{
