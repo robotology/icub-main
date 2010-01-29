@@ -25,6 +25,23 @@ can convert the relative position of the target in the two image
 planes in relative displacement in 3D task space with respect to 
 the actual fixation point. 
  
+<b>Caveat</b> \n 
+If you experience a slow speed motion, please check the shift 
+factors settings within your low-level configuration file of the 
+head part: they should be properly tuned. Usually a value of 8 
+is enough. 
+ 
+Example: look in the file <i>icub_head_torso_safe.ini</i>; you 
+should find something similar to: 
+<code> 
+[VELOCITY]
+Shifts 8 8 8 8 8 8 8 8 8 8 
+</code> 
+ 
+Remind that a lower shift factor allows to yield an higher joint
+speed and at the same time it reduces the minimum speed that can 
+be achieved. 
+ 
 \note A video on iCub gazing at a target can be seen <a 
       href="http://eris.liralab.it/misc/icubvideos/gazing_IIT_ISR.wmv">here</a>.
 
