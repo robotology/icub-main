@@ -6,67 +6,53 @@ This is the application used to run the attention system based on proto-object, 
 across a cluster of computers. See paper A Proto-object Based Visual Attention Model, Orabona Metta Sandini
 
 \section intro_sec Description
-Run the attention system calling at the same time the openCVLogPolar converter,image processing module,and blob extractor module based on Proto-Objects.
-Finally it runs the contextualRefinement and another openCVLogPolar in INVERSE mode to extract the silhouette of the most salientObject
+Run the attention system calling using logpolar image.The colourProcessor and the imageProcessing module are in charge of preprocessing the input image.
+The saliencyBlobFinder is a blob extractor module based on Proto-Objects. In other words given images which simulates center-surround receptive fields with spectrally opponent
+colour responses the system extracts a series of edges that are likely to be boundaries of proto-objects. Applying the watershed process (rain falling algorithm),
+the system determines the blobs. After colour quatization the blobs are catalogued and the saliency for every blob is calculated. The process of defining the
+saliency of a blob is based on the linear combination of bottom-up(isolated blobs) and top-down(blobs with closer to the target colour) algorithms.
+
 
 \section dep_sec Dependencies
-Assumes \ref icub_iCubInterface is running, and that the head is instantiated.
+Assumes \ref icub_yarp::dev::ServerLogpolarFrameGrabber  is running, and that the logPolar images are provided in the form /icub/cam/right/logpolar and /icub/cam/left/logpolar
 
 \section int_sec Instantiated Modules
-- \ref icub_openCVLogPolar "openCVLogPolar"
 
-- \ref icub_visualAttentionB09 "visualAttentionB09"
+- \ref icub_colourProcessor "colourProcessor"
 
-- \ref icub_watershedModule "watershedModule"
+- \ref icub_imageProcessor "imageProcessor"
 
-- \ref icub_contestualRefinement "contestualRefinement"
+- \ref icub_imageProcessor "imageProcessorInterface"
 
-- \ref icub_openCVLogPolar "openCVLogPolar"
+- \ref icub_saliencyBlobFinder "contestualRefinement"
+
+- \ref icub_saliencyBlobFinderInterface "openCVLogPolar"
 
 \section parameters_sec Parameters
-
-See below.
+none
 
 \section config_sec Configuration Files
+none
 
-The application directory is assumed to contain a certain sub-folder structure. 
-Currently a ./conf folder is required.
 
-File: /app/attentionDistributed/config.sh
+File: there is no .sh file
 
-config.sh contains all information required by the module start scripts and the yarp connect script. 
 
 Global application values are:
 
-- Name of the robot
-
-- Portnames of the robot (controlboards, image grabbers, etc.)
-
-- Absolute path to the module binaries (no trailing slash) (this path might need to be changed depending on the operation system used; windows uses the /bin/debug folder for compiled binaries whereas Linux uses the /bin folder)
-
-- Absolute path to the application directory (no trailing slash)
+- none
 
 For robot devices config.sh contains:
 
-- Device parameters or the configuration file used by the device driver
+- none
 
 For every module config.sh contains:
 
-- Name of the executable
+- none
 
-- Config file to use
-
-- Name of the module (base portname to use)
-
-- All portnames opened by this module
-
-Configuration of the devices running on the iCub are defined in config.sh or in the configuration file specified. 
-The controlboard is currently assumed to be located in iCub/conf .
-
-All configuration options (except portnames) are contained in the according configuration file in 
-the local ./conf folder.
 
 \section howto How to run the Application
+Simply run through the manager.py 
 \code
 Customize and run ./scripts/appConfig-visual.xml.template
 \endcode
@@ -77,5 +63,4 @@ Copyright (C) 2008 RobotCub Consortium
 
 CopyPolicy: Released under the terms of the GNU GPL v2.0.
 
-This file can be edited at app/protoObjectVisualAttention/doc.dox
 **/
