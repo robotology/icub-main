@@ -465,9 +465,9 @@ static void linkController() {
 		if (odeinit._iCub->actTorso == "on"){
 		  int torso = PART_TORSO;
 		  const char *torsoName = "torso";
-          getController(torso,0).init(torsoName,"hinge",0,-1);
+          getController(torso,0).init(torsoName,"hinge",2,+1);
 		  getController(torso,1).init(torsoName,"hinge",1,+1);
-		  getController(torso,2).init(torsoName,"hinge",2,+1);
+		  getController(torso,2).init(torsoName,"hinge",0,-1);
 		}
         simLinked = true;
     }
