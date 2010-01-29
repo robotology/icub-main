@@ -35,8 +35,8 @@ Rule: a lower shift factor allows to yield an higher joint speed
 and at the same time it reduces the minimum speed that can be 
 achieved. 
  
-Example: look in the file <i>icub_head_torso_safe.ini</i>; you 
-should find something similar to: 
+Example: look in the file <i>icub_head_torso_safe.ini</i> of 
+your robot setup; you should find something similar to: 
 <code> 
 [VELOCITY]
 Shifts 8 8 8 8 8 8 8 8 8 8 
