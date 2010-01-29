@@ -45,7 +45,7 @@ static const char *iso_speed_labels[]={"100 Mbps","200 Mbps","400 Mbps","800 Mbp
 static const char *op_mode_labels[]={"LEGACY","1394b"};
 
 #include <gtkmm.h>
-#include <yarp/dev/RemoteFrameGrabber.h>
+#include <yarp/dev/RemoteFrameGrabberDC1394.h>
 
 class DC1394SliderBase
 {
@@ -73,7 +73,7 @@ public:
 	    delete pRBa;
         delete pRBm;
     }
-	DC1394Slider(dc1394feature_id_t feature,char* label,Gtk::VBox &vbox,yarp::dev::RemoteFrameGrabberDC1394 *fg) 
+	DC1394Slider(dc1394feature_id_t feature,char* label,Gtk::VBox &vbox,yarp::dev::RemoteFrameGrabberControlsDC1394 *fg) 
 		: m_Slider(0.0,1.005,0.005),m_OnePush("One Push")
 	{
 		if (!((pFG=fg)->hasFeatureDC1394(m_Feature=feature)))
@@ -201,7 +201,7 @@ public:
 
 protected:
 	double m_old_value,m_new_value;
-	yarp::dev::RemoteFrameGrabberDC1394 *pFG;
+	yarp::dev::RemoteFrameGrabberControlsDC1394 *pFG;
 	dc1394feature_id_t m_Feature;
 	Gtk::CheckButton* pPwr;
 	Gtk::RadioButton *pRBa,*pRBm;
@@ -220,7 +220,7 @@ public:
 	    delete pRBa;
         delete pRBm;
     }
-	DC1394SliderWB(Gtk::VBox &vbox,yarp::dev::RemoteFrameGrabberDC1394 *fg) 
+	DC1394SliderWB(Gtk::VBox &vbox,yarp::dev::RemoteFrameGrabberControlsDC1394 *fg) 
 		: m_Red(0.0,1.005,0.005),m_Blue(0.0,1.005,0.005),m_OnePush("One Push")
 	{
 		if (!(pFG=fg)->hasFeatureDC1394(DC1394_FEATURE_WHITE_BALANCE))
@@ -376,7 +376,7 @@ public:
 
 protected:
 	double m_old_red,m_new_red,m_old_blu,m_new_blu;
-	yarp::dev::RemoteFrameGrabberDC1394 *pFG;
+	yarp::dev::RemoteFrameGrabberControlsDC1394 *pFG;
 	Gtk::CheckButton* pPwr;
 	Gtk::RadioButton *pRBa,*pRBm;
 	Gtk::HScale m_Red,m_Blue;
@@ -386,7 +386,7 @@ protected:
 /**
  *	A graphical control interface for a remote framegrabber.	
  */
-class FrameGrabberGUIControl2 : public Gtk::Window, virtual public yarp::dev::RemoteFrameGrabberDC1394
+class FrameGrabberGUIControl2 : public Gtk::Window, virtual public yarp::dev::RemoteFrameGrabberControlsDC1394
 {
 public:
     /**
@@ -399,7 +399,7 @@ public:
 	FrameGrabberGUIControl2(char* loc, char* rem) : 
 	  // base classes
 	  Gtk::Window(),
-	  yarp::dev::RemoteFrameGrabberDC1394(),
+	  yarp::dev::RemoteFrameGrabberControlsDC1394(),
 	  
 	  //members	  
 	  m_Refresh1("Refresh"),
@@ -482,6 +482,7 @@ public:
         // FORMAT
 		m_MenuMode.set_name("Video Format");
 		unsigned int mask=getVideoModeMaskDC1394();
+        printf("VIDEO MODE MASK %x\n",mask);
 		for (int i=0,e=0; i<32; ++i)
 		{
 			if ((1<<i) & mask)
