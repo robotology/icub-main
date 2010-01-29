@@ -9,10 +9,10 @@ iCubShoulderConstr::iCubShoulderConstr(unsigned int dofs, double lower_bound_inf
 {
     unsigned int offs=dofs<=7 ? 0 : 3;
 
-    double joint1_0= 10.0*(M_PI/180.0);
-    double joint1_1= 15.0*(M_PI/180.0);
-    double joint2_0=-33.0*(M_PI/180.0);
-    double joint2_1= 60.0*(M_PI/180.0);
+    double joint1_0= 10.0*CTRL_DEG2RAD;
+    double joint1_1= 15.0*CTRL_DEG2RAD;
+    double joint2_0=-33.0*CTRL_DEG2RAD;
+    double joint2_1= 60.0*CTRL_DEG2RAD;
     double m=(joint1_1-joint1_0)/(joint2_1-joint2_0);
     double n=joint1_0-m*joint2_0;    
 
@@ -29,9 +29,9 @@ iCubShoulderConstr::iCubShoulderConstr(unsigned int dofs, double lower_bound_inf
 
     // lower and upper bounds
     lB.resize(5); uB.resize(5);
-    lB[0]= -347.0*(M_PI/180.0); uB[0]=upperBoundInf;
-    lB[1]=-366.57*(M_PI/180.0); uB[1]=112.42*(M_PI/180.0);
-    lB[2]=  -66.6*(M_PI/180.0); uB[2]= 213.3*(M_PI/180.0);
+    lB[0]= -347.0*CTRL_DEG2RAD; uB[0]=upperBoundInf;
+    lB[1]=-366.57*CTRL_DEG2RAD; uB[1]=112.42*CTRL_DEG2RAD;
+    lB[2]=  -66.6*CTRL_DEG2RAD; uB[2]= 213.3*CTRL_DEG2RAD;
     lB[3]=n;                    uB[3]=upperBoundInf;
     lB[4]=lowerBoundInf;        uB[4]=SHOULDER_MAXABDUCTION;
 }
@@ -93,13 +93,13 @@ Solver::Solver(PolyDriver *_drvTorso, PolyDriver *_drvArm, exchangeData *_commDa
             q0[0]=q0[1]=q0[2]=0.0;
             offs=3;
         }
-        q0[offs]  =-26.0*(M_PI/180.0);
-        q0[offs+1]=+22.0*(M_PI/180.0);
-        q0[offs+2]=+43.0*(M_PI/180.0);
-        q0[offs+3]=+61.0*(M_PI/180.0);
-        q0[offs+4]=+00.0*(M_PI/180.0);
-        q0[offs+5]=-24.0*(M_PI/180.0);
-        q0[offs+6]=-00.0*(M_PI/180.0);
+        q0[offs]  =-26.0*CTRL_DEG2RAD;
+        q0[offs+1]=+22.0*CTRL_DEG2RAD;
+        q0[offs+2]=+43.0*CTRL_DEG2RAD;
+        q0[offs+3]=+61.0*CTRL_DEG2RAD;
+        q0[offs+4]=+00.0*CTRL_DEG2RAD;
+        q0[offs+5]=-24.0*CTRL_DEG2RAD;
+        q0[offs+6]=-00.0*CTRL_DEG2RAD;
         chain->setAng(q0);
 
         fb.resize(nJoints,0.0);
@@ -239,7 +239,7 @@ void Solver::run()
         for (int i=0; i<nJointsTorso; i++)
             qTorso[i]=chain->getAng(i);
 
-        movedTorso=norm(qTorso-qTorso_old)>1.0*(M_PI/180.0);
+        movedTorso=norm(qTorso-qTorso_old)>1.0*CTRL_DEG2RAD;
     }
 
     if (!(xd==xd_old) || movedTorso)
@@ -282,16 +282,16 @@ void Solver::run()
         Vector &qd=port_qd->prepare();
 
         if (ctrlTorso)
-            qd=(180.0/M_PI)*_qd;
+            qd=CTRL_RAD2DEG*_qd;
         else
         {
             qd.resize(nJointsTorso+chain->getDOF());
 
             for (int i=0; i<nJointsTorso; i++)
-                qd[i]=(180.0/M_PI)*chain->getAng(i);
+                qd[i]=CTRL_RAD2DEG*chain->getAng(i);
 
             for (unsigned int i=0; i<chain->getDOF(); i++)
-                qd[nJointsTorso+i]=(180.0/M_PI)*_qd[i];
+                qd[nJointsTorso+i]=CTRL_RAD2DEG*_qd[i];
         }
 
         port_qd->write();

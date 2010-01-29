@@ -18,7 +18,7 @@
 
 #include "utils.h"
 
-#define SHOULDER_MAXABDUCTION   (100.0*(M_PI/180.0))
+#define SHOULDER_MAXABDUCTION   (100.0*CTRL_DEG2RAD)
 
 using namespace std;
 using namespace yarp;

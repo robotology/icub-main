@@ -466,9 +466,9 @@ bool ServerCartesianController::respond(const Bottle &command, Bottle &reply)
                             int cnt=0;
                             for (unsigned int i=0; i<chain->getN(); i++)
                                 if ((*chain)[i].isBlocked())
-                                    qData.addDouble((180.0/M_PI)*chain->getAng(i));
+                                    qData.addDouble(CTRL_RAD2DEG*chain->getAng(i));
                                 else
-                                    qData.addDouble((180.0/M_PI)*qdes[cnt++]);
+                                    qData.addDouble(CTRL_RAD2DEG*qdes[cnt++]);
 
                             break;
                         }
@@ -696,8 +696,8 @@ void ServerCartesianController::alignJointsBounds()
                 max=reply.get(2).asDouble();                        
         
                 // align local joint's bounds
-                (*chain)[i].setMin((M_PI/180.0)*min);
-                (*chain)[i].setMax((M_PI/180.0)*max);
+                (*chain)[i].setMin(CTRL_DEG2RAD*min);
+                (*chain)[i].setMax(CTRL_DEG2RAD*max);
 
                 fprintf(stdout,"[%.1f, %.1f] deg\n",min,max);
             }
@@ -719,7 +719,7 @@ void ServerCartesianController::getFeedback(Vector &_fb)
         if ((*RES_ENC(lEnc))[i]->getEncoders(fbTmp.data()))
             for (int j=0; j<(*RES_JNT(lJnt))[i]; j++)
             {
-                double tmp=(M_PI/180.0)*fbTmp[(*RES_RMP(lRmp))[i][j]];
+                double tmp=CTRL_DEG2RAD*fbTmp[(*RES_RMP(lRmp))[i][j]];
 
                 if ((*chain)[chainCnt].isBlocked())
                     chain->setBlockingValue(chainCnt,tmp);
@@ -821,7 +821,7 @@ bool ServerCartesianController::getNewTarget()
             _qdes.resize(len);
 
             for (int i=0; i<len; i++)
-                _qdes[i]=(M_PI/180.0)*b2->get(i).asDouble();
+                _qdes[i]=CTRL_DEG2RAD*b2->get(i).asDouble();
 
             if (!(_qdes==qdes))
                 isNew=true;
@@ -911,7 +911,7 @@ void ServerCartesianController::run()
             ctrl->iterate(xdes,qdes);
 
             // send joints velocities to the robot [deg/s]
-            sendVelocity((180.0/M_PI)*ctrl->get_qdot());
+            sendVelocity(CTRL_RAD2DEG*ctrl->get_qdot());
     
             // handle the end-trajectory event
             if (ctrl->isInTarget())
@@ -1542,9 +1542,9 @@ bool ServerCartesianController::getDesired(Vector &xdcap, Vector &odcap, Vector 
 
         for (unsigned int i=0; i<chain->getN(); i++)
             if ((*chain)[i].isBlocked())
-                qdcap[i]=(180.0/M_PI)*chain->getAng(i);
+                qdcap[i]=CTRL_RAD2DEG*chain->getAng(i);
             else
-                qdcap[i]=(180.0/M_PI)*qdes[cnt++];
+                qdcap[i]=CTRL_RAD2DEG*qdes[cnt++];
 
         return true;
     }
@@ -1754,8 +1754,8 @@ bool ServerCartesianController::getLimits(int axis, double *min, double *max)
     {
         if (axis<(int)chain->getN())
         {
-            *min=(180.0/M_PI)*(*chain)[axis].getMin();
-            *max=(180.0/M_PI)*(*chain)[axis].getMax();
+            *min=CTRL_RAD2DEG*(*chain)[axis].getMin();
+            *max=CTRL_RAD2DEG*(*chain)[axis].getMax();
 
             return true;
         }
@@ -1791,8 +1791,8 @@ bool ServerCartesianController::setLimits(int axis, const double min, const doub
         if (reply.get(0).asVocab()==IKINSLV_VOCAB_REP_ACK)
         {
             // align local joint's limits
-            (*chain)[axis].setMin((M_PI/180.0)*min);
-            (*chain)[axis].setMax((M_PI/180.0)*max);
+            (*chain)[axis].setMin(CTRL_DEG2RAD*min);
+            (*chain)[axis].setMax(CTRL_DEG2RAD*max);
 
             return true;
         }

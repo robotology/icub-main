@@ -248,9 +248,9 @@ void Controller::run()
     }
 
     // convert to degrees
-    qddeg=(180.0/M_PI)*qd;
-    qdeg =(180.0/M_PI)*fbHead;
-    vdeg =(180.0/M_PI)*v;
+    qddeg=CTRL_RAD2DEG*qd;
+    qdeg =CTRL_RAD2DEG*fbHead;
+    vdeg =CTRL_RAD2DEG*v;
 
     // send velocities to the robot
     if (Robotable && !(vdeg==vdegOld))
@@ -273,7 +273,7 @@ void Controller::run()
 
     int j;
     for (j=0; j<nJointsTorso; j++)
-        qd1[j]=q1[j]=(180.0/M_PI)*fbTorso[j];
+        qd1[j]=q1[j]=CTRL_RAD2DEG*fbTorso[j];
     for (; j<nJointsTorso+nJointsHead; j++)
     {
         qd1[j]=qddeg[j-nJointsTorso];

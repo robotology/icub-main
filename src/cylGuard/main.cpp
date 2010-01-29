@@ -75,7 +75,7 @@ private:
         for (int i=0; i<n; i++)
             q_in[i]=b.get(i).asDouble();
 
-        Vector q=chain->setAng((M_PI/180.0)*q_in);
+        Vector q=chain->setAng(CTRL_DEG2RAD*q_in);
         Vector x=chain->EndEffPose();
         Vector x_in=x;
         Vector x_out=x_in;
@@ -116,7 +116,7 @@ private:
 
             int i;
             for (i=0; i<q.size(); i++)
-                q_out[i]=(180.0/M_PI)*q[i];
+                q_out[i]=CTRL_RAD2DEG*q[i];
 
             for (; i<7; i++)
                 q_out[i]=q_in[i];
@@ -134,7 +134,7 @@ private:
             cout << "q_tx      = " << q_out.toString()                  << endl;
             cout << "x_tx      = " << x_out.toString()                  << endl;
             cout << "rho       = " << rho2                              << endl;
-            cout << "delta_phi = " << (180.0/M_PI)*(phi2-phi) << " deg" << endl;
+            cout << "delta_phi = " << CTRL_RAD2DEG*(phi2-phi) << " deg" << endl;
 
             cout << endl << endl;
         }

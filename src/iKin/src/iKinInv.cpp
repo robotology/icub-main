@@ -389,13 +389,13 @@ void SteepCtrl::printIter(const unsigned int verbose)
         cout << "iter #"     << iter                        << endl;
         cout << "State   = " << strState[State]             << endl;
         cout << "norm(e) = " << dist()                      << endl;
-        cout << "q       = " << ((180.0/M_PI)*q).toString() << endl;
+        cout << "q       = " << (CTRL_RAD2DEG*q).toString() << endl;
         cout << "x       = " << x.toString()                << endl;
 
         if (_verbose>1)
         {
             cout << "grad    = " << grad.toString()                << endl;
-            cout << "qdot    = " << ((180.0/M_PI)*qdot).toString() << endl;
+            cout << "qdot    = " << (CTRL_RAD2DEG*qdot).toString() << endl;
         }
 
         if (_verbose>2)
@@ -616,7 +616,7 @@ void LMCtrl::printIter(const unsigned int verbose)
         cout << "iter #"     << iter                        << endl;
         cout << "State   = " << strState[State]             << endl;
         cout << "norm(e) = " << dist()                      << endl;
-        cout << "q       = " << ((180.0/M_PI)*q).toString() << endl;
+        cout << "q       = " << (CTRL_RAD2DEG*q).toString() << endl;
         cout << "x       = " << x.toString()                << endl;
 
         if (_verbose>1)
@@ -942,7 +942,7 @@ void GSLMinCtrl::printIter(const unsigned int verbose)
         cout << "iter #"     << iter                        << endl;
         cout << "state   = " << strState[State]             << endl;
         cout << "norm(e) = " << dist()                      << endl;
-        cout << "q       = " << ((180.0/M_PI)*q).toString() << endl;
+        cout << "q       = " << (CTRL_RAD2DEG*q).toString() << endl;
         cout << "x       = " << x.toString()                << endl;
 
         if (_verbose>1)
@@ -1242,12 +1242,12 @@ void MultiRefMinJerkCtrl::printIter(const unsigned int verbose)
         cout << "norm(e) = " << dist()                          << endl;
         cout << "xd      = " << x_set.toString()                << endl;
         cout << "x       = " << x.toString()                    << endl;
-        cout << "qd      = " << ((180.0/M_PI)*q_set).toString() << endl;
-        cout << "q       = " << ((180.0/M_PI)*q).toString()     << endl;
+        cout << "qd      = " << (CTRL_RAD2DEG*q_set).toString() << endl;
+        cout << "q       = " << (CTRL_RAD2DEG*q).toString()     << endl;
 
         if (_verbose>1)
         {
-            cout << "qdot    = " << ((180.0/M_PI)*qdot).toString() << endl;
+            cout << "qdot    = " << (CTRL_RAD2DEG*qdot).toString() << endl;
             cout << "xdot    = " << xdot.toString()                << endl;
         }
 

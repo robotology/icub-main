@@ -84,8 +84,8 @@ Matrix alignJointsBounds(iKinChain *chain, IControlLimits *limTorso, IControlLim
     {   
         limTorso->getLimits(i,&min,&max);
 
-        (*chain)[2-i].setMin((M_PI/180.0)*min);
-        (*chain)[2-i].setMax((M_PI/180.0)*max);
+        (*chain)[2-i].setMin(CTRL_DEG2RAD*min);
+        (*chain)[2-i].setMax(CTRL_DEG2RAD*max);
     }
 
     Matrix lim(6,2);
@@ -104,8 +104,8 @@ Matrix alignJointsBounds(iKinChain *chain, IControlLimits *limTorso, IControlLim
                 max=12.0;
         }
 
-        lim(i,0)=(M_PI/180.0)*min;
-        lim(i,1)=(M_PI/180.0)*max;
+        lim(i,0)=CTRL_DEG2RAD*min;
+        lim(i,1)=CTRL_DEG2RAD*max;
 
         // just one eye's got only 5 dofs
         if (i<5)
@@ -158,12 +158,12 @@ bool getFeedback(Vector &fbTorso, Vector &fbHead, IEncoders *encTorso, IEncoders
     
     if (encTorso->getEncoders(fb.data()))
         for (int i=0; i<3; i++)
-            fbTorso[i]=(M_PI/180.0)*fb[2-i];    // reversed order
+            fbTorso[i]=CTRL_DEG2RAD*fb[2-i];    // reversed order
     else
         ret=false;
 
     if (encHead->getEncoders(fb.data()))
-        fbHead=(M_PI/180.0)*fb;
+        fbHead=CTRL_DEG2RAD*fb;
     else
         ret=false;
 

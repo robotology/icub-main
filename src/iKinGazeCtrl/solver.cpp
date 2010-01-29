@@ -185,8 +185,8 @@ void EyePinvRefGen::run()
         Vector &xd=port_xd->get_xd();
 
         // beware of too small vergence
-        if (qd[2]<0.5*(M_PI/180.0))
-            qd[2]=0.5*(M_PI/180.0);
+        if (qd[2]<0.5*CTRL_DEG2RAD)
+            qd[2]=0.5*CTRL_DEG2RAD;
 
         // update neck chain
         chainNeck->setAng(nJointsTorso+0,fbHead[0]);
@@ -474,10 +474,10 @@ bool Solver::threadInit()
     // Initialization
     Vector fp(3);
     Matrix J(3,3);
-    if (computeFixationPointData(*chainEyeL,*chainEyeR,fp,J) || fbHead[5]<1.0*(M_PI/180.0))
+    if (computeFixationPointData(*chainEyeL,*chainEyeR,fp,J) || fbHead[5]<1.0*CTRL_DEG2RAD)
     {
         // standard value for initial vergence~0.0
-        fbHead[5]=10.0*(M_PI/180.0);
+        fbHead[5]=10.0*CTRL_DEG2RAD;
         updateAngles();
 
         Vector eyePos=chainEyeL->getAng();
@@ -545,7 +545,7 @@ void Solver::run()
 
         if (fbTorsoOld.size()>NECKSOLVER_MOVEDTORSOQUEUSIZE)
         {
-            movedTorso=norm(fbTorso-fbTorsoOld.back())>1.0*(M_PI/180.0);
+            movedTorso=norm(fbTorso-fbTorsoOld.back())>1.0*CTRL_DEG2RAD;
             fbTorsoOld.pop_back();
         }
 
@@ -567,8 +567,8 @@ void Solver::run()
     {
         // call the solver for neck (only if necessary)        
         if (movedTorso ||
-            theta[0]>NECKSOLVER_ACTIVATIONANGLE_TRA*(M_PI/180.0) ||
-            theta[1]>NECKSOLVER_ACTIVATIONANGLE_SAG*(M_PI/180.0))
+            theta[0]>NECKSOLVER_ACTIVATIONANGLE_TRA*CTRL_DEG2RAD ||
+            theta[1]>NECKSOLVER_ACTIVATIONANGLE_SAG*CTRL_DEG2RAD)
         {
             //invNeck->solve(neckPos,xd,NULL,NULL,neckCallbackObj);
             neckPos=invNeck->solve(neckPos,xd);
@@ -582,8 +582,8 @@ void Solver::run()
         xdOld=xd;
     }
 
-    if (theta[0]>1.0*(M_PI/180.0) && theta[0]<NECKSOLVER_ACTIVATIONANGLE_TRA*(M_PI/180.0) ||
-        theta[1]>1.0*(M_PI/180.0) && theta[1]<NECKSOLVER_ACTIVATIONANGLE_SAG*(M_PI/180.0))
+    if (theta[0]>1.0*CTRL_DEG2RAD && theta[0]<NECKSOLVER_ACTIVATIONANGLE_TRA*CTRL_DEG2RAD ||
+        theta[1]>1.0*CTRL_DEG2RAD && theta[1]<NECKSOLVER_ACTIVATIONANGLE_SAG*CTRL_DEG2RAD)
         alignNeckCnt++;
 
     // re-align neck after a timeout

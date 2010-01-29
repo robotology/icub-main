@@ -29,6 +29,9 @@
 #include <yarp/sig/Matrix.h>
 #include <yarp/math/Math.h>
 
+#define CTRL_RAD2DEG    (180.0/M_PI)
+#define CTRL_DEG2RAD    (M_PI/180.0)
+
 
 namespace ctrl
 {

@@ -11,7 +11,7 @@
 
 #define RES_EVENT(x)            (static_cast<ACE_Auto_Event*>(x))
 
-#define SHOULDER_MAXABDUCTION   (100.0*(M_PI/180.0))
+#define SHOULDER_MAXABDUCTION   (100.0*CTRL_DEG2RAD)
 #define CARTSLV_DEFAULT_PER     20      // [ms]
 #define CARTSLV_DEFAULT_TMO     1000    // [ms]
 
@@ -67,10 +67,10 @@ public:
         // from root reference  
         numAxes2Shou=3;
 
-        joint1_0= 10.0*(M_PI/180.0);
-        joint1_1= 15.0*(M_PI/180.0);
-        joint2_0=-33.0*(M_PI/180.0);
-        joint2_1= 60.0*(M_PI/180.0);
+        joint1_0= 10.0*CTRL_DEG2RAD;
+        joint1_1= 15.0*CTRL_DEG2RAD;
+        joint2_0=-33.0*CTRL_DEG2RAD;
+        joint2_1= 60.0*CTRL_DEG2RAD;
         m=(joint1_1-joint1_0)/(joint2_1-joint2_0);
         n=joint1_0-m*joint2_0;
 
@@ -107,9 +107,9 @@ public:
     
             // lower and upper bounds
             lB.resize(5); uB.resize(5);
-            lB[0]=-347.00*(M_PI/180.0); uB[0]=upperBoundInf;
-            lB[1]=-366.57*(M_PI/180.0); uB[1]=112.42*(M_PI/180.0);
-            lB[2]=-66.600*(M_PI/180.0); uB[2]=213.30*(M_PI/180.0);
+            lB[0]=-347.00*CTRL_DEG2RAD; uB[0]=upperBoundInf;
+            lB[1]=-366.57*CTRL_DEG2RAD; uB[1]=112.42*CTRL_DEG2RAD;
+            lB[2]=-66.600*CTRL_DEG2RAD; uB[2]=213.30*CTRL_DEG2RAD;
             lB[3]=n;                    uB[3]=upperBoundInf;
             lB[4]=lowerBoundInf;        uB[4]=SHOULDER_MAXABDUCTION;
 
@@ -339,7 +339,7 @@ void InputPort::onRead(Bottle &b)
 /************************************************************************/
 void SolverCallback::exec(Vector xd, Vector q)
 {
-    slv->send(xd,slv->prt->chn->EndEffPose(),(180/M_PI)*q,slv->pToken);
+    slv->send(xd,slv->prt->chn->EndEffPose(),CTRL_RAD2DEG*q,slv->pToken);
 }
 
 
@@ -443,8 +443,8 @@ void CartesianSolver::alignJointsBounds()
 
             fprintf(stdout,"joint #%d: [%g, %g] deg\n",cnt,min,max);
         
-            (*prt->chn)[cnt].setMin((M_PI/180.0)*min);
-            (*prt->chn)[cnt].setMax((M_PI/180.0)*max);
+            (*prt->chn)[cnt].setMin(CTRL_DEG2RAD*min);
+            (*prt->chn)[cnt].setMax(CTRL_DEG2RAD*max);
         
             cnt++;
         }
@@ -467,8 +467,8 @@ bool CartesianSolver::setLimits(int axis, double min, double max)
 
                 if (min>=curMin && max<=curMax)
                 {
-                    (*prt->chn)[axis].setMin((M_PI/180.0)*min);
-                    (*prt->chn)[axis].setMax((M_PI/180.0)*max);
+                    (*prt->chn)[axis].setMin(CTRL_DEG2RAD*min);
+                    (*prt->chn)[axis].setMax(CTRL_DEG2RAD*max);
 
                     return true;
                 }
@@ -526,7 +526,7 @@ void CartesianSolver::getFeedback(const bool wait)
         {    
             for (int j=0; j<jnt[i]; j++)
             {
-                double tmp=(M_PI/180.0)*fbTmp[rmp[i][j]];
+                double tmp=CTRL_DEG2RAD*fbTmp[rmp[i][j]];
             
                 if ((*prt->chn)[chainCnt].isBlocked())
                     prt->chn->setBlockingValue(chainCnt,tmp);
@@ -732,8 +732,8 @@ bool CartesianSolver::respond(const Bottle &command, Bottle &reply)
                                 if (axis<(int)prt->chn->getN())
                                 {
                                     reply.addVocab(IKINSLV_VOCAB_REP_ACK);
-                                    reply.addDouble((180.0/M_PI)*(*prt->chn)[axis].getMin());
-                                    reply.addDouble((180.0/M_PI)*(*prt->chn)[axis].getMax());
+                                    reply.addDouble(CTRL_RAD2DEG*(*prt->chn)[axis].getMin());
+                                    reply.addDouble(CTRL_RAD2DEG*(*prt->chn)[axis].getMax());
                                 }
                                 else
                                     reply.addVocab(IKINSLV_VOCAB_REP_NACK);
@@ -1048,7 +1048,7 @@ bool CartesianSolver::handleJointsRestPosition(const Bottle *options, Bottle *re
 
         for (int i=0; i<l; i++)
         {
-            double val=(M_PI/180.0)*options->get(i).asDouble();
+            double val=CTRL_DEG2RAD*options->get(i).asDouble();
             double min=(*prt->chn)[i].getMin();
             double max=(*prt->chn)[i].getMax();
 
@@ -1062,7 +1062,7 @@ bool CartesianSolver::handleJointsRestPosition(const Bottle *options, Bottle *re
     {
         Bottle &b=reply->addList();
         for (int i=0; i<restJntPos.length(); i++)
-            b.addDouble((180/M_PI)*restJntPos[i]);
+            b.addDouble(CTRL_RAD2DEG*restJntPos[i]);
     }
 
     return ret;
@@ -1473,7 +1473,7 @@ void CartesianSolver::run()
         latchUncontrolledJoints(unctrlJoints);
     
         // detect movements of uncontrolled links
-        double distExtMoves=norm((180.0/M_PI)*(unctrlJoints-unctrlJointsOld));
+        double distExtMoves=norm(CTRL_RAD2DEG*(unctrlJoints-unctrlJointsOld));
         unctrlJointsOld=unctrlJoints;
     
         // run the solver if movements of uncontrolled links 
@@ -1517,7 +1517,7 @@ void CartesianSolver::run()
         Vector x=prt->chn->EndEffPose(q);
         
         // change to degrees
-        q=(180.0/M_PI)*q;
+        q=CTRL_RAD2DEG*q;
 
         // send data
         send(xd,x,q,pToken);

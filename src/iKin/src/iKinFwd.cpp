@@ -1306,17 +1306,17 @@ bool iKinLimb::fromLinksProperties(const Property &option)
 
         double A=bLink.check("A",Value(0.0)).asDouble();
         double D=bLink.check("D",Value(0.0)).asDouble();
-        double alpha=(M_PI/180.0)*bLink.check("alpha",Value(0.0)).asDouble();
-        double offset=(M_PI/180.0)*bLink.check("offset",Value(0.0)).asDouble();
-        double min=(M_PI/180.0)*bLink.check("min",Value(0.0)).asDouble();
-        double max=(M_PI/180.0)*bLink.check("max",Value(0.0)).asDouble();
+        double alpha=CTRL_DEG2RAD*bLink.check("alpha",Value(0.0)).asDouble();
+        double offset=CTRL_DEG2RAD*bLink.check("offset",Value(0.0)).asDouble();
+        double min=CTRL_DEG2RAD*bLink.check("min",Value(0.0)).asDouble();
+        double max=CTRL_DEG2RAD*bLink.check("max",Value(0.0)).asDouble();
 
         linkList[i]=new iKinLink(A,D,alpha,offset,min,max);
 
         *this<<*linkList[i];
 
         if (bLink.check("blocked"))
-            blockLink(i,(M_PI/180.0)*bLink.find("blocked").asDouble());
+            blockLink(i,CTRL_DEG2RAD*bLink.find("blocked").asDouble());
     }
 
     return configured=true;
@@ -1427,29 +1427,29 @@ void iCubArm::_allocate_limb(const string &_type)
 
     if (type=="right")
     {
-        linkList[0]=new iKinLink(     0.032,      0.0,  M_PI/2.0,               0.0, -22.0*M_PI/180.0,  84.0*M_PI/180.0);
-        linkList[1]=new iKinLink(       0.0,      0.0,  M_PI/2.0,         -M_PI/2.0, -39.0*M_PI/180.0,  39.0*M_PI/180.0);
-        linkList[2]=new iKinLink(-0.0233647,  -0.1433,  M_PI/2.0, -105.0*M_PI/180.0, -59.0*M_PI/180.0,  59.0*M_PI/180.0);
-        linkList[3]=new iKinLink(       0.0, -0.10774,  M_PI/2.0,         -M_PI/2.0, -95.5*M_PI/180.0,   5.0*M_PI/180.0);
-        linkList[4]=new iKinLink(       0.0,      0.0, -M_PI/2.0,         -M_PI/2.0,              0.0, 160.8*M_PI/180.0);
-        linkList[5]=new iKinLink(       0.0, -0.15228, -M_PI/2.0, -105.0*M_PI/180.0, -37.0*M_PI/180.0,  90.0*M_PI/180.0);
-        linkList[6]=new iKinLink(     0.015,      0.0,  M_PI/2.0,               0.0,   5.5*M_PI/180.0, 106.0*M_PI/180.0);
-        linkList[7]=new iKinLink(       0.0,  -0.1373,  M_PI/2.0,         -M_PI/2.0, -90.0*M_PI/180.0,  90.0*M_PI/180.0);
-        linkList[8]=new iKinLink(       0.0,      0.0,  M_PI/2.0,          M_PI/2.0, -90.0*M_PI/180.0,   0.0*M_PI/180.0);
-        linkList[9]=new iKinLink(    0.0625,    0.016,       0.0,              M_PI, -20.0*M_PI/180.0,  40.0*M_PI/180.0);
+        linkList[0]=new iKinLink(     0.032,      0.0,  M_PI/2.0,                 0.0, -22.0*CTRL_DEG2RAD,  84.0*CTRL_DEG2RAD);
+        linkList[1]=new iKinLink(       0.0,      0.0,  M_PI/2.0,           -M_PI/2.0, -39.0*CTRL_DEG2RAD,  39.0*CTRL_DEG2RAD);
+        linkList[2]=new iKinLink(-0.0233647,  -0.1433,  M_PI/2.0, -105.0*CTRL_DEG2RAD, -59.0*CTRL_DEG2RAD,  59.0*CTRL_DEG2RAD);
+        linkList[3]=new iKinLink(       0.0, -0.10774,  M_PI/2.0,           -M_PI/2.0, -95.5*CTRL_DEG2RAD,   5.0*CTRL_DEG2RAD);
+        linkList[4]=new iKinLink(       0.0,      0.0, -M_PI/2.0,           -M_PI/2.0,                0.0, 160.8*CTRL_DEG2RAD);
+        linkList[5]=new iKinLink(       0.0, -0.15228, -M_PI/2.0, -105.0*CTRL_DEG2RAD, -37.0*CTRL_DEG2RAD,  90.0*CTRL_DEG2RAD);
+        linkList[6]=new iKinLink(     0.015,      0.0,  M_PI/2.0,                 0.0,   5.5*CTRL_DEG2RAD, 106.0*CTRL_DEG2RAD);
+        linkList[7]=new iKinLink(       0.0,  -0.1373,  M_PI/2.0,           -M_PI/2.0, -90.0*CTRL_DEG2RAD,  90.0*CTRL_DEG2RAD);
+        linkList[8]=new iKinLink(       0.0,      0.0,  M_PI/2.0,            M_PI/2.0, -90.0*CTRL_DEG2RAD,   0.0*CTRL_DEG2RAD);
+        linkList[9]=new iKinLink(    0.0625,    0.016,       0.0,                M_PI, -20.0*CTRL_DEG2RAD,  40.0*CTRL_DEG2RAD);
     }
     else
     {
-        linkList[0]=new iKinLink(     0.032,      0.0,  M_PI/2.0,               0.0, -22.0*M_PI/180.0,  84.0*M_PI/180.0);
-        linkList[1]=new iKinLink(       0.0,      0.0,  M_PI/2.0,         -M_PI/2.0, -39.0*M_PI/180.0,  39.0*M_PI/180.0);
-        linkList[2]=new iKinLink( 0.0233647,  -0.1433, -M_PI/2.0,  105.0*M_PI/180.0, -59.0*M_PI/180.0,  59.0*M_PI/180.0);
-        linkList[3]=new iKinLink(       0.0,  0.10774, -M_PI/2.0,          M_PI/2.0, -95.5*M_PI/180.0,   5.0*M_PI/180.0);
-        linkList[4]=new iKinLink(       0.0,      0.0,  M_PI/2.0,         -M_PI/2.0,              0.0, 160.8*M_PI/180.0);
-        linkList[5]=new iKinLink(       0.0,  0.15228, -M_PI/2.0,   75.0*M_PI/180.0, -37.0*M_PI/180.0,  90.0*M_PI/180.0);
-        linkList[6]=new iKinLink(    -0.015,      0.0,  M_PI/2.0,               0.0,   5.5*M_PI/180.0, 106.0*M_PI/180.0);
-        linkList[7]=new iKinLink(       0.0,   0.1373,  M_PI/2.0,         -M_PI/2.0, -90.0*M_PI/180.0,  90.0*M_PI/180.0);
-        linkList[8]=new iKinLink(       0.0,      0.0,  M_PI/2.0,          M_PI/2.0, -90.0*M_PI/180.0,   0.0*M_PI/180.0);
-        linkList[9]=new iKinLink(    0.0625,   -0.016,       0.0,               0.0, -20.0*M_PI/180.0,  40.0*M_PI/180.0);
+        linkList[0]=new iKinLink(     0.032,      0.0,  M_PI/2.0,                 0.0, -22.0*CTRL_DEG2RAD,  84.0*CTRL_DEG2RAD);
+        linkList[1]=new iKinLink(       0.0,      0.0,  M_PI/2.0,           -M_PI/2.0, -39.0*CTRL_DEG2RAD,  39.0*CTRL_DEG2RAD);
+        linkList[2]=new iKinLink( 0.0233647,  -0.1433, -M_PI/2.0,  105.0*CTRL_DEG2RAD, -59.0*CTRL_DEG2RAD,  59.0*CTRL_DEG2RAD);
+        linkList[3]=new iKinLink(       0.0,  0.10774, -M_PI/2.0,            M_PI/2.0, -95.5*CTRL_DEG2RAD,   5.0*CTRL_DEG2RAD);
+        linkList[4]=new iKinLink(       0.0,      0.0,  M_PI/2.0,           -M_PI/2.0,                0.0, 160.8*CTRL_DEG2RAD);
+        linkList[5]=new iKinLink(       0.0,  0.15228, -M_PI/2.0,   75.0*CTRL_DEG2RAD, -37.0*CTRL_DEG2RAD,  90.0*CTRL_DEG2RAD);
+        linkList[6]=new iKinLink(    -0.015,      0.0,  M_PI/2.0,                 0.0,   5.5*CTRL_DEG2RAD, 106.0*CTRL_DEG2RAD);
+        linkList[7]=new iKinLink(       0.0,   0.1373,  M_PI/2.0,           -M_PI/2.0, -90.0*CTRL_DEG2RAD,  90.0*CTRL_DEG2RAD);
+        linkList[8]=new iKinLink(       0.0,      0.0,  M_PI/2.0,            M_PI/2.0, -90.0*CTRL_DEG2RAD,   0.0*CTRL_DEG2RAD);
+        linkList[9]=new iKinLink(    0.0625,   -0.016,       0.0,                 0.0, -20.0*CTRL_DEG2RAD,  40.0*CTRL_DEG2RAD);
     }
 
     for (unsigned int i=0; i<linkList.size(); i++)
@@ -1500,23 +1500,23 @@ void iCubLeg::_allocate_limb(const string &_type)
     {
         H0(1,3)=0.0681;
 
-        linkList[0]=new iKinLink(   0.0,     0.0,  M_PI/2.0,  M_PI/2.0,  -44.0*M_PI/180.0, 132.0*M_PI/180.0);
-        linkList[1]=new iKinLink(   0.0,     0.0,  M_PI/2.0,  M_PI/2.0, -119.0*M_PI/180.0,  17.0*M_PI/180.0);
-        linkList[2]=new iKinLink(   0.0,  0.2236, -M_PI/2.0, -M_PI/2.0,  -79.0*M_PI/180.0,  79.0*M_PI/180.0);
-        linkList[3]=new iKinLink(-0.213,     0.0,      M_PI,  M_PI/2.0, -125.0*M_PI/180.0,  23.0*M_PI/180.0);
-        linkList[4]=new iKinLink(   0.0,     0.0,  M_PI/2.0,       0.0,  -42.0*M_PI/180.0,  21.0*M_PI/180.0);
-        linkList[5]=new iKinLink(-0.041,     0.0,      M_PI,       0.0,  -24.0*M_PI/180.0,  24.0*M_PI/180.0);
+        linkList[0]=new iKinLink(   0.0,     0.0,  M_PI/2.0,  M_PI/2.0,  -44.0*CTRL_DEG2RAD, 132.0*CTRL_DEG2RAD);
+        linkList[1]=new iKinLink(   0.0,     0.0,  M_PI/2.0,  M_PI/2.0, -119.0*CTRL_DEG2RAD,  17.0*CTRL_DEG2RAD);
+        linkList[2]=new iKinLink(   0.0,  0.2236, -M_PI/2.0, -M_PI/2.0,  -79.0*CTRL_DEG2RAD,  79.0*CTRL_DEG2RAD);
+        linkList[3]=new iKinLink(-0.213,     0.0,      M_PI,  M_PI/2.0, -125.0*CTRL_DEG2RAD,  23.0*CTRL_DEG2RAD);
+        linkList[4]=new iKinLink(   0.0,     0.0,  M_PI/2.0,       0.0,  -42.0*CTRL_DEG2RAD,  21.0*CTRL_DEG2RAD);
+        linkList[5]=new iKinLink(-0.041,     0.0,      M_PI,       0.0,  -24.0*CTRL_DEG2RAD,  24.0*CTRL_DEG2RAD);
     }
     else
     {
         H0(1,3)=-0.0681;
 
-        linkList[0]=new iKinLink(   0.0,     0.0, -M_PI/2.0,  M_PI/2.0,  -44.0*M_PI/180.0, 132.0*M_PI/180.0);
-        linkList[1]=new iKinLink(   0.0,     0.0, -M_PI/2.0,  M_PI/2.0, -119.0*M_PI/180.0,  17.0*M_PI/180.0);
-        linkList[2]=new iKinLink(   0.0, -0.2236,  M_PI/2.0, -M_PI/2.0,  -79.0*M_PI/180.0,  79.0*M_PI/180.0);
-        linkList[3]=new iKinLink(-0.213,     0.0,      M_PI,  M_PI/2.0, -125.0*M_PI/180.0,  23.0*M_PI/180.0);
-        linkList[4]=new iKinLink(   0.0,     0.0, -M_PI/2.0,       0.0,  -42.0*M_PI/180.0,  21.0*M_PI/180.0);
-        linkList[5]=new iKinLink(-0.041,     0.0,       0.0,       0.0,  -24.0*M_PI/180.0,  24.0*M_PI/180.0);
+        linkList[0]=new iKinLink(   0.0,     0.0, -M_PI/2.0,  M_PI/2.0,  -44.0*CTRL_DEG2RAD, 132.0*CTRL_DEG2RAD);
+        linkList[1]=new iKinLink(   0.0,     0.0, -M_PI/2.0,  M_PI/2.0, -119.0*CTRL_DEG2RAD,  17.0*CTRL_DEG2RAD);
+        linkList[2]=new iKinLink(   0.0, -0.2236,  M_PI/2.0, -M_PI/2.0,  -79.0*CTRL_DEG2RAD,  79.0*CTRL_DEG2RAD);
+        linkList[3]=new iKinLink(-0.213,     0.0,      M_PI,  M_PI/2.0, -125.0*CTRL_DEG2RAD,  23.0*CTRL_DEG2RAD);
+        linkList[4]=new iKinLink(   0.0,     0.0, -M_PI/2.0,       0.0,  -42.0*CTRL_DEG2RAD,  21.0*CTRL_DEG2RAD);
+        linkList[5]=new iKinLink(-0.041,     0.0,       0.0,       0.0,  -24.0*CTRL_DEG2RAD,  24.0*CTRL_DEG2RAD);
     }
 
     for (unsigned int i=0; i<linkList.size(); i++)
@@ -1560,25 +1560,25 @@ void iCubEye::_allocate_limb(const string &_type)
 
     if (type=="right")
     {
-        linkList[0]=new iKinLink(   0.032,    0.0,  M_PI/2.0,       0.0, -22.0*M_PI/180.0, 84.0*M_PI/180.0);
-        linkList[1]=new iKinLink(     0.0,    0.0,  M_PI/2.0, -M_PI/2.0, -39.0*M_PI/180.0, 39.0*M_PI/180.0);
-        linkList[2]=new iKinLink( 0.00231,-0.1933, -M_PI/2.0, -M_PI/2.0, -59.0*M_PI/180.0, 59.0*M_PI/180.0);
-        linkList[3]=new iKinLink(   0.033,    0.0,  M_PI/2.0,  M_PI/2.0, -40.0*M_PI/180.0, 30.0*M_PI/180.0);
-        linkList[4]=new iKinLink(     0.0,    0.0,  M_PI/2.0,  M_PI/2.0, -70.0*M_PI/180.0, 60.0*M_PI/180.0);
-        linkList[5]=new iKinLink(  -0.054, 0.0825, -M_PI/2.0, -M_PI/2.0, -55.0*M_PI/180.0, 55.0*M_PI/180.0);
-        linkList[6]=new iKinLink(     0.0,  0.034, -M_PI/2.0,       0.0, -35.0*M_PI/180.0, 15.0*M_PI/180.0);
-        linkList[7]=new iKinLink(     0.0,    0.0,  M_PI/2.0, -M_PI/2.0, -50.0*M_PI/180.0, 50.0*M_PI/180.0);
+        linkList[0]=new iKinLink(   0.032,    0.0,  M_PI/2.0,       0.0, -22.0*CTRL_DEG2RAD, 84.0*CTRL_DEG2RAD);
+        linkList[1]=new iKinLink(     0.0,    0.0,  M_PI/2.0, -M_PI/2.0, -39.0*CTRL_DEG2RAD, 39.0*CTRL_DEG2RAD);
+        linkList[2]=new iKinLink( 0.00231,-0.1933, -M_PI/2.0, -M_PI/2.0, -59.0*CTRL_DEG2RAD, 59.0*CTRL_DEG2RAD);
+        linkList[3]=new iKinLink(   0.033,    0.0,  M_PI/2.0,  M_PI/2.0, -40.0*CTRL_DEG2RAD, 30.0*CTRL_DEG2RAD);
+        linkList[4]=new iKinLink(     0.0,    0.0,  M_PI/2.0,  M_PI/2.0, -70.0*CTRL_DEG2RAD, 60.0*CTRL_DEG2RAD);
+        linkList[5]=new iKinLink(  -0.054, 0.0825, -M_PI/2.0, -M_PI/2.0, -55.0*CTRL_DEG2RAD, 55.0*CTRL_DEG2RAD);
+        linkList[6]=new iKinLink(     0.0,  0.034, -M_PI/2.0,       0.0, -35.0*CTRL_DEG2RAD, 15.0*CTRL_DEG2RAD);
+        linkList[7]=new iKinLink(     0.0,    0.0,  M_PI/2.0, -M_PI/2.0, -50.0*CTRL_DEG2RAD, 50.0*CTRL_DEG2RAD);
     }
     else
     {
-        linkList[0]=new iKinLink(   0.032,    0.0,  M_PI/2.0,       0.0, -22.0*M_PI/180.0, 84.0*M_PI/180.0);
-        linkList[1]=new iKinLink(     0.0,    0.0,  M_PI/2.0, -M_PI/2.0, -39.0*M_PI/180.0, 39.0*M_PI/180.0);
-        linkList[2]=new iKinLink( 0.00231,-0.1933, -M_PI/2.0, -M_PI/2.0, -59.0*M_PI/180.0, 59.0*M_PI/180.0);
-        linkList[3]=new iKinLink(   0.033,    0.0,  M_PI/2.0,  M_PI/2.0, -40.0*M_PI/180.0, 30.0*M_PI/180.0);
-        linkList[4]=new iKinLink(     0.0,    0.0,  M_PI/2.0,  M_PI/2.0, -70.0*M_PI/180.0, 60.0*M_PI/180.0);
-        linkList[5]=new iKinLink(  -0.054, 0.0825, -M_PI/2.0, -M_PI/2.0, -55.0*M_PI/180.0, 55.0*M_PI/180.0);
-        linkList[6]=new iKinLink(     0.0, -0.034, -M_PI/2.0,       0.0, -35.0*M_PI/180.0, 15.0*M_PI/180.0);
-        linkList[7]=new iKinLink(     0.0,    0.0,  M_PI/2.0, -M_PI/2.0, -50.0*M_PI/180.0, 50.0*M_PI/180.0);
+        linkList[0]=new iKinLink(   0.032,    0.0,  M_PI/2.0,       0.0, -22.0*CTRL_DEG2RAD, 84.0*CTRL_DEG2RAD);
+        linkList[1]=new iKinLink(     0.0,    0.0,  M_PI/2.0, -M_PI/2.0, -39.0*CTRL_DEG2RAD, 39.0*CTRL_DEG2RAD);
+        linkList[2]=new iKinLink( 0.00231,-0.1933, -M_PI/2.0, -M_PI/2.0, -59.0*CTRL_DEG2RAD, 59.0*CTRL_DEG2RAD);
+        linkList[3]=new iKinLink(   0.033,    0.0,  M_PI/2.0,  M_PI/2.0, -40.0*CTRL_DEG2RAD, 30.0*CTRL_DEG2RAD);
+        linkList[4]=new iKinLink(     0.0,    0.0,  M_PI/2.0,  M_PI/2.0, -70.0*CTRL_DEG2RAD, 60.0*CTRL_DEG2RAD);
+        linkList[5]=new iKinLink(  -0.054, 0.0825, -M_PI/2.0, -M_PI/2.0, -55.0*CTRL_DEG2RAD, 55.0*CTRL_DEG2RAD);
+        linkList[6]=new iKinLink(     0.0, -0.034, -M_PI/2.0,       0.0, -35.0*CTRL_DEG2RAD, 15.0*CTRL_DEG2RAD);
+        linkList[7]=new iKinLink(     0.0,    0.0,  M_PI/2.0, -M_PI/2.0, -50.0*CTRL_DEG2RAD, 50.0*CTRL_DEG2RAD);
     }
 
     for (unsigned int i=0; i<linkList.size(); i++)
@@ -1654,12 +1654,12 @@ void iCubInertialSensor::_allocate_limb(const string &_type)
     linkList.resize(8);
 
     // links of torso and neck
-    linkList[0]=new iKinLink(    0.032,       0.0,  M_PI/2.0,       0.0, -22.0*M_PI/180.0, 84.0*M_PI/180.0);
-    linkList[1]=new iKinLink(      0.0,       0.0,  M_PI/2.0, -M_PI/2.0, -39.0*M_PI/180.0, 39.0*M_PI/180.0);
-    linkList[2]=new iKinLink(  0.00231,   -0.1933, -M_PI/2.0, -M_PI/2.0, -59.0*M_PI/180.0, 59.0*M_PI/180.0);
-    linkList[3]=new iKinLink(    0.033,       0.0,  M_PI/2.0,  M_PI/2.0, -40.0*M_PI/180.0, 30.0*M_PI/180.0);
-    linkList[4]=new iKinLink(      0.0,       0.0,  M_PI/2.0,  M_PI/2.0, -70.0*M_PI/180.0, 60.0*M_PI/180.0);
-    linkList[5]=new iKinLink(   -0.054,    0.0825, -M_PI/2.0, -M_PI/2.0, -55.0*M_PI/180.0, 55.0*M_PI/180.0);
+    linkList[0]=new iKinLink(    0.032,       0.0,  M_PI/2.0,       0.0, -22.0*CTRL_DEG2RAD, 84.0*CTRL_DEG2RAD);
+    linkList[1]=new iKinLink(      0.0,       0.0,  M_PI/2.0, -M_PI/2.0, -39.0*CTRL_DEG2RAD, 39.0*CTRL_DEG2RAD);
+    linkList[2]=new iKinLink(  0.00231,   -0.1933, -M_PI/2.0, -M_PI/2.0, -59.0*CTRL_DEG2RAD, 59.0*CTRL_DEG2RAD);
+    linkList[3]=new iKinLink(    0.033,       0.0,  M_PI/2.0,  M_PI/2.0, -40.0*CTRL_DEG2RAD, 30.0*CTRL_DEG2RAD);
+    linkList[4]=new iKinLink(      0.0,       0.0,  M_PI/2.0,  M_PI/2.0, -70.0*CTRL_DEG2RAD, 60.0*CTRL_DEG2RAD);
+    linkList[5]=new iKinLink(   -0.054,    0.0825, -M_PI/2.0, -M_PI/2.0, -55.0*CTRL_DEG2RAD, 55.0*CTRL_DEG2RAD);
 
     // virtual links that describe T_nls (see http://eris.liralab.it/wiki/ICubInertiaSensorKinematics)
     linkList[6]=new iKinLink( 0.013250,  0.008538,  0.785721,       0.0,              0.0,             0.0);

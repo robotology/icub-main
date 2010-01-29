@@ -176,8 +176,8 @@ void Controller::run()
     }
 
     // control the arm and dump all available information at rate of 1/100th
-    Vector q=(180.0/M_PI)*ctrl->iterate(xd,qd,0x0064ffff);
-    Vector v=(180.0/M_PI)*ctrl->get_qdot();
+    Vector q=CTRL_RAD2DEG*ctrl->iterate(xd,qd,0x0064ffff);
+    Vector v=CTRL_RAD2DEG*ctrl->get_qdot();
 
     // send velocities to the robot
     if (Robotable && !(v==vOld))
@@ -220,7 +220,7 @@ void Controller::run()
         v1.resize(nJointsTorso+chain->getDOF(),0.0);
 
         for (int i=0; i<nJointsTorso; i++)
-            q1[i]=(180.0/M_PI)*chain->getAng(i);
+            q1[i]=CTRL_RAD2DEG*chain->getAng(i);
 
         for (unsigned int i=0; i<chain->getDOF(); i++)
         {    

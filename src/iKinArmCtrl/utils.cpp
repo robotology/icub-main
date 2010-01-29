@@ -86,16 +86,16 @@ void alignJointsBounds(iKinChain *chain, IControlLimits *limTorso,
     {   
         limTorso->getLimits(i,&min,&max);
 
-        (*chain)[2-i].setMin((M_PI/180.0)*min);
-        (*chain)[2-i].setMax((M_PI/180.0)*max);
+        (*chain)[2-i].setMin(CTRL_DEG2RAD*min);
+        (*chain)[2-i].setMax(CTRL_DEG2RAD*max);
     }
 
     for (unsigned int i=0; i<7; i++)
     {   
         limArm->getLimits(i,&min,&max);
 
-        (*chain)[3+i].setMin((M_PI/180.0)*min);
-        (*chain)[3+i].setMax((M_PI/180.0)*max);
+        (*chain)[3+i].setMin(CTRL_DEG2RAD*min);
+        (*chain)[3+i].setMax(CTRL_DEG2RAD*max);
     }
 }
 
@@ -114,10 +114,10 @@ bool getFeedback(Vector &fb, iKinChain *chain, IEncoders *encTorso,
     {
         if (ctrlTorso)
             for (int i=0; i<nJointsTorso; i++)
-                fb[i]=(M_PI/180.0)*fbTorso[nJointsTorso-i-1];
+                fb[i]=CTRL_DEG2RAD*fbTorso[nJointsTorso-i-1];
             else
                 for (int i=0; i<nJointsTorso; i++)
-                    chain->setBlockingValue(i,(M_PI/180.0)*fbTorso[nJointsTorso-i-1]);
+                    chain->setBlockingValue(i,CTRL_DEG2RAD*fbTorso[nJointsTorso-i-1]);
     }
     else
         ret=false;
@@ -125,7 +125,7 @@ bool getFeedback(Vector &fb, iKinChain *chain, IEncoders *encTorso,
     Vector fbArm(nJointsArm);
     if (encArm->getEncoders(fbArm.data()))
         for (int i=0; i<nJointsArm; i++)
-            fb[offs+i]=(M_PI/180.0)*fbArm[i];
+            fb[offs+i]=CTRL_DEG2RAD*fbArm[i];
     else
         ret=false;
 

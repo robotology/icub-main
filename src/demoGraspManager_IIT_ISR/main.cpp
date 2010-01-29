@@ -903,7 +903,7 @@ protected:
 
     Matrix &rotx(const double theta)
     {
-        double t=(M_PI/180.0)*theta;
+        double t=CTRL_DEG2RAD*theta;
         double c=cos(t);
         double s=sin(t);
 
@@ -916,7 +916,7 @@ protected:
 
     Matrix &roty(const double theta)
     {
-        double t=(M_PI/180.0)*theta;
+        double t=CTRL_DEG2RAD*theta;
         double c=cos(t);
         double s=sin(t);
 
@@ -929,7 +929,7 @@ protected:
 
     Matrix &rotz(const double theta)
     {
-        double t=(M_PI/180.0)*theta;
+        double t=CTRL_DEG2RAD*theta;
         double c=cos(t);
         double s=sin(t);
 
