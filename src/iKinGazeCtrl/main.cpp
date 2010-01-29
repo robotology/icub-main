@@ -74,12 +74,14 @@ Shifts 8 8 8 8 8 8 8 8 8 8
   connect to; if not specified \e inertial is assumed.
  
 --Tneck \e time
-- specify the neck movements time in seconds; by default \e time
-  is 0.70 seconds. (Tneck cannot be lower than Teyes).
+- specify the neck trajectory execution time in point-to-point 
+  movements [expressed in seconds]; by default \e time is 0.70
+  seconds. (Tneck cannot be lower than Teyes).
  
 --Teyes \e time
-- specify the eyes movements time in seconds; by default \e time
-  is 0.20 seconds.
+- specify the eyes trajectory execution time in point-to-point 
+  movements [expressed in seconds]; by default \e time is 0.20
+  seconds.
  
 --cx \e x 
 - The parameter \e x represents the central x image plane 
