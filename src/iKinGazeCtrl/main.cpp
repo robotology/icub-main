@@ -61,7 +61,7 @@ Shifts 8 8 8 8 8 8 8 8 8 8
 - The parameter \e name selects the robot name to connect to; if
   not specified \e icub is assumed.
  
---part \e name 
+--part \e type 
 - The parameter \e type selects the robot's head port to connect
   to; if not specified \e head is assumed.
 
