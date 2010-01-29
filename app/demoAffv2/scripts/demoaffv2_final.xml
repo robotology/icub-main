@@ -168,12 +168,12 @@
 </connection>
 
 <connection>
-      <from>/icub/lefthand/analog:o/fingerDetector/status:o</from> 
+      <from>/icub/left_hand/analog:o/fingerDetector/status:o</from> 
       <to>/demoAffv2/left_arm/detectGrasp:i</to>
       <protocol>tcp</protocol>
 </connection>
 <connection>
-      <from>/icub/righthand/analog:o/fingerDetector/status:o</from> 
+      <from>/icub/right_hand/analog:o/fingerDetector/status:o</from> 
       <to>/demoAffv2/right_arm/detectGrasp:i</to>
       <protocol>tcp</protocol>
 </connection>

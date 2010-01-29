@@ -110,7 +110,7 @@
   </connection>
 
   <connection>
-      <from>/icub/righthand/analog:o/fingerDetector/status:o</from>
+      <from>/icub/right_hand/analog:o/fingerDetector/status:o</from>
       <to>/affActionPrimitivesMod/right_arm/detectGrasp:i</to>
   </connection>
 
