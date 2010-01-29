@@ -37,10 +37,10 @@ achieved.
  
 Example: look in the file <i>icub_head_torso_safe.ini</i> of 
 your robot setup; you should find something similar to: 
-<code> 
-[VELOCITY]
+\code 
+[VELOCITY] 
 Shifts 8 8 8 8 8 8 8 8 8 8 
-</code> 
+\endcode 
 
 \note A video on iCub gazing at a target can be seen <a 
       href="http://eris.liralab.it/misc/icubvideos/gazing_IIT_ISR.wmv">here</a>.
