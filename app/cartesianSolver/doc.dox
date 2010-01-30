@@ -22,11 +22,7 @@ Customize the file ./scripts/*.template for your specific platform
 before launching them.
 
 - ./scripts/cartesianSolver.xml.template
-  launches solvers for the following parts:
-  right_arm
-  left_arm
-  right_leg
-  left_leg
+  launches solvers for the following parts: <i>right_arm, left_arm, right_leg, left_leg.</i>
 
 \author Ugo Pattacini
 
