@@ -1,5 +1,5 @@
 /*******************************************************************************
- * Copyright (C) 2009 Christian Wressnegger
+ * Copyright (C) 2009-2010 Christian Wressnegger
  *
  * This program is free software; you can redistribute it and/or
  * modify it under the terms of the GNU General Public License
@@ -339,6 +339,10 @@ public:
 	 * @see ThreadedRFModule#configure(ResourceFinder)
 	 */
 	virtual bool configure(::yarp::os::ResourceFinder &rf); // configure all the module parameters and return true if successful
+    /**
+     * @see yarp::os::RFModule#close()
+     */
+    virtual bool close(); // close and shut down the module
 };
 
 }

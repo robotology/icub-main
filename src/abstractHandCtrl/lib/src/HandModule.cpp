@@ -156,6 +156,11 @@ bool HandModule::configure(ResourceFinder &rf) {
   return true;
 }
 
+bool HandModule::close() {
+  bool b = controlBoard.close();
+  return ThreadedRFModule::close() && b;
+}
+
 bool HandModule::startThread() {
   bool b = ThreadedRFModule::startThread();
   workerThread = dynamic_cast<HandWorkerThread *> (ThreadedRFModule::workerThread);
