@@ -5,12 +5,13 @@
 # ARTOOLKIT_INCLUDE_DIR, where to find avcodec.h, avformat.h ...
 # ARTOOLKIT_LIBRARIES, the libraries to link against to use ARTOOLKIT.
 # ARTOOLKIT_FOUND, If false, do not try to use ARTOOLKIT.
-# This has only been tested in windows :-(
-# Right now this is only including the basics ...
+# Right now this is only including the basics ..
+# Frank F. (01/02/10): changed the FIND_LIBRARY line slightly, so that it works
+# under Mac OS X (and hopefully Linux) too
 
 
-FIND_PATH(ARTOOLKIT_INCLUDE_DIR AR/ar.h $ENV{ARTOOLKIT_DIR}/include )
-FIND_LIBRARY(ARTOOLKIT_AR_LIBRARY libAR $ENV{ARTOOLKIT_DIR}/lib )
+FIND_PATH(ARTOOLKIT_INCLUDE_DIR AR/ar.h "$ENV{ARTOOLKIT_DIR}/include" )
+FIND_LIBRARY(ARTOOLKIT_AR_LIBRARY NAMES libAR.a PATHS "$ENV{ARTOOLKIT_DIR}/lib" )
 #FIND_LIBRARY(ARTOOLKIT_ARGSUB_LIBRARY libARgsub $ENV{ARTOOLKIT_DIR}/lib )
 #FIND_LIBRARY(ARTOOLKIT_ARVIDEO_LIBRARY libARvideo $ENV{ARTOOLKIT_DIR}/lib )
 #FIND_LIBRARY(ARTOOLKIT_ARGSUBLITE_LIBRARY libARgsub_lite $ENV{ARTOOLKIT_DIR}/lib )
