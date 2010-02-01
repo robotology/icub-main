@@ -185,9 +185,13 @@ Hand::Hand(PolyDriver& controlBoard) :
   recorder = new Recorder(*this);
   record(false);
 
-  Vector v; // Set default velocity
-  v.resize(HandMetrics::numAxes, 10.0);
-  setVelocity(v);
+  // Set default velocity
+  defaultVelocity.resize(HandMetrics::numAxes, 40.0);
+  setVelocity(defaultVelocity);
+
+  // Set default acceleration
+  defaultAcceleration.resize(HandMetrics::numAxes, 50.0);
+  setAcceleration(defaultAcceleration);
 }
 
 void Hand::defineHandMetrics() {
@@ -253,6 +257,44 @@ void Hand::getDisabledJoints(vector<int>& joints) {
   joints.clear();
   copy(disabledJoints.begin(), disabledJoints.end(), inserter(joints, joints.end()));
   jointsMutex.post();
+}
+
+void Hand::setAcceleration(const double d, const int joint) {
+  if (enabledJoints.find(joint) != enabledJoints.end()) { // contains(.)
+    posControl->setRefAcceleration(joint, d);
+  }
+}
+
+void Hand::setAcceleration(const double d, const std::set<int> joints) {
+  Vector v(HandMetrics::numAxes);
+  set<int>::const_iterator itr;
+  for (itr = joints.begin(); itr != joints.end(); ++itr) {
+    int joint = (*itr);
+    if (joint >= v.size() || joint < Hand::WRIST_PROSUP) {
+      cout << "Warning: joint #" << joint << " is not part of the hand." << endl;
+    } else {
+      v[joint] = d;
+    }
+  }
+  setAcceleration(v, joints);
+}
+
+void Hand::setAcceleration(const ::yarp::sig::Vector& v, const std::set<int> joints) {
+  set<int>::const_iterator itr;
+  for (itr = joints.begin(); itr != joints.end(); ++itr) {
+    int joint = (*itr);
+    if (joint >= v.size() || joint < 0) {
+      cout << "Warning: No value for joint #" << joint << " specified." << endl;
+    } else {
+      setAcceleration(v[joint], joint);
+    }
+  }
+}
+
+void Hand::setAcceleration(const ::yarp::sig::Vector& v, const int joint) {
+  set<int> s;
+  s.insert(joint);
+  setAcceleration(v, s);
 }
 
 void Hand::setVelocity(const double d, const int joint) {

@@ -174,6 +174,8 @@ class Hand {
 	JointMonitor* jointMonitor;
 
 protected:
+    ::yarp::sig::Vector defaultVelocity;
+    ::yarp::sig::Vector defaultAcceleration;
 
 	/** Provides several metrics for this hand. */
 	HandMetrics* handMetrics;
@@ -281,30 +283,55 @@ public:
 	 */
 	void getDisabledJoints(std::vector<int>& joints);
 
-	/**
-	 * Sets the velocity of the given joint.
-	 * @param d The velocity value.
-	 * @param joint The joint to be effected.
-	 */
-	void setVelocity(const double d, const int joint);
-	/**
-	 * Sets the velocity of the given joints.
-	 * @param d The velocity value.
-	 * @param joints The joints to be effected (default: {@link COMPLETE_HAND}).
-	 */
-	void setVelocity(const double d, const std::set<int> joints = COMPLETE_HAND);
-	/**
-	 * Sets the velocity of the given joint.
-	 * @param v The velocity values as {@link ::yarp::sig::Vector} of size 16 (number of joints of the arm)
-	 * @param joint The joint to be effected.
-	 */
-	void setVelocity(const ::yarp::sig::Vector& v, const int joint);
-	/**
-	 * Sets the velocity of the given joints.
-	 * @param v The velocity values as {@link ::yarp::sig::Vector} of size 16 (number of joints of the arm)
-	 * @param joint The joints to be effected.
-	 */
-	void setVelocity(const ::yarp::sig::Vector& v, const std::set<int> joints = COMPLETE_HAND);
+    /**
+     * Sets the acceleration of the given joint.
+     * @param d The acceleration value.
+     * @param joint The joint to be effected.
+     */
+    void setAcceleration(const double d, const int joint);
+    /**
+     * Sets the acceleration of the given joints.
+     * @param d The acceleration value.
+     * @param joints The joints to be effected (default: {@link COMPLETE_HAND}).
+     */
+    void setAcceleration(const double d, const std::set<int> joints = COMPLETE_HAND);
+    /**
+     * Sets the acceleration of the given joint.
+     * @param v The acceleration values as {@link ::yarp::sig::Vector} of size 16 (number of joints of the arm)
+     * @param joint The joint to be effected.
+     */
+    void setAcceleration(const ::yarp::sig::Vector& v, const int joint);
+    /**
+     * Sets the acceleration of the given joints.
+     * @param v The acceleration values as {@link ::yarp::sig::Vector} of size 16 (number of joints of the arm)
+     * @param joint The joints to be effected.
+     */
+    void setAcceleration(const ::yarp::sig::Vector& v, const std::set<int> joints = COMPLETE_HAND);
+
+    /**
+     * Sets the velocity of the given joint.
+     * @param d The velocity value.
+     * @param joint The joint to be effected.
+     */
+    void setVelocity(const double d, const int joint);
+    /**
+     * Sets the velocity of the given joints.
+     * @param d The velocity value.
+     * @param joints The joints to be effected (default: {@link COMPLETE_HAND}).
+     */
+    void setVelocity(const double d, const std::set<int> joints = COMPLETE_HAND);
+    /**
+     * Sets the velocity of the given joint.
+     * @param v The velocity values as {@link ::yarp::sig::Vector} of size 16 (number of joints of the arm)
+     * @param joint The joint to be effected.
+     */
+    void setVelocity(const ::yarp::sig::Vector& v, const int joint);
+    /**
+     * Sets the velocity of the given joints.
+     * @param v The velocity values as {@link ::yarp::sig::Vector} of size 16 (number of joints of the arm)
+     * @param joint The joints to be effected.
+     */
+    void setVelocity(const ::yarp::sig::Vector& v, const std::set<int> joints = COMPLETE_HAND);
 
 	/**
 	 * Move the hand to the given position.
