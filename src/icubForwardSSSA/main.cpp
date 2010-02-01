@@ -1,3 +1,129 @@
+/* 
+ * Copyright (C) 2009 RobotCub Consortium, European Commission FP6 Project IST-004370
+ * Author Fernando Gamarra& Kenneth Pinpin SSSA
+ * email:   <firstname.secondname>@robotcub.org
+ * website: www.robotcub.org
+ * Permission is granted to copy, distribute, and/or modify this program
+ * under the terms of the GNU General Public License, version 2 or any
+ * later version published by the Free Software Foundation.
+ *
+ * A copy of the license can be found at
+ * http://www.robotcub.org/icub/license/gpl.txt
+ *
+ * This program is distributed in the hope that it will be useful, but
+ * WITHOUT ANY WARRANTY; without even the implied warranty of
+ * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the GNU General
+ * Public License for more details
+*/
+/** 
+ * @ingroup icub_module
+ *
+ * \defgroup icubForwardSSSA icubForwardSSSA
+ *
+ * This module constructs a forward model of the iCub. The forward model is
+ * constructed through a babbling process of the iCub in its workspace
+ *
+ * \section lib_sec Libraries
+ * - YARP libraries.
+ * - Matlab libraries.
+ * - OpenCV libraries.
+ *
+ * \section portsa_sec Ports Accessed
+ * - /icub/head/rpc:i 
+ *   is connected temporally just to put move the head in a position to see the hand
+ * /icub/left_arm
+ *   is connected to control the arm and babble the arm
+ *   in the robot workspace
+ * /icub/cam/left
+ *   connected to the left camera
+ * /icub/cam/right
+ *   connected to the right camera
+ * Command-line Parameters
+ * 
+ * The following key-value pairs can be specified as command-line parameters by prefixing -- to the key 
+ * (e.g. --from file.ini. The value part can be changed to suit your needs; the default values are shown below. 
+ *
+ * - <key> <value>           
+ *   <description>
+ *
+ * - ...
+ *
+ *
+ * Configuration File Parameters
+ *
+ * The following key-value pairs can be specified as parameters in the configuration file 
+ * (they can also be specified as command-line parameters if you so wish). 
+ * The value part can be changed to suit your needs; the default values are shown below. 
+ *   
+ * - <key> <value>           
+ *   <description> 
+ *
+ * - ... 
+ *
+ * 
+ * \section portsa_sec Ports Accessed
+ * 
+ * - <portName>              
+ *   <description>
+ * 
+ * - ...
+ *                      
+ * \section portsc_sec Ports Created
+ *
+ *  Input ports
+ *
+ *  - <portName>
+ *    <description>
+ *
+ *  - ...
+ *
+ * Output ports
+ *
+ *  - <portName>
+ *    <description>
+ * 
+ *  - ...
+ *
+ * Port types 
+ *
+ * The functional specification only names the ports to be used to communicate with the module 
+ * but doesn't say anything about the data transmitted on the ports. This is defined by the following code. 
+ *
+ * - <portType>   <portName>        
+ *
+ *
+ * \section in_files_sec Input Data Files
+ *
+ *  - <fileName>
+ *    <description>
+ *
+ * \section out_data_sec Output Data Files
+ *   -  jointAngles.mat 
+ *      the joint angles of the robotic manipulator
+ *   -  endEffectorImgPts.mat
+ *      the end-effector position in the image space
+  * \section conf_file_sec Configuration Files
+ *
+ *  - <fileName>
+ *    <description>
+ * 
+ * \section tested_os_sec Tested OS
+ *
+ * Linux and Windows
+ *  Note that \icubForwardSSSA will launch MATLAB in 
+ *  background. Just in the matlab prompt write babbleIcub.
+ * \author Fernando Gamarra
+ * 
+ * Copyright (C) 2009 RobotCub Consortium
+ * 
+ * CopyPolicy: Released under the terms of the GNU GPL v2.0.
+ * 
+ * This file can be edited at src/<moduleName>/src/<moduleName.h>.
+ * 
+ **/
+
+
+
 #include <ace/OS.h>
 #include <yarp/dev/ControlBoardInterfaces.h>
 #include <yarp/dev/Drivers.h>
@@ -39,7 +165,7 @@ using namespace std;
 
 int LOOK_R = 1, LOOK_L = 2;
 
-const int ARM_JOINTS=16;
+const int ARM_JOINTS = 16;
 const int NUM_CONTROLLED_JOINTS = 7;
 const int NUM_FEATURES = 4;
 
@@ -83,7 +209,9 @@ int smin_left = 30;
 
 IplImage *image_left = NULL;
 
-/*Function to capture the right mouse movement*/
+/**on_mouse 
+*Function to capture the right mouse movement
+*/
 void on_mouse( int event, int x, int y, int flags, void* param )
 {
 	if( !image )
@@ -125,7 +253,9 @@ void on_mouse( int event, int x, int y, int flags, void* param )
 }
 
 
-/*Function to capture the left mouse movement*/
+/**on_mouse_left
+*Function to capture the left mouse movement
+*/
 void on_mouse_left( int event, int x, int y, int flags, void* param )
 {
 	if( !image_left )
@@ -168,7 +298,9 @@ void on_mouse_left( int event, int x, int y, int flags, void* param )
 	}
 }
 
-/*change of color space from HSV to RGB*/
+/**hsv2rgb
+*change of color space from HSV to RGB
+*/
 CvScalar hsv2rgb( float hue )
 {
 	int rgb[3], p, sector;
@@ -187,9 +319,6 @@ CvScalar hsv2rgb( float hue )
 }
 
 
-
-
-
 class rxPort : public BufferedPort<Bottle>
 {
 public:
@@ -206,6 +335,11 @@ private:
 			curr[i]=b.get(i).asDouble();
 	}
 };
+
+/**GatewayThread
+*main class where we can find all the functions that will
+*deploy when the module is launched
+*/
 
 
 
@@ -334,6 +468,27 @@ public:
 		ok = _dd->view(_iencs);
 		ok = _dd->view(_ipos);
 		ok = _dd->view(_ivel);
+
+
+		BufferedPort<Bottle> outNeck;
+
+        outNeck.open("/nat/out/neck");
+	    Network::connect("/nat/out/neck","/icubSim/head/rpc:i");
+		//Network::connect("/nat/out/neck","/icub/head/rpc:i");
+        Bottle& outbotNeck1 = outNeck.prepare(); //get the object
+	    outbotNeck1.clear();
+	    outbotNeck1.addString("set"); //put "set" command in the bottle
+	    outbotNeck1.addString("pos"); //put "pos" command in the bottle
+	    outbotNeck1.addInt(0);//control joint 0
+	    outbotNeck1.addInt(-45);// move to -45
+	    printf("writing bottle Neck 1 (%s)\n", outbotNeck1.toString().c_str());
+	    outNeck.write();            //now send it on its way
+		Time::delay(1);
+
+		outNeck.close();
+	    Network::disconnect("/icubSim/head/rpc:i", "/nat/out/neck");
+		//Network::disconnect("/icub/head/rpc:i", "/nat/out/neck");
+
 
 		if (!(ep=engOpen(NULL)))
 		{
@@ -640,7 +795,7 @@ public:
 		double width = 0, height = 0;
 		// for each blob
 
-		if(track_box.center.x!=0)
+		/*if(track_box.center.x!=0)
 		{
 		    bot.addDouble(track_box.center.x);
 		}else{
@@ -653,7 +808,23 @@ public:
 		    bot.addDouble(track_box.center.y);
 		}else{
 			bot.addDouble(0.0);
+		}*/
+
+		if(track_box.angle!=0)
+		{
+		    bot.addDouble(track_box.center.x);
+		}else{
+			bot.addDouble(0.0);
 		}
+
+
+		if(track_box.angle!=0)
+		{
+		    bot.addDouble(track_box.center.y);
+		}else{
+			bot.addDouble(0.0);
+		}
+
 
 	
 
@@ -695,13 +866,6 @@ public:
 
 	bool sendImageLeft(int cam){
 
-
-
-
-		
-
-			//img = portInputLeft.read(); 
-
 			// wait for a key
 			cvWaitKey(10);
 			cvNamedWindow( "HistogramLeft", 1 );
@@ -714,18 +878,11 @@ public:
 			// image grabbed?
 			if (imgLeft == NULL) 
 			{
-
 				printf("no image found\n");
 				return false;
 			}
 
-		
-
-		
-
 		int i, bin_w, c;
-
-
 		
 		cvCvtColor((IplImage*)imgLeft->getIplImage(), cvImageCam, CV_RGB2BGR);
 
@@ -793,15 +950,13 @@ public:
 			cvShowImage( "CamShiftDemoLeft", image_left );
 			cvShowImage( "HistogramLeft", histimg_left );               			
 
-		//
-		//// Put blob values in the matlab workspace
+	
 
 		double posx = 0, posy = 0;
 		double area = 0;
 		double width = 0, height = 0;
-		// for each blob
-
-		if(track_box_left.center.x!=0)
+	
+		/*if(track_box_left.center.x!=0)
 		{
 		    bot.addDouble(track_box_left.center.x);
 		}else{
@@ -814,9 +969,23 @@ public:
 		    bot.addDouble(track_box_left.center.y);
 		}else{
 			bot.addDouble(0.0);
+		}	*/
+
+			if(track_box_left.angle!=0)
+		{
+		    bot.addDouble(track_box_left.center.x);
+		}else{
+			bot.addDouble(0.0);
 		}
 
-	
+
+		if(track_box_left.angle!=0)
+		{
+		    bot.addDouble(track_box_left.center.y);
+		}else{
+			bot.addDouble(0.0);
+		}
+
 
 		//printf("x=%s\n",bot.toString().c_str());
 
@@ -944,3 +1113,4 @@ int main(int argc, char *argv[])
 
 	return mod.runModule(argc,argv);
 }
+//empty line to make gcc happy
