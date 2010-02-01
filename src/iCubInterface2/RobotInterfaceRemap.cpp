@@ -689,7 +689,7 @@ bool RobotInterfaceRemap::instantiateNetwork(std::string &path, Property &robotO
     std::string file=robotOptions.find("file").asString().c_str();
     std::string fullFilename;
     fullFilename=path;
-    if (fullFilename[fullFilename.length()-1]!='/')
+    if (fullFilename[fullFilename.length()-1]!='/' && fullFilename.length()!=0)
         fullFilename.append("/",1);
 
     fullFilename.append(file.c_str(), file.length());
@@ -815,7 +815,7 @@ bool RobotInterfaceRemap::instantiateInertial(const std::string &path, Property 
 
     std::string fullFilename;
     fullFilename=path;
-    if (fullFilename[fullFilename.length()-1]!='/')
+    if (fullFilename[fullFilename.length()-1]!='/' && fullFilename.length()!=0)
         fullFilename.append("/",1);
 
     fullFilename.append(file.c_str(), file.length());
