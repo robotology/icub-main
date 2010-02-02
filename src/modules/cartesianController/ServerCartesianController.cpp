@@ -448,21 +448,21 @@ bool ServerCartesianController::respond(const Bottle &command, Bottle &reply)
                             reply.addVocab(IKINCARTCTRL_VOCAB_REP_ACK);
 							Bottle &body=reply.addList();
 
-                            // xdcap part
+                            // xdhat part
                             Bottle &xPart=body.addList();
                             xPart.addVocab(IKINCARTCTRL_VOCAB_OPT_X);
                             Bottle &xData=xPart.addList();
 
-                            // populate xdcap list
+                            // populate xdhat list
                             for (int i=0; i<xdes.length(); i++)
                                 xData.addDouble(xdes[i]);
     
-                            // qdcap part
+                            // qdhat part
                             Bottle &qPart=body.addList();
                             qPart.addVocab(IKINCARTCTRL_VOCAB_OPT_Q);
                             Bottle &qData=qPart.addList();
 
-                            // populate qdcap list
+                            // populate qdhat list
                             int cnt=0;
                             for (unsigned int i=0; i<chain->getN(); i++)
                                 if ((*chain)[i].isBlocked())
@@ -1524,27 +1524,27 @@ bool ServerCartesianController::goToPositionSync(const Vector &xd, const double 
 
 
 /************************************************************************/
-bool ServerCartesianController::getDesired(Vector &xdcap, Vector &odcap, Vector &qdcap)
+bool ServerCartesianController::getDesired(Vector &xdhat, Vector &odhat, Vector &qdhat)
 {
     if (connected)
     {
-        xdcap.resize(3);
-        odcap.resize(xdes.length()-3);
+        xdhat.resize(3);
+        odhat.resize(xdes.length()-3);
 
-        for (int i=0; i<xdcap.length(); i++)
-            xdcap[i]=xdes[i];
+        for (int i=0; i<xdhat.length(); i++)
+            xdhat[i]=xdes[i];
 
-        for (int i=0; i<odcap.length(); i++)
-            odcap[i]=xdes[xdcap.length()+i];
+        for (int i=0; i<odhat.length(); i++)
+            odhat[i]=xdes[xdhat.length()+i];
 
-        qdcap.resize(chain->getN());
+        qdhat.resize(chain->getN());
         int cnt=0;
 
         for (unsigned int i=0; i<chain->getN(); i++)
             if ((*chain)[i].isBlocked())
-                qdcap[i]=CTRL_RAD2DEG*chain->getAng(i);
+                qdhat[i]=CTRL_RAD2DEG*chain->getAng(i);
             else
-                qdcap[i]=CTRL_RAD2DEG*qdes[cnt++];
+                qdhat[i]=CTRL_RAD2DEG*qdes[cnt++];
 
         return true;
     }

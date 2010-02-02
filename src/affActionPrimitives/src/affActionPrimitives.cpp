@@ -770,14 +770,14 @@ void affActionPrimitives::run()
 
     if (!armMoveDone)
     {
-        Vector x,o,xdcap,odcap,qdcap;
+        Vector x,o,xdhat,odhat,qdhat;
         cartCtrl->getPose(x,o);
-        cartCtrl->getDesired(xdcap,odcap,qdcap);
+        cartCtrl->getDesired(xdhat,odhat,qdhat);
 
         if (t-t0>ACTIONPRIM_DUMP_PERIOD)
         {
-            printMessage("reaching... xdcap=[%s] |e|=%.3f [m]\n",
-                         toCompactString(xdcap).c_str(),norm(xdcap-x));
+            printMessage("reaching... xdhat=[%s] |e|=%.3f [m]\n",
+                         toCompactString(xdhat).c_str(),norm(xdhat-x));
 
             t0=t;
         }

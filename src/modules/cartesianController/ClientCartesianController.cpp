@@ -343,7 +343,7 @@ bool ClientCartesianController::goToPositionSync(const Vector &xd, const double 
 
 
 /************************************************************************/
-bool ClientCartesianController::getDesired(Vector &xdcap, Vector &odcap, Vector &qdcap)
+bool ClientCartesianController::getDesired(Vector &xdhat, Vector &odhat, Vector &qdhat)
 {
     Bottle command, reply;
 
@@ -362,30 +362,30 @@ bool ClientCartesianController::getDesired(Vector &xdcap, Vector &odcap, Vector 
 	{
 		if (Bottle *body=reply.get(1).asList())
 		{
-			// xdcap and odcap part
+			// xdhat and odhat part
 			if (body->check(Vocab::decode(IKINCARTCTRL_VOCAB_OPT_X)))
             {
                 Bottle *xData=body->find(Vocab::decode(IKINCARTCTRL_VOCAB_OPT_X)).asList();
-                xdcap.resize(3);
-                odcap.resize(4);
+                xdhat.resize(3);
+                odhat.resize(4);
             
-                for (int i=0; i<xdcap.length(); i++)
-                    xdcap[i]=xData->get(i).asDouble();
+                for (int i=0; i<xdhat.length(); i++)
+                    xdhat[i]=xData->get(i).asDouble();
             
-                for (int i=0; i<odcap.length(); i++)
-                    odcap[i]=xData->get(xdcap.length()+i).asDouble();
+                for (int i=0; i<odhat.length(); i++)
+                    odhat[i]=xData->get(xdhat.length()+i).asDouble();
             }
             else
                 return false;
 
-			// qdcap part
+			// qdhat part
             if (body->check(Vocab::decode(IKINCARTCTRL_VOCAB_OPT_Q)))
             {
                 Bottle *qData=body->find(Vocab::decode(IKINCARTCTRL_VOCAB_OPT_Q)).asList();
-                qdcap.resize(qData->size());
+                qdhat.resize(qData->size());
 
-                for (int i=0; i<qdcap.length(); i++)
-                    qdcap[i]=qData->get(i).asDouble();
+                for (int i=0; i<qdhat.length(); i++)
+                    qdhat[i]=qData->get(i).asDouble();
             }
             else
                 return false;
