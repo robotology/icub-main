@@ -37,13 +37,27 @@ SalienceOperator::SalienceOperator(const int width1, const int height1)//:_gaze(
     _img.Size_Theta=20;
     _img.Size_Fovea=256.0/1090.0;*/
 
-    _img = Set_Param(
+    /*_img = Set_Param(
                 _xsize, _ysize,
                 320, 240, //256,256
                 320, 240, _sfovea,
                 1090,
                 CUST,
-                256.0/1090.0);
+                256.0/1090.0);*/
+
+    //parameter for the giotto 2
+    /*image.Size_Rho = 152;
+        image.Size_Theta = 252;
+        image.Size_Fovea = 42;
+        image.Resolution = 1090;*/
+
+    _img = Set_Param(
+                _xsize, _ysize,
+                _xsize, _ysize, //256,256
+                252, 152, 42,
+                1090,
+                Giotto2,
+                252.0/1090.0);
 
     _img.padding =1; // YarpImageAlign;
     _img.Pix_Numb = 2;
@@ -929,8 +943,8 @@ void SalienceOperator::blobCatalog(ImageOf<PixelInt>& tagged,
 * set paramenters of the saliency operator
 * @param SXO size along x axis of the original image
 * @param SYO size of the original image along y axis
-* @param SXR size of the reconstruvtion image along x axis
-* @param SYR size of the resulting image along y axis
+* @param SXR size of the reconstruted image along x axis
+* @param SYR size of the reconstructed image along y axis
 * @param rho rho of logPolar conversion
 * @param theta theta of the logPolar conversion
 * @param fovea fovea size
@@ -988,6 +1002,8 @@ Image_Data SalienceOperator::Set_Param(
     image.Size_LP = image.Size_Rho * image.Size_Theta;
     image.Size_X_Orig = SXO;
     image.Size_Y_Orig = SYO;
+    image.Size_X_Remap= SXR;
+    image.Size_Y_Remap= SYR;
     image.Size_Img_Orig = image.Size_X_Orig*image.Size_Y_Orig;
     image.Size_Img_Remap = image.Size_X_Remap * image.Size_Y_Remap;
     image.LP_Planes = Color;
