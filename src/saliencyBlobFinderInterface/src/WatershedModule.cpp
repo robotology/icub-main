@@ -1055,20 +1055,20 @@ static gint menuFileSingle_CB(GtkWidget *widget, GdkEventExpose *event, gpointer
 static void cb_digits_scale( GtkAdjustment *adj )
 {
     /* Set the number of decimal places to which adj->value is rounded */
-    wModule->salienceBU=adj->value;
-    printf("salienceBU: %f",wModule->salienceBU/100);
+    wModule->salienceBU=adj->value/100;
+    printf("salienceBU: %f",wModule->salienceBU);
     std::string str("");
-    sprintf((char *)str.c_str(),"set kbu %2.2f",wModule->salienceBU/100);
+    sprintf((char *)str.c_str(),"set kbu %2.2f",wModule->salienceBU);
     wModule->message->assign(str.c_str());
 }
 
 static void cb_digits_scale2( GtkAdjustment *adj )
 {
     /* Set the number of decimal places to which adj->value is rounded */
-    wModule->salienceTD=adj->value;
-    printf("salienceTD: %f",wModule->salienceTD/100);
+    wModule->salienceTD=adj->value/100;
+    printf("salienceTD: %f",wModule->salienceTD);
     std::string str("");
-    sprintf((char *)str.c_str(),"set ktd %2.2f",wModule->salienceTD/100);
+    sprintf((char *)str.c_str(),"set ktd %2.2f",wModule->salienceTD);
     wModule->message->assign(str.c_str());
 }
 
@@ -1076,9 +1076,9 @@ static void cb_digits_scale3( GtkAdjustment *adj )
 {
     /* Set the number of decimal places to which adj->value is rounded */
     wModule->maxBLOB=adj->value;
-    printf("maxBLOB: %f",wModule->salienceBU/100);
+    printf("maxBLOB: %f",wModule->maxBLOB);
     std::string str("");
-    sprintf((char *)str.c_str(),"set Mdb %2.2f",wModule->maxBLOB/100);
+    sprintf((char *)str.c_str(),"set Mdb %2.2f",wModule->maxBLOB);
     wModule->message->assign(str.c_str());
 }
 
@@ -1086,9 +1086,9 @@ static void cb_digits_scale4( GtkAdjustment *adj )
 {
     /* Set the number of decimal places to which adj->value is rounded */
     wModule->minBLOB=adj->value;
-    printf("minBLOB: %f",wModule->salienceBU/100);
+    printf("minBLOB: %f",wModule->minBLOB);
     std::string str("");
-    sprintf((char *)str.c_str(),"set mdb %2.2f",wModule->minBLOB/100);
+    sprintf((char *)str.c_str(),"set mdb %2.2f",wModule->minBLOB);
     wModule->message->assign(str.c_str());
 }
 
@@ -1096,9 +1096,9 @@ static void cb_digits_scaler( GtkAdjustment *adj )
 {
     /* Set the number of decimal places to which adj->value is rounded */
     wModule->targetRED=adj->value;
-    printf("targetRED: %f",wModule->salienceBU/100);
+    printf("targetRED: %f",wModule->targetRED);
     std::string str("");
-    sprintf((char *)str.c_str(),"set rin %2.2f",wModule->targetRED/100);
+    sprintf((char *)str.c_str(),"set rin %2.2f",wModule->targetRED);
     wModule->message->assign(str.c_str());
 }
 
@@ -1106,9 +1106,9 @@ static void cb_digits_scaleg( GtkAdjustment *adj )
 {
     /* Set the number of decimal places to which adj->value is rounded */
     wModule->targetGREEN=adj->value;
-    printf("targetGREEN: %f",wModule->salienceBU/100);
+    printf("targetGREEN: %f",wModule->targetGREEN);
     std::string str("");
-    sprintf((char *)str.c_str(),"set gin %2.2f",wModule->targetGREEN/100);
+    sprintf((char *)str.c_str(),"set gin %2.2f",wModule->targetGREEN);
     wModule->message->assign(str.c_str());
 }
 
@@ -1116,9 +1116,9 @@ static void cb_digits_scaleb( GtkAdjustment *adj )
 {
     /* Set the number of decimal places to which adj->value is rounded */
     wModule->targetBLUE=adj->value;
-    printf("targetBLUE: %f",wModule->salienceBU/100);
+    printf("targetBLUE: %f",wModule->targetBLUE);
     std::string str("");
-    sprintf((char *)str.c_str(),"set bin %2.2f",wModule->targetBLUE/100);
+    sprintf((char *)str.c_str(),"set bin %2.2f",wModule->targetBLUE);
     wModule->message->assign(str.c_str());
 }
 
@@ -1749,7 +1749,7 @@ GtkWidget* WatershedModule::createMainWindow(void)
     label = gtk_label_new ("MAXBLOB dimension:");
     gtk_box_pack_start (GTK_BOX (box4), label, FALSE, FALSE, 0);
     gtk_widget_show (label);
-    adj3 = gtk_adjustment_new (100, 100,6000,100, 1, 1);
+    adj3 = gtk_adjustment_new (100, 10,6000,100, 1, 1);
     hscale = gtk_hscale_new (GTK_ADJUSTMENT (adj3));
     gtk_widget_set_size_request (GTK_WIDGET (hscale), 200, -1);
     scale_set_default_values (GTK_SCALE (hscale));
