@@ -227,6 +227,7 @@ ENDIF (ARTOOLKITPLUS_FOUND)
   ADD_SUBDIRECTORY(iKinArmCtrlIF)
   ADD_SUBDIRECTORY(affActionPrimitives)
   ADD_SUBDIRECTORY(affActionPrimitives/example)
+  ADD_SUBDIRECTORY(simCartesianControl)
 
   add_subdirectory(graspDetector)
   add_subdirectory(graspDetectorConf)
