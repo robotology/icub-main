@@ -121,14 +121,14 @@ public:
 
     /**
     * Returns a reference to the internal representation of -inf. 
-    * \note default is -1e9.
+    * @note default is -1e9.
     * @return -inf.
     */
     Ipopt::Number &getLowerBoundInf() { return lowerBoundInf; }
 
     /**
     * Returns a reference to the internal representation of +inf. 
-    * \note default is +1e9. 
+    * @note default is +1e9. 
     * @return +inf.
     */
     Ipopt::Number &getUpperBoundInf() { return upperBoundInf; }
@@ -147,7 +147,7 @@ public:
 
     /**
     * Updates internal state. 
-    * \note Useful when it is required to handle change in 
+    * @note Useful when it is required to handle change in 
     *       inherited objects.
     */
     virtual void update(void*) { }
@@ -409,7 +409,7 @@ public:
     * Attach a iKinLinIneqConstr object in order to impose 
     * constraints of the form lB <= C*q <= uB.
     * @param lic is the iKinLinIneqConstr object to attach.
-    * \see iKinLinIneqConstr
+    * @see iKinLinIneqConstr
     */
     void attachLIC(iKinLinIneqConstr &lic) { pLIC=&lic; }
 
@@ -417,7 +417,7 @@ public:
     * Returns a reference to the attached Linear Inequality 
     * Constraints object.
     * @return Linear Inequality Constraints pLIC. 
-    * \see iKinLinIneqConstr
+    * @see iKinLinIneqConstr
     */
     iKinLinIneqConstr &getLIC() { return *pLIC; }
 
@@ -498,7 +498,7 @@ public:
     /**
     * Returns the tolerance used by the algorithm for translational 
     * part when the complete pose is to be achieved. 
-    * \note tolerance is applied to the squared norm 
+    * @note tolerance is applied to the squared norm 
     * @return the current translational tolerance (1e-6 by default).
     */
     Ipopt::Number getTranslationalTol() { return translationalTol; }
@@ -507,7 +507,7 @@ public:
     * Sets the tolerance used by the algorithm for translational 
     * part when the complete pose is to be achieved (1e-6 by 
     * default). 
-    * \note tolerance is applied to the squared norm 
+    * @note tolerance is applied to the squared norm 
     * @param tol is the new translational tolerance
     */
     void setTranslationalTol(const Ipopt::Number tol) { translationalTol=tol; }

@@ -202,7 +202,7 @@ yarp::sig::Matrix axis2dcm(const yarp::sig::Vector &v, unsigned int verbose=0);
 * @param verbose sets some verbosity.  
 * @return inverse of 4 by 4 rototranslational matrix. 
 *  
-* \note about 5 times faster than pinv() 
+* @note about 5 times faster than pinv() 
 */
 yarp::sig::Matrix SE3inv(const yarp::sig::Matrix &H, unsigned int verbose=0);
 

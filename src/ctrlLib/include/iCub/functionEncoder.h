@@ -56,7 +56,7 @@ public:
     * @return the computed 1+N coefficients, with the first one 
     *         being f(0) and the following N are the actual wavelet
     *         expansion coefficients.
-    * \note It holds that N=floor(R)+1, where N is the number of
+    * @note It holds that N=floor(R)+1, where N is the number of
     *       coefficients of the vector space. Recap that floor() is
     *       the round function towards minus infinity.
     */
@@ -71,7 +71,7 @@ public:
     * @param x is the point at which the result is computed. It 
     *          shall be in [0,1].
     * @return the decoded function value. 
-    * \note It shall hold that Coeffs.length()>=floor(R)+2. Recap 
+    * @note It shall hold that Coeffs.length()>=floor(R)+2. Recap 
     *       that floor() is the round function towards minus
     *       infinity.
     */

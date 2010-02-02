@@ -147,7 +147,7 @@ protected:
     *                0x0001####=>print one iteration and skip the
     *                next one, 0x0002####=> print one iteration and
     *                skip the next two).
-    * \note Angles are dumperd as degrees. 
+    * @note Angles are dumperd as degrees. 
     * Shall be implemented. 
     */
     virtual void printIter(const unsigned int verbose=0) = 0;
@@ -203,8 +203,8 @@ public:
     * Iterates the control algorithm trying to converge on the 
     * target. 
     * @param xd is the End-Effector target Pose to be tracked. 
-    * \see setInTargetTol 
-    * \see getInTargetTol 
+    * @see setInTargetTol 
+    * @see getInTargetTol 
     * @param tol_size exits if test_convergence(tol_size) is true 
     *                 (tol_size<0 disables this check, default).
     * @param max_iter exits if iter>=max_iter (max_iter<0 disables
@@ -454,7 +454,7 @@ public:
     * equation according to the Gradient Projection Method, i.e. 
     * qdot=pinvJ*xdot+(I-pinvJ*J)*w 
     * @return shall return the quantity (I-pinvJ*J)*w. 
-    * \note This method shall be inherited and handled accordingly 
+    * @note This method shall be inherited and handled accordingly 
     *       (here a vector of 0s is returned). To do that, J and
     *       pinvJ are already computed when this method is called.
     */
@@ -630,7 +630,7 @@ public:
     * equation according to the Gradient Projection Method, i.e. 
     * qdot=pinvJ*xdot+(I-pinvJ*J)*w 
     * @return shall return the quantity (I-pinvJ*J)*w. 
-    * \note This method shall be inherited and handled accordingly 
+    * @note This method shall be inherited and handled accordingly 
     *       (here a vector of 0s is returned). To do that, J and
     *       pinvJ are already computed when this method is called.
     */
@@ -931,7 +931,7 @@ public:
     * @param xd is the End-Effector target Pose to be tracked. 
     * @param qd is the target joint angles (it shall satisfy the
     *           forward kinematic function xd=f(qd)).
-    * \note The reason why qd is provided externally instead of 
+    * @note The reason why qd is provided externally instead of 
     *       computed here is to discouple the inverse kinematic
     *       problem (which may require some computational effort
     *       depending on the current pose xd and the chosen
@@ -970,7 +970,7 @@ public:
 
     /**
     * Returns the guard ratio for the joints span (0.1 by default). 
-    * \note The weights W_theta^-1 are non-zero only within the 
+    * @note The weights W_theta^-1 are non-zero only within the 
     *       range [ q_min+0.5*guardRatio*D, q_max-0.5*guardRatio*D ]
     *       for each join, where D=q_max-q_min.
     * @return guard ratio.
@@ -1025,7 +1025,7 @@ public:
     * @param warn enable/disable warning message for thresholding 
     *             (disabled by default).
     * @return the actual execTime.
-    * \note A lower bound equal to 10*Ts (Ts=controller's sample 
+    * @note A lower bound equal to 10*Ts (Ts=controller's sample 
     *       time) is imposed.
     */
     double set_execTime(const double _execTime, const bool warn=false);

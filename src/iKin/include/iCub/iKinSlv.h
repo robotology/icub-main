@@ -80,7 +80,7 @@
  *    will be in turn sent back by the solver for
  *    synchronization purpose.
  *  
- * \note One single command sent to the streaming input port can 
+ * \note One single command sent to the streaming input port can
  *       contain multiple requests: e.g. ([pose] [xyz]) ([dof]
  *       (1 0 1 2 1)) ([xd] (-0.1 0.1 0.1) ([tok] 1.234) ...)
  *  
@@ -475,7 +475,7 @@ public:
     * detected. 
     * @return reference to the internal flag. 
     *  
-    * \note At first timeout detection the flag is set and is never 
+    * @note At first timeout detection the flag is set and is never 
     *       reset again.
     */
     virtual bool &getTimeoutFlag() { return timeout_detected; }

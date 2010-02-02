@@ -218,7 +218,7 @@ public:
     /**
     * Destructor. 
     *  
-    * \note it calls the close() method. 
+    * @note it calls the close() method. 
     */
     virtual ~affActionPrimitives();
 
@@ -227,9 +227,9 @@ public:
     * @param opt the Property used to configure the object after its
     *            creation.
     *  
-    * \note To be called after object creation. 
+    * @note To be called after object creation. 
     *  
-    * \note Available options are: 
+    * @note Available options are: 
     *  
     * \b local <string>: specify a stem name used to open local 
     *    ports and to highlight messages printed on the screen. 
@@ -248,7 +248,7 @@ public:
     *  
     * \b tracking_mode <string>: enable/disable the tracking mode; 
     *    possible values: "on"/"off".
-    * \note In tracking mode the cartesian position is mantained on 
+    * @note In tracking mode the cartesian position is mantained on 
     *       the reached target.
     *  
     * \b verbosity <string>: enable/disable the verbose mode; 
@@ -281,7 +281,7 @@ public:
     *    containing the hand motions sequences.<br />Here is the
     *    format of motion sequences:
     *  
-    *  \code
+    *  @code
     *  [GENERAL]
     *  numSequences ***
     *  
@@ -298,9 +298,9 @@ public:
     *  // the "poss" and "vels" keys specify 9 joints positions and
     *  // velocities whereas the "thres" key specifies 5 fingers
     *  // thresholds used for model-based contact detection
-    *  \endcode
+    *  @endcode
     *  
-    * \note A port called <i> /<local>/<part>/detectGrasp:i </i> is 
+    * @note A port called <i> /<local>/<part>/detectGrasp:i </i> is 
     *       open to acquire data provided by \ref icub_graspDetector
     *       module.
     */
@@ -330,7 +330,7 @@ public:
     *            ends; none by default.
     * @return true/false on success/fail. 
     *  
-    * \note Some examples: 
+    * @note Some examples: 
     *  
     * the call \b pushAction(x,o,"close_hand") pushes the combined 
     * action of reach(x,o) and hand "close_hand" sequence into the 
@@ -389,7 +389,7 @@ public:
     *          specified iff different from default value).
     * @return true/false on success/fail. 
     *  
-    * \note The intended use is for tracking moving targets. 
+    * @note The intended use is for tracking moving targets. 
     */
     virtual bool reach(const yarp::sig::Vector &x, const yarp::sig::Vector &o,
                        const double execTime=ACTIONPRIM_DISABLE_EXECTIME);
@@ -411,7 +411,7 @@ public:
     *              detection.
     * @return true/false on success/fail. 
     *  
-    * \note this method creates a new empty sequence referred by the
+    * @note this method creates a new empty sequence referred by the
     *       passed key if the key does not point to any valid
     *       sequence; hence the triplet (poss,vels,thres) will be
     *       the first WP of the new sequence.
@@ -449,7 +449,7 @@ public:
     * Query if fingers are in position.
     * @return true iff fingers are in position. 
     *  
-    * \note Fingers are intended to be in position if they have 
+    * @note Fingers are intended to be in position if they have 
     *       attained the desired position or while moving they
     *       follow the desired trajectory. Any possible contact
     *       among fingers or with objects causes the method to
@@ -463,7 +463,7 @@ public:
     * @param ctrl the cartesian interface.
     * @return true/false on success/fail. 
     *  
-    * \note Useful to access solver's options through the <a 
+    * @note Useful to access solver's options through the <a 
     *       href="http://eris.liralab.it/yarpdoc/dd/de6/classyarp_1_1dev_1_1ICartesianControl.html">Cartesian
     *       Interface</a>.
     */
@@ -473,7 +473,7 @@ public:
     * Stop any ongoing arm/hand movements.
     * @return true/false on success/fail. 
     *  
-    * \note it empty out the actions queue. 
+    * @note it empty out the actions queue. 
     */
     virtual bool stopControl();
 
@@ -481,7 +481,7 @@ public:
     * Set the task space controller in tracking or non-tracking 
     * mode. 
     * @param f: true for tracking mode, false otherwise. 
-    * \note In tracking mode the cartesian position is mantained on 
+    * @note In tracking mode the cartesian position is mantained on 
     *       the reached target.
     * @return true/false on success/failure.
     */
@@ -500,7 +500,7 @@ public:
     *             (blocking call).
     * @return true/false on success/fail. 
     *  
-    * \note Actually the check is performed on the content of the 
+    * @note Actually the check is performed on the content of the 
     *       actions queue so that the blocking call returns as soon
     *       as the queue is empty.
     */
@@ -511,7 +511,7 @@ public:
     * querying the action status. 
     * @param disable disable the blocking feature for future 
     * calls with sync switch on; useful to allow a graceful stop of 
-    * the application. \see syncCheckReinstate to reinstate it.
+    * the application. @see syncCheckReinstate to reinstate it.
     * @return true/false on success/fail. 
     */
     virtual bool syncCheckInterrupt(const bool disable=false);
@@ -536,7 +536,7 @@ public:
 * "karate_hand" :) that are used for grasp(), touch() and tap() 
 * actions. 
 *  
-* \note Given as an example of how primitive actions can be 
+* @note Given as an example of how primitive actions can be 
 *       combined in higher level actions, thus how further
 *       layers can be inherited from the base class.
 */
@@ -566,14 +566,14 @@ public:
     *          grasping.
     * @return true/false on success/fail. 
     *  
-    * \note internal implementation (pseudo-code): 
-    * \code 
+    * @note internal implementation (pseudo-code): 
+    * @code 
     * ... 
     * pushAction(x+d,o,"open_hand"); 
     * pushAction(x,o); 
     * pushAction("close_hand"); 
     * ... 
-    * \endcode 
+    * @endcode 
     *  
     * It reachs for (x+d,o) opening the hand, then reachs for (x,o)
     * and finally closes the hand. 
@@ -592,13 +592,13 @@ public:
     *          touching.
     * @return true/false on success/fail. 
     *  
-    * \note internal implementation (pseudo-code): 
-    * \code 
+    * @note internal implementation (pseudo-code): 
+    * @code 
     * ... 
     * pushAction(x+d,o,"karate_hand"); 
     * pushAction(x,o); 
     * ... 
-    * \endcode 
+    * @endcode 
     *  
     * It reachs for (x+d,o), then reachs for (x,o). 
     * Similar to grasp but without final hand action. 
@@ -619,14 +619,14 @@ public:
     *          default value).
     * @return true/false on success/fail. 
     *  
-    * \note internal implementation (pseudo-code): 
-    * \code 
+    * @note internal implementation (pseudo-code): 
+    * @code 
     * ...
     * pushAction(x1,o1,"karate_hand");
     * pushAction(x2,o2,execTime);
     * pushAction(x1,o1); 
     * ... 
-    * \endcode 
+    * @endcode 
     *  
     * It reachs for (x1,o1), then reachs for (x2,o2) and then again
     * for (x1,o1).
@@ -679,7 +679,7 @@ public:
 * contacts by checking the low-level output signal. As soon as 
 * the contact is detected the reaching is suddenly stopped. 
 *  
-* \note The benefit is that unlike the previous implementation 
+* @note The benefit is that unlike the previous implementation 
 * of grasp() and touch(), the height of the objects to be 
 * attained can be known just approximately. 
 *  
@@ -733,7 +733,7 @@ public:
     /**
     * Destructor. 
     *  
-    * \note it calls the close() method. 
+    * @note it calls the close() method. 
     */
     virtual ~affActionPrimitivesLayer2();
 
@@ -742,7 +742,7 @@ public:
     * @param opt the Property used to configure the object after its
     *            creation.
     *  
-    * \note To be called after object creation. 
+    * @note To be called after object creation. 
     *  
     * Further available options are: 
     *  

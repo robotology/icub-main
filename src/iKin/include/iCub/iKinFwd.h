@@ -247,7 +247,7 @@ public:
 
     /**
     * Same as getH() with specification of new joint angle position. 
-    * \see getH
+    * @see getH
     * @param _Ang is the new joint angle position. 
     * @param c_override.
     * @return a reference to H.
@@ -379,7 +379,7 @@ public:
     /**
     * Adds a Link at the bottom of the Chain.
     * @param l is the Link to be added. 
-    * \see operator<< 
+    * @see operator<< 
     */
     void pushLink(iKinLink &l);
 
@@ -390,7 +390,7 @@ public:
 
     /**
     * Removes a Link from the bottom of the Chain. 
-    * \see operator--  
+    * @see operator--  
     */
     void popLink();
 
@@ -655,7 +655,7 @@ public:
     /**
     * Prepares computation for a successive call to 
     * fastHessian_ij(). 
-    * \see fastHessian_ij
+    * @see fastHessian_ij
     */
     void prepareForHessian();
 
@@ -666,9 +666,9 @@ public:
     * function and \f$ \left(q_i,q_j\right) \f$ is the DOF couple. 
     * <i>Fast Version</i>: to be used in conjunction with 
     * prepareForHessian(). 
-    * \note It is advisable to use this version when successive 
+    * @note It is advisable to use this version when successive 
     * computations with different indexes values are needed. 
-    * \see prepareForHessian 
+    * @see prepareForHessian 
     * @param i is the index of the first DOF. 
     * @param j is the index of the second DOF.
     * @return the 6x1 vector \f$ 
@@ -723,7 +723,7 @@ public:
     * Creates a new Limb from a list of properties wherein links 
     * parameters are specified. 
     * @param option is the list of links properties. 
-    * \see fromProperty
+    * @see fromProperty
     */
     iKinLimb(const yarp::os::Property &option);
 
@@ -732,7 +732,7 @@ public:
     * parameters are specified. 
     * @param option is the list of links properties. 
     *  
-    * \note Available options are: 
+    * @note Available options are: 
     *  
     * \b type <string>: specifies the limb handedness [left/right] 
     *    (default=right).
@@ -762,16 +762,16 @@ public:
     * \b blocked <double>: blocks the link at the specified value 
     *    [deg] (default=released).
     *  
-    * \note The list should look like as the following: 
+    * @note The list should look like as the following: 
     *  
-    * \code 
+    * @code 
     * type right 
     * H0 (1.0 2.0 3.0 ...) 
     * numLinks 4 
     * link_0 (option1 value1) (option2 value2) ... 
     * link_1 (option1 value1) ... 
     * ... 
-    * \endcode 
+    * @endcode 
     */
     bool fromLinksProperties(const yarp::os::Property &option);
 

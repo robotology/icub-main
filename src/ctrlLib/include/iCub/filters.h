@@ -46,7 +46,7 @@ public:
     * @param den vector of denominator elements given as increasing 
     *            power of z^-1. 
     * @param y0 initial output. 
-    * \note den[0] shall not be 0. 
+    * @note den[0] shall not be 0. 
     */ 
    Filter(const yarp::sig::Vector &num, const yarp::sig::Vector &den,
           const yarp::sig::Vector &y0);

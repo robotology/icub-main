@@ -86,7 +86,7 @@ public:
     * Appends to a bottle a token to be exchanged with the solver.
     * @param token. 
     *  
-    * \note useful for some synchronization. 
+    * @note useful for some synchronization. 
     */
     static void addTokenOption(yarp::os::Bottle &b, const double token);    
 
