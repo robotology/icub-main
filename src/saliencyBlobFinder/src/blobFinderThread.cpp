@@ -469,10 +469,14 @@ void blobFinderThread::drawAllBlobs(bool stable)
     //float salienceBU=1.0,salienceTD=0.0;
     IppiSize srcsize={this->width,this->height};
     PixelMono searchTD=0;
+    PixelMono pixelRG=0,pixelGR=0,pixelBY=0;
     searchRG=((targetRED-targetGREEN+255)/510)*255;
+    pixelRG=searchRG;
     searchGR=((targetGREEN-targetRED+255)/510)*255;
+    pixelGR=searchGR;
     PixelMono addRG=((targetRED+targetGREEN)/510)*255;
     searchBY=((targetBLUE-addRG+255)/510)*255;
+    pixelBY=searchBY;
     int psb32s;
     //int psb8u;
     Ipp32s* _inputImgRGS32=ippiMalloc_32s_C1(this->width,this->height,&psb32s);
@@ -510,7 +514,7 @@ void blobFinderThread::drawAllBlobs(bool stable)
     int nBlobs=salience->DrawContrastLP2(*_inputImgGRS, *_inputImgGRS, *_inputImgBYS,
         *outContrastLP, *tagged, max_tag,
         salienceBU, salienceTD,
-        searchRG, searchGR, searchBY, 255); // somma coeff pos=3 somma coeff neg=-3
+        pixelRG, pixelGR, pixelBY, 255); // somma coeff pos=3 somma coeff neg=-3
     //printf("The number of blobs: %d",nBlobs);
     salience->ComputeMeanColors(max_tag); //compute for every box the mean Red,Green and Blue Color.
     salience->DrawMeanColorsLP(*outMeanColourLP,*tagged);

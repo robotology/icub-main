@@ -523,7 +523,8 @@ int SalienceOperator::DrawContrastLP2(ImageOf<PixelMono>& rg, ImageOf<PixelMono>
             salienceTD=sqrt((double)(m_boxes[i].meanRG-prg)*(m_boxes[i].meanRG-prg)+
                             (m_boxes[i].meanGR-pgr)*(m_boxes[i].meanGR-pgr)+
                             (m_boxes[i].meanBY-pby)*(m_boxes[i].meanBY-pby));
-            salienceTD=255-salienceTD/sqrt(3.0);
+            //salienceTD=255-salienceTD/sqrt(3.0);
+            salienceTD=255-salienceTD;
             
             /*__OLD//salienceTD=abs(m_boxes[i].meanRG-prg);
                             
