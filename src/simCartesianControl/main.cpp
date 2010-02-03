@@ -86,12 +86,12 @@ public:
         Property optArmR("(device remote_controlboard)"); 
         Property optArmL("(device remote_controlboard)"); 
 
-        string robot=rf.find("robot").asString();
+        string robot=rf.find("robot").asString().c_str();
         optTorso.put("remote",("/"+robot+"/torso").c_str());
         optArmR.put("remote",("/"+robot+"/right_arm").c_str());
         optArmL.put("remote",("/"+robot+"/left_arm").c_str());
 
-        string local=rf.find("local").asString();
+        string local=rf.find("local").asString().c_str();
         optTorso.put("local",("/"+local+"/torso").c_str());
         optArmR.put("local",("/"+local+"/right_arm").c_str());
         optArmL.put("local",("/"+local+"/left_arm").c_str());
