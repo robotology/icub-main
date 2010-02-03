@@ -6,28 +6,28 @@
       
         <module>
                 <name>iKinCartesianSolver</name>
-                <parameters>--from simCartesianControl/conf --part right_arm</parameters>
+                <parameters>--context simCartesianControl/conf --part right_arm</parameters>
                 <node>pwrNode1</node>
                 <tag>rightArmSolver</tag>
         </module>
 
         <module>
                 <name>iKinCartesianSolver</name>
-                <parameters>--from simCartesianControl/conf --part left_arm</parameters>
+                <parameters>--context simCartesianControl/conf --part left_arm</parameters>
                 <node>pwrNode2</node>
                 <tag>leftArmSolver</tag>
         </module>
 
         <module>
                 <name>iKinCartesianSolver</name>
-                <parameters>--from simCartesianControl/conf --part right_leg</parameters>
+                <parameters>--context simCartesianControl/conf --part right_leg</parameters>
                 <node>pwrNode3</node>
                 <tag>rightLegSolver</tag>
         </module>
 
         <module>
                 <name>iKinCartesianSolver</name>
-                <parameters>--from simCartesianControl/conf --part left_leg</parameters>
+                <parameters>--context simCartesianControl/conf --part left_leg</parameters>
                 <node>pwrNode4</node>
                 <tag>leftLegSolver</tag>
         </module>
