@@ -125,6 +125,11 @@ public:
         m_Height=height;
     }
 
+    int Abs(int x)
+    {
+        return x>=0?x:-x;
+    }
+
     void eval(double *image)
     {
         int dx,dy;
@@ -139,9 +144,9 @@ public:
 
                 for (int i=1; i<=12; ++i)
                 {
-                    dx=abs(X-x[i]);
+                    dx=Abs(X-x[i]);
                     if (dx>=m_maxRange) continue;
-                    dy=abs(Y-y[i]);
+                    dy=Abs(Y-y[i]);
                     if (dy>=m_maxRange) continue;
 
                     value+=activation[i]*Exponential[dx]*Exponential[dy];
