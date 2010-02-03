@@ -1,4 +1,7 @@
 
+2010-02-03 Ugo Pattacini <ugo.pattacini@iit.it>
+	   * CMakeLists.txt, CTRLLIBConfig.cmake: for win32 DEBUG_POSTFIX put equal to "d"
+
 2010-01-22 Serena Ivaldi <serena.ivaldi@iit.it>
 	   * optimalControl module added
 

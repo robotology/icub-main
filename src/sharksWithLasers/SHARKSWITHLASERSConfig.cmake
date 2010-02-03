@@ -21,7 +21,13 @@ IF (NESTED_BUILD)
   # This a global build, so we do not need to supply the full path
   # and filename(s) of the library.  We can just use the CMake target name.
   # CMake itself knows what exactly the library is called on this system.
-  SET(${LIB_PKG}_LIBRARIES ${LIB_TARGET})
+  IF (WIN32 AND NOT CYGWIN)
+     FIND_LIBRARY(${LIB_PKG}_LIBRARIES_RELEASE ${LIB_TARGET}  ${ICUB_DIR}/lib/Release NO_DEFAULT_PATH)
+     FIND_LIBRARY(${LIB_PKG}_LIBRARIES_DEBUG   ${LIB_TARGET}d ${ICUB_DIR}/lib/Debug   NO_DEFAULT_PATH)
+     SET (${LIB_PKG}_LIBRARIES optimized ${${LIB_PKG}_LIBRARIES_RELEASE} debug ${${LIB_PKG}_LIBRARIES_DEBUG})
+  ELSE (WIN32 AND NOT CYGWIN)
+     SET (${LIB_PKG}_LIBRARIES ${LIB_TARGET})
+  ENDIF (WIN32 AND NOT CYGWIN)
 
 ELSE (NESTED_BUILD)
 
@@ -35,7 +41,7 @@ ELSE (NESTED_BUILD)
     # We may be on a system with "Release" and "Debug" sub-configurations
     FIND_LIBRARY(${LIB_PKG}_LIBRARIES_RELEASE ${LIB_TARGET} 
 		 ${LIB_DIR}/Release NO_DEFAULT_PATH)
-    FIND_LIBRARY(${LIB_PKG}_LIBRARIES_DEBUG ${LIB_TARGET} 
+    FIND_LIBRARY(${LIB_PKG}_LIBRARIES_DEBUG ${LIB_TARGET}d 
 		 ${LIB_DIR}/Debug NO_DEFAULT_PATH)
 
     IF (${LIB_PKG}_LIBRARIES_RELEASE AND NOT ${LIB_PKG}_LIBRARIES_DEBUG)

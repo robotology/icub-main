@@ -1,4 +1,7 @@
 
+2010-02-03 Ugo Pattacini <ugo.pattacini@iit.it>
+	   * CMakeLists.txt, IKINConfig.cmake: for win32 DEBUG_POSTFIX put equal to "d"
+
 2010-01-14 Ugo Pattacini <ugo.pattacini@iit.it>
 	   * iKinFwd.h,.cpp: provided Jacobians for generic ith link
 
