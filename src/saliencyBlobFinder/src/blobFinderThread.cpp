@@ -471,12 +471,15 @@ void blobFinderThread::drawAllBlobs(bool stable)
     PixelMono searchTD=0;
     PixelMono pixelRG=0,pixelGR=0,pixelBY=0;
     searchRG=((targetRED-targetGREEN+255)/510)*255;
-    pixelRG=searchRG;
+    //pixelRG=searchRG;
+    pixelRG=targetRED;
     searchGR=((targetGREEN-targetRED+255)/510)*255;
-    pixelGR=searchGR;
+    //pixelGR=searchGR;
+    pixelGR=targetGREEN;
     PixelMono addRG=((targetRED+targetGREEN)/510)*255;
     searchBY=((targetBLUE-addRG+255)/510)*255;
-    pixelBY=searchBY;
+    //pixelBY=searchBY;
+    pixelBY=targetBLUE;
     int psb32s;
     //int psb8u;
     Ipp32s* _inputImgRGS32=ippiMalloc_32s_C1(this->width,this->height,&psb32s);
@@ -511,7 +514,7 @@ void blobFinderThread::drawAllBlobs(bool stable)
     }
     else
         return;
-    int nBlobs=salience->DrawContrastLP2(*_inputImgGRS, *_inputImgGRS, *_inputImgBYS,
+    int nBlobs=salience->DrawContrastLP2(*_inputImgRGS, *_inputImgGRS, *_inputImgBYS,
         *outContrastLP, *tagged, max_tag,
         salienceBU, salienceTD,
         pixelRG, pixelGR, pixelBY, 255); // somma coeff pos=3 somma coeff neg=-3

@@ -513,7 +513,7 @@ int SalienceOperator::DrawContrastLP2(ImageOf<PixelMono>& rg, ImageOf<PixelMono>
                 salienceBU=m_boxes[i].cBY;*/
 
             //__OLD//sum of abs of contrast differences
-            // BU is the sum of abs of contrast differences
+            // BU(bottom up) is the sum of abs of contrast divergence
             salienceBU=m_boxes[i].cRG+m_boxes[i].cGR+m_boxes[i].cBY;
             
             // CALCULATE THE TOP-DOWN SALIENCY 
@@ -523,8 +523,8 @@ int SalienceOperator::DrawContrastLP2(ImageOf<PixelMono>& rg, ImageOf<PixelMono>
             salienceTD=sqrt((double)(m_boxes[i].meanRG-prg)*(m_boxes[i].meanRG-prg)+
                             (m_boxes[i].meanGR-pgr)*(m_boxes[i].meanGR-pgr)+
                             (m_boxes[i].meanBY-pby)*(m_boxes[i].meanBY-pby));
-            //salienceTD=255-salienceTD/sqrt(3.0);
-            salienceTD=255-salienceTD;
+            salienceTD=255-salienceTD/sqrt(3.0);
+            //salienceTD=255-salienceTD;
             
             /*__OLD//salienceTD=abs(m_boxes[i].meanRG-prg);
                             
@@ -599,10 +599,12 @@ int SalienceOperator::DrawContrastLP2(ImageOf<PixelMono>& rg, ImageOf<PixelMono>
         if (m_boxes[i].valid) {
             //__OLD//if ((m_boxes[i].salienceBU==maxSalienceBU && pBU==1) || (m_boxes[i].salienceTD==maxSalienceTD && pTD==1))
             //if ((m_boxes[i].salienceBU==maxSalienceBU && pBU==1)||(m_boxes[i].salienceTD==maxSalienceTD && pTD==1))
-            if (m_boxes[i].salienceTotal==maxSalienceTot)
+            /*if (m_boxes[i].salienceTotal==maxSalienceTot)
                 m_boxes[i].salienceTotal=255;
             else 
-                m_boxes[i].salienceTotal=a3*m_boxes[i].salienceTotal+b3;
+                m_boxes[i].salienceTotal=a3*m_boxes[i].salienceTotal+b3;*/
+            
+            m_boxes[i].salienceTotal=m_boxes[i].salienceTotal;
 
             //for the whole blob in this loop
             for (int r=m_boxes[i].rmin; r<=m_boxes[i].rmax; r++)
