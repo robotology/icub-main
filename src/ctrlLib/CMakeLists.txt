@@ -30,4 +30,6 @@ INCLUDE_DIRECTORIES(${PROJECT_SOURCE_DIR}/include)
 
 ADD_LIBRARY(${PROJECTNAME} ${folder_source} ${folder_header})
 
+INSTALL(TARGETS ${PROJECTNAME} DESTINATION lib)
+INSTALL(FILES ${folder_header} DESTINATION include/iCub)
 
