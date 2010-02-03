@@ -16,8 +16,8 @@ IF (NOT SKIP_cartesiancontrollerserver OR NOT SKIP_cartesiancontrollerclient)
     SET(server_source ServerCartesianController.cpp)
     SET(server_header CommonCartesianController.h ServerCartesianController.h)
 
-    LINK_LIBRARIES(${IKIN_LIBRARIES})
-    ADD_LIBRARY(cartesiancontrollerserver ${server_source} ${server_header})    
+    ADD_LIBRARY(cartesiancontrollerserver ${server_source} ${server_header})
+    TARGET_LINK_LIBRARIES(cartesiancontrollerserver ${IKIN_LIBRARIES})
   ENDIF (NOT SKIP_cartesiancontrollerserver)
 
   IF (NOT SKIP_cartesiancontrollerclient)
