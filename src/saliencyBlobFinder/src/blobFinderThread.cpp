@@ -514,7 +514,7 @@ void blobFinderThread::drawAllBlobs(bool stable)
     }
     else
         return;
-    int nBlobs=salience->DrawContrastLP2(*_inputImgRGS, *_inputImgGRS, *_inputImgBYS,
+    int nBlobs=salience->DrawContrastLP2(_inputImgRG, _inputImgGR, _inputImgBY,
         *outContrastLP, *tagged, max_tag,
         salienceBU, salienceTD,
         pixelRG, pixelGR, pixelBY, 255); // somma coeff pos=3 somma coeff neg=-3

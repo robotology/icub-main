@@ -523,8 +523,8 @@ int SalienceOperator::DrawContrastLP2(ImageOf<PixelMono>& rg, ImageOf<PixelMono>
             salienceTD=sqrt((double)(m_boxes[i].meanRG-prg)*(m_boxes[i].meanRG-prg)+
                             (m_boxes[i].meanGR-pgr)*(m_boxes[i].meanGR-pgr)+
                             (m_boxes[i].meanBY-pby)*(m_boxes[i].meanBY-pby));
-            salienceTD=255-salienceTD/sqrt(3.0);
-            //salienceTD=255-salienceTD;
+            //salienceTD=255-salienceTD/sqrt(3.0);
+            salienceTD=255-salienceTD;
             
             /*__OLD//salienceTD=abs(m_boxes[i].meanRG-prg);
                             
@@ -760,7 +760,7 @@ void SalienceOperator::maxSalienceBlob(ImageOf<PixelInt>& tagged, int max_tag, Y
         this->maxr=(box.rmax+box.rmin)/2;
     }
     //printf("rho:%f,theta:%f \n",maxc,maxr);
-    printf("centroidx:%f,centroid_y:%f \n",centroid_x,centroid_y);
+    //printf("centroidx:%f,centroid_y:%f \n",centroid_x,centroid_y);
     //_gaze.computeRay(YARPBabybotHeadKin::KIN_LEFT_PERI, box.elev, box.az, (int)box.centroid_x, (int)box.centroid_y);
 }
 

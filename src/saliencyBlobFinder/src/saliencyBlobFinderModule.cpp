@@ -255,8 +255,8 @@ void saliencyBlobFinderModule::outPorts(){
         if((dif>10)&&(dif<=20)){
             bot.addVocab( Vocab::encode("sac") ); 
             bot.addVocab( Vocab::encode("img") ); 
-            double xrel=(blobFinder->salience->centroid_y-width/2)/(width/2);
-            double yrel=(blobFinder->salience->centroid_x-height/2)/(height/2);
+            double xrel=(blobFinder->salience->centroid_x-320/2)/(320/2);
+            double yrel=(blobFinder->salience->centroid_y-240/2)/(-240/2);
             printf("%f>%f,%f \n",dif,xrel,yrel);
             bot.addDouble(xrel);  
             bot.addDouble(yrel); 
