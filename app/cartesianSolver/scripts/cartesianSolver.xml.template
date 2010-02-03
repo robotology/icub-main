@@ -6,7 +6,6 @@
       
         <module>
                 <name>iCubInterface</name>
-                <parameters>--from iCubInterfaceCartesian.ini</parameters>
                 <node>pc104</node>
                 <stdio>console</stdio>
                 <tag>icubInterface</tag>
