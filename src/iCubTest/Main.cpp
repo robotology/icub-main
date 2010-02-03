@@ -169,6 +169,7 @@ This file can be edited at src/iCubTest/main.cpp.
 #include <yarp/os/ResourceFinder.h>
 #include <yarp/os/Value.h>
 #include <yarp/os/Bottle.h>
+#include <yarp/os/Network.h>
 
 #include "TestSet.h"
 #include "TestMotors.h"
@@ -176,6 +177,9 @@ This file can be edited at src/iCubTest/main.cpp.
 
 int main(int argc,char* argv[])
 {
+    // do not forget to initialize yarp! --nat.
+    yarp::os::Network yarp;
+
     yarp::os::ResourceFinder rf;
     //rf.setVerbose();
     rf.setDefaultContext("tutorials/iCubTest");
