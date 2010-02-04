@@ -10,9 +10,8 @@ IF(NOT CTRLLIB_FOUND)
     IF(NESTED_BUILD)
     
       IF(WIN32 AND NOT CYGWIN)
-         FIND_LIBRARY(CTRLLIB_LIBRARIES_RELEASE ctrlLib  ${ICUB_DIR}/lib/Release NO_DEFAULT_PATH)
-         FIND_LIBRARY(CTRLLIB_LIBRARIES_DEBUG   ctrlLibd ${ICUB_DIR}/lib/Debug   NO_DEFAULT_PATH)
-         SET(CTRLLIB_LIBRARIES optimized ${CTRLLIB_LIBRARIES_RELEASE} debug ${CTRLLIB_LIBRARIES_DEBUG})
+         SET(CTRLLIB_LIBRARIES optimized ${ICUB_DIR}/lib/Release/ctrlLib.lib
+                               debug     ${ICUB_DIR}/lib/Debug/ctrlLibd.lib)
       ELSE(WIN32 AND NOT CYGWIN)
          SET(CTRLLIB_LIBRARIES ctrlLib)
       ENDIF(WIN32 AND NOT CYGWIN)

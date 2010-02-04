@@ -24,9 +24,8 @@ IF(NOT IKIN_FOUND)
     IF(NESTED_BUILD)
 
       IF(WIN32 AND NOT CYGWIN)
-         FIND_LIBRARY(IKIN_LIBRARIES_RELEASE iKin  ${ICUB_DIR}/lib/Release NO_DEFAULT_PATH)
-         FIND_LIBRARY(IKIN_LIBRARIES_DEBUG   iKind ${ICUB_DIR}/lib/Debug   NO_DEFAULT_PATH)
-         SET(IKIN_LIBRARIES optimized ${IKIN_LIBRARIES_RELEASE} debug ${IKIN_LIBRARIES_DEBUG})
+        SET(IKIN_LIBRARIES iKin optimized ${ICUB_DIR}/lib/Release/iKin.lib
+                                debug     ${ICUB_DIR}/lib/Debug/iKind.lib)
       ELSE(WIN32 AND NOT CYGWIN)
          SET(IKIN_LIBRARIES iKin)
       ENDIF(WIN32 AND NOT CYGWIN)
