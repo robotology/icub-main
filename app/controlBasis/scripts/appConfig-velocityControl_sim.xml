@@ -1,0 +1,39 @@
+<application>
+  <name>iCubSimVelocityControlStarter</name>
+	<module>
+		<name>velocityControl</name>
+		<parameters>--robot icubSim --part right_arm --period 10</parameters>
+		<tag>rightArmVelController</tag>
+		<node>/plutonia</node>
+	</module>
+	<module>
+		<name>velocityControl</name>
+		<parameters>--robot icubSim --part left_arm --period 10</parameters>
+		<tag>leftArmVelController</tag>
+		<node>/plutonia</node>
+	</module>
+	<module>
+		<name>velocityControl</name>
+		<parameters>--robot icubSim --part torso --period 10</parameters>
+		<tag>torsoVelController</tag>
+		<node>/plutonia</node>
+	</module>
+	<module>
+		<name>velocityControl</name>
+		<parameters>--robot icubSim --part head --period 10</parameters>
+		<tag>headVelController</tag>
+		<node>/plutonia</node>
+	</module>
+	<module>
+		<name>velocityControl</name>
+		<parameters>--robot icubSim --part right_leg --period 10</parameters>
+		<tag>rightLegVelController</tag>
+		<node>/plutonia</node>
+	</module>
+	<module>
+		<name>velocityControl</name>
+		<parameters>--robot icubSim --part left_leg --period 10</parameters>
+		<tag>leftLegVelController</tag>
+		<node>/plutonia</node>
+	</module>
+</application>

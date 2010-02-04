@@ -1,0 +1,101 @@
+<application>
+  <name>iCubSimControlBasisResourceStarter</name>
+  <dependencies>
+    <port>/icubSim/right_arm/state:o</port> 
+    <port>/icubSim/vc/right_arm/command</port>
+    <port>/icubSim/vc/right_arm/input</port>
+    <port>/icubSim/left_arm/state:o</port> 
+    <port>/icubSim/vc/left_arm/command</port>
+    <port>/icubSim/vc/left_arm/input</port>
+    <port>/icubSim/right_leg/state:o</port> 
+    <port>/icubSim/vc/right_leg/command</port>
+    <port>/icubSim/vc/right_leg/input</port>
+    <port>/icubSim/left_leg/state:o</port> 
+    <port>/icubSim/vc/left_leg/command</port>
+    <port>/icubSim/vc/left_leg/input</port>
+  </dependencies>
+  <module>
+    <name>controlBasisResource</name>
+    <parameters>--type yarpConfiguration --robot /icubSim --part right_arm --config right_arm.dh</parameters>
+    <tag>rightArmConfiguration</tag>
+    <node>plutonia</node>
+    <stdio>plutonia</stdio>
+  </module>
+  <module>
+    <name>controlBasisResource</name>
+    <parameters>--type endEffector --robot /icubSim --part right_arm</parameters>
+    <tag>rightArmEndEffector</tag>
+    <node>plutonia</node>
+    <stdio>plutonia</stdio>
+  </module>
+  <module>
+    <name>controlBasisResource</name>
+    <parameters>--type yarpConfiguration --robot /icubSim --part left_arm --config left_arm.dh</parameters>
+    <tag>leftArmConfiguration</tag>
+    <node>plutonia</node>
+    <stdio>plutonia</stdio>
+  </module>
+  <module>
+    <name>controlBasisResource</name>
+    <parameters>--type endEffector --robot /icubSim --part left_arm</parameters>
+    <tag>leftArmEndEffector</tag>
+    <node>plutonia</node>
+    <stdio>plutonia</stdio>
+  </module>
+  <module>
+    <name>controlBasisResource</name>
+    <parameters>--type yarpConfiguration --robot /icubSim --part right_leg --config right_leg.dh</parameters>
+    <tag>rightLegConfiguration</tag>
+    <node>plutonia</node>
+    <stdio>plutonia</stdio>
+  </module>
+  <module>
+    <name>controlBasisResource</name>
+    <parameters>--type endEffector --robot /icubSim --part right_leg</parameters>
+    <tag>rightLegEndEffector</tag>
+    <node>plutonia</node>
+    <stdio>plutonia</stdio>
+  </module>
+  <module>
+    <name>controlBasisResource</name>
+    <parameters>--type yarpConfiguration --robot /icubSim --part left_leg --config left_leg.dh</parameters>
+    <tag>leftLegConfiguration</tag>
+    <node>plutonia</node>
+    <stdio>plutonia</stdio>
+  </module>
+  <module>
+    <name>controlBasisResource</name>
+    <parameters>--type endEffector --robot /icubSim --part left_leg</parameters>
+    <tag>leftLegEndEffector</tag>
+    <node>plutonia</node>
+    <stdio>plutonia</stdio>
+  </module>
+  <module>
+    <name>controlBasisResource</name>
+    <parameters>--type yarpConfiguration --robot /icubSim --part torso</parameters>
+    <tag>torsoConfiguration</tag>
+    <node>plutonia</node>
+    <stdio>plutonia</stdio>
+  </module>
+  <module>
+    <name>controlBasisResource</name>
+    <parameters>--type yarpConfiguration --robot /icubSim --part head --config head.dh</parameters>
+    <tag>headConfiguration</tag>
+    <node>plutonia</node>
+    <stdio>plutonia</stdio>
+  </module>
+  <module>
+    <name>controlBasisResource</name>
+    <parameters>--type yarpConfiguration --robot /icubSim --part right_hand</parameters>
+    <tag>rightHandConfiguration</tag>
+    <node>plutonia</node>
+    <stdio>plutonia</stdio>
+  </module>
+  <module>
+    <name>controlBasisResource</name>
+    <parameters>--type yarpConfiguration --robot /icubSim --part left_hand</parameters>
+    <tag>leftHandConfiguration</tag>
+    <node>plutonia</node>
+    <stdio>plutonia</stdio>
+  </module>
+</application>
