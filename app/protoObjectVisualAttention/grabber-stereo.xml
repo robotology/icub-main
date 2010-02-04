@@ -30,24 +30,32 @@
       <node>icub14</node>
       <tag>rightview</tag>
    </module>
-   <module>
-      <name>yarpview</name>
-      <parameters>--name /viewremapper --x 640 --y 50 --synch</parameters>
-      <node>icub14</node>
-      <tag>viewremapper</tag>
-   </module>
+   
    <module>
       <name>logpolarRemapper</name>
-      <parameters>--name remapper --remote /icub/cam/left --width 480</parameters>
+      <parameters>--name remapper/left --remote /icub/cam/left --width 480</parameters>
       <node>pc104</node>
       <stdio>icub14</stdio>
-      <tag>remapper</tag>
+      <tag>remapperLeft</tag>
+   </module>
+<module>
+      <name>logpolarRemapper</name>
+      <parameters>--name remapper/right --remote /icub/cam/right --width 480</parameters>
+      <node>pc104</node>
+      <stdio>icub14</stdio>
+      <tag>remapperRight</tag>
    </module>
    <module>
       <name>yarpview</name>
-      <parameters>--name /view4 --x 960 --y 50 --synch</parameters>
+      <parameters>--name /viewremapperRight --x 960 --y 50 --synch</parameters>
       <node>icub14</node>
-      <tag>view4</tag>
+      <tag>viewremapperRight</tag>
+   </module>
+	<module>
+      <name>yarpview</name>
+      <parameters>--name /viewremapperLeft --x 640 --y 50 --synch</parameters>
+      <node>icub14</node>
+      <tag>viewremapperLeft</tag>
    </module>
 <connection>
   <output>/icub/cam/left/logpolar</output>
@@ -59,14 +67,19 @@
   <input>/rightview</input>
   <protocol>mcast</protocol>
 </connection>
-<connection>
+<!--connection>
   <output>/icub/cam/right</output>
   <input>/viewremapper</input>
   <protocol>mcast</protocol>
+</connection-->
+<connection>
+  <output>/remapper/left:out</output>
+  <input>/viewremapperLeft</input>
+  <protocol>mcast</protocol>
 </connection>
 <connection>
-  <output>/remapper:out</output>
-  <input>/view4</input>
-  <protocol>udp</protocol>
+  <output>/remapper/right:out</output>
+  <input>/viewremapperRight</input>
+  <protocol>mcast</protocol>
 </connection>
 </application>
