@@ -131,6 +131,7 @@ public:
     bool simulationMode = true;
     bool velocityMode = false;
 
+    string iCubDir(getenv("ICUB_ROOT"));
     if(rf.check("type")) {
       resourceType=rf.find("type").asString().c_str();
     } 
@@ -142,7 +143,7 @@ public:
     }
     if(rf.check("configFile")) {
       configFile= rf.find("configFile").asString().c_str();
-      configFile = "/home/hart/iCub/src/controlBasis/config/"+configFile;
+      configFile = iCubDir+"/app/controlBasis/conf/"+configFile;
     }
     if(rf.check("cbName")) {
       cbName=rf.find("cbName").asString().c_str();
@@ -157,8 +158,9 @@ public:
     cout << resourceType << endl;
     cout << robot << endl;
     cout << part << endl;
+    cout << endl<< endl<< endl;
     cout << configFile << endl;
-
+    cout << endl<< endl<< endl;
     if( (part == "") || (robot == "") ) {
       return false;
     }
