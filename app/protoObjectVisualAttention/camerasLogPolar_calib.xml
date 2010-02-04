@@ -1,63 +1,65 @@
 <application>
 <name>logpolar grabber and reconstruct</name>
 <dependencies>
- 	
 	<port>/pc104</port>
 </dependencies>
+
+
    <module>
       <name>icubmoddev</name>
 	      <parameters>--device logpolargrabber --subdevice dragonfly2 --width 320 --height 240  --white_balance 0.506 0.494 --gain 0.312 --shutter 0.913 --name /icub/cam/left  --brightness 0 --DR2  --d 0 --framerate 30 </parameters>
      <node>pc104</node>
-          <stdio>icub14</stdio>
+          <stdio>icub15</stdio>
 	  <tag>logpolar-grabber-left</tag>
    </module>
-	<module>
+
+   <module>
       <name>icubmoddev</name>
 	      <parameters>--device logpolargrabber --subdevice dragonfly2 --width 320 --height 240  --white_balance 0.506 0.494 --gain 0.312 --shutter 0.913 --name /icub/cam/right  --brightness 0 --DR2  --d 1 --framerate 30 </parameters>
      <node>pc104</node>
-	  <stdio>icub14</stdio>
+	  <stdio>icub15</stdio>
 	  <tag>logpolar-grabber-right</tag>
    </module>
+
+   
    <module>
-	<module>
         <name>camCalib</name>
         <parameters>--context cameraCalibration/conf --from icubEyes.ini --group CAMERA_CALIBRATION_LEFT --name /icub/camcalib/left</parameters>  
-        <node>icub14</node>
+        <node>icub15</node>
         <tag>camcalib_left</tag>
     </module> 
     <module>
         <name>camCalib</name>
         <parameters>--context cameraCalibration/conf --from icubEyes.ini --group CAMERA_CALIBRATION_RIGHT --name /icub/camcalib/right</parameters> 
-        <node>icub14</node>
+        <node>icub15</node>
         <tag>camcalib_right</tag> 
     </module> 
    <module>
       <name>yarpview</name>
       <parameters>--name /icub/view/left --x 0 --y 0 --synch</parameters>
-      <node>icub14</node>
+      <node>icub15</node>
 	<tag>viewleft</tag>
    </module>
    <module>
       <name>yarpview</name>
       <parameters>--name /icub/view/right --x 320 --y 0 --synch</parameters>
-      <node>icub14</node>
-	<tag>viewright</tag>
+      <node>icub15</node>
+      <tag>viewright</tag>
    </module>
-<module>
+   <module>
       <name>frameGrabberGui2</name>
 	  <parameters>--local /icub/fggui/left --remote /icub/cam/left --x 0 --y 350 --width 350 --height 500</parameters>
 	  <tag>fggui_left</tag>
-	  <node>icub14</node>
+	  <node>icub15</node>
    </module>
    <module>
       <name>frameGrabberGui2</name>
 	  <parameters>--local /icub/fggui/right --remote /icub/cam/right --x 320 --y 350 --width 350 --height 500</parameters>
 	  <tag>fggui_right</tag>
-	  <node>icub14</node>
+	  <node>icub15</node>
    </module>
    
- <!-----------------------connections -------------------------------------------------------------------->  
-
+ 
 <connection>
   <output>/icub/cam/left</output>
   <input>/icub/camcalib/left/in</input>
