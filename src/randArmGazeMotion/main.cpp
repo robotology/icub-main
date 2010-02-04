@@ -290,7 +290,7 @@ public:
             //orient the hand so that the palm is directed toward the eyes
             Vector orient_axis_z = hand2head;
             Vector orient_axis_x = cross(orient_axis_z,hand_0);
-            Vector orient_axis_y = cross(orient_axis_x,orient_axis_z);
+            Vector orient_axis_y = cross(orient_axis_z,orient_axis_x);
 
             //normalize the axis to get the new basis
             double norm_x = sqrt(yarp::math::dot(orient_axis_x,orient_axis_x));
