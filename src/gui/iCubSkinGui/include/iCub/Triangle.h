@@ -13,90 +13,91 @@ class Triangle
 public:
     Triangle(double cx,double cy,double th)
     {
-        double deg2rad=M_PI/180.0;
-        double H=sin(deg2rad*60.0);
-        double l=2.0*H/9.0;
+        const double DEG2RAD=M_PI/180.0;
+
+        const double CST=cos(DEG2RAD*th);
+        const double SNT=sin(DEG2RAD*th);
+
+        const double H=sin(DEG2RAD*60.0);
+        const double L=2.0*H/9.0;
         
-        xm[6]=l*cos(deg2rad*30.0); xm[5]=0.5-xm[6]; xm[3]=0.5+xm[6]; xm[2]=1.0-xm[6];
-        xm[7]=0.25; xm[4]=0.5; xm[1]=0.75;
-        xm[8]=0.25+xm[6]; xm[12]=0.75-xm[6];
-        xm[9]=xm[8]; xm[11]=xm[12];
-        xm[10]=0.5;
+        dX[5]=L*cos(DEG2RAD*30.0); dX[4]=0.5-dX[5]; dX[2]=0.5+dX[5]; dX[1]=1.0-dX[5];
+        dX[6]=0.25; dX[3]=0.5; dX[0]=0.75;
+        dX[7]=0.25+dX[5]; dX[11]=0.75-dX[5];
+        dX[8]=dX[7]; dX[10]=dX[11];
+        dX[9]=0.5;
 
-        ym[6]=l*sin(deg2rad*30.0); ym[5]=ym[6]; ym[3]=ym[6]; ym[2]=ym[6];
-        ym[7]=0.5*H-l; ym[4]=l; ym[1]=ym[7];
-        ym[8]=0.5*H-l*sin(deg2rad*30.0); ym[12]=ym[8];
-        ym[9]=0.5*H+l*sin(deg2rad*30.0); ym[11]=ym[9];
-        ym[10]=H-l;
+        dY[5]=L*sin(DEG2RAD*30.0); dY[4]=dY[5]; dY[2]=dY[5]; dY[1]=dY[5];
+        dY[6]=0.5*H-L; dY[3]=L; dY[0]=dY[6];
+        dY[7]=0.5*H-L*sin(DEG2RAD*30.0); dY[11]=dY[7];
+        dY[8]=0.5*H+L*sin(DEG2RAD*30.0); dY[10]=dY[8];
+        dY[9]=H-L;
 
-        for (int i=1; i<=12; ++i)
+        for (int i=0; i<12; ++i)
         {
-            xm[i]=30.0*(xm[i]-0.5);
-            ym[i]=30.0*ym[i]-10.0*H;
+            double x=30.0*dX[i]-15.0;
+            double y=30.0*dY[i]-10.0*H;
+
+            dX[i]=cx+CST*x-SNT*y;
+            dY[i]=cy+SNT*x+CST*y;
         }
 
-        m_cx=cx;
-        m_cy=cy;
+        dXv[0]=cx-15.0*CST+8.66*SNT;
+        dYv[0]=cy-15.0*SNT-8.66*CST;
 
-        m_cst=cos(deg2rad*th);
-        m_snt=sin(deg2rad*th);
+        dXv[1]=cx+15.0*CST+8.66*SNT;
+        dYv[1]=cy+15.0*SNT-8.66*CST;
 
-        double dX,dY;
+        dXv[2]=cx-17.32*SNT;
+        dYv[2]=cy+17.32*CST;
 
-        for (int i=1; i<=12; ++i)
+        // in static definition
+        //dXmin=dYmin= HUGE; 
+        //dXmax=dYmax=-HUGE;
+
+        for (int i=0; i<3; ++i)
         {
-            dX=m_cx+m_cst*xm[i]-m_snt*ym[i];
-            dY=m_cy+m_snt*xm[i]+m_cst*ym[i];
-
-            if (dX<xMin) xMin=dX;
-            if (dX>xMax) xMax=dX;
-            if (dY<yMin) yMin=dY;
-            if (dY>yMax) yMax=dY;
+            if (dXv[i]<dXmin) dXmin=dXv[i];
+            if (dXv[i]>dXmax) dXmax=dXv[i];
+            if (dYv[i]<dYmin) dYmin=dYv[i];
+            if (dYv[i]>dYmax) dYmax=dYv[i];
         }
+
+        dXc=cx;
+        dYc=cy;
     }
 
-    ~Triangle()
+    void resize(int width,int height,int margin)
     {
-        if (Exponential)
-        {
-            delete [] Exponential;
-            Exponential=0;
-        }
-    }
+        if (3*margin>=width || 3*margin>=height) margin=0;
 
-    void resize(int width,int height,int margin=20)
-    {
-        double scaleX=double(width- 2*margin)/(xMax-xMin);
-        double scaleY=double(height-2*margin)/(yMax-yMin);
-
+        double scaleX=double(width -2*margin)/(dXmax-dXmin);
+        double scaleY=double(height-2*margin)/(dYmax-dYmin);
         double scale=scaleX<scaleY?scaleX:scaleY;
 
         m_Radius=2.0*scale;
 
-        double xMid=0.5*(xMin+xMax);
-        double yMid=0.5*(yMin+yMax);
+        double dXmid=0.5*(dXmin+dXmax);
+        double dYmid=0.5*(dYmin+dYmax);
 
-        int w2=width/2;
+        int w2=width /2;
         int h2=height/2;
 
-        for (int i=1; i<=12; ++i)
+        for (int i=0; i<12; ++i)
         {
-            x[i]=w2+int(scale*((m_cx+m_cst*xm[i]-m_snt*ym[i])-xMid));
-            y[i]=h2+int(scale*((m_cy+m_snt*xm[i]+m_cst*ym[i])-yMid));
+            x[i]=w2+int(scale*(dX[i]-dXmid));
+            y[i]=h2+int(scale*(dY[i]-dYmid));
         }
 
-        m_x0=w2+int(scale*((m_cx-15.0*m_cst+8.66*m_snt)-xMid));
-        m_y0=h2+int(scale*((m_cy-15.0*m_snt-8.66*m_cst)-yMid));
-
-        m_x1=w2+int(scale*((m_cx+15.0*m_cst+8.66*m_snt)-xMid));
-        m_y1=h2+int(scale*((m_cy+15.0*m_snt-8.66*m_cst)-yMid));
-
-        m_x2=w2+int(scale*((m_cx-17.32*m_snt)-xMid));
-        m_y2=h2+int(scale*((m_cy+17.32*m_cst)-yMid));
+        for (int i=0; i<3; ++i)
+        {
+            xv[i]=w2+int(scale*(dXv[i]-dXmid));
+            yv[i]=h2+int(scale*(dYv[i]-dYmid));
+        }
 
         double sigma=0.5*5.55*scale;
         int maxRange=int(3.0*sigma);
-        
+
         if (maxRange!=m_maxRange)
         {
             m_maxRange=maxRange;
@@ -111,18 +112,27 @@ public:
             }
         }
 
-        m_Xa=w2+int(scale*(m_cx-15.0-xMid))-maxRange;
-        m_Xb=w2+int(scale*(m_cx+15.0-xMid))+maxRange;
-        m_Ya=h2+int(scale*(m_cy-15.0-yMid))-maxRange;
-        m_Yb=h2+int(scale*(m_cy+15.0-yMid))+maxRange;
+        xMin=w2+int(scale*(dXc-dXmid-15.0))-maxRange;
+        xMax=w2+int(scale*(dXc-dXmid+15.0))+maxRange;
+        yMin=h2+int(scale*(dYc-dYmid-15.0))-maxRange;
+        yMax=h2+int(scale*(dYc-dYmid+15.0))+maxRange;
 
-        if (m_Xa<0) m_Xa=0;
-        if (m_Xb>width) m_Xb=width;
-        if (m_Ya<0) m_Ya=0;
-        if (m_Yb>height) m_Yb=height;
+        if (xMin<0)      xMin=0;
+        if (xMax>width)  xMax=width;
+        if (yMin<0)      yMin=0;
+        if (yMax>height) yMax=height;
 
         m_Width=width;
         m_Height=height;
+    }
+
+    ~Triangle()
+    {
+        if (Exponential)
+        {
+            delete [] Exponential;
+            Exponential=0;
+        }
     }
 
     int Abs(int x)
@@ -134,15 +144,15 @@ public:
     {
         int dx,dy;
 
-        for (int Y=m_Ya; Y<m_Yb; ++Y)
+        for (int Y=yMin; Y<yMax; ++Y)
         {        
-            int Ybase=(m_Width-Y-1)*m_Width;
+            int Ybase=(m_Height-Y-1)*m_Width;
 
-            for (int X=m_Xa; X<m_Xb; ++X)
+            for (int X=xMin; X<xMax; ++X)
             {
                 double &value=image[X+Ybase];
 
-                for (int i=1; i<=12; ++i)
+                for (int i=0; i<12; ++i)
                 {
                     dx=Abs(X-x[i]);
                     if (dx>=m_maxRange) continue;
@@ -157,26 +167,27 @@ public:
 
     void setActivationFirst7(unsigned char* data)
     {
-        for (int i=1; i<=7; ++i)
+        for (int i=0; i<7; ++i)
         {
-            activation[i]=double(255-data[i]);
+            activation[i]=double(255-data[i+1]);
         }
     }
     void setActivationLast5(unsigned char* data)
     {
         for (int i=1; i<=5; ++i)
         {
-            activation[i+7]=double(255-data[i]);
+            activation[i+6]=double(255-data[i]);
         }
     }
 
     void draw(unsigned char *image)
     {
-        drawLine(image,m_x0,m_y0,m_x1,m_y1);
-        drawLine(image,m_x1,m_y1,m_x2,m_y2);
-        drawLine(image,m_x2,m_y2,m_x0,m_y0);
-
-        for (int i=1; i<=12; ++i)
+        for (int i=0; i<3; ++i)
+        {
+            drawLine(image,xv[i],yv[i],xv[(i+1)%3],yv[(i+1)%3]);
+        }
+        
+        for (int i=0; i<12; ++i)
         {
             drawCircle(image,x[i],y[i],m_Radius);
         }
@@ -191,7 +202,7 @@ protected:
 
         //y=m_Width-y-1;
         //int bytePos=(x+(y-1)*m_Width)*3;
-        int bytePos=(x+(m_Width-y-2)*m_Width)*3;
+        int bytePos=(x+(m_Height-y-2)*m_Width)*3;
 
         if (image[bytePos-3]<R4) image[bytePos-3]=R4;
         if (image[bytePos-2]<G4) image[bytePos-2]=G4;
@@ -275,22 +286,25 @@ protected:
         }
     }
 
-    double xm[16],ym[16];
-    int x[16],y[16];
+    // original
+    double dX[12],dY[12];
+    static double dXmin,dXmax,dYmin,dYmax;
+    double dXv[3],dYv[3];
+    double dXc,dYc;
 
-    int m_Width,m_Height;
-
-    int m_Xa,m_Xb,m_Ya,m_Yb;
-
-    double m_cx,m_cy,m_cst,m_snt;
-    double activation[16];
-
-    int m_x0,m_y0,m_x1,m_y1,m_x2,m_y2;
     double m_Radius;
+    double activation[12];
 
     static int m_maxRange;
     static double *Exponential;
-    static double xMin,xMax,yMin,yMax;
+    
+    // scaled
+    int x[12],y[12];
+    int xv[3],yv[3];
+
+    int xMin,xMax,yMin,yMax;
+
+    int m_Width,m_Height;
 };
 
 #endif

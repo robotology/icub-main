@@ -8,7 +8,6 @@ const int CAN_DRIVER_BUFFER_SIZE=2047;
 const int canBufferSize=144;
 
 bool SkinMeshThread::threadInit()
-
 {
 	printf("Image Thread initialising...\n");
 
@@ -28,9 +27,19 @@ bool SkinMeshThread::threadInit()
     if (!driver.isValid())
     {
         fprintf(stderr, "Error opening PolyDriver check parameters\n");
-        return false;
+        fprintf(stderr, "NOTICE: simulating data\n");
+        return true;
     }
+
     driver.view(pCanBus);
+    
+    if (!pCanBus)
+    {
+        fprintf(stderr, "Error opening /ecan device not available\n");
+        fprintf(stderr, "NOTICE: simulating data\n");
+        return true;
+    }
+
     driver.view(pCanBufferFactory);
     pCanBus->canSetBaudRate(0); //default 1MB/s
 
@@ -50,47 +59,51 @@ bool SkinMeshThread::threadInit()
 
 void SkinMeshThread::run()
 {	
-    unsigned int canMessages=0;
-    bool res=pCanBus->canRead(canBuffer,canBufferSize,&canMessages,true);
-
     mutex.wait();
-    /*
-    int triangleId=1+rand()%6;
 
-    unsigned char data[16];
-    for (int i=1; i<=12; ++i) data[i]=rand()%256;
-
-    if (rand()%2)
+    if (pCanBus)
     {
-        triangles[triangleId]->setActivationLast5(data); // last 5 bytes
+        unsigned int canMessages=0;
+    
+        bool res=pCanBus->canRead(canBuffer,canBufferSize,&canMessages,true);
+
+	    for (unsigned int i=0; i<canMessages; i++)
+	    {
+            CanMessage &msg=canBuffer[i];
+
+		    if ((msg.getId() & 0xFFFFFFF0) == cardId)
+		    {
+                int triangleId=msg.getId() & 0x0F;
+
+                if (msg.getData()[0] & 0x80)
+                {
+                    triangles[triangleId]->setActivationLast5(msg.getData()); // last 5 bytes
+                }
+                else
+                {
+                    triangles[triangleId]->setActivationFirst7(msg.getData()); // first 7 bytes
+                }
+		    }
+	    }
     }
     else
     {
-        triangles[triangleId]->setActivationFirst7(data); // first 7 bytes
+        yarp::os::Time::delay(0.04);
+
+        int triangleId=rand()%6;
+
+        unsigned char data[8];
+        for (int i=1; i<=7; ++i) data[i]=rand()%256;
+
+        if (rand()%2)
+        {
+            triangles[triangleId]->setActivationLast5(data); // last 5 bytes
+        }
+        else
+        {
+            triangles[triangleId]->setActivationFirst7(data); // first 7 bytes
+        }
     }
-    */
-	for (unsigned int i=0; i<canMessages; i++)
-	{
-        CanMessage &msg=canBuffer[i];
-
-		if ((msg.getId() & 0xFFFFFFF0) == cardId)
-		{
-            int triangleId=msg.getId() & 0x0F;
-
-            //printf("%d triangle: ",triangleId);
-            //for (int i=0; i<8; ++i) printf("%03d ",msg.getData()[i]);
-            //printf("\n");
-
-            if (msg.getData()[0] & 0x80)
-            {
-                triangles[triangleId]->setActivationLast5(msg.getData()); // last 5 bytes
-            }
-            else
-            {
-                triangles[triangleId]->setActivationFirst7(msg.getData()); // first 7 bytes
-            }
-		}
-	}
 
     mutex.post();
 }

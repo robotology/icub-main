@@ -4,8 +4,7 @@
 #define __SKIN_MESH_THREAD_H__
 
 //#include <stdio.h>
-//#include <string>
-//#include <iostream>
+#include <string>
 
 #include <yarp/os/RateThread.h>
 #include <yarp/os/Semaphore.h>
@@ -40,27 +39,47 @@ public:
             triangles[t]=NULL;
         }
 
-        Bottle bot;
-        bot=config.findGroup("triangle0");
-        triangles[0]=new Triangle(bot.get(1).asDouble(),bot.get(2).asDouble(),bot.get(3).asDouble());
-        bot=config.findGroup("triangle1");
-        triangles[1]=new Triangle(bot.get(1).asDouble(),bot.get(2).asDouble(),bot.get(3).asDouble());
-        bot=config.findGroup("triangle2");
-        triangles[2]=new Triangle(bot.get(1).asDouble(),bot.get(2).asDouble(),bot.get(3).asDouble());
-        bot=config.findGroup("triangle3");
-        triangles[3]=new Triangle(bot.get(1).asDouble(),bot.get(2).asDouble(),bot.get(3).asDouble());
-        bot=config.findGroup("triangle4");
-        triangles[4]=new Triangle(bot.get(1).asDouble(),bot.get(2).asDouble(),bot.get(3).asDouble());
-        bot=config.findGroup("triangle5");
-        triangles[5]=new Triangle(bot.get(1).asDouble(),bot.get(2).asDouble(),bot.get(3).asDouble());
-
+        cardId=0x300 | (config.find("cardid").asInt() << 4);
         int width =config.find("width" ).asInt();
         int height=config.find("height").asInt();
 
+        yarp::os::Bottle sensorSet=config.findGroup("SENSORS").tail();
+
+        for (int t=0; t<sensorSet.size(); ++t)
+        {       
+            yarp::os::Bottle sensor(sensorSet.get(t).toString());
+
+            std::string type(sensor.get(0).asString());
+            if (type=="triangle")
+            {
+                int id=sensor.get(1).asInt();
+                double xc=sensor.get(2).asDouble();
+                double yc=sensor.get(3).asDouble();
+                double th=sensor.get(4).asDouble();
+
+                if (id>=0 && id<16)
+                {
+                    if (triangles[id])
+                    {
+                        printf("WARNING: triangle %d already exists.\n",id);
+                    }
+                    else
+                    {
+                        triangles[id]=new Triangle(xc,yc,th);
+                    }
+                }
+                else
+                {
+                    printf("WARNING: %d is invalid triangle Id [0:15].\n",id);
+                }
+            }
+            else
+            {
+                printf("WARNING: sensor type %s unknown, discarded.\n",type.c_str());
+            }
+        }
+
         resize(width,height);
-
-        cardId=0x300 | (config.find("cardid").asInt() << 4);
-
     }
 
     ~SkinMeshThread()
@@ -81,7 +100,7 @@ public:
 
         for (int t=0; t<6; ++t)
         {
-            triangles[t]->resize(width,height,64);
+            triangles[t]->resize(width,height,40);
         }
 
         mutex.post();

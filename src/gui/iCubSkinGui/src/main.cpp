@@ -12,77 +12,96 @@
 
 using namespace yarp::os;
 
-GtkWidget *da=NULL;
+static GtkWidget *gpDrawingArea=NULL;
+static SkinMeshThread *gpSkinMeshThread=NULL;
+static yarp::os::Semaphore gMutex(1);
+static int gbRunning=TRUE;
+static int gWidth=0,gHeight=0,gRowStride=0,gImageSize=0,gMapSize=0,gImageArea=0;
+static double *gpActivationMap=NULL;
+static guchar *gpImageBuff=NULL;
+static guint gTimer;
 
-SkinMeshThread *skinMeshThread=NULL;
-
-void time_handler()
+static void timer_handler()
 {
-	gtk_widget_queue_draw(da);
+	gtk_widget_queue_draw(gpDrawingArea);
 }
 
-int gRunning=TRUE;
-
-static yarp::os::Semaphore mutex(1);
-
-static gint expose_CB (GtkWidget *widget, GdkEventExpose *event, gpointer data)
+static gint paint(GtkWidget *pWidget,GdkEventExpose *pEvent,gpointer pData)
 {
-    static int width=640,height=640;
-    static int rowStride=3*width;
-    static int imageSize=rowStride*height;
-    static int imageArea=width*height;
-    static guchar *imageBuff=new guchar[imageSize];
-    static double *values=new double[width*height];
+    gint width=0,height=0;
+    gdk_drawable_get_size(pWidget->window,&width,&height);
 
-    static bool drawing=false;
+    //gint width =gpDrawingArea->allocation.width;
+    //gint height=gpDrawingArea->allocation.height;
+
+    static bool bDrawing=false;
  
-    if (drawing) return TRUE;
+    if (!gbRunning) return FALSE;
 
-    mutex.wait();
+    if (bDrawing) return TRUE;
+
+    gMutex.wait();
     
-    if (!gRunning) return FALSE;
+    bDrawing=true;
 
-    drawing=true;
-
-    if (skinMeshThread)
+    if (width!=gWidth || height!=gHeight)
     {
-        memset(values,0,imageArea*sizeof(double));
-        memset(imageBuff,0,imageSize);
+        gWidth=width;
+        gHeight=height;
+        
+        gRowStride=3*gWidth;
+        gImageSize=gRowStride*gHeight;
+        gImageArea=gWidth*gHeight;
+        gMapSize=gWidth*gHeight*sizeof(double);
 
-        skinMeshThread->eval(values);
+        if (gpActivationMap) delete [] gpActivationMap;
+        if (gpImageBuff) delete [] gpImageBuff;
+        gpActivationMap=new double[gImageArea];
+        gpImageBuff=new guchar[gImageSize];
 
-        for (int i=0; i<imageArea; ++i)
-        {
-            imageBuff[i*3]=values[i]<=255.9?guchar(values[i]):255;
-        }
-
-        skinMeshThread->draw(imageBuff);
-
-        gdk_draw_rgb_image(widget->window,
-                        widget->style->black_gc,
-					    event->area.x, event->area.y,
-						event->area.width, event->area.height,
-						GDK_RGB_DITHER_NORMAL,
-						imageBuff,
-						rowStride);
+        if (gpSkinMeshThread && gWidth>=180 && gHeight>=180) gpSkinMeshThread->resize(gWidth,gHeight);
     }
+    
+    if (gpSkinMeshThread)
+    {
+        memset(gpActivationMap,0,gMapSize);
+        memset(gpImageBuff,0,gImageSize);
 
-    mutex.post();
+        if (gWidth>=180 && gHeight>=180)
+        {
+            gpSkinMeshThread->eval(gpActivationMap);
 
-    drawing=false;
+            for (int i=0; i<gImageArea; ++i)
+            {
+                gpImageBuff[i*3]=gpActivationMap[i]<255.0?guchar(gpActivationMap[i]):255;
+            }
+
+            gpSkinMeshThread->draw(gpImageBuff);
+        }
+        
+        gdk_draw_rgb_image(pWidget->window,
+                           pWidget->style->black_gc,
+					       pEvent->area.x,pEvent->area.y,
+						   pEvent->area.width,pEvent->area.height,
+						   GDK_RGB_DITHER_NONE,
+						   gpImageBuff,
+						   gRowStride);
+    }
+ 
+    gMutex.post();
+
+    bDrawing=false;
 
     return TRUE;
 }
 
-guint gTimer;
-
-void cleanExit()
+void clean_exit()
 {
-    mutex.wait();
-    gRunning=FALSE;
+    gMutex.wait();
+    gbRunning=FALSE;
     g_source_remove(gTimer);
     gtk_main_quit();
-    mutex.post();
+    gMutex.post();
 }
 
 int main(int argc, char *argv[]) 
@@ -95,58 +114,53 @@ int main(int argc, char *argv[])
 
     yarp::os::ResourceFinder rf;
     rf.setVerbose();
-    rf.setDefaultContext("tutorials/iCubSkinDemo");
+    rf.setDefaultContext("iCubSkinDemo");
     rf.setDefaultConfigFile("skin.ini");
     rf.configure("ICUB_ROOT",argc,argv);
 
-    int width =rf.find("width").asInt();
-    int height=rf.find("width").asInt();
-	
+    gWidth =rf.find("width" ).asInt();
+    gHeight=rf.find("height").asInt();
+
+    gRowStride=3*gWidth;
+    gImageSize=gRowStride*gHeight;
+    gMapSize=gWidth*gHeight*sizeof(double);
+    gImageArea=gWidth*gHeight;
+
+    gpActivationMap=new double[gImageArea];
+    gpImageBuff=new guchar[gImageSize];
+
     gtk_init (&argc, &argv);
 	
-    GtkWidget *mainWindow = gtk_window_new(GTK_WINDOW_TOPLEVEL);
-    
-    gtk_window_set_title(GTK_WINDOW(mainWindow),"iCub Skin");
+    GtkWidget *pMainWindow=gtk_window_new(GTK_WINDOW_TOPLEVEL);
+    gtk_window_set_title(GTK_WINDOW(pMainWindow),"iCub Skin");
+    gtk_window_set_resizable(GTK_WINDOW(pMainWindow),TRUE);
+	gtk_window_set_default_size(GTK_WINDOW(pMainWindow),gWidth,gHeight);
+    gtk_window_resize(GTK_WINDOW(pMainWindow),gWidth,gHeight);
 
-    gtk_window_set_resizable(GTK_WINDOW(mainWindow),TRUE);
+	GtkWidget *pBox=gtk_vbox_new(FALSE,0); // parameters (gboolean homogeneous_space, gint spacing);
+    gtk_container_add(GTK_CONTAINER(pMainWindow),pBox);
 
-	gtk_window_set_default_size(GTK_WINDOW(mainWindow),width,height); //320, 700
-    
-    gtk_window_resize(GTK_WINDOW(mainWindow),width,height); //320, 700
+	gpDrawingArea=gtk_drawing_area_new();
+	gtk_box_pack_start(GTK_BOX(pBox),gpDrawingArea,TRUE,TRUE,0);
 
-	// Box for main window
-	GtkWidget *box=gtk_vbox_new(FALSE,0); // parameters (gboolean homogeneous_space, gint spacing);
-    gtk_container_add(GTK_CONTAINER(mainWindow),box);
-	
-	// Drawing Area : here the image will be drawn
-	da=gtk_drawing_area_new();
-	g_signal_connect(da,"expose_event",G_CALLBACK(expose_CB),NULL);
-	gtk_box_pack_start(GTK_BOX(box),da,TRUE,TRUE,0);
+	gtk_signal_connect(GTK_OBJECT(pMainWindow),"destroy",GTK_SIGNAL_FUNC(clean_exit),NULL);
+    g_signal_connect(gpDrawingArea,"expose_event",G_CALLBACK(paint),NULL);
 
-	gtk_signal_connect(GTK_OBJECT(mainWindow),"destroy",GTK_SIGNAL_FUNC(cleanExit),NULL);
+    gTimer=g_timeout_add(50,(GSourceFunc)timer_handler,(gpointer)pMainWindow);
 
-    gTimer=g_timeout_add(50,(GSourceFunc)time_handler,(gpointer)mainWindow);
+	gtk_widget_show_all(pMainWindow);
+	gtk_window_move(GTK_WINDOW(pMainWindow),32,32);
 
-	gtk_widget_show_all(mainWindow);
-	gtk_window_move(GTK_WINDOW(mainWindow),32,32);
-    //gtk_window_set_resizable(GTK_WINDOW(mainWindow),FALSE);
-
-
-    //gtk_widget_queue_draw(da);
-
-    
-	
-	// All GTK applications must have a gtk_main(). Control ends here
-	// and waits for an event to occur (like a key press or
-	// mouse event).
-
-    skinMeshThread=new SkinMeshThread(rf);
-    skinMeshThread->start();
+    gpSkinMeshThread=new SkinMeshThread(rf);
+    gpSkinMeshThread->start();
 
 	gtk_main();
 
 	//gtk_widget_destroy(mainWindow);
 
-    skinMeshThread->stop();
-    delete skinMeshThread;
+    gpSkinMeshThread->stop();
+    delete gpSkinMeshThread;
+
+    if (gpActivationMap) delete [] gpActivationMap;
+    if (gpImageBuff) delete [] gpImageBuff;
 }
