@@ -8,26 +8,26 @@
       <name>icubmoddev</name>
 	      <parameters>--device logpolargrabber --subdevice dragonfly2 --width 320 --height 240  --white_balance 0.506 0.494 --gain 0.312 --shutter 0.913 --name /icub/cam/left  --brightness 0 --DR2  --d 0 --framerate 30 </parameters>
      <node>pc104</node>
-          <stdio>icub14</stdio>
+          <stdio>icub15</stdio>
 	  <tag>logpolar-grabber-left</tag>
    </module>
 	<module>
       <name>icubmoddev</name>
 	      <parameters>--device logpolargrabber --subdevice dragonfly2 --width 320 --height 240  --white_balance 0.506 0.494 --gain 0.312 --shutter 0.913 --name /icub/cam/right  --brightness 0 --DR2  --d 1 --framerate 30 </parameters>
      <node>pc104</node>
-	  <stdio>icub14</stdio>
+	  <stdio>icub15</stdio>
 	  <tag>logpolar-grabber-right</tag>
    </module>
    <module>
       <name>yarpview</name>
       <parameters>--name /leftview --x 0 --y 50 --synch</parameters>
-      <node>icub14</node>
+      <node>icub15</node>
 	  <tag>leftview</tag>
    </module>
    <module>
       <name>yarpview</name>
       <parameters>--name /rightview --x 320 --y 50 --synch</parameters>
-      <node>icub14</node>
+      <node>icub15</node>
       <tag>rightview</tag>
    </module>
    
@@ -35,27 +35,39 @@
       <name>logpolarRemapper</name>
       <parameters>--name remapper/left --remote /icub/cam/left --width 480</parameters>
       <node>pc104</node>
-      <stdio>icub14</stdio>
+      <stdio>icub15</stdio>
       <tag>remapperLeft</tag>
    </module>
-<module>
+   <module>
       <name>logpolarRemapper</name>
       <parameters>--name remapper/right --remote /icub/cam/right --width 480</parameters>
       <node>pc104</node>
-      <stdio>icub14</stdio>
+      <stdio>icub15</stdio>
       <tag>remapperRight</tag>
    </module>
    <module>
       <name>yarpview</name>
       <parameters>--name /viewremapperRight --x 960 --y 50 --synch</parameters>
-      <node>icub14</node>
+      <node>icub15</node>
       <tag>viewremapperRight</tag>
    </module>
 	<module>
       <name>yarpview</name>
       <parameters>--name /viewremapperLeft --x 640 --y 50 --synch</parameters>
-      <node>icub14</node>
+      <node>icub15</node>
       <tag>viewremapperLeft</tag>
+   </module>
+   <module>
+      <name>yarpview</name>
+      <parameters>--name /viewFoveaRight --x 0 --y 150 --synch</parameters>
+      <node>icub15</node>
+      <tag>viewfoveaRight</tag>
+   </module>
+	<module>
+      <name>yarpview</name>
+      <parameters>--name /viewFoveaLeft --x 320 --y 150 --synch</parameters>
+      <node>icub15</node>
+      <tag>viewfoveaLeft</tag>
    </module>
 <connection>
   <output>/icub/cam/left/logpolar</output>
@@ -80,6 +92,16 @@
 <connection>
   <output>/remapper/right:out</output>
   <input>/viewremapperRight</input>
+  <protocol>mcast</protocol>
+</connection>
+<connection>
+  <output>/icub/cam/left/fovea</output>
+  <input>/viewFoveaLeft</input>
+  <protocol>mcast</protocol>
+</connection>
+<connection>
+  <output>/icub/cam/right/fovea</output>
+  <input>/viewFoveaRight</input>
   <protocol>mcast</protocol>
 </connection>
 </application>
