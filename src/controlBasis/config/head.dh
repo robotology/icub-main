@@ -1,0 +1,15 @@
+N: 3
+L: 8
+DH:
+ 0            0          90      0     CONSTANT
+ 0            0           0     90     CONSTANT
+ 0.032        0          90      0     CONSTANT
+ 0            0          90    -90     CONSTANT
+-0.0231      -0.19330   -90    -90     CONSTANT
+ 0.0330       0          90     90     REVOLUTE
+ 0            0          90     90     REVOLUTE
+-0.0540       0.08250   -90    -90     REVOLUTE
+MAX: 0.2
+MASK: 1 1 1 0 0 0
+
+

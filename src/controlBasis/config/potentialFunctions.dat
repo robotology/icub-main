@@ -1,0 +1,5 @@
+configuration/squared_error_pf true configuration
+cartesianposition/squared_error_pf true cartesianposition
+configuration/cosfield_pf false configuration
+configuration/manipulability_pf false configuration
+cartesianposition/harmonic_function_pf false cartesianposition

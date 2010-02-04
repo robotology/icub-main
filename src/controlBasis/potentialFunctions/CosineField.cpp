@@ -1,0 +1,189 @@
+// -*- mode:C++; tab-width:4; c-basic-offset:4; indent-tabs-mode:nil -*-      
+#include "CosineField.h"
+#include <yarp/os/Network.h>
+#include <math.h>
+
+using namespace std;
+using namespace yarp::os;
+
+void CB::CosineField::startPotentialFunction() {
+    if(!connectedToInputs) {
+        if(!connectToInputs()) {
+            cout << "Couldn't connect to YARP input port in startPotentialFunction()..." << endl;
+            return;
+        }
+    }
+    running = true;
+    start();     // mandatory start function
+}
+
+void CB::CosineField::stopPotentialFunction() {
+    cout << "CosineField::stopPotentialFunction()" << endl;
+    stop();     // mandatory stop function
+}
+
+bool CB::CosineField::updatePotentialFunction() {
+    
+    //    cout << "CosineField updating potential" << endl;
+
+    Bottle *b;
+    double offset;
+    bool ok = true;
+    double tmp;
+
+    // get data from ports (should be more safety checks...)
+    b = inputPort[0].read(false);
+
+    if(b==NULL) {
+        cout << "CosineField::update() problem reading data!!" << endl;
+        return ok;
+    }
+
+    offset = 1;
+    if(size==0) {
+        size = b->get(0).asInt();
+        input[0].resize(size);
+        gradient.resize(size);
+        maxLimits.resize(size);
+        minLimits.resize(size);
+        centers.resize(size);
+        ranges.resize(size);
+        cout << "CosineField setting size: " << size << endl;
+    }
+
+    potential = 0;
+
+    for(int i=0; i<size; i++) {
+        input[0][i] = b->get(i+offset).asDouble();
+
+        // compute gradient
+        tmp = -(-((M_PI) / ranges[i]) * cos(M_PI * ((input[0][i] - minLimits[i]) / ranges[i])));        
+    
+        // check to make sure not too small
+        if (fabs(tmp) < 1E-15) tmp = 0;
+
+        // set it in the state
+        gradient[i] = -1.0*tmp;
+        potential += cos((input[0][i] - centers[i]) / ranges[i]);
+
+    }
+    
+    potential = size-potential;
+
+    return ok;
+
+}
+
+bool CB::CosineField::connectToInputs() {
+    
+    bool ok = true;
+    //cout << "CosineField() -- connecting to input port..." << endl;
+
+    cout << "CosineField::connectToInputs():\n\t " << inputName[0].c_str() << "\n\n\n";
+   
+    connectedToInputs = false;
+
+    string configName = inputName[0] + "/data:o";
+    string limitsName = inputName[0] + "/limits:o";
+
+    string prefixStr = "/cb/" + inputSpace;
+    int s = prefixStr.size();
+    string tmp = inputName[0];
+    tmp.erase(0,s);
+    
+    string configNameIn = "/cb/configuration/cosfield_pf" + tmp + ":i";
+    string limitsNameIn = "/cb/configuration/cosfield_pf" + tmp + "/limits:i";
+
+    cout << "CosineField::connectToInputs() -- opening current input port..." << endl;
+    ok &= inputPort[0].open(configNameIn.c_str());
+    if(!ok) {
+        cout << "CosineField::connectToInputs() -- failed opening config input port..." << endl;
+        return ok;
+    }
+    cout << "CosineField::connectToInputs() -- opening limits input port..." << endl;
+    ok &= inputPort[1].open(limitsNameIn.c_str());
+    if(!ok) {
+        cout << "CosineField::connectToInputs() -- failed opening limits input port..." << endl;
+        return ok;
+    }
+    //    Time::delay(1);
+    cout << "CosineField::connectToInputs() -- connecting:\n\t " 
+         << configName.c_str() << "-> " << configNameIn.c_str() << endl << endl;
+
+    cout << "CosineField::connectToInputs() -- connecting:\n\t " 
+         << limitsName.c_str() << "-> " << limitsNameIn.c_str() << endl << endl;
+
+    ok &= Network::connect(configName.c_str(),configNameIn.c_str(),"tcp");
+    if(!ok) {
+        cout << "CosineField::connectToInputs() -- failed connecting to input ports..." << endl << endl;
+        return ok;
+    }
+    ok &= Network::connect(limitsName.c_str(),limitsNameIn.c_str(),"tcp");
+    if(!ok) {
+        cout << "CosineField::connectToInputs() -- failed connecting to limit input ports..." << endl << endl;
+        return ok;
+    }
+   
+        
+    int thresh = 10;
+    int t = 0;
+    Bottle *b = inputPort[1].read(true);
+    while(b==NULL) {
+        cout << "CosField::connect() -- port read failed on attempt " << t << endl;    
+        b = inputPort[1].read(true);
+        t++;
+        if(t==thresh) {
+            cout << "CosField::connect() -- port read failed, giving up!!" << endl;    
+            ok = false;
+            return ok;
+        }
+        Time::delay(1);
+    }
+
+    int c=0;
+    int offset = 1;
+    cout << "CosField read limits from port successfully..." << endl;    
+    if(ok)
+        {
+            size = b->get(0).asInt();
+            
+            cout << "CosineField::connectToInputs() -- read limit data, got size=" << size << endl;
+        
+            input[0].resize(size);
+            minLimits.resize(size);
+            maxLimits.resize(size);
+            gradient.resize(size);
+            centers.resize(size);
+            ranges.resize(size);
+            
+            for(int i = 0; i<b->size(); i+=2) 
+                {
+                    minLimits[c] = b->get(offset+i).asDouble();
+                    maxLimits[c] = b->get(offset+i+1).asDouble();
+                    c++;
+                }
+            cout << "cosfield got limits" << endl;
+            
+            for(int i=0; i<size; i++) {
+                
+                input[0][i] = b->get(i+offset).asDouble();
+                cout << input[0][i] << " in (" << minLimits[i] << " <-> " << maxLimits[i] << ")" << endl;
+                
+                ranges[i] = maxLimits[i] - minLimits[i];
+                centers[i] = minLimits[i] + (ranges[i] / 2.0);
+            }
+            
+            cout << "" << endl;
+            
+        }  
+    else {
+        cout << "could not read data..." << endl;
+    }
+    
+    //ok &= Network::disconnect(limitsName.c_str(),limitsNameIn.c_str());            
+    cout << "CosineField done connecting to YARP input ports..." << endl;
+    connectedToInputs = true;
+    return ok; 
+}
+    
+
