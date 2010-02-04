@@ -240,9 +240,12 @@ bool velControlThread::init(PolyDriver *d, ConstString partName, ConstString rob
 void velControlThread::halt()
 {
 	suspended=true;
+	for(int k=0;k<nJoints;k++)
+	{
+		command(k)=0;
+		ivel->velocityMove(k, command[k]);
+	}
 	fprintf(stderr, "Suspended\n");
-	command=0;
-
 	targets=encoders;
 	ffVelocities = 0;
 }

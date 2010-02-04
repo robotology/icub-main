@@ -297,6 +297,7 @@ public:
     {
         fprintf(stderr, "Closing module [%s]\n", partName);
         vc->stop();
+        vc->halt();
         delete vc;
         fprintf(stderr, "Thead [%s] stopped\n", partName);
 
