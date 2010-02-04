@@ -12,7 +12,7 @@ LINK_DIRECTORIES(
   )
 
 ADD_LIBRARY(    cbresources
-  SHARED
+#  SHARED
   YARPConfigurationVariables.cpp 
   iCubFullArmConfigurationVariables.cpp 
   EndEffectorCartesianPosition.cpp

@@ -12,7 +12,7 @@ LINK_DIRECTORIES(
   )
 
 ADD_LIBRARY(    cbjacobian
-  SHARED
+#  SHARED
   ManipulatorPositionJacobian.cpp
   )
 

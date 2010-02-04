@@ -25,7 +25,8 @@ namespace CB {
      * resource information, and \phi is the control (potential) function.
      * The task Jacobian J captures sensitive of the potential evaluated
      * at the sensory values w.r.t., the output variables. that is,
-     * J = \frac{ \partial \phi(\sigma) }{ \partial \tau}.
+     * J = \frac{ \partial \phi(\sigma) }{ \partial \tau}.  Also supports 
+     * using J^T in place of J^#.
      **/
     class Controller : public ControlBasisAction {
         
@@ -305,8 +306,19 @@ namespace CB {
 
     protected:
 
+        /**
+         * connects the controller to the sensorimotor resources (that should be running)
+         **/
         bool connectToResources(std::string sen, std::string ref, std::string eff);
+
+        /**
+         * creates a potential function of the specified type
+         **/ 
         bool createPotentialFunction(std::string pf);
+
+        /**
+         * creates the necessary Jacobian to transform potential changes to effector changes.
+         **/
         bool createJacobian();
 
   };

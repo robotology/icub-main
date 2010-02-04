@@ -126,7 +126,9 @@ namespace CB {
             std::cout << "cb post data for " << actionName.c_str() << std::endl;
         }
        
-
+        /**
+         * run function
+         **/
         void run() {
 
             std::cout << "configuring action output information..." << std::endl;
@@ -171,11 +173,17 @@ namespace CB {
             numOutputs = 0;
         }
 
+        /**
+         * Destructor
+         **/
         ~ControlBasisAction() {  
             std::cout << "ControlBasisAction destructor..." << std::endl;
             reset();
         }
 
+        /** 
+         * reset function.  closes and clears the ports.
+         **/
         void reset() {
             std::cout << "ControlBasisAction reset..." << std::endl;
             for(int i=0; i<outputPort.size(); i++) {

@@ -18,7 +18,7 @@ LINK_DIRECTORIES(
   )
 
 ADD_LIBRARY(    cbcontrol
-  SHARED
+#  SHARED
   Controller.cpp
   RunnableControlLaw.cpp
   )

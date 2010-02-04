@@ -88,7 +88,7 @@ modules/controlBasisResource: /usr/lib/libgslcblas.so
 modules/controlBasisResource: /home/hart/yarp2/lib/libYARP_sig.a
 modules/controlBasisResource: /home/hart/yarp2/lib/libYARP_OS.a
 modules/controlBasisResource: /usr/lib/libACE.so
-modules/controlBasisResource: resources/libcbresources.so
+modules/controlBasisResource: resources/libcbresources.a
 modules/controlBasisResource: /home/hart/iCub/lib/libiKin.a
 modules/controlBasisResource: /home/hart/yarp2/lib/libYARP_dev.a
 modules/controlBasisResource: /home/hart/yarp2/lib/libYARP_math.a

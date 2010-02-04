@@ -12,7 +12,7 @@ LINK_DIRECTORIES(
   )
 
 ADD_LIBRARY(    cbpf
-  SHARED
+#  SHARED
   ConfigurationSquaredError.cpp
   CartesianPositionSquaredError.cpp
   CartesianPositionHarmonicFunction.cpp

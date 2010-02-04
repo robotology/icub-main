@@ -164,6 +164,9 @@ o         **/
          **/
         void resetControlLaw();
 
+        /**
+         * gets the potential of controller n
+         **/
         double getControllerPotential(int n) {
             if((n >= 0) && (n < controllers.size()))  {
                 return controllers[n]->getControllerPotential();
@@ -172,6 +175,9 @@ o         **/
             }        
         }
 
+        /**
+         * gets the estimated change in potential of controller n
+         **/
         double getControllerPotentialDot(int n) {
             if((n >= 0) && (n<controllers.size()))
                 return controllers[n]->getControllerPotentialDot();
@@ -179,6 +185,9 @@ o         **/
                 return 0;
         }
 
+        /**
+         * gets the state of conroller n
+         **/
         int getControllerState(int n) {
             if((n >= 0) && (n<controllers.size()))
                 return controllers[n]->getState();
@@ -186,6 +195,9 @@ o         **/
                 return 0;
         }
 
+        /** 
+         * sets whether to use J^T or J^#
+         **/
         void useTranspose(bool b) {
             for(int i=0; i<controllers.size(); i++) {
                 controllers[i]->useTranspose(b);
@@ -200,6 +212,9 @@ o         **/
 
     protected:
 
+        /**
+         * initial;ization function
+         **/
         void init();
 
   };
