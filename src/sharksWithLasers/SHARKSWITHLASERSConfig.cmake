@@ -22,8 +22,8 @@ IF (NESTED_BUILD)
   # and filename(s) of the library.  We can just use the CMake target name.
   # CMake itself knows what exactly the library is called on this system.
   IF (WIN32 AND NOT CYGWIN)
-     SET (${LIB_PKG}_LIBRARIES optimized ${ICUB_DIR}/lib/Release/${LIB_TARGET}.lib
-                               debug     ${ICUB_DIR}/lib/Debug/${LIB_TARGET}d.lib)
+     SET (${LIB_PKG}_LIBRARIES optimized ${LIB_TARGET} debug ${LIB_TARGET}d)
+     LINK_DIRECTORIES(${ICUB_DIR}/lib/Debug)
   ELSE (WIN32 AND NOT CYGWIN)
      SET (${LIB_PKG}_LIBRARIES ${LIB_TARGET})
   ENDIF (WIN32 AND NOT CYGWIN)

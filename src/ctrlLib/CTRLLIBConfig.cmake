@@ -10,8 +10,8 @@ IF(NOT CTRLLIB_FOUND)
     IF(NESTED_BUILD)
     
       IF(WIN32 AND NOT CYGWIN)
-         SET(CTRLLIB_LIBRARIES optimized ${ICUB_DIR}/lib/Release/ctrlLib.lib
-                               debug     ${ICUB_DIR}/lib/Debug/ctrlLibd.lib)
+         SET(CTRLLIB_LIBRARIES optimized ctrlLib debug ctrlLibd)
+         LINK_DIRECTORIES(${ICUB_DIR}/lib/Debug)
       ELSE(WIN32 AND NOT CYGWIN)
          SET(CTRLLIB_LIBRARIES ctrlLib)
       ENDIF(WIN32 AND NOT CYGWIN)

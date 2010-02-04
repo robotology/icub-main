@@ -10,8 +10,8 @@ IF(NOT AFFACTIONPRIMITIVES_FOUND)
     IF(NESTED_BUILD)
     
         IF(WIN32 AND NOT CYGWIN)
-           SET(AFFACTIONPRIMITIVES_LIBRARIES optimized ${ICUB_DIR}/lib/Release/affActionPrimitives.lib
-                                             debug     ${ICUB_DIR}/lib/Debug/affActionPrimitivesd.lib)
+           SET(AFFACTIONPRIMITIVES_LIBRARIES optimized affActionPrimitives debug affActionPrimitivesd)
+           LINK_DIRECTORIES(${ICUB_DIR}/lib/Debug)
         ELSE(WIN32 AND NOT CYGWIN)
            SET(AFFACTIONPRIMITIVES_LIBRARIES affActionPrimitives)
         ENDIF(WIN32 AND NOT CYGWIN)
