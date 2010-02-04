@@ -11,22 +11,38 @@
 		<tag>gazecontroller</tag>
 		<node>/lightHouse</node>
 	</module>
+
+	<module>
+		<name>openCVLogPolar</name>
+		<parameters>--name /cvLogPolarR  --mode INVERSE</parameters>
+		<tag>logPolarReverse</tag>
+		<node>/lightHouse</node>
+	</module>
 	
  	<module>
 		<name>yarpview</name>
-		<parameters>--name /edgesView --x 500 --y 400 --synch</parameters>
+		<parameters>--name /view1 --x 500 --y 400 --synch</parameters>
 		<tag>view1</tag>
 		<node>/lightHouse</node>
 	</module>
 
 	<module>
 		<name>yarpview</name>
-		<parameters>--name /logPolarForwardView --x 800 --y 400 --synch</parameters>
+		<parameters>--name /logPolarReverseView --x 800 --y 400 --synch</parameters>
 		<tag>view2</tag>
 		<node>/lightHouse</node>
 	</module>
 	
- 
+ 	<connection>
+      	<output>/blobFinder/image:o</output>
+			<input>/cvLogPolarR/image:i</input>
+			<protocol>tcp</protocol>
+	</connection>
+	<connection>
+      	<output>/cvLogPolarR/image:o</output>
+			<input>/logPolarReverseView</input>
+			<protocol>tcp</protocol>
+	</connection>
 	<connection>
       	<output>/blobFinder/centroid:o</output>
 			<input>/controlGaze/conf</input>
