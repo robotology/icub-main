@@ -30,10 +30,14 @@ using namespace ctrl;
 class eyeTriangulation:public RateThread
 {
 protected:
+  bool xConstant;
   bool enableKalman;
   int kalState;
   double kalTimer;
   double Ts;
+
+  string ctrlName;
+  string robotName;
 
   iKinLink  *alignLnkLeft1,  *alignLnkLeft2;
   iKinLink  *alignLnkRight1, *alignLnkRight2;
@@ -72,14 +76,16 @@ protected:
   Bottle qBottleTorso;
   Bottle qBottleHead;
 
+  double eyeDistL;
+  double eyeDistR;
+
   bool getAlignLinks(const string&, const string&, iKinLink**, iKinLink**);
   bool qrGet(Vector);
   bool qlGet(Vector);
-  bool xCheckBottleFormat(Bottle*, Vector &, Vector &);
-
-  bool xConstant;
+  bool xCheckBottleFormat(Bottle*, Vector &, Vector &);  
+  
 public:
-  eyeTriangulation(const string&, Matrix, Matrix, bool, unsigned int);
+  eyeTriangulation(const string&, Matrix, Matrix, bool, unsigned int, const string&, const string&);
   virtual bool threadInit();
   virtual void afterStart(bool);
   virtual void run();
@@ -88,6 +94,7 @@ public:
   void xInit(Vector, Vector);
   void xSetConstant(Vector, Vector);
   void xDisConstant();
+  bool xExecReq(const Bottle &req, Bottle &reply);
 };
 
 

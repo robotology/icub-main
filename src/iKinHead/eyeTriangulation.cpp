@@ -27,8 +27,10 @@ void eyeTriangulation::xDisConstant()
 }
 
 eyeTriangulation::eyeTriangulation(const string &configFile, Matrix PrjL, Matrix PrjR,
-                                   bool _enableKalman, unsigned int _period) : 
-                                   RateThread(_period), enableKalman(_enableKalman), Ts(_period/1000.0)
+                                   bool _enableKalman, unsigned int _period,
+                                   const string &_ctrlName, const string &_robotName) : 
+                                   RateThread(_period), enableKalman(_enableKalman), Ts(_period/1000.0),
+                                   ctrlName(_ctrlName), robotName(_robotName)
 {
   T_RoLe.resize(4,4);
   T_RoRe.resize(4,4);
@@ -152,17 +154,22 @@ eyeTriangulation::eyeTriangulation(const string &configFile, Matrix PrjL, Matrix
 
   //not using a constant xr and xl
   xConstant = false;
+
+  eyeDistL=eyeDistR=1.0;
 }
 
 bool eyeTriangulation::threadInit()
 {
-  xlrPort.open("/eyeTriangulation/x:i");
-  XPort.open("/eyeTriangulation/X:o");
+  string stemCtrlPort="/"+ctrlName;
+  string stemRobotPort="/"+robotName;
 
-  qPortTorso.open("/eyeTriangulation/qTorso:i");
-  qPortHead.open("/eyeTriangulation/qHead:i");
-  Network::connect("/icub/torso/state:o", "/eyeTriangulation/qTorso:i");
-  Network::connect("/icub/head/state:o", "/eyeTriangulation/qHead:i");
+  xlrPort.open((stemCtrlPort+"/x:i").c_str());
+  XPort.open((stemCtrlPort+"/X:o").c_str());
+
+  qPortTorso.open((stemCtrlPort+"/qTorso:i").c_str());
+  qPortHead.open((stemCtrlPort+"/qHead:i").c_str());
+  Network::connect((stemRobotPort+"/torso/state:o").c_str(), (stemCtrlPort+"/qTorso:i").c_str());
+  Network::connect((stemRobotPort+"/head/state:o").c_str(), (stemCtrlPort+"/qHead:i").c_str());
 
   return true;
 }
@@ -447,6 +454,99 @@ void eyeTriangulation::run()
 	fprintf(stderr, "Unable to get the head position\n");
 
 	  kalTimer+=Ts;
+}
+
+
+bool eyeTriangulation::xExecReq(const Bottle &req, Bottle &reply)
+{
+    if (req.size())
+    {
+        string cmd=req.get(0).asString().c_str();
+
+        if (cmd=="set")
+        {
+            if (req.size()<3)
+                return false;
+
+            string subcmd=req.get(1).asString().c_str();
+            string type=req.get(2).asString().c_str();
+
+            if (subcmd=="eyedist")
+            {
+                double z=req.get(3).asDouble();
+
+                if (type=="left")
+                    eyeDistL=z;
+                else if (type=="right")
+                    eyeDistR=z;
+                else
+                    return false;                
+
+                reply.addString("ack");
+            }
+            else
+                return false;
+        }
+        else if (cmd=="get")
+        {
+            if (req.size()<4)
+                return false;
+
+            string subcmd=req.get(1).asString().c_str();
+            string type=req.get(2).asString().c_str();
+
+            if (subcmd=="eyedist")
+            {
+                if (type=="left")
+                    reply.addDouble(eyeDistL);
+                else if (type=="right")
+                    reply.addDouble(eyeDistR);
+                else
+                    return false;
+            }
+            else if (subcmd=="3dpoint")
+            {
+                double u=req.get(3).asDouble();
+                double v=req.get(4).asDouble();
+
+                if (type=="left" || type=="right")
+                {                    
+                    if (req.size()>4)
+                    {
+                        double z=req.get(5).asDouble();
+
+                        if (type=="left")
+                            eyeDistL=z;
+                        else
+                            eyeDistR=z;
+                    }
+
+                    Matrix &Prj=type=="left"?Pl:Pr;
+                    Matrix &H=type=="left"?T_LeRo:T_ReRo;
+                    double &z=type=="left"?eyeDistL:eyeDistR;
+
+                    Vector x(3);
+                    x[0]=z*u;
+                    x[1]=z*v;
+                    x[2]=z;
+
+                    Vector X=pinv(Prj*H)*x;
+
+                    reply.addDouble(X[0]);
+                    reply.addDouble(X[1]);
+                    reply.addDouble(X[2]);
+                }
+                else
+                    return false;
+            }
+        }
+        else
+            return false;
+
+        return true;
+    }
+    else
+        return false;
 }
     
     

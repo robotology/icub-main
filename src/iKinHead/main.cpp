@@ -17,6 +17,10 @@
   * reference frame is in the top left corner. The x axis is pointing 
   * rightward and the y axis is pointing downward.
   * 
+  * Furthermore, through a request forwarded to the rpc port, it
+  * is also possibile to ask for a 3d point which corresponds to
+  * a pixel in one image plane (the distance from the eye shall
+  * be given too).
   *
   *\section dep_sec Dependencies
   * This application requires the iKin library and the GSL library.
@@ -47,6 +51,10 @@
   * filtered with a Kalman state estimator.
   *
   * Example: ./iKinHead --file config.ini --const --kalman
+  * 
+  * There are also the usual <i>--robot</i> and <i>--name</i>
+  * command line options to change the name of the robot to
+  * connect to and the module name.
   *
   *\section accessedPort_sec Ports Accessed
   * The module requires an access to the robot head configuration.
@@ -54,7 +62,7 @@
   * /icub/torso/state:o are available (i.e. the iCubInterface is
   * running).
   *
-  *\section openedPort_sec Ports opened
+  *\section openedPort_sec Ports Opened
   * The module opens four ports:
   *
   * <ul>
@@ -72,7 +80,22 @@
   * <li> /eyeTriangulation/rpc is the usual remote procedure
   * call port
   * </ul>
-  *
+  * 
+  * \section rpcProto_sec RPC protocol
+  * Through the rpc port the following commands are available:
+  * 
+  * - <b>set eyedist \e type \e z</b>: sets the current distance
+  *   from the eye, where \e type can be \e left or \e right and
+  *   \e z is the distance given in meters.
+  * 
+  * - <b>get eyedist \e type</b>: returns the current distance
+  *   from the left/right eye [in meters].
+  * 
+  * - <b>get 3dpoint \e type \e u \e v [\e z ]</b>: ask for the
+  *   3d point which corresponds to the (\e u,\e v) coordinates
+  *   in the left/right image plane, given the distance \e z
+  *   from the eye [in meters]. The coordinates of the resulting
+  *   3dpoint refer to the root frame attached to the waist.
   *
   * \author Francesco Nori
   *
@@ -201,8 +224,12 @@ public:
         if (rf.check("kalman"))
             enableKalman=true;
 
+        string ctrlName=rf.find("name").asString().c_str();
+        string robotName=rf.find("robot").asString().c_str();
+
         fprintf(stderr, "Initializing eT\n");
-        eT=new eyeTriangulation(configFile, PiLeft, PiRight, enableKalman, period);
+        eT=new eyeTriangulation(configFile, PiLeft, PiRight, enableKalman, period,
+                                ctrlName, robotName);
 
         Vector xr(3); xr(0)=PiRight(0,2); xr(1)=PiRight(1,2); xr(2)=1.0; 
         Vector xl(3); xl(0)=PiLeft(0,2);  xl(1)=PiLeft(1,2);  xl(2)=1.0; 
@@ -213,11 +240,21 @@ public:
 
         eT->start();    
 
-        string rpcPortName="/eyeTriangulation/rpc";
+        string rpcPortName="/"+ctrlName+"/rpc";
         rpcPort.open(rpcPortName.c_str());
         attach(rpcPort);
 
         return true;
+    }
+
+    virtual bool respond(const Bottle &command, Bottle &reply)
+    {
+        fprintf(stderr,"Received rpc request: %s\n",command.toString().c_str());
+
+        if (eT->xExecReq(command,reply))
+            return true;
+        else
+            return RFModule::respond(command,reply);
     }
 
     virtual bool close()
@@ -245,6 +282,8 @@ int main(int argc, char *argv[])
 
     ResourceFinder rf;
     rf.setVerbose(true);
+    rf.setDefault("name","eyeTriangulation");
+    rf.setDefault("robot","icub");
     rf.configure("ICUB_ROOT",argc,argv);
 
     CtrlModule mod;
