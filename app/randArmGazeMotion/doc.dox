@@ -1,0 +1,43 @@
+/**
+@ingroup  icub_applications
+\defgroup randArmGazeMotion
+
+A module for keeping the gaze focused on the hand while performing random movements with the arm
+
+\section intro_sec Description
+This application repeatedly generates a random 3-d point inside a bounded box 
+in front of the robot and tries to focus the gaze toward it. The arm will try 
+to reach the target while keeping the hand's back constantly oriented toward the
+robot's cameras.
+
+\section dep_sec Dependencies
+Assumes \ref icub_iCubInterface is running.
+
+\section int_sec Instantiated Modules
+- \ref randArmGazeMotion "randArmGazeMotion"
+
+- \ref iKinGazeCtrl "iKinGazeCtrl"
+
+- \ref iKinArmCtrl "iKinArmCtrl"
+
+\section config_sec Configuration Files
+None.
+
+\section howto_sec How to run the Application
+Customize the file ./scripts/*.template for your specific platform
+before launching them.
+
+- ./scripts/randArmGazeMotion.xml.template activates the 
+iKinArmCtrl and iKinGazeCtrl and connects the randArmGazeMotion
+module to them.
+
+\author Carlo Ciliberto
+
+Copyright (C) 2009 RobotCub Consortium
+
+CopyPolicy: Released under the terms of the GNU GPL v2.0.
+
+This file can be edited at app/randArmGazeMotion/doc.dox
+*/
+
+

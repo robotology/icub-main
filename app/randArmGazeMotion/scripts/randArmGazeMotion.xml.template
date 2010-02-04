@@ -1,0 +1,44 @@
+<application>
+<name>Random Arm-Gaze Motion Generator</name>
+
+        <dependencies>
+                <port>/icub/camcalib/right/out</port>
+                <port>/icub/torso/state:o</port>
+                <port>/icub/head/state:o</port>
+                <port>/icub/right_arm/state:o</port>
+        </dependencies>
+      
+        <module>
+                <name>randArmGazeMotion</name>
+                <node>pwrNode1</node>
+                <tag>generator</tag>
+        </module>
+     
+
+        <module>
+                <name>iKinGazeCtrl</name>
+                <parameters>--Tneck 2.0 --Teyes 2.0</parameters>
+				<node>pwrNode2</node>
+                <tag>gazeCtrl</tag>
+        </module>
+  
+        <module>
+                <name>iKinArmCtrl</name>
+                <parameters>--part right_arm --DOF8 --T 10.0</parameters>                
+                <node>pwrNode3</node>
+                <tag>armCtrl</tag>
+        </module>
+
+
+        <connection>
+                <from>/randArmGazeMotion/head</from>
+                <to>/iKinGazeCtrl/head/xd:i</to>
+                <protocol>udp</protocol>
+        </connection>
+        <connection>
+                <from>/randArmGazeMotion/right_arm</from>
+                <to>/iKinArmCtrl/right_arm/xd:i</to>
+                <protocol>udp</protocol>
+        </connection>
+
+</application>

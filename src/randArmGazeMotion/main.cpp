@@ -13,9 +13,10 @@ Author: Carlo Ciliberto
 CopyPolicy: Released under the terms of the GNU GPL v2.0.
 
 \section intro_sec Description
-This module repeatedly generates a random 3-d point inside a bounded box 
-and tries to focus the gaze toward it. Depending on the parameters selected
-the hand will try to reach the target or stay out of the field of view.
+This module repeatedly generates a random 3-d point inside a bounded box
+and send commands to the cartesian controllers to focus the gaze toward it
+and reach it with the arm while keeping the hand's back constanly oriented
+toward the robot's cameras.
  
 \section lib_sec Libraries 
 - YARP libraries.
