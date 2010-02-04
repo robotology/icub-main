@@ -357,13 +357,22 @@ void CB::RunnableControlLaw::stopAction() {
       helperJacobians[i]->stopJacobian();
   }
 
-  // make sure the devices are locked
+  // make sure the devices are set to 0 and locked
+  for(int i=0; i<VoutConfig.size(); i++) {
+      for(int k=0; k<VoutConfig[i].size(); k++) {
+          VoutConfig[i][k] = 0;
+      }
+  }
+  sendOutputsToDevices();
+
+  /*
   for(int i=0; i<devicePorts.size(); i++) {
       Bottle &b = deviceLockPorts[i]->prepare();
       b.clear();
       b.addInt(1);        
       deviceLockPorts[i]->write();
   }
+  */
 
   //controllers.clear();
   //helperJacobians.clear();
