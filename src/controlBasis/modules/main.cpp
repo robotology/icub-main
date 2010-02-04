@@ -1,4 +1,78 @@
+// -*- mode:C++; tab-width:4; c-basic-offset:4; indent-tabs-mode:nil -*-
+/**
+*
+@ingroup icub_module
+\defgroup icub_controlBasisResource controlBasisResource
 
+A Generic Control Resource Module for Typed Sensors & Effectors
+
+\section intro_sec Description
+This module allows a user to start up a control basis module such as a 
+configuration resource, position sensor (such as the end-effector
+location of a link), etc.  These resources can be used by control basis
+controllers to create co-artciculated control programs.
+
+\section lib_sec Libraries
+YARP
+
+\section parameters_sec Parameters
+
+--type: the specific type of resoruce (e.g., yarpConfiguration, 
+endEffector, triangulatedPosition, etc.).  This type shouldn't be 
+confused by the formal type of the sensor (configuration, cartesianposition,
+etc.).
+
+--robot: specifies the name of the robot. It will be used to form 
+the names of the ports created and accessed by module.
+
+--part: part to control (e.g. head,arm_right, arm_left, lef_right...), it 
+will be used to form the names of the ports created and accessed by the 
+module.
+
+--cbName: if you want to create a special name for the resource, do it here. The
+default will be "/robot/part"
+
+--configFile: the name of the config file to load for the resource
+
+--velocityMode: [0/1] if the resource is a yarpConfiguration, you can control 
+it in either position or velocity mode.
+
+--simulationMode: [0/1] if the resource comes from a simulated source.
+
+--updateDelay: the update delay (in ms) that resource will wait between upates.
+
+
+\section portsa_sec Ports Accessed
+For the iCub, it assumes \ref icub_iCubInterface and \ref icub_velocityControl run for the necessary 
+parts. 
+
+\section in_files_sec Input Data Files
+None.
+
+\section out_data_sec Output Data Files
+None.
+
+\section conf_file_sec Configuration Files
+None.
+
+\section tested_os_sec Tested OS
+Linux.
+
+\section example_sec Example Instantiation of the Module
+
+controlBasisResource --type yarpConfiguration --robot icub --part right_arm --configFile right_arm.dh 
+
+Starts the module using the robot icub to control the right arm in velocity 
+mode (default). it reads DH parameters and joint/link numbers from right_arm.dh
+
+\author Stephen Hart
+
+Copyright (C) 2010 RobotCub Consortium
+ 
+CopyPolicy: Released under the terms of the GNU GPL v2.0.
+
+This file can be edited at src/controlBasis/modules/main.cpp.
+**/
 
 #include <yarp/os/Network.h>
 #include <yarp/os/Property.h>
@@ -25,7 +99,6 @@ class ControlBasisResourceModule : public RFModule {
   Port handlerPort; // to handle messagees
 
   ControlBasisResource *resource;
-  //YARPConfigurationVariables *resource;
   bool resourceRunning;
 
 public:
@@ -35,10 +108,14 @@ public:
     resourceRunning = false;
   }
 
-  /*  ~ControlBasisResourceModule() 
+  ~ControlBasisResourceModule() 
   {
+    if (resourceRunning) {
+      resource->stopResource();
+      delete resource;
+    }
   }
-  */
+  
 
   bool configure(ResourceFinder &rf) 
   {
