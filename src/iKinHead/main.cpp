@@ -12,10 +12,11 @@
   * This module transform the coordinates xr and xl
   * (image plane coordinates in the left and right eye)
   * into the coorinates X of the point in the root reference
-  * frame (see http://eris.liralab.it/wiki/ICubForwardKinematics).
-  * Image plane coordinates are defined so that the origin of the 
-  * reference frame is in the top left corner. The x axis is pointing 
-  * rightward and the y axis is pointing downward.
+  * frame (see <a
+  * href="http://eris.liralab.it/wiki/ICubForwardKinematics">here</a>).
+  * Image plane coordinates are defined so that the origin of
+  * the reference frame is in the top left corner. The x axis is
+  * pointing rightward and the y axis is pointing downward.
   * 
   * Furthermore, through a request forwarded to the rpc port, it
   * is also possibile to ask for a 3d point which corresponds to
