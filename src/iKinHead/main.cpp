@@ -19,8 +19,8 @@
   * 
   * Furthermore, through a request forwarded to the rpc port, it
   * is also possibile to ask for a 3d point which corresponds to
-  * a pixel in one image plane (the component z in the eye frame
-  * shall be given too).
+  * a pixel in one image plane (the component z along the
+  * optical axis in the eye frame shall be given too).
   *
   *\section dep_sec Dependencies
   * This application requires the iKin library and the GSL library.
@@ -85,18 +85,19 @@
   * Through the rpc port the following commands are available:
   * 
   * - <b>set eyedist \e type \e z</b>: sets the current distance
-  *   from the eye (measured in the eye reference frame), where
-  *   \e type can be \e left or \e right and \e z is the
-  *   distance given in meters.
+  *   from the eye along the optical axis (measured in the eye
+  *   reference frame), where \e type can be \e left or \e right
+  *   and \e z is the distance given in meters.
   * 
   * - <b>get eyedist \e type</b>: returns the current distance
   *   from the left/right eye [in meters].
   * 
-  * - <b>get 3dpoint \e type \e u \e v [\e z ]</b>: ask for the
-  *   3d point which corresponds to the (\e u,\e v) coordinates
-  *   in the left/right image plane, given the distance \e z
-  *   from the eye [in meters]. The coordinates of the resulting
-  *   3dpoint refer to the root frame attached to the waist.
+  * - <b>get 3dpoint \e type \e u \e v [<i>z</i>]</b>: ask for
+  *   the 3d point which corresponds to the (\e u,\e v)
+  *   coordinates in the left/right image plane, given the
+  *   distance \e z from the eye [in meters]. The coordinates of
+  *   the resulting 3dpoint refer to the root frame attached to
+  *   the waist.
   *
   * \author Francesco Nori
   *
