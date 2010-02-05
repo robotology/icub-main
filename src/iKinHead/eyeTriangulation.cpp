@@ -527,20 +527,20 @@ bool eyeTriangulation::xExecReq(const Bottle &req, Bottle &reply)
                             eyeDistR=z;
                     }
 
-                    Matrix &invPrj=type=="left"?invPl:invPr;
-                    Matrix &H=type=="left"?T_RoLe:T_RoRe;
-                    double &z=type=="left"?eyeDistL:eyeDistR;
+                    Matrix &invPrj=(type=="left"?invPl:invPr);
+                    Matrix &T_Roe=(type=="left"?T_RoLe:T_RoRe);
+                    double &z=(type=="left"?eyeDistL:eyeDistR);
 
                     Vector x(3);
                     x[0]=z*u;
                     x[1]=z*v;
                     x[2]=z;
 
-                    Vector X=H*invPrj*x;
+                    Vector XRo=T_Roe*(invPrj*x);
 
-                    reply.addDouble(X[0]);
-                    reply.addDouble(X[1]);
-                    reply.addDouble(X[2]);
+                    reply.addDouble(XRo[0]);
+                    reply.addDouble(XRo[1]);
+                    reply.addDouble(XRo[2]);
                 }
                 else
                     return false;
