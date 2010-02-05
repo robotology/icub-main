@@ -99,33 +99,19 @@ using namespace yarp::sig;
 
 
 
-//Limits for the random target point
-#define X_MIN -0.3
-#define X_MAX -0.2
-#define Y_MIN -0.15
-#define Y_MAX 0.3
-#define Z_MIN 0.1
-#define Z_MAX 0.3
-
-//Head position
-#define HEAD_X 0.0
-#define HEAD_Y 0.0
-#define HEAD_Z 0.4
-
-
-
 class RandThread: public RateThread
 {
 private:
-    string                     genName;                 //local name
-    string                     arm;                     //arm type
-
-    Vector                     head;                    //head position
-    Vector                     target_min;
-    Vector                     target_max;
-
+    string                     name;                 //local name
 
     double                     hand_freq;
+    double                     gaze_limit;
+
+    Vector                     head;                    //head position
+    Vector                     min_target;
+    Vector                     max_target;
+    Vector                     hand_constraints;
+
 
     bool                       isHandIn;
 
@@ -133,61 +119,154 @@ private:
     BufferedPort<Vector>       *port_arm;
     BufferedPort<Vector>       *port_gaze;
 
+    ResourceFinder             &rf;
 
 
-    Vector cross(const Vector &a, const Vector &b)
-    {
-        Vector c(3);
-
-        if(a.size() != 3 || b.size() != 3)
-        {
-            cout << "Error! vectors not of size 3 for the cross product" << endl;
-            return c;
-        }
-
-        c[0] = a[1]*b[2] - a[2]*b[1];
-        c[1] = a[2]*b[0] - a[0]*b[2];
-        c[2] = a[0]*b[1] - a[1]*b[0];
-
-        return c;
-}
 
 
 public:
      
     //Constructor
-    RandThread(unsigned int _period, string &_genName, string &_arm, double &_hand_freq)
-        :RateThread(_period*1000),genName(_genName), arm(_arm),hand_freq(_hand_freq){}
-
+    RandThread(const string &_name, ResourceFinder &_rf, unsigned int period) : 
+               RateThread(period*1000), name(_name), rf(_rf) {}
 
     virtual bool threadInit()
     {
-        string localArmName = "/" + genName + "/" + arm;
-        string localGazeName = "/" + genName + "/head";
+        Bottle &bGeneral = rf.findGroup("general");
+        if(bGeneral.isNull())
+        {
+            cout << "general part is missing!" << endl;
+            return false;
+        }
+
+        //hand frequency
+        if(bGeneral.check("hand_freq"))
+            hand_freq = bGeneral.findGroup("hand_freq").get(1).asDouble();
+        else
+            hand_freq = 1.0;
+
+
+        //head position information
+        if(bGeneral.check("head_position"))
+        {
+            head.resize(3);
+            Bottle &bHead = bGeneral.findGroup("head_position");
+            if(bHead.size()-1 == 3)
+                for(int i = 0; i < bHead.size()-1; i++)
+                    head[i] = bHead.get(1+i).asDouble();
+            else
+            {
+                cout << "option size != 3" << endl;
+                return false;
+            }
+        }
+        else
+        {
+            cout << "head position is missing!" << endl;
+            return false;
+        }
+
+
+
+        string arm = bGeneral.check("arm",Value("right_arm")).asString();
+
+        Bottle &bArm = rf.findGroup(arm.c_str());
+        if(bArm.isNull())
+        {
+            cout << arm << " is missing!" << endl;
+            return false;
+        }
+        
+        //gaze limit
+        if(bArm.check("gaze_limit"))
+            gaze_limit = bArm.findGroup("gaze_limit").get(1).asDouble();
+        else
+        {
+            cout << "gaze limit is missing!" << endl;
+            return false;
+        }
+
+
+        //hand constraints
+        if(bArm.check("hand_constraints"))
+        {
+            hand_constraints.resize(3);
+            Bottle &bHandConstraints = bArm.findGroup("hand_constraints");
+            if(bHandConstraints.size()-1 == 3)
+            {
+                for(int i = 0; i < bHandConstraints.size()-1; i++)
+                    hand_constraints[i] = bHandConstraints.get(1+i).asDouble();
+            }
+            else
+            {
+                cout << "option size != 3" << endl;
+                return false;
+            }
+        }
+        else
+        {
+            cout << "hand constraints are missing!" << endl;
+            return false;
+        }
+
+
+        //max target limit
+        if(bArm.check("max_target"))
+        {
+            max_target.resize(3);
+            Bottle &bMaxTarget = bArm.findGroup("max_target");
+            if(bMaxTarget.size()-1 == 3)
+            {
+                for(int i = 0; i < bMaxTarget.size()-1; i++)
+                    max_target[i] = bMaxTarget.get(1+i).asDouble();
+            }
+            else
+            {
+                cout << "option size != 3" << endl;
+                return false;
+            }
+        }
+        else
+        {
+            cout << "max target limit is missing!" << endl;
+            return false;
+        }
+
+        //min target limit
+        if(bArm.check("min_target"))
+        {
+            min_target.resize(3);
+            Bottle &bMinTarget = bArm.findGroup("min_target");
+            if(bMinTarget.size()-1 == 3)
+            {
+                for(int i = 0; i < bMinTarget.size()-1; i++)
+                    min_target[i] = bMinTarget.get(1+i).asDouble();
+            }
+            else
+            {
+                cout << "option size != 3" << endl;
+                return false;
+            }
+        }
+        else
+        {
+            cout << "min target limit is missing!" << endl;
+            return false;
+        }
+
+
+
 
         //open ports
+        string localArmName = name + "/" + arm;
+        string localGazeName = name + "/head";
+
         port_arm = new BufferedPort<Vector>;
         port_arm->open(localArmName.c_str());
 
         port_gaze = new BufferedPort<Vector>;
         port_gaze->open(localGazeName.c_str());
-        
-        //Head position
-        head.resize(3);
-        head[0] = HEAD_X;
-        head[1] = HEAD_Y;
-        head[2] = HEAD_Z;
 
-        //Bounds of the box for the random targets
-        target_min.resize(3);
-        target_min[0] = X_MIN;
-        target_min[1] = Y_MIN;
-        target_min[2] = Z_MIN;
-
-        target_max.resize(3);
-        target_max[0] = X_MAX;
-        target_max[1] = Y_MAX;
-        target_max[2] = Z_MAX;
 
         return true;
     }
@@ -225,11 +304,11 @@ public:
         isHandIn = (math::Rand::scalar() < hand_freq)? true: false;
         
         //Generate the random target point.
-        Vector target = math::Rand::vector(target_min,target_max);
+        Vector target = math::Rand::vector(min_target,max_target);
 
         cout <<"\n\n----------------------------------------------" << endl;
-        cout << "          Target point coordinates: " ;
-        cout << "( " << target[0] << " , " << target[1] << " , " << target[2] << ")" << endl;
+        cout << "          Target point coordinates: " << endl;
+        cout << "     ( " << target[0] << " , " << target[1] << " , " << target[2] << ")" << endl;
 
         return target;
     }
@@ -252,8 +331,8 @@ public:
             gaze[i] = target[i];
 
         //keep the gaze out of the hand's way
-        if(isHandIn && gaze[2] > 0.08)
-            gaze[2] = 0.08;
+        if(!isHandIn && abs(gaze[2]) > abs(gaze_limit))
+            gaze[2] = gaze_limit;
 
 
         port_gaze->write();
@@ -289,13 +368,13 @@ public:
 
             //orient the hand so that the palm is directed toward the eyes
             Vector orient_axis_z = hand2head;
-            Vector orient_axis_x = cross(orient_axis_z,hand_0);
-            Vector orient_axis_y = cross(orient_axis_z,orient_axis_x);
+            Vector orient_axis_x = ctrl::cross(orient_axis_z,hand_0);
+            Vector orient_axis_y = ctrl::cross(orient_axis_z,orient_axis_x);
 
             //normalize the axis to get the new basis
-            double norm_x = sqrt(yarp::math::dot(orient_axis_x,orient_axis_x));
-            double norm_y = sqrt(yarp::math::dot(orient_axis_y,orient_axis_y));
-            double norm_z = sqrt(yarp::math::dot(orient_axis_z,orient_axis_z));
+            double norm_x = ctrl::norm(orient_axis_x);
+            double norm_y = ctrl::norm(orient_axis_y);
+            double norm_z = ctrl::norm(orient_axis_z);
 
             for(int i = 0; i < 3; i++)
             {
@@ -328,8 +407,8 @@ public:
         }
         else
         {
-            hand[0] = -0.21;
-            hand[1] = 0.36;
+            hand[0] = hand_constraints[0];
+            hand[1] = hand_constraints[1];
             hand[2] = yarp::math::Rand::scalar()*0.3;
         }
 
@@ -358,49 +437,31 @@ public:
 
     virtual bool configure(ResourceFinder &rf)
     {
-        string genName;
-        string arm;
-        unsigned int period;
-        double handPresence;
+        int period;
 
         Time::turboBoost();
         yarp::math::Rand::init();
 
 
-
-
-        if (rf.check("genName"))
-            genName=rf.find("genName").asString();
+        Bottle &general = rf.findGroup("general");
+        if(!general.isNull())
+            period = rf.check("period",Value((int) 20)).asInt();
         else
-            genName="randArmGazeMotion";
-
-        if (rf.check("arm"))
-            arm=rf.find("arm").asString();
-        else
-            arm="right_arm";
-        
-        if (rf.check("T"))
-            period=rf.find("T").asInt();
-        else
-            period=20;
-        
-        if (rf.check("handPresence"))
-            handPresence = rf.find("handPresence").asDouble();
-        else
-            handPresence = 1.0;
+        {
+            cout << "general part is missing!" << endl;
+            return false;
+        }
 
 
+        rnd = new RandThread(getName().c_str(),rf,period);
+        if(!rnd->start())
+        {
+            delete rnd;
+            return false;
+        }
 
-
-
-
-        rnd = new RandThread(period,genName,arm,handPresence);
-        rnd->start();
-
-        string rpcPortName= "/" + genName +"/rpc";
-        rpcPort.open(rpcPortName.c_str());
+        rpcPort.open(getName("/rpc"));
         attach(rpcPort);
-        attachTerminal();
 
         return true;
     }
@@ -466,26 +527,20 @@ public:
 
 int main(int argc, char *argv[])
 {
-    ResourceFinder rf;
-    rf.setVerbose(true);
-    rf.configure("ICUB_ROOT",argc,argv);
-
-    if (rf.check("help"))
-    {
-        cout << "Options:" << endl << endl;
-        cout << "\t--genName        name: module name (default randArmGazeMotion)"                           << endl;
-        cout << "\t--arm            type: robot arm type, left_arm or right_arm (default: right_arm)"                         << endl;
-        cout << "\t--handFreq       frequency: frequency of hand presence in the Fov (default: 1)"    << endl;
-        cout << "\t--T              time: interval between movements in sec (default: 30)"    << endl;
-        return 0;
-    }
 
     Network yarp;
 
     if (!yarp.checkNetwork())
         return -1;
 
+    ResourceFinder rf;
+    rf.setVerbose(true);
+    rf.setDefaultContext("randArmGazeMotion/conf");
+    rf.setDefaultConfigFile("config.ini");
+    rf.configure("ICUB_ROOT",argc,argv);
+
     RandModule mod;
+    mod.setName("/randArmGazeMotion");
 
     return mod.runModule(rf);
 }
