@@ -536,7 +536,8 @@ bool eyeTriangulation::xExecReq(const Bottle &req, Bottle &reply)
                     x[1]=z*v;
                     x[2]=z;
 
-                    Vector XRo=T_Roe*(invPrj*x);
+                    Vector Xe=invPrj*x; Xe[3]=1.0;
+                    Vector XRo=T_Roe*Xe;
 
                     reply.addDouble(XRo[0]);
                     reply.addDouble(XRo[1]);
