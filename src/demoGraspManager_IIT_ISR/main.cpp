@@ -1012,7 +1012,7 @@ public:
         // general part
         Bottle &bGeneral=rf.findGroup("general");
         bGeneral.setMonitor(rf.getMonitor());
-        robot=bGeneral.check("robot",Value("icub"),"Getting robot name").asString();
+        robot=bGeneral.check("robot",Value("icub"),"Getting robot name").asString().c_str();
         useLeftArm=bGeneral.check("left_arm",Value("on"),"Getting left arm use flag").asString()=="on"?true:false;
         useRightArm=bGeneral.check("right_arm",Value("on"),"Getting right arm use flag").asString()=="on"?true:false;
         trajTime=bGeneral.check("traj_time",Value(2.0),"Getting trajectory time").asDouble();

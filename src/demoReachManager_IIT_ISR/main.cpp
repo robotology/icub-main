@@ -162,8 +162,8 @@ public:
             return false;
         }
 
-        robot=bGeneral.check("robot",Value("icub")).asString();
-        part=bGeneral.check("part",Value("left_arm")).asString();
+        robot=bGeneral.check("robot",Value("icub")).asString().c_str();
+        part=bGeneral.check("part",Value("left_arm")).asString().c_str();
 
         Bottle &bPart=rf.findGroup(part.c_str());
         if (bPart.isNull())
