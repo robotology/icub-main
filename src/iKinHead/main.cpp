@@ -250,8 +250,6 @@ public:
 
     virtual bool respond(const Bottle &command, Bottle &reply)
     {
-        fprintf(stderr,"Received rpc request: %s\n",command.toString().c_str());
-
         if (eT->xExecReq(command,reply))
             return true;
         else
