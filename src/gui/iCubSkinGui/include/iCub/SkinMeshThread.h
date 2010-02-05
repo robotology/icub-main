@@ -30,10 +30,13 @@ protected:
     yarp::os::Semaphore mutex;
 
     int cardId;
+    unsigned int triangleNum;
 
 public:
 	SkinMeshThread(Searchable& config,int period=40) : RateThread(period),mutex(1)
     {
+        triangleNum=0;
+
         for (int t=0; t<16; ++t)
         {
             triangles[t]=NULL;
@@ -56,6 +59,9 @@ public:
                 double xc=sensor.get(2).asDouble();
                 double yc=sensor.get(3).asDouble();
                 double th=sensor.get(4).asDouble();
+                double gain=sensor.get(5).asDouble();
+
+                printf("%d %f\n",id,gain);
 
                 if (id>=0 && id<16)
                 {
@@ -65,7 +71,8 @@ public:
                     }
                     else
                     {
-                        triangles[id]=new Triangle(xc,yc,th);
+                        triangles[id]=new Triangle(xc,yc,th,gain);
+                        triangleNum+=2;
                     }
                 }
                 else

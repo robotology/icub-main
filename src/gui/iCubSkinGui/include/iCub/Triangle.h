@@ -11,7 +11,7 @@
 class Triangle
 {
 public:
-    Triangle(double cx,double cy,double th)
+    Triangle(double cx,double cy,double th,double gain=1.0)
     {
         const double DEG2RAD=M_PI/180.0;
 
@@ -20,7 +20,9 @@ public:
 
         const double H=sin(DEG2RAD*60.0);
         const double L=2.0*H/9.0;
-        
+     
+        dGain=gain;
+
         dX[5]=L*cos(DEG2RAD*30.0); dX[4]=0.5-dX[5]; dX[2]=0.5+dX[5]; dX[1]=1.0-dX[5];
         dX[6]=0.25; dX[3]=0.5; dX[0]=0.75;
         dX[7]=0.25+dX[5]; dX[11]=0.75-dX[5];
@@ -97,7 +99,7 @@ public:
 
         double sigma=0.5*5.55*scale;
         int maxRange=int(3.0*sigma);
-
+        
         if (maxRange!=m_maxRange)
         {
             m_maxRange=maxRange;
@@ -159,7 +161,7 @@ public:
                     dy=Abs(Y-y[i]);
                     if (dy>=m_maxRange) continue;
 
-                    value+=activation[i]*Exponential[dx]*Exponential[dy];
+                    value+=dGain*activation[i]*Exponential[dx]*Exponential[dy];
                 }
             }
         }
@@ -169,14 +171,14 @@ public:
     {
         for (int i=0; i<7; ++i)
         {
-            activation[i]=double(255-data[i+1]);
+            activation[i]=data[i+1]<=244?double(244-data[i+1]):0.0;
         }
     }
     void setActivationLast5(unsigned char* data)
     {
         for (int i=1; i<=5; ++i)
         {
-            activation[i+6]=double(255-data[i]);
+            activation[i+6]=data[i]<=244?double(244-data[i]):0.0;
         }
     }
 
@@ -291,6 +293,7 @@ protected:
     static double dXmin,dXmax,dYmin,dYmax;
     double dXv[3],dYv[3];
     double dXc,dYc;
+    double dGain;
 
     double m_Radius;
     double activation[12];

@@ -5,7 +5,6 @@
 #include <yarp/os/Time.h>
 
 const int CAN_DRIVER_BUFFER_SIZE=2047;
-const int canBufferSize=144;
 
 bool SkinMeshThread::threadInit()
 {
@@ -43,14 +42,15 @@ bool SkinMeshThread::threadInit()
     driver.view(pCanBufferFactory);
     pCanBus->canSetBaudRate(0); //default 1MB/s
 
-    pCanBus->canIdAdd(cardId);
-    pCanBus->canIdAdd(cardId+1);
-    pCanBus->canIdAdd(cardId+2);
-    pCanBus->canIdAdd(cardId+3);
-    pCanBus->canIdAdd(cardId+4);
-    pCanBus->canIdAdd(cardId+5);
+    for (int id=0; id<16; ++id)
+    {
+        if (triangles[id])
+        {
+            pCanBus->canIdAdd(cardId+id);
+        }
+    }
 
-    canBuffer=pCanBufferFactory->createBuffer(canBufferSize);
+    canBuffer=pCanBufferFactory->createBuffer(2*triangleNum);
 
     printf("... done!\n");
 
@@ -65,7 +65,7 @@ void SkinMeshThread::run()
     {
         unsigned int canMessages=0;
     
-        bool res=pCanBus->canRead(canBuffer,canBufferSize,&canMessages,true);
+        bool res=pCanBus->canRead(canBuffer,2*triangleNum,&canMessages,true);
 
 	    for (unsigned int i=0; i<canMessages; i++)
 	    {
