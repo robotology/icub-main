@@ -11,20 +11,20 @@
         <module>
                 <name>pf3dTracker</name>
                 <parameters>--from pf3dTracker.ini</parameters>
-                <node>cortex1</node>
+                <node>icubbrain1</node>
                 <tag>PF3DTracker_tracker</tag>
         </module>
    
         <module>
                 <name>leftEyeToRoot</name>
                 <parameters>--inputHeadPort /l2rBall/headIn --inputTorsoPort /l2rBall/torsoIn --inputBallPositionPort /l2rBall/posIn --outputBallPositionPort /l2rBall/posOut</parameters>
-                <node>cortex1</node>
+                <node>icubbrain2</node>
                 <tag>l2rBall</tag>
         </module>
 
         <module>
                 <name>demoReachManager_IIT_ISR</name>
-                <node>cortex2</node>
+                <node>icubbrain1</node>
                 <tag>manager</tag>
         </module>
 
@@ -37,14 +37,14 @@
   
         <module>
                 <name>iKinGazeCtrl</name>
-                <node>cortex4</node>
+                <node>icubbrain2</node>
                 <tag>gazeCtrl</tag>
         </module>
   
         <module>
                 <name>iKinArmCtrl</name>
                 <parameters>--part left_arm --DOF9</parameters>                
-                <node>cortex2</node>
+                <node>icubbrain2</node>
                 <tag>armCtrl</tag>
         </module>
 
