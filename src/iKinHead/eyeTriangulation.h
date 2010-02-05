@@ -10,8 +10,6 @@
 #include <yarp/math/Math.h>
 #include <yarp/math/SVD.h>
 
-#include <iostream>
-#include <iomanip>
 #include <string>
 
 #include <iCub/iKinFwd.h>
@@ -50,6 +48,8 @@ protected:
   Matrix T_ReRo;
   Matrix Pr;
   Matrix Pl;
+  Matrix invPr;
+  Matrix invPl;
   unsigned int nl;
   unsigned int nr;
   Vector q;

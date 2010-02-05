@@ -1,3 +1,5 @@
+
+#include <stdio.h>
 #include "eyeTriangulation.h"
 
 #define KALMAN_INIT		0
@@ -72,30 +74,31 @@ eyeTriangulation::eyeTriangulation(const string &configFile, Matrix PrjL, Matrix
   else
       alignLnkLeft1=alignLnkLeft2=NULL;
 
-  cout << "Left Eye kinematic parameters:" << endl;
+  fprintf(stderr,"Left Eye kinematic parameters:\n");
   for (unsigned int i=0; i<chainLeftEye->getN(); i++)
   {
-      cout << "#" << i << ": " <<  
-      (*chainLeftEye)[i].getA()       << ", " <<
-      (*chainLeftEye)[i].getD()       << ", " <<
-      (*chainLeftEye)[i].getAlpha()   << ", " <<
-      (*chainLeftEye)[i].getOffset()  << ", " <<
-       endl;
+      fprintf(stderr,"#%d: %g, %g, %g, %g\n",i,
+              (*chainLeftEye)[i].getA(),
+              (*chainLeftEye)[i].getD(),
+              (*chainLeftEye)[i].getAlpha(),
+              (*chainLeftEye)[i].getOffset());
   }
 
-  cout << "Right Eye kinematic parameters:" << endl;
+  fprintf(stderr,"Right Eye kinematic parameters:\n");
   for (unsigned int i=0; i<chainRightEye->getN(); i++)
   {
-      cout << "#" << i << ": " <<  
-      (*chainRightEye)[i].getA()       << ", " <<
-      (*chainRightEye)[i].getD()       << ", " <<
-      (*chainRightEye)[i].getAlpha()   << ", " <<
-      (*chainRightEye)[i].getOffset()  << ", " <<
-       endl;
+      fprintf(stderr,"#%d: %g, %g, %g, %g\n",i,
+              (*chainRightEye)[i].getA(),
+              (*chainRightEye)[i].getD(),
+              (*chainRightEye)[i].getAlpha(),
+              (*chainRightEye)[i].getOffset());
   }
 
   Pr = PrjR;
   Pl = PrjL;
+
+  invPr = pinv(Pr.transposed()).transposed();
+  invPl = pinv(Pl.transposed()).transposed();
 
   nr = chainRightEye->getDOF();
   nl = chainLeftEye->getDOF();
@@ -245,10 +248,10 @@ bool eyeTriangulation::getAlignLinks(const string &configFile, const string &typ
                 return true;
             }
             else
-                cerr << error << endl;
+                fprintf(stderr,"error\n");
         }
         else
-            cerr << error << endl;
+            fprintf(stderr,"error\n");
     }
 
     return false;
@@ -489,7 +492,7 @@ bool eyeTriangulation::xExecReq(const Bottle &req, Bottle &reply)
         }
         else if (cmd=="get")
         {
-            if (req.size()<4)
+            if (req.size()<3)
                 return false;
 
             string subcmd=req.get(1).asString().c_str();
@@ -506,12 +509,15 @@ bool eyeTriangulation::xExecReq(const Bottle &req, Bottle &reply)
             }
             else if (subcmd=="3dpoint")
             {
+                if (req.size()<5)
+                    return false;
+
                 double u=req.get(3).asDouble();
                 double v=req.get(4).asDouble();
 
                 if (type=="left" || type=="right")
                 {                    
-                    if (req.size()>4)
+                    if (req.size()>5)
                     {
                         double z=req.get(5).asDouble();
 
@@ -521,8 +527,8 @@ bool eyeTriangulation::xExecReq(const Bottle &req, Bottle &reply)
                             eyeDistR=z;
                     }
 
-                    Matrix &Prj=type=="left"?Pl:Pr;
-                    Matrix &H=type=="left"?T_LeRo:T_ReRo;
+                    Matrix &invPrj=type=="left"?invPl:invPr;
+                    Matrix &H=type=="left"?T_RoLe:T_RoRe;
                     double &z=type=="left"?eyeDistL:eyeDistR;
 
                     Vector x(3);
@@ -530,7 +536,7 @@ bool eyeTriangulation::xExecReq(const Bottle &req, Bottle &reply)
                     x[1]=z*v;
                     x[2]=z;
 
-                    Vector X=pinv(Prj*H)*x;
+                    Vector X=H*invPrj*x;
 
                     reply.addDouble(X[0]);
                     reply.addDouble(X[1]);
@@ -549,4 +555,4 @@ bool eyeTriangulation::xExecReq(const Bottle &req, Bottle &reply)
         return false;
 }
     
-    
+

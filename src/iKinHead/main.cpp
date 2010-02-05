@@ -130,9 +130,10 @@ bool getProjectionMatrix(Bottle b, Matrix &P)
   else 
     return 0;
   
-  double sth= 0.0;      double sx = fx;    double sy = fy;
+  double sth= 0.0; double sx = fx; double sy = fy;
   double ox = cx;  double oy = cy;
   double f  = 1.0;
+
   Matrix K = eye(3,3);
   K(0,0)=sx*f;   K(1,1)=sy*f;   K(0,1)=sth*f;  K(0,2)=ox;   K(1,2)=oy; 
 
