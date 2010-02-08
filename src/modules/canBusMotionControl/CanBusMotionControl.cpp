@@ -1819,9 +1819,10 @@ void CanBusMotionControl:: run()
         {
             for(int m=0;m<r.requestsQueue->getNMessages();m++)
             {
-                ThreadFifo &fifo=r.requestsQueue->getFifo(j,m);
-                std::list<ThreadId>::iterator it=fifo.begin();
-                std::list<ThreadId>::iterator end=fifo.end();
+                ThreadFifo *fifo=r.requestsQueue->getFifo(j,m);
+                ACE_ASSERT (fifo!=0);
+                std::list<ThreadId>::iterator it=fifo->begin();
+                std::list<ThreadId>::iterator end=fifo->end();
                 while(it!=end)
                     {
                         //increase wait time
@@ -1834,7 +1835,7 @@ void CanBusMotionControl:: run()
                                 rq.msg=m;
                                 rq.threadId=(*it).id;
                                 timedout.push_back(rq); //store this request, so we can wake up the waiting thread
-                                it=fifo.erase(it); //it now points to the next element
+                                it=fifo->erase(it); //it now points to the next element
                                 fprintf(stderr, "%s [%d] thread:%d msg:%d joint:%d timed out\n", 
                                         canDevName.c_str(),
                                         r._networkN,
