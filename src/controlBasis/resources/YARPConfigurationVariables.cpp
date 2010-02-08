@@ -11,6 +11,7 @@ using namespace yarp::sig;
 
 void CB::YARPConfigurationVariables::startResource() {
 
+    // if the resource hasnt connected to the YARP device, do it now
     if(!connectedToDevice) {
         if(!connectToDevice()) {
             cout << "Couldn't connect to YARP port in startResource()..." << endl;
@@ -28,9 +29,10 @@ void CB::YARPConfigurationVariables::stopResource() {
     cout << "YARPConfigurationVariables::stopResource()" << endl;
     stop();     // mandatory stop function
 
-    // stop motor device
+    // close the polydriver
     dd->close();
 
+    // if in velocity control mode, disconnect the connections to the velocityControl module.
     if(velocityControlMode) {
         string velocityOutputPortName = "/cb/configuration" + deviceName + "/vel:o";
         string velocityRPCOutputPortName = "/cb/configuration" + deviceName + "/vel/rpc:o";
@@ -40,6 +42,7 @@ void CB::YARPConfigurationVariables::stopResource() {
         velocityPort.close();
     }
 
+    // set running/connected flags to false
     connectedToDevice = false;        
     running = false;
 }
@@ -48,7 +51,7 @@ void CB::YARPConfigurationVariables::stopResource() {
 
 bool CB::YARPConfigurationVariables::updateResource() {
 
-    // get current values of config variables from device
+    // get current values of config variables from PolyDriver
     bool ok;
     ok = dd->view(pos);
     ok &= dd->view(enc);
@@ -59,17 +62,19 @@ bool CB::YARPConfigurationVariables::updateResource() {
         return ok;
     }
 
+    // get encoder data
     int jnts = 0;
     pos->getAxes(&jnts);
-
     double *tmp = new double[jnts];
     enc->getEncoders(tmp);
 
+    // make sure the size of the mask vector matches the total number of DOFs of the device
     if( jnts != mask.size() ) {
         cout << "YARPConfiguration::updateResource() -- number of Joints from YARP motor interface mismatch!!" << endl;
         return false;
     }    
 
+    // copy the device positions to the local resource data (masking out values if necessary)
     int idx = 0;
     for(int i = 0; i < mask.size(); i++) {
         if(!mask[i]) continue;
@@ -78,6 +83,7 @@ bool CB::YARPConfigurationVariables::updateResource() {
 
     // set device values for (unmasked) joints
     if(!velocityControlMode) {
+        // send to PolyDriver
         if(moveable && !lock) {
             idx = 0;
             for(int i=0; i<mask.size(); i++) {
@@ -86,7 +92,8 @@ bool CB::YARPConfigurationVariables::updateResource() {
             }
         }       
     } else {
-        if(moveable && !lock) {
+        // send to velocityControl module
+        if(moveable && !lock) {            
             Vector &v = velocityPort.prepare();
             v.resize(mask.size(),0);       
             idx = 0;
@@ -97,7 +104,6 @@ bool CB::YARPConfigurationVariables::updateResource() {
             }
             velocityPort.write();
         }
-
     }
 
     return ok;
@@ -106,6 +112,7 @@ bool CB::YARPConfigurationVariables::updateResource() {
 
 bool CB::YARPConfigurationVariables::connectToDevice() {
 
+    // if this is the first time running, need to connec to the PolyDriver.
     bool ok;
     int idx;
     cout << "YARPConfigurationVariables() -- connecting to port..." << endl;
@@ -138,14 +145,22 @@ bool CB::YARPConfigurationVariables::connectToDevice() {
         return ok;
     }
 
-    Time::delay(2);
-    // get information from device
+    Time::delay(2);  // necessary to make sure PolyDriver data is correct.
+
+    // now get information from device
     int jnts = 0;
     pos->getAxes(&jnts);
 
+    // if mask size = 1, it was not specified in the config file.  This assumes
+    // that there is therefore no mask, and all device DOFs (up to the number 
+    // specified) are controlled
     if(mask.size() == 1) {
+
+        // first setup a virtual mask that passes through all joints
         mask.resize(jnts);
         for(int i=0; i<numDOFs; i++) mask[i] = 1;
+
+        // set the number of DOFs and associated storage vectors
         numDOFs = jnts;
         cout << "Working with " << numDOFs << " axes" << endl;
         cout << "YARPConfigurationVariables::resizing storage vectors..." << endl;
@@ -153,16 +168,27 @@ bool CB::YARPConfigurationVariables::connectToDevice() {
         desiredValues.resize(numDOFs); desiredValues.zero();
         maxLimits.resize(numDOFs); maxLimits.zero();
         minLimits.resize(numDOFs); minLimits.zero();
+
     } else  if(jnts < numDOFs) {
+
+        // less number of joints are availabe on the device that the number the resource wants to control 
+        // this is bad, and so returns.
         cout << "numDOF size mismatch!!  numDOFs=" << numDOFs << ", device=" << jnts << endl;
         return 0;
+
     } else  if(jnts > numDOFs) {
+
+        // there are more joints availabe from the device then the number the resource wants. 
+        // in this case, lets just discard the excess...
         cout << "numDOF size mismatch!!  only taking first " << numDOFs << " vals. got " << jnts << " from device" << endl;
+
     } else {
+
+        // everything is as it should be
         cout << "Working with axes " << numDOFs << ", with mask of: " << mask.size() << endl;
     }
 
-    // get initial joint values
+    // get initial joint values (masking unwanted ones)
     double *tmp = new double[jnts];
     enc->getEncoders(tmp);
     idx = 0;
@@ -185,6 +211,7 @@ bool CB::YARPConfigurationVariables::connectToDevice() {
         idx++;
     }    
 
+    // set the connected flag cause everything seems to be okay
     connectedToDevice = true;
 
     return ok; 
@@ -193,10 +220,13 @@ bool CB::YARPConfigurationVariables::connectToDevice() {
 
 
 void CB::YARPConfigurationVariables::setMask(Vector m) {
+
+    // make sure the number of specified joints in the mask that are controlled
+    // is equal to the number of joints the resource wants to specify (numDOFs)
+    // if not, return...
     int c=0;
-    for(int i=0; i<m.size(); i++) {
-        c += m[i];        
-    }
+    for(int i=0; i<m.size(); i++) c += m[i];        
+
     if(c!=numDOFs) {
         cout << "YARPConfigurationVariables::setMask() -- mask size incorrect!!" << endl;
         return;
@@ -350,6 +380,8 @@ void CB::YARPConfigurationVariables::loadConfig(string fname) {
 void CB::YARPConfigurationVariables::setVelocityControlMode(bool mode, string portName) {
 
     bool ok = true;
+
+    // specify the local port names that connect to the velocityControl module
     string velocityOutputPortName = "/cb/configuration" + deviceName + "/vel:o";
     string velocityRPCOutputPortName = "/cb/configuration" + deviceName + "/vel/rpc:o";
     velocityPortName = portName + "/command";      
@@ -358,15 +390,16 @@ void CB::YARPConfigurationVariables::setVelocityControlMode(bool mode, string po
 
     if(mode && !velocityControlMode) {
 
-        cout << "trying to connect " << velocityOutputPortName << " to " << velocityPortName << endl;
-        // turning on velocity control mode
+        // if we're turning on the velocityControlMode (and it wasnt previously on)
+
+        // open and connect the data and config portsport
         ok &= velocityPort.open(velocityOutputPortName.c_str());
         ok &= Network::connect(velocityOutputPortName.c_str(),velocityPortName.c_str(),"tcp");
-
         Time::delay(0.5);
         ok &= velocityRPCPort.open(velocityRPCOutputPortName.c_str());
         ok &= Network::connect(velocityRPCOutputPortName.c_str(),velocityRPCPortName.c_str(),"tcp");
 
+        // send gain and maxVel paramaters to the vc module 
         for(int i=0; i<mask.size(); i++) {
             b.clear();
             b.addString("gain");
@@ -385,13 +418,15 @@ void CB::YARPConfigurationVariables::setVelocityControlMode(bool mode, string po
 
     } else if(!mode && velocityControlMode) {
 
-        // turning off velocity control mode
+        // turning off velocity control mode by disconnecting and closing ports
         ok &= Network::disconnect(velocityOutputPortName.c_str(),velocityPortName.c_str());
         ok &= Network::disconnect(velocityRPCOutputPortName.c_str(),velocityRPCPortName.c_str());
         velocityRPCPort.close();
         velocityPort.close();
 
     }
+
+    // set the current mode
     velocityControlMode = mode;
 
 

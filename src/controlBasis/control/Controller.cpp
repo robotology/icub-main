@@ -410,7 +410,7 @@ bool CB::Controller::updateAction() {
         Matrix JfullInv;
         Matrix JfullInvT;
 
-        if(useJacobianTranspose) {
+        if(!useJacobianTranspose) {
             Jfull = Jint*Jinv;
         } else {
             Jfull = Jint*JT;
@@ -428,7 +428,8 @@ bool CB::Controller::updateAction() {
         */
 
         for(int i=0; i<Vout.size(); i++) {
-            Vout[i] = -potential*Jfull[i][0]*gain;
+            //Vout[i] = Jfull[i][0]*(-gain*potential - 2.0*gain*potentialDot);
+            Vout[i] = -gain*potential*Jfull[i][0];
         }
 
         if(useJacobianTranspose) {

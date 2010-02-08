@@ -7,7 +7,10 @@
 namespace CB {
 
   /**
-   * This class instantiates the abstract ControlBasisResource class for a CartesianPosition type resource.
+   * This class instantiates the abstract ControlBasisResource class for a CartesianPosition 
+   * type resource. It is still abstract, in that it doesn't implement a runnable resource. 
+   * This class must be extended for specific cartesian position device that implements the 
+   * start, update, and stop functions.
    **/
   class CartesianPosition : public ControlBasisResource {
 

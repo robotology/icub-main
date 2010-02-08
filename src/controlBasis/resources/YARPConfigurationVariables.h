@@ -16,7 +16,9 @@ namespace CB {
      * device using either the position controller (using a PolyDriver) or
      * the velocity controller (using a velocityControl module).  Both accept
      * position commands, but which is used is dependent on the lower level 
-     * control properties of the device.
+     * control properties of the device.  For reading the encoder positions of 
+     * the device, the PolyDriver is used in both cases (regardless of how the 
+     * device is controlled).
      **/    
     class YARPConfigurationVariables : public ConfigurationVariables {
         

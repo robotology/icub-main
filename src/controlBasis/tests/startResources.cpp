@@ -184,7 +184,10 @@ void startResources() {
         iCubArm[i]->loadConfig(armConfigFile[i]);
         iCubArm[i]->setUpdateDelay(0.1);
         iCubArm[i]->startResource();
-        iCubArm[i]->setVelocityControlMode(true, armVelPort[i]);
+
+        if(!simulationMode) {
+            iCubArm[i]->setVelocityControlMode(true, armVelPort[i]);
+        }
         Time::delay(.75);
         
         /*

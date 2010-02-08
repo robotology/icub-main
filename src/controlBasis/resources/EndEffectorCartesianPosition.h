@@ -12,7 +12,8 @@ namespace CB {
     
     /**
      * Implements the CartesianPosition abstract interface to retun the 
-     * EndEffector position of a serial Kinematic chain.
+     * EndEffector position of a serial Kinematic chain.  This is determined
+     * using the iCub iKin library.
      **/
     class EndEffectorCartesianPosition : public CartesianPosition {
         
@@ -24,9 +25,13 @@ namespace CB {
         bool connectedToConfiguration;
         
         /**
-         * a ForwardKinematics helper classes.
+         * the iKinLimb to store kinematic data.
          **/
         iKin::iKinLimb kinLimb;
+
+        /**
+         * the pointer to the iKinChain storing kinematic data.
+         **/
         iKin::iKinChain *kinChain;
 
         /*
@@ -80,11 +85,26 @@ namespace CB {
          **/
         ~EndEffectorCartesianPosition() { }
         
-        // functions from ControlBasisResource
+        /**
+         * Inherited update function.
+         * \returns success on update
+         **/
         bool updateResource();
+
+        /**
+         * Inherited start function.
+         **/
         void startResource();
+
+        /**
+         * Inherited stop function.
+         **/
         void stopResource();
         
+        /**
+         * A functon that connects the EndEffector resource to 
+         * the CB configuration device resource device it represents.
+         **/
         bool connectToConfiguration();
         
     };

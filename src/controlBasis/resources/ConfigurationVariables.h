@@ -10,8 +10,10 @@
 namespace CB {
     
     /**
-     * This class instantiates the abstract ControlBasisResource class for a ConfigurationVAriable type resource.
+     * This class instantiates the abstract ControlBasisResource class for a ConfigurationVariable type resource.
      * This type of resource can be used to read and write joint values to a robot manipulator of the position of a mobile robot.
+     * It is still abstract, in that it doesn't implement a runnable resource. This class must be extended for
+     * a specific device that implements the start, update, and stop functions.
      **/
     class ConfigurationVariables : public ControlBasisResource {
         
@@ -114,11 +116,34 @@ namespace CB {
  
     public:
         
+        /**
+         * gets the number of DOFs of the device.
+         **/
         int getNumDOF() { return numDOFs; }
+
+        /**
+         * gets the number of links of the device.
+         **/
         int getNumLinks() { return numLinks; }
+
+        /**
+         * Gets the value of a particular DOF
+         **/
         double getVal(int n) { return values[n]; }
+
+        /**
+         * gets the min joint limit for a specified DOF.
+         **/
         double getMinLimit(int n) { return minLimits[n]; }
+
+        /**
+         * gets the max joint limit for a specified DOF.
+         **/
         double getMaxLimit(int n) { return maxLimits[n]; }
+
+        /**
+         * flag specifying if the resource accepts input commands that move the device.
+         **/
         bool isMoveable() { return moveable; } 
 
         /**
@@ -142,9 +167,10 @@ namespace CB {
         
         }    
 
-        ~ConfigurationVariables() { 
-            std::cout << "ConfigurationVariables() destructor..." << std::endl;
-        }
+        /** 
+         * Destructor
+         **/
+        ~ConfigurationVariables() { }
         
         /**
          * This is the function that posts the resource data to the output port.
