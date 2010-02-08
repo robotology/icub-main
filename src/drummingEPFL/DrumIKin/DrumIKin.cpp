@@ -7,7 +7,7 @@ using namespace ctrl;
 
 #include <iCub/iKinVocabs.h>
 
-
+//#define TEST
 
 DrumIKin::DrumIKin()
 {
@@ -86,11 +86,11 @@ bool DrumIKin::updateModule(void)
 		Vector xp(3);
 		int markerID;
 
-#ifdef _DEBUG
+#ifdef TEST
 		xp[0] = visionBottle->get(0).asDouble();
 		xp[1] = visionBottle->get(1).asDouble();
 		xp[2] = visionBottle->get(2).asDouble();
-		markerID = 3;
+		markerID = 9;
 #else
 		Bottle *patchBottle=visionBottle->get(i).asList();
 		if(patchBottle->size() != 4 || patchBottle->get(0).asDouble() > 100)
@@ -275,13 +275,13 @@ void DrumIKin::OpenIKSolver(string arm)
     Network::connect(iKinPorts[arm]->rpc.getName().c_str(),("/" + solverName + "/rpc").c_str());
 
 	Bottle cmd, reply;
-	cmd.clear();
-    cmd.addVocab(IKINSLV_VOCAB_CMD_SET);
-    cmd.addVocab(IKINSLV_VOCAB_OPT_MODE);
-    cmd.addVocab(IKINSLV_VOCAB_VAL_MODE_TRACK);
-    cout<<"switching to track mode...";
-    iKinPorts[arm]->rpc.write(cmd,reply);
-	cout<<reply.size()<<endl;  
+	//cmd.clear();
+ //   cmd.addVocab(IKINSLV_VOCAB_CMD_SET);
+ //   cmd.addVocab(IKINSLV_VOCAB_OPT_MODE);
+ //   cmd.addVocab(IKINSLV_VOCAB_VAL_MODE_TRACK);
+ //   cout<<"switching to track mode...";
+ //   iKinPorts[arm]->rpc.write(cmd,reply);
+	//cout<<reply.size()<<endl;  
 
 	//cmd.clear();
  //   cmd.addVocab(IKINSLV_VOCAB_CMD_SET);
@@ -292,14 +292,14 @@ void DrumIKin::OpenIKSolver(string arm)
  //   iKinPorts[arm]->rpc.write(cmd,reply);
 	//cout<<reply.size()<<endl;  
 
-	//cmd.clear();
- //   cmd.addVocab(IKINSLV_VOCAB_CMD_SET);
- //   cmd.addVocab(IKINSLV_VOCAB_OPT_LIM);
- //   cmd.addInt(4);
-	//cmd.addDouble(0.02);
-	//cmd.addDouble(25);
- //   iKinPorts[arm]->rpc.write(cmd,reply);
-	//cout<<reply.size()<<endl;  
+	cmd.clear();
+	cmd.addVocab(IKINSLV_VOCAB_CMD_SET);
+    cmd.addVocab(IKINSLV_VOCAB_OPT_LIM);
+    cmd.addInt(4);
+	cmd.addDouble(10);
+	cmd.addDouble(90);
+    iKinPorts[arm]->rpc.write(cmd,reply);
+	cout<<reply.size()<<endl;  
 
 	cmd.clear();
 	cmd.addVocab(IKINSLV_VOCAB_CMD_GET);
@@ -443,10 +443,13 @@ Vector DrumIKin::Solve(const Vector &xd, string partName, double &precision)
 	
 	cout << "SOLVING WITH " << partName << endl;
 
-	iCubArmCartesianSolver::addTargetOption(cmd,xd);
+	cout << "XD : " << xd[0] << " - " << xd[1] << " - " << xd[2] << endl;
+	iCubArmCartesianSolver::addTargetOption(cmd, xd);
+	cout << "CMD : " << cmd.toString() << endl;
 
 	iKinPorts[partName]->out.write(cmd);
 	iKinPorts[partName]->in.wait(reply);
+	//iKinPorts[partName]->in.wait(reply);
 
 	Bottle *xdBottle = CartesianSolver::getTargetOption(reply);
 	Bottle *xBottle = CartesianSolver::getEndEffectorPoseOption(reply);

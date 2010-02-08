@@ -55,7 +55,7 @@ bool DrumIKinSolverModule::close()
 
 double DrumIKinSolverModule::getPeriod()    
 { 
-	return 0.0;  
+	return 0.05;  
 }
 
 bool DrumIKinSolverModule::updateModule() 
