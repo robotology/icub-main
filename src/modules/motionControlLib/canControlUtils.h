@@ -1,3 +1,23 @@
+// -*- mode:C++; tab-width:4; c-basic-offset:4; indent-tabs-mode:nil -*-
+
+/* 
+ * Copyright (C) 2008 The RobotCub Consortium
+ * Author: Lorenzo Natale
+ * website: www.robotcub.org
+ * Permission is granted to copy, distribute, and/or modify this program
+ * under the terms of the GNU General Public License, version 2 or any
+ * later version published by the Free Software Foundation.
+ *
+ * A copy of the license can be found at
+ * http://www.robotcub.org/icub/license/gpl.txt
+ *
+ * This program is distributed in the hope that it will be useful, but
+ * WITHOUT ANY WARRANTY; without even the implied warranty of
+ * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the GNU General
+ * Public License for more details
+*/
+
+
 #ifndef __CANUTILS__
 #define __CANUTILS__
 
@@ -203,18 +223,17 @@ public:
         delete [] requests;
     }
 
-    ThreadFifo &getFifo(int j, int msg)
+    ThreadFifo *getFifo(int j, int msg)
     {
         unsigned int i=msg&0x7F;
         // fprintf(stderr, "Asking FIFO for joint:%d msg:%d\n", j, i);
         int index=j*num_of_messages+i;
         DEBUG("%d %d\n", index, elements);
-        if ( (index<0) || (index>=elements))
-            fprintf(stderr, "%d %d %d\n", j, num_of_messages, i);
 
-
-        ACE_ASSERT((index>=0)&&(index<elements));
-        return requests[index];
+        if ((index>=0)&&(index<elements))
+            return requests+index;
+        else
+            return 0;
     }
 
     // pop a request
@@ -227,8 +246,11 @@ public:
             }
 
         int ret;
-        ThreadFifo &fifo=getFifo(j, msg);
-        if (!fifo.pop(ret))
+        ThreadFifo *fifo=getFifo(j, msg);
+        if (!fifo)
+            return -1;
+
+        if (!fifo->pop(ret))
             return -1;
         pendings--;
         return ret;
@@ -242,8 +264,11 @@ public:
     // append requests
     void append(const CanRequest &rqst)
     {
-        ThreadFifo &fifo=getFifo(rqst.joint, rqst.msg);
-        fifo.push(rqst.threadId);
+        ThreadFifo *fifo=getFifo(rqst.joint, rqst.msg);
+        if (!fifo)
+            return;
+
+        fifo->push(rqst.threadId);
         pendings++;
     }
 
