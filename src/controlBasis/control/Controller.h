@@ -27,6 +27,12 @@ namespace CB {
      * at the sensory values w.r.t., the output variables. that is,
      * J = \frac{ \partial \phi(\sigma) }{ \partial \tau}.  Also supports 
      * using J^T in place of J^#.
+     *
+     * A controller can be run in either "local" ir "remote" mode. In local mode,
+     * it connects directly to ControlBasisResource classes specified in the
+     * constructor.  If it runs in remote mode, it connects to these resources
+     * over YARP ports, and the names of these ports must be specified in the
+     * constructor.
      **/
     class Controller : public ControlBasisAction {
         

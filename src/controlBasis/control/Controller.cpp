@@ -274,7 +274,6 @@ bool CB::Controller::createPotentialFunction(string pf) {
         ok = false;
     }
 
-
     if(hasReference) {
         potentialFunction = pfMap.getPotentialFunction(pf,sensorName,referenceName);
     } else {
@@ -352,7 +351,6 @@ bool CB::Controller::updateAction() {
     // stores (\phi, \dot{\phi})
     // sets state of controller
 
-    //    cout << "CONTROLLER REQUESTING POTENTIAL\n" << endl;
     Vector grad = potentialFunction->getPotentialGradient();
     potential = potentialFunction->getPotential();
 
@@ -361,22 +359,19 @@ bool CB::Controller::updateAction() {
     Matrix JTinv(1,grad.size());
     Matrix Jinv(grad.size(),1);
     Matrix Jint(1,1);
-
         
-    //    cout << "Controller gradient:" << endl;
+    // copy the gradient of the pf into the jacobian (and its transpose), and take inverses.
     for(int i=0; i<grad.size(); i++) {
         J[0][i] = grad[i];
         JT[i][0] = grad[i];
-        //  cout << J[0][i] << endl;
     }
     JTinv = pinv(JT,0.0);
 
-    //    cout << "Controller gradient INVERSE:" << endl;
     for(int i=0; i<grad.size(); i++) {
         Jinv[i][0] = JTinv[0][i];
-        //  cout << Jinv[i][0] << endl;
     }
 
+    // if there needs to be an intermediate jacobain computed, connect to it here.
     if(needsJacobian) {
 
         if(!needsJacobianInverse) {
@@ -391,15 +386,6 @@ bool CB::Controller::updateAction() {
                 Jint = jacobian->getJacobianInverse();            
             }
 
-          /*
-            cout << "\nController Jint:\n";
-            for(int row=0; row<Jint.rows(); row++) {
-                for(int col=0; col<Jint.cols(); col++) {
-                    cout << Jint[row][col] << " ";
-                }
-                cout << endl;
-            }
-          */
         }
 
         if(Vout.size() != Jint.rows())
@@ -410,23 +396,14 @@ bool CB::Controller::updateAction() {
         Matrix JfullInv;
         Matrix JfullInvT;
 
+        // copy the full jacobian based on whether we are using transpose or inverse mode
         if(!useJacobianTranspose) {
             Jfull = Jint*Jinv;
         } else {
             Jfull = Jint*JT;
         }
 
-        /*
-        cout << "\nController Jfull:\n";
-        for(int row=0; row<Jfull.rows(); row++) {
-            for(int col=0; col<Jfull.cols(); col++) {
-                cout << Jfull[row][col] << " ";
-            }
-            cout << endl;
-        }
-        cout << endl;
-        */
-
+        // compute the controlle output
         for(int i=0; i<Vout.size(); i++) {
             //Vout[i] = Jfull[i][0]*(-gain*potential - 2.0*gain*potentialDot);
             Vout[i] = -gain*potential*Jfull[i][0];
@@ -455,14 +432,8 @@ bool CB::Controller::updateAction() {
         Jc = J;
     }
 
-    
-    /*
-    cout << "Controller[" << actionName.c_str() << "] output:" << endl;
-    for(int i=0; i<Vout.size(); i++) {
-        cout << Vout[i] << endl;
-    }
-    */
-    
+
+    // estimate the change in potential and store it
     double pdiff = potential - potentialLast;
     double a = 0.2;
     potentialDot = a*pdiff + (1.0-a)*potentialDot;
@@ -472,7 +443,8 @@ bool CB::Controller::updateAction() {
     potentialStore.push_back(potential);
     potentialDotStore.push_back(potentialDot);
 
-    if(fabs(potentialDot) < 1E-5) {
+    // set the state based on the estimated change in potential
+    if(fabs(potentialDot) < 1E-6) {
         dynamicState = CONVERGED;
     } else {
         dynamicState = UNCONVERGED;
@@ -515,10 +487,12 @@ void CB::Controller::startAction() {
         cout << "Controller already running potential function..." << endl;
     }
     running = true;
+
     start();     // mandatory start function
 }
 
 void CB::Controller::stopAction() {
+
     cout << "Controller::stop() -- stopping thread" << endl;
     stop();     // mandatory stop function
 
@@ -549,6 +523,7 @@ void CB::Controller::stopAction() {
     potentialStore.clear();
 
     cout << "Controller::stop() -- ports closed" << endl;
+
 }
 
 void CB::Controller::postData() {
