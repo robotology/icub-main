@@ -153,8 +153,8 @@ namespace CB {
          **/
         void postData() {
             
-            //std::cout << "Configuration posting data for: " << resourceName.c_str() << std::endl;
-                       
+            
+            // prepare the output bottles to post information           
             yarp::os::Bottle &b0 = outputPort[0]->prepare();
             yarp::os::Bottle &b1 = outputPort[1]->prepare();
             yarp::os::Bottle &b2 = outputPort[2]->prepare();
@@ -177,6 +177,7 @@ namespace CB {
                     
             }
             
+            // write the information to the ports
             outputPort[0]->write();      
             outputPort[1]->write();      
             
@@ -199,8 +200,8 @@ namespace CB {
          **/
         void getInputData() {
 
-            //ACE_OS::printf ("\nConfiguration %s setting data\n------------------\n-------------------\n\n", resourceName.c_str());
-
+            // If the resource is not moveable, there shouldn't be an input port.
+            // In other words, no other service should be sending inputs to this resource.
             if(!moveable) {
                 numInputs = 0;
                 for(int i=0; i<inputPort.size(); i++) {

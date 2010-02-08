@@ -16,20 +16,17 @@ namespace CB {
   public:
 
       /**
-       * retruns the X coordinate of the position
-       * \return the x position
+       * returns the X coordinate of the position
        **/    
       double getX() { return values[0]; }
 
       /**
-       * retruns the Y coordinate of the position
-       * \return the y position
+       * returns the Y coordinate of the position
        **/    
       double getY() { return values[1]; }
 
       /**
-       * retruns the Z coordinate of the position
-       * \return the z position
+       * returns the Z coordinate of the position
        **/    
       double getZ() { return values[2]; }
 
@@ -45,7 +42,6 @@ namespace CB {
         values.resize(size);
 
         numInputs = 0;
-
         numOutputs = 1;
         outputName.push_back("data");
 
@@ -63,9 +59,7 @@ namespace CB {
         b.addDouble(getX());
         b.addDouble(getY());
         b.addDouble(getZ());      
-        //outputPort[0]->write(b);
         outputPort[0]->write();
-        //std::cout << "CartesianPosition posted data for " << resourceName.c_str() << std::endl;              
     }
   
   };

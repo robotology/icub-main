@@ -48,8 +48,6 @@ void CB::YARPConfigurationVariables::stopResource() {
 
 bool CB::YARPConfigurationVariables::updateResource() {
 
-    //cout << "YARPConfiguration updating robot=" << deviceName.c_str() << ", dof=" << numDOFs << ", links=" << numLinks << endl;
-
     // get current values of config variables from device
     bool ok;
     ok = dd->view(pos);
