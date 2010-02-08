@@ -14,7 +14,12 @@
 namespace CB {
 
     /**
-     * The Abstract Control Basis Potential Function class.  Returns potential and gradient based on input.
+     * The Abstract ControlBasis Potential Function class.  Returns potential 
+     * and gradient based on input. Implmenters of this class will be required to
+     * compute a potential functon evaluated at a certain point, as well as the 
+     * gradient of the function at that point.  The type (i.e., cartesianposition) 
+     * of the PF must be specified, as well as if this PF needs a reference to
+     * compute its current value.
      */
     class ControlBasisPotentialFunction : public yarp::os::Thread {
         
@@ -183,64 +188,67 @@ namespace CB {
             }
            
             outputPort.write();
-    }
+        }
+        
+        /**
+         * main run function for pf (instatiates for thread)
+         **/
+        void run() {
 
-    /**
-     * main run function for pf (instatiates for thread)
-     **/
-    void run() {
-
-        // set up port name
-        pfName = "/cb/" + inputSpace + "/" + pfTypeName;
-
-        std::string prefixStr = "/cb/" + inputSpace;
-        std::string tmp = inputName[0];
-        int s = prefixStr.size();
-
-        tmp.erase(0,s);
-        pfName += tmp;
-
-        if(hasReference) {
-            tmp = inputName[1];
+            // set up port name
+            pfName = "/cb/" + inputSpace + "/" + pfTypeName;
+            
+            std::string prefixStr = "/cb/" + inputSpace;
+            std::string tmp = inputName[0];
+            int s = prefixStr.size();
+            
             tmp.erase(0,s);
             pfName += tmp;
-        }
-
-        std::cout << "ControlBasisPotentialFunction::run() name=" << pfName.c_str() << std::endl;
-
-        outputPortName = pfName + ":o";
-        outputPort.open(outputPortName.c_str());
-        
-        while(!isStopping()) {
-            if(!updatePotentialFunction()) {
-                std::cout << "Problem updating potential function: " << pfName.c_str() << std::endl;
-                break;
+            
+            // if the PF has a reference, store its name in the portname as well
+            if(hasReference) {
+                tmp = inputName[1];
+                tmp.erase(0,s);
+                pfName += tmp;
             }
-            postData();
-            yarp::os::Time::delay(updateDelay);
+            
+            std::cout << "ControlBasisPotentialFunction::run() name=" << pfName.c_str() << std::endl;
+            
+            outputPortName = pfName + ":o";
+            outputPort.open(outputPortName.c_str());
+            
+            while(!isStopping()) {
+                if(!updatePotentialFunction()) {
+                    std::cout << "Problem updating potential function: " << pfName.c_str() << std::endl;
+                    break;
+                }
+                postData();
+                yarp::os::Time::delay(updateDelay);
+            }
+            std::cout << "ControlBasisPotentialFunction::run() -- setting running flag to false and closing ports" << std::endl;
+            running = false;
+            
+            inputPort[0].close();
+            inputPort[1].close();
+            outputPort.close(); 
+            
         }
-        std::cout << "ControlBasisPotentialFunction::run() -- setting running flag to false and closing ports" << std::endl;
-        running = false;
-
-        inputPort[0].close();
-        inputPort[1].close();
-        outputPort.close(); 
-
-    }
-      
-      /**
-       * Constructor
-       **/
-      ControlBasisPotentialFunction() {
-          updateDelay = 0.01;
-          running = false;
-          size = 1;
-      }
-
-      ~ControlBasisPotentialFunction() {
-
-      }
-  };
+        
+        /**
+         * Constructor
+         **/
+        ControlBasisPotentialFunction() {
+            updateDelay = 0.01;
+            running = false;
+            size = 1;
+        }
+        
+        /**
+         * Destructor
+         **/
+        ~ControlBasisPotentialFunction() { }
+        
+    };
     
 }
 

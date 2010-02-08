@@ -5,11 +5,21 @@
 #include "ControlBasisPotentialFunction.h"
 
 namespace CB {
-    
+
+    /**
+     * This class implements a Squared Error quadratic potential function
+     * for Cartesian Position resources, s.t., \phi = (1/2)*x^T*X.  
+     * Implemented as x_current - x_reference.
+     **/
     class CartesianPositionSquaredError : public ControlBasisPotentialFunction {
         
     public:
         
+        /** 
+         * Constructor.
+         * \param inName the current value of the device
+         * \param refName the reference value of the device
+         **/
         CartesianPositionSquaredError(std::string inName, std::string refName) {
             
             size = 3;
@@ -33,13 +43,30 @@ namespace CB {
             running = false;
            
         }
-        
+
+        /**
+         * Destructor
+         **/        
         ~CartesianPositionSquaredError() { }
 
-        // functions from ControlBasisPotentialFunction
+        /**
+         * inherited update function
+         **/
         bool updatePotentialFunction();
+
+        /**
+         * inherited start function
+         **/
         void startPotentialFunction();
+        
+        /**
+         * inherited stop function
+         **/
         void stopPotentialFunction();
+        
+        /**
+         * inherited connect function
+         **/
         bool connectToInputs();
 
 

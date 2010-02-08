@@ -262,13 +262,17 @@ namespace CB {
         /**
          * Constructor
          **/
-        ControlBasisResource() {
-            updateDelay = 0.01;
-            numInputs = 0;
-            numOutputs = 0;
-            lock = true;            
+        ControlBasisResource() :
+            updateDelay(0.01),
+            numInputs(0),
+            numOutputs(0),
+            lock(true)
+        {            
         }
 
+        /** 
+         * Destructor
+         **/
         ~ControlBasisResource() {          
 
             for(int i=0; i<inputPort.size(); i++) {
@@ -281,7 +285,6 @@ namespace CB {
                 delete outputPort[i];
             }
 
-            std::cout << "ControlBasisResource() destructed..." << std::endl;
         }
         
     };

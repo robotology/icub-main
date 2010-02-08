@@ -151,17 +151,17 @@ namespace CB {
          **/
         ConfigurationVariables() {
         
-            running = false;
+            running=false;
+            type="configuration";
+            numOutputs=3;
+            numInputs=2;
 
-            type = "configuration";
             std::cout << "setting type of ConfigurationVariables to " << type.c_str() << std::endl;
-            
-            numOutputs = 3;      
+
             outputName.push_back("data");
             outputName.push_back("limits");
             outputName.push_back("params");
 
-            numInputs = 2;
             inputName.push_back("data");
             inputName.push_back("lock");
         
@@ -178,7 +178,6 @@ namespace CB {
          * after the update() function in the main thread loop.
          **/
         void postData() {
-            
             
             // prepare the output bottles to post information           
             yarp::os::Bottle &b0 = outputPort[0]->prepare();

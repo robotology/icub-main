@@ -238,20 +238,6 @@ namespace CB {
             // set up port name
             jName = "/cb/jacobian/" + randomIDstr + "/" + inputSpace + ":" + outputSpace + deviceName;
             
-            /*
-              string prefixStr = "/cb/" + inputSpace;
-              int s = prefixStr.size();
-              string tmp = inputName[0];
-              tmp.erase(0,s);
-              pfName += tmp;
-              
-              if(hasReference) {
-              tmp = inputName[1];
-              tmp.erase(0,s);
-              pfName += tmp;
-              }
-            */
-            
             std::cout << "ControlBasisJacobian::run() name=" << jName.c_str() << std::endl;        
             
             outputPortName = jName + ":o";
@@ -282,9 +268,9 @@ namespace CB {
         /**
          * Constructor
          **/
-        ControlBasisJacobian() {
-            updateDelay = 0.1;
-        }
+        ControlBasisJacobian() :
+            updateDelay(0.1)
+        {  }
         
     };
     

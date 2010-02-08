@@ -5,11 +5,21 @@
 #include "ControlBasisPotentialFunction.h"
 
 namespace CB {
-    
+
+    /**
+     * This class implements a Squared Error quadratic potential function, 
+     * for Configuration rsources s.t., \phi = (1/2)*q^T*q.  
+     * Implemented as q_current - q_reference.
+     **/    
     class ConfigurationSquaredError : public ControlBasisPotentialFunction {
         
     public:
         
+        /** 
+         * Constructor.
+         * \param inName the current value of the device
+         * \param refName the reference value of the device
+         **/
         ConfigurationSquaredError(std::string inName, std::string refName, int n=0) {
             
             size = n;
@@ -38,12 +48,29 @@ namespace CB {
 
         }
         
+        /**
+         * Destructor
+         **/        
         ~ConfigurationSquaredError() { }
 
-        // functions from ControlBasisPotentialFunction
+        /**
+         * inherited update function
+         **/
         bool updatePotentialFunction();
+
+        /**
+         * inherited start function
+         **/
         void startPotentialFunction();
+        
+        /**
+         * inherited stop function
+         **/
         void stopPotentialFunction();
+        
+        /**
+         * inherited connect function
+         **/
         bool connectToInputs();
 
 

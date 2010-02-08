@@ -20,14 +20,11 @@ void CB::ConfigurationSquaredError::startPotentialFunction() {
 }
 
 void CB::ConfigurationSquaredError::stopPotentialFunction() {
-    cout << "ConfigurationSquaredError::stopPotentialFunction()" << endl;
     stop();     // mandatory stop function
 }
 
 bool CB::ConfigurationSquaredError::updatePotentialFunction() {
-    
-    cout << "ConfigurationSquaredError updating potential" << endl;
-    
+       
     Bottle *b[2];
     double offset;
     bool ok = true;
@@ -64,11 +61,12 @@ bool CB::ConfigurationSquaredError::updatePotentialFunction() {
     }
     cout << endl;
 
+    // compute the potential and its gradient
     diff = input[1] - input[0];
     gradient = -1.0*diff;
     potential = 0.5*dot(diff,diff);
 
-cout << "ConfigurationSquaredError Potential = " << potential << endl;
+    //    cout << "ConfigurationSquaredError Potential = " << potential << endl;
     return ok;
 
 }

@@ -8,15 +8,23 @@
 #include <cb.h>
 
 namespace CB {
-    
+
+    /**
+     * This potential function implements Yoshikawa's Manipulability field for a manipulator.
+     * This field is defined as \phi= sqrt(det(J*J^T)), where J is the manipulator jacobian.
+     **/
     class ManipulabilityField : public ControlBasisPotentialFunction {
         
     protected:
 
-        /**o
-         * a ForwardKinematics helper class.
+        /**
+         * The iKin Limb
          **/
         iKin::iKinLimb kinLimb;
+
+        /**
+         * The pionter to the iKin Chain
+         **/
         iKin::iKinChain *kinChain;
 
         /** 
@@ -41,6 +49,10 @@ namespace CB {
 
     public:
         
+        /**
+         * Constructor
+         * \param inName, the name of the manipulator
+         **/
         ManipulabilityField(std::string inName) {
             
             inputName[0] = inName;
@@ -63,16 +75,35 @@ namespace CB {
 
         }
         
+        /**
+         * Destructor
+         **/
         ~ManipulabilityField() { }
 
-        // functions from ControlBasisPotentialFunction
+        /**
+         * inherited update function
+         **/
         bool updatePotentialFunction();
+
+        /**
+         * inherited start function
+         **/
         void startPotentialFunction();
+
+        /**
+         * inherited stop function
+         **/
         void stopPotentialFunction();
+
+        /**
+         * inherited connect function
+         **/
         bool connectToInputs();
 
+        /**
+         * gets the manipulability metric for the specified Jacobian matrix
+         **/
         double getManipulability(yarp::sig::Matrix J);
-
 
     private:
 

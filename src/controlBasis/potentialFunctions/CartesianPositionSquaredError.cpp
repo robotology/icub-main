@@ -20,7 +20,6 @@ void CB::CartesianPositionSquaredError::startPotentialFunction() {
 }
 
 void CB::CartesianPositionSquaredError::stopPotentialFunction() {
-    cout << "CartesianPositionSquaredError::stopPotentialFunction()" << endl;
     stop();     // mandatory stop function
 }
 
@@ -60,6 +59,7 @@ bool CB::CartesianPositionSquaredError::updatePotentialFunction() {
     }
     cout << endl;
 
+    // compute potential and gradient
     diff = input[1] - input[0];
     gradient = -1.0*diff;
     potential = 0.5*dot(diff,diff);

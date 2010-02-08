@@ -8,7 +8,11 @@
 #include <cb.h>
 
 namespace CB {
-    
+
+    /**
+     * This class implements the generic Jacobian class for a Manipulator Jacobian.
+     * the Jacobian is a 3xN matrix where N is the number of DOFs/Joints of the (serial) manipulator.
+     **/
     class ManipulatorPositionJacobian : public ControlBasisJacobian {
         
     protected:
@@ -46,7 +50,10 @@ namespace CB {
 
 
     public:
-        
+
+        /**
+         * Constructor.
+         **/        
         ManipulatorPositionJacobian(std::string name, int n=0) {           
  
             inputSize = n;
@@ -68,6 +75,7 @@ namespace CB {
             
             paramsSet = false;
 
+            // requires the DH parameters and current config values from the Configuration resource
             numInputs = 2;
             inputNames.push_back("params");
             inputNames.push_back("vals");
@@ -78,12 +86,29 @@ namespace CB {
             connectedToInputs = false;
         }
         
+        /**
+         * destructor
+         **/
         ~ManipulatorPositionJacobian() { }
 
-        // functions from ControlBasisJacobian
+        /**
+         * inherited update function
+         **/
         bool updateJacobian();
+
+        /**
+         * inherited start function
+         **/
         void startJacobian();
+
+        /**
+         * inherited stop function
+         **/
         void stopJacobian();
+
+        /**
+         * inherited connect to inputs function
+         **/
         bool connectToInputs();
 
     };

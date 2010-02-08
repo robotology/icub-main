@@ -65,17 +65,20 @@ namespace CB {
          * Constructor
          */
         EndEffectorCartesianPosition(std::string name) 
+            : connectedToConfiguration(false),
+              paramsSet(false)
         {
 
-            deviceName = name;
-            connectedToConfiguration = false;
-            paramsSet = false;
-            updateDelay = 0.01;
-            
+            deviceName=name;
+
             numInputs = 3;
             inputName.push_back("config");
             inputName.push_back("params");
             inputName.push_back("limits");
+
+            updateDelay=0.01;
+
+            // mandatory inherit function
             initPorts();
 
         }

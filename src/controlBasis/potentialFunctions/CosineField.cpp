@@ -18,7 +18,6 @@ void CB::CosineField::startPotentialFunction() {
 }
 
 void CB::CosineField::stopPotentialFunction() {
-    cout << "CosineField::stopPotentialFunction()" << endl;
     stop();     // mandatory stop function
 }
 
@@ -35,7 +34,7 @@ bool CB::CosineField::updatePotentialFunction() {
     b = inputPort[0].read(false);
 
     if(b==NULL) {
-        cout << "CosineField::update() problem reading data!!" << endl;
+        //        cout << "CosineField::update() problem reading data!!" << endl;
         return ok;
     }
 
@@ -106,7 +105,7 @@ bool CB::CosineField::connectToInputs() {
         cout << "CosineField::connectToInputs() -- failed opening limits input port..." << endl;
         return ok;
     }
-    //    Time::delay(1);
+
     cout << "CosineField::connectToInputs() -- connecting:\n\t " 
          << configName.c_str() << "-> " << configNameIn.c_str() << endl << endl;
 
@@ -143,45 +142,41 @@ bool CB::CosineField::connectToInputs() {
     int c=0;
     int offset = 1;
     cout << "CosField read limits from port successfully..." << endl;    
-    if(ok)
-        {
-            size = b->get(0).asInt();
-            
-            cout << "CosineField::connectToInputs() -- read limit data, got size=" << size << endl;
+
+    if(ok) {
+        size = b->get(0).asInt();
         
-            input[0].resize(size);
-            minLimits.resize(size);
-            maxLimits.resize(size);
-            gradient.resize(size);
-            centers.resize(size);
-            ranges.resize(size);
+        input[0].resize(size);
+        minLimits.resize(size);
+        maxLimits.resize(size);
+        gradient.resize(size);
+        centers.resize(size);
+        ranges.resize(size);
             
-            for(int i = 0; i<b->size(); i+=2) 
-                {
-                    minLimits[c] = b->get(offset+i).asDouble();
-                    maxLimits[c] = b->get(offset+i+1).asDouble();
-                    c++;
-                }
-            cout << "cosfield got limits" << endl;
+        for(int i = 0; i<b->size(); i+=2) {
+            minLimits[c] = b->get(offset+i).asDouble();
+            maxLimits[c] = b->get(offset+i+1).asDouble();
+            c++;
+        }
+        cout << "cosfield got limits" << endl;
+        
+        for(int i=0; i<size; i++) {
             
-            for(int i=0; i<size; i++) {
-                
-                input[0][i] = b->get(i+offset).asDouble();
-                cout << input[0][i] << " in (" << minLimits[i] << " <-> " << maxLimits[i] << ")" << endl;
-                
-                ranges[i] = maxLimits[i] - minLimits[i];
-                centers[i] = minLimits[i] + (ranges[i] / 2.0);
-            }
+            input[0][i] = b->get(i+offset).asDouble();
+            cout << input[0][i] << " in (" << minLimits[i] << " <-> " << maxLimits[i] << ")" << endl;
             
-            cout << "" << endl;
-            
-        }  
+            ranges[i] = maxLimits[i] - minLimits[i];
+            centers[i] = minLimits[i] + (ranges[i] / 2.0);
+        }
+        
+        cout << "" << endl;
+        
+    }  
     else {
         cout << "could not read data..." << endl;
     }
     
     //ok &= Network::disconnect(limitsName.c_str(),limitsNameIn.c_str());            
-    cout << "CosineField done connecting to YARP input ports..." << endl;
     connectedToInputs = true;
     return ok; 
 }

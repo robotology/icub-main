@@ -5,18 +5,42 @@
 #include "ControlBasisPotentialFunction.h"
 
 namespace CB {
-    
+
+    /**
+     * This class implements a CB Potential Function that puts a Sum-of-Cosines
+     * around the joint centers of a configuration.  Moving wrt this function will 
+     * put the manipulator in the center of its range-of-motion.
+     **/    
     class CosineField : public ControlBasisPotentialFunction {
         
     protected:
 
+        /**
+         * the min limits of the manipulator
+         **/
         yarp::sig::Vector minLimits;
+
+        /**
+         * the max limits of the manipulator
+         **/
         yarp::sig::Vector maxLimits;
+
+        /**
+         * the ranges of the manipulator
+         **/
         yarp::sig::Vector ranges;
+
+        /**
+         * the joint centers of the manipulator
+         **/
         yarp::sig::Vector centers;
 
     public:
         
+        /**
+         * Constructor.
+         * \param inName the name of the manipulator device 
+         **/
         CosineField(std::string inName) {
             
             inputName[0] = inName;
@@ -31,7 +55,6 @@ namespace CB {
             centers.resize(1);
             gradient.resize(1);
 
-
             hasReference = false;
             running = false;
 
@@ -42,13 +65,30 @@ namespace CB {
             connectedToInputs = false;
 
         }
-        
+
+        /**
+         * Destructor
+         **/        
         ~CosineField() { }
 
-        // functions from ControlBasisPotentialFunction
+        /**
+         * inherited update function
+         **/
         bool updatePotentialFunction();
+        
+        /**
+         * inherited start function
+         **/
         void startPotentialFunction();
+        
+        /**
+         * inherited stop function
+         **/
         void stopPotentialFunction();
+        
+        /**
+         * inherited connect function
+         **/
         bool connectToInputs();
 
 

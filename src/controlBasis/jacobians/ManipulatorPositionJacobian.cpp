@@ -9,6 +9,8 @@ using namespace yarp::math;
 using namespace iKin;
 
 void CB::ManipulatorPositionJacobian::startJacobian() {
+
+    // if not conencted to inputs, do that now
   if(!connectedToInputs) {
     if(!connectToInputs()) {
       cout << "ManipulatorPositionJacobian couldn't connect to input ports in startJacobian()..." << endl;
@@ -20,7 +22,6 @@ void CB::ManipulatorPositionJacobian::startJacobian() {
 }
 
 void CB::ManipulatorPositionJacobian::stopJacobian() {
-
   stop();     // mandatory stop function
 }
 
@@ -32,48 +33,40 @@ bool CB::ManipulatorPositionJacobian::updateJacobian() {
   int offset;
   Matrix Jfull;
 
-  //  cout << "ManipulatorPositionJacobian::update() -- reading input data..." << endl;
+  // get the current configuration of the manipulator
   b = inputPorts[1]->read();
-
   if(b==NULL) {
       cout << "ManipulatorPositionJacobian::update() -- having trouble reading input data!" << endl;
       return ok;
   }
-
   nj = b->get(0).asInt();
   inputSize = nj;
 
+  // check sizes, reinitialize if there is a mismatch
   if(configVals.size() != nj) {
     configVals.resize(nj); configVals.zero();
     J.resize(outputSize,inputSize); J.zero();
     cout << "ManipulatorPositionJacobian size mismatch, resizing=" << inputSize << endl;
   }
 
+  // get the data
   offset = 1;  
   for(int i=0; i<nj; i++) {
     configVals[i] = b->get(i+offset).asDouble();
   }
 
+  // send to iKin
   configVals=kinChain->setAng(configVals);
   Jfull = kinChain->GeoJacobian();    
   //  Jfull = kinChain->AnaJacobian();    
-  
+
+  // copy the Jacobian to class var
   J.resize(3,Jfull.cols());
   for(int i=0; i<3; i++) {      
       for(int j=0; j<J.cols(); j++) {        
           J[i][j] = Jfull[i][j];
       }
   }
-
-  /*  cout << endl << "GeoJacobian:" << endl;
-  for(int i=0; i<J.rows(); i++) {      
-      for(int j=0; j<J.cols(); j++) {        
-          cout << J[i][j] << " ";    
-      }
-      cout << endl;          
-  }
-  cout << endl;          
-  */
 
   return ok;
   
@@ -87,6 +80,7 @@ bool CB::ManipulatorPositionJacobian::connectToInputs() {
      int numJoints;
      Matrix H(4,4);
 
+     // configue a random ID for this jacobian instance 
      int randomID = (int)(Random::uniform()*1000.0);
      char *c = (char *)malloc(16);
      sprintf(c,"%d", randomID);
@@ -117,11 +111,13 @@ bool CB::ManipulatorPositionJacobian::connectToInputs() {
        return ok;
      }
 
+     // initiallize all the link / DH info for the manipulator
      numLinks = b->get(0).asInt();
      LinkTypes.resize(numLinks); LinkTypes.zero();
      DHParams.resize(4,numLinks); DHParams.zero();
      numJoints = 0;
 
+     // instantiate the iKin device
      kinChain = kinLimb.asChain();
      linkList.clear();
      H.eye();
@@ -176,13 +172,13 @@ bool CB::ManipulatorPositionJacobian::connectToInputs() {
      }
      cout << kinChain->getDOF() << " DOFs available from iKinChain" << endl;                     
 
+     // set the appropriate size for the Jacobian (just in case its not right)
      inputSize = numJoints;
      J.resize(outputSize,inputSize); J.zero();
      configVals.resize(inputSize); configVals.zero();
-     
      cout << "ManipulatorPositionJacobian::connect() -- got links=" << numLinks << ", dofs=" << numJoints << endl;
-     
-     cout << "ManipulatorPositionJacobian::connectToInputs() -- disconnecting ports for link parameters. got inforamtion..." << endl;
+    
+     // disconnect the param port (we got what we needed from it)
      ok &= Network::disconnect(linkOutputName.c_str(),linkInputName.c_str());
      if(!ok) {
        cout << "ManipulatorPositionJacobian::connectToInputs() -- trouble disconnecting link parameter port!!" << endl;

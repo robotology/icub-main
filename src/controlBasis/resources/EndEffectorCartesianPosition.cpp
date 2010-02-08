@@ -9,18 +9,19 @@ using namespace yarp::math;
 using namespace iKin;
 
 void CB::EndEffectorCartesianPosition::startResource() {
-  if(!connectedToConfiguration) {
-    if(!connectToConfiguration()) {
-      cout << "EE cartpos Couldn't connect to configuration port in startResource()..." << endl;
-      return;
+
+    // if not connected to the configuration resource, do that now
+    if(!connectedToConfiguration) {
+        if(!connectToConfiguration()) {
+            cout << "EE cartpos Couldn't connect to configuration port in startResource()..." << endl;
+            return;
+        }
     }
-  }
-  running = true;
-  start();     // mandatory start function
+    running = true;
+    start();     // mandatory start function
 }
 
 void CB::EndEffectorCartesianPosition::stopResource() {
-  cout << "EndEffectorCartesianPosition::stopResource()" << endl;
   stop();     // mandatory stop function
 }
 
@@ -33,11 +34,10 @@ bool CB::EndEffectorCartesianPosition::updateResource() {
     Vector xf, q0;
     int idx = 0;
 
-    //    cout << "EndEffectorCartesianPosition::update()" << endl;
+    // read the current configuration variables from the input port
     b = inputPort[0]->read(false);
     if(b!=NULL) {
 
-        //        cout << "EndEffectorCartesianPosition::update() -- reading config information..." << endl;
         nj = b->get(0).asInt();
         offset = 1;
 
@@ -45,17 +45,16 @@ bool CB::EndEffectorCartesianPosition::updateResource() {
         for(int i=0; i<nj; i++) {            
             configVals[i] = b->get(i+offset).asDouble();
         }
-        //cout << "Current arm[" << deviceName.c_str() << "] pose: " << configVals.toString() << endl;                  
 
-        // set the angles and get the axis-angle end-effector pose
+        // set the angles and get the axis-angle end-effector pose using iKin
         configVals=kinChain->setAng(configVals);
         xf=kinChain->EndEffPose(false);     
-        //cout << "Current arm end-effector pose: " << xf.toString() << endl;                  
 
         // copy position
         values[0] = xf[0];
         values[1] = xf[1];
         values[2] = xf[2];
+
         //cout << "Pos=[" << values[0] << " " << values[1] << " " << values[2] << "]" << endl;
     } 
 
@@ -101,7 +100,7 @@ bool CB::EndEffectorCartesianPosition::connectToConfiguration() {
         return ok;
     }
 
-    // get Link information   
+    // get Link information (DHParameters and link limits (unused))
     int c = 0;
     int thresh = 10;
     b_params = inputPort[1]->read(true);
@@ -134,6 +133,7 @@ bool CB::EndEffectorCartesianPosition::connectToConfiguration() {
 
     cout << "EndEffectorCartesianPosition::connectToConfiguration() -- setting up FK" << endl; 
 
+    // now that we have the DH parameters, copy to local storage and send to iKin
     for(int i=0; i<numLinks; i++) {
         for(int j=0; j<4; j++) {
             DHParams[j][i] = b_params->get(offset_params+j).asDouble();
@@ -141,7 +141,7 @@ bool CB::EndEffectorCartesianPosition::connectToConfiguration() {
         LinkTypes[i] = b_params->get(offset_params+4).asInt();
         offset_params+=5;
 
-        cout << "Link[" << i  << "] Info: [" << //%.3f %.3f %.3f %.3f], type=%.0f\n", i, 
+        cout << "Link[" << i  << "] Info: [" << 
             DHParams[DH_A][i] << " " <<
             DHParams[DH_D][i] << " " <<
             DHParams[DH_ALPHA][i] << " " <<
@@ -185,17 +185,13 @@ bool CB::EndEffectorCartesianPosition::connectToConfiguration() {
         } 
 
     }
-    cout << kinChain->getDOF() << " DOFs available from iKinChain" << endl;                     
 
-    cout << "input matrix:" << endl;
+    // clear some FP residual in input matrix
     for(int i=0; i<4; i++) {
         for(int j=0; j<4; j++) {
             if(fabs(H[i][j]) < 1E-10) H[i][j] = 0;
-            cout << H[i][j] << " ";
         }
-        cout << endl;
     }
-    cout << endl;
 
     // connect to config port for reading config values
     string configOutputName = "/cb/configuration" + deviceName + "/data:o";

@@ -122,7 +122,12 @@ namespace CB {
          * \param dofs The number of DOFs of the resource (default to 0, if specified using a config file).
          * \param links The number of links of the resource (default to 0, if specified using a config file).
          **/
-        YARPConfigurationVariables(std::string devName, std::string yarpDevName, int dofs=0, int links=0) {
+        YARPConfigurationVariables(std::string devName, std::string yarpDevName, 
+                                   int dofs=0, int links=0)  :           
+              connectedToDevice(false),
+              velocityGain(10),
+              velocityControlMode(false)
+        {
 
             std::cout << "YARPConfigurationVariables created..." << std::endl;  
 
@@ -139,17 +144,6 @@ namespace CB {
                 localDevPort = yarpDeviceName + deviceName;
             }
             remoteDevPort = yarpDeviceName;
-
-            numDOFs = dofs;
-            numLinks = links;
-            size = dofs;
-
-            connectedToDevice = false;
-            moveable = true;
-            lock = true;
-            
-            maxSetVal = 0.01;
-            velocityGain = 10;
 
             // initiallize storage vectors and matrices
             if(numDOFs != 0) {
@@ -172,9 +166,13 @@ namespace CB {
                 mask.resize(1);
                 mask[0] = 1;
             }
-            
-            // default to position controller mode
-            velocityControlMode = false;
+
+            numDOFs=dofs;
+            numLinks=links;
+            size=dofs;
+            moveable = true;
+            lock = true;
+            maxSetVal=0.01;
 
             // init the input/output ports
             initPorts();
