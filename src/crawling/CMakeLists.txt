@@ -13,10 +13,10 @@ IF(NOT IPOPT_FOUND)
    MESSAGE(FATAL_ERROR "IPOPT is strictly required!")
 ENDIF(NOT IPOPT_FOUND)
 
-ADD_SUBDIRECTORY(CrawlGenerator)
-ADD_SUBDIRECTORY(CrawlManager)
-ADD_SUBDIRECTORY(CrawlHeadControl)
-ADD_SUBDIRECTORY(ReachManager)
+ADD_SUBDIRECTORY(crawlGenerator)
+ADD_SUBDIRECTORY(crawlManager)
+ADD_SUBDIRECTORY(crawlHeadControl)
+ADD_SUBDIRECTORY(reachManager)
 
 IF(MSVC)
 	add_definitions( /wd4250 )
@@ -24,10 +24,10 @@ ENDIF(MSVC)
 
 FIND_PACKAGE(ARToolkitPlus QUIET)
 IF (ARTOOLKITPLUS_FOUND)
-  ADD_SUBDIRECTORY(MultiMarkerTracker)
+  ADD_SUBDIRECTORY(multiMarkerTracker)
 ELSEIF (ARTOOLKITPLUS_FOUND)
   MESSAGE(STATUS "Skipping module MultiMarkerTracker using ARToolkitPlus")
 ENDIF (ARTOOLKITPLUS_FOUND)
-ADD_SUBDIRECTORY(Planner)
+ADD_SUBDIRECTORY(planner)
 
 
