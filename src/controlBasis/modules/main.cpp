@@ -4,7 +4,7 @@
 @ingroup icub_module
 \defgroup icub_controlBasisResource controlBasisResource
 
-A Generic Control Resource Module for Typed Sensors & Effectors
+A generic ControlBasis resource module for typed sensors & effectors
 
 \section intro_sec Description
 This module allows a user to start up a control basis module such as a 

@@ -1,4 +1,60 @@
-// -*- mode:C++; tab-width:4; c-basic-offset:4; indent-tabs-mode:nil -*-      
+// -*- mode:C++; tab-width:4; c-basic-offset:4; indent-tabs-mode:nil -*-
+/**
+@ingroup icub_guis
+\defgroup icub_controlBasisGui controlBasisGui
+
+A viewer for running ControlBasis API (CBAPI) control laws.
+ 
+Copyright (C) 2010 RobotCub Consortium 
+ 
+Author: Stephen Hart
+ 
+CopyPolicy: Released under the terms of the GNU GPL v2.0.
+ 
+\section intro_sec Description 
+
+This gui will connect to all running control basis resources that are running on the 
+network and allow a user to configure control laws with them.  When a user adds a 
+controller to the current control law, it will be added with a lower priority then 
+previously added controllers.  The final multi-objective prioritized output will be
+computed using nullspace projection.  
+
+The user is allowed to set a gain for each controller.
+
+Allowing "virtual" effectors will enable the user to choose resources such as the 
+Cartesian Position of a robot end-effector.  This is "virtual" because the actual 
+device that is moved is a Configuration resource that accepts commands by first being
+transformed through an available Jacobian.  The possible virtual effectors are defined
+by the possible Jacobian operations that act on the actual (moveable) Configuration
+resources.  If virtual effectors are not allowed, only the Configuration resources will
+be displayed.
+
+Each controller computes its control signal as follows:
+
+\delta \effector = gain*potential*Jacobian^#,
+
+where "#" is the generalized (Moore-Penrose) pseudoinverse.  If the "Use Jacobian Transpose"
+button is selected, the transpose is used in place of the pseudoinverse.  
+ 
+The GUI will look like this
+\image html controlBasisGUI.jpg
+
+\section example_sec Example 
+Try with the following:
+ 
+\code
+on terminal 1: iCub_SIM
+
+on terminal 2: src/controlBasis/tests/startResources
+- type "start" and hit enter
+
+on terminal 3: controlBasisGUI
+
+\author Stephen Hart
+ 
+This file can be edited at 
+\in src/controlBasis/app/controlBasisGUI.cpp.
+*/
 #include "controlBasisGUI.h"
 
 #include <yarp/String.h>
