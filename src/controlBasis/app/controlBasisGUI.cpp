@@ -1,7 +1,7 @@
 // -*- mode:C++; tab-width:4; c-basic-offset:4; indent-tabs-mode:nil -*-
 /**
-@ingroup icub_guis
 \defgroup icub_controlBasisGui controlBasisGui
+@ingroup icub_guis
 
 A viewer for running ControlBasis API (CBAPI) control laws.
  
