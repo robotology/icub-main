@@ -1,4 +1,4 @@
-SET(KEYWORD "CrawlManager")
+SET(KEYWORD "crawlManager")
 
 PROJECT(${KEYWORD})
 

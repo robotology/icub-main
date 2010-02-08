@@ -22,13 +22,13 @@
 /**
  * @ingroup icub_module
  *
- * \defgroup icub_CrawlManager CrawlManager
+ * \defgroup icub_crawlManager crawlManager
  *
- *This module is part of the application \ref icub_Crawling "Crawling"
+ *This module is part of the application \ref icub_crawlingDemo "crawlingDemo"
  *
  *\section intro_sec Description 
  *
- * This module send the appropriate parameters for the dynamical systems generating the trajectories (\ref icub_CrawlGenerator "CrawlGenerator") according to the chosen behavior. It sends the parameters at timing corresponding to the beat of each of the part.If you want to  use the whole drumming application, please refer to \ref icub_Crawling "Crawling". 
+ * This module send the appropriate parameters for the dynamical systems generating the trajectories (\ref icub_crawlGenerator "crawlGenerator") according to the chosen behavior. It sends the parameters at timing corresponding to the beat of each of the part.If you want to  use the whole drumming application, please refer to \ref icub_crawlingDemo "crawlingDemo". 
  *
  *\section lib_sec Libraries
  *
@@ -46,7 +46,7 @@
  *
  * Input ports\n
  * <ul>
- * <li> for each active \a part (i.e left_arm, right_arm, left_leg, right_leg, torso, head) of the robot: /part/parameters/in (created by the \ref icub_CrawlGenerator "CrawlGenerator" module)
+ * <li> for each active \a part (i.e left_arm, right_arm, left_leg, right_leg, torso, head) of the robot: /part/parameters/in (created by the \ref icub_crawlGenerator "crawlGenerator" module)
  *</ul>
  *
  *\section portsc_sec Ports Created
@@ -77,9 +77,9 @@
  *
  *\section example_sec Example Instantiation of the Module
  *
- * ./CrawlManager
+ * ./crawlManager
 
- * This file can be edited at \in src/crawling/CrawlManager/main.cpp 
+ * This file can be edited at \in src/crawling/crawlManager/main.cpp 
  *
  *\authors Sarah Degallier Ludovic Righetti
  *

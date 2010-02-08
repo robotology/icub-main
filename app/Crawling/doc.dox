@@ -1,7 +1,7 @@
 /**
 @ingroup  icub_applications
 
-\defgroup icub_Crawling crawlingDemo
+\defgroup icub_crawlingDemo crawlingDemo
 
 A set of modules for crawling and reaching on all fours. 
 
@@ -13,7 +13,7 @@ The general implementation for the basic crawling architecture is pictured below
 
 \image html crawl_new_impl.jpg
 
-The four limbs as well as the head and the torso are controlled. For each part, the trajectoires of all the dofs are produced by a \ref icub_CrawlGenerator "CrawlGenerator" module (referred to as CPG on the figure), some of them being coupled together to ensure the gait (green arrows). On top of these, the \ref icub_CrawlManager "CrawlManager" module is responsible for sending the control (i.e. high-level) parameters corresponding to the different behaviors.   
+The four limbs as well as the head and the torso are controlled. For each part, the trajectoires of all the dofs are produced by a \ref icub_crawlGenerator "crawlGenerator" module (referred to as CPG on the figure), some of them being coupled together to ensure the gait (green arrows). On top of these, the \ref icub_crawlManager "crawlManager" module is responsible for sending the control (i.e. high-level) parameters corresponding to the different behaviors.   
 
 The behavior of the robot can be modulated by the user using the keyboard, more precisely :
 - [1] -> going on all fours
@@ -37,8 +37,8 @@ Assumes \ref icub_iCubInterface "iCubInterface" is running, and that the parts y
 
 
 - \ref icub_velocityControl "velocityControl" (for each of the controlled parts)	
-- \ref icub_CrawlGenerator "CrawlGenerator" (for each of the controlled parts)
-- \ref icub_CrawlManager "CrawlManager"	
+- \ref icub_crawlGenerator "crawlGenerator" (for each of the controlled parts)
+- \ref icub_crawlManager "crawlManager"	
 
 
 

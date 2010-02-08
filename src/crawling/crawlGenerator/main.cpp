@@ -20,13 +20,13 @@
 /**
  * @ingroup icub_module
  *
- * \defgroup icub_CrawlGenerator CrawlGenerator
+ * \defgroup icub_crawlGenerator crawlGenerator
  *
- * This module is part of the application \ref icub_Crawling "Crawling"
+ * This module is part of the application \ref icub_crawling "crawlingDemo"
  *
  *\section intro_sec Description 
  *
- * This module transforms a set of parameters for the dynamical systems into target trajectories for a specific interface of the robot (head, torso, left_arm, right_arm, left_leg, right_leg). The command are then sent to the corresponding \ref icub_velocityControl "velocityControl" module. If you want to  use the whole crawling application, please refer to \ref icub_Crawling "Crawling".
+ * This module transforms a set of parameters for the dynamical systems into target trajectories for a specific interface of the robot (head, torso, left_arm, right_arm, left_leg, right_leg). The command are then sent to the corresponding \ref icub_velocityControl "velocityControl" module. If you want to  use the whole crawling application, please refer to \ref icub_crawlingDemo "crawlingDemo".
  *
  *\section lib_sec Libraries
  *
@@ -44,7 +44,7 @@
  *
  * Output ports\n
  * <ul>
- * <li> for each active \a part (i.e left_arm, right_arm, left_leg, right_leg, torso, head) of the robot: /part/parameters/out (created by the \ref icub_CrawlManager "CrawlManager" module)
+ * <li> for each active \a part (i.e left_arm, right_arm, left_leg, right_leg, torso, head) of the robot: /part/parameters/out (created by the \ref icub_crawlManager "crawlManager" module)
  *</ul>
  *  
  *
@@ -52,7 +52,7 @@
  *
  *  Input ports\n
  * <ul>
- * <li> For each \a part of the robot, a corresponding port /part/parameters/in receives from the \ref icub_CrawlManager "CrawlManager" 2*ndofs+1 doubles (where ndofs is the number of dofs of \a part):
+ * <li> For each \a part of the robot, a corresponding port /part/parameters/in receives from the \ref icub_crawlManager "crawlManager" 2*ndofs+1 doubles (where ndofs is the number of dofs of \a part):
  * <ul> 
  * <li> the amplitude of the movement (1 if crawling; -5 otherwise) and the target position for each dof
  * <li> the frequency
@@ -76,9 +76,9 @@
  *
  *\section example_sec Example Instantiation of the Module
  *
- * ./CrawlGenerator  --part left_arm 
+ * ./crawlGenerator  --part left_arm 
  *
- * This file can be edited at \in src/crawling/CrawlGenerator/main.cpp 
+ * This file can be edited at \in src/crawling/crawlGenerator/main.cpp 
  *
  *\authors Sarah Degallier 
  *

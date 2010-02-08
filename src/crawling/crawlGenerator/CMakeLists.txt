@@ -1,4 +1,4 @@
-SET(KEYWORD "CrawlGeneratorModule")
+SET(KEYWORD "crawlGeneratorModule")
 
 PROJECT(Generator)
 
