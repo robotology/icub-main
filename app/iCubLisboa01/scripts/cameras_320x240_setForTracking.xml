@@ -1,5 +1,5 @@
 <application>
-<name>Cameras</name>
+<name>Cameras (with settings for ball tracking)</name>
 <dependencies>
       <port>/icub</port>
 </dependencies>
