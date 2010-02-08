@@ -5,7 +5,7 @@ using namespace yarp::math;
 #include <iCub/ctrlMath.h>
 using namespace ctrl;
 
-#include "../Common/Common.h"
+#include "../common/Common.h"
 
 #include <iostream>
 using namespace std;

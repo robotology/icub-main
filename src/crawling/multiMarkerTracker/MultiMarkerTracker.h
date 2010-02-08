@@ -53,12 +53,11 @@ using namespace yarp::sig;
 using namespace std;
 using namespace yarp::dev;
 
-#define Z_OFFSET 0.0
 
 // ARToolkitPlus
 #include "ARToolKitPlus/TrackerSingleMarker.h"
 using namespace ARToolKitPlus;
-
+#define _DEBUG
 
 /**
 * A simple class to write a log.
@@ -82,9 +81,10 @@ class MultiMarkerTracker : public Module
 
 private:
 #ifdef _DEBUG
-	ofstream twoDFile;
-	ofstream threeDFile;
+	ofstream log;
 	int numIter;
+	ofstream torsoEncoders;
+	ofstream headEncoders;
 #endif
 
 	//the tracker
@@ -100,10 +100,13 @@ private:
     IplImage *frame;
 
 	//ports opened by the module
-	BufferedPort<Bottle> markersPort;
-	BufferedPort<Bottle> visionPort;
+	BufferedPort<Bottle> rootPosPort;
+	BufferedPort<Bottle> eyePosPort;
 	BufferedPort<ImageOf<PixelRgb>> imagePort;
 	BufferedPort<ImageOf<PixelRgb>> viewPort;
+
+	BufferedPort<Bottle> headEncodersPort;
+	BufferedPort<Bottle> torsoEncodersPort;
 
 	//drivers to get the kinematic configuration of the robot.
 	map<string, PolyDriver *> drivers;
@@ -117,6 +120,7 @@ private:
 
 	//initializes the tracker according to the parameters in the configuration file
 	bool initTracker(ResourceFinder &rf);
+	void OpenEncodersPorts();
 
 
 public:

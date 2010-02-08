@@ -11,7 +11,7 @@ using namespace ctrl;
 #include <yarp/math/Math.h>
 using namespace yarp::math;
 
-#include "../Common/Common.h"
+#include "../common/Common.h"
 
 CrawlPlanner::CrawlPlanner(void) : previousRotationAngle(0), previousNeckAngle(0), previousTetaDot(0), scanningOff(false)
 {

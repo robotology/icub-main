@@ -44,7 +44,7 @@ using namespace std;
 
 
 #define L 0.36
-#define MODULE_PERIOD 0.2
+#define MODULE_PERIOD 0.1
 
 /**
 * A simple class handling the control of the head when approaching a "good" object when crawling.
@@ -97,6 +97,9 @@ public:
 	* Closes the polydriver of the head.
     */
 	virtual bool close();
+
+    virtual bool interruptModule();
+
 
 
 protected:

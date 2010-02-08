@@ -43,10 +43,12 @@ using namespace std;
 
 #include "SuperPort.h"
 
-#define MODULE_PERIOD 0.1
-#define MIN_DIFFERENCE 0.0
+#define MODULE_PERIOD 0.2
+#define MIN_DIFFERENCE 0.01
 #define L 0.36
 #define MODULE_NAME "ReachManager"
+
+#include <fstream>
 
 
 /**
@@ -107,6 +109,9 @@ public:
     */
 	virtual bool close();
 
+    virtual bool interruptModule();
+
+
 
 private:
     BufferedPort<Bottle> inPort;
@@ -118,6 +123,9 @@ private:
 	map<string, PolyDriver *> polydrivers;
 	map<string, int> nbJoints;
 	Vector lastPosition;
+	int numSolving;
+
+	ofstream outFile;
 
 private:
 	void OpenIKSolver(string arm);

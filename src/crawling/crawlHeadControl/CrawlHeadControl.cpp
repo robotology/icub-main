@@ -42,6 +42,24 @@ bool CrawlHeadControl::close()
 {
 	inPort.close();
     outPort.close();
+
+	for(map<string, Value *>::iterator it = parameters.begin(); it!= parameters.end(); it++)
+	{
+		delete it->second;
+	}
+	return true;
+}
+
+
+bool CrawlHeadControl::interruptModule()
+{
+	inPort.close();
+    outPort.close();
+
+	for(map<string, Value *>::iterator it = parameters.begin(); it!= parameters.end(); it++)
+	{
+		delete it->second;
+	}
 	return true;
 }
 
@@ -116,6 +134,7 @@ bool CrawlHeadControl::updateModule(void)
 		outBottle.addInt(parameters["head_control_command_code"]->asInt());
 		outBottle.addDouble(headPitchAngle);
 		outBottle.addDouble(headYawAngle);
+		outBottle.addDouble(nearestPatchPosition[2]);
 		outPort.write();
 	}
 

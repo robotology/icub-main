@@ -32,11 +32,17 @@ MultiMarkerTracker::~MultiMarkerTracker()
 
 double MultiMarkerTracker::getPeriod()
 {
-	return 0.0;
+	return 0.1;
 }
 
 bool MultiMarkerTracker::open(Searchable& config)
 {
+#ifdef _DEBUG
+	log.open("3DPos.dat");
+	torsoEncoders.open("torso_encoders.dat");
+	headEncoders.open("head_encoders.dat");
+	numIter = 0;
+#endif
     if (config.check("help","if present, display usage message")) {
         printf("Call with --from config.ini\n");
         return false;
@@ -83,14 +89,68 @@ bool MultiMarkerTracker::open(Searchable& config)
 	//opens some ports
 	imagePort.open(getName("image"));
 	viewPort.open(getName("view"));
-	markersPort.open(getName("RootPos"));
-	visionPort.open(getName("EyePos"));
+	rootPosPort.open(getName("RootPos"));
+	eyePosPort.open(getName("EyePos"));
 
 	//creates the polydriver used to get the robot current kinematic configuration.
-	drivers["head"] = CreatePolyDriver("head");
-	drivers["torso"] = CreatePolyDriver("torso");
+	//drivers["head"] = CreatePolyDriver("head");
+	//drivers["torso"] = CreatePolyDriver("torso");
+
+	OpenEncodersPorts();
 
     return true;
+}
+
+void MultiMarkerTracker::OpenEncodersPorts()
+{
+	string port_name = "/MultiMarkerTracker/head_encoders";
+	headEncodersPort.open(port_name.c_str());
+	bool connected = false;
+	cout << "Connecting to /icub/head/state:o ..." << endl;
+	for(int i=0; i<3; ++i)
+	{
+		cout << "Attempt " << i << " ..." << endl;
+		if(Network::connect("/icub/head/state:o", port_name.c_str()))
+		{
+			connected = true;
+			break;
+		}
+	}
+	if(connected)
+	{
+		cout << "Connected." << endl;
+	}
+	else
+	{
+		cout << "Failed to connect to port /icub/head/state:o." << endl
+			<< "iCubInterface must be running for this module to work" << endl;
+		return;
+	}
+
+
+	port_name = "/MultiMarkerTracker/torso_encoders";
+	torsoEncodersPort.open(port_name.c_str());
+	connected = false;
+	cout << "Connecting to /icub/torso/state:o ..." << endl;
+	for(int i=0; i<3; ++i)
+	{
+		cout << "Attempt " << i << " ..." << endl;
+		if(Network::connect("/icub/torso/state:o", port_name.c_str()))
+		{
+			connected = true;
+			break;
+		}
+	}
+	if(connected)
+	{
+		cout << "Connected." << endl;
+	}
+	else
+	{
+		cout << "Failed to connect to port /icub/torso/state:o." << endl
+			<< "iCubInterface must be running for this module to work" << endl;
+		return;
+	}
 }
 
 
@@ -120,7 +180,7 @@ bool MultiMarkerTracker::initTracker(ResourceFinder &rf)
 	//tracker->setLoadUndistLUT(true);
 
 	//sets the camera according to weather it's a simulated or a real camera.
-	bool simulation = (bool)rf.find("simulation").asInt();
+	bool simulation = false;//(bool)rf.find("simulation").asInt();
 	if(!simulation)
 	{
 		// name of the camera calibration file
@@ -153,14 +213,14 @@ bool MultiMarkerTracker::initTracker(ResourceFinder &rf)
     tracker->setBorderWidth(0.250f);
 
     // set a threshold. alternatively we could also activate automatic thresholding
-    //tracker->setThreshold(_thresh);
+    //tracker->setThreshold(threshold);
 	tracker->activateAutoThreshold(true);
 	
 	//activates processing on the full resolution image for detection of far away markers
 	tracker->setImageProcessingMode(IMAGE_FULL_RES);
 
 	//sets a high number of retries to detect more markers
-	tracker->setNumAutoThresholdRetries(6);
+	tracker->setNumAutoThresholdRetries(5);
 
 	if(simulation)
 	{
@@ -211,18 +271,50 @@ bool MultiMarkerTracker::close()
 
 	imagePort.close();
 	viewPort.close();
-	markersPort.close();
-	visionPort.close();
+	rootPosPort.close();
+	eyePosPort.close();
+
+	if(tracker != NULL)
+	{
+		delete tracker;
+	}
+	if(frame != NULL)
+	{
+		cvReleaseImage(&frame);
+	}
+
+#ifdef _DEBUG
+	log.close();
+	headEncoders.close();
+	torsoEncoders.close();
+#endif
 
     return true;
 }
 
-bool MultiMarkerTracker::interruptModule(){
-    
+bool MultiMarkerTracker::interruptModule()
+{
+    for(map<string, PolyDriver *>::iterator it = drivers.begin(); it!= drivers.end(); it++)
+	{
+		it->second->close();
+		delete it->second;
+	}
+
+	for(map<string, Value *>::iterator it = parameters.begin(); it!= parameters.end(); it++)
+	{
+		delete it->second;
+	}
+
     imagePort.close();
 	viewPort.close();
-	markersPort.close();
-	visionPort.close();
+	rootPosPort.close();
+	eyePosPort.close();
+
+#ifdef _DEBUG
+	log.close();
+	headEncoders.close();
+	torsoEncoders.close();
+#endif
     return true;
 }
 
@@ -231,7 +323,9 @@ bool MultiMarkerTracker::updateModule()
     ImageOf<PixelRgb> *yarpImageIn;
 	static int cycles = 0;
 
-    yarpImageIn = imagePort.read();
+	sig::Matrix robotTransformationMatrix = GetRobotTransformationMatrix();
+  
+	yarpImageIn = imagePort.read();
     if (yarpImageIn == NULL) // this is the case if the module is requested to quit while waiting for image
 	{
         return true;
@@ -249,39 +343,20 @@ bool MultiMarkerTracker::updateModule()
 	int markerId = tracker->calc(dataPtr, -1, true, &markerInfo, &markerNum);
     float confidence = (float)tracker->getConfidence();
 
-	//printf("\nFound %d markers.(confidence %d%%)\n  ", marker_num, (int(conf*100.0f)));
-	//for(int i=0; i<marker_num ; ++i)
-	//{
-	//	//printf("marker %d, ID = %d, pos = (%f,%f)\n  ", i, marker_info[i].id, marker_info[i].pos[0], marker_info[i].pos[1]);
-	//}
-
 	ImageOf<PixelRgb> &yarpImageOut = viewPort.prepare();
 	yarpImageOut = *yarpImageIn;
 
-	Bottle &markersBottle = markersPort.prepare();
-	Bottle &visionBottle = visionPort.prepare();
-	visionBottle.clear();
-	markersBottle.clear();
+	Bottle &rootPosBottle = rootPosPort.prepare();
+	Bottle &eyePosBottle = eyePosPort.prepare();
+	eyePosBottle.clear();
+	rootPosBottle.clear();
 
 	if(confidence > 0.3) // 30 percent confidence
 	{
 		//gets the transformation matrix of the eye (camera) in the root reference frame of the robot.
-		sig::Matrix robotTransformationMatrix = GetRobotTransformationMatrix();
-		/*cout << "=====[ TRANSFORM ]=====" << endl;
-		for(int i=0; i<3; ++i)
-		{
-			for(int j=0; j<3; ++j)
-			{
-				cout << robotTransformationMatrix(i,j) << "\t";
-			}
-			cout << endl;
-		}
-		cout << endl << endl;*/
-		
+		//sig::Matrix robotTransformationMatrix = GetRobotTransformationMatrix();
 
-
-		//cout << "transform : " << robotTransformationMatrix.toString() << endl;
-
+		vector<yarp::sig::Vector> positions;
 
 		for(int i=0; i<markerNum; ++i)
 		{
@@ -332,34 +407,61 @@ bool MultiMarkerTracker::updateModule()
 			objectOffset.resize(4);
 			objectOffset[3] = 1;
 
-			sig::Vector objectPosition(4);
+			sig::Vector eyePosition(4);
 
 			//the real object position is a translation of the marker position.
 			//gets the real object position
-			objectPosition = cameraTransformationMatrix * objectOffset;
+			eyePosition = cameraTransformationMatrix * objectOffset;
 
-			sig::Vector rootPosition = robotTransformationMatrix * objectPosition;
+			//sig::Vector rootPosition = robotTransformationMatrix * eyePosition;
 			//sig::Vector rootPosition = objectPosition;
 			
-			Bottle markerBottleVision;
-			markerBottleVision.addDouble(objectPosition[0]);
-			markerBottleVision.addDouble(objectPosition[1]);
-			markerBottleVision.addDouble(objectPosition[2]);
-			markerBottleVision.addInt(markerInfo[i].id);
-			visionBottle.addList() = markerBottleVision;
-
-			Bottle markerBottleRoot;
-			markerBottleRoot.addDouble(rootPosition[0]);
-			markerBottleRoot.addDouble(rootPosition[1]);
-			markerBottleRoot.addDouble(rootPosition[2] + Z_OFFSET);
-			markerBottleRoot.addInt(markerInfo[i].id);
-			markersBottle.addList() = markerBottleRoot;
-
+			Bottle marker;
+			marker.addDouble(eyePosition[0]);
+			marker.addDouble(eyePosition[1]);
+			marker.addDouble(eyePosition[2]);
+			marker.addInt(markerInfo[i].id);
+			eyePosBottle.addList() = marker;
 		}
-		if(markersBottle.size() >0)
+
+		for(int i=0; i<eyePosBottle.size(); ++i)
 		{
-			markersPort.write();
-			visionPort.write();
+			Bottle *current = eyePosBottle.get(i).asList();
+			yarp::sig::Vector rootPosition(4);
+			rootPosition[0] = current->get(0).asDouble();
+			rootPosition[1] = current->get(1).asDouble();
+			rootPosition[2] = current->get(2).asDouble();
+			rootPosition[3] = 1;
+			rootPosition = robotTransformationMatrix * rootPosition;
+			Bottle marker;
+			marker.addDouble(rootPosition[0]);
+			marker.addDouble(rootPosition[1]);
+			marker.addDouble(rootPosition[2]);
+			marker.addInt( current->get(3).asInt());
+			rootPosBottle.addList() = marker;
+		}
+
+#ifdef _DEBUG
+		if(rootPosBottle.size() > 0)
+		{
+			Bottle *firstMarkerRoot = rootPosBottle.get(0).asList();
+			Bottle *firstMarkerEye = eyePosBottle.get(0).asList();
+			log << numIter << "\t" 
+				<< firstMarkerRoot->get(0).asDouble() << "\t" 
+				<< firstMarkerRoot->get(1).asDouble() << "\t"
+				<< firstMarkerRoot->get(2).asDouble() << "\t"
+				<< firstMarkerEye->get(0).asDouble() << "\t"
+				<< firstMarkerEye->get(1).asDouble() << "\t"
+				<< firstMarkerEye->get(2).asDouble() << "\t"
+				<< endl;
+			numIter ++;
+		}
+#endif
+
+		if(rootPosBottle.size() >0)
+		{
+			rootPosPort.write();
+			eyePosPort.write();
 		}
 	}
 	
@@ -371,53 +473,45 @@ bool MultiMarkerTracker::updateModule()
 
 sig::Vector MultiMarkerTracker::GetJointAngles(string partName)
 {
-    IPositionControl *pos;
-    IEncoders *encs;
-
-    if (!(drivers[partName]->view(pos) && drivers[partName]->view(encs))) 
-	{
-        printf("Problems acquiring interfaces\n");
-        return 0;
-    }
-
-	sig::Vector jointAngles(nbJoints[partName]);
-	double *encoders = new double[nbJoints[partName]];
-	encs->getEncoders(encoders);
-
 	//compatibility problems between the orders of the encoders and the standart torso pitch roll yaw;
 	if(partName == "torso")
 	{
+		sig::Vector jointAngles(3);
+		Bottle *torsoAngles = torsoEncodersPort.read();
 		//invert torso
-		jointAngles[0] = encoders[2]* M_PI/180;
-		jointAngles[1] = encoders[1]* M_PI/180;
-		jointAngles[2] = encoders[0]* M_PI/180;
-	}
-	else
-	{
-		for(int i=0; i<nbJoints[partName]; ++i)
+		jointAngles[0] = torsoAngles->get(2).asDouble() * M_PI/180;
+		jointAngles[1] = torsoAngles->get(1).asDouble() * M_PI/180;
+		jointAngles[2] = torsoAngles->get(0).asDouble() * M_PI/180;
+#ifdef _DEBUG
+		torsoEncoders << numIter << "\t";
+		for(int i=0; i<3; ++i)
 		{
-			//if(i==5)
-			//{
-			//	jointAngles[i] = 0;//(encoders[i] + 3.5)* M_PI/180; // has to be deleted at some point.
-			//	cout << "EYE VERGENCE : " << encoders[i] + 3.5 << endl;
-			//}
-			//else if(i==3)
-			//{
-			//	jointAngles[i] = (encoders[i] + 12)* M_PI/180; // has to be deleted at some point.
-			//}
-			//else if(i==4)
-			//{
-			//	jointAngles[i] = 0.5 * encoders[i]* M_PI/180;
-			//}
-			/*else
-			{*/
-			jointAngles[i] = encoders[i]* M_PI/180;
-			//}
+			torsoEncoders << jointAngles[i] << "\t";
 		}
+		torsoEncoders << endl;
+#endif
+		return jointAngles;
 	}
-	delete[] encoders;
-	//cout << "encoders : " << jointAngles.toString() << endl;
-	return jointAngles;
+	else // head
+	{
+		sig::Vector jointAngles(6);
+		Bottle *headAngles = headEncodersPort.read();
+		
+		for(int i=0; i<6; ++i)
+		{
+			jointAngles[i] = headAngles->get(i).asDouble() * M_PI/180;
+		}
+
+#ifdef _DEBUG
+		headEncoders << numIter << "\t";
+		for(int i=0; i<6; ++i)
+		{
+			headEncoders << jointAngles[i] << "\t";
+		}
+		headEncoders << endl;
+#endif 
+		return jointAngles;
+	}
 }
 
 
@@ -469,13 +563,13 @@ sig::Matrix MultiMarkerTracker::GetRobotTransformationMatrix()
 {
 	string eyeName = parameters["eye"]->asString();
 	//setups a new chain for the eye we want to use.
-	iCubEye *eye = new iCubEye(eyeName);
-    iKinChain chainEye=*(eye->asChain());
+	iCubEye eye(eyeName);
+    iKinChain *chainEye= eye.asChain();
 
 	//releases the joints of the torso and the head. The links are included in the chain.
 	for(int i=0; i<8; ++i)
 	{
-		if(!chainEye.releaseLink(i))
+		if(!chainEye->releaseLink(i))
 		{
 			cout << "Problem with link " << i << endl;
 		}
@@ -508,8 +602,7 @@ sig::Matrix MultiMarkerTracker::GetRobotTransformationMatrix()
 		allAngles[allAngles.length()-1]=head[4]-head[5]/2;
 	}
 
-	//cout << "angles : " << allAngles[allAngles.length()-1] << endl;
-
 	//returns the transformation matrix for the chain.
-    return chainEye.getH(allAngles);
+	
+    return chainEye->getH(allAngles);
 }

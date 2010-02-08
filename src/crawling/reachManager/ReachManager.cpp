@@ -3,7 +3,7 @@
 #include <yarp/math/Math.h>
 using namespace yarp::math;
 
-#include <iCub/ctrlMath.h>
+#include <iCub/ctrlMath.h>;
 using namespace ctrl;
 
 #include <iCub/iKinVocabs.h>
@@ -20,12 +20,16 @@ ReachManager::ReachManager()
 	//rightRotMat(0,2) = -1;
 	//rightRotMat(1,1) = 1;
 	//rightRotMat(2,0) = 1;
-	//lastPosition = Vector(3);
 
 	//leftOrientation = dcm2axis(leftRotMat);
 	//rightOrientation = dcm2axis(rightRotMat);
 
-	cout << "left orientation " << leftOrientation.toString() << endl;
+	lastPosition = Vector(3);
+	lastPosition.zero();
+
+	numSolving = 0;
+
+
 }
 
 ReachManager::~ReachManager(void)
@@ -56,8 +60,21 @@ bool ReachManager::open(Searchable& config)
 
 	//Network::connect(outPort.getName().c_str(), "/manager");
 
-	OpenIKSolver("right");
-	OpenIKSolver("left");
+	outFile.open("reaching.dat");
+
+	if(parameters["enabled_arm"]->asString() == "left")
+	{
+		OpenIKSolver("left");
+	}
+	else if(parameters["enabled_arm"]->asString() == "right")
+	{
+		OpenIKSolver("right");
+	}
+	else if(parameters["enabled_arm"]->asString() == "both")
+	{
+		OpenIKSolver("left");
+		OpenIKSolver("right");
+	}
 
 	if(parameters["pos_vel_cont"]->asInt())
 	{
@@ -71,12 +88,59 @@ bool ReachManager::open(Searchable& config)
 
 bool ReachManager::close()
 {
-	CloseIKSolver("left");
-	CloseIKSolver("right");
+	if(parameters["enabled_arm"]->asString() == "left")
+	{
+		CloseIKSolver("left");
+		delete iKinPorts["left"];
+	}
+	else if(parameters["enabled_arm"]->asString() == "right")
+	{
+		CloseIKSolver("right");
+		delete iKinPorts["right"];
+	}
+	else if(parameters["enabled_arm"]->asString() == "both")
+	{
+		CloseIKSolver("left");
+		CloseIKSolver("right");
+		delete iKinPorts["left"];
+		delete iKinPorts["right"];
+	}
 	inPort.close();
-    inPort.close();
-	delete iKinPorts["left"];
-	delete iKinPorts["right"];
+    outPort.close();
+
+	if(parameters["pos_vel_cont"]->asInt())
+	{
+		ClosePositionControl("left");
+		ClosePositionControl("right");
+	}
+	for(map<string, Value *>::iterator it = parameters.begin(); it!= parameters.end(); it++)
+	{
+		delete it->second;
+	}
+	return true;
+}
+
+bool ReachManager::interruptModule()
+{
+	if(parameters["enabled_arm"]->asString() == "left")
+	{
+		CloseIKSolver("left");
+		delete iKinPorts["left"];
+	}
+	else if(parameters["enabled_arm"]->asString() == "right")
+	{
+		CloseIKSolver("right");
+		delete iKinPorts["right"];
+	}
+	else if(parameters["enabled_arm"]->asString() == "both")
+	{
+		CloseIKSolver("left");
+		CloseIKSolver("right");
+		delete iKinPorts["left"];
+		delete iKinPorts["right"];
+	}
+	inPort.close();
+    outPort.close();
 	if(parameters["pos_vel_cont"]->asInt())
 	{
 		ClosePositionControl("left");
@@ -90,11 +154,14 @@ bool ReachManager::updateModule(void)
 {
     Vector xd(3);
 	Bottle *visionBottle = inPort.read();
-	cout << "GOt Patch " << endl;
 	double minDistanceSQR = 999999;
 	bool patchToReach = false;
 
-#ifndef TEST
+	if(!visionBottle)
+	{
+		return true;
+	}
+
 	for(int i=0; i<visionBottle->size(); ++i)
 	{
 		Bottle *patchBottle=visionBottle->get(i).asList();
@@ -125,7 +192,7 @@ bool ReachManager::updateModule(void)
 				continue;
 			}
 			//tue object is too near. it is dangerous to reach it.
-			if(position[0] > -parameters["min_reach_dist"]->asDouble())
+			if(fabs(position[0]) < parameters["min_reach_dist"]->asDouble())
 			{
 				continue;
 			}
@@ -145,22 +212,21 @@ bool ReachManager::updateModule(void)
 		return true;
 	}
 
-	Vector differenceVector = xd - lastPosition;
-	double difference = differenceVector[0]*differenceVector[0] 
-						+ differenceVector[1]*differenceVector[1] 
-						+ differenceVector[2]*differenceVector[2];
 
+	Vector differenceVector = xd - lastPosition;
+	double difference = sqrt (differenceVector[0]*differenceVector[0] 
+						+ differenceVector[1]*differenceVector[1] 
+						+ differenceVector[2]*differenceVector[2]);
+
+
+	//The position is in new position is in the noise range of the last one.
+	//Give the little dude some time to reach for god sake !
 	if(difference < MIN_DIFFERENCE)
 	{
 		return true;
 	}
 
-#else
 
-	xd[0] = visionBottle->get(0).asDouble();
-	xd[1] = visionBottle->get(1).asDouble();
-	xd[2] = visionBottle->get(2).asDouble();
-#endif
 
 
 	string bestArm;
@@ -170,58 +236,42 @@ bool ReachManager::updateModule(void)
 	//xd[6] = leftOrientation[3];
 
 	Vector resultQ = Solve(xd, ((string)parameters["enabled_arm"]->asString()), bestArm);
-	
-	lastPosition = xd;
-
-	cout << "distance : " << sqrt(minDistanceSQR) << endl;
-	cout << "min distance : " << parameters["reach_mode_dist"]->asDouble() << endl;
-	//if(minDistanceSQR < pow(parameters["reach_mode_dist"]->asDouble(),2))
-	//{
-	//	double headPitchAngle = -atan((xd[2]-L)/xd[0]);
-	//	double headYawAngle = atan((xd[1]+0.1)/xd[0]);
-	//	cout << "Head angle pitch : " << headPitchAngle << endl;
-	//	cout << "Head angle Yaw : " << headYawAngle << endl;
-	//	Bottle &outBottle = outPort.prepare();
-	//	outBottle.clear();
-	//	outBottle.addInt(55);
-	//	outBottle.addDouble(headPitchAngle);
-	//	outBottle.addDouble(headYawAngle);
-	//	outPort.write();
-	//}
 
 	if(bestArm == "none")
 	{
 		return true;
 	}
 
+	lastPosition = xd;
 	//cout << "result : " << resultQ.toString();
 
-	if(false)//parameters["pos_vel_cont"]->asInt())
+	if(numSolving == 0)
 	{
-		RobotPositionControl(bestArm, resultQ);
-	}
-	else
-	{
-		//setting crawling to init position and reach.
-		Bottle &outBottle = outPort.prepare();
-		outBottle.clear();
-		outBottle.addInt(parameters["reach_command_code"]->asInt());
-		Bottle reachCommand;
-		reachCommand.addString((bestArm + "_arm").c_str());
-		for(int i=0; i<parameters["num_dof"]->asInt(); ++i)
-		{
-			reachCommand.addDouble(resultQ[i]);
-		}
-		//reachCommand.addDouble(-1.57);
-		//reachCommand.addDouble(0.26);
-		//reachCommand.addDouble(0.26);
-		//reachCommand.addDouble(1.57);
-		outBottle.addList() = reachCommand;
-		cout << "Sending : " << outBottle.toString() << endl;
-		outPort.write();
+		numSolving ++;
+		return true;
 	}
 
-	return true;
+	outFile << xd[0] << "\t" << xd[1] << "\t" << xd[2] << "\t" << endl;
+
+	//setting crawling to init position and reach.
+	Bottle &outBottle = outPort.prepare();
+	outBottle.clear();
+	outBottle.addInt(parameters["reach_command_code"]->asInt());
+	Bottle reachCommand;
+	reachCommand.addString((bestArm + "_arm").c_str());
+	for(int i=0; i<parameters["num_dof"]->asInt(); ++i)
+	{
+		outFile << resultQ[i] << "\t" ;
+		reachCommand.addDouble(resultQ[i]);
+	}
+	outFile << endl;
+	outBottle.addList() = reachCommand;
+	cout << "=============REACHING===============" << endl; 
+	cout << "Sending : " << outBottle.toString() << endl;
+	outPort.write();
+
+	close();
+	return false;
 }
 
 double ReachManager::getPeriod(void)
@@ -234,27 +284,9 @@ void ReachManager::OpenIKSolver(string arm)
 	cout << "=====================================" << endl;
 	cout << "Opening IKin Catesian Solver for " << arm << " arm." << endl;
 	cout << "=====================================" << endl;
-	// declare the on-line arm solver called "solver"
+	
 	string solverName = ((string)parameters["solver_name"]->asString()) + "/" + arm + "_arm";
- //   iKSolvers[arm] = new iCubArmCartesianSolver(solverName.c_str());
-	//Property options;
- //   // it will operate on the simulator (which is supposed to be already running)
-	//options.put("robot",parameters["robot"].asString().c_str());
- //   // it will work with the right arm
-	//options.put("type",arm.c_str());
- //   // it will achieve just the positional pose
- //   options.put("pose","xyz");
- //   // switch off verbosity
- //   options.put("verbosity","off");
 
- //   // launch the solver and make it connect to the simulator
- //   if (!iKSolvers[arm]->open(options))
-	//{
-	//	cout << "Error opening the IKinCartesianSolver " << solverName << endl;
- //       return;
-	//}
-    
-    // prepare ports
 	iKinPorts[arm] = new IKinPort;
 	iKinPorts[arm]->in.open(("/" + (string)MODULE_NAME + "/" + arm + "/in").c_str());
 	iKinPorts[arm]->out.open(("/" + (string)MODULE_NAME + "/" + arm + "/out").c_str());
@@ -275,9 +307,9 @@ void ReachManager::OpenIKSolver(string arm)
 }
 
 
-void ReachManager::CloseIKSolver(string arm)
+void ReachManager::CloseIKSolver(string arm)d
 {
-	/*iKSolvers[arm]->close();*/
+
 	iKinPorts[arm]->in.close();
 	iKinPorts[arm]->out.close();
 	iKinPorts[arm]->rpc.close();
@@ -365,24 +397,6 @@ void ReachManager::RobotPositionControl(string partName, const Vector &jointAngl
 	cout << "Moving to : " << command.toString() << endl;
 
 	pos->positionMove(command.data());
-
-	//bool done=false;
-
- //   while(!done)
- //   {
- //       pos->checkMotionDone(&done);
- //       Time::delay(0.1);
- //   }
-
-	/*Vector tmpvec = jointAngles;
-	cout << "jointAngles: " <<tmpvec.toString() << endl;
-    pos->positionMove(tmpvec.data());
-
-	while(!done)
-    {
-        pos->checkMotionDone(&done);
-        Time::delay(0.1);
-    }*/
     
     return;
 }
@@ -409,8 +423,6 @@ Vector ReachManager::Solve(const Vector &xd, string partName, string &resultPart
 		
 		cout << "SOLVING WITH RIGHT ARM" << endl;
 
-		//cout <<  "VECTOR : " << xd.toString() << endl;
-
 		iCubArmCartesianSolver::addTargetOption(cmd,xd);
 
 		iKinPorts["right"]->out.write(cmd);
@@ -418,16 +430,36 @@ Vector ReachManager::Solve(const Vector &xd, string partName, string &resultPart
 		iKinPorts["right"]->in.wait(replyRight);
 		iKinPorts["left"]->in.wait(replyLeft);
 
+		if(replyRight.isNull() || replyLeft.isNull())
+		{
+			cout << "\n\nERROR ! \n\n" << endl;
+			resultPart = "none";
+			return resultQ;
+		}
+
 		Bottle *xdBottleRight = CartesianSolver::getTargetOption(replyRight);
 		Bottle *xBottleRight = CartesianSolver::getEndEffectorPoseOption(replyRight);
 		Bottle *qBottleRight = CartesianSolver::getJointsOption(replyRight);
+
+		
+		if (!xdBottleRight || !xBottleRight || !qBottleRight)
+		{
+			cout << "\n\nERROR ! \n\n" << endl;
+			resultPart = "none";
+			return resultQ;
+		}
+		if (xdBottleRight->isNull() || xBottleRight->isNull() || qBottleRight->isNull())
+		{
+			cout << "\n\nERROR ! \n\n" << endl;
+			resultPart = "none";
+			return resultQ;
+		}
 
 		Vector deltaRight(3);
 		deltaRight[0] = xBottleRight->get(0).asDouble() - xdBottleRight->get(0).asDouble();
 		deltaRight[1] = xBottleRight->get(1).asDouble() - xdBottleRight->get(1).asDouble();
 		deltaRight[2] = xBottleRight->get(2).asDouble() - xdBottleRight->get(2).asDouble();
 
-		
 		double deltaRightNorm2 = deltaRight[0]*deltaRight[0] + deltaRight[1]*deltaRight[1] + deltaRight[2]*deltaRight[2];
 	
 		cout << "right error : " << sqrt(deltaRightNorm2) << endl;
@@ -436,16 +468,25 @@ Vector ReachManager::Solve(const Vector &xd, string partName, string &resultPart
 		cout<<"q [rad] ="<<qBottleRight->toString()<<endl;
 		cout<<endl;
 
-		//xd[3]=leftOrientation[0];
-		//xd[4]=leftOrientation[1];
-		//xd[5]=leftOrientation[2];
-		//xd[6]=leftOrientation[3];
 
 		cout << "SOLVING WITH LEFT ARM" << endl;
 		
 		Bottle *xdBottleLeft = CartesianSolver::getTargetOption(replyLeft);
 		Bottle *xBottleLeft = CartesianSolver::getEndEffectorPoseOption(replyLeft);
 		Bottle *qBottleLeft = CartesianSolver::getJointsOption(replyLeft);
+
+		if (!xdBottleLeft || !xBottleLeft || !qBottleLeft)
+		{
+			cout << "\n\nERROR ! \n\n" << endl;
+			resultPart = "none";
+			return resultQ;
+		}
+		if (xdBottleLeft->isNull() || xBottleLeft->isNull() || qBottleLeft->isNull())
+		{
+			cout << "\n\nERROR ! \n\n" << endl;
+			resultPart = "none";
+			return resultQ;
+		}
 
 		Vector deltaLeft(3);
 		deltaLeft[0] = xBottleLeft->get(0).asDouble() - xdBottleLeft->get(0).asDouble();
@@ -474,6 +515,20 @@ Vector ReachManager::Solve(const Vector &xd, string partName, string &resultPart
 		minNorm2 = min(deltaLeftNorm2, deltaRightNorm2);
 		if(minNorm2>(pow(parameters["max_error"]->asDouble(),2)))
 		{
+			cout << "TOO BIG ERROR !!! \n\n" << endl;
+			resultPart = "none";
+			return resultQ;
+		}
+
+		if(resultPart == "left" && deltaLeft[0] < 0)
+		{
+			cout << "REACHING TOO FAR !!! " << endl;
+			resultPart = "none";
+			return resultQ;
+		}
+		if(resultPart == "right" && deltaRight[0] < 0)
+		{
+			cout << "REACHING TOO FAR !!! " << endl;
 			resultPart = "none";
 			return resultQ;
 		}
@@ -490,16 +545,35 @@ Vector ReachManager::Solve(const Vector &xd, string partName, string &resultPart
 		
 		cout << "SOLVING WITH " << partName << " ARM" << endl;
 
-		//cout <<  "VECTOR : " << xd.toString() << endl;
-
 		iCubArmCartesianSolver::addTargetOption(cmd,xd);
 
 		iKinPorts[partName]->out.write(cmd);
 		iKinPorts[partName]->in.wait(reply);
 
+		if(reply.isNull())
+		{
+			cout << "\n\nERROR ! \n\n" << endl;
+			resultPart = "none";
+			return resultQ;
+		}
+
+
 		Bottle *xdBottle = CartesianSolver::getTargetOption(reply);
 		Bottle *xBottle = CartesianSolver::getEndEffectorPoseOption(reply);
 		Bottle *qBottle = CartesianSolver::getJointsOption(reply);
+
+		if (!xdBottle || !xBottle || !qBottle)
+		{
+			cout << "\n\nERROR ! \n\n" << endl;
+			resultPart = "none";
+			return resultQ;
+		}
+		if (xdBottle->isNull() || xBottle->isNull() || qBottle->isNull())
+		{
+			cout << "\n\nERROR ! \n\n" << endl;
+			resultPart = "none";
+			return resultQ;
+		}
 
 		Vector delta(3);
 		delta[0] = xBottle->get(0).asDouble() - xdBottle->get(0).asDouble();
@@ -514,9 +588,16 @@ Vector ReachManager::Solve(const Vector &xd, string partName, string &resultPart
 		cout << "q [rad] =" << qBottle->toString()<<endl;
 		cout << endl;
 
+		if(delta[0] < 0)
+		{
+			cout << "REACHING TOO FAR !!! " << endl;
+			resultPart = "none";
+			return resultQ;
+		}
+
 		if(deltaNorm2>(pow(parameters["max_error"]->asDouble(),2)))
 		{
-			cout << "TOO BIG ERROR !!! " << endl;
+			cout << "TOO BIG ERROR !!! \n\n" << endl;
 			resultPart = "none";
 			return resultQ;
 		}
