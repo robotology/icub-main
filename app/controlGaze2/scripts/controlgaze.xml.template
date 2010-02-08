@@ -1,0 +1,18 @@
+<application>
+<name>Control_Gaze</name>
+<dependencies>
+        <port>/icub/head/rpc:i</port> 
+        <port>/icub/torso/rpc:i</port>
+</dependencies>
+<module>
+        <name>controlGaze2</name>
+        <parameters>--configCamera icubEyes.ini --name /icub/controlGaze --context controlGaze2/conf --from icubControlGaze2.ini --motorboard /icub/head </parameters>
+        <tag>controlgaze</tag>
+        <stdio>view-node</stdio>
+        <node>control-node</node>
+</module>
+<connection>
+        <from>/icub/torso/state:o</from>
+        <to>/icub/controlGaze/torso</to>
+</connection>
+</application>
