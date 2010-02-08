@@ -13,8 +13,8 @@ namespace CB {
     /**
      * This class implements the ConfigurationVariables abstract resource 
      * interface for a generic YARP motor interface.  It allows to control the 
-     * device using either the position controller (using IPositionControl) or
-     * the velocity controller (using the velocityControl module).  Both accept
+     * device using either the position controller (using a PolyDriver) or
+     * the velocity controller (using a velocityControl module).  Both accept
      * position commands, but which is used is dependent on the lower level 
      * control properties of the device.
      **/    
