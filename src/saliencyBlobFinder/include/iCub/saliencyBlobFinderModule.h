@@ -198,9 +198,17 @@ private:
     */
     BufferedPort<Bottle> cmdPort;
     /**
-    * port necessary for rpc commands
+    * port used for centroid position to controlGaze2
     */
     BufferedPort<Bottle> centroidPort;
+    /**
+    * port used for centroid position to iKinHead
+    */
+    BufferedPort<Bottle> triangulationPort;
+    /**
+    * port used for sending responses from triangulationPort back into iKinGazeControl
+    */
+    BufferedPort<Bottle> gazeControlPort;
     /**
     * ipp reference to the size of the input image
     */

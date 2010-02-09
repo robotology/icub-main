@@ -52,6 +52,8 @@ bool saliencyBlobFinderModule::open(Searchable& config) {
 
     outputPort.open(getName("image:o"));
     centroidPort.open(getName("centroid:o"));
+    triangulationPort.open(getName("triangulation:o"));
+    gazeControlPort.open(getName("gazeControl:o"));
     cmdPort.open(getName("cmd"));
     attach(cmdPort);
 
@@ -77,6 +79,8 @@ bool saliencyBlobFinderModule::interruptModule() {
 
     outputPort.interrupt();
     centroidPort.interrupt();
+    triangulationPort.interrupt();
+    gazeControlPort.interrupt();
     cmdPort.interrupt();
     
     return true;
@@ -107,8 +111,10 @@ bool saliencyBlobFinderModule::close(){
     printf("closing command port .... \n");
     cmdPort.close();
     
-    printf("closing centroid port .... \n");
+    printf("closing communication ports .... \n");
     centroidPort.close();
+    gazeControlPort.close();
+    triangulationPort.close();
    
     return true;
 }
@@ -242,6 +248,22 @@ void saliencyBlobFinderModule::outPorts(){
         outputPort.prepare() = *(blobFinder->image_out);		
         outputPort.write();
     }
+
+    if(triangulationPort.getOutputCount()){
+        Bottle &bot = triangulationPort.prepare(); 
+        bot.clear();
+        bot.addVocab( Vocab::encode("set") ); 
+        bot.addVocab( Vocab::encode("3dpoint") );
+        bot.addVocab( Vocab::encode("right") );
+        bot.addDouble(blobFinder->salience->centroid_x);
+        bot.addDouble(blobFinder->salience->centroid_y);
+        bot.addDouble(1.0); //fixed distance in which the saccade takes place
+    }
+
+    if(gazeControlPort.getOutputCount()){
+        
+    }
+
     if(centroidPort.getOutputCount()){
         Bottle &bot = centroidPort.prepare(); 
         bot.clear();
@@ -252,18 +274,18 @@ void saliencyBlobFinderModule::outPorts(){
         //logPolarMapper iCub driver
         time (&end);
         double dif = difftime (end,start);
-        if((dif>10)&&(dif<=20)){
+        if((dif>5)&&(dif<=60)){
             bot.addVocab( Vocab::encode("sac") ); 
             bot.addVocab( Vocab::encode("img") ); 
             double xrel=(blobFinder->salience->centroid_x-320/2)/(320/2);
-            double yrel=(blobFinder->salience->centroid_y-240/2)/(-240/2);
-            printf("%f>%f,%f \n",dif,xrel,yrel);
+            double yrel=(blobFinder->salience->centroid_y-240/2+25)/(-240/2);
+            //printf("%f>%f,%f \n",dif,xrel,yrel);
             bot.addDouble(xrel);  
             bot.addDouble(yrel); 
             centroidPort.write();
             
         }
-        else if(dif>20){
+        else if(dif>60){
             time (&start);
         }
         else{

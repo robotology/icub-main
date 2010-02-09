@@ -80,8 +80,8 @@ blobFinderThread::blobFinderThread():RateThread(THREAD_RATE){
     blobFov=new ImageOf<PixelMono>;
     
 
-    salienceBU=10;
-    salienceTD=10;
+    salienceBU=0.5;
+    salienceTD=0.5;
     maxBLOB=4096;
     minBLOB=100;
 
@@ -471,15 +471,15 @@ void blobFinderThread::drawAllBlobs(bool stable)
     PixelMono searchTD=0;
     PixelMono pixelRG=0,pixelGR=0,pixelBY=0;
     searchRG=((targetRED-targetGREEN+255)/510)*255;
-    //pixelRG=searchRG;
-    pixelRG=targetRED;
+    pixelRG=255-searchRG;
+    //pixelRG=targetRED;
     searchGR=((targetGREEN-targetRED+255)/510)*255;
-    //pixelGR=searchGR;
-    pixelGR=targetGREEN;
+    pixelGR=255-searchGR;
+    //pixelGR=targetGREEN;
     PixelMono addRG=((targetRED+targetGREEN)/510)*255;
     searchBY=((targetBLUE-addRG+255)/510)*255;
-    //pixelBY=searchBY;
-    pixelBY=targetBLUE;
+    pixelBY=255-searchBY;
+    //pixelBY=targetBLUE;
     int psb32s;
     //int psb8u;
     Ipp32s* _inputImgRGS32=ippiMalloc_32s_C1(this->width,this->height,&psb32s);

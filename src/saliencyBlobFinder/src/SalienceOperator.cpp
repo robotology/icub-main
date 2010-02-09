@@ -221,7 +221,7 @@ void SalienceOperator::DrawMaxSaliencyBlob(ImageOf<PixelMono>& id,int max_tag,Im
     PixelMono pixelColour=255;
     YARPBox box;
     maxSalienceBlob(tagged,max_tag,box);
-    printf("id: %d \n",box.id);
+    //printf("id: %d \n",box.id);
     for (int r=0; r<height; r++)
         for (int c=0; c<width; c++){
             //printf("%d ",tagged(c,r));
