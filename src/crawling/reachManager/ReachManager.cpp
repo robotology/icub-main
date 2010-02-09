@@ -307,7 +307,7 @@ void ReachManager::OpenIKSolver(string arm)
 }
 
 
-void ReachManager::CloseIKSolver(string arm)d
+void ReachManager::CloseIKSolver(string arm)
 {
 
 	iKinPorts[arm]->in.close();
