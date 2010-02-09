@@ -100,7 +100,7 @@ CBAPIWindow::CBAPIWindow() :
     set_title("Control Basis API GUI");
     set_size_request(1200,750);
     set_border_width(10);
-    set_icon_from_file("app/cb.png");
+    set_icon_from_file("cb.png");
 
     addControllerButton.set_border_width(4);
     clearControllerButton.set_border_width(4);
