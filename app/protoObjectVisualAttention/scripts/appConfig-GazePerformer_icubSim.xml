@@ -44,10 +44,12 @@
 	</module>
 	
 	<connection>
-<<<<<<< .mine      	<output>>/blobFinder/centroid:o</output>
+		<output>>/blobFinder/centroid:o</output>
 		<input>/controlGaze/conf</input>
 		<protocol>tcp</protocol>
-=======      	<output>/cvLogPolarR/image:o</output>
+	</connection>
+	<connection>
+	   	<output>/cvLogPolarR/image:o</output>
 			<input>/logPolarReverseView</input>
 			<protocol>tcp</protocol>
 	</connection>
@@ -55,7 +57,7 @@
       	<output>/blobFinder/centroid:o</output>
 			<input>/controlGaze/conf</input>
 			<protocol>tcp</protocol>
->>>>>>> .theirs	</connection>
+	</connection>
 	<connection>
       	<output>/blobFinder/triangulation:o</output>
 		<input>/eyeTriangulation/x:i</input>
