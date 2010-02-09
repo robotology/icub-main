@@ -25,6 +25,11 @@ can convert the relative position of the target in the two image
 planes in relative displacement in 3D task space with respect to 
 the actual fixation point. 
  
+Moreover, in case only a monocular vision is exploited, one can 
+still use the iKinGazeCtrl in combination with the \ref 
+icub_iKinHead module which returns via rpc the 3d point 
+corresponding to a pixel in one image plane. 
+ 
 <b>Reminder</b> \n 
 If you experience a slow speed motion, please check the shift 
 factors settings within your low-level configuration file of the 
