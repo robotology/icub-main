@@ -21,11 +21,7 @@ IF (NESTED_BUILD)
   # This a global build, so we do not need to supply the full path
   # and filename(s) of the library.  We can just use the CMake target name.
   # CMake itself knows what exactly the library is called on this system.
-  IF (WIN32 AND NOT CYGWIN)
-     SET (${LIB_PKG}_LIBRARIES optimized ${LIB_TARGET} debug ${LIB_TARGET}d)
-  ELSE (WIN32 AND NOT CYGWIN)
-     SET (${LIB_PKG}_LIBRARIES ${LIB_TARGET})
-  ENDIF (WIN32 AND NOT CYGWIN)
+  SET (${LIB_PKG}_LIBRARIES ${LIB_TARGET})
 
 ELSE (NESTED_BUILD)
 

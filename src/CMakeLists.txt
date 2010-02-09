@@ -58,11 +58,6 @@ IF(CREATE_GUIS_GTKMM)
 		ENDIF (NOT GtkMM_FOUND)
 ENDIF(CREATE_GUIS_GTKMM)
 
-# include the iCub/lib/Release or iCub/lib/Debug path in the project
-IF(MSVC)
-    LINK_DIRECTORIES(${ICUB_DIR}/lib/${CMAKE_CFG_INTDIR})
-ENDIF(MSVC)
-
 # Formal releases of RobotCub software are starting.
 # In releases, the "BUILD_FOR_RELEASE" flag is set.
 SET(BUILD_FOR_RELEASE FALSE CACHE BOOL "Is this an official build?")
