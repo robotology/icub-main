@@ -26,8 +26,7 @@ bool SkinMeshThread::threadInit()
     if (!driver.isValid())
     {
         fprintf(stderr, "Error opening PolyDriver check parameters\n");
-        fprintf(stderr, "NOTICE: simulating data\n");
-        return true;
+        return false;
     }
 
     driver.view(pCanBus);
@@ -35,8 +34,7 @@ bool SkinMeshThread::threadInit()
     if (!pCanBus)
     {
         fprintf(stderr, "Error opening /ecan device not available\n");
-        fprintf(stderr, "NOTICE: simulating data\n");
-        return true;
+        return false;
     }
 
     driver.view(pCanBufferFactory);
@@ -61,47 +59,26 @@ void SkinMeshThread::run()
 {	
     mutex.wait();
 
-    if (pCanBus)
+    unsigned int canMessages=0;
+
+    bool res=pCanBus->canRead(canBuffer,2*triangleNum,&canMessages,true);
+
+    for (unsigned int i=0; i<canMessages; i++)
     {
-        unsigned int canMessages=0;
-    
-        bool res=pCanBus->canRead(canBuffer,2*triangleNum,&canMessages,true);
+        CanMessage &msg=canBuffer[i];
 
-	    for (unsigned int i=0; i<canMessages; i++)
-	    {
-            CanMessage &msg=canBuffer[i];
-
-		    if ((msg.getId() & 0xFFFFFFF0) == cardId)
-		    {
-                int triangleId=msg.getId() & 0x0F;
-
-                if (msg.getData()[0] & 0x80)
-                {
-                    triangles[triangleId]->setActivationLast5(msg.getData()); // last 5 bytes
-                }
-                else
-                {
-                    triangles[triangleId]->setActivationFirst7(msg.getData()); // first 7 bytes
-                }
-		    }
-	    }
-    }
-    else
-    {
-        yarp::os::Time::delay(0.04);
-
-        int triangleId=rand()%6;
-
-        unsigned char data[8];
-        for (int i=1; i<=7; ++i) data[i]=rand()%256;
-
-        if (rand()%2)
+        if ((msg.getId() & 0xFFFFFFF0) == cardId)
         {
-            triangles[triangleId]->setActivationLast5(data); // last 5 bytes
-        }
-        else
-        {
-            triangles[triangleId]->setActivationFirst7(data); // first 7 bytes
+            int triangleId=msg.getId() & 0x0F;
+
+            if (msg.getData()[0] & 0x80)
+            {
+                triangles[triangleId]->setActivationLast5(msg.getData()); // last 5 bytes
+            }
+            else
+            {
+                triangles[triangleId]->setActivationFirst7(msg.getData()); // first 7 bytes
+            }
         }
     }
 
