@@ -64,7 +64,7 @@
  *    corresponding position) and which not (with 0). The length
  *    of the provided list of 1's and 0's should match the
  *    number of chain's dof. The special value 2 is used to keep
- *    the link status unchanged and proceed to next link.
+ *    the link status unchanged and proceed to the next link.
  *  
  * \b resp request: example ([resp] (20.0 0.0 0.0 ...)), 
  *    specifies for each joint the rest position in degrees. The
@@ -403,7 +403,7 @@ public:
     *    corresponding position) and which not (with 0). The length
     *    of the provided list of 1's and 0's should match the number
     *    of chain's links. The special value 2 is used to keep the
-    *    link status unchanged and proceed to next link.
+    *    link status unchanged and proceed to the next link.
     *  
     * \b rest_pos <(double double ...)>: example (rest_pos (20.0 0.0
     *    0.0 ...)), specifies in degrees the joints rest position
