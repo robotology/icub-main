@@ -79,13 +79,13 @@ protected:
   double eyeDistL;
   double eyeDistR;
 
-  bool getAlignLinks(const string&, const string&, iKinLink**, iKinLink**);
+  bool getAlignLinks(const ResourceFinder&, const string&, iKinLink**, iKinLink**);
   bool qrGet(Vector);
   bool qlGet(Vector);
-  bool xCheckBottleFormat(Bottle*, Vector &, Vector &);  
+  bool xCheckBottleFormat(Bottle*, Vector&, Vector&);  
   
 public:
-  eyeTriangulation(const string&, Matrix, Matrix, bool, unsigned int, const string&, const string&);
+  eyeTriangulation(const ResourceFinder&, Matrix, Matrix, bool, unsigned int, const string&, const string&);
   virtual bool threadInit();
   virtual void afterStart(bool);
   virtual void run();

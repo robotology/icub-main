@@ -28,7 +28,7 @@ void eyeTriangulation::xDisConstant()
   xConstant = false;
 }
 
-eyeTriangulation::eyeTriangulation(const string &configFile, Matrix PrjL, Matrix PrjR,
+eyeTriangulation::eyeTriangulation(const ResourceFinder &rf, Matrix PrjL, Matrix PrjR,
                                    bool _enableKalman, unsigned int _period,
                                    const string &_ctrlName, const string &_robotName) : 
                                    RateThread(_period), enableKalman(_enableKalman), Ts(_period/1000.0),
@@ -56,7 +56,7 @@ eyeTriangulation::eyeTriangulation(const string &configFile, Matrix PrjL, Matrix
   chainLeftEye =leftEye->asChain();
 
   // add aligning links read from configuration file
-  if (getAlignLinks(configFile,"RIGHT_ALIGN",&alignLnkRight1,&alignLnkRight2))
+  if (getAlignLinks(rf,"RIGHT_ALIGN",&alignLnkRight1,&alignLnkRight2))
   {
       *chainRightEye<<*alignLnkRight1<<*alignLnkRight2;
       chainRightEye->blockLink(chainRightEye->getN()-1,0.0);
@@ -65,7 +65,7 @@ eyeTriangulation::eyeTriangulation(const string &configFile, Matrix PrjL, Matrix
   else
       alignLnkRight1=alignLnkRight2=NULL;
 
-  if (getAlignLinks(configFile,"LEFT_ALIGN",&alignLnkLeft1,&alignLnkLeft2))
+  if (getAlignLinks(rf,"LEFT_ALIGN",&alignLnkLeft1,&alignLnkLeft2))
   {
       *chainLeftEye<<*alignLnkLeft1<<*alignLnkLeft2;
       chainLeftEye->blockLink(chainLeftEye->getN()-1,0.0);
@@ -219,40 +219,34 @@ void eyeTriangulation::threadRelease()
 	fprintf(stderr, "eT stopped successfully\n");
 }
 
-bool eyeTriangulation::getAlignLinks(const string &configFile, const string &type,
+bool eyeTriangulation::getAlignLinks(const ResourceFinder &rf, const string &type,
                                      iKinLink **link1, iKinLink **link2)
 {
     *link1=*link2=NULL;
 
-    if (configFile.size())
+    Bottle &parType=const_cast<ResourceFinder&>(rf).findGroup(type.c_str());
+    string error="unable to find aligning parameters group: "+type;
+
+    if (parType.size())
     {
-        Property par;
-        par.fromConfigFile(configFile.c_str());
+        Bottle length=parType.findGroup("length");
+        Bottle offset=parType.findGroup("offset");
+        Bottle twist=parType.findGroup("twist");
 
-        Bottle parType=par.findGroup(type.c_str());
-        string error="unable to find aligning parameters for "+type+" eye";
-
-        if (parType.size())
+        if (length.size()>=2 && offset.size()>=2 && twist.size()>=2)
         {
-            Bottle length=parType.findGroup("length");
-            Bottle offset=parType.findGroup("offset");
-            Bottle twist=parType.findGroup("twist");
+            *link1=new iKinLink(length.get(1).asDouble(),offset.get(1).asDouble(),
+                                twist.get(1).asDouble(),0.0,0.0,0.0);
+            *link2=new iKinLink(length.get(2).asDouble(),offset.get(2).asDouble(),
+                                twist.get(2).asDouble(),0.0,0.0,0.0);
 
-            if (length.size()>=2 && offset.size()>=2 && twist.size()>=2)
-            {
-                *link1=new iKinLink(length.get(1).asDouble(),offset.get(1).asDouble(),
-                                    twist.get(1).asDouble(),0.0,0.0,0.0);
-                *link2=new iKinLink(length.get(2).asDouble(),offset.get(2).asDouble(),
-                                    twist.get(2).asDouble(),0.0,0.0,0.0);
-
-                return true;
-            }
-            else
-                fprintf(stderr,"error\n");
+            return true;
         }
         else
-            fprintf(stderr,"error\n");
+            fprintf(stderr,"%s\n",error.c_str());
     }
+    else
+        fprintf(stderr,"%s\n",error.c_str());
 
     return false;
 }

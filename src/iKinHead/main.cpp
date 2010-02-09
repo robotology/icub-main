@@ -33,14 +33,14 @@
   * matrices for the left and the right eye. These parameters can be
   * obtained with the module \ref icub_camcalibconf. The calibration matrices
   * are specified via the parameters (fx,fy,cx,cy). The left and right 
-  * camera parms should be specifed in the [LEFT_PROJECTION] and the
-  * [RIGHT_PROJECTION] group respctively (see config.ini for an example).
-  * An additional parameter can be specified (--const). When this parameter
-  * is specifed the module does not use the input port
-  * /eyeTriangulation/x:i (and therefore does not wait for data
-  * to be written in this port). In this configuration the image
-  * plane coordinates are substituted with the left and right
-  * principal coordinates (cx,cy).
+  * camera parms should be specifed in the
+  * [CAMERA_CALIBRATION_LEFT] and the [CAMERA_CALIBRATION_RIGHT]
+  * group respctively. An additional parameter can be specified
+  * (--const). When this parameter is specifed the module does
+  * not use the input port /eyeTriangulation/x:i (and therefore
+  * does not wait for data to be written in this port). In this
+  * configuration the image plane coordinates are substituted
+  * with the left and right principal coordinates (cx,cy).
   * 
   * Moreover, two further groups [LEFT_ALIGN] and [RIGHT_ALIGN]
   * can be added to the configuration file to describe the
@@ -51,7 +51,7 @@
   * By adding the option --kalman the 3D output position is
   * filtered with a Kalman state estimator.
   *
-  * Example: ./iKinHead --file config.ini --const --kalman
+  * Example: ./iKinHead --from icubEyes.ini --const --kalman
   * 
   * There are also the usual <i>--robot</i> and <i>--name</i>
   * command line options to change the name of the robot to
@@ -163,39 +163,15 @@ public:
     {
         Time::turboBoost();
 
-        // get command line options
-        if (!rf.check("file"))
-        {
-            fprintf(stderr, "Missing --file option. Quitting.\n");
-            return false;
-        }
-
-        string configFile = rf.findFile(rf.find("file").asString()).c_str();
-
-        if (configFile=="")
-        {
-            fprintf(stderr, "File %s not found. Quitting.\n",configFile.c_str());
-            return false;
-        }
-
-        // get command file options
-        Property fileOptions;
-        fprintf(stderr, "Opening file\n");
-        if(!fileOptions.fromConfigFile(configFile.c_str()))
-          {
-            fprintf(stderr, "Couldn't find a file named %s.\nThis file is mandatory!\n", configFile.c_str());
-            return false;
-          }
-
         fprintf(stderr, "Getting projections\n");
 
         Matrix PiRight;
         Bottle b;
-        b = fileOptions.findGroup("RIGHT_PROJECTION");
-        //fprintf(stderr, "RIGHT_PROJECTION contains: %s\n", b.toString().c_str());
+        b = rf.findGroup("CAMERA_CALIBRATION_RIGHT");
+        //fprintf(stderr, "CAMERA_CALIBRATION_RIGHT contains: %s\n", b.toString().c_str());
         if (getProjectionMatrix(b, PiRight) == 0)
           {
-            fprintf(stderr, "RIGHT_PROJECTION was missing some params\n");
+            fprintf(stderr, "CAMERA_CALIBRATION_RIGHT was missing some params\n");
             return false;
           }
         else
@@ -206,11 +182,11 @@ public:
           }
 
         Matrix PiLeft;
-        b = fileOptions.findGroup("LEFT_PROJECTION");
-        //fprintf(stderr, "LEFT_PROJECTION contains: %s\n", b.toString().c_str());
+        b = rf.findGroup("CAMERA_CALIBRATION_LEFT");
+        //fprintf(stderr, "CAMERA_CALIBRATION_LEFT contains: %s\n", b.toString().c_str());
         if (getProjectionMatrix(b, PiLeft) == 0)
           {
-            fprintf(stderr, "LEFT_PROJECTION was missing some params\n");
+            fprintf(stderr, "CAMERA_CALIBRATION_LEFT was missing some params\n");
             return false;
           }
         else
@@ -232,8 +208,7 @@ public:
         string robotName=rf.find("robot").asString().c_str();
 
         fprintf(stderr, "Initializing eT\n");
-        eT=new eyeTriangulation(configFile, PiLeft, PiRight, enableKalman, period,
-                                ctrlName, robotName);
+        eT=new eyeTriangulation(rf, PiLeft, PiRight, enableKalman, period, ctrlName, robotName);
 
         Vector xr(3); xr(0)=PiRight(0,2); xr(1)=PiRight(1,2); xr(2)=1.0; 
         Vector xl(3); xl(0)=PiLeft(0,2);  xl(1)=PiLeft(1,2);  xl(2)=1.0; 
@@ -286,6 +261,8 @@ int main(int argc, char *argv[])
     rf.setVerbose(true);
     rf.setDefault("name","eyeTriangulation");
     rf.setDefault("robot","icub");
+    rf.setDefaultContext("cameraCalibration/conf");
+    rf.setDefaultConfigFile("icubEyes.ini");
     rf.configure("ICUB_ROOT",argc,argv);
 
     CtrlModule mod;
