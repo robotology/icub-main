@@ -681,7 +681,8 @@ public:
 *  
 * @note The benefit is that unlike the previous implementation 
 * of grasp() and touch(), the height of the objects to be 
-* attained can be known just approximately. 
+* attained can be known just approximately. Nonetheless, the old 
+* implementation of grasp() is still available. 
 *  
 * <b>Important note</b>: from within the robot configuration 
 * file remind to enable the option to read the voltage output 
