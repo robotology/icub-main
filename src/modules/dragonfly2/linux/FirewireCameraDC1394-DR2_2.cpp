@@ -54,8 +54,11 @@ bool CFWCamera_DR2_2::Create(unsigned int idCamera,unsigned int size_x,unsigned 
 	}
 
 	dc1394_camera_reset(m_pCamera);
+    // if previous instance crashed we need to clean up 
+    // allocated bandwidth -- Added Lorenzo Natale, 9/2/2010.
     const int INT_MAX=0x7FFFFFFF;
     dc1394_iso_release_bandwidth(m_pCamera, INT_MAX);
+    ///////////////////////////////////////////////////
 
 	dc1394speed_t speed;
 	dc1394_video_get_iso_speed(m_pCamera,&speed);
@@ -108,9 +111,7 @@ bool CFWCamera_DR2_2::Create(unsigned int idCamera,unsigned int size_x,unsigned 
 		fprintf(stderr,"invalid video format, reading from camera\n");    
 	}
 
-    fprintf(stderr, "HERE\n");
 	LoadSettings(size_x,size_y);
-    fprintf(stderr, "HERE2\n");
 
 	for (int f=DC1394_FEATURE_MIN; f<=DC1394_FEATURE_MAX; ++f)
 	{	
