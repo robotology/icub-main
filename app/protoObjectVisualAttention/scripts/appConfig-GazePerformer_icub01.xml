@@ -1,0 +1,62 @@
+<!-- please assume that lightHouse, surfer are names of server which run on power nods -->
+<!-- @authour Francesco Rea -->
+
+<application>
+	<name>GazePerformer</name>
+ 	<dependencies>
+		<port>/icub/head/rpc:i</port> 
+		<port>/icub/cam/right</port>
+	</dependencies>
+
+	<module>
+		<name>controlGaze2</name>
+		<parameters>--configCamera iCubEyes.ini --file icubControlGaze2.ini --motorboard /icubSim/head</parameters>
+		<tag>gazecontroller</tag>
+		<node>/lightHouse</node>
+	</module>
+
+	<module>
+		<name>iKinGazeCtrl</name>
+		<parameters>--robot icubSim</parameters>
+		<stdio>lightHouse</stdio>
+		<tag>gazeCtrl</tag>
+		<node>/lightHouse</node>
+	</module>
+	<module>
+		<name>iKinHead</name>
+		<parameters>--file iKinHead.ini --kalman --const</parameters>
+		<tag>ikinHead</tag>
+		<node>/lightHouse</node>
+	</module>
+ 	<module>
+		<name>yarpview</name>
+		<parameters>--name /edgesView --x 500 --y 400 --synch</parameters>
+		<tag>view1</tag>
+		<node>/lightHouse</node>
+	</module>
+
+	<module>
+		<name>yarpview</name>
+		<parameters>--name /logPolarForwardView --x 800 --y 400 --synch</parameters>
+		<tag>view2</tag>
+		<node>/lightHouse</node>
+	</module>
+	
+	<connection>
+      	<output>>/blobFinder/centroid:o</output>
+		<input>/controlGaze/conf</input>
+		<protocol>tcp</protocol>
+	</connection>
+	<connection>
+      	<output>/blobFinder/triangulation:o</output>
+		<input>/eyeTriangulation/x:i</input>
+		<protocol>tcp</protocol>
+	</connection>
+	<connection>
+      	<output>/eyeTriangulation/X:o</output>
+		<input>/iKinGazeCtrl/xd:i</input>
+		<protocol>tcp</protocol>
+	</connection>
+	
+	
+</application>
