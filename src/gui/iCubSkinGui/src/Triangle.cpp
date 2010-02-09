@@ -2,11 +2,11 @@
 
 #include <iCub/Triangle.h>
 
-#define HUGE 1E+20
-double Triangle::dXmin= HUGE;
-double Triangle::dXmax=-HUGE;
-double Triangle::dYmin= HUGE;
-double Triangle::dYmax=-HUGE;
+#define VERY_FAR 1E+20
+double Triangle::dXmin= VERY_FAR;
+double Triangle::dXmax=-VERY_FAR;
+double Triangle::dYmin= VERY_FAR;
+double Triangle::dYmax=-VERY_FAR;
 
 int Triangle::m_maxRange=0;
 double* Triangle::Exponential=0;
