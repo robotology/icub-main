@@ -127,7 +127,7 @@ bool CB::YARPConfigurationVariables::connectToDevice() {
     options.put("remote", remote_name.c_str());
     fprintf(stderr, "%s", options.toString().c_str());
 
-    cout << "\ncreating new PolyDriver for " << remoteDevPort << endl;
+    cout << endl << "creating new PolyDriver for " << remoteDevPort << endl;
     dd = new PolyDriver(options);       
     cout << "created." << endl;
 
