@@ -2,67 +2,25 @@
 # * Copyright (C) 2009 Stephen Hart. All rights reserved.
 # * 
 # */
+cmake_minimum_required(VERSION 2.6)
 
-ADD_DEFINITIONS(-O3 -Wno-deprecated)
+SET(PROJECTNAME startResources)
+PROJECT(${PROJECTNAME})
+SET(CB_START_RESOURCES startResources)
 
-FIND_PACKAGE(GtkPlus)
-IF (NOT GtkPlus_FOUND)
-    MESSAGE(ERROR "gtk+ not found, cannot compile the application!")
-ENDIF (NOT GtkPlus_FOUND)
+FIND_PACKAGE(ICUB QUIET)
+IF (NOT ICUB_FOUND)
+   MESSAGE (STATUS "ICUB repository not found; assuming distributed build.")
+   MESSAGE (STATUS "If this is not what you want, set ICUB_DIR variable.")
+ENDIF (NOT ICUB_FOUND)
 
-FIND_PACKAGE(GtkMM REQUIRED)
+FIND_PACKAGE(IKIN REQUIRED)
+SET(CONTROLBASIS_DIR "${ICUB_DIR}/src/controlBasis")
+FIND_PACKAGE(CONTROLBASIS REQUIRED)
 
-ADD_DEFINITIONS(${GTKPLUS_C_FLAGS})
-ADD_DEFINITIONS(${GTKMM_C_FLAGS})
-LINK_LIBRARIES(${GTKPLUS_LINK_FLAGS})
-LINK_LIBRARIES(${GTKMM_LINK_FLAGS})
+LINK_LIBRARIES(${CONTROLBASIS_LIBRARIES} ${IKIN_LIBRARIES})
+INCLUDE_DIRECTORIES(${CONTROLBASIS_INCLUDE_DIRS} ${IKIN_INCLUDE_DIRS})
 
-INCLUDE_DIRECTORIES(
-        ${PROJECT_SOURCE_DIR}/resources
-        ${PROJECT_SOURCE_DIR}/potentialFunctions
-	${PROJECT_SOURCE_DIR}/jacobians
-	${PROJECT_SOURCE_DIR}/control
-        ${PROJECT_SOURCE_DIR}/util/kinematics
-        )
-
-LINK_DIRECTORIES(
-        ${PROJECT_SOURCE_DIR}/resources
-        ${PROJECT_SOURCE_DIR}/potentialFunctions
-	${PROJECT_SOURCE_DIR}/jacobians
-        ${PROJECT_SOURCE_DIR}/control
-        ${PROJECT_SOURCE_DIR}/util/kinematics
-)
-
-ADD_EXECUTABLE( controlBasisGUI               
-		controlBasisGUI.cpp
-		CBAPIUtil.cpp
-		CBAPIHelper.cpp
-		)
-
-ADD_EXECUTABLE(referenceGUI
-		referenceGUI.cpp
-		)
-
-TARGET_LINK_LIBRARIES( referenceGUI
-                       cbresources
-		       ${GTKMM_LINK_FLAGS}
-)
-
-TARGET_LINK_LIBRARIES(controlBasisGUI
-  ${IKIN_LIBRARIES}
-  cbresources
-  cbpf
-  cbjacobian
-  cbcontrol
-  ${GTKMM_LINK_FLAGS}
-        )
-#
-# install targets                                                                                                                                                               
-#INSTALL_TARGETS(${BIN_DIR}
-#  controlBasisGuI
-#  referenceGUI
-#  )
-
-
+ADD_EXECUTABLE(${CB_START_RESOURCES} startResources.cpp)
 
 
