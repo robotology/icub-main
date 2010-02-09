@@ -1,7 +1,7 @@
 // -*- mode:C++; tab-width:4; c-basic-offset:4; indent-tabs-mode:nil -*-
 
 #include <yarp/os/all.h>
-#include <iCub/WatershedModule.h>
+#include <iCub/blobFinderModule.h>
 
 using namespace yarp::os;
 
@@ -9,7 +9,7 @@ static GtkWidget *mainWindow = NULL;
 
 int main(int argc, char *argv[]) {
       // Create and run processor module
-	WatershedModule *module=new WatershedModule();
+	blobFinderModule *module=new blobFinderModule();
 	//module->processor1=new ImageProcessor();
 	//module->processor2=new ImageProcessor();
 	//module->processor3=new ImageProcessor();

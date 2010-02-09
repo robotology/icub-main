@@ -8,3 +8,6 @@ bool yarpImage2Pixbuf(yarp::sig::ImageOf<yarp::sig::PixelRgb> *sourceImg,
 bool yarpImage2Pixbuf(yarp::sig::ImageOf<yarp::sig::PixelMono> *sourceImg, 
                       GdkPixbuf* destPixbuf);
 #endif
+
+//----- end-of-file --- ( next line intentionally left blank ) ------------------
+

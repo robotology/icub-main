@@ -211,3 +211,5 @@ inline double YARPIntegralImage::getSaliency(int maxX, int minX, int maxY, int m
 
 #endif
 
+
+//----- end-of-file --- ( next line intentionally left blank ) ------------------

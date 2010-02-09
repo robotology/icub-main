@@ -98,7 +98,7 @@ CopyPolicy: Released under the terms of the GNU GPL v2.0.
 **/
 
 
-class WatershedModule : public Module {
+class WatershedModule : public RateThread {
 private:
 	/**
 	* a port for reading the edge image 
@@ -137,14 +137,10 @@ private:
 	*/
 	BufferedPort<ImageOf<PixelBgr> > port_Blobs; //
 	/**
-	* port where the commands are sent
-	*/
-    Port cmdPort;
-	/**
-	* options of the connection
-	*/
-	Property options;	//
-    
+    * root name of all the port connections
+    */
+     ConstString name;
+        
 public:
 	//------------------ PUBLIC METHODS -----------------------------------
 
@@ -155,27 +151,46 @@ public:
 	/**
 	* open and initialise the module
 	*/
-	bool open(Searchable& config); //
+	//bool open(Searchable& config);
+
+    /**
+    *	initialization of the thread 
+    */
+    bool threadInit();
+    /**
+    * active loop of the thread
+    */
+    void run();
+    /**
+    *	releases the thread
+    */
+    void threadRelease();
 	/**
-	* try to interrupt any communications or resource usage
+	* interrupts any communications or resource usage
 	*/
-    bool interruptModule(); // 
+    bool interrupt(); // 
 	/**
-	* closes all the ports 
+	* closes all this thread safely
 	*/
 	bool close(); //
-	/**
-	* active control of the Module
-	*/
-	bool updateModule(); //
 	/**
 	* function that resizes all the images and all the objects that are dependent from the size of the inputimage
 	*/
 	void resizeImages(int width, int height);
-	/**
-	* set the attribute options of class Property
-	*/
-	void setOptions(Property options); //
+
+    /**
+    * set name of the module for any port connect function
+    * @param name starting root of all the ports
+    */
+    void setName(ConstString name);
+    /**
+    * returns the name of the module
+    */
+    ConstString getName();
+    /**
+    * appends the suffix to the name of the module and returns the result
+    */
+    ConstString getName(ConstString suffix);
 	/**
 	* create the main Window
 	*/
@@ -192,6 +207,10 @@ public:
 	* set different components of the module up
 	*/
 	void setUp();
+    /**
+    * set the reference to the module that has created this thread
+    */
+    void setModule(void* refModule);
 	/**
 	* creats some components of the module
 	*/
@@ -457,4 +476,6 @@ public:
 	
 };
 
-#endif //_IMAGEPROCESSMODULE_H_
+#endif //_WATERSHEDMODULE_H_
+
+//----- end-of-file --- ( next line intentionally left blank ) ------------------

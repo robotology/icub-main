@@ -352,3 +352,5 @@ public:
 };
 
 #endif //_SALIENCEOPERATOR_H_
+
+//----- end-of-file --- ( next line intentionally left blank ) ------------------

@@ -1,7 +1,7 @@
 // -*- mode:C++; tab-width:4; c-basic-offset:4; indent-tabs-mode:nil -*-
 
 #include <iCub/WatershedModule.h>
-
+#include <iCub/blobFinderModule.h>
 
 #include <ace/config.h>
 
@@ -22,14 +22,7 @@ using namespace yarp::sig;
 using namespace yarp::sig::draw;
 
 
-// We need a macro for efficient switching.
-// Use as, for example, VOCAB('s','e','t')
-#define VOCAB(a,b,c,d) ((((int)(d))<<24)+(((int)(c))<<16)+(((int)(b))<<8)+((int)(a)))
-#define VOCAB4(a,b,c,d) VOCAB((a),(b),(c),(d))
-#define VOCAB3(a,b,c) VOCAB((a),(b),(c),(0))
-#define VOCAB2(a,b) VOCAB((a),(b),(0),(0))
-#define VOCAB1(a) VOCAB((a),(0),(0),(0))
-
+#define THREADRATE 30
 #define BLOB_MAXSIZE 4096
 #define BLOB_MINSIZE 100
 
@@ -87,6 +80,7 @@ static guint timeout_ID;
 static WatershedOperator *_wOperator;
 static SalienceOperator *_salience;
 static WatershedModule *wModule;
+static blobFinderModule* bfModule;
 
 #define _imgRecv (*(ptr_imgRecv))
 
@@ -110,7 +104,7 @@ static WatershedModule *wModule;
 #define _tagged (*(ptr_tagged))
 #define _semaphore (*(ptr_semaphore))
 
-WatershedModule::WatershedModule(){
+WatershedModule::WatershedModule():RateThread(THREADRATE){
     ct=0;
 
     message=new std::string();
@@ -226,15 +220,8 @@ void WatershedModule::resizeImages(int width, int height){
     resized_flag=true;
 }
 
-bool WatershedModule::open(Searchable& config) {
-    //ct = 0;
-    //port_in.open(getName("in"));
-    //ConstString portName2 = options.check("name",Value("/worker2")).asString();
-    //port_out.open(getName("out"));
-    //port_Blobs.open(getName("outBlobs"));
-    cmdPort.open(getName("cmd")); // optional command port
-    attach(cmdPort); // cmdPort will work just like terminal
 
+bool WatershedModule::threadInit(){
     // create a new window
     this->createObjects();
     this->setUp();
@@ -248,52 +235,21 @@ bool WatershedModule::open(Searchable& config) {
     // and waits for an event to occur (like a key press or
     // mouse event).
 
-    gtk_main ();
-    gtk_widget_destroy(mainWindow);
-    this->close();
-    yarp::os::Network::fini();
-    return false;
+    
+    return true;
 }
 
-// try to interrupt any communications or resource usage
-bool WatershedModule::interruptModule() {
-    /**
-    * a port for reading the edge image 
-    */
-        port_in.interrupt(); // 
-    /**
-    * a port for reading the input Image of the Red Plane
-    */
-        portRedPlane.interrupt(); // 
-    /**
-    * a port for reading the input Image of the Green Plane
-    */
-        portGreenPlane.interrupt();
-    /**
-    * a port for reading the input Image of the Blue Plane 
-    */
-        portBluePlane.interrupt(); 
-    /**
-    * a port for reading the R+G- colour opponency Image
-    */
-        portRG.interrupt(); // 
-    /**
-    * a port for reading the G+R- colour opponency Image
-    */
-        portGR.interrupt(); // 
-    /**
-    * a port for reading the B+Y- colour opponency Image 
-    */
-        portBY.interrupt(); // 
-    /**
-    * port where the processed image is buffered out
-    */
-        port_out.interrupt(); //
-    /**
-    * port where the image of the found blob is put
-    */
-    port_Blobs.interrupt(); //
-    return true;
+void WatershedModule::run(){
+    gtk_main ();
+    gtk_widget_destroy(mainWindow);
+    bfModule->close();
+    this->close();
+    yarp::os::Network::fini();
+    ACE_OS::exit(0);
+}
+
+void WatershedModule::threadRelease(){
+    close();
 }
 
 bool WatershedModule::close() {
@@ -334,17 +290,56 @@ bool WatershedModule::close() {
     * port where the image of the found blob is put
     */
     port_Blobs.close(); //
-    cmdPort.close();
+    
     closePorts();
-    return true;
-    }
 
-void WatershedModule::setOptions(yarp::os::Property opt){
-    options	=opt;
+        
+    return true;
 }
 
-bool WatershedModule::updateModule() {    
+// try to interrupt any communications or resource usage
+bool WatershedModule::interrupt(){
+    /**
+    * a port for reading the edge image 
+    */
+        port_in.interrupt(); // 
+    /**
+    * a port for reading the input Image of the Red Plane
+    */
+        portRedPlane.interrupt(); // 
+    /**
+    * a port for reading the input Image of the Green Plane
+    */
+        portGreenPlane.interrupt();
+    /**
+    * a port for reading the input Image of the Blue Plane 
+    */
+        portBluePlane.interrupt(); 
+    /**
+    * a port for reading the R+G- colour opponency Image
+    */
+        portRG.interrupt(); // 
+    /**
+    * a port for reading the G+R- colour opponency Image
+    */
+        portGR.interrupt(); // 
+    /**
+    * a port for reading the B+Y- colour opponency Image 
+    */
+        portBY.interrupt(); // 
+    /**
+    * port where the processed image is buffered out
+    */
+    port_out.interrupt(); //
+    /**
+    * port where the image of the found blob is put
+    */
+    port_Blobs.interrupt(); //
     return true;
+}
+
+void WatershedModule::setModule(void* refModule){
+    bfModule=(blobFinderModule*)refModule;
 }
 
 
@@ -1133,7 +1128,19 @@ static void updateStatusbar (GtkStatusbar  *statusbar)
     fps = 1000 / float(50);
  
     gtk_statusbar_pop (statusbar, 0); // clear any previous message, underflow is allowed 
-                    
+     
+    PixelMono searchRG=0,searchGR=0,searchBY=0;
+    
+    searchRG=((wModule->targetRED-wModule->targetGREEN+255)/510)*255;
+    wModule->searchRG=searchRG;
+    //wModule->searchRG=wModule->targetRED;
+    searchGR=((wModule->targetGREEN-wModule->targetRED+255)/510)*255;
+    wModule->searchGR=searchGR;
+    //wModule->searchGR=wModule->targetGREEN;
+    PixelMono addRG=((wModule->targetRED+wModule->targetGREEN)/510)*255;
+    searchBY=((wModule->targetBLUE-addRG+255)/510)*255;
+    wModule->searchBY=searchBY;
+
     msg = g_strdup_printf ("%s - %.1f fps    r:%f;g:%f;b:%f     RG:%d;GR:%d;BY:%d","WatershedModule", fps, 
         wModule->targetRED,wModule->targetGREEN,wModule->targetBLUE, wModule->searchRG, wModule->searchGR, wModule->searchBY);
     //printf("r:%f;g:%f;b:%f     RG:%f;GR:%f;BY:%f",wModule->targetRED,wModule->targetGREEN,wModule->targetBLUE, wModule->searchRG, wModule->searchGR, wModule->searchBY);
@@ -1271,12 +1278,29 @@ void WatershedModule::createObjects() {
     ptr_semaphore = new yarp::os::Semaphore;
 }
 
+void WatershedModule::setName(ConstString param){
+   name=param;
+}
+
+ConstString WatershedModule::getName(){
+    return name;
+}
+
+ConstString WatershedModule::getName(ConstString suffix){
+    
+    std::string namestr(name.c_str());
+    namestr.append("/");
+    namestr.append(suffix.c_str());
+    ConstString ret(namestr.c_str());
+    return ret;
+}
+
 bool WatershedModule::openPorts(){
     bool ret = false;
     //int res = 0;
     // Registering Port(s)
     //reduce verbosity --paulfitz
-    g_print("Registering port %s on network %s...\n", getName("in"),"default");
+    g_print("Registering port %s on network %s...\n",  getName("in"),"default");
     ret = _imgRecv.Connect((char*)getName("image:i").c_str(),"default");
     if (ret == true)
         {
@@ -1288,7 +1312,7 @@ bool WatershedModule::openPorts(){
             return false;
         }
     //--------
-    ret = _imgRecvRed.Connect((char*)getName("inRed:i").c_str(),"default");
+    ret = _imgRecvRed.Connect((char*) getName("inRed:i").c_str(),"default");
     if (ret == true)
         {
             //reduce verbosity --paulfitz
@@ -1299,7 +1323,7 @@ bool WatershedModule::openPorts(){
             g_print("ERROR: Port registration failed.\nQuitting, sorry.\n");
             return false;
         }
-    ret = _imgRecvGreen.Connect((char*)getName("inGreen:i").c_str(),"default");
+    ret = _imgRecvGreen.Connect((char*) getName("inGreen:i").c_str(),"default");
     if (ret == true)
         {
             //reduce verbosity --paulfitz
@@ -1310,7 +1334,7 @@ bool WatershedModule::openPorts(){
             g_print("ERROR: Port registration failed.\nQuitting, sorry.\n");
             return false;
         }
-    ret = _imgRecvBlue.Connect((char*)getName("inBlue:i").c_str(),"default");
+    ret = _imgRecvBlue.Connect((char*) getName("inBlue:i").c_str(),"default");
     if (ret == true)
         {
             //reduce verbosity --paulfitz
@@ -1322,7 +1346,7 @@ bool WatershedModule::openPorts(){
             return false;
         }
     //--------
-    ret = _imgRecvRG.Connect((char*)getName("inRG:i").c_str(),"default");
+    ret = _imgRecvRG.Connect((char*) getName("inRG:i").c_str(),"default");
     if (ret == true)
         {
             //reduce verbosity --paulfitz
@@ -1333,7 +1357,7 @@ bool WatershedModule::openPorts(){
             g_print("ERROR: Port registration failed.\nQuitting, sorry.\n");
             return false;
         }
-    ret = _imgRecvGR.Connect((char*)getName("inGR:i").c_str(),"default");
+    ret = _imgRecvGR.Connect((char*) getName("inGR:i").c_str(),"default");
     if (ret == true)
         {
             //reduce verbosity --paulfitz
@@ -1344,7 +1368,7 @@ bool WatershedModule::openPorts(){
             g_print("ERROR: Port registration failed.\nQuitting, sorry.\n");
             return false;
         }
-    ret = _imgRecvBY.Connect((char*)getName("inBY:i").c_str(),"default");
+    ret = _imgRecvBY.Connect((char*) getName("inBY:i").c_str(),"default");
     if (ret == true)
         {
             //reduce verbosity --paulfitz
@@ -1359,8 +1383,8 @@ bool WatershedModule::openPorts(){
     if (true)
         {		
             _pOutPort = new yarp::os::BufferedPort<yarp::os::Bottle>;
-            g_print("Registering port %s on network %s...\n", getName("outputImage:o"),"default");
-            bool ok = _pOutPort->open(getName("outputImage:o"));
+            //g_print("Registering port %s on network %s...\n", getName("outputImage:o"),"default");
+            bool ok = _pOutPort->open( getName("outputImage:o"));
             if  (ok)
                 g_print("Port registration succeed!\n");
             else 
@@ -1369,8 +1393,8 @@ bool WatershedModule::openPorts(){
                     return false;
                 }
             _pOutPort2 = new yarp::os::BufferedPort<ImageOf<PixelRgb> >;
-            g_print("Registering port %s on network %s...\n", getName("outBlobs:o"),"default");
-            ok = _pOutPort2->open(getName("outBlobs:o"));
+            //g_print("Registering port %s on network %s...\n", getName("outBlobs:o"),"default");
+            ok = _pOutPort2->open( getName("outBlobs:o"));
             if  (ok)
                 g_print("Port registration succeed!\n");
             else 
@@ -1379,8 +1403,8 @@ bool WatershedModule::openPorts(){
                     return false;
                 }
             _pOutPort3 = new yarp::os::BufferedPort<ImageOf<PixelRgb> >;
-            g_print("Registering port %s on network %s...\n", getName("outView:o"),"default");
-            ok = _pOutPort3->open(getName("outView:o"));
+            //g_print("Registering port %s on network %s...\n", getName("outView:o"),"default");
+            ok = _pOutPort3->open( getName("outView:o"));
             if  (ok)
                 g_print("Port registration succeed!\n");
             else 
@@ -1389,8 +1413,8 @@ bool WatershedModule::openPorts(){
                     return false;
                 }
             commandPort = new yarp::os::BufferedPort<Bottle >;
-            g_print("Registering port %s on network %s...\n", getName("command:o"),"default");
-            ok = commandPort->open(getName("command:o"));
+            //g_print("Registering port %s on network %s...\n", getName("command:o"),"default");
+            ok = commandPort->open( getName("command:o"));
             if  (ok)
                 g_print("Port registration succeed!\n");
             else 
@@ -1408,7 +1432,7 @@ bool WatershedModule::closePorts(){
     //int res = 0;
     // Registering Port(s)
     //reduce verbosity --paulfitz
-    g_print("Closing port %s on network %s...\n", getName("in"),"default");
+    //g_print("Closing port %s on network %s...\n", getName("in"),"default");
     ret = _imgRecv.Disconnect();
     //--------
     ret = _imgRecvRed.Disconnect(); //("/rea/Watershed/inRed","default");
@@ -1422,13 +1446,13 @@ bool WatershedModule::closePorts(){
     if (true)
         {		
             _pOutPort->close();
-            g_print("Closing port %s on network %s...\n", getName("out"),"default");
+            //g_print("Closing port %s on network %s...\n", getName("out"),"default");
             _pOutPort2->close();
-            g_print("Closing port %s on network %s...\n", getName("outBlobs:o"),"default");
+            //g_print("Closing port %s on network %s...\n", getName("outBlobs:o"),"default");
             _pOutPort3->close();
-            g_print("Closing port %s on network %s...\n", getName("outView:o"),"default");
+            //g_print("Closing port %s on network %s...\n", getName("outView:o"),"default");
             commandPort->close();
-            g_print("Closing port %s on network %s...\n", getName("centroid:o"),"default");
+            //g_print("Closing port %s on network %s...\n", getName("centroid:o"),"default");
         }
 
     return true;
@@ -1723,7 +1747,7 @@ GtkWidget* WatershedModule::createMainWindow(void)
     double minAdj=1;
     double stepAdj=1;
     
-    adj1 = gtk_adjustment_new(1, minAdj,maxAdj,stepAdj, 1, 1);
+    adj1 = gtk_adjustment_new(50, minAdj,maxAdj,stepAdj, 1, 1);
     hscale = gtk_hscale_new (GTK_ADJUSTMENT (adj1));
     gtk_widget_set_size_request (GTK_WIDGET (hscale), 200, -1);
     scale_set_default_values (GTK_SCALE (hscale));
@@ -1737,7 +1761,7 @@ GtkWidget* WatershedModule::createMainWindow(void)
     gtk_box_pack_start (GTK_BOX (box4), label, FALSE, FALSE, 0);
     gtk_widget_show (label);
 
-    adj2 = gtk_adjustment_new (1, minAdj,maxAdj,stepAdj, 1, 1);
+    adj2 = gtk_adjustment_new (50, minAdj,maxAdj,stepAdj, 1, 1);
     hscale = gtk_hscale_new (GTK_ADJUSTMENT (adj2));
     gtk_widget_set_size_request (GTK_WIDGET (hscale), 200, -1);
     scale_set_default_values (GTK_SCALE (hscale));
