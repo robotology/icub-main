@@ -4,6 +4,10 @@
 
 #include <ace/config.h>
 
+//within project includes
+#include <iCub/ImageProcessor.h>
+#include <iCub/graphicThread.h>
+
 //YARP include
 #include <yarp/os/all.h>
 #include <yarp/sig/all.h>
@@ -12,15 +16,6 @@
 #include <cv.h>
 #include <cvaux.h>
 #include <highgui.h>
-//=============================================================================
-// GTK Includes 
-//=============================================================================
-#include <gtk/gtk.h>
-
-//within Project Include
-#include <iCub/ImageProcessor.h>
-#include <iCub/YARPImgRecv.h>
-#include <iCub/YarpImage2Pixbuf.h>
 
 using namespace yarp::os;
 using namespace yarp::sig;
@@ -107,6 +102,10 @@ private:
 	* command port of the module
 	*/
     BufferedPort<Bottle > cmdPort;
+    /**
+    * reference to the graphic unit interface managed by a thread
+    */
+    graphicThread* gui;
 	/**
 	* counter of the module
 	*/
@@ -115,18 +114,7 @@ private:
 	* options of the connection
 	*/
 	Property options;	//
-	/**
-	* maximum value for the gtk sliding control
-	*/
-	double maxAdj;
-	/**
-	* maximum value for the gtk sliding control
-	*/
-	double minAdj;
-	/**
-	* step adjustment for the gtk sliding control
-	*/
-	double stepAdj;
+	
 public:
 	/**
 	*open the ports of the module
@@ -148,34 +136,8 @@ public:
 	* set the attribute options of class Property
 	*/
 	void setOptions(Property options); //
-	/**
-	* creates the main Window
-	*/
-	GtkWidget* createMainWindow(); //
-	/**
-	* menuFileSingle callback
-	*/
-	static gint menuFileSingle_CB(GtkWidget *widget, GdkEventExpose *event, gpointer data);
-	/**
-	* menufileset callback
-	*/
-	gint menuFileSet_CB(GtkWidget *widget, GdkEventExpose *event, gpointer data);
-	/**
-	* creates the menubar
-	*/
-	GtkWidget* createMenubar();
-	/**
-	* updates status bar
-	*/
-	void updateStatusbar (GtkStatusbar  *statusbar);
-	/**
-	* creates some objects necessary for the window
-	*/
-	void createObjects();
-	/**
-	* sets the adjustments in the window
-	*/
-	void setAdjs();
+	
+	
 	//gint timeout_CB (gpointer data);
 	//bool getImage();
 	/**
@@ -190,10 +152,7 @@ public:
 	* streams out data on ports
 	*/
 	bool outPorts();
-	/**
-	* sets the module up
-	*/
-	void setUp();
+	
 	//---attributes
 	// Output Point Ports
 	/**
@@ -263,3 +222,5 @@ public:
 };
 
 #endif //_IMAGEPROCESSMODULE_H_
+
+//----- end-of-file --- ( next line intentionally left blank ) ------------------

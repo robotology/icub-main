@@ -80,3 +80,6 @@ private:
 };
 
 #endif // !defined(AFX_YARPIMGRECV_H__2654CA92_2656_48E0_9A91_F6CD59F11AC4__INCLUDED_)
+
+//----- end-of-file --- ( next line intentionally left blank ) ------------------
+
