@@ -2,27 +2,26 @@
 # * Copyright (C) 2010 Stephen Hart. All rights reserved.
 # * 
 # */
+cmake_minimum_required(VERSION 2.6)
 
-ADD_DEFINITIONS(-O3 -Wno-deprecated -D_LINUX)
+SET(PROJECTNAME controlBasisModules)
+PROJECT(${PROJECTNAME})
+SET(CB_RESOURCE_MODULE controlBasisResource)
 
-INCLUDE_DIRECTORIES(
-  ${PROJECT_SOURCE_DIR}/resources
-  )
+FIND_PACKAGE(ICUB QUIET)
+IF (NOT ICUB_FOUND)
+   MESSAGE (STATUS "ICUB repository not found; assuming distributed build.")
+   MESSAGE (STATUS "If this is not what you want, set ICUB_DIR variable.")
+ENDIF (NOT ICUB_FOUND)
 
-LINK_DIRECTORIES(
-  ${PROJECT_SOURCE_DIR}/resources
-  )
+FIND_PACKAGE(IKIN REQUIRED)
+SET(CONTROLBASIS_DIR "${ICUB_DIR}/src/controlBasis")
+FIND_PACKAGE(CONTROLBASIS REQUIRED)
 
-ADD_EXECUTABLE( controlBasisResource
-  main.cpp
-  )
+LINK_LIBRARIES(${CONTROLBASIS_LIBRARIES} ${IKIN_LIBRARIES})
+INCLUDE_DIRECTORIES(${CONTROLBASIS_INCLUDE_DIRS} ${IKIN_INCLUDE_DIRS})
 
-TARGET_LINK_LIBRARIES(  controlBasisResource
-  cbresources
-  ${IKIN_LIBRARIES}
-  )
+ADD_EXECUTABLE(${CB_RESOURCE_MODULE} controlBasisResource.cpp)
 
-INSTALL_TARGETS(../../../bin
-  controlBasisResource
-  )
+INSTALL_TARGETS(/bin controlBasisResource )
 
