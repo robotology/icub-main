@@ -3,8 +3,7 @@
 /*
  * Copyright (C) 2007 Robotcub Consortium
  * CopyPolicy: Released under the terms of the GNU GPL v2.0.
- *
- * Author: Alessandro Scalzo
+ * * Author: Alessandro Scalzo
  */
 
 //  L      I  N   N  U   U  X   X
@@ -36,6 +35,7 @@ bool CFWCamera_DR2_2::Create(unsigned int idCamera,unsigned int size_x,unsigned 
 		return false;       
 	}
 
+
 	m_IsoSpeed=2;
 
 	m_bCameraOn=false;
@@ -54,6 +54,8 @@ bool CFWCamera_DR2_2::Create(unsigned int idCamera,unsigned int size_x,unsigned 
 	}
 
 	dc1394_camera_reset(m_pCamera);
+    const int INT_MAX=0x7FFFFFFF;
+    dc1394_iso_release_bandwidth(m_pCamera, INT_MAX);
 
 	dc1394speed_t speed;
 	dc1394_video_get_iso_speed(m_pCamera,&speed);
@@ -106,7 +108,9 @@ bool CFWCamera_DR2_2::Create(unsigned int idCamera,unsigned int size_x,unsigned 
 		fprintf(stderr,"invalid video format, reading from camera\n");    
 	}
 
+    fprintf(stderr, "HERE\n");
 	LoadSettings(size_x,size_y);
+    fprintf(stderr, "HERE2\n");
 
 	for (int f=DC1394_FEATURE_MIN; f<=DC1394_FEATURE_MAX; ++f)
 	{	
@@ -138,7 +142,7 @@ bool CFWCamera_DR2_2::Create(unsigned int idCamera,unsigned int size_x,unsigned 
 
 	if (dc1394_capture_setup(m_pCamera,NUM_DMA_BUFFERS,DC1394_CAPTURE_FLAGS_DEFAULT)!=DC1394_SUCCESS)
 	{
-		fprintf(stderr,"ERROR: Can't set DC1394_CAPTURE_FLAGS_DEFAULT\n");
+        
 		dc1394_camera_free(m_pCamera);
 		m_pCamera=NULL;
 		return false;
@@ -862,6 +866,8 @@ bool CFWCamera_DR2_2::setColorCodingDC1394(int coding)
 
 	return bRetVal;
 }	
+
+//experimental cleanup function, Lorenzo
 
 // 25
 bool CFWCamera_DR2_2::getFormat7MaxWindowDC1394(unsigned int &xdim,unsigned int &ydim,unsigned int &xstep,unsigned int &ystep)
