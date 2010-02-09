@@ -1,3 +1,5 @@
+<!-- please assume that lightHouse, surfer are names of server which run on power nods -->
+<!-- @authour Francesco Rea -->
 <application>
 	<name>GazePerformer</name>
  	<dependencies>
@@ -11,14 +13,22 @@
 		<tag>gazecontroller</tag>
 		<node>/lightHouse</node>
 	</module>
+	
+
 
 	<module>
-		<name>openCVLogPolar</name>
-		<parameters>--name /cvLogPolarR  --mode INVERSE</parameters>
-		<tag>logPolarReverse</tag>
+		<name>iKinGazeCtrl</name>
+		<parameters>--robot icubSim</parameters>
+		<stdio>lightHouse</stdio>
+		<tag>gazeCtrl</tag>
 		<node>/lightHouse</node>
 	</module>
-	
+	<module>
+		<name>iKinHead</name>
+		<parameters>--file iKinHead.ini --kalman --const</parameters>
+		<tag>ikinHead</tag>
+		<node>/lightHouse</node>
+	</module>
  	<module>
 		<name>yarpview</name>
 		<parameters>--name /view1 --x 500 --y 400 --synch</parameters>
@@ -33,13 +43,11 @@
 		<node>/lightHouse</node>
 	</module>
 	
- 	<connection>
-      	<output>/blobFinder/image:o</output>
-			<input>/cvLogPolarR/image:i</input>
-			<protocol>tcp</protocol>
-	</connection>
 	<connection>
-      	<output>/cvLogPolarR/image:o</output>
+<<<<<<< .mine      	<output>>/blobFinder/centroid:o</output>
+		<input>/controlGaze/conf</input>
+		<protocol>tcp</protocol>
+=======      	<output>/cvLogPolarR/image:o</output>
 			<input>/logPolarReverseView</input>
 			<protocol>tcp</protocol>
 	</connection>
@@ -47,6 +55,16 @@
       	<output>/blobFinder/centroid:o</output>
 			<input>/controlGaze/conf</input>
 			<protocol>tcp</protocol>
+>>>>>>> .theirs	</connection>
+	<connection>
+      	<output>/blobFinder/triangulation:o</output>
+		<input>/eyeTriangulation/x:i</input>
+		<protocol>tcp</protocol>
+	</connection>
+	<connection>
+      	<output>/eyeTriangulation/X:o</output>
+		<input>/iKinGazeCtrl/xd:i</input>
+		<protocol>tcp</protocol>
 	</connection>
 	
 	
