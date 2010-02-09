@@ -204,9 +204,9 @@ private:
     /**
     * port used for centroid position to iKinHead
     */
-    BufferedPort<Bottle> triangulationPort;
+    Port triangulationPort;
     /**
-    * port used for sending responses from triangulationPort back into iKinGazeControl
+    * port used for sending responses from triangulationPort back into i
     */
     BufferedPort<Bottle> gazeControlPort;
     /**

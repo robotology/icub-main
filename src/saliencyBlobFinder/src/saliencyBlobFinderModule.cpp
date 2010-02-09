@@ -250,7 +250,8 @@ void saliencyBlobFinderModule::outPorts(){
     }
 
     if(triangulationPort.getOutputCount()){
-        Bottle &bot = triangulationPort.prepare(); 
+        Bottle in,bot;
+        //Bottle &bot = triangulationPort.prepare(); 
         bot.clear();
         bot.addVocab( Vocab::encode("set") ); 
         bot.addVocab( Vocab::encode("3dpoint") );
@@ -258,6 +259,12 @@ void saliencyBlobFinderModule::outPorts(){
         bot.addDouble(blobFinder->salience->centroid_x);
         bot.addDouble(blobFinder->salience->centroid_y);
         bot.addDouble(1.0); //fixed distance in which the saccade takes place
+        triangulationPort.write(bot,in);
+        if (in.size()>0) {
+            printf("Got response: %s\n", in.toString().c_str());
+        } else { 
+            printf("No response\n");
+        }
     }
 
     if(gazeControlPort.getOutputCount()){
