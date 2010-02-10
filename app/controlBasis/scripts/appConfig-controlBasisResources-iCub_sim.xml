@@ -4,15 +4,6 @@
     <port>/icubSim/right_arm/state:o</port> 
     <port>/icubSim/vc/right_arm/command</port>
     <port>/icubSim/vc/right_arm/input</port>
-    <port>/icubSim/left_arm/state:o</port> 
-    <port>/icubSim/vc/left_arm/command</port>
-    <port>/icubSim/vc/left_arm/input</port>
-    <port>/icubSim/right_leg/state:o</port> 
-    <port>/icubSim/vc/right_leg/command</port>
-    <port>/icubSim/vc/right_leg/input</port>
-    <port>/icubSim/left_leg/state:o</port> 
-    <port>/icubSim/vc/left_leg/command</port>
-    <port>/icubSim/vc/left_leg/input</port>
   </dependencies>
   <module>
     <name>controlBasisResource</name>
