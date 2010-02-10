@@ -160,7 +160,7 @@ public:
     cout << part << endl;
     cout << endl<< endl<< endl;
     cout << configFile << endl;
-    cout << endl<< endl<< endl;
+    //    cout << endl<< endl<< endl;
     if( (part == "") || (robot == "") ) {
       return false;
     }

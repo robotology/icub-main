@@ -131,6 +131,13 @@ namespace CB {
 
             std::cout << "YARPConfigurationVariables created..." << std::endl;  
 
+            numDOFs = dofs;
+            numLinks = links;
+            size=dofs;
+            moveable = true;
+            lock = true;
+            maxSetVal=0.01;
+
             // set configuration info
             deviceName = devName;
             if(yarpDevName=="") {
@@ -166,13 +173,6 @@ namespace CB {
                 mask.resize(1);
                 mask[0] = 1;
             }
-
-            numDOFs=dofs;
-            numLinks=links;
-            size=dofs;
-            moveable = true;
-            lock = true;
-            maxSetVal=0.01;
 
             // init the input/output ports
             initPorts();
