@@ -237,7 +237,7 @@ void CrawlPlanner::AgePotentialField()
 void CrawlPlanner::SmoothPotentialField()
 {
 	// list of potentials that can be assimilated to another and can be deleted.
-	vector<vector<Potential *>> similarPotentials;
+	vector<vector<Potential *> > similarPotentials;
 	similarPotentials.clear();
 
 	//finds out the potentials that are near to each other (inside the noise range)
