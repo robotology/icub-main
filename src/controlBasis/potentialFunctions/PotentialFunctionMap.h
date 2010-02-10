@@ -10,10 +10,13 @@
 #include <ManipulabilityField.h>
 
 namespace CB {
-
+    
     class PotentialFunctionMap {
 
+    protected:
+
     public:
+
         PotentialFunctionMap() { }
         ~PotentialFunctionMap() { }
         
