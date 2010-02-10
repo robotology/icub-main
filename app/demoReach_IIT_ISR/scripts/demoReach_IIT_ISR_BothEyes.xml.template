@@ -22,8 +22,8 @@
         </module>
 
         <module>
-                <name>leftEyeToRoot</name>
-                <parameters>--inputHeadPort /l2rBall/headIn --inputTorsoPort /l2rBall/torsoIn --inputBallPositionPort /l2rBall/posIn --outputBallPositionPort /l2rBall/posOut</parameters>
+                <name>eye2RootFrameTransformer</name>
+                <parameters>--name l2rBall --eye left</parameters>
                 <node>pwrNode1</node>
                 <tag>l2rBall</tag>
         </module>
@@ -90,17 +90,17 @@
         </connection>
         <connection>
                 <from>/icub/head/state:o</from>
-                <to>/l2rBall/headIn</to>
+                <to>/l2rBall/head:i</to>
                 <protocol>udp</protocol>
         </connection>
         <connection>
                 <from>/icub/torso/state:o</from>
-                <to>/l2rBall/torsoIn</to>
+                <to>/l2rBall/torso:i</to>
                 <protocol>udp</protocol>
         </connection>
         <connection>
                 <from>/icub/PF3DTracker_L/dataOut</from>
-                <to>/l2rBall/posIn</to>
+                <to>/l2rBall/targetPos:i</to>
                 <protocol>udp</protocol>
         </connection>
         <connection>
@@ -121,7 +121,7 @@
         </connection>
 
         <connection>
-                <from>/l2rBall/posOut</from>
+                <from>/l2rBall/targetPos:o</from>
                 <to>/demoReachManager_IIT_ISR/trackTarget:i</to>
                 <protocol>udp</protocol>
         </connection>
@@ -147,7 +147,7 @@
         </connection> 
 
         <connection>
-                <from>/l2rBall/posOut</from>
+                <from>/l2rBall/targetPos:o</from>
                 <to>/log/xyz</to>
         </connection> 
 

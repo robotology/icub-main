@@ -17,7 +17,7 @@ interface implemented) is running.
 \section int_sec Instantiated Modules
 - \ref pf3dTracker "pf3dTracker"
 
-- \ref leftEyeToRoot "leftEyeToRoot"
+- \ref eye2RootFrameTransformer "eye2RootFrameTransformer"
 
 - \ref demoGraspManager_IIT_ISR "demoGraspManager_IIT_ISR"
 
