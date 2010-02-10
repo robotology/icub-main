@@ -9,6 +9,11 @@ PROJECT (iCub)
 
 FIND_PACKAGE(YARP REQUIRED)
 
+IF (NOT YARP_HAS_MATH_LIB)
+  MESSAGE(SEND_ERROR "libYARP_math not found!")
+  MESSAGE(FATAL_ERROR "Missing libYARP_math -- see the manual for instructions")
+ENDIF (NOT YARP_HAS_MATH_LIB)
+
 FIND_PACKAGE(OpenCV QUIET)
 IF (NOT OPENCV_FOUND)
    MESSAGE(STATUS "Skipping modules using OpenCV (Open Computer Vision)")
