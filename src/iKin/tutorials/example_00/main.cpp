@@ -1,3 +1,7 @@
+//
+// A tutorial on how to use iKin library for forward/inverse kinematics.
+//
+// Author: Ugo Pattacini - <ugo.pattacini@iit.it>
 
 #include <gsl/gsl_math.h>
 #include <iostream>

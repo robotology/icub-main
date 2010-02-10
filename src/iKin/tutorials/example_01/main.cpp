@@ -1,3 +1,7 @@
+//
+// A tutorial on how to use the iKin on-line solver.
+//
+// Author: Ugo Pattacini - <ugo.pattacini@iit.it>
 
 #include <yarp/os/Network.h>
 #include <yarp/os/Port.h>
