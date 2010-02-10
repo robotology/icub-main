@@ -117,13 +117,13 @@
  *    Note that the name of this port mirrors whatever is provided by the --name parameter value
  *    The port is attached to the terminal so that you can type in commands and receive replies.
  *    The port can be used by other modules but also interactively by a user through the yarp rpc
- *    directive: yarp rpc /eye2world This opens a connection from a terminal to the port and allows
+ *    directive: yarp rpc /abstractHandCtrl This opens a connection from a terminal to the port and allows
  *    the user to then type in commands and receive replies.
  *
  *
  * \subsection outputports_Sec Output ports
  *
- *  - /eye2world <br />
+ *  - /abstractHandCtrl <br />
  *    see above
  *
  *
