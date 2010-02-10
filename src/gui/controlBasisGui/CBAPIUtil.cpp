@@ -65,7 +65,6 @@ CBAPITextWindow::CBAPITextWindow(string fgColor, string bgColor) {
 
   Gdk::Color bColor(bgColor);
   m_TextView.modify_base(Gtk::STATE_NORMAL, bColor);
-    
   show_all_children();
 }
 

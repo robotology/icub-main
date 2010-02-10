@@ -1,7 +1,7 @@
 // -*- mode:C++; tab-width:4; c-basic-offset:4; indent-tabs-mode:nil -*-
 /**
-\defgroup icub_controlBasisGui controlBasisGui
 @ingroup icub_guis
+\defgroup icub_controlBasisGui controlBasisGui
 
 A viewer for running ControlBasis API (CBAPI) control laws.
  
@@ -152,10 +152,8 @@ CBAPIWindow::CBAPIWindow() :
     gainEntry.set_max_length(5);
     gainEntry.set_text("1");
     
-    //  controlResourcesTable.set_col_spacings(1);
-    //controlResourcesTable.set_row_spacings(2);
     controlResourcesFrame.add(controlResourcesTable);
-    
+   
     controlDefinitionFrame.set_label("Controller Definition");
     controlDefinitionFrame.set_shadow_type(Gtk::SHADOW_ETCHED_IN);
     controlDefinitionText.set_border_width(5);
@@ -342,11 +340,6 @@ void CBAPIWindow::refreshResourceList() {
                                 
                                 cout << "found control basis service: " << simpleServiceName.c_str() << endl;
                                 
-                                //model = gtk_
-                                //gchar *msg = g_strdup_printf(simpleServiceName.c_str());
-                                //gtk_list_store_append (GTK_LIST_STORE (model), &iter);
-                                //gtk_list_store_set (GTK_LIST_STORE (model), &iter, 0, msg, -1);
-                                
                                 sensorList.addResource(simpleServiceName);
                                 referenceList.addResource(simpleServiceName);
                                 
@@ -402,7 +395,7 @@ void CBAPIWindow::refreshResourceList() {
 void CBAPIWindow::loadPotentialFunctions() {
 
     FILE *fp;
-    string fname = "config/potentialFunctions.dat";
+    string fname = "../../controlBasis/potentialFunctions/potentialFunctions.dat";
 
     if( (fp=fopen(fname.c_str(), "r")) == NULL ) {
         cout << "problem opening \'" << fname.c_str() << "\' for reading!!!" << endl;
@@ -458,7 +451,7 @@ void CBAPIWindow::loadPotentialFunctions() {
 void CBAPIWindow::loadJacobians() {
 
     FILE *fp;
-    string fname = "config/jacobians.dat";
+    string fname = "../../controlBasis/jacobians/jacobians.dat";
 
     if( (fp=fopen(fname.c_str(), "r")) == NULL ) {
         cout << "problem opening \'" << fname.c_str() << "\' for reading!!!" << endl;
