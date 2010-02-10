@@ -33,11 +33,8 @@ protected:
     double torso0,torso1,torso2;
     double targetPosInX,targetPosInY,targetPosInZ,targetPosInGood;
 
-public:
-    eye2RootFrameTransformer()  { }
-    ~eye2RootFrameTransformer() { }
-    
-    virtual bool open(yarp::os::ResourceFinder &rf);
+public:  
+    virtual bool configure(yarp::os::ResourceFinder &rf);
     virtual bool close();
     virtual bool updateModule();
     virtual double getPeriod();

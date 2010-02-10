@@ -59,7 +59,7 @@ using namespace iKin;
 
 
 // member function that set the object up.
-bool eye2RootFrameTransformer::open(ResourceFinder &rf)
+bool eye2RootFrameTransformer::configure(ResourceFinder &rf)
 {
     //***********************************
     //Read options from the command line.
@@ -74,19 +74,18 @@ bool eye2RootFrameTransformer::open(ResourceFinder &rf)
     _outputTargetPosPort.open((stemNamePort+"/targetPos:o").c_str());
     
     eye = new iCubEye(eyeType);
-    cout<<"Working with the "<<eyeType<<" eye"<<endl;
+    cout<<"Working with the "<<eye->getType()<<" eye"<<endl;
 
-    cout<<(int)(eye->releaseLink(0))<<endl;
-    cout<<(int)(eye->releaseLink(1))<<endl;
-    cout<<(int)(eye->releaseLink(2))<<endl;
+    eye->releaseLink(0);
+    eye->releaseLink(1);
+    eye->releaseLink(2);
     cout<<"eye Degrees Of Freedom = "<<eye->getDOF()<<endl;
 
     chainEye=*(eye->asChain());
-    chainEye[6].setMax(35*(M_PI/180.0));
     receivedHead = false;
     receivedTorso = false;
     receivedTargetPos = false;
-    isLeftEye=eyeType=="left";
+    isLeftEye=eye->getType()=="left";
 
     v.resize(8);
     eyeTargetPos.resize(4);
@@ -99,6 +98,7 @@ bool eye2RootFrameTransformer::open(ResourceFinder &rf)
 // member that closes the object.
 bool eye2RootFrameTransformer::close()
 {
+    delete eye;
     return true;
 }
 
@@ -198,7 +198,7 @@ int main(int argc, char *argv[])
         return -1;
 
     ResourceFinder rf;
-    rf.setVerbose(true);
+    rf.setVerbose(false);
     rf.setDefault("eye","left");
     rf.setDefault("name","eye2RootFrameTransformer");
     rf.configure("ICUB_ROOT",argc,argv);
