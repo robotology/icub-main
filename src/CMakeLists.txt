@@ -49,6 +49,11 @@ if(NOT PNL_FOUND)
    message(STATUS "Skipping modules using PNL")
 endif(NOT PNL_FOUND)
 
+find_package(libglove QUIET)
+if(NOT LIBGLOVE_FOUND)
+   message(STATUS "Skipping modules using libglove (http://libglove.sf.net)")
+endif(NOT LIBGLOVE_FOUND)
+
 IF (CREATE_GUIS_GTK)
 	FIND_PACKAGE(GtkPlus QUIET)
 		IF (NOT GtkPlus_FOUND)
@@ -272,6 +277,10 @@ ENDIF(OPENCV_FOUND)
     if(IKIN_FOUND)
       add_subdirectory(eye2world)
     endif(IKIN_FOUND)
+
+    if(LIBGLOVE_FOUND)
+      add_subdirectory(gloveCtrl)
+    endif(LIBGLOVE_FOUND)
   endif(LIBVISLAB_FOUND)
   
 ENDIF(BUILD_FOR_RELEASE)
