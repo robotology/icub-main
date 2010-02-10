@@ -75,6 +75,9 @@
 #include <cv.h>
 #include <highgui.h>
 
+// added to make OpenCV 2.0 cvCalcPGH() happy under Linux. --gsaponaro
+#include <cvaux.h>
+
 
 
 //Port names
