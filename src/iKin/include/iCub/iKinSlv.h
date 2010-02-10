@@ -137,8 +137,8 @@
  *  
  * \b run request: example [run], let the thread run again. 
  *  
- * \b quit request: example [quit], close ports and quit thread. 
- *    [ack] is returned.
+ * \b quit request: example [quit], close ports and quit the
+ *    thread. [ack] is returned.
  *  
  * Commands concerning the solver configuration: 
  *  
