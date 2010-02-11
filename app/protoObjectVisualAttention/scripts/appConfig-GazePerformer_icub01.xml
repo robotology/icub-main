@@ -17,7 +17,7 @@
 
 	<module>
 		<name>iKinGazeCtrl</name>
-		<parameters>--robot icub01</parameters>
+		<parameters></parameters>
 		<stdio>lightHouse</stdio>
 		<tag>gazeCtrl</tag>
 		<node>/lightHouse</node>
@@ -25,7 +25,7 @@
 
 	<module>
 		<name>iKinHead</name>
-		<parameters>--file iKinHead.ini --from protoObjectVisualAttention --kalman --const</parameters>
+		<parameters>--file iKinHead.ini --context protoObjectVisualAttention --kalman --const</parameters>
 		<stdio>lightHouse</stdio>
 		<tag>ikinHead</tag>
 		<node>/lightHouse</node>
