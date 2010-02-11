@@ -253,7 +253,7 @@ void saliencyBlobFinderModule::outPorts(){
         Bottle in,bot;
         //Bottle &bot = triangulationPort.prepare(); 
         bot.clear();
-        bot.addVocab( Vocab::encode("set") ); 
+        bot.addVocab( Vocab::encode("get") ); 
         bot.addVocab( Vocab::encode("3dpoint") );
         bot.addVocab( Vocab::encode("right") );
         bot.addDouble(blobFinder->salience->centroid_x);
@@ -265,10 +265,17 @@ void saliencyBlobFinderModule::outPorts(){
         } else { 
             printf("No response\n");
         }
+        target_z=in.pop().asDouble();
+        target_y=in.pop().asDouble();
+        target_x=in.pop().asDouble();
     }
 
     if(gazeControlPort.getOutputCount()){
-        
+        Bottle &bot = centroidPort.prepare(); 
+        bot.clear();
+        bot.addDouble(target_x);  
+        bot.addDouble(target_y); 
+        bot.addDouble(target_z);
     }
 
     if(centroidPort.getOutputCount()){

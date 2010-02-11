@@ -65,10 +65,15 @@ using namespace yarp::sig;
 @ingroup icub_module
 \defgroup icub_saliencyBlobFinder saliencyBlobFinder
 
-This module receives an edge image and the respective red plane, green plane and yellow plane.
-It needs the opponency maps composed as R+G-, G+R-, B+Y-.
-The module applies the watershed technique in order to extract all the blob and calculates a saliency map based on the mean color of the blob,
-its dimension and the the color distance to the target object
+This module extracts visual blobs in the scene and gives a saliency value to any of them.
+The process of assigning a saliency value is based on a top-down algorithm and bottom-up algorithm.(see <a href="http://">here</a>).
+The bottom-up gives high saliency to isolated blobs whereas the top-down gives high saliency to blobs which have mean colour close to the target colour.
+
+This module receives an edge image and the respective red plane, green plane and yellow plane. It needs the opponency maps composed as R+G-, G+R-, B+Y- as well.
+Those are maps that made by the difference of gaussians appied on the three colour planes. These rappresent the colour sentive photo receptors present in humans.
+
+Therefore, the module applies the watershed technique in order to extract all the blob and calculates a saliency map based on the mean color of the blob,
+its dimension and the the color distance to the target object.
 
 \section intro_sec Description
 
@@ -89,7 +94,7 @@ IPP
 \section parameters_sec Parameters
 Here is a  comprehensive list of the parameters you can pass to the module.
 --name (string) name of the module. The name of all the ports will be istantiated starting from this name 
-
+--file (string) name of the configuration file.
  
 \section portsa_sec Ports Accessed
 - /blobFinderInterface/command:o : once manually connected to the <name>/cmd the graphical interface is able to control this module (for further information press Help Button in the interface)
@@ -130,6 +135,22 @@ Input ports:
 
 InOut ports:
 - <name>/cmd : port for the input rpc commands (for further command send Help command)
+
+This module is able to respond to the following set of commands:
+- set mea
+- set tag
+- set max
+- set clp
+- set fov
+
+- set kbu: weight of the bottom-up algorithm
+- set ktd: weight of top-down algorithm
+- set rin: red intensity value
+- set gin: green intensity value
+- set bin: blue intensity value
+- set Mdb: Maximum dimension of the blob analysed
+- set mdb: minimum dimension of the blob analysed
+
 
 \section in_files_sec Input Data Files
 none
@@ -261,9 +282,18 @@ private:
     * time variable
     */
     time_t end;
-
-
-
+    /**
+    * position of the target in the body-centered frame (x coordinate)
+    */
+    double target_x;
+    /**
+    * position of the target in the body-centered frame (y coordinate)
+    */
+    double target_y;
+    /**
+    * position of the target in the body-centered frame (z coordinate)
+    */
+    double target_z;
     //_________ private methods ____________
     /**
     * function that reads the ports for colour RGB opponency maps
