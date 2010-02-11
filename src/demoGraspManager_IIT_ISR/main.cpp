@@ -728,7 +728,7 @@ protected:
             else if (state==STATE_GRASP)
             {
                 // check for hand closure
-                if (isGraspEnded())
+                if (isHandSeqEnded())
                 {                    
                     fprintf(stdout,"--- Grasp done OR Hand closure complete => WAITING\n");
 
@@ -750,10 +750,11 @@ protected:
                     fprintf(stdout,"--- Timeout elapsed => RELEASING\n");
 
                     openHand();
+                    Time::delay(2.0);
 
                     Vector x,o;
                     cartArm->getPose(x,o);
-                    x=x+*armReachOffs;
+                    x=x+0.5**armReachOffs;
     
                     cartArm->goToPoseSync(x,*armHandOrien);
 
@@ -811,7 +812,7 @@ protected:
             return true;
     }
 
-    bool isGraspEnded()
+    bool isHandSeqEnded()
     {
         // latch the current moving fingers set
         set<int> tmpSet=fingersMovingSet;
