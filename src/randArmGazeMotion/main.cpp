@@ -168,7 +168,7 @@ public:
 
 
 
-        string arm = bGeneral.check("arm",Value("right_arm")).asString();
+        string arm = bGeneral.check("arm",Value("right_arm")).asString().c_str();
 
         Bottle &bArm = rf.findGroup(arm.c_str());
         if(bArm.isNull())
