@@ -653,10 +653,10 @@ protected:
                 steerArmToHome();
             
                 // swap interfaces
-                armSel=!armSel;
-            
-                if (armSel==LEFTARM)
+                if (armSel==RIGHTARM)
                 {
+                    armSel=LEFTARM;
+
                     drvLeftArm->view(encArm);
                     drvLeftArm->view(posArm);
                     drvCartLeftArm->view(cartArm);
@@ -668,6 +668,8 @@ protected:
                 }
                 else
                 {
+                    armSel=RIGHTARM;
+
                     drvRightArm->view(encArm);
                     drvRightArm->view(posArm);
                     drvCartRightArm->view(cartArm);
@@ -747,7 +749,21 @@ protected:
                 {
                     fprintf(stdout,"--- Timeout elapsed => RELEASING\n");
 
-                    openHand();    
+                    openHand();
+
+                    Vector x,o;
+                    cartArm->getPose(x,o);
+                    x=x+*armReachOffs;
+    
+                    cartArm->goToPoseSync(x,*armHandOrien);
+
+                    bool f=false;
+                    while (!f)
+                    {
+                       cartArm->checkMotionDone(&f);
+                       Time::delay(0.1);
+                    }
+    
                     state=STATE_IDLE;
                 }
             }
