@@ -27,6 +27,7 @@ bool ImageProcessModule::open(Searchable& config) {
     reinit_flag=false;
 
 	currentProcessor=0;
+    inputImg=0;
 
     this->openPorts();   
     //ConstString portName2 = options.check("name",Value("/worker2")).asString();
@@ -199,6 +200,12 @@ bool ImageProcessModule::closePorts(){
     cmdPort.close();
     
     printf("All the ports successfully closed ... \n");
+
+    if(inputImg!=0)
+        delete inputImg;
+    if(currentProcessor!=0)
+        delete currentProcessor;
+
 	return ret;
 }
 

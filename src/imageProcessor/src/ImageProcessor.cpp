@@ -219,10 +219,6 @@ ImageProcessor::~ImageProcessor(){
     delete outputImage;
     //---->cvImage16
     //---->cvImage8
-
-
-
-        
 }
 
 ImageProcessor::ImageProcessor(ImageOf<PixelRgb>* inputImage):RateThread(THREAD_RATE){
@@ -316,12 +312,14 @@ void ImageProcessor::resizeImages(int width,int height){
     
 
     //redGreen opponency
+    int psb_border;
     inputRedGreen32 = ippiMalloc_32f_C1(width,height,&psb32);
     outputRedGreen2 = ippiMalloc_8u_C1(width,height,&psb);
     outputRedGreen = ippiMalloc_8u_C1(width,height,&psb);
     outputRedGreen3 = ippiMalloc_8u_C1(width,height,&psb);
     outputRedGreen32B = ippiMalloc_32f_C1(width,height,&psb32); 
     outputRedGreen32 = ippiMalloc_32f_C1(width,height,&psb32);
+    redGreenBorder=ippiMalloc_8u_C1(width+2,height+2,&psb_border);
 
     //greenRed opponency
     inputGreenRed32 = ippiMalloc_32f_C1(width,height,&psb32);
@@ -360,6 +358,7 @@ void ImageProcessor::run(){
 */
 void ImageProcessor::threadRelease(){
     printf("Thread realeasing .... \n");
+    
 }
 
 
@@ -1032,6 +1031,7 @@ ImageOf<PixelMono>* ImageProcessor::findEdgesRedOpponency(){
     //printf("width:%d /n",width);
     IppiSize srcsize ={width,height};
     IppiSize dstsize ={width-2,height-2};
+    IppiSize bordersize={width+2,height+2};
     IppiPoint anchor={1,1};
     //2. convolve every colour opponency with the sobel in order to get edges
     /*Ipp32s src0[3*3]={1, 2 ,1,
@@ -1202,8 +1202,11 @@ ImageOf<PixelMono>* ImageProcessor::findEdgesRedOpponency(){
 
     else if (IPPISOBEL){
         
-        ippiFilterSobelHoriz_8u_C1R(redGreen_yarp->getPixelAddress(0,0),redGreen_yarp->getRowSize(),outputRedGreen3,psb,srcsize);
-        ippiFilterSobelVert_8u_C1R(redGreen_yarp->getPixelAddress(0,0),redGreen_yarp->getRowSize(),outputRedGreen2,psb,srcsize);
+        
+        
+        ippiCopyConstBorder_8u_C1R(redGreen_yarp->getRawImage(),redGreen_yarp->getRowSize(),srcsize,redGreenBorder,psb_border,bordersize,1,1,0);
+        ippiFilterSobelHoriz_8u_C1R(redGreenBorder,psb_border,outputRedGreen3,psb,srcsize);
+        ippiFilterSobelVert_8u_C1R(redGreenBorder,psb_border,outputRedGreen2,psb_border,bordersize);
         for(int i=0; i<width*height;i++){
             if(outputRedGreen==NULL){
                 printf("outputRedGreen NULL");
@@ -1215,11 +1218,13 @@ ImageOf<PixelMono>* ImageProcessor::findEdgesRedOpponency(){
             }
             if(outputRedGreen3[i]<outputRedGreen2[i])
                 outputRedGreen3[i]=outputRedGreen2[i];
+            outputRedGreen[i]=outputRedGreen3[i];
         }
 
-        IppiSize msksize={3,3};
+        /*IppiSize msksize={3,3};
         Ipp8u src[3*3]={1,1,1,1,1,1,1,1,1};
-        ippiConvValid_8u_C1R(outputRedGreen3,psb,srcsize,src,3,msksize,&outputRedGreen[1 + width*1],psb,5);
+        ippiConvValid_8u_C1R(redGreen_yarp->getRawImage(),redGreen_yarp->getRowSize(),srcsize,src,3,msksize,&outputRedGreen[1 + width*1],psb,5);*/
+
         /*conv_8u_to_32f(redGreen_yarp->getPixelAddress(0,0),width,outputRedGreen32,psb32,srcsize);
         ippiFilterSobelCross_32f_C1R(outputRedGreen32,psb32,outputRedGreen32B,psb32,srcsize,ippMskSize3x3);
         conv_32f_to_8u(outputRedGreen32B,psb32,outputRedGreen2,psb,srcsize);
@@ -1828,9 +1833,9 @@ ImageOf<PixelMono>* ImageProcessor::combineMax(){
 
 
     for(int i=0; i<width*height;i++){
-        //edgesOutput_ippi[i]=edgesRed_ippi[i];
+        edgesOutput_ippi[i]=edgesRed_ippi[i];
 
-        if(edgesGreen_ippi[i]<edgesRed_ippi[i])
+        /*if(edgesGreen_ippi[i]<edgesRed_ippi[i])
             if(edgesRed_ippi[i]<edgesBlue_ippi[i])
                 edgesOutput_ippi[i]=edgesBlue_ippi[i];
             else
@@ -1839,7 +1844,7 @@ ImageOf<PixelMono>* ImageProcessor::combineMax(){
             if(edgesGreen_ippi[i]<edgesBlue_ippi[i])
                 edgesOutput_ippi[i]=edgesBlue_ippi[i];
             else
-                edgesOutput_ippi[i]=edgesGreen_ippi[i];
+                edgesOutput_ippi[i]=edgesGreen_ippi[i];*/
 
 
         /*if(edgesOutput_ippi[i]==255) 

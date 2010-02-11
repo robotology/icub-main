@@ -40,6 +40,10 @@ class ImageProcessor:public RateThread
         */
         int psb32;
         /**
+        * width step of the image with border for 3x3 operator convolution
+        */
+        int psb_border;
+        /**
         * green 1-channel image second plane of the input image
         */
         ImageOf<PixelMono>* green_yarp;//
@@ -176,6 +180,7 @@ class ImageProcessor:public RateThread
         Ipp8u* outputRedGreen3; // = ippiMalloc_8u_C1(width,height,&psb);
         Ipp32f* outputRedGreen32B; // = ippiMalloc_32f_C1(width,height,&psb32); 
         Ipp32f* outputRedGreen32; // = ippiMalloc_32f_C1(width,height,&psb32);
+        Ipp8u* redGreenBorder;
 
         //greenRed opponency
         Ipp32f* inputGreenRed32; // = ippiMalloc_32f_C1(width,height,&psb32);

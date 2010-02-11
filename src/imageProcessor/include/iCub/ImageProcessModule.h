@@ -114,7 +114,14 @@ Outports:
 - outBY:o
 
 InOut ports:
--cmd
+-<name>/cmd
+
+Possible commands that this module is responsive to are:
+- set fil: select the filter
+- set yuv: select the maximum value of different convolutions
+- set ocv: applies the sobel filter (opencv algorithm)
+- set ipp: applies the sobel filter (ipp algorithm)
+- set seq: sequential algorithm for convolution
 
 
 \section in_files_sec Input Data Files
