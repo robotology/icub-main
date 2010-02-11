@@ -699,7 +699,7 @@ bool iCubWebotsMotionControl::positionMoveRaw(int axis, double ref)
             else
                 next_pos[axis] = ref;
             
-			ACE_OS::printf("changed position %d to %f\n",axis,next_pos[axis]);
+			ACE_OS::printf("changed position %d to %f\n",axis , next_pos[axis]);
             _mutex.post();
             return true;
         }
