@@ -89,12 +89,12 @@
                 <protocol>udp</protocol>
         </connection>
         <connection>
-                <from>/icub/left_hand/analog:o/graspDetector/status:o</from>
+                <from>/icub/left_hand/analog:o/fingerDetector/status:o</from>
                 <to>/demoGraspManager_IIT_ISR/leftDetectGrasp:i</to>
                 <protocol>udp</protocol>
         </connection>
         <connection>
-                <from>/icub/right_hand/analog:o/graspDetector/status:o</from>
+                <from>/icub/right_hand/analog:o/fingerDetector/status:o</from>
                 <to>/demoGraspManager_IIT_ISR/rightDetectGrasp:i</to>
                 <protocol>udp</protocol>
         </connection>
