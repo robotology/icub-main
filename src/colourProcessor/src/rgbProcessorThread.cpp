@@ -23,6 +23,9 @@ rgbProcessorThread::~rgbProcessorThread()
     delete redPlane;
     delete greenPlane;
     delete bluePlane;    
+    delete greenRed_yarp;
+    delete redGreen_yarp;
+    delete blueYellow_yarp;
 }
 
 /*processorThread::processorThread(Property &op):processorThread(){
@@ -250,7 +253,7 @@ void rgbProcessorThread::colourOpponency(){
 
 	
 	int pBufferSize;
-	ippiFilterGaussGetBufferSize_32f_C1R(srcsize, 7, &pBufferSize);
+	ippiFilterGaussGetBufferSize_32f_C1R(srcsize, 3, &pBufferSize);
 	Ipp8u *pBufferBlue;
 	pBufferBlue = ippsMalloc_8u(pBufferSize);
 	Ipp8u *pBufferRed;
@@ -259,20 +262,20 @@ void rgbProcessorThread::colourOpponency(){
 	pBufferGreen = ippsMalloc_8u(pBufferSize);
 	
 	//ippiFilter possible variables for border ippBorderConst,ippBorderRepl,ippBorderWrap,ippBorderMirror,ippBorderMirrorR
-	Ipp32f value=1;
-	Ipp32f sigma=2;
-	int kernelSize=7;
+	Ipp32f value=0;
+	Ipp32f sigma=1;
+	int kernelSize=3;
     ippiFilterGaussBorder_32f_C1R(greenPlane_ippi32,psb2,greenPlane_ippi32_f,psb2,srcsize,kernelSize,sigma,ippBorderConst,value,pBufferGreen);
 	ippiFilterGaussBorder_32f_C1R(bluePlane_ippi32,psb2,bluePlane_ippi32_f,psb2,srcsize,kernelSize,sigma,ippBorderConst,value,pBufferBlue);
 	ippiFilterGaussBorder_32f_C1R(redPlane_ippi32,psb2,redPlane_ippi32_f,psb2,srcsize,kernelSize,sigma,ippBorderConst,value,pBufferRed);
 	
 	
-
+    
 	//4.1 subtract the red from the green to obtain R+G-
-	ippiSub_32f_C1R(redPlane_ippi32,psb2,greenPlane_ippi32_f,psb2,redGreen_ippi32,psb2,srcsize);
+	ippiSub_32f_C1R(redPlane_ippi32_f,psb2,greenPlane_ippi32_f,psb2,redGreen_ippi32,psb2,srcsize);
 	//ippiSub_8u_C1RSfs(redGreen_ippi,psb,greenPlane_ippi_f,psb,redGreen_ippi,psb,srcsize,-1);
 	//4.2 subtract the green from the red to obtain G+R-
-	ippiSub_32f_C1R(greenPlane_ippi32,psb2,redPlane_ippi32_f,psb2,greenRed_ippi32,psb2,srcsize);
+	ippiSub_32f_C1R(greenPlane_ippi32_f,psb2,redPlane_ippi32_f,psb2,greenRed_ippi32,psb2,srcsize);
 	//ippiSub_8u_C1RSfs(greenRed_ippi,psb,redPlane_ippi_f,psb,greenRed_ippi,psb,srcsize,-1);
 	//4.3 risht shift;
 	//ippiRShiftC_32s_C1IR(1,greenPlane_ippi32_f,psb2,srcsize);
@@ -281,8 +284,21 @@ void rgbProcessorThread::colourOpponency(){
 	ippiAdd_32f_C1R(redPlane_ippi32_f,psb2,greenPlane_ippi32_f,psb2,yellowPlane_ippi32_f,psb2,srcsize);
 	//ippiAdd_8u_C1RSfs(redPlane_ippi_f,psb,greenPlane_ippi_f,psb,yellowPlane_ippi_f,psb,srcsize,-1);
 	//4.5. subtract the yellow from the blue in order to get B+Y-
-	ippiSub_32f_C1R(bluePlane_ippi32,psb2,yellowPlane_ippi32_f,psb2,blueYellow_ippi32,psb2,srcsize);
+	ippiSub_32f_C1R(bluePlane_ippi32_f,psb2,yellowPlane_ippi32_f,psb2,blueYellow_ippi32,psb2,srcsize);
 	//ippiSub_8u_C1RSfs(yellowPlane_ippi_f,psb,blueYellow_ippi,psb,blueYellow_ippi,psb,srcsize,-1);
+    
+
+    /*for(int i=0;i< width*height; i++){
+        //searchRG=((targetRED-targetGREEN+255)/510)*255;
+        //searchGR=((targetGREEN-targetRED+255)/510)*255;
+        //PixelMono addRG=((targetRED+targetGREEN)/510)*255;
+        //searchBY=((targetBLUE-addRG+255)/510)*255;
+        redGreen_ippi32[i]=(((redPlane_ippi32_f[i]-greenPlane_ippi32_f[i])+255)/510)*255;
+        greenRed_ippi32[i]=(((greenPlane_ippi32_f[i]-redPlane_ippi32_f[i])+255)/510)*255;
+        yellowPlane_ippi32_f[i]= ((redPlane_ippi32_f[i]+greenPlane_ippi32_f[i])/510)*255;
+        blueYellow_ippi32[i]=((bluePlane_ippi32_f[i]-yellowPlane_ippi32_f[i])/510)*255;
+    }*/
+
 
 	//5. convesion back to 8u images 
 	conv_32f_to_8u(blueYellow_ippi32,psb2,blueYellow_yarp->getRawImage(),blueYellow_yarp->getRowSize(),srcsize);

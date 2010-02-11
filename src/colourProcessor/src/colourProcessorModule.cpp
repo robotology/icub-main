@@ -92,6 +92,9 @@ bool colourProcessorModule::close(){
     uvPort.close();
 
     cmdPort.close();
+
+    rgbProcessor.threadRelease();
+    yuvProcessor.threadRelease();
    
     return true;
 }
