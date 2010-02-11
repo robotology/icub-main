@@ -17,14 +17,16 @@
 
 	<module>
 		<name>iKinGazeCtrl</name>
-		<parameters>--robot icubSim</parameters>
+		<parameters>--robot icub01</parameters>
 		<stdio>lightHouse</stdio>
 		<tag>gazeCtrl</tag>
 		<node>/lightHouse</node>
 	</module>
+
 	<module>
 		<name>iKinHead</name>
-		<parameters>--file iKinHead.ini --kalman --const</parameters>
+		<parameters>--file iKinHead.ini --from protoObjectVisualAttention --kalman --const</parameters>
+		<stdio>lightHouse</stdio>
 		<tag>ikinHead</tag>
 		<node>/lightHouse</node>
 	</module>
