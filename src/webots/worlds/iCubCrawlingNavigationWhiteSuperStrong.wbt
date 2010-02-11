@@ -9,8 +9,8 @@ WorldInfo {
   runRealTime TRUE
 }
 Viewpoint {
-  orientation 0.993064 0.1174 -0.00648552 5.6303
-  position -0.113873 2.18606 5.18046
+  orientation -0.0106623 0.998529 -0.0531615 4.33599
+  position -1.65871 0.226796 1.82446
   follow "icub"
 }
 Background {
@@ -6846,7 +6846,8 @@ DEF icub Supervisor {
                                     centerOfMass 0 -0.07 0
                                   }
                                   maxVelocity 120
-                                  maxForce 20
+                                  maxForce 999
+                                  controlP 999
                                   position 0.879243
                                   minPosition 0.096
                                   maxPosition 1.85005
@@ -8976,7 +8977,7 @@ DEF icub Supervisor {
                       }
                       maxVelocity 120
                       maxForce 999
-                      controlP 99
+                      controlP 999
                       position -1.00173
                       minPosition -1.74
                       maxPosition 0.17
