@@ -331,7 +331,7 @@ public:
             gaze[i] = target[i];
 
         //keep the gaze out of the hand's way
-        if(!isHandIn && abs(gaze[2]) > abs(gaze_limit))
+        if(!isHandIn && fabs(gaze[2]) > fabs(gaze_limit))
             gaze[2] = gaze_limit;
 
 
