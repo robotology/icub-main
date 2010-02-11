@@ -3,7 +3,7 @@
 \defgroup icub_protoObjectVisualAttention protoObjectVisualAttention
 
 This is the application simulates the attention system based on proto-object, distributing across a cluster of computers.
-See paper <a href="" >A Proto-object Based Visual Attention Model, Orabona Metta Sandini</a> 
+See paper <a href="http://www.robotcub.org/misc/review3/05_Orabona_Metta_Sandini.pdf" >Object-based Visual Attention: a Model for a Behaving Robot, Orabona, Metta, Sandini</a> 
 
 \section intro_sec Description
 Run the attention system using logpolar image.The colourProcessor and the imageProcessing module are in charge of preprocessing the input image.
