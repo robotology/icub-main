@@ -1,5 +1,5 @@
 /** 
-\defgroup randArmGazeMotion
+\defgroup randArmGazeMotion randArmGazeMotion
  
 @ingroup icub_module  
  
@@ -68,7 +68,7 @@ None.
 None.
 
 \section tested_os_sec Tested OS
-Windows
+Linux and Windows
 
 \author Carlo Ciliberto
 */ 
