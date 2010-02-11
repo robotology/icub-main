@@ -19,7 +19,7 @@
 
 #include "Cameras.h"
 
-
+#define TIME_STEP 64
 
 PolyDriver *ddLArm,*ddRArm,*ddLLeg,*ddRLeg,*ddTorso,*ddHead;
 WebotsCommon *webots_instance;
@@ -113,15 +113,15 @@ int main()
   reset();
 
   //Enables the cameras
-  Cameras cameras;
+  Cameras cameras(TIME_STEP);
    
   int count = 0;
-  while (wb_robot_step(64) != -1) 
+  while (wb_robot_step(TIME_STEP) != -1) 
     {
 		//Send images to Yarp.
         cameras.SendImages();
         count++;
-  		run(64);
+  		run(TIME_STEP);
   	}   	
  
   exit_robot();

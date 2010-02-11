@@ -4,7 +4,7 @@
 #include <iostream> 
 using namespace std;
 
-Cameras::Cameras(void)
+Cameras::Cameras(int timeStep)
 {
     Property options;
     options.fromConfigFile("configFiles/cams.ini");
@@ -20,7 +20,7 @@ Cameras::Cameras(void)
 	{
 		pLCam.open(options.find("left_cam_port").asString().c_str());
 		leftCam = wb_robot_get_device("LEFT_CAM");
-		wb_camera_enable(leftCam, 10);
+		wb_camera_enable(leftCam, 20);
 	}
 	if(right)
 	{

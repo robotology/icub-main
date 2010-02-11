@@ -10,7 +10,7 @@ using namespace yarp::sig;
 class Cameras
 {
 public:
-    Cameras(void);
+    Cameras(int timeStep);
     ~Cameras(void);
     void SendImages(void);
 
