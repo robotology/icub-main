@@ -1,6 +1,6 @@
 /**
 @ingroup  icub_applications
-\defgroup randArmGazeMotion
+\defgroup icub_randomArmGazeMotion randomArmGazeMotion
 
 A module for keeping the gaze focused on the hand while performing random movements with the arm
 
