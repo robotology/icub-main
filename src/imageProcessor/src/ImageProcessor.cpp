@@ -312,14 +312,13 @@ void ImageProcessor::resizeImages(int width,int height){
     
 
     //redGreen opponency
-    int psb_border;
     inputRedGreen32 = ippiMalloc_32f_C1(width,height,&psb32);
-    outputRedGreen2 = ippiMalloc_8u_C1(width,height,&psb);
+    outputRedGreen2 = ippiMalloc_8u_C1(width,height,&psb_border);
     outputRedGreen = ippiMalloc_8u_C1(width,height,&psb);
-    outputRedGreen3 = ippiMalloc_8u_C1(width,height,&psb);
+    outputRedGreen3 = ippiMalloc_8u_C1(width,height,&psb_border);
     outputRedGreen32B = ippiMalloc_32f_C1(width,height,&psb32); 
     outputRedGreen32 = ippiMalloc_32f_C1(width,height,&psb32);
-    redGreenBorder=ippiMalloc_8u_C1(width+2,height+2,&psb_border);
+    redGreenBorder=ippiMalloc_8u_C1(width+6,height+6,&psb_border);
 
     //greenRed opponency
     inputGreenRed32 = ippiMalloc_32f_C1(width,height,&psb32);
@@ -1205,9 +1204,11 @@ ImageOf<PixelMono>* ImageProcessor::findEdgesRedOpponency(){
         
         
         ippiCopyConstBorder_8u_C1R(redGreen_yarp->getRawImage(),redGreen_yarp->getRowSize(),srcsize,redGreenBorder,psb_border,bordersize,1,1,0);
+        //ippiFilterSobelHoriz_8u_C1R(redGreen_yarp->getRawImage(),redGreen_yarp->getRowSize(),outputRedGreen3,psb,srcsize);
+        //ippiFilterSobelVert_8u_C1R(redGreen_yarp->getRawImage(),redGreen_yarp->getRowSize(),outputRedGreen2,psb,srcsize);
         ippiFilterSobelHoriz_8u_C1R(redGreenBorder,psb_border,outputRedGreen3,psb,srcsize);
-        ippiFilterSobelVert_8u_C1R(redGreenBorder,psb_border,outputRedGreen2,psb_border,bordersize);
-        for(int i=0; i<width*height;i++){
+        ippiFilterSobelVert_8u_C1R(redGreenBorder,psb_border,outputRedGreen2,psb,srcsize);
+        /*for(int i=width+2; i<width+2*height+2;i++){
             if(outputRedGreen==NULL){
                 printf("outputRedGreen NULL");
                 break;
@@ -1219,7 +1220,8 @@ ImageOf<PixelMono>* ImageProcessor::findEdgesRedOpponency(){
             if(outputRedGreen3[i]<outputRedGreen2[i])
                 outputRedGreen3[i]=outputRedGreen2[i];
             outputRedGreen[i]=outputRedGreen3[i];
-        }
+        }*/
+        ippiCopy_8u_C1R(outputRedGreen3,psb,outputRedGreen,psb,srcsize);
 
         /*IppiSize msksize={3,3};
         Ipp8u src[3*3]={1,1,1,1,1,1,1,1,1};
@@ -1832,7 +1834,7 @@ ImageOf<PixelMono>* ImageProcessor::combineMax(){
     }*/
 
 
-    for(int i=0; i<width*height;i++){
+    for(int i=0; i<redGreenEdges_yarp->getRowSize()*height;i++){
         edgesOutput_ippi[i]=edgesRed_ippi[i];
 
         /*if(edgesGreen_ippi[i]<edgesRed_ippi[i])
