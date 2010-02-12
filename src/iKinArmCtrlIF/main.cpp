@@ -3,7 +3,7 @@
  
 @ingroup icub_module  
  
-The YARP interface version of \ref iKinArmCtrl "iKinArmCtrl".
+The YARP interface version of \ref iKinArmCtrl.
  
 Copyright (C) 2009 RobotCub Consortium
  
@@ -15,8 +15,13 @@ CopyPolicy: Released under the terms of the GNU GPL v2.0.
  
 This module relies on the YARP ICartesianControl interface to 
 implement the same functionalities of iKinArmCtrl module. 
-Please refer to \ref iKinArmCtrl "iKinArmCtrl" for a detailed
-description. 
+Please refer to \ref iKinArmCtrl for a detailed description.
+ 
+The main differences with respect to \ref iKinArmCtrl are: 
+-# \ref iKinArmCtrlIF controls specifically the arm joints, 
+   hence one can use the hand joints concurrently without
+   conflict.
+-# \ref iKinArmCtrlIF does not have a <i>simulation</i> mode. 
  
 \section lib_sec Libraries 
 - YARP libraries. 
