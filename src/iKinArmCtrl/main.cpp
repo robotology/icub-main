@@ -84,8 +84,8 @@ it can be called at different rate.
 --onlyXYZ  
 - disable orientation control. 
  
---noRobot
-- avoid connecting to robot: simulation only.
+--simulation
+- simulate the presence of the robot.
  
 \section portsa_sec Ports Accessed
  
@@ -249,7 +249,7 @@ public:
         else
             ctrlPose=IKINCTRL_POSE_FULL;
 
-        if (rf.check("noRobot"))
+        if (rf.check("simulation"))
             Robotable=false;
         else
             Robotable=true;
@@ -381,7 +381,7 @@ int main(int argc, char *argv[])
         cout << "\t--DOF9         : control the torso yaw/pitch as well"                        << endl;
         cout << "\t--DOF8         : control the torso yaw as well"                              << endl;
         cout << "\t--onlyXYZ      : disable orientation control"                                << endl;
-        cout << "\t--noRobot      : avoid connecting to robot (simulation purpose)"             << endl;
+        cout << "\t--simulation   : simulate the presence of the robot"                         << endl;
 
         return 0;
     }

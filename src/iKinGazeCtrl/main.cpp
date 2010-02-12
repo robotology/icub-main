@@ -103,8 +103,8 @@ Shifts 8 8 8 8 8 8 8 8 8 8
 --context \e dir
 - Resource finder searching dir for config file.
  
---noRobot
-- avoid connecting to robot: simulation only.
+--simulation
+- simulate the presence of the robot.
  
 \section portsa_sec Ports Accessed
  
@@ -298,7 +298,7 @@ public:
         else
             cy=120;
 
-        if (rf.check("noRobot"))
+        if (rf.check("simulation"))
             Robotable=false;
         else
             Robotable=true;
@@ -452,7 +452,7 @@ int main(int argc, char *argv[])
         cout << "\t--cy           y: central y coordinate of image plane (default: 120)"         << endl;
         cout << "\t--config    file: file name for aligning eyes kinematic to image planes"      << endl;
         cout << "\t--context    dir: resource finder searching dir for config file"              << endl;
-        cout << "\t--noRobot       : avoid connecting to robot (simulation purpose)"             << endl;
+        cout << "\t--simulation    : simulate the presence of the robot"                         << endl;
 
         return 0;
     }
