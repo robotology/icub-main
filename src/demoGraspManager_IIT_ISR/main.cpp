@@ -522,8 +522,8 @@ protected:
         Vector homeHead(3);
 
         homeHead[0]=-1.0;
-        homeHead[0]=0.0;
-        homeHead[0]=0.0;
+        homeHead[1]=0.0;
+        homeHead[2]=0.0;
 
         fprintf(stdout,"*** Homing head\n");
 
