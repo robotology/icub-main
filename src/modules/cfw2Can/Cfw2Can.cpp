@@ -20,7 +20,7 @@ using namespace yarp::os;
 
 Cfw2Can::Cfw2Can()
 {
-    handle = new CFW2CAN_HANDLE;
+    handle = new CFWCAN_HANDLE;
 }
 
 Cfw2Can::~Cfw2Can()
@@ -31,7 +31,7 @@ Cfw2Can::~Cfw2Can()
 
 bool Cfw2Can::canSetBaudRate(unsigned int rate)
 {
-    printf("Cfw2Can::canSetBaudRate not yet implemented\n");
+    printf("CfwCan::canSetBaudRate not yet implemented\n");
     return true;
 }
 
@@ -44,16 +44,14 @@ bool Cfw2Can::canGetBaudRate(unsigned int *rate)
 
 bool Cfw2Can::canIdAdd(unsigned int id)
 {
-    int res=cfw2CanIdAdd(*handle, id);
-    if (res!=0)
-        return false;
+    printf("Cfw2Can::canIdAdd not implemented yet\n");
 
     return true;
 }
 
 bool Cfw2Can::canIdDelete(unsigned int id)
 {
-    printf("Cfw2Can::canIdDelete not yet implemented\n");
+    printf("Cfw2Can::canIdDelete not implemented yet\n");
     return true;
 }
 
@@ -64,11 +62,11 @@ bool Cfw2Can::canRead(CanBuffer &msgs,
 {
     int res;
     *read=size;
-    CFW2CAN_MSG *tmp=reinterpret_cast<CFW2CAN_MSG *>(msgs[0].getPointer());
+    CFWCAN_MSG *tmp=reinterpret_cast<CFWCAN_MSG *>(msgs[0].getPointer());
     if (wait)
-        res=cfw2CanRead(*handle, tmp, read, 1);
+        res=cfwCanRead(*handle, tmp, read, 1);
     else
-        res=cfw2CanRead(*handle, tmp, read, 0);
+        res=cfwCanRead(*handle, tmp, read, 0);
 
     if(res!=0)
         return false;
@@ -85,14 +83,14 @@ bool Cfw2Can::canWrite(const CanBuffer &msgs,
     *sent=size;
 
     CanBuffer &buffer=const_cast<CanBuffer &>(msgs);
-    const CFW2CAN_MSG *tmp=reinterpret_cast<const CFW2CAN_MSG *>(buffer[0].getPointer());
+    const CFWCAN_MSG *tmp=reinterpret_cast<const CFWCAN_MSG *>(buffer[0].getPointer());
 
     if (wait)
-        res=cfw2CanWrite(*handle, const_cast<CFW2CAN_MSG *>(tmp), sent, 1);
+        res=cfwCanWrite(*handle, const_cast<CFWCAN_MSG *>(tmp), sent, 1);
     else
-        res=cfw2CanWrite(*handle, const_cast<CFW2CAN_MSG *>(tmp), sent, 0);
+        res=cfwCanWrite(*handle, const_cast<CFWCAN_MSG *>(tmp), sent, 0);
 
-    if (res!=NTCAN_SUCCESS)
+    if (res!=0)
         return false;
 
     return true;
@@ -108,11 +106,9 @@ bool Cfw2Can::open(yarp::os::Searchable &par)
         "timeout on transmission [ms]").asInt();
     int rxTimeout=par.check("CanRxTimeout", Value(0),
         "timeout on receive when calling blocking read [ms]").asInt() ;
-    fprintf(stderr ,"TxQueueSize=%d RxQueueSize=%d\n", txTimeout, rxTimeout);
-    fprintf(stderr ,"Warning, ignoring TxQueueSize and RxQueueSize\n");
 
-    int res = cfw2CanOpen (netId, txQueueSize, rxQueueSize, txTimeout, rxTimeout, handle);
-    if (res != NTCAN_SUCCESS)
+    int res = cfwCanOpen (netId, txQueueSize, rxQueueSize, txTimeout, rxTimeout, handle);
+    if (res != 0)
     {
         fprintf(stderr, "Cfw2Can::open() returning false\n");
         return false;
@@ -127,9 +123,9 @@ bool Cfw2Can::close()
     if (!handle)
         return false;
 
-    res=cfw2CanClose (*handle);
+    res=cfwCanClose (*handle);
 
-    if (res!=NTCAN_SUCCESS)
+    if (res!=0)
         return false;
 
     delete handle;
@@ -137,26 +133,19 @@ bool Cfw2Can::close()
     return true;
 }
 
+/*
 bool Cfw2Can::canGetErrors(CanErrors &err)
 {
-    CFW2CAN_ERRORS error;
-    if (cfw2CanErrors(*handle, &error)!=0)
-        return false;
-
-    err.busoff=error.busoff;
-    err.overflow=error.canOvr;
-    err.inBuffOvr=error.inputBuffOvr;
-    err.outBuffOvr=error.outputBuffOvr;
-    err.errors=error.errors;
-
     return true;
 }
+*/
 
+///////// CanMessage
 #include <string.h>
 
-CanMessage &Cfw2CanMessage::operator=(const CanMessage &l)()
+CanMessage &Cfw2CanMessage::operator=(const CanMessage &l)
 {
     const Cfw2CanMessage &tmp=dynamic_cast<const Cfw2CanMessage &>(l);
-    memcpy(msg, tmp.msg, sizeof(CFW2CAN_MSG));
+    memcpy(msg, tmp.msg, sizeof(CFWCAN_MSG));
     return *this;
 }

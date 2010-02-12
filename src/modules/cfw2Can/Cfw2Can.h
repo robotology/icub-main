@@ -40,7 +40,7 @@ namespace yarp{
 class yarp::dev::Cfw2CanMessage:public yarp::dev::CanMessage
 {
  public:
-    CFW2CAN_MSG *msg;
+    CFWCAN_MSG *msg;
 
  public:
     Cfw2CanMessage()
@@ -81,17 +81,17 @@ class yarp::dev::Cfw2CanMessage:public yarp::dev::CanMessage
     virtual void setBuffer(unsigned char *b)
     { 
         if (b!=0)
-            msg=(CFW2CAN_MSG *)(b);
+            msg=(CFWCAN_MSG *)(b);
     }
 };
 
-class yarp::dev::Cfw2Can: public ImplementCanBufferFactory<Cfw2CanMessage, CFW2CAN_MSG>,
+class yarp::dev::Cfw2Can: public ImplementCanBufferFactory<Cfw2CanMessage, CFWCAN_MSG>,
             public ICanBus, 
-            public ICanBusErrors,
+           /* public ICanBusErrors, */
             public DeviceDriver
 {
 private:
-    CFW2CAN_HANDLE *handle;
+    CFWCAN_HANDLE *handle;
 public:
     Cfw2Can();
     ~Cfw2Can();
@@ -113,7 +113,8 @@ public:
                           bool wait=false);
 
     /*ICanBusErrors*/
-    virtual bool canGetErrors(CanErrors &errs);
+    // virtual bool canGetErrors(CanErrors &errs);
+    
 
     /*Device Driver*/
     virtual bool open(yarp::os::Searchable &par);
