@@ -180,6 +180,7 @@ Windows, Linux
 #define STATE_REACH         1
 #define STATE_GRASP         2
 #define STATE_RELEASE       3
+#define STATE_WAIT          4
                                                              
 using namespace std;
 using namespace yarp;
@@ -750,21 +751,23 @@ protected:
                     fprintf(stdout,"--- Timeout elapsed => RELEASING\n");
 
                     openHand();
-                    Time::delay(2.0);
 
-                    Vector x,o;
-                    cartArm->getPose(x,o);
-                    x=x+0.5**armReachOffs;
-    
-                    cartArm->goToPoseSync(x,*armHandOrien);
+                    latchTimer=Time::now();
+                    state=STATE_WAIT;
+                }
+            }
+        }
+    }
 
-                    bool f=false;
-                    while (!f)
-                    {
-                       cartArm->checkMotionDone(&f);
-                       Time::delay(0.1);
-                    }
-    
+    void doWait()
+    {
+        if (useLeftArm || useRightArm)
+        {
+            if (state==STATE_WAIT)
+            {
+                if (Time::now()-latchTimer>releaseTmo)
+                {
+                    fprintf(stdout,"--- Timeout elapsed => IDLING\n");
                     state=STATE_IDLE;
                 }
             }
@@ -1270,6 +1273,7 @@ public:
         doReach();
         doGrasp();
         doRelease();
+        doWait();
         commandFace();
     }
 
