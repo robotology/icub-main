@@ -13,6 +13,7 @@
 #include "libcfw002.h"
 #include <yarp/dev/CanBusInterface.h>
 #include <yarp/os/Bottle.h>
+#include "Cfw2Can.h"
 
 using namespace yarp::dev;
 using namespace yarp::os;
@@ -149,4 +150,13 @@ bool Cfw2Can::canGetErrors(CanErrors &err)
     err.errors=error.errors;
 
     return true;
+}
+
+#include <string.h>
+
+CanMessage &Cfw2CanMessage::operator=(const CanMessage &l)()
+{
+    const Cfw2CanMessage &tmp=dynamic_cast<const Cfw2CanMessage &>(l);
+    memcpy(msg, tmp.msg, sizeof(CFW2CAN_MSG));
+    return *this;
 }

@@ -52,12 +52,7 @@ class yarp::dev::Cfw2CanMessage:public yarp::dev::CanMessage
     {
     }
 
-    virtual CanMessage &operator=(const CanMessage &l)
-    {
-        const Cfw2CanMessage &tmp=dynamic_cast<const Cfw2CanMessage &>(l);
-        memcpy(msg, tmp.msg, sizeof(CFW2CAN_MSG));
-        return *this;
-    }
+    virtual CanMessage &operator=(const CanMessage &l);
 
     virtual unsigned int getId() const
         { return msg->id;}
@@ -90,7 +85,7 @@ class yarp::dev::Cfw2CanMessage:public yarp::dev::CanMessage
     }
 };
 
-class yarp::dev::Cfw2Can: public ImplementCanBufferFactory<Cfw2CanMessage, CFW2CN_MSG>,
+class yarp::dev::Cfw2Can: public ImplementCanBufferFactory<Cfw2CanMessage, CFW2CAN_MSG>,
             public ICanBus, 
             public ICanBusErrors,
             public DeviceDriver
