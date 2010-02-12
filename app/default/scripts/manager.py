@@ -17,10 +17,17 @@
 ##Public License for more details
 
 import sys
+import time
 import xml.dom.minidom
 import subprocess
 import os
+import signal
+import datetime
 from Tkinter import *
+
+# a couple of constants
+PROCESS_TIMEOUT=5         #seconds
+PROCESS_POLL_INTERVAL=0.05 #seconds
 
 class ModuleData:
     def __init__(self, name, arguments, node, tag, workdir, ioNode):
@@ -122,6 +129,15 @@ class AppData:
     def setName(self, name):
         self.name = name
 
+    def getName(self):
+        return self.name
+
+    def setLogFilename(self, filename):
+        self.logfilename=filename
+
+    def getLogFilename(self):
+        return self.logfilename
+
     def pushPortDependency(self, portname):
         self.dependencies.ports.append(portname)
         self.dependencies.ports=list(set(self.dependencies.ports))
@@ -142,39 +158,39 @@ class AppData:
         nc=Connection(input, output, prot)
         self.connections.append(nc)
 
-    def display(self):
-        print "------------"
-        print "--- %s" %self.name
-        print "-- Dependencies:"
-        print "-Ports:"
+    def display(self, log):
+        log.write("------------\n")
+        log.write("--- "+self.name+"\n")
+        log.write("-- Dependencies:\n")
+        log.write("-Ports:\n")
         for p in self.dependencies.ports:
-            print p
+            log.write(p)
 
-        print "-Nodes:"
+        log.write("-Nodes:\n")
         for n in self.dependencies.nodes:
-            print n
+            log.write(n)
 
-        print "-- Modules:"
+        log.write("\n-- Modules:")
         for mod in self.modules:
-            print mod.name, 
-            print mod.parameters,
-            print "on", 
-            print mod.node,
+            log.write(mod.name)
+            log.write(mod.parameters)
+            log.write("on")
+            log.write("mod.node")
             if mod.workdir!="":
-                print "workdir",
-                print mod.workdir
+                log.write("workdir")
+                log.write(mod.workdir)
             else:
-                print
+                log.write("\n")
 
-        print "-- Connections:"
+        log.write("-- Connections:\n")
         for c in self.connections:
-            print c.output,
-            print " --> ",
-            print c.input,
-            print "prot",
-            print c.protocol
+            log.write(c.output)
+            log.write(" --> ")
+            log.write(c.input)
+            log.write("prot")
+            log.write(c.protocol)
 
-        print "------------"
+        log.write("------------\n")
 
 class Window:
     def __init__(self, master, moduleData):
@@ -353,9 +369,41 @@ class App:
         tmp.grid(row=r, column=6)
         r=r+1
 
+        # open log file
+        log=self.application.getLogFilename()
+        self.logfile=open(log,"w")
+        print "Logging to: "+log
+        self.logfile.writelines("== "+self.application.getName()+" ==\n")
+        self.logfile.writelines("Log started on ")
+        self.logfile.writelines(datetime.datetime.now().strftime("%A (%a) %d/%m/%Y\n"))
+
+        self.application.display(self.logfile)
+
         #finally check dependencies and ports
         self.checkDeps()
         self.checkPorts()
+
+    def spawnProcess(self, cmd):
+        print "Running: ", str(cmd)
+        self.logfile.writelines("Running"+str(cmd)+"\n")
+        fin_time = time.time() + PROCESS_TIMEOUT
+        p=subprocess.Popen(cmd, stdout=subprocess.PIPE, stderr=subprocess.PIPE)
+        while (p.poll()==None and  fin_time > time.time()):
+            self.logfile.writelines(p.communicate())
+            time.sleep(PROCESS_POLL_INTERVAL)
+               
+        if (fin_time < time.time()):
+            self.logfile.writelines("Process timed out killing "+cmd+"\n")
+            print "--> Error process timed out",
+            print "you can try increasing the timeout time",
+            print "however this is probably due to a problem to your",
+            print "yarp network (address conflict?)"
+            print "See log file /tmp/"+self.application.getName()+".log"
+            print "I'll now kill ", cmd, ""
+            os.kill(p.pid, signal.SIGKILL)
+
+        ret = p.returncode
+        return ret
 
     def checkModules(self):
         for mod in self.modules:
@@ -364,7 +412,8 @@ class App:
     def checkPorts(self):
         for port in self.connections:
             cmd=['yarp', 'exists', port.outEntry.get()]
-            ret=subprocess.Popen(cmd).wait()
+#            ret=subprocess.Popen(cmd).wait()
+            ret=self.spawnProcess(cmd)
             connectionFlag=True
             if ret:
                 port.outFlag.set(0)
@@ -372,7 +421,7 @@ class App:
                 port.outFlag.set(1)
 
             cmd=['yarp', 'exists', port.inEntry.get()]
-            ret=subprocess.Popen(cmd).wait()
+            ret=self.spawnProcess(cmd)
             if ret:
                 port.inFlag.set(0)
             else:
@@ -381,7 +430,7 @@ class App:
             if port.inFlag.get() and port.outFlag.get():
                 cmd=['yarp', 'exists', port.outEntry.get(), port.inEntry.get()]
                 print cmd
-                ret=subprocess.Popen(cmd).wait()
+                ret=self.spawnProcess(cmd)
             if ret:
                 port.connFlag.set(0)
             else:
@@ -399,8 +448,7 @@ class App:
         for port in self.connections:
             if port.inFlag.get() and port.outFlag.get():
                 cmd=['yarp', 'connect', port.outEntry.get(), port.inEntry.get(), port.protEntry.get()]
-                print cmd
-                subprocess.Popen(cmd).wait()
+                self.spawnProcess(cmd)
 
                 port.update()
 
@@ -412,8 +460,7 @@ class App:
         for port in self.connections:
             if port.inFlag.get() and port.outFlag.get():
                 cmd=['yarp', 'disconnect', port.outEntry.get(), port.inEntry.get()]
-                print cmd
-                subprocess.Popen(cmd).wait()
+                self.spawnProcess(cmd)
 
                 port.update()
 
@@ -424,16 +471,14 @@ class App:
         tag=mod.entryTag.get()
 
         cmd=['yarprun', '--on', node, '--sigterm', tag]
-        print cmd
-        ret=subprocess.Popen(cmd).wait()
+        ret=self.spawnProcess(cmd)
 
     def killModule(self, mod):
         node=mod.entryNode.get()
         tag=mod.entryTag.get()
 
         cmd=['yarprun', '--on', node, '--kill', tag, '9']
-        print cmd
-        ret=subprocess.Popen(cmd).wait()
+        ret=self.spawnProcess(cmd)
 
     def runModule(self, mod):
         ret=self.checkDeps()
@@ -467,8 +512,7 @@ class App:
             else:
                 cmd=['yarprun', '--cmd', '\"'+name+' '+parameters+'\"', '--on', '/'+node, '--as', tag, '--stdio', '/'+stdioNode, '--workdir',workdir]
 
-        print cmd
-        ret=subprocess.Popen(cmd).wait()
+        ret=self.spawnProcess(cmd)
 
         self.checkModule(mod)
             
@@ -477,8 +521,7 @@ class App:
         tag=mod.entryTag.get()
         
         cmd=['yarprun', '--on', node, '--isrunning', tag]
-        print cmd
-        ret=subprocess.Popen(cmd).wait()
+        ret=self.spawnProcess(cmd)
 
         if ret==0:
             mod.runningFlag=True
@@ -511,8 +554,7 @@ class App:
 
         for mod in self.application.modules:
             cmd=['yarp', 'run', '--on', mod.node, '--sigterm', mod.tag]
-            print cmd
-            ret=subprocess.Popen(cmd).wait()
+            ret=self.spawnProcess(cmd)
 
     def killModules(self):
         print "-- Stopping modules"
@@ -525,8 +567,7 @@ class App:
 
         for mod in self.application.modules:
             cmd=['yarp', 'run', '--on', mod.node, '--kill', mod.tag, '9']
-            print cmd
-            ret=subprocess.Popen(cmd).wait()
+            ret=self.spawnProcess(cmd)
 
     def checkDeps(self):
         #print "-- Checking port dependencies:"
@@ -535,7 +576,7 @@ class App:
 
         for dep in self.portDep:
             cmd=['yarp', 'exists', dep.entry.get()]
-            ret=subprocess.Popen(cmd).wait()
+            ret=self.spawnProcess(cmd)
             if ret==0:
                 dep.flag.set(1)
             else:
@@ -545,7 +586,7 @@ class App:
         #print "-- Checking node dependencies:"
         for dep in  self.nodeDep:
             cmd=['yarp', 'exists', '/'+dep.entry.get()]
-            ret=subprocess.Popen(cmd).wait()
+            ret=self.spawnProcess(cmd)
             if ret==0:
                 dep.flag.set(1)
             else:
@@ -691,12 +732,14 @@ if __name__ == '__main__':
             else:
                 napp.pushConnection(output, input, "tcp")
 
+        logfilename="/tmp/"+napp.getName()+".log"
+        napp.setLogFilename(logfilename)
         applicationList.append(napp)
 
 
 
-    for app in applicationList:
-        app.display()
+#    for app in applicationList:
+#        app.display()
 
     root = Tk()
     frame = Frame(root)
