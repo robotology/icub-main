@@ -1,4 +1,4 @@
-SET(PROJECTNAME CrawlHeadControl)
+SET(PROJECTNAME crawlHeadControl)
 
 PROJECT(${PROJECTNAME})
 

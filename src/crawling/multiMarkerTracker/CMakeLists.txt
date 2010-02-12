@@ -6,7 +6,7 @@
 # Replace "yarpy" with whatever your executable should be called.
 # There's some stuff to make compiling devices easier too.
 
-SET(KEYWORD "MultiMarkerTracker")
+SET(KEYWORD "multiMarkerTracker")
 
 # Start a project.
 PROJECT(${KEYWORD})

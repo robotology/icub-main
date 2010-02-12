@@ -4,7 +4,7 @@ ELSE(WIN32)
 cmake_minimum_required(VERSION 2.4)
 ENDIF(WIN32)
 
-PROJECT(PlannerSupervisor)
+PROJECT(plannerSupervisor)
 
 
 FIND_PACKAGE(GtkMM REQUIRED)
@@ -22,7 +22,7 @@ FILE(GLOB folder_header *.h )
 SOURCE_GROUP("Source Files" FILES ${folder_source})
 SOURCE_GROUP("Header Files" FILES ${folder_header})
 
-ADD_EXECUTABLE(PlannerSupervisor ${folder_source} ${folder_header})
-TARGET_LINK_LIBRARIES(PlannerSupervisor ${GTKMM_LINK_FLAGS})
+ADD_EXECUTABLE(plannerSupervisor ${folder_source} ${folder_header})
+TARGET_LINK_LIBRARIES(plannerSupervisor ${GTKMM_LINK_FLAGS})
 # target_link_libraries(PlannerSupervisor ${GTKMM_LIBRARIES} xml++-vc90-2_6.lib)
 

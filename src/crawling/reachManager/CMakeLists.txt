@@ -1,4 +1,4 @@
-SET(PROJECTNAME ReachManager)
+SET(PROJECTNAME reachManager)
 
 PROJECT(${PROJECTNAME})
 

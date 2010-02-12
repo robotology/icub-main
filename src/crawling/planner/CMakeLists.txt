@@ -4,7 +4,7 @@ ELSE(WIN32)
 cmake_minimum_required(VERSION 2.4)
 ENDIF(WIN32)
 
-project(CrawlPlanner)
+project(crawlPlanner)
  
 FIND_PACKAGE(YARP REQUIRED)
 FIND_PACKAGE(ICUB)
