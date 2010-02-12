@@ -150,8 +150,7 @@ IF(Boost_INCLUDE_DIR)
     SET(Boost_INCLUDE_DIRS ${Boost_INCLUDE_DIR})
     # We have found boost. It is possible that the user has not
     # compiled any libraries so we set Boost_FOUND to be true here.
-    SET(Boost_FOUND 1)
-    MARK_AS_ADVANCED(Boost_INCLUDE_DIR)
+    SET(Boost_FOUND 1)    
   ENDIF(EXISTS "${Boost_INCLUDE_DIR}")
 
   IF(Boost_LIBRARY_DIR AND EXISTS "${Boost_LIBRARY_DIR}")
@@ -266,6 +265,8 @@ IF(Boost_LIBRARY_DIRS)
     ENDIF(Boost_${library}_FOUND)
   ENDFOREACH(library)
 ENDIF(Boost_LIBRARY_DIRS)
+
+MARK_AS_ADVANCED(Boost_INCLUDE_DIR)
 
 IF(NOT Boost_FOUND)
   IF(NOT Boost_FIND_QUIETLY)
