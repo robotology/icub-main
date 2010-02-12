@@ -81,7 +81,7 @@ protected:
      * @throw runtime error if the index is out of bounds
      */
     IScaler* getAt(int index) {
-        if (index >= 0 && index < this->scalers.size()) {
+        if (index >= 0 && index < int(this->scalers.size())) {
             return this->scalers[index];
         } else {
             throw std::runtime_error("Index for scaler out of bounds!");

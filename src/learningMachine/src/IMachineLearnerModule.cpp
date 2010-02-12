@@ -43,7 +43,6 @@ bool IMachineLearnerModule::close() {
 
 std::string IMachineLearnerModule::findFile(std::string fname) {
     std::string full_fname;
-    bool ok;
 
     /*
      * ResourceFinder does _not_ allow us to search directly for a path. So we
@@ -52,6 +51,7 @@ std::string IMachineLearnerModule::findFile(std::string fname) {
      * Uncomment this as soon as searching directly for files is disabled. At
      * the moment it is deprecated.
      */
+    //bool ok;
     //ok = this->getResourceFinder().setDefault(fname.c_str(), fname.c_str());
     //if(!ok) {
     //    throw std::runtime_error("Could not inject dummy key in resource finder.");

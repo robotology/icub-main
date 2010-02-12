@@ -77,8 +77,8 @@ public:
      * Copy constructor.
      */
     DatasetRecorder(const DatasetRecorder& other)
-      : IMachineLearner(other), precision(other.precision),
-        sampleCount(other.sampleCount), filename(other.filename) {
+      : IMachineLearner(other), filename(other.filename), 
+        precision(other.precision), sampleCount(other.sampleCount) {
     }
 
     /**

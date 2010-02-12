@@ -50,11 +50,6 @@ protected:
     int noSamples;
 
     /**
-     * Temporary variable that counts the sum of the squared errors.
-     */
-    double squaredErrors;
-
-    /**
      * Desired mean for the output distribution.
      */
     double mean;
@@ -73,6 +68,11 @@ protected:
      * Running standard deviation based on the samples seen so far.
      */
     double runningStd;
+
+    /**
+     * Temporary variable that counts the sum of the squared errors.
+     */
+    double squaredErrors;
 
     /*
      * Inherited from IScaler

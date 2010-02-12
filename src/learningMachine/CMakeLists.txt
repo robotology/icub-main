@@ -11,7 +11,7 @@ SET(LM_LIB ${PROJECTNAME})
 
 PROJECT(${PROJECTNAME})
 
-SET(CMAKE_CXX_FLAGS "-O3")
+SET(CMAKE_CXX_FLAGS "-O3 -Wall ") #-W -pedantic complains also about YARP warnings
 
 # Source code Groups
 SET(LM_MODULE_SRC 

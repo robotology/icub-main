@@ -45,7 +45,7 @@ namespace test {
 std::string printVector(const std::vector<int>& v) {
   std::ostringstream output;
   output << "[";
-  for(int i = 0; i < v.size(); i++) {
+  for(unsigned int i = 0; i < v.size(); i++) {
     if(i > 0) output << ",";
     output << v[i];
   }

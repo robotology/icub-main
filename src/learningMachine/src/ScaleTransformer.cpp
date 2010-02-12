@@ -37,7 +37,7 @@ ScaleTransformer::~ScaleTransformer() {
 ScaleTransformer::ScaleTransformer(const ScaleTransformer& other)
   : IFixedSizeTransformer(other) {
     this->scalers.resize(other.scalers.size());
-    for(int i = 0; i < other.scalers.size(); i++) {
+    for(unsigned int i = 0; i < other.scalers.size(); i++) {
         this->scalers[i] = other.scalers[i]->clone();
     }
 }
@@ -48,7 +48,7 @@ ScaleTransformer& ScaleTransformer::operator=(const ScaleTransformer& other) {
     this->IFixedSizeTransformer::operator=(other);
 
     this->deleteAll(other.scalers.size());
-    for(int i = 0; i < other.scalers.size(); i++) {
+    for(unsigned int i = 0; i < other.scalers.size(); i++) {
         this->scalers[i] = other.scalers[i]->clone();
     }
 
@@ -69,7 +69,7 @@ void ScaleTransformer::deleteAll(int size) {
 }
 
 void ScaleTransformer::setAt(int index, std::string type) {
-    if(index >= 0 && index < this->scalers.size()) {
+    if(index >= 0 && index < int(this->scalers.size())) {
         delete this->scalers[index];
         this->scalers[index] = (IScaler *) 0;
         this->scalers[index] = FactoryT<std::string, IScaler>::instance().create(type);
@@ -80,15 +80,15 @@ void ScaleTransformer::setAt(int index, std::string type) {
 
 void ScaleTransformer::setAll(std::string type) {
     //this->clearVector();
-    for(int i = 0; i < this->scalers.size(); i++) {
+    for(unsigned int i = 0; i < this->scalers.size(); i++) {
         this->setAt(i, type);
     }
 }
 
 Vector ScaleTransformer::transform(const Vector& input) {
     Vector output = this->IFixedSizeTransformer::transform(input);
-    assert(input.size() == this->scalers.size());
-    assert(output.size() == this->scalers.size());
+    assert(input.size() == int(this->scalers.size()));
+    assert(output.size() == int(this->scalers.size()));
 
     for(int i = 0; i < output.size(); i++) {
         output(i) = this->getAt(i)->transform(input(i));
@@ -118,7 +118,7 @@ std::string ScaleTransformer::getInfo() {
     std::ostringstream buffer;
     buffer << this->IFixedSizeTransformer::getInfo();
     buffer << "Scalers:" << std::endl;
-    for(int i = 0; i < this->scalers.size(); i++) {
+    for(unsigned int i = 0; i < this->scalers.size(); i++) {
         buffer << "  [" << (i + 1) << "] ";
         buffer << this->scalers[i]->getInfo() << std::endl;
     }
@@ -196,7 +196,7 @@ bool ScaleTransformer::configure(Searchable &config) {
             success = this->getAt(i)->configure(property);
         } else if(list.get(0).asString() == "all") {
             // format: set config all key val
-            for(int i = 0; i < this->scalers.size(); i++) {
+            for(unsigned int i = 0; i < this->scalers.size(); i++) {
                 success |= this->getAt(i)->configure(property);
             }
         }

@@ -40,16 +40,6 @@ namespace learningmachine {
 class FixedRangeScaler : public IScaler {
 protected:
     /**
-     * The desired lower bound for the output range.
-     */
-    double lowerBoundOut;
-
-    /**
-     * The desired upper bound for the output range.
-     */
-    double upperBoundOut;
-
-    /**
      * The expected lower bound in the sample values.
      */
     double lowerBoundIn;
@@ -58,6 +48,16 @@ protected:
      * The expected upper bound in the sample values.
      */
     double upperBoundIn;
+
+    /**
+     * The desired lower bound for the output range.
+     */
+    double lowerBoundOut;
+
+    /**
+     * The desired upper bound for the output range.
+     */
+    double upperBoundOut;
 
     /**
      * Updates the scale and offset according to the specified expected and

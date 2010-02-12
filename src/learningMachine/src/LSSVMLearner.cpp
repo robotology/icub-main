@@ -194,7 +194,7 @@ void LSSVMLearner::writeBottle(Bottle& bot) {
     bot.addInt(this->alphas.cols());
 
     // write inputs
-    for(int i = 0; i < this->inputs.size(); i++) {
+    for(unsigned int i = 0; i < this->inputs.size(); i++) {
         for(int d = 0; d < this->getDomainSize(); d++) {
             bot.addDouble(this->inputs[i](d));
         }

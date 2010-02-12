@@ -49,7 +49,7 @@ EventDispatcher::~EventDispatcher() {
 }
 
 void EventDispatcher::removeListener(int idx) {
-    assert(idx >= 0 && idx < this->listeners.size());
+    assert(idx >= 0 && idx < int(this->listeners.size()));
     std::list<IEventListener*>::iterator it = this->listeners.begin();
     std::advance(it, idx);
     delete *it;

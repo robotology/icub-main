@@ -42,16 +42,6 @@ namespace learningmachine {
 class Normalizer : public IScaler {
 protected:
     /**
-     * The desired lower bound for the normalization range.
-     */
-    double lowerBound;
-
-    /**
-     * The desired upper bound for the normalization range.
-     */
-    double upperBound;
-
-    /**
      * The actual lowest value found in the sample values.
      */
     double lowest;
@@ -60,6 +50,16 @@ protected:
      * The actual highest value found in the sample values.
      */
     double highest;
+
+    /**
+     * The desired lower bound for the normalization range.
+     */
+    double lowerBound;
+
+    /**
+     * The desired upper bound for the normalization range.
+     */
+    double upperBound;
 
     /*
      * Inherited from IScaler

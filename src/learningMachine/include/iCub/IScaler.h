@@ -84,7 +84,7 @@ public:
      * @param o the offset for the linear transformation
      */
     IScaler(double s = 1., double o = 0.)
-      : scale(s), offset(o), updateEnabled(true), name("") { }
+      : offset(o), scale(s), name(""), updateEnabled(true) { }
 
     /**
      * Destructor (empty).

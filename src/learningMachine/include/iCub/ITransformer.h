@@ -91,7 +91,7 @@ public:
     /**
      * Constructor.
      */
-    ITransformer() : sampleCount(0), name("") { }
+    ITransformer() : name(""), sampleCount(0) { }
 
     /**
      * Destructor (empty).

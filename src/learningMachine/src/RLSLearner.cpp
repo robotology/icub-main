@@ -38,7 +38,7 @@ RLSLearner::RLSLearner(int dom, int cod, double lambda) {
 RLSLearner::RLSLearner(const RLSLearner& other)
   : IFixedSizeLearner(other), sampleCount(other.sampleCount) {
     this->machines.resize(other.machines.size());
-    for(int i = 0; i < other.machines.size(); i++) {
+    for(unsigned int i = 0; i < other.machines.size(); i++) {
         this->machines[i] = new RLS(*(other.machines[i]));
     }
 
@@ -55,7 +55,7 @@ RLSLearner& RLSLearner::operator=(const RLSLearner& other) {
     this->sampleCount = other.sampleCount;
 
     this->deleteAll(other.machines.size());
-    for(int i = 0; i < other.machines.size(); i++) {
+    for(unsigned int i = 0; i < other.machines.size(); i++) {
         this->machines[i] = new RLS(*(other.machines[i]));
     }
 
@@ -67,7 +67,7 @@ void RLSLearner::deleteAll() {
 }
 
 void RLSLearner::deleteAll(int size) {
-    for(int i = 0; i < this->machines.size(); i++) {
+    for(unsigned int i = 0; i < this->machines.size(); i++) {
         this->deleteAt(i);
     }
     this->machines.clear();
@@ -75,7 +75,7 @@ void RLSLearner::deleteAll(int size) {
 }
 
 void RLSLearner::deleteAt(int index) {
-    assert(index < this->machines.size());
+    assert(index < int(this->machines.size()));
 
     delete this->machines[index];
     this->machines[index] = (RLS*) 0;
@@ -89,13 +89,13 @@ void RLSLearner::initAll(int size) {
     // clear current vector and set to correct size
     this->deleteAll(size);
     // create new machines
-    for(int i = 0; i < this->machines.size(); i++) {
+    for(unsigned int i = 0; i < this->machines.size(); i++) {
         this->machines[i] = this->createMachine();
     }
 }
 
 void RLSLearner::setLambdaAll(double l) {
-    for(int i = 0; i < this->machines.size(); i++) {
+    for(unsigned int i = 0; i < this->machines.size(); i++) {
         this->setLambdaAt(i, l);
     }
 }
@@ -107,7 +107,7 @@ void RLSLearner::setLambdaAt(int index, double l) {
 }
 
 RLS* RLSLearner::getAt(int index) {
-    if(index >= 0 && index < this->machines.size()) {
+    if(index >= 0 && index < int(this->machines.size())) {
         return this->machines[index];
     } else {
         throw std::runtime_error("Index out of bounds!");
@@ -156,7 +156,7 @@ std::string RLSLearner::getInfo() {
     buffer << this->IFixedSizeLearner::getInfo();
     buffer << "Sample Count: " << this->sampleCount << std::endl;
     buffer << "Machines: " << std::endl;
-    for(int i = 0; i < this->machines.size(); i++) {
+    for(unsigned int i = 0; i < this->machines.size(); i++) {
         buffer << "  [" << (i + 1) << "] ";
         buffer << "lambda: " << this->machines[i]->getLambda();
         buffer << std::endl;

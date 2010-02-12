@@ -490,7 +490,7 @@ public:
     virtual void loadIndices(std::string format) {
         std::list<int> idxList;
         std::vector<std::string> indexSplit = this->split(format, ",");
-        for (int i = 0; i < indexSplit.size(); i++) {
+        for (unsigned int i = 0; i < indexSplit.size(); i++) {
             std::vector<std::string> rangeSplit = this->split(indexSplit[i], "-");
 
             if (rangeSplit.size() == 0) {
@@ -576,7 +576,7 @@ public:
      */
     ~CompositeSelector() {
         // clear children vector
-        for (int i = 0; i < this->children.size(); i++) {
+        for (unsigned int i = 0; i < this->children.size(); i++) {
             delete this->children[i];
         }
         this->children.clear();
@@ -627,7 +627,7 @@ public:
     std::string toString(int indent = 0) {
         std::ostringstream buffer;
         buffer << std::string(indent, ' ') << "(" << std::endl;
-        for (int i = 0; i < this->children.size(); i++) {
+        for (unsigned int i = 0; i < this->children.size(); i++) {
             buffer << this->children[i]->toString(indent + 2);
         }
         buffer << std::string(indent, ' ') << ")" << std::endl;
@@ -638,7 +638,7 @@ public:
      * Inherited from DataSelector.
      */
     virtual void declareSources(SourceList& sl) {
-        for (int i = 0; i < this->children.size(); i++) {
+        for (unsigned int i = 0; i < this->children.size(); i++) {
             this->children[i]->declareSources(sl);
         }
     }
@@ -648,7 +648,7 @@ public:
      */
     virtual void select(Bottle& bot, SourceList& sl) {
         Bottle& bot2 = bot.addList();
-        for (int i = 0; i < this->children.size(); i++) {
+        for (unsigned int i = 0; i < this->children.size(); i++) {
             this->children[i]->select(bot2, sl);
         }
     }
@@ -670,7 +670,7 @@ public:
      * Inherited from DataSelector.
      */
     virtual void select(Bottle& bot, SourceList& sl) {
-        for (int i = 0; i < this->children.size(); i++) {
+        for (unsigned int i = 0; i < this->children.size(); i++) {
             this->children[i]->select(bot, sl);
         }
     }
@@ -687,6 +687,11 @@ public:
 class MergeModule : public RFModule {
 protected:
     /**
+     * Prefix for the ports.
+     */
+    std::string portPrefix;
+
+    /**
      * Desired period of the module updates.
      */
     double desiredPeriod;
@@ -695,11 +700,6 @@ protected:
      * The collecting resource for all data from all sources.
      */
     SourceList sourceList;
-
-    /**
-     * Prefix for the ports.
-     */
-    std::string portPrefix;
 
     /**
      * A pointer to the root DataSelector.
@@ -712,7 +712,6 @@ protected:
     Port output;
 
     void printOptions(std::string error = "") {
-        int errorCode = 0;
         if (error != "") {
             std::cerr << "Error: " << error << std::endl;
         }
@@ -765,7 +764,7 @@ public:
      * Constructor.
      */
     MergeModule(std::string pp = "/lm/merge")
-            : portPrefix(pp), dataSelector((DataSelector*) 0), desiredPeriod(0.1) { }
+            : portPrefix(pp), desiredPeriod(0.1), dataSelector((DataSelector*) 0) { }
 
     /**
      * Destructor.

@@ -55,14 +55,14 @@ private:
     Vector w;
 
     /**
-     * Regularization constant.
-     */
-    double lambda;
-
-    /**
      * Number of inputs.
      */
     int n;
+
+    /**
+     * Regularization constant.
+     */
+    double lambda;
 
     void writeBottle(Bottle& bot) {
         // write lambda
