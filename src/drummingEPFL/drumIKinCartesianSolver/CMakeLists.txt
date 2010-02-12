@@ -1,4 +1,4 @@
-SET(PROJECTNAME DrumIKinCartesianSolver)
+SET(PROJECTNAME drumIKinCartesianSolver)
 
 PROJECT(${PROJECTNAME})
 

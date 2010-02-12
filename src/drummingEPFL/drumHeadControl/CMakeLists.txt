@@ -1,4 +1,4 @@
-SET(PROJECTNAME DrumHeadControl)
+SET(PROJECTNAME drumHeadControl)
 
 PROJECT(${PROJECTNAME})
 

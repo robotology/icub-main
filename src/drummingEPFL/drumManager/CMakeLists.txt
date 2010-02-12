@@ -1,4 +1,4 @@
-SET(KEYWORD "DrumManager")
+SET(KEYWORD "drumManager")
 
 PROJECT(${KEYWORD})
 

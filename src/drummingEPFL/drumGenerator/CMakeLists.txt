@@ -1,4 +1,4 @@
-SET(KEYWORD "DrumGeneratorModule")
+SET(KEYWORD "drumGeneratorModule")
 
 PROJECT(${KEYWORD})
 
