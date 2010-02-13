@@ -216,16 +216,16 @@ void Controller::run()
     }
     else
     {
-        q1.resize(nJointsTorso+chain->getDOF());
-        v1.resize(nJointsTorso+chain->getDOF(),0.0);
+        q1.resize(chain->getN());
+        v1.resize(chain->getN(),0.0);
 
         for (int i=0; i<nJointsTorso; i++)
             q1[i]=CTRL_RAD2DEG*chain->getAng(i);
 
-        for (unsigned int i=0; i<chain->getDOF(); i++)
+        for (unsigned int i=nJointsTorso; i<chain->getN(); i++)
         {    
-            q1[nJointsTorso+i]=q[i];
-            v1[nJointsTorso+i]=v[i];
+            q1[i]=q[i-nJointsTorso];
+            v1[i]=v[i-nJointsTorso];
         }
     }
 

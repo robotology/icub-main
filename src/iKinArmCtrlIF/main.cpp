@@ -18,9 +18,9 @@ implement the same functionalities of iKinArmCtrl module.
 Please refer to \ref iKinArmCtrl for a detailed description.
  
 The main differences with respect to \ref iKinArmCtrl are: 
--# \ref iKinArmCtrlIF controls specifically the arm joints, 
-   hence one can use the hand joints concurrently without
-   conflict.
+-# \ref iKinArmCtrlIF controls joint by joint individually, 
+   hence one can use the non-controlled joints concurrently
+   without conflict.
 -# \ref iKinArmCtrlIF does not have a <i>simulation</i> mode. 
  
 \section lib_sec Libraries 

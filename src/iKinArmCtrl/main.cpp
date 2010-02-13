@@ -27,7 +27,10 @@ controller is capable of handling the complete pose (xyz
 cartesian position + orientation in axis/angle mode). 
  
 The module can be selected to control a usual 7-DOF arm or the 
-extended 10-DOF arm which includes the torso structure.
+extended 10-DOF arm which includes the torso structure. When 
+enabled the torso is always fully controlled even though user 
+may choose how many torso dofs to move actually (the remainder 
+is controlled to zero). 
  
 The approach untertaken herein is to discouple the kinematic 
 Solver part (running the IPOPT algorithm in this implementation) 
