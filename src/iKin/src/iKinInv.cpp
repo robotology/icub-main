@@ -549,7 +549,7 @@ Vector LMCtrl::iterate(Vector &xd, const unsigned int verbose)
 
         Matrix M=H;
         for (unsigned int i=0; i<dim; i++)
-            M(i,i)+=mu*M(i,i);
+            M(i,i)+=mu;
 
         Matrix pinvM;
         if (M.rows()>=M.cols())
