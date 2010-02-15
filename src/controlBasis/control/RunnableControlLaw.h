@@ -6,8 +6,6 @@
 #include "Controller.h"
 
 #include <map>
-#include <JacobianMap.h>
-#include <PotentialFunctionMap.h>
 
 namespace CB {
     
@@ -97,9 +95,6 @@ o         **/
          * flag determining whether control law has connected to devices yet.
          **/
         bool connectedToDevices;
-
-        JacobianMap jacMap;
-        PotentialFunctionMap pfMap;    
 
     public:
         
@@ -205,10 +200,10 @@ o         **/
         }
 
         // inherited functions
-        bool updateAction();
-        void startAction();
-        void stopAction();
-        void postData();  
+        virtual bool updateAction();
+        virtual void startAction();
+        virtual void stopAction();
+        virtual void postData();  
 
     protected:
 

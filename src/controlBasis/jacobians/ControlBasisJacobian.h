@@ -40,12 +40,12 @@ namespace CB {
         bool running;
         
         /**
-         * The Yarp output port
+         * The Yarp output ports
          **/
         yarp::os::BufferedPort<yarp::os::Bottle> outputPort;
         
         /**
-         * The Yarp output port name
+         * The Yarp output port names
          **/
         std::string outputPortName;
         
@@ -62,12 +62,12 @@ namespace CB {
         /**
          * the names of the input resource
          **/
-        std::vector<std::string> inputNames;
+        std::string inputName;
         
         /**
          * the input ports
          **/
-        std::vector<yarp::os::BufferedPort<yarp::os::Bottle> *> inputPorts;
+        yarp::os::BufferedPort<yarp::os::Bottle> inputPort;
         
         /** 
          * The formal input type of the jacobian (e.g., CartesianPosition, ConfigurationVariable, etc.)
@@ -93,11 +93,6 @@ namespace CB {
          * connected to inputs flag
          **/
         bool connectedToInputs;
-
-        /**
-         * the number of inputs needed to compute jacobian
-         **/ 
-        int numInputs;
         
     public:
         
@@ -154,14 +149,18 @@ namespace CB {
          * \return the space
          **/
         std::string getInputSpace() { return inputSpace; }  
-        
-        
+
+        /** 
+         * Getter for the output space
+         * \return the space
+         **/
+        std::string getOutputSpace() { return outputSpace; }  
+                
         /** 
          * Getter for the input size
          * \return the input size
          **/
-        int getInputSize() { return inputSize; }  
-        
+        int getInputSize() { return inputSize; }          
         
         /** 
          * Getter for the output size
@@ -176,34 +175,24 @@ namespace CB {
         void setUpdateDelay(double t) { updateDelay = t; }
         
         /**
-         * connect to inputs
+         * virtual connect to inputs
          **/
-        virtual bool connectToInputs() {
-            std::cout << "cb jacobian connect" << std::endl;
-            return false;            
-        }
+        virtual bool connectToInputs()=0;
         
         /** 
          * virtual update function
          **/
-        virtual bool updateJacobian() {
-            std::cout << "cb jacobian update" << std::endl;
-            return false;            
-        }
+        virtual bool updateJacobian()=0;
         
         /**
          * virtual start function
          **/
-        virtual void startJacobian() {
-            std::cout << "cb jacobian start" << std::endl;
-        }
+        virtual void startJacobian()=0;
         
         /**
          * virtual stop function
          **/
-        virtual void stopJacobian() {
-            std::cout << "cb jacobian start" << std::endl;
-        }
+        virtual void stopJacobian()=0;
         
         /**
          * virtual post data function to be filled in by abstract interface
@@ -230,23 +219,16 @@ namespace CB {
          **/
         void run() {
             
-            int randomID = (int)(yarp::os::Random::uniform()*1000.0);
-            char *c = (char *)malloc(16);
-            sprintf(c,"%d", randomID);
-            std::string randomIDstr(c);
-
-            // set up port name
-            jName = "/cb/jacobian/" + randomIDstr + "/" + inputSpace + ":" + outputSpace + deviceName;
-            
-            std::cout << "ControlBasisJacobian::run() name=" << jName.c_str() << std::endl;        
-            
+            bool ok = true;            
             outputPortName = jName + ":o";
-            bool ok = outputPort.open(outputPortName.c_str());
+            outputPort.close();
+            ok = outputPort.open(outputPortName.c_str());
             if(!ok) {
                 std::cout << "ControlBasisJacobian::run() -- couldnt open output port!!" << std::endl;
                 return;
             }            
 
+            running = true;
             while(!isStopping()) {
                 if(!updateJacobian()) {
                     std::cout << "Problem updating jacobian: (" << jName.c_str() << ")!!" << std::endl;
@@ -255,22 +237,56 @@ namespace CB {
                 postData();
                 yarp::os::Time::delay(updateDelay);
             }
-            std::cout << "ControlBasisJacobian::run() -- setting running flag to false and closing ports." << std::endl;
-            running = false;
-            outputPort.close(); 
 
-            for(int i=0; i<inputPorts.size(); i++) {
-                inputPorts[i]->close();
-            }
-            inputPorts.clear();
+            running = false;
+
         }
         
         /**
+         * sets the device this Jacobian refers to
+         **/
+        void setDevice(std::string dev) {
+            
+            int randomID = (int)(yarp::os::Random::uniform()*1000.0);
+            char *c = (char *)malloc(16);
+            sprintf(c,"%d", randomID);
+            std::string randomIDstr(c);
+
+            deviceName=dev;
+
+            // set up port name
+            jName = "/cb/jacobian/" + randomIDstr + "/" + inputSpace + ":" + outputSpace + deviceName;
+            
+            std::cout << "ControlBasisJacobian::setDevice() name=" << jName.c_str() << std::endl;        
+            
+        }
+
+        /**
          * Constructor
          **/
-        ControlBasisJacobian() :
-            updateDelay(0.1)
-        {  }
+        ControlBasisJacobian(std::string inSpace, std::string outSpace, int inSize=0, int outSize=0) :
+            inputSpace(inSpace),
+            outputSpace(outSpace),
+            inputSize(inSize),
+            outputSize(outSize),
+            updateDelay(0.1),
+            running(false),
+            connectedToInputs(false)
+        {              
+            if( (inputSize==0)|| (outputSize==0) ) {
+                J.resize(1,1);
+            } else {
+                J.resize(outputSize,inputSize);
+            }
+        }
+
+        /**
+         * Destructor
+         **/
+        ~ControlBasisJacobian() {
+            inputPort.close();
+            outputPort.close(); 
+        }
         
     };
     

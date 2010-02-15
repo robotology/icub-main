@@ -12,6 +12,9 @@ namespace CB {
         
     public:
         
+        /**
+         * Constructor
+         **/        
         CartesianPositionReference(std::string name) {
             
             // set configuration info
@@ -23,6 +26,9 @@ namespace CB {
             
         }
         
+        /**
+         * Destructor
+         **/        
         ~CartesianPositionReference() { }
 
         

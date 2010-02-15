@@ -15,39 +15,17 @@ namespace CB {
         
     public:
         
-        /** 
-         * Constructor.
-         * \param inName the current value of the device
-         * \param refName the reference value of the device
+        /**
+         * Empty Constructor, needs to set configuration info
          **/
-        ConfigurationSquaredError(std::string inName, std::string refName, int n=0) {
-            
-            size = n;
-
-            inputName[0] = inName;
-            inputName[1] = refName;
-
-            std::cout << "Creating new ConfigurationSquaredError PotentialFunction (cur=" 
-                      << inputName[0].c_str() << ", ref=" << inputName[1].c_str() << ", size=" << size << std::endl;
-
-            if(n!=0) {
-                input[0].resize(size);
-                input[1].resize(size);
-            }
-
+        ConfigurationSquaredError() :
+            ControlBasisPotentialFunction("squared_error_pf", "configuration", true)        
+        {            
             // temp allocation, will resize later when connect to inputs
             gradient.resize(1);
-            potential = 0;
-
-            hasReference = true;
-            running = false;
-            connectedToInputs = false;
-
-            inputSpace = "configuration";          
-            pfTypeName = "squared_error_pf";
-
+            std::cout << "Created new ConfigurationSquaredError..." << std::endl;        
         }
-        
+
         /**
          * Destructor
          **/        
@@ -56,22 +34,22 @@ namespace CB {
         /**
          * inherited update function
          **/
-        bool updatePotentialFunction();
+        virtual bool updatePotentialFunction();
 
         /**
          * inherited start function
          **/
-        void startPotentialFunction();
+        virtual void startPotentialFunction();
         
         /**
          * inherited stop function
          **/
-        void stopPotentialFunction();
+        virtual void stopPotentialFunction();
         
         /**
          * inherited connect function
          **/
-        bool connectToInputs();
+        virtual bool connectToInputs();
 
 
     };

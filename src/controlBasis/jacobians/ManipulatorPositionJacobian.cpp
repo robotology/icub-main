@@ -17,7 +17,6 @@ void CB::ManipulatorPositionJacobian::startJacobian() {
       return;
     }
   }  
-  running = true;
   start();     // mandatory start function
 }
 
@@ -34,7 +33,7 @@ bool CB::ManipulatorPositionJacobian::updateJacobian() {
   Matrix Jfull;
 
   // get the current configuration of the manipulator
-  b = inputPorts[1]->read();
+  b = inputPort.read();
   if(b==NULL) {
       cout << "ManipulatorPositionJacobian::update() -- having trouble reading input data!" << endl;
       return ok;
@@ -57,12 +56,12 @@ bool CB::ManipulatorPositionJacobian::updateJacobian() {
 
   // send to iKin
   configVals=kinChain->setAng(configVals);
-  Jfull = kinChain->GeoJacobian();    
-  //  Jfull = kinChain->AnaJacobian();    
+  //Jfull = kinChain->GeoJacobian();    
+  Jfull = kinChain->AnaJacobian();    
 
   // copy the Jacobian to class var
-  J.resize(3,Jfull.cols());
-  for(int i=0; i<3; i++) {      
+  //  J.resize(3,Jfull.cols());
+  for(int i=0; i<J.rows(); i++) {      
       for(int j=0; j<J.cols(); j++) {        
           J[i][j] = Jfull[i][j];
       }
@@ -91,21 +90,21 @@ bool CB::ManipulatorPositionJacobian::connectToInputs() {
      string linkInputName = "/cb/manipulatorpositionjacobian/" + randomIDstr + "/" + deviceName + "/config/params:i";
      
      cout << "ManipulatorPositionJacobian::connectToInputs() -- opening input port for link parameters..." << endl;
-     ok &= inputPorts[0]->open(linkInputName.c_str());
+     ok &= paramPort.open(linkInputName.c_str());
      if(!ok) {
        cout << "ManipulatorPositionJacobian::connectToInputs() -- could not open port for configuration link parameters!!" << endl;
        return ok;
      }
 
      cout << "ManipulatorPositionJacobian::connectToInputs() -- connecting ports for link parameters..." << endl;
-     ok &= Network::connect(linkOutputName.c_str(),linkInputName.c_str(), "tcp");
+     ok &= Network::connect(linkOutputName.c_str(),linkInputName.c_str(), "udp");
      if(!ok) {
        cout << "ManipulatorPositionJacobian::connectToInputs() -- could not connect to configuration link parameters!!" << endl;
        return ok;
      }
      
      // get Link information
-     b = inputPorts[0]->read();
+     b = paramPort.read();
      if(b==NULL) {
        cout << "ManipulatorPositionJacobian::connectToInputs() -- could not read link information!!" << endl;
        return ok;
@@ -192,7 +191,7 @@ bool CB::ManipulatorPositionJacobian::connectToInputs() {
      string configInputName = "/cb/manipulatorpositionjacobian/" + randomIDstr + "/" + deviceName + "/config/vals:i";
 
      cout << "ManipulatorPositionJacobian::connectToInputs() -- opening input port for configuration values..." << endl;
-     ok &= inputPorts[1]->open(configInputName.c_str());
+     ok &= inputPort.open(configInputName.c_str());
      if(!ok) {
        cout << "ManipulatorPositionJacobian::connectToInputs() -- could not open port for configuration values!!" << endl;
        return ok;

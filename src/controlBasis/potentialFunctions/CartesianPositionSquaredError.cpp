@@ -31,8 +31,12 @@ bool CB::CartesianPositionSquaredError::updatePotentialFunction() {
     Vector diff(3);
  
     // get data from ports (should be more safety checks...)
-    b[0] = inputPort[0].read(false);
-    b[1] = inputPort[1].read(false);
+    if(inputPorts.size() != 2) {
+        cout << "CartesianPositionSquaredError::update() -- wrong number of input ports!!" << endl;
+        return false;
+    }
+    b[0] = inputPorts[0]->read(false);
+    b[1] = inputPorts[1]->read(false);
 
     bool b0 = (b[0]==NULL);
     bool b1 = (b[1]==NULL);
@@ -42,27 +46,24 @@ bool CB::CartesianPositionSquaredError::updatePotentialFunction() {
     }
     
     offset = 1;
-    if(size==0) {
-        size = 3;
-        input[0].resize(size);
-        input[1].resize(size);
-        gradient.resize(size);
-        diff.resize(3);
-        cout << "ConfigurationSquaredError setting size: " << size << endl;
-    }
-    
-    cout << "ref     cur" << endl;
+    if(inputs[0]->size() != 3) inputs[0]->resize(3);
+    if(inputs[1]->size() != 3) inputs[1]->resize(3);
+
     for(int i=0; i<size; i++) {
-        input[0][i] = b[0]->get(i+offset).asDouble();
-        input[1][i] = b[1]->get(i+offset).asDouble();
-        cout << input[1][i] << "    " << input[0][i] << endl;
+        (*inputs[0])[i] = b[0]->get(i+offset).asDouble();
+        (*inputs[1])[i] = b[1]->get(i+offset).asDouble();
+        diff[i] = (*inputs[1])[i] - (*inputs[0])[i];
     }
-    cout << endl;
 
     // compute potential and gradient
-    diff = input[1] - input[0];
     gradient = -1.0*diff;
     potential = 0.5*dot(diff,diff);
+    
+    cout << "ref  -  cur  =  diff" << endl;
+    for(int i=0; i<size; i++) {
+        cout << (*inputs[1])[i] << "    " << (*inputs[0])[i] << "   " << diff[i] << endl;
+    }
+    cout << endl;
 
     //cout << "CartesianPositionSquaredError Potential = " << potential << endl;
     return ok;
@@ -73,18 +74,21 @@ bool CB::CartesianPositionSquaredError::connectToInputs() {
     
     bool ok = true;
 
+    if(inputNames.size() != 2) {
+        cout << "CartesianPositionSquaredError::connectToInputs() -- size mismatch!!" << endl;
+        return false;
+    }
+
     cout << "CartesianSquaredError::connectToInputs():\n\t" <<
-        inputName[0].c_str() << "\n\t" << inputName[1].c_str() << endl << endl;
+        inputNames[0].c_str() << "\n\t" << inputNames[1].c_str() << endl << endl;
 
-    connectedToInputs = false;
+    string posCurName = inputNames[0] + "/data:o";
+    string posRefName = inputNames[1] + "/data:o";
 
-    string posCurName = inputName[0] + "/data:o";
-    string posRefName = inputName[1] + "/data:o";
-
-    string prefixStr = "/cb/" + inputSpace;
+    string prefixStr = "/cb/" + getSpace();
     int s = prefixStr.size();
-    string tmp0 = inputName[0];
-    string tmp1 = inputName[1];
+    string tmp0 = inputNames[0];
+    string tmp1 = inputNames[1];
     tmp0.erase(0,s);
     tmp1.erase(0,s);
 
@@ -92,14 +96,14 @@ bool CB::CartesianPositionSquaredError::connectToInputs() {
     string posRefNameIn = "/cb/cartesianposition/squared_error_pf" + tmp1 + ":i";
 
     cout << "CartesianPositionSquaredError::connectToInputs() -- opening current input port..." << endl;
-    ok &= inputPort[0].open(posCurNameIn.c_str());
+    ok &= inputPorts[0]->open(posCurNameIn.c_str());
     if(!ok) {
         cout << "CartesianSquaredError::connectToInputs() -- failed opening current input port..." << endl;
         return ok;
     }
 
     cout << "CartesianPositionSquaredError::connectToInputs() -- opening reference input port..." << endl;
-    ok &= inputPort[1].open(posRefNameIn.c_str());
+    ok &= inputPorts[1]->open(posRefNameIn.c_str());
     if(!ok) {
         cout << "ConfigurationSquaredError::connectToInputs() -- failed opening reference input port..." << endl;
         return ok;

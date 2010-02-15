@@ -41,36 +41,27 @@ namespace CB {
         
     public:
         
-        CartesianPositionHarmonicFunction(std::string inName) {
-            
+
+        /**
+         * Empty Constructor, needs to set configuration info
+         **/
+        CartesianPositionHarmonicFunction() :
+            ControlBasisPotentialFunction("harmonic_pf", "cartesianposition", true)        
+        {
             size = 3;
-            inputName[0] = inName;
-            input[0].resize(size);
-
-            potential = 0;
-            gradient.resize(3);
-            curPos.resize(3);
-
-            inputSpace = "cartesianposition";
-            pfTypeName = "harmonic_pf";
-
-            hasReference = true;           
-            connectedToInputs = false;
-            running = false;
-
-            std::cout << "Creating new CartesianPositionHarmonicFunction PotentialFunction (cur=" << inputName[0].c_str() << "), size=" << gradient.size() << std::endl;
-
+            gradient.resize(size);
+            curPos.resize(size);
             initHarmonicFunction();
-
+            std::cout << "Created new CartesianPositionHarmonicFunction..." << std::endl;
         }
         
         ~CartesianPositionHarmonicFunction() { }
 
         // functions from ControlBasisPotentialFunction
-        bool updatePotentialFunction();
-        void startPotentialFunction();
-        void stopPotentialFunction();
-        bool connectToInputs();
+        virtual bool updatePotentialFunction();
+        virtual void startPotentialFunction();
+        virtual void stopPotentialFunction();
+        virtual bool connectToInputs();
 
         // HF functions
         bool initHarmonicFunction();

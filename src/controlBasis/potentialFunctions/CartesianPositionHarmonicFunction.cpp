@@ -21,95 +21,96 @@ void CB::CartesianPositionHarmonicFunction::startPotentialFunction() {
 }
 
 void CB::CartesianPositionHarmonicFunction::stopPotentialFunction() {
-    cout << "CartesianPositionHarmonicFunction::stopPotentialFunction()" << endl;
     stop();     // mandatory stop function
 }
 
 bool CB::CartesianPositionHarmonicFunction::updatePotentialFunction() {
 
-  bool ok = true;
-  Bottle *b[2];
-  int offset;
-  string t;
-  double rad;
-  Vector obs(3);
-  Vector goal(3);
-
-  // first read port 1 to see if there are any obstacles or goals being added
-  b[1] = inputPort[1].read(false);
-  if(b[1]!=NULL) {
-
+    bool ok = true;
+    Bottle *b[2];
+    int offset;
+    string t;
+    double rad;
+    Vector obs(3);
+    Vector goal(3);
+    
+    // first read port 1 to see if there are any obstacles or goals being added
+    if(inputPorts.size() != 2) {
+        cout << "CartesianPositionHarmonicFunction::update() -- wrong number of input ports!!" << endl;
+        return false;
+    }
+    b[1] = inputPorts[1]->read(false);
+    if(b[1]!=NULL) {        
     t = b[1]->get(0).asString();
 
     if(t=="obstacle") {
-
-      obs[0] = b[1]->get(1).asDouble();
-      obs[1] = b[1]->get(2).asDouble();
-      obs[2] = b[1]->get(3).asDouble();
-      rad = b[1]->get(4).asDouble();
-      setObstacle(obs,rad);
-
-      cout << "CartesianPositionHarmonicFunction::update() -- got new obstacle with radius " <<
-             rad << " at:" << endl << obs[0] << endl << obs[1] << endl << obs[2] << endl;
-      
+        
+        obs[0] = b[1]->get(1).asDouble();
+        obs[1] = b[1]->get(2).asDouble();
+        obs[2] = b[1]->get(3).asDouble();
+        rad = b[1]->get(4).asDouble();
+        setObstacle(obs,rad);
+        
+        cout << "CartesianPositionHarmonicFunction::update() -- got new obstacle with radius " <<
+            rad << " at:" << endl << obs[0] << endl << obs[1] << endl << obs[2] << endl;
+        
     } else if(t=="goal") {
-
-      goal[0] = b[1]->get(1).asDouble();
-      goal[1] = b[1]->get(2).asDouble();
-      goal[2] = b[1]->get(3).asDouble();
-      setGoal(goal);
-      
-      cout << "CartesianPositionHarmonicFunction::update() -- got new goal at: " <<
-		     endl << goal[0] << endl << goal[1] << endl << goal[2] << endl;
+        
+        goal[0] = b[1]->get(1).asDouble();
+        goal[1] = b[1]->get(2).asDouble();
+        goal[2] = b[1]->get(3).asDouble();
+        setGoal(goal);
+        
+        cout << "CartesianPositionHarmonicFunction::update() -- got new goal at: " <<
+            endl << goal[0] << endl << goal[1] << endl << goal[2] << endl;
     }
-
-  }
-
-  // read the position
-  b[0] = inputPort[0].read(false);
-  if(b[0]==NULL) {
-      //    cout << "CartesianPositionHarmonicFunction::update() -- could not read input data!" << endl;
+    
+    }
+    
+    // read the position
+    b[0] = inputPorts[0]->read(false);
+    if(b[0]==NULL) {
+        // non fatal error (probably due to asynchronous update rates)
+        //    cout << "CartesianPositionHarmonicFunction::update() -- could not read input data!" << endl;
+        return ok;
+    }
+    
+    offset = 1;
+    for(int i=0; i<size; i++) {
+        (*inputs[0])[i] = b[0]->get(i+offset).asDouble();
+    }
+    
+    // find out potential here...
+    curPos[0] = (*inputs[0])[0];
+    curPos[1] = (*inputs[0])[1];
+    curPos[2] = (*inputs[0])[2];
+    
+    int x = (int)(((*inputs[0])[0] - rangeMin[0]) / resolution[0]); 
+    int y = (int)(((*inputs[0])[1] - rangeMin[1]) / resolution[1]); 
+    int z = (int)(((*inputs[0])[2] - rangeMin[2]) / resolution[2]); 
+    potential = potentialMap[x][y][z];
+    
+    gradient = computeGradient(curPos);
     return ok;
-  }
-
-  offset = 1;
-  for(int i=0; i<size; i++) {
-    input[0][i] = b[0]->get(i+offset).asDouble();
-  }
-
-  // find out potential here...
-  curPos[0] = input[0][0];
-  curPos[1] = input[0][1];
-  curPos[2] = input[0][2];
-
-  int x = (int)((input[0][0] - rangeMin[0]) / resolution[0]); 
-  int y = (int)((input[0][1] - rangeMin[1]) / resolution[1]); 
-  int z = (int)((input[0][2] - rangeMin[2]) / resolution[2]); 
-  potential = potentialMap[x][y][z];
-
-  gradient = computeGradient(curPos);
-  return ok;
 }
 
 
 bool CB::CartesianPositionHarmonicFunction::connectToInputs() {
     
     bool ok = true;
+    
+    cout << "CartesianHarmonicFunction::connectToInputs():\n\t" << inputNames[0].c_str() << endl << endl;
 
-    cout << "CartesianHarmonicFunction::connectToInputs():\n\t" << inputName[0].c_str() << endl << endl;
-
-    connectedToInputs = false;
-
-    string posCurName = inputName[0] + "/data:o";
-    string prefixStr = "/cb/" + inputSpace;
+    string posCurName = inputNames[0] + "/data:o";
+    string prefixStr = "/cb/" + getSpace();
     int s = prefixStr.size();
-    string tmp0 = inputName[0];
+    string tmp0 = inputNames[0];
     tmp0.erase(0,s);
 
     string posCurNameIn = "/cb/cartesianposition/harmonic_pf" + tmp0 + ":i";   
 
     cout << "CartesianPositionHarmonicFunction::connectToInputs() -- opening current input port..." << endl;
-    ok &= inputPort[0].open(posCurNameIn.c_str());
+    ok &= inputPorts[0]->open(posCurNameIn.c_str());
     if(!ok) {
       cout << "CartesianHarmonicFunction::connectToInputs() -- failed opening current input port..." << endl;
       return ok;

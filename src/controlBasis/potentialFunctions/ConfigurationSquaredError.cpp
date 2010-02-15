@@ -31,40 +31,48 @@ bool CB::ConfigurationSquaredError::updatePotentialFunction() {
     Vector diff;
 
     // get data from ports (should be more safety checks...)
-    b[0] = inputPort[0].read(false);
-    b[1] = inputPort[1].read(false);
+    if(inputPorts.size() != 2) {
+        cout << "ConfigurationSquaredError::update() -- wrong number of input ports!!" << endl;
+        return false;
+    }
+    b[0] = inputPorts[0]->read(false);
+    b[1] = inputPorts[1]->read(false);
     
     if( (b[0]==NULL) || (b[1]==NULL) ) {
-        cout << "ConfigurationSquaredError::update() problem reading data!!" << endl;
-        if(size==0) {
-            diff.resize(1);
-            diff.zero();
-        }
+        // non fatal error
+        //cout << "ConfigurationSquaredError::update() problem reading data!!" << endl;
+        //        if(size==0) {
+        //    diff.resize(1);
+        //    diff.zero();
+        //}
         return ok;
     }
 
     offset = 1;
-    if(size==0) {
-        size = b[0]->get(0).asInt();
-        input[0].resize(size);
-        input[1].resize(size);
+    int s = b[0]->get(0).asInt();
+    if(size!=s) {
+        size = s;
+        inputs[0]->resize(size);
+        inputs[1]->resize(size);
         gradient.resize(size);
-        diff.resize(size);
         cout << "ConfigurationSquaredError setting size: " << size << endl;
     }
-
-    cout << "ref     cur" << endl;
+    diff.resize(size);
     for(int i=0; i<size; i++) {
-        input[0][i] = b[0]->get(i+offset).asDouble();
-        input[1][i] = b[1]->get(i+offset).asDouble();
-        cout << input[1][i] << "  " << input[0][i] << endl;
+        (*inputs[0])[i] = b[0]->get(i+offset).asDouble();
+        (*inputs[1])[i] = b[1]->get(i+offset).asDouble();
+        diff[i] = (*inputs[1])[i] - (*inputs[0])[i];
     }
-    cout << endl;
 
     // compute the potential and its gradient
-    diff = input[1] - input[0];
     gradient = -1.0*diff;
     potential = 0.5*dot(diff,diff);
+
+    cout << "ref   -  cur  =  diff" << endl;
+    for(int i=0; i<size; i++) {
+        cout << (*inputs[1])[i] << "  " << (*inputs[0])[i] << "  " << diff[i] << endl;
+    }
+    cout << endl;
 
     //    cout << "ConfigurationSquaredError Potential = " << potential << endl;
     return ok;
@@ -75,17 +83,19 @@ bool CB::ConfigurationSquaredError::connectToInputs() {
     
     bool ok = true;
 
-    cout << "ConfigurationSquaredError::connectToInputs():\n\t" << inputName[0].c_str() << " \n\t" << inputName[1].c_str() << "\n\n\n"; 
+    if(inputNames.size() != 2) {
+        cout << "ConfigurationSquaredError::connectToInputs() -- size mismatch!!" << endl;
+        return false;
+    }
+    cout << "ConfigurationSquaredError::connectToInputs():\n\t" << inputNames[0].c_str() << " \n\t" << inputNames[1].c_str() << "\n\n"; 
   
-    connectedToInputs = false;
+    string configCurName = inputNames[0] + "/data:o";
+    string configRefName = inputNames[1] + "/data:o";
 
-    string configCurName = inputName[0] + "/data:o";
-    string configRefName = inputName[1] + "/data:o";
-
-    string prefixStr = "/cb/" + inputSpace;
+    string prefixStr = "/cb/" + getSpace();
     int s = prefixStr.size();
-    string tmp0 = inputName[0];
-    string tmp1 = inputName[1];
+    string tmp0 = inputNames[0];
+    string tmp1 = inputNames[1];
     tmp0.erase(0,s);
     tmp1.erase(0,s);
     
@@ -93,25 +103,25 @@ bool CB::ConfigurationSquaredError::connectToInputs() {
     string configRefNameIn = "/cb/configuration/squared_error_pf" + tmp1 + ":i";
 
     cout << "ConfigurationSquaredError::connectToInputs() -- opening current input port..." << endl;
-    ok &= inputPort[0].open(configCurNameIn.c_str());
+    ok &= inputPorts[0]->open(configCurNameIn.c_str());
     if(!ok) {
         cout << "ConfigurationSquaredError::connectToInputs() -- failed opening current input port..." << endl;
         return ok;
     }
     cout << "ConfigurationSquaredError::connectToInputs() -- opening reference input port..." << endl;
-    ok &= inputPort[1].open(configRefNameIn.c_str());
+    ok &= inputPorts[1]->open(configRefNameIn.c_str());
     if(!ok) {
         cout << "ConfigurationSquaredError::connectToInputs() -- failed opening reference input port..." << endl;
         return ok;
     }
 
-    Time::delay(1);
+    //    Time::delay(0.1);
     cout << "ConfigurationSquaredError::connectToInputs() -- connecting:\n\t" << 
         configCurName.c_str() << " -> " << configCurNameIn.c_str() << "\n\t" << 
         configRefName.c_str() << " -> " << configRefNameIn.c_str() << endl << endl;
     
     ok &= Network::connect(configCurName.c_str(),configCurNameIn.c_str(), "udp");
-    Time::delay(0.2);
+    //Time::delay(0.1);
     ok &= Network::connect(configRefName.c_str(),configRefNameIn.c_str(), "udp");
     if(!ok) {
         cout << "ConfigurationSquaredError::connectToInputs() -- failed connecting to input ports..." << endl << endl;

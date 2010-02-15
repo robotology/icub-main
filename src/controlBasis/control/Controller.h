@@ -12,8 +12,8 @@
 #include <yarp/os/Port.h>
 #include <vector>
 
-#include <JacobianMap.h>
-#include <PotentialFunctionMap.h>
+#include <JacobianFactory.h>
+#include <PotentialFunctionFactory.h>
 
 namespace CB {
     
@@ -158,22 +158,15 @@ namespace CB {
          **/
         std::string deviceName;
 
-        std::string sensorInputName;
-        std::string sensorOutputName;
-        std::string refInputName;
-        std::string refOutputName;
-        std::string effectorInputName;
-        std::string effectorOutputName;
-
-        yarp::os::Port sensorInputPort;
-        yarp::os::Port refInputPort;
-        yarp::os::Port effectorInputPort;
-
+        /**
+         * storage for the potential as the controller runs
+         */
         std::vector<double> potentialStore;
-        std::vector<double> potentialDotStore;
 
-        JacobianMap jacMap;
-        PotentialFunctionMap pfMap;
+        /**
+         * storage for the estimated potential derivative as the controller runs
+         */
+        std::vector<double> potentialDotStore;       
 
         /**
          * using transpose of Jacobian, rather than pseudoinverse, s.t. \delta \tau = -J^T \phi(\sigma)
@@ -198,7 +191,7 @@ namespace CB {
                    ControlBasisResource *eff);
 
         /**
-         * constructor for remote set up (with reference sensor)
+         * constructor for remote set up (with reference sensoro)
          **/
         Controller(std::string sen, std::string ref, std::string pf, std::string eff);
 
@@ -212,18 +205,42 @@ namespace CB {
          **/
         ~Controller() {
             std::cout << "Controller destructor..." << std::endl;
+
+            resetController();
+
             if(potentialFunction!=NULL) delete potentialFunction;
             if(jacobian!=NULL) delete jacobian;
-            potentialStore.clear();
-            potentialDotStore.clear();
+            if(sensor!=NULL) delete sensor;
+            if(effector!=NULL) delete effector;
+            if(reference!=NULL) delete reference;
+
             std::cout << "Controller destructor (done)..." << std::endl;
         }       
         
-        // inherited functions
-        bool updateAction();
-        void startAction();
-        void stopAction();
-        void postData();  
+        /**
+         * Inherited update fuction from ControlBasisAction class
+         **/
+        virtual bool updateAction();
+
+        /**
+         * Inherited start fuction from ControlBasisAction class
+         **/
+        virtual void startAction();
+
+        /**
+         * Inherited stop fuction from ControlBasisAction class
+         **/
+        virtual void stopAction();
+
+        /**
+         * Inherited postData fuction from ControlBasisAction class
+         **/
+        virtual void postData();  
+
+        /**
+         * reset funtion
+         **/
+        void resetController();  
 
         /**
          * gets the device name of the effector this controller moves
@@ -272,11 +289,6 @@ namespace CB {
         bool inDistributedMode() { return distributedMode; }
 
         /**
-         * determines the output device and space of effector resource
-         **/
-        void parseOutputResource();
-
-        /**
          * sets the controller gain         
          * \param kappa the gain value
          **/
@@ -313,11 +325,6 @@ namespace CB {
     protected:
 
         /**
-         * connects the controller to the sensorimotor resources (that should be running)
-         **/
-        bool connectToResources(std::string sen, std::string ref, std::string eff);
-
-        /**
          * creates a potential function of the specified type
          **/ 
         bool createPotentialFunction(std::string pf);
@@ -326,6 +333,11 @@ namespace CB {
          * creates the necessary Jacobian to transform potential changes to effector changes.
          **/
         bool createJacobian();
+
+        /**
+         * determines the output device and space of effector resource
+         **/
+        void parseOutputResource();
 
   };
  

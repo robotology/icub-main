@@ -152,7 +152,7 @@ namespace CB {
             }
             remoteDevPort = yarpDeviceName;
 
-            // initiallize storage vectors and matrices
+            // initialize storage vectors and matrices
             if(numDOFs != 0) {
                 values.resize(numDOFs);
                 desiredValues.resize(numDOFs);

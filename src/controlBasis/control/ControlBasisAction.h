@@ -51,18 +51,18 @@ namespace CB {
         /**
          * YARP output port
          **/
-        std::vector<yarp::os::BufferedPort<yarp::os::Bottle> *> outputPort;
+        std::vector<yarp::os::BufferedPort<yarp::os::Bottle> *> outputPorts;
         
         /**
          * YARP output port name
          **/
-        std::vector<std::string> outputPortName;
+        std::vector<std::string> outputPortNames;
 
         /**
          * YARP output names
          **/
-        std::vector<std::string> outputName;
-        
+        std::vector<std::string> outputNames;
+
         /**
          * num output ports
          **/
@@ -96,51 +96,38 @@ namespace CB {
         /** 
          * virtual update function
          **/
-        virtual bool updateAction()
-        {
-            std::cout << "cb action update" << std::endl;
-            return true;
-        }        
+        virtual bool updateAction()=0;
 
         /**
          * virtual start function
          **/
-        virtual void startAction()
-        {
-            std::cout << "cb action start" << std::endl;
-        }
+        virtual void startAction()=0;
 
         /**
          * virtual stop function
          **/
-        virtual void stopAction()
-        {
-            std::cout << "cb action start" << std::endl;
-        }
-        
+        virtual void stopAction()=0;
+
         /**
-         * virtual post data function to be filled in by action instantiation
+         * virtual post data function
          **/
-        virtual void postData()
-        {
-            std::cout << "cb post data for " << actionName.c_str() << std::endl;
-        }
-       
+        virtual void postData()=0;
+               
         /**
          * run function
          **/
         void run() {
 
             std::cout << "configuring action output information..." << std::endl;
-            outputPort.clear();
-            outputPortName.clear();
+            outputPorts.clear();
+            outputPortNames.clear();
             for(int i=0; i<numOutputs; i++) {
-                outputPortName.push_back(actionName + "/" + outputName[i] +  ":o");
-                outputPort.push_back(new yarp::os::BufferedPort<yarp::os::Bottle>);
-                outputPort[i]->open(outputPortName[i].c_str());
+                outputPortNames.push_back(actionName + "/" + outputNames[i] +  ":o");
+                outputPorts.push_back(new yarp::os::BufferedPort<yarp::os::Bottle>);
+                outputPorts[i]->open(outputPortNames[i].c_str());
             }
 
-            std::cout << "starting controller update loop...." << std::endl;
+            std::cout << "starting action update loop...." << std::endl;
             while(!isStopping()) {
                 if(!updateAction()) {
                     std::cout << "Problem updating control action!!" << std::endl;
@@ -159,18 +146,36 @@ namespace CB {
             // close ports
             std::cout << "ControlBasisAction closing outputports" << std::endl;
             //for(int i=0; i<numInputs; i++) input[i]->close(); 
-            for(int i=0; i<outputPort.size(); i++) outputPort[i]->close(); 
+            for(int i=0; i<outputPorts.size(); i++) outputPorts[i]->close(); 
                         
         }
       
+        /** 
+         * reset function.  closes and clears the ports.
+         **/
+        void reset() {
+            std::cout << "ControlBasisAction reset..." << std::endl;
+            for(int i=0; i<outputPorts.size(); i++) {
+                outputPorts[i]->close();
+            }
+            outputPorts.clear();
+            outputPortNames.clear();
+            outputNames.clear();
+            dynamicState=UNKNOWN;
+            running = false;
+            iterations = 0;
+        }
+
         /**
          * Constructor
          **/
-        ControlBasisAction() {
-            dynamicState = UNKNOWN;
-            updateDelay = 0.001;
-            running = false;
-            numOutputs = 0;
+        ControlBasisAction() :
+            dynamicState(UNKNOWN),
+            updateDelay(0.01),
+            running(false),
+            numOutputs(0),
+            iterations(0)
+        {
         }
 
         /**
@@ -181,16 +186,6 @@ namespace CB {
             reset();
         }
 
-        /** 
-         * reset function.  closes and clears the ports.
-         **/
-        void reset() {
-            std::cout << "ControlBasisAction reset..." << std::endl;
-            for(int i=0; i<outputPort.size(); i++) {
-                outputPort[i]->close();
-            }
-            outputPort.clear();
-        }
     };
     
 }

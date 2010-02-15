@@ -149,22 +149,20 @@ namespace CB {
         /**
          * constructor.  sets type and port names.
          **/
-        ConfigurationVariables() {
-        
-            running=false;
-            type="configuration";
-            numOutputs=3;
-            numInputs=2;
-
+        ConfigurationVariables() :
+            ControlBasisResource("configuration", 2, 3) 
+        {        
             std::cout << "setting type of ConfigurationVariables to " << type.c_str() << std::endl;
+
+            running=false;
+
+            inputName.push_back("data");
+            inputName.push_back("lock");        
 
             outputName.push_back("data");
             outputName.push_back("limits");
             outputName.push_back("params");
 
-            inputName.push_back("data");
-            inputName.push_back("lock");
-        
         }    
 
         /** 
@@ -223,7 +221,7 @@ namespace CB {
          * It is automatically called after the update() function in the main 
          * thread loop.
          **/
-        void getInputData() {
+        virtual void getInputData() {
 
             // If the resource is not moveable, there shouldn't be an input port.
             // In other words, no other service should be sending inputs to this resource.

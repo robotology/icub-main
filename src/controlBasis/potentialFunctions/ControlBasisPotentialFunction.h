@@ -9,6 +9,7 @@
 #include <yarp/sig/Vector.h>
 
 #include <string>
+#include <vector>
 #include <iostream>
 
 namespace CB {
@@ -31,9 +32,19 @@ namespace CB {
         std::string pfName;
 
         /**
-         * the name of the potential function type
+         * the name of the type of function
          **/
-        std::string pfTypeName;
+        std::string pfType;
+
+        /**
+         * the space of function
+         **/
+        std::string pfSpace;
+
+        /**
+         * whether the PF needs a reference
+         **/
+        bool hasReference;
 
         /**
          * running flag
@@ -68,22 +79,17 @@ namespace CB {
         /**
          * the input vector
          **/
-        yarp::sig::Vector input[2];
+        std::vector<yarp::sig::Vector *> inputs;
 
         /**
          * the name of the input resources
          **/
-        std::string inputName[2];
+        std::vector<std::string> inputNames;
         
         /**
          * the input ports
          **/
-        yarp::os::BufferedPort<yarp::os::Bottle> inputPort[2];
-        
-        /** 
-         * The formal type of the potential (e.g., CartesianPosition, ConfigurationVariable, etc.)
-         **/
-        std::string inputSpace;
+        std::vector< yarp::os::BufferedPort<yarp::os::Bottle> *> inputPorts;
         
         /**
          * the size of the input space
@@ -91,15 +97,15 @@ namespace CB {
         int size;
         
         /**
-         * whether the potential needs a reference signal
-         **/
-        bool hasReference;
-        
-        /**
          * connected to inputs flag
          **/
-        bool connectedToInputs;
-        
+        bool connectedToInputs;       
+
+        /**
+         * set inputs flag
+         **/
+        bool inputsSet;       
+
     public:
         
         /** 
@@ -127,12 +133,6 @@ namespace CB {
         bool isPotentialRunning() { return running; }
         
         /** 
-         * Getter for the potential space
-         * \return the space
-         **/
-        std::string getInputSpace() { return inputSpace; }  
-        
-        /** 
          * Getter for the potential size
          * \return the size
          **/
@@ -142,40 +142,31 @@ namespace CB {
          * Setter for updated delay
          * \param delay (in seconds)
          **/
-        void setUpdateDelay(double t) { updateDelay = t; }
-        
+        void setUpdateDelay(double t) { updateDelay = t; }      
+
         /**
          * connect to input function
          **/
-        virtual bool connectToInputs() {
-            std::cout << "cb pf connect" << std::endl;
-        }
+        virtual bool connectToInputs()=0;
         
         /** 
          * virtual update function
          **/
-        virtual bool updatePotentialFunction() {
-            std::cout << "cb pf update" << std::endl;
-        }
+        virtual bool updatePotentialFunction()=0;
 
         /**
          * virtual start function
          **/
-        virtual void startPotentialFunction() {
-            std::cout << "cb pf start" << std::endl;
-        }
+        virtual void startPotentialFunction()=0;
         
         /**
          * virtual stop function
          **/
-        virtual void stopPotentialFunction() {
-            std::cout << "cb pf start" << std::endl;
-        }
-        
+        virtual void stopPotentialFunction()=0;
         /**
          * virtual post data function to be filled in by abstract interface
          **/
-        virtual void postData() {
+        void postData() {
 
             yarp::os::Bottle &b = outputPort.prepare();
             b.clear();
@@ -195,60 +186,165 @@ namespace CB {
          **/
         void run() {
 
-            // set up port name
-            pfName = "/cb/" + inputSpace + "/" + pfTypeName;
-            
-            std::string prefixStr = "/cb/" + inputSpace;
-            std::string tmp = inputName[0];
-            int s = prefixStr.size();
-            
-            tmp.erase(0,s);
-            pfName += tmp;
-            
-            // if the PF has a reference, store its name in the portname as well
-            if(hasReference) {
-                tmp = inputName[1];
-                tmp.erase(0,s);
-                pfName += tmp;
+            if(!inputsSet) {
+                std::cout << "PotentialFunction inputs not set, can't run...." << std::endl;
+                return;
             }
-            
-            std::cout << "ControlBasisPotentialFunction::run() name=" << pfName.c_str() << std::endl;
-            
-            outputPortName = pfName + ":o";
+            std::cout << "running..." << std::endl;
+
+            outputPortName = pfName + ":o";            
+            outputPort.close();
             outputPort.open(outputPortName.c_str());
-            
+
             while(!isStopping()) {
                 if(!updatePotentialFunction()) {
                     std::cout << "Problem updating potential function: " << pfName.c_str() << std::endl;
                     break;
                 }
+                running = true;            
                 postData();
                 yarp::os::Time::delay(updateDelay);
             }
             std::cout << "ControlBasisPotentialFunction::run() -- setting running flag to false and closing ports" << std::endl;
             running = false;
-            
-            inputPort[0].close();
-            inputPort[1].close();
-            outputPort.close(); 
-            
+
         }
-        
+
         /**
          * Constructor
          **/
-        ControlBasisPotentialFunction() {
-            updateDelay = 0.01;
-            running = false;
-            size = 1;
+        ControlBasisPotentialFunction(std::string type, std::string space, bool hasRef) :
+            potential(0),
+            updateDelay(0.01),
+            running(false),
+            connectedToInputs(false),
+            inputsSet(false),
+            size(1),
+            hasReference(hasRef),
+            pfType(type),
+            pfSpace(space) 
+        {            
+        }
+
+        /**
+         * Function to set input names
+         * \param inNames vector of input names
+         **/
+        void setInputs(std::vector<std::string> inNames)
+        {
+            // clear our residual names
+            if(inputsSet) {
+                inputNames.clear();
+            }
+            inputNames = inNames;
+
+            // set up pf name: /cb/<space>/<pf_type>/<inputName[1]>/.../<inputName[N]>
+            pfName = "/cb/" + pfSpace + "/" + pfType;
+            std::string prefixStr = "/cb/" + pfSpace;
+            std::string tmp;
+            int s;
+            for(int i=0; i<inputNames.size(); i++) {
+                tmp = inputNames[0];
+                s = prefixStr.size();           
+                tmp.erase(0,s);
+                pfName += tmp;
+            }
+            std::cout << "ControlBasisPotentialFunction::setInputs() name=" << pfName.c_str() << std::endl;
+            
+            // clear out any old input vectors or ports
+            for(int i=0; i<inputPorts.size(); i++)
+                delete inputPorts[i];
+            inputPorts.clear();
+            
+            for(int i=0; i<inputs.size(); i++)
+                delete inputs[i];
+            inputs.clear();
+
+            // create new input pointers
+            for(int i=0; i<inputNames.size(); i++) {
+                inputs.push_back(new yarp::sig::Vector(1));
+                inputPorts.push_back(new yarp::os::BufferedPort<yarp::os::Bottle>());
+            }                       
+
+            // set flag
+            inputsSet = true;
         }
         
         /**
          * Destructor
          **/
-        ~ControlBasisPotentialFunction() { }
+        ~ControlBasisPotentialFunction() 
+        { 
+            inputNames.clear();
+            inputsSet = false;
+
+            // clear ports and data
+            for(int i=0; i<inputPorts.size(); i++)
+                delete inputPorts[i];
+            inputPorts.clear();
+
+            for(int i=0; i<inputs.size(); i++)
+                delete inputs[i];
+            inputs.clear();
+
+            outputPort.close(); 
+
+        }
+
+        /**
+         * returns whether the PF needs a reference input
+         **/
+        bool needsReference() { return hasReference; }
+
+        /**
+         * gets the space of the potential function
+         **/
+        std::string getSpace() { return pfSpace; }
         
+        /**
+         * gets the type of the potential function (the name representing the type of function. e.g., squared_error_pf)
+         **/
+        std::string getType() { return pfType; }
+       
     };
+
+
+    /**
+     * a helper class that stores the identification information concerning 
+     * control basis potential functions.
+     **/
+    class PotentialFunctionInfo {
+
+    public:
+
+        PotentialFunctionInfo() { }
+
+        PotentialFunctionInfo(std::string name, std::string space, bool hasReference) :
+            name(name),
+            space(space),
+            hasReference(hasReference)
+        {
+        }
+        
+        ~PotentialFunctionInfo() {}
+
+        /**
+         * the name of the PF
+         **/
+        std::string name;
+
+        /**
+         * the space the PF computeds its value in
+         **/
+        std::string space;
+
+        /**
+         * whether the PF needs a reference (to compute an error from)
+         **/
+        bool hasReference;
+
+    };
+
     
 }
 

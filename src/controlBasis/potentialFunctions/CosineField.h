@@ -35,37 +35,31 @@ namespace CB {
          **/
         yarp::sig::Vector centers;
 
+        /**
+         * port to get limit information
+         **/
+        yarp::os::BufferedPort<yarp::os::Bottle> limitsInputPort;
+
     public:
         
         /**
-         * Constructor.
-         * \param inName the name of the manipulator device 
+         * Empty Constructor, needs to set configuration info
          **/
-        CosineField(std::string inName) {
-            
-            inputName[0] = inName;
-
-            std::cout << "Creating new CosineField PotentialFunction for " << inputName[0].c_str() << std::endl;
+        CosineField() :
+            ControlBasisPotentialFunction("cosfield_pf","configuration",false)
+        {
 
             // temp allocation, will resize later when connect to inputs
-            input[0].resize(1);
+            inputs.resize(1);
             minLimits.resize(1);
             maxLimits.resize(1);
             ranges.resize(1);
             centers.resize(1);
             gradient.resize(1);
 
-            hasReference = false;
-            running = false;
-
-            potential = 0;
-            inputSpace = "configuration";
-            pfTypeName = "cosfield_pf";
-
-            connectedToInputs = false;
-
+            std::cout << "Created new CosineField..." << std::endl;
         }
-
+        
         /**
          * Destructor
          **/        
@@ -74,23 +68,22 @@ namespace CB {
         /**
          * inherited update function
          **/
-        bool updatePotentialFunction();
+        virtual bool updatePotentialFunction();
         
         /**
          * inherited start function
          **/
-        void startPotentialFunction();
+        virtual void startPotentialFunction();
         
         /**
          * inherited stop function
          **/
-        void stopPotentialFunction();
+        virtual void stopPotentialFunction();
         
         /**
          * inherited connect function
          **/
-        bool connectToInputs();
-
+        virtual bool connectToInputs();
 
     };
     

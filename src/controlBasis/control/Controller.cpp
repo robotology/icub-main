@@ -2,6 +2,7 @@
 #include "Controller.h"
 #include <yarp/os/Network.h>
 #include <yarp/math/Math.h>
+#include <math.h>
 
 using namespace std;
 using namespace yarp::os;
@@ -11,30 +12,30 @@ using namespace yarp::math;
 CB::Controller::Controller(ControlBasisResource *sen,
                            ControlBasisResource *ref,
                            ControlBasisPotentialFunction *pf,
-                           ControlBasisResource *eff) {
+                           ControlBasisResource *eff) : 
+    ControlBasisAction(),
+    distributedMode(false),
+    sensor(sen),
+    reference(ref),
+    effector(eff),
+    potentialFunction(pf),
+    potentialDot(0),
+    potentialLast(0),
+    needsJacobian(false),
+    needsJacobianInverse(false),
+    hasReference(true),
+    gain(1.0),
+    useJacobianTranspose(true),
+    jacobian(NULL)
+{
     
     string refType = "";
-    distributedMode = false;    
-    sensor = sen;
-    effector = eff;
-    potentialFunction = pf;    
-    potentialDot = 0;
-    potentialLast = 0;
-    iterations = 0;
-    dynamicState = UNKNOWN;
-    running = false;
-    needsJacobian = false;
-    needsJacobianInverse = false;
-    hasReference = false;   
-    jacobian = NULL;
-    potentialFunction = NULL;
-    gain = 1.0;
-    useJacobianTranspose = true;
+
     
     // get the types of the resources
     inputSpace = sensor->getResourceType();
     outputSpace = effector->getResourceType();
-    pfType = potentialFunction->getInputSpace();
+    pfType = potentialFunction->getSpace();
     
     if(ref != NULL) {
         cout << "Controller HAS reference" << endl;
@@ -62,7 +63,7 @@ CB::Controller::Controller(ControlBasisResource *sen,
     actionName += "pf:" + potentialFunction->getPotentialName();
     
     numOutputs = 1;
-    outputName.push_back("u");
+    outputNames.push_back("u");
     
     int inputSize = sensor->getResourceDataSize();
     int outputSize = effector->getResourceDataSize();
@@ -72,31 +73,29 @@ CB::Controller::Controller(ControlBasisResource *sen,
 
 CB::Controller::Controller(ControlBasisResource *sen,
                            ControlBasisPotentialFunction *pf,
-                           ControlBasisResource *eff) {
-    
+                           ControlBasisResource *eff) :
+    ControlBasisAction(),
+    distributedMode(false),
+    sensor(sen),
+    reference(NULL),
+    effector(eff),
+    potentialFunction(pf),
+    potentialDot(0),
+    potentialLast(0),
+    needsJacobian(false),
+    needsJacobianInverse(false),
+    hasReference(false),
+    gain(1.0),
+    useJacobianTranspose(true),
+    jacobian(NULL)
+{    
+
     string refType = "";
-    
-    sensor = sen;
-    effector = eff;
-    potentialFunction = pf;
-    potentialDot = 0;
-    potentialLast = 0;    
-    iterations = 0;
-    dynamicState = UNKNOWN;
-    running = false;
-    needsJacobian = false;
-    needsJacobianInverse = false;
-    hasReference = false;
-    distributedMode = false;    
-    jacobian = NULL;
-    potentialFunction = NULL;
-    useJacobianTranspose = true;
-    gain = 1.0;
 
     // get the types of the resources
     inputSpace = sensor->getResourceType();
     outputSpace = effector->getResourceType();
-    pfType = potentialFunction->getInputSpace();
+    pfType = potentialFunction->getSpace();
     
     if(pfType!=outputSpace) {
         needsJacobian = true;
@@ -110,7 +109,7 @@ CB::Controller::Controller(ControlBasisResource *sen,
     actionName += "pf:" + potentialFunction->getPotentialName();
     
     numOutputs = 1;
-    outputName.push_back("u");
+    outputNames.push_back("u");
     
     int inputSize = sensor->getResourceDataSize();
     int outputSize = effector->getResourceDataSize();
@@ -118,28 +117,27 @@ CB::Controller::Controller(ControlBasisResource *sen,
     
 }
 
-CB::Controller::Controller(string sen, string ref, string pf, string eff) {
+CB::Controller::Controller(string sen, string ref, string pf, string eff) :
+    sensorName(sen),
+    referenceName(ref),
+    effectorName(eff),
+    pfName(pf),
+    distributedMode(true),
+    needsJacobian(false),
+    needsJacobianInverse(false),
+    hasReference(true),
+    gain(1.0),
+    jacobian(NULL),
+    potentialFunction(NULL),
+    useJacobianTranspose(true),
+    sensor(NULL),
+    reference(NULL),
+    effector(NULL)
+{
 
-    sensorName = sen;
-    referenceName = ref;
-    effectorName = eff;
-    pfName = pf;
-    distributedMode = true;
-    needsJacobian = false;
-    needsJacobianInverse = false;
-    hasReference = true;
-    gain = 1.0;
-    dynamicState = UNKNOWN;
-    potentialDot = 0;
-    potentialLast = 0;
-    jacobian = NULL;
-    potentialFunction = NULL;
-    useJacobianTranspose = true;
+    // do some string ops to get valid names 
+    parseOutputResource();    
 
-    if(!connectToResources(sen,ref,eff)) {
-        cout << "Controller can't connect to resources!!" << endl;
-        return;
-    }
     if(!createPotentialFunction(pf)) {
         cout << "Controller can't create potential function!!" << endl;
         return;
@@ -165,33 +163,33 @@ CB::Controller::Controller(string sen, string ref, string pf, string eff) {
     
 }
 
-CB::Controller::Controller(string sen, string pf, string eff) {
+CB::Controller::Controller(string sen, string pf, string eff) :
+    sensorName(sen),
+    referenceName(""),
+    effectorName(eff),
+    pfName(pf),
+    distributedMode(true),
+    needsJacobian(false),
+    needsJacobianInverse(false),
+    hasReference(false),
+    gain(1.0),
+    jacobian(NULL),
+    potentialFunction(NULL),
+    useJacobianTranspose(true),
+    sensor(NULL),
+    reference(NULL),
+    effector(NULL)
+{
 
-    sensorName = sen;
-    referenceName = "";
-    effectorName = eff;
-    pfName = pf;
-    distributedMode = true;
-    needsJacobian = false;
-    needsJacobianInverse = false;
-    hasReference = false;
-    gain = 1.0;
-    dynamicState = UNKNOWN;
-    potentialDot = 0;
-    potentialLast = 0;
-    jacobian = NULL;
-    potentialFunction = NULL;
-    useJacobianTranspose = true;
+    // do some string ops to get valid names 
+    parseOutputResource();    
 
-    if(!connectToResources(sen,"",eff)) {
-        cout << "Controller can't connect to resources!!" << endl;
-        return;
-    }
     if(!createPotentialFunction(pf)) {
         cout << "Controller can't create potential function!!" << endl;
         return;
     }
 
+    cout << "Controller " << inputSpace.c_str() << " -> " << outputSpace.c_str() << endl;
     if(outputSpace != inputSpace) {
         needsJacobian = true;
         if(!createJacobian()) {
@@ -204,8 +202,6 @@ CB::Controller::Controller(string sen, string pf, string eff) {
         Vout.resize(potentialFunction->getInputSize());
     } 
 
-    cout << "Controller needs jacobian: " << needsJacobian << endl;
-
     actionName = "/cb/controller/";
     actionName += "s:" + sensorName + "/";
     actionName += "e:" + effectorName + "/";
@@ -213,79 +209,27 @@ CB::Controller::Controller(string sen, string pf, string eff) {
 }
 
 
-bool CB::Controller::connectToResources(string sen, string ref, string eff) {
-
-    bool ok = true;
-
-    int randomID;
-    Random::seed(time(NULL));
-    randomID = (int)(Random::uniform()*1000.0);
-    char *c;
-    c = (char *)malloc(16);
-    sprintf(c, "%d", randomID);
-    string randomIDstr(c);
-
-    sensorOutputName = sen + "/data:o";
-    sensorInputName = "/cb/controller/" + randomIDstr + "/sensor" + sen + "/data:i";
-    ok &= sensorInputPort.open(sensorInputName.c_str());
-    ok &= Network::connect(sensorOutputName.c_str(),sensorInputName.c_str(),"tcp");
-    if(!ok) {
-        cout << "Controller couldn't connect to sensor: " << sensorOutputName.c_str() << endl;
-        return ok;
-    }
-    cout << "Controller connected sensor." << endl;
-
-    if(hasReference) {
-        refOutputName = ref + "/data:o";
-        refInputName = "/cb/controller/" + randomIDstr + "/ref" + ref + "/data:i";
-        ok &= refInputPort.open(refInputName.c_str());
-        ok &= Network::connect(refOutputName.c_str(),refInputName.c_str(),"tcp");
-        if(!ok) {
-            cout << "Controller couldn't connect to reference: " << refOutputName.c_str() << endl;
-            return ok;
-        }
-        cout << "Controller connected reference." << endl;
-    }
-
-    effectorOutputName = eff + "/data:o";
-    effectorInputName = "/cb/controller/" + randomIDstr + "/effector" + eff + "/data:i";
-
-    ok &= effectorInputPort.open(effectorInputName.c_str());
-    ok &= Network::connect(effectorOutputName.c_str(),effectorInputName.c_str(),"tcp");
-    if(!ok) {
-        cout << "Controller couldn't connect to effector: " << effectorOutputName.c_str() << endl;
-        return ok;
-    }
-    cout << "Controller connected effector." << endl;
-
-    // get effector type
-    parseOutputResource();    
-
-    return ok;
-
-}
-
 bool CB::Controller::createPotentialFunction(string pf) {
 
     bool ok = true;
+    vector<string> pfInputs;
 
     if(!distributedMode) {
         cout << "Controller can't create potential function in local mode..." << endl;
         ok = false;
     }
 
-    if(hasReference) {
-        potentialFunction = pfMap.getPotentialFunction(pf,sensorName,referenceName);
-    } else {
-        potentialFunction = pfMap.getPotentialFunction(pf,sensorName,"");
-    }
+    pfInputs.clear();
+    pfInputs.push_back(sensorName);
+    if(hasReference) pfInputs.push_back(referenceName);
 
+    potentialFunction = PotentialFunctionFactory::instance().createObject(pf,pfInputs);
     if(potentialFunction==NULL) {
         ok = false;
     } else {
-        inputSpace = potentialFunction->getInputSpace();
-        cout << "Controller found input type = " << inputSpace.c_str() << endl;
-    }    
+        inputSpace = potentialFunction->getSpace();
+    }
+
     return ok;
 }
 
@@ -300,8 +244,11 @@ bool CB::Controller::createJacobian() {
         return ok;
     }
 
-    jacobian = jacMap.getJacobian(inputSpace,outputSpace,deviceName);
-    needsJacobianInverse = jacMap.needsInverse(inputSpace,outputSpace);
+    jacobian = JacobianFactory::instance().createObject(inputSpace,outputSpace,deviceName);
+    needsJacobianInverse = JacobianFactory::instance().needsInverse(inputSpace,outputSpace);
+
+//    jacobian = jacMap.getJacobian(inputSpace,outputSpace,deviceName);
+//    needsJacobianInverse = jacMap.needsInverse(inputSpace,outputSpace);
 
     if(needsJacobianInverse) {
         cout << "Controller needs INVERSE jacobian" << endl;
@@ -469,7 +416,8 @@ void CB::Controller::startAction() {
                 reference->startResource();
             }
         }
-        Time::delay(0.5);
+        Time::delay(0.25);
+
     }
 
     if(needsJacobian) {
@@ -496,21 +444,17 @@ void CB::Controller::stopAction() {
     cout << "Controller::stop() -- stopping thread" << endl;
     stop();     // mandatory stop function
 
-    cout << "Controller::stop() -- killing jacobian and pf" << endl;
-    if(jacobian!=NULL) jacobian->stopJacobian();
-    if(potentialFunction!=NULL) potentialFunction->stopPotentialFunction();
+    // clear data
+    potentialDotStore.clear();
+    potentialStore.clear();
+    dynamicState = UNKNOWN;
 
-    // close ports
-    if(distributedMode) {
-        cout << "Controller::stop() -- closing sensor input port" << endl;
-        sensorInputPort.close();
-        if(hasReference) {
-        cout << "Controller::stop() -- closing reference input port" << endl;
-            refInputPort.close();
-        }
-        cout << "Controller::stop() -- closing effector input port" << endl;
-        effectorInputPort.close();
-    } else {
+    if(!running) return;
+
+    running = false;
+
+    // stop resources
+    if(!distributedMode) {
         sensor->stopResource();
         if(hasReference) {
             reference->stopResource();
@@ -518,31 +462,69 @@ void CB::Controller::stopAction() {
         effector->stopResource();
     }
 
+    if(needsJacobian) {
+        if(jacobian->isJacobianRunning()) {
+            jacobian->stopJacobian();
+        }
+    }
 
-    potentialDotStore.clear();
-    potentialStore.clear();
+    if(potentialFunction->isPotentialRunning()) {
+        potentialFunction->stopPotentialFunction();
+    }
 
-    cout << "Controller::stop() -- ports closed" << endl;
+    cout << "Controller::stop() -- finished" << endl;
 
 }
 
-void CB::Controller::postData() {
+void CB::Controller::resetController() {
+
+    cout << "Controller::resetController()" << endl;
+
+    stopAction();
+    cout << "Controller::resetController() -- actions stopped" << endl;
+
+    if(!distributedMode) {
+        if(sensor!=NULL) delete sensor; sensor=NULL;
+        if(effector!=NULL) delete effector; effector=NULL;
+        if(reference!=NULL) delete reference; reference=NULL;
+        cout << "Controller::resetController() -- resources deleted" << endl;
+    }
+
+    if(jacobian!=NULL) {
+        jacobian->stopJacobian();
+        delete jacobian; jacobian=NULL;
+    }
+    cout << "Controller::resetController() -- jacobian deleted" << endl;
+
+    if(potentialFunction!=NULL) {
+        potentialFunction->stopPotentialFunction();
+        delete potentialFunction; potentialFunction=NULL;
+    }
+    cout << "Controller::resetController() -- potentialFunction deleted" << endl;
+
+    Vout.clear();    
+    reset();
+
+    cout << "Controller::resetController() -- done" << endl;
+}
+
+
+void CB::Controller::postData() 
+{
     
-    Bottle &b = outputPort[0]->prepare();
-    b.clear();
-    
-    cout << "Controller " << actionName.c_str() << " posting data" << endl;
-  
+    Bottle &b = outputPorts[0]->prepare();
+    b.clear();                            
     b.addInt(Vout.size());
     
-    cout << "out: (";
-    for(int i = 0; i < Vout.size(); i++) {
-        cout << Vout[i] << " ";
-       
+    cout << "Vout: (";
+    for(int k = 0; k < Vout.size(); k++) {
+        cout << Vout[k] << " ";
+        
         // add position to output port
-        b.addDouble(Vout[i]);
+        b.addDouble(Vout[k]);
     }
     cout << endl;
-    outputPort[0]->write();      
- 
+    outputPorts[0]->write();      
 }
+
+

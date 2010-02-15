@@ -20,7 +20,6 @@ void CB::ManipulabilityField::startPotentialFunction() {
 }
 
 void CB::ManipulabilityField::stopPotentialFunction() {
-    cout << "ManipulabilityField::stopPotentialFunction()" << endl;
     stop();     // mandatory stop function
 }
 
@@ -42,19 +41,25 @@ bool CB::ManipulabilityField::updatePotentialFunction() {
     double epsilon = 1E-7;
     double mag;
 
-    // get data from ports (should be more safety checks...)
-    b = inputPort[0].read(false);
+    // get data from ports
+    if(inputPorts.size() != 1) {
+        cout << "ManipulabilityField::update() -- wrong number of input ports!!" << endl;
+        return false;
+    }
+    b = inputPorts[0]->read(false);
 
     if(b==NULL) {
-        cout << "ManipulabilityField::update() problem reading data!!" << endl;
+        // non fatal error
+        // cout << "ManipulabilityField::update() problem reading data!!" << endl;
         return ok;
     }
 
     offset = 1;
     potential = 0;
+
     for(int i=0; i<size; i++) {
-        input[0][i] = b->get(i+offset).asDouble();
-        Vsim[i] = input[0][i];
+        (*inputs[0])[i] = b->get(i+offset).asDouble();
+        Vsim[i] = (*inputs[0])[i];
     }
     mag = 0;
 
@@ -106,7 +111,7 @@ bool CB::ManipulabilityField::updatePotentialFunction() {
     gradient = -1.0*gradient;
 
     // get manipulability for acutal joint angles
-    input[0]=kinChain->setAng(input[0]);
+    (*inputs[0])=kinChain->setAng((*inputs[0]));
         
     // compute jacobian and manip metric
     Jfull = kinChain->GeoJacobian();    
@@ -125,31 +130,32 @@ bool CB::ManipulabilityField::connectToInputs() {
     int numLinks;
     int numJoints;
     Matrix H(4,4);
-    //cout << "ManipulabilityField() -- connecting to input port..." << endl;
 
-    cout << "ManipulabilityField::connectToInputs():\n\t " << inputName[0].c_str() << "\n\n\n"; 
+    if(inputNames.size() != 1) {
+        cout << "ManipulabilityField::connectToInputs() -- size mismatch!!" << endl;
+        return false;
+    }
+    cout << "ManipulabilityField::connectToInputs():\n\t " << inputNames[0].c_str() << "\n\n";
     
-    connectedToInputs = false;
+    string configName = inputNames[0] + "/data:o";
+    string paramsName = inputNames[0] + "/params:o";
 
-    string configName = inputName[0] + "/data:o";
-    string paramsName = inputName[0] + "/params:o";
-
-    string prefixStr = "/cb/" + inputSpace;
+    string prefixStr = "/cb/" + getSpace();
     int s = prefixStr.size();
-    string tmp = inputName[0];
+    string tmp = inputNames[0];
     tmp.erase(0,s);
     
     string configNameIn = "/cb/configuration/manipulability_pf" + tmp + "/data:i";
     string paramsNameIn = "/cb/configuration/manipulability_pf" + tmp + "/params:i";
 
     cout << "ManipulabilityField::connectToInputs() -- opening current input port..." << endl;
-    ok &= inputPort[0].open(configNameIn.c_str());
+    ok &= inputPorts[0]->open(configNameIn.c_str());
     if(!ok) {
         cout << "ManipulabilityField::connectToInputs() -- failed opening config input port..." << endl;
         return ok;
     }
     cout << "ManipulabilityField::connectToInputs() -- opening params input port..." << endl;
-    ok &= inputPort[1].open(paramsNameIn.c_str());
+    ok &= paramsInputPort.open(paramsNameIn.c_str());
     if(!ok) {
         cout << "ManipulabilityField::connectToInputs() -- failed opening params input port..." << endl;
         return ok;
@@ -171,11 +177,11 @@ bool CB::ManipulabilityField::connectToInputs() {
        
     int thresh = 10;
     int t = 0;
-    Bottle *b = inputPort[1].read(true);
+    Bottle *b = paramsInputPort.read(true);
 
     while(b==NULL) {
         cout << "ManipulabilityField::connect() -- port read failed on attempt " << t << endl;    
-        b = inputPort[1].read(true);
+        b = paramsInputPort.read(true);
         t++;
         if(t==thresh) {
             cout << "ManipulabilityField::connect() -- port read failed, giving up!!" << endl;    
@@ -251,7 +257,7 @@ bool CB::ManipulabilityField::connectToInputs() {
     
         cout << "ManipulabilityField::connectToInputs() -- read parameter data, got size=" << size << endl;
         
-        input[0].resize(size); input[0].zero();
+        inputs[0]->resize(size); inputs[0]->zero();
         gradient.resize(size); gradient.zero();
         
     }  
@@ -259,7 +265,9 @@ bool CB::ManipulabilityField::connectToInputs() {
         cout << "could not read data..." << endl;
     }
     
-    //ok &= Network::disconnect(limitsName.c_str(),limitsNameIn.c_str());            
+    ok &= Network::disconnect(paramsName.c_str(),paramsNameIn.c_str());            
+    paramsInputPort.close();
+
     cout << "ManipulabilityField done connecting to YARP input ports..." << endl;
     connectedToInputs = true;
     return ok; 

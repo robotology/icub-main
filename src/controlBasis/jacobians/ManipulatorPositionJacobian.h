@@ -48,68 +48,58 @@ namespace CB {
          **/
         std::deque<iKin::iKinLink*> linkList;
 
+        /**
+         * Port to get the configuration information of the device
+         **/
+        yarp::os::BufferedPort<yarp::os::Bottle> paramPort;
 
     public:
 
         /**
          * Constructor.
          **/        
-        ManipulatorPositionJacobian(std::string name, int n=0) {           
- 
-            inputSize = n;
-            outputSize = 3;
+        ManipulatorPositionJacobian(int n=0) :
+            ControlBasisJacobian("configuration", "cartesianposition", n, 3)
+        {           
 
-            deviceName = name;
-
-            std::cout << "Creating new ManipulatorPositionJacobian for " << deviceName.c_str() << std::endl;
-            
-            if(inputSize!=0) {
+            if(n!=0) {
+                inputSize=n;
                 J.resize(outputSize,inputSize);
-                configVals.resize(inputSize);
-            } 
+                configVals.resize(inputSize);                
+            }  else {
+                configVals.resize(1);
+            }
 
-            running = false;
-
-            inputSpace = "configuration";
-            outputSpace = "cartesianposition";
-            
             paramsSet = false;
 
-            // requires the DH parameters and current config values from the Configuration resource
-            numInputs = 2;
-            inputNames.push_back("params");
-            inputNames.push_back("vals");
-
-            inputPorts.push_back(new yarp::os::BufferedPort<yarp::os::Bottle>);
-            inputPorts.push_back(new yarp::os::BufferedPort<yarp::os::Bottle>);
-
-            connectedToInputs = false;
         }
         
         /**
          * destructor
          **/
-        ~ManipulatorPositionJacobian() { }
+        ~ManipulatorPositionJacobian() { 
+            paramPort.close();
+        }
 
         /**
          * inherited update function
          **/
-        bool updateJacobian();
+        virtual bool updateJacobian();
 
         /**
          * inherited start function
          **/
-        void startJacobian();
+        virtual void startJacobian();
 
         /**
          * inherited stop function
          **/
-        void stopJacobian();
+        virtual void stopJacobian();
 
         /**
          * inherited connect to inputs function
          **/
-        bool connectToInputs();
+        virtual bool connectToInputs();
 
     };
     

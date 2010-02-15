@@ -156,49 +156,27 @@ namespace CB {
         /** 
          * virtual update function
          **/
-        virtual bool updateResource()
-        {
-            std::cout << "cb resource update" << std::endl;
-        }        
+        virtual bool updateResource()=0;
 
         /**
          * virtual start function
          **/
-        virtual void startResource()
-        {
-            std::cout << "cb resource start" << std::endl;
-        }
+        virtual void startResource()=0;
 
         /**
          * virtual stop function
          **/
-        virtual void stopResource()
-        {
-            std::cout << "cb resource stop" << std::endl;
-            /*            for(int i=0; i<inputPort.size(); i++) {
-                inputPort[i]->close();
-            }
-            for(int i=0; i<outputPort.size(); i++) {
-                outputPort[i]->close();
-            }
-            */
-        }
+        virtual void stopResource()=0;
         
         /**
          * virtual post data function to be filled in by instantiation
          **/
-        virtual void postData()
-        {
-            //std::cout << "cb post data for " << resourceName.c_str() << std::endl;
-        }
-        
+        virtual void postData()=0;
+
         /**
          * virtual set data function to be filled in by instantiation
          **/
-        virtual void getInputData()
-        {
-            //std::cout << "cb getting input data for " << resourceName.c_str() << std::endl ;
-        }
+        virtual void getInputData()=0;
         
         /**
          * Initiallization function for starting ports
@@ -208,7 +186,7 @@ namespace CB {
             // set up port names
             resourceName = "/cb/" + type + deviceName;
             
-            std::cout << "ControlBasisResource::run() name=" << resourceName.c_str() << std::endl;
+            std::cout << "ControlBasisResource::initPorts() name=" << resourceName.c_str() << std::endl;
             
             std::cout << "configuring " << numOutputs << " outputs for " << resourceName.c_str() << std::endl;
             outputPort.clear();
@@ -228,6 +206,7 @@ namespace CB {
                 inputPort[i]->open(inputPortName[i].c_str());
             }
 
+            std::cout << "ControlBasisResource::initPorts() initialized" << std::endl;
         };
 
         /**
@@ -262,10 +241,11 @@ namespace CB {
         /**
          * Constructor
          **/
-        ControlBasisResource() :
+        ControlBasisResource(std::string type, int numInputs, int numOutputs) :
+            type(type),
+            numInputs(numInputs),
+            numOutputs(numOutputs),
             updateDelay(0.01),
-            numInputs(0),
-            numOutputs(0),
             lock(true)
         {            
         }

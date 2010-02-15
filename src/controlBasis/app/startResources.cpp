@@ -2,7 +2,7 @@
 #include <YARPConfigurationVariables.h>
 #include <iCubFullArmConfigurationVariables.h>
 #include <EndEffectorCartesianPosition.h>
-#include <CartesianPositionHarmonicReference.h>
+//#include <CartesianPositionHarmonicReference.h>
 #include <ManipulatorPositionJacobian.h>
 #include <Controller.h>
 #include <RunnableControlLaw.h>
@@ -32,7 +32,7 @@ YARPConfigurationVariables *iCubTorso;
 EndEffectorCartesianPosition *endEffector[2]; 
 EndEffectorCartesianPosition *legEndEffector[2]; 
 EndEffectorCartesianPosition *fullArmEndEffector[2]; 
-CartesianPositionHarmonicReference *harmonicPositionRef;
+//CartesianPositionHarmonicReference *harmonicPositionRef;
 
 string fullArmName[2];
 string fullArmConfigFile[2];
@@ -147,7 +147,7 @@ void stopResources() {
             iCubArm[i]->stopResource();
             //iCubLeg[i]->stopResource();
             //iCubHand[i]->stopResource();
-            //endEffector[i]->stopResource(); 
+            endEffector[i]->stopResource(); 
             //legEndEffector[i]->stopResource(); 
             //fullArmEndEffector[i]->stopResource(); 
      
@@ -164,7 +164,7 @@ void stopResources() {
         //harmonicPositionRef->stopResource();
         delete iCubHead;
         delete iCubTorso;
-        delete harmonicPositionRef;
+        //        delete harmonicPositionRef;
     }
 }
 
@@ -182,7 +182,7 @@ void startResources() {
         */
         iCubArm[i] = new YARPConfigurationVariables(armName[i], armName[i], armNumJoints, armNumLinks);
         iCubArm[i]->loadConfig(armConfigFile[i]);
-        iCubArm[i]->setUpdateDelay(0.1);
+        iCubArm[i]->setUpdateDelay(0.05);
         iCubArm[i]->startResource();
 
         if(!simulationMode) {
@@ -204,8 +204,11 @@ void startResources() {
         Time::delay(.75);
         */
         // start up end effectors
-        /*
+
         endEffector[i] = new EndEffectorCartesianPosition(armName[i]);
+        endEffector[i]->startResource();
+        endEffector[i]->setUpdateDelay(0.05);
+        /*
         if(!endEffector[i]->connectToConfiguration()) {
             printf("Couldn't connect end effector[%d]...\n",i);
         } else {
@@ -271,7 +274,7 @@ void doUI() {
             posRef[0] = (double)x;
             posRef[1] = (double)y;
             posRef[2] = (double)z;
-            harmonicPositionRef->setGoal(posRef);            
+            //            harmonicPositionRef->setGoal(posRef);            
         } 
         else if(command=="quit") {
             break;

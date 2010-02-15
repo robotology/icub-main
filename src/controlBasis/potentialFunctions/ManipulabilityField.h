@@ -38,6 +38,11 @@ namespace CB {
         yarp::sig::Vector LinkTypes;
 
         /**
+         * port to get DH parameter and link information
+         **/
+        yarp::os::BufferedPort<yarp::os::Bottle> paramsInputPort;
+
+        /**
          * indicator flag concerning whether DH parameter info has been set
          **/
         bool paramsSet;
@@ -48,31 +53,20 @@ namespace CB {
         std::deque<iKin::iKinLink*> linkList;
 
     public:
-        
+
         /**
-         * Constructor
-         * \param inName, the name of the manipulator
+         * Empty Constructor, needs to set configuration info
          **/
-        ManipulabilityField(std::string inName) {
-            
-            inputName[0] = inName;
+        ManipulabilityField() :
+            ControlBasisPotentialFunction("manipulability_pf","configuration",false)
+        {
 
-            std::cout << "Creating new ManipulabilityField PotentialFunction for " << inputName[0].c_str() << std::endl;
-
-            input[0].resize(1);
+            inputs.resize(1);
             DHParams.resize(1,1);
             LinkTypes.resize(1);
             gradient.resize(1);
 
-            hasReference = false;
-            running = false;
-
-            potential = 0;
-            inputSpace = "configuration";
-            pfTypeName = "manipulability_pf";
-
-            connectedToInputs = false;
-
+            std::cout << "Created new ManipulabilityField... " << std::endl;
         }
         
         /**
@@ -83,22 +77,22 @@ namespace CB {
         /**
          * inherited update function
          **/
-        bool updatePotentialFunction();
+        virtual bool updatePotentialFunction();
 
         /**
          * inherited start function
          **/
-        void startPotentialFunction();
+        virtual void startPotentialFunction();
 
         /**
          * inherited stop function
          **/
-        void stopPotentialFunction();
+        virtual void stopPotentialFunction();
 
         /**
          * inherited connect function
          **/
-        bool connectToInputs();
+        virtual bool connectToInputs();
 
         /**
          * gets the manipulability metric for the specified Jacobian matrix

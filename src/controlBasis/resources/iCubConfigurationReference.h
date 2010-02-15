@@ -26,7 +26,7 @@ namespace CB {
         /** 
          * implements update for the parent class (does nothing here)
          **/
-        bool updateResource() { }
+        bool updateResource() { return true; }
         
         /** 
          * starts the resource

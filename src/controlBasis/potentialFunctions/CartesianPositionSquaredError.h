@@ -15,33 +15,14 @@ namespace CB {
         
     public:
         
-        /** 
-         * Constructor.
-         * \param inName the current value of the device
-         * \param refName the reference value of the device
+        /**
+         * Empty Constructor, needs to set configuration info
          **/
-        CartesianPositionSquaredError(std::string inName, std::string refName) {
-            
+        CartesianPositionSquaredError() :
+            ControlBasisPotentialFunction("squared_error_pf", "cartesianposition", true)        
+        {                        
             size = 3;
-            inputName[0] = inName;
-            inputName[1] = refName;
-
-            std::cout << "Creating new CartesianPositionSquaredError PotentialFunction (cur=" 
-                      << inputName[0].c_str() << ", ref=" << inputName[1].c_str() << "), size=" << size << std::endl;
-            
-            input[0].resize(size);
-            input[1].resize(size);
-
-            potential = 0;
-            gradient.resize(size);
-
-            inputSpace = "cartesianposition";
-            pfTypeName = "squared_error_pf";
-
-            hasReference = true;           
-            connectedToInputs = false;
-            running = false;
-           
+            gradient.resize(size);           
         }
 
         /**
@@ -52,22 +33,22 @@ namespace CB {
         /**
          * inherited update function
          **/
-        bool updatePotentialFunction();
+        virtual bool updatePotentialFunction();
 
         /**
          * inherited start function
          **/
-        void startPotentialFunction();
+        virtual void startPotentialFunction();
         
         /**
          * inherited stop function
          **/
-        void stopPotentialFunction();
+        virtual void stopPotentialFunction();
         
         /**
          * inherited connect function
          **/
-        bool connectToInputs();
+        virtual bool connectToInputs();
 
 
     };
