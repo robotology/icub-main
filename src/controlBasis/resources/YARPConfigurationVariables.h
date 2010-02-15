@@ -188,17 +188,17 @@ namespace CB {
          * Inherited update function.
          * \returns success on update
          **/
-        bool updateResource();
+        virtual bool updateResource();
 
         /**
          * Inherited start function
          **/
-        void startResource();
+        virtual void startResource();
 
         /**
          * Inherited stop function
          **/
-        void stopResource();
+        virtual void stopResource();
 
         /**
          * Function to connect to the YARP device.

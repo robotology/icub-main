@@ -21,8 +21,7 @@ namespace CB {
         /**
          * Constructor.  This will configure the ports and the names for the device.
          **/
-        ResourceTemplate(std::string devName, std::string yarpDevName, 
-                            int dofs=0, int links=0) :
+        ResourceTemplate(std::string devName) {
             ResourceTypeTemplate()
         {
 
@@ -49,11 +48,11 @@ namespace CB {
          * Inherited start function
          **/
         virtual void startResource() {
-
             // do any connections to hardware or other services that might be necessary
             running = true;
             start();     // mandatory start function
         }
+
         /**
          * Inherited stop function
          **/

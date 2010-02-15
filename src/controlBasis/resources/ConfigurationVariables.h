@@ -175,7 +175,7 @@ namespace CB {
          * it is type specific, so it is defined here.  it is automatically called 
          * after the update() function in the main thread loop.
          **/
-        void postData() {
+        virtual void postData() {
             
             // prepare the output bottles to post information           
             yarp::os::Bottle &b0 = outputPort[0]->prepare();
