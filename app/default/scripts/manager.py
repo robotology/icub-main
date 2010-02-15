@@ -392,8 +392,10 @@ class App:
         self.logfile.writelines("Running"+str(cmd)+"\n")
         fin_time = time.time() + PROCESS_TIMEOUT
         p=subprocess.Popen(cmd, stdout=subprocess.PIPE, stderr=subprocess.PIPE)
+	#, stdout=self.logfile, stderr=self.logfile)
         while (p.poll()==None and  fin_time > time.time()):
-            self.logfile.writelines(p.communicate())
+            #self.logfile.writelines(p.communicate())
+	    #self.logfile.writelines(p.stdout.read())
             time.sleep(PROCESS_POLL_INTERVAL)
                
         if (fin_time < time.time()):
