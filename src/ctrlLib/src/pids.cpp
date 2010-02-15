@@ -19,9 +19,9 @@ Integrator::Integrator(const double _Ts, const Vector &y0, const Matrix &_lim)
     x_old.resize(dim,0.0);
     applySat=true;
 
-    y  =y0;
-    lim=_lim;
     Ts =_Ts;
+    lim=_lim;
+    y  =saturate(y0);
 }
 
 

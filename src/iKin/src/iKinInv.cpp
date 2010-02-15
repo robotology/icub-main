@@ -284,8 +284,7 @@ SteepCtrl::SteepCtrl(iKinChain &c, unsigned int _type, unsigned int _ctrlPose, c
     }
 
     Ts=_Ts;
-    I=new Integrator(Ts,Vector(dim),lim);
-    I->reset(q0);
+    I=new Integrator(Ts,q0,lim);
 
     Kp=_Kp;
 }
@@ -434,14 +433,13 @@ void VarKpSteepCtrl::reset_Kp()
 Vector VarKpSteepCtrl::update_qdot()
 {
     Vector qdot_old=qdot;
-
     qdot=SteepCtrl::update_qdot();
 
     double d=dist();
     double ratio=d/dist_old;
     double Kp_c=1.0;
 
-    if (ratio>max_perf_inc && !(qdot_old==Vector(dim)))
+    if (ratio>max_perf_inc && !norm(qdot_old))
     {
         qdot=qdot_old;
         Kp_c=Kp_dec;
@@ -476,8 +474,7 @@ LMCtrl::LMCtrl(iKinChain &c, unsigned int _ctrlPose, const Vector &q0, double _T
     }
 
     Ts=_Ts;
-    I=new Integrator(Ts,Vector(dim),lim);
-    I->reset(q0);
+    I=new Integrator(Ts,q0,lim);
 
     mu    =_mu0;
     mu0   =_mu0;
