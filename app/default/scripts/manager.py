@@ -16,6 +16,10 @@
 ##MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the GNU General
 ##Public License for more details
 
+
+## Added timeout for process termination.
+## Added log in temp, cleaned up debug messages to terminal.
+
 import sys
 import time
 import xml.dom.minidom
@@ -732,7 +736,10 @@ if __name__ == '__main__':
             else:
                 napp.pushConnection(output, input, "tcp")
 
-        logfilename="/tmp/"+napp.getName()+".log"
+        # getting temp directory
+        tmpPath  = os.getenv("TMP");
+        
+        logfilename=tmpPath+"/"+napp.getName()+".log"
         napp.setLogFilename(logfilename)
         applicationList.append(napp)
 
