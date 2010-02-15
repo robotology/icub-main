@@ -271,6 +271,7 @@ void blobFinderThread::run(){
     }
     else if(this->contrastLP_flag){
         this->drawAllBlobs(true);
+        this->salience->DrawMaxSaliencyBlob(*this->salience->maxSalienceBlob_img,this->max_tag,*this->tagged);
         //ippiCopy_8u_C3R(this->outMeanColourLP->getRawImage(),320*3,_outputImage3->getRawImage(),320*3,srcsize);	
         ippiCopy_8u_C1R(this->outContrastLP->getRawImage(),this->outContrastLP->getRowSize(),_outputImage->getRawImage(),_outputImage->getRowSize(),srcsize);
         conversion=true;
@@ -399,7 +400,7 @@ void blobFinderThread::rain(){
     }
     else
         return;
-    salience->blobCatalog(_tagged, *_inputImgRGS, *_inputImgGRS, *_inputImgBYS,
+    salience->blobCatalog(_tagged, _inputImgRG, _inputImgGR, _inputImgBY,
         _inputImgBlue, _inputImgGreen, _inputImgRed, max_tag);
     blobCataloged_flag=true;
     //istruction to set the ptr_tagged in the Watershed Module with the static variable _tagged

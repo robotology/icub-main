@@ -1,7 +1,7 @@
 #include <iCub/saliencyBlobFinderModule.h>
 
-#include <iostream>
 using namespace std;
+
 
 saliencyBlobFinderModule::saliencyBlobFinderModule(){
     reinit_flag=false;
@@ -244,6 +244,8 @@ bool saliencyBlobFinderModule::getPlanes(){
 
 
 void saliencyBlobFinderModule::outPorts(){ 
+    
+    
     if((0!=blobFinder->image_out)&&(outputPort.getOutputCount())){ 
         outputPort.prepare() = *(blobFinder->image_out);		
         outputPort.write();
@@ -268,6 +270,8 @@ void saliencyBlobFinderModule::outPorts(){
             target_z=in.pop().asDouble();
             target_y=in.pop().asDouble();
             target_x=in.pop().asDouble();
+            
+            
         } else { 
             printf("No response\n");
         }
@@ -282,7 +286,31 @@ void saliencyBlobFinderModule::outPorts(){
         }
         else if((dif>blobFinder->reactivity)&&(dif<blobFinder->reactivity+1)){
             //finds the entries with a greater number of occurencies 
+            std::map<const char*,int>::iterator iterMap;
+            int previousValue=occurencesMap.begin()->second;
+            std::string finalKey("");
+            iterMap=occurencesMap.begin();
+            for(;iterMap==occurencesMap.end();iterMap++){
+                if(iterMap->second>previousValue){
+                    sprintf((char*)finalKey.c_str(),"%s",iterMap->first);
+                }
+            }
             //estracts the strings of the target
+            size_t found;
+            string target_xmap_string("");
+            string target_ymap_string("");
+            string target_zmap_string("");
+            string rest("");
+
+            found=finalKey.find(",");
+            target_xmap_string=finalKey.substr(0,found);
+            rest=finalKey.substr(found,finalKey.length()-found);
+            found=finalKey.find(",");
+            target_ymap_string=rest.substr(0,found);
+            rest=finalKey.substr(found,finalKey.length()-found);
+            found=finalKey.find(",");
+            target_zmap_string=rest.substr(0,finalKey.length());
+            
             //subdived the string into x,y,z
             //send the command.
             Bottle &bot = gazeControlPort.prepare(); 
@@ -295,12 +323,20 @@ void saliencyBlobFinderModule::outPorts(){
             //clear the map
         }
         else{
-            //create the new entry
-            string strTarget("");
-            sprintf((char*)strTarget.c_str(),"%f%f%f",target_x,target_y,target_z);
-            //check if it is present and update the map
             
-        
+            //check if it is present and update the map
+            std::string positionName("");
+            sprintf((char*)positionName.c_str(),"%f,%f,%f",target_x,target_y,target_z);
+            std::map<const char*,int>::iterator iterMap;
+            
+            iterMap=occurencesMap.find(positionName.c_str());
+
+            if(iterMap==0){
+                printf("new occurence!");
+            }
+            else{
+                iterMap->second++;
+            }
 
         }
     }

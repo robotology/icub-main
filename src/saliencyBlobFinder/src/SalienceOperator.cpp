@@ -90,6 +90,7 @@ void SalienceOperator::ComputeSalienceAll(int num_blob, int last_tag){
             m_boxes[i].meanGR = m_boxes[i].grSum / m_boxes[i].areaLP;
             m_boxes[i].meanBY = m_boxes[i].bySum / m_boxes[i].areaLP;
             
+            
             //__OLD//m_boxes[box_num].id = max_tag;
         } else
             m_boxes[i].valid=false;
@@ -520,11 +521,16 @@ int SalienceOperator::DrawContrastLP2(ImageOf<PixelMono>& rg, ImageOf<PixelMono>
             // as the euclidian distance between the colour of the blob and the colour of the target
             //prg mono plane of RG,pgr mono plane of GR, pby mono plane of BY
             //TD is the square root of the sum of square errors between planes and means
-            salienceTD=sqrt((double)(m_boxes[i].meanRG-prg)*(m_boxes[i].meanRG-prg)+
-                            (m_boxes[i].meanGR-pgr)*(m_boxes[i].meanGR-pgr)+
-                            (m_boxes[i].meanBY-pby)*(m_boxes[i].meanBY-pby));
-            //salienceTD=255-salienceTD/sqrt(3.0);
-            salienceTD=255-salienceTD;
+            double RGdistance=m_boxes[i].meanRG-prg;
+            double GRdistance=m_boxes[i].meanGR-pgr;
+            double BYdistance=m_boxes[i].meanBY-pby;
+           
+            salienceTD=sqrt((double)RGdistance*RGdistance+
+                            GRdistance*GRdistance+
+                            BYdistance*BYdistance);
+            //printf("%d:   %d,%d,%d \n",i,m_boxes[i].meanRG,m_boxes[i].meanGR,m_boxes[i].meanBY);
+            salienceTD=255-salienceTD/sqrt(3.0);
+           
             
             /*__OLD//salienceTD=abs(m_boxes[i].meanRG-prg);
                             
@@ -556,6 +562,7 @@ int SalienceOperator::DrawContrastLP2(ImageOf<PixelMono>& rg, ImageOf<PixelMono>
                 maxSalienceTD=salienceTD;
         }
     }
+
     //coefficients for normalisation of BU (a1,b1)
     if (maxSalienceBU!=minSalienceBU) {
         //__OLD//a1=255.*(maxDest-1)/(maxSalienceBU-minSalienceBU);
@@ -599,12 +606,12 @@ int SalienceOperator::DrawContrastLP2(ImageOf<PixelMono>& rg, ImageOf<PixelMono>
         if (m_boxes[i].valid) {
             //__OLD//if ((m_boxes[i].salienceBU==maxSalienceBU && pBU==1) || (m_boxes[i].salienceTD==maxSalienceTD && pTD==1))
             //if ((m_boxes[i].salienceBU==maxSalienceBU && pBU==1)||(m_boxes[i].salienceTD==maxSalienceTD && pTD==1))
-            /*if (m_boxes[i].salienceTotal==maxSalienceTot)
+            if (m_boxes[i].salienceTotal==maxSalienceTot)
                 m_boxes[i].salienceTotal=255;
             else 
-                m_boxes[i].salienceTotal=a3*m_boxes[i].salienceTotal+b3;*/
+                m_boxes[i].salienceTotal=a3*m_boxes[i].salienceTotal+b3;
             
-            m_boxes[i].salienceTotal=m_boxes[i].salienceTotal;
+            //m_boxes[i].salienceTotal=m_boxes[i].salienceTotal;
 
             //for the whole blob in this loop
             for (int r=m_boxes[i].rmin; r<=m_boxes[i].rmax; r++)
@@ -913,7 +920,7 @@ void SalienceOperator::blobCatalog(ImageOf<PixelInt>& tagged,
             m_boxes[tag_index].grSum += gr(c, r);
             m_boxes[tag_index].bySum += by(c, r);
 
-            unsigned char value=r1(c, r);
+            //unsigned char value=r1(c, r);
             m_boxes[tag_index].rSum += r1(c, r);
             m_boxes[tag_index].gSum += g1(c, r);
             m_boxes[tag_index].bSum += b1(c, r);

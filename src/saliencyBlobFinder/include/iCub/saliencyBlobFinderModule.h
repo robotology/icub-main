@@ -3,6 +3,9 @@
 #define _SALIENCYBLOBFINDERMODULE_H_
 
 #include <time.h>
+#include <iostream>
+#include <map>
+using namespace std;
 
 
 //within project includes
@@ -308,6 +311,11 @@ private:
     * function that copies flags to the blobFinder thread
     */
     void copyFlags();
+
+    /**
+    * map of the occurences of control positions
+    */
+    std::map<const char*,int> occurencesMap;
     
 public:
     /**
