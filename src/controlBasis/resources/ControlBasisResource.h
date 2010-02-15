@@ -246,7 +246,8 @@ namespace CB {
             numInputs(numInputs),
             numOutputs(numOutputs),
             updateDelay(0.01),
-            lock(true)
+            lock(true),
+            running(false)
         {            
         }
 
