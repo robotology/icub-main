@@ -253,29 +253,56 @@ void saliencyBlobFinderModule::outPorts(){
         Bottle in,bot;
         //Bottle &bot = triangulationPort.prepare(); 
         bot.clear();
-        bot.addVocab( Vocab::encode("get") ); 
+        /*bot.addVocab( Vocab::encode("get") ); 
         bot.addVocab( Vocab::encode("3dpoint") );
-        bot.addVocab( Vocab::encode("right") );
+        bot.addVocab( Vocab::encode("right") );*/
+        bot.addString("get");
+        bot.addString("3dpoint");
+        bot.addString("right");
         bot.addDouble(blobFinder->salience->centroid_x);
-        bot.addDouble(blobFinder->salience->centroid_y);
-        bot.addDouble(1.0); //fixed distance in which the saccade takes place
+        bot.addDouble(_logpolarParams::_ysize-blobFinder->salience->centroid_y);
+        bot.addDouble(1.5); //fixed distance in which the saccade takes place
         triangulationPort.write(bot,in);
         if (in.size()>0) {
-            printf("Got response: %s\n", in.toString().c_str());
+            printf("3D position: %s\n", in.toString().c_str());
+            target_z=in.pop().asDouble();
+            target_y=in.pop().asDouble();
+            target_x=in.pop().asDouble();
         } else { 
             printf("No response\n");
         }
-        target_z=in.pop().asDouble();
-        target_y=in.pop().asDouble();
-        target_x=in.pop().asDouble();
+        bot.clear();
     }
 
     if(gazeControlPort.getOutputCount()){
-        Bottle &bot = centroidPort.prepare(); 
-        bot.clear();
-        bot.addDouble(target_x);  
-        bot.addDouble(target_y); 
-        bot.addDouble(target_z);
+        time (&end);
+        double dif = difftime (end,start);
+        if(dif>blobFinder->reactivity+1){
+             time (&start);
+        }
+        else if((dif>blobFinder->reactivity)&&(dif<blobFinder->reactivity+1)){
+            //finds the entries with a greater number of occurencies 
+            //estracts the strings of the target
+            //subdived the string into x,y,z
+            //send the command.
+            Bottle &bot = gazeControlPort.prepare(); 
+            bot.clear();
+            int target_xmap,target_ymap, target_zmap;
+            bot.addDouble(target_xmap);  
+            bot.addDouble(target_ymap); 
+            bot.addDouble(target_zmap);
+            gazeControlPort.writeStrict();
+            //clear the map
+        }
+        else{
+            //create the new entry
+            string strTarget("");
+            sprintf((char*)strTarget.c_str(),"%f%f%f",target_x,target_y,target_z);
+            //check if it is present and update the map
+            
+        
+
+        }
     }
 
     if(centroidPort.getOutputCount()){
@@ -362,6 +389,8 @@ bool saliencyBlobFinderModule::respond(const Bottle &command,Bottle &reply){
             reply.addString("set rin : set red intensity value for the target to be sought");
             reply.addString("set gin : set green intensity value for the target to be sought");
             reply.addString("set bin : set blue intensity value for the target to be sought");
+            reply.addString("\n");
+            reply.addString("set rea : set the reactivity in terms of seconds ");
 
             reply.addString("\n");
 
@@ -443,6 +472,14 @@ bool saliencyBlobFinderModule::respond(const Bottle &command,Bottle &reply){
                 this->blobFinder->resetFlags();
                 this->blobFinder->foveaBlob_flag=true;
                 string s(command.get(3).asString().c_str());
+                ok=true;
+            }
+                break;
+            case COMMAND_VOCAB_REA:{
+                //int j = command.get(2).asInt();
+                printf("reactivity of the output \n");
+                double w= command.get(2).asDouble();
+                this->blobFinder->reactivity=w;
                 ok=true;
             }
                 break;

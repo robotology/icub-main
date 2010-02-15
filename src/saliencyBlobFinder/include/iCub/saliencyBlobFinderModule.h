@@ -41,6 +41,8 @@ using namespace yarp::sig;
 #define COMMAND_VOCAB_MAXSALIENCY VOCAB3('m','a','x')
 #define COMMAND_VOCAB_CONTRASTLP VOCAB3('c','l','p')
 #define COMMAND_VOCAB_FOVEA VOCAB3('f','o','v')
+// other commands
+#define COMMAND_VOCAB_REA VOCAB3('r','e','a')
 
 
 #define COMMAND_VOCAB_KBU VOCAB3('k','b','u') //weight of the bottom-up algorithm
@@ -84,7 +86,6 @@ The module does:
 -	stream the most salient blob
 
 \image html saliencyBlobFinder.png
-
 
 
 \section lib_sec Libraries
@@ -137,11 +138,11 @@ InOut ports:
 - <name>/cmd : port for the input rpc commands (for further command send Help command)
 
 This module is able to respond to the following set of commands:
-- set mea
-- set tag
-- set max
-- set clp
-- set fov
+- set mea: select the output which represents all the blobs in mean colour
+- set tag: select the output which represents all the blobs 
+- set max: select the output which represents the most salient blob
+- set clp: select the output which represents all the blobs intensified by the saliency
+- set fov: select the output which represents the fovea blob
 
 - set kbu: weight of the bottom-up algorithm
 - set ktd: weight of top-down algorithm

@@ -348,6 +348,10 @@ public:
 	* blue intensity of the target that has been found 
 	*/
 	double targetBLUE;
+    /**
+	* value that represent the reactivity of the sensorial system in terms of second
+	*/
+	double reactivity;
     
 };
 

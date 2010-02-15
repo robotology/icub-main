@@ -742,7 +742,6 @@ void SalienceOperator::maxSalienceBlob(ImageOf<PixelInt>& tagged, int max_tag, Y
     }
 
     box=m_boxes[max];
-    printf("%d, ",max);
     if(max==1){
         printf("max saliency correspond to the fovea blob \n");
         maxr=0;
