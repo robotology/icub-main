@@ -25,5 +25,5 @@ ADD_EXECUTABLE(${CB_RESOURCE_MODULE} controlBasisResource.cpp)
 ADD_EXECUTABLE(iCubControlBasisResources iCubControlBasisResources.cpp)
 
 INSTALL_TARGETS(/bin controlBasisResource )
-#INSTALL_TARGETS(/bin iCubControlBasisResources )
+INSTALL_TARGETS(/bin iCubControlBasisResources )
 
