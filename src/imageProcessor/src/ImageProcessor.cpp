@@ -318,7 +318,7 @@ void ImageProcessor::resizeImages(int width,int height){
     outputRedGreen3 = ippiMalloc_8u_C1(width,height,&psb_border);
     outputRedGreen32B = ippiMalloc_32f_C1(width,height,&psb32); 
     outputRedGreen32 = ippiMalloc_32f_C1(width,height,&psb32);
-    redGreenBorder=ippiMalloc_8u_C1(width+6,height+6,&psb_border);
+    redGreenBorder=ippiMalloc_8u_C1(width+2,height+2,&psb_border);
 
     //greenRed opponency
     inputGreenRed32 = ippiMalloc_32f_C1(width,height,&psb32);
@@ -327,6 +327,7 @@ void ImageProcessor::resizeImages(int width,int height){
     outputGreenRed3 = ippiMalloc_8u_C1(width,height,&psb);
     outputGreenRed32 = ippiMalloc_32f_C1(width,height,&psb32);
     outputGreenRed32B = ippiMalloc_32f_C1(width,height,&psb32);
+    greenRedBorder=ippiMalloc_8u_C1(width+2,height+2,&psb_border);
    
     //blueYellow opponency temporary images
     outputBlueYellow32 = ippiMalloc_32f_C1(width,height,&psb32);
@@ -335,6 +336,7 @@ void ImageProcessor::resizeImages(int width,int height){
     outputBlueYellow = ippiMalloc_8u_C1(width,height,&psb);
     outputBlueYellow2 = ippiMalloc_8u_C1(width,height,&psb);
     outputBlueYellow3 = ippiMalloc_8u_C1(width,height,&psb);
+    blueYellowBorder=ippiMalloc_8u_C1(width+2,height+2,&psb_border);
 
     resized_flag=true;
 }
@@ -426,6 +428,7 @@ ImageOf<PixelMono>* ImageProcessor::findEdgesBlueOpponency(){
     int height=this->blueYellow_yarp->height();
     IppiSize srcsize ={width,height};
     IppiSize dstsize ={width-2,height-2};
+    IppiSize bordersize={width+2,height+2};
     //2. convolve every colour opponency with the sobel in order to get edges
     /*Ipp32s src0[3*3]={1, 2 ,1,
                      0, 0, 0,
@@ -597,11 +600,11 @@ ImageOf<PixelMono>* ImageProcessor::findEdgesBlueOpponency(){
          
 
     else if (IPPISOBEL){
+        ippiCopyConstBorder_8u_C1R(blueYellow_yarp->getPixelAddress(0,0),blueYellow_yarp->getRowSize(),srcsize,blueYellowBorder,psb_border,bordersize,1,1,0);
+        ippiFilterSobelHoriz_8u_C1R(blueYellowBorder,psb_border,outputBlueYellow3,psb,srcsize);
+        ippiFilterSobelVert_8u_C1R(blueYellowBorder,psb_border,outputBlueYellow2,psb,srcsize);
         
-        ippiFilterSobelHoriz_8u_C1R(blueYellow_yarp->getPixelAddress(0,0),blueYellow_yarp->getRowSize(),outputBlueYellow3,psb,srcsize);
-        ippiFilterSobelVert_8u_C1R(blueYellow_yarp->getPixelAddress(0,0),blueYellow_yarp->getRowSize(),outputBlueYellow2,psb,srcsize);
-        
-        for(int i=0; i<width*height;i++){
+        for(int i=0; i<psb*height;i++){
             if(outputBlueYellow3==NULL){
                 printf("outputBlueYellow3 NULL");
                 break;
@@ -612,22 +615,29 @@ ImageOf<PixelMono>* ImageProcessor::findEdgesBlueOpponency(){
             }
             if(outputBlueYellow3[i]<outputBlueYellow2[i])
                 outputBlueYellow3[i]=outputBlueYellow2[i];
+            outputBlueYellow[i]=outputBlueYellow3[i];
         }
 
-        IppiSize msksize={3,3};
+        /*ippiAdd_8u_C1IRSfs(outputBlueYellow2,psb,outputBlueYellow3,psb,srcsize,0.5);
+        ippiCopy_8u_C1R(outputBlueYellow3,psb,outputBlueYellow,psb,srcsize);*/
+
+        /*IppiSize msksize={3,3};
         Ipp8u src[3*3]={1,1,1,1,1,1,1,1,1};
-        ippiConvValid_8u_C1R(outputBlueYellow3,psb,srcsize,src,3,msksize,&outputBlueYellow[1 + width*1],psb,10);
-        /*conv_8u_to_32f(blueYellow_yarp->getPixelAddress(0,0),width,outputBlueYellow32,psb32,srcsize);
-        ippiFilterSobelCross_32f_C1R(outputBlueYellow32,psb32,outputBlueYellow32B,psb32,srcsize,ippMskSize3x3);
-        conv_32f_to_8u(outputBlueYellow32B,psb32,outputBlueYellow2,psb,srcsize);
-        for(int i=0; i<320*240;i++){
-            if(outputBlueYellow[i]<outputBlueYellow2[i])
-                outputBlueYellow[i]=outputBlueYellow2[i];
-        }*/
+        ippiConvValid_8u_C1R(outputBlueYellow3,psb,srcsize,src,3,msksize,&outputBlueYellow[1 + width*1],psb,10);*/
+
+        
         //ippiFree(outputBlueYellow2);
         //ippiFree(outputBlueYellow3);
     }
-
+    else if(IPPICROSS){
+        conv_8u_to_32f(blueYellow_yarp->getRawImage(),blueYellow_yarp->getRowSize(),outputBlueYellow32,psb32,srcsize);
+        ippiFilterSobelCross_32f_C1R(outputBlueYellow32,psb32,outputBlueYellow32B,psb32,srcsize,ippMskSize3x3);
+        conv_32f_to_8u(outputBlueYellow32B,psb32,outputBlueYellow2,psb,srcsize);
+        for(int i=0; i<psb*width;i++){
+            if(outputBlueYellow[i]<outputBlueYellow2[i])
+                outputBlueYellow[i]=outputBlueYellow2[i];
+        }
+    }
     else if(OPENCVSOBEL){
         
         IppiSize msksize={3,3};
@@ -744,6 +754,7 @@ ImageOf<PixelMono>* ImageProcessor::findEdgesGreenOpponency(){
     int width=this->greenRed_yarp->width();
     int height=this->greenRed_yarp->height();
     IppiSize srcsize ={width,height};
+    IppiSize bordersize={width+2,height+2};
     IppiSize dstsize ={width-2,height-2};
     //2. convolve every colour opponency with the sobel in order to get edges
     
@@ -892,9 +903,11 @@ ImageOf<PixelMono>* ImageProcessor::findEdgesGreenOpponency(){
 
     else if (IPPISOBEL){
         
-        ippiFilterSobelHoriz_8u_C1R(greenRed_yarp->getPixelAddress(0,0),greenRed_yarp->getRowSize(),outputGreenRed3,psb,srcsize);
-        ippiFilterSobelVert_8u_C1R(greenRed_yarp->getPixelAddress(0,0),greenRed_yarp->getRowSize(),outputGreenRed2,psb,srcsize);
-        for(int i=0; i<width*height;i++){
+        ippiCopyConstBorder_8u_C1R(greenRed_yarp->getRawImage(),greenRed_yarp->getRowSize(),srcsize,greenRedBorder,psb_border,bordersize,1,1,0);
+        ippiFilterSobelHoriz_8u_C1R(greenRedBorder,psb_border,outputGreenRed3,psb,srcsize);
+        ippiFilterSobelVert_8u_C1R(greenRedBorder,psb_border,outputGreenRed2,psb,srcsize);
+
+        for(int i=0; i<psb*height;i++){
             if(outputGreenRed==NULL){
                 printf("outputGreenRed NULL");
                 break;
@@ -905,24 +918,30 @@ ImageOf<PixelMono>* ImageProcessor::findEdgesGreenOpponency(){
             }
             if(outputGreenRed3[i]<outputGreenRed2[i])
                 outputGreenRed3[i]=outputGreenRed2[i];
+            outputGreenRed[i]=outputGreenRed3[i];
         }
 
-        IppiSize msksize={3,3};
+        /*ippiAdd_8u_C1IRSfs(outputGreenRed2,psb,outputGreenRed3,psb,srcsize,0.5);
+        ippiCopy_8u_C1R(outputGreenRed3,psb,outputGreenRed,psb,srcsize);*/
+            
+        /*IppiSize msksize={3,3};
         Ipp8u src[3*3]={1,1,1,1,1,1,1,1,1};
-        ippiConvValid_8u_C1R(outputGreenRed3,psb,srcsize,src,3,msksize,&outputGreenRed[1 + width*1],psb,5);
+        ippiConvValid_8u_C1R(outputGreenRed3,psb,srcsize,src,3,msksize,&outputGreenRed[1 + width*1],psb,5);*/
         
-        /*conv_8u_to_32f(greenRed_yarp->getPixelAddress(0,0),width,outputGreenRed32,psb32,srcsize);
-        ippiFilterSobelCross_32f_C1R(outputGreenRed32,psb32,outputGreenRed32B,psb32,srcsize,ippMskSize3x3);
-        conv_32f_to_8u(outputGreenRed32B,psb32,outputGreenRed2,psb,srcsize);
-        for(int i=0; i<320*240;i++){
-            if(outputGreenRed[i]<outputGreenRed2[i])
-                outputGreenRed[i]=outputGreenRed2[i];
-        }*/
+        
         //ippiFree(outputGreenRed2);
         //ippiFree(outputGreenRed3);
 
     }
-
+    else if(IPPICROSS){
+        conv_8u_to_32f(greenRed_yarp->getRawImage(),greenRed_yarp->getRowSize(),outputGreenRed32,psb32,srcsize);
+        ippiFilterSobelCross_32f_C1R(outputGreenRed32,psb32,outputGreenRed32B,psb32,srcsize,ippMskSize3x3);
+        conv_32f_to_8u(outputGreenRed32B,psb32,outputGreenRed2,psb,srcsize);
+        for(int i=0; i<psb*width;i++){
+            if(outputGreenRed[i]<outputGreenRed2[i])
+                outputGreenRed[i]=outputGreenRed2[i];
+        }
+    }
     else if (OPENCVSOBEL){
         
         IppiSize msksize={3,3};
@@ -1191,7 +1210,7 @@ ImageOf<PixelMono>* ImageProcessor::findEdgesRedOpponency(){
                 outputRedGreen[i]=outputRedGreen2[i];
         }
         ippiFilter_8u_C1R(redGreen_yarp->getPixelAddress(0,0),width,outputRedGreen2,psb,dstsize,&src7s[0],src2Size,anchor,CONVFILTER_TH);
-        for(int i=0; i<320*240;i++){
+        for(int i=0; i<width*height;i++){
             if(outputRedGreen[i]<outputRedGreen2[i])
                 outputRedGreen[i]=outputRedGreen2[i];
         }
@@ -1201,14 +1220,12 @@ ImageOf<PixelMono>* ImageProcessor::findEdgesRedOpponency(){
 
     else if (IPPISOBEL){
         
-        
-        
         ippiCopyConstBorder_8u_C1R(redGreen_yarp->getRawImage(),redGreen_yarp->getRowSize(),srcsize,redGreenBorder,psb_border,bordersize,1,1,0);
         //ippiFilterSobelHoriz_8u_C1R(redGreen_yarp->getRawImage(),redGreen_yarp->getRowSize(),outputRedGreen3,psb,srcsize);
         //ippiFilterSobelVert_8u_C1R(redGreen_yarp->getRawImage(),redGreen_yarp->getRowSize(),outputRedGreen2,psb,srcsize);
         ippiFilterSobelHoriz_8u_C1R(redGreenBorder,psb_border,outputRedGreen3,psb,srcsize);
         ippiFilterSobelVert_8u_C1R(redGreenBorder,psb_border,outputRedGreen2,psb,srcsize);
-        /*for(int i=width+2; i<width+2*height+2;i++){
+        for(int i=0; i<psb*height;i++){
             if(outputRedGreen==NULL){
                 printf("outputRedGreen NULL");
                 break;
@@ -1220,22 +1237,27 @@ ImageOf<PixelMono>* ImageProcessor::findEdgesRedOpponency(){
             if(outputRedGreen3[i]<outputRedGreen2[i])
                 outputRedGreen3[i]=outputRedGreen2[i];
             outputRedGreen[i]=outputRedGreen3[i];
-        }*/
-        ippiCopy_8u_C1R(outputRedGreen3,psb,outputRedGreen,psb,srcsize);
+        }
+
+        /*ippiAdd_8u_C1IRSfs(outputRedGreen2,psb,outputRedGreen3,psb,srcsize,0.5);
+        ippiCopy_8u_C1R(outputRedGreen3,psb,outputRedGreen,psb,srcsize);*/
 
         /*IppiSize msksize={3,3};
         Ipp8u src[3*3]={1,1,1,1,1,1,1,1,1};
         ippiConvValid_8u_C1R(redGreen_yarp->getRawImage(),redGreen_yarp->getRowSize(),srcsize,src,3,msksize,&outputRedGreen[1 + width*1],psb,5);*/
 
-        /*conv_8u_to_32f(redGreen_yarp->getPixelAddress(0,0),width,outputRedGreen32,psb32,srcsize);
-        ippiFilterSobelCross_32f_C1R(outputRedGreen32,psb32,outputRedGreen32B,psb32,srcsize,ippMskSize3x3);
-        conv_32f_to_8u(outputRedGreen32B,psb32,outputRedGreen2,psb,srcsize);
-        for(int i=0; i<320*240;i++){
-            if(outputRedGreen[i]<outputRedGreen2[i])
-                outputRedGreen[i]=outputRedGreen2[i];
-        }*/
+        
         //ippiFree(outputRedGreen2);
         //ippiFree(outputRedGreen3);
+    }
+    if (IPPICROSS){
+        conv_8u_to_32f(redGreen_yarp->getRawImage(),redGreen_yarp->getRowSize(),outputRedGreen32,psb32,srcsize);
+        ippiFilterSobelCross_32f_C1R(outputRedGreen32,psb32,outputRedGreen32B,psb32,srcsize,ippMskSize3x3);
+        conv_32f_to_8u(outputRedGreen32B,psb32,outputRedGreen2,psb,srcsize);
+        for(int i=0; i<psb*height;i++){
+            if(outputRedGreen[i]<outputRedGreen2[i])
+                outputRedGreen[i]=outputRedGreen2[i];
+        }
     }
 
     if (OPENCVSOBEL){
@@ -1310,7 +1332,7 @@ void ImageProcessor::blankBorder(Ipp8u* image, int maxk){
     for(int x=0;x<width;x++)
      for(int k=0;k<maxk;k++){
         image[x+(y0+k)*width]=(Ipp8u)0;
-        image[x+(ylast-k)*width]=(Ipp8u)0;
+        //image[x+(ylast-k)*width]=(Ipp8u)0;
     }
 }
 
@@ -1835,9 +1857,9 @@ ImageOf<PixelMono>* ImageProcessor::combineMax(){
 
 
     for(int i=0; i<redGreenEdges_yarp->getRowSize()*height;i++){
-        edgesOutput_ippi[i]=edgesRed_ippi[i];
+        //edgesOutput_ippi[i]=edgesBlue_ippi[i];
 
-        /*if(edgesGreen_ippi[i]<edgesRed_ippi[i])
+        if(edgesGreen_ippi[i]<edgesRed_ippi[i])
             if(edgesRed_ippi[i]<edgesBlue_ippi[i])
                 edgesOutput_ippi[i]=edgesBlue_ippi[i];
             else
@@ -1846,7 +1868,7 @@ ImageOf<PixelMono>* ImageProcessor::combineMax(){
             if(edgesGreen_ippi[i]<edgesBlue_ippi[i])
                 edgesOutput_ippi[i]=edgesBlue_ippi[i];
             else
-                edgesOutput_ippi[i]=edgesGreen_ippi[i];*/
+                edgesOutput_ippi[i]=edgesGreen_ippi[i];
 
 
         /*if(edgesOutput_ippi[i]==255) 
@@ -1866,7 +1888,7 @@ ImageOf<PixelMono>* ImageProcessor::combineMax(){
     /*ippiAdd_8u_C1IRSfs(edgesGreen_ippi,psb,edgesOutput->getPixelAddress(0,0),width,srcsize,1);
     ippiAdd_8u_C1IRSfs(edgesRed_ippi,psb,edgesOutput->getPixelAddress(0,0),width,srcsize,1);
     ippiAdd_8u_C1IRSfs(edgesBlue_ippi,psb,edgesOutput->getPixelAddress(0,0),width,srcsize,1);*/
-    //blankBorder(edgesOutput_ippi);
+    blankBorder(edgesOutput_ippi,4);
     ippiCopy_8u_C1R(edgesOutput_ippi,psb,edgesOutput->getRawImage(),edgesOutput->getRowSize(),srcsize);
     //edgesOutput->setExternal((unsigned char*)pointerRed,height,width);
 

@@ -189,6 +189,7 @@ class ImageProcessor:public RateThread
         Ipp8u* outputGreenRed3; // = ippiMalloc_8u_C1(width,height,&psb);
         Ipp32f* outputGreenRed32; // = ippiMalloc_32f_C1(width,height,&psb32);
         Ipp32f* outputGreenRed32B; // = ippiMalloc_32f_C1(width,height,&psb32);
+        Ipp8u* greenRedBorder;
        
         //blueYellow opponency temporary images
         Ipp32f* outputBlueYellow32; // = ippiMalloc_32f_C1(width,height,&psb32);
@@ -197,6 +198,7 @@ class ImageProcessor:public RateThread
         Ipp8u* outputBlueYellow; // = ippiMalloc_8u_C1(width,height,&psb);
         Ipp8u* outputBlueYellow2; // = ippiMalloc_8u_C1(width,height,&psb);
         Ipp8u* outputBlueYellow3; // = ippiMalloc_8u_C1(width,height,&psb);
+        Ipp8u* blueYellowBorder;
         
     public:
         /**
@@ -493,6 +495,10 @@ class ImageProcessor:public RateThread
         * flag that allows find edges function to use a sequence of convolutions
         */
         bool CONVSEQ;
+        /**
+        * flag that allow to use the ippiSobelCross function
+        */
+        bool IPPICROSS;
 
         //---
         Ipp32f src0f[9];

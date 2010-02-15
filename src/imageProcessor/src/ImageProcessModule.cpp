@@ -57,6 +57,7 @@ bool ImageProcessModule::interruptModule() {
 }
 
 bool ImageProcessModule::close() {
+    
     printf("Closing the module ... \n");
     if(0!=currentProcessor){
         printf("Thread running! Closing the thread ... \n");
@@ -296,6 +297,7 @@ void ImageProcessModule::resetFlags(){
     currentProcessor->CONVSEQ=false;
     currentProcessor->IPPISOBEL=false;
     currentProcessor->OPENCVSOBEL=false;
+    currentProcessor->IPPICROSS=false;
 }
 
 bool ImageProcessModule::respond(const Bottle &command,Bottle &reply){
