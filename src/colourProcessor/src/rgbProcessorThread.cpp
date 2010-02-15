@@ -286,9 +286,9 @@ void rgbProcessorThread::colourOpponency(){
 	ippiFilterGaussBorder_32f_C1R(bluePlane_ippi32,psb2,bluePlane_ippi32_f,psb2,srcsize,kernelSize,sigma,ippBorderConst,value,pBufferBlue);
 	ippiFilterGaussBorder_32f_C1R(redPlane_ippi32,psb2,redPlane_ippi32_f,psb2,srcsize,kernelSize,sigma,ippBorderConst,value,pBufferRed);
 	
-    ippiConvert_32f8u_C1R(redPlane_ippi32_f,psb2,redPlane_ippi8u_f,psb,srcsize,IppRoundMode::ippRndNear);
-    ippiConvert_32f8u_C1R(greenPlane_ippi32_f,psb2,greenPlane_ippi8u_f,psb,srcsize,IppRoundMode::ippRndNear);
-    ippiConvert_32f8u_C1R(bluePlane_ippi32_f,psb2,bluePlane_ippi8u_f,psb,srcsize,IppRoundMode::ippRndNear);
+    ippiConvert_32f8u_C1R(redPlane_ippi32_f,psb2,redPlane_ippi8u_f,psb,srcsize,ippRndNear);
+    ippiConvert_32f8u_C1R(greenPlane_ippi32_f,psb2,greenPlane_ippi8u_f,psb,srcsize,ippRndNear);
+    ippiConvert_32f8u_C1R(bluePlane_ippi32_f,psb2,bluePlane_ippi8u_f,psb,srcsize,ippRndNear);
 
 
     /*ippiSub_8u_C1RSfs(redPlane_ippi8u,psb,greenPlane_ippi8u_f,psb,redGreen_yarp->getRawImage(),redGreen_yarp->getRowSize(),srcsize,0);
