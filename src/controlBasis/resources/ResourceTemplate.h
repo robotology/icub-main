@@ -40,32 +40,26 @@ namespace CB {
          * Inherited update function.
          * \returns success on update
          **/
-        bool updateResource() {
-
+        virtual bool updateResource() {
             // update the data that this service is publishing
-
             return true;
         }
 
         /**
          * Inherited start function
          **/
-        void startResource() {
+        virtual void startResource() {
 
             // do any connections to hardware or other services that might be necessary
-
             running = true;
             start();     // mandatory start function
         }
         /**
          * Inherited stop function
          **/
-        void stopResource() {
-
+        virtual void stopResource() {
             stop(); // mandatory stop function
-
             // disconnect any connections to hardware or other service
-
         }
 
 
