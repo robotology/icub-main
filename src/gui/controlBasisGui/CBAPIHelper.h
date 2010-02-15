@@ -36,7 +36,9 @@ namespace CB {
         /**
          * Destuctor
          **/
-        ~CBAPIHelper() { }
+        ~CBAPIHelper() { 
+            clearControlLaw();
+        }
       
         /**
          * Adds a controller to the law with the resources specified.
