@@ -64,6 +64,9 @@ This file can be edited at
 #include <yarp/os/impl/NameClient.h>
 #include <yarp/os/impl/NameConfig.h>
 
+#include "PotentialFunctionRegister.h"
+#include "JacobianRegister.h"
+
 using namespace CB;
 using namespace std;
 using namespace yarp::os;
@@ -91,6 +94,9 @@ CBAPIWindow::CBAPIWindow() :
     gainLabel("gain:")
 {
 
+    registerPotentialFunctions();
+    registerJacobians();
+
     controlLawRunning = false;
     showVirtualEffectors = false;
     useJacobianTranspose = true;
@@ -100,7 +106,7 @@ CBAPIWindow::CBAPIWindow() :
     set_title("Control Basis API GUI");
     set_size_request(1200,750);
     set_border_width(10);
-    set_icon_from_file("cb.png");
+    //set_icon_from_file("cb.png");
 
     addControllerButton.set_border_width(4);
     clearControllerButton.set_border_width(4);
@@ -181,6 +187,8 @@ CBAPIWindow::CBAPIWindow() :
 
     show_all_children();
     
+    cout << "test 0\n";
+
     loadPotentialFunctions();
     loadJacobians();
     refreshResourceList();
@@ -200,7 +208,11 @@ CBAPIWindow::CBAPIWindow() :
 
 }
 
-CBAPIWindow::~CBAPIWindow() { }
+CBAPIWindow::~CBAPIWindow() { 
+    for(int i=0; i<pfInfo.size(); i++) 
+        delete pfInfo[i];
+    pfInfo.clear();
+}
 
 
 void CBAPIWindow::on_control_thread_update(ControlDataThread *dThread) {
@@ -209,33 +221,32 @@ void CBAPIWindow::on_control_thread_update(ControlDataThread *dThread) {
 }
 
 void CBAPIWindow::on_notebook_switch_page(GtkNotebookPage* /* page */, guint page_num) {
-    std::cout << "CBAPI Switching to tab " << page_num << std::endl;
+    cout << "CBAPI Switching to tab " << page_num << endl;
 }
 
 void CBAPIWindow::on_sensor_selection() {
-    std::cout << "got sensor selection" << endl;
+    cout << "got sensor selection" << endl;
     string sen = sensorList.getSelected();
     if(sen=="") return;
 }
 
 void CBAPIWindow::on_reference_selection() {
-    std::cout << "got reference selection" << endl;
+    cout << "got reference selection" << endl;
     string ref = referenceList.getSelected();
     if(ref=="") return;
 }
 
 void CBAPIWindow::on_potential_function_selection() {
-    std::cout << "got pf selection" << endl;
+    cout << "got pf selection" << endl;
     string pf = potentialFunctionList.getSelected();
     if(pf=="") return;
 
     refreshResourceList();
+    
     int id;
     for(id=0; id<pfInfo.size(); id++) {
-        if(pfInfo[id].name == pf) break;
+        if(pfInfo[id]->name == pf) break;
     }
-
-    printf("got PF: %s, space: %s, ref=%d\n", pfInfo[id].name.c_str(), pfInfo[id].space.c_str(), (int)(pfInfo[id].hasReference));
 
     referenceList.clear();
     sensorList.clear();
@@ -243,7 +254,7 @@ void CBAPIWindow::on_potential_function_selection() {
     printf("sensor 1 info size: %d\n", sensorInfo.size());
     for(int i=0; i<sensorInfo.size(); i) {
         printf("testing sensor %s %s\n", sensorInfo[i].space.c_str(), sensorInfo[i].name.c_str());
-        if(sensorInfo[i].space != pfInfo[id].space) {
+        if(sensorInfo[i].space != pfInfo[id]->space) {
             sensorInfo.erase(sensorInfo.begin()+i);
         } else {
             i++;
@@ -256,7 +267,7 @@ void CBAPIWindow::on_potential_function_selection() {
         str = sensorInfo[i].space + sensorInfo[i].name;
         printf("adding sensor: %s\n", str.c_str());
         sensorList.addResource(str);
-        if(pfInfo[id].hasReference) {
+        if(pfInfo[id]->hasReference) {
             referenceList.addResource(str);
         }
     }
@@ -392,10 +403,12 @@ void CBAPIWindow::refreshResourceList() {
     }   
 }
 
-void CBAPIWindow::loadPotentialFunctions() {
+void CBAPIWindow::loadPotentialFunctionsFromFile() {
 
     FILE *fp;
-    string fname = "../../controlBasis/potentialFunctions/potentialFunctions.dat";
+    string ICUB_ROOT(getenv("ICUB_ROOT"));    
+    string fname = ICUB_ROOT + "/src/controlBasis/potentialFunctions/potentialFunctions.dat";
+    cout << fname << endl;
 
     if( (fp=fopen(fname.c_str(), "r")) == NULL ) {
         cout << "problem opening \'" << fname.c_str() << "\' for reading!!!" << endl;
@@ -411,12 +424,13 @@ void CBAPIWindow::loadPotentialFunctions() {
     string lineStr;
     
     int start,stop;
-    
-    PotentialFunctionInfo info;
-    
+       
     potentialFunctionList.clear();
+    
     while(fgets(line, 128, fp) != NULL) {
-        
+
+        PotentialFunctionInfo *info = new PotentialFunctionInfo();        
+
         lineStr = string(line);
         
         start = 0;
@@ -433,12 +447,12 @@ void CBAPIWindow::loadPotentialFunctions() {
         pfSpace = lineStr.substr(start,stop-start);
         start = lineStr.find_first_not_of(" ", stop+1);
 
-        info.name = pfName;
-        info.space = pfSpace;
+        info->name = pfName;
+        info->space = pfSpace;
         if(pfHasReference=="true") 
-            info.hasReference = true; 
+            info->hasReference = true; 
         else 
-            info.hasReference = false; 
+            info->hasReference = false; 
         pfInfo.push_back(info);
         
         potentialFunctionList.addResource(pfName);
@@ -448,14 +462,38 @@ void CBAPIWindow::loadPotentialFunctions() {
     fclose(fp);
 }
 
+void CBAPIWindow::loadPotentialFunctions() {
+
+    for(int i=0; i<pfInfo.size(); i++) {
+        delete pfInfo[i];
+    }
+    pfInfo.clear();
+    potentialFunctionList.clear();
+
+    for(int i=0; i<PotentialFunctionFactory::instance().getNumRegisteredPotentialFunctions(); i++) {
+
+        PotentialFunctionInfo *info = new PotentialFunctionInfo();
+        info->name = PotentialFunctionFactory::instance().getPotentialFunctionInfo(i).name;
+        info->space = PotentialFunctionFactory::instance().getPotentialFunctionInfo(i).space;
+        info->hasReference = PotentialFunctionFactory::instance().getPotentialFunctionInfo(i).hasReference;
+        pfInfo.push_back(info);
+        potentialFunctionList.addResource(PotentialFunctionFactory::instance().getName(i));   
+
+        cout << "Loaded PF: " << PotentialFunctionFactory::instance().getName(i).c_str() << endl;
+    }
+            
+}
+
 void CBAPIWindow::loadJacobians() {
 
     FILE *fp;
-    string fname = "../../controlBasis/jacobians/jacobians.dat";
+    string ICUB_ROOT(getenv("ICUB_ROOT"));    
+    string fname = ICUB_ROOT + "/src/controlBasis/jacobians/jacobians.dat";
+    cout << fname << endl;
 
     if( (fp=fopen(fname.c_str(), "r")) == NULL ) {
         cout << "problem opening \'" << fname.c_str() << "\' for reading!!!" << endl;
-        pfInfo.clear();
+        jacInfo.clear();
         return;
     }
     
@@ -511,9 +549,9 @@ void CBAPIWindow::on_add_button_clicked() {
     
     int id;
     for(id=0; id<pfInfo.size(); id++) {
-        if(pfInfo[id].name == pf) break;
+        if(pfInfo[id]->name == pf) break;
     }
-    if(pfInfo[id].hasReference) {
+    if(pfInfo[id]->hasReference) {
         cout << "Please select control resources" << endl;
         if(ref=="") return;
     }
@@ -523,6 +561,13 @@ void CBAPIWindow::on_add_button_clicked() {
     cout << "got input gain: " << gainStr << endl;
     sscanf(gainStr.c_str(),"%f",&gain);
     cout << "Setting controller gain: " << gain << endl;
+
+    cout << "adding controller: " << endl;
+    cout << "\t " << pf.c_str() << endl;
+    cout << "\t " << sen.c_str() << endl;
+    if(ref != "") cout << "\t " << ref.c_str() << endl;
+    cout << "\t " << eff.c_str() << endl;
+
     cbapi.addControllerToLaw(sen, ref, pf, eff, useJacobianTranspose, (double)gain);
     
     char c[32];

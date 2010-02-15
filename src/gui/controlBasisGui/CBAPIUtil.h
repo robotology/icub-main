@@ -61,7 +61,7 @@ namespace CB {
     std::string fg, bg;
     
   };
-  
+    /*  
   class PotentialFunctionInfo {
     
   public:
@@ -74,7 +74,7 @@ namespace CB {
     bool hasReference;
   
   };
-  
+    */
   class JacobianInfo {
     
   public:

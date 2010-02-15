@@ -6,6 +6,9 @@
 #include "CBAPIUtil.h"
 #include "ControlDataThread.h"
 
+#include "ControlBasisPotentialFunction.h"
+#include "ControlBasisJacobian.h"
+
 namespace CB {
   
     class CBAPIWindow : public Gtk::Window {
@@ -16,6 +19,7 @@ namespace CB {
         
         void refreshResourceList();
         void loadPotentialFunctions();
+        void loadPotentialFunctionsFromFile();
         void loadJacobians();
 
     protected:
@@ -65,7 +69,7 @@ namespace CB {
         CBAPITextWindow controlOutputText;
         
         // storage information for building control laws
-        std::vector<PotentialFunctionInfo> pfInfo;
+        std::vector<PotentialFunctionInfo *> pfInfo;
         std::vector<JacobianInfo> jacInfo;
         std::vector<ResourceInfo> sensorInfo;
         std::vector<ResourceInfo> effectorInfo;

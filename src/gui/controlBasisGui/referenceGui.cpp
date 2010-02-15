@@ -178,7 +178,17 @@ ReferenceWindow::ReferenceWindow() :
 }
 
 ReferenceWindow::~ReferenceWindow() { 
+
     stopResources();
+
+    delete iCubArmRef;
+    delete iCubFullArmRef;
+    delete iCubLegRef;
+    delete iCubHandRef;
+    delete iCubHeadRef;
+    delete iCubTorsoRef;
+    delete iCubPositionRef;
+
 }
 
 void ReferenceWindow::on_notebook_switch_page(GtkNotebookPage* /* page */, guint page_num) {
@@ -290,6 +300,7 @@ void ReferenceWindow::startResources() {
     posRef.zero();
 
     // start up references
+    cout << endl << "creating iCub arm reference..." << endl << endl;
     iCubArmRef = new iCubConfigurationReference("/icub/arm", 7);  
     iCubArmRef->setVals(armRef);
     iCubArmRef->setUpdateDelay(0.25);
@@ -334,6 +345,7 @@ void ReferenceWindow::stopResources() {
     cout << "stopping resources..." << endl;
     if(resourcesStarted) {
         iCubArmRef->stopResource();
+        iCubFullArmRef->stopResource();
         iCubLegRef->stopResource();
         iCubHandRef->stopResource();
         iCubHeadRef->stopResource();
@@ -341,7 +353,6 @@ void ReferenceWindow::stopResources() {
         iCubPositionRef->stopResource();
         resourcesStarted = false;
     }
-
 }
 
 int main(int argc, char *argv[]) {
@@ -361,7 +372,7 @@ int main(int argc, char *argv[]) {
 
 static void close_handler(int) {
     std::cout << "Shutting down..." << std::endl;
-    exit(0);
+    Gtk::Main::quit();
 }
 
 
