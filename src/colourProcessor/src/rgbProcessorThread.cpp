@@ -247,10 +247,15 @@ void rgbProcessorThread::colourOpponency(){
     ippiConvert_8u32f_C1R(bluePlane->getRawImage(),bluePlane->getRowSize(),bluePlane_ippi32,psb2,srcsize);
     ippiConvert_8u32f_C1R(redPlane->getRawImage(),redPlane->getRowSize(),redPlane_ippi32,psb2,srcsize);*/
 
+    //Conversion planes in signed char
+    ippiRShiftC_8u_C1IR(1,redPlane_ippi,psb,srcsize);
+    ippiRShiftC_8u_C1IR(1,greenPlane_ippi,psb,srcsize);
+    ippiRShiftC_8u_C1IR(1,bluePlane_ippi,psb,srcsize);
+    
 	ippiConvert_8u32f_C1R(greenPlane_ippi,psb,greenPlane_ippi32,psb2,srcsize);
 	ippiConvert_8u32f_C1R(bluePlane_ippi,psb,bluePlane_ippi32,psb2,srcsize);
 	ippiConvert_8u32f_C1R(redPlane_ippi,psb,redPlane_ippi32,psb2,srcsize);
-
+  
 	
 	int pBufferSize;
 	ippiFilterGaussGetBufferSize_32f_C1R(srcsize, 3, &pBufferSize);
@@ -272,19 +277,19 @@ void rgbProcessorThread::colourOpponency(){
 	
     
 	//4.1 subtract the red from the green to obtain R+G-
-	ippiSub_32f_C1R(redPlane_ippi32_f,psb2,greenPlane_ippi32_f,psb2,redGreen_ippi32,psb2,srcsize);
+	ippiSub_32f_C1R(redPlane_ippi32,psb2,greenPlane_ippi32_f,psb2,redGreen_ippi32,psb2,srcsize);
 	//ippiSub_8u_C1RSfs(redGreen_ippi,psb,greenPlane_ippi_f,psb,redGreen_ippi,psb,srcsize,-1);
 	//4.2 subtract the green from the red to obtain G+R-
-	ippiSub_32f_C1R(greenPlane_ippi32_f,psb2,redPlane_ippi32_f,psb2,greenRed_ippi32,psb2,srcsize);
+	ippiSub_32f_C1R(greenPlane_ippi32,psb2,redPlane_ippi32_f,psb2,greenRed_ippi32,psb2,srcsize);
 	//ippiSub_8u_C1RSfs(greenRed_ippi,psb,redPlane_ippi_f,psb,greenRed_ippi,psb,srcsize,-1);
 	//4.3 risht shift;
-	//ippiRShiftC_32s_C1IR(1,greenPlane_ippi32_f,psb2,srcsize);
-	//ippiRShiftC_32s_C1IR(1,redPlane_ippi32_f,psb2,srcsize);
+	ippiRShiftC_32s_C1IR(1,greenPlane_ippi32_f,psb2,srcsize);
+	ippiRShiftC_32s_C1IR(1,redPlane_ippi32_f,psb2,srcsize);
 	//4.4 sum the filtered red and filtered green to get the filtered yellow
 	ippiAdd_32f_C1R(redPlane_ippi32_f,psb2,greenPlane_ippi32_f,psb2,yellowPlane_ippi32_f,psb2,srcsize);
 	//ippiAdd_8u_C1RSfs(redPlane_ippi_f,psb,greenPlane_ippi_f,psb,yellowPlane_ippi_f,psb,srcsize,-1);
 	//4.5. subtract the yellow from the blue in order to get B+Y-
-	ippiSub_32f_C1R(bluePlane_ippi32_f,psb2,yellowPlane_ippi32_f,psb2,blueYellow_ippi32,psb2,srcsize);
+	ippiSub_32f_C1R(bluePlane_ippi32,psb2,yellowPlane_ippi32_f,psb2,blueYellow_ippi32,psb2,srcsize);
 	//ippiSub_8u_C1RSfs(yellowPlane_ippi_f,psb,blueYellow_ippi,psb,blueYellow_ippi,psb,srcsize,-1);
     
 
