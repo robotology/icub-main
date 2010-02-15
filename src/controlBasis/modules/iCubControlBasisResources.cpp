@@ -23,7 +23,7 @@ ControlBasis
 
 --velocityControlMode [true | false]: specifies whether the configuration resources should send position deltas to velocityControl modules or to PolyDrivers. Default=false; 
 
---from: the name of the config file to load. Can specify either real-robot or simulated-robot resources. OPTIONAL
+--from [<filename>.ini]: the name of the config file to load. Can specify either real-robot or simulated-robot resources. OPTIONAL
 
 \section portsa_sec Ports Accessed
 For the iCub, it assumes \ref icub_iCubInterface and \ref icub_velocityControl run for the necessary 
@@ -32,6 +32,7 @@ parts. For the iCub simulator, only \ref icub_iCubInterface needs to run.
 \section conf_file_sec Configuration Files
 
 <tt>iCubControlBasisResources.ini</tt>
+<tt>iCubSimControlBasisResources.ini</tt>
 
 Here's how the configuration file will look like: 
  
