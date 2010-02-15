@@ -23,17 +23,36 @@ using namespace yarp::sig::draw;
 Module graphical interface for saliencyBlobFinder
 
 \section intro_sec Description
-This module is purely an interface towards the module saliencyBlobFinder. It sends commands via /command:o port as bottles.
-The protocol respects the directives that the saliencyBlobFinder requires.
+This module is purely an interface towards the module saliencyBlobFinder. It sends commands via /command:o port.
+The protocol respects the communication directives that the saliencyBlobFinder requires.
 In addition this interface is able to draw an image. This useful functionality allows the user to visualise straigh away important information 
 and result of his/her interaction
 
 The module does:
--   stream the command to the saliencyBlobFinder module
+-   stream commands to the saliencyBlobFinder module
 -   visualise an image in the graphics interface
 
-
 \image html saliencyBlobFinder.png
+
+In the GUI there are some sliding controls on the left hand side which are in sequence:
+<ul>
+    <li>coefficients for the algorithm that defines the saliency of the blob </li>
+    <li>min and max dimension of the blobs which will be analysed</li>
+    <li>controls for the selection of the colour which the system has to look for</li>
+</ul>
+
+On the right side of the GUI there is a series of checkbox which select the typology of the output sent on the /image:o port.
+The last checkbox that toggle from OFF to ON selects the output. It can be choosen between this possible alternatives:
+<ul>
+<li> tagged: the image composed by all the blobs filled with a gray scale equal to their list position</li>
+<li> watershed: the result of the watershed operation</li>
+<li> foveaBlob: the representation of the blob foveated in that moment</li>
+<li> colourVQ: image composed by all the blobs filled with quantization colour</li>
+<li> meanColour: the composition of all the colour filled with the mean colour of all the pixel which belong to the blob</li>
+<li> maxSaliencyBlob: the representation of the max saliency blob</li>
+</ul>
+
+
 
 \section lib_sec Libraries
 YARP
@@ -49,9 +68,9 @@ GTK
 
 \section portsc_sec Ports Created
 Input ports:
-none
+- blobFinder/cmd
 Outports
-- /watershed/command:o
+- <name>/command:o
 
 \section in_files_sec Input Data Files
 none

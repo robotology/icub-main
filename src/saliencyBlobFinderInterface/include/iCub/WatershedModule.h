@@ -148,6 +148,10 @@ public:
 	* default constructor
 	*/
 	WatershedModule();
+    /**
+	* default destructor
+	*/
+	~WatershedModule();
 	/**
 	* open and initialise the module
 	*/
@@ -254,6 +258,10 @@ public:
 	* saliencyTOT linear combination Kbu coefficient (BOTTOM-UP saliency weight)
 	*/
 	double salienceBU;
+    /**
+    * reactivity of the robot in seconds
+    */
+    double reactivity;
 	/**
 	* red intensity of the target that has been found 
 	*/

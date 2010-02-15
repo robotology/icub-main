@@ -162,6 +162,8 @@ WatershedModule::WatershedModule():RateThread(THREADRATE){
     maxBLOB=4096;
     minBLOB=100;
 
+    reactivity=5.0;
+
     targetRED=1;
     targetGREEN=1;
     targetBLUE=1;
@@ -171,11 +173,33 @@ WatershedModule::WatershedModule():RateThread(THREADRATE){
     
 }
 
+WatershedModule::~WatershedModule(){
+    delete maxSalienceBlob_img; //=new ImageOf<PixelMono>;
+    delete outContrastLP;//=new ImageOf<PixelMono>;
+    delete outMeanColourLP;//=new ImageOf<PixelBgr>;
+    
+    //initializing the image plotted out int the drawing area
+    delete image_out;//=new ImageOf<PixelRgb>;
+    delete _outputImage3;//=new ImageOf<PixelRgb>;
+    delete _outputImage;//=new ImageOf<PixelMono>;
+
+    delete ptr_inputRed;//=new ImageOf<yarp::sig::PixelMono>; //pointer to the input image of the red plane
+    delete ptr_inputGreen;//= new ImageOf<yarp::sig::PixelMono>; //pointer to the input image of the green plane
+    delete ptr_inputBlue;// new ImageOf<yarp::sig::PixelMono>; //pointer to the input image of the blue plane
+    delete ptr_inputRG;//= new ImageOf<yarp::sig::PixelMono>; //pointer to the input image of the R+G- colour opponency
+    delete ptr_inputGR;//= new ImageOf<yarp::sig::PixelMono>; //pointer to the input image of the G+R- colour opponency
+    delete ptr_inputBY;//= new ImageOf<yarp::sig::PixelMono>; //pointer to the input image of the B+Y- colour opponency
+    
+    delete _inputImgRGS;//=new ImageOf<PixelMono>;
+    delete _inputImgGRS;//=new ImageOf<PixelMono>;
+    delete _inputImgBYS;//=new ImageOf<PixelMono>;
+    
+    delete blobFov;//=new ImageOf<PixelMono>;
+}
+
 void WatershedModule::resizeImages(int width, int height){
     this->width=width;
     this->height=height;
-
-    
 
     int widthstep=256;
 
@@ -1117,6 +1141,16 @@ static void cb_digits_scaleb( GtkAdjustment *adj )
     wModule->message->assign(str.c_str());
 }
 
+static void cb_digits_scaletime( GtkAdjustment *adj )
+{
+    /* Set the number of decimal places to which adj->value is rounded */
+    wModule->reactivity=adj->value;
+    printf("reactivity: %f",wModule->reactivity);
+    std::string str("");
+    sprintf((char *)str.c_str(),"set rea %2.2f",wModule->reactivity);
+    wModule->message->assign(str.c_str());
+}
+
 
 //-------------------------------------------------
 // Main Window Statusbar
@@ -1679,7 +1713,7 @@ GtkWidget* WatershedModule::createMainWindow(void)
     
     
     GtkWidget *scale;
-    GtkObject *adj1, *adj2,*adj3, *adj4,*adjr, *adjg, *adjb;
+    GtkObject *adj1, *adj2,*adj3, *adj4,*adjr, *adjg, *adjb, *adjtime;
     GtkWidget *hscale, *vscale;
 
 
@@ -1831,6 +1865,18 @@ GtkWidget* WatershedModule::createMainWindow(void)
     g_signal_connect (G_OBJECT (adjb), "value_changed",
                       G_CALLBACK (cb_digits_scaleb), NULL);
     
+    label = gtk_label_new ("reactivity:");
+    gtk_box_pack_start (GTK_BOX (box4), label, FALSE, FALSE, 0);
+    gtk_widget_show (label);
+    adjtime = gtk_adjustment_new (1,1,10,1,1,1);
+    hscale = gtk_hscale_new (GTK_ADJUSTMENT (adjtime));
+    gtk_widget_set_size_request (GTK_WIDGET (hscale), 200, -1);
+    scale_set_default_values (GTK_SCALE (hscale));
+    gtk_box_pack_start (GTK_BOX (box4), hscale, TRUE, TRUE, 0);
+    gtk_widget_show (hscale);
+    g_signal_connect (G_OBJECT (adjtime), "value_changed",
+                      G_CALLBACK (cb_digits_scaletime), NULL);
+
     gtk_box_pack_start (GTK_BOX (box3), box4, TRUE, TRUE, 0);
     gtk_widget_show (box4);
 
