@@ -110,7 +110,7 @@ bool Cfw2Can::open(yarp::os::Searchable &par)
     int res = cfwCanOpen (netId, txQueueSize, rxQueueSize, txTimeout, rxTimeout, handle);
     if (res != 0)
     {
-        fprintf(stderr, "Cfw2Can::open() returning false\n");
+        fprintf(stderr, "Cfw2Can::open() returning error %d\n", res);
         return false;
     }
 
