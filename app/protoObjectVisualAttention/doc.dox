@@ -23,7 +23,7 @@ Assumes \ref icub_yarp::dev::ServerLogpolarFrameGrabber  is running, and that th
 
 - \ref icub_imageProcessor "imageProcessor"
 
-- \ref icub_imageProcessor "imageProcessorInterface"
+- \ref icub_imageProcessorInterface "imageProcessorInterface"
 
 - \ref icub_saliencyBlobFinder "saliencyBlobFinder"
 
