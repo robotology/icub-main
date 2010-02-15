@@ -1,18 +1,18 @@
 // -*- mode:C++; tab-width:4; c-basic-offset:4; indent-tabs-mode:nil -*-      
-#ifndef _NEW_RESOURCE_TYPE_TEMPLATE__H_
-#define _NEW_RESOURCE_TYPE_TEMPLATE__H_
+#ifndef _RESOURCE_TYPE_TEMPLATE__H_
+#define _RESOURCE_TYPE_TEMPLATE__H_
 
 #include "ControlBasisResource.h"
 
 namespace CB {
     
     /**
-     * This is a template for classes that instantiate the abstract ControlBasisResource class for a new type of resource.
+     * This is a template for classes that instantiate the abstract ControlBasisResource class for a  type of resource.
      * This class should also be abstract, because users will have to implement specific resources of this type as subclasses.
-     * Example types (that already exist) include ConfigurationVariables or CartesianPositions.  
+     * Example types (that already exist) include ConfigurationVariables or CartesianPosition.  
      *
      **/
-    class NewResourcesTypeTemplate : public ControlBasisResource {
+    class ResourcesTypeTemplate : public ControlBasisResource {
         
     public:
         
@@ -20,7 +20,7 @@ namespace CB {
         /**
          * constructor.  sets type and port names.
          **/
-        NewResourcesTypeTemplate() :
+        ResourcesTypeTemplate() :
             ControlBasisResource("typename", 2, 3)  // the name of the type, the number of inputs (that other resources will modify), the number of outputs (this resource will publish) 
         {        
 
@@ -41,7 +41,7 @@ namespace CB {
         /** 
          * Destructor
          **/
-        ~NewResourcesTypeTemplate() { }
+        ~ResourcesTypeTemplate() { }
         
         /**
          * This is the function that posts the resource data to the output port.
