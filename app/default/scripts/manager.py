@@ -738,6 +738,8 @@ if __name__ == '__main__':
 
         # getting temp directory
         tmpPath  = os.getenv("TMP");
+	if (tmpPath==None):
+		tmpPath="/tmp"
         
         logfilename=tmpPath+"/"+napp.getName()+".log"
         napp.setLogFilename(logfilename)
