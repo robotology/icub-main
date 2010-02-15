@@ -1588,7 +1588,7 @@ ImageOf<PixelRgb>* ImageProcessor::process (ImageOf<PixelRgb> *src){
                 ippiCopy_8u_C1R(yellowPlane->getRawImage(),yellowPlane->getRowSize(),image_tmp->getRawImage(),yellowPlane->getRowSize(),srcsize);
         }
 
-    printf("image_tmp: 0x%08x\n", image_tmp);	
+    
 
     /*if(this->normalize_flag){
         image_tmp=this->normalize(image_tmp);
@@ -1632,7 +1632,6 @@ ImageOf<PixelRgb>* ImageProcessor::process (ImageOf<PixelRgb> *src){
         //ippiFree(im_tmp[1]);
         //ippiFree(im_tmp[2]);
     }
-    printf("image_out: 0x%08x\n", image_out);
     return image_out;
 }
 
