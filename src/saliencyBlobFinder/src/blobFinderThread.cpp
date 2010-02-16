@@ -85,7 +85,7 @@ blobFinderThread::blobFinderThread():RateThread(THREAD_RATE){
     maxBLOB=4096;
     minBLOB=100;
 
-    reactivity=1;
+    reactivity=0.5;
 
     targetRED=1;
     targetGREEN=1;
