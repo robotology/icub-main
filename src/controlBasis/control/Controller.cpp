@@ -403,6 +403,8 @@ bool CB::Controller::updateAction() {
 
 void CB::Controller::startAction() {
 
+    cout << "Controller::startAction()" << endl;
+
     // if in local mode, make sure resources are running
     if(!distributedMode) {
     
@@ -417,8 +419,7 @@ void CB::Controller::startAction() {
                 reference->startResource();
             }
         }
-        Time::delay(0.25);
-
+        Time::delay(0.2);
     }
 
     if(needsJacobian) {
@@ -436,7 +437,6 @@ void CB::Controller::startAction() {
         cout << "Controller already running potential function..." << endl;
     }
     running = true;
-
     start();     // mandatory start function
 }
 

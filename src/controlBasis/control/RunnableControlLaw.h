@@ -190,6 +190,21 @@ o         **/
                 return 0;
         }
 
+        /**
+         * gets the state of conroller n in string format s=(X,-,0,1)
+         **/
+        std::string getControllerStateString(int n) {
+            std::string s_str = "X";
+            int s;
+            if((n >= 0) && (n<controllers.size())) {
+                s = controllers[n]->getState();
+                if(s==1) s_str="-";
+                else if(s==2) s_str="0";
+                else if(s==3) s_str="1";
+            }            
+            return s_str;
+        }
+
         /** 
          * sets whether to use J^T or J^#
          **/

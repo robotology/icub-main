@@ -300,7 +300,6 @@ namespace CB {
         double getControllerPotential() {
             return potential;
         }
-
         /**
          * returns current controller potential
          */

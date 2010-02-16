@@ -32,8 +32,6 @@ void CB::RunnableControlLaw::init() {
     bool foundResource;
     bool useTranspose;
     
-    cout << "RunnableControlLaw::init()" << endl;
-
     controllerDeviceNames.clear();
     controllerOutputSpaces.clear();
     Vout.clear();
@@ -231,14 +229,10 @@ bool CB::RunnableControlLaw::updateAction() {
         }
         
         for(int k=0; k<tmpSize; k++) Mout[k][0] = Vout[id][k];
-        
-        //    cout << "RunnableControlLaw::update() -- Mout[" << i << "]:\n";
-        //for(int k=0; k<tmpSize; k++) cout << Mout[k][0] << endl;
-        
         Mproj = Nc*Mout; // (NxN)*(Nx1)=(Nx1)
         for(int k=0; k<tmpSize; k++) Vproj[k] = Mproj[k][0];
         
-        // make sure magnitude of lower priority objective does not overweight superior1
+        // make sure magnitude of lower priority objective does not overweight superior
         VcMag = 0;
         for(int k=0; k<Vc.size(); k++) VcMag += (Vc[k]*Vc[k]);
         VcMag = sqrt(VcMag);
@@ -269,27 +263,27 @@ bool CB::RunnableControlLaw::updateAction() {
     for(int i=0; i<VoutSpaces.size(); i++) {
 
         //tmpName = controllers[i]->getOutputDeviceName();
-        //      tmpSpace = controllers[i]->getOutputSpace();
+        //tmpSpace = controllers[i]->getOutputSpace();
         //tmpSize = controllers[i]->getOutputSize();   
         //id = deviceMap[tmpName];
         
         if(VoutSpaces[i] != "configuration") {
-            //          cout << "RunnableControlLaw::update() for controller " << i << ", not a configuration resource" << endl;
+            
+            //cout << "RunnableControlLaw::update() for controller " << i << ", not a configuration resource" << endl;
             Jint = getJacobian(VoutDeviceNames[i], "configuration", VoutSpaces[i], useTranspose);
             MoutTmp.resize(Vout[i].size(),1);
             for(int k=0; k<Vout[i].size(); k++) MoutTmp[k][0] = Vout[i][k];
             Mout = Jint*MoutTmp;
             //for(int k=0; k<Vout[i].size(); k++) Vout[i][k] = Mout[k][0];
-            //     VoutSpaces[i] = "configuration";
-            
+            //VoutSpaces[i] = "configuration";
             VoutConfig[i].resize(Mout.rows());
-            //            cout << "Vout size=" << Vout[i].size() << ", VoutConfig size=" << VoutConfig[i].size() << endl;
             for(int k=0; k<Mout.rows(); k++) VoutConfig[i][k] = Mout[k][0];
+
         } else {
             VoutConfig[i].resize(Vout[i].size());
             for(int k=0; k<Vout[i].size(); k++) VoutConfig[i][k] = Vout[i][k];
         }
-        //   cout << "VoutConfig[" << i << "]\n";
+        //cout << "VoutConfig[" << i << "]\n";
         //for(int k=0; k<VoutConfig[i].size(); k++) cout << VoutConfig[i][k] << endl;
         
     }
@@ -312,7 +306,7 @@ void CB::RunnableControlLaw::startAction() {
     for(int i=0; i<controllers.size(); i++) {
         controllers[i]->startAction();
     }
-    Time::delay(0.25);
+    Time::delay(0.2);
     running = true;
     start();     // mandatory start function
 }
@@ -393,21 +387,14 @@ Matrix CB::RunnableControlLaw::getJacobian(string deviceName, string outSpace, s
                 cout << "Controller needs an unknown Jacobian..." << endl;
                 exit(0);
             }
-            
-            //            cout << "starting helper Jacobian[%d], (%s:%s), device=%s, inv=%d\n", 
-            //               id, inSpace.c_str(), outSpace.c_str(), deviceName.c_str(), (int)needsJacobianInverse);
-
-            //            exit(0);
             helperJacobians[id]->startJacobian();
 
         }
 
-        Time::delay(0.25);
+        Time::delay(0.2);
 
     }
 
-    //    cout << "RunnableControlLaw::getJacobian() -- found forward jacobian" << endl;
-    //    cout << "getting Jacobian" << endl;
     id = jacobianMap[jStr];
     if(jacobianInverseStore[id]) {
         if(!useTranspose) {
@@ -418,13 +405,7 @@ Matrix CB::RunnableControlLaw::getJacobian(string deviceName, string outSpace, s
     } else {
         J = helperJacobians[id]->getJacobian();
     }
-    //cout << "Jacobian found, at id:%d, inverse=%d, size=%dx%d\n", id, (int)jacobianInverseStore[id], J.rows(), J.cols());
 
-    /*
-    if(outSpace=="configuration") {
-        exit(0);
-    }
-    */
     return J;
 }
 
