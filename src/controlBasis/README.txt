@@ -1,4 +1,8 @@
 
+------------------------
+CONTROL BASIS API README
+------------------------
+
 The Control Basis framework is designed to fascillitate the construction and exploration of 
 control programs in a principled and formal framework.  This directory holds the core files in 
 the YARP implementation of a Control Basis API (or CBAPI).  
