@@ -5,7 +5,7 @@
 /************************************************************************/
 iCubShoulderConstr::iCubShoulderConstr(unsigned int dofs, double lower_bound_inf,
                                        double upper_bound_inf) :
-                                      iKinLinIneqConstr(lower_bound_inf,upper_bound_inf)
+                                       iKinLinIneqConstr(lower_bound_inf,upper_bound_inf)
 {
     unsigned int offs=dofs<=7 ? 0 : 3;
 
