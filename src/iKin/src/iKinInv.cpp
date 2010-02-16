@@ -557,7 +557,11 @@ Vector LMCtrl::iterate(Vector &xd, const unsigned int verbose)
         else
             pinvM=pinv(M.transposed()).transposed();
 
-        pinvJ=pinvM*Jt;
+        if (J.rows()>=J.cols())
+            pinvJ=pinv(J);
+        else
+            pinvJ=pinv(J.transposed()).transposed();
+
         gpm=computeGPM();
 
         Vector _qdot=-1.0*pinvM*grad+gpm;
