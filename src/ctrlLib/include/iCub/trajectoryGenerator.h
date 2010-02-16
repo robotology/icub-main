@@ -24,7 +24,7 @@
 #define MINJERK_STATE_FEEDBACK      1
 #define MINJERK_STATE_REACHED       2
 
-#define MINJERK_DT_DISABLED         -1
+#define MINJERK_OPT_DISABLED        -1
 
 
 namespace ctrl
@@ -69,9 +69,12 @@ public:
     /**
     * Constructor. 
     * @param _Ts is the block sample time in seconds. 
-    * @param x0 is the initial position.
+    * @param x0 is the initial position. 
+    * @param _Tmin is the minimum time interval for reading the 
+    *              feedback (if _Tmin<0, the minimum time interval
+    *              is set equal to 10*_Ts).
     */
-    minJerkTrajGen(const double _Ts, const yarp::sig::Vector &x0);
+    minJerkTrajGen(const double _Ts, const yarp::sig::Vector &x0, const double _Tmin=MINJERK_OPT_DISABLED);
 
     /**
     * Computes the trajectory. 
@@ -84,7 +87,7 @@ public:
     *           is used).
     */
     virtual void compute(const double T, const yarp::sig::Vector &xd, const yarp::sig::Vector &fb,
-                         const double tol, const double dt=MINJERK_DT_DISABLED);
+                         const double tol, const double dt=MINJERK_OPT_DISABLED);
 
     /**
     * Returns the current reference position.

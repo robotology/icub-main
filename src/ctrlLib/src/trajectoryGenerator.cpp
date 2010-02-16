@@ -11,7 +11,7 @@ using namespace ctrl;
 
 
 /************************************************************************/
-minJerkTrajGen::minJerkTrajGen(const double _Ts, const Vector &x0) :
+minJerkTrajGen::minJerkTrajGen(const double _Ts, const Vector &x0, const double _Tmin) :
                                Ts(_Ts), x(x0)
 {
     dim=x.length();
@@ -30,8 +30,11 @@ minJerkTrajGen::minJerkTrajGen(const double _Ts, const Vector &x0) :
     }
 
     TOld=fT=t0=t=0.0;
-    //Tmin=10*Ts;
-    Tmin=0.8; // value with good margin to control iCub in feedback
+
+    if (_Tmin<0.0)
+        Tmin=10*Ts;
+    else
+        Tmin=_Tmin;
 
     vtau[0]=1.0;
 

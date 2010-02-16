@@ -1067,8 +1067,9 @@ MultiRefMinJerkCtrl::MultiRefMinJerkCtrl(iKinChain &c, unsigned int _ctrlPose, c
         lim(i,1)=chain(i).getMax();
     }
 
-    genTrajJoint=new minJerkTrajGen(Ts,q);
-    genTrajTask =new minJerkTrajGen(Ts,x);
+    // Tmin=0.8, good margin to control iCub in feedback
+    genTrajJoint=new minJerkTrajGen(Ts,q,0.8);
+    genTrajTask =new minJerkTrajGen(Ts,x,0.8);
     Int=new Integrator(Ts,q,lim);
 
     gamma=0.01;
@@ -1165,7 +1166,7 @@ Vector MultiRefMinJerkCtrl::iterate(Vector &xd, Vector &qd, const unsigned int v
     if (adjustSampleTime)
         dt=dt<maxDeltaTime ? dt : maxDeltaTime;
     else
-        dt=MINJERK_DT_DISABLED;
+        dt=MINJERK_OPT_DISABLED;
 
     x_set=xd;
     q_set=qd;
