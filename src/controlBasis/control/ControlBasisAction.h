@@ -133,7 +133,8 @@ namespace CB {
                     std::cout << "Problem updating control action!!" << std::endl;
                     break;
                 }
-                
+
+                iterations++;                
                 // post input/output data to ports
                 if(numOutputs > 0) postData();
                 //if(numInputs > 0) getInputData();

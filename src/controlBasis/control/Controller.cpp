@@ -391,7 +391,8 @@ bool CB::Controller::updateAction() {
     potentialDotStore.push_back(potentialDot);
 
     // set the state based on the estimated change in potential
-    if(fabs(potentialDot) < 1E-6) {
+
+    if((fabs(potentialDot) < 1E-6) && (iterations>=20)) {
         dynamicState = CONVERGED;
     } else {
         dynamicState = UNCONVERGED;
@@ -448,6 +449,7 @@ void CB::Controller::stopAction() {
     potentialDotStore.clear();
     potentialStore.clear();
     dynamicState = UNKNOWN;
+    iterations=0;
 
     if(!running) return;
 
