@@ -56,8 +56,17 @@ public:
     *             lower (1st column) and the upper limit (2nd
     *             column) of the ith component:
     *             _lim(i,1)<=output[i]<=_lim(i,2)
+    * @note the saturation here is on by default 
     */
     Integrator(const double _Ts, const yarp::sig::Vector &y0, const yarp::sig::Matrix &_lim);
+
+    /**
+    * Constructor. 
+    * @param _Ts is the integrator sample time.
+    * @param y0 is the initial value of the output vector. 
+    * @note the saturation here is off by default. 
+    */
+    Integrator(const double _Ts, const yarp::sig::Vector &y0);
 
     /**
     * Creates a new Integrator from an already existing object.
@@ -85,7 +94,7 @@ public:
     * @param _applySat if true then the saturation is applied 
     *                  (initialized as true).
     */
-    void setSaturation(bool _applySat) { applySat=_applySat; }
+    void setSaturation(bool _applySat);
 
     /**
     * Returns the current saturation status. 
@@ -97,7 +106,7 @@ public:
     * Sets the output vector constraints matrix. 
     * @param _lim is the constraints matrix.
     */
-    void setLim(const yarp::sig::Matrix &_lim) { lim=_lim; }
+    void setLim(const yarp::sig::Matrix &_lim);
 
     /**
     * Returns the constraints matrix. 

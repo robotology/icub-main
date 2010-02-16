@@ -3,6 +3,9 @@
 #include <iCub/pids.h>
 #include <iCub/ctrlMath.h>
 
+#include <iostream>
+#include <iomanip>
+
 #define SAT(x,L,H)  ((x)>(H)?(H):((x)<(L)?(L):(x)))
 
 using namespace std;
@@ -22,6 +25,20 @@ Integrator::Integrator(const double _Ts, const Vector &y0, const Matrix &_lim)
     Ts =_Ts;
     lim=_lim;
     y  =saturate(y0);
+}
+
+
+/************************************************************************/
+Integrator::Integrator(const double _Ts, const Vector &y0)
+{
+    dim=y0.length();
+    x_old.resize(dim,0.0);
+    applySat=false;
+
+    lim.resize(1,2);
+
+    Ts=_Ts;
+    y =y0;
 }
 
 
@@ -57,6 +74,24 @@ Vector Integrator::saturate(const Vector &v)
 
 
 /************************************************************************/
+void Integrator::setSaturation(bool _applySat)
+{
+    if (applySat=_applySat)
+        y=saturate(y);
+}
+
+
+/************************************************************************/
+void Integrator::setLim(const yarp::sig::Matrix &_lim)
+{
+    lim=_lim;
+
+    if (applySat)
+        y=saturate(y);
+}
+
+
+/************************************************************************/
 Vector Integrator::integrate(const Vector &x)
 {
     // implements the Tustin formula
@@ -82,8 +117,7 @@ parallelPID::parallelPID(const double _Ts,
     for (unsigned int i=0; i<dim; i++)
         uSat[i]=SAT(u[i],satLim(i,0),satLim(i,1));
 
-    Int=new Integrator(Ts,uSat,Matrix(1,1));
-    Int->setSaturation(false);
+    Int=new Integrator(Ts,uSat);
 
     for (unsigned int i=0; i<dim; i++)
     {
