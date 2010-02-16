@@ -535,7 +535,7 @@ int main(int argc, char *argv[])
 
     ResourceFinder rf;
     rf.setVerbose(true);
-    rf.setDefaultContext("randArmGazeMotion/conf");
+    rf.setDefaultContext("randomArmGazeMotion/conf");
     rf.setDefaultConfigFile("config.ini");
     rf.configure("ICUB_ROOT",argc,argv);
 
