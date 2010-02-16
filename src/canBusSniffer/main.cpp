@@ -59,9 +59,11 @@ class SnifferThread: public RateThread
     ICanBufferFactory *iBufferFactory;
     CanBuffer readBuffer;
     std::string devname;
+    int port;
 public:
-    SnifferThread(std::string dname, int r=SNIFFER_THREAD_RATE): RateThread(r)
+    SnifferThread(std::string dname, int p, int r=SNIFFER_THREAD_RATE): RateThread(r)
     {
+        port=p;
         devname=dname;   
     }
 
@@ -72,7 +74,7 @@ public:
 
         prop.put("CanTxTimeout", 500);
         prop.put("CanRxTimeout", 500);
-        prop.put("CanDeviceNum", 0);
+        prop.put("CanDeviceNum", port);
         prop.put("CanMyAddress", 0);
 
         prop.put("CanTxQueueSize", CAN_DRIVER_BUFFER_SIZE);
@@ -111,23 +113,45 @@ public:
     }
 };
 
+#ifdef USE_ICUB_MOD
+#include "drivers.h"
+#endif
+
+
 int main(int argc, char *argv[]) 
 {
-    if (argc!=3)
+
+#ifdef USE_ICUB_MOD
+	yarp::dev::DriverCollection dev;
+#endif
+
+    if (argc!=3 && argc!=5)
     {
-        std::cout<<"Usage: --device device_name {ecan|pcan}\n";
+        std::cout<<"Usage: --device device_name {ecan|pcan|...}\n";
+        std::cout<<"Optional: --port {int} (default 0)\n";
         return -1;
     }
 
     std::string p1=std::string(argv[1]);
     std::string p2=std::string(argv[2]);
+
+    int port=0;
+    if (argc==5)
+        {
+            std::string tmp=std::string(argv[3]);
+            if (tmp=="--port")
+                {
+                    port=atoi(argv[4]);
+                }
+        }
+
     if (p1!="--device")
     {
         std::cout<<"Usage: --device device_name {ecan|pcan}\n";
         return -1;
     }
   
-    SnifferThread thread(p2);
+    SnifferThread thread(p2, port);
 
     if (!thread.start())
     {

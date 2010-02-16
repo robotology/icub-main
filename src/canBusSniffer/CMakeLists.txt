@@ -4,6 +4,14 @@ PROJECT(${PROJECTNAME})
 
 FIND_PACKAGE(YARP)
 FIND_PACKAGE(ICUB)
+FIND_PACKAGE(ICUBDEV)
+
+IF(USE_ICUB_MOD)
+  ADD_DEFINITIONS(-DUSE_ICUB_MOD)
+  FIND_PACKAGE(icubmod)
+  IMPORT_DEVICES(${ICUB_DIR}/src/canBusSniffer/drivers.h icubmod)
+ENDIF (USE_ICUB_MOD)
+
 
 # Find .cpp and .h files automatically.  This is a bit lazy,
 # and in principle it would be better to list these files manually.
