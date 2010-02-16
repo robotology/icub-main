@@ -29,7 +29,7 @@ minJerkTrajGen::minJerkTrajGen(const double _Ts, const Vector &x0, const double 
         coeff.push_back(c);
     }
 
-    TOld=fT=t0=t=0.0;
+    TOld=fT=tau=t0=t=0.0;
 
     if (_Tmin<0.0)
         Tmin=10*Ts;
@@ -75,6 +75,15 @@ void minJerkTrajGen::calcCoeff(const double T, const Vector &xd, const Vector &f
 
 
 /************************************************************************/
+void minJerkTrajGen::recomputeCoeff(const Vector &xd, const Vector &fb)
+{
+    calcCoeff(fT*(1.0-tau),xd,fb);
+    t0=t;
+    tau=0.0;
+}
+
+
+/************************************************************************/
 void minJerkTrajGen::compute(const double T, const Vector &xd, const Vector &fb,
                              const double tol, const double dt)
 {
@@ -92,7 +101,10 @@ void minJerkTrajGen::compute(const double T, const Vector &xd, const Vector &fb,
     else
         t+=dt;        
 
-    double tau=(t-t0)/fT;
+    tau=(t-t0)/fT;
+    if (tau>1.0)
+        tau=1.0;
+
     if (tau>=0.5)
     {
         if (norm(xd-fb)<tol)
@@ -111,8 +123,8 @@ void minJerkTrajGen::compute(const double T, const Vector &xd, const Vector &fb,
     	} 
         else if (norm(x-fb)>tol)
         {
-            fT=fT*(1.0-tau);            
-            fT=fT<Tmin?Tmin:fT;            
+            fT=fT*(1.0-tau);
+            fT=fT<Tmin?Tmin:fT;
             calcCoeff(fT,xd,fb);
             t0=t;
             tau=0.0;

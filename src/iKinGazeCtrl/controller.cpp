@@ -291,7 +291,14 @@ void Controller::run()
     // update joints angles
     fbHead=Int->integrate(v);
     commData->get_q()=fbHead;
-    commData->get_v()=v;    
+    commData->get_v()=v;
+
+    // update only the eyes-controller coeffs
+    // due to the compensation term on vEyes
+    for (unsigned int i=0; i<3; i++)
+        fbEyes[i]=fbHead[3+i];
+
+    genTrajEyes->recomputeCoeff(qdEyes,fbEyes);
 }
 
 

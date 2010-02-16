@@ -59,6 +59,7 @@ protected:
     double fT;
     double t0;
     double t;
+    double tau;
     double Ts;
 
     int state;
@@ -88,6 +89,13 @@ public:
     */
     virtual void compute(const double T, const yarp::sig::Vector &xd, const yarp::sig::Vector &fb,
                          const double tol, const double dt=MINJERK_OPT_DISABLED);
+
+    /**
+    * Forces the generator to recompute the trajectory coefficients.
+    * @param xd the desired position to reach. 
+    * @param fb the current position. 
+    */
+    virtual void recomputeCoeff(const yarp::sig::Vector &xd, const yarp::sig::Vector &fb);
 
     /**
     * Returns the current reference position.

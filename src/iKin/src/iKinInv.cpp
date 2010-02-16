@@ -1201,6 +1201,12 @@ Vector MultiRefMinJerkCtrl::iterate(Vector &xd, Vector &qd, const unsigned int v
         xdot=J*qdot;
         q=chain.setAng(Int->integrate(qdot));
         x=chain.EndEffPose();
+
+        // update controllers coeffs with only the result
+        // of the integration; the feedback is appropriately
+        // read inside the compute()
+        genTrajJoint->recomputeCoeff(q_set,q);
+        genTrajTask->recomputeCoeff(x_set,x);
     }
 
     updateState();
