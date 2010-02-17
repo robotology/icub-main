@@ -31,6 +31,7 @@ This file can be edited at src/canBusSniffer/main.cpp.
 **/
 
 #include <stdio.h>
+#include <stdlib.h>
 #include <yarp/os/Network.h>
 #include <yarp/dev/ControlBoardInterfaces.h>
 #include <yarp/dev/PolyDriver.h>
