@@ -1,6 +1,6 @@
 // -*- mode:C++; tab-width:4; c-basic-offset:4; indent-tabs-mode:nil -*-      
-#ifndef _CARTESIAN_POSITION_SQUARED_ERROR__H_
-#define _CARTESIAN_POSITION_SQUARED_ERROR__H_
+#ifndef _HEADING_SQUARED_ERROR__H_
+#define _HEADING_SQUARED_ERROR__H_
 
 #include "ControlBasisPotentialFunction.h"
 
@@ -8,27 +8,27 @@ namespace CB {
 
     /**
      * This class implements a Squared Error quadratic potential function
-     * for Cartesian Position resources, s.t., \phi = (1/2)*x^T*X.  
-     * Implemented as x_reference - x_current.
+     * for a Heading resources, s.t., \phi = (1/2)*gamma^T*gamma.  
+     * Implemented as gamma_reference - gamma_current.
      **/
-    class CartesianPositionSquaredError : public ControlBasisPotentialFunction {
+    class HeadingSquaredError : public ControlBasisPotentialFunction {
         
     public:
         
         /**
          * Empty Constructor, needs to set configuration info
          **/
-        CartesianPositionSquaredError() :
-            ControlBasisPotentialFunction("squared_error_pf", "cartesianposition", true)        
+        HeadingSquaredError() :
+            ControlBasisPotentialFunction("squared_error_pf", "heading", true)        
         {                        
-            size = 3;
+            size = 2;
             gradient.resize(size);           
         }
 
         /**
          * Destructor
          **/        
-        ~CartesianPositionSquaredError() { }
+        ~HeadingSquaredError() { }
 
         /**
          * inherited update function
