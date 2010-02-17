@@ -89,6 +89,7 @@ bool CB::YARPConfigurationVariables::updateResource() {
             for(int i=0; i<mask.size(); i++) {
                 if(!mask[i]) continue;
                 pos->positionMove(i, desiredValues[idx++]*TODEG);            
+                cout << "sending position["<<i<<"] -> " << desiredValues[idx-1]*TODEG << endl;
             }
         }       
     } else {
