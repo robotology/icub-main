@@ -103,6 +103,9 @@ Int16 init_trajectory (byte jj, Int32 current, Int32 final, Int16 speed)
 
 	float speedf = __abs(speed);
 
+#ifdef DEBUG_TRAJECTORY
+	can_printf("New pos cmd: %d", (Int16) final);
+#endif
 	
 	//if (!_ended[jj] || speed <= 0)
 	if (speed <= 0)
