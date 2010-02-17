@@ -61,6 +61,11 @@ left_leg       0
 right_full_arm 0
 left_full_arm  0
 
+[heading_resources]
+left_eye       0
+right_eye      0
+stereo         0
+
 //DO NOT REMOVE THIS LINE                 
 \endcode 
  
@@ -89,6 +94,7 @@ This file can be edited at src/controlBasis/modules/main.cpp.
 #include <Controller.h>
 #include <RunnableControlLaw.h>
 #include <YARPAttentionMechanismHeading.h>
+#include <YARPAttentionMechanismStereoHeading.h>
 
 #include <yarp/os/RFModule.h>
 #include <yarp/os/Module.h>
@@ -119,6 +125,7 @@ class iCubControlBasisResourceStarter : public RFModule {
     EndEffectorCartesianPosition *fullArmEndEffector[2]; 
 
     YARPAttentionMechanismHeading *salientHeadings[2];
+    YARPAttentionMechanismStereoHeading *salientStereoHeading;
 
     bool runArmConfig[2];
     bool runLegConfig[2];
@@ -133,6 +140,7 @@ class iCubControlBasisResourceStarter : public RFModule {
     bool runLegPosition[2];
 
     bool runHeadings[2];
+    bool runStereoHeading;
 
     string fullArmName[2];
     string fullArmConfigFile[2];
@@ -164,6 +172,9 @@ class iCubControlBasisResourceStarter : public RFModule {
 
     string headingName[2];
     string headingVelPort[2];
+
+    string stereoHeadingName;
+    string stereoHeadingVelPort;
 
     int armNumJoints;
     int armNumLinks;
@@ -215,6 +226,7 @@ public:
             if(runHeadConfig) delete iCubHead;
             if(runTorsoConfig) delete iCubTorso;
             if(runEyesConfig) delete iCubEyes;                
+            if(runStereoHeading) delete salientStereoHeading;                
         }
 
     }
@@ -375,6 +387,13 @@ public:
         }
         //cout << "run left heading: " << runHeadings[1] << endl;
 
+        if(heading_group.check("stereo")) {
+            runStereoHeading = (bool)(heading_group.find("stereo").asInt());
+        } else {
+            runStereoHeading = false;
+        }
+        //cout << "run stereo heading: " << runStereoHeading << endl;
+
         // now that we have the config vals, set the params used by resources
         setParameters();
 
@@ -464,6 +483,7 @@ public:
 
         headingName[0] = robot_prefix + "/right_eye";
         headingName[1] = robot_prefix + "/left_eye";
+        stereoHeadingName = robot_prefix + "/stereo";
     
         armNumJoints = 7;
         armNumLinks = 12;
@@ -620,6 +640,14 @@ public:
             }
         }
 
+
+        if(runStereoHeading) {
+            cout << "starting stereo heading" << endl;
+            salientStereoHeading = new YARPAttentionMechanismStereoHeading(stereoHeadingName);
+            salientStereoHeading->startResource();
+        }
+
+
         resourcesRunning = true;
 
     }    
@@ -641,6 +669,7 @@ public:
             if(runHeadConfig) iCubHead->stopResource();
             if(runTorsoConfig) iCubTorso->stopResource();
             if(runEyesConfig) iCubEyes->stopResource();
+            if(runStereoHeading) salientStereoHeading->stopResource();
         }
         resourcesRunning=false;
     }

@@ -10,7 +10,7 @@ namespace CB {
      * This class instantiates the abstract ControlBasisResource class for a Heading 
      * type resource. This type of resource provides interesting image coordinates to 
      * control actions.  It is still abstract, in that it doesn't implement a runnable resource. 
-     * This class must be extended for specific cartesian position device that implements the 
+     * This class must be extended for specific heading sensor device that implements the 
      * start, update, and stop functions.
      **/
     class Heading : public ControlBasisResource {       
@@ -20,12 +20,12 @@ namespace CB {
         /**
          * returns the horizontal angle of the image coordinate of the position
          **/    
-        double getGamma_u() { return values[0]; }
+        double get_gamma_u() { return values[0]; }
 
         /**
          * returns the vertical angle of the image coordinate of the position
          **/    
-        double getGamma_v() { return values[1]; }
+        double get_gamma_v() { return values[1]; }
 
         /**
          * Constructor
@@ -53,8 +53,8 @@ namespace CB {
             yarp::os::Bottle &b = outputPort[0]->prepare();
             b.clear();
             b.addString(resourceName.c_str());
-            b.addDouble(getGamma_u());
-            b.addDouble(getGamma_v());
+            b.addDouble(get_gamma_u());
+            b.addDouble(get_gamma_v());
             outputPort[0]->write();
         }
 

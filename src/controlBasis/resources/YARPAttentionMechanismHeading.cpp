@@ -67,10 +67,10 @@ bool CB::YARPAttentionMechanismHeading::connectToAttentionMechanism() {
     // connect to config port for reading config values
     string coordinatesOutputName = "/blobFinder/"+deviceName+"/triangulation:o";
 
-    cout << "YARPAttentionMechanismHeading::connectToAttentionMechanism() -- connecting ports for configuration values..." << endl;
+    cout << "YARPAttentionMechanismHeading::connectToAttentionMechanism() -- connecting ports for image coordinate values..." << endl;
     ok &= Network::connect(coordinatesOutputName.c_str(),inputPortName[0].c_str(),"udp");
     if(!ok) {
-        cout << "YARPAttentionMechanismHeading::connectToAttentionMechanism() -- connecting to image_coordinates port falied..." << endl;
+        cout << "YARPAttentionMechanismHeading::connectToAttentionMechanism() -- connecting to image coordinates port failed..." << endl;
         return ok;
     }
 

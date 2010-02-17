@@ -9,6 +9,7 @@
 #include <ManipulabilityField.h>
 #include <ConfigurationSquaredError.h>
 #include <HeadingSquaredError.h>
+#include <StereoHeadingSquaredError.h>
 #include <CartesianPositionSquaredError.h>
 #include <CartesianPositionHarmonicFunction.h>
 
@@ -18,6 +19,7 @@ namespace CB {
     void registerPotentialFunctions() {
         PotentialFunctionFactory::instance().registerClass<ConfigurationSquaredError>(new ConfigurationSquaredError());
         PotentialFunctionFactory::instance().registerClass<HeadingSquaredError>(new HeadingSquaredError());
+        PotentialFunctionFactory::instance().registerClass<StereoHeadingSquaredError>(new StereoHeadingSquaredError());
         PotentialFunctionFactory::instance().registerClass<CartesianPositionSquaredError>(new CartesianPositionSquaredError());
         PotentialFunctionFactory::instance().registerClass<CosineField>(new CosineField());
         PotentialFunctionFactory::instance().registerClass<ManipulabilityField>(new ManipulabilityField());

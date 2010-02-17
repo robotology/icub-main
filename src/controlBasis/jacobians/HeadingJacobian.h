@@ -20,7 +20,7 @@ namespace CB {
          * Constructor.
          **/        
         HeadingJacobian() :
-            ControlBasisJacobian("heading", "configuration", 2, 2)
+            ControlBasisJacobian("heading", "configuration", 2, 3)
         {                      
             J.resize(outputSize,inputSize);
             J.zero();
