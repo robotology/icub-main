@@ -344,7 +344,7 @@ public:
             gaze[i] = target[i];
 
         //keep the gaze out of the hand's way
-        if(!isHandIn && gaze[2]) > gaze_limit)
+        if(!isHandIn && gaze[2] > gaze_limit)
             gaze[2] = gaze_limit;
 
 
