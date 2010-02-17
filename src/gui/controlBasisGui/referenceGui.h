@@ -7,6 +7,7 @@
 
 #include <iCubConfigurationReference.h>
 #include <CartesianPositionReference.h>
+#include <HeadingFovea.h>
 
 namespace CB {
   
@@ -83,6 +84,7 @@ namespace CB {
         iCubConfigurationReference *iCubHeadRef;
         iCubConfigurationReference *iCubTorsoRef;
         CartesianPositionReference *iCubPositionRef;
+        HeadingFovea *fovea;
 
         yarp::sig::Vector armRef;
         yarp::sig::Vector fullArmRef;

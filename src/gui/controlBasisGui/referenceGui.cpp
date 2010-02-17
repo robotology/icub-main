@@ -188,6 +188,7 @@ ReferenceWindow::~ReferenceWindow() {
     delete iCubHeadRef;
     delete iCubTorsoRef;
     delete iCubPositionRef;
+    delete fovea;
 
 }
 
@@ -336,6 +337,9 @@ void ReferenceWindow::startResources() {
     iCubPositionRef->setUpdateDelay(0.2);
     iCubPositionRef->startResource();
 
+    fovea = new HeadingFovea();
+    fovea->startResource();
+
     resourcesStarted = true;
 
 }
@@ -351,6 +355,7 @@ void ReferenceWindow::stopResources() {
         iCubHeadRef->stopResource();
         iCubTorsoRef->stopResource();
         iCubPositionRef->stopResource();
+        fovea->stopResource();
         resourcesStarted = false;
     }
 }

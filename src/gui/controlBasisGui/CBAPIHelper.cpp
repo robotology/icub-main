@@ -21,6 +21,13 @@ void CB::CBAPIHelper::addControllerToLaw(string sen, string ref, string pf, stri
     eff = "/cb/" + eff;
     controlLaw.addController(sen, pf, eff, gain);
   }
+
+  cout << "ADDING CONTROLLER:" << endl;
+  cout << "\tsen: " << sen << endl;
+  cout << "\tref: " << ref << endl;
+  cout << "\teff: " << eff << endl;
+  cout << "\tpf: " << pf << endl;
+
   numControllers++;
   controlLaw.useTranspose(useTranspose);
  
