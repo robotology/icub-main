@@ -1,0 +1,111 @@
+<application>
+	<name>AttentionMechanism (heading control)</name>
+ 	<dependencies>
+		<port>/icubSim/head/rpc:i</port>
+		<port>/icubSim/cam/left/logpolar</port> 
+		<port>/icubSim/cam/right/logpolar</port>
+	</dependencies>
+	<module>
+		<name>colourProcessor</name>
+		<parameters>--file colourProcessorLeft.ini</parameters>
+		<tag>colourLeft</tag>
+		<node>/surfer</node>
+		<stdio>lightHouse</stdio>
+	</module>
+	<module>
+		<name>imageProcessor</name>
+		<parameters>--file imageProcessorLeft.ini</parameters>
+		<tag>imageLeft</tag>
+		<node>/lightHouse</node>
+	</module>
+	<module>
+		<name>imageProcessorInterface</name>
+		<parameters>--name /imageProcessorInterface/left</parameters>
+		<tag>imageInterfaceLeft</tag>
+		<node>/surfer</node>
+	</module>
+	<module>
+		<name>saliencyBlobFinder</name>
+		<parameters>--file saliencyBlobFinderLeft.ini</parameters>
+		<tag>saliencyBlobFinderLeft</tag>
+		<node>/surfer</node>
+	</module>
+	<module>
+		<name>saliencyBlobFinderInterface</name>
+		<parameters>--name /saliencyBlobFinderInterface/left</parameters>
+		<tag>saliencyBlobFinderInterfaceLeft</tag>
+		<node>/surfer</node>
+	</module>
+	 
+	
+	<connection>
+      	<from>/icub/cam/left/logpolar</from>
+		<to>/colourPU/left/image:i</to>
+	</connection>
+	<connection>
+      	<from>/colourPU/left/rg:o</from>
+		<to>/imagePU/left/rg:i</to>
+		<protocol>tcp</protocol>
+	</connection>
+	<connection>
+      	<from>/colourPU/left/gr:o</from>
+		<to>/imagePU/left/gr:i</to>
+		<protocol>tcp</protocol>
+	</connection>
+	<connection>
+      	<from>/colourPU/left/by:o</from>
+		<to>/imagePU/left/by:i</to>
+		<protocol>tcp</protocol>
+	</connection>
+	
+	<connection>
+      	<from>/imagePU/edges:o</from>
+		<to>/edgesView</to>
+		<protocol>tcp</protocol>
+	</connection>
+	<connection>
+      	<from>/imageProcessorInterface/left/command:o</from>
+		<to>/imagePU/left/cmd</to>
+		<protocol>tcp</protocol>
+	</connection>
+	<connection>
+      	<from>/imagePU/left/edges:o</from>
+		<to>/blobFinder/left/image:i</to>
+		<protocol>tcp</protocol>
+	</connection>
+	<connection>
+      	<from>/colourPU/left/rg:o</from>
+		<to>/blobFinder/left/rg:i</to>
+		<protocol>tcp</protocol>
+	</connection>
+	<connection>
+      	<from>/colourPU/left/gr:o</from>
+		<to>/blobFinder/left/gr:i</to>
+		<protocol>tcp</protocol>
+	</connection>
+	<connection>
+      	<from>/colourPU/left/by:o</from>
+		<to>/blobFinder/left/by:i</to>
+		<protocol>tcp</protocol>
+	</connection>
+	<connection>
+      	<from>/colourPU/left/red:o</from>
+		<to>/blobFinder/left/red:i</to>
+		<protocol>tcp</protocol>
+	</connection>
+	<connection>
+      	<from>/colourPU/left/green:o</from>
+		<to>/blobFinder/left/green:i</to>
+		<protocol>tcp</protocol>
+	</connection>
+	<connection>
+      	<from>/colourPU/left/blue:o</from>
+		<to>/blobFinder/left/blue:i</to>
+		<protocol>tcp</protocol>
+	</connection>
+	<connection>
+      	<from>/blobFinderInterface/left/command:o</from>
+		<to>/blobFinder/left/cmd</to>
+		<protocol>tcp</protocol>
+	</connection>
+</application>
