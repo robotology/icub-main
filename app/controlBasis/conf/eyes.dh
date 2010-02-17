@@ -1,0 +1,9 @@
+N: 3
+L: 3
+DH:
+ 0            0           0      0     REVOLUTE
+ 0            0           0      0     REVOLUTE
+ 0            0           0      0     REVOLUTE
+MAX: 10.0
+MASK: 0 0 0 1 1 1
+
