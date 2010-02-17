@@ -19,9 +19,9 @@ namespace CB {
         /**
          * Constructor
          */
-        HeadingFovea() {
+        HeadingFovea(std::string name="") {
         
-            deviceName="fovea";
+            deviceName=name+"/fovea";
             updateDelay=1.0;
 
             // mandatory inherit function

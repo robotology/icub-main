@@ -51,6 +51,7 @@ right_full_arm 0
 left_full_arm  0
 torso          0
 head           1
+eyes           0
 
 [cartesianposition_resources]
 right_arm      1
@@ -108,8 +109,10 @@ class iCubControlBasisResourceStarter : public RFModule {
     YARPConfigurationVariables *iCubArm[2];
     YARPConfigurationVariables *iCubLeg[2];
     YARPConfigurationVariables *iCubHand[2];
+    YARPConfigurationVariables *iCubEyes;
     YARPConfigurationVariables *iCubHead;
     YARPConfigurationVariables *iCubTorso;
+
     EndEffectorCartesianPosition *armEndEffector[2]; 
     EndEffectorCartesianPosition *legEndEffector[2]; 
     EndEffectorCartesianPosition *fullArmEndEffector[2]; 
@@ -118,6 +121,7 @@ class iCubControlBasisResourceStarter : public RFModule {
     bool runLegConfig[2];
     bool runHandConfig[2];
     bool runFullArmConfig[2];
+    bool runEyesConfig;
     bool runTorsoConfig;
     bool runHeadConfig;
 
@@ -140,6 +144,10 @@ class iCubControlBasisResourceStarter : public RFModule {
     string handName[2];
     string handConfigFile[2];
     string handVelPort[2];
+
+    string eyesName;
+    string eyesConfigFile;
+    string eyesVelPort;
 
     string headName;
     string headConfigFile;
@@ -164,6 +172,9 @@ class iCubControlBasisResourceStarter : public RFModule {
     int torsoNumJoints;
     int torsoNumLinks;
 
+    int eyesNumJoints;
+    int eyesNumLinks;
+    
     string robot_prefix;
     bool simulationMode;
     bool velocityControlMode;
@@ -174,7 +185,6 @@ public:
     iCubControlBasisResourceStarter() :
         resourcesRunning(false) 
     {
-
     }
 
     ~iCubControlBasisResourceStarter() 
@@ -191,10 +201,11 @@ public:
                 if(runHandConfig[i]) delete iCubHand[i];
                 if(runArmPosition[i]) delete armEndEffector[i]; 
                 if(runLegPosition[i]) delete legEndEffector[i]; 
-                if(runFullArmPosition[i]) delete fullArmEndEffector[i]; 
+                if(runFullArmPosition[i]) delete fullArmEndEffector[i];                 
             }     
             if(runHeadConfig) delete iCubHead;
             if(runTorsoConfig) delete iCubTorso;
+            if(runEyesConfig) delete iCubEyes;                
         }
 
     }
@@ -284,6 +295,14 @@ public:
             runTorsoConfig = false;
         }
         //cout << "run torso config: " << runTorsoConfig << endl;
+
+        if(config_group.check("eyes")) {
+            runEyesConfig = (bool)(config_group.find("eyes").asInt());;
+        } else {
+            runEyesConfig = false;
+        }
+        //cout << "run eyes config: " << runEyesConfig << endl;
+
 
         // parse cartesian position resources
         Bottle &cartpos_group=rf.findGroup("cartesianposition_resources");
@@ -409,6 +428,10 @@ public:
         headConfigFile = configFilePath+"head.dh";
         headName = robot_prefix + "/head";
         headVelPort = robot_prefix + "/vc/head";
+
+        eyesConfigFile = configFilePath+"eyes.dh";
+        eyesName = robot_prefix + "/eyes";
+        eyesVelPort = robot_prefix + "/vc/eyes";
         
         torsoName = robot_prefix + "/torso";
         torsoVelPort = robot_prefix + "/vc/torso";
@@ -428,9 +451,11 @@ public:
         torsoNumJoints = 3;
         torsoNumLinks = 3;
 
+        eyesNumJoints = 3;
+        eyesNumLinks = 3;
+
     }
     
-
 
     void startResources() {
 
@@ -548,6 +573,18 @@ public:
             }
         }
 
+        if(runEyesConfig) {
+            cout << "starting eyes config" << endl;
+            iCubEyes = new YARPConfigurationVariables(eyesName, headName, eyesNumJoints, eyesNumLinks);
+            iCubEyes->loadConfig(eyesConfigFile);
+            iCubEyes->startResource();
+            if(velocityControlMode) {
+                iCubEyes->setVelocityControlMode(true, eyesVelPort);
+            } else {
+                iCubEyes->setVelocityControlMode(false, "");
+            }
+        }
+
         resourcesRunning = true;
 
     }    
@@ -567,6 +604,7 @@ public:
             }     
             if(runHeadConfig) iCubHead->stopResource();
             if(runTorsoConfig) iCubTorso->stopResource();
+            if(runEyesConfig) iCubEyes->stopResource();
         }
         resourcesRunning=false;
     }

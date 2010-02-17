@@ -6,11 +6,13 @@
 
 // jacobians
 #include <ManipulatorPositionJacobian.h>
+#include <HeadingJacobian.h>
 
 namespace CB {
 
     void registerJacobians() {
         JacobianFactory::instance().registerClass<ManipulatorPositionJacobian>(new ManipulatorPositionJacobian());
+        JacobianFactory::instance().registerClass<HeadingJacobian>(new HeadingJacobian());
     }
 
 }
