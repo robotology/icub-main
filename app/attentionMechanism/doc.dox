@@ -1,0 +1,96 @@
+/**
+@ingroup  icub_applications
+\defgroup icub_protoObjectVisualAttention protoObjectVisualAttention
+
+This is the application simulates the attention system based on proto-object, distributing across a cluster of computers.
+See paper <a href="http://www.robotcub.org/misc/review3/05_Orabona_Metta_Sandini.pdf" >Object-based Visual Attention: a Model for a Behaving Robot, Orabona, Metta, Sandini</a> 
+
+\section intro_sec Description
+Run the attention system using logpolar image.The colourProcessor and the imageProcessing module are in charge of preprocessing the input image.
+The saliencyBlobFinder is a blob extractor module based on Proto-Objects. In other words given images which simulates center-surround receptive fields with spectrally opponent
+colour responses the system extracts a series of edges that are likely to be boundaries of proto-objects. Applying the watershed process (rain falling algorithm),
+the system determines the blobs. After colour quatization the blobs are catalogued and the saliency for every blob is calculated. The process of defining the
+saliency of a blob is based on the linear combination of bottom-up(isolated blobs) and top-down(blobs with closer to the target colour) algorithms.
+
+\image html applicationVisualAttention.png
+
+\section dep_sec Dependencies
+Assumes \ref icub_yarp::dev::ServerLogpolarFrameGrabber  is running, and that the logPolar images are provided in the form /icub/cam/right/logpolar and /icub/cam/left/logpolar
+
+\section int_sec Instantiated Modules
+
+- \ref icub_colourProcessor "colourProcessor"
+
+- \ref icub_imageProcessor "imageProcessor"
+
+- \ref icub_imageProcessorInterface "imageProcessorInterface"
+
+- \ref icub_saliencyBlobFinder "saliencyBlobFinder"
+
+- \ref icub_saliencyBlobFinderInterface "saliencyBlobFinderInterface"
+
+\section parameters_sec Parameters
+none
+
+\section config_sec Configuration Files
+In /app/protoObjectVisualAttention/conf are present a series of configurarion files
+- colourProcessor.ini
+- imageProcessor.ini
+- saliencyBlobFinder.ini
+
+
+File: there is no .sh file
+
+
+Global application values are:
+
+- none
+
+For robot devices config.sh contains:
+
+- none
+
+For every module config.sh contains:
+
+- none
+
+
+\section howto How to run the Application
+The application is based on one main module \ref icub_saliencyBlobFinder "saliencyBlobFinder" which extracts regions which are likely to be bounded into
+object afterward. This module builds as well the saliency map composed by all the blobs represent with an intensity proportional to saliency of the blob.
+This image is named colorLP and is provided to the system throught the port image:o
+
+The module \ref icub_saliencyBlobFinderInterface "saliencyBlobFinderInterface", once connected to the saliencyBlobFinder module allow the user to tune some
+parameters of the algorithm and therefore to adapt the visual attention. In addition, via saliencyBlobFinderInterface, it can be forced to provide a different output:
+<ul>
+<li> tagged: the image composed by all the blobs filled with a gray scale equal to their list position</li>
+<li> watershed: the result of the watershed operation</li>
+<li> foveaBlob: the representation of the blob foveated in that moment</li>
+<li> colourVQ: image composed by all the blobs filled with quantization colour</li>
+<li> meanColour: the composition of all the colour filled with the mean colour of all the pixel which belong to the blob</li>
+<li> maxSaliencyBlob: the representation of the max saliency blob</li>
+</ul>
+
+
+However the saliencyBlobFinder module needs some intensity and colour information provided respectively by the following two modules:
+<ul>
+<li> \ref icub_imageProcessor "imageProcessor"</li>
+<li> \ref icub_colourProcessor "colourProcessor" </li>
+</ul>
+
+Finally the saliencyBlobFinder module can provide different references relative to the position of the most salient blob in the image plane.
+These are interfaces towards controllers able to perform saccades and control the gaze.
+For more information: \ref icub_saliencyBlobFinder "saliencyBlobFinder".
+
+
+\code
+Customize and run ./scripts/appConfig-visual.xml.template
+\endcode
+
+\author Francesco Rea
+
+Copyright (C) 2008 RobotCub Consortium
+
+CopyPolicy: Released under the terms of the GNU GPL v2.0.
+
+**/
