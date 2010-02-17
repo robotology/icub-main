@@ -324,6 +324,7 @@ public:
         else
             isHandIn = (math::Rand::scalar() < hand_freq)? true: false;
 
+
         //Generate the random target point.
         Vector target = math::Rand::vector(min_target,max_target);
 
@@ -425,6 +426,8 @@ public:
             Vector orient = ctrl::dcm2axis(R);
             for(int i = 0; i < 4; i++)
                 hand[i+3] = orient[i];
+
+            wasHandOut = false;
         }
         else
         {
