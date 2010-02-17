@@ -337,7 +337,7 @@ void ReferenceWindow::startResources() {
     iCubPositionRef->setUpdateDelay(0.2);
     iCubPositionRef->startResource();
 
-    fovea = new HeadingFovea();
+    fovea = new HeadingFovea("/iCub/left_eye");
     fovea->startResource();
 
     resourcesStarted = true;
