@@ -5,3 +5,32 @@
 
 using namespace yarp::os;
 
+int main(int argc, char *argv[]) {
+      // Create and run processor module
+	BMLInterface *module=new BMLInterface();
+	//module->processor1=new ImageProcessor();
+	//module->processor2=new ImageProcessor();
+	//module->processor3=new ImageProcessor();
+	//module->currentProcessor=module->processor1;
+    module->setName("/rea/BMLInterface");
+	
+	
+	
+	//initialise Yarp Network
+    Network yarp;
+	// This is called in all GTK applications. Arguments are parsed
+	// from the command line and are returned to the application.
+    gtk_init (&argc, &argv);
+
+	
+	// Get command line options
+	//Property options;
+	//options.fromCommand(argc,argv);
+	//module.setOptions(options);
+	
+
+
+    return module->runModule(argc,argv);
+	//return 0;
+}
+

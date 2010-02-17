@@ -1,10 +1,10 @@
 #include <iCub/graphicThread.h>
-#include <iCub/BIControlGazeInterface.h>
+#include <iCub/BMLInterface.h>
 
 
 #define BLOB_MAXSIZE 4096
 #define BLOB_MINSIZE 600
-#define THREADRATE 30
+
 
 
 static GtkWidget* saveSingleDialog;
@@ -50,28 +50,11 @@ static yarp::os::Semaphore *ptr_semaphore;
 // Timeout ID
 static guint timeout_ID;
 
-static BIControlGazeInterface *wModule;
+static BMLInterface *wModule;
 
-#define _imgRecv (*(ptr_imgRecv))
 
-static YARPImgRecv *ptr_imgRecvLayer0;
-static YARPImgRecv *ptr_imgRecvLayer1;
-static YARPImgRecv *ptr_imgRecvLayer2;
-static YARPImgRecv *ptr_imgRecvLayer3;
-static YARPImgRecv *ptr_imgRecvLayer4;
-static YARPImgRecv *ptr_imgRecvLayer5;
-static YARPImgRecv *ptr_imgRecvLayer6;
-static YARPImgRecv *ptr_imgRecvLayer7;
-static YARPImgRecv *ptr_imgRecvLayer8;
-#define _imgRecvLayer0 (*(ptr_imgRecvLayer0))
-#define _imgRecvLayer1 (*(ptr_imgRecvLayer1))
-#define _imgRecvLayer2 (*(ptr_imgRecvLayer2))
-#define _imgRecvLayer3 (*(ptr_imgRecvLayer3))
-#define _imgRecvLayer4 (*(ptr_imgRecvLayer4))
-#define _imgRecvLayer5 (*(ptr_imgRecvLayer5))
-#define _imgRecvLayer6 (*(ptr_imgRecvLayer6))
-#define _imgRecvLayer7 (*(ptr_imgRecvLayer7))
-#define _imgRecvLayer8 (*(ptr_imgRecvLayer8))
+
+
 
 #define _inputImg (*(ptr_inputImg))
 
@@ -103,13 +86,7 @@ static yarp::sig::ImageOf<yarp::sig::PixelRgb> *ptr_inputImgLayer8;
 * default constructor
 */
 graphicThread::graphicThread():RateThread(THREADRATE){
-    this->colDim=10;
-	this->rowDim=10;
-    //---
-	/*meanColour_flag=true;
-	contrastLP_flag=false;
-	blobCataloged_flag=true;*/
-	inLayer0_flag=false;
+    inLayer0_flag=true;
 	inLayer1_flag=false;
 	inLayer2_flag=false;
 	inLayer3_flag=false;
@@ -118,7 +95,7 @@ graphicThread::graphicThread():RateThread(THREADRATE){
 	inLayer6_flag=false;
 	inLayer7_flag=false;
 	inLayer8_flag=false;
-	SelectLayer0_flag=false;
+	SelectLayer0_flag=true;
 	SelectLayer1_flag=false;
 	SelectLayer2_flag=false;
 	SelectLayer3_flag=false;
@@ -133,10 +110,12 @@ graphicThread::graphicThread():RateThread(THREADRATE){
 	//outContrastLP->resize(320,240);
 	//outMeanColourLP=new ImageOf<PixelBgr>;
 	//outMeanColourLP->resize(320,240);
-	
+	wModule=this;
 
 	//max_boxes = new YARPBox[3];
-	
+	//initializing the image plotted out int the drawing area
+	image_out=new ImageOf<PixelRgb>;
+	image_out->resize(320,240);
 	_outputImage3=new ImageOf<PixelRgb>;
 	_outputImage3->resize(320,240);
 	_outputImage=new ImageOf<PixelMono>;
@@ -162,10 +141,19 @@ graphicThread::graphicThread():RateThread(THREADRATE){
 	ptr_inputLayer7->resize(320,240);
 	ptr_inputLayer8=new ImageOf<yarp::sig::PixelRgb>; //pointer to the input image of Layer8
 	ptr_inputLayer8->resize(320,240);
-	
-    maxAdj=200.0;
-    minAdj=0.0;
-    stepAdj=0.01;   
+	/*_inputImgRGS=new ImageOf<PixelMonoSigned>;
+	_inputImgGRS=new ImageOf<PixelMonoSigned>;
+	_inputImgBYS=new ImageOf<PixelMonoSigned>;
+	_inputImgRGS->resize(320,240);
+	_inputImgGRS->resize(320,240);
+	_inputImgBYS->resize(320,240);*/
+	blobFov=new ImageOf<PixelMono>;
+	blobFov->resize(320,240);
+
+	this->colDim=10;
+	this->rowDim=10;
+
+	inputImageReady_flag=false;
 }
 
 /**
@@ -174,159 +162,6 @@ graphicThread::graphicThread():RateThread(THREADRATE){
 graphicThread::~graphicThread(){
 }
 
-
-static gint menuFileSet_CB(GtkWidget *widget, GdkEventExpose *event, gpointer data)
-{
-#if GTK_CHECK_VERSION(2,6,0)
-
-	if ( gtk_check_menu_item_get_active (GTK_CHECK_MENU_ITEM(widget)) ) 
-        {
-            gtk_check_menu_item_set_active(GTK_CHECK_MENU_ITEM(fileSingleItem), FALSE);
-					
-            gtk_widget_show_all (saveSetDialog);
-        } 
-	else 
-        {
-            gtk_widget_hide (saveSetDialog);
-        }
-
-#endif
-
-	return TRUE;
-}
-
-static gint saveSingleDelete_CB (GtkWidget *widget, gpointer data)
-{
-	gtk_check_menu_item_set_active(GTK_CHECK_MENU_ITEM(fileSingleItem), FALSE);
-
-	return (TRUE);
-}
-
-static gint saveSetStartClicked_CB(GtkWidget *widget, gpointer data)
-{
-	//_savingSet = true;
-		
-	return (TRUE);
-}
-
-static gint saveSetDelete_CB (GtkWidget *widget, gpointer data)
-{
-	gtk_check_menu_item_set_active(GTK_CHECK_MENU_ITEM(fileSetItem), FALSE);
-
-	return (TRUE);
-}
-
-static gint saveSetStopClicked_CB(GtkWidget *widget, gpointer data)
-{
-	//_savingSet = false;
-		
-	return (TRUE);
-}
-
-/* Get the selected filename and print it to the console */
-static void file_ok_sel( GtkWidget        *w,
-                         GtkFileSelection *fs ){
-    g_print ("%s\n", gtk_file_selection_get_filename (GTK_FILE_SELECTION (fs)));
-}
-
-
-static gint saveSingleClicked_CB(GtkWidget *widget, gpointer data)
-{
-	//saveCurrentFrame();
-	
-	return (TRUE);
-}
-
-GtkWidget* createLoadDialog(void)
-{
-
-	
-    GtkWidget* filew = gtk_file_selection_new ("File selection");
-    
-    g_signal_connect (G_OBJECT (filew), "destroy",
-	              G_CALLBACK (gtk_main_quit), NULL);
-    
-    g_signal_connect (G_OBJECT (GTK_FILE_SELECTION (filew)->ok_button),
-		      "clicked", G_CALLBACK (file_ok_sel), (gpointer) filew);
-    
-    
-    g_signal_connect_swapped (G_OBJECT (GTK_FILE_SELECTION (filew)->cancel_button),
-	                      "clicked", G_CALLBACK (gtk_widget_destroy),
-			      G_OBJECT (filew));
-    
-    
-    gtk_file_selection_set_filename (GTK_FILE_SELECTION(filew), 
-				     "penguin.png");
-
-	
-	return filew;
-}
-
-//-------------------------------------------------
-// Non Modal Dialogs
-//-------------------------------------------------
-GtkWidget* createSaveSingleDialog(void)
-{
-
-	GtkWidget *dialog = NULL;
-	GtkWidget *button;
-	GtkWidget *hbox;
-	dialog = gtk_dialog_new ();
-	gtk_window_set_title(GTK_WINDOW(dialog), "Save Snapshot");
-	gtk_window_set_modal(GTK_WINDOW(dialog), FALSE);
-	gtk_window_set_transient_for(GTK_WINDOW(dialog), GTK_WINDOW(mainWindow));
-	//gtk_window_resize(GTK_WINDOW(dialog), 185, 40);
-	gtk_window_set_resizable(GTK_WINDOW(dialog), FALSE);
-	//gtk_window_set_default_size(GTK_WINDOW(dialog), 185, 40);
-	gtk_window_set_destroy_with_parent(GTK_WINDOW(dialog), TRUE);
-	gtk_dialog_set_has_separator (GTK_DIALOG(dialog), FALSE);
-	hbox = gtk_hbox_new (TRUE, 8); // parameters (gboolean homogeneous_space, gint spacing);
-	button = gtk_button_new_from_stock(GTK_STOCK_SAVE);
-	gtk_widget_set_size_request (GTK_WIDGET(button), 150,50);
-	gtk_box_pack_start (GTK_BOX (hbox), button, TRUE, TRUE, 16); // parameters (GtkBox *box, GtkWidget *child, gboolean expand, gboolean fill, guint padding);
-	gtk_box_pack_start (GTK_BOX (GTK_DIALOG (dialog)->vbox), hbox, FALSE, FALSE, 8); // parameters (GtkBox *box, GtkWidget *child, gboolean expand, gboolean fill, guint padding);
-	gtk_signal_connect (GTK_OBJECT (button), "clicked", GTK_SIGNAL_FUNC (saveSingleClicked_CB), NULL);
-	gtk_signal_connect (GTK_OBJECT (dialog), "delete_event", GTK_SIGNAL_FUNC (saveSingleDelete_CB), NULL);
-	
-	//gtk_container_set_border_width(GTK_CONTAINER(hbox), 5);
-	
-	return dialog;
-
-}
-
-GtkWidget* createSaveSetDialog(void)
-{
-	GtkWidget *dialog = NULL;
-	GtkWidget *saveButton;
-	GtkWidget *stopButton;
-	GtkWidget *hbox;
-	dialog = gtk_dialog_new ();
-	gtk_window_set_title(GTK_WINDOW(dialog), "Save Image Set");
-	gtk_window_set_modal(GTK_WINDOW(dialog), FALSE);
-	gtk_window_set_transient_for(GTK_WINDOW(dialog), GTK_WINDOW(mainWindow));
-	gtk_window_set_resizable(GTK_WINDOW(dialog), FALSE);
-	//gtk_window_set_default_size(GTK_WINDOW(dialog), 190, 40);
-	gtk_window_set_destroy_with_parent(GTK_WINDOW(dialog), TRUE);
-	gtk_dialog_set_has_separator (GTK_DIALOG(dialog), FALSE);
-#if GTK_CHECK_VERSION(2,6,0)
-	saveButton = gtk_button_new_from_stock(GTK_STOCK_MEDIA_RECORD);
-	stopButton = gtk_button_new_from_stock(GTK_STOCK_MEDIA_STOP);
-#else
-    printf("Missing functionality on older GTK version, sorry\n");
-#endif
-	gtk_widget_set_size_request (GTK_WIDGET(saveButton), 80,50);
-	gtk_widget_set_size_request (GTK_WIDGET(stopButton), 80,50);
-
-	hbox = gtk_hbox_new (TRUE, 8); // parameters (gboolean homogeneous_space, gint spacing);
-	gtk_box_pack_start (GTK_BOX (hbox), saveButton, TRUE, TRUE, 8); // parameters (GtkBox *box, GtkWidget *child, gboolean expand, gboolean fill, guint padding);
-	gtk_box_pack_start (GTK_BOX (hbox), stopButton, TRUE, TRUE, 8); // parameters (GtkBox *box, GtkWidget *child, gboolean expand, gboolean fill, guint padding);
-	gtk_box_pack_start (GTK_BOX (GTK_DIALOG (dialog)->vbox), hbox, FALSE, FALSE, 8); // parameters (GtkBox *box, GtkWidget *child, gboolean expand, gboolean fill, guint padding);
-	gtk_signal_connect (GTK_OBJECT (saveButton), "clicked", GTK_SIGNAL_FUNC (saveSetStartClicked_CB), NULL);
-	gtk_signal_connect (GTK_OBJECT (stopButton), "clicked", GTK_SIGNAL_FUNC (saveSetStopClicked_CB), NULL);
-	gtk_signal_connect (GTK_OBJECT (dialog), "delete_event", GTK_SIGNAL_FUNC (saveSetDelete_CB), NULL);
-
-	return dialog;
-}
 
 
 
@@ -351,7 +186,7 @@ bool graphicThread::threadInit(){
 #endif
 
     //bool ret = _imgRecv.Connect((char*)imageProcessModule->getName("/in").c_str(),"default");
-    bool ret = _imgRecv.Connect("imageProcessorInterface/in","default");
+    
     return true;
 }
 
@@ -359,47 +194,168 @@ bool graphicThread::threadInit(){
 * active loop of the thread
 */
 void graphicThread::run(){
-    mainWindow = this->createMainWindow();
-
-    // Shows all widgets in main Window
+     // Shows all widgets in main Window
     gtk_widget_show_all (mainWindow);
-    gtk_window_move(GTK_WINDOW(mainWindow), 10,10);
-    // All GTK applications must have a gtk_main(). Control ends here
-    // and waits for an event to occur (like a key press or
-    // mouse event).
+	gtk_window_move(GTK_WINDOW(mainWindow), 10,10);
+	// All GTK applications must have a gtk_main(). Control ends here
+	// and waits for an event to occur (like a key press or
+	// mouse event).
 
-    gtk_main ();
+	gtk_main ();
     wModule->close();
-    gtk_widget_destroy(mainWindow);
-    close();
+	gtk_widget_destroy(mainWindow);
+    this->close();
+	yarp::os::Network::fini();
+
     ACE_OS::exit(0);
 }
 /**
 *	releases the thread
 */
 void graphicThread::threadRelease(){
-    close();
-    bool ret;
-    ret = _imgRecv.Disconnect();//("/rea/BIControlGazeInterface/in","default");
-	
-	//--------
-	ret = _imgRecvLayer0.Disconnect();//("/rea/BIControlGazeInterface/inLayer0","default");
-	ret = _imgRecvLayer1.Disconnect();//("/rea/BIControlGazeInterface/inLayer1","default");
-	ret = _imgRecvLayer2.Disconnect();//("/rea/BIControlGazeInterface/inLayer2","default");
-	//--------
-	ret = _imgRecvLayer3.Disconnect();//("/rea/BIControlGazeInterface/inLayer3","default");
-	ret = _imgRecvLayer4.Disconnect();//("/rea/BIControlGazeInterface/inLayer4","default");
-	ret = _imgRecvLayer5.Disconnect();//("/rea/BIControlGazeInterface/inLayer5","default");
-	ret = _imgRecvLayer6.Disconnect();//("/rea/BIControlGazeInterface/inLayer6","default");
-	ret = _imgRecvLayer7.Disconnect();//("/rea/BIControlGazeInterface/inLayer7","default");
-	ret = _imgRecvLayer8.Disconnect();//("/rea/BIControlGazeInterface/inLayer8","default");
-	//-------------
+    
 }
 
 void graphicThread::close(){
-     g_print("Closing port for visual representation");
-    //_imgRecv.Disconnect();
+    
 }
+
+
+bool getLayers(){
+	/*bool ret = true;
+	
+	ret = _imgRecvLayer0.Update();
+	if (ret != false){
+		_semaphore.wait();
+		ret = _imgRecvLayer0.GetLastImage(&_inputImgLayer0);
+		wModule->ptr_inputLayer0=&_inputImgLayer0;
+		_semaphore.post();
+	}
+
+	ret = _imgRecvLayer1.Update();
+	if (ret != false){
+		_semaphore.wait();
+		ret = _imgRecvLayer1.GetLastImage(&_inputImgLayer1);
+		wModule->ptr_inputLayer1=&_inputImgLayer1;
+		_semaphore.post();
+	}
+	ret = _imgRecvLayer2.Update();
+	if (ret != false){
+		_semaphore.wait();
+		ret = _imgRecvLayer2.GetLastImage(&_inputImgLayer2);
+		wModule->ptr_inputLayer2=&_inputImgLayer2;
+		_semaphore.post();
+	}
+	ret = _imgRecvLayer3.Update();
+	if (ret != false){
+		_semaphore.wait();
+		ret = _imgRecvLayer3.GetLastImage(&_inputImgLayer3);
+		wModule->ptr_inputLayer3=&_inputImgLayer3;
+		_semaphore.post();
+	}
+	ret = _imgRecvLayer4.Update();
+	if (ret != false){
+		_semaphore.wait();
+		ret = _imgRecvLayer4.GetLastImage(&_inputImgLayer4);
+		wModule->ptr_inputLayer4=&_inputImgLayer4;
+		_semaphore.post();
+	}
+	ret = _imgRecvLayer5.Update();
+	if (ret != false){
+		_semaphore.wait();
+		ret = _imgRecvLayer5.GetLastImage(&_inputImgLayer5);
+		wModule->ptr_inputLayer5=&_inputImgLayer5;
+		_semaphore.post();
+	}
+	ret = _imgRecvLayer6.Update();
+	if (ret != false){
+		_semaphore.wait();
+		ret = _imgRecvLayer6.GetLastImage(&_inputImgLayer6);
+		wModule->ptr_inputLayer6=&_inputImgLayer6;
+		_semaphore.post();
+	}
+	ret = _imgRecvLayer7.Update();
+	if (ret != false){
+		_semaphore.wait();
+		ret = _imgRecvLayer7.GetLastImage(&_inputImgLayer7);
+		wModule->ptr_inputLayer7=&_inputImgLayer7;
+		_semaphore.post();
+	}
+	ret = _imgRecvLayer8.Update();
+	if (ret != false){
+		_semaphore.wait();
+		ret = _imgRecvLayer8.GetLastImage(&_inputImgLayer8);
+		wModule->ptr_inputLayer8=&_inputImgLayer8;
+		_semaphore.post();
+	}	
+
+	
+	/*_semaphore.wait();
+	ret = _imgRecvLayer1.GetLastImage(&_inputLayer1);
+	wModule->ptr_inputLayer1=&_inputLayer1;
+	_semaphore.post();
+	_semaphore.wait();
+	ret = _imgRecvLayer2.GetLastImage(&_inputLayer2);
+	wModule->ptr_inputLayer2=&_inputLayer2;
+	_semaphore.post();
+	_semaphore.wait();
+	ret = _imgRecvLayer3.GetLastImage(&_inputLayer3);
+	wModule->ptr_inputLayer3=&_inputLayer3;
+	_semaphore.post();
+	_semaphore.wait();
+	ret = _imgRecvLayer4.GetLastImage(&_inputLayer4);
+	wModule->ptr_inputLayer4=&_inputLayer4;
+	_semaphore.post();
+	_semaphore.wait();
+	ret = _imgRecvLayer5.GetLastImage(&_inputLayer5);
+	wModule->ptr_inputLayer5=&_inputLayer5;
+	_semaphore.post();
+	_semaphore.wait();
+	ret = _imgRecvLayer6.GetLastImage(&_inputLayer6);
+	wModule->ptr_inputLayer6=&_inputLayer6;
+	_semaphore.post();
+	_semaphore.wait();
+	ret = _imgRecvLayer7.GetLastImage(&_inputLayer7);
+	wModule->ptr_inputLayer7=&_inputLayer7;
+	_semaphore.post();
+	_semaphore.wait();
+	ret = _imgRecvLayer8.GetLastImage(&_inputLayer8);
+	wModule->ptr_inputLayer8=&_inputLayer8;
+	_semaphore.post();*/
+	
+	//printf("GetImage: out of the semaphore \n");
+
+    
+
+	return ret;
+}
+
+bool getOpponencies(){
+	bool ret = false;
+	/*ret = _imgRecvRG.Update();
+	ret = _imgRecvGR.Update();
+	ret = _imgRecvBY.Update();*/
+
+	if (ret == false){
+		return false;
+	}
+
+	/*_semaphore.wait();
+	ret = _imgRecvGR.GetLastImage(&_inputImgGR);
+	wModule->ptr_inputGR=&_inputImgGR;
+	_semaphore.post();
+	_semaphore.wait();
+	ret = _imgRecvRG.GetLastImage(&_inputImgRG);
+	wModule->ptr_inputRG=&_inputImgRG;
+	_semaphore.post();
+	_semaphore.wait();
+	ret = _imgRecvBY.GetLastImage(&_inputImgBY);
+	wModule->ptr_inputBY=&_inputImgBY;
+	_semaphore.post();
+	//printf("GetImage: out of the semaphore \n");*/
+	return ret;
+}
+
 
 //-------------------------------------------------
 // Main Window Callbacks
@@ -407,112 +363,32 @@ void graphicThread::close(){
 
 /* usual callback function */
 static void callback( GtkWidget *widget,gpointer   data ){
-    g_print ("Hello again %s was pressed \n", (char *) data);
+    printf ("Hello again - %s was pressed \n", (char *) data);
 	
 	if(!strcmp((char *)data,"Execute")){
 		printf("Execute");
 		string _command;
-		/*if(wModule->runFreely_flag)
+		if(wModule->runFreely_flag)
 			_command.assign("ExecuteFreely");
 		else if(wModule->runClamped_flag)
 			_command.assign("ExecuteClamped");
 		else if(wModule->stopEvolution_flag)
-			_command.assign("ExecuteStop");*/
+			_command.assign("ExecuteStop");
 		wModule->command->assign(_command); 
 	}
-	else if(!strcmp((char *)data,"Eyes:stop")){
-		printf("Eyes:stop");
-		string _command("Eyes_stop");
-		wModule->command->assign(_command);
-	}
-	else if(!strcmp((char *)data,"Eyes:left")){
-		printf("Eyes_left");
-		string _command("Eyes_left");
-		wModule->command->assign(_command);
-	}
-	else if(!strcmp((char *)data,"Eyes:up-left")){
-		printf("Eyes_up_left");
-		string _command("Eyes_up_left");
-		wModule->command->assign(_command);
-	}
-	else if(!strcmp((char *)data,"Eyes:down-left")){
-		printf("Eyes_down_left");
-		string _command("Eyes_down_left");
-		wModule->command->assign(_command);
-	}
-	else if(!strcmp((char *)data,"Eyes:right")){
-		printf("Eyes_right");
-		string _command("Eyes_right");
-		wModule->command->assign(_command);
-	}
-	else if(!strcmp((char *)data,"Eyes:up-right")){
-		printf("Eyes_up_right");
-		string _command("Eyes_up_right");
-		wModule->command->assign(_command);
-	}
-	else if(!strcmp((char *)data,"Eyes:down-right")){
-		printf("Eyes_down_right");
-		string _command("Eyes_down_right");
-		wModule->command->assign(_command);
-	}
-	else if(!strcmp((char *)data,"Eyes:up")){
-		printf("Head_up");
-		string _command("Eyes_up");
-		wModule->command->assign(_command);
-	}
-	else if(!strcmp((char *)data,"Eyes:down")){
-		printf("Eyes_down");
-		string _command("Eyes_down");
-		wModule->command->assign(_command);
-	}
-	else if(!strcmp((char *)data,"Head:stop")){
-		printf("Head:stop");
-		string _command("Head_stop");
-		wModule->command->assign(_command);
-	}
-	else if(!strcmp((char *)data,"Head:left")){
-		printf("Head_left");
-		string _command("Head_left");
-		wModule->command->assign(_command);
-	}
-	else if(!strcmp((char *)data,"Head:up-left")){
-		printf("Head_up_left");
-		string _command("Head_up_left");
-		wModule->command->assign(_command);
-	}
-	else if(!strcmp((char *)data,"Head:down-left")){
-		printf("Head_down_left");
-		string _command("Head_down_left");
-		wModule->command->assign(_command);
-	}
-	else if(!strcmp((char *)data,"Head:right")){
-		printf("Head_right");
-		string _command("Head_right");
-		wModule->command->assign(_command);
-	}
-	else if(!strcmp((char *)data,"Head:up-right")){
-		printf("Head_up_right");
-		string _command("Head_up_right");
-		wModule->command->assign(_command);
-	}
-	else if(!strcmp((char *)data,"Head:down-right")){
-		printf("Head_down_right");
-		string _command("Head_down_right");
-		wModule->command->assign(_command);
-	}
-	else if(!strcmp((char *)data,"Head:up")){
-		printf("Head_up");
-		string _command("Head_up");
-		wModule->command->assign(_command);
-	}
-	else if(!strcmp((char *)data,"Head:down")){
-		printf("Head_down");
-		string _command("Head_down");
-		wModule->command->assign(_command);
-	}
-	/*else if(!strcmp((char *)data,"Learn")){
+	else if(!strcmp((char *)data,"Learn")){
 		printf("Learn");
 		string _command("Learn");
+		wModule->command->assign(_command);
+	}
+	else if(!strcmp((char *)data,"outHeadBehaviour")){
+		printf("outHeadBehaviour");
+		string _command("outHeadBehaviour");
+		wModule->command->assign(_command);
+	}
+	else if(!strcmp((char *)data,"outEyesBehaviour")){
+		printf("outEyesBehaviour");
+		string _command("outEyesBehaviour");
 		wModule->command->assign(_command);
 	}
 	else if(!strcmp((char *)data,"EvolveFreely")){
@@ -540,7 +416,7 @@ static void callback( GtkWidget *widget,gpointer   data ){
 		string _command("AddLayer");
 		Bottle tmp;
 		tmp.addString("row");
-    	tmp.addInt(wModule->rowDim);
+		tmp.addInt(wModule->rowDim);
 		wModule->bOptions.addList()=tmp;
 		tmp.clear();
 		tmp.addString("col");
@@ -551,26 +427,69 @@ static void callback( GtkWidget *widget,gpointer   data ){
 	else if(!strcmp((char *)data,"ConnectLayer")){
 		printf("ConnectLayer request \n");
 		string _command("ConnectLayer");
+		string Aname("");
+		string Bname("");
+		/*if(wModule->inLayer0_flag){
+			printf("LayerA: layer0 \n");
+			Aname.append("layer0");
+		}
+		else if(wModule->inLayer1_flag){
+			printf("LayerA: layer1 \n");
+			Aname.append("layer1");
+		}
+		if(wModule->SelectLayer0_flag){
+			printf("LayerB: layer0 \n");
+			Bname.append("layer0");
+		}
+		else if(wModule->SelectLayer1_flag){
+			printf("LayerB: layer1 \n");
+			Bname.append("layer1");
+		}*/
+		Bottle tmp;
+		tmp.addString("LayerA");
+		tmp.addString(Aname.c_str());
+		wModule->bOptions.addList()=tmp;
+		tmp.clear();
+		tmp.addString("LayerB");
+		tmp.addString(Bname.c_str());
+		wModule->bOptions.addList()=tmp;
+		wModule->command->assign(_command);
+	}
+	else if(!strcmp((char *)data,"ClampPattern")){
+		printf("ClampPattern \n");
+		string _command("ClampPattern");
+		Bottle tmp;
+		tmp.addString("pattern");
+		tmp.addString("1,0,0,0");
+		wModule->bOptions.addList()=tmp;
 		wModule->command->assign(_command);
 	}
 	else if(!strcmp((char *)data,"ClampLayer")){
 		printf("ClampLayer \n");
 		string _command("ClampLayer");
+		Bottle tmp;
+		tmp.addString("layer");
+		/*if(wModule->inLayer0_flag)
+			tmp.addString("layer0");
+		else if(wModule->inLayer1_flag)
+			tmp.addString("layer1");*/
+		wModule->bOptions.addList()=tmp;
 		wModule->command->assign(_command);
 	}
-	else if(!strcmp((char *)data,"DrawAllBlobs2")){
-		printf("DrawAllBlobs2");
+	else if(!strcmp((char *)data,"setProbabilityFreely")){
+		printf("setProbabilityFreely \n");
+		string _command("setProbabilityFreely");
+		wModule->command->assign(_command);
 	}
-	else if(!strcmp((char *)data,"DrawAllBlobs3")){
-		printf("DrawAllBlobs3");
-		
+	else if(!strcmp((char *)data,"setProbabilityNull")){
+		printf("setProbabilityNull \n");
+		string _command("setProbabilityNull");
+		wModule->command->assign(_command);
 	}
-	else if(!strcmp((char *)data,"drawFoveaBlob1")){
-		printf("drawFoveaBlob1");
-	}
-	else if(!strcmp((char *)data,"drawFoveaBlob2")){
-		printf("drawFoveaBlob2");
-		
+	else if(!strcmp((char *)data,"setProbabilityClamped")){
+		printf("setProbabilityClamped \n");
+		string _command("setProbabilityClamped");
+		wModule->command->assign(_command);
 	}
 	else if(!strcmp((char *)data,"drawFoveaBlob3")){
 		printf("drawFoveaBlob3");
@@ -595,119 +514,9 @@ static void callback( GtkWidget *widget,gpointer   data ){
 	}
 	else if(!strcmp((char *)data,"maxSalienceBlob3")){
 		printf("drawFoveaBlob3");
-	}*/
-	wModule->outPorts();
-}
-
-bool getLayers(){
-    /*
-	bool ret = true;
-	ret = _imgRecvLayer0.Update();
-	if (ret != false){
-		_semaphore.wait();
-		//ret = _imgRecvLayer0.GetLastImage(&_inputImgLayer0);
-		//wModule->ptr_inputLayer0=&_inputImgLayer0;
-		_semaphore.post();
 	}
-	ret = _imgRecvLayer1.Update();
-	if (ret != false){
-		_semaphore.wait();
-		//ret = _imgRecvLayer1.GetLastImage(&_inputImgLayer1);
-		//wModule->ptr_inputLayer1=&_inputImgLayer1;
-		_semaphore.post();
-	}
-	ret = _imgRecvLayer2.Update();
-	if (ret != false){
-		_semaphore.wait();
-		//ret = _imgRecvLayer2.GetLastImage(&_inputImgLayer2);
-		//wModule->ptr_inputLayer2=&_inputImgLayer2;
-		_semaphore.post();
-	}
-	ret = _imgRecvLayer3.Update();
-	if (ret != false){
-		_semaphore.wait();
-		//ret = _imgRecvLayer3.GetLastImage(&_inputImgLayer3);
-		//wModule->ptr_inputLayer3=&_inputImgLayer3;
-		_semaphore.post();
-	}
-	ret = _imgRecvLayer4.Update();
-	if (ret != false){
-		_semaphore.wait();
-		//ret = _imgRecvLayer4.GetLastImage(&_inputImgLayer4);
-		//wModule->ptr_inputLayer4=&_inputImgLayer4;
-		_semaphore.post();
-	}
-	ret = _imgRecvLayer5.Update();
-	if (ret != false){
-		_semaphore.wait();
-		//ret = _imgRecvLayer5.GetLastImage(&_inputImgLayer5);
-		//wModule->ptr_inputLayer5=&_inputImgLayer5;
-		_semaphore.post();
-	}
-	ret = _imgRecvLayer6.Update();
-	if (ret != false){
-		_semaphore.wait();
-		//ret = _imgRecvLayer6.GetLastImage(&_inputImgLayer6);
-		//wModule->ptr_inputLayer6=&_inputImgLayer6;
-		_semaphore.post();
-	}
-	ret = _imgRecvLayer7.Update();
-	if (ret != false){
-		_semaphore.wait();
-		//ret = _imgRecvLayer7.GetLastImage(&_inputImgLayer7);
-		//wModule->ptr_inputLayer7=&_inputImgLayer7;
-		_semaphore.post();
-	}
-	ret = _imgRecvLayer8.Update();
-	if (ret != false){
-		_semaphore.wait();
-		//ret = _imgRecvLayer8.GetLastImage(&_inputImgLayer8);
-		//wModule->ptr_inputLayer8=&_inputImgLayer8;
-		_semaphore.post();
-	}	
-
-	ret=true;
-
 	
-	//_semaphore.wait();
-	//ret = _imgRecvLayer1.GetLastImage(&_inputLayer1);
-	//wModule->ptr_inputLayer1=&_inputLayer1;
-	//_semaphore.post();
-	//_semaphore.wait();
-	//ret = _imgRecvLayer2.GetLastImage(&_inputLayer2);
-	//wModule->ptr_inputLayer2=&_inputLayer2;
-	//_semaphore.post();
-	//_semaphore.wait();
-	//ret = _imgRecvLayer3.GetLastImage(&_inputLayer3);
-	//wModule->ptr_inputLayer3=&_inputLayer3;
-	//_semaphore.post();
-	//_semaphore.wait();
-	//ret = _imgRecvLayer4.GetLastImage(&_inputLayer4);
-	//wModule->ptr_inputLayer4=&_inputLayer4;
-	//_semaphore.post();
-	//_semaphore.wait();
-	//ret = _imgRecvLayer5.GetLastImage(&_inputLayer5);
-	//wModule->ptr_inputLayer5=&_inputLayer5;
-	//_semaphore.post();
-	//_semaphore.wait();
-	//ret = _imgRecvLayer6.GetLastImage(&_inputLayer6);
-	//wModule->ptr_inputLayer6=&_inputLayer6;
-	//_semaphore.post();
-	//_semaphore.wait();
-	//ret = _imgRecvLayer7.GetLastImage(&_inputLayer7);
-	//wModule->ptr_inputLayer7=&_inputLayer7;
-	//_semaphore.post();
-	//_semaphore.wait();
-	//ret = _imgRecvLayer8.GetLastImage(&_inputLayer8);
-	//wModule->ptr_inputLayer8=&_inputLayer8;
-	//_semaphore.post();
-	
-	//printf("GetImage: out of the semaphore \n");
-    */
-    bool ret;
-	return ret;
 }
-
 
 static gint expose_CB (GtkWidget *widget, GdkEventExpose *event, gpointer data)
 {
@@ -720,10 +529,10 @@ static gint expose_CB (GtkWidget *widget, GdkEventExpose *event, gpointer data)
 				unsigned int rowstride;
 				unsigned int imageWidth,imageHeight,areaWidth, areaHeight;
 				//IppiSize srcsize={320,240};
-				
+
 				bool ret=getLayers();
-				if(ret==false){
-					printf("No Layers! \n");
+				if((ret==false)&&(!wModule->inputImageReady_flag)){
+					printf("No Layers and NO Image! \n");
 					return true;
 				}
 			
@@ -779,7 +588,7 @@ static gint expose_CB (GtkWidget *widget, GdkEventExpose *event, gpointer data)
 					//ippiCopy_8u_C3R(wModule->ptr_inputLayer8->getPixelAddress(0,0),320*3,_outputImage3->getPixelAddress(0,0),320*3,srcsize);
 					cvCopyImage(wModule->ptr_inputLayer8->getIplImage(),_outputImage3->getIplImage());
 					conversion=false;
-				}
+				}*/
 				else if(false){
 					//ippiCopy_8u_C3R(wModule->salience->colorVQ_img->getPixelAddress(0,0),320*3,_outputImage3->getPixelAddress(0,0),320*3,srcsize);
 					conversion=false;
@@ -797,18 +606,16 @@ static gint expose_CB (GtkWidget *widget, GdkEventExpose *event, gpointer data)
 				}
 				else _outputImage->zero(); //the input is a RGB image, whereas the watershed is working with a mono image
 
-                */
 				//-------
 				
 				if(conversion){
-					cvCvtColor(_outputImage->getIplImage(),wModule->image_out->getIplImage(),CV_GRAY2RGB);
-
 					//int psb,width=320,height=240;
 					//Ipp8u* im_out = ippiMalloc_8u_C1(width,height,&psb);
 					//Ipp8u* im_tmp[3];
 					//two copies in order to have 2 conversions
 					//the first transform the yarp mono into a 4-channel image
 					//ippiCopy_8u_C1R(_outputImage->getPixelAddress(0,0), width,im_out,psb,srcsize);
+					cvCvtColor(_outputImage->getIplImage(),wModule->image_out->getIplImage(),CV_GRAY2RGB);
 					//im_tmp[0]=im_out;
 					//im_tmp[1]=im_out;
 					//im_tmp[2]=im_out;
@@ -831,8 +638,6 @@ static gint expose_CB (GtkWidget *widget, GdkEventExpose *event, gpointer data)
 				imageWidth = 320;
 				imageHeight = 240;
 				_semaphore.post();
-
-				
 				
 	            
 				if (imageWidth==0||imageHeight==0) {
@@ -905,17 +710,16 @@ static void cb_draw_value( GtkToggleButton *button )
 	string _command;
 	if(!strcmp(button->button.label_text,"inputImage")){
 		printf("inputImage request \n");
-		if(button->active){
-			//wModule->inputImage_flag=true;
+		/*if(button->active){
+			wModule->inputImage_flag=true;
 		}
-        else{
-			//wModule->inputImage_flag=false;
-        }
+		else
+			wModule->inputImage_flag=false;*/
 	}
 	else if(!strcmp(button->button.label_text,"SelectLayer0-->")){
 		printf("Select Layer0 \n");
-		if(button->active){
-			/*wModule->SelectLayer0_flag=true;
+		/*if(button->active){
+			wModule->SelectLayer0_flag=true;
 			wModule->SelectLayer1_flag=false;
 			wModule->SelectLayer2_flag=false;
 			wModule->SelectLayer3_flag=false;
@@ -923,24 +727,104 @@ static void cb_draw_value( GtkToggleButton *button )
 			wModule->SelectLayer5_flag=false;
 			wModule->SelectLayer6_flag=false;
 			wModule->SelectLayer7_flag=false;
-			wModule->SelectLayer8_flag=false;*/
+			wModule->SelectLayer8_flag=false;
 		}
-        else{
-			//wModule->SelectLayer0_flag=false;
-        }
+		else
+			wModule->SelectLayer0_flag=false;*/
+	}
+	else if(!strcmp(button->button.label_text,"SelectLayer1-->")){
+		printf("Select B: Layer1 \n");
+		/*if(button->active){
+			wModule->SelectLayer0_flag=false;
+			wModule->SelectLayer1_flag=true;
+			wModule->SelectLayer2_flag=false;
+			wModule->SelectLayer3_flag=false;
+			wModule->SelectLayer4_flag=false;
+			wModule->SelectLayer5_flag=false;
+			wModule->SelectLayer6_flag=false;
+			wModule->SelectLayer7_flag=false;
+			wModule->SelectLayer8_flag=false;
+		}
+		else
+			wModule->SelectLayer1_flag=false;*/
+	}
+	else if(!strcmp(button->button.label_text,"SelectLayer2-->")){
+		printf("Select B: Layer2 \n");
+		/*if(button->active){
+			wModule->SelectLayer0_flag=false;
+			wModule->SelectLayer1_flag=false;
+			wModule->SelectLayer2_flag=true;
+			wModule->SelectLayer3_flag=false;
+			wModule->SelectLayer4_flag=false;
+			wModule->SelectLayer5_flag=false;
+			wModule->SelectLayer6_flag=false;
+			wModule->SelectLayer7_flag=false;
+			wModule->SelectLayer8_flag=false;
+		}
+		else
+			wModule->SelectLayer2_flag=false;*/
+	}
+	else if(!strcmp(button->button.label_text,"SelectLayer3-->")){
+		printf("Select B Layer3 \n");
+		/*if(button->active){
+			wModule->SelectLayer0_flag=false;
+			wModule->SelectLayer1_flag=false;
+			wModule->SelectLayer2_flag=false;
+			wModule->SelectLayer3_flag=true;
+			wModule->SelectLayer4_flag=false;
+			wModule->SelectLayer5_flag=false;
+			wModule->SelectLayer6_flag=false;
+			wModule->SelectLayer7_flag=false;
+			wModule->SelectLayer8_flag=false;
+		}
+		else
+			wModule->SelectLayer3_flag=true;*/
+	}
+	else if(!strcmp(button->button.label_text,"SelectLayer4-->")){
+		printf("Select B: Layer4 \n");
+		/*if(button->active){
+			wModule->SelectLayer0_flag=false;
+			wModule->SelectLayer1_flag=false;
+			wModule->SelectLayer2_flag=false;
+			wModule->SelectLayer3_flag=false;
+			wModule->SelectLayer4_flag=true;
+			wModule->SelectLayer5_flag=false;
+			wModule->SelectLayer6_flag=false;
+			wModule->SelectLayer7_flag=false;
+			wModule->SelectLayer8_flag=false;
+		}
+		else
+			wModule->SelectLayer4_flag=false;*/
+
+	}
+	else if(!strcmp(button->button.label_text,"SelectLayer5-->")){
+		printf("Select B: Layer5 \n");
+		/*if(button->active){
+			wModule->SelectLayer0_flag=false;
+			wModule->SelectLayer1_flag=false;
+			wModule->SelectLayer2_flag=false;
+			wModule->SelectLayer3_flag=false;
+			wModule->SelectLayer4_flag=false;
+			wModule->SelectLayer5_flag=true;
+			wModule->SelectLayer6_flag=false;
+			wModule->SelectLayer7_flag=false;
+			wModule->SelectLayer8_flag=false;
+		}
+		else
+			wModule->SelectLayer5_flag=false;*/
 	}
 	else if(!strcmp(button->button.label_text,"Layer0")){
 		printf("Layer0 request \n");
 		if(button->active){
-			/*this->inLayer0_flag=true;
-			this->inLayer1_flag=false;
-			this->inLayer2_flag=false;
-			this->inLayer3_flag=false;
-			this->inLayer4_flag=false;
-			this->inLayer5_flag=false;
-			this->inLayer6_flag=false;
-			this->inLayer7_flag=false;
-			this->inLayer8_flag=false;*/
+			/*wModule->inLayer0_flag=true;
+			wModule->inLayer1_flag=false;
+			wModule->inLayer2_flag=false;
+			wModule->inLayer3_flag=false;
+			wModule->inLayer4_flag=false;
+			wModule->inLayer5_flag=false;
+			wModule->inLayer6_flag=false;
+			wModule->inLayer7_flag=false;
+			wModule->inLayer8_flag=false;*/
 			string _command("CurrentLayer");
 			Bottle tmp;
 			tmp.addString("value");
@@ -952,14 +836,13 @@ static void cb_draw_value( GtkToggleButton *button )
 			//wModule->bOptions.addList()=tmp;
 			wModule->command->assign(_command);
 		}
-        else{
-			//wModule->inLayer0_flag=false;
-        }
+		/*else
+			wModule->inLayer0_flag=false;*/
 	}
 	else if(!strcmp(button->button.label_text,"Layer1")){
 		printf("Layer1 request \n");
-		if(button->active){
-			/*wModule->inLayer0_flag=false;
+		/*if(button->active){
+			wModule->inLayer0_flag=false;
 			wModule->inLayer1_flag=true;
 			wModule->inLayer2_flag=false;
 			wModule->inLayer3_flag=false;
@@ -967,7 +850,7 @@ static void cb_draw_value( GtkToggleButton *button )
 			wModule->inLayer5_flag=false;
 			wModule->inLayer6_flag=false;
 			wModule->inLayer7_flag=false;
-			wModule->inLayer8_flag=false;*/
+			wModule->inLayer8_flag=false;
 			string _command("CurrentLayer");
 			Bottle tmp;
 			tmp.addString("value");
@@ -979,14 +862,13 @@ static void cb_draw_value( GtkToggleButton *button )
 			//wModule->bOptions.addList()=tmp;
 			wModule->command->assign(_command);
 		}
-        else{
-			//wModule->inLayer1_flag=false;
-        }
+		else
+			wModule->inLayer1_flag=false;*/
 	}
 	else if(!strcmp(button->button.label_text,"Layer2")){
 		printf("Layer2 request \n");
-		if(button->active){
-			/*wModule->inLayer0_flag=false;
+		/*if(button->active){
+			wModule->inLayer0_flag=false;
 			wModule->inLayer1_flag=false;
 			wModule->inLayer2_flag=true;
 			wModule->inLayer3_flag=false;
@@ -994,7 +876,7 @@ static void cb_draw_value( GtkToggleButton *button )
 			wModule->inLayer5_flag=false;
 			wModule->inLayer6_flag=false;
 			wModule->inLayer7_flag=false;
-			wModule->inLayer8_flag=false;*/
+			wModule->inLayer8_flag=false;
 			string _command("CurrentLayer");
 			Bottle tmp;
 			tmp.addString("value");
@@ -1006,13 +888,12 @@ static void cb_draw_value( GtkToggleButton *button )
 			//wModule->bOptions.addList()=tmp;
 			wModule->command->assign(_command);
 		}
-        else{
-			//wModule->inLayer2_flag=false;
-        }
+		else
+			wModule->inLayer2_flag=false;*/
 	}
 	if(!strcmp(button->button.label_text,"Layer3")){
-		if(button->active){
-			/*wModule->inLayer0_flag=false;
+		/*if(button->active){
+			wModule->inLayer0_flag=false;
 			wModule->inLayer1_flag=false;
 			wModule->inLayer2_flag=false;
 			wModule->inLayer3_flag=true;
@@ -1020,7 +901,7 @@ static void cb_draw_value( GtkToggleButton *button )
 			wModule->inLayer5_flag=false;
 			wModule->inLayer6_flag=false;
 			wModule->inLayer7_flag=false;
-			wModule->inLayer8_flag=false;*/
+			wModule->inLayer8_flag=false;
 			string _command("CurrentLayer");
 			Bottle tmp;
 			tmp.addString("value");
@@ -1032,13 +913,12 @@ static void cb_draw_value( GtkToggleButton *button )
 			//wModule->bOptions.addList()=tmp;
 			wModule->command->assign(_command);
 		}
-        else{
-			//wModule->inLayer3_flag=false;
-        }
+		else
+			wModule->inLayer3_flag=false;*/
 	}
 	else if(!strcmp(button->button.label_text,"Layer4")){
-		if(button->active){
-			/*wModule->inLayer0_flag=false;
+		/*if(button->active){
+			wModule->inLayer0_flag=false;
 			wModule->inLayer1_flag=false;
 			wModule->inLayer2_flag=false;
 			wModule->inLayer3_flag=false;
@@ -1046,7 +926,7 @@ static void cb_draw_value( GtkToggleButton *button )
 			wModule->inLayer5_flag=false;
 			wModule->inLayer6_flag=false;
 			wModule->inLayer7_flag=false;
-			wModule->inLayer8_flag=false;*/
+			wModule->inLayer8_flag=false;
 			string _command("CurrentLayer");
 			Bottle tmp;
 			tmp.addString("value");
@@ -1058,13 +938,12 @@ static void cb_draw_value( GtkToggleButton *button )
 			//wModule->bOptions.addList()=tmp;
 			wModule->command->assign(_command);
 		}
-        else{
-			//wModule->inLayer4_flag=false;
-        }
+		else
+			wModule->inLayer4_flag=false;*/
 	}
 	else if(!strcmp(button->button.label_text,"Layer5")){
-		if(button->active){
-			/*wModule->inLayer0_flag=false;
+		/*if(button->active){
+			wModule->inLayer0_flag=false;
 			wModule->inLayer1_flag=false;
 			wModule->inLayer2_flag=false;
 			wModule->inLayer3_flag=false;
@@ -1072,7 +951,7 @@ static void cb_draw_value( GtkToggleButton *button )
 			wModule->inLayer5_flag=true;
 			wModule->inLayer6_flag=false;
 			wModule->inLayer7_flag=false;
-			wModule->inLayer8_flag=false;*/
+			wModule->inLayer8_flag=false;
 			string _command("CurrentLayer");
 			Bottle tmp;
 			tmp.addString("value");
@@ -1084,13 +963,12 @@ static void cb_draw_value( GtkToggleButton *button )
 			//wModule->bOptions.addList()=tmp;
 			wModule->command->assign(_command);
 		}
-        else{
-			//wModule->inLayer5_flag=false;
-        }
+		else
+			wModule->inLayer5_flag=false;*/
 	}
 	else if(!strcmp(button->button.label_text,"Layer6")){
-		if(button->active){
-			/*wModule->inLayer0_flag=false;
+		/*if(button->active){
+			wModule->inLayer0_flag=false;
 			wModule->inLayer1_flag=false;
 			wModule->inLayer2_flag=false;
 			wModule->inLayer3_flag=false;
@@ -1098,7 +976,7 @@ static void cb_draw_value( GtkToggleButton *button )
 			wModule->inLayer5_flag=false;
 			wModule->inLayer6_flag=true;
 			wModule->inLayer7_flag=false;
-			wModule->inLayer8_flag=false;*/
+			wModule->inLayer8_flag=false;
 			string _command("CurrentLayer");
 			Bottle tmp;
 			tmp.addString("value");
@@ -1110,13 +988,12 @@ static void cb_draw_value( GtkToggleButton *button )
 			//wModule->bOptions.addList()=tmp;
 			wModule->command->assign(_command);
 		}
-        else{
-			//wModule->inLayer6_flag=false;
-        }
+		else
+			wModule->inLayer6_flag=false;*/
 	}
 	else if(!strcmp(button->button.label_text,"Layer7")){
-		if(button->active){
-			/*wModule->inLayer0_flag=false;
+		/*if(button->active){
+			wModule->inLayer0_flag=false;
 			wModule->inLayer1_flag=false;
 			wModule->inLayer2_flag=false;
 			wModule->inLayer3_flag=false;
@@ -1124,7 +1001,7 @@ static void cb_draw_value( GtkToggleButton *button )
 			wModule->inLayer5_flag=false;
 			wModule->inLayer6_flag=false;
 			wModule->inLayer7_flag=true;
-			wModule->inLayer8_flag=false;*/
+			wModule->inLayer8_flag=false;
 			string _command("CurrentLayer");
 			Bottle tmp;
 			tmp.addString("value");
@@ -1136,13 +1013,12 @@ static void cb_draw_value( GtkToggleButton *button )
 			//wModule->bOptions.addList()=tmp;
 			wModule->command->assign(_command);
 		}
-        else{
-			//wModule->inLayer7_flag=false;
-        }
+		else
+			wModule->inLayer7_flag=false;*/
 	}
 	else if(!strcmp(button->button.label_text,"Layer8")){
-		if(button->active){
-			/*wModule->inLayer0_flag=false;
+		/*if(button->active){
+			wModule->inLayer0_flag=false;
 			wModule->inLayer1_flag=false;
 			wModule->inLayer2_flag=false;
 			wModule->inLayer3_flag=false;
@@ -1150,7 +1026,7 @@ static void cb_draw_value( GtkToggleButton *button )
 			wModule->inLayer5_flag=false;
 			wModule->inLayer6_flag=false;
 			wModule->inLayer7_flag=false;
-			wModule->inLayer8_flag=true;*/
+			wModule->inLayer8_flag=true;
 			string _command("CurrentLayer");
 			Bottle tmp;
 			tmp.addString("value");
@@ -1162,11 +1038,10 @@ static void cb_draw_value( GtkToggleButton *button )
 			//wModule->bOptions.addList()=tmp;
 			wModule->command->assign(_command);
 		}
-        else{
-			//wModule->inLayer8_flag=false;
-        }
+		else
+			wModule->inLayer8_flag=false;*/
 	}
-	/*if(!strcmp(button->button.label_text,"EvolveFreely-->")){
+	if(!strcmp(button->button.label_text,"EvolveFreely-->")){
 		if(button->active)
 			wModule->runFreely_flag=true;
 		else
@@ -1183,7 +1058,7 @@ static void cb_draw_value( GtkToggleButton *button )
 			wModule->stopEvolution_flag=true;
 		else
 			wModule->stopEvolution_flag=false;
-	}*/
+	}
 	else if(!strcmp(button->button.label_text,"Blue2-->")){
 		if(button->active){
 			//imageProcessModule->processor2->redPlane_flag=0;
@@ -1223,52 +1098,13 @@ bool getImage(){
 		return false;
 	}
 
-	_semaphore.wait();
-	//ret = _imgRecv.GetLastImage(&_inputImg);
-	//wModule->ptr_inputImage=&_inputImg;
-	_semaphore.post();
+	/*_semaphore.wait();
+	ret = _imgRecv.GetLastImage(&_inputImg);
+	wModule->ptr_inputImage=&_inputImg;
+	_semaphore.post();*/
 	
 	//printf("GetImage: out of the semaphore \n");
 	return ret;
-}
-
-
-
-
-
-bool getOpponencies(){
-	bool ret = false;
-	/*ret = _imgRecvRG.Update();
-	ret = _imgRecvGR.Update();
-	ret = _imgRecvBY.Update();*/
-
-	if (ret == false){
-		return false;
-	}
-
-	/*_semaphore.wait();
-	ret = _imgRecvGR.GetLastImage(&_inputImgGR);
-	wModule->ptr_inputGR=&_inputImgGR;
-	_semaphore.post();
-	_semaphore.wait();
-	ret = _imgRecvRG.GetLastImage(&_inputImgRG);
-	wModule->ptr_inputRG=&_inputImgRG;
-	_semaphore.post();
-	_semaphore.wait();
-	ret = _imgRecvBY.GetLastImage(&_inputImgBY);
-	wModule->ptr_inputBY=&_inputImgBY;
-	_semaphore.post();
-	//printf("GetImage: out of the semaphore \n");*/
-	return ret;
-}
-
-
-void graphicThread::setRowDim(int number){
-	this->rowDim=number;
-}
-
-void graphicThread::setColDim(int number){
-	this->colDim=number;
 }
 
 void cleanExit(){
@@ -1307,11 +1143,72 @@ static gint menuLoadFile_CB(GtkWidget *widget, GdkEventExpose *event, gpointer d
 	return TRUE;
 }
 
+static gint menuFileSet_CB(GtkWidget *widget, GdkEventExpose *event, gpointer data)
+{
+#if GTK_CHECK_VERSION(2,6,0)
 
+	if ( gtk_check_menu_item_get_active (GTK_CHECK_MENU_ITEM(widget)) ) 
+        {
+            gtk_check_menu_item_set_active(GTK_CHECK_MENU_ITEM(fileSingleItem), FALSE);
+					
+            gtk_widget_show_all (saveSetDialog);
+        } 
+	else 
+        {
+            gtk_widget_hide (saveSetDialog);
+        }
+
+#endif
+
+	return TRUE;
+}
+
+static gint saveSingleDelete_CB (GtkWidget *widget, gpointer data)
+{
+	gtk_check_menu_item_set_active(GTK_CHECK_MENU_ITEM(fileSingleItem), FALSE);
+
+	return (TRUE);
+}
+
+static gint saveSetStartClicked_CB(GtkWidget *widget, gpointer data)
+{
+	//_savingSet = true;
+		
+	return (TRUE);
+}
+
+static gint saveSetDelete_CB (GtkWidget *widget, gpointer data)
+{
+	gtk_check_menu_item_set_active(GTK_CHECK_MENU_ITEM(fileSetItem), FALSE);
+
+	return (TRUE);
+}
+
+static gint saveSetStopClicked_CB(GtkWidget *widget, gpointer data)
+{
+	//_savingSet = false;
+		
+	return (TRUE);
+}
+
+/* Get the selected filename and print it to the console */
+static void file_ok_sel( GtkWidget        *w,
+                         GtkFileSelection *fs ){
+    printf ("%s\n", gtk_file_selection_get_filename (GTK_FILE_SELECTION (fs)));
+}
+
+
+static gint saveSingleClicked_CB(GtkWidget *widget, gpointer data)
+{
+	//saveCurrentFrame();
+	
+	return (TRUE);
+}
 
 static gint timeout_CB (gpointer data){
 	gtk_widget_queue_draw (da);
 	if (getImage()){
+			wModule->inputImageReady_flag=true;
             //             int imageWidth, imageHeight, pixbufWidth, pixbufHeight;
             //             _semaphore.wait();
             //            imageWidth = _inputImg.width();
@@ -1330,7 +1227,7 @@ static gint timeout_CB (gpointer data){
             //                saveCurrentFrame();
     }
 
-	
+	wModule->outPorts();
 	return TRUE;
 }
 
@@ -1353,6 +1250,97 @@ static void updateStatusbar (GtkStatusbar  *statusbar)
     gtk_statusbar_push (statusbar, 0, msg);
 
     g_free (msg);
+}
+
+//-------------------------------------------------
+// Non Modal Dialogs
+//-------------------------------------------------
+GtkWidget* createSaveSingleDialog(void)
+{
+
+	GtkWidget *dialog = NULL;
+	GtkWidget *button;
+	GtkWidget *hbox;
+	dialog = gtk_dialog_new ();
+	gtk_window_set_title(GTK_WINDOW(dialog), "Save Snapshot");
+	gtk_window_set_modal(GTK_WINDOW(dialog), FALSE);
+	gtk_window_set_transient_for(GTK_WINDOW(dialog), GTK_WINDOW(mainWindow));
+	//gtk_window_resize(GTK_WINDOW(dialog), 185, 40);
+	gtk_window_set_resizable(GTK_WINDOW(dialog), FALSE);
+	//gtk_window_set_default_size(GTK_WINDOW(dialog), 185, 40);
+	gtk_window_set_destroy_with_parent(GTK_WINDOW(dialog), TRUE);
+	gtk_dialog_set_has_separator (GTK_DIALOG(dialog), FALSE);
+	hbox = gtk_hbox_new (TRUE, 8); // parameters (gboolean homogeneous_space, gint spacing);
+	button = gtk_button_new_from_stock(GTK_STOCK_SAVE);
+	gtk_widget_set_size_request (GTK_WIDGET(button), 150,50);
+	gtk_box_pack_start (GTK_BOX (hbox), button, TRUE, TRUE, 16); // parameters (GtkBox *box, GtkWidget *child, gboolean expand, gboolean fill, guint padding);
+	gtk_box_pack_start (GTK_BOX (GTK_DIALOG (dialog)->vbox), hbox, FALSE, FALSE, 8); // parameters (GtkBox *box, GtkWidget *child, gboolean expand, gboolean fill, guint padding);
+	gtk_signal_connect (GTK_OBJECT (button), "clicked", GTK_SIGNAL_FUNC (saveSingleClicked_CB), NULL);
+	gtk_signal_connect (GTK_OBJECT (dialog), "delete_event", GTK_SIGNAL_FUNC (saveSingleDelete_CB), NULL);
+	
+	//gtk_container_set_border_width(GTK_CONTAINER(hbox), 5);
+	
+	return dialog;
+}
+
+GtkWidget* createLoadDialog(void)
+{
+
+	/* Create a new file selection widget */
+    GtkWidget* filew = gtk_file_selection_new ("File selection");
+    
+    g_signal_connect (G_OBJECT (filew), "destroy",
+	              G_CALLBACK (gtk_main_quit), NULL);
+    /* Connect the ok_button to file_ok_sel function */
+    g_signal_connect (G_OBJECT (GTK_FILE_SELECTION (filew)->ok_button),
+		      "clicked", G_CALLBACK (file_ok_sel), (gpointer) filew);
+    
+    /* Connect the cancel_button to destroy the widget */
+    g_signal_connect_swapped (G_OBJECT (GTK_FILE_SELECTION (filew)->cancel_button),
+	                      "clicked", G_CALLBACK (gtk_widget_destroy),
+			      G_OBJECT (filew));
+    
+    /* Lets set the filename, as if this were a save dialog, and we are giving
+     a default filename */
+    gtk_file_selection_set_filename (GTK_FILE_SELECTION(filew), 
+				     "penguin.png");
+
+	
+	return filew;
+}
+
+GtkWidget* createSaveSetDialog(void)
+{
+	GtkWidget *dialog = NULL;
+	GtkWidget *saveButton;
+	GtkWidget *stopButton;
+	GtkWidget *hbox;
+	dialog = gtk_dialog_new ();
+	gtk_window_set_title(GTK_WINDOW(dialog), "Save Image Set");
+	gtk_window_set_modal(GTK_WINDOW(dialog), FALSE);
+	gtk_window_set_transient_for(GTK_WINDOW(dialog), GTK_WINDOW(mainWindow));
+	gtk_window_set_resizable(GTK_WINDOW(dialog), FALSE);
+	//gtk_window_set_default_size(GTK_WINDOW(dialog), 190, 40);
+	gtk_window_set_destroy_with_parent(GTK_WINDOW(dialog), TRUE);
+	gtk_dialog_set_has_separator (GTK_DIALOG(dialog), FALSE);
+#if GTK_CHECK_VERSION(2,6,0)
+	saveButton = gtk_button_new_from_stock(GTK_STOCK_MEDIA_RECORD);
+	stopButton = gtk_button_new_from_stock(GTK_STOCK_MEDIA_STOP);
+#else
+    printf("Missing functionality on older GTK version, sorry\n");
+#endif
+	gtk_widget_set_size_request (GTK_WIDGET(saveButton), 80,50);
+	gtk_widget_set_size_request (GTK_WIDGET(stopButton), 80,50);
+
+	hbox = gtk_hbox_new (TRUE, 8); // parameters (gboolean homogeneous_space, gint spacing);
+	gtk_box_pack_start (GTK_BOX (hbox), saveButton, TRUE, TRUE, 8); // parameters (GtkBox *box, GtkWidget *child, gboolean expand, gboolean fill, guint padding);
+	gtk_box_pack_start (GTK_BOX (hbox), stopButton, TRUE, TRUE, 8); // parameters (GtkBox *box, GtkWidget *child, gboolean expand, gboolean fill, guint padding);
+	gtk_box_pack_start (GTK_BOX (GTK_DIALOG (dialog)->vbox), hbox, FALSE, FALSE, 8); // parameters (GtkBox *box, GtkWidget *child, gboolean expand, gboolean fill, guint padding);
+	gtk_signal_connect (GTK_OBJECT (saveButton), "clicked", GTK_SIGNAL_FUNC (saveSetStartClicked_CB), NULL);
+	gtk_signal_connect (GTK_OBJECT (stopButton), "clicked", GTK_SIGNAL_FUNC (saveSetStopClicked_CB), NULL);
+	gtk_signal_connect (GTK_OBJECT (dialog), "delete_event", GTK_SIGNAL_FUNC (saveSetDelete_CB), NULL);
+
+	return dialog;
 }
 
 
@@ -1457,159 +1445,6 @@ void graphicThread::createObjects() {
 	ptr_semaphore = new yarp::os::Semaphore;
 }
 
-/*void BIControlGazeInterface::deleteObjects() {
-    delete ptr_imgRecv;
-    delete ptr_inputImg;
-    delete ptr_semaphore;
-}*/
-
-bool graphicThread::openPorts(){
-	bool ret = false;
-	//int res = 0;
-	// Registering Port(s)
-    //reduce verbosity --paulfitz
-	g_print("Registering port %s on network %s...\n", "/rea/BIControlGazeInterface/in","default");
-	ret = _imgRecv.Connect("/rea/BIControlGazeInterface/in","default");
-	if (ret == true)
-        {
-            //reduce verbosity --paulfitz
-            g_print("Port registration succeed!\n");
-        }
-	else
-        {
-            g_print("ERROR: Port registration failed.\nQuitting, sorry.\n");
-            return false;
-        }
-	//--------
-	ret = _imgRecvLayer0.Connect("/rea/BIControlGazeInterface/inLayer0","default");
-	if (ret == true)
-        {
-            //reduce verbosity --paulfitz
-            g_print("Port registration succeed!\n");
-        }
-	else
-        {
-            g_print("ERROR: Port registration failed.\nQuitting, sorry.\n");
-            return false;
-        }
-	ret = _imgRecvLayer1.Connect("/rea/BIControlGazeInterface/inLayer1","default");
-	if (ret == true)
-        {
-            //reduce verbosity --paulfitz
-            g_print("Port registration succeed!\n");
-        }
-	else
-        {
-            g_print("ERROR: Port registration failed.\nQuitting, sorry.\n");
-            return false;
-        }
-	ret = _imgRecvLayer2.Connect("/rea/BIControlGazeInterface/inLayer2","default");
-	if (ret == true)
-        {
-            //reduce verbosity --paulfitz
-            g_print("Port registration succeed!\n");
-        }
-	else
-        {
-            g_print("ERROR: Port registration failed.\nQuitting, sorry.\n");
-            return false;
-        }
-	//--------
-	ret = _imgRecvLayer3.Connect("/rea/BIControlGazeInterface/inLayer3","default");
-	if (ret == true)
-        {
-            //reduce verbosity --paulfitz
-            g_print("Port registration succeed!\n");
-        }
-	else
-        {
-            g_print("ERROR: Port registration failed.\nQuitting, sorry.\n");
-            return false;
-        }
-	ret = _imgRecvLayer4.Connect("/rea/BIControlGazeInterface/inLayer4","default");
-	if (ret == true)
-        {
-            //reduce verbosity --paulfitz
-            g_print("Port registration succeed!\n");
-        }
-	else
-        {
-            g_print("ERROR: Port registration failed.\nQuitting, sorry.\n");
-            return false;
-        }
-	ret = _imgRecvLayer5.Connect("/rea/BIControlGazeInterface/inLayer5","default");
-	if (ret == true)
-        {
-            //reduce verbosity --paulfitz
-            g_print("Port registration succeed!\n");
-        }
-	else
-        {
-            g_print("ERROR: Port registration failed.\nQuitting, sorry.\n");
-            return false;
-        }
-	ret = _imgRecvLayer6.Connect("/rea/BIControlGazeInterface/inLayer6","default");
-	if (ret == true)
-        {
-            //reduce verbosity --paulfitz
-            g_print("Port registration succeed!\n");
-        }
-	else
-        {
-            g_print("ERROR: Port registration failed.\nQuitting, sorry.\n");
-            return false;
-        }
-	ret = _imgRecvLayer7.Connect("/rea/BIControlGazeInterface/inLayer7","default");
-	if (ret == true)
-        {
-            //reduce verbosity --paulfitz
-            g_print("Port registration succeed!\n");
-        }
-	else
-        {
-            g_print("ERROR: Port registration failed.\nQuitting, sorry.\n");
-            return false;
-        }
-	ret = _imgRecvLayer8.Connect("/rea/BIControlGazeInterface/inLayer8","default");
-	if (ret == true)
-        {
-            //reduce verbosity --paulfitz
-            g_print("Port registration succeed!\n");
-        }
-	else
-        {
-            g_print("ERROR: Port registration failed.\nQuitting, sorry.\n");
-            return false;
-        }
-	//-------------
-	/*if (true)
-        {		
-            _pOutPort = new yarp::os::BufferedPort<yarp::os::Bottle>;
-            g_print("Registering port %s on network %s...\n", "/rea/BIControlGazeInterface/out","dafult");
-            bool ok = _pOutPort->open("/rea/BIControlGazeInterface/out");
-            if  (ok)
-                g_print("Port registration succeed!\n");
-            else 
-                {
-                    g_print("ERROR: Port registration failed.\nQuitting, sorry.\n");
-                    return false;
-                }
-			_pOutPort2 = new yarp::os::BufferedPort<ImageOf<PixelRgb> >;
-            g_print("Registering port %s on network %s...\n", "/rea/BIControlGazeInterface/out","dafult");
-            ok = _pOutPort2->open("/rea/BIControlGazeInterface/outBlobs");
-            if  (ok)
-                g_print("Port registration succeed!\n");
-            else 
-                {
-                    g_print("ERROR: Port registration failed.\nQuitting, sorry.\n");
-                    return false;
-                }
-
-        }
-    */
-	return true;
-}
-
 void graphicThread::setUp()
 {
 	if (true)
@@ -1623,7 +1458,10 @@ void graphicThread::setUp()
 		_imgRecv.SetFovea(true);
 	
 	if (openPorts() == false)
-		ACE_OS::exit(1);
+	{
+		printf("ERROR: not opened ports \n");
+		//ACE_OS::exit(1);
+	}
 	
 	//_inputImg.resize(320,240);
 	_inputImgLayer0.resize(320,240);
@@ -1650,13 +1488,13 @@ static void scale_set_default_values( GtkScale *scale )
 
 static void cb_digits_scale2( GtkAdjustment *adj )
 {
-	//wModule->setRowDim((int)adj->value);
+	wModule->setRowDim((int)adj->value);
 	printf("RowDimension: %f",(double) adj->value);
 }
 
 static void cb_digits_scale1( GtkAdjustment *adj )
 {
-	//wModule->setColDim((int)adj->value);
+	wModule->setColDim((int)adj->value);
 	printf("ColumnDimension: %f",(double) adj->value);
 }
 
@@ -1705,7 +1543,7 @@ GtkWidget* graphicThread::createMainWindow(void)
 	
     //gtk_init (&argc, &argv);
 	window = gtk_window_new (GTK_WINDOW_TOPLEVEL);
-    gtk_window_set_title (GTK_WINDOW (window), "Boltzmann Machine Graphical Interface");
+    gtk_window_set_title (GTK_WINDOW (window), "Boltmann Machine Graphical Interface");
 	gtk_window_set_default_size(GTK_WINDOW (window), 320, 700); 
 	gtk_window_set_resizable (GTK_WINDOW (window), TRUE);
 	g_signal_connect (G_OBJECT (window), "destroy",
@@ -1769,77 +1607,87 @@ GtkWidget* graphicThread::createMainWindow(void)
     //gtk_container_add (GTK_CONTAINER (boxButtons), button);
 	//gtk_container_add (GTK_CONTAINER (boxButtons), button2);
 
-	label = gtk_label_new ("Layer Representations:");
+	label = gtk_label_new ("LayerA Selection: ");
 	gtk_box_pack_start (GTK_BOX (boxButtons), label, FALSE, FALSE, 0);
     gtk_widget_show (label);
 
 	/* A checkbutton to control whether the value is displayed or not */
     buttonCheckGreen = gtk_check_button_new_with_label("inputImage");
+	char* valueii="inputImage";
     gtk_toggle_button_set_active (GTK_TOGGLE_BUTTON (buttonCheckGreen), FALSE);
-    g_signal_connect (G_OBJECT (buttonCheckGreen), "toggled",G_CALLBACK (cb_draw_value), (gpointer) "inputImage");
+    g_signal_connect (G_OBJECT (buttonCheckGreen), "toggled",G_CALLBACK (cb_draw_value), valueii);
     gtk_box_pack_start (GTK_BOX (boxButtons), buttonCheckGreen, TRUE, TRUE, 0);
     gtk_widget_show (buttonCheckGreen);
 	
 	/* A checkbutton to control whether the value is displayed or not */
     buttonCheckGreen = gtk_check_button_new_with_label("Layer0");
     gtk_toggle_button_set_active (GTK_TOGGLE_BUTTON (buttonCheckGreen), FALSE);
-    g_signal_connect (G_OBJECT (buttonCheckGreen), "toggled",G_CALLBACK (cb_draw_value), (gpointer) "Layer0");
+	char* valueL0="Layer0";
+    g_signal_connect (G_OBJECT (buttonCheckGreen), "toggled",G_CALLBACK (cb_draw_value), valueL0);
     gtk_box_pack_start (GTK_BOX (boxButtons), buttonCheckGreen, TRUE, TRUE, 0);
     gtk_widget_show (buttonCheckGreen);
 
 	/* A checkbutton to control whether the value is displayed or not */
     buttonCheck = gtk_check_button_new_with_label("Layer1");
-    gtk_toggle_button_set_active (GTK_TOGGLE_BUTTON (buttonCheck), FALSE);
-    g_signal_connect (G_OBJECT (buttonCheck), "toggled",G_CALLBACK (cb_draw_value), (gpointer) "Layer1");
+    char* valueL1="Layer1";
+	gtk_toggle_button_set_active (GTK_TOGGLE_BUTTON (buttonCheck), FALSE);
+    g_signal_connect (G_OBJECT (buttonCheck), "toggled",G_CALLBACK (cb_draw_value), valueL1);
     gtk_box_pack_start (GTK_BOX (boxButtons), buttonCheck, TRUE, TRUE, 0);
     gtk_widget_show (buttonCheck);
 
 	/* A checkbutton to control whether the value is displayed or not */
     buttonCheck = gtk_check_button_new_with_label("Layer2");
+	char* valueL2="Layer2";
     gtk_toggle_button_set_active (GTK_TOGGLE_BUTTON (buttonCheck), FALSE);
-    g_signal_connect (G_OBJECT (buttonCheck), "toggled",G_CALLBACK (cb_draw_value), (gpointer) "Layer2");
+    g_signal_connect (G_OBJECT (buttonCheck), "toggled",G_CALLBACK (cb_draw_value), valueL2);
     gtk_box_pack_start (GTK_BOX (boxButtons), buttonCheck, TRUE, TRUE, 0);
     gtk_widget_show (buttonCheck);
 
 	/* A checkbutton to control whether the value is displayed or not */
     buttonCheck = gtk_check_button_new_with_label("Layer3");
+	char* valueL3="Layer3";
     gtk_toggle_button_set_active (GTK_TOGGLE_BUTTON (buttonCheck), FALSE);
-    g_signal_connect (G_OBJECT (buttonCheck), "toggled",G_CALLBACK (cb_draw_value), (gpointer) "Layer3");
+    g_signal_connect (G_OBJECT (buttonCheck), "toggled",G_CALLBACK (cb_draw_value), valueL3);
     gtk_box_pack_start (GTK_BOX (boxButtons), buttonCheck, TRUE, TRUE, 0);
     gtk_widget_show (buttonCheck);
 
 	/* A checkbutton to control whether the value is displayed or not */
     buttonCheck = gtk_check_button_new_with_label("Layer4");
+	char* valueL4="Layer4";
     gtk_toggle_button_set_active (GTK_TOGGLE_BUTTON (buttonCheck), FALSE);
-    g_signal_connect (G_OBJECT (buttonCheck), "toggled",G_CALLBACK (cb_draw_value),(gpointer) "Layer4");
+    g_signal_connect (G_OBJECT (buttonCheck), "toggled",G_CALLBACK (cb_draw_value), valueL4);
     gtk_box_pack_start (GTK_BOX (boxButtons), buttonCheck, TRUE, TRUE, 0);
     gtk_widget_show (buttonCheck);
 
 	/* A checkbutton to control whether the value is displayed or not */
     buttonCheck = gtk_check_button_new_with_label("Layer5");
+	char* valueL5="Layer5";
     gtk_toggle_button_set_active (GTK_TOGGLE_BUTTON (buttonCheck), FALSE);
-    g_signal_connect (G_OBJECT (buttonCheck), "toggled",G_CALLBACK (cb_draw_value),  (gpointer) "Layer5");
+    g_signal_connect (G_OBJECT (buttonCheck), "toggled",G_CALLBACK (cb_draw_value), valueL5);
     gtk_box_pack_start (GTK_BOX (boxButtons), buttonCheck, TRUE, TRUE, 0);
     gtk_widget_show (buttonCheck);
 	
 	/* A checkbutton to control whether the value is displayed or not */
     buttonCheck = gtk_check_button_new_with_label("Layer6");
+	char* valueL6="Layer6";
     gtk_toggle_button_set_active (GTK_TOGGLE_BUTTON (buttonCheck), FALSE);
-    g_signal_connect (G_OBJECT (buttonCheck), "toggled",G_CALLBACK (cb_draw_value), (gpointer) "Layer6");
+    g_signal_connect (G_OBJECT (buttonCheck), "toggled",G_CALLBACK (cb_draw_value), valueL6);
     gtk_box_pack_start (GTK_BOX (boxButtons), buttonCheck, TRUE, TRUE, 0);
     gtk_widget_show (buttonCheck);
 
 	/* A checkbutton to control whether the value is displayed or not */
     buttonCheck = gtk_check_button_new_with_label("Layer7");
+	char* valueL7="Layer7";
     gtk_toggle_button_set_active (GTK_TOGGLE_BUTTON (buttonCheck), FALSE);
-    g_signal_connect (G_OBJECT (buttonCheck), "toggled",G_CALLBACK (cb_draw_value), (gpointer) "Layer7");
+    g_signal_connect (G_OBJECT (buttonCheck), "toggled",G_CALLBACK (cb_draw_value), valueL7);
     gtk_box_pack_start (GTK_BOX (boxButtons), buttonCheck, TRUE, TRUE, 0);
     gtk_widget_show (buttonCheck);
 
 	/* A checkbutton to control whether the value is displayed or not */
     buttonCheck = gtk_check_button_new_with_label("Layer8");
+	char* valueL8="Layer8";
     gtk_toggle_button_set_active (GTK_TOGGLE_BUTTON (buttonCheck), FALSE);
-    g_signal_connect (G_OBJECT (buttonCheck), "toggled",G_CALLBACK (cb_draw_value), (gpointer) "Layer8");
+    g_signal_connect (G_OBJECT (buttonCheck), "toggled",G_CALLBACK (cb_draw_value), valueL8);
     gtk_box_pack_start (GTK_BOX (boxButtons), buttonCheck, TRUE, TRUE, 0);
     gtk_widget_show (buttonCheck);
 	
@@ -1856,7 +1704,7 @@ GtkWidget* graphicThread::createMainWindow(void)
     
     
     GtkWidget *scale;
-    GtkObject *adj1, *adj2, *adj3, *adj4;
+    GtkObject *adj1, *adj2;
 	GtkWidget *hscale, *vscale;
 
 
@@ -1885,35 +1733,32 @@ GtkWidget* graphicThread::createMainWindow(void)
     gtk_box_pack_start (GTK_BOX (boxA), separator, FALSE, TRUE, 3);
     gtk_widget_show (separator);
 	
-	//----EYES CONTROL
-	adj1 = gtk_adjustment_new (0.0,-10.0,10.0, 1.0, 1.0, 1.0);
-	adj2 = gtk_adjustment_new (0.0,-10.0,10.0, 1.0, 1.0, 1.0);
+	//--box3 section A
+
+	adj1 = gtk_adjustment_new (10.0, 0.0, 100.0, 1.0, 1.0, 1.0);
+	adj2 = gtk_adjustment_new (10.0, 0.0, 100.0, 1.0, 1.0, 1.0);
 	box3 = gtk_hbox_new (FALSE, 0);
 	
 	box5 = gtk_vbox_new (FALSE, 0);
 
-	label = gtk_label_new ("EYES CONTROL");
-	gtk_box_pack_start (GTK_BOX (box5), label, FALSE, FALSE, 0);
-    gtk_widget_show (label);
-
-	label = gtk_label_new ("Joint1");
+	label = gtk_label_new ("Column Layer Dimension:");
 	gtk_box_pack_start (GTK_BOX (box5), label, FALSE, FALSE, 0);
     gtk_widget_show (label);
 
 	hscale = gtk_hscale_new (GTK_ADJUSTMENT (adj1));
-    gtk_widget_set_size_request (GTK_WIDGET (hscale), 100, 50);
+    gtk_widget_set_size_request (GTK_WIDGET (hscale), 100, 100);
     scale_set_default_values (GTK_SCALE (hscale));
     gtk_box_pack_start (GTK_BOX (box5), hscale, TRUE, TRUE, 0);
     gtk_widget_show (hscale);
 	g_signal_connect (G_OBJECT (adj1), "value_changed",
                       G_CALLBACK (cb_digits_scale1), NULL);
 
-	label = gtk_label_new ("Joint2:");
+	label = gtk_label_new ("Row Layer Dimension:");
 	gtk_box_pack_start (GTK_BOX (box5), label, FALSE, FALSE, 0);
     gtk_widget_show (label);
 
 	hscale = gtk_hscale_new (GTK_ADJUSTMENT (adj2));
-    gtk_widget_set_size_request (GTK_WIDGET (hscale), 100, 50);
+    gtk_widget_set_size_request (GTK_WIDGET (hscale), 100, 100);
     scale_set_default_values (GTK_SCALE (hscale));
     gtk_box_pack_start (GTK_BOX (box5), hscale, TRUE, TRUE, 0);
     gtk_widget_show (hscale);
@@ -1938,172 +1783,112 @@ GtkWidget* graphicThread::createMainWindow(void)
     gtk_box_pack_start (GTK_BOX (box3), scrollbar, TRUE, TRUE, 0);
     gtk_widget_show (scrollbar);*/
 
-	box4 = gtk_vbox_new (FALSE, 0);
+	box4 = gtk_hbox_new (FALSE, 0);
 	//-------run button
 	button = gtk_button_new ();
 	/* Connect the "clicked" signal of the button to our callback */
-	g_signal_connect (G_OBJECT (button), "clicked",G_CALLBACK (callback), (gpointer) "Eyes:up-left");
+    g_signal_connect (G_OBJECT (button), "clicked",G_CALLBACK (callback), (gpointer) "EvolveFreely");
     /* This calls our box creating func tion */
-    boxButton = xpm_label_box (NULL, "Eyes:up-left");
+    boxButton = xpm_label_box (NULL, "EvolveFreely");
     /* Pack and show all our widgets */
-    gtk_widget_show (boxButton);
-    gtk_container_add (GTK_CONTAINER (button), boxButton);
-    gtk_widget_show (button);
-	gtk_box_pack_start (GTK_BOX (box4), button, TRUE, TRUE, 0);
-	gtk_widget_show (button);
-
-	//-------run button
-	button = gtk_button_new ();
-	/* Connect the "clicked" signal of the button to our callback */
-    g_signal_connect (G_OBJECT (button), "clicked",G_CALLBACK (callback), (gpointer) "Eyes:left");
-    /* This calls our box creating func tion */
-    boxButton = xpm_label_box (NULL, "Eyes:left");
-    /* Pack and show all our widgets */
-    gtk_widget_show (boxButton);
-    gtk_container_add (GTK_CONTAINER (button), boxButton);
-    gtk_widget_show (button);
-	gtk_box_pack_start (GTK_BOX (box4), button, TRUE, TRUE, 0);
-	gtk_widget_show (button);
-
-	//-------run button
-	button = gtk_button_new ();
-	/* Connect the "clicked" signal of the button to our callback */
-    g_signal_connect (G_OBJECT (button), "clicked",G_CALLBACK (callback), (gpointer) "Eyes:down-left");
-    /* This calls our box creating func tion */
-    boxButton = xpm_label_box (NULL, "Eyes:down-left");
-    /* Pack and show all our widgets */
-    gtk_widget_show (boxButton);
-    gtk_container_add (GTK_CONTAINER (button), boxButton);
-    gtk_widget_show (button);
-	gtk_box_pack_start (GTK_BOX (box4), button, TRUE, TRUE, 0);
-	gtk_widget_show (button);
-
-	gtk_box_pack_start (GTK_BOX (box3), box4, TRUE, TRUE, 0);
-    gtk_widget_show (box4);
-
-	box4 = gtk_vbox_new (FALSE, 0);
-	//-------run button
-	button = gtk_button_new ();
-	/* Connect the "clicked" signal of the button to our callback */
-    g_signal_connect (G_OBJECT (button), "clicked",G_CALLBACK (callback), (gpointer) "Eyes:up");
-    /* This calls our box creating func tion */
-    boxButton = xpm_label_box (NULL, "Eyes:up");
-    /* Pack and show all our widgets */
-    gtk_widget_show (boxButton);
-    gtk_container_add (GTK_CONTAINER (button), boxButton);
-    gtk_widget_show (button);
-	gtk_box_pack_start (GTK_BOX (box4), button, TRUE, TRUE, 0);
-	gtk_widget_show (button);
-
-	//-------run button
-	button = gtk_button_new ();
-	/* Connect the "clicked" signal of the button to our callback */
-    g_signal_connect (G_OBJECT (button), "clicked",G_CALLBACK (callback), (gpointer) "Eyes:stop");
-    /* This calls our box creating func tion */
-    boxButton = xpm_label_box (NULL, "Eyes:stop");
-    /* Pack and show all our widgets */
-    gtk_widget_show (boxButton);
-    gtk_container_add (GTK_CONTAINER (button), boxButton);
-    gtk_widget_show (button);
-	gtk_box_pack_start (GTK_BOX (box4), button, TRUE, TRUE, 0);
-	gtk_widget_show (button);
-
-	//-------run button
-	button = gtk_button_new ();
-	/* Connect the "clicked" signal of the button to our callback */
-    g_signal_connect (G_OBJECT (button), "clicked",G_CALLBACK (callback), (gpointer) "Eyes:down");
-    /* This calls our box creating func tion */
-    boxButton = xpm_label_box (NULL, "Eyes:down");
-    /* Pack and show all our widgets */
-    gtk_widget_show (boxButton);
-    gtk_container_add (GTK_CONTAINER (button), boxButton);
-    gtk_widget_show (button);
-	gtk_box_pack_start (GTK_BOX (box4), button, TRUE, TRUE, 0);
-	gtk_widget_show (button);
-
-	gtk_box_pack_start (GTK_BOX (box3), box4, TRUE, TRUE, 0);
-    gtk_widget_show (box4);
-
-	box4 = gtk_vbox_new (FALSE, 0);
-	//-------run button
-	button = gtk_button_new ();
-	/* Connect the "clicked" signal of the button to our callback */
-    g_signal_connect (G_OBJECT (button), "clicked",G_CALLBACK (callback), (gpointer) "Eyes:up-right");
-    /* This calls our box creating func tion */
-    boxButton = xpm_label_box (NULL, "Eyes:up-right");
-    /* Pack and show all our widgets */
-    gtk_widget_show (boxButton);
-    gtk_container_add (GTK_CONTAINER (button), boxButton);
-    gtk_widget_show (button);
-	gtk_box_pack_start (GTK_BOX (box4), button, TRUE, TRUE, 0);
-	gtk_widget_show (button);
-
-	//-------run button
-	button = gtk_button_new ();
-	/* Connect the "clicked" signal of the button to our callback */
-    g_signal_connect (G_OBJECT (button), "clicked",G_CALLBACK (callback), (gpointer) "Eyes:right");
-    /* This calls our box creating func tion */
-    boxButton = xpm_label_box (NULL, "Eyes:right");
-    /* Pack and show all our widgets */
-    gtk_widget_show (boxButton);
-    gtk_container_add (GTK_CONTAINER (button), boxButton);
-    gtk_widget_show (button);
-	gtk_box_pack_start (GTK_BOX (box4), button, TRUE, TRUE, 0);
-	gtk_widget_show (button);
-
-	//-------run button
-	button = gtk_button_new ();
-	/* Connect the "clicked" signal of the button to our callback */
-    g_signal_connect (G_OBJECT (button), "clicked",G_CALLBACK (callback), (gpointer) "Eyes:down-right");
-    /* This calls our box creating func tion */
-    boxButton = xpm_label_box (NULL, "Eyes:down-right");
-    /* Pack and show all our widgets */
-    gtk_widget_show (boxButton);
-    gtk_container_add (GTK_CONTAINER (button), boxButton);
-    gtk_widget_show (button);
-	gtk_box_pack_start (GTK_BOX (box4), button, TRUE, TRUE, 0);
-	gtk_widget_show (button);
-
-	gtk_box_pack_start (GTK_BOX (box3), box4, TRUE, TRUE, 0);
-    gtk_widget_show (box4);
-
-	/*
-	//-----box4
-	box4=  gtk_vbox_new (FALSE, 0);
-
-	// A checkbutton to control whether the value is displayed or not 
-    buttonCheck = gtk_check_button_new_with_label("setProbabilityFreely");
-    gtk_toggle_button_set_active (GTK_TOGGLE_BUTTON (buttonCheck), FALSE);
-    g_signal_connect (G_OBJECT (buttonCheck), "toggled",G_CALLBACK (cb_draw_value), "setProbabilityFreely");
-    gtk_box_pack_start (GTK_BOX (box4), buttonCheck, TRUE, TRUE, 0);
-    gtk_widget_show (buttonCheck);
-
-	// A checkbutton to control whether the value is displayed or not //
-    buttonCheck = gtk_check_button_new_with_label("setProbabilityClamped");
-    gtk_toggle_button_set_active (GTK_TOGGLE_BUTTON (buttonCheck), FALSE);
-    g_signal_connect (G_OBJECT (buttonCheck), "toggled",G_CALLBACK (cb_draw_value), "setProbabilityClamped");
-    gtk_box_pack_start (GTK_BOX (box4), buttonCheck, TRUE, TRUE, 0);
-    gtk_widget_show (buttonCheck);
-
-
-	gtk_box_pack_start (GTK_BOX (box3), box4, TRUE, TRUE, 0);
-    gtk_widget_show (box4);
-
-	*/
-
-	/*
-	//---box 4
-	//-------run button
-	//button = gtk_button_new ();
-	// Connect the "clicked" signal of the button to our callback     g_signal_connect (G_OBJECT (button), "clicked",G_CALLBACK (callback), (gpointer) "Execute");
-    // This calls our box creating func tion 
-    boxButton = xpm_label_box (NULL, "Execute");
-    // Pack and show all our widgets 
     gtk_widget_show (boxButton);
     gtk_container_add (GTK_CONTAINER (button), boxButton);
     gtk_widget_show (button);
 	gtk_box_pack_start (GTK_BOX (box3), button, TRUE, TRUE, 0);
-	gtk_widget_show (button);*/
+	gtk_widget_show (button);
+
+	//-------run button
+	button = gtk_button_new ();
+	/* Connect the "clicked" signal of the button to our callback */
+    g_signal_connect (G_OBJECT (button), "clicked",G_CALLBACK (callback), (gpointer) "EvolveClamped");
+    /* This calls our box creating func tion */
+    boxButton = xpm_label_box (NULL, "EvolveClamped");
+    /* Pack and show all our widgets */
+    gtk_widget_show (boxButton);
+    gtk_container_add (GTK_CONTAINER (button), boxButton);
+    gtk_widget_show (button);
+	gtk_box_pack_start (GTK_BOX (box3), button, TRUE, TRUE, 0);
+	gtk_widget_show (button);
+
+	gtk_box_pack_start (GTK_BOX (box3), box4, TRUE, TRUE, 0);
+    gtk_widget_show (box4);
+
+	//-----box4
+	box4=  gtk_vbox_new (FALSE, 0);
+
+	//-------run button
+	button = gtk_button_new ();
+	/* Connect the "clicked" signal of the button to our callback */
+    g_signal_connect (G_OBJECT (button), "clicked",G_CALLBACK (callback), (gpointer) "Stop");
+    /* This calls our box creating func tion */
+    boxButton = xpm_label_box (NULL, "Stop");
+    /* Pack and show all our widgets */
+    gtk_widget_show (boxButton);
+    gtk_container_add (GTK_CONTAINER (button), boxButton);
+    gtk_widget_show (button);
+	gtk_box_pack_start (GTK_BOX (box3), button, TRUE, TRUE, 0);
+	gtk_widget_show (button);
+
+	
+	box5 = gtk_vbox_new (FALSE, 0);
+	
+	//-------run button
+	button = gtk_button_new ();
+	/* Connect the "clicked" signal of the button to our callback */
+    g_signal_connect (G_OBJECT (button), "clicked",G_CALLBACK (callback), (gpointer) "setProbabilityFreely");
+    /* This calls our box creating func tion */
+    boxButton = xpm_label_box (NULL, "setProbabilityFreely");
+    /* Pack and show all our widgets */
+    gtk_widget_show (boxButton);
+    gtk_container_add (GTK_CONTAINER (button), boxButton);
+    gtk_widget_show (button);
+	gtk_box_pack_start (GTK_BOX (box5), button, TRUE, TRUE, 0);
+	gtk_widget_show (button);
+
+	//-------run button
+	button = gtk_button_new ();
+	/* Connect the "clicked" signal of the button to our callback */
+    g_signal_connect (G_OBJECT (button), "clicked",G_CALLBACK (callback), (gpointer) "setProbabilityClamped");
+    /* This calls our box creating func tion */
+    boxButton = xpm_label_box (NULL, "SetProbabilityClamped");
+    /* Pack and show all our widgets */
+    gtk_widget_show (boxButton);
+    gtk_container_add (GTK_CONTAINER (button), boxButton);
+    gtk_widget_show (button);
+	gtk_box_pack_start (GTK_BOX (box5), button, TRUE, TRUE, 0);
+	gtk_widget_show (button);
+	//-------run button
+	button = gtk_button_new ();
+	/* Connect the "clicked" signal of the button to our callback */
+    g_signal_connect (G_OBJECT (button), "clicked",G_CALLBACK (callback), (gpointer) "setProbabilityNull");
+    /* This calls our box creating func tion */
+    boxButton = xpm_label_box (NULL, "setProbabilityNull");
+    /* Pack and show all our widgets */
+    gtk_widget_show (boxButton);
+    gtk_container_add (GTK_CONTAINER (button), boxButton);
+    gtk_widget_show (button);
+	gtk_box_pack_start (GTK_BOX (box5), button, TRUE, TRUE, 0);
+	gtk_widget_show (button);
+
+	gtk_box_pack_start (GTK_BOX (box3), box5, TRUE, TRUE, 0);
+    gtk_widget_show (box5);
+
+	gtk_box_pack_start (GTK_BOX (box3), box4, TRUE, TRUE, 0);
+    gtk_widget_show (box4);
+	//---box 4
+
+	//-------run button
+	button = gtk_button_new ();
+	/* Connect the "clicked" signal of the button to our callback */
+    g_signal_connect (G_OBJECT (button), "clicked",G_CALLBACK (callback), (gpointer) "Learn");
+    /* This calls our box creating func tion */
+    boxButton = xpm_label_box (NULL, "Learn");
+    /* Pack and show all our widgets */
+    gtk_widget_show (boxButton);
+    gtk_container_add (GTK_CONTAINER (button), boxButton);
+    gtk_widget_show (button);
+	gtk_box_pack_start (GTK_BOX (box3), button, TRUE, TRUE, 0);
+	gtk_widget_show (button);
 
 	gtk_container_set_border_width (GTK_CONTAINER (box3), 0);
     gtk_box_pack_start (GTK_BOX (boxA), box3, TRUE, TRUE, 0);
@@ -2113,179 +1898,6 @@ GtkWidget* graphicThread::createMainWindow(void)
 	separator = gtk_vseparator_new ();
     gtk_box_pack_start (GTK_BOX (box3), separator, FALSE, TRUE, 3);
     gtk_widget_show (separator);
-
-	// ------- HEAD CONTROL
-	adj3 = gtk_adjustment_new (0.0,-10.0,10.0, 1.0, 1.0, 1.0);
-	adj4 = gtk_adjustment_new (0.0,-10.0,10.0, 1.0, 1.0, 1.0);
-	box3 = gtk_hbox_new (FALSE, 0);
-	box5 = gtk_vbox_new (FALSE, 0);
-
-	label = gtk_label_new ("HEAD CONTROL");
-	gtk_box_pack_start (GTK_BOX (box5), label, FALSE, FALSE, 0);
-    gtk_widget_show (label);
-
-	label = gtk_label_new ("Joint1");
-	gtk_box_pack_start (GTK_BOX (box5), label, FALSE, FALSE, 0);
-    gtk_widget_show (label);
-
-	hscale = gtk_hscale_new (GTK_ADJUSTMENT (adj3));
-    gtk_widget_set_size_request (GTK_WIDGET (hscale), 100, 50);
-    scale_set_default_values (GTK_SCALE (hscale));
-    gtk_box_pack_start (GTK_BOX (box5), hscale, TRUE, TRUE, 0);
-    gtk_widget_show (hscale);
-	g_signal_connect (G_OBJECT (adj3), "value_changed",
-                      G_CALLBACK (cb_digits_scale1), NULL);
-
-	label = gtk_label_new ("Joint2:");
-	gtk_box_pack_start (GTK_BOX (box5), label, FALSE, FALSE, 0);
-    gtk_widget_show (label);
-
-	hscale = gtk_hscale_new (GTK_ADJUSTMENT (adj4));
-    gtk_widget_set_size_request (GTK_WIDGET (hscale), 100, 50);
-    scale_set_default_values (GTK_SCALE (hscale));
-    gtk_box_pack_start (GTK_BOX (box5), hscale, TRUE, TRUE, 0);
-    gtk_widget_show (hscale);
-	g_signal_connect (G_OBJECT (adj4), "value_changed",
-                      G_CALLBACK (cb_digits_scale2), NULL);
-
-	gtk_box_pack_start (GTK_BOX (box3), box5, TRUE, TRUE, 0);
-    gtk_widget_show (box5);
-
-	//_______
-
-	
-	box4 = gtk_vbox_new (FALSE, 0);
-	//-------run button
-	button = gtk_button_new ();
-	/* Connect the "clicked" signal of the button to our callback */
-	g_signal_connect (G_OBJECT (button), "clicked",G_CALLBACK (callback), (gpointer) "Head:up-left");
-    /* This calls our box creating func tion */
-    boxButton = xpm_label_box (NULL, "Head:up-left");
-    /* Pack and show all our widgets */
-    gtk_widget_show (boxButton);
-    gtk_container_add (GTK_CONTAINER (button), boxButton);
-    gtk_widget_show (button);
-	gtk_box_pack_start (GTK_BOX (box4), button, TRUE, TRUE, 0);
-	gtk_widget_show (button);
-
-	//-------run button
-	button = gtk_button_new ();
-	/* Connect the "clicked" signal of the button to our callback */
-    g_signal_connect (G_OBJECT (button), "clicked",G_CALLBACK (callback), (gpointer) "Head:left");
-    /* This calls our box creating func tion */
-    boxButton = xpm_label_box (NULL, "Head:left");
-    /* Pack and show all our widgets */
-    gtk_widget_show (boxButton);
-    gtk_container_add (GTK_CONTAINER (button), boxButton);
-    gtk_widget_show (button);
-	gtk_box_pack_start (GTK_BOX (box4), button, TRUE, TRUE, 0);
-	gtk_widget_show (button);
-
-	//-------run button
-	button = gtk_button_new ();
-	/* Connect the "clicked" signal of the button to our callback */
-    g_signal_connect (G_OBJECT (button), "clicked",G_CALLBACK (callback), (gpointer) "Head:down-left");
-    /* This calls our box creating func tion */
-    boxButton = xpm_label_box (NULL, "Head:down-left");
-    /* Pack and show all our widgets */
-    gtk_widget_show (boxButton);
-    gtk_container_add (GTK_CONTAINER (button), boxButton);
-    gtk_widget_show (button);
-	gtk_box_pack_start (GTK_BOX (box4), button, TRUE, TRUE, 0);
-	gtk_widget_show (button);
-
-	gtk_box_pack_start (GTK_BOX (box3), box4, TRUE, TRUE, 0);
-    gtk_widget_show (box4);
-
-	box4 = gtk_vbox_new (FALSE, 0);
-	//-------run button
-	button = gtk_button_new ();
-	/* Connect the "clicked" signal of the button to our callback */
-    g_signal_connect (G_OBJECT (button), "clicked",G_CALLBACK (callback), (gpointer) "Head:up");
-    /* This calls our box creating func tion */
-    boxButton = xpm_label_box (NULL, "Head:up");
-    /* Pack and show all our widgets */
-    gtk_widget_show (boxButton);
-    gtk_container_add (GTK_CONTAINER (button), boxButton);
-    gtk_widget_show (button);
-	gtk_box_pack_start (GTK_BOX (box4), button, TRUE, TRUE, 0);
-	gtk_widget_show (button);
-
-	//-------run button
-	button = gtk_button_new ();
-	/* Connect the "clicked" signal of the button to our callback */
-    g_signal_connect (G_OBJECT (button), "clicked",G_CALLBACK (callback), (gpointer) "Head:stop");
-    /* This calls our box creating func tion */
-    boxButton = xpm_label_box (NULL, "Head:stop");
-    /* Pack and show all our widgets */
-    gtk_widget_show (boxButton);
-    gtk_container_add (GTK_CONTAINER (button), boxButton);
-    gtk_widget_show (button);
-	gtk_box_pack_start (GTK_BOX (box4), button, TRUE, TRUE, 0);
-	gtk_widget_show (button);
-
-	//-------run button
-	button = gtk_button_new ();
-	/* Connect the "clicked" signal of the button to our callback */
-    g_signal_connect (G_OBJECT (button), "clicked",G_CALLBACK (callback), (gpointer) "Head:down");
-    /* This calls our box creating func tion */
-    boxButton = xpm_label_box (NULL, "Head:down");
-    /* Pack and show all our widgets */
-    gtk_widget_show (boxButton);
-    gtk_container_add (GTK_CONTAINER (button), boxButton);
-    gtk_widget_show (button);
-	gtk_box_pack_start (GTK_BOX (box4), button, TRUE, TRUE, 0);
-	gtk_widget_show (button);
-
-	gtk_box_pack_start (GTK_BOX (box3), box4, TRUE, TRUE, 0);
-    gtk_widget_show (box4);
-
-	box4 = gtk_vbox_new (FALSE, 0);
-	//-------run button
-	button = gtk_button_new ();
-	/* Connect the "clicked" signal of the button to our callback */
-    g_signal_connect (G_OBJECT (button), "clicked",G_CALLBACK (callback), (gpointer) "Head:up-right");
-    /* This calls our box creating func tion */
-    boxButton = xpm_label_box (NULL, "Head:up-right");
-    /* Pack and show all our widgets */
-    gtk_widget_show (boxButton);
-    gtk_container_add (GTK_CONTAINER (button), boxButton);
-    gtk_widget_show (button);
-	gtk_box_pack_start (GTK_BOX (box4), button, TRUE, TRUE, 0);
-	gtk_widget_show (button);
-
-	//-------run button
-	button = gtk_button_new ();
-	/* Connect the "clicked" signal of the button to our callback */
-    g_signal_connect (G_OBJECT (button), "clicked",G_CALLBACK (callback), (gpointer) "Head:right");
-    /* This calls our box creating func tion */
-    boxButton = xpm_label_box (NULL, "Head:right");
-    /* Pack and show all our widgets */
-    gtk_widget_show (boxButton);
-    gtk_container_add (GTK_CONTAINER (button), boxButton);
-    gtk_widget_show (button);
-	gtk_box_pack_start (GTK_BOX (box4), button, TRUE, TRUE, 0);
-	gtk_widget_show (button);
-
-	//-------run button
-	button = gtk_button_new ();
-	/* Connect the "clicked" signal of the button to our callback */
-    g_signal_connect (G_OBJECT (button), "clicked",G_CALLBACK (callback), (gpointer) "Head:down-right");
-    /* This calls our box creating func tion */
-    boxButton = xpm_label_box (NULL, "Head:down-right");
-    /* Pack and show all our widgets */
-    gtk_widget_show (boxButton);
-    gtk_container_add (GTK_CONTAINER (button), boxButton);
-    gtk_widget_show (button);
-	gtk_box_pack_start (GTK_BOX (box4), button, TRUE, TRUE, 0);
-	gtk_widget_show (button);
-
-	gtk_box_pack_start (GTK_BOX (box3), box4, TRUE, TRUE, 0);
-    gtk_widget_show (box4);
-
-	gtk_container_set_border_width (GTK_CONTAINER (box3), 0);
-    gtk_box_pack_start (GTK_BOX (boxA), box3, TRUE, TRUE, 0);
-    gtk_widget_show (box3);
 	
 	//--box3 section B
 	//box3 = gtk_hbox_new (FALSE, 0);
@@ -2294,8 +1906,19 @@ GtkWidget* graphicThread::createMainWindow(void)
     scale_set_default_values (GTK_SCALE (hscale));
     gtk_box_pack_start (GTK_BOX (box3), hscale, TRUE, TRUE, 0);
     gtk_widget_show (hscale);*/
-	
-	/*
+
+	/*label = gtk_label_new ("Configuration Manager:");
+	gtk_box_pack_start (GTK_BOX (box3), label, FALSE, FALSE, 0);
+    gtk_widget_show (label);*/
+
+
+	scrollbar = gtk_hscrollbar_new (GTK_ADJUSTMENT (adj1));
+    /* Notice how this causes the scales to always be updated
+     * continuously when the scrollbar is moved */
+    /*gtk_range_set_update_policy (GTK_RANGE (scrollbar), 
+                                 GTK_UPDATE_CONTINUOUS);
+    gtk_box_pack_start (GTK_BOX (box3), scrollbar, TRUE, TRUE, 0);
+    gtk_widget_show (scrollbar);*/
 
 	//-----Check Buttons
 	box4=  gtk_vbox_new (FALSE, 0);
@@ -2304,7 +1927,9 @@ GtkWidget* graphicThread::createMainWindow(void)
 
 	//-----box4
 	box4=  gtk_vbox_new (FALSE, 0);
-	// A checkbutton to control whether the value is displayed or not 
+
+	/*
+	// A checkbutton to control whether the value is displayed or not
     buttonCheck = gtk_check_button_new_with_label("AddLayer");
     gtk_toggle_button_set_active (GTK_TOGGLE_BUTTON (buttonCheck), FALSE);
     g_signal_connect (G_OBJECT (buttonCheck), "toggled",G_CALLBACK (cb_draw_value), "AddLayer");
@@ -2351,11 +1976,59 @@ GtkWidget* graphicThread::createMainWindow(void)
     gtk_toggle_button_set_active (GTK_TOGGLE_BUTTON (buttonCheck), FALSE);
     g_signal_connect (G_OBJECT (buttonCheck), "toggled",G_CALLBACK (cb_draw_value), "ColorVQ1");
     gtk_box_pack_start (GTK_BOX (box4), buttonCheck, TRUE, TRUE, 0);
-    gtk_widget_show (buttonCheck);
+    gtk_widget_show (buttonCheck);*/
 
 
-	gtk_box_pack_start (GTK_BOX (box3), box4, TRUE, TRUE, 0);
-    gtk_widget_show (box4);*/
+	
+	
+	
+	//---box 4
+	//-------run button
+	
+	button = gtk_button_new ();
+	/* Connect the "clicked" signal of the button to our callback */
+    g_signal_connect (G_OBJECT (button), "clicked",G_CALLBACK (callback), (gpointer) "outEyesBehaviour");
+    /* This calls our box creating func tion */
+    boxButton = xpm_label_box (NULL, "outEyesBehaviour");
+    /* Pack and show all our widgets */
+    gtk_widget_show (boxButton);
+    gtk_container_add (GTK_CONTAINER (button), boxButton);
+    gtk_widget_show (button);
+	gtk_box_pack_start (GTK_BOX (box4), button, TRUE, TRUE, 0);
+	gtk_widget_show (button);
+
+	button = gtk_button_new ();
+	/* Connect the "clicked" signal of the button to our callback */
+    g_signal_connect (G_OBJECT (button), "clicked",G_CALLBACK (callback), (gpointer) "outHeadBehaviour");
+    /* This calls our box creating func tion */
+    boxButton = xpm_label_box (NULL, "outHeadBehaviour");
+    /* Pack and show all our widgets */
+    gtk_widget_show (boxButton);
+    gtk_container_add (GTK_CONTAINER (button), boxButton);
+    gtk_widget_show (button);
+	gtk_box_pack_start (GTK_BOX (box4), button, TRUE, TRUE, 0);
+	gtk_widget_show (button);
+
+	button = gtk_button_new ();
+	/* Connect the "clicked" signal of the button to our callback */
+    g_signal_connect (G_OBJECT (button), "clicked",G_CALLBACK (callback), (gpointer) "Learn");
+    /* This calls our box creating func tion */
+    boxButton = xpm_label_box (NULL, "Learn");
+    /* Pack and show all our widgets */
+    gtk_widget_show (boxButton);
+    gtk_container_add (GTK_CONTAINER (button), boxButton);
+    gtk_widget_show (button);
+	gtk_box_pack_start (GTK_BOX (box4), button, TRUE, TRUE, 0);
+	gtk_widget_show (button);
+
+	button = gtk_button_new ();
+    g_signal_connect (G_OBJECT (button), "clicked",G_CALLBACK (callback), (gpointer) "Load");
+    boxButton = xpm_label_box (NULL, "Load");
+    gtk_widget_show (boxButton);
+    gtk_container_add (GTK_CONTAINER (button), boxButton);
+    gtk_widget_show (button);
+	gtk_box_pack_start (GTK_BOX (box4), button, TRUE, TRUE, 0);
+	gtk_widget_show (button);
 
 	/*button = gtk_button_new ();
     g_signal_connect (G_OBJECT (button), "clicked",G_CALLBACK (callback), (gpointer) "drawVQColor1");
@@ -2375,12 +2048,14 @@ GtkWidget* graphicThread::createMainWindow(void)
 	gtk_box_pack_start (GTK_BOX (box3), button, TRUE, TRUE, 0);
 	gtk_widget_show (button);*/
 
+	gtk_box_pack_start (GTK_BOX (box3), box4, TRUE, TRUE, 0);
+    gtk_widget_show (box4);
+
 	//------ HSEPARATOR ---------------
 	separator = gtk_hseparator_new ();
     gtk_box_pack_start (GTK_BOX (box2), separator, FALSE, TRUE, 0);
     gtk_widget_show (separator);
 
-	//------ SECOND ROW of CONTROL
 	//----------BOXA SECTION:2
 	//boxA is the area that contains the two subsection for watershed and saliency operators
 	boxA = gtk_hbox_new (FALSE, 0);
@@ -2391,6 +2066,8 @@ GtkWidget* graphicThread::createMainWindow(void)
 	gtk_container_set_border_width (GTK_CONTAINER (box3), 0);
     gtk_box_pack_start (GTK_BOX (boxA), box3, TRUE, TRUE, 0);
     gtk_widget_show (box3);
+
+	
 	
 	//--box3 section A
 	box3 = gtk_hbox_new (FALSE, 0);
@@ -2400,9 +2077,19 @@ GtkWidget* graphicThread::createMainWindow(void)
     gtk_box_pack_start (GTK_BOX (box3), hscale, TRUE, TRUE, 0);
     gtk_widget_show (hscale);*/
 
-	/*label = gtk_label_new ("where to apply operations:");
-	gtk_box_pack_start (GTK_BOX (box3), label, FALSE, FALSE, 0);
-    gtk_widget_show (label);*/
+	GtkWidget* box33 = gtk_vbox_new (FALSE, 1);
+	label = gtk_label_new ("Considering operation between LayerA and LayerB");
+	gtk_box_pack_start (GTK_BOX (box33), label, FALSE, FALSE, 0);
+    gtk_widget_show (label);
+	label = gtk_label_new ("                                              ");
+	gtk_box_pack_start (GTK_BOX (box33), label, FALSE, FALSE, 0);
+    gtk_widget_show (label);
+	label = gtk_label_new ("LayerA in LayerA Box;             LayerB--->");
+	gtk_box_pack_start (GTK_BOX (box33), label, FALSE, FALSE, 0);
+    gtk_widget_show (label);
+
+	gtk_box_pack_start (GTK_BOX (box3), box33, TRUE, TRUE, 0);
+    gtk_widget_show (box33);
 
 
 	scrollbar = gtk_hscrollbar_new (GTK_ADJUSTMENT (adj1));
@@ -2418,43 +2105,49 @@ GtkWidget* graphicThread::createMainWindow(void)
 
 	/* A checkbutton to control whether the value is displayed or not */
     buttonCheck = gtk_check_button_new_with_label("SelectLayer0-->");
+	char* valueSL0="SelectLayer0-->";
     gtk_toggle_button_set_active (GTK_TOGGLE_BUTTON (buttonCheck), FALSE);
-    g_signal_connect (G_OBJECT (buttonCheck), "toggled",G_CALLBACK (cb_draw_value), (gpointer) "SelectLayer0-->");
+    g_signal_connect (G_OBJECT (buttonCheck), "toggled",G_CALLBACK (cb_draw_value), valueSL0);
     gtk_box_pack_start (GTK_BOX (box4), buttonCheck, TRUE, TRUE, 0);
     gtk_widget_show (buttonCheck);
 
 	/* A checkbutton to control whether the value is displayed or not */
     buttonCheck = gtk_check_button_new_with_label("SelectLayer1-->");
+	char* valueSL1="SelectLayer1-->";
     gtk_toggle_button_set_active (GTK_TOGGLE_BUTTON (buttonCheck), FALSE);
-    g_signal_connect (G_OBJECT (buttonCheck), "toggled",G_CALLBACK (cb_draw_value), (gpointer) "SelectLayer1-->");
+    g_signal_connect (G_OBJECT (buttonCheck), "toggled",G_CALLBACK (cb_draw_value), valueSL1);
     gtk_box_pack_start (GTK_BOX (box4), buttonCheck, TRUE, TRUE, 0);
     gtk_widget_show (buttonCheck);
 
 	/* A checkbutton to control whether the value is displayed or not */
     buttonCheck = gtk_check_button_new_with_label("SelectLayer2-->");
+	char* valueSL2="SelectLayer2-->";
     gtk_toggle_button_set_active (GTK_TOGGLE_BUTTON (buttonCheck), TRUE);
-    g_signal_connect (G_OBJECT (buttonCheck), "toggled",G_CALLBACK (cb_draw_value), (gpointer) "SelectLayer2-->");
+    g_signal_connect (G_OBJECT (buttonCheck), "toggled",G_CALLBACK (cb_draw_value), valueSL2);
     gtk_box_pack_start (GTK_BOX (box4), buttonCheck, TRUE, TRUE, 0);
     gtk_widget_show (buttonCheck);
 
 	/* A checkbutton to control whether the value is displayed or not */
     buttonCheck = gtk_check_button_new_with_label("SelectLayer3-->");
+	char* valueSL3="SelectLayer3-->";
     gtk_toggle_button_set_active (GTK_TOGGLE_BUTTON (buttonCheck), FALSE);
-    g_signal_connect (G_OBJECT (buttonCheck), "toggled",G_CALLBACK (cb_draw_value), (gpointer) "SelectLayer3-->");
+    g_signal_connect (G_OBJECT (buttonCheck), "toggled",G_CALLBACK (cb_draw_value), valueSL3);
     gtk_box_pack_start (GTK_BOX (box4), buttonCheck, TRUE, TRUE, 0);
     gtk_widget_show (buttonCheck);
 
 	/* A checkbutton to control whether the value is displayed or not */
     buttonCheck = gtk_check_button_new_with_label("SelectLayer4-->");
+	char* valueSL4="SelectLayer4-->";
     gtk_toggle_button_set_active (GTK_TOGGLE_BUTTON (buttonCheck), FALSE);
-    g_signal_connect (G_OBJECT (buttonCheck), "toggled",G_CALLBACK (cb_draw_value), (gpointer) "SelectLayer4-->");
+    g_signal_connect (G_OBJECT (buttonCheck), "toggled",G_CALLBACK (cb_draw_value), valueSL4);
     gtk_box_pack_start (GTK_BOX (box4), buttonCheck, TRUE, TRUE, 0);
     gtk_widget_show (buttonCheck);
 
 	/* A checkbutton to control whether the value is displayed or not */
     buttonCheck = gtk_check_button_new_with_label("SelectLayer5-->");
+	char* valueSL5="SelectLayer5-->";
     gtk_toggle_button_set_active (GTK_TOGGLE_BUTTON (buttonCheck), FALSE);
-    g_signal_connect (G_OBJECT (buttonCheck), "toggled",G_CALLBACK (cb_draw_value), (gpointer) "SelectLayer5-->");
+    g_signal_connect (G_OBJECT (buttonCheck), "toggled",G_CALLBACK (cb_draw_value), valueSL5);
     gtk_box_pack_start (GTK_BOX (box4), buttonCheck, TRUE, TRUE, 0);
     gtk_widget_show (buttonCheck);
 
@@ -2464,8 +2157,9 @@ GtkWidget* graphicThread::createMainWindow(void)
 
 	/* A checkbutton to control whether the value is displayed or not */
     buttonCheck = gtk_check_button_new_with_label("Normalize1-->");
+	char* valueN1="Normalize1";
     gtk_toggle_button_set_active (GTK_TOGGLE_BUTTON (buttonCheck), FALSE);
-    g_signal_connect (G_OBJECT (buttonCheck), "toggled",G_CALLBACK (cb_draw_value), (gpointer) "Normalize1");
+    g_signal_connect (G_OBJECT (buttonCheck), "toggled",G_CALLBACK (cb_draw_value), valueN1);
     gtk_box_pack_start (GTK_BOX (box4), buttonCheck, TRUE, TRUE, 0);
     gtk_widget_show (buttonCheck);
 
@@ -2479,9 +2173,10 @@ GtkWidget* graphicThread::createMainWindow(void)
 	//-------run button
 	button = gtk_button_new ();
 	/* Connect the "clicked" signal of the button to our callback */
-    g_signal_connect (G_OBJECT (button), "clicked",G_CALLBACK (callback), (gpointer) "ConnectLayer");
+	char* valueCL="ConnectLayer";
+    g_signal_connect (G_OBJECT (button), "clicked",G_CALLBACK (callback), (gpointer) valueCL);
     /* This calls our box creating func tion */
-    boxButton = xpm_label_box (NULL, "ConnectLayer");
+    boxButton = xpm_label_box (NULL, "ConnectLayer(A,B)");
     /* Pack and show all our widgets */
     gtk_widget_show (boxButton);
     gtk_container_add (GTK_CONTAINER (button), boxButton);
@@ -2492,9 +2187,10 @@ GtkWidget* graphicThread::createMainWindow(void)
 	//-------run button
 	button = gtk_button_new ();
 	/* Connect the "clicked" signal of the button to our callback */
-    g_signal_connect (G_OBJECT (button), "clicked",G_CALLBACK (callback), (gpointer) "AddLayer");
+	char* valueAL="AddLayer";
+    g_signal_connect (G_OBJECT (button), "clicked",G_CALLBACK (callback), (gpointer) valueAL);
     /* This calls our box creating func tion */
-    boxButton = xpm_label_box (NULL, "AddLayer");
+    boxButton = xpm_label_box (NULL, "AddLayer()");
     /* Pack and show all our widgets */
     gtk_widget_show (boxButton);
     gtk_container_add (GTK_CONTAINER (button), boxButton);
@@ -2507,7 +2203,7 @@ GtkWidget* graphicThread::createMainWindow(void)
 	/* Connect the "clicked" signal of the button to our callback */
     g_signal_connect (G_OBJECT (button), "clicked",G_CALLBACK (callback), (gpointer) "ClampLayer");
     /* This calls our box creating func tion */
-    boxButton = xpm_label_box (NULL, "ClampLayer");
+    boxButton = xpm_label_box (NULL, "ClampLayer(A)");
     /* Pack and show all our widgets */
     gtk_widget_show (boxButton);
     gtk_container_add (GTK_CONTAINER (button), boxButton);
@@ -2619,36 +2315,49 @@ GtkWidget* graphicThread::createMainWindow(void)
 	//-----box4
 	box4=  gtk_vbox_new (FALSE, 0);
 	/* A checkbutton to control whether the value is displayed or not */
-    buttonCheck = gtk_check_button_new_with_label("ContrastLP2-->");
+    buttonCheck = gtk_check_button_new_with_label("Pattern1-->");
+	char* valueP1="Pattern1";
     gtk_toggle_button_set_active (GTK_TOGGLE_BUTTON (buttonCheck), FALSE);
-    g_signal_connect (G_OBJECT (buttonCheck), "toggled",G_CALLBACK (cb_draw_value), (gpointer) "ContrastLP2");
+    g_signal_connect (G_OBJECT (buttonCheck), "toggled",G_CALLBACK (cb_draw_value), valueP1);
     gtk_box_pack_start (GTK_BOX (box4), buttonCheck, TRUE, TRUE, 0);
     gtk_widget_show (buttonCheck);
 
 	/* A checkbutton to control whether the value is displayed or not */
-    buttonCheck = gtk_check_button_new_with_label("MeanColoursLP2-->");
+    buttonCheck = gtk_check_button_new_with_label("Pattern2-->");
+	char* valueP2="Pattern2";
     gtk_toggle_button_set_active (GTK_TOGGLE_BUTTON (buttonCheck), FALSE);
-    g_signal_connect (G_OBJECT (buttonCheck), "toggled",G_CALLBACK (cb_draw_value), (gpointer) "MeanColoursLP2");
+    g_signal_connect (G_OBJECT (buttonCheck), "toggled",G_CALLBACK (cb_draw_value), valueP2);
     gtk_box_pack_start (GTK_BOX (box4), buttonCheck, TRUE, TRUE, 0);
     gtk_widget_show (buttonCheck);
 
 	/* A checkbutton to control whether the value is displayed or not */
-    buttonCheck = gtk_check_button_new_with_label("Normalize1-->");
+    buttonCheck = gtk_check_button_new_with_label("Pattern3-->");
+	char* valueP3="Pattern3";
     gtk_toggle_button_set_active (GTK_TOGGLE_BUTTON (buttonCheck), FALSE);
-    g_signal_connect (G_OBJECT (buttonCheck), "toggled",G_CALLBACK (cb_draw_value), (gpointer) "Normalize1");
+    g_signal_connect (G_OBJECT (buttonCheck), "toggled",G_CALLBACK (cb_draw_value), valueP3);
     gtk_box_pack_start (GTK_BOX (box4), buttonCheck, TRUE, TRUE, 0);
     gtk_widget_show (buttonCheck);
+
+	//-------run button
+	button = gtk_button_new ();
+	/* Connect the "clicked" signal of the button to our callback */
+    g_signal_connect (G_OBJECT (button), "clicked",G_CALLBACK (callback), (gpointer) "ClampPattern");
+    /* This calls our box creating func tion */
+    boxButton = xpm_label_box (NULL, "ClampPattern");	
+    /* Pack and show all our widgets */
+    gtk_widget_show (boxButton);
+    gtk_container_add (GTK_CONTAINER (button), boxButton);
+    gtk_widget_show (button);
+	gtk_box_pack_start (GTK_BOX (box4), button, TRUE, TRUE, 0);
+	gtk_widget_show (button);
 
 	gtk_box_pack_start (GTK_BOX (box3), box4, TRUE, TRUE, 0);
     gtk_widget_show (box4);
 	//---box 4
 
-	button = gtk_button_new ();
-	/* Connect the "clicked" signal of the button to our callback */
+	/*button = gtk_button_new ();
     g_signal_connect (G_OBJECT (button), "clicked",G_CALLBACK (callback), (gpointer) "DrawAllBlobs2");
-    /* This calls our box creating func tion */
     boxButton = xpm_label_box (NULL, "DrawAllBlobs2");
-    /* Pack and show all our widgets */
     gtk_widget_show (boxButton);
     gtk_container_add (GTK_CONTAINER (button), boxButton);
     gtk_widget_show (button);
@@ -2656,11 +2365,8 @@ GtkWidget* graphicThread::createMainWindow(void)
 	gtk_widget_show (button);
 
 	button = gtk_button_new ();
-	/* Connect the "clicked" signal of the button to our callback */
     g_signal_connect (G_OBJECT (button), "clicked",G_CALLBACK (callback), (gpointer) "drawFoveaBlob2");
-    /* This calls our box creating func tion */
     boxButton = xpm_label_box (NULL, "drawFoveaBlob2");
-    /* Pack and show all our widgets */
     gtk_widget_show (boxButton);
     gtk_container_add (GTK_CONTAINER (button), boxButton);
     gtk_widget_show (button);
@@ -2668,16 +2374,13 @@ GtkWidget* graphicThread::createMainWindow(void)
 	gtk_widget_show (button);
 
 	button = gtk_button_new ();
-	/* Connect the "clicked" signal of the button to our callback */
     g_signal_connect (G_OBJECT (button), "clicked",G_CALLBACK (callback), (gpointer) "drawVQColor2");
-    /* This calls our box creating func tion */
     boxButton = xpm_label_box (NULL, "drawVQColor2");
-    /* Pack and show all our widgets */
     gtk_widget_show (boxButton);
     gtk_container_add (GTK_CONTAINER (button), boxButton);
     gtk_widget_show (button);
 	gtk_box_pack_start (GTK_BOX (box3), button, TRUE, TRUE, 0);
-	gtk_widget_show (button);
+	gtk_widget_show (button);*/
 
 	//------ HSEPARATOR ---------------
 	separator = gtk_hseparator_new ();
@@ -2719,76 +2422,84 @@ GtkWidget* graphicThread::createMainWindow(void)
 	box4=  gtk_vbox_new (FALSE, 0);
 	/* A checkbutton to control whether the value is displayed or not */
     buttonCheck = gtk_check_button_new_with_label("Green1-->");
+	char* valueG1="Green1-->";
     gtk_toggle_button_set_active (GTK_TOGGLE_BUTTON (buttonCheck), FALSE);
-    g_signal_connect (G_OBJECT (buttonCheck), "toggled",G_CALLBACK (cb_draw_value), (gpointer) "Green1");
+    g_signal_connect (G_OBJECT (buttonCheck), "toggled",G_CALLBACK (cb_draw_value), valueG1);
     gtk_box_pack_start (GTK_BOX (box4), buttonCheck, TRUE, TRUE, 0);
     gtk_widget_show (buttonCheck);
 
 	/* A checkbutton to control whether the value is displayed or not */
     buttonCheck = gtk_check_button_new_with_label("Red1-->");
+	char* valueR1="Red1-->";
     gtk_toggle_button_set_active (GTK_TOGGLE_BUTTON (buttonCheck), TRUE);
-    g_signal_connect (G_OBJECT (buttonCheck), "toggled",G_CALLBACK (cb_draw_value), (gpointer) "Red1");
+    g_signal_connect (G_OBJECT (buttonCheck), "toggled",G_CALLBACK (cb_draw_value),valueR1);
     gtk_box_pack_start (GTK_BOX (box4), buttonCheck, TRUE, TRUE, 0);
     gtk_widget_show (buttonCheck);
 
 	/* A checkbutton to control whether the value is displayed or not */
     buttonCheck = gtk_check_button_new_with_label("Blue1-->");
+	char* valueB1="Blue1-->";
     gtk_toggle_button_set_active (GTK_TOGGLE_BUTTON (buttonCheck), FALSE);
-    g_signal_connect (G_OBJECT (buttonCheck), "toggled",G_CALLBACK (cb_draw_value), (gpointer) "Blue1");
+    g_signal_connect (G_OBJECT (buttonCheck), "toggled",G_CALLBACK (cb_draw_value), valueB1);
     gtk_box_pack_start (GTK_BOX (box4), buttonCheck, TRUE, TRUE, 0);
     gtk_widget_show (buttonCheck);
 
-	gtk_box_pack_start (GTK_BOX (box3), box4, TRUE, TRUE, 0);
-    gtk_widget_show (box4);
+	//gtk_box_pack_start (GTK_BOX (box3), box4, TRUE, TRUE, 0);
+    //gtk_widget_show (box4);
 
 	//-----box4
 	box4=  gtk_vbox_new (FALSE, 0);
 	/* A checkbutton to control whether the value is displayed or not */
-    buttonCheck = gtk_check_button_new_with_label("ColourOpponency1-->");
+    buttonCheck = gtk_check_button_new_with_label("Pattern1-->");
+	char* valueP1b="Pattern1-->";
     gtk_toggle_button_set_active (GTK_TOGGLE_BUTTON (buttonCheck), FALSE);
-    g_signal_connect (G_OBJECT (buttonCheck), "toggled",G_CALLBACK (cb_draw_value), (gpointer) "ColourOpponency11");
+    g_signal_connect (G_OBJECT (buttonCheck), "toggled",G_CALLBACK (cb_draw_value), valueP1b);
     gtk_box_pack_start (GTK_BOX (box4), buttonCheck, TRUE, TRUE, 0);
     gtk_widget_show (buttonCheck);
 
 	/* A checkbutton to control whether the value is displayed or not */
-    buttonCheck = gtk_check_button_new_with_label("FindEdges1-->");
-    gtk_toggle_button_set_active (GTK_TOGGLE_BUTTON (buttonCheck), FALSE);
-    g_signal_connect (G_OBJECT (buttonCheck), "toggled",G_CALLBACK (cb_draw_value), (gpointer) "FindEdges1");
+    buttonCheck = gtk_check_button_new_with_label("Pattern2-->");
+    char* valueP2b="Pattern2-->";
+	gtk_toggle_button_set_active (GTK_TOGGLE_BUTTON (buttonCheck), FALSE);
+    g_signal_connect (G_OBJECT (buttonCheck), "toggled",G_CALLBACK (cb_draw_value), valueP2b);
     gtk_box_pack_start (GTK_BOX (box4), buttonCheck, TRUE, TRUE, 0);
     gtk_widget_show (buttonCheck);
 
 	/* A checkbutton to control whether the value is displayed or not */
-    buttonCheck = gtk_check_button_new_with_label("Normalize1-->");
+    buttonCheck = gtk_check_button_new_with_label("Pattern3-->");
+	char* valueP3b="Pattern3-->";
     gtk_toggle_button_set_active (GTK_TOGGLE_BUTTON (buttonCheck), FALSE);
-    g_signal_connect (G_OBJECT (buttonCheck), "toggled",G_CALLBACK (cb_draw_value), (gpointer) "Normalize1");
+    g_signal_connect (G_OBJECT (buttonCheck), "toggled",G_CALLBACK (cb_draw_value), valueP3b);
     gtk_box_pack_start (GTK_BOX (box4), buttonCheck, TRUE, TRUE, 0);
     gtk_widget_show (buttonCheck);
-
-	gtk_box_pack_start (GTK_BOX (box3), box4, TRUE, TRUE, 0);
-    gtk_widget_show (box4);
-	//---box 4
 
 	//-------run button
 	button = gtk_button_new ();
 	/* Connect the "clicked" signal of the button to our callback */
-    g_signal_connect (G_OBJECT (button), "clicked",G_CALLBACK (callback), (gpointer) "Rain3");
+    g_signal_connect (G_OBJECT (button), "clicked",G_CALLBACK (callback), (gpointer) "ClampPattern");
     /* This calls our box creating func tion */
-    boxButton = xpm_label_box (NULL, "Rain3");
+    boxButton = xpm_label_box (NULL, "ClampPattern");
     /* Pack and show all our widgets */
     gtk_widget_show (boxButton);
     gtk_container_add (GTK_CONTAINER (button), boxButton);
     gtk_widget_show (button);
-	gtk_box_pack_start (GTK_BOX (box3), button, TRUE, TRUE, 0);
+	gtk_box_pack_start (GTK_BOX (box4), button, TRUE, TRUE, 0);
 	gtk_widget_show (button);
 
+	//gtk_box_pack_start (GTK_BOX (box3), box4, TRUE, TRUE, 0);
+    //gtk_widget_show (box4);
+	//---box 4
+
+	
+
 	gtk_container_set_border_width (GTK_CONTAINER (box3), 0);
-    gtk_box_pack_start (GTK_BOX (boxA), box3, TRUE, TRUE, 0);
-    gtk_widget_show (box3);
+    //gtk_box_pack_start (GTK_BOX (boxA), box3, TRUE, TRUE, 0);
+    //gtk_widget_show (box3);
 
 	//---- vSeparator
 	separator = gtk_vseparator_new ();
-    gtk_box_pack_start (GTK_BOX (box3), separator, FALSE, TRUE, 3);
-    gtk_widget_show (separator);
+    //gtk_box_pack_start (GTK_BOX (box3), separator, FALSE, TRUE, 3);
+    //gtk_widget_show (separator);
 	
 	//--box3 section B
 	/*hscale = gtk_hscale_new (GTK_ADJUSTMENT (adj1));
@@ -2797,9 +2508,9 @@ GtkWidget* graphicThread::createMainWindow(void)
     gtk_box_pack_start (GTK_BOX (box3), hscale, TRUE, TRUE, 0);
     gtk_widget_show (hscale);*/
 
-	label = gtk_label_new ("OCheckList:");
-	gtk_box_pack_start (GTK_BOX (box3), label, FALSE, FALSE, 0);
-    gtk_widget_show (label);
+	label = gtk_label_new ("CheckList:");
+	//gtk_box_pack_start (GTK_BOX (box3), label, FALSE, FALSE, 0);
+    //gtk_widget_show (label);
 
 
 	scrollbar = gtk_hscrollbar_new (GTK_ADJUSTMENT (adj1));
@@ -2880,43 +2591,41 @@ GtkWidget* graphicThread::createMainWindow(void)
 	-----*/
 
 
-	gtk_box_pack_start (GTK_BOX (box3), box4, TRUE, TRUE, 0);
-    gtk_widget_show (box4);
+	//gtk_box_pack_start (GTK_BOX (box3), box4, TRUE, TRUE, 0);
+    //gtk_widget_show (box4);
 
 	//-----box4
 	box4=  gtk_vbox_new (FALSE, 0);
-	/* A checkbutton to control whether the value is displayed or not */
     buttonCheck = gtk_check_button_new_with_label("ContrastLP3-->");
+	char* valueCLP3="ContrastLP3-->";
     gtk_toggle_button_set_active (GTK_TOGGLE_BUTTON (buttonCheck), FALSE);
-    g_signal_connect (G_OBJECT (buttonCheck), "toggled",G_CALLBACK (cb_draw_value),(gpointer) "ContrastLP3");
+    g_signal_connect (G_OBJECT (buttonCheck), "toggled",G_CALLBACK (cb_draw_value), valueCLP3);
     gtk_box_pack_start (GTK_BOX (box4), buttonCheck, TRUE, TRUE, 0);
     gtk_widget_show (buttonCheck);
 
-	/* A checkbutton to control whether the value is displayed or not */
     buttonCheck = gtk_check_button_new_with_label("MeanColoursLP3-->");
+	char* valueMCLP3="MeanColoursLP3-->";
     gtk_toggle_button_set_active (GTK_TOGGLE_BUTTON (buttonCheck), FALSE);
-    g_signal_connect (G_OBJECT (buttonCheck), "toggled",G_CALLBACK (cb_draw_value), (gpointer) "MeanColoursLP3");
+    g_signal_connect (G_OBJECT (buttonCheck), "toggled",G_CALLBACK (cb_draw_value), valueMCLP3);
     gtk_box_pack_start (GTK_BOX (box4), buttonCheck, TRUE, TRUE, 0);
     gtk_widget_show (buttonCheck);
 
-	/* A checkbutton to control whether the value is displayed or not */
     buttonCheck = gtk_check_button_new_with_label("Normalize1-->");
+	char* valueN1b="Normalize1-->";
     gtk_toggle_button_set_active (GTK_TOGGLE_BUTTON (buttonCheck), FALSE);
-    g_signal_connect (G_OBJECT (buttonCheck), "toggled",G_CALLBACK (cb_draw_value), (gpointer) "Normalize1");
+    g_signal_connect (G_OBJECT (buttonCheck), "toggled",G_CALLBACK (cb_draw_value), valueN1b);
     gtk_box_pack_start (GTK_BOX (box4), buttonCheck, TRUE, TRUE, 0);
     gtk_widget_show (buttonCheck);
 
-	gtk_box_pack_start (GTK_BOX (box3), box4, TRUE, TRUE, 0);
-    gtk_widget_show (box4);
+	//gtk_box_pack_start (GTK_BOX (box3), box4, TRUE, TRUE, 0);
+    //gtk_widget_show (box4);
+	
 	//---box 4
 
 	//-------run button
-	button = gtk_button_new ();
-	/* Connect the "clicked" signal of the button to our callback */
+	/*button = gtk_button_new ();
     g_signal_connect (G_OBJECT (button), "clicked",G_CALLBACK (callback), (gpointer) "DrawAllBlobs3");
-    /* This calls our box creating func tion */
     boxButton = xpm_label_box (NULL, "DrawAllBlobs3");
-    /* Pack and show all our widgets */
     gtk_widget_show (boxButton);
     gtk_container_add (GTK_CONTAINER (button), boxButton);
     gtk_widget_show (button);
@@ -2924,11 +2633,8 @@ GtkWidget* graphicThread::createMainWindow(void)
 	gtk_widget_show (button);
 
 	button = gtk_button_new ();
-	/* Connect the "clicked" signal of the button to our callback */
     g_signal_connect (G_OBJECT (button), "clicked",G_CALLBACK (callback), (gpointer) "drawFoveaBlob3");
-    /* This calls our box creating func tion */
     boxButton = xpm_label_box (NULL, "drawFoveaBlob3");
-    /* Pack and show all our widgets */
     gtk_widget_show (boxButton);
     gtk_container_add (GTK_CONTAINER (button), boxButton);
     gtk_widget_show (button);
@@ -2936,16 +2642,14 @@ GtkWidget* graphicThread::createMainWindow(void)
 	gtk_widget_show (button);
 
 	button = gtk_button_new ();
-	/* Connect the "clicked" signal of the button to our callback */
     g_signal_connect (G_OBJECT (button), "clicked",G_CALLBACK (callback), (gpointer) "drawVQColor3");
-    /* This calls our box creating func tion */
     boxButton = xpm_label_box (NULL, "drawVQColor3");
-    /* Pack and show all our widgets */
     gtk_widget_show (boxButton);
     gtk_container_add (GTK_CONTAINER (button), boxButton);
-    gtk_widget_show (button);
-	gtk_box_pack_start (GTK_BOX (box3), button, TRUE, TRUE, 0);
-	gtk_widget_show (button);
+    gtk_widget_show (button);*/
+
+	//gtk_box_pack_start (GTK_BOX (box3), button, TRUE, TRUE, 0);
+	//gtk_widget_show (button);
 
 	//------ HSEPARATOR ---------------
 	separator = gtk_hseparator_new ();

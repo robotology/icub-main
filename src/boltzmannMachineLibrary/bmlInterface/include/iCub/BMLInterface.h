@@ -115,14 +115,6 @@ public:
 	* set the attribute options of class Property
 	*/
 	void setOptions(Property options); //
-	/** 
-	* create the main Window
-	*/
-	GtkWidget* createMainWindow(); //
-	/**
-	* creates the menu bar
-	*/
-	GtkWidget* createMenubar(void); //
 	/**
 	* set the images to the output ports
 	*/
@@ -164,46 +156,7 @@ public:
 	*/
 	yarp::os::Bottle _outBottle;
 
-	/**
-	* pointer to the input image o
-	*/
-	yarp::sig::ImageOf<yarp::sig::PixelRgb> *ptr_inputImage; //
-	/**
-	* pointer to the input image of layer0
-	*/
-	yarp::sig::ImageOf<yarp::sig::PixelRgb> *ptr_inputLayer0; //
-	/**
-	* pointer to the input image of layer1
-	*/
-	yarp::sig::ImageOf<yarp::sig::PixelRgb> *ptr_inputLayer1; //
-	/**
-	* pointer to the input image of layer2
-	*/
-	yarp::sig::ImageOf<yarp::sig::PixelRgb> *ptr_inputLayer2; //
-	/**
-	* pointer to the input image of layer3
-	*/
-	yarp::sig::ImageOf<yarp::sig::PixelRgb> *ptr_inputLayer3;  //
-	/**
-	* pointer to the input image of layer4
-	*/
-	yarp::sig::ImageOf<yarp::sig::PixelRgb> *ptr_inputLayer4;  //
-	/**
-	* pointer to the input image of layer5
-	*/
-	yarp::sig::ImageOf<yarp::sig::PixelRgb> *ptr_inputLayer5; //
-	/**
-	* pointer to the input image of layer6
-	*/
-	yarp::sig::ImageOf<yarp::sig::PixelRgb> *ptr_inputLayer6; //
-	/**
-	* pointer to the input image of layer7
-	*/
-	yarp::sig::ImageOf<yarp::sig::PixelRgb> *ptr_inputLayer7; //
-	/**
-	* pointer to the input image of layer8
-	*/
-	yarp::sig::ImageOf<yarp::sig::PixelRgb> *ptr_inputLayer8; //
+	
 	/**
 	* flag that indicates when an input Image is regurarly 
 	* acquired on the dedicated port
@@ -235,82 +188,7 @@ public:
 	* flag that indicates the control box EvolveClamped is active
 	*/
 	bool evolveClamped_flag;
-	/**
-	* flag that indicates the control box inputImage is active
-	*/
-	bool inputImage_flag;
-	/**
-	* flag that indicates the control box Layer0 is active
-	*/
-	bool inLayer0_flag;
-	/**
-	* flag that indicates the control box Layer1 is active
-	*/
-	bool inLayer1_flag;
-	/**
-	* flag that indicates the control box Layer2 is active
-	*/
-	bool inLayer2_flag;
-	/**
-	* flag that indicates the control box Layer3 is active
-	*/
-	bool inLayer3_flag;
-	/**
-	* flag that indicates the control box Layer4 is active
-	*/
-	bool inLayer4_flag;
-	/**
-	* flag that indicates the control box Layer5 is active
-	*/
-	bool inLayer5_flag;
-	/**
-	* flag that indicates the control box Layer6 is active
-	*/
-	bool inLayer6_flag;
-	/**
-	* flag that indicates the control box Layer7 is active
-	*/
-	bool inLayer7_flag;
-	/**
-	* flag that indicates the control box Layer8 is active
-	*/
-	bool inLayer8_flag;
-	/**
-	* flag that indicates the control box SelectLayer0 is active
-	*/
-	bool SelectLayer0_flag;
-	/**
-	* flag that indicates the control box SelectLayer0 is active
-	*/
-	bool SelectLayer1_flag;
-	/**
-	* flag that indicates the control box SelectLayer0 is active
-	*/
-	bool SelectLayer2_flag;
-	/**
-	* flag that indicates the control box SelectLayer0 is active
-	*/
-	bool SelectLayer3_flag;
-	/**
-	* flag that indicates the control box SelectLayer0 is active
-	*/
-	bool SelectLayer4_flag;
-	/**
-	* flag that indicates the control box SelectLayer0 is active
-	*/
-	bool SelectLayer5_flag;
-	/**
-	* flag that indicates the control box SelectLayer0 is active
-	*/
-	bool SelectLayer6_flag;
-	/**
-	* flag that indicates the control box SelectLayer0 is active
-	*/
-	bool SelectLayer7_flag;
-	/**
-	* flag that indicates the control box SelectLayer0 is active
-	*/
-	bool SelectLayer8_flag;
+	
 	/**
 	* flag that indicates when the freely run mode is active
 	*/

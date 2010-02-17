@@ -84,14 +84,16 @@ public:
     * @param module reference to the module
     */
     void setImageProcessModule(void *module);
-    /**
-	* create the main Window of the module
+    /** 
+	* create the main Window
 	*/
 	GtkWidget* createMainWindow(); //
 	/**
 	* creates the menu bar
 	*/
 	GtkWidget* createMenubar(void); //
+	
+    
     /**
 	* function that set the dimension of the layer (rows)
 	*/
@@ -144,6 +146,10 @@ public:
 	yarp::sig::ImageOf<yarp::sig::PixelRgb> *ptr_inputLayer8; //
 
     //---------- FLAGS -------------------------------
+	/**
+	* flag that indicates the control box inputImage is active
+	*/
+	bool inputImage_flag;
 	/**
 	* flag that indicates the control box inputImage is active
 	*/
