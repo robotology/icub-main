@@ -1,20 +1,20 @@
 <application>
 	<name>AttentionMechanism (heading control)</name>
  	<dependencies>
-		<port>/icubSim/head/rpc:i</port>
-		<port>/icubSim/cam/left/logpolar</port> 
-		<port>/icubSim/cam/right/logpolar</port>
+		<!--port>/icub/head/rpc:i</port-->
+		<port>/icub/cam/left/logpolar</port> 
+		<port>/icub/cam/right/logpolar</port>
 	</dependencies>
 	<module>
 		<name>colourProcessor</name>
-		<parameters>--file colourProcessorLeft.ini</parameters>
+		<parameters>--file colourProcessorLeft.ini --context attentionMechanism/conf</parameters>
 		<tag>colourLeft</tag>
 		<node>/surfer</node>
 		<stdio>lightHouse</stdio>
 	</module>
 	<module>
 		<name>imageProcessor</name>
-		<parameters>--file imageProcessorLeft.ini</parameters>
+		<parameters>--file imageProcessorLeft.ini --context attentionMechanism/conf</parameters>
 		<tag>imageLeft</tag>
 		<node>/lightHouse</node>
 	</module>
@@ -26,13 +26,13 @@
 	</module>
 	<module>
 		<name>saliencyBlobFinder</name>
-		<parameters>--file saliencyBlobFinderLeft.ini</parameters>
+		<parameters>--file saliencyBlobFinderLeft.ini --context attentionMechanism/conf</parameters>
 		<tag>saliencyBlobFinderLeft</tag>
 		<node>/surfer</node>
 	</module>
 	<module>
 		<name>saliencyBlobFinderInterface</name>
-		<parameters>--name /saliencyBlobFinderInterface/left</parameters>
+		<parameters>--name /saliencyBlobFinderInterface/left </parameters>
 		<tag>saliencyBlobFinderInterfaceLeft</tag>
 		<node>/surfer</node>
 	</module>
