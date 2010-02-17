@@ -2,7 +2,7 @@
 @ingroup  icub_applications
 \defgroup icub_protoObjectVisualAttention protoObjectVisualAttention
 
-This is the application simulates the attention system based on proto-object, distributing across a cluster of computers.
+Application which simulates the attention system based on proto-object, distributed across a cluster of computers.
 See paper <a href="http://www.robotcub.org/misc/review3/05_Orabona_Metta_Sandini.pdf" >Object-based Visual Attention: a Model for a Behaving Robot, Orabona, Metta, Sandini</a> 
 
 \section intro_sec Description
@@ -33,7 +33,7 @@ Assumes \ref icub_yarp::dev::ServerLogpolarFrameGrabber  is running, and that th
 none
 
 \section config_sec Configuration Files
-In /app/protoObjectVisualAttention/conf are present a series of configurarion files
+In /app/protoObjectVisualAttention/conf are present a series of configuration files
 - colourProcessor.ini
 - imageProcessor.ini
 - saliencyBlobFinder.ini
