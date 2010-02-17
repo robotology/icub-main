@@ -48,20 +48,20 @@ using namespace yarp::sig;
 @ingroup icub_module
 \defgroup icub_colourProcessor colourProcessor
 
-This module processes the input image and colour information from this.
+This module processes the input image and extracts colour information from the visual channel.
 Starting from RGB channels it can produce the corrispective YUV channels if the user selects the option.
 If not selected the YUV channels are not computed and the module does not require extra computation power.
 All these channels are made available to other users via ports.
 Colour quantization is performed in order to reduce the effect of the input noise. After the yellow channel is 
 extracted the four channels are combined together to create three color opponent channels similar to those in retina.
 These are normally indicated with the names R+G-,G+R-, B+Y- and they have a center surround receptive field with
-spectrally opponent colour responses
+spectrally opponent colour responses.
 
 \section intro_sec Description
 
 The module does:
 -	run different processors for colour processing
--   reads a configuration file (todo)
+-   reads a configuration file
 -   reads commands from rpc
 -	always, the RED, GREEN BLUE planes are streamed out on ports.
 -	if the yuv processor is on, the Y, U+V  planes are streamed out on ports
