@@ -1,8 +1,6 @@
 
 #include "clockModule.h"
 
-#include <ace/OS.h>
-
 clockThread::clockThread(int period) : RateThread(period)
 {
   this->period = ((double)period)/1000.0;
@@ -22,7 +20,7 @@ void clockThread::getParameters()
       if(freq < MAX_FREQUENCY)
 	nu = freq;
     }
-  //ACE_OS::printf("frequency is %f\n", nu);
+  printf("frequency is %f\n", nu);
 }
 
 void clockThread::run()
@@ -36,7 +34,7 @@ void clockThread::run()
   //check if we must stop
   if(nu<0)
     {
-      ACE_OS::printf("Task is finished\n");
+      printf("Task is finished\n");
       this->stop();
       return;
    }
@@ -44,7 +42,7 @@ void clockThread::run()
   ///check the current beat
   if(time_now-lastBeat_time > 1.0/nu)
     {
-      ACE_OS::printf("current beat: %d\n",beat);
+      printf("current beat: %d\n",beat);
       beat++;
       lastBeat_time = time_now;
       
@@ -110,14 +108,14 @@ bool clockThread::init(Searchable &s)
   bool ok = clock_port.open("/clock/out");
   if(!ok)
     {
-      ACE_OS::printf("cannot open clock port\n");
+      printf("cannot open clock port\n");
       return false;
     }
   ///we open the parameter port
   ok = manager_port.open("/clock/parameters/in");
   if(!ok)
     {
-      ACE_OS::printf("cannot open manager port\n");
+      printf("cannot open manager port\n");
       return false;
     }
 
@@ -125,7 +123,7 @@ bool clockThread::init(Searchable &s)
   ok = beat_port.open("/clock/check_motion/out");
   if(!ok)
     {
-      ACE_OS::printf("failed to open beat port\n");
+      printf("failed to open beat port\n");
       return false;
     }
 
@@ -142,7 +140,7 @@ bool clockThread::init(Searchable &s)
 
 double clockModule::getPeriod()
 {
-  ACE_OS::printf(" Clock Module is running\n");
+  printf(" Clock Module is running\n");
   return 1.0;
 }
 

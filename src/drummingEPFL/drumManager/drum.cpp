@@ -1,6 +1,5 @@
 #include "drum.h"
 #include <iostream>
-#include <ace/OS.h>
 
 using namespace std;
 
