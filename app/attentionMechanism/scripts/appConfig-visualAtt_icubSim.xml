@@ -1,6 +1,6 @@
 <application>
-	<name>protoObjectVisualAttention</name>
- <dependencies>
+	<name>AttentionMechanism (heading control)</name>
+ 	<dependencies>
 		<port>/icubSim/head/rpc:i</port> 
 		<port>/icubSim/cam/right</port>
 	</dependencies>
