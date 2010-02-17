@@ -23,25 +23,7 @@ toward the robot's cameras.
 - ctrlLib
  
 \section parameters_sec Parameters
---genName \e name 
-- The parameter \e name identifies the module's name; all 
-  the open ports will be tagged with the prefix
-  /<genName>/<part>/. If not specified \e randArmGazeMotion is
-  assumed.
- 
---arm \e type 
-- The parameter \e type selects the robot's arm to work with. It
-  can be \e right_arm or \e left_arm; if not specified
-  \e right_arm is assumed.
-
---handFreq \e frequency 
-- The parameter \e frequency selects the frequency by which the module
-  will command the arm controller to reach the randomly generated target.
-  It can vary between 0.0 and 1.0. If not specified 1.0 (constant presence) is assumed.
- 
---T \e time
-- specify the interval between the generation of two random points
-  in seconds if not specified \e time is 20.0 seconds.
+None.
  
 \section portsa_sec Ports Accessed
 None.
@@ -65,7 +47,38 @@ None.
 None. 
  
 \section conf_file_sec Configuration Files
-None.
+The configuration file passed through the option \e --from
+should look like as follows:
+ 
+\code 
+[general]
+// the arm under control 
+arm                 right_arm
+// the frequency of images containing the hand
+hand_freq           1.0
+// the thread period
+T                   10.0
+// the 3d position of the heaad
+head_position       0.0 0.0 0.4
+
+[right_arm]
+//bounds for the random target
+max_target          -0.2 0.3 0.3
+min_target          -0.3 -0.15 0.1
+// gaze limit when the hand is required to be outside the FoV
+gaze_limit          0.1
+// hand position when it must be ouside the FoV
+hand_constraints    -0.11 0.34 0.2 -0.434 -0.855 -0.280 1.501
+
+[left_arm]
+//bounds for the random target
+max_target          -0.2 0.15 0.3
+min_target          -0.3 -0.3 0.1
+// gaze limit when the hand is required to be outside the FoV
+gaze_limit          -0.1
+// hand position when it must be ouside the FoV
+hand_constraints    -0.11 -0.34 0.2 -0.434 -0.855 -0.280 1.501
+\endcode 
 
 \section tested_os_sec Tested OS
 Linux and Windows
@@ -190,16 +203,16 @@ public:
         //hand constraints
         if(bArm.check("hand_constraints"))
         {
-            hand_constraints.resize(3);
+            hand_constraints.resize(7);
             Bottle &bHandConstraints = bArm.findGroup("hand_constraints");
-            if(bHandConstraints.size()-1 == 3)
+            if(bHandConstraints.size()-1 == 7)
             {
                 for(int i = 0; i < bHandConstraints.size()-1; i++)
                     hand_constraints[i] = bHandConstraints.get(1+i).asDouble();
             }
             else
             {
-                cout << "option size != 3" << endl;
+                cout << "option size != 7" << endl;
                 return false;
             }
         }
@@ -331,7 +344,7 @@ public:
             gaze[i] = target[i];
 
         //keep the gaze out of the hand's way
-        if(!isHandIn && fabs(gaze[2]) > fabs(gaze_limit))
+        if(!isHandIn && gaze[2]) > gaze_limit)
             gaze[2] = gaze_limit;
 
 
@@ -341,7 +354,7 @@ public:
 
 
     void reach(const Vector &target)
-{
+    {
         if(target.size() != 3)
         {
             cout << "Error! wrong size for arm target point" << endl;
@@ -407,9 +420,8 @@ public:
         }
         else
         {
-            hand[0] = hand_constraints[0];
-            hand[1] = hand_constraints[1];
-            hand[2] = yarp::math::Rand::scalar()*0.3;
+            for(int i = 0; i < 7; i++)
+               hand[i] = hand_constraints[i];
         }
 
         port_arm->write();
