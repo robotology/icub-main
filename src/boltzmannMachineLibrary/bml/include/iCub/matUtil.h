@@ -85,7 +85,7 @@ static Vector operator+(const yarp::sig::Vector &m, double c){
 	return res;
 }
 
-static Matrix operator*(const yarp::sig::Matrix &m,double c){
+/*static Matrix operator*(const yarp::sig::Matrix &m,double c){
 	Matrix res(m.rows(),m.cols());
 	for (int row=0;row<m.rows();row++)
 		for(int col=0;col<m.cols();col++)
@@ -98,7 +98,7 @@ static Matrix operator*(double c,const yarp::sig::Matrix &m){
 		for(int col=0;col<m.cols();col++)
 			res(row,col)=m(row,col)*c;
 	return res;
-}
+}*/
 
 static Matrix operator/(double c,const yarp::sig::Matrix &m){
 	Matrix res(m.rows(),m.cols());
