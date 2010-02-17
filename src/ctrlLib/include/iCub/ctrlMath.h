@@ -193,6 +193,33 @@ yarp::sig::Vector dcm2axis(const yarp::sig::Matrix &R, unsigned int verbose=0);
 */
 yarp::sig::Matrix axis2dcm(const yarp::sig::Vector &v, unsigned int verbose=0);
 
+/**
+* \ingroup Maths
+*
+* Converts a dcm (direction cosine matrix) rotation matrix to euler angles. Three angles are returned in
+* a vector with the following format:
+* \f[  \mathbf{v} = [\alpha, \beta, \gamma ]\f]
+* such that the returned matrix satisfies the following:
+* \f[  R = R_z(\alpha) R_z(\beta) R_z(\gamma) \f]
+* @param R is the input matrix.
+* @param verbose sets some verbosity.  
+* @return 3 by 1 vector for the Euler angles representation.
+*/
+yarp::sig::Vector dcm2euler(const yarp::sig::Matrix &R, unsigned int verbose=0);
+
+/**
+* \ingroup Maths
+*
+* Converts euler angles vector in the corresponding dcm (direction cosine matrix) rotation matrix. The
+* three euler angles are specified in a vector with the following structure:
+* \f[  \mathbf{v} = [\alpha, \beta, \gamma ]\f]
+* and the returned matrix is:
+* \f[  R = R_z(\alpha) R_z(\beta) R_z(\gamma) \f]
+* @param euler is the input vector (alpha=z-rotation, beta=y-rotation, gamma=z-rotation).
+* @param verbose sets some verbosity.  
+* @return 3 by 3 matrix representing the rotation.
+*/
+yarp::sig::Matrix euler2dcm(const yarp::sig::Vector &euler, unsigned int verbose=0);
 
 /**
 * \ingroup Maths

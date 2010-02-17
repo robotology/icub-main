@@ -197,6 +197,59 @@ Matrix ctrl::axis2dcm(const Vector &v, unsigned int verbose)
     return R;
 }
 
+/************************************************************************/
+Vector ctrl::dcm2euler(const Matrix &R, unsigned int verbose)
+{
+    if (R.rows()<3 || R.cols()<3)
+    {
+        if (verbose)
+            cerr << "dcm2euler() failed" << endl;
+
+        return Vector(0);
+    }
+
+    Vector v(3); v=0.0;
+    double r2 = R(2,0)*R(2,0) + R(2,1)*R(2,1);
+    if (r2 > 0)
+      {
+	v[1]=atan2(sqrt(r2), R(2,2));
+	v[0]=atan2(R(1,2)/sin(v[1]), R(0,2)/sin(v[1]));
+	v[2]=atan2(R(2,1)/sin(v[1]),-R(2,0)/sin(v[1]));
+      }
+    else
+      {
+        if (verbose)
+            cerr << "dcm2euler in singularity: choosing one solution among multiple" << endl;
+	v[1]=0;
+	v[0]=atan2(R(1,0), R(0,0));
+	v[2]=0;
+      }
+
+    return v;
+}
+
+/************************************************************************/
+Matrix ctrl::euler2dcm(const Vector &v, unsigned int verbose)
+{
+    if (v.length()<3)
+    {
+        if (verbose)
+            cerr << "euker2dcm() failed" << endl;
+    
+        return Matrix(0,0);
+    }
+
+    Matrix Rza=eye(4,4);  Matrix Ryb=eye(4,4);   Matrix Rzg=eye(4,4);
+    double alpha = v[0];  double ca=cos(alpha);  double sa=sin(alpha);
+    double beta  = v[1];  double cb=cos(beta);   double sb=sin(beta);
+    double gamma = v[2];  double cg=cos(gamma);  double sg=sin(gamma);
+    
+    Rza(0,0)=ca;   Rza(1,1)=ca;   Rza(1,0)=sa;   Rza(0,1)=-sa;
+    Rzg(0,0)=cg;   Rzg(1,1)=cg;   Rzg(1,0)=sg;   Rzg(0,1)=-sg;
+    Ryb(0,0)=cb;   Ryb(2,2)=cb;   Ryb(2,0)=-sb;  Ryb(0,2)= sb;
+
+    return Rza*Ryb*Rzg;
+}
 
 /************************************************************************/
 Matrix ctrl::SE3inv(const Matrix &H, unsigned int verbose)
