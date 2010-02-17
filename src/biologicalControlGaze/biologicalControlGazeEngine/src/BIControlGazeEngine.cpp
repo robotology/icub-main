@@ -345,7 +345,7 @@ void BIControlGazeEngine::setTrackerLeftVector(){
 }
 
 /** 
-* function that set the left vector of the tracker thread
+* function that set the right vector of the tracker thread
 */
 void BIControlGazeEngine::setTrackerRightVector(){
 	thread->setRightVector(-1,0,0);
