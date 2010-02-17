@@ -91,7 +91,7 @@ void graphicThread::threadRelease(){
 }
 
 void graphicThread::close(){
-     g_print("Closing port for visual representation");
+     printf("Closing port for visual representation");
     _imgRecv.Disconnect();
 }
 
@@ -488,7 +488,7 @@ void graphicThread::updateStatusbar (GtkStatusbar  *statusbar)
 * usual callback function 
 */
 static void callback( GtkWidget *widget,gpointer   data ){
-    g_print ("Hello again - %s was pressed \n", (char *) data);
+    printf ("Hello again - %s was pressed \n", (char *) data);
     
     if(!strcmp((char *)data,"OpencvSobel")){
         printf("OpencvSobel");
@@ -533,11 +533,11 @@ static gint expose_CB (GtkWidget *widget, GdkEventExpose *event, gpointer data)
                 //=new yarp::sig::ImageOf<yarp::sig::PixelRgb>;
                 //_outputImage->resize(320,240);
                 if(imageProcessModule->currentProcessor==NULL){
-                    printf("currentProcessor resulted nil");
+                    //printf("currentProcessor resulted nil");
                     return false;
                 }
                 if(imageProcessModule->currentProcessor->canProcess_flag==false){
-                    printf("expose_CB:_inputImg NULL");
+                    //printf("expose_CB:_inputImg NULL");
                     return false;
                 }
                 else
@@ -562,7 +562,7 @@ static gint expose_CB (GtkWidget *widget, GdkEventExpose *event, gpointer data)
                 
                 
                 if (imageWidth==0||imageHeight==0) {
-                    printf("exit for dimension nil \n");
+                    //printf("exit for dimension nil \n");
                     return TRUE;
                 }
      
@@ -582,19 +582,19 @@ static gint expose_CB (GtkWidget *widget, GdkEventExpose *event, gpointer data)
                 if ( (areaWidth != imageWidth) || (areaHeight != imageHeight) )
                     {
                         GdkPixbuf *scaledFrame;
-                        printf("scaling image... \n");
+                        //printf("scaling image... \n");
                         scaledFrame = gdk_pixbuf_scale_simple(	frame,
                                                                 areaWidth,
                                                                 areaHeight,
                                                                 GDK_INTERP_BILINEAR); // Best quality
                         //GDK_INTERP_NEAREST); // Best speed
                         if(scaledFrame==0){
-                            printf("Scaled Frame null \n");
+                            //printf("Scaled Frame null \n");
                             return true;
                         }
                         pixels = gdk_pixbuf_get_pixels (scaledFrame);
                         rowstride = gdk_pixbuf_get_rowstride(scaledFrame);
-                        printf("got pixels from the scaledFrame \n");
+                        //printf("got pixels from the scaledFrame \n");
                         gdk_draw_rgb_image (widget->window,
                                             widget->style->black_gc,
                                             event->area.x, event->area.y,
@@ -603,7 +603,7 @@ static gint expose_CB (GtkWidget *widget, GdkEventExpose *event, gpointer data)
                                             pixels,
                                             rowstride);
                         g_object_unref(scaledFrame);
-                        printf("drawn rgb image \n");
+                        //printf("drawn rgb image \n");
                 
                     }
                 else

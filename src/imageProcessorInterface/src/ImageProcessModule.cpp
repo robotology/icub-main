@@ -159,11 +159,11 @@ bool ImageProcessModule::openPorts(){
     if (ret == true)
         {
             //reduce verbosity --paulfitz
-            g_print("Port registration succeed!\n");
+            printf("Port registration succeed!\n");
         }
     else
         {
-            g_print("ERROR: Port registration failed.\nQuitting, sorry.\n");
+            printf("ERROR: Port registration failed.\nQuitting, sorry.\n");
             return false;
         }
     if (false)
@@ -172,21 +172,21 @@ bool ImageProcessModule::openPorts(){
             _pOutPort = new yarp::os::BufferedPort<ImageOf<PixelRgb> >;
             _pOutPort2 = new yarp::os::BufferedPort<ImageOf<PixelRgb> >;
             _pOutPort3 = new yarp::os::BufferedPort<ImageOf<PixelRgb> >;
-            g_print("Registering port %s on network %s...\n", getName("/out"),"default");
-            g_print("Registering port %s on network %s...\n", getName("/out2"),"default");
-            g_print("Registering port %s on network %s...\n", getName("/out3"),"default");
+            printf("Registering port %s on network %s...\n", getName("/out"),"default");
+            printf("Registering port %s on network %s...\n", getName("/out2"),"default");
+            printf("Registering port %s on network %s...\n", getName("/out3"),"default");
             portRg = new yarp::os::BufferedPort<ImageOf<PixelMono> >;
             portGr = new yarp::os::BufferedPort<ImageOf<PixelMono> >;
             portBy = new yarp::os::BufferedPort<ImageOf<PixelMono> >;
-            g_print("Registering port %s on network %s...\n", getName("/outRG"),"default");
-            g_print("Registering port %s on network %s...\n", getName("/outGR"),"default");
-            g_print("Registering port %s on network %s...\n", getName("/outBY"),"default");
+            printf("Registering port %s on network %s...\n", getName("/outRG"),"default");
+            printf("Registering port %s on network %s...\n", getName("/outGR"),"default");
+            printf("Registering port %s on network %s...\n", getName("/outBY"),"default");
             portRedPlane = new yarp::os::BufferedPort<ImageOf<PixelMono> >;
             portGreenPlane = new yarp::os::BufferedPort<ImageOf<PixelMono> >;
             portBluePlane = new yarp::os::BufferedPort<ImageOf<PixelMono> >;
-            g_print("Registering port %s on network %s...\n", getName("/outRed"),"default");
-            g_print("Registering port %s on network %s...\n", getName("/outGreen"),"default");
-            g_print("Registering port %s on network %s...\n", getName("/outBlue"),"default");
+            printf("Registering port %s on network %s...\n", getName("/outRed"),"default");
+            printf("Registering port %s on network %s...\n", getName("/outGreen"),"default");
+            printf("Registering port %s on network %s...\n", getName("/outBlue"),"default");
             bool ok = _pOutPort->open(getName("/out"));
             ok = _pOutPort2->open(getName("/out2"));
             ok = _pOutPort3->open(getName("/out3"));
@@ -197,10 +197,10 @@ bool ImageProcessModule::openPorts(){
             ok = portGreenPlane->open(getName("/outGreen"));
             ok = portBluePlane->open(getName("/outBlue"));
             if  (ok)
-                g_print("Port registration succeed!\n");
+                printf("Port registration succeed!\n");
             else 
                 {
-                    g_print("ERROR: Port registration failed.\nQuitting, sorry.\n");
+                    printf("ERROR: Port registration failed.\nQuitting, sorry.\n");
                     return false;
                 }
 
@@ -283,30 +283,30 @@ bool ImageProcessModule::closePorts(){
             
             
             
-            g_print("Closing port %s on network %s...\n", getName("/out"),"dafult");
-            g_print("Closing port %s on network %s...\n", getName("/out2"),"dafult");
-            g_print("Closing port %s on network %s...\n", getName("/out3"),"dafult");
+            printf("Closing port %s on network %s...\n", getName("/out"),"dafult");
+            printf("Closing port %s on network %s...\n", getName("/out2"),"dafult");
+            printf("Closing port %s on network %s...\n", getName("/out3"),"dafult");
             _pOutPort->close(); //->open(getName("/out");
             _pOutPort2->close(); //open(getName("/out2");
             _pOutPort3->close(); //open(getName("/out3");
-            g_print("Closing port %s on network %s...\n", getName("/outRG"),"dafult");
-            g_print("Closing port %s on network %s...\n", getName("/outGR"),"dafult");
-            g_print("Closing port %s on network %s...\n", getName("/outBY"),"dafult");
+            printf("Closing port %s on network %s...\n", getName("/outRG"),"dafult");
+            printf("Closing port %s on network %s...\n", getName("/outGR"),"dafult");
+            printf("Closing port %s on network %s...\n", getName("/outBY"),"dafult");
             portRg->close(); //open(getName("/outRG");
             portGr->close(); //open(getName("/outGR");
             portBy->close(); //open(getName("/outBY");
-            g_print("Closing port %s on network %s...\n", getName("/outRed"),"dafult");
-            g_print("Closing port %s on network %s...\n", getName("/outGreen"),"dafult");
-            g_print("Closing port %s on network %s...\n", getName("/outBlue"),"dafult");
+            printf("Closing port %s on network %s...\n", getName("/outRed"),"dafult");
+            printf("Closing port %s on network %s...\n", getName("/outGreen"),"dafult");
+            printf("Closing port %s on network %s...\n", getName("/outBlue"),"dafult");
             portRedPlane->close(); //open(getName("/outRed");
             portGreenPlane->close(); //open(getName("/outGreen");
             portBluePlane->close(); //open(getName("/outBlue");*/
 
             if(true)
-                g_print("All ports closed succeed!\n");
+                printf("All ports closed succeed!\n");
             else 
                 {
-                    g_print("ERROR: Ports closing failed.\nQuitting, sorry.\n");
+                    printf("ERROR: Ports closing failed.\nQuitting, sorry.\n");
                     return false;
                 }
 

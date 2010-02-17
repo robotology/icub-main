@@ -45,7 +45,7 @@ OPENCV
 GTK
 
 \section parameters_sec Parameters
-none
+--name:defines the name of the module and the rootname of every port
  
 \section portsa_sec Ports Accessed
 - /imageProcessor/cmd 
