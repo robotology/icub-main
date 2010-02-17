@@ -88,6 +88,7 @@ This file can be edited at src/controlBasis/modules/main.cpp.
 #include <ManipulatorPositionJacobian.h>
 #include <Controller.h>
 #include <RunnableControlLaw.h>
+#include <YARPAttentionMechanismHeading.h>
 
 #include <yarp/os/RFModule.h>
 #include <yarp/os/Module.h>
@@ -117,6 +118,8 @@ class iCubControlBasisResourceStarter : public RFModule {
     EndEffectorCartesianPosition *legEndEffector[2]; 
     EndEffectorCartesianPosition *fullArmEndEffector[2]; 
 
+    YARPAttentionMechanismHeading *salientHeadings[2];
+
     bool runArmConfig[2];
     bool runLegConfig[2];
     bool runHandConfig[2];
@@ -128,6 +131,8 @@ class iCubControlBasisResourceStarter : public RFModule {
     bool runArmPosition[2];
     bool runFullArmPosition[2];
     bool runLegPosition[2];
+
+    bool runHeadings[2];
 
     string fullArmName[2];
     string fullArmConfigFile[2];
@@ -156,6 +161,9 @@ class iCubControlBasisResourceStarter : public RFModule {
     string torsoName;
     string torsoConfigFile;
     string torsoVelPort;
+
+    string headingName[2];
+    string headingVelPort[2];
 
     int armNumJoints;
     int armNumLinks;
@@ -202,6 +210,7 @@ public:
                 if(runArmPosition[i]) delete armEndEffector[i]; 
                 if(runLegPosition[i]) delete legEndEffector[i]; 
                 if(runFullArmPosition[i]) delete fullArmEndEffector[i];                 
+                if(runHeadings[i]) delete salientHeadings[i];
             }     
             if(runHeadConfig) delete iCubHead;
             if(runTorsoConfig) delete iCubTorso;
@@ -349,6 +358,23 @@ public:
         }
         //cout << "run left leg position: " << runLegPosition[1] << endl;
 
+        // parse heading resources
+        Bottle &heading_group=rf.findGroup("heading_resources");
+        
+        if(heading_group.check("right_eye")) {
+            runHeadings[0] = (bool)(heading_group.find("right_eye").asInt());
+        } else {
+            runHeadings[0] = false;
+        }
+        //cout << "run right heading: " << runHeadings[0] << endl;
+
+        if(heading_group.check("left_eye")) {
+            runHeadings[1] = (bool)(heading_group.find("left_eye").asInt());
+        } else {
+            runHeadings[1] = false;
+        }
+        //cout << "run left heading: " << runHeadings[1] << endl;
+
         // now that we have the config vals, set the params used by resources
         setParameters();
 
@@ -431,11 +457,14 @@ public:
 
         eyesConfigFile = configFilePath+"eyes.dh";
         eyesName = robot_prefix + "/eyes";
-        eyesVelPort = robot_prefix + "/vc/eyes";
+        eyesVelPort = robot_prefix + "/vc/head";
         
         torsoName = robot_prefix + "/torso";
         torsoVelPort = robot_prefix + "/vc/torso";
 
+        headingName[0] = robot_prefix + "/right_eye";
+        headingName[1] = robot_prefix + "/left_eye";
+    
         armNumJoints = 7;
         armNumLinks = 12;
         
@@ -548,6 +577,12 @@ public:
                     cout<<"Can't start CartesianPosition resource for fullArm["<<i<<"] because configuration resource is not running!!"<<endl;
                 }     
             }           
+    
+            if(runHeadings[i]) {
+                cout << "starting heading for eye: " << i << endl;
+                salientHeadings[i] = new YARPAttentionMechanismHeading(headingName[i]);
+                salientHeadings[i]->startResource();
+            }           
         }
 
         if(runHeadConfig) {
@@ -601,6 +636,7 @@ public:
                 if(runArmPosition[i]) armEndEffector[i]->stopResource(); 
                 if(runLegPosition[i]) legEndEffector[i]->stopResource(); 
                 if(runFullArmPosition[i]) fullArmEndEffector[i]->stopResource(); 
+                if(runHeadings[i]) salientHeadings[i]->stopResource();
             }     
             if(runHeadConfig) iCubHead->stopResource();
             if(runTorsoConfig) iCubTorso->stopResource();
