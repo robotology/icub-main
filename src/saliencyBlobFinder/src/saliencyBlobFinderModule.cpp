@@ -366,7 +366,7 @@ void saliencyBlobFinderModule::outPorts(){
         //logPolarMapper iCub driver
         time (&end);
         double dif = difftime (end,start);
-        if((dif>5)&&(dif<=60)){
+        if((dif>0.5)&&(dif<=60)){
             bot.addVocab( Vocab::encode("sac") ); 
             bot.addVocab( Vocab::encode("img") ); 
             double xrel=(blobFinder->salience->centroid_x-320/2)/(320/2);
@@ -381,12 +381,12 @@ void saliencyBlobFinderModule::outPorts(){
             time (&start);
         }
         else{
-            printf("%f.",dif);
+            /*printf("%f.",dif);
             bot.addVocab( Vocab::encode("sac") ); 
             bot.addVocab( Vocab::encode("abs") ); 
             bot.addDouble(0);  
             bot.addDouble(0); 
-            centroidPort.write();
+            centroidPort.write();*/
         }
         
     }
