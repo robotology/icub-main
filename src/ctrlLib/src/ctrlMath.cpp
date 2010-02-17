@@ -211,19 +211,20 @@ Vector ctrl::dcm2euler(const Matrix &R, unsigned int verbose)
     Vector v(3); v=0.0;
     double r2 = R(2,0)*R(2,0) + R(2,1)*R(2,1);
     if (r2 > 0)
-      {
-	v[1]=atan2(sqrt(r2), R(2,2));
-	v[0]=atan2(R(1,2)/sin(v[1]), R(0,2)/sin(v[1]));
-	v[2]=atan2(R(2,1)/sin(v[1]),-R(2,0)/sin(v[1]));
-      }
+    {
+        v[1]=atan2(sqrt(r2), R(2,2));
+	    v[0]=atan2(R(1,2)/sin(v[1]), R(0,2)/sin(v[1]));
+	    v[2]=atan2(R(2,1)/sin(v[1]),-R(2,0)/sin(v[1]));
+    }
     else
-      {
+    {
         if (verbose)
             cerr << "dcm2euler in singularity: choosing one solution among multiple" << endl;
-	v[1]=0;
-	v[0]=atan2(R(1,0), R(0,0));
-	v[2]=0;
-      }
+
+        v[1]=0;
+	    v[0]=atan2(R(1,0), R(0,0));
+	    v[2]=0;
+    }
 
     return v;
 }
@@ -234,7 +235,7 @@ Matrix ctrl::euler2dcm(const Vector &v, unsigned int verbose)
     if (v.length()<3)
     {
         if (verbose)
-            cerr << "euker2dcm() failed" << endl;
+            cerr << "euler2dcm() failed" << endl;
     
         return Matrix(0,0);
     }

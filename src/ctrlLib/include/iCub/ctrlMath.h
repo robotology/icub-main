@@ -175,7 +175,8 @@ yarp::sig::Vector Dcross(const yarp::sig::Matrix &A, const yarp::sig::Matrix &DA
 /**
 * \ingroup Maths
 *
-* Converts a rotation matrix R to axis/angle representation.
+* Converts a dcm (direction cosine matrix) rotation matrix R to 
+* axis/angle representation. 
 * @param R is the input matrix.
 * @param verbose sets some verbosity.  
 * @return 4 by 1 vector for the axis/angle representation.
@@ -186,7 +187,8 @@ yarp::sig::Vector dcm2axis(const yarp::sig::Matrix &R, unsigned int verbose=0);
 /**
 * \ingroup Maths
 *
-* Returns a rotation matrix R from axis/angle representation
+* Returns a dcm (direction cosine matrix) rotation matrix R from
+* axis/angle representation.
 * @param v is the axis/angle vector.
 * @param verbose sets some verbosity.  
 * @return 4 by 4 rotation matrix of the form [R,1].
