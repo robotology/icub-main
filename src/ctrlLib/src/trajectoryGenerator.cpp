@@ -29,7 +29,7 @@ minJerkTrajGen::minJerkTrajGen(const double _Ts, const Vector &x0) :
         coeff.push_back(c);
     }
 
-    TOld=t0=t=0.0;
+    TOld=t0=t1=t=0.0;
 
     vtau[0]=1.0;
 
@@ -53,12 +53,14 @@ minJerkTrajGen::minJerkTrajGen(const double _Ts, const Vector &x0) :
 /************************************************************************/
 double minJerkTrajGen::calcTau(const double T,  const double dt)
 {
+    t1=t;
+
     if (dt<0.0)
         t+=Ts;
     else
         t+=dt;        
 
-    double tau=(t-t0)/T;
+    double tau=(t-t1)/T;
     if (tau>1.0)
         tau=1.0;
 
@@ -110,10 +112,9 @@ void minJerkTrajGen::compute(const double T, const Vector &xd, const Vector &fb,
         v=a=0.0;
         state=MINJERK_STATE_REACHED;
     }
-    else if (state==MINJERK_STATE_REACHED)
+    else if (state==MINJERK_STATE_REACHED || (t-t0>=T) && T>1.0)
     {
         calcCoeff(T,xd,fb);
-        t0=t;
         tau=calcTau(T,dt);
         state=MINJERK_STATE_RUNNING;
     }

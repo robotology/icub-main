@@ -55,6 +55,7 @@ protected:
     yarp::sig::Vector xdOld;
     double TOld;
     double t0;
+    double t1;
     double t;
     double Ts;
 
