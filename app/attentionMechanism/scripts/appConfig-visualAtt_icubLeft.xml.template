@@ -3,7 +3,7 @@
  	<dependencies>
 		<!--port>/icub/head/rpc:i</port-->
 		<port>/icub/cam/left/logpolar</port> 
-		<port>/icub/cam/right/logpolar</port>
+		<!--port>/icub/cam/right/logpolar</port-->
 	</dependencies>
 	<module>
 		<name>colourProcessor</name>
@@ -36,6 +36,12 @@
 		<tag>saliencyBlobFinderInterfaceLeft</tag>
 		<node>/surfer</node>
 	</module>
+	<module>
+		<name>yarpview</name>
+		<parameters>--name /blobFinder/icub/left_cam/outputView --x 200 --y 600 --synch</parameters>
+		<tag>blobFinderOutLeft</tag>
+		<node>/lightHouse</node>
+	</module>
 	 
 	
 	<connection>
@@ -58,8 +64,8 @@
 		<protocol>tcp</protocol>
 	</connection>
 	<connection>
-      	<from>/imagePU/icub/left_cam/edges:o</from>
-		<to>/edgesView</to>
+      	<from>/blobFinder/icub/left_cam/image:o</from>
+		<to>/blobFinder/icub/left_cam/outputView</to>
 		<protocol>tcp</protocol>
 	</connection>
 	<connection>
