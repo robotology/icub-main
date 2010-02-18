@@ -43,69 +43,68 @@
 		<to>/colourPU/left/image:i</to>
 	</connection>
 	<connection>
-      	<from>/colourPU/left/rg:o</from>
-		<to>/imagePU/left/rg:i</to>
+      	<from>/colourPU/icub/left_cam/rg:o</from>
+		<to>/imagePU/icub/left_cam/rg:i</to>
 		<protocol>tcp</protocol>
 	</connection>
 	<connection>
-      	<from>/colourPU/left/gr:o</from>
-		<to>/imagePU/left/gr:i</to>
+      	<from>/colourPU/icub/left_cam/gr:o</from>
+		<to>/imagePU/icub/left_cam/gr:i</to>
 		<protocol>tcp</protocol>
 	</connection>
 	<connection>
-      	<from>/colourPU/left/by:o</from>
-		<to>/imagePU/left/by:i</to>
+      	<from>/colourPU/icub/left_cam/by:o</from>
+		<to>/imagePU/icub/left_cam/by:i</to>
 		<protocol>tcp</protocol>
 	</connection>
-	
 	<connection>
-      	<from>/imagePU/edges:o</from>
+      	<from>/imagePU/icub/left_cam/edges:o</from>
 		<to>/edgesView</to>
 		<protocol>tcp</protocol>
 	</connection>
 	<connection>
-      	<from>/imageProcessorInterface/left/command:o</from>
-		<to>/imagePU/left/cmd</to>
+      	<from>/imageProcessorInterface/icub/left_cam/command:o</from>
+		<to>/imagePU/icub/left_cam/cmd</to>
 		<protocol>tcp</protocol>
 	</connection>
 	<connection>
-      	<from>/imagePU/left/edges:o</from>
-		<to>/blobFinder/left/image:i</to>
+      	<from>/imagePU/icub/left_cam/edges:o</from>
+		<to>/blobFinder/icub/left_cam/image:i</to>
 		<protocol>tcp</protocol>
 	</connection>
 	<connection>
-      	<from>/colourPU/left/rg:o</from>
-		<to>/blobFinder/left/rg:i</to>
+      	<from>/colourPU/icub/left_cam/rg:o</from>
+		<to>/blobFinder/icub/left_cam/rg:i</to>
 		<protocol>tcp</protocol>
 	</connection>
 	<connection>
-      	<from>/colourPU/left/gr:o</from>
-		<to>/blobFinder/left/gr:i</to>
+      	<from>/colourPU/icub/left_cam/gr:o</from>
+		<to>/blobFinder/icub/left_cam/gr:i</to>
 		<protocol>tcp</protocol>
 	</connection>
 	<connection>
-      	<from>/colourPU/left/by:o</from>
-		<to>/blobFinder/left/by:i</to>
+      	<from>/colourPU/icub/left_cam/by:o</from>
+		<to>/blobFinder/icub/left_cam/by:i</to>
 		<protocol>tcp</protocol>
 	</connection>
 	<connection>
-      	<from>/colourPU/left/red:o</from>
-		<to>/blobFinder/left/red:i</to>
+      	<from>/colourPU/icub/left_cam/red:o</from>
+		<to>/blobFinder/icub/left_cam/red:i</to>
 		<protocol>tcp</protocol>
 	</connection>
 	<connection>
-      	<from>/colourPU/left/green:o</from>
-		<to>/blobFinder/left/green:i</to>
+      	<from>/colourPU/icub/left_cam/green:o</from>
+		<to>/blobFinder/icub/left_cam/green:i</to>
 		<protocol>tcp</protocol>
 	</connection>
 	<connection>
-      	<from>/colourPU/left/blue:o</from>
-		<to>/blobFinder/left/blue:i</to>
+      	<from>/colourPU/icub/left_cam/blue:o</from>
+		<to>/blobFinder/icub/left_cam/blue:i</to>
 		<protocol>tcp</protocol>
 	</connection>
 	<connection>
-      	<from>/blobFinderInterface/left/command:o</from>
-		<to>/blobFinder/left/cmd</to>
+      	<from>/blobFinderInterface/icub/left_cam/command:o</from>
+		<to>/blobFinder/icub/left_cam/cmd</to>
 		<protocol>tcp</protocol>
 	</connection>
 </application>
