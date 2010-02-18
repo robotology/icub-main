@@ -1067,9 +1067,8 @@ MultiRefMinJerkCtrl::MultiRefMinJerkCtrl(iKinChain &c, unsigned int _ctrlPose, c
         lim(i,1)=chain(i).getMax();
     }
 
-    // Tmin=0.8, good margin to control iCub in feedback
-    genTrajJoint=new minJerkTrajGen(Ts,q,0.8);
-    genTrajTask =new minJerkTrajGen(Ts,x,0.8);
+    genTrajJoint=new minJerkTrajGen(Ts,q);
+    genTrajTask =new minJerkTrajGen(Ts,x);
     Int=new Integrator(Ts,q,lim);
 
     gamma=0.01;
@@ -1201,12 +1200,6 @@ Vector MultiRefMinJerkCtrl::iterate(Vector &xd, Vector &qd, const unsigned int v
         xdot=J*qdot;
         q=chain.setAng(Int->integrate(qdot));
         x=chain.EndEffPose();
-
-        // update controllers coeffs with only the result
-        // of the integration; the feedback is appropriately
-        // read inside the compute()
-        genTrajJoint->recomputeCoeff(q_set,q);
-        genTrajTask->recomputeCoeff(x_set,x);
     }
 
     updateState();

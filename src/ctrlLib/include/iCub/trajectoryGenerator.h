@@ -20,9 +20,8 @@
 
 #include <iCub/pids.h>
 
-#define MINJERK_STATE_STARTING      0
-#define MINJERK_STATE_FEEDBACK      1
-#define MINJERK_STATE_REACHED       2
+#define MINJERK_STATE_RUNNING       0
+#define MINJERK_STATE_REACHED       1
 
 #define MINJERK_OPT_DISABLED        -1
 
@@ -55,27 +54,22 @@ protected:
     yarp::sig::Vector aData;
     yarp::sig::Vector xdOld;
     double TOld;
-    double Tmin;
-    double fT;
     double t0;
     double t;
-    double tau;
     double Ts;
 
     int state;
 
-    virtual void calcCoeff(const double T, const yarp::sig::Vector &xd, const yarp::sig::Vector &fb);
+    virtual double calcTau(const double T,  const double dt);
+    virtual void   calcCoeff(const double T, const yarp::sig::Vector &xd, const yarp::sig::Vector &fb);
 
 public:
     /**
     * Constructor. 
     * @param _Ts is the block sample time in seconds. 
     * @param x0 is the initial position. 
-    * @param _Tmin is the minimum time interval for reading the 
-    *              feedback (if _Tmin<0, the minimum time interval
-    *              is set equal to 10*_Ts).
     */
-    minJerkTrajGen(const double _Ts, const yarp::sig::Vector &x0, const double _Tmin=MINJERK_OPT_DISABLED);
+    minJerkTrajGen(const double _Ts, const yarp::sig::Vector &x0);
 
     /**
     * Computes the trajectory. 
@@ -89,13 +83,6 @@ public:
     */
     virtual void compute(const double T, const yarp::sig::Vector &xd, const yarp::sig::Vector &fb,
                          const double tol, const double dt=MINJERK_OPT_DISABLED);
-
-    /**
-    * Forces the generator to recompute the trajectory coefficients.
-    * @param xd the desired position to reach. 
-    * @param fb the current position. 
-    */
-    virtual void recomputeCoeff(const yarp::sig::Vector &xd, const yarp::sig::Vector &fb);
 
     /**
     * Returns the current reference position.
