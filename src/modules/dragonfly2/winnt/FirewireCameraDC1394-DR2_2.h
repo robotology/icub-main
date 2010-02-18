@@ -31,35 +31,29 @@
 
 #define NUM_DMA_BUFFERS 8
 
-#define CHECK(error,value) if (error.GetType()!=FlyCapture2::PGRERROR_OK) \
-                 { \
-					fprintf(stderr,"ERROR: %s\n",error.GetDescription()); \
-					return value; \
-				 }
-
 typedef enum {
-  DC1394_FEATURE_BRIGHTNESS=0,
-  DC1394_FEATURE_EXPOSURE,
-  DC1394_FEATURE_SHARPNESS,
-  DC1394_FEATURE_WHITE_BALANCE,
-  DC1394_FEATURE_HUE,
-  DC1394_FEATURE_SATURATION,
-  DC1394_FEATURE_GAMMA,
-  DC1394_FEATURE_SHUTTER,
-  DC1394_FEATURE_GAIN,
-  DC1394_FEATURE_IRIS,
-  DC1394_FEATURE_FOCUS,
-  DC1394_FEATURE_TEMPERATURE,
-  DC1394_FEATURE_TRIGGER,
-  DC1394_FEATURE_TRIGGER_DELAY,
-  DC1394_FEATURE_WHITE_SHADING,
-  DC1394_FEATURE_FRAME_RATE,
-  DC1394_FEATURE_ZOOM,
-  DC1394_FEATURE_PAN,
-  DC1394_FEATURE_TILT,
-  DC1394_FEATURE_OPTICAL_FILTER,
-  DC1394_FEATURE_CAPTURE_SIZE,
-  DC1394_FEATURE_CAPTURE_QUALITY
+    DC1394_FEATURE_BRIGHTNESS=0,
+    DC1394_FEATURE_EXPOSURE,
+    DC1394_FEATURE_SHARPNESS,
+    DC1394_FEATURE_WHITE_BALANCE,
+    DC1394_FEATURE_HUE,
+    DC1394_FEATURE_SATURATION,
+    DC1394_FEATURE_GAMMA,
+    DC1394_FEATURE_SHUTTER,
+    DC1394_FEATURE_GAIN,
+    DC1394_FEATURE_IRIS,
+    DC1394_FEATURE_FOCUS,
+    DC1394_FEATURE_TEMPERATURE,
+    DC1394_FEATURE_TRIGGER,
+    DC1394_FEATURE_TRIGGER_DELAY,
+    DC1394_FEATURE_WHITE_SHADING,
+    DC1394_FEATURE_FRAME_RATE,
+    DC1394_FEATURE_ZOOM,
+    DC1394_FEATURE_PAN,
+    DC1394_FEATURE_TILT,
+    DC1394_FEATURE_OPTICAL_FILTER,
+    DC1394_FEATURE_CAPTURE_SIZE,
+    DC1394_FEATURE_CAPTURE_QUALITY
 } dc1394feature_id_t;
 
 class CFWCamera_DR2_2 : public yarp::dev::IFrameGrabberControlsDC1394
@@ -84,8 +78,9 @@ public:
 	bool SetVideoMode(FlyCapture2::VideoMode video_mode);
 	bool SetF7(int mode,int xdim,int ydim,int pixel_format,int speed);
 
-    bool Create(unsigned int idCamera,unsigned int size_x,unsigned int size_y,bool bDR2,int format);
-	virtual void Close();
+    bool Create(yarp::os::Searchable& config);
+
+    virtual void Close();
 
 	bool CaptureImage(yarp::sig::ImageOf<yarp::sig::PixelRgb>& image)
 	{
@@ -141,6 +136,44 @@ protected:
 
 	inline unsigned int NormToValue(double& dVal,int feature);
     inline double ValueToNorm(unsigned int iVal,int feature);
+
+    int maxFPS(FlyCapture2::Mode mode,FlyCapture2::PixelFormat pixelFormat);
+    double bytesPerPixel(FlyCapture2::PixelFormat pixelFormat);
+
+    bool manage(FlyCapture2::Error& error,yarp::os::Semaphore *pToUnlock=NULL)
+    {
+        if (error.GetType()!=FlyCapture2::PGRERROR_OK)
+        {
+            fprintf(stderr,"ERROR: %s\n",error.GetDescription());
+            if (pToUnlock)
+            {
+                pToUnlock->post();
+            }
+		    return true;
+	    }
+
+        return false;
+    }
+
+    int checkInt(yarp::os::Searchable& config,const char* key)
+    {
+        if (config.check(key))
+        {
+            return config.find(key).asInt();
+        }
+
+        return 0;
+    }
+
+    double checkDouble(yarp::os::Searchable& config,const char* key)
+    {
+        if (config.check(key))
+        {
+            return config.find(key).asDouble();
+        }
+
+        return -1.0;
+    }
 
 	///////////////////////////////////////////////////////////////////////////////////////
 	///////////////////////////////////////////////////////////////////////////////////////

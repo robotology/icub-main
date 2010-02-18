@@ -26,6 +26,12 @@
 
 #define NUM_DMA_BUFFERS 4
 
+// formats
+#define DR_UNINIT           0 // not initialized
+#define DR_RGB_HALF_RES     1 // 320 x 240 RGB8
+#define DR_RGB_FULL_RES     2 // 640 x 480 RGB8
+#define DR_BAYER_FULL_RES   3 // 640 x 480 RAW + software Bayer decoding
+
 class CFWCamera_DR2_2 : public yarp::dev::IFrameGrabberControlsDC1394
 {
 public:   
@@ -44,12 +50,7 @@ public:
 
     inline const yarp::os::Stamp& getLastInputStamp(){ return m_Stamp; }
 
-    // formats
-#define DR_UNINIT           0 // not initialized
-#define DR_RGB_HALF_RES     1 // 320 x 240 RGB8
-#define DR_RGB_FULL_RES     2 // 640 x 480 RGB8
-#define DR_BAYER_FULL_RES   3 // 640 x 480 RAW + software Bayer decoding
-    bool Create(unsigned int idCamera,unsigned int size_x,unsigned int size_y,bool bDR2,int format);
+    bool Create(yarp::os::Searchable& config);
 
     virtual void Close();
 
@@ -68,6 +69,9 @@ public:
         return Capture(0,pBuffer,true);
     }
 
+    bool SetVideoMode(dc1394video_mode_t videoMode);
+    bool SetF7(int newVideoMode,int newXdim,int newYdim,int newColorCoding,int newSpeed);
+
     bool Capture(yarp::sig::ImageOf<yarp::sig::PixelRgb>* pImage,unsigned char *pBuffer=0,bool bRaw=false);
 
 protected:
@@ -81,16 +85,13 @@ protected:
     int m_nInvalidFrames;
     bool m_bCameraOn;
 
-    bool m_bIsRaw,m_bIsRgb,m_bIsFormat7;
-    bool m_bDR2;
     unsigned int m_RawBufferSize;
     unsigned int m_XDim,m_YDim;
+    int m_Framerate;
+    
+    unsigned int m_GainSaveValue,m_ShutterSaveValue;
+    dc1394feature_mode_t m_GainSaveModeAuto,m_ShutterSaveModeAuto;
 
-    int m_IsoSpeed;
-
-    unsigned int m_MinBPP,m_MaxBPP,m_RelBPP;
-    dc1394video_mode_t m_video_mode;
-    dc1394color_coding_t m_color_coding;
     uint32_t m_iMin[DC1394_FEATURE_NUM],m_iMax[DC1394_FEATURE_NUM];
 
     dc1394video_frame_t *m_pFrame,*m_pFramePoll;
@@ -99,14 +100,46 @@ protected:
 
     dc1394camera_t *m_pCamera;
 
-    virtual void LoadSettings(unsigned int size_x=0,unsigned int size_y=0);
-    virtual void UpdateNonFormat7Window();
-    virtual void UpdateFormat7Window(int xdim=0,int ydim=0);
-    //inline void Bayer(unsigned char* dst,unsigned char* src);
-
     inline uint32_t NormToValue(double& dVal,int feature);
     inline double ValueToNorm(uint32_t iVal,int feature);
 
+    bool manage(dc1394error_t error,yarp::os::Semaphore *pToUnlock=NULL)
+    {
+        if (error!=DC1394_SUCCESS)
+        {
+            fprintf(stderr,"ERROR: %d\n",error);
+            if (pToUnlock)
+            {
+                pToUnlock->post();
+            }
+		    return true;
+	    }
+
+        return false;
+    }
+
+    int checkInt(yarp::os::Searchable& config,const char* key)
+    {
+        if (config.check(key))
+        {
+            return config.find(key).asInt();
+        }
+
+        return 0;
+    }
+
+    double checkDouble(yarp::os::Searchable& config,const char* key)
+    {
+        if (config.check(key))
+        {
+            return config.find(key).asDouble();
+        }
+
+        return -1.0;
+    }
+
+    int maxFPS(dc1394video_mode_t mode,dc1394color_coding_t pixelFormat);
+    double bytesPerPixel(dc1394color_coding_t pixelFormat);
 
     ///////////////////////////////////////////////////////////////////////////////////////
     ///////////////////////////////////////////////////////////////////////////////////////

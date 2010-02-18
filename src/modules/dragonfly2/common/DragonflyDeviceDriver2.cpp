@@ -40,26 +40,13 @@ DragonflyDeviceDriver2::~DragonflyDeviceDriver2()
 	}
 }
 
-bool DragonflyDeviceDriver2::open(const Dragonfly2OpenParameters &params)
+bool DragonflyDeviceDriver2::open(yarp::os::Searchable& config)
 {
-	if (!RES(system_resources)->Create(params._unit_number,params._size_x,params._size_y,params._DR2,params._video_type))
+	if (!RES(system_resources)->Create(config))
 	{
-		fprintf(stderr,"DragonflyDeviceDriver2: can't open camera %d\n",params._unit_number);
+		fprintf(stderr,"DragonflyDeviceDriver2: can't open camera\n");
 		return false;
 	}
-
-	// Setup Camera Parameters, Magic Numbers :-)
-	
-	setBrightness(params._brightness);
-    setExposure(params._exposure);
-    setSharpness(params._sharpness);
-    setWhiteBalance(params._whiteB,params._whiteR);
-    setHue(params._hue);
-    setSaturation(params._saturation);
-    setGamma(params._gamma);
-    setShutter(params._shutter);
-    setGain(params._gain);
-    setIris(params._iris);
 	
     return true;
 }

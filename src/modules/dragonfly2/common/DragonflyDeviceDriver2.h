@@ -33,70 +33,6 @@ namespace yarp {
 */
 
 /**
-* Structure for defining the open() parameters of the camera.
-*/
-class yarp::dev::Dragonfly2OpenParameters
-{
-public:
-    // Parameters
-    unsigned int _unit_number;
-    unsigned int _port_number;
-    unsigned int _size_x;
-    unsigned int _size_y;
-    unsigned int _video_type;
-
-    double _brightness;
-    double _exposure;
-    double _sharpness;
-    double _whiteB,_whiteR;
-    double _hue;
-    double _saturation;
-    double _gamma;
-    double _shutter;
-    double _gain;
-    double _iris;
-
-    bool _DR2; // Dragonfly2 model
-
-    bool _fleacr;  //FLEA color reconstruction flag
-
-    /**
-    * Constructor. Add here the parameters for the open().
-    */
-    Dragonfly2OpenParameters()
-    {
-        // parameters initialization
-        _port_number = 0;
-        _unit_number = 0;
-        _size_x = 0;
-        _size_y = 0;
-        _video_type = 0;
-
-        //uninitialized - inherit registry stored values
-        _brightness=-1.0;
-        _exposure=-1.0;
-        _sharpness=-1.0;
-        _whiteB=_whiteR=-1.0;
-        _hue=-1.0;
-        _saturation=-1.0;	    
-        _gamma=-1.0;	    
-        _shutter=-1.0;
-        _gain=-1.0;
-        _iris=-1.0;
-
-        _DR2 = false;
-
-        // FLEA cameras are compatible with DRAGONFLY's but ...
-        // the color reconstruction method is different 
-        // (GBRG instead of RGGB)
-        // The default is to use Dragonsfly's method
-        _fleacr = false;
-
-    }
-
-};
-
-/**
 *
 @ingroup icub_hardware_modules
 \defgroup icub_dragonfly2 dragonfly2
@@ -212,84 +148,11 @@ public:
     virtual ~DragonflyDeviceDriver2();
 
     /**
-    * Initialize the device driver implementation.
-    * @param par parameters for the device driver implementation
-    * @return returns true on success, false on failure.
-    */
-    bool open(const Dragonfly2OpenParameters& par);
-
-    /**
     * Open the device driver.
     * @param config configuration for the device driver
     * @return returns true on success, false on failure.
     */
-    virtual bool open(yarp::os::Searchable& config)
-    {
-        Dragonfly2OpenParameters params;
-        yarp::os::Value *value;
-        if (config.check("port_number",value)) {
-            params._port_number = value->asInt();
-        }		
-        if (config.check("unit_number",value)||config.check("d",value)) {
-            params._unit_number = value->asInt();
-        }
-        if (config.check("size_x",value)||config.check("width",value)){
-            params._size_x  = value->asInt();
-        }
-        if (config.check("size_y",value)||config.check("height",value)){
-            params._size_y  = value->asInt();
-        }
-
-        params._video_type=0;
-        if (config.check("video_type",value))
-        {
-            params._video_type = value->asInt();
-        }
-
-        //params._offset_y = config.find("offset_y").asInt();
-        //params._offset_x = config.find("offset_x").asInt();
-        //params._alfa = (float)config.find("alfa").asInt();
-
-        if (config.check("brightness", value)){
-            params._brightness=value->asDouble();
-        }
-        if (config.check("exposure", value)){
-            params._exposure=value->asDouble();
-        }
-        if (config.check("sharpness", value)){
-            params._sharpness=value->asDouble();
-        }
-        yarp::os::Bottle& white_balance = config.findGroup("white_balance");
-        if (!white_balance.isNull()) {
-            params._whiteR = white_balance.get(1).asDouble();
-            params._whiteB = white_balance.get(2).asDouble();
-        }
-        if (config.check("hue", value)){
-            params._hue=value->asDouble();
-        }
-        if (config.check("saturation", value)){
-            params._saturation=value->asDouble();
-        }
-        if (config.check("gamma", value)){
-            params._gamma=value->asDouble();
-        }
-        if (config.check("shutter", value)){
-            params._shutter=value->asDouble();
-        }
-        if (config.check("gain", value)){
-            params._gain=value->asDouble();
-        }
-        if (config.check("iris", value)){
-            params._iris=value->asDouble();
-        }       
-
-        params._DR2 = config.check("DR2","If present indicates Dragonfly2 camera model");
-
-        params._fleacr = config.check("flea", "If present indicates to use Flea color reconstruction ");
-
-
-        return open(params);
-    }
+    virtual bool open(yarp::os::Searchable& config);
 
     /**
     * Closes the device driver.
