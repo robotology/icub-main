@@ -241,8 +241,8 @@ void Controller::run()
     }
 
     // control loop
-    genTrajNeck->compute(neckTime,qdNeck,fbNeck,INTARGET_TOL,dt);
-    genTrajEyes->compute(eyesTime,qdEyes,fbEyes,INTARGET_TOL,dt);
+    genTrajNeck->compute(neckTime,qdNeck,fbNeck,INTARGET_TOL);
+    genTrajEyes->compute(eyesTime,qdEyes,fbEyes,INTARGET_TOL);
 
     vNeck=genTrajNeck->get_v();
     vEyes=genTrajEyes->get_v()-commData->get_compv();
