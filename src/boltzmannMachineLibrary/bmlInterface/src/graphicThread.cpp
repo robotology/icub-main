@@ -1,6 +1,11 @@
 #include <iCub/graphicThread.h>
 #include <iCub/BMLInterface.h>
 
+#include <ace/OS.h>
+#include <iostream>
+using namespace std;
+
+
 
 #define BLOB_MAXSIZE 4096
 #define BLOB_MINSIZE 600
@@ -53,10 +58,28 @@ static guint timeout_ID;
 static BMLInterface *wModule;
 
 
-
-
-
 #define _inputImg (*(ptr_inputImg))
+
+#define _imgRecv (*(ptr_imgRecv))
+static YARPImgRecv *ptr_imgRecvLayer0;
+static YARPImgRecv *ptr_imgRecvLayer1;
+static YARPImgRecv *ptr_imgRecvLayer2;
+static YARPImgRecv *ptr_imgRecvLayer3;
+static YARPImgRecv *ptr_imgRecvLayer4;
+static YARPImgRecv *ptr_imgRecvLayer5;
+static YARPImgRecv *ptr_imgRecvLayer6;
+static YARPImgRecv *ptr_imgRecvLayer7;
+static YARPImgRecv *ptr_imgRecvLayer8;
+#define _imgRecvLayer0 (*(ptr_imgRecvLayer0))
+#define _imgRecvLayer1 (*(ptr_imgRecvLayer1))
+#define _imgRecvLayer2 (*(ptr_imgRecvLayer2))
+#define _imgRecvLayer3 (*(ptr_imgRecvLayer3))
+#define _imgRecvLayer4 (*(ptr_imgRecvLayer4))
+#define _imgRecvLayer5 (*(ptr_imgRecvLayer5))
+#define _imgRecvLayer6 (*(ptr_imgRecvLayer6))
+#define _imgRecvLayer7 (*(ptr_imgRecvLayer7))
+#define _imgRecvLayer8 (*(ptr_imgRecvLayer8))
+
 
 static yarp::sig::ImageOf<yarp::sig::PixelRgb> *ptr_inputImgLayer0;
 static yarp::sig::ImageOf<yarp::sig::PixelRgb> *ptr_inputImgLayer1;
@@ -81,6 +104,8 @@ static yarp::sig::ImageOf<yarp::sig::PixelRgb> *ptr_inputImgLayer8;
 #define _middleImg (*(ptr_middleImg))
 #define _tagged (*(ptr_tagged))
 #define _semaphore (*(ptr_semaphore))
+
+#define THREADRATE 30
 
 /**
 * default constructor
@@ -110,12 +135,12 @@ graphicThread::graphicThread():RateThread(THREADRATE){
 	//outContrastLP->resize(320,240);
 	//outMeanColourLP=new ImageOf<PixelBgr>;
 	//outMeanColourLP->resize(320,240);
-	wModule=this;
+	
 
 	//max_boxes = new YARPBox[3];
 	//initializing the image plotted out int the drawing area
-	image_out=new ImageOf<PixelRgb>;
-	image_out->resize(320,240);
+	/*image_out=new ImageOf<PixelRgb>;
+	image_out->resize(320,240);*/
 	_outputImage3=new ImageOf<PixelRgb>;
 	_outputImage3->resize(320,240);
 	_outputImage=new ImageOf<PixelMono>;
@@ -147,13 +172,13 @@ graphicThread::graphicThread():RateThread(THREADRATE){
 	_inputImgRGS->resize(320,240);
 	_inputImgGRS->resize(320,240);
 	_inputImgBYS->resize(320,240);*/
-	blobFov=new ImageOf<PixelMono>;
-	blobFov->resize(320,240);
+	/*blobFov=new ImageOf<PixelMono>;
+	blobFov->resize(320,240);*/
 
 	this->colDim=10;
 	this->rowDim=10;
 
-	inputImageReady_flag=false;
+	//inputImageReady_flag=false;
 }
 
 /**
@@ -165,38 +190,15 @@ graphicThread::~graphicThread(){
 
 
 
-/**
-*	initialization of the thread 
-*/
-bool graphicThread::threadInit(){
 
-
-    // create a new window
-	this->createObjects();
-	this->setUp();
-    mainWindow = this->createMainWindow();
-
-    	// Non Modal Dialogs
-#if GTK_CHECK_VERSION(2,6,0)
-	loadDialog= createLoadDialog();
-	saveSingleDialog = createSaveSingleDialog();
-	saveSetDialog = createSaveSetDialog();
-#else
-    printf("Functionality omitted for older GTK version\n");
-#endif
-
-    //bool ret = _imgRecv.Connect((char*)imageProcessModule->getName("/in").c_str(),"default");
-    
-    return true;
-}
 
 /**
 * active loop of the thread
 */
 void graphicThread::run(){
      // Shows all widgets in main Window
-    gtk_widget_show_all (mainWindow);
-	gtk_window_move(GTK_WINDOW(mainWindow), 10,10);
+    //gtk_widget_show_all (mainWindow);
+	//gtk_window_move(GTK_WINDOW(mainWindow), 10,10);
 	// All GTK applications must have a gtk_main(). Control ends here
 	// and waits for an event to occur (like a key press or
 	// mouse event).
@@ -206,7 +208,7 @@ void graphicThread::run(){
 	gtk_widget_destroy(mainWindow);
     this->close();
 	yarp::os::Network::fini();
-
+    
     ACE_OS::exit(0);
 }
 /**
@@ -217,7 +219,193 @@ void graphicThread::threadRelease(){
 }
 
 void graphicThread::close(){
+    closePorts();
+}
+
+void graphicThread::setModule(void *){
+
+}
+
+bool graphicThread::openPorts(){
     
+	bool ret = false;
+	//int res = 0;
+	// Registering Port(s)
+    //reduce verbosity --paulfitz
+	printf("Registering port %s on network %s...\n", "/rea/BMLInterface/in","default");
+	ret = _imgRecv.Connect("/rea/BMLInterface/in","default");
+	if (ret == true)
+        {
+            //reduce verbosity --paulfitz
+            printf("Port registration succeed!\n");
+        }
+	else
+        {
+            printf("ERROR: Port registration failed.\nQuitting, sorry.\n");
+            return false;
+        }
+	//--------
+	ret = _imgRecvLayer0.Connect("/rea/BMLInterface/inLayer0","default");
+	if (ret == true)
+        {
+            //reduce verbosity --paulfitz
+            printf("Port registration succeed!\n");
+        }
+	else
+        {
+            printf("ERROR: Port registration failed.\nQuitting, sorry.\n");
+            return false;
+        }
+	ret = _imgRecvLayer1.Connect("/rea/BMLInterface/inLayer1","default");
+	if (ret == true)
+        {
+            //reduce verbosity --paulfitz
+            printf("Port registration succeed!\n");
+        }
+	else
+        {
+            printf("ERROR: Port registration failed.\nQuitting, sorry.\n");
+            return false;
+        }
+	ret = _imgRecvLayer2.Connect("/rea/BMLInterface/inLayer2","default");
+	if (ret == true)
+        {
+            //reduce verbosity --paulfitz
+            printf("Port registration succeed!\n");
+        }
+	else
+        {
+            printf("ERROR: Port registration failed.\nQuitting, sorry.\n");
+            return false;
+        }
+	//--------
+	ret = _imgRecvLayer3.Connect("/rea/BMLInterface/inLayer3","default");
+	if (ret == true)
+        {
+            //reduce verbosity --paulfitz
+            printf("Port registration succeed!\n");
+        }
+	else
+        {
+            printf("ERROR: Port registration failed.\nQuitting, sorry.\n");
+            return false;
+        }
+	ret = _imgRecvLayer4.Connect("/rea/BMLInterface/inLayer4","default");
+	if (ret == true)
+        {
+            //reduce verbosity --paulfitz
+            printf("Port registration succeed!\n");
+        }
+	else
+        {
+            printf("ERROR: Port registration failed.\nQuitting, sorry.\n");
+            return false;
+        }
+	ret = _imgRecvLayer5.Connect("/rea/BMLInterface/inLayer5","default");
+	if (ret == true)
+        {
+            //reduce verbosity --paulfitz
+            printf("Port registration succeed!\n");
+        }
+	else
+        {
+            printf("ERROR: Port registration failed.\nQuitting, sorry.\n");
+            return false;
+        }
+	ret = _imgRecvLayer6.Connect("/rea/BMLInterface/inLayer6","default");
+	if (ret == true)
+        {
+            //reduce verbosity --paulfitz
+            printf("Port registration succeed!\n");
+        }
+	else
+        {
+            printf("ERROR: Port registration failed.\nQuitting, sorry.\n");
+            return false;
+        }
+	ret = _imgRecvLayer7.Connect("/rea/BMLInterface/inLayer7","default");
+	if (ret == true)
+        {
+            //reduce verbosity --paulfitz
+            printf("Port registration succeed!\n");
+        }
+	else
+        {
+            printf("ERROR: Port registration failed.\nQuitting, sorry.\n");
+            return false;
+        }
+	ret = _imgRecvLayer8.Connect("/rea/BMLInterface/inLayer8","default");
+	if (ret == true)
+        {
+            //reduce verbosity --paulfitz
+            printf("Port registration succeed!\n");
+        }
+	else
+        {
+            printf("ERROR: Port registration failed.\nQuitting, sorry.\n");
+            return false;
+        }
+	//-------------
+	if (true)
+        {		
+            _pOutPort = new yarp::os::BufferedPort<yarp::os::Bottle>;
+            printf("Registering port %s on network %s...\n", "/rea/BMLInterface/out","dafult");
+            bool ok = _pOutPort->open("/rea/BMLInterface/out");
+            if  (ok)
+                printf("Port registration succeed!\n");
+            else 
+                {
+                    printf("ERROR: Port registration failed.\nQuitting, sorry.\n");
+                    return false;
+                }
+			_pOutPort2 = new yarp::os::BufferedPort<ImageOf<PixelRgb> >;
+            printf("Registering port %s on network %s...\n", "/rea/BMLInterface/out","dafult");
+            ok = _pOutPort2->open("/rea/BMLInterface/outBlobs");
+            if  (ok)
+                printf("Port registration succeed!\n");
+            else 
+                {
+                    printf("ERROR: Port registration failed.\nQuitting, sorry.\n");
+                    return false;
+                }
+
+        }
+    
+	return true;
+    
+}
+
+bool graphicThread::closePorts(){
+    
+	bool ret = false;
+	//int res = 0;
+	// Registering Port(s)
+    //reduce verbosity --paulfitz
+	printf("Closing port %s on network %s...\n", "/rea/BMLInterface/in","default");
+	_imgRecv.Disconnect();//("/rea/BMLInterface/in","default");
+	//--------
+	ret = _imgRecvLayer0.Disconnect();//("/rea/BMLInterface/inLayer0","default");
+	ret = _imgRecvLayer1.Disconnect();//("/rea/BMLInterface/inLayer1","default");
+	ret = _imgRecvLayer2.Disconnect();//("/rea/BMLInterface/inLayer2","default");
+	//--------
+	ret = _imgRecvLayer3.Disconnect();//("/rea/BMLInterface/inLayer3","default");
+	ret = _imgRecvLayer4.Disconnect();//("/rea/BMLInterface/inLayer4","default");
+	ret = _imgRecvLayer5.Disconnect();//("/rea/BMLInterface/inLayer5","default");
+	ret = _imgRecvLayer6.Disconnect();//("/rea/BMLInterface/inLayer6","default");
+	ret = _imgRecvLayer7.Disconnect();//("/rea/BMLInterface/inLayer7","default");
+	ret = _imgRecvLayer8.Disconnect();//("/rea/BMLInterface/inLayer8","default");
+	//-------------
+	if (true)
+        {		
+            //_pOutPort = new yarp::os::BufferedPort<yarp::os::Bottle>;
+            printf("Closing port %s on network %s...\n", "/rea/BMLInterface/out","dafult");
+            _pOutPort->close();//open("/rea/BMLInterface/out");
+			//_pOutPort2 = new yarp::os::BufferedPort<ImageOf<PixelRgb> >;
+            printf("Closing port %s on network %s...\n", "/rea/BMLInterface/out","dafult");
+            _pOutPort2->close();//open("/rea/BMLInterface/outBlobs");
+        }
+        
+	return true;
 }
 
 
@@ -326,7 +514,7 @@ bool getLayers(){
 	//printf("GetImage: out of the semaphore \n");
 
     
-
+    bool ret=true;
 	return ret;
 }
 
@@ -353,6 +541,7 @@ bool getOpponencies(){
 	wModule->ptr_inputBY=&_inputImgBY;
 	_semaphore.post();
 	//printf("GetImage: out of the semaphore \n");*/
+    ret=true;
 	return ret;
 }
 
@@ -367,7 +556,7 @@ static void callback( GtkWidget *widget,gpointer   data ){
 	
 	if(!strcmp((char *)data,"Execute")){
 		printf("Execute");
-		string _command;
+        string _command;
 		if(wModule->runFreely_flag)
 			_command.assign("ExecuteFreely");
 		else if(wModule->runClamped_flag)
@@ -378,7 +567,7 @@ static void callback( GtkWidget *widget,gpointer   data ){
 	}
 	else if(!strcmp((char *)data,"Learn")){
 		printf("Learn");
-		string _command("Learn");
+        string _command("Learn");
 		wModule->command->assign(_command);
 	}
 	else if(!strcmp((char *)data,"outHeadBehaviour")){
@@ -414,7 +603,7 @@ static void callback( GtkWidget *widget,gpointer   data ){
 	else if(!strcmp((char *)data,"AddLayer")){
 		printf("AddLayer request \n");
 		string _command("AddLayer");
-		Bottle tmp;
+        yarp::os::Bottle tmp;
 		tmp.addString("row");
 		tmp.addInt(wModule->rowDim);
 		wModule->bOptions.addList()=tmp;
@@ -589,7 +778,7 @@ static gint expose_CB (GtkWidget *widget, GdkEventExpose *event, gpointer data)
 					cvCopyImage(wModule->ptr_inputLayer8->getIplImage(),_outputImage3->getIplImage());
 					conversion=false;
 				}*/
-				else if(false){
+				if(false){
 					//ippiCopy_8u_C3R(wModule->salience->colorVQ_img->getPixelAddress(0,0),320*3,_outputImage3->getPixelAddress(0,0),320*3,srcsize);
 					conversion=false;
 				}
@@ -1091,12 +1280,13 @@ static void cb_draw_value( GtkToggleButton *button )
 }
 
 bool getImage(){
+    /*
 	bool ret = false;
 	ret = _imgRecv.Update();
 
 	if (ret == false){
 		return false;
-	}
+	}*/
 
 	/*_semaphore.wait();
 	ret = _imgRecv.GetLastImage(&_inputImg);
@@ -1104,7 +1294,7 @@ bool getImage(){
 	_semaphore.post();*/
 	
 	//printf("GetImage: out of the semaphore \n");
-	return ret;
+	return true;
 }
 
 void cleanExit(){
@@ -1206,7 +1396,7 @@ static gint saveSingleClicked_CB(GtkWidget *widget, gpointer data)
 }
 
 static gint timeout_CB (gpointer data){
-	gtk_widget_queue_draw (da);
+	/*gtk_widget_queue_draw (da);
 	if (getImage()){
 			wModule->inputImageReady_flag=true;
             //             int imageWidth, imageHeight, pixbufWidth, pixbufHeight;
@@ -1227,7 +1417,7 @@ static gint timeout_CB (gpointer data){
             //                saveCurrentFrame();
     }
 
-	wModule->outPorts();
+	wModule->outPorts();*/
 	return TRUE;
 }
 
@@ -2672,4 +2862,37 @@ GtkWidget* graphicThread::createMainWindow(void)
 	mainWindow=window;
 
 	return window;
+}
+
+
+/**
+*	initialization of the thread 
+*/
+bool graphicThread::threadInit(){
+
+
+    // create a new window
+	this->createObjects();
+	this->setUp();
+    mainWindow = this->createMainWindow();
+    // Shows all widgets in main Window
+    gtk_widget_show_all (mainWindow);
+    gtk_window_move(GTK_WINDOW(mainWindow), 10,10);
+
+    	// Non Modal Dialogs
+/*#if GTK_CHECK_VERSION(2,6,0)
+	loadDialog= createLoadDialog();
+	saveSingleDialog = createSaveSingleDialog();
+	saveSetDialog = createSaveSetDialog();
+#else
+    printf("Functionality omitted for older GTK version\n");
+#endif*/
+
+    //bool ret = _imgRecv.Connect((char*)imageProcessModule->getName("/in").c_str(),"default");
+    
+    return true;
+}
+
+void graphicThread::setImageProcessModule(void *module){
+    wModule=(BMLInterface*) module;
 }

@@ -2,7 +2,7 @@
 
 #include <iCub/BMLInterface.h>
 
-#include <ace/config.h>
+
 
 //YARP include
 #include <yarp/os/all.h>
@@ -20,36 +20,25 @@ using namespace yarp::os;
 using namespace yarp::sig;
 using namespace yarp::sig::draw;
 
-#define _imgRecv (*(ptr_imgRecv))
-static YARPImgRecv *ptr_imgRecvLayer0;
-static YARPImgRecv *ptr_imgRecvLayer1;
-static YARPImgRecv *ptr_imgRecvLayer2;
-static YARPImgRecv *ptr_imgRecvLayer3;
-static YARPImgRecv *ptr_imgRecvLayer4;
-static YARPImgRecv *ptr_imgRecvLayer5;
-static YARPImgRecv *ptr_imgRecvLayer6;
-static YARPImgRecv *ptr_imgRecvLayer7;
-static YARPImgRecv *ptr_imgRecvLayer8;
-#define _imgRecvLayer0 (*(ptr_imgRecvLayer0))
-#define _imgRecvLayer1 (*(ptr_imgRecvLayer1))
-#define _imgRecvLayer2 (*(ptr_imgRecvLayer2))
-#define _imgRecvLayer3 (*(ptr_imgRecvLayer3))
-#define _imgRecvLayer4 (*(ptr_imgRecvLayer4))
-#define _imgRecvLayer5 (*(ptr_imgRecvLayer5))
-#define _imgRecvLayer6 (*(ptr_imgRecvLayer6))
-#define _imgRecvLayer7 (*(ptr_imgRecvLayer7))
-#define _imgRecvLayer8 (*(ptr_imgRecvLayer8))
+
+#include <ace/config.h>
 
 
 
 
 BMLInterface::BMLInterface(){
 	this->command=new string("");
+    this->image_out=new ImageOf<PixelRgb>;
+    image_out->resize(320,240);
 	//---
 	/*meanColour_flag=true;
 	contrastLP_flag=false;
 	blobCataloged_flag=true;*/
 	
+}
+
+BMLInterface::~BMLInterface(){
+    delete image_out;
 }
 
 
@@ -63,9 +52,11 @@ bool BMLInterface::interruptModule() {
 }
 
 bool BMLInterface::close() {
-		port_in.close();
-		port_out.close();
 		closePorts();
+        if(gui!=0){
+            gui->close();
+            //delete gui;
+        }
 		return true;
 	}
 
@@ -110,9 +101,6 @@ bool BMLInterface::outPorts(){
 	//ippiCopy_8u_P3C3R(im_tmp,psb,image_out->getPixelAddress(0,0),320*3,srcsize);
 	//this->_pOutPort2->prepare()=*(this->image_out);
 	this->_pOutPort2->prepare()=*(this->image_out);
-	//this->_pOutPort2->prepare()=*(this->processor2->portImage);
-	//this->_pOutPort3->prepare()=*(this->processor3->portImage);
-	//printf("After prepares \n");
 	this->_pOutPort2->write();
 	//this->_pOutPort2->write();
 	//this->_pOutPort3->write();
@@ -141,184 +129,16 @@ bool BMLInterface::outPorts(){
 }*/
 
 bool BMLInterface::openPorts(){
-	bool ret = false;
-	//int res = 0;
-	// Registering Port(s)
-    //reduce verbosity --paulfitz
-	printf("Registering port %s on network %s...\n", "/rea/BMLInterface/in","default");
-	ret = _imgRecv.Connect("/rea/BMLInterface/in","default");
-	if (ret == true)
-        {
-            //reduce verbosity --paulfitz
-            printf("Port registration succeed!\n");
-        }
-	else
-        {
-            printf("ERROR: Port registration failed.\nQuitting, sorry.\n");
-            return false;
-        }
-	//--------
-	ret = _imgRecvLayer0.Connect("/rea/BMLInterface/inLayer0","default");
-	if (ret == true)
-        {
-            //reduce verbosity --paulfitz
-            printf("Port registration succeed!\n");
-        }
-	else
-        {
-            printf("ERROR: Port registration failed.\nQuitting, sorry.\n");
-            return false;
-        }
-	ret = _imgRecvLayer1.Connect("/rea/BMLInterface/inLayer1","default");
-	if (ret == true)
-        {
-            //reduce verbosity --paulfitz
-            printf("Port registration succeed!\n");
-        }
-	else
-        {
-            printf("ERROR: Port registration failed.\nQuitting, sorry.\n");
-            return false;
-        }
-	ret = _imgRecvLayer2.Connect("/rea/BMLInterface/inLayer2","default");
-	if (ret == true)
-        {
-            //reduce verbosity --paulfitz
-            printf("Port registration succeed!\n");
-        }
-	else
-        {
-            printf("ERROR: Port registration failed.\nQuitting, sorry.\n");
-            return false;
-        }
-	//--------
-	ret = _imgRecvLayer3.Connect("/rea/BMLInterface/inLayer3","default");
-	if (ret == true)
-        {
-            //reduce verbosity --paulfitz
-            printf("Port registration succeed!\n");
-        }
-	else
-        {
-            printf("ERROR: Port registration failed.\nQuitting, sorry.\n");
-            return false;
-        }
-	ret = _imgRecvLayer4.Connect("/rea/BMLInterface/inLayer4","default");
-	if (ret == true)
-        {
-            //reduce verbosity --paulfitz
-            printf("Port registration succeed!\n");
-        }
-	else
-        {
-            printf("ERROR: Port registration failed.\nQuitting, sorry.\n");
-            return false;
-        }
-	ret = _imgRecvLayer5.Connect("/rea/BMLInterface/inLayer5","default");
-	if (ret == true)
-        {
-            //reduce verbosity --paulfitz
-            printf("Port registration succeed!\n");
-        }
-	else
-        {
-            printf("ERROR: Port registration failed.\nQuitting, sorry.\n");
-            return false;
-        }
-	ret = _imgRecvLayer6.Connect("/rea/BMLInterface/inLayer6","default");
-	if (ret == true)
-        {
-            //reduce verbosity --paulfitz
-            printf("Port registration succeed!\n");
-        }
-	else
-        {
-            printf("ERROR: Port registration failed.\nQuitting, sorry.\n");
-            return false;
-        }
-	ret = _imgRecvLayer7.Connect("/rea/BMLInterface/inLayer7","default");
-	if (ret == true)
-        {
-            //reduce verbosity --paulfitz
-            printf("Port registration succeed!\n");
-        }
-	else
-        {
-            printf("ERROR: Port registration failed.\nQuitting, sorry.\n");
-            return false;
-        }
-	ret = _imgRecvLayer8.Connect("/rea/BMLInterface/inLayer8","default");
-	if (ret == true)
-        {
-            //reduce verbosity --paulfitz
-            printf("Port registration succeed!\n");
-        }
-	else
-        {
-            printf("ERROR: Port registration failed.\nQuitting, sorry.\n");
-            return false;
-        }
-	//-------------
-	if (true)
-        {		
-            _pOutPort = new yarp::os::BufferedPort<yarp::os::Bottle>;
-            printf("Registering port %s on network %s...\n", "/rea/BMLInterface/out","dafult");
-            bool ok = _pOutPort->open("/rea/BMLInterface/out");
-            if  (ok)
-                printf("Port registration succeed!\n");
-            else 
-                {
-                    printf("ERROR: Port registration failed.\nQuitting, sorry.\n");
-                    return false;
-                }
-			_pOutPort2 = new yarp::os::BufferedPort<ImageOf<PixelRgb> >;
-            printf("Registering port %s on network %s...\n", "/rea/BMLInterface/out","dafult");
-            ok = _pOutPort2->open("/rea/BMLInterface/outBlobs");
-            if  (ok)
-                printf("Port registration succeed!\n");
-            else 
-                {
-                    printf("ERROR: Port registration failed.\nQuitting, sorry.\n");
-                    return false;
-                }
+    
 
-        }
-
-	return true;
+    return true;
 }
 
 bool BMLInterface::closePorts(){
-	bool ret = false;
-	//int res = 0;
-	// Registering Port(s)
-    //reduce verbosity --paulfitz
-	printf("Closing port %s on network %s...\n", "/rea/BMLInterface/in","default");
-	_imgRecv.Disconnect();//("/rea/BMLInterface/in","default");
-	//--------
-	ret = _imgRecvLayer0.Disconnect();//("/rea/BMLInterface/inLayer0","default");
-	ret = _imgRecvLayer1.Disconnect();//("/rea/BMLInterface/inLayer1","default");
-	ret = _imgRecvLayer2.Disconnect();//("/rea/BMLInterface/inLayer2","default");
-	//--------
-	ret = _imgRecvLayer3.Disconnect();//("/rea/BMLInterface/inLayer3","default");
-	ret = _imgRecvLayer4.Disconnect();//("/rea/BMLInterface/inLayer4","default");
-	ret = _imgRecvLayer5.Disconnect();//("/rea/BMLInterface/inLayer5","default");
-	ret = _imgRecvLayer6.Disconnect();//("/rea/BMLInterface/inLayer6","default");
-	ret = _imgRecvLayer7.Disconnect();//("/rea/BMLInterface/inLayer7","default");
-	ret = _imgRecvLayer8.Disconnect();//("/rea/BMLInterface/inLayer8","default");
-	//-------------
-	if (true)
-        {		
-            //_pOutPort = new yarp::os::BufferedPort<yarp::os::Bottle>;
-            printf("Closing port %s on network %s...\n", "/rea/BMLInterface/out","dafult");
-            _pOutPort->close();//open("/rea/BMLInterface/out");
-			//_pOutPort2 = new yarp::os::BufferedPort<ImageOf<PixelRgb> >;
-            printf("Closing port %s on network %s...\n", "/rea/BMLInterface/out","dafult");
-            _pOutPort2->close();//open("/rea/BMLInterface/outBlobs");
-        }
-	return true;
+    port_in.close();
+	port_out.close();	
+    return true;
 }
-
-
 
 
 
@@ -331,10 +151,13 @@ bool BMLInterface::open(Searchable& config) {
 	//ConstString portName2 = options.check("name",Value("/worker2")).asString();
 	//port_out.open(getName("out"));
 	//port_Blobs.open(getName("outBlobs"));
-    //cmdPort.open(getName("cmd")); // optional command port
-    //attach(cmdPort); // cmdPort will work just like terminal
+    cmdPort.open(getName("cmd")); // optional command port
+    attach(cmdPort); // cmdPort will work just like terminal
+    gui=new graphicThread();
+    gui->setImageProcessModule(this);
+    gui->start();
 
-	/
+	
 
 	return true;	
 }

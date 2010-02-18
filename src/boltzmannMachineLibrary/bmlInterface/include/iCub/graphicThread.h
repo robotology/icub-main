@@ -2,17 +2,16 @@
 #ifndef _GRAPHICTHREAD_H_
 #define _GRAPHICTHREAD_H_
 
+
+
 //=============================================================================
 // GTK Includes 
 //=============================================================================
 #include <gtk/gtk.h>
 
 //within Project Include
-
 #include <iCub/YARPImgRecv.h>
 #include <iCub/YarpImage2Pixbuf.h>
-
-
 
 //YARP include
 #include <yarp/os/all.h>
@@ -37,6 +36,15 @@ private:
 	*/
 	double stepAdj;
 
+    /**
+	* Output Port for commands 
+	*/
+	yarp::os::BufferedPort<yarp::os::Bottle> *_pOutPort;
+	/**
+	* Output Port for commands 
+	*/
+	yarp::os::BufferedPort<ImageOf<PixelRgb> > *_pOutPort2;
+
 public:
     /**
     * default constructor
@@ -58,15 +66,19 @@ public:
     *	releases the thread
     */
     void threadRelease();
-
     /**
     * function that safely close this thread
     */
     void close();
-    /** 
-	* istantiate the port and open them
+    /**
+	* open all the ports and all the YARP image receivers 
+	* on the dedicated ports
 	*/
 	bool openPorts();
+	/**
+	* close all the ports and all the YARP image receivers 
+	*/
+	bool closePorts();
 	/**
 	* creates all the objects in the window
 	*/
@@ -92,8 +104,10 @@ public:
 	* creates the menu bar
 	*/
 	GtkWidget* createMenubar(void); //
-	
-    
+	/**
+    * function that sets the Interface reference which called this thread
+    */
+    void setModule(void *);
     /**
 	* function that set the dimension of the layer (rows)
 	*/
@@ -150,10 +164,7 @@ public:
 	* flag that indicates the control box inputImage is active
 	*/
 	bool inputImage_flag;
-	/**
-	* flag that indicates the control box inputImage is active
-	*/
-	bool inputImage_flag;
+	
 	/**
 	* flag that indicates the control box Layer0 is active
 	*/

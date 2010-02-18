@@ -18,11 +18,14 @@
 //=============================================================================
 #include <gtk/gtk.h>
 
+//======================
+// within project includes
+//======================
 #include <iCub/YarpImage2Pixbuf.h>
 #include <iCub/YARPImgRecv.h>
 #include <iCub/YARPIntegralImage.h>
-
 #include <iCub/MachineBoltzmann.h>
+#include <iCub/graphicThread.h>
 
 //#include <ipp.h>
 
@@ -89,12 +92,20 @@ private:
 	* options of the connection
 	*/
 	Property options;	//
+    /**
+    * graphic unit interface composed by a window with drawing area and buttons
+    */
+    graphicThread* gui;
 	
 public:
 	/**
 	* constructor of the class
 	*/
 	BMLInterface();
+    /**
+	* destructor of the class
+	*/
+	~BMLInterface();
 	/**
 	* open the port
 	*/
