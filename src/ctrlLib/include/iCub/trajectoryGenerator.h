@@ -61,7 +61,7 @@ protected:
 
     int state;
 
-    virtual double calcTau(const double T,  const double dt);
+    virtual double calcTau(const double T, const double dt);
     virtual void   calcCoeff(const double T, const yarp::sig::Vector &xd, const yarp::sig::Vector &fb);
 
 public:
