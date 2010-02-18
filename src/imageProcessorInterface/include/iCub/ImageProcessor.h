@@ -2,7 +2,13 @@
 #ifndef _IMAGEPROCESSOR_H_
 #define _IMAGEPROCESSOR_H_
 
-#include <ace/config.h>
+
+
+//utils includes
+//#include <ace/config.h>
+#include <ace/os.h>
+#include <iCub/canny.h>
+#include <iCub/convert_bitdepth.h>
 
 #include <yarp/os/all.h>
 #include <yarp/sig/all.h>
@@ -11,9 +17,7 @@
 #include <cvaux.h>
 #include <highgui.h>
 
-//utils includes
-#include <iCub/canny.h>
-#include <iCub/convert_bitdepth.h>
+
 
 #include <ipp.h>
 #include <ipps.h>
