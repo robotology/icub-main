@@ -13,13 +13,15 @@
 #include <iCub/graphicThread.h>
 
 //openCV include
-#include <cv.h>
-#include <cvaux.h>
-#include <highgui.h>
+//#include <cv.h>
+//#include <cvaux.h>
+//#include <highgui.h>
 
 //YARP include
 #include <yarp/os/all.h>
 #include <yarp/sig/all.h>
+
+
 
 
 
