@@ -6,7 +6,7 @@
 
 //utils includes
 //#include <ace/config.h>
-#include <ace/os.h>
+#include <ace/OS.h>
 #include <iCub/canny.h>
 #include <iCub/convert_bitdepth.h>
 
