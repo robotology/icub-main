@@ -896,15 +896,20 @@ void ServerCartesianController::run()
     {
         // begin of critical code
         mutex->wait();
-    
-        // get the current target pose
-        if (getNewTarget())
-            executingTraj=true; // onset of new trajectory
-    
+
         // read the feedback
         getFeedback(fb);
         ctrl->set_q(fb);
-        
+    
+        // get the current target pose
+        if (getNewTarget())
+        {    
+            if (!executingTraj)
+                ctrl->restart(fb);
+
+            executingTraj=true; // onset of new trajectory
+        }
+            
         if (executingTraj)
         {
             // limb control loop

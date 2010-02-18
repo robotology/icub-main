@@ -79,6 +79,7 @@ void iKinCtrl::set_q(const Vector &q0)
         q[i]=q0[i];
 
     q=chain.setAng(q);
+    x=chain.EndEffPose(q);
 }
 
 
@@ -1261,8 +1262,6 @@ void MultiRefMinJerkCtrl::printIter(const unsigned int verbose)
 void MultiRefMinJerkCtrl::set_q(const Vector &q0)
 {
     iKinCtrl::set_q(q0);
-    x=chain.EndEffPose(q);
-
     Int->reset(q);
 }
 
