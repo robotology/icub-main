@@ -1,6 +1,9 @@
 // -*- mode:C++; tab-width:4; c-basic-offset:4; indent-tabs-mode:nil -*-
 #include <iCub/ImageProcessModule.h>
 
+using namespace yarp::os;
+using namespace yarp::sig;
+using namespace yarp::sig::draw;
 
 // We need a macro for efficient switching.
 // Use as, for example, VOCAB('s','e','t')
@@ -10,6 +13,17 @@
 #define VOCAB2(a,b) VOCAB((a),(b),(0),(0))
 #define VOCAB1(a) VOCAB((a),(0),(0),(0))
 
+
+/**
+* generic constructor
+*/
+ImageProcessModule::ImageProcessModule(){}
+/**
+* destructor
+*/
+ImageProcessModule::~ImageProcessModule(){
+    delete gui;
+}
 
 bool ImageProcessModule::open(Searchable& config) {
     ct = 0;
@@ -58,11 +72,11 @@ bool ImageProcessModule::close() {
     port2.close();
     port_plane.close();
     cmdPort.close();
-    this->closePorts();
-    
+    this->closePorts();   
     
     //gtk_main_quit();
     gui->close();
+    
     
     //currentProcessor->~ImageProcessor();
     //delete processor1;

@@ -17,7 +17,7 @@ static GtkWidget *da;
 static GdkPixbuf *frame = NULL;
 
 // Image Receiver
-static YARPImgRecv *ptr_imgRecv;
+static YARPImgRecv *ptr_imgRecv=0;
 // Image to Display
 static yarp::sig::ImageOf<yarp::sig::PixelRgb> *ptr_inputImg=0;
 // Semaphore
@@ -59,8 +59,8 @@ bool graphicThread::threadInit(){
     this->setAdjs();
     printf("adjustment set \n");
 
-    //bool ret = _imgRecv.Connect((char*)imageProcessModule->getName("/in").c_str(),"default");
-    bool ret = _imgRecv.Connect("imageProcessorInterface/in","default");
+    bool ret = _imgRecv.Connect((char*)imageProcessModule->getName("/in").c_str(),"default");
+    //bool ret = _imgRecv.Connect("imageProcessorInterface/in","default");
     return true;
 }
 
@@ -92,7 +92,9 @@ void graphicThread::threadRelease(){
 
 void graphicThread::close(){
      printf("Closing port for visual representation");
-    _imgRecv.Disconnect();
+     /*if(ptr_imgRecv->)
+        _imgRecv.Disconnect();*/
+     
 }
 
 void graphicThread::setImageProcessModule(void* moduleReference){
@@ -131,8 +133,8 @@ void graphicThread::setUp()
     else
         _imgRecv.SetFovea(true);
     
-    /*if (openPorts() == false)
-        ACE_OS::exit(1);*/
+    if (openPorts() == false)
+        ACE_OS::exit(1);
     
     //_inputImg.resize(320,240);
 }
@@ -145,6 +147,10 @@ void graphicThread::setAdjs(){
     maxAdj=400.0;
     minAdj=0.0;
     stepAdj=0.01;
+}
+
+bool graphicThread::openPorts(){
+    return true;
 }
 
 //-------------------------------------------------

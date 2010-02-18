@@ -3,6 +3,7 @@
 
 
 
+
 // available methods for edges detection
 //#define CONVMAX
 //#define CONVFILTER

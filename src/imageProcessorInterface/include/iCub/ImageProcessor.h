@@ -8,6 +8,7 @@
 #include <cvaux.h>
 #include <highgui.h>
 
+
 #include <yarp/os/all.h>
 #include <yarp/sig/all.h>
 
@@ -34,7 +35,7 @@ class ImageProcessor
         /**
         * green 1-channel image second plane of the input image
         */
-        ImageOf<PixelMono>* green_yarp;//
+        yarp::sig::ImageOf<PixelMono>* green_yarp;//
         /**
         * red 1-channel image first plane of the input image
         */
@@ -361,6 +362,7 @@ class ImageProcessor
         * tmp IPLImage necessary for edge detection 16 bit
         */
         IplImage *cvImage8;
+
         Ipp8u* im_out;
         
         /**

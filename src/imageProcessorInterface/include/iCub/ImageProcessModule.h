@@ -2,24 +2,28 @@
 #ifndef _IMAGEPROCESSMODULE_H_
 #define _IMAGEPROCESSMODULE_H_
 
-#include <ace/config.h>
+
+
+//#include <ace/config.h>
+
+
 
 //within project includes
 #include <iCub/ImageProcessor.h>
 #include <iCub/graphicThread.h>
-
-//YARP include
-#include <yarp/os/all.h>
-#include <yarp/sig/all.h>
 
 //openCV include
 #include <cv.h>
 #include <cvaux.h>
 #include <highgui.h>
 
-using namespace yarp::os;
-using namespace yarp::sig;
-using namespace yarp::sig::draw;
+//YARP include
+#include <yarp/os/all.h>
+#include <yarp/sig/all.h>
+
+
+
+
 
 /**
 *
@@ -89,19 +93,19 @@ private:
 	/**
 	* a port for reading and writing images
 	*/
-    BufferedPort<ImageOf<PixelRgb> > port; // 
+    yarp::os::BufferedPort<ImageOf<PixelRgb> > port; // 
 	/**
 	* a port for reading and writing images
 	*/
-	BufferedPort<ImageOf<PixelRgb> > port2; //
+	yarp::os::BufferedPort<ImageOf<PixelRgb> > port2; //
 	/**
 	* port where the red plane of the input image is buffered
 	*/
-	BufferedPort<ImageOf<PixelMono> > port_plane; // 
+	yarp::os::BufferedPort<ImageOf<PixelMono> > port_plane; // 
 	/**
 	* command port of the module
 	*/
-    BufferedPort<Bottle > cmdPort;
+    yarp::os::BufferedPort<Bottle > cmdPort;
     /**
     * reference to the graphic unit interface managed by a thread
     */
@@ -113,9 +117,18 @@ private:
 	/**
 	* options of the connection
 	*/
-	Property options;	//
+    yarp::os::Property options;	//
 	
 public:
+    /**
+    * generic constructor
+    */
+    ImageProcessModule();
+    /**
+    * destructor
+    */
+    ~ImageProcessModule();
+
 	/**
 	*open the ports of the module
 	*/
@@ -135,7 +148,7 @@ public:
 	/**
 	* set the attribute options of class Property
 	*/
-	void setOptions(Property options); //
+    void setOptions(yarp::os::Property options); //
 	
 	
 	//gint timeout_CB (gpointer data);
@@ -158,39 +171,39 @@ public:
 	/**
 	* output port for the first Processor result
 	*/
-	yarp::os::BufferedPort<ImageOf<PixelRgb> > *_pOutPort; //
+    yarp::os::BufferedPort<yarp::sig::ImageOf<PixelRgb> > *_pOutPort; //
 	/**
 	* output port for the first Processor result
 	*/
-	yarp::os::BufferedPort<ImageOf<PixelRgb> > *_pOutPort2; //
+	yarp::os::BufferedPort<yarp::sig::ImageOf<PixelRgb> > *_pOutPort2; //
 	/**
 	* output port for the first Processor result
 	*/
-	yarp::os::BufferedPort<ImageOf<PixelRgb> > *_pOutPort3; //
+	yarp::os::BufferedPort<yarp::sig::ImageOf<PixelRgb> > *_pOutPort3; //
 	/**
 	* output port for R+G- Color Opponency Image
 	*/
-	yarp::os::BufferedPort<ImageOf<PixelMono> > *portRg; //
+	yarp::os::BufferedPort<yarp::sig::ImageOf<PixelMono> > *portRg; //
 	/**
 	* output port for G+R- Color Opponency Image
 	*/
-	yarp::os::BufferedPort<ImageOf<PixelMono> > *portGr; //
+	yarp::os::BufferedPort<yarp::sig::ImageOf<PixelMono> > *portGr; //
 	/**
 	* output port for B+Y- Color Opponency Image
 	*/
-	yarp::os::BufferedPort<ImageOf<PixelMono> > *portBy; //
+	yarp::os::BufferedPort<yarp::sig::ImageOf<PixelMono> > *portBy; //
 	/**
 	* output port for R+G- Color Opponency Image
 	*/
-	yarp::os::BufferedPort<ImageOf<PixelMono> > *portRedPlane; //
+	yarp::os::BufferedPort<yarp::sig::ImageOf<PixelMono> > *portRedPlane; //
 	/**
 	* output port for G+R- Color Opponency Image
 	*/
-	yarp::os::BufferedPort<ImageOf<PixelMono> > *portGreenPlane; //
+	yarp::os::BufferedPort<yarp::sig::ImageOf<PixelMono> > *portGreenPlane; //
 	/**
 	* output port for B+Y- Color Opponency Image
 	*/
-	yarp::os::BufferedPort<ImageOf<PixelMono> > *portBluePlane; //
+	yarp::os::BufferedPort<yarp::sig::ImageOf<PixelMono> > *portBluePlane; //
 	/**
 	* Output Bottle Container
 	*/

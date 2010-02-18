@@ -12,8 +12,6 @@
 #include <iCub/YARPImgRecv.h>
 #include <iCub/YarpImage2Pixbuf.h>
 
-
-
 //YARP include
 #include <yarp/os/all.h>
 #include <yarp/sig/all.h>
@@ -100,6 +98,10 @@ public:
 	* creates some objects necessary for the window
 	*/
 	void createObjects();
+    /**
+    * open  all the necessary ports
+    */
+    bool openPorts();
 };
 
 #endif //__GRAPHICTHREAD_H_
