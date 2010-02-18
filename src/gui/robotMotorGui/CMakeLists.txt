@@ -2,6 +2,18 @@ PROJECT(robotMotorGui)
 
 FIND_PACKAGE(YARP)
 FIND_PACKAGE(ICUB)
+FIND_PACKAGE(CTRLLIB REQUIRED)
+INCLUDE_DIRECTORIES(${CTRLLIB_INCLUDE_DIRS})
+
+if(USE_ICUB_MOD)
+    add_definitions(-DUSE_ICUB_MOD)
+    find_package(icubmod)
+    import_devices(${ICUB_DIR}/src/${PROJECTNAME}/drivers.h icubmod)
+    set(folder_header drivers.h)
+else(USE_ICUB_MOD)
+    set(folder_header)
+endif(USE_ICUB_MOD)
+
 
 # check if we have already found GTK
 IF(NOT GtkPlus_FOUND)
@@ -14,10 +26,17 @@ IF (GtkPlus_FOUND)
 
 	INCLUDE_DIRECTORIES(${GTKPLUS_INCLUDE_DIR})
 
+	if(USE_ICUB_MOD)
+	  add_definitions(-DUSE_ICUB_MOD)
+	  find_package(icubmod)
+	  import_devices(src/include/drivers.h icubmod)
+	  FILE(GLOB_RECURSE folder_header src/include/*.cpp)
+	else(USE_ICUB_MOD)
+	  set(folder_header src/include)
+	endif(USE_ICUB_MOD)
+
 	FILE(GLOB_RECURSE folder_source src/*.cpp)
-	FILE(GLOB_RECURSE folder_header src/include/*.h)
 	SOURCE_GROUP("Source Files" FILES ${folder_source})
-	SOURCE_GROUP("Header Files" FILES ${folder_header})
 
 	ADD_EXECUTABLE(robotMotorGui ${folder_source} ${folder_header})
 

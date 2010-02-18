@@ -1,4 +1,5 @@
 #include "partMover.h"
+#include "cartesianMover.h"
 #include "robotMotorGui.h"
 
 extern GtkWidget *buttonGoAll;

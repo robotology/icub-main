@@ -74,6 +74,34 @@
  * Calibration3      0.0	     0.0      0.0       0.0        0.0        0.0
  * \endcode
  *
+ * A set of parameters can be optionally specified in order to
+ * open a set of tabs which allow cartesian movements trough the cartesian
+ * interfaces (see the tutorial \ref icub_cartesian_interface). These cartesian
+ * interfaces can be enabled by inserting a group [cartesian] in the
+ * robotMotorGui intialization file. This group should contain the name
+ * of the robot parts which should be controlled in the cartesian space:
+ * \code
+ * [cartesian]
+ * left_arm
+ * ...
+ * right_leg
+ * \endcode
+ * Each part initialized with the cartesian interface should be properly
+ * configured by specifying the limits for the cartesian workspace.
+ * \code
+ * [left_arm_workspace]
+ * xmin xm
+ * xmax xM
+ *
+ * ymin ym
+ * ymax yM
+ *
+ * zmin zm
+ * zmax zM
+ * \endcode
+ * In order to make the cartesian tabs working you need to be sure that 
+ * that the \ref iKinCartesianSolver "Cartesian Solvers" are running and working.
+ *
  * \section portsa_sec Ports Accessed
  * For each part initalized (e.g. right_leg):
  * - /icub/right_leg/rpc:i 
@@ -134,6 +162,7 @@ GtkWidget *robotNameBox   = NULL;
 char *partsName[];
 int *ENA[];
 int NUMBER_OF_ACTIVATED_PARTS = 0;
+int NUMBER_OF_ACTIVATED_CARTESIAN = 0;
 int NUMBER_OF_AVAILABLE_PARTS = 0;
 int PART;
 
@@ -165,7 +194,7 @@ void notebook_change (GtkNotebook *nb, GtkNotebookPage *nbp,	gint current_enable
     gint i;
 
     //skip if the "all" tab has been called
-    if (current_enabled!=NUMBER_OF_ACTIVATED_PARTS)
+    if (current_enabled<NUMBER_OF_ACTIVATED_PARTS)
         {
             for (i = 0; i < NUMBER_OF_ACTIVATED_PARTS; i++)
                 {
@@ -219,8 +248,11 @@ static void myMain2(GtkButton *button,	int *position)
     int n;
 
     PolyDriver *partsdd[MAX_NUMBER_ACTIVATED];
+    PolyDriver *cartesiandd[MAX_NUMBER_ACTIVATED];
     partMover *partMoverList[MAX_NUMBER_ACTIVATED];
+    cartesianMover *cartesianMoverList[MAX_NUMBER_ACTIVATED];
     partMover *currentPartMover;
+    cartesianMover *currentCartesianMover;
 
     for (n = 0; n < NUMBER_OF_AVAILABLE_PARTS; n++)
         {
@@ -230,13 +262,14 @@ static void myMain2(GtkButton *button,	int *position)
                     main_vbox4 = gtk_vbox_new (FALSE, 0);
                     gint note4 = gtk_notebook_append_page((GtkNotebook*) nb1, main_vbox4, label);
 
-                    sprintf(&portPartName[0], "/%s/%s", robotName.c_str(), partsName[n]);
+                    String robotPartPort= "/";
+                    robotPartPort = robotPartPort + robotName.c_str() + "/" + partsName[n];
 
                     //checking eixstence of the port
                     int ind = 0;
                     sprintf(&portLocalName[0], "/%s/gui%d/%s/rpc:o", robotName.c_str(), ind, partsName[n]);
                     NameClient &nic=NameClient::getNameClient();
-                    fprintf(stderr, "Checking the existence of: %s \n", portLocalName.c_str());
+                    fprintf(stderr, "Checking the existence of: %s \n", portLocalName.c_str());                    
                     Address adr=nic.queryName(portLocalName.c_str());
 
                     //Contact c = yarp::os::Network::queryName(portLocalName.c_str());
@@ -248,10 +281,9 @@ static void myMain2(GtkButton *button,	int *position)
                             adr=nic.queryName(portLocalName.c_str());
                         }
 
-                    sprintf(&portLocalName[0], "/%s/gui%d/%s", robotName.c_str(), ind, partsName[n]);
                     options.put("local", portLocalName.c_str());	//local port names
                     options.put("device", "remote_controlboard");
-                    options.put("remote", portPartName.c_str());
+                    options.put("remote", robotPartPort.c_str());
                     options.put("carrier", "udp");
 
                     partsdd[n] = new PolyDriver(options);
@@ -261,97 +293,174 @@ static void myMain2(GtkButton *button,	int *position)
                             partMoverList[NUMBER_OF_ACTIVATED_PARTS] = currentPartMover;
                             NUMBER_OF_ACTIVATED_PARTS++;
                         }
+                    else
+                        fprintf(stderr, "Trying to exit without starting the GUI \n");
                 }
         }
 
-
     if (NUMBER_OF_ACTIVATED_PARTS > 0)
         {
-            g_signal_connect (nb1, "switch-page",G_CALLBACK(notebook_change), partMoverList);
 
-            main_vbox5 = gtk_fixed_new ();
-            label = gtk_label_new("all");
-            gint note4 = gtk_notebook_append_page((GtkNotebook*) nb1, main_vbox5, label);
+            for (n = 0; n < NUMBER_OF_AVAILABLE_PARTS; n++)
+                {
+                    if(*ENA[n] == 1)
+                        {
+
+                            if (finder->check("cartesian"))
+                                {
+                                    Bottle bCartesianParts = finder->findGroup("cartesian");
+                                    if (bCartesianParts.check(partsName[n]))
+                                        {
+                                            fprintf(stderr, "Adding cartesian tab %d\n", n);
+                                            String cartesianPartName;
+                                            cartesianPartName = partsName[n];
+                                            cartesianPartName += "_cartesian";
+                                            label = gtk_label_new(cartesianPartName.c_str());
+                                            main_vbox4 = gtk_vbox_new (FALSE, 0);
+                                            gint note4 = gtk_notebook_append_page((GtkNotebook*) nb1, main_vbox4, label);
+
+                                            String robotPartPort= "/";
+                                            robotPartPort = robotPartPort + robotName.c_str() + "/cartesianController/" + partsName[n];
+
+                                            //checking eixstence of the port
+                                            int ind = 0;
+                                            sprintf(&portLocalName[0], "/%s/gui%d/cartesian/%s/rpc:o", robotName.c_str(), ind, partsName[n]);
+                                            NameClient &nic=NameClient::getNameClient();
+                                            fprintf(stderr, "Checking the existence of: %s \n", portLocalName.c_str());                    
+                                            Address adr=nic.queryName(portLocalName.c_str());
+
+                                            //Contact c = yarp::os::Network::queryName(portLocalName.c_str());
+                                            fprintf(stderr, "ADDRESS is: %s \n", adr.toString().c_str());
+                                            while(adr.isValid())
+                                                {   
+                                                    ind++;
+                                                    sprintf(&portLocalName[0], "/%s/gui%d/%s/rpc:o", robotName.c_str(), ind, partsName[n]);
+                                                    adr=nic.queryName(portLocalName.c_str());
+                                                }
+
+                                            options.put("local", portLocalName.c_str());	//local port names
+                                            options.put("device", "cartesiancontrollerclient");
+                                            options.put("remote", robotPartPort.c_str());
+                                            
+                                            fprintf(stderr, "Trying to open the cartesian PolyDriver...\n");
+                                            cartesiandd[n] = new PolyDriver(options);
+                                            fprintf(stderr, "Checking the validity of the cartesian PolyDriver...\n");
+                                            if(cartesiandd[n]->isValid())
+                                                {
+                                                    currentCartesianMover = new cartesianMover(main_vbox4, cartesiandd[n], partsName[n], finder);
+                                                    if(!(currentCartesianMover->interfaceError)) 
+                                                        {
+                                                            cartesianMoverList[NUMBER_OF_ACTIVATED_CARTESIAN] = currentCartesianMover;
+                                                            NUMBER_OF_ACTIVATED_CARTESIAN++;
+                                                        }
+                                                    else
+                                                        fprintf(stderr, "One of the requested cartesian interfaces was not available\n");
+                                                }
+                                            else
+                                                fprintf(stderr, "Cartesian Poly Driver was not valid \n");
+                                        }        
+                                    else
+                                        fprintf(stderr, "A cartesian interface was requested but no part was associated \n");
+                                }
+                            else
+                                fprintf(stderr, "GUI was not configured for cartesian \n");
+                        }
+                }
+            
+            if (NUMBER_OF_ACTIVATED_PARTS>0)
+                {
+                    fprintf(stderr, "Activating tabs \n");
+                    g_signal_connect (nb1, "switch-page",G_CALLBACK(notebook_change), partMoverList);
+                
+                    main_vbox5 = gtk_fixed_new ();
+                    fprintf(stderr, "Created all tab box\n");
+                    label = gtk_label_new("all");
+                    fprintf(stderr, "Appending all tab \n");
+                    gint note5 = gtk_notebook_append_page((GtkNotebook*) nb1, main_vbox5, label); 
+
+                    //Frame
+                    fprintf(stderr, "Appending all frame \n");
+                    GtkWidget *frame1 = gtk_frame_new ("Global commands");
+                    gtk_widget_set_size_request 	(frame1, 250, 550);
+                    gtk_fixed_put (GTK_FIXED (main_vbox5), frame1, 10, 10);
+
+                    //Button 1 in the panel
+                    buttonGoAll = gtk_button_new_with_mnemonic ("Go ALL!");
+                    gtk_fixed_put	(GTK_FIXED(main_vbox5), buttonGoAll, 30, 50);
+                    g_signal_connect (buttonGoAll, "clicked", G_CALLBACK (go_all_click), partMoverList);
+                    gtk_widget_set_size_request(buttonGoAll, 190, 30);
+
 	
-            //Frame
-            GtkWidget *frame1 = gtk_frame_new ("Global commands");
-            gtk_widget_set_size_request 	(frame1, 250, 550);
-            gtk_fixed_put (GTK_FIXED (main_vbox5), frame1, 10, 10);
+                    //Button 2 in the panel
+                    buttonSeqAll = gtk_button_new_with_mnemonic ("Run ALL Sequence");
+                    gtk_fixed_put	(GTK_FIXED(main_vbox5), buttonSeqAll, 30, 100);
+                    g_signal_connect (buttonSeqAll, "clicked",G_CALLBACK(sequence_all_click), partMoverList);
+                    gtk_widget_set_size_request     (buttonSeqAll, 190, 30);
 
-            //Button 1 in the panel
-            buttonGoAll = gtk_button_new_with_mnemonic ("Go ALL!");
-            gtk_fixed_put	(GTK_FIXED(main_vbox5), buttonGoAll, 30, 50);
-            g_signal_connect (buttonGoAll, "clicked", G_CALLBACK (go_all_click), partMoverList);
-            gtk_widget_set_size_request(buttonGoAll, 190, 30);
+                    //Button 2time in the panel
+                    buttonSeqAllTime = gtk_button_new_with_mnemonic ("Run ALL Sequence (time)");
+                    gtk_fixed_put	(GTK_FIXED(main_vbox5), buttonSeqAllTime, 30, 150);
+                    g_signal_connect (buttonSeqAllTime, "clicked",G_CALLBACK(sequence_all_click_time), partMoverList);
+                    gtk_widget_set_size_request     (buttonSeqAllTime, 190, 30);	
+	
+                    //Button 3 in the panel
+                    buttonSeqAllSave = gtk_button_new_with_mnemonic ("Save ALL Sequence");
+                    gtk_fixed_put	(GTK_FIXED(main_vbox5), buttonSeqAllSave, 30, 200);
+                    g_signal_connect (buttonSeqAllSave, "clicked", G_CALLBACK(sequence_all_save), partMoverList);
+                    gtk_widget_set_size_request     (buttonSeqAllSave, 190, 30);	
+	
+                    //Button 4 in the panel
+                    buttonSeqAllLoad = gtk_button_new_with_mnemonic ("Load ALL Sequence");
+                    gtk_fixed_put	(GTK_FIXED(main_vbox5), buttonSeqAllLoad, 30, 250);
+                    g_signal_connect (buttonSeqAllLoad, "clicked", G_CALLBACK (sequence_all_load), partMoverList);
+                    gtk_widget_set_size_request     (buttonSeqAllLoad, 190, 30);
 
 	
-            //Button 2 in the panel
-            buttonSeqAll = gtk_button_new_with_mnemonic ("Run ALL Sequence");
-            gtk_fixed_put	(GTK_FIXED(main_vbox5), buttonSeqAll, 30, 100);
-            g_signal_connect (buttonSeqAll, "clicked",G_CALLBACK(sequence_all_click), partMoverList);
-            gtk_widget_set_size_request     (buttonSeqAll, 190, 30);
+                    //Button 5 in the panel
+                    buttonSeqAllCycle = gtk_button_new_with_mnemonic ("Cycle ALL Sequence");
+                    gtk_fixed_put	(GTK_FIXED(main_vbox5), buttonSeqAllCycle, 30, 300);
+                    g_signal_connect (buttonSeqAllCycle, "clicked", G_CALLBACK (sequence_all_cycle), partMoverList);
+                    gtk_widget_set_size_request     (buttonSeqAllCycle, 190, 30);
 
-            //Button 2time in the panel
-            buttonSeqAllTime = gtk_button_new_with_mnemonic ("Run ALL Sequence (time)");
-            gtk_fixed_put	(GTK_FIXED(main_vbox5), buttonSeqAllTime, 30, 150);
-            g_signal_connect (buttonSeqAllTime, "clicked",G_CALLBACK(sequence_all_click_time), partMoverList);
-            gtk_widget_set_size_request     (buttonSeqAllTime, 190, 30);	
+                    //Button 5time in the panel
+                    buttonSeqAllCycleTime = gtk_button_new_with_mnemonic ("Cycle ALL Sequence (time)");
+                    gtk_fixed_put	(GTK_FIXED(main_vbox5), buttonSeqAllCycleTime, 30, 350);
+                    g_signal_connect (buttonSeqAllCycleTime, "clicked", G_CALLBACK (sequence_all_cycle_time), partMoverList);
+                    gtk_widget_set_size_request     (buttonSeqAllCycleTime, 190, 30);
+
+                    //Button 6 in the panel
+                    buttonSeqAllStop = gtk_button_new_with_mnemonic ("Stop ALL Sequence");
+                    gtk_fixed_put	(GTK_FIXED(main_vbox5), buttonSeqAllStop, 30, 400);
+                    g_signal_connect (buttonSeqAllStop, "clicked", G_CALLBACK (sequence_all_stop),  partMoverList);
+                    gtk_widget_set_size_request     (buttonSeqAllStop, 190, 30);
 	
-            //Button 3 in the panel
-            buttonSeqAllSave = gtk_button_new_with_mnemonic ("Save ALL Sequence");
-            gtk_fixed_put	(GTK_FIXED(main_vbox5), buttonSeqAllSave, 30, 200);
-            g_signal_connect (buttonSeqAllSave, "clicked", G_CALLBACK(sequence_all_save), partMoverList);
-            gtk_widget_set_size_request     (buttonSeqAllSave, 190, 30);	
-	
-            //Button 4 in the panel
-            buttonSeqAllLoad = gtk_button_new_with_mnemonic ("Load ALL Sequence");
-            gtk_fixed_put	(GTK_FIXED(main_vbox5), buttonSeqAllLoad, 30, 250);
-            g_signal_connect (buttonSeqAllLoad, "clicked", G_CALLBACK (sequence_all_load), partMoverList);
-            gtk_widget_set_size_request     (buttonSeqAllLoad, 190, 30);
+                    //Button 6time in the panel
+                    //buttonSeqAllStopTime = gtk_button_new_with_mnemonic ("Stop ALL Sequence (time)");
+                    //gtk_fixed_put	(GTK_FIXED(main_vbox5), buttonSeqAllStopTime, 120, 450);
+                    //g_signal_connect (buttonSeqAllStopTime, "clicked", G_CALLBACK (sequence_all_stop_time),  partMoverList);
+                    //gtk_widget_set_size_request     (buttonSeqAllStopTime, 190, 30);
 
-	
-            //Button 5 in the panel
-            buttonSeqAllCycle = gtk_button_new_with_mnemonic ("Cycle ALL Sequence");
-            gtk_fixed_put	(GTK_FIXED(main_vbox5), buttonSeqAllCycle, 30, 300);
-            g_signal_connect (buttonSeqAllCycle, "clicked", G_CALLBACK (sequence_all_cycle), partMoverList);
-            gtk_widget_set_size_request     (buttonSeqAllCycle, 190, 30);
+                    //Button 6time in the panel
+                    buttonRunAllParts = gtk_button_new_with_mnemonic ("Run ALL Parts");
+                    gtk_fixed_put	(GTK_FIXED(main_vbox5), buttonRunAllParts, 30, 450);
+                    g_signal_connect (buttonRunAllParts, "clicked", G_CALLBACK (run_all_parts),  partMoverList);
+                    gtk_widget_set_size_request     (buttonRunAllParts, 190, 30);
 
-            //Button 5time in the panel
-            buttonSeqAllCycleTime = gtk_button_new_with_mnemonic ("Cycle ALL Sequence (time)");
-            gtk_fixed_put	(GTK_FIXED(main_vbox5), buttonSeqAllCycleTime, 30, 350);
-            g_signal_connect (buttonSeqAllCycleTime, "clicked", G_CALLBACK (sequence_all_cycle_time), partMoverList);
-            gtk_widget_set_size_request     (buttonSeqAllCycleTime, 190, 30);
+                    //Button 7 in the panel
+                    buttonHomeAllParts = gtk_button_new_with_mnemonic ("Home ALL Parts");
+                    gtk_fixed_put	(GTK_FIXED(main_vbox5), buttonHomeAllParts, 30, 500);
+                    g_signal_connect (buttonHomeAllParts, "clicked", G_CALLBACK (home_all_parts),  partMoverList);
+                    gtk_widget_set_size_request     (buttonHomeAllParts, 190, 30);
 
-            //Button 6 in the panel
-            buttonSeqAllStop = gtk_button_new_with_mnemonic ("Stop ALL Sequence");
-            gtk_fixed_put	(GTK_FIXED(main_vbox5), buttonSeqAllStop, 30, 400);
-            g_signal_connect (buttonSeqAllStop, "clicked", G_CALLBACK (sequence_all_stop),  partMoverList);
-            gtk_widget_set_size_request     (buttonSeqAllStop, 190, 30);
-	
-            //Button 6time in the panel
-            //buttonSeqAllStopTime = gtk_button_new_with_mnemonic ("Stop ALL Sequence (time)");
-            //gtk_fixed_put	(GTK_FIXED(main_vbox5), buttonSeqAllStopTime, 120, 450);
-            //g_signal_connect (buttonSeqAllStopTime, "clicked", G_CALLBACK (sequence_all_stop_time),  partMoverList);
-            //gtk_widget_set_size_request     (buttonSeqAllStopTime, 190, 30);
-
-            //Button 6time in the panel
-            buttonRunAllParts = gtk_button_new_with_mnemonic ("Run ALL Parts");
-            gtk_fixed_put	(GTK_FIXED(main_vbox5), buttonRunAllParts, 30, 450);
-            g_signal_connect (buttonRunAllParts, "clicked", G_CALLBACK (run_all_parts),  partMoverList);
-            gtk_widget_set_size_request     (buttonRunAllParts, 190, 30);
-
-            //Button 7 in the panel
-            buttonHomeAllParts = gtk_button_new_with_mnemonic ("Home ALL Parts");
-            gtk_fixed_put	(GTK_FIXED(main_vbox5), buttonHomeAllParts, 30, 500);
-            g_signal_connect (buttonHomeAllParts, "clicked", G_CALLBACK (home_all_parts),  partMoverList);
-            gtk_widget_set_size_request     (buttonHomeAllParts, 190, 30);
-
-            // finish & show
-            //	connected_status();
-            gtk_window_set_default_size (GTK_WINDOW (window), 480, 250);
-            gtk_window_set_resizable (GTK_WINDOW (window), true);
+                    // finish & show
+                    //	connected_status();
+                    fprintf(stderr, "Resizing window \n");
+                    gtk_window_set_default_size (GTK_WINDOW (window), 480, 250);
+                    gtk_window_set_resizable (GTK_WINDOW (window), true);
+                }
         }
 		
+    fprintf(stderr, "Making the window visible \n");
     if (!GTK_WIDGET_VISIBLE (window))
         gtk_widget_show_all (window);
     else
@@ -539,5 +648,8 @@ int myMain( int   argc, char *argv[] )
 
 int main(int argc, char* argv[])
 {
+#ifdef USE_ICUB_MOD
+    DriverCollection dev;
+#endif
     return myMain(argc, argv);
 }

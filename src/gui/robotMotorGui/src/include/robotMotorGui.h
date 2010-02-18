@@ -1,4 +1,8 @@
 
+#ifdef USE_ICUB_MOD
+#include "drivers.h"
+#endif
+
 #include <yarp/os/ResourceFinder.h>
 
 ///////////GTK///////////
@@ -15,6 +19,7 @@ extern GtkWidget *robotNameBox;
 extern int PART; 
 extern int NUMBER_OF_AVAILABLE_PARTS;
 extern int NUMBER_OF_ACTIVATED_PARTS;
+extern int NUMBER_OF_ACTIVATED_CARTESIAN;
 extern char *partsName[MAX_NUMBER_ACTIVATED];
 extern int        *ENA[MAX_NUMBER_ACTIVATED];
 
