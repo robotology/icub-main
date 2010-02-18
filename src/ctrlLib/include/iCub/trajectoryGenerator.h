@@ -20,11 +20,6 @@
 
 #include <iCub/pids.h>
 
-#define MINJERK_STATE_RUNNING       0
-#define MINJERK_STATE_REACHED       1
-
-#define MINJERK_OPT_DISABLED        -1
-
 
 namespace ctrl
 {
@@ -44,25 +39,16 @@ protected:
     yarp::os::Semaphore *mutex;
     unsigned int dim;
 
+    std::deque<ctrl::Integrator*> Int;
     yarp::sig::Vector x;
     yarp::sig::Vector v;
     yarp::sig::Vector a;
 
-    std::deque<yarp::sig::Vector> coeff;
-    yarp::sig::Vector vtau;
-    yarp::sig::Vector vData;
-    yarp::sig::Vector aData;
-    yarp::sig::Vector xdOld;
+    yarp::sig::Matrix A;
+    yarp::sig::Vector b;
+
     double TOld;
-    double t0;
-    double t1;
-    double t;
     double Ts;
-
-    int state;
-
-    virtual double calcTau(const double T, const double dt);
-    virtual void   calcCoeff(const double T, const yarp::sig::Vector &xd, const yarp::sig::Vector &fb);
 
 public:
     /**
@@ -77,13 +63,8 @@ public:
     * @param T the current execution time.  
     * @param xd the desired position to reach. 
     * @param fb the current position. 
-    * @param tol the tolerance for in-target checking 
-    * @param dt the delta time expired from the previous call and 
-    *           externally provided (if dt<0, internal sample time
-    *           is used).
     */
-    virtual void compute(const double T, const yarp::sig::Vector &xd, const yarp::sig::Vector &fb,
-                         const double tol, const double dt=MINJERK_OPT_DISABLED);
+    virtual void compute(const double T, const yarp::sig::Vector &xd, const yarp::sig::Vector &fb);
 
     /**
     * Returns the current reference position.
@@ -104,10 +85,10 @@ public:
     virtual yarp::sig::Vector get_a();
 
     /**
-    * Returns the internal state.
-    * @return the interanl state.
+    * Resets the generator. 
+    * @param fb the current position. 
     */
-    virtual int get_state() { return state; }
+    virtual void reset(const yarp::sig::Vector &fb);
 
     /**
     * Destructor. 

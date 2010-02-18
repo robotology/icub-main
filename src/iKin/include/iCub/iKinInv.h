@@ -889,13 +889,9 @@ protected:
     yarp::sig::Matrix Eye6;
 
     double Ts;
-    double tOld;
-    double maxDeltaTime;
     double execTime;
     double gamma;
     double guardRatio;
-
-    bool adjustSampleTime;
 
     yarp::sig::Vector qGuard;
     yarp::sig::Vector qGuardMinInt, qGuardMinExt, qGuardMinCOG;
@@ -920,11 +916,9 @@ public:
     *  IKINCTRL_POSE_ANG  => rotational part of pose controlled.
     * @param q0 is the vector of initial joint angles values. 
     * @param _Ts is the nominal controller sample time. 
-    * @param _adjustSampleTime enable/disable internal sample time 
-    *                          adjustment (true by default).
     */
-    MultiRefMinJerkCtrl(iKinChain &c, unsigned int _ctrlPose, const yarp::sig::Vector &q0,
-                        double _Ts, bool _adjustSampleTime=true);
+    MultiRefMinJerkCtrl(iKinChain &c, unsigned int _ctrlPose,
+                        const yarp::sig::Vector &q0, double _Ts);
 
     /**
     * Executes one iteration of the control algorithm 

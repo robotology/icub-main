@@ -15,8 +15,6 @@
 
 #include "utils.h"
 
-#define INTARGET_TOL    1e-3
-
 using namespace std;
 using namespace yarp;
 using namespace yarp::os;
@@ -59,7 +57,6 @@ protected:
     double neckTime;
     double eyesTime;
     double Ts;
-    double tOld;
 
     Vector qddeg,qdeg,vdeg,xd,fp;
     Vector v,vNeck,vEyes,vdegOld;

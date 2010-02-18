@@ -137,6 +137,17 @@ void Controller::suspend()
 /************************************************************************/
 void Controller::resume()
 {
+    getFeedback(fbTorso,fbHead,encTorso,encHead);
+
+    for (unsigned int i=0; i<3; i++)
+    {
+        fbNeck[i]=fbHead[i];
+        fbEyes[i]=fbHead[3+i];
+    }
+
+    genTrajNeck->reset(fbNeck);
+    genTrajEyes->reset(fbEyes);
+
     cout << endl;
     cout << "Controller has been resumed!" << endl;
     cout << endl;
@@ -186,8 +197,6 @@ bool Controller::threadInit()
 
     cout << "Starting Controller at " << period << " ms" << endl;
 
-    tOld=Time::now();
-
     return true;
 }
 
@@ -205,10 +214,6 @@ void Controller::afterStart(bool s)
 /************************************************************************/
 void Controller::run()
 {
-    double t=Time::now();
-    double dt=t-tOld;
-    tOld=t;
-
     // get data
     xd=commData->get_xd();
     qd=commData->get_qd();
@@ -241,8 +246,8 @@ void Controller::run()
     }
 
     // control loop
-    genTrajNeck->compute(neckTime,qdNeck,fbNeck,INTARGET_TOL,dt);
-    genTrajEyes->compute(eyesTime,qdEyes,fbEyes,INTARGET_TOL,dt);
+    genTrajNeck->compute(neckTime,qdNeck,fbNeck);
+    genTrajEyes->compute(eyesTime,qdEyes,fbEyes);
 
     vNeck=genTrajNeck->get_v();
     vEyes=genTrajEyes->get_v()-commData->get_compv();

@@ -1045,13 +1045,10 @@ GSLMinCtrl::~GSLMinCtrl()
 
 
 /************************************************************************/
-MultiRefMinJerkCtrl::MultiRefMinJerkCtrl(iKinChain &c, unsigned int _ctrlPose, const Vector &q0,
-                                         double _Ts,  bool _adjustSampleTime) : 
-                                         iKinCtrl(c,_ctrlPose,q0), Ts(_Ts), adjustSampleTime(_adjustSampleTime)
+MultiRefMinJerkCtrl::MultiRefMinJerkCtrl(iKinChain &c, unsigned int _ctrlPose,
+                                         const Vector &q0,  double _Ts) : 
+                                         iKinCtrl(c,_ctrlPose,q0), Ts(_Ts)
 {
-    maxDeltaTime=2.0*Ts;
-    tOld=Time::now();
-
     q_set.resize(dim,0.0);
     qdot.resize(dim,0.0);
     xdot.resize(6,0.0);
@@ -1159,15 +1156,6 @@ Vector MultiRefMinJerkCtrl::calc_e()
 /************************************************************************/
 Vector MultiRefMinJerkCtrl::iterate(Vector &xd, Vector &qd, const unsigned int verbose)
 {
-    double t=Time::now();
-    double dt=t-tOld;
-    tOld=t;
-
-    if (adjustSampleTime)
-        dt=dt<maxDeltaTime ? dt : maxDeltaTime;
-    else
-        dt=MINJERK_OPT_DISABLED;
-
     x_set=xd;
     q_set=qd;
 
@@ -1178,8 +1166,8 @@ Vector MultiRefMinJerkCtrl::iterate(Vector &xd, Vector &qd, const unsigned int v
         q_old=q;
         calc_e();
 
-        genTrajJoint->compute(execTime,q_set,q,inTargetTol,dt);
-        genTrajTask->compute(execTime,x_set,x,inTargetTol,dt);
+        genTrajJoint->compute(execTime,q_set,q);
+        genTrajTask->compute(execTime,x_set,x);
 
         qdot=genTrajJoint->get_v();
         xdot7=genTrajTask->get_v();
@@ -1220,6 +1208,9 @@ Vector MultiRefMinJerkCtrl::iterate(Vector &xd, Vector &qd, const unsigned int v
 void MultiRefMinJerkCtrl::restart(const Vector &q0)
 {
     iKinCtrl::restart(q0);
+
+    genTrajJoint->reset(q);
+    genTrajTask->reset(x);
 
     qdot=0.0;
     xdot=0.0;

@@ -120,7 +120,7 @@ void Controller::resume()
 bool Controller::threadInit()
 {
     // Instantiate controller
-    ctrl=new MultiRefMinJerkCtrl(*chain,ctrlPose,chain->getAng(),Ts,Robotable);
+    ctrl=new MultiRefMinJerkCtrl(*chain,ctrlPose,chain->getAng(),Ts);
 
     // Set the task execution time
     execTime=ctrl->set_execTime(execTime,true);
