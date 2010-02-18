@@ -52,24 +52,36 @@ void minJerkTrajGen::compute(const double T, const Vector &xd, const Vector &fb,
         double T2=T1*T1;
         double T3=T2*T1;
 
-        A(2,0)=-60.0/T3; A(2,1)=36.0/T2; A(3,1)=-9.0/T1;
+        A(2,0)=-60.0/T3; A(2,1)=-36.0/T2; A(2,2)=-9.0/T1;
         b[2]=-A(2,0);
 
         TOld=T;
     }
 
-    if (norm(xd-fb)<tol)
-        state=MINJERK_STATE_REACHED;
-    else
+//  if (norm(xd-fb)<tol)
+//      state=MINJERK_STATE_REACHED;
+//  else
     {
-        state=MINJERK_STATE_RUNNING;
+//      if (state==MINJERK_STATE_REACHED)
+//      {
+//          state=MINJERK_STATE_RUNNING;
+//
+//          for (unsigned int i=0; i<dim; i++)
+//          {
+//              Vector X(3);
+//
+//              X[0]=fb[i]; X[1]=v[i]=0.0; X[2]=a[i]=0.0;
+//
+//              Int[i]->reset(X);
+//          }
+//      }
 
         mutex->wait();
         for (unsigned int i=0; i<dim; i++)
         {
             Vector X(3);
     
-            X[0]=x[i]; X[1]=v[i]; X[2]=a[i];
+            X[0]=fb[i]; X[1]=v[i]; X[2]=a[i];
     
             X=Int[i]->integrate(A*X+xd[i]*b);
     
