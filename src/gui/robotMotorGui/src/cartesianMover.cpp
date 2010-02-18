@@ -170,7 +170,7 @@ cartesianMover::cartesianMover(GtkWidget *vbox_d, PolyDriver *partDd_d, char *pa
   bool ok;
   ok  = partDd->view(crt);
   if ((!ok) || (crt==0))
-    fprintf(stderr, "...crt was not ok...ok=%d,crt=0x%x", ok, (unsigned int) crt);
+    fprintf(stderr, "...crt was not ok...ok=%d", ok);
 
   if (!partDd->isValid()) {
     fprintf(stderr, "Cartesian device driver was not valid! \n");
@@ -196,7 +196,7 @@ cartesianMover::cartesianMover(GtkWidget *vbox_d, PolyDriver *partDd_d, char *pa
       sliderArray    = new GtkWidget* [NUMBER_OF_CARTESIAN_COORDINATES];
       currPosArray = new GtkWidget* [NUMBER_OF_CARTESIAN_COORDINATES];
 
-      fprintf(stderr, "sliderArray has address 0x%x\n", (unsigned int) sliderArray);
+      //fprintf(stderr, "sliderArray has address 0x%x\n", (unsigned int) sliderArray);
 
       GtkWidget *top_hbox 		 = NULL;
       GtkWidget *bottom_hbox		 = NULL;
