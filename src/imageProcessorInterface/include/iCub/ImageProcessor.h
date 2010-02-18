@@ -7,8 +7,6 @@
 //utils includes
 //#include <ace/config.h>
 #include <ace/OS.h>
-#include <iCub/canny.h>
-#include <iCub/convert_bitdepth.h>
 
 #include <yarp/os/all.h>
 #include <yarp/sig/all.h>
@@ -17,7 +15,8 @@
 #include <cvaux.h>
 #include <highgui.h>
 
-
+#include <iCub/canny.h>
+#include <iCub/convert_bitdepth.h>
 
 #include <ipp.h>
 #include <ipps.h>

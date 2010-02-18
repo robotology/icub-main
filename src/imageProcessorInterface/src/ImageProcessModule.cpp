@@ -1,9 +1,11 @@
 // -*- mode:C++; tab-width:4; c-basic-offset:4; indent-tabs-mode:nil -*-
 #include <iCub/ImageProcessModule.h>
+#include <iCub/graphicThread.h>
 
 using namespace yarp::os;
 using namespace yarp::sig;
 using namespace yarp::sig::draw;
+using namespace std;
 
 // We need a macro for efficient switching.
 // Use as, for example, VOCAB('s','e','t')
@@ -17,12 +19,14 @@ using namespace yarp::sig::draw;
 /**
 * generic constructor
 */
-ImageProcessModule::ImageProcessModule(){}
+ImageProcessModule::ImageProcessModule(){
+    command=new string("");
+}
 /**
 * destructor
 */
 ImageProcessModule::~ImageProcessModule(){
-    delete gui;
+    delete command;
 }
 
 bool ImageProcessModule::open(Searchable& config) {
@@ -40,17 +44,14 @@ bool ImageProcessModule::open(Searchable& config) {
     //ConstString portName2 = options.check("name",Value("/worker2")).asString();
     port2.open(getName("edges"));
     port_plane.open(getName("blue"));
-    cmdPort.open(getName("command:o")); // optional command port
-    //attach(cmdPort); // cmdPort will work just like terminal
-    //this->createMainWindow();
-    command=new std::string("");
-    printf("created the null command \n");
+    
+    cmdPort.open(getName("cmd")); // optional command port
+    attach(cmdPort); // cmdPort will work just like terminal
 
     //starting the graphical thread (GUI)
-    gui=new graphicThread();
+    this->gui=new graphicThread();
     gui->setImageProcessModule(this); //it is necessary to synchronise the static function with this class
     gui->start();
-    
 
     return true;
 }
@@ -74,7 +75,6 @@ bool ImageProcessModule::close() {
     cmdPort.close();
     this->closePorts();   
     
-    //gtk_main_quit();
     gui->close();
     
     
@@ -264,7 +264,7 @@ bool ImageProcessModule::outPorts(){
     }
     
     //command->assign("help");
-    if(strcmp(command->c_str(),"")){
+    if(strcmp(command->c_str(),"")&&(cmdPort.getOutputCount())){
         Bottle& outBot1=cmdPort.prepare();
         outBot1.clear();
         //bOptions.addString("to");

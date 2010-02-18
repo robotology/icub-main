@@ -6,7 +6,7 @@
 
 using namespace yarp::os;
 
-static GtkWidget *mainWindow = NULL;
+//static GtkWidget *mainWindow = NULL;
 
 
 int main(int argc, char *argv[]) {

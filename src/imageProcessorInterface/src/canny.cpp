@@ -97,12 +97,12 @@ void CANNY::setIppiSize(IppiSize isize_){
 }
 
 void CANNY::setThresholdL(double value){
-	this->thresholdL=value;
+	//this->thresholdL=value;
 	printf("SETTHRSHOLDL: %f",this->thresholdU);
 }
 
 void CANNY::setThresholdU(double value){
-	this->thresholdU=value;
+	//this->thresholdU=value;
 	printf("SETTHRSHOLDU: %f",this->thresholdU);
 }
   
