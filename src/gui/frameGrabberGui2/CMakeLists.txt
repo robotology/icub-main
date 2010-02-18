@@ -12,7 +12,7 @@ IF (GtkMM_FOUND)
 	LINK_LIBRARIES(${GTKMM_LINK_FLAGS})
 	INCLUDE_DIRECTORIES(${GTKMM_INCLUDE_DIR})
 
-	ADD_EXECUTABLE(frameGrabberGui2 fggui2_main.cpp  FrameGrabberGUIControl2.h)
+	ADD_EXECUTABLE(frameGrabberGui2 fggui2_main.cpp  FrameGrabberGUIControl2.h Sliders.h Sliders.cpp)
 
 	IF (WIN32 AND NOT CYGWIN)
   		SET_TARGET_PROPERTIES(frameGrabberGui2 PROPERTIES COMPILE_FLAGS /wd4250)

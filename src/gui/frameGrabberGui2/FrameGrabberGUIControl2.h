@@ -9,31 +9,6 @@
 #ifndef __FRAME_GRABBER_GUI_CONTROL2_H__
 #define __FRAME_GRABBER_GUI_CONTROL2_H__
 
-typedef enum {
-  DC1394_FEATURE_BRIGHTNESS=0,
-  DC1394_FEATURE_EXPOSURE,
-  DC1394_FEATURE_SHARPNESS,
-  DC1394_FEATURE_WHITE_BALANCE,
-  DC1394_FEATURE_HUE,
-  DC1394_FEATURE_SATURATION,
-  DC1394_FEATURE_GAMMA,
-  DC1394_FEATURE_SHUTTER,
-  DC1394_FEATURE_GAIN,
-  DC1394_FEATURE_IRIS,
-  DC1394_FEATURE_FOCUS,
-  DC1394_FEATURE_TEMPERATURE,
-  DC1394_FEATURE_TRIGGER,
-  DC1394_FEATURE_TRIGGER_DELAY,
-  DC1394_FEATURE_WHITE_SHADING,
-  DC1394_FEATURE_FRAME_RATE,
-  DC1394_FEATURE_ZOOM,
-  DC1394_FEATURE_PAN,
-  DC1394_FEATURE_TILT,
-  DC1394_FEATURE_OPTICAL_FILTER,
-  DC1394_FEATURE_CAPTURE_SIZE,
-  DC1394_FEATURE_CAPTURE_QUALITY
-} dc1394feature_id_t;
-
 static const char *video_mode_labels[]={"160x120 YUV444","320x240 YUV422","640x480 YUV411", "640x480 YUV422","640x480 RGB8","640x480 MONO8","640x480 MONO16","800x600 YUV422", "800x600 RGB8","800x600_MONO8","1024x768 YUV422","1024x768 RGB8","1024x768 MONO8", "800x600 MONO16","1024x768 MONO16","1280x960 YUV422","1280x960 RGB8","1280x960_MONO8", "1600x1200 YUV422","1600x1200 RGB8","1600x1200 MONO8","1280x960 MONO16","1600x1200_MONO16","EXIF","FORMAT7 0","FORMAT7 1","FORMAT7 2","FORMAT7 3","FORMAT7 4","FORMAT7 5","FORMAT7 6","FORMAT7 7"};
 
 static const char *video_rate_labels[]={"1.875 fps","3.75 fps","7.5 fps","15 fps","30 fps","60 fps","120 fps","240 fps"};
@@ -46,342 +21,7 @@ static const char *op_mode_labels[]={"LEGACY","1394b"};
 
 #include <gtkmm.h>
 #include <yarp/dev/RemoteFrameGrabberDC1394.h>
-
-class DC1394SliderBase
-{
-public:
-    virtual ~DC1394SliderBase(){}
-	static int GetHeight(){ return m_Height; }
-	virtual void Refresh()=0;
-	virtual void Propagate()=0;
-protected:
-	static int m_Height;
-	bool m_bInactive;
-    int m_nInternalChange;
-};
-
-int DC1394SliderBase::m_Height=0;
-
-class DC1394Slider : public DC1394SliderBase
-{
-public:
-	//DC1394Slider(){}
-    virtual ~DC1394Slider()
-    {
-        if (m_bInactive) return;
-        delete pPwr;
-	    delete pRBa;
-        delete pRBm;
-    }
-	DC1394Slider(dc1394feature_id_t feature,char* label,Gtk::VBox &vbox,yarp::dev::RemoteFrameGrabberControlsDC1394 *fg) 
-		: m_Slider(0.0,1.005,0.005),m_OnePush("One Push")
-	{
-		if (!((pFG=fg)->hasFeatureDC1394(m_Feature=feature)))
-		{
-            printf("feature %s is inactive\n",label);
-			m_bInactive=true;
-			return;
-		}
-        
-        m_nInternalChange=0;
-		m_bInactive=false;
-
-        m_Name=label;
-
-		m_Height+=70;
-
-		m_Slider.set_size_request(256,40);
-		
-		vbox.pack_start(*(new Gtk::HSeparator()),Gtk::PACK_SHRINK,2);
-		
-		Gtk::HBox* pHBox=new Gtk::HBox();
-		pHBox->pack_start(*(new Gtk::Label(label,0)),Gtk::PACK_EXPAND_PADDING);
-		pHBox->pack_start(*(pPwr=new Gtk::CheckButton("pwr")),Gtk::PACK_SHRINK,0);
-		pHBox->pack_start(*(pRBa=new Gtk::RadioButton("auto")),Gtk::PACK_SHRINK,0);
-		const Glib::ustring s_man("man");
-		Gtk::RadioButtonGroup rbg=pRBa->get_group();
-		pHBox->pack_start(*(pRBm=new Gtk::RadioButton(rbg,s_man,false)),Gtk::PACK_SHRINK,0);
-		pHBox->pack_start(m_OnePush,Gtk::PACK_SHRINK,8);
-
-		vbox.pack_start(*(pHBox),Gtk::PACK_SHRINK);
-		vbox.pack_start(m_Slider,Gtk::PACK_SHRINK,0);
-
-		m_Slider.set_update_policy(Gtk::UPDATE_DISCONTINUOUS);
-		//m_old_value=m_new_value=pFG->getFeatureDC1394(m_Feature);
-		m_old_value=-1.0;
-
-		m_Slider.signal_value_changed().connect(sigc::mem_fun(*this,&DC1394Slider::slider_handler));
-		m_OnePush.signal_clicked().connect(sigc::mem_fun(*this,&DC1394Slider::onepush_handler));
-		pPwr->signal_clicked().connect(sigc::mem_fun(*this,&DC1394Slider::pwr_handler));
-		pRBa->signal_clicked().connect(sigc::mem_fun(*this,&DC1394Slider::auto_handler));
-
-		Refresh();
-	}
-
-	void Refresh()
-	{
-		if (m_bInactive) return;
-	   
-        bool bON=pFG->getActiveDC1394(m_Feature);
-		bool bAuto=pFG->getModeDC1394(m_Feature);
-
-		pPwr->set_active(bON);
-
-		pPwr->set_sensitive(pFG->hasOnOffDC1394(m_Feature));
-		pRBa->set_sensitive(bON && pFG->hasAutoDC1394(m_Feature));
-		pRBm->set_sensitive(bON && pFG->hasManualDC1394(m_Feature));
-		m_Slider.set_sensitive(bON && !bAuto);
-		m_OnePush.set_sensitive(bON && pFG->hasOnePushDC1394(m_Feature));
-
-        if (bAuto) 
-            pRBa->set_active(true);
-        else
-            pRBm->set_active(true);
-		
-		if (m_old_value!=(m_new_value=pFG->getFeatureDC1394(m_Feature)))
-		{
-			++m_nInternalChange;
-			m_Slider.set_value(m_old_value=m_new_value);
-		}
-	}
-
-	void Propagate()
-	{
-	    if (m_bInactive) return;
-	
-		pFG->setFeatureDC1394(m_Feature,m_Slider.get_value());
-		pFG->setModeDC1394(m_Feature,pRBa->get_active());
-		pFG->setActiveDC1394(m_Feature,pPwr->get_active());
-	}
-
-	void slider_handler()
-	{
-		printf("++++++++++++++\n");
-
-        if (m_nInternalChange>0)
-        {
-            --m_nInternalChange;
-            return;
-        }        
-
-		pFG->setFeatureDC1394(m_Feature,m_Slider.get_value());
-		printf("%s new value %lf\n",m_Name.c_str(),m_Slider.get_value());
-	}
-
-	void onepush_handler()
-    { 
-		//m_old_value=pFG->getFeatureDC1394(m_Feature);
-        pFG->setOnePushDC1394(m_Feature);
-		
-		if (m_old_value!=(m_new_value=pFG->getFeatureDC1394(m_Feature)))
-		{
-			++m_nInternalChange;
-			m_Slider.set_value(m_old_value=m_new_value);
-		}
-    }
-	void auto_handler()
-    { 
-        bool bAuto=pRBa->get_active();
-        pFG->setModeDC1394(m_Feature,bAuto); 
-        m_Slider.set_sensitive(!bAuto);
-        printf("%s\n",pRBa->get_active()?"auto":"man");
-    }
-	void pwr_handler()
-    { 
-        bool bON=pPwr->get_active();
-        pFG->setActiveDC1394(m_Feature,bON);
-        pRBa->set_sensitive(bON && pFG->hasAutoDC1394(m_Feature)); 
-        pRBm->set_sensitive(bON && pFG->hasManualDC1394(m_Feature));
-        m_Slider.set_sensitive(bON && pRBm->get_active());
-        m_OnePush.set_sensitive(bON && pFG->hasOnePushDC1394(m_Feature));                 
-        printf("power %s\n",pPwr->get_active()?"on":"off");
-    }
-
-	void set_value(double val){ m_Slider.set_value(val); }
-
-protected:
-	double m_old_value,m_new_value;
-	yarp::dev::RemoteFrameGrabberControlsDC1394 *pFG;
-	dc1394feature_id_t m_Feature;
-	Gtk::CheckButton* pPwr;
-	Gtk::RadioButton *pRBa,*pRBm;
-	Gtk::HScale m_Slider;
-	Gtk::Button m_OnePush;
-    Glib::ustring m_Name;
-};
-
-class DC1394SliderWB : public DC1394SliderBase
-{
-public:
-    virtual ~DC1394SliderWB()
-    {
-        if (m_bInactive) return;
-        delete pPwr;
-	    delete pRBa;
-        delete pRBm;
-    }
-	DC1394SliderWB(Gtk::VBox &vbox,yarp::dev::RemoteFrameGrabberControlsDC1394 *fg) 
-		: m_Red(0.0,1.005,0.005),m_Blue(0.0,1.005,0.005),m_OnePush("One Push")
-	{
-		if (!(pFG=fg)->hasFeatureDC1394(DC1394_FEATURE_WHITE_BALANCE))
-		{
-			m_bInactive=true;
-			return;
-		}
-
-        m_nInternalChange=0;
-
-		m_bInactive=false;
-
-		m_Height+=100;
-
-		vbox.pack_start(*(new Gtk::HSeparator()),Gtk::PACK_SHRINK,2);
-
-		Gtk::HBox* pHBox=new Gtk::HBox();
-		pHBox->pack_start(*(new Gtk::Label("White Balance",0)),Gtk::PACK_EXPAND_PADDING);
-		pHBox->pack_start(*(pPwr=new Gtk::CheckButton("pwr")),Gtk::PACK_SHRINK,0);
-		pHBox->pack_start(*(pRBa=new Gtk::RadioButton("auto")),Gtk::PACK_SHRINK,0);
-		const Glib::ustring s_man("man");
-		Gtk::RadioButtonGroup rbg=pRBa->get_group();
-		pHBox->pack_start(*(pRBm=new Gtk::RadioButton(rbg,s_man,false)),Gtk::PACK_SHRINK,0);
-		pHBox->pack_start(m_OnePush,Gtk::PACK_SHRINK,8);
-		vbox.pack_start(*(pHBox),Gtk::PACK_SHRINK);
-		
-		m_Blue.set_size_request(256,40);
-		m_Red.set_size_request(256,40);
-		Gtk::HBox *pRbox=new Gtk::HBox();
-		pRbox->pack_start(*(new Gtk::Label("RED ",0)),Gtk::PACK_SHRINK,4);
-		pRbox->pack_start(m_Red,Gtk::PACK_EXPAND_WIDGET,10);
-		vbox.pack_start(*(pRbox),Gtk::PACK_SHRINK,0);
-		Gtk::HBox *pBbox=new Gtk::HBox();
-		pBbox->pack_start(*(new Gtk::Label("BLUE",0)),Gtk::PACK_SHRINK,4);
-		pBbox->pack_start(m_Blue,Gtk::PACK_EXPAND_WIDGET,10);
-		vbox.pack_start(*(pBbox),Gtk::PACK_SHRINK,0);
-
-		//pFG->getWhiteBalanceDC1394(m_old_blu,m_old_red);
-		//m_new_red=m_old_red;
-		//m_new_blu=m_old_blu;
-
-		m_old_red=m_old_blu=-1.0;
-
-		m_Blue.signal_value_changed().connect(sigc::mem_fun(*this,&DC1394SliderWB::slider_handler));
-		m_Blue.set_update_policy(Gtk::UPDATE_DISCONTINUOUS);
-		m_Red.signal_value_changed().connect(sigc::mem_fun(*this,&DC1394SliderWB::slider_handler));
-		m_Red.set_update_policy(Gtk::UPDATE_DISCONTINUOUS);
-		pPwr->signal_clicked().connect(sigc::mem_fun(*this,&DC1394SliderWB::pwr_handler));
-		pRBa->signal_clicked().connect(sigc::mem_fun(*this,&DC1394SliderWB::automan_handler));
-		m_OnePush.signal_clicked().connect(sigc::mem_fun(*this,&DC1394SliderWB::onepush_handler));
-
-		Refresh();
-	}
-
-	void Refresh()
-	{
-		if (m_bInactive) return;
-        
-        bool bON=pFG->getActiveDC1394(DC1394_FEATURE_WHITE_BALANCE);
-		bool bAuto=pFG->getModeDC1394(DC1394_FEATURE_WHITE_BALANCE);
-
-		if (bAuto) 
-            pRBa->set_active(true);
-        else
-            pRBm->set_active(true);
-
-		pPwr->set_active(bON);
-
-		pPwr->set_sensitive(pFG->hasOnOffDC1394(DC1394_FEATURE_WHITE_BALANCE));
-		pRBa->set_sensitive(bON && pFG->hasAutoDC1394(DC1394_FEATURE_WHITE_BALANCE));
-		pRBm->set_sensitive(bON && pFG->hasManualDC1394(DC1394_FEATURE_WHITE_BALANCE));
-		m_Blue.set_sensitive(bON && !bAuto);
-		m_Red.set_sensitive(bON && !bAuto);
-		m_OnePush.set_sensitive(bON && pFG->hasOnePushDC1394(DC1394_FEATURE_WHITE_BALANCE));
-
-		pFG->getWhiteBalanceDC1394(m_new_blu,m_new_red);
-		if (m_new_blu!=m_old_blu)
-		{
-			++m_nInternalChange;
-			m_Blue.set_value(m_old_blu=m_new_blu);
-		}
-
-		if (m_new_red!=m_old_red)
-		{
-			++m_nInternalChange;
-			m_Red.set_value(m_old_red=m_new_red);
-		}
-	}
-
-	void Propagate()
-	{
-	    if (m_bInactive) return;
-	
-		pFG->setWhiteBalanceDC1394(m_Blue.get_value(),m_Red.get_value());
-		pFG->setModeDC1394(DC1394_FEATURE_WHITE_BALANCE,pRBa->get_active());
-		pFG->setActiveDC1394(DC1394_FEATURE_WHITE_BALANCE,pPwr->get_active());
-	}
-
-	void slider_handler()
-	{
-		printf("************\n");
-		if (m_nInternalChange>0)
-        {
-            --m_nInternalChange;
-            return;
-        }
-
-		pFG->setWhiteBalanceDC1394(m_Blue.get_value(),m_Red.get_value());
-		printf("white balance %f %f\n",m_Blue.get_value(),m_Red.get_value());
-	}
-	void onepush_handler()
-    { 
-		//pFG->getWhiteBalanceDC1394(m_old_blu,m_old_red);
-        pFG->setOnePushDC1394(DC1394_FEATURE_WHITE_BALANCE); 
-        pFG->getWhiteBalanceDC1394(m_new_blu,m_new_red);
-		printf("one push\n");
-
-		if (m_new_blu!=m_old_blu)
-		{
-			++m_nInternalChange;
-			m_Blue.set_value(m_old_blu=m_new_blu);
-		}
-
-		if (m_new_red!=m_old_red)
-		{
-			++m_nInternalChange;
-			m_Red.set_value(m_old_red=m_new_red);
-		}
-    }
-
-	void automan_handler()
-    {
-        bool bAuto=pRBa->get_active();
-        pFG->setModeDC1394(DC1394_FEATURE_WHITE_BALANCE,bAuto); 
-        m_Red.set_sensitive(!bAuto); 
-        m_Blue.set_sensitive(!bAuto);
-        printf("%s\n",pRBa->get_active()?"auto":"man");
-    }
-
-	void pwr_handler()
-    { 
-        bool bON=pPwr->get_active();
-        pFG->setActiveDC1394(DC1394_FEATURE_WHITE_BALANCE,bON);
-        pRBa->set_sensitive(bON && pFG->hasAutoDC1394(DC1394_FEATURE_WHITE_BALANCE)); 
-        pRBm->set_sensitive(bON && pFG->hasManualDC1394(DC1394_FEATURE_WHITE_BALANCE));
-        m_Red.set_sensitive(bON && pRBm->get_active());
-        m_Blue.set_sensitive(bON && pRBm->get_active());
-        m_OnePush.set_sensitive(bON && pFG->hasOnePushDC1394(DC1394_FEATURE_WHITE_BALANCE));                 
-        printf("power %s\n",pPwr->get_active()?"on":"off");
-    }
-
-	void set_value(double blue,double red){ m_Blue.set_value(blue); m_Red.set_value(red); }
-
-protected:
-	double m_old_red,m_new_red,m_old_blu,m_new_blu;
-	yarp::dev::RemoteFrameGrabberControlsDC1394 *pFG;
-	Gtk::CheckButton* pPwr;
-	Gtk::RadioButton *pRBa,*pRBm;
-	Gtk::HScale m_Red,m_Blue;
-	Gtk::Button m_OnePush;
-};
+#include "Sliders.h"
 
 /**
  *	A graphical control interface for a remote framegrabber.	
@@ -665,96 +305,8 @@ public:
 
 		close();
 	}
-
-protected:
-	int m_nFeat;
-
-	Gtk::VBox m_VBoxFeat1,m_VBoxFeat2; ///< Control sliders container
-	Gtk::VBox m_VBoxForm; ///< Control sliders container
-	Gtk::VBox m_VBoxForm7;
-	Gtk::VBox m_VBoxCamera;
-
-	Gtk::ComboBoxText m_MenuMode,m_MenuFPS,m_MenuISO,m_MenuOpMode,m_MenuColorCoding;
-    unsigned int m_VideoModeLut[32];
-    unsigned int m_ColorCodingLut[32];
-    unsigned int m_FPSLut[8];
-
-	int m_MenuColorCodingCNT;
-	int m_bppCNT;
-
-	int m_nFeatures;
-	DC1394SliderBase* m_pSli[16];
-
-    Gtk::Button m_Refresh1,m_Refresh2; ///< Read control values from framegrabber.
-	Gtk::Button m_reset;
-	Gtk::Button m_defaults;
-	Gtk::Button m_propagate;
-	Gtk::CheckButton m_broadcast;
-	Gtk::CheckButton m_power;
-	Gtk::CheckButton m_transmission;
-
-	Gtk::SpinButton m_xdim,m_ydim;
-	Gtk::SpinButton m_bpp;
- 
-	Gtk::Notebook m_Notebook;
-	Gtk::Label m_LabelControls1,m_LabelControls2,m_LabelFormat,m_LabelFormat7,m_LabelCamera;
-    Gtk::Label m_LabelMaxXDim,m_LabelMaxYDim;
-
-	virtual void Init()
-	{
-        //printf("Init\n");
-
-		//for (int n=0; n<m_nFeatures; ++n) m_pSli[n]->Refresh();
-
-		m_MenuMode.set_active_text(video_mode_labels[getVideoModeDC1394()]);
-
-        printf("video mode %s\n",video_mode_labels[getVideoModeDC1394()]);
-
-		bool bFormat7=getVideoModeDC1394()>=24;
 	
-		m_MenuColorCoding.set_sensitive(bFormat7);
-		m_xdim.set_sensitive(bFormat7);
-		m_ydim.set_sensitive(bFormat7);
-       
-		m_MenuFPS.set_sensitive(!bFormat7);
-		if (!bFormat7)
-        {
-            m_MenuFPS.set_active_text(video_rate_labels[getFPSDC1394()]);
-            //printf("fps=%d\n",m_FPSLut[getFPSDC1394()]);
-        }        
-
-		m_MenuISO.set_active_text(iso_speed_labels[getISOSpeedDC1394()]);
-		m_MenuOpMode.set_active_text(getOperationModeDC1394()?"1394b":"LEGACY");
-		m_MenuColorCoding.set_active_text(color_coding_labels[getColorCodingDC1394()]);
-
-		unsigned int xmax,ymax,xstep,ystep;
-		getFormat7MaxWindowDC1394(xmax,ymax,xstep,ystep);
-
-		unsigned int xdim,ydim;
-		getFormat7WindowDC1394(xdim,ydim);
-		
-		if (xstep<2) xstep=2;
-		if (ystep<2) ystep=2;
-		
-		m_xdim.set_range(0,xmax);
-		m_ydim.set_range(0,ymax);
-		m_xdim.set_increments(xstep,0);
-		m_ydim.set_increments(ystep,0);
-		m_xdim.set_value(xdim);
-		m_ydim.set_value(ydim);
-
-        char buff[16];
-        sprintf(buff,"Max width %d",xmax);
-        m_LabelMaxXDim.set_text(buff);
-        sprintf(buff,"Max height %d",ymax);
-        m_LabelMaxYDim.set_text(buff);
-
-		m_bpp.set_value(getBytesPerPacketDC1394());
-        m_bpp.set_sensitive(bFormat7);
-		m_transmission.set_active(getTransmissionDC1394());
-	}
-
-    void Reload()
+	    void Reload()
     {
 		printf("*** Reload() ***\n");
 
@@ -846,6 +398,94 @@ protected:
 
         for (int n=0; n<m_nFeatures; ++n) m_pSli[n]->Refresh();
     }
+
+protected:
+	int m_nFeat;
+
+	Gtk::VBox m_VBoxFeat1,m_VBoxFeat2; ///< Control sliders container
+	Gtk::VBox m_VBoxForm; ///< Control sliders container
+	Gtk::VBox m_VBoxForm7;
+	Gtk::VBox m_VBoxCamera;
+
+	Gtk::ComboBoxText m_MenuMode,m_MenuFPS,m_MenuISO,m_MenuOpMode,m_MenuColorCoding;
+    unsigned int m_VideoModeLut[32];
+    unsigned int m_ColorCodingLut[32];
+    unsigned int m_FPSLut[8];
+
+	int m_MenuColorCodingCNT;
+	int m_bppCNT;
+
+	int m_nFeatures;
+	DC1394SliderBase* m_pSli[16];
+
+    Gtk::Button m_Refresh1,m_Refresh2; ///< Read control values from framegrabber.
+	Gtk::Button m_reset;
+	Gtk::Button m_defaults;
+	Gtk::Button m_propagate;
+	Gtk::CheckButton m_broadcast;
+	Gtk::CheckButton m_power;
+	Gtk::CheckButton m_transmission;
+
+	Gtk::SpinButton m_xdim,m_ydim;
+	Gtk::SpinButton m_bpp;
+ 
+	Gtk::Notebook m_Notebook;
+	Gtk::Label m_LabelControls1,m_LabelControls2,m_LabelFormat,m_LabelFormat7,m_LabelCamera;
+    Gtk::Label m_LabelMaxXDim,m_LabelMaxYDim;
+
+	virtual void Init()
+	{
+        //printf("Init\n");
+
+		//for (int n=0; n<m_nFeatures; ++n) m_pSli[n]->Refresh();
+
+		m_MenuMode.set_active_text(video_mode_labels[getVideoModeDC1394()]);
+
+        printf("video mode %s\n",video_mode_labels[getVideoModeDC1394()]);
+
+		bool bFormat7=getVideoModeDC1394()>=24;
+	
+		m_MenuColorCoding.set_sensitive(bFormat7);
+		m_xdim.set_sensitive(bFormat7);
+		m_ydim.set_sensitive(bFormat7);
+       
+		m_MenuFPS.set_sensitive(!bFormat7);
+		if (!bFormat7)
+        {
+            m_MenuFPS.set_active_text(video_rate_labels[getFPSDC1394()]);
+            //printf("fps=%d\n",m_FPSLut[getFPSDC1394()]);
+        }        
+
+		m_MenuISO.set_active_text(iso_speed_labels[getISOSpeedDC1394()]);
+		m_MenuOpMode.set_active_text(getOperationModeDC1394()?"1394b":"LEGACY");
+		m_MenuColorCoding.set_active_text(color_coding_labels[getColorCodingDC1394()]);
+
+		unsigned int xmax,ymax,xstep,ystep;
+		getFormat7MaxWindowDC1394(xmax,ymax,xstep,ystep);
+
+		unsigned int xdim,ydim;
+		getFormat7WindowDC1394(xdim,ydim);
+		
+		if (xstep<2) xstep=2;
+		if (ystep<2) ystep=2;
+		
+		m_xdim.set_range(0,xmax);
+		m_ydim.set_range(0,ymax);
+		m_xdim.set_increments(xstep,0);
+		m_ydim.set_increments(ystep,0);
+		m_xdim.set_value(xdim);
+		m_ydim.set_value(ydim);
+
+        char buff[16];
+        sprintf(buff,"Max width %d",xmax);
+        m_LabelMaxXDim.set_text(buff);
+        sprintf(buff,"Max height %d",ymax);
+        m_LabelMaxYDim.set_text(buff);
+
+		m_bpp.set_value(getBytesPerPacketDC1394());
+        m_bpp.set_sensitive(bFormat7);
+		m_transmission.set_active(getTransmissionDC1394());
+	}
 
     /*
 	virtual void Propagate()
@@ -946,7 +586,7 @@ protected:
 	  }
     
 	  printf("on_bpp_change()\n");
-	  setBytesPerPacketDC1394((unsigned int) m_bpp.get_value());
+	  setBytesPerPacketDC1394((unsigned int)m_bpp.get_value());
 	}
 
 	virtual void on_iso_speed_change()
