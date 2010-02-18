@@ -1165,7 +1165,7 @@ Vector MultiRefMinJerkCtrl::iterate(Vector &xd, Vector &qd, const unsigned int v
     if (adjustSampleTime)
         dt=dt<maxDeltaTime ? dt : maxDeltaTime;
     else
-        dt=-1.0;
+        dt=MINJERK_OPT_DISABLED;
 
     x_set=xd;
     q_set=qd;
@@ -1177,8 +1177,8 @@ Vector MultiRefMinJerkCtrl::iterate(Vector &xd, Vector &qd, const unsigned int v
         q_old=q;
         calc_e();
 
-        genTrajJoint->compute(execTime,q_set,q,inTargetTol);
-        genTrajTask->compute(execTime,x_set,x,inTargetTol);
+        genTrajJoint->compute(execTime,q_set,q,inTargetTol,dt);
+        genTrajTask->compute(execTime,x_set,x,inTargetTol,dt);
 
         qdot=genTrajJoint->get_v();
         xdot7=genTrajTask->get_v();
