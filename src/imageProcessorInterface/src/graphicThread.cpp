@@ -59,15 +59,6 @@ bool graphicThread::threadInit(){
     this->setAdjs();
     printf("adjustment set \n");
 
-    bool ret = _imgRecv.Connect((char*)imageProcessModule->getName("/in").c_str(),"default");
-    //bool ret = _imgRecv.Connect("imageProcessorInterface/in","default");
-    return true;
-}
-
-/**
-* active loop of the thread
-*/
-void graphicThread::run(){
     mainWindow = this->createMainWindow();
 
     // Shows all widgets in main Window
@@ -77,6 +68,15 @@ void graphicThread::run(){
     // and waits for an event to occur (like a key press or
     // mouse event).
 
+    bool ret = _imgRecv.Connect((char*)imageProcessModule->getName("/in").c_str(),"default");
+    //bool ret = _imgRecv.Connect("imageProcessorInterface/in","default");
+    return true;
+}
+
+/**
+* active loop of the thread
+*/
+void graphicThread::run(){
     gtk_main ();
     imageProcessModule->close();
     gtk_widget_destroy(mainWindow);
@@ -211,28 +211,28 @@ static GtkWidget *xpm_label_box( gchar     *xpm_filename,
 static void cb_digits_scale( GtkAdjustment *adj )
 {
     /* Set the number of decimal places to which adj->value is rounded */
-    imageProcessModule->processor1->cannyOperator->setThresholdU((double)adj->value);
+    //imageProcessModule->processor1->cannyOperator->setThresholdU((double)adj->value);
     printf("Threshold U: %f \n",(double) adj->value);
 }
 
 static void cb_digits_scale2( GtkAdjustment *adj )
 {
     /* Set the number of decimal places to which adj->value is rounded */
-    imageProcessModule->processor1->cannyOperator->setThresholdL((double)adj->value);
+    //imageProcessModule->processor1->cannyOperator->setThresholdL((double)adj->value);
     printf("Threshold L: %f \n",(double) adj->value);
 }
 
 static void cb_digits_scale3( GtkAdjustment *adj )
 {
     /* Set the number of maskSeed */
-    imageProcessModule->processor1->maskSeed=adj->value;
+    //imageProcessModule->processor1->maskSeed=adj->value;
     printf("maskseed: %f \n",(double) adj->value);
 }
 
 static void cb_digits_scale4( GtkAdjustment *adj )
 {
     /* Set the number of maskSeed */
-    imageProcessModule->processor1->maskTop=adj->value;
+    //imageProcessModule->processor1->maskTop=adj->value;
     printf("maskseed: %f \n",(double) adj->value);
 }
 
@@ -255,10 +255,10 @@ static gint timeout_CB (gpointer data){
             gtk_widget_queue_draw (da);
             
 
-            imageProcessModule->currentProcessor->canProcess_flag=1;
-            imageProcessModule->processor1->canProcess_flag=1;
-            imageProcessModule->processor2->canProcess_flag=1;
-            imageProcessModule->processor3->canProcess_flag=1;
+            //imageProcessModule->currentProcessor->canProcess_flag=1;
+            //imageProcessModule->processor1->canProcess_flag=1;
+            //imageProcessModule->processor2->canProcess_flag=1;
+            //imageProcessModule->processor3->canProcess_flag=1;
 
             //            if (_savingSet)
             //                saveCurrentFrame();
@@ -276,93 +276,35 @@ static void cb_draw_value( GtkToggleButton *button )
     printf("callbacks from draw value %s \n",button->button.label_text);
     if(!strcmp(button->button.label_text,"Red1-->")){
         if(button->active){
-            imageProcessModule->processor1->redPlane_flag=1;
-            imageProcessModule->processor1->greenPlane_flag=0;
-            imageProcessModule->processor1->bluePlane_flag=0;
+            //imageProcessModule->processor1->redPlane_flag=1;
+            //imageProcessModule->processor1->greenPlane_flag=0;
+            //imageProcessModule->processor1->bluePlane_flag=0;
         }
     }
     else if(!strcmp(button->button.label_text,"Green1-->")){
         if(button->active){
-            imageProcessModule->processor1->redPlane_flag=0;
-            imageProcessModule->processor1->greenPlane_flag=1;
-            imageProcessModule->processor1->bluePlane_flag=0;
+            //imageProcessModule->processor1->redPlane_flag=0;
+            //imageProcessModule->processor1->greenPlane_flag=1;
+            //imageProcessModule->processor1->bluePlane_flag=0;
         }
     }
     else if(!strcmp(button->button.label_text,"Blue1-->")){
         if(button->active){
-            imageProcessModule->processor1->redPlane_flag=0;
-            imageProcessModule->processor1->greenPlane_flag=0;
-            imageProcessModule->processor1->bluePlane_flag=1;
+            //imageProcessModule->processor1->redPlane_flag=0;
+            //imageProcessModule->processor1->greenPlane_flag=0;
+            //imageProcessModule->processor1->bluePlane_flag=1;
         }
     }
-    if(!strcmp(button->button.label_text,"Red2-->")){
-        if(button->active){
-            imageProcessModule->processor2->redPlane_flag=1;
-            imageProcessModule->processor2->greenPlane_flag=0;
-            imageProcessModule->processor2->bluePlane_flag=0;
-        }
-    }
-    else if(!strcmp(button->button.label_text,"Green2-->")){
-        if(button->active){
-            imageProcessModule->processor2->redPlane_flag=0;
-            imageProcessModule->processor2->greenPlane_flag=1;
-            imageProcessModule->processor2->bluePlane_flag=0;
-        }
-    }
-    else if(!strcmp(button->button.label_text,"Blue2-->")){
-        if(button->active){
-            imageProcessModule->processor2->redPlane_flag=0;
-            imageProcessModule->processor2->greenPlane_flag=0;
-            imageProcessModule->processor2->bluePlane_flag=1;
-        }
-    }
-    if(!strcmp(button->button.label_text,"Red3-->")){
-        if(button->active){
-            imageProcessModule->processor3->redPlane_flag=1;
-            imageProcessModule->processor3->greenPlane_flag=0;
-            imageProcessModule->processor3->bluePlane_flag=0;
-        }
-    }
-    else if(!strcmp(button->button.label_text,"Green3-->")){
-        if(button->active){
-            imageProcessModule->processor3->redPlane_flag=0;
-            imageProcessModule->processor3->greenPlane_flag=1;
-            imageProcessModule->processor3->bluePlane_flag=0;
-        }
-
-    }
-    else if(!strcmp(button->button.label_text,"Blue3-->")){
-        if(button->active){
-            imageProcessModule->processor3->redPlane_flag=0;
-            imageProcessModule->processor3->greenPlane_flag=0;
-            imageProcessModule->processor3->bluePlane_flag=1;
-        }
-    }
+    
     if(!strcmp(button->button.label_text,"Yellow1-->")){
         if(button->active){
-            imageProcessModule->processor1->redPlane_flag=0;
-            imageProcessModule->processor1->greenPlane_flag=0;
-            imageProcessModule->processor1->bluePlane_flag=0;
-            imageProcessModule->processor1->yellowPlane_flag=1;
+            //imageProcessModule->processor1->redPlane_flag=0;
+            //imageProcessModule->processor1->greenPlane_flag=0;
+            //imageProcessModule->processor1->bluePlane_flag=0;
+            //imageProcessModule->processor1->yellowPlane_flag=1;
         }
     }
-    else if(!strcmp(button->button.label_text,"Yellow2-->")){
-        if(button->active){
-            imageProcessModule->processor2->redPlane_flag=0;
-            imageProcessModule->processor2->greenPlane_flag=0;
-            imageProcessModule->processor2->bluePlane_flag=0;
-            imageProcessModule->processor2->yellowPlane_flag=0;
-        }
-
-    }
-    else if(!strcmp(button->button.label_text,"Yellow3-->")){
-        if(button->active){
-            imageProcessModule->processor3->redPlane_flag=0;
-            imageProcessModule->processor3->greenPlane_flag=0;
-            imageProcessModule->processor3->bluePlane_flag=0;
-            imageProcessModule->processor3->yellowPlane_flag=1;
-        }
-    }
+    /*
     else if(!strcmp(button->button.label_text,"FindEdges1-->")){
         if(button->active){
             imageProcessModule->processor1->findEdges_flag=1;
@@ -462,7 +404,7 @@ static void cb_draw_value( GtkToggleButton *button )
         }
         else
             imageProcessModule->processor3->inputImage_flag=0;
-    }
+    }*/
 }
 
 
@@ -537,8 +479,10 @@ static gint expose_CB (GtkWidget *widget, GdkEventExpose *event, gpointer data)
                 unsigned int rowstride;
                 unsigned int imageWidth, imageHeight, areaWidth, areaHeight;
 
-                //=new yarp::sig::ImageOf<yarp::sig::PixelRgb>;
-                //_outputImage->resize(320,240);
+                
+                _outputImage=new yarp::sig::ImageOf<yarp::sig::PixelRgb>;
+               _outputImage->resize(320,240);
+                /*
                 if(imageProcessModule->currentProcessor==NULL){
                     //printf("currentProcessor resulted nil");
                     return false;
@@ -552,12 +496,15 @@ static gint expose_CB (GtkWidget *widget, GdkEventExpose *event, gpointer data)
                     if(!imageProcessModule->currentProcessor->resized_flag)
                         imageProcessModule->currentProcessor->resizeImages(_inputImg.width(),_inputImg.height());
                 }
+                */
 
                 /*_outputImage=imageProcessModule->currentProcessor->process(&_inputImg); //findEdges(&_inputImg,1,0);
                 printf("_outputImage: 0x%08x\n", _outputImage);
                 if(_outputImage==NULL){
                     return FALSE;
                 }*/
+
+                
 
                 _semaphore.wait();
                 bool result=yarpImage2Pixbuf(_outputImage, frame);

@@ -8,9 +8,6 @@
 //#include <ace/config.h>
 #include <ace/OS.h>
 
-#include <yarp/os/all.h>
-#include <yarp/sig/all.h>
-
 #include <cv.h>
 #include <cvaux.h>
 #include <highgui.h>
@@ -21,6 +18,9 @@
 #include <ipp.h>
 #include <ipps.h>
 #include <iostream>
+
+#include <yarp/os/all.h>
+#include <yarp/sig/all.h>
 
 using namespace yarp::os;
 using namespace yarp::sig;

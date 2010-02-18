@@ -5,14 +5,15 @@
 #include <iCub/ImageProcessModule.h>
 
 using namespace yarp::os;
+using namespace std;
 
 //static GtkWidget *mainWindow = NULL;
 
 
 int main(int argc, char *argv[]) {
 
-
-    std::string fname;
+    
+    string fname;
 
     if(argc<2){
 		//there are no parameters
@@ -51,10 +52,10 @@ int main(int argc, char *argv[]) {
     
     // Create and run processor module
 	ImageProcessModule *module=new ImageProcessModule();
-	module->processor1=new ImageProcessor();
-	module->processor2=new ImageProcessor();
-	module->processor3=new ImageProcessor();
-	module->currentProcessor=module->processor1;
+	//module->processor1=new ImageProcessor();
+	//module->processor2=new ImageProcessor();
+	//module->processor3=new ImageProcessor();
+	//module->currentProcessor=module->processor1;
     module->setName(fname.c_str());
 	
 	//initialise Yarp Network

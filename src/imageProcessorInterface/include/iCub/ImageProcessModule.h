@@ -8,7 +8,7 @@
 
 
 //within project includes
-#include <iCub/ImageProcessor.h>
+//#include <iCub/ImageProcessor.h>
 #include <iCub/graphicThread.h>
 
 
@@ -20,10 +20,10 @@
 //YARP include
 #include <yarp/os/all.h>
 #include <yarp/sig/all.h>
+#include <string>
 
 
-
-
+using namespace std;
 
 
 
@@ -92,35 +92,35 @@ CopyPolicy: Released under the terms of the GNU GPL v2.0.
 
 class ImageProcessModule : public Module {
 private:
-	/**
-	* a port for reading and writing images
-	*/
+    /**
+    * a port for reading and writing images
+    */
     yarp::os::BufferedPort<ImageOf<PixelRgb> > port; // 
-	/**
-	* a port for reading and writing images
-	*/
-	yarp::os::BufferedPort<ImageOf<PixelRgb> > port2; //
-	/**
-	* port where the red plane of the input image is buffered
-	*/
-	yarp::os::BufferedPort<ImageOf<PixelMono> > port_plane; // 
-	/**
-	* command port of the module
-	*/
+    /**
+    * a port for reading and writing images
+    */
+    yarp::os::BufferedPort<ImageOf<PixelRgb> > port2; //
+    /**
+    * port where the red plane of the input image is buffered
+    */
+    yarp::os::BufferedPort<ImageOf<PixelMono> > port_plane; // 
+    /**
+    * command port of the module
+    */
     yarp::os::BufferedPort<Bottle > cmdPort;
     /**
     * reference to the graphic unit interface managed by a thread
     */
     graphicThread* gui;
-	/**
-	* counter of the module
-	*/
+    /**
+    * counter of the module
+    */
     int ct;
-	/**
-	* options of the connection
-	*/
+    /**
+    * options of the connection
+    */
     yarp::os::Property options;	//
-	
+    
 public:
     /**
     * generic constructor
@@ -131,109 +131,109 @@ public:
     */
     ~ImageProcessModule();
 
-	/**
-	*open the ports of the module
-	*/
-	bool open(Searchable& config); //
-	/**
-	* tryes to interrupt any communications or resource usage
-	*/
+    /**
+    *open the ports of the module
+    */
+    bool open(Searchable& config); //
+    /**
+    * tryes to interrupt any communications or resource usage
+    */
     bool interruptModule(); // 
-	/**
-	* closes the modules and all its components
-	*/
-	bool close(); //
-	/**
-	* active control of the Module
-	*/
-	bool updateModule(); //
-	/**
-	* set the attribute options of class Property
-	*/
+    /**
+    * closes the modules and all its components
+    */
+    bool close(); //
+    /**
+    * active control of the Module
+    */
+    bool updateModule(); //
+    /**
+    * set the attribute options of class Property
+    */
     void setOptions(yarp::os::Property options); //
-	
-	
-	//gint timeout_CB (gpointer data);
-	//bool getImage();
-	/**
-	* opens all the ports necessary for the module
-	*/
-	bool openPorts();
-	/**
-	* closes all the ports opened when the module started
-	*/
-	bool closePorts();
-	/**
-	* streams out data on ports
-	*/
-	bool outPorts();
-	
-	//---attributes
-	// Output Point Ports
-	/**
-	* output port for the first Processor result
-	*/
+    
+    
+    //gint timeout_CB (gpointer data);
+    //bool getImage();
+    /**
+    * opens all the ports necessary for the module
+    */
+    bool openPorts();
+    /**
+    * closes all the ports opened when the module started
+    */
+    bool closePorts();
+    /**
+    * streams out data on ports
+    */
+    bool outPorts();
+    
+    //---attributes
+    // Output Point Ports
+    /**
+    * output port for the first Processor result
+    */
     yarp::os::BufferedPort<yarp::sig::ImageOf<PixelRgb> > *_pOutPort; //
-	/**
-	* output port for the first Processor result
-	*/
-	yarp::os::BufferedPort<yarp::sig::ImageOf<PixelRgb> > *_pOutPort2; //
-	/**
-	* output port for the first Processor result
-	*/
-	yarp::os::BufferedPort<yarp::sig::ImageOf<PixelRgb> > *_pOutPort3; //
-	/**
-	* output port for R+G- Color Opponency Image
-	*/
-	yarp::os::BufferedPort<yarp::sig::ImageOf<PixelMono> > *portRg; //
-	/**
-	* output port for G+R- Color Opponency Image
-	*/
-	yarp::os::BufferedPort<yarp::sig::ImageOf<PixelMono> > *portGr; //
-	/**
-	* output port for B+Y- Color Opponency Image
-	*/
-	yarp::os::BufferedPort<yarp::sig::ImageOf<PixelMono> > *portBy; //
-	/**
-	* output port for R+G- Color Opponency Image
-	*/
-	yarp::os::BufferedPort<yarp::sig::ImageOf<PixelMono> > *portRedPlane; //
-	/**
-	* output port for G+R- Color Opponency Image
-	*/
-	yarp::os::BufferedPort<yarp::sig::ImageOf<PixelMono> > *portGreenPlane; //
-	/**
-	* output port for B+Y- Color Opponency Image
-	*/
-	yarp::os::BufferedPort<yarp::sig::ImageOf<PixelMono> > *portBluePlane; //
-	/**
-	* Output Bottle Container
-	*/
-	yarp::os::Bottle _outBottle;
-	/**
-	* first processor
-	*/
-	ImageProcessor *processor1;
-	/**
-	* second processor
-	*/
-	ImageProcessor *processor2;
-	/**
-	* third processor
-	*/
-	ImageProcessor *processor3;
-	/**
-	* processor actually active
-	*/
-	ImageProcessor *currentProcessor;
-	/**
-	* flag that control if the inputImage has been ever read
-	*/
-	bool inputImage_flag;
+    /**
+    * output port for the first Processor result
+    */
+    yarp::os::BufferedPort<yarp::sig::ImageOf<PixelRgb> > *_pOutPort2; //
+    /**
+    * output port for the first Processor result
+    */
+    yarp::os::BufferedPort<yarp::sig::ImageOf<PixelRgb> > *_pOutPort3; //
+    /**
+    * output port for R+G- Color Opponency Image
+    */
+    yarp::os::BufferedPort<yarp::sig::ImageOf<PixelMono> > *portRg; //
+    /**
+    * output port for G+R- Color Opponency Image
+    */
+    yarp::os::BufferedPort<yarp::sig::ImageOf<PixelMono> > *portGr; //
+    /**
+    * output port for B+Y- Color Opponency Image
+    */
+    yarp::os::BufferedPort<yarp::sig::ImageOf<PixelMono> > *portBy; //
+    /**
+    * output port for R+G- Color Opponency Image
+    */
+    yarp::os::BufferedPort<yarp::sig::ImageOf<PixelMono> > *portRedPlane; //
+    /**
+    * output port for G+R- Color Opponency Image
+    */
+    yarp::os::BufferedPort<yarp::sig::ImageOf<PixelMono> > *portGreenPlane; //
+    /**
+    * output port for B+Y- Color Opponency Image
+    */
+    yarp::os::BufferedPort<yarp::sig::ImageOf<PixelMono> > *portBluePlane; //
+    /**
+    * Output Bottle Container
+    */
+    yarp::os::Bottle _outBottle;
+    /**
+    * first processor
+    */
+    //ImageProcessor *processor1;
+    /**
+    * second processor
+    */
+    //ImageProcessor *processor2;
+    /**
+    * third processor
+    */
+    //ImageProcessor *processor3;
+    /**
+    * processor actually active
+    */
+    //ImageProcessor *currentProcessor;
+    /**
+    * flag that control if the inputImage has been ever read
+    */
+    bool inputImage_flag;
     /** 
     * reference to the string refering to the last command to send
     */
-    std::string* command;
+    string* command;
 };
 
 #endif //_IMAGEPROCESSMODULE_H_

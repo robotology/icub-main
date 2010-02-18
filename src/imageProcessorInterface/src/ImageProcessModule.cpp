@@ -226,7 +226,7 @@ bool ImageProcessModule::openPorts(){
 bool ImageProcessModule::outPorts(){
     bool ret = false;
     //if((processor1->canProcess_flag)&&(processor2->canProcess_flag)&&(processor3->canProcess_flag))
-    if(false)
+    /*if(false)
     {
         //printf("Entered in outPorts \n");
         this->_pOutPort->prepare()=*(this->processor1->portImage);
@@ -237,8 +237,9 @@ bool ImageProcessModule::outPorts(){
         this->_pOutPort2->write();
         this->_pOutPort3->write();
         //printf("Entered in outPorts \n");
-    }
+    }*/
     //if((currentProcessor->blueYellow_flag)&&(currentProcessor->redGreen_flag)&&(currentProcessor->greenRed_flag)){
+    /*
     if(false){
         //if(currentProcessor->redGreen_yarp!=0xcdcdcdcd)
         this->portRg->prepare()=*(this->currentProcessor->redGreen_yarp);
@@ -261,7 +262,7 @@ bool ImageProcessModule::outPorts(){
         this->portRedPlane->write();
         this->portGreenPlane->write();
         this->portBluePlane->write();
-    }
+    }*/
     
     //command->assign("help");
     if(strcmp(command->c_str(),"")&&(cmdPort.getOutputCount())){
