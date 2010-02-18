@@ -7,7 +7,6 @@
 //#include <ace/config.h>
 
 
-
 //within project includes
 #include <iCub/ImageProcessor.h>
 #include <iCub/graphicThread.h>

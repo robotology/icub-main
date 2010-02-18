@@ -4,13 +4,12 @@
 
 #include <ace/config.h>
 
+#include <yarp/os/all.h>
+#include <yarp/sig/all.h>
+
 #include <cv.h>
 #include <cvaux.h>
 #include <highgui.h>
-
-
-#include <yarp/os/all.h>
-#include <yarp/sig/all.h>
 
 //utils includes
 #include <iCub/canny.h>
@@ -18,11 +17,7 @@
 
 #include <ipp.h>
 #include <ipps.h>
-//#include <qimage.h>
-#include <math.h>
 #include <iostream>
-#include <stdlib.h>
-#include <cstdio>
 
 using namespace yarp::os;
 using namespace yarp::sig;
