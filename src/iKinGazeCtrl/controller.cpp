@@ -186,6 +186,8 @@ bool Controller::threadInit()
 
     cout << "Starting Controller at " << period << " ms" << endl;
 
+    tOld=Time::now();
+
     return true;
 }
 
@@ -203,6 +205,10 @@ void Controller::afterStart(bool s)
 /************************************************************************/
 void Controller::run()
 {
+    double t=Time::now();
+    double dt=t-tOld;
+    tOld=t;
+
     // get data
     xd=commData->get_xd();
     qd=commData->get_qd();
@@ -235,8 +241,8 @@ void Controller::run()
     }
 
     // control loop
-    genTrajNeck->compute(neckTime,qdNeck,fbNeck,INTARGET_TOL);
-    genTrajEyes->compute(eyesTime,qdEyes,fbEyes,INTARGET_TOL);
+    genTrajNeck->compute(neckTime,qdNeck,fbNeck,INTARGET_TOL,dt);
+    genTrajEyes->compute(eyesTime,qdEyes,fbEyes,INTARGET_TOL,dt);
 
     vNeck=genTrajNeck->get_v();
     vEyes=genTrajEyes->get_v()-commData->get_compv();

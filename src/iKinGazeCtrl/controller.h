@@ -59,6 +59,7 @@ protected:
     double neckTime;
     double eyesTime;
     double Ts;
+    double tOld;
 
     Vector qddeg,qdeg,vdeg,xd,fp;
     Vector v,vNeck,vEyes,vdegOld;
