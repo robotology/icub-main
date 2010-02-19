@@ -58,11 +58,10 @@ void minJerkTrajGen::compute(const double T, const Vector &xd, const Vector &fb)
 {
     if (T!=TOld)
     {    
-        double T1=0.8*T;
-        double T2=T1*T1;
-        double T3=T2*T1;
+        double T2=T*T;
+        double T3=T2*T;
 
-        A(2,0)=-60.0/T3; A(2,1)=-36.0/T2; A(2,2)=-9.0/T1;
+        A(2,0)=-195.240/T3; A(2,1)=-101.431/T2; A(2,2)=-17.486/T;
         b[2]=-A(2,0);
 
         TOld=T;
