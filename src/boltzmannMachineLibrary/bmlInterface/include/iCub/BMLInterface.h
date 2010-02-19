@@ -36,16 +36,11 @@ using namespace yarp::os;
 using namespace yarp::sig;
 using namespace yarp::sig::draw;
 
-/**
-* Graphical interface used in order to send preformatted commands to the BMLEngine through port
-* and to visualize the input data, the state of the layer and the feature extracted by the boltzmann Machine
-* @author Francesco Rea
-*/
 
 /**
 *
 @ingroup icub_module
-\defgroup icub_imageProcessorInterface imageProcessorInterface
+\defgroup icub_bmlInterface bmlInterface
 
  Graphical interface used in order to send preformatted commands to the BMLEngine through port
  and to visualize the input data, the state of the layer and the feature extracted by the boltzmann Machine
@@ -55,12 +50,19 @@ This module sends commands as bottle to the BMLEngine module. The command respec
 In addition this module is able to draw the active layers in the associated instance of the BMLEngine. This allows the user to 
 visually control the learning process of the Boltzmann Machine.
 
+The user is able to
+- add new layers
+- set the dimension of new layer
+- interconnect 2 layers
+- save the state of the boltzmann machine
+- load the state of the boltzmann machine
+
 
 The module does:
 - send commands to the BMLEngine module
 - plot  images of the active layers on the drawing area of the window
 
-\image html imageProcessor.png
+\image html boltzmannMachineFramework.png
 
 \section lib_sec Libraries
 YARP
