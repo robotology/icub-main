@@ -1,3 +1,29 @@
+2010-02-19 Alessandro Scalzo <alessandro.scalzo@iit.it>
+	* iCub/src/modules/logpolarGrabber/ServerLogpolarFrameGrabber.cpp
+	
+	--framerate is now real framerate (Hz) and not period (ms).
+
+2010-02-18 Alessandro Scalzo <alessandro.scalzo@iit.it>
+	* iCub/src/gui/frameGrabberGui2/FrameGrabberGUIControl.h
+	* iCub/src/gui/frameGrabberGui2/CMakeLists.txt
+
+	Added:
+	* iCub/src/gui/frameGrabberGui2/Sliders.h
+	* iCub/src/gui/frameGrabberGui2/Sliders.cpp
+
+	Improved form refresh.
+
+2010-02-18 Alessandro Scalzo <alessandro.scalzo@iit.it>
+	* src/modules/dragonfly2/common/DragonflyDeviceDriver2.h
+	* src/modules/dragonfly2/common/DragonflyDeviceDriver2.cpp
+	* src/modules/dragonfly2/linux/FirewireCameraDC1394-2_2.h
+	* src/modules/dragonfly2/linux/FirewireCameraDC1394-2_2.cpp
+	* src/modules/dragonfly2/winnt/FirewireCameraDC1394-2_2.h
+	* src/modules/dragonfly2/winnt/FirewireCameraDC1394-2_2.cpp
+
+	Improved framerate management.
+	Auto mode automatic "ON" on Gain and Shutter with Exposure "ON".
+
 2009-11-25 Lorenzo Natale <nat@liralab.it>
 	* removed unused include files that introduced ace dependencies in bunch of files (mainly yarp/String.h and some ace inclusions).
 
@@ -32,8 +58,8 @@
 2008-11-06 Alessandro Scalzo <alessandro@liralab.it>
 	* iCub/src/modules/dragonfly/linux/dc1394settings.h
 	* iCub/src/modules/dragonfly/winnt/DragonflyDeviceDriver.cpp
-	* iCub/src/gui/frameGrabberGui/FrameGrabberGUIControl.h
-	* iCub/src/gui/frameGrabberGui/fggui_main.h
+	* iCub/src/gui/frameGrabberGui2/FrameGrabberGUIControl.h
+	* iCub/src/gui/frameGrabberGui2/fggui_main.h
 	Changed exposure control.
 	Refresh button added to GUI.
 
