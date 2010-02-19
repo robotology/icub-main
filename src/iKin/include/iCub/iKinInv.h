@@ -972,7 +972,7 @@ public:
     double get_guardRatio() { return guardRatio; }
 
     /**
-    * Returns the parameter gamma (0.03 by default). 
+    * Returns the parameter gamma. 
     * @return gamma.
     */
     double get_gamma() { return gamma; }

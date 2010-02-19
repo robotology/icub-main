@@ -1069,7 +1069,7 @@ MultiRefMinJerkCtrl::MultiRefMinJerkCtrl(iKinChain &c, unsigned int _ctrlPose,
     genTrajTask =new minJerkTrajGen(Ts,x);
     Int=new Integrator(Ts,q,lim);
 
-    gamma=0.01;
+    gamma=0.02;
     guardRatio=0.1;
 
     qGuard.resize(dim);
