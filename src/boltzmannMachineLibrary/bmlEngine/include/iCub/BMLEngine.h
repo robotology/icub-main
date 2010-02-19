@@ -37,6 +37,70 @@ using namespace yarp::sig::draw;
 *
 * \author Rea Francesco
 */
+/**
+*
+@ingroup icub_module
+\defgroup icub_bmlEngine bmlEngine
+
+This class implements a process able of getting command from a controller 
+interpreting them in term of callings to function of the library BM(BOLZMANN MACHINE LIBRARY)
+the module reads any command on the port /inCmd whereas the input image for any clamping is read on /inputImage
+
+\section intro_sec Description
+This module receives commands as bottle from the bmlInterface GUI. The command respect a communication stardard based
+on bottle composed of vocabols
+
+
+The module does:
+- reads commands from the bmlInterface GUI
+- produces images representing the state of every allocated layer
+- clamp an input into the selected layer
+
+\image html boltzmannMachineLibrary.png
+
+\section lib_sec Libraries
+YARP
+OPENCV
+
+\section parameters_sec Parameters
+--name:defines the name of the module and the rootname of every port
+ 
+\section portsa_sec Ports Accessed
+- /imageProcessor/cmd 
+
+
+\section portsc_sec Ports Created
+Input ports:
+- /imageProcessorInterface/img:i
+Outports
+- /imageProcessorInterface/cmd
+
+
+
+\section in_files_sec Input Data Files
+none
+
+\section out_data_sec Output Data Files
+none
+ 
+\section conf_file_sec Configuration Files
+none
+
+
+\section tested_os_sec Tested OS
+Linux and Windows.
+
+\section example_sec Example Instantiation of the Module
+imageProcessorInterface
+
+
+\author Francesco Rea
+
+Copyright (C) 2008 RobotCub Consortium
+
+CopyPolicy: Released under the terms of the GNU GPL v2.0.
+
+**/
 class BMLEngine : public Module {
 private:
     /** 
