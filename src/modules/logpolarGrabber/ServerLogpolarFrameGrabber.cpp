@@ -363,9 +363,19 @@ bool ServerLogpolarFrameGrabber::open(yarp::os::Searchable& config) {
     addUsage("[get] [ovl]", "get the overlap between receptive fields in the logpolar image");
 
     // configure and start acquisition thread.
-    double framerate = config.check("framerate",Value("0")).asDouble(); // this is the period in fact (not the rate)!
-    if (framerate < 0) framerate = 0.;
-    RateThread::setRate((int)(framerate+.5));
+    double framerate = config.check("framerate",Value("0")).asDouble();
+
+    if (framerate < 0.0) framerate = 0.0;
+
+    if (framerate > 0.0)
+    {
+        RateThread::setRate((int)(1000.0/framerate+.5));
+    }
+    else
+    {
+        RateThread::setRate(0);
+    }
+
     if (!RateThread::start()) {
         fprintf(stderr, "ServerLogpolarFrameGrabber: Troubles starting the grabber thread\n");
         // LATER: here I need to delete all objects, close ports, etc.
