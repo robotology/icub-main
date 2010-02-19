@@ -16,22 +16,22 @@ using namespace std;
 
 int main(int argc, char *argv[]) {
 
-	
-	//initialise Yarp Network
-	Network yarp;
     
-	// Get command line options
-	//Property options;
-	//options.fromCommand(argc,argv);
-	//module.setOptions(options);
+    //initialise Yarp Network
+    Network yarp;
+    
+    // Get command line options
+    //Property options;
+    //options.fromCommand(argc,argv);
+    //module.setOptions(options);
 
-	
+    
 
     BMLEngine module;
     module.setName("/rea/BMLEngine");
-	bool ret=module.runModule(argc,argv);
-	if(!ret)
-		module.close();
-	return ret;
-	//return 0;
+    bool ret=module.runModule(argc,argv);
+    if(!ret)
+        module.close();
+    return ret;
+    //return 0;
 }
