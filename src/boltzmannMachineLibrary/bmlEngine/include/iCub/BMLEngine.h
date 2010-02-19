@@ -66,15 +66,15 @@ OPENCV
 --name:defines the name of the module and the rootname of every port
  
 \section portsa_sec Ports Accessed
-- /imageProcessor/cmd 
-
+none
 
 \section portsc_sec Ports Created
 Input ports:
-- /imageProcessorInterface/img:i
-Outports
-- /imageProcessorInterface/cmd
+- <name>/cmd:i
+- <name>/image:i
 
+Outports
+- <name>/cmd:o
 
 
 \section in_files_sec Input Data Files
@@ -101,6 +101,8 @@ Copyright (C) 2008 RobotCub Consortium
 CopyPolicy: Released under the terms of the GNU GPL v2.0.
 
 **/
+
+
 class BMLEngine : public Module {
 private:
     /** 

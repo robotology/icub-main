@@ -23,8 +23,8 @@ static yarp::os::Semaphore *ptr_semaphore;
 
 void BMLEngine::openCommandPort(){
     _pOutPort = new yarp::os::BufferedPort<yarp::os::Bottle>;
-    printf("Registering port %s on network %s...\n", "/rea/BMLEngine/outCommand","dafult");
-    bool ok = _pOutPort->open("/rea/BMLEngine/outCommand");
+    printf("Registering port %s on network %s...\n", getName("/cmd:o").c_str(),"default");
+    bool ok = _pOutPort->open(getName("/cmd:o").c_str());
     if  (ok)
         printf("Port registration succeed!\n");
     else 
@@ -35,7 +35,7 @@ void BMLEngine::openCommandPort(){
 
 void BMLEngine::closeCommandPort(){
     //_pOutPort = new yarp::os::BufferedPort<yarp::os::Bottle>;
-    printf("Closing port %s on network %s...\n", "/rea/BMLEngine/outCommand","dafult");
+    printf("Closing port %s on network %s...\n", getName("/cmd:o"),"default");
     _pOutPort->close();//("/rea/BMLEngine/outCommand");
 }
 
