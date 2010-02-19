@@ -1,4 +1,10 @@
 
+2010-02-18 Ugo Pattacini <ugo.pattacini@iit.it>
+	   * minJerkTrajGen: feedback formulation (Shadmehr)
+
+2010-02-17 Francesco Nori <francesco.nori@iit.it>
+	   * added functions dcm2euler and euler2dcm
+
 2010-02-03 Ugo Pattacini <ugo.pattacini@iit.it>
 	   * CMakeLists.txt, CTRLLIBConfig.cmake: for win32 DEBUG_POSTFIX put equal to "d"
 
