@@ -42,6 +42,68 @@ using namespace yarp::sig::draw;
 * @author Francesco Rea
 */
 
+/**
+*
+@ingroup icub_module
+\defgroup icub_imageProcessorInterface imageProcessorInterface
+
+ Graphical interface used in order to send preformatted commands to the BMLEngine through port
+ and to visualize the input data, the state of the layer and the feature extracted by the boltzmann Machine
+
+\section intro_sec Description
+This module sends commands as bottle to the BMLEngine module. The command respect the communication stardard of the BMLEngine.
+In addition this module is able to draw the active layers in the associated instance of the BMLEngine. This allows the user to 
+visually control the learning process of the Boltzmann Machine.
+
+
+The module does:
+- send commands to the BMLEngine module
+- plot  images of the active layers on the drawing area of the window
+
+\image html imageProcessor.png
+
+\section lib_sec Libraries
+YARP
+BML
+
+\section parameters_sec Parameters
+--name:defines the name of the module and the rootname of every port
+ 
+\section portsa_sec Ports Accessed
+- BMLEngine/cmd 
+
+
+\section portsc_sec Ports Created
+Input ports:
+- <name>/img:i
+Outports
+- <name>/cmd
+
+\section in_files_sec Input Data Files
+none
+
+\section out_data_sec Output Data Files
+none
+ 
+\section conf_file_sec Configuration Files
+none
+
+
+\section tested_os_sec Tested OS
+Linux and Windows.
+
+\section example_sec Example Instantiation of the Module
+bmlInterface
+
+
+\author Francesco Rea
+
+Copyright (C) 2008 RobotCub Consortium
+
+CopyPolicy: Released under the terms of the GNU GPL v2.0.
+
+**/
+
 class BMLInterface : public Module {
 private:
 	/**
