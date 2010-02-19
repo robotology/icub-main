@@ -49,25 +49,20 @@ static int standard_layer_dim_units=10;
   <ul><a href=http://www.cs.toronto.edu/~hinton/absps/pdp7.pdf>first reference</a></ul>
   <ul><a href=http://www.cs.toronto.edu/~hinton/science.pdf>the milestone in the field</a> </ul>
   <ul><a href=http://www.cs.toronto.edu/~hinton/absps/dbm.pdf>the last outstanding work</a></ul>
+  </li>
 
  
   \section dep_sec Dependencies 
   - none 
  
-   
-  \author Francesco Rea
   
   \defgroup bml bml 
    
   @ingroup bml  
  
-
- 
   Date: first release 19/02/2010
- 
-  
- 
-    \author Francesco Rea
+   
+  \author Francesco Rea
 
 Copyright (C) 2008 RobotCub Consortium
 
