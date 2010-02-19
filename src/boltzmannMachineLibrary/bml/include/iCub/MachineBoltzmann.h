@@ -34,20 +34,30 @@ static int standard_layer_dim_units=10;
    
   @ingroup icub_libraries 
    
-  Classes for forward-inverse kinematics of serial-links chains
-  of revolute joints and iCub limbs 
+  Classes for the management of Boltzmann Machines.
+
+  The user can :
+  - add connections
+  - add layers
+  - evolve freely the Boltzmann Machine
+  - evolve clamped the Boltzmann Machine
+  - save the Boltzmann Machine
+  - load the Boltzmann Machine
    
-  \note <b>SI units adopted</b>: meters for lengths and radians
-        for angles.
+  \note <b>Boltzmann Machine</b>: 
+  <li>
+  <ul><a href=http://www.cs.toronto.edu/~hinton/absps/pdp7.pdf>first reference</a></ul>
+  <ul><a href=http://www.cs.toronto.edu/~hinton/science.pdf>the milestone in the field</a> </ul>
+  <ul><a href=http://www.cs.toronto.edu/~hinton/absps/dbm.pdf>the last outstanding work</a></ul>
+
  
   \section dep_sec Dependencies 
-  - ctrlLib 
-  - IPOPT: see the <a
-    href="http://eris.liralab.it/wiki/Installing_IPOPT">wiki</a>.
+  - none 
+ 
    
   \author Francesco Rea
   
-  \defgroup iKinFwd iKinFwd 
+  \defgroup bml bml 
    
   @ingroup bml  
  
