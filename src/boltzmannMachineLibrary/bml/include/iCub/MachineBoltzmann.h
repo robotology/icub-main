@@ -51,6 +51,7 @@ static int standard_layer_dim_units=10;
   <ul><a href=http://www.cs.toronto.edu/~hinton/absps/dbm.pdf>the last outstanding work</a></ul>
   </li>
 
+  \image html boltzmannMachineLibrary.png
  
   \section dep_sec Dependencies 
   - none 

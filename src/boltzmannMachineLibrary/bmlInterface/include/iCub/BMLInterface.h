@@ -62,7 +62,7 @@ The module does:
 - send commands to the BMLEngine module
 - plot  images of the active layers on the drawing area of the window
 
-\image html boltzmannMachineFramework.png
+\image html boltzmannMachineLibrary.png
 
 \section lib_sec Libraries
 YARP
