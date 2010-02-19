@@ -30,9 +30,40 @@ static int standard_layer_dim_rows=10;
 static int standard_layer_dim_units=10;
 
 /**
-* Machine Boltzmann Class
-* @author Francesco Rea
-*/
+  \defgroup bml bml
+   
+  @ingroup icub_libraries 
+   
+  Classes for forward-inverse kinematics of serial-links chains
+  of revolute joints and iCub limbs 
+   
+  \note <b>SI units adopted</b>: meters for lengths and radians
+        for angles.
+ 
+  \section dep_sec Dependencies 
+  - ctrlLib 
+  - IPOPT: see the <a
+    href="http://eris.liralab.it/wiki/Installing_IPOPT">wiki</a>.
+   
+  \author Francesco Rea
+  
+  \defgroup iKinFwd iKinFwd 
+   
+  @ingroup bml  
+ 
+
+ 
+  Date: first release 19/02/2010
+ 
+  
+ 
+    \author Francesco Rea
+
+Copyright (C) 2008 RobotCub Consortium
+
+CopyPolicy: Released under the terms of the GNU GPL v2.0.
+
+**/
 
 class MachineBoltzmann{
 private:
