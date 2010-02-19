@@ -182,3 +182,6 @@ public:
 };
 
 #endif //_LAYER_H_
+
+
+//----- end-of-file --- ( next line intentionally left blank ) ------------------

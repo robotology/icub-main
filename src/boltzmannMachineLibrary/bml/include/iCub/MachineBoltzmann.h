@@ -302,3 +302,7 @@ public:
 	list<double> _probClamped;
 };
 #endif //_MACHINEBOLTZMANN_H_
+
+
+//----- end-of-file --- ( next line intentionally left blank ) ------------------
+

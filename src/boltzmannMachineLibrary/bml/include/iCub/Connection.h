@@ -100,3 +100,9 @@ public:
 };
 
 #endif //_CONNECTION_H_
+
+
+
+//----- end-of-file --- ( next line intentionally left blank ) ------------------
+
+

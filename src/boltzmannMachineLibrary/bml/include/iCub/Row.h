@@ -78,3 +78,6 @@ public:
 	map<std::string,Connection> connectionList;
 };
 #endif //_UNIT_H_
+
+
+//----- end-of-file --- ( next line intentionally left blank ) ------------------
