@@ -70,15 +70,15 @@
 
 YARPIntegralImage::YARPIntegralImage()
 {
-	_nRows = 0;
-	_nCols = 0;
-	_nfovea = 0;
-	_max = 1.0;
+    _nRows = 0;
+    _nCols = 0;
+    _nfovea = 0;
+    _max = 1.0;
 }
 
 YARPIntegralImage::YARPIntegralImage(int nC, int nR, int sf)
 {
-	_resize(nC, nR, sf);
+    _resize(nC, nR, sf);
 }
 
 YARPIntegralImage::~YARPIntegralImage()
@@ -88,154 +88,154 @@ YARPIntegralImage::~YARPIntegralImage()
 
 void YARPIntegralImage::resize(int nC, int nR, int sf)
 {
-	_resize(nC, nR, sf);
+    _resize(nC, nR, sf);
 }
 
 void YARPIntegralImage::_resize(int nC, int nR, int sf)
 {
-	//ACE_ASSERT ((nR>0) && (nC>0));
+    //ACE_ASSERT ((nR>0) && (nC>0));
 
-	_nCols = nC;
-	_nRows = nR;
-	_nfovea = sf;
+    _nCols = nC;
+    _nRows = nR;
+    _nfovea = sf;
 
-	_max = (float) (255*(nR-sf)*nC);
-	
-	_integralImg.resize(nC, nR);
-	_rowSum.resize(nC,nR);
+    _max = (float) (255*(nR-sf)*nC);
+    
+    _integralImg.resize(nC, nR);
+    _rowSum.resize(nC,nR);
 }
 
 int YARPIntegralImage::computeCartesian(ImageOf<PixelMono> &input)
 {
-	int r;
-	int c;
+    int r;
+    int c;
 
-	// first row
-	_rowSum(0,0) = (float) input(0,0);
-	_integralImg(0, 0) = _rowSum(0,0);
-		
-	for(c = 1; c < _nCols; c++)
-	{
-		_rowSum(c,0) = _rowSum(c-1,0) + (float) input(c,0);
-		_integralImg(c,0) = _rowSum(c,0);
-	}
-		
-	for(r = 1; r < _nRows; r++)
-	{
-		// first col
-		_rowSum(0,r) = (float) input(0,r);
-		_integralImg(0, r) = _integralImg(0, r-1) + _rowSum(0,r);
-		
-		for(c = 1; c < _nCols; c++)
-		{
-			_rowSum(c,r) = _rowSum(c-1,r) + (float) input(c,r);
-			_integralImg(c,r) = _integralImg(c, r-1) + _rowSum(c,r);
-		}
-	}
+    // first row
+    _rowSum(0,0) = (float) input(0,0);
+    _integralImg(0, 0) = _rowSum(0,0);
+        
+    for(c = 1; c < _nCols; c++)
+    {
+        _rowSum(c,0) = _rowSum(c-1,0) + (float) input(c,0);
+        _integralImg(c,0) = _rowSum(c,0);
+    }
+        
+    for(r = 1; r < _nRows; r++)
+    {
+        // first col
+        _rowSum(0,r) = (float) input(0,r);
+        _integralImg(0, r) = _integralImg(0, r-1) + _rowSum(0,r);
+        
+        for(c = 1; c < _nCols; c++)
+        {
+            _rowSum(c,r) = _rowSum(c-1,r) + (float) input(c,r);
+            _integralImg(c,r) = _integralImg(c, r-1) + _rowSum(c,r);
+        }
+    }
 
-	return true;
+    return true;
 }
 
 int YARPIntegralImage::computeCartesian(ImageOf<PixelMonoSigned> &input)
 {
-	int r;
-	int c;
+    int r;
+    int c;
 
-	// first row
-	_rowSum(0,0) = (float) input(0,0);
-	_integralImg(0, 0) = _rowSum(0,0);
-		
-	for(c = 1; c < _nCols; c++)
-	{
-		_rowSum(c,0) = _rowSum(c-1,0) + (float) input(c,0);
-		_integralImg(c,0) = _rowSum(c,0);
-	}
-		
-	for(r = 1; r < _nRows; r++)
-	{
-		// first col
-		_rowSum(0,r) = (float) input(0,r);
-		_integralImg(0, r) = _integralImg(0, r-1) + _rowSum(0,r);
-		
-		for(c = 1; c < _nCols; c++)
-		{
-			_rowSum(c,r) = _rowSum(c-1,r) + (float) input(c,r);
-			_integralImg(c,r) = _integralImg(c, r-1) + _rowSum(c,r);
-		}
-	}
+    // first row
+    _rowSum(0,0) = (float) input(0,0);
+    _integralImg(0, 0) = _rowSum(0,0);
+        
+    for(c = 1; c < _nCols; c++)
+    {
+        _rowSum(c,0) = _rowSum(c-1,0) + (float) input(c,0);
+        _integralImg(c,0) = _rowSum(c,0);
+    }
+        
+    for(r = 1; r < _nRows; r++)
+    {
+        // first col
+        _rowSum(0,r) = (float) input(0,r);
+        _integralImg(0, r) = _integralImg(0, r-1) + _rowSum(0,r);
+        
+        for(c = 1; c < _nCols; c++)
+        {
+            _rowSum(c,r) = _rowSum(c-1,r) + (float) input(c,r);
+            _integralImg(c,r) = _integralImg(c, r-1) + _rowSum(c,r);
+        }
+    }
 
-	return true;
+    return true;
 }
 
 int YARPIntegralImage::computeLp(ImageOf<PixelMono> &input)
 {
-	int r;
-	int c;
+    int r;
+    int c;
 
-	// first pixel, init
-	_rowSum(0,0) = 0; //input(0,0)/255.0;
-	_integralImg(0,0) = _rowSum(0,0);
-	
-	// fovea, zero it for now
-	for(r = 0; r<_nfovea; r++)
-		for(c = 0; c < _nCols; c++)
-		{
-			_rowSum(c,r) = 0;
-			_integralImg(c,r) = 0;
-		}
-	
-	
-	for(r = _nfovea; r < _nRows; r++)
-	{
-		// first col
-		//_rowSum(0,r) = (float) (input(0,r)*pSize(c,r,_nfovea));
-		_rowSum(0,r) = (float) (input(0,r)*sizeof(c*r*_nfovea));
-		_integralImg(0, r) = _integralImg(0, r-1) + _rowSum(0,r);
-		
-		for(c = 1; c < _nCols; c++)
-		{
-			
-			//_rowSum(c,r) = _rowSum(c-1,r) + (float) (input(c,r)*pSize(c,r,_nfovea));
-			_rowSum(c,r) = _rowSum(c-1,r) + (float) (input(c,r)*sizeof(c*r*_nfovea));
-			_integralImg(c,r) = _integralImg(c, r-1) + _rowSum(c,r);
-		}
-	}
+    // first pixel, init
+    _rowSum(0,0) = 0; //input(0,0)/255.0;
+    _integralImg(0,0) = _rowSum(0,0);
+    
+    // fovea, zero it for now
+    for(r = 0; r<_nfovea; r++)
+        for(c = 0; c < _nCols; c++)
+        {
+            _rowSum(c,r) = 0;
+            _integralImg(c,r) = 0;
+        }
+    
+    
+    for(r = _nfovea; r < _nRows; r++)
+    {
+        // first col
+        //_rowSum(0,r) = (float) (input(0,r)*pSize(c,r,_nfovea));
+        _rowSum(0,r) = (float) (input(0,r)*sizeof(c*r*_nfovea));
+        _integralImg(0, r) = _integralImg(0, r-1) + _rowSum(0,r);
+        
+        for(c = 1; c < _nCols; c++)
+        {
+            
+            //_rowSum(c,r) = _rowSum(c-1,r) + (float) (input(c,r)*pSize(c,r,_nfovea));
+            _rowSum(c,r) = _rowSum(c-1,r) + (float) (input(c,r)*sizeof(c*r*_nfovea));
+            _integralImg(c,r) = _integralImg(c, r-1) + _rowSum(c,r);
+        }
+    }
 
-	return true;
+    return true;
 }
 
 int YARPIntegralImage::computeLp(ImageOf<PixelMonoSigned> &input)
 {
-	int r;
-	int c;
+    int r;
+    int c;
 
-	// first pixel, init
-	_rowSum(0,0) = 0; //input(0,0)/255.0;
-	_integralImg(0,0) = _rowSum(0,0);
-	
-	// fovea, zero it for now
-	for(r = 0; r<_nfovea; r++)
-		for(c = 0; c < _nCols; c++)
-		{
-			_rowSum(c,r) = 0;
-			_integralImg(c,r) = 0;
-		}
-	
-	
-	for(r = _nfovea; r < _nRows; r++)
-	{
-		// first col
-		//_rowSum(0,r) = (float) (input(0,r)*pSize(c,r,_nfovea));
-		_rowSum(0,r) = (float) (input(0,r)*sizeof(c*r*_nfovea));
-		_integralImg(0, r) = _integralImg(0, r-1) + _rowSum(0,r);
-		
-		for(c = 1; c < _nCols; c++)
-		{
-			//_rowSum(c,r) = _rowSum(c-1,r) + (float) (input(c,r)*pSize(c,r,_nfovea));
-			_rowSum(c,r) = _rowSum(c-1,r) + (float) (input(c,r)*sizeof(c*r*_nfovea));
-			_integralImg(c,r) = _integralImg(c, r-1) + _rowSum(c,r);
-		}
-	}
+    // first pixel, init
+    _rowSum(0,0) = 0; //input(0,0)/255.0;
+    _integralImg(0,0) = _rowSum(0,0);
+    
+    // fovea, zero it for now
+    for(r = 0; r<_nfovea; r++)
+        for(c = 0; c < _nCols; c++)
+        {
+            _rowSum(c,r) = 0;
+            _integralImg(c,r) = 0;
+        }
+    
+    
+    for(r = _nfovea; r < _nRows; r++)
+    {
+        // first col
+        //_rowSum(0,r) = (float) (input(0,r)*pSize(c,r,_nfovea));
+        _rowSum(0,r) = (float) (input(0,r)*sizeof(c*r*_nfovea));
+        _integralImg(0, r) = _integralImg(0, r-1) + _rowSum(0,r);
+        
+        for(c = 1; c < _nCols; c++)
+        {
+            //_rowSum(c,r) = _rowSum(c-1,r) + (float) (input(c,r)*pSize(c,r,_nfovea));
+            _rowSum(c,r) = _rowSum(c-1,r) + (float) (input(c,r)*sizeof(c*r*_nfovea));
+            _integralImg(c,r) = _integralImg(c, r-1) + _rowSum(c,r);
+        }
+    }
 
-	return true;
+    return true;
 }

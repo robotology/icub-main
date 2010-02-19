@@ -1,6 +1,6 @@
 // -*- mode:C++; tab-width:4; c-basic-offset:4; indent-tabs-mode:nil -*-
-#ifndef _IMAGEPROCESSMODULE_H_
-#define _IMAGEPROCESSMODULE_H_
+#ifndef _BMLINTERFACE_H_
+#define _BMLINTERFACE_H_
 
 #include <ace/config.h>
 
@@ -156,10 +156,7 @@ private:
 	* options of the connection
 	*/
 	Property options;	//
-    /**
-    * graphic unit interface composed by a window with drawing area and buttons
-    */
-    graphicThread* gui;
+    
 	
 public:
 	/**
@@ -301,7 +298,14 @@ public:
 	*Column Dimension of the layer currently set
 	*/
 	int colDim;
+    /**
+    * graphic unit interface composed by a window with drawing area and buttons
+    */
+    graphicThread* gui;
 	
 };
 
-#endif //_IMAGEPROCESSMODULE_H_
+#endif //_BMLINTERFACE_H_
+
+
+//----- end-of-file --- ( next line intentionally left blank ) ------------------

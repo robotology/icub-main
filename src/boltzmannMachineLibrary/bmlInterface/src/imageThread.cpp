@@ -7,11 +7,11 @@
 * initialise the thread
 */
 bool imageThread::threadInit(){
-	cvImage= cvCreateImage(cvSize(320,240), IPL_DEPTH_8U, 3 );
-	image2=new ImageOf<PixelRgb>;
-	image2->resize(320,240);
-	printf("Image Thread initialising.....");
-	return true;
+    cvImage= cvCreateImage(cvSize(320,240), IPL_DEPTH_8U, 3 );
+    image2=new ImageOf<PixelRgb>;
+    image2->resize(320,240);
+    printf("Image Thread initialising.....");
+    return true;
 }
 
 /**
@@ -19,9 +19,9 @@ bool imageThread::threadInit(){
 * @param s is true if the thread started
 */
 void imageThread::afterStart(bool s){
-	if(s){
-		printf("Image Thread after start.....\n");		
-	}
+    if(s){
+        printf("Image Thread after start.....\n");		
+    }
 
 }
 
@@ -29,17 +29,17 @@ void imageThread::afterStart(bool s){
 * running code of the thread
 */
 void imageThread::run(){
-	//printf("Image Thread running..... \n");
-	
+    //printf("Image Thread running..... \n");
+    
 }
 
 /**
 * code executed when the thread is released
 */
 void imageThread::threadRelease(){
-	//printf("Image Thread releasing..... \n");	
+    //printf("Image Thread releasing..... \n");	
 }
 
 ImageOf<PixelRgb>* imageThread::getYarpImage(){
-	return image2;
+    return image2;
 }
