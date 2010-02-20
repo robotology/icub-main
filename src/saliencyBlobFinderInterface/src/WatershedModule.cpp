@@ -1321,7 +1321,6 @@ ConstString WatershedModule::getName(){
 }
 
 ConstString WatershedModule::getName(ConstString suffix){
-    
     std::string namestr(name.c_str());
     namestr.append("/");
     namestr.append(suffix.c_str());
