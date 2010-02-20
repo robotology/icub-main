@@ -12,25 +12,28 @@ using namespace ctrl;
 
 /************************************************************************/
 minJerkTrajGen::minJerkTrajGen(const double _Ts, const Vector &x0) :
-                               Ts(_Ts), x(x0)
+                               Ts(_Ts), x(x0), TOld(0.0)
 {
     dim=x.length();
 
-    v.resize(dim,0.0);
-    a.resize(dim,0.0);
+    v.resize(dim);
+    a.resize(dim);
+    j.resize(dim);
 
-    A.resize(3,3);
-    A(0,0)=0.0; A(0,1)=1.0; A(0,2)=0.0;
-    A(1,0)=0.0; A(1,1)=0.0; A(1,2)=1.0;
-    b.resize(3,0.0);
-
-    TOld=0.0;
+    A.resize(4,4);
+    A(0,0)=0.0; A(0,1)=1.0; A(0,2)=0.0; A(0,3)=0.0;
+    A(1,0)=0.0; A(1,1)=0.0; A(1,2)=1.0; A(1,3)=0.0;
+    A(2,0)=0.0; A(2,1)=0.0; A(2,2)=0.0; A(2,3)=1.0;
+    b.resize(4,0.0);
 
     for (unsigned int i=0; i<dim; i++)
     {
-        Vector X(3);
+        Vector X(4);
 
-        X[0]=x[i]; X[1]=X[2]=0.0;
+        X[0]=x[i];
+        X[1]=v[i]=0.0;
+        X[2]=a[i]=0.0;
+        X[3]=j[i]=0.0;
 
         Int.push_back(new Integrator(Ts,X));
     }
@@ -44,9 +47,12 @@ void minJerkTrajGen::reset(const Vector &fb)
 {
     for (unsigned int i=0; i<dim; i++)
     {
-        Vector X(3);
+        Vector X(4);
 
-        X[0]=fb[i]; X[1]=v[i]=0.0; X[2]=a[i]=0.0;
+        X[0]=fb[i];
+        X[1]=v[i]=0.0;
+        X[2]=a[i]=0.0;
+        X[3]=j[i]=0.0;
 
         Int[i]->reset(X);
     }
@@ -60,9 +66,13 @@ void minJerkTrajGen::compute(const double T, const Vector &xd, const Vector &fb)
     {    
         double T2=T*T;
         double T3=T2*T;
+        double T4=T3*T;
 
-        A(2,0)=-195.240/T3; A(2,1)=-101.431/T2; A(2,2)=-17.486/T;
-        b[2]=-A(2,0);
+        A(3,0)=-3619.92935135721/T4;
+        A(3,1)=-1866.85091315535/T3;
+        A(3,2)=-361.022300721807/T2;
+        A(3,3)=-31.0284112524965/T;
+        b[3]=-A(3,0);
 
         TOld=T;
     }
@@ -70,20 +80,26 @@ void minJerkTrajGen::compute(const double T, const Vector &xd, const Vector &fb)
     mutex->wait();
     for (unsigned int i=0; i<dim; i++)
     {
-        Vector X(3);
+        Vector X(4);
 
-        X[0]=fb[i]; X[1]=v[i]; X[2]=a[i];
+        X[0]=fb[i];
+        X[1]=v[i];
+        X[2]=a[i];
+        X[3]=j[i];
 
         X=Int[i]->integrate(A*X+xd[i]*b);
 
-        x[i]=X[0]; v[i]=X[1]; a[i]=X[2];
+        x[i]=X[0];
+        v[i]=X[1];
+        a[i]=X[2];
+        j[i]=X[3];
     }
     mutex->post();
 }
 
 
 /************************************************************************/
-Vector minJerkTrajGen::get_x()
+Vector minJerkTrajGen::get_pos()
 {
     mutex->wait();
     Vector latch_x=x;
@@ -94,7 +110,7 @@ Vector minJerkTrajGen::get_x()
 
 
 /************************************************************************/
-Vector minJerkTrajGen::get_v()
+Vector minJerkTrajGen::get_vel()
 {
     mutex->wait();
     Vector latch_v=v;
@@ -105,13 +121,24 @@ Vector minJerkTrajGen::get_v()
 
 
 /************************************************************************/
-Vector minJerkTrajGen::get_a()
+Vector minJerkTrajGen::get_acc()
 {
     mutex->wait();
     Vector latch_a=a;
     mutex->post();
 
     return latch_a;
+}
+
+
+/************************************************************************/
+Vector minJerkTrajGen::get_jerk()
+{
+    mutex->wait();
+    Vector latch_j=j;
+    mutex->post();
+
+    return latch_j;
 }
 
 

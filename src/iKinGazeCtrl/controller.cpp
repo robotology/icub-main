@@ -249,8 +249,8 @@ void Controller::run()
     genTrajNeck->compute(neckTime,qdNeck,fbNeck);
     genTrajEyes->compute(eyesTime,qdEyes,fbEyes);
 
-    vNeck=genTrajNeck->get_v();
-    vEyes=genTrajEyes->get_v()-commData->get_compv();
+    vNeck=genTrajNeck->get_vel();
+    vEyes=genTrajEyes->get_vel()-commData->get_compv();
 
     for (unsigned int i=0; i<3; i++)
     {

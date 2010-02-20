@@ -1169,8 +1169,8 @@ Vector MultiRefMinJerkCtrl::iterate(Vector &xd, Vector &qd, const unsigned int v
         genTrajJoint->compute(execTime,q_set,q);
         genTrajTask->compute(execTime,x_set,x);
 
-        qdot=genTrajJoint->get_v();
-        xdot7=genTrajTask->get_v();
+        qdot=genTrajJoint->get_vel();
+        xdot7=genTrajTask->get_vel();
 
         xdot[0]=xdot7[0];
         xdot[1]=xdot7[1];
