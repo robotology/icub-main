@@ -1126,3 +1126,213 @@ void BMLEngine::clampLayer(Layer layer){
     //ippiFree(im_tmp);
     //ippiFree(im_tmp_tmp);
 }
+
+bool BMLEngine::respond(const Bottle &command,Bottle &reply){
+        
+    bool ok = false;
+    bool rec = false; // is the command recognized?
+
+    mutex.wait();
+    switch (command.get(0).asVocab()) {
+    case COMMAND_VOCAB_HELP:
+        rec = true;
+        {
+            reply.addString("help");
+
+            reply.addString("\n");
+            reply.addString("get fn \t: general get command \n");
+            
+
+            reply.addString("\n");
+            reply.addString("set s1 <s> \t: general set command \n");
+
+            reply.addString("\n");
+            reply.addString("shut down : run the rgb processor \n");
+            reply.addString("run yuv : run the yuv processor");
+            
+
+            reply.addString("\n");
+
+
+            ok = true;
+        }
+        break;
+    case COMMAND_VOCAB_NAME:
+        rec = true;
+        {
+            // check and change filter name to pass on to the next filter
+            string fName(command.get(1).asString());
+            string subName;
+            Bottle subCommand;
+            int pos=1;
+            //int pos = fName.find_first_of(filter->getFilterName());
+            if (pos == 0){
+                pos = fName.find_first_of('.');
+                if (pos  > -1){ // there is a subfilter name
+                    subName = fName.substr(pos + 1, fName.size()-1);
+                    subCommand.add(command.get(0));
+                    subCommand.add(Value(subName.c_str()));
+                }
+                for (int i = 2; i < command.size(); i++)
+                    subCommand.add(command.get(i));
+                //ok = filter->respond(subCommand, reply);
+            }
+            else{
+                printf("filter name  does not match top filter name ");
+                ok = false;
+            }
+        }
+        break;
+    case COMMAND_VOCAB_SET:
+        rec = true;
+        {
+            switch(command.get(1).asVocab()) {
+            case COMMAND_VOCAB_SALIENCE_THRESHOLD:{
+                double thr = command.get(2).asDouble();
+            }
+                break;
+            case COMMAND_VOCAB_NUM_BLUR_PASSES:{
+                int nb = command.get(2).asInt();
+                //reply.addString("connection 2");
+              
+                ok=true;
+            }
+                break;
+            /*case COMMAND_VOCAB_TEMPORAL_BLUR:{
+                int size = command.get(2).asInt();
+                ok = this->setTemporalBlur(size);
+            }*/
+                break;
+            case COMMAND_VOCAB_NAME:{
+                string s(command.get(2).asString().c_str());
+                reply.addString("connection 1");
+                ok=true;
+            }
+                break;
+            case COMMAND_VOCAB_CHILD_NAME:{
+                int j = command.get(2).asInt();
+                string s(command.get(3).asString().c_str());
+            }
+                break;
+            case COMMAND_VOCAB_WEIGHT:{
+                double w = command.get(2).asDouble();
+            }
+                break;
+            case COMMAND_VOCAB_CHILD_WEIGHT:{
+                int j = command.get(2).asInt();
+                double w = command.get(3).asDouble();
+            }
+                break;
+            case COMMAND_VOCAB_CHILD_WEIGHTS:{
+                Bottle weights;
+                for (int i = 2; i < command.size(); i++)
+                    weights.addDouble(command.get(i).asDouble());
+            }
+                break;
+            default:
+                cout << "received an unknown request after a SALIENCE_VOCAB_SET" << endl;
+                break;
+            }
+        }
+        break;
+     case COMMAND_VOCAB_RUN:
+        rec = true;
+        {
+            switch(command.get(1).asVocab()) {
+            /*case COMMAND_VOCAB_RGB_PROCESSOR:{
+                
+                
+                ok=true;
+            }
+                break;
+            case COMMAND_VOCAB_YUV_PROCESSOR:{
+                
+                ok=true;
+            }
+                break;
+                */
+            default:
+                cout << "received an unknown request after a _VOCAB_RUN" << endl;
+                break;
+            }
+        }
+        break;
+    case COMMAND_VOCAB_GET:
+        rec = true;
+        {
+            reply.addVocab(COMMAND_VOCAB_IS);
+            reply.add(command.get(1));
+            switch(command.get(1).asVocab()) {
+            case COMMAND_VOCAB_SALIENCE_THRESHOLD:{
+                double thr=0.0;
+                reply.addDouble(thr);
+                ok = true;
+            }
+                break;
+            case COMMAND_VOCAB_NUM_BLUR_PASSES:{
+                int nb = 0;
+                reply.addInt(nb);
+                ok = true;
+            }
+                break;
+            case COMMAND_VOCAB_NAME:{
+                string s(" ");
+                reply.addString(s.c_str());
+                ok = true;
+            }
+                break;
+            case COMMAND_VOCAB_CHILD_NAME:{
+                int j = command.get(2).asInt();
+                string s(" ");
+                reply.addString(s.c_str());
+                ok = true;
+            }
+                break;
+            case COMMAND_VOCAB_CHILD_COUNT:{
+                int count =0;
+                reply.addInt(count);
+                ok = true;
+            }
+                break;
+            case COMMAND_VOCAB_WEIGHT:{
+                double w = 0.0;
+                reply.addDouble(w);
+                ok = true;
+            }
+                break;
+            case COMMAND_VOCAB_CHILD_WEIGHT:{
+                int j = command.get(2).asInt();
+                double w = 0.0;
+                reply.addDouble(w);
+                ok = true;
+            }
+                break;
+            case COMMAND_VOCAB_CHILD_WEIGHTS:{
+                Bottle weights;
+                //ok = filter->getChildWeights(&weights);
+                for (int k = 0; k < weights.size(); k++)
+                    reply.addDouble(0.0);
+            }
+                break;
+            default:
+                cout << "received an unknown request after a SALIENCE_VOCAB_GET" << endl;
+                break;
+            }
+        }
+        break;
+
+    }
+    mutex.post();
+
+    if (!rec)
+        ok = Module::respond(command,reply);
+    
+    if (!ok) {
+        reply.clear();
+        reply.addVocab(COMMAND_VOCAB_FAILED);
+    }
+    else
+        reply.addVocab(COMMAND_VOCAB_OK);
+
+    return ok;
+} 	

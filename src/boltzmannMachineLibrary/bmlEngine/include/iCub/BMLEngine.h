@@ -28,6 +28,27 @@ using namespace yarp::os;
 using namespace yarp::sig;
 using namespace yarp::sig::draw;
 
+// general command vocab's
+#define COMMAND_VOCAB_HELP VOCAB4('h','e','l','p')
+#define COMMAND_VOCAB_SHUT VOCAB4('s','h','u','t')
+#define COMMAND_VOCAB_SET VOCAB3('s','e','t')
+#define COMMAND_VOCAB_GET VOCAB3('g','e','t')
+#define COMMAND_VOCAB_RUN VOCAB3('r','u','n')
+#define COMMAND_VOCAB_IS VOCAB2('i','s')
+#define COMMAND_VOCAB_FAILED VOCAB4('f','a','i','l')
+#define COMMAND_VOCAB_OK VOCAB2('o','k')
+#define COMMAND_VOCAB_CHILD_COUNT VOCAB2('c','c')
+#define COMMAND_VOCAB_WEIGHT VOCAB1('w')
+#define COMMAND_VOCAB_CHILD_WEIGHT VOCAB2('c','w')
+#define COMMAND_VOCAB_CHILD_WEIGHTS VOCAB3('c','w','s')
+#define COMMAND_VOCAB_NAME VOCAB2('s','1')
+#define COMMAND_VOCAB_CHILD_NAME VOCAB2('c','n')
+#define COMMAND_VOCAB_SALIENCE_THRESHOLD VOCAB2('t','h')
+#define COMMAND_VOCAB_NUM_BLUR_PASSES VOCAB2('s','2')
+
+// directional saliency filter vocab's
+
+
 /**
 * This class implements a process able of getting command from a controller 
 * interpreting them in term of callings to function of the 
@@ -229,6 +250,10 @@ private:
     * value that indicates whether an area can be visually clamped 
     */
     int clampingThreshold;
+    /**
+     * semaphore for the respond function
+     */
+     Semaphore mutex;
 public:
     /** 
     * open the ports
@@ -246,6 +271,10 @@ public:
     * active control of the module
     */
     bool updateModule(); //active control of the Module
+    /**
+    * function that interprets the vocab and respond to the commands
+    */
+    bool respond(const Bottle &command,Bottle &reply);
     /**
     * uses a bottle to comunicate a command to the module linked on 
     */
@@ -344,6 +373,7 @@ public:
     * flag that indicates if the inputImage is ready for clamping
     */
     bool inputImage_flag;
+    
 };
 
 #endif //_BMLEngine_H_
