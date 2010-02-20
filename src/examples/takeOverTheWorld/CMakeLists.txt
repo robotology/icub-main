@@ -1,23 +1,16 @@
+# Copyright: (C) 2010 RobotCub Consortium
+# Authos: Lorenzo Natale
+# CopyPolicy: Released under the terms of the GNU GPL v2.0.
+# Based on code by Paul Fitzpatrick
 
-# This is just an example module, that does not do anything much.  It
-# is intended to be a quick way to understand current good practice
-# for making iCub modules.  This hasn't really stabilized yet, so if
-# you see something that is out of date, please feel free to fix it
+# Cmake code for adding a module to the iCub main build.
+# You can assume yarp has been already found and is 
+# available.
 
 SET(PROJECTNAME takeOverTheWorld)
 
 PROJECT(${PROJECTNAME})
 
-FIND_PACKAGE(YARP)
-FIND_PACKAGE(ICUB QUIET)
-IF (NOT ICUB_FOUND)
-   MESSAGE (STATUS "ICUB repository not found; assuming distributed build.")
-   MESSAGE (STATUS "If this is not what you want, set ICUB_DIR variable.")
-ENDIF (NOT ICUB_FOUND)
-
-FIND_PACKAGE(SHARKSWITHLASERS REQUIRED)
-LINK_LIBRARIES(${SHARKSWITHLASERS_LIBRARIES})
-INCLUDE_DIRECTORIES(${SHARKSWITHLASERS_INCLUDE_DIRS})
 
 # Find .cpp and .h files automatically.  This is a bit lazy,
 # and in principle it would be better to list these files manually.
@@ -30,9 +23,12 @@ SOURCE_GROUP("Header Files" FILES ${folder_header})
 
 # Add our include files into our compiler's search path.
 INCLUDE_DIRECTORIES(${PROJECT_SOURCE_DIR}/include)
+INCLUDE_DIRECTORIES(${sharksWithLasers_INCLUDE_DIRS})
 
 # Create everything needed to build our executable.
 ADD_EXECUTABLE(${PROJECTNAME} ${folder_source} ${folder_header})
+TARGET_LINK_LIBRARIES(${PROJECTNAME} ${sharksWithLasers_LIBRARIES})
+
 INSTALL(TARGETS ${PROJECTNAME} DESTINATION bin)
 
 
