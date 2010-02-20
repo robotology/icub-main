@@ -39,8 +39,8 @@ using namespace yarp::sig::draw;
 
 /**
 *
-@ingroup icub_module
-\defgroup icub_bmlInterface bmlInterface
+@ingroup icub_gui
+\defgroup bmlInterface bmlInterface
 
  Graphical interface used in order to send preformatted commands to the BMLEngine through port
  and to visualize the input data, the state of the layer and the feature extracted by the boltzmann Machine
