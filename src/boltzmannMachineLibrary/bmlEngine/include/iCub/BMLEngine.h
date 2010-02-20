@@ -31,6 +31,7 @@ using namespace yarp::sig::draw;
 // general command vocab's
 #define COMMAND_VOCAB_HELP VOCAB4('h','e','l','p')
 #define COMMAND_VOCAB_SHUT VOCAB4('s','h','u','t')
+#define COMMAND_VOCAB_SHUT VOCAB4('d','o','w','n')
 #define COMMAND_VOCAB_SET VOCAB3('s','e','t')
 #define COMMAND_VOCAB_GET VOCAB3('g','e','t')
 #define COMMAND_VOCAB_RUN VOCAB3('r','u','n')
@@ -47,17 +48,15 @@ using namespace yarp::sig::draw;
 #define COMMAND_VOCAB_NUM_BLUR_PASSES VOCAB2('s','2')
 
 // directional saliency filter vocab's
+#define COMMAND_VOCAB_SHUT VOCAB4('e','v','o','l')
+#define COMMAND_VOCAB_SHUT VOCAB4('c','l','a','m')
+#define COMMAND_VOCAB_SHUT VOCAB4('e','v','o','l')
+#define COMMAND_VOCAB_SHUT VOCAB4('f','r','e','e')
+#define COMMAND_VOCAB_SHUT VOCAB4('p','e','r','f')
+#define COMMAND_VOCAB_SHUT VOCAB4('c','o','n','n')
+#define COMMAND_VOCAB_SHUT VOCAB4('c','l','a','m')
 
 
-/**
-* This class implements a process able of getting command from a controller 
-* interpreting them in term of callings to function of the 
-* library BM(BOLZMANN MACHINE LIBRARY)
-* the module reads any command on the port /inCmd
-* whereas the input image for any clamping is read on /inputImage
-*
-* \author Rea Francesco
-*/
 /**
 *
 @ingroup icub_module
