@@ -111,7 +111,7 @@ none
 Linux and Windows.
 
 \section example_sec Example Instantiation of the Module
-imageProcessorInterface
+bmlEngine --name bmlEngine
 
 
 \author Francesco Rea
