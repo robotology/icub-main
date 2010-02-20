@@ -37,7 +37,7 @@ using namespace yarp::sig::draw;
 
 /**
 *
-@ingroup icub_gui
+@ingroup icub_guis
 \defgroup biControlGazeInterface biControlGazeInterface
 
 the module provides the interface in order to use the Biological inspired control of the gaze
