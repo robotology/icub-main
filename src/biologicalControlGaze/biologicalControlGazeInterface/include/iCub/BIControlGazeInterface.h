@@ -33,11 +33,69 @@ using namespace yarp::os;
 using namespace yarp::sig;
 using namespace yarp::sig::draw;
 
+
+
 /**
-  * the module provides the interface in order to use the Biological inspired control of the gaze
-  *
-  * \author Francesco Rea
- */
+*
+@ingroup icub_gui
+\defgroup biControlGazeInterface biControlGazeInterface
+
+the module provides the interface in order to use the Biological inspired control of the gaze
+
+\section intro_sec Description
+This module sends commands as bottle to the biologicalInspired gaze control module. The command respect a communication stardard based
+on bottle composed of vocabols
+
+
+The module does:
+- send commands to the imageProcessor module
+- plot on the window drawing area image of an input image
+
+\image html biologicalInspiredControlGaze.png
+
+\section lib_sec Libraries
+YARP
+GTK
+
+\section parameters_sec Parameters
+--name:defines the name of the module and the rootname of every port
+ 
+\section portsa_sec Ports Accessed
+- /BIControlGazeEngine/cmd 
+
+
+\section portsc_sec Ports Created
+Input ports:
+- /e <name>/img:i
+Outports
+- /e <name>/cmd
+
+
+
+\section in_files_sec Input Data Files
+none
+
+\section out_data_sec Output Data Files
+none
+ 
+\section conf_file_sec Configuration Files
+none
+
+
+\section tested_os_sec Tested OS
+Linux and Windows.
+
+\section example_sec Example Instantiation of the Module
+BIControlGazeInterface --name biControlGazeInterface
+
+
+\author Francesco Rea
+
+Copyright (C) 2008 RobotCub Consortium
+
+CopyPolicy: Released under the terms of the GNU GPL v2.0.
+
+**/
 
 class BIControlGazeInterface : public Module {
 private:
