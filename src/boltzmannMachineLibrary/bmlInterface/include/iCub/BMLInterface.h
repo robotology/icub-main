@@ -39,7 +39,7 @@ using namespace yarp::sig::draw;
 
 /**
 *
-@ingroup icub_gui
+@ingroup icub_guis
 \defgroup bmlInterface bmlInterface
 
  Graphical interface used in order to send preformatted commands to the BMLEngine through port
