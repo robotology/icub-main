@@ -17,7 +17,7 @@ using namespace yarp::sig::draw;
 
 /**
 *
-@ingroup icub_gui
+@ingroup icub_guis
 \defgroup saliencyBlobFinderInterface saliencyBlobFinderInterface
 
 Module graphical interface for saliencyBlobFinder
