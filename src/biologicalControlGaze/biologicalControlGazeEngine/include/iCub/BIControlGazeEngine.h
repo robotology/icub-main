@@ -29,14 +29,79 @@ using namespace yarp::os;
 using namespace yarp::sig;
 using namespace yarp::sig::draw;
 
+
 /**
-* This class implements a process able of controlling the gaze of the robot acting
-* on the eyes and head orientation.
-* The motion is driven by a velocity controller. The module is able to get command from
-* the associated interface or from a third module.
 *
-* \author Rea Francesco
-*/
+@ingroup icub_module
+\defgroup icub_biologicalControlGazeEngine biologicalControlGazeEngine
+
+This class implements a process able of choose between different biological plausible control techniques for the gaze of the robot after training.
+The motion is driven by a velocity controller. The module is able to get command from the associated interface or from an gui.
+
+\section intro_sec Description
+The module provides a biological plausible technique in order to select the best behaviour in order to perfom the most rewarded gaze action.
+The module can choose between a series of behaviours ( vergence, saccade, smooth pursuit, etc ..) based on a complex combination of sensorial inputs
+Those sensorial inputs are processed and the dimensionality of the data is reduced after training. The training extracts what the most salient input
+of the input data are using a custom boltzmann machine. The user can shape the boltzmann machine as he prefers
+
+Finally This module receives commands as bottle from the biologicalControlGazeInterface GUI. The command respect a communication stardard based
+on bottle composed of vocabols
+
+
+The module does:
+- reads commands from the biological ControlGaze GUI
+- able to control the robot with every single control algorithm
+- start a training process based on the input channel
+- after the training is termined the system can choose the best behaviour considering the very same data input
+
+
+\image html 
+
+\section lib_sec Libraries
+YARP
+BML
+
+\section parameters_sec Parameters
+--name:defines the name of the module and the rootname of every port
+ 
+\section portsa_sec Ports Accessed
+none
+
+\section portsc_sec Ports Created
+Input ports:
+- <name>/cmd:i
+- <name>/image:i
+
+Outports
+- <name>/cmd:o
+
+
+\section in_files_sec Input Data Files
+none
+
+\section out_data_sec Output Data Files
+none
+ 
+\section conf_file_sec Configuration Files
+none
+
+
+\section tested_os_sec Tested OS
+Linux and Windows.
+
+\section example_sec Example Instantiation of the Module
+biologicalControlGazeEngine --name biologicalControlGazeEngine
+
+
+\author Francesco Rea
+
+Copyright (C) 2008 RobotCub Consortium
+
+CopyPolicy: Released under the terms of the GNU GPL v2.0.
+
+**/
+
+
 class BIControlGazeEngine : public Module {
 private:
 	 
