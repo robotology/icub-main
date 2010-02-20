@@ -197,7 +197,8 @@ void SalienceOperator::ComputeMeanColors(int last_tag)
 
 void SalienceOperator::DrawMeanColorsLP(ImageOf<PixelBgr>& id, ImageOf<PixelInt>& tagged)
 {
-    /*__OLD//if (last_tag<numBlob || numBlob==-1) numBlob=last_tag;
+    /*__OLD
+    //if (last_tag<numBlob || numBlob==-1) numBlob=last_tag;
     
     for (int i = 0; i < numBlob; i++) {
     //for (int i = 0; i < MaxBoxes; i++) {
@@ -207,8 +208,8 @@ void SalienceOperator::DrawMeanColorsLP(ImageOf<PixelBgr>& id, ImageOf<PixelInt>
                     id(c ,r)=m_boxes[i].meanColors;
                 }
     }
-
-    return numBlob;*/
+    return numBlob;
+    */
 
     for (int r=0; r<height; r++)
         for (int c=0; c<width; c++){
