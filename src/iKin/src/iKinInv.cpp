@@ -319,10 +319,8 @@ Vector SteepCtrl::iterate(Vector &xd, const unsigned int verbose)
     if (State!=IKINCTRL_STATE_DEADLOCK)
     {
         iter++;
-    
         q_old=q;
-
-        x=chain.EndEffPose();
+        
         calc_e();
 
         J =chain.GeoJacobian();
@@ -349,6 +347,7 @@ Vector SteepCtrl::iterate(Vector &xd, const unsigned int verbose)
 
         q=I->integrate(qdot);
         q=chain.setAng(q);
+        x=chain.EndEffPose();
     }
 
     updateState();
@@ -534,10 +533,8 @@ Vector LMCtrl::iterate(Vector &xd, const unsigned int verbose)
     if (State!=IKINCTRL_STATE_DEADLOCK)
     {
         iter++;
-
         q_old=q;
 
-        x=chain.EndEffPose();
         calc_e();
 
         J=chain.GeoJacobian();
@@ -572,6 +569,7 @@ Vector LMCtrl::iterate(Vector &xd, const unsigned int verbose)
 
         q=I->integrate(qdot);
         q=chain.setAng(q);
+        x=chain.EndEffPose();
 
         mu=update_mu();
     }
@@ -850,7 +848,6 @@ Vector GSLMinCtrl::iterate(Vector &xd, const unsigned int verbose)
     if (State!=IKINCTRL_STATE_DEADLOCK)
     {    
         iter++;
-
         q_old=q;        
     
         if (fdfOn)
@@ -871,8 +868,8 @@ Vector GSLMinCtrl::iterate(Vector &xd, const unsigned int verbose)
                 q[i]=gsl_vector_get(s2->x,i);
         }
 
-
         q=chain.setAng(q);
+        x=chain.EndEffPose();
     }
 
     updateState();
@@ -1160,8 +1157,8 @@ Vector MultiRefMinJerkCtrl::iterate(Vector &xd, Vector &qd, const unsigned int v
     if (State!=IKINCTRL_STATE_DEADLOCK)
     {
         iter++;
-    
         q_old=q;
+
         calc_e();
 
         genTrajJoint->compute(execTime,q_set,q);
