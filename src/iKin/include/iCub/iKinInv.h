@@ -16,7 +16,6 @@
 #define __IKININV_H__
 
 #include <gsl/gsl_multimin.h>
-#include <yarp/math/SVD.h>
 
 #include <iCub/iKinFwd.h>
 #include <iCub/trajectoryGenerator.h>

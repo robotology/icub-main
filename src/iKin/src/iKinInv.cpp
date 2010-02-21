@@ -1,5 +1,6 @@
 
 #include <yarp/os/Time.h>
+#include <yarp/math/SVD.h>
 #include <iCub/iKinInv.h>
 
 #include <iostream>
