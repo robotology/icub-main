@@ -512,14 +512,11 @@ double LMCtrl::update_mu()
 {
     double d=dist();
     double ratio=d/dist_old;
-    double mu_c=1.0;
 
     if (ratio>1.0)
-        mu_c=mu_inc;
+        mu*=mu_inc;
     else
-        mu_c=mu_dec;
-
-    mu*=mu_c;
+        mu*=mu_dec;
 
     mu=mu>mu_max ? mu_max : (mu<mu_min ? mu_min : mu);
 
