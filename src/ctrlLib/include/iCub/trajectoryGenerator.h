@@ -43,7 +43,6 @@ protected:
     yarp::sig::Vector x;
     yarp::sig::Vector v;
     yarp::sig::Vector a;
-    yarp::sig::Vector j;
 
     yarp::sig::Matrix A;
     yarp::sig::Vector b;
@@ -84,12 +83,6 @@ public:
     * @return the current reference acceleration.
     */
     virtual yarp::sig::Vector get_acc();
-
-    /**
-    * Returns the current reference jerk.
-    * @return the current reference jerk.
-    */
-    virtual yarp::sig::Vector get_jerk();
 
     /**
     * Resets the generator. 
