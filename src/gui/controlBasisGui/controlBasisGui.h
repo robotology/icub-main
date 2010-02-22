@@ -47,8 +47,7 @@ Try with the following:
 \code
 on terminal 1: iCub_SIM
 
-on terminal 2: src/controlBasis/tests/startResources
-- type "start" and hit enter
+on terminal 2: iCubControlBasisResources  // this starts up the resources indicated in $ICUB_ROOT/app/controlBasis/conf/iCubSimControlBasisResources.ini 
 
 on terminal 3: controlBasisGUI
 \endcode
