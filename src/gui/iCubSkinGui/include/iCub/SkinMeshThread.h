@@ -13,6 +13,7 @@
 #include <yarp/dev/CanBusInterface.h>
 
 #include <iCub/Triangle.h>
+#include <iCub/Fingertip.h>
 
 using namespace yarp::os;
 using namespace yarp::dev;
@@ -25,54 +26,61 @@ protected:
     ICanBufferFactory *pCanBufferFactory;
     CanBuffer canBuffer;
     
-    Triangle *triangles[16];
+    TouchSensor *sensor[16];
 
     yarp::os::Semaphore mutex;
 
     int cardId;
-    unsigned int triangleNum;
+    int sensorsNum;
 
 public:
 	SkinMeshThread(Searchable& config,int period=40) : RateThread(period),mutex(1)
     {
-        triangleNum=0;
+        sensorsNum=0;
 
         for (int t=0; t<16; ++t)
         {
-            triangles[t]=NULL;
+            sensor[t]=NULL;
         }
 
         cardId=0x300 | (config.find("cardid").asInt() << 4);
         int width =config.find("width" ).asInt();
         int height=config.find("height").asInt();
 
-        yarp::os::Bottle sensorSet=config.findGroup("SENSORS").tail();
+        yarp::os::Bottle sensorSetConfig=config.findGroup("SENSORS").tail();
 
-        for (int t=0; t<sensorSet.size(); ++t)
+        for (int t=0; t<sensorSetConfig.size(); ++t)
         {       
-            yarp::os::Bottle sensor(sensorSet.get(t).toString());
+            yarp::os::Bottle sensorConfig(sensorSetConfig.get(t).toString());
 
-            std::string type(sensor.get(0).asString());
-            if (type=="triangle")
+            std::string type(sensorConfig.get(0).asString());
+            if (type=="triangle" || type=="fingertip")
             {
-                int id=sensor.get(1).asInt();
-                double xc=sensor.get(2).asDouble();
-                double yc=sensor.get(3).asDouble();
-                double th=sensor.get(4).asDouble();
-                double gain=sensor.get(5).asDouble();
+                int id=sensorConfig.get(1).asInt();
+                double xc=sensorConfig.get(2).asDouble();
+                double yc=sensorConfig.get(3).asDouble();
+                double th=sensorConfig.get(4).asDouble();
+                double gain=sensorConfig.get(5).asDouble();
 
                 printf("%d %f\n",id,gain);
 
                 if (id>=0 && id<16)
                 {
-                    if (triangles[id])
+                    if (sensor[id])
                     {
                         printf("WARNING: triangle %d already exists.\n",id);
                     }
                     else
                     {
-                        triangles[id]=new Triangle(xc,yc,th,gain);
-                        triangleNum+=2;
+                        if (type=="triangle")
+                        {
+                            sensor[id]=new Triangle(xc,yc,th,gain);
+                        }
+                        else
+                        {
+                            sensor[id]=new Fingertip(xc,yc,th,gain);
+                        }
+                        ++sensorsNum;
                     }
                 }
                 else
@@ -91,9 +99,9 @@ public:
 
     ~SkinMeshThread()
     {
-        for (int t=0; t<6; ++t)
+        for (int t=0; t<16; ++t)
         {
-            if (triangles[t]) delete triangles[t];
+            if (sensor[t]) delete sensor[t];
         }
     }
 
@@ -105,9 +113,9 @@ public:
     {
         mutex.wait();
 
-        for (int t=0; t<6; ++t)
+        for (int t=0; t<16; ++t)
         {
-            triangles[t]->resize(width,height,40);
+            if (sensor[t]) sensor[t]->resize(width,height,40);
         }
 
         mutex.post();
@@ -117,9 +125,9 @@ public:
     {
         mutex.wait();
 
-        for (int t=0; t<6; ++t)
+        for (int t=0; t<16; ++t)
         {
-            triangles[t]->eval(image);
+            if (sensor[t]) sensor[t]->eval(image);
         }
 
         mutex.post();
@@ -127,9 +135,9 @@ public:
 
     void draw(unsigned char *image)
     {
-        for (int t=0; t<6; ++t)
+        for (int t=0; t<16; ++t)
         {
-            triangles[t]->draw(image);
+            if (sensor[t]) sensor[t]->draw(image);
         }        
     }
 };

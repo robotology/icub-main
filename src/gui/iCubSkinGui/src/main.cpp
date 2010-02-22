@@ -66,16 +66,17 @@ static gint paint(GtkWidget *pWidget,GdkEventExpose *pEvent,gpointer pData)
     {
         memset(gpActivationMap,0,gMapSize);
         memset(gpImageBuff,0,gImageSize);
-
+        
         if (gWidth>=180 && gHeight>=180)
         {
+            /*
             gpSkinMeshThread->eval(gpActivationMap);
 
             for (int i=0; i<gImageArea; ++i)
             {
                 gpImageBuff[i*3]=gpActivationMap[i]<255.0?guchar(gpActivationMap[i]):255;
             }
-
+            */
             gpSkinMeshThread->draw(gpImageBuff);
         }
         
@@ -115,7 +116,7 @@ int main(int argc, char *argv[])
     yarp::os::ResourceFinder rf;
     rf.setVerbose();
     rf.setDefaultContext("iCubSkinDemo");
-    rf.setDefaultConfigFile("skin.ini");
+    rf.setDefaultConfigFile("hand.ini");
     rf.configure("ICUB_ROOT",argc,argv);
 
     gWidth =rf.find("width" ).asInt();

@@ -42,13 +42,13 @@ bool SkinMeshThread::threadInit()
 
     for (int id=0; id<16; ++id)
     {
-        if (triangles[id])
+        if (sensor[id])
         {
             pCanBus->canIdAdd(cardId+id);
         }
     }
 
-    canBuffer=pCanBufferFactory->createBuffer(2*triangleNum);
+    canBuffer=pCanBufferFactory->createBuffer(4*sensorsNum);
 
     printf("... done!\n");
 
@@ -61,7 +61,7 @@ void SkinMeshThread::run()
 
     unsigned int canMessages=0;
 
-    bool res=pCanBus->canRead(canBuffer,2*triangleNum,&canMessages,true);
+    bool res=pCanBus->canRead(canBuffer,4*sensorsNum,&canMessages,true);
 
     for (unsigned int i=0; i<canMessages; i++)
     {
@@ -69,15 +69,18 @@ void SkinMeshThread::run()
 
         if ((msg.getId() & 0xFFFFFFF0) == cardId)
         {
-            int triangleId=msg.getId() & 0x0F;
+            int sensorId=msg.getId() & 0x0F;
 
-            if (msg.getData()[0] & 0x80)
+            if (sensor[sensorId])
             {
-                triangles[triangleId]->setActivationLast5(msg.getData()); // last 5 bytes
-            }
-            else
-            {
-                triangles[triangleId]->setActivationFirst7(msg.getData()); // first 7 bytes
+                if (msg.getData()[0] & 0x80)
+                {
+                    sensor[sensorId]->setActivationLast5(msg.getData()); // last 5 bytes
+                }
+                else
+                {
+                    sensor[sensorId]->setActivationFirst7(msg.getData()); // first 7 bytes
+                }
             }
         }
     }
