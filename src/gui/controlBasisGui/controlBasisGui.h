@@ -22,9 +22,8 @@ computed using nullspace projection.
 The user is allowed to set a gain for each controller.
 
 Allowing "virtual" effectors will enable the user to choose resources such as the 
-Cartesian Position of a robot end-effector.  This is "virtual" because the actual 
-device that is moved is a Configuration resource that accepts commands by first being
-transformed through an available Jacobian.  The possible virtual effectors are defined
+Cartesian Position of a robot end-effector as the thing to move.  These effectors are "virtual" because the actual 
+device that is moved is a Configuration resource transformed through an available Jacobian.  The possible virtual effectors are defined
 by the possible Jacobian operations that act on the actual (moveable) Configuration
 resources.  If virtual effectors are not allowed, only the Configuration resources will
 be displayed.
@@ -35,8 +34,11 @@ Each controller computes its control signal as follows:
 d_effector = - gain*Potential(sensor)*Jacobian^#,
 \endcode
 
-where "#" is the generalized (Moore-Penrose) pseudoinverse.  If the "Use Jacobian Transpose"
-button is selected, the transpose is used in place of the pseudoinverse.  
+where "#" is the generalized (Moore-Penrose) pseudoinverse of the Jacobian:
+\code
+J = d_Potential(sensor) / d_effector.
+\endcode
+If the "use Jacobian Transpose" button is selected, the transpose is used in place of the pseudoinverse.  
  
 The GUI will look like this
 \image html controlBasisGUI.jpg
