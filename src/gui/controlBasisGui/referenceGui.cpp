@@ -18,6 +18,7 @@ ReferenceWindow::ReferenceWindow() :
     handTable(11,3,true),
     headTable(11,3,true),
     torsoTable(11,3,true),
+    eyeTable(11,3,true),
     setButton("Set", true),
     resetButton("Reset", true)
 {
@@ -27,7 +28,7 @@ ReferenceWindow::ReferenceWindow() :
     int max_entry_length=10;
 
     set_title("Reference GUI");
-    set_size_request(400,500);
+    set_size_request(500,500);
     set_border_width(10);
     //    set_icon_from_file("app/cb.png");
 
@@ -52,6 +53,7 @@ ReferenceWindow::ReferenceWindow() :
     handFrame.set_label("iCub Hand Reference");
     headFrame.set_label("iCub Head Reference");
     torsoFrame.set_label("iCub Torso Reference");
+    eyeFrame.set_label("iCub Eye References");
 
     posFrame.set_shadow_type(Gtk::SHADOW_ETCHED_IN);
     armFrame.set_shadow_type(Gtk::SHADOW_ETCHED_IN);
@@ -60,6 +62,7 @@ ReferenceWindow::ReferenceWindow() :
     handFrame.set_shadow_type(Gtk::SHADOW_ETCHED_IN);
     headFrame.set_shadow_type(Gtk::SHADOW_ETCHED_IN);
     torsoFrame.set_shadow_type(Gtk::SHADOW_ETCHED_IN);
+    eyeFrame.set_shadow_type(Gtk::SHADOW_ETCHED_IN);
 
     posFrame.set_border_width(15);
     armFrame.set_border_width(15);
@@ -68,11 +71,34 @@ ReferenceWindow::ReferenceWindow() :
     handFrame.set_border_width(15);
     headFrame.set_border_width(15);
     torsoFrame.set_border_width(15);
+    eyeFrame.set_border_width(15);
 
     // position reference
     posLabel[0].set_text("x:");
     posLabel[1].set_text("y:");
     posLabel[2].set_text("z:");
+
+    // eye references
+    eyePanTiltLabel[0].set_text("pan:");
+    eyePanTiltLabel[1].set_text("tilt:");
+
+    eyePanTiltVergeLabel[0].set_text("pan left:");
+    eyePanTiltVergeLabel[1].set_text("tilt left:");
+    eyePanTiltVergeLabel[2].set_text("pan right:");
+    eyePanTiltVergeLabel[3].set_text("tilt right:");
+
+    for(int i=0; i<2; i++) {
+        eyePanTiltEntry[i].set_text("0.0");
+        eyePanTiltEntry[i].set_max_length(max_entry_length);
+        eyeTable.attach(eyePanTiltLabel[i],0,1,i,i+1);
+        eyeTable.attach(eyePanTiltEntry[i],1,2,i,i+1);
+    }
+    for(int i=0; i<4; i++) {
+        eyePanTiltVergeEntry[i].set_text("0.0");
+        eyePanTiltVergeEntry[i].set_max_length(max_entry_length);
+        eyeTable.attach(eyePanTiltVergeLabel[i],0,1,3+i,3+i+1);
+        eyeTable.attach(eyePanTiltVergeEntry[i],1,2,3+i,3+i+1);
+    }
 
     for(int i=0; i<3; i++) {
         posEntry[i].set_text("0.0");
@@ -160,6 +186,7 @@ ReferenceWindow::ReferenceWindow() :
     headFrame.add(headTable);
     handFrame.add(handTable);
     torsoFrame.add(torsoTable);
+    eyeFrame.add(eyeTable);
 
     referenceNotebook.append_page(posFrame, "Position");
     referenceNotebook.append_page(armFrame, "Arm");
@@ -168,6 +195,7 @@ ReferenceWindow::ReferenceWindow() :
     referenceNotebook.append_page(handFrame, "Hand");
     referenceNotebook.append_page(headFrame, "Head");
     referenceNotebook.append_page(torsoFrame, "Torso");
+    referenceNotebook.append_page(eyeFrame, "Eyes");
 
     referenceNotebook.signal_switch_page().connect(sigc::mem_fun(*this, &ReferenceWindow::on_notebook_switch_page) );
 
@@ -187,6 +215,8 @@ ReferenceWindow::~ReferenceWindow() {
     delete iCubHandRef;
     delete iCubHeadRef;
     delete iCubTorsoRef;
+    delete iCubEyePanTiltRef;
+    delete iCubEyePanTiltVergeRef;
     delete iCubPositionRef;
     delete fovea;
 
@@ -229,6 +259,12 @@ void ReferenceWindow::on_set_button_clicked() {
     case 6:
         for(int i=0; i<3; i++) torsoRef[i] = atof(torsoEntry[i].get_text().c_str());       
         iCubTorsoRef->setVals(torsoRef);
+        break;
+    case 7:
+        for(int i=0; i<2; i++) eyePanTiltRef[i] = atof(eyePanTiltEntry[i].get_text().c_str());       
+        iCubEyePanTiltRef->setVals(eyePanTiltRef);
+        for(int i=0; i<4; i++) eyePanTiltVergeRef[i] = atof(eyePanTiltVergeEntry[i].get_text().c_str());       
+        iCubEyePanTiltVergeRef->setVals(eyePanTiltVergeRef);
         break;
     }
 
@@ -280,6 +316,15 @@ void ReferenceWindow::on_reset_button_clicked() {
         for(int i=0; i<3; i++) {
             torsoEntry[i].set_text("0.0");
         }
+    case 7:
+        eyePanTiltRef.zero();
+        eyePanTiltVergeRef.zero();
+        for(int i=0; i<2; i++) {
+            eyePanTiltEntry[i].set_text("0.0");
+        }
+        for(int i=0; i<4; i++) {
+            eyePanTiltVergeEntry[i].set_text("0.0");
+        }
         break;
     }
 
@@ -299,45 +344,59 @@ void ReferenceWindow::startResources() {
     torsoRef.zero();
     posRef.resize(3);
     posRef.zero();
+    eyePanTiltRef.resize(2);
+    eyePanTiltRef.zero();
+    eyePanTiltVergeRef.resize(4);
+    eyePanTiltVergeRef.zero();
 
     // start up references
     cout << endl << "creating iCub arm reference..." << endl << endl;
     iCubArmRef = new iCubConfigurationReference("/icub/arm", 7);  
     iCubArmRef->setVals(armRef);
-    iCubArmRef->setUpdateDelay(0.25);
+    iCubArmRef->setUpdateDelay(0.5);
     iCubArmRef->startResource();
 
     iCubFullArmRef = new iCubConfigurationReference("/icub/fullarm", 10);  
     iCubFullArmRef->setVals(fullArmRef);
-    iCubFullArmRef->setUpdateDelay(0.25);
+    iCubFullArmRef->setUpdateDelay(0.5);
     iCubFullArmRef->startResource();
     
     iCubLegRef = new iCubConfigurationReference("/icub/leg", 6);  
     iCubLegRef->setVals(armRef);
-    iCubLegRef->setUpdateDelay(0.25);
+    iCubLegRef->setUpdateDelay(0.5);
     iCubLegRef->startResource();
 
     iCubHeadRef = new iCubConfigurationReference("/icub/head", 3);  
     iCubHeadRef->setVals(headRef);
-    iCubHeadRef->setUpdateDelay(0.25);
+    iCubHeadRef->setUpdateDelay(0.5);
     iCubHeadRef->startResource();
 
     iCubHandRef = new iCubConfigurationReference("/icub/hand", 9);  
     iCubHandRef->setVals(handRef);
-    iCubHandRef->setUpdateDelay(0.25);
+    iCubHandRef->setUpdateDelay(0.5);
     iCubHandRef->startResource();
 
     iCubTorsoRef = new iCubConfigurationReference("/icub/torso", 3);  
     iCubTorsoRef->setVals(torsoRef);
-    iCubTorsoRef->setUpdateDelay(0.25);
+    iCubTorsoRef->setUpdateDelay(0.5);
     iCubTorsoRef->startResource();
+
+    iCubEyePanTiltRef = new iCubConfigurationReference("/icub/eye-pt", 2);  
+    iCubEyePanTiltRef->setVals(eyePanTiltRef);
+    iCubEyePanTiltRef->setUpdateDelay(0.5);
+    iCubEyePanTiltRef->startResource();
+
+    iCubEyePanTiltVergeRef = new iCubConfigurationReference("/icub/eye-ptv", 4);  
+    iCubEyePanTiltVergeRef->setVals(eyePanTiltVergeRef);
+    iCubEyePanTiltVergeRef->setUpdateDelay(0.5);
+    iCubEyePanTiltVergeRef->startResource();
 
     iCubPositionRef = new CartesianPositionReference("/icub/pos");
     iCubPositionRef->setVals(posRef);
     iCubPositionRef->setUpdateDelay(0.2);
     iCubPositionRef->startResource();
 
-    fovea = new HeadingFovea("/iCub/left_eye");
+    fovea = new HeadingFovea("/icub/left_eye");
     fovea->startResource();
 
     resourcesStarted = true;
@@ -355,6 +414,8 @@ void ReferenceWindow::stopResources() {
         iCubHeadRef->stopResource();
         iCubTorsoRef->stopResource();
         iCubPositionRef->stopResource();
+        iCubEyePanTiltRef->stopResource();
+        iCubEyePanTiltVergeRef->stopResource();
         fovea->stopResource();
         resourcesStarted = false;
     }

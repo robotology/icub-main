@@ -37,6 +37,7 @@ namespace CB {
         Gtk::Table headTable;
         Gtk::Table handTable;
         Gtk::Table torsoTable;
+        Gtk::Table eyeTable;
 
         Gtk::Frame posFrame;
         Gtk::Frame armFrame;
@@ -45,6 +46,7 @@ namespace CB {
         Gtk::Frame headFrame;
         Gtk::Frame handFrame;
         Gtk::Frame torsoFrame;
+        Gtk::Frame eyeFrame;
 
         Gtk::Table appTable;
         
@@ -72,6 +74,12 @@ namespace CB {
         Gtk::Entry fullArmEntry[MAX_VALS];
         Gtk::Label fullArmLabel[MAX_VALS];
 
+        Gtk::Entry eyePanTiltEntry[MAX_VALS];
+        Gtk::Label eyePanTiltLabel[MAX_VALS];
+
+        Gtk::Entry eyePanTiltVergeEntry[MAX_VALS];
+        Gtk::Label eyePanTiltVergeLabel[MAX_VALS];
+
         void on_set_button_clicked();
         void on_reset_button_clicked();
         void on_notebook_switch_page(GtkNotebookPage *page, guint page_num);     
@@ -83,6 +91,9 @@ namespace CB {
         iCubConfigurationReference *iCubHandRef;
         iCubConfigurationReference *iCubHeadRef;
         iCubConfigurationReference *iCubTorsoRef;
+        iCubConfigurationReference *iCubEyeRef;
+        iCubConfigurationReference *iCubEyePanTiltRef;
+        iCubConfigurationReference *iCubEyePanTiltVergeRef;
         CartesianPositionReference *iCubPositionRef;
         HeadingFovea *fovea;
 
@@ -93,6 +104,8 @@ namespace CB {
         yarp::sig::Vector handRef;
         yarp::sig::Vector torsoRef;
         yarp::sig::Vector posRef;
+        yarp::sig::Vector eyePanTiltRef;
+        yarp::sig::Vector eyePanTiltVergeRef;
 
         bool resourcesStarted;
 

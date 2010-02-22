@@ -3,7 +3,6 @@
 \defgroup icub_controlBasisGui controlBasisGui
 @ingroup icub_guis
 
-
 A viewer for running ControlBasis API (CBAPI) control laws.
  
 Copyright (C) 2010 RobotCub Consortium 
@@ -32,7 +31,9 @@ be displayed.
 
 Each controller computes its control signal as follows:
 
-\delta \effector = gain*potential*Jacobian^#,
+\code 
+d_effector = - gain*Potential(sensor)*Jacobian^#,
+\endcode
 
 where "#" is the generalized (Moore-Penrose) pseudoinverse.  If the "Use Jacobian Transpose"
 button is selected, the transpose is used in place of the pseudoinverse.  
@@ -50,11 +51,12 @@ on terminal 2: src/controlBasis/tests/startResources
 - type "start" and hit enter
 
 on terminal 3: controlBasisGUI
-
-\author Stephen Hart
+\endcode
  
 This file can be edited at 
 \in src/controlBasis/app/controlBasisGUI.cpp.
+
+
 **/
 
 #ifndef _CBAPI_WINDOW__H_
