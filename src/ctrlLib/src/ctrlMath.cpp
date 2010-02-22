@@ -219,7 +219,7 @@ Vector ctrl::dcm2euler(const Matrix &R, unsigned int verbose)
     else
     {
         if (verbose)
-            cerr << "dcm2euler in singularity: choosing one solution among multiple" << endl;
+            cerr << "dcm2euler() in singularity: choosing one solution among multiple" << endl;
 
         v[1]=0;
 	    v[0]=atan2(R(1,0), R(0,0));
