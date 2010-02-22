@@ -477,7 +477,7 @@ static void myMain2(GtkButton *button,	int *position)
             partMoverList[i]->releaseDriver();
             fprintf(stderr, "Deleting part number %d \n", i);
             delete partMoverList[i];
-            Time::delay(1);
+            Time::delay(0.1);
         }
     fprintf(stderr, "Closing the main GUI \n");
     Network::fini();
