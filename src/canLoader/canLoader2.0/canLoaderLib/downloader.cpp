@@ -463,6 +463,35 @@ int cDownloader::strain_get_serial_number (int target_id, char* serial_number)
 }
 
 //*****************************************************************/
+int cDownloader::strain_get_eeprom_saved (int target_id, bool* status)
+{
+	 // check if driver is running
+     if (m_candriver == NULL)
+        {
+            printf ("ERR: Driver not ready\n");
+            return -1;
+        }
+
+ 	 //read eeprom status (saved/not saved)
+	 txBuffer[0].setId((2 << 8) + target_id);
+	 txBuffer[0].setLen(1);
+	 txBuffer[0].getData()[0]= 0x1B; 
+
+	 int ret = m_candriver->send_message(txBuffer, 1);
+
+ 	 int read_messages = m_candriver->receive_message(rxBuffer,1);
+	 for (int i=0; i<read_messages; i++)
+	 {
+		if (rxBuffer[i].getData()[0]==0x1B &&   
+			rxBuffer[i].getId()==(2 << 8) + (target_id<<4)) 
+			{
+				*status = rxBuffer[i].getData()[1];
+				return 0;
+			}
+	 }
+	 return -1;
+}
+//*****************************************************************/
 int cDownloader::strain_get_matrix_gain	 (int target_id, unsigned int& gain)
 {
 	 // check if driver is running

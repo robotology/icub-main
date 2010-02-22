@@ -139,6 +139,7 @@ int strain_set_full_scale	 (int target_id, unsigned char channel, unsigned int  
 int strain_get_full_scale	 (int target_id, unsigned char channel, unsigned int&  full_scale);
 int strain_get_serial_number (int target_id, char* serial_number);
 int strain_set_serial_number (int target_id, const char* serial_number);
+int strain_get_eeprom_saved  (int target_id, bool* status);
 
 cDownloader();
 };
