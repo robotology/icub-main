@@ -55,7 +55,8 @@ on terminal 3: controlBasisGUI
  
 This file can be edited at 
 \in src/controlBasis/app/controlBasisGUI.cpp.
-*/
+**/
+
 #ifndef _CBAPI_WINDOW__H_
 #define _CBAPI_WINDOW__H_
 
