@@ -69,14 +69,13 @@ static gint paint(GtkWidget *pWidget,GdkEventExpose *pEvent,gpointer pData)
         
         if (gWidth>=180 && gHeight>=180)
         {
-            /*
             gpSkinMeshThread->eval(gpActivationMap);
 
             for (int i=0; i<gImageArea; ++i)
             {
                 gpImageBuff[i*3]=gpActivationMap[i]<255.0?guchar(gpActivationMap[i]):255;
             }
-            */
+           
             gpSkinMeshThread->draw(gpImageBuff);
         }
         
