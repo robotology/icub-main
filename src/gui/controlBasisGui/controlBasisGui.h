@@ -45,16 +45,22 @@ The GUI will look like this
 Try with the following:
  
 \code
+
+// start the iCub simulator
 on terminal 1: iCub_SIM
 
+// start the control basis modules for the iCub (simulator)
 on terminal 2: iCubControlBasisResources  // this starts up the resources indicated in $ICUB_ROOT/app/controlBasis/conf/iCubSimControlBasisResources.ini 
 
+// optional
+on terminal 2a: referenceGui // starts up iCub reference modules
+
+// start the GUI
 on terminal 3: controlBasisGUI
 \endcode
  
 This file can be edited at 
 \in src/controlBasis/app/controlBasisGUI.cpp.
-
 
 **/
 
