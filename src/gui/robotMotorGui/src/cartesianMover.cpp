@@ -47,24 +47,36 @@ bool cartesianMover::display_cartesian_pose(cartesianMover *cm)
 
   //fprintf(stderr, "v: %s\n Res Matrix: %s\n", eulerAngles.toString().c_str(), (Rr-R).toString().c_str());
      
-  gboolean focus;
+  gboolean focus = false;
   char buffer[40] = {'i', 'n', 'i', 't'};
   for (int k = 0; k < NUMBER_OF_CARTESIAN_COORDINATES; k++)
     {
       if (k<3)
-	sprintf(buffer, "%.2f", x(k));  
+          sprintf(buffer, "%.2f", x(k));  
       if (k>=3 && k<= 5)
-	sprintf(buffer, "%.1f", eulerAngles(k-3)*180/M_PI);    
+          sprintf(buffer, "%.1f", eulerAngles(k-3)*180/M_PI);    
       gtk_entry_set_text((GtkEntry*) entry[k],  buffer);
-
-      g_object_get((gpointer) sliderPosArray[k], "has-focus", &focus, NULL);
-      if (!focus)
-	{
-	  if (k<3)
-	    gtk_range_set_value 			((GtkRange *) (sliderPosArray[k]),  x(k));
-	  if (k>=3 && k <= 5)
-	    gtk_range_set_value 			((GtkRange *) (sliderPosArray[k]),  eulerAngles(k-3) * 180/M_PI);
-	}
+      
+      //if changing orientation do not update all the three sliders
+      //if changing position update other sliders
+      if(k<3)
+          {
+              g_object_get((gpointer) sliderPosArray[k], "has-focus", &focus, NULL);
+              if(!focus)
+                  gtk_range_set_value 			((GtkRange *) (sliderPosArray[k]),  x(k));
+          }
+      else
+          {
+              for (int i = 3; i < NUMBER_OF_CARTESIAN_COORDINATES; i++)
+                  {
+                      gboolean tmp;
+                      g_object_get((gpointer) sliderPosArray[i], "has-focus", &tmp, NULL);
+                      focus = focus || tmp;
+                  }
+              if(!focus)
+                  gtk_range_set_value 			((GtkRange *) (sliderPosArray[k]),  eulerAngles(k-3) * 180/M_PI);
+          }
+      
     }
   return true;
 }
@@ -101,6 +113,7 @@ void cartesianMover::position_slider_changed(GtkRange *range, cartesianMover *cm
 
   ICartesianControl *icrt = cm->crt;
   GtkWidget **sliderPosArray = (GtkWidget **) cm->sliderArray;
+  GtkWidget *sliderVel      = (GtkWidget *) cm->sliderVelocity;
   
   int sliderIndex;
   for(int i=0; i < NUMBER_OF_CARTESIAN_COORDINATES; i++)
@@ -121,10 +134,11 @@ void cartesianMover::position_slider_changed(GtkRange *range, cartesianMover *cm
 	  if(!icrt->getPose(x,o))
 	    fprintf(stderr, "Troubles in gettin the cartesian pose for %s\n", cm->partLabel);
 
-	  if(!icrt->goToPose(xd,o))
+      double vel = gtk_range_get_value((GtkRange *) sliderVel);
+	  if(!icrt->goToPose(xd,o,vel))
 	    fprintf(stderr, "Troubles in executing the cartesian pose for %s\n", cm->partLabel);
-	  else
-	    fprintf(stderr, "Sent %s new cartesian for %s\n", xd.toString().c_str(),cm->partLabel);
+	  //else
+      //    fprintf(stderr, "Sent %s new cartesian for %s with vel %.1f\n", xd.toString().c_str(),cm->partLabel, vel);
 	}
       else
 	{
@@ -140,10 +154,11 @@ void cartesianMover::position_slider_changed(GtkRange *range, cartesianMover *cm
 	  if(!icrt->getPose(x,o))
 	    fprintf(stderr, "Troubles in gettin the cartesian pose for %s\n", cm->partLabel);
 
-	  if(!icrt->goToPose(x,od))
+      double vel = gtk_range_get_value((GtkRange *) sliderVel);
+	  if(!icrt->goToPose(x,od,vel))
 	    fprintf(stderr, "Troubles in executing the cartesian pose for %s\n", cm->partLabel);
-	  else
-	    fprintf(stderr, "Sent %s new orientation for %s\n", od.toString().c_str(), cm->partLabel);
+	  //else
+      //fprintf(stderr, "Sent %s new orientation for %s\n", od.toString().c_str(), cm->partLabel);
 	}
     }
 }
@@ -375,26 +390,10 @@ cartesianMover::cartesianMover(GtkWidget *vbox_d, PolyDriver *partDd_d, char *pa
 	    gtk_range_set_value 			((GtkRange *) (sliderArray[k]),  eu(k-3) * 180/M_PI);
 	  
 	  g_signal_connect (sliderArray[k], "value-changed", G_CALLBACK(position_slider_changed), this);
-	  //g_signal_connect (sliderArray[k], "focus-in-event", G_CALLBACK(this->slider_pick), myClassData);
-	  //g_signal_connect (sliderArray[k], "focus-out-event", G_CALLBACK(this->slider_unpick), myClassData);
 
-	  //Positions dispay update
-	  //gtkClassCartesianData *myClassData1 = new gtkClassCartesianData;
-	  //myClassData1->indexPointer = index+k;
-	  //myClassData1->cartesianPointer = this;
-
-
-	  //gtkClassCartesianData *myClassData = new gtkClassCartesianData;
-	  //myClassData->indexPointer = index+k;
-	  //myClassData->cartesianPointer = this;
 
 	}
       
-      //gtkClassCartesianData *myClassData3 = new gtkClassCartesianData;
-      //myClassData3->indexPointer = index+k;
-      //myClassData3->cartesianPointer = this;
-      //g_signal_connect (treeview, "row-activated", G_CALLBACK (line_click),myClassData3);
-
       /*
        * Display current position
        */      
@@ -408,7 +407,7 @@ cartesianMover::cartesianMover(GtkWidget *vbox_d, PolyDriver *partDd_d, char *pa
       GtkWidget *frame3;
       frame3 = gtk_frame_new ("Commands:");
       gtk_fixed_put	(GTK_FIXED(inv1), frame3,       (NUMBER_OF_CARTESIAN_COORDINATES%numberOfRows)*width,         (NUMBER_OF_CARTESIAN_COORDINATES/numberOfRows)*height);
-      gtk_widget_set_size_request 	(frame3, 180, 200);
+      gtk_widget_set_size_request 	(frame3, 180, 240);
 
       //Button 0 in the panel
       GtkWidget *button0 = gtk_button_new_with_mnemonic ("Open sequence tab");
@@ -418,32 +417,46 @@ cartesianMover::cartesianMover(GtkWidget *vbox_d, PolyDriver *partDd_d, char *pa
 		      
       //Button1 in the panel
       GtkWidget *button1 = gtk_button_new_with_mnemonic ("Stop");
-      gtk_fixed_put (GTK_FIXED (inv1), button1, 10+(NUMBER_OF_CARTESIAN_COORDINATES%numberOfRows)*width,         60+(NUMBER_OF_CARTESIAN_COORDINATES/numberOfRows)*height);
+      gtk_fixed_put (GTK_FIXED (inv1), button1, 10+(NUMBER_OF_CARTESIAN_COORDINATES%numberOfRows)*width,         45+(NUMBER_OF_CARTESIAN_COORDINATES/numberOfRows)*height);
       gtk_widget_set_size_request 	(button1, 150, 25);
       //g_signal_connect (button1, "clicked", G_CALLBACK (stop_motion), crt);
 
+      //Velocity
+      GtkWidget *frame7;
+      frame7 = gtk_frame_new ("Velocity:");
+      gtk_fixed_put	(GTK_FIXED(inv1), frame7,       5+(NUMBER_OF_CARTESIAN_COORDINATES%numberOfRows)*width,          70 + (NUMBER_OF_CARTESIAN_COORDINATES/numberOfRows)*height);
+      gtk_widget_set_size_request 	(frame7, 160, 50);
+      sliderVelocity = new GtkWidget;
+      sliderVelocity =  gtk_hscale_new_with_range(1, 10, 1);
+      gtk_scale_set_digits((GtkScale*) sliderVelocity,2);
+ 	  gtk_fixed_put	(GTK_FIXED(inv1), sliderVelocity,    60+(NUMBER_OF_CARTESIAN_COORDINATES%numberOfRows)*width,          80 + (NUMBER_OF_CARTESIAN_COORDINATES/numberOfRows)*height);
+	  gtk_widget_set_size_request 	(sliderVelocity, 90, 40);
+	  gtk_range_set_update_policy 	((GtkRange *) (sliderVelocity), GTK_UPDATE_DISCONTINUOUS);
+      gtk_range_set_value 			((GtkRange *) (sliderVelocity),  2);
 
+
+      //Diplay axis
       po = new GtkWidget*[4];
       for (int i=0; i < 4; i++)
-	{
-	  po[i] = gtk_entry_new();
-	}
+          {
+              po[i] = gtk_entry_new();
+          }
       
       //Display axis
       GtkWidget *frame5;
       frame5 = gtk_frame_new ("Axis:");
-      gtk_fixed_put	(GTK_FIXED(inv1), frame5,       5+(NUMBER_OF_CARTESIAN_COORDINATES%numberOfRows)*width,         105 + (NUMBER_OF_CARTESIAN_COORDINATES/numberOfRows)*height);
+      gtk_fixed_put	(GTK_FIXED(inv1), frame5,       5+(NUMBER_OF_CARTESIAN_COORDINATES%numberOfRows)*width,         140 + (NUMBER_OF_CARTESIAN_COORDINATES/numberOfRows)*height);
       gtk_widget_set_size_request 	(frame5, 80, 85);
-      gtk_fixed_put	(GTK_FIXED(inv1), po[0],   10+(NUMBER_OF_CARTESIAN_COORDINATES%numberOfRows)*width,         120+(NUMBER_OF_CARTESIAN_COORDINATES/numberOfRows)*height);
-      gtk_fixed_put	(GTK_FIXED(inv1), po[1],   10+(NUMBER_OF_CARTESIAN_COORDINATES%numberOfRows)*width,         140+(NUMBER_OF_CARTESIAN_COORDINATES/numberOfRows)*height);
-      gtk_fixed_put	(GTK_FIXED(inv1), po[2],   10+(NUMBER_OF_CARTESIAN_COORDINATES%numberOfRows)*width,         160+(NUMBER_OF_CARTESIAN_COORDINATES/numberOfRows)*height);
+      gtk_fixed_put	(GTK_FIXED(inv1), po[0],   10+(NUMBER_OF_CARTESIAN_COORDINATES%numberOfRows)*width,         155+(NUMBER_OF_CARTESIAN_COORDINATES/numberOfRows)*height);
+      gtk_fixed_put	(GTK_FIXED(inv1), po[1],   10+(NUMBER_OF_CARTESIAN_COORDINATES%numberOfRows)*width,         175+(NUMBER_OF_CARTESIAN_COORDINATES/numberOfRows)*height);
+      gtk_fixed_put	(GTK_FIXED(inv1), po[2],   10+(NUMBER_OF_CARTESIAN_COORDINATES%numberOfRows)*width,         195+(NUMBER_OF_CARTESIAN_COORDINATES/numberOfRows)*height);
 
       //Display angle
       GtkWidget *frame6;
       frame6 = gtk_frame_new ("Angle:");
-      gtk_fixed_put	(GTK_FIXED(inv1), frame6,       85+(NUMBER_OF_CARTESIAN_COORDINATES%numberOfRows)*width,         120 + (NUMBER_OF_CARTESIAN_COORDINATES/numberOfRows)*height);
+      gtk_fixed_put	(GTK_FIXED(inv1), frame6,       85+(NUMBER_OF_CARTESIAN_COORDINATES%numberOfRows)*width,         155 + (NUMBER_OF_CARTESIAN_COORDINATES/numberOfRows)*height);
       gtk_widget_set_size_request 	(frame6, 80, 45);
-      gtk_fixed_put	(GTK_FIXED(inv1), po[3],   90+(NUMBER_OF_CARTESIAN_COORDINATES%numberOfRows)*width,         140+(NUMBER_OF_CARTESIAN_COORDINATES/numberOfRows)*height);
+      gtk_fixed_put	(GTK_FIXED(inv1), po[3],   90+(NUMBER_OF_CARTESIAN_COORDINATES%numberOfRows)*width,         175+(NUMBER_OF_CARTESIAN_COORDINATES/numberOfRows)*height);
 
       for (int i=0; i < 4; i++)
 	{
@@ -455,7 +468,7 @@ cartesianMover::cartesianMover(GtkWidget *vbox_d, PolyDriver *partDd_d, char *pa
 
       //CheckButton in the panel
       GtkWidget *check= gtk_check_button_new_with_mnemonic ("Tracking Mode");
-      gtk_fixed_put (GTK_FIXED (inv1), check, 10+(NUMBER_OF_CARTESIAN_COORDINATES%numberOfRows)*width,         85+(NUMBER_OF_CARTESIAN_COORDINATES/numberOfRows)*height);
+      gtk_fixed_put (GTK_FIXED (inv1), check, 10+(NUMBER_OF_CARTESIAN_COORDINATES%numberOfRows)*width,         120+(NUMBER_OF_CARTESIAN_COORDINATES/numberOfRows)*height);
       gtk_widget_set_size_request 	(check, 150, 25);
       //g_signal_connect (check, "clicked", G_CALLBACK (toggle_tracking_mode), crt);
       
