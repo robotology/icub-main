@@ -36,7 +36,7 @@ Follow this steps:
 - specifies the simulated robot name to connect to. 
  
 Other options are available but their default values should be 
-ok for normal use. If you are really curious then get into the 
+fine for normal use. If you are really curious then get into the
 short code :) 
 
 \section tested_os_sec Tested OS
