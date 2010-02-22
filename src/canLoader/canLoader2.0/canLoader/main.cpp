@@ -1416,7 +1416,7 @@ int myMain( int   argc, char *argv[] )
 		printf("Initializing prompt version of canLoader...\n");
 		if      (argc==2 && strcmp(argv[1],"--help")==0)
 		{
-				printf("CANLOADER APPLICATION V2.5a\n");
+				printf("CANLOADER APPLICATION V2.5b\n");
 				printf("Syntax:\n");
 				printf("1) to execute the GUI version of the canLoader:\n");
 				printf("./canLoader20 \n");
@@ -1526,7 +1526,7 @@ int myMain( int   argc, char *argv[] )
     //create the main window, and sets the callback destroy_main() to quit
     //the application when the main window is closed
     window = gtk_window_new (GTK_WINDOW_TOPLEVEL);
-    gtk_window_set_title (GTK_WINDOW (window), "CAN Flasher V2.5a");
+    gtk_window_set_title (GTK_WINDOW (window), "CAN Flasher V2.5b");
     g_signal_connect (window, "destroy",G_CALLBACK (destroy_main), &window);
 
     gtk_container_set_border_width (GTK_CONTAINER (window), 8);

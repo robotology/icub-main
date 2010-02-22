@@ -45,6 +45,7 @@ unsigned int full_scale_const[6]={0,0,0,0,0,0};
 char serial_no[8]={'U','N','D','E','F',0,0,0};
 bool matrix_changed;
 bool something_changed;
+bool eeprom_saved_status;
 		
 #define START_TIMER timer_refresh = g_timeout_add (500, timer_func, NULL);
 #define STOP_TIMER {if (timer_refresh>0) g_source_remove(timer_refresh); timer_refresh=0;}
@@ -93,6 +94,7 @@ char *myitoa(int a, char *buff, int d)
 //*********************************************************************************
 gboolean timer_func (gpointer data)
 {
+	downloader.strain_get_eeprom_saved(downloader.board_list[selected].pid, &eeprom_saved_status);
 	downloader.strain_get_offset (downloader.board_list[selected].pid, 0, offset[0]);
 	downloader.strain_get_offset (downloader.board_list[selected].pid, 1, offset[1]);
 	downloader.strain_get_offset (downloader.board_list[selected].pid, 2, offset[2]);
@@ -110,18 +112,30 @@ gboolean timer_func (gpointer data)
 
 	int ri,ci=0;
 	char tempbuf [250];
-	GdkColor color;
-	color.red=65535;
-	color.green=40000;
-	color.blue=40000;
+	GdkColor r_color,y_color;
+	r_color.red=65535;
+	r_color.green=40000;
+	r_color.blue=40000;
+	y_color.red=65535;
+	y_color.green=65535;
+	y_color.blue=38000;
 
+	if (eeprom_saved_status==false)
+	{
+		/*gtk_widget_modify_bg (save_button, GTK_STATE_NORMAL,	  &y_color);
+		gtk_widget_modify_bg (save_button, GTK_STATE_ACTIVE,      &y_color);
+		gtk_widget_modify_bg (save_button, GTK_STATE_PRELIGHT,    &y_color);
+		gtk_widget_modify_bg (save_button, GTK_STATE_SELECTED,    &y_color);	
+		gtk_widget_modify_bg (save_button, GTK_STATE_INSENSITIVE, &y_color);*/
+	}
 	if (something_changed==true)
 	{
-		gtk_widget_modify_bg (save_button, GTK_STATE_NORMAL,	   &color);
-		gtk_widget_modify_bg (save_button, GTK_STATE_ACTIVE,      &color);
-		gtk_widget_modify_bg (save_button, GTK_STATE_PRELIGHT,    &color);
-		gtk_widget_modify_bg (save_button, GTK_STATE_SELECTED,    &color);	
-		gtk_widget_modify_bg (save_button, GTK_STATE_INSENSITIVE, &color);
+		gtk_widget_modify_base (save_button, GTK_STATE_NORMAL,      &r_color);
+		gtk_widget_modify_bg (save_button,   GTK_STATE_NORMAL,	    &r_color);
+		gtk_widget_modify_bg (save_button,   GTK_STATE_ACTIVE,      &r_color);
+		gtk_widget_modify_bg (save_button,   GTK_STATE_PRELIGHT,    &r_color);
+		gtk_widget_modify_bg (save_button,   GTK_STATE_SELECTED,    &r_color);	
+		gtk_widget_modify_bg (save_button,   GTK_STATE_INSENSITIVE, &r_color);
 	}
 
 	if (matrix_changed==false)
@@ -150,7 +164,7 @@ gboolean timer_func (gpointer data)
 			for (ri=0;ri<6;ri++)
 				for (ci=0;ci<6;ci++)
 					{
-						gtk_widget_modify_base (edit_matrix[ri][ci],GTK_STATE_NORMAL, &color );
+						gtk_widget_modify_base (edit_matrix[ri][ci],GTK_STATE_NORMAL, &r_color );
 					}
 		}
 	for (int i=0;i<6;i++)
@@ -357,6 +371,7 @@ void close_window (GtkDialog *window,	gpointer   user_data)
 void slider_changed (GtkButton *button,	gpointer ch_p)
 { 
 	int chan = *(int*)ch_p;
+	printf("debug: moved slider chan:%d\n",chan);
 	offset[chan] = (unsigned int) (gtk_range_get_value (GTK_RANGE(slider_gain[chan])));
 	unsigned int curr_offset;
 //	downloader.strain_get_offset (downloader.board_list[selected].pid, chan, curr_offset);
@@ -689,6 +704,7 @@ void calibrate_click (GtkButton *button,	gpointer   user_data)
 { 
 	matrix_changed=false;
 	something_changed=false;
+	eeprom_saved_status=false;
 	//which strain board is selected)
     int i        = 0;
 	int count    = 0;
