@@ -30,7 +30,7 @@ using namespace std;
 /**
 *
 @ingroup icub_guis
-\defgroup imageProcessorInterface imageProcessorInterface
+\defgroup icub_imageProcessorInterface imageProcessorInterface
 
 This module provides a graphical interface for imageProcessor module.
 
