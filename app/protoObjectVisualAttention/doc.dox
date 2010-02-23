@@ -85,7 +85,7 @@ For more information: \ref icub_saliencyBlobFinder "saliencyBlobFinder".
 
 
 \code
-Customize and run ./scripts/appConfig-visual.xml.template
+Customize and run ./scripts/appConfig-visualAttention_icub01.xml.template
 \endcode
 
 \author Francesco Rea
