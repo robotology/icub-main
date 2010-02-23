@@ -127,7 +127,6 @@ private:
 
 
     bool                       isHandIn;
-    bool                       wasHandOut;
 
 
     BufferedPort<Vector>       *port_arm;
@@ -282,8 +281,6 @@ public:
         port_gaze->open(localGazeName.c_str());
 
 
-        //set wasHandOut flag on false
-        wasHandOut = false;
 
         return true;
     }
@@ -317,12 +314,8 @@ public:
 
     Vector generateTarget()
     {
-        //decide if the hand will be in the scene or not.
-        //if the hand was outside in the last run, then this time it must be inside.
-        if(wasHandOut)
-            isHandIn = true;
-        else
-            isHandIn = (math::Rand::scalar() < hand_freq)? true: false;
+        //decide if the hand will be in the scene or not.        
+        isHandIn = (math::Rand::scalar() < hand_freq)? true: false;
 
 
         //Generate the random target point.
@@ -426,15 +419,11 @@ public:
             Vector orient = ctrl::dcm2axis(R);
             for(int i = 0; i < 4; i++)
                 hand[i+3] = orient[i];
-
-            wasHandOut = false;
         }
         else
         {
             for(int i = 0; i < 7; i++)
                hand[i] = hand_constraints[i];
-
-            wasHandOut = true;
         }
 
         port_arm->write();
@@ -470,7 +459,7 @@ public:
 
         Bottle &general = rf.findGroup("general");
         if(!general.isNull())
-            period = rf.check("period",Value((int) 20)).asInt();
+            period = rf.check("T",Value((int) 20)).asInt();
         else
         {
             cout << "general part is missing!" << endl;
