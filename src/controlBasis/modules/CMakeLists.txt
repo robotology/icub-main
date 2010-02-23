@@ -7,6 +7,7 @@ cmake_minimum_required(VERSION 2.6)
 SET(PROJECTNAME controlBasisModules)
 PROJECT(${PROJECTNAME})
 SET(CB_RESOURCE_MODULE controlBasisResource)
+SET(CB_CONTROL_MODULE controlBasisControlLaw)
 
 FIND_PACKAGE(ICUB QUIET)
 IF (NOT ICUB_FOUND)
@@ -23,7 +24,9 @@ INCLUDE_DIRECTORIES(${CONTROLBASIS_INCLUDE_DIRS} ${IKIN_INCLUDE_DIRS})
 
 ADD_EXECUTABLE(${CB_RESOURCE_MODULE} controlBasisResource.cpp)
 ADD_EXECUTABLE(iCubControlBasisResources iCubControlBasisResources.cpp)
+ADD_EXECUTABLE(controlBasisControlLaw controlBasisControlLaw.cpp)
 
 INSTALL_TARGETS(/bin controlBasisResource )
+INSTALL_TARGETS(/bin controlBasisControlLaw )
 INSTALL_TARGETS(/bin iCubControlBasisResources )
 
