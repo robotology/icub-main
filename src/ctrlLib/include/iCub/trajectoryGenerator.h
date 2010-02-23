@@ -59,12 +59,33 @@ public:
     minJerkTrajGen(const double _Ts, const yarp::sig::Vector &x0);
 
     /**
+    * Computes the trajectory.
+    * @param T the current execution time.
+    * @param xd the desired position to reach.
+    * @param fbPos the current position.
+    */
+    virtual void compute(const double T, const yarp::sig::Vector &xd, const yarp::sig::Vector &fbPos);
+
+    /**
+    * Computes the trajectory.
+    * @param T the current execution time.
+    * @param xd the desired position to reach.
+    * @param fbPos the current position.
+    * @param fbVel the current velocity.
+    */
+    virtual void compute(const double T, const yarp::sig::Vector &xd, const yarp::sig::Vector &fbPos,
+                         const yarp::sig::Vector &fbVel);
+
+    /**
     * Computes the trajectory. 
     * @param T the current execution time.  
     * @param xd the desired position to reach. 
-    * @param fb the current position. 
+    * @param fbPos the current position. 
+    * @param fbVel the current velocity. 
+    * @param fbAcc the current acceleration. 
     */
-    virtual void compute(const double T, const yarp::sig::Vector &xd, const yarp::sig::Vector &fb);
+    virtual void compute(const double T, const yarp::sig::Vector &xd, const yarp::sig::Vector &fbPos,
+                         const yarp::sig::Vector &fbVel, const yarp::sig::Vector &fbAcc);
 
     /**
     * Returns the current reference position.

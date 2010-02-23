@@ -56,7 +56,23 @@ void minJerkTrajGen::reset(const Vector &fb)
 
 
 /************************************************************************/
-void minJerkTrajGen::compute(const double T, const Vector &xd, const Vector &fb)
+void minJerkTrajGen::compute(const double T, const Vector &xd, const Vector &fbPos)
+{
+    compute(T,xd,fbPos,v,a);
+}
+
+
+/************************************************************************/
+void minJerkTrajGen::compute(const double T, const Vector &xd, const Vector &fbPos,
+                             const Vector &fbVel)
+{
+    compute(T,xd,fbPos,fbVel,a);
+}
+
+
+/************************************************************************/
+void minJerkTrajGen::compute(const double T, const Vector &xd, const Vector &fbPos,
+                             const Vector &fbVel, const Vector &fbAcc)
 {
     if (T!=TOld)
     {    
@@ -77,9 +93,9 @@ void minJerkTrajGen::compute(const double T, const Vector &xd, const Vector &fb)
     {
         Vector X(3);
 
-        X[0]=fb[i];
-        X[1]=v[i];
-        X[2]=a[i];
+        X[0]=fbPos[i];
+        X[1]=fbVel[i];
+        X[2]=fbAcc[i];
 
         X=Int[i]->integrate(A*X+xd[i]*b);
 
