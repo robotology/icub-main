@@ -477,9 +477,10 @@ int cDownloader::strain_get_eeprom_saved (int target_id, bool* status)
 	 txBuffer[0].setLen(1);
 	 txBuffer[0].getData()[0]= 0x1B; 
 
+	 int read_messages = m_candriver->receive_message(rxBuffer,0.001); //flush buffer
 	 int ret = m_candriver->send_message(txBuffer, 1);
 
- 	 int read_messages = m_candriver->receive_message(rxBuffer,1);
+ 	 read_messages = m_candriver->receive_message(rxBuffer,1);
 	 for (int i=0; i<read_messages; i++)
 	 {
 		if (rxBuffer[i].getData()[0]==0x1B &&   
