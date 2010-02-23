@@ -121,7 +121,7 @@ public:
     iCubLeg4DOF(const iCubLeg4DOF &leg);
 };
 
-FILE* fid = fopen("ftSweepData.dat","a+");
+FILE* fid;// = fopen("ftSweepData.dat","a+");
 // class dataCollector: class for reading from Vrow and providing for FT on an output port
 class ftSweep: public RateThread
 {
@@ -231,6 +231,7 @@ private:
               Rs(0,0) = Rs(2,1) = 1.0;  Rs(1,2) = -1.0;
               ps(1) = 0.10;
               fprintf(stderr, "Opening left arm ... \n");
+			  fid = fopen("ftSweepData_leftarm.dat","a+");
 		  }
 		  else if (strcmp(limb.c_str(), "right_arm")==0)
 		  {  
@@ -242,6 +243,7 @@ private:
 			  iCubLimb = new iCubArm4DOF("right");
               Rs(0,0) = -1.0; Rs(2,1) = 1.0;  Rs(1,2) = 1.0;
               ps(1) = -0.10;
+			  fid = fopen("ftSweepData_rightarm.dat","a+");
               fprintf(stderr, "Opening right arm ... \n");
 		  } 
 		  else if (strcmp(limb.c_str(), "left_leg")==0)
@@ -254,6 +256,7 @@ private:
               Rs(1,0) = -1.0; Rs(0,1) = -1.0;  Rs(2,2) = -1.0;
               ps(2) = -0.10;
 			  T_all=eye(limbJnt,limbJnt);
+			  fid = fopen("ftSweepData_leftleg.dat","a+");
 			  fprintf(stderr, "Opening left leg ... \n");
 		  }
 		  else if (strcmp(limb.c_str(), "right_leg")==0)
@@ -266,6 +269,7 @@ private:
               Rs(1,0) = -1.0; Rs(0,1) = 1.0;  Rs(2,2) = 1.0;
               ps(2) = 0.10;
 			  T_all=eye(limbJnt,limbJnt);
+			  fid = fopen("ftSweepData_rightleg.dat","a+");
 			  fprintf(stderr, "Opening right leg ... \n");
 		  }
 		  else
