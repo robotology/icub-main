@@ -172,19 +172,19 @@ bool CFWCamera_DR2_2::Create(yarp::os::Searchable& config)
     case DR_RGB_HALF_RES:
         if (!size_x) { size_x=320; }
         if (!size_y) { size_y=240; }
-        SetF7(DC1394_VIDEO_MODE_FORMAT7_1,size_x,size_y,DC1394_COLOR_CODING_RGB8,50);
+        SetF7(DC1394_VIDEO_MODE_FORMAT7_1,size_x,size_y,DC1394_COLOR_CODING_RGB8,44);
         break;
 
     case DR_RGB_FULL_RES:
         if (!size_x) { size_x=640; }
         if (!size_y) { size_y=480; }
-        SetF7(DC1394_VIDEO_MODE_FORMAT7_0,size_x,size_y,DC1394_COLOR_CODING_RGB8,50);
+        SetF7(DC1394_VIDEO_MODE_FORMAT7_0,size_x,size_y,DC1394_COLOR_CODING_RGB8,44);
         break;
 
     case DR_BAYER_FULL_RES:
         if (!size_x) { size_x=640; }
         if (!size_y) { size_y=480; }
-        SetF7(DC1394_VIDEO_MODE_FORMAT7_0,size_x,size_y,DC1394_COLOR_CODING_RAW8,50);
+        SetF7(DC1394_VIDEO_MODE_FORMAT7_0,size_x,size_y,DC1394_COLOR_CODING_RAW8,44);
         break;
 
     default:
@@ -408,7 +408,7 @@ bool CFWCamera_DR2_2::SetVideoMode(dc1394video_mode_t videoMode)
 }
 
 #define SKIP -1
-bool CFWCamera_DR2_2::SetF7(int newVideoMode,int newXdim,int newYdim,int newColorCoding,int bandPercent)
+bool CFWCamera_DR2_2::SetF7(int newVideoMode,int newXdim,int newYdim,int newColorCoding,int newBandPercent)
 {
     if (!m_pCamera) return false;
 
@@ -529,14 +529,21 @@ bool CFWCamera_DR2_2::SetF7(int newVideoMode,int newXdim,int newYdim,int newColo
     xOff=(xOff/xStep)*xStep;
     yOff=(yOff/yStep)*yStep;
 
+    error=dc1394_video_set_mode(m_pCamera,(dc1394video_mode_t)newVideoMode);
+    if (manage(error)) return false;
+    error=dc1394_format7_set_color_coding(m_pCamera,(dc1394video_mode_t)newVideoMode,(dc1394color_coding_t)newColorCoding);
+    if (manage(error)) return false;
+
+    //////////////////
     // speed
-    if (bandPercent<0)
+    //////////////////
+    if (newBandPercent<0)
     { 
-        bandPercent=50;
+        newBandPercent=40;
     } 
-    else if (bandPercent>100) 
+    else if (newBandPercent>100) 
     {
-        bandPercent=100;
+        newBandPercent=100;
     }
     
     dc1394speed_t isoSpeed;
@@ -545,12 +552,17 @@ bool CFWCamera_DR2_2::SetF7(int newVideoMode,int newXdim,int newYdim,int newColo
 
     // get ISO bandwidth
     int busBand=10000000<<(isoSpeed-DC1394_ISO_SPEED_MIN);
-
-    int fps=maxFPS((dc1394video_mode_t)newVideoMode,(dc1394color_coding_t)newColorCoding);
+    int fpsMax=maxFPS((dc1394video_mode_t)newVideoMode,(dc1394color_coding_t)newColorCoding);
     double bpp=bytesPerPixel((dc1394color_coding_t)newColorCoding);
+    double newBandOcc=double(fpsMax*newXdim*newYdim)*bpp;
     
+    int fps=fpsMax;
+    
+    unsigned int roundUp=0;
     if (m_Framerate)
     { 
+        roundUp=1;
+        
         if (m_Framerate<fps)
         {
             fps=m_Framerate;
@@ -563,26 +575,22 @@ bool CFWCamera_DR2_2::SetF7(int newVideoMode,int newXdim,int newYdim,int newColo
         m_Framerate=0;
     }
     
-    
-    double maxBandOcc=double(fps*newXdim*newYdim)*bpp;
-    double margin=double(busBand)/maxBandOcc;
-    if (margin<1.0) margin=1.0;
-
-    error=dc1394_video_set_mode(m_pCamera,(dc1394video_mode_t)newVideoMode);
-    if (manage(error)) return false;
-    error=dc1394_format7_set_color_coding(m_pCamera,(dc1394video_mode_t)newVideoMode,(dc1394color_coding_t)newColorCoding);
-    if (manage(error)) return false;
-    
     unsigned int bytesPerPacket,maxBytesPerPacket,unitBytesPerPacket;
     error=dc1394_format7_get_packet_parameters(m_pCamera,(dc1394video_mode_t)newVideoMode,&unitBytesPerPacket,&maxBytesPerPacket);
     if (manage(error)) return false;
-
-    bytesPerPacket=(unsigned int)(0.01*double(bandPercent*maxBytesPerPacket)*margin);
-    bytesPerPacket=(1+bytesPerPacket/unitBytesPerPacket)*unitBytesPerPacket;
+    bytesPerPacket=(unsigned int)(0.01*double(fps)/double(fpsMax)*double(newBandPercent)*double(busBand)*double(maxBytesPerPacket)/newBandOcc);
+    bytesPerPacket=(roundUp+bytesPerPacket/unitBytesPerPacket)*unitBytesPerPacket;
+    
     if (bytesPerPacket>maxBytesPerPacket)
     {
         bytesPerPacket=maxBytesPerPacket;
     }
+    else if (bytesPerPacket<unitBytesPerPacket)
+    {
+        bytesPerPacket=unitBytesPerPacket;
+    }
+    
+    printf("\nfps=%d newBandOcc=%f bpp=%f bytesPerPacket=%d maxBytesPerPacket=%d\n\n",fps,newBandOcc,bpp,bytesPerPacket,maxBytesPerPacket);
     
     error=dc1394_format7_set_roi(m_pCamera,(dc1394video_mode_t)newVideoMode,(dc1394color_coding_t)newColorCoding,bytesPerPacket,xOff,yOff,newXdim,newYdim);
     if (manage(error)) return false;
@@ -1467,7 +1475,7 @@ unsigned int CFWCamera_DR2_2::getBytesPerPacketDC1394()
 }
 
 // 40
-bool CFWCamera_DR2_2::setBytesPerPacketDC1394(unsigned int bandPercent)
+bool CFWCamera_DR2_2::setBytesPerPacketDC1394(unsigned int newBandPercent)
 {	
 	m_AcqMutex.wait();
 
@@ -1495,7 +1503,14 @@ bool CFWCamera_DR2_2::setBytesPerPacketDC1394(unsigned int bandPercent)
         return false;
     }
 
-	if (bandPercent<0) bandPercent=0; else if (bandPercent>100) bandPercent=100;
+	if (newBandPercent<0)
+	{
+	    newBandPercent=0;
+	}
+	else if (newBandPercent>100)
+    {
+        newBandPercent=100;
+    }
     
     dc1394speed_t isoSpeed;
     error=dc1394_video_get_iso_speed(m_pCamera,&isoSpeed);
@@ -1515,18 +1530,20 @@ bool CFWCamera_DR2_2::setBytesPerPacketDC1394(unsigned int bandPercent)
 
     int fps=maxFPS(videoMode,colorCoding);
     double bpp=bytesPerPixel(colorCoding);
-    double maxBandOcc=double(fps*xDim*yDim)*bpp;
-    double margin=double(busBand)/maxBandOcc;
-    if (margin<1.0) margin=1.0;
+    double newBandOcc=double(fps*xDim*yDim)*bpp;
 
-    unsigned int bytesPerPacket=(unsigned int)(0.01*double(bandPercent*maxBytesPerPacket)*margin);
-    bytesPerPacket=(1+bytesPerPacket/unitBytesPerPacket)*unitBytesPerPacket;
+    unsigned int bytesPerPacket=(unsigned int)(0.01*double(newBandPercent)*double(busBand)*double(maxBytesPerPacket)/newBandOcc);
+    bytesPerPacket=(bytesPerPacket/unitBytesPerPacket)*unitBytesPerPacket;
     if (bytesPerPacket>maxBytesPerPacket)
     {
         bytesPerPacket=maxBytesPerPacket;
     }
+    else if (bytesPerPacket<unitBytesPerPacket)
+    {
+        bytesPerPacket=unitBytesPerPacket;
+    }
     
-    printf("videoMode %d band percnet %d bytesPerPacket %d\n",videoMode,bandPercent,bytesPerPacket);
+    printf("videoMode %d band percnet %d bytesPerPacket %d\n",videoMode,newBandPercent,bytesPerPacket);
     
     error=dc1394_format7_set_packet_size(m_pCamera,videoMode,bytesPerPacket);
     if (manage(error,&m_AcqMutex)) return false;
