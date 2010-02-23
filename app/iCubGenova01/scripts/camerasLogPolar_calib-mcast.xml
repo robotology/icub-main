@@ -7,7 +7,7 @@
 
    <module>
       <name>icubmoddev</name>
-	      <parameters>--device logpolargrabber --subdevice dragonfly2 --width 320 --height 240  --white_balance 0.512 0.625 --gain 0.312 --shutter 0.836 --name /icub/cam/left  --brightness 0 --DR2  --d 0 --framerate 30 </parameters>
+	      <parameters>--device logpolargrabber --subdevice dragonfly2 --width 320 --height 240  --white_balance 0.506 0.494 --gain 0.312 --shutter 0.913 --name /icub/cam/left  --brightness 0 --DR2  --d 0 --framerate 30 </parameters>
      <node>pc104</node>
           <stdio>icub15</stdio>
 	  <tag>logpolar-grabber-left</tag>
@@ -73,12 +73,12 @@
 <connection>
   <output>/icub/camcalib/left/out</output>
   <input>/icub/view/left</input>
-  <protocol>udp</protocol>
+  <protocol>mcast</protocol>
 </connection>
 <connection>
   <output>/icub/camcalib/right/out</output>
   <input>/icub/view/right</input>
-  <protocol>udp</protocol>
+  <protocol>mcast</protocol>
 </connection>
 
 </application>
