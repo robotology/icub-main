@@ -17,14 +17,14 @@
 
         <module>
                 <name>iKinGazeCtrl</name>
-                <parameters>--Tneck 2.0 --Teyes 2.0</parameters>
+                <parameters>--Tneck 0.5 --Teyes 0.5</parameters>
 				<node>pwrNode2</node>
                 <tag>gazeCtrl</tag>
         </module>
   
         <module>
                 <name>iKinArmCtrl</name>
-                <parameters>--part right_arm --DOF8 --T 10.0</parameters>                
+                <parameters>--part right_arm --DOF8 --T 2.0</parameters>                
                 <node>pwrNode3</node>
                 <tag>armCtrl</tag>
         </module>
