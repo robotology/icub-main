@@ -44,8 +44,10 @@ unsigned int calib_const=0;
 unsigned int full_scale_const[6]={0,0,0,0,0,0};
 char serial_no[8]={'U','N','D','E','F',0,0,0};
 bool matrix_changed;
+bool serial_number_changed;
 bool something_changed;
 bool eeprom_saved_status;
+bool first_time[6]={1,1,1,1,1,1};
 		
 #define START_TIMER timer_refresh = g_timeout_add (500, timer_func, NULL);
 #define STOP_TIMER {if (timer_refresh>0) g_source_remove(timer_refresh); timer_refresh=0;}
@@ -114,21 +116,25 @@ gboolean timer_func (gpointer data)
 	char tempbuf [250];
 	GdkColor r_color,y_color;
 	r_color.red=65535;
-	r_color.green=40000;
-	r_color.blue=40000;
+	r_color.green=39000;
+	r_color.blue=39000;
 	y_color.red=65535;
 	y_color.green=65535;
 	y_color.blue=38000;
 
 	if (eeprom_saved_status==false)
 	{
-		/*gtk_widget_modify_bg (save_button, GTK_STATE_NORMAL,	  &y_color);
-		gtk_widget_modify_bg (save_button, GTK_STATE_ACTIVE,      &y_color);
-		gtk_widget_modify_bg (save_button, GTK_STATE_PRELIGHT,    &y_color);
-		gtk_widget_modify_bg (save_button, GTK_STATE_SELECTED,    &y_color);	
-		gtk_widget_modify_bg (save_button, GTK_STATE_INSENSITIVE, &y_color);*/
+		gtk_widget_modify_bg (save_button, GTK_STATE_NORMAL,	  &r_color);
+		gtk_widget_modify_bg (save_button, GTK_STATE_ACTIVE,      &r_color);
+		gtk_widget_modify_bg (save_button, GTK_STATE_PRELIGHT,    &r_color);
+		gtk_widget_modify_bg (save_button, GTK_STATE_SELECTED,    &r_color);	
+		gtk_widget_modify_bg (save_button, GTK_STATE_INSENSITIVE, &r_color);
+		gtk_button_set_label     (GTK_BUTTON(save_button), "Not saved.\nSave to eeprom?");	}
+	else
+	{
+		gtk_button_set_label     (GTK_BUTTON(save_button), "Save to eeprom");
 	}
-	if (something_changed==true)
+/*	if (something_changed==true)
 	{
 		gtk_widget_modify_base (save_button, GTK_STATE_NORMAL,      &r_color);
 		gtk_widget_modify_bg (save_button,   GTK_STATE_NORMAL,	    &r_color);
@@ -136,7 +142,16 @@ gboolean timer_func (gpointer data)
 		gtk_widget_modify_bg (save_button,   GTK_STATE_PRELIGHT,    &r_color);
 		gtk_widget_modify_bg (save_button,   GTK_STATE_SELECTED,    &r_color);	
 		gtk_widget_modify_bg (save_button,   GTK_STATE_INSENSITIVE, &r_color);
-	}
+	}*/
+
+	if (serial_number_changed==false)
+		{
+			gtk_widget_modify_base (edit_serial_number,GTK_STATE_NORMAL, NULL );
+		}
+	else
+		{
+			gtk_widget_modify_base (edit_serial_number,GTK_STATE_NORMAL, &r_color );
+		}
 
 	if (matrix_changed==false)
 		{
@@ -377,10 +392,17 @@ void slider_changed (GtkButton *button,	gpointer ch_p)
 //	downloader.strain_get_offset (downloader.board_list[selected].pid, chan, curr_offset);
 
 //	if (offset[chan]!=curr_offset)
+/*		{
+			something_changed=true;
+			downloader.strain_set_offset (downloader.board_list[selected].pid, chan, offset[chan]);
+		}*/
+
+	if (first_time[chan]!=true)
 		{
-//			something_changed=true;
+			something_changed=true;
 			downloader.strain_set_offset (downloader.board_list[selected].pid, chan, offset[chan]);
 		}
+	first_time[chan]=false;
 }
 
 //*********************************************************************************
@@ -614,22 +636,24 @@ void file_import_click (GtkButton *button,	gpointer ch_p)
 	}
 	filestr.close();
 
-	matrix_changed=true;
 	something_changed=true;
 	printf ("Calibration file loaded!\n");
 
 	int ri=0;
 	int ci=0;
-	drv_sleep (1000);
-	for (ri=0;ri<6;ri++)
-			for (ci=0;ci<6;ci++)
-				{
-					downloader.strain_get_matrix_rc(downloader.board_list[selected].pid,ri,ci,matrix[ri][ci]);
-					sprintf(buffer,"%x",matrix[ri][ci]);
-					gtk_entry_set_text (GTK_ENTRY (edit_matrix[ri][ci]), buffer);
-					gtk_widget_modify_base (edit_matrix[ri][ci],GTK_STATE_NORMAL, NULL );
-				}
-	drv_sleep (1000);
+	
+	for (i=0; i<2; i++)
+	{
+		drv_sleep (1000);
+		for (ri=0;ri<6;ri++)
+				for (ci=0;ci<6;ci++)
+					{
+						downloader.strain_get_matrix_rc(downloader.board_list[selected].pid,ri,ci,matrix[ri][ci]);
+						sprintf(buffer,"%x",matrix[ri][ci]);
+						gtk_entry_set_text (GTK_ENTRY (edit_matrix[ri][ci]), buffer);
+						gtk_widget_modify_base (edit_matrix[ri][ci],GTK_STATE_NORMAL, NULL );
+					}
+	}
 	int count_ok=0;
 	for (i=0;i<36; i++)
 	{
@@ -670,8 +694,17 @@ void matrix_change (GtkEntry *entry,	gpointer index)
 }
 
 //*********************************************************************************
+void serial_number_change (GtkEntry *entry,	gpointer index)
+{ 
+	serial_number_changed=true;
+	something_changed=true;
+	//printf("Calibration matrix changed\n");
+}
+
+//*********************************************************************************
 void serial_number_send (GtkEntry *entry,	gpointer index)
 { 
+	serial_number_changed=false;
 	const gchar* temp2 = gtk_entry_get_text (GTK_ENTRY (edit_serial_number));
 	sprintf(serial_no,temp2);
 	downloader.strain_set_serial_number(downloader.board_list[selected].pid,temp2);
@@ -705,10 +738,17 @@ void calibrate_click (GtkButton *button,	gpointer   user_data)
 	matrix_changed=false;
 	something_changed=false;
 	eeprom_saved_status=false;
+
 	//which strain board is selected)
     int i        = 0;
 	int count    = 0;
-    for (i=0; i<downloader.board_list_size; i++)
+
+	for (i=0; i<6;i++)
+	{
+		first_time[i]=true;
+	}
+
+	for (i=0; i<downloader.board_list_size; i++)
     {
         if (downloader.board_list[i].status==BOARD_RUNNING &&
 			downloader.board_list[i].type==BOARD_TYPE_STRAIN &&
@@ -1018,7 +1058,8 @@ void calibrate_click (GtkButton *button,	gpointer   user_data)
 			g_signal_connect(edit_matrix[ri][ci], "activate", G_CALLBACK (matrix_send),&index[ri*6+ci]);
 		}
 
-	g_signal_connect(edit_serial_number, "activate", G_CALLBACK (serial_number_send),&index[ri*6+ci]);
+	g_signal_connect(edit_serial_number, "changed", G_CALLBACK (serial_number_change),NULL);
+	g_signal_connect(edit_serial_number, "activate", G_CALLBACK (serial_number_send),NULL);
 
 	gtk_widget_show_all (fixed);
 	//gtk_window_set_resizable(GTK_WINDOW(calib_window),false);
