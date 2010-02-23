@@ -180,6 +180,22 @@ namespace CB {
         }
         
         /**
+         * Empty Constructor
+         **/
+        YARPConfigurationVariables() :
+              connectedToDevice(false),
+              velocityGain(10),
+              velocityControlMode(false)              
+        {
+            numDOFs = 0;
+            numLinks = 0;
+            size=0;
+            moveable = false;
+            lock = true;
+            maxSetVal=0.0;
+        }
+
+        /**
          * Destructor
          **/
         ~YARPConfigurationVariables() { }
@@ -203,7 +219,7 @@ namespace CB {
         /**
          * Function to connect to the YARP device.
          **/
-        bool connectToDevice();
+        virtual bool connectToDevice();
 
         /**
          * Function to load config data from a file (e.g., DH Parameter info)

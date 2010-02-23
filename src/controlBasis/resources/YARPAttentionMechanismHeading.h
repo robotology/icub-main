@@ -51,7 +51,7 @@ namespace CB {
 
             deviceName=name;
             numInputs = 1;
-            inputName.push_back("image_coordinates");
+            inputName.push_back(deviceName + "/attentionMechanism");
             updateDelay=0.01;
 
             // filiter initialization params
@@ -60,9 +60,7 @@ namespace CB {
 
             // mandatory inherit function
             initPorts();
-            
-
-            
+                       
         }
         
         /** 

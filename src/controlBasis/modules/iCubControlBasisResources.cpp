@@ -51,7 +51,8 @@ right_full_arm 0
 left_full_arm  0
 torso          0
 head           1
-eyes           0
+eyes-pt        0
+eyes-ptv       0
 
 [cartesianposition_resources]
 right_arm      1
@@ -89,6 +90,7 @@ This file can be edited at src/controlBasis/modules/main.cpp.
 
 #include <YARPConfigurationVariables.h>
 #include <iCubFullArmConfigurationVariables.h>
+#include <iCubEyeConfigurationVariables.h>
 #include <EndEffectorCartesianPosition.h>
 #include <ManipulatorPositionJacobian.h>
 #include <Controller.h>
@@ -116,7 +118,7 @@ class iCubControlBasisResourceStarter : public RFModule {
     YARPConfigurationVariables *iCubArm[2];
     YARPConfigurationVariables *iCubLeg[2];
     YARPConfigurationVariables *iCubHand[2];
-    YARPConfigurationVariables *iCubEyes;
+    iCubEyeConfigurationVariables *iCubEyes[2]; // PT or PTV
     YARPConfigurationVariables *iCubHead;
     YARPConfigurationVariables *iCubTorso;
 
@@ -131,7 +133,7 @@ class iCubControlBasisResourceStarter : public RFModule {
     bool runLegConfig[2];
     bool runHandConfig[2];
     bool runFullArmConfig[2];
-    bool runEyesConfig;
+    bool runEyesConfig[2];
     bool runTorsoConfig;
     bool runHeadConfig;
 
@@ -158,9 +160,9 @@ class iCubControlBasisResourceStarter : public RFModule {
     string handConfigFile[2];
     string handVelPort[2];
 
-    string eyesName;
-    string eyesConfigFile;
-    string eyesVelPort;
+    string eyesName[2];
+    string eyesConfigFile[2];
+    string eyesVelPort[2];
 
     string headName;
     string headConfigFile;
@@ -191,8 +193,8 @@ class iCubControlBasisResourceStarter : public RFModule {
     int torsoNumJoints;
     int torsoNumLinks;
 
-    int eyesNumJoints;
-    int eyesNumLinks;
+    int eyesNumJoints[2];
+    int eyesNumLinks[2];
     
     string robot_prefix;
     bool simulationMode;
@@ -222,10 +224,10 @@ public:
                 if(runLegPosition[i]) delete legEndEffector[i]; 
                 if(runFullArmPosition[i]) delete fullArmEndEffector[i];                 
                 if(runHeadings[i]) delete salientHeadings[i];
+                if(runEyesConfig[i]) delete iCubEyes[i];                
             }     
             if(runHeadConfig) delete iCubHead;
             if(runTorsoConfig) delete iCubTorso;
-            if(runEyesConfig) delete iCubEyes;                
             if(runStereoHeading) delete salientStereoHeading;                
         }
 
@@ -317,12 +319,19 @@ public:
         }
         //cout << "run torso config: " << runTorsoConfig << endl;
 
-        if(config_group.check("eyes")) {
-            runEyesConfig = (bool)(config_group.find("eyes").asInt());;
+        if(config_group.check("eyes-pt")) {
+            runEyesConfig[0] = (bool)(config_group.find("eyes-pt").asInt());;
         } else {
-            runEyesConfig = false;
+            runEyesConfig[0] = false;
         }
-        //cout << "run eyes config: " << runEyesConfig << endl;
+        //cout << "run eyes-pt config: " << runEyesConfig[0] << endl;
+
+        if(config_group.check("eyes-ptv")) {
+            runEyesConfig[1] = (bool)(config_group.find("eyes-ptv").asInt());;
+        } else {
+            runEyesConfig[1] = false;
+        }
+        //cout << "run eyes-ptv config: " << runEyesConfig[1] << endl;
 
 
         // parse cartesian position resources
@@ -474,9 +483,13 @@ public:
         headName = robot_prefix + "/head";
         headVelPort = robot_prefix + "/vc/head";
 
-        eyesConfigFile = configFilePath+"eyes.dh";
-        eyesName = robot_prefix + "/eyes";
-        eyesVelPort = robot_prefix + "/vc/head";
+        eyesConfigFile[0] = configFilePath+"eyes_pt.dh";
+        eyesName[0] = robot_prefix + "/eyes-pt";
+        eyesVelPort[0] = robot_prefix + "/vc/head";
+
+        eyesConfigFile[1] = configFilePath+"eyes_ptv.dh";
+        eyesName[1] = robot_prefix + "/eyes-ptv";
+        eyesVelPort[1] = robot_prefix + "/vc/head";
         
         torsoName = robot_prefix + "/torso";
         torsoVelPort = robot_prefix + "/vc/torso";
@@ -500,9 +513,11 @@ public:
         torsoNumJoints = 3;
         torsoNumLinks = 3;
 
-        eyesNumJoints = 3;
-        eyesNumLinks = 3;
+        eyesNumJoints[0] = 2;
+        eyesNumLinks[0] = 2;
 
+        eyesNumJoints[1] = 4;
+        eyesNumLinks[1] = 4;
     }
     
 
@@ -563,7 +578,17 @@ public:
                 Time::delay(.75);
             }
 
-
+            if(runEyesConfig[i]) {
+                cout << "starting eyes config, verge=" << i << endl;
+                iCubEyes[i] = new iCubEyeConfigurationVariables(simulationMode,(bool)i);
+                iCubEyes[i]->startResource();
+                if(velocityControlMode) {
+                    iCubEyes[i]->setVelocityControlMode(true, eyesVelPort[i]);
+                } else {
+                    iCubEyes[i]->setVelocityControlMode(false, "");
+                }
+            }
+            
             // start up end effectors
             if(runArmPosition[i]) {                
                 cout << "starting arm position for arm: " << i << endl;
@@ -603,6 +628,7 @@ public:
                 salientHeadings[i] = new YARPAttentionMechanismHeading(headingName[i]);
                 salientHeadings[i]->startResource();
             }           
+
         }
 
         if(runHeadConfig) {
@@ -625,18 +651,6 @@ public:
                 iCubTorso->setVelocityControlMode(true, torsoVelPort);
             } else {
                 iCubTorso->setVelocityControlMode(false, "");
-            }
-        }
-
-        if(runEyesConfig) {
-            cout << "starting eyes config" << endl;
-            iCubEyes = new YARPConfigurationVariables(eyesName, headName, eyesNumJoints, eyesNumLinks);
-            iCubEyes->loadConfig(eyesConfigFile);
-            iCubEyes->startResource();
-            if(velocityControlMode) {
-                iCubEyes->setVelocityControlMode(true, eyesVelPort);
-            } else {
-                iCubEyes->setVelocityControlMode(false, "");
             }
         }
 
@@ -665,10 +679,10 @@ public:
                 if(runLegPosition[i]) legEndEffector[i]->stopResource(); 
                 if(runFullArmPosition[i]) fullArmEndEffector[i]->stopResource(); 
                 if(runHeadings[i]) salientHeadings[i]->stopResource();
+                if(runEyesConfig[i]) iCubEyes[i]->stopResource();
             }     
             if(runHeadConfig) iCubHead->stopResource();
             if(runTorsoConfig) iCubTorso->stopResource();
-            if(runEyesConfig) iCubEyes->stopResource();
             if(runStereoHeading) salientStereoHeading->stopResource();
         }
         resourcesRunning=false;
