@@ -31,7 +31,6 @@
 #include <iomanip>
 #include <string.h>
 
-#include "filter.h"
 #include "iCub/iFC.h"
 #include "iCub/iKinFwd.h"
 
@@ -180,7 +179,7 @@ private:
 	Stamp info;
 	double time, time0;
 	int countTime, countTime0, sweepCount;
-	double wt,f,w0,A;
+	double wt,f,w0,sweepAmplitude;
 
 	Vector *datas;
 
@@ -371,7 +370,7 @@ public:
 		  wt=0;
 		  f=1;
 		  w0=0;
-		  A=50;
+		  sweepAmplitude=0;
 	  }
 	  bool threadInit()
 	  {
@@ -407,10 +406,7 @@ public:
 	  }
 		void run()
 		{
-			static double told=0;
-			static double t=0;
-			told=t;
-			t=Time::now();
+			
 		
 			datas=port_FT->read(false);
 
@@ -466,8 +462,11 @@ public:
 			{
 				FTs_init = FTs;
 		  	    sweep=SWEEP_ON;
-				for(int kk=0;kk<100;kk++)
-					fprintf(stderr,"Sweep signal is starting now!!!\n");
+				if(verbose)
+				{
+					for(int kk=0;kk<100;kk++)
+						fprintf(stderr,"Sweep signal is starting now!!!\n");
+				}
 			}
 			FT = FTB->getFB(FTs-FTs_init);
 			first = false;
@@ -494,32 +493,39 @@ public:
 		  FTj=J.transposed()*FT;
 		  if(sweep==SWEEP_ON)
 		  {
-			  fprintf(stderr,"sono in sweep!!!\n");
+			  if(verbose) fprintf(stderr,"sweep working...\n");
 			  if(sweepCount<=SWEEP_TIME/SAMPLER_RATE)
 			  {
 				  sweepCount++;
 				  wt=2*M_PI*f*sweepCount*SAMPLER_RATE/1000+w0;
-				  fprintf(stderr,"sono qui!!!\n");
+				  if(verbose) fprintf(stderr,"waiting to change frequency...\n");
 			  }else
 			  {
 				  sweepCount=1;
 				  f=f+1;
+				  if(f>20) f=1;
 				  w0=wt;
 				  wt=2*M_PI*f*sweepCount*SAMPLER_RATE/1000+w0;
 				  for(int kk=0;kk<100;kk++)
-					  fprintf(stderr,"sono qui!!!\n");
+					   if(verbose) fprintf(stderr,"changing frequency!!!\n");
 			  }
-			  tau=A*sin(wt);
+			  tau=sweepAmplitude*sin(wt);
 		  }  else
 		  {
-			  fprintf(stderr,"sono fuori da sweep!!!\n");
+			   if(verbose) fprintf(stderr,"waiting to start sweep...\n");
 			  tau=0.0;
 		  }
-		  fprintf(stderr,"f = %.2lf; \t wt = %.2lf; \t sweepCount = %.d; \t w0 = %.2lf;\n", f, wt, sweepCount, w0);
+		  
 			  
 		  tauSafe = checkLimits(encoders, tau); 
-		  fprintf(fid, "%.3lf\t", tau);
-		  fprintf(fid, "%.3lf\t%.3lf\t%.3lf\t%.3lf\t", FTj(0), FTj(1), FTj(2), FTj(3));
+
+		  static double told=0;
+		  static double t=0;
+		  told=t;
+		  t=Time::now();
+		  fprintf(fid, "%.3lf\t", t-told);
+		  fprintf(fid, "%.3lf\t", tau(ctrlJnt));
+		  fprintf(fid, "%.3lf\t", FTj(ctrlJnt));
 		  fprintf(fid, "%.3lf\t%.3lf\t%.3lf\t%.3lf\t%.3lf\t%.3lf\n", FSweep(0), FSweep(1), FSweep(2), FSweep(3), FSweep(4), FSweep(5));
 
 
@@ -530,7 +536,7 @@ public:
 
 		  if(count>=CPRNT)
 		  {
-			  
+			  fprintf(stderr,"f = %.2lf; \t wt = %.2lf; \t sweepCount = %.d; \t w0 = %.2lf;\n", f, wt, sweepCount, w0);
 			  if (verbose)
 			  {fprintf(stderr,"FTs = ");
 			  for(int i=0;i<6;i++)
@@ -584,6 +590,11 @@ public:
 		  initPosition.resize(initPos.length());
 		  for(int i = 0;i<limbJnt;i++)
 			  initPosition(i) =	initPos(i);
+		  return true;
+	  }
+ 	  bool setSweepAmplitude(double sweepAmpl)
+	  {
+		  sweepAmplitude = sweepAmpl;
 		  return true;
 	  }
 
@@ -717,6 +728,17 @@ public:
 		}
 
 		Bottle tmp;
+		double sweepAmplitude = 0;
+		if(rf.check("amplitude"))
+		{
+			tmp = rf.findGroup("amplitude");
+			sweepAmplitude = tmp.get(1).asDouble();
+		}
+		else 
+		{
+		  fprintf(stderr,"error: amplitude of sweep signal not defined in configuration file!!!\n returning;");
+		  return false;
+		}
 		Vector initPos;
 		if(rf.check("initPosition"))
 		{
@@ -796,6 +818,7 @@ public:
 		fprintf(stderr,"input port opened...\n");
 		ft_sweep = new ftSweep(SAMPLER_RATE, dd, port_FT, rf, part);
 		fprintf(stderr,"id thread istantiated...\n");
+		ft_sweep->setSweepAmplitude(sweepAmplitude);
 		ft_sweep->setInitialPosition(initPos);
 		ft_sweep->setLimits(maxLim,minLim);
 		fprintf(stderr,"initial position and limits set...\n");
