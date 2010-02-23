@@ -62,7 +62,7 @@
 #define STRAIN_RELEASE     0x03
 
 #define MAIS_BUILD         0x01
-#define STRAIN_BUILD       0x03
+#define STRAIN_BUILD       0x05
 
 #ifdef STRAIN 
   char VERSION=   		STRAIN_VERSION;
@@ -171,6 +171,7 @@ char filter_enable = 0;
 char can_enable = 0;
 char mux_enable = 1;
 char muxed_chans =5;
+char eeprom_status = 1;
 void T2(void);
 
 
@@ -254,7 +255,6 @@ void __attribute__((interrupt, no_auto_psv)) _T3Interrupt(void)
   unsigned int adcs[ADCS];
   float adct=0;
   unsigned int adc=0;
-  unsigned int i=0;
     
   // LATBbits.LATB12 = 1; // led on
 
@@ -397,8 +397,8 @@ void T2(void)
   // ForceData and TorqueData are defined as 8 bytes arrays, but only 6 bytes are used.
   // The remainaing two should be not trasmitted, unless a particular event occurs (i.e:debug message, saturation warning etc.)
   unsigned char ForceDataCalib[8], TorqueDataCalib[8]; 
+  unsigned char ForceDataCalibSafe[8];
   unsigned char ForceDataUncalib[8], TorqueDataUncalib[8]; 
-  unsigned char ForceData[8], TorqueData[8]; 
   static unsigned char ChToTransmit=1; 
   unsigned char saturation = 0;
   unsigned char i=0;
@@ -513,10 +513,28 @@ void T2(void)
   if (saturation!=0)
   {
 	 length=7;
+	 ForceDataCalib[0]=ForceDataCalibSafe[0];
+	 ForceDataCalib[1]=ForceDataCalibSafe[1];
+	 ForceDataCalib[2]=ForceDataCalibSafe[2];
+	 ForceDataCalib[3]=ForceDataCalibSafe[3];
+	 ForceDataCalib[4]=ForceDataCalibSafe[4];
+	 ForceDataCalib[5]=ForceDataCalibSafe[5];
 	 ForceDataCalib[6]=1;
 	 TorqueDataCalib[6]=1;	
 	 ForceDataUncalib[6]=1;
 	 TorqueDataUncalib[6]=1;
+  }
+  else
+  {
+	 ForceDataCalibSafe[0]=ForceDataCalib[0];
+	 ForceDataCalibSafe[1]=ForceDataCalib[1];
+	 ForceDataCalibSafe[2]=ForceDataCalib[2];
+	 ForceDataCalibSafe[3]=ForceDataCalib[3];
+	 ForceDataCalibSafe[4]=ForceDataCalib[4];
+	 ForceDataCalibSafe[5]=ForceDataCalib[5];
+	 ForceDataCalibSafe[6]=0;
+	 ForceDataCalibSafe[7]=0;
+
   }
 
   // force data 
