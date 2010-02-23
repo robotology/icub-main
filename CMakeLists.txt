@@ -1,7 +1,8 @@
 # Copyright: (C) 2009 RobotCub Consortium
-# Authos: Lorenzo Natale
+# Authors: Lorenzo Natale
 # CopyPolicy: Released under the terms of the GNU GPL v2.0.
-# Based on code from yarp.
+
+# New build system. Use export. 
 
 #reduce warning level with cmake 2.6
 cmake_minimum_required(VERSION 2.6)
@@ -46,18 +47,33 @@ MARK_AS_ADVANCED(CMAKE_BACKWARDS_COMPATIBILITY)
 
 set(ICUB_INCLUDE_DIRS "")
 set(ICUB_LIBRARIES "")
+set(ICUB_TARGETS "" CACHE STRING "list of all targets" FORCE) #cleanup directory
 
 # clean icub-config.cmake file
 file(WRITE ${CMAKE_BINARY_DIR}/icub-config.cmake "")
 
 # Create everything needed to build our executable.
-subdirs(src)
+add_subdirectory(src)
 
 install(EXPORT icub-targets DESTINATION ./ FILE icub-export-config.cmake)
 file(WRITE ${CMAKE_BINARY_DIR}/icub-config.install.cmake "MESSAGE(STATUS \"Configuring iCub package\")")
 file(APPEND ${CMAKE_BINARY_DIR}/icub-config.install.cmake "\nset(ICUB_INCLUDE_DIRS ${CMAKE_INSTALL_PREFIX}/include CACHE STRING \"\")")
 file(APPEND ${CMAKE_BINARY_DIR}/icub-config.install.cmake "\ninclude(${CMAKE_INSTALL_PREFIX}/icub-export-config.cmake)")
 install(FILES ${CMAKE_BINARY_DIR}/icub-config.install.cmake DESTINATION ./ RENAME icub-config.cmake)
+
+message(STATUS "Now exporting targets: ${ICUB_TARGETS}")
+file(APPEND ${CMAKE_BINARY_DIR}/icub-config.cmake "###################\n")
+file(APPEND ${CMAKE_BINARY_DIR}/icub-config.cmake "# List of include directories for exported targets\n\n")
+set(include_dirs "")
+foreach (t ${ICUB_TARGETS})
+  set(target ${t})
+  set(target_INCLUDE_DIRS ${${t}_INCLUDE_DIRS})
+  file(APPEND ${CMAKE_BINARY_DIR}/icub-config.cmake "set(${t}_INCLUDE_DIRS ${target_INCLUDE_DIRS} CACHE STRING \"include dir for target ${t}\")\n")
+
+  set(include_dirs ${include_dirs} ${target_INCLUDE_DIRS})
+endforeach(t)
+
+file(APPEND ${CMAKE_BINARY_DIR}/icub-config.cmake "set(ICUB_INCLUDE_DIRS ${include_dirs} CACHE STRING \"list of include directories, all exported targets\")\n")
 
 
 

@@ -3,6 +3,5 @@
 # CopyPolicy: Released under the terms of the GNU GPL v2.0.
 
 #add here list of subdirectories
-
 subdirs(examples)
 
