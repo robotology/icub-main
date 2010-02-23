@@ -1,10 +1,10 @@
 /**
 * @ingroup icub_module
 *
-* \defgroup zeroForceControl zeroForceControl
+* \defgroup ftIdSweep ftIdSweep
 *
 *
-* Perform zero force control on the iCub arms.
+* Perform sweep PWM over one motor.
 *
 * \author Matteo Fumagalli
 *
@@ -38,11 +38,16 @@
 const int SAMPLER_RATE = 10;
 const int FT_VALUES = 6;
 
+const int SWEEP_TIME = 4000; //time of sweep@w 
+
 bool verbose = false;
 const int CPRNT = 100;
 
 #define CONNECTION_ERROR 0
 #define CONNECTION_OK	 1
+
+#define SWEEP_OFF	 0
+#define SWEEP_ON	 1
 
 #define CONTROL_ON  1
 
@@ -51,7 +56,6 @@ using namespace yarp::os;
 using namespace yarp::sig;
 using namespace yarp::math;
 using namespace yarp::dev;
-//using namespace ctrl;
 using namespace std;
 
 using namespace iFC;
@@ -117,7 +121,7 @@ public:
     iCubLeg4DOF(const iCubLeg4DOF &leg);
 };
 
-
+FILE* fid = fopen("ftSweepData.dat","a+");
 // class dataCollector: class for reading from Vrow and providing for FT on an output port
 class ftSweep: public RateThread
 {
@@ -132,7 +136,8 @@ private:
 
 	// Pids
 	Pid *iCubPid; //needed when the program stops
-	Pid *FTPid; // to be set to zero
+	Pid *FTPid; //needed when the program stops
+	Pid *SweepPid; // to be set to zero
 
 	Vector encoders;
 	Vector angs;
@@ -164,6 +169,7 @@ private:
 	BufferedPort<Vector> *port_FT;
 	Vector Datum;
 	bool first;
+	bool sweep;
 
 	int ctrlJnt;
 	Vector tau;
@@ -173,7 +179,8 @@ private:
 	int watchDog;
 	Stamp info;
 	double time, time0;
-	int countTime, countTime0;
+	int countTime, countTime0, sweepCount;
+	double wt,f,w0,A;
 
 	Vector *datas;
 
@@ -268,37 +275,21 @@ private:
 		  //initializePositionAndLimits(limb);
 	}
 	
-	  Vector checkLimits(Vector q, Vector TAO, Vector dir)
+	  Vector checkLimits(Vector q, Vector TAO)
 	  {
 		  Vector t = TAO;
 		  for(int i=0;i<limbJnt;i++)
 		  {
 			  if(q(i)<=minJntLimits[i])
 			  {
-                  if(count>=CPRNT)  fprintf(stderr,"J%d over limits %.2lf (%.2lf ; %.2lf) ", i, q(i), minJntLimits[i], maxJntLimits[i]);
-				  if (dir(i)>0)
-				  {
-                      if(count>=CPRNT) fprintf(stderr,"Dir %.3lf > 0.0,safe\n",dir(i));
-				  }
-				  else
-				  {
-					  t(i) = 0.0;
-					  if(count>=CPRNT) fprintf(stderr,"Dir %.3lf < 0.0,STOPPING\n",dir(i));
-				  }
+                  t(i) = 0.0;
+				  fprintf(stderr,"jnt %d is over inferior limit : %.3lf (%.3lf - %.3lf)\n", i, q(i), minJntLimits[i], maxJntLimits[i]);
+					  
 			  }
 			  if(q(i)>=maxJntLimits[i])
 			  {
-                  if(count>=CPRNT) fprintf(stderr,"J%d over limits %.2lf (%.2lf ; %.2lf) ", i, q(i), minJntLimits[i], maxJntLimits[i]);
-				  if (dir(i)<0)
-				  {
-					  //t(i) = t(i)/2; //for safety
-                      if(count>=CPRNT) fprintf(stderr,"Dir %.3lf > 0.0, safe\n",dir(i));
-				  }
-				  else
-				  {
-					  t(i) = 0.0;
-                      if(count>=CPRNT) fprintf(stderr,"Dir %.3lf < 0.0, STOPPING\n",dir(i));
-				  }
+				  t(i) = 0.0;
+				  fprintf(stderr,"jnt %d is over inferior limit : %.3lf (%.3lf - %.3lf)\n", i, q(i), minJntLimits[i], maxJntLimits[i]);
 			  }
 		  }
 		  return t;
@@ -345,7 +336,9 @@ public:
 
 		  angs.resize(limbJnt);
 		  angs=0.0;
-		  for(int i=0;i<limbJnt;i++)
+
+		  ctrlJnt = 3;
+		  for(int i=0; i<limbJnt;i++)
 		  {
 			  // Get a copy of iCub Pid values...
 			  ipids->getPid(i,iCubPid+i);
@@ -357,8 +350,8 @@ public:
 			  FTPid[i].setOffset(0.0);	
 			  // Setting the FTPid, iCub is controllable using setOffset
 		  }
+		  
 
-		  ctrlJnt = 3;
 		  tau.resize(limbJnt);
 		  tauDes.resize(limbJnt);
 		  tauSafe.resize(limbJnt);
@@ -369,6 +362,12 @@ public:
 		  watchDog = 0;
 		  time = time0 = 0.0;
 		  countTime = countTime0 = 0;
+		  sweep = SWEEP_OFF;
+		  sweepCount = 0;
+		  wt=0;
+		  f=1;
+		  w0=0;
+		  A=50;
 	  }
 	  bool threadInit()
 	  {
@@ -394,9 +393,11 @@ public:
 			  count++;
 		  	  Time::delay(0.1);
 		    }
+			fprintf(stderr,"Reached position %.1lf [deg] on jnt: %d\n",initPosition[i], i);
 		  }
 		  ipids->setPid(ctrlJnt,FTPid[ctrlJnt]);  
 		  	  
+		  Time::delay(2.0);
 		  count =0;
 		  return true;
 	  }
@@ -448,63 +449,96 @@ public:
 
 		  if(count>=CPRNT)
 		  {
-			  fprintf(stderr," s, watchdog:%d ", watchDog);
-			  if (verbose) fprintf(stderr,"c:%d c0:%d", countTime, countTime0);
-			  fprintf(stderr,"\n");
+			  if (verbose) {fprintf(stderr," s, watchdog:%d ", watchDog);
+			  fprintf(stderr,"c:%d c0:%d", countTime, countTime0);
+			  fprintf(stderr,"\n");}
 			  if (connected == CONNECTION_ERROR) fprintf(stderr,"Connection error with the sensor\n");
 		  }
-			if(datas!=0)  
-			{ 
-			  FTs = *datas;
-			  if(first) FTs_init = FTs;
-			  FT = FTB->getFB(FTs-FTs_init);
-			  first = false;
-			}
-			else
+
+		  if(datas!=0)  
+		  { 
+			FTs = *datas;
+			if(first) 
 			{
-			  if(!first)  FT = FTB->getFB();
-			  else 
-			  {
-				  FT=0.0;
-				  FTs=0.0;
-				  FTj=0.0;
-				  FTs_init=0.0;
-			  }
+				FTs_init = FTs;
+		  	    sweep=SWEEP_ON;
+				for(int kk=0;kk<100;kk++)
+					fprintf(stderr,"Sweep signal is starting now!!!\n");
 			}
+			FT = FTB->getFB(FTs-FTs_init);
+			first = false;
+		  }
+		  else
+	  	  {
+	  	    if(!first)  FT = FTB->getFB();
+		    else 
+		    {
+	  		  FT=0.0;
+	  		  FTs=0.0;
+	  		  FTj=0.0;
+		  	  FTs_init=0.0;
+		    }
+		  }
 
 				  
-			Vector Fe=FTB->getFe();
+		  Vector Fe=FTB->getFe();
+		  Vector FSweep=FTs-FTs_init;
 
 		  Matrix J = iCubLimb->GeoJacobian();
 		  Vector tau(4);
 		  tau=0.0;
 		  FTj=J.transposed()*FT;
-		  Vector speeds(limbJnt);
-		  speeds = 0.0;
-		  tauSafe = checkLimits(encoders, tau, speeds); 
+		  if(sweep==SWEEP_ON)
+		  {
+			  fprintf(stderr,"sono in sweep!!!\n");
+			  if(sweepCount<=SWEEP_TIME/SAMPLER_RATE)
+			  {
+				  sweepCount++;
+				  wt=2*M_PI*f*sweepCount*SAMPLER_RATE/1000+w0;
+				  fprintf(stderr,"sono qui!!!\n");
+			  }else
+			  {
+				  sweepCount=1;
+				  f=f+1;
+				  w0=wt;
+				  wt=2*M_PI*f*sweepCount*SAMPLER_RATE/1000+w0;
+				  for(int kk=0;kk<100;kk++)
+					  fprintf(stderr,"sono qui!!!\n");
+			  }
+			  tau=A*sin(wt);
+		  }  else
+		  {
+			  fprintf(stderr,"sono fuori da sweep!!!\n");
+			  tau=0.0;
+		  }
+		  fprintf(stderr,"f = %.2lf; \t wt = %.2lf; \t sweepCount = %.d; \t w0 = %.2lf;\n", f, wt, sweepCount, w0);
+			  
+		  tauSafe = checkLimits(encoders, tau); 
+		  fprintf(fid, "%.3lf\t", tau);
+		  fprintf(fid, "%.3lf\t%.3lf\t%.3lf\t%.3lf\t", FTj(0), FTj(1), FTj(2), FTj(3));
+		  fprintf(fid, "%.3lf\t%.3lf\t%.3lf\t%.3lf\t%.3lf\t%.3lf\n", FSweep(0), FSweep(1), FSweep(2), FSweep(3), FSweep(4), FSweep(5));
 
 
 		  //saturation
-			  ipids->setOffset(ctrlJnt,tauSafe(ctrlJnt));
+		  ipids->setOffset(ctrlJnt,tauSafe(ctrlJnt));
+		  
+		fprintf(stderr,"tau(%d) = %.3lf\n", ctrlJnt, tauSafe(ctrlJnt));
 
 		  if(count>=CPRNT)
 		  {
 			  
-			  //if (verbose)
+			  if (verbose)
 			  {fprintf(stderr,"FTs = ");
 			  for(int i=0;i<6;i++)
 				  fprintf(stderr,"%+.3lf\t", FTs(i)-FTs_init(i));
 			  fprintf(stderr,"\n");}
 
-			  if (verbose)
-			  {fprintf(stderr,"spds = ");
-			  for(int i=0;i<limbJnt;i++)
-				  fprintf(stderr,"%+.3lf\t", speeds(i));
-			  fprintf(stderr,"\n");}
 
 			  count = 0;
 		  }
 		  count++;
+		  fprintf(stderr,"counter: %d\n", count);
+		  fprintf(stderr,"sweep: %d\n", sweep);
 	  }
 
 	  void threadRelease()
@@ -523,6 +557,8 @@ public:
 		  {
 			  ipids->setPid(i,iCubPid[i]);
 		  }
+		  fprintf(stderr,"set Pid on jnt %d:\n", ctrlJnt);
+		  Time::delay(3);
 		  fprintf(stderr,"enabling amps...\n");
 		  for(int i=0;i<limbJnt;i++)
           	  iamps->enableAmp(i);
@@ -728,7 +764,7 @@ public:
 		  
 
 		// Create the terminal
-		handlerPortName = "/zfcTerminal/";
+		handlerPortName = "/ftIdTerminal/";
 		handlerPortName += partName;
 		if (!handlerPort.open(handlerPortName.c_str())) {           
 		cout << getName() << ": Unable to open port " << handlerPortName << endl;  
@@ -739,7 +775,7 @@ public:
 		Options.put("robot",robot.c_str());
 		Options.put("part",part.c_str());
 		Options.put("device","remote_controlboard");
-		Options.put("local",((fwdSlash+robot+fwdSlash+part)+"/ftControl/client").c_str());
+		Options.put("local",((fwdSlash+robot+fwdSlash+part)+"/ftIdSweep/client").c_str());
 		Options.put("remote",(fwdSlash+robot+fwdSlash+part).c_str());
 
 		dd = new PolyDriver(Options);
@@ -755,7 +791,7 @@ public:
 		port_FT->open((PortName+"/FT:i").c_str());
 		fprintf(stderr,"input port opened...\n");
 		ft_sweep = new ftSweep(SAMPLER_RATE, dd, port_FT, rf, part);
-		fprintf(stderr,"ft thread istantiated...\n");
+		fprintf(stderr,"id thread istantiated...\n");
 		ft_sweep->setInitialPosition(initPos);
 		ft_sweep->setLimits(maxLim,minLim);
 		fprintf(stderr,"initial position and limits set...\n");
@@ -800,7 +836,7 @@ int main(int argc, char * argv[])
     // prepare and configure the resource finder
     ResourceFinder rf;
     rf.setVerbose();
-	rf.setDefaultContext("zeroForceControl/conf");
+	rf.setDefaultContext("ftIdSweep/conf");
 	rf.setDefaultConfigFile("defautFT.ini");
 
     rf.configure("ICUB_ROOT", argc, argv);
