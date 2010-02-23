@@ -459,7 +459,7 @@ public:
 
         Bottle &general = rf.findGroup("general");
         if(!general.isNull())
-            period = rf.check("T",Value((int) 20)).asInt();
+            period = general.check("T",Value((int) 20)).asInt();
         else
         {
             cout << "general part is missing!" << endl;
