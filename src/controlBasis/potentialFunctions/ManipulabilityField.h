@@ -99,14 +99,6 @@ namespace CB {
          **/
         double getManipulability(yarp::sig::Matrix J);
 
-    private:
-
-        // determinant and helper functions
-        double determinant(const yarp::sig::Matrix &M);
-        double ZeroLLTri(yarp::sig::Matrix M);
-        yarp::sig::Matrix RowSwap(yarp::sig::Matrix M, int r1, int r2);
-        yarp::sig::Matrix RowMulS(yarp::sig::Matrix M, int row, double value);
-        yarp::sig::Matrix RowAddMulS(yarp::sig::Matrix M, int r1, int r2, double value);
 
     };
     

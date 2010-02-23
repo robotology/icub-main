@@ -1,6 +1,7 @@
 // -*- mode:C++; tab-width:4; c-basic-offset:4; indent-tabs-mode:nil -*-      
 #include "ManipulabilityField.h"
 #include <yarp/os/Network.h>
+#include <yarp/math/Math.h>
 
 using namespace std;
 using namespace yarp::os;
@@ -276,155 +277,13 @@ bool CB::ManipulabilityField::connectToInputs() {
 
 double CB::ManipulabilityField::getManipulability(Matrix M) {
 
-  double manip, det;
+  double manip, d;
   Matrix MT;(M.cols(),M.rows());
   Matrix MMT(M.rows(),M.rows());
   MT = M.transposed();
   MMT = M*MT;
-  det = determinant(MMT);
-  manip = sqrt(det);
+  d = det(MMT);
+  manip = sqrt(d);
   return manip;
 
 }
-
-double CB::ManipulabilityField::determinant(const Matrix &M) {
-
-  double Det;                 
-  int m = M.rows();
-  int n = M.cols();
-                                                                                                                                                 
-  Matrix Tmp(m,n);                                                                                                                                                               
-                                                                                                                                                                                 
-  if (m != n) {                                                                                                                                                                  
-    printf("Matrix::determinant: Matrix is not square.\n");                                                                                                                           
-    exit(-1);                                                                                                                                                                    
-  }                                                                                                                                                                              
-                                                                                                                                                                                 
-  if (m > 1) {                                                                                                                                                                   
-    Tmp = M;                                                                                                                                                                  
-    Det = ZeroLLTri(Tmp);                                                                                                                                                       
-  } else {                                                                                                                                                                       
-    if (m == 1) Det = M[0][0];                                                                                                                                                 
-    else Det = 0.0;                                                                                                                                                              
-  }                                                                                                                                                                              
-  return(Det);                                    
-
-}
-
-double CB::ManipulabilityField::ZeroLLTri(Matrix M) {
-
-  double   Det;                                                                                                                                                                                          
-  unsigned c, r;                                                                                                                                                                                         
-  int m = M.rows();
-  int n = M.cols();                                                                                                                                                                                        
-  double INVEPS = 1.0e-50;  
-  
-  if (m > n) {                                                                                                                                                                                           
-    printf("Matrix::ZeroLLTri(): Must have cols >= rows.\n");                                                                                                                                            
-    exit(-1);                                                                                                                                                                                            
-  }                                                                                                                                                                                                      
-                                                                                                                                                                                                           
-  Det = 1.0;                                                                                                                                                                                             
-                                                                                                                                                                                                           
-  //    printf("ZeroLLTri m: %d\n", m);                                                                                                                                                                  
-  //    display();                                                                                                                                                                                       
-  
-  //Starting at row c, find a row whose column c element is nonzero.                                                                                                                                     
-  for (c = 0; c < m; ++c) {                                                                                                                                                                              
-    
-    //      printf("ZeroLLTri working on col: %d\n", c);                                                                                                                                                 
-    
-    for (r = c; ((r < m) && (fabs(M[r][c]) < INVEPS)); ++r);                                                                                                                                           
-    //If column c of row c is zero, gonna hafta swap with row r.                                                                                                                                         
-    if (r != c) {                                                                                                                        
-
-      if (r >= m) {                                                                                                                                                                                      
-	//Not invertible (no remaining row with col != 0)                                                                                                                                                
-	Det = 0.0;                                                                                                                                                                                       
-	break;                                                                                                                                                                                           
-      }                                                                                                                                                                                                  
-      //Swap rows to make col c non-zero (which negates determinant).                                                                                                                                    
-      M = RowSwap(M, r, c);                                                                                                                                                                                     
-      Det = -Det;                                                                                                                                                                                        
-    }                                                                                                                                                                                                    
-    //Dst[c, c] is now non-zero.  Scale row to                                                                                                                                                           
-    //make Dst[c, c] == 1.0, and adjust determinant.                                                                                                                                                     
-    Det *= M[c][c];                                                                                                                                                                                    
-    M = RowMulS(M, c, (1.0 / M[c][c]));                                                                                                                                                                       
-    //add a multiple of row c to each row below the                                                                                                                                                      
-    //diagonal to make column c of those rows zero.                                                                                                                                                      
-    for (r = c + 1; r < m; ++r) {                                                                                                                                                                        
-      M = RowAddMulS(M, r, c, (-M[r][c]));                                                                                                                                                                    
-      //      printf("ZeroLLTri zeroing out row %d in col %d\n", r, c);                                                                                                                                  
-    }                                                                                                                                                                                                    
-    //      display();                                                                                                                                                                                   
-  }                                                         
-
-  //If the (leftmost square of the) original matrix is                                                                                                                                                   
-  //invertible then the diagonal is all 1.0, and Det is                                                                                                                                                  
-  //already the determinant. However, if the matrix is                                                                                                                                                   
-  //not invertible then Det may be zero and/or some of                                                                                                                                                   
-  //the diagonal elements may be zero, so multiply Det                                                                                                                                                   
-  //by the diagonal.                                                                                                                                                                                     
-  for (c = 0; c < m; ++c) Det *= M[c][c];                                                                                                                                                              
-  return(Det);                           
-
-}
-
-//Swap rows r1 and r2 in this matrix                                                                                                                                                                       
-Matrix CB::ManipulabilityField::RowSwap(Matrix M, int r1, int r2) {                                                                                                                                                                     
-
-  int i;                                                                                                                                                                                                   
-  double temp;                
-  int m = M.rows();
-  int n = M.cols();  
-                                                                                                                                                                                                           
-  if ((r1 > m) || (r2 > m)) {                                                                                                                                                                              
-    printf("Matrix::RowSwap(): input r1 and r2 must be <= total matrix rows\n");                                                                                                                           
-    exit(-1);                                                                                                                                                                                              
-  }                                                                                                                                                                                                        
-                                                                                                                                                                                                           
-  for (i=0; i<n; i++) {                                                                                                                                                                                    
-    temp = M[r1][i];                                                                                                                                                                                     
-    M[r1][i] = M[r2][i];                                                                                                                                                                               
-    M[r2][i] = temp;                                                                                                                                                                                     
-  }   
-
-  return M;                                                                                                                                                                                                     
-}                                                                                                                                                                                                          
-  
-
-//multiply contents of row by value                                                                                                                                                                        
-Matrix CB::ManipulabilityField::RowMulS(Matrix M, int row, double value) {                                                                                                                                                              
-
-  int i;                                                                                                                                                                                                   
-
-  int m = M.rows();
-  int n = M.cols();  
-                                                                                                                                                                                                           
-  if (row > m) {                                                                                                                                                                                           
-    printf("Matrix::RowMulS(): input row must be <= total matrix rows.\n");                                                                                                                                
-    exit(-1);                                                                                                                                                                                              
-  }                                                                                                                                                                                                        
-  for (i=0; i<n; i++)                                                                                                                                                                                      
-    M[row][i] *= value;                                                                                                                                                                                  
-
-  return M;
-}                                                                                                                                                                                                          
-                                                                                                                                                                                                           
-//r1 += r2 * value                                                                                                                                                                                         
-Matrix CB::ManipulabilityField::RowAddMulS(Matrix M, int r1, int r2, double value) {                                                                                                                                                    
-
-  int i;                                                                                                                                                                                                   
-  int m = M.rows();
-  int n = M.cols();  
-                                                                                                                                                                                                           
-  if ((r1 > m) || (r2 > m)) {                                                                                                                                                                              
-    printf("Matrix::RowAddMulS(): input row must be <= total matrix rows.\n");                                                                                                                             
-    exit(-1);                                                                                                                                                                                              
-  }                                                                                                                                                                                                        
-  for (i=0; i<n; i++)
-    M[r1][i] += M[r2][i] * value;
-
-  return M;
-}                   
