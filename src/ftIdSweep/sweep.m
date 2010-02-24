@@ -25,6 +25,7 @@ end
 plot(time,tau)
 
 load ftSweepData_leftarm.dat
+ftSweepData_leftarm=ftSweepData_leftarm(2:8000,:);
 dt=ftSweepData_leftarm(2:end,1);
 tauIn=ftSweepData_leftarm(:,2);
 tauOut=ftSweepData_leftarm(:,3);
@@ -44,13 +45,15 @@ TAUOUT = fft(tauOut,NFFT)/L;
 f = Fs/2*linspace(0,1,NFFT/2+1);
 H=TAUOUT./TAUIN;
 % Plot single-sided amplitude spectrum.
+figure
 plot(f,2*abs(TAUIN(1:NFFT/2+1))),hold on 
 plot(f,2*500*abs(TAUOUT(1:NFFT/2+1)),'r') 
 title('Single-Sided Amplitude Spectrum of H')
 xlabel('Frequency (Hz)')
 ylabel('|H(f)|')
-sys=frd(H,f)
-bode(sys)
+figure
+semilogx(f,20*log10(2*abs(H(1:NFFT/2+1)))),axis([1 20 -90 0])
+
 
 
 
