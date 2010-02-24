@@ -35,7 +35,7 @@ using namespace std;
 This module provides a graphical interface for imageProcessor module.
 
 \section intro_sec Description
-This module sends commands as bottle to the imageProcessor module. The command respect a communication stardard based
+This module sends commands as bottle to the \ref imageProcessor "imageProcessor"  module. The command respect a communication stardard based
 on bottle composed of vocabols
 
 
@@ -79,7 +79,7 @@ none
 Linux and Windows.
 
 \section example_sec Example Instantiation of the Module
-imageProcessorInterface
+imageProcessorInterface --name imageProcessorInterface
 
 
 \author Francesco Rea
