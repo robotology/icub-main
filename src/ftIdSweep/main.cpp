@@ -37,7 +37,7 @@
 const int SAMPLER_RATE = 10;
 const int FT_VALUES = 6;
 
-const int SWEEP_TIME = 4000; //time of sweep@w 
+const int SWEEP_TIME = 8000; //time of sweep@w 
 
 bool verbose = false;
 const int CPRNT = 100;
@@ -535,23 +535,24 @@ public:
 		  //saturation
 		  ipids->setOffset(ctrlJnt,tauSafe(ctrlJnt));
 		  
-		fprintf(stderr,"tau(%d) = %.3lf\n", ctrlJnt, tauSafe(ctrlJnt));
+		if(verbose) fprintf(stderr,"tau(%d) = %.3lf\n", ctrlJnt, tauSafe(ctrlJnt));
 
 		  if(count>=CPRNT)
 		  {
-			  fprintf(stderr,"f = %.2lf; \t wt = %.2lf; \t sweepCount = %.d; \t w0 = %.2lf;\n", f, wt, sweepCount, w0);
+			  if(verbose) fprintf(stderr,"f = %.2lf; \t wt = %.2lf; \t sweepCount = %.d; \t w0 = %.2lf;\n", f, wt, sweepCount, w0);
 			  if (verbose)
 			  {fprintf(stderr,"FTs = ");
 			  for(int i=0;i<6;i++)
 				  fprintf(stderr,"%+.3lf\t", FTs(i)-FTs_init(i));
 			  fprintf(stderr,"\n");}
+			  fprintf(stderr,"frequency: %.1lf\n", f);
 
 
 			  count = 0;
 		  }
 		  count++;
-		  fprintf(stderr,"counter: %d\n", count);
-		  fprintf(stderr,"sweep: %d\n", sweep);
+		  if(verbose) fprintf(stderr,"counter: %d\n", count);
+		  if(verbose) fprintf(stderr,"sweep: %d\n", sweep);
 	  }
 
 	  void threadRelease()
