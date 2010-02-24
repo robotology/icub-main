@@ -1806,7 +1806,7 @@ GtkWidget* WatershedModule::createMainWindow(void)
     label = gtk_label_new ("MAXBLOB dimension:");
     gtk_box_pack_start (GTK_BOX (box4), label, FALSE, FALSE, 0);
     gtk_widget_show (label);
-    adj3 = gtk_adjustment_new (100, 10,6000,100, 1, 1);
+    adj3 = gtk_adjustment_new (4096, 10,6000,100, 1, 1);
     hscale = gtk_hscale_new (GTK_ADJUSTMENT (adj3));
     gtk_widget_set_size_request (GTK_WIDGET (hscale), 200, -1);
     scale_set_default_values (GTK_SCALE (hscale));
@@ -1819,7 +1819,7 @@ GtkWidget* WatershedModule::createMainWindow(void)
     label = gtk_label_new ("MINBLOB dimension:");
     gtk_box_pack_start (GTK_BOX (box4), label, FALSE, FALSE, 0);
     gtk_widget_show (label);
-    adj4 = gtk_adjustment_new (1,1,3000,1,1,1);
+    adj4 = gtk_adjustment_new (100,1,3000,1,1,1);
     hscale = gtk_hscale_new (GTK_ADJUSTMENT (adj4));
     gtk_widget_set_size_request (GTK_WIDGET (hscale), 200, -1);
     scale_set_default_values (GTK_SCALE (hscale));
