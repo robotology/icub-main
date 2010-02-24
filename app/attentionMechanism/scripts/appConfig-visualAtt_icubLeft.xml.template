@@ -13,6 +13,13 @@
 		<stdio>lightHouse</stdio>
 	</module>
 	<module>
+		<name>yuvProcessor</name>
+		<parameters></parameters>
+		<tag>yuvProcessor</tag>
+		<node>/surfer</node>
+		<stdio>lightHouse</stdio>
+	</module>
+	<module>
 		<name>imageProcessor</name>
 		<parameters>--file imageProcessorLeft.ini --context attentionMechanism/conf</parameters>
 		<tag>imageLeft</tag>
@@ -42,11 +49,30 @@
 		<tag>blobFinderOutLeft</tag>
 		<node>/lightHouse</node>
 	</module>
-	 
+	<module>
+		<name>selectiveAttentionEngine</name>
+		<parameters>--file selectiveAttentionEngine.ini --context attentionMechanism/conf</parameters>
+		<tag>selectiveAttentionEngine</tag>
+		<node>/surfer</node>
+	</module>
+
+ 
 	
 	<connection>
       	<from>/icub/cam/left/logpolar</from>
-		<to>/colourPU/left/image:i</to>
+		<to>/colourPU/icub/left_cam/image:i</to>
+	</connection>
+	<connection>
+      	<from>/colourPU/icub/left_cam/ychannel:o</from>
+		<to>/yuvProc/Y/image:i</to>
+	</connection>
+	<connection>
+      	<from>/colourPU/icub/left_cam/uchannel:o</from>
+		<to>/yuvProc/U/image:i</to>
+	</connection>
+	<connection>
+      	<from>/colourPU/icub/left_cam/vchannel:o</from>
+		<to>/yuvProc/V/image:i</to>
 	</connection>
 	<connection>
       	<from>/colourPU/icub/left_cam/rg:o</from>
