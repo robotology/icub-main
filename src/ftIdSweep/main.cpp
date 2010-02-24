@@ -155,6 +155,7 @@ private:
 	iKinChain *chain;
 	
 	int limbJnt;
+	string limb;
 
 	iFB *FTB;
 	iFTransform *sensor;
@@ -216,8 +217,9 @@ private:
 	}
 
 	
-	void initLimb(string limb)
+	void initLimb(string tmplimb)
 	{
+		limb=tmplimb;
 		if (strcmp(limb.c_str(), "left_arm")==0)
 		  {			  
 			  limbJnt = 4;
@@ -301,7 +303,7 @@ private:
 public:
 	
 
-	ftSweep(int _rate, PolyDriver *_dd, BufferedPort<Vector> *_port_FT, ResourceFinder &_rf, string limb):	  
+	ftSweep(int _rate, PolyDriver *_dd, BufferedPort<Vector> *_port_FT, ResourceFinder &_rf, string tmplimb):	  
 	  RateThread(_rate), dd(_dd) 
 	  {
 		  iCubPid = 0;
@@ -321,6 +323,7 @@ public:
 		  // Elbow to FT sensor variables
 		  Rs.resize(3,3);     Rs=0.0;
 		  ps.resize(3);		  ps=0.0;
+		  limb=tmplimb;
 
 		  initLimb(limb);
 		  sensor = new iFTransform(Rs,ps);
@@ -594,7 +597,10 @@ public:
 	  }
  	  bool setSweepAmplitude(double sweepAmpl)
 	  {
-		  sweepAmplitude = sweepAmpl;
+		  if (strcmp(limb.c_str(), "left_arm")==0)
+		  {
+		  	sweepAmplitude = -sweepAmpl;
+		  }else sweepAmplitude = sweepAmpl;
 		  return true;
 	  }
 
