@@ -68,8 +68,8 @@ GTK
 
 \section portsc_sec Ports Created
 Input ports:
-- blobFinder/cmd
-Outports
+- <name>/cmd
+Outports:
 - <name>/command:o
 
 \section in_files_sec Input Data Files
