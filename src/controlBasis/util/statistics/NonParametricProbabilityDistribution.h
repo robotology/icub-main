@@ -1,4 +1,11 @@
 // -*- mode:C++; tab-width:4; c-basic-offset:4; indent-tabs-mode:nil -*-    
+/*
+\author Shiraj Sen and Stephen Hart
+
+Copyright (C) 2010 RobotCub Consortium
+ 
+CopyPolicy: Released under the terms of the GNU GPL v2.0.
+**/
 #ifndef __NONPARAMETRICDISTRIBUTION_H__
 #define __NONPARAMETRICDISTRIBUTION_H__
 

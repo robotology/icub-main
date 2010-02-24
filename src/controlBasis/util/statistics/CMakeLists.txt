@@ -14,8 +14,7 @@ IF (NOT ICUB_FOUND)
    MESSAGE (STATUS "If this is not what you want, set ICUB_DIR variable.")
 ENDIF (NOT ICUB_FOUND)
 
-INCLUDE_DIRECTORIES( . 
-  ../../include )
+INCLUDE_DIRECTORIES( . )
 
 ADD_EXECUTABLE(statisticsTest main.cpp NonParametricProbabilityDistribution.cpp)
 
