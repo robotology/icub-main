@@ -51,6 +51,39 @@ class cartesianMover{
   static bool display_cartesian_pose(cartesianMover *currentPart);
   static bool display_axis_pose(cartesianMover *currentPart);
   static void position_slider_changed(GtkRange *range, cartesianMover *currentPart);
+  //table functions
+  void init_cartesian_table();
+  static void cartesian_table_open(GtkButton* button, cartesianMover *currentPart);
+  static void go_click(GtkButton* b, cartesianMover* cm);
+  //GtkTreeModel* refresh_cartesian_position_list_model(double *TIM, int *SEQ, double **POS_LIST);
+  //void add_cartesian_columns (GtkTreeView *tree_view, cartesianMover* cm);
+  //table variables
+ public:
+  static void edited_cartesian_sequence (GtkCellRendererText *cell, GtkTreePath *path_str, gchar *new_text, cartesianMover *cm);
+  static void edited_cartesian_timing (GtkCellRendererText *cell, GtkTreePath *path_str, gchar *new_text, cartesianMover *cm);
+  static void cartesian_line_click(GtkTreeView *tree_view, GtkTreePath *path, GtkTreeViewColumn *column, cartesianMover *cm);
+  static void sequence_save(GtkButton *button,  cartesianMover* cm);
+  static void sequence_load(GtkFileChooser *button, cartesianMover *cm );
+  static void sequence_cycle_time(GtkButton*, cartesianMover*);
+  static bool sequence_iterator_time(cartesianMover* cm);
+  static void sequence_stop(GtkButton *button,cartesianMover* cm);
+  void save_to_file(char* filenameIn, cartesianMover* cm);
+  void load_from_file(char* filenameIn, cartesianMover* cm);
+
+  GtkWidget *buttonGo;
+  GtkWidget *buttonSave;
+  GtkWidget *buttonLoad;
+  GtkWidget *buttonCycTim;
+  GtkWidget *buttonStp;
+
+  int *SEQUENCE;
+  int *INV_SEQUENCE;
+  double *TIMING;
+  double **STORED_POS;
+  GtkWidget *treeview;
+  guint32* timeout_seqeunce_rate;
+  guint* timeout_seqeunce_id;
+  int *SEQUENCE_ITERATOR;
 
  public:
   ResourceFinder *finder;

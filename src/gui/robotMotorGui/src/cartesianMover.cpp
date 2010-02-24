@@ -444,10 +444,14 @@ cartesianMover::cartesianMover(GtkWidget *vbox_d, PolyDriver *partDd_d, char *pa
             gtk_widget_set_size_request 	(frame3, 180, 240);
 
             //Button 0 in the panel
+
             GtkWidget *button0 = gtk_button_new_with_mnemonic ("Open sequence tab");
             gtk_fixed_put (GTK_FIXED (inv1), button0, 10+(NUMBER_OF_CARTESIAN_COORDINATES%numberOfRows)*width,         20+(NUMBER_OF_CARTESIAN_COORDINATES/numberOfRows)*height);
             gtk_widget_set_size_request     (button0, 150, 25);
-            //g_signal_connect (button14, "clicked", G_CALLBACK (table_open), myClassData3);
+	    fprintf(stderr, "Initializing the table \n");
+	    init_cartesian_table();
+	    fprintf(stderr, "Connecting the callbacks for the table \n");
+            g_signal_connect (button0, "clicked", G_CALLBACK (cartesian_table_open), this);
 		      
             //Button1 in the panel
             GtkWidget *button1 = gtk_button_new_with_mnemonic ("Stop");
@@ -517,5 +521,6 @@ cartesianMover::~cartesianMover()
 
 void cartesianMover::releaseDriver()
 {
-    fprintf(stderr, "cartesianMover doing nothing...");
+    fprintf(stderr, "cartesianMover closing driver...");
+    partDd->close();
 }
