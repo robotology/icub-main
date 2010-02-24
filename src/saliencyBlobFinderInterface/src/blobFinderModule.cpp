@@ -20,7 +20,7 @@ blobFinderModule::~blobFinderModule(){
 
 
 bool blobFinderModule::open(Searchable& config) {
-  
+    printf("Opening the command port at %s \n",getName());
     cmdPort.open(getName("cmd")); // optional command port
     attach(cmdPort); // cmdPort will work just like terminal
     gui->setName(getName());

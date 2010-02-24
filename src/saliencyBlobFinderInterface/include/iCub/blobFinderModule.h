@@ -102,7 +102,7 @@ private:
     /**
 	* port where the commands are sent
 	*/
-    Port cmdPort;
+    BufferedPort<Bottle > cmdPort;
 	/**
 	* options of the connection
 	*/
