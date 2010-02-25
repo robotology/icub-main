@@ -38,9 +38,7 @@
  *
  * \f[ r: \quad \left\{  \begin{array}{l} a_{2,1} \cdot q_1 + a_{2,2} \cdot q_2 + a_{2,3} \cdot q_3 + \dots +  a_{2,n} \cdot q_n  = c_2 \\ \vdots \\ a_{n,1} \cdot q_1 + a_{n,2} \cdot q_2 + \dots + a_{n,n} \cdot q_n  = c_{n} \end{array} \right. .  \f]
  *
- * However, the representation of a line by means of the coefficients \f$ a_{1,1} \f$, \f$ \dots \f$, \f$ a_{n-1,n} \f$ is redundant. It can be shown that an equivalent
- *
- * non-redundant implicit representation is the following:
+ * However, the representation of a line by means of the coefficients \f$ a_{1,1} \f$, \f$ \dots \f$, \f$ a_{n-1,n} \f$ is redundant. It can be shown that an equivalent non-redundant implicit representation is the following:
  *
  * \f[ r: \left\{  \begin{array}{l} a_{2,1} \cdot q_1 + q_2 + 0 \cdot q_3 + \dots +  0 \cdot q_n  = c_2 \\ \vdots \\ a_{n,1} \cdot q_1 + 0 \cdot q_2 + \dots + 0 \cdot q_{n-1} + q_n  = c_{n} \end{array} \right. .  \f]
  *
