@@ -548,17 +548,14 @@ Vector LMCtrl::iterate(Vector &xd, const unsigned int verbose)
         Jt=J.transposed();
         grad=-1.0*(Jt*e);
 
-        Matrix H=Jt*J;
+        Matrix LM=J*Jt;
+        for (unsigned int i=0; i<6; i++)
+            LM(i,i)+=mu*LM(i,i);
 
-        Matrix M=H;
-        for (unsigned int i=0; i<dim; i++)
-            M(i,i)+=mu*M(i,i);
-
-        Matrix pinvM;
-        if (M.rows()>=M.cols())
-            pinvM=pinv(M);
+        if (LM.rows()>=LM.cols())
+            pinvLM=Jt*pinv(LM);
         else
-            pinvM=pinv(M.transposed()).transposed();
+            pinvLM=Jt*pinv(LM.transposed()).transposed();
 
         if (J.rows()>=J.cols())
             pinvJ=pinv(J);
@@ -567,7 +564,7 @@ Vector LMCtrl::iterate(Vector &xd, const unsigned int verbose)
 
         gpm=computeGPM();
 
-        Vector _qdot=-1.0*pinvM*grad+gpm;
+        Vector _qdot=pinvLM*e+gpm;
 
         if (constrained)
             qdot=checkVelocity(_qdot,Ts);
@@ -687,7 +684,7 @@ Vector LMCtrl_GPM::computeGPM()
         w[i]+=d_max[i]<0 ? 0.0 : 2.0*d_max[i]/(span[i]*span[i]);
     }
 
-    return (Eye-pinvJ*J)*((-K)*w);
+    return (Eye-pinvLM*J)*((-K)*w);
 }
 
 

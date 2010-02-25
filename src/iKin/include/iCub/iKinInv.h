@@ -588,6 +588,7 @@ protected:
 
     yarp::sig::Vector qdot;
     yarp::sig::Vector gpm;
+    yarp::sig::Matrix pinvLM;
 
     double mu;
     double mu0;
@@ -631,6 +632,7 @@ public:
     * @note This method shall be inherited and handled accordingly 
     *       (here a vector of 0s is returned). To do that, J and
     *       pinvJ are already computed when this method is called.
+    *       The LM-inverse matrix pinvLM is also available.
     */
     virtual yarp::sig::Vector computeGPM() { yarp::sig::Vector ret(dim); ret=0.0; return ret; }
 
