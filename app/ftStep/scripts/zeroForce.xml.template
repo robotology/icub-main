@@ -1,0 +1,62 @@
+<application>
+<name>Zero Force Control</name>
+	<dependencies>
+	        <port>/icub/left_arm/state:o</port>
+        </dependencies>
+	<module>
+      		<name>zeroForceControl</name>
+      		<parameters>--from leftArmFT.ini</parameters>
+			<node>pc104</node>
+			<tag>left_arm_zfc</tag>
+			<stdio>console</stdio>
+   	</module>
+
+	<module>
+      		<name>zeroForceControl</name>
+      		<parameters>--from rightArmFT.ini</parameters>
+			<node>pc104</node>
+			<tag>right_arm_zfc</tag>
+			<stdio>console</stdio>
+   	</module>
+
+	<module>
+      		<name>zeroForceControl</name>
+      		<parameters>--from leftLegFT.ini</parameters>
+			<node>pc104</node>
+			<tag>left_leg_zfc</tag>
+			<stdio>console</stdio>
+   	</module>
+
+	<module>
+      		<name>zeroForceControl</name>
+      		<parameters>--from rightLegFT.ini</parameters>
+			<node>pc104</node>
+			<tag>right_leg_zfc</tag>
+			<stdio>console</stdio>
+   	</module>
+
+<!-- <module>     		<name>genericFTCalibrator</name>      		<parameters></parameters>	<node>icub14</node>		<stdio>icub14</stdio>		<tag>genFTcal</tag>
+   	</module> -->
+
+        <connection>
+                <from>/icub/leftarm/analog:o</from>
+                <to>/icub/left_arm/FT:i</to>
+                <protocol>udp</protocol>
+        </connection>
+        <connection>
+                <from>/icub/rightarm/analog:o</from>
+                <to>/icub/right_arm/FT:i</to>
+                <protocol>udp</protocol>
+        </connection>
+        <connection>
+                <from>/icub/leftleg/analog:o</from>
+                <to>/icub/left_leg/FT:i</to>
+                <protocol>udp</protocol>
+        </connection>
+        <connection>
+                <from>/icub/rightleg/analog:o</from>
+                <to>/icub/right_leg/FT:i</to>
+                <protocol>udp</protocol>
+        </connection>
+<!-- <connection>             <from>/icub/left_arm/FT:o</from>                <to>/icub/left_arm/FT:i</to>                 <protocol>udp</protocol>        </connection> -->
+</application>
