@@ -676,6 +676,7 @@ public:
 		               fprintf(fid,"%.4lf\t",tauSafe(i));
 			  for(int i=0;i<6;i++)
 		               fprintf(fid,"%.4lf\t",FTs(i)-FTs_init(i));
+              fprintf(fid,"\n");
                   }
 		  /*if(count>=CPRNT)
 		  {
