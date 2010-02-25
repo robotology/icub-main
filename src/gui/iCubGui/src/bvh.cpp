@@ -183,6 +183,7 @@ BVHNode* BVH::bvhReadNode(yarp::os::ResourceFinder& config)
     expect_token("{");
     iCubMesh *pMesh=0;
     QString tag=token();
+    int ftSensorId=-1;
     
     if (tag=="MESH")
     {
@@ -199,6 +200,12 @@ BVHNode* BVH::bvhReadNode(yarp::os::ResourceFinder& config)
         tag=token();
     }
     
+    if (tag=="FORCE_TORQUE")
+    {
+		ftSensorId=token().toInt();
+        tag=token();
+    }
+
     switch (nType)
     {
     case BVH_ROOT:
@@ -229,26 +236,22 @@ BVHNode* BVH::bvhReadNode(yarp::os::ResourceFinder& config)
 		}
         else if (tag=="DH")
 		{
-			int a=token().toInt();
+	        int a=token().toInt();
 			double b=token().toDouble();
 			double c=token().toDouble();
 			double d=token().toDouble();
 			double e=token().toDouble();
 			double f=token().toDouble();
 			double g=token().toDouble();
-            node=new BVHNodeDH(sName,a,b,c,d,e,f,g,pMesh); 
-		}
-        else if (tag=="FORCE_TORQUE")
-        {
-            int a=token().toInt();
-            int b=token().toInt();
-			double c=token().toDouble();
-			double d=token().toDouble();
-			double e=token().toDouble();
-			double f=token().toDouble();
-			double g=token().toDouble();
-			double h=token().toDouble();
-            node=new BVHNodeForceTorque(sName,a,b,c,d,e,f,g,h,pMesh);
+            
+            if (ftSensorId==-1)
+            {
+                node=new BVHNodeDH(sName,a,b,c,d,e,f,g,pMesh); 
+		    }
+            else
+            {
+                node=new BVHNodeForceTorque(sName,ftSensorId,a,b,c,d,e,f,g,pMesh);
+            }
         }
 		break;
     case BVH_END:
