@@ -598,11 +598,15 @@ protected:
     double mu_max;
 
     double dist_old;
+    double svMin;
+    double svThres;
     
     virtual double update_mu();
     virtual void   inTargetFcn()         { }
     virtual void   deadLockRecoveryFcn() { }
     virtual void   printIter(const unsigned int verbose);
+
+    virtual yarp::sig::Matrix pinv(const yarp::sig::Matrix &A, double tol=0.0);
 
 public:
     /**
@@ -619,10 +623,13 @@ public:
     * @param _mu_inc is the increasing factor.
     * @param _mu_dec is the drecreasing factor.
     * @param _mu_min is the minimum value for mu.
-    * @param _mu_max is the maximum value for mu.
+    * @param _mu_max is the maximum value for mu. 
+    * @param _sv_thres is the minimum singular value under which the
+    *                mu is constantly kept equal to _mu_max.
     */
     LMCtrl(iKinChain &c, unsigned int _ctrlPose, const yarp::sig::Vector &q0, double _Ts,
-           double _mu0, double _mu_inc, double _mu_dec, double _mu_min, double _mu_max);
+           double _mu0, double _mu_inc, double _mu_dec, double _mu_min, double _mu_max,
+           double _sv_thres=1e-6);
 
     /**
     * Returns the further contribution to the qdot=pinvJ*xdot 
@@ -708,7 +715,8 @@ public:
     * Constructor.
     */
     LMCtrl_GPM(iKinChain &c, unsigned int _ctrlPose, const yarp::sig::Vector &q0, double _Ts,
-               double _mu0, double _mu_inc, double _mu_dec, double _mu_min, double _mu_max);
+               double _mu0, double _mu_inc, double _mu_dec, double _mu_min, double _mu_max,
+               double _sv_thres=1e-6);
 
     virtual yarp::sig::Vector computeGPM();
 

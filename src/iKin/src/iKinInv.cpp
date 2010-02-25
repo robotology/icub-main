@@ -468,7 +468,8 @@ Vector VarKpSteepCtrl::update_qdot()
 
 /************************************************************************/
 LMCtrl::LMCtrl(iKinChain &c, unsigned int _ctrlPose, const Vector &q0, double _Ts, double _mu0,
-               double _mu_inc, double _mu_dec, double _mu_min, double _mu_max) : iKinCtrl(c,_ctrlPose,q0)
+               double _mu_inc, double _mu_dec, double _mu_min, double _mu_max, double _sv_thres) : 
+               iKinCtrl(c,_ctrlPose,q0)
 {
     constrained=true;
 
@@ -490,6 +491,7 @@ LMCtrl::LMCtrl(iKinChain &c, unsigned int _ctrlPose, const Vector &q0, double _T
     mu_dec=_mu_dec;
     mu_min=_mu_min;
     mu_max=_mu_max;
+    svThres=_sv_thres;
 
     dist_old=1.0;
 }
@@ -506,6 +508,35 @@ void LMCtrl::setChainConstraints(bool _constrained)
 
 
 /************************************************************************/
+Matrix LMCtrl::pinv(const Matrix &A, double tol)
+{
+	int m=A.rows();
+	int n=A.cols();
+	Matrix U(m,n);
+	Vector Sdiag(n);
+	Matrix V(n,n);
+
+	SVD(A,U,Sdiag,V);
+
+	Matrix Spinv=zeros(n,n);    
+	for (int c=0; c<n; c++)
+    {    
+		for (int r=0; r<n; r++)
+        {    
+            if (r==c && Sdiag[c]>tol)
+                Spinv(r,c)=1.0/Sdiag[c];
+			else
+				Spinv(r,c)=0.0;
+        }
+    }
+
+    svMin=Sdiag[n-1];
+
+    return V*Spinv*U.transposed();
+}
+
+
+/************************************************************************/
 void LMCtrl::reset_mu()
 {
     mu=mu0;
@@ -516,17 +547,25 @@ void LMCtrl::reset_mu()
 /************************************************************************/
 double LMCtrl::update_mu()
 {
-    double d=dist();
-    double ratio=d/dist_old;
-
-    if (ratio>1.0)
-        mu*=mu_inc;
+    if (svMin>svThres)
+    {
+        double d=dist();
+        double ratio=d/dist_old;
+    
+        if (ratio>1.0)
+            mu*=mu_inc;
+        else
+            mu*=mu_dec;
+    
+        mu=mu>mu_max ? mu_max : (mu<mu_min ? mu_min : mu);
+    
+        dist_old=d;
+    }
     else
-        mu*=mu_dec;
-
-    mu=mu>mu_max ? mu_max : (mu<mu_min ? mu_min : mu);
-
-    dist_old=d;
+    {
+        mu=mu_max;
+        dist_old=1.0;
+    }
 
     return mu;
 }
@@ -553,9 +592,9 @@ Vector LMCtrl::iterate(Vector &xd, const unsigned int verbose)
             LM(i,i)+=mu*LM(i,i);
 
         if (LM.rows()>=LM.cols())
-            pinvLM=Jt*pinv(LM);
+            pinvLM=Jt*LMCtrl::pinv(LM);
         else
-            pinvLM=Jt*pinv(LM.transposed()).transposed();
+            pinvLM=Jt*LMCtrl::pinv(LM.transposed()).transposed();
 
         if (J.rows()>=J.cols())
             pinvJ=pinv(J);
@@ -642,8 +681,8 @@ LMCtrl::~LMCtrl()
 /************************************************************************/
 LMCtrl_GPM::LMCtrl_GPM(iKinChain &c, unsigned int _ctrlPose, const Vector &q0,
                        double _Ts, double _mu0, double _mu_inc, double _mu_dec,
-                       double _mu_min, double _mu_max) : 
-                       LMCtrl(c,_ctrlPose,q0,_Ts,_mu0,_mu_inc,_mu_dec,_mu_min,_mu_max)
+                       double _mu_min, double _mu_max, double _sv_thres) : 
+                       LMCtrl(c,_ctrlPose,q0,_Ts,_mu0,_mu_inc,_mu_dec,_mu_min,_mu_max,_sv_thres)
 {
     span.resize(dim);
     alpha_min.resize(dim);
