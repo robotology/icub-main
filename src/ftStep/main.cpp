@@ -50,6 +50,9 @@ bool  filter_enabled=true;
 
 #define CONTROL_ON  1
 
+#define STEP_UP 0
+#define STEP_DOWN 1
+
 using namespace yarp;
 using namespace yarp::os;
 using namespace yarp::sig;
@@ -121,7 +124,7 @@ public:
     iCubLeg4DOF(const iCubLeg4DOF &leg);
 };
 
-
+FILE *fid;
 // class dataCollector: class for reading from Vrow and providing for FT on an output port
 class ftStep: public RateThread
 {
@@ -184,6 +187,9 @@ private:
 	int countTime, countTime0;
 
 	int ctrlJnt;
+	int stepDir;
+        int stepSign;
+        int stepCount;
 	Vector *datas;
     Vector kp;
 	Vector kspr;
@@ -412,7 +418,7 @@ public:
 		  // Elbow to FT sensor variables
 		  Rs.resize(3,3);     Rs=0.0;
 		  ps.resize(3);		  ps=0.0;
-          kp=0.0;
+                  kp=0.0;
 		  kspr=0.0;
 
 		  initLimb(limb);
@@ -456,10 +462,14 @@ public:
 		  tauDes=0.0;
 		  tauSafe=0.0;
 		  tauFilt=0.0;
-
+                  stepDir=STEP_UP;
+                  stepSign=1;
+                  stepCount = 0;
 		  watchDog = 0;
 		  time = time0 = 0.0;
 		  countTime = countTime0 = 0;
+
+                  fid=fopen("stepResponce.dat","a+");
 	  }
 	  bool threadInit()
 	  {
@@ -582,7 +592,12 @@ public:
 					  if(CALIBRATION_OK)  FTs = *datas;
 					  else  FTs = readFT();
 
-					  if(first) FTs_init = FTs;
+					  if(first) {
+		                                  FTs_init = FTs;
+		                                  stepDir=STEP_UP;
+		                                  stepSign=1;
+		                                  stepCount=0;
+                                          }
 					  FT = FTB->getFB(FTs-FTs_init);
 
 					  	
@@ -600,6 +615,8 @@ public:
 						  FTs=0.0;
 						  FTj=0.0;
 						  FTs_init=0.0;
+                                                  stepDir=2;
+                                                  stepSign=0;
 					  }
 				  }
 				 // break;
@@ -615,19 +632,47 @@ public:
 		  Kspring=eye(limbJnt,limbJnt);
 		  for(int i=0;i<limbJnt;i++) {K(i,i) = kp(i); Kspring(i,i) = kspr(i);}
 
+                  if(stepCount<=200 && first==false)     
+                  {
+                      stepCount++;
+                      fprintf(stderr,"step Counter: %d\n", stepCount);
+                  }
+		  else
+		  {
+                      stepCount = 0;
+                      switch(stepDir)
+                      {
+                           case STEP_UP:
+                                stepDir = STEP_DOWN;
+                                stepSign = -1;
+                           break;
+                           case STEP_DOWN:
+                                stepDir = STEP_UP;
+                                stepSign = 1;
+                           break;
+                           default:
+                                stepSign = 0;
+                           break;
+                      }
+                  }
+ 
+
 		  //control: to be checked
 		  Matrix J = iCubLimb->GeoJacobian();
          // const double Kspringc=0.3;
 		  Vector tau(4);
 		  tau=0.0;
 		  tauDes=Kspring*((180.0/M_PI)*angs-desPosition); 
+		  Vector tauStep(limbJnt);
+                  tauStep=0.0;
+                  tauStep(ctrlJnt)=0.6*stepSign;
 		  FTj=J.transposed()*FT;
 		  if (control_mode==IMPEDANCE)
 			{tau = K*(FTj-tauDes);} //USE THIS FOR IMPEDANCE CONTROL
 		  else 
-			{tau = K*(FTj);}        //USE THIS FOR ZERO FORCE CONTROL
-		  Vector tauC= T_all*tau;
-
+			{tau = K*(FTj-tauStep);}        //USE THIS FOR ZERO FORCE CONTROL
+		  Vector tauC= T_all*(tau);
+                  fprintf(fid,"%d\t%.4lf\t%.4lf\n",stepSign,tauStep(ctrlJnt),FTj(ctrlJnt));
 		  //filtering
 		  for(int i=0;i<limbJnt;i++)
 			  {
@@ -796,6 +841,7 @@ public:
 			  for(int i=0;i<limbJnt;i++)
 				  fprintf(stderr,"%+.3lf\t", tauSafe(i));
 			  fprintf(stderr,"\n");}
+			  fprintf(stderr,"Step Direction: %d\n tauDesired: %.3lf\ntauActual:%.3lf\n",stepDir, tauStep(ctrlJnt), FTj(ctrlJnt));
 			  /*
 			  // debug only
               fprintf(stderr,"J:\n");
@@ -825,6 +871,7 @@ public:
 		  for(int i=0;i<limbJnt;i++)
           	  ipids->disablePid(i);
 		  fprintf(stderr,"setting old PIDS...\n");
+		  fclose(fid);
 
 #ifdef CONTROL_ON
 		  //set again the original saved PIDS to the ICub
