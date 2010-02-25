@@ -123,7 +123,7 @@ public:
 
 
 // class dataCollector: class for reading from Vrow and providing for FT on an output port
-class ftControl: public RateThread
+class ftStep: public RateThread
 {
 private:
 	//device:
@@ -392,7 +392,7 @@ public:
 			desPosition(i)=encoders(i);
 	}
 
-	ftControl(int _rate, PolyDriver *_dd, BufferedPort<Vector> *_port_FT, ResourceFinder &_rf, string limb):	  
+	ftStep(int _rate, PolyDriver *_dd, BufferedPort<Vector> *_port_FT, ResourceFinder &_rf, string limb):	  
 	  RateThread(_rate), dd(_dd) 
 	  {
 		  iCubPid = 0;
@@ -911,21 +911,21 @@ public:
 };
 
 
-class ft_ControlModule: public RFModule
+class ftStepModule: public RFModule
 {
 private:
 	Property Options;
 	PolyDriver *dd;
-	ftControl *ft_control;
+	ftStep *ft_step;
 	BufferedPort<Vector>* port_FT;
     int mod_count;
 	string handlerPortName;
     Port handlerPort;      //a port to handle messages 
 public:
-	ft_ControlModule()
+	ftStepModule()
 	{
 		dd         = 0;
-		ft_control = 0;
+		ft_step = 0;
 		mod_count  = 0;
 	}
 
@@ -995,7 +995,7 @@ public:
 		  {
 		     control_mode= IMPEDANCE;
 			 reply.addString("ok, setting impedance mode");
-			 ft_control->setDesiredPositions();
+			 ft_step->setDesiredPositions();
 		  }
 		  else if (command.get(1).asString()=="zfc")
 		  {
@@ -1066,9 +1066,9 @@ public:
 		port_FT=new BufferedPort<Vector>;
 		port_FT->open((PortName+"/FT:i").c_str());
 		fprintf(stderr,"input port opened...\n");
-		ft_control = new ftControl(SAMPLER_RATE, dd, port_FT, rf, part);
+		ft_step = new ftStep(SAMPLER_RATE, dd, port_FT, rf, part);
 		fprintf(stderr,"ft thread istantiated...\n");
-		ft_control->start();
+		ft_step->start();
 		fprintf(stderr,"thread started\n");
 		return true;
 	}
@@ -1086,8 +1086,8 @@ public:
 	{
 		fprintf(stderr,"closing...don't know why :S \n");
 		handlerPort.close();
-		if (ft_control) ft_control->stop();
-		if (ft_control) {delete ft_control; ft_control=0;}
+		if (ft_step) ft_step->stop();
+		if (ft_step) {delete ft_step; ft_step=0;}
 		if (dd) {delete dd; dd=0;}
 		if (port_FT) {delete port_FT; port_FT=0;}
 		//port_FT.interrupt();
@@ -1104,7 +1104,7 @@ int main(int argc, char * argv[])
     Network yarp;
 	
     //create your module
-    ft_ControlModule* ft_controlmodule = new ft_ControlModule;
+    ftStepModule* ftstepmodule = new ftStepModule;
 
     // prepare and configure the resource finder
     ResourceFinder rf;
@@ -1123,18 +1123,18 @@ int main(int argc, char * argv[])
     }
 
     cout<<"Configure module..."<<endl;
-    bool ret = ft_controlmodule->configure(rf);
+    bool ret = ftstepmodule->configure(rf);
     
 	if (ret)
 	{
 		cout<<"Start module..."<<endl;
-		ft_controlmodule->runModule();
+		ftstepmodule->runModule();
 	}
 
     cout<<"Main returning..."<<endl;
-	if (ft_controlmodule) ft_controlmodule->close();
-	delete ft_controlmodule;
-	ft_controlmodule=0;
+	if (ftstepmodule) ftstepmodule->close();
+	delete ftstepmodule;
+	ftstepmodule=0;
 
 
 
