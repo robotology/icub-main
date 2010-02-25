@@ -3,11 +3,20 @@ if(COMMAND cmake_policy)
 endif(COMMAND cmake_policy)
 
 # Sources
-SET(icubgui_SRC animationview.cpp bvh.cpp bvhnode.cpp camera.cpp main.cpp qavimator.cpp settings.cpp settingsdialog.cpp)
+#SET(icubgui_SRC animationview.cpp bvh.cpp bvhnode.cpp camera.cpp main.cpp qavimator.cpp settings.cpp settingsdialog.cpp)
+#SET(icubgui_SRC *.cpp)
 
 # Headers
 SET(icubgui_MOC_HDR animationview.h qavimator.h settingsdialog.h)
-SET(icubgui_HDR bvh.h bvhnode.h camera.h mesh.h playstate.h settings.h ui_mainapplicationform.h ui_settingsdialogform.h ${icubgui_MOC_HDR})
+#SET(icubgui_HDR bvh.h bvhnode.h camera.h mesh.h playstate.h settings.h ui_mainapplicationform.h ui_settingsdialogform.h ${icubgui_MOC_HDR})
+#SET(icubgui_HDR *.h)
+
+
+FILE(GLOB_RECURSE icubgui_SRC *.cpp)
+FILE(GLOB_RECURSE icubgui_HDR *.h)
+SOURCE_GROUP("Source Files" FILES ${icubgui_SRC})
+SOURCE_GROUP("Header Files" FILES ${icubgui_HDR})
+
 
 # Interfaces
 #SET(icubgui_UI mainapplicationform.ui settingsdialogform.ui)

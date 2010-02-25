@@ -43,14 +43,11 @@ public:
     {        
         nFaces=0;
         
-        QString dataPath(getenv("ICUB_DIR"));
-        dataPath+="/src/gui/iCubGui/covers/";
-        
-        QFile objFile(dataPath+fileName);
+        QFile objFile(fileName);
         if(!objFile.open(IO_ReadOnly))
         {
             QMessageBox::critical(0,QObject::tr("Missing Obj File"),
-                                  QObject::tr("<qt>Obj file not found at:<br>%1</qt>").arg(dataPath+fileName));
+                                  QObject::tr("<qt>Obj file not found at:<br>%1</qt>").arg(fileName));
             return;
         }
         

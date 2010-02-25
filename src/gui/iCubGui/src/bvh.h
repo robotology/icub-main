@@ -30,15 +30,25 @@ using namespace yarp;
 
 //#include <QtCore>
 
-#include "bvhnode.h"
+#include <yarp/os/ResourceFinder.h>
 
-#define ICUB_INI "iCubGui.ini"
+#include "bvhnode.h"
+#include "bvhnoderpy_xyz.h"
+#include "bvhnodedh.h"
+#include "bvhnodeend.h"
+#include "bvhnodeinertial.h"
+#include "bvhnodeforcetorque.h"
+#include "bvhnodelefthand.h"
+#include "bvhnoderighthand.h"
+#include "bvhnodeeye.h"
+#include "bvhnoderoot.h"
+
 #define __YARP
 
 class BVH
 {
 public:
-    BVH(const QString& file);
+    BVH(yarp::os::ResourceFinder& config);
     ~BVH();
    
     QStringList partNames,bvhChannelName;
@@ -110,8 +120,8 @@ public:
     bool expect_token(const QString& expect);
     
     double dAvatarScale;
-    BVHNode* bvhRead(const QString& file);
-    BVHNode* bvhReadNode();
+    BVHNode* bvhRead(yarp::os::ResourceFinder& config);
+    BVHNode* bvhReadNode(yarp::os::ResourceFinder& config);
     BVHNode* pRoot;
     
     // YARP

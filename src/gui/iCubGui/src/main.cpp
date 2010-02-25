@@ -44,10 +44,23 @@
 #include "qavimator.h"
 #include <qapplication.h>
 
+#include <yarp/os/ResourceFinder.h>
+
+#include "drivers.h"
+
 int main( int argc, char ** argv )
 {
+    yarp::dev::DriverCollection dev;
+
+    yarp::os::ResourceFinder rf;
+    rf.setVerbose();
+    rf.setDefaultContext("iCubGui");
+    rf.setDefaultConfigFile("iCubGui.ini");
+    rf.configure("ICUB_ROOT",argc,argv);
+
     QApplication a(argc,argv);
-    qavimator* mw=new qavimator();
+
+    qavimator* mw=new qavimator(rf);
     mw->show();
     a.connect(&a,SIGNAL(lastWindowClosed()),&a,SLOT(quit()));
     return a.exec();

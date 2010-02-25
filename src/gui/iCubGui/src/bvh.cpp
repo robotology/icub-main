@@ -12,8 +12,10 @@
 
 #include "bvh.h"
 
-BVH::BVH(const QString& file)
+BVH::BVH(yarp::os::ResourceFinder& config)
 {
+    robot=QString(config.find("robot").asString().c_str());
+
     bvhChannelName.append("Xposition");
     bvhChannelName.append("Yposition");
     bvhChannelName.append("Zposition");
@@ -24,7 +26,7 @@ BVH::BVH(const QString& file)
     // default avatar scale for BVH and AVM files
     dAvatarScale=1.0;
   
-    pRoot=bvhRead(file);
+    pRoot=bvhRead(config);
 }
 
 BVH::~ BVH()
@@ -48,7 +50,7 @@ BVH::~ BVH()
 
 QString BVH::token()
 {
-  if(tokenPos>=tokens.size())
+  if (tokenPos>=(int)tokens.size())
   {
     qDebug("BVH::token(): no more tokens at index %d",tokenPos);
     return QString();
@@ -66,23 +68,22 @@ bool BVH::expect_token(const QString& name)
   return true;
 }
 
-BVHNode* BVH::bvhRead(const QString& file)
+BVHNode* BVH::bvhRead(yarp::os::ResourceFinder& config)
 {
-    QFile animationFile(file);
-    if(!animationFile.open(IO_ReadOnly))
+    QString fileName(config.findPath("geometry"));
+    QFile geometryFile(fileName);
+    if(!geometryFile.open(IO_ReadOnly))
     {
-        QMessageBox::critical(0,QObject::tr("File not found"),QObject::tr("BVH File not found: %1").arg(file.latin1()));
+        QMessageBox::critical(0,QObject::tr("File not found"),QObject::tr("BVH File not found: %1").arg(fileName.latin1()));
         return NULL;
     }
 
-    inputFile=QString(animationFile.readAll());    
-    animationFile.close();
+    inputFile=QString(geometryFile.readAll());    
+    geometryFile.close();
 
     tokens=tokenize(inputFile.simplifyWhiteSpace(),' ');
   
     tokenPos=0;
-    expect_token("ROBOT");
-    robot=token();
   
     // YARP
     #ifdef __YARP
@@ -117,8 +118,8 @@ BVHNode* BVH::bvhRead(const QString& file)
     if (!pEncTorso || !pEncHead || !pEncLeftArm || !pEncRightArm || !pEncLeftLeg || !pEncRightLeg)
     {
         qDebug("BVH::BVH: error getting IEncoders interfaces");
-        dEncBuffer[10]=10.0;
-        dEncBuffer[26]=10.0;
+        dEncBuffer[10]=45.0;
+        dEncBuffer[26]=45.0;
     }
     else
     {
@@ -154,12 +155,10 @@ BVHNode* BVH::bvhRead(const QString& file)
         dEncRightLeg=dEncLeftLeg+6;
         dEncRoot=dEncRightLeg+6;
 
-    expect_token("HIERARCHY");
-
-    return bvhReadNode();
+        return bvhReadNode(config);
 }
 
-BVHNode* BVH::bvhReadNode()
+BVHNode* BVH::bvhReadNode(yarp::os::ResourceFinder& config)
 {
     QString sType=token();
     if (sType=="}") return NULL;
@@ -194,7 +193,9 @@ BVHNode* BVH::bvhReadNode()
 		double d=token().toDouble();
 		double e=token().toDouble();
 		double f=token().toDouble();
-        pMesh=new iCubMesh(name,a,b,c,d,e,f);
+        QString file(config.findPath(QString("covers/")+name).c_str());
+        printf("\n%s\n\n",file.latin1());
+        pMesh=new iCubMesh(file,a,b,c,d,e,f);
         tag=token();
     }
     
@@ -226,7 +227,7 @@ BVHNode* BVH::bvhReadNode()
 			double i=token().toDouble();
             node=new BVHNodeRPY_XYZ(sName,a,b,c,d,e,f,g,h,i,pMesh);
 		}
-        else
+        else if (tag=="DH")
 		{
 			int a=token().toInt();
 			double b=token().toDouble();
@@ -237,6 +238,18 @@ BVHNode* BVH::bvhReadNode()
 			double g=token().toDouble();
             node=new BVHNodeDH(sName,a,b,c,d,e,f,g,pMesh); 
 		}
+        else if (tag=="FORCE_TORQUE")
+        {
+            int a=token().toInt();
+            int b=token().toInt();
+			double c=token().toDouble();
+			double d=token().toDouble();
+			double e=token().toDouble();
+			double f=token().toDouble();
+			double g=token().toDouble();
+			double h=token().toDouble();
+            node=new BVHNodeForceTorque(sName,a,b,c,d,e,f,g,h,pMesh);
+        }
 		break;
     case BVH_END:
         if (tag=="EYE")
@@ -288,7 +301,7 @@ BVHNode* BVH::bvhReadNode()
 
     do
     {
-        if((child=bvhReadNode()))
+        if((child=bvhReadNode(config)))
         {
             node->addChild(child);
         }

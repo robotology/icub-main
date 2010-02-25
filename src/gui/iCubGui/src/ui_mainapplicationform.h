@@ -94,18 +94,15 @@ public:
 
 	#define setShortcut(s) setAccel(QKeySequence(QString(s)))
 
-	void setupUi(QMainWindow *MainWindow)
+	void setupUi(QMainWindow *MainWindow,yarp::os::ResourceFinder& config)
     {
-        QString dataPath(getenv("ICUB_DIR"));
-        dataPath+="/src/gui/iCubGui/icons/";
-
         MainWindow->setName(QString::fromUtf8("MainWindow"));
         MainWindow->resize(703, 818);
 
         fileNewAction = new QAction(MainWindow);
         fileNewAction->setName(QString::fromUtf8("fileNewAction"));
         QIconSet icon;
-        icon.setPixmap(QPixmap(dataPath+"filenew.png"), QIconSet::Automatic, QIconSet::Normal, QIconSet::Off);
+        icon.setPixmap(QPixmap(config.findPath("icons/filenew.png").c_str()), QIconSet::Automatic, QIconSet::Normal, QIconSet::Off);
         fileNewAction->setIconSet(icon);
         fileNewAction->setText("New");
         fileNewAction->setShortcut("Ctrl+N");
@@ -114,7 +111,7 @@ public:
         fileOpenAction = new QAction(MainWindow);
         fileOpenAction->setName(QString::fromUtf8("fileOpenAction"));
         QIconSet icon1;
-        icon1.setPixmap(QPixmap(dataPath+"fileopen.png"), QIconSet::Automatic, QIconSet::Normal, QIconSet::Off);
+        icon1.setPixmap(QPixmap(config.findPath("icons/fileopen.png").c_str()), QIconSet::Automatic, QIconSet::Normal, QIconSet::Off);
         fileOpenAction->setIconSet(icon1);
         fileOpenAction->setText("Open ...");
         fileOpenAction->setShortcut("Ctrl+O");
@@ -123,7 +120,7 @@ public:
 		fileSaveAction = new QAction(MainWindow);
         fileSaveAction->setName(QString::fromUtf8("fileSaveAction"));
         QIconSet icon3;
-        icon3.setPixmap(QPixmap(dataPath+"filesave.png"), QIconSet::Automatic, QIconSet::Normal, QIconSet::Off);
+        icon3.setPixmap(QPixmap(config.findPath("icons/filesave.png").c_str()), QIconSet::Automatic, QIconSet::Normal, QIconSet::Off);
         fileSaveAction->setIconSet(icon3);
 		fileSaveAction->setText("Save");
         fileSaveAction->setShortcut("Ctrl+S");
@@ -133,7 +130,7 @@ public:
 		fileSaveAsAction = new QAction(MainWindow);
         fileSaveAsAction->setName(QString::fromUtf8("fileSaveAsAction"));
         QIconSet icon4;
-        icon4.setPixmap(QPixmap(dataPath+"filesaveas.png"), QIconSet::Automatic, QIconSet::Normal, QIconSet::Off);
+        icon4.setPixmap(QPixmap(config.findPath("icons/filesaveas.png").c_str()), QIconSet::Automatic, QIconSet::Normal, QIconSet::Off);
         fileSaveAsAction->setIconSet(icon4);
 		fileSaveAsAction->setText("Save As...");
         fileSaveAsAction->setShortcut("Ctrl+A");
@@ -170,7 +167,7 @@ public:
         resetCameraAction = new QAction(MainWindow);
         resetCameraAction->setName(QString::fromUtf8("resetCameraAction"));
         QIconSet icon10;
-		icon10.setPixmap(QPixmap(dataPath+"resetcamera.png"), QIconSet::Automatic, QIconSet::Normal, QIconSet::Off);
+		icon10.setPixmap(QPixmap(config.findPath("icons/resetcamera.png").c_str()), QIconSet::Automatic, QIconSet::Normal, QIconSet::Off);
         resetCameraAction->setIconSet(icon10);
 		resetCameraAction->setText("Reset Camera");
         resetCameraAction->setShortcut("Ctrl+0");
@@ -185,7 +182,7 @@ public:
         gridLayout1 = new QGridLayout();
 		//gridLayout1->setSpacing(8);
         gridLayout1->setName(QString::fromUtf8("gridLayout1"));
-        animationView = new AnimationView(centralwidget);
+        animationView = new AnimationView(centralwidget,config);
         animationView->setName(QString::fromUtf8("animationView"));
         QSizePolicy sizePolicy(QSizePolicy::Expanding, QSizePolicy::Expanding);
         sizePolicy.setHorStretch(0);
@@ -524,7 +521,7 @@ public:
         playButton->setName(QString::fromUtf8("playButton"));
 		playButton->setText(QString());
         QIconSet icon11;
-		icon11.setPixmap(QPixmap(dataPath+"play.png"), QIconSet::Automatic, QIconSet::Normal, QIconSet::Off);
+        icon11.setPixmap(QPixmap(config.findPath("icons/play.png").c_str()), QIconSet::Automatic, QIconSet::Normal, QIconSet::Off);
         playButton->setIconSet(icon11);
 		MainWindow->connect(playButton,SIGNAL(clicked()),MainWindow,SLOT(on_playButton_clicked()));
         hboxLayout->addWidget(playButton);

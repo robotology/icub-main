@@ -28,7 +28,7 @@
 #define KEY_CTRL  2
 #define KEY_ALT   4
 
-AnimationView::AnimationView(QWidget* parent) : QGLWidget(parent)
+AnimationView::AnimationView(QWidget* parent,yarp::os::ResourceFinder& config) : QGLWidget(parent)
 {
     m_bInitialized=false;
 
@@ -49,16 +49,13 @@ AnimationView::AnimationView(QWidget* parent) : QGLWidget(parent)
     ySelect=false;
     zSelect=false;
 
-    QString dataPath(getenv("ICUB_ROOT"));
-    dataPath+="/src/gui/iCubGui/conf/";
-
-    pBVH=new BVH(dataPath+ICUB_INI);
-
     leftMouseButton=false;
     modifier=0;
     
     setMouseTracking(true);
     setFocusPolicy(QWidget::StrongFocus);
+
+    pBVH=new BVH(config);
 
     connect(&mTimer,SIGNAL(timeout()),this,SLOT(timerTimeout()));
 }

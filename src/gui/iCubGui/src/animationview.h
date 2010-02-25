@@ -38,7 +38,7 @@ class AnimationView : public QGLWidget
   Q_OBJECT
 
   public:
-    AnimationView(QWidget* parent=0);
+    AnimationView(QWidget* parent,yarp::os::ResourceFinder& config);
     ~AnimationView();
 
     // This function clears the animations

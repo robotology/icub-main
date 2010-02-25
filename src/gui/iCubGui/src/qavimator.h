@@ -13,21 +13,12 @@
 #include <qfileinfo.h>
 #include <qiconset.h>
 
-//#include <qobject.h>
-//#include <qmainwindow.h>
-//#include <qlayout.h>
-//#include "animationview.h"
-
-//class Animation;
-//class Prop;
-//class QCloseEvent;
-
 class qavimator : public QMainWindow, Ui::MainWindow
 {
   Q_OBJECT
 
   public:
-    qavimator();
+    qavimator(yarp::os::ResourceFinder& config);
     ~qavimator();
 
   signals:
