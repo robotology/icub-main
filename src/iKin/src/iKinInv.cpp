@@ -407,6 +407,13 @@ void SteepCtrl::printIter(const unsigned int verbose)
 
 
 /************************************************************************/
+SteepCtrl::~SteepCtrl()
+{
+    delete I;
+}
+
+
+/************************************************************************/
 VarKpSteepCtrl::VarKpSteepCtrl(iKinChain &c, unsigned int _type, unsigned int _ctrlPose, const Vector &q0,
                                double _Ts, double _Kp0, double _Kp_inc, double _Kp_dec, double _Kp_max,
                                double _max_perf_inc) : SteepCtrl(c,_ctrlPose,_type,q0,_Ts,_Kp0)
@@ -625,6 +632,13 @@ void LMCtrl::printIter(const unsigned int verbose)
 
         cout << endl << endl;
     }
+}
+
+
+/************************************************************************/
+LMCtrl::~LMCtrl()
+{
+    delete I;
 }
 
 

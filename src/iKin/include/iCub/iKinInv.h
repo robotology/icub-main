@@ -491,7 +491,7 @@ public:
     /**
     * Destructor.
     */                                                         
-    virtual ~SteepCtrl() { delete I; }
+    virtual ~SteepCtrl();
 };
 
 
@@ -597,10 +597,9 @@ protected:
     double mu_max;
 
     double dist_old;
-
-    void           reset_mu();
+    
     virtual double update_mu();
-    virtual void   inTargetFcn()         { reset_mu(); }
+    virtual void   inTargetFcn()         { }
     virtual void   deadLockRecoveryFcn() { }
     virtual void   printIter(const unsigned int verbose);
 
@@ -665,9 +664,14 @@ public:
     double get_mu() { return mu; }
 
     /**
+    * Sets the weighting factor mu equal to the initial value.
+    */
+    void reset_mu();
+
+    /**
     * Destructor.
     */                                                         
-    virtual ~LMCtrl() { delete I; }
+    virtual ~LMCtrl();
 };
 
 
