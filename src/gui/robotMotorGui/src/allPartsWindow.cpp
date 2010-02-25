@@ -99,6 +99,50 @@ void sequence_all_save (GtkButton *button, partMover** currentPartMover)
 }
 
 //*********************************************************************************
+// This callback saves all sequences
+void sequence_crt_all_save (GtkButton *button, cartesianMover** cm)
+{
+        
+  FILE* fileAll;
+  char buffer[800];
+
+  GtkWidget *dialog;
+  dialog = gtk_file_chooser_dialog_new ("Save Cartesian File",
+					(GtkWindow*) window,
+					GTK_FILE_CHOOSER_ACTION_SAVE,
+					GTK_STOCK_CANCEL, GTK_RESPONSE_CANCEL,
+					GTK_STOCK_SAVE, GTK_RESPONSE_ACCEPT,
+					NULL);
+	
+  if (gtk_dialog_run (GTK_DIALOG (dialog)) == GTK_RESPONSE_ACCEPT)
+    {
+      char *filenameIn; 
+      int i;
+    	  
+      filenameIn = gtk_file_chooser_get_filename(GTK_FILE_CHOOSER(dialog));
+      for (i = 0; i < NUMBER_OF_ACTIVATED_CARTESIAN; i++)
+	cm[i]->save_to_file(filenameIn,cm[i]);
+
+      //store the file describing the poses
+      fileAll = fopen(filenameIn , "w");
+      for (i = 0; i < NUMBER_OF_ACTIVATED_CARTESIAN; i++)
+	{
+	  sprintf(buffer, "[%s] \n", cm[i]->partLabel);
+	  fprintf(fileAll, "%s", buffer);
+	  //Specific part filename
+	  sprintf(buffer, "%s.crt%s\n\n", filenameIn, cm[i]->partLabel);
+	  fprintf(fileAll, "%s", buffer);
+	}
+      fclose(fileAll);
+      g_free (filenameIn);
+    }
+  gtk_widget_destroy (dialog);
+	
+  return;
+
+}
+
+//*********************************************************************************
 // This callback loads all sequences
 void sequence_all_load (GtkButton *button, partMover** currentPartMover)
 {
@@ -155,6 +199,56 @@ void sequence_all_load (GtkButton *button, partMover** currentPartMover)
 }
 
 //*********************************************************************************
+// This callback loads all cartesian sequences
+void sequence_crt_all_load (GtkButton *button, cartesianMover** cm)
+{
+  GtkWidget *dialog;
+  dialog = gtk_file_chooser_dialog_new ("Open File",
+					(GtkWindow*) window,
+					GTK_FILE_CHOOSER_ACTION_OPEN,
+					GTK_STOCK_CANCEL, GTK_RESPONSE_CANCEL,
+					GTK_STOCK_OPEN, GTK_RESPONSE_ACCEPT,
+					NULL);
+	
+  if (gtk_dialog_run (GTK_DIALOG (dialog)) == GTK_RESPONSE_ACCEPT)
+    {
+      char *filenameIn; 
+      int i, lengthStr;
+    	  
+      filenameIn = gtk_file_chooser_get_filename(GTK_FILE_CHOOSER(dialog));
+	  
+      //store the file describing the poses
+      for (i = 0; i < NUMBER_OF_ACTIVATED_CARTESIAN; i++)
+	{
+	  Property p;
+	  bool fileExists;
+	  char buffer[800];
+
+	  fileExists = p.fromConfigFile(filenameIn);
+	  if (fileExists)
+	    {
+	      Bottle& xtmp = p.findGroup(cm[i]->partLabel);
+	      sprintf(buffer, "%s",xtmp.get(1).toString().c_str());
+	      lengthStr = strlen(buffer);
+	      *(buffer + (lengthStr-1)*sizeof(char)) = (char) NULL;
+	      fprintf(stderr, "Loading from %s\n",buffer+sizeof(char));
+	      cm[i]->load_from_file(buffer+sizeof(char),cm[i]);
+	    }
+	  else
+	    {
+	      dialog_message(GTK_MESSAGE_ERROR,
+			     (char *)"Couldn't find the file describing the positions ", 
+			     (char *)"associated to the currently activated parts", true);
+	    }
+	}
+      g_free (filenameIn);
+    }
+  gtk_widget_destroy (dialog);
+	
+  return;
+}
+
+//*********************************************************************************
 // This callback cycles all sequences
 void sequence_all_cycle (GtkButton *button, partMover** currentPartMover)
 {
@@ -207,6 +301,22 @@ void sequence_all_cycle_time (GtkButton *button, partMover** currentPartMover)
 }
 
 //*********************************************************************************
+// This callback cycles all sequences in time based
+void sequence_crt_all_cycle_time (GtkButton *button, cartesianMover** cm)
+{
+  int i;
+  for (i = 0; i < NUMBER_OF_ACTIVATED_CARTESIAN; i++)
+    cm[i]->sequence_cycle_time(NULL, cm[i]);
+
+
+  gtk_widget_set_sensitive(buttonCrtSeqAllSave, false);
+  gtk_widget_set_sensitive(buttonCrtSeqAllLoad, false);
+  gtk_widget_set_sensitive(buttonCrtSeqAllCycleTime, false);
+
+  return;
+}
+
+//*********************************************************************************
 // This callback stops all cycling sequences
 void sequence_all_stop (GtkButton *button, partMover** currentPartMover)
 {
@@ -229,19 +339,12 @@ void sequence_all_stop (GtkButton *button, partMover** currentPartMover)
 
 //*********************************************************************************
 // This callback stops all cycling sequences
-//static void sequence_all_stop_time (GtkButton *button, partMover** currentPartMover)
-//{
-//  int i;
-//  for (i = 0; i < NUMBER_OF_ACTIVATED_PARTS; i++)
-//    currentPartMover[i]->sequence_stop_time(NULL, currentPartMover[i]);
+void sequence_crt_all_stop (GtkButton *button, cartesianMover** cm)
+{
+  int i;
+  for (i = 0; i < NUMBER_OF_ACTIVATED_CARTESIAN; i++)
+    cm[i]->sequence_stop(NULL, cm[i]);
 
-//  gtk_widget_set_sensitive(buttonGoAll, true);
-//  gtk_widget_set_sensitive(buttonSeqAll, true);
-//  gtk_widget_set_sensitive(buttonSeqAllTime, true);
-//  gtk_widget_set_sensitive(buttonSeqAllSave, true);
-//  gtk_widget_set_sensitive(buttonSeqAllLoad, true);
-//  gtk_widget_set_sensitive(buttonSeqAllCycle, true);
-//  gtk_widget_set_sensitive(buttonSeqAllCycleTime, true);
-//  gtk_widget_set_sensitive(buttonSeqAllStop, true);
-//  return;
-//}
+  return;
+}
+

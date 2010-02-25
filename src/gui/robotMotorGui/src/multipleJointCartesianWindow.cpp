@@ -67,7 +67,8 @@ void cartesianMover::load_from_file(char* filenameIn, cartesianMover* cm)
   char filenameExtension[800];
 
   Property p;
-  bool fileExists = p.fromConfigFile(filenameIn);	
+  bool fileExists = p.fromConfigFile(filenameIn);
+  fprintf(stderr, "Loading from file: %s\n", filenameIn);
   strcpy(filenameExtension, ".crt");
   strcat(filenameExtension, cm->partLabel);
   extensionLength = strlen(filenameExtension);
@@ -114,9 +115,12 @@ void cartesianMover::load_from_file(char* filenameIn, cartesianMover* cm)
 		}
 	    }
 	}
-		
-      gtk_tree_view_set_model (GTK_TREE_VIEW (cm->treeview), refresh_cartesian_list_model(cm));
-      gtk_widget_draw(GTK_WIDGET(cm->treeview), NULL);
+  
+      if(GTK_IS_TREE_VIEW (cm->treeview))
+	{
+	  gtk_tree_view_set_model (GTK_TREE_VIEW (cm->treeview), refresh_cartesian_list_model(cm));
+	  gtk_widget_draw(GTK_WIDGET(cm->treeview), NULL);
+	}
     }
   else
     dialog_message(GTK_MESSAGE_ERROR,

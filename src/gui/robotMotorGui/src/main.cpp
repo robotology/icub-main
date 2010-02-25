@@ -187,6 +187,11 @@ GtkWidget *buttonSeqAllStopTime;
 GtkWidget *buttonRunAllParts;
 GtkWidget *buttonHomeAllParts;
 
+GtkWidget *buttonCrtSeqAllSave;
+GtkWidget *buttonCrtSeqAllLoad;
+GtkWidget *buttonCrtSeqAllCycleTime;
+GtkWidget *buttonCrtSeqAllStop;
+
 //*********************************************************************************
 // This callback switches among tabs
 void notebook_change (GtkNotebook *nb, GtkNotebookPage *nbp,	gint current_enabled, partMover** currentPartMover)
@@ -208,6 +213,15 @@ void notebook_change (GtkNotebook *nb, GtkNotebookPage *nbp,	gint current_enable
     return;
 }
 
+//*********************************************************************************
+void add_enabled_joints(cartesianMover* cm, GtkWidget *vbox)
+{
+    GtkWidget *check= gtk_check_button_new_with_mnemonic ("test");
+    gtk_fixed_put	(GTK_FIXED(vbox), check, 10, 0);
+    gtk_widget_set_size_request     (check, 80, 50);
+    gtk_toggle_button_set_active((GtkToggleButton*) check, true);
+    //g_signal_connect (check, "clicked", G_CALLBACK (check_pressed),ENA[n]);
+}
 
 //*********************************************************************************
 // This function is main window after selection of the part to be controlled
@@ -388,7 +402,7 @@ static void myMain2(GtkButton *button,	int *position)
 
                     //Frame
                     fprintf(stderr, "Appending all frame \n");
-                    GtkWidget *frame1 = gtk_frame_new ("Global commands");
+                    GtkWidget *frame1 = gtk_frame_new ("Global joint commands");
                     gtk_widget_set_size_request 	(frame1, 250, 550);
                     gtk_fixed_put (GTK_FIXED (main_vbox5), frame1, 10, 10);
 
@@ -397,7 +411,6 @@ static void myMain2(GtkButton *button,	int *position)
                     gtk_fixed_put	(GTK_FIXED(main_vbox5), buttonGoAll, 30, 50);
                     g_signal_connect (buttonGoAll, "clicked", G_CALLBACK (go_all_click), partMoverList);
                     gtk_widget_set_size_request(buttonGoAll, 190, 30);
-
 	
                     //Button 2 in the panel
                     buttonSeqAll = gtk_button_new_with_mnemonic ("Run ALL Sequence");
@@ -422,7 +435,6 @@ static void myMain2(GtkButton *button,	int *position)
                     gtk_fixed_put	(GTK_FIXED(main_vbox5), buttonSeqAllLoad, 30, 250);
                     g_signal_connect (buttonSeqAllLoad, "clicked", G_CALLBACK (sequence_all_load), partMoverList);
                     gtk_widget_set_size_request     (buttonSeqAllLoad, 190, 30);
-
 	
                     //Button 5 in the panel
                     buttonSeqAllCycle = gtk_button_new_with_mnemonic ("Cycle ALL Sequence");
@@ -460,6 +472,43 @@ static void myMain2(GtkButton *button,	int *position)
                     g_signal_connect (buttonHomeAllParts, "clicked", G_CALLBACK (home_all_parts),  partMoverList);
                     gtk_widget_set_size_request     (buttonHomeAllParts, 190, 30);
 
+                    //Global cartesian commands
+                    if(NUMBER_OF_ACTIVATED_CARTESIAN>0)
+                        {
+                            //Frame
+                            fprintf(stderr, "Appending all cartesian frame \n");
+                            GtkWidget *frame2 = gtk_frame_new ("Global cartesian commands");
+                            gtk_widget_set_size_request 	(frame2, 250, 550);
+                            gtk_fixed_put (GTK_FIXED (main_vbox5), frame2, 300, 10);
+
+                            //for(int i = 0; i < NUMBER_OF_ACTIVATED_CARTESIAN; i++)
+                            //    add_enabled_joints(cartesianMoverList[i], main_vbox5);
+
+                            //Button 3 in the panel
+                            buttonCrtSeqAllSave = gtk_button_new_with_mnemonic ("Save ALL Cartesian Seq");
+                            gtk_fixed_put	(GTK_FIXED(main_vbox5), buttonCrtSeqAllSave, 320, 200);
+                            g_signal_connect (buttonCrtSeqAllSave, "clicked", G_CALLBACK(sequence_crt_all_save), cartesianMoverList);
+                            gtk_widget_set_size_request     (buttonCrtSeqAllSave, 190, 30);	
+	
+                            //Button 4 in the panel
+                            buttonCrtSeqAllLoad = gtk_button_new_with_mnemonic ("Load ALL Cartesian Seq");
+                            gtk_fixed_put	(GTK_FIXED(main_vbox5), buttonCrtSeqAllLoad, 320, 250);
+                            g_signal_connect (buttonCrtSeqAllLoad, "clicked", G_CALLBACK (sequence_crt_all_load), cartesianMoverList);
+                            gtk_widget_set_size_request     (buttonCrtSeqAllLoad, 190, 30);
+	
+                            //Button 5time in the panel
+                            buttonCrtSeqAllCycleTime = gtk_button_new_with_mnemonic ("Cycle ALL Cartesian Seq");
+                            gtk_fixed_put	(GTK_FIXED(main_vbox5), buttonCrtSeqAllCycleTime, 320, 350);
+                            g_signal_connect (buttonCrtSeqAllCycleTime, "clicked", G_CALLBACK (sequence_crt_all_cycle_time), cartesianMoverList);
+                            gtk_widget_set_size_request     (buttonCrtSeqAllCycleTime, 190, 30);
+
+                            //Button 6 in the panel
+                            buttonCrtSeqAllStop = gtk_button_new_with_mnemonic ("Stop ALL Cartsian Seq");
+                            gtk_fixed_put	(GTK_FIXED(main_vbox5), buttonCrtSeqAllStop, 320, 400);
+                            g_signal_connect (buttonCrtSeqAllStop, "clicked", G_CALLBACK (sequence_crt_all_stop),  cartesianMoverList);
+                            gtk_widget_set_size_request     (buttonCrtSeqAllStop, 190, 30);
+
+                        }
                     // finish & show
                     //	connected_status();
                     fprintf(stderr, "Resizing window \n");

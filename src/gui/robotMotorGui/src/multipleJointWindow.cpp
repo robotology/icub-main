@@ -209,9 +209,11 @@ void partMover::load_from_file(char* filenameIn, partMover* currentPart)
 		}
 	    }
 	}
-		
-      gtk_tree_view_set_model (GTK_TREE_VIEW (tree_view), refresh_position_list_model(currentPart));
-      gtk_widget_draw(GTK_WIDGET(tree_view), NULL);
+      if(GTK_IS_TREE_VIEW (tree_view))	
+	{
+	  gtk_tree_view_set_model (GTK_TREE_VIEW (tree_view), refresh_position_list_model(currentPart));
+	  gtk_widget_draw(GTK_WIDGET(tree_view), NULL);
+	}
     }
   else
     dialog_message(GTK_MESSAGE_ERROR,
