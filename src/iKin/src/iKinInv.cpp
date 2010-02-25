@@ -592,14 +592,14 @@ Vector LMCtrl::iterate(Vector &xd, const unsigned int verbose)
             LM(i,i)+=mu*LM(i,i);
 
         if (LM.rows()>=LM.cols())
-            pinvLM=Jt*LMCtrl::pinv(LM);
+            pinvLM=Jt*pinv(LM);
         else
-            pinvLM=Jt*LMCtrl::pinv(LM.transposed()).transposed();
+            pinvLM=Jt*pinv(LM.transposed()).transposed();
 
         if (J.rows()>=J.cols())
-            pinvJ=pinv(J);
+            pinvJ=LMCtrl::pinv(J);
         else
-            pinvJ=pinv(J.transposed()).transposed();
+            pinvJ=LMCtrl::pinv(J.transposed()).transposed();
 
         gpm=computeGPM();
 
