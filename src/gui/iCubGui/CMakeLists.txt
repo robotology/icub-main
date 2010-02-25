@@ -19,11 +19,11 @@ FIND_PACKAGE(YARP)
 
 SET(USE_ICUB_MOD TRUE CACHE BOOL "Use separated icub_mod lib")
 
-  IF(USE_ICUB_MOD)
-    ADD_DEFINITIONS(-DUSE_ICUB_MOD)
-    FIND_PACKAGE(icubmod)
-    IMPORT_DEVICES("${ICUB_DIR}/src/gui/iCubGui/src/drivers.h" icubmod)
-  ENDIF (USE_ICUB_MOD)
+IF(USE_ICUB_MOD)
+  ADD_DEFINITIONS(-DUSE_ICUB_MOD)
+  FIND_PACKAGE(icubmod)
+  IMPORT_DEVICES("${ICUB_DIR}/src/gui/iCubGui/src/drivers.h" icubmod)
+ENDIF (USE_ICUB_MOD)
 
 # Initialize and search for QT4 libraries
 SET(QT_USE_QTOPENGL TRUE)

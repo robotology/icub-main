@@ -46,11 +46,15 @@
 
 #include <yarp/os/ResourceFinder.h>
 
+#ifdef USE_ICUB_MOD
 #include "drivers.h"
+#endif
 
 int main( int argc, char ** argv )
 {
+#ifdef USE_ICUB_MOD
     yarp::dev::DriverCollection dev;
+#endif 
 
     yarp::os::ResourceFinder rf;
     rf.setVerbose();
