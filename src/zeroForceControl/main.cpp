@@ -242,7 +242,8 @@ private:
 				initPosition.resize(limbJnt);
 				desPosition.resize(limbJnt);
 				initPosition = 0.0;
-				initPosition(0) = -10.0; initPosition(1) = 20.0; initPosition(2) = 15.0; initPosition(3) = 15.0;
+				//initPosition(0) = -10.0; initPosition(1) = 20.0; initPosition(2) = 15.0; initPosition(3) = 15.0;
+				initPosition(0) = -57.0; initPosition(1) = 33.0; initPosition(2) = -11.0; initPosition(3) = 45.0;
 				desPosition=initPosition;
 				maxJntLimits.resize(4);
 				maxJntLimits(0) = 2.0; maxJntLimits(1) = 120.0; maxJntLimits(2) = 90.0; maxJntLimits(3) = 95.0;
