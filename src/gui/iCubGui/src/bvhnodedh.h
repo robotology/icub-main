@@ -36,8 +36,6 @@ public:
             glColor4f(1.0,0.0,0.0,1.0);
         else
             glColor4f(0.5,0.5,0.5,1.0);
-            
-        drawJoint();
         
         glRotated(encoders[nEnc],0.0,0.0,1.0);
         
@@ -46,6 +44,9 @@ public:
             glColor4f(0.9,0.8,0.7,m_Alpha);
             pMesh->Draw();
         }
+
+        glColor4f(0.5,0.5,0.5,1.0);
+        drawJoint();
     
         for (unsigned int i=0; i<children.count(); ++i)
         {

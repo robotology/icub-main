@@ -177,9 +177,9 @@ void AnimationView::draw()
 
     camera.setModelView();
   
-    pBVH->draw();
-  
     drawFloor();
+
+    pBVH->draw();
 }
 
 void AnimationView::mouseMoveEvent(QMouseEvent* event)

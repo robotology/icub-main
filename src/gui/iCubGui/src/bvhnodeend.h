@@ -32,13 +32,13 @@ public:
         
         glRotated(dAlpha,1.0,0.0,0.0);
         
-        drawJoint();
-        
         if (pMesh)
         { 
             glColor4f(0.9,0.8,0.7,1.0);
             pMesh->Draw();
         }
+
+        drawJoint();
         
         glPopMatrix();   
     }

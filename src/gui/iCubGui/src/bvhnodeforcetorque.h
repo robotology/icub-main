@@ -22,8 +22,6 @@ class BVHNodeForceTorque : public BVHNodeDH
 
         cardId=id;
 
-        //m_Alpha=0.5;
-
 	    Property prop;
         prop.put("device", "ecan");
         prop.put("CanTxTimeout", 500);
@@ -51,6 +49,14 @@ class BVHNodeForceTorque : public BVHNodeDH
             return;
         }
 
+        if (pMesh)
+        {
+            //delete pMesh;
+            //pMesh=0;
+        }
+
+        //m_Alpha=0.5;
+
         driver.view(pCanBufferFactory);
         pCanBus->canSetBaudRate(0); //default 1MB/s
 
@@ -76,18 +82,7 @@ class BVHNodeForceTorque : public BVHNodeDH
 
         BVHNodeDH::drawJoint();
 
-        if (pCanBus)
-        {
-            if (pMesh)
-            {
-                delete pMesh;
-                pMesh=0;
-            }
-        }
-        else
-        {
-            return;
-        }
+        if (!pCanBus) return;
 
         unsigned int canMessages=0;
         bool res=pCanBus->canRead(canBuffer,1000,&canMessages,false);
@@ -127,14 +122,15 @@ class BVHNodeForceTorque : public BVHNodeDH
         }
 
         glColor4f(0.4,0.4,1.0,1.0);
-
         glPushMatrix();
-        glTranslated(0.0,0.0,40.0);
+        glTranslated(0.0,0.0,15.0);
         gluDisk(cyl,0.0,27.5,16,16);
         gluCylinder(cyl,27.5,27.5,18.0,16,16);
         glTranslated(0.0,0.0,18.0);
         gluDisk(cyl,0.0,27.5,16,16);
         glTranslated(0.0,0.0,-9.0);
+
+        glDisable(GL_DEPTH_TEST);
 
         // Force
         glLineWidth(3.0);
@@ -178,19 +174,21 @@ class BVHNodeForceTorque : public BVHNodeDH
         glPushMatrix();
         glRotated(-90.0,1.0,0.0,0.0);
         glRotated(180.0,0.0,0.0,10.0);
-        drawArc(0.0005*dForceTorque[5]);
+        drawArc(-0.0005*dForceTorque[3]);
         glPopMatrix();
 
         // Z
         glColor4f(0.0,0.0,1.0,1.0);
         glPushMatrix();
         glRotated(180.0,0.0,0.0,10.0);
-        drawArc(0.0005*dForceTorque[3]);
+        drawArc(0.0005*dForceTorque[5]);
         glPopMatrix();
 
         glPopMatrix();
 
         glEnable(GL_LINE_SMOOTH);
+
+        glEnable(GL_DEPTH_TEST);
     }
 
 protected:
