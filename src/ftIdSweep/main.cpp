@@ -37,7 +37,7 @@
 const int SAMPLER_RATE = 10;
 const int FT_VALUES = 6;
 
-const int SWEEP_TIME = 8000; //time of sweep@w 
+const int SWEEP_TIME = 4000; //time of sweep@w 
 
 bool verbose = false;
 const int CPRNT = 100;
