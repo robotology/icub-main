@@ -632,7 +632,7 @@ public:
 		  Kspring=eye(limbJnt,limbJnt);
 		  for(int i=0;i<limbJnt;i++) {K(i,i) = kp(i); Kspring(i,i) = kspr(i);}
 
-                  if(stepCount<=200 && first==false)     
+                  if(stepCount<=1000 && first==false)     
                   {
                       stepCount++;
                       fprintf(stderr,"step Counter: %d\n", stepCount);
