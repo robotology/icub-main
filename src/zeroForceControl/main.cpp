@@ -38,6 +38,7 @@
 const int SAMPLER_RATE = 10;
 const int FT_VALUES = 6;
 
+bool prntData = false;
 bool verbose = false;
 const int CPRNT = 100;
 const int CALIBRATION_OK = true; // should be true when FT calibration will be ok
@@ -121,7 +122,7 @@ public:
     iCubLeg4DOF(const iCubLeg4DOF &leg);
 };
 
-
+FILE* fid;
 // class dataCollector: class for reading from Vrow and providing for FT on an output port
 class ftControl: public RateThread
 {
@@ -456,6 +457,7 @@ public:
 		  watchDog = 0;
 		  time = time0 = 0.0;
 		  countTime = countTime0 = 0;
+                  if(prntData) fid=fopen("impedanceData.dat","a+");
 	  }
 	  bool threadInit()
 	  {
@@ -663,9 +665,18 @@ public:
 	//	  ipids->setOffset(1,tauSafe(1));  // use this on single joint
 	//	  ipids->setOffset(0,tauSafe(0));  // use this on single joint
 #endif		  
-
-		  
-
+                  if(prntData){
+			  for(int i=0;i<limbJnt;i++)
+		               fprintf(fid,"%.4lf\t",encoders(i));
+			  for(int i=0;i<limbJnt;i++)
+		               fprintf(fid,"%.4lf\t",tauDes(i));
+			  for(int i=0;i<limbJnt;i++)
+		               fprintf(fid,"%.4lf\t",FTj(i));
+			  for(int i=0;i<limbJnt;i++)
+		               fprintf(fid,"%.4lf\t",tauSafe(i));
+			  for(int i=0;i<6;i++)
+		               fprintf(fid,"%.4lf\t",FTs(i)-FTs_init(i));
+                  }
 		  /*if(count>=CPRNT)
 		  {
 			  Matrix He = arm->getH();
@@ -840,6 +851,7 @@ public:
 
 	//	  if(datas) delete datas;
 
+                  if(prntData) fclose(fid);
 		  if(FTB) delete FTB;
 		  if(iCubPid) delete[] iCubPid;
 		  if(FTPid) delete[] FTPid;
