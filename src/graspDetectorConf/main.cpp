@@ -39,7 +39,7 @@
  *
  * where \f$ q \f$ represents the finger joints positions and where
  * the parameters \f$ q_0 \f$ and \f$ q_1 \f$ are estimated via a least
- * square optimization (see also the documentation of \ref icub_graspDetectorConfClasses).
+ * square optimization (see also the documentation of \ref icub_graspDetectorConfThread).
  * Even if the linear model might seem a little bit too restrictive, it can
  * be shown that it is a good model for the coupled fingers behaviour (due to
  * the presence of linear springs coupling the joints).
