@@ -366,7 +366,7 @@ bool iKin_NLP::eval_jac_g(Index n, const Number* x, bool new_x,
             for (Index row=0; row<m; row++)
                 for (Index col=0; col<n; col++)
                 {    
-                    if (!row && ctrlPose==IKINCTRL_POSE_FULL)
+                    if (row==0 && ctrlPose==IKINCTRL_POSE_FULL)
                     {
                         values[idx]=grad[idx];
                     
