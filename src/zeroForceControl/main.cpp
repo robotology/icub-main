@@ -160,6 +160,7 @@ private:
 	iKinChain *chain;
 	
 	int limbJnt;
+	string limb;
 
 	iFB *FTB;
 	iFTransform *sensor;
@@ -389,7 +390,7 @@ public:
 			desPosition(i)=encoders(i);
 	}
 
-	ftControl(int _rate, PolyDriver *_dd, BufferedPort<Vector> *_port_FT, ResourceFinder &_rf, string limb):	  
+	ftControl(int _rate, PolyDriver *_dd, BufferedPort<Vector> *_port_FT, ResourceFinder &_rf, string tmplimb):	  
 	  RateThread(_rate), dd(_dd) 
 	  {
 		  iCubPid = 0;
@@ -412,6 +413,7 @@ public:
           kp=0.0;
 		  kspr=0.0;
 
+		  limb = tmplimb;
 		  initLimb(limb);
 		  sensor = new iFTransform(Rs,ps);
 		  chain = iCubLimb->asChain();
@@ -906,6 +908,34 @@ public:
 		  return t;
 	  }
 
+	  bool setInitialPosition(Vector initPos)
+	  {
+		  if(initPos.length()<limbJnt)
+			  return false;
+
+		  initPosition.resize(initPos.length());
+		  for(int i = 0;i<limbJnt;i++)
+			  initPosition(i) =	initPos(i);
+		  return true;
+	  }
+	  bool setLimits(Vector maxLimit, Vector minLimit)
+	  {
+		  if(maxLimit.length()<limbJnt || minLimit.length()<limbJnt)
+			  return false;
+
+		  maxJntLimits.resize(maxLimit.length());
+		  minJntLimits.resize(minLimit.length());
+		  for(int i = 0;i<limbJnt;i++)
+		  {
+			  maxJntLimits(i) = maxLimit(i);
+			  minJntLimits(i) = minLimit(i);
+		  }
+		  return true;
+	  }
+
+	 
+
+
 	  Vector readFT()
 	  {
 		  Vector FTtmp = *datas;
@@ -1046,6 +1076,57 @@ public:
             return false;
 		}
 
+		Bottle tmp;
+		tmp=0;
+		Vector initPos;
+		if(rf.check("initPosition"))
+		{
+		  tmp = rf.findGroup("initPosition");
+		  initPos.resize(tmp.size()-1);
+		  for(int i = 0;i<initPos.length();i++)
+		  {
+			  initPos(i) = tmp.get(i+1).asDouble();
+		  }
+		}
+		else 
+		{
+		  fprintf(stderr,"error: initial position not defined in configuration file!!!\n returning;");
+		  return false;
+		}
+		tmp=0;
+		Vector maxLim;
+		if(rf.check("MAX_LIMITS"))
+		{
+		  tmp = rf.findGroup("MAX_LIMITS");
+		  maxLim.resize(tmp.size()-1);
+		  for(int i = 0;i<maxLim.length();i++)
+		  {
+			  maxLim(i) = tmp.get(i+1).asDouble();
+		  }
+		}
+		else 
+		{
+		  fprintf(stderr,"error: max limits not defined in configuration file!!!\n returning;");
+		  return false;
+		}
+
+		tmp=0;
+		Vector minLim;
+		if(rf.check("MIN_LIMITS"))
+		{
+		  tmp = rf.findGroup("MIN_LIMITS");
+		  minLim.resize(tmp.size()-1);
+		  for(int i = 0;i<minLim.length();i++)
+		  {
+			  minLim(i) = tmp.get(i+1).asDouble();
+		  }
+		}
+		else 
+		{
+		  fprintf(stderr,"error: min limits not defined in configuration file!!!\n returning;");
+		  return false;
+		}
+
 		// Create the terminal
 		handlerPortName = "/zfcTerminal/";
 		handlerPortName += partName;
@@ -1075,6 +1156,10 @@ public:
 		fprintf(stderr,"input port opened...\n");
 		ft_control = new ftControl(SAMPLER_RATE, dd, port_FT, rf, part);
 		fprintf(stderr,"ft thread istantiated...\n");
+		ft_control->setInitialPosition(initPos);
+		ft_control->setLimits(maxLim,minLim);
+		fprintf(stderr,"initial position and limits set...\n");
+
 		ft_control->start();
 		fprintf(stderr,"thread started\n");
 		return true;
