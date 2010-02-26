@@ -11,6 +11,7 @@
 #define VOCAB1(a) VOCAB((a),(0),(0),(0))
 
 blobFinderModule::blobFinderModule(){
+    printf("creating the graphic unit /n");
     gui=new WatershedModule();
 }
 

@@ -109,6 +109,7 @@ WatershedModule::WatershedModule():RateThread(THREADRATE){
 
     message=new std::string();
 
+    printf("initialising all the flags \n");
     inputImage_flag=false;
 
     meanColour_flag=true;
@@ -139,6 +140,7 @@ WatershedModule::WatershedModule():RateThread(THREADRATE){
 
     max_boxes = new YARPBox[3];
     //initializing the image plotted out int the drawing area
+    printf("initialising the images \n");
     image_out=new ImageOf<PixelRgb>;
     _outputImage3=new ImageOf<PixelRgb>;
     _outputImage=new ImageOf<PixelMono>;
@@ -247,8 +249,10 @@ void WatershedModule::resizeImages(int width, int height){
 
 bool WatershedModule::threadInit(){
     // create a new window
+    printf(" thread initialisation \n");
     this->createObjects();
     this->setUp();
+    printf(" creating the main windows \n");
     mainWindow = this->createMainWindow();
     
 
@@ -264,6 +268,7 @@ bool WatershedModule::threadInit(){
 }
 
 void WatershedModule::run(){
+    printf("starting the gtk_main \n");
     gtk_main ();
     gtk_widget_destroy(mainWindow);
     bfModule->close();
