@@ -1338,7 +1338,7 @@ bool WatershedModule::openPorts(){
     //int res = 0;
     // Registering Port(s)
     //reduce verbosity --paulfitz
-    printf("Registering port %s on network %s...\n",  getName("in").c_str(),"default");
+    printf("Registering port %s on network %s...\n",  getName("image:i").c_str(),"default");
     ret = _imgRecv.Connect((char*)getName("image:i").c_str(),"default");
     if (ret == true)
         {
@@ -1571,7 +1571,7 @@ GtkWidget* WatershedModule::createMainWindow(void)
     
     //gtk_init (&argc, &argv);
     window = gtk_window_new (GTK_WINDOW_TOPLEVEL);
-    gtk_window_set_title (GTK_WINDOW (window), "Watershed and Saliency Module");
+    gtk_window_set_title (GTK_WINDOW (window), "saliencyBlobFinderInterface");
     gtk_window_set_default_size(GTK_WINDOW (window), 320, 700); 
     gtk_window_set_resizable (GTK_WINDOW (window), TRUE);
     g_signal_connect (G_OBJECT (window), "destroy",

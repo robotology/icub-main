@@ -13,7 +13,7 @@
 blobFinderModule::blobFinderModule(){
     printf("creating the graphic unit \n");
     gui=new WatershedModule();
-    printf("end of the constructor \n");
+    
 }
 
 blobFinderModule::~blobFinderModule(){
