@@ -486,24 +486,30 @@ bool saliencyBlobFinderModule::respond(const Bottle &command,Bottle &reply){
             case COMMAND_VOCAB_MAXSALIENCY:{
                 int nb = command.get(2).asInt();
                 printf("most salient blob as output has been selected \n");
-                this->blobFinder->resetFlags();
-                this->blobFinder->maxSaliencyBlob_flag=true;
+                if(0!=blobFinder){
+                    this->blobFinder->resetFlags();
+                    this->blobFinder->maxSaliencyBlob_flag=true;
+                }
                 //reply.addString("connection 2");
                 ok=true;
             }
                 break;
             case COMMAND_VOCAB_CONTRASTLP:{
                 printf("image of the saliency (grayscale) \n");
-                this->blobFinder->resetFlags();
-                this->blobFinder->contrastLP_flag=true;
+                if(0!=blobFinder){
+                    this->blobFinder->resetFlags();
+                    this->blobFinder->contrastLP_flag=true;
+                }
                 ok =true;
             }
                 break;
             case COMMAND_VOCAB_MEANCOLOURS:{
                 string s(command.get(2).asString().c_str());
                 printf("image composed by mean colour blobs selected as output\n");
-                this->blobFinder->resetFlags();
-                this->blobFinder->meanColour_flag=true;
+                if(0!=blobFinder){
+                    this->blobFinder->resetFlags();
+                    this->blobFinder->meanColour_flag=true;
+                }
                 //reply.addString("connection 1");
                 ok=true;
             }
@@ -511,8 +517,10 @@ bool saliencyBlobFinderModule::respond(const Bottle &command,Bottle &reply){
             case COMMAND_VOCAB_TAGGED:{
                 //int j = command.get(2).asInt();
                 printf("image of tags(unsigned char) given to blobs  \n");
-                this->blobFinder->resetFlags();
-                this->blobFinder->tagged_flag=true;
+                if(0!=blobFinder){
+                    blobFinder->resetFlags();
+                    blobFinder->tagged_flag=true;
+                }
                 string s(command.get(3).asString().c_str());
                 ok=true;
             }
@@ -520,8 +528,10 @@ bool saliencyBlobFinderModule::respond(const Bottle &command,Bottle &reply){
             case COMMAND_VOCAB_FOVEA:{
                 //int j = command.get(2).asInt();
                 printf("image of the fovea \n");
-                this->blobFinder->resetFlags();
-                this->blobFinder->foveaBlob_flag=true;
+                if(0!=blobFinder){
+                    blobFinder->resetFlags();
+                    blobFinder->foveaBlob_flag=true;
+                }
                 string s(command.get(3).asString().c_str());
                 ok=true;
             }
@@ -530,49 +540,57 @@ bool saliencyBlobFinderModule::respond(const Bottle &command,Bottle &reply){
                 //int j = command.get(2).asInt();
                 printf("reactivity of the output \n");
                 double w= command.get(2).asDouble();
-                this->blobFinder->reactivity=w/10;
+                if(0!=blobFinder)
+                    this->blobFinder->reactivity=w/10;
                 ok=true;
             }
                 break;
             case COMMAND_VOCAB_KBU:{
                 double w = command.get(2).asDouble();
-                this->blobFinder->salienceBU=w;
+                if(0!=blobFinder)
+                    this->blobFinder->salienceBU=w;
                 ok=true;
             }
                 break;
             case COMMAND_VOCAB_KTD:{
                 double w = command.get(2).asDouble();
-                blobFinder->salienceTD=w;
+                if(0!=blobFinder)
+                    blobFinder->salienceTD=w;
                 ok=true;
             }
                 break;
             case COMMAND_VOCAB_RIN:{
                 double w = command.get(2).asDouble();
-                blobFinder->targetRED=w;
+                if(0!=blobFinder)
+                    blobFinder->targetRED=w;
                 ok=true;
             }
                 break;
             case COMMAND_VOCAB_GIN:{
                 double w = command.get(2).asDouble();
-                blobFinder->targetGREEN=w;
+                if(0!=blobFinder)
+                    blobFinder->targetGREEN=w;
                 ok=true;
             }
                 break;
             case COMMAND_VOCAB_BIN:{
                 double w = command.get(2).asDouble();
-                blobFinder->targetBLUE=w;
+                if(0!=blobFinder)
+                    blobFinder->targetBLUE=w;
                 ok=true;
             }
                 break;
             case COMMAND_VOCAB_MAXDB:{
-                double w = command.get(2).asDouble();
-                blobFinder->maxBLOB=w;
+                int w = command.get(2).asInt();
+                if(0!=blobFinder)
+                    blobFinder->maxBLOB=w;
                 ok=true;
             }
                 break;
             case COMMAND_VOCAB_MINDB:{
-                double w = command.get(2).asDouble();
-                blobFinder->minBLOB=w;
+                int w = command.get(2).asInt();
+                if(0!=blobFinder)
+                    blobFinder->minBLOB=w;
                 ok=true;
             }
                 break;
