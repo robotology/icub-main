@@ -3,12 +3,14 @@
 #include "ad.h"
 #include "pwm_interface.h"
 
+Int32 MAX_CURRENT=1600;   //MAX current in milliAmpere
+Int32 MAX_I2T_CURRENT=2000000000;
+//Int32 _current_limit_I2T=1600; //NOT USED, we are using max_allowed_current  value in mA 
 Int32 _current[4] =		 {0,0,0,0};					/* current through the transistors*/
 Int32 _current_old[4] =  {0,0,0,0};					/* current at t-1*/
 Int32 _filt_current[4] = {0,0,0,0};     			/* filtered current through the transistors*/
-Int32 _max_allowed_current[4] = {8000000,8000000,8000000,8000000};	/* limit on the current in micro-ampere*/							
-float _conversion_factor[4] = {0,0,0,0} ;		/* limit on the current as set by the interface (later converted into the filter parameter) */
-
+Int32 _max_allowed_current[4] = {1600000,1600000,1600000,1600000};	/* limit on the current in micro-ampere*/							
+float _conversion_factor[4] = {0.0488,0.0488,0.0488,0.0488} ;	// 484.85*3.3/32760	
 
 /*************************************************************************** 
  * this function checks if the current consumption has exceeded a threshold
@@ -42,7 +44,7 @@ word check_current(byte jnt, bool sign)
 	if (!sign)	temporary = -temporary;
 	
 	_current_old[jnt] = _current[jnt];
-	//the conversion factor coming depends on the hardware and it is passed from the CANbus
+
 	_current[jnt] = temporary * _conversion_factor[jnt];
 	return _current[jnt];
 }
