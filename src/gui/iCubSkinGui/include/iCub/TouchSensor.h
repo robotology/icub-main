@@ -3,6 +3,8 @@
 #include <gsl/gsl_math.h>
 #include <memory.h>
 
+#include <stdio.h>
+
 #ifndef __ALE_TOUCHSENSOR_H__
 #define __ALE_TOUCHSENSOR_H__
 
@@ -81,27 +83,33 @@ public:
     {
         return x>=0?x:-x;
     }
-
+    
     void eval(double *image)
     {
         int dx,dy;
+        int Y0,Y1;
+        double k0,k1;
+        int dya,dyb,dxa,dxb;
 
-        for (int Y=yMin; Y<yMax; ++Y)
-        {        
-            int Ybase=(m_Height-Y-1)*m_Width;
+        for (int i=0; i<12; ++i) if (activation[i]>0.0)
+        {
+            k0=dGain*activation[i];
+            Y0=(m_Height-y[i]-1)*m_Width+x[i];
 
-            for (int X=xMin; X<xMax; ++X)
+            dya=(y[i]>=m_maxRange)?-m_maxRange:-y[i];
+            dyb=(y[i]+m_maxRange<m_Height)?m_maxRange:m_Height-y[i]-1;
+
+            dxa=(x[i]>=m_maxRange)?-m_maxRange:-x[i];
+            dxb=(x[i]+m_maxRange<m_Width)?m_maxRange:m_Width-x[i]-1;
+
+            for (dy=dya; dy<=dyb; ++dy)
             {
-                double &value=image[X+Ybase];
+                k1=k0*Exponential[Abs(dy)];
+                Y1=Y0-dy*m_Width;
 
-                for (int i=0; i<12; ++i)
+                for (dx=dxa; dx<=dxb; ++dx)
                 {
-                    dx=Abs(X-x[i]);
-                    if (dx>=m_maxRange) continue;
-                    dy=Abs(Y-y[i]);
-                    if (dy>=m_maxRange) continue;
-
-                    value+=dGain*activation[i]*Exponential[dx]*Exponential[dy];
+                    image[dx+Y1]+=k1*Exponential[Abs(dx)];
                 }
             }
         }
