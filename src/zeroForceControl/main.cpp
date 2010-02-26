@@ -223,62 +223,62 @@ private:
 		  }
 	}
 
-	void initializePositionAndLimits(string limb)
-	{
-		if(limbJnt!=0)
-		{
-			if (strcmp(limb.c_str(), "left_arm")==0)
-			{
-				initPosition.resize(limbJnt);
-				desPosition.resize(limbJnt);
-				initPosition = 0.0;
-				initPosition(0) = -10.0; initPosition(1) = 20.0; initPosition(2) = 15.0; initPosition(3) = 15.0;
-				desPosition=initPosition;
-				maxJntLimits.resize(4);
-				maxJntLimits(0) = 2.0; maxJntLimits(1) = 120.0; maxJntLimits(2) = 90.0; maxJntLimits(3) = 95.0;
-				minJntLimits.resize(4);
-				minJntLimits(0) = -95.0; minJntLimits(1) = 0.0; minJntLimits(2) = -20.0; minJntLimits(3) = 10.0;
-			}
-			else if (strcmp(limb.c_str(), "right_arm")==0)
-			{
-				initPosition.resize(limbJnt);
-				desPosition.resize(limbJnt);
-				initPosition = 0.0;
-				//initPosition(0) = -10.0; initPosition(1) = 20.0; initPosition(2) = 15.0; initPosition(3) = 15.0;
-				initPosition(0) = -57.0; initPosition(1) = 33.0; initPosition(2) = -11.0; initPosition(3) = 45.0;
-				desPosition=initPosition;
-				maxJntLimits.resize(4);
-				maxJntLimits(0) = 2.0; maxJntLimits(1) = 120.0; maxJntLimits(2) = 90.0; maxJntLimits(3) = 95.0;
-				minJntLimits.resize(4);
-				minJntLimits(0) = -95.0; minJntLimits(1) = 0.0; minJntLimits(2) = -20.0; minJntLimits(3) = 10.0;
-			}
-			else if (strcmp(limb.c_str(), "left_leg")==0)
-			{
-				initPosition.resize(limbJnt);
-				desPosition.resize(limbJnt);
-				initPosition = 0.0;
-				initPosition(0) = 15.0; initPosition(1) = 15.0; initPosition(2) = 0.0; initPosition(3) = -20.0;
-				desPosition=initPosition;
-				maxJntLimits.resize(4);
-				maxJntLimits(0) = 130.0; maxJntLimits(1) = 100.0; maxJntLimits(2) = 30.0; maxJntLimits(3) = -10.0;
-				minJntLimits.resize(4);
-				minJntLimits(0) = -30.0; minJntLimits(1) = 0.0; minJntLimits(2) = -30.0; minJntLimits(3) = -110.0;
-			}
-			else if (strcmp(limb.c_str(), "right_leg")==0)
-			{
-				initPosition.resize(limbJnt);
-				desPosition.resize(limbJnt);
-				initPosition = 0.0;
-				initPosition(0) = 15.0; initPosition(1) = 15.0; initPosition(2) = 0.0; initPosition(3) = -20.0;
-				desPosition=initPosition;
-				maxJntLimits.resize(4);
-				maxJntLimits(0) = 130.0; maxJntLimits(1) = 100.0; maxJntLimits(2) = 30.0; maxJntLimits(3) = -10.0;
-				minJntLimits.resize(4);
-				minJntLimits(0) = -30.0; minJntLimits(1) = 0.0; minJntLimits(2) = -30.0; minJntLimits(3) = -110.0;
-			}
-		}
-	}
-
+//	void initializePositionAndLimits(string limb)
+//	{
+//		if(limbJnt!=0)
+//		{
+//			if (strcmp(limb.c_str(), "left_arm")==0)
+//			{
+///*				initPosition.resize(limbJnt);
+//				desPosition.resize(limbJnt);
+//				initPosition = 0.0;
+//				initPosition(0) = -10.0; initPosition(1) = 20.0; initPosition(2) = 15.0; initPosition(3) = 15.0;
+//				desPosition=initPosition;
+//				maxJntLimits.resize(4);
+//				maxJntLimits(0) = 2.0; maxJntLimits(1) = 120.0; maxJntLimits(2) = 90.0; maxJntLimits(3) = 95.0;
+//				minJntLimits.resize(4);
+//				minJntLimits(0) = -95.0; minJntLimits(1) = 0.0; minJntLimits(2) = -20.0; minJntLimits(3) = 10.0;
+//	*/		}
+//			else if (strcmp(limb.c_str(), "right_arm")==0)
+//			{
+//				//initPosition.resize(limbJnt);
+//				//desPosition.resize(limbJnt);
+//				//initPosition = 0.0;
+//				////initPosition(0) = -10.0; initPosition(1) = 20.0; initPosition(2) = 15.0; initPosition(3) = 15.0;
+//				//initPosition(0) = -57.0; initPosition(1) = 33.0; initPosition(2) = -11.0; initPosition(3) = 45.0;
+//				//desPosition=initPosition;
+//				//maxJntLimits.resize(4);
+//				//maxJntLimits(0) = 2.0; maxJntLimits(1) = 120.0; maxJntLimits(2) = 90.0; maxJntLimits(3) = 95.0;
+//				//minJntLimits.resize(4);
+//				//minJntLimits(0) = -95.0; minJntLimits(1) = 0.0; minJntLimits(2) = -20.0; minJntLimits(3) = 10.0;
+//			}
+//			else if (strcmp(limb.c_str(), "left_leg")==0)
+//			{
+//				//initPosition.resize(limbJnt);
+//				//desPosition.resize(limbJnt);
+//				//initPosition = 0.0;
+//				//initPosition(0) = 15.0; initPosition(1) = 15.0; initPosition(2) = 0.0; initPosition(3) = -20.0;
+//				//desPosition=initPosition;
+//				//maxJntLimits.resize(4);
+//				//maxJntLimits(0) = 130.0; maxJntLimits(1) = 100.0; maxJntLimits(2) = 30.0; maxJntLimits(3) = -10.0;
+//				//minJntLimits.resize(4);
+//				//minJntLimits(0) = -30.0; minJntLimits(1) = 0.0; minJntLimits(2) = -30.0; minJntLimits(3) = -110.0;
+//			}
+//			else if (strcmp(limb.c_str(), "right_leg")==0)
+//			{
+//				//initPosition.resize(limbJnt);
+//				//desPosition.resize(limbJnt);
+//				//initPosition = 0.0;
+//				//initPosition(0) = 15.0; initPosition(1) = 15.0; initPosition(2) = 0.0; initPosition(3) = -20.0;
+//				//desPosition=initPosition;
+//				//maxJntLimits.resize(4);
+//				//maxJntLimits(0) = 130.0; maxJntLimits(1) = 100.0; maxJntLimits(2) = 30.0; maxJntLimits(3) = -10.0;
+//				//minJntLimits.resize(4);
+//				//minJntLimits(0) = -30.0; minJntLimits(1) = 0.0; minJntLimits(2) = -30.0; minJntLimits(3) = -110.0;
+//			}
+//		}
+//	}
+//
 	void initLimb(string limb)
 	{
 		if (strcmp(limb.c_str(), "left_arm")==0)
@@ -379,7 +379,7 @@ private:
           {
               fprintf(stderr, "nothing will be opened ... \n");
           }
-		  initializePositionAndLimits(limb);
+		  //initializePositionAndLimits(limb);
 	}
 
     
