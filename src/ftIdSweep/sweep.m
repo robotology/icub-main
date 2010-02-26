@@ -3,39 +3,66 @@ function main()
 clear all
 close all
 clc
-d='leftArm';
-[data]=chooseFile(d);
-[H,f] = transferFCT(data);
-semilogx(f,20*log10(abs(H(1:end))),'--b'),axis([1 20 -90 0]), hold on
-d='rightArm';
-[data]=chooseFile(d);
-[H,f] = transferFCT(data);
-semilogx(f,20*log10(abs(H(1:end))),'--r'),axis([1 20 -90 0]), hold on
-d='leftArm2';
-[data]=chooseFile(d);
-[H,f] = transferFCT(data);
-semilogx(f,20*log10(abs(H(1:end))),'b'),axis([1 20 -90 0]), hold on
 d='rightArm2';
-[data]=chooseFile(d);
-[H,f] = transferFCT(data);
-semilogx(f,20*log10(abs(H(1:end))),'r'),axis([1 20 -90 0]), hold on
-legend('LeftArm','RightArm','LeftArm2','RightArm2')
 
-    function [H,f] = transferFCT(data)
+[data,l]=chooseFile(d);
+time=[0:0.01:(0.01*(length(data)-1))];
+fig=figure
+h1=plotyy(time(1:1600),data(1:1600,2),time(1:1600),data(1:1600,3));
+ll=legend('Input PWM','equivalentOutput torqe')
+
+set(gcf,'Color',[1,1,1])
+xl=xlabel('time [s]');
+set(xl,'Interpreter','latex','FontSize',10);
+set(ll,'Interpreter','latex','FontSize',10);
+grid on
+
+
+fig=figure();
+[H,f] = transferFCT(data,l);
+h=semilogx(f,20*log10(abs(H(1:end))),'b','LineWidth',2),axis([1 20 -70 -40]),
+set(h,'LineWidth',2), hold on
+% d='rightArm';
+% [data,l]=chooseFile(d);
+% [H,f] = transferFCT(data,l);
+% semilogx(f,20*log10(abs(H(1:end))),'--r'),axis([1 20 -90 0]), hold on
+
+d='rightArm';
+[data,l]=chooseFile(d);
+[H,f] = transferFCT(data,l);
+semilogx(f,20*log10(abs(H(1:end))),'r','LineWidth',2),axis([1 20 -70 -40]), hold on
+
+d='rightArm3';
+[data,l]=chooseFile(d);
+[H,f] = transferFCT(data,l);
+semilogx(f,20*log10(abs(H(1:end))),'g','LineWidth',2),axis([1 20 -70 -40]), hold on
+% d='rightArm2';
+% [data,l]=chooseFile(d);
+% [H,f] = transferFCT(data,l);
+% semilogx(f,20*log10(abs(H(1:end))),'r'),axis([1 20 -90 0]), hold on
+set(gcf,'Color',[1,1,1])
+yl=ylabel('module of $\frac{\tau}{PWM}$');
+set(yl,'Interpreter','latex','FontSize',10);
+xl=xlabel('frequency [Hz]');
+set(xl,'Interpreter','latex','FontSize',10);
+ll=legend('shoulder up','shoulder down','hand at $90^{\circ}$')
+set(ll,'Interpreter','latex','FontSize',10);
+grid on
+% % % 
+    function [H,f] = transferFCT(data,L)
         dt=data(1:end,1);
         dt=mean(dt);
-        Fs = 1/dt;                    % Sampling frequency
-        L = 402;                     % Length of signal
-        t = (0:L-1)*dt;                % Time vector
-        NFFT = 2^nextpow2(L); % Next power of 2 from length of y
+        Fs = 1/dt;                    % Sampling frequency 
+        t = (0:L/2-1)*dt;                % Time vector
+        NFFT = 2^nextpow2(L/2); % Next power of 2 from length of y
         f = Fs/2*linspace(0,1,NFFT/2+1);
         index=0;
         maxA=0;
         f=[];
         for i=1:20
-            ftData_i=data(((L*(i-1)+1):L*i),:);
+            ftData_i=data(((L*(i-1)+1)+L/2-1:L*i),:);
             ftData(:,:,i)=ftData_i;
-            fftData_i = fft(ftData_i,NFFT)/L;
+            fftData_i = 2*fft(ftData_i,NFFT)/L;
             fftData(:,:,i)=fftData_i;
             [maxA,index] = max(2*abs(fftData_i(1:NFFT/2+1,2)));
             IN=fftData_i(index,2);
@@ -45,18 +72,31 @@ legend('LeftArm','RightArm','LeftArm2','RightArm2')
         end
     end
 
-    function [data]=chooseFile(d)
-        if(strcmp(d,'leftArm'))
+    function [data,l]=chooseFile(d)
+        if(strcmp(d,'leftArm3'))
             disp('left')
-            data=importfile('ftSweepData_leftarm.dat');
+            data=importfile('ftSweepData_leftarm4.dat');
+            l=402;
         elseif(strcmp(d,'leftArm2'))
             disp('left2')
             data=importfile('ftSweepData_leftarm2.dat');
+            l=402;
         elseif(strcmp(d,'rightArm2'))
             disp('right2')
+            l=402;
             data=importfile('ftSweepData_rightarm2.dat');
-        else data=importfile('ftSweepData_rightarm.dat');
+        elseif(strcmp(d,'rightArm3'))
+            data=importfile('ftSweepData_leftarm4.dat');
+            l=402;
             disp('right')
+        elseif(strcmp(d,'leftArm'))
+            disp('left')
+            data=importfile('ftSweepData_leftarm.dat');
+            l=402;
+        elseif(strcmp(d,'rightArm'))
+            disp('right')
+            data=importfile('ftSweepData_rightarm.dat');
+            l=402;
         end
     end
 
