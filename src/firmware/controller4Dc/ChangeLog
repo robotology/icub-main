@@ -86,6 +86,9 @@ Added control for the receiving of the PID values before enabling the PWM.
 2009-24-June  Francesco Nori <francesco.nori@iit.t>
 * Current build 25. iron: DEBUG_ANA_INC can now be used to print out the incremental encoder readings (a can_print message diplays the incremental encoders positions every second)
 	
+	
+2010-26-February  Maggiali Marco <marco.maggiali@iit.t>
+* Current build 26. maggia: now from the calibration file it is passed the current limit in mA. 
 
 
 
