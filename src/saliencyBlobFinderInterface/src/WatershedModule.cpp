@@ -1338,7 +1338,7 @@ bool WatershedModule::openPorts(){
     //int res = 0;
     // Registering Port(s)
     //reduce verbosity --paulfitz
-    printf("Registering port %s on network %s...\n",  getName("in"),"default");
+    printf("Registering port %s on network %s...\n",  getName("in").c_str(),"default");
     ret = _imgRecv.Connect((char*)getName("image:i").c_str(),"default");
     if (ret == true)
         {
@@ -1422,7 +1422,7 @@ bool WatershedModule::openPorts(){
         {		
             _pOutPort = new yarp::os::BufferedPort<yarp::os::Bottle>;
             //printf("Registering port %s on network %s...\n", getName("outputImage:o"),"default");
-            bool ok = _pOutPort->open( getName("outputImage:o"));
+            bool ok = _pOutPort->open( getName("outputImage:o").c_str());
             if  (ok)
                 printf("Port registration succeed!\n");
             else 
@@ -1432,7 +1432,7 @@ bool WatershedModule::openPorts(){
                 }
             _pOutPort2 = new yarp::os::BufferedPort<ImageOf<PixelRgb> >;
             //printf("Registering port %s on network %s...\n", getName("outBlobs:o"),"default");
-            ok = _pOutPort2->open( getName("outBlobs:o"));
+            ok = _pOutPort2->open( getName("outBlobs:o").c_str());
             if  (ok)
                 printf("Port registration succeed!\n");
             else 
@@ -1442,7 +1442,7 @@ bool WatershedModule::openPorts(){
                 }
             _pOutPort3 = new yarp::os::BufferedPort<ImageOf<PixelRgb> >;
             //printf("Registering port %s on network %s...\n", getName("outView:o"),"default");
-            ok = _pOutPort3->open( getName("outView:o"));
+            ok = _pOutPort3->open( getName("outView:o").c_str());
             if  (ok)
                 printf("Port registration succeed!\n");
             else 
@@ -1452,7 +1452,7 @@ bool WatershedModule::openPorts(){
                 }
             commandPort = new yarp::os::BufferedPort<Bottle >;
             //printf("Registering port %s on network %s...\n", getName("command:o"),"default");
-            ok = commandPort->open( getName("command:o"));
+            ok = commandPort->open( getName("command:o").c_str());
             if  (ok)
                 printf("Port registration succeed!\n");
             else 
