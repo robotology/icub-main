@@ -223,62 +223,6 @@ private:
 		  }
 	}
 
-//	void initializePositionAndLimits(string limb)
-//	{
-//		if(limbJnt!=0)
-//		{
-//			if (strcmp(limb.c_str(), "left_arm")==0)
-//			{
-///*				initPosition.resize(limbJnt);
-//				desPosition.resize(limbJnt);
-//				initPosition = 0.0;
-//				initPosition(0) = -10.0; initPosition(1) = 20.0; initPosition(2) = 15.0; initPosition(3) = 15.0;
-//				desPosition=initPosition;
-//				maxJntLimits.resize(4);
-//				maxJntLimits(0) = 2.0; maxJntLimits(1) = 120.0; maxJntLimits(2) = 90.0; maxJntLimits(3) = 95.0;
-//				minJntLimits.resize(4);
-//				minJntLimits(0) = -95.0; minJntLimits(1) = 0.0; minJntLimits(2) = -20.0; minJntLimits(3) = 10.0;
-//	*/		}
-//			else if (strcmp(limb.c_str(), "right_arm")==0)
-//			{
-//				//initPosition.resize(limbJnt);
-//				//desPosition.resize(limbJnt);
-//				//initPosition = 0.0;
-//				////initPosition(0) = -10.0; initPosition(1) = 20.0; initPosition(2) = 15.0; initPosition(3) = 15.0;
-//				//initPosition(0) = -57.0; initPosition(1) = 33.0; initPosition(2) = -11.0; initPosition(3) = 45.0;
-//				//desPosition=initPosition;
-//				//maxJntLimits.resize(4);
-//				//maxJntLimits(0) = 2.0; maxJntLimits(1) = 120.0; maxJntLimits(2) = 90.0; maxJntLimits(3) = 95.0;
-//				//minJntLimits.resize(4);
-//				//minJntLimits(0) = -95.0; minJntLimits(1) = 0.0; minJntLimits(2) = -20.0; minJntLimits(3) = 10.0;
-//			}
-//			else if (strcmp(limb.c_str(), "left_leg")==0)
-//			{
-//				//initPosition.resize(limbJnt);
-//				//desPosition.resize(limbJnt);
-//				//initPosition = 0.0;
-//				//initPosition(0) = 15.0; initPosition(1) = 15.0; initPosition(2) = 0.0; initPosition(3) = -20.0;
-//				//desPosition=initPosition;
-//				//maxJntLimits.resize(4);
-//				//maxJntLimits(0) = 130.0; maxJntLimits(1) = 100.0; maxJntLimits(2) = 30.0; maxJntLimits(3) = -10.0;
-//				//minJntLimits.resize(4);
-//				//minJntLimits(0) = -30.0; minJntLimits(1) = 0.0; minJntLimits(2) = -30.0; minJntLimits(3) = -110.0;
-//			}
-//			else if (strcmp(limb.c_str(), "right_leg")==0)
-//			{
-//				//initPosition.resize(limbJnt);
-//				//desPosition.resize(limbJnt);
-//				//initPosition = 0.0;
-//				//initPosition(0) = 15.0; initPosition(1) = 15.0; initPosition(2) = 0.0; initPosition(3) = -20.0;
-//				//desPosition=initPosition;
-//				//maxJntLimits.resize(4);
-//				//maxJntLimits(0) = 130.0; maxJntLimits(1) = 100.0; maxJntLimits(2) = 30.0; maxJntLimits(3) = -10.0;
-//				//minJntLimits.resize(4);
-//				//minJntLimits(0) = -30.0; minJntLimits(1) = 0.0; minJntLimits(2) = -30.0; minJntLimits(3) = -110.0;
-//			}
-//		}
-//	}
-//
 	void initLimb(string limb)
 	{
 		if (strcmp(limb.c_str(), "left_arm")==0)
@@ -379,7 +323,6 @@ private:
           {
               fprintf(stderr, "nothing will be opened ... \n");
           }
-		  //initializePositionAndLimits(limb);
 	}
 
     
@@ -680,63 +623,8 @@ public:
 		               fprintf(fid,"%.4lf\t",FTs(i)-FTs_init(i));
               fprintf(fid,"\n");
                   }
-		  /*if(count>=CPRNT)
-		  {
-			  Matrix He = arm->getH();
-			  Matrix Hg = arm->getH(2);
-			  Matrix Hs = FTB->getHs();
-			  Matrix He2 = FTB->getHe();
+		 
 
-			  fprintf(stderr,"He = ");
-			  for(int i=0;i<3;i++)
-			  {
-				  for(int j=0;j<4;j++)
-					  fprintf(stderr,"%.3lf\t", He(i,j));
-				  fprintf(stderr,"\n");
-			  }
-			  fprintf(stderr,"\n\n");
-
-			  fprintf(stderr,"He2 = ");
-			  for(int i=0;i<3;i++)
-			  {
-				  for(int j=0;j<4;j++)
-					  fprintf(stderr,"%.3lf\t", He2(i,j));
-				  fprintf(stderr,"\n");
-			  }
-			  fprintf(stderr,"\n\n");
-
-			  fprintf(stderr,"Hg = ");
-			  for(int i=0;i<3;i++)
-			  {
-				  for(int j=0;j<4;j++)
-					  fprintf(stderr,"%.3lf\t", Hg(i,j));
-				  fprintf(stderr,"\n");
-			  }
-			  fprintf(stderr,"\n\n");
-
-			  fprintf(stderr,"Hs = ");
-			  for(int i=0;i<3;i++)
-			  {
-				  for(int j=0;j<4;j++)
-					  fprintf(stderr,"%.3lf\t", Hs(i,j));
-				  fprintf(stderr,"\n");
-			  }
-			  fprintf(stderr,"\n\n");
-
-			  fprintf(stderr,"encs = ");
-			  for(int i=0;i<4;i++)
-				  fprintf(stderr,"%.3lf\t", encoders(i));
-			  fprintf(stderr,"\n");
-			  fprintf(stderr,"ang = ");
-			  for(int i=0;i<4;i++)
-				  fprintf(stderr,"%.3lf\t", arm->getAng(i+3)*180/M_PI);
-
-			  fprintf(stderr,"DOF = %d \n", arm->getDOF());
-
-			  count = 0;
-		  }
-
-		  */
 		  if(count>=CPRNT)
 		  {
 			  if (verbose)
@@ -804,18 +692,7 @@ public:
 			  for(int i=0;i<limbJnt;i++)
 				  fprintf(stderr,"%+.3lf\t", tauSafe(i));
 			  fprintf(stderr,"\n");}
-			  /*
-			  // debug only
-              fprintf(stderr,"J:\n");
-			  for(int i=0;i<J.rows();i++)
-			  {
-				  for(int j=0;j<J.cols();j++)
-					  fprintf(stderr,"%+.3lf\t", J(i,j));
-				  fprintf(stderr,"\n");
-			  }
-			  fprintf(stderr,"\n\n\n");
-			  */
-
+			  
 			  fprintf(stderr,"\n\n");
 			 
 			  count = 0;
@@ -839,6 +716,7 @@ public:
 		  for(int i=0;i<limbJnt;i++)
 		  {
 			  ipids->setPid(i,iCubPid[i]);
+			  fprintf(stderr,"setting back iCub PID(%d)\n",i);
 		  }
 	//	  ipids->setPid(3,iCubPid[3]); //use this on single joint
 	//	  ipids->setPid(2,iCubPid[2]); //use this on single joint
@@ -851,6 +729,7 @@ public:
 		  fprintf(stderr,"enabling pids...\n");
 		  for(int i=0;i<limbJnt;i++)
           	  ipids->enablePid(i);
+		  Time::delay(5);
 
 	//	  if(datas) delete datas;
 
@@ -916,6 +795,9 @@ public:
 		  initPosition.resize(initPos.length());
 		  for(int i = 0;i<limbJnt;i++)
 			  initPosition(i) =	initPos(i);
+		  
+		  fprintf(stderr,"initial position set to: %.2lf, %.2lf, %.2lf, %.2lf\n", initPosition(0), initPosition(1), initPosition(2), initPosition(3));
+		  
 		  return true;
 	  }
 	  bool setLimits(Vector maxLimit, Vector minLimit)
@@ -930,6 +812,9 @@ public:
 			  maxJntLimits(i) = maxLimit(i);
 			  minJntLimits(i) = minLimit(i);
 		  }
+		  fprintf(stderr,"max limits set to: %.2lf, %.2lf, %.2lf, %.2lf\n", maxJntLimits(0), maxJntLimits(1), maxJntLimits(2), maxJntLimits(3));
+		  fprintf(stderr,"max limits set to: %.2lf, %.2lf, %.2lf, %.2lf\n", minJntLimits(0), minJntLimits(1), minJntLimits(2), minJntLimits(3));
+		  
 		  return true;
 	  }
 
@@ -1156,7 +1041,9 @@ public:
 		fprintf(stderr,"input port opened...\n");
 		ft_control = new ftControl(SAMPLER_RATE, dd, port_FT, rf, part);
 		fprintf(stderr,"ft thread istantiated...\n");
+		fprintf(stderr,"setting initial position\n");
 		ft_control->setInitialPosition(initPos);
+		fprintf(stderr,"setting limits\n");
 		ft_control->setLimits(maxLim,minLim);
 		fprintf(stderr,"initial position and limits set...\n");
 
