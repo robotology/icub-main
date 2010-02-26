@@ -29,7 +29,7 @@
 byte	_board_ID = 15;	
 
 char    _additional_info [32];
-word    _build_number = 25;
+word    _build_number = 26;
 UInt8    mainLoopOVF[2]={0,0};
 int     _countBoardStatus[2] ={0,0};
 UInt8   highcurrent[4]={false,false,false,false};
@@ -90,6 +90,8 @@ Int16 _version = 0x0120;
 Int16 _version = 0x0121;
 #elif VERSION == 0x0128
 Int16 _version = 0x0128;
+#elif VERSION == 0x0129
+Int16 _version = 0x0129;
 #elif VERSION == 0x0130
 Int16 _version = 0x0130;
 #elif VERSION == 0x0125
@@ -202,6 +204,11 @@ void main(void)
     init_pwm			  ();	 
     init_faults           (true,true,true);	 
     init_position_encoder ();
+   	#if (VERSION==0x0129)		
+
+	init_position_abs_ssi();
+	
+	#endif
 	TI1_init 			  ();
 	init_leds  			  ();
 	EEPROM_Init();
@@ -441,6 +448,14 @@ void main(void)
 		_position[3]= _adjustment[3];					
 #endif
 
+#if VERSION == 0x0129
+	    _position[0]= get_position_encoder(0);	
+		_position[1]= get_position_abs_ssi(0);
+		_position[2]= get_position_abs_ssi(1);;
+		_position[3]= extract_h( compute_filt_pos(get_position_abs_analog(3)>>3,3));					
+#endif
+
+
 #if VERSION == 0x0130
 		for (i=0; i<JN; i++) _position[i]=_adjustment[i];					
 #endif
@@ -644,15 +659,19 @@ void main(void)
 			check_current(i, (_pid[i] > 0));		
 			compute_filtcurr(i);
 			
-			if (_filt_current[i] > _max_allowed_current[i])
+			if ((_filt_current[i] > (_max_allowed_current[i]*1000)))
 			{
 				_control_mode[i] = MODE_IDLE;	
 				_pad_enabled[i] = false;
 				highcurrent[i]=true;
 				PWM_outputPadDisable(i);
 		
-				can_printf("BIG CURR AXIS:%d",i);
+				can_printf("BIG CURR AXIS:%d calibrate:%d",i,_calibrated[i]);
 			} 			
+			else
+			{
+					highcurrent[i]=false;
+			}
 		}
 //-------------------------------------------------------------------------------------------
 

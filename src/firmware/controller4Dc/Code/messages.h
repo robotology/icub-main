@@ -951,7 +951,8 @@
 	{ \
 		dword tmp; \
 		tmp = BYTE_C(CAN_DATA[1], CAN_DATA[2], CAN_DATA[3], CAN_DATA[4]); \
-		_conversion_factor[axis] = (tmp * 3.3) / 32760.0f; \
+		if (tmp<=MAX_CURRENT) _max_allowed_current[axis]=tmp;\
+		else can_printf("MAX CURRENT BIGGER THEN MAX:%d",axis);\
 		_general_board_error = ERROR_NONE; \
 	} \
 	else \
