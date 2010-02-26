@@ -247,9 +247,9 @@ bool iKin_NLP::get_bounds_info(Index n, Number* x_l, Number* x_u,
     Index offs=0;
 
     for (Index i=0; i<m; i++)
-        if (!i && ctrlPose==IKINCTRL_POSE_FULL)
+        if (i==0 && ctrlPose==IKINCTRL_POSE_FULL)
         {
-            g_l[0]=0.0;
+            g_l[0]=lowerBoundInf;
             g_u[0]=translationalTol;
 
             offs=1;
@@ -322,7 +322,7 @@ bool iKin_NLP::eval_g(Index n, const Number* x, bool new_x, Index m, Number* g)
     Index offs=0;
 
     for (Index i=0; i<m; i++)
-        if (!i && ctrlPose==IKINCTRL_POSE_FULL)
+        if (i==0 && ctrlPose==IKINCTRL_POSE_FULL)
         {
             g[0]=0.5*norm2(e_xyz);
 
