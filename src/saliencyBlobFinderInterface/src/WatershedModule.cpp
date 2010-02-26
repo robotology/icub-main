@@ -1102,7 +1102,7 @@ static void cb_digits_scale3( GtkAdjustment *adj )
     wModule->maxBLOB=adj->value;
     printf("maxBLOB: %f",wModule->maxBLOB);
     std::string str("");
-    sprintf((char *)str.c_str(),"set Mdb %2.2f",wModule->maxBLOB);
+    sprintf((char *)str.c_str(),"set Mdb %d",wModule->maxBLOB);
     wModule->message->assign(str.c_str());
 }
 
@@ -1110,9 +1110,9 @@ static void cb_digits_scale4( GtkAdjustment *adj )
 {
     /* Set the number of decimal places to which adj->value is rounded */
     wModule->minBLOB=adj->value;
-    printf("minBLOB: %f",wModule->minBLOB);
+    printf("minBLOB: %d",wModule->minBLOB);
     std::string str("");
-    sprintf((char *)str.c_str(),"set mdb %2.2f",wModule->minBLOB);
+    sprintf((char *)str.c_str(),"set mdb %d",wModule->minBLOB);
     wModule->message->assign(str.c_str());
 }
 
