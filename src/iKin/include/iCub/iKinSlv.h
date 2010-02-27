@@ -316,6 +316,7 @@ protected:
 
     yarp::sig::Vector qd_3rdTask;
     yarp::sig::Vector w_3rdTask;
+    yarp::sig::Vector idx_3rdTask;
 
     yarp::os::Bottle solutionBottle;
 

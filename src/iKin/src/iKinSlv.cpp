@@ -1339,13 +1339,15 @@ void CartesianSolver::prepareJointsRestTask()
     
     qd_3rdTask.resize(prt->chn->getDOF());
     w_3rdTask.resize(prt->chn->getDOF());    
+    idx_3rdTask.resize(prt->chn->getDOF());
 
     for (unsigned int i=0; i<prt->chn->getN(); i++)
     {
         if (!(*prt->chn)[i].isBlocked())
         {            
             qd_3rdTask[offs]=restJntPos[i];
-            w_3rdTask[offs]=restWeights[i];
+            w_3rdTask[offs]=restWeights[i]?restWeights[i]:1.0;
+            idx_3rdTask[offs]=restWeights[i]?0:1;
 
             offs++;
         }
@@ -1503,13 +1505,10 @@ void CartesianSolver::run()
         else
             pToken=NULL;
 
-        // set things for 3rd task
+        // set things for the 3rd task
         for (unsigned int i=0; i<prt->chn->getDOF(); i++)
-            if (w_3rdTask[i]==0.0)
-            {
-                w_3rdTask[i]=1.0;
+            if (idx_3rdTask[i])
                 qd_3rdTask[i]=(*prt->chn)(i).getAng();
-            }
 
         // call the solver to converge
         double t0=Time::now();
