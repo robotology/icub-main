@@ -230,41 +230,37 @@ void Solver::run()
     Vector &xd=port_xd->get_xd();
     bool movedTorso=false;
 
-    // if torso is not controlled but it's been moved, update end-effector pose 
-    if (Robotable && !ctrlTorso)
+    if (Robotable)
     {
+        // get the feedback
         getFeedback(fb,chain,encTorso,encArm,nJointsTorso,nJointsArm,ctrlTorso>0);
+        chain->setAng(fb);
 
-        Vector qTorso(nJointsTorso);
-        for (int i=0; i<nJointsTorso; i++)
-            qTorso[i]=chain->getAng(i);
-
-        movedTorso=norm(qTorso-qTorso_old)>1.0*CTRL_DEG2RAD;
+        // if torso is not controlled but it's been moved, update end-effector pose 
+        if (ctrlTorso)
+        {        
+            Vector qTorso(nJointsTorso);
+            for (int i=0; i<nJointsTorso; i++)
+                qTorso[i]=chain->getAng(i);
+    
+            movedTorso=norm(qTorso-qTorso_old)>1.0*CTRL_DEG2RAD;
+        }
     }
 
     if (!(xd==xd_old) || movedTorso)
     {
-        Vector dummyVector(1);
-
         // try to keep elbow height as low as possible
         double weight2ndTask=0.01;
-        Vector xdElb(3); xdElb=0.0; xdElb[2]=-1.0;
         Vector w_2nd(3); w_2nd=0.0; w_2nd[2]=1.0;
+        Vector xdElb(3); xdElb=0.0; xdElb[2]=-1.0;
 
-        double weight3rdTask=0.0;
-        Vector qd_3rd=dummyVector;
-        Vector w_3rd=dummyVector;
-
-        // minimize the torso displacement wrt rest position (0,0,0)
+        // minimize against the torso rest position (0,0,0)
+        // and current arm position too
+        double weight3rdTask=0.01;
+        Vector w_3rd(chain->getDOF()); w_3rd=1.0;
+        Vector qd_3rd=chain->getAng();
         if (ctrlTorso)
-        {
-            weight3rdTask=0.01;
-
-            qd_3rd.resize(chain->getDOF(),0.0);
-
-            w_3rd=qd_3rd;
-            w_3rd[0]=w_3rd[1]=w_3rd[2]=1.0;
-        }
+            qd_3rd[0]=qd_3rd[1]=qd_3rd[2]=0.0;        
 
         // Call the solver and start the convergence from the current point.
         Vector _qd=slv->solve(chain->getAng(),xd,weight2ndTask,xdElb,w_2nd,
