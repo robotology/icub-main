@@ -9,11 +9,13 @@
 #include <iCub/iKinVocabs.h>
 #include <iCub/iKinSlv.h>
 
-#define RES_EVENT(x)            (static_cast<ACE_Auto_Event*>(x))
-
-#define SHOULDER_MAXABDUCTION   (100.0*CTRL_DEG2RAD)
-#define CARTSLV_DEFAULT_PER     20      // [ms]
-#define CARTSLV_DEFAULT_TMO     1000    // [ms]
+#define RES_EVENT(x)                (static_cast<ACE_Auto_Event*>(x))
+                                    
+#define SHOULDER_MAXABDUCTION       (100.0*CTRL_DEG2RAD)
+#define CARTSLV_DEFAULT_PER         20      // [ms]
+#define CARTSLV_DEFAULT_TMO         1000    // [ms]
+#define CARTSLV_WEIGHT_2ND_TASK     0.01
+#define CARTSLV_WEIGHT_3RD_TASK     0.01
 
 using namespace std;
 using namespace yarp;
@@ -1335,25 +1337,19 @@ void CartesianSolver::prepareJointsRestTask()
 {
     int offs=0;
     
-    qd_RestTask.resize(prt->chn->getDOF());
-    w_RestTask.resize(prt->chn->getDOF());    
+    qd_3rdTask.resize(prt->chn->getDOF());
+    w_3rdTask.resize(prt->chn->getDOF());    
 
     for (unsigned int i=0; i<prt->chn->getN(); i++)
     {
         if (!(*prt->chn)[i].isBlocked())
         {            
-            qd_RestTask[offs]=restJntPos[i];
-            w_RestTask[offs]=restWeights[i];
+            qd_3rdTask[offs]=restJntPos[i];
+            w_3rdTask[offs]=restWeights[i];
 
             offs++;
         }
     }
-
-    // enable rest position task only if it's the case
-    if (norm(w_RestTask))
-        weightRestTask=0.01;
-    else
-        weightRestTask=0.0;
 }
 
 
@@ -1365,7 +1361,7 @@ Vector CartesianSolver::solve(Vector &xd)
     // call the solver and start the convergence from the current point
     return slv->solve(prt->chn->getAng(),xd,
                       0.0,dummy,dummy,
-                      weightRestTask,qd_RestTask,w_RestTask,
+                      CARTSLV_WEIGHT_3RD_TASK,qd_3rdTask,w_3rdTask,
                       NULL,NULL,clb);
 }
 
@@ -1507,6 +1503,14 @@ void CartesianSolver::run()
         else
             pToken=NULL;
 
+        // set things for 3rd task
+        for (unsigned int i=0; i<prt->chn->getDOF(); i++)
+            if (w_3rdTask[i]==0.0)
+            {
+                w_3rdTask[i]=1.0;
+                qd_3rdTask[i]=(*prt->chn)(i).getAng();
+            }
+
         // call the solver to converge
         double t0=Time::now();
         Vector q=solve(xd);
@@ -1640,14 +1644,13 @@ bool iCubArmCartesianSolver::decodeDOF(const Vector &_dof)
 Vector iCubArmCartesianSolver::solve(Vector &xd)
 {
     // try to keep elbow height as low as possible
-    double weight2ndTask=0.01;
-    Vector xdElb(3); xdElb=0.0; xdElb[2]=-1.0;
     Vector w_2nd(3); w_2nd=0.0; w_2nd[2]=1.0;
+    Vector xdElb(3); xdElb=0.0; xdElb[2]=-1.0;
 
     // call the solver and start the convergence from the current point
     return slv->solve(prt->chn->getAng(),xd,
-                      weight2ndTask,xdElb,w_2nd,
-                      weightRestTask,qd_RestTask,w_RestTask,
+                      CARTSLV_WEIGHT_2ND_TASK,xdElb,w_2nd,
+                      CARTSLV_WEIGHT_3RD_TASK,qd_3rdTask,w_3rdTask,
                       NULL,NULL,clb);
 }
 

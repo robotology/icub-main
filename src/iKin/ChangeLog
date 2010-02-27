@@ -1,4 +1,7 @@
 
+2010-02-27 Ugo Pattacini <ugo.pattacini@iit.it>
+	   * iKinSlv.h,.cpp: minimization against current q added
+
 2010-02-03 Ugo Pattacini <ugo.pattacini@iit.it>
 	   * CMakeLists.txt, IKINConfig.cmake: for win32 DEBUG_POSTFIX put equal to "d"
 

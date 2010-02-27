@@ -314,9 +314,8 @@ protected:
     yarp::sig::Vector restJntPos;
     yarp::sig::Vector restWeights;
 
-    double weightRestTask;
-    yarp::sig::Vector qd_RestTask;
-    yarp::sig::Vector w_RestTask;
+    yarp::sig::Vector qd_3rdTask;
+    yarp::sig::Vector w_3rdTask;
 
     yarp::os::Bottle solutionBottle;
 
