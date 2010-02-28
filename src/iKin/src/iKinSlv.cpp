@@ -1335,11 +1335,12 @@ bool CartesianSolver::changeDOF(const Vector &_dof)
 /************************************************************************/
 void CartesianSolver::prepareJointsRestTask()
 {
+    unsigned int nDOF=prt->chn->getDOF();
     int offs=0;
     
-    qd_3rdTask.resize(prt->chn->getDOF());
-    w_3rdTask.resize(prt->chn->getDOF());    
-    idx_3rdTask.resize(prt->chn->getDOF());
+    qd_3rdTask.resize(nDOF);
+    w_3rdTask.resize(nDOF);
+    idx_3rdTask.resize(nDOF);
 
     for (unsigned int i=0; i<prt->chn->getN(); i++)
     {
