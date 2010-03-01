@@ -650,6 +650,11 @@ void ServerCartesianController::stopLimbVel()
     int j=0;
     int k=0;
 
+    // this timeout prevents the stop() from
+    // being overwritten by the last velocityMove()
+    // which travels on a different connection.
+    Time::delay((2.0/1000.0)*getRate());
+
     for (unsigned int i=0; i<chain->getN(); i++)
     {
         if (!(*chain)[i].isBlocked())

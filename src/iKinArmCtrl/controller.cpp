@@ -81,6 +81,11 @@ void Controller::stopLimbsVel()
 {
     if (Robotable)
     {
+        // this timeout prevents the stop() from
+        // being overwritten by the last velocityMove()
+        // which travels on a different connection.
+        Time::delay(2*Ts);
+
         velArm->stop();
 
         if (ctrlTorso)
