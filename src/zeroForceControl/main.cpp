@@ -398,6 +398,7 @@ public:
 		  tauDes=0.0;
 		  tauSafe=0.0;
 		  tauFilt=0.0;
+          desPosition.resize(limbJnt);
 
 		  watchDog = 0;
 		  time = time0 = 0.0;
@@ -425,7 +426,7 @@ public:
 		  {
 			  check=false;
 			  count=0;
-			  while(!check && count < 10)
+			  while(!check && count < 50)
 			  {
 				  ipos->checkMotionDone(i,&check);
 				  count++;
@@ -547,7 +548,6 @@ public:
 				 // break;
 			  
 		  //}
-				  
 		  Vector Fe=FTB->getFe();
 
 		  //gains: to be tuned
@@ -556,13 +556,12 @@ public:
 		  K=eye(limbJnt,limbJnt);
 		  Kspring=eye(limbJnt,limbJnt);
 		  for(int i=0;i<limbJnt;i++) {K(i,i) = kp(i); Kspring(i,i) = kspr(i);}
-
 		  //control: to be checked
 		  Matrix J = iCubLimb->GeoJacobian();
          // const double Kspringc=0.3;
-		  Vector tau(4);
+		  Vector tau(limbJnt);
 		  tau=0.0;
-		  tauDes=Kspring*((180.0/M_PI)*angs-desPosition); 
+		  tauDes=Kspring*((180.0/M_PI)*angs-desPosition);
 		  FTj=J.transposed()*FT;
 		  if (control_mode==IMPEDANCE)
 			{tau = K*(FTj-tauDes);} //USE THIS FOR IMPEDANCE CONTROL
@@ -588,7 +587,7 @@ public:
 		  {
 			  speeds(i) = (angs(i) - angs_old(i))/tdiff;
 		  }
-		  tauSafe = checkLimits(encoders, tauC, speeds); 
+		  tauSafe = checkLimits(encoders, tauC, speeds);
 
 		  //saturation
 		  Vector sat(4);
@@ -729,8 +728,7 @@ public:
 		  fprintf(stderr,"enabling pids...\n");
 		  for(int i=0;i<limbJnt;i++)
           	  ipids->enablePid(i);
-		  Time::delay(5);
-
+		 
 	//	  if(datas) delete datas;
 
                   if(prntData) fclose(fid);
@@ -1050,7 +1048,8 @@ public:
 		fprintf(stderr,"setting limits\n");
 		ft_control->setLimits(maxLim,minLim);
 		fprintf(stderr,"initial position and limits set...\n");
-
+        Time::delay(5.0);
+        fprintf(stderr,"starting thread\n");
 		ft_control->start();
 		fprintf(stderr,"thread started\n");
 		return true;
