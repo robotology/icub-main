@@ -3042,7 +3042,6 @@ bool CanBusMotionControl::getRefTorqueRaw (int axis, double *t)
 
 bool CanBusMotionControl::stopRaw(int j)
 {
-    fprintf(stderr, "CanBusMotionControl::received stop command joint %d", j);
     return velocityMoveRaw(j, 0);
 }
 
@@ -3053,7 +3052,6 @@ bool CanBusMotionControl::stopRaw()
 
     double *tmp = new double [n];
     memset(tmp, 0, sizeof(double)*n);
-    fprintf(stderr, "CanBusMotionControl::received stop command for all joints");
     bool ret=velocityMoveRaw(tmp);
     
     delete [] tmp;
