@@ -17,6 +17,8 @@ SalienceOperator::SalienceOperator(const int width1, const int height1)//:_gaze(
     maxSalienceBlob_img=new ImageOf<PixelMono>;
     maxSalienceBlob_img->resize(width1,height1);
 
+    
+
     colorVQ=new ColorVQ(width1,height1,10);
     //reset the angular shifts
     //_angShiftMap = (double *) malloc (152 * sizeof(double));
@@ -64,6 +66,23 @@ SalienceOperator::SalienceOperator(const int width1, const int height1)//:_gaze(
     _img.Fovea_Type = 0;
 
 
+}
+
+SalienceOperator::~SalienceOperator(){
+    /*
+    std::map<const char*,int>::iterator iterMap;
+    iterMap=spikeMap.begin();
+    
+    int previousValue=iterMap->second;
+    std::string finalKey("");
+    //iterMap=spikeMap.begin();
+    for(;iterMap==spikeMap.end();iterMap++){
+        if(iterMap->second>previousValue){
+            sprintf((char*)finalKey.c_str(),"%s",iterMap->first);
+        }
+    }
+    */
+    
 }
 
 void SalienceOperator::DrawVQColor(ImageOf<PixelBgr>& id, ImageOf<PixelInt>& tagged)
@@ -231,6 +250,99 @@ void SalienceOperator::DrawMaxSaliencyBlob(ImageOf<PixelMono>& id,int max_tag,Im
                 id(c,r)=pixelColour;
         }
 }
+
+void SalienceOperator::DrawStrongestSaliencyBlob(ImageOf<PixelMono>& id,int max_tag,ImageOf<PixelInt>& tagged){
+    id.zero();
+    PixelMono pixelColour=255;
+    YARPBox box;
+    std::map<std::string,int>::iterator iterMap;
+    int previousValue=0;
+    /*if(iterMap==NULL)
+        return;*/
+    //int previousValue=iterMap->second;
+    std::string finalKey("");
+    std::string maxKey("");
+    int maxValue=0;
+    //iterMap=spikeMap.begin();
+    for(iterMap=spikeMap.begin();iterMap!=spikeMap.end();iterMap++){
+        
+    }
+    
+    printf("strongest %s with %d \n",maxKey,maxValue);
+    for (int r=0; r<height; r++){
+        for (int c=0; c<width; c++){
+            //printf("%d ",tagged(c,r));
+            /*if (tagged(c,r)==maxKey)
+                id(c,r)=pixelColour;*/
+        }
+    }
+    //printf("erasing the map \n");
+    spikeMap.clear();
+}
+
+
+void SalienceOperator::countSpikes(ImageOf<PixelInt>& tagged, int max_tag, YARPBox &box){
+    int max=1;
+    int xcart=0;
+    int ycart=0;
+    
+    
+    for (int m = 1; m < max_tag; m++){
+        //printf("blob number %d:",m);
+        if (m_boxes[m].valid){
+            //printf(" valid %d ---> %f \n",m,m_boxes[m].salienceTotal);
+            if (m_boxes[m].salienceTotal>m_boxes[max].salienceTotal)
+                max=m;
+        }
+        else{
+            //printf(" non valid");
+        }
+    }
+
+    box=m_boxes[max];
+    if(max==1){
+        printf("max saliency correspond to the fovea blob \n");
+        maxr=0;
+        maxc=0;
+        centroid_x=width/2;
+        centroid_y=height/2;
+    }
+    else{
+        centerOfMassAndMass(tagged, box.id, &xcart, &ycart, &box.areaCart);
+        box.centroid_x=xcart;
+        box.centroid_y=ycart;
+        centroid_x=xcart;
+        centroid_y=ycart;
+        maxc=(box.cmax+box.cmin)/2;
+        maxr=(box.rmax+box.rmin)/2;
+    }
+    //sprintf(ke,"%d,%d",(int)(centroid_x),(int)(centroid_y));
+    std::string maxKeyStr("");
+    sprintf((char*)maxKeyStr.c_str(),"%d,%d",(int)centroid_x,(int)centroid_y);
+
+    /*
+    if(centroid_x>=100)
+        if(centroid_y>=100)
+            sprintf((char*)maxKeyStr.c_str(),"%d,%d",(int)centroid_x,(int)centroid_y);
+        else
+            sprintf(maxKeyStr,"%d,0%d",(int)centroid_x,(int)centroid_y);
+    else
+        if(centroid_y>=100)
+            sprintf(maxKeyStr,"0%d,%d",(int)centroid_x,(int)centroid_y);
+        else
+            sprintf(maxKeyStr,"0%d,0%d",(int)centroid_x,(int)centroid_y);
+        */
+    
+      int previousValue=spikeMap[maxKeyStr];
+      spikeMap[maxKeyStr]=previousValue+1;
+      //spikeMap.insert(std::pair<std::string, int>((std::string)maxKeyStr, 1));
+
+
+      
+        
+    
+}
+
 
 void SalienceOperator::drawFoveaBlob(ImageOf<PixelMono>& id,ImageOf<PixelInt>& tagged){
     //id.Zero();

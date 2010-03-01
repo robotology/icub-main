@@ -73,13 +73,10 @@ private:
     * height of the input image
     */
     int height;
-    
-    
     /**
     * flag that indicates when the reinitiazation has already be done
     */
     bool reinit_flag;
-    
     /**
      * semaphore for the respond function
      */
@@ -96,11 +93,6 @@ private:
 	* reference to the watershed operator
 	*/
 	WatershedOperator *wOperator;
-	
-    /**
-	* number of blobs
-	*/
-	int max_tag;
     /**
 	* vector of boolean which tells whether there is a blob or not
 	*/
@@ -126,30 +118,6 @@ private:
     */
     ImageOf<PixelInt> *ptr_tagged;    
     /**
-	* pointer to the input image of the red plane
-	*/
-	//yarp::sig::ImageOf<yarp::sig::PixelMono> *ptr_inputRed; //
-	/**
-	* pointer to the input image of the green plane
-	*/
-	//yarp::sig::ImageOf<yarp::sig::PixelMono> *ptr_inputGreen; //
-	/**
-	* pointer to the input image of the blue plane
-	*/
-	//yarp::sig::ImageOf<yarp::sig::PixelMono> *ptr_inputBlue; //
-	/**
-	* pointer to the input image of the R+G- colour opponency
-	*/
-	//yarp::sig::ImageOf<yarp::sig::PixelMono> *ptr_inputRG;  //
-	/**
-	* pointer to the input image of the G+R- colour opponency
-	*/
-	//yarp::sig::ImageOf<yarp::sig::PixelMono> *ptr_inputGR;  //
-	/**
-	* pointer to the input image of the B+Y- colour opponency
-	*/
-	//yarp::sig::ImageOf<yarp::sig::PixelMono> *ptr_inputBY; //
-    /**
 	*vector of tags to the sequence of blobs
 	*/
 	ImageOf<PixelInt>* tagged;
@@ -157,7 +125,6 @@ private:
 	* image of the fovea blob
 	*/
 	ImageOf<PixelMono> *blobFov;
-    
     /**
 	* R+G- value for the search
 	*/
@@ -318,6 +285,10 @@ public:
 	* flag for drawing watershed image
 	*/
 	bool watershed_flag;
+    /**
+	* function that indicates if the stimuli have to be processed
+	*/
+	bool filterSpikes_flag;
 
     //------------parameters modified by the interface
     /**
@@ -352,7 +323,14 @@ public:
 	* value that represent the reactivity of the sensorial system in terms of second
 	*/
 	double reactivity;
-    
+    /**
+    * counter of cycle for maxsaliency blob
+    */
+    int count;
+    /**
+	* number of blobs
+	*/
+	int max_tag;    
 };
 
 #endif //__BLOBFINDERTHREAD_H_

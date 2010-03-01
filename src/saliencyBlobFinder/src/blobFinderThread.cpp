@@ -22,6 +22,8 @@ blobFinderThread::blobFinderThread():RateThread(THREAD_RATE){
     reinit_flag=false;
 
     ct=0;
+    filterSpikes_flag=true;
+    count=0;
 
     //inputImage_flag=false;
     freetorun=false;
@@ -162,6 +164,9 @@ void blobFinderThread::resizeImages(int width, int height){
 *	initialization of the thread 
 */
 bool blobFinderThread::threadInit(){
+
+    
+
 	/*contrastLP_flag=true;
 	meanColour_flag=false;
 	blobCataloged_flag=false;
@@ -185,6 +190,7 @@ void blobFinderThread::resetFlags(){
 	blobList_flag=false;
     tagged_flag=false;
 	watershed_flag=false;
+    
 }
 
 /**
@@ -265,9 +271,26 @@ void blobFinderThread::run(){
     }
     else if(this->maxSaliencyBlob_flag){
         this->drawAllBlobs(false);
-        this->salience->DrawMaxSaliencyBlob(*this->salience->maxSalienceBlob_img,this->max_tag,*this->tagged);
-        ippiCopy_8u_C1R(salience->maxSalienceBlob_img->getRawImage(),salience->maxSalienceBlob_img->getRowSize(),_outputImage->getRawImage(),_outputImage->getRowSize(),srcsize);
-        conversion=true;
+        if(filterSpikes_flag){
+            count++;
+            if(count>30){
+                count=0;
+                this->salience->DrawStrongestSaliencyBlob(*salience->maxSalienceBlob_img,max_tag,*tagged);
+                ippiCopy_8u_C1R(salience->maxSalienceBlob_img->getRawImage(),salience->maxSalienceBlob_img->getRowSize(),_outputImage->getRawImage(),_outputImage->getRowSize(),srcsize);
+                conversion=true;
+            }
+            else{
+                YARPBox box;
+                this->salience->countSpikes(*tagged,max_tag,box);
+                ippiCopy_8u_C1R(salience->maxSalienceBlob_img->getRawImage(),salience->maxSalienceBlob_img->getRowSize(),_outputImage->getRawImage(),_outputImage->getRowSize(),srcsize);
+            }
+            
+        }
+        else{
+            this->salience->DrawMaxSaliencyBlob(*salience->maxSalienceBlob_img,max_tag,*tagged);
+            ippiCopy_8u_C1R(salience->maxSalienceBlob_img->getRawImage(),salience->maxSalienceBlob_img->getRowSize(),_outputImage->getRawImage(),_outputImage->getRowSize(),srcsize);
+            conversion=true;
+        }
     }
     else if(this->contrastLP_flag){
         this->drawAllBlobs(true);

@@ -26,15 +26,21 @@
 #include <iCub/YARPBox.h>
 #include <iCub/YARPIntegralImage.h>
 
+#include <map>
+#include <string>
+
 using namespace yarp::os;
 using namespace yarp::sig;
 using namespace yarp::sig::draw;
+
 
 #define Giotto1 0
 #define Giotto2 1
 #define CUST 20
 #define FITIN   99
 #define FITOUT 101
+#define CODELENGHT 7
+
 
 // Logpolar trans -- Notational conventions:
 // x = ro*cos(eta/q)
@@ -151,15 +157,21 @@ private:
     * pointers to angleShift
     */
      double *_angShiftMap;
-    
-
+    /**
+    * feature of the input image
+    */
     Image_Data _img;
+    
 public:
     //------------methods
     /**
     * default constructor
     */
     SalienceOperator(){};
+    /**
+    * default destructor
+    */
+    ~SalienceOperator();
     /**
     * constructor
     * @param width1 dimension width
@@ -253,6 +265,8 @@ public:
     * @param box box of the fovea
     */
     void maxSalienceBlob(ImageOf<PixelInt>& tagged, int max_tag, YARPBox &box); //
+
+     
     /**
     * draw the blobs present in the fovea area
     * @param id image of the ids
@@ -304,6 +318,13 @@ public:
     */
     void ComputeMeanColors(int last_tag); //
     /**
+    * counts the number of spiky stimuli coming from every blob
+    * @param id input image(data)
+    * @param max_tag number of blobs
+    * @param tagged image composed by tags
+    */
+    void countSpikes(ImageOf<PixelInt>& tagged, int max_tag, YARPBox &box);
+    /**
     * draws the blobs in the scene painting the blobs with their mean colour
     * @param id input image(data)
     * @param tagged image composed by tags
@@ -312,9 +333,17 @@ public:
     /**
     * draws the most salient blobs in the scene
     * @param id input image(data)
+    * @param max_tag number of blobs
     * @param tagged image composed by tags
     */
     void DrawMaxSaliencyBlob(ImageOf<PixelMono>& id,int max_tag,ImageOf<PixelInt>& tagged);
+    /**
+    * draws the blobs which has strongest responses in the scene
+    * @param id input image(data)
+    * @param max_tag number of blobs
+    * @param tagged image composed by tags
+    */
+    void DrawStrongestSaliencyBlob(ImageOf<PixelMono>& id,int max_tag,ImageOf<PixelInt>& tagged);
     /**
     * remove the blobs that are out of range
     * @param last_tag number of blobs
@@ -421,7 +450,13 @@ public:
     * center of the max saliency blob, logpolar r coordinate
     */
     double maxr;
+    /**
+    * map which contains the number of spikes for a specific blob
+    */
+    std::map<std::string,int> spikeMap;
 
+   
+    
 };
 
 #endif //_SALIENCEOPERATOR_H_
