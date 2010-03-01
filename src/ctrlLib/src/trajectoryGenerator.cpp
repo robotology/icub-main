@@ -79,7 +79,8 @@ void minJerkTrajGen::compute(const double T, const Vector &xd, const Vector &fbP
         double T2=T*T;
         double T3=T2*T;
 
-        // 90% in t=T
+        // 90% of steady-state value in t=T
+        // transient extinguished for t>=1.5*T
         A(2,0)=-150.831920400137/T3;
         A(2,1)=-85.0063312395465/T2;
         A(2,2)=-15.9693357591441/T;
