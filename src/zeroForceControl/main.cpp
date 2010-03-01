@@ -958,6 +958,7 @@ public:
         else
 		{
 			fprintf(stderr,"Could not find part in the config file\n");
+		  Time::delay(3.0);
             return false;
 		}
 
@@ -976,6 +977,7 @@ public:
 		else 
 		{
 		  fprintf(stderr,"error: initial position not defined in configuration file!!!\n returning;");
+		  Time::delay(3.0);
 		  return false;
 		}
 		tmp=0;
@@ -992,6 +994,7 @@ public:
 		else 
 		{
 		  fprintf(stderr,"error: max limits not defined in configuration file!!!\n returning;");
+		  Time::delay(3.0);
 		  return false;
 		}
 
@@ -1009,6 +1012,7 @@ public:
 		else 
 		{
 		  fprintf(stderr,"error: min limits not defined in configuration file!!!\n returning;");
+		  Time::delay(3.0);
 		  return false;
 		}
 
