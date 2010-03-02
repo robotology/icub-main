@@ -25,7 +25,7 @@
 
 	<module>
 		<name>iKinHead</name>
-		<parameters>--file iKinHead.ini --context protoObjectVisualAttention --kalman --const</parameters>
+		<parameters>--file iKinHead.ini --context protoObjectVisualAttention/conf --kalman</parameters>
 		<stdio>lightHouse</stdio>
 		<tag>ikinHead</tag>
 		<node>/lightHouse</node>
@@ -45,18 +45,18 @@
 	</module>
 	
 	<connection>
-      	<output>>/blobFinder/centroid:o</output>
+      	<output>/blobFinder/centroid:o</output>
 		<input>/controlGaze/conf</input>
 		<protocol>tcp</protocol>
 	</connection>
 	<connection>
-      	<output>/blobFinder/triangulation:o</output>
-		<input>/eyeTriangulation/x:i</input>
+      <output>/blobFinder/triangulation:o</output>
+		<input>/eyeTriangulation/rpc</input>
 		<protocol>tcp</protocol>
 	</connection>
 	<connection>
-      	<output>/eyeTriangulation/X:o</output>
-		<input>/iKinGazeCtrl/xd:i</input>
+      	<output>/blobFinder/gazeControl:o</output>
+		<input>/iKinGazeCtrl/head/xd:i</input>
 		<protocol>tcp</protocol>
 	</connection>
 	
