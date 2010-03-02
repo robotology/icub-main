@@ -381,7 +381,8 @@ bool AnalogSensor::open(int channels, AnalogDataFormat f, short bId, short useCa
 	for (i=0; i<channels; i++) scaleFactor[i]=1;
     dataFormat=f;
     boardId=bId;
-	if (useCalib==1 && dataFormat==AnalogSensor::ANALOG_FORMAT_16)
+	useCalibration=useCalib;
+	if (useCalibration==1 && dataFormat==AnalogSensor::ANALOG_FORMAT_16)
 	{
 		scaleFactor[0]=500;
 		scaleFactor[1]=500;
