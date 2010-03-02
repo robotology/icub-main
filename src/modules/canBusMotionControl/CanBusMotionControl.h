@@ -245,8 +245,8 @@ public:
         {return closeMsg;}
 	short getUseCalibration()
 		{return useCalibration;}
-//	double &getScaleFactor()
-//		{return scaleFactor;}
+	double* getScaleFactor()
+		{return scaleFactor;}
 
     bool open(int channels, AnalogDataFormat f, short bId, short useCalib);
 
