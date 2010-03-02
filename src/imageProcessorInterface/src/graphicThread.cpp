@@ -93,8 +93,8 @@ void graphicThread::threadRelease(){
 void graphicThread::close(){
      printf("Closing port for visual representation");
      
-     /*if(ptr_imgRecv->)
-        _imgRecv.Disconnect();*/
+     if(ptr_imgRecv!=0)
+        _imgRecv.Disconnect();
      
 }
 
