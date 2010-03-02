@@ -2,6 +2,8 @@
 
 #include <yarp/math/Math.h>
 #include <iCub/SalienceOperator.h>
+#include <string>
+#include <sstream>
 
 SalienceOperator::SalienceOperator(const int width1, const int height1)//:_gaze( YMatrix(_dh_nrf, 5, DH_left[0]), YMatrix(_dh_nrf, 5, DH_right[0]), YMatrix(4, 4, TBaseline[0]) )
 {
@@ -265,10 +267,22 @@ void SalienceOperator::DrawStrongestSaliencyBlob(ImageOf<PixelMono>& id,int max_
     int maxValue=0;
     //iterMap=spikeMap.begin();
     for(iterMap=spikeMap.begin();iterMap!=spikeMap.end();iterMap++){
-        
+        printf("%s->%d \n",iterMap->first.c_str(),iterMap->second);
+        if(iterMap->second>maxValue){
+            maxKey=iterMap->first;
+            maxValue=iterMap->second;
+        }
     }
-    
-    printf("strongest %s with %d \n",maxKey,maxValue);
+
+    printf("strongest %s with %d \n",maxKey.c_str(),maxValue);
+    std::string xStr;
+    std::string yStr;
+    size_t found=maxKey.find(",");
+    xStr=maxKey.substr(0,found);
+    yStr=maxKey.substr(found+1,maxKey.length()-found+1);
+    target_x=(int)atoi(xStr.c_str());
+    target_y=(int)atoi(yStr.c_str());
+
     for (int r=0; r<height; r++){
         for (int c=0; c<width; c++){
             //printf("%d ",tagged(c,r));
@@ -318,7 +332,19 @@ void SalienceOperator::countSpikes(ImageOf<PixelInt>& tagged, int max_tag, YARPB
     }
     //sprintf(ke,"%d,%d",(int)(centroid_x),(int)(centroid_y));
     std::string maxKeyStr("");
-    sprintf((char*)maxKeyStr.c_str(),"%d,%d",(int)centroid_x,(int)centroid_y);
+    std::stringstream streamStr;
+    std::stringstream streamStr2;
+
+    streamStr<<centroid_y;
+    std::string yStr(streamStr.str());
+    
+    streamStr2<<centroid_x;
+    std::string xStr=streamStr2.str();
+    
+    maxKeyStr.append(xStr);
+    maxKeyStr.append(",");
+    maxKeyStr.append(yStr);
+    
 
     /*
     if(centroid_x>=100)
@@ -335,11 +361,6 @@ void SalienceOperator::countSpikes(ImageOf<PixelInt>& tagged, int max_tag, YARPB
     
       int previousValue=spikeMap[maxKeyStr];
       spikeMap[maxKeyStr]=previousValue+1;
-      //spikeMap.insert(std::pair<std::string, int>((std::string)maxKeyStr, 1));
-
-
-      
-        
     
 }
 

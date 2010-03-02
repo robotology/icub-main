@@ -443,6 +443,15 @@ public:
     */
     double centroid_y;
     /**
+    * center of the blob that has strongest reinforcement, x coordinate
+    */
+    double target_x;
+    /**
+    * center of the blob that has strongest reinforcement, y coordinate
+    */
+    double target_y;
+
+    /**
     * center of the max saliency blob, logpolar c coordinate
     */
     double maxc;

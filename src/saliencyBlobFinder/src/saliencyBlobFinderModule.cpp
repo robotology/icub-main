@@ -2,7 +2,7 @@
 
 using namespace std;
 
-#define NOTIMECONTROL false
+#define NOTIMECONTROL true
 
 
 saliencyBlobFinderModule::saliencyBlobFinderModule(){
@@ -263,8 +263,8 @@ void saliencyBlobFinderModule::outPorts(){
         bot.addString("get");
         bot.addString("3dpoint");
         bot.addString("right");
-        bot.addDouble(blobFinder->salience->centroid_x);
-        bot.addDouble(_logpolarParams::_ysize-blobFinder->salience->centroid_y);
+        bot.addDouble(blobFinder->salience->target_x);
+        bot.addDouble(_logpolarParams::_ysize-blobFinder->salience->target_y);
         bot.addDouble(1.5); //fixed distance in which the saccade takes place
         triangulationPort.write(bot,in);
         if (in.size()>0) {
@@ -369,8 +369,8 @@ void saliencyBlobFinderModule::outPorts(){
         if((dif>0.5)&&(dif<=60)){
             bot.addVocab( Vocab::encode("sac") ); 
             bot.addVocab( Vocab::encode("img") ); 
-            double xrel=(blobFinder->salience->centroid_x-320/2)/(320/2);
-            double yrel=(blobFinder->salience->centroid_y-240/2+25)/(-240/2);
+            double xrel=(blobFinder->salience->target_x-_logpolarParams::_xsize/2)/(_logpolarParams::_xsize/2);
+            double yrel=(blobFinder->salience->target_y-_logpolarParams::_ysize/2+25)/(-_logpolarParams::_ysize/2);
             //printf("%f>%f,%f \n",dif,xrel,yrel);
             bot.addDouble(xrel);  
             bot.addDouble(yrel); 
