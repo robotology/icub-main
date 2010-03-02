@@ -267,7 +267,6 @@ void SalienceOperator::DrawStrongestSaliencyBlob(ImageOf<PixelMono>& id,int max_
     int maxValue=0;
     //iterMap=spikeMap.begin();
     for(iterMap=spikeMap.begin();iterMap!=spikeMap.end();iterMap++){
-        printf("%s->%d \n",iterMap->first.c_str(),iterMap->second);
         if(iterMap->second>maxValue){
             maxKey=iterMap->first;
             maxValue=iterMap->second;
@@ -277,17 +276,21 @@ void SalienceOperator::DrawStrongestSaliencyBlob(ImageOf<PixelMono>& id,int max_
     printf("strongest %s with %d \n",maxKey.c_str(),maxValue);
     std::string xStr;
     std::string yStr;
+    std::string maxStr;
     size_t found=maxKey.find(",");
     xStr=maxKey.substr(0,found);
-    yStr=maxKey.substr(found+1,maxKey.length()-found+1);
+    size_t found2=maxKey.find("|");
+    yStr=maxKey.substr(found+1,found2-found+1);
+    maxStr=maxKey.substr(found2+1,maxKey.length()-found2+1);
     target_x=(int)atoi(xStr.c_str());
     target_y=(int)atoi(yStr.c_str());
+    int target_max=(int) atoi(maxStr.c_str());
 
     for (int r=0; r<height; r++){
         for (int c=0; c<width; c++){
             //printf("%d ",tagged(c,r));
-            /*if (tagged(c,r)==maxKey)
-                id(c,r)=pixelColour;*/
+            if (tagged(c,r)==target_max)
+                id(c,r)=pixelColour;
         }
     }
     //printf("erasing the map \n");
@@ -334,16 +337,20 @@ void SalienceOperator::countSpikes(ImageOf<PixelInt>& tagged, int max_tag, YARPB
     std::string maxKeyStr("");
     std::stringstream streamStr;
     std::stringstream streamStr2;
+    std::stringstream streamStr3;
 
     streamStr<<centroid_y;
     std::string yStr(streamStr.str());
-    
     streamStr2<<centroid_x;
     std::string xStr=streamStr2.str();
+    streamStr3<<max;
+    std::string maxStr=streamStr3.str();
     
     maxKeyStr.append(xStr);
     maxKeyStr.append(",");
     maxKeyStr.append(yStr);
+    maxKeyStr.append("|");
+    maxKeyStr.append(maxStr);
     
 
     /*

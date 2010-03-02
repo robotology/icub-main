@@ -268,11 +268,9 @@ void saliencyBlobFinderModule::outPorts(){
         bot.addDouble(1.5); //fixed distance in which the saccade takes place
         triangulationPort.write(bot,in);
         if (in.size()>0) {
-            printf("3D position: %s\n", in.toString().c_str());
             target_z=in.pop().asDouble();
             target_y=in.pop().asDouble();
             target_x=in.pop().asDouble();
-            
             
         } else { 
             printf("No response\n");
@@ -285,6 +283,7 @@ void saliencyBlobFinderModule::outPorts(){
             Bottle &bot = gazeControlPort.prepare(); 
             bot.clear();
             int target_xmap,target_ymap, target_zmap;
+            
             bot.addDouble(target_x);  
             bot.addDouble(target_y); 
             bot.addDouble(target_z);

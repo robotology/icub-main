@@ -273,9 +273,10 @@ void blobFinderThread::run(){
         this->drawAllBlobs(false);
         if(filterSpikes_flag){
             count++;
-            if(count>30){
+            if(count>10){
                 count=0;
                 this->salience->DrawStrongestSaliencyBlob(*salience->maxSalienceBlob_img,max_tag,*tagged);
+                
                 ippiCopy_8u_C1R(salience->maxSalienceBlob_img->getRawImage(),salience->maxSalienceBlob_img->getRowSize(),_outputImage->getRawImage(),_outputImage->getRowSize(),srcsize);
                 conversion=true;
             }
