@@ -53,14 +53,14 @@ private:
     BufferedPort<ImageOf<PixelMono> > yellowPort;
     
     /**
-	* image result of the function outContrastLP
-	*/
-	ImageOf<PixelMono> *outContrastLP;
+    * image result of the function outContrastLP
+    */
+    ImageOf<PixelMono> *outContrastLP;
     
-	/**
-	* image result of the function meanColourLP;
-	*/
-	ImageOf<PixelBgr> *outMeanColourLP;
+    /**
+    * image result of the function meanColourLP;
+    */
+    ImageOf<PixelBgr> *outMeanColourLP;
     /**
     * ipp reference to the size of the input image
     */
@@ -90,57 +90,57 @@ private:
     */
     ImageOf<PixelRgb> *img;
     /**
-	* reference to the watershed operator
-	*/
-	WatershedOperator *wOperator;
+    * reference to the watershed operator
+    */
+    WatershedOperator *wOperator;
     /**
-	* vector of boolean which tells whether there is a blob or not
-	*/
-	char* blobList;
+    * vector of boolean which tells whether there is a blob or not
+    */
+    char* blobList;
     /**
     * pointer to the 3 channels output image of the watershed algorithm
     */
     ImageOf<PixelRgb>* _outputImage3;
     /**
-	* input image of the opponency R+G-
-	*/
-	ImageOf<PixelMono> *_inputImgRGS;
-	/**
-	* input image of the opponency G+R-
-	*/
-	ImageOf<PixelMono> *_inputImgGRS;
-	/**
-	* input image of the opponency B+Y-
-	*/
-	ImageOf<PixelMono> *_inputImgBYS;
+    * input image of the opponency R+G-
+    */
+    ImageOf<PixelMono> *_inputImgRGS;
+    /**
+    * input image of the opponency G+R-
+    */
+    ImageOf<PixelMono> *_inputImgGRS;
+    /**
+    * input image of the opponency B+Y-
+    */
+    ImageOf<PixelMono> *_inputImgBYS;
     /**
     * pointer to the image of tags
     */
     ImageOf<PixelInt> *ptr_tagged;    
     /**
-	*vector of tags to the sequence of blobs
-	*/
-	ImageOf<PixelInt>* tagged;
+    *vector of tags to the sequence of blobs
+    */
+    ImageOf<PixelInt>* tagged;
     /**
-	* image of the fovea blob
-	*/
-	ImageOf<PixelMono> *blobFov;
+    * image of the fovea blob
+    */
+    ImageOf<PixelMono> *blobFov;
     /**
-	* R+G- value for the search
-	*/
-	int searchRG;
-	/**
-	* G+R- value for the search
-	*/
-	int searchGR;
-	/**
-	* B+Y- value for the search
-	*/
-	int searchBY;
+    * R+G- value for the search
+    */
+    int searchRG;
     /**
-	* flag that indicates if the images have been resized
-	*/
-	bool resized_flag;
+    * G+R- value for the search
+    */
+    int searchGR;
+    /**
+    * B+Y- value for the search
+    */
+    int searchBY;
+    /**
+    * flag that indicates if the images have been resized
+    */
+    bool resized_flag;
 
     //_________ private methods ____________
     /**
@@ -154,6 +154,7 @@ private:
     * @param stable parameters that enable some lines of code for the stable version
     */
     void drawAllBlobs(bool stable);    
+    
 public:
     /**
     * default constructor
@@ -192,9 +193,9 @@ public:
 
     //_________ public attributes _______________
     /**
-	* reference to the salience operator
-	*/
-	SalienceOperator *salience;
+    * reference to the salience operator
+    */
+    SalienceOperator *salience;
     /**
     * pointer to the most salient blob
     */
@@ -204,13 +205,13 @@ public:
     */
     bool freetorun;
     /**
-	* image which is plotted in the drawing area
-	*/
-	ImageOf<PixelRgb> *image_out; //
+    * image which is plotted in the drawing area
+    */
+    ImageOf<PixelRgb> *image_out; //
     /**
-	* image which is plotted in the drawing area
-	*/
-	ImageOf<PixelRgb> *image_out2;
+    * image which is plotted in the drawing area
+    */
+    ImageOf<PixelRgb> *image_out2;
      /**
     * pointer to the input image
     */
@@ -249,88 +250,88 @@ public:
     */
     ImageOf<PixelMono>* _outputImage;
     //---------- flags --------------------------
-	/**
-	* flag for drawing contrastLP
-	*/
-	bool contrastLP_flag;
-	/**
-	* flag for drawing meanColourImage
-	*/
-	bool meanColour_flag;
-	/**
-	* flag for drawing blobCatalog
-	*/
-	bool blobCataloged_flag;
-	/**
-	* flag for drawing foveaBlob
-	*/
-	bool foveaBlob_flag;
-	/**
-	* flag for drawing colorVQ
-	*/
-	bool colorVQ_flag;
-	/**
-	* flag for drawing maxSaliencyBlob
-	*/
-	bool maxSaliencyBlob_flag;
-	/**
-	* flag for drawing blobList
-	*/
-	bool blobList_flag;
-	/**
-	* flag for the drawings
-	*/
-	bool tagged_flag;
-	/**
-	* flag for drawing watershed image
-	*/
-	bool watershed_flag;
     /**
-	* function that indicates if the stimuli have to be processed
-	*/
-	bool filterSpikes_flag;
+    * flag for drawing contrastLP
+    */
+    bool contrastLP_flag;
+    /**
+    * flag for drawing meanColourImage
+    */
+    bool meanColour_flag;
+    /**
+    * flag for drawing blobCatalog
+    */
+    bool blobCataloged_flag;
+    /**
+    * flag for drawing foveaBlob
+    */
+    bool foveaBlob_flag;
+    /**
+    * flag for drawing colorVQ
+    */
+    bool colorVQ_flag;
+    /**
+    * flag for drawing maxSaliencyBlob
+    */
+    bool maxSaliencyBlob_flag;
+    /**
+    * flag for drawing blobList
+    */
+    bool blobList_flag;
+    /**
+    * flag for the drawings
+    */
+    bool tagged_flag;
+    /**
+    * flag for drawing watershed image
+    */
+    bool watershed_flag;
+    /**
+    * function that indicates if the stimuli have to be processed
+    */
+    bool filterSpikes_flag;
 
     //------------parameters modified by the interface
     /**
-	* maxBLOB dimension
-	*/
-	int maxBLOB;
-	/**
-	* minBLOB dimension
-	*/
-	int minBLOB;
+    * maxBLOB dimension
+    */
+    int maxBLOB;
     /**
-	* saliencyTOT linear combination Ktd coefficient (TOP DOWN saliency weight)
-	*/
-	double salienceTD;
-	/**
-	* saliencyTOT linear combination Kbu coefficient (BOTTOM-UP saliency weight)
-	*/
-	double salienceBU;
+    * minBLOB dimension
+    */
+    int minBLOB;
     /**
-	* red intensity of the target that has been found 
-	*/
-	double targetRED;
-	/**
-	* green intensity of the target that has been found 
-	*/
-	double targetGREEN;
-	/**
-	* blue intensity of the target that has been found 
-	*/
-	double targetBLUE;
+    * saliencyTOT linear combination Ktd coefficient (TOP DOWN saliency weight)
+    */
+    double salienceTD;
     /**
-	* value that represent the reactivity of the sensorial system in terms of second
-	*/
-	double reactivity;
+    * saliencyTOT linear combination Kbu coefficient (BOTTOM-UP saliency weight)
+    */
+    double salienceBU;
+    /**
+    * red intensity of the target that has been found 
+    */
+    double targetRED;
+    /**
+    * green intensity of the target that has been found 
+    */
+    double targetGREEN;
+    /**
+    * blue intensity of the target that has been found 
+    */
+    double targetBLUE;
+    /**
+    * value that represent the reactivity of the sensorial system in terms of second
+    */
+    double reactivity;
     /**
     * counter of cycle for maxsaliency blob
     */
     int count;
     /**
-	* number of blobs
-	*/
-	int max_tag;    
+    * number of blobs
+    */
+    int max_tag;    
 };
 
 #endif //__BLOBFINDERTHREAD_H_

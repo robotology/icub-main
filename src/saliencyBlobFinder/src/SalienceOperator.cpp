@@ -274,27 +274,53 @@ void SalienceOperator::DrawStrongestSaliencyBlob(ImageOf<PixelMono>& id,int max_
     }
 
     printf("strongest %s with %d \n",maxKey.c_str(),maxValue);
-    std::string xStr;
-    std::string yStr;
+    std::string cStr;
+    std::string rStr;
     std::string maxStr;
     size_t found=maxKey.find(",");
-    xStr=maxKey.substr(0,found);
+    cStr=maxKey.substr(0,found);
     size_t found2=maxKey.find("|");
-    yStr=maxKey.substr(found+1,found2-found+1);
+    rStr=maxKey.substr(found+1,found2-found+1);
     maxStr=maxKey.substr(found2+1,maxKey.length()-found2+1);
-    target_x=(int)atoi(xStr.c_str());
-    target_y=(int)atoi(yStr.c_str());
+    target_c=(int)atoi(cStr.c_str());
+    target_r=(int)atoi(rStr.c_str());
     int target_max=(int) atoi(maxStr.c_str());
+    int strongestBlob=0;
 
-    for (int r=0; r<height; r++){
-        for (int c=0; c<width; c++){
+    //extracts the cartesian position of the target
+    int tgx=0;
+    int tgy=0;
+    logPolar2Cartesian(target_r,target_c,tgx,tgy);
+    target_x=(int)tgx;
+    target_y=(int)tgy;
+
+    //define which blob is attracting the attention
+    for (int i=0;i<max_tag;i++){
+        if(m_boxes[i].valid){
             //printf("%d ",tagged(c,r));
-            if (tagged(c,r)==target_max)
-                id(c,r)=pixelColour;
+            if (checkInside(target_r,target_c,i)){
+                strongestBlob=i;
+                break;
+            }
         }
     }
+
+    //plotting the image with the only strongest blob in it
+     for (int r=0; r<height; r++)
+        for (int c=0; c<width; c++)
+            if (tagged(c, r)==strongestBlob)
+                id(c ,r)=pixelColour;
     //printf("erasing the map \n");
     spikeMap.clear();
+}
+
+bool SalienceOperator::checkInside(int r,int c, int blobReference){
+    
+    YARPBox box=m_boxes[blobReference];
+    if((r>=box.rmin)&&(r<=box.rmax)&&(c>=box.cmin)&&(c<=box.cmax))
+        return true;
+    else
+        return false;
 }
 
 
@@ -339,9 +365,9 @@ void SalienceOperator::countSpikes(ImageOf<PixelInt>& tagged, int max_tag, YARPB
     std::stringstream streamStr2;
     std::stringstream streamStr3;
 
-    streamStr<<centroid_y;
+    streamStr<<maxr;
     std::string yStr(streamStr.str());
-    streamStr2<<centroid_x;
+    streamStr2<<maxc;
     std::string xStr=streamStr2.str();
     streamStr3<<max;
     std::string maxStr=streamStr3.str();
@@ -351,24 +377,9 @@ void SalienceOperator::countSpikes(ImageOf<PixelInt>& tagged, int max_tag, YARPB
     maxKeyStr.append(yStr);
     maxKeyStr.append("|");
     maxKeyStr.append(maxStr);
-    
 
-    /*
-    if(centroid_x>=100)
-        if(centroid_y>=100)
-            sprintf((char*)maxKeyStr.c_str(),"%d,%d",(int)centroid_x,(int)centroid_y);
-        else
-            sprintf(maxKeyStr,"%d,0%d",(int)centroid_x,(int)centroid_y);
-    else
-        if(centroid_y>=100)
-            sprintf(maxKeyStr,"0%d,%d",(int)centroid_x,(int)centroid_y);
-        else
-            sprintf(maxKeyStr,"0%d,0%d",(int)centroid_x,(int)centroid_y);
-        */
-    
-      int previousValue=spikeMap[maxKeyStr];
-      spikeMap[maxKeyStr]=previousValue+1;
-    
+    int previousValue=spikeMap[maxKeyStr];
+    spikeMap[maxKeyStr]=previousValue+1;
 }
 
 

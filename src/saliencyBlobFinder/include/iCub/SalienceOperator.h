@@ -161,6 +161,15 @@ private:
     * feature of the input image
     */
     Image_Data _img;
+
+    /**
+    * checks if the position passed as parameter is insied a precise blob
+    * @param r row position in the logPolar space
+    * @param c column position in the logPolar space
+    * @param blobReference id number of the blob in the blobList
+    * @return boolean value result of the check
+    */
+    bool checkInside(int r,int c, int blobReference);
     
 public:
     //------------methods
@@ -443,13 +452,21 @@ public:
     */
     double centroid_y;
     /**
-    * center of the blob that has strongest reinforcement, x coordinate
+    * center of the blob that has strongest reinforcement, x coordinate in cartesian space
     */
     double target_x;
     /**
-    * center of the blob that has strongest reinforcement, y coordinate
+    * center of the blob that has strongest reinforcement, y coordinate in cartesian space
     */
     double target_y;
+    /**
+    * center of the blob that has strongest reinforcement, x coordinate in logPolar space
+    */
+    int target_c;
+    /**
+    * center of the blob that has strongest reinforcement, y coordinate in logPolar space
+    */
+    int target_r;
 
     /**
     * center of the max saliency blob, logpolar c coordinate
@@ -469,3 +486,6 @@ public:
 };
 
 #endif //_SALIENCEOPERATOR_H_
+
+
+//----- end-of-file --- ( next line intentionally left blank ) ------------------

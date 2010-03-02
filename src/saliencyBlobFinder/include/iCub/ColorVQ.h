@@ -24,24 +24,27 @@ using namespace yarp::sig::draw;
 
 // bounding box type.
 class ColorVQ {
-	ImageOf<PixelInt> tmp1;
-	ImageOf<PixelInt> tmp2;
-	
-	int height, width;
+    ImageOf<PixelInt> tmp1;
+    ImageOf<PixelInt> tmp2;
+    
+    int height, width;
 
 public:
-	
-	ColorVQ() {}
-	ColorVQ(int x, int y, int fovea) { Resize(x, y, fovea); }
-	~ColorVQ() {}
+    
+    ColorVQ() {}
+    ColorVQ(int x, int y, int fovea) { Resize(x, y, fovea); }
+    ~ColorVQ() {}
 
-	void Resize(int x, int y, int fovea);
-	void Variance(ImageOf<PixelMono> &src, ImageOf<PixelInt> &dst, int size);
-	void Compactness(ImageOf<PixelMono> &src, int fovea, int val, int eps);
-	void DominantQuantization(ImageOf<PixelBgr> &src, ImageOf<PixelBgr> &dst, unsigned char t);
-	void DominantQuantization(PixelBgr src, PixelBgr &dst, unsigned char t);
+    void Resize(int x, int y, int fovea);
+    void Variance(ImageOf<PixelMono> &src, ImageOf<PixelInt> &dst, int size);
+    void Compactness(ImageOf<PixelMono> &src, int fovea, int val, int eps);
+    void DominantQuantization(ImageOf<PixelBgr> &src, ImageOf<PixelBgr> &dst, unsigned char t);
+    void DominantQuantization(PixelBgr src, PixelBgr &dst, unsigned char t);
 };
 
 
 
 #endif //_COLORVQ_H_
+
+
+//----- end-of-file --- ( next line intentionally left blank ) ------------------
