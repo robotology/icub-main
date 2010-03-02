@@ -381,8 +381,7 @@ bool AnalogSensor::open(int channels, AnalogDataFormat f, short bId, short useCa
 	for (i=0; i<channels; i++) scaleFactor[i]=1;
     dataFormat=f;
     boardId=bId;
-	useCalibration=useCalib;
-	if (useCalibration==1 && dataFormat==AnalogSensor::ANALOG_FORMAT_16)
+	if (useCalib==1 && dataFormat==AnalogSensor::ANALOG_FORMAT_16)
 	{
 		scaleFactor[0]=500;
 		scaleFactor[1]=500;
@@ -1021,6 +1020,10 @@ bool CanBusResources::initialize (const CanBusMotionControlParameters& parms)
     for (i = 0x100; i < 0x1ff; i++)
         iCanBus->canIdAdd(i);
 
+	// set all message ID's for class 2
+    for (i = 0x200; i < 0x2ff; i++)
+        iCanBus->canIdAdd(i);
+
     // set all message ID's for class 3
     for (i = 0x300; i < 0x3ff; i++)
         iCanBus->canIdAdd(i);
@@ -1410,11 +1413,52 @@ AnalogSensor *CanBusMotionControl::instantiateAnalog(yarp::os::Searchable& confi
                 break;
         }
 
-		if (analogSensor->getUseCalibration()==1 &&
-			analogChannels==6)
+		//get the full scale values
+		if (analogChannels==6 && analogFormat==16 && analogCalibration==1)
 		{
-			//get the scale factors		
+            
+            int tmp=analogSensor->getInitMsg().get(0).asInt();
+			for (int ch=0; ch<6; ch++)
+			{
+				int i=0;
+				res.startPacket();
+				res._writeBuffer[0].setId(tmp);
+				res._writeBuffer[0].getData()[0]=0x18;
+				res._writeBuffer[0].getData()[1]=ch;
+				res._writeBuffer[0].setLen(2);
+				res._writeMessages++;
+				res.writePacket();
+
+				if (res.read()!=true)
+				{
+					fprintf(stderr, "Trying to get fullscale data from sensor: reading failed\n");
+				}
+				for (i=0; i<res._readMessages; i++)
+					{
+						CanMessage& m = res._readBuffer[i];
+						if (m.getId()==0x2D0 ||
+							m.getId()==0x2E0)
+							if (m.getLen()==4 &&
+								m.getData()[0]==0x18 &&
+								m.getData()[1]==ch)
+								{
+									analogSensor->getScaleFactor()[ch]=m.getData()[2]<<8 | m.getData()[3];
+									break;
+								}
+					}
+				if (i==res._readMessages) fprintf(stderr, "Trying to get fullscale data from sensor: no answer recieved or message lost\n");
+			}
 		}
+		#if 1
+			 fprintf(stderr, "Sensor Fullscale: ");
+			 fprintf(stderr, " %f ", analogSensor->getScaleFactor()[0]);
+			 fprintf(stderr, " %f ", analogSensor->getScaleFactor()[1]);
+			 fprintf(stderr, " %f ", analogSensor->getScaleFactor()[2]);
+			 fprintf(stderr, " %f ", analogSensor->getScaleFactor()[3]);
+			 fprintf(stderr, " %f ", analogSensor->getScaleFactor()[4]);
+			 fprintf(stderr, " %f ", analogSensor->getScaleFactor()[5]);
+			 fprintf(stderr, " \n ");
+		#endif
 
 		if (analogSensor->getSpeedMsg().size()>0)
         {
