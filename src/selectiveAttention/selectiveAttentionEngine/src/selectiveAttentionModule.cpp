@@ -1,0 +1,515 @@
+// -*- mode:C++; tab-width:4; c-basic-offset:4; indent-tabs-mode:nil -*-
+#include <iCub/selectiveAttentionModule.h>
+#include <iostream>
+
+using namespace std;
+
+// Image Receiver
+//static YARPImgRecv *ptr_imgRecv;
+// Image to Display
+static yarp::sig::ImageOf<yarp::sig::PixelRgb> *ptr_inputImg=0;
+// Semaphore
+static yarp::os::Semaphore *ptr_semaphore;
+// Timeout ID
+//static guint timeout_ID;
+static yarp::sig::ImageOf<yarp::sig::PixelRgb>* _outputImage;
+static selectiveAttentionModule *selectiveAttentionModule;
+
+
+#define _imgRecv (*(ptr_imgRecv))
+#define _inputImg (*(ptr_inputImg))
+#define _semaphore (*(ptr_semaphore))
+
+
+bool selectiveAttentionModule::open(Searchable& config) {
+    ct = 0;
+	inputImage_flag=false;
+    reinit_flag=false;
+
+	currentProcessor=0;
+    inputImg=0;
+    tmp=0;
+
+    this->openPorts();   
+    //ConstString portName2 = options.check("name",Value("/worker2")).asString();
+    
+    return true;
+}
+
+// try to interrupt any communications or resource usage
+bool selectiveAttentionModule::interruptModule() {
+    printf("interrupting the module.. \n");
+	map1Port.interrupt();
+    map2Port.interrupt();
+    map3Port.interrupt();
+    
+    map4Port.interrupt();
+    map5Port.interrupt();
+    map6Port.interrupt();
+    
+    
+
+    inImagePort.interrupt();
+    cmdPort.interrupt();
+	return true;
+}
+
+bool selectiveAttentionModule::close() {
+    
+    printf("Closing the module ... \n");
+    if(0!=currentProcessor){
+        printf("Thread running! Closing the thread ... \n");
+        this->currentProcessor->stop();
+    }
+	this->closePorts();
+    printf("The module has been successfully closed ... \n");
+	return true;
+}
+
+void selectiveAttentionModule::setOptions(yarp::os::Property opt){
+	//options	=opt;
+    // definition of the name of the module
+    ConstString name=opt.find("name").asString();
+    if(name!=""){
+        printf("|||  Module named as :%s \n", name.c_str());
+        this->setName(name.c_str());
+    }
+    ConstString value=opt.find("mode").asString();
+    if(value!=""){
+       
+    }
+}
+
+
+
+void selectiveAttentionModule::createObjects() {
+//    ptr_imgRecv = new YARPImgRecv;
+    ptr_inputImg = new yarp::sig::ImageOf<yarp::sig::PixelRgb>;
+    ptr_semaphore = new yarp::os::Semaphore;
+}
+
+
+bool getImage(){
+	bool ret = false;
+	//ret = _imgRecv.Update();
+	if (ret == false){
+		return false;
+	}
+
+	_semaphore.wait();
+	//ret = _imgRecv.GetLastImage(&_inputImg);
+	_semaphore.post();
+    printf("Acquired a new image for _imgRecv /n ");
+	
+	//selectiveAttentionModule->processor1->inImage=&_inputImg;
+	//selectiveAttentionModule->processor2->inImage=&_inputImg;
+	//selectiveAttentionModule->processor3->inImage=&_inputImg;
+	//printf("GetImage: out of the semaphore \n");
+	//selectiveAttentionModule->inputImage_flag=true;
+	return ret;
+}
+
+void selectiveAttentionModule::setUp()
+{
+	printf("Module setting up automatically ..../n");
+}
+
+bool selectiveAttentionModule::openPorts(){
+	bool ret = false;
+    bool ok=true;
+    //input ports 
+    inImagePort.open(getName("image:i"));
+    map1Port.open(getName("map1:i")); //
+    map2Port.open(getName("map2:i"));; //
+    map3Port.open(getName("map3:i"));; //	 
+    map4Port.open(getName("map4:i"));; 
+    map5Port.open(getName("map5:i"));; 
+    map6Port.open(getName("map6:i"));; 
+
+    
+
+    selectedAttentionPort.open(getName("attention:o"));
+
+    cmdPort.open(getName("cmd")); // optional command port
+    attach(cmdPort); // cmdPort will work just like terminal
+
+	return true;
+}
+
+bool selectiveAttentionModule::outPorts(){
+	bool ret = false;
+    /*if((0!=currentProcessor->redGreenEdges_yarp)&&(rgEdgesPort.getOutputCount())){
+        rgEdgesPort.prepare() = *(currentProcessor->redGreenEdges_yarp);		
+        rgEdgesPort.write();
+        ret=true;
+    }
+    if((0!=currentProcessor->greenRed_yarp)&&(grEdgesPort.getOutputCount())){
+        grEdgesPort.prepare() = *(currentProcessor->greenRed_yarp);		
+        grEdgesPort.write();
+        ret=true;
+    }
+    if((0!=currentProcessor->blueYellow_yarp)&&(byEdgesPort.getOutputCount())){
+        byEdgesPort.prepare() = *(currentProcessor->blueYellow_yarp);		
+        byEdgesPort.write();
+        ret=true;
+    } 
+    if((0!=currentProcessor->edges_yarp)&&(edgesPort.getOutputCount())){
+        edgesPort.prepare() = *(currentProcessor->edges_yarp);		
+        edgesPort.write();
+        ret=true;
+    } */
+	return ret;
+}
+
+bool selectiveAttentionModule::closePorts(){
+    printf("Closing all the ports ... \n");
+	bool ret = false;
+	//int res = 0;
+	// Closing Port(s)
+    //reduce verbosity --paulfitz
+
+    //closing input ports
+    inImagePort.close();
+    map1Port.close();
+    map2Port.close();
+    map3Port.close();
+    map4Port.close();
+    map5Port.close();
+    map6Port.close();
+    
+
+    selectedAttentionPort.close();
+    cmdPort.close();
+    printf("All the ports successfully closed ... \n");
+
+
+	return ret;
+}
+
+
+
+void selectiveAttentionModule::reinitialise(int width, int height){
+    inputImg=new ImageOf<PixelRgb>;
+    inputImg->resize(width,height);
+    tmp=new ImageOf<PixelMono>;
+    tmp->resize(width,height);
+}
+
+
+bool selectiveAttentionModule::updateModule() {
+    
+
+    /*this->inputImg = this->inImagePort.read(false);
+    if(0==inputImg)
+        return true;*/
+
+    //check for any possible command
+    Bottle* command=cmdPort.read(false);
+    if(command!=0){
+        //Bottle* tmpBottle=cmdPort.read(false);
+        ConstString str= command->toString();
+        printf("command received: %s \n", str.c_str());
+        Bottle* reply=new Bottle();
+        this->respond(*command,*reply);
+        command->clear();
+    }
+    //read input maps
+    if(map1Port.getInputCount()){
+        tmp=map1Port.read(false);
+    }
+    if(tmp==0){
+        return true;
+    }
+    
+    if(!reinit_flag){
+        //srcsize.height=img->height();
+        //srcsize.width=img->width();
+        reinitialise(tmp->width(), tmp->height());
+        reinit_flag=true;
+        currentProcessor=new selectiveAttentionProcessor();
+        //passes the temporary variable for the mode
+        currentProcessor->resizeImages(tmp->width(),tmp->height());
+        startselectiveAttentionProcessor();
+        currentProcessor->setIdle(false);
+    }
+    
+    currentProcessor->map1_yarp=tmp;
+    if(currentProcessor->map1_yarp==NULL)
+        currentProcessor->map1_yarp=0;
+    if(map2Port.getInputCount()){    
+        tmp=map2Port.read(false);
+        if(tmp!=NULL)
+            currentProcessor->map2_yarp=tmp;
+    }
+    if(map3Port.getInputCount()){
+        tmp=map3Port.read(false);
+        if(tmp!=NULL)
+            currentProcessor->map3_yarp=tmp;
+    }
+    if(map4Port.getInputCount()){
+        tmp=map4Port.read(false);
+        if(tmp!=NULL)
+            currentProcessor->map4_yarp=tmp;
+    }
+    
+    if(map5Port.getInputCount()){
+        tmp=map5Port.read(false);
+        if(tmp==NULL)
+            currentProcessor->map5_yarp=tmp;
+    }
+    if(map6Port.getInputCount()){
+        tmp=map6Port.read(false);
+        if(tmp!=NULL)
+            currentProcessor->map6_yarp=tmp;
+    }
+    
+
+    
+    if((0!=currentProcessor->outputImage)&&(selectedAttentionPort.getOutputCount())){
+        selectedAttentionPort.prepare() = *(currentProcessor->outputImage);
+        selectedAttentionPort.write();
+    }
+
+    return true;
+}
+
+bool selectiveAttentionModule::startselectiveAttentionProcessor(){
+    printf("image processor starting ..... \n");
+    this->currentProcessor->start();
+    return true;
+}
+
+void selectiveAttentionModule::resetFlags(){
+    
+}
+
+bool selectiveAttentionModule::respond(const Bottle &command,Bottle &reply){
+        
+    bool ok = false;
+    bool rec = false; // is the command recognized?
+
+    mutex.wait();
+    switch (command.get(0).asVocab()) {
+    case COMMAND_VOCAB_HELP:
+        rec = true;
+        {
+            reply.addString("help");
+
+            reply.addString("\n");
+            reply.addString("get fn \t: general get command \n");
+            
+
+            reply.addString("\n");
+            
+
+            reply.addString("\n");
+            
+
+            reply.addString("\n");
+            reply.addString("set k1 <s> \t: setting of linear combination coefficient (map1) \n");
+            reply.addString("set k2 <s> \t: setting of linear combination coefficient (map2) \n");
+            reply.addString("set k3 <s> \t: setting of linear combination coefficient (map3) \n");
+            reply.addString("set k4 <s> \t: setting of linear combination coefficient (map4) \n");
+            reply.addString("set k5 <s> \t: setting of linear combination coefficient (map5) \n");
+            reply.addString("set k6 <s> \t: setting of linear combination coefficient (map6) \n");
+
+            reply.addString("\n");
+            
+            
+            reply.addString("\n");
+
+
+            ok = true;
+        }
+        break;
+    case COMMAND_VOCAB_NAME:
+        rec = true;
+        {
+            // check and change filter name to pass on to the next filter
+            string fName(command.get(1).asString());
+            string subName;
+            Bottle subCommand;
+            int pos=1;
+            //int pos = fName.find_first_of(filter->getFilterName());
+            if (pos == 0){
+                pos = fName.find_first_of('.');
+                if (pos  > -1){ // there is a subfilter name
+                    subName = fName.substr(pos + 1, fName.size()-1);
+                    subCommand.add(command.get(0));
+                    subCommand.add(Value(subName.c_str()));
+                }
+                for (int i = 2; i < command.size(); i++)
+                    subCommand.add(command.get(i));
+                //ok = filter->respond(subCommand, reply);
+            }
+            else{
+                printf("filter name  does not match top filter name ");
+                ok = false;
+            }
+        }
+        break;
+    case COMMAND_VOCAB_SET:
+        rec = true;
+        {
+            switch(command.get(1).asVocab()) {
+            case COMMAND_VOCAB_SALIENCE_THRESHOLD:{
+                double thr = command.get(2).asDouble();
+            }
+                break;
+            case COMMAND_VOCAB_NUM_BLUR_PASSES:{
+                int nb = command.get(2).asInt();
+                //reply.addString("connection 2");
+              
+                ok=true;
+            }
+            break;
+            case COMMAND_VOCAB_K1:{
+                double w = command.get(2).asDouble();
+                if(currentProcessor!=0)
+                    currentProcessor->k1=w;
+                ok = true;
+            }
+            break;
+            case COMMAND_VOCAB_K2:{
+                double w = command.get(2).asDouble();
+                if(currentProcessor!=0)
+                    currentProcessor->k2=w;
+                ok = true;
+            }
+            break;
+            case COMMAND_VOCAB_K3:{
+                double w = command.get(2).asDouble();
+                if(currentProcessor!=0)
+                    currentProcessor->k3=w;
+                ok = true;
+            }
+            break;
+            case COMMAND_VOCAB_K4:{
+                double w = command.get(2).asDouble();
+                if(currentProcessor!=0)
+                    currentProcessor->k4=w;
+                ok = true;
+            }
+            break;
+            case COMMAND_VOCAB_K5:{
+                double w = command.get(2).asDouble();
+                if(currentProcessor!=0)
+                    currentProcessor->k5=w;
+                ok = true;
+            }
+            break;
+            case COMMAND_VOCAB_K6:{
+                double w = command.get(2).asDouble();
+                if(currentProcessor!=0)
+                    currentProcessor->k6=w;
+                ok = true;
+            }
+            break;
+            case COMMAND_VOCAB_CHILD_NAME:{
+                int j = command.get(2).asInt();
+                string s(command.get(3).asString().c_str());
+            }
+                break;
+            case COMMAND_VOCAB_WEIGHT:{
+                double w = command.get(2).asDouble();
+            }
+                break;
+            case COMMAND_VOCAB_CHILD_WEIGHT:{
+                int j = command.get(2).asInt();
+                double w = command.get(3).asDouble();
+            }
+                break;
+            case COMMAND_VOCAB_CHILD_WEIGHTS:{
+                Bottle weights;
+                for (int i = 2; i < command.size(); i++)
+                    weights.addDouble(command.get(i).asDouble());
+            }
+                break;
+            default:
+                cout << "received an unknown request after a SET COMMAND" << endl;
+                break;
+            }
+        }
+        break;
+     
+    case COMMAND_VOCAB_GET:
+        rec = true;
+        {
+            reply.addVocab(COMMAND_VOCAB_IS);
+            reply.add(command.get(1));
+            switch(command.get(1).asVocab()) {
+            case COMMAND_VOCAB_SALIENCE_THRESHOLD:{
+                double thr=0.0;
+                reply.addDouble(thr);
+                ok = true;
+            }
+                break;
+            case COMMAND_VOCAB_NUM_BLUR_PASSES:{
+                int nb = 0;
+                reply.addInt(nb);
+                ok = true;
+            }
+                break;
+            case COMMAND_VOCAB_NAME:{
+                string s(" ");
+                reply.addString(s.c_str());
+                ok = true;
+            }
+                break;
+            case COMMAND_VOCAB_CHILD_NAME:{
+                int j = command.get(2).asInt();
+                string s(" ");
+                reply.addString(s.c_str());
+                ok = true;
+            }
+                break;
+            case COMMAND_VOCAB_CHILD_COUNT:{
+                int count =0;
+                reply.addInt(count);
+                ok = true;
+            }
+                break;
+            case COMMAND_VOCAB_WEIGHT:{
+                double w = 0.0;
+                reply.addDouble(w);
+                ok = true;
+            }
+                break;
+            case COMMAND_VOCAB_CHILD_WEIGHT:{
+                int j = command.get(2).asInt();
+                double w = 0.0;
+                reply.addDouble(w);
+                ok = true;
+            }
+                break;
+            case COMMAND_VOCAB_CHILD_WEIGHTS:{
+                Bottle weights;
+                //ok = filter->getChildWeights(&weights);
+                for (int k = 0; k < weights.size(); k++)
+                    reply.addDouble(0.0);
+            }
+                break;
+            default:
+                cout << "received an unknown request after a GET COMMAND" << endl;
+                break;
+            }
+        }
+        break;
+
+    }
+    mutex.post();
+
+    if (!rec)
+        ok = Module::respond(command,reply);
+    
+    if (!ok) {
+        reply.clear();
+        reply.addVocab(COMMAND_VOCAB_FAILED);
+    }
+    else
+        reply.addVocab(COMMAND_VOCAB_OK);
+
+    return ok;
+} 	
+
+
