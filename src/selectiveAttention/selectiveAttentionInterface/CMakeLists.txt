@@ -1,4 +1,3 @@
-
 SET(KEYWORD "selectiveAttentionInterface")
 
 PROJECT(${KEYWORD})
