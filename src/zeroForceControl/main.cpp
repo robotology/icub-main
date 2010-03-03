@@ -260,7 +260,7 @@ private:
               ps(1) = -0.10;
 			  kp.resize(limbJnt);
 			  kspr.resize(limbJnt);
-			  kspr(0) = 0.3;	kspr(1) = 0.3;	kspr(2) = 0.3;	kspr(3) = 0.15;
+			  kspr(0) = 0.3;	kspr(1) = 0.3;	kspr(2) = 0.30;	kspr(3) = 0.15;
 			  if (filter_enabled)
 			  {
 				kp(0) =  62.0;	kp(1) =  50.0;	kp(2) =  55.0;	kp(3) =  100;
