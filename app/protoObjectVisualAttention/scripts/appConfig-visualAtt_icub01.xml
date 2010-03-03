@@ -20,7 +20,7 @@
 	</module>
 	<module>
 		<name>imageProcessorInterface</name>
-		<parameters>--name imageProcessorInterface</parameters>
+		<parameters>--name /imageProcessorInterface</parameters>
 		<tag>imagePUInterface</tag>
 		<node>/surfer</node>
 	</module>
@@ -32,7 +32,7 @@
 	</module>
 	<module>
 		<name>saliencyBlobFinderInterface</name>
-		<parameters>--name blobFinderInterface</parameters>
+		<parameters>--name /blobFinderInterface</parameters>
 		<tag>saliencyBlobFinderInterface</tag>
 		<node>/surfer</node>
 	</module>
