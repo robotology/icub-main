@@ -19,7 +19,6 @@
 
 #include <iCub/iKinFwd.h>
 #include <iCub/trajectoryGenerator.h>
-#include <iCub/pids.h>
 
 #define IKINCTRL_STATE_RUNNING      0
 #define IKINCTRL_STATE_INTARGET     1
