@@ -306,12 +306,12 @@ bool selectiveAttentionModule::respond(const Bottle &command,Bottle &reply){
             
 
             reply.addString("\n");
-            reply.addString("set k1 <s> \t: setting of linear combination coefficient (map1) \n");
-            reply.addString("set k2 <s> \t: setting of linear combination coefficient (map2) \n");
-            reply.addString("set k3 <s> \t: setting of linear combination coefficient (map3) \n");
-            reply.addString("set k4 <s> \t: setting of linear combination coefficient (map4) \n");
-            reply.addString("set k5 <s> \t: setting of linear combination coefficient (map5) \n");
-            reply.addString("set k6 <s> \t: setting of linear combination coefficient (map6) \n");
+            reply.addString("set k1 <double> \t: setting of linear combination coefficient (map1) \n");
+            reply.addString("set k2 <double> \t: setting of linear combination coefficient (map2) \n");
+            reply.addString("set k3 <double> \t: setting of linear combination coefficient (map3) \n");
+            reply.addString("set k4 <double> \t: setting of linear combination coefficient (map4) \n");
+            reply.addString("set k5 <double> \t: setting of linear combination coefficient (map5) \n");
+            reply.addString("set k6 <double> \t: setting of linear combination coefficient (map6) \n");
 
             reply.addString("\n");
             

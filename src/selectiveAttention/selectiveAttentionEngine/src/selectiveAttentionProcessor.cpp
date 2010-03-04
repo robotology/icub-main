@@ -34,9 +34,9 @@ selectiveAttentionProcessor::selectiveAttentionProcessor():RateThread(THREAD_RAT
     resized_flag=false;
     
     k1=0.5;
-    k2=0.2;
-    k3=0.2;
-    k4=0.1;
+    k2=0.0;
+    k3=0.0;
+    k4=0.0;
     k5=0;
     k6=0;
 
