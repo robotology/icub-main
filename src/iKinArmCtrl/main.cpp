@@ -73,7 +73,7 @@ it can be called at different rate.
  
 --T \e time
 - specify the task execution time in seconds; by default \e time
-  is 2.0 second.
+  is 3.0 seconds.
  
 --DOF8
 - enable the control of torso yaw joint. 
@@ -236,7 +236,7 @@ public:
         if (rf.check("T"))
             execTime=rf.find("T").asDouble();
         else
-            execTime=2.0;
+            execTime=3.0;
 
         if (rf.check("DOF10"))
             ctrlTorso=3;
@@ -379,7 +379,7 @@ int main(int argc, char *argv[])
         cout << "\t--robot    name: robot name to connect to (default: icub)"                   << endl;
         cout << "\t--part     type: robot arm type, left_arm or right_arm (default: right_arm)" << endl;
         cout << "\t--torso    name: robot torso port name (default: torso)"                     << endl;
-        cout << "\t--T        time: specify the task execution time in seconds (default: 2.0)"  << endl;
+        cout << "\t--T        time: specify the task execution time in seconds (default: 3.0)"  << endl;
         cout << "\t--DOF10        : control the torso yaw/roll/pitch as well"                   << endl;
         cout << "\t--DOF9         : control the torso yaw/pitch as well"                        << endl;
         cout << "\t--DOF8         : control the torso yaw as well"                              << endl;

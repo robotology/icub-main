@@ -14,7 +14,7 @@
 #define RES_EVENT(x)                                (static_cast<ACE_Auto_Event*>(x))
                                                     
 #define ACTIONPRIM_DEFAULT_PER                      50      // [ms]
-#define ACTIONPRIM_DEFAULT_EXECTIME                 2.0     // [s]
+#define ACTIONPRIM_DEFAULT_EXECTIME                 3.0     // [s]
 #define ACTIONPRIM_DEFAULT_REACHTOL                 0.005   // [m]
 #define ACTIONPRIM_DUMP_PERIOD                      1.0     // [s]
 #define ACTIONPRIM_DEFAULT_WRIST_JOINT              5
