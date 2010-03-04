@@ -98,7 +98,7 @@ public:
     * Feeds data into the algorithm.
     * @param el is the new data of type AWPolyElement.
     */
-    void feedData(AWPolyElement &el) { elemList.push_back(el); }
+    void feedData(const AWPolyElement &el);
 
     /**
     * Returns the current windows lengths.
@@ -112,6 +112,14 @@ public:
     * @return the current estimation. 
     */
     yarp::sig::Vector estimate();
+
+    /**
+    * Executes the algorithm upon the elements list, with the max 
+    * deviation threshold given by D. 
+    * @param el is the new data of type AWPolyElement. 
+    * @return the current estimation. 
+    */
+    yarp::sig::Vector estimate(const AWPolyElement &el);
 
     /**
     * Reinitializes the internal state. 

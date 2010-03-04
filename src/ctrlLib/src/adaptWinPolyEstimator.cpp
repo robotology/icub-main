@@ -81,6 +81,13 @@ Vector AWPolyEstimator::fit(const Vector &x, const Vector &y, const unsigned int
 
 
 /***************************************************************************/
+void AWPolyEstimator::feedData(const AWPolyElement &el)
+{
+    elemList.push_back(el);
+}
+
+
+/***************************************************************************/
 Vector AWPolyEstimator::estimate()
 {
     if (!elemList.size())
@@ -150,6 +157,14 @@ Vector AWPolyEstimator::estimate()
         elemList.pop_front();
 
     return esteem;
+}
+
+
+/***************************************************************************/
+Vector AWPolyEstimator::estimate(const AWPolyElement &el)
+{
+    feedData(el);
+    return estimate();
 }
 
 

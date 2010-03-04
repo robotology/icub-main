@@ -197,11 +197,8 @@ private:
         else
             el.time=Time::now();
 
-        linEst->feedData(el);
-        quadEst->feedData(el);
-
-        port_vel.prepare()=linEst->estimate();       
-        port_acc.prepare()=quadEst->estimate();
+        port_vel.prepare()=linEst->estimate(el);       
+        port_acc.prepare()=quadEst->estimate(el);
 
         // the outbound packets will carry the same
         // envelope information of the inbound ones.
