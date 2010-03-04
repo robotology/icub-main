@@ -87,7 +87,7 @@ blobFinderThread::blobFinderThread():RateThread(THREAD_RATE){
     maxBLOB=4096;
     minBLOB=100;
 
-    reactivity=0.5;
+    reactivity=1;
 
     targetRED=1;
     targetGREEN=1;
@@ -295,8 +295,25 @@ void blobFinderThread::run(){
     }
     else if(this->contrastLP_flag){
         this->drawAllBlobs(true);
-        this->salience->DrawMaxSaliencyBlob(*this->salience->maxSalienceBlob_img,this->max_tag,*this->tagged);
-        //ippiCopy_8u_C3R(this->outMeanColourLP->getRawImage(),320*3,_outputImage3->getRawImage(),320*3,srcsize);	
+        if(filterSpikes_flag){
+            count++;
+            if(count>10){
+                count=0;
+                this->salience->DrawStrongestSaliencyBlob(*salience->maxSalienceBlob_img,max_tag,*tagged);
+                
+                ippiCopy_8u_C1R(salience->maxSalienceBlob_img->getRawImage(),salience->maxSalienceBlob_img->getRowSize(),_outputImage->getRawImage(),_outputImage->getRowSize(),srcsize);
+                conversion=true;
+            }
+            else{
+                YARPBox box;
+                this->salience->countSpikes(*tagged,max_tag,box);
+                ippiCopy_8u_C1R(salience->maxSalienceBlob_img->getRawImage(),salience->maxSalienceBlob_img->getRowSize(),_outputImage->getRawImage(),_outputImage->getRowSize(),srcsize);
+            }
+        }
+        else{
+            salience->DrawMaxSaliencyBlob(*this->salience->maxSalienceBlob_img,this->max_tag,*this->tagged);
+        }
+        
         ippiCopy_8u_C1R(this->outContrastLP->getRawImage(),this->outContrastLP->getRowSize(),_outputImage->getRawImage(),_outputImage->getRowSize(),srcsize);
         conversion=true;
     }

@@ -2,7 +2,7 @@
 
 using namespace std;
 
-#define NOTIMECONTROL true
+#define NOTIMECONTROL false
 
 
 saliencyBlobFinderModule::saliencyBlobFinderModule(){
@@ -247,6 +247,8 @@ bool saliencyBlobFinderModule::getPlanes(){
 
 void saliencyBlobFinderModule::outPorts(){ 
     
+    printf("centroid:%f,%f \n",blobFinder->salience->centroid_x,blobFinder->salience->centroid_y);
+    printf("target:%f,%f \n",blobFinder->salience->target_x,blobFinder->salience->target_y);
     
     if((0!=blobFinder->image_out)&&(outputPort.getOutputCount())){ 
         outputPort.prepare() = *(blobFinder->image_out);		
@@ -263,8 +265,11 @@ void saliencyBlobFinderModule::outPorts(){
         bot.addString("get");
         bot.addString("3dpoint");
         bot.addString("right");
-        bot.addDouble(blobFinder->salience->target_x);
-        bot.addDouble(_logpolarParams::_ysize-blobFinder->salience->target_y);
+        /*bot.addDouble(blobFinder->salience->target_x);
+        bot.addDouble(_logpolarParams::_ysize-blobFinder->salience->target_y);*/
+        bot.addDouble(blobFinder->salience->centroid_x);
+        bot.addDouble(_logpolarParams::_ysize-blobFinder->salience->centroid_y);
+       
         bot.addDouble(1.5); //fixed distance in which the saccade takes place
         triangulationPort.write(bot,in);
         if (in.size()>0) {
@@ -293,9 +298,11 @@ void saliencyBlobFinderModule::outPorts(){
             time (&end);
             double dif = difftime (end,start);
             if(dif>blobFinder->reactivity+2){
+                //restart the time intervall
                  time(&start);
             }
             else if((dif>blobFinder->reactivity)&&(dif<blobFinder->reactivity+2)){
+                //output the command
                 //finds the entries with a greater number of occurencies 
                 std::map<const char*,int>::iterator iterMap;
                 /*int previousValue=occurencesMap.begin()->second;
@@ -335,7 +342,7 @@ void saliencyBlobFinderModule::outPorts(){
                 //clear the map
             }
             else{
-                
+                //idle period
                 //check if it is present and update the map
                 //std::string positionName(" ");
                 /*sprintf((char*)positionName.c_str(),"%f,%f,%f",target_x,target_y,target_z);
