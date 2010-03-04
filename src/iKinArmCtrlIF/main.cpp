@@ -45,7 +45,7 @@ The main differences with respect to \ref iKinArmCtrl are:
  
 --T \e time
 - specify the task execution time in seconds; by default \e time
-  is 2.0 second.
+  is 3.0 seconds.
  
 --DOF8
 - enable the control of torso yaw joint. 
@@ -175,7 +175,7 @@ public:
         client->view(arm);
 
         // set trajectory time
-        defaultExecTime=rf.check("T",Value(2.0)).asDouble();
+        defaultExecTime=rf.check("T",Value(3.0)).asDouble();
 
         // set torso dofs
         Vector newDof, curDof;
@@ -408,7 +408,7 @@ int main(int argc, char *argv[])
         cout << "\t--modName  name: module name (default iKinArmCtrlIF)"                              << endl;
         cout << "\t--ctrlName name: controller name to connect to (default icub/cartesianController)" << endl;
         cout << "\t--part     type: robot arm type, left_arm or right_arm (default: right_arm)"       << endl;
-        cout << "\t--T        time: specify the task execution time in seconds (default: 2.0)"        << endl;
+        cout << "\t--T        time: specify the task execution time in seconds (default: 3.0)"        << endl;
         cout << "\t--DOF10        : control the torso yaw/roll/pitch as well"                         << endl;
         cout << "\t--DOF9         : control the torso yaw/pitch as well"                              << endl;
         cout << "\t--DOF8         : control the torso yaw as well"                                    << endl;
