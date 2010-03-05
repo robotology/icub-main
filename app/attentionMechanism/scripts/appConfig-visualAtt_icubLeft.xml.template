@@ -63,7 +63,13 @@
 	</module>
 	<module>
 		<name>yarpview</name>
-		<parameters>--name /selectionView --x 500 --y 600 --synch</parameters>
+		<parameters>--name /combinationView --x 500 --y 600 --synch</parameters>
+		<tag>combinationView</tag>
+		<node>/lightHouse</node>
+	</module>
+	<module>
+		<name>yarpview</name>
+		<parameters>--name /selectionView --x 500 --y 200 --synch</parameters>
 		<tag>selectionView</tag>
 		<node>/lightHouse</node>
 	</module>
@@ -166,6 +172,11 @@
 	<connection>
       <from>/yuvProc/UV/image:o</from>
 		<to>/selectiveAttentionEngine/map3:i</to>
+		<protocol>tcp</protocol>
+	</connection>
+	<connection>
+      <from>/selectiveAttentionEngine/combination:o</from>
+		<to>/combinationView</to>
 		<protocol>tcp</protocol>
 	</connection>
 	<connection>
