@@ -13,7 +13,7 @@
 		<stdio>lightHouse</stdio>
 	</module>
 	<module>
-		<name>yuvProcessor</name>
+		<name>YUVProcessor</name>
 		<parameters></parameters>
 		<tag>yuvProcessor</tag>
 		<node>/surfer</node>
@@ -27,7 +27,7 @@
 	</module>
 	<module>
 		<name>imageProcessorInterface</name>
-		<parameters>--name /imageProcessorInterface/left</parameters>
+		<parameters>--name /imageProcessorInterface/icub/left_cam</parameters>
 		<tag>imageInterfaceLeft</tag>
 		<node>/surfer</node>
 	</module>
@@ -39,8 +39,20 @@
 	</module>
 	<module>
 		<name>saliencyBlobFinderInterface</name>
-		<parameters>--name /saliencyBlobFinderInterface/left </parameters>
+		<parameters>--name /blobFinderInterface/icub/left_cam </parameters>
 		<tag>saliencyBlobFinderInterfaceLeft</tag>
+		<node>/surfer</node>
+	</module>
+	<module>
+		<name>selectiveAttentionEngine</name>
+		<parameters>--file selectiveAttentionEngine.ini --context attentionMechanism/conf</parameters>
+		<tag>selectiveAttentionEngine</tag>
+		<node>/surfer</node>
+	</module>
+	<module>
+		<name>selectiveAttentionInterface</name>
+		<parameters>--name selectiveAttentionInterface/icub/left_cam</parameters>
+		<tag>selectiveAttentionEngine</tag>
 		<node>/surfer</node>
 	</module>
 	<module>
@@ -50,29 +62,31 @@
 		<node>/lightHouse</node>
 	</module>
 	<module>
-		<name>selectiveAttentionEngine</name>
-		<parameters>--file selectiveAttentionEngine.ini --context attentionMechanism/conf</parameters>
-		<tag>selectiveAttentionEngine</tag>
-		<node>/surfer</node>
+		<name>yarpview</name>
+		<parameters>--name /selectionView --x 500 --y 600 --synch</parameters>
+		<tag>selectionView</tag>
+		<node>/lightHouse</node>
 	</module>
-
- 
 	
 	<connection>
       	<from>/icub/cam/left/logpolar</from>
 		<to>/colourPU/icub/left_cam/image:i</to>
+		<protocol>mcast</protocol>
 	</connection>
 	<connection>
-      	<from>/colourPU/icub/left_cam/ychannel:o</from>
+      <from>/colourPU/icub/left_cam/ychannel:o</from>
 		<to>/yuvProc/Y/image:i</to>
+		<protocol>tcp</protocol>
 	</connection>
 	<connection>
       	<from>/colourPU/icub/left_cam/uchannel:o</from>
 		<to>/yuvProc/U/image:i</to>
+		<protocol>tcp</protocol>
 	</connection>
 	<connection>
       	<from>/colourPU/icub/left_cam/vchannel:o</from>
 		<to>/yuvProc/V/image:i</to>
+		<protocol>tcp</protocol>
 	</connection>
 	<connection>
       	<from>/colourPU/icub/left_cam/rg:o</from>
@@ -95,7 +109,7 @@
 		<protocol>tcp</protocol>
 	</connection>
 	<connection>
-      	<from>/imageProcessorInterface/icub/left_cam/command:o</from>
+      	<from>/imageProcessorInterface/icub/left_cam/cmd</from>
 		<to>/imagePU/icub/left_cam/cmd</to>
 		<protocol>tcp</protocol>
 	</connection>
@@ -135,8 +149,33 @@
 		<protocol>tcp</protocol>
 	</connection>
 	<connection>
-      	<from>/blobFinderInterface/icub/left_cam/command:o</from>
+      <from>/blobFinderInterface/icub/left_cam/command:o</from>
 		<to>/blobFinder/icub/left_cam/cmd</to>
 		<protocol>tcp</protocol>
 	</connection>
+	<connection>
+      <from>/blobFinder/icub/left_cam/image:o</from>
+		<to>/selectiveAttentionEngine/map1:i</to>
+		<protocol>tcp</protocol>
+	</connection>
+	<connection>
+      <from>/yuvProc/Y/image:o</from>
+		<to>/selectiveAttentionEngine/map2:i</to>
+		<protocol>tcp</protocol>
+	</connection>
+	<connection>
+      <from>/yuvProc/UV/image:o</from>
+		<to>/selectiveAttentionEngine/map3:i</to>
+		<protocol>tcp</protocol>
+	</connection>
+	<connection>
+      <from>/selectiveAttentionEngine/attention:o</from>
+		<to>/selectionView</to>
+		<protocol>tcp</protocol>
+	</connection>
+	<connection>
+      <from>/selectiveAttentionInterface/icub/left_cam/command:o</from>
+		<to>/selectiveAttentionEngine/icub/left_cam/cmd</to>
+		<protocol>tcp</protocol>
+	</connection
 </application>
