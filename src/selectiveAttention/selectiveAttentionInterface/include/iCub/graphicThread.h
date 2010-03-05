@@ -86,7 +86,7 @@ public:
     * return the name of this thread +suffix
     * @param suffix suffix attached to the name of the thread
     */
-    ConstString graphicThread::getName(ConstString suffix);
+    ConstString getName(ConstString suffix);
     /**
 	* sets the module up
 	*/
