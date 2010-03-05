@@ -177,5 +177,5 @@
       <from>/selectiveAttentionInterface/icub/left_cam/command:o</from>
 		<to>/selectiveAttentionEngine/icub/left_cam/cmd</to>
 		<protocol>tcp</protocol>
-	</connection
+	</connection>
 </application>
