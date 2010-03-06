@@ -25,9 +25,9 @@
 
 #define CARTCTRL_DEFAULT_PER        10
 #define CARTCTRL_DEFAULT_TOL        5e-3
-#define CARTCTRL_DEFAULT_TRAJTIME   2.0
+#define CARTCTRL_DEFAULT_TRAJTIME   2.0     // [s]
 #define CARTCTRL_MAX_ACCEL          1e9
-#define CARTCTRL_CONNECT_TMO        5e3
+#define CARTCTRL_CONNECT_TMO        5e3     // [ms]
 
 using namespace yarp;
 using namespace yarp::os;
