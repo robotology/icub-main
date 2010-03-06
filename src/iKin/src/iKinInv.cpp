@@ -1110,8 +1110,8 @@ MultiRefMinJerkCtrl::MultiRefMinJerkCtrl(iKinChain &c, unsigned int _ctrlPose,
         lim(i,1)=chain(i).getMax();
     }
 
-    genTrajJoint=new minJerkTrajGen(Ts,q);
-    genTrajTask =new minJerkTrajGen(Ts,x);
+    mjCtrlJoint=new minJerkVelCtrl(Ts,q);
+    mjCtrlTask =new minJerkVelCtrl(Ts,x);
     Int=new Integrator(Ts,q,lim);
 
     gamma=0.02;
@@ -1211,11 +1211,8 @@ Vector MultiRefMinJerkCtrl::iterate(Vector &xd, Vector &qd, const unsigned int v
 
         calc_e();
 
-        genTrajJoint->compute(execTime,q_set,q);
-        genTrajTask->compute(execTime,x_set,x);
-
-        qdot=genTrajJoint->get_vel();
-        xdot7=genTrajTask->get_vel();
+        qdot=mjCtrlJoint->computeCmd(execTime,q_set-q);
+        xdot7=mjCtrlTask->computeCmd(execTime,x_set-x);
 
         xdot[0]=xdot7[0];
         xdot[1]=xdot7[1];
@@ -1254,8 +1251,8 @@ void MultiRefMinJerkCtrl::restart(const Vector &q0)
 {
     iKinCtrl::restart(q0);
 
-    genTrajJoint->reset(q);
-    genTrajTask->reset(x);
+    mjCtrlJoint->reset(q);
+    mjCtrlTask->reset(x);
 
     qdot=0.0;
     xdot=0.0;
@@ -1320,8 +1317,8 @@ double MultiRefMinJerkCtrl::set_execTime(const double _execTime, const bool warn
 /************************************************************************/
 MultiRefMinJerkCtrl::~MultiRefMinJerkCtrl()
 {
-    delete genTrajJoint;
-    delete genTrajTask;
+    delete mjCtrlJoint;
+    delete mjCtrlTask;
     delete Int;
 }
 

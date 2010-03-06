@@ -10,7 +10,7 @@ SET(folder_source src/ctrlMath.cpp
                   src/kalman.cpp
                   src/pids.cpp
                   src/adaptWinPolyEstimator.cpp                  
-                  src/trajectoryGenerator.cpp
+                  src/minJerkCtrl.cpp
                   src/functionEncoder.cpp
                   src/optimalControl.cpp)
 
@@ -19,7 +19,7 @@ SET(folder_header include/iCub/ctrlMath.h
                   include/iCub/kalman.h
                   include/iCub/pids.h
                   include/iCub/adaptWinPolyEstimator.h                  
-                  include/iCub/trajectoryGenerator.h
+                  include/iCub/minJerkCtrl.h
                   include/iCub/functionEncoder.h
                   include/iCub/optimalControl.h)
 

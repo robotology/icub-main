@@ -36,6 +36,30 @@ void Filter::init(const Vector &y0)
 
 
 /***************************************************************************/
+void Filter::getCoeffs(Vector &num, Vector &den)
+{
+    num=b;
+    den=a;
+}
+
+
+/***************************************************************************/
+void Filter::setCoeffs(const Vector &num, const Vector &den)
+{
+    b=num;
+    a=den;
+
+    uold.clear();
+    yold.clear();
+
+    m=b.size(); uold.resize(m-1);
+    n=a.size(); yold.resize(n-1);
+
+    init(y);
+}
+
+
+/***************************************************************************/
 Vector Filter::filt(const Vector &u)
 {
     y=b[0]*u;
@@ -59,8 +83,8 @@ Vector Filter::filt(const Vector &u)
 
 
 /**********************************************************************/
-RateLimiter::RateLimiter(const Vector &_rL, const Vector &_rU) :
-                         rateLowerLim(_rL), rateUpperLim(_rU)
+RateLimiter::RateLimiter(const Vector &rL, const Vector &rU) :
+                         rateLowerLim(rL), rateUpperLim(rU)
 {
     size_t nL=rateLowerLim.length();
     size_t nU=rateUpperLim.length();
@@ -73,6 +97,22 @@ RateLimiter::RateLimiter(const Vector &_rL, const Vector &_rU) :
 void RateLimiter::init(const Vector &u0)
 { 
     uLim=u0;
+}
+
+
+/**********************************************************************/
+void RateLimiter::getLimits(Vector &rL, Vector &rU)
+{
+    rL=rateLowerLim;
+    rU=rateUpperLim;
+}
+
+
+/**********************************************************************/
+void RateLimiter::setLimits(const Vector &rL, const Vector &rU)
+{
+    rateLowerLim=rL;
+    rateUpperLim=rU;
 }
 
 

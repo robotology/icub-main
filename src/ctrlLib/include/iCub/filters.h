@@ -38,16 +38,16 @@ protected:
    int m;
 
 public:
-    /**
-    * Creates a filter with specified numerator and denominator 
-    * coefficients. 
-    * @param num vector of numerator elements given as increasing 
-    *            power of z^-1.
-    * @param den vector of denominator elements given as increasing 
-    *            power of z^-1. 
-    * @param y0 initial output. 
-    * @note den[0] shall not be 0. 
-    */ 
+   /**
+   * Creates a filter with specified numerator and denominator 
+   * coefficients. 
+   * @param num vector of numerator elements given as increasing 
+   *            power of z^-1.
+   * @param den vector of denominator elements given as increasing 
+   *            power of z^-1. 
+   * @param y0 initial output.
+   * @note den[0] shall not be 0. 
+   */ 
    Filter(const yarp::sig::Vector &num, const yarp::sig::Vector &den,
           const yarp::sig::Vector &y0);
 
@@ -56,6 +56,28 @@ public:
    * @param y0 new internal state.
    */ 
    void init(const yarp::sig::Vector &y0);
+
+   /**
+   * Returns the current filter coefficients.
+   * @param num vector of numerator elements returned as increasing
+   *            power of z^-1.
+   * @param den vector of denominator elements returned as 
+   *            increasing power of z^-1.
+   */ 
+   void getCoeffs(yarp::sig::Vector &num, yarp::sig::Vector &den);
+
+   /**
+   * Sets new filter coefficients.
+   * @param num vector of numerator elements given as increasing 
+   *            power of z^-1.
+   * @param den vector of denominator elements given as increasing 
+   *            power of z^-1. 
+   * @param y0 initial output. 
+   * @note den[0] shall not be 0. 
+   * @note the internal state is reinitialized to the current 
+   *       output.
+   */ 
+   void setCoeffs(const yarp::sig::Vector &num, const yarp::sig::Vector &den);
 
    /**
    * Performs filtering on the actual input.
@@ -83,27 +105,42 @@ protected:
 
 public:
     /**
-     * Creates a Rate Limiter which keeps the rate of the input 
-     * within assigned thresholds. 
-     * 
-     * @param _rL Rate lower limit 
-     * @param _rU Rate upper limit 
-     */
-    RateLimiter(const yarp::sig::Vector &_rL, const yarp::sig::Vector &_rU);
+    * Creates a Rate Limiter which keeps the rate of the input 
+    * within assigned thresholds. 
+    * @param rL Rate lower limit.
+    * @param rU Rate upper limit.
+    */
+    RateLimiter(const yarp::sig::Vector &rL, const yarp::sig::Vector &rU);
 
     /**
-    * Init internal state 
+    * Init internal state.
     * @param u0 new internal state.
     */
     void init(const yarp::sig::Vector &u0);
 
     /**
-     * Limits the input rate. 
-     * 
-     * @param z Current input.
-     * 
-     * @return Output within the thresholds.
-     */
+    * Returns the current Rate limits.
+    * @param rL Rate lower limit.
+    * @param rU Rate upper limit.
+    */
+    void getLimits(yarp::sig::Vector &rL, yarp::sig::Vector &rU);
+
+    /**
+    * Sets new Rate limits
+    * @param rL Rate lower limit.
+    * @param rU Rate upper limit. 
+    * @note coherence between new limits length and the state 
+    *       length is not veriified.
+    */
+    void setLimits(const yarp::sig::Vector &rL, const yarp::sig::Vector &rU);
+
+    /**
+    * Limits the input rate. 
+    * 
+    * @param z Current input.
+    * 
+    * @return Output within the thresholds.
+    */
     yarp::sig::Vector filt(const yarp::sig::Vector &u);
 };
 

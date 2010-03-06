@@ -104,8 +104,8 @@ Controller::Controller(PolyDriver *_drvTorso, PolyDriver *_drvHead, exchangeData
         fbEyes[i]=fbHead[3+i];
     }
 
-    genTrajNeck=new minJerkTrajGen(Ts,fbNeck);
-    genTrajEyes=new minJerkTrajGen(Ts,fbEyes);
+    mjCtrlNeck=new minJerkVelCtrl(Ts,fbNeck);
+    mjCtrlEyes=new minJerkVelCtrl(Ts,fbEyes);
     Int=new Integrator(Ts,fbHead,lim);
 
     v.resize(nJointsHead,0.0);
@@ -152,8 +152,8 @@ void Controller::resume()
         fbEyes[i]=fbHead[3+i];
     }
 
-    genTrajNeck->reset(fbNeck);
-    genTrajEyes->reset(fbEyes);
+    mjCtrlNeck->reset(fbNeck);
+    mjCtrlEyes->reset(fbEyes);
 
     cout << endl;
     cout << "Controller has been resumed!" << endl;
@@ -253,11 +253,8 @@ void Controller::run()
     }
 
     // control loop
-    genTrajNeck->compute(neckTime,qdNeck,fbNeck);
-    genTrajEyes->compute(eyesTime,qdEyes,fbEyes);
-
-    vNeck=genTrajNeck->get_vel();
-    vEyes=genTrajEyes->get_vel()-commData->get_compv();
+    vNeck=mjCtrlNeck->computeCmd(neckTime,qdNeck-fbNeck);
+    vEyes=mjCtrlEyes->computeCmd(eyesTime,qdEyes-fbEyes)-commData->get_compv();
 
     for (unsigned int i=0; i<3; i++)
     {
@@ -333,8 +330,8 @@ void Controller::threadRelease()
     delete port_q;
     delete port_v;
     delete eyeLim;
-    delete genTrajNeck;
-    delete genTrajEyes;
+    delete mjCtrlNeck;
+    delete mjCtrlEyes;
     delete Int;
 }
 

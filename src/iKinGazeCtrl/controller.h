@@ -10,8 +10,8 @@
 #include <yarp/dev/ControlBoardInterfaces.h>
 #include <yarp/dev/PolyDriver.h>
 
+#include <iCub/minJerkCtrl.h>
 #include <iCub/pids.h>
-#include <iCub/trajectoryGenerator.h>
 
 #include "utils.h"
 
@@ -43,8 +43,8 @@ protected:
     BufferedPort<Vector>  *port_q;
     BufferedPort<Vector>  *port_v;
 
-    minJerkTrajGen *genTrajNeck;
-    minJerkTrajGen *genTrajEyes;
+    minJerkVelCtrl *mjCtrlNeck;
+    minJerkVelCtrl *mjCtrlEyes;
     Integrator     *Int;
 
     string robotName;
