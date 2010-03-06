@@ -23,7 +23,7 @@ void minJerkVelCtrl::computeCoeffs()
 {
     double T2=T*T;
     double T3=T2*T;
-    double twoTs=2.0/Ts;
+    double twoOnTs=2.0/Ts;
 
     // 90% of steady-state value in t=T
     // transient extinguished for t>=1.5*T
@@ -36,7 +36,7 @@ void minJerkVelCtrl::computeCoeffs()
     num.resize(3);
     den.resize(3);
 
-    double c1=twoTs*(twoTs-c)-b;
+    double c1=twoOnTs*(twoOnTs-c)-b;
     double c2=-a/c1;
 
     num[0]=c2;
@@ -44,8 +44,8 @@ void minJerkVelCtrl::computeCoeffs()
     num[2]=c2;
 
     den[0]=1.0;
-    den[1]=-2.0*(twoTs*twoTs+b)/c1;
-    den[2]=(twoTs*(twoTs+c)-b)/c1;
+    den[1]=-2.0*(twoOnTs*twoOnTs+b)/c1;
+    den[2]=(twoOnTs*(twoOnTs+c)-b)/c1;
 }
 
 
