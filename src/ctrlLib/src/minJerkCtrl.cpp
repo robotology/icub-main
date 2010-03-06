@@ -36,16 +36,16 @@ void minJerkVelCtrl::computeCoeffs()
     num.resize(3);
     den.resize(3);
 
-    double tmp1=twoTs*(twoTs-c)-b;
-    double tmp2=-a/tmp1;
+    double c1=twoTs*(twoTs-c)-b;
+    double c2=-a/c1;
 
-    num[0]=tmp2;
-    num[1]=2.0*tmp2;
-    num[2]=tmp2;
+    num[0]=c2;
+    num[1]=2.0*c2;
+    num[2]=c2;
 
     den[0]=1.0;
-    den[1]=-2.0*(twoTs*twoTs+b)/tmp1;
-    den[2]=(twoTs*(twoTs+c)-b)/tmp1;
+    den[1]=-2.0*(twoTs*twoTs+b)/c1;
+    den[2]=(twoTs*(twoTs+c)-b)/c1;
 }
 
 
