@@ -343,8 +343,7 @@ Solver::Solver(PolyDriver *_drvTorso, PolyDriver *_drvHead, exchangeData *_commD
 
         // read starting position
         fbTorso.resize(nJointsTorso);
-        fbHead.resize(nJointsHead);
-        
+        fbHead.resize(nJointsHead);        
         getFeedback(fbTorso,fbHead,encTorso,encHead);        
     }
     else

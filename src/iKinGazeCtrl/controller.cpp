@@ -144,16 +144,19 @@ void Controller::suspend()
 /************************************************************************/
 void Controller::resume()
 {
-    getFeedback(fbTorso,fbHead,encTorso,encHead);
-
-    for (unsigned int i=0; i<3; i++)
+    if (Robotable)
     {
-        fbNeck[i]=fbHead[i];
-        fbEyes[i]=fbHead[3+i];
+        getFeedback(fbTorso,fbHead,encTorso,encHead);
+    
+        for (unsigned int i=0; i<3; i++)
+        {
+            fbNeck[i]=fbHead[i];
+            fbEyes[i]=fbHead[3+i];
+        }
+    
+        mjCtrlNeck->reset(fbNeck);
+        mjCtrlEyes->reset(fbEyes);
     }
-
-    mjCtrlNeck->reset(fbNeck);
-    mjCtrlEyes->reset(fbEyes);
 
     cout << endl;
     cout << "Controller has been resumed!" << endl;

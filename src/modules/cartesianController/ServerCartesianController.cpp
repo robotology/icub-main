@@ -755,6 +755,7 @@ void ServerCartesianController::newController()
     // update quantities
     fb.resize(chain->getDOF());
     getFeedback(fb);
+    chain->setAng(fb);
     velOld.resize(chain->getDOF(),0.0);
     xdes=chain->EndEffPose();
     qdes=chain->getAng();

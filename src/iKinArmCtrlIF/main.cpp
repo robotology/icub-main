@@ -21,7 +21,8 @@ The main differences with respect to \ref iKinArmCtrl are:
 -# \ref iKinArmCtrlIF controls joint by joint individually, 
    hence one can use the non-controlled joints concurrently
    without conflict.
--# \ref iKinArmCtrlIF does not have a <i>simulation</i> mode. 
+-# \ref iKinArmCtrlIF does not have a <i>simulation</i> mode 
+ since it is deeply connected to the robot.
  
 \section lib_sec Libraries 
 - YARP libraries. 

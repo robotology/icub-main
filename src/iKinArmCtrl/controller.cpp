@@ -110,8 +110,11 @@ void Controller::suspend()
 /************************************************************************/
 void Controller::resume()
 {
-    getFeedback(fb,chain,encTorso,encArm,nJointsTorso,nJointsArm,ctrlTorso>0);
-    ctrl->restart(fb);
+    if (Robotable)
+    {    
+        getFeedback(fb,chain,encTorso,encArm,nJointsTorso,nJointsArm,ctrlTorso>0);
+        ctrl->restart(fb);
+    }
 
     cout << endl;
     cout << "Controller has been resumed!" << endl;
@@ -124,6 +127,13 @@ void Controller::resume()
 /************************************************************************/
 bool Controller::threadInit()
 {
+    if (Robotable)
+    {
+        // arm's starting position
+        getFeedback(fb,chain,encTorso,encArm,nJointsTorso,nJointsArm,ctrlTorso>0);
+        chain->setAng(fb);
+    }
+
     // Instantiate controller
     ctrl=new MultiRefMinJerkCtrl(*chain,ctrlPose,chain->getAng(),Ts);
 
