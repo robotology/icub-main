@@ -41,6 +41,7 @@ protected:
 
     double Ts;
     double T;
+    int dim;
 
     virtual void computeCoeffs();
 
@@ -48,9 +49,9 @@ public:
     /**
     * Constructor. 
     * @param _Ts is the controller sample time in seconds. 
-    * @param x0 is the initial position. 
+    * @param _dim is the controller's dimension 
     */
-    minJerkVelCtrl(const double _Ts, const yarp::sig::Vector &x0);
+    minJerkVelCtrl(const double _Ts, const int _dim);
 
     /**
     * Computes the command.
@@ -60,12 +61,6 @@ public:
     * @return the command.
     */
     virtual yarp::sig::Vector computeCmd(const double _T, const yarp::sig::Vector &e);
-
-    /**
-    * Resets the internal state. 
-    * @param fb the new state. 
-    */
-    virtual void reset(const yarp::sig::Vector &fb);
 
     /**
     * Destructor. 

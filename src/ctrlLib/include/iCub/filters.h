@@ -85,6 +85,12 @@ public:
    * @return the corresponding output. 
    */ 
    yarp::sig::Vector filt(const yarp::sig::Vector &u);
+
+   /**
+   * Return current filter output.
+   * @return the filter output. 
+   */ 
+   yarp::sig::Vector output();
 };
 
 

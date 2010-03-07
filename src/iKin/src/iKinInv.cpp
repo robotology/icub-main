@@ -1110,8 +1110,8 @@ MultiRefMinJerkCtrl::MultiRefMinJerkCtrl(iKinChain &c, unsigned int _ctrlPose,
         lim(i,1)=chain(i).getMax();
     }
 
-    mjCtrlJoint=new minJerkVelCtrl(Ts,q);
-    mjCtrlTask =new minJerkVelCtrl(Ts,x);
+    mjCtrlJoint=new minJerkVelCtrl(Ts,dim);
+    mjCtrlTask =new minJerkVelCtrl(Ts,x.length());
     Int=new Integrator(Ts,q,lim);
 
     gamma=0.02;
@@ -1250,9 +1250,6 @@ Vector MultiRefMinJerkCtrl::iterate(Vector &xd, Vector &qd, const unsigned int v
 void MultiRefMinJerkCtrl::restart(const Vector &q0)
 {
     iKinCtrl::restart(q0);
-
-    mjCtrlJoint->reset(q);
-    mjCtrlTask->reset(x);
 
     qdot=0.0;
     xdot=0.0;

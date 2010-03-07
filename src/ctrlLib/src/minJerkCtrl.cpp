@@ -10,11 +10,12 @@ using namespace ctrl;
 
 
 /************************************************************************/
-minJerkVelCtrl::minJerkVelCtrl(const double _Ts, const Vector &x0) :
-                               Ts(_Ts), T(1.0)
+minJerkVelCtrl::minJerkVelCtrl(const double _Ts, const int _dim) :
+                               Ts(_Ts), dim(_dim), T(1.0) 
 {
     computeCoeffs();
-    F=new Filter(num,den,x0);
+    Vector e0(dim); e0=0.0;
+    F=new Filter(num,den,e0);
 }
 
 
@@ -46,13 +47,6 @@ void minJerkVelCtrl::computeCoeffs()
     den[0]=1.0;
     den[1]=-2.0*(twoOnTs*twoOnTs+b)/c1;
     den[2]=(twoOnTs*(twoOnTs+c)-b)/c1;
-}
-
-
-/************************************************************************/
-void minJerkVelCtrl::reset(const Vector &fb)
-{
-    F->init(fb);
 }
 
 

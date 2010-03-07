@@ -104,8 +104,8 @@ Controller::Controller(PolyDriver *_drvTorso, PolyDriver *_drvHead, exchangeData
         fbEyes[i]=fbHead[3+i];
     }
 
-    mjCtrlNeck=new minJerkVelCtrl(Ts,fbNeck);
-    mjCtrlEyes=new minJerkVelCtrl(Ts,fbEyes);
+    mjCtrlNeck=new minJerkVelCtrl(Ts,fbNeck.length());
+    mjCtrlEyes=new minJerkVelCtrl(Ts,fbEyes.length());
     Int=new Integrator(Ts,fbHead,lim);
 
     v.resize(nJointsHead,0.0);
@@ -153,9 +153,6 @@ void Controller::resume()
             fbNeck[i]=fbHead[i];
             fbEyes[i]=fbHead[3+i];
         }
-    
-        mjCtrlNeck->reset(fbNeck);
-        mjCtrlEyes->reset(fbEyes);
     }
 
     cout << endl;

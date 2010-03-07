@@ -83,6 +83,13 @@ Vector Filter::filt(const Vector &u)
 
 
 /**********************************************************************/
+Vector Filter::output()
+{
+    return y;
+}
+
+
+/**********************************************************************/
 RateLimiter::RateLimiter(const Vector &rL, const Vector &rU) :
                          rateLowerLim(rL), rateUpperLim(rU)
 {
