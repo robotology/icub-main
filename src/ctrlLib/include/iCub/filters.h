@@ -72,12 +72,25 @@ public:
    *            power of z^-1.
    * @param den vector of denominator elements given as increasing 
    *            power of z^-1. 
-   * @param y0 initial output. 
    * @note den[0] shall not be 0. 
    * @note the internal state is reinitialized to the current 
    *       output.
    */ 
    void setCoeffs(const yarp::sig::Vector &num, const yarp::sig::Vector &den);
+
+   /**
+   * Modifies the values of existing filter coefficients without 
+   * varying their lengths. 
+   * @param num vector of numerator elements given as increasing 
+   *            power of z^-1.
+   * @param den vector of denominator elements given as increasing 
+   *            power of z^-1. 
+   * @note den[0] shall not be 0. 
+   * @note the adjustment is carried out iff num.size() and 
+   *       den.size() match the existing numerator and denominator
+   *       lenghts.
+   */ 
+   void adjustCoeffs(const yarp::sig::Vector &num, const yarp::sig::Vector &den);
 
    /**
    * Performs filtering on the actual input.

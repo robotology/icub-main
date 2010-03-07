@@ -57,7 +57,7 @@ Vector minJerkVelCtrl::computeCmd(const double _T, const Vector &e)
     {    
         T=_T;
         computeCoeffs();
-        F->setCoeffs(num,den);
+        F->adjustCoeffs(num,den);
     }
 
     return F->filt(e);
