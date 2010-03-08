@@ -3,6 +3,10 @@
 #include <yarp/math/Math.h>
 #include <iCub/SalienceOperator.h>
 
+//definition necessary for a particular version of GCC
+#define INT_MIN     (-2147483647 - 1) /* minimum (signed) int value */
+#define INT_MAX       2147483647    /* maximum (signed) int value */
+
 SalienceOperator::SalienceOperator(const int width1, const int height1)//:_gaze( YMatrix(_dh_nrf, 5, DH_left[0]), YMatrix(_dh_nrf, 5, DH_right[0]), YMatrix(4, 4, TBaseline[0]) )
 {
 	resize(width1, height1);
@@ -1100,4 +1104,4 @@ void SalienceOperator::get_XY_Center(int *xx, int *yy, int irho, int itheta, yar
 }
 
 
-
+//----- end-of-file --- ( next line intentionally left blank ) ------------------
