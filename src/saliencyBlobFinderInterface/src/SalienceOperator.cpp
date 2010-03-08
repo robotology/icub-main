@@ -1098,3 +1098,6 @@ void SalienceOperator::get_XY_Center(int *xx, int *yy, int irho, int itheta, yar
 	*xx=width/2;
 	*yy=height/2;
 }
+
+
+
