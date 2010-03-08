@@ -12,7 +12,7 @@ colourProcessorModule::colourProcessorModule(){
     startrgb_flag=true;
     startyuv_flag=false;
 }
-
+ 
 
 /**
 *function that opens the module
