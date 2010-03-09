@@ -1,7 +1,7 @@
 #include "include/robotMotorGui.h"
 #include "include/partMover.h"
-
 #include <string.h>
+
 
 /*
  * Performs coordinated movements

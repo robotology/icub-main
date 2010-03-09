@@ -286,33 +286,34 @@ partMover::partMover(GtkWidget *vbox_d, PolyDriver *partDd_d, char *partName, Re
       button7 = NULL;
       button8 = NULL;
 
+      //Button 14 in the panel
+      GtkWidget *button14 = gtk_button_new_with_mnemonic ("Open sequence tab");
+      //gtk_container_add (GTK_CONTAINER (panel_hbox), button1);
+      g_signal_connect (button14, "clicked", G_CALLBACK (table_open), myClassData3);
+      gtk_fixed_put (GTK_FIXED (inv1), button14, 15+(NUMBER_OF_JOINTS%numberOfRows)*width,         20+(NUMBER_OF_JOINTS/numberOfRows)*height);
+      gtk_widget_set_size_request     (button14, 150, 30);
+
+      //Button13 in the panel
+      GtkWidget *button13 = gtk_button_new_with_mnemonic ("RunAll");
+      //gtk_container_add (GTK_CONTAINER (panel_hbox), button0);
+      g_signal_connect (button13, "clicked", G_CALLBACK (run_all), this);
+      gtk_fixed_put (GTK_FIXED (inv1), button13, 15+(NUMBER_OF_JOINTS%numberOfRows)*width,         50+(NUMBER_OF_JOINTS/numberOfRows)*height);
+      gtk_widget_set_size_request 	(button13, 150, 30);
+
       //Button11 in the panel
       GtkWidget *button11 = gtk_button_new_with_mnemonic ("CalibAll");
       //gtk_container_add (GTK_CONTAINER (panel_hbox), button0);
       g_signal_connect (button11, "clicked", G_CALLBACK (calib_all), this);
-      gtk_fixed_put (GTK_FIXED (inv1), button11, 10+(NUMBER_OF_JOINTS%numberOfRows)*180,         90+(NUMBER_OF_JOINTS/numberOfRows)*150);
-      gtk_widget_set_size_request 	(button11, 150, 25);
+      gtk_fixed_put (GTK_FIXED (inv1), button11, 15+(NUMBER_OF_JOINTS%numberOfRows)*width,         80+(NUMBER_OF_JOINTS/numberOfRows)*height);
+      gtk_widget_set_size_request 	(button11, 150, 30);
 
       //Button12 in the panel
       GtkWidget *button12 = gtk_button_new_with_mnemonic ("HomeAll");
       //gtk_container_add (GTK_CONTAINER (panel_hbox), button0);
       g_signal_connect (button12, "clicked", G_CALLBACK (home_all), this);
-      gtk_fixed_put (GTK_FIXED (inv1), button12, 10+(NUMBER_OF_JOINTS%numberOfRows)*180,         115+(NUMBER_OF_JOINTS/numberOfRows)*150);
-      gtk_widget_set_size_request 	(button12, 150, 25);
-      
-      //Button13 in the panel
-      GtkWidget *button13 = gtk_button_new_with_mnemonic ("RunAll");
-      //gtk_container_add (GTK_CONTAINER (panel_hbox), button0);
-      g_signal_connect (button13, "clicked", G_CALLBACK (run_all), this);
-      gtk_fixed_put (GTK_FIXED (inv1), button13, 10+(NUMBER_OF_JOINTS%numberOfRows)*180,         65+(NUMBER_OF_JOINTS/numberOfRows)*150);
-      gtk_widget_set_size_request 	(button13, 150, 25);
-
-      //Button 14 in the panel
-      GtkWidget *button14 = gtk_button_new_with_mnemonic ("Open sequence tab");
-      //gtk_container_add (GTK_CONTAINER (panel_hbox), button1);
-      g_signal_connect (button14, "clicked", G_CALLBACK (table_open), myClassData3);
-      gtk_fixed_put (GTK_FIXED (inv1), button14, 10+(NUMBER_OF_JOINTS%numberOfRows)*180,         40+(NUMBER_OF_JOINTS/numberOfRows)*150);
-      gtk_widget_set_size_request     (button14, 150, 25);
+      gtk_fixed_put (GTK_FIXED (inv1), button12, 15+(NUMBER_OF_JOINTS%numberOfRows)*width,         110+(NUMBER_OF_JOINTS/numberOfRows)*height);
+      gtk_widget_set_size_request 	(button12, 150, 30);
+     
     }
 }
 

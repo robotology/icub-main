@@ -151,7 +151,6 @@
 //#include "include/partMover.h"
 
 #include "include/allPartsWindow.h"
-#include <string>
 
 using namespace yarp::os::impl;
 
