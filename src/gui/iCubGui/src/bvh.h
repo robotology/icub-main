@@ -48,7 +48,8 @@ using namespace yarp;
 class BVH
 {
 public:
-    BVH(yarp::os::ResourceFinder& config);
+    BVH();
+    bool Create(yarp::os::ResourceFinder& config);
     ~BVH();
    
     QStringList partNames,bvhChannelName;

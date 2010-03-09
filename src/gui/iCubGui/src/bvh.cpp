@@ -12,7 +12,12 @@
 
 #include "bvh.h"
 
-BVH::BVH(yarp::os::ResourceFinder& config)
+BVH::BVH()
+{
+    pRoot=NULL;
+}
+
+bool BVH::Create(yarp::os::ResourceFinder& config)
 {
     robot=QString(config.find("robot").asString().c_str());
 
@@ -27,6 +32,8 @@ BVH::BVH(yarp::os::ResourceFinder& config)
     dAvatarScale=1.0;
   
     pRoot=bvhRead(config);
+
+    return pRoot!=NULL;
 }
 
 BVH::~ BVH()
@@ -195,6 +202,7 @@ BVHNode* BVH::bvhReadNode(yarp::os::ResourceFinder& config)
 		double e=token().toDouble();
 		double f=token().toDouble();
         QString file(config.findPath(QString("covers/")+name).c_str());
+        if (file.isEmpty()) file=name;
         printf("\n%s\n\n",file.latin1());
         pMesh=new iCubMesh(file,a,b,c,d,e,f);
         tag=token();

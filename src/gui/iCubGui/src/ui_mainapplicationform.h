@@ -311,7 +311,7 @@ public:
         shiftLabel->setMinimumSize(QSize(40, 0));
         //shiftLabel->setStyleSheet(QString::fromUtf8("color: #ab0000;\n"));
 		shiftLabel->setPaletteForegroundColor(QColor(0xAB,0x00,0x00));
-        shiftLabel->setAlignment(Qt::AlignRight|Qt::AlignVCenter);
+        shiftLabel->setAlignment(Qt::AlignHCenter|Qt::AlignVCenter);
 		//gridLayout3->addWidget(shiftLabel, 0, 1, 2, 1);
         gridLayout3->addMultiCellWidget(shiftLabel, 0, 0, 2, 2);
 
@@ -349,7 +349,7 @@ public:
         altLabel->setMinimumSize(QSize(40, 0));
         //altLabel->setStyleSheet(QString::fromUtf8("color: #20af00;\n"));
 		altLabel->setPaletteForegroundColor(QColor(0x20,0xAF,0x00));
-        altLabel->setAlignment(Qt::AlignRight|Qt::AlignVCenter);
+        altLabel->setAlignment(Qt::AlignHCenter|Qt::AlignVCenter);
 
         //gridLayout3->addWidget(altLabel, 2, 2, 1, 1);
 		gridLayout3->addMultiCellWidget(altLabel, 2, 2, 2, 2);
@@ -388,7 +388,7 @@ public:
         ctrlLabel->setMinimumSize(QSize(40, 0));
         //ctrlLabel->setStyleSheet(QString::fromUtf8("color: #0000e2;\n"));
         ctrlLabel->setPaletteForegroundColor(QColor(0x00,0x00,0xE2));
-		ctrlLabel->setAlignment(Qt::AlignRight|Qt::AlignVCenter);
+        ctrlLabel->setAlignment(Qt::AlignHCenter|Qt::AlignVCenter);
 
         //gridLayout3->addWidget(ctrlLabel, 4, 2, 1, 1);
 		gridLayout3->addMultiCellWidget(ctrlLabel, 4, 4, 2, 2);

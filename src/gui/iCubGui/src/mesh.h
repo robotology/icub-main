@@ -47,7 +47,7 @@ public:
         if(!objFile.open(IO_ReadOnly))
         {
             QMessageBox::critical(0,QObject::tr("Missing Obj File"),
-                                  QObject::tr("<qt>Obj file not found at:<br>%1</qt>").arg(fileName));
+                                  QObject::tr("<qt>File not found:<br>%1</qt>").arg(fileName));
             return;
         }
         

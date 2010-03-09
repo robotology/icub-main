@@ -55,7 +55,12 @@ AnimationView::AnimationView(QWidget* parent,yarp::os::ResourceFinder& config) :
     setMouseTracking(true);
     setFocusPolicy(QWidget::StrongFocus);
 
-    pBVH=new BVH(config);
+    pBVH=new BVH();
+
+    if (!pBVH->Create(config))
+    {
+        exit(-1);
+    }
 
     connect(&mTimer,SIGNAL(timeout()),this,SLOT(timerTimeout()));
 }
