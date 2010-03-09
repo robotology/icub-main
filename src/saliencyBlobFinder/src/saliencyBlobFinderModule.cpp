@@ -247,8 +247,8 @@ bool saliencyBlobFinderModule::getPlanes(){
 
 void saliencyBlobFinderModule::outPorts(){ 
     
-    printf("centroid:%f,%f \n",blobFinder->salience->centroid_x,blobFinder->salience->centroid_y);
-    printf("target:%f,%f \n",blobFinder->salience->target_x,blobFinder->salience->target_y);
+    //printf("centroid:%f,%f \n",blobFinder->salience->centroid_x,blobFinder->salience->centroid_y);
+    //printf("target:%f,%f \n",blobFinder->salience->target_x,blobFinder->salience->target_y);
     
     if((0!=blobFinder->image_out)&&(outputPort.getOutputCount())){ 
         outputPort.prepare() = *(blobFinder->image_out);		
@@ -265,16 +265,16 @@ void saliencyBlobFinderModule::outPorts(){
         bot.addString("get");
         bot.addString("3dpoint");
         bot.addString("right");
-        /*bot.addDouble(blobFinder->salience->target_x);
-        bot.addDouble(_logpolarParams::_ysize-blobFinder->salience->target_y);*/
-        bot.addDouble(blobFinder->salience->centroid_x);
-        bot.addDouble(_logpolarParams::_ysize-blobFinder->salience->centroid_y);
+        bot.addDouble(blobFinder->salience->target_x);
+        bot.addDouble(_logpolarParams::_ysize-blobFinder->salience->target_y);
+        /*bot.addDouble(blobFinder->salience->centroid_x);
+        bot.addDouble(_logpolarParams::_ysize-blobFinder->salience->centroid_y);*/
        
         bot.addDouble(1.5); //fixed distance in which the saccade takes place
-        triangulationPort.write(bot,in);
+        triangulationPort.write(bot,in); //stop here till it receives a response
         if (in.size()>0) {
-            target_z=in.pop().asDouble();
-            target_y=in.pop().asDouble();
+            target_z=in.pop().asDouble()+0.1;
+            target_y=in.pop().asDouble()+0.15;
             target_x=in.pop().asDouble();
             
         } else { 

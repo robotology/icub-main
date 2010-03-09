@@ -272,8 +272,8 @@ void SalienceOperator::DrawStrongestSaliencyBlob(ImageOf<PixelMono>& id,int max_
             maxValue=iterMap->second;
         }
     }
-
-    printf("strongest %s with %d \n",maxKey.c_str(),maxValue);
+    //printf("maxKey:%s",maxKey.c_str());
+    
     std::string cStr;
     std::string rStr;
     std::string maxStr;
@@ -293,6 +293,7 @@ void SalienceOperator::DrawStrongestSaliencyBlob(ImageOf<PixelMono>& id,int max_
     logPolar2Cartesian(target_r,target_c,tgx,tgy);
     target_x=(int)tgx;
     target_y=(int)tgy;
+    //printf("strongest %f,%f with %d \n",target_x,target_y,maxValue);
 
     //define which blob is attracting the attention
     for (int i=0;i<max_tag;i++){
@@ -304,7 +305,7 @@ void SalienceOperator::DrawStrongestSaliencyBlob(ImageOf<PixelMono>& id,int max_
             }
         }
     }
-
+    
     //plotting the image with the only strongest blob in it
      for (int r=0; r<height; r++)
         for (int c=0; c<width; c++)
@@ -377,6 +378,7 @@ void SalienceOperator::countSpikes(ImageOf<PixelInt>& tagged, int max_tag, YARPB
     maxKeyStr.append(yStr);
     maxKeyStr.append("|");
     maxKeyStr.append(maxStr);
+   
 
     int previousValue=spikeMap[maxKeyStr];
     spikeMap[maxKeyStr]=previousValue+1;
