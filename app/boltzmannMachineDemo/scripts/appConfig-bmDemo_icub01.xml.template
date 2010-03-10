@@ -1,0 +1,55 @@
+<!-- please refer to /surfer and  /lightHouse as two POWER NODES-->
+<!-- @author Francesco Rea -->
+<application>
+	<name>Boltzmann Machine Demo</name>
+ 	<dependencies>
+		<port>/icub/cam/left/fovea</port> 		
+	</dependencies>
+	<module>
+		<name>boltmannMachineEngine</name>
+		<parameters>--name bmlEngine</parameters>
+		<tag>engine</tag>
+		<node>/surfer</node>
+		<stdio>lightHouse</stdio>
+	</module>
+	<module>
+		<name>boltzmannMachineInterface</name>
+		<parameters>--name bmlInterface</parameters>
+		<tag>interface</tag>
+		<node>/surfer</node>
+		<stdio>lightHouse</stdio>
+	</module>
+	<module>
+		<name>yarpview</name>
+		<parameters>--name /layer1 --x 200 --y 300 --synch</parameters>
+		<tag>layer1View</tag>
+		<node>/lightHouse</node>
+	</module>
+	<module>
+		<name>yarpview</name>
+		<parameters>--name /layer2 --x 200 --y 600 </parameters>
+		<tag>layer2View</tag>
+		<node>/surfer</node>
+	</module>
+
+ 	<connection>
+      	<from>icub/cam/left/fovea</from>
+		<to>/bmlInterface/image:i</to>
+	</connection>
+	<connection>
+      	<from>icub/cam/left/fovea</from>
+		<to>/bmlEngine/image:i</to>
+	</connection>	
+	<connection>
+      	<from>/bmlEngine/layer0:o</from>
+		<to>/bmlInterface/layer0:i</to>
+	</connection>
+	<connection>
+      	<from>/bmlEngine/layer1:o</from>
+		<to>/bmlInterface/layer1:i</to>
+	</connection>
+	<connection>
+      	<from>/bmlEngine/layer2:o</from>
+		<to>/bmlInterface/layer2:i</to>
+	</connection>
+</application>
