@@ -77,9 +77,16 @@ BML
 
 \section portsc_sec Ports Created
 Input ports:
-- <name>/img:i
+- <name>/image:i
+- <name>/layer1:i
+- <name>/layer2:i
+- <name>/layer3:i
+- <name>/layer4:i
+- <name>/layer5:i
+- <name>/layer6:i
+- <name>/layer7:i
 Outports
-- <name>/cmd
+- <name>/command:o
 
 \section in_files_sec Input Data Files
 none

@@ -134,11 +134,11 @@ bool BMLEngine::open(Searchable& config) {
         openCommandPort();
         this->outCommand=new string("");
 
-        port.open(getName("in")); 
-        port0.open(getName("out0"));
-        port1.open(getName("out1"));
-        port2.open(getName("out2")); 
-        portCmd.open(getName("inCmd"));
+        port.open(getName("image:i")); 
+        port0.open(getName("layer0:o"));
+        port1.open(getName("layer1:o"));
+        port2.open(getName("layer2:o")); 
+        portCmd.open(getName("cmd"));
         portCmd.setStrict();
         
         img0=new ImageOf<PixelRgb>;

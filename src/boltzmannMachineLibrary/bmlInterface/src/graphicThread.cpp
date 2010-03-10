@@ -257,7 +257,7 @@ bool graphicThread::openPorts(){
             return false;
         }
     //--------
-    ret = _imgRecvLayer0.Connect((char *)wModule->getName("/inLayer0").c_str(),"default");
+    ret = _imgRecvLayer0.Connect((char *)wModule->getName("/inLayer0:o").c_str(),"default");
     if (ret == true)
         {
             //reduce verbosity --paulfitz
@@ -268,7 +268,7 @@ bool graphicThread::openPorts(){
             printf("ERROR: Port registration failed.\nQuitting, sorry.\n");
             return false;
         }
-    ret = _imgRecvLayer1.Connect((char *)wModule->getName("/inLayer1").c_str(),"default");
+    ret = _imgRecvLayer1.Connect((char *)wModule->getName("/inLayer1:o").c_str(),"default");
     if (ret == true)
         {
             //reduce verbosity --paulfitz
@@ -279,7 +279,7 @@ bool graphicThread::openPorts(){
             printf("ERROR: Port registration failed.\nQuitting, sorry.\n");
             return false;
         }
-    ret = _imgRecvLayer2.Connect((char *)wModule->getName("/inLayer2").c_str(),"default");
+    ret = _imgRecvLayer2.Connect((char *)wModule->getName("/inLayer2:o").c_str(),"default");
     if (ret == true)
         {
             //reduce verbosity --paulfitz
@@ -291,7 +291,7 @@ bool graphicThread::openPorts(){
             return false;
         }
     //--------
-    ret = _imgRecvLayer3.Connect((char *)wModule->getName("/inLayer3").c_str(),"default");
+    ret = _imgRecvLayer3.Connect((char *)wModule->getName("/inLayer3:o").c_str(),"default");
     if (ret == true)
         {
             //reduce verbosity --paulfitz
@@ -302,7 +302,7 @@ bool graphicThread::openPorts(){
             printf("ERROR: Port registration failed.\nQuitting, sorry.\n");
             return false;
         }
-    ret = _imgRecvLayer4.Connect((char *)wModule->getName("/inLayer4").c_str(),"default");
+    ret = _imgRecvLayer4.Connect((char *)wModule->getName("/inLayer4:o").c_str(),"default");
     if (ret == true)
         {
             //reduce verbosity --paulfitz
@@ -313,7 +313,7 @@ bool graphicThread::openPorts(){
             printf("ERROR: Port registration failed.\nQuitting, sorry.\n");
             return false;
         }
-    ret = _imgRecvLayer5.Connect((char *)wModule->getName("/inLayer5").c_str(),"default");
+    ret = _imgRecvLayer5.Connect((char *)wModule->getName("/inLayer5:o").c_str(),"default");
     if (ret == true)
         {
             //reduce verbosity --paulfitz
@@ -324,7 +324,7 @@ bool graphicThread::openPorts(){
             printf("ERROR: Port registration failed.\nQuitting, sorry.\n");
             return false;
         }
-    ret = _imgRecvLayer6.Connect((char *)wModule->getName("/inLayer6").c_str(),"default");
+    ret = _imgRecvLayer6.Connect((char *)wModule->getName("/inLayer6:o").c_str(),"default");
     if (ret == true)
         {
             //reduce verbosity --paulfitz
@@ -335,7 +335,7 @@ bool graphicThread::openPorts(){
             printf("ERROR: Port registration failed.\nQuitting, sorry.\n");
             return false;
         }
-    ret = _imgRecvLayer7.Connect((char *)wModule->getName("/inLayer7").c_str(),"default");
+    ret = _imgRecvLayer7.Connect((char *)wModule->getName("/inLayer7:o").c_str(),"default");
     if (ret == true)
         {
             //reduce verbosity --paulfitz
@@ -346,7 +346,7 @@ bool graphicThread::openPorts(){
             printf("ERROR: Port registration failed.\nQuitting, sorry.\n");
             return false;
         }
-    ret = _imgRecvLayer8.Connect((char *)wModule->getName("/inLayer8").c_str(),"default");
+    ret = _imgRecvLayer8.Connect((char *)wModule->getName("/inLayer8:o").c_str(),"default");
     if (ret == true)
         {
             //reduce verbosity --paulfitz
@@ -358,30 +358,7 @@ bool graphicThread::openPorts(){
             return false;
         }
     //-------------
-    if (false)
-        {		
-            _pOutPort = new yarp::os::BufferedPort<yarp::os::Bottle>;
-            printf("Registering port %s on network %s...\n", "/rea/BMLInterface/out","dafult");
-            bool ok = _pOutPort->open("/rea/BMLInterface/out");
-            if  (ok)
-                printf("Port registration succeed!\n");
-            else 
-                {
-                    printf("ERROR: Port registration failed.\nQuitting, sorry.\n");
-                    return false;
-                }
-            _pOutPort2 = new yarp::os::BufferedPort<ImageOf<PixelRgb> >;
-            printf("Registering port %s on network %s...\n", "/rea/BMLInterface/out","dafult");
-            ok = _pOutPort2->open("/rea/BMLInterface/outBlobs");
-            if  (ok)
-                printf("Port registration succeed!\n");
-            else 
-                {
-                    printf("ERROR: Port registration failed.\nQuitting, sorry.\n");
-                    return false;
-                }
-
-        }
+    
     
     return true;
     
@@ -394,7 +371,7 @@ bool graphicThread::closePorts(){
     // Registering Port(s)
     //reduce verbosity --paulfitz
     printf("Closing port %s on network %s...\n", "/rea/BMLInterface/in","default");
-    _imgRecv.Disconnect();//("/rea/BMLInterface/in","default");
+    _imgRecv.Disconnect();//("/rea/BMLInterface/image:i","default");
     //--------
     ret = _imgRecvLayer0.Disconnect();//("/rea/BMLInterface/inLayer0","default");
     ret = _imgRecvLayer1.Disconnect();//("/rea/BMLInterface/inLayer1","default");
