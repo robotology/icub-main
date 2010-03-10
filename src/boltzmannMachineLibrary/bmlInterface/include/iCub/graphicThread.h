@@ -100,6 +100,14 @@ public:
     * function which extracts the images from the port layers and save them
     */
     bool getLayers();
+    /**
+    * function which reads the input image
+    */
+    bool getInput();
+    /**
+    * resets the dimension of the images in the graphic process
+    */
+    void reinitialise(int width, int height);
     /** 
     * create the main Window
     */
@@ -162,13 +170,24 @@ public:
     * pointer to the input image of layer8
     */
     yarp::sig::ImageOf<yarp::sig::PixelRgb> *ptr_inputLayer8; //
+    /**
+    * mono image of the output
+    */
+    yarp::sig::ImageOf<yarp::sig::PixelMono>* _outputImage;
+    /**
+    * colour image of the output
+    */
+    yarp::sig::ImageOf<yarp::sig::PixelRgb>* _outputImage3;
 
     //---------- FLAGS -------------------------------
     /**
     * flag that indicates the control box inputImage is active
     */
     bool inputImage_flag;
-    
+    /**
+    * flag that indicates when the input image is ready
+    */
+    bool inputImageReady_flag;
     /**
     * flag that indicates the control box Layer0 is active
     */

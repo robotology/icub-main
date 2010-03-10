@@ -1,5 +1,6 @@
 #include <iCub/graphicThread.h>
 #include <iCub/BMLInterface.h>
+#include <ippi.h>
 
 #include <ace/OS.h>
 #include <iostream>
@@ -39,8 +40,7 @@ static yarp::sig::ImageOf<yarp::sig::PixelRgb> *ptr_inputImg;
 
 static yarp::sig::ImageOf<yarp::sig::PixelMono> *ptr_middleImg;
 static yarp::sig::ImageOf<yarp::sig::PixelInt> *ptr_tagged;
-static yarp::sig::ImageOf<yarp::sig::PixelMono>* _outputImage;
-static yarp::sig::ImageOf<yarp::sig::PixelRgb>* _outputImage3;
+
 
 static ImageOf<PixelMonoSigned> rgs;
 static ImageOf<PixelMonoSigned> grs;
@@ -111,7 +111,7 @@ static yarp::sig::ImageOf<yarp::sig::PixelRgb> *ptr_inputImgLayer8;
 * default constructor
 */
 graphicThread::graphicThread():RateThread(THREADRATE){
-    inLayer0_flag=true;
+    inLayer0_flag=false;
     inLayer1_flag=false;
     inLayer2_flag=false;
     inLayer3_flag=false;
@@ -131,41 +131,29 @@ graphicThread::graphicThread():RateThread(THREADRATE){
     SelectLayer8_flag=false;
     //----
     
-    //outContrastLP=new ImageOf<PixelMono>;
-    //outContrastLP->resize(320,240);
-    //outMeanColourLP=new ImageOf<PixelBgr>;
-    //outMeanColourLP->resize(320,240);
-    
-
     //max_boxes = new YARPBox[3];
     //initializing the image plotted out int the drawing area
+    
     /*image_out=new ImageOf<PixelRgb>;
     image_out->resize(320,240);*/
+
     _outputImage3=new ImageOf<PixelRgb>;
-    _outputImage3->resize(320,240);
     _outputImage=new ImageOf<PixelMono>;
+
     _outputImage->resize(320,240);
+    _outputImage3->resize(320,240);
 
     ptr_inputImage=new ImageOf<yarp::sig::PixelRgb>; //pointer to the input image of Layer0
-    ptr_inputImage->resize(320,240);
     ptr_inputLayer0=new ImageOf<yarp::sig::PixelRgb>; //pointer to the input image of Layer0
-    ptr_inputLayer0->resize(320,240);
     ptr_inputLayer1=new ImageOf<yarp::sig::PixelRgb>; //pointer to the input image of Layer1
-    ptr_inputLayer1->resize(320,240);
     ptr_inputLayer2=new ImageOf<yarp::sig::PixelRgb>; //pointer to the input image of Layer2
-    ptr_inputLayer2->resize(320,240);
     ptr_inputLayer3=new ImageOf<yarp::sig::PixelRgb>; //pointer to the input image of Layer3
-    ptr_inputLayer3->resize(320,240);
     ptr_inputLayer4=new ImageOf<yarp::sig::PixelRgb>; //pointer to the input image of Layer4
-    ptr_inputLayer4->resize(320,240);
     ptr_inputLayer5=new ImageOf<yarp::sig::PixelRgb>; //pointer to the input image of Layer5
-    ptr_inputLayer5->resize(320,240);
     ptr_inputLayer6=new ImageOf<yarp::sig::PixelRgb>; //pointer to the input image of Layer6
-    ptr_inputLayer6->resize(320,240);
     ptr_inputLayer7=new ImageOf<yarp::sig::PixelRgb>; //pointer to the input image of Layer7
-    ptr_inputLayer7->resize(320,240);
     ptr_inputLayer8=new ImageOf<yarp::sig::PixelRgb>; //pointer to the input image of Layer8
-    ptr_inputLayer8->resize(320,240);
+    
     /*_inputImgRGS=new ImageOf<PixelMonoSigned>;
     _inputImgGRS=new ImageOf<PixelMonoSigned>;
     _inputImgBYS=new ImageOf<PixelMonoSigned>;
@@ -175,20 +163,54 @@ graphicThread::graphicThread():RateThread(THREADRATE){
     /*blobFov=new ImageOf<PixelMono>;
     blobFov->resize(320,240);*/
 
+    ptr_inputImage->resize(320,240);
+    ptr_inputLayer0->resize(320,240);
+    ptr_inputLayer1->resize(320,240);
+    ptr_inputLayer2->resize(320,240);
+    ptr_inputLayer3->resize(320,240);
+    ptr_inputLayer4->resize(320,240);
+    ptr_inputLayer5->resize(320,240);
+    ptr_inputLayer6->resize(320,240);
+    ptr_inputLayer7->resize(320,240);
+    ptr_inputLayer8->resize(320,240);
+
     this->colDim=10;
     this->rowDim=10;
 
-    //inputImageReady_flag=false;
+    inputImageReady_flag=false;
 }
 
 /**
 * destructor
 */
 graphicThread::~graphicThread(){
+    delete _outputImage;
+    delete _outputImage3;
+    delete ptr_inputImage;
+    delete ptr_inputLayer0;
+    delete ptr_inputLayer1;
+    delete ptr_inputLayer2;
+    delete ptr_inputLayer3;
+    delete ptr_inputLayer4;
+    delete ptr_inputLayer5;
+    delete ptr_inputLayer6;
+    delete ptr_inputLayer7;
+    delete ptr_inputLayer8;
 }
 
 
-
+void graphicThread::reinitialise(int width, int height){
+    ptr_inputImage->resize(width,height);
+    ptr_inputLayer0->resize(width,height);
+    ptr_inputLayer1->resize(width,height);
+    ptr_inputLayer2->resize(width,height);
+    ptr_inputLayer3->resize(width,height);
+    ptr_inputLayer4->resize(width,height);
+    ptr_inputLayer5->resize(width,height);
+    ptr_inputLayer6->resize(width,height);
+    ptr_inputLayer7->resize(width,height);
+    ptr_inputLayer8->resize(width,height);
+}
 
 
 
@@ -215,7 +237,7 @@ void graphicThread::run(){
 *	releases the thread
 */
 void graphicThread::threadRelease(){
-    //delete outputImage3; //new ImageOf<PixelRgb>;
+    delete _outputImage3; //new ImageOf<PixelRgb>;
     delete _outputImage; // =new ImageOf<PixelMono>;
 
     delete ptr_inputImage;// =new ImageOf<yarp::sig::PixelRgb>; //pointer to the input image of Layer0
@@ -398,6 +420,20 @@ bool graphicThread::closePorts(){
 }
 
 
+bool graphicThread::getInput(){
+    bool ret = true;
+    ret = _imgRecv.Update();
+    if (ret != false){
+        _semaphore.wait();
+        //ret = _imgRecv.GetLastImage(&_inputImg);
+        //ptr_inputImg=&_inputImg;
+        ret = _imgRecv.GetLastImage(ptr_inputImage);
+        _semaphore.post();
+        this->inputImageReady_flag=true;
+    }
+    return ret;
+}
+
 bool graphicThread::getLayers(){
     bool ret = true;
     
@@ -471,37 +507,9 @@ bool graphicThread::getLayers(){
     
     //printf("GetImage: out of the semaphore \n");
 
-    
-    ret=true;
-    return ret;
+    return true;
 }
 
-bool getOpponencies(){
-    bool ret = false;
-    /*ret = _imgRecvRG.Update();
-    ret = _imgRecvGR.Update();
-    ret = _imgRecvBY.Update();*/
-
-    if (ret == false){
-        return false;
-    }
-
-    /*_semaphore.wait();
-    ret = _imgRecvGR.GetLastImage(&_inputImgGR);
-    wModule->ptr_inputGR=&_inputImgGR;
-    _semaphore.post();
-    _semaphore.wait();
-    ret = _imgRecvRG.GetLastImage(&_inputImgRG);
-    wModule->ptr_inputRG=&_inputImgRG;
-    _semaphore.post();
-    _semaphore.wait();
-    ret = _imgRecvBY.GetLastImage(&_inputImgBY);
-    wModule->ptr_inputBY=&_inputImgBY;
-    _semaphore.post();
-    //printf("GetImage: out of the semaphore \n");*/
-    ret=true;
-    return ret;
-}
 
 
 //-------------------------------------------------
@@ -675,85 +683,86 @@ static gint expose_CB (GtkWidget *widget, GdkEventExpose *event, gpointer data)
                 guchar *pixels;
                 unsigned int rowstride;
                 unsigned int imageWidth,imageHeight,areaWidth, areaHeight;
-                //IppiSize srcsize={320,240};
+                
 
-                bool ret=wModule->gui->getLayers();
-                if((ret==false)&&(!wModule->inputImageReady_flag)){
+                //bool ret=wModule->gui->getInput(); 
+                bool  ret=wModule->gui->getLayers();
+                
+                if(!wModule->gui->inputImageReady_flag){
                     printf("No Layers and NO Image! \n");
                     return true;
                 }
             
                 //=new yarp::sig::ImageOf<yarp::sig::PixelRgb>;
-                //_outputImage->resize(320,240);
+                //_outputImage3->resize(320,240);
+                ImageOf<yarp::sig::PixelRgb>* temp3=new yarp::sig::ImageOf<yarp::sig::PixelRgb>;
+                temp3->resize(wModule->gui->ptr_inputImage->width(),wModule->gui->ptr_inputImage->height());
+                IppiSize srcsize={wModule->gui->ptr_inputImage->width(),wModule->gui->ptr_inputImage->height()};
+
                 bool conversion=true;
                 if(wModule->gui->inputImage_flag){
-                    //ippiCopy_8u_C3R(wModule->ptr_inputImage->getPixelAddress(0,0),320*3,_outputImage3->getPixelAddress(0,0),320*3,srcsize);
-                    cvCopyImage(wModule->gui->ptr_inputImage->getIplImage(),_outputImage3->getIplImage());
+                    
+                    ippiCopy_8u_C3R(wModule->gui->ptr_inputImage->getRawImage(),wModule->gui->ptr_inputImage->getRowSize(),temp3->getRawImage(),temp3->getRowSize(),srcsize);
+                    //cvCopyImage(ptr_inputImg->getIplImage(),wModule->gui->_outputImage3->getIplImage());
                     conversion=false;
                 }
                 else if(wModule->gui->inLayer0_flag){
-                    //ippiCopy_8u_C3R(wModule->ptr_inputLayer0->getPixelAddress(0,0),320*3,_outputImage3->getPixelAddress(0,0),320*3,srcsize);
-                    cvCopyImage(wModule->gui->ptr_inputLayer0->getIplImage(),_outputImage3->getIplImage());
+                    //ippiCopy_8u_C3R(wModule->ptr_inputLayer0->getPixelAddress(0,0),320*3,wModule->gui->_outputImage3->getPixelAddress(0,0),320*3,srcsize);
+                    cvCopyImage(wModule->gui->ptr_inputLayer0->getIplImage(),wModule->gui->_outputImage3->getIplImage());
                     conversion=false;
                 }
                 else if(wModule->gui->inLayer1_flag){
-                    //ippiCopy_8u_C3R(wModule->ptr_inputLayer1->getPixelAddress(0,0),320*3,_outputImage3->getPixelAddress(0,0),320*3,srcsize);
-                    cvCopyImage(wModule->gui->ptr_inputLayer1->getIplImage(),_outputImage3->getIplImage());
+                    //ippiCopy_8u_C3R(wModule->ptr_inputLayer1->getPixelAddress(0,0),320*3,wModule->gui->_outputImage3->getPixelAddress(0,0),320*3,srcsize);
+                    cvCopyImage(wModule->gui->ptr_inputLayer1->getIplImage(),wModule->gui->_outputImage3->getIplImage());
                     conversion=false;
                 }
                 else if(wModule->gui->inLayer2_flag){
-                    //ippiCopy_8u_C3R(wModule->ptr_inputLayer2->getPixelAddress(0,0),320*3,_outputImage3->getPixelAddress(0,0),320*3,srcsize);
-                    cvCopyImage(wModule->gui->ptr_inputLayer2->getIplImage(),_outputImage3->getIplImage());
+                    //ippiCopy_8u_C3R(wModule->ptr_inputLayer2->getPixelAddress(0,0),320*3,wModule->gui->_outputImage3->getPixelAddress(0,0),320*3,srcsize);
+                    cvCopyImage(wModule->gui->ptr_inputLayer2->getIplImage(),wModule->gui->_outputImage3->getIplImage());
                     conversion=false;
                 }
                 else if(wModule->gui->inLayer3_flag){
-                    //ippiCopy_8u_C3R(wModule->ptr_inputLayer3->getPixelAddress(0,0),320*3,_outputImage3->getPixelAddress(0,0),320*3,srcsize);
-                    cvCopyImage(wModule->gui->ptr_inputLayer3->getIplImage(),_outputImage3->getIplImage());
+                    //ippiCopy_8u_C3R(wModule->ptr_inputLayer3->getPixelAddress(0,0),320*3,wModule->gui->_outputImage3->getPixelAddress(0,0),320*3,srcsize);
+                    cvCopyImage(wModule->gui->ptr_inputLayer3->getIplImage(),wModule->gui->_outputImage3->getIplImage());
                     conversion=false;
                 }
                 else if(wModule->gui->inLayer4_flag){
-                    //ippiCopy_8u_C3R(wModule->ptr_inputLayer4->getPixelAddress(0,0),320*3,_outputImage3->getPixelAddress(0,0),320*3,srcsize);
-                    cvCopyImage(wModule->gui->ptr_inputLayer4->getIplImage(),_outputImage3->getIplImage());
+                    //ippiCopy_8u_C3R(wModule->ptr_inputLayer4->getPixelAddress(0,0),320*3,wModule->gui->_outputImage3->getPixelAddress(0,0),320*3,srcsize);
+                    cvCopyImage(wModule->gui->ptr_inputLayer4->getIplImage(),wModule->gui->_outputImage3->getIplImage());
                     conversion=false;
                 }
                 else if(wModule->gui->inLayer5_flag){
-                    //ippiCopy_8u_C3R(wModule->ptr_inputLayer5->getPixelAddress(0,0),320*3,_outputImage3->getPixelAddress(0,0),320*3,srcsize);
-                    cvCopyImage(wModule->gui->ptr_inputLayer5->getIplImage(),_outputImage3->getIplImage());
+                    //ippiCopy_8u_C3R(wModule->ptr_inputLayer5->getPixelAddress(0,0),320*3,wModule->gui->_outputImage3->getPixelAddress(0,0),320*3,srcsize);
+                    cvCopyImage(wModule->gui->ptr_inputLayer5->getIplImage(),wModule->gui->_outputImage3->getIplImage());
                     conversion=false;
                 }
                 else if(wModule->gui->inLayer6_flag){
-                    //ippiCopy_8u_C3R(wModule->ptr_inputLayer6->getPixelAddress(0,0),320*3,_outputImage3->getPixelAddress(0,0),320*3,srcsize);
-                    cvCopyImage(wModule->gui->ptr_inputLayer6->getIplImage(),_outputImage3->getIplImage());
+                    //ippiCopy_8u_C3R(wModule->ptr_inputLayer6->getPixelAddress(0,0),320*3,wModule->gui->_outputImage3->getPixelAddress(0,0),320*3,srcsize);
+                    cvCopyImage(wModule->gui->ptr_inputLayer6->getIplImage(),wModule->gui->_outputImage3->getIplImage());
                     conversion=false;
                 }
                 else if(wModule->gui->inLayer7_flag){
-                    //ippiCopy_8u_C3R(wModule->ptr_inputLayer7->getPixelAddress(0,0),320*3,_outputImage3->getPixelAddress(0,0),320*3,srcsize);
-                    cvCopyImage(wModule->gui->ptr_inputLayer7->getIplImage(),_outputImage3->getIplImage());
+                    //ippiCopy_8u_C3R(wModule->ptr_inputLayer7->getPixelAddress(0,0),320*3,wModule->gui->_outputImage3->getPixelAddress(0,0),320*3,srcsize);
+                    cvCopyImage(wModule->gui->ptr_inputLayer7->getIplImage(),wModule->gui->_outputImage3->getIplImage());
                     conversion=false;
                 }
                 else if(wModule->gui->inLayer8_flag){
-                    //ippiCopy_8u_C3R(wModule->ptr_inputLayer8->getPixelAddress(0,0),320*3,_outputImage3->getPixelAddress(0,0),320*3,srcsize);
-                    cvCopyImage(wModule->gui->ptr_inputLayer8->getIplImage(),_outputImage3->getIplImage());
+                    //ippiCopy_8u_C3R(wModule->ptr_inputLayer8->getPixelAddress(0,0),320*3,wModule->gui->_outputImage3->getPixelAddress(0,0),320*3,srcsize);
+                    cvCopyImage(wModule->gui->ptr_inputLayer8->getIplImage(),wModule->gui->_outputImage3->getIplImage());
                     conversion=false;
                 }
-                if(false){
+
+                /*if(false){
                     //ippiCopy_8u_C3R(wModule->salience->colorVQ_img->getPixelAddress(0,0),320*3,_outputImage3->getPixelAddress(0,0),320*3,srcsize);
                     conversion=false;
                 }
-                else if(false){
-                    if(false){
-                        //ippiCopy_8u_C1R(wModule->outContrastLP->getPixelAddress(0,0),320,_outputImage->getPixelAddress(0,0),320,srcsize);
-                        conversion=true;
-                    }
-                    else if(false){
-                        //ippiCopy_8u_C3R(wModule->outMeanColourLP->getPixelAddress(0,0),320*3,_outputImage3->getPixelAddress(0,0),320*3,srcsize);	
-                        conversion=false;
-                    }
-                    else _outputImage->zero(); //the input is a RGB image, whereas the watershed is working with a mono image
-                }
-                else _outputImage->zero(); //the input is a RGB image, whereas the watershed is working with a mono image
-
+                
+                else 
+                    _outputImage->zero(); //the input is a RGB image, whereas the watershed is working with a mono image */
+                
                 //-------
+
+                
                 
                 if(conversion){
                     //int psb,width=320,height=240;
@@ -762,7 +771,7 @@ static gint expose_CB (GtkWidget *widget, GdkEventExpose *event, gpointer data)
                     //two copies in order to have 2 conversions
                     //the first transform the yarp mono into a 4-channel image
                     //ippiCopy_8u_C1R(_outputImage->getPixelAddress(0,0), width,im_out,psb,srcsize);
-                    cvCvtColor(_outputImage->getIplImage(),wModule->image_out->getIplImage(),CV_GRAY2RGB);
+                    cvCvtColor(wModule->gui->_outputImage->getIplImage(),wModule->image_out->getIplImage(),CV_GRAY2RGB);
                     //im_tmp[0]=im_out;
                     //im_tmp[1]=im_out;
                     //im_tmp[2]=im_out;
@@ -774,22 +783,25 @@ static gint expose_CB (GtkWidget *widget, GdkEventExpose *event, gpointer data)
                     //ippiFree(im_tmp[2]);
                 }
                 else{
-                    //ippiCopy_8u_C3R(_outputImage3->getPixelAddress(0,0),320*3,wModule->image_out->getPixelAddress(0,0),320*3,srcsize);
-                    cvCopyImage(_outputImage3->getIplImage(),wModule->image_out->getIplImage());
+                    ippiCopy_8u_C3R(wModule->gui->_outputImage3->getRawImage(),wModule->gui->_outputImage3->getRowSize(),wModule->image_out->getRawImage(),wModule->image_out->getRowSize(),srcsize);
+                    //cvCopyImage(_outputImage3->getIplImage(),wModule->image_out->getIplImage());
                 }
                 
                 //----------
                 _semaphore.wait();
-                bool result=yarpImage2Pixbuf(wModule->image_out, frame);
+                bool result=yarpImage2Pixbuf(temp3, frame);
+                //bool result=yarpImage2Pixbuf(wModule->gui->ptr_inputImage, frame);
                 //bool result=yarpImage2Pixbuf(&_inputImg, frame);
                 imageWidth = wModule->image_out->width();
                 imageHeight = wModule->image_out->height();
                 _semaphore.post();
+
+                delete temp3;
                 
                 
                 if (imageWidth==0||imageHeight==0) {
                     printf("exit for dimension nil \n");
-                    return TRUE;
+                    return true;
                 }
      
                 areaWidth = event->area.width;
@@ -857,121 +869,121 @@ static void cb_draw_value( GtkToggleButton *button )
     string _command;
     if(!strcmp(button->button.label_text,"inputImage")){
         printf("inputImage request \n");
-        /*if(button->active){
-            wModule->inputImage_flag=true;
+        if(button->active){
+            wModule->gui->inputImage_flag=true;
         }
         else
-            wModule->inputImage_flag=false;*/
+            wModule->gui->inputImage_flag=false;
     }
     else if(!strcmp(button->button.label_text,"SelectLayer0-->")){
         printf("Select Layer0 \n");
-        /*if(button->active){
-            wModule->SelectLayer0_flag=true;
-            wModule->SelectLayer1_flag=false;
-            wModule->SelectLayer2_flag=false;
-            wModule->SelectLayer3_flag=false;
-            wModule->SelectLayer4_flag=false;
-            wModule->SelectLayer5_flag=false;
-            wModule->SelectLayer6_flag=false;
-            wModule->SelectLayer7_flag=false;
-            wModule->SelectLayer8_flag=false;
+        if(button->active){
+            wModule->gui->SelectLayer0_flag=true;
+            wModule->gui->SelectLayer1_flag=false;
+            wModule->gui->SelectLayer2_flag=false;
+            wModule->gui->SelectLayer3_flag=false;
+            wModule->gui->SelectLayer4_flag=false;
+            wModule->gui->SelectLayer5_flag=false;
+            wModule->gui->SelectLayer6_flag=false;
+            wModule->gui->SelectLayer7_flag=false;
+            wModule->gui->SelectLayer8_flag=false;
         }
         else
-            wModule->SelectLayer0_flag=false;*/
+            wModule->gui->SelectLayer0_flag=false;
     }
     else if(!strcmp(button->button.label_text,"SelectLayer1-->")){
         printf("Select B: Layer1 \n");
-        /*if(button->active){
-            wModule->SelectLayer0_flag=false;
-            wModule->SelectLayer1_flag=true;
-            wModule->SelectLayer2_flag=false;
-            wModule->SelectLayer3_flag=false;
-            wModule->SelectLayer4_flag=false;
-            wModule->SelectLayer5_flag=false;
-            wModule->SelectLayer6_flag=false;
-            wModule->SelectLayer7_flag=false;
-            wModule->SelectLayer8_flag=false;
+        if(button->active){
+            wModule->gui->SelectLayer0_flag=false;
+            wModule->gui->SelectLayer1_flag=true;
+            wModule->gui->SelectLayer2_flag=false;
+            wModule->gui->SelectLayer3_flag=false;
+            wModule->gui->SelectLayer4_flag=false;
+            wModule->gui->SelectLayer5_flag=false;
+            wModule->gui->SelectLayer6_flag=false;
+            wModule->gui->SelectLayer7_flag=false;
+            wModule->gui->SelectLayer8_flag=false;
         }
         else
-            wModule->SelectLayer1_flag=false;*/
+            wModule->gui->SelectLayer1_flag=false;
     }
     else if(!strcmp(button->button.label_text,"SelectLayer2-->")){
         printf("Select B: Layer2 \n");
-        /*if(button->active){
-            wModule->SelectLayer0_flag=false;
-            wModule->SelectLayer1_flag=false;
-            wModule->SelectLayer2_flag=true;
-            wModule->SelectLayer3_flag=false;
-            wModule->SelectLayer4_flag=false;
-            wModule->SelectLayer5_flag=false;
-            wModule->SelectLayer6_flag=false;
-            wModule->SelectLayer7_flag=false;
-            wModule->SelectLayer8_flag=false;
+        if(button->active){
+            wModule->gui->SelectLayer0_flag=false;
+            wModule->gui->SelectLayer1_flag=false;
+            wModule->gui->SelectLayer2_flag=true;
+            wModule->gui->SelectLayer3_flag=false;
+            wModule->gui->SelectLayer4_flag=false;
+            wModule->gui->SelectLayer5_flag=false;
+            wModule->gui->SelectLayer6_flag=false;
+            wModule->gui->SelectLayer7_flag=false;
+            wModule->gui->SelectLayer8_flag=false;
         }
         else
-            wModule->SelectLayer2_flag=false;*/
+            wModule->gui->SelectLayer2_flag=false;
     }
     else if(!strcmp(button->button.label_text,"SelectLayer3-->")){
         printf("Select B Layer3 \n");
-        /*if(button->active){
-            wModule->SelectLayer0_flag=false;
-            wModule->SelectLayer1_flag=false;
-            wModule->SelectLayer2_flag=false;
-            wModule->SelectLayer3_flag=true;
-            wModule->SelectLayer4_flag=false;
-            wModule->SelectLayer5_flag=false;
-            wModule->SelectLayer6_flag=false;
-            wModule->SelectLayer7_flag=false;
-            wModule->SelectLayer8_flag=false;
+        if(button->active){
+            wModule->gui->SelectLayer0_flag=false;
+            wModule->gui->SelectLayer1_flag=false;
+            wModule->gui->SelectLayer2_flag=false;
+            wModule->gui->SelectLayer3_flag=true;
+            wModule->gui->SelectLayer4_flag=false;
+            wModule->gui->SelectLayer5_flag=false;
+            wModule->gui->SelectLayer6_flag=false;
+            wModule->gui->SelectLayer7_flag=false;
+            wModule->gui->SelectLayer8_flag=false;
         }
         else
-            wModule->SelectLayer3_flag=true;*/
+            wModule->gui->SelectLayer3_flag=true;
     }
     else if(!strcmp(button->button.label_text,"SelectLayer4-->")){
         printf("Select B: Layer4 \n");
-        /*if(button->active){
-            wModule->SelectLayer0_flag=false;
-            wModule->SelectLayer1_flag=false;
-            wModule->SelectLayer2_flag=false;
-            wModule->SelectLayer3_flag=false;
-            wModule->SelectLayer4_flag=true;
-            wModule->SelectLayer5_flag=false;
-            wModule->SelectLayer6_flag=false;
-            wModule->SelectLayer7_flag=false;
-            wModule->SelectLayer8_flag=false;
+        if(button->active){
+            wModule->gui->SelectLayer0_flag=false;
+            wModule->gui->SelectLayer1_flag=false;
+            wModule->gui->SelectLayer2_flag=false;
+            wModule->gui->SelectLayer3_flag=false;
+            wModule->gui->SelectLayer4_flag=true;
+            wModule->gui->SelectLayer5_flag=false;
+            wModule->gui->SelectLayer6_flag=false;
+            wModule->gui->SelectLayer7_flag=false;
+            wModule->gui->SelectLayer8_flag=false;
         }
         else
-            wModule->SelectLayer4_flag=false;*/
+            wModule->gui->SelectLayer4_flag=false;
 
     }
     else if(!strcmp(button->button.label_text,"SelectLayer5-->")){
         printf("Select B: Layer5 \n");
-        /*if(button->active){
-            wModule->SelectLayer0_flag=false;
-            wModule->SelectLayer1_flag=false;
-            wModule->SelectLayer2_flag=false;
-            wModule->SelectLayer3_flag=false;
-            wModule->SelectLayer4_flag=false;
-            wModule->SelectLayer5_flag=true;
-            wModule->SelectLayer6_flag=false;
-            wModule->SelectLayer7_flag=false;
-            wModule->SelectLayer8_flag=false;
+        if(button->active){
+            wModule->gui->SelectLayer0_flag=false;
+            wModule->gui->SelectLayer1_flag=false;
+            wModule->gui->SelectLayer2_flag=false;
+            wModule->gui->SelectLayer3_flag=false;
+            wModule->gui->SelectLayer4_flag=false;
+            wModule->gui->SelectLayer5_flag=true;
+            wModule->gui->SelectLayer6_flag=false;
+            wModule->gui->SelectLayer7_flag=false;
+            wModule->gui->SelectLayer8_flag=false;
         }
         else
-            wModule->SelectLayer5_flag=false;*/
+            wModule->gui->SelectLayer5_flag=false;
     }
     else if(!strcmp(button->button.label_text,"Layer0")){
         printf("Layer0 request \n");
         if(button->active){
-            /*wModule->inLayer0_flag=true;
-            wModule->inLayer1_flag=false;
-            wModule->inLayer2_flag=false;
-            wModule->inLayer3_flag=false;
-            wModule->inLayer4_flag=false;
-            wModule->inLayer5_flag=false;
-            wModule->inLayer6_flag=false;
-            wModule->inLayer7_flag=false;
-            wModule->inLayer8_flag=false;*/
+            wModule->gui->inLayer0_flag=true;
+            wModule->gui->inLayer1_flag=false;
+            wModule->gui->inLayer2_flag=false;
+            wModule->gui->inLayer3_flag=false;
+            wModule->gui->inLayer4_flag=false;
+            wModule->gui->inLayer5_flag=false;
+            wModule->gui->inLayer6_flag=false;
+            wModule->gui->inLayer7_flag=false;
+            wModule->gui->inLayer8_flag=false;
             string _command("CurrentLayer");
             Bottle tmp;
             tmp.addString("value");
@@ -983,21 +995,21 @@ static void cb_draw_value( GtkToggleButton *button )
             //wModule->bOptions.addList()=tmp;
             wModule->command->assign(_command);
         }
-        /*else
-            wModule->inLayer0_flag=false;*/
+        else
+            wModule->gui->inLayer0_flag=false;
     }
     else if(!strcmp(button->button.label_text,"Layer1")){
         printf("Layer1 request \n");
-        /*if(button->active){
-            wModule->inLayer0_flag=false;
-            wModule->inLayer1_flag=true;
-            wModule->inLayer2_flag=false;
-            wModule->inLayer3_flag=false;
-            wModule->inLayer4_flag=false;
-            wModule->inLayer5_flag=false;
-            wModule->inLayer6_flag=false;
-            wModule->inLayer7_flag=false;
-            wModule->inLayer8_flag=false;
+        if(button->active){
+            wModule->gui->inLayer0_flag=false;
+            wModule->gui->inLayer1_flag=true;
+            wModule->gui->inLayer2_flag=false;
+            wModule->gui->inLayer3_flag=false;
+            wModule->gui->inLayer4_flag=false;
+            wModule->gui->inLayer5_flag=false;
+            wModule->gui->inLayer6_flag=false;
+            wModule->gui->inLayer7_flag=false;
+            wModule->gui->inLayer8_flag=false;
             string _command("CurrentLayer");
             Bottle tmp;
             tmp.addString("value");
@@ -1010,20 +1022,20 @@ static void cb_draw_value( GtkToggleButton *button )
             wModule->command->assign(_command);
         }
         else
-            wModule->inLayer1_flag=false;*/
+            wModule->gui->inLayer1_flag=false;
     }
     else if(!strcmp(button->button.label_text,"Layer2")){
         printf("Layer2 request \n");
-        /*if(button->active){
-            wModule->inLayer0_flag=false;
-            wModule->inLayer1_flag=false;
-            wModule->inLayer2_flag=true;
-            wModule->inLayer3_flag=false;
-            wModule->inLayer4_flag=false;
-            wModule->inLayer5_flag=false;
-            wModule->inLayer6_flag=false;
-            wModule->inLayer7_flag=false;
-            wModule->inLayer8_flag=false;
+        if(button->active){
+            wModule->gui->inLayer0_flag=false;
+            wModule->gui->inLayer1_flag=false;
+            wModule->gui->inLayer2_flag=true;
+            wModule->gui->inLayer3_flag=false;
+            wModule->gui->inLayer4_flag=false;
+            wModule->gui->inLayer5_flag=false;
+            wModule->gui->inLayer6_flag=false;
+            wModule->gui->inLayer7_flag=false;
+            wModule->gui->inLayer8_flag=false;
             string _command("CurrentLayer");
             Bottle tmp;
             tmp.addString("value");
@@ -1036,19 +1048,19 @@ static void cb_draw_value( GtkToggleButton *button )
             wModule->command->assign(_command);
         }
         else
-            wModule->inLayer2_flag=false;*/
+            wModule->gui->inLayer2_flag=false;
     }
     if(!strcmp(button->button.label_text,"Layer3")){
-        /*if(button->active){
-            wModule->inLayer0_flag=false;
-            wModule->inLayer1_flag=false;
-            wModule->inLayer2_flag=false;
-            wModule->inLayer3_flag=true;
-            wModule->inLayer4_flag=false;
-            wModule->inLayer5_flag=false;
-            wModule->inLayer6_flag=false;
-            wModule->inLayer7_flag=false;
-            wModule->inLayer8_flag=false;
+        if(button->active){
+            wModule->gui->inLayer0_flag=false;
+            wModule->gui->inLayer1_flag=false;
+            wModule->gui->inLayer2_flag=false;
+            wModule->gui->inLayer3_flag=true;
+            wModule->gui->inLayer4_flag=false;
+            wModule->gui->inLayer5_flag=false;
+            wModule->gui->inLayer6_flag=false;
+            wModule->gui->inLayer7_flag=false;
+            wModule->gui->inLayer8_flag=false;
             string _command("CurrentLayer");
             Bottle tmp;
             tmp.addString("value");
@@ -1061,19 +1073,19 @@ static void cb_draw_value( GtkToggleButton *button )
             wModule->command->assign(_command);
         }
         else
-            wModule->inLayer3_flag=false;*/
+            wModule->gui->inLayer3_flag=false;
     }
     else if(!strcmp(button->button.label_text,"Layer4")){
-        /*if(button->active){
-            wModule->inLayer0_flag=false;
-            wModule->inLayer1_flag=false;
-            wModule->inLayer2_flag=false;
-            wModule->inLayer3_flag=false;
-            wModule->inLayer4_flag=true;
-            wModule->inLayer5_flag=false;
-            wModule->inLayer6_flag=false;
-            wModule->inLayer7_flag=false;
-            wModule->inLayer8_flag=false;
+        if(button->active){
+            wModule->gui->inLayer0_flag=false;
+            wModule->gui->inLayer1_flag=false;
+            wModule->gui->inLayer2_flag=false;
+            wModule->gui->inLayer3_flag=false;
+            wModule->gui->inLayer4_flag=true;
+            wModule->gui->inLayer5_flag=false;
+            wModule->gui->inLayer6_flag=false;
+            wModule->gui->inLayer7_flag=false;
+            wModule->gui->inLayer8_flag=false;
             string _command("CurrentLayer");
             Bottle tmp;
             tmp.addString("value");
@@ -1086,19 +1098,19 @@ static void cb_draw_value( GtkToggleButton *button )
             wModule->command->assign(_command);
         }
         else
-            wModule->inLayer4_flag=false;*/
+            wModule->gui->inLayer4_flag=false;
     }
     else if(!strcmp(button->button.label_text,"Layer5")){
-        /*if(button->active){
-            wModule->inLayer0_flag=false;
-            wModule->inLayer1_flag=false;
-            wModule->inLayer2_flag=false;
-            wModule->inLayer3_flag=false;
-            wModule->inLayer4_flag=false;
-            wModule->inLayer5_flag=true;
-            wModule->inLayer6_flag=false;
-            wModule->inLayer7_flag=false;
-            wModule->inLayer8_flag=false;
+        if(button->active){
+            wModule->gui->inLayer0_flag=false;
+            wModule->gui->inLayer1_flag=false;
+            wModule->gui->inLayer2_flag=false;
+            wModule->gui->inLayer3_flag=false;
+            wModule->gui->inLayer4_flag=false;
+            wModule->gui->inLayer5_flag=true;
+            wModule->gui->inLayer6_flag=false;
+            wModule->gui->inLayer7_flag=false;
+            wModule->gui->inLayer8_flag=false;
             string _command("CurrentLayer");
             Bottle tmp;
             tmp.addString("value");
@@ -1111,19 +1123,19 @@ static void cb_draw_value( GtkToggleButton *button )
             wModule->command->assign(_command);
         }
         else
-            wModule->inLayer5_flag=false;*/
+            wModule->gui->inLayer5_flag=false;
     }
     else if(!strcmp(button->button.label_text,"Layer6")){
-        /*if(button->active){
-            wModule->inLayer0_flag=false;
-            wModule->inLayer1_flag=false;
-            wModule->inLayer2_flag=false;
-            wModule->inLayer3_flag=false;
-            wModule->inLayer4_flag=false;
-            wModule->inLayer5_flag=false;
-            wModule->inLayer6_flag=true;
-            wModule->inLayer7_flag=false;
-            wModule->inLayer8_flag=false;
+        if(button->active){
+            wModule->gui->inLayer0_flag=false;
+            wModule->gui->inLayer1_flag=false;
+            wModule->gui->inLayer2_flag=false;
+            wModule->gui->inLayer3_flag=false;
+            wModule->gui->inLayer4_flag=false;
+            wModule->gui->inLayer5_flag=false;
+            wModule->gui->inLayer6_flag=true;
+            wModule->gui->inLayer7_flag=false;
+            wModule->gui->inLayer8_flag=false;
             string _command("CurrentLayer");
             Bottle tmp;
             tmp.addString("value");
@@ -1136,19 +1148,19 @@ static void cb_draw_value( GtkToggleButton *button )
             wModule->command->assign(_command);
         }
         else
-            wModule->inLayer6_flag=false;*/
+            wModule->gui->inLayer6_flag=false;
     }
     else if(!strcmp(button->button.label_text,"Layer7")){
-        /*if(button->active){
-            wModule->inLayer0_flag=false;
-            wModule->inLayer1_flag=false;
-            wModule->inLayer2_flag=false;
-            wModule->inLayer3_flag=false;
-            wModule->inLayer4_flag=false;
-            wModule->inLayer5_flag=false;
-            wModule->inLayer6_flag=false;
-            wModule->inLayer7_flag=true;
-            wModule->inLayer8_flag=false;
+        if(button->active){
+            wModule->gui->inLayer0_flag=false;
+            wModule->gui->inLayer1_flag=false;
+            wModule->gui->inLayer2_flag=false;
+            wModule->gui->inLayer3_flag=false;
+            wModule->gui->inLayer4_flag=false;
+            wModule->gui->inLayer5_flag=false;
+            wModule->gui->inLayer6_flag=false;
+            wModule->gui->inLayer7_flag=true;
+            wModule->gui->inLayer8_flag=false;
             string _command("CurrentLayer");
             Bottle tmp;
             tmp.addString("value");
@@ -1161,19 +1173,19 @@ static void cb_draw_value( GtkToggleButton *button )
             wModule->command->assign(_command);
         }
         else
-            wModule->inLayer7_flag=false;*/
+            wModule->gui->inLayer7_flag=false;
     }
     else if(!strcmp(button->button.label_text,"Layer8")){
-        /*if(button->active){
-            wModule->inLayer0_flag=false;
-            wModule->inLayer1_flag=false;
-            wModule->inLayer2_flag=false;
-            wModule->inLayer3_flag=false;
-            wModule->inLayer4_flag=false;
-            wModule->inLayer5_flag=false;
-            wModule->inLayer6_flag=false;
-            wModule->inLayer7_flag=false;
-            wModule->inLayer8_flag=true;
+        if(button->active){
+            wModule->gui->inLayer0_flag=false;
+            wModule->gui->inLayer1_flag=false;
+            wModule->gui->inLayer2_flag=false;
+            wModule->gui->inLayer3_flag=false;
+            wModule->gui->inLayer4_flag=false;
+            wModule->gui->inLayer5_flag=false;
+            wModule->gui->inLayer6_flag=false;
+            wModule->gui->inLayer7_flag=false;
+            wModule->gui->inLayer8_flag=true;
             string _command("CurrentLayer");
             Bottle tmp;
             tmp.addString("value");
@@ -1186,7 +1198,7 @@ static void cb_draw_value( GtkToggleButton *button )
             wModule->command->assign(_command);
         }
         else
-            wModule->inLayer8_flag=false;*/
+            wModule->gui->inLayer8_flag=false;
     }
     if(!strcmp(button->button.label_text,"EvolveFreely-->")){
         if(button->active)
@@ -1354,8 +1366,8 @@ static gint saveSingleClicked_CB(GtkWidget *widget, gpointer data)
 }
 
 static gint timeout_CB (gpointer data){
-    /*gtk_widget_queue_draw (da);
-    if (getImage()){
+    gtk_widget_queue_draw (da);
+    if (wModule->gui->getInput()){
             wModule->inputImageReady_flag=true;
             //             int imageWidth, imageHeight, pixbufWidth, pixbufHeight;
             //             _semaphore.wait();
@@ -1375,7 +1387,7 @@ static gint timeout_CB (gpointer data){
             //                saveCurrentFrame();
     }
 
-    wModule->outPorts();*/
+    //wModule->outPorts();
     return TRUE;
 }
 
@@ -1611,7 +1623,7 @@ void graphicThread::setUp()
         //ACE_OS::exit(1);
     }
     
-    //_inputImg.resize(320,240);
+    _inputImg.resize(320,240);
     _inputImgLayer0.resize(320,240);
     _inputImgLayer1.resize(320,240);
     _inputImgLayer2.resize(320,240);

@@ -34,11 +34,14 @@ BMLInterface::BMLInterface(){
     /*meanColour_flag=true;
     contrastLP_flag=false;
     blobCataloged_flag=true;*/
+
+    _pOutPort=new BufferedPort<Bottle>;
     
 }
 
 BMLInterface::~BMLInterface(){
     delete image_out;
+    delete _pOutPort;
 }
 
 
@@ -65,7 +68,7 @@ void BMLInterface::setOptions(yarp::os::Property opt){
 }
 
 bool BMLInterface::updateModule() {    
-   
+    outPorts();
     return true;
 }
 
@@ -100,8 +103,11 @@ bool BMLInterface::outPorts(){
     ippiCopy_8u_C1R(im_tmp[2],psb,blobFov->getPixelAddress(0,0),psb,srcsize);*/
     //ippiCopy_8u_P3C3R(im_tmp,psb,image_out->getPixelAddress(0,0),320*3,srcsize);
     //this->_pOutPort2->prepare()=*(this->image_out);
-    this->_pOutPort2->prepare()=*(this->image_out);
-    this->_pOutPort2->write();
+
+    //this->_pOutPort2->prepare()=*(this->image_out);
+    //this->_pOutPort2->write();
+
+
     //this->_pOutPort2->write();
     //this->_pOutPort3->write();
     //ippiFree(im_out);
