@@ -257,7 +257,7 @@ bool graphicThread::openPorts(){
             return false;
         }
     //--------
-    ret = _imgRecvLayer0.Connect((char *)wModule->getName("/inLayer0:o").c_str(),"default");
+    ret = _imgRecvLayer0.Connect((char *)wModule->getName("/layer0:i").c_str(),"default");
     if (ret == true)
         {
             //reduce verbosity --paulfitz
@@ -268,7 +268,7 @@ bool graphicThread::openPorts(){
             printf("ERROR: Port registration failed.\nQuitting, sorry.\n");
             return false;
         }
-    ret = _imgRecvLayer1.Connect((char *)wModule->getName("/inLayer1:o").c_str(),"default");
+    ret = _imgRecvLayer1.Connect((char *)wModule->getName("/layer1:i").c_str(),"default");
     if (ret == true)
         {
             //reduce verbosity --paulfitz
@@ -279,7 +279,7 @@ bool graphicThread::openPorts(){
             printf("ERROR: Port registration failed.\nQuitting, sorry.\n");
             return false;
         }
-    ret = _imgRecvLayer2.Connect((char *)wModule->getName("/inLayer2:o").c_str(),"default");
+    ret = _imgRecvLayer2.Connect((char *)wModule->getName("/layer2:i").c_str(),"default");
     if (ret == true)
         {
             //reduce verbosity --paulfitz
@@ -291,7 +291,7 @@ bool graphicThread::openPorts(){
             return false;
         }
     //--------
-    ret = _imgRecvLayer3.Connect((char *)wModule->getName("/inLayer3:o").c_str(),"default");
+    ret = _imgRecvLayer3.Connect((char *)wModule->getName("/layer3:i").c_str(),"default");
     if (ret == true)
         {
             //reduce verbosity --paulfitz
@@ -302,7 +302,7 @@ bool graphicThread::openPorts(){
             printf("ERROR: Port registration failed.\nQuitting, sorry.\n");
             return false;
         }
-    ret = _imgRecvLayer4.Connect((char *)wModule->getName("/inLayer4:o").c_str(),"default");
+    ret = _imgRecvLayer4.Connect((char *)wModule->getName("/layer4:i").c_str(),"default");
     if (ret == true)
         {
             //reduce verbosity --paulfitz
@@ -313,7 +313,7 @@ bool graphicThread::openPorts(){
             printf("ERROR: Port registration failed.\nQuitting, sorry.\n");
             return false;
         }
-    ret = _imgRecvLayer5.Connect((char *)wModule->getName("/inLayer5:o").c_str(),"default");
+    ret = _imgRecvLayer5.Connect((char *)wModule->getName("/layer5:i").c_str(),"default");
     if (ret == true)
         {
             //reduce verbosity --paulfitz
@@ -324,7 +324,7 @@ bool graphicThread::openPorts(){
             printf("ERROR: Port registration failed.\nQuitting, sorry.\n");
             return false;
         }
-    ret = _imgRecvLayer6.Connect((char *)wModule->getName("/inLayer6:o").c_str(),"default");
+    ret = _imgRecvLayer6.Connect((char *)wModule->getName("/layer6:i").c_str(),"default");
     if (ret == true)
         {
             //reduce verbosity --paulfitz
@@ -335,7 +335,7 @@ bool graphicThread::openPorts(){
             printf("ERROR: Port registration failed.\nQuitting, sorry.\n");
             return false;
         }
-    ret = _imgRecvLayer7.Connect((char *)wModule->getName("/inLayer7:o").c_str(),"default");
+    ret = _imgRecvLayer7.Connect((char *)wModule->getName("/layer7:i").c_str(),"default");
     if (ret == true)
         {
             //reduce verbosity --paulfitz
@@ -346,7 +346,7 @@ bool graphicThread::openPorts(){
             printf("ERROR: Port registration failed.\nQuitting, sorry.\n");
             return false;
         }
-    ret = _imgRecvLayer8.Connect((char *)wModule->getName("/inLayer8:o").c_str(),"default");
+    ret = _imgRecvLayer8.Connect((char *)wModule->getName("/layer8:i").c_str(),"default");
     if (ret == true)
         {
             //reduce verbosity --paulfitz
@@ -467,38 +467,7 @@ bool graphicThread::getLayers(){
     }	
 
     
-    /*_semaphore.wait();
-    ret = _imgRecvLayer1.GetLastImage(&_inputLayer1);
-    wModule->ptr_inputLayer1=&_inputLayer1;
-    _semaphore.post();
-    _semaphore.wait();
-    ret = _imgRecvLayer2.GetLastImage(&_inputLayer2);
-    wModule->ptr_inputLayer2=&_inputLayer2;
-    _semaphore.post();
-    _semaphore.wait();
-    ret = _imgRecvLayer3.GetLastImage(&_inputLayer3);
-    wModule->ptr_inputLayer3=&_inputLayer3;
-    _semaphore.post();
-    _semaphore.wait();
-    ret = _imgRecvLayer4.GetLastImage(&_inputLayer4);
-    wModule->ptr_inputLayer4=&_inputLayer4;
-    _semaphore.post();
-    _semaphore.wait();
-    ret = _imgRecvLayer5.GetLastImage(&_inputLayer5);
-    wModule->ptr_inputLayer5=&_inputLayer5;
-    _semaphore.post();
-    _semaphore.wait();
-    ret = _imgRecvLayer6.GetLastImage(&_inputLayer6);
-    wModule->ptr_inputLayer6=&_inputLayer6;
-    _semaphore.post();
-    _semaphore.wait();
-    ret = _imgRecvLayer7.GetLastImage(&_inputLayer7);
-    wModule->ptr_inputLayer7=&_inputLayer7;
-    _semaphore.post();
-    _semaphore.wait();
-    ret = _imgRecvLayer8.GetLastImage(&_inputLayer8);
-    wModule->ptr_inputLayer8=&_inputLayer8;
-    _semaphore.post();*/
+    
     
     //printf("GetImage: out of the semaphore \n");
 
@@ -717,56 +686,56 @@ static gint expose_CB (GtkWidget *widget, GdkEventExpose *event, gpointer data)
                 //=new yarp::sig::ImageOf<yarp::sig::PixelRgb>;
                 //_outputImage->resize(320,240);
                 bool conversion=true;
-                /*if(wModule->inputImage_flag){
+                if(wModule->gui->inputImage_flag){
                     //ippiCopy_8u_C3R(wModule->ptr_inputImage->getPixelAddress(0,0),320*3,_outputImage3->getPixelAddress(0,0),320*3,srcsize);
-                    cvCopyImage(wModule->ptr_inputImage->getIplImage(),_outputImage3->getIplImage());
+                    cvCopyImage(wModule->gui->ptr_inputImage->getIplImage(),_outputImage3->getIplImage());
                     conversion=false;
                 }
-                else if(wModule->inLayer0_flag){
+                else if(wModule->gui->inLayer0_flag){
                     //ippiCopy_8u_C3R(wModule->ptr_inputLayer0->getPixelAddress(0,0),320*3,_outputImage3->getPixelAddress(0,0),320*3,srcsize);
-                    cvCopyImage(wModule->ptr_inputLayer0->getIplImage(),_outputImage3->getIplImage());
+                    cvCopyImage(wModule->gui->ptr_inputLayer0->getIplImage(),_outputImage3->getIplImage());
                     conversion=false;
                 }
-                else if(wModule->inLayer1_flag){
+                else if(wModule->gui->inLayer1_flag){
                     //ippiCopy_8u_C3R(wModule->ptr_inputLayer1->getPixelAddress(0,0),320*3,_outputImage3->getPixelAddress(0,0),320*3,srcsize);
-                    cvCopyImage(wModule->ptr_inputLayer1->getIplImage(),_outputImage3->getIplImage());
+                    cvCopyImage(wModule->gui->ptr_inputLayer1->getIplImage(),_outputImage3->getIplImage());
                     conversion=false;
                 }
-                else if(wModule->inLayer2_flag){
+                else if(wModule->gui->inLayer2_flag){
                     //ippiCopy_8u_C3R(wModule->ptr_inputLayer2->getPixelAddress(0,0),320*3,_outputImage3->getPixelAddress(0,0),320*3,srcsize);
-                    cvCopyImage(wModule->ptr_inputLayer2->getIplImage(),_outputImage3->getIplImage());
+                    cvCopyImage(wModule->gui->ptr_inputLayer2->getIplImage(),_outputImage3->getIplImage());
                     conversion=false;
                 }
-                else if(wModule->inLayer3_flag){
+                else if(wModule->gui->inLayer3_flag){
                     //ippiCopy_8u_C3R(wModule->ptr_inputLayer3->getPixelAddress(0,0),320*3,_outputImage3->getPixelAddress(0,0),320*3,srcsize);
-                    cvCopyImage(wModule->ptr_inputLayer3->getIplImage(),_outputImage3->getIplImage());
+                    cvCopyImage(wModule->gui->ptr_inputLayer3->getIplImage(),_outputImage3->getIplImage());
                     conversion=false;
                 }
-                else if(wModule->inLayer4_flag){
+                else if(wModule->gui->inLayer4_flag){
                     //ippiCopy_8u_C3R(wModule->ptr_inputLayer4->getPixelAddress(0,0),320*3,_outputImage3->getPixelAddress(0,0),320*3,srcsize);
-                    cvCopyImage(wModule->ptr_inputLayer4->getIplImage(),_outputImage3->getIplImage());
+                    cvCopyImage(wModule->gui->ptr_inputLayer4->getIplImage(),_outputImage3->getIplImage());
                     conversion=false;
                 }
-                else if(wModule->inLayer5_flag){
+                else if(wModule->gui->inLayer5_flag){
                     //ippiCopy_8u_C3R(wModule->ptr_inputLayer5->getPixelAddress(0,0),320*3,_outputImage3->getPixelAddress(0,0),320*3,srcsize);
-                    cvCopyImage(wModule->ptr_inputLayer5->getIplImage(),_outputImage3->getIplImage());
+                    cvCopyImage(wModule->gui->ptr_inputLayer5->getIplImage(),_outputImage3->getIplImage());
                     conversion=false;
                 }
-                else if(wModule->inLayer6_flag){
+                else if(wModule->gui->inLayer6_flag){
                     //ippiCopy_8u_C3R(wModule->ptr_inputLayer6->getPixelAddress(0,0),320*3,_outputImage3->getPixelAddress(0,0),320*3,srcsize);
-                    cvCopyImage(wModule->ptr_inputLayer6->getIplImage(),_outputImage3->getIplImage());
+                    cvCopyImage(wModule->gui->ptr_inputLayer6->getIplImage(),_outputImage3->getIplImage());
                     conversion=false;
                 }
-                else if(wModule->inLayer7_flag){
+                else if(wModule->gui->inLayer7_flag){
                     //ippiCopy_8u_C3R(wModule->ptr_inputLayer7->getPixelAddress(0,0),320*3,_outputImage3->getPixelAddress(0,0),320*3,srcsize);
-                    cvCopyImage(wModule->ptr_inputLayer7->getIplImage(),_outputImage3->getIplImage());
+                    cvCopyImage(wModule->gui->ptr_inputLayer7->getIplImage(),_outputImage3->getIplImage());
                     conversion=false;
                 }
-                else if(wModule->inLayer8_flag){
+                else if(wModule->gui->inLayer8_flag){
                     //ippiCopy_8u_C3R(wModule->ptr_inputLayer8->getPixelAddress(0,0),320*3,_outputImage3->getPixelAddress(0,0),320*3,srcsize);
-                    cvCopyImage(wModule->ptr_inputLayer8->getIplImage(),_outputImage3->getIplImage());
+                    cvCopyImage(wModule->gui->ptr_inputLayer8->getIplImage(),_outputImage3->getIplImage());
                     conversion=false;
-                }*/
+                }
                 if(false){
                     //ippiCopy_8u_C3R(wModule->salience->colorVQ_img->getPixelAddress(0,0),320*3,_outputImage3->getPixelAddress(0,0),320*3,srcsize);
                     conversion=false;
@@ -813,8 +782,8 @@ static gint expose_CB (GtkWidget *widget, GdkEventExpose *event, gpointer data)
                 _semaphore.wait();
                 bool result=yarpImage2Pixbuf(wModule->image_out, frame);
                 //bool result=yarpImage2Pixbuf(&_inputImg, frame);
-                imageWidth = 320;
-                imageHeight = 240;
+                imageWidth = wModule->image_out->width();
+                imageHeight = wModule->image_out->height();
                 _semaphore.post();
                 
                 
