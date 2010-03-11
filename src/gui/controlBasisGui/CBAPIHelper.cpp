@@ -33,9 +33,8 @@ void CB::CBAPIHelper::addControllerToLaw(string sen, string ref, string pf, stri
  
 }
 
-void CB::CBAPIHelper::clearControlLaw() {
-  controlLaw.stopAction();
-  controlLaw.resetControlLaw();
+void CB::CBAPIHelper::clearControlLaw() { 
+  controlLaw.deleteControllers();
   numControllers = 0;
 }
 

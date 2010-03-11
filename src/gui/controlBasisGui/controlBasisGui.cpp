@@ -532,6 +532,12 @@ void CBAPIWindow::on_add_button_clicked() {
 
 void CBAPIWindow::on_clear_button_clicked() { 
     cout << "CLEAR" << endl; 
+    if(controlLawRunning) {
+        dataThread->stopUpdateThread();
+        cbapi.stopControlLaw();
+        controlOutputText.append_text("stopping control law\n");
+        controlLawRunning = false;
+    }
     if(cbapi.getNumControllers()>0) {
         cout << "clearing control law" << endl; 
         cbapi.clearControlLaw();
