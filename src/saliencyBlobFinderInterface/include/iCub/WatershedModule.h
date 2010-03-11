@@ -259,9 +259,13 @@ public:
 	*/
 	double salienceBU;
     /**
-    * reactivity of the robot in seconds
+    * time constant of the robot in seconds for the format (x,y,z)
     */
     double reactivity;
+    /**
+    * time constant of the robot in seconds for the format (set img x y)
+    */
+    double timeCentroid;
 	/**
 	* red intensity of the target that has been found 
 	*/

@@ -1150,9 +1150,19 @@ static void cb_digits_scaletime( GtkAdjustment *adj )
 {
     /* Set the number of decimal places to which adj->value is rounded */
     wModule->reactivity=adj->value;
-    printf("reactivity: %f",wModule->reactivity);
+    printf("constant time for the iKinControlGaze: %f",wModule->reactivity);
     std::string str("");
-    sprintf((char *)str.c_str(),"set rea %2.2f",wModule->reactivity);
+    sprintf((char *)str.c_str(),"set tcon %2.2f",wModule->reactivity);
+    wModule->message->assign(str.c_str());
+}
+
+static void cb_digits_scaletime2( GtkAdjustment *adj )
+{
+    /* Set the number of decimal places to which adj->value is rounded */
+    wModule->timeCentroid=adj->value;
+    printf("constant time for the controlGaze2: %f",wModule->timeCentroid);
+    std::string str("");
+    sprintf((char *)str.c_str(),"set tcen %2.2f",wModule->timeCentroid);
     wModule->message->assign(str.c_str());
 }
 
@@ -1869,7 +1879,7 @@ GtkWidget* WatershedModule::createMainWindow(void)
     g_signal_connect (G_OBJECT (adjb), "value_changed",
                       G_CALLBACK (cb_digits_scaleb), NULL);
     
-    label = gtk_label_new ("reactivity:");
+    label = gtk_label_new ("time constant 1 (x y z):");
     gtk_box_pack_start (GTK_BOX (box4), label, FALSE, FALSE, 0);
     gtk_widget_show (label);
     adjtime = gtk_adjustment_new (1,1,10,1,1,1);
@@ -1880,6 +1890,19 @@ GtkWidget* WatershedModule::createMainWindow(void)
     gtk_widget_show (hscale);
     g_signal_connect (G_OBJECT (adjtime), "value_changed",
                       G_CALLBACK (cb_digits_scaletime), NULL);
+
+
+    label = gtk_label_new ("time constant 2 (set img x y):");
+    gtk_box_pack_start (GTK_BOX (box4), label, FALSE, FALSE, 0);
+    gtk_widget_show (label);
+    adjtime = gtk_adjustment_new (1,1,10,1,1,1);
+    hscale = gtk_hscale_new (GTK_ADJUSTMENT (adjtime));
+    gtk_widget_set_size_request (GTK_WIDGET (hscale), 200, -1);
+    scale_set_default_values (GTK_SCALE (hscale));
+    gtk_box_pack_start (GTK_BOX (box4), hscale, TRUE, TRUE, 0);
+    gtk_widget_show (hscale);
+    g_signal_connect (G_OBJECT (adjtime), "value_changed",
+                      G_CALLBACK (cb_digits_scaletime2), NULL);
 
     gtk_box_pack_start (GTK_BOX (box3), box4, TRUE, TRUE, 0);
     gtk_widget_show (box4);
