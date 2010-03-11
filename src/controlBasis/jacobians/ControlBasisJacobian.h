@@ -212,6 +212,7 @@ namespace CB {
                 }
             }
             outputPort.write();
+
         }
         
         /**
@@ -220,26 +221,25 @@ namespace CB {
         void run() {
             
             bool ok = true;            
-            outputPortName = jName + ":o";
-            outputPort.close();
-            ok = outputPort.open(outputPortName.c_str());
-            if(!ok) {
-                std::cout << "ControlBasisJacobian::run() -- couldnt open output port!!" << std::endl;
-                return;
-            }            
-
             running = true;
-            while(!isStopping()) {
+            while(!isStopping() && running) {
                 if(!updateJacobian()) {
                     std::cout << "Problem updating jacobian: (" << jName.c_str() << ")!!" << std::endl;
+                    running = false;
                     break;
-                }
+                }            
                 postData();
                 yarp::os::Time::delay(updateDelay);
             }
-
             running = false;
 
+        }
+
+        /**
+         * onStop function
+         **/
+        void onStop() {
+            running = false;
         }
         
         /**
@@ -257,8 +257,17 @@ namespace CB {
             // set up port name
             jName = "/cb/jacobian/" + randomIDstr + "/" + inputSpace + ":" + outputSpace + deviceName;
             
-            std::cout << "ControlBasisJacobian::setDevice() name=" << jName.c_str() << std::endl;        
-            
+            std::cout << "OPEN PORT: ControlBasisJacobian::setDevice() name=" << jName.c_str() << std::endl;        
+
+            // set up output ports
+            outputPortName = jName + ":o";
+            outputPort.close();
+            bool ok = outputPort.open(outputPortName.c_str());
+            if(!ok) {
+                std::cout << "ControlBasisJacobian::run() -- couldnt open output port!!" << std::endl;
+                return;
+            }            
+
         }
 
         /**

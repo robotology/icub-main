@@ -63,7 +63,9 @@ namespace CB {
         /**
          * Destructor
          **/        
-        ~CosineField() { }
+        ~CosineField() {             
+            //            std::cout << "CosineField destructor..." << std::endl;
+        }
 
         /**
          * inherited update function

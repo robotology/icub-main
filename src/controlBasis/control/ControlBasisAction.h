@@ -112,13 +112,13 @@ namespace CB {
          * virtual post data function
          **/
         virtual void postData()=0;
-               
-        /**
-         * run function
-         **/
-        void run() {
 
-            std::cout << "configuring action output information..." << std::endl;
+        /**
+         * Initiallization function for starting ports
+         **/
+        void initPorts() {
+
+            std::cout << "ControlBasisAction::initPorts()" << std::endl;
             outputPorts.clear();
             outputPortNames.clear();
             for(int i=0; i<numOutputs; i++) {
@@ -127,13 +127,21 @@ namespace CB {
                 outputPorts[i]->open(outputPortNames[i].c_str());
             }
 
+        }
+               
+        /**
+         * run function
+         **/
+        void run() {
+
             std::cout << "starting action update loop...." << std::endl;
-            while(!isStopping()) {
+            running = true;
+            while(!isStopping() && running) {
                 if(!updateAction()) {
+                    running = false;
                     std::cout << "Problem updating control action!!" << std::endl;
                     break;
                 }
-
                 iterations++;                
                 // post input/output data to ports
                 if(numOutputs > 0) postData();
@@ -145,12 +153,19 @@ namespace CB {
             running = false;
 
             // close ports
-            std::cout << "ControlBasisAction closing outputports" << std::endl;
+            //std::cout << "ControlBasisAction closing outputports" << std::endl;
             //for(int i=0; i<numInputs; i++) input[i]->close(); 
-            for(int i=0; i<outputPorts.size(); i++) outputPorts[i]->close(); 
+            //for(int i=0; i<outputPorts.size(); i++) outputPorts[i]->close(); 
                         
         }
       
+        /**
+         * onStop function
+         **/
+        void onStop() {
+            running = false;
+        }
+
         /** 
          * reset function.  closes and clears the ports.
          **/

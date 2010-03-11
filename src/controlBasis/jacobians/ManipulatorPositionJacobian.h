@@ -77,9 +77,7 @@ namespace CB {
         /**
          * destructor
          **/
-        ~ManipulatorPositionJacobian() { 
-            paramPort.close();
-        }
+        ~ManipulatorPositionJacobian() { }
 
         /**
          * inherited update function
@@ -100,6 +98,7 @@ namespace CB {
          * inherited connect to inputs function
          **/
         virtual bool connectToInputs();
+
 
     };
     

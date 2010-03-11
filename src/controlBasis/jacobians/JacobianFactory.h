@@ -44,7 +44,7 @@ namespace CB {
         std::map<std::string, CreateObjectFunc> mObjectCreator;
 
         /**
-         * A vector of PF prototypes that store the configuration information
+         * A vector of Jacobian prototypes that store the configuration information
          **/
         std::vector<ControlBasisJacobian *> prototypes;        
 
@@ -82,7 +82,7 @@ namespace CB {
             // store the information concerning this PF
             prototypes.push_back(pt);
 
-            std::cout << "PF Factory registering " << id << std::endl;
+            std::cout << "Jacobian Factory registering " << id << std::endl;
             // register the type of subclass
             mObjectCreator.insert( std::make_pair<std::string,CreateObjectFunc>(id, &createObject<S> ) ); 
 

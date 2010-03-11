@@ -16,12 +16,39 @@ CB::RunnableControlLaw::RunnableControlLaw() :
     initiallized(false),
     connectedToDevices(false)
 {
+
     controllers.clear();   
+
+    // set the information for the action (required).  
+    // Here we have no output ports, so no names need to be set
+    numOutputs = 0;
+    initPorts(); // mandatory initPorts() function from ControlBasisAction.h
 }
 
 
 CB::RunnableControlLaw::~RunnableControlLaw() {
+
+    // dont want to delete controller pointers, cause they might've been fed in from above
     controllers.clear();
+
+    for(int i=0; i<helperJacobians.size(); i++) {
+        helperJacobians[i]->stopJacobian();
+        delete helperJacobians[i];
+    }
+    helperJacobians.clear();
+
+    for(int i=0; i<devicePorts.size(); i++) {
+        devicePorts[i]->close();
+        delete devicePorts[i];
+    }
+    devicePorts.clear();
+
+    for(int i=0; i<deviceLockPorts.size(); i++) {
+        deviceLockPorts[i]->close();
+        delete deviceLockPorts[i];
+    }
+    deviceLockPorts.clear();
+
 }
 
 void CB::RunnableControlLaw::init() {
@@ -31,6 +58,9 @@ void CB::RunnableControlLaw::init() {
     int tmpSize;
     bool foundResource;
     bool useTranspose;
+
+    // check to see if eveyrthigns set up already
+    if(initiallized) return;
     
     controllerDeviceNames.clear();
     controllerOutputSpaces.clear();
@@ -77,19 +107,22 @@ void CB::RunnableControlLaw::init() {
         }
         
     }
-  
     cout << "RunnableControlLaw::init() finished" << endl;
     initiallized = true;
 
 }
 
 void CB::RunnableControlLaw::addController(Controller *c) {
+    connectedToDevices=false;
+    initiallized=false;  //new things have been added, so we need to re-initiallize
     controllers.push_back(c);
     numControllers++;
     cout << "RunnableControlLaw::addController() added new controller " << numControllers << endl;
 }
 
 void CB::RunnableControlLaw::addController(string sen, string ref, string pf, string eff, double gain=1) {
+    connectedToDevices=false;
+    initiallized=false;  //new things have been added, so we need to re-initiallize
     Controller *c = new Controller(sen,ref,pf,eff);
     c->setGain(gain);
     controllers.push_back(c);
@@ -98,6 +131,8 @@ void CB::RunnableControlLaw::addController(string sen, string ref, string pf, st
 }
 
 void CB::RunnableControlLaw::addController(string sen, string pf, string eff, double gain=1) {
+    connectedToDevices=false;
+    initiallized=false;  //new things have been added, so we need to re-initiallize
     Controller *c = new Controller(sen,pf,eff);
     c->setGain(gain);
     controllers.push_back(c);
@@ -108,11 +143,11 @@ void CB::RunnableControlLaw::addController(string sen, string pf, string eff, do
 bool CB::RunnableControlLaw::updateAction() {
   
     bool ok = true;
-    Vector Vc;
-    Matrix Jc;
-    Matrix JcInv;
-    Matrix Nc;
-    Matrix I;
+    Vector Vc(1);
+    Matrix Jc(1,1);
+    Matrix JcInv(1,1);
+    Matrix Nc(1,1);
+    Matrix I(1,1);
     int id;
     string tmpName;
     string tmpSpace;
@@ -125,14 +160,14 @@ bool CB::RunnableControlLaw::updateAction() {
     double VprojMag = 0;
     double VcMag = 0;
     
-    Matrix Mout;
-    Matrix MoutInitial;
-    Vector Vproj;
-    Matrix JcT;
-    Matrix JcTinv;
-    Matrix Mproj;
-    Matrix Jint;
-    Matrix MoutTmp;
+    Matrix Mout(1,1);
+    Matrix MoutInitial(1,1);
+    Vector Vproj(1);
+    Matrix JcT(1,1);
+    Matrix JcTinv(1,1);
+    Matrix Mproj(1,1);
+    Matrix Jint(1,1);
+    Matrix MoutTmp(1,1);
 
     //  cout << "\n\nRunnableControlLaw::update()\n-----------------------" << endl;
     
@@ -152,7 +187,7 @@ bool CB::RunnableControlLaw::updateAction() {
     // may require a space transformation of the lower priority action
     // into the space of the higher priority action.
     for(int i=(numControllers-1); i>=0; i--) {
-        
+
         tmpName = controllers[i]->getOutputDeviceName();
         tmpSpace = controllers[i]->getOutputSpace();
         tmpSize = controllers[i]->getOutputSize();   
@@ -198,7 +233,8 @@ bool CB::RunnableControlLaw::updateAction() {
 
         //    cout << "RunnableControlLaw::update() -- controller space:%s, existing space for device: %s\n",
         //             tmpSpace.c_str(), VoutSpaces[id].c_str());
-        
+  
+
         if(tmpSpace != VoutSpaces[id]) {
         
             // the (new) higher priority space is not the same as the 
@@ -307,16 +343,17 @@ void CB::RunnableControlLaw::startAction() {
         controllers[i]->startAction();
     }
     Time::delay(0.2);
-    running = true;
     start();     // mandatory start function
 }
 
 void CB::RunnableControlLaw::stopAction() {
 
-    running = false;
-    stop();     // mandatory stop function
+    cout << "RunnableControlLaw::stopAction()" << endl;
 
-    cout << "stopping control law..." << endl;
+    if(isRunning()) {
+        stop();     // mandatory stop function
+        cout << "stopping control law..." << endl;
+    }
 
     for(int i=0; i<controllers.size(); i++) {
         controllers[i]->stopAction();
@@ -339,14 +376,13 @@ void CB::RunnableControlLaw::postData() {  }
 
 Matrix CB::RunnableControlLaw::getJacobian(string deviceName, string outSpace, string inSpace, bool useTranspose=false) {
 
-    Matrix J;
+    Matrix J(1,1);
     bool needsJacobianInverse;
     int id, id2;
     string jStr = deviceName + "/" + outSpace + "/" + inSpace;
     string jStr2 = deviceName + "/" + inSpace + "/" + outSpace;
 
-
-    cout << "RunnableControlLaw::getJacobian(" << inSpace.c_str() << ":" << outSpace.c_str() << "), mapSize=" << jacobianMap.size() << endl;
+    //cout << "RunnableControlLaw::getJacobian(" << inSpace.c_str() << ":" << outSpace.c_str() << "), mapSize=" << jacobianMap.size() << endl;
 
     // check to see if the jacobian has already been created
     if(jacobianMap.find(jStr) == jacobianMap.end()) {
@@ -420,9 +456,28 @@ bool CB::RunnableControlLaw::connectToDevicePorts() {
     string outputLockPortName;
 
     if(connectedToDevices) return ok;
-    outputPortNames.clear();
-    deviceLockPorts.clear();
+
+    for(int i=0; i<helperJacobians.size(); i++) {
+        helperJacobians[i]->stopJacobian();
+        delete helperJacobians[i];
+    }
+    helperJacobians.clear();
+
+    for(int i=0; i<devicePorts.size(); i++) {
+        devicePorts[i]->close();
+        delete devicePorts[i];
+    }
     devicePorts.clear();
+
+    for(int i=0; i<deviceLockPorts.size(); i++) {
+        deviceLockPorts[i]->close();
+        delete deviceLockPorts[i];
+    }
+    deviceLockPorts.clear();
+
+    jacobianMap.clear();
+    outputPortNames.clear();
+
 
     for(int i=0; i<Vout.size(); i++) {
 
@@ -495,33 +550,18 @@ bool CB::RunnableControlLaw::sendOutputsToDevices() {
 
 void CB::RunnableControlLaw::resetControlLaw() {
 
-    string devicePortName;
-    string outputPortName;
-    string deviceLockPortName;
-    string outputLockPortName;
-
     cout << "RunnableControlLaw() -- reset()" << endl;
-
-    for(int i=0; i<controllers.size(); i++) {
-        controllers[i]->resetController();
-        delete controllers[i]; controllers[i] = NULL;
-    }
-    controllers.clear();
+    stopAction();
 
     cout << "RunnableControlLaw() -- reset() disconnecting ports" << endl;
-    for(int i=0; i<Vout.size(); i++) {
-        devicePortName = "/cb/configuration" + VoutDeviceNames[i] + "/data:i";
-        outputPortName = "/cb/control_law" + VoutDeviceNames[i] + ":o";
-        deviceLockPortName = "/cb/configuration" + VoutDeviceNames[i] + "/lock:i";
-        outputLockPortName = "/cb/control_law" + VoutDeviceNames[i] + "/lock:o";
-        Network::disconnect(outputPortName.c_str(),devicePortName.c_str());
-        Network::disconnect(outputLockPortName.c_str(),deviceLockPortName.c_str());
+    for(int i=0; i<devicePorts.size(); i++) {
         devicePorts[i]->close();
+    }
+    for(int i=0; i<deviceLockPorts.size(); i++) {
         deviceLockPorts[i]->close();
     }
 
     cout << "RunnableControlLaw() -- reset() clearing data structures" << endl;
-    controllers.clear();
     Vout.clear();
     VoutSpaces.clear();
     VoutDeviceNames.clear();
@@ -535,10 +575,42 @@ void CB::RunnableControlLaw::resetControlLaw() {
     deviceLockPorts.clear();
 
     connectedToDevices = false;
-    running = false;
     initiallized = false;
     numControllers = 0;
+    controllers.clear();
 
     reset(); // from base class
     cout << "RunnableControlLaw() -- reset() done..." << endl;
+}
+
+void CB::RunnableControlLaw::deleteControllers() {
+
+    cout << "RunnableControlLaw::deleteControllers() -- deleting " << numControllers << " controllers..." << endl;
+
+    // delete all the pointers
+    for(int i=0; i<controllers.size(); i++) {
+        delete controllers[i];
+    }
+    controllers.clear();
+
+    resetControlLaw();
+
+    for(int i=0; i<helperJacobians.size(); i++) {
+        helperJacobians[i]->stopJacobian();
+        delete helperJacobians[i];
+    }
+    helperJacobians.clear();
+
+    for(int i=0; i<devicePorts.size(); i++) {
+        devicePorts[i]->close();
+        delete devicePorts[i];
+    }
+    devicePorts.clear();
+
+    for(int i=0; i<deviceLockPorts.size(); i++) {
+        deviceLockPorts[i]->close();
+        delete deviceLockPorts[i];
+    }
+    deviceLockPorts.clear();
+
 }

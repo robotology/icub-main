@@ -15,7 +15,6 @@ void CB::StereoHeadingSquaredError::startPotentialFunction() {
             return;
         }
     }
-    running = true;
     start();     // mandatory start function
 }
 

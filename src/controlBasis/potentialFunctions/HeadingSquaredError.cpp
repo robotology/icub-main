@@ -15,7 +15,6 @@ void CB::HeadingSquaredError::startPotentialFunction() {
             return;
         }
     }
-    running = true;
     start();     // mandatory start function
 }
 

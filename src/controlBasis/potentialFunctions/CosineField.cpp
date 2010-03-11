@@ -13,7 +13,6 @@ void CB::CosineField::startPotentialFunction() {
             return;
         }
     }
-    running = true;
     start();     // mandatory start function
 }
 
@@ -23,8 +22,6 @@ void CB::CosineField::stopPotentialFunction() {
 
 bool CB::CosineField::updatePotentialFunction() {
     
-    //    cout << "CosineField updating potential" << endl;
-
     Bottle *b;
     double offset;
     bool ok = true;

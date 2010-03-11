@@ -32,11 +32,9 @@ namespace CB {
             // set configuration info
             deviceName = name + "/harmref";
             std::string tmpName = "/cb/cartesianposition" + name;
-            running = false;
 
-            initPorts();            
-            std::cout << "Creating new CartesianPositionHarmonicReference, name=" << deviceName.c_str() << std::endl;
-         
+            initPorts(); // mandatory init function            
+            std::cout << "Creating new CartesianPositionHarmonicReference, name=" << deviceName.c_str() << std::endl;        
 
             harmonicFunction = new CartesianPositionHarmonicFunction(tmpName);
             yarp::os::Time::delay(1);
@@ -59,8 +57,8 @@ namespace CB {
             yarp::sig::Vector Vgrad = harmonicFunction->getPotentialGradient();
             yarp::sig::Vector Vpos = harmonicFunction->getCurrentPosition();
 
-            //            printf("Harmonic Goal got potential=%f, gradient=\n%f\t%f\n%f\t%f\n%f\t%f\n",
-            //      potential,Vgrad[0],Vpos[0],Vgrad[1],Vpos[1],Vgrad[2],Vpos[2]);
+            //printf("Harmonic Goal got potential=%f, gradient=\n%f\t%f\n%f\t%f\n%f\t%f\n",
+            //   potential,Vgrad[0],Vpos[0],Vgrad[1],Vpos[1],Vgrad[2],Vpos[2]);
 
             double mag = sqrt(pow(Vgrad[0],2)+pow(Vgrad[1],2)+pow(Vgrad[2],2));
             yarp::sig::Vector Vstep(3);
@@ -73,11 +71,12 @@ namespace CB {
         }
 
         void startResource() { 
-            running = true; 
             start(); 
         }
         
-        void stopResource() { stop(); }
+        void stopResource() { 
+            stop(); 
+        }
         
         void setGoal(const yarp::sig::Vector & ref){        
             harmonicFunction->setGoal(ref);

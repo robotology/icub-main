@@ -10,7 +10,6 @@ using namespace yarp::os;
 using namespace yarp::sig;
 
 void CB::YARPConfigurationVariables::startResource() {
-
     // if the resource hasnt connected to the YARP device, do it now
     if(!connectedToDevice) {
         if(!connectToDevice()) {
@@ -18,33 +17,14 @@ void CB::YARPConfigurationVariables::startResource() {
             return;
         }
     }
-    running = true;
     start();     // mandatory start function
 }
 
 
 
 void CB::YARPConfigurationVariables::stopResource() {
-
     cout << "YARPConfigurationVariables::stopResource()" << endl;
     stop();     // mandatory stop function
-
-    // close the polydriver
-    dd->close();
-
-    // if in velocity control mode, disconnect the connections to the velocityControl module.
-    if(velocityControlMode) {
-        string velocityOutputPortName = "/cb/configuration" + deviceName + "/vel:o";
-        string velocityRPCOutputPortName = "/cb/configuration" + deviceName + "/vel/rpc:o";
-        Network::disconnect(velocityOutputPortName.c_str(),velocityPortName.c_str());
-        Network::disconnect(velocityRPCOutputPortName.c_str(),velocityRPCPortName.c_str());
-        velocityRPCPort.close();
-        velocityPort.close();
-    }
-
-    // set running/connected flags to false
-    connectedToDevice = false;        
-    running = false;
 }
 
 

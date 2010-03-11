@@ -15,7 +15,6 @@ void CB::CartesianPositionSquaredError::startPotentialFunction() {
             return;
         }
     }
-    running = true;
     start();     // mandatory start function
 }
 
@@ -59,11 +58,13 @@ bool CB::CartesianPositionSquaredError::updatePotentialFunction() {
     gradient = -1.0*diff;
     potential = 0.5*dot(diff,diff);
     
-    cout << "ref  -  cur  =  diff" << endl;
+    /*
+      cout << "ref  -  cur  =  diff" << endl;
     for(int i=0; i<size; i++) {
         cout << (*inputs[1])[i] << "    " << (*inputs[0])[i] << "   " << diff[i] << endl;
     }
     cout << endl;
+    */
 
     //cout << "CartesianPositionSquaredError Potential = " << potential << endl;
     return ok;
@@ -114,12 +115,12 @@ bool CB::CartesianPositionSquaredError::connectToInputs() {
         posCurName.c_str() << " -> " << posCurNameIn.c_str() << "\n\t" << 
         posRefName.c_str() << " -> " << posRefNameIn.c_str() << endl << endl;
 
-    ok &= Network::connect(posCurName.c_str(),posCurNameIn.c_str(),"udp");
+    ok &= Network::connect(posCurName.c_str(),posCurNameIn.c_str(),"tcp");
     if(!ok) {
         cout << "CartesianSquaredError::connectToInputs() -- failed connecting to current input pors...\n\n\n" << endl;
         return ok;
     }
-    ok &= Network::connect(posRefName.c_str(),posRefNameIn.c_str(),"udp");
+    ok &= Network::connect(posRefName.c_str(),posRefNameIn.c_str(),"tcp");
     if(!ok) {
         cout << "CartesianSquaredError::connectToInputs() -- failed connecting to reference input pors...\n\n\n" << endl;
         return ok;

@@ -61,9 +61,7 @@ namespace CB {
 
             // mandatory inherit function
             initPorts();
-            
-
-            
+                        
         }
         
         /** 

@@ -10,7 +10,6 @@ CB::iCubConfigurationReference::iCubConfigurationReference(std::string name, int
     size = dofs;
     
     moveable = false;
-    running = false;
     
     values.resize(numDOFs); values.zero();
     desiredValues.resize(numDOFs); desiredValues.zero();
@@ -22,7 +21,7 @@ CB::iCubConfigurationReference::iCubConfigurationReference(std::string name, int
     
     std::cout << "Creating new iCubConfigurationReference(name=" << deviceName.c_str() << ",dof=" << numDOFs << ")" << std::endl;
     
-    initPorts();
+    initPorts(); // mandatory init function
 }
 
 void CB::iCubConfigurationReference::setVals(yarp::sig::Vector ref) {

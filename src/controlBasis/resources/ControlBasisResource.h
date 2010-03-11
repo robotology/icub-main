@@ -215,12 +215,13 @@ namespace CB {
         void run() {
 
             std::cout << "starting update loop for " << resourceName.c_str() << std::endl;
-            while(!isStopping()) {
-                if(!updateResource()) {
+            running = true;
+            while(!isStopping() && running) {
+                if(!updateResource()) {                    
+                    running = false;
                     std::cout << "Problem updating resource: " << resourceName.c_str() << "!!" << std::endl;
                     break;
                 }
-               
                 // post input/output data to ports
                 //                printf("PROCESSING IN/OUT DATA FOR %s\n", resourceName.c_str());
                 if(numOutputs > 0) postData();
@@ -236,6 +237,13 @@ namespace CB {
             for(int i=0; i<outputPort.size(); i++) outputPort[i]->close(); 
             std::cout << "ControlBasisResource::run() -- closed ports..." << std::endl;
 
+        }
+
+        /**
+         * onStop function
+         **/
+        void onStop() {
+            running = false;
         }
       
         /**

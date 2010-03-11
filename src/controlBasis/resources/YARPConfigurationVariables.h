@@ -4,6 +4,7 @@
 
 #include "ConfigurationVariables.h"
 
+#include <yarp/os/Network.h>
 #include <yarp/dev/PolyDriver.h>
 #include <yarp/dev/ControlBoardInterfaces.h>
 #include <cb.h>
@@ -126,7 +127,8 @@ namespace CB {
                                    int dofs=0, int links=0)  :           
               connectedToDevice(false),
               velocityGain(10),
-              velocityControlMode(false)
+              velocityControlMode(false),
+              dd(NULL)
         {
 
             std::cout << "YARPConfigurationVariables created..." << std::endl;  
@@ -185,7 +187,8 @@ namespace CB {
         YARPConfigurationVariables() :
               connectedToDevice(false),
               velocityGain(10),
-              velocityControlMode(false)              
+              velocityControlMode(false),
+              dd(NULL)
         {
             numDOFs = 0;
             numLinks = 0;
@@ -198,7 +201,22 @@ namespace CB {
         /**
          * Destructor
          **/
-        ~YARPConfigurationVariables() { }
+        ~YARPConfigurationVariables() { 
+
+            // close the polydriver
+            if(dd!=NULL) dd->close();
+
+            // if in velocity control mode, disconnect the connections to the velocityControl module.
+            if(velocityControlMode) {
+                std::string velocityOutputPortName = "/cb/configuration" + deviceName + "/vel:o";
+                std::string velocityRPCOutputPortName = "/cb/configuration" + deviceName + "/vel/rpc:o";
+                yarp::os::Network::disconnect(velocityOutputPortName.c_str(),velocityPortName.c_str());
+                yarp::os::Network::disconnect(velocityRPCOutputPortName.c_str(),velocityRPCPortName.c_str());
+                velocityRPCPort.close();
+                velocityPort.close();
+            }
+            
+        }
         
         /**
          * Inherited update function.

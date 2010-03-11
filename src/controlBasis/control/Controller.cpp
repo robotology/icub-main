@@ -21,6 +21,7 @@ CB::Controller::Controller(ControlBasisResource *sen,
     potentialFunction(pf),
     potentialDot(0),
     potentialLast(0),
+    convergenceStore(0),
     needsJacobian(false),
     needsJacobianInverse(false),
     hasReference(true),
@@ -68,7 +69,8 @@ CB::Controller::Controller(ControlBasisResource *sen,
     int inputSize = sensor->getResourceDataSize();
     int outputSize = effector->getResourceDataSize();
     Vout.resize(outputSize);
-    
+
+    initPorts(); // mandatory initPorts() function from ControlBasisAction.h    
 }
 
 CB::Controller::Controller(ControlBasisResource *sen,
@@ -82,6 +84,7 @@ CB::Controller::Controller(ControlBasisResource *sen,
     potentialFunction(pf),
     potentialDot(0),
     potentialLast(0),
+    convergenceStore(0),
     needsJacobian(false),
     needsJacobianInverse(false),
     hasReference(false),
@@ -114,7 +117,8 @@ CB::Controller::Controller(ControlBasisResource *sen,
     int inputSize = sensor->getResourceDataSize();
     int outputSize = effector->getResourceDataSize();
     Vout.resize(outputSize);
-    
+
+    initPorts(); // mandatory initPorts() function from ControlBasisAction.h
 }
 
 CB::Controller::Controller(string sen, string ref, string pf, string eff) :
@@ -130,10 +134,15 @@ CB::Controller::Controller(string sen, string ref, string pf, string eff) :
     jacobian(NULL),
     potentialFunction(NULL),
     useJacobianTranspose(true),
+    convergenceStore(0),
+    potentialDot(0),
+    potentialLast(0),    
     sensor(NULL),
     reference(NULL),
     effector(NULL)
 {
+
+    cout << endl << "Creating new Controller" << endl;
 
     // do some string ops to get valid names 
     parseOutputResource();    
@@ -143,15 +152,16 @@ CB::Controller::Controller(string sen, string ref, string pf, string eff) :
         return;
     }    
 
-    cout << "checking if controller needs jacobian..." << endl;
+    cout << "Controller " << inputSpace.c_str() << " -> " << outputSpace.c_str() << endl;
     if(outputSpace != inputSpace) {
         needsJacobian = true;
         if(!createJacobian()) {
             cout << "Controller can't create Jacobian!!" << endl;
             return;
-        }    
+        } else {
+            cout << "Controller created Jacobian..." << endl;    
+        }
     }
-    cout << "Controller needs jacobian: " << needsJacobian << endl;
 
     actionName = "/cb/controller/";
     actionName += "s:" + sensorName + "/";
@@ -159,8 +169,9 @@ CB::Controller::Controller(string sen, string ref, string pf, string eff) :
     actionName += "e:" + effectorName + "/";
     actionName += "pf:" + pfName;
 
+    cout << endl;    
 
-    
+    initPorts(); // mandatory initPorts() function from ControlBasisAction.h
 }
 
 CB::Controller::Controller(string sen, string pf, string eff) :
@@ -173,6 +184,9 @@ CB::Controller::Controller(string sen, string pf, string eff) :
     needsJacobianInverse(false),
     hasReference(false),
     gain(1.0),
+    convergenceStore(0),
+    potentialDot(0),
+    potentialLast(0),    
     jacobian(NULL),
     potentialFunction(NULL),
     useJacobianTranspose(true),
@@ -188,15 +202,18 @@ CB::Controller::Controller(string sen, string pf, string eff) :
         cout << "Controller can't create potential function!!" << endl;
         return;
     }
-
+    
     cout << "Controller " << inputSpace.c_str() << " -> " << outputSpace.c_str() << endl;
     if(outputSpace != inputSpace) {
         needsJacobian = true;
         if(!createJacobian()) {
             cout << "Controller can't create Jacobian!!" << endl;
             return;
-        }    
+        } else {
+            cout << "Controller Created Jacobian..." << endl;    
+        }
     }
+
 
     if(!needsJacobian) {
         Vout.resize(potentialFunction->getInputSize());
@@ -206,6 +223,10 @@ CB::Controller::Controller(string sen, string pf, string eff) :
     actionName += "s:" + sensorName + "/";
     actionName += "e:" + effectorName + "/";
     actionName += "pf:" + pfName;
+
+    cout << endl;
+
+    initPorts(); // mandatory initPorts() function from ControlBasisAction.h
 }
 
 
@@ -218,10 +239,14 @@ bool CB::Controller::createPotentialFunction(string pf) {
         cout << "Controller can't create potential function in local mode..." << endl;
         ok = false;
     }
-
+    
     pfInputs.clear();
     pfInputs.push_back(sensorName);
     if(hasReference) pfInputs.push_back(referenceName);
+
+    cout << "Controller creating PotentialFunction(" << pfInputs[0];
+    if(hasReference) cout << ", " << pfInputs[1];
+    cout << ")" << endl;
 
     potentialFunction = PotentialFunctionFactory::instance().createObject(pf,pfInputs);
     if(potentialFunction==NULL) {
@@ -381,23 +406,52 @@ bool CB::Controller::updateAction() {
 
 
     // estimate the change in potential and store it
-    double pdiff = potential - potentialLast;
+    double pdiff;
     double a = 0.2;
-    potentialDot = a*pdiff + (1.0-a)*potentialDot;
-    potentialLast = potential;
-    //cout << "Controller potential: " << potential << ", potentialDot: " << potentialDot << endl;
+    int lag = 50;
+    double tmp;
 
     potentialStore.push_back(potential);
+        
+    if(iterations >= lag) {
+
+        potentialLast = potentialStore[potentialStore.size() - lag];
+        pdiff = potential - potentialLast;
+        potentialDot = a*pdiff + (1.0-a)*potentialDot; 
+
+        // set the state based on the estimated change in potential
+        if(fabs(potentialDot) < 1E-4) {
+            tmp = 1;
+            //dynamicState = CONVERGED;
+        } else {
+            tmp = 0;
+            //dynamicState = UNCONVERGED;
+        }
+
+        // this tries to filter out spurious convergence that might only
+        // last an iteration or two.  this forces long stretches of
+        // convergence (or unconvergence) to occur to actually change the state. 
+        convergenceStoreLast = convergenceStore;
+        convergenceStore = 0.95*convergenceStoreLast + 0.05*tmp;
+        if(convergenceStore > 0.9 ) {
+            dynamicState = CONVERGED;
+        } else {
+            dynamicState = UNCONVERGED;
+        }
+
+    } else {
+        
+        // this is a buffer to not update too quickly
+        potentialLast = potentialStore[0];
+        pdiff = potential - potentialLast;
+        potentialDot = a*pdiff + (1.0-a)*potentialDot; 
+        dynamicState = UNCONVERGED;
+    } 
+
+
     potentialDotStore.push_back(potentialDot);
 
-    // set the state based on the estimated change in potential
-
-    if((fabs(potentialDot) < 1E-6) && (iterations>=20)) {
-        dynamicState = CONVERGED;
-    } else {
-        dynamicState = UNCONVERGED;
-    }
- 
+    //cout << "Controller potential: " << potential << ", potentialDot: " << potentialDot << endl;
     return true;
 }
 
@@ -446,14 +500,13 @@ void CB::Controller::stopAction() {
     stop();     // mandatory stop function
 
     // clear data
+    convergenceStore=0;
+    potentialDot=1000;
+    potentialLast=0;
     potentialDotStore.clear();
     potentialStore.clear();
     dynamicState = UNKNOWN;
     iterations=0;
-
-    if(!running) return;
-
-    running = false;
 
     // stop resources
     if(!distributedMode) {
@@ -464,16 +517,14 @@ void CB::Controller::stopAction() {
         effector->stopResource();
     }
 
+    // stop jacobian (if necessary)
     if(needsJacobian) {
-        if(jacobian->isJacobianRunning()) {
-            jacobian->stopJacobian();
-        }
+        jacobian->stopJacobian();    
     }
 
-    if(potentialFunction->isPotentialRunning()) {
-        potentialFunction->stopPotentialFunction();
-    }
-
+    // stop potential function
+    potentialFunction->stopPotentialFunction();
+    
     cout << "Controller::stop() -- finished" << endl;
 
 }
@@ -482,8 +533,8 @@ void CB::Controller::resetController() {
 
     cout << "Controller::resetController()" << endl;
 
-    stopAction();
-    cout << "Controller::resetController() -- actions stopped" << endl;
+    stopAction(); // stops the controller and the resources if in non-distributed mode
+    cout << "Controller::resetController() -- action stopped" << endl;
 
     if(!distributedMode) {
         if(sensor!=NULL) delete sensor; sensor=NULL;
@@ -493,18 +544,21 @@ void CB::Controller::resetController() {
     }
 
     if(jacobian!=NULL) {
-        jacobian->stopJacobian();
+        cout << "Controller::resetController() -- deleting jacobian" << endl;
         delete jacobian; jacobian=NULL;
+        cout << "Controller::resetController() -- jacobian deleted" << endl;
     }
-    cout << "Controller::resetController() -- jacobian deleted" << endl;
 
     if(potentialFunction!=NULL) {
-        potentialFunction->stopPotentialFunction();
+        cout << "Controller::resetController() -- deleting potentialFunction" << endl;
         delete potentialFunction; potentialFunction=NULL;
+        cout << "Controller::resetController() -- potentialFunction deleted" << endl;
     }
-    cout << "Controller::resetController() -- potentialFunction deleted" << endl;
 
+    // clear the output
     Vout.clear();    
+    
+    // close and clear the ports
     reset();
 
     cout << "Controller::resetController() -- done" << endl;

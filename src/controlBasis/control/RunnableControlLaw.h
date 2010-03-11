@@ -43,7 +43,7 @@ namespace CB {
 
         /**
          * the composite configuration-space output signals (one for each synergy)
-o         **/
+        **/
         std::vector<yarp::sig::Vector> VoutConfig;
 
         /**
@@ -127,6 +127,11 @@ o         **/
          * add controller method, from pointer
          **/
         void addController(Controller *c);
+
+        /**
+         * gets the number of controllers in the law
+         **/
+        int getNumControllers() { return numControllers; }
         
         /**
          * add controller method, from names (with reference)
@@ -158,6 +163,11 @@ o         **/
          * reset function
          **/
         void resetControlLaw();
+
+        /**
+         * delete function to delete controller pointers
+         **/
+        void deleteControllers();
 
         /**
          * gets the potential of controller n
@@ -198,9 +208,9 @@ o         **/
             int s;
             if((n >= 0) && (n<controllers.size())) {
                 s = controllers[n]->getState();
-                if(s==1) s_str="-";
-                else if(s==2) s_str="0";
-                else if(s==3) s_str="1";
+                if(s==UNDEFINED) s_str="-";
+                else if(s==UNCONVERGED) s_str="0";
+                else if(s==CONVERGED) s_str="1";
             }            
             return s_str;
         }
@@ -223,7 +233,7 @@ o         **/
     protected:
 
         /**
-         * initial;ization function
+         * initialization function
          **/
         void init();
 

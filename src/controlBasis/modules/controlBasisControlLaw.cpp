@@ -41,7 +41,7 @@ Copyright (C) 2010 RobotCub Consortium
  
 CopyPolicy: Released under the terms of the GNU GPL v2.0.
 
-This file can be edited at src/controlBasis/modules/main.cpp.
+This file can be edited at src/controlBasis/modules/ControlBasisControlLaw.cpp.
 **/
 
 #include <yarp/os/Network.h>
@@ -80,6 +80,7 @@ using namespace CB;
 #define COMMAND_VOCAB_POTENTIAL_NAME VOCAB4('p','o','t','e')
 #define COMMAND_VOCAB_GAIN VOCAB4('g','a','i','n')
 
+#define COMMAND_VOCAB_GET_CONTROLLER_STATE VOCAB4('s','t','a','t')
 
 class ControlBasisControlLawModule : public RFModule {
 
@@ -130,6 +131,10 @@ public:
         bool effector_set = false;
         bool pf_set = false;
         bool reference_set = false;
+
+        int idx;
+        double phi;
+        double phi_dot;
 
         mutex.wait();
 
@@ -241,7 +246,22 @@ public:
         case COMMAND_VOCAB_GET:
             rec = true;
             {
-                cout << "get" << endl;
+                switch (command.get(1).asVocab()) {
+                case COMMAND_VOCAB_GET_CONTROLLER_STATE:
+                    idx = command.get(2).asInt();
+                    if(idx >= controlLaw.getNumControllers()) {
+                        cout << "controller index out of range!" << endl;
+                    } else {
+                        phi = controlLaw.getControllerPotential(idx);
+                        phi_dot = controlLaw.getControllerPotentialDot(idx);
+                        reply.addDouble(phi);
+                        reply.addDouble(phi_dot);
+                    }
+                default:
+                    break;
+                }
+
+
                 reply.addDouble(0.0);
             }
             ok = true;

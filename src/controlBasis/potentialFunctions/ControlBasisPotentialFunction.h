@@ -190,24 +190,27 @@ namespace CB {
                 std::cout << "PotentialFunction inputs not set, can't run...." << std::endl;
                 return;
             }
-            std::cout << "running..." << std::endl;
 
-            outputPortName = pfName + ":o";            
-            outputPort.close();
-            outputPort.open(outputPortName.c_str());
-
-            while(!isStopping()) {
+            running = true;            
+            while(!isStopping() && running) {
                 if(!updatePotentialFunction()) {
+                    running = false;
                     std::cout << "Problem updating potential function: " << pfName.c_str() << std::endl;
                     break;
                 }
-                running = true;            
                 postData();
                 yarp::os::Time::delay(updateDelay);
             }
             std::cout << "ControlBasisPotentialFunction::run() -- setting running flag to false and closing ports" << std::endl;
             running = false;
 
+        }
+
+        /**
+         * onStop function
+         **/
+        void onStop() {
+            running = false;
         }
 
         /**
@@ -244,7 +247,7 @@ namespace CB {
             std::string tmp;
             int s;
             for(int i=0; i<inputNames.size(); i++) {
-                tmp = inputNames[0];
+                tmp = inputNames[i];
                 s = prefixStr.size();           
                 tmp.erase(0,s);
                 pfName += tmp;
@@ -268,6 +271,12 @@ namespace CB {
 
             // set flag
             inputsSet = true;
+
+            // set outputs
+            outputPortName = pfName + ":o";            
+            outputPort.close();
+            outputPort.open(outputPortName.c_str());
+
         }
         
         /**
@@ -275,18 +284,23 @@ namespace CB {
          **/
         ~ControlBasisPotentialFunction() 
         { 
+
+            std::cout << "ControlBasisPotentialFunction destructor..." << std::endl;
+
             inputNames.clear();
             inputsSet = false;
 
             // clear ports and data
-            for(int i=0; i<inputPorts.size(); i++)
+            for(int i=0; i<inputPorts.size(); i++) {
+                inputPorts[i]->close();
                 delete inputPorts[i];
+            }
             inputPorts.clear();
 
-            for(int i=0; i<inputs.size(); i++)
+            for(int i=0; i<inputs.size(); i++){
                 delete inputs[i];
+            }
             inputs.clear();
-
             outputPort.close(); 
 
         }

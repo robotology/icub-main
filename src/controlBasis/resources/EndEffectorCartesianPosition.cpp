@@ -9,7 +9,6 @@ using namespace yarp::math;
 using namespace iKin;
 
 void CB::EndEffectorCartesianPosition::startResource() {
-
     // if not connected to the configuration resource, do that now
     if(!connectedToConfiguration) {
         if(!connectToConfiguration()) {
@@ -17,7 +16,6 @@ void CB::EndEffectorCartesianPosition::startResource() {
             return;
         }
     }
-    running = true;
     start();     // mandatory start function
 }
 
@@ -87,14 +85,14 @@ bool CB::EndEffectorCartesianPosition::connectToConfiguration() {
     string limitsOutputName = "/cb/configuration" + deviceName + "/limits:o";
 
     cout << "EndEffectorCartesianPosition::connectToConfiguration() -- connecting ports for link parameters..." << endl;
-    ok &= Network::connect(linkOutputName.c_str(),inputPortName[1].c_str(),"udp");
+    ok &= Network::connect(linkOutputName.c_str(),inputPortName[1].c_str(),"tcp");
     if(!ok) {
         cout << "EndEffectorCartesianPosition::connectToConfiguration() -- connecting input port falied..." << endl;
         return ok;
     }
 
     cout << "EndEffectorCartesianPosition::connectToConfiguration() -- connecting ports for limit parameters..." << endl;
-    ok &= Network::connect(limitsOutputName.c_str(),inputPortName[2].c_str(),"udp");
+    ok &= Network::connect(limitsOutputName.c_str(),inputPortName[2].c_str(),"tcp");
     if(!ok) {
         cout << "EndEffectorCartesianPosition::connectToConfiguration() -- connecting input port falied..." << endl;
         return ok;
@@ -197,7 +195,7 @@ bool CB::EndEffectorCartesianPosition::connectToConfiguration() {
     string configOutputName = "/cb/configuration" + deviceName + "/data:o";
 
     cout << "EndEffectorCartesianPosition::connectToConfiguration() -- connecting ports for configuration values..." << endl;
-    ok &= Network::connect(configOutputName.c_str(),inputPortName[0].c_str(),"udp");
+    ok &= Network::connect(configOutputName.c_str(),inputPortName[0].c_str(),"tcp");
     if(!ok) {
         cout << "EndEffectorCartesianPosition::connectToConfiguration() -- connecting to config port falied..." << endl;
         return ok;

@@ -173,6 +173,16 @@ namespace CB {
          **/
         bool useJacobianTranspose;        
 
+        /**
+         * stores the bias towards convergence based on history
+         **/
+        double convergenceStore;
+
+        /**
+         * stores the previous convergence state
+         **/
+        double convergenceStoreLast;
+
     public:
         
         /** 
@@ -205,16 +215,7 @@ namespace CB {
          **/
         ~Controller() {
             std::cout << "Controller destructor..." << std::endl;
-
             resetController();
-
-            if(potentialFunction!=NULL) delete potentialFunction;
-            if(jacobian!=NULL) delete jacobian;
-            if(sensor!=NULL) delete sensor;
-            if(effector!=NULL) delete effector;
-            if(reference!=NULL) delete reference;
-
-            std::cout << "Controller destructor (done)..." << std::endl;
         }       
         
         /**

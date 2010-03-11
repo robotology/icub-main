@@ -15,7 +15,6 @@ void CB::ConfigurationSquaredError::startPotentialFunction() {
             return;
         }
     }
-    running = true;
     start();     // mandatory start function
 }
 
@@ -68,11 +67,13 @@ bool CB::ConfigurationSquaredError::updatePotentialFunction() {
     gradient = -1.0*diff;
     potential = 0.5*dot(diff,diff);
 
+    /*
     cout << "ref   -  cur  =  diff" << endl;
     for(int i=0; i<size; i++) {
         cout << (*inputs[1])[i] << "  " << (*inputs[0])[i] << "  " << diff[i] << endl;
     }
     cout << endl;
+    */
 
     //    cout << "ConfigurationSquaredError Potential = " << potential << endl;
     return ok;
@@ -120,9 +121,9 @@ bool CB::ConfigurationSquaredError::connectToInputs() {
         configCurName.c_str() << " -> " << configCurNameIn.c_str() << "\n\t" << 
         configRefName.c_str() << " -> " << configRefNameIn.c_str() << endl << endl;
     
-    ok &= Network::connect(configCurName.c_str(),configCurNameIn.c_str(), "udp");
+    ok &= Network::connect(configCurName.c_str(),configCurNameIn.c_str(), "tcp");
     //Time::delay(0.1);
-    ok &= Network::connect(configRefName.c_str(),configRefNameIn.c_str(), "udp");
+    ok &= Network::connect(configRefName.c_str(),configRefNameIn.c_str(), "tcp");
     if(!ok) {
         cout << "ConfigurationSquaredError::connectToInputs() -- failed connecting to input ports..." << endl << endl;
         return ok;

@@ -31,7 +31,7 @@ namespace CB {
         /** 
          * starts the resource
          **/
-        void startResource() { running = true; start(); }
+        void startResource() { start(); }
 
         /** 
          * stops the resource

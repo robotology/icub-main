@@ -16,7 +16,6 @@ void CB::ManipulabilityField::startPotentialFunction() {
             return;
         }
     }
-    running = true;
     start();     // mandatory start function
 }
 

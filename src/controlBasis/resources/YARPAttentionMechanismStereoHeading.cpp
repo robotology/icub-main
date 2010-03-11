@@ -8,7 +8,6 @@ using namespace yarp::os;
 using namespace yarp::sig;
 
 void CB::YARPAttentionMechanismStereoHeading::startResource() {
-
     // if not connected to the configuration resource, do that now
     if(!connectedToAttentionMechanism) {
         if(!connectToAttentionMechanism()) {
@@ -16,7 +15,6 @@ void CB::YARPAttentionMechanismStereoHeading::startResource() {
             return;
         }
     }
-    running = true;
     start();     // mandatory start function
 }
 
