@@ -53,7 +53,7 @@ This file can be edited at src/reinforcementLearning/main.cpp.
 #include <string.h>
 #include <stdlib.h>
 
-#include "MarkovDecisionProcess.h"
+#include <MarkovDecisionProcess.h>
 
 using namespace yarp::os;
 using namespace std;
