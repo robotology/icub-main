@@ -152,6 +152,7 @@
 
 #include "include/allPartsWindow.h"
 
+
 using namespace yarp::os::impl;
 
 
@@ -227,9 +228,9 @@ void add_enabled_joints(cartesianMover* cm, GtkWidget *vbox)
 
 static void myMain2(GtkButton *button,	int *position)
 {
-    std::string portPartName;
-    std::string robotName;
-    std::string portLocalName;
+    String portPartName;
+    String robotName;
+    String portLocalName;
 
     portPartName.resize(1024);
     robotName.resize(1024);
@@ -635,7 +636,7 @@ int myMain( int   argc, char *argv[] )
     finder->configure("ICUB_ROOT",argc,argv);
     //fprintf(stderr, "Retrieved finder: %p \n", finder);
 
-    std::string robotName=finder->find("name").asString().c_str();
+    String robotName=finder->find("name").asString().c_str();
     Bottle *pParts=finder->find("parts").asList();
     if (pParts!=0)
         NUMBER_OF_AVAILABLE_PARTS=pParts->size();

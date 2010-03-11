@@ -4,7 +4,6 @@
 #endif
 
 #include <yarp/os/ResourceFinder.h>
-#include <string.h>
 ///////////GTK///////////
 #include <gtk/gtk.h>
 #include <gtk/gtkmain.h>
