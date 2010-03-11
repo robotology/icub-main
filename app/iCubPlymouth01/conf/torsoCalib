@@ -1,8 +1,0 @@
-[CALIBRATION]
-//                  6        7        8        
-CalibrationType     3        3        3        
-Calibration1     2047     2047     2047      
-Calibration2     10.0     10.0     10.0      
-Calibration3     836.1   1212.6   3999.5    
-PositionZero      0.0      0.0      0.0
-VelocityZero      4.0      4.0      4.0     
