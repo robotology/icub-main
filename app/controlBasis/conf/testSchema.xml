@@ -1,0 +1,353 @@
+<?xml version="1.0" ?>
+<QVALUES NUM-STATES="64" NUM-ACTIONS="3">
+    <GOAL ID="3" />
+    <STATE ID="0" BEST-ACTION="2">
+        <ACTION ID="0" QVAL="0.000000">
+            <NEXT-STATE ID="32" N="1" />
+        </ACTION>
+        <ACTION ID="1" QVAL="0.000000">
+            <NEXT-STATE ID="8" N="2" />
+        </ACTION>
+        <ACTION ID="2" QVAL="0.283909">
+            <NEXT-STATE ID="2" N="4" />
+        </ACTION>
+    </STATE>
+    <STATE ID="1" BEST-ACTION="2">
+        <ACTION ID="0" QVAL="0.000000" />
+        <ACTION ID="1" QVAL="0.000000" />
+        <ACTION ID="2" QVAL="0.000000" />
+    </STATE>
+    <STATE ID="2" BEST-ACTION="2">
+        <ACTION ID="0" QVAL="0.000000" />
+        <ACTION ID="1" QVAL="0.000000" />
+        <ACTION ID="2" QVAL="0.771233">
+            <NEXT-STATE ID="3" N="7" />
+        </ACTION>
+    </STATE>
+    <STATE ID="3" BEST-ACTION="2">
+        <ACTION ID="0" QVAL="0.000000" />
+        <ACTION ID="1" QVAL="0.000000" />
+        <ACTION ID="2" QVAL="0.000000" />
+    </STATE>
+    <STATE ID="4" BEST-ACTION="0">
+        <ACTION ID="0" QVAL="0.000000" />
+        <ACTION ID="1" QVAL="0.000000" />
+        <ACTION ID="2" QVAL="0.000000" />
+    </STATE>
+    <STATE ID="5" BEST-ACTION="0">
+        <ACTION ID="0" QVAL="0.000000" />
+        <ACTION ID="1" QVAL="0.000000" />
+        <ACTION ID="2" QVAL="0.000000" />
+    </STATE>
+    <STATE ID="6" BEST-ACTION="2">
+        <ACTION ID="0" QVAL="0.000000" />
+        <ACTION ID="1" QVAL="0.000000" />
+        <ACTION ID="2" QVAL="0.000000" />
+    </STATE>
+    <STATE ID="7" BEST-ACTION="0">
+        <ACTION ID="0" QVAL="0.000000" />
+        <ACTION ID="1" QVAL="0.000000" />
+        <ACTION ID="2" QVAL="0.000000" />
+    </STATE>
+    <STATE ID="8" BEST-ACTION="2">
+        <ACTION ID="0" QVAL="0.000000" />
+        <ACTION ID="1" QVAL="0.000000">
+            <NEXT-STATE ID="12" N="1" />
+        </ACTION>
+        <ACTION ID="2" QVAL="0.052273">
+            <NEXT-STATE ID="2" N="1" />
+        </ACTION>
+    </STATE>
+    <STATE ID="9" BEST-ACTION="1">
+        <ACTION ID="0" QVAL="0.000000" />
+        <ACTION ID="1" QVAL="0.000000" />
+        <ACTION ID="2" QVAL="0.000000" />
+    </STATE>
+    <STATE ID="10" BEST-ACTION="0">
+        <ACTION ID="0" QVAL="0.000000" />
+        <ACTION ID="1" QVAL="0.000000" />
+        <ACTION ID="2" QVAL="0.000000" />
+    </STATE>
+    <STATE ID="11" BEST-ACTION="0">
+        <ACTION ID="0" QVAL="0.000000" />
+        <ACTION ID="1" QVAL="0.000000" />
+        <ACTION ID="2" QVAL="0.000000" />
+    </STATE>
+    <STATE ID="12" BEST-ACTION="1">
+        <ACTION ID="0" QVAL="0.000000" />
+        <ACTION ID="1" QVAL="0.000000" />
+        <ACTION ID="2" QVAL="0.000000">
+            <NEXT-STATE ID="2" N="1" />
+        </ACTION>
+    </STATE>
+    <STATE ID="13" BEST-ACTION="0">
+        <ACTION ID="0" QVAL="0.000000" />
+        <ACTION ID="1" QVAL="0.000000" />
+        <ACTION ID="2" QVAL="0.000000" />
+    </STATE>
+    <STATE ID="14" BEST-ACTION="1">
+        <ACTION ID="0" QVAL="0.000000" />
+        <ACTION ID="1" QVAL="0.000000" />
+        <ACTION ID="2" QVAL="0.000000" />
+    </STATE>
+    <STATE ID="15" BEST-ACTION="0">
+        <ACTION ID="0" QVAL="0.000000" />
+        <ACTION ID="1" QVAL="0.000000" />
+        <ACTION ID="2" QVAL="0.000000" />
+    </STATE>
+    <STATE ID="16" BEST-ACTION="0">
+        <ACTION ID="0" QVAL="0.000000" />
+        <ACTION ID="1" QVAL="0.000000" />
+        <ACTION ID="2" QVAL="0.000000" />
+    </STATE>
+    <STATE ID="17" BEST-ACTION="0">
+        <ACTION ID="0" QVAL="0.000000" />
+        <ACTION ID="1" QVAL="0.000000" />
+        <ACTION ID="2" QVAL="0.000000" />
+    </STATE>
+    <STATE ID="18" BEST-ACTION="0">
+        <ACTION ID="0" QVAL="0.000000" />
+        <ACTION ID="1" QVAL="0.000000" />
+        <ACTION ID="2" QVAL="0.000000" />
+    </STATE>
+    <STATE ID="19" BEST-ACTION="2">
+        <ACTION ID="0" QVAL="0.000000" />
+        <ACTION ID="1" QVAL="0.000000" />
+        <ACTION ID="2" QVAL="0.000000" />
+    </STATE>
+    <STATE ID="20" BEST-ACTION="2">
+        <ACTION ID="0" QVAL="0.000000" />
+        <ACTION ID="1" QVAL="0.000000" />
+        <ACTION ID="2" QVAL="0.000000" />
+    </STATE>
+    <STATE ID="21" BEST-ACTION="2">
+        <ACTION ID="0" QVAL="0.000000" />
+        <ACTION ID="1" QVAL="0.000000" />
+        <ACTION ID="2" QVAL="0.000000" />
+    </STATE>
+    <STATE ID="22" BEST-ACTION="2">
+        <ACTION ID="0" QVAL="0.000000" />
+        <ACTION ID="1" QVAL="0.000000" />
+        <ACTION ID="2" QVAL="0.000000" />
+    </STATE>
+    <STATE ID="23" BEST-ACTION="2">
+        <ACTION ID="0" QVAL="0.000000" />
+        <ACTION ID="1" QVAL="0.000000" />
+        <ACTION ID="2" QVAL="0.000000" />
+    </STATE>
+    <STATE ID="24" BEST-ACTION="1">
+        <ACTION ID="0" QVAL="0.000000" />
+        <ACTION ID="1" QVAL="0.000000" />
+        <ACTION ID="2" QVAL="0.000000" />
+    </STATE>
+    <STATE ID="25" BEST-ACTION="2">
+        <ACTION ID="0" QVAL="0.000000" />
+        <ACTION ID="1" QVAL="0.000000" />
+        <ACTION ID="2" QVAL="0.000000" />
+    </STATE>
+    <STATE ID="26" BEST-ACTION="0">
+        <ACTION ID="0" QVAL="0.000000" />
+        <ACTION ID="1" QVAL="0.000000" />
+        <ACTION ID="2" QVAL="0.000000" />
+    </STATE>
+    <STATE ID="27" BEST-ACTION="1">
+        <ACTION ID="0" QVAL="0.000000" />
+        <ACTION ID="1" QVAL="0.000000" />
+        <ACTION ID="2" QVAL="0.000000" />
+    </STATE>
+    <STATE ID="28" BEST-ACTION="0">
+        <ACTION ID="0" QVAL="0.000000" />
+        <ACTION ID="1" QVAL="0.000000" />
+        <ACTION ID="2" QVAL="0.000000" />
+    </STATE>
+    <STATE ID="29" BEST-ACTION="0">
+        <ACTION ID="0" QVAL="0.000000" />
+        <ACTION ID="1" QVAL="0.000000" />
+        <ACTION ID="2" QVAL="0.000000" />
+    </STATE>
+    <STATE ID="30" BEST-ACTION="0">
+        <ACTION ID="0" QVAL="0.000000" />
+        <ACTION ID="1" QVAL="0.000000" />
+        <ACTION ID="2" QVAL="0.000000" />
+    </STATE>
+    <STATE ID="31" BEST-ACTION="1">
+        <ACTION ID="0" QVAL="0.000000" />
+        <ACTION ID="1" QVAL="0.000000" />
+        <ACTION ID="2" QVAL="0.000000" />
+    </STATE>
+    <STATE ID="32" BEST-ACTION="2">
+        <ACTION ID="0" QVAL="0.000000" />
+        <ACTION ID="1" QVAL="0.000000" />
+        <ACTION ID="2" QVAL="0.028880">
+            <NEXT-STATE ID="2" N="1" />
+        </ACTION>
+    </STATE>
+    <STATE ID="33" BEST-ACTION="2">
+        <ACTION ID="0" QVAL="0.000000" />
+        <ACTION ID="1" QVAL="0.000000" />
+        <ACTION ID="2" QVAL="0.000000" />
+    </STATE>
+    <STATE ID="34" BEST-ACTION="1">
+        <ACTION ID="0" QVAL="0.000000" />
+        <ACTION ID="1" QVAL="0.000000" />
+        <ACTION ID="2" QVAL="0.000000" />
+    </STATE>
+    <STATE ID="35" BEST-ACTION="0">
+        <ACTION ID="0" QVAL="0.000000" />
+        <ACTION ID="1" QVAL="0.000000" />
+        <ACTION ID="2" QVAL="0.000000" />
+    </STATE>
+    <STATE ID="36" BEST-ACTION="1">
+        <ACTION ID="0" QVAL="0.000000" />
+        <ACTION ID="1" QVAL="0.000000" />
+        <ACTION ID="2" QVAL="0.000000" />
+    </STATE>
+    <STATE ID="37" BEST-ACTION="2">
+        <ACTION ID="0" QVAL="0.000000" />
+        <ACTION ID="1" QVAL="0.000000" />
+        <ACTION ID="2" QVAL="0.000000" />
+    </STATE>
+    <STATE ID="38" BEST-ACTION="0">
+        <ACTION ID="0" QVAL="0.000000" />
+        <ACTION ID="1" QVAL="0.000000" />
+        <ACTION ID="2" QVAL="0.000000" />
+    </STATE>
+    <STATE ID="39" BEST-ACTION="2">
+        <ACTION ID="0" QVAL="0.000000" />
+        <ACTION ID="1" QVAL="0.000000" />
+        <ACTION ID="2" QVAL="0.000000" />
+    </STATE>
+    <STATE ID="40" BEST-ACTION="1">
+        <ACTION ID="0" QVAL="0.000000" />
+        <ACTION ID="1" QVAL="0.000000" />
+        <ACTION ID="2" QVAL="0.000000" />
+    </STATE>
+    <STATE ID="41" BEST-ACTION="2">
+        <ACTION ID="0" QVAL="0.000000" />
+        <ACTION ID="1" QVAL="0.000000" />
+        <ACTION ID="2" QVAL="0.000000" />
+    </STATE>
+    <STATE ID="42" BEST-ACTION="2">
+        <ACTION ID="0" QVAL="0.000000" />
+        <ACTION ID="1" QVAL="0.000000" />
+        <ACTION ID="2" QVAL="0.000000" />
+    </STATE>
+    <STATE ID="43" BEST-ACTION="0">
+        <ACTION ID="0" QVAL="0.000000" />
+        <ACTION ID="1" QVAL="0.000000" />
+        <ACTION ID="2" QVAL="0.000000" />
+    </STATE>
+    <STATE ID="44" BEST-ACTION="0">
+        <ACTION ID="0" QVAL="0.000000" />
+        <ACTION ID="1" QVAL="0.000000" />
+        <ACTION ID="2" QVAL="0.000000" />
+    </STATE>
+    <STATE ID="45" BEST-ACTION="1">
+        <ACTION ID="0" QVAL="0.000000" />
+        <ACTION ID="1" QVAL="0.000000" />
+        <ACTION ID="2" QVAL="0.000000" />
+    </STATE>
+    <STATE ID="46" BEST-ACTION="1">
+        <ACTION ID="0" QVAL="0.000000" />
+        <ACTION ID="1" QVAL="0.000000" />
+        <ACTION ID="2" QVAL="0.000000" />
+    </STATE>
+    <STATE ID="47" BEST-ACTION="2">
+        <ACTION ID="0" QVAL="0.000000" />
+        <ACTION ID="1" QVAL="0.000000" />
+        <ACTION ID="2" QVAL="0.000000" />
+    </STATE>
+    <STATE ID="48" BEST-ACTION="1">
+        <ACTION ID="0" QVAL="0.000000" />
+        <ACTION ID="1" QVAL="0.000000" />
+        <ACTION ID="2" QVAL="0.000000" />
+    </STATE>
+    <STATE ID="49" BEST-ACTION="1">
+        <ACTION ID="0" QVAL="0.000000" />
+        <ACTION ID="1" QVAL="0.000000" />
+        <ACTION ID="2" QVAL="0.000000" />
+    </STATE>
+    <STATE ID="50" BEST-ACTION="2">
+        <ACTION ID="0" QVAL="0.000000" />
+        <ACTION ID="1" QVAL="0.000000" />
+        <ACTION ID="2" QVAL="0.000000" />
+    </STATE>
+    <STATE ID="51" BEST-ACTION="1">
+        <ACTION ID="0" QVAL="0.000000" />
+        <ACTION ID="1" QVAL="0.000000" />
+        <ACTION ID="2" QVAL="0.000000" />
+    </STATE>
+    <STATE ID="52" BEST-ACTION="1">
+        <ACTION ID="0" QVAL="0.000000" />
+        <ACTION ID="1" QVAL="0.000000" />
+        <ACTION ID="2" QVAL="0.000000" />
+    </STATE>
+    <STATE ID="53" BEST-ACTION="0">
+        <ACTION ID="0" QVAL="0.000000" />
+        <ACTION ID="1" QVAL="0.000000" />
+        <ACTION ID="2" QVAL="0.000000" />
+    </STATE>
+    <STATE ID="54" BEST-ACTION="0">
+        <ACTION ID="0" QVAL="0.000000" />
+        <ACTION ID="1" QVAL="0.000000" />
+        <ACTION ID="2" QVAL="0.000000" />
+    </STATE>
+    <STATE ID="55" BEST-ACTION="1">
+        <ACTION ID="0" QVAL="0.000000" />
+        <ACTION ID="1" QVAL="0.000000" />
+        <ACTION ID="2" QVAL="0.000000" />
+    </STATE>
+    <STATE ID="56" BEST-ACTION="2">
+        <ACTION ID="0" QVAL="0.000000" />
+        <ACTION ID="1" QVAL="0.000000" />
+        <ACTION ID="2" QVAL="0.000000" />
+    </STATE>
+    <STATE ID="57" BEST-ACTION="1">
+        <ACTION ID="0" QVAL="0.000000" />
+        <ACTION ID="1" QVAL="0.000000" />
+        <ACTION ID="2" QVAL="0.000000" />
+    </STATE>
+    <STATE ID="58" BEST-ACTION="2">
+        <ACTION ID="0" QVAL="0.000000" />
+        <ACTION ID="1" QVAL="0.000000" />
+        <ACTION ID="2" QVAL="0.000000" />
+    </STATE>
+    <STATE ID="59" BEST-ACTION="2">
+        <ACTION ID="0" QVAL="0.000000" />
+        <ACTION ID="1" QVAL="0.000000" />
+        <ACTION ID="2" QVAL="0.000000" />
+    </STATE>
+    <STATE ID="60" BEST-ACTION="0">
+        <ACTION ID="0" QVAL="0.000000" />
+        <ACTION ID="1" QVAL="0.000000" />
+        <ACTION ID="2" QVAL="0.000000" />
+    </STATE>
+    <STATE ID="61" BEST-ACTION="0">
+        <ACTION ID="0" QVAL="0.000000" />
+        <ACTION ID="1" QVAL="0.000000" />
+        <ACTION ID="2" QVAL="0.000000" />
+    </STATE>
+    <STATE ID="62" BEST-ACTION="0">
+        <ACTION ID="0" QVAL="0.000000" />
+        <ACTION ID="1" QVAL="0.000000" />
+        <ACTION ID="2" QVAL="0.000000" />
+    </STATE>
+    <STATE ID="63" BEST-ACTION="2">
+        <ACTION ID="0" QVAL="0.000000" />
+        <ACTION ID="1" QVAL="0.000000" />
+        <ACTION ID="2" QVAL="0.000000" />
+    </STATE>
+    <REWARD EPISODE="0" VAL="1.000000" MAX_Q="0.190000" />
+    <REWARD EPISODE="1" VAL="1.000000" MAX_Q="0.343900" />
+    <REWARD EPISODE="2" VAL="1.000000" MAX_Q="0.468559" />
+    <REWARD EPISODE="3" VAL="1.000000" MAX_Q="0.569533" />
+    <REWARD EPISODE="4" VAL="1.000000" MAX_Q="0.651322" />
+    <REWARD EPISODE="5" VAL="1.000000" MAX_Q="0.717571" />
+    <REWARD EPISODE="6" VAL="1.000000" MAX_Q="0.190000" />
+    <REWARD EPISODE="7" VAL="1.000000" MAX_Q="0.343900" />
+    <REWARD EPISODE="8" VAL="1.000000" MAX_Q="0.468559" />
+    <REWARD EPISODE="9" VAL="1.000000" MAX_Q="0.569533" />
+    <REWARD EPISODE="10" VAL="1.000000" MAX_Q="0.651322" />
+    <REWARD EPISODE="11" VAL="1.000000" MAX_Q="0.717571" />
+    <REWARD EPISODE="12" VAL="1.000000" MAX_Q="0.771233" />
+</QVALUES>
