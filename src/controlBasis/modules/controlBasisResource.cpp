@@ -82,6 +82,9 @@ This file can be edited at src/controlBasis/modules/main.cpp.
 #include "ControlBasisResource.h"
 #include "YARPConfigurationVariables.h"
 #include "EndEffectorCartesianPosition.h"
+#include "YARPAttentionMechanismHeading.h"
+#include "YARPAttentionMechanismStereoHeading.h"
+#include "Force.h"
 #include <yarp/os/RFModule.h>
 #include <yarp/os/Module.h>
 
@@ -170,21 +173,21 @@ public:
     if(cbName == "") cbName = yarpName;
     
     if(resourceType=="yarpConfiguration") {
-      resource = new YARPConfigurationVariables(cbName,yarpName);
-      if(configFile != "") { 
-	((YARPConfigurationVariables *)resource)->loadConfig(configFile);
-      }
-      if(updateDelay != -1) ((YARPConfigurationVariables *)resource)->setUpdateDelay(updateDelay);
-      if(velocityMode) ((YARPConfigurationVariables *)resource)->setVelocityControlMode(velocityMode,velPortName);
+        resource = new YARPConfigurationVariables(cbName,yarpName);
+        if(configFile != "") { 
+            ((YARPConfigurationVariables *)resource)->loadConfig(configFile);
+        }
+        if(updateDelay != -1) ((YARPConfigurationVariables *)resource)->setUpdateDelay(updateDelay);
+        if(velocityMode) ((YARPConfigurationVariables *)resource)->setVelocityControlMode(velocityMode,velPortName);
     } else if(resourceType=="endEffector") {
-      if(yarpName == "") {
-	return false;
-      }
-      resource = new EndEffectorCartesianPosition(yarpName);
-      if(!((EndEffectorCartesianPosition *)resource)->connectToConfiguration()) return false;
+        if(yarpName == "") {
+            return false;
+        }
+        resource = new EndEffectorCartesianPosition(yarpName);
+        if(!((EndEffectorCartesianPosition *)resource)->connectToConfiguration()) return false;
     } else {
-      cout<<"unknown resoruce type..."<<endl;
-      return false;
+        cout<<"unknown resoruce type..."<<endl;
+        return false;
     }
     
     cout<<"starting resource..."<<endl;
@@ -196,39 +199,39 @@ public:
 
   virtual bool respond(const Bottle &command, Bottle &reply) 
   {
-    if(command.get(0).asString()=="quit")
-      return false;
-    else 
-      reply=command;
-    return true;
+      if(command.get(0).asString()=="quit")
+          return false;
+      else 
+          reply=command;
+      return true;
   }
-
-  virtual bool close()
-  {
-    cout << "Closing CB Resource Module..." << endl; 
-    if (resourceRunning) {
-      resource->stopResource();
-      delete resource;
+    
+    virtual bool close()
+    {
+        cout << "Closing CB Resource Module..." << endl; 
+        if (resourceRunning) {
+            resource->stopResource();
+            delete resource;
+        }
+        resourceRunning = false;
+        return true;
     }
-    resourceRunning = false;
-    return true;
-  }
-  
-  double getPeriod() {
-    return 1;
-  }
-
-  bool updateModule() {
-    return true;
-  }
-
+    
+    double getPeriod() {
+        return 1;
+    }
+    
+    bool updateModule() {
+        return true;
+    }
+    
 };
 
 int main(int argc, char *argv[])
 {
     Network yarp;
     ControlBasisResourceModule mod;
-
+    
     ResourceFinder rf;
     rf.setDefault("type","yarpConfiguration");
     rf.setDefault("part","right_arm");
