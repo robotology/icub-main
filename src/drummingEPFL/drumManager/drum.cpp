@@ -147,7 +147,7 @@ void drum::openPort(int i, BufferedPort<Bottle> *port, ConstString port_name, in
             if(!ok[i]) 
                 {
                     port[i].close();
-                    ACE_OS::printf("Failed to connect to %s for part %s\n", port_name.c_str(), parts[i].c_str());
+                    printf("Failed to connect to %s for part %s\n", port_name.c_str(), parts[i].c_str());
                 }
         }
 }
@@ -189,7 +189,7 @@ void drum::sendSoundFeedback(Bottle *Hit, BufferedPort<Bottle> *sound_port)
                     //ACE_OS::printf("Sending %s\n", soundfeed.toString().c_str());
                     fprintf(feedback_file, "%f \n", Time::now());
                     drumHit=0;
-                    ACE_OS::printf("FEEDBACK ON FOR PART %s\n", parts[i].c_str());
+                    printf("FEEDBACK ON FOR PART %s\n", parts[i].c_str());
                 }
             else
                 {

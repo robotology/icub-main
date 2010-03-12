@@ -134,12 +134,12 @@ void getConfig(drum *MyGMP){
                     confFile=partConf.fromConfigFile(partName);
                     if(!confFile)
                         {
-                            ACE_OS::printf("Config file \"%s\" not found for part %s\n", partName, MyGMP->parts[i].c_str());
+                            printf("Config file \"%s\" not found for part %s\n", partName, MyGMP->parts[i].c_str());
                             Network::fini();
                             exit(-1);
                         }
                     MyGMP->controlled_dofs[i] = partConf.find("nbDOFs").asInt();
-                    ACE_OS::printf("Controlling %d dofs for part %s\n", MyGMP->controlled_dofs[i], MyGMP->parts[i].c_str());
+                    printf("Controlling %d dofs for part %s\n", MyGMP->controlled_dofs[i], MyGMP->parts[i].c_str());
                 }
         }
 }
@@ -159,12 +159,12 @@ void getDrumInfo(drum *MyGMP){
                     file=drum.fromConfigFile(temp);
                     if(!file)
                         {
-                            ACE_OS::printf("Target positions file \"%s\" not found for part %s\n", temp, MyGMP->parts[i].c_str());
+                            printf("Target positions file \"%s\" not found for part %s\n", temp, MyGMP->parts[i].c_str());
                             Network::fini();
                             exit(-1);
                         }
                     MyGMP->nbDrums[i] = drum.find("NbDrums").asInt();
-                    ACE_OS::printf("nb drums %d\n",MyGMP->nbDrums[i]);
+                    printf("nb drums %d\n",MyGMP->nbDrums[i]);
                     for(int j=1; j<(MyGMP->nbDrums[i]+1); j++)
                         {
 			  sprintf(drumName, "Drum_%d", j);			  
@@ -173,20 +173,20 @@ void getDrumInfo(drum *MyGMP){
 			  for (int k=1; k<Target.size(); k++) 
 			    {
 			      MyGMP->G[i][j][k-1]=3.14/180.0*Target.get(k).asDouble();
-			      ACE_OS::printf("%f ", MyGMP->G[i][j][k-1]);
+			      printf("%f ", MyGMP->G[i][j][k-1]);
 			    }
-			  ACE_OS::printf("\n");
+			  printf("\n");
 			  Target.clear();
                         }
                     Bottle& Target2 = drum.findGroup("Idle");
                     for (int k=1; k<Target2.size(); k++) {
 		      MyGMP->G[i][0][k-1]=3.14/180.0*Target2.get(k).asDouble();
-		      ACE_OS::printf("%f ", MyGMP->G[i][0][k-1]);
+		      printf("%f ", MyGMP->G[i][0][k-1]);
                     }
                     printf("\n");
                     Target2.clear();
                     
-		    ACE_OS::printf("Notes: ");
+		    printf("Notes: ");
                     Bottle& Target3 = drum.findGroup("Notes");
                     for (int k=1; k<Target3.size(); k++) {
                         printf("%f ", Target3.get(k).asDouble());
@@ -196,7 +196,7 @@ void getDrumInfo(drum *MyGMP){
                     Target3.clear();
                     
                     //printf("\n");
-                    ACE_OS::printf("Target angles G for part %s:\n",MyGMP->parts[i].c_str());
+                    printf("Target angles G for part %s:\n",MyGMP->parts[i].c_str());
                     for(int j=0; j<MyGMP->max_drums; j++){
                         for(int k=0; k<MyGMP->max_dofs; k++){
                             printf("%f ",MyGMP->G[i][j][k]);
@@ -217,7 +217,7 @@ void doConnect(drum *MyGMP){
       
             if(MyGMP->ok[i])
                 {
-                    ACE_OS::printf("Using part %s\n", MyGMP->parts[i].c_str());
+                    printf("Using part %s\n", MyGMP->parts[i].c_str());
 	  
                     //opening ports and connecting with the DrumGenerator modules
                     MyGMP->openPort(i,MyGMP->check_port, "check_motion",0,1);  // IN receives beat 
@@ -231,17 +231,17 @@ void doConnect(drum *MyGMP){
             else
                 {
                     MyGMP->param_port[i].close();
-                    ACE_OS::printf("Not using %s\n", MyGMP->parts[i].c_str());
+                    printf("Not using %s\n", MyGMP->parts[i].c_str());
                 }
         }
 
     //connecting with the clock
     MyGMP->clock_port.open("/clock/parameters/out");
     bool okClock=Network::connect("/clock/parameters/out","/clock/parameters/in", "tcp");
-    if(!okClock)ACE_OS::printf("troubles connecting with the clock\n");
+    if(!okClock)printf("troubles connecting with the clock\n");
     MyGMP->beat_clock_port.open("/clock/check_motion/in");
     bool okClock2=Network::connect("/clock/check_motion/out","/clock/check_motion/in", "tcp");
-    if(!okClock2)ACE_OS::printf("troubles connecting with the clock\n");
+    if(!okClock2)printf("troubles connecting with the clock\n");
 
     //opening port to get frequency and couplings from the DrumManager
     MyGMP->interactive_port.open("/interactive/in");
@@ -312,7 +312,7 @@ void Drumming(drum *MyGMP){
 
                     if(escape==0)
                         {
-                            ACE_OS::printf("Closing command received from the gui...\n");
+                            printf("Closing command received from the gui...\n");
                             break; //GETTING OUT OF THE WHILE LOOP: if negative frequency is sent by the gui, the manager closes.
                         }
                 }
@@ -351,14 +351,14 @@ void Drumming(drum *MyGMP){
 				    MyGMP->beat[i]=0;
 				    if(time_init!=NULL) MyGMP->drum_beat[i] = time_init->get(0).asInt();
 				  }
-				ACE_OS::printf("Score for part %s: ",MyGMP->parts[i].c_str());
+				printf("Score for part %s: ",MyGMP->parts[i].c_str());
 				for (int j=0; j<MyGMP->sizeScore; j++) 
 				  {
 				    int indiceScore = (j+MyGMP->beat[i])%MyGMP->sizeScore;
 				    Score[i][indiceScore]= newScore->get(j).asInt();
-				    ACE_OS::printf("%d ",Score[i][indiceScore], newScore->get(j).asInt());
+				    printf("%d ",Score[i][indiceScore], newScore->get(j).asInt());
 				  }
-			      	ACE_OS::printf("\n");
+			      	printf("\n");
 			      }
 	     
 
@@ -373,12 +373,12 @@ void Drumming(drum *MyGMP){
 					MyGMP->phase_shift[i][indiceScore]= newPhase->get(j).asDouble();
 				      }
 				    
-				    ACE_OS::printf("Phase shifts for part %s: ",MyGMP->parts[i].c_str());
+				    printf("Phase shifts for part %s: ",MyGMP->parts[i].c_str());
 				    for (int j=0; j<MyGMP->sizeScore; j++) 
 				      {
-					ACE_OS::printf("%f ", MyGMP->phase_shift[i][j]);
+					printf("%f ", MyGMP->phase_shift[i][j]);
 				      }					
-				    ACE_OS::printf("\n");
+				    printf("\n");
 				  }
 			      }
 			}}                  
@@ -395,11 +395,11 @@ void Drumming(drum *MyGMP){
                                     MyGMP->current_beat[i] = answer->get(0).asInt();
                                     MyGMP->beat[i]=(MyGMP->current_beat[i]-MyGMP->drum_beat[i])%MyGMP->sizeScore;
 		      
-                                    ACE_OS::printf("beat %d for part %s\n",MyGMP->beat[i], MyGMP->parts[i].c_str());	                                       ACE_OS::printf("Parameters sent to %s: ", MyGMP->parts[i].c_str());
+                                    printf("beat %d for part %s\n",MyGMP->beat[i], MyGMP->parts[i].c_str());	                                       printf("Parameters sent to %s: ", MyGMP->parts[i].c_str());
                                     for(int k=0; k<MyGMP->controlled_dofs[i]; k++)
                                         {
                                             MyGMP->g[i][k]= MyGMP->G[i][Score[i][MyGMP->beat[i]]][k];
-                                            ACE_OS::printf("%f ", MyGMP->g[i][k]); 
+                                            printf("%f ", MyGMP->g[i][k]); 
                                             if(Score[i][MyGMP->beat[i]]>0) //BEATING
                                                 {
                                                     MyGMP->mu[i][k] = mu_on[i][k];
@@ -411,7 +411,7 @@ void Drumming(drum *MyGMP){
                                                     init[i]=0;
                                                 }
                                         }
-                                    ACE_OS::printf("\n");
+                                    printf("\n");
                                     MyGMP->sendNewParameterSet(MyGMP->mu[i],MyGMP->g[i],MyGMP->phase_shift[i][MyGMP->beat[i]],MyGMP->rhythmParam[MyGMP->beat[i]], i,MyGMP->param_port);}
 		  	  
                             //sending frequency to the clock	      		  
@@ -429,7 +429,7 @@ void Drumming(drum *MyGMP){
                         {
                             int current_clock= be->get(0).asInt();
                             beat_clock=(current_clock-drum_beat_clock)%MyGMP->sizeScore;		      
-                            ACE_OS::printf("beat %d for clock\n", beat_clock);
+                            printf("beat %d for clock\n", beat_clock);
                         }
                 }
             Time::delay(0.025);
@@ -470,7 +470,7 @@ int main(int argc,char **argv)
     Drumming(MyGMP);
 
     //close     
-    ACE_OS::printf("Closing...\n");
+    printf("Closing...\n");
     delete MyGMP;
 
     return 1;
