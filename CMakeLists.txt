@@ -49,8 +49,9 @@ set(ICUB_INCLUDE_DIRS "")
 set(ICUB_LIBRARIES "")
 set(ICUB_TARGETS "" CACHE STRING "list of all targets" FORCE) #cleanup directory
 
-# clean up icub-export-build.cmake (required because targets append to it)
+# clean up icub-export-build.cmake and icub-export-build-includes.cmake(required because targets append to it)
 file(WRITE ${CMAKE_BINARY_DIR}/icub-export-build.cmake "")
+file(WRITE ${CMAKE_BINARY_DIR}/icub-export-build-includes.cmake "")
 
 # Create everything needed to build our executable.
 add_subdirectory(src)
