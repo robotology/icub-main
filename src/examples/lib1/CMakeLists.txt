@@ -14,7 +14,7 @@ PROJECT(${PROJECTNAME})
 # Find .cpp and .h files automatically.  This is a bit lazy,
 # and in principle it would be better to list these files manually.
 FILE(GLOB folder_source src/*.cpp)
-FILE(GLOB folder_header include/iCub/*.h)
+FILE(GLOB folder_header include/iCub/lib1/*.h)
 
 # Declare groups of source and header files -- makes things pretty in MSVC.
 SOURCE_GROUP("Source Files" FILES ${folder_source})
@@ -27,6 +27,7 @@ INCLUDE_DIRECTORIES(${CMAKE_SOURCE_DIR}/src/examples/lib0/include)
 # Create everything needed to build our executable.
 ADD_LIBRARY(${PROJECTNAME} ${folder_source} ${folder_header})
 TARGET_LINK_LIBRARIES(${PROJECTNAME} lib0) #dependency on lib0
+SET_TARGET_PROPERTIES(${PROJECTNAME} PROPERTIES DEBUG_POSTFIX "d")
 
 icub_export_library(${PROJECTNAME} iCub/lib1)
 
