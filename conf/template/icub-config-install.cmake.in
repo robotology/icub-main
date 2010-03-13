@@ -6,7 +6,7 @@ IF (NOT ICUB_FOUND)
 
 MESSAGE(STATUS "Using iCub from install")
 
-SET(ICUB_INCLUDE_DIRS "@ICUB_INCLUDE_DIRS@" CACHE INTERNAL "Include directories needed for YARP")
+SET(ICUB_INCLUDE_DIRS "@ICUB_INCLUDE_DIRS@" CACHE INTERNAL "Include directories needed for iCub")
 
 include("@CMAKE_INSTALL_PREFIX@/icub-export-install.cmake")
 
