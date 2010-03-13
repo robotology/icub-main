@@ -1,0 +1,13 @@
+# Copyright: (C) 2010 RobotCub Consortium
+# Author: Lorenzo Natale
+# CopyPolicy: Released under the terms of the GNU GPL v2.0.
+
+IF (NOT ICUB_FOUND)
+
+MESSAGE(STATUS "Using iCub from build tree")
+
+include("@CMAKE_BINARY_DIR@/@EXPORT_INCLUDE_FILE@")
+include("@CMAKE_BINARY_DIR@/@EXPORT_CONFIG_FILE@")
+
+SET (ICUB_FOUND TRUE)
+ENDIF (NOT ICUB_FOUND)
