@@ -28,7 +28,7 @@ INCLUDE_DIRECTORIES(${CMAKE_SOURCE_DIR}/src/examples/lib0/include)
 ADD_LIBRARY(${PROJECTNAME} ${folder_source} ${folder_header})
 TARGET_LINK_LIBRARIES(${PROJECTNAME} lib0) #dependency on lib0
 
-icub_export_library(${PROJECTNAME} ${PROJECT_SOURCE_DIR}/include ${folder_header})
+icub_export_library(${PROJECTNAME} iCub/lib1)
 
 
 
