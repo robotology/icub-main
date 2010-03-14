@@ -127,9 +127,9 @@ following ports:
  
 - \e /<ctrlName>/<part>/rpc remote procedure call. 
     Recognized remote commands:
-    -'quit' quit the module
-    -'susp' suspend the controller
-    -'run' resume the controller
+    -# [quit]: quit the module.
+    -# [susp]: suspend the controller.
+    -# [run]: resume the controller.
  
 \section coor_sys_sec Coordinate System 
 Positions (meters) and orientation (radians) refer to the root 
@@ -319,13 +319,14 @@ public:
                 case VOCAB4('s','u','s','p'):
                 {                    
                     ctrl->suspend();
+                    slv->suspend();
                     reply.addVocab(Vocab::encode("ack"));
                     return true;
                 }
         
                 case VOCAB3('r','u','n'):
                 {                    
-                    slv->setStart();
+                    slv->resume();
                     ctrl->resume();
                     reply.addVocab(Vocab::encode("ack"));
                     return true;

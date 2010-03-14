@@ -62,7 +62,6 @@ Solver::Solver(PolyDriver *_drvTorso, PolyDriver *_drvArm, exchangeData *_commDa
         bool ok;
         ok =drvTorso->view(limTorso);
         ok&=drvTorso->view(encTorso);
-        ok&=drvTorso->view(posTorso);
         ok&=drvArm->view(limArm);
         ok&=drvArm->view(encArm);
 
@@ -135,31 +134,6 @@ void Solver::setStart()
 {
     if (Robotable)
     {
-        switch (ctrlTorso)
-        {
-        case 1: // command pitch to zero
-            posTorso->positionMove(2,0.0);
-
-        case 2: // command roll to zero
-            posTorso->positionMove(1,0.0);
-        }
-
-        if (ctrlTorso)
-        {
-            bool rollDone=false;
-
-            while (!rollDone)
-                posTorso->checkMotionDone(1,&rollDone);
-        }
-
-        if (ctrlTorso==1)
-        {
-            bool pitchDone=false;
-
-            while (!pitchDone)
-                posTorso->checkMotionDone(2,&pitchDone);
-        }
-
         getFeedback(fb,chain,encTorso,encArm,nJointsTorso,nJointsArm,ctrlTorso>0);
         chain->setAng(fb);
     }
@@ -316,4 +290,29 @@ void Solver::threadRelease()
     delete shouConstr;
     delete arm;    
 }
+
+
+/************************************************************************/
+void Solver::suspend()
+{
+    cout << endl;
+    cout << "Solver has been suspended!" << endl;
+    cout << endl;
+
+    RateThread::suspend();
+}
+
+
+/************************************************************************/
+void Solver::resume()
+{
+    setStart();
+
+    cout << endl;
+    cout << "Solver has been resumed!" << endl;
+    cout << endl;
+
+    RateThread::resume();
+}
+
 

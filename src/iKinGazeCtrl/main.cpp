@@ -153,9 +153,14 @@ following ports:
  
 - \e /<ctrlName>/<part>/rpc remote procedure call. 
     Recognized remote commands:
-    -'quit' quit the module
-    -'susp' suspend the controller
-    -'run' resume the controller
+    -# [quit]: quit the module.
+    -# [susp]: suspend the controller.
+    -# [run]: resume the controller.
+    -# [block] [pitch] <val>: block the neck pitch at <val>
+     degrees.
+    -# [block] [yaw] <val>: block the neck yaw at <val> degrees.
+    -# [clear] [pitch]: restore the neck pitch range.
+    -# [clear] [yaw]: restore the neck yaw range.
  
 \section coor_sys_sec Coordinate System 
 Positions (meters) refer to the root reference frame attached to
@@ -378,18 +383,67 @@ public:
                 case VOCAB4('s','u','s','p'):
                 {
                     ctrl->suspend();
+                    eyesRefGen->suspend();
+                    slv->suspend();
                     reply.addVocab(Vocab::encode("ack"));
                     return true;
                 }
 
                 case VOCAB3('r','u','n'):
                 {
-                    slv->setStart();
+                    slv->resume();
+                    eyesRefGen->resume();
                     ctrl->resume();
                     reply.addVocab(Vocab::encode("ack"));
                     return true;
                 }
 
+                case VOCAB4('b','l','o','c'):
+                {
+                    if (command.size()>2)
+                    {
+                        int joint=command.get(1).asVocab();
+                        double val=command.get(2).asDouble();
+
+                        if (joint==VOCAB4('p','i','t','c'))
+                        {
+                            slv->blockNeckPitch(val);
+                            reply.addVocab(Vocab::encode("ack"));
+                        }
+                        else if (joint==VOCAB3('y','a','w'))
+                        {
+                            slv->blockNeckYaw(val);
+                            reply.addVocab(Vocab::encode("ack"));
+                        }
+                        else
+                            reply.addVocab(Vocab::encode("nack"));
+                    }
+                    else
+                        reply.addVocab(Vocab::encode("nack"));
+                }
+
+                case VOCAB4('c','l','e','a'):
+                {
+                    if (command.size()>1)
+                    {
+                        int joint=command.get(1).asVocab();
+    
+                        if (joint==VOCAB4('p','i','t','c'))
+                        {
+                            slv->clearNeckPitch();
+                            reply.addVocab(Vocab::encode("ack"));
+                        }
+                        else if (joint==VOCAB3('y','a','w'))
+                        {
+                            slv->clearNeckYaw();
+                            reply.addVocab(Vocab::encode("ack"));
+                        }
+                        else
+                            reply.addVocab(Vocab::encode("nack"));
+                    }
+                    else
+                        reply.addVocab(Vocab::encode("nack"));
+                }
                 default:
                     return RFModule::respond(command,reply);
             }

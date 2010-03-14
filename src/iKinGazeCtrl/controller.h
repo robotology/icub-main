@@ -69,8 +69,6 @@ public:
                double _eyesTime, unsigned int _period);
 
     void stopLimbsVel();
-    void suspend();
-    void resume();
     void printIter(Vector &xd, Vector &fp, Vector &qd, Vector &q,
                    Vector &v, double printTime);
 
@@ -78,6 +76,8 @@ public:
     virtual void afterStart(bool s);
     virtual void run();
     virtual void threadRelease();
+    virtual void suspend();
+    virtual void resume();
 };
 
 

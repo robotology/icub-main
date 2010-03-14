@@ -74,7 +74,6 @@ protected:
     PolyDriver           *drvTorso, *drvArm;
     IControlLimits       *limTorso, *limArm;
     IEncoders            *encTorso, *encArm;
-    IPositionControl     *posTorso;
     exchangeData         *commData;
     slvCallback          *slvCallbackObj;
 
@@ -106,6 +105,8 @@ public:
     virtual void afterStart(bool s);
     virtual void run();
     virtual void threadRelease();
+    virtual void suspend();
+    virtual void resume();
 };
 
 

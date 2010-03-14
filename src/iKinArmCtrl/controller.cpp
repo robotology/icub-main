@@ -95,36 +95,6 @@ void Controller::stopLimbsVel()
 
 
 /************************************************************************/
-void Controller::suspend()
-{
-    stopLimbsVel();
-
-    cout << endl;
-    cout << "Controller has been suspended!" << endl;
-    cout << endl;
-
-    RateThread::suspend();
-}
-
-
-/************************************************************************/
-void Controller::resume()
-{
-    if (Robotable)
-    {    
-        getFeedback(fb,chain,encTorso,encArm,nJointsTorso,nJointsArm,ctrlTorso>0);
-        ctrl->restart(fb);
-    }
-
-    cout << endl;
-    cout << "Controller has been resumed!" << endl;
-    cout << endl;
-
-    RateThread::resume();
-}
-
-
-/************************************************************************/
 bool Controller::threadInit()
 {
     if (Robotable)
@@ -275,6 +245,36 @@ void Controller::threadRelease()
     delete port_v;
     delete ctrl;
     delete arm;
+}
+
+
+/************************************************************************/
+void Controller::suspend()
+{
+    stopLimbsVel();
+
+    cout << endl;
+    cout << "Controller has been suspended!" << endl;
+    cout << endl;
+
+    RateThread::suspend();
+}
+
+
+/************************************************************************/
+void Controller::resume()
+{
+    if (Robotable)
+    {    
+        getFeedback(fb,chain,encTorso,encArm,nJointsTorso,nJointsArm,ctrlTorso>0);
+        ctrl->restart(fb);
+    }
+
+    cout << endl;
+    cout << "Controller has been resumed!" << endl;
+    cout << endl;
+
+    RateThread::resume();
 }
 
 

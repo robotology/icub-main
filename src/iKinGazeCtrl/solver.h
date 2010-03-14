@@ -85,6 +85,8 @@ public:
     virtual void afterStart(bool s);
     virtual void run();
     virtual void threadRelease();
+    virtual void suspend();
+    virtual void resume();
 };
 
 
@@ -125,6 +127,11 @@ protected:
     Vector neckPos;
     Vector gazePos;
 
+    double neckPitchMin;
+    double neckPitchMax;
+    double neckYawMin;
+    double neckYawMax;
+
     deque<Vector> fbTorsoOld;
 
     unsigned int alignNeckCnt;
@@ -137,12 +144,18 @@ public:
     // Returns a measure of neck angle required to reach the target
     void   updateAngles();
     Vector neckTargetRotAngles(const Vector &xd);
-    void   setStart();
+
+    void blockNeckPitch(double val);
+    void blockNeckYaw(double val);
+    void clearNeckPitch();
+    void clearNeckYaw();
 
     virtual bool threadInit();
     virtual void afterStart(bool s);
     virtual void run();
     virtual void threadRelease();
+    virtual void suspend();
+    virtual void resume();
 };
 
 

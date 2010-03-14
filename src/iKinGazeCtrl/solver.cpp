@@ -30,7 +30,7 @@ EyePinvRefGen::EyePinvRefGen(PolyDriver *_drvTorso, PolyDriver *_drvHead,
     eyeL->blockLink(4,0.0); eyeR->blockLink(4,0.0);
     eyeL->blockLink(5,0.0); eyeR->blockLink(5,0.0);
 
-    // Get the chain object attached to the arm
+    // Get the chain objects
     chainNeck=neck->asChain();
     chainEyeL=eyeL->asChain();
     chainEyeR=eyeR->asChain();
@@ -275,6 +275,28 @@ void EyePinvRefGen::threadRelease()
 
 
 /************************************************************************/
+void EyePinvRefGen::suspend()
+{
+    cout << endl;
+    cout << "Pseudoinverse Reference Generator has been suspended!" << endl;
+    cout << endl;
+
+    RateThread::suspend();
+}
+
+
+/************************************************************************/
+void EyePinvRefGen::resume()
+{
+    cout << endl;
+    cout << "Pseudoinverse Reference Generator has been resumed!" << endl;
+    cout << endl;
+
+    RateThread::resume();
+}
+
+
+/************************************************************************/
 Solver::Solver(PolyDriver *_drvTorso, PolyDriver *_drvHead, exchangeData *_commData,
                EyePinvRefGen *_eyesRefGen, Localizer *_loc, const string &_localName,
                const string &_configFile, unsigned int _period) :
@@ -297,7 +319,7 @@ Solver::Solver(PolyDriver *_drvTorso, PolyDriver *_drvHead, exchangeData *_commD
     eyeL->blockLink(4,0.0); eyeR->blockLink(4,0.0);
     eyeL->blockLink(5,0.0); eyeR->blockLink(5,0.0);
 
-    // Get the chain object attached to the arm
+    // Get the chain objects
     chainNeck=neck->asChain();
     chainEyeL=eyeL->asChain();        
     chainEyeR=eyeR->asChain();
@@ -355,6 +377,12 @@ Solver::Solver(PolyDriver *_drvTorso, PolyDriver *_drvHead, exchangeData *_commD
         fbHead.resize(nJointsHead,0.0);
     }
 
+    // store neck pitch/yaw bounds
+    neckPitchMin=(*chainNeck)[3].getMin();
+    neckPitchMax=(*chainNeck)[3].getMax();
+    neckYawMin  =(*chainNeck)[5].getMin();
+    neckYawMax  =(*chainNeck)[5].getMax();
+
     // neck roll disabled
     fbHead[1]=0.0;
 
@@ -383,6 +411,44 @@ Solver::Solver(PolyDriver *_drvTorso, PolyDriver *_drvHead, exchangeData *_commD
 
     // latch torso joints
     fbTorsoOld.push_front(fbTorso);
+}
+
+
+/************************************************************************/
+void Solver::blockNeckPitch(double val)
+{
+    val*=CTRL_DEG2RAD;
+    val=val<neckPitchMin ? neckPitchMin : (val>neckPitchMax ? neckPitchMax : val);
+
+    (*chainNeck)[3].setMin(val);
+    (*chainNeck)[3].setMax(val);
+}
+
+
+/************************************************************************/
+void Solver::blockNeckYaw(double val)
+{
+    val*=CTRL_DEG2RAD;
+    val=val<neckYawMin ? neckYawMin : (val>neckYawMax ? neckYawMax : val);
+
+    (*chainNeck)[5].setMin(val);
+    (*chainNeck)[5].setMax(val);
+}
+
+
+/************************************************************************/
+void Solver::clearNeckPitch()
+{
+    (*chainNeck)[3].setMin(neckPitchMin);
+    (*chainNeck)[3].setMax(neckPitchMax);
+}
+
+
+/************************************************************************/
+void Solver::clearNeckYaw()
+{
+    (*chainNeck)[5].setMin(neckYawMin);
+    (*chainNeck)[5].setMax(neckYawMax);
 }
 
 
@@ -427,46 +493,9 @@ Vector Solver::neckTargetRotAngles(const Vector &xd)
 
 
 /************************************************************************/
-void Solver::setStart()
-{
-    if (Robotable)
-    {
-        // read encoders
-        getFeedback(fbTorso,fbHead,encTorso,encHead);
-        updateTorsoBlockedJoints(chainNeck,fbTorso);
-        updateTorsoBlockedJoints(chainEyeL,fbTorso);
-        updateTorsoBlockedJoints(chainEyeR,fbTorso);        
-    }
-    else
-        fbHead=commData->get_q();    
-
-    // update kinematics
-    updateAngles();
-    updateNeckBlockedJoints(chainEyeL,fbHead);
-    updateNeckBlockedJoints(chainEyeR,fbHead);
-    chainNeck->setAng(neckPos);
-    chainEyeL->setAng(nJointsTorso+3,gazePos[0]);                chainEyeR->setAng(nJointsTorso+3,gazePos[0]);
-    chainEyeL->setAng(nJointsTorso+4,gazePos[1]+gazePos[2]/2.0); chainEyeR->setAng(nJointsTorso+4,gazePos[1]-gazePos[2]/2.0);
-
-    // compute fixation point
-    Vector fp(3);
-    Matrix J(3,3);
-    computeFixationPointData(*chainEyeL,*chainEyeR,fp,J);
-
-    // update input port
-    port_xd->set_xd(fp);
-    
-    // clear the buffer
-    fbTorsoOld.clear();
-    // latch torso joints
-    fbTorsoOld.push_front(fbTorso);
-}
-
-
-/************************************************************************/
 bool Solver::threadInit()
 {
-    // Instantiate the optimizers
+    // Instantiate optimizers
     iKinChain dummyChain;
     invNeck=new GazeIpOptMin("neck",*chainNeck,dummyChain,1e-3,20);
     invEyes=new GazeIpOptMin("eyes",*chainEyeL,*chainEyeR,1e-3,20);
@@ -631,5 +660,64 @@ void Solver::threadRelease()
     if (alignLnkRight2)
         delete alignLnkRight2;
 }
+
+
+/************************************************************************/
+void Solver::suspend()
+{
+    cout << endl;
+    cout << "Solver has been suspended!" << endl;
+    cout << endl;
+
+    RateThread::suspend();
+}
+
+
+/************************************************************************/
+void Solver::resume()
+{
+    if (Robotable)
+    {
+        // read encoders
+        getFeedback(fbTorso,fbHead,encTorso,encHead);
+
+        // neck roll disabled
+        fbHead[1]=0.0;
+
+        updateTorsoBlockedJoints(chainNeck,fbTorso);
+        updateTorsoBlockedJoints(chainEyeL,fbTorso);
+        updateTorsoBlockedJoints(chainEyeR,fbTorso);        
+    }
+    else
+        fbHead=commData->get_q();    
+
+    // update kinematics
+    updateAngles();
+    updateNeckBlockedJoints(chainEyeL,fbHead);
+    updateNeckBlockedJoints(chainEyeR,fbHead);
+    chainNeck->setAng(neckPos);
+    chainEyeL->setAng(nJointsTorso+3,gazePos[0]);                chainEyeR->setAng(nJointsTorso+3,gazePos[0]);
+    chainEyeL->setAng(nJointsTorso+4,gazePos[1]+gazePos[2]/2.0); chainEyeR->setAng(nJointsTorso+4,gazePos[1]-gazePos[2]/2.0);
+
+    // compute fixation point
+    Vector fp(3);
+    Matrix J(3,3);
+    computeFixationPointData(*chainEyeL,*chainEyeR,fp,J);
+
+    // update input port
+    port_xd->set_xd(fp);
+
+    // clear the buffer
+    fbTorsoOld.clear();
+    // latch torso joints
+    fbTorsoOld.push_front(fbTorso);
+
+    cout << endl;
+    cout << "Solver has been resumed!" << endl;
+    cout << endl;
+
+    RateThread::resume();
+}
+
 
 

@@ -129,41 +129,6 @@ void Controller::stopLimbsVel()
 
 
 /************************************************************************/
-void Controller::suspend()
-{
-    stopLimbsVel();
-
-    cout << endl;
-    cout << "Controller has been suspended!" << endl;
-    cout << endl;
-
-    RateThread::suspend();
-}
-
-
-/************************************************************************/
-void Controller::resume()
-{
-    if (Robotable)
-    {
-        getFeedback(fbTorso,fbHead,encTorso,encHead);
-    
-        for (unsigned int i=0; i<3; i++)
-        {
-            fbNeck[i]=fbHead[i];
-            fbEyes[i]=fbHead[3+i];
-        }
-    }
-
-    cout << endl;
-    cout << "Controller has been resumed!" << endl;
-    cout << endl;
-
-    RateThread::resume();
-}
-
-
-/************************************************************************/
 void Controller::printIter(Vector &xd, Vector &fp, Vector &qd, Vector &q,
                            Vector &v, double printTime)
 {
@@ -333,6 +298,41 @@ void Controller::threadRelease()
     delete mjCtrlNeck;
     delete mjCtrlEyes;
     delete Int;
+}
+
+
+/************************************************************************/
+void Controller::suspend()
+{
+    stopLimbsVel();
+
+    cout << endl;
+    cout << "Controller has been suspended!" << endl;
+    cout << endl;
+
+    RateThread::suspend();
+}
+
+
+/************************************************************************/
+void Controller::resume()
+{
+    if (Robotable)
+    {
+        getFeedback(fbTorso,fbHead,encTorso,encHead);
+    
+        for (unsigned int i=0; i<3; i++)
+        {
+            fbNeck[i]=fbHead[i];
+            fbEyes[i]=fbHead[3+i];
+        }
+    }
+
+    cout << endl;
+    cout << "Controller has been resumed!" << endl;
+    cout << endl;
+
+    RateThread::resume();
 }
 
 

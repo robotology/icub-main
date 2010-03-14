@@ -22,7 +22,9 @@ The main differences with respect to \ref iKinArmCtrl are:
    hence one can use the non-controlled joints concurrently
    without conflict.
 -# \ref iKinArmCtrlIF does not have a <i>simulation</i> mode 
- since it is deeply connected to the robot.
+ since it is deeply connected to the robot. Nonethelesse, you
+ can still use it together with the \ref icub_Simulation "iCub
+ Simulator".
  
 \section lib_sec Libraries 
 - YARP libraries. 
