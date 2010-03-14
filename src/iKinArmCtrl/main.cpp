@@ -320,7 +320,6 @@ public:
                 {                    
                     ctrl->suspend();
                     slv->suspend();
-                    reply.addVocab(Vocab::encode("ack"));
                     return true;
                 }
         
@@ -328,7 +327,6 @@ public:
                 {                    
                     slv->resume();
                     ctrl->resume();
-                    reply.addVocab(Vocab::encode("ack"));
                     return true;
                 }
         
@@ -337,10 +335,7 @@ public:
             }
         }
         else
-        {
-            reply.add("command size==0");
             return false;
-        }
     }
 
     virtual bool close()

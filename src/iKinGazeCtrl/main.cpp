@@ -385,7 +385,6 @@ public:
                     ctrl->suspend();
                     eyesRefGen->suspend();
                     slv->suspend();
-                    reply.addVocab(Vocab::encode("ack"));
                     return true;
                 }
 
@@ -394,7 +393,6 @@ public:
                     slv->resume();
                     eyesRefGen->resume();
                     ctrl->resume();
-                    reply.addVocab(Vocab::encode("ack"));
                     return true;
                 }
 
@@ -406,20 +404,16 @@ public:
                         double val=command.get(2).asDouble();
 
                         if (joint==VOCAB4('p','i','t','c'))
-                        {
                             slv->blockNeckPitch(val);
-                            reply.addVocab(Vocab::encode("ack"));
-                        }
                         else if (joint==VOCAB3('y','a','w'))
-                        {
                             slv->blockNeckYaw(val);
-                            reply.addVocab(Vocab::encode("ack"));
-                        }
                         else
-                            reply.addVocab(Vocab::encode("nack"));
+                            return false;
                     }
                     else
-                        reply.addVocab(Vocab::encode("nack"));
+                        return false;
+
+                    return true;
                 }
 
                 case VOCAB4('c','l','e','a'):
@@ -429,30 +423,24 @@ public:
                         int joint=command.get(1).asVocab();
     
                         if (joint==VOCAB4('p','i','t','c'))
-                        {
                             slv->clearNeckPitch();
-                            reply.addVocab(Vocab::encode("ack"));
-                        }
                         else if (joint==VOCAB3('y','a','w'))
-                        {
                             slv->clearNeckYaw();
-                            reply.addVocab(Vocab::encode("ack"));
-                        }
                         else
-                            reply.addVocab(Vocab::encode("nack"));
+                            return false;
                     }
                     else
-                        reply.addVocab(Vocab::encode("nack"));
+                        return false;
+
+                    return true;
                 }
+
                 default:
                     return RFModule::respond(command,reply);
             }
         }
         else
-        {
-            reply.add("command size==0");
             return false;
-        }
     }
 
     virtual bool close()

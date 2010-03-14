@@ -415,24 +415,32 @@ Solver::Solver(PolyDriver *_drvTorso, PolyDriver *_drvHead, exchangeData *_commD
 
 
 /************************************************************************/
-void Solver::blockNeckPitch(double val)
+void Solver::blockNeckPitch(const double val_deg)
 {
-    val*=CTRL_DEG2RAD;
-    val=val<neckPitchMin ? neckPitchMin : (val>neckPitchMax ? neckPitchMax : val);
+    double val_rad=CTRL_DEG2RAD*val_deg;
+    val_rad=val_rad<neckPitchMin?neckPitchMin:(val_rad>neckPitchMax?neckPitchMax:val_rad);
 
-    (*chainNeck)[3].setMin(val);
-    (*chainNeck)[3].setMax(val);
+    (*chainNeck)[3].setMin(val_rad);
+    (*chainNeck)[3].setMax(val_rad);
+
+    cout << endl;
+    cout << "neck pitch blocked at " << val_deg << " [deg]" << endl;
+    cout << endl;
 }
 
 
 /************************************************************************/
-void Solver::blockNeckYaw(double val)
+void Solver::blockNeckYaw(const double val_deg)
 {
-    val*=CTRL_DEG2RAD;
-    val=val<neckYawMin ? neckYawMin : (val>neckYawMax ? neckYawMax : val);
+    double val_rad=CTRL_DEG2RAD*val_deg;
+    val_rad=val_rad<neckYawMin?neckYawMin:(val_rad>neckYawMax?neckYawMax:val_rad);
 
-    (*chainNeck)[5].setMin(val);
-    (*chainNeck)[5].setMax(val);
+    (*chainNeck)[5].setMin(val_rad);
+    (*chainNeck)[5].setMax(val_rad);
+
+    cout << endl;
+    cout << "neck yaw blocked at " << val_deg << " [deg]" << endl;
+    cout << endl;
 }
 
 
@@ -441,6 +449,10 @@ void Solver::clearNeckPitch()
 {
     (*chainNeck)[3].setMin(neckPitchMin);
     (*chainNeck)[3].setMax(neckPitchMax);
+
+    cout << endl;
+    cout << "neck pitch cleared" << endl;
+    cout << endl;
 }
 
 
@@ -449,6 +461,10 @@ void Solver::clearNeckYaw()
 {
     (*chainNeck)[5].setMin(neckYawMin);
     (*chainNeck)[5].setMax(neckYawMax);
+
+    cout << endl;
+    cout << "neck yaw cleared" << endl;
+    cout << endl;
 }
 
 
