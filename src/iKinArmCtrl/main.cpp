@@ -128,8 +128,8 @@ following ports:
 - \e /<ctrlName>/<part>/rpc remote procedure call. 
     Recognized remote commands:
     -# [quit]: quit the module.
-    -# [susp]: suspend the controller.
-    -# [run]: resume the controller.
+    -# [susp]: suspend the module.
+    -# [run]: resume the module.
  
 \section coor_sys_sec Coordinate System 
 Positions (meters) and orientation (radians) refer to the root 

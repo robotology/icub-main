@@ -154,8 +154,8 @@ following ports:
 - \e /<ctrlName>/<part>/rpc remote procedure call. 
     Recognized remote commands:
     -# [quit]: quit the module.
-    -# [susp]: suspend the controller.
-    -# [run]: resume the controller.
+    -# [susp]: suspend the module.
+    -# [run]: resume the module.
     -# [block] [pitch] <val>: block the neck pitch at <val>
      degrees.
     -# [block] [yaw] <val>: block the neck yaw at <val> degrees.
