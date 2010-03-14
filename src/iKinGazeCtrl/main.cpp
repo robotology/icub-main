@@ -153,14 +153,14 @@ following ports:
  
 - \e /<ctrlName>/<part>/rpc remote procedure call. 
     Recognized remote commands:
-    -# [quit]: quit the module.
-    -# [susp]: suspend the module.
-    -# [run]: resume the module.
-    -# [block] [pitch] <val>: block the neck pitch at <val>
+    - [quit]: quit the module.
+    - [susp]: suspend the module.
+    - [run]: resume the module.
+    - [block] [pitch] <val>: block the neck pitch at <val>
      degrees.
-    -# [block] [yaw] <val>: block the neck yaw at <val> degrees.
-    -# [clear] [pitch]: restore the neck pitch range.
-    -# [clear] [yaw]: restore the neck yaw range.
+    - [block] [yaw] <val>: block the neck yaw at <val> degrees.
+    - [clear] [pitch]: restore the neck pitch range.
+    - [clear] [yaw]: restore the neck yaw range.
  
 \section coor_sys_sec Coordinate System 
 Positions (meters) refer to the root reference frame attached to
