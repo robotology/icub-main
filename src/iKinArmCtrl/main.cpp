@@ -19,12 +19,12 @@ This module provides a controller for the iCub arm which
 implements the multi-referential approach based on the paper 
 from Micha Hersch available <a 
 href="http://infoscience.epfl.ch/record/114045">here</a>. Unlike
-the Micha Hersch baseline, the VITE's controllers are 
-substituted with time-base minimum jerk generators. Essentially,
-the generated trajectories of end-effector are quasi-straight 
-similar to the ones measured in human reaching movements. The 
-controller is capable of handling the complete pose (xyz 
-cartesian position + orientation in axis/angle mode). 
+the Micha Hersch baseline, the VITE models are substituted with
+minimum-jerk controllers. Essentially, the generated 
+trajectories of end-effector are quasi-straight similar to the 
+ones measured in human reaching movements. The controller is 
+capable of handling the complete pose (xyz cartesian position + 
+orientation in axis/angle mode). 
  
 The module can be selected to control a usual 7-DOF arm or the 
 extended 10-DOF arm which includes the torso structure. When 
