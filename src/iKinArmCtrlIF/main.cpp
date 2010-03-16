@@ -30,16 +30,15 @@ The main differences with respect to \ref iKinArmCtrl are:
 - YARP libraries. 
 
 \section parameters_sec Parameters
---modName \e name 
-- The parameter \e name identifies the module's name; all the 
-  open ports will be tagged with the prefix
-  /<modName>/<part>/. If not specified \e iKinArmCtrlIF is
+--ctrlName \e name 
+- The parameter \e name identifies the controller's name; all 
+  the open ports will be tagged with the prefix
+  /<ctrlName>/<part>/. If not specified \e iKinArmCtrlIF is
   assumed.
  
---ctrlName \e name 
-- The parameter \e name identifies the cartesian controller's 
-  name to connect to. If not specified \e
-  icub/cartesianController is assumed.
+--robot \e name 
+- The parameter \e name selects the robot name to connect to; if
+  not specified \e icub is assumed.
  
 --part \e type 
 - The parameter \e type selects the robot's arm to work with. It
@@ -355,8 +354,8 @@ public:
     virtual bool configure(ResourceFinder &rf)
     {
         string slash="/";
-        string modName;
         string ctrlName;
+        string robotName;
         string partName;
         string remoteName;
         string localName;
@@ -364,12 +363,12 @@ public:
         Time::turboBoost();
 
         // get params from the RF
-        modName=rf.check("modName",Value("iKinArmCtrlIF")).asString();
-        ctrlName=rf.check("ctrlName",Value("icub/cartesianController")).asString();
+        ctrlName=rf.check("ctrlName",Value("iKinArmCtrlIF")).asString();
+        robotName=rf.check("robot",Value("icub")).asString();
         partName=rf.check("part",Value("right_arm")).asString();
 
-        remoteName=slash+ctrlName+slash+partName;
-        localName=slash+modName+slash+partName;
+        remoteName=slash+robotName+"/cartesianController/"+partName;
+        localName=slash+ctrlName+slash+partName;
 
         thr=new CtrlThread(20,rf,remoteName,localName);
         if (!thr->start())
@@ -410,14 +409,14 @@ int main(int argc, char *argv[])
     if (rf.check("help"))
     {
         cout << "Options:" << endl << endl;
-        cout << "\t--modName  name: module name (default iKinArmCtrlIF)"                              << endl;
-        cout << "\t--ctrlName name: controller name to connect to (default icub/cartesianController)" << endl;
-        cout << "\t--part     type: robot arm type, left_arm or right_arm (default: right_arm)"       << endl;
-        cout << "\t--T        time: specify the task execution time in seconds (default: 2.0)"        << endl;
-        cout << "\t--DOF10        : control the torso yaw/roll/pitch as well"                         << endl;
-        cout << "\t--DOF9         : control the torso yaw/pitch as well"                              << endl;
-        cout << "\t--DOF8         : control the torso yaw as well"                                    << endl;
-        cout << "\t--onlyXYZ      : disable orientation control"                                      << endl;
+        cout << "\t--ctrlName name: controller name (default iKinArmCtrlIF)"                    << endl;
+        cout << "\t--robot    name: robot name to connect to (default: icub)"                   << endl;
+        cout << "\t--part     type: robot arm type, left_arm or right_arm (default: right_arm)" << endl;
+        cout << "\t--T        time: specify the task execution time in seconds (default: 2.0)"  << endl;
+        cout << "\t--DOF10        : control the torso yaw/roll/pitch as well"                   << endl;
+        cout << "\t--DOF9         : control the torso yaw/pitch as well"                        << endl;
+        cout << "\t--DOF8         : control the torso yaw as well"                              << endl;
+        cout << "\t--onlyXYZ      : disable orientation control"                                << endl;
 
         return 0;
     }
