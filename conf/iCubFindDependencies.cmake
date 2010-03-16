@@ -33,12 +33,10 @@ checkandset_dependency(OpenGL)
 checkandset_dependency(ODE)
 checkandset_dependency(SDL)
 
-
-
-if (YARP_HAS_MATH)
+if (YARP_HAS_LIBMATH)
     set(ICUB_HAS_YARPMATH true)
     message(STATUS "found yarp math library")
-endif (YARP_HAS_MATH)
+endif (YARP_HAS_LIBMATH)
 
 
 
