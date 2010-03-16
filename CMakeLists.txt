@@ -30,7 +30,7 @@ SET(CMAKE_MODULE_PATH ${ICUB_MODULE_PATH})
 include(${PROJECT_SOURCE_DIR}/conf/iCubHelpers.cmake)
 
 # find dependencies and set variables
-include(${PROJECT_SOURCE_DIR}/dependencies.cmake)
+include(${PROJECT_SOURCE_DIR}/conf/iCubFindDependencies.cmake)
 
 
 ### this makes everything go in $ICUB_DIR/lib and $ICUB_DIR/bin
