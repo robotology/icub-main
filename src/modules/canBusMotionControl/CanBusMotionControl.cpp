@@ -1429,8 +1429,32 @@ AnalogSensor *CanBusMotionControl::instantiateAnalog(yarp::os::Searchable& confi
 				res._writeBuffer[0].setLen(2);
 				res._writeMessages++;
 				res.writePacket();
+				
+				int timeout=0;
+				bool full_scale_read=false;
+				do 
+				{
+					res.read();
+					for (i=0; i<res._readMessages; i++)
+					{
+						CanMessage& m = res._readBuffer[i];
+						if (m.getId()==0x2D0 ||
+							m.getId()==0x2E0)
+							if (m.getLen()==4 &&
+								m.getData()[0]==0x18 &&
+								m.getData()[1]==ch)
+								{
+									analogSensor->getScaleFactor()[ch]=m.getData()[2]<<8 | m.getData()[3];
+									full_scale_read=true;
+									break;
+								}
+					}
+					timeout++;
+				}
+				while(timeout<1000 && full_scale_read==false);
+				if (full_scale_read==false) fprintf(stderr, "Trying to get fullscale data from sensor: no answer recieved or message lost\n");
 
-				if (res.read()!=true)
+/*				if (res.read()!=true)
 				{
 					fprintf(stderr, "Trying to get fullscale data from sensor: reading failed\n");
 				}
@@ -1448,6 +1472,7 @@ AnalogSensor *CanBusMotionControl::instantiateAnalog(yarp::os::Searchable& confi
 								}
 					}
 				if (i==res._readMessages) fprintf(stderr, "Trying to get fullscale data from sensor: no answer recieved or message lost\n");
+*/
 			}
 		}
 		#if 1
