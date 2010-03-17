@@ -285,4 +285,13 @@ Matrix ctrl::SE3inv(const Matrix &H, unsigned int verbose)
     return invH;
 }
 
+//~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+Vector ctrl::sign(const Vector &v)
+{
+	Vector ret(v.length());
+	for(int i=0; i<ret.length(); i++)
+		ret(i) = sign(v(i));
+	return ret;
+}
+
 
