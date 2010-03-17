@@ -106,6 +106,28 @@ inline double norm(const yarp::sig::Matrix &M, int col)
     return sqrt(norm2(M,col));
 }
 
+/**
+* \ingroup Maths
+*
+* Returns the sign of a real number: 1 if positive, -1 if negative, 0 if equal to zero
+* @param v is a real number. 
+* @return sign(v). 
+*/
+inline double sign(const double &v)
+{
+	return (v==0.0)?0.0:((v>0)?1.0:-1.0);
+}
+
+/**
+* \ingroup Maths
+*
+* Returns the sign vector of a real vector, that is a vector with 1 if the value is positive, 
+* -1 if negative, 0 if equal to zero. 
+* @param v is the input vector. 
+* @return sign(v). 
+*/
+yarp::sig::Vector sign(const yarp::sig::Vector &v);
+
 
 /**
 * \ingroup Maths
