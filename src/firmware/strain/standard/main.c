@@ -62,7 +62,7 @@
 #define STRAIN_RELEASE     0x03
 
 #define MAIS_BUILD         0x01
-#define STRAIN_BUILD       0x05
+#define STRAIN_BUILD       0x06
 
 #ifdef STRAIN 
   char VERSION=   		STRAIN_VERSION;
@@ -397,7 +397,8 @@ void T2(void)
   // ForceData and TorqueData are defined as 8 bytes arrays, but only 6 bytes are used.
   // The remainaing two should be not trasmitted, unless a particular event occurs (i.e:debug message, saturation warning etc.)
   unsigned char ForceDataCalib[8], TorqueDataCalib[8]; 
-  unsigned char ForceDataCalibSafe[8];
+  static unsigned char ForceDataCalibSafe[8];
+  static unsigned char TorqueDataCalibSafe[8];
   unsigned char ForceDataUncalib[8], TorqueDataUncalib[8]; 
   static unsigned char ChToTransmit=1; 
   unsigned char saturation = 0;
@@ -413,67 +414,8 @@ void T2(void)
 
   // Tim1IRQ has to be disabled: MatrixMultiply and IIRTransposed 
   // from dsp library shares some common resources
-//@@@
-  //DisableIntT3;
-/*
-  // 15usec 
-  MatrixMultiply(
-  6, // int numRows1,
-  6, // int numCols1Rows2,
-  1, // int numCols2,
-  &BoardConfig.EE_TF_TorqueValue[0],   // fractional* dstM,
-  &BoardConfig.EE_TF_TMatrix[0][0],    // fractional* srcM1,
-  (int*) &BoardConfig.EE_AN_ChannelValue[0]); // fractional* srcM2 
   //@@@
-  //EnableIntT3;
-
-  if (UseCalibration==1)
-  {
-	  //Use Caliration Matrix
-	  VectorAdd (6, BoardConfig.EE_TF_TorqueValue, BoardConfig.EE_TF_TorqueValue, BoardConfig.EE_CalibrationTare);
-	  VectorAdd (6, BoardConfig.EE_TF_TorqueValue, BoardConfig.EE_TF_TorqueValue, CurrentTare);
-	  BoardConfig.EE_TF_TorqueValue[0]+=0x7FFF;
-	  BoardConfig.EE_TF_TorqueValue[1]+=0x7FFF;
-	  BoardConfig.EE_TF_TorqueValue[2]+=0x7FFF;
-	  BoardConfig.EE_TF_TorqueValue[3]+=0x7FFF;
-	  BoardConfig.EE_TF_TorqueValue[4]+=0x7FFF;
-	  BoardConfig.EE_TF_TorqueValue[5]+=0x7FFF;
-	  memcpy(ForceData,BoardConfig.EE_TF_TorqueValue,6);
-	  memcpy(TorqueData,BoardConfig.EE_TF_ForceValue,6);
-  }
-  else
-  {
- 	  //Do not use calibration matrix
-	  BoardConfig.EE_AN_ChannelValue[0]+=0x7FFF;
-	  BoardConfig.EE_AN_ChannelValue[1]+=0x7FFF;
-	  BoardConfig.EE_AN_ChannelValue[2]+=0x7FFF;
-	  BoardConfig.EE_AN_ChannelValue[3]+=0x7FFF;
-	  BoardConfig.EE_AN_ChannelValue[4]+=0x7FFF;
-	  BoardConfig.EE_AN_ChannelValue[5]+=0x7FFF;
-	  memcpy(ForceData,BoardConfig.EE_AN_ChannelValue,6);
-	  memcpy(TorqueData,&BoardConfig.EE_AN_ChannelValue[3],6);
-  }
-
-
-  // memcpy(ForceData,BoardConfig.EE_AN_ChannelValue,6);
-  // memcpy(TorqueData,&BoardConfig.EE_AN_ChannelValue[3],6);
-
-  // Load message ID , Data into transmit buffer and set transmit request bit
-  // class, source, type for periodoc messages
-  // force data 
-  if (saturation!=0)
-  {
-	 length=7;
-	 ForceData[6]=1;
-	 TorqueData[6]=1;	
-  }
-  SID = (CAN_MSG_CLASS_PERIODIC) | ((BoardConfig.EE_CAN_BoardAddress)<<4) | (CAN_CMD_FORCE_VECTOR) ;
-  CAN1SendMessage((CAN_TX_SID(SID)) & CAN_TX_EID_DIS & CAN_SUB_NOR_TX_REQ, (CAN_TX_EID(0x0)) & CAN_NOR_TX_REQ, ForceData,length,0); // buffer 0 
-  // torque data 
-  SID = (CAN_MSG_CLASS_PERIODIC) | ((BoardConfig.EE_CAN_BoardAddress)<<4) | (CAN_CMD_TORQUE_VECTOR) ;
-  CAN1SendMessage((CAN_TX_SID(SID)) & CAN_TX_EID_DIS & CAN_SUB_NOR_TX_REQ, (CAN_TX_EID(0x0)) & CAN_NOR_TX_REQ, TorqueData,length,1); // buffer 1 
-  
-*/
+  //DisableIntT3;
 
   VectorAdd (6, BoardConfig.EE_AN_ChannelValue, BoardConfig.EE_AN_ChannelValue, BoardConfig.EE_CalibrationTare);
   MatrixMultiply(
@@ -485,7 +427,6 @@ void T2(void)
   (int*) &BoardConfig.EE_AN_ChannelValue[0]); // fractional* srcM2 
 
 	//calculate Data for calibrated values...
-//	VectorAdd (6, BoardConfig.EE_TF_TorqueValue, BoardConfig.EE_TF_TorqueValue, BoardConfig.EE_CalibrationTare);
 	VectorAdd (6, BoardConfig.EE_TF_TorqueValue, BoardConfig.EE_TF_TorqueValue, CurrentTare);
 	BoardConfig.EE_TF_TorqueValue[0]+=0x7FFF;
 	BoardConfig.EE_TF_TorqueValue[1]+=0x7FFF;
@@ -494,7 +435,7 @@ void T2(void)
 	BoardConfig.EE_TF_TorqueValue[4]+=0x7FFF;
 	BoardConfig.EE_TF_TorqueValue[5]+=0x7FFF;
 	memcpy(ForceDataCalib,BoardConfig.EE_TF_TorqueValue,6);
-	memcpy(TorqueDataCalib,BoardConfig.EE_TF_ForceValue,6);
+	memcpy(TorqueDataCalib,BoardConfig.EE_TF_ForceValue,6); 
 	//...and for not calibrated ones
 	BoardConfig.EE_AN_ChannelValue[0]+=0x7FFF;
 	BoardConfig.EE_AN_ChannelValue[1]+=0x7FFF;
@@ -504,9 +445,6 @@ void T2(void)
 	BoardConfig.EE_AN_ChannelValue[5]+=0x7FFF;
 	memcpy(ForceDataUncalib,BoardConfig.EE_AN_ChannelValue,6);
 	memcpy(TorqueDataUncalib,&BoardConfig.EE_AN_ChannelValue[3],6);
-
-  // memcpy(ForceData,BoardConfig.EE_AN_ChannelValue,6);
-  // memcpy(TorqueData,&BoardConfig.EE_AN_ChannelValue[3],6);
 
   // Load message ID , Data into transmit buffer and set transmit request bit
   // class, source, type for periodoc messages
@@ -519,6 +457,12 @@ void T2(void)
 	 ForceDataCalib[3]=ForceDataCalibSafe[3];
 	 ForceDataCalib[4]=ForceDataCalibSafe[4];
 	 ForceDataCalib[5]=ForceDataCalibSafe[5];
+	 TorqueDataCalib[0]=TorqueDataCalibSafe[0];
+	 TorqueDataCalib[1]=TorqueDataCalibSafe[1];
+	 TorqueDataCalib[2]=TorqueDataCalibSafe[2];
+	 TorqueDataCalib[3]=TorqueDataCalibSafe[3];
+	 TorqueDataCalib[4]=TorqueDataCalibSafe[4];
+	 TorqueDataCalib[5]=TorqueDataCalibSafe[5];
 	 ForceDataCalib[6]=1;
 	 TorqueDataCalib[6]=1;	
 	 ForceDataUncalib[6]=1;
@@ -532,9 +476,16 @@ void T2(void)
 	 ForceDataCalibSafe[3]=ForceDataCalib[3];
 	 ForceDataCalibSafe[4]=ForceDataCalib[4];
 	 ForceDataCalibSafe[5]=ForceDataCalib[5];
+	 TorqueDataCalibSafe[0]=TorqueDataCalib[0];
+	 TorqueDataCalibSafe[1]=TorqueDataCalib[1];
+	 TorqueDataCalibSafe[2]=TorqueDataCalib[2];
+	 TorqueDataCalibSafe[3]=TorqueDataCalib[3];
+	 TorqueDataCalibSafe[4]=TorqueDataCalib[4];
+	 TorqueDataCalibSafe[5]=TorqueDataCalib[5];
 	 ForceDataCalibSafe[6]=0;
 	 ForceDataCalibSafe[7]=0;
-
+	 TorqueDataCalibSafe[6]=0;
+	 TorqueDataCalibSafe[7]=0;
   }
 
   // force data 
