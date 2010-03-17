@@ -407,9 +407,14 @@ public:
 	*/
 	bool watershed_flag;
     /**
-    * time control flag
+    * it indicates if the control of the time is on
     */
     bool timeControl_flag;
+    /**
+    *  indicates if the process that filters the spikes is on
+    */
+    bool filterSpikes_flag;
+
    
 };
 

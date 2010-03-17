@@ -24,6 +24,7 @@ saliencyBlobFinderModule::saliencyBlobFinderModule(){
 	watershed_flag=false;
 
     timeControl_flag=true;
+    filterSpikes_flag=true;
 }
 
 void saliencyBlobFinderModule::copyFlags(){
@@ -37,6 +38,7 @@ void saliencyBlobFinderModule::copyFlags(){
     blobFinder->blobList_flag=blobList_flag;
     blobFinder->tagged_flag=tagged_flag;
     blobFinder->watershed_flag=watershed_flag;
+    blobFinder->filterSpikes_flag=filterSpikes_flag;
 }
 
 /**
@@ -149,14 +151,14 @@ void saliencyBlobFinderModule::setOptions(yarp::os::Property opt){
     if(value!=""){
         printf("|||  Module filter :%s \n", value.c_str());
         if(value=="spikes"){
-            this->blobFinder->filterSpikes_flag=true;
+            filterSpikes_flag=true;
             printf("stimuli filter ON \n");
         }
         if(value=="kalman"){
             printf("kalman filter ON \n");
         }
         if(value=="off"){
-            this->blobFinder->filterSpikes_flag=false;
+            filterSpikes_flag=false;
             printf("all the filters OFF \n");
         }
     }
