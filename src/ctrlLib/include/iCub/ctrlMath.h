@@ -106,6 +106,7 @@ inline double norm(const yarp::sig::Matrix &M, int col)
     return sqrt(norm2(M,col));
 }
 
+
 /**
 * \ingroup Maths
 *
@@ -117,6 +118,7 @@ inline double sign(const double &v)
 {
 	return (v==0.0)?0.0:((v>0)?1.0:-1.0);
 }
+
 
 /**
 * \ingroup Maths

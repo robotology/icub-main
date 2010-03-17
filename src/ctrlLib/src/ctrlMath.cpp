@@ -197,6 +197,7 @@ Matrix ctrl::axis2dcm(const Vector &v, unsigned int verbose)
     return R;
 }
 
+
 /************************************************************************/
 Vector ctrl::dcm2euler(const Matrix &R, unsigned int verbose)
 {
@@ -229,6 +230,7 @@ Vector ctrl::dcm2euler(const Matrix &R, unsigned int verbose)
     return v;
 }
 
+
 /************************************************************************/
 Matrix ctrl::euler2dcm(const Vector &v, unsigned int verbose)
 {
@@ -251,6 +253,7 @@ Matrix ctrl::euler2dcm(const Vector &v, unsigned int verbose)
 
     return Rza*Ryb*Rzg;
 }
+
 
 /************************************************************************/
 Matrix ctrl::SE3inv(const Matrix &H, unsigned int verbose)
@@ -285,12 +288,15 @@ Matrix ctrl::SE3inv(const Matrix &H, unsigned int verbose)
     return invH;
 }
 
-//~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+
+/************************************************************************/
 Vector ctrl::sign(const Vector &v)
 {
 	Vector ret(v.length());
-	for(int i=0; i<ret.length(); i++)
-		ret(i) = sign(v(i));
+
+    for (int i=0; i<ret.length(); i++)
+        ret(i) = sign(v(i));
+
 	return ret;
 }
 
