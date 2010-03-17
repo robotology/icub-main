@@ -47,7 +47,8 @@ bool selectiveAttentionModule::interruptModule() {
     map5Port.interrupt();
     map6Port.interrupt();
     
-    
+    selectedAttentionPort.interrupt();
+    linearCombinationPort.interrupt();
 
     inImagePort.interrupt();
     cmdPort.interrupt();
@@ -129,6 +130,8 @@ bool selectiveAttentionModule::openPorts(){
     
 
     selectedAttentionPort.open(getName("attention:o"));
+    linearCombinationPort.open(getName("combination:o"));
+    centroidPort.open(getName("centroid:o"));
 
     cmdPort.open(getName("cmd")); // optional command port
     attach(cmdPort); // cmdPort will work just like terminal
@@ -138,27 +141,27 @@ bool selectiveAttentionModule::openPorts(){
 
 bool selectiveAttentionModule::outPorts(){
 	bool ret = false;
-    /*if((0!=currentProcessor->redGreenEdges_yarp)&&(rgEdgesPort.getOutputCount())){
-        rgEdgesPort.prepare() = *(currentProcessor->redGreenEdges_yarp);		
-        rgEdgesPort.write();
-        ret=true;
+    if((0!=currentProcessor->linearCombinationImage)&&(linearCombinationPort.getOutputCount())){
+        linearCombinationPort.prepare() = *(currentProcessor->linearCombinationImage);
+        linearCombinationPort.write();
     }
-    if((0!=currentProcessor->greenRed_yarp)&&(grEdgesPort.getOutputCount())){
-        grEdgesPort.prepare() = *(currentProcessor->greenRed_yarp);		
-        grEdgesPort.write();
-        ret=true;
-    }
-    if((0!=currentProcessor->blueYellow_yarp)&&(byEdgesPort.getOutputCount())){
-        byEdgesPort.prepare() = *(currentProcessor->blueYellow_yarp);		
-        byEdgesPort.write();
-        ret=true;
-    } 
-    if((0!=currentProcessor->edges_yarp)&&(edgesPort.getOutputCount())){
-        edgesPort.prepare() = *(currentProcessor->edges_yarp);		
-        edgesPort.write();
-        ret=true;
-    } */
-	return ret;
+    
+    if((0!=currentProcessor->outputImage)&&(selectedAttentionPort.getOutputCount())){
+        selectedAttentionPort.prepare() = *(currentProcessor->outputImage);
+        selectedAttentionPort.write();
+    }	
+
+    if(centroidPort.getOutputCount()){  
+        Bottle& commandBottle=centroidPort.prepare();
+        commandBottle.clear();
+        commandBottle.addInt(currentProcessor->centroid_x);
+        commandBottle.addInt(currentProcessor->centroid_y);
+        centroidPort.write();
+    }	
+
+
+    
+    return ret;
 }
 
 bool selectiveAttentionModule::closePorts(){
@@ -176,12 +179,11 @@ bool selectiveAttentionModule::closePorts(){
     map4Port.close();
     map5Port.close();
     map6Port.close();
-    
 
     selectedAttentionPort.close();
+    linearCombinationPort.close();
     cmdPort.close();
     printf("All the ports successfully closed ... \n");
-
 
 	return ret;
 }
@@ -263,12 +265,7 @@ bool selectiveAttentionModule::updateModule() {
             currentProcessor->map6_yarp=tmp;
     }
     
-
-    
-    if((0!=currentProcessor->outputImage)&&(selectedAttentionPort.getOutputCount())){
-        selectedAttentionPort.prepare() = *(currentProcessor->outputImage);
-        selectedAttentionPort.write();
-    }
+    outPorts();
 
     return true;
 }

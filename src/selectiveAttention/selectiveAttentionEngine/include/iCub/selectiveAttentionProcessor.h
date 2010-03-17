@@ -111,7 +111,7 @@ class selectiveAttentionProcessor:public RateThread
         */
         ~selectiveAttentionProcessor();//
         /**
-        * generic constructor
+        * constructor
         */
         selectiveAttentionProcessor(ImageOf<PixelRgb>* inputImage );//
         /**
@@ -128,12 +128,20 @@ class selectiveAttentionProcessor:public RateThread
         void threadRelease();
         /**
         * method that resize images once the processor knows the dimesions of the input
+        * @param width width dimension the image is resized to
+        * @param height height dimension the image is resized to
         */
         void resizeImages(int width, int height);
         /**
         * set the flag idle locking the resource
         */
         void setIdle(bool value);
+        /**
+        * function that extract the contour and the center of gravity
+        * @param inputImage input image where the contours are extracted from
+        * @param outImage representation of the contours
+        */
+        void extractContour(ImageOf<PixelMono>* inputImage,ImageOf<PixelMono>* outputImage,int& x,int& y);
         //------------- PUBLIC ATTRIBUTES ------------
 
         /**
@@ -232,7 +240,18 @@ class selectiveAttentionProcessor:public RateThread
         * result of the selection
         */
         ImageOf<PixelMono>* outputImage; //
-        
+        /**
+        * result of the combination
+        */
+        ImageOf<PixelMono>* linearCombinationImage;
+        /**
+        * center of gravity of the selective attention (x position)
+        */
+        int centroid_x;
+        /**
+        * center of gravity of the selective attention (y position)
+        */
+        int centroid_y;
         
 };
 

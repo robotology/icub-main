@@ -101,7 +101,9 @@ Input ports:
 - map6:i : image coming from the 6th saliency map
 
 Outports:
-- attention:o : graphical output of the selected region of interest
+- attention:o : graphical output of the selected region of interest (winner-take-all)
+- combination:o : graphical output that shows the linear combination of different maps
+- centroid:o : port where the coordinate of the attention focus are sent 
 
 
 InOut ports:
@@ -171,10 +173,17 @@ private:
     */
     BufferedPort<ImageOf<PixelMono> > map6Port; 	
     /**
+    *  output port that represent the linear combination of different maps
+    */
+    BufferedPort<ImageOf<PixelMono> > linearCombinationPort; 
+    /**
     *  output port that represent the selected attention output
     */
     BufferedPort<ImageOf<PixelMono> > selectedAttentionPort; 
-    
+    /**
+    *  output port where the centroid coordinate is sent
+    */
+    BufferedPort<Bottle > centroidPort; 
     
     /**
     * command port of the module
