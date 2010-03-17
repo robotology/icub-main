@@ -2,8 +2,9 @@
 
 using namespace std;
 
-#define NOTIMECONTROL false
+#define NOTIMECONTROL true
 
+#define centroidDispacementY 10;
 
 saliencyBlobFinderModule::saliencyBlobFinderModule(){
     reinit_flag=false;
@@ -297,11 +298,11 @@ void saliencyBlobFinderModule::outPorts(){
         else{
             time (&end);
             double dif = difftime (end,start);
-            if(dif>blobFinder->reactivity+2){
+            if(dif>blobFinder->constantTimeGazeControl+2){
                 //restart the time intervall
                  time(&start);
             }
-            else if((dif>blobFinder->reactivity)&&(dif<blobFinder->reactivity+2)){
+            else if((dif>blobFinder->constantTimeGazeControl)&&(dif<blobFinder->constantTimeGazeControl+2)){
                 //output the command
                 //finds the entries with a greater number of occurencies 
                 std::map<const char*,int>::iterator iterMap;
@@ -372,11 +373,12 @@ void saliencyBlobFinderModule::outPorts(){
         //logPolarMapper iCub driver
         time (&end);
         double dif = difftime (end,start);
-        if((dif>0.5)&&(dif<=60)){
+        if((dif>blobFinder->constantTimeCentroid)&&(dif<=blobFinder->constantTimeCentroid+2)){
             bot.addVocab( Vocab::encode("sac") ); 
             bot.addVocab( Vocab::encode("img") ); 
+            double centroidDisplacementY=1.0;
             double xrel=(blobFinder->salience->target_x-_logpolarParams::_xsize/2)/(_logpolarParams::_xsize/2);
-            double yrel=(blobFinder->salience->target_y-_logpolarParams::_ysize/2+25)/(-_logpolarParams::_ysize/2);
+            double yrel=(blobFinder->salience->target_y-_logpolarParams::_ysize/2)/(-_logpolarParams::_ysize/2);
             //printf("%f>%f,%f \n",dif,xrel,yrel);
             bot.addDouble(xrel);  
             bot.addDouble(yrel); 
@@ -447,7 +449,7 @@ bool saliencyBlobFinderModule::respond(const Bottle &command,Bottle &reply){
             reply.addString("set gin : set green intensity value for the target to be sought");
             reply.addString("set bin : set blue intensity value for the target to be sought");
             reply.addString("\n");
-            reply.addString("set rea : set the reactivity in terms of seconds ");
+            reply.addString("set rea : set the constantTimeGazeControl in terms of seconds ");
 
             reply.addString("\n");
 
@@ -542,12 +544,21 @@ bool saliencyBlobFinderModule::respond(const Bottle &command,Bottle &reply){
                 ok=true;
             }
                 break;
-            case COMMAND_VOCAB_REA:{
+            case COMMAND_VOCAB_TCON:{
                 //int j = command.get(2).asInt();
-                printf("reactivity of the output \n");
+                printf("constantTimeGazeControl of the output \n");
                 double w= command.get(2).asDouble();
                 if(0!=blobFinder)
-                    this->blobFinder->reactivity=w/10;
+                    this->blobFinder->constantTimeGazeControl=w/10;
+                ok=true;
+            }
+                break;
+            case COMMAND_VOCAB_TCEN:{
+                //int j = command.get(2).asInt();
+                printf("constantTimeCentroid of the output \n");
+                double w= command.get(2).asDouble();
+                if(0!=blobFinder)
+                    this->blobFinder->constantTimeCentroid=w/10;
                 ok=true;
             }
                 break;

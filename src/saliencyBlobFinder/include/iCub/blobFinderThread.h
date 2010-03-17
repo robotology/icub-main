@@ -321,9 +321,13 @@ public:
     */
     double targetBLUE;
     /**
-    * value that represent the reactivity of the sensorial system in terms of second
+    * value that represent the constantTimeGazeControl of the sensorial system in terms of second
     */
-    double reactivity;
+    double constantTimeGazeControl;
+    /**
+    * value that represent the constantTimeCentroid of the sensorial system in terms of second
+    */
+    double constantTimeCentroid;
     /**
     * counter of cycle for maxsaliency blob
     */

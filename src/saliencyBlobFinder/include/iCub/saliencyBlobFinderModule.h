@@ -45,7 +45,8 @@ using namespace yarp::sig;
 #define COMMAND_VOCAB_CONTRASTLP VOCAB3('c','l','p')
 #define COMMAND_VOCAB_FOVEA VOCAB3('f','o','v')
 // other commands
-#define COMMAND_VOCAB_REA VOCAB3('r','e','a')
+#define COMMAND_VOCAB_TCON VOCAB4('t','c','o','n') //time contant for the controlGaze2
+#define COMMAND_VOCAB_TCEN VOCAB3('t','c','e','n') //time constant for the iKinGazeCtrl
 
 
 #define COMMAND_VOCAB_KBU VOCAB3('k','b','u') //weight of the bottom-up algorithm
