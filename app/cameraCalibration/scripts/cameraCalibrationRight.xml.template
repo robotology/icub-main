@@ -8,17 +8,17 @@
 
 <module>
    <name>camCalibConf</name>
-   <parameters>--name /camCalibConf --group CAMERA_CALIBRATION_CONFIGURATION_RIGHT</parameters>
-   <stdio>icub14</stdio>
-   <node>icub1</node>
+   <parameters>--context cameraCalibration/conf --from icubEyes.ini --name /camCalibConf --group CAMERA_CALIBRATION_CONFIGURATION_RIGHT</parameters>
+   <stdio>console</stdio>
+   <node>console</node>
    <tag>camCalibConf</tag>
 </module>
  
 <module>
    <name>yarpview</name>
    <parameters>--name /right_image --x 0 --y 0 --synch</parameters>
-   <node>icub1</node>
-   <tag>left_image</tag>
+   <node>console</node>
+   <tag>right_image</tag>
 </module>
 
 <connection>
