@@ -155,10 +155,8 @@ public:
 
     /**
     * Limits the input rate. 
-    * 
-    * @param z Current input.
-    * 
-    * @return Output within the thresholds.
+    * @param u is the current input.
+    * @return the output within the thresholds.
     */
     yarp::sig::Vector filt(const yarp::sig::Vector &u);
 };
