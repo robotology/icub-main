@@ -22,7 +22,7 @@ blobFinderThread::blobFinderThread():RateThread(THREAD_RATE){
     reinit_flag=false;
 
     ct=0;
-    filterSpikes_flag=true;
+    filterSpikes_flag=false;
     count=0;
 
     //inputImage_flag=false;

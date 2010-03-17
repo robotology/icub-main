@@ -22,6 +22,8 @@ saliencyBlobFinderModule::saliencyBlobFinderModule(){
 	blobList_flag=false;
 	tagged_flag=false;
 	watershed_flag=false;
+
+    timeControl_flag=true;
 }
 
 void saliencyBlobFinderModule::copyFlags(){
@@ -141,6 +143,34 @@ void saliencyBlobFinderModule::setOptions(yarp::os::Property opt){
         if(value=="MAX"){
             maxSaliencyBlob_flag=true;
             printf("max_saliency image as output selected \n");
+        }
+    }
+    value=opt.find("filter").asString();
+    if(value!=""){
+        printf("|||  Module filter :%s \n", value.c_str());
+        if(value=="spikes"){
+            this->blobFinder->filterSpikes_flag=true;
+            printf("stimuli filter ON \n");
+        }
+        if(value=="kalman"){
+            printf("kalman filter ON \n");
+        }
+        if(value=="off"){
+            this->blobFinder->filterSpikes_flag=false;
+            printf("all the filters OFF \n");
+        }
+    }
+    value=opt.find("timeControl").asString();
+    if(value!=""){
+        printf("|||  Module time control flag :%s \n", value.c_str());
+        if(value=="ON"){
+            this->timeControl_flag=true;
+            printf("time control ON \n");
+        }
+        
+        if(value=="OFF"){
+            this->timeControl_flag=false;
+            printf("time control OFF \n");
         }
     }
 }
@@ -285,7 +315,7 @@ void saliencyBlobFinderModule::outPorts(){
     }
 
     if(gazeControlPort.getOutputCount()){
-        if(NOTIMECONTROL){
+        if(!this->timeControl_flag){
             Bottle &bot = gazeControlPort.prepare(); 
             bot.clear();
             int target_xmap,target_ymap, target_zmap;

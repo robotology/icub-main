@@ -406,6 +406,10 @@ public:
 	* flag for drawing watershed image
 	*/
 	bool watershed_flag;
+    /**
+    * time control flag
+    */
+    bool timeControl_flag;
    
 };
 
