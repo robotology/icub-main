@@ -27,7 +27,7 @@ INCLUDE_DIRECTORIES(${sharksWithLasers_INCLUDE_DIRS})
 
 # Create everything needed to build our executable.
 ADD_EXECUTABLE(${PROJECTNAME} ${folder_source} ${folder_header})
-TARGET_LINK_LIBRARIES(${PROJECTNAME} ${sharksWithLasers_LIBRARIES})
+TARGET_LINK_LIBRARIES(${PROJECTNAME} sharksWithLasers)
 
 INSTALL(TARGETS ${PROJECTNAME} DESTINATION bin)
 

@@ -1,6 +1,6 @@
-subdirs(lib0)
-subdirs(lib1)
-subdirs(sharksWithLasers)
-subdirs(takeOverTheWorld)
+add_subdirectory(lib0)
+add_subdirectory(lib1)
+add_subdirectory(sharksWithLasers)
+add_subdirectory(takeOverTheWorld)
 
 
