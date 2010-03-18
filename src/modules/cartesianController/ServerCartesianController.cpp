@@ -906,7 +906,7 @@ void ServerCartesianController::run()
         // read the feedback
         getFeedback(fb);
         ctrl->set_q(fb);
-    
+
         // get the current target pose
         if (getNewTarget())
         {    
@@ -923,7 +923,7 @@ void ServerCartesianController::run()
 
             // send joints velocities to the robot [deg/s]
             sendVelocity(CTRL_RAD2DEG*ctrl->get_qdot());
-    
+
             // handle the end-trajectory event
             if (ctrl->isInTarget())
             {
@@ -931,7 +931,7 @@ void ServerCartesianController::run()
                 motionDone   =true;
 
                 stopLimbVel();
-    
+
                 // switch the solver status to one shot mode
                 // if it is the case
                 if (!trackingMode && (rxToken==txToken))
@@ -1620,6 +1620,9 @@ bool ServerCartesianController::setDOF(const Vector &newDof, Vector &curDof)
             
         // update controller
         newController();
+
+        // flush the content of the target port
+        portSlvIn->read(false);
 
         // end of critical code
         mutex->post();
