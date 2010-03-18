@@ -1624,9 +1624,6 @@ bool ServerCartesianController::setDOF(const Vector &newDof, Vector &curDof)
         // update controller
         newController();
 
-        // flush the content of the target port
-        portSlvIn->read(false);
-
         // end of critical code
         mutex->post();
         
