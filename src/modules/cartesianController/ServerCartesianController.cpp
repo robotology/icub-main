@@ -830,8 +830,11 @@ bool ServerCartesianController::getNewTarget()
                 _qdes[i]=CTRL_DEG2RAD*b2->get(i).asDouble();
 
             if (_qdes.length()!=ctrl->get_dim())
+            {    
                 fprintf(stdout,"%s warning: skipped message from solver since does not match the controller dimension (qdes=%d)!=(ctrl=%d)\n",
                         ctrlName.c_str(),_qdes.length(),ctrl->get_dim());
+                return false;
+            }
             else if (!(_qdes==qdes))
                 isNew=true;
         }
