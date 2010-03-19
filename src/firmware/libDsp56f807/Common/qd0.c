@@ -6,6 +6,8 @@
 
 #include "qd0.h"
 
+byte magnetic_err0;
+
 /**
  * sets the init registers of the quadrature decoder.
  * @param Position is the 32bit position value.
@@ -39,6 +41,7 @@ byte QD0_setPosition (dword Position)
 byte QD0_getPosition (dword *Position)
 {
 	*Position = getReg(QD0_LPOS) | ((dword)getReg(QD0_UPOS)<<16);
+	if (magnetic_err0 == 1) *Position = 10000;
 	return ERR_OK;
 }
 
@@ -55,9 +58,37 @@ void QD0_init (void)
 	*/
 	// The FIR has a frequency of 156 KHz (255) instead of 4MHz (10)
 	
+	magnetic_err0 = 0;
 	setReg (QD0_FIR, 10);
+	setRegBits (QD0_DECCR, QD0_DECCR_XIE_MASK);
+}
+
+#pragma interrupt saveall
+void QD0_HomeHandler(void)
+{
+	word status;
+		
+	status = getReg(QD0_IMR) & 15;
+	if (((status>>1) & 0b111) == 0b111)
+	{
+		if (magnetic_err0==1)
+		{
+			//SW HOME (reset position)
+			setReg    (QD0_UPOS, 0);
+			setReg    (QD0_LPOS, 0);
+		}
+	}
 	
-	setRegBits (QD0_DECCR, 0);
+	if (((status>>1) & 0b111) == 0b001 ) //PHA=0, PHB=0, INDEX=1 
+	{
+		magnetic_err0=1;
+	}
+	else
+	{
+		magnetic_err0=0;
+	}
+
+	setRegBits(QD0_DECCR,QD0_DECCR_XIRQ_MASK);
 }
 
 /**
