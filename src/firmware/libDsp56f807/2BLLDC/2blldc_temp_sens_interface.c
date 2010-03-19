@@ -423,14 +423,14 @@ Int16 GetTempSens(byte sens_num)
  	if (error_flag[sens_num]==true)
  		 return 0;
  	else
- 		 return (temperature[sens_num]&0xFF)>>1; 
+ 		 return (temperature[sens_num]&0xFF);//>>1; 
  	
  	case TEMPERATURE_STATUS_OK:
  	temp_sens_status=TEMPERATURE_STATUS_IDLE;
  	if (error_flag[sens_num]==true) 
  		return 0;
  	else 
- 		return (temperature[sens_num]&0xFF)>>1;
+ 		return (temperature[sens_num]&0xFF);//>>1; 
  	
  	case TEMPERATURE_STATUS_ERR:
  	temp_sens_status=TEMPERATURE_STATUS_IDLE;
@@ -442,7 +442,7 @@ Int16 GetTempSens(byte sens_num)
  	if (error_flag[sens_num]==true) 
  		return 0;
   	else 
-  		return (temperature[sens_num]&0xFF)>>1;
+  		return (temperature[sens_num]&0xFF);//>>1; 
  }
 }
 
