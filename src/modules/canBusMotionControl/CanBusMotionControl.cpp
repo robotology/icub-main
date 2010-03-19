@@ -467,10 +467,10 @@ bool AnalogSensor::decode16(const unsigned char *msg, int id, double *data)
             {
                 for(int k=0;k<3;k++)
 					{
-						data[k]=(((unsigned short)(msg[2*k+1]))<<8)+msg[2*k]-32768;
+						data[k]=(((unsigned short)(msg[2*k+1]))<<8)+msg[2*k]-0x8000;
 						if (useCalibration==1)
 						{
-							data[k]=data[k]*scaleFactor[k]/float(0x7fff);
+							data[k]=data[k]*scaleFactor[k]/float(0x8000);
 						}
 					}
             }
@@ -479,10 +479,10 @@ bool AnalogSensor::decode16(const unsigned char *msg, int id, double *data)
             {
                 for(int k=0;k<3;k++)
 					{
-						data[k+3]=(((unsigned short)(msg[2*k+1]))<<8)+msg[2*k]-32768;
+						data[k+3]=(((unsigned short)(msg[2*k+1]))<<8)+msg[2*k]-0x8000;
 						if (useCalibration==1)
 						{
-							data[k+3]=data[k+3]*scaleFactor[k+3]/float(0x7fff);
+							data[k+3]=data[k+3]*scaleFactor[k+3]/float(0x8000);
 						}
 					}
             }
