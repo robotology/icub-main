@@ -51,6 +51,7 @@ bool first_time[6]={1,1,1,1,1,1};
 		
 #define START_TIMER timer_refresh = g_timeout_add (500, timer_func, NULL);
 #define STOP_TIMER {if (timer_refresh>0) g_source_remove(timer_refresh); timer_refresh=0;}
+#define HEX_VALC 0x8000
 
 
 //*********************************************************************************
@@ -214,17 +215,17 @@ gboolean timer_func (gpointer data)
 	gtk_range_set_value (GTK_RANGE(slider_gain[4]),(offset[4]));
 	gtk_range_set_value (GTK_RANGE(slider_gain[5]),(offset[5]));
 
-	sprintf(tempbuf,"%d",adc[0]-0x7fff); //@@@@ changed here
+	sprintf(tempbuf,"%d",adc[0]-HEX_VALC); //@@@@ changed here
 	gtk_label_set_text(GTK_LABEL(curr_measure[0]),tempbuf); 
-	sprintf(tempbuf,"%d",adc[1]-0x7fff);
+	sprintf(tempbuf,"%d",adc[1]-HEX_VALC);
 	gtk_label_set_text(GTK_LABEL(curr_measure[1]),tempbuf);
-	sprintf(tempbuf,"%d",adc[2]-0x7fff);
+	sprintf(tempbuf,"%d",adc[2]-HEX_VALC);
 	gtk_label_set_text(GTK_LABEL(curr_measure[2]),tempbuf);
-	sprintf(tempbuf,"%d",adc[3]-0x7fff);
+	sprintf(tempbuf,"%d",adc[3]-HEX_VALC);
 	gtk_label_set_text(GTK_LABEL(curr_measure[3]),tempbuf);
-	sprintf(tempbuf,"%d",adc[4]-0x7fff);
+	sprintf(tempbuf,"%d",adc[4]-HEX_VALC);
 	gtk_label_set_text(GTK_LABEL(curr_measure[4]),tempbuf);
-	sprintf(tempbuf,"%d",adc[5]-0x7fff);
+	sprintf(tempbuf,"%d",adc[5]-HEX_VALC);
 	gtk_label_set_text(GTK_LABEL(curr_measure[5]),tempbuf);
 
 	if (bool_raw)
@@ -270,17 +271,17 @@ gboolean timer_func (gpointer data)
 
 		/*
 		//previous version
-		sprintf(tempbuf,"%+.3f N",(int(adc[0])-0x7fff)/float(calib_const));
+		sprintf(tempbuf,"%+.3f N",(int(adc[0])-HEX_VALC)/float(calib_const));
 		gtk_label_set_text(GTK_LABEL(newton_measure[0]),tempbuf);
-		sprintf(tempbuf,"%+.3f N",(int(adc[1])-0x7fff)/float(calib_const));
+		sprintf(tempbuf,"%+.3f N",(int(adc[1])-HEX_VALC)/float(calib_const));
 		gtk_label_set_text(GTK_LABEL(newton_measure[1]),tempbuf);
-		sprintf(tempbuf,"%+.3f N",(int(adc[2])-0x7fff)/float(calib_const));
+		sprintf(tempbuf,"%+.3f N",(int(adc[2])-HEX_VALC)/float(calib_const));
 		gtk_label_set_text(GTK_LABEL(newton_measure[2]),tempbuf);
-		sprintf(tempbuf,"%+.3f N/m",(int(adc[3])-0x7fff)/float(calib_const));
+		sprintf(tempbuf,"%+.3f N/m",(int(adc[3])-HEX_VALC)/float(calib_const));
 		gtk_label_set_text(GTK_LABEL(newton_measure[3]),tempbuf);
-		sprintf(tempbuf,"%+.3f N/m",(int(adc[4])-0x7fff)/float(calib_const));
+		sprintf(tempbuf,"%+.3f N/m",(int(adc[4])-HEX_VALC)/float(calib_const));
 		gtk_label_set_text(GTK_LABEL(newton_measure[4]),tempbuf);
-		sprintf(tempbuf,"%+.3f N/m",(int(adc[5])-0x7fff)/float(calib_const));
+		sprintf(tempbuf,"%+.3f N/m",(int(adc[5])-HEX_VALC)/float(calib_const));
 		gtk_label_set_text(GTK_LABEL(newton_measure[5]),tempbuf);*/
 
 		bool skip_display_calib=false;
@@ -295,17 +296,17 @@ gboolean timer_func (gpointer data)
 
 		if (skip_display_calib==false)
 		{
-			sprintf(tempbuf,"%+.3f N",(int(adc[0])-0x7fff)/float(0x7fff)*full_scale_const[0]);
+			sprintf(tempbuf,"%+.3f N",(int(adc[0])-HEX_VALC)/float(HEX_VALC)*full_scale_const[0]);
 			gtk_label_set_text(GTK_LABEL(newton_measure[0]),tempbuf);
-			sprintf(tempbuf,"%+.3f N",(int(adc[1])-0x7fff)/float(0x7fff)*full_scale_const[1]);
+			sprintf(tempbuf,"%+.3f N",(int(adc[1])-HEX_VALC)/float(HEX_VALC)*full_scale_const[1]);
 			gtk_label_set_text(GTK_LABEL(newton_measure[1]),tempbuf);
-			sprintf(tempbuf,"%+.3f N",(int(adc[2])-0x7fff)/float(0x7fff)*full_scale_const[2]);
+			sprintf(tempbuf,"%+.3f N",(int(adc[2])-HEX_VALC)/float(HEX_VALC)*full_scale_const[2]);
 			gtk_label_set_text(GTK_LABEL(newton_measure[2]),tempbuf);
-			sprintf(tempbuf,"%+.3f N/m",(int(adc[3])-0x7fff)/float(0x7fff)*full_scale_const[3]);
+			sprintf(tempbuf,"%+.3f N/m",(int(adc[3])-HEX_VALC)/float(HEX_VALC)*full_scale_const[3]);
 			gtk_label_set_text(GTK_LABEL(newton_measure[3]),tempbuf);
-			sprintf(tempbuf,"%+.3f N/m",(int(adc[4])-0x7fff)/float(0x7fff)*full_scale_const[4]);
+			sprintf(tempbuf,"%+.3f N/m",(int(adc[4])-HEX_VALC)/float(HEX_VALC)*full_scale_const[4]);
 			gtk_label_set_text(GTK_LABEL(newton_measure[4]),tempbuf);
-			sprintf(tempbuf,"%+.3f N/m",(int(adc[5])-0x7fff)/float(0x7fff)*full_scale_const[5]);
+			sprintf(tempbuf,"%+.3f N/m",(int(adc[5])-HEX_VALC)/float(HEX_VALC)*full_scale_const[5]);
 			gtk_label_set_text(GTK_LABEL(newton_measure[5]),tempbuf);
 		}
 		else
