@@ -9,8 +9,8 @@ UInt8   temp_sens_status = 0;
 void 	delay(UInt16 del);
 
 #warning TEMPERATURE SENSOR actually NOT working for 4DC BOARDS, eventually change PIN configuration
-#define TEMP_PIN1 GPIO_E5
-#define TEMP_PIN2 GPIO_E5
+#define TEMP_PIN1 GPIO_D6
+#define TEMP_PIN2 GPIO_D7
 
 //********************************************************* 
 
