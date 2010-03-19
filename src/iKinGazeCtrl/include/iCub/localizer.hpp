@@ -7,7 +7,7 @@
 
 #include <iCub/pids.h>
 
-#include "utils.h"
+#include <iCub/utils.hpp>
                             
 #define KP_PAN               0.0012
 #define KP_TILT              0.0012

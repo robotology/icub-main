@@ -12,11 +12,23 @@ ENDIF(NOT IPOPT_FOUND)
 
 INCLUDE_DIRECTORIES(${IKIN_INCLUDE_DIRS})
 
-SET(folder_header gazeNlp.h utils.h solver.h controller.h localizer.h)
-SET(folder_source gazeNlp.cpp utils.cpp solver.cpp controller.cpp localizer.cpp main.cpp)
+SET(folder_header include/iCub/gazeNlp.hpp
+                  include/iCub/utils.hpp
+                  include/iCub/solver.hpp
+                  include/iCub/controller.hpp
+                  include/iCub/localizer.hpp)
+
+SET(folder_source src/gazeNlp.cpp
+                  src/utils.cpp
+                  src/solver.cpp
+                  src/controller.cpp
+                  src/localizer.cpp
+                  src/main.cpp)
 
 SOURCE_GROUP("Header Files" FILES ${folder_header})
 SOURCE_GROUP("Source Files" FILES ${folder_source})
+
+INCLUDE_DIRECTORIES(${PROJECT_SOURCE_DIR}/include)
 
 ADD_EXECUTABLE(${PROJECTNAME} ${folder_header} ${folder_source})
 TARGET_LINK_LIBRARIES(${PROJECTNAME} ${IKIN_LIBRARIES})

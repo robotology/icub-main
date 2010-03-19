@@ -1,6 +1,6 @@
 
 #include <yarp/math/SVD.h>
-#include "solver.h"
+#include <iCub/solver.hpp>
 
 
 /************************************************************************/

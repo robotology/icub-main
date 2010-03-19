@@ -15,9 +15,9 @@
 
 #include <deque>
 
-#include "gazeNlp.h"
-#include "utils.h"
-#include "localizer.h"
+#include <iCub/gazeNlp.hpp>
+#include <iCub/utils.hpp>
+#include <iCub/localizer.hpp>
 
 #define EYEPINVREFGEN_GAIN              10.0
 #define NECKSOLVER_ACTIVATIONANGLE_TRA  15.0

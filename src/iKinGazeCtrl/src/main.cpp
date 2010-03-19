@@ -217,9 +217,9 @@ background. Just connect the ports with the viewer and play.
 #include <iomanip>
 #include <string>
 
-#include "localizer.h"
-#include "solver.h"
-#include "controller.h"
+#include <iCub/localizer.hpp>
+#include <iCub/solver.hpp>
+#include <iCub/controller.hpp>
 
 using namespace std;
 using namespace yarp;

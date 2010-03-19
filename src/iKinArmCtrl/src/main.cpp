@@ -178,9 +178,9 @@ background. Just connect the ports with the viewer and play.
 #include <iomanip>
 #include <string>
 
-#include "utils.h"
-#include "solver.h"
-#include "controller.h"
+#include <iCub/utils.hpp>
+#include <iCub/solver.hpp>
+#include <iCub/controller.hpp>
 
 using namespace std;
 using namespace yarp;

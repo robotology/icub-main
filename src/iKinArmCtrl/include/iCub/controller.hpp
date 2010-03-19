@@ -16,7 +16,7 @@
 
 #include <iCub/iKinInv.h>
 
-#include "utils.h"
+#include <iCub/utils.hpp>
 
 using namespace std;
 using namespace yarp;

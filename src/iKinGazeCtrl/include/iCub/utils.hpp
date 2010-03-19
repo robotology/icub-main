@@ -12,7 +12,7 @@
 
 #include <string>
 
-#include "gazeNlp.h"
+#include <iCub/gazeNlp.hpp>
 
 using namespace std;
 using namespace yarp;

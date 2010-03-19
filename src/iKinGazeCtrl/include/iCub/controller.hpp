@@ -13,7 +13,7 @@
 #include <iCub/minJerkCtrl.h>
 #include <iCub/pids.h>
 
-#include "utils.h"
+#include <iCub/utils.hpp>
 
 using namespace std;
 using namespace yarp;

@@ -2,7 +2,7 @@
 #include <iostream>
 #include <iomanip>
 
-#include "localizer.h"
+#include <iCub/localizer.hpp>
 
 
 /************************************************************************/

@@ -11,11 +11,19 @@ IF(NOT IPOPT_FOUND)
    MESSAGE(FATAL_ERROR "IPOPT is strictly required!")
 ENDIF(NOT IPOPT_FOUND)
 
-SET(folder_header utils.h solver.h controller.h)
-SET(folder_source utils.cpp solver.cpp controller.cpp main.cpp)
+SET(folder_header include/iCub/utils.hpp
+                  include/iCub/solver.hpp
+                  include/iCub/controller.hpp)
+
+SET(folder_source src/utils.cpp
+                  src/solver.cpp
+                  src/controller.cpp
+                  src/main.cpp)
 
 SOURCE_GROUP("Header Files" FILES ${folder_header})
 SOURCE_GROUP("Source Files" FILES ${folder_source})
+
+INCLUDE_DIRECTORIES(${PROJECT_SOURCE_DIR}/include)
 
 ADD_EXECUTABLE(${PROJECTNAME} ${folder_header} ${folder_source})
 TARGET_LINK_LIBRARIES(${PROJECTNAME} ${IKIN_LIBRARIES})

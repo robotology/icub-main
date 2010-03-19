@@ -16,7 +16,7 @@
 #include <iCub/iKinInv.h>
 #include <iCub/iKinIpOpt.h>
 
-#include "utils.h"
+#include <iCub/utils.hpp>
 
 #define SHOULDER_MAXABDUCTION   (100.0*CTRL_DEG2RAD)
 
