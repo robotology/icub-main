@@ -283,7 +283,9 @@ void __attribute__((interrupt, no_auto_psv)) _T3Interrupt(void)
         // adc=adc>>3;
 	    // adc=adc<<3;
 	    // LOW-PASS DIGITAL FILTER
-		adc-=0x7FFF;
+		
+		adc-=HEX_VALC;
+
 /*		if (filter_enable)
 	    {
 
@@ -297,7 +299,7 @@ void __attribute__((interrupt, no_auto_psv)) _T3Interrupt(void)
 		{
 			BoardConfig.EE_AN_ChannelValue[BoardConfig.EE_AN_SelectedChannel] = adc;
 		}
-	//	BoardConfig.EE_AN_ChannelValue[BoardConfig.EE_AN_SelectedChannel]+=0x7FFF;
+	//	BoardConfig.EE_AN_ChannelValue[BoardConfig.EE_AN_SelectedChannel]+=HEX_VALC;
 	}
 	
 
@@ -407,9 +409,9 @@ void T2(void)
  
   for (i=0; i<6; i++)
   {
-	if ((unsigned int)(BoardConfig.EE_AN_ChannelValue[i]+0x7FFF) > 64000 ||
-	    (unsigned int)(BoardConfig.EE_AN_ChannelValue[i]+0x7FFF) <  1000)
-			saturation=1;
+	if ((unsigned int)(BoardConfig.EE_AN_ChannelValue[i]+HEX_VALC) > 64000 ||
+	    (unsigned int)(BoardConfig.EE_AN_ChannelValue[i]+HEX_VALC) <  1000)
+		saturation=1; 
   }
 
   // Tim1IRQ has to be disabled: MatrixMultiply and IIRTransposed 
@@ -428,21 +430,21 @@ void T2(void)
 
 	//calculate Data for calibrated values...
 	VectorAdd (6, BoardConfig.EE_TF_TorqueValue, BoardConfig.EE_TF_TorqueValue, CurrentTare);
-	BoardConfig.EE_TF_TorqueValue[0]+=0x7FFF;
-	BoardConfig.EE_TF_TorqueValue[1]+=0x7FFF;
-	BoardConfig.EE_TF_TorqueValue[2]+=0x7FFF;
-	BoardConfig.EE_TF_TorqueValue[3]+=0x7FFF;
-	BoardConfig.EE_TF_TorqueValue[4]+=0x7FFF;
-	BoardConfig.EE_TF_TorqueValue[5]+=0x7FFF;
+	BoardConfig.EE_TF_TorqueValue[0]+=HEX_VALC;
+	BoardConfig.EE_TF_TorqueValue[1]+=HEX_VALC;
+	BoardConfig.EE_TF_TorqueValue[2]+=HEX_VALC;
+	BoardConfig.EE_TF_TorqueValue[3]+=HEX_VALC;
+	BoardConfig.EE_TF_TorqueValue[4]+=HEX_VALC;
+	BoardConfig.EE_TF_TorqueValue[5]+=HEX_VALC;
 	memcpy(ForceDataCalib,BoardConfig.EE_TF_TorqueValue,6);
 	memcpy(TorqueDataCalib,BoardConfig.EE_TF_ForceValue,6); 
 	//...and for not calibrated ones
-	BoardConfig.EE_AN_ChannelValue[0]+=0x7FFF;
-	BoardConfig.EE_AN_ChannelValue[1]+=0x7FFF;
-	BoardConfig.EE_AN_ChannelValue[2]+=0x7FFF;
-	BoardConfig.EE_AN_ChannelValue[3]+=0x7FFF;
-	BoardConfig.EE_AN_ChannelValue[4]+=0x7FFF;
-	BoardConfig.EE_AN_ChannelValue[5]+=0x7FFF;
+	BoardConfig.EE_AN_ChannelValue[0]+=HEX_VALC;
+	BoardConfig.EE_AN_ChannelValue[1]+=HEX_VALC;
+	BoardConfig.EE_AN_ChannelValue[2]+=HEX_VALC;
+	BoardConfig.EE_AN_ChannelValue[3]+=HEX_VALC;
+	BoardConfig.EE_AN_ChannelValue[4]+=HEX_VALC;
+	BoardConfig.EE_AN_ChannelValue[5]+=HEX_VALC;
 	memcpy(ForceDataUncalib,BoardConfig.EE_AN_ChannelValue,6);
 	memcpy(TorqueDataUncalib,&BoardConfig.EE_AN_ChannelValue[3],6);
 
@@ -686,8 +688,8 @@ else
 				Txdata[0] = CAN_CMD_GET_CH_ADC; 
 				Txdata[1] = msg->CAN_Per_Msg_PayLoad[1];  
 				Txdata[2] = msg->CAN_Per_Msg_PayLoad[2];  
-				Txdata[3] = (BoardConfig.EE_AN_ChannelValue[msg->CAN_Per_Msg_PayLoad[1]]+0x7FFF) >> 8; 
-				Txdata[4] = (BoardConfig.EE_AN_ChannelValue[msg->CAN_Per_Msg_PayLoad[1]]+0x7FFF) & 0xFF; 
+				Txdata[3] = (BoardConfig.EE_AN_ChannelValue[msg->CAN_Per_Msg_PayLoad[1]]+HEX_VALC) >> 8; 
+				Txdata[4] = (BoardConfig.EE_AN_ChannelValue[msg->CAN_Per_Msg_PayLoad[1]]+HEX_VALC) & 0xFF; 
 				datalen=5;
 
 		    }
@@ -703,8 +705,8 @@ else
 					  &BoardConfig.EE_TF_TorqueValue[0],   // fractional* dstM,
 					  &BoardConfig.EE_TF_TMatrix[0][0],    // fractional* srcM1,
 					  (int*) &BoardConfig.EE_AN_ChannelValue[0]); // fractional* srcM2 
-				Txdata[3] = (BoardConfig.EE_TF_TorqueValue[msg->CAN_Per_Msg_PayLoad[1]]+0x7FFF) >> 8; 
-				Txdata[4] = (BoardConfig.EE_TF_TorqueValue[msg->CAN_Per_Msg_PayLoad[1]]+0x7FFF) & 0xFF; 
+				Txdata[3] = (BoardConfig.EE_TF_TorqueValue[msg->CAN_Per_Msg_PayLoad[1]]+HEX_VALC) >> 8; 
+				Txdata[4] = (BoardConfig.EE_TF_TorqueValue[msg->CAN_Per_Msg_PayLoad[1]]+HEX_VALC) & 0xFF; 
 				datalen=5;
 			}   
           }
