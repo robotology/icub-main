@@ -1,6 +1,6 @@
 SET(PROJECTNAME zeroForceControl)
 
-MESSAGE(STATUS "--> adding zeroForceControl")
+#MESSAGE(STATUS "--> adding zeroForceControl")
 
 PROJECT(${PROJECTNAME})
 

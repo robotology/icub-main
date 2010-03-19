@@ -1,3 +1,4 @@
+
 IF(WIN32)
 cmake_minimum_required(VERSION 2.6)
 ELSE(WIN32)
@@ -7,6 +8,10 @@ ENDIF(WIN32)
 SET(KEYWORD "affectiveState")
 
 PROJECT(${KEYWORD})
+
+if(COMMAND cmake_policy)
+  cmake_policy(SET CMP0003 NEW)
+endif(COMMAND cmake_policy)
 
 FIND_PACKAGE(ICUB)
 FIND_PACKAGE(YARP REQUIRED)
@@ -20,10 +25,6 @@ FILE(GLOB folder_source src/*.cpp src/*.cc src/*.c)
 FILE(GLOB folder_header include/iCub/*.h)
 SOURCE_GROUP("Source Files" FILES ${folder_source})
 SOURCE_GROUP("Header Files" FILES ${folder_header})
-
-LINK_LIBRARIES(
-
-)
 
 
 # Set up the main executable.
