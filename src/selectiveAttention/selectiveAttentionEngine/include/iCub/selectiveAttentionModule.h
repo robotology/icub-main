@@ -61,25 +61,29 @@ using namespace yarp::sig::draw;
 @ingroup icub_module
 \defgroup icub_selectiveAttentionProcessor selectiveAttentionProcessor
 
-Module that combines the saliency map using winner-takes-all algorithm and selects the attentive region of interested
+Module that combines the saliency map using winner-takes-all algorithm and selects the attentive region of interest.
 
 
 \section intro_sec Description
-Module that combines the saliency map using winner-takes-all algorithm and selected the attentive region of interested
+Module that combines the saliency map using winner-takes-all algorithm and selected the attentive region of interest.
+Moreover it is in charge of closing the first loop of self-reingorcement. In other words, it sends back commands that are used
+in order to select the area of interest more precisely.
 
 
 
 The module does:
 -   process the input images as saliency maps
--   determines the winner-take-all saliency region
--   Applies the Inhibition of return (todo)
+-   determine the winner-take-all saliency region
+-   apply the Inhibition of return (todo)
+-   send feedback to the preattentive section of the application in order to reinforce the stimulus coming from selected area
 
 
 \image html selectiveAttentionProcessor.png
 
 \section lib_sec Libraries
 YARP
-
+OPENCV
+IPP
 
 
 \section parameters_sec Parameters
@@ -92,7 +96,7 @@ none
 
 \section portsc_sec Ports Created
 Input ports:
-- image:i
+- image:i : input image where the colours are extracted.
 - map1:i : image coming from the 1st saliency map
 - map2:i : image coming from the 2nd saliency map
 - map3:i : image coming from the 3rd saliency map
@@ -104,7 +108,7 @@ Outports:
 - attention:o : graphical output of the selected region of interest (winner-take-all)
 - combination:o : graphical output that shows the linear combination of different maps
 - centroid:o : port where the coordinate of the attention focus are sent 
-
+- feedback:o : port necessary to send back commands to preattentive processors
 
 InOut ports:
 -<name>/cmd
@@ -184,7 +188,10 @@ private:
     *  output port where the centroid coordinate is sent
     */
     BufferedPort<Bottle > centroidPort; 
-    
+    /**
+    *  port necessary to send back command to the preattentive processors
+    */
+    Port feedbackPort; 
     /**
     * command port of the module
     */
@@ -245,7 +252,26 @@ private:
     * input image of the 6th map
     */
     ImageOf<PixelMono> *map6Img;
-
+    /**
+    * value read from the blobFinder component (red intensity of the target)
+    */
+    int targetRED;
+    /**
+    * value read from the blobFinder component (green intensity of the target)
+    */
+    int targetGREEN;
+    /**
+    * value read from the blobFinder component (blue intensity of the target)
+    */
+    int targetBLUE;
+    /**
+    * value of the weight of top-down approach in the blobFinder
+    */
+    int salienceTD;
+    /**
+    * value of the weight of bottom-up approach in the blobFinder
+    */
+    int salienceBU;
 
     /**
     * function that resets all the mode flags

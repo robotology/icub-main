@@ -132,6 +132,7 @@ bool selectiveAttentionModule::openPorts(){
     selectedAttentionPort.open(getName("attention:o"));
     linearCombinationPort.open(getName("combination:o"));
     centroidPort.open(getName("centroid:o"));
+    feedbackPort.open(getName("feedback:o"));
 
     cmdPort.open(getName("cmd")); // optional command port
     attach(cmdPort); // cmdPort will work just like terminal
@@ -157,8 +158,32 @@ bool selectiveAttentionModule::outPorts(){
         commandBottle.addInt(currentProcessor->centroid_x);
         commandBottle.addInt(currentProcessor->centroid_y);
         centroidPort.write();
-    }	
+    }
 
+    if(feedbackPort.getOutputCount()){  
+        //Bottle& commandBottle=feedbackPort.prepare();
+        Bottle in,commandBottle;
+        commandBottle.clear();
+        commandBottle.addString("SET RIN");
+        commandBottle.addInt(targetRED);
+        feedbackPort.write(commandBottle,in);
+        commandBottle.clear();
+        commandBottle.addString("SET GIN");
+        commandBottle.addInt(targetGREEN);
+        feedbackPort.write(commandBottle,in);
+        commandBottle.clear();
+        commandBottle.addString("SET BIN");
+        commandBottle.addInt(targetBLUE);
+        feedbackPort.write(commandBottle,in);
+        commandBottle.clear();
+        commandBottle.addString("SET KTD");
+        commandBottle.addInt(salienceTD);
+        feedbackPort.write(commandBottle,in);
+        commandBottle.clear();
+        commandBottle.addString("SET KBU");
+        commandBottle.addInt(salienceBU);
+        feedbackPort.write(commandBottle,in);
+    }
 
     
     return ret;
@@ -205,7 +230,7 @@ bool selectiveAttentionModule::updateModule() {
     if(0==inputImg)
         return true;*/
 
-    //check for any possible command
+    //-----------check for any possible command
     Bottle* command=cmdPort.read(false);
     if(command!=0){
         //Bottle* tmpBottle=cmdPort.read(false);
@@ -215,7 +240,17 @@ bool selectiveAttentionModule::updateModule() {
         this->respond(*command,*reply);
         command->clear();
     }
-    //read input maps
+    //--------read value from the preattentive level
+    if(feedbackPort.getInputCount()){
+        Bottle in,out;
+        out.clear();
+        out.addString("get");
+        out.addString("KTD");
+        feedbackPort.write(out,in);
+        printf("%s \n",in.toString().c_str());
+    }
+
+    //-------------read input maps
     if(map1Port.getInputCount()){
         tmp=map1Port.read(false);
     }
