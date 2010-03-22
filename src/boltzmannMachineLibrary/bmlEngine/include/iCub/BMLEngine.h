@@ -282,6 +282,10 @@ public:
     * closes port image
     */
     bool closePortImage();
+    /** 
+    * function that sends the image of the layers
+    */
+    void outLayers();
     /**
     * opens port Image
     */

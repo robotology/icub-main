@@ -169,6 +169,11 @@ bool BMLEngine::open(Searchable& config) {
             blue_tmp[i]=255;
             green_tmp[i]=255;
         }*/
+
+        layer0Image=0;
+        layer1Image=0;
+        layer2Image=0;
+        layer3Image=0;
             
 
         engineModule=this;
@@ -190,7 +195,8 @@ bool BMLEngine::close() {
         portCmd.close();//(getName("inCmd"));
         closePortImage();
         closeCommandPort();
-        layer0Image->stop();
+        if(layer0Image!=0)
+            layer0Image->stop();
         //delete layer0Image;
         //layer1Image->stop();
         //delete layer1Image;
@@ -544,10 +550,12 @@ bool BMLEngine::updateModule() {
         }
         else if((!strcmp(command.c_str(),"AddLayer"))){
             printf("addLayer \n");
-            int valueRow=atoi(optionValue1.c_str());
-            int valueCol=atoi(optionValue2.c_str());
-            addLayer(countLayer,valueRow,valueCol);
-            countLayer++;
+            int valueRow=10;//atoi(optionValue1.c_str());
+            int valueCol=10;//atoi(optionValue2.c_str());
+            if((valueRow!=0)||(valueCol!=0)){
+                addLayer(countLayer,valueCol,valueRow);
+                countLayer++;
+            }
         }
         else if((!strcmp(command.c_str(),"CurrentLayer"))){
             
@@ -814,9 +822,14 @@ bool BMLEngine::updateModule() {
     }
 
     outCommandPort();
-
+    outLayers();
     return true;
 }
+
+void BMLEngine::outLayers(){
+    
+}
+
 
 /** 
 * function that sets the scaleFactorX
@@ -881,7 +894,7 @@ void BMLEngine::addLayer(int number,int colDimension, int rowDimension){
     mb->migrateLayer(*layer);
     //mb->interconnectLayer(number);
     enableDraw=true;
-    // allocate the relative thread
+    // allocate the relative threads
     if(number==0){
         layer0Image=new imageThread(50,"out00");
         layer0Image->setLayer(layer);

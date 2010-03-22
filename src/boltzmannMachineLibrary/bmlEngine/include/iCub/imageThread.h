@@ -208,9 +208,7 @@ public:
     
     ImageOf<PixelRgb> img; //=new ImageOf<PixelRgb>;
     ImageOf<PixelRgb> *img0; //=new ImageOf<PixelRgb>;
-    /**
-    * YARP image where all the objects are drawn sequentially
-    */
+    
     ImageOf<PixelRgb> *image2; 
     /**
     * openCv image where all the objects are drawn sequentially

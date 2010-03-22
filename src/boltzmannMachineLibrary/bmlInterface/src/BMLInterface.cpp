@@ -115,13 +115,15 @@ bool BMLInterface::outPorts(){
     //ippiFree(im_tmp);
     if(strcmp(command->c_str(),"")){
         Bottle& outBot1=_pOutPort->prepare();
-        //bOptions.addString("to");
-        //bOptions.addString("Layer0");
-        outBot1.fromString(command->c_str());
-        outBot1.addList()=bOptions;
-        this->_pOutPort->writeStrict();
+        //bOptions.addInt(10);
+        //bOptions.addInt(10);
+        //outBot1.addString("to");
+        outBot1.addString(command->c_str());
+        //outBot1.addList()=bOptions;
+        _pOutPort->write();
         command->clear();
         bOptions.clear();
+        outBot1.clear();
     }
     return ret;
 }
@@ -135,8 +137,9 @@ bool BMLInterface::outPorts(){
 }*/
 
 bool BMLInterface::openPorts(){
-    
-
+    cmdPort.open(getName("cmd")); // optional command port
+    attach(cmdPort); // cmdPort will work just like terminal
+    _pOutPort->open(getName("command:o")); // optional command port
     return true;
 }
 
@@ -157,8 +160,7 @@ bool BMLInterface::open(Searchable& config) {
     //ConstString portName2 = options.check("name",Value("/worker2")).asString();
     //port_out.open(getName("out"));
     //port_Blobs.open(getName("outBlobs"));
-    cmdPort.open(getName("cmd")); // optional command port
-    attach(cmdPort); // cmdPort will work just like terminal
+    openPorts();
     gui=new graphicThread();
     gui->setImageProcessModule(this);
     gui->start();

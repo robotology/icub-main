@@ -20,7 +20,8 @@ bool imageThread::threadInit(){
                     pix.g=0;
                 }
             }
-    printf("Image Thread initialising.....");
+    printf("Image Thread initialising..... \n");
+    printf("opening image port..... \n");
     //string str=getName();
     string str("/rea/BMLEngine/");
     str.append(this->name);
