@@ -87,7 +87,7 @@ The module does:
 -   stream the mean color image of all the blobs
 -   stream the image of the fovea blob
 -   stream the saliency map as a gray scale image
--	stream the most salient blob
+-   stream the most salient blob
 
 \image html saliencyBlobFinder.png
 
@@ -103,13 +103,13 @@ Here is a  comprehensive list of the parameters you can pass to the module.
  
 \section portsa_sec Ports Accessed
 - /blobFinderInterface/command:o : once manually connected to the <name>/cmd the graphical interface is able to control this module (for further information press Help Button in the interface)
-- /colourPU/red:o
-- /colourPU/green:o
-- /colourPU/blue:o
-- /colourPU/rg:o
-- /colourPU/gr:o
-- /colourPU/by:o
-- /imagePU/edges:o
+- /colourPU/red:o:  red plane of the input image
+- /colourPU/green:o : green plane of the input image
+- /colourPU/blue:o : blue plane of the input image
+- /colourPU/rg:o :  colour opponency map of the input image (difference of gaussian)
+- /colourPU/gr:o : colour opponency map of the input image (difference of gaussian)
+- /colourPU/by:o : colour opponency map of the input image (difference of gaussian)
+- /imagePU/edges:o : edges extracted from the input image
 
 \section portsc_sec Ports Created
 - <name>/cmd
@@ -127,6 +127,7 @@ Here is a  comprehensive list of the parameters you can pass to the module.
 Output ports:
 - <name>/image:o: image output
 - <name>/centroid:o : position of the cog of the most salient blob
+- <name>/gazeControl:o : position of the cog of the most salient blob
 
 
 Input ports:
@@ -155,6 +156,15 @@ This module is able to respond to the following set of commands:
 - set bin: blue intensity value
 - set Mdb: Maximum dimension of the blob analysed
 - set mdb: minimum dimension of the blob analysed
+
+- get kbu: weight of the bottom-up algorithm
+- get ktd: weight of top-down algorithm
+- get rin: red intensity value
+- get gin: green intensity value
+- get bin: blue intensity value
+- get Mdb: Maximum dimension of the blob analysed
+- get mdb: minimum dimension of the blob analysed
+
 
 
 \section in_files_sec Input Data Files
@@ -370,42 +380,42 @@ public:
     //_________ public attributes _______________
     
     //---------- flags --------------------------
-	/**
-	* flag for drawing contrastLP
-	*/
-	bool contrastLP_flag;
-	/**
-	* flag for drawing meanColourImage
-	*/
-	bool meanColour_flag;
-	/**
-	* flag for drawing blobCatalog
-	*/
-	bool blobCataloged_flag;
-	/**
-	* flag for drawing foveaBlob
-	*/
-	bool foveaBlob_flag;
-	/**
-	* flag for drawing colorVQ
-	*/
-	bool colorVQ_flag;
-	/**
-	* flag for drawing maxSaliencyBlob
-	*/
-	bool maxSaliencyBlob_flag;
-	/**
-	* flag for drawing blobList
-	*/
-	bool blobList_flag;
-	/**
-	* flag for the drawings
-	*/
-	bool tagged_flag;
-	/**
-	* flag for drawing watershed image
-	*/
-	bool watershed_flag;
+    /**
+    * flag for drawing contrastLP
+    */
+    bool contrastLP_flag;
+    /**
+    * flag for drawing meanColourImage
+    */
+    bool meanColour_flag;
+    /**
+    * flag for drawing blobCatalog
+    */
+    bool blobCataloged_flag;
+    /**
+    * flag for drawing foveaBlob
+    */
+    bool foveaBlob_flag;
+    /**
+    * flag for drawing colorVQ
+    */
+    bool colorVQ_flag;
+    /**
+    * flag for drawing maxSaliencyBlob
+    */
+    bool maxSaliencyBlob_flag;
+    /**
+    * flag for drawing blobList
+    */
+    bool blobList_flag;
+    /**
+    * flag for the drawings
+    */
+    bool tagged_flag;
+    /**
+    * flag for drawing watershed image
+    */
+    bool watershed_flag;
     /**
     * it indicates if the control of the time is on
     */

@@ -485,6 +485,14 @@ bool saliencyBlobFinderModule::respond(const Bottle &command,Bottle &reply){
 
             reply.addString("\n");
 
+            reply.addString("get kbu : set coefficient k of the bottom-up saliency calculation ");
+            reply.addString("get ktd : set coefficient k of the top-down saliency calculation ");
+            reply.addString("get Mdb : set maximum dimension allowed for blobs ");
+            reply.addString("get mdb : set minimum dimension allowed for blobs");
+            reply.addString("get rin : set red intensity value for the target to be sought");
+            reply.addString("get gin : set green intensity value for the target to be sought");
+            reply.addString("get bin : set blue intensity value for the target to be sought");
+
 
             ok = true;
         }
@@ -699,26 +707,48 @@ bool saliencyBlobFinderModule::respond(const Bottle &command,Bottle &reply){
                 reply.addString(s.c_str());
                 ok = true;
             }
-                break;
-            case COMMAND_VOCAB_CHILD_COUNT:{
-                int count =0;
-                reply.addInt(count);
+            case COMMAND_VOCAB_KBU:{
+                double nb = blobFinder->salienceBU;
+                reply.addDouble(nb);
                 ok = true;
             }
                 break;
-            /*case COMMAND_VOCAB_WEIGHT:{
-                double w = 0.0;
-                reply.addDouble(w);
+            case COMMAND_VOCAB_KTD:{
+                double nb = blobFinder->salienceTD;
+                reply.addDouble(nb);
                 ok = true;
-            }*/
-                break;
-            /*case COMMAND_VOCAB_CHILD_WEIGHT:{
-                int j = command.get(2).asInt();
-                double w = 0.0;
-                reply.addDouble(w);
+            }
+            break;
+            case COMMAND_VOCAB_RIN:{
+                int nb = blobFinder->targetRED;
+                reply.addInt(nb);
                 ok = true;
-            }*/
-                break;
+            }
+            break;
+            case COMMAND_VOCAB_GIN:{
+                int nb = blobFinder->targetGREEN;
+                reply.addInt(nb);
+                ok = true;
+            }
+            break;
+            case COMMAND_VOCAB_BIN:{
+                int nb = blobFinder->targetBLUE;
+                reply.addInt(nb);
+                ok = true;
+            }
+            break;
+            case COMMAND_VOCAB_MAXDB:{
+                int nb = blobFinder->maxBLOB;
+                reply.addInt(nb);
+                ok = true;
+            }
+            break;
+            case COMMAND_VOCAB_MINDB:{
+                int nb = blobFinder->minBLOB;
+                reply.addInt(nb);
+                ok = true;
+            }
+            break;
             
             default:
                 cout << "received an unknown request after a SALIENCE_VOCAB_GET" << endl;
