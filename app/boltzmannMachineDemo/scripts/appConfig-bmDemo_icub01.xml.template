@@ -34,22 +34,22 @@
 
  	<connection>
       	<from>icub/cam/left/fovea</from>
-		<to>/bmlInterface/image:i</to>
+		   <to>/bmlInterface/image:i</to>
 	</connection>
 	<connection>
       	<from>icub/cam/left/fovea</from>
-		<to>/bmlEngine/image:i</to>
+		   <to>/bmlEngine/image:i</to>
 	</connection>	
 	<connection>
       	<from>/bmlEngine/layer0:o</from>
-		<to>/bmlInterface/layer0:i</to>
+		   <to>/bmlInterface/layer0:i</to>
 	</connection>
 	<connection>
       	<from>/bmlEngine/layer1:o</from>
-		<to>/bmlInterface/layer1:i</to>
+		   <to>/bmlInterface/layer1:i</to>
 	</connection>
 	<connection>
       	<from>/bmlEngine/layer2:o</from>
-		<to>/bmlInterface/layer2:i</to>
+		   <to>/bmlInterface/layer2:i</to>
 	</connection>
 </application>
