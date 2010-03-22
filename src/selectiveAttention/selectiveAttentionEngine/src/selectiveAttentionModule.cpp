@@ -30,7 +30,13 @@ bool selectiveAttentionModule::open(Searchable& config) {
     inputImg=0;
     tmp=0;
 
-    this->openPorts();   
+    targetRED=0;
+    targetGREEN=0;
+    targetBLUE=0;
+    salienceTD=0.5;
+    salienceBU=0.5;
+
+    openPorts();   
     //ConstString portName2 = options.check("name",Value("/worker2")).asString();
     
     return true;
@@ -49,7 +55,9 @@ bool selectiveAttentionModule::interruptModule() {
     
     selectedAttentionPort.interrupt();
     linearCombinationPort.interrupt();
-
+    centroidPort.interrupt();
+    feedbackPort.interrupt();
+    
     inImagePort.interrupt();
     cmdPort.interrupt();
 	return true;
@@ -207,6 +215,9 @@ bool selectiveAttentionModule::closePorts(){
 
     selectedAttentionPort.close();
     linearCombinationPort.close();
+    centroidPort.close();
+    feedbackPort.close();
+    
     cmdPort.close();
     printf("All the ports successfully closed ... \n");
 
@@ -224,7 +235,7 @@ void selectiveAttentionModule::reinitialise(int width, int height){
 
 
 bool selectiveAttentionModule::updateModule() {
-    
+    string name;
 
     /*this->inputImg = this->inImagePort.read(false);
     if(0==inputImg)
@@ -241,13 +252,49 @@ bool selectiveAttentionModule::updateModule() {
         command->clear();
     }
     //--------read value from the preattentive level
-    if(feedbackPort.getInputCount()){
+    if(feedbackPort.getOutputCount()){
         Bottle in,out;
         out.clear();
         out.addString("get");
-        out.addString("KTD");
+        out.addString("ktd");
         feedbackPort.write(out,in);
         printf("%s \n",in.toString().c_str());
+        name=in.pop().asString();
+        salienceTD=in.pop().asDouble();
+        out.clear();
+        in.clear();
+        out.addString("get");
+        out.addString("kbu");
+        feedbackPort.write(out,in);
+        printf("%s \n",in.toString().c_str());
+        name=in.pop().asString();
+        salienceBU=in.pop().asDouble();
+        out.clear();
+        in.clear();
+        out.addString("get");
+        out.addString("rin");
+        feedbackPort.write(out,in);
+        printf("%s \n",in.toString().c_str());
+        name=in.pop().asString();
+        targetRED=in.pop().asInt();
+        out.clear();
+        in.clear();
+        out.addString("get");
+        out.addString("gin");
+        feedbackPort.write(out,in);
+        printf("%s \n",in.toString().c_str());
+        name=in.pop().asString();
+        targetGREEN=in.pop().asInt();
+        out.clear();
+        in.clear();
+        out.addString("get");
+        out.addString("bin");
+        feedbackPort.write(out,in);
+        printf("%s \n",in.toString().c_str());
+        name=in.pop().asString();
+        targetBLUE=in.pop().asDouble();
+        out.clear();
+        in.clear();
     }
 
     //-------------read input maps

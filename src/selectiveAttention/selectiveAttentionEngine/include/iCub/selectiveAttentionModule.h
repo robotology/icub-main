@@ -267,11 +267,11 @@ private:
     /**
     * value of the weight of top-down approach in the blobFinder
     */
-    int salienceTD;
+    double salienceTD;
     /**
     * value of the weight of bottom-up approach in the blobFinder
     */
-    int salienceBU;
+    double salienceBU;
 
     /**
     * function that resets all the mode flags
