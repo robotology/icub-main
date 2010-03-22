@@ -160,6 +160,11 @@
 		<protocol>tcp</protocol>
 	</connection>
 	<connection>
+      <from>/icub/cam/left/logpolar</from>
+		<to>/selectiveAttentionEngine/image:i</to>
+		<protocol>tcp</protocol>
+	</connection>
+	<connection>
       <from>/blobFinder/icub/left_cam/image:o</from>
 		<to>/selectiveAttentionEngine/map1:i</to>
 		<protocol>tcp</protocol>
