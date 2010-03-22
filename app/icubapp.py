@@ -1,27 +1,82 @@
 #!/usr/bin/python
 
-##Copyright (C) 2009 RobotCub Consortium, European Commission FP6 Project IST-004370
-##Author Lorenzo Natale
-##email:   <lorenzo.natale>@robotcub.org
-##website: www.robotcub.org
-##Permission is granted to copy, distribute, and/or modify this program
-##under the terms of the GNU General Public License, version 2 or any
-##later version published by the Free Software Foundation.
+## Copyright (C) 2009 RobotCub Consortium, European Commission FP6 Project IST-004370
+## Author Lorenzo Natale
+## email:   <lorenzo.natale>@robotcub.org
+## website: www.robotcub.org
+## Permission is granted to copy, distribute, and/or modify this program
+## under the terms of the GNU General Public License, version 2 or any
+## later version published by the Free Software Foundation.
 ##
-##A copy of the license can be found at
-##http://www.robotcub.org/icub/license/gpl.txt
+## A copy of the license can be found at
+## http://www.robotcub.org/icub/license/gpl.txt
 ##
-##This program is distributed in the hope that it will be useful, but
-##WITHOUT ANY WARRANTY; without even the implied warranty of
-##MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the GNU General
-##Public License for more details
+## This program is distributed in the hope that it will be useful, but
+## WITHOUT ANY WARRANTY; without even the implied warranty of
+## MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the GNU General
+## Public License for more details
 
+# Recursively descent the working directory tree and detects all files
+# with xml extension. Allows running an instance of the manager for each
+# of them.
+#
+# Parameters: a file that contains a list of directories to search.
+# By default look for app.txt
 
 import fnmatch
 import os
 import sys
 import subprocess
 from Tkinter import *
+
+def fileExists(f):
+    try:
+        file=open(f)
+    except IOError:
+        return 0
+    else:
+        return 1
+
+class ApplicationDescriptor:
+    title=''
+    applications=[]
+
+def pruneContexts(appDirs, allContexts):
+    ret=[]
+    for ap in appDirs:
+        for c in allContexts:
+            #print ap,
+            #print c
+            if (c==ap):
+                ret.append(c)
+    return ret
+    
+def parseConfigFile(filedescriptor):
+    f=open(filedescriptor,'r')
+    group=''
+    ret= ApplicationDescriptor()
+    for line in f:
+        line=line.rstrip('\r\n')
+
+        if (group=='name' and line!='' and line[0]!='[' and line[0]!='#'):
+            ret.title=line
+                
+        if (group=='app' and line!='' and line[0]!='[' and line[0]!='#'):
+            #protect against empty lines
+            if (line!=''):
+                if (line[0]!='['):
+                    ret.applications.append(line)
+
+        if (line=='[NAME]'):
+            group='name'
+
+        if (line=='[APPLICATIONS]'):
+            group='app'
+  
+    f.close()
+    
+    return ret            
+
 
 def isXML(x):
     return fnmatch.fnmatch(x, '*.xml')
@@ -41,8 +96,8 @@ class App:
     def __init__(self, master):
 	frame = Frame(master)
 	frame.pack()
-	self.master=frame
-
+	self.master=frame      
+        
     def setManager(self, manager):
 	self.manager=manager
 
@@ -64,7 +119,7 @@ class App:
 	for app in appList:
 
 	    tmpFrame.grid(row=r, column=c, sticky=W)
-	    print app.context
+#	    print app.context
 	    tmpApp=Label(tmpFrame, text=app.context, relief=SUNKEN).grid(row=r, column=0, sticky=N+W+E)
 ##             tmpFrame.columnconfigure(0, minsize=150)
 ##             tmpFrame.columnconfigure(1, minsize=150)
@@ -104,40 +159,60 @@ def searchManager():
 		for f in files:
 		    if isManagerPy(f):
 			ret=os.path.join(c, 'scripts', f)
-			print ret
+#			print ret
 			return ret
 
-def searchApplications():
-    contexts=os.listdir('.')
+def searchApplications(appDirs):
+    allContexts=os.listdir('.')
+    contexts=[]
+   
+    # handle special cases
+    if (appDirs==[]):
+        contexts=allContexts
+    elif (appDirs[0]=='*' or appDirs[0]==''):
+        contexts=allContexts
+    else:
+        contexts=pruneContexts(appDirs, allContexts)
 
+#   print contexts
     applications=[]
 
     for c in contexts:
 	if (os.path.isdir(c)):
-	    #print c
+#	    print c
 	    tmp=os.listdir(c)
 	    if 'scripts' in tmp:
-#                print c
+#               print c
 		tmpApp=appEntry()
 		files=os.listdir(os.path.join(c,'scripts'))
 		tmpApp.path=os.path.join(c,'scripts')
 		tmpApp.context=c
 		tmpApp.xmls=filter(isXML, files)
 
-#                print tmpApp.xmls
+#              print tmpApp.xmls
 		if (tmpApp.xmls!=[]):
 		    applications.append(tmpApp)
 
     return applications
 
 if __name__ == '__main__':
-    root = Tk()
-    app = App(root)
-    root.title("iCub application manager")
 
-    applications=searchApplications()
+    if (fileExists('app.txt')):
+        textDescription=parseConfigFile('app.txt')
+    else:
+        print 'Need app.txt in local directory'
+        sys.exit(1)
+        
+    #print application.name
+    #print application.applications
+       
+    applications=searchApplications(textDescription.applications)
     managerPath=searchManager()
 
+
+    root = Tk()
+    app = App(root)
+    root.title(textDescription.title)
     app.setManager(managerPath)
     app.setAppList(applications)
 
