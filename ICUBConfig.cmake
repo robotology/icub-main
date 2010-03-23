@@ -68,6 +68,8 @@ SET(AFFACTIONPRIMITIVES_DIR "${ICUB_DIR}/src/affActionPrimitives")
 set(LIBVISLAB_DIR "${ICUB_DIR}/src/libvislab-snapshot")
 set(LIBHANDCTRL_DIR "${ICUB_DIR}/src/abstractHandCtrl/lib")
 set(LIBEYECUB_DIR "${ICUB_DIR}/src/eye2world/lib")
+set(REINFORCEMENTLEARNING_DIR "${ICUB_DIR}/src/reinforcementLearning")
+set(CONTROLBASIS_DIR "${ICUB_DIR}/src/controlBasis")
 
 IF (BUILDING_ICUB)
   SET(icubmod_DIR "${CMAKE_BINARY_DIR}")
