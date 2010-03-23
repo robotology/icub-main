@@ -67,6 +67,10 @@ left_eye       0
 right_eye      0
 stereo         0
 
+[contactset_resources]
+left_hand      0
+right_hand      0
+
 //DO NOT REMOVE THIS LINE                 
 \endcode 
  
@@ -91,6 +95,7 @@ This file can be edited at src/controlBasis/modules/main.cpp.
 #include <YARPConfigurationVariables.h>
 #include <iCubFullArmConfigurationVariables.h>
 #include <iCubEyeConfigurationVariables.h>
+#include <iCubHandContactSet.h>
 #include <EndEffectorCartesianPosition.h>
 #include <ManipulatorPositionJacobian.h>
 #include <Controller.h>
@@ -118,7 +123,7 @@ class iCubControlBasisResourceStarter : public RFModule {
     YARPConfigurationVariables *iCubArm[2];
     YARPConfigurationVariables *iCubLeg[2];
     YARPConfigurationVariables *iCubHand[2];
-    iCubEyeConfigurationVariables *iCubEyes[2]; // PT or PTV
+    iCubEyeConfigurationVariables *iCubEyes[2]; // PT and PTV
     YARPConfigurationVariables *iCubHead;
     YARPConfigurationVariables *iCubTorso;
 
@@ -128,6 +133,8 @@ class iCubControlBasisResourceStarter : public RFModule {
 
     YARPAttentionMechanismHeading *salientHeadings[2];
     YARPAttentionMechanismStereoHeading *salientStereoHeading;
+
+    iCubHandContactSet *handContacts[2];
 
     bool runArmConfig[2];
     bool runLegConfig[2];
@@ -143,6 +150,7 @@ class iCubControlBasisResourceStarter : public RFModule {
 
     bool runHeadings[2];
     bool runStereoHeading;
+    bool runHandContactSet[2];
 
     string fullArmName[2];
     string fullArmConfigFile[2];
@@ -177,6 +185,8 @@ class iCubControlBasisResourceStarter : public RFModule {
 
     string stereoHeadingName;
     string stereoHeadingVelPort;
+
+    string handContactName[2];
 
     int armNumJoints;
     int armNumLinks;
@@ -403,6 +413,24 @@ public:
         }
         //cout << "run stereo heading: " << runStereoHeading << endl;
 
+
+        // parse contact set resources
+        Bottle &contacts_group=rf.findGroup("contactset_resources");
+        
+        if(contacts_group.check("right_hand")) {
+            runHandContactSet[0] = (bool)(contacts_group.find("right_hand").asInt());
+        } else {
+            runHandContactSet[0] = false;
+        }
+        //cout << "run right hand contacts set: " << runHandContactSet[0] << endl;
+
+        if(contacts_group.check("left_hand")) {
+            runHandContactSet[1] = (bool)(contacts_group.find("left_hand").asInt());
+        } else {
+            runHandContactSet[1] = false;
+        }
+        //cout << "run left hand contacts set: " << runHandContactSet[1] << endl;
+
         // now that we have the config vals, set the params used by resources
         setParameters();
 
@@ -498,6 +526,9 @@ public:
         headingName[1] = robot_prefix + "/left_eye";
         stereoHeadingName = robot_prefix + "/stereo";
     
+        handContactName[0] = "right";
+        handContactName[1] = "left";
+
         armNumJoints = 7;
         armNumLinks = 12;
         
@@ -629,6 +660,11 @@ public:
                 salientHeadings[i]->startResource();
             }           
 
+            if(runHandContactSet[i]) {
+                cout << "starting hand contact set for hand: " << i << endl;
+                handContacts[i] = new iCubHandContactSet(simulationMode,handContactName[i]);
+                handContacts[i]->startResource();
+            }
         }
 
         if(runHeadConfig) {
@@ -680,6 +716,7 @@ public:
                 if(runFullArmPosition[i]) fullArmEndEffector[i]->stopResource(); 
                 if(runHeadings[i]) salientHeadings[i]->stopResource();
                 if(runEyesConfig[i]) iCubEyes[i]->stopResource();
+                if(runHandContactSet[i]) handContacts[i]->stopResource();
             }     
             if(runHeadConfig) iCubHead->stopResource();
             if(runTorsoConfig) iCubTorso->stopResource();

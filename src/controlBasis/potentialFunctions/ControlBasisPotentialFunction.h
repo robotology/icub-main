@@ -273,7 +273,7 @@ namespace CB {
             inputsSet = true;
 
             // set outputs
-            outputPortName = pfName + ":o";            
+            outputPortName = pfName + "data:o";            
             outputPort.close();
             outputPort.open(outputPortName.c_str());
 
