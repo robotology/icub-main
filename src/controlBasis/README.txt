@@ -15,6 +15,8 @@ DEPENDENCIES
 The CBAPI library requires making and installing the iKin and reinforcementLearning libraries.  Both are in the
 $ICUB_ROOT/src/ tree.
 
+also, if there is trouble with compiling the modules,  comment out the modules subdir in the CMakeLists.txt file, 
+make and make install, then comment it back in and try again.  sorry! need to fix this....
 
 ------------
 INSTALLATION
