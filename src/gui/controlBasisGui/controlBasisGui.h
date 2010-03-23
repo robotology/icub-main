@@ -13,7 +13,7 @@ CopyPolicy: Released under the terms of the GNU GPL v2.0.
  
 \section intro_sec Description 
 
-This gui will connect to all running control basis resources that are running on the 
+This GUI will connect to all running control basis resources that are running on the 
 network and allow a user to configure control laws with them.  When a user adds a 
 controller to the current control law, it will be added with a lower priority then 
 previously added controllers.  The final multi-objective prioritized output will be
@@ -43,6 +43,43 @@ If the "use Jacobian Transpose" button is selected, the transpose is used in pla
 The GUI will look like this
 \image html controlBasisGUI.jpg
 
+
+A high-level diagram of how controllers are combined is shown in the figure below:
+
+\image html cbapi.png
+
+Each controller in the multi-objective law can require a Jacobian (if the task-space is not 
+Configuration-space), and a set of k sensory resources (Note that the control basis GUI application
+currently only allows the user to specify two sensors at this time: a "current" and a "reference").  In general, a particular
+potential function could require more, but this has not been implemented yet in the GUI, as none of the current
+PFs do in fact require more then either one or two sensors.  
+
+A note on what's going on "beneath the hood."  When the GUI creates a control law of n primitives, it creates one RunnableControlLaw object
+and n Controller objects.  The Controllers automatically create the PotentialFunction and Jacobian classes as necessay (if 
+the effector is "virtual," then the RunnableControlLaw actually creates the Jacobian).  These classes connect over YARP
+ports to the Control Basis resources that must be running on the network.  These resourcees, as necessary, communicate with the low-level
+devices that read from and write to the hardware. For example, consider a Cartesian controller that moves a YARP motor device to a 
+reference position.  A schematic of this controller is shown below:
+
+\image html cartesian_controller.png
+
+In this example, the YARPConfigurationVariables object talks to a motor device with the name <device_name> (in this example, this is an iCub device).  It accepts commands 
+via a YARP port (/data:i). It provides the current values of the device joints and the DH-Parameters over the ports /data:o and 
+/params:o, respectively.  The EndEffectorCartesianPosition resource consumes these values and computes the forward kinematics, thus providing
+the "current" signal to the potential function; in this case a simple squared-error quadratic that measures the error between the current
+and the reference value provided by a CartesianPositionReference object.  When the Controller computes this error, it needs to send a signal back
+to the device to move it and reduce the error.  However, because the error is in Cartesian-space, it needs to first be transformed into Configuration-space using an
+instance of the ManipulatorPositionJacobian.  This Jacobian also needs the current position and the DH-Parameters from the device, and
+so connects to the appropriate ports.
+
+A second controller example can be seen below.  This controller moves an iCub manipulator to optimize the Measure of Manipulability metric. This metric  keeps the manipulator
+Jacobian well conditioned (and thus away from undesirable singularities).  This controller operates in Configuration-space and thus does not need a Jacobian.  Moreover, the 
+potential is evaluated from only the current value of the robot's joints and the DH-parameters (and therefore does not need a second reference sensor).  Note that if this 
+controller were to run as a 2nd priorty controller to the Cartesian Controller shown in the above example, then it would connect to the same RunnableControlLaw and YARPConfigurationVariables
+objects.
+
+\image html manipulability_controller.png
+
 \section example_sec Example 
 Try with the following:
  
@@ -52,7 +89,8 @@ Try with the following:
 on terminal 1: iCub_SIM
 
 // start the control basis modules for the iCub (simulator)
-on terminal 2: iCubControlBasisResources  // this starts up the resources indicated in $ICUB_ROOT/app/controlBasis/conf/iCubSimControlBasisResources.ini 
+on terminal 2: iCubControlBasisResources  // this starts up the resources indicated in $ICUB_ROOT/app/controlBasis/conf/iCubSimControlBasisResources.ini. 
+// Edit this file to change which resources are started. 
 
 // optional
 on terminal 2a: referenceGui // starts up iCub reference modules
