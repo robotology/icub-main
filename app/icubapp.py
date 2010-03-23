@@ -48,11 +48,12 @@ def fileExists(f):
         return 1
 
 def printUsage(scriptName):
-    print "manager.py: python gui for parsing applications xml files"
+    print "python gui for parsing application directories"
     print "Usage:"
     print scriptName, 
-    print "app.xml"
-    print "app.xml: application descriptor file"
+    print "app.txt"
+    print "app.txt: configuration file, contains a list of directories that will be parsed"
+    print "see app.txt.template in repository" 
     
 class ApplicationDescriptor:
     title=''
@@ -68,8 +69,8 @@ def pruneContexts(appDirs, allContexts):
                 ret.append(c)
     return ret
     
-def parseConfigFile(filedescriptor):
-    f=open(filedescriptor,'r')
+def parseConfigFile(filename):
+    f=open(filename,'r')
     group=''
     ret= ApplicationDescriptor()
     for line in f:
@@ -128,7 +129,7 @@ class App:
 	tmpFrame.columnconfigure(2, minsize=40)
 
 	Label(tmpFrame, text="Context:").grid(row=0,column=0, sticky=N+W)
-	Label(tmpFrame, text="Detected xmls:").grid(row=0,column=1, sticky=N+W)
+	Label(tmpFrame, text="Found xmls:").grid(row=0,column=1, sticky=N+W)
 
 	r=1
 	c=1
@@ -147,9 +148,9 @@ class App:
 	    #tmpFrame.grid(row=1, column=1, sticky=N)
 	    for xml in app.xmls:
 		tmpXml=Label(tmpFrame,text=xml, relief=SUNKEN)
-		tmpXml.grid(row=r, column=c+1, sticky=N+W)
+		tmpXml.grid(row=r, column=1, sticky=N+W)
 		tmp=Button(tmpFrame, text="Run Manager", command=lambda i=os.path.join(app.path, xml):self.runManager(i))
-		tmp.grid(row=r, column=c+2, sticky=N)
+		tmp.grid(row=r, column=2, sticky=N)
 		r=r+1
 	    r=r+1
 
@@ -229,19 +230,21 @@ if __name__ == '__main__':
         sys.exit(1)
 
     found=fileExists(confFile)
-    if (!found):
+    if (not found):
         print 'File ',
         print confFile,
         print 'not found on local directory'
         sys.exit(1)
+
+    config=parseConfigFile(confFile)
         
-    applications=searchApplications(textDescription.applications)
+    applications=searchApplications(config.applications)
     managerPath=searchManager()
 
 
     root = Tk()
     app = App(root)
-    root.title(textDescription.title)
+    root.title(config.title)
     app.setManager(managerPath)
     app.setAppList(applications)
 
