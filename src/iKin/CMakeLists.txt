@@ -8,27 +8,33 @@ FIND_PACKAGE(ICUB)
 FIND_PACKAGE(CTRLLIB REQUIRED)
 INCLUDE_DIRECTORIES(${CTRLLIB_INCLUDE_DIRS})
 
-SET(ADD_IPOPT FALSE CACHE BOOL "Dou you want to add IPOPT library?")
-IF(ADD_IPOPT)
-   FIND_PACKAGE(IPOPT)
-   IF(NOT IPOPT_FOUND)
-      MESSAGE(STATUS "IPOPT not found! Keep on building ...")
-   ENDIF(NOT IPOPT_FOUND)
-ENDIF(ADD_IPOPT)
+FIND_PACKAGE(IPOPT)
+IF(NOT IPOPT_FOUND)
+   MESSAGE(STATUS "IPOPT not found! Keep on building ...")
+ENDIF(NOT IPOPT_FOUND)
+
+SET(ADD_IPOPT ${IPOPT_FOUND} CACHE BOOL "Dou you want to add IPOPT library?")
+IF(NOT ADD_IPOPT)
+   SET(IPOPT_INC_DIRS "")
+   SET(IPOPT_LIB "")
+   SET(IPOPT_LIB_R "")
+   SET(IPOPT_LIB_D "")
+ENDIF(NOT ADD_IPOPT)
 
 SET(folder_source src/iKinFwd.cpp src/iKinInv.cpp src/iKinHlp.cpp)
 SET(folder_header include/iCub/iKinFwd.h include/iCub/iKinInv.h
                   include/iCub/iKinVocabs.h include/iCub/iKinHlp.h)
-
-IF(IPOPT_FOUND)
+				  
+INCLUDE_DIRECTORIES(${PROJECT_SOURCE_DIR}/include)				  
+				  
+IF(IPOPT_FOUND AND ADD_IPOPT)
    SET(folder_source ${folder_source} src/iKinIpOpt.cpp src/iKinSlv.cpp)
    SET(folder_header ${folder_header} include/iCub/iKinIpOpt.h include/iCub/iKinSlv.h)
-ENDIF(IPOPT_FOUND)
+   INCLUDE_DIRECTORIES(${IPOPT_INC_DIRS})
+ENDIF(IPOPT_FOUND AND ADD_IPOPT)
 
 SOURCE_GROUP("Source Files" FILES ${folder_source})
 SOURCE_GROUP("Header Files" FILES ${folder_header})
-
-INCLUDE_DIRECTORIES(${PROJECT_SOURCE_DIR}/include ${IPOPT_INC_DIRS})
 
 ADD_LIBRARY(${PROJECTNAME} ${folder_source} ${folder_header})
 

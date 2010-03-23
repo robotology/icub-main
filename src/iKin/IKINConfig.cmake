@@ -4,19 +4,19 @@ IF(NOT IKIN_FOUND)
     MESSAGE(STATUS "Using IKINConfig.cmake")
     
     SET(LIB_DIR ${IKIN_DIR})
+
+	FIND_PACKAGE(IPOPT)
+	IF(NOT IPOPT_FOUND)
+	   MESSAGE(STATUS "IPOPT not found! Keep on building ...")
+	ENDIF(NOT IPOPT_FOUND)
     
-    SET(ADD_IPOPT FALSE CACHE BOOL "Dou you want to add IPOPT library?")
-    IF(ADD_IPOPT)
-       FIND_PACKAGE(IPOPT)
-       IF(NOT IPOPT_FOUND)
-          MESSAGE(STATUS "IPOPT not found! Keep on building...")
-       ENDIF(NOT IPOPT_FOUND)
-    ELSE(ADD_IPOPT)
+    SET(ADD_IPOPT ${IPOPT_FOUND} CACHE BOOL "Dou you want to add IPOPT library?")
+    IF(NOT ADD_IPOPT)
        SET(IPOPT_INC_DIRS "")
        SET(IPOPT_LIB "")
        SET(IPOPT_LIB_R "")
        SET(IPOPT_LIB_D "")
-    ENDIF(ADD_IPOPT)
+    ENDIF(NOT ADD_IPOPT)
     
     SET(IKIN_INCLUDE_DIRS ${LIB_DIR}/include ${IPOPT_INC_DIRS})
     

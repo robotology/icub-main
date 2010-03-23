@@ -1,7 +1,11 @@
 
+2010-03-23 Ugo Pattacini <ugo.pattacini@iit.it>
+	   * CMakeLists.cmake, IKINConfig.cmake: now ADD_IPOPT flag is set by default according
+	     to the status of IPOPT_FOUND variable
+
 2010-02-27 Ugo Pattacini <ugo.pattacini@iit.it>
 	   * iKinSlv.h,.cpp: minimization against current q added
-
+	   
 2010-02-03 Ugo Pattacini <ugo.pattacini@iit.it>
 	   * CMakeLists.txt, IKINConfig.cmake: for win32 DEBUG_POSTFIX put equal to "d"
 
