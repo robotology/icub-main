@@ -22,6 +22,16 @@
 #
 # Parameters: a file that contains a list of directories to search.
 # By default look for app.txt
+#
+# Ths syntax of the file is:
+# [NAME]
+# name
+#
+# [APPLICATIONS]
+# dir1
+# dir2
+#
+# use wildcard * or an empty list to mean everyting
 
 import fnmatch
 import os
@@ -37,6 +47,13 @@ def fileExists(f):
     else:
         return 1
 
+def printUsage(scriptName):
+    print "manager.py: python gui for parsing applications xml files"
+    print "Usage:"
+    print scriptName, 
+    print "app.xml"
+    print "app.xml: application descriptor file"
+    
 class ApplicationDescriptor:
     title=''
     applications=[]
@@ -197,15 +214,27 @@ def searchApplications(appDirs):
 
 if __name__ == '__main__':
 
-    if (fileExists('app.txt')):
-        textDescription=parseConfigFile('app.txt')
+    argc = len(sys.argv)
+
+    confFile='app.txt'
+    if (argc==1):
+        print 'Using default ',
+        print confFile
+    elif (argc==2):
+        textFile=argv[1]
+        print 'Using ',
+        print confFile
     else:
-        print 'Need app.txt in local directory'
+        printUsage(sys.argv[0])
+        sys.exit(1)
+
+    found=fileExists(confFile)
+    if (!found):
+        print 'File ',
+        print confFile,
+        print 'not found on local directory'
         sys.exit(1)
         
-    #print application.name
-    #print application.applications
-       
     applications=searchApplications(textDescription.applications)
     managerPath=searchManager()
 
