@@ -112,7 +112,7 @@ bool yuvProc::configure(yarp::os::ResourceFinder &rf)
 
     attach(handlerPort);                  // attach to port
  
-    attachTerminal();                     // attach to terminal (maybe not such a good thing...)
+    //attachTerminal();                     // attach to terminal (maybe not such a good thing...)
 
 
     /* create the thread and pass pointers to the module parameters */
