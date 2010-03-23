@@ -12,7 +12,8 @@ the YARP implementation of a Control Basis API (or CBAPI).
 DEPENDENCIES
 ------------
 
-The CBAPI library requieres the iKin library.
+The CBAPI library requires making and installing the iKin and reinforcementLearning libraries.  Both are in the
+$ICUB_ROOT/src/ tree.
 
 
 ------------
