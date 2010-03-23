@@ -48,7 +48,7 @@ def fileExists(f):
         return 1
 
 def printUsage(scriptName):
-    print "python gui for parsing application directories"
+    print "icubapp.py: a python gui for parsing application directories"
     print "Usage:"
     print scriptName, 
     print "app.txt"
@@ -222,7 +222,7 @@ if __name__ == '__main__':
         print 'Using default ',
         print confFile
     elif (argc==2):
-        textFile=argv[1]
+        confFile=sys.argv[1]
         print 'Using ',
         print confFile
     else:
@@ -231,9 +231,9 @@ if __name__ == '__main__':
 
     found=fileExists(confFile)
     if (not found):
-        print 'File ',
+        print 'Error: file ',
         print confFile,
-        print 'not found on local directory'
+        print 'not found in local directory'
         sys.exit(1)
 
     config=parseConfigFile(confFile)
