@@ -177,6 +177,9 @@ private:
   	ImageOf<PixelMono> *imgU;    
     ImageOf<PixelMono> *imgV;
 
+	ImageOf<PixelMono> *img_out_Y;    
+	ImageOf<PixelMono> *img_out_UV;
+
     /* thread parameters: they are pointers so that they refer to the original variables */
 
     BufferedPort<ImageOf<PixelMono> >  *imageInputPortY;
