@@ -13,7 +13,7 @@ DH:
  0           -0.1373     90    -90     REVOLUTE
  0            0          90     90     REVOLUTE
  0.0625       0.016       0    180     REVOLUTE
-MAX: 3
-GAIN: 5
+MAX: 10
+GAIN: 10
 MASK: 1 1 1 1 1 1 1 0 0 0 0 0 0 0 0 0
 
