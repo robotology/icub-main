@@ -246,7 +246,7 @@ public:
 
 	//get sensor members, previously defined
 	yarp::sig::Matrix getRs(yarp::sig::Matrix _Rs){return Sensore->getR();}
-	yarp::sig::Vector getPs(yarp::sig::Vector _ps){return Sensore->getP();}
+	yarp::sig::Vector getPs(){return Sensore->getP();}
 	yarp::sig::Matrix getHs(yarp::sig::Matrix _Hs){return Sensore->getH();}
 
 	//get Limb variables
