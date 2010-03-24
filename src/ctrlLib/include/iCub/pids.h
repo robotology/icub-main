@@ -119,7 +119,7 @@ public:
     * given value. 
     * @param y0 is new value of output vector.
     */
-    void reset(const yarp::sig::Vector &y0) { y=saturate(y0); x_old=0.0; }
+    void reset(const yarp::sig::Vector &y0);
 
     /**
     * Returns the current output vector. 

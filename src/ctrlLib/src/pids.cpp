@@ -103,6 +103,14 @@ Vector Integrator::integrate(const Vector &x)
 
 
 /************************************************************************/
+void Integrator::reset(const Vector &y0)
+{
+    y=saturate(y0);
+    x_old=0.0;
+}
+
+
+/************************************************************************/
 parallelPID::parallelPID(const double _Ts,
                          const Vector &_Kp, const Vector &_Ki, const Vector &_Kd,
                          const Vector &_Wp, const Vector &_Wi, const Vector &_Wd,
