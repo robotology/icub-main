@@ -38,7 +38,7 @@ bool CB::CartesianPositionHarmonicFunction::updatePotentialFunction() {
         cout << "CartesianPositionHarmonicFunction::update() -- wrong number of input ports!!" << endl;
         return false;
     }
-    b[1] = inputPorts[1]->read(false);
+    b[1] = inputPorts[1]->read(true);
 
     if(b[1]!=NULL) {        
         t = b[1]->get(0).asString();
@@ -68,7 +68,7 @@ bool CB::CartesianPositionHarmonicFunction::updatePotentialFunction() {
     }
     
     // read the position
-    b[0] = inputPorts[0]->read(false);
+    b[0] = inputPorts[0]->read(true);
     if(b[0]==NULL) {
         // non fatal error (probably due to asynchronous update rates)
         //    cout << "CartesianPositionHarmonicFunction::update() -- could not read input data!" << endl;
@@ -107,7 +107,7 @@ bool CB::CartesianPositionHarmonicFunction::connectToInputs() {
     string tmp0 = inputNames[0];
     tmp0.erase(0,s);
 
-    string posCurNameIn = "/cb/cartesianposition/harmonic_pf" + tmp0 + ":i";   
+    string posCurNameIn = "/cb/cartesianposition/harmonic_pf" + tmp0 + "/data:i";   
 
     cout << "CartesianPositionHarmonicFunction::connectToInputs() -- opening current input port..." << endl;
     ok &= inputPorts[0]->open(posCurNameIn.c_str());

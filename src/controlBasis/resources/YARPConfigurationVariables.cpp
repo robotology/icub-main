@@ -69,7 +69,7 @@ bool CB::YARPConfigurationVariables::updateResource() {
             for(int i=0; i<mask.size(); i++) {
                 if(!mask[i]) continue;
                 pos->positionMove(i, desiredValues[idx++]*TODEG);            
-                cout << "sending position["<<i<<"] -> " << desiredValues[idx-1]*TODEG << endl;
+                //cout << "sending position["<<i<<"] -> " << desiredValues[idx-1]*TODEG << endl;
             }
         }       
     } else {
@@ -382,18 +382,20 @@ void CB::YARPConfigurationVariables::setVelocityControlMode(bool mode, string po
 
         // send gain and maxVel paramaters to the vc module 
         for(int i=0; i<mask.size(); i++) {
-            b.clear();
-            b.addString("gain");
-            b.addInt(i);
-            b.addDouble(velocityGain);
-            velocityRPCPort.write(b);
-            Time::delay(0.1);
-            b.clear();
-            b.addString("svel");
-            b.addInt(i);
-            b.addDouble(maxSetVal);
-            velocityRPCPort.write(b);
-            Time::delay(0.1);
+            if(mask[i]) {
+                b.clear();
+                b.addString("gain");
+                b.addInt(i);
+                b.addDouble(velocityGain);
+                velocityRPCPort.write(b);
+                Time::delay(0.1);
+                b.clear();
+                b.addString("svel");
+                b.addInt(i);
+                b.addDouble(maxSetVal);
+                velocityRPCPort.write(b);
+                Time::delay(0.1);
+            }
         }
 
 

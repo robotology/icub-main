@@ -101,12 +101,12 @@ bool CB::EndEffectorCartesianPosition::connectToConfiguration() {
     // get Link information (DHParameters and link limits (unused))
     int c = 0;
     int thresh = 10;
-    b_params = inputPort[1]->read(true);
-    b_limits = inputPort[2]->read(true);
+    b_params = inputPort[1]->read(false);
+    b_limits = inputPort[2]->read(false);
     while( (b_params==NULL) || (b_limits==NULL) ) {
         cout << "EndEffectorCartesianPosition::connect() -- didn't read configuration parameter information. trying again..." << endl;
-        b_params = inputPort[1]->read(true);
-        b_limits = inputPort[2]->read(true);
+        b_params = inputPort[1]->read(false);
+        b_limits = inputPort[2]->read(false);
         c++;
         if(c == thresh) {
             cout << "EndEffectorCartesianPosition::connect() -- could not read parameter information. Giving up!!" << endl;

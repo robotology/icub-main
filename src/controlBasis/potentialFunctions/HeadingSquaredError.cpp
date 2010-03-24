@@ -34,8 +34,8 @@ bool CB::HeadingSquaredError::updatePotentialFunction() {
         cout << "HeadingSquaredError::update() -- wrong number of input ports!!" << endl;
         return false;
     }
-    b[0] = inputPorts[0]->read(false);
-    b[1] = inputPorts[1]->read(false);
+    b[0] = inputPorts[0]->read(true);
+    b[1] = inputPorts[1]->read(true);
 
     bool b0 = (b[0]==NULL);
     bool b1 = (b[1]==NULL);
@@ -91,8 +91,8 @@ bool CB::HeadingSquaredError::connectToInputs() {
     tmp0.erase(0,s);
     tmp1.erase(0,s);
 
-    string posCurNameIn = "/cb/heading/squared_error_pf" + tmp0 + ":i";
-    string posRefNameIn = "/cb/heading/squared_error_pf" + tmp1 + ":i";
+    string posCurNameIn = "/cb/heading/squared_error_pf" + tmp0 + "/data:i";
+    string posRefNameIn = "/cb/heading/squared_error_pf" + tmp1 + "/data:i";
 
     cout << "HeadingSquaredError::connectToInputs() -- opening current input port..." << endl;
     ok &= inputPorts[0]->open(posCurNameIn.c_str());

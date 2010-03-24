@@ -34,14 +34,18 @@ bool CB::CartesianPositionSquaredError::updatePotentialFunction() {
         cout << "CartesianPositionSquaredError::update() -- wrong number of input ports!!" << endl;
         return false;
     }
-    b[0] = inputPorts[0]->read(false);
-    b[1] = inputPorts[1]->read(false);
+    b[0] = inputPorts[0]->read(true);
+    b[1] = inputPorts[1]->read(true);
 
     bool b0 = (b[0]==NULL);
     bool b1 = (b[1]==NULL);
 
     if( b0 || b1 ) {
+        if(b0) cout << "XPF - cur invalid" << endl;
+        if(b1) cout << "XPF - ref invalid" << endl;
         return ok;
+    } else {
+       cout << "PF - valid" << endl;
     }
     
     offset = 1;
@@ -58,13 +62,13 @@ bool CB::CartesianPositionSquaredError::updatePotentialFunction() {
     gradient = -1.0*diff;
     potential = 0.5*dot(diff,diff);
     
-    /*
-      cout << "ref  -  cur  =  diff" << endl;
+
+    cout << "ref  -  cur  =  diff" << endl;
     for(int i=0; i<size; i++) {
         cout << (*inputs[1])[i] << "    " << (*inputs[0])[i] << "   " << diff[i] << endl;
     }
     cout << endl;
-    */
+
 
     //cout << "CartesianPositionSquaredError Potential = " << potential << endl;
     return ok;
@@ -93,8 +97,8 @@ bool CB::CartesianPositionSquaredError::connectToInputs() {
     tmp0.erase(0,s);
     tmp1.erase(0,s);
 
-    string posCurNameIn = "/cb/cartesianposition/squared_error_pf" + tmp0 + ":i";
-    string posRefNameIn = "/cb/cartesianposition/squared_error_pf" + tmp1 + ":i";
+    string posCurNameIn = "/cb/cartesianposition/squared_error_pf" + tmp0 + "/data:i";
+    string posRefNameIn = "/cb/cartesianposition/squared_error_pf" + tmp1 + "/data:i";
 
     cout << "CartesianPositionSquaredError::connectToInputs() -- opening current input port..." << endl;
     ok &= inputPorts[0]->open(posCurNameIn.c_str());

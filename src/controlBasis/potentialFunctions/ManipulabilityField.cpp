@@ -46,7 +46,7 @@ bool CB::ManipulabilityField::updatePotentialFunction() {
         cout << "ManipulabilityField::update() -- wrong number of input ports!!" << endl;
         return false;
     }
-    b = inputPorts[0]->read(false);
+    b = inputPorts[0]->read(true);
 
     if(b==NULL) {
         // non fatal error

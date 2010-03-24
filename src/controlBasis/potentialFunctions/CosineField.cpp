@@ -32,7 +32,7 @@ bool CB::CosineField::updatePotentialFunction() {
         cout << "CosineField::update() -- wrong number of input ports!!" << endl;
         return false;
     }
-    b = inputPorts[0]->read(false);
+    b = inputPorts[0]->read(true);
 
     if(b==NULL) {
         // non fatal error (prob cause of asynchronous update rates...)
@@ -96,7 +96,7 @@ bool CB::CosineField::connectToInputs() {
     string tmp = inputNames[0];
     tmp.erase(0,s);
     
-    string configNameIn = "/cb/configuration/cosfield_pf" + tmp + ":i";
+    string configNameIn = "/cb/configuration/cosfield_pf" + tmp + "/data:i";
     string limitsNameIn = "/cb/configuration/cosfield_pf" + tmp + "/limits:i";
 
     cout << "CosineField::connectToInputs() -- opening current input port..." << endl;
@@ -130,13 +130,17 @@ bool CB::CosineField::connectToInputs() {
         return ok;
     }
    
+    cout << "CosField::connect() -- ports connected"<< endl;    
         
     int thresh = 10;
     int t = 0;
-    Bottle *b = limitsInputPort.read(true);
+    Bottle *b = limitsInputPort.read(false);
+    int c=0;
+    int offset = 1;
+
     while(b==NULL) {
         cout << "CosField::connect() -- port read failed on attempt " << t << endl;    
-        b = limitsInputPort.read(true);
+        b = limitsInputPort.read(false);
         t++;
         if(t==thresh) {
             cout << "CosField::connect() -- port read failed, giving up!!" << endl;    
@@ -146,9 +150,7 @@ bool CB::CosineField::connectToInputs() {
         Time::delay(1);
     }
 
-    int c=0;
-    int offset = 1;
-    cout << "CosField read limits from port successfully..." << endl;    
+    cout << "CosField::connect() --  read limits from port successfully..." << endl;    
 
     ok &= Network::disconnect(limitsName.c_str(),limitsNameIn.c_str());            
     limitsInputPort.close();
