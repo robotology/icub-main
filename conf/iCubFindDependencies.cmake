@@ -16,7 +16,7 @@ find_package(YARP)
 find_package(GSL)
 find_package(GtkMM)
 find_package(Qt3)
-find_package(OPENCV)
+find_package(OpenCV)
 
 find_package(OpenGL)
 find_package(ODE)
