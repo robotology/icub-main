@@ -24,6 +24,10 @@ Incoming commands are the following:
 
 [ctpc] [time] TIME(seconds) [off] j [pos] list
 
+or 
+
+[ctq] [time] TIME (seconds) [off] j [pos] list
+
 Example:
 This requires 1 second movement of joints 5,6,7 to 10 10 10 respectively:
 [ctpc] [time] 1 [off] 5 [pos] (10 10 10)
@@ -58,6 +62,8 @@ Author: Lorenzo Natale
 
 #include <yarp/dev/ControlBoardInterfaces.h>
 #include <yarp/dev/PolyDriver.h>
+#include <yarp/os/Semaphore.h>
+#include <yarp/os/RateThread.h>
 
 #include <iostream>
 #include <iomanip>
@@ -73,7 +79,9 @@ using namespace yarp::math;
 #define VCTP_TIME VOCAB4('t','i','m','e')
 #define VCTP_OFFSET VOCAB3('o','f','f')
 #define VCTP_CMD VOCAB4('c','t','p','c')
+#define VCTP_CMD_QUEUE VOCAB3('c','t','q')
 #define VCTP_POSITION VOCAB3('p','o','s')
+#define VCTP_WAIT VOCAB4('w','a','i','t')
 
 // Class for position control
 class ActionItem
@@ -94,26 +102,44 @@ public:
     Vector &getCmd() { return cmd; }
 };
 
+typedef std::deque<ActionItem *> ActionList;
+
 class Actions
 {
-    ActionItem data; //this might become a list
+    ActionList actions;
+
 public:
     Actions(){}
     ~Actions(){}
 
     int size()
     {
-        return 1;
+        return actions.size();
     }
 
-    ActionItem pop()
+    void clear()
     {
-        return data;
+        for(unsigned int k=0; k<actions.size();k++)
+        {
+            ActionItem *ret=actions.at(k);
+            delete ret;
+         }
+        actions.clear();
     }
 
-    void push_back(const ActionItem &v)
+    ActionItem *pop()
     {
-        data=(v);
+        if (actions.empty())
+            return 0;
+
+        ActionItem *ret=actions.at(0);
+        actions.pop_front();
+        return ret;
+    }
+
+    void push_back(ActionItem *v)
+    {
+        actions.push_back(v);
     }
 };
 
@@ -127,8 +153,9 @@ protected:
     IPositionControl *pos;
     IEncoders        *enc;
     Actions actions;
+    Semaphore mutex;
  
-    void send(const ActionItem &x)
+    void _send(const ActionItem *x)
     {
         if (!connected)
         {
@@ -136,9 +163,9 @@ protected:
             return;
         }
 
-        int size=x.getCmd().size();
-        int offset=x.getOffset();
-        double time=x.getTime();
+        int size=x->getCmd().size();
+        int offset=x->getOffset();
+        double time=x->getTime();
         int nJoints=0;
 
         enc->getAxes(&nJoints);
@@ -166,7 +193,7 @@ protected:
                  return;
             }
                 
-            disp[i]=x.getCmd()[i]-q;
+            disp[i]=x->getCmd()[i]-q;
 
             if (disp[i]<0.0)
                 disp[i]=-disp[i];
@@ -175,10 +202,10 @@ protected:
         for (int i=0; i<disp.length(); i++)
         {
             pos->setRefSpeed(offset+i,disp[i]/time);
-            pos->positionMove(offset+i,x.getCmd()[i]);
+            pos->positionMove(offset+i,x->getCmd()[i]);
         }
 
-        cout << "Script port: " << const_cast<Vector &>(x.getCmd()).toString() << endl;
+        cout << "Script port: " << const_cast<Vector &>(x->getCmd()).toString() << endl;
     }
 
 public:
@@ -188,6 +215,13 @@ public:
         drv=0;
         verbose=1;
         connected=false;
+    }
+
+    void send(ActionItem *tmp)
+    {
+        mutex.wait();
+        _send(tmp);
+        mutex.post();
     }
 
     bool configure(const Property &copt)
@@ -220,12 +254,27 @@ public:
         return ret;
      }
 
-    void push_back(const ActionItem &item)
+    void queue(ActionItem *item)
     {
+        mutex.wait();
         actions.push_back(item);
+        mutex.post();
+    }
 
-        //for now send it immediatly
-        send(actions.pop());
+    void sendNow(ActionItem *item)
+    {
+        mutex.wait();
+        actions.clear();
+        _send(item);
+        mutex.post();
+    }
+
+    ActionItem *pop()
+    {
+        mutex.wait();
+        ActionItem *ret=actions.pop();
+        mutex.post();
+        return ret;
     }
 
     bool connect()
@@ -253,6 +302,39 @@ public:
     }
 };
 
+class WorkingThread: public RateThread
+{
+private:
+    scriptPosPort *posPort;
+public:
+    WorkingThread(int period=100): RateThread(period)
+    {}
+
+    void attachPosPort(scriptPosPort *p)
+    {
+        if (p)
+            posPort=p;
+    }
+
+    bool threadInit()
+    {
+        if (!posPort)
+            return false;
+        return true;
+    }
+        
+    void run()
+    {
+        ActionItem *tmp=posPort->pop();
+        if (tmp)
+        {
+            posPort->send(tmp);
+            double time=tmp->getTime();
+            delete tmp;
+            Time::delay(time);
+        }
+    }
+};
 
 class scriptModule: public RFModule
 {
@@ -261,6 +343,7 @@ protected:
     std::string   name;
     bool          verbose;
     scriptPosPort posPort;
+    WorkingThread thread;
 
 public:
     scriptModule() 
@@ -269,6 +352,34 @@ public:
     }
 
     bool handlectpm(const Bottle &cmd, Bottle &reply)
+    {
+        ActionItem *action;
+        bool ret=parsePosCmd(cmd, reply, &action);
+        if (ret)
+            posPort.sendNow(action);
+        return ret;
+    }
+
+    bool handle_ctp_queue(const Bottle &cmd, Bottle &reply)
+    {
+        ActionItem *action;
+        bool ret=parsePosCmd(cmd, reply, &action);
+        if (ret)
+            posPort.queue(action);
+        return ret;
+    }
+
+    bool handle_wait(const Bottle &cmd, Bottle &reply)
+    {
+        cerr<<"Warning command not implemented yet"<<endl;
+        return true;
+        //ActionItem *action;
+        //bool ret=parseWaitCmd(cmd, reply, &action);
+        //if (ret)
+        //   posPort.queue(action);
+    }
+
+    bool parsePosCmd(const Bottle &cmd, Bottle &reply, ActionItem **action)
     {
         const int expectedMsgSize=7;
         bool parsed=false;
@@ -295,14 +406,13 @@ public:
                         cout<<"Received command:"<<endl;
                         cout<<"Time: " << time << "offset: " << offset <<" Cmd: " << posCmd->toString()<<endl;
                     }
-                    ActionItem tmp;
-                    tmp.getCmd().resize(posCmd->size());
+                    *action=new ActionItem;
+                    (*action)->getCmd().resize(posCmd->size());
                     for(int k=0;k<posCmd->size();k++)
-                        tmp.getCmd()[k]=posCmd->get(k).asDouble();
+                        (*action)->getCmd()[k]=posCmd->get(k).asDouble();
 
-                    tmp.getOffset()=offset;
-                    tmp.getTime()=time;
-                    posPort.push_back(tmp);
+                    (*action)->getOffset()=offset;
+                    (*action)->getTime()=time;
                     return true;
                 }
             }
@@ -344,6 +454,12 @@ public:
 
         cout << "***** connect to rpc port and type \"help\" for commands list" << endl;
 
+        thread.attachPosPort(&posPort);
+        if (!thread.start())
+        {
+            cerr<<"Thread did not start, queue will not work"<<endl;
+        }
+
         return true;
     }
 
@@ -365,6 +481,15 @@ public:
                         ret=handlectpm(command, reply);
                         return ret;
                     }
+                case VCTP_CMD_QUEUE:
+                    {
+                        ret=handle_ctp_queue(command, reply);
+                        return ret;
+                    }
+                case VCTP_WAIT:
+                    {
+                        ret=handle_wait(command, reply);
+                    }
                 default:
                     return RFModule::respond(command,reply);
             }
@@ -380,6 +505,7 @@ public:
     {
         rpcPort.interrupt();
         rpcPort.close();
+        thread.stop();
 
         return true;
     }
