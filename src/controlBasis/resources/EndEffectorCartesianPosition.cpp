@@ -53,7 +53,7 @@ bool CB::EndEffectorCartesianPosition::updateResource() {
         values[1] = xf[1];
         values[2] = xf[2];
 
-        //cout << "Pos=[" << values[0] << " " << values[1] << " " << values[2] << "]" << endl;
+        //        cout << "Pos=[" << values[0] << " " << values[1] << " " << values[2] << "]" << endl;
     } 
 
     return ok;

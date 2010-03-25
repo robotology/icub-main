@@ -36,7 +36,7 @@ bool CB::CosineField::updatePotentialFunction() {
 
     if(b==NULL) {
         // non fatal error (prob cause of asynchronous update rates...)
-        //        cout << "CosineField::update() problem reading data!!" << endl;
+        cout << "CosineField::update() problem reading data!!" << endl;
         return ok;
     }
 
@@ -57,6 +57,7 @@ bool CB::CosineField::updatePotentialFunction() {
     offset = 1;
     potential = 0;
 
+    //    cout << "CosField: " << endl;
     for(int i=0; i<size; i++) {
         (*inputs[0])[i] = b->get(i+offset).asDouble();
 
@@ -70,8 +71,9 @@ bool CB::CosineField::updatePotentialFunction() {
         gradient[i] = -1.0*tmp;
         potential += cos(((*inputs[0])[i] - centers[i]) / ranges[i]);
 
+        //  cout << gradient[i] << endl;
     }
-    
+    //    cout << endl;
     potential = size-potential;
     
     return ok;

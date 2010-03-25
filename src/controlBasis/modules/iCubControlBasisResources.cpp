@@ -294,7 +294,7 @@ public:
         }
         //cout << "run right leg config: " << runLegConfig[0] << endl;
 
-        if(config_group.check("left_leg_arm")) {
+        if(config_group.check("left_leg")) {
             runLegConfig[1] = (bool)(config_group.find("left_leg").asInt());;
         } else {
             runLegConfig[1] = false;
@@ -382,7 +382,7 @@ public:
         }
         //cout << "run right leg position: " << runLegPosition[0] << endl;
 
-        if(cartpos_group.check("left_leg_arm")) {
+        if(cartpos_group.check("left_leg")) {
             runLegPosition[1] = (bool)(cartpos_group.find("left_leg").asInt());;
         } else {
             runLegPosition[1] = false;
@@ -502,10 +502,10 @@ public:
 
         handConfigFile[0] = configFilePath+"right_hand.dh";
         handName[0] = robot_prefix + "/right_hand";
-        handVelPort[0] = robot_prefix + "/vc/right_hand";
+        handVelPort[0] = robot_prefix + "/vc/right_arm";
         handConfigFile[1] = configFilePath+"left_hand.dh";
         handName[1] = robot_prefix + "/left_hand";
-        handVelPort[1] = robot_prefix + "/vc/left_hand";
+        handVelPort[1] = robot_prefix + "/vc/left_arm";
         
         headConfigFile = configFilePath+"head.dh";
         headName = robot_prefix + "/head";
@@ -519,6 +519,7 @@ public:
         eyesName[1] = robot_prefix + "/eyes-ptv";
         eyesVelPort[1] = robot_prefix + "/vc/head";
         
+        torsoConfigFile = configFilePath+"torso.dh";
         torsoName = robot_prefix + "/torso";
         torsoVelPort = robot_prefix + "/vc/torso";
 
@@ -682,6 +683,7 @@ public:
         if(runTorsoConfig) {
             cout << "starting torso config" << endl;
             iCubTorso = new YARPConfigurationVariables(torsoName, "", torsoNumJoints, torsoNumLinks);
+            iCubTorso->loadConfig(torsoConfigFile);
             iCubTorso->startResource();
             if(velocityControlMode) {
                 iCubTorso->setVelocityControlMode(true, torsoVelPort);

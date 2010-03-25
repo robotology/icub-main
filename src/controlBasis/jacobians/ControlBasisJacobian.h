@@ -278,7 +278,7 @@ namespace CB {
             outputSpace(outSpace),
             inputSize(inSize),
             outputSize(outSize),
-            updateDelay(0.1),
+            updateDelay(0.01),
             running(false),
             connectedToInputs(false)
         {              

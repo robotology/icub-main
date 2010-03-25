@@ -78,11 +78,16 @@ bool CB::YARPConfigurationVariables::updateResource() {
             Vector &v = velocityPort.prepare();
             v.resize(mask.size(),0);       
             idx = 0;
+            cout << endl;
             for(int i=0; i<mask.size(); i++) {
                 if(mask[i]) {
                     v[i] = desiredValues[idx++]*TODEG;            
+                } else {
+                    v[i] = tmp[i];
                 }
-            }
+                cout << "sending position["<<i<<"] -> " << v[i] << ", mask=" << mask[i] << endl;
+            }            
+            cout << endl;
             velocityPort.write();
         }
     }
