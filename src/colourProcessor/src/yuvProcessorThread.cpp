@@ -97,10 +97,16 @@ void yuvProcessorThread::getYPlane(ImageOf<PixelMono>* tmp){
      pg=greenPlane->getPixelAddress(0,0);
      pb=bluePlane->getPixelAddress(0,0);
 
+     int rowsize=redPlane->getRowSize();
+     int padding=rowsize-width;
+
     for (int y=0;y<height;y++){
         for(int x=0;x<width;x++){
-            double value=yr*(double)(*pr);
             (*py)=yr*(*pr)+yg*(*pg)+yb*(*pb);
+            py++;
+            pr++;pg++;pb++;
+        }
+        for (int i=0;i<padding;i++){
             py++;
             pr++;pg++;pb++;
         }
@@ -116,16 +122,24 @@ void yuvProcessorThread::getUPlane(ImageOf<PixelMono>* tmp){
      pg=greenPlane->getPixelAddress(0,0);
      pb=bluePlane->getPixelAddress(0,0);
 
+     int rowsize=redPlane->getRowSize();
+     int padding=rowsize-width;
+
     for (int y=0;y<height;y++){
         for(int x=0;x<width;x++){
-            double value=ur*(double)(*pr);
             (*pu)=ur*(*pr)+ug*(*pg)+ub*(*pb)+128;
             assert((*pu)>=0);
             assert((*pu)<=255);
             pu++;
             pr++;pg++;pb++;
         }
+        for (int i=0;i<padding;i++){
+            pu++;
+            pr++;pg++;pb++;
+        }
     }
+
+    
 }
 
 /*
@@ -137,12 +151,18 @@ void yuvProcessorThread::getVPlane(ImageOf<PixelMono>* tmp){
      pg=greenPlane->getPixelAddress(0,0);
      pb=bluePlane->getPixelAddress(0,0);
 
+     int rowsize=redPlane->getRowSize();
+     int padding=rowsize-width;
+
     for (int y=0;y<height;y++){
         for(int x=0;x<width;x++){
-            double value=vr*(double)(*pr);
             (*pv)=vr*(*pr)+vg*(*pg)+vb*(*pb)+128;
             assert((*pv)>=0);
             assert((*pv)<=255);
+            pv++;
+            pr++;pg++;pb++;
+        }
+        for (int i=0;i<padding;i++){
             pv++;
             pr++;pg++;pb++;
         }
@@ -157,12 +177,19 @@ void yuvProcessorThread::addUVPlanes(){
     pu=uPlane->getPixelAddress(0,0);
     puv=uvPlane->getPixelAddress(0,0);
 
+    int rowsize=redPlane->getRowSize();
+    int padding=rowsize-width;
+
     for (int y=0;y<height;y++){
         for(int x=0;x<width;x++){
             double value=(double)((*pu)+(*pv));
             (*puv)=((double)((*pu)+(*pv))/510)*255;
             assert((*pv)>=0);
             assert((*pv)<=255);
+            puv++;
+            pv++;pu++;
+        }
+        for (int i=0;i<padding;i++){
             puv++;
             pv++;pu++;
         }
