@@ -239,6 +239,8 @@ ENDIF (ARTOOLKITPLUS_FOUND)
   add_subdirectory(graspDetector)
   add_subdirectory(graspDetectorConf)
   add_subdirectory(predictiveSP)
+  
+  add_subdirectory(ctpService)
 
   # add here modules you want to test for compilation
   # these modules will only be compiled by automated
