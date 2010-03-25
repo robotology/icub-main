@@ -11,6 +11,7 @@
 #include <HeadingSquaredError.h>
 #include <StereoHeadingSquaredError.h>
 #include <CartesianPositionSquaredError.h>
+#include <CartesianOrientationSquaredError.h>
 #include <CartesianPositionHarmonicFunction.h>
 
 
@@ -21,6 +22,7 @@ namespace CB {
         PotentialFunctionFactory::instance().registerClass<HeadingSquaredError>(new HeadingSquaredError());
         PotentialFunctionFactory::instance().registerClass<StereoHeadingSquaredError>(new StereoHeadingSquaredError());
         PotentialFunctionFactory::instance().registerClass<CartesianPositionSquaredError>(new CartesianPositionSquaredError());
+        PotentialFunctionFactory::instance().registerClass<CartesianOrientationSquaredError>(new CartesianOrientationSquaredError());
         PotentialFunctionFactory::instance().registerClass<CosineField>(new CosineField());
         PotentialFunctionFactory::instance().registerClass<ManipulabilityField>(new ManipulabilityField());
         PotentialFunctionFactory::instance().registerClass<CartesianPositionHarmonicFunction>(new CartesianPositionHarmonicFunction());

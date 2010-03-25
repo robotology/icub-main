@@ -154,7 +154,7 @@ class iCubControlBasisResourceStarter : public RFModule {
 
     string fullArmName[2];
     string fullArmConfigFile[2];
-    string fullArmVelPort[2];
+    string fullArmVelPort[2][2];
 
     string armName[2];
     string armConfigFile[2];
@@ -483,8 +483,12 @@ public:
 
         fullArmConfigFile[0] = configFilePath+"full_right_arm.dh";
         fullArmName[0] = "right";
+        fullArmVelPort[0][0] = robot_prefix + "/vc/torso";
+        fullArmVelPort[0][1] = robot_prefix + "/vc/right_arm";
         fullArmConfigFile[1] = configFilePath+"full_left_arm.dh";
         fullArmName[1] = "left";
+        fullArmVelPort[1][0] = robot_prefix + "/vc/torso";
+        fullArmVelPort[1][1] = robot_prefix + "/vc/left_arm";
         
         armConfigFile[0] = configFilePath+"right_arm.dh";
         armName[0] = robot_prefix + "/right_arm";
@@ -566,6 +570,11 @@ public:
                 cout << "starting full arm config for arm: " << i << endl;
                 iCubFullArm[i] = new iCubFullArmConfigurationVariables(fullArmName[i], simulationMode, fullArmConfigFile[i]);
                 iCubFullArm[i]->startResource();
+                if(velocityControlMode) {
+                    iCubFullArm[i]->setVelocityControlMode(true, fullArmVelPort[i][0],fullArmVelPort[i][0]);
+                } else {
+                    iCubFullArm[i]->setVelocityControlMode(false, "", "");
+                }
                 Time::delay(.75);
             }
 

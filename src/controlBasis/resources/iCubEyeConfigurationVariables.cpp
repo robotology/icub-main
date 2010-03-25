@@ -143,6 +143,19 @@ bool CB::iCubEyeConfigurationVariables::updateResource() {
     } else {
         // send to velocityControl module
         if(moveable && !lock) {            
+
+            Bottle &v = velocityPort.prepare();
+            //v.resize(mask.size(),0);       
+            idx = 0;
+            for(int i=0; i<mask.size(); i++) {
+                if(mask[i]) {
+                    v.addInt(i);
+                    v.addDouble(desiredValues[idx++]*TODEG);            
+                }
+            }
+            velocityPort.write();
+            
+            /*
             Vector &v = velocityPort.prepare();
             v.resize(mask.size(),0);       
             idx = 0;
@@ -152,6 +165,7 @@ bool CB::iCubEyeConfigurationVariables::updateResource() {
                 }
             }
             velocityPort.write();
+            */
         }
     }
 

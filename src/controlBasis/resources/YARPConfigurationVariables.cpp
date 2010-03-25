@@ -75,6 +75,8 @@ bool CB::YARPConfigurationVariables::updateResource() {
     } else {
         // send to velocityControl module
         if(moveable && !lock) {            
+
+            /*
             Vector &v = velocityPort.prepare();
             v.resize(mask.size(),0);       
             idx = 0;
@@ -88,6 +90,19 @@ bool CB::YARPConfigurationVariables::updateResource() {
                 cout << "sending position["<<i<<"] -> " << v[i] << ", mask=" << mask[i] << endl;
             }            
             cout << endl;
+            */
+            Bottle &v = velocityPort.prepare();
+            idx = 0;
+            //cout << endl;
+            for(int i=0; i<mask.size(); i++) {
+                if(mask[i]) {
+                    v.addInt(i);
+                    v.addDouble(desiredValues[idx++]*TODEG);            
+                } 
+                //                cout << "sending position["<<i<<"] -> " << v[i] << ", mask=" << mask[i] << endl;
+            }            
+            //cout << endl;
+
             velocityPort.write();
         }
     }
@@ -370,7 +385,8 @@ void CB::YARPConfigurationVariables::setVelocityControlMode(bool mode, string po
     // specify the local port names that connect to the velocityControl module
     string velocityOutputPortName = "/cb/configuration" + deviceName + "/vel:o";
     string velocityRPCOutputPortName = "/cb/configuration" + deviceName + "/vel/rpc:o";
-    velocityPortName = portName + "/command";      
+    //    velocityPortName = portName + "/command";      
+    velocityPortName = portName + "/fastCommand";      
     velocityRPCPortName = portName + "/input";      
     Bottle b;
 

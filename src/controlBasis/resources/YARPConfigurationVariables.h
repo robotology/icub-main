@@ -84,7 +84,7 @@ namespace CB {
          * If using this resource with a velocityController to control 
          * the device, this is the port to connect to.
          **/
-        yarp::os::BufferedPort<yarp::sig::Vector> velocityPort;
+        yarp::os::BufferedPort<yarp::os::Bottle> velocityPort;
 
         /**
          * The RPC port for the velocity controller.  This is necessary
@@ -208,10 +208,6 @@ namespace CB {
 
             // if in velocity control mode, disconnect the connections to the velocityControl module.
             if(velocityControlMode) {
-                std::string velocityOutputPortName = "/cb/configuration" + deviceName + "/vel:o";
-                std::string velocityRPCOutputPortName = "/cb/configuration" + deviceName + "/vel/rpc:o";
-                yarp::os::Network::disconnect(velocityOutputPortName.c_str(),velocityPortName.c_str());
-                yarp::os::Network::disconnect(velocityRPCOutputPortName.c_str(),velocityRPCPortName.c_str());
                 velocityRPCPort.close();
                 velocityPort.close();
             }

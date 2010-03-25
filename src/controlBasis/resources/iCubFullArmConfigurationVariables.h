@@ -13,16 +13,16 @@ namespace CB {
         
     protected:
 
+        // bookkeeping stuff
         std::string which_arm;
         std::string armDevPort;
         std::string torsoDevPort;
         bool connectedToDevice;
         bool simulationMode;
 
+        // Motor Driver pointers
         yarp::os::Property options[2];
         yarp::dev::PolyDriver *dd[2];
-
-        // Motor Driver pointers
         yarp::dev::IPositionControl *pos[2];
         yarp::dev::IVelocityControl *vel[2];
         yarp::dev::IEncoders *enc[2];
@@ -30,10 +30,54 @@ namespace CB {
         yarp::dev::IAmplifierControl *amp[2];
         yarp::dev::IControlLimits *lim[2];     
 
+        /**
+         * If using this resource with a velocityController to control 
+         * the device, this is the port to connect to.
+         **/
+        yarp::os::BufferedPort<yarp::os::Bottle> velocityPort[2];
+
+
+        /**
+         * The RPC port for the velocity controller.  This is necessary
+         * to connect to to specify the gains and maxVel of the device.
+         * By default, the velocityControl module sets these to 0.
+         **/
+        yarp::os::Port velocityRPCPort[2];
+
+        /**
+         * The local port name of the velocityController specification data.
+         **/
+        std::string velocityPortName[2];
+
+        /**
+         * The local port name of the velocityController RPC port for configuring.
+         **/
+        std::string velocityRPCPortName[2];
+
+        /**
+         * Boolean flag specifying if this resource will set positions through 
+         * a velocityControl module or through the motor interface driver.
+         **/
+        bool velocityControlMode;
+
+        /** 
+         * The gain for the velocityControl module.
+         **/
+        double velocityGain[2];
 
     public:
         
-        iCubFullArmConfigurationVariables(std::string arm_id, bool sim, std::string configFile) {
+        /**
+         * Constructor
+         **/
+        iCubFullArmConfigurationVariables(std::string arm_id, bool sim, std::string configFile) 
+        {
+
+            // set initial velocity control stuff
+            velocityControlMode = false;
+            velocityGain[0] = 10;
+            velocityGain[1] = 10;
+
 
             // set configuration info
             if( (arm_id != "left") && (arm_id != "right") ) {
@@ -90,19 +134,68 @@ namespace CB {
             
         }
         
+        /**
+         * Destructor
+         **/
         ~iCubFullArmConfigurationVariables() { 
             std::cout << "iCubFullArmConfigurationVariables() destructor..." << std::endl;
+
+            // close down polydrivers
+            if(dd[0]!=NULL) dd[0]->close();
+            if(dd[1]!=NULL) dd[1]->close();
+
+            // if in velocity control mode, disconnect the connections to the velocityControl module.
+            if(velocityControlMode) {
+                velocityRPCPort[0].close();
+                velocityRPCPort[1].close();
+                velocityPort[0].close();
+                velocityPort[1].close();
+            }
+
         }
         
                 
-        // functions from ControlBasisResource
+        /**
+         * Inherited update function
+         **/
         bool updateResource();
+
+        /**
+         * Inherited start function
+         **/
         void startResource();
+
+        /**
+         * Inherited stop function
+         **/
         void stopResource();
         
-        // new functions
+        /**
+         * Function for setting velocity control mode.  If set to true, must connect 
+         * to a velocityControl module running for the device.
+         * \param mode Boolean for specifying velocity controller mode.
+         * \param torsoPortName The command port name of the torso velocityControl module.
+         * \param armPortName The command port name of the arm velocityControl module.
+         **/
+        void setVelocityControlMode(bool mode, std::string torsoPortName, std::string armPortName);
+
+        /**
+         * Gets the velocity control mode flag.
+         **/
+        bool getVelocityControlMode();        // new functions
+
+        /**
+         * Function to connect to the YARP device.
+         **/
         bool connectToDevice();
+
+        /**
+         * Function to load config data from a file (e.g., DH Parameter info)
+         **/
         void loadConfig(std::string fname);
+
+
+
 
     };
     

@@ -63,7 +63,7 @@ bool CB::CartesianPositionSquaredError::updatePotentialFunction() {
     potential = 0.5*dot(diff,diff);
     
 
-    cout << "ref  -  cur  =  diff" << endl;
+    cout << "ref  -  cur  =  diff (position)" << endl;
     for(int i=0; i<size; i++) {
         cout << (*inputs[1])[i] << "    " << (*inputs[0])[i] << "   " << diff[i] << endl;
     }

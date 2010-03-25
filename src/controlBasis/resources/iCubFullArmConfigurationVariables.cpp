@@ -2,6 +2,7 @@
 #include "iCubFullArmConfigurationVariables.h"
 
 #include <string.h>
+#include <yarp/os/Network.h>
 
 using namespace std;
 using namespace yarp::dev;
@@ -16,7 +17,7 @@ void CB::iCubFullArmConfigurationVariables::startResource() {
             return;
         }
     }
-    running = true;
+    //    running = true;
     start();     // mandatory start function
 }
 
@@ -27,11 +28,13 @@ void CB::iCubFullArmConfigurationVariables::stopResource() {
     cout << "iCubFullArmConfigurationVariables::stopResource()" << endl;
     stop();     // mandatory stop function
 
+    /*
     // stop motor device
     dd[0]->close();
     dd[1]->close();
     connectedToDevice = false;        
     running = false;
+    */
 }
 
 
@@ -76,18 +79,39 @@ bool CB::iCubFullArmConfigurationVariables::updateResource() {
         delete tmp[i];
     }
 
-    // send positions to robot
+    // if unlocked
     if(!lock) {
-        pos[0]->positionMove(0, desiredValues[0]*TODEG);
-        pos[0]->positionMove(1, desiredValues[1]*TODEG);
-        pos[0]->positionMove(2, desiredValues[2]*TODEG);
-        pos[1]->positionMove(0, desiredValues[3]*TODEG);
-        pos[1]->positionMove(1, desiredValues[4]*TODEG);
-        pos[1]->positionMove(2, desiredValues[5]*TODEG);
-        pos[1]->positionMove(3, desiredValues[6]*TODEG);
-        pos[1]->positionMove(4, desiredValues[7]*TODEG);
-        pos[1]->positionMove(5, desiredValues[8]*TODEG);
-        pos[1]->positionMove(6, desiredValues[9]*TODEG);
+
+        // send positions to robot
+        if(!velocityControlMode) {
+            pos[0]->positionMove(0, desiredValues[0]*TODEG);
+            pos[0]->positionMove(1, desiredValues[1]*TODEG);
+            pos[0]->positionMove(2, desiredValues[2]*TODEG);
+            pos[1]->positionMove(0, desiredValues[3]*TODEG);
+            pos[1]->positionMove(1, desiredValues[4]*TODEG);
+            pos[1]->positionMove(2, desiredValues[5]*TODEG);
+            pos[1]->positionMove(3, desiredValues[6]*TODEG);
+            pos[1]->positionMove(4, desiredValues[7]*TODEG);
+            pos[1]->positionMove(5, desiredValues[8]*TODEG);
+            pos[1]->positionMove(6, desiredValues[9]*TODEG);
+        } else {
+
+            Bottle &v_torso = velocityPort[0].prepare();
+            Bottle &v_arm   = velocityPort[1].prepare();
+
+            for(int i=0; i<3; i++) {
+                v_torso.addInt(i);
+                v_torso.addDouble(desiredValues[i]*TODEG);            
+            }
+            for(int i=0; i<7; i++) {
+                v_arm.addInt(i);
+                v_arm.addDouble(desiredValues[i+3]*TODEG);            
+            }            
+            velocityPort[0].write();
+            velocityPort[1].write();
+        
+        }
+
     }
 
     //    cout  << "arm " << which_arm << ":\n"; 
@@ -281,9 +305,105 @@ void CB::iCubFullArmConfigurationVariables::loadConfig(string fname) {
             maxSetVal = atof(tmpStr.c_str());
             cout << "MaxSetVal: " << maxSetVal << endl;        
         }
+        else if(!strncmp(line,"TORSO GAIN:",11)) {
+            lineStr = string(line);
+            start = lineStr.find_first_of(" ", 0);
+            stop = lineStr.find_first_of(" \n", start+1);
+            tmpStr = lineStr.substr(start,stop-start);            
+            velocityGain[0] = atof(tmpStr.c_str());
+            cout << "Torso Gain: " << velocityGain[0] << endl;        
+        }
+        else if(!strncmp(line,"ARM GAIN:",9)) {
+            lineStr = string(line);
+            start = lineStr.find_first_of(" ", 0);
+            stop = lineStr.find_first_of(" \n", start+1);
+            tmpStr = lineStr.substr(start,stop-start);            
+            velocityGain[1] = atof(tmpStr.c_str());
+            cout << "Arm Gain: " << velocityGain[1] << endl;        
+        }
     }
     cout << "iCubFullArmConfigurationVariables::loadConfig() got DOFs=" << numDOFs << ", Links=" << numLinks << endl;
     free(linkType);        
     fclose(fp);
 
 }
+
+void CB::iCubFullArmConfigurationVariables::setVelocityControlMode(bool mode, string torsoPortName, string armPortName) {
+
+    bool ok = true;
+
+    // specify the local port names that connect to the velocityControl module
+    string velocityOutputPortName[2];
+    string velocityRPCOutputPortName[2];
+
+    velocityOutputPortName[0] = "/cb/configuration" + deviceName + "/torso/vel:o";
+    velocityOutputPortName[1] = "/cb/configuration" + deviceName + "/arm/vel:o";
+    
+    velocityRPCOutputPortName[0] = "/cb/configuration" + deviceName + "/torso/vel/rpc:o";
+    velocityRPCOutputPortName[1] = "/cb/configuration" + deviceName + "/arm/vel/rpc:o";
+
+    //    velocityPortName = portName + "/command";      
+    velocityPortName[0] = torsoPortName + "/fastCommand";      
+    velocityPortName[1] = armPortName + "/fastCommand";      
+
+    velocityRPCPortName[0] = torsoPortName + "/input";      
+    velocityRPCPortName[1] = armPortName + "/input";      
+
+    Bottle b[2];
+
+    if(mode && !velocityControlMode) {
+
+        // if we're turning on the velocityControlMode (and it wasnt previously on)
+
+        // open and connect the data and config portsport
+        ok &= velocityPort[0].open(velocityOutputPortName[0].c_str());
+        ok &= velocityPort[1].open(velocityOutputPortName[1].c_str());
+
+        ok &= Network::connect(velocityOutputPortName[0].c_str(),velocityPortName[0].c_str(),"tcp");
+        Time::delay(0.25);
+        ok &= Network::connect(velocityOutputPortName[1].c_str(),velocityPortName[1].c_str(),"tcp");
+        Time::delay(0.25);
+
+        ok &= velocityRPCPort[0].open(velocityRPCOutputPortName[0].c_str());
+        ok &= velocityRPCPort[1].open(velocityRPCOutputPortName[1].c_str());
+
+        ok &= Network::connect(velocityRPCOutputPortName[0].c_str(),velocityRPCPortName[0].c_str(),"tcp");
+        ok &= Network::connect(velocityRPCOutputPortName[1].c_str(),velocityRPCPortName[1].c_str(),"tcp");
+
+        // send gain and maxVel paramaters to the vc module 
+        for(int i=0; i<2; i++) {
+            b[i].clear();
+            b[i].addString("gain");
+            b[i].addInt(i);
+            b[i].addDouble(velocityGain[i]);
+            velocityRPCPort[i].write(b[i]);
+            Time::delay(0.1);
+            b[i].clear();
+            b[i].addString("svel");
+            b[i].addInt(i);
+            b[i].addDouble(maxSetVal);
+            velocityRPCPort[i].write(b[i]);
+            Time::delay(0.1);        
+        }
+
+
+    } else if(!mode && velocityControlMode) {
+
+        // turning off velocity control mode by disconnecting and closing ports
+        velocityRPCPort[0].close();
+        velocityRPCPort[1].close();
+        velocityPort[0].close();
+        velocityPort[1].close();
+
+    }
+
+    // set the current mode
+    velocityControlMode = mode;
+
+
+}
+
+bool CB::iCubFullArmConfigurationVariables::getVelocityControlMode() {
+    return velocityControlMode;
+}
+
