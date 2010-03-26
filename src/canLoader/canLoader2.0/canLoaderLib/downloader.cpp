@@ -1024,6 +1024,8 @@ int cDownloader::change_card_address(int target_id, int new_id, int board_type)
 	    case BOARD_TYPE_STRAIN: 
 		case BOARD_TYPE_SKIN:
 		case BOARD_TYPE_MAIS:
+		case BOARD_TYPE_2FOC:
+		
 			txBuffer[0].setId((0x02 << 8) + (ID_MASTER << 4) + target_id);
 			txBuffer[0].setLen(2);
 			txBuffer[0].getData()[0]= CAN_SET_BOARD_ID;
@@ -1228,6 +1230,7 @@ int cDownloader::startscheda(int board_pid, bool board_eeprom, int board_type)
 	case BOARD_TYPE_SKIN:
 	case BOARD_TYPE_STRAIN:
 	case BOARD_TYPE_MAIS:
+	case BOARD_TYPE_2FOC:
 	case BOARD_UNKNOWN:
 		{
 		// Send command
@@ -1588,7 +1591,7 @@ int cDownloader::download_motorola_line(char* line, int len, int board_pid)
 // 1  Current downloading, everything OK
 // -1 Fatal error 
 
-int cDownloader::download_hexintel_line(char* line, int len, int board_pid, bool eeprom)
+int cDownloader::download_hexintel_line(char* line, int len, int board_pid, bool eeprom, int board_type)
 {
     char               sprsRecordType=0;
 	unsigned int       sprsState; 	
@@ -1748,10 +1751,18 @@ int cDownloader::download_hexintel_line(char* line, int len, int board_pid, bool
 								return -1;
 							}
 						//pause
-						drv_sleep(5);
+						if(board_type == BOARD_TYPE_2FOC){
+							drv_sleep(15);
+						}else{
+							drv_sleep(5);
+						}
 					}
 				    //receive one ack for the whole line
-				    read_messages = m_candriver->receive_message(rxBuffer,nSelectedBoards);
+				    if(board_type == BOARD_TYPE_2FOC){
+				      read_messages = m_candriver->receive_message(rxBuffer,nSelectedBoards,200);
+				    }else{
+              read_messages = m_candriver->receive_message(rxBuffer,nSelectedBoards);
+            }
 				    ret=verify_ack(CMD_DATA, rxBuffer, read_messages);	   
 					//DEBUG 
 		
@@ -1884,7 +1895,8 @@ int cDownloader::download_file(int board_pid, int download_type, bool board_eepr
 						case BOARD_TYPE_SKIN:
 						case BOARD_TYPE_STRAIN:
 						case BOARD_TYPE_MAIS:
-							 ret = download_hexintel_line(buffer, strlen(buffer), board_pid, board_eeprom);
+						case BOARD_TYPE_2FOC:
+							 ret = download_hexintel_line(buffer, strlen(buffer), board_pid, board_eeprom, download_type);
 						break;
 						case BOARD_UNKNOWN:
 						default:

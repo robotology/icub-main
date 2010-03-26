@@ -57,6 +57,7 @@ public:
 #define BOARD_TYPE_SKIN   0x05
 #define BOARD_TYPE_STRAIN 0x06
 #define BOARD_TYPE_MAIS   0x07
+#define BOARD_TYPE_2FOC   0x08
 #define BOARD_UNKNOWN     0xFF
 
 
@@ -86,7 +87,7 @@ class cDownloader
 	
 private:
 int download_motorola_line(char* line, int len, int board_pid);
-int download_hexintel_line(char* line, int len, int board_pid, bool eeprom);
+int download_hexintel_line(char* line, int len, int board_pid, bool eeprom, int board_type);
 
 int build_id(int source, int dest);
 int get_src_from_id (int id);
