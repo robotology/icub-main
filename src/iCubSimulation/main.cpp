@@ -76,8 +76,12 @@
  * - /icubSim/head/state:o : head state port
  *
  * - /icubSim/face/eyelids : port to control the eyelids
- * - /icubSim/cam/left : streams out the data from the left camera
- * - /icubSim/cam/right : streams out the data from the right camera
+ * - /icubSim/cam/left : streams out the data from the left camera (cartesian format 320x240 )
+ * - /icubSim/cam/left/fovea : streams out the data from the left camera (fovea format 128x128 ) 
+ * - /icubSim/cam/left/logpolar : streams out the data from the left camera (log polar format 252x152 ) 
+ * - /icubSim/cam/right : streams out the data from the right camera (cartesian format 320x240 )
+ * - /icubSim/cam/right/fovea : streams out the data from the left camera (fovea format 128x128 ) 
+ * - /icubSim/cam/right/logpolar : streams out the data from the left camera (log polar format 252x152 ) 
  * - /icubSim/cam : streams out the data from the global view
  *
  * - /icubSim/world : port to manipulate the environment
@@ -161,8 +165,6 @@ int setBody = 0;
 dReal sides[3];
 
 #define DENSITY (1.0)		// density of all objects
-
-#define _min(X, Y)  ((X) < (Y) ? (X) : (Y))
 
 int a,b,c;
 bool viewParam1 = false, viewParam2 = false;
@@ -1128,6 +1130,7 @@ bool SimulatorModule::runModule() {
 
 
 void SimulatorModule::displayStep(int pause) {
+
     bool needLeft = (portLeft.getOutputCount()>0);// || viewParam1;
     bool needRight = (portRight.getOutputCount()>0);// || viewParam2;
     bool needWide = (portWide.getOutputCount()>0);// || (!(viewParam1 || viewParam2));
@@ -1218,6 +1221,7 @@ void SimulatorModule::displayStep(int pause) {
     if (target>now) {
         Time::delay(target-now);
     }
+    
 }
 
 void SimulatorModule::getImage(){
@@ -1232,7 +1236,7 @@ void SimulatorModule::getImage(){
     img.setQuantum(1);
 	img.setExternal(buf,w,h);
     // inefficient flip
-    ImageOf<PixelRgb> target;// = port.prepare();
+    ImageOf<PixelRgb> target;
     target.resize(img);
 
     IMGFOR(target,x,y) {
