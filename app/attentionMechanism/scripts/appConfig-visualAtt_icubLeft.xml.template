@@ -208,7 +208,7 @@
 		<protocol>tcp</protocol>
 	</connection>
 	<connection>
-      <from>/selectiveAttentionEngine/command:o</from>
+      <from>/selectiveAttentionEngine/feedback:o</from>
 		<to>/blobFinder/icub/left_cam/cmd</to>
 		<protocol>tcp</protocol>
 	</connection>
