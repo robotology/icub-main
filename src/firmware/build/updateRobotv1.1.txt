@@ -8,7 +8,7 @@ pcan 0 6 2BLL.1.52.out.S
 
 // left_arm
 pcan 1 1 2BLL.1.50.out.S
-pcan 1 2 2BLL.1.53.out.S
+pcan 1 2 2BLL.1.57.out.S
 pcan 1 3 4DC.1.19.out.S
 
 // left_hand
@@ -17,7 +17,7 @@ ecan 1 7 4DC.1.30.out.S
 
 // right_arm
 pcan 2 1 2BLL.1.50.out.S
-pcan 2 2 2BLL.1.53.out.S
+pcan 2 2 2BLL.1.57.out.S
 pcan 2 3 4DC.1.19.out.S
 
 // right_hand
