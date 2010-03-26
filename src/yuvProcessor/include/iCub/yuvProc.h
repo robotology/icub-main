@@ -119,7 +119,7 @@
  *
  * \author 
  * 
- * Vadim Tikhanoff
+ * Vadim Tikhanoff, Andrew Dankers
  * 
  * Copyright (C) 2009 RobotCub Consortium
  * 

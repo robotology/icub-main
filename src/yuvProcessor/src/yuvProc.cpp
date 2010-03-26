@@ -1,6 +1,6 @@
 /* 
  * Copyright (C) 2009 RobotCub Consortium, European Commission FP6 Project IST-004370
- * Authors: Vadim Tikhanoff
+ * Authors: Vadim Tikhanoff, Andrew Dankers
  * email:   vadim.tikhanoff@iit.it
  * website: www.robotcub.org 
  * Permission is granted to copy, distribute, and/or modify this program
