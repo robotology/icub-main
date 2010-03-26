@@ -600,6 +600,7 @@ bool saliencyBlobFinderModule::respond(const Bottle &command,Bottle &reply){
                 break;
             case COMMAND_VOCAB_KBU:{
                 double w = command.get(2).asDouble();
+                printf("set kbu: %f \n", w);
                 if(0!=blobFinder)
                     this->blobFinder->salienceBU=w;
                 ok=true;
@@ -607,6 +608,7 @@ bool saliencyBlobFinderModule::respond(const Bottle &command,Bottle &reply){
                 break;
             case COMMAND_VOCAB_KTD:{
                 double w = command.get(2).asDouble();
+                printf("set ktd: %f \n", w);
                 if(0!=blobFinder)
                     blobFinder->salienceTD=w;
                 ok=true;
@@ -614,6 +616,7 @@ bool saliencyBlobFinderModule::respond(const Bottle &command,Bottle &reply){
                 break;
             case COMMAND_VOCAB_RIN:{
                 double w = command.get(2).asDouble();
+                printf("set rin: %f \n", w);
                 if(0!=blobFinder)
                     blobFinder->targetRED=w;
                 ok=true;
@@ -621,6 +624,7 @@ bool saliencyBlobFinderModule::respond(const Bottle &command,Bottle &reply){
                 break;
             case COMMAND_VOCAB_GIN:{
                 double w = command.get(2).asDouble();
+                printf("set gin: %f \n", w);
                 if(0!=blobFinder)
                     blobFinder->targetGREEN=w;
                 ok=true;
@@ -628,6 +632,7 @@ bool saliencyBlobFinderModule::respond(const Bottle &command,Bottle &reply){
                 break;
             case COMMAND_VOCAB_BIN:{
                 double w = command.get(2).asDouble();
+                printf("set bin: %f \n", w);
                 if(0!=blobFinder)
                     blobFinder->targetBLUE=w;
                 ok=true;
@@ -710,27 +715,35 @@ bool saliencyBlobFinderModule::respond(const Bottle &command,Bottle &reply){
             }
                 break;
             case COMMAND_VOCAB_KTD:{
-                double nb = blobFinder->salienceTD;
-                reply.addDouble(nb);
-                ok = true;
+                if(blobFinder!=0){
+                    double nb = blobFinder->salienceTD;
+                    reply.addDouble(nb);
+                    ok = true;
+                }
             }
             break;
             case COMMAND_VOCAB_RIN:{
-                int nb = blobFinder->targetRED;
-                reply.addInt(nb);
-                ok = true;
+                if(blobFinder!=0){
+                    int nb = blobFinder->targetRED;
+                    reply.addInt(nb);
+                    ok = true;
+                }
             }
             break;
             case COMMAND_VOCAB_GIN:{
-                int nb = blobFinder->targetGREEN;
-                reply.addInt(nb);
-                ok = true;
+                if(blobFinder!=0){
+                    int nb = blobFinder->targetGREEN;
+                    reply.addInt(nb);
+                    ok = true;
+                }
             }
             break;
             case COMMAND_VOCAB_BIN:{
-                int nb = blobFinder->targetBLUE;
-                reply.addInt(nb);
-                ok = true;
+                if(blobFinder!=0){
+                    int nb = blobFinder->targetBLUE;
+                    reply.addInt(nb);
+                    ok = true;
+                }
             }
             break;
             case COMMAND_VOCAB_MAXDB:{
