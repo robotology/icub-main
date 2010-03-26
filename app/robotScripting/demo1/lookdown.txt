@@ -1,0 +1,1 @@
+echo ctpq time 5 off 0 pos (-15 25 0 0 0 0) | yarp rpc /ctpservice/head/rpc
