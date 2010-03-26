@@ -1226,7 +1226,7 @@ void SimulatorModule::getImage(){
     int h = 240;
     int p = 3;//320 240
 
-	char buf[ w * h * p ];
+	char buf[ 320 * 240 * 3 ];
     glReadPixels( 0, 0, w, h, GL_RGB, GL_UNSIGNED_BYTE, buf);
     static ImageOf<PixelRgb> img;
     img.setQuantum(1);
