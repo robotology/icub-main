@@ -73,7 +73,18 @@
 		<tag>selectionView</tag>
 		<node>/lightHouse</node>
 	</module>
+	<module>
+		<name>yarpview</name>
+		<parameters>--name /logpolarView --x 200 --y 200 --synch</parameters>
+		<tag>logView</tag>
+		<node>/lightHouse</node>
+	</module>
 	
+	<connection>
+      <from>/icub/cam/left/logpolar</from>
+		<to>/logpolarView</to>
+		<protocol>mcast</protocol>
+	</connection>
 	<connection>
       	<from>/icub/cam/left/logpolar</from>
 		<to>/colourPU/icub/left_cam/image:i</to>
@@ -154,6 +165,8 @@
 		<to>/blobFinder/icub/left_cam/blue:i</to>
 		<protocol>tcp</protocol>
 	</connection>
+	
+
 	<connection>
       <from>/blobFinderInterface/icub/left_cam/command:o</from>
 		<to>/blobFinder/icub/left_cam/cmd</to>
@@ -192,6 +205,11 @@
 	<connection>
       <from>/selectiveAttentionInterface/icub/left_cam/command:o</from>
 		<to>/selectiveAttentionEngine/icub/left_cam/cmd</to>
+		<protocol>tcp</protocol>
+	</connection>
+	<connection>
+      <from>/selectiveAttentionEngine/command:o</from>
+		<to>/blobFinder/icub/left_cam/cmd</to>
 		<protocol>tcp</protocol>
 	</connection>
 </application>
