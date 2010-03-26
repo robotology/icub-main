@@ -83,11 +83,13 @@ class App:
 
             tmp=Button(tmpFrame, text="Run", command=lambda i=sc:self.runScript(i))
             tmp.grid(row=r, column=2, sticky=N)
+            #tmp=Button(tmpFrame, text="Edit", command=lambda i=sc:self.editScript(i))
+            #tmp.grid(row=r, column=3, sticky=N)
+            #r=r+1
+
             r=r+1
 
     def runScript(self, script):
-        print "running",
-
         f=open(os.path.join(directory, script),'r')
         for line in f:
             line=line.rstrip('\r\n')
@@ -95,6 +97,9 @@ class App:
             #ret=subprocess.Popen('cmd -c', line);
             os.system(line)
         f.close()
+
+    def editScript(self, script):
+        w=EditWindow(self.master, directory, script)
 
 def searchScripts(scriptDir):
     all=os.listdir(scriptDir)
@@ -106,6 +111,72 @@ def searchScripts(scriptDir):
             ret.append(c)
     return ret
 
+class EditWindow:
+    def __init__(self, master, directory, script):
+        frame=Toplevel()
+        self.directory=directory
+        self.script=script
+        self.master=frame
+    
+        Label(frame, text=script).grid(row=0, column=0, sticky=W)
+        bottom=Frame(frame).grid(row=1, column=0)
+        f=open(os.path.join(directory, script),'r')
+ 
+        self.lines=[]
+        r=1
+        for line in f:
+            line=line.rstrip('\r\n')
+            tmp=Entry(bottom)
+            if (not line==[]):
+                print line
+                tmp.insert(END, 'ciao')
+                self.lines.append(tmp)
+                tmp.grid(row=r,column=0)
+                r=r+1
+        f.close()
+
+        tmp=Button(bottom, text="Save", command=self.save())
+        tmp.grid(row=r, column=0, sticky=N)
+
+        tmp=Button(bottom, text="Add", command=self.addLine())
+        tmp.grid(row=r, column=1, sticky=N)
+
+        tmp=Button(bottom, text="Remove", command=self.removeLine())
+        tmp.grid(row=r, column=2, sticky=N)
+
+        #finally place window close to top left corner
+        #frame.update_idletasks() #update current geometry
+        width=frame.winfo_width()
+        height=frame.winfo_height()
+        rootx=master.winfo_rootx()
+        rooty=master.winfo_rooty()
+        #frame.geometry('%dx%d+%d+%d' %(width, height, rootx, rooty))
+ 
+    def update(self):
+        r=0
+        for l in self.lines:
+            tmp=Entry(self.master)
+            tmp.insert(END, l)
+            tmp.grid(row=r,column=0)
+            r=r+1
+            
+    def addLine(self):
+        tmp=Entry(self.master)
+        self.lines.append(tmp)
+        self.update()
+        
+    def removeLine(self):
+        self.lines.pop()
+        self.update()
+
+    def save(self):
+        f=open(os.path.join(directory, 'temp.txt'),'w')
+   
+        for l in self.lines:
+            tmp=l.get()
+            f.write(tmp)
+        f.close()
+            
 if __name__ == '__main__':
 
     argc = len(sys.argv)

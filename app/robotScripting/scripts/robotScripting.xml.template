@@ -1,0 +1,55 @@
+<application>
+<name>Robot Scripting</name>
+
+<dependencies>
+   <port>/icub/left_arm/rpc:i</port>
+   <port>/icub/right_arm/rpc:i</port>
+   <port>/icub/head/rpc:i</port>
+   <port>/icub/torso/rpc:i</port>
+   <port>/icub/left_leg/rpc:i</port>
+   <port>/icub/right_leg/rpc:i</port>
+</dependencies>
+
+<module>
+   <name>ctpService</name>
+   <parameters>--robot icub --part right_arm</parameters>
+   <node>icub1</node>
+   <tag>right_arm_ctp</tag>
+</module>
+
+<module>
+   <name>ctpService</name>
+   <parameters>--robot icub --part left_arm</parameters>
+   <node>icub1</node>
+   <tag>left_arm_ctp</tag>
+</module>
+
+<module>
+   <name>ctpService</name>
+   <parameters>--robot icub --part left_leg/parameters>
+   <node>icub1</node>
+   <tag>left_leg_ctp</tag>
+</module>
+
+<module>
+   <name>ctpService</name>
+   <parameters>--robot icub --part right_leg/parameters>
+   <node>icub1</node>
+   <tag>right_leg_ctp</tag>
+</module>
+
+<module>
+   <name>ctpService</name>
+   <parameters>--robot icub --part head/parameters>
+   <node>icub1</node>
+   <tag>head_ctp</tag>
+</module>
+
+<module>
+   <name>ctpService</name>
+   <parameters>--robot icub --part torso/parameters>
+   <node>icub1</node>
+   <tag>torso_ctp</tag>
+</module>
+
+</application>
