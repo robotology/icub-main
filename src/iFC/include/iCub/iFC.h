@@ -245,9 +245,9 @@ public:
 	void setHs(yarp::sig::Matrix _Hs){Sensore->setH(_Hs);}
 
 	//get sensor members, previously defined
-	yarp::sig::Matrix getRs(yarp::sig::Matrix _Rs){return Sensore->getR();}
+	yarp::sig::Matrix getRs(){return Sensore->getR();}
 	yarp::sig::Vector getPs(){return Sensore->getP();}
-	yarp::sig::Matrix getHs(yarp::sig::Matrix _Hs){return Sensore->getH();}
+	yarp::sig::Matrix getHs(){return Sensore->getH();}
 
 	//get Limb variables
 	/* @param _Rl is the rotation matrix of the link FoR with respect to the base FoR*/
