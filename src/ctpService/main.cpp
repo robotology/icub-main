@@ -235,7 +235,7 @@ public:
         else
             drvOptions.put("device","remote_controlboard");
 
-        std::string name="/localct/";
+        std::string name="/local/";
 
         std::string remote=std::string("/")+std::string(options.find("robot").asString());
         remote+=name+std::string(options.find("part").asString());
