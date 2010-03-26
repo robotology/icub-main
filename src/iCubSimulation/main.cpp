@@ -126,6 +126,8 @@
 #include <yarp/sig/ImageDraw.h>
 #include <yarp/os/Os.h>
 
+#include "iCub/RC_DIST_FB_logpolar_mapper.h"
+
 #include <stdio.h>
 #include <string.h>
 
@@ -157,16 +159,23 @@ static int nextobj=0;// next object to recycle if num==NUM
 size_t i;
 int setBody = 0;
 dReal sides[3];
+
 #define DENSITY (1.0)		// density of all objects
+
+#define _min(X, Y)  ((X) < (Y) ? (X) : (Y))
 
 int a,b,c;
 bool viewParam1 = false, viewParam2 = false;
 bool noCam;
 
+const int ifovea = 128;
+const int baseWidth = 320;
+const int baseHeight = 240;
+
 class SimulatorModule : public yarp::os::PortReader {
 private:
     PolyDriver *iCubLArm, *iCubRArm, *iCubHead, *iCubLLeg ,*iCubRLeg, *iCubTorso;
-	BufferedPort<ImageOf<PixelRgb> > portLeft, portRight, portWide;
+	BufferedPort<ImageOf<PixelRgb> > portLeft, portRight, portWide, portLeftFov, portLeftLog, portRightFov, portRightLog ;
 	Port cmdPort;
 	BufferedPort<Bottle> tactilePort;
     BufferedPort<Bottle> inertialPort;
@@ -185,6 +194,7 @@ private:
     void initImagePorts();
 	void initIcubParts();
 	SimConfig finder;
+    
 
 public:
     SimulatorModule() : mutex(1), pulse(0), ack(0) {
@@ -197,6 +207,15 @@ public:
         sim = NULL;
         sloth = 0;
     }
+    
+    cart2LpPixel * c2ltable;
+    bool firstpass;
+
+    ImageOf<PixelRgb> buffer;
+
+    bool cartToLogPolar(ImageOf<PixelRgb> &lp, const ImageOf<PixelRgb> &cart);
+    //bool getFovealImage(ImageOf<PixelRgb> &image);
+    bool subsampleFovea(yarp::sig::ImageOf<yarp::sig::PixelRgb>& dst, const yarp::sig::ImageOf<yarp::sig::PixelRgb>& src);
 
     bool open();
     bool runModule();
@@ -232,12 +251,23 @@ public:
             delete sim;
         sim=NULL;
 
-        portLeft.interrupt();
+        portLeft.interrupt();        
+        portLeftFov.interrupt();
+        portLeftLog.interrupt();
         portRight.interrupt();
+        portRightFov.interrupt();
+        portRightLog.interrupt();
+
         portWide.interrupt();
 
         portLeft.close();
+        portLeftFov.close();
+        portLeftLog.close();
+
         portRight.close();
+        portRightFov.close();
+        portRightLog.close();
+
         portWide.close();
 
         tactilePort.close();
@@ -941,8 +971,12 @@ public:
         if (done) { return ok; }
         return ok;
     }
-
+    void getImage();
     void sendImage(BufferedPort<ImageOf<PixelRgb> >& port);
+    void sendImageFov(BufferedPort<ImageOf<PixelRgb> >& port);
+    void sendImageLog(BufferedPort<ImageOf<PixelRgb> >& port);
+    
+   
 };
 
 
@@ -1050,6 +1084,12 @@ void SimulatorModule::initImagePorts() {
     portLeft.open(nameLeft);
     portRight.open(nameRight);
     portWide.open(nameExternal);
+
+    portLeftFov.open("/icubSim/cam/left/fovea");
+    portRightFov.open("/icubSim/cam/right/fovea");
+
+    portLeftLog.open("/icubSim/cam/left/logpolar");
+    portRightLog.open("/icubSim/cam/right/logpolar");
 }
 
 
@@ -1065,8 +1105,16 @@ bool SimulatorModule::open() {
     }
 	 init();
 	 sim = new Simulation();
-	 w = 480;
-     h = 620;
+	 
+     w = 480;
+     h = 640;
+
+    // the main image buffer.
+    buffer.resize( w, h);
+
+    c2ltable = NULL;
+    firstpass = true;
+
     return true;
 }
 
@@ -1077,10 +1125,16 @@ bool SimulatorModule::runModule() {
     return true;
 }
 
+
+
 void SimulatorModule::displayStep(int pause) {
     bool needLeft = (portLeft.getOutputCount()>0);// || viewParam1;
     bool needRight = (portRight.getOutputCount()>0);// || viewParam2;
     bool needWide = (portWide.getOutputCount()>0);// || (!(viewParam1 || viewParam2));
+    bool needLeftFov = (portLeftFov.getOutputCount()>0);
+    bool needLeftLog = (portLeftLog.getOutputCount()>0);
+    bool needRightFov = (portRightFov.getOutputCount()>0);
+    bool needRightLog = (portRightLog.getOutputCount()>0); 
 
     mutex.wait();
     bool done = stopped;
@@ -1102,20 +1156,47 @@ void SimulatorModule::displayStep(int pause) {
         case 'l':
             if (needLeft) {
 				sim->drawView(true,false,false);
+                getImage();
 				sendImage(portLeft);
+				sim->clearBuffer();
+            }
+            if (needLeftFov) {
+				sim->drawView(true,false,false);
+                getImage();
+				sendImageFov(portLeftFov);
+				sim->clearBuffer();
+            }
+            if (needLeftLog) {
+				sim->drawView(true,false,false);
+                getImage();
+				sendImageLog(portLeftLog);
 				sim->clearBuffer();
             }
             break;
         case 'r':
 			if (needRight) {
 				sim->drawView(false,true,false);
+                getImage();
 				sendImage(portRight);
+				sim->clearBuffer();
+            }
+            if (needRightFov) {
+				sim->drawView(false,true,false);
+                getImage();
+				sendImageFov(portRightFov);
+				sim->clearBuffer();
+            }
+            if (needRightLog) {
+				sim->drawView(false,true,false);
+                getImage();
+				sendImageLog(portRightLog);
 				sim->clearBuffer();
             }
             break;
         case 'w':
             if (needWide) {
 				sim->drawView(false,false,true);
+                getImage();
 				sendImage(portWide);
 				sim->clearBuffer();
             }
@@ -1139,26 +1220,120 @@ void SimulatorModule::displayStep(int pause) {
     }
 }
 
-void SimulatorModule::sendImage(BufferedPort<ImageOf<PixelRgb> >& port) {
+void SimulatorModule::getImage(){
+    
     int w = 320;
     int h = 240;
     int p = 3;//320 240
 
-	char buf[320*240*3];
-    
-    glReadPixels(0,0,w,h,GL_RGB,GL_UNSIGNED_BYTE,buf);
-	static ImageOf<PixelRgb> img;
+	char buf[ w * h * p ];
+    glReadPixels( 0, 0, w, h, GL_RGB, GL_UNSIGNED_BYTE, buf);
+    static ImageOf<PixelRgb> img;
     img.setQuantum(1);
 	img.setExternal(buf,w,h);
-    
     // inefficient flip
-    ImageOf<PixelRgb>& target = port.prepare();
+    ImageOf<PixelRgb> target;// = port.prepare();
     target.resize(img);
+
     IMGFOR(target,x,y) {
         target(x,y) = img(x,img.height()-1-y);
     }
+    buffer.copy(target);
+
+    glClear(GL_COLOR_BUFFER_BIT|GL_DEPTH_BUFFER_BIT);
+}
+
+void SimulatorModule::sendImage(BufferedPort<ImageOf<PixelRgb> >& port) {
+    ImageOf<PixelRgb>& normal = port.prepare();
+    normal.copy( buffer );
     port.write();
-	glClear(GL_COLOR_BUFFER_BIT|GL_DEPTH_BUFFER_BIT); // refresh opengl
+}
+
+void SimulatorModule::sendImageFov(BufferedPort<ImageOf<PixelRgb> >& portFov) {
+    static ImageOf<PixelRgb> fov;
+    ImageOf<PixelRgb>& targetFov = portFov.prepare();
+    //getFovealImage ( fov );
+    subsampleFovea( fov, buffer );
+    targetFov.copy( fov );
+    portFov.write();
+}
+
+void SimulatorModule::sendImageLog(BufferedPort<ImageOf<PixelRgb> >& portLog) {
+    static ImageOf<PixelRgb> lp;
+    lp.resize (252, 152);
+    lp.zero();
+    ImageOf<PixelRgb>& targetLog = portLog.prepare();
+    cartToLogPolar( lp , buffer );
+    targetLog.copy( lp );
+    portLog.write();
+}
+
+
+bool SimulatorModule::cartToLogPolar(ImageOf<PixelRgb>& lp, const ImageOf<PixelRgb>& cart) {
+    
+    static float scaleFactor;
+    static char   path[] = "./";
+    
+    if (firstpass){
+
+        if(c2ltable==NULL)
+            c2ltable = new cart2LpPixel[ lp.width()*lp.height() ];
+
+        scaleFactor = (float) RCcomputeScaleFactor ( lp.height(), lp.width(), cart.width(), cart.height(), 1.0 );
+        RCbuildC2LMap( lp.height(), lp.width(), cart.width(), cart.height(), 1.0, scaleFactor, ELLIPTICAL, path);
+        RCallocateC2LTable( c2ltable, lp.height(), lp.width(), 0, path );
+
+        firstpass = false;
+    }
+
+    // adjust padding.
+    if (cart.getPadding() != 0) {
+        const int byte = cart.width() * sizeof(PixelRgb);
+        unsigned char *d = (unsigned char *)cart.getRawImage() + byte;
+        int i;
+        for (i = 1; i < cart.height(); i++) {
+            unsigned char *s = (unsigned char *)cart.getRow(i);
+            memmove(d, s, byte);
+            d += byte; 
+        }
+    }
+    
+    RCgetLpImg (lp.getRawImage(), (unsigned char *) cart.getRawImage(), c2ltable, lp.width() * lp.height() , false);   
+    
+    // adjust padding.
+    if (lp.getPadding() != 0) {
+        const int byte = lp.width() * sizeof( PixelRgb );
+        int i;
+        for (i = lp.height()-1; i >= 1; i--) {
+            unsigned char *d = lp.getRow(i);
+            unsigned char *s = lp.getRawImage() + i*byte;
+            memmove( d, s, byte );
+        }
+    }
+    return true;
+}
+
+/*
+bool SimulatorModule::getFovealImage(yarp::sig::ImageOf<yarp::sig::PixelRgb>& image) { 
+    image.resize (ifovea, ifovea);
+    return subsampleFovea(image, buffer);
+}
+*/
+
+bool SimulatorModule::subsampleFovea(yarp::sig::ImageOf<yarp::sig::PixelRgb>& dst, 
+                                          const yarp::sig::ImageOf<yarp::sig::PixelRgb>& src) {
+    dst.resize (ifovea, ifovea);
+    const int fov = dst.width();
+    const int offset = baseHeight/2-fov/2;
+    const int col = baseWidth/2-fov/2;
+    const int bytes = fov*sizeof(PixelRgb);
+    int i;
+    for (i = 0; i < fov; i++) {
+        unsigned char *s = (unsigned char *)src.getRow(i+offset)+col*sizeof(PixelRgb);
+        unsigned char *d = dst.getRow(i);
+        memcpy(d, s, bytes);
+    }
+    return true;
 }
 
 class MyNetwork
