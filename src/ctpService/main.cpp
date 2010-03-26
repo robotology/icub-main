@@ -173,6 +173,7 @@ protected:
         {
             cerr<<"Error: detected possible overflow, skipping"<<endl;
             cerr<<"For debug --> joints: "<<nJoints<< " off: "<<offset<<" cmd lenght: "<<size<<endl;
+            return;
         }
 
         Vector disp(size);
