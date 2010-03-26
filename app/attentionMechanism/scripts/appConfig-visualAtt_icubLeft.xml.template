@@ -166,12 +166,12 @@
 		<protocol>tcp</protocol>
 	</connection>
 	
-
 	<connection>
       <from>/blobFinderInterface/icub/left_cam/command:o</from>
 		<to>/blobFinder/icub/left_cam/cmd</to>
 		<protocol>tcp</protocol>
 	</connection>
+	
 	<connection>
       <from>/icub/cam/left/logpolar</from>
 		<to>/selectiveAttentionEngine/image:i</to>
