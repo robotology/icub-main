@@ -140,8 +140,22 @@ class selectiveAttentionProcessor:public RateThread
         * function that extract the contour and the center of gravity
         * @param inputImage input image where the contours are extracted from
         * @param outImage representation of the contours
+        * @param inputColourImage image where the colour are extracted
+        * @param x x position of the center of mass of the contours
+        * @param y y position of the center of mass of the contours
         */
-        void extractContour(ImageOf<PixelMono>* inputImage,ImageOf<PixelMono>* outputImage,int& x,int& y);
+        void extractContour(ImageOf<PixelMono>* inputImage,ImageOf<PixelRgb>* outputImage,ImageOf<PixelRgb>* inputColourImage ,int& x,int& y);
+        /**
+        * function that extracts the colour of a region around a pixel given the input image
+        * @param inputColourImage input image where the region colour is read.
+        * @param x position in the image plane
+        * @param y position in the image plane
+        * @param redIntensity intensity of the red plane of the region colour
+        * @param greenIntensity intensity of the red plane of the region colour
+        * @param blueIntensity intensity of the red plane of the region colour
+        */
+        void getPixelColour(ImageOf<PixelRgb>* inputColourImage,int x ,int y, unsigned char &redIntensity, unsigned char &greenIntensity, unsigned char &blueIntensity);
+
         //------------- PUBLIC ATTRIBUTES ------------
 
         /**
@@ -156,6 +170,10 @@ class selectiveAttentionProcessor:public RateThread
         * input image  of the processing
         */
         ImageOf<PixelRgb> *inImage; // 
+        /**
+        * input image  of the processing
+        */
+        ImageOf<PixelRgb> *inColourImage; // 
         /**
         * saliency map coming from the 1st source
         */
@@ -184,6 +202,18 @@ class selectiveAttentionProcessor:public RateThread
         * yarp image of the composition of all the edges
         */
         ImageOf<PixelMono>* edges_yarp;
+        /**
+        * colour information passed back for the reinforcement
+        */
+        unsigned char targetRed;
+        /**
+        * colour information passed back for the reinforcement
+        */
+        unsigned char targetGreen;
+        /**
+        * colour information passed back for the reinforcement
+        */
+        unsigned char targetBlue;
         /**
         * coefficient for the linear combination of maps
         */
@@ -240,6 +270,10 @@ class selectiveAttentionProcessor:public RateThread
         * result of the selection
         */
         ImageOf<PixelMono>* outputImage; //
+        /**
+        * result of the selection
+        */
+        ImageOf<PixelRgb>* outputColourImage;
         /**
         * result of the combination
         */

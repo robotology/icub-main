@@ -96,7 +96,7 @@ none
 
 \section portsc_sec Ports Created
 Input ports:
-- image:i : input image where the colours are extracted.
+- image:i : input image where the colour are extracted.
 - map1:i : image coming from the 1st saliency map
 - map2:i : image coming from the 2nd saliency map
 - map3:i : image coming from the 3rd saliency map
@@ -149,9 +149,9 @@ CopyPolicy: Released under the terms of the GNU GPL v2.0.
 class selectiveAttentionModule : public Module {
 private:
     /**
-    * a port for the inputImage
+    * a port for the inputImage (colour)
     */
-    BufferedPort<ImageOf<PixelRgb> > inImagePort; // 
+    BufferedPort<ImageOf<PixelRgb> > inImagePort; //
     /**
     * input port for the 1st saliency map
     */
@@ -183,7 +183,7 @@ private:
     /**
     *  output port that represent the selected attention output
     */
-    BufferedPort<ImageOf<PixelMono> > selectedAttentionPort; 
+    BufferedPort<ImageOf<PixelRgb> > selectedAttentionPort; 
     /**
     *  output port where the centroid coordinate is sent
     */
@@ -228,6 +228,10 @@ private:
     * temporary mono image
     */
     ImageOf<PixelMono> *tmp;
+     /**
+    * temporary rgb image
+    */
+    ImageOf<PixelRgb> *tmp2;
     /**
     * input image of the 1st map
     */

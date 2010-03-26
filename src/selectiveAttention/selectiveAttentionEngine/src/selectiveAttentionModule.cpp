@@ -4,6 +4,15 @@
 
 using namespace std;
 
+
+#define COMMAND_VOCAB_SET VOCAB3('s','e','t')
+#define COMMAND_VOCAB_GET VOCAB3('g','e','t')
+#define COMMAND_VOCAB_KBU VOCAB3('k','b','u') //weight of the bottom-up algorithm
+#define COMMAND_VOCAB_KTD VOCAB3('k','t','d') //weight of top-down algorithm
+#define COMMAND_VOCAB_RIN VOCAB3('r','i','n') //red intensity value
+#define COMMAND_VOCAB_GIN VOCAB3('g','i','n') //green intensity value
+#define COMMAND_VOCAB_BIN VOCAB3('b','i','n') //blue intensity value
+
 // Image Receiver
 //static YARPImgRecv *ptr_imgRecv;
 // Image to Display
@@ -29,6 +38,7 @@ bool selectiveAttentionModule::open(Searchable& config) {
 	currentProcessor=0;
     inputImg=0;
     tmp=0;
+    tmp2=0;
 
     targetRED=0;
     targetGREEN=0;
@@ -155,8 +165,8 @@ bool selectiveAttentionModule::outPorts(){
         linearCombinationPort.write();
     }
     
-    if((0!=currentProcessor->outputImage)&&(selectedAttentionPort.getOutputCount())){
-        selectedAttentionPort.prepare() = *(currentProcessor->outputImage);
+    if((0!=currentProcessor->outputColourImage)&&(selectedAttentionPort.getOutputCount())){
+        selectedAttentionPort.prepare() = *(currentProcessor->outputColourImage);
         selectedAttentionPort.write();
     }	
 
@@ -172,24 +182,36 @@ bool selectiveAttentionModule::outPorts(){
         //Bottle& commandBottle=feedbackPort.prepare();
         Bottle in,commandBottle;
         commandBottle.clear();
-        commandBottle.addString("SET RIN");
-        commandBottle.addInt(targetRED);
+        commandBottle.addVocab(VOCAB3('s','e','t'));
+        commandBottle.addVocab(VOCAB3('r','i','n'));
+        commandBottle.addDouble((double)currentProcessor->targetRed);
         feedbackPort.write(commandBottle,in);
         commandBottle.clear();
-        commandBottle.addString("SET GIN");
-        commandBottle.addInt(targetGREEN);
+        commandBottle.addVocab(VOCAB3('s','e','t'));
+        commandBottle.addVocab(VOCAB3('g','i','n'));
+        commandBottle.addDouble((double)currentProcessor->targetGreen);
         feedbackPort.write(commandBottle,in);
         commandBottle.clear();
-        commandBottle.addString("SET BIN");
-        commandBottle.addInt(targetBLUE);
+        commandBottle.addVocab(VOCAB3('s','e','t'));
+        commandBottle.addVocab(VOCAB3('b','i','n'));
+        commandBottle.addDouble((double)currentProcessor->targetBlue);
+        feedbackPort.write(commandBottle,in);
+        //setting coefficients
+        commandBottle.clear();
+        commandBottle.addVocab(VOCAB3('s','e','t'));
+        commandBottle.addVocab(VOCAB3('k','t','d'));
+        salienceTD=salienceTD+0.001;
+        if(salienceTD>0.99)
+            salienceTD=0.99;
+        commandBottle.addDouble((double)salienceTD);
         feedbackPort.write(commandBottle,in);
         commandBottle.clear();
-        commandBottle.addString("SET KTD");
-        commandBottle.addInt(salienceTD);
-        feedbackPort.write(commandBottle,in);
-        commandBottle.clear();
-        commandBottle.addString("SET KBU");
-        commandBottle.addInt(salienceBU);
+        commandBottle.addVocab(VOCAB3('s','e','t'));
+        commandBottle.addVocab(VOCAB3('k','b','u'));
+        salienceBU=salienceBU-0.001;
+        if(salienceBU<=0)
+            salienceBU=0;
+        commandBottle.addDouble((double)salienceBU);
         feedbackPort.write(commandBottle,in);
     }
 
@@ -231,6 +253,8 @@ void selectiveAttentionModule::reinitialise(int width, int height){
     inputImg->resize(width,height);
     tmp=new ImageOf<PixelMono>;
     tmp->resize(width,height);
+    tmp2=new ImageOf<PixelRgb>;
+    tmp2->resize(width,height);
 }
 
 
@@ -258,39 +282,38 @@ bool selectiveAttentionModule::updateModule() {
         out.addString("get");
         out.addString("ktd");
         feedbackPort.write(out,in);
-        printf("%s \n",in.toString().c_str());
         name=in.pop().asString();
         salienceTD=in.pop().asDouble();
         out.clear();
         in.clear();
+        
         out.addString("get");
         out.addString("kbu");
         feedbackPort.write(out,in);
-        printf("%s \n",in.toString().c_str());
         name=in.pop().asString();
         salienceBU=in.pop().asDouble();
         out.clear();
         in.clear();
+        
         out.addString("get");
         out.addString("rin");
         feedbackPort.write(out,in);
-        printf("%s \n",in.toString().c_str());
         name=in.pop().asString();
         targetRED=in.pop().asInt();
         out.clear();
         in.clear();
+        
         out.addString("get");
         out.addString("gin");
         feedbackPort.write(out,in);
-        printf("%s \n",in.toString().c_str());
         name=in.pop().asString();
         targetGREEN=in.pop().asInt();
         out.clear();
         in.clear();
+        
         out.addString("get");
         out.addString("bin");
         feedbackPort.write(out,in);
-        printf("%s \n",in.toString().c_str());
         name=in.pop().asString();
         targetBLUE=in.pop().asDouble();
         out.clear();
@@ -298,28 +321,35 @@ bool selectiveAttentionModule::updateModule() {
     }
 
     //-------------read input maps
-    if(map1Port.getInputCount()){
-        tmp=map1Port.read(false);
+    //if(map1Port.getInputCount()){
+    //    tmp=map1Port.read(false);
+    //}
+    if(inImagePort.getInputCount()){
+        tmp2=inImagePort.read(false);
     }
-    if(tmp==0){
+    if(tmp2==0){
         return true;
     }
     
     if(!reinit_flag){
         //srcsize.height=img->height();
         //srcsize.width=img->width();
-        reinitialise(tmp->width(), tmp->height());
+        reinitialise(tmp2->width(), tmp2->height());
         reinit_flag=true;
         currentProcessor=new selectiveAttentionProcessor();
         //passes the temporary variable for the mode
-        currentProcessor->resizeImages(tmp->width(),tmp->height());
+        currentProcessor->resizeImages(tmp2->width(),tmp2->height());
         startselectiveAttentionProcessor();
         currentProcessor->setIdle(false);
     }
     
-    currentProcessor->map1_yarp=tmp;
-    if(currentProcessor->map1_yarp==NULL)
-        currentProcessor->map1_yarp=0;
+    currentProcessor->inImage=tmp2;
+
+    if(map1Port.getInputCount()){    
+        tmp=map1Port.read(false);
+        if(tmp!=NULL)
+            currentProcessor->map1_yarp=tmp;
+    }
     if(map2Port.getInputCount()){    
         tmp=map2Port.read(false);
         if(tmp!=NULL)
