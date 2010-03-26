@@ -103,8 +103,10 @@ public:
         unsigned int messages=localBufferSize;
         unsigned int readMessages=0;
         bool res=iCanBus->canRead(readBuffer, messages, &readMessages);
-
-        fprintf(stderr, "Read %u messages\n", readMessages);
+        if (res)
+            fprintf(stderr, "Read %u messages\n", readMessages);
+        else
+            fprintf(stderr, "Failed (read %u messages)\n", readMessages);
     }
 
     void threadRelease()
