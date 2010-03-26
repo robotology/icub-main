@@ -12,8 +12,8 @@ commands to any of the robot ports.
 Sit silently and waits for incoming commands. Receive position
 commands requests and sends position commands, but it computes
 the reference speeds s.t. commands are all executed in the same
-time irrespectively of the current position (the service clearly
-reads the current encoders).
+time irrespectively of the current position (the service reads 
+the current encoders and compute the reference speed accordingly).
 
 \section ports_sec Ports and Messages
 
@@ -22,15 +22,15 @@ reads the current encoders).
 
 Incoming commands are the following:
 
-[ctpc] [time] TIME(seconds) [off] j [pos] list
+[ctpn] [time] TIME(seconds) [off] j [pos] list
 
 or 
 
-[ctq] [time] TIME (seconds) [off] j [pos] list
+[ctpq] [time] TIME (seconds) [off] j [pos] list
 
 Example:
 This requires 1 second movement of joints 5,6,7 to 10 10 10 respectively:
-[ctpc] [time] 1 [off] 5 [pos] (10 10 10)
+[ctpn] [time] 1 [off] 5 [pos] (10 10 10)
 
 \section parameters_sec Parameters
 Run as:
@@ -78,8 +78,8 @@ using namespace yarp::math;
 
 #define VCTP_TIME VOCAB4('t','i','m','e')
 #define VCTP_OFFSET VOCAB3('o','f','f')
-#define VCTP_CMD VOCAB4('c','t','p','c')
-#define VCTP_CMD_QUEUE VOCAB3('c','t','q')
+#define VCTP_CMD_NOW VOCAB4('c','t','p','n')
+#define VCTP_CMD_QUEUE VOCAB4('c','t','p','q')
 #define VCTP_POSITION VOCAB3('p','o','s')
 #define VCTP_WAIT VOCAB4('w','a','i','t')
 
@@ -477,7 +477,7 @@ public:
                     reply.addVocab(Vocab::encode("ack"));
                     return true;
                 }
-                case VCTP_CMD:
+                case VCTP_CMD_NOW:
                     {
                         ret=handlectpm(command, reply);
                         return ret;
