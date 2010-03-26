@@ -283,6 +283,7 @@ void saliencyBlobFinderModule::outPorts(){
     //printf("centroid:%f,%f \n",blobFinder->salience->centroid_x,blobFinder->salience->centroid_y);
     //printf("target:%f,%f \n",blobFinder->salience->target_x,blobFinder->salience->target_y);
     
+    
     if((0!=blobFinder->image_out)&&(outputPort.getOutputCount())){ 
         outputPort.prepare() = *(blobFinder->image_out);		
         outputPort.write();
@@ -306,8 +307,8 @@ void saliencyBlobFinderModule::outPorts(){
         bot.addDouble(1.5); //fixed distance in which the saccade takes place
         triangulationPort.write(bot,in); //stop here till it receives a response
         if (in.size()>0) {
-            target_z=in.pop().asDouble()+0.1;
-            target_y=in.pop().asDouble()+0.15;
+            target_z=in.pop().asDouble();
+            target_y=in.pop().asDouble()+0.097;
             target_x=in.pop().asDouble();
             
         } else { 
@@ -405,7 +406,7 @@ void saliencyBlobFinderModule::outPorts(){
         //logPolarMapper iCub driver
         time (&end);
         double dif = difftime (end,start);
-        if((dif>blobFinder->constantTimeCentroid)&&(dif<=blobFinder->constantTimeCentroid+2)){
+        if((dif>2)&&(dif<=2+2)){
             bot.addVocab( Vocab::encode("sac") ); 
             bot.addVocab( Vocab::encode("img") ); 
             double centroidDisplacementY=1.0;
@@ -417,16 +418,11 @@ void saliencyBlobFinderModule::outPorts(){
             centroidPort.write();
             
         }
-        else if(dif>60){
+        else if(dif>4){
             time (&start);
         }
         else{
-            /*printf("%f.",dif);
-            bot.addVocab( Vocab::encode("sac") ); 
-            bot.addVocab( Vocab::encode("abs") ); 
-            bot.addDouble(0);  
-            bot.addDouble(0); 
-            centroidPort.write();*/
+           
         }
         
     }
