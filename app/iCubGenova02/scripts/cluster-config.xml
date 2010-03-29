@@ -1,17 +1,19 @@
 <cluster name="icub02" user="icub">
 
-<nameserver namespace="/icub02" node="icub3"> </nameserver>
+<nameserver namespace="/icub02" node="icub14"> </nameserver>
 
-<node display="true">icub3</node>
-<node display="true">icub10</node>
+
+<node>pc104</node>
+<node>icub3</node>
+<node>icub10</node>
 <node>icub12</node>
-<node>icub14</node>
+<node display="true">icub14</node>
 <node>icub-b4</node>
 <node>icub-b5</node>
 <node>icub-b6</node>
 <node>icub-b7</node>
 <node>icub-b8</node>
-<node>pc104</node>
+<node>icub-vm1</node>
 
 </cluster>
 
