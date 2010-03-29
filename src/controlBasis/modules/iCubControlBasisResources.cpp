@@ -569,9 +569,11 @@ public:
             if(runFullArmConfig[i]) {
                 cout << "starting full arm config for arm: " << i << endl;
                 iCubFullArm[i] = new iCubFullArmConfigurationVariables(fullArmName[i], simulationMode, fullArmConfigFile[i]);
+                iCubFullArm[i]->setUpdateDelay(0.05);
                 iCubFullArm[i]->startResource();
+                iCubFullArm[i]->loadConfig(fullArmConfigFile[i]);
                 if(velocityControlMode) {
-                    iCubFullArm[i]->setVelocityControlMode(true, fullArmVelPort[i][0],fullArmVelPort[i][0]);
+                    iCubFullArm[i]->setVelocityControlMode(true, fullArmVelPort[i][0],fullArmVelPort[i][1]);
                 } else {
                     iCubFullArm[i]->setVelocityControlMode(false, "", "");
                 }

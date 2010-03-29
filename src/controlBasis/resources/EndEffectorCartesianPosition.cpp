@@ -40,8 +40,10 @@ bool CB::EndEffectorCartesianPosition::updateResource() {
         offset = 1;
 
         configVals.resize(nj);
+        //cout << endl;
         for(int i=0; i<nj; i++) {            
             configVals[i] = b->get(i+offset).asDouble();
+            //cout << "config[" << i << "]: " << configVals[i] << endl;
         }
 
         // set the angles and get the axis-angle end-effector pose using iKin
@@ -53,7 +55,7 @@ bool CB::EndEffectorCartesianPosition::updateResource() {
         values[1] = xf[1];
         values[2] = xf[2];
 
-        //        cout << "Pos=[" << values[0] << " " << values[1] << " " << values[2] << "]" << endl;
+        //cout << "Pos=[" << values[0] << " " << values[1] << " " << values[2] << "]" << endl;
     } 
 
     return ok;
@@ -185,11 +187,15 @@ bool CB::EndEffectorCartesianPosition::connectToConfiguration() {
     }
 
     // clear some FP residual in input matrix
+    cout << "input matrix: " << endl;
     for(int i=0; i<4; i++) {
         for(int j=0; j<4; j++) {
             if(fabs(H[i][j]) < 1E-10) H[i][j] = 0;
+            cout << H[i][j] << " ";    
         }
+        cout << endl;
     }
+    cout << endl;
 
     // connect to config port for reading config values
     string configOutputName = "/cb/configuration" + deviceName + "/data:o";

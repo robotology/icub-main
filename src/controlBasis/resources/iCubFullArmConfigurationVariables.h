@@ -129,8 +129,6 @@ namespace CB {
 
             std::cout << "Creating new iCubFullArmConfigurationVariables(name=" << resourceName.c_str() <<
                 "dof=" << numDOFs << ", links=" << numLinks << std::endl;
-
-            loadConfig(configFile);
             
         }
         

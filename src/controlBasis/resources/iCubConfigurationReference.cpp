@@ -26,9 +26,9 @@ CB::iCubConfigurationReference::iCubConfigurationReference(std::string name, int
 
 void CB::iCubConfigurationReference::setVals(yarp::sig::Vector ref) {
     if(ref.size() != values.size()) {
-        std::cout << "Couldn't set reference valus for " << deviceName.c_str() << "!!" << std::endl;
+        std::cout << "Couldn't set reference values for " << deviceName.c_str() << "!!" << std::endl;
         return;
     } else {
-        values = ref;
+        values = ref;        
     }
 }

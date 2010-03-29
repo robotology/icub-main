@@ -67,14 +67,12 @@ bool CB::ConfigurationSquaredError::updatePotentialFunction() {
     gradient = -1.0*diff;
     potential = 0.5*dot(diff,diff);
 
-    /*
     cout << "ref   -  cur  =  diff" << endl;
     for(int i=0; i<size; i++) {
         cout << (*inputs[1])[i] << "  " << (*inputs[0])[i] << "  " << diff[i] << endl;
     }
     cout << endl;
-    */
-
+    
     //    cout << "ConfigurationSquaredError Potential = " << potential << endl;
     return ok;
 

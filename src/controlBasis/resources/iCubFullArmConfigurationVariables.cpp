@@ -72,21 +72,30 @@ bool CB::iCubFullArmConfigurationVariables::updateResource() {
         } else {
             limit = 7;
         }
-        
+    
         for(int k=0; k<limit; k++) {
             values[(i*3)+k] = tmp[i][k]*TORAD;
-        } 
+           // cout << "read value[" << ((i*3)+k) << "]: " << values[(i*3)+k]*TORAD << ", degrees=" << values[(i*3)+k] << endl;   
+        }
+
+        //cout << endl; 
         delete tmp[i];
     }
 
+    double t=values[0];
+    values[0]=values[2];
+    values[2]=t;   
+
     // if unlocked
+    //cout << "lock: " << lock << endl;
+    //cout << "vel: " << velocityControlMode << endl;   
     if(!lock) {
 
         // send positions to robot
         if(!velocityControlMode) {
-            pos[0]->positionMove(0, desiredValues[0]*TODEG);
+            pos[0]->positionMove(2, desiredValues[0]*TODEG);
             pos[0]->positionMove(1, desiredValues[1]*TODEG);
-            pos[0]->positionMove(2, desiredValues[2]*TODEG);
+            pos[0]->positionMove(0, desiredValues[2]*TODEG);
             pos[1]->positionMove(0, desiredValues[3]*TODEG);
             pos[1]->positionMove(1, desiredValues[4]*TODEG);
             pos[1]->positionMove(2, desiredValues[5]*TODEG);
@@ -98,14 +107,25 @@ bool CB::iCubFullArmConfigurationVariables::updateResource() {
 
             Bottle &v_torso = velocityPort[0].prepare();
             Bottle &v_arm   = velocityPort[1].prepare();
-
-            for(int i=0; i<3; i++) {
-                v_torso.addInt(i);
-                v_torso.addDouble(desiredValues[i]*TODEG);            
-            }
+    
+            v_torso.clear();
+            v_arm.clear();
+            
+            cout << endl;
+            v_torso.addInt(2);
+            v_torso.addDouble(desiredValues[0]*TODEG);    
+            cout << "torso[" << 0 << "]: cur=" << values[0]*TODEG << ", des= " << desiredValues[0]*TODEG << endl;        
+            v_torso.addInt(1);
+            v_torso.addDouble(desiredValues[1]*TODEG);    
+            cout << "torso[" << 1 << "]: cur=" << values[1]*TODEG << ", des= " << desiredValues[1]*TODEG << endl;        
+            v_torso.addInt(0);
+            v_torso.addDouble(desiredValues[2]*TODEG);    
+            cout << "torso[" << 2 << "]: cur=" << values[2]*TODEG << ", des= " << desiredValues[2]*TODEG << endl;        
+    
             for(int i=0; i<7; i++) {
                 v_arm.addInt(i);
-                v_arm.addDouble(desiredValues[i+3]*TODEG);            
+                v_arm.addDouble(desiredValues[i+3]*TODEG);    
+                cout << "arm[" << i << "]: cur=" << values[i+3]*TODEG << ", des= " << desiredValues[i+3]*TODEG << endl;                  
             }            
             velocityPort[0].write();
             velocityPort[1].write();
@@ -114,8 +134,8 @@ bool CB::iCubFullArmConfigurationVariables::updateResource() {
 
     }
 
-    //    cout  << "arm " << which_arm << ":\n"; 
-    //for(int i=0; i<10; i++) cout << values[i] << endl;
+   // cout  << "arm " << which_arm << endl; 
+   // for(int i=0; i<10; i++) cout << values[i] << endl;
 
     return ok;
 }
@@ -199,10 +219,22 @@ bool CB::iCubFullArmConfigurationVariables::connectToDevice() {
         delete tmp[i];
     }
 
+    double t=values[0];
+    values[0]=values[2];
+    values[2]=t;   
+
+    t=minLimits[0];
+    minLimits[0]=minLimits[2];
+    minLimits[2]=t;   
+
+    t=maxLimits[0];
+    maxLimits[0]=maxLimits[2];
+    maxLimits[2]=t;   
+
     // send positions to robot
-    pos[0]->positionMove(0, desiredValues[0]*TODEG);
+    pos[0]->positionMove(2, desiredValues[0]*TODEG);
     pos[0]->positionMove(1, desiredValues[1]*TODEG);
-    pos[0]->positionMove(2, desiredValues[2]*TODEG);
+    pos[0]->positionMove(0, desiredValues[2]*TODEG);
     pos[1]->positionMove(0, desiredValues[3]*TODEG);
     pos[1]->positionMove(1, desiredValues[4]*TODEG);
     pos[1]->positionMove(2, desiredValues[5]*TODEG);
@@ -305,7 +337,7 @@ void CB::iCubFullArmConfigurationVariables::loadConfig(string fname) {
             maxSetVal = atof(tmpStr.c_str());
             cout << "MaxSetVal: " << maxSetVal << endl;        
         }
-        else if(!strncmp(line,"TORSO GAIN:",11)) {
+        else if(!strncmp(line,"TORSO-GAIN:",11)) {
             lineStr = string(line);
             start = lineStr.find_first_of(" ", 0);
             stop = lineStr.find_first_of(" \n", start+1);
@@ -313,7 +345,7 @@ void CB::iCubFullArmConfigurationVariables::loadConfig(string fname) {
             velocityGain[0] = atof(tmpStr.c_str());
             cout << "Torso Gain: " << velocityGain[0] << endl;        
         }
-        else if(!strncmp(line,"ARM GAIN:",9)) {
+        else if(!strncmp(line,"ARM-GAIN:",9)) {
             lineStr = string(line);
             start = lineStr.find_first_of(" ", 0);
             stop = lineStr.find_first_of(" \n", start+1);
@@ -349,12 +381,13 @@ void CB::iCubFullArmConfigurationVariables::setVelocityControlMode(bool mode, st
     velocityRPCPortName[0] = torsoPortName + "/input";      
     velocityRPCPortName[1] = armPortName + "/input";      
 
-    Bottle b[2];
+    Bottle b;
 
     if(mode && !velocityControlMode) {
 
         // if we're turning on the velocityControlMode (and it wasnt previously on)
 
+        cout << "iCubFullArmConfigurationVariables::setVelocityControlMode() -- setting up velocity ports..." << endl;
         // open and connect the data and config portsport
         ok &= velocityPort[0].open(velocityOutputPortName[0].c_str());
         ok &= velocityPort[1].open(velocityOutputPortName[1].c_str());
@@ -371,19 +404,25 @@ void CB::iCubFullArmConfigurationVariables::setVelocityControlMode(bool mode, st
         ok &= Network::connect(velocityRPCOutputPortName[1].c_str(),velocityRPCPortName[1].c_str(),"tcp");
 
         // send gain and maxVel paramaters to the vc module 
+        int lim;
         for(int i=0; i<2; i++) {
-            b[i].clear();
-            b[i].addString("gain");
-            b[i].addInt(i);
-            b[i].addDouble(velocityGain[i]);
-            velocityRPCPort[i].write(b[i]);
-            Time::delay(0.1);
-            b[i].clear();
-            b[i].addString("svel");
-            b[i].addInt(i);
-            b[i].addDouble(maxSetVal);
-            velocityRPCPort[i].write(b[i]);
-            Time::delay(0.1);        
+            if(i==0) lim=3;
+            else lim=7;
+            for(int k=0; k<lim; k++) {
+                b.clear();
+                b.addString("gain");
+                b.addInt(k);
+                b.addDouble(velocityGain[i]);
+                velocityRPCPort[i].write(b);
+                Time::delay(0.1);
+                b.clear();
+                b.addString("svel");
+                b.addInt(k);
+                b.addDouble(maxSetVal);
+                velocityRPCPort[i].write(b);
+                Time::delay(0.1);        
+                cout << "setting part["<<i<<"], jnt[" << k << "]" << endl;
+            }
         }
 
 

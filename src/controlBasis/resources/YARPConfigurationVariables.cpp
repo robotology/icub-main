@@ -59,6 +59,7 @@ bool CB::YARPConfigurationVariables::updateResource() {
     for(int i = 0; i < mask.size(); i++) {
         if(!mask[i]) continue;
         values[idx++] = tmp[i]*TORAD;
+        //cout << "read value[" << i << "]: " << values[idx-1]*TORAD << ", degrees=" << values[idx-1] << endl;  
     }
 
     // set device values for (unmasked) joints
