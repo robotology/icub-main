@@ -173,6 +173,7 @@ cDownloader downloader;
 
 //can_parameters_type params;
 int networkId=0;
+const int maxNetworks=10; //max number of can networks
 std::string networkType;
 bool calibration_enabled=false;
 bool prompt_version=false;
@@ -337,14 +338,14 @@ static GtkTreeModel * create_net_model (void)
     store = gtk_list_store_new (1, G_TYPE_STRING);
 
     // add data to the list store
-    gtk_list_store_append (store, &iter);
-    gtk_list_store_set (store, &iter, 0, "Net 0",-1);
-    gtk_list_store_append (store, &iter);
-    gtk_list_store_set (store, &iter, 0, "Net 1",-1);  
-    gtk_list_store_append (store, &iter);
-    gtk_list_store_set (store, &iter, 0, "Net 2",-1);  
-    gtk_list_store_append (store, &iter);
-    gtk_list_store_set (store, &iter, 0, "Net 3",-1);  
+
+    for (int k=0;k<maxNetworks;k++)
+        {
+            char tmp[80];
+            sprintf(tmp, "Net %d", k);
+            gtk_list_store_append (store, &iter);
+            gtk_list_store_set (store, &iter, 0, tmp,-1);
+        }
 
     return GTK_TREE_MODEL (store);
 }
@@ -364,6 +365,8 @@ static GtkTreeModel * create_netType_model (void)
     gtk_list_store_set (store, &iter, 0, "ecan",-1);
     gtk_list_store_append (store, &iter);
     gtk_list_store_set (store, &iter, 0, "pcan",-1);    
+    gtk_list_store_append (store, &iter);
+    gtk_list_store_set (store, &iter, 0, "cfw2can",-1);    
 
     return GTK_TREE_MODEL (store);
 }
@@ -383,6 +386,7 @@ static void combo_nettype_changed (GtkComboBox *box,	gpointer   user_data)
 	{
 		case 0: networkType = "ecan"; break;
 		case 1: networkType = "pcan";  break;
+        case 2: networkType="cfw2can"; break;
 	}
 }
 
@@ -1353,7 +1357,7 @@ void fatal_error(int err)
 		break;
 		case INVALID_PARAM_CANTYPE:
 			printf("ERROR: invalid --canDeviceType parameter \n");
-			printf("must be 'ecan' or 'pcan'\n");
+			printf("must be 'ecan' or 'pcan' or 'cfwcan'\n");
 			exit(err);
 		break;
 		case INVALID_PARAM_CANNUM:
@@ -1425,7 +1429,7 @@ int myMain( int   argc, char *argv[] )
 				printf("./canLoader20 \n");
 				printf("2) to execute the command line version of the canLoader:\n");
 				printf("./canLoader20 --canDeviceType t --canDeviceNum x --boardId y --firmware myFirmware.out.S\n");
-				printf("parameter t is the name of the CAN bus driver. It can be ecan or pcan\n");
+				printf("parameter t is the name of the CAN bus driver. It can be ecan or pcan cfw2can\n");
 				printf("parameter x is the number of the CAN bus (0-3)\n");
 				printf("parameter y is the CAN address of the board (0-15)\n");
 				exit(0);
@@ -1443,7 +1447,8 @@ int myMain( int   argc, char *argv[] )
 				int temp_val=-1;
 
 				if (strcmp(argv[2],"ecan") !=0 &&
-					strcmp(argv[2],"pcan") !=0 )
+					strcmp(argv[2],"pcan") !=0 &&
+                    strcmp(argv[3],"cfw2can")!=0)
 					{
 						fatal_error(INVALID_PARAM_CANTYPE);
 					}
