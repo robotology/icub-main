@@ -200,7 +200,7 @@ bool selectiveAttentionModule::outPorts(){
         commandBottle.clear();
         commandBottle.addVocab(VOCAB3('s','e','t'));
         commandBottle.addVocab(VOCAB3('k','t','d'));
-        salienceTD=salienceTD+0.001;
+        salienceTD=salienceTD+0.1;
         if(salienceTD>0.99)
             salienceTD=0.99;
         commandBottle.addDouble((double)salienceTD);
@@ -208,7 +208,7 @@ bool selectiveAttentionModule::outPorts(){
         commandBottle.clear();
         commandBottle.addVocab(VOCAB3('s','e','t'));
         commandBottle.addVocab(VOCAB3('k','b','u'));
-        salienceBU=salienceBU-0.001;
+        salienceBU=salienceBU-0.1;
         if(salienceBU<=0)
             salienceBU=0;
         commandBottle.addDouble((double)salienceBU);
