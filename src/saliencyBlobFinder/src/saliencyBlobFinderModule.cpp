@@ -477,7 +477,8 @@ bool saliencyBlobFinderModule::respond(const Bottle &command,Bottle &reply){
             reply.addString("set gin : set green intensity value for the target to be sought");
             reply.addString("set bin : set blue intensity value for the target to be sought");
             reply.addString("\n");
-            reply.addString("set rea : set the constantTimeGazeControl in terms of seconds ");
+            reply.addString("set tcon : set the constantTimeGazeControl (ex.: format for iKinGazeCtrl) ");
+            reply.addString("set tcen : set the constantTimeCentroidControl (ex.: format for controlGaze2) ");
 
             reply.addString("\n");
 
@@ -582,10 +583,10 @@ bool saliencyBlobFinderModule::respond(const Bottle &command,Bottle &reply){
                 break;
             case COMMAND_VOCAB_TCON:{
                 //int j = command.get(2).asInt();
-                printf("constantTimeGazeControl of the output \n");
+                printf("constantTimeGazeControl of the output   \n");
                 double w= command.get(2).asDouble();
                 if(0!=blobFinder)
-                    this->blobFinder->constantTimeGazeControl=w/10;
+                    this->blobFinder->constantTimeGazeControl=w;
                 ok=true;
             }
                 break;
@@ -594,7 +595,7 @@ bool saliencyBlobFinderModule::respond(const Bottle &command,Bottle &reply){
                 printf("constantTimeCentroid of the output \n");
                 double w= command.get(2).asDouble();
                 if(0!=blobFinder)
-                    this->blobFinder->constantTimeCentroid=w/10;
+                    this->blobFinder->constantTimeCentroid=w;
                 ok=true;
             }
                 break;

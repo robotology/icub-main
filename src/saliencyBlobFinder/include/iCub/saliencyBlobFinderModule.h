@@ -157,6 +157,9 @@ This module is able to respond to the following set of commands:
 - set Mdb: Maximum dimension of the blob analysed
 - set mdb: minimum dimension of the blob analysed
 
+- set tcon: set the timeconstant in second for output format (x y z) 3d space
+- set tcen: set the time constant in second for output forma (img x y) imageplane
+
 - get kbu: weight of the bottom-up algorithm
 - get ktd: weight of top-down algorithm
 - get rin: red intensity value
