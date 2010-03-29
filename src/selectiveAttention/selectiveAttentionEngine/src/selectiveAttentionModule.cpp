@@ -182,25 +182,31 @@ bool selectiveAttentionModule::outPorts(){
         //Bottle& commandBottle=feedbackPort.prepare();
         Bottle in,commandBottle;
         commandBottle.clear();
-        commandBottle.addVocab(VOCAB3('s','e','t'));
-        commandBottle.addVocab(VOCAB3('r','i','n'));
-        commandBottle.addDouble((double)currentProcessor->targetRed);
-        feedbackPort.write(commandBottle,in);
-        commandBottle.clear();
-        commandBottle.addVocab(VOCAB3('s','e','t'));
-        commandBottle.addVocab(VOCAB3('g','i','n'));
-        commandBottle.addDouble((double)currentProcessor->targetGreen);
-        feedbackPort.write(commandBottle,in);
-        commandBottle.clear();
-        commandBottle.addVocab(VOCAB3('s','e','t'));
-        commandBottle.addVocab(VOCAB3('b','i','n'));
-        commandBottle.addDouble((double)currentProcessor->targetBlue);
-        feedbackPort.write(commandBottle,in);
+        if(salienceTD<0.5){
+            commandBottle.addVocab(VOCAB3('s','e','t'));
+            commandBottle.addVocab(VOCAB3('r','i','n'));
+            commandBottle.addDouble((double)currentProcessor->targetRed);
+            feedbackPort.write(commandBottle,in);
+            commandBottle.clear();
+            commandBottle.addVocab(VOCAB3('s','e','t'));
+            commandBottle.addVocab(VOCAB3('g','i','n'));
+            commandBottle.addDouble((double)currentProcessor->targetGreen);
+            feedbackPort.write(commandBottle,in);
+            commandBottle.clear();
+            commandBottle.addVocab(VOCAB3('s','e','t'));
+            commandBottle.addVocab(VOCAB3('b','i','n'));
+            commandBottle.addDouble((double)currentProcessor->targetBlue);
+            feedbackPort.write(commandBottle,in);
+        }
+        else{
+            printf("%f,%f,%f \n",currentProcessor->targetRed,currentProcessor->targetGreen,currentProcessor->targetBlue);
+        }
         //setting coefficients
         commandBottle.clear();
         commandBottle.addVocab(VOCAB3('s','e','t'));
         commandBottle.addVocab(VOCAB3('k','t','d'));
         salienceTD=salienceTD+0.1;
+        printf("salienceTD: %f \n", salienceTD);
         if(salienceTD>0.99)
             salienceTD=0.99;
         commandBottle.addDouble((double)salienceTD);
