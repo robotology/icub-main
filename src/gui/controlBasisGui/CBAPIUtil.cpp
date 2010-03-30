@@ -73,8 +73,15 @@ CBAPITextWindow::~CBAPITextWindow() { }
 void CBAPITextWindow::append_text(string text) {
   Glib::RefPtr<Gtk::TextBuffer> refTextBuffer = m_TextView.get_buffer();
   int last_line = refTextBuffer->get_line_count();
+
   Gtk::TextBuffer::iterator iter = refTextBuffer->get_iter_at_line(last_line);
   refTextBuffer->insert(iter, text);
+
+  if(last_line > 500) {
+      Gtk::TextBuffer::iterator iter_first = refTextBuffer->get_iter_at_line(0);
+      Gtk::TextBuffer::iterator iter_last  = refTextBuffer->get_iter_at_line(100);
+      refTextBuffer->erase(iter_first,iter_last);
+  }
 
   Glib::RefPtr<Gtk::TextBuffer::Tag> refTagMatch = Gtk::TextBuffer::Tag::create();
   refTagMatch->property_foreground() = fg.c_str();

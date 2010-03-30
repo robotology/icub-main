@@ -96,11 +96,11 @@ on terminal 2: iCubControlBasisResources  // this starts up the resources indica
 on terminal 2a: referenceGui // starts up iCub reference modules
 
 // start the GUI
-on terminal 3: controlBasisGUI
+on terminal 3: controlBasisGui
 \endcode
  
 This file can be edited at 
-\in src/controlBasis/app/controlBasisGUI.cpp.
+\in src/controlBasis/app/controlBasisGui.cpp.
 
 **/
 

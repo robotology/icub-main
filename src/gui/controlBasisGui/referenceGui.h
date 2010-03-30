@@ -7,6 +7,7 @@
 
 #include <iCubConfigurationReference.h>
 #include <CartesianPositionReference.h>
+#include <CartesianOrientationReference.h>
 #include <HeadingFovea.h>
 
 namespace CB {
@@ -31,6 +32,7 @@ namespace CB {
 
         // table widgets for each reference
         Gtk::Table posTable;
+        Gtk::Table rotTable;
         Gtk::Table armTable;
         Gtk::Table legTable;
         Gtk::Table fullArmTable;
@@ -40,6 +42,7 @@ namespace CB {
         Gtk::Table eyeTable;
 
         Gtk::Frame posFrame;
+        Gtk::Frame rotFrame;
         Gtk::Frame armFrame;
         Gtk::Frame legFrame;
         Gtk::Frame fullArmFrame;
@@ -55,6 +58,9 @@ namespace CB {
 
         Gtk::Entry posEntry[MAX_VALS];
         Gtk::Label posLabel[MAX_VALS];
+
+        Gtk::Entry rotEntry[MAX_VALS];
+        Gtk::Label rotLabel[MAX_VALS];
 
         Gtk::Entry armEntry[MAX_VALS];
         Gtk::Label armLabel[MAX_VALS];
@@ -95,6 +101,7 @@ namespace CB {
         iCubConfigurationReference *iCubEyePanTiltRef;
         iCubConfigurationReference *iCubEyePanTiltVergeRef;
         CartesianPositionReference *iCubPositionRef;
+        CartesianOrientationReference *iCubOrientationRef;
         HeadingFovea *fovea;
 
         yarp::sig::Vector armRef;
@@ -104,6 +111,7 @@ namespace CB {
         yarp::sig::Vector handRef;
         yarp::sig::Vector torsoRef;
         yarp::sig::Vector posRef;
+        yarp::sig::Vector rotRef;
         yarp::sig::Vector eyePanTiltRef;
         yarp::sig::Vector eyePanTiltVergeRef;
 
