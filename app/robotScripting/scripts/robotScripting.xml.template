@@ -26,14 +26,14 @@
 
 <module>
    <name>ctpService</name>
-   <parameters>--robot icub --part left_leg/parameters>
+   <parameters>--robot icub --part left_leg</parameters>
    <node>icub1</node>
    <tag>left_leg_ctp</tag>
 </module>
 
 <module>
    <name>ctpService</name>
-   <parameters>--robot icub --part right_leg/parameters>
+   <parameters>--robot icub --part right_leg</parameters>
    <node>icub1</node>
    <tag>right_leg_ctp</tag>
 </module>
@@ -47,7 +47,7 @@
 
 <module>
    <name>ctpService</name>
-   <parameters>--robot icub --part torso/parameters>
+   <parameters>--robot icub --part torso</parameters>
    <node>icub1</node>
    <tag>torso_ctp</tag>
 </module>
