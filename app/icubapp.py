@@ -121,7 +121,6 @@ class App:
 
     def setAppList(self, appList):
 	self.appList=appList
-        print appList
 
 	tmpFrame=Frame(self.master, relief=SUNKEN)
 
@@ -137,7 +136,6 @@ class App:
 
 	for app in appList:
 	    tmpFrame.grid(row=r, column=c, sticky=W)
-	    print app.context
 
 	    tmpApp=Label(tmpFrame, text=app.context, relief=SUNKEN).grid(row=r, column=0, sticky=N+W+E)
 ##             tmpFrame.columnconfigure(0, minsize=150)
@@ -160,7 +158,6 @@ class App:
 	print fullPathToXml
 
 	cmd=['python', self.manager, fullPathToXml]
-	#print cmd
 	ret=subprocess.Popen(cmd);
 
 def searchManager():
@@ -173,14 +170,11 @@ def searchManager():
 		for f in files:
 		    if isManagerPy(f):
 			ret=os.path.join(c, 'scripts', f)
-#			print ret
 			return ret
 
 def searchApplications(appDirs):
-    print appDirs
     allContexts=os.listdir('.')
     allContexts.sort()
-#    print allContexts
     contexts=[]
    
     # handle special cases
@@ -191,22 +185,18 @@ def searchApplications(appDirs):
     else:
         contexts=pruneContexts(appDirs, allContexts)
 
-    print contexts
     applications=[]
 
     for c in contexts:
 	if (os.path.isdir(c)):
-#	    print c
 	    tmp=os.listdir(c)
 	    if 'scripts' in tmp:
-#               print c
 		tmpApp=appEntry()
 		files=os.listdir(os.path.join(c,'scripts'))
 		tmpApp.path=os.path.join(c,'scripts')
 		tmpApp.context=c
 		tmpApp.xmls=filter(isXML, files)
 
-#              print tmpApp.xmls
 		if (tmpApp.xmls!=[]):
 		    applications.append(tmpApp)
 
