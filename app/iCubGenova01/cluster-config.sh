@@ -1,4 +1,0 @@
-USER=icub
-NAMESPACE=/icub01
-NODE_NAMESERVER=icub10
-CLUSTERS="pc104-icub01 icub10 icub12"
