@@ -1,3 +1,4 @@
+<!-- This is a template to start a number of control basis resources. "plutonia" is the node that these resources are started on --> 
 <application>
   <name>iCubSimControlBasisResourceStarter</name>
   <dependencies>

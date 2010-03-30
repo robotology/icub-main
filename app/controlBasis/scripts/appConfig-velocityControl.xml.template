@@ -1,38 +1,41 @@
+<!-- This is a template to start a number velocityControl modules for the iCub. 
+<!-- "/icub01" is the node that these modules are started on. Running a number of these at 5ms periods could be intensive, so it
+<!-- would be good to make sure the nodes are fast, and maybe to distribute them on the network. -->
 <application>
   <name>iCubVelocityControlStarter</name>
 	<module>
 		<name>velocityControl</name>
-		<parameters>--robot icub --part right_arm --period 10</parameters>
+		<parameters>--robot icub --part right_arm --period 5</parameters>
 		<tag>rightArmVelController</tag>
 		<node>/icub01</node>
 	</module>
 	<module>
 		<name>velocityControl</name>
-		<parameters>--robot icub --part left_arm --period 10</parameters>
+		<parameters>--robot icub --part left_arm --period 5</parameters>
 		<tag>leftArmVelController</tag>
 		<node>/icub01</node>
 	</module>
 	<module>
 		<name>velocityControl</name>
-		<parameters>--robot icub --part torso --period 10</parameters>
+		<parameters>--robot icub --part torso --period 5</parameters>
 		<tag>torsoVelController</tag>
 		<node>/icub01</node>
 	</module>
 	<module>
 		<name>velocityControl</name>
-		<parameters>--robot icub --part head --period 10</parameters>
+		<parameters>--robot icub --part head --period 5</parameters>
 		<tag>headVelController</tag>
 		<node>/icub01</node>
 	</module>
 	<module>
 		<name>velocityControl</name>
-		<parameters>--robot icub --part right_leg --period 10</parameters>
+		<parameters>--robot icub --part right_leg --period 5</parameters>
 		<tag>rightLegVelController</tag>
 		<node>/icub01</node>
 	</module>
 	<module>
 		<name>velocityControl</name>
-		<parameters>--robot icub --part left_leg --period 10</parameters>
+		<parameters>--robot icub --part left_leg --period 5</parameters>
 		<tag>leftLegVelController</tag>
 		<node>/icub01</node>
 	</module>
