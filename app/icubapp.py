@@ -121,6 +121,7 @@ class App:
 
     def setAppList(self, appList):
 	self.appList=appList
+        print appList
 
 	tmpFrame=Frame(self.master, relief=SUNKEN)
 
@@ -135,9 +136,9 @@ class App:
 	c=1
 
 	for app in appList:
-
 	    tmpFrame.grid(row=r, column=c, sticky=W)
-#	    print app.context
+	    print app.context
+
 	    tmpApp=Label(tmpFrame, text=app.context, relief=SUNKEN).grid(row=r, column=0, sticky=N+W+E)
 ##             tmpFrame.columnconfigure(0, minsize=150)
 ##             tmpFrame.columnconfigure(1, minsize=150)
@@ -153,11 +154,6 @@ class App:
 		tmp.grid(row=r, column=2, sticky=N)
 		r=r+1
 	    r=r+1
-
-	    if (r==10):
-		r=1
-		c=c+1
-
 
     def runManager(self, fullPathToXml):
 	print "running",
@@ -181,7 +177,10 @@ def searchManager():
 			return ret
 
 def searchApplications(appDirs):
+    print appDirs
     allContexts=os.listdir('.')
+    allContexts.sort()
+#    print allContexts
     contexts=[]
    
     # handle special cases
@@ -192,7 +191,7 @@ def searchApplications(appDirs):
     else:
         contexts=pruneContexts(appDirs, allContexts)
 
-#   print contexts
+    print contexts
     applications=[]
 
     for c in contexts:

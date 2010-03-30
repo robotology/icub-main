@@ -2,7 +2,7 @@
 Main
 
 [APPLICATIONS]
-# use * or let empty to mean everything
+# use * or leave empty to mean everything
 controlBasis
 
 
