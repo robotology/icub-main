@@ -182,7 +182,7 @@ bool selectiveAttentionModule::outPorts(){
         //Bottle& commandBottle=feedbackPort.prepare();
         Bottle in,commandBottle;
         commandBottle.clear();
-        if(salienceTD<0.5){
+        if(salienceTD<0.8){
             commandBottle.addVocab(VOCAB3('s','e','t'));
             commandBottle.addVocab(VOCAB3('r','i','n'));
             commandBottle.addDouble((double)currentProcessor->targetRed);
@@ -199,16 +199,17 @@ bool selectiveAttentionModule::outPorts(){
             feedbackPort.write(commandBottle,in);
         }
         else{
-            printf("%f,%f,%f \n",currentProcessor->targetRed,currentProcessor->targetGreen,currentProcessor->targetBlue);
+            printf("%f,%f,%f \n",(double)currentProcessor->targetRed,(double)currentProcessor->targetGreen,(double)currentProcessor->targetBlue);
         }
         //setting coefficients
         commandBottle.clear();
         commandBottle.addVocab(VOCAB3('s','e','t'));
         commandBottle.addVocab(VOCAB3('k','t','d'));
         salienceTD=salienceTD+0.1;
-        printf("salienceTD: %f \n", salienceTD);
+        
         if(salienceTD>0.99)
             salienceTD=0.99;
+        printf("salienceTD: %f \n", salienceTD);
         commandBottle.addDouble((double)salienceTD);
         feedbackPort.write(commandBottle,in);
         commandBottle.clear();
