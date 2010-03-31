@@ -3,7 +3,7 @@
  
 @ingroup icub_module 
  
-Hidden beyond a sophisticated name lies a simple but useful 
+Hidden behind a sophisticated name lies a simple but useful 
 service that will allow you to send constant time position
 commands to any of the robot ports.
 
@@ -17,8 +17,17 @@ the current encoders and compute the reference speed accordingly).
 
 \section ports_sec Ports and Messages
 
-- Opens robot position interface for a given part.
-- Opens incoming port, for receiving commands.
+- Input, for receiving commands:
+ - /ctpservice/{part}/rpc
+
+- Output, to interface with the robot, usual control board ports:
+ - /ctpservice/local/{part}/rpc:o
+ - /ctpservice/local/{part}/state:i
+ - /ctpservice/local/{part}/command:o
+
+Here {part} is replaced with the robot part (see --part parameter)
+
+ctpservice is a default value that can be replaced with --name.
 
 Incoming commands are the following:
 
@@ -35,10 +44,13 @@ This requires 1 second movement of joints 5,6,7 to 10 10 10 respectively:
 \section parameters_sec Parameters
 Run as:
 
-ctpService --robot robotname --part part
+ctpService --robot robotname --part part (optionally: --name modulename)
 
 robot: name of robot (e.g. icub)
+
 part: prefix for part name (e.g. right_arm)
+
+name: module name (used to form port names)
 
 \section lib_sec Libraries 
 - YARP libraries. 
