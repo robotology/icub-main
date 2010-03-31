@@ -183,6 +183,21 @@ namespace CB {
          **/
         double convergenceStoreLast;
 
+        /**
+         * stores the start time of the controller
+         **/
+        double t0;
+
+        /**
+         * stores the time of the last iteration of the controller
+         **/
+        double t_last;
+
+        /**
+         * stores an estimate of dt
+         **/
+        double dt;
+
     public:
         
         /** 

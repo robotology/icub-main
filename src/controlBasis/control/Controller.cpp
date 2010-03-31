@@ -326,6 +326,12 @@ bool CB::Controller::updateAction() {
     Vector grad = potentialFunction->getPotentialGradient();
     potential = potentialFunction->getPotential();
 
+    if(iterations==0) {
+        t0 = Time::now();
+        t_last = 0;
+        dt = 0;
+    }
+
     Matrix J(1,grad.size());
     Matrix JT(grad.size(),1);
     Matrix JTinv(1,grad.size());
@@ -342,6 +348,11 @@ bool CB::Controller::updateAction() {
     for(int i=0; i<grad.size(); i++) {
         Jinv[i][0] = JTinv[0][i];
     }
+
+    double t = fabs(Time::now() - t0);
+    dt = t-t_last;
+    t_last = t;
+    if(dt > 1) dt = 0.02;
 
     // if there needs to be an intermediate jacobain computed, connect to it here.
     if(needsJacobian) {
@@ -375,10 +386,14 @@ bool CB::Controller::updateAction() {
             Jfull = Jint*JT;
         }
 
-        // compute the controlle output
+        // compute the controller output
         for(int i=0; i<Vout.size(); i++) {
-            //Vout[i] = Jfull[i][0]*(-gain*potential - 2.0*gain*potentialDot);
-            Vout[i] = -gain*potential*Jfull[i][0];
+            if(potentialDot<0) {
+                Vout[i] = Jfull[i][0]*(-gain*potential + 0.2*gain*potentialDot);
+            } else {
+                Vout[i] = Jfull[i][0]*(-gain*potential);
+            }            
+            //Vout[i] = -gain*potential*Jfull[i][0];
         }
 
         if(useJacobianTranspose) {
@@ -395,12 +410,21 @@ bool CB::Controller::updateAction() {
         
         for(int i=0; i<Vout.size(); i++) {
             if(useJacobianTranspose) {
-                Vout[i] = -potential*JT[0][i]*gain;
+                if(potentialDot<0) {
+                    Vout[i] = JT[0][i]*(-gain*potential + 0.2*gain*potentialDot);
+                } else {
+                    Vout[i] = JT[0][i]*(-gain*potential);
+                }            
+                //Vout[i] = -potential*JT[0][i]*gain;
             } else {
-                Vout[i] = -potential*Jinv[0][i]*gain;
+                if(potentialDot<0) {
+                    Vout[i] = Jinv[0][i]*(-gain*potential + 0.2*gain*potentialDot);
+                } else {
+                    Vout[i] = Jinv[0][i]*(-gain*potential);
+                }            
+                //Vout[i] = -potential*Jinv[0][i]*gain;
             }
-        }
-        
+        }        
         Jc = J;
     }
 
@@ -416,11 +440,11 @@ bool CB::Controller::updateAction() {
     if(iterations >= lag) {
 
         potentialLast = potentialStore[potentialStore.size() - lag];
-        pdiff = potential - potentialLast;
+        pdiff = (potential - potentialLast)/dt;
         potentialDot = a*pdiff + (1.0-a)*potentialDot; 
 
         // set the state based on the estimated change in potential
-        if(fabs(potentialDot) < 1E-4) {
+        if(fabs(potentialDot) < 5E-2) {
             tmp = 1;
             //dynamicState = CONVERGED;
         } else {
@@ -443,13 +467,17 @@ bool CB::Controller::updateAction() {
         
         // this is a buffer to not update too quickly
         potentialLast = potentialStore[0];
-        pdiff = potential - potentialLast;
+        pdiff = (potential - potentialLast)/dt;
         potentialDot = a*pdiff + (1.0-a)*potentialDot; 
         dynamicState = UNCONVERGED;
     } 
 
-
-    potentialDotStore.push_back(potentialDot);
+    if(iterations%50 == 0) {
+        if(potentialDotStore.size() >= 999) {
+            potentialDotStore.erase(potentialDotStore.begin());
+        }
+        potentialDotStore.push_back(potentialDot);
+    }
 
     //cout << "Controller potential: " << potential << ", potentialDot: " << potentialDot << endl;
     return true;
