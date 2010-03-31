@@ -1,12 +1,6 @@
 SET(PROJECTNAME iCubDev)
 PROJECT(${PROJECTNAME})
 
-FIND_PACKAGE(ICUB QUIET)
-IF (NOT ICUB_FOUND)
-   MESSAGE (STATUS "ICUB repository not found; assuming distributed build.")
-   MESSAGE (STATUS "If this is not what you want, set ICUB_DIR variable.")
-ENDIF (NOT ICUB_FOUND)
-
 # Find .cpp and .h files automatically.  This is a bit lazy,
 # and in principle it would be better to list these files manually.
 FILE(GLOB folder_source src/*.cpp)
@@ -21,8 +15,8 @@ INCLUDE_DIRECTORIES(${PROJECT_SOURCE_DIR}/include)
 
 # Create everything needed to build our executable.
 ADD_LIBRARY(${PROJECTNAME} ${folder_source} ${folder_header})
-INSTALL(TARGETS ${PROJECTNAME} DESTINATION lib)
-INSTALL(FILES ${folder_header} DESTINATION include/iCub)
+
+icub_export_library(${PROJECTNAME} iCub/)
 
 # Makes VS a bit quiter wrt warnings.
 IF(MSVC)

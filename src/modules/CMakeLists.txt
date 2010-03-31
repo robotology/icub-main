@@ -1,30 +1,12 @@
 PROJECT(iCubModules)
 
 FIND_PACKAGE(YARP REQUIRED)
-FIND_PACKAGE(LOGPOLAR REQUIRED)
 
 # Prepare a device library called "icubmod".
 # A test executable called "icubmoddev" will also be produced.
 
 BEGIN_DEVICE_LIBRARY(icubmod)
-  ADD_SUBDIRECTORY(staticgrabber)
-  ADD_SUBDIRECTORY(dragonfly2)
-  ADD_SUBDIRECTORY(xsensmtx)
-  ADD_SUBDIRECTORY(armcalibrator)
-  ADD_SUBDIRECTORY(handcalibrator)
-  ADD_SUBDIRECTORY(headcalibrator)
-  ADD_SUBDIRECTORY(legscalibrator)
-  ADD_SUBDIRECTORY(torsoonlycalibrator)
-  ADD_SUBDIRECTORY(fakeCan)
-  ADD_SUBDIRECTORY(cartesianController)
-  ADD_SUBDIRECTORY(logpolarGrabber)
-  ADD_SUBDIRECTORY(logpolarClient)
-
-  ADD_SUBDIRECTORY(canBusMotionControl)
-  ADD_SUBDIRECTORY(plxCan)
-  ADD_SUBDIRECTORY(esdCan)
-  ADD_SUBDIRECTORY(esdSniffer)
-  
+  add_subdirectory(staticgrabber)
 END_DEVICE_LIBRARY(icubmod)
 
 IF(MSVC)
@@ -32,7 +14,7 @@ IF(MSVC)
     SET_TARGET_PROPERTIES(icubmod PROPERTIES COMPILE_FLAGS /wd4996)
 ENDIF(MSVC)
 
-#ADD_SUBDIRECTORY(motionControlLib)
+#add_subdirectory(motionControlLib)
 IF (USE_ICUB_MOD)
   INSTALL(TARGETS icubmoddev DESTINATION bin)
   INSTALL(TARGETS icubmod DESTINATION lib)

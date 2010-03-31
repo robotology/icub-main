@@ -2,9 +2,6 @@ SET(PROJECTNAME testArm)
 
 PROJECT(${PROJECTNAME})
 
-FIND_PACKAGE(YARP)
-FIND_PACKAGE(ICUB)
-
 # Find .cpp and .h files automatically.  This is a bit lazy,
 # and in principle it would be better to list these files manually.
 FILE(GLOB folder_source *.cpp)
