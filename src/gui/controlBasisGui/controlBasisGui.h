@@ -144,10 +144,18 @@ namespace CB {
         Gtk::Notebook cbapiNotebook;
 
         // widgets for the control tab
-        Gtk::Table controlTabTable;
+        Gtk::Table cbapiTable;
         Gtk::Table controlResourcesTable;
+
+        Gtk::Table controlTabTable;
         Gtk::Table controlDefinitionTable;
         Gtk::Table optionsTable;
+
+        // widgets for the sequence tab
+        Gtk::Table sequenceTabTable;
+        Gtk::Table sequenceControllersTable;
+        Gtk::Frame sequenceControllersFrame;
+        Gtk::Frame sequenceOutputFrame;
 
         Gtk::Frame controlResourcesFrame;
         Gtk::Frame controlDefinitionFrame;
@@ -159,11 +167,21 @@ namespace CB {
         Gtk::Button stopControllerButton;
         Gtk::Button refreshButton;
 
+        Gtk::Button addControllerToSequenceButton;
+        Gtk::Button clearSequenceButton;
+        Gtk::Button runSequenceButton;
+        Gtk::Button stopSequenceButton;
+        Gtk::Button fwdSequenceButton;
+        Gtk::Button bkSequenceButton;
+
         Gtk::CheckButton allowVirtualEffectorsBox;
         Gtk::CheckButton useJacobianTransposeBox;
 
-        Gtk::Entry gainEntry;
-        Gtk::Label gainLabel;
+        Gtk::Entry controllerGainEntry;
+        Gtk::Label controllerGainLabel;
+
+        Gtk::Entry sequenceGainEntry;
+        Gtk::Label sequenceGainLabel;
 
         ResourceList sensorList;
         ResourceList referenceList;
@@ -172,6 +190,9 @@ namespace CB {
         
         CBAPITextWindow controlDefinitionText;
         CBAPITextWindow controlOutputText;
+
+        CBAPITextWindow sequenceControllersText;
+        CBAPITextWindow sequenceOutputText;
         
         // storage information for building control laws
         std::vector<PotentialFunctionInfo *> pfInfo;
@@ -184,6 +205,14 @@ namespace CB {
         void on_run_button_clicked();
         void on_stop_button_clicked();
         void on_refresh_button_clicked();
+
+        void on_add_to_sequence_button_clicked();
+        void on_clear_sequence_button_clicked();
+        void on_run_sequence_button_clicked();
+        void on_stop_sequence_button_clicked();
+        void on_bk_sequence_button_clicked();
+        void on_fwd_sequence_button_clicked();
+
         void on_control_thread_update(ControlDataThread *dThread);
     
         // the main CBAPI class that we pass GUI events too...
@@ -197,6 +226,7 @@ namespace CB {
         Glib::RefPtr<Gtk::TreeSelection> effectorTreeSelection;
         
         bool controlLawRunning;
+        bool sequenceRunning;
         bool showVirtualEffectors;
         bool useJacobianTranspose;
 

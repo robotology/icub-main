@@ -26,6 +26,8 @@ namespace CB {
 
         int iteration;
 
+        bool runningSequence;
+
     private:
         Glib::Dispatcher my_dispatcher_;
         sigc::signal<void> control_thread_update_finished_;
@@ -39,16 +41,19 @@ namespace CB {
 
         virtual ~ControlDataThread() { } 
         
-        void connectCBPAIObjects(CBAPIHelper *c, CBAPITextWindow *txt) {
+        void connectCBAPIObjects(CBAPIHelper *c, CBAPITextWindow *txt, bool sequence) {
             cbapi = c;
             cbapiText = txt;
-            
-            numControllers = cbapi->getNumControllers();
+            runningSequence = sequence;
+
+            numControllers = cbapi->getNumControllers(runningSequence);
+
             for(int i=0; i<numControllers; i++) {
                 potentials.push_back(0);
                 potentialDots.push_back(0);
                 states.push_back(0);
             }
+            std::cout << "ControlDataThread::connectCBAPIObjects() finished" << std::endl;
         }
         
         sigc::signal<void>& control_thread_update_finished() {
@@ -66,14 +71,26 @@ namespace CB {
             char *state_char;
             state_char = (char *)malloc(2);
             outputString = "";
-            
-            for(int i=0; i<numControllers; i++) {
-                potentials[i] = cbapi->getPotential(i);
-                potentialDots[i] = cbapi->getPotentialDot(i);
-                states[i] = cbapi->getState(i);
+
+            int printLimit; 
+            if(runningSequence) {
+                printLimit = 1;
+            } else {
+                printLimit = numControllers;
+            }
+          
+            for(int i=0; i<printLimit; i++) {
+                potentials[i] = cbapi->getPotential(i, runningSequence);
+                potentialDots[i] = cbapi->getPotentialDot(i, runningSequence);
+                states[i] = cbapi->getState(i, runningSequence);
                 getStateChar(states[i], (char *)state_char);
-                sprintf(c,"c[%d], phi: %.7f, phi_dot: %.7f, state=%s\n",
-                        i, potentials[i], potentialDots[i], state_char);
+                if(!runningSequence) {
+                    sprintf(c,"c[%d], phi: %.7f, phi_dot: %.7f, state=%s\n",
+                            i, potentials[i], potentialDots[i], state_char);
+                } else {
+                    sprintf(c,"c[%d], phi: %.7f, phi_dot: %.7f, state=%s\n",
+                            cbapi->getSequenceControllerID(), potentials[i], potentialDots[i], state_char);
+                }
                 str = std::string(c);	
                 for(int k=0; k<i;k++) str = "\t" + str;
                 outputString += str;
@@ -84,10 +101,10 @@ namespace CB {
         }
         
         void startUpdateThread() { 
-            if(numControllers != cbapi->getNumControllers()) {
+            if(numControllers != cbapi->getNumControllers(runningSequence)) {
                 // if new controllers have been added since the last time
                 // the thread ran, allocated storage for them
-                numControllers = cbapi->getNumControllers();
+                numControllers = cbapi->getNumControllers(runningSequence);
                 for(int i=0; i<numControllers; i++) {
                     potentials.push_back(0);
                     potentialDots.push_back(0);
@@ -97,7 +114,9 @@ namespace CB {
             start(); 
         }
         
-        void stopUpdateThread() { stop(); }
+        void stopUpdateThread() { 
+            stop(); 
+        }
         
         std::string getOutputString() {
             return outputString;
