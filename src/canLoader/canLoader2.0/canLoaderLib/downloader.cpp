@@ -547,6 +547,7 @@ int cDownloader::strain_set_matrix_gain	 (int target_id, unsigned int  gain)
 	 txBuffer[0].getData()[1]= gain;
 
 	 int ret = m_candriver->send_message(txBuffer, 1);
+	 drv_sleep(5);
 
 	 return 0;
 }
@@ -600,6 +601,7 @@ int cDownloader::strain_set_full_scale	 (int target_id, unsigned char channel,  
 	 txBuffer[0].getData()[3]= full_scale & 0xFF;
 
 	 int ret = m_candriver->send_message(txBuffer, 1);
+ 	 drv_sleep(5);
 
 	 return 0;
 }
@@ -656,6 +658,7 @@ int cDownloader::strain_set_matrix_rc	 (int target_id, char r, char c, unsigned 
 	 txBuffer[0].getData()[3]= elem >> 8;
 	 txBuffer[0].getData()[4]= elem & 0xFF;
 	 int ret = m_candriver->send_message(txBuffer, 1);
+	 drv_sleep(5);
 
 	 return 0;
 }
