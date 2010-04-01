@@ -97,9 +97,11 @@ char *myitoa(int a, char *buff, int d)
 //*********************************************************************************
 gboolean timer_func (gpointer data)
 {
-	downloader.strain_get_eeprom_saved(downloader.board_list[selected].pid, &eeprom_saved_status);
 	int ret=0;
-	ret|=downloader.strain_get_offset (downloader.board_list[selected].pid, 0, offset[0]);
+	ret =downloader.strain_get_eeprom_saved(downloader.board_list[selected].pid, &eeprom_saved_status);
+	if (ret!=0) printf("debug: message 'train_get_eeprom_saved' lost.\n");
+
+	ret =downloader.strain_get_offset (downloader.board_list[selected].pid, 0, offset[0]);
 	ret|=downloader.strain_get_offset (downloader.board_list[selected].pid, 1, offset[1]);
 	ret|=downloader.strain_get_offset (downloader.board_list[selected].pid, 2, offset[2]);
 	ret|=downloader.strain_get_offset (downloader.board_list[selected].pid, 3, offset[3]);
@@ -108,12 +110,13 @@ gboolean timer_func (gpointer data)
 	if (ret!=0) printf("debug: message 'strain_get_offset' lost.\n");
 
 	int bool_raw= gtk_toggle_button_get_active (GTK_TOGGLE_BUTTON (check_raw_vals));
-	downloader.strain_get_adc (downloader.board_list[selected].pid, 0, adc[0], bool_raw);
-	downloader.strain_get_adc (downloader.board_list[selected].pid, 1, adc[1], bool_raw);
-	downloader.strain_get_adc (downloader.board_list[selected].pid, 2, adc[2], bool_raw);
-	downloader.strain_get_adc (downloader.board_list[selected].pid, 3, adc[3], bool_raw);
-	downloader.strain_get_adc (downloader.board_list[selected].pid, 4, adc[4], bool_raw);
-	downloader.strain_get_adc (downloader.board_list[selected].pid, 5, adc[5], bool_raw);
+	ret =downloader.strain_get_adc (downloader.board_list[selected].pid, 0, adc[0], bool_raw);
+	ret|=downloader.strain_get_adc (downloader.board_list[selected].pid, 1, adc[1], bool_raw);
+	ret|=downloader.strain_get_adc (downloader.board_list[selected].pid, 2, adc[2], bool_raw);
+	ret|=downloader.strain_get_adc (downloader.board_list[selected].pid, 3, adc[3], bool_raw);
+	ret|=downloader.strain_get_adc (downloader.board_list[selected].pid, 4, adc[4], bool_raw);
+	ret|=downloader.strain_get_adc (downloader.board_list[selected].pid, 5, adc[5], bool_raw);
+    if (ret!=0) printf("debug: message 'strain_get_adc' lost.\n");
 
 	int ri,ci=0;
 	char tempbuf [250];
@@ -389,7 +392,7 @@ void close_window (GtkDialog *window,	gpointer   user_data)
 void slider_changed (GtkButton *button,	gpointer ch_p)
 { 
 	int chan = *(int*)ch_p;
-	printf("debug: moved slider chan:%d\n",chan);
+	//printf("debug: moved slider chan:%d\n",chan);
 	offset[chan] = (unsigned int) (gtk_range_get_value (GTK_RANGE(slider_gain[chan])));
 	unsigned int curr_offset;
 //	downloader.strain_get_offset (downloader.board_list[selected].pid, chan, curr_offset);

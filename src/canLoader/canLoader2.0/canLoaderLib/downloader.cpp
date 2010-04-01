@@ -172,6 +172,9 @@ int cDownloader::strain_get_adc(int target_id, char channel, unsigned int& adc, 
 			printf ("ERR: Unable to send message\n");
 			return -1;
 		}
+
+	 drv_sleep(3);
+
 	 //read adc
 	 int read_messages = m_candriver->receive_message(rxBuffer,1);
 	 for (int i=0; i<read_messages; i++)
@@ -204,6 +207,8 @@ int cDownloader::strain_get_offset(int target_id, char channel, unsigned int& of
 	txBuffer[0].getData()[1]= channel;
 	int ret = m_candriver->send_message(txBuffer, 1);
 
+	drv_sleep(3);
+
 	int read_messages = m_candriver->receive_message(rxBuffer,1);
 	for (int i=0; i<read_messages; i++)
 	{
@@ -214,6 +219,7 @@ int cDownloader::strain_get_offset(int target_id, char channel, unsigned int& of
 				return 0;
 			}
 	}
+
 	return -1;
 }
 //*****************************************************************/
@@ -480,6 +486,8 @@ int cDownloader::strain_get_eeprom_saved (int target_id, bool* status)
 	 int read_messages = m_candriver->receive_message(rxBuffer,0.001); //flush buffer
 	 int ret = m_candriver->send_message(txBuffer, 1);
 
+	 drv_sleep(3);
+
  	 read_messages = m_candriver->receive_message(rxBuffer,1);
 	 for (int i=0; i<read_messages; i++)
 	 {
@@ -613,6 +621,8 @@ int cDownloader::strain_get_matrix_rc	 (int target_id, char r, char c, unsigned 
 	 txBuffer[0].getData()[2]= c;
 
 	 int ret = m_candriver->send_message(txBuffer, 1);
+
+	 drv_sleep(3);
 
 	 int read_messages = m_candriver->receive_message(rxBuffer,1);
 	 for (int i=0; i<read_messages; i++)
