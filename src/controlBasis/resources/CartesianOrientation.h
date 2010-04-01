@@ -10,27 +10,14 @@ namespace CB {
      * This class instantiates the abstract ControlBasisResource class for a CartesianOrientation 
      * type resource. It is still abstract, in that it doesn't implement a runnable resource. 
      * This class must be extended for specific cartesian orientation device that implements the 
-     * start, update, and stop functions.
+     * start, update, and stop functions.  
+     *
+     * It will be assumed that the orientation is represented in 4D axis-angle cooridinates
      **/
     class CartesianOrientation : public ControlBasisResource {       
         
     public:
         
-        /**
-         * returns the X coordinate of the orientation
-         **/    
-        double getX() { return values[0]; }
-
-        /**
-         * returns the Y coordinate of the orientation
-         **/    
-        double getY() { return values[1]; }
-        
-        /**
-         * returns the Z coordinate of the orientation
-         **/    
-        double getZ() { return values[2]; }
-
         /**
          * Constructor
          **/
@@ -38,7 +25,7 @@ namespace CB {
             ControlBasisResource("cartesianorientation", 0, 1) 
         {        
             std::cout << "setting type of CartesianOrientation to " << type.c_str() << std::endl;            
-            size = 3;
+            size = 4;
             values.resize(size);         
             outputName.push_back("data");            
         }   
@@ -57,9 +44,10 @@ namespace CB {
             yarp::os::Bottle &b = outputPort[0]->prepare();
             b.clear();
             b.addString(resourceName.c_str());
-            b.addDouble(getX());
-            b.addDouble(getY());
-            b.addDouble(getZ());      
+            b.addDouble(values[0]);
+            b.addDouble(values[1]);
+            b.addDouble(values[2]);
+            b.addDouble(values[3]);
             outputPort[0]->write();
         }
 

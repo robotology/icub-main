@@ -174,6 +174,11 @@ namespace CB {
         bool useJacobianTranspose;        
 
         /**
+         * using a derivative term in the control law (in addition to a proportional term)
+         **/
+        bool useDerivativeTerm;
+
+        /**
          * stores the bias towards convergence based on history
          **/
         double convergenceStore;
@@ -335,6 +340,13 @@ namespace CB {
          **/
         void useTranspose(bool b) {
             useJacobianTranspose = b;
+        }
+
+        /**
+         * sets whether this controller is a PD or a P Controller 
+         **/
+        void usePDControl(bool b) {
+            useDerivativeTerm = b;
         }
 
     protected:

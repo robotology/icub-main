@@ -224,6 +224,15 @@ namespace CB {
             }
         }
 
+        /** 
+         * sets whether to use PD Controllers or just P Controllers
+         **/
+        void usePDControl(bool b) {
+            for(int i=0; i<controllers.size(); i++) {
+                controllers[i]->usePDControl(b);
+            }
+        }
+
         // inherited functions
         virtual bool updateAction();
         virtual void startAction();

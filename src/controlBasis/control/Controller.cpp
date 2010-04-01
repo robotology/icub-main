@@ -27,6 +27,7 @@ CB::Controller::Controller(ControlBasisResource *sen,
     hasReference(true),
     gain(1.0),
     useJacobianTranspose(true),
+    useDerivativeTerm(false),
     jacobian(NULL)
 {
     
@@ -90,6 +91,7 @@ CB::Controller::Controller(ControlBasisResource *sen,
     hasReference(false),
     gain(1.0),
     useJacobianTranspose(true),
+    useDerivativeTerm(false),
     jacobian(NULL)
 {    
 
@@ -134,6 +136,7 @@ CB::Controller::Controller(string sen, string ref, string pf, string eff) :
     jacobian(NULL),
     potentialFunction(NULL),
     useJacobianTranspose(true),
+    useDerivativeTerm(false),
     convergenceStore(0),
     potentialDot(0),
     potentialLast(0),    
@@ -190,6 +193,7 @@ CB::Controller::Controller(string sen, string pf, string eff) :
     jacobian(NULL),
     potentialFunction(NULL),
     useJacobianTranspose(true),
+    useDerivativeTerm(false),
     sensor(NULL),
     reference(NULL),
     effector(NULL)
@@ -388,7 +392,7 @@ bool CB::Controller::updateAction() {
 
         // compute the controller output
         for(int i=0; i<Vout.size(); i++) {
-            if(potentialDot<0) {
+            if((potentialDot<0) && useDerivativeTerm) {
                 Vout[i] = Jfull[i][0]*(-gain*potential + 0.2*gain*potentialDot);
             } else {
                 Vout[i] = Jfull[i][0]*(-gain*potential);
@@ -410,7 +414,7 @@ bool CB::Controller::updateAction() {
         
         for(int i=0; i<Vout.size(); i++) {
             if(useJacobianTranspose) {
-                if(potentialDot<0) {
+                if((potentialDot<0) && useDerivativeTerm) {
                     Vout[i] = JT[0][i]*(-gain*potential + 0.2*gain*potentialDot);
                 } else {
                     Vout[i] = JT[0][i]*(-gain*potential);
