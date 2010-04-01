@@ -55,6 +55,13 @@ using namespace iCub::contrib;
  *     "/iCubInterface/head" -> "/egoSphere/controlboard"
  * \enddot
  *
+ * Parameters: \n
+ * - name:    prefix to be appended to port names \n
+ * - context: path to the $ICUB_ROOT/app directory where configuration file should be searched \n 
+ * - from: configuration file to be used \n
+ * - controlboard: head control board port \n
+ * - controlboardTorso: (optional) torso control board port \n
+ *
  * Ports:\n
  * - /egoSphere/map_out Output / floating point image: Spherical multimodal salience map; the main output from egoSphere.\n
  * - /egoSphere/conf RPC: Process runtime configuration calls to egoSphere.\n

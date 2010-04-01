@@ -76,6 +76,19 @@ bool EgoSphereModule::configure(yarp::os::ResourceFinder &rf){
 		_blnControlboard = true;
 	}
 
+    // check for toplevel configuration options (not contained in configuration group)
+    // name of the server controlboard to connect to
+	_strTorsoControlboard = rf.check("controlboardTorso",
+                                    Value("not_available"),
+                                    "Port name of the torso server controlboard to connect to (string).").asString().c_str();
+	if(_strTorsoControlboard == std::string("not_available")){
+		_blnTorsoControlboard = false;
+		std::cout << endl << "***No torso server controlboard specified. Torso movement will not be compensated .***" << endl << endl;
+	}
+	else{
+		_blnTorsoControlboard = true;
+	}
+
     // Options from the EGO_SPHERE configuration group
     Bottle botConfig(rf.toString().c_str());
     botConfig.setMonitor(rf.getMonitor());
@@ -152,7 +165,41 @@ bool EgoSphereModule::configure(yarp::os::ResourceFinder &rf){
 		for (int i = 0; i < 6; i++){
             _encoders[i] = 0.0;
 		}
-    }   
+    }
+
+	// open torso remote controlboard
+    if(_blnTorsoControlboard){        
+		Bottle botTorsoControlboard(std::string(
+			std::string("(device remote_controlboard) ") +
+			std::string("(local ") + std::string(this->getName("controlboard").c_str()) + std::string("/torso") +std::string(") ") +
+			std::string("(remote ") + _strTorsoControlboard + std::string(") ")).c_str());
+
+        _ddTorso.open(botTorsoControlboard);
+        if(!_ddTorso.view(_iencTorso)){
+            cout << "Torso motor controlboard does not implement IEncoders!" << endl;
+            return false;
+        }
+        if(!_ddTorso.view(_iposTorso)){
+            cout << "Torso motor controlboard does not implement IPositionControl!" << endl;
+            return false;
+        }
+        _numAxesTorso = 0;
+        _ienc->getAxes(&_numAxesTorso);
+        if (_numAxesTorso == 0){
+            cout << "Error retrieving number of axes from server controlboard at " << _strTorsoControlboard << endl;
+            return false;
+        }
+        else if (_numAxesTorso < 3){
+            cout << "Number of motor axes outside expected range (available: " << _numAxesTorso << " required 3)." << endl;
+            return false;
+        }
+        else{
+            _encodersTorso = new double[_numAxesTorso];
+        }
+    }
+    else{
+        cout << "Torso controlBoard was not enabled since option was not specified" << endl;
+    }
 
     // Visual Map
 	if(_activateModVision){
@@ -238,6 +285,15 @@ bool EgoSphereModule::close(){
         delete [] _encoders;
     _encoders = NULL;
 
+	// close torso controlboard
+    _ddTorso.close();
+    if (_blnTorsoControlboard)
+        {
+            cout << "Deleting torso" << endl;
+            delete [] _encodersTorso;
+        }
+    _encodersTorso = NULL;
+
     return true;
 }
 
@@ -287,8 +343,12 @@ bool EgoSphereModule::updateModule(){
     
 	// read encoders
     if(_blnControlboard){
-		_ienc->getEncoders(_encoders); 
+		_ienc->getEncoders(_encoders);
     } // else encoders are set to 0
+    if(_blnTorsoControlboard){
+		_iencTorso->getEncoders(_encodersTorso);
+        _encoders[2]=_encoders[2]-_encodersTorso[0];
+    } // else no information will be available
 	// convert from vergence/common direction to indepentent eye positions
 	double aux1,aux2;
 	aux1 = _encoders[4];

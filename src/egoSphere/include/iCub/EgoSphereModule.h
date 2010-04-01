@@ -75,6 +75,12 @@ private:
     yarp::dev::IPositionControl *_ipos;
     double *_encoders;
     int _numAxes;
+    // controlboardTorso
+    yarp::dev::PolyDriver  _ddTorso;
+    yarp::dev::IEncoders *_iencTorso;
+    yarp::dev::IPositionControl *_iposTorso;
+    double *_encodersTorso;
+    int _numAxesTorso;
 
 	// kinematics
     iCubHeadKinematics                  _headKin;
@@ -118,6 +124,8 @@ private:
 
 	bool								_blnControlboard;
 	std::string							_strControlboard;
+	bool								_blnTorsoControlboard;
+	std::string							_strTorsoControlboard;
 
     Semaphore                           _semaphore;
 
