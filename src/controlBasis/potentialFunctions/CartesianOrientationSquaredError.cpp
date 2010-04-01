@@ -50,6 +50,8 @@ bool CB::CartesianOrientationSquaredError::updatePotentialFunction() {
     }
     
     offset = 1;
+
+    /*
     if(inputs[0]->size() != 3) inputs[0]->resize(3);
     if(inputs[1]->size() != 3) inputs[1]->resize(3);
 
@@ -58,26 +60,45 @@ bool CB::CartesianOrientationSquaredError::updatePotentialFunction() {
         (*inputs[1])[i] = b[1]->get(i+offset).asDouble();
         diff[i] = (*inputs[1])[i] - (*inputs[0])[i];
        
-        /*
-        if(diff[i] > 0) diff[i] + M_PI;
-        if(diff[i] < 0) diff[i] + 2*M_PI;
-        
-        while(diff[i] > M_PI) {
-            diff[i] = diff[i] - M_PI;
-        }
-        while(diff[i] < M_PI) {
-            diff[i] = diff[i] + M_PI;
-        }       
-        */
+        if(diff[i] >  M_PI) diff[i] = -(2*M_PI - diff[i]);
+        if(diff[i] < -M_PI) diff[i] = 2*M_PI + diff[i];
+        //diff[i] = min( fmod((*inputs[1])[i]-(*inputs[0])[i],(2.0*M_PI)),fmod((*inputs[0])[i]-(*inputs[1])[i],(2.0*M_PI)));
+    }
+    */
+
+    if(inputs[0]->size() != 4) inputs[0]->resize(4);
+    if(inputs[1]->size() != 4) inputs[1]->resize(4);
+
+    for(int i=0; i<4; i++) {
+        (*inputs[0])[i] = b[0]->get(i+offset).asDouble();
+        (*inputs[1])[i] = b[1]->get(i+offset).asDouble();
+    }
+
+    // the inputs are 4D axis-angle coordinates consisting of a normal vector and a maginitude
+    // to compute the error we need to scale the vector by this magnitude to get a 3D signal
+    Vector Vcur(4);
+    Vector Vref(4);
+    for(int i=0; i<3; i++) {
+        Vcur[i] = (*inputs[0])[i]*(*inputs[0])[3];
+        Vref[i] = (*inputs[1])[i]*(*inputs[1])[3];
+        //Vcur[i] = (*inputs[0])[i];
+        //Vref[i] = (*inputs[1])[i];
+        diff[i] = Vref[i] - Vcur[i]; // compute the error
     }
 
     // compute potential and gradient
     gradient = -1.0*diff;
     potential = 0.5*dot(diff,diff);
     
-    cout << "ref  -  cur  =  diff (rotation)" << endl;
-    for(int i=0; i<size; i++) {
-        cout << (*inputs[1])[i] << "    " << (*inputs[0])[i] << "   " << diff[i] << endl;
+    cout << "ref,  cur   (axis-angle)" << endl;
+    for(int i=0; i<4; i++) {
+        cout << (*inputs[1])[i] << ",    " << (*inputs[0])[i] << endl;
+    }
+    cout << endl;
+
+    cout << "ref  -   cur   =   diff (axis-angle, scaled)" << endl;
+    for(int i=0; i<3; i++) {
+        cout << Vref[i] << ",    " << Vcur[i] << "   " << diff[i] << endl;
     }
     cout << endl;
 

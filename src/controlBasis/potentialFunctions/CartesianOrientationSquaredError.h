@@ -51,6 +51,10 @@ namespace CB {
         virtual bool connectToInputs();
 
 
+        inline double min(double a, double b) {
+            return (a < b) ? a : b;
+        }
+
     };
     
 }
