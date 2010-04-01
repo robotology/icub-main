@@ -59,21 +59,23 @@ bool CB::ManipulatorOrientationJacobian::updateJacobian() {
   //Jfull = kinChain->GeoJacobian();    
   Jfull = kinChain->AnaJacobian();    
   
+  /*
   Matrix T = kinChain->getH();
   Matrix R = T.submatrix(0,2,0,2);
 
   Vector Vxyz = rotationToXYZEuler(R);
   Matrix Jxyz = computeEulerJacobian(Vxyz);
-
+  */
   // copy the Jacobian to class var
-  //  J.resize(3,Jfull.cols());
+  J.resize(3,Jfull.cols());
   for(int i=0; i<Jtmp.rows(); i++) {      
       for(int j=0; j<Jtmp.cols(); j++) {        
           Jtmp[i][j] = Jfull[i+3][j];
       }
   }
 
-  J = Jxyz*Jtmp;
+  //J = Jxyz*Jtmp;
+  J = Jtmp;
 
   /*
   cout << "ORIENTATION JACOBIAN:\n-------------------------\n" << endl;
