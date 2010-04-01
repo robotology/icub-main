@@ -98,12 +98,14 @@ char *myitoa(int a, char *buff, int d)
 gboolean timer_func (gpointer data)
 {
 	downloader.strain_get_eeprom_saved(downloader.board_list[selected].pid, &eeprom_saved_status);
-	downloader.strain_get_offset (downloader.board_list[selected].pid, 0, offset[0]);
-	downloader.strain_get_offset (downloader.board_list[selected].pid, 1, offset[1]);
-	downloader.strain_get_offset (downloader.board_list[selected].pid, 2, offset[2]);
-	downloader.strain_get_offset (downloader.board_list[selected].pid, 3, offset[3]);
-	downloader.strain_get_offset (downloader.board_list[selected].pid, 4, offset[4]);
-	downloader.strain_get_offset (downloader.board_list[selected].pid, 5, offset[5]);
+	int ret=0;
+	ret|=downloader.strain_get_offset (downloader.board_list[selected].pid, 0, offset[0]);
+	ret|=downloader.strain_get_offset (downloader.board_list[selected].pid, 1, offset[1]);
+	ret|=downloader.strain_get_offset (downloader.board_list[selected].pid, 2, offset[2]);
+	ret|=downloader.strain_get_offset (downloader.board_list[selected].pid, 3, offset[3]);
+	ret|=downloader.strain_get_offset (downloader.board_list[selected].pid, 4, offset[4]);
+	ret|=downloader.strain_get_offset (downloader.board_list[selected].pid, 5, offset[5]);
+	if (ret!=0) printf("debug: message 'strain_get_offset' lost.\n");
 
 	int bool_raw= gtk_toggle_button_get_active (GTK_TOGGLE_BUTTON (check_raw_vals));
 	downloader.strain_get_adc (downloader.board_list[selected].pid, 0, adc[0], bool_raw);
