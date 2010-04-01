@@ -109,7 +109,10 @@ namespace CB {
          * the CB configuration device resource device it represents.
          **/
         bool connectToConfiguration();
-        
+
+    private:
+        yarp::sig::Vector rotationToXYZEuler(const yarp::sig::Matrix &R);        
+
     };
     
 }
