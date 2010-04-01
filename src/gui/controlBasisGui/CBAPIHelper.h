@@ -46,6 +46,11 @@ namespace CB {
          **/
         int sequenceIndex;
 
+        /**
+         * determines whether a derivative term is used in the control laws
+         **/
+        bool useDerivativeTerm;
+
     public:
         
         /**
@@ -144,6 +149,11 @@ namespace CB {
          * sets whether the controller is using the transpose of the Jacobian or the Moore-Penros pseudoinverse
          **/
         void useTranspose(bool b);
+
+        /**
+         * sets whether the controller will be a PD controller or a P controller 
+         **/
+        void usePDControl(bool b);
       
         /**
          * gets the current sequence controller id if that is running

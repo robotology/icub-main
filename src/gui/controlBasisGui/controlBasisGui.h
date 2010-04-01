@@ -39,6 +39,9 @@ where "#" is the generalized (Moore-Penrose) pseudoinverse of the Jacobian:
 J = d_Potential(sensor) / d_effector.
 \endcode
 If the "use Jacobian Transpose" button is selected, the transpose is used in place of the pseudoinverse.  
+
+If the "use PD-Control" button is selected, the control loop will compute errors using both proportional 
+and derivative components.  If it is no,t the controller is only proportional.
  
 The GUI will look like this
 \image html controlBasisGUI.jpg
@@ -138,6 +141,7 @@ namespace CB {
        
         void on_virtual_effector_toggle();
         void on_use_jacobian_transpose();
+        void on_use_pd_control();
 
         // main widgets
         Gtk::VBox cbapiVBox;
@@ -176,6 +180,7 @@ namespace CB {
 
         Gtk::CheckButton allowVirtualEffectorsBox;
         Gtk::CheckButton useJacobianTransposeBox;
+        Gtk::CheckButton usePDControlBox;
 
         Gtk::Entry controllerGainEntry;
         Gtk::Label controllerGainLabel;
@@ -229,7 +234,7 @@ namespace CB {
         bool sequenceRunning;
         bool showVirtualEffectors;
         bool useJacobianTranspose;
-
+        bool usePDControl;
   };
 
 }

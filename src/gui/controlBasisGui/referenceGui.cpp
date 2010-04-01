@@ -48,7 +48,7 @@ ReferenceWindow::ReferenceWindow() :
     appTable.attach(setButton,2,3,13,14);
 
     posFrame.set_label("Cartesian Position Reference");
-    rotFrame.set_label("Cartesian Orientation Reference (XYZ-Euler)");
+    rotFrame.set_label("Cartesian Orientation Reference (Axis-Angle Rep)");
     armFrame.set_label("iCub Arm Reference");
     legFrame.set_label("iCub Leg Reference");
     fullArmFrame.set_label("iCub Torso+Arm Reference");
@@ -83,9 +83,10 @@ ReferenceWindow::ReferenceWindow() :
     posLabel[2].set_text("z:");
 
     // orientation reference
-    rotLabel[0].set_text("alpha:");
-    rotLabel[1].set_text("beta: ");
-    rotLabel[2].set_text("gamma:");
+    rotLabel[0].set_text("w[0]:");
+    rotLabel[1].set_text("w[1]: ");
+    rotLabel[2].set_text("w[2]:");
+    rotLabel[3].set_text("theta:");
 
     // eye references
     eyePanTiltLabel[0].set_text("pan:");
@@ -117,7 +118,7 @@ ReferenceWindow::ReferenceWindow() :
     }
     posEntry[0].set_text("-0.5");
 
-    for(int i=0; i<3; i++) {
+    for(int i=0; i<4; i++) {
         rotEntry[i].set_text("0.0");
         rotEntry[i].set_max_length(max_entry_length);
         rotTable.attach(rotLabel[i],0,1,i,i+1);
@@ -257,8 +258,8 @@ void ReferenceWindow::on_set_button_clicked() {
         iCubPositionRef->setVals(posRef);
         break;
     case 1:
-        for(int i=0; i<3; i++) rotRef[i] = atof(rotEntry[i].get_text().c_str());       
-        cout << "rot: (" << rotRef[0] << ", " << rotRef[1] << ", " << rotRef[2] << ")" << endl;
+        for(int i=0; i<4; i++) rotRef[i] = atof(rotEntry[i].get_text().c_str());       
+        cout << "rot: (" << rotRef[0] << ", " << rotRef[1] << ", " << rotRef[2] << "), angle = " << rotRef[3] << endl;
         iCubOrientationRef->setVals(rotRef);
         break;
     case 2:
@@ -308,7 +309,7 @@ void ReferenceWindow::on_reset_button_clicked() {
         break;
     case 1:
         rotRef.zero();
-        for(int i=0; i<3; i++) {
+        for(int i=0; i<4; i++) {
             rotEntry[i].set_text("0.0");
         }
         break;
@@ -375,7 +376,7 @@ void ReferenceWindow::startResources() {
     torsoRef.zero();
     posRef.resize(3);
     posRef.zero();
-    rotRef.resize(3);
+    rotRef.resize(4);
     rotRef.zero();
     eyePanTiltRef.resize(2);
     eyePanTiltRef.zero();

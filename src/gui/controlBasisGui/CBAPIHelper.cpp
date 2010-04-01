@@ -9,6 +9,7 @@ CB::CBAPIHelper::CBAPIHelper() {
   numControllersInLaw = 0;
   numControllersInSequence = 0;
   sequenceIndex = -1;
+  useDerivativeTerm = false;
 }
 
 void CB::CBAPIHelper::addControllerToLaw(string sen, string ref, string pf, string eff, bool useTranspose, double gain) {
@@ -34,7 +35,8 @@ void CB::CBAPIHelper::addControllerToLaw(string sen, string ref, string pf, stri
 
   numControllersInLaw++;
   controlLaw.useTranspose(useTranspose);
- 
+  controlLaw.usePDControl(useDerivativeTerm);
+
 }
 
 void CB::CBAPIHelper::addControllerToSequence(string sen, string ref, string pf, string eff, bool useTranspose, double gain) {
@@ -60,7 +62,7 @@ void CB::CBAPIHelper::addControllerToSequence(string sen, string ref, string pf,
 
   numControllersInSequence++;
   sequenceControlLaw.useTranspose(useTranspose);
- 
+  sequenceControlLaw.usePDControl(useDerivativeTerm); 
 }
 
 void CB::CBAPIHelper::clearControlLaw() { 
@@ -127,6 +129,12 @@ void CB::CBAPIHelper::useTranspose(bool b) {
     controlLaw.useTranspose(b); 
 }
 
+void CB::CBAPIHelper::usePDControl(bool b) {
+    useDerivativeTerm = b;
+    sequenceControlLaw.usePDControl(b);
+    controlLaw.usePDControl(b); 
+}
+
 int CB::CBAPIHelper::getSequenceControllerID() {
     return sequenceIndex;
 }
@@ -162,7 +170,8 @@ void CB::CBAPIHelper::goToNextControllerInSequence() {
                                          sequenceControllerParameters[sequenceIndex]->Effector, 
                                          sequenceControllerParameters[sequenceIndex]->Gain);
     }  
-    
+    sequenceControlLaw.usePDControl(useDerivativeTerm);
+
     // start it
     sequenceControlLaw.startAction();
 
@@ -198,7 +207,8 @@ void CB::CBAPIHelper::goToPreviousControllerInSequence() {
                                          sequenceControllerParameters[sequenceIndex]->Effector, 
                                          sequenceControllerParameters[sequenceIndex]->Gain);
     }  
-    
+    sequenceControlLaw.usePDControl(useDerivativeTerm);
+
     // start it
     sequenceControlLaw.startAction();
 }

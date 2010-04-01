@@ -23,7 +23,7 @@ CBAPIWindow::CBAPIWindow() :
     controlResourcesTable(6,9,true),
     controlDefinitionTable(8,12,true),
     sequenceControllersTable(8,12,true),
-    optionsTable(2,1,true),
+    optionsTable(3,1,true),
     sensorList("sensors"),
     referenceList("reference"),
     potentialFunctionList("potential functions"),
@@ -45,6 +45,7 @@ CBAPIWindow::CBAPIWindow() :
     bkSequenceButton(Gtk::Stock::MEDIA_REWIND),
     allowVirtualEffectorsBox("allow virtual effectors"),
     useJacobianTransposeBox("use Jacobian Transpose"),
+    usePDControlBox("use PD-Control"),
     controllerGainLabel("gain:"),
     sequenceGainLabel("gain:")
 {
@@ -56,8 +57,11 @@ CBAPIWindow::CBAPIWindow() :
     sequenceRunning = false;
     showVirtualEffectors = false;
     useJacobianTranspose = true;
+    usePDControl = true;
     useJacobianTransposeBox.set_active(useJacobianTranspose);
+    usePDControlBox.set_active(usePDControl);
     cbapi.useTranspose(useJacobianTranspose);
+    cbapi.usePDControl(usePDControl);
 
     set_title("Control Basis API GUI");
     set_size_request(1200,800);
@@ -92,6 +96,8 @@ CBAPIWindow::CBAPIWindow() :
                                                                   &CBAPIWindow::on_virtual_effector_toggle) );
     useJacobianTransposeBox.signal_clicked().connect( sigc::mem_fun(*this,
                                                                  &CBAPIWindow::on_use_jacobian_transpose) );
+    usePDControlBox.signal_clicked().connect( sigc::mem_fun(*this,
+                                                                 &CBAPIWindow::on_use_pd_control) );
 
     addControllerToSequenceButton.signal_clicked().connect( sigc::mem_fun(*this,
                                                                           &CBAPIWindow::on_add_to_sequence_button_clicked) );
@@ -138,6 +144,7 @@ CBAPIWindow::CBAPIWindow() :
 
     optionsTable.attach(allowVirtualEffectorsBox,0,1,0,1);
     optionsTable.attach(useJacobianTransposeBox,0,1,1,2);
+    optionsTable.attach(usePDControlBox,0,1,2,3);
     controlResourcesTable.attach(optionsTable,7,9,5,6);
 
     controllerGainEntry.set_max_length(5);
@@ -335,6 +342,16 @@ void CBAPIWindow::on_use_jacobian_transpose() {
         useJacobianTranspose = false;
     }
     cbapi.useTranspose(useJacobianTranspose);
+}
+
+void CBAPIWindow::on_use_pd_control() {
+    cout << "got use pd control toggle" << endl;
+    if(usePDControlBox.get_active()) {
+        usePDControl = true;
+    } else {
+        usePDControl = false;
+    }
+    cbapi.usePDControl(usePDControl);
 }
 
 void CBAPIWindow::refreshResourceList() {
@@ -606,7 +623,8 @@ void CBAPIWindow::on_add_button_clicked() {
     cout << "\t " << eff.c_str() << endl;
 
     cbapi.addControllerToLaw(sen, ref, pf, eff, useJacobianTranspose, (double)gain);
-    
+    cbapi.usePDControl(usePDControl);
+
     char c[32];
     int n = cbapi.getNumControllers()-1;
     sprintf(c, "%d", n);
@@ -706,9 +724,9 @@ void CBAPIWindow::on_add_to_sequence_button_clicked() {
     if(ref != "") cout << "\t " << ref.c_str() << endl;
     cout << "\t " << eff.c_str() << endl;
 
-    // FIX ME!
     cbapi.addControllerToSequence(sen, ref, pf, eff, useJacobianTranspose, (double)gain);
-    
+    cbapi.usePDControl(usePDControl);
+
     char c[32];
     int n = cbapi.getNumControllers(true)-1;
     sprintf(c, "%d", n);
