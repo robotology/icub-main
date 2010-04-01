@@ -97,6 +97,7 @@ This file can be edited at src/controlBasis/modules/main.cpp.
 #include <iCubEyeConfigurationVariables.h>
 #include <iCubHandContactSet.h>
 #include <EndEffectorCartesianPosition.h>
+#include <EndEffectorCartesianOrientation.h>
 #include <ManipulatorPositionJacobian.h>
 #include <Controller.h>
 #include <RunnableControlLaw.h>
@@ -131,6 +132,8 @@ class iCubControlBasisResourceStarter : public RFModule {
     EndEffectorCartesianPosition *legEndEffector[2]; 
     EndEffectorCartesianPosition *fullArmEndEffector[2]; 
 
+    EndEffectorCartesianOrientation *armEndEffectorOrientation[2]; 
+
     YARPAttentionMechanismHeading *salientHeadings[2];
     YARPAttentionMechanismStereoHeading *salientStereoHeading;
 
@@ -147,6 +150,7 @@ class iCubControlBasisResourceStarter : public RFModule {
     bool runArmPosition[2];
     bool runFullArmPosition[2];
     bool runLegPosition[2];
+    bool runArmOrientation[2];
 
     bool runHeadings[2];
     bool runStereoHeading;
@@ -231,6 +235,7 @@ public:
                 if(runLegConfig[i]) delete iCubLeg[i];
                 if(runHandConfig[i]) delete iCubHand[i];
                 if(runArmPosition[i]) delete armEndEffector[i]; 
+                if(runArmOrientation[i]) delete armEndEffectorOrientation[i]; 
                 if(runLegPosition[i]) delete legEndEffector[i]; 
                 if(runFullArmPosition[i]) delete fullArmEndEffector[i];                 
                 if(runHeadings[i]) delete salientHeadings[i];
@@ -388,6 +393,23 @@ public:
             runLegPosition[1] = false;
         }
         //cout << "run left leg position: " << runLegPosition[1] << endl;
+
+        // parse cartesian orientation resources
+        Bottle &cartrot_group=rf.findGroup("cartesianorientation_resources");
+        
+        if(cartrot_group.check("right_arm")) {
+            runArmOrientation[0] = (bool)(cartrot_group.find("right_arm").asInt());
+        } else {
+            runArmOrientation[0] = false;
+        }
+        //cout << "run right arm orientation: " << runArmOrientation[0] << endl;
+
+        if(cartrot_group.check("left_arm")) {
+            runArmOrientation[1] = (bool)(cartrot_group.find("left_arm").asInt());;
+        } else {
+            runArmOrientation[1] = false;
+        }
+        //cout << "run left arm orientation: " << runArmOrientation[1] << endl;
 
         // parse heading resources
         Bottle &heading_group=rf.findGroup("heading_resources");
@@ -666,6 +688,18 @@ public:
                 }     
             }           
     
+            // start up end effector orientations
+            if(runArmOrientation[i]) {                
+                cout << "starting arm orientations for arm: " << i << endl;
+                if(runArmConfig[i]) {
+                    armEndEffectorOrientation[i] = new EndEffectorCartesianOrientation(armName[i]);
+                    armEndEffectorOrientation[i]->startResource();
+                    armEndEffectorOrientation[i]->setUpdateDelay(0.05);
+                } else {
+                    cout<<"Can't start CartesianOrientation resource for arm["<<i<<"] because configuration resource is not running!!"<<endl;
+                }
+            }
+
             if(runHeadings[i]) {
                 cout << "starting heading for eye: " << i << endl;
                 salientHeadings[i] = new YARPAttentionMechanismHeading(headingName[i]);
@@ -725,6 +759,7 @@ public:
                 if(runLegConfig[i]) iCubLeg[i]->stopResource();
                 if(runHandConfig[i]) iCubHand[i]->stopResource();
                 if(runArmPosition[i]) armEndEffector[i]->stopResource(); 
+                if(runArmOrientation[i]) armEndEffectorOrientation[i]->stopResource(); 
                 if(runLegPosition[i]) legEndEffector[i]->stopResource(); 
                 if(runFullArmPosition[i]) fullArmEndEffector[i]->stopResource(); 
                 if(runHeadings[i]) salientHeadings[i]->stopResource();
