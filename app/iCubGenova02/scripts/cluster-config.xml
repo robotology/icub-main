@@ -13,6 +13,9 @@
 <node>icub-b6</node>
 <node>icub-b7</node>
 <node>icub-b8</node>
+<node>icub-b14</node>
+<node>icub-b15</node>
+<node>icub-b16</node>
 <node>icub-vm1</node>
 
 </cluster>
