@@ -24,6 +24,8 @@ using namespace yarp::sig;
 
 // general command vocab's
 #define COMMAND_VOCAB_HELP VOCAB4('h','e','l','p')
+#define COMMAND_VOCAB_RSET VOCAB4('r','s','e','t')
+#define COMMAND_VOCAB_FLT VOCAB3('f','l','t')
 #define COMMAND_VOCAB_SET VOCAB3('s','e','t')
 #define COMMAND_VOCAB_GET VOCAB3('g','e','t')
 #define COMMAND_VOCAB_RUN VOCAB3('r','u','n')
@@ -156,9 +158,10 @@ This module is able to respond to the following set of commands:
 - set bin: blue intensity value
 - set Mdb: Maximum dimension of the blob analysed
 - set mdb: minimum dimension of the blob analysed
-
 - set tcon: set the timeconstant in second for output format (x y z) 3d space
 - set tcen: set the time constant in second for output forma (img x y) imageplane
+
+- rset flt : reset the filter
 
 - get kbu: weight of the bottom-up algorithm
 - get ktd: weight of top-down algorithm
@@ -325,11 +328,19 @@ private:
     * function that copies flags to the blobFinder thread
     */
     void copyFlags();
-
     /**
     * map of the occurences of control positions
     */
     std::map<const char*,int> occurencesMap;
+
+    /**
+    * position of the centroid X in the previous time instant
+    */
+    int previous_target_x;
+    /**
+    * position of the centroid Y in the previous time instant
+    */
+    int previous_target_y;
     
 public:
     /**

@@ -12,6 +12,9 @@ saliencyBlobFinderModule::saliencyBlobFinderModule(){
     reply=new Bottle();
     blobFinder=0;
 
+    previous_target_x=0;
+    previous_target_y=0;
+
     //---------- flags --------------------------
 	contrastLP_flag=false;
 	meanColour_flag=false;
@@ -406,8 +409,46 @@ void saliencyBlobFinderModule::outPorts(){
         //logPolarMapper iCub driver
         time (&end);
         double dif = difftime (end,start);
-        if((dif>2)&&(dif<=2+2)){
-            bot.addVocab( Vocab::encode("sac") ); 
+        if((dif>1)&&(dif<=1+2)){
+            if((blobFinder->salience->target_x<previous_target_x+5)&&(blobFinder->salience->target_x>previous_target_x-5)){
+                if((blobFinder->salience->target_y<previous_target_y+5)&&(blobFinder->salience->target_y>previous_target_y-5)){
+                    printf("same position \n");
+                }
+                else{
+                    printf(".");
+                    bot.addVocab( Vocab::encode("sac") ); 
+                    bot.addVocab( Vocab::encode("img") ); 
+                    double centroidDisplacementY=1.0;
+                    double xrel=(blobFinder->salience->target_x-_logpolarParams::_xsize/2)/(_logpolarParams::_xsize/2);
+                    double yrel=(blobFinder->salience->target_y-_logpolarParams::_ysize/2)/(-_logpolarParams::_ysize/2);
+                    //printf("%f>%f,%f \n",dif,xrel,yrel);
+                    bot.addDouble(xrel);  
+                    bot.addDouble(yrel); 
+                    centroidPort.write();
+
+                    previous_target_x=blobFinder->salience->target_x;
+                    previous_target_y=blobFinder->salience->target_y;
+                }
+            }
+            else{
+                printf(".");
+                bot.addVocab( Vocab::encode("sac") ); 
+                bot.addVocab( Vocab::encode("img") ); 
+                double centroidDisplacementY=1.0;
+                double xrel=(blobFinder->salience->target_x-_logpolarParams::_xsize/2)/(_logpolarParams::_xsize/2);
+                double yrel=(blobFinder->salience->target_y-_logpolarParams::_ysize/2)/(-_logpolarParams::_ysize/2);
+                //printf("%f>%f,%f \n",dif,xrel,yrel);
+                bot.addDouble(xrel);  
+                bot.addDouble(yrel); 
+                centroidPort.write();
+
+                previous_target_x=blobFinder->salience->target_x;
+                previous_target_y=blobFinder->salience->target_y;
+            }
+            
+
+
+            /*bot.addVocab( Vocab::encode("sac") ); 
             bot.addVocab( Vocab::encode("img") ); 
             double centroidDisplacementY=1.0;
             double xrel=(blobFinder->salience->target_x-_logpolarParams::_xsize/2)/(_logpolarParams::_xsize/2);
@@ -415,10 +456,10 @@ void saliencyBlobFinderModule::outPorts(){
             //printf("%f>%f,%f \n",dif,xrel,yrel);
             bot.addDouble(xrel);  
             bot.addDouble(yrel); 
-            centroidPort.write();
+            centroidPort.write();*/
             
         }
-        else if(dif>4){
+        else if(dif>1+2){
             time (&start);
         }
         else{
@@ -675,6 +716,21 @@ bool saliencyBlobFinderModule::respond(const Bottle &command,Bottle &reply){
                 break;
             default:
                 cout << "received an unknown request after a _VOCAB_RUN" << endl;
+                break;
+            }
+        }
+        break;
+        case COMMAND_VOCAB_RSET:
+        rec = true;
+        {
+            switch(command.get(1).asVocab()) {
+            case COMMAND_VOCAB_FLT:{
+                printf("reset filter");
+                ok=true;
+            }
+                break;
+            default:
+                cout << "received an unknown request after a _VOCAB_RSET" << endl;
                 break;
             }
         }
