@@ -1,4 +1,4 @@
-<!-- please assume that lightHouse, surfer are names of server which run on power nods -->
+<!-- please take few seconds in order to change console and powernode names with those in your network -->
 <!-- @authour Francesco Rea -->
 
 <application>
@@ -12,36 +12,36 @@
 		<name>controlGaze2</name>
 		<parameters>--configCamera iCubEyes.ini --file icubControlGaze2.ini --motorboard /icubSim/head</parameters>
 		<tag>gazecontroller</tag>
-		<node>/lightHouse</node>
+		<node>/console1</node>
 	</module>
 
 	<module>
 		<name>iKinGazeCtrl</name>
 		<parameters></parameters>
-		<stdio>lightHouse</stdio>
+		<stdio>console1</stdio>
 		<tag>gazeCtrl</tag>
-		<node>/lightHouse</node>
+		<node>/console1</node>
 	</module>
 
 	<module>
 		<name>iKinHead</name>
 		<parameters>--file iKinHead.ini --context protoObjectVisualAttention/conf --kalman</parameters>
-		<stdio>lightHouse</stdio>
+		<stdio>console1</stdio>
 		<tag>ikinHead</tag>
-		<node>/lightHouse</node>
+		<node>/console1</node>
 	</module>
  	<module>
 		<name>yarpview</name>
 		<parameters>--name /edgesView --x 500 --y 400 --synch</parameters>
 		<tag>view1</tag>
-		<node>/lightHouse</node>
+		<node>/console1</node>
 	</module>
 
 	<module>
 		<name>yarpview</name>
 		<parameters>--name /logPolarForwardView --x 800 --y 400 --synch</parameters>
 		<tag>view2</tag>
-		<node>/lightHouse</node>
+		<node>/console1</node>
 	</module>
 	
 	<connection>
