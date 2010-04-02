@@ -9,7 +9,7 @@
 
 	<module>
 		<name>controlGaze2</name>
-		<parameters>--configCamera iCubEyes.ini --file icubControlGaze2.ini --motorboard /icubSim/head</parameters>
+		<parameters>--configCamera iCubEyes.in --name /icub/controlGaze --context demoAffv2/conf/attention  --from icubControlGaze2.ini --motorboard /icub/head</parameters>
 		<tag>gazecontroller</tag>
 		<node>/console1</node>
 	</module>
