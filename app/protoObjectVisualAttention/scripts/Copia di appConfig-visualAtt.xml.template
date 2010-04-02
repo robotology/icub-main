@@ -1,7 +1,9 @@
+<!-- @authour Francesco Rea -->
+<!-- please, take a second in order to substitute the names of the nodes with those available in your network -->
+
 <application>
 	<name>protoObjectVisualAttention</name>
- <dependencies>
-		
+ 	<dependencies>	
 		<port>/icub/cam/right</port>
 	</dependencies>
 	
@@ -9,68 +11,68 @@
 		<name>colourProcessor</name>
 		<parameters>--file colourProcessor.ini</parameters>
 		<tag>colourPU</tag>
-		<node>/surfer</node>
-		<stdio>lightHouse</stdio>
+		<node>/powerNode1</node>
+		<stdio>console1</stdio>
 	</module>
 	<module>
 		<name>imageProcessor</name>
 		<parameters>--file imageProcessor.ini</parameters>
 		<tag>imagePU</tag>
-		<node>/lightHouse</node>
+		<node>/console1</node>
 	</module>
 	<module>
 		<name>imageProcessorInterface</name>
 		<parameters>--name /imageProcessorInterface</parameters>
 		<tag>imagePUInterface</tag>
-		<node>/surfer</node>
+		<node>/powerNode1</node>
 	</module>
 	<module>
 		<name>saliencyBlobFinder</name>
 		<parameters>--file saliencyBlobFinder.ini</parameters>
 		<tag>saliencyBlobFinder</tag>
-		<node>/surfer</node>
+		<node>/powerNode1</node>
 	</module>
 	<module>
 		<name>saliencyBlobFinderInterface</name>
 		<parameters>--name /blobFinderInterface</parameters>
 		<tag>saliencyBlobFinderInterface</tag>
-		<node>/surfer</node>
+		<node>/powerNode1</node>
 	</module>
 	<module>
 		<name>yarpview</name>
 		<parameters>--name /rgView --x 200 --y 600 --synch</parameters>
 		<tag>rgview</tag>
-		<node>/lightHouse</node>
+		<node>/console1</node>
 	</module>
 	<module>
 		<name>yarpview</name>
 		<parameters>--name /grView --x 500 --y 600 --synch</parameters>
 		<tag>grview</tag>
-		<node>/lightHouse</node>
+		<node>/console1</node>
 	</module>
 	<module>
 		<name>yarpview</name>
 		<parameters>--name /byView --x 200 --y 400 --synch</parameters>
 		<tag>byview</tag>
-		<node>/lightHouse</node>
+		<node>/console1</node>
 	</module>
  	<module>
 		<name>yarpview</name>
 		<parameters>--name /edgesView --x 500 --y 400 --synch</parameters>
 		<tag>edgesview</tag>
-		<node>/lightHouse</node>
+		<node>/console1</node>
 	</module>
 	<module>
 		<name>yarpview</name>
 		<parameters>--name /logPolarForwardView --x 800 --y 400 --synch</parameters>
 		<tag>logpolarforward</tag>
-		<node>/lightHouse</node>
+		<node>/console1</node>
 	</module>
 	<module>
 		<name>yarpview</name>
 		<parameters>--name /saliencyMapView --x 1100 --y 400 --synch</parameters>
 		<tag>saliencymapview</tag>
-		<node>/lightHouse</node>
+		<node>/console1</node>
 	</module>
  
 	
