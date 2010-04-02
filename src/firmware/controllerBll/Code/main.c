@@ -215,7 +215,7 @@ void main(void)
 #if VERSION == 0x0153 || VERSION ==0x0157 || VERSION == 0x0173 || VERSION == 0x0172 
     init_relative_position_abs_ssi();
 #endif 
-
+ 
     init_faults           (true,true,true);	 
     
 #if VERSION ==0x0155  
@@ -814,7 +814,7 @@ void decouple_positions(void)
 	}
 #elif   VERSION == 0x0157
 	_cpl_pos_counter++;
-	if (_cpl_pos_counter < timeout_cpl_pos && && (get_error_abs_ssi(0)==ERR_OK)
+	if (_cpl_pos_counter < timeout_cpl_pos  && (get_error_abs_ssi(0)==ERR_OK))
 	{
 		/* beware of the first cycle when _old has no meaning */		
 		_position[0] = (((float) _position[0])*0.6153F);  
