@@ -384,12 +384,12 @@ bool AnalogSensor::open(int channels, AnalogDataFormat f, short bId, short useCa
 	useCalibration=useCalib;
 	if (useCalibration==1 && dataFormat==AnalogSensor::ANALOG_FORMAT_16)
 	{
-		scaleFactor[0]=500;
-		scaleFactor[1]=500;
-		scaleFactor[2]=1000;
-		scaleFactor[3]=8;
-		scaleFactor[4]=8;
-		scaleFactor[5]=8;
+		scaleFactor[0]=1;
+		scaleFactor[1]=1;
+		scaleFactor[2]=1;
+		scaleFactor[3]=1;
+		scaleFactor[4]=1;
+		scaleFactor[5]=1;
 	}
 
     return true;
@@ -1449,10 +1449,11 @@ AnalogSensor *CanBusMotionControl::instantiateAnalog(yarp::os::Searchable& confi
 									break;
 								}
 					}
+					yarp::os::Time::delay(0.001);
 					timeout++;
 				}
-				while(timeout<100000 && full_scale_read==false);
-				if (full_scale_read==false) fprintf(stderr, "Trying to get fullscale data from sensor: no answer recieved or message lost\n");
+				while(timeout<32 && full_scale_read==false);
+				if (full_scale_read==false) fprintf(stderr, "Trying to get fullscale data from sensor: no answer recieved or message lost (ch:%d)\n", ch);
 			}
 		}
 		#if 1
