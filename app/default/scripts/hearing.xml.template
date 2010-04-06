@@ -1,0 +1,24 @@
+<application>
+<name>Cameras</name>
+<dependencies>
+      <port>/root</port>
+</dependencies> 
+<module>
+      <name>yarpdev</name>
+      <parameters>--name /icub/earing --device portaudio --id 1 --c 2 --read --rate 48000 </parameters>
+	  <node>pc104</node>
+	<tag>icub-earing</tag>
+   </module>
+   <module>
+      <name>yarphear</name>
+      <parameters>--name /icub/hear </parameters>
+      <node>icubsrv</node>
+	<tag>icubhear</tag>
+   </module>
+<connection>
+  <output>/icub/earing</output>
+  <input>/icub/hear</input>
+  <protocol>tcp</protocol>
+</connection>
+</application>
+
