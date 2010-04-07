@@ -114,7 +114,7 @@ protected:
 	bool verbose;
 
 public:
-    /**
+     /**
      * Constructor, with initialization of algebraic Riccati equation
      * 
      * @param _A  State transition matrix
@@ -141,7 +141,7 @@ public:
      */
 	 yarp::sig::Matrix T(int step);
 
-    /**
+     /**
      * Initialization of algebraic Riccati equation
      * 
      * @param _A  State transition matrix
@@ -175,8 +175,8 @@ public:
      * Compute the LQ feedback control, in the form: u= - L(i) * x 
      * 
      * @param step The time index i
-	  * @param x The state vector
-	  * @param ret The control vector
+	 * @param x The state vector
+	 * @param ret The control vector
      */
 	 void doLQcontrol(int step, const yarp::sig::Vector &x, yarp::sig::Vector &ret);
 
