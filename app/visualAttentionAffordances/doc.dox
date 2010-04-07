@@ -1,0 +1,62 @@
+/**
+@ingroup  icub_applications
+\defgroup icub_visualAttentionAffordances visualAttentionAffordances
+
+A series of affordances are extracted from the object present on the table. The robot perform actions on the object based
+on the affordances extracted. The robot performs saccades on the salient object based on the winner-take-all algorithm.
+
+\section intro_sec Description
+A table whose height relative to the robot reference frame is supposed to
+be known is presented to the robot along with some objects lying on top.
+The winner-take-all algorithm extracts the most salient object in the environment and leads the robot to fixate this object 
+via multiple saccades.
+The segmentation process define the features of the object and the position in the image plane is determined.
+This position is then transformed in the corresponding 3-d point projected on the table surface as result
+of the so called homography operation.
+
+From this situation the system switches from the visual attention control to the affordance control. This controller performs
+in sequence different actions whereas the visual attention is always active in order to keep the fixation point on the salient object
+
+
+\note A video on iCub grasping objects can be seen <a href="http://eris.liralab.it/misc/icubvideos/affordances_2010.wmv">here</a>.
+
+
+
+\section dep_sec Dependencies
+Assumes \ref icub_iCubInterface (with cartesian control implemented) is running.
+
+\section int_sec Instantiated Application
+- \ref protoObjectVisualAttention
+
+- \ref demoAffv2
+
+
+\section howto_sec How to run the Application
+The demo is composed by different applications which run always at the same time.
+Note that in order to run all the applications the icubApp can be run usign the txt file present in script sub directory.
+Before that you need to modify all the template in that directory for your own network configuration.
+
+The sequence of activation of these application is the following
+
+- run the protoObjectVisualAttention
+  select the most salient proto-object and extracts the coordinates of this in the image plane.
+
+- run the selected gaze controller
+  the robot is ready to receive commands for saccades.
+
+- feed the selected gaze controller with the coordinates in the image plane
+  the robot starts to perform saccades to the most salient region in the field of view
+
+- run the demoAff application
+  permorms some action to the segmented object based on the affordances extracted
+
+\author Francesco Rea
+
+Copyright (C) 2009 RobotCub Consortium
+
+CopyPolicy: Released under the terms of the GNU GPL v2.0.
+
+This file can be edited at app/armCartesianController/doc.dox
+*/
+
+

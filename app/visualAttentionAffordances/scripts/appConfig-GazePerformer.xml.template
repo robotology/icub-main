@@ -1,0 +1,64 @@
+<!-- @authour Francesco Rea -->
+<!-- please, take a second in order to substitute the names of the nodes with those available in your network -->
+
+<application>
+	<name>GazePerformer</name>
+ 	<dependencies>
+		<port>/icub/head/rpc:i</port> 
+		<port>/icub/cam/right</port>
+	</dependencies>
+
+	<module>
+		<name>controlGaze2</name>
+		<parameters>--configCamera iCubEyes.ini --file icubControlGaze2.ini --motorboard /icubSim/head</parameters>
+		<tag>gazecontroller</tag>
+		<node>/powerNode1</node>
+	</module>
+
+	<module>
+		<name>iKinGazeCtrl</name>
+		<parameters></parameters>
+		<stdio>powerNode1</stdio>
+		<tag>gazeCtrl</tag>
+		<node>/powerNode1</node>
+	</module>
+
+	<module>
+		<name>iKinHead</name>
+		<parameters>--file iKinHead.ini --context protoObjectVisualAttention/conf --kalman</parameters>
+		<stdio>powerNode1</stdio>
+		<tag>ikinHead</tag>
+		<node>/powerNode1</node>
+	</module>
+ 	<module>
+		<name>yarpview</name>
+		<parameters>--name /edgesView --x 500 --y 400 --synch</parameters>
+		<tag>view1</tag>
+		<node>/powerNode1</node>
+	</module>
+
+	<module>
+		<name>yarpview</name>
+		<parameters>--name /logPolarForwardView --x 800 --y 400 --synch</parameters>
+		<tag>view2</tag>
+		<node>/powerNode1</node>
+	</module>
+	
+	<connection>
+      	<output>/blobFinder/centroid:o</output>
+		<input>/controlGaze/conf</input>
+		<protocol>tcp</protocol>
+	</connection>
+	<connection>
+      <output>/blobFinder/triangulation:o</output>
+		<input>/eyeTriangulation/rpc</input>
+		<protocol>tcp</protocol>
+	</connection>
+	<connection>
+      	<output>/blobFinder/gazeControl:o</output>
+		<input>/iKinGazeCtrl/head/xd:i</input>
+		<protocol>tcp</protocol>
+	</connection>
+	
+	
+</application>
