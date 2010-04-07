@@ -1053,7 +1053,7 @@ public:
         else
 		{
 			fprintf(stderr,"Could not find part in the config file\n");
-		  Time::delay(3.0);
+		  Time::delay(3.1);
             return false;
 		}
 
@@ -1145,7 +1145,7 @@ public:
 		fprintf(stderr,"setting limits\n");
 		ft_control->setLimits(maxLim,minLim);
 		fprintf(stderr,"initial position and limits set...\n");
-        Time::delay(5.0);
+        //Time::delay(5.0);
         fprintf(stderr,"starting thread\n");
 		ft_control->start();
 		fprintf(stderr,"thread started\n");
