@@ -99,7 +99,7 @@ gboolean timer_func (gpointer data)
 {
 	int ret=0;
 	ret =downloader.strain_get_eeprom_saved(downloader.board_list[selected].pid, &eeprom_saved_status);
-	if (ret!=0) printf("debug: message 'train_get_eeprom_saved' lost.\n");
+	if (ret!=0) printf("debug: message 'strain_get_eeprom_saved' lost.\n");
 
 	ret =downloader.strain_get_offset (downloader.board_list[selected].pid, 0, offset[0]);
 	ret|=downloader.strain_get_offset (downloader.board_list[selected].pid, 1, offset[1]);
@@ -419,30 +419,53 @@ void file_save_click (GtkButton *button,	gpointer ch_p)
 	filestr.open (filename.c_str(), fstream::out);
 	int i=0;
 	char buffer[256];
+
+	//file version
+	filestr<<"File version:"<<endl;
+	filestr<<"2"<<endl;
+
+	//serial number
+	filestr<<"Serial number:"<<endl;
 	sprintf (buffer,"%s",serial_no);
 	filestr<<buffer<<endl;
+
+	//offsets
+	filestr<<"Offsets:"<<endl;
 	for (i=0;i<6; i++)
 	{
 		sprintf (buffer,"%d",offset[i]);
 		filestr<<buffer<<endl;
 	}
+
+	//calibration matrix
+	filestr<<"Calibration matrix:"<<endl;
 	for (i=0;i<36; i++)
 	{
 		sprintf (buffer,"%x",matrix[i/6][i%6]);
 		filestr<<buffer<<endl;
 	}
+
+	//matrix gain
+	filestr<<"Matrix gain:"<<endl;
 	sprintf (buffer,"%d",calib_const);
 	filestr<<buffer<<endl;
+
+	//tare
+	filestr<<"Tare:"<<endl;
 	for (i=0;i<6; i++)
 	{
 		sprintf (buffer,"%d",calib_bias[i]);
 		filestr<<buffer<<endl;
 	}
+
+	//full scale values
+	filestr<<"Full scale values:"<<endl;
 	for (i=0;i<6; i++)
 	{
 		sprintf (buffer,"%d",full_scale_const[i]);
 		filestr<<buffer<<endl;
 	}
+
 	printf ("Calibration file saved!\n");
 	filestr.close();
 }
@@ -496,6 +519,7 @@ void file_load_click (GtkButton *button,	gpointer ch_p)
 	std::string filename = "C:\\Software\\iCub\\bin\\debug\\ciao.dat";
 
 	char* buff;
+	int file_version=0;
 
 	buff = gtk_file_chooser_get_filename   (GTK_FILE_CHOOSER(picker_calib));
 	if (buff==NULL)
@@ -514,17 +538,30 @@ void file_load_click (GtkButton *button,	gpointer ch_p)
 
 	int i=0;
 	char buffer[256];
+
+	//file version
+	filestr.getline (buffer,256);
+	filestr.getline (buffer,256);
+	sscanf (buffer,"%d",&file_version);
+
+	//serial number
+	filestr.getline (buffer,256);
 	filestr.getline (buffer,256);
 	sprintf(serial_no,buffer);
 	gtk_entry_set_text (GTK_ENTRY (edit_serial_number), serial_no);
 	downloader.strain_set_serial_number(downloader.board_list[selected].pid,serial_no);
 
+	//offsets
+	filestr.getline (buffer,256);
 	for (i=0;i<6; i++)
 	{
 		filestr.getline (buffer,256);
 		sscanf  (buffer,"%d",&offset[i]);
 		gtk_range_set_value (GTK_RANGE(slider_gain[i]),(offset[i]));
 	}
+
+	//calibration matrix
+	filestr.getline (buffer,256);
 	for (i=0;i<36; i++)
 	{
 		int ri=i/6;
@@ -534,17 +571,25 @@ void file_load_click (GtkButton *button,	gpointer ch_p)
 		printf("%d %x\n", calib_matrix[ri][ci],calib_matrix[ri][ci]);
 		downloader.strain_set_matrix_rc(downloader.board_list[selected].pid,ri,ci,calib_matrix[ri][ci]);
 	}
+	
+	//matrix gain
+	filestr.getline (buffer,256);
 	filestr.getline (buffer,256);
 	int cc=0;
 	sscanf (buffer,"%d",&cc);
 	downloader.strain_set_matrix_gain(downloader.board_list[selected].pid,cc);
 
+	//tare
+	filestr.getline (buffer,256);
 	for (i=0;i<6; i++)
 	{
 		filestr.getline (buffer,256);
 		sscanf  (buffer,"%d",&calib_bias[i]);
 		downloader.strain_set_calib_bias(downloader.board_list[selected].pid,i,calib_bias[i]);
 	}
+
+	//full scale values
+	filestr.getline (buffer,256);
 	for (i=0;i<6; i++)
 	{
 		filestr.getline (buffer,256);
