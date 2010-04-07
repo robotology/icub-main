@@ -87,7 +87,7 @@ bool CB::CartesianOrientationSquaredError::updatePotentialFunction() {
     }
 
     // compute potential and gradient
-    gradient = -1.0*diff;
+    gradient = 1.0*diff;
     potential = 0.5*dot(diff,diff);
     
     cout << "ref,  cur   (axis-angle)" << endl;

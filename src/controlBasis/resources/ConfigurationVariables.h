@@ -275,6 +275,12 @@ namespace CB {
             }
         }
 
+        /**
+         * sets the value of the lock
+         **/
+        void setLock(bool b) {
+            lock = b;
+        }
         
     };
     
