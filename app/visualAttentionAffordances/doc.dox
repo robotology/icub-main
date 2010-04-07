@@ -36,7 +36,7 @@ Assumes \ref icub_iCubInterface (with cartesian control implemented) is running.
 
 \section howto_sec How to run the Application
 The demo is composed by different applications which run always at the same time.
-Note that in order to run all the applications the icubApp can be run usign the txt file present in script sub directory.
+Note that in order to run all the applications the icubApp can be run using the txt file appVisualAttentionAffordances.txt
 Before that you need to modify all the template in that directory for your own network configuration.
 
 The sequence of activation of these application is the following
