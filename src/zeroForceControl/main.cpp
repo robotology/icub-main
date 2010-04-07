@@ -246,19 +246,19 @@ private:
 				  {
 				  case FILT1HZ:
 					  kp(0) = -62.0;	kp(1) = -50.0;	kp(2) = -55.0;	kp(3) = -100; //kp(2) was 62
-					  fprintf(stderr,"using lowpass filter with bandwidth of: 1 Hz");
+					  //fprintf(stderr,"using lowpass filter with bandwidth of: 1 Hz");
 					  break;
 				  case FILT2HZ:
 					  kp(0) = -62.0;	kp(1) = -50.0;	kp(2) = -55.0;	kp(3) = -100; //kp(2) was 62
-					  fprintf(stderr,"using lowpass filter with bandwidth of: 2 Hz");
+					  //fprintf(stderr,"using lowpass filter with bandwidth of: 2 Hz");
 					  break;
 				  case FILT3HZ:
 					  kp(0) = -62.0;	kp(1) = -50.0;	kp(2) = -55.0;	kp(3) = -100; //kp(2) was 62
-					  fprintf(stderr,"using lowpass filter with bandwidth of: 3 Hz");
+					  //fprintf(stderr,"using lowpass filter with bandwidth of: 3 Hz");
 					  break;
 				  default:
 					  kp(0) = -25.0;	kp(1) = -25.0;	kp(2) = -25.0;	kp(3) = -30.0;
-					  fprintf(stderr,"using lowpass filter with bandwidth of: boh Hz");
+					  //fprintf(stderr,"using lowpass filter with bandwidth of: boh Hz");
 					  break;
 				  }
 			  }
@@ -288,19 +288,19 @@ private:
 				  {
 				  case FILT1HZ:
 					  kp(0) =  62.0;	kp(1) =  50.0;	kp(2) =  55.0;	kp(3) =  100;
-					  fprintf(stderr,"using lowpass filter with bandwidth of: 1 Hz");
+					  //fprintf(stderr,"using lowpass filter with bandwidth of: 1 Hz");
 					  break;
 				  case FILT2HZ:
 					  kp(0) =  62.0;	kp(1) =  50.0;	kp(2) =  55.0;	kp(3) =  100;
-					  fprintf(stderr,"using lowpass filter with bandwidth of: 2 Hz");
+					  //fprintf(stderr,"using lowpass filter with bandwidth of: 2 Hz");
 					  break;
 				  case FILT3HZ:
 					  kp(0) =  62.0;	kp(1) =  50.0;	kp(2) =  55.0;	kp(3) =  100;
-					  fprintf(stderr,"using lowpass filter with bandwidth of: 3 Hz");
+					  //fprintf(stderr,"using lowpass filter with bandwidth of: 3 Hz");
 					  break;
 				  default:
 					  kp(0) =  25.0;	kp(1) =  25.0;	kp(2) =  25.0;	kp(3) =  30.0;
-					  fprintf(stderr,"using lowpass filter with bandwidth of: boh Hz");
+					  //fprintf(stderr,"using lowpass filter with bandwidth of: boh Hz");
 					  break;
 				  }
 			  }
@@ -330,19 +330,19 @@ private:
 				  {
 				  case FILT1HZ:
 					  kp(0) =  20.0;	kp(1) =  -14.0;	kp(2) =  94.0;	kp(3) =  -94.0;
-					  fprintf(stderr,"using lowpass filter with bandwidth of: 1 Hz");
+					  //fprintf(stderr,"using lowpass filter with bandwidth of: 1 Hz");
 					  break;
 				  case FILT2HZ:
 					  kp(0) =  20.0;	kp(1) =  -14.0;	kp(2) =  94.0;	kp(3) =  -94.0;
-					  fprintf(stderr,"using lowpass filter with bandwidth of: 2 Hz");
+					  //fprintf(stderr,"using lowpass filter with bandwidth of: 2 Hz");
 					  break;
 				  case FILT3HZ:
 					  kp(0) =  20.0;	kp(1) =  -14.0;	kp(2) =  94.0;	kp(3) =  -94.0;
-					  fprintf(stderr,"using lowpass filter with bandwidth of: 3 Hz");
+					  //fprintf(stderr,"using lowpass filter with bandwidth of: 3 Hz");
 					  break;
 				  default:
 					  kp(0) =  10;	kp(1) =  -5;	kp(2) =  40;	kp(3) =  -50; 
-					  fprintf(stderr,"using lowpass filter with bandwidth of: boh Hz");
+					  //fprintf(stderr,"using lowpass filter with bandwidth of: boh Hz");
 					  break;
 				  }
 
@@ -374,19 +374,19 @@ private:
 				  {
 				  case FILT1HZ:
 					  kp(0) = -20.0;	kp(1) =  14.0;	kp(2) =  -94.0;	kp(3) =  94.0; 
-					  fprintf(stderr,"using lowpass filter with bandwidth of: 1 Hz");
+					  //fprintf(stderr,"using lowpass filter with bandwidth of: 1 Hz");
 					  break;
 				  case FILT2HZ:
 					  kp(0) = -20.0;	kp(1) =  14.0;	kp(2) =  -94.0;	kp(3) =  94.0; 
-					  fprintf(stderr,"using lowpass filter with bandwidth of: 2 Hz");
+					  //fprintf(stderr,"using lowpass filter with bandwidth of: 2 Hz");
 					  break;
 				  case FILT3HZ:
 					  kp(0) = -20.0;	kp(1) =  14.0;	kp(2) =  -94.0;	kp(3) =  94.0; 
-					  fprintf(stderr,"using lowpass filter with bandwidth of: 3 Hz");
+					  //fprintf(stderr,"using lowpass filter with bandwidth of: 3 Hz");
 					  break;
 				  default:
 					  kp(0) =  -10;	kp(1) =   5;	kp(2) =  -40;	kp(3) =  50; 
-					  fprintf(stderr,"using lowpass filter with bandwidth of: boh Hz");
+					  //fprintf(stderr,"using lowpass filter with bandwidth of: boh Hz");
 					  break;
 				  }
 			  }
@@ -655,19 +655,19 @@ public:
 				  {
 				  case FILT1HZ:
 					  tauFilt(i) = lpf_ord1_1hz(tauC(i), i);
-					  fprintf(stderr,"using lowpass filter with bandwidth of: 1 Hz");
+					  //fprintf(stderr,"using lowpass filter with bandwidth of: 1 Hz");
 					  break;
 				  case FILT2HZ:
 					  tauFilt(i) = lpf_ord1_2hz(tauC(i), i);
-					  fprintf(stderr,"using lowpass filter with bandwidth of: 2 Hz");
+					  //fprintf(stderr,"using lowpass filter with bandwidth of: 2 Hz");
 					  break;
 				  case FILT3HZ:
 					  tauFilt(i) = lpf_ord1_3hz(tauC(i), i);
-					  fprintf(stderr,"using lowpass filter with bandwidth of: 3 Hz");
+					  //fprintf(stderr,"using lowpass filter with bandwidth of: 3 Hz");
 					  break;
 				  default:
 					  tauFilt(i) = lpf_ord1_3hz(tauC(i), i);
-					  fprintf(stderr,"using lowpass filter with bandwidth of: boh Hz");
+					  //fprintf(stderr,"using lowpass filter with bandwidth of: boh Hz");
 					  break;
 				  }
 			  }
