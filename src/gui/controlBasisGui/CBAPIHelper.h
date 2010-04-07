@@ -39,7 +39,7 @@ namespace CB {
         /**
          * the list of controllers in the sequence
          **/
-        std::vector<ControllerParameters *> sequenceControllerParameters;
+        std::vector<ControllerParameters *> sequenceControllerParameters[2];
         
         /**
          * the index into the sequence that is currently running
@@ -88,6 +88,18 @@ namespace CB {
          * \param gain the gain for the controller
          **/
         void addControllerToSequence(std::string sen, std::string ref, std::string pf, std::string eff, bool useTranspose, double gain);
+
+        /**
+         * Adds a lower-priority (secondary) controller to the sequence with the resources specified.
+         * \param sen the sensor name
+         * \param ref the reference (target) name, if there is one
+         * \param pf the name of the potential function
+         * \param eff the effector name
+         * \param useTranspose  if true, uses J^T in the contrl law, if false, uses J^# (moore-penrose pseudoinverse)
+         * \param gain the gain for the controller
+         * \return returns whether it was added (only two objectives are allowed)
+         **/
+        bool addSecondaryControllerToSequence(std::string sen, std::string ref, std::string pf, std::string eff, bool useTranspose, double gain);
 
         /**
          * clears the control law
@@ -159,6 +171,11 @@ namespace CB {
          * gets the current sequence controller id if that is running
          **/
         int getSequenceControllerID();
+
+        /**
+         * gets the number of controllers (objectives) in the current sequence step
+         **/
+        int getNumberOfControllersInSequenceStep();
 
         /**
          * starts the next controller in the sequence

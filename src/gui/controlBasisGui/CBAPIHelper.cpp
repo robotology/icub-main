@@ -46,13 +46,14 @@ void CB::CBAPIHelper::addControllerToSequence(string sen, string ref, string pf,
     ref = "/cb/" + ref;
     pf = "/cb/" + pf;
     eff = "/cb/" + eff;
-    sequenceControllerParameters.push_back(new ControllerParameters(sen, ref, pf, eff, gain));
+    sequenceControllerParameters[0].push_back(new ControllerParameters(sen, ref, pf, eff, gain));
   } else {
     sen = "/cb/" + sen;
     pf = "/cb/" + pf;
     eff = "/cb/" + eff;
-    sequenceControllerParameters.push_back(new ControllerParameters(sen, pf, eff, gain));
+    sequenceControllerParameters[0].push_back(new ControllerParameters(sen, pf, eff, gain));
   }
+  sequenceControllerParameters[1].push_back(NULL);
 
   cout << "ADDING CONTROLLER TO SEQUENCE:" << endl;
   cout << "\tsen: " << sen << endl;
@@ -63,6 +64,42 @@ void CB::CBAPIHelper::addControllerToSequence(string sen, string ref, string pf,
   numControllersInSequence++;
   sequenceControlLaw.useTranspose(useTranspose);
   sequenceControlLaw.usePDControl(useDerivativeTerm); 
+
+
+}
+
+
+bool CB::CBAPIHelper::addSecondaryControllerToSequence(string sen, string ref, string pf, string eff, bool useTranspose, double gain) {
+
+
+    if(sequenceControllerParameters[1][sequenceControllerParameters[1].size()-1] != NULL) {
+        cout << "can't add secondary controller to sequence, one already exists!!" << endl;
+        return false;
+    }
+
+    if(ref != "") {
+        sen = "/cb/" + sen;
+        ref = "/cb/" + ref;
+        pf = "/cb/" + pf;
+        eff = "/cb/" + eff;
+        sequenceControllerParameters[1][sequenceControllerParameters[1].size()-1] = new ControllerParameters(sen, ref, pf, eff, gain);
+    } else {
+        sen = "/cb/" + sen;
+        pf = "/cb/" + pf;
+        eff = "/cb/" + eff;
+        sequenceControllerParameters[1][sequenceControllerParameters[1].size()-1] = new ControllerParameters(sen, pf, eff, gain);
+    }
+    
+    cout << "ADDING SECONDARY CONTROLLER TO SEQUENCE:" << endl;
+    cout << "\tsen: " << sen << endl;
+    cout << "\tref: " << ref << endl;
+    cout << "\teff: " << eff << endl;
+    cout << "\tpf: " << pf << endl;
+    
+    sequenceControlLaw.useTranspose(useTranspose);
+    sequenceControlLaw.usePDControl(useDerivativeTerm); 
+
+    return true;
 }
 
 void CB::CBAPIHelper::clearControlLaw() { 
@@ -75,11 +112,13 @@ void CB::CBAPIHelper::clearSequence() {
   numControllersInSequence = 0;
   sequenceIndex = -1;
 
-  for(int i=0; i<sequenceControllerParameters.size(); i++) {
-      delete sequenceControllerParameters[i];
+  for(int k=0; k<2; k++) {
+      for(int i=0; i<sequenceControllerParameters[k].size(); i++) {
+          delete sequenceControllerParameters[k][i];
+          sequenceControllerParameters[k][i] = NULL;
+      }
+      sequenceControllerParameters[k].clear();
   }
-  sequenceControllerParameters.clear();
-
 }
 
 void CB::CBAPIHelper::stopControlLaw() {
@@ -139,6 +178,11 @@ int CB::CBAPIHelper::getSequenceControllerID() {
     return sequenceIndex;
 }
 
+int CB::CBAPIHelper::getNumberOfControllersInSequenceStep() {   
+    return sequenceControlLaw.getNumControllers();
+}
+
+
 void CB::CBAPIHelper::goToNextControllerInSequence() {
 
     if(sequenceIndex==(numControllersInSequence-1)) {
@@ -158,17 +202,30 @@ void CB::CBAPIHelper::goToNextControllerInSequence() {
     sequenceIndex++;
 
     // add it to the control law
-    if(sequenceControllerParameters[sequenceIndex]->Reference=="") {
-        sequenceControlLaw.addController(sequenceControllerParameters[sequenceIndex]->Sensor, 
-                                         sequenceControllerParameters[sequenceIndex]->PotentialFunction,
-                                         sequenceControllerParameters[sequenceIndex]->Effector, 
-                                         sequenceControllerParameters[sequenceIndex]->Gain);
+    if(sequenceControllerParameters[0][sequenceIndex]->Reference=="") {
+        sequenceControlLaw.addController(sequenceControllerParameters[0][sequenceIndex]->Sensor, 
+                                         sequenceControllerParameters[0][sequenceIndex]->PotentialFunction,
+                                         sequenceControllerParameters[0][sequenceIndex]->Effector, 
+                                         sequenceControllerParameters[0][sequenceIndex]->Gain);
+        if(sequenceControllerParameters[1][sequenceIndex] != NULL) {
+            sequenceControlLaw.addController(sequenceControllerParameters[1][sequenceIndex]->Sensor, 
+                                             sequenceControllerParameters[1][sequenceIndex]->PotentialFunction,
+                                             sequenceControllerParameters[1][sequenceIndex]->Effector, 
+                                             sequenceControllerParameters[1][sequenceIndex]->Gain);
+        }
     } else {
-        sequenceControlLaw.addController(sequenceControllerParameters[sequenceIndex]->Sensor, 
-                                         sequenceControllerParameters[sequenceIndex]->Reference,
-                                         sequenceControllerParameters[sequenceIndex]->PotentialFunction,
-                                         sequenceControllerParameters[sequenceIndex]->Effector, 
-                                         sequenceControllerParameters[sequenceIndex]->Gain);
+        sequenceControlLaw.addController(sequenceControllerParameters[0][sequenceIndex]->Sensor, 
+                                         sequenceControllerParameters[0][sequenceIndex]->Reference,
+                                         sequenceControllerParameters[0][sequenceIndex]->PotentialFunction,
+                                         sequenceControllerParameters[0][sequenceIndex]->Effector, 
+                                         sequenceControllerParameters[0][sequenceIndex]->Gain);
+        if(sequenceControllerParameters[1][sequenceIndex] != NULL) {
+            sequenceControlLaw.addController(sequenceControllerParameters[1][sequenceIndex]->Sensor, 
+                                             sequenceControllerParameters[1][sequenceIndex]->Reference,
+                                             sequenceControllerParameters[1][sequenceIndex]->PotentialFunction,
+                                             sequenceControllerParameters[1][sequenceIndex]->Effector, 
+                                             sequenceControllerParameters[1][sequenceIndex]->Gain);
+        }
     }  
     sequenceControlLaw.usePDControl(useDerivativeTerm);
 
@@ -195,17 +252,30 @@ void CB::CBAPIHelper::goToPreviousControllerInSequence() {
     sequenceIndex--;
 
     // add it to the control law
-    if(sequenceControllerParameters[sequenceIndex]->Reference=="") {
-        sequenceControlLaw.addController(sequenceControllerParameters[sequenceIndex]->Sensor, 
-                                         sequenceControllerParameters[sequenceIndex]->PotentialFunction,
-                                         sequenceControllerParameters[sequenceIndex]->Effector, 
-                                         sequenceControllerParameters[sequenceIndex]->Gain);
+    if(sequenceControllerParameters[0][sequenceIndex]->Reference=="") {
+        sequenceControlLaw.addController(sequenceControllerParameters[0][sequenceIndex]->Sensor, 
+                                         sequenceControllerParameters[0][sequenceIndex]->PotentialFunction,
+                                         sequenceControllerParameters[0][sequenceIndex]->Effector, 
+                                         sequenceControllerParameters[0][sequenceIndex]->Gain);
+        if(sequenceControllerParameters[1][sequenceIndex] != NULL) {
+            sequenceControlLaw.addController(sequenceControllerParameters[1][sequenceIndex]->Sensor, 
+                                             sequenceControllerParameters[1][sequenceIndex]->PotentialFunction,
+                                             sequenceControllerParameters[1][sequenceIndex]->Effector, 
+                                             sequenceControllerParameters[1][sequenceIndex]->Gain);
+        }
     } else {
-        sequenceControlLaw.addController(sequenceControllerParameters[sequenceIndex]->Sensor, 
-                                         sequenceControllerParameters[sequenceIndex]->Reference,
-                                         sequenceControllerParameters[sequenceIndex]->PotentialFunction,
-                                         sequenceControllerParameters[sequenceIndex]->Effector, 
-                                         sequenceControllerParameters[sequenceIndex]->Gain);
+        sequenceControlLaw.addController(sequenceControllerParameters[0][sequenceIndex]->Sensor, 
+                                         sequenceControllerParameters[0][sequenceIndex]->Reference,
+                                         sequenceControllerParameters[0][sequenceIndex]->PotentialFunction,
+                                         sequenceControllerParameters[0][sequenceIndex]->Effector, 
+                                         sequenceControllerParameters[0][sequenceIndex]->Gain);
+        if(sequenceControllerParameters[1][sequenceIndex] != NULL) {
+            sequenceControlLaw.addController(sequenceControllerParameters[1][sequenceIndex]->Sensor, 
+                                             sequenceControllerParameters[1][sequenceIndex]->Reference,
+                                             sequenceControllerParameters[1][sequenceIndex]->PotentialFunction,
+                                             sequenceControllerParameters[1][sequenceIndex]->Effector, 
+                                             sequenceControllerParameters[1][sequenceIndex]->Gain);
+        }
     }  
     sequenceControlLaw.usePDControl(useDerivativeTerm);
 

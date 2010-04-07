@@ -74,7 +74,7 @@ namespace CB {
 
             int printLimit; 
             if(runningSequence) {
-                printLimit = 1;
+                printLimit = cbapi->getNumberOfControllersInSequenceStep();
             } else {
                 printLimit = numControllers;
             }
@@ -88,8 +88,8 @@ namespace CB {
                     sprintf(c,"c[%d], phi: %.7f, phi_dot: %.7f, state=%s\n",
                             i, potentials[i], potentialDots[i], state_char);
                 } else {
-                    sprintf(c,"c[%d], phi: %.7f, phi_dot: %.7f, state=%s\n",
-                            cbapi->getSequenceControllerID(), potentials[i], potentialDots[i], state_char);
+                    sprintf(c,"c[%d][%d], phi: %.7f, phi_dot: %.7f, state=%s\n",
+                            cbapi->getSequenceControllerID(), i, potentials[i], potentialDots[i], state_char);
                 }
                 str = std::string(c);	
                 for(int k=0; k<i;k++) str = "\t" + str;

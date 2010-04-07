@@ -22,7 +22,7 @@ CBAPIWindow::CBAPIWindow() :
     sequenceTabTable(1,2,true),
     controlResourcesTable(6,9,true),
     controlDefinitionTable(8,12,true),
-    sequenceControllersTable(8,12,true),
+    sequenceControllersTable(9,12,true),
     optionsTable(3,1,true),
     sensorList("sensors"),
     referenceList("reference"),
@@ -38,6 +38,7 @@ CBAPIWindow::CBAPIWindow() :
     stopControllerButton(Gtk::Stock::MEDIA_STOP),
     refreshButton(Gtk::Stock::REFRESH),
     addControllerToSequenceButton(Gtk::Stock::ADD),
+    addSecondaryControllerToSequenceButton("Nullspace"),
     clearSequenceButton(Gtk::Stock::CLEAR),
     runSequenceButton(Gtk::Stock::MEDIA_PLAY),
     stopSequenceButton(Gtk::Stock::MEDIA_STOP),
@@ -75,6 +76,7 @@ CBAPIWindow::CBAPIWindow() :
     refreshButton.set_border_width(2);
 
     addControllerToSequenceButton.set_border_width(4);
+    addSecondaryControllerToSequenceButton.set_border_width(4);
     clearSequenceButton.set_border_width(4);
     runSequenceButton.set_border_width(4);
     stopSequenceButton.set_border_width(4);
@@ -101,6 +103,8 @@ CBAPIWindow::CBAPIWindow() :
 
     addControllerToSequenceButton.signal_clicked().connect( sigc::mem_fun(*this,
                                                                           &CBAPIWindow::on_add_to_sequence_button_clicked) );
+    addSecondaryControllerToSequenceButton.signal_clicked().connect( sigc::mem_fun(*this,
+                                                                                   &CBAPIWindow::on_add_secondary_to_sequence_button_clicked) );
     clearSequenceButton.signal_clicked().connect( sigc::mem_fun(*this,
                                                                 &CBAPIWindow::on_clear_sequence_button_clicked) );
     runSequenceButton.signal_clicked().connect( sigc::mem_fun(*this,
@@ -183,13 +187,14 @@ CBAPIWindow::CBAPIWindow() :
     sequenceControllersFrame.set_shadow_type(Gtk::SHADOW_ETCHED_IN);
     sequenceControllersText.set_border_width(5);
 
-    sequenceControllersTable.attach(sequenceControllersText,0,8,0,8);
+    sequenceControllersTable.attach(sequenceControllersText,0,8,0,9);
     sequenceControllersTable.attach(addControllerToSequenceButton,8,10,0,1); 
-    sequenceControllersTable.attach(runSequenceButton,8,10,2,3);
-    sequenceControllersTable.attach(fwdSequenceButton,8,10,3,4);
-    sequenceControllersTable.attach(bkSequenceButton,8,10,4,5);
-    sequenceControllersTable.attach(stopSequenceButton,8,10,5,6);
-    sequenceControllersTable.attach(clearSequenceButton,8,10,7,8);
+    sequenceControllersTable.attach(addSecondaryControllerToSequenceButton,8,10,1,2); 
+    sequenceControllersTable.attach(runSequenceButton,8,10,3,4);
+    sequenceControllersTable.attach(fwdSequenceButton,8,10,4,5);
+    sequenceControllersTable.attach(bkSequenceButton,8,10,5,6);
+    sequenceControllersTable.attach(stopSequenceButton,8,10,6,7);
+    sequenceControllersTable.attach(clearSequenceButton,8,10,8,9);
 
     sequenceControllersTable.attach(sequenceGainLabel,10,11,0,1); 
     sequenceControllersTable.attach(sequenceGainEntry,11,12,0,1); 
@@ -248,498 +253,554 @@ void CBAPIWindow::on_control_thread_update(ControlDataThread *dThread) {
         if ( (cbapi.getState(0, true) == CB::CONVERGED) || 
              (cbapi.getState(0,true) == CB::UNDEFINED) ) {           
             cout << "controller[" << cbapi.getSequenceControllerID() << "] state: " << (int)(cbapi.getState(0,true)) << endl;            
+             if(cbapi.getSequenceControllerID() == (cbapi.getNumControllers(true)-1)) {
+                 dataThread->stopUpdateThread();
+                 cbapi.stopSequence();
+                 sequenceOutputText.append_text("control sequence finished\n");
+                 sequenceRunning = false;
+             } else {
+                 cbapi.goToNextControllerInSequence();
+             }
+         } 
 
-            if(cbapi.getSequenceControllerID() == (cbapi.getNumControllers(true)-1)) {
-                dataThread->stopUpdateThread();
-                cbapi.stopSequence();
-                sequenceOutputText.append_text("control sequence finished\n");
-                sequenceRunning = false;
-            } else {
-                cbapi.goToNextControllerInSequence();
-            }
-        } 
+     } else {
+         controlOutputText.append_text(str);
+     }
+ }
 
-    } else {
-        controlOutputText.append_text(str);
+ void CBAPIWindow::on_notebook_switch_page(GtkNotebookPage* /* page */, guint page_num) {
+     cout << "CBAPI Switching to tab " << page_num << endl;
+ }
+
+ void CBAPIWindow::on_sensor_selection() {
+     cout << "got sensor selection" << endl;
+     string sen = sensorList.getSelected();
+     if(sen=="") return;
+ }
+
+ void CBAPIWindow::on_reference_selection() {
+     cout << "got reference selection" << endl;
+     string ref = referenceList.getSelected();
+     if(ref=="") return;
+ }
+
+ void CBAPIWindow::on_potential_function_selection() {
+     cout << "got pf selection" << endl;
+     string pf = potentialFunctionList.getSelected();
+     if(pf=="") return;
+
+     refreshResourceList();
+
+     int id;
+     for(id=0; id<pfInfo.size(); id++) {
+         if(pfInfo[id]->name == pf) break;
+     }
+
+     referenceList.clear();
+     sensorList.clear();
+
+     printf("sensor 1 info size: %d\n", sensorInfo.size());
+     for(int i=0; i<sensorInfo.size(); i) {
+         printf("testing sensor %s %s\n", sensorInfo[i].space.c_str(), sensorInfo[i].name.c_str());
+         if(sensorInfo[i].space != pfInfo[id]->space) {
+             sensorInfo.erase(sensorInfo.begin()+i);
+         } else {
+             i++;
+         }
+     }
+     printf("sensor 2 info size: %d\n", sensorInfo.size());
+
+     string str;
+     for(int i=0; i<sensorInfo.size(); i++) {
+         str = sensorInfo[i].space + sensorInfo[i].name;
+         printf("adding sensor: %s\n", str.c_str());
+         sensorList.addResource(str);
+         if(pfInfo[id]->hasReference) {
+             referenceList.addResource(str);
+         }
+     }
+
+ }
+
+ void CBAPIWindow::on_effector_selection() {
+     cout << "got effector selection" << endl;
+     string eff = effectorList.getSelected();
+     if(eff=="") return;
+ }
+
+ void CBAPIWindow::on_virtual_effector_toggle() {
+     cout << "got virtual effector toggle" << endl;
+     if(allowVirtualEffectorsBox.get_active()) {
+         showVirtualEffectors = true;
+     } else {
+         showVirtualEffectors = false;
+     }
+     refreshResourceList();
+ }
+
+ void CBAPIWindow::on_use_jacobian_transpose() {
+     cout << "got use transpose toggle" << endl;
+     if(useJacobianTransposeBox.get_active()) {
+         useJacobianTranspose = true;
+     } else {
+         useJacobianTranspose = false;
+     }
+     cbapi.useTranspose(useJacobianTranspose);
+ }
+
+ void CBAPIWindow::on_use_pd_control() {
+     cout << "got use pd control toggle" << endl;
+     if(usePDControlBox.get_active()) {
+         usePDControl = true;
+     } else {
+         usePDControl = false;
+     }
+     cbapi.usePDControl(usePDControl);
+ }
+
+ void CBAPIWindow::refreshResourceList() {
+
+     cout << "RefreshResourceList()" << endl;
+     string serviceName;
+     string simpleServiceName;
+     int start,stop;  
+     string resourceName, resourceSpace;
+     ResourceInfo resInfo;
+
+     NameClient& nic = NameClient::getNameClient();
+     NameConfig nc;
+     String name = nc.getNamespace();
+     Bottle msg, reply;
+     msg.addString("bot");
+     msg.addString("list");
+
+     // clearing out current list
+     sensorList.clear();
+     referenceList.clear();
+     effectorList.clear();
+
+     sensorInfo.clear();
+     effectorInfo.clear();
+
+     cout << "Requesting list of ports from name server" << endl;
+     Network::write(name.c_str(),
+                    msg,
+                    reply);
+     int ct = reply.size()-1;
+     cout << "Got " << ct << " port " << ((ct!=1)?"s":"") << endl ;
+     for (int i=1; i<reply.size(); i++) {
+         Bottle *entry = reply.get(i).asList();
+         if (entry!=NULL) {
+             ConstString port = entry->check("name",Value("")).asString();
+             if (port!="" && port!="fallback" && port!=name.c_str()) {
+                 Contact c = Contact::byConfig(*entry);
+                 if (c.getCarrier()=="mcast") {
+                     cout << "Skipping mcast port: " << port.c_str() << endl;
+                 } else {
+                     Address addr = Address::fromContact(c);
+
+                     if (addr.isValid()) {
+                         serviceName = port.c_str();
+
+                         if( (serviceName.compare(0,3,"/cb")==0) && (serviceName.compare(serviceName.size()-6,6,"data:o")==0) ) {
+
+                             if(serviceName.at(serviceName.size()-1)!='i') {
+                                 simpleServiceName = serviceName.substr(4,serviceName.size()-4-7);
+
+                                 cout << "found control basis service: " << simpleServiceName.c_str() << endl;
+
+                                 sensorList.addResource(simpleServiceName);
+                                 referenceList.addResource(simpleServiceName);
+
+                                 start = 0;
+                                 stop = simpleServiceName.find_first_of("/", start);
+                                 resourceSpace = simpleServiceName.substr(start,stop-start);
+                                 resourceName = simpleServiceName.substr(stop-start,simpleServiceName.size());	      
+                                 resInfo.name = resourceName;
+                                 resInfo.space = resourceSpace;
+                                 sensorInfo.push_back(resInfo);
+
+                             }
+                             //	      cout << "name=%s, space=%s\n", resourceName.c_str(), resourceSpace.c_str());
+
+                         } else if( (serviceName.compare(0,17,"/cb/configuration")==0) && (serviceName.compare(serviceName.size()-6,6,"data:i")==0) ) {
+                             simpleServiceName = serviceName.substr(4,serviceName.size()-4-7);
+
+                             // load the runnable configurations
+                             start = 0;
+                             stop = simpleServiceName.find_first_of("/", start);
+                             resourceSpace = simpleServiceName.substr(start,stop-start);
+                             resourceName = simpleServiceName.substr(stop-start,simpleServiceName.size());	      
+                             resInfo.name = resourceName;
+                             resInfo.space = resourceSpace;
+                             effectorInfo.push_back(resInfo);
+                             effectorList.addResource(simpleServiceName);
+                             cout << "found control basis effector: " << simpleServiceName.c_str() << endl;
+
+                             // now load any transformations on those configurations, possible through applying jacobians
+                             if(showVirtualEffectors) {
+                                 for(int i=0; i<jacInfo.size(); i++) {
+                                     if( (jacInfo[i].inputSpace == resourceSpace) ) {
+                                         simpleServiceName = jacInfo[i].outputSpace + "/" + resourceName;
+                                         effectorList.addResource(simpleServiceName);
+                                         cout << "found virtual control basis effector: " << simpleServiceName.c_str() << endl;
+                                     } else if( (jacInfo[i].outputSpace == resourceSpace) ) {
+                                         simpleServiceName = jacInfo[i].inputSpace + resourceName;
+                                         effectorList.addResource(simpleServiceName);
+                                         cout << "found virtual control basis effector: " << simpleServiceName.c_str() << endl;
+                                     }
+                                 }
+                             }
+
+                         }
+
+                     }
+                 }
+             } 
+         } 
+     }   
+ }
+
+ void CBAPIWindow::loadPotentialFunctionsFromFile() {
+
+     FILE *fp;
+     string ICUB_ROOT(getenv("ICUB_ROOT"));    
+     string fname = ICUB_ROOT + "/src/controlBasis/potentialFunctions/potentialFunctions.dat";
+     cout << fname << endl;
+
+     if( (fp=fopen(fname.c_str(), "r")) == NULL ) {
+         cout << "problem opening \'" << fname.c_str() << "\' for reading!!!" << endl;
+         pfInfo.clear();
+         return;
+     }
+
+     string pfName;
+     string pfSpace;
+     string pfHasReference;
+
+     char line[128];
+     string lineStr;
+
+     int start,stop;
+
+     potentialFunctionList.clear();
+
+     while(fgets(line, 128, fp) != NULL) {
+
+         PotentialFunctionInfo *info = new PotentialFunctionInfo();        
+
+         lineStr = string(line);
+
+         start = 0;
+
+         stop = lineStr.find_first_of(" \n", start);
+         pfName = lineStr.substr(start,stop-start);
+         start = lineStr.find_first_not_of(" ", stop+1);
+
+         stop = lineStr.find_first_of(" \n", start);
+         pfHasReference = lineStr.substr(start,stop-start);
+         start = lineStr.find_first_not_of(" ", stop+1);
+
+         stop = lineStr.find_first_of(" \n", start);
+         pfSpace = lineStr.substr(start,stop-start);
+         start = lineStr.find_first_not_of(" ", stop+1);
+
+         info->name = pfName;
+         info->space = pfSpace;
+         if(pfHasReference=="true") 
+             info->hasReference = true; 
+         else 
+             info->hasReference = false; 
+         pfInfo.push_back(info);
+
+         potentialFunctionList.addResource(pfName);
+
+     }
+
+     fclose(fp);
+ }
+
+ void CBAPIWindow::loadPotentialFunctions() {
+
+     for(int i=0; i<pfInfo.size(); i++) {
+         delete pfInfo[i];
+     }
+     pfInfo.clear();
+     potentialFunctionList.clear();
+
+     for(int i=0; i<PotentialFunctionFactory::instance().getNumRegisteredPotentialFunctions(); i++) {
+
+         PotentialFunctionInfo *info = new PotentialFunctionInfo();
+         info->name = PotentialFunctionFactory::instance().getPotentialFunctionInfo(i).name;
+         info->space = PotentialFunctionFactory::instance().getPotentialFunctionInfo(i).space;
+         info->hasReference = PotentialFunctionFactory::instance().getPotentialFunctionInfo(i).hasReference;
+         pfInfo.push_back(info);
+         potentialFunctionList.addResource(PotentialFunctionFactory::instance().getName(i));   
+
+         cout << "Loaded PF: " << PotentialFunctionFactory::instance().getName(i).c_str() << endl;
+     }
+
+ }
+
+ void CBAPIWindow::loadJacobians() {
+
+     FILE *fp;
+     string ICUB_ROOT(getenv("ICUB_ROOT"));    
+     string fname = ICUB_ROOT + "/src/controlBasis/jacobians/jacobians.dat";
+     cout << fname << endl;
+
+     if( (fp=fopen(fname.c_str(), "r")) == NULL ) {
+         cout << "problem opening \'" << fname.c_str() << "\' for reading!!!" << endl;
+         jacInfo.clear();
+         return;
+     }
+
+     string jacName;
+     string jacSpaceIn;
+     string jacSpaceOut;    
+     char line[128];
+     string lineStr;    
+     int start,stop;
+     JacobianInfo info;
+
+     while(fgets(line, 128, fp) != NULL) {
+
+         lineStr = string(line);
+         start = 0;
+
+         stop = lineStr.find_first_of(" \n", start);
+         jacName = lineStr.substr(start,stop-start);
+         start = lineStr.find_first_not_of(" ", stop+1);
+
+         stop = lineStr.find_first_of(" \n", start);
+         jacSpaceIn = lineStr.substr(start,stop-start);
+         start = lineStr.find_first_not_of(" ", stop+1);
+
+         stop = lineStr.find_first_of(" \n", start);
+         jacSpaceOut = lineStr.substr(start,stop-start);
+         start = lineStr.find_first_not_of(" ", stop+1);
+
+         info.name = jacName;
+         info.inputSpace = jacSpaceIn;
+         info.outputSpace = jacSpaceOut;
+         jacInfo.push_back(info);
+
+     }
+
+     fclose(fp);
+
+ }
+
+ void CBAPIWindow::on_add_button_clicked() { 
+
+     cout << "ADD" << endl; 
+
+     string sen = sensorList.getSelected();
+     string ref = referenceList.getSelected();
+     string pf = potentialFunctionList.getSelected();
+     string eff = effectorList.getSelected();
+
+     if( (sen=="") || (pf=="") || (eff=="") ) {
+         cout << "Please select control resources" << endl;
+         return;
+     }
+
+     int id;
+     for(id=0; id<pfInfo.size(); id++) {
+         if(pfInfo[id]->name == pf) break;
+     }
+     if(pfInfo[id]->hasReference) {
+         cout << "Please select control resources" << endl;
+         if(ref=="") return;
+     }
+
+     string gainStr = controllerGainEntry.get_text();
+     float gain = 1;
+     cout << "got input gain: " << gainStr << endl;
+     sscanf(gainStr.c_str(),"%f",&gain);
+     cout << "Setting controller gain: " << gain << endl;
+
+     cout << "adding controller: " << endl;
+     cout << "\t " << pf.c_str() << endl;
+     cout << "\t " << sen.c_str() << endl;
+     if(ref != "") cout << "\t " << ref.c_str() << endl;
+     cout << "\t " << eff.c_str() << endl;
+
+     cbapi.addControllerToLaw(sen, ref, pf, eff, useJacobianTranspose, (double)gain);
+     cbapi.usePDControl(usePDControl);
+
+     char c[32];
+     int n = cbapi.getNumControllers()-1;
+     sprintf(c, "%d", n);
+     string nStr = string(c);
+
+     controlDefinitionText.append_text("Controller[" + nStr + "]\n");
+     controlDefinitionText.append_text("\tsensor: " + sen +"\n");
+     if(ref != "") {
+         controlDefinitionText.append_text("\tref: " + ref +"\n");
+     }
+     controlDefinitionText.append_text("\tpf: " + pf +"\n");
+     controlDefinitionText.append_text("\teffector: " + eff +"\n");
+     controlOutputText.append_text("added controller " + nStr +" to law\n");
+
+ }
+
+ void CBAPIWindow::on_clear_button_clicked() { 
+     cout << "CLEAR" << endl; 
+     if(controlLawRunning) {
+         dataThread->stopUpdateThread();
+         cbapi.stopControlLaw();
+         controlOutputText.append_text("stopping control law\n");
+         controlLawRunning = false;
+     }
+     if(cbapi.getNumControllers()>0) {
+         cout << "clearing control law" << endl; 
+         cbapi.clearControlLaw();
+         cout << "clearing text window" << endl; 
+         controlDefinitionText.clear_text();
+         controlOutputText.append_text("clearing control law\n");
+     }
+ }
+
+ void CBAPIWindow::on_run_button_clicked() { 
+     cout << "RUN" << endl; 
+     if(sequenceRunning) {
+         cout << "CBAPI Can't run control law because sequence is running!!" << endl;
+         return;
+     }
+     if(cbapi.getNumControllers()>0) {       
+         controlOutputText.append_text("running control law\n");
+         cbapi.runControlLaw();
+         dataThread->connectCBAPIObjects(&cbapi,&controlOutputText, false);
+         dataThread->startUpdateThread();
+         controlLawRunning = true;
+     }
+ }
+
+ void CBAPIWindow::on_stop_button_clicked() { 
+     cout << "STOP" << endl; 
+     if(controlLawRunning) {
+         dataThread->stopUpdateThread();
+         cbapi.stopControlLaw();
+         controlOutputText.append_text("stopping control law\n");
+         controlLawRunning = false;
+     }
+     cout << "STOP FINISHED" << endl; 
+ }
+
+ void CBAPIWindow::on_refresh_button_clicked() { 
+     cout << "REFRESH" << endl; 
+     refreshResourceList();
+     loadPotentialFunctions();
+ }
+
+ void CBAPIWindow::on_add_to_sequence_button_clicked() { 
+     cout << "ADD TO SEQUENCE" << endl; 
+
+     string sen = sensorList.getSelected();
+     string ref = referenceList.getSelected();
+     string pf = potentialFunctionList.getSelected();
+     string eff = effectorList.getSelected();
+
+     if( (sen=="") || (pf=="") || (eff=="") ) {
+         cout << "Please select control resources" << endl;
+         return;
+     }
+
+     int id;
+     for(id=0; id<pfInfo.size(); id++) {
+         if(pfInfo[id]->name == pf) break;
+     }
+     if(pfInfo[id]->hasReference) {
+         cout << "Please select control resources" << endl;
+         if(ref=="") return;
+     }
+
+     string gainStr = sequenceGainEntry.get_text();
+     float gain = 1;
+     cout << "got input gain: " << gainStr << endl;
+     sscanf(gainStr.c_str(),"%f",&gain);
+     cout << "Setting controller gain: " << gain << endl;
+
+     cout << "adding controller: " << endl;
+     cout << "\t " << pf.c_str() << endl;
+     cout << "\t " << sen.c_str() << endl;
+     if(ref != "") cout << "\t " << ref.c_str() << endl;
+     cout << "\t " << eff.c_str() << endl;
+
+     cbapi.addControllerToSequence(sen, ref, pf, eff, useJacobianTranspose, (double)gain);
+     cbapi.usePDControl(usePDControl);
+
+     char c[32];
+     int n = cbapi.getNumControllers(true)-1;
+     sprintf(c, "%d", n);
+     string nStr = string(c);
+
+     sequenceControllersText.append_text("\nController[" + nStr + "][0]\n");
+     sequenceControllersText.append_text("\tsensor: " + sen +"\n");
+     if(ref != "") {
+         sequenceControllersText.append_text("\tref: " + ref +"\n");
+     }
+     sequenceControllersText.append_text("\tpf: " + pf +"\n");
+     sequenceControllersText.append_text("\teffector: " + eff +"\n");
+     sequenceOutputText.append_text("added controller " + nStr +" to sequence\n");
+
+ }
+
+ void CBAPIWindow::on_add_secondary_to_sequence_button_clicked() { 
+     cout << "ADD SECONDARY CONTROLLER TO SEQUENCE" << endl; 
+
+     string sen = sensorList.getSelected();
+     string ref = referenceList.getSelected();
+     string pf = potentialFunctionList.getSelected();
+     string eff = effectorList.getSelected();
+
+     if( (sen=="") || (pf=="") || (eff=="") ) {
+         cout << "Please select control resources" << endl;
+         return;
+     }
+
+     int id;
+     for(id=0; id<pfInfo.size(); id++) {
+         if(pfInfo[id]->name == pf) break;
+     }
+     if(pfInfo[id]->hasReference) {
+         cout << "Please select control resources" << endl;
+         if(ref=="") return;
+     }
+
+     string gainStr = sequenceGainEntry.get_text();
+     float gain = 1;
+     cout << "got input gain: " << gainStr << endl;
+     sscanf(gainStr.c_str(),"%f",&gain);
+     cout << "Setting controller gain: " << gain << endl;
+
+     cout << "adding controller: " << endl;
+     cout << "\t " << pf.c_str() << endl;
+     cout << "\t " << sen.c_str() << endl;
+     if(ref != "") cout << "\t " << ref.c_str() << endl;
+     cout << "\t " << eff.c_str() << endl;
+
+     bool ret = cbapi.addSecondaryControllerToSequence(sen, ref, pf, eff, useJacobianTranspose, (double)gain);
+     cbapi.usePDControl(usePDControl);
+
+     if(ret) {
+         char c[32];
+         int n = cbapi.getNumControllers(true)-1;
+         sprintf(c, "%d", n);
+         string nStr = string(c);
+
+         sequenceControllersText.append_text("Controller[" + nStr + "][1]\n");
+         sequenceControllersText.append_text("\tsensor: " + sen +"\n");
+         if(ref != "") {
+             sequenceControllersText.append_text("\tref: " + ref +"\n");
+         }
+         sequenceControllersText.append_text("\tpf: " + pf +"\n");
+         sequenceControllersText.append_text("\teffector: " + eff +"\n");
+         sequenceOutputText.append_text("added controller " + nStr +" to sequence\n");
+     } else {
+        sequenceOutputText.append_text("did not add secondary controller. already set!\n");
     }
-}
-
-void CBAPIWindow::on_notebook_switch_page(GtkNotebookPage* /* page */, guint page_num) {
-    cout << "CBAPI Switching to tab " << page_num << endl;
-}
-
-void CBAPIWindow::on_sensor_selection() {
-    cout << "got sensor selection" << endl;
-    string sen = sensorList.getSelected();
-    if(sen=="") return;
-}
-
-void CBAPIWindow::on_reference_selection() {
-    cout << "got reference selection" << endl;
-    string ref = referenceList.getSelected();
-    if(ref=="") return;
-}
-
-void CBAPIWindow::on_potential_function_selection() {
-    cout << "got pf selection" << endl;
-    string pf = potentialFunctionList.getSelected();
-    if(pf=="") return;
-
-    refreshResourceList();
-    
-    int id;
-    for(id=0; id<pfInfo.size(); id++) {
-        if(pfInfo[id]->name == pf) break;
-    }
-
-    referenceList.clear();
-    sensorList.clear();
-
-    printf("sensor 1 info size: %d\n", sensorInfo.size());
-    for(int i=0; i<sensorInfo.size(); i) {
-        printf("testing sensor %s %s\n", sensorInfo[i].space.c_str(), sensorInfo[i].name.c_str());
-        if(sensorInfo[i].space != pfInfo[id]->space) {
-            sensorInfo.erase(sensorInfo.begin()+i);
-        } else {
-            i++;
-        }
-    }
-    printf("sensor 2 info size: %d\n", sensorInfo.size());
-    
-    string str;
-    for(int i=0; i<sensorInfo.size(); i++) {
-        str = sensorInfo[i].space + sensorInfo[i].name;
-        printf("adding sensor: %s\n", str.c_str());
-        sensorList.addResource(str);
-        if(pfInfo[id]->hasReference) {
-            referenceList.addResource(str);
-        }
-    }
-    
-}
-
-void CBAPIWindow::on_effector_selection() {
-    cout << "got effector selection" << endl;
-    string eff = effectorList.getSelected();
-    if(eff=="") return;
-}
-
-void CBAPIWindow::on_virtual_effector_toggle() {
-    cout << "got virtual effector toggle" << endl;
-    if(allowVirtualEffectorsBox.get_active()) {
-        showVirtualEffectors = true;
-    } else {
-        showVirtualEffectors = false;
-    }
-    refreshResourceList();
-}
-
-void CBAPIWindow::on_use_jacobian_transpose() {
-    cout << "got use transpose toggle" << endl;
-    if(useJacobianTransposeBox.get_active()) {
-        useJacobianTranspose = true;
-    } else {
-        useJacobianTranspose = false;
-    }
-    cbapi.useTranspose(useJacobianTranspose);
-}
-
-void CBAPIWindow::on_use_pd_control() {
-    cout << "got use pd control toggle" << endl;
-    if(usePDControlBox.get_active()) {
-        usePDControl = true;
-    } else {
-        usePDControl = false;
-    }
-    cbapi.usePDControl(usePDControl);
-}
-
-void CBAPIWindow::refreshResourceList() {
-  
-    cout << "RefreshResourceList()" << endl;
-    string serviceName;
-    string simpleServiceName;
-    int start,stop;  
-    string resourceName, resourceSpace;
-    ResourceInfo resInfo;
-    
-    NameClient& nic = NameClient::getNameClient();
-    NameConfig nc;
-    String name = nc.getNamespace();
-    Bottle msg, reply;
-    msg.addString("bot");
-    msg.addString("list");
-    
-    // clearing out current list
-    sensorList.clear();
-    referenceList.clear();
-    effectorList.clear();
-    
-    sensorInfo.clear();
-    effectorInfo.clear();
-    
-    cout << "Requesting list of ports from name server" << endl;
-    Network::write(name.c_str(),
-                   msg,
-                   reply);
-    int ct = reply.size()-1;
-    cout << "Got " << ct << " port " << ((ct!=1)?"s":"") << endl ;
-    for (int i=1; i<reply.size(); i++) {
-        Bottle *entry = reply.get(i).asList();
-        if (entry!=NULL) {
-            ConstString port = entry->check("name",Value("")).asString();
-            if (port!="" && port!="fallback" && port!=name.c_str()) {
-                Contact c = Contact::byConfig(*entry);
-                if (c.getCarrier()=="mcast") {
-                    cout << "Skipping mcast port: " << port.c_str() << endl;
-                } else {
-                    Address addr = Address::fromContact(c);
-                    
-                    if (addr.isValid()) {
-                        serviceName = port.c_str();
-                        
-                        if( (serviceName.compare(0,3,"/cb")==0) && (serviceName.compare(serviceName.size()-6,6,"data:o")==0) ) {
-                            
-                            if(serviceName.at(serviceName.size()-1)!='i') {
-                                simpleServiceName = serviceName.substr(4,serviceName.size()-4-7);
-                                
-                                cout << "found control basis service: " << simpleServiceName.c_str() << endl;
-                                
-                                sensorList.addResource(simpleServiceName);
-                                referenceList.addResource(simpleServiceName);
-                                
-                                start = 0;
-                                stop = simpleServiceName.find_first_of("/", start);
-                                resourceSpace = simpleServiceName.substr(start,stop-start);
-                                resourceName = simpleServiceName.substr(stop-start,simpleServiceName.size());	      
-                                resInfo.name = resourceName;
-                                resInfo.space = resourceSpace;
-                                sensorInfo.push_back(resInfo);
-                                
-                            }
-                            //	      cout << "name=%s, space=%s\n", resourceName.c_str(), resourceSpace.c_str());
-                            
-                        } else if( (serviceName.compare(0,17,"/cb/configuration")==0) && (serviceName.compare(serviceName.size()-6,6,"data:i")==0) ) {
-                            simpleServiceName = serviceName.substr(4,serviceName.size()-4-7);
-                            
-                            // load the runnable configurations
-                            start = 0;
-                            stop = simpleServiceName.find_first_of("/", start);
-                            resourceSpace = simpleServiceName.substr(start,stop-start);
-                            resourceName = simpleServiceName.substr(stop-start,simpleServiceName.size());	      
-                            resInfo.name = resourceName;
-                            resInfo.space = resourceSpace;
-                            effectorInfo.push_back(resInfo);
-                            effectorList.addResource(simpleServiceName);
-                            cout << "found control basis effector: " << simpleServiceName.c_str() << endl;
-                            
-                            // now load any transformations on those configurations, possible through applying jacobians
-                            if(showVirtualEffectors) {
-                                for(int i=0; i<jacInfo.size(); i++) {
-                                    if( (jacInfo[i].inputSpace == resourceSpace) ) {
-                                        simpleServiceName = jacInfo[i].outputSpace + "/" + resourceName;
-                                        effectorList.addResource(simpleServiceName);
-                                        cout << "found virtual control basis effector: " << simpleServiceName.c_str() << endl;
-                                    } else if( (jacInfo[i].outputSpace == resourceSpace) ) {
-                                        simpleServiceName = jacInfo[i].inputSpace + resourceName;
-                                        effectorList.addResource(simpleServiceName);
-                                        cout << "found virtual control basis effector: " << simpleServiceName.c_str() << endl;
-                                    }
-                                }
-                            }
-                            
-                        }
-                        
-                    }
-                }
-            } 
-        } 
-    }   
-}
-
-void CBAPIWindow::loadPotentialFunctionsFromFile() {
-
-    FILE *fp;
-    string ICUB_ROOT(getenv("ICUB_ROOT"));    
-    string fname = ICUB_ROOT + "/src/controlBasis/potentialFunctions/potentialFunctions.dat";
-    cout << fname << endl;
-
-    if( (fp=fopen(fname.c_str(), "r")) == NULL ) {
-        cout << "problem opening \'" << fname.c_str() << "\' for reading!!!" << endl;
-        pfInfo.clear();
-        return;
-    }
-
-    string pfName;
-    string pfSpace;
-    string pfHasReference;
-    
-    char line[128];
-    string lineStr;
-    
-    int start,stop;
-       
-    potentialFunctionList.clear();
-    
-    while(fgets(line, 128, fp) != NULL) {
-
-        PotentialFunctionInfo *info = new PotentialFunctionInfo();        
-
-        lineStr = string(line);
-        
-        start = 0;
-
-        stop = lineStr.find_first_of(" \n", start);
-        pfName = lineStr.substr(start,stop-start);
-        start = lineStr.find_first_not_of(" ", stop+1);
-
-        stop = lineStr.find_first_of(" \n", start);
-        pfHasReference = lineStr.substr(start,stop-start);
-        start = lineStr.find_first_not_of(" ", stop+1);
-
-        stop = lineStr.find_first_of(" \n", start);
-        pfSpace = lineStr.substr(start,stop-start);
-        start = lineStr.find_first_not_of(" ", stop+1);
-
-        info->name = pfName;
-        info->space = pfSpace;
-        if(pfHasReference=="true") 
-            info->hasReference = true; 
-        else 
-            info->hasReference = false; 
-        pfInfo.push_back(info);
-        
-        potentialFunctionList.addResource(pfName);
-        
-    }
-
-    fclose(fp);
-}
-
-void CBAPIWindow::loadPotentialFunctions() {
-
-    for(int i=0; i<pfInfo.size(); i++) {
-        delete pfInfo[i];
-    }
-    pfInfo.clear();
-    potentialFunctionList.clear();
-
-    for(int i=0; i<PotentialFunctionFactory::instance().getNumRegisteredPotentialFunctions(); i++) {
-
-        PotentialFunctionInfo *info = new PotentialFunctionInfo();
-        info->name = PotentialFunctionFactory::instance().getPotentialFunctionInfo(i).name;
-        info->space = PotentialFunctionFactory::instance().getPotentialFunctionInfo(i).space;
-        info->hasReference = PotentialFunctionFactory::instance().getPotentialFunctionInfo(i).hasReference;
-        pfInfo.push_back(info);
-        potentialFunctionList.addResource(PotentialFunctionFactory::instance().getName(i));   
-
-        cout << "Loaded PF: " << PotentialFunctionFactory::instance().getName(i).c_str() << endl;
-    }
-            
-}
-
-void CBAPIWindow::loadJacobians() {
-
-    FILE *fp;
-    string ICUB_ROOT(getenv("ICUB_ROOT"));    
-    string fname = ICUB_ROOT + "/src/controlBasis/jacobians/jacobians.dat";
-    cout << fname << endl;
-
-    if( (fp=fopen(fname.c_str(), "r")) == NULL ) {
-        cout << "problem opening \'" << fname.c_str() << "\' for reading!!!" << endl;
-        jacInfo.clear();
-        return;
-    }
-    
-    string jacName;
-    string jacSpaceIn;
-    string jacSpaceOut;    
-    char line[128];
-    string lineStr;    
-    int start,stop;
-    JacobianInfo info;
-
-    while(fgets(line, 128, fp) != NULL) {
-        
-        lineStr = string(line);
-        start = 0;
-
-        stop = lineStr.find_first_of(" \n", start);
-        jacName = lineStr.substr(start,stop-start);
-        start = lineStr.find_first_not_of(" ", stop+1);
-
-        stop = lineStr.find_first_of(" \n", start);
-        jacSpaceIn = lineStr.substr(start,stop-start);
-        start = lineStr.find_first_not_of(" ", stop+1);
-        
-        stop = lineStr.find_first_of(" \n", start);
-        jacSpaceOut = lineStr.substr(start,stop-start);
-        start = lineStr.find_first_not_of(" ", stop+1);
-        
-        info.name = jacName;
-        info.inputSpace = jacSpaceIn;
-        info.outputSpace = jacSpaceOut;
-        jacInfo.push_back(info);
-        
-    }
-    
-    fclose(fp);
-
-}
-
-void CBAPIWindow::on_add_button_clicked() { 
-
-    cout << "ADD" << endl; 
-    
-    string sen = sensorList.getSelected();
-    string ref = referenceList.getSelected();
-    string pf = potentialFunctionList.getSelected();
-    string eff = effectorList.getSelected();
-    
-    if( (sen=="") || (pf=="") || (eff=="") ) {
-        cout << "Please select control resources" << endl;
-        return;
-    }
-    
-    int id;
-    for(id=0; id<pfInfo.size(); id++) {
-        if(pfInfo[id]->name == pf) break;
-    }
-    if(pfInfo[id]->hasReference) {
-        cout << "Please select control resources" << endl;
-        if(ref=="") return;
-    }
-
-    string gainStr = controllerGainEntry.get_text();
-    float gain = 1;
-    cout << "got input gain: " << gainStr << endl;
-    sscanf(gainStr.c_str(),"%f",&gain);
-    cout << "Setting controller gain: " << gain << endl;
-
-    cout << "adding controller: " << endl;
-    cout << "\t " << pf.c_str() << endl;
-    cout << "\t " << sen.c_str() << endl;
-    if(ref != "") cout << "\t " << ref.c_str() << endl;
-    cout << "\t " << eff.c_str() << endl;
-
-    cbapi.addControllerToLaw(sen, ref, pf, eff, useJacobianTranspose, (double)gain);
-    cbapi.usePDControl(usePDControl);
-
-    char c[32];
-    int n = cbapi.getNumControllers()-1;
-    sprintf(c, "%d", n);
-    string nStr = string(c);
-
-    controlDefinitionText.append_text("Controller[" + nStr + "]\n");
-    controlDefinitionText.append_text("\tsensor: " + sen +"\n");
-    if(ref != "") {
-        controlDefinitionText.append_text("\tref: " + ref +"\n");
-    }
-    controlDefinitionText.append_text("\tpf: " + pf +"\n");
-    controlDefinitionText.append_text("\teffector: " + eff +"\n");
-    controlOutputText.append_text("added controller " + nStr +" to law\n");
-    
-}
-
-void CBAPIWindow::on_clear_button_clicked() { 
-    cout << "CLEAR" << endl; 
-    if(controlLawRunning) {
-        dataThread->stopUpdateThread();
-        cbapi.stopControlLaw();
-        controlOutputText.append_text("stopping control law\n");
-        controlLawRunning = false;
-    }
-    if(cbapi.getNumControllers()>0) {
-        cout << "clearing control law" << endl; 
-        cbapi.clearControlLaw();
-        cout << "clearing text window" << endl; 
-        controlDefinitionText.clear_text();
-        controlOutputText.append_text("clearing control law\n");
-    }
-}
-
-void CBAPIWindow::on_run_button_clicked() { 
-    cout << "RUN" << endl; 
-    if(sequenceRunning) {
-        cout << "CBAPI Can't run control law because sequence is running!!" << endl;
-        return;
-    }
-    if(cbapi.getNumControllers()>0) {       
-        controlOutputText.append_text("running control law\n");
-        cbapi.runControlLaw();
-        dataThread->connectCBAPIObjects(&cbapi,&controlOutputText, false);
-        dataThread->startUpdateThread();
-        controlLawRunning = true;
-    }
-}
-
-void CBAPIWindow::on_stop_button_clicked() { 
-    cout << "STOP" << endl; 
-    if(controlLawRunning) {
-        dataThread->stopUpdateThread();
-        cbapi.stopControlLaw();
-        controlOutputText.append_text("stopping control law\n");
-        controlLawRunning = false;
-    }
-    cout << "STOP FINISHED" << endl; 
-}
-
-void CBAPIWindow::on_refresh_button_clicked() { 
-    cout << "REFRESH" << endl; 
-    refreshResourceList();
-    loadPotentialFunctions();
-}
-
-void CBAPIWindow::on_add_to_sequence_button_clicked() { 
-    cout << "ADD TO SEQUENCE" << endl; 
-
-    string sen = sensorList.getSelected();
-    string ref = referenceList.getSelected();
-    string pf = potentialFunctionList.getSelected();
-    string eff = effectorList.getSelected();
-    
-    if( (sen=="") || (pf=="") || (eff=="") ) {
-        cout << "Please select control resources" << endl;
-        return;
-    }
-    
-    int id;
-    for(id=0; id<pfInfo.size(); id++) {
-        if(pfInfo[id]->name == pf) break;
-    }
-    if(pfInfo[id]->hasReference) {
-        cout << "Please select control resources" << endl;
-        if(ref=="") return;
-    }
-
-    string gainStr = sequenceGainEntry.get_text();
-    float gain = 1;
-    cout << "got input gain: " << gainStr << endl;
-    sscanf(gainStr.c_str(),"%f",&gain);
-    cout << "Setting controller gain: " << gain << endl;
-
-    cout << "adding controller: " << endl;
-    cout << "\t " << pf.c_str() << endl;
-    cout << "\t " << sen.c_str() << endl;
-    if(ref != "") cout << "\t " << ref.c_str() << endl;
-    cout << "\t " << eff.c_str() << endl;
-
-    cbapi.addControllerToSequence(sen, ref, pf, eff, useJacobianTranspose, (double)gain);
-    cbapi.usePDControl(usePDControl);
-
-    char c[32];
-    int n = cbapi.getNumControllers(true)-1;
-    sprintf(c, "%d", n);
-    string nStr = string(c);
-
-    sequenceControllersText.append_text("Controller[" + nStr + "]\n");
-    sequenceControllersText.append_text("\tsensor: " + sen +"\n");
-    if(ref != "") {
-        sequenceControllersText.append_text("\tref: " + ref +"\n");
-    }
-    sequenceControllersText.append_text("\tpf: " + pf +"\n");
-    sequenceControllersText.append_text("\teffector: " + eff +"\n");
-    sequenceOutputText.append_text("added controller " + nStr +" to sequence\n");
 
 }
 
