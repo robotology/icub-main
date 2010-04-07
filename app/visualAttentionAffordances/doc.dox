@@ -6,6 +6,9 @@ A series of affordances are extracted from the object present on the table. The 
 on the affordances extracted. The robot performs saccades on the salient object based on the winner-take-all algorithm.
 
 \section intro_sec Description
+
+\image html visualAttentionAffordances.png
+
 A table whose height relative to the robot reference frame is supposed to
 be known is presented to the robot along with some objects lying on top.
 The winner-take-all algorithm extracts the most salient object in the environment and leads the robot to fixate this object 
