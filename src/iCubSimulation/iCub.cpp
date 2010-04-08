@@ -183,15 +183,14 @@ void ICubSim::draw(){
 		bottomEyeLidModel->reloadTextures();
 		reinitialized = false; 
 	}
-	glColor3d(1.0,0.0,1.0);
-	glPushMatrix();LDEsetM(dBodyGetPosition(body_cube[0]),dBodyGetRotation(body_cube[0]));DrawBox(0.1,2.005,0.1,false,false,0);glPopMatrix();
 	
-	//glColor3d(0.3,0.3,0.3);
-	
-	//glPushMatrix();LDEsetM(dGeomGetPosition(iCubHeadGeom),dGeomGetRotation(iCubHeadGeom));
-	////glScalef(0.001,0.001,0.001);
-	//iCubHeadModel->draw(false);
-	//glPopMatrix();
+   // glColor3d(1.0,1.0,1.0);
+   // glPushMatrix();LDEsetM(dGeomGetPosition(screenGeom),dGeomGetRotation(screenGeom));
+   // DrawBox(1.0,1.0,0.001,false,textured,15);glPopMatrix();
+
+
+    glColor3d(1.0,0.0,1.0);
+    glPushMatrix();LDEsetM(dGeomGetPosition(geom_cube[0]),dGeomGetRotation(geom_cube[0]));DrawBox(0.1,2.005,0.1,false,false,0);glPopMatrix();
 
 	
 	if (actLegs == "off"){
@@ -672,19 +671,12 @@ void ICubSim::draw(){
 
 	glPopMatrix();
 
-
-	/*const dReal *pos = dGeomGetPosition(leftLeg_1geom);
-	const dReal *rot = dGeomGetRotation(leftLeg_1geom); 
-	dVector3 l; 
-	dGeomBoxGetLengths(leftLeg_1geom, l); 
-	dGeomCylinderGetLengths(leftLeg_1geom, l); */
-
 }
 void ICubSim::setPosition(dReal agentX, dReal agentY, dReal agentZ ) {
 	//Coordinates X Y Z using the 3D Cartesian coordinate system
-	dBodySetPosition(body_cube[0],0.0,0.05,3); //reference on the z 
+	dGeomSetPosition(geom_cube[0],0.0,0.05,3); //reference on the z 
 	
-	//dBodySetPosition(iCubHead, 0, 2, 0);
+    //dGeomSetPosition(screenGeom,0.0,1.0,0.7);
 
 	if (actLegs == "off"){
 		dBodySetPosition (legs,   0.068, elev +0.002,  0.0);
@@ -843,18 +835,12 @@ void ICubSim::init( dWorldID world, dSpaceID space, dReal X, dReal Y, dReal Z ) 
 	topEyeLidModel =      new Model();
 	bottomEyeLidModel =   new Model();
 
-	//TriData = dGeomTriMeshDataCreate();
-	//dGeomTriMeshDataBuildSingle(TriData, &Vertices[0], 3 * sizeof(float), VertexCount, (int*)&Indices[0], IndexCount, 3 * sizeof(int));
-
     SimConfig finder;
 	iCubHeadModel->loadModelData(finder.find("data/model/iCub_Head.ms3d").c_str());
 	topEyeLidModel->loadModelData(finder.find("data/model/topEyeLid.ms3d").c_str());
 	bottomEyeLidModel->loadModelData(finder.find("data/model/bottomEyeLid.ms3d").c_str());
     
-
-	/*TriData[0] = dGeomTriMeshDataCreate();
-	dLoadMeshFromX("data/model/vadim.x", &trimesh[0]);
-	dGeomTriMeshDataBuildSingle(TriData[0], trimesh[0].Vertices, 3 * sizeof(float), trimesh[0].VertexCount, trimesh[0].Indices, trimesh[0].IndexCount, 3 * sizeof(int));*/
+   // screenGeom = dCreateBox(space,1.0,1.0,0.01);
 
 	//mass
 	dMass m, m2;
@@ -871,18 +857,9 @@ void ICubSim::init( dWorldID world, dSpaceID space, dReal X, dReal Y, dReal Z ) 
 	dSpaceSetCleanup(iCub,0);
 	dMassSetZero(&m);
 	//the reference object
-	body_cube[0] = dBodyCreate(world); dMassSetZero(&m); dMassSetBoxTotal (&m,0.1,0.1,0.005,0.1);dBodySetMass(body_cube[0],&m);
-	geom_cube[0] = dCreateBox(space,0.1,0.005,0.1); dGeomSetBody(geom_cube[0],body_cube[0]); 
+	//body_cube[0] = dBodyCreate(world); dMassSetZero(&m); dMassSetBoxTotal (&m,0.1,0.1,0.005,0.1);dBodySetMass(body_cube[0],&m);
+	geom_cube[0] = dCreateBox(space,0.1,0.005,0.1); //dGeomSetBody(geom_cube[0],body_cube[0]); 
 
-	//dMassSetZero(&m);
-	//iCubHead = dBodyCreate(world);
-	//iCubHeadGeom = dCreateTriMesh(iCub, TriData[0], 0, 0, 0);
-	//dGeomSetData(iCubHeadGeom,TriData[0]);
-	//dGeomSetBody(iCubHeadGeom, iCubHead);
-	//dMassSetTrimeshTotal(&m, 1.53129, iCubHeadGeom);
-	//dMassTranslate(&m, -m.c[0], -m.c[1], -m.c[2]);
-	//dBodySetMass(iCubHead, &m);
-	//
 
 	if (actLegs == "off"){//here we create legs as one body
 

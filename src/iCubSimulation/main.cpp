@@ -372,19 +372,23 @@ public:
 						setBody = 1;
 						break;
 					case VOCAB3('b','o','x'):
-						bid = odeinit._iCub->body[1];//temporary then will be replaced...
+						//bid = odeinit._iCub->body[1];//temporary then will be replaced...
+                        if (odeinit._iCub->actHead=="on"){bid = odeinit._iCub->neck[0];}
+						else {bid = odeinit._iCub->head;}
 						setBody = 2;
 						break;
 					case VOCAB4('s','b','o','x'):
-						bid2 = odeinit._iCub->geom[1];//temporary then will be replaced...
+						bid2 = odeinit._iCub->geom_cube[0];//temporary then will be replaced...
 						setBody = 5;
 						break;
 					case VOCAB3('c','y','l'):
-						bid = odeinit._iCub->body[1];//temporary then will be replaced...
+						//bid = odeinit._iCub->body[1];//temporary then will be replaced...
+                        if (odeinit._iCub->actHead=="on"){bid = odeinit._iCub->neck[0];}
+						else {bid = odeinit._iCub->head;}
 						setBody = 6;
 						break;
 					case VOCAB4('s','c','y','l'):
-						bid2 = odeinit._iCub->geom[1];//temporary then will be replaced...
+						bid2 = odeinit._iCub->geom_cube[0];//temporary then will be replaced...
 						setBody = 7;
 						break;
 					case VOCAB4('l','h','a','n'):
@@ -764,9 +768,9 @@ public:
 								odeinit.mutex.post();
 
 								if (num < MAXNUM){
-								odeinit._wrld->s_MODEL_NUM++;
-							    b = odeinit._wrld->s_MODEL_NUM;
-								odeinit._wrld->s_modelTexture[b-1] = odeinit._wrld->s_MODEL_NUM + 49;
+								    odeinit._wrld->s_MODEL_NUM++;
+							        b = odeinit._wrld->s_MODEL_NUM;
+								    odeinit._wrld->s_modelTexture[b-1] = odeinit._wrld->s_MODEL_NUM + 49;
 								}
 								odeinit.mutexTexture.wait();
 								odeinit._wrld->static_model = true;

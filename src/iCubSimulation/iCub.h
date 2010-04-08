@@ -45,13 +45,14 @@ public:
 	ConstString actElevation, actLegs, actTorso, actLArm, actRArm, actLHand, actRHand, actHead, actfixedHip, actVision, actCover, actWorld;
     double elev;
 	
+//    dGeomID screenGeom;
 
 	bool reinitialized;
 	float eyeLidRot;
 
 	dSpaceID iCub;
-	dBodyID body_cube[1000];
-	dGeomID geom_cube[1000];
+	//dBodyID body_cube[1000];
+	dGeomID geom_cube[1];
 
 	dBodyID iCubHead;
 	dGeomID iCubHeadGeom;
