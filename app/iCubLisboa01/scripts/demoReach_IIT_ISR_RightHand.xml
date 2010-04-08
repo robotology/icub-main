@@ -17,9 +17,9 @@
    
         <module>
                 <name>eye2RootFrameTransformer</name>
-                <parameters>--name l2rBall --eye left</parameters>
+                <parameters>--name e2rBall --eye left</parameters>
                 <node>icubbrain2</node>
-                <tag>l2rBall</tag>
+                <tag>e2rBall</tag>
         </module>
 
         <module>
@@ -55,17 +55,17 @@
         </connection>
         <connection>
                 <from>/icub/head/state:o</from>
-                <to>/l2rBall/head:i</to>
+                <to>/e2rBall/head:i</to>
                 <protocol>udp</protocol>
         </connection>
         <connection>
                 <from>/icub/torso/state:o</from>
-                <to>/l2rBall/torso:i</to>
+                <to>/e2rBall/torso:i</to>
                 <protocol>udp</protocol>
         </connection>
         <connection>
                 <from>/icub/PF3DTracker/dataOut</from>
-                <to>/l2rBall/targetPos:i</to>
+                <to>/e2rBall/targetPos:i</to>
                 <protocol>udp</protocol>
         </connection>
         <connection>
@@ -75,7 +75,7 @@
         </connection>
 
         <connection>
-                <from>/l2rBall/targetPos:o</from>
+                <from>/e2rBall/targetPos:o</from>
                 <to>/demoReachManager_IIT_ISR/trackTarget:i</to>
                 <protocol>udp</protocol>
         </connection>
