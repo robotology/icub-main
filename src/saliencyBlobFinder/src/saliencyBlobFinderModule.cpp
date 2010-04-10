@@ -409,7 +409,7 @@ void saliencyBlobFinderModule::outPorts(){
         //logPolarMapper iCub driver
         time (&end);
         double dif = difftime (end,start);
-        if((dif>1)&&(dif<=1+2)){
+        if((dif>0.5)&&(dif<=0.5+1.5)){
             if((blobFinder->salience->target_x<previous_target_x+5)&&(blobFinder->salience->target_x>previous_target_x-5)){
                 if((blobFinder->salience->target_y<previous_target_y+5)&&(blobFinder->salience->target_y>previous_target_y-5)){
                     //printf("same position \n");
