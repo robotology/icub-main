@@ -412,10 +412,10 @@ void saliencyBlobFinderModule::outPorts(){
         if((dif>1)&&(dif<=1+2)){
             if((blobFinder->salience->target_x<previous_target_x+5)&&(blobFinder->salience->target_x>previous_target_x-5)){
                 if((blobFinder->salience->target_y<previous_target_y+5)&&(blobFinder->salience->target_y>previous_target_y-5)){
-                    printf("same position \n");
+                    //printf("same position \n");
                 }
                 else{
-                    printf(".");
+                    //printf(".");
                     bot.addVocab( Vocab::encode("sac") ); 
                     bot.addVocab( Vocab::encode("img") ); 
                     double centroidDisplacementY=1.0;
@@ -431,7 +431,7 @@ void saliencyBlobFinderModule::outPorts(){
                 }
             }
             else{
-                printf(".");
+                //printf(".");
                 bot.addVocab( Vocab::encode("sac") ); 
                 bot.addVocab( Vocab::encode("img") ); 
                 double centroidDisplacementY=1.0;

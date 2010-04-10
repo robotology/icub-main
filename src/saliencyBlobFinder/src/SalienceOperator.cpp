@@ -5,6 +5,9 @@
 #include <string>
 #include <sstream>
 
+#define INT_MIN     (-2147483647 - 1) /* minimum (signed) int value */
+#define INT_MAX       2147483647    /* maximum (signed) int value */
+
 SalienceOperator::SalienceOperator(const int width1, const int height1)//:_gaze( YMatrix(_dh_nrf, 5, DH_left[0]), YMatrix(_dh_nrf, 5, DH_right[0]), YMatrix(4, 4, TBaseline[0]) )
 {
     resize(width1, height1);
