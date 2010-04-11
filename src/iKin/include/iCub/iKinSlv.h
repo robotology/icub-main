@@ -15,7 +15,7 @@
  * The task to be solved is:
  *
  * \f[
- * \mathbf{q}=\arg\min_{\mathbf{q}\in R^{n} }\left(\frac{1}{2}\left\|\mathbf{\alpha}_d-\mathit{K_{\alpha}}\left(\mathbf{q}\right)\right\|^2+\mathit{w}\cdot\frac{1}{2}\left(\mathbf{q}_{\text{rest}}-\mathbf{q}\right)^{\top}\mathit{W}_{\text{rest}}\left(\mathbf{q}_{\text{rest}}-\mathbf{q}\right)\right) \quad s.t.\,\left\{\begin{array}{l}\left\|\mathbf{x}_d-\mathit{K_x}\left(\mathbf{q}\right)\right\|^2<\epsilon\\\mathbf{q}_L<\mathbf{q}<\mathbf{q}_U\end{array}\right.
+ * \mathbf{q}=\arg\min_{\mathbf{q}\in R^{n} }\left(\frac{1}{2}\left\|\mathbf{\alpha}_d-\mathit{K_{\alpha}}\left(\mathbf{q}\right)\right\|^2+\mathit{w}\cdot\frac{1}{2}\left(\mathbf{q}_{\text{rest}}-\mathbf{q}\right)^{\top}\mathit{W}_{\text{rest}}\left(\mathbf{q}_{\text{rest}}-\mathbf{q}\right)\right) \quad \text{s.t.}\,\left\{\begin{array}{l}\left\|\mathbf{x}_d-\mathit{K_x}\left(\mathbf{q}\right)\right\|^2<\epsilon\\\mathbf{q}_L<\mathbf{q}<\mathbf{q}_U\end{array}\right.
  * \f]
  *
  * Where the solution \f$ \mathbf{q} \f$ is the joints vector with n components (depending
