@@ -15,7 +15,7 @@
  * The task to be solved is:
  *
  * \f[
- * \mathbf{q}=\arg\min_{\mathbf{q}\in R^{n} }\left(\frac{1}{2}\left\|\mathbf{\alpha}_d-\mathit{K_{\alpha}}\left(\mathbf{q}\right)\right\|^2+\mathit{w}\cdot\frac{1}{2}\left(\mathbf{q}_{rest}-\mathbf{q}\right)^{\top}\mathit{W}_{rest}\left(\mathbf{q}_{rest}-\mathbf{q}\right)\right) \quad s.t.\,\left\{\begin{array}{l}\left\|\mathbf{x}_d-\mathit{K_x}\left(\mathbf{q}\right)\right\|^2<\epsilon\\\mathbf{q}_L<\mathbf{q}<\mathbf{q}_U\end{array}\right.
+ * \mathbf{q}=\arg\min_{\mathbf{q}\in R^{n} }\left(\frac{1}{2}\left\|\mathbf{\alpha}_d-\mathit{K_{\alpha}}\left(\mathbf{q}\right)\right\|^2+\mathit{w}\cdot\frac{1}{2}\left(\mathbf{q}_{\text{rest}}-\mathbf{q}\right)^{\top}\mathit{W}_{\text{rest}}\left(\mathbf{q}_{\text{rest}}-\mathbf{q}\right)\right) \quad s.t.\,\left\{\begin{array}{l}\left\|\mathbf{x}_d-\mathit{K_x}\left(\mathbf{q}\right)\right\|^2<\epsilon\\\mathbf{q}_L<\mathbf{q}<\mathbf{q}_U\end{array}\right.
  * \f]
  *
  * Where the solution \f$ \mathbf{q} \f$ is the joints vector with n components (depending
@@ -24,9 +24,9 @@
  * is the positional part of the desired pose, \f$ \mathbf{\alpha}_d \f$ is the
  * desired orientation and \f$ \mathit{K_x} \f$ and \f$ \mathit{K_{\alpha}} \f$ are
  * the forward kinematic maps for the position and orientation part, respectively;
- * \f$ \mathbf{q}_{rest} \f$ is used to keep the solution as close as possible to a given rest
+ * \f$ \mathbf{q}_{\text{rest}} \f$ is used to keep the solution as close as possible to a given rest
  * position in the joint space (weighting with a positive factor \f$ \mathit{w} < 1 \f$ and also
- * through the diagonal matrix \f$ \mathit{W}_{rest} \f$ which allows to select a specific weight for each joint)
+ * through the diagonal matrix \f$ \mathit{W}_{\text{rest}} \f$ which allows to select a specific weight for each joint)
  * and \f$ \epsilon \f$ is a small number in the range of \f$ \left[10^{-5},10^{-4}\right] \f$.
  *  
  * \section protocol_sec Solver protocol
