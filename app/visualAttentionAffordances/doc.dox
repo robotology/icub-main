@@ -42,17 +42,26 @@ Before that you need to modify all the template in that directory for your own n
 
 The sequence of activation of these application is the following
 
-- run the protoObjectVisualAttention
+1) run the protoObjectVisualAttention (e.g.: appConfig-visualAttention.xml)
   select the most salient proto-object and extracts the coordinates of this in the image plane.
 
-- run the selected gaze controller
+2)run the selected gaze controller (e.g.: controlgaze.xml)
   the robot is ready to receive commands for saccades.
 
-- feed the selected gaze controller with the coordinates in the image plane
+3) feed the selected gaze controller with the coordinates in the image plane (e.g.: appConfig-GazePerformer.xml)
   the robot starts to perform saccades to the most salient region in the field of view
 
-- run the demoAff application
+4) run the demoAff application (e.g.: demoAffv2.xml)
   permorms some action to the segmented object based on the affordances extracted
+
+
+\code
+Customize and run ./scripts/appConfig-visualAttention.xml.template
+Customize and run ./scripts/appConfig-GazePerformer.xml.template
+Customize and run ./scripts/controlgaze.xml.template
+Customize and run ./scripts/face_expression.xml.template
+Customize and run ./scripts/demoAffv2.xml.template
+\endcode
 
 \author Francesco Rea
 
