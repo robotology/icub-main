@@ -2,7 +2,7 @@
 @ingroup  icub_applications
 \defgroup icub_visualAttentionAffordances visualAttentionAffordances
 
-A series of affordances are extracted from the object present on the table. The robot perform actions on the object based
+A series of affordances are extracted  from the object present on the table are performed whereas the visual attention is based on log-polar vision. The robot perform actions on the object based
 on the affordances extracted. The robot performs saccades on the salient object based on the winner-take-all algorithm.
 
 \section intro_sec Description
