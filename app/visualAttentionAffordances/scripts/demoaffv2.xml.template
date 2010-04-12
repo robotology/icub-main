@@ -1,0 +1,180 @@
+<application>
+<name>demoAffv2 Final</name>
+
+<dependencies>
+        <port>/icub/controlGaze/status:o</port>
+        <port>/cartesianSolver/left_arm/out</port>
+        <port>/cartesianSolver/right_arm/out</port>
+        <port>/icub/camcalib/left/out</port>
+        <port>/icub/face/emotions/in</port>
+</dependencies>
+
+<module>
+        <name>behaviorController</name>
+        <parameters>--context demoAffv2/conf</parameters>
+        <tag>behavior_controller</tag>
+        <stdio>console1</stdio>
+        <node>icub-vm1</node>
+</module>
+
+<module>
+      <name>demoAffv2</name>
+      <parameters>--context demoAffv2/conf</parameters>
+      <node>icub-vm1</node>
+      <stdio>console1</stdio>
+      <tag>demoAffv2</tag>
+</module>
+<module>
+  <name>graspDetector</name>
+  <parameters>--context graspDetector/conf --from left_armGraspDetector.ini</parameters>
+  <node>powerNode1</node>
+  <tag>graspdetectorleft</tag>
+</module>
+<module>
+  <name>graspDetector</name>
+  <parameters>--context graspDetector/conf --from right_armGraspDetector.ini</parameters>
+  <node>powerNode1</node>
+  <tag>graspdetectorright</tag>
+</module>
+
+<!-- vision modules -->
+<module>
+      <name>edisonSegmentation</name>
+      <parameters>--context demoAffv2/conf</parameters>
+      <node>icub-b12</node>
+      <tag>edison_segmentation</tag>
+</module>
+<module>
+      <name>blobDescriptor</name>
+      <parameters>--context demoAffv2/conf</parameters>
+      <node>powerNode1</node>
+      <tag>blob_descriptor</tag>
+</module>
+<module>
+      <name>effectDetector</name>
+      <parameters>--context demoAffv2/conf</parameters>
+      <node>console1</node>
+      <stdio>console1</stdio>
+      <tag>effect_detector</tag>
+</module>
+<module>
+      <name>yarpview</name>
+      <parameters>--name /userSelection:view --out /userSelection:o --synch</parameters>
+      <node>console1</node>
+      <tag>user_selection</tag>
+</module>
+<module>
+      <name>yarpview</name>
+      <parameters>--name /blobDescriptor/yarpview/view --synch</parameters>
+      <node>console1</node>
+      <tag>labeled_image</tag>
+</module>
+
+<!-- behavior control connections -->
+<connection>
+        <from>/icub/controlGaze/status:o</from>
+        <to>/demoAffv2/behavior/gaze</to>
+</connection>
+<connection>
+        <from>/demoAffv2/behavior/att</from>
+        <to>/icub/attentionSelection/conf</to>
+</connection>
+<connection>
+        <from>/demoAffv2/behavior/aff_out</from>
+        <to>/demoAffv2/behavior:i</to>
+</connection>
+<connection>
+        <from>/demoAffv2/behavior:o</from>
+        <to>/demoAffv2/behavior/aff_in</to>
+</connection>
+
+<!-- vision connections -->
+<connection>
+      <from>/icub/camcalib/left/out</from>
+      <to>/edisonSegm/rawImg:i</to>
+</connection>
+<connection>
+      <from>/icub/camcalib/left/out</from>
+      <to>/userSelection:view</to>
+</connection>
+<connection>
+      <from>/edisonSegm/rawImg:o</from>
+      <to>/blobDescriptor/rawImg:i</to>
+</connection>
+<connection>
+      <from>/edisonSegm/labeledImg:o</from>
+      <to>/blobDescriptor/labeledImg:i</to>
+</connection>
+<connection>
+      <from>/blobDescriptor/viewImg:o</from>
+      <to>/blobDescriptor/yarpview/view</to>
+</connection>
+<connection>
+      <from>/userSelection:o</from>
+      <to>/blobDescriptor/userSelection:i</to>
+</connection>
+<connection>
+      <from>/icub/camcalib/left/out</from>
+      <to>/effectDetector/rawcurrimg</to>
+</connection>
+<connection>
+      <from>/edisonSegm/rawImg:o</from> 
+      <to>/effectDetector/rawsegmimg</to>
+</connection>
+<connection>
+      <from>/demoAffv2/synccamshift</from> 
+      <to>/effectDetector/init</to>
+</connection>
+<connection>
+      <from>/blobDescriptor/trackerInit:o</from> 
+      <to>/demoAffv2/trackdesc</to>
+</connection>
+<connection>
+      <from>/blobDescriptor/affDescriptor:o</from> 
+      <to>/demoAffv2/objsdesc</to>
+</connection>
+<connection>
+      <from>/effectDetector/effect</from> 
+      <to>/demoAffv2/effect</to>
+</connection>
+<connection>
+      <from>/icub/head/state:o</from> 
+      <to>/demoAffv2/headState</to>
+</connection>
+<connection>
+      <from>/icub/torso/state:o</from> 
+      <to>/demoAffv2/torsoState</to>
+</connection>
+
+<!-- emotion connections -->
+<connection>
+      <from>/demoAffv2/emotion</from> 
+      <to>/icub/face/emotions/in</to>
+      <protocol>tcp</protocol>
+</connection>
+<!-- note that the other emotion connection (/icub/face/emotions/out to /icub/face/raw/in)
+     is in face_expressions.xml -->
+
+<connection>
+      <from>/demoAffv2/gazeposcmd</from> 
+      <to>/icub/controlGaze/pos</to>
+      <protocol>udp</protocol>
+</connection>
+<connection>
+      <from>/demoAffv2/gazevelcmd</from> 
+      <to>/icub/controlGaze/vel</to>
+      <protocol>udp</protocol>
+</connection>
+
+<connection>
+      <from>/icub/left_hand/analog:o/fingerDetector/status:o</from> 
+      <to>/demoAffv2/left_arm/detectGrasp:i</to>
+      <protocol>tcp</protocol>
+</connection>
+<connection>
+      <from>/icub/right_hand/analog:o/fingerDetector/status:o</from> 
+      <to>/demoAffv2/right_arm/detectGrasp:i</to>
+      <protocol>tcp</protocol>
+</connection>
+
+</application>
