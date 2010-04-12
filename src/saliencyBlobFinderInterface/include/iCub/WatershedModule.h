@@ -48,9 +48,33 @@ The protocol respects the directives that the saliencyBlobFinder requires.
 In addition this interface is able to draw an image. This useful functionality allows the user to visualise straigh away important information 
 and result of his/her interaction
 
+
 The module does:
 -   stream the command to the saliencyBlobFinder module
 -   visualise an image in the graphics interface
+
+\section How to use it
+At the moment it is possible to tune some parameter used by the saliencyBlobFinder. 
+
+In particular concerning scales:
+- kcoeff.TD: weight for the top-down algorithm for the computation of saliency. The greater the value the more salient 
+the blobs which have similar target-colour 
+-red intensity: set the level in the red plane of the targetColour
+-green intensity: set the level in the green plane of the targetColour
+-blue intensity: set the level in the blue plane of the targetColour
+- kcoeff.BU: weight for the bottom-up algorithm for the computation of saliency. The greater the value the more salient 
+the blobs which are isolated (it should be set complementary to kCoeff TD)
+-maxBlob dimension: set the maximum dimension of the blobs
+-minBlob dimension: set the minimum dimension of the blobs
+
+
+In particular concerning checkboxes, these set the output of the saliencyBlobFinder:
+- watershed: result of the watershed operation
+- tagged: grayscale image composed by the pixel-wise tags of the blobs
+- contrastLP: saliency map of all the blobs 
+- foveaBlob: blob of the fovea
+- maxSaliencyBlob: most salient blob in the saliency map
+
 
 
 \image html saliencyBlobFinder.png
