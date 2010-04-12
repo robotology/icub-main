@@ -1,0 +1,26 @@
+<application>
+<name>Facial Expressions</name>
+
+<module>
+    <name>yarpdev</name>
+    <parameters>--name /icub/face/raw --device serial --subdevice serialport --file /usr/local/src/robot/iCub/app/faceExpressions/conf/serialport.ini</parameters>
+    <node>pc104</node>
+    <tag>face_device</tag>
+</module>
+<module>
+    <name>emotionInterface</name>
+    <parameters>--name /icub/face/emotions --file /usr/local/src/robot/iCub/app/demoAffv2/conf/emotions.ini</parameters>
+    <node>console1</node>
+    <tag>emotionInterface</tag>
+</module>
+
+<connection>
+    <from>/icub/face/emotions/out</from> 
+    <to>/icub/face/raw/in</to>
+</connection>
+
+<!-- note that the
+        /demoAffv2/emotion to /icub/face/emotions/in
+connection goes to demoaffv2_final.xml -->
+
+</application>
