@@ -31,7 +31,8 @@ Assumes \ref icub_iCubInterface (with cartesian control implemented) is running.
 \section int_sec Instantiated Application
 - \ref icub_protoObjectVisualAttention "protoObjectVisualAttention" 
 
-- \ref icub_demoAffv2_app "demoAffv2 (whereas the visualAttention in the application is replaced by the" \ref icub_protoObjectVisualAttention
+- \ref icub_demoAffv2_app "demoAffv2" 
+whereas the visualAttention in the application is replaced by the protoObjectVisualAttention
 
 
 \section howto_sec How to run the Application
