@@ -414,7 +414,9 @@ void slider_changed (GtkButton *button,	gpointer ch_p)
 //*********************************************************************************
 void file_save_click (GtkButton *button,	gpointer ch_p)
 { 
-	std::string filename = "CanLoaderDataV2.dat";
+	std::string filename = "calibrationData";
+	filename += serial_no;
+	filename += ".dat";
 	fstream filestr;
 	filestr.open (filename.c_str(), fstream::out);
 	int i=0;
