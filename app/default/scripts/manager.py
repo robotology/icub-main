@@ -399,7 +399,7 @@ class App:
             time.sleep(PROCESS_POLL_INTERVAL)
                
         if (fin_time < time.time()):
-            self.logfile.writelines("Process timed out killing "+cmd+"\n")
+            self.logfile.writelines("Process timed out killing "+str(cmd)+"\n")
             print "--> Error process timed out",
             print "you can try increasing the timeout time",
             print "however this is probably due to a problem to your",
