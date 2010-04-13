@@ -440,65 +440,66 @@ bool graphicThread::getLayers(){
     ret = _imgRecvLayer0.Update();
     if (ret != false){
         _semaphore.wait();
-        ret = _imgRecvLayer0.GetLastImage(&_inputImgLayer0);
-        ptr_inputImgLayer0=&_inputImgLayer0;
+        //ret = _imgRecvLayer0.GetLastImage(&_inputImgLayer0);
+        //ptr_inputImgLayer0=&_inputImgLayer0;
+        ret = _imgRecvLayer0.GetLastImage(ptr_inputLayer0); //ptr_inputLayer0
         _semaphore.post();
     }
 
     ret = _imgRecvLayer1.Update();
     if (ret != false){
         _semaphore.wait();
-        ret = _imgRecvLayer1.GetLastImage(&_inputImgLayer1);
-         ptr_inputLayer1=&_inputImgLayer1;
+        ret = _imgRecvLayer1.GetLastImage(ptr_inputLayer1);
+         //ptr_inputLayer1=&_inputImgLayer1;
         _semaphore.post();
     }
     ret = _imgRecvLayer2.Update();
     if (ret != false){
         _semaphore.wait();
-        ret = _imgRecvLayer2.GetLastImage(&_inputImgLayer2);
-         ptr_inputLayer2=&_inputImgLayer2;
+        ret = _imgRecvLayer2.GetLastImage(ptr_inputLayer2);
+         //ptr_inputLayer2=&_inputImgLayer2;
         _semaphore.post();
     }
     ret = _imgRecvLayer3.Update();
     if (ret != false){
         _semaphore.wait();
-        ret = _imgRecvLayer3.GetLastImage(&_inputImgLayer3);
-         ptr_inputLayer3=&_inputImgLayer3;
+        ret = _imgRecvLayer3.GetLastImage(ptr_inputLayer3);
+         //ptr_inputLayer3=&_inputImgLayer3;
         _semaphore.post();
     }
     ret = _imgRecvLayer4.Update();
     if (ret != false){
         _semaphore.wait();
-        ret = _imgRecvLayer4.GetLastImage(&_inputImgLayer4);
-         ptr_inputLayer4=&_inputImgLayer4;
+        ret = _imgRecvLayer4.GetLastImage(ptr_inputLayer4);
+         //ptr_inputLayer4=&_inputImgLayer4;
         _semaphore.post();
     }
     ret = _imgRecvLayer5.Update();
     if (ret != false){
         _semaphore.wait();
-        ret = _imgRecvLayer5.GetLastImage(&_inputImgLayer5);
-         ptr_inputLayer5=&_inputImgLayer5;
+        ret = _imgRecvLayer5.GetLastImage(ptr_inputLayer5);
+         //ptr_inputLayer5=&_inputImgLayer5;
         _semaphore.post();
     }
     ret = _imgRecvLayer6.Update();
     if (ret != false){
         _semaphore.wait();
-        ret = _imgRecvLayer6.GetLastImage(&_inputImgLayer6);
-         ptr_inputLayer6=&_inputImgLayer6;
+        ret = _imgRecvLayer6.GetLastImage(ptr_inputLayer6);
+        //ptr_inputLayer6=&_inputImgLayer6;
         _semaphore.post();
     }
     ret = _imgRecvLayer7.Update();
     if (ret != false){
         _semaphore.wait();
-        ret = _imgRecvLayer7.GetLastImage(&_inputImgLayer7);
-         ptr_inputLayer7=&_inputImgLayer7;
+        ret = _imgRecvLayer7.GetLastImage(ptr_inputLayer7);
+         //ptr_inputLayer7=&_inputImgLayer7;
         _semaphore.post();
     }
     ret = _imgRecvLayer8.Update();
     if (ret != false){
         _semaphore.wait();
-        ret = _imgRecvLayer8.GetLastImage(&_inputImgLayer8);
-         ptr_inputLayer8=&_inputImgLayer8;
+        ret = _imgRecvLayer8.GetLastImage(ptr_inputLayer8);
+        //ptr_inputLayer8=&_inputImgLayer8;
         _semaphore.post();
     }	
 
@@ -686,7 +687,7 @@ static gint expose_CB (GtkWidget *widget, GdkEventExpose *event, gpointer data)
                 
 
                 //bool ret=wModule->gui->getInput(); 
-                bool  ret=wModule->gui->getLayers();
+                //bool  ret=wModule->gui->getLayers();
                 
                 if(!wModule->gui->inputImageReady_flag){
                     printf("No Layers and NO Image! \n");
@@ -706,7 +707,7 @@ static gint expose_CB (GtkWidget *widget, GdkEventExpose *event, gpointer data)
                     //cvCopyImage(ptr_inputImg->getIplImage(),wModule->gui->_outputImage3->getIplImage());
                     conversion=false;
                 }
-                else if(wModule->gui->inLayer0_flag){
+                else if(wModule->gui->inLayer0_flag){ 
                     ippiCopy_8u_C3R(wModule->gui->ptr_inputLayer0->getRawImage(),wModule->gui->ptr_inputLayer0->getRowSize(),temp3->getRawImage(),temp3->getRowSize(),srcsize);
                     //cvCopyImage(wModule->gui->ptr_inputLayer0->getIplImage(),wModule->gui->_outputImage3->getIplImage());
                     conversion=false;
@@ -791,14 +792,13 @@ static gint expose_CB (GtkWidget *widget, GdkEventExpose *event, gpointer data)
                     ippiCopy_8u_C3R(wModule->gui->_outputImage3->getRawImage(),wModule->gui->_outputImage3->getRowSize(),wModule->image_out->getRawImage(),wModule->image_out->getRowSize(),srcsize);
                     //cvCopyImage(_outputImage3->getIplImage(),wModule->image_out->getIplImage());
                 }
-                
                 //----------
                 _semaphore.wait();
                 
                 //bool result=yarpImage2Pixbuf(wModule->gui->ptr_inputImage, frame);
                 //bool result=yarpImage2Pixbuf(&_inputImg, frame);
                 wModule->image_out->zero();
-                ippiCopy_8u_C3R(temp3->getRawImage(),temp3->getRowSize(),wModule->image_out->getPixelAddress(100,10),wModule->image_out->getRowSize(),srcsize);
+                ippiCopy_8u_C3R(temp3->getRawImage(),temp3->getRowSize(),wModule->image_out->getPixelAddress(0,0),wModule->image_out->getRowSize(),srcsize);
                 bool result=yarpImage2Pixbuf(wModule->image_out,frame);
                 imageWidth = wModule->image_out->width();
                 imageHeight = wModule->image_out->height();
@@ -1393,6 +1393,7 @@ static gint timeout_CB (gpointer data){
             gtk_widget_queue_draw (da);
             //            if (_savingSet)
             //                saveCurrentFrame();
+            wModule->gui->getLayers();
     }
 
     //wModule->outPorts();

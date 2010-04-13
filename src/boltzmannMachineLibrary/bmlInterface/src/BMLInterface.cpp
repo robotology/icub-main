@@ -36,7 +36,8 @@ BMLInterface::BMLInterface(){
     blobCataloged_flag=true;*/
 
     _pOutPort=new BufferedPort<Bottle>;
-    
+    this->rowDim=10;
+    this->colDim=10;
 }
 
 BMLInterface::~BMLInterface(){
@@ -114,16 +115,48 @@ bool BMLInterface::outPorts(){
     //ippiFree(im_tmp_tmp);
     //ippiFree(im_tmp);
     if(strcmp(command->c_str(),"")){
+        string optionValue1, optionValue2, tag;
+        string option;
         Bottle& outBot1=_pOutPort->prepare();
-        //bOptions.addInt(10);
-        //bOptions.addInt(10);
-        //outBot1.addString("to");
-        outBot1.addString(command->c_str());
+        outBot1.clear();
+        if(!bOptions.isNull()){
+            outBot1.addString(command->c_str());
+            outBot1.append(bOptions);
+            //outBot1.append(bOptions);
+        
+        }
+
+        /*size_t found1, found2;
+        found1=command->find("(");
+        if(found1!=string::npos){
+            tag=command->substr(0,found1-1);
+            option=command->substr(found1+1,command->size()-found1);
+            
+            
+            unsigned int  parPos1=option.find("(");
+            unsigned int parPos2=option.find(")");
+            unsigned int spacePos=option.find(" ");
+            if(spacePos!=-1){
+                printf("Presence of a space detected \n");
+                optionValue1=option.substr(parPos1+1,spacePos-parPos1);
+                optionValue2= option.substr(spacePos+1,parPos2-spacePos-1);
+                   
+            
+            }
+            
+            bOptions.addString(optionValue1.c_str());
+            bOptions.addString(optionValue2.c_str()); 
+            
+            //outBot1.addString("to");
+        }*/
+        else{
+            outBot1.addString(command->c_str());
+        }
         //outBot1.addList()=bOptions;
+
         _pOutPort->write();
         command->clear();
         bOptions.clear();
-        outBot1.clear();
     }
     return ret;
 }
