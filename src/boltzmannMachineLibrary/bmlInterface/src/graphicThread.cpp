@@ -797,6 +797,7 @@ static gint expose_CB (GtkWidget *widget, GdkEventExpose *event, gpointer data)
                 
                 //bool result=yarpImage2Pixbuf(wModule->gui->ptr_inputImage, frame);
                 //bool result=yarpImage2Pixbuf(&_inputImg, frame);
+                wModule->image_out->zero();
                 ippiCopy_8u_C3R(temp3->getRawImage(),temp3->getRowSize(),wModule->image_out->getPixelAddress(100,10),wModule->image_out->getRowSize(),srcsize);
                 bool result=yarpImage2Pixbuf(wModule->image_out,frame);
                 imageWidth = wModule->image_out->width();
