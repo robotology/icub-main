@@ -752,6 +752,10 @@ static gint expose_CB (GtkWidget *widget, GdkEventExpose *event, gpointer data)
                     //cvCopyImage(wModule->gui->ptr_inputLayer8->getIplImage(),wModule->gui->_outputImage3->getIplImage());
                     conversion=false;
                 }
+                else{
+                    temp3->zero();
+                }
+
 
                 /*if(false){
                     //ippiCopy_8u_C3R(wModule->salience->colorVQ_img->getPixelAddress(0,0),320*3,_outputImage3->getPixelAddress(0,0),320*3,srcsize);
