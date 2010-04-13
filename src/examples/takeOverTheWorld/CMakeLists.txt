@@ -25,9 +25,12 @@ SOURCE_GROUP("Header Files" FILES ${folder_header})
 INCLUDE_DIRECTORIES(${PROJECT_SOURCE_DIR}/include)
 INCLUDE_DIRECTORIES(${sharksWithLasers_INCLUDE_DIRS})
 
+# Include YARP
+INCLUDE_DIRECTORIES(${YARP_INCLUDE_DIRS})
+
 # Create everything needed to build our executable.
 ADD_EXECUTABLE(${PROJECTNAME} ${folder_source} ${folder_header})
-TARGET_LINK_LIBRARIES(${PROJECTNAME} sharksWithLasers)
+TARGET_LINK_LIBRARIES(${PROJECTNAME} sharksWithLasers ${YARP_LIBRARIES})
 
 INSTALL(TARGETS ${PROJECTNAME} DESTINATION bin)
 

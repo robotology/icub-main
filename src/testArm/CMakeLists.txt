@@ -11,10 +11,14 @@ FILE(GLOB folder_header include/iCub/*.h)
 SOURCE_GROUP("Source Files" FILES ${folder_source})
 SOURCE_GROUP("Header Files" FILES ${folder_header})
 
+# Include YARP
+INCLUDE_DIRECTORIES(${YARP_INCLUDE_DIRS})
+
 # Add our include files into our compiler's search path.
 INCLUDE_DIRECTORIES(${PROJECT_SOURCE_DIR}/include)
 
 # Create everything needed to build our executable.
 ADD_EXECUTABLE(${PROJECTNAME} ${folder_source} ${folder_header})
+TARGET_LINK_LIBRARIES(${PROJECTNAME} ${YARP_LIBRARIES})
 
 
