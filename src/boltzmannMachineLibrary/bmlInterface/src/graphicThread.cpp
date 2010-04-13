@@ -707,48 +707,49 @@ static gint expose_CB (GtkWidget *widget, GdkEventExpose *event, gpointer data)
                     conversion=false;
                 }
                 else if(wModule->gui->inLayer0_flag){
-                    //ippiCopy_8u_C3R(wModule->ptr_inputLayer0->getPixelAddress(0,0),320*3,wModule->gui->_outputImage3->getPixelAddress(0,0),320*3,srcsize);
-                    cvCopyImage(wModule->gui->ptr_inputLayer0->getIplImage(),wModule->gui->_outputImage3->getIplImage());
+                    ippiCopy_8u_C3R(wModule->gui->ptr_inputLayer0->getRawImage(),wModule->gui->ptr_inputLayer0->getRowSize(),temp3->getRawImage(),temp3->getRowSize(),srcsize);
+                    //cvCopyImage(wModule->gui->ptr_inputLayer0->getIplImage(),wModule->gui->_outputImage3->getIplImage());
                     conversion=false;
                 }
                 else if(wModule->gui->inLayer1_flag){
-                    //ippiCopy_8u_C3R(wModule->ptr_inputLayer1->getPixelAddress(0,0),320*3,wModule->gui->_outputImage3->getPixelAddress(0,0),320*3,srcsize);
-                    cvCopyImage(wModule->gui->ptr_inputLayer1->getIplImage(),wModule->gui->_outputImage3->getIplImage());
+                    ippiCopy_8u_C3R(wModule->gui->ptr_inputLayer1->getRawImage(),wModule->gui->ptr_inputLayer1->getRowSize(),temp3->getRawImage(),temp3->getRowSize(),srcsize);
+                    //cvCopyImage(wModule->gui->ptr_inputLayer1->getIplImage(),wModule->gui->_outputImage3->getIplImage());
                     conversion=false;
                 }
                 else if(wModule->gui->inLayer2_flag){
-                    //ippiCopy_8u_C3R(wModule->ptr_inputLayer2->getPixelAddress(0,0),320*3,wModule->gui->_outputImage3->getPixelAddress(0,0),320*3,srcsize);
-                    cvCopyImage(wModule->gui->ptr_inputLayer2->getIplImage(),wModule->gui->_outputImage3->getIplImage());
+                    ippiCopy_8u_C3R(wModule->gui->ptr_inputLayer2->getRawImage(),wModule->gui->ptr_inputLayer2->getRowSize(),temp3->getRawImage(),temp3->getRowSize(),srcsize);
+                    //cvCopyImage(wModule->gui->ptr_inputLayer2->getIplImage(),wModule->gui->_outputImage3->getIplImage());
                     conversion=false;
                 }
                 else if(wModule->gui->inLayer3_flag){
-                    //ippiCopy_8u_C3R(wModule->ptr_inputLayer3->getPixelAddress(0,0),320*3,wModule->gui->_outputImage3->getPixelAddress(0,0),320*3,srcsize);
-                    cvCopyImage(wModule->gui->ptr_inputLayer3->getIplImage(),wModule->gui->_outputImage3->getIplImage());
+                    ippiCopy_8u_C3R(wModule->gui->ptr_inputLayer3->getRawImage(),wModule->gui->ptr_inputLayer3->getRowSize(),temp3->getRawImage(),temp3->getRowSize(),srcsize);
+                    //cvCopyImage(wModule->gui->ptr_inputLayer3->getIplImage(),wModule->gui->_outputImage3->getIplImage());
                     conversion=false;
                 }
                 else if(wModule->gui->inLayer4_flag){
-                    //ippiCopy_8u_C3R(wModule->ptr_inputLayer4->getPixelAddress(0,0),320*3,wModule->gui->_outputImage3->getPixelAddress(0,0),320*3,srcsize);
-                    cvCopyImage(wModule->gui->ptr_inputLayer4->getIplImage(),wModule->gui->_outputImage3->getIplImage());
+                    ippiCopy_8u_C3R(wModule->gui->ptr_inputLayer4->getRawImage(),wModule->gui->ptr_inputLayer4->getRowSize(),temp3->getRawImage(),temp3->getRowSize(),srcsize);
+                    //cvCopyImage(wModule->gui->ptr_inputLayer4->getIplImage(),wModule->gui->_outputImage3->getIplImage());
                     conversion=false;
                 }
                 else if(wModule->gui->inLayer5_flag){
-                    //ippiCopy_8u_C3R(wModule->ptr_inputLayer5->getPixelAddress(0,0),320*3,wModule->gui->_outputImage3->getPixelAddress(0,0),320*3,srcsize);
-                    cvCopyImage(wModule->gui->ptr_inputLayer5->getIplImage(),wModule->gui->_outputImage3->getIplImage());
+                    ippiCopy_8u_C3R(wModule->gui->ptr_inputLayer5->getRawImage(),wModule->gui->ptr_inputLayer5->getRowSize(),temp3->getRawImage(),temp3->getRowSize(),srcsize);
+                    //cvCopyImage(wModule->gui->ptr_inputLayer5->getIplImage(),wModule->gui->_outputImage3->getIplImage());
                     conversion=false;
                 }
                 else if(wModule->gui->inLayer6_flag){
-                    //ippiCopy_8u_C3R(wModule->ptr_inputLayer6->getPixelAddress(0,0),320*3,wModule->gui->_outputImage3->getPixelAddress(0,0),320*3,srcsize);
-                    cvCopyImage(wModule->gui->ptr_inputLayer6->getIplImage(),wModule->gui->_outputImage3->getIplImage());
+                    ippiCopy_8u_C3R(wModule->gui->ptr_inputLayer6->getRawImage(),wModule->gui->ptr_inputLayer6->getRowSize(),temp3->getRawImage(),temp3->getRowSize(),srcsize);
+
+                    //cvCopyImage(wModule->gui->ptr_inputLayer6->getIplImage(),wModule->gui->_outputImage3->getIplImage());
                     conversion=false;
                 }
                 else if(wModule->gui->inLayer7_flag){
-                    //ippiCopy_8u_C3R(wModule->ptr_inputLayer7->getPixelAddress(0,0),320*3,wModule->gui->_outputImage3->getPixelAddress(0,0),320*3,srcsize);
-                    cvCopyImage(wModule->gui->ptr_inputLayer7->getIplImage(),wModule->gui->_outputImage3->getIplImage());
+                    ippiCopy_8u_C3R(wModule->gui->ptr_inputLayer7->getRawImage(),wModule->gui->ptr_inputLayer7->getRowSize(),temp3->getRawImage(),temp3->getRowSize(),srcsize);
+                    //cvCopyImage(wModule->gui->ptr_inputLayer7->getIplImage(),wModule->gui->_outputImage3->getIplImage());
                     conversion=false;
                 }
                 else if(wModule->gui->inLayer8_flag){
-                    //ippiCopy_8u_C3R(wModule->ptr_inputLayer8->getPixelAddress(0,0),320*3,wModule->gui->_outputImage3->getPixelAddress(0,0),320*3,srcsize);
-                    cvCopyImage(wModule->gui->ptr_inputLayer8->getIplImage(),wModule->gui->_outputImage3->getIplImage());
+                    ippiCopy_8u_C3R(wModule->gui->ptr_inputLayer8->getRawImage(),wModule->gui->ptr_inputLayer8->getRowSize(),temp3->getRawImage(),temp3->getRowSize(),srcsize);
+                    //cvCopyImage(wModule->gui->ptr_inputLayer8->getIplImage(),wModule->gui->_outputImage3->getIplImage());
                     conversion=false;
                 }
 
@@ -789,9 +790,11 @@ static gint expose_CB (GtkWidget *widget, GdkEventExpose *event, gpointer data)
                 
                 //----------
                 _semaphore.wait();
-                bool result=yarpImage2Pixbuf(temp3, frame);
+                
                 //bool result=yarpImage2Pixbuf(wModule->gui->ptr_inputImage, frame);
                 //bool result=yarpImage2Pixbuf(&_inputImg, frame);
+                ippiCopy_8u_C3R(temp3->getRawImage(),temp3->getRowSize(),wModule->image_out->getPixelAddress(100,10),wModule->image_out->getRowSize(),srcsize);
+                bool result=yarpImage2Pixbuf(wModule->image_out,frame);
                 imageWidth = wModule->image_out->width();
                 imageHeight = wModule->image_out->height();
                 _semaphore.post();
@@ -1405,7 +1408,7 @@ static void updateStatusbar (GtkStatusbar  *statusbar)
  
     gtk_statusbar_pop (statusbar, 0); // clear any previous message, underflow is allowed 
                     
-    msg = g_strdup_printf ("%s - %.1f fps","/rea/imageProcess", fps);
+    msg = g_strdup_printf ("%s - %.1f fps","/bmlInterface", fps);
 
     gtk_statusbar_push (statusbar, 0, msg);
 
