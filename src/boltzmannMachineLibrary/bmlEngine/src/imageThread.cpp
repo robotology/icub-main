@@ -7,8 +7,8 @@
 * initialise the thread
 */
 bool imageThread::threadInit(){
-    scaleFactorX=2;
-    scaleFactorY=2;
+    scaleFactorX=4;
+    scaleFactorY=4;
     cvImage= cvCreateImage(cvSize(320,240), IPL_DEPTH_8U, 3 );
     image2=new ImageOf<PixelRgb>;
     image2->resize(320,240);
@@ -21,11 +21,11 @@ bool imageThread::threadInit(){
                 }
             }
     printf("Image Thread initialising..... \n");
-    printf("opening image port..... \n");
+    //printf("opening image port..... \n");
     //string str=getName();
-    string str("/rea/BMLEngine/");
+    string str("/bmlEngine/");
     str.append(this->name);
-    port.open(str.c_str()); 
+    //port.open(str.c_str()); 
     return true;
 }
 
@@ -65,8 +65,8 @@ void imageThread::run(){
     }
     printf("Send the image out on port \n");
     //2. force the image out on the port
-    port.prepare()=*(image2);
-    port.write();
+   // port.prepare()=*(image2);
+    //port.write();
 }
 void imageThread::setLayer(Layer* layer){
     this->plottedLayer=layer;
@@ -76,7 +76,7 @@ void imageThread::setLayer(Layer* layer){
 */
 void imageThread::threadRelease(){
     printf("Image Thread releasing..... \n");
-    port.close();
+   // port.close();
 }
 
 ImageOf<PixelRgb>* imageThread::getYarpImage(){

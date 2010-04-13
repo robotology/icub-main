@@ -47,8 +47,8 @@ bool BMLEngine::openPortImage(){
     //int res = 0;
     // Registering Port(s)
     //reduce verbosity --paulfitz
-    printf("Registering port %s on network %s...\n", "/rea/BMLEngine/inputImage","default");
-    ret = _imgRecv.Connect("/rea/BMLEngine/inputImage","default");
+    printf("Registering port %s on network %s...\n", "/bmlEngine/inputImage","default");
+    ret = _imgRecv.Connect("/bmlEngine/inputImage","default");
     if (ret == true)
         {
             //reduce verbosity --paulfitz
@@ -69,7 +69,7 @@ bool  BMLEngine::closePortImage(){
     //int res = 0;
     // Registering Port(s)
     //reduce verbosity --paulfitz
-    printf("Closing port %s on network %s...\n", "/rea/BMLEngine/inputImage","default");
+    printf("Closing port %s on network %s...\n", "/inputImage","default");
     _imgRecv.Disconnect();//("/rea/BMLEngine/inputImage","default");
     return ret;
 }
@@ -83,10 +83,12 @@ bool getImage(){
         return false;
     }
 
+    
     _semaphore.wait();
     ret = _imgRecv.GetLastImage(&_inputImg);
     engineModule->ptr_inputImage=&_inputImg;
     _semaphore.post();
+    
 
     engineModule->inputImage_flag=true;
     
@@ -182,24 +184,26 @@ bool BMLEngine::open(Searchable& config) {
 
 bool  BMLEngine::interruptModule() {
         port.interrupt();
-        port2.interrupt();
+        
         return true;
     }
 
 bool BMLEngine::close() {
         port.close();
-        port2.close();
-        port0.close();//(getName("out0"));
-        port1.close();//(getName("out1"));
-        port2.close();//(getName("out2")); 
+        //port2.close();
+        port0.close();//(getName("layer0"));
+        port1.close();//(getName("layer1"));
+        port2.close();//(getName("layer2")); 
         portCmd.close();//(getName("inCmd"));
         closePortImage();
         closeCommandPort();
         if(layer0Image!=0)
             layer0Image->stop();
-        //delete layer0Image;
-        //layer1Image->stop();
-        //delete layer1Image;
+        if(layer1Image!=0)
+            layer1Image->stop();
+        if(layer2Image!=0)
+            layer2Image->stop();
+        
         //mb->saveConfiguration();		
         return true;
     }
@@ -827,7 +831,32 @@ bool BMLEngine::updateModule() {
 }
 
 void BMLEngine::outLayers(){
+    if(layer0Image!=0){
+        if((layer0Image->image2!=0)&&(port0.getOutputCount()!=0)){
+            port0.prepare()=*(layer0Image->image2);
+            port0.write();
+        }
+    }   
     
+    if(this->layer1Image!=0){
+        if((layer1Image->image2!=0)&&(port1.getOutputCount()!=0)){
+            port1.prepare()=*(layer1Image->image2);
+            port1.write();
+        }
+            
+    }
+    
+    if(this->layer2Image!=0){
+        if((layer2Image->image2!=0)&&(port2.getOutputCount()!=0)){
+            port2.prepare()=*(layer2Image->image2);
+            port2.write();
+        }
+    }
+    
+}
+
+void BMLEngine::setName(const char *name) {
+        this->name = (char *) name;
 }
 
 
@@ -896,12 +925,16 @@ void BMLEngine::addLayer(int number,int colDimension, int rowDimension){
     enableDraw=true;
     // allocate the relative threads
     if(number==0){
-        layer0Image=new imageThread(50,"out00");
+        string name(this->name);
+        name.append("layer0:o");
+        layer0Image=new imageThread(50,name.c_str());
         layer0Image->setLayer(layer);
         layer0Image->start();
     }
     else if(number==1){
-        layer1Image=new imageThread(50,"out11");
+        string name(this->name);
+        name.append("layer1:o");
+        layer1Image=new imageThread(50,name.c_str());
         layer1Image->setLayer(layer);
         layer1Image->start();
     }

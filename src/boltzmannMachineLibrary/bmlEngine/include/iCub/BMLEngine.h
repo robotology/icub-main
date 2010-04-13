@@ -298,8 +298,14 @@ public:
     * close the port necessary to send commands
     */
     void closeCommandPort();
+    /**
+    * function necessary to set the name of the class
+    * @param name new name of the class
+    */
+    void setName(const char *name);
     /** 
     * set the attribute options of class Property
+    * @param options series of options as properties which the class will be set with
     */
     void setOptions(Property options); //set the attribute options of class Property
     /** 
@@ -352,6 +358,10 @@ public:
     * number of layers already istantiated
     */
     int countLayer;
+    /**
+    * name of the class (rootname of the ports)
+    */
+    char* name;
     /**
     * Output Port for commands
     */
