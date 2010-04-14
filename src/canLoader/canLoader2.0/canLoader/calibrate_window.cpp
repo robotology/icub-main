@@ -515,27 +515,28 @@ void reset_calib_bias_click (GtkButton *button,	gpointer ch_p)
 	something_changed=true;
 	downloader.strain_reset_calib_bias(downloader.board_list[selected].pid);
 }
+
 //*********************************************************************************
-void file_load_click (GtkButton *button,	gpointer ch_p)
+bool calibration_load_v2 (char* filename, int selected_id)
 {
-	std::string filename = "C:\\Software\\iCub\\bin\\debug\\ciao.dat";
-
-	char* buff;
-	int file_version=0;
-
-	buff = gtk_file_chooser_get_filename   (GTK_FILE_CHOOSER(picker_calib));
-	if (buff==NULL)
+	if (filename==NULL)
 		{
 			printf ("ERR: File not found!\n");
-			return;
+			return false;
+		}
+	if (selected_id <1 || selected_id >= 15)
+		{
+			printf ("ERR: invalid board address!\n");
+			return false;
 		}
 
+	int file_version=0;
 	fstream filestr;
-	filestr.open (buff, fstream::in);
+	filestr.open (filename, fstream::in);
     if (!filestr.is_open())
         {
             printf ("ERR: Error opening calibration file!\n");
-            return;
+            return false;
         }
 
 	int i=0;
@@ -545,13 +546,17 @@ void file_load_click (GtkButton *button,	gpointer ch_p)
 	filestr.getline (buffer,256);
 	filestr.getline (buffer,256);
 	sscanf (buffer,"%d",&file_version);
+	if (file_version!=2)
+        {
+            printf ("ERR: Wrong file. Calibration version != 2\n");
+            return false;
+        }
 
 	//serial number
 	filestr.getline (buffer,256);
 	filestr.getline (buffer,256);
 	sprintf(serial_no,buffer);
-	gtk_entry_set_text (GTK_ENTRY (edit_serial_number), serial_no);
-	downloader.strain_set_serial_number(downloader.board_list[selected].pid,serial_no);
+	downloader.strain_set_serial_number(selected_id,serial_no);
 
 	//offsets
 	filestr.getline (buffer,256);
@@ -559,7 +564,7 @@ void file_load_click (GtkButton *button,	gpointer ch_p)
 	{
 		filestr.getline (buffer,256);
 		sscanf  (buffer,"%d",&offset[i]);
-		gtk_range_set_value (GTK_RANGE(slider_gain[i]),(offset[i]));
+		downloader.strain_set_offset (downloader.board_list[selected].pid, i, offset[i]);
 	}
 
 	//calibration matrix
@@ -571,7 +576,7 @@ void file_load_click (GtkButton *button,	gpointer ch_p)
 		filestr.getline (buffer,256);
 		sscanf (buffer,"%x",&calib_matrix[ri][ci]);
 		printf("%d %x\n", calib_matrix[ri][ci],calib_matrix[ri][ci]);
-		downloader.strain_set_matrix_rc(downloader.board_list[selected].pid,ri,ci,calib_matrix[ri][ci]);
+		downloader.strain_set_matrix_rc(selected_id,ri,ci,calib_matrix[ri][ci]);
 	}
 	
 	//matrix gain
@@ -579,7 +584,7 @@ void file_load_click (GtkButton *button,	gpointer ch_p)
 	filestr.getline (buffer,256);
 	int cc=0;
 	sscanf (buffer,"%d",&cc);
-	downloader.strain_set_matrix_gain(downloader.board_list[selected].pid,cc);
+	downloader.strain_set_matrix_gain(selected_id,cc);
 
 	//tare
 	filestr.getline (buffer,256);
@@ -587,7 +592,7 @@ void file_load_click (GtkButton *button,	gpointer ch_p)
 	{
 		filestr.getline (buffer,256);
 		sscanf  (buffer,"%d",&calib_bias[i]);
-		downloader.strain_set_calib_bias(downloader.board_list[selected].pid,i,calib_bias[i]);
+		downloader.strain_set_calib_bias(selected_id,i,calib_bias[i]);
 	}
 
 	//full scale values
@@ -596,29 +601,56 @@ void file_load_click (GtkButton *button,	gpointer ch_p)
 	{
 		filestr.getline (buffer,256);
 		sscanf  (buffer,"%d",&full_scale_const[i]);
-		downloader.strain_set_full_scale(downloader.board_list[selected].pid,i,full_scale_const[i]);
+		downloader.strain_set_full_scale(selected_id,i,full_scale_const[i]);
 	}
 
-	//calib_const=cc;
-	//calib_const=63;
 	filestr.close();
+	filestr.clear();
 
 	matrix_changed=true;
 	something_changed=true;
 	printf ("Calibration file loaded!\n");
 
+	return true;
+}
+
+//*********************************************************************************
+void file_load_click (GtkButton *button,	gpointer ch_p)
+{
+	int selected_id=downloader.board_list[selected].pid;
+
+	char* buff;
+	buff = gtk_file_chooser_get_filename   (GTK_FILE_CHOOSER(picker_calib));
+	if (buff==NULL)
+		{
+			printf ("ERR: File not found!\n");
+			return;
+		}
+	
+	//load data file
+	calibration_load_v2 (buff, selected_id);
+
+	//update windows graphics
+	int i=0;
 	int ri=0;
 	int ci=0;
-	drv_sleep (1000);
+	char buffer[256];
+
+	drv_sleep (500);
+	downloader.strain_get_serial_number(selected_id, buffer);
+	gtk_entry_set_text (GTK_ENTRY (edit_serial_number), buffer);
+	serial_number_changed=false;
+	
+	drv_sleep (500);
 	for (ri=0;ri<6;ri++)
 			for (ci=0;ci<6;ci++)
 				{
-					downloader.strain_get_matrix_rc(downloader.board_list[selected].pid,ri,ci,matrix[ri][ci]);
+					downloader.strain_get_matrix_rc(selected_id,ri,ci,matrix[ri][ci]);
 					sprintf(buffer,"%x",matrix[ri][ci]);
 					gtk_entry_set_text (GTK_ENTRY (edit_matrix[ri][ci]), buffer);
 					gtk_widget_modify_base (edit_matrix[ri][ci],GTK_STATE_NORMAL, NULL );
 				}
-	drv_sleep (1000);
+	drv_sleep (500);
 	int count_ok=0;
 	for (i=0;i<36; i++)
 	{
