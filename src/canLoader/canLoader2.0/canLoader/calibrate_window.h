@@ -4,6 +4,7 @@
 #include <gtk/gtk.h>
 #include <gtk/gtkmain.h>
 
-void calibrate_click (GtkButton *button,	gpointer   user_data);
+void calibrate_click     (GtkButton *button,	gpointer   user_data);
+bool calibration_load_v2 (char* filename, int selected_id);
 
 #endif
