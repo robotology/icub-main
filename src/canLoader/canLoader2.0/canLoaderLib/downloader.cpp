@@ -7,6 +7,7 @@
 using namespace yarp::dev;
 using namespace yarp::os;
 
+#define CLEAR_RXBUFFER m_candriver->receive_message(rxBuffer,64,0.001);
 //*****************************************************************/
 void drv_sleep (double time)
 {
@@ -205,6 +206,8 @@ int cDownloader::strain_get_offset(int target_id, char channel, unsigned int& of
 	txBuffer[0].setLen(2);
 	txBuffer[0].getData()[0]= 0x0B;
 	txBuffer[0].getData()[1]= channel;
+	
+	CLEAR_RXBUFFER
 	int ret = m_candriver->send_message(txBuffer, 1);
 
 	drv_sleep(3);
@@ -446,7 +449,10 @@ int cDownloader::strain_get_serial_number (int target_id, char* serial_number)
 	 txBuffer[0].setLen(1);
 	 txBuffer[0].getData()[0]= 0x1A; 
 
+	 CLEAR_RXBUFFER
 	 int ret = m_candriver->send_message(txBuffer, 1);
+
+	 drv_sleep(5);
 
  	 int read_messages = m_candriver->receive_message(rxBuffer,1);
 	 for (int i=0; i<read_messages; i++)
@@ -483,12 +489,12 @@ int cDownloader::strain_get_eeprom_saved (int target_id, bool* status)
 	 txBuffer[0].setLen(1);
 	 txBuffer[0].getData()[0]= 0x1B; 
 
-	 int read_messages = m_candriver->receive_message(rxBuffer,64,0.001); //flush buffer
+	 CLEAR_RXBUFFER
 	 int ret = m_candriver->send_message(txBuffer, 1);
 
 	 drv_sleep(5);
 
- 	 read_messages = m_candriver->receive_message(rxBuffer,1);
+ 	 int read_messages = m_candriver->receive_message(rxBuffer,1);
 	 for (int i=0; i<read_messages; i++)
 	 {
 		if (rxBuffer[i].getData()[0]==0x1B &&   
@@ -515,7 +521,10 @@ int cDownloader::strain_get_matrix_gain	 (int target_id, unsigned int& gain)
 	 txBuffer[0].setLen(1);
 	 txBuffer[0].getData()[0]= 0x12; 
 
+	 CLEAR_RXBUFFER
 	 int ret = m_candriver->send_message(txBuffer, 1);
+
+	 drv_sleep(5);
 
  	 int read_messages = m_candriver->receive_message(rxBuffer,1);
 	 for (int i=0; i<read_messages; i++)
@@ -570,6 +579,8 @@ int cDownloader::strain_get_full_scale	 (int target_id, unsigned char channel, u
 
 	 int ret = m_candriver->send_message(txBuffer, 1);
 
+	 drv_sleep(5);
+
  	 int read_messages = m_candriver->receive_message(rxBuffer,1);
 	 for (int i=0; i<read_messages; i++)
 	 {
@@ -622,6 +633,7 @@ int cDownloader::strain_get_matrix_rc	 (int target_id, char r, char c, unsigned 
 	 txBuffer[0].getData()[1]= r;
 	 txBuffer[0].getData()[2]= c;
 
+	 CLEAR_RXBUFFER
 	 int ret = m_candriver->send_message(txBuffer, 1);
 
 	 drv_sleep(3);
@@ -1836,6 +1848,8 @@ int cDownloader::download_hexintel_line(char* line, int len, int board_pid, bool
 int cDownloader::open_file(std::string file)
 {
     progress=0;
+	filestr.close();
+	filestr.clear();
     filestr.open (file.c_str(), fstream::in);
     if (!filestr.is_open())
         {
