@@ -1,6 +1,6 @@
 /**
 @ingroup  icub_applications
-\defgroup icub_visualAttentionAffordances visualAttentionAffordances
+\defgroup icub_boltzmanMachineDemo BoltzmanMachineDemo
 
 Demo which shows all the possible function of the Boltzmann Machine Library sending commands via an Interface Component composed by engine and graphical interface
 
