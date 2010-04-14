@@ -675,6 +675,36 @@ static void start_end_click (GtkButton *button,	gpointer   user_data)
 }
 
 //*********************************************************************************
+bool load_calibration (char* filename)
+{
+	int selected=0;
+	int count=0;
+	int i=0;
+	for (i=0; i<downloader.board_list_size; i++)
+    {
+        if (downloader.board_list[i].status==BOARD_RUNNING &&
+			downloader.board_list[i].type==BOARD_TYPE_STRAIN &&
+            downloader.board_list[i].selected==true)
+			{
+				selected = i;
+				count++;
+			}
+    }
+	//only one board can be calibrated!!
+	if (count!=1) 
+	{
+		return false;
+	}
+
+	if (calibration_load_v2 (filename,downloader.board_list[selected].pid))
+	{
+		//save to eeprom
+		downloader.strain_save_to_eeprom(downloader.board_list[selected].pid);
+	}
+	return true;
+}
+
+//*********************************************************************************
 static int download_click (GtkButton *button,	gpointer   user_data)
 {  
     double timer_start =0;
@@ -726,6 +756,14 @@ static int download_click (GtkButton *button,	gpointer   user_data)
         dialog_message(GTK_MESSAGE_ERROR,"Error opening the selected file!","");
         return DOWNLOADERR_FILE_NOT_OPEN;
     }
+
+	//@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@
+	if (strstr (buffer, "calibrationDataSN") != 0)
+	{
+		load_calibration (buffer);
+		return ALL_OK;
+	}
+	//@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@
 
     // Get an identification of the firmware fot the file that you have selected
     int firmware_board_type=0;
@@ -1428,10 +1466,10 @@ int myMain( int   argc, char *argv[] )
 				printf("1) to execute the GUI version of the canLoader:\n");
 				printf("./canLoader20 \n");
 				printf("2) to execute the command line version of the canLoader:\n");
-				printf("./canLoader20 --canDeviceType t --canDeviceNum x --boardId y --firmware myFirmware.out.S\n");
-				printf("parameter t is the name of the CAN bus driver. It can be ecan or pcan cfw2can\n");
-				printf("parameter x is the number of the CAN bus (0-3)\n");
-				printf("parameter y is the CAN address of the board (0-15)\n");
+				printf("./canLoader20 --canDeviceType <t> --canDeviceNum <x> --boardId <y> --firmware myFirmware.out.S\n");
+				printf("parameter <t> is the name of the CAN bus driver. It can be ecan or pcan or cfw2can\n");
+				printf("parameter <x> is the number of the CAN bus (0-3)\n");
+				printf("parameter <y> is the CAN address of the board (0-15)\n");
 				exit(0);
 		}				
 		if		(argc==9) 
@@ -1440,7 +1478,8 @@ int myMain( int   argc, char *argv[] )
 				if (strcmp(argv[1],"--canDeviceType")!=0) fatal_error(INVALID_CMD_STRING);
 				if (strcmp(argv[3],"--canDeviceNum")!=0)  fatal_error(INVALID_CMD_STRING);
 				if (strcmp(argv[5],"--boardId")!=0)		  fatal_error(INVALID_CMD_STRING);
-				if (strcmp(argv[7],"--firmware")!=0)	  fatal_error(INVALID_CMD_STRING);
+				if (strcmp(argv[7],"--firmware")!=0 &&
+					strcmp(argv[7],"--calibration")!=0)	  fatal_error(INVALID_CMD_STRING);
 	
 				int param_board_id=0;
 				std::string param_filename = "empty";
