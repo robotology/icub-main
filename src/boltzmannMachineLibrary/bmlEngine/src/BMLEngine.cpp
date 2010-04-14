@@ -13,8 +13,10 @@ static YARPImgRecv *ptr_imgRecv;
 #define _imgRecv (*(ptr_imgRecv))
 
 //Image been read
+/*
 static yarp::sig::ImageOf<yarp::sig::PixelRgb> *ptr_inputImg;
 #define _inputImg (*(ptr_inputImg))
+*/
 
 // Semaphore
 static yarp::os::Semaphore *ptr_semaphore;
@@ -48,7 +50,9 @@ bool BMLEngine::openPortImage(){
     // Registering Port(s)
     //reduce verbosity --paulfitz
     printf("Registering port %s on network %s...\n", "/bmlEngine/inputImage","default");
-    ret = _imgRecv.Connect("/bmlEngine/inputImage","default");
+    string portName(this->name);
+    portName.append("/inputImage");
+    ret = _imgRecv.Connect((char*)portName.c_str(),"default");
     if (ret == true)
         {
             //reduce verbosity --paulfitz
@@ -85,8 +89,9 @@ bool getImage(){
 
     
     _semaphore.wait();
-    ret = _imgRecv.GetLastImage(&_inputImg);
-    engineModule->ptr_inputImage=&_inputImg;
+    ret = _imgRecv.GetLastImage(engineModule->ptr_inputImage);
+    //ret = _imgRecv.GetLastImage(&_inputImg);
+    //engineModule->ptr_inputImage=&_inputImg;
     _semaphore.post();
     
 
@@ -99,7 +104,7 @@ bool getImage(){
 
 void createObjects() {
     ptr_imgRecv = new YARPImgRecv;
-    ptr_inputImg = new yarp::sig::ImageOf<yarp::sig::PixelRgb>;
+    //ptr_inputImg = new yarp::sig::ImageOf<yarp::sig::PixelRgb>;
     //ptr_inputImg2= new yarp::sig::ImageOf<yarp::sig::PixelRgb>;
     ptr_semaphore = new yarp::os::Semaphore;
 }
@@ -149,6 +154,8 @@ bool BMLEngine::open(Searchable& config) {
         img2->resize(320,240);
         ptr_inputImage2=new ImageOf<PixelRgb>;
         ptr_inputImage2->resize(320,240);
+        ptr_inputImage=new ImageOf<PixelRgb>;
+        ptr_inputImage->resize(320,240);
 
         //setting of the flags
         enableDraw=false;
@@ -554,8 +561,10 @@ bool BMLEngine::updateModule() {
         }
         else if((!strcmp(command.c_str(),"AddLayer"))){
             printf("addLayer \n");
-            int valueRow=10;//atoi(optionValue1.c_str());
-            int valueCol=10;//atoi(optionValue2.c_str());
+            //int valueRow=10;//
+            int valueRow=atoi(optionValue1.c_str());
+            //int valueCol=10;//
+            int valueCol=atoi(optionValue2.c_str());
             if((valueRow!=0)||(valueCol!=0)){
                 addLayer(countLayer,valueCol,valueRow);
                 countLayer++;
@@ -1082,11 +1091,11 @@ void BMLEngine::clampLayer(int layerNumber){
 }
 
 void BMLEngine::clampLayer(Layer layer){
-    int width=320;
-    int height=240;
+    int width=ptr_inputImage->width();
+    int height=ptr_inputImage->height();
     //IppiSize srcsize={width,height};
     //1.extracts 3 planes
-    IplImage* im_tmp_ipl = cvCreateImage( cvSize(320,240), 8, 1 );
+    IplImage* im_tmp_ipl = cvCreateImage( cvSize(width,height), 8, 1 );
     //Ipp8u* im_out = ippiMalloc_8u_C1(320,240,&psb);
     //Ipp8u* im_tmp[3];
     //Ipp8u* im_tmp_tmp[3];
@@ -1144,8 +1153,8 @@ void BMLEngine::clampLayer(Layer layer){
 
 
     //3.maps the intensity on to the layer
-    int rectDimX=320/totUnits;
-    int rectDimY=240/totRows;
+    int rectDimX=width/totUnits;
+    int rectDimY=height/totRows;
     int sum=0;
     uchar* data=(uchar*)(im_tmp_ipl->imageData);
     int step       = im_tmp_ipl->widthStep/sizeof(uchar);
@@ -1156,12 +1165,12 @@ void BMLEngine::clampLayer(Layer layer){
             sum=0;
             for(int y=0;y<rectDimY;y++){
                 for(int x=0;x<rectDimX;x++){
-                    sum+=data[boltzmannMachineRow*rectDimY*320+boltzmannMachineCol*rectDimX+320*y+x];
+                    sum+=data[boltzmannMachineRow*rectDimY*width+boltzmannMachineCol*rectDimX+width*y+x];
                     //sum+=im_tmp_ipl[boltzmannMachineRow*rectDimY*320+boltzmannMachineCol*rectDimX+320*y+x];
                 }
             }
             double mean=sum/(rectDimX*rectDimY);
-            printf("mean of the unit %f ----> ",mean);
+            //printf("mean of the unit %f ----> ",mean);
             //set the threashold to decide whether the unit has to be elicite
             (*layer.stateVector)(boltzmannMachineCol+boltzmannMachineRow*totUnits)=mean/255;
         }

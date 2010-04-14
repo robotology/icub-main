@@ -44,7 +44,6 @@ void imageThread::afterStart(bool s){
 * running code of the thread
 */
 void imageThread::run(){
-    printf("Image Thread running..... \n");
     //1. produces the image
     //printf("|||||||||||||||||||||||||||| \n");
     for(int i=0;i<plottedLayer->getCol();i++){
@@ -63,7 +62,6 @@ void imageThread::run(){
             }
         }
     }
-    printf("Send the image out on port \n");
     //2. force the image out on the port
    // port.prepare()=*(image2);
     //port.write();
