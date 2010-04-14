@@ -9,11 +9,13 @@
 bool imageThread::threadInit(){
     scaleFactorX=4;
     scaleFactorY=4;
-    cvImage= cvCreateImage(cvSize(320,240), IPL_DEPTH_8U, 3 );
+    int sizeX=plottedLayer->getCol()*scaleFactorX;
+    int sizeY=plottedLayer->getRow()*scaleFactorY;
+    cvImage= cvCreateImage(cvSize(sizeX,sizeY), IPL_DEPTH_8U, 3 );
     image2=new ImageOf<PixelRgb>;
-    image2->resize(320,240);
-    for (int x=0; x<320; x++){
-                for(int y=0;y<240;y++){
+    image2->resize(sizeX,sizeY);
+    for (int x=0; x<sizeX; x++){
+                for(int y=0;y<sizeY;y++){
                     PixelRgb &pix=image2->pixel(x,y);
                     pix.r=0;
                     pix.b=0;

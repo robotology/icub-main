@@ -259,17 +259,23 @@ bool BMLEngine::updateModule() {
                 optionName1=option.substr(parPos1+1,spacePos-parPos1);
                 optionValue1= option.substr(spacePos+1,parPos2-spacePos-1);
                 unsigned int dim=option.size();
-                option=option.substr(parPos2+2,dim-2-parPos2);
+                if(dim>parPos2+2){
+                    option=option.substr(parPos2+2,dim-2-parPos2);
 
-                parPos1=option.find("(");
-                if(parPos1!=-1){
-                    printf("found the second parentesis \n");
-                    parPos2=option.find(")");
-                    spacePos=option.find(" ");
-                    optionName2=option.substr(parPos1+1,spacePos-parPos1);
-                    optionValue2= option.substr(spacePos+1,parPos2-spacePos-1);
-                    option=option.substr(parPos2,option.size()-parPos2);
+                    parPos1=option.find("(");
+                    if(parPos1!=-1){
+                        printf("found the second parentesis \n");
+                        parPos2=option.find(")");
+                        spacePos=option.find(" ");
+                        optionName2=option.substr(parPos1+1,spacePos-parPos1);
+                        optionValue2= option.substr(spacePos+1,parPos2-spacePos-1);
+                        option=option.substr(parPos2,option.size()-parPos2);
+                    }
+                }else{
+                    optionName2.append("");
+                    optionValue2.append("");
                 }
+
             
                 //string name=option.substr(1,spacePos-1);
                 //string value=option.substr(spacePos+1,option.size()-spacePos);

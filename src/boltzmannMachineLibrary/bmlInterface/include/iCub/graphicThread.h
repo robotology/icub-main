@@ -178,6 +178,10 @@ public:
     * colour image of the output
     */
     yarp::sig::ImageOf<yarp::sig::PixelRgb>* _outputImage3;
+    /**
+    * colour image of the output
+    */
+    yarp::sig::ImageOf<yarp::sig::PixelRgb>* temp3;
 
     //---------- FLAGS -------------------------------
     /**
