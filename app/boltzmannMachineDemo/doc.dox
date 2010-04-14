@@ -1,0 +1,68 @@
+/**
+@ingroup  icub_applications
+\defgroup icub_visualAttentionAffordances visualAttentionAffordances
+
+Demo which shows all the possible function of the Boltzmann Machine Library sending commands via an Interface Component composed by engine and graphical interface
+
+\section intro_sec Description
+
+\image html boltzmannMachineLibrary.png
+
+Through the Boltzmann Machine library the user is able to:
+- load a Boltzmann Machine with a pre-exhisting structure
+- add Layers of different dimensions
+- clamp an input data to one specific visible layer
+- let the boltzmann Machine evolve
+- save the boltzmann Machine
+
+The GUI helps the user to perform all these actions in a more friendly environment
+The GUI is connected to the Engine Module which incapsulate the library
+
+
+\section dep_sec Dependencies
+Assumes \ref icub_iCubInterface (with cartesian control implemented) is running.
+
+\section int_sec Instantiated Modules
+- \ref icub_bmlEngine "bmlEngine" 
+
+- \ref bmlInterface "bmlInterface" 
+
+
+\section howto_sec How to run the Application
+
+- Selection A of the input data and all the layers
+In the upper section either the input data or one of the layers can be selected.
+When selected the graphic frame in the center of the windows represent the selection
+- Main section
+Where all the operations on the whole boltzmann machine are grouped. In this section a series of parameters can be tune.
+- Operation on selections
+Here all the operation which require a reference to one or more layers are listed.
+The reference A is related to Selection A whereas the reference B links within this section.
+
+\section ex_howto Example on How to use the Application
+
+1) Load the Boltzmann Machine
+2) Select the dimension of the layer and Add on or more layers
+3) Visualise the layers and the input data
+4) Clamp the input data on the visible layer
+5) Interconnect different layers
+6) Evolve the Boltzmann Machine and see how the layers change
+7) Save the actual situation (connection, state, etc ...)
+
+
+
+\code
+Customize and run ./scripts/appConfig-bmDemo.xml.template
+\endcode
+
+\author Francesco Rea
+
+Copyright (C) 2009 RobotCub Consortium
+
+CopyPolicy: Released under the terms of the GNU GPL v2.0.
+
+This file can be edited at app/armCartesianController/doc.dox
+*/
+
+
+
