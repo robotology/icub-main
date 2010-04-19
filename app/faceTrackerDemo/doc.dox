@@ -7,19 +7,23 @@ This is the application used to run the Face Tracker demo.
 \section intro_sec Description
 The Haar detector of OpenCV library is used to find a face
 in front of the robot. Once a face is detected the application
-commands the head to keep on gazing at it and the right arm to point
+commands the head to keep on gazing at it and the specified arm to point
 at the current face location.
 While no face is currently tracked the gaze is commanded to
 move randomly around. 
+Moreover, user may also force the gaze to fixate a point selected through
+a click on a viewer.
 
 \section dep_sec Dependencies
 Assumes \ref icub_iCubInterface is running, and that the head and
-the right arm are instantiated.
+the specified arm are instantiated.
 
 \section int_sec Instantiated Modules
 - \ref faceTracker "faceTracker"
 
 - \ref iKinGazeCtrl "iKinGazeCtrl"
+
+- \ref icub_iKinHead "iKinHead"
 
 - \ref iKinArmCtrl "iKinArmCtrl"
 

@@ -1,5 +1,5 @@
 <application>
-    <name>Face Tracker</name>
+    <name>Face Tracker NoHand</name>
 
     <dependencies>
       <port>/icub/cam/right</port>
@@ -9,27 +9,20 @@
     <module>
       <name>faceTracker</name>
       <node>pwrNode1</node>
-	  <parameters>--eye right --eyeDist 0.5 --arm right --holdoff 3.0</parameters>
+	  <parameters>--eye right --eyeDist 0.5 --holdoff 3.0</parameters>
       <tag>tracker</tag> 
     </module> 
 
     <module>
-      <name>iKinArmCtrl</name>
-      <parameters>--onlyXYZ --DOF8</parameters> 
-      <node>pwrNode2</node>
-      <tag>armCtrl</tag>
-    </module> 
-
-    <module>
       <name>iKinHead</name>
-      <node>pwrNode3</node>
+      <node>pwrNode2</node>
 	  <parameters>--robot icub --kalman --from icubEyes.ini</parameters>
       <tag>ikinhead</tag> 
     </module>
 
     <module>
       <name>iKinGazeCtrl</name>
-      <node>pwrNode4</node>
+      <node>pwrNode3</node>
       <tag>gazeCtrl</tag> 
     </module>
 
@@ -50,11 +43,6 @@
       <to>/faceViewer</to>
     </connection> 
 
-    <connection>
-      <from>/faceTracker/reach:o</from>
-      <to>/iKinArmCtrl/right_arm/xd:i</to>
-    </connection> 
- 
 	<connection>
       <from>/faceTracker/gazeat:o</from>
       <to>/iKinGazeCtrl/head/xd:i</to>
