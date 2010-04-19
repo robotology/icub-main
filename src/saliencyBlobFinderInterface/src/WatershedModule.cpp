@@ -1012,6 +1012,7 @@ bool WatershedModule::outPorts(){
     
     
     if(strcmp("",message->c_str())){
+
         Bottle& commandBottle=commandPort->prepare();
         commandBottle.clear();
         commandBottle.addVocab(VOCAB3(message->at(0),message->at(1),message->at(2)));
@@ -1152,7 +1153,7 @@ static void cb_digits_scaletime( GtkAdjustment *adj )
     wModule->reactivity=adj->value;
     printf("constant time for the iKinControlGaze: %f",wModule->reactivity/10);
     std::string str("");
-    sprintf((char *)str.c_str(),"set tcon %2.2f",wModule->reactivity/10);
+    sprintf((char *)str.c_str(),"set tco %2.2f",wModule->reactivity/10);
     wModule->message->assign(str.c_str());
 }
 
@@ -1162,7 +1163,7 @@ static void cb_digits_scaletime2( GtkAdjustment *adj )
     wModule->timeCentroid=adj->value;
     printf("constant time for the controlGaze2: %f",wModule->timeCentroid/10);
     std::string str("");
-    sprintf((char *)str.c_str(),"set tcen %2.2f",wModule->timeCentroid/10);
+    sprintf((char *)str.c_str(),"set tce %2.2f",wModule->timeCentroid/10);
     wModule->message->assign(str.c_str());
 }
 
