@@ -1883,7 +1883,7 @@ GtkWidget* WatershedModule::createMainWindow(void)
     label = gtk_label_new ("time decimal constant1 (x y z):");
     gtk_box_pack_start (GTK_BOX (box4), label, FALSE, FALSE, 0);
     gtk_widget_show (label);
-    adjtime = gtk_adjustment_new (0,0,100,1,1,1);
+    adjtime = gtk_adjustment_new (10,1,100,1,1,1);
     hscale = gtk_hscale_new (GTK_ADJUSTMENT (adjtime));
     gtk_widget_set_size_request (GTK_WIDGET (hscale), 200, -1);
     scale_set_default_values (GTK_SCALE (hscale));
@@ -1896,7 +1896,7 @@ GtkWidget* WatershedModule::createMainWindow(void)
     label = gtk_label_new ("time decimal constant2 (set img x y):");
     gtk_box_pack_start (GTK_BOX (box4), label, FALSE, FALSE, 0);
     gtk_widget_show (label);
-    adjtime = gtk_adjustment_new (0,0,100,1,1,1);
+    adjtime = gtk_adjustment_new (10,1,100,1,1,1);
     hscale = gtk_hscale_new (GTK_ADJUSTMENT (adjtime));
     gtk_widget_set_size_request (GTK_WIDGET (hscale), 200, -1);
     scale_set_default_values (GTK_SCALE (hscale));
