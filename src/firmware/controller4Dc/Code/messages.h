@@ -559,6 +559,7 @@
 	{ \
 		if (_control_mode[axis] != MODE_IDLE && IS_DONE(axis)) \
 		{ \
+			_vel_counter[axis] = 0; \
 			if (_control_mode[axis] == MODE_POSITION) \
 				_desired_vel[axis] = 0; \
 			_control_mode[axis] = MODE_VELOCITY; \

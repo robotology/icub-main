@@ -90,18 +90,5 @@ Added control for the receiving of the PID values before enabling the PWM.
 2010-26-February  Maggiali Marco <marco.maggiali@iit.t>
 * Current build 26. maggia: now from the calibration file it is passed the current limit in mA. 
 
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
+2010-20-April Francesco Nori <francesco.nori@iit.t>
+* Current build 27. Timeout on velocity control in case messages are not received within 100ms.

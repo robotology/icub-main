@@ -111,7 +111,7 @@ extern Int16 _accu_desired_vel[JN];		// accumultor for the fractional part of th
 extern Int16 _set_vel[JN] ;				// set point for velocity [user specified] 
 extern Int16 _max_vel[JN] ;
 extern Int32 _vel_shift[JN]	;
-
+extern Int16 _vel_counter[JN];
 
 // ACCELERATION VARIABLES
 extern Int16 _accel[JN]; 				// encoder estimated acceleration				
