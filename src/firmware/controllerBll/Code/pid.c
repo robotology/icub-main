@@ -69,7 +69,8 @@ Int16 _desired_vel[JN] = INIT_ARRAY (0);				// speed reference value, computed b
 Int16 _set_vel[JN] = INIT_ARRAY (DEFAULT_VELOCITY);		// set point for velocity [user specified] 
 Int16 _max_vel[JN] = INIT_ARRAY (DEFAULT_MAX_VELOCITY);	// assume this limit is symmetric 
 Int32 _vel_shift[JN] = INIT_ARRAY (4);
-
+Int16 _vel_counter[JN] = INIT_ARRAY (0);
+const Int16 VELOCITY_TIMEOUT = 400;                     // timeout on velocity messages
 
 // ACCELERATION VARIABLES
 Int16  _accel[JN] = INIT_ARRAY (0);			 			 // encoder acceleration 
@@ -820,6 +821,24 @@ void compute_desired(byte i)
 		case MODE_VELOCITY:
 			_desired[i] += step_trajectory_delta (i);
 			_desired[i] += step_velocity (i);
+			// checks if the velocity messages streaming
+			// has been interrupted (i.e. last message
+			// received  more than VELOCITY_TIMEOUT ms ago)
+			if (_set_vel[i] != 0)
+			  {
+			    _vel_counter[i]++;
+			    if(_vel_counter[i] > VELOCITY_TIMEOUT)
+			      {
+				//disabling control
+				_control_mode[i] = MODE_IDLE;	
+				_pad_enabled[i] = false;
+				PWM_outputPadDisable(i);
+				//resetting the counter
+				_vel_counter[i] = 0;
+#ifdef DEBUG_CAN_MSG
+				can_printf("No vel msgs in %d[ms]", _vel_counter[i]);
+#endif			
+			      }
 			break;
 		}
 		

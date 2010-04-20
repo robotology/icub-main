@@ -99,3 +99,9 @@
 2010-11-January  Francesco Nori and Randaz <iron@liralab.it>
 	* Stops sending both encoders if one fails (avoid troubles with coupled boards)
 	* Current build 35.
+
+2010-20-April  Francesco Nori <iron@liralab.it>
+	* Stops controlling (disable PWM) if velocity messages 
+	* are not received in 400ms (VELOCITY_TIMEOUT).
+	* Current build 36.
+	
