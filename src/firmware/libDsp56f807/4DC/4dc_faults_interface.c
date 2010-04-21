@@ -14,7 +14,7 @@ void FaultB_Interrupt(void);
  ******************************************************************************/
 void init_faults(bool internal_fault_enable,  bool external_fault_enable, bool interrupts_enable)
 {
-/*
+
 	#warning //so far we are not using the DRV1_2_3_4FAULT
 	  
 	
@@ -49,12 +49,6 @@ void init_faults(bool internal_fault_enable,  bool external_fault_enable, bool i
 		setRegBits (PWMB_PMDISMAP1, 0x8888);
 		setRegBits (PWMB_PMDISMAP2, 0); 
 	}
-*/
-
-		setReg (PWMA_PMDISMAP1, 0); 
-		setReg (PWMA_PMDISMAP2, 0); 
-		setReg (PWMB_PMDISMAP1, 0); 
-		setReg (PWMB_PMDISMAP2, 0); 
 		
 }
 
@@ -66,7 +60,7 @@ void init_faults(bool internal_fault_enable,  bool external_fault_enable, bool i
 #pragma interrupt called
 void FaultInterruptDisable(byte axis)
 {
-/*	if 		(axis<=1)
+	if 		(axis<=1)
 	{
 		clrRegBits (PWMA_PMFCTL,PWMA_PMFCTL_FIE0_MASK);	
 //		clrRegBits (PWMA_PMFCTL,PWMA_PMFCTL_FIE1_MASK);	
@@ -80,7 +74,7 @@ void FaultInterruptDisable(byte axis)
 //		clrRegBits (PWMB_PMFCTL,PWMB_PMFCTL_FIE2_MASK);	
 		clrRegBits (PWMB_PMFCTL,PWMB_PMFCTL_FIE3_MASK);		
 	}
-*/
+
 }
 
 /******************************************************************************/
@@ -89,15 +83,7 @@ void FaultInterruptDisable(byte axis)
  ******************************************************************************/
 void FaultInterruptEnable(byte axis)
 {
-/*		setRegBits (PWMA_PMFCTL,PWMA_PMFCTL_FMODE0_MASK);	
-		setRegBits (PWMA_PMFCTL,PWMA_PMFCTL_FMODE1_MASK);	
-		setRegBits (PWMA_PMFCTL,PWMA_PMFCTL_FMODE2_MASK);	
-		setRegBits (PWMA_PMFCTL,PWMA_PMFCTL_FMODE3_MASK);
-			
-		setRegBits (PWMB_PMFCTL,PWMB_PMFCTL_FMODE0_MASK);	
-		setRegBits (PWMB_PMFCTL,PWMB_PMFCTL_FMODE1_MASK);	
-		setRegBits (PWMB_PMFCTL,PWMB_PMFCTL_FMODE2_MASK);	
-		setRegBits (PWMB_PMFCTL,PWMB_PMFCTL_FMODE3_MASK);	
+
 				
 	if 		(axis<=1)
 	{
@@ -120,7 +106,7 @@ void FaultInterruptEnable(byte axis)
 //		setRegBits (PWMB_PMFCTL,PWMB_PMFCTL_FIE2_MASK);	
 	    setRegBits (PWMB_PMFCTL,PWMB_PMFCTL_FIE3_MASK);		
 	}
-*/	
+
 }
 
 /******************************************************************************/
@@ -130,7 +116,7 @@ void FaultInterruptEnable(byte axis)
 #pragma interrupt saveall
 void FaultA_Interrupt(void)
 {
-/*
+
 	int status=0;
 
 	status = getReg (PWMA_PMFSA);
@@ -159,7 +145,6 @@ void FaultA_Interrupt(void)
 //	#ifdef DEBUG_CAN_MSG
 	can_printf("FAULT AXIS: 0 & 1 %d",status);
 //   #endif
-*/
 }
 
 /******************************************************************************/
@@ -169,7 +154,6 @@ void FaultA_Interrupt(void)
 #pragma interrupt saveall
 void FaultB_Interrupt(void)
 {
-/*
 	int status=0;
 
 	status = getReg (PWMB_PMFSA);
@@ -199,5 +183,4 @@ void FaultB_Interrupt(void)
  //   can_printf("FAULT AXIS: 2 & 3 %d",status);
  //   #endif
 	//
-	*/ 
 }
