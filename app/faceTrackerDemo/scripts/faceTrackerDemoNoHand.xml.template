@@ -2,7 +2,7 @@
     <name>Face Tracker NoHand</name>
 
     <dependencies>
-      <port>/icub/cam/right</port>
+      <port>/icub/camcalib/right/out</port>
       <port>/icub/right_arm/state:o</port> 
     </dependencies> 
 
@@ -34,7 +34,7 @@
     </module> 
 
     <connection>
-      <from>/icub/cam/right</from>
+      <from>/icub/camcalib/right/out</from>
       <to>/faceTracker/img:i</to>
     </connection> 
 
