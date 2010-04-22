@@ -5,6 +5,7 @@
 #include "dsp56f807.h"
 #include "controller.h"
 #include "options.h"
+#include "can1.h"
 
 #ifndef VERSION
 #	error "No valid version specified"

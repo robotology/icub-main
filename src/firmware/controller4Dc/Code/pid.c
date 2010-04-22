@@ -567,20 +567,21 @@ void compute_desired(byte i)
 			// has been interrupted (i.e. last message
 			// received  more than VELOCITY_TIMEOUT ms ago)
 			if (_set_vel[i] != 0)
-			  {
-			    _vel_counter[i]++;
-			    if(_vel_counter[i] > VELOCITY_TIMEOUT)
-			      {
-				//disabling control
-				_control_mode[i] = MODE_IDLE;	
-				_pad_enabled[i] = false;
-				PWM_outputPadDisable(i);
-				//resetting the counter
-				_vel_counter[i] = 0;
+			  	{
+			    	_vel_counter[i]++;
+			    	if(_vel_counter[i] > VELOCITY_TIMEOUT)
+			      	{
+						//disabling control
+						_control_mode[i] = MODE_IDLE;	
+						_pad_enabled[i] = false;
+						PWM_outputPadDisable(i);
 #ifdef DEBUG_CAN_MSG
-				can_printf("No vel msgs in %d[ms]", _vel_counter[i]);
+						can_printf("No vel msgs in %d[ms]", _vel_counter[i]);
 #endif			
-			      }
+						//resetting the counter
+						_vel_counter[i] = 0;
+			      	}
+			  	}
 			break;
 		}
 		
