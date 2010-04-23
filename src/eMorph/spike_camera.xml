@@ -1,0 +1,35 @@
+<application>
+<name>Test event based cam simulation</name>
+<dependencies>
+      <port>/tamon-ten</port>
+</dependencies>
+   <module>
+      <name>binFile2yarp</name>
+      <parameters>C:/Users/pasa/Repository/_svn/iCub/src/eMorph/raw_events.bin</parameters>
+      <node>tamon-ten</node>
+	  <stdio>tamon-ten</stdio>
+	  <tag>binFile2yarp</tag>
+   </module>
+    <module>
+        <name>cFrameConverter</name>
+        <node>tamon-ten</node>
+        <stdio>tamon-ten</stdio>
+        <tag>cFrameConverter</tag>
+    </module>
+    <module>
+      <name>yarpview</name>
+      <parameters>--name /view1 --x 0 --y 50 --synch</parameters>
+      <node>tamon-ten</node>
+	  <tag>view1</tag>
+   </module>
+<connection>
+  <from>/DV128/out</from>
+  <to>/converter/in</to>
+  <protocol>udp</protocol>
+</connection>
+<connection>
+  <from>/image/cartesian</from>
+  <to>/view1</to>
+  <protocol>udp</protocol>
+</connection>
+</application>
