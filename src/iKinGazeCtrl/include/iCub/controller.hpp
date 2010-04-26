@@ -72,12 +72,16 @@ public:
     void printIter(Vector &xd, Vector &fp, Vector &qd, Vector &q,
                    Vector &v, double printTime);
 
-    virtual bool threadInit();
-    virtual void afterStart(bool s);
-    virtual void run();
-    virtual void threadRelease();
-    virtual void suspend();
-    virtual void resume();
+    virtual bool   threadInit();
+    virtual void   afterStart(bool s);
+    virtual void   run();
+    virtual void   threadRelease();
+    virtual void   suspend();
+    virtual void   resume();
+    virtual double getTneck();
+    virtual double getTeyes();
+    virtual void   setTneck(const double execTime);
+    virtual void   setTeyes(const double execTime);
 };
 
 

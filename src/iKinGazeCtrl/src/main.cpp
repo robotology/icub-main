@@ -161,6 +161,12 @@ following ports:
     - [block] [yaw] <val>: block the neck yaw at <val> degrees.
     - [clear] [pitch]: restore the neck pitch range.
     - [clear] [yaw]: restore the neck yaw range.
+    - [get] [Tneck]: returns the neck movements execution time.
+    - [get] [Teyes]: returns the eyes movements execution time.
+    - [set] [Tneck] <val>: sets a new movements execution time
+      for neck movements.
+    - [set] [Teyes] <val>: sets a new movements execution time
+      for eyes movements.
  
 \section coor_sys_sec Coordinate System 
 Positions (meters) refer to the root reference frame attached to
@@ -432,6 +438,45 @@ public:
                     else
                         return false;
 
+                    return true;
+                }
+
+                case VOCAB3('g','e','t'):
+                {
+                    if (command.size()>1)
+                    {
+                        int type=command.get(1).asVocab();
+    
+                        if (type==VOCAB4('T','n','e','c'))
+                            reply.addDouble(ctrl->getTneck());
+                        else if (type==VOCAB4('T','e','y','e'))
+                            reply.addDouble(ctrl->getTeyes());
+                        else
+                            return false;
+                    }
+                    else
+                        return false;
+    
+                    return true;
+                }
+
+                case VOCAB3('s','e','t'):
+                {
+                    if (command.size()>2)
+                    {
+                        int type=command.get(1).asVocab();
+                        double execTime=command.get(2).asDouble();
+    
+                        if (type==VOCAB4('T','n','e','c'))
+                            ctrl->setTneck(execTime);
+                        else if (type==VOCAB4('T','e','y','e'))
+                            ctrl->setTeyes(execTime);
+                        else
+                            return false;
+                    }
+                    else
+                        return false;
+    
                     return true;
                 }
 

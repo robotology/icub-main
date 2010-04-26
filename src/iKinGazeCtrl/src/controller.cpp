@@ -80,29 +80,8 @@ Controller::Controller(PolyDriver *_drvTorso, PolyDriver *_drvHead, exchangeData
     vNeck.resize(3);  vEyes.resize(3);
 
     // Set the task execution time
-    double lowerThresEyes=10.0*Ts;
-    if (eyesTime<lowerThresEyes)
-    {        
-        cout << "Warning: eyes execution time is under the lower bound!"           << endl;
-        cout << "A new eyes execution time of " << lowerThresEyes << "s is chosen" << endl;        
-
-        eyesTime=lowerThresEyes;
-    }
-
-    double lowerThresNeck=eyesTime+0.2;
-    if (neckTime<lowerThresNeck)
-    {        
-        cout << "Warning: neck execution time is under the lower bound!"           << endl;
-        cout << "A new neck execution time of " << lowerThresNeck << "s is chosen" << endl;        
-
-        neckTime=lowerThresNeck;
-    }
-
-    for (unsigned int i=0; i<3; i++)
-    {
-        fbNeck[i]=fbHead[i];
-        fbEyes[i]=fbHead[3+i];
-    }
+    setTeyes(eyesTime);
+    setTneck(neckTime);
 
     mjCtrlNeck=new minJerkVelCtrl(Ts,fbNeck.length());
     mjCtrlEyes=new minJerkVelCtrl(Ts,fbEyes.length());
@@ -335,5 +314,50 @@ void Controller::resume()
     RateThread::resume();
 }
 
+
+/************************************************************************/
+double Controller::getTneck()
+{
+    return neckTime;
+}
+
+
+/************************************************************************/
+double Controller::getTeyes()
+{
+    return eyesTime;
+}
+
+
+/************************************************************************/
+void Controller::setTneck(const double execTime)
+{
+    double lowerThresNeck=eyesTime+0.2;
+    if (execTime<lowerThresNeck)
+    {        
+        cout << "Warning: neck execution time is under the lower bound!"           << endl;
+        cout << "A new neck execution time of " << lowerThresNeck << "s is chosen" << endl;        
+
+        neckTime=lowerThresNeck;
+    }
+    else
+        neckTime=execTime;
+}
+
+
+/************************************************************************/
+void Controller::setTeyes(const double execTime)
+{
+    double lowerThresEyes=10.0*Ts;
+    if (execTime<lowerThresEyes)
+    {        
+        cout << "Warning: eyes execution time is under the lower bound!"           << endl;
+        cout << "A new eyes execution time of " << lowerThresEyes << "s is chosen" << endl;        
+
+        eyesTime=lowerThresEyes;
+    }
+    else
+        eyesTime=execTime;
+}
 
 
