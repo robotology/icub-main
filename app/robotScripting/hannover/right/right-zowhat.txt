@@ -1,0 +1,13 @@
+echo "ctpn time 2 off 0 pos (-37 33 24 70 -81 -24 -3 6 69 27 19 80 36 73 25 180)" | yarp rpc /ctpservice/right_arm/rpc
+sleep 3
+
+echo "ctpq time 0.5 off 3 pos (83 -81 0)" | yarp rpc /ctpservice/right_arm/rpc
+echo "ctpq time 0.5 off 3 pos (70 -81 -24)" | yarp rpc /ctpservice/right_arm/rpc
+
+echo "ctpq time 0.5 off 3 pos (83 -81 0)" | yarp rpc /ctpservice/right_arm/rpc
+echo "ctpq time 0.5 off 3 pos (70 -81 -24)" | yarp rpc /ctpservice/right_arm/rpc
+
+echo "ctpq time 0.5 off 3 pos (83 -81 0)" | yarp rpc /ctpservice/right_arm/rpc
+echo "ctpq time 0.5 off 3 pos (70 -81 -24)" | yarp rpc /ctpservice/right_arm/rpc
+
+
