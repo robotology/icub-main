@@ -1395,7 +1395,7 @@ void fatal_error(int err)
 		break;
 		case INVALID_PARAM_CANTYPE:
 			printf("ERROR: invalid --canDeviceType parameter \n");
-			printf("must be 'ecan' or 'pcan' or 'cfwcan'\n");
+			printf("must be 'ecan' or 'pcan' or 'cfw2'\n");
 			exit(err);
 		break;
 		case INVALID_PARAM_CANNUM:
@@ -1487,7 +1487,7 @@ int myMain( int   argc, char *argv[] )
 
 				if (strcmp(argv[2],"ecan") !=0 &&
 					strcmp(argv[2],"pcan") !=0 &&
-                    strcmp(argv[3],"cfw2can")!=0)
+                    strcmp(argv[2],"cfw2can")!=0)
 					{
 						fatal_error(INVALID_PARAM_CANTYPE);
 					}
@@ -1497,7 +1497,7 @@ int myMain( int   argc, char *argv[] )
 					}
 
 				temp_val=atoi(argv[4]);
-				if (temp_val<0 || temp_val>3)
+				if (temp_val<0 || temp_val>9)
 					{
 						fatal_error(INVALID_PARAM_CANNUM);
 					}
