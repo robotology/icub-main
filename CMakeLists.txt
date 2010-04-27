@@ -11,17 +11,17 @@ if(COMMAND cmake_policy)
     cmake_policy(SET CMP0003 NEW)
 endif(COMMAND cmake_policy)
 
-IF(win32)
+if(win32)
 #disable annoying warnings about use of deprecated c functions
-ADD_DEFINITIONS(-D_CRT_SECURE_NO_DEPRECATE)
-SET(CMAKE_EXE_LINKER_FLAGS "${CMAKE_EXE_LINKER_FLAGS} /NODEFAULTLIB:libcmt.lib;libcmtd.lib")
-ENDIF(win32)
+add_definitions(-D_CRT_SECURE_NO_DEPRECATE)
+set(CMAKE_EXE_LINKER_FLAGS "${CMAKE_EXE_LINKER_FLAGS} /NODEFAULTLIB:libcmt.lib;libcmtd.lib")
+endif(win32)
 
-PROJECT(iCub)
+project(iCub)
 
 # Pick up our scripts - they are all in the conf subdirectory
-SET(ICUB_MODULE_PATH ${PROJECT_SOURCE_DIR}/conf)
-SET(CMAKE_MODULE_PATH ${ICUB_MODULE_PATH})
+set(ICUB_MODULE_PATH ${PROJECT_SOURCE_DIR}/conf)
+set(CMAKE_MODULE_PATH ${ICUB_MODULE_PATH})
 
 # Set up some large-scale compile options - do you want devices? guis?
 # INCLUDE(${PROJECT_SOURCE_DIR}/ICUBOptions.cmake)
@@ -34,20 +34,19 @@ include(${PROJECT_SOURCE_DIR}/conf/iCubFindDependencies.cmake)
 
 
 ### this makes everything go in $ICUB_DIR/lib and $ICUB_DIR/bin
-SET(LIBRARY_OUTPUT_PATH ${CMAKE_BINARY_DIR}/lib)
-SET(EXECUTABLE_OUTPUT_PATH ${CMAKE_BINARY_DIR}/bin)
-MESSAGE(STATUS "Libraries go to ${LIBRARY_OUTPUT_PATH}")
-MESSAGE(STATUS "Executables go to ${EXECUTABLE_OUTPUT_PATH}")
+set(LIBRARY_OUTPUT_PATH ${CMAKE_BINARY_DIR}/lib)
+set(EXECUTABLE_OUTPUT_PATH ${CMAKE_BINARY_DIR}/bin)
+message(STATUS "Libraries go to ${LIBRARY_OUTPUT_PATH}")
+message(STATUS "Executables go to ${EXECUTABLE_OUTPUT_PATH}")
 # this doesn't happen automatically for makefiles
-MAKE_DIRECTORY(${LIBRARY_OUTPUT_PATH})
-MAKE_DIRECTORY(${EXECUTABLE_OUTPUT_PATH})
-MARK_AS_ADVANCED(LIBRARY_OUTPUT_PATH EXECUTABLE_OUTPUT_PATH)
-MARK_AS_ADVANCED(CMAKE_BACKWARDS_COMPATIBILITY)
+make_directory(${LIBRARY_OUTPUT_PATH})
+make_directory(${EXECUTABLE_OUTPUT_PATH})
+mark_as_advanced(LIBRARY_OUTPUT_PATH EXECUTABLE_OUTPUT_PATH)
+mark_as_advanced(CMAKE_BACKWARDS_COMPATIBILITY)
 ##########################################
 
-set(ICUB_INCLUDE_DIRS "")
-set(ICUB_LIBRARIES "")
-set(ICUB_TARGETS "" CACHE STRING "list of all targets" FORCE) #cleanup directory
+set_property(GLOBAL PROPERTY ICUB_INCLUDE_DIRS)
+set_property(GLOBAL PROPERTY ICUB_TARGETS)
 
 # clean up icub-export-build.cmake and icub-export-build-includes.cmake(required because targets append to it)
 file(WRITE ${CMAKE_BINARY_DIR}/icub-export-build.cmake "")
