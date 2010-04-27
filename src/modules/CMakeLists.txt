@@ -3,13 +3,15 @@ PROJECT(iCubModules)
 # Prepare a device library called "icubmod".
 # A test executable called "icubmoddev" will also be produced.
 
-include(${YARP_DIR}/conf/YarpDevice.cmake)
+include(${YARP_DIR}/conf/YarpPlugin.cmake)
 
-BEGIN_DEVICE_LIBRARY(icubmod)
+BEGIN_PLUGIN_LIBRARY(icubmod)
 
   add_subdirectory(staticgrabber)
 
-END_DEVICE_LIBRARY(icubmod)
+END_PLUGIN_LIBRARY(icubmod)
+
+YARP_PREPARE_PLUGINS()
 
 IF(MSVC)
     SET_TARGET_PROPERTIES(icubmoddev PROPERTIES COMPILE_FLAGS /wd4996)
