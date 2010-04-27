@@ -31,27 +31,27 @@ Cfw2Can::~Cfw2Can()
 
 bool Cfw2Can::canSetBaudRate(unsigned int rate)
 {
-    printf("CfwCan::canSetBaudRate not yet implemented\n");
+    //    printf("CfwCan::canSetBaudRate not yet implemented\n");
     return true;
 }
 
 bool Cfw2Can::canGetBaudRate(unsigned int *rate)
 {
-    printf("Cfw2Can::canSetBaudRate not yet implemented\n");
+    //    printf("Cfw2Can::canSetBaudRate not yet implemented\n");
     *rate=0;
     return true;
 }
 
 bool Cfw2Can::canIdAdd(unsigned int id)
 {
-    printf("Cfw2Can::canIdAdd not implemented yet\n");
+    //printf("Cfw2Can::canIdAdd not implemented yet\n");
 
     return true;
 }
 
 bool Cfw2Can::canIdDelete(unsigned int id)
 {
-    printf("Cfw2Can::canIdDelete not implemented yet\n");
+    //    printf("Cfw2Can::canIdDelete not implemented yet\n");
     return true;
 }
 
