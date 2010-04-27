@@ -316,7 +316,7 @@ public:
 
         if (rf.check("config"))
         {    
-            configFile=rf.findFile(rf.find("config").asString());
+            configFile=rf.findFile(rf.find("config").asString().c_str());
 
             if (configFile=="")
                 return false;
