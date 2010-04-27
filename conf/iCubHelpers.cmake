@@ -22,10 +22,13 @@ macro(icub_export_library name public_inc_dirs)
 
 set(ICUB_EXPORTBUILD_FILE icub-export-build.cmake)
 
-set(${name}_INCLUDE_DIRS "${PROJECT_SOURCE_DIR}/include" CACHE STRING "include directories")
-set(${name}_LIBRARIES ${name} CACHE STRING "library")
+#set(${name}_INCLUDE_DIRS "${PROJECT_SOURCE_DIR}/include" CACHE STRING "include directories")
+#set(${name}_LIBRARIES ${name} CACHE STRING "library")
 
-set(ICUB_TARGETS ${ICUB_TARGETS} "${name}" CACHE STRING "" FORCE)
+set_property(GLOBAL PROPERTY ${name}_INCLUDE_DIRS  ${PROJECT_SOURCE_DIR}/include)
+set_property(GLOBAL APPEND PROPERTY ICUB_TARGETS ${name})
+
+#set(ICUB_TARGETS ${ICUB_TARGETS} "${name}" CACHE STRING "" FORCE)
 
 install(TARGETS ${name} DESTINATION ${CMAKE_INSTALL_PREFIX}/lib EXPORT icub-targets)
 install(DIRECTORY "${PROJECT_SOURCE_DIR}/include/${public_inc_dirs}" DESTINATION include/iCub

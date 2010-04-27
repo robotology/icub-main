@@ -15,7 +15,7 @@
 # Files: 
 # EXPORT_INCLUDE_FILE: this file contains a list of all the targets in the 
 # build, and a corresponding include directories. This is generated from 
-# information in cache variables (mainly ICUB_TARGETS); this is populated
+# information in property (mainly ICUB_TARGETS); this is populated
 # by each target by calling for example icub_export_library, see iCubHelpers.cmake).
 # 
 # EXPORT_CONFIG_FILE: in build directory, store libraries and dependenecies
@@ -26,6 +26,8 @@
 #
 
 ###################################
+get_property(ICUB_TARGETS GLOBAL PROPERTY ICUB_TARGETS)
+
 message(STATUS "Now exporting targets: ${ICUB_TARGETS}")
 set(EXPORT_INCLUDE_FILE icub-export-build-includes.cmake)
 set(EXPORT_CONFIG_FILE icub-export-build.cmake)
@@ -34,8 +36,8 @@ file(APPEND ${CMAKE_BINARY_DIR}/${EXPORT_INCLUDE_FILE} "###################\n")
 file(APPEND ${CMAKE_BINARY_DIR}/${EXPORT_INCLUDE_FILE} "# List of include directories for exported targets\n\n")
 set(include_dirs "")
 foreach (t ${ICUB_TARGETS})
-  set(target ${t})
-  set(target_INCLUDE_DIRS ${${t}_INCLUDE_DIRS})
+#  set(target ${t})
+  get_property(target_INCLUDE_DIRS GLOBAL PROPERTY ${t}_INCLUDE_DIRS)
   file(APPEND ${CMAKE_BINARY_DIR}/${EXPORT_INCLUDE_FILE} "set(${t}_INCLUDE_DIRS ${target_INCLUDE_DIRS} CACHE STRING \"include dir for target ${t}\")\n")
 
   set(include_dirs ${include_dirs} ${target_INCLUDE_DIRS})
