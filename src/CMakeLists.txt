@@ -5,3 +5,5 @@
 add_subdirectory(examples)
 add_subdirectory(testGyro)
 add_subdirectory(testArm)
+add_subdirectory(modules)
+
