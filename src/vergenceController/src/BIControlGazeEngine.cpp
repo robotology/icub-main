@@ -28,7 +28,7 @@ bool openPortImage(){
 	//int res = 0;
 	// Registering Port(s)
     //reduce verbosity --paulfitz
-	printf("Registering port %s on network %s...\n", "/rea/BIControlGazeEngine/inputImage","default");
+	//printf("Registering port %s on network %s...\n", "/rea/BIControlGazeEngine/inputImage","default");
 	/*ret = _imgRecv.Connect("/rea/BIControlGazeEngine/inputImage","default");
 	if (ret == true)
         {
