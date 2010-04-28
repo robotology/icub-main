@@ -60,7 +60,7 @@ namespace iKin
 */
 class iKinLink
 {
-private:
+protected:
     double       A;
     double       D;
     double       Alpha;
@@ -84,7 +84,7 @@ private:
     // Default constructor: not implemented.
     iKinLink();
 
-    void _allocate_link(const iKinLink &l);    
+    void clone(const iKinLink &l);    
     bool isCumulative()     { return cumulative;          }
     void block()            { blocked=true;               }
     void block(double _Ang) { setAng(_Ang); blocked=true; }
@@ -299,9 +299,9 @@ protected:
     std::deque<yarp::sig::Matrix>  hess_H;
     std::deque<yarp::sig::Matrix> *hess_DH;
 
-    void _allocate_chain(const iKinChain &c);
-    void buildChain();
-	void _dispose_chain();
+    void clone(const iKinChain &c);
+    void build();
+	void dispose();
 
     yarp::sig::Vector RotAng(const yarp::sig::Matrix &R);
     yarp::sig::Vector dRotAng(const yarp::sig::Matrix &R, const yarp::sig::Matrix &dR);
@@ -699,9 +699,9 @@ protected:
     std::string           type;
     bool                  configured;
 
-    virtual void _allocate_limb(const std::string &_type);
-    virtual void _copy_limb(const iKinLimb &limb);
-    virtual void _dispose_limb();
+    virtual void allocate(const std::string &_type);
+    virtual void clone(const iKinLimb &limb);
+    virtual void dispose();
 
 public:
     /**
@@ -854,7 +854,7 @@ public:
 class iCubArm : public iKinLimb
 {
 protected:
-    virtual void _allocate_limb(const std::string &_type);
+    virtual void allocate(const std::string &_type);
 
 public:
     /**
@@ -885,7 +885,7 @@ public:
 class iCubLeg : public iKinLimb
 {
 protected:
-    virtual void _allocate_limb(const std::string &_type);
+    virtual void allocate(const std::string &_type);
 
 public:
     /**
@@ -916,7 +916,7 @@ public:
 class iCubEye : public iKinLimb
 {
 protected:
-    virtual void _allocate_limb(const std::string &_type);
+    virtual void allocate(const std::string &_type);
 
 public:
     /**
@@ -948,7 +948,7 @@ public:
 class iCubEyeNeckRef : public iCubEye
 {
 protected:
-    virtual void _allocate_limb(const std::string &_type);
+    virtual void allocate(const std::string &_type);
 
 public:
     /**
@@ -979,7 +979,7 @@ public:
 class iCubInertialSensor : public iKinLimb
 {
 protected:
-    virtual void _allocate_limb(const std::string &_type);
+    virtual void allocate(const std::string &_type);
 
 public:
     /**

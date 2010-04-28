@@ -23,8 +23,8 @@ protected:
     virtual void _allocate_limb(const string &_type);
 
 public:
-    iCubHeadCenter()                           { _allocate_limb("right"); }
-    iCubHeadCenter(const iCubHeadCenter &head) { _copy_limb(head);        }
+    iCubHeadCenter()                           { allocate("right"); }
+    iCubHeadCenter(const iCubHeadCenter &head) { clone(head);       }
 };
 
 

@@ -49,12 +49,15 @@ iKinLink::iKinLink(double _A, double _D, double _Alpha, double _Offset,
 
 
 /************************************************************************/
-void iKinLink::_allocate_link(const iKinLink &l)
+void iKinLink::clone(const iKinLink &l)
 {
     A     =l.A;
     D     =l.D;
     Alpha =l.Alpha;
     Offset=l.Offset;
+
+    c_alpha=l.c_alpha;
+    s_alpha=l.s_alpha;
 
     Ang=l.Ang;
     Min=l.Min;
@@ -74,14 +77,14 @@ void iKinLink::_allocate_link(const iKinLink &l)
 /************************************************************************/
 iKinLink::iKinLink(const iKinLink &l)
 {
-    _allocate_link(l);
+    clone(l);
 }
 
 
 /************************************************************************/
 iKinLink &iKinLink::operator=(const iKinLink &l)
 {
-    _allocate_link(l);
+    clone(l);
 
     return *this;
 }
@@ -249,7 +252,7 @@ iKinChain::iKinChain(const Matrix &_H0)
 
 
 /************************************************************************/
-void iKinChain::_allocate_chain(const iKinChain &c)
+void iKinChain::clone(const iKinChain &c)
 {
     N      =c.N;
     DOF    =c.DOF;
@@ -269,14 +272,14 @@ void iKinChain::_allocate_chain(const iKinChain &c)
 /************************************************************************/
 iKinChain::iKinChain(const iKinChain &c)
 {
-    _allocate_chain(c);
+    clone(c);
 }
 
 
 /************************************************************************/
 iKinChain &iKinChain::operator=(const iKinChain &c)
 {
-    _allocate_chain(c);
+    clone(c);
 
     return *this;
 }
@@ -290,7 +293,7 @@ bool iKinChain::addLink(const unsigned int i, iKinLink &l)
         allList.insert(allList.begin()+i,&l);
         N=allList.size();
 
-        buildChain();
+        build();
 
         return true;
     }
@@ -315,7 +318,7 @@ bool iKinChain::rmLink(const unsigned int i)
         allList.erase(allList.begin()+i);
         N=allList.size();
 
-        buildChain();
+        build();
 
         return true;
     }
@@ -338,7 +341,7 @@ void iKinChain::pushLink(iKinLink &l)
     allList.push_back(&l);
     N=allList.size();
 
-    buildChain();
+    build();
 }
 
 
@@ -369,7 +372,7 @@ void iKinChain::popLink()
     allList.pop_back();
     N=allList.size();
 
-    buildChain();
+    build();
 }
 
 
@@ -388,7 +391,7 @@ bool iKinChain::blockLink(const unsigned int i, double Ang)
     if (i<N)
     {
         allList[i]->block(Ang);
-        buildChain();
+        build();
 
         return true;
     }
@@ -466,7 +469,7 @@ bool iKinChain::releaseLink(const unsigned int i)
     if (i<N)
     {
         allList[i]->release();
-        buildChain();
+        build();
 
         return true;
     }
@@ -500,7 +503,7 @@ void iKinChain::setAllLinkVerbosity(unsigned int _verbose)
 
 
 /************************************************************************/
-void iKinChain::buildChain()
+void iKinChain::build()
 {
     quickList.clear();
     hash.clear();
@@ -1195,12 +1198,12 @@ Vector iKinChain::fastHessian_ij(const unsigned int i, const unsigned int j)
 /************************************************************************/
 iKinChain::~iKinChain()
 {
-	_dispose_chain();
+	dispose();
 }
 
 
 /************************************************************************/
-void iKinChain::_dispose_chain()
+void iKinChain::dispose()
 {
     allList.clear();
     quickList.clear();
@@ -1216,21 +1219,21 @@ void iKinChain::_dispose_chain()
 /************************************************************************/
 iKinLimb::iKinLimb()
 {
-    _allocate_limb("right");
+    allocate("right");
 }
 
 
 /************************************************************************/
 iKinLimb::iKinLimb(const string &_type)
 {
-    _allocate_limb(_type);
+    allocate(_type);
 }
 
 
 /************************************************************************/
 iKinLimb::iKinLimb(const iKinLimb &limb)
 {
-    _copy_limb(limb);
+    clone(limb);
 }
 
 
@@ -1246,7 +1249,7 @@ bool iKinLimb::fromLinksProperties(const Property &option)
 {
     Property &opt=const_cast<Property&>(option);
 
-    _dispose_limb();    
+    dispose();    
 
     type=opt.check("type",Value("right")).asString().c_str();
     if (type!="right" && type!="left")
@@ -1299,7 +1302,7 @@ bool iKinLimb::fromLinksProperties(const Property &option)
 
             type="right";
             H0.eye();
-            _dispose_limb();
+            dispose();
 
             return false;
         }
@@ -1326,8 +1329,8 @@ bool iKinLimb::fromLinksProperties(const Property &option)
 /************************************************************************/
 iKinLimb &iKinLimb::operator=(const iKinLimb &limb)
 {
-    _dispose_limb();	
-    _copy_limb(limb);
+    dispose();	
+    clone(limb);
 
     return *this;
 }
@@ -1336,12 +1339,12 @@ iKinLimb &iKinLimb::operator=(const iKinLimb &limb)
 /************************************************************************/
 iKinLimb::~iKinLimb()
 {
-    _dispose_limb();
+    dispose();
 }
 
 
 /************************************************************************/
-void iKinLimb::_allocate_limb(const string &_type)
+void iKinLimb::allocate(const string &_type)
 {
     type=_type;
 
@@ -1353,7 +1356,7 @@ void iKinLimb::_allocate_limb(const string &_type)
 
 
 /************************************************************************/
-void iKinLimb::_copy_limb(const iKinLimb &limb)
+void iKinLimb::clone(const iKinLimb &limb)
 {
     type=limb.type;
     H0=limb.H0;
@@ -1374,7 +1377,7 @@ void iKinLimb::_copy_limb(const iKinLimb &limb)
 
 
 /************************************************************************/
-void iKinLimb::_dispose_limb()
+void iKinLimb::dispose()
 {
     if (unsigned int n=linkList.size())
     {
@@ -1385,7 +1388,7 @@ void iKinLimb::_dispose_limb()
         linkList.clear();
     }
 
-    _dispose_chain();
+    iKinChain::dispose();
 
     configured=false;
 }
@@ -1394,28 +1397,28 @@ void iKinLimb::_dispose_limb()
 /************************************************************************/
 iCubArm::iCubArm()
 {
-    _allocate_limb("right");
+    allocate("right");
 }
 
 
 /************************************************************************/
 iCubArm::iCubArm(const string &_type)
 {
-    _allocate_limb(_type);
+    allocate(_type);
 }
 
 
 /************************************************************************/
 iCubArm::iCubArm(const iCubArm &arm)
 {
-    _copy_limb(arm);
+    clone(arm);
 }
 
 
 /************************************************************************/
-void iCubArm::_allocate_limb(const string &_type)
+void iCubArm::allocate(const string &_type)
 {
-    iKinLimb::_allocate_limb(_type);
+    iKinLimb::allocate(_type);
 
     H0.zero();
     H0(0,1)=-1;
@@ -1464,28 +1467,28 @@ void iCubArm::_allocate_limb(const string &_type)
 /************************************************************************/
 iCubLeg::iCubLeg()
 {
-    _allocate_limb("right");
+    allocate("right");
 }
 
 
 /************************************************************************/
 iCubLeg::iCubLeg(const string &_type)
 {
-    _allocate_limb(_type);
+    allocate(_type);
 }
 
 
 /************************************************************************/
 iCubLeg::iCubLeg(const iCubLeg &leg)
 {
-    _copy_limb(leg);
+    clone(leg);
 }
 
 
 /************************************************************************/
-void iCubLeg::_allocate_limb(const string &_type)
+void iCubLeg::allocate(const string &_type)
 {
-    iKinLimb::_allocate_limb(_type);
+    iKinLimb::allocate(_type);
 
     H0.zero();
     H0(0,0)=1;
@@ -1527,28 +1530,28 @@ void iCubLeg::_allocate_limb(const string &_type)
 /************************************************************************/
 iCubEye::iCubEye()
 {
-    _allocate_limb("right");
+    allocate("right");
 }
 
 
 /************************************************************************/
 iCubEye::iCubEye(const string &_type)
 {
-    _allocate_limb(_type);
+    allocate(_type);
 }
 
 
 /************************************************************************/
 iCubEye::iCubEye(const iCubEye &eye)
 {
-    _copy_limb(eye);
+    clone(eye);
 }
 
 
 /************************************************************************/
-void iCubEye::_allocate_limb(const string &_type)
+void iCubEye::allocate(const string &_type)
 {
-    iKinLimb::_allocate_limb(_type);
+    iKinLimb::allocate(_type);
 
     H0.zero();
     H0(0,1)=-1;
@@ -1593,26 +1596,26 @@ void iCubEye::_allocate_limb(const string &_type)
 /************************************************************************/
 iCubEyeNeckRef::iCubEyeNeckRef()
 {
-    _allocate_limb("right");
+    allocate("right");
 }
 
 
 /************************************************************************/
 iCubEyeNeckRef::iCubEyeNeckRef(const string &_type)
 {
-    _allocate_limb(_type);
+    allocate(_type);
 }
 
 
 /************************************************************************/
 iCubEyeNeckRef::iCubEyeNeckRef(const iCubEyeNeckRef &eye)
 {
-    _copy_limb(eye);
+    clone(eye);
 }
 
 
 /************************************************************************/
-void iCubEyeNeckRef::_allocate_limb(const string &_type)
+void iCubEyeNeckRef::allocate(const string &_type)
 {
     rmLink(0);
     rmLink(0);
@@ -1629,21 +1632,21 @@ void iCubEyeNeckRef::_allocate_limb(const string &_type)
 /************************************************************************/
 iCubInertialSensor::iCubInertialSensor()
 {
-    _allocate_limb("right");
+    allocate("right");
 }
 
 
 /************************************************************************/
 iCubInertialSensor::iCubInertialSensor(const iCubInertialSensor &sensor)
 {
-    _copy_limb(sensor);
+    clone(sensor);
 }
 
 
 /************************************************************************/
-void iCubInertialSensor::_allocate_limb(const string &_type)
+void iCubInertialSensor::allocate(const string &_type)
 {
-    iKinLimb::_allocate_limb(_type);
+    iKinLimb::allocate(_type);
 
     H0.zero();
     H0(0,1)=-1;

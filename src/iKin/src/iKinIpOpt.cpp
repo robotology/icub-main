@@ -33,7 +33,7 @@ iKinLinIneqConstr::iKinLinIneqConstr(Ipopt::Number _lowerBoundInf, Ipopt::Number
 
 
 /************************************************************************/
-void iKinLinIneqConstr::_allocate(const iKinLinIneqConstr *obj)
+void iKinLinIneqConstr::clone(const iKinLinIneqConstr *obj)
 {
     C =obj->C;
     uB=obj->uB;
@@ -49,14 +49,14 @@ void iKinLinIneqConstr::_allocate(const iKinLinIneqConstr *obj)
 /************************************************************************/
 iKinLinIneqConstr::iKinLinIneqConstr(const iKinLinIneqConstr &obj)
 {
-    _allocate(&obj);
+    clone(&obj);
 }
 
 
 /************************************************************************/
 iKinLinIneqConstr &iKinLinIneqConstr::operator=(const iKinLinIneqConstr &obj)
 {
-    _allocate(&obj);
+    clone(&obj);
 
     return *this;
 }

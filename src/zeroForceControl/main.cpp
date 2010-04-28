@@ -71,7 +71,7 @@ using namespace iKin;
 class iCubArm4DOF : public iKinLimb
 {
 protected:
-    virtual void _allocate_limb(const std::string &_type);
+    virtual void allocate(const std::string &_type);
 
 public:
     /**
@@ -102,7 +102,7 @@ public:
 class iCubLeg4DOF : public iKinLimb
 {
 protected:
-    virtual void _allocate_limb(const std::string &_type);
+    virtual void allocate(const std::string &_type);
 
 public:
     /**
@@ -1226,28 +1226,28 @@ int main(int argc, char * argv[])
 /************************************************************************/
 iCubArm4DOF::iCubArm4DOF()
 {
-    _allocate_limb("right");
+    allocate("right");
 }
 
 
 /************************************************************************/
 iCubArm4DOF::iCubArm4DOF(const string &_type)
 {
-    _allocate_limb(_type);
+    allocate(_type);
 }
 
 
 /************************************************************************/
 iCubArm4DOF::iCubArm4DOF(const iCubArm4DOF &arm)
 {
-    _copy_limb(arm);
+    clone(arm);
 }
 
 
 /************************************************************************/
-void iCubArm4DOF::_allocate_limb(const string &_type)
+void iCubArm4DOF::allocate(const string &_type)
 {
-    iKinLimb::_allocate_limb(_type);
+    iKinLimb::allocate(_type);
 
     H0.zero();
     H0(0,1)=-1;
@@ -1302,28 +1302,28 @@ void iCubArm4DOF::_allocate_limb(const string &_type)
 /************************************************************************/
 iCubLeg4DOF::iCubLeg4DOF()
 {
-    _allocate_limb("right");
+    allocate("right");
 }
 
 
 /************************************************************************/
 iCubLeg4DOF::iCubLeg4DOF(const string &_type)
 {
-    _allocate_limb(_type);
+    allocate(_type);
 }
 
 
 /************************************************************************/
 iCubLeg4DOF::iCubLeg4DOF(const iCubLeg4DOF &leg)
 {
-    _copy_limb(leg);
+    clone(leg);
 }
 
 
 /************************************************************************/
-void iCubLeg4DOF::_allocate_limb(const string &_type)
+void iCubLeg4DOF::allocate(const string &_type)
 {
-    iKinLimb::_allocate_limb(_type);
+    iKinLimb::allocate(_type);
 
     H0.zero();
     H0(0,0)=1;

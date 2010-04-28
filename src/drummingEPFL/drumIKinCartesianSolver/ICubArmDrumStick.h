@@ -15,7 +15,7 @@ using namespace std;
 class ICubArmDrumStick : public iKinLimb
 {
 protected:
-	virtual void _allocate_limb(const string &_type, double drumStickLength);
+	virtual void allocate(const string &_type, double drumStickLength);
 public:
     // redefine constructors just in case
     ICubArmDrumStick();

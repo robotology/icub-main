@@ -1,8 +1,8 @@
 #include "ICubArmDrumStick.h"
 
-void ICubArmDrumStick::_allocate_limb(const string &_type, double drumStickLength)
+void ICubArmDrumStick::allocate(const string &_type, double drumStickLength)
 {
-    iKinLimb::_allocate_limb(_type);
+    iKinLimb::allocate(_type);
 
     H0.zero();
     H0(0,1)=-1;
@@ -20,7 +20,7 @@ void ICubArmDrumStick::_allocate_limb(const string &_type, double drumStickLengt
         linkList[1] =new iKinLink(       0.0,      0.0,  M_PI/2.0,         -M_PI/2.0, -39.0*M_PI/180.0,  39.0*M_PI/180.0);
         linkList[2] =new iKinLink(-0.0233647,  -0.1433,  M_PI/2.0, -105.0*M_PI/180.0, -59.0*M_PI/180.0,  59.0*M_PI/180.0);
         linkList[3] =new iKinLink(       0.0, -0.10774,  M_PI/2.0,         -M_PI/2.0, -95.5*M_PI/180.0,   5.0*M_PI/180.0);
-        linkList[4] =new iKinLink(       0.0,      0.0, -M_PI/2.0,         -M_PI/2.0,              0.0, 45*M_PI/180.0);
+        linkList[4] =new iKinLink(       0.0,      0.0, -M_PI/2.0,         -M_PI/2.0,              0.0,  45*M_PI/180.0);
         linkList[5] =new iKinLink(       0.0, -0.15228, -M_PI/2.0, -105.0*M_PI/180.0, -37.0*M_PI/180.0,  90.0*M_PI/180.0);
         linkList[6] =new iKinLink(     0.015,      0.0,  M_PI/2.0,               0.0,   5.5*M_PI/180.0, 106.0*M_PI/180.0);
         linkList[7] =new iKinLink(       0.0,  -0.1373 - drumStickLength,  M_PI/2.0,         -M_PI/2.0, -90.0*M_PI/180.0,  90.0*M_PI/180.0);
@@ -55,15 +55,15 @@ void ICubArmDrumStick::_allocate_limb(const string &_type, double drumStickLengt
 
 ICubArmDrumStick::ICubArmDrumStick()
 {
-    _allocate_limb("left", 0);
+    allocate("left", 0);
 }
 
 ICubArmDrumStick::ICubArmDrumStick(const string &_type, double drumStickLength)
 {
-    _allocate_limb(_type, drumStickLength);
+    allocate(_type, drumStickLength);
 }
 
 ICubArmDrumStick::ICubArmDrumStick(const ICubArmDrumStick &armDrumStick)
 {
-    _copy_limb(armDrumStick);
+    clone(armDrumStick);
 }

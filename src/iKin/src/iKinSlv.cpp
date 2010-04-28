@@ -42,9 +42,9 @@ protected:
 
     iKinChain *chain;
 
-    virtual void _allocate(const iKinLinIneqConstr *obj)
+    virtual void clone(const iKinLinIneqConstr *obj)
     {
-        iKinLinIneqConstr::_allocate(obj);
+        iKinLinIneqConstr::clone(obj);
 
         const iCubShoulderConstr *ptr=static_cast<const iCubShoulderConstr*>(obj);
 

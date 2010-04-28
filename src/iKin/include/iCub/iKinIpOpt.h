@@ -67,7 +67,7 @@ protected:
 
     bool active;
 
-    virtual void _allocate(const iKinLinIneqConstr *obj);
+    virtual void clone(const iKinLinIneqConstr *obj);
 
 public:
     /**
