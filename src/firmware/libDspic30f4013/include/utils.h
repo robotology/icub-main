@@ -10,6 +10,9 @@ void __delay32(unsigned long);
 
 extern unsigned char HESDATA_RESOLUTION; 
 
+//used by strain to convert to 1.15 fixed point
+#define HEX_VALC 0x8000
+ 
 typedef struct CANin12bit
 {
   union
