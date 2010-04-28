@@ -69,6 +69,7 @@ extern char BOARD_TYPE;
 #define CAN_CMD_GET_FULL_SCALES   0x18 //get current tare
 #define CAN_CMD_SET_SERIAL_NO     0x19 //set/reset current tare
 #define CAN_CMD_GET_SERIAL_NO     0x1A //get current tare
+#define CAN_CMD_GET_EEPROM_STATUS 0x1B //get eeprom status (saved/not saved)
 //////////////////////////////////////////////////////////////
 // BROADCAST MESSAGES, CLASS 0x03
 // Transmitted Torque values 3*16 bit 
