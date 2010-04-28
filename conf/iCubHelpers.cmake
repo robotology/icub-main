@@ -25,7 +25,7 @@ set(ICUB_EXPORTBUILD_FILE icub-export-build.cmake)
 #set(${name}_INCLUDE_DIRS "${PROJECT_SOURCE_DIR}/include" CACHE STRING "include directories")
 #set(${name}_LIBRARIES ${name} CACHE STRING "library")
 
-set_property(GLOBAL PROPERTY ${name}_INCLUDE_DIRS  ${PROJECT_SOURCE_DIR}/include)
+set_property(TARGET ${name} PROPERTY INCLUDE_DIRS  ${PROJECT_SOURCE_DIR}/include)
 set_property(GLOBAL APPEND PROPERTY ICUB_TARGETS ${name})
 
 #set(ICUB_TARGETS ${ICUB_TARGETS} "${name}" CACHE STRING "" FORCE)

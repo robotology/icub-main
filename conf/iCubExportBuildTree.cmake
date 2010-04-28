@@ -36,14 +36,13 @@ file(APPEND ${CMAKE_BINARY_DIR}/${EXPORT_INCLUDE_FILE} "###################\n")
 file(APPEND ${CMAKE_BINARY_DIR}/${EXPORT_INCLUDE_FILE} "# List of include directories for exported targets\n\n")
 set(include_dirs "")
 foreach (t ${ICUB_TARGETS})
-#  set(target ${t})
-  get_property(target_INCLUDE_DIRS GLOBAL PROPERTY ${t}_INCLUDE_DIRS)
+  get_property(target_INCLUDE_DIRS TARGET ${t} PROPERTY INCLUDE_DIRS)
   file(APPEND ${CMAKE_BINARY_DIR}/${EXPORT_INCLUDE_FILE} "set(${t}_INCLUDE_DIRS ${target_INCLUDE_DIRS} CACHE STRING \"include dir for target ${t}\")\n")
 
   set(include_dirs ${include_dirs} ${target_INCLUDE_DIRS})
 endforeach(t)
 
-file(APPEND ${CMAKE_BINARY_DIR}/${EXPORT_INCLUDE_FILE} "set(ICUB_INCLUDE_DIRS ${include_dirs} CACHE STRING \"list of include directories, all exported targets\")\n")
+file(APPEND ${CMAKE_BINARY_DIR}/${EXPORT_INCLUDE_FILE} "set(ICUB_INCLUDE_DIRS \"${include_dirs}\" CACHE STRING \"list of include directories, all exported targets\")\n")
 
 
 CONFIGURE_FILE(${CMAKE_SOURCE_DIR}/${BUILD_CONFIG_TEMPLATE}
