@@ -23,7 +23,8 @@ SOURCE_GROUP("Header Files" FILES ${folder_header})
 
 # Add our include files into our compiler's search path.
 INCLUDE_DIRECTORIES(${PROJECT_SOURCE_DIR}/include)
-INCLUDE_DIRECTORIES(${sharksWithLasers_INCLUDE_DIRS})
+get_property(SHARKS_INCLUDE_DIRS TARGET sharksWithLasers PROPERTY INCLUDE_DIRS)
+INCLUDE_DIRECTORIES(${SHARKS_INCLUDE_DIRS})
 
 # Include YARP
 INCLUDE_DIRECTORIES(${YARP_INCLUDE_DIRS})
