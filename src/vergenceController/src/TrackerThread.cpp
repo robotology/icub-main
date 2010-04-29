@@ -121,7 +121,7 @@ void TrackerThread::run()
     for(int k=0;k<joints;k++)
         command[k]=0;
 
-	printf("before");
+	//printf("before");
 
     /*if ((vr!=0)||((*cmd)[0]!=0))
         {
@@ -146,7 +146,7 @@ void TrackerThread::run()
 	timeStampLprev=timeStampL;
     timeStampL=Time::now();
 
-    printf("after");
+    //printf("after");
 
     delayR=timeNow-timeStampR;
     delayL=timeNow-timeStampL;
@@ -166,12 +166,12 @@ void TrackerThread::run()
             enableVOR=true;*/
 		           
 	   
-            command[4]=Kpan*(*cmd)(4);
-            command[5]=Kvergence*(*cmd)[5];
-            command[3]=Ktilt*0.5*(*cmd)[3];
+            command[4]=Kpan*(*cmd)(4); //eyes pan,version
+            command[5]=Kvergence*(*cmd)[5]; //eyes vergence
+            command[3]=Ktilt*0.5*(*cmd)[3]; //eyes tilt
             if(!just_eyes){
-                command[0]=Kn_tilt*(*cmd)[0];
-                command[2]=Kn_pan*(*cmd)[2];
+                command[0]=Kn_tilt*(*cmd)[0]; //head tilt
+                command[2]=Kn_pan*(*cmd)[2]; //head pan
             }
 		    //printf("%f %f %f %f %f %f", command[0],command[1],command[2],command[3],command[4],command[5]);
             timeStampTO=timeNow;

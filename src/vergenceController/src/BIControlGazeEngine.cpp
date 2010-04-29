@@ -475,28 +475,36 @@ bool BIControlGazeEngine::respond(const Bottle &command,Bottle &reply){
             case COMMAND_VOCAB_JNT2:{
                 //head pan
                 double angle = command.get(2).asDouble();
-                thread->cmd[2]=angle;
+                if(thread!=0){
+                    thread->cmd[2]=angle;
+                }
                 ok=true;
             }
                 break;
             case COMMAND_VOCAB_JNT3:{
                 //eye tilt
                 double angle = command.get(2).asDouble();
-                thread->cmd[3]=angle;
+                if(thread!=0){
+                    thread->cmd[3]=angle;
+                }
                 ok=true;
             }
                 break;
             case COMMAND_VOCAB_JNT4:{
                 //eyes version
                 double angle = command.get(2).asDouble();
-                thread->cmd[4]=angle;
+                if(thread!=0){
+                    thread->cmd[4]=angle;
+                }
                 ok=true;
             }
                 break;
             case COMMAND_VOCAB_JNT5:{
                 //eye vergence
                 double angle = command.get(2).asDouble();
-                thread->cmd[5]=angle;
+                if(thread!=0){
+                    thread->cmd[5]=angle;
+                }
                 ok=true;
             }
                 break;
