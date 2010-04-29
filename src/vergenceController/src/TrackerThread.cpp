@@ -21,7 +21,7 @@ TrackerThread::TrackerThread(Property &op):RateThread(THREAD_RATE)
         enableVOR=true;
         enableTracking=true;
 
-        cmd->resize(6);
+        cmd=new Vector(6);
         
     }
 
