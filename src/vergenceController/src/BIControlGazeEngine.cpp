@@ -403,6 +403,8 @@ bool BIControlGazeEngine::respond(const Bottle &command,Bottle &reply){
     bool rec = false; // is the command recognized?
 
     mutex.wait();
+
+    Vector v=*thread->cmd;
     
     switch (command.get(0).asVocab()) {
     case COMMAND_VOCAB_HELP:
@@ -457,7 +459,7 @@ bool BIControlGazeEngine::respond(const Bottle &command,Bottle &reply){
                 double angle = command.get(2).asDouble();
                 //head tilt 
                 if(thread!=0){
-                    thread->cmd[0]=angle;
+                    v[0]=angle;
 		            printf("angle set %f",angle);
                 }
                 ok=true;
@@ -467,7 +469,7 @@ bool BIControlGazeEngine::respond(const Bottle &command,Bottle &reply){
                 //head heeling
                 double angle = command.get(2).asDouble();
                 if(thread!=0){
-                    thread->cmd[1]=angle;
+                    v[1]=angle;
                     printf("angle set %f",angle);
                 }
                 ok=true;
@@ -477,7 +479,7 @@ bool BIControlGazeEngine::respond(const Bottle &command,Bottle &reply){
                 //head pan
                 double angle = command.get(2).asDouble();
                 if(thread!=0){
-                    thread->cmd[2]=angle;
+                    v[2]=angle;
                     printf("angle set %f",angle);
                 }
                 ok=true;
@@ -487,7 +489,7 @@ bool BIControlGazeEngine::respond(const Bottle &command,Bottle &reply){
                 //eye tilt
                 double angle = command.get(2).asDouble();
                 if(thread!=0){
-                    thread->cmd[3]=angle;
+                    v[3]=angle;
                     printf("angle set %f",angle);
                 }
                 ok=true;
@@ -497,7 +499,7 @@ bool BIControlGazeEngine::respond(const Bottle &command,Bottle &reply){
                 //eyes version
                 double angle = command.get(2).asDouble();
                 if(thread!=0){
-                    thread->cmd[4]=angle;
+                    v[4]=angle;
                     printf("angle set %f",angle);
                 }
                 ok=true;
@@ -507,7 +509,7 @@ bool BIControlGazeEngine::respond(const Bottle &command,Bottle &reply){
                 //eye vergence
                 double angle = command.get(2).asDouble();
                 if(thread!=0){
-                    thread->cmd[5]=angle;
+                    v[5]=angle;
                     printf("angle set %f",angle);
                 }
                 ok=true;
