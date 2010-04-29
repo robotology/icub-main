@@ -425,7 +425,7 @@ void saliencyBlobFinderModule::outPorts(){
                     //printf("same position \n");
                 }
                 else{
-                    //printf(".");
+                    //printf("."); 
                     bot.addVocab( Vocab::encode("sac") ); 
                     bot.addVocab( Vocab::encode("img") ); 
                     double centroidDisplacementY=1.0;
