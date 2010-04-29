@@ -19,9 +19,12 @@ endif(win32)
 
 project(iCub)
 
+# Pick up yarp's scripts -- ICUB_DIR/conf directory
+set(CMAKE_MODULE_PATH ${CMAKE_MODULE_PATH} ${YARP_DIR}/conf)
+
 # Pick up our scripts - they are all in the conf subdirectory
 set(ICUB_MODULE_PATH ${PROJECT_SOURCE_DIR}/conf)
-set(CMAKE_MODULE_PATH ${ICUB_MODULE_PATH})
+set(CMAKE_MODULE_PATH ${CMAKE_MODULE_PATH} ${ICUB_MODULE_PATH})
 
 # Set up some large-scale compile options - do you want devices? guis?
 # INCLUDE(${PROJECT_SOURCE_DIR}/ICUBOptions.cmake)
