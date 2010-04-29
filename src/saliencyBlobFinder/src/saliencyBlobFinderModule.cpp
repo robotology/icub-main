@@ -344,11 +344,11 @@ void saliencyBlobFinderModule::outPorts(){
         else{
             time (&end);
             double dif = difftime (end,start);
-            if(dif>blobFinder->constantTimeGazeControl+2){
+            if(dif>blobFinder->constantTimeGazeControl+0.5){
                 //restart the time intervall
                  time(&start);
             }
-            else if((dif>blobFinder->constantTimeGazeControl)&&(dif<blobFinder->constantTimeGazeControl+1)){
+            else if((dif>blobFinder->constantTimeGazeControl)&&(dif<blobFinder->constantTimeGazeControl+0.5)){
                 //output the command
                 //finds the entries with a greater number of occurencies 
                 std::map<const char*,int>::iterator iterMap;
@@ -419,7 +419,7 @@ void saliencyBlobFinderModule::outPorts(){
         
         time (&end);
         double dif = difftime (end,start);
-        if((dif>blobFinder->constantTimeCentroid)&&(dif<=blobFinder->constantTimeCentroid+1.0)){
+        if((dif>blobFinder->constantTimeCentroid)&&(dif<=blobFinder->constantTimeCentroid+0.5)){
             if((blobFinder->salience->target_x<previous_target_x+5)&&(blobFinder->salience->target_x>previous_target_x-5)){
                 if((blobFinder->salience->target_y<previous_target_y+5)&&(blobFinder->salience->target_y>previous_target_y-5)){
                     //printf("same position \n");
@@ -469,7 +469,7 @@ void saliencyBlobFinderModule::outPorts(){
             centroidPort.write();*/
             
         }
-        else if(dif>1+2){
+        else if(dif>blobFinder->constantTimeCentroid+0.5){
             time (&start);
         }
         else{
