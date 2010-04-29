@@ -131,9 +131,7 @@ This file can be edited at src/myModule/main.cpp.
 #include <stdio.h>
 #include <fcntl.h>
 
-#ifdef USE_ICUB_MOD
-#include "drivers.h"
-#endif
+#include <yarp/dev/Drivers.h>
 
 GtkWidget *window     = NULL;
 
@@ -173,6 +171,7 @@ cDownloader downloader;
 
 //can_parameters_type params;
 int networkId=0;
+const int maxNetworks=10; //max number of can networks
 std::string networkType;
 bool calibration_enabled=false;
 bool prompt_version=false;
@@ -267,6 +266,9 @@ static GtkTreeModel * refresh_board_list_model (void)
 		case BOARD_TYPE_MAIS:
             strcpy(board_type, "MAIS (DSPIC)");
             break;
+    case BOARD_TYPE_2FOC:
+            strcpy(board_type, "2FOC (DSPIC)");
+			      break;
 		case BOARD_UNKNOWN:
 
         default:
@@ -334,14 +336,14 @@ static GtkTreeModel * create_net_model (void)
     store = gtk_list_store_new (1, G_TYPE_STRING);
 
     // add data to the list store
-    gtk_list_store_append (store, &iter);
-    gtk_list_store_set (store, &iter, 0, "Net 0",-1);
-    gtk_list_store_append (store, &iter);
-    gtk_list_store_set (store, &iter, 0, "Net 1",-1);  
-    gtk_list_store_append (store, &iter);
-    gtk_list_store_set (store, &iter, 0, "Net 2",-1);  
-    gtk_list_store_append (store, &iter);
-    gtk_list_store_set (store, &iter, 0, "Net 3",-1);  
+
+    for (int k=0;k<maxNetworks;k++)
+        {
+            char tmp[80];
+            sprintf(tmp, "Net %d", k);
+            gtk_list_store_append (store, &iter);
+            gtk_list_store_set (store, &iter, 0, tmp,-1);
+        }
 
     return GTK_TREE_MODEL (store);
 }
@@ -361,6 +363,8 @@ static GtkTreeModel * create_netType_model (void)
     gtk_list_store_set (store, &iter, 0, "ecan",-1);
     gtk_list_store_append (store, &iter);
     gtk_list_store_set (store, &iter, 0, "pcan",-1);    
+    gtk_list_store_append (store, &iter);
+    gtk_list_store_set (store, &iter, 0, "cfw2can",-1);    
 
     return GTK_TREE_MODEL (store);
 }
@@ -380,6 +384,7 @@ static void combo_nettype_changed (GtkComboBox *box,	gpointer   user_data)
 	{
 		case 0: networkType = "ecan"; break;
 		case 1: networkType = "pcan";  break;
+        case 2: networkType="cfw2can"; break;
 	}
 }
 
@@ -470,7 +475,7 @@ void not_connected_status()
 //*********************************************************************************
 
 //Shows a message dialog for displaying infos/errors
-GtkWidget * dialog_message_generator(GtkMessageType gtk_message_type, const char *text1, const char *text2, bool connect=true)
+GtkWidget * dialog_message_generator(GtkMessageType gtk_message_type, const char *text1, const char *text2)
 {
     GtkWidget *message;
 
@@ -562,7 +567,7 @@ bool dialog_message (GtkMessageType gtk_message_type, const char *text1, const c
 {
 	if (prompt_version==true) return 0;
 
-    message=dialog_message_generator(gtk_message_type, text1, text2, connect);
+    message=dialog_message_generator(gtk_message_type, text1, text2);
 
     gtk_widget_show(message);
     if (connect)
@@ -668,6 +673,36 @@ static void start_end_click (GtkButton *button,	gpointer   user_data)
 }
 
 //*********************************************************************************
+bool load_calibration (char* filename)
+{
+	int selected=0;
+	int count=0;
+	int i=0;
+	for (i=0; i<downloader.board_list_size; i++)
+    {
+        if (downloader.board_list[i].status==BOARD_RUNNING &&
+			downloader.board_list[i].type==BOARD_TYPE_STRAIN &&
+            downloader.board_list[i].selected==true)
+			{
+				selected = i;
+				count++;
+			}
+    }
+	//only one board can be calibrated!!
+	if (count!=1) 
+	{
+		return false;
+	}
+
+	if (calibration_load_v2 (filename,downloader.board_list[selected].pid))
+	{
+		//save to eeprom
+		downloader.strain_save_to_eeprom(downloader.board_list[selected].pid);
+	}
+	return true;
+}
+
+//*********************************************************************************
 static int download_click (GtkButton *button,	gpointer   user_data)
 {  
     double timer_start =0;
@@ -719,6 +754,14 @@ static int download_click (GtkButton *button,	gpointer   user_data)
         dialog_message(GTK_MESSAGE_ERROR,"Error opening the selected file!","");
         return DOWNLOADERR_FILE_NOT_OPEN;
     }
+
+	//@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@
+	if (strstr (buffer, "calibrationDataSN") != 0)
+	{
+		load_calibration (buffer);
+		return ALL_OK;
+	}
+	//@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@
 
     // Get an identification of the firmware fot the file that you have selected
     int firmware_board_type=0;
@@ -1350,7 +1393,7 @@ void fatal_error(int err)
 		break;
 		case INVALID_PARAM_CANTYPE:
 			printf("ERROR: invalid --canDeviceType parameter \n");
-			printf("must be 'ecan' or 'pcan'\n");
+			printf("must be 'ecan' or 'pcan' or 'cfw2'\n");
 			exit(err);
 		break;
 		case INVALID_PARAM_CANNUM:
@@ -1388,6 +1431,7 @@ void fatal_error(int err)
 }
 //*********************************************************************************
 // Entry point for the GTK application
+YARP_DECLARE_DEVICES(icubmod)
 int myMain( int   argc, char *argv[] )
 {	/*  //for debug only
     downloader.board_list= new sBoard[1];
@@ -1404,10 +1448,7 @@ int myMain( int   argc, char *argv[] )
 
 	networkType="empty";
 
-    #ifdef USE_ICUB_MOD
-    yarp::dev::DriverCollection dev;
-    #endif
-    
+    YARP_REGISTER_DEVICES(icubmod);
 
 	//printf("argc = %d\n",argc);
 	if (argc!=1)
@@ -1416,15 +1457,15 @@ int myMain( int   argc, char *argv[] )
 		printf("Initializing prompt version of canLoader...\n");
 		if      (argc==2 && strcmp(argv[1],"--help")==0)
 		{
-				printf("CANLOADER APPLICATION V2.5a\n");
+				printf("CANLOADER APPLICATION V2.6\n");
 				printf("Syntax:\n");
 				printf("1) to execute the GUI version of the canLoader:\n");
 				printf("./canLoader20 \n");
 				printf("2) to execute the command line version of the canLoader:\n");
-				printf("./canLoader20 --canDeviceType t --canDeviceNum x --boardId y --firmware myFirmware.out.S\n");
-				printf("parameter t is the name of the CAN bus driver. It can be ecan or pcan\n");
-				printf("parameter x is the number of the CAN bus (0-3)\n");
-				printf("parameter y is the CAN address of the board (0-15)\n");
+				printf("./canLoader20 --canDeviceType <t> --canDeviceNum <x> --boardId <y> --firmware myFirmware.out.S\n");
+				printf("parameter <t> is the name of the CAN bus driver. It can be ecan or pcan or cfw2can\n");
+				printf("parameter <x> is the number of the CAN bus (0-3)\n");
+				printf("parameter <y> is the CAN address of the board (0-15)\n");
 				exit(0);
 		}				
 		if		(argc==9) 
@@ -1433,14 +1474,16 @@ int myMain( int   argc, char *argv[] )
 				if (strcmp(argv[1],"--canDeviceType")!=0) fatal_error(INVALID_CMD_STRING);
 				if (strcmp(argv[3],"--canDeviceNum")!=0)  fatal_error(INVALID_CMD_STRING);
 				if (strcmp(argv[5],"--boardId")!=0)		  fatal_error(INVALID_CMD_STRING);
-				if (strcmp(argv[7],"--firmware")!=0)	  fatal_error(INVALID_CMD_STRING);
+				if (strcmp(argv[7],"--firmware")!=0 &&
+					strcmp(argv[7],"--calibration")!=0)	  fatal_error(INVALID_CMD_STRING);
 	
 				int param_board_id=0;
 				std::string param_filename = "empty";
 				int temp_val=-1;
 
 				if (strcmp(argv[2],"ecan") !=0 &&
-					strcmp(argv[2],"pcan") !=0 )
+					strcmp(argv[2],"pcan") !=0 &&
+                    strcmp(argv[2],"cfw2can")!=0)
 					{
 						fatal_error(INVALID_PARAM_CANTYPE);
 					}
@@ -1450,7 +1493,7 @@ int myMain( int   argc, char *argv[] )
 					}
 
 				temp_val=atoi(argv[4]);
-				if (temp_val<0 || temp_val>3)
+				if (temp_val<0 || temp_val>9)
 					{
 						fatal_error(INVALID_PARAM_CANNUM);
 					}
@@ -1526,7 +1569,7 @@ int myMain( int   argc, char *argv[] )
     //create the main window, and sets the callback destroy_main() to quit
     //the application when the main window is closed
     window = gtk_window_new (GTK_WINDOW_TOPLEVEL);
-    gtk_window_set_title (GTK_WINDOW (window), "CAN Flasher V2.5a");
+    gtk_window_set_title (GTK_WINDOW (window), "CAN Flasher V2.6");
     g_signal_connect (window, "destroy",G_CALLBACK (destroy_main), &window);
 
     gtk_container_set_border_width (GTK_CONTAINER (window), 8);
