@@ -458,7 +458,7 @@ bool BIControlGazeEngine::respond(const Bottle &command,Bottle &reply){
                 //head tilt 
                 if(thread!=0){
                     thread->cmd[0]=angle;
-		            printf("angle set");
+		            printf("angle set %f",angle);
                 }
                 ok=true;
             }
@@ -468,6 +468,7 @@ bool BIControlGazeEngine::respond(const Bottle &command,Bottle &reply){
                 double angle = command.get(2).asDouble();
                 if(thread!=0){
                     thread->cmd[1]=angle;
+                    printf("angle set %f",angle);
                 }
                 ok=true;
             }
@@ -477,6 +478,7 @@ bool BIControlGazeEngine::respond(const Bottle &command,Bottle &reply){
                 double angle = command.get(2).asDouble();
                 if(thread!=0){
                     thread->cmd[2]=angle;
+                    printf("angle set %f",angle);
                 }
                 ok=true;
             }
@@ -486,6 +488,7 @@ bool BIControlGazeEngine::respond(const Bottle &command,Bottle &reply){
                 double angle = command.get(2).asDouble();
                 if(thread!=0){
                     thread->cmd[3]=angle;
+                    printf("angle set %f",angle);
                 }
                 ok=true;
             }
@@ -495,6 +498,7 @@ bool BIControlGazeEngine::respond(const Bottle &command,Bottle &reply){
                 double angle = command.get(2).asDouble();
                 if(thread!=0){
                     thread->cmd[4]=angle;
+                    printf("angle set %f",angle);
                 }
                 ok=true;
             }
@@ -504,6 +508,7 @@ bool BIControlGazeEngine::respond(const Bottle &command,Bottle &reply){
                 double angle = command.get(2).asDouble();
                 if(thread!=0){
                     thread->cmd[5]=angle;
+                    printf("angle set %f",angle);
                 }
                 ok=true;
             }
