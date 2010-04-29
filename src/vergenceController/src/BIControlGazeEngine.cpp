@@ -404,8 +404,9 @@ bool BIControlGazeEngine::respond(const Bottle &command,Bottle &reply){
 
     mutex.wait();
 
-    Vector* v=new Vector(6);
-	v=thread->cmd;
+    Vector v;
+    v.resize(6);
+	v=*thread->cmd;
     
     switch (command.get(0).asVocab()) {
     case COMMAND_VOCAB_HELP:
@@ -460,7 +461,7 @@ bool BIControlGazeEngine::respond(const Bottle &command,Bottle &reply){
                 double angle = command.get(2).asDouble();
                 //head tilt 
                 if(thread!=0){
-                    v[0]=angle;
+                    v(0)=angle;
 		            printf("angle set %f",angle);
                 }
                 ok=true;
@@ -470,7 +471,7 @@ bool BIControlGazeEngine::respond(const Bottle &command,Bottle &reply){
                 //head heeling
                 double angle = command.get(2).asDouble();
                 if(thread!=0){
-                    v[1]=angle;
+                    v(1)=angle;
                     printf("angle set %f",angle);
                 }
                 ok=true;
@@ -480,7 +481,7 @@ bool BIControlGazeEngine::respond(const Bottle &command,Bottle &reply){
                 //head pan
                 double angle = command.get(2).asDouble();
                 if(thread!=0){
-                    v[2]=angle;
+                    v(2)=angle;
                     printf("angle set %f",angle);
                 }
                 ok=true;

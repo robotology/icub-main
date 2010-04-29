@@ -21,7 +21,7 @@ TrackerThread::TrackerThread(Property &op):RateThread(THREAD_RATE)
         enableVOR=true;
         enableTracking=true;
 
-        cmd=new Vector(6);
+        cmd->resize(6);
         
     }
 
@@ -150,6 +150,7 @@ void TrackerThread::run()
 
     delayR=timeNow-timeStampR;
     delayL=timeNow-timeStampL;
+    
 
     if ( (delayR<TIMEOUT)&&(delayL<TIMEOUT))
         {                           
@@ -167,11 +168,11 @@ void TrackerThread::run()
 		           
 	   
             command[4]=Kpan*(*cmd)(4); //eyes pan,version
-            command[5]=Kvergence*(*cmd)[5]; //eyes vergence
-            command[3]=Ktilt*0.5*(*cmd)[3]; //eyes tilt
+            command[5]=Kvergence*(*cmd)(5); //eyes vergence
+            command[3]=Ktilt*0.5*(*cmd)(3); //eyes tilt
             if(!just_eyes){
-                command[0]=Kn_tilt*(*cmd)[0]; //head tilt
-                command[2]=Kn_pan*(*cmd)[2]; //head pan
+                command[0]=Kn_tilt*(*cmd)(0); //head tilt
+                command[2]=Kn_pan*(*cmd)(2); //head pan
             }
 		    //printf("%f %f %f %f %f %f", command[0],command[1],command[2],command[3],command[4],command[5]);
             timeStampTO=timeNow;
