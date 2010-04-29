@@ -10,7 +10,7 @@
 
 	<module>
 		<name>controlGaze2</name>
-		<parameters>--configCamera iCubEyes.ini --file icubControlGaze2.ini --motorboard /icubSim/head</parameters>
+		<parameters>--configCamera icubEyes.ini --name /icub/controlGaze --context protoObjectVisualAttention/conf/ --from icubControlGaze2.ini --motorboard /icub/head    </parameters>
 		<tag>gazecontroller</tag>
 		<node>/powerNode1</node>
 	</module>
