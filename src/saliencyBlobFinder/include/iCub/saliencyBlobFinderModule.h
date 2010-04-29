@@ -47,8 +47,8 @@ using namespace yarp::sig;
 #define COMMAND_VOCAB_CONTRASTLP VOCAB3('c','l','p')
 #define COMMAND_VOCAB_FOVEA VOCAB3('f','o','v')
 // other commands
-#define COMMAND_VOCAB_TCON VOCAB4('t','c','o','n') //time contant for the controlGaze2
-#define COMMAND_VOCAB_TCEN VOCAB4('t','c','e','n') //time constant for the iKinGazeCtrl
+#define COMMAND_VOCAB_TCON VOCAB3('t','c','o') //time contant for the controlGaze2
+#define COMMAND_VOCAB_TCEN VOCAB3('t','c','e') //time constant for the iKinGazeCtrl
 
 
 #define COMMAND_VOCAB_KBU VOCAB3('k','b','u') //weight of the bottom-up algorithm
@@ -158,8 +158,8 @@ This module is able to respond to the following set of commands:
 - set bin: blue intensity value
 - set Mdb: Maximum dimension of the blob analysed
 - set mdb: minimum dimension of the blob analysed
-- set tcon: set the timeconstant in second for output format (x y z) 3d space
-- set tcen: set the time constant in second for output forma (img x y) imageplane
+- set tco: set the timeconstant in second for output format (x y z) 3d space
+- set tce: set the time constant in second for output forma (img x y) imageplane
 
 - rset flt : reset the filter
 
@@ -263,6 +263,14 @@ private:
     * height of the input image
     */
     int height;
+    /**
+    * dispacement on the x axis for the target
+    */
+    int xdisp;
+    /**
+    * dispacement on the y axis for the target
+    */
+    int ydisp;
     /**
     * flag that indicates when the reinitiazation has already be done
     */

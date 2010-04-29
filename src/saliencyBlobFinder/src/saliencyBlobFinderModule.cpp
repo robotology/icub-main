@@ -178,6 +178,16 @@ void saliencyBlobFinderModule::setOptions(yarp::os::Property opt){
             printf("time control OFF \n");
         }
     }
+    int numValue=opt.find("xdisp").asInt();
+    if(numValue!=0){
+        printf("|||  Module x disp :%d \n", value);
+        this->xdisp=numValue;
+    }
+    numValue=opt.find("ydisp").asInt();
+    if(numValue!=0){
+        printf("|||  Module y disp :%d \n", value);
+        this->ydisp=numValue;
+    }
 }
 
 bool saliencyBlobFinderModule::updateModule() {
@@ -338,7 +348,7 @@ void saliencyBlobFinderModule::outPorts(){
                 //restart the time intervall
                  time(&start);
             }
-            else if((dif>blobFinder->constantTimeGazeControl)&&(dif<blobFinder->constantTimeGazeControl+2)){
+            else if((dif>blobFinder->constantTimeGazeControl)&&(dif<blobFinder->constantTimeGazeControl+1)){
                 //output the command
                 //finds the entries with a greater number of occurencies 
                 std::map<const char*,int>::iterator iterMap;
@@ -403,13 +413,13 @@ void saliencyBlobFinderModule::outPorts(){
         Bottle &bot = centroidPort.prepare(); 
         bot.clear();
         
-        // temporary implementation for opencvLogPolar
+        
         /*bot.addDouble(blobFinder->salience->maxc); 
         bot.addDouble(blobFinder->salience->maxr); */
-        //logPolarMapper iCub driver
+        
         time (&end);
         double dif = difftime (end,start);
-        if((dif>0.5)&&(dif<=0.5+1.5)){
+        if((dif>blobFinder->constantTimeCentroid)&&(dif<=blobFinder->constantTimeCentroid+1.0)){
             if((blobFinder->salience->target_x<previous_target_x+5)&&(blobFinder->salience->target_x>previous_target_x-5)){
                 if((blobFinder->salience->target_y<previous_target_y+5)&&(blobFinder->salience->target_y>previous_target_y-5)){
                     //printf("same position \n");
@@ -419,8 +429,8 @@ void saliencyBlobFinderModule::outPorts(){
                     bot.addVocab( Vocab::encode("sac") ); 
                     bot.addVocab( Vocab::encode("img") ); 
                     double centroidDisplacementY=1.0;
-                    double xrel=(blobFinder->salience->target_x-_logpolarParams::_xsize/2)/(_logpolarParams::_xsize/2);
-                    double yrel=(blobFinder->salience->target_y-_logpolarParams::_ysize/2)/(-_logpolarParams::_ysize/2);
+                    double xrel=(blobFinder->salience->target_x-_logpolarParams::_xsize/2+xdisp)/(_logpolarParams::_xsize/2);
+                    double yrel=(blobFinder->salience->target_y-_logpolarParams::_ysize/2+ydisp)/(-_logpolarParams::_ysize/2);
                     //printf("%f>%f,%f \n",dif,xrel,yrel);
                     bot.addDouble(xrel);  
                     bot.addDouble(yrel); 
