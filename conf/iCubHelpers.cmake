@@ -9,23 +9,22 @@
 # @param name: name of the target to be export
 # @param public_inc_dirs: the directory that contains public header files, copied verbatim at 
 # install time to INSTALL_PREFIX/include/iCub
-# 
-# Variables created: 
-# ${name}_INCLUDE_DIRS: cache variable containing header files directory
-# ${name}_LIBRARIES: name of the target library to be linked against
+#
+# Creates a cache variable to store the target include directory.
 #
 # -add ${name} to group icub_targets
-# -append ${name} to our own local list of exported targets ICUB_TARGETS
+# -append ${name} to global property ICUB_TARGETS
+# -create property INCLUDE_DIRS for target ${name} 
 # -install rule to copy all header files in public_include_dir
 # -append export rules to a file in ${PROJECT_BINARY_DIR}
 macro(icub_export_library name public_inc_dirs)
 
 set(ICUB_EXPORTBUILD_FILE icub-export-build.cmake)
 
-#set(${name}_INCLUDE_DIRS "${PROJECT_SOURCE_DIR}/include" CACHE STRING "include directories")
-#set(${name}_LIBRARIES ${name} CACHE STRING "library")
 
 set_property(TARGET ${name} PROPERTY INCLUDE_DIRS  ${PROJECT_SOURCE_DIR}/include)
+set(${name}_INCLUDE_DIRS "${PROJECT_SOURCE_DIR}/include" CACHE STRING "include directories")
+#set(${name}_LIBRARIES ${name} CACHE STRING "library")
 set_property(GLOBAL APPEND PROPERTY ICUB_TARGETS ${name})
 
 #set(ICUB_TARGETS ${ICUB_TARGETS} "${name}" CACHE STRING "" FORCE)

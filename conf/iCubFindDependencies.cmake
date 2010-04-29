@@ -22,6 +22,8 @@ find_package(OpenGL)
 find_package(ODE)
 find_package(SDL)
 
+find_package(GtkPlus)
+
 message(STATUS "I have found the following libraries:")
 
 checkandset_dependency(YARP)
@@ -32,6 +34,7 @@ checkandset_dependency(OPENCV)
 checkandset_dependency(OpenGL)
 checkandset_dependency(ODE)
 checkandset_dependency(SDL)
+checkandset_dependency(GtkPlus)
 
 if (YARP_HAS_LIBMATH)
     set(ICUB_HAS_YARPMATH true)
