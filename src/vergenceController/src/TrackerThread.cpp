@@ -138,13 +138,13 @@ void TrackerThread::run()
             timeStampLprev=timeStampL;
             timeStampL=Time::now();
         }
-*/
+    */
 
-timeStampRprev=timeStampR;
-            timeStampR=Time::now();
+    timeStampRprev=timeStampR;
+    timeStampR=Time::now();
 
 	timeStampLprev=timeStampL;
-            timeStampL=Time::now();
+    timeStampL=Time::now();
 
     printf("after");
 
@@ -173,7 +173,7 @@ timeStampRprev=timeStampR;
                 command[0]=Kn_tilt*(*cmd)[0];
                 command[2]=Kn_pan*(*cmd)[2];
             }
-		printf("%f %f %f %f %f %f", command[0],command[1],command[2],command[3],command[4],command[5]);
+		    //printf("%f %f %f %f %f %f", command[0],command[1],command[2],command[3],command[4],command[5]);
             timeStampTO=timeNow;
             enableVOR=true;
         }

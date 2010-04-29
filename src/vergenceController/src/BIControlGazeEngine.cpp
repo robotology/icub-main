@@ -458,7 +458,7 @@ bool BIControlGazeEngine::respond(const Bottle &command,Bottle &reply){
                 //head tilt 
                 if(thread!=0){
                     thread->cmd[0]=angle;
-		    printf("angle set");
+		            printf("angle set");
                 }
                 ok=true;
             }
@@ -468,7 +468,6 @@ bool BIControlGazeEngine::respond(const Bottle &command,Bottle &reply){
                 double angle = command.get(2).asDouble();
                 if(thread!=0){
                     thread->cmd[1]=angle;
-                    
                 }
                 ok=true;
             }
@@ -484,7 +483,6 @@ bool BIControlGazeEngine::respond(const Bottle &command,Bottle &reply){
                 //eye tilt
                 double angle = command.get(2).asDouble();
                 thread->cmd[3]=angle;
-                
                 ok=true;
             }
                 break;
@@ -492,8 +490,6 @@ bool BIControlGazeEngine::respond(const Bottle &command,Bottle &reply){
                 //eyes version
                 double angle = command.get(2).asDouble();
                 thread->cmd[4]=angle;
-                
-
                 ok=true;
             }
                 break;
@@ -501,7 +497,6 @@ bool BIControlGazeEngine::respond(const Bottle &command,Bottle &reply){
                 //eye vergence
                 double angle = command.get(2).asDouble();
                 thread->cmd[5]=angle;
-                
                 ok=true;
             }
                 break;
