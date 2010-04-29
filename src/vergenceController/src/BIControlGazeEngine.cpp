@@ -454,17 +454,18 @@ bool BIControlGazeEngine::respond(const Bottle &command,Bottle &reply){
         {
             switch(command.get(1).asVocab()) {
             case COMMAND_VOCAB_JNT0:{
-                double angle = command.get(2).asInt();
+                double angle = command.get(2).asDouble();
                 //head tilt 
                 if(thread!=0){
                     thread->cmd[0]=angle;
+		    printf("angle set");
                 }
                 ok=true;
             }
                 break;
             case COMMAND_VOCAB_JNT1:{
                 //head heeling
-                double angle = command.get(2).asInt();
+                double angle = command.get(2).asDouble();
                 if(thread!=0){
                     thread->cmd[1]=angle;
                     
@@ -474,14 +475,14 @@ bool BIControlGazeEngine::respond(const Bottle &command,Bottle &reply){
                 break;
             case COMMAND_VOCAB_JNT2:{
                 //head pan
-                double angle = command.get(2).asInt();
+                double angle = command.get(2).asDouble();
                 thread->cmd[2]=angle;
                 ok=true;
             }
                 break;
             case COMMAND_VOCAB_JNT3:{
                 //eye tilt
-                int angle = command.get(2).asInt();
+                double angle = command.get(2).asDouble();
                 thread->cmd[3]=angle;
                 
                 ok=true;
@@ -489,7 +490,7 @@ bool BIControlGazeEngine::respond(const Bottle &command,Bottle &reply){
                 break;
             case COMMAND_VOCAB_JNT4:{
                 //eyes version
-                int angle = command.get(2).asInt();
+                double angle = command.get(2).asDouble();
                 thread->cmd[4]=angle;
                 
 
@@ -498,7 +499,7 @@ bool BIControlGazeEngine::respond(const Bottle &command,Bottle &reply){
                 break;
             case COMMAND_VOCAB_JNT5:{
                 //eye vergence
-                int angle = command.get(2).asInt();
+                double angle = command.get(2).asDouble();
                 thread->cmd[5]=angle;
                 
                 ok=true;

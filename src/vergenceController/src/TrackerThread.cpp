@@ -52,7 +52,7 @@ bool TrackerThread::threadInit()
         }
 
     ivel->getAxes(&joints);
-    printf("Working with %d axes\n", joints);
+    //printf("Working with %d axes\n", joints);
     
     encoders = new double [joints];
     command = new double [joints];
@@ -98,17 +98,18 @@ bool TrackerThread::threadInit()
 }
 
 void TrackerThread::run()
-{
-    iencs->getEncoders(encoders);
+{   
+	iencs->getEncoders(encoders);
     double pos;
     int countEncoders;
     iencs->getAxes(&countEncoders);
     for(int i=0;i<countEncoders;i++){
         iencs->getEncoder(i,&pos);
-        printf("%f ",pos);
+        //printf("%f ",pos);
     }
-    printf("\n");
+    //printf("\n");
     //Vector *vr=targetRight->read(0);
+	
     Vector *vr=v_r;
     Vector *vl=v_l;
     //Vector *vl=targetLeft->read(0);
@@ -120,19 +121,32 @@ void TrackerThread::run()
     for(int k=0;k<joints;k++)
         command[k]=0;
 
-    if (vr!=0)
+	printf("before");
+
+    /*if ((vr!=0)||((*cmd)[0]!=0))
         {
-            targetR=*vr;
+            printf("vr not nill");
+		targetR=*vr;
             timeStampRprev=timeStampR;
             timeStampR=Time::now();
         }
 
-    if (vl!=0)
+    if ((vl!=0)||((*cmd)[0]!=0))
         {
-            targetL=*vl;
+		printf("vl not nill");            
+		targetL=*vl;
             timeStampLprev=timeStampL;
             timeStampL=Time::now();
         }
+*/
+
+timeStampRprev=timeStampR;
+            timeStampR=Time::now();
+
+	timeStampLprev=timeStampL;
+            timeStampL=Time::now();
+
+    printf("after");
 
     delayR=timeNow-timeStampR;
     delayL=timeNow-timeStampL;
@@ -150,8 +164,8 @@ void TrackerThread::run()
             }
             timeStampTO=timeNow;
             enableVOR=true;*/
-           
-
+		           
+	   
             command[4]=Kpan*(*cmd)(4);
             command[5]=Kvergence*(*cmd)[5];
             command[3]=Ktilt*0.5*(*cmd)[3];
@@ -159,6 +173,7 @@ void TrackerThread::run()
                 command[0]=Kn_tilt*(*cmd)[0];
                 command[2]=Kn_pan*(*cmd)[2];
             }
+		printf("%f %f %f %f %f %f", command[0],command[1],command[2],command[3],command[4],command[5]);
             timeStampTO=timeNow;
             enableVOR=true;
         }
