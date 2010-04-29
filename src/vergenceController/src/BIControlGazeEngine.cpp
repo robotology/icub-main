@@ -404,7 +404,8 @@ bool BIControlGazeEngine::respond(const Bottle &command,Bottle &reply){
 
     mutex.wait();
 
-    Vector v=*thread->cmd;
+    Vector* v=new Vector(6);
+	v=thread->cmd;
     
     switch (command.get(0).asVocab()) {
     case COMMAND_VOCAB_HELP:
