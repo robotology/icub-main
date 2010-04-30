@@ -92,3 +92,6 @@ Added control for the receiving of the PID values before enabling the PWM.
 
 2010-20-April Francesco Nori <francesco.nori@iit.t>
 * Current build 27. Timeout on velocity control in case messages are not received within 100ms.
+
+2010-20-April Francesco Nori <francesco.nori@iit.t>
+* Current build 28. Timeout on velocity can be set by CAN message. Joint is not disabled but switches to POSITION control.

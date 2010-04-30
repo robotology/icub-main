@@ -166,13 +166,21 @@ extern char    _additional_info [32];
 #define CAN_SET_VEL_SHIFT_HANDLER(x) \
 { \
 	byte value = 0; \
+	if (CAN_LEN == 5) \
+	{ \
+		value = BYTE_W(CAN_DATA[1], CAN_DATA[2]); \
+		if (value>=0 && value <=16) _vel_shift[axis] = value; \
+		value = BYTE_W(CAN_DATA[3], CAN_DATA[4]); \
+		if (value>=0) _vel_timeout[axis] = value; \
+		_general_board_error = ERROR_NONE; \
+	} \
 	if (CAN_LEN == 3) \
 	{ \
 		value = BYTE_W(CAN_DATA[1], CAN_DATA[2]); \
 		if (value>=0 && value <=16) _vel_shift[axis] = value; \
 		_general_board_error = ERROR_NONE; \
 	} \
-	else \
+	if (CAN_LEN != 3 && CAN_LEN != 5) \
 		_general_board_error = ERROR_FMT; \
 }
 

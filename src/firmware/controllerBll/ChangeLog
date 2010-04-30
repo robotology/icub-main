@@ -104,4 +104,7 @@
 	* Stops controlling (disable PWM) if velocity messages 
 	* are not received in 400ms (VELOCITY_TIMEOUT).
 	* Current build 36.
-	
+
+2010-29-April  Francesco Nori <iron@liralab.it>
+	* _vel_timeout is now passed via CAN
+	* Current build 37.

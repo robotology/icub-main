@@ -70,7 +70,7 @@ Int16 _set_vel[JN] = INIT_ARRAY (DEFAULT_VELOCITY);		// set point for velocity [
 Int16 _max_vel[JN] = INIT_ARRAY (DEFAULT_MAX_VELOCITY);	// assume this limit is symmetric 
 Int32 _vel_shift[JN] = INIT_ARRAY (4);
 Int16 _vel_counter[JN] = INIT_ARRAY (0);
-const Int16 VELOCITY_TIMEOUT = 100;                     // timeout on velocity messages
+Int16 _vel_timeout[JN] = INIT_ARRAY (2000);                  // timeout on velocity messages
 
 // ACCELERATION VARIABLES
 Int16  _accel[JN] = INIT_ARRAY (0);			 			 // encoder acceleration 
@@ -89,7 +89,7 @@ Int16  _absolute_error_old[JN] = INIT_ARRAY (0);// error at t-1
 Int16  _pid[JN] = INIT_ARRAY (0);				// pid result 
 Int16  _pid_limit[JN] = INIT_ARRAY (0);			// pid limit 
 Int32  _pd[JN] = INIT_ARRAY (0);              	// pd portion of the pid
-Int32  _integral[JN] = INIT_ARRAY (0.0);		// store the sum of the integral component 
+Int32  _integral[JN] = INIT_ARRAY (0);		// store the sum of the integral component 
 Int16  _integral_limit[JN] = INIT_ARRAY (0x7fff);
 
 Int16  _kp[JN] = INIT_ARRAY (10);				// PID gains: proportional... 
@@ -316,7 +316,7 @@ Int32 compute_pwm(byte j)
 		break;
 		
 	case MODE_IDLE:
-	#if IDENTIF 
+	#ifdef IDENTIF 
 		reset_identif(j);
 	#endif	
 		PWMOUT=0;
@@ -338,11 +338,11 @@ Int32 compute_pid_torque(byte j, Int16 strain_val)
 {
 	Int32 ProportionalPortion, DerivativePortion, IntegralPortion;
 	Int32 IntegralError;
-	float temp;
-	float temp2;
 	Int32 PIDoutput;
 	Int32 InputError;
+#if VERSION == 0x0173 || VERSION == 0x0174
 	float temp_err[JN];
+#endif
 	byte i=0;
 	byte k=0;
 	static Int32 DerPort[2][10]={{0,0,0,0,0,0,0,0,0,0},{0,0,0,0,0,0,0,0,0,0}};	
@@ -369,11 +369,7 @@ Int32 compute_pid_torque(byte j, Int16 strain_val)
 	_error[j]=_error_torque[j];
 
 	//Error decoupling for shoulder torque control
-	#if VERSION == 0x0173 
-	
-	
-	
-	#elif VERSION == 0x0174 
+	#if VERSION == 0x0174 
 		temp_err[0] = (float)_error_torque[0];
 		temp_err[1] = (float)_error_torque[1];
 		
@@ -653,7 +649,6 @@ Int32 compute_pid_abs(byte j)
 {
 	Int32 ProportionalPortion, DerivativePortion;
 	Int32 PIDoutput;
-	Int16 InputError;
 	Int16 Kp = 1;
 	Int16 Kd = 10;
 		
@@ -803,7 +798,7 @@ void compute_desired(byte i)
 			
 		case MODE_CALIB_ABS_POS_SENS:
 		
-			_desired_absolute[i] = step_trajectory (i);
+			_desired_absolute[i] = (Int16) step_trajectory (i);
 			
 			/* The following lines handle two possible situations:
 				(1) the absolute position sensor increseas 
@@ -823,16 +818,16 @@ void compute_desired(byte i)
 			_desired[i] += step_velocity (i);
 			// checks if the velocity messages streaming
 			// has been interrupted (i.e. last message
-			// received  more than VELOCITY_TIMEOUT ms ago)
+			// received  more than _vel_timeout ms ago)
 			if (_set_vel[i] != 0)
 			{
 				_vel_counter[i]++;	
-			    if(_vel_counter[i] > VELOCITY_TIMEOUT)
+			    if(_vel_counter[i] > _vel_timeout[i])
 			    {
-					//disabling control
-					_control_mode[i] = MODE_IDLE;	
-					_pad_enabled[i] = false;
-					PWM_outputPadDisable(i);
+
+					//disabling control						
+					_control_mode[i] = MODE_POSITION;
+					init_trajectory (i, _desired[i], _desired[i], 1);
 #ifdef DEBUG_CAN_MSG
 					can_printf("No vel msgs in %d[ms]", _vel_counter[i]);
 					//resetting the counter

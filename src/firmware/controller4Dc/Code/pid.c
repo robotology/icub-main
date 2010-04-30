@@ -74,7 +74,7 @@ Int16 _set_vel[JN] = INIT_ARRAY (DEFAULT_VELOCITY);		// set point for velocity [
 Int16 _max_vel[JN] = INIT_ARRAY (DEFAULT_MAX_VELOCITY);	// assume this limit is symmetric 
 Int32 _vel_shift[JN] = INIT_ARRAY (4);
 Int16 _vel_counter[JN] = INIT_ARRAY (0);
-const Int16 VELOCITY_TIMEOUT = 100;                     // timeout on velocity messages
+Int16 _vel_timeout[JN] = INIT_ARRAY (2000);                     // timeout on velocity messages
 
 
 // ACCELERATION VARIABLES
@@ -569,12 +569,11 @@ void compute_desired(byte i)
 			if (_set_vel[i] != 0)
 			  	{
 			    	_vel_counter[i]++;
-			    	if(_vel_counter[i] > VELOCITY_TIMEOUT)
+			    	if(_vel_counter[i] > _vel_timeout[i])
 			      	{
-						//disabling control
-						_control_mode[i] = MODE_IDLE;	
-						_pad_enabled[i] = false;
-						PWM_outputPadDisable(i);
+						//disabling control						
+						_control_mode[i] = MODE_POSITION;
+						init_trajectory (i, _desired[i], _desired[i], 1);
 #ifdef DEBUG_CAN_MSG
 						can_printf("No vel msgs in %d[ms]", _vel_counter[i]);
 #endif			

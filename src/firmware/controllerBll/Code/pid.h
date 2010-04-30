@@ -108,7 +108,7 @@ extern Int16 _set_vel[JN] ;				// set point for velocity [user specified]
 extern Int16 _max_vel[JN] ;
 extern Int32 _vel_shift[JN]	;
 extern Int16 _vel_counter[JN]	;
-
+extern Int16 _vel_timeout[JN]   ;
 
 
 // ACCELERATION VARIABLES
