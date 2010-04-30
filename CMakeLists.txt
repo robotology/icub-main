@@ -16,6 +16,9 @@ endif(COMMAND cmake_policy)
 
 PROJECT(iCub)
 
+#### support new yarp build
+SET(YARP_AUTO_LINK TRUE CACHE BOOL "Enable compatibility with new yarp build")
+
 ### Useful for adjust some configuration for allow out-of-source building
 SET(BUILDING_ICUB TRUE)
 
