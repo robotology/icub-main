@@ -7,11 +7,11 @@
 */
 
 
-#include <ace/config.h>
-#include <ace/OS.h>
-#include <ace/Log_Msg.h>
-
 #include <yarp/os/Time.h>
+
+#include <ace/config.h>
+
+#include <ace/Log_Msg.h>
 
 #include "iCubArmCalibrator.h"
 
@@ -61,60 +61,48 @@ bool iCubArmCalibrator::open (yarp::os::Searchable& config)
         }
         
     type = new unsigned char[nj];
-    ACE_ASSERT (type != NULL);
     param1 = new double[nj];
-    ACE_ASSERT (param1 != NULL);
     param2 = new double[nj];
-    ACE_ASSERT (param2 != NULL);
     param3 = new double[nj];
-    ACE_ASSERT (param3 != NULL);
 
     pos = new double[nj];
-    ACE_ASSERT (pos != NULL);
     vel = new double[nj];
-    ACE_ASSERT (vel != NULL);
 
     homePos = new double[nj];
-    ACE_ASSERT (homePos != NULL);
     homeVel = new double[nj];
-    ACE_ASSERT (homeVel != NULL);
 
     Bottle& xtmp = p.findGroup("CALIBRATION").findGroup("Calibration1");
-    ACE_ASSERT (xtmp.size() == nj+1);
     int i;
     for (i = 1; i < xtmp.size(); i++)
         param1[i-1] = xtmp.get(i).asDouble();
     xtmp = p.findGroup("CALIBRATION").findGroup("Calibration2");
-    ACE_ASSERT (xtmp.size() == nj+1);
     for (i = 1; i < xtmp.size(); i++)
         param2[i-1] = xtmp.get(i).asDouble();
     xtmp = p.findGroup("CALIBRATION").findGroup("Calibration3");
-    ACE_ASSERT (xtmp.size() == nj+1);
     for (i = 1; i < xtmp.size(); i++)
         param3[i-1] = xtmp.get(i).asDouble();
     xtmp = p.findGroup("CALIBRATION").findGroup("CalibrationType");
-    ACE_ASSERT (xtmp.size() == nj+1);
     for (i = 1; i < xtmp.size(); i++)
         type[i-1] = (unsigned char) xtmp.get(i).asDouble();
 
 
     xtmp = p.findGroup("CALIBRATION").findGroup("PositionZero");
-    ACE_ASSERT (xtmp.size() == nj+1);
+
     for (i = 1; i < xtmp.size(); i++)
         pos[i-1] = xtmp.get(i).asDouble();
 
     xtmp = p.findGroup("CALIBRATION").findGroup("VelocityZero");
-    ACE_ASSERT (xtmp.size() == nj+1);
+
     for (i = 1; i < xtmp.size(); i++)
         vel[i-1] = xtmp.get(i).asDouble();
 
     xtmp = p.findGroup("HOME").findGroup("PositionHome");
-    ACE_ASSERT (xtmp.size() == nj+1);
+
     for (i = 1; i < xtmp.size(); i++)
         homePos[i-1] = xtmp.get(i).asDouble();
 
     xtmp = p.findGroup("HOME").findGroup("VelocityHome");
-    ACE_ASSERT (xtmp.size() == nj+1);
+
     for (i = 1; i < xtmp.size(); i++)
         homeVel[i-1] = xtmp.get(i).asDouble();
 
