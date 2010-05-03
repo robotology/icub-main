@@ -1,5 +1,5 @@
 <application>
-  <name>faceHistogramTracker</name>
+  <name>faceEyeDetector Histogram Tracker</name>
 <dependencies>
   <port>/icub</port>
   <port>/icub/camcalib/left/out</port>
