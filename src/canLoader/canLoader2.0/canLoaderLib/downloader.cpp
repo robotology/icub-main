@@ -1249,7 +1249,7 @@ int cDownloader::startscheda(int board_pid, bool board_eeprom, int board_type)
 
 		//makes the first jump
 		m_candriver->send_message(txBuffer, 1);
-		drv_sleep(250);
+		drv_sleep(1500);//drv_sleep(250);
 		}
 		break;
 	case BOARD_TYPE_SKIN:
