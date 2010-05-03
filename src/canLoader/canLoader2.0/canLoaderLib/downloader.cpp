@@ -174,7 +174,7 @@ int cDownloader::strain_get_adc(int target_id, char channel, unsigned int& adc, 
 			return -1;
 		}
 
-	 drv_sleep(3);
+	 drv_sleep(3+2);
 
 	 //read adc
 	 int read_messages = m_candriver->receive_message(rxBuffer,1);
@@ -210,7 +210,7 @@ int cDownloader::strain_get_offset(int target_id, char channel, unsigned int& of
 	CLEAR_RXBUFFER
 	int ret = m_candriver->send_message(txBuffer, 1);
 
-	drv_sleep(3);
+	drv_sleep(3+2);
 
 	int read_messages = m_candriver->receive_message(rxBuffer,1);
 	for (int i=0; i<read_messages; i++)
@@ -452,7 +452,7 @@ int cDownloader::strain_get_serial_number (int target_id, char* serial_number)
 	 CLEAR_RXBUFFER
 	 int ret = m_candriver->send_message(txBuffer, 1);
 
-	 drv_sleep(5);
+	 drv_sleep(5+2);
 
  	 int read_messages = m_candriver->receive_message(rxBuffer,1);
 	 for (int i=0; i<read_messages; i++)
@@ -492,7 +492,7 @@ int cDownloader::strain_get_eeprom_saved (int target_id, bool* status)
 	 CLEAR_RXBUFFER
 	 int ret = m_candriver->send_message(txBuffer, 1);
 
-	 drv_sleep(5);
+	 drv_sleep(5+2);
 
  	 int read_messages = m_candriver->receive_message(rxBuffer,1);
 	 for (int i=0; i<read_messages; i++)
@@ -524,7 +524,7 @@ int cDownloader::strain_get_matrix_gain	 (int target_id, unsigned int& gain)
 	 CLEAR_RXBUFFER
 	 int ret = m_candriver->send_message(txBuffer, 1);
 
-	 drv_sleep(5);
+	 drv_sleep(5+2);
 
  	 int read_messages = m_candriver->receive_message(rxBuffer,1);
 	 for (int i=0; i<read_messages; i++)
@@ -556,7 +556,7 @@ int cDownloader::strain_set_matrix_gain	 (int target_id, unsigned int  gain)
 	 txBuffer[0].getData()[1]= gain;
 
 	 int ret = m_candriver->send_message(txBuffer, 1);
-	 drv_sleep(5);
+	 drv_sleep(5+2);
 
 	 return 0;
 }
@@ -579,7 +579,7 @@ int cDownloader::strain_get_full_scale	 (int target_id, unsigned char channel, u
 
 	 int ret = m_candriver->send_message(txBuffer, 1);
 
-	 drv_sleep(5);
+	 drv_sleep(5+2);
 
  	 int read_messages = m_candriver->receive_message(rxBuffer,1);
 	 for (int i=0; i<read_messages; i++)
@@ -612,7 +612,7 @@ int cDownloader::strain_set_full_scale	 (int target_id, unsigned char channel,  
 	 txBuffer[0].getData()[3]= full_scale & 0xFF;
 
 	 int ret = m_candriver->send_message(txBuffer, 1);
- 	 drv_sleep(5);
+ 	 drv_sleep(5+2);
 
 	 return 0;
 }
@@ -636,7 +636,7 @@ int cDownloader::strain_get_matrix_rc	 (int target_id, char r, char c, unsigned 
 	 CLEAR_RXBUFFER
 	 int ret = m_candriver->send_message(txBuffer, 1);
 
-	 drv_sleep(3);
+	 drv_sleep(3+2);
 
 	 int read_messages = m_candriver->receive_message(rxBuffer,1);
 	 for (int i=0; i<read_messages; i++)
@@ -670,7 +670,7 @@ int cDownloader::strain_set_matrix_rc	 (int target_id, char r, char c, unsigned 
 	 txBuffer[0].getData()[3]= elem >> 8;
 	 txBuffer[0].getData()[4]= elem & 0xFF;
 	 int ret = m_candriver->send_message(txBuffer, 1);
-	 drv_sleep(5);
+	 drv_sleep(5+2);
 
 	 return 0;
 }
@@ -842,7 +842,7 @@ int cDownloader::strain_calibrate_offset  (int target_id, unsigned int middle_va
 			int ret = m_candriver->send_message(txBuffer, 1);
 
 			//wait 
-			drv_sleep(3);
+			drv_sleep(3+2);
 
 			// Send read channel command to strain board
 			txBuffer[0].setId((2 << 8) + target_id);
@@ -1207,7 +1207,7 @@ int cDownloader::initschede()
             get_board_info	   (board_list[i].pid, board_info);
             strcpy (board_list[i].add_info,  board_info);
             //pause
-            drv_sleep(10);	
+            drv_sleep(10+2);	
         }
  
 	for (i=0; i<board_list_size; i++)
@@ -1216,7 +1216,7 @@ int cDownloader::initschede()
             get_serial_no	   (board_list[i].pid, serial_no);
 			strcpy (board_list[i].serial,  serial_no);
             //pause
-            drv_sleep(10);	
+            drv_sleep(10+2);	
         }
 
 	printf ("CONNECTED: %d Boards found\n", board_list_size);
@@ -1330,7 +1330,7 @@ int cDownloader::stopscheda(int board_pid)
         }
 
     //pause
-    drv_sleep(5);
+    drv_sleep(5+2);
 
     // riceve la risposta
     int read_messages = m_candriver->receive_message(rxBuffer);
@@ -1588,7 +1588,7 @@ int cDownloader::download_motorola_line(char* line, int len, int board_pid)
 				}
 
             //pause
-            drv_sleep(10);
+            drv_sleep(10+2);
 
             // riceve la risposta
             read_messages = m_candriver->receive_message(rxBuffer);
@@ -1740,7 +1740,7 @@ int cDownloader::download_hexintel_line(char* line, int len, int board_pid, bool
 						return -1;
 					}
 					//pause
-					drv_sleep(10);
+					drv_sleep(10+2);
 
 					//prepare packet
 					int tmp, rest;
@@ -1777,9 +1777,9 @@ int cDownloader::download_hexintel_line(char* line, int len, int board_pid, bool
 							}
 						//pause
 						if(board_type == BOARD_TYPE_2FOC){
-							drv_sleep(15);
+							drv_sleep(15+2);
 						}else{
-							drv_sleep(5);
+							drv_sleep(5+2);
 						}
 					}
 				    //receive one ack for the whole line
@@ -1815,7 +1815,7 @@ int cDownloader::download_hexintel_line(char* line, int len, int board_pid, bool
 						return -1;
 					}
 					//pause
-					drv_sleep(5);
+					drv_sleep(5+2);
 					//receive the ack from the board
 				    read_messages = m_candriver->receive_message(rxBuffer);
 				    ret=verify_ack(CMD_START, rxBuffer, read_messages);
