@@ -29,7 +29,7 @@
 byte	_board_ID = 15;	
 
 char    _additional_info [32];
-word    _build_number = 28;
+word    _build_number = 29;
 UInt8    mainLoopOVF[2]={0,0};
 int     _countBoardStatus[2] ={0,0};
 UInt8   highcurrent[4]={false,false,false,false};
@@ -122,11 +122,11 @@ void main(void)
 {
 	Int32 PWMoutput [JN];
 	Int32 temp_swap = 0;
-	word temporary;
+
 	byte i=0;
 	byte j=0;
 	word test=0;
-	Int32 t1val=0;
+	Int32 t1val=0; 
 	
 
 	/* gets the address of flash memory from the linker */
@@ -648,7 +648,6 @@ void main(void)
 		}
 //-------------------------------------------------------------------------------------------
 
-
 //******************************************************************************************/		
 // 							  		CHECK CURRENT                                  
 // 									
@@ -657,24 +656,20 @@ void main(void)
 		for (i=0; i<JN; i++) 
 		{
 			check_current(i, (_pid[i] > 0));		
-			compute_filtcurr(i);
-			
-			if ((_filt_current[i] > (_max_allowed_current[i]*1000)))
+			compute_i2t(i);
+			if (_filt_current[i] > MAX_I2T_CURRENT)
 			{
 				_control_mode[i] = MODE_IDLE;	
 				_pad_enabled[i] = false;
 				highcurrent[i]=true;
 				PWM_outputPadDisable(i);
-		
-				can_printf("BIG CURR AXIS:%d calibrate:%d",i,_calibrated[i]);
+				can_printf("BIG CURR AXIS:%d ",i);
 			} 			
 			else
 			{
-					highcurrent[i]=false;
+				highcurrent[i]=false;
 			}
 		}
-//-------------------------------------------------------------------------------------------
-
 
 //******************************************************************************************/		
 // 							  		CAN SEND BROADCAST                                 

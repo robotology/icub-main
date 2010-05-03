@@ -16,7 +16,7 @@ extern Int16   _flash_version;
  ***************************************************************************/
 byte flash_channels   = 0;
 Int16 _flash_addr 	  = 0;
-
+ 
 /***************************************************************************/
 /**
  * writes data on the flash memory at the specified address

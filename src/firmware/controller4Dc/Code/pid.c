@@ -761,8 +761,6 @@ void init_smooth_pid(byte jnt,Int16 finalp,Int16 finald,byte finals, Int16 Time)
     }	
     smoothing_step[jnt]=n[jnt]+1;
     smoothing[jnt]=true;
-    smoothing_step[jnt]==0;
-    smoothing_tip[jnt]==0;
 }
 void smooth_pid(byte jnt)
 {
