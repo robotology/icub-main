@@ -1284,7 +1284,9 @@ int cDownloader::startscheda(int board_pid, bool board_eeprom, int board_type)
 
     // riceve la risposta
     int read_messages = m_candriver->receive_message(rxBuffer);
-
+	
+	 printf (" read_messages %d",read_messages);
+       
     //One (or more) answers received
     for (int i=0; i<read_messages; i++)
         {
