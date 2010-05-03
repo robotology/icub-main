@@ -34,7 +34,7 @@ int cDriver::init (Searchable &config)
         return -1;
 
     int i;
-	for (i = 1700; i < 2047; i++) iCanBus->canIdAdd (i);
+	for (i = 0x700; i < 0x7FF; i++) iCanBus->canIdAdd (i);
 	for (i = 0x200; i < 0x2FF; i++) iCanBus->canIdAdd (i); //for strain board (polling messages used for calibration)
 
     iCanBus->canSetBaudRate(0); //0=1Mbit/s
