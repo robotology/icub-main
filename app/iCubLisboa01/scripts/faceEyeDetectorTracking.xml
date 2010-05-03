@@ -1,0 +1,51 @@
+<application>
+  <name>faceHistogramTracker</name>
+<dependencies>
+  <port>/icub</port>
+  <port>/icub/camcalib/left/out</port>
+</dependencies>
+<module>
+  <name>faceEyeDetector</name>
+  <parameters>--name /icub/faceEyeDetector --file /home/icub/iCub/conf/backup/icubFaceDetector.ini</parameters>
+  <node>cortex5</node>
+  <tag>face_eye_detector</tag>
+</module>
+<module>
+  <name>histTracker</name>
+  <parameters>--name /icub/histTracker --file /home/icub/iCub/conf/backup/icubHistTracker.ini</parameters>
+  <node>cortex6</node>
+  <tag>histogram_tracker</tag>
+</module>
+<module>
+  <name>yarpview</name>
+  <parameters>--name /icub/view/faceEyeDetector --x 0 --y 0 --synch</parameters>
+  <node>chico3</node>
+  <tag>viewFaceDetector</tag>
+</module>
+<module>
+  <name>yarpview</name>
+  <parameters>--name /icub/view/histTracker --x 0 --y 0 --synch</parameters>
+  <node>chico3</node>
+  <tag>viewHistogramTracker</tag>
+</module>
+<connection>
+  <from>/icub/camcalib/left/out</from>
+  <to>/icub/faceEyeDetector/rgb</to>
+  <protocol>tcp</protocol>
+</connection>
+<connection>
+  <from>/icub/faceEyeDetector/detectOut</from>
+  <to>/icub/histTracker/detectIn</to>
+  <protocol>tcp</protocol>
+</connection>
+<connection>
+  <from>/icub/faceEyeDetector/out</from>
+  <to>/icub/view/faceEyeDetector</to>
+  <protocol>tcp</protocol>
+</connection>
+<connection>
+  <from>/icub/histTracker/out</from>
+  <to>/icub/view/histTracker</to>
+  <protocol>tcp</protocol>
+</connection>
+</application>
