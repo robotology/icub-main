@@ -4,7 +4,7 @@
 #include "pwm_interface.h"
 
 Int32 MAX_CURRENT=1600;   //MAX current in milliAmpere
-Int32 MAX_I2T_CURRENT=2000000000;
+Int32 MAX_I2T_CURRENT=1800000000; //300mA*300mA*20000ms
 //Int32 _current_limit_I2T=1600; //NOT USED, we are using max_allowed_current  value in mA 
 Int32 _current[4] =		 {0,0,0,0};					/* current through the transistors*/
 Int32 _current_old[4] =  {0,0,0,0};					/* current at t-1*/
@@ -92,4 +92,27 @@ void compute_filtcurr(byte jnt)
 	filt_current_old[jnt] = _filt_current[jnt];
 	_filt_current[jnt] = 0.9886 * filt_current_old[jnt] + 5.7 * (current_old + current);
 	
+}
+
+void compute_i2t(byte jnt)
+{
+	Int32 _increment=0;
+	Int32 current;
+		if (_current[jnt] < 0)
+		current = -_current[jnt];
+	else
+		current = _current[jnt];
+	
+	_increment=current-_max_allowed_current[jnt];
+	
+	if (_increment>0)
+	{
+		_filt_current[jnt]+=((_increment*_increment));	
+	}
+	else 
+	{
+		_filt_current[jnt]+=((-_increment*_increment));
+	}
+	if (_filt_current[jnt]<0) _filt_current[jnt]=0;
+
 }
