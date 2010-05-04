@@ -99,3 +99,9 @@ Added control for the receiving of the PID values before enabling the PWM.
 2010-03-May  Maggiali Marco <marco.maggiali@iit.t>
 * Current build 29. maggia: added a I2T filter for the current. Build number 29
 
+2010-03-May  Maggiali Marco <marco.maggiali@iit.t>
+* Current build 30. maggia: BUILD NUMBER 30. TO BE TESTED. The target 1.28 and 1.30 do not enable the MAIS board. 
+In the struct canmsg_tag I have changed the CAN_data[16] in CAN_data[8]. I do not know why it was 16, since the data of a CAN message are at maximum 8.  
+
+ 
+
