@@ -44,6 +44,10 @@
 //
 //  The 8bits data messages are organized as following: data 0to 6 in the first message, from 7 to 14 in the second one.
 //
+//  Revision 2.0: Marco Maggiali 28/01/10
+//
+//  After SVN installation there was a mass in the code and there is no way to go back
+//
 
 #include <p30f4013.h>
 #include <timer.h>
@@ -62,26 +66,37 @@
 #include "ext_mux.h"
 #include "errors.h"
 #include "utils.h"
+#include "options.h"
 
 
-#define MAIS
 
+#ifdef MAIS 
+#ifdef STRAIN
+#error "Cannot define both MAIS and STRAIN!"
+#endif
+#endif
+
+#ifndef MAIS 
+#ifndef STRAIN
+#error "At least MAIS or STRAIN must be defined!"
+#endif
+#endif
 
 //board types
 #define BOARD_TYPE_STRAIN  0x06
 #define BOARD_TYPE_MAIS    0x07
 
-#define MAIS_VERSION       0x01
+#define MAIS_VERSION       0x02
 
-#define MAIS_RELEASE       0x01
+#define MAIS_RELEASE       0x00
 
 
-#define MAIS_BUILD         0x06
+#define MAIS_BUILD         0x00
 
 
 #ifdef MAIS 
   char VERSION=   	MAIS_VERSION;
-  char RELEASE=     	MAIS_RELEASE;
+  char RELEASE=    	MAIS_RELEASE;
   char BUILD=     	MAIS_BUILD;
   char BOARD_TYPE= 	BOARD_TYPE_MAIS;
 #endif 
@@ -130,7 +145,7 @@ struct s_eeprom _EEDATA(1) ee_data =
   0x0,           // EE_B_EEErased             :1
   0x0,           // EE_B_EnableWD             :1
   0x1,           // EE_B_EnableBOR            :1
-  0x0F,          // EE_CAN_BoardAddress;      :8
+  0x0E,          // EE_CAN_BoardAddress;      :8
   0x01,          // EE_CAN_MessageDataRate    :8
   0x04,          // EE_CAN_Speed;             :8
   {
@@ -265,12 +280,12 @@ switch (HESDATA_RESOLUTION)
 	  HESData2[7] = BoardConfig.EE_AN_ChannelValue[14] >>4;
 	  
 	  SID = (CAN_MSG_CLASS_PERIODIC) | ((BoardConfig.EE_CAN_BoardAddress)<<4) | (CAN_CMD_HES0TO6) ;
-	  CAN1_send(SID,0,7,HESData1);
-	 // CAN1SendMessage((CAN_TX_SID(SID)) & CAN_TX_EID_DIS & CAN_SUB_NOR_TX_REQ, (CAN_TX_EID(0x0)) & CAN_NOR_TX_REQ, HESData1,8,0); // buffer 0 
+//	 CAN1_send(SID,0,7,HESData1);
+	  CAN1SendMessage((CAN_TX_SID(SID)) & CAN_TX_EID_DIS & CAN_SUB_NOR_TX_REQ, (CAN_TX_EID(0x0)) & CAN_NOR_TX_REQ, HESData1,7,0); // buffer 0 
 	  // HES data 
 	  SID = (CAN_MSG_CLASS_PERIODIC) | ((BoardConfig.EE_CAN_BoardAddress)<<4) | (CAN_CMD_HES7TO14) ;
-	  CAN1_send(SID,0,8,HESData2);
-	 // CAN1SendMessage((CAN_TX_SID(SID)) & CAN_TX_EID_DIS & CAN_SUB_NOR_TX_REQ, (CAN_TX_EID(0x0)) & CAN_NOR_TX_REQ, HESData2,7,1); // buffer 1 
+	// CAN1_send(SID,0,8,HESData2);
+	  CAN1SendMessage((CAN_TX_SID(SID)) & CAN_TX_EID_DIS & CAN_SUB_NOR_TX_REQ, (CAN_TX_EID(0x0)) & CAN_NOR_TX_REQ, HESData2,8,1); // buffer 1 
  	}
  	break;
  	
@@ -285,13 +300,17 @@ switch (HESDATA_RESOLUTION)
 	  // class, source, type for periodIc messages
 	  // HES data 
 	  SID = (CAN_MSG_CLASS_PERIODIC) | ((BoardConfig.EE_CAN_BoardAddress)<<4) | (CAN_CMD_HES0TO3) ;
-	  CAN1_send(SID,0,8,HESData1);
+//	  CAN1_send(SID,0,8,HESData1);
+	  CAN1SendMessage((CAN_TX_SID(SID)) & CAN_TX_EID_DIS & CAN_SUB_NOR_TX_REQ, (CAN_TX_EID(0x0)) & CAN_NOR_TX_REQ, HESData1,8,0); // buffer 0 
 	  SID = (CAN_MSG_CLASS_PERIODIC) | ((BoardConfig.EE_CAN_BoardAddress)<<4) | (CAN_CMD_HES4TO7) ;
-	  CAN1_send(SID,0,8,HESData2);
+//	  CAN1_send(SID,0,8,HESData2);
+	  CAN1SendMessage((CAN_TX_SID(SID)) & CAN_TX_EID_DIS & CAN_SUB_NOR_TX_REQ, (CAN_TX_EID(0x0)) & CAN_NOR_TX_REQ, HESData1,8,1); // buffer 0 
 	  SID = (CAN_MSG_CLASS_PERIODIC) | ((BoardConfig.EE_CAN_BoardAddress)<<4) | (CAN_CMD_HES8TO11) ;
-	  CAN1_send(SID,0,8,HESData3);
+//	  CAN1_send(SID,0,8,HESData3);
+	  CAN1SendMessage((CAN_TX_SID(SID)) & CAN_TX_EID_DIS & CAN_SUB_NOR_TX_REQ, (CAN_TX_EID(0x0)) & CAN_NOR_TX_REQ, HESData1,8,2); // buffer 0 
 	  SID = (CAN_MSG_CLASS_PERIODIC) | ((BoardConfig.EE_CAN_BoardAddress)<<4) | (CAN_CMD_HES12TO14) ;
-	  CAN1_send(SID,0,6,HESData4);
+	  CAN1SendMessage((CAN_TX_SID(SID)) & CAN_TX_EID_DIS & CAN_SUB_NOR_TX_REQ, (CAN_TX_EID(0x0)) & CAN_NOR_TX_REQ, HESData1,8,0); // buffer 0 
+//	  CAN1_send(SID,0,6,HESData4);
  	}
  	break;
  	
@@ -308,7 +327,7 @@ switch (HESDATA_RESOLUTION)
 	  msg1.data3=BoardConfig.EE_AN_ChannelValue[3]&0xFFF;
 	  msg1.data4=BoardConfig.EE_AN_ChannelValue[4]&0xFFF;
 	  SID = (CAN_MSG_CLASS_PERIODIC) | ((BoardConfig.EE_CAN_BoardAddress)<<4) | (CAN_CMD_HES0TO4) ;
-	  CAN1_send(SID,0,8,msg1.data);
+//	  CAN1_send(SID,0,8,msg1.data);
 	  
       msg1.data0=BoardConfig.EE_AN_ChannelValue[5]&0xFFF;
 	  msg1.data1=BoardConfig.EE_AN_ChannelValue[6]&0xFFF;
@@ -316,7 +335,7 @@ switch (HESDATA_RESOLUTION)
 	  msg1.data3=BoardConfig.EE_AN_ChannelValue[8]&0xFFF;
 	  msg1.data4=BoardConfig.EE_AN_ChannelValue[9]&0xFFF;
 	  SID = (CAN_MSG_CLASS_PERIODIC) | ((BoardConfig.EE_CAN_BoardAddress)<<4) | (CAN_CMD_HES5TO9) ;
-	  CAN1_send(SID,0,8,msg1.data);
+//	  CAN1_send(SID,0,8,msg1.data);
 	  
 	  msg1.data0=BoardConfig.EE_AN_ChannelValue[10]&0xFFF;
 	  msg1.data1=BoardConfig.EE_AN_ChannelValue[11]&0xFFF;
@@ -324,7 +343,7 @@ switch (HESDATA_RESOLUTION)
 	  msg1.data3=BoardConfig.EE_AN_ChannelValue[13]&0xFFF;
 	  msg1.data4=BoardConfig.EE_AN_ChannelValue[14]&0xFFF;
 	  SID = (CAN_MSG_CLASS_PERIODIC) | ((BoardConfig.EE_CAN_BoardAddress)<<4) | (CAN_CMD_HES10TO14) ;
-	  CAN1_send(SID,0,8,msg1.data);
+//	  CAN1_send(SID,0,8,msg1.data);
 	  
  	}
  	default:
@@ -363,7 +382,11 @@ int main(void)
 
   // turn IO ports and periferals
   InitPorts();
-  
+    //
+  // ADC12 used only for MAIS Boards
+  // HES sampling
+  //
+  init_internal_adc();
   //Init external Mux
   AMUXInit();
   
@@ -451,11 +474,7 @@ int main(void)
     T3_SOURCE_INT, match_value);
 
  
-  //
-  // ADC12 used only for MAIS Boards
-  // HES sampling
-  //
-  init_internal_adc();
+
 
   // flashled 
   
