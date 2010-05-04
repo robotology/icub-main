@@ -50,6 +50,8 @@ public:
 	bool reinitialized;
 	float eyeLidRot;
 
+    int inc;
+
 	dSpaceID iCub;
 	//dBodyID body_cube[1000];
 	dGeomID geom_cube[1];

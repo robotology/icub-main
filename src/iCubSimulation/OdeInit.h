@@ -35,6 +35,8 @@ public:
 	ICubSim *_iCub;
 	worldSim *_wrld;
 	bool stop;
+    bool sync;
+
 
 	OdeInit():mutex(1)
 	{	

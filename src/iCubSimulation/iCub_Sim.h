@@ -104,7 +104,7 @@ class Simulation{
     static VideoTexture *video;
 
 public:
-    
+        
 	static void draw(){
 		odeinit._iCub->draw();
 		odeinit._wrld->draw();
@@ -535,7 +535,7 @@ assert(o1);
 	}
 
 	static void draw_screen(){
-
+        
 		static clock_t startTimeODE= clock(), finishTimeODE= clock();
 		glClear(GL_COLOR_BUFFER_BIT|GL_DEPTH_BUFFER_BIT); // refresh opengl
 
@@ -580,7 +580,7 @@ assert(o1);
 		glViewport(0,0,320,240);
 		glMatrixMode (GL_PROJECTION);
 		glLoadIdentity();
-		gluPerspective( 75, 320/240, 0.01, 100.0 );
+		gluPerspective( 75, 320/240, 0.04, 100.0 );
 	
 		if (left){
 			pos = dGeomGetPosition(odeinit._iCub->Leye1_geom);
@@ -626,6 +626,7 @@ assert(o1);
 			glRotatef (yrot, 0,1,0);
 			glTranslated(-xpos,-ypos,-zpos);
 		}
+
 		//draw the ground
 		glColor3d(0.5,0.5,1);
 		glEnable(GL_TEXTURE_2D);
@@ -637,7 +638,7 @@ assert(o1);
 		glDisable(GL_TEXTURE_2D);
 		draw();
 		glEnable(GL_TEXTURE_2D);
-		drawSkyDome(0,0,0,50,50,50); // Draw the Skybox		
+		drawSkyDome(0,0,0,50,50,50); // Draw the Skybox	
 	}
 
     void clearBuffer(){
@@ -669,12 +670,7 @@ assert(o1);
 		OldLinearVel[1] = LinearVel[1];
 		OldLinearVel[2] = LinearVel[2];
         
-		////Add linear acceleration -------- this is used for free acceleration without taking into account the gravity
-        /*
-        inertialReport.addDouble( LinearAccel[0] );
-        inertialReport.addDouble( LinearAccel[1] );
-        inertialReport.addDouble( LinearAccel[2] ); 
-        */
+		////Add linear acceleration
         inertialReport.addDouble( -(sin(pitch) * cos(roll)) * 9.8 );
         inertialReport.addDouble( (sin(roll)) * 9.8 );
         inertialReport.addDouble( (cos(pitch) * cos(roll)) * 9.8 );
@@ -684,7 +680,6 @@ assert(o1);
         inertialReport.addDouble(-dBodyGetAngularVel(odeinit._iCub->head)[0] / 10);
         inertialReport.addDouble( dBodyGetAngularVel(odeinit._iCub->head)[1] / 10);
         
-    
         //Add magnetic fields
         inertialReport.addDouble(0.0);
         inertialReport.addDouble(0.0);
@@ -698,7 +693,8 @@ assert(o1);
 		
 		odeinit.mutex.wait();
 		dSpaceCollide(odeinit.space,0,&nearCallback);
-		dWorldStep(odeinit.world,0.01); // TIMESTEP
+		dWorldStep(odeinit.world, 0.01); // TIMESTEP
+        odeinit.sync = true;
 		odeinit.mutex.post();
 
 		if (shouldSendTouch()) {
@@ -726,7 +722,7 @@ assert(o1);
         // this needs to be kept synchronized with the timestep in
         // dWorldStep, in order to get correct world clock time
         //  --paulfitz
-		int delay = 100;
+		int delay = 50;
 		id = SDL_AddTimer( delay, &Simulation::ODE_process, (void*)1);
 
 		return(0);
@@ -734,24 +730,24 @@ assert(o1);
 	/*
 	static void SPS()     
 	{
-	static float sps           = 0.0f;      
-	static float previousTime  = 0.0f; 
-	static int currentsps; 
-	static char  strSPS[60]    = {0};
+	    static float sps           = 0.0f;      
+	    static float previousTime  = 0.0f; 
+	    static int currentsps; 
+	    static char  strSPS[60]    = {0};
 
-	float currentTime = (GetTickCount() * 0.001f);    
+	    float currentTime = (GetTickCount() * 0.001f);    
 
-	++sps; // Increment the SPS counter
+	    ++sps; // Increment the SPS counter
 
-	if( currentTime - previousTime > 1.0f )
-	{
-	previousTime = currentTime;
-	currentsps = int(sps);
-	printf("current SPS: %d\n",currentsps);
-	sps = 0.0f;
-	}
+	if( currentTime - previousTime > 1.0f ){
+	    previousTime = currentTime;
+	    currentsps = int(sps);
+	    printf("current SPS: %d\n",currentsps);
+	    sps = 0.0f;
+	    }
 	}
 	*/
+
 	static void sighandler(int sig){
 		odeinit.stop = true;
 		cout << "\nCAUGHT Ctrl-c" << endl;
@@ -797,8 +793,7 @@ assert(o1);
 			/* Draw the screen. */
 			if ( !odeinit._wrld->WAITLOADING ){
 				odeinit.mutexTexture.wait();
-				draw_screen();
-
+				draw_screen();  
 				odeinit.mutexTexture.post();
 			}
 			else{

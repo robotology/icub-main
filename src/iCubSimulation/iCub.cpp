@@ -26,11 +26,7 @@ using std::cout;
 using std::endl;
 
 #include "ControlBoardInterfacesImpl_without_ace.inl"
-//static const int VertexCount = 288;
-//static const int IndexCount = 96 * 3;
 
-//float Vertices[VertexCount * 3];
-//int Indices[IndexCount / 3][3];
 Model *iCubHeadModel;
 Model *topEyeLidModel;
 Model *bottomEyeLidModel;
@@ -164,7 +160,7 @@ void ICubSim::setJointSpeeds() {
 	}
 	dJointSetHingeParam(Hjoints[0], dParamVel, h_speed[0]);
 	for (int x=1; x<6; x++){//Joint parameters
-	dJointSetHingeParam(Hjoints[x], dParamVel, h_speed[x]);
+	    dJointSetHingeParam(Hjoints[x], dParamVel, h_speed[x]);
 	}
 	
 	/*dMatrix3 R;
@@ -839,8 +835,6 @@ void ICubSim::init( dWorldID world, dSpaceID space, dReal X, dReal Y, dReal Z ) 
 	iCubHeadModel->loadModelData(finder.find("data/model/iCub_Head.ms3d").c_str());
 	topEyeLidModel->loadModelData(finder.find("data/model/topEyeLid.ms3d").c_str());
 	bottomEyeLidModel->loadModelData(finder.find("data/model/bottomEyeLid.ms3d").c_str());
-    
-   // screenGeom = dCreateBox(space,1.0,1.0,0.01);
 
 	//mass
 	dMass m, m2;

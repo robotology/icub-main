@@ -985,7 +985,7 @@ bool iCubSimulationControl::setRefSpeedRaw(int j, double sp)
         {
             _mutex.wait();
 			 vel = sp *180/M_PI ;
-             vels[j] = vel/10;
+             vels[j] = vel/20;
 			 printf("the velocity: %lf %lf\n",vel, sp );
             _mutex.post();
             return true;
@@ -998,7 +998,7 @@ bool iCubSimulationControl::setRefSpeedsRaw(const double *spds)
 	_mutex.wait();
 	for(int i = 0; i<njoints; i++)
         {
-             vel = spds[i]/10;
+             vel = spds[i]/20;
 			 
 	}
 	_mutex.post();

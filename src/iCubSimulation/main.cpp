@@ -1006,11 +1006,11 @@ bool shouldSendInertial() {
 
 
 void sendVision(){
-simulatorModule->displayStep(0);
+    simulatorModule->displayStep(0);
 }
 
 static void displayStep(int pause) {
-    simulatorModule->displayStep(pause);
+   // simulatorModule->displayStep(pause);
 }
 
 void SimulatorModule::init()
@@ -1048,12 +1048,6 @@ void SimulatorModule::init()
 
 	//odeinit._wrld->model_DIR = finder.findPath("model_path_default").asString();
 	odeinit._wrld->model_DIR = finder.findPath("model_path_default");//findPath("model_path_default");
-		
-	//string pPath;
-	//pPath = getenv ("ICUB_ROOT");
-	//odeinit._wrld->model_DIR = pPath + "/app/simConfig/" + odeinit._wrld->model_DIR;
-
-	//cout << "\n\n\n\n\n" <<  odeinit._wrld->model_DIR << "\n\n\n\n" << endl;
 	
   if(!iCubLArm->isValid() || !iCubRArm->isValid() || !iCubHead->isValid() || !iCubLLeg->isValid() || !iCubRLeg->isValid() || !iCubTorso->isValid())
     {
@@ -1134,98 +1128,100 @@ bool SimulatorModule::runModule() {
 
 
 void SimulatorModule::displayStep(int pause) {
+    if (odeinit.sync){
+        bool needLeft = (portLeft.getOutputCount()>0);// || viewParam1;
+        bool needRight = (portRight.getOutputCount()>0);// || viewParam2;
+        bool needWide = (portWide.getOutputCount()>0);// || (!(viewParam1 || viewParam2));
+        bool needLeftFov = (portLeftFov.getOutputCount()>0);
+        bool needLeftLog = (portLeftLog.getOutputCount()>0);
+        bool needRightFov = (portRightFov.getOutputCount()>0);
+        bool needRightLog = (portRightLog.getOutputCount()>0); 
 
-    bool needLeft = (portLeft.getOutputCount()>0);// || viewParam1;
-    bool needRight = (portRight.getOutputCount()>0);// || viewParam2;
-    bool needWide = (portWide.getOutputCount()>0);// || (!(viewParam1 || viewParam2));
-    bool needLeftFov = (portLeftFov.getOutputCount()>0);
-    bool needLeftLog = (portLeftLog.getOutputCount()>0);
-    bool needRightFov = (portRightFov.getOutputCount()>0);
-    bool needRightLog = (portRightLog.getOutputCount()>0); 
-
-    mutex.wait();
-    bool done = stopped;
-    mutex.post();
+        mutex.wait();
+        //stopping
+        bool done = stopped;
+        mutex.post();
 
 
-#ifndef WIN32_DYNAMIC_LINK 
-    const char *order = "lrw";
-    if (viewParam1) {
-        order = "rwl";
-    }
-    if (viewParam2) {
-        order = "lwr";
-    }
-
-	for (int i=0; i<3; i++) {
-        char ch = order[i];
-        switch (ch) {
-        case 'l':
-            if (needLeft) {
-				sim->drawView(true,false,false);
-                getImage();
-				sendImage(portLeft);
-				sim->clearBuffer();
-            }
-            if (needLeftFov) {
-				sim->drawView(true,false,false);
-                getImage();
-				sendImageFov(portLeftFov);
-				sim->clearBuffer();
-            }
-            if (needLeftLog) {
-				sim->drawView(true,false,false);
-                getImage();
-				sendImageLog(portLeftLog);
-				sim->clearBuffer();
-            }
-            break;
-        case 'r':
-			if (needRight) {
-				sim->drawView(false,true,false);
-                getImage();
-				sendImage(portRight);
-				sim->clearBuffer();
-            }
-            if (needRightFov) {
-				sim->drawView(false,true,false);
-                getImage();
-				sendImageFov(portRightFov);
-				sim->clearBuffer();
-            }
-            if (needRightLog) {
-				sim->drawView(false,true,false);
-                getImage();
-				sendImageLog(portRightLog);
-				sim->clearBuffer();
-            }
-            break;
-        case 'w':
-            if (needWide) {
-				sim->drawView(false,false,true);
-                getImage();
-				sendImage(portWide);
-				sim->clearBuffer();
-            }
-            break;
+    #ifndef WIN32_DYNAMIC_LINK 
+        const char *order = "lrw";
+        if (viewParam1) {
+            order = "rwl";
         }
+        if (viewParam2) {
+            order = "lwr";
+        }
+
+	    for (int i=0; i<3; i++) {
+            char ch = order[i];
+            switch (ch) {
+            case 'l':
+                if (needLeft) {
+				    sim->drawView(true,false,false);
+                    getImage();
+				    sendImage(portLeft);
+				    sim->clearBuffer();
+                }
+                if (needLeftFov) {
+				    sim->drawView(true,false,false);
+                    getImage();
+				    sendImageFov(portLeftFov);
+				    sim->clearBuffer();
+                }
+                if (needLeftLog) {
+				    sim->drawView(true,false,false);
+                    getImage();
+				    sendImageLog(portLeftLog);
+				    sim->clearBuffer();
+                }
+                break;
+            case 'r':
+			    if (needRight) {
+				    sim->drawView(false,true,false);
+                    getImage();
+				    sendImage(portRight);
+				    sim->clearBuffer();
+                }
+                if (needRightFov) {
+				    sim->drawView(false,true,false);
+                    getImage();
+				    sendImageFov(portRightFov);
+				    sim->clearBuffer();
+                }
+                if (needRightLog) {
+				    sim->drawView(false,true,false);
+                    getImage();
+				    sendImageLog(portRightLog);
+				    sim->clearBuffer();
+                }
+                break;
+            case 'w':
+                if (needWide) {
+				    sim->drawView(false,false,true);
+                    getImage();
+				    sendImage(portWide);
+				    sim->clearBuffer();
+                }
+               break;
+            }
+        }
+    #else
+        // per-image operations can be done here
+        if (wrappedStep!=NULL) {
+            wrappedStep(pause);
+        }
+    #endif
+    /**/
+        double now = Time::now();
+        static double first = now;
+        static double target = 0;
+        now -= first;
+        target += sloth;
+        if (target>now) {
+            Time::delay(target-now);
+        }
+         odeinit.sync = false;
     }
-#else
-    // per-image operations can be done here
-    if (wrappedStep!=NULL) {
-        wrappedStep(pause);
-    }
-#endif
-/**/
-    double now = Time::now();
-    static double first = now;
-    static double target = 0;
-    now -= first;
-    target += sloth;
-    if (target>now) {
-        Time::delay(target-now);
-    }
-    
 }
 
 void SimulatorModule::getImage(){
@@ -1247,7 +1243,6 @@ void SimulatorModule::getImage(){
         target(x,y) = img(x,img.height()-1-y);
     }
     buffer.copy(target);
-
     glClear(GL_COLOR_BUFFER_BIT|GL_DEPTH_BUFFER_BIT);
 }
 
@@ -1260,7 +1255,6 @@ void SimulatorModule::sendImage(BufferedPort<ImageOf<PixelRgb> >& port) {
 void SimulatorModule::sendImageFov(BufferedPort<ImageOf<PixelRgb> >& portFov) {
     static ImageOf<PixelRgb> fov;
     ImageOf<PixelRgb>& targetFov = portFov.prepare();
-    //getFovealImage ( fov );
     subsampleFovea( fov, buffer );
     targetFov.copy( fov );
     portFov.write();
@@ -1320,13 +1314,6 @@ bool SimulatorModule::cartToLogPolar(ImageOf<PixelRgb>& lp, const ImageOf<PixelR
     }
     return true;
 }
-
-/*
-bool SimulatorModule::getFovealImage(yarp::sig::ImageOf<yarp::sig::PixelRgb>& image) { 
-    image.resize (ifovea, ifovea);
-    return subsampleFovea(image, buffer);
-}
-*/
 
 bool SimulatorModule::subsampleFovea(yarp::sig::ImageOf<yarp::sig::PixelRgb>& dst, 
                                           const yarp::sig::ImageOf<yarp::sig::PixelRgb>& src) {
