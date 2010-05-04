@@ -227,15 +227,10 @@ byte can_interface (void)
 			if (_canmsg.CAN_ID_class == CLASS_PERIODIC_SENS)
 			{
 			
-				switch (_canmsg.CAN_ID_src)
-				{
-					case MAIS_CAN_ID:
-					
-						mais_counter=0;
-						CAN_SET_ACTIVE_ENCODER_POSITION_HANDLER(0)
-						break;
-					default:
-						break;
+				if ((_canmsg.CAN_messID==MAIS_8bit_D_MSG) || (_canmsg.CAN_messID==MAIS_8bit_C_MSG))
+				{	
+					mais_counter=0;
+					CAN_SET_ACTIVE_ENCODER_POSITION_HANDLER(0)	
 				}
 			}
 		

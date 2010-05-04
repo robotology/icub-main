@@ -29,7 +29,7 @@
 byte	_board_ID = 15;	
 
 char    _additional_info [32];
-word    _build_number = 29;
+word    _build_number = 30;
 UInt8    mainLoopOVF[2]={0,0};
 int     _countBoardStatus[2] ={0,0};
 UInt8   highcurrent[4]={false,false,false,false};
@@ -37,7 +37,7 @@ Int16   _flash_version=0;
 UInt8   mais_counter=0;
 UInt16  mais_init_request=0;
 #define  MAX_MAIS_COUNTER 15
-#define  MAIS_INIT_REQUEST 500
+//#define  MAIS_INIT_REQUEST 500
 
  
 #if ((VERSION==0x0120) || (VERSION==0x0121) || (VERSION==0x0128) || (VERSION==0x0130))
@@ -229,24 +229,24 @@ void main(void)
 	
 	
 	// set the resolution to 8bits 
-	_initMAIS[0]=0x10;
-	_initMAIS[1]=0x2;	
-	idtx = 0x200 + MAIS_CAN_ID;				
-	CAN1_send(idtx, DATA_FRAME, 2, _initMAIS);
+//	_initMAIS[0]=0x10;
+//	_initMAIS[1]=0x2;	
+//	idtx = 0x200 + MAIS_CAN_ID;				
+//	CAN1_send(idtx, DATA_FRAME, 2, _initMAIS);
 	
     // set the baudrate in ms   
-	_initMAIS[0]=0x08;
-	_initMAIS[1]=0x0A;  //10 ms 
-	mais_counter=0;	
-	idtx = 0x200 + MAIS_CAN_ID;				
-	CAN1_send(idtx, DATA_FRAME, 2, _initMAIS);
+//	_initMAIS[0]=0x08;
+//	_initMAIS[1]=0x0A;  //10 ms 
+//	mais_counter=0;	
+//	idtx = 0x200 + MAIS_CAN_ID;				
+//	CAN1_send(idtx, DATA_FRAME, 2, _initMAIS);
 	
 	//start broadcast
-	_initMAIS[0]=0x07;
-	_initMAIS[1]=0x00;  //10 ms 
-	mais_counter=0;	
-	idtx = 0x200 + MAIS_CAN_ID;				
-	CAN1_send(idtx, DATA_FRAME, 2, _initMAIS);
+//	_initMAIS[0]=0x07;
+//	_initMAIS[1]=0x00;  //10 ms 
+//	mais_counter=0;	
+//	idtx = 0x200 + MAIS_CAN_ID;				
+//	CAN1_send(idtx, DATA_FRAME, 2, _initMAIS);
 	
 #endif	
 
@@ -340,42 +340,14 @@ void main(void)
 
 		if (mais_counter>=MAX_MAIS_COUNTER)
 		{
-			if(mais_init_request==MAIS_INIT_REQUEST)
-			{
-				// MAIS initialization
-				// set the resolution to 8bits 
-				_initMAIS[0]=0x10;
-				_initMAIS[1]=0x2;	
-				idtx = 0x200 + MAIS_CAN_ID;				
-				CAN1_send(idtx, DATA_FRAME, 2, _initMAIS);
-
-				// set the baudrate in ms   
-				_initMAIS[0]=0x08;
-				_initMAIS[1]=0x0A;  //10 ms 
-				idtx = 0x200 + MAIS_CAN_ID;				
-				CAN1_send(idtx, DATA_FRAME, 2, _initMAIS);
-				
-				//start broadcast
-	       		_initMAIS[0]=0x07;
-				_initMAIS[1]=0x00;  //on
-				idtx = 0x200 + MAIS_CAN_ID;				
-				CAN1_send(idtx, DATA_FRAME, 2, _initMAIS);
-				mais_init_request=0;	
-			}
-			else
-			{
-				mais_init_request++;	
-			}
 			for (i=0; i<JN; i++)
 			{
 				_control_mode[i] = MODE_IDLE;
 			}
-			#ifdef  DEBUG_CAN_MSG 
 		    can_printf("MAIS is not broadcasting");	
-		    #endif
 		}
 		else
-		    mais_counter++;
+		    mais_counter++; //this variable is set to zero whenever a message from the MAIS is received
 		
 		#ifdef DEBUG_ANA_INC
 		for (i=0; i<JN; i++)
