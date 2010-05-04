@@ -145,7 +145,6 @@ extern volatile word SR_lock;
  */
 #define __ENIGROUP(x, level) \
 { \
-	int mask; \
 	int in = (x & 0x0003) << 2; \
 	int grp = x >> 2; \
 	(*(char *)(GPR0+grp)) &= ~(0x0f << in); \
