@@ -10,6 +10,7 @@ void InitPorts()
   // 
   // MAIS
   // 
+ 
   TRISFbits.TRISF4 = 0; // set F4 as out (LED Yellow)
   TRISDbits.TRISD1 = 0; // set F5 as out (LED Blue)
 }

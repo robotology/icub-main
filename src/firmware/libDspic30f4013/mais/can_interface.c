@@ -295,6 +295,8 @@ void ParseCommand() //, unsigned int SID)
 
 {
 	 canmsg_t *msg;
+	 unsigned int tmp;
+	 unsigned int j;
 	 canmsg_t CAN_Msg;
 	 unsigned char Txdata[9]; 
  	 char datalen;
@@ -335,7 +337,7 @@ void ParseCommand() //, unsigned int SID)
 					if (SAVE_EEPROM_ATONCE)
 					{
 					    SaveEepromBoardConfig();
-					    SaveEepromIIRFilter();
+				//	    SaveEepromIIRFilter();
 					}
 			      }
 			      else 
@@ -669,7 +671,7 @@ void ParseCommand() //, unsigned int SID)
 		    					  // 0x205 len 1  data 9 
 		    {
 			  SaveEepromBoardConfig();
-		 	  SaveEepromIIRFilter();
+		// 	  SaveEepromIIRFilter();
 	
 		      // todo: checksum calcuation
 		 
@@ -693,14 +695,17 @@ void ParseCommand() //, unsigned int SID)
 /////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
 		case (CAN_MSG_CLASS_LOADER>>8):
 		{
+//		if (msg->CAN_Poll_Msg_Dest==( BoardConfig.EE_CAN_BoardAddress ))
+//	 	{	
 		//	DisableIntT1;
 			DisableIntT2; 
 	 		DisableIntT3;
-	
+		
 			switch (msg->CAN_Per_Msg_PayLoad[0])
 			{
 				case CMD_BROADCAST: 
 				{
+					
 	   				//Create ID for CAN message
 	      			i = CAN_MSG_CLASS_LOADER | ( BoardConfig.EE_CAN_BoardAddress << 4 ) | (0);
 	     	        Txdata[0] = CMD_BROADCAST;
@@ -762,7 +767,7 @@ void ParseCommand() //, unsigned int SID)
 						{
 		 					addinfo_part=0;
 						    SaveEepromBoardConfig();
-						    SaveEepromIIRFilter();
+			//			    SaveEepromIIRFilter();
 						}
 						else
 						{					
@@ -789,7 +794,8 @@ void ParseCommand() //, unsigned int SID)
 					SendCanProblem();
 				}
 				break;
-			}
+			}	
+//		}
 		}
 		break;
 	
@@ -800,7 +806,8 @@ void ParseCommand() //, unsigned int SID)
 			SendCanProblem();
 		}
 		break;
-	  }
+		}
+	  	
 	
 	  // Load message ID , Data into transmit buffer and set transmit request bit
 	  // swap source and destination
