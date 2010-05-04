@@ -30,7 +30,8 @@
 /* can bus message structure */
 typedef struct canmsg_tag 
 {
-	byte 	CAN_data[16];					// CAN bus message 
+#warning "I have changed it to 8, I do not know wy it was 16"
+	byte 	CAN_data[8];					// CAN bus message 
 	dword 	CAN_messID;						// message ID - arbitration 
 	byte 	CAN_frameType;					// data or remote frame 
 	byte 	CAN_frameFormat;				// standard or extended frame 
