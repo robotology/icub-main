@@ -85,9 +85,9 @@ extern char BOARD_TYPE;
 #define CAN_CMD_HES12TO14         0xF // 010 SOURCE DEST 0xC h12 h12 h13 h13 h14 h14 h15 h15
 
 // hall effect sensors from 0 to 7*8bits
-#define CAN_CMD_HES0TO7           0xC // 010 SOURCE DEST 0xC h0 h1 h2 h3 h4 h5 h6 h7
+#define CAN_CMD_HES0TO6           0xC // 010 SOURCE DEST 0xC h0 h1 h2 h3 h4 h5 h6 
 // hall effect sensors from 8 to 14*8bits
-#define CAN_CMD_HES8TO14          0xD // 010 SOURCE DEST 0xD h8 h9 h10 h11 h12 h13 h14 
+#define CAN_CMD_HES7TO14          0xD // 010 SOURCE DEST 0xD h7 h8 h9 h10 h11 h12 h13 h14 
 
 // hall effect sensors from 0 to 4*12bits
 #define CAN_CMD_HES0TO4           0xC // 010 SOURCE DEST 0xC h0 h1 h2 h3 h4 
