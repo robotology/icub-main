@@ -10,15 +10,12 @@
 //IPP include
 #include <ipp.h>
 
-using namespace yarp::os;
-using namespace yarp::sig;
-
 
 const double TIMEOUT=0.1;
 const double STOP_TIME=3;
 const int THREAD_RATE=30;
 
-class rgbProcessorThread: public RateThread
+class rgbProcessorThread: public yarp::os::RateThread
 {
 private:
     /**
@@ -40,7 +37,7 @@ private:
     /***
     * temporary image mono for processing
     */
-    ImageOf<PixelMono>* tmp;
+    yarp::sig::ImageOf<yarp::sig::PixelMono>* tmp;
     /**
     * temporary psb for processing
     */
@@ -52,7 +49,7 @@ private:
     /**
     * input image
     */
-    ImageOf<PixelRgb> *img; 
+    yarp::sig::ImageOf<yarp::sig::PixelRgb> *img; 
     
     /**
     * temp variable for the plane extraction
@@ -76,15 +73,15 @@ private:
     /**
     * function that extracts the blue plane
     */
-    void getBluePlane(ImageOf<PixelRgb>* inputImage,ImageOf<PixelMono>* tmp);
+    void getBluePlane(yarp::sig::ImageOf<yarp::sig::PixelRgb>* inputImage,yarp::sig::ImageOf<yarp::sig::PixelMono>* tmp);
     /**
     * function that extracts the red plane
     */
-    void getRedPlane(ImageOf<PixelRgb>* inputImage,ImageOf<PixelMono>* tmp);
+    void getRedPlane(yarp::sig::ImageOf<yarp::sig::PixelRgb>* inputImage,yarp::sig::ImageOf<yarp::sig::PixelMono>* tmp);
     /**
     * function that extracts the green plane
     */
-    void getGreenPlane(ImageOf<PixelRgb>* inputImage,ImageOf<PixelMono>* tmp);
+    void getGreenPlane(yarp::sig::ImageOf<yarp::sig::PixelRgb>* inputImage,yarp::sig::ImageOf<yarp::sig::PixelMono>* tmp);
     /**
     * function that calculates the colour opponency maps as differences of Gaussians
     */
@@ -121,38 +118,38 @@ public:
     /**
     * function that extracts planes from the input image
     */
-    void extractPlanes(ImageOf<PixelRgb>* inputImage);
+    void extractPlanes(yarp::sig::ImageOf<yarp::sig::PixelRgb>* inputImage);
     /**
     * set the reference to the input image
     */
-    void setInputImage(ImageOf<PixelRgb>* inputImage);
+    void setInputImage(yarp::sig::ImageOf<yarp::sig::PixelRgb>* inputImage);
 
     //______ public attributes________
 
     /**
     *yarp mono image of the red channel
     */
-    ImageOf<PixelMono>* redPlane; 
+    yarp::sig::ImageOf<yarp::sig::PixelMono>* redPlane; 
     /**
     *yarp mono image of the green channel
     */
-    ImageOf<PixelMono>* greenPlane; 
+    yarp::sig::ImageOf<yarp::sig::PixelMono>* greenPlane; 
     /**
     *yarp mono image of the blue channel
     */
-    ImageOf<PixelMono>* bluePlane; 
+    yarp::sig::ImageOf<yarp::sig::PixelMono>* bluePlane; 
     /**
     * yarp image for Opponency Map R+G-
     */
-    ImageOf<PixelMono>* redGreen_yarp;
+    yarp::sig::ImageOf<yarp::sig::PixelMono>* redGreen_yarp;
     /**
     * yarp image for Opponency Map G+R-
     */
-    ImageOf<PixelMono>* greenRed_yarp;
+    yarp::sig::ImageOf<yarp::sig::PixelMono>* greenRed_yarp;
     /**
     * yarp image for Opponency Map B+Y-
     */
-    ImageOf<PixelMono>* blueYellow_yarp;
+    yarp::sig::ImageOf<yarp::sig::PixelMono>* blueYellow_yarp;
 };
 
 #endif //_RGBPROCESSORTHREAD_H_

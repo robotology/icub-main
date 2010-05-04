@@ -1,15 +1,12 @@
 // -*- mode:C++; tab-width:4; c-basic-offset:4; indent-tabs-mode:nil -*-
 
-
 #include <iCub/colourProcessorModule.h>
 #include <yarp/os/all.h>
 #include <string.h>
-
 #include <iostream>
 
 using namespace std;
-
-
+using namespace yarp::os;
 
 int main(int argc, char *argv[]) {
         
@@ -73,6 +70,7 @@ int main(int argc, char *argv[]) {
     module.setOptions(prop);
 
 
-    return module.runModule(argc,argv);
+    return module.runModule(finder);
 
 }
+//----- end-of-file --- ( next line intentionally left blank ) ------------------

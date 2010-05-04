@@ -14,8 +14,6 @@
 #include <yarp/os/all.h>
 #include <yarp/sig/all.h>
 
-using namespace yarp::os;
-using namespace yarp::sig;
 
 // general command vocab's
 #define COMMAND_VOCAB_HELP VOCAB4('h','e','l','p')
@@ -100,16 +98,16 @@ none
 
 
 Output ports:
-- <name>/red:o: streams out a yarp::sig::ImageOf<PixelMono> which is the red plane
-- <name>/green:o:  streams out a yarp::sig::Image<PixelMono> which is the green plane
-- <name>/blue:o:  streams out a yarp::sig::Image<PixelMono> which is the blue plane
-- <name>/ychannel:o: streams out a yarp::sig::ImageOf<PixelMono> which is the intensity information
-- <name>/uvchannel:o:  streams out a yarp::sig::Image<PixelMono> which is the chrominance information
-- <name>/uchannel:o:    streams out a yarp::sig::Image<PixelMono> which corrispond to the u channel
-- <name>/vchannel:o:    streams out a yarp::sig::Image<PixelMono> which corrispond to the v channel     
-- <name>/rg:o:  streams out a yarp::sig::Image<PixelMono> which corrispond to the colourOpponency Map defined as R+G-
-- <name>/gr:o:  streams out a yarp::sig::Image<PixelMono> which corrispond to the colourOpponency Map defined as G+R-
-- <name>/by:o:  streams out a yarp::sig::Image<PixelMono> which corrispond to the colourOpponency Map defined as B+Y-
+- <name>/red:o: streams out a yarp::sig::ImageOf<yarp::sig::PixelMono> which is the red plane
+- <name>/green:o:  streams out a yarp::sig::Image<yarp::sig::PixelMono> which is the green plane
+- <name>/blue:o:  streams out a yarp::sig::Image<yarp::sig::PixelMono> which is the blue plane
+- <name>/ychannel:o: streams out a yarp::sig::ImageOf<yarp::sig::PixelMono> which is the intensity information
+- <name>/uvchannel:o:  streams out a yarp::sig::Image<yarp::sig::PixelMono> which is the chrominance information
+- <name>/uchannel:o:    streams out a yarp::sig::Image<yarp::sig::PixelMono> which corrispond to the u channel
+- <name>/vchannel:o:    streams out a yarp::sig::Image<yarp::sig::PixelMono> which corrispond to the v channel     
+- <name>/rg:o:  streams out a yarp::sig::Image<yarp::sig::PixelMono> which corrispond to the colourOpponency Map defined as R+G-
+- <name>/gr:o:  streams out a yarp::sig::Image<yarp::sig::PixelMono> which corrispond to the colourOpponency Map defined as G+R-
+- <name>/by:o:  streams out a yarp::sig::Image<yarp::sig::PixelMono> which corrispond to the colourOpponency Map defined as B+Y-
 
 
 Input ports:
@@ -140,56 +138,56 @@ CopyPolicy: Released under the terms of the GNU GPL v2.0.
 **/
 
 
-class colourProcessorModule : public Module{
+class colourProcessorModule : public yarp::os::RFModule{
 private:
     /**
     * port where the input image is read from
     */
-    BufferedPort<ImageOf<PixelRgb> > inputPort;
+    yarp::os::BufferedPort<yarp::sig::ImageOf<yarp::sig::PixelRgb> > inputPort;
     /**
     * port where the red plane of the image is streamed
     */
-    BufferedPort<ImageOf<PixelMono> > redPort;
+    yarp::os::BufferedPort<yarp::sig::ImageOf<yarp::sig::PixelMono> > redPort;
     /**
     * port where the green plane of the image is streamed
     */
-    BufferedPort<ImageOf<PixelMono> > greenPort;
+    yarp::os::BufferedPort<yarp::sig::ImageOf<yarp::sig::PixelMono> > greenPort;
     /**
     * port where the blue plane of the image is streamed
     */
-    BufferedPort<ImageOf<PixelMono> > bluePort;
+    yarp::os::BufferedPort<yarp::sig::ImageOf<yarp::sig::PixelMono> > bluePort;
     /**
     * port where the difference of gaussian R+G- is streamed
     */
-    BufferedPort<ImageOf<PixelMono> > rgPort;
+    yarp::os::BufferedPort<yarp::sig::ImageOf<yarp::sig::PixelMono> > rgPort;
     /**
     * port where the difference of gaussian G+R- is streamed
     */
-    BufferedPort<ImageOf<PixelMono> > grPort;
+    yarp::os::BufferedPort<yarp::sig::ImageOf<yarp::sig::PixelMono> > grPort;
     /**
     * port where the difference of gaussian B+Y- of the image is streamed
     */
-    BufferedPort<ImageOf<PixelMono> > byPort;
+    yarp::os::BufferedPort<yarp::sig::ImageOf<yarp::sig::PixelMono> > byPort;
     /**
     * port where the yellow plane of the image is streamed
     */
-    BufferedPort<ImageOf<PixelMono> > yellowPort;
+    yarp::os::BufferedPort<yarp::sig::ImageOf<yarp::sig::PixelMono> > yellowPort;
     /**
     * port where the ychannel of the image is streamed
     */
-    BufferedPort<ImageOf<PixelMono> > yPort;
+    yarp::os::BufferedPort<yarp::sig::ImageOf<yarp::sig::PixelMono> > yPort;
     /**
     * port where the uchannel of the image is streamed
     */
-    BufferedPort<ImageOf<PixelMono> > uPort;
+    yarp::os::BufferedPort<yarp::sig::ImageOf<yarp::sig::PixelMono> > uPort;
     /**
     * port where the vchannel plane of the image is streamed
     */
-    BufferedPort<ImageOf<PixelMono> > vPort;
+    yarp::os::BufferedPort<yarp::sig::ImageOf<yarp::sig::PixelMono> > vPort;
      /**
     * port where the uvchannel of the input image is streamed
     */
-    BufferedPort<ImageOf<PixelMono> > uvPort;
+    yarp::os::BufferedPort<yarp::sig::ImageOf<yarp::sig::PixelMono> > uvPort;
     /**
     * flag that indicates the yuv processor should be start
     */
@@ -201,8 +199,10 @@ private:
     /**
     * port necessary for rpc commands
     */
-    BufferedPort<Bottle> cmdPort;
-
+    yarp::os::Port cmdPort;
+    /**
+    * size of the input image
+    */
     IppiSize srcsize;
     /**
     * width of the input image
@@ -219,7 +219,7 @@ private:
     /**
      * semaphore for the respond function
      */
-     Semaphore mutex;
+    yarp::os::Semaphore mutex;
      /**
     * execution step counter
     */
@@ -227,11 +227,11 @@ private:
     /**
     * input image
     */
-    ImageOf<PixelRgb> *inputImg;
+    yarp::sig::ImageOf<yarp::sig::PixelRgb> *inputImg;
     /**
     * input image
     */
-    ImageOf<PixelRgb> *img;
+    yarp::sig::ImageOf<yarp::sig::PixelRgb> *img;
     //_________ private methods ____________
     /**
     * function that starts the RGB Processor
@@ -254,7 +254,7 @@ public:
     *opens the port and intialise the module
     * @param config configuration of the module
     */
-    bool open(Searchable& config); 
+    bool open(yarp::os::Searchable& config); 
     /**
     * tries to interrupt any communications or resource usage
     */
@@ -264,6 +264,11 @@ public:
     * @param opt options passed to the module
     */
     void setOptions(yarp::os::Property opt);
+    /**
+    * function for initialization and configuration of the RFModule
+    * @param rf resourceFinder reference
+    */
+    virtual bool configure(yarp::os::ResourceFinder &rf);
     /**
     * catches all the commands that have to be executed when the module is closed
     */
@@ -275,7 +280,7 @@ public:
     /**
     * respond to command coming from the command port
     */
-    bool respond(const Bottle &command,Bottle &reply);
+    bool respond(const yarp::os::Bottle &command,yarp::os::Bottle &reply);
     /**
     * updates the module
     */

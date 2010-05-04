@@ -10,19 +10,14 @@
 //IPP include
 #include <ippi.h>
 
-using namespace yarp::os;
-using namespace yarp::sig;
-
-
-
-const int THREAD_RATE_YUV=30;
 
 const double yr=0.299;const double yg=0.587;const double yb=0.114;
 const double ur=-0.147;const double ug=-0.289;const double ub=0.436;
 const double vr=0.615;const double vg=-0.515;const double vb=-0.1;
 
+const int THREAD_RATE_YUV=30;
 
-class yuvProcessorThread: public RateThread
+class yuvProcessorThread: public yarp::os::RateThread
 {
 private:
     /**
@@ -44,7 +39,7 @@ private:
     /***
     * temporary image mono for processing
     */
-    ImageOf<PixelMono>* tmp;
+    yarp::sig::ImageOf<yarp::sig::PixelMono>* tmp;
     /**
     * temporary psb for processing
     */
@@ -63,15 +58,15 @@ private:
     /**
     * function that extracts the y channel
     */
-    void getYPlane(ImageOf<PixelMono>* tmp);
+    void getYPlane(yarp::sig::ImageOf<yarp::sig::PixelMono>* tmp);
     /**
     * function that extracts the u channel
     */
-    void getUPlane(ImageOf<PixelMono>* tmp);
+    void getUPlane(yarp::sig::ImageOf<yarp::sig::PixelMono>* tmp);
     /**
     * function that extracts the v channel
     */
-    void getVPlane(ImageOf<PixelMono>* tmp);
+    void getVPlane(yarp::sig::ImageOf<yarp::sig::PixelMono>* tmp);
     /**
     * function that adds U and V channels
     */
@@ -113,38 +108,38 @@ public:
     /**
     * set the reference to the input image
     */
-    void setInputImage(ImageOf<PixelMono>* redImage,ImageOf<PixelMono>* greenImage,ImageOf<PixelMono>* blueImage);
+    void setInputImage(yarp::sig::ImageOf<yarp::sig::PixelMono>* redImage,yarp::sig::ImageOf<yarp::sig::PixelMono>* greenImage,yarp::sig::ImageOf<yarp::sig::PixelMono>* blueImage);
 
     //______ public attributes________
 
     /**
     *yarp mono image of the red channel
     */
-    ImageOf<PixelMono>* redPlane; 
+    yarp::sig::ImageOf<yarp::sig::PixelMono>* redPlane; 
     /**
     *yarp mono image of the green channel
     */
-    ImageOf<PixelMono>* greenPlane; 
+    yarp::sig::ImageOf<yarp::sig::PixelMono>* greenPlane; 
     /**
     *yarp mono image of the blue channel
     */
-    ImageOf<PixelMono>* bluePlane; 
+    yarp::sig::ImageOf<yarp::sig::PixelMono>* bluePlane; 
      /**
     *yarp mono image of the y channel (intensity information)
     */
-    ImageOf<PixelMono>* yPlane; 
+    yarp::sig::ImageOf<yarp::sig::PixelMono>* yPlane; 
     /**
     *yarp mono image of the u channel (chrominance information)
     */
-    ImageOf<PixelMono>* uPlane; 
+    yarp::sig::ImageOf<yarp::sig::PixelMono>* uPlane; 
     /**
     *yarp mono image of the v channel (chrominance information)
     */
-    ImageOf<PixelMono>* vPlane;
+    yarp::sig::ImageOf<yarp::sig::PixelMono>* vPlane;
     /**
     *yarp mono image of the uv channel (chrominance information)
     */
-    ImageOf<PixelMono>* uvPlane;
+    yarp::sig::ImageOf<yarp::sig::PixelMono>* uvPlane;
 };
 
 #endif //_YUVPROCESSORTHREAD_H_

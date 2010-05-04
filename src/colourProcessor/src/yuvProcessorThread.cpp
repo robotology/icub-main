@@ -2,6 +2,9 @@
 #include <cassert>
 
 
+using namespace yarp::os;
+using namespace yarp::sig;
+
 yuvProcessorThread::yuvProcessorThread():RateThread(THREAD_RATE_YUV)
 {
     reinit_flag=false;
@@ -102,7 +105,7 @@ void yuvProcessorThread::getYPlane(ImageOf<PixelMono>* tmp){
 
     for (int y=0;y<height;y++){
         for(int x=0;x<width;x++){
-            (*py)=yr*(*pr)+yg*(*pg)+yb*(*pb);
+            (*py)=(unsigned char)ceil(yr*(*pr)+yg*(*pg)+yb*(*pb));
             py++;
             pr++;pg++;pb++;
         }
@@ -127,7 +130,7 @@ void yuvProcessorThread::getUPlane(ImageOf<PixelMono>* tmp){
 
     for (int y=0;y<height;y++){
         for(int x=0;x<width;x++){
-            (*pu)=ur*(*pr)+ug*(*pg)+ub*(*pb)+128;
+            (*pu)=(unsigned char)ceil(ur*(*pr)+ug*(*pg)+ub*(*pb)+128);
             assert((*pu)>=0);
             assert((*pu)<=255);
             pu++;
@@ -156,7 +159,7 @@ void yuvProcessorThread::getVPlane(ImageOf<PixelMono>* tmp){
 
     for (int y=0;y<height;y++){
         for(int x=0;x<width;x++){
-            (*pv)=vr*(*pr)+vg*(*pg)+vb*(*pb)+128;
+            (*pv)=(unsigned char)ceil(vr*(*pr)+vg*(*pg)+vb*(*pb)+128);
             assert((*pv)>=0);
             assert((*pv)<=255);
             pv++;
@@ -183,7 +186,7 @@ void yuvProcessorThread::addUVPlanes(){
     for (int y=0;y<height;y++){
         for(int x=0;x<width;x++){
             double value=(double)((*pu)+(*pv));
-            (*puv)=((double)((*pu)+(*pv))/510)*255;
+            (*puv)=(((*pu)+(*pv))/510)*255;
             assert((*pv)>=0);
             assert((*pv)<=255);
             puv++;
@@ -212,3 +215,5 @@ void yuvProcessorThread::extractYUV(){
 	getVPlane(vPlane);
 	//ippiCopy_8u_C1R(tmp->getRawImage(),tmp->getRowSize(),vPlane->getRawImage(),vPlane->getRowSize(),srcsize);
 }
+
+//----- end-of-file --- ( next line intentionally left blank ) ------------------

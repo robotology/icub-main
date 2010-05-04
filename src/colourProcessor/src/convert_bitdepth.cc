@@ -63,3 +63,4 @@ void norm1_32f(Ipp32f*im,int psb_i,Ipp32f*im_out,int psb_o,IppiSize ssize){
 
 }
 
+//----- end-of-file --- ( next line intentionally left blank ) ------------------

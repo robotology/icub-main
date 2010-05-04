@@ -1,11 +1,12 @@
 #include <iCub/colourProcessorModule.h>
-
+#include <yarp/os/Network.h>
 
 #include <string.h>
 #include <iostream>
 
 using namespace std;
 using namespace yarp::sig;
+using namespace yarp::os;
 
 colourProcessorModule::colourProcessorModule(){
     reinit_flag=false;
@@ -13,6 +14,35 @@ colourProcessorModule::colourProcessorModule(){
     startyuv_flag=false;
 }
  
+
+bool colourProcessorModule::configure(ResourceFinder &rf)
+{
+        Time::turboBoost();
+        printf("resource finder configuration after time turbo boosting \n");
+
+
+        ct = 0;
+        //ConstString portName2 = options.check("name",Value("/worker2")).asString();
+        inputPort.open(getName("image:i"));
+        
+        redPort.open(getName("red:o"));
+        greenPort.open(getName("green:o"));
+        bluePort.open(getName("blue:o"));
+
+        rgPort.open(getName("rg:o"));
+        grPort.open(getName("gr:o"));
+        byPort.open(getName("by:o"));
+
+        yPort.open(getName("ychannel:o"));
+        uPort.open(getName("uchannel:o"));
+        vPort.open(getName("vchannel:o"));
+        uvPort.open(getName("uvchannel:o"));
+
+        cmdPort.open(getName("cmd:i"));
+        attach(cmdPort);
+
+        return true;
+}
 
 /**
 *function that opens the module
@@ -106,7 +136,7 @@ void colourProcessorModule::setOptions(yarp::os::Property opt){
     ConstString name=opt.find("name").asString();
     if(name!=""){
         printf("|||  Module named as :%s \n", name.c_str());
-        this->setName(name.c_str());
+        //this->setName(name.c_str());
     }
     ConstString yuvoption=opt.find("yuvprocessor").asString();
     if(yuvoption!=""){
@@ -434,7 +464,7 @@ bool colourProcessorModule::respond(const Bottle &command,Bottle &reply){
     mutex.post();
 
     if (!rec)
-        ok = Module::respond(command,reply);
+        ok = RFModule::respond(command,reply);
     
     if (!ok) {
         reply.clear();
@@ -446,4 +476,4 @@ bool colourProcessorModule::respond(const Bottle &command,Bottle &reply){
     return ok;
 } 	
 
-
+//----- end-of-file --- ( next line intentionally left blank ) ------------------

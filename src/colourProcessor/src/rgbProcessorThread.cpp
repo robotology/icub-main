@@ -3,7 +3,8 @@
 #include <ipps.h>
 
 
-
+using namespace yarp::sig;
+using namespace yarp::os;
 
 rgbProcessorThread::rgbProcessorThread():RateThread(THREAD_RATE)
 {
@@ -466,3 +467,5 @@ void rgbProcessorThread::colourOpponency(){
 	ippsFree(pBufferRed);
 	ippsFree(pBufferGreen);
 }
+
+//----- end-of-file --- ( next line intentionally left blank ) ------------------
