@@ -344,7 +344,7 @@ void main(void)
 			{
 				_control_mode[i] = MODE_IDLE;
 			}
-		    can_printf("MAIS is not broadcasting");	
+			if (msec>=500) can_printf("MAIS is not broadcasting");	
 		}
 		else
 		    mais_counter++; //this variable is set to zero whenever a message from the MAIS is received
