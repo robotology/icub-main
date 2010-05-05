@@ -40,6 +40,7 @@ bool colourProcessorModule::configure(ResourceFinder &rf)
 
         cmdPort.open(getName("cmd:i"));
         attach(cmdPort);
+        attachTerminal();
 
         return true;
 }
