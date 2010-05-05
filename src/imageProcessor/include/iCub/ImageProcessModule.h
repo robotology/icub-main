@@ -19,9 +19,6 @@
 //#include <iCub/YARPImgRecv.h>
 //#include <iCub/YarpImage2Pixbuf.h>
 
-using namespace yarp::os;
-using namespace yarp::sig;
-using namespace yarp::sig::draw;
 
 
 // general command vocab's
@@ -148,56 +145,56 @@ CopyPolicy: Released under the terms of the GNU GPL v2.0.
 
 **/
 
-class ImageProcessModule : public Module {
+class ImageProcessModule : public yarp::os::RFModule{
 private:
     /**
     * a port for the inputImage
     */
-    BufferedPort<ImageOf<PixelRgb> > inImagePort; // 
+    yarp::os::BufferedPort<yarp::sig::ImageOf<yarp::sig::PixelRgb> > inImagePort; // 
     /**
     * a port for the redPlane
     */
-    BufferedPort<ImageOf<PixelMono> > redPlanePort; //
+    yarp::os::BufferedPort<yarp::sig::ImageOf<yarp::sig::PixelMono> > redPlanePort; //
     /**
     * a port for the greenPlane
     */
-    BufferedPort<ImageOf<PixelMono> > greenPlanePort; //
+    yarp::os::BufferedPort<yarp::sig::ImageOf<yarp::sig::PixelMono> > greenPlanePort; //
     /**
     * a port for the bluePlane
     */
-    BufferedPort<ImageOf<PixelMono> > bluePlanePort; //	 
+    yarp::os::BufferedPort<yarp::sig::ImageOf<yarp::sig::PixelMono> > bluePlanePort; //	 
     /**
     * input port for the R+G- colour Opponency Map
     */
-    BufferedPort<ImageOf<PixelMono> > rgPort; 
+    yarp::os::BufferedPort<yarp::sig::ImageOf<yarp::sig::PixelMono> > rgPort; 
     /**
     * input port for the G+R- colour Opponency Map
     */
-    BufferedPort<ImageOf<PixelMono> > grPort; 
+    yarp::os::BufferedPort<yarp::sig::ImageOf<yarp::sig::PixelMono> > grPort; 
     /**
     * input port for the B+Y- colour Opponency Map
     */
-    BufferedPort<ImageOf<PixelMono> > byPort; 	
+    yarp::os::BufferedPort<yarp::sig::ImageOf<yarp::sig::PixelMono> > byPort; 	
     /**
     *  output port for edges in R+G- colour Opponency Map
     */
-    BufferedPort<ImageOf<PixelMono> > rgEdgesPort; 
+    yarp::os::BufferedPort<yarp::sig::ImageOf<yarp::sig::PixelMono> > rgEdgesPort; 
     /**
     * output port for edges in G+R- colour Opponency Map
     */
-    BufferedPort<ImageOf<PixelMono> > grEdgesPort; 
+    yarp::os::BufferedPort<yarp::sig::ImageOf<yarp::sig::PixelMono> > grEdgesPort; 
     /**
     * output port for edges in B+Y- colour Opponency Map
     */
-    BufferedPort<ImageOf<PixelMono> > byEdgesPort;
+    yarp::os::BufferedPort<yarp::sig::ImageOf<yarp::sig::PixelMono> > byEdgesPort;
     /**
     * overall edges port combination of maximum values of all the colorOpponency edges
     */
-    BufferedPort<ImageOf<PixelMono> > edgesPort;
+    yarp::os::BufferedPort<yarp::sig::ImageOf<yarp::sig::PixelMono> > edgesPort;
     /**
     * command port of the module
     */
-    BufferedPort<Bottle > cmdPort;
+    yarp::os::Port cmdPort;
     /**
     * counter of the module
     */
@@ -205,7 +202,7 @@ private:
     /**
     * options of the connection
     */
-    Property options;	//
+    yarp::os::Property options;	//
     /**
     * width of the input image
     */
@@ -221,15 +218,15 @@ private:
     /**
      * semaphore for the respond function
      */
-     Semaphore mutex;
+    yarp::os::Semaphore mutex;
      /**
     * input image reference
     */
-    ImageOf<PixelRgb> *inputImg;
+    yarp::sig::ImageOf<yarp::sig::PixelRgb> *inputImg;
     /**
     * input image reference
     */
-    ImageOf<PixelMono> *tmp;
+    yarp::sig::ImageOf<yarp::sig::PixelMono> *tmp;
 
     /**
     * function that resets all the mode flags
@@ -239,7 +236,11 @@ public:
     /**
     *open the ports of the module
     */
-    bool open(Searchable& config); //
+    bool open(yarp::os::Searchable& config); //
+    /**
+    * function that configures the module using the ResourceFinder
+    */
+    bool ImageProcessModule::configure(yarp::os::ResourceFinder &rf);
     /**
     * tryes to interrupt any communications or resource usage
     */
@@ -258,7 +259,7 @@ public:
     /**
     * set the attribute options of class Property
     */
-    void setOptions(Property options); //
+    void setOptions(yarp::os::Property options); //
     /**
     * function to reainitialise the attributes of the class
     */
@@ -266,7 +267,7 @@ public:
     /**
     * respond to command coming from the command port
     */
-    bool respond(const Bottle &command,Bottle &reply);
+    bool respond(const yarp::os::Bottle &command,yarp::os::Bottle &reply);
     /**
     * creates some objects necessary for the window
     */

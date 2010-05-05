@@ -17,9 +17,7 @@
 #include <yarp/os/all.h>
 #include <yarp/sig/all.h>
 
-using namespace yarp::os;
-using namespace yarp::sig;
-using namespace yarp::sig::draw;
+
 
 const int THREAD_RATE=30;
 
@@ -28,7 +26,7 @@ const int THREAD_RATE=30;
  */
 
 
-class ImageProcessor:public RateThread
+class ImageProcessor:public yarp::os::RateThread
 {
     private:
         /**
@@ -46,15 +44,15 @@ class ImageProcessor:public RateThread
         /**
         * green 1-channel image second plane of the input image
         */
-        ImageOf<PixelMono>* green_yarp;//
+        yarp::sig::ImageOf<yarp::sig::PixelMono>* green_yarp;//
         /**
         * red 1-channel image first plane of the input image
         */
-        ImageOf<PixelMono>* red_yarp; //
+        yarp::sig::ImageOf<yarp::sig::PixelMono>* red_yarp; //
         /**
         * blue 1-channel image third plane of the input image
         */
-        ImageOf<PixelMono>* blue_yarp; //
+        yarp::sig::ImageOf<yarp::sig::PixelMono>* blue_yarp; //
         /**
         * ippi image of the R+G- Opponency Colour Image  necessary for computation
         */
@@ -82,46 +80,46 @@ class ImageProcessor:public RateThread
         /**
         * temporal object for CombineMax process
         */
-        ImageOf<PixelMono>* edgesBlue;
+        yarp::sig::ImageOf<yarp::sig::PixelMono>* edgesBlue;
         /**
         * temporal object for CombineMax process
         */
-        ImageOf<PixelMono>* edgesRed;
+        yarp::sig::ImageOf<yarp::sig::PixelMono>* edgesRed;
         /**
         * temporal object for CombineMax process
         */
-        ImageOf<PixelMono>* edgesGreen;
+        yarp::sig::ImageOf<yarp::sig::PixelMono>* edgesGreen;
         /**
         * temp variable for plane extraction;
         */
-        ImageOf<PixelMono>* outputImage; //
+        yarp::sig::ImageOf<yarp::sig::PixelMono>* outputImage; //
         
-        //ImageOf<PixelMono>* outputImagePlane; //temp variable for plane extraction;
+        //yarp::sig::ImageOf<yarp::sig::PixelMono>* outputImagePlane; //temp variable for plane extraction;
         
         /**
         * temp variable for plane extraction;
         */
-        ImageOf<PixelMono> *bluePlane_tmp; //
+        yarp::sig::ImageOf<yarp::sig::PixelMono> *bluePlane_tmp; //
         /**
         * temp variable for plane extraction;
         */
-        ImageOf<PixelMono> *redPlane_tmp; //
+        yarp::sig::ImageOf<yarp::sig::PixelMono> *redPlane_tmp; //
         /**
         * temp variable for plane extraction;
         */
-        ImageOf<PixelMono> *greenPlane_tmp;//
+        yarp::sig::ImageOf<yarp::sig::PixelMono> *greenPlane_tmp;//
         /**
         * temp variable for plane extraction;
         */
-        ImageOf<PixelMono> *tmp;//
+        yarp::sig::ImageOf<yarp::sig::PixelMono> *tmp;//
         /**
         * temp variable for plane extraction;
         */
-        ImageOf<PixelRgb> *image_out;
+        yarp::sig::ImageOf<yarp::sig::PixelRgb> *image_out;
         /**
         * temp variable for plane extraction;
         */
-        ImageOf<PixelMono> *image_tmp;
+        yarp::sig::ImageOf<yarp::sig::PixelMono> *image_tmp;
 
         /**
         * temp variable for the plane extraction
@@ -212,7 +210,7 @@ class ImageProcessor:public RateThread
         /**
         * generic constructor
         */
-        ImageProcessor(ImageOf<PixelRgb>* inputImage );//
+        ImageProcessor(yarp::sig::ImageOf<yarp::sig::PixelRgb>* inputImage );//
         /**
         *	initialization of the thread 
         */
@@ -232,33 +230,33 @@ class ImageProcessor:public RateThread
         /**
         * combines the 3 edge images saving the maximum value for every pixel 
         */
-        ImageOf<PixelMono>* combineMax(); //
+        yarp::sig::ImageOf<yarp::sig::PixelMono>* combineMax(); //
         /**
         * the output image is the edged image of the input image along the axes x and y
         */
-        ImageOf<PixelMono>* findEdges (); //
+        yarp::sig::ImageOf<yarp::sig::PixelMono>* findEdges (); //
         /**
         * finds the edges in the red plane
         */
-        ImageOf<PixelMono>* findEdgesRedOpponency (); //
+        yarp::sig::ImageOf<yarp::sig::PixelMono>* findEdgesRedOpponency (); //
         /**
         * finds the edges in the green plane
         */
-        ImageOf<PixelMono>* findEdgesGreenOpponency (); //
+        yarp::sig::ImageOf<yarp::sig::PixelMono>* findEdgesGreenOpponency (); //
         /**
         * finds the edges in the blue plane
         */
-        ImageOf<PixelMono>* findEdgesBlueOpponency (); //
-        //ImageOf<PixelMono>* findEdgesRed (); //finds the edges in the red plane
+        yarp::sig::ImageOf<yarp::sig::PixelMono>* findEdgesBlueOpponency (); //
+        //yarp::sig::ImageOf<yarp::sig::PixelMono>* findEdgesRed (); //finds the edges in the red plane
         /**
         * finds the edges in the green plane
         * @return the edge image of the green plane
         */
-        ImageOf<PixelMono>* findEdgesGreen (); //
+        yarp::sig::ImageOf<yarp::sig::PixelMono>* findEdgesGreen (); //
         /**
         * finds the edges in the blue plane
         */
-        ImageOf<PixelMono>* findEdgesBlue ();
+        yarp::sig::ImageOf<yarp::sig::PixelMono>* findEdgesBlue ();
         /**
         * function that blanks out the border of a given image
         * @param the input image which is modified by the function
@@ -267,63 +265,63 @@ class ImageProcessor:public RateThread
         /**
         * gets as output the outputImage (last image produced)
         */
-        ImageOf<PixelRgb>* getOutputImage(); //
+        yarp::sig::ImageOf<yarp::sig::PixelRgb>* getOutputImage(); //
         /**
         * get the Red plane of the input image
         */
-        ImageOf<PixelMono>* getRedPlane ( ImageOf<PixelRgb>* src,ImageOf<PixelMono>* tmp ); //
+        yarp::sig::ImageOf<yarp::sig::PixelMono>* getRedPlane ( yarp::sig::ImageOf<yarp::sig::PixelRgb>* src,yarp::sig::ImageOf<yarp::sig::PixelMono>* tmp ); //
         /**
         * get the Blue plane of the input image
         */
-        ImageOf<PixelMono>* getBluePlane ( ImageOf<PixelRgb>* src,ImageOf<PixelMono>* tmp ); //
+        yarp::sig::ImageOf<yarp::sig::PixelMono>* getBluePlane ( yarp::sig::ImageOf<yarp::sig::PixelRgb>* src,yarp::sig::ImageOf<yarp::sig::PixelMono>* tmp ); //
         /**
         * get the Green plane of the input image
         */
-        ImageOf<PixelMono>* getGreenPlane ( ImageOf<PixelRgb>* src,ImageOf<PixelMono>* tmp ); //
+        yarp::sig::ImageOf<yarp::sig::PixelMono>* getGreenPlane ( yarp::sig::ImageOf<yarp::sig::PixelRgb>* src,yarp::sig::ImageOf<yarp::sig::PixelMono>* tmp ); //
         /**
         * normalise the image between the max and min value
         */
-        ImageOf<PixelMono>* normalize ( ImageOf<PixelMono>* src ); //
+        yarp::sig::ImageOf<yarp::sig::PixelMono>* normalize ( yarp::sig::ImageOf<yarp::sig::PixelMono>* src ); //
         /**
         * uses IPP function to left shift the src image
         */
-        ImageOf<PixelMono>*  LShiftC ( ImageOf<PixelMono> *src ); //
+        yarp::sig::ImageOf<yarp::sig::PixelMono>*  LShiftC ( yarp::sig::ImageOf<yarp::sig::PixelMono> *src ); //
         /**
         * uses IPP function to right shift the src image
         */
-        ImageOf<PixelMono>* RShiftC (ImageOf<PixelMono> *src); //
+        yarp::sig::ImageOf<yarp::sig::PixelMono>* RShiftC (yarp::sig::ImageOf<yarp::sig::PixelMono> *src); //
         /**
         * extracts the min and the max value within an image
         * @param src source image
         * @param maxValue reference to the max integer value
         * @param maxValue reference to the min integer value
         */
-        void minMax(ImageOf<PixelMono> *src,int* maxValue,int* minValue);
+        void minMax(yarp::sig::ImageOf<yarp::sig::PixelMono> *src,int* maxValue,int* minValue);
         /**
         * fulls the range of an image
         */
-        ImageOf<PixelMono>* fullRange(ImageOf<PixelMono> *src,int *mx, int *mn);
+        yarp::sig::ImageOf<yarp::sig::PixelMono>* fullRange(yarp::sig::ImageOf<yarp::sig::PixelMono> *src,int *mx, int *mn);
      
         
         
-        ImageOf<PixelMono> lineMax(ImageOf<PixelMono> &src);
+        yarp::sig::ImageOf<yarp::sig::PixelMono> lineMax(yarp::sig::ImageOf<yarp::sig::PixelMono> &src);
         /**
         * add two images (using IPP)
         */
-        ImageOf<PixelMono>* add(ImageOf<PixelMono> *src1,ImageOf<PixelMono> *src2); //
+        yarp::sig::ImageOf<yarp::sig::PixelMono>* add(yarp::sig::ImageOf<yarp::sig::PixelMono> *src1,yarp::sig::ImageOf<yarp::sig::PixelMono> *src2); //
         /**
         * subtract two images (using IPP)
         */
-        ImageOf<PixelMono>* subtract(ImageOf<PixelMono> *src1, ImageOf<PixelMono> *src2); //
+        yarp::sig::ImageOf<yarp::sig::PixelMono>* subtract(yarp::sig::ImageOf<yarp::sig::PixelMono> *src1, yarp::sig::ImageOf<yarp::sig::PixelMono> *src2); //
         /**
         * convert pixel order rgba to planar order yuv channels
         */
         void convertRGB(IppiSize sze,Ipp8u * rgba_orig, int psb_o); //
-        void setInputImage(ImageOf<PixelRgb> *src);
+        void setInputImage(yarp::sig::ImageOf<yarp::sig::PixelRgb> *src);
         /**
         * process the src image considering the imageprocessor flags
         */
-        ImageOf<PixelRgb>* process (ImageOf<PixelRgb> *src); //
+        yarp::sig::ImageOf<yarp::sig::PixelRgb>* process (yarp::sig::ImageOf<yarp::sig::PixelRgb> *src); //
 
         //------------- PUBLIC ATTRIBUTES ------------
 
@@ -338,72 +336,72 @@ class ImageProcessor:public RateThread
         /**
         * input image  of the processing
         */
-        ImageOf<PixelRgb> *inImage; // 
+        yarp::sig::ImageOf<yarp::sig::PixelRgb> *inImage; // 
         /**
         * yarp image for Opponency Map R+G-
         */
-        ImageOf<PixelMono>* redGreen_yarp;
+        yarp::sig::ImageOf<yarp::sig::PixelMono>* redGreen_yarp;
         /**
         * yarp image for Opponency Map G+R-
         */
-        ImageOf<PixelMono>* greenRed_yarp;
+        yarp::sig::ImageOf<yarp::sig::PixelMono>* greenRed_yarp;
         /**
         * yarp image for Opponency Map B+Y-
         */
-        ImageOf<PixelMono>* blueYellow_yarp;
+        yarp::sig::ImageOf<yarp::sig::PixelMono>* blueYellow_yarp;
         /**
         * edges yarp image of Opponency Map R+G- 
         */
-        ImageOf<PixelMono>* greenRedEdges_yarp;
+        yarp::sig::ImageOf<yarp::sig::PixelMono>* greenRedEdges_yarp;
         /**
         * edges yarp image of Opponency Map R+G-
         */
-        ImageOf<PixelMono>* redGreenEdges_yarp;
+        yarp::sig::ImageOf<yarp::sig::PixelMono>* redGreenEdges_yarp;
         /**
         * edges yarp image of Opponency Map R+G-
         */
-        ImageOf<PixelMono>* blueYellowEdges_yarp;
+        yarp::sig::ImageOf<yarp::sig::PixelMono>* blueYellowEdges_yarp;
         /**
         * yarp image of the composition of all the edges
         */
-        ImageOf<PixelMono>* edges_yarp;
+        yarp::sig::ImageOf<yarp::sig::PixelMono>* edges_yarp;
         /**
         * temporary image of the last processing performed
         */
-        ImageOf<PixelRgb> *portImage; //
+        yarp::sig::ImageOf<yarp::sig::PixelRgb> *portImage; //
         /**
         * temp images necessary for denoising
         */
-        ImageOf<PixelMono>* redGreenEdges; //
+        yarp::sig::ImageOf<yarp::sig::PixelMono>* redGreenEdges; //
         /**
         * temp images necessary for denoising
         */
-        ImageOf<PixelMono>* greenRedEdges; //
+        yarp::sig::ImageOf<yarp::sig::PixelMono>* greenRedEdges; //
         /**
         * temp images necessary for denoising
         */
-        ImageOf<PixelMono>* blueYellowEdges; //
+        yarp::sig::ImageOf<yarp::sig::PixelMono>* blueYellowEdges; //
         /**
         * temp images necessary for denoising
         */
-        ImageOf<PixelMono>* edgesOutput; //
+        yarp::sig::ImageOf<yarp::sig::PixelMono>* edgesOutput; //
         //
         /**
         * temp images necessary for planes extraction
         */
-        ImageOf<PixelMono> *bluePlane; //
+        yarp::sig::ImageOf<yarp::sig::PixelMono> *bluePlane; //
         /**
         * temp images necessary for planes extraction
         */
-        ImageOf<PixelMono> *redPlane; //
+        yarp::sig::ImageOf<yarp::sig::PixelMono> *redPlane; //
         /**
         * temp images necessary for planes extraction
         */
-        ImageOf<PixelMono> *greenPlane; //
+        yarp::sig::ImageOf<yarp::sig::PixelMono> *greenPlane; //
         /**
         * temp images necessary for planes extraction
         */
-        ImageOf<PixelMono> *yellowPlane; //
+        yarp::sig::ImageOf<yarp::sig::PixelMono> *yellowPlane; //
         /**
         * tmp IPLImage necessary for edge detection 16 bit
         */

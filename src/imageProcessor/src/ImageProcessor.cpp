@@ -11,7 +11,9 @@
 #include <stdlib.h>
 #include <cstdio>
 
-
+using namespace yarp::os;
+using namespace yarp::sig;
+using namespace yarp::sig::draw;
 
 
 // available methods for edges detection

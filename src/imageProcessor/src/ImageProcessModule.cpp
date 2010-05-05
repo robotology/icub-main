@@ -3,6 +3,9 @@
 #include <iostream>
 
 using namespace std;
+using namespace yarp::os;
+using namespace yarp::sig;
+using namespace yarp::sig::draw;
 
 // Image Receiver
 //static YARPImgRecv *ptr_imgRecv;
@@ -19,6 +22,24 @@ static ImageProcessModule *imageProcessModule;
 #define _imgRecv (*(ptr_imgRecv))
 #define _inputImg (*(ptr_inputImg))
 #define _semaphore (*(ptr_semaphore))
+
+bool ImageProcessModule::configure(ResourceFinder &rf)
+{
+    Time::turboBoost();
+    printf("resource finder configuration after time turbo boosting \n");
+
+     ct = 0;
+    inputImage_flag=false;
+    reinit_flag=false;
+
+    currentProcessor=0;
+    inputImg=0;
+
+    this->openPorts();   
+    //ConstString portName2 = options.check("name",Value("/worker2")).asString();
+    
+    return true;       
+}
 
 
 bool ImageProcessModule::open(Searchable& config) {
@@ -145,7 +166,7 @@ bool ImageProcessModule::openPorts(){
 
     cmdPort.open(getName("cmd")); // optional command port
     attach(cmdPort); // cmdPort will work just like terminal
-	
+    attachTerminal();
 
 	return true;
 }
@@ -266,7 +287,8 @@ bool ImageProcessModule::updateModule() {
     }
 
     //check for any possible command
-    Bottle* command=cmdPort.read(false);
+    
+/*    Bottle* command=(Bottle)cmdPort.read(reader,false);
     if(command!=0){
         //Bottle* tmpBottle=cmdPort.read(false);
         ConstString str= command->toString();
@@ -274,7 +296,7 @@ bool ImageProcessModule::updateModule() {
         Bottle* reply=new Bottle();
         this->respond(*command,*reply);
         command->clear();
-    }
+    }*/
 
     if((currentProcessor->redGreen_flag)&&(currentProcessor->greenRed_flag)&&(currentProcessor->blueYellow_flag)){
         currentProcessor->edges_yarp=currentProcessor->combineMax();
@@ -532,7 +554,7 @@ bool ImageProcessModule::respond(const Bottle &command,Bottle &reply){
     mutex.post();
 
     if (!rec)
-        ok = Module::respond(command,reply);
+        ok = RFModule::respond(command,reply);
     
     if (!ok) {
         reply.clear();
