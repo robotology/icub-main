@@ -277,12 +277,12 @@ static void myMain2(GtkButton *button,	int *position)
                     //checking existence of the port
                     int ind = 0;
                     portLocalName="/";
-                    portLocalName+="robotMotorGui";
+                    portLocalName+=robotName.c_str();
+                    portLocalName+="/robotMotorGui";
                     char tmp[80];
                     sprintf(tmp, "%d", ind);
                     portLocalName+=tmp;
                     portLocalName+="/";
-                    portLocalName+=robotName;
                     portLocalName+=partsName[n];
                     // sprintf(&portLocalName[0], "/%s/gui%d/%s", robotName.c_str(), ind, partsName[n]);
 
@@ -302,12 +302,12 @@ static void myMain2(GtkButton *button,	int *position)
                             ind++;
 
                             portLocalName="/";
-                            portLocalName+="robotMotorGui";
+                            portLocalName+=robotName.c_str();
+                            portLocalName+="/robotMotorGui";
                             char tmp[80];
                             sprintf(tmp, "%d", ind);
                             portLocalName+=tmp;
                             portLocalName+="/";
-                            portLocalName+=robotName;
                             portLocalName+=partsName[n];
 
                             // sprintf(&portLocalName[0], "/%s/gui%d/%s", robotName.c_str(), ind, partsName[n]);
@@ -360,23 +360,24 @@ static void myMain2(GtkButton *button,	int *position)
 
                                             //checking eixstence of the port
                                             int ind = 0;
-                                            sprintf(&portLocalName[0], "/%s/gui%d/cartesian/%s", robotName.c_str(), ind, partsName[n]);
+                                            sprintf(&portLocalName[0], "/%s/robotMotorGui%d/cartesian/%s", robotName.c_str(), ind, partsName[n]);
                                             // NameClient &nic=NameClient::getNameClient();
                                             std::string nameToCheck = portLocalName.c_str();
                                             nameToCheck += "/rpc:o";
-                                            fprintf(stderr, "Checking the existence of: %s \n", nameToCheck.c_str());                    
+                                            fprintf(stderr, "Checking the existence of: %s \n", nameToCheck.c_str());
                                             //                                           Address adr=nic.queryName(nameToCheck.c_str());
 
-                                            Contact adr = yarp::os::Network::queryName(portLocalName.c_str());
+                                            Contact adr = yarp::os::Network::queryName(nameToCheck.c_str());
                                             fprintf(stderr, "ADDRESS is: %s \n", adr.toString().c_str());
                                             while(adr.isValid())
                                                 {   
                                                     ind++;
-                                                    sprintf(&portLocalName[0], "/%s/gui%d/cartesian/%s", robotName.c_str(), ind, partsName[n]);
+                                                    sprintf(&portLocalName[0], "/%s/robotMotorGui%d/cartesian/%s", robotName.c_str(), ind, partsName[n]);
                                                     nameToCheck=portLocalName.c_str();
                                                     nameToCheck += "/rpc:o";
                                                     //Contact adr=yarp::os::Network::queryName(portLocalName.c_str());
-                                                    Contact adr=yarp::os::Network::queryName(nameToCheck.c_str());
+                                                    fprintf(stderr, "Checking the existence of: %s \n", nameToCheck.c_str());
+                                                    adr=yarp::os::Network::queryName(nameToCheck.c_str());
                                                     //adr=nic.queryName(nameToCheck.c_str());
                                                 }
 
