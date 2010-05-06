@@ -6,4 +6,4 @@ IF (COMPILE_DEVICE_LIBRARY)
   PREPARE_DEVICE(icublegscalibrator TYPE iCubLegsCalibrator INCLUDE iCubLegsCalibrator.h)
 ENDIF (COMPILE_DEVICE_LIBRARY)
 
-ADD_LIBRARY(headcalibrator iCubLegsCalibrator.cpp iCubLegsCalibrator.h)
+ADD_LIBRARY(legscalibrator iCubLegsCalibrator.cpp iCubLegsCalibrator.h)
