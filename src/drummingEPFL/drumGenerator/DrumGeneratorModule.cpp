@@ -2,6 +2,8 @@
 
 #include "DrumGeneratorModule.h"
 
+#include <stdlib.h>
+
 #define DEBUG 0
 
 //#include <ppEventDebugger.h>

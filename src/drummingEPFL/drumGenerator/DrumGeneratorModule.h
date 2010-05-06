@@ -8,10 +8,11 @@
 #include <yarp/dev/PolyDriver.h>
 #include <yarp/dev/ControlBoardInterfaces.h>
 #include <yarp/os/RateThread.h>
-#include <yarp/String.h>
 
 #include <stdio.h>
 #include "cpgs.h"
+
+#include <string>
 
 using namespace yarp::os;
 using namespace yarp::dev;
@@ -36,7 +37,7 @@ class generatorThread : public yarp::os::RateThread
  private:
     double period; //in second
 
-    yarp::String partName;
+    std::string partName;
 
     int nbDOFs;
     int *jointMapping;
@@ -77,7 +78,7 @@ class DrumGeneratorModule : public Module
 {
  private:        
     generatorThread *theThread;
-    yarp::String partName;
+    std::string partName;
 
  public:
     virtual bool close();
