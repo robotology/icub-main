@@ -11,7 +11,6 @@
 #include <yarp/sig/Vector.h>
 #include <yarp/os/Time.h>
 #include <yarp/os/ResourceFinder.h>
-#include <yarp/String.h>
 ///////////ICUB///////////
 #include <iCub/ctrlMath.h>
 ///////////GTK///////////

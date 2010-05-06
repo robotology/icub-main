@@ -144,16 +144,13 @@
  **/
 
 ///////////YARP//////////
-#include <yarp/os/impl/NameClient.h>
+//#include <yarp/os/impl/NameClient.h>
 
 ///////canGui/////////////
 //#include "include/robotMotorGui.h"
 //#include "include/partMover.h"
 
 #include "include/allPartsWindow.h"
-
-
-using namespace yarp::os::impl;
 
 
 ///////Initializations////
@@ -228,13 +225,8 @@ void add_enabled_joints(cartesianMover* cm, GtkWidget *vbox)
 
 static void myMain2(GtkButton *button,	int *position)
 {
-    String portPartName;
-    String robotName;
-    String portLocalName;
-
-    portPartName.resize(1024);
-    robotName.resize(1024);
-    portLocalName.resize(1024);
+    std::string robotName;
+    std::string portLocalName;
 
     GtkWidget *main_vbox1		 = NULL;
     GtkWidget *main_vbox2		 = NULL;
@@ -276,27 +268,48 @@ static void myMain2(GtkButton *button,	int *position)
                     main_vbox4 = gtk_vbox_new (FALSE, 0);
                     gint note4 = gtk_notebook_append_page((GtkNotebook*) nb1, main_vbox4, label);
 
-                    String robotPartPort= "/";
+                    std::string robotPartPort= "/";
                     robotPartPort = robotPartPort + robotName.c_str() + "/" + partsName[n];
 
-                    //checking eixstence of the port
+                    //checking existence of the port
                     int ind = 0;
-                    sprintf(&portLocalName[0], "/%s/gui%d/%s", robotName.c_str(), ind, partsName[n]);
-                    NameClient &nic=NameClient::getNameClient();
-                    String nameToCheck = portLocalName.c_str();
+                    portLocalName="/";
+                    portLocalName+="/gui";
+                    char tmp[80];
+                    sprintf(tmp, "%d", ind);
+                    portLocalName+=tmp;
+                    portLocalName+=robotName;
+                    portLocalName+=partsName[n];
+                    // sprintf(&portLocalName[0], "/%s/gui%d/%s", robotName.c_str(), ind, partsName[n]);
+
+                    std::string nameToCheck = portLocalName;
                     nameToCheck += "/rpc:o";
+
+                    //   NameClient &nic=NameClient::getNameClient();
                     fprintf(stderr, "Checking the existence of: %s \n", nameToCheck.c_str());
-                    Address adr=nic.queryName(nameToCheck.c_str());
+                    //                    Address adr=nic.queryName(nameToCheck.c_str());
+
+                    Contact &adr=Network::queryName(nameToCheck.c_str());
 
                     //Contact c = yarp::os::Network::queryName(portLocalName.c_str());
                     fprintf(stderr, "ADDRESS is: %s \n", adr.toString().c_str());
                     while(adr.isValid())
                         {   
                             ind++;
-                            sprintf(&portLocalName[0], "/%s/gui%d/%s", robotName.c_str(), ind, partsName[n]);
-                            nameToCheck = portLocalName.c_str();
+
+                            portLocalName="/";
+                            portLocalName+="/gui";
+                            char tmp[80];
+                            sprintf(tmp, "%d", ind);
+                            portLocalName+=tmp;
+                            portLocalName+=robotName;
+                            portLocalName+=partsName[n];
+
+                            // sprintf(&portLocalName[0], "/%s/gui%d/%s", robotName.c_str(), ind, partsName[n]);
+                            nameToCheck = portLocalName;
                             nameToCheck += "/rpc:o";
-                            adr=nic.queryName(nameToCheck.c_str());
+                            //                         adr=nic.queryName(nameToCheck.c_str());
+                            adr=Network::queryName(nameToCheck.c_str());
                         }
 
                     options.put("local", portLocalName.c_str());	//local port names
@@ -330,26 +343,26 @@ static void myMain2(GtkButton *button,	int *position)
                                     if (bCartesianParts.check(partsName[n]))
                                         {
                                             fprintf(stderr, "Adding cartesian tab %d\n", n);
-                                            String cartesianPartName;
+                                            std::string cartesianPartName;
                                             cartesianPartName = partsName[n];
                                             cartesianPartName += "_cartesian";
                                             label = gtk_label_new(cartesianPartName.c_str());
                                             main_vbox4 = gtk_vbox_new (FALSE, 0);
                                             gint note4 = gtk_notebook_append_page((GtkNotebook*) nb1, main_vbox4, label);
 
-                                            String robotPartPort= "/";
+                                            std::string robotPartPort= "/";
                                             robotPartPort = robotPartPort + robotName.c_str() + "/cartesianController/" + partsName[n];
 
                                             //checking eixstence of the port
                                             int ind = 0;
                                             sprintf(&portLocalName[0], "/%s/gui%d/cartesian/%s", robotName.c_str(), ind, partsName[n]);
-                                            NameClient &nic=NameClient::getNameClient();
+                                            // NameClient &nic=NameClient::getNameClient();
                                             String nameToCheck=portLocalName.c_str();
                                             nameToCheck += "/rpc:o";
                                             fprintf(stderr, "Checking the existence of: %s \n", nameToCheck.c_str());                    
-                                            Address adr=nic.queryName(nameToCheck.c_str());
+                                            //                                           Address adr=nic.queryName(nameToCheck.c_str());
 
-                                            //Contact c = yarp::os::Network::queryName(portLocalName.c_str());
+                                            Contact &adr = yarp::os::Network::queryName(portLocalName.c_str());
                                             fprintf(stderr, "ADDRESS is: %s \n", adr.toString().c_str());
                                             while(adr.isValid())
                                                 {   
@@ -357,7 +370,8 @@ static void myMain2(GtkButton *button,	int *position)
                                                     sprintf(&portLocalName[0], "/%s/gui%d/cartesian/%s", robotName.c_str(), ind, partsName[n]);
                                                     nameToCheck=portLocalName.c_str();
                                                     nameToCheck += "/rpc:o";
-                                                    adr=nic.queryName(nameToCheck.c_str());
+                                                    Contact &adr=yarp::os::Network::queryName(portLocalName.c_str());
+#                                                    adr=nic.queryName(nameToCheck.c_str());
                                                 }
 
                                             options.put("local", portLocalName.c_str());	//local port names
