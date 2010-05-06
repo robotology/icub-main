@@ -15,4 +15,4 @@ SOURCE_GROUP("Source Files" FILES ${folder_source})
 SOURCE_GROUP("Header Files" FILES ${folder_header})
 
 ADD_EXECUTABLE(graspDetectorConf ${folder_source} ${folder_header})
-INSTALL(TARGETS graspDetectorConf DESTINATION ${ICUB_DIR}/bin)
+INSTALL(TARGETS graspDetectorConf DESTINATION bin)
