@@ -17,6 +17,8 @@
 #include <yarp/os/Searchable.h>
 
 #include <string>
+#include <string.h> //strncmp
+
 #include <list>
 
 const int NNETS=10;

@@ -25,7 +25,6 @@
 #include <cv.h>
 
 // yarp
-#include <yarp/String.h>
 #include <yarp/os/all.h>
 #include <yarp/sig/all.h>
 #include <yarp/dev/PolyDriver.h>

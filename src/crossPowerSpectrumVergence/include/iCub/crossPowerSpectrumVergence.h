@@ -254,7 +254,6 @@
 
 /* YARP includes */
 
-#include <ace/config.h>
 #include <yarp/sig/all.h>
 #include <yarp/os/all.h>
 #include <yarp/os/RFModule.h>

@@ -164,7 +164,6 @@
 #include "graspDetector.h"
 
 //YARP
-#include <yarp/os/impl/String.h>
 #include <yarp/os/ResourceFinder.h>
 #include <yarp/os/Module.h>
 

@@ -13,6 +13,7 @@ IF (NOT SKIP_cartesiancontrollerserver OR NOT SKIP_cartesiancontrollerclient)
   IF (NOT SKIP_cartesiancontrollerserver)
     FIND_PACKAGE(IKIN REQUIRED)
     INCLUDE_DIRECTORIES(${IKIN_INCLUDE_DIRS})
+    message("WARNING--> ${IKIN_INCLUDE_DIRS}")
     INCLUDE_DIRECTORIES(${ACE_INCLUDE_DIR})
 
     SET(server_source ServerCartesianController.cpp)

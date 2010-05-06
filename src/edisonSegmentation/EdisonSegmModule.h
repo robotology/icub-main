@@ -17,14 +17,12 @@
 #include  <cv.h>
 
 // yarp
-#include <yarp/String.h>
 #include <yarp/os/all.h>
 #include <yarp/sig/all.h>
 #include <yarp/os/Module.h>
 #include <yarp/os/ResourceFinder.h>
 #include <yarp/os/Stamp.h>
 
-using namespace yarp;
 using namespace yarp::os;
 using namespace yarp::sig;
 using namespace std;
