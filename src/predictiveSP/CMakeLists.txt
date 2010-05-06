@@ -1,6 +1,11 @@
+IF(WIN32)
+cmake_minimum_required(VERSION 2.6)
+ELSE(WIN32)
 cmake_minimum_required(VERSION 2.4)
-# replace "..." with the path to your YARP binaries if needed
-SET(YARP_DIR "${CMAKE_SOURCE_DIR}/../.." CACHE LOCATION "where is yarp?")
+ENDIF(WIN32)
+if(COMMAND cmake_policy)
+ cmake_policy(SET CMP0003 NEW)
+endif(COMMAND cmake_policy)
 
 FIND_PACKAGE(YARP REQUIRED)
 
