@@ -4,6 +4,7 @@ PROJECT(${PROJECTNAME})
 
 FIND_PACKAGE(YARP)
 FIND_PACKAGE(ICUB)
+FIND_PACKAGE(Ace)
 
 FIND_PACKAGE(CTRLLIB REQUIRED)
 INCLUDE_DIRECTORIES(${CTRLLIB_INCLUDE_DIRS})
@@ -26,6 +27,9 @@ SET(folder_header include/iCub/iKinFwd.h include/iCub/iKinInv.h
                   include/iCub/iKinVocabs.h include/iCub/iKinHlp.h)
 				  
 INCLUDE_DIRECTORIES(${PROJECT_SOURCE_DIR}/include)				  
+INCLUDE_DIRECTORIES(${ACE_INCLUDE_DIR})
+
+MESSAGE(${ACE_INCLUDE_DIR})
 				  
 IF(IPOPT_FOUND AND ADD_IPOPT)
    SET(folder_source ${folder_source} src/iKinIpOpt.cpp src/iKinSlv.cpp)
@@ -40,6 +44,7 @@ ADD_LIBRARY(${PROJECTNAME} ${folder_source} ${folder_header})
 
 # Add CTRLLIB dependencies
 TARGET_LINK_LIBRARIES(${PROJECT_NAME} ${CTRLLIB_LIBRARIES})
+TARGET_LINK_LIBRARIES(${PROJECT_NAME} ${ACE_LIBRARY})
 
 IF(MSVC)
    SET_TARGET_PROPERTIES(${PROJECTNAME} PROPERTIES COMPILE_FLAGS /wd4996)
