@@ -16,15 +16,12 @@
 
 #include <yarp/sig/Vector.h>
 
-#include <yarp/String.h> 
-
 #include <yarp/dev/GenericSensorInterfaces.h>
 #include <yarp/dev/ControlBoardInterfaces.h>
 #include <yarp/dev/PolyDriver.h>
 
 using namespace yarp::dev;
 using namespace yarp::os;
-using namespace yarp;
 
 /////////////////////////////////////////////
 
