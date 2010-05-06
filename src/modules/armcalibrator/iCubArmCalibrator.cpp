@@ -8,11 +8,6 @@
 
 
 #include <yarp/os/Time.h>
-
-#include <ace/config.h>
-
-#include <ace/Log_Msg.h>
-
 #include "iCubArmCalibrator.h"
 
 using namespace yarp::os;
