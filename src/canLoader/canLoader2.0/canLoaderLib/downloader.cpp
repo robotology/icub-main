@@ -3,9 +3,11 @@
 
 #include <yarp/os/Time.h>
 #include <stdlib.h> //added for abs
+#include <string.h>
 
 using namespace yarp::dev;
 using namespace yarp::os;
+using namespace std;
 
 #define CLEAR_RXBUFFER m_candriver->receive_message(rxBuffer,64,0.001);
 //*****************************************************************/

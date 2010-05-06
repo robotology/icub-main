@@ -125,7 +125,8 @@ This file can be edited at src/myModule/main.cpp.
 #include <gtk/gtkmain.h>
 #include <yarp/os/Time.h>
 
-#include <string>
+#include <string>   //stl string
+#include <string.h> //memcpy ...
 #include <stdlib.h>
 
 #include <stdio.h>
@@ -948,13 +949,13 @@ static void choose_file (GtkFileChooser *picker,	gpointer   user_data)
     gchar* path = gtk_file_chooser_get_filename (GTK_FILE_CHOOSER(picker));
     if (path == NULL) return;
 
-    fstream filestr;
+    std::fstream filestr;
 
-    filestr.open ("config.txt", fstream::out);
+    filestr.open ("config.txt", std::fstream::out);
     if (filestr.is_open())
     {
-        filestr<<path<<endl;
-		if (calibration_enabled==true) filestr<<"calib"<<endl;
+        filestr<<path<<std::endl;
+		if (calibration_enabled==true) filestr<<"calib"<<std::endl;
         filestr.close();
         filestr.clear();
     }
@@ -1516,8 +1517,8 @@ int myMain( int   argc, char *argv[] )
 					}
 
 				param_filename=argv[8];
-				fstream filestr;
-				filestr.open ( param_filename.c_str(), fstream::in);
+                std::fstream filestr;
+				filestr.open ( param_filename.c_str(), std::fstream::in);
 				if (!filestr.is_open())
 					{
 						//file not exists
@@ -1686,10 +1687,10 @@ int myMain( int   argc, char *argv[] )
         gtk_widget_set_size_request     (download_button, 130, 30);
 
 		//find default path
-        fstream filestr;
+        std::fstream filestr;
         char path[256];
 		char calib_string[256];
-        filestr.open ("config.txt", fstream::in);
+        filestr.open ("config.txt", std::fstream::in);
         if (filestr.is_open())
         {
             filestr.getline (path,255);

@@ -1,6 +1,10 @@
 #include "downloader.h"
 #include "calibrate_window.h"
 
+#include <fstream>
+
+using namespace std;
+
 extern cDownloader downloader;
 extern GtkWidget *window;
 int	   selected = 0;
@@ -555,7 +559,7 @@ bool calibration_load_v2 (char* filename, int selected_id)
 	//serial number
 	filestr.getline (buffer,256);
 	filestr.getline (buffer,256);
-	sprintf(serial_no,buffer);
+	sprintf(serial_no,"%s", buffer);
 	downloader.strain_set_serial_number(selected_id,serial_no);
 
 	//offsets
@@ -791,7 +795,7 @@ void serial_number_send (GtkEntry *entry,	gpointer index)
 { 
 	serial_number_changed=false;
 	const gchar* temp2 = gtk_entry_get_text (GTK_ENTRY (edit_serial_number));
-	sprintf(serial_no,temp2);
+	sprintf(serial_no,"%s", temp2);
 	downloader.strain_set_serial_number(downloader.board_list[selected].pid,temp2);
 }
 //*********************************************************************************

@@ -3,9 +3,10 @@
 
 #include <yarp/os/Searchable.h>
 #include <yarp/dev/CanBusInterface.h>
-#include <ace/streams.h>
 
 #include "driver.h"
+
+#include <fstream>
 
 //*****************************************************************/
 
@@ -100,7 +101,7 @@ int                board_list_size;
 int				   progress;
 int				   file_length;
 unsigned int       sprsPage;
-fstream            filestr;
+ std::fstream            filestr;
  int nSelectedBoards; 
 
 bool    connected;
