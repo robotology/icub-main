@@ -151,7 +151,8 @@
 //#include "include/partMover.h"
 
 #include "include/allPartsWindow.h"
-
+#include <string>
+#include <string.h>
 
 ///////Initializations////
 GtkWidget *robotNameBox   = NULL;
@@ -269,15 +270,18 @@ static void myMain2(GtkButton *button,	int *position)
                     gint note4 = gtk_notebook_append_page((GtkNotebook*) nb1, main_vbox4, label);
 
                     std::string robotPartPort= "/";
-                    robotPartPort = robotPartPort + robotName.c_str() + "/" + partsName[n];
+                    robotPartPort += robotName.c_str();
+                    robotPartPort += "/";
+                    robotPartPort += partsName[n];
 
                     //checking existence of the port
                     int ind = 0;
                     portLocalName="/";
-                    portLocalName+="/gui";
+                    portLocalName+="robotMotorGui";
                     char tmp[80];
                     sprintf(tmp, "%d", ind);
                     portLocalName+=tmp;
+                    portLocalName+="/";
                     portLocalName+=robotName;
                     portLocalName+=partsName[n];
                     // sprintf(&portLocalName[0], "/%s/gui%d/%s", robotName.c_str(), ind, partsName[n]);
@@ -289,7 +293,7 @@ static void myMain2(GtkButton *button,	int *position)
                     fprintf(stderr, "Checking the existence of: %s \n", nameToCheck.c_str());
                     //                    Address adr=nic.queryName(nameToCheck.c_str());
 
-                    Contact &adr=Network::queryName(nameToCheck.c_str());
+                    Contact adr=Network::queryName(nameToCheck.c_str());
 
                     //Contact c = yarp::os::Network::queryName(portLocalName.c_str());
                     fprintf(stderr, "ADDRESS is: %s \n", adr.toString().c_str());
@@ -298,10 +302,11 @@ static void myMain2(GtkButton *button,	int *position)
                             ind++;
 
                             portLocalName="/";
-                            portLocalName+="/gui";
+                            portLocalName+="robotMotorGui";
                             char tmp[80];
                             sprintf(tmp, "%d", ind);
                             portLocalName+=tmp;
+                            portLocalName+="/";
                             portLocalName+=robotName;
                             portLocalName+=partsName[n];
 
@@ -357,12 +362,12 @@ static void myMain2(GtkButton *button,	int *position)
                                             int ind = 0;
                                             sprintf(&portLocalName[0], "/%s/gui%d/cartesian/%s", robotName.c_str(), ind, partsName[n]);
                                             // NameClient &nic=NameClient::getNameClient();
-                                            String nameToCheck=portLocalName.c_str();
+                                            std::string nameToCheck = portLocalName.c_str();
                                             nameToCheck += "/rpc:o";
                                             fprintf(stderr, "Checking the existence of: %s \n", nameToCheck.c_str());                    
                                             //                                           Address adr=nic.queryName(nameToCheck.c_str());
 
-                                            Contact &adr = yarp::os::Network::queryName(portLocalName.c_str());
+                                            Contact adr = yarp::os::Network::queryName(portLocalName.c_str());
                                             fprintf(stderr, "ADDRESS is: %s \n", adr.toString().c_str());
                                             while(adr.isValid())
                                                 {   
@@ -370,8 +375,9 @@ static void myMain2(GtkButton *button,	int *position)
                                                     sprintf(&portLocalName[0], "/%s/gui%d/cartesian/%s", robotName.c_str(), ind, partsName[n]);
                                                     nameToCheck=portLocalName.c_str();
                                                     nameToCheck += "/rpc:o";
-                                                    Contact &adr=yarp::os::Network::queryName(portLocalName.c_str());
-#                                                    adr=nic.queryName(nameToCheck.c_str());
+                                                    //Contact adr=yarp::os::Network::queryName(portLocalName.c_str());
+                                                    Contact adr=yarp::os::Network::queryName(nameToCheck.c_str());
+                                                    //adr=nic.queryName(nameToCheck.c_str());
                                                 }
 
                                             options.put("local", portLocalName.c_str());	//local port names
@@ -650,7 +656,7 @@ int myMain( int   argc, char *argv[] )
     finder->configure("ICUB_ROOT",argc,argv);
     //fprintf(stderr, "Retrieved finder: %p \n", finder);
 
-    String robotName=finder->find("name").asString().c_str();
+    std::string robotName=finder->find("name").asString().c_str();
     Bottle *pParts=finder->find("parts").asList();
     if (pParts!=0)
         NUMBER_OF_AVAILABLE_PARTS=pParts->size();

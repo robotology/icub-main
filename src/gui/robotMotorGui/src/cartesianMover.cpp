@@ -287,7 +287,7 @@ cartesianMover::cartesianMover(GtkWidget *vbox_d, PolyDriver *partDd_d, char *pa
             width = 180;
             double min,max;
 
-            String limitString=partLabel;
+            std::string limitString=partLabel;
             limitString=limitString+"_workspace";
             Bottle bCartesianLimits;
             if (finder->check(limitString.c_str()))

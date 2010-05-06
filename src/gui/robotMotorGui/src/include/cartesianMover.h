@@ -17,13 +17,14 @@
 #include <gtk/gtk.h>
 #include <gtk/gtkmain.h>
 #include "gtkMessages.h"
+//strings
+#include <string>
 
 using namespace yarp::dev;
 using namespace yarp::sig;
 using namespace yarp::os;
 using namespace ctrl;
 using namespace yarp::math;
-using namespace yarp::os::impl;
 
 #define NUMBER_OF_CARTESIAN_COORDINATES 6
 #define UPDATE_TIME 500
