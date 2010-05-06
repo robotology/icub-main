@@ -3,6 +3,7 @@ echo
 echo "Installed packages:"
 echo
 echo "ace version 5.5.5 from ace web site, compiled locally"
+echo "ipopt version 3.8.1 from ipopt web site, compiled locally"
 echo 
 echo "libgsl0-dev"
 echo "libncurses5-dev"

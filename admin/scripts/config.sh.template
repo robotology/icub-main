@@ -129,4 +129,4 @@ echo YARP_DIR $YARP_DIR
 echo ICUB_ROOT $ICUB_ROOT
 echo ICUB_DIR $ICUB_DIR
 echo ODE_DIR $ODE_DIR " # just for ODE simulator"
-
+echo IPOPT_DIR $IPOPT_DIR

@@ -192,6 +192,12 @@ echo "</TABLE>" >> $main
     else
 	echo "GTKMM_BASEPATH=$GTKMM_BASEPATH"
     fi
+    
+    if [ "k$IPOPT_DIR" = "k" ]; then
+	echo "IPOPT_DIR undefined"
+    else
+	echo "IPOPT_DIR=$IPOPT_DIR"
+    fi
 
     echo "# YARP_DIR = where YARP is compiled, should contain YARPConfig.cmake"
     echo "# ICUB_DIR = where iCub is compiled, should contain ICUBConfig.cmake"
@@ -203,6 +209,7 @@ echo "</TABLE>" >> $main
     echo "# ODE_DIR = where ode was compiled (if not using precompiled debian package)"
     echo "# SDLDIR = where sdl was compiled (if not using precompiled debian package)"
     echo "# GTKMM_BASEPATH/GTK_BASEPATH = where gtk/gtkmm was compiled or installed (if not using precompiled debian package)"
+    echo "# IPOPT_DIR = where ipopt was installed"
 
     echo "</pre>"
 ) >> $main
