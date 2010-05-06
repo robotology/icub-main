@@ -5,7 +5,6 @@
 #include <yarp/dev/Drivers.h>
 #include <yarp/dev/PolyDriver.h>
 #include <yarp/os/all.h>
-#include <yarp/String.h>
 
 #include<vector>
 #include<iostream>

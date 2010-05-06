@@ -109,6 +109,8 @@
 
 #include "drum.h"
 
+#include <stdlib.h>
+
 //which dof oscillate.. 
 double  mu_on[5][4] ={{1.0,-5.0,-5.0,1.0}, //left arm 
 		      {1.0, -5.0, -5.0, 1.0}, //right arm
