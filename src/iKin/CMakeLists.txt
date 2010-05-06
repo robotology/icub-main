@@ -29,8 +29,6 @@ SET(folder_header include/iCub/iKinFwd.h include/iCub/iKinInv.h
 INCLUDE_DIRECTORIES(${PROJECT_SOURCE_DIR}/include)				  
 INCLUDE_DIRECTORIES(${ACE_INCLUDE_DIR})
 
-MESSAGE(${ACE_INCLUDE_DIR})
-				  
 IF(IPOPT_FOUND AND ADD_IPOPT)
    SET(folder_source ${folder_source} src/iKinIpOpt.cpp src/iKinSlv.cpp)
    SET(folder_header ${folder_header} include/iCub/iKinIpOpt.h include/iCub/iKinSlv.h)
