@@ -32,10 +32,10 @@
 #include <yarp/dev/PolyDriver.h>
 #include <yarp/dev/ControlBoardInterfaces.h>
 #include <yarp/os/RateThread.h>
-#include <yarp/String.h>
 
 #include <stdio.h>
 #include <iostream>
+#include <string>
 #include "Cpgs.h"
 #include "CrawlInvKin.h"
 
@@ -130,7 +130,7 @@ class GeneratorThread : public yarp::os::RateThread
 
 	double period; /**< Period in seconds */
 
-    yarp::String partName; /**< Name of the part */
+    std::string partName; /**< Name of the part */
 
     int nbDOFs; /**< Number of degrees of freedom of this part */
     int nbLIMBs; /**< Number of limbs coupled with this part */
@@ -256,7 +256,7 @@ class CrawlGeneratorModule : public Module
 {
 private:
     GeneratorThread *theThread; /**< Periodic generator thread */
-    yarp::String partName; /**< Name of the controlled part */
+    std::string partName; /**< Name of the controlled part */
 
 public:
     /**

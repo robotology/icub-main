@@ -3,6 +3,7 @@
 
 #include <yarp/os/Os.h>
 #include <stdio.h>
+#include <string>
 
 #define DEBUG 0
 
@@ -521,7 +522,7 @@ bool GeneratorThread::init(Searchable &s)
 			printf("GeneratorThread::init>> ERROR getting the environment variable ICUB_DIR, exiting\n");
 			return false;
 		}
-		yarp::String cubPathStr(cubPath);
+		std::string cubPathStr(cubPath);
 		options.fromConfigFile((cubPathStr + "/app/Crawling/config/" + partName + "Config.ini").c_str());
 	}
 

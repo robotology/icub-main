@@ -33,7 +33,7 @@
 
 #include <math.h>
 #include <vector>
-#include <yarp/String.h>
+#include <string>
 
 using namespace std;
 
@@ -101,7 +101,7 @@ public:
 	//open parameters
 	double *g; /**< Targets */ 
 	double *m; /**< Amplitudes */
-	yarp::String partName;  /**< Name of the part beeing controlled */
+	std::string partName;  /**< Name of the part beeing controlled */
         
     double turnAngle;/**<angle of rotation of the torso roll */
     

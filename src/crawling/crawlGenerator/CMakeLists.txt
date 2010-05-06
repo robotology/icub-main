@@ -1,6 +1,6 @@
 SET(KEYWORD "crawlGeneratorModule")
 
-PROJECT(Generator)
+PROJECT(${KEYWORD})
 
 FIND_PACKAGE(YARP)
 FIND_PACKAGE(ICUB)

@@ -3,6 +3,9 @@
 #include "CrawlManagerModule.h"
 #include <yarp/os/Os.h>
 #include <stdio.h>
+#include <string>
+
+using namespace std;
 
 #define DEBUG 1
 
@@ -171,7 +174,7 @@ bool CrawlManagerModule::open(Searchable &s)
     		printf("generatorThread::init>> ERROR getting the environment variable ICUB_DIR, exiting\n");
     		return false;
     	}
-    	yarp::String cubPathStr(cubPath);
+    	string cubPathStr(cubPath);
     	options.fromConfigFile((cubPathStr + "/app/Crawling/config/managerConfig.ini").c_str());
 	}
     

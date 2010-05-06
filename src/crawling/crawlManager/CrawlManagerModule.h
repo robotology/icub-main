@@ -6,7 +6,6 @@
 #include <yarp/dev/PolyDriver.h>
 #include <yarp/dev/ControlBoardInterfaces.h>
 #include <yarp/os/RateThread.h>
-#include <yarp/String.h>
 
 using namespace yarp::os;
 using namespace yarp::dev;
