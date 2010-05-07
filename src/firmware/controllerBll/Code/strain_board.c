@@ -65,7 +65,7 @@ void init_strain (void)
 		start_strain(0x205);
 	#elif VERSION ==0x0173 || VERSION ==0x0174
 		//start the can transmission. CAN must be already intialized.
-		start_strain(0x20B);
+		start_strain(0x20D);
 		start_strain(0x20C);	
 	#elif VERSION == 0x0171 
 		AD_init ();
