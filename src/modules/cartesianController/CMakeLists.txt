@@ -8,20 +8,17 @@ ENDIF (COMPILE_DEVICE_LIBRARY)
 IF (NOT SKIP_cartesiancontrollerserver OR NOT SKIP_cartesiancontrollerclient)
   FIND_PACKAGE(YARP)
   FIND_PACKAGE(ICUB)
-  find_package(Ace)
+  FIND_PACKAGE(Ace)
 
   IF (NOT SKIP_cartesiancontrollerserver)
     FIND_PACKAGE(IKIN REQUIRED)
-    INCLUDE_DIRECTORIES(${IKIN_INCLUDE_DIRS})
-    message("WARNING--> ${IKIN_INCLUDE_DIRS}")
-    INCLUDE_DIRECTORIES(${ACE_INCLUDE_DIR})
+    INCLUDE_DIRECTORIES(${ACE_INCLUDE_DIR} ${IKIN_INCLUDE_DIRS})
 
     SET(server_source ServerCartesianController.cpp)
     SET(server_header CommonCartesianController.h ServerCartesianController.h)
 
     ADD_LIBRARY(cartesiancontrollerserver ${server_source} ${server_header})
-    TARGET_LINK_LIBRARIES(cartesiancontrollerserver ${IKIN_LIBRARIES})
-    TARGET_LINK_LIBRARIES(cartesiancontrollerserver ${ACE_LIBRARY})
+    TARGET_LINK_LIBRARIES(cartesiancontrollerserver ${ACE_LIBRARY} ${IKIN_LIBRARIES})
   ENDIF (NOT SKIP_cartesiancontrollerserver)
 
   IF (NOT SKIP_cartesiancontrollerclient)

@@ -4,6 +4,9 @@ PROJECT(${KEYWORD})
 
 FIND_PACKAGE(ICUB)
 FIND_PACKAGE(YARP REQUIRED)
+FIND_PACKAGE(GSL)
+
+INCLUDE_DIRECTORIES(${GSL_INCLUDE_DIR})
 
 SET(USE_ICUB_MOD TRUE CACHE BOOL "Use separated icub_mod lib")
 
@@ -58,6 +61,7 @@ IF (GtkPlus_FOUND)
       ${folder_source} 
       ${folder_header}
       )	
+    TARGET_LINK_LIBRARIES(${KEYWORD} ${GSL_LIBRARIES})
   ELSE (folder_source)
     MESSAGE(FATAL_ERROR "No source code files found. Please add something")
   ENDIF (folder_source)

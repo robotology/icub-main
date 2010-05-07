@@ -3,14 +3,11 @@ PROJECT(${PROJECTNAME})
 
 FIND_PACKAGE(YARP)
 FIND_PACKAGE(ICUB)
-
 FIND_PACKAGE(IKIN REQUIRED)
 
 IF(NOT IPOPT_FOUND)
    MESSAGE(FATAL_ERROR "IPOPT is strictly required!")
 ENDIF(NOT IPOPT_FOUND)
-
-INCLUDE_DIRECTORIES(${IKIN_INCLUDE_DIRS})
 
 SET(folder_header include/iCub/gazeNlp.hpp
                   include/iCub/utils.hpp
@@ -28,8 +25,7 @@ SET(folder_source src/gazeNlp.cpp
 SOURCE_GROUP("Header Files" FILES ${folder_header})
 SOURCE_GROUP("Source Files" FILES ${folder_source})
 
-INCLUDE_DIRECTORIES(${PROJECT_SOURCE_DIR}/include)
-
+INCLUDE_DIRECTORIES(${PROJECT_SOURCE_DIR}/include ${IKIN_INCLUDE_DIRS})
 ADD_EXECUTABLE(${PROJECTNAME} ${folder_header} ${folder_source})
 TARGET_LINK_LIBRARIES(${PROJECTNAME} ${IKIN_LIBRARIES})
 INSTALL(TARGETS ${PROJECTNAME} DESTINATION bin)
