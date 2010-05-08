@@ -294,11 +294,12 @@ public:
         // different arm objects (instantiated internally
         // and separately) in order to avoid any interaction.
         slv=new Solver(drvTorso,drvArm,&commData,localArmName,partName,
-                       ctrlTorso,ctrlPose,30);
-        slv->start();
+                       ctrlTorso,ctrlPose,30);        
 
         ctrl=new Controller(drvTorso,drvArm,&commData,localArmName,partName,
                             execTime,ctrlTorso,ctrlPose,10);
+
+        slv->start();
         ctrl->start();
 
         string rpcPortName=localArmName+"/rpc";

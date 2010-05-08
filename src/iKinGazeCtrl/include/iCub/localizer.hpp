@@ -7,6 +7,7 @@
 
 #include <iCub/pids.h>
 
+#include <iCub/gazeNlp.hpp>
 #include <iCub/utils.hpp>
                             
 #define KP_PAN               0.0012
@@ -37,14 +38,20 @@ protected:
     xdPort               *port_xd;
     BufferedPort<Bottle> *port_mono;
     BufferedPort<Bottle> *port_stereo;
+    BufferedPort<Bottle> *port_azieleIn;
+    BufferedPort<Vector> *port_azieleOut;
     
     string localName;
     string configFile;
     unsigned int period;
     double Ts;
 
-    iCubEye *eyeL;
-    iCubEye *eyeR;
+    iCubHeadCenter  eyeC;
+    iCubEye        *eyeL;
+    iCubEye        *eyeR;
+
+    Matrix eyeCAbsFrame;
+    Matrix invEyeCAbsFrame;
 
     Matrix *PrjL, *invPrjL;
     Matrix *PrjR, *invPrjR;
@@ -55,6 +62,8 @@ protected:
 
     void handleMonocularInput();
     void handleStereoInput();
+    void handleAziEleInput();
+    void handleAziEleOutput();
 
 public:
     Localizer(exchangeData *_commData, const string &_localName,

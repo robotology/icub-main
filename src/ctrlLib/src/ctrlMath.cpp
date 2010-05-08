@@ -209,7 +209,7 @@ Vector ctrl::dcm2euler(const Matrix &R, unsigned int verbose)
         return Vector(0);
     }
 
-    Vector v(3); v=0.0;
+    Vector v(3);
     double r2 = R(2,0)*R(2,0) + R(2,1)*R(2,1);
     if (r2 > 0)
     {

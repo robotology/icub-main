@@ -40,7 +40,8 @@ using namespace iKin;
 class EyePinvRefGen : public RateThread
 {
 protected:
-    iCubEye        *neck,      *eyeL,      *eyeR;
+    iCubHeadCenter *neck;
+    iCubEye        *eyeL,      *eyeR;
     iKinChain      *chainNeck, *chainEyeL, *chainEyeR;
     PolyDriver     *drvTorso,  *drvHead;
     IControlLimits *limTorso,  *limHead;

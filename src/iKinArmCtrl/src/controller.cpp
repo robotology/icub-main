@@ -110,15 +110,15 @@ bool Controller::threadInit()
     // Set the task execution time
     execTime=ctrl->set_execTime(execTime,true);
 
-    port_x=new BufferedPort<Vector>();
+    port_x=new BufferedPort<Vector>;
     string n1=localName+"/x:o";
     port_x->open(n1.c_str());
 
-    port_q=new BufferedPort<Vector>();
+    port_q=new BufferedPort<Vector>;
     string n2=localName+"/q:o";
     port_q->open(n2.c_str());
 
-    port_v=new BufferedPort<Vector>();
+    port_v=new BufferedPort<Vector>;
     string n3=localName+"/v:o";
     port_v->open(n3.c_str());
 

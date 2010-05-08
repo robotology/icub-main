@@ -174,7 +174,7 @@ bool Solver::threadInit()
     string n1=localName+"/xd:i";
     port_xd->open(n1.c_str());
 
-    port_qd=new BufferedPort<Vector>();
+    port_qd=new BufferedPort<Vector>;
     string n2=localName+"/qd:o";
     port_qd->open(n2.c_str());
 

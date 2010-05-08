@@ -20,15 +20,17 @@ reflex). VOR (vestibulo-ocular reflex relying on inertial data)
 is not provided at time being but can be easily implemented. 
  
 The controller can be seen as cartesian gaze controller since it
-receives as input a 3D position in the task space or, in turn, 
-can convert the relative position of the target in the two image
-planes in relative displacement in 3D task space with respect to 
-the actual fixation point. 
- 
-Moreover, in case only a monocular vision is exploited, one can 
-still use the iKinGazeCtrl by passing it the coordinates (u,v) 
-of just one pixel in the image plane along with a guessed 
-distance z wrt the eye's reference frame. 
+receives as input a 3D position in the task space. Nonetheless, 
+further command modalities are available, listed in order of 
+implementation: 1) the relative position of the target in the 
+two image planes can be converted in relative displacement in 3D
+task space with respect to the actual fixation point; 2) in case
+only a monocular vision is exploited, the coordinates (u,v) of
+just one pixel in the image plane along with a guessed distance 
+z wrt the eye's reference frame can be given to the module; 3) 
+the head-centeres azimuth and elevation angles can be passed to 
+the module both in absolute and relative mode (i.e. wrt to the 
+current head position). 
  
 <b>Reminder</b> \n 
 If you experience a slow speed motion, please check the shift 
@@ -105,8 +107,8 @@ The ports the module is connected to: e.g.
 
 \section portsc_sec Ports Created 
  
-There are three different ways of commanding a new target 
-fixation point: 
+There are different ways of commanding a new target fixation
+point: 
  
 - by sending the absolute 3D position to gaze at in the task 
   space through /<ctrlName>/xd:i port.
@@ -119,6 +121,10 @@ fixation point:
   distance z from the eye's frame to the /<ctrlName>/mono:i
   port. In this mode the intrinsic cameras parameters are
   required.
+- by sending the head-centered azimuth/elevation couples in 
+  degrees wrt either to the current head position or to the
+  absolute head position (computed with the robot looking
+  straight ahead).
  
 The module creates the usual ports required for the 
 communication with the robot (through interfaces) and the 
@@ -138,6 +144,13 @@ following ports:
   right, <i> (u,v) </i> is the pixel coordinates and \e z is the
   guessed distance relative to the eye's reference frame.
  
+- \e /<ctrlName>/<part>/aziele:i receives the current target 
+  position expressed as azimuth/elevation couple in degrees. It
+  accepts 3 double (also as a Bottle object) in this order:
+  [mode azi ele], where \e mode can be \e rel or \e abs. A
+  positive azimuth will turn the gaze to the right, whereas a
+  positive elevation will move the gaze upward.
+ 
 - \e /<ctrlName>/<part>/x:o returns the actual fixation point 
   (Vector of 3 double).
  
@@ -155,6 +168,10 @@ following ports:
 - \e /<ctrlName>/<part>/v:o returns the computed joints 
   velocities which steers the head to gaze at the target
   fixation point (Vector of 6 double). Units in deg/s.
+ 
+- \e /<ctrlName>/<part>/aziele:o returns the current 
+  azimuth/elevation couple wrt to the absolute head position
+  (Vector of 2 double). Units in deg.
  
 - \e /<ctrlName>/<part>/rpc remote procedure call. 
     Recognized remote commands:
@@ -362,20 +379,22 @@ public:
             drvTorso=drvHead=NULL;
 
         // create and start threads
-        loc=new Localizer(&commData,localHeadName,configFile,20);
-        loc->start();
+        loc=new Localizer(&commData,localHeadName,configFile,10);
 
         eyesRefGen=new EyePinvRefGen(drvTorso,drvHead,&commData,robotName,
                                      localHeadName,inertialName,configFile,20);        
-        eyesRefGen->start();
 
         slv=new Solver(drvTorso,drvHead,&commData,eyesRefGen,loc,
                        localHeadName,configFile,20);
-        slv->start();
 
         ctrl=new Controller(drvTorso,drvHead,&commData,robotName,
-                            localHeadName,neckTime,eyesTime,10);
+                            localHeadName,neckTime,eyesTime,10);        
+
+        // this switch-on order does matter !!
+        eyesRefGen->start();
+        slv->start();
         ctrl->start();
+        loc->start();
 
         string rpcPortName=localHeadName+"/rpc";
         rpcPort.open(rpcPortName.c_str());

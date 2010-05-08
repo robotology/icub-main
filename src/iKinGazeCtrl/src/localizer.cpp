@@ -21,6 +21,12 @@ Localizer::Localizer(exchangeData *_commData, const string &_localName,
     eyeL->setAllConstraints(false);
     eyeR->setAllConstraints(false);
 
+    // get the absolute reference frame of the cyclopic eye
+    Vector q(eyeC.getDOF()); q=0.0;
+    eyeCAbsFrame=eyeC.getH(q);
+    // ... and its inverse
+    invEyeCAbsFrame=SE3inv(eyeCAbsFrame);
+
     double cxl,cyl,cxr,cyr;
 
     // get camera projection matrix from the configFile
@@ -93,14 +99,14 @@ Localizer::Localizer(exchangeData *_commData, const string &_localName,
     satLim(0,1)=satLim(1,1)=satLim(2,1)=LIM_HIGH;
 
     pid=new parallelPID(Ts,Kp,Ki,Kd,Wp,Wi,Wd,N,Tt,satLim);
+
+    port_xd=NULL;
 }
 
 
 /************************************************************************/
 bool Localizer::threadInit()
-{
-    port_xd=NULL;
-
+{ 
     port_mono=new BufferedPort<Bottle>;
     string n1=localName+"/mono:i";
     port_mono->open(n1.c_str());
@@ -108,6 +114,14 @@ bool Localizer::threadInit()
     port_stereo=new BufferedPort<Bottle>;
     string n2=localName+"/stereo:i";
     port_stereo->open(n2.c_str());
+
+    port_azieleIn=new BufferedPort<Bottle>;
+    string n3=localName+"/aziele:i";
+    port_azieleIn->open(n3.c_str());
+
+    port_azieleOut=new BufferedPort<Vector>;
+    string n4=localName+"/aziele:o";
+    port_azieleOut->open(n4.c_str());
 
     cout << "Starting Localizer at " << period << " ms" << endl;
 
@@ -128,7 +142,6 @@ void Localizer::afterStart(bool s)
 /************************************************************************/
 void Localizer::handleMonocularInput()
 {
-    // get image mono input
     if (Bottle *mono=port_mono->read(false))
         if (mono->size()>=4)
         {
@@ -197,7 +210,6 @@ void Localizer::handleMonocularInput()
 /************************************************************************/
 void Localizer::handleStereoInput()
 {
-    // get image stereo input
     if (Bottle *stereo=port_stereo->read(false))
         if (stereo->size()>=4)
         {
@@ -235,17 +247,12 @@ void Localizer::handleStereoInput()
             dx[2]=-u[2];
             dx[3]=1.0;  // impose homogeneous coordinates
 
-            // normalize reference frame axes
+            // get the head-centered frame
+            // do not use reference since we're gonna modify it
+            // and we don't want to keep the changes
             Matrix fpFrame=commData->get_fpFrame();
-            for (unsigned int j=0; j<3; j++)
-            {   
-                double d=norm(fpFrame,j); 
-                for (unsigned int i=0; i<3; i++)
-                    fpFrame(i,j)/=d;
-            }
 
             // set-up translational part
-            fpFrame(3,3)=1.0;
             for (unsigned int i=0; i<3; i++)
                 fpFrame(i,3)=commData->get_x()[i];
 
@@ -270,10 +277,103 @@ void Localizer::handleStereoInput()
 
 
 /************************************************************************/
+void Localizer::handleAziEleInput()
+{
+    if (Bottle *aziele=port_azieleIn->read(false))
+        if (aziele->size()>=3)
+        {
+            string type=aziele->get(0).asString().c_str();
+            double azi=CTRL_DEG2RAD*aziele->get(1).asDouble();
+            double ele=CTRL_DEG2RAD*aziele->get(2).asDouble();
+
+            bool isAbs=(type=="abs");
+
+            // compute rotational matrix
+            Vector x(4);
+            x[0]=1.0;
+            x[1]=0.0;
+            x[2]=0.0;
+            x[3]=ele;
+
+            Vector y(4);
+            y[0]=0.0;
+            y[1]=1.0;
+            y[2]=0.0;
+            y[3]=azi;
+            
+            Matrix R=axis2dcm(y)*axis2dcm(x);
+
+            Vector fp(4), fpe;
+            fp[0]=commData->get_x()[0];
+            fp[1]=commData->get_x()[1];
+            fp[2]=commData->get_x()[2];
+            fp[3]=1.0;  // impose homogeneous coordinates
+
+            // get the head-centered frame
+            Matrix &frame=(isAbs?eyeCAbsFrame:commData->get_fpFrame());
+
+            // get fp wrt head-centered frame
+            if (isAbs)
+                fpe=invEyeCAbsFrame*fp;
+            else
+                fpe=SE3inv(frame)*fp;
+
+            // remove the 4th component to compute the norm
+            fpe[3]=0.0;
+
+            // get the rotated z-axis, properly scaled
+            Vector z=norm(fpe)*R.getCol(2);
+            z[3]=1.0;  // impose homogeneous coordinates
+
+            // get fp wrt root frame
+            Vector xdO=frame*z;
+
+            if (port_xd)
+            {
+                Vector xd(3);
+                xd[0]=xdO[0];
+                xd[1]=xdO[1];
+                xd[2]=xdO[2];
+
+                port_xd->set_xd(xd);
+            }
+            else
+                cerr << "Internal error occured!" << endl;
+        }
+        else
+            cerr << "Got wrong aziele information!" << endl;
+}
+
+
+/************************************************************************/
+void Localizer::handleAziEleOutput()
+{
+    Vector fp(4);
+    fp[0]=commData->get_x()[0];
+    fp[1]=commData->get_x()[1];
+    fp[2]=commData->get_x()[2];
+    fp[3]=1.0;  // impose homogeneous coordinates
+
+    // get fp wrt head-centered system
+    Vector fpe=invEyeCAbsFrame*fp;
+
+    Vector &aziele=port_azieleOut->prepare();
+    aziele.resize(2);
+
+    aziele[0]=CTRL_RAD2DEG*atan2(fpe[0],fpe[2]);
+    aziele[1]=-CTRL_RAD2DEG*atan2(fpe[1],fpe[2]);
+
+    port_azieleOut->write();
+}
+
+
+/************************************************************************/
 void Localizer::run()
 {
     handleMonocularInput();
     handleStereoInput();
+    handleAziEleInput();
+    handleAziEleOutput();
 }
 
 
@@ -282,12 +382,18 @@ void Localizer::threadRelease()
 {
     port_mono->interrupt();
     port_stereo->interrupt();
+    port_azieleIn->interrupt();
+    port_azieleOut->interrupt();
 
     port_mono->close();
     port_stereo->close();
+    port_azieleIn->close();
+    port_azieleOut->close();
 
     delete port_mono;
     delete port_stereo;
+    delete port_azieleIn;
+    delete port_azieleOut;
 
     if (PrjL)
     {

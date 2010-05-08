@@ -16,14 +16,9 @@ EyePinvRefGen::EyePinvRefGen(PolyDriver *_drvTorso, PolyDriver *_drvHead,
     Robotable=drvTorso&&drvHead;
 
     // Instantiate objects
-    neck=new iCubEye("left");
+    neck=new iCubHeadCenter();
     eyeL=new iCubEye("left");
     eyeR=new iCubEye("right");
-
-    // block neck roll and eyes dofs
-    neck->blockLink(4,0.0);
-    neck->blockLink(6,0.0);
-    neck->blockLink(7,0.0);
 
     // block neck dofs
     eyeL->blockLink(3,0.0); eyeR->blockLink(3,0.0);
@@ -73,7 +68,8 @@ EyePinvRefGen::EyePinvRefGen(PolyDriver *_drvTorso, PolyDriver *_drvHead,
         encHead->getAxes(&nJointsHead);
 
         // joints bounds alignment
-        lim=alignJointsBounds(chainEyeL,limTorso,limHead);
+        lim=alignJointsBounds(chainNeck,limTorso,limHead);
+        copyJointsBounds(chainNeck,chainEyeL);
         copyJointsBounds(chainEyeL,chainEyeR);
 
         // reinforce vergence min bound
@@ -124,7 +120,8 @@ EyePinvRefGen::EyePinvRefGen(PolyDriver *_drvTorso, PolyDriver *_drvHead,
     eyesJ.zero();
     gyro.resize(12,0.0);
 
-    genOn=false;    
+    genOn=false;
+    port_xd=NULL;
 }
 
 
@@ -240,7 +237,7 @@ void EyePinvRefGen::run()
         commData->get_qd()[3]=qd[0];
         commData->get_qd()[4]=qd[1];
         commData->get_qd()[5]=qd[2];
-        commData->get_fpFrame()=chainEyeL->getH()+chainEyeR->getH();
+        commData->get_fpFrame()=chainNeck->getH();
     }
 }
 
@@ -542,7 +539,7 @@ bool Solver::threadInit()
     commData->get_torso()=fbTorso;
     commData->get_v().resize(5,0.0);
     commData->get_compv().resize(3,0.0);
-    commData->get_fpFrame()=chainEyeL->getH()+chainEyeR->getH();
+    commData->get_fpFrame()=chainNeck->getH();
 
     xdOld=fp;
 
