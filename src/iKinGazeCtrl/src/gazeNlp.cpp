@@ -3,7 +3,7 @@
 
 
 /************************************************************************/
-void iCubHeadCenter::_allocate_limb(const string &_type)
+void iCubHeadCenter::allocate(const string &_type)
 {
     // change DH parameters
     linkList[getN()-2]->setD(0.0);

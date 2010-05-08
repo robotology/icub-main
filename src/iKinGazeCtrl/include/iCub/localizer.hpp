@@ -35,20 +35,27 @@ class Localizer : public RateThread
 protected:
     exchangeData         *commData;
     xdPort               *port_xd;
-    BufferedPort<Bottle> *port_pixel;
-
-    unsigned int period;
+    BufferedPort<Bottle> *port_mono;
+    BufferedPort<Bottle> *port_stereo;
+    
     string localName;
+    string configFile;
+    unsigned int period;
     double Ts;
 
-    int cx, cy;
+    iCubEye *eyeL;
+    iCubEye *eyeR;
+
+    Matrix *PrjL, *invPrjL;
+    Matrix *PrjR, *invPrjR;
+    double  cx;
+    double  cy;
 
     parallelPID *pid;
-    Vector dx;
 
 public:
     Localizer(exchangeData *_commData, const string &_localName,
-              int _cx, int _cy, unsigned int _period);
+              const string &_configFile, unsigned int _period);
 
     void set_xdport(xdPort *_port_xd) { port_xd=_port_xd; }
 

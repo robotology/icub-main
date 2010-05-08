@@ -56,7 +56,7 @@ eyeTriangulation::eyeTriangulation(const ResourceFinder &rf, Matrix PrjL, Matrix
   chainLeftEye =leftEye->asChain();
 
   // add aligning links read from configuration file
-  if (getAlignLinks(rf,"RIGHT_ALIGN",&alignLnkRight1,&alignLnkRight2))
+  if (getAlignLinks(rf,"ALIGN_KIN_RIGHT",&alignLnkRight1,&alignLnkRight2))
   {
       *chainRightEye<<*alignLnkRight1<<*alignLnkRight2;
       chainRightEye->blockLink(chainRightEye->getN()-1,0.0);
@@ -65,7 +65,7 @@ eyeTriangulation::eyeTriangulation(const ResourceFinder &rf, Matrix PrjL, Matrix
   else
       alignLnkRight1=alignLnkRight2=NULL;
 
-  if (getAlignLinks(rf,"LEFT_ALIGN",&alignLnkLeft1,&alignLnkLeft2))
+  if (getAlignLinks(rf,"ALIGN_KIN_LEFT",&alignLnkLeft1,&alignLnkLeft2))
   {
       *chainLeftEye<<*alignLnkLeft1<<*alignLnkLeft2;
       chainLeftEye->blockLink(chainLeftEye->getN()-1,0.0);

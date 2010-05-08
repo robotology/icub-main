@@ -36,6 +36,51 @@ void eyesCallback::exec(Vector xd, Vector q)
 
 
 /************************************************************************/
+bool getCamPrj(const string &configFile, const string &type, Matrix **Prj)
+{
+    *Prj=NULL;
+
+    if (configFile.size())
+    {
+        Property par;
+        par.fromConfigFile(configFile.c_str());
+
+        Bottle parType=par.findGroup(type.c_str());
+        string warning="Intrinsic parameters for "+type+" group not found";
+
+        if (parType.size())
+        {
+            if (parType.check("cx") && parType.check("cy") &&
+                parType.check("fx") && parType.check("fy"))
+            {
+                double cx=parType.find("cx").asDouble();
+                double cy=parType.find("cy").asDouble();
+                double fx=parType.find("fx").asDouble();
+                double fy=parType.find("fy").asDouble();
+
+                Matrix K=eye(3,3);
+                Matrix Pi=zeros(3,4);
+
+                K(0,0)=fx; K(1,1)=fy;
+                K(0,2)=cx; K(1,2)=cy; 
+                
+                Pi(0,0)=Pi(1,1)=Pi(2,2)=1.0; 
+
+                *Prj=new Matrix;
+                **Prj=K*Pi;
+            }
+            else
+                cerr << warning << endl;
+        }
+        else
+            cerr << warning << endl;
+    }
+
+    return false;
+}
+
+
+/************************************************************************/
 bool getAlignLinks(const string &configFile, const string &type,
                    iKinLink **link1, iKinLink **link2)
 {
@@ -47,7 +92,7 @@ bool getAlignLinks(const string &configFile, const string &type,
         par.fromConfigFile(configFile.c_str());
 
         Bottle parType=par.findGroup(type.c_str());
-        string error="unable to find aligning parameters for "+type+" eye";
+        string warning="Aligning parameters for "+type+" group not found";
 
         if (parType.size())
         {
@@ -65,10 +110,10 @@ bool getAlignLinks(const string &configFile, const string &type,
                 return true;
             }
             else
-                cerr << error << endl;
+                cerr << warning << endl;
         }
         else
-            cerr << error << endl;
+            cerr << warning << endl;
     }
 
     return false;

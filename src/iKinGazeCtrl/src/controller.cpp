@@ -130,19 +130,19 @@ void Controller::printIter(Vector &xd, Vector &fp, Vector &qd, Vector &q,
 /************************************************************************/
 bool Controller::threadInit()
 {
-    port_x=new BufferedPort<Vector>();
+    port_x=new BufferedPort<Vector>;
     string n1=localName+"/x:o";
     port_x->open(n1.c_str());
 
-    port_qd=new BufferedPort<Vector>();
+    port_qd=new BufferedPort<Vector>;
     string n2=localName+"/qd:o";
     port_qd->open(n2.c_str());
 
-    port_q=new BufferedPort<Vector>();
+    port_q=new BufferedPort<Vector>;
     string n3=localName+"/q:o";
     port_q->open(n3.c_str());
 
-    port_v=new BufferedPort<Vector>();
+    port_v=new BufferedPort<Vector>;
     string n4=localName+"/v:o";
     port_v->open(n4.c_str());
 
@@ -250,6 +250,7 @@ void Controller::run()
     // update joints angles
     fbHead=Int->integrate(v);
     commData->get_q()=fbHead;
+    commData->get_torso()=fbTorso;
     commData->get_v()=v;
 }
 

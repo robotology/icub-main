@@ -50,7 +50,7 @@ class exchangeData
 {
 protected:
     Vector xd,qd;
-    Vector x,q;
+    Vector x,q,torso;
     Vector v,compv;
     Matrix S;
 
@@ -61,6 +61,7 @@ public:
     Vector &get_qd()      { return qd;    }
     Vector &get_x()       { return x;     }
     Vector &get_q()       { return q;     }
+    Vector &get_torso()   { return torso; }
     Vector &get_v()       { return v;     }
     Vector &get_compv()   { return compv; }
     Matrix &get_fpFrame() { return S;     }
@@ -99,8 +100,14 @@ public:
 };
 
 
+// Allocates Projection Matrix Prj for the camera read from configFile
+// type is in {"CAMERA_CALIBRATION_LEFT","CAMERA_CALIBRATION_RIGHT"}
+// Returns true if correctly configured
+bool getCamPrj(const string &configFile, const string &type, Matrix **Prj);
+
+
 // Allocates the two aligning links read from configFile
-// type is in {"LEFT","RIGHT"}
+// type is in {"ALIGN_KIN_LEFT","ALIGN_KIN_RIGHT"}
 // Returns true if correctly configured
 bool getAlignLinks(const string &configFile, const string &type,
                    iKinLink **link1, iKinLink **link2);

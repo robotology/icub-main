@@ -36,7 +36,7 @@ EyePinvRefGen::EyePinvRefGen(PolyDriver *_drvTorso, PolyDriver *_drvHead,
     chainEyeR=eyeR->asChain();
 
     // add aligning links read from configuration file
-    if (getAlignLinks(configFile,"LEFT",&alignLnkLeft1,&alignLnkLeft2))
+    if (getAlignLinks(configFile,"ALIGN_KIN_LEFT",&alignLnkLeft1,&alignLnkLeft2))
     {
         *chainEyeL<<*alignLnkLeft1<<*alignLnkLeft2;
         chainEyeL->blockLink(chainEyeL->getN()-1,0.0);
@@ -45,7 +45,7 @@ EyePinvRefGen::EyePinvRefGen(PolyDriver *_drvTorso, PolyDriver *_drvHead,
     else
         alignLnkLeft1=alignLnkLeft2=NULL;
 
-    if (getAlignLinks(configFile,"RIGHT",&alignLnkRight1,&alignLnkRight2))
+    if (getAlignLinks(configFile,"ALIGN_KIN_RIGHT",&alignLnkRight1,&alignLnkRight2))
     {
         *chainEyeR<<*alignLnkRight1<<*alignLnkRight2;
         chainEyeR->blockLink(chainEyeR->getN()-1,0.0);
@@ -124,7 +124,7 @@ EyePinvRefGen::EyePinvRefGen(PolyDriver *_drvTorso, PolyDriver *_drvHead,
     eyesJ.zero();
     gyro.resize(12,0.0);
 
-    genOn=false;
+    genOn=false;    
 }
 
 
@@ -133,7 +133,7 @@ bool EyePinvRefGen::threadInit()
 {
     if (Robotable)
     {
-        port_inertial=new BufferedPort<Vector>();
+        port_inertial=new BufferedPort<Vector>;
         string n=localName+inertialName+":i";
         port_inertial->open(n.c_str());
 
@@ -175,7 +175,7 @@ void EyePinvRefGen::run()
             updateTorsoBlockedJoints(chainEyeR,fbTorso);
         }
         else
-            fbHead=commData->get_q();
+            fbHead=commData->get_q();        
 
         // read gyro data
         if (port_inertial)
@@ -322,10 +322,10 @@ Solver::Solver(PolyDriver *_drvTorso, PolyDriver *_drvHead, exchangeData *_commD
     // Get the chain objects
     chainNeck=neck->asChain();
     chainEyeL=eyeL->asChain();        
-    chainEyeR=eyeR->asChain();
+    chainEyeR=eyeR->asChain();    
 
     // add aligning links read from configuration file
-    if (getAlignLinks(configFile,"LEFT",&alignLnkLeft1,&alignLnkLeft2))
+    if (getAlignLinks(configFile,"ALIGN_KIN_LEFT",&alignLnkLeft1,&alignLnkLeft2))
     {
         *chainEyeL<<*alignLnkLeft1<<*alignLnkLeft2;
         chainEyeL->blockLink(chainEyeL->getN()-1,0.0);
@@ -334,7 +334,7 @@ Solver::Solver(PolyDriver *_drvTorso, PolyDriver *_drvHead, exchangeData *_commD
     else
         alignLnkLeft1=alignLnkLeft2=NULL;
 
-    if (getAlignLinks(configFile,"RIGHT",&alignLnkRight1,&alignLnkRight2))
+    if (getAlignLinks(configFile,"ALIGN_KIN_RIGHT",&alignLnkRight1,&alignLnkRight2))
     {
         *chainEyeR<<*alignLnkRight1<<*alignLnkRight2;
         chainEyeR->blockLink(chainEyeR->getN()-1,0.0);
@@ -539,6 +539,7 @@ bool Solver::threadInit()
     commData->get_qd()=fbHead;
     commData->get_x()=fp;
     commData->get_q()=fbHead;
+    commData->get_torso()=fbTorso;
     commData->get_v().resize(5,0.0);
     commData->get_compv().resize(3,0.0);
     commData->get_fpFrame()=chainEyeL->getH()+chainEyeR->getH();
@@ -610,7 +611,7 @@ void Solver::run()
 
     if (!(xd==xdOld) || movedTorso)
     {
-        // call the solver for neck (only if necessary)        
+        // call the solver for neck (only if necessary)
         if (movedTorso ||
             theta[0]>NECKSOLVER_ACTIVATIONANGLE_TRA*CTRL_DEG2RAD ||
             theta[1]>NECKSOLVER_ACTIVATIONANGLE_SAG*CTRL_DEG2RAD)

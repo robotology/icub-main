@@ -20,7 +20,7 @@ using namespace iKin;
 class iCubHeadCenter : public iCubEye
 {
 protected:
-    virtual void _allocate_limb(const string &_type);
+    virtual void allocate(const string &_type);
 
 public:
     iCubHeadCenter()                           { allocate("right"); }

@@ -26,9 +26,9 @@ planes in relative displacement in 3D task space with respect to
 the actual fixation point. 
  
 Moreover, in case only a monocular vision is exploited, one can 
-still use the iKinGazeCtrl in combination with the \ref 
-icub_iKinHead module which returns via rpc the 3d point 
-corresponding to a pixel in one image plane. 
+still use the iKinGazeCtrl by passing it the coordinate (u,v) of
+just one pixel in the image plane along with a guessed distance 
+z from the eye's reference frame.
  
 <b>Reminder</b> \n 
 If you experience a slow speed motion, please check the shift 
@@ -88,17 +88,9 @@ Shifts 8 8 8 8 8 8 8 8 8 8
   movements [expressed in seconds]; by default \e time is 0.20
   seconds.
  
---cx \e x 
-- The parameter \e x represents the central x image plane 
-  coordinate in pixel; by default \e x = 160.
- 
---cy \e y 
-- The parameter \e y represents the central y image plane 
-  coordinate in pixel; by default \e y = 120.
- 
 --config \e file 
-- The parameter \e file specifies the file name used for 
-  aligning eyes kinematic to image planes (see below).
+- The parameter \e file specifies the file name used to read 
+  kinematics and cameras parameters (see below).
  
 --context \e dir
 - Resource finder searching dir for config file.
@@ -113,13 +105,18 @@ The ports the module is connected to: e.g.
 
 \section portsc_sec Ports Created 
  
-There are two different ways of commanding a new target fixation 
-point: 
+There are three different ways of commanding a new target 
+fixation point: 
  
 - by sending the absolute 3D position to gaze at in the task 
   space through /<ctrlName>/xd:i port.
 - by localizing the target in the two image planes and thus 
-  sending its relative coordinates to /<ctrlName>/pixel:i port.
+  sending its relative coordinates to the /<ctrlName>/stereo:i
+  port.
+- by localizing the target in just one image plane and then 
+  sending its relative coordinates together with a guessed
+  distance z from the eye's frame to the /<ctrlName>/mono:i
+  port.
  
 The module creates the usual ports required for the 
 communication with the robot (through interfaces) and the 
@@ -129,9 +126,15 @@ following ports:
   It accepts 3 double (also as a Bottle object) for xyz
   coordinates.
  
-- \e /<ctrlName>/<part>/pixel:i receives the current target 
+- \e /<ctrlName>/<part>/stereo:i receives the current target 
   position expressed in image planes. It accepts 4 double (also
   as a Bottle object) in this order: [ul vl ur vr].
+ 
+- \e /<ctrlName>/<part>/mono:i receives the current target 
+  position expressed in one image plane. The input data format
+  is the Bottle [type u v z], where \e type can be left or
+  right, <i> (u,v) </i> is the pixel coordinates and \e z is the
+  guessed distance relative to the eye's reference frame.
  
 - \e /<ctrlName>/<part>/x:o returns the actual fixation point 
   (Vector of 3 double).
@@ -180,22 +183,34 @@ None.
 None. 
  
 \section conf_file_sec Configuration Files
-Optionally, a configuration file passed through \e --config 
-contains the fields required to reconstruct the virtual links 
-(given in terms of lenght,offset,twist parameters) which are 
-appended to the eye kinematic in order to achieve the alignment 
-with the optical axes compensating for possible unknown offsets. 
-This option is not currently used. 
+A configuration file passed through \e --config contains the
+fields required to specify the intrinsic cameras parameters 
+along with the virtual links (given in terms of 
+lenght,offset,twist parameters) which are appended to the eye 
+kinematic in order to achieve the alignment with the optical 
+axes compensating for possible unknown offsets. 
  
 Example: 
  
 \code 
-[LEFT]
+[CAMERA_CALIBRATION_RIGHT]
+fx 225.904
+fy 227.041
+cx 157.858
+cy 113.51
+
+[CAMERA_CALIBRATION_LEFT]
+fx 219.057
+fy 219.028
+cx 174.742
+cy 102.874
+ 
+[ALIGN_KIN_LEFT]
 length 4.15777e-007 -4.44085e-007   // [m]
 offset 1.11013e-006 -1.84301e-007   // [m]
 twist  0.163382 -0.12788            // [rad] 
 
-[RIGHT]
+[ALIGN_KIN_RIGHT]
 length 0.000100176 -0.000105106     // [m]
 offset 0.000103259 -9.96225e-005    // [m]
 twist  0.296114 -0.194269           // [rad] 
@@ -259,7 +274,6 @@ public:
         string configFile;
         double neckTime;
         double eyesTime;
-        int    cx, cy;
         bool   Robotable;
 
         Time::turboBoost();
@@ -298,16 +312,6 @@ public:
             eyesTime=rf.find("Teyes").asDouble();
         else
             eyesTime=0.20;
-
-        if (rf.check("cx"))
-            cx=rf.find("cx").asInt();
-        else
-            cx=160;
-
-        if (rf.check("cy"))
-            cy=rf.find("cy").asInt();
-        else
-            cy=120;
 
         if (rf.check("simulation"))
             Robotable=false;
@@ -355,8 +359,8 @@ public:
         else
             drvTorso=drvHead=NULL;
 
-        // starts threads
-        loc=new Localizer(&commData,localHeadName,cx,cy,20);
+        // create and start threads
+        loc=new Localizer(&commData,localHeadName,configFile,20);
         loc->start();
 
         eyesRefGen=new EyePinvRefGen(drvTorso,drvHead,&commData,robotName,
@@ -446,7 +450,7 @@ public:
                     if (command.size()>1)
                     {
                         int type=command.get(1).asVocab();
-    
+
                         if (type==VOCAB4('T','n','e','c'))
                             reply.addDouble(ctrl->getTneck());
                         else if (type==VOCAB4('T','e','y','e'))
@@ -535,9 +539,7 @@ int main(int argc, char *argv[])
         cout << "\t--inertial  name: robot inertial port name (default: inertial)"               << endl;
         cout << "\t--Tneck     time: specify the neck movements time in seconds (default: 0.70)" << endl;
         cout << "\t--Teyes     time: specify the eyes movements time in seconds (default: 0.20)" << endl;
-        cout << "\t--cx           x: central x coordinate of image plane (default: 160)"         << endl;
-        cout << "\t--cy           y: central y coordinate of image plane (default: 120)"         << endl;
-        cout << "\t--config    file: file name for aligning eyes kinematic to image planes"      << endl;
+        cout << "\t--config    file: file name for kinematics and cameras parameters"            << endl;
         cout << "\t--context    dir: resource finder searching dir for config file"              << endl;
         cout << "\t--simulation    : simulate the presence of the robot"                         << endl;
 

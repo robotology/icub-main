@@ -42,11 +42,12 @@
   * configuration the image plane coordinates are substituted
   * with the left and right principal coordinates (cx,cy).
   * 
-  * Moreover, two further groups [LEFT_ALIGN] and [RIGHT_ALIGN]
-  * can be added to the configuration file to describe the
-  * virtual links (given in terms of lenght,offset,twist
-  * parameters) which are appended to the eye kinematic in order
-  * to achieve the alignment with the optical axes.
+  * Moreover, two further groups [ALIGN_KIN_LEFT] and
+  * [ALIGN_KIN_RIGHT] can be added to the configuration
+  * file to describe the virtual links (given in terms of
+  * lenght,offset,twist parameters) which are appended to the
+  * eye kinematic in order to achieve the alignment with the
+  * optical axes.
   * 
   * By adding the option --kalman the 3D output position is
   * filtered with a Kalman state estimator.
