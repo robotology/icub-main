@@ -68,6 +68,8 @@ bool getCamPrj(const string &configFile, const string &type, Matrix **Prj)
 
                 *Prj=new Matrix;
                 **Prj=K*Pi;
+
+                return true;
             }
             else
                 cerr << warning << endl;
