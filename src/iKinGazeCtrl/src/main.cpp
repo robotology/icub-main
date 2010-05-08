@@ -26,9 +26,9 @@ planes in relative displacement in 3D task space with respect to
 the actual fixation point. 
  
 Moreover, in case only a monocular vision is exploited, one can 
-still use the iKinGazeCtrl by passing it the coordinate (u,v) of
-just one pixel in the image plane along with a guessed distance 
-z from the eye's reference frame.
+still use the iKinGazeCtrl by passing it the coordinates (u,v) 
+of just one pixel in the image plane along with a guessed 
+distance z wrt the eye's reference frame. 
  
 <b>Reminder</b> \n 
 If you experience a slow speed motion, please check the shift 
@@ -112,11 +112,13 @@ fixation point:
   space through /<ctrlName>/xd:i port.
 - by localizing the target in the two image planes and thus 
   sending its relative coordinates to the /<ctrlName>/stereo:i
-  port.
+  port. There's no need here to know the intrinsic cameras
+  parameters.
 - by localizing the target in just one image plane and then 
   sending its relative coordinates together with a guessed
   distance z from the eye's frame to the /<ctrlName>/mono:i
-  port.
+  port. In this mode the intrinsic cameras parameters are
+  required.
  
 The module creates the usual ports required for the 
 communication with the robot (through interfaces) and the 
