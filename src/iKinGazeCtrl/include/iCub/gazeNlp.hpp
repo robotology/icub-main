@@ -71,6 +71,11 @@ public:
 bool computeFixationPointData(iKinChain &eyeL, iKinChain &eyeR, Vector &fp, Matrix &J);
 
 
+// Compute fixation point position wrt eyes (tilt,pan,vergence)
+// Return true if division by zero is detected
+bool computeFixationPointOnly(iKinChain &eyeL, iKinChain &eyeR, Vector &fp);
+
+
 // Describe the nonlinear problem of eyes handling.
 // DOFs=tilt+pan+vergence.
 class Eyes_NLP : public iKin_NLP

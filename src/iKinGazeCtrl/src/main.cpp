@@ -30,7 +30,8 @@ just one pixel in the image plane along with a guessed distance
 z wrt the eye's reference frame can be given to the module; 3) 
 the head-centeres azimuth and elevation angles can be passed to 
 the module both in absolute and relative mode (i.e. wrt to the 
-current head position). 
+current head position); 4) a dedicated input for vergence 
+control is available as well. 
  
 <b>Reminder</b> \n 
 If you experience a slow speed motion, please check the shift 
@@ -125,6 +126,8 @@ point:
   degrees wrt either to the current head position or to the
   absolute head position (computed with the robot looking
   straight ahead).
+- a dedicated input is provided to control directly the 
+  vergence.
  
 The module creates the usual ports required for the 
 communication with the robot (through interfaces) and the 
@@ -151,6 +154,9 @@ following ports:
   positive azimuth will turn the gaze to the right, whereas a
   positive elevation will move the gaze upward.
  
+- \e /<ctrlName>/<part>/vergence:i allows a direct control of 
+  the vergence angle acquired in degrees.
+ 
 - \e /<ctrlName>/<part>/x:o returns the actual fixation point 
   (Vector of 3 double).
  
@@ -169,9 +175,10 @@ following ports:
   velocities which steers the head to gaze at the target
   fixation point (Vector of 6 double). Units in deg/s.
  
-- \e /<ctrlName>/<part>/aziele:o returns the current 
-  azimuth/elevation couple wrt to the absolute head position
-  (Vector of 2 double). Units in deg.
+- \e /<ctrlName>/<part>/angles:o returns the current 
+  azimuth/elevation couple wrt to the absolute head position,
+  together with the current vergence (Vector of 3 double). Units
+  in deg.
  
 - \e /<ctrlName>/<part>/rpc remote procedure call. 
     Recognized remote commands:

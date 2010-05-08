@@ -21,6 +21,11 @@ Localizer::Localizer(exchangeData *_commData, const string &_localName,
     eyeL->setAllConstraints(false);
     eyeR->setAllConstraints(false);
 
+    // release links
+    eyeL->releaseLink(0); eyeR->releaseLink(0);
+    eyeL->releaseLink(1); eyeR->releaseLink(1);
+    eyeL->releaseLink(2); eyeR->releaseLink(2);
+
     // get the absolute reference frame of the cyclopic eye
     Vector q(eyeC.getDOF()); q=0.0;
     eyeCAbsFrame=eyeC.getH(q);
@@ -115,13 +120,17 @@ bool Localizer::threadInit()
     string n2=localName+"/stereo:i";
     port_stereo->open(n2.c_str());
 
-    port_azieleIn=new BufferedPort<Bottle>;
+    port_aziele=new BufferedPort<Bottle>;
     string n3=localName+"/aziele:i";
-    port_azieleIn->open(n3.c_str());
+    port_aziele->open(n3.c_str());
 
-    port_azieleOut=new BufferedPort<Vector>;
-    string n4=localName+"/aziele:o";
-    port_azieleOut->open(n4.c_str());
+    port_vergence=new BufferedPort<Bottle>;
+    string n4=localName+"/vergence:i";
+    port_vergence->open(n4.c_str());
+
+    port_angles=new BufferedPort<Vector>;
+    string n5=localName+"/angles:o";
+    port_angles->open(n5.c_str());
 
     cout << "Starting Localizer at " << period << " ms" << endl;
 
@@ -279,7 +288,7 @@ void Localizer::handleStereoInput()
 /************************************************************************/
 void Localizer::handleAziEleInput()
 {
-    if (Bottle *aziele=port_azieleIn->read(false))
+    if (Bottle *aziele=port_aziele->read(false))
         if (aziele->size()>=3)
         {
             string type=aziele->get(0).asString().c_str();
@@ -341,12 +350,50 @@ void Localizer::handleAziEleInput()
                 cerr << "Internal error occured!" << endl;
         }
         else
-            cerr << "Got wrong aziele information!" << endl;
+            cerr << "Got wrong azimuth/elevation information!" << endl;
 }
 
 
 /************************************************************************/
-void Localizer::handleAziEleOutput()
+void Localizer::handleVergenceInput()
+{
+    if (Bottle *vergence=port_vergence->read(false))
+        if (vergence->size())
+        {
+            double ver_2=0.5*CTRL_DEG2RAD*vergence->get(0).asDouble();
+
+            Vector &torso=commData->get_torso();
+            Vector &head=commData->get_q();
+
+            Vector q(8);
+            q[0]=torso[0];
+            q[1]=torso[1];
+            q[2]=torso[2];
+            q[3]=head[0];
+            q[4]=head[1];
+            q[5]=head[2];
+            q[6]=head[3];
+
+            q[7]=head[4]+ver_2;
+            eyeL->setAng(q);
+
+            q[7]=head[4]-ver_2;
+            eyeR->setAng(q);
+
+            Vector fp(3);
+
+            if (!computeFixationPointOnly(*(eyeL->asChain()),*(eyeR->asChain()),fp) && port_xd)
+                port_xd->set_xd(fp);
+            else
+                cerr << "Internal error occured!" << endl;
+        }
+        else
+            cerr << "Got wrong vergence information!" << endl;
+}
+
+
+/************************************************************************/
+void Localizer::handleAnglesOutput()
 {
     Vector fp(4);
     fp[0]=commData->get_x()[0];
@@ -357,13 +404,14 @@ void Localizer::handleAziEleOutput()
     // get fp wrt head-centered system
     Vector fpe=invEyeCAbsFrame*fp;
 
-    Vector &aziele=port_azieleOut->prepare();
-    aziele.resize(2);
+    Vector &angles=port_angles->prepare();
+    angles.resize(3);
 
-    aziele[0]=CTRL_RAD2DEG*atan2(fpe[0],fpe[2]);
-    aziele[1]=-CTRL_RAD2DEG*atan2(fpe[1],fpe[2]);
+    angles[0]=CTRL_RAD2DEG*atan2(fpe[0],fpe[2]);
+    angles[1]=-CTRL_RAD2DEG*atan2(fpe[1],fpe[2]);
+    angles[2]=CTRL_RAD2DEG*commData->get_q()[5];
 
-    port_azieleOut->write();
+    port_angles->write();
 }
 
 
@@ -373,7 +421,8 @@ void Localizer::run()
     handleMonocularInput();
     handleStereoInput();
     handleAziEleInput();
-    handleAziEleOutput();
+    handleVergenceInput();
+    handleAnglesOutput();
 }
 
 
@@ -382,18 +431,21 @@ void Localizer::threadRelease()
 {
     port_mono->interrupt();
     port_stereo->interrupt();
-    port_azieleIn->interrupt();
-    port_azieleOut->interrupt();
+    port_aziele->interrupt();
+    port_vergence->interrupt();
+    port_angles->interrupt();
 
     port_mono->close();
     port_stereo->close();
-    port_azieleIn->close();
-    port_azieleOut->close();
+    port_aziele->close();
+    port_vergence->close();
+    port_angles->close();
 
     delete port_mono;
     delete port_stereo;
-    delete port_azieleIn;
-    delete port_azieleOut;
+    delete port_aziele;
+    delete port_vergence;
+    delete port_angles;
 
     if (PrjL)
     {

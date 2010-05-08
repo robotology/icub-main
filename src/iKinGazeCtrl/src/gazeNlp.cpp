@@ -213,6 +213,39 @@ bool computeFixationPointData(iKinChain &eyeL, iKinChain &eyeR, Vector &fp, Matr
 
 
 /************************************************************************/
+bool computeFixationPointOnly(iKinChain &eyeL, iKinChain &eyeR, Vector &fp)
+{
+    Vector dfp1(4), dfp2(4);
+    Vector dfpL1(4),dfpL2(4);
+    Vector dfpR1(4),dfpR2(4);
+
+    Matrix HL=eyeL.getH();
+    Matrix HR=eyeR.getH();
+    HL(3,3)=HR(3,3)=0.0;
+
+    double qty1=dot(HR,2,HL,2);
+    Matrix H1=HL-HR;
+    Matrix H2L=HL-qty1*HR;
+    Matrix H2R=qty1*HL-HR;
+    Matrix H3(4,4); H3(3,2)=0.0;
+    double qty2L=dot(H2L,2,H1,3);
+    double qty2R=dot(H2R,2,H1,3);
+    double qty3=qty1*qty1-1.0;
+
+    if (!qty3)
+        return true;
+
+    double tL=qty2L/qty3;
+    double tR=qty2R/qty3;
+
+    for (unsigned int i=0; i<3; i++)
+        fp[i]=0.5*(HL(i,3)+tL*HL(i,2)+HR(i,3)+tR*HR(i,2));
+
+    return false;
+}
+
+
+/************************************************************************/
 Eyes_NLP::Eyes_NLP(iKinChain &_eyeL, iKinChain &_eyeR, const Vector &_q0, Vector &_xd,
                    iKinLinIneqConstr &_LIC, bool *_exhalt) :
                    iKin_NLP(_eyeL,IKINCTRL_POSE_XYZ,_q0,_xd,

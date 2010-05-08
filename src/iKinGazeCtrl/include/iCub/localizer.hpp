@@ -38,8 +38,9 @@ protected:
     xdPort               *port_xd;
     BufferedPort<Bottle> *port_mono;
     BufferedPort<Bottle> *port_stereo;
-    BufferedPort<Bottle> *port_azieleIn;
-    BufferedPort<Vector> *port_azieleOut;
+    BufferedPort<Bottle> *port_aziele;
+    BufferedPort<Bottle> *port_vergence;
+    BufferedPort<Vector> *port_angles;
     
     string localName;
     string configFile;
@@ -63,7 +64,8 @@ protected:
     void handleMonocularInput();
     void handleStereoInput();
     void handleAziEleInput();
-    void handleAziEleOutput();
+    void handleVergenceInput();
+    void handleAnglesOutput();
 
 public:
     Localizer(exchangeData *_commData, const string &_localName,
