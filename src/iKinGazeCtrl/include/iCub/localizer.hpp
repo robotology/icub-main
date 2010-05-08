@@ -53,6 +53,9 @@ protected:
 
     parallelPID *pid;
 
+    void handleMonocularInput();
+    void handleStereoInput();
+
 public:
     Localizer(exchangeData *_commData, const string &_localName,
               const string &_configFile, unsigned int _period);
