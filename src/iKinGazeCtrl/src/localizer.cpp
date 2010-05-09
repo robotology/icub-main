@@ -120,17 +120,13 @@ bool Localizer::threadInit()
     string n2=localName+"/stereo:i";
     port_stereo->open(n2.c_str());
 
-    port_aziele=new BufferedPort<Bottle>;
-    string n3=localName+"/aziele:i";
-    port_aziele->open(n3.c_str());
+    port_anglesIn=new BufferedPort<Bottle>;
+    string n3=localName+"/angles:i";
+    port_anglesIn->open(n3.c_str());
 
-    port_vergence=new BufferedPort<Bottle>;
-    string n4=localName+"/vergence:i";
-    port_vergence->open(n4.c_str());
-
-    port_angles=new BufferedPort<Vector>;
-    string n5=localName+"/angles:o";
-    port_angles->open(n5.c_str());
+    port_anglesOut=new BufferedPort<Vector>;
+    string n4=localName+"/angles:o";
+    port_anglesOut->open(n4.c_str());
 
     cout << "Starting Localizer at " << period << " ms" << endl;
 
@@ -286,16 +282,55 @@ void Localizer::handleStereoInput()
 
 
 /************************************************************************/
-void Localizer::handleAziEleInput()
+void Localizer::handleAnglesInput()
 {
-    if (Bottle *aziele=port_aziele->read(false))
-        if (aziele->size()>=3)
+    if (Bottle *angles=port_anglesIn->read(false))
+        if (angles->size()>=4)
         {
-            string type=aziele->get(0).asString().c_str();
-            double azi=CTRL_DEG2RAD*aziele->get(1).asDouble();
-            double ele=CTRL_DEG2RAD*aziele->get(2).asDouble();
+            string type=angles->get(0).asString().c_str();
+            double azi=CTRL_DEG2RAD*angles->get(1).asDouble();
+            double ele=CTRL_DEG2RAD*angles->get(2).asDouble();
+            double ver=CTRL_DEG2RAD*angles->get(3).asDouble();
 
             bool isAbs=(type=="abs");
+
+            Vector &torso=commData->get_torso();
+            Vector &head=commData->get_q();
+
+            Vector q(8);
+            q[0]=torso[0];
+            q[1]=torso[1];
+            q[2]=torso[2];
+            q[3]=head[0];
+            q[4]=head[1];
+            q[5]=head[2];
+            q[6]=head[3];
+
+            if (isAbs)
+                q[7]=head[4]+ver/2.0;
+            else
+                q[7]=head[4]+(head[5]+ver)/2.0;
+            eyeL->setAng(q);
+
+            if (isAbs)
+                q[7]=head[4]-ver/2.0;
+            else
+                q[7]=head[4]-(head[5]+ver)/2.0;
+            eyeR->setAng(q);
+
+            Vector fp(4);
+            fp[3]=1.0;  // impose homogeneous coordinates
+
+            // compute new fp due to changed vergence
+            if (computeFixationPointOnly(*(eyeL->asChain()),*(eyeR->asChain()),fp) || head[5]<1.0*CTRL_DEG2RAD)
+            {
+                // keep the old fp if some errors occur
+                fp[0]=commData->get_x()[0];
+                fp[1]=commData->get_x()[1];
+                fp[2]=commData->get_x()[2];
+
+                cerr << "Vergence error occured!" << endl;
+            }
 
             // compute rotational matrix
             Vector x(4);
@@ -311,12 +346,7 @@ void Localizer::handleAziEleInput()
             y[3]=azi;
             
             Matrix R=axis2dcm(y)*axis2dcm(x);
-
-            Vector fp(4), fpe;
-            fp[0]=commData->get_x()[0];
-            fp[1]=commData->get_x()[1];
-            fp[2]=commData->get_x()[2];
-            fp[3]=1.0;  // impose homogeneous coordinates
+            Vector fpe;
 
             // get the head-centered frame
             Matrix &frame=(isAbs?eyeCAbsFrame:commData->get_fpFrame());
@@ -350,45 +380,7 @@ void Localizer::handleAziEleInput()
                 cerr << "Internal error occured!" << endl;
         }
         else
-            cerr << "Got wrong azimuth/elevation information!" << endl;
-}
-
-
-/************************************************************************/
-void Localizer::handleVergenceInput()
-{
-    if (Bottle *vergence=port_vergence->read(false))
-        if (vergence->size())
-        {
-            double ver_2=0.5*CTRL_DEG2RAD*vergence->get(0).asDouble();
-
-            Vector &torso=commData->get_torso();
-            Vector &head=commData->get_q();
-
-            Vector q(8);
-            q[0]=torso[0];
-            q[1]=torso[1];
-            q[2]=torso[2];
-            q[3]=head[0];
-            q[4]=head[1];
-            q[5]=head[2];
-            q[6]=head[3];
-
-            q[7]=head[4]+ver_2;
-            eyeL->setAng(q);
-
-            q[7]=head[4]-ver_2;
-            eyeR->setAng(q);
-
-            Vector fp(3);
-
-            if (!computeFixationPointOnly(*(eyeL->asChain()),*(eyeR->asChain()),fp) && port_xd)
-                port_xd->set_xd(fp);
-            else
-                cerr << "Internal error occured!" << endl;
-        }
-        else
-            cerr << "Got wrong vergence information!" << endl;
+            cerr << "Got wrong angles information!" << endl;
 }
 
 
@@ -404,14 +396,14 @@ void Localizer::handleAnglesOutput()
     // get fp wrt head-centered system
     Vector fpe=invEyeCAbsFrame*fp;
 
-    Vector &angles=port_angles->prepare();
+    Vector &angles=port_anglesOut->prepare();
     angles.resize(3);
 
     angles[0]=CTRL_RAD2DEG*atan2(fpe[0],fpe[2]);
     angles[1]=-CTRL_RAD2DEG*atan2(fpe[1],fpe[2]);
     angles[2]=CTRL_RAD2DEG*commData->get_q()[5];
 
-    port_angles->write();
+    port_anglesOut->write();
 }
 
 
@@ -420,8 +412,7 @@ void Localizer::run()
 {
     handleMonocularInput();
     handleStereoInput();
-    handleAziEleInput();
-    handleVergenceInput();
+    handleAnglesInput();
     handleAnglesOutput();
 }
 
@@ -431,21 +422,18 @@ void Localizer::threadRelease()
 {
     port_mono->interrupt();
     port_stereo->interrupt();
-    port_aziele->interrupt();
-    port_vergence->interrupt();
-    port_angles->interrupt();
+    port_anglesIn->interrupt();
+    port_anglesOut->interrupt();
 
     port_mono->close();
     port_stereo->close();
-    port_aziele->close();
-    port_vergence->close();
-    port_angles->close();
+    port_anglesIn->close();
+    port_anglesOut->close();
 
     delete port_mono;
     delete port_stereo;
-    delete port_aziele;
-    delete port_vergence;
-    delete port_angles;
+    delete port_anglesIn;
+    delete port_anglesOut;
 
     if (PrjL)
     {

@@ -38,9 +38,8 @@ protected:
     xdPort               *port_xd;
     BufferedPort<Bottle> *port_mono;
     BufferedPort<Bottle> *port_stereo;
-    BufferedPort<Bottle> *port_aziele;
-    BufferedPort<Bottle> *port_vergence;
-    BufferedPort<Vector> *port_angles;
+    BufferedPort<Bottle> *port_anglesIn;
+    BufferedPort<Vector> *port_anglesOut;
     
     string localName;
     string configFile;
@@ -63,8 +62,7 @@ protected:
 
     void handleMonocularInput();
     void handleStereoInput();
-    void handleAziEleInput();
-    void handleVergenceInput();
+    void handleAnglesInput();
     void handleAnglesOutput();
 
 public:

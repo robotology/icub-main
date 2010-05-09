@@ -28,10 +28,9 @@ task space with respect to the actual fixation point; 2) in case
 only a monocular vision is exploited, the coordinates (u,v) of
 just one pixel in the image plane along with a guessed distance 
 z wrt the eye's reference frame can be given to the module; 3) 
-the head-centeres azimuth and elevation angles can be passed to 
-the module both in absolute and relative mode (i.e. wrt to the 
-current head position); 4) a dedicated input for vergence 
-control is available as well. 
+the head-centeres azimuth and elevation angles along with the 
+vergence angle can be passed to the module both in absolute and 
+relative mode (i.e. wrt to the current head position). 
  
 <b>Reminder</b> \n 
 If you experience a slow speed motion, please check the shift 
@@ -122,12 +121,11 @@ point:
   distance z from the eye's frame to the /<ctrlName>/mono:i
   port. In this mode the intrinsic cameras parameters are
   required.
-- by sending the head-centered azimuth/elevation couples in 
+- by sending the head-centered azimuth/elevation couple in 
   degrees wrt either to the current head position or to the
   absolute head position (computed with the robot looking
-  straight ahead).
-- a dedicated input is provided to control directly the 
-  vergence.
+  straight ahead). Vergence is also to be given either in
+  relative mode or absolute mode.
  
 The module creates the usual ports required for the 
 communication with the robot (through interfaces) and the 
@@ -147,15 +145,13 @@ following ports:
   right, <i> (u,v) </i> is the pixel coordinates and \e z is the
   guessed distance relative to the eye's reference frame.
  
-- \e /<ctrlName>/<part>/aziele:i receives the current target 
-  position expressed as azimuth/elevation couple in degrees. It
-  accepts 3 double (also as a Bottle object) in this order:
-  [mode azi ele], where \e mode can be \e rel or \e abs. A
-  positive azimuth will turn the gaze to the right, whereas a
-  positive elevation will move the gaze upward.
- 
-- \e /<ctrlName>/<part>/vergence:i allows a direct control of 
-  the vergence angle acquired in degrees.
+- \e /<ctrlName>/<part>/angles:i receives the current target 
+  position expressed as azimuth/elevation/vergence triplet in
+  degrees. It accepts 1 string and 3 doubles (also as a Bottle
+  object) in this order: [mode azi ele ver], where \e mode can
+  be \e rel or \e abs. A positive azimuth will turn the gaze to
+  the right, whereas a positive elevation will move the gaze
+  upward.
  
 - \e /<ctrlName>/<part>/x:o returns the actual fixation point 
   (Vector of 3 double).
