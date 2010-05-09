@@ -292,7 +292,7 @@ void Localizer::handleAnglesInput()
             double ele=CTRL_DEG2RAD*angles->get(2).asDouble();
             double ver=CTRL_DEG2RAD*angles->get(3).asDouble();
 
-            bool isAbs=(type=="abs");
+            bool isRel=(type=="rel");
 
             Vector &torso=commData->get_torso();
             Vector &head=commData->get_q();
@@ -306,23 +306,20 @@ void Localizer::handleAnglesInput()
             q[5]=head[2];
             q[6]=head[3];
 
-            if (isAbs)
-                q[7]=head[4]+ver/2.0;
-            else
-                q[7]=head[4]+(head[5]+ver)/2.0;
+            if (isRel)
+                ver+=head[5];
+
+            q[7]=head[4]+ver/2.0;
             eyeL->setAng(q);
 
-            if (isAbs)
-                q[7]=head[4]-ver/2.0;
-            else
-                q[7]=head[4]-(head[5]+ver)/2.0;
+            q[7]=head[4]-ver/2.0;
             eyeR->setAng(q);
 
             Vector fp(4);
             fp[3]=1.0;  // impose homogeneous coordinates
 
             // compute new fp due to changed vergence
-            if (computeFixationPointOnly(*(eyeL->asChain()),*(eyeR->asChain()),fp) || head[5]<1.0*CTRL_DEG2RAD)
+            if (computeFixationPointOnly(*(eyeL->asChain()),*(eyeR->asChain()),fp) || ver<1.0*CTRL_DEG2RAD)
             {
                 // keep the old fp if some errors occur
                 fp[0]=commData->get_x()[0];
@@ -349,13 +346,13 @@ void Localizer::handleAnglesInput()
             Vector fpe;
 
             // get the head-centered frame
-            Matrix &frame=(isAbs?eyeCAbsFrame:commData->get_fpFrame());
+            Matrix &frame=(isRel?commData->get_fpFrame():eyeCAbsFrame);
 
             // get fp wrt head-centered frame
-            if (isAbs)
-                fpe=invEyeCAbsFrame*fp;
-            else
+            if (isRel)
                 fpe=SE3inv(frame)*fp;
+            else
+                fpe=invEyeCAbsFrame*fp;
 
             // remove the 4th component to compute the norm
             fpe[3]=0.0;
