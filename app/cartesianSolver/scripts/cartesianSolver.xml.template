@@ -39,4 +39,10 @@
                 <tag>leftLegSolver</tag>
         </module>
 
+        <module>
+                <name>iKinGazeCtrl</name>
+                <node>pwrNode5</node>
+                <tag>gazeController</tag>
+        </module>
+
 </application>
