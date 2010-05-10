@@ -2,13 +2,15 @@
 # Author: Lorenzo Natale
 # CopyPolicy: Released under the terms of the GNU GPL v2.0.
 
-IF (NOT ICUB_FOUND)
+if (NOT ICUB_FOUND)
 
-MESSAGE(STATUS "Using iCub from install")
+message(STATUS "Using iCub from install")
 
-SET(ICUB_INCLUDE_DIRS "@ICUB_INCLUDE_DIRS@" CACHE INTERNAL "Include directories needed for iCub")
+set(ICUB_INCLUDE_DIRS "@ICUB_INCLUDE_DIRS@" CACHE INTERNAL "Include directories needed for iCub")
+
+set(ICUB_LIBRARIES "@ICUB_TARGETS@" CACHE INTERNAL "List of iCub libraries")
 
 include("@CMAKE_INSTALL_PREFIX@/icub-export-install.cmake")
 
-SET (ICUB_FOUND TRUE)
-ENDIF (NOT ICUB_FOUND)
+set (ICUB_FOUND TRUE)
+endif (NOT ICUB_FOUND)
