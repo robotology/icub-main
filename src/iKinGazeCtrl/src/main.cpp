@@ -193,6 +193,7 @@ following ports:
       for neck movements.
     - [set] [Teyes] <val>: sets a new movements execution time
       for eyes movements.
+    - [get] [done]: returns 1 iff motion is done, 0 otherwise.
  
 \section coor_sys_sec Coordinate System 
 Positions (meters) refer to the root reference frame attached to
@@ -480,6 +481,8 @@ public:
                             reply.addDouble(ctrl->getTneck());
                         else if (type==VOCAB4('T','e','y','e'))
                             reply.addDouble(ctrl->getTeyes());
+                        else if (type==VOCAB4('d','o','n','e'))
+                            reply.addInt((int)ctrl->isMotionDone());
                         else
                             return false;
                     }

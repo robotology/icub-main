@@ -362,3 +362,10 @@ void Controller::setTeyes(const double execTime)
 }
 
 
+/************************************************************************/
+bool Controller::isMotionDone()
+{
+    return (norm(xd-fp)<GAZECTRL_MOTIONDONE_THRES);
+}
+
+

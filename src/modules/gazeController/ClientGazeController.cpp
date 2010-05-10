@@ -12,7 +12,6 @@
 #include "ClientGazeController.h"
 
 #define GAZECTRL_DEFAULT_TMO    0.1     // [s]
-#define GAZECTRL_VEL_THRES      1e-3    // [deg/s]
 
 using namespace yarp;
 using namespace yarp::os;
@@ -32,7 +31,6 @@ ClientGazeController::ClientGazeController()
     portStateFp=NULL;
     portStateAng=NULL;
     portStateHead=NULL;
-    portStateVel=NULL;
     portRpc=NULL;
 
     connected=false;
@@ -99,9 +97,6 @@ bool ClientGazeController::open(Searchable &config)
     portStateHead=new BufferedPort<Vector>;
     portStateHead->open((local+"/q:i").c_str());
 
-    portStateVel=new BufferedPort<Vector>;
-    portStateVel->open((local+"/v:i").c_str());
-
     portRpc=new Port;
     portRpc->open((local+"/rpc").c_str());
 
@@ -115,7 +110,6 @@ bool ClientGazeController::open(Searchable &config)
     ok&=Network::connect((remote+"/x:o").c_str(),portStateFp->getName().c_str());
     ok&=Network::connect((remote+"/angles:o").c_str(),portStateAng->getName().c_str());
     ok&=Network::connect((remote+"/q:o").c_str(),portStateHead->getName().c_str());
-    ok&=Network::connect((remote+"/v:o").c_str(),portStateVel->getName().c_str());
     ok&=Network::connect(portRpc->getName().c_str(),(remote+"/rpc").c_str());
 
     return connected=ok;
@@ -175,13 +169,6 @@ bool ClientGazeController::close()
         portStateHead->interrupt();
         portStateHead->close();
         delete portStateHead;
-    }
-
-    if (portStateVel)
-    {
-        portStateVel->interrupt();
-        portStateVel->close();
-        delete portStateVel;
     }
 
     if (portRpc)
@@ -558,8 +545,21 @@ bool ClientGazeController::checkMotionDone(bool *f)
     if (!connected)
         return false;
 
-    Vector *v=portStateVel->read(true);
-    return (norm(*v)<(CTRL_DEG2RAD*GAZECTRL_VEL_THRES));
+    Bottle command, reply;
+
+    command.addString("get");
+    command.addString("done");
+
+    if (!portRpc->write(command,reply))
+    {
+        fprintf(stdout,"Error: unable to get reply from server!\n");
+        return false;
+    }
+    else
+    {
+        *f=reply.get(0).asInt()?true:false;
+        return true;
+    }
 }
 
 

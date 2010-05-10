@@ -15,6 +15,8 @@
 
 #include <iCub/utils.hpp>
 
+#define GAZECTRL_MOTIONDONE_THRES   1e-3    // [m]
+
 using namespace std;
 using namespace yarp;
 using namespace yarp::os;
@@ -82,6 +84,7 @@ public:
     virtual double getTeyes();
     virtual void   setTneck(const double execTime);
     virtual void   setTeyes(const double execTime);
+    virtual bool   isMotionDone();
 };
 
 

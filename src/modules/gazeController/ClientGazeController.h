@@ -46,7 +46,6 @@ protected:
     yarp::os::BufferedPort<yarp::sig::Vector> *portStateFp;
     yarp::os::BufferedPort<yarp::sig::Vector> *portStateAng;
     yarp::os::BufferedPort<yarp::sig::Vector> *portStateHead;
-    yarp::os::BufferedPort<yarp::sig::Vector> *portStateVel;
 
     yarp::os::Port                            *portRpc;
 
