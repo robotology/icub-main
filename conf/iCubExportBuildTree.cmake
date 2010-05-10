@@ -44,6 +44,5 @@ endforeach(t)
 
 file(APPEND ${CMAKE_BINARY_DIR}/${EXPORT_INCLUDE_FILE} "set(ICUB_INCLUDE_DIRS \"${include_dirs}\" CACHE STRING \"list of include directories, all exported targets\")\n")
 
-
 CONFIGURE_FILE(${CMAKE_SOURCE_DIR}/${BUILD_CONFIG_TEMPLATE}
   ${CMAKE_BINARY_DIR}/icub-config.cmake @ONLY IMMEDIATE)
