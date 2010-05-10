@@ -559,7 +559,7 @@ bool ClientGazeController::checkMotionDone(bool *f)
         return false;
 
     Vector *v=portStateVel->read(true);
-    return (norm(*v)<=(CTRL_DEG2RAD*GAZECTRL_VEL_THRES));
+    return (norm(*v)<(CTRL_DEG2RAD*GAZECTRL_VEL_THRES));
 }
 
 
