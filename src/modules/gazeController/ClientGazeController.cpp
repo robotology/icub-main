@@ -63,7 +63,7 @@ ClientGazeController::~ClientGazeController()
 /************************************************************************/
 bool ClientGazeController::open(Searchable &config)
 {
-    ConstString remote, local;
+    ConstString remote, local, stem;
 
     if (config.check("remote"))
         remote=config.find("remote").asString();
@@ -105,18 +105,19 @@ bool ClientGazeController::open(Searchable &config)
     portRpc=new Port;
     portRpc->open((local+"/rpc").c_str());
 
-    remote=remote+"/head";
+    stem="/";
+    stem=stem+remote+"/head";
     bool ok=true;
 
-    ok&=Network::connect(portCmdFp->getName().c_str(),(remote+"/xd:i").c_str());
-    ok&=Network::connect(portCmdAng->getName().c_str(),(remote+"/angles:i").c_str());
-    ok&=Network::connect(portCmdMono->getName().c_str(),(remote+"/mono:i").c_str());
-    ok&=Network::connect(portCmdStereo->getName().c_str(),(remote+"/stereo:i").c_str());
-    ok&=Network::connect((remote+"/x:o").c_str(),portStateFp->getName().c_str());
-    ok&=Network::connect((remote+"/angles:o").c_str(),portStateAng->getName().c_str());
-    ok&=Network::connect((remote+"/q:o").c_str(),portStateHead->getName().c_str());
-    ok&=Network::connect((remote+"/v:o").c_str(),portStateVel->getName().c_str());
-    ok&=Network::connect(portRpc->getName().c_str(),(remote+"/rpc").c_str());
+    ok&=Network::connect(portCmdFp->getName().c_str(),(stem+"/xd:i").c_str());
+    ok&=Network::connect(portCmdAng->getName().c_str(),(stem+"/angles:i").c_str());
+    ok&=Network::connect(portCmdMono->getName().c_str(),(stem+"/mono:i").c_str());
+    ok&=Network::connect(portCmdStereo->getName().c_str(),(stem+"/stereo:i").c_str());
+    ok&=Network::connect((stem+"/x:o").c_str(),portStateFp->getName().c_str());
+    ok&=Network::connect((stem+"/angles:o").c_str(),portStateAng->getName().c_str());
+    ok&=Network::connect((stem+"/q:o").c_str(),portStateHead->getName().c_str());
+    ok&=Network::connect((stem+"/v:o").c_str(),portStateVel->getName().c_str());
+    ok&=Network::connect(portRpc->getName().c_str(),(stem+"/rpc").c_str());
 
     return connected=ok;
 }
