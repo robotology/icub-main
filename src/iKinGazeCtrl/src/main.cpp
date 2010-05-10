@@ -28,7 +28,7 @@ task space with respect to the actual fixation point; 2) in case
 only a monocular vision is exploited, the coordinates (u,v) of
 just one pixel in the image plane along with a guessed distance 
 z wrt the eye's reference frame can be given to the module; 3) 
-the head-centeres azimuth and elevation angles along with the 
+the head-centered azimuth and elevation angles along with the 
 vergence angle can be passed to the module both in absolute and 
 relative mode (i.e. wrt to the current head position). 
  
@@ -115,7 +115,8 @@ point:
 - by localizing the target in the two image planes and thus 
   sending its relative coordinates to the /<ctrlName>/stereo:i
   port. There's no need here to know the intrinsic cameras
-  parameters.
+  parameters but it's required to feed continuosly the port with
+  new feedback while converging to the target.
 - by localizing the target in just one image plane and then 
   sending its relative coordinates together with a guessed
   distance z from the eye's frame to the /<ctrlName>/mono:i
