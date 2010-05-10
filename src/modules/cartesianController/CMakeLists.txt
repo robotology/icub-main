@@ -12,11 +12,11 @@ IF (NOT SKIP_cartesiancontrollerserver OR NOT SKIP_cartesiancontrollerclient)
 
   IF (NOT SKIP_cartesiancontrollerserver)
     FIND_PACKAGE(IKIN REQUIRED)
-    INCLUDE_DIRECTORIES(${ACE_INCLUDE_DIR} ${IKIN_INCLUDE_DIRS})
 
     SET(server_source ServerCartesianController.cpp)
     SET(server_header CommonCartesianController.h ServerCartesianController.h)
 
+    INCLUDE_DIRECTORIES(${ACE_INCLUDE_DIR} ${IKIN_INCLUDE_DIRS})
     ADD_LIBRARY(cartesiancontrollerserver ${server_source} ${server_header})
     TARGET_LINK_LIBRARIES(cartesiancontrollerserver ${ACE_LIBRARY} ${IKIN_LIBRARIES})
   ENDIF (NOT SKIP_cartesiancontrollerserver)

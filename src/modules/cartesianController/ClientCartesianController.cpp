@@ -26,6 +26,7 @@ ClientCartesianController::ClientCartesianController()
     portState=NULL;
     portRpc  =NULL;
 
+    connected=false;
     closed=false;
 
     timeout=CARTCTRL_DEFAULT_TMO;
@@ -100,7 +101,7 @@ bool ClientCartesianController::open(Searchable &config)
         if (reply.get(0).asVocab()==IKINCARTCTRL_VOCAB_REP_ACK)
             if (reply.size()>1)
                 if (reply.get(1).asVocab()==IKINCARTCTRL_VOCAB_VAL_TRUE)
-                    return true;
+                    return connected=true;
 
         fprintf(stdout,"Error: unable to connect to solver!\n");
         close();
@@ -139,6 +140,8 @@ bool ClientCartesianController::close()
         delete portRpc;
     }
 
+    connected=false;
+
     return closed=true;
 }
 
@@ -146,6 +149,9 @@ bool ClientCartesianController::close()
 /************************************************************************/
 bool ClientCartesianController::setTrackingMode(const bool f)
 {
+    if (!connected)
+        return false;
+
     Bottle command, reply;
 
     // prepare command
@@ -174,6 +180,9 @@ bool ClientCartesianController::setTrackingMode(const bool f)
 /************************************************************************/
 bool ClientCartesianController::getTrackingMode(bool *f)
 {
+    if (!connected)
+        return false;
+
     Bottle command, reply;
 
     // prepare command
@@ -208,6 +217,9 @@ bool ClientCartesianController::getTrackingMode(bool *f)
 /************************************************************************/
 bool ClientCartesianController::getPose(Vector &x, Vector &o)
 {
+    if (!connected)
+        return false;
+
     double now=Time::now();
 
     // receive from network in streaming mode (non-blocking)
@@ -233,7 +245,7 @@ bool ClientCartesianController::getPose(Vector &x, Vector &o)
 /************************************************************************/
 bool ClientCartesianController::goToPose(const Vector &xd, const Vector &od, const double t)
 {
-    if (xd.length()<3 || od.length()<4)
+    if (!connected || xd.length()<3 || od.length()<4)
         return false;
 
     Bottle &command=portCmd->prepare();
@@ -261,7 +273,7 @@ bool ClientCartesianController::goToPose(const Vector &xd, const Vector &od, con
 /************************************************************************/
 bool ClientCartesianController::goToPosition(const Vector &xd, const double t)
 {
-    if (xd.length()<3)
+    if (!connected || xd.length()<3)
         return false;
 
     Bottle &command=portCmd->prepare();
@@ -286,7 +298,7 @@ bool ClientCartesianController::goToPosition(const Vector &xd, const double t)
 /************************************************************************/
 bool ClientCartesianController::goToPoseSync(const Vector &xd, const Vector &od, const double t)
 {
-    if (xd.length()<3 || od.length()<4)
+    if (!connected || xd.length()<3 || od.length()<4)
         return false;
 
     Bottle command, reply;
@@ -317,7 +329,7 @@ bool ClientCartesianController::goToPoseSync(const Vector &xd, const Vector &od,
 /************************************************************************/
 bool ClientCartesianController::goToPositionSync(const Vector &xd, const double t)
 {
-    if (xd.length()<3)
+    if (!connected || xd.length()<3)
         return false;
 
     Bottle command, reply;
@@ -345,6 +357,9 @@ bool ClientCartesianController::goToPositionSync(const Vector &xd, const double 
 /************************************************************************/
 bool ClientCartesianController::getDesired(Vector &xdhat, Vector &odhat, Vector &qdhat)
 {
+    if (!connected)
+        return false;
+
     Bottle command, reply;
 
     // prepare command
@@ -403,6 +418,9 @@ bool ClientCartesianController::getDesired(Vector &xdhat, Vector &odhat, Vector 
 /************************************************************************/
 bool ClientCartesianController::getDOF(Vector &curDof)
 {
+    if (!connected)
+        return false;
+
     Bottle command, reply;
 
     // prepare command
@@ -438,6 +456,9 @@ bool ClientCartesianController::getDOF(Vector &curDof)
 /************************************************************************/
 bool ClientCartesianController::setDOF(const Vector &newDof, Vector &curDof)
 {
+    if (!connected)
+        return false;
+
     Bottle command, reply;
 
     // prepare command
@@ -477,6 +498,9 @@ bool ClientCartesianController::setDOF(const Vector &newDof, Vector &curDof)
 /************************************************************************/
 bool ClientCartesianController::getRestPos(Vector &curRestPos)
 {
+    if (!connected)
+        return false;
+
     Bottle command, reply;
 
     // prepare command
@@ -512,6 +536,9 @@ bool ClientCartesianController::getRestPos(Vector &curRestPos)
 /************************************************************************/
 bool ClientCartesianController::setRestPos(const Vector &newRestPos, Vector &curRestPos)
 {
+    if (!connected)
+        return false;
+
     Bottle command, reply;
 
     // prepare command
@@ -551,6 +578,9 @@ bool ClientCartesianController::setRestPos(const Vector &newRestPos, Vector &cur
 /************************************************************************/
 bool ClientCartesianController::getRestWeights(Vector &curRestWeights)
 {
+    if (!connected)
+        return false;
+
     Bottle command, reply;
 
     // prepare command
@@ -587,6 +617,9 @@ bool ClientCartesianController::getRestWeights(Vector &curRestWeights)
 bool ClientCartesianController::setRestWeights(const Vector &newRestWeights,
                                                Vector &curRestWeights)
 {
+    if (!connected)
+        return false;
+
     Bottle command, reply;
 
     // prepare command
@@ -626,6 +659,9 @@ bool ClientCartesianController::setRestWeights(const Vector &newRestWeights,
 /************************************************************************/
 bool ClientCartesianController::getLimits(int axis, double *min, double *max)
 {
+    if (!connected)
+        return false;
+
     Bottle command, reply;
 
     // prepare command
@@ -660,6 +696,9 @@ bool ClientCartesianController::getLimits(int axis, double *min, double *max)
 /************************************************************************/
 bool ClientCartesianController::setLimits(int axis, const double min, const double max)
 {
+    if (!connected)
+        return false;
+
     Bottle command, reply;
 
     // prepare command
@@ -686,6 +725,9 @@ bool ClientCartesianController::setLimits(int axis, const double min, const doub
 /************************************************************************/
 bool ClientCartesianController::getTrajTime(double *t)
 {
+    if (!connected)
+        return false;
+
     Bottle command, reply;
 
     // prepare command
@@ -718,6 +760,9 @@ bool ClientCartesianController::getTrajTime(double *t)
 /************************************************************************/
 bool ClientCartesianController::setTrajTime(const double t)
 {
+    if (!connected)
+        return false;
+
     Bottle command, reply;
 
     // prepare command
@@ -742,6 +787,9 @@ bool ClientCartesianController::setTrajTime(const double t)
 /************************************************************************/
 bool ClientCartesianController::getInTargetTol(double *tol)
 {
+    if (!connected)
+        return false;
+
     Bottle command, reply;
 
     // prepare command
@@ -774,6 +822,9 @@ bool ClientCartesianController::getInTargetTol(double *tol)
 /************************************************************************/
 bool ClientCartesianController::setInTargetTol(const double tol)
 {
+    if (!connected)
+        return false;
+
     Bottle command, reply;
 
     // prepare command
@@ -798,6 +849,9 @@ bool ClientCartesianController::setInTargetTol(const double tol)
 /************************************************************************/
 bool ClientCartesianController::checkMotionDone(bool *f)
 {
+    if (!connected)
+        return false;
+
     Bottle command, reply;
 
     // prepare command
@@ -835,6 +889,9 @@ bool ClientCartesianController::checkMotionDone(bool *f)
 /************************************************************************/
 bool ClientCartesianController::stopControl()
 {
+    if (!connected)
+        return false;
+
     Bottle command, reply;
 
     // prepare command

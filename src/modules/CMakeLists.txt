@@ -17,6 +17,7 @@ BEGIN_DEVICE_LIBRARY(icubmod)
   ADD_SUBDIRECTORY(torsoonlycalibrator)
   ADD_SUBDIRECTORY(fakeCan)
   ADD_SUBDIRECTORY(cartesianController)
+  ADD_SUBDIRECTORY(gazeController)
   ADD_SUBDIRECTORY(logpolarGrabber)
   ADD_SUBDIRECTORY(logpolarClient)
 

@@ -30,6 +30,7 @@ class ClientCartesianController : public yarp::dev::DeviceDriver,
                                   public yarp::dev::ICartesianControl
 {
 protected:
+    bool connected;
     bool closed;
 
     double timeout;
