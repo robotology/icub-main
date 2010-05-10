@@ -1,7 +1,8 @@
 /** 
 \defgroup iKinGazeCtrl iKinGazeCtrl 
  
-@ingroup icub_module  
+@ingroup icub_module
+@ingroup icub_hardware_modules  
  
 Gaze controller based on iKin.
 
