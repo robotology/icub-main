@@ -2,7 +2,9 @@
  * \defgroup clientgazecontroller clientgazecontroller
  * @ingroup icub_hardware_modules 
  *  
- * ........ 
+ * Implements the client part of the <a 
+ * href="http://eris.liralab.it/yarpdoc/d2/df5/classyarp_1_1dev_1_1IGazeControl.html">Gaze 
+ * Control Interface</a>. 
  *  
  * Copyright (C) 2009 RobotCub Consortium.
  *

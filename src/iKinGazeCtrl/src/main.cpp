@@ -30,7 +30,11 @@ just one pixel in the image plane along with a guessed distance
 z wrt the eye's reference frame can be given to the module; 3) 
 the head-centered azimuth and elevation angles along with the 
 vergence angle can be passed to the module both in absolute and 
-relative mode (i.e. wrt to the current head position). 
+relative mode (i.e. wrt to the current head position).
+
+Moreover, this module also implements the server part of the <a 
+href="http://eris.liralab.it/yarpdoc/d2/df5/classyarp_1_1dev_1_1IGazeControl.html">Gaze 
+Control Interface</a>.
  
 <b>Reminder</b> \n 
 If you experience a slow speed motion, please check the shift 
