@@ -26,6 +26,12 @@
         </module>
 
         <module>
+                <name>iKinGazeCtrl</name>
+                <node>pwrNode2</node>
+                <tag>gazeControl</tag>
+        </module>
+
+        <module>
                 <name>demoGraspManager_IIT_ISR</name>
                 <node>pwrNode2</node>
                 <tag>manager</tag>
