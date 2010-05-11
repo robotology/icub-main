@@ -51,7 +51,7 @@ YARP libraries and OpenCV (if found)
   ppm files. If \e video is choosen then only the file
   'video.avi' is produced neither 'data.log' nor the single
   images. The data type \e video is available iff OpenCV is
-  found.
+  found and the codec MPEG-4 is installed.
  
 --addVideo
 - In case images are acquired with this option enabled, a video 
@@ -102,7 +102,11 @@ to the name of the directory.
 None. 
  
 \section tested_os_sec Tested OS
-Linux and Windows.
+Linux and Windows. 
+On Linux platforms, in order to have the video acquisition 
+properly working you should check that OpenCV finds the ffmpeg
+package correctly installed: the quickest way to achieve that is 
+to install the ffmepg prior to the OpenCV installation. 
 
 \section example_sec Example
 By launching the following command: 
