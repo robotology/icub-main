@@ -763,24 +763,50 @@ bool CanBusMotionControlParameters::fromConfig(yarp::os::Searchable &p)
     }
     for(i=1;i<xtmp.size(); i++) _limitsMin[i-1]=xtmp.get(i).asDouble();
 
-    /////// VELOCITY
+    /////// [VELOCITY]
     if (p.check("VELOCITY"))
         {
+            /////// Shifts
             xtmp = p.findGroup("VELOCITY").findGroup("Shifts",
                                                      "a list of shifts to be used in the vmo control");
 
             if (xtmp.size() != nj+1) {
-                printf("Velocity shifts do not have the right number of entries\n");
-                return false;
+                fprintf(stderr, "[VELOCITY] Shifts do not have the right number of entries. Using default Shifts=4\n");
+                for(i=1;i<nj+1; i++)
+                    _velocityShifts[i-1] = 4;   //Default value
             }
-            for(i=1;i<xtmp.size(); i++) 
-                _velocityShifts[i-1]=xtmp.get(i).asInt();
+            else
+                {
+                    for(i=1;i<xtmp.size(); i++) 
+                        _velocityShifts[i-1]=xtmp.get(i).asInt();
+                }
+
+            /////// Timeout
+            xtmp.clear();
+            xtmp = p.findGroup("VELOCITY").findGroup("Timeout",
+                                                     "a list of timeout to be used in the vmo control");
+            
+            if (xtmp.size() != nj+1) 
+                {
+                    fprintf(stderr, "[VELOCITY] Timeout do not have the right number of entries. Using default Timeout=1000, i.e 1s\n");
+                    for(i=1;i<nj+1; i++)
+                        _velocityTimeout[i-1] = 1000;   //Default value
+                }
+            else
+                {
+                    for(i=1;i<xtmp.size(); i++) 
+                        _velocityTimeout[i-1]=xtmp.get(i).asInt();
+                }
         }
     else
     {
-        printf("A suitable value for velocity shifts was not found. Using default \n");
+        fprintf(stderr, "A suitable value for [VELOCITY] Shifts was not found. Using default Shifts=4\n");
         for(i=1;i<nj+1; i++)
             _velocityShifts[i-1] = 4;   //Default value
+
+        fprintf(stderr, "A suitable value for [VELOCITY] Timeout was not found. Using default Timeout=1000, i.e 1s.\n");
+        for(i=1;i<nj+1; i++)
+            _velocityTimeout[i-1] = 1000;   //Default value
     }
 
     xtmp=p.findGroup("CAN").findGroup("broadcast_pos");
@@ -828,6 +854,7 @@ CanBusMotionControlParameters::CanBusMotionControlParameters()
     _limitsMin=0;
     _currentLimits=0;
     _velocityShifts=0;
+    _velocityTimeout=0;
 
     _my_address = 0;
     _polling_interval = 10;
@@ -854,10 +881,12 @@ bool CanBusMotionControlParameters::alloc(int nj)
     _limitsMin=allocAndCheck<double>(nj);
     _currentLimits=allocAndCheck<double>(nj);
     _velocityShifts=allocAndCheck<int>(CAN_MAX_CARDS);
+    _velocityTimeout=allocAndCheck<int>(CAN_MAX_CARDS);
     memset(_limitsMin, 0, sizeof(double)*nj);
     memset(_limitsMax, 0, sizeof(double)*nj);
     memset(_currentLimits, 0, sizeof(double)*nj);
     memset(_velocityShifts, 0, sizeof(int)*nj);
+    memset(_velocityTimeout, 0, sizeof(int)*nj);
 
     _my_address = 0;
     _polling_interval = 10;
@@ -885,13 +914,13 @@ CanBusMotionControlParameters::~CanBusMotionControlParameters()
     checkAndDestroy<int>(_axisMap);
     checkAndDestroy<unsigned char>(_destinations);
     checkAndDestroy<int>(_velocityShifts);
+    checkAndDestroy<int>(_velocityTimeout);
 
 
     checkAndDestroy<Pid>(_pids);
     checkAndDestroy<double>(_limitsMax);
     checkAndDestroy<double>(_limitsMin);
     checkAndDestroy<double>(_currentLimits);
-    checkAndDestroy<int>(_velocityShifts);
     checkAndDestroy<int>(_broadcast_mask);
 }
 
@@ -1333,6 +1362,7 @@ bool CanBusMotionControl::open (Searchable &config)
     // set limits, on encoders and max current
     for(i = 0; i < p._njoints; i++) {
         setVelocityShift(i, p._velocityShifts[i]);
+        setVelocityTimeout(i, p._velocityTimeout[i]);
     }
 
     // disable the controller, cards will start with the pid controller & pwm off
@@ -3376,6 +3406,15 @@ bool CanBusMotionControl::setVelocityShift(int axis, double shift)
     return _writeWord16 (CAN_SET_VEL_SHIFT, axis, S_16(shift));
 }
 
+bool CanBusMotionControl::setVelocityTimeout(int axis, double timeout)
+{
+    if (!(axis >= 0 && axis <= (CAN_MAX_CARDS-1)*2))
+        return false;
+
+    return _writeWord16 (CAN_SET_VEL_TIMEOUT, axis, S_16(timeout));
+}
+
+
 bool CanBusMotionControl::calibrateRaw(int axis, double p)
 {
     return _writeWord16 (CAN_CALIBRATE_ENCODER, axis, S_16(p));
@@ -3616,7 +3655,7 @@ bool CanBusMotionControl::_writeDWord (int msg, int axis, int value)
 }
 
 /// two shorts in a single Can message (both must belong to the same control card).
-bool CanBusMotionControl::_writeWord16Ex (int msg, int axis, short s1, short s2)
+bool CanBusMotionControl::_writeWord16Ex (int msg, int axis, short s1, short s2, bool checkAxisEven=true)
 {
     /// prepare Can message.
     CanBusResources& r = RES(system_resources);
@@ -3624,7 +3663,8 @@ bool CanBusMotionControl::_writeWord16Ex (int msg, int axis, short s1, short s2)
     if (!(axis >= 0 && axis <= (CAN_MAX_CARDS-1)*2))
         return false;
 
-    ACE_ASSERT ((axis % 2) == 0);/// axis is even.
+    if (checkAxisEven)
+        ACE_ASSERT ((axis % 2) == 0);/// axis is even.
 
     DEBUG("Write Word16Ex  msg:%d axis:%d\n", msg, axis);
 

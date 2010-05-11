@@ -118,6 +118,7 @@ public:
     double *_limitsMax;                         /** joint limits, min*/
     double *_currentLimits;                     /** current limits */
 	int *_velocityShifts;                       /** velocity shifts */
+	int *_velocityTimeout;                       /** velocity shifts */
 };
 
 class AnalogData
@@ -449,6 +450,8 @@ public:
 
 	//Shift factors for velocity control
 	bool setVelocityShift(int j, double val);
+	//Timeout factors for velocity control
+	bool setVelocityTimeout(int j, double val);
 
 
     //////////////////////// BEGIN EncoderInterface
@@ -524,7 +527,7 @@ protected:
 
     // helper functions
     bool _writeWord16 (int msg, int axis, short s);
-    bool _writeWord16Ex (int msg, int axis, short s1, short s2);
+    bool _writeWord16Ex (int msg, int axis, short s1, short s2, bool check);
     bool _readWord16 (int msg, int axis, short& value);
     bool _readWord16Array (int msg, double *out);
     bool _readDWord (int msg, int axis, int& value);
