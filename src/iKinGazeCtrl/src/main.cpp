@@ -197,11 +197,23 @@ following ports:
     - [clear] [yaw]: restore the neck yaw range.
     - [get] [Tneck]: returns the neck movements execution time.
     - [get] [Teyes]: returns the eyes movements execution time.
+    - [get] [track]: returns the current controller's tracking
+      mode.
+    - [get] [done]: returns 1 iff motion is done, 0 otherwise.
     - [set] [Tneck] <val>: sets a new movements execution time
       for neck movements.
     - [set] [Teyes] <val>: sets a new movements execution time
       for eyes movements.
-    - [get] [done]: returns 1 iff motion is done, 0 otherwise.
+    - [set] [track] <val>: sets the controller's tracking mode;
+      val can be 0/1.
+ 
+@note When the tracking mode is active and the controller has 
+      reached the target, it keeps on sending velocities to the
+      head in order to compensate for any movements induced by
+      the torso. If tracking mode is switched off, the
+      controller automatically disconnects once the target is
+      attained and reconnects at the next requested target. The
+      controller starts by default in non-tracking mode.
  
 \section coor_sys_sec Coordinate System 
 Positions (meters) refer to the root reference frame attached to
@@ -544,6 +556,8 @@ public:
                             reply.addDouble(ctrl->getTeyes());
                         else if (type==VOCAB4('d','o','n','e'))
                             reply.addInt((int)ctrl->isMotionDone());
+                        else if (type==VOCAB4('t','r','a','c'))
+                            reply.addInt((int)ctrl->getTrackingMode());
                         else
                             return false;
                     }
@@ -557,13 +571,23 @@ public:
                 {
                     if (command.size()>2)
                     {
-                        int type=command.get(1).asVocab();
-                        double execTime=command.get(2).asDouble();
+                        int type=command.get(1).asVocab();                        
     
                         if (type==VOCAB4('T','n','e','c'))
+                        {
+                            double execTime=command.get(2).asDouble();
                             ctrl->setTneck(execTime);
+                        }
                         else if (type==VOCAB4('T','e','y','e'))
+                        {
+                            double execTime=command.get(2).asDouble();
                             ctrl->setTeyes(execTime);
+                        }
+                        else if (type==VOCAB4('t','r','a','c'))
+                        {
+                            bool mode=(command.get(2).asInt()>0);
+                            ctrl->setTrackingMode(mode);
+                        }
                         else
                             return false;
                     }

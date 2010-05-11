@@ -6,10 +6,10 @@
 Controller::Controller(PolyDriver *_drvTorso, PolyDriver *_drvHead, exchangeData *_commData,
                        const string &_robotName, const string &_localName, double _neckTime,
                        double _eyesTime, unsigned int _period) :
-                       RateThread(_period),   drvTorso(_drvTorso),   drvHead(_drvHead),
-                       commData(_commData),   robotName(_robotName), localName(_localName),
-                       neckTime(_neckTime),   eyesTime(_eyesTime),   period(_period),
-                       Ts(_period/1000.0),    printAccTime(0.0)
+                       RateThread(_period), drvTorso(_drvTorso),   drvHead(_drvHead),
+                       commData(_commData), robotName(_robotName), localName(_localName),
+                       neckTime(_neckTime), eyesTime(_eyesTime),   period(_period),
+                       Ts(_period/1000.0),  printAccTime(0.0)
 {
     Robotable=drvTorso&&drvHead;
 
@@ -89,6 +89,11 @@ Controller::Controller(PolyDriver *_drvTorso, PolyDriver *_drvHead, exchangeData
 
     v.resize(nJointsHead,0.0);
     vdegOld=v;
+
+    xd.resize(3,0.0);
+
+    isCtrlActive=false;
+    canCtrlBeDisabled=true;
 }
 
 
@@ -165,6 +170,20 @@ void Controller::afterStart(bool s)
 /************************************************************************/
 void Controller::run()
 {
+    // verify control's switching conditions
+    if (isCtrlActive)
+    {
+        // switch-off condition
+        if (canCtrlBeDisabled && norm(xd-fp)<GAZECTRL_MOTIONDONE_THRES)
+        {
+            stopLimbsVel();
+            isCtrlActive=false;
+        }
+    }
+    // switch-on condition
+    else if (!(commData->get_xd()==xd))
+        isCtrlActive=true;
+
     // get data
     xd=commData->get_xd();
     qd=commData->get_qd();
@@ -196,9 +215,17 @@ void Controller::run()
         fbEyes[i]=fbHead[3+i];
     }
 
-    // control loop
-    vNeck=mjCtrlNeck->computeCmd(neckTime,qdNeck-fbNeck);
-    vEyes=mjCtrlEyes->computeCmd(eyesTime,qdEyes-fbEyes)-commData->get_compv();
+    if (isCtrlActive)
+    {
+        // control loop
+        vNeck=mjCtrlNeck->computeCmd(neckTime,qdNeck-fbNeck);
+        vEyes=mjCtrlEyes->computeCmd(eyesTime,qdEyes-fbEyes)-commData->get_compv();
+    }
+    else
+    {
+        vNeck=0.0;
+        vEyes=0.0;
+    }
 
     for (unsigned int i=0; i<3; i++)
     {
@@ -317,14 +344,14 @@ void Controller::resume()
 
 
 /************************************************************************/
-double Controller::getTneck()
+double Controller::getTneck() const
 {
     return neckTime;
 }
 
 
 /************************************************************************/
-double Controller::getTeyes()
+double Controller::getTeyes() const
 {
     return eyesTime;
 }
@@ -363,9 +390,23 @@ void Controller::setTeyes(const double execTime)
 
 
 /************************************************************************/
-bool Controller::isMotionDone()
+bool Controller::isMotionDone() const
 {
-    return (norm(xd-fp)<GAZECTRL_MOTIONDONE_THRES);
+    return !isCtrlActive;
+}
+
+
+/************************************************************************/
+void Controller::setTrackingMode(const bool f)
+{
+    canCtrlBeDisabled=!f;
+}
+
+
+/************************************************************************/
+bool Controller::getTrackingMode() const 
+{
+    return !canCtrlBeDisabled;
 }
 
 

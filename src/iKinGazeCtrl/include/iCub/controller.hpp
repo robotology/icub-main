@@ -60,6 +60,9 @@ protected:
     double eyesTime;
     double Ts;
 
+    bool isCtrlActive;
+    bool canCtrlBeDisabled;
+
     Vector qddeg,qdeg,vdeg,xd,fp;
     Vector v,vNeck,vEyes,vdegOld;
     Vector qd,qdNeck,qdEyes;
@@ -80,11 +83,13 @@ public:
     virtual void   threadRelease();
     virtual void   suspend();
     virtual void   resume();
-    virtual double getTneck();
-    virtual double getTeyes();
+    virtual double getTneck() const;
+    virtual double getTeyes() const;
     virtual void   setTneck(const double execTime);
     virtual void   setTeyes(const double execTime);
-    virtual bool   isMotionDone();
+    virtual bool   isMotionDone() const;
+    virtual void   setTrackingMode(const bool f);
+    virtual bool   getTrackingMode() const;
 };
 
 

@@ -185,6 +185,52 @@ bool ClientGazeController::close()
 
 
 /************************************************************************/
+bool ClientGazeController::setTrackingMode(const bool f)
+{
+    if (!connected)
+        return false;
+
+    Bottle command, reply;
+
+    command.addString("set");
+    command.addString("track");
+    command.addInt((int)f);
+
+    if (!portRpc->write(command,reply))
+    {
+        fprintf(stdout,"Error: unable to get reply from server!\n");
+        return false;
+    }
+
+    return true;
+}
+
+
+/************************************************************************/
+bool ClientGazeController::getTrackingMode(bool *f)
+{
+    if (!connected)
+        return false;
+
+    Bottle command, reply;
+
+    command.addString("get");
+    command.addString("track");
+
+    if (!portRpc->write(command,reply))
+    {
+        fprintf(stdout,"Error: unable to get reply from server!\n");
+        return false;
+    }
+    else
+    {
+        *f=(reply.get(0).asInt()>0);
+        return true;
+    }
+}
+
+
+/************************************************************************/
 bool ClientGazeController::getFixationPoint(Vector &fp)
 {
     if (!connected)
@@ -557,7 +603,7 @@ bool ClientGazeController::checkMotionDone(bool *f)
     }
     else
     {
-        *f=reply.get(0).asInt()?true:false;
+        *f=(reply.get(0).asInt()>0);
         return true;
     }
 }

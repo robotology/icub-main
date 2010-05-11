@@ -58,6 +58,8 @@ public:
     virtual bool open(yarp::os::Searchable &config);
     virtual bool close();
 
+    virtual bool setTrackingMode(const bool f);
+    virtual bool getTrackingMode(bool *f);
     virtual bool getFixationPoint(yarp::sig::Vector &fp);
     virtual bool getAngles(yarp::sig::Vector &ang);
     virtual bool lookAtFixationPoint(const yarp::sig::Vector &fp);
