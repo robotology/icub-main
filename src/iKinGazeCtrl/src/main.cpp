@@ -198,7 +198,7 @@ following ports:
     - [get] [Tneck]: returns the neck movements execution time.
     - [get] [Teyes]: returns the eyes movements execution time.
     - [get] [track]: returns the current controller's tracking
-      mode.
+      mode (0/1).
     - [get] [done]: returns 1 iff motion is done, 0 otherwise.
     - [set] [Tneck] <val>: sets a new movements execution time
       for neck movements.
