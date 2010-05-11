@@ -63,7 +63,7 @@ public:
     virtual bool lookAtFixationPoint(const yarp::sig::Vector &fp);
     virtual bool lookAtAbsAngles(const yarp::sig::Vector &ang);
     virtual bool lookAtRelAngles(const yarp::sig::Vector &ang);
-    virtual bool lookAtMonoPixels(const int camSel, const yarp::sig::Vector &px, const double z=1.0);
+    virtual bool lookAtMonoPixel(const int camSel, const yarp::sig::Vector &px, const double z=1.0);
     virtual bool lookAtStereoPixels(const yarp::sig::Vector &pxl, const yarp::sig::Vector &pxr);
     virtual bool getNeckTrajTime(double *t);
     virtual bool getEyesTrajTime(double *t);

@@ -278,7 +278,7 @@ bool ClientGazeController::lookAtRelAngles(const Vector &ang)
 
 
 /************************************************************************/
-bool ClientGazeController::lookAtMonoPixels(const int camSel, const Vector &px, const double z)
+bool ClientGazeController::lookAtMonoPixel(const int camSel, const Vector &px, const double z)
 {
     if (!connected || px.length()<2)
         return false;
