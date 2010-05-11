@@ -3,12 +3,12 @@
 
         <dependencies>
                 <port>/icub/camcalib/left/out</port>
-                <port>/icub/torso/state:o</port>
                 <port>/icub/head/state:o</port>
-                <port>/icub/right_arm/state:o</port>
-                <port>/icub/left_arm/state:o</port>
+                <port>/icub/cartesianController/right_arm/state:o</port>
+                <port>/icub/cartesianController/left_arm/state:o</port>
                 <port>/icub/left_hand/analog:o</port>
                 <port>/icub/right_hand/analog:o</port>
+                <port>/iKinGazeCtrl/head/q:o</port>
         </dependencies>
       
         <module>
@@ -31,12 +31,6 @@
                 <tag>manager</tag>
         </module>
   
-        <module>
-                <name>iKinGazeCtrl</name>
-                <node>pwrNode3</node>
-                <tag>gazeCtrl</tag>
-        </module>
-
         <module>
                 <name>graspDetector</name>
                 <parameters>--from left_armGraspDetector.ini</parameters>
