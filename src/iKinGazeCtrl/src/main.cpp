@@ -102,7 +102,11 @@ Shifts 8 8 8 8 8 8 8 8 8 8
 - Resource finder searching dir for config file.
  
 --simulation
-- simulate the presence of the robot.
+- simulate the presence of the robot. 
+ 
+-- ping_robot_tmo \e tmo
+- The parameter \e tmo is the timeout (in seconds) to allow to
+  start-up the robot before connecting to it.
  
 \section portsa_sec Ports Accessed
  
@@ -255,6 +259,8 @@ background. Just connect the ports with the viewer and play.
 */ 
 
 #include <yarp/os/Network.h>
+#include <yarp/os/impl/NameClient.h>
+#include <yarp/os/impl/Carriers.h>
 #include <yarp/os/RFModule.h>
 #include <yarp/os/BufferedPort.h>
 #include <yarp/sig/Vector.h>
@@ -273,6 +279,7 @@ background. Just connect the ports with the viewer and play.
 using namespace std;
 using namespace yarp;
 using namespace yarp::os;
+using namespace yarp::os::impl;
 using namespace yarp::dev;
 using namespace yarp::sig;
 
@@ -292,6 +299,48 @@ protected:
 public:
     CtrlModule() { }
 
+    void waitPart(const Property &partOpt, const double ping_robot_tmo)
+    {
+        string robotName=const_cast<Property&>(partOpt).find("robot").asString().c_str();
+        string partName=const_cast<Property&>(partOpt).find("part").asString().c_str();
+        string portName="/"+robotName+"/"+partName+"/state:o";
+        double t0=Time::now();
+    
+        while (Time::now()-t0<ping_robot_tmo)
+        {   
+            cout << "Checking if " << portName << " port is active ... " << endl;
+        
+            NameClient &nic=NameClient::getNameClient();
+            Address address=nic.queryName(portName.c_str());
+            bool ret;
+        
+            if (address.isValid())
+            {    
+                if (OutputProtocol *out=Carriers::connect(address))
+                {
+                    out->close();
+                    delete out;
+        
+                    ret=true;
+                }
+                else
+                    ret=false;
+            }
+            else
+                ret=false;
+        
+            cout << (ret?"ok":"not yet") << endl;
+    
+            if (ret)
+                return;
+            else
+            {
+                double t1=Time::now();
+                while (Time::now()-t1<1.0);
+            }
+        }
+    }
+
     virtual bool configure(ResourceFinder &rf)
     {
         string ctrlName;
@@ -303,6 +352,7 @@ public:
         double neckTime;
         double eyesTime;
         bool   Robotable;
+        double ping_robot_tmo;
 
         Time::turboBoost();
 
@@ -346,6 +396,11 @@ public:
         else
             Robotable=true;
 
+        if (rf.check("ping_robot_tmo"))
+            ping_robot_tmo=rf.find("ping_robot_tmo").asDouble();
+        else
+            ping_robot_tmo=0.0;
+
         if (rf.check("config"))
         {    
             configFile=rf.findFile(rf.find("config").asString().c_str());
@@ -361,13 +416,18 @@ public:
 
         string remoteHeadName="/"+robotName+"/"+partName;
         string localHeadName="/"+ctrlName+"/"+partName;
+        optHead.put("robot",robotName.c_str());
         optHead.put("remote",remoteHeadName.c_str());
         optHead.put("local",localHeadName.c_str());
 
         string remoteTorsoName="/"+robotName+"/"+torsoName;
         string localTorsoName=localHeadName+"/"+torsoName;
+        optTorso.put("robot",robotName.c_str());
         optTorso.put("remote",remoteTorsoName.c_str());
         optTorso.put("local",localTorsoName.c_str());
+
+        waitPart(optHead,ping_robot_tmo);
+        waitPart(optTorso,ping_robot_tmo);
 
         if (Robotable)
         {
@@ -564,16 +624,17 @@ int main(int argc, char *argv[])
     if (rf.check("help"))
     {
         cout << "Options:" << endl << endl;
-        cout << "\t--ctrlName  name: controller name (default iKinGazeCtrl)"                     << endl;
-        cout << "\t--robot     name: robot name to connect to (default: icub)"                   << endl;
-        cout << "\t--part      name: robot head port name, (default: head)"                      << endl;
-        cout << "\t--torso     name: robot torso port name (default: torso)"                     << endl;
-        cout << "\t--inertial  name: robot inertial port name (default: inertial)"               << endl;
-        cout << "\t--Tneck     time: specify the neck movements time in seconds (default: 0.70)" << endl;
-        cout << "\t--Teyes     time: specify the eyes movements time in seconds (default: 0.20)" << endl;
-        cout << "\t--config    file: file name for kinematics and cameras parameters"            << endl;
-        cout << "\t--context    dir: resource finder searching dir for config file"              << endl;
-        cout << "\t--simulation    : simulate the presence of the robot"                         << endl;
+        cout << "\t--ctrlName      name: controller name (default iKinGazeCtrl)"                     << endl;
+        cout << "\t--robot         name: robot name to connect to (default: icub)"                   << endl;
+        cout << "\t--part          name: robot head port name, (default: head)"                      << endl;
+        cout << "\t--torso         name: robot torso port name (default: torso)"                     << endl;
+        cout << "\t--inertial      name: robot inertial port name (default: inertial)"               << endl;
+        cout << "\t--Tneck         time: specify the neck movements time in seconds (default: 0.70)" << endl;
+        cout << "\t--Teyes         time: specify the eyes movements time in seconds (default: 0.20)" << endl;
+        cout << "\t--config        file: file name for kinematics and cameras parameters"            << endl;
+        cout << "\t--context        dir: resource finder searching dir for config file"              << endl;
+        cout << "\t--simulation        : simulate the presence of the robot"                         << endl;
+        cout << "\t--ping_robot_tmo tmo: connection timeout (s) to start-up the robot"               << endl;
 
         return 0;
     }

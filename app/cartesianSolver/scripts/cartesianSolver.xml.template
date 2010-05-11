@@ -41,7 +41,7 @@
 
         <module>
                 <name>iKinGazeCtrl</name>
-                <parameters>--context cameraCalibration/conf --config icubEyes.ini</parameters>
+                <parameters>--context cameraCalibration/conf --config icubEyes.ini --ping_robot_tmo 20.0</parameters>
                 <node>pwrNode5</node>
                 <tag>gazeController</tag>
         </module>
