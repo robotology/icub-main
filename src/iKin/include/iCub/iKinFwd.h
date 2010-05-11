@@ -271,9 +271,50 @@ public:
     /**
     * Default destructor. 
     */
-    virtual ~iKinLink() { };
-};
+    virtual ~iKinLink() { }
 
+	/****** void methods for iDyn *******/
+	/** set **/
+	virtual	double setVel(const double _dteta)                                                { return 0.0; }
+	virtual	double setAcc(const double _ddteta)                                               { return 0.0; }
+	virtual void   setPosVelAcc(const double _teta,const double _dteta,const double _ddteta)  { }
+	virtual	void   setDynamicParameters(const double _m, const yarp::sig::Matrix &_HC,
+                                        const yarp::sig::Matrix &_I, const double _kr,
+                                        const double _Fv, const double _Fs, const double _Im) { }
+	virtual	void   setDynamicParameters(const double _m, const yarp::sig::Matrix &_HC,
+                                        const yarp::sig::Matrix &_I)                          { }
+	virtual	void   setStaticParameters(const double _m, const yarp::sig::Matrix &_HC)         { }
+	virtual	void   setInertia(const yarp::sig::Matrix &_I)                                    { }
+	virtual	void   setMass(const double _m)				                                      { }
+	virtual	void   setCOM(const yarp::sig::Matrix &_HC)	                                      { }
+	virtual	void   setCOM(const yarp::sig::Vector &_rC)	                                      { }
+	virtual void   setForce(const yarp::sig::Vector &_F, const yarp::sig::Vector &_Mu)        { }
+	virtual void   setMoment(const yarp::sig::Vector &_Mu)                                    { }
+	virtual void   setTorque(const double _Tau)                                               { }
+
+	/** get **/
+	virtual	yarp::sig::Matrix getInertia() const { yarp::sig::Matrix M(1,1); M=0.0; return M; }
+	virtual	double			  getMass()	   const { return 0.0;                                }
+	virtual	double			  getIm()	   const { return 0.0;                                }
+	virtual	double			  getKr()	   const { return 0.0;                                }
+	virtual	double			  getFs()	   const { return 0.0;                                }
+	virtual	double			  getFv()	   const { return 0.0;                                }
+	virtual	yarp::sig::Matrix getCOM()	   const { yarp::sig::Matrix M(1,1); M=0.0; return M; }
+	virtual	double			  getVel()	   const { return 0.0;                                }
+	virtual	double			  getAcc()	   const { return 0.0;                                }
+	virtual	yarp::sig::Matrix getR()	   const { yarp::sig::Matrix M(1,1); M=0.0; return M; }
+	virtual	yarp::sig::Matrix getRC()	   const { yarp::sig::Matrix M(1,1); M=0.0; return M; }
+	virtual	yarp::sig::Vector getr()	   const { yarp::sig::Vector v(1);   v=0.0; return v; }
+	virtual	yarp::sig::Vector getrC()	   const { yarp::sig::Vector v(1);   v=0.0; return v; }
+	virtual	yarp::sig::Vector getAngVel()  const { yarp::sig::Vector v(1);   v=0.0; return v; }
+	virtual	yarp::sig::Vector getAngAcc()  const { yarp::sig::Vector v(1);   v=0.0; return v; }
+	virtual	yarp::sig::Vector getAngAccM() const { yarp::sig::Vector v(1);   v=0.0; return v; }
+	virtual	yarp::sig::Vector getLinAcc()  const { yarp::sig::Vector v(1);   v=0.0; return v; }
+	virtual	yarp::sig::Vector getLinAccC() const { yarp::sig::Vector v(1);   v=0.0; return v; }
+	virtual	yarp::sig::Vector getForce()   const { yarp::sig::Vector v(1);   v=0.0; return v; }
+	virtual	yarp::sig::Vector getMoment()  const { yarp::sig::Vector v(1);   v=0.0; return v; }
+	virtual	double			  getTorque()  const { return 0.0;                                }
+};
 
 
 /**
@@ -684,6 +725,9 @@ public:
     * Destructor. 
     */
     virtual ~iKinChain();
+
+	//**** void methods used by iDyn *****//
+	void setAngVel() { }
 };
 
 
