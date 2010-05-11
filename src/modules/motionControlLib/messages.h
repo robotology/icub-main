@@ -120,7 +120,7 @@
 #define CAN_SET_POS_PIDLIMITS       84
 #define CAN_GET_POS_PIDLIMITS   	85
 
-#define CAN_SET_VEL_SHIFT			86
+#define CAN_SET_VEL_TIMEOUT			86
 
 #define NUM_OF_MESSAGES				87
 
