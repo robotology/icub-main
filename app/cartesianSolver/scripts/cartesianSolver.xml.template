@@ -41,6 +41,7 @@
 
         <module>
                 <name>iKinGazeCtrl</name>
+                <parameters>--context cameraCalibration/conf --config icubEyes.ini</parameters>
                 <node>pwrNode5</node>
                 <tag>gazeController</tag>
         </module>
