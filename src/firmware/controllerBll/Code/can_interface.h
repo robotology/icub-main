@@ -117,7 +117,9 @@ void can_receive_additional_info();
 #define CAN_SET_POS_PIDLIMITS       84
 #define CAN_GET_POS_PIDLIMITS   	85
 
-#define NUM_OF_MESSAGES				86
+#define CAN_SET_VEL_TIMEOUT			86
+
+#define NUM_OF_MESSAGES				87
 
 // class 1 messages, broadcast 
 // when in bcast mode, messages are sent periodically by the controller

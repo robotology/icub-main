@@ -108,3 +108,7 @@
 2010-29-April  Francesco Nori <iron@liralab.it>
 	* _vel_timeout is now passed via CAN
 	* Current build 37.
+
+2010-11-May  Francesco Nori <iron@liralab.it>
+	* _vel_timeout is now passed via CAN on a separate message
+	* Current build 38.	

@@ -118,7 +118,9 @@ void can_receive_additional_info();
 #define CAN_SET_POS_PIDLIMITS       84
 #define CAN_GET_POS_PIDLIMITS   	85
 
-#define NUM_OF_MESSAGES				86
+#define CAN_SET_VEL_TIMEOUT			86
+
+#define NUM_OF_MESSAGES				87
 
 // class 1 messages, broadcast 
 // when in bcast mode, messages are sent periodically by the controller
@@ -131,8 +133,9 @@ void can_receive_additional_info();
 #define CAN_BCAST_OVERFLOW			5
 #define CAN_BCAST_PRINT				6
 #define CAN_BCAST_VELOCITY			7
+#define CAN_BCAST_TRQ_PID			8
 
-#define CAN_BCAST_MAX_MSGS			8
+#define CAN_BCAST_MAX_MSGS			9
 #define MAIS_CAN_ID                 0xE 
 #define MAIS_8bit_D_MSG          0x3ED //8 bits value
 #define MAIS_8bit_C_MSG           0x3EC //8 bits value
