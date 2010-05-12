@@ -207,7 +207,13 @@ void main(void)
    	#if (VERSION==0x0129)		
 
 	init_position_abs_ssi();
+
+	// reset of the ABS_SSI
+	// this is needed because the AS5045 gives the first value wrong !!!
+    for (i=0; i<JN; i++)	_position[i]=(Int32) get_position_abs_ssi(i);
+    for (i=0; i<JN; i++)    _max_real_position[i]=4095;
 	
+
 	#endif
 	TI1_init 			  ();
 	init_leds  			  ();
@@ -224,32 +230,6 @@ void main(void)
 	}
 	
 	
-#if ( (VERSION==0x0121) || (VERSION==0x0128) || (VERSION==0x0130))	
-	// MAIS initialization
-	
-	
-	// set the resolution to 8bits 
-//	_initMAIS[0]=0x10;
-//	_initMAIS[1]=0x2;	
-//	idtx = 0x200 + MAIS_CAN_ID;				
-//	CAN1_send(idtx, DATA_FRAME, 2, _initMAIS);
-	
-    // set the baudrate in ms   
-//	_initMAIS[0]=0x08;
-//	_initMAIS[1]=0x0A;  //10 ms 
-//	mais_counter=0;	
-//	idtx = 0x200 + MAIS_CAN_ID;				
-//	CAN1_send(idtx, DATA_FRAME, 2, _initMAIS);
-	
-	//start broadcast
-//	_initMAIS[0]=0x07;
-//	_initMAIS[1]=0x00;  //10 ms 
-//	mais_counter=0;	
-//	idtx = 0x200 + MAIS_CAN_ID;				
-//	CAN1_send(idtx, DATA_FRAME, 2, _initMAIS);
-	
-#endif	
-
 #if ((VERSION==0x0120) || (VERSION==0x0121) || (VERSION==0x0128) || (VERSION==0x0130))	
 
 	for (i=0; i<JN; i++)
@@ -423,7 +403,7 @@ void main(void)
 #if VERSION == 0x0129
 	    _position[0]= get_position_encoder(0);	
 		_position[1]= get_position_abs_ssi(0);
-		_position[2]= get_position_abs_ssi(1);;
+		_position[2]= get_position_abs_ssi(1);
 		_position[3]= extract_h( compute_filt_pos(get_position_abs_analog(3)>>3,3));					
 #endif
 
@@ -530,6 +510,37 @@ void main(void)
 			{
 				if 	(PWMoutput[1]> _pwm_calibration[1])
 				  	PWMoutput[1] = _pwm_calibration[1];
+				if 	(PWMoutput[1] < -_pwm_calibration[1])	
+					PWMoutput[1] = -_pwm_calibration[1];
+				if 	(PWMoutput[2]> _pwm_calibration[2])
+				  	PWMoutput[2] = _pwm_calibration[2];
+				if 	(PWMoutput[2] < -_pwm_calibration[2])	
+					PWMoutput[2] = -_pwm_calibration[2];		
+			}	
+#endif 
+
+		/*differential controls*/
+#if VERSION == 0x0129 
+	/*  Wrist Differential coupling 
+		|Me1| |  1    -1 |  |Je1|
+		|Me2|=| -1     0 |* |Je2|    */
+	
+
+
+			PWMoutput[1] = PWMoutput[1]-PWMoutput[2];	
+			PWMoutput[2] = -PWMoutput[2];
+			if (_control_mode[1] == MODE_IDLE || _control_mode[2] == MODE_IDLE)
+			{
+				PWMoutput[1] = 0;
+	 			PWMoutput[2] = 0;
+			}
+			_pd[1] = _pd[1]-_pd[2];			
+			_pd[2] = -_pd[2];
+			
+			if ((_control_mode[1] == MODE_CALIB_HARD_STOPS) || (_control_mode[2] == MODE_CALIB_HARD_STOPS))
+			{
+				if 	(PWMoutput[1]> _pwm_calibration[1])
+				   	PWMoutput[1] = _pwm_calibration[1];
 				if 	(PWMoutput[1] < -_pwm_calibration[1])	
 					PWMoutput[1] = -_pwm_calibration[1];
 				if 	(PWMoutput[2]> _pwm_calibration[2])
@@ -717,7 +728,7 @@ void decouple_positions(void)
 		
 #elif VERSION == 0x0119
 		//_position[1] = _position[1];		//omitted
-		_position[2] = _position[1] + _position[2];	
+		_position[2] = _position[1] + _position[2];		
 #endif
 }
 

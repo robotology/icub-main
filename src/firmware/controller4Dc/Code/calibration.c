@@ -9,10 +9,10 @@
 #include "pid.h"
 #include "controller.h"
 #include "trajectory.h"
-
+#include "abs_ssi_interface.h"
 #include "can1.h"
 #include "can_interface.h"
-
+#include "pwm_interface.h"
 
 #include "encoders_interface.h"
 #include "calibration.h"
@@ -445,7 +445,76 @@ byte calibrate (byte channel, byte type, Int16 param1,Int16 param2, Int16 param3
 			
 		}	
 	}
+/********
+ *0x0129*
+ ********/	
+#elif VERSION ==0x0129
 
+	if ((type==CALIB_HARD_STOPS) && (channel==0))
+	{
+		if (_control_mode[channel] != MODE_IDLE && IS_DONE(channel))
+		{
+			_control_mode[channel] = MODE_CALIB_HARD_STOPS;	
+			_counter_calib = 0;
+			_pwm_calibration[channel] = param1;
+			if (param2!=0)
+		 		_velocity_calibration[channel]=param2;
+			else
+				_velocity_calibration[channel]=1;
+			#ifdef DEBUG_CALIBRATION			
+			AS1_printStringEx ("Calibration HARD_STOPS started \r\n");
+			AS1_printStringEx ("param1: ");
+			AS1_printWord16AsChars (param1);
+			AS1_printStringEx ("param2: ");	
+			AS1_printWord16AsChars (param2);
+			#endif			
+		}	
+	}
+
+	if (type==CALIB_ABS_POS_SENS)
+	{
+		#ifdef DEBUG_CALIBRATION	
+ 		AS1_printStringEx ("Calibration ABS_POS aborted \r\n");
+		#endif
+	}
+
+	if (type==CALIB_ABS_DIGITAL )
+	{
+		#ifdef DEBUG_CALIBRATION	
+		can_printf ("Calibration started  %d \r\n",channel);
+		#endif
+		
+			#ifdef DEBUG_CALIBRATION	
+		can_printf ("BC ");
+    	can_print_dword(_position[channel]);
+		#endif	
+		if (param3 >=0 && param3 <=4095) set_max_position(channel-1, param3);	
+		#ifdef DEBUG_CALIBRATION	
+		can_printf ("AC ");
+		can_print_dword(_position[channel]);
+		#endif
+		if (param2>0)
+		{
+		
+		    _position[channel] = get_position_abs_ssi(channel-1);
+			_set_point[channel] = param1;
+			init_trajectory (channel, _position[channel], _set_point[channel], param2);
+			_in_position[channel] = false;
+			_calibrated[channel] = true;
+				#ifdef DEBUG_CALIBRATION
+			can_printf("Calibration ABS_DIGITAL terminated %d \r\n", channel);
+				#endif
+		}
+		if (param2==0)
+		{
+			_control_mode[channel]=MODE_IDLE;	
+			_pad_enabled[channel] = false;
+			PWM_outputPadDisable(channel);
+		#ifdef DEBUG_CALIBRATION
+			can_printf("Calibration ABS_DIGITAL aborted \r\n");
+				#endif			
+		}		
+	}
 /********	********
  *0x0120*	*0x0121*
  ********	********/

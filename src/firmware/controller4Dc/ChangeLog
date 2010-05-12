@@ -106,5 +106,6 @@ In the struct canmsg_tag I have changed the CAN_data[16] in CAN_data[8]. I do no
 2010-11-May  Francesco Nori <iron@liralab.it>
 * Current build 31. _vel_timeout is now passed via CAN on a separate message
 
- 
+2010-12-May  Maggiali Marco <marco.maggiali@iit.t>
+* Current build 32. Added the target 1.29 for iCubV2 
 

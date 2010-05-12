@@ -36,7 +36,63 @@
 }
 
 //-------------------------------------------------------------------
-#define CAN_CONTROLLER_RUN_HANDLER(x) \
+#if (VERSION == 0x0129) 
+	#define CAN_CONTROLLER_RUN_HANDLER(x) \
+	{ \
+		if ((axis>0) && (axis<3))\
+		{\
+			if ((_pad_enabled[1]==false) || (_pad_enabled[2]==false))\
+				can_printf("WARNING: RUN called before AMP");\
+			if (((_control_mode[1] == MODE_IDLE) || (_control_mode[2] == MODE_IDLE)))  \
+			{ \
+			 	if ((_received_pid[1].rec_pid==0x7F) || (_received_pid[2].rec_pid==0x7F))   \
+				{ \
+					_control_mode[1] = MODE_POSITION; \
+					_control_mode[2] = MODE_POSITION; \
+					_desired[1] = _position[1]; \
+					_desired[2] = _position[2]; \
+					_integral[1] = 0; \
+					_integral[2] = 0; \
+					_set_point[1] = _position[1]; \
+					_set_point[2] = _position[2]; \
+					init_trajectory (1, _position[1], _position[1], 1); \
+					init_trajectory (2, _position[2], _position[2], 1); \
+					_general_board_error = ERROR_NONE; \
+				} \
+				else \
+				{ \
+				  can_printf("WARNING:PID IS NOT SET");\
+				} \
+			} \
+			else \
+				_general_board_error = ERROR_MODE; \
+		}\
+		else\
+		{\
+			if (_pad_enabled[axis]==false)\
+			can_printf("WARNING: RUN called before AMP");\
+			if (_control_mode[axis] == MODE_IDLE) \
+			{ \
+				if (_received_pid[axis].rec_pid==0x7F)\
+				{\
+				_control_mode[axis] = MODE_POSITION; \
+				_desired[axis] = _position[axis]; \
+				_integral[axis] = 0; \
+				_set_point[axis] = _position[axis]; \
+				init_trajectory (axis, _position[axis], _position[axis], 1); \
+				_general_board_error = ERROR_NONE; \
+				}\
+				else\
+				{ \
+					can_printf("WARNING:PID IS NOT SET"); \
+				} \
+			} \
+			else \
+				_general_board_error = ERROR_MODE; \
+		}\
+	}
+#else
+	#define CAN_CONTROLLER_RUN_HANDLER(x) \
 { \
 	if (_pad_enabled[axis]==false)\
 		can_printf("WARNING: RUN called before AMP");\
@@ -59,7 +115,7 @@
 	else \
 		_general_board_error = ERROR_MODE; \
 }
-
+#endif
 //-------------------------------------------------------------------
 #define CAN_CONTROLLER_IDLE_HANDLER(x) \
 { \
@@ -88,23 +144,67 @@
 	_general_board_error = ERROR_NONE; \
 }
 
-//-------------------------------------------------------------------
-#define CAN_ENABLE_PWM_PAD_HANDLER(x) \
-{ \
-	PWM_outputPadEnable(axis); \
-	_control_mode[axis] = MODE_IDLE; \
-	_general_board_error = ERROR_NONE; \
-	can_printf("PWM ENA:%d",axis);\
-}
-//-------------------------------------------------------------------
-#define CAN_DISABLE_PWM_PAD_HANDLER(x) \
-{ \
-	PWM_outputPadDisable(axis); \
-	_pad_enabled[axis] = false; \
-	_general_board_error = ERROR_NONE; \
-	can_printf("PWM DISABLED AXIS:%d",axis);\
-}
+#if VERSION == 0x0129 
+	#define CAN_ENABLE_PWM_PAD_HANDLER(x) \
+	{ \
+		if ((axis>0) && (axis<3))\
+		{\
+			if (_pad_enabled[1] == false &&	_pad_enabled[2] == false) \
+			{ \
+				PWM_outputPadEnable(1); \
+				PWM_outputPadEnable(2); \
+				_general_board_error = ERROR_NONE; \
+				can_printf("PWM ENA COUPLED:1 & 2");\
+			} \
+		}\
+		else\
+		{\
+			PWM_outputPadEnable(axis);\
+			_control_mode[axis] = MODE_IDLE; \
+			_general_board_error = ERROR_NONE; \
+			can_printf("PWM ENA:%d",axis);\
+		}\
+	}
+#else
+	#define CAN_ENABLE_PWM_PAD_HANDLER(x) \
+	{ \
+		PWM_outputPadEnable(axis); \
+		_control_mode[axis] = MODE_IDLE; \
+		_general_board_error = ERROR_NONE; \
+		can_printf("PWM ENA:%d",axis);\
+	}
+#endif
 
+//-------------------------------------------------------------------
+#if VERSION == 0x0129
+	#define CAN_DISABLE_PWM_PAD_HANDLER(x) \
+	{ \
+		if ((axis>0) && (axis<3))\
+		{\
+			PWM_outputPadDisable(1); \
+			PWM_outputPadDisable(2); \
+			_pad_enabled[1] = false; \
+			_pad_enabled[2] = false; \
+			_general_board_error = ERROR_NONE; \
+			can_printf("PWM DIS COUPLED:1 & 2");\
+		}\
+		else\
+		{\
+			PWM_outputPadDisable(axis); \
+			_pad_enabled[axis] = false; \
+			_general_board_error = ERROR_NONE; \
+			can_printf("PWM DIS:%d",axis);\
+		}\
+	}
+#else
+	#define CAN_DISABLE_PWM_PAD_HANDLER(x) \
+	{ \
+		PWM_outputPadDisable(axis); \
+		_pad_enabled[axis] = false; \
+		_general_board_error = ERROR_NONE; \
+		can_printf("PWM DIS:%d",axis);\
+	}
+#endif
 
 //-------------------------------------------------------------------
 #define CAN_GET_CONTROL_MODE_HANDLER(x) \
