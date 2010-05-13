@@ -1,0 +1,16 @@
+# Copyright: (C) 2010 RobotCub Consortium
+# Author: Lorenzo Natale
+# CopyPolicy: Released under the terms of the GNU GPL v2.0.
+
+if (NOT ICUB_FOUND)
+
+message(STATUS "Using iCub from install")
+
+set(ICUB_INCLUDE_DIRS "@ICUB_INCLUDE_DIRS@" CACHE INTERNAL "Include directories needed for iCub")
+
+set(ICUB_LIBRARIES "@ICUB_TARGETS@" CACHE INTERNAL "List of iCub libraries")
+
+include("@CMAKE_INSTALL_PREFIX@/icub-export-install.cmake")
+
+set (ICUB_FOUND TRUE)
+endif (NOT ICUB_FOUND)
