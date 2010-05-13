@@ -1371,13 +1371,13 @@ bool CanBusMotionControl::open (Searchable &config)
         disableAmp(i);
     }
 
-    Bottle *analogList=config.findGroup("CAN").find("analog").asList();
-    if (analogList!=0)
-        if (analogList->size()>0)
+    Bottle analogList=config.findGroup("analog").tail();
+    //    if (analogList!=0)
+        if (analogList.size()>0)
         {
-            for(int k=0;k<analogList->size();k++)
+            for(int k=0;k<analogList.size();k++)
             {
-                std::string analogId=analogList->get(k).asString().c_str();;
+                std::string analogId=analogList.get(k).asString().c_str();;
 
                 AnalogSensor *as=instantiateAnalog(config, analogId);
                 if (as!=0)
@@ -1405,7 +1405,7 @@ AnalogSensor *CanBusMotionControl::instantiateAnalog(yarp::os::Searchable& confi
     //std::string groupName=std::string("ANALOG-");
     //groupName+=deviceid;
     //Bottle analogConfig=config.findGroup(groupName.c_str());
-    Bottle analogConfig=config.findGroup(deviceId.c_str());
+    Bottle analogConfig=config.findGroup(deviceid.c_str());
     if (analogConfig.size()>0)
     {
         fprintf(stderr, "--> Initializing analog device %s\n", deviceid.c_str());
@@ -1428,13 +1428,22 @@ AnalogSensor *CanBusMotionControl::instantiateAnalog(yarp::os::Searchable& confi
                 break;
         }
 
-        if (analogConfig.check("Frequency"))
-        {
-            int speed=analogConfig.find("Frequency").asInt();
-            analogSensor->setRate(speed);
-        }
-
         int destId=0x0200|analogSensor->getId();
+
+        if (analogConfig.check("Period"))
+        {
+            int period=analogConfig.find("Period").asInt();
+            res.startPacket();
+
+            res.startPacket();
+            res._writeBuffer[0].setId(destId);
+            res._writeBuffer[0].getData()[0]=0x08;
+            res._writeBuffer[0].getData()[1]=period;
+            res._writeBuffer[0].setLen(2);
+            res._writeMessages++;
+            res.writePacket();
+
+        }
 
 		//get the full scale values
 		if (analogChannels==6 && analogFormat==16 && analogCalibration==1)
@@ -1474,9 +1483,31 @@ AnalogSensor *CanBusMotionControl::instantiateAnalog(yarp::os::Searchable& confi
 					timeout++;
 				}
 				while(timeout<32 && full_scale_read==false);
+
 				if (full_scale_read==false) fprintf(stderr, "Trying to get fullscale data from sensor: no answer recieved or message lost (ch:%d)\n", ch);
+
 			}
+
+                res.startPacket();
+                res._writeBuffer[0].setId(destId);
+                res._writeBuffer[0].getData()[0]=0x07;
+                res._writeBuffer[0].getData()[1]=0x03;
+                res._writeBuffer[0].setLen(2);
+                res._writeMessages++;
+                res.writePacket();
+
 		}
+        else
+            {
+                res.startPacket();
+                res._writeBuffer[0].setId(destId);
+                res._writeBuffer[0].getData()[0]=0x07;
+                res._writeBuffer[0].getData()[1]=0x00;
+                res._writeBuffer[0].setLen(2);
+                res._writeMessages++;
+                res.writePacket();
+            }
+
 		#if 1
 			 fprintf(stderr, "Sensor Fullscale: ");
 			 fprintf(stderr, " %f ", analogSensor->getScaleFactor()[0]);
@@ -1488,35 +1519,7 @@ AnalogSensor *CanBusMotionControl::instantiateAnalog(yarp::os::Searchable& confi
 			 fprintf(stderr, " \n ");
 		#endif
 
-#if 0 //skipping speed message
-             res.startPacket();
 
-             res.startPacket();
-             res._writeBuffer[0].setId(destId);
-             res._writeBuffer[0].getData()[0]=0x08;
-             res._writeBuffer[0].getData()[1]=0x0A;
-             res._writeBuffer[0].setLen(2);
-             res._writeMessages++;
-#endif 
-
-
-        res.startPacket();
-        res._writeBuffer[0].setId(destId);
-        res._writeBuffer[0].getData()[0]=0x07;
-        res._writeBuffer[0].getData()[1]=0x00;
-        res._writeBuffer[0].setLen(2);
-        res._writeMessages++;
-
-#if 0  
-        //debug
-        fprintf(stderr, "---> Len:%d %x %x %x\n", 
-            res._writeBuffer[0].getLen(),
-            res._writeBuffer[0].getId(),
-            res._writeBuffer[0].getData()[0],
-            res._writeBuffer[0].getData()[1]);
-#endif
-
-        res.writePacket();
     }
     return analogSensor;
 }

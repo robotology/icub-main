@@ -225,12 +225,6 @@ public:
         return deviceIdentifier;
     }
 
-    void setRate(int r)
-    {   rate=r; }
-
-    int getRate()
-    {   return rate; }
-    
     short getId()
     { return boardId;}
 
