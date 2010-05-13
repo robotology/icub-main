@@ -1402,9 +1402,10 @@ AnalogSensor *CanBusMotionControl::instantiateAnalog(yarp::os::Searchable& confi
     CanBusResources& res = RES (system_resources);
     AnalogSensor *analogSensor=0;
 
-    std::string groupName=std::string("ANALOG-");
-    groupName+=deviceid;
-    Bottle analogConfig=config.findGroup(groupName.c_str());
+    //std::string groupName=std::string("ANALOG-");
+    //groupName+=deviceid;
+    //Bottle analogConfig=config.findGroup(groupName.c_str());
+    Bottle analogConfig=config.findGroup(deviceId.c_str());
     if (analogConfig.size()>0)
     {
         fprintf(stderr, "--> Initializing analog device %s\n", deviceid.c_str());
@@ -1417,23 +1418,6 @@ AnalogSensor *CanBusMotionControl::instantiateAnalog(yarp::os::Searchable& confi
         int analogChannels=analogConfig.find("Channels").asInt();
 		int analogCalibration=analogConfig.find("UseCalibration").asInt();
 
-        Bottle *initMsg=analogConfig.find("InitMessage").asList();
-		Bottle *speedMsg=analogConfig.find("SpeedMessage").asList();
-        Bottle *finiMsg=analogConfig.find("CloseMessage").asList();
-
-        if (initMsg)
-        {
-            analogSensor->getInitMsg()=*initMsg;
-        }
-		if (speedMsg)
-        {
-            analogSensor->getSpeedMsg()=*speedMsg;
-        }
-        if (finiMsg)
-        {
-            analogSensor->getCloseMsg()=*finiMsg;
-        }
-
         switch (analogFormat)
         {
             case 8:
@@ -1444,16 +1428,23 @@ AnalogSensor *CanBusMotionControl::instantiateAnalog(yarp::os::Searchable& confi
                 break;
         }
 
+        if (analogConfig.check("Frequency"))
+        {
+            int speed=analogConfig.find("Frequency").asInt();
+            analogSensor->setRate(speed);
+        }
+
+        int destId=0x0200|analogSensor->getId();
+
 		//get the full scale values
 		if (analogChannels==6 && analogFormat==16 && analogCalibration==1)
 		{
             
-            int tmp=analogSensor->getInitMsg().get(0).asInt();
-			for (int ch=0; ch<6; ch++)
+    		for (int ch=0; ch<6; ch++)
 			{
 				unsigned int i=0;
 				res.startPacket();
-				res._writeBuffer[0].setId(tmp);
+				res._writeBuffer[0].setId(destId);
 				res._writeBuffer[0].getData()[0]=0x18;
 				res._writeBuffer[0].getData()[1]=ch;
 				res._writeBuffer[0].setLen(2);
@@ -1497,45 +1488,35 @@ AnalogSensor *CanBusMotionControl::instantiateAnalog(yarp::os::Searchable& confi
 			 fprintf(stderr, " \n ");
 		#endif
 
-		if (analogSensor->getSpeedMsg().size()>0)
-        {
-            res.startPacket();
-            int tmp=analogSensor->getSpeedMsg().get(0).asInt();
-            res._writeBuffer[0].setId(tmp);
-            int k=0;
-            for (k=0;k<analogSensor->getSpeedMsg().size()-1;k++)
-            {
-                res._writeBuffer[0].getData()[k]=analogSensor->getSpeedMsg().get(k+1).asInt();
-            }
-            res._writeBuffer[0].setLen(k);
-            res._writeMessages++;
-            res.writePacket();
-        }
+#if 0 //skipping speed message
+             res.startPacket();
 
-        if (analogSensor->getInitMsg().size()>0)
-        {
-            res.startPacket();
-            int tmp=analogSensor->getInitMsg().get(0).asInt();
-            res._writeBuffer[0].setId(tmp);
-            int k=0;
-            for (k=0;k<analogSensor->getInitMsg().size()-1;k++)
-            {
-                res._writeBuffer[0].getData()[k]=analogSensor->getInitMsg().get(k+1).asInt();
-            }
-            res._writeBuffer[0].setLen(k);
-            res._writeMessages++;
+             res.startPacket();
+             res._writeBuffer[0].setId(destId);
+             res._writeBuffer[0].getData()[0]=0x08;
+             res._writeBuffer[0].getData()[1]=0x0A;
+             res._writeBuffer[0].setLen(2);
+             res._writeMessages++;
+#endif 
+
+
+        res.startPacket();
+        res._writeBuffer[0].setId(destId);
+        res._writeBuffer[0].getData()[0]=0x07;
+        res._writeBuffer[0].getData()[1]=0x00;
+        res._writeBuffer[0].setLen(2);
+        res._writeMessages++;
 
 #if 0  
-            //debug
-            fprintf(stderr, "---> Len:%d %x %x %x\n", 
-                res._writeBuffer[0].getLen(),
-                res._writeBuffer[0].getId(),
-                res._writeBuffer[0].getData()[0],
-                res._writeBuffer[0].getData()[1]);
+        //debug
+        fprintf(stderr, "---> Len:%d %x %x %x\n", 
+            res._writeBuffer[0].getLen(),
+            res._writeBuffer[0].getId(),
+            res._writeBuffer[0].getData()[0],
+            res._writeBuffer[0].getData()[1]);
 #endif
 
-            res.writePacket();
-        }
+        res.writePacket();
     }
     return analogSensor;
 }
@@ -1545,17 +1526,15 @@ void CanBusMotionControl::finiAnalog(AnalogSensor *analogSensor)
     CanBusResources& res = RES (system_resources);
 
     if (analogSensor->isOpen())
-            if (analogSensor->getCloseMsg().size()>0)
             {
                 res.startPacket();
-                int tmp=analogSensor->getCloseMsg().get(0).asInt();
-                res._writeBuffer[0].setId(tmp);
-                int k=0;
-                for (k=0;k<analogSensor->getCloseMsg().size()-1;k++)
-                {
-                    res._writeBuffer[0].getData()[k]=analogSensor->getCloseMsg().get(k+1).asInt();
-                }
-                res._writeBuffer[0].setLen(k);
+                int destId=0x0200|analogSensor->getId();
+
+                res.startPacket();
+                res._writeBuffer[0].setId(destId);
+                res._writeBuffer[0].getData()[0]=0x07;
+                res._writeBuffer[0].getData()[1]=0x01;
+                res._writeBuffer[0].setLen(2);
                 res._writeMessages++;
 
                 //debug

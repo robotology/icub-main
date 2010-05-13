@@ -177,6 +177,7 @@ private:
     unsigned int counterSat;
     unsigned int counterError;
     unsigned int counterTimeout;
+    int rate;
 
     ////////////////////
     AnalogData *data;
@@ -224,6 +225,12 @@ public:
         return deviceIdentifier;
     }
 
+    void setRate(int r)
+    {   rate=r; }
+
+    int getRate()
+    {   return rate; }
+    
     short getId()
     { return boardId;}
 
@@ -238,13 +245,7 @@ public:
             return false;
     }
 
-    yarp::os::Bottle &getInitMsg()
-        {return initMsg;}    
-	yarp::os::Bottle &getSpeedMsg()
-        {return speedMsg;}
-    yarp::os::Bottle &getCloseMsg()
-        {return closeMsg;}
-	short getUseCalibration()
+ 	short getUseCalibration()
 		{return useCalibration;}
 	double* getScaleFactor()
 		{return scaleFactor;}
