@@ -14,7 +14,7 @@ cfw2can 1 3 4DC.1.19.out.S
 // left_hand
 cfw2can 5 5 4DC.1.28.out.S
 cfw2can 5 7 4DC.1.30.out.S
-
+cfw2can 5 14 mais.hex
 // right_arm
 cfw2can 2 1 2BLL.1.50.out.S
 cfw2can 2 2 2BLL.1.57.out.S
@@ -23,7 +23,7 @@ cfw2can 2 3 4DC.1.19.out.S
 // right_hand
 cfw2can 6 5 4DC.1.28.out.S
 cfw2can 6 7 4DC.1.30.out.S
-
+cfw2can 6 14 mais.hex
 // left leg
 cfw2can 3 5  2BLL.1.51.out.S
 cfw2can 3 6  2BLL.1.51.out.S
