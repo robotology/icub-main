@@ -35,7 +35,7 @@ IF(WIN32 AND NOT CYGWIN)
 ENDIF(WIN32 AND NOT CYGWIN)
 
 icub_export_library(${PROJECTNAME} 
-							${PROJECT_SOURCE_DIR}/include 
+							"${PROJECT_SOURCE_DIR}/include;${GSL_INCLUDE_DIRS}" 
 							include/iCub
 							${folder_header})
 

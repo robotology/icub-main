@@ -11,14 +11,32 @@ if(COMMAND cmake_policy)
     cmake_policy(SET CMP0003 NEW)
 endif(COMMAND cmake_policy)
 
-if(win32)
-#disable annoying warnings about use of deprecated c functions
-add_definitions(-D_CRT_SECURE_NO_DEPRECATE)
-set(CMAKE_EXE_LINKER_FLAGS "${CMAKE_EXE_LINKER_FLAGS} /NODEFAULTLIB:libcmt.lib;libcmtd.lib")
-endif(win32)
 
 project(iCub)
 
+if(MSVC)
+    MESSAGE(STATUS "Warning: running on windows")
+    set(CMAKE_EXE_LINKER_FLAGS "${CMAKE_EXE_LINKER_FLAGS} /NODEFAULTLIB:libcmt.lib;libcmtd.lib;msvcrt.lib")
+    
+    # ACE uses a bunch of functions MSVC warns about.
+    # The warnings make sense in general, but not in this case.
+    # this gets rids of deprecated unsafe crt functions
+    add_definitions(-D_CRT_SECURE_NO_DEPRECATE)
+    # this gets rid of warning about deprecated POSIX names
+    add_definitions(-D_CRT_NONSTDC_NO_DEPRECATE)
+    # Traditionally, we add "d" postfix to debug libraries
+    set(CMAKE_DEBUG_POSTFIX "d")
+endif(MSVC)
+
+if(NOT CMAKE_BUILD_TYPE)
+        set(CMAKE_BUILD_TYPE "Release" CACHE STRING 
+        "Choose the type of build, recommanded options are: Debug or Release")
+endif(NOT CMAKE_BUILD_TYPE)
+# Hide variable to MSVC users, since it is not needed
+ if (MSVC)
+        mark_as_advanced(CMAKE_BUILD_TYPE)
+endif(MSVC)
+    
 #### Find YARP
 find_package(YARP)
 if (YARP_FOUND)
