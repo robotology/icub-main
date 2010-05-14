@@ -5,10 +5,12 @@
 
 macro(checkandset_dependency package)
     if (${package}_FOUND)
-        set(ICUB_HAS_${package} TRUE CACHE BOOL "" FORCE)
+        set(ICUB_HAS_${package} TRUE CACHE BOOL "Package ${package} found" FORCE)
+        set(ICUB_USE_${package} TRUE CACHE BOOL "Use package ${package}")
         message(STATUS "found ${package}")
     else (${package}_FOUND)
     	  set(ICUB_HAS_${package} FALSE CACHE BOOL "" FORCE)
+          set(ICUB_USE_${package} FALSE CACHE BOOL "Use package ${package}")
     endif (${package}_FOUND)
 endmacro (checkandset_dependency)
 
@@ -26,6 +28,7 @@ find_package(ODE)
 find_package(SDL)
 
 find_package(GtkPlus)
+find_package(IPOPT)
 
 message(STATUS "I have found the following libraries:")
 
@@ -37,6 +40,7 @@ checkandset_dependency(OpenGL)
 checkandset_dependency(ODE)
 checkandset_dependency(SDL)
 checkandset_dependency(GtkPlus)
+checkandset_dependency(IPOPT)
 
 if (YARP_HAS_LIBMATH)
     set(ICUB_HAS_YARPMATH true)
