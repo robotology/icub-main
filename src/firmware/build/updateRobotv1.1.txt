@@ -14,7 +14,7 @@ pcan 1 3 4DC.1.19.out.S
 // left_hand
 ecan 1 5 4DC.1.28.out.S
 ecan 1 7 4DC.1.30.out.S
-
+ecan 1 14 mais.hex
 // right_arm
 pcan 2 1 2BLL.1.50.out.S
 pcan 2 2 2BLL.1.57.out.S
@@ -23,7 +23,7 @@ pcan 2 3 4DC.1.19.out.S
 // right_hand
 ecan 0 5 4DC.1.28.out.S
 ecan 0 7 4DC.1.30.out.S
-
+ecan 0 14 mais.hex
 // legs
 pcan 3 5  2BLL.1.51.out.S
 pcan 3 6  2BLL.1.51.out.S
