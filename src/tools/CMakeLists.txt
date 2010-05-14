@@ -1,0 +1,10 @@
+add_subdirectory(controlBoardDumper)
+add_subdirectory(dataDumper)
+add_subdirectory(testStereoMatch)
+add_subdirectory(velocityObserver)
+
+if (ICUB_HAS_GtkPlus)
+	add_subdirectory(canLoader)
+else (ICUB_HAS_GtkPlus)
+	message(status "GtkPlus not found, skipping canLoader")
+endif(ICUB_HAS_GtkPlus)
