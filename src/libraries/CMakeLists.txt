@@ -1,5 +1,8 @@
 add_subdirectory(icubmod)
 
-if (ICUB_HAS_GSL)
+if (ICUB_USE_GSL)
 	add_subdirectory(ctrlLib)
-endif (ICUB_HAS_GSL)
+	add_subdirectory(iKin)
+endif (ICUB_USE_GSL)
+
+

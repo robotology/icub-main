@@ -29,7 +29,7 @@ find_package(SDL)
 
 find_package(GtkPlus)
 find_package(IPOPT)
-
+find_package(ACE)
 message(STATUS "I have found the following libraries:")
 
 checkandset_dependency(GSL)
@@ -40,6 +40,7 @@ checkandset_dependency(OpenGL)
 checkandset_dependency(ODE)
 checkandset_dependency(SDL)
 checkandset_dependency(GtkPlus)
+checkandset_dependency(ACE)
 checkandset_dependency(IPOPT)
 
 if (YARP_HAS_LIBMATH)

@@ -7,4 +7,5 @@ if (ICUB_USE_GtkPlus)
 	add_subdirectory(canLoader)
 else (ICUB_USE_GtkPlus)
 	message(status "GtkPlus not found, skipping canLoader")
-endif(ICUB_HAS_GtkPlus)
+endif(ICUB_USE_GtkPlus)
+
