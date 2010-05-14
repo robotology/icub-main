@@ -1,0 +1,102 @@
+
+2010-04-28 Ugo Pattacini <ugo.pattacini@iit.it>
+	   * name convention of some protected methods changed
+       * bug fix on iKinLink copy constructor
+
+2010-03-23 Ugo Pattacini <ugo.pattacini@iit.it>
+	   * CMakeLists.cmake, IKINConfig.cmake: now ADD_IPOPT flag is set by default according
+	     to the status of IPOPT_FOUND variable
+
+2010-02-27 Ugo Pattacini <ugo.pattacini@iit.it>
+	   * iKinSlv.h,.cpp: minimization against current q added
+	   
+2010-02-03 Ugo Pattacini <ugo.pattacini@iit.it>
+	   * CMakeLists.txt, IKINConfig.cmake: for win32 DEBUG_POSTFIX put equal to "d"
+
+2010-01-14 Ugo Pattacini <ugo.pattacini@iit.it>
+	   * iKinFwd.h,.cpp: provided Jacobians for generic ith link
+
+2010-01-13 Ugo Pattacini <ugo.pattacini@iit.it>
+	   * iKinSlv.h,.cpp: rest position option extended
+
+2010-01-12 Ugo Pattacini <ugo.pattacini@iit.it>
+	   * iKinSlv.h,.cpp: added options for torso rest positions
+                         bug fixes for continuous mode
+
+2009-12-20 Ugo Pattacini <ugo.pattacini@iit.it>
+	   * iKinFwd.h,.cpp: iKinLimb class extended with new methods
+                         for creating limb from a list of links properties
+
+2009-12-18 Ugo Pattacini <ugo.pattacini@iit.it>
+	   * iKinFwd.h,.cpp: iCubInertialSensor class added
+
+2009-11-11 Ugo Pattacini <ugo.pattacini@iit.it>
+	   * all headers: namespace rearranged
+
+2009-11-07 Ugo Pattacini <ugo.pattacini@iit.it>
+	   * iKinSlv.cpp, iKinSlv.h: DOF handling bug fix
+
+2009-10-12 Ugo Pattacini <ugo.pattacini@iit.it>
+	   * iKinHlp.cpp, iKinHlp.h, iKinVocabs.h: files added
+
+2009-07-29 Ugo Pattacini <ugo.pattacini@iit.it>
+	   * iKinInv.cpp, iKinIpOpt.cpp: SE3inv() used instead of pinv()
+
+2009-07-08 Ugo Pattacini <ugo.pattacini@iit.it>
+	   * iKinFwd.cpp: kinematic fix on the right leg
+
+2009-07-04 Ugo Pattacini <ugo.pattacini@iit.it>
+	   * iKinInv.h,.cpp: MultiRefDynCtrl renamed in MultiRefMinJerkCtrl
+
+2009-06-25 Ugo Pattacini <ugo.pattacini@iit.it>
+	   * All modules: "using namespace" removed from within header files
+
+2009-06-22 Ugo Pattacini <ugo.pattacini@iit.it>
+       * iKinSlv.h,.cpp:
+         PING and QUIT commands added to CartesianSolver class
+
+2009-06-20 Ugo Pattacini <ugo.pattacini@iit.it>
+       * iKinSlv.h,.cpp:
+         new classes added for on-line solvers
+       * example_01 added within tutorials directory
+
+2009-06-04 Ugo Pattacini <ugo.pattacini@iit.it>
+       * iKinIpOpt.h:
+         added getTranslationalTol() to iKinIpOptMin class
+         added update() to iKinLinIneqConstr class
+
+2009-06-03 Ugo Pattacini <ugo.pattacini@iit.it>
+       * iKinFwd.h: isBlocked() method of iKinLink class made public.
+	   * iKinIpOpt.cpp,.h: added default constructor for iKinLinIneqConstr class.
+         Rationale: constructor with default parameters caused compilation error
+         for inherited classes under Linux platforms.
+
+2009-06-01 Ugo Pattacini <ugo.pattacini@iit.it>
+	   * iKinInv.cpp,.h,iKinIpOpt.cpp,.h: IKINCTRL_POSE_ALL became IKINCTRL_POSE_FULL
+         since it's more meaningfull
+
+2009-05-29 Ugo Pattacini <ugo.pattacini@iit.it>
+	   * iKinInv.cpp,.h: set_execTime() updated with dump of warning message
+
+2009-05-20 Ugo Pattacini <ugo.pattacini@iit.it>
+	   * iKinInv.cpp,.h: weight shaping changed in MultiRefDynCtrl class
+
+2009-04-27 Ugo Pattacini <ugo.pattacini@iit.it>
+	   * iKinFwd.h: asChain() method changed; now it returns a pointer
+       * iKinLinIneqConstr class constructor update
+
+2009-04-21 Ugo Pattacini <ugo.pattacini@iit.it>
+	   * Added possibility to change translational tolerance for IPOPT solver
+         see setTranslationalTol() method
+
+2009-04-20 Ugo Pattacini <ugo.pattacini@iit.it>
+	   * Added tutorials directory
+
+2009-04-04 Ugo Pattacini <ugo.pattacini@iit.it>
+	   * Minimum jerk trajectory used instead of VITE controller
+         in MultiRefDynCtrl class
+
+2009-03-15 Ugo Pattacini <ugo.pattacini@iit.it>
+	   * Added dependence from ctrlLib library
+
+
