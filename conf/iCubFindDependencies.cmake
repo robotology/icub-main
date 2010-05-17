@@ -21,7 +21,7 @@ message(STATUS "CMake modules directory: ${CMAKE_MODULE_PATH}")
 find_package(GSL)
 find_package(GtkMM)
 find_package(Qt3)
-#find_package(OpenCV QUIET)
+find_package(OpenCV)
 
 find_package(OpenGL)
 find_package(ODE)
