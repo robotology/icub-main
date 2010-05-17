@@ -15,7 +15,8 @@
 
 #include <iCub/utils.hpp>
 
-#define GAZECTRL_MOTIONDONE_THRES       0.05     // [deg]
+#define GAZECTRL_MOTIONDONE_QTHRES      0.05     // [deg]
+#define GAZECTRL_MOTIONSTART_XTHRES     1e-3     // [m]
 
 using namespace std;
 using namespace yarp;

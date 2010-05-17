@@ -173,7 +173,7 @@ void Controller::afterStart(bool s)
 /************************************************************************/
 void Controller::run()
 {
-    bool swOffCond=(norm(commData->get_qd()-fbHead)<CTRL_DEG2RAD*GAZECTRL_MOTIONDONE_THRES);
+    bool swOffCond=(norm(commData->get_qd()-fbHead)<CTRL_DEG2RAD*GAZECTRL_MOTIONDONE_QTHRES);
 
     // verify control's switching conditions
     if (isCtrlActive)
@@ -184,14 +184,13 @@ void Controller::run()
             stopLimbsVel();
             isCtrlActive=false;
         }
-    }    
+    }   
+    // switch-on condition 
     else if (!swOffCond)
     {
-        // switch-on condition
-        if (canCtrlBeDisabled)
-            isCtrlActive=!(commData->get_xd()==xd);
-        else
-            isCtrlActive=true;
+        isCtrlActive=canCtrlBeDisabled ?
+                     !(commData->get_xd()==xd) :
+                     norm(port_xd->get_xd()-fp)>GAZECTRL_MOTIONSTART_XTHRES;
     }
 
     // get data
@@ -411,7 +410,7 @@ void Controller::setTrackingMode(const bool f)
 {
     canCtrlBeDisabled=!f;
 
-    if (port_xd)
+    if (port_xd && f)
         port_xd->set_xd(fp);
 }
 
