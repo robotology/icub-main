@@ -1446,7 +1446,7 @@ AnalogSensor *CanBusMotionControl::instantiateAnalog(yarp::os::Searchable& confi
         }
 
         //init message for mais board
-        if (analogChannels==6 && analogFormat==8)
+        if (analogChannels==16 && analogFormat==8)
         {
                 res.startPacket();
                 res._writeBuffer[0].setId(destId);
