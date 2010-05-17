@@ -206,7 +206,6 @@ following ports:
       for eyes movements.
     - [set] [track] <val>: sets the controller's tracking mode;
       val can be 0/1.
-    - [help]: returns a complete list of available rpc commands
  
 @note When the tracking mode is active and the controller has 
       reached the target, it keeps on sending velocities to the
@@ -490,20 +489,6 @@ public:
         {
             switch (command.get(0).asVocab())
             {
-            case VOCAB4('h','e','l','p'):
-                {
-                    reply.addString("Available rpc commands:\n");
-                    reply.addString("[susp]:                      suspends controllers\n");
-                    reply.addString("[run]:                       resumes controllers\n");
-                    reply.addString("[block] [pitch]/[yaw]:       blocks neck joints\n");
-                    reply.addString("[clear] [pitch]/[yaw]:       releases neck joints\n");
-                    reply.addString("[set]/[get] [Tneck] {<val>}: sets/returns neck controller's execution time\n");
-                    reply.addString("[set]/[get] [Teyes] {<val>}: sets/returns eyes controller's execution time\n");
-                    reply.addString("[set]/[get] [track] {<val>}: sets/returns the controllers tracking mode {0/1}\n");
-                    reply.addString("[get] [done]:                returns 1 iff motion is accomplished\n");
-                    return true;
-                }
-
                 case VOCAB4('s','u','s','p'):
                 {
                     ctrl->suspend();
