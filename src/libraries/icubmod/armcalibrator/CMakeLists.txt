@@ -1,12 +1,22 @@
-FIND_PACKAGE(YARP REQUIRED)
+PREPARE_DEVICE(icubarmcalibrator TYPE iCubArmCalibrator INCLUDE iCubArmCalibrator.h)
+PREPARE_DEVICE(icubarmcalibratorj8 TYPE iCubArmCalibratorJ8 INCLUDE iCubArmCalibratorJ8.h)
 
-INCLUDE_DIRECTORIES(${CMAKE_CURRENT_SOURCE_DIR})
+if (NOT SKIP_armcalibrator)
+  include_directories(${YARP_INCLUDE_DIRS})
 
-IF (COMPILE_DEVICE_LIBRARY)
-  PREPARE_DEVICE(icubarmcalibrator TYPE iCubArmCalibrator INCLUDE iCubArmCalibrator.h)
-  PREPARE_DEVICE(icubarmcalibratorj8 TYPE iCubArmCalibratorJ8 INCLUDE iCubArmCalibratorJ8.h)
-ENDIF (COMPILE_DEVICE_LIBRARY)
+  add_library(armcalibrator iCubArmCalibrator.cpp iCubArmCalibrator.h)
 
-ADD_LIBRARY(armcalibrator iCubArmCalibrator.cpp iCubArmCalibrator.h)
-ADD_LIBRARY(armcalibratorj8 iCubArmCalibratorJ8.cpp iCubArmCalibratorJ8.h)
+  target_link_libraries(armcalibrator ${YARP_LIBRARIES})
+  icub_export_library(armcalibrator "" include/iCub "")
+endif (NOT SKIP_armcalibrator)
+
+if (NOT SKIP_armcalibratorj8)
+  include_directories(${YARP_INCLUDE_DIRS})
+
+  add_library(armcalibratorj8 iCubArmCalibratorJ8.cpp iCubArmCalibratorJ8.h)
+
+  target_link_libraries(armcalibratorj8 ${YARP_LIBRARIES})
+  icub_export_library(armcalibratorj8 "" include/iCub "")
+
+endif (NOT SKIP_armcalibratorj8)
 

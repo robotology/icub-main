@@ -7,6 +7,9 @@ if (NOT SKIP_static_grabber)
   add_library(static_grabber StaticGrabber.h StaticGrabber.cpp)
 
   target_link_libraries(static_grabber ${YARP_LIBRARIES})
+  
+  icub_export_library(static_grabber "" include/iCub "")
+
 endif (NOT SKIP_static_grabber)
 
 

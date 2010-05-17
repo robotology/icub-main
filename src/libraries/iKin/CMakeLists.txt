@@ -35,7 +35,7 @@ SOURCE_GROUP("Header Files" FILES ${folder_header})
 
 ADD_LIBRARY(${PROJECTNAME} ${folder_source} ${folder_header})
 
-TARGET_LINK_LIBRARIES(${PROJECT_NAME} ${ACE_LIBRARIES} ${CTRLLIB_LIBRARIES})
+TARGET_LINK_LIBRARIES(${PROJECT_NAME} ${ACE_LIBRARIES} ctrlLib)
 
 # hopefully no longer needed
 #IF(MSVC)
@@ -46,7 +46,7 @@ TARGET_LINK_LIBRARIES(${PROJECT_NAME} ${ACE_LIBRARIES} ${CTRLLIB_LIBRARIES})
 #   SET_TARGET_PROPERTIES(${PROJECTNAME} PROPERTIES DEBUG_POSTFIX "d")
 #ENDIF(WIN32 AND NOT CYGWIN)
 
-icub_export_library(${PROJECT_NAME} ${PROJECT_SOURCE_DIR}/include include/iCub ${folder_header})
+icub_export_library(${PROJECT_NAME} "${PROJECT_SOURCE_DIR}/include;${ctrlLib_INCLUDE_DIRS}" include/iCub ${folder_header})
 
 #INSTALL(TARGETS ${PROJECTNAME} DESTINATION lib)
 #INSTALL(FILES ${folder_header} DESTINATION include/iCub)

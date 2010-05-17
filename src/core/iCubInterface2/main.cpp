@@ -248,10 +248,7 @@ This file can be edited at src/iCubInterface2/main.cpp.
 #include <yarp/os/Terminator.h>
 #include <yarp/os/ResourceFinder.h>
 #include <yarp/os/Os.h>
-
-#ifdef USE_ICUB_MOD
-#include "drivers.h"
-#endif
+#include <yarp/dev/Drivers.h>
 
 #include "RobotInterface.h" 
 
@@ -259,6 +256,8 @@ This file can be edited at src/iCubInterface2/main.cpp.
 
 #include "ControlBoardWrapper2.h"
 #include "ControlBoardWrapper.h"
+
+YARP_DECLARE_DEVICES(icubmod)
 
 using namespace yarp::os;
 using namespace yarp::dev;  
@@ -293,6 +292,8 @@ static void sighandler (int) {
 
 int main(int argc, char *argv[]) 
 {
+    YARP_REGISTER_DEVICES(icubmod)
+
 	Network yarp; //initialize network, this goes before everything
 
 	if (!yarp.checkNetwork())

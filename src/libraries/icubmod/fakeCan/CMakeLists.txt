@@ -1,10 +1,12 @@
-IF (COMPILE_DEVICE_LIBRARY)
-  PREPARE_DEVICE(fakecan TYPE FakeCan
+PREPARE_DEVICE(fakecan TYPE FakeCan
     INCLUDE fakeCan.h 
     WRAPPER "")
-ENDIF (COMPILE_DEVICE_LIBRARY)
+
 
 IF (NOT SKIP_fcan)
-    FIND_PACKAGE(YARP REQUIRED)
+    include_directories(${YARP_INCLUDE_DIRS})
     ADD_LIBRARY(fcan fakeCan.cpp fakeBoard.cpp fakeCan.h fakeBoard.h fbCanBusMessage.h msgList.h)
+    target_link_libraries(fcan ${YARP_LIBRARIES})
+    
+    icub_export_library(fcan "" include/iCub "")
 ENDIF (NOT SKIP_fcan)

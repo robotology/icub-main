@@ -1,20 +1,15 @@
-IF (COMPILE_DEVICE_LIBRARY)
-  PREPARE_DEVICE(logpolargrabber TYPE ServerLogpolarFrameGrabber
+PREPARE_DEVICE(logpolargrabber TYPE ServerLogpolarFrameGrabber
     INCLUDE yarp/dev/ServerLogpolarFrameGrabber.h 
     WRAPPER logpolargrabber)
-ENDIF (COMPILE_DEVICE_LIBRARY)
 
 IF(NOT SKIP_logpolargrabber)
-  FIND_PACKAGE(YARP REQUIRED)
-  FIND_PACKAGE(ICUB)
-  FIND_PACKAGE(LOGPOLAR REQUIRED)
-  FIND_PACKAGE(ICUBDEV REQUIRED)
-
-  LINK_LIBRARIES(${ICUBDEV_LIBRARIES})
-  LINK_LIBRARIES(${LOGPOLAR_LIBRARIES})
-  INCLUDE_DIRECTORIES(${LOGPOLAR_INCLUDE_DIRS})
-  INCLUDE_DIRECTORIES(${ICUBDEV_INCLUDE_DIRS})
-
+    INCLUDE_DIRECTORIES(${LOGPOLAR_INCLUDE_DIRS} ${ICUBDEV_INCLUDE_DIRS} 
+                        ${YARP_INCLUDE_DIRS})
+                      
   ADD_LIBRARY(logpolargrabber ServerLogpolarFrameGrabber.cpp yarp/dev/ServerLogpolarFrameGrabber.h)
   
+  TARGET_LINK_LIBRARIES(logpolargrabber ${LOGPOLAR_LIBRARIES} 
+                                        ${ICUBDEV_LIBRARIES} 
+                                        ${YARP_LIBRARIES})
+                                        
 ENDIF(NOT SKIP_logpolargrabber)

@@ -1,4 +1,4 @@
-  PREPARE_DEVICE(pcan TYPE PlxCan
+PREPARE_DEVICE(pcan TYPE PlxCan
     INCLUDE PlxCan.h 
     WRAPPER "")
 
@@ -8,9 +8,9 @@ if (NOT SKIP_pcan)
   IF (NOT PLXCANAPI_FOUND)
     MESSAGE("pcan: cannot find plxcanapi, turn off device")
   ELSE (NOT PLXCANAPI_FOUND)
-        INCLUDE_DIRECTORIES(${YARP_INCLUDE_DIRS})
-        INCLUDE_DIRECTORIES(${CMAKE_CURRENT_SOURCE_DIR})
-        INCLUDE_DIRECTORIES(${PLXCANAPI_INC_DIRS})
+        INCLUDE_DIRECTORIES(${YARP_INCLUDE_DIRS} 
+                            ${CMAKE_CURRENT_SOURCE_DIR}
+                            ${PLXCANAPI_INC_DIRS})
 
         #plx-api related define
         ADD_DEFINITIONS(-DPLX_LITTLE_ENDIAN -DPLX_LINUX -DGCC)

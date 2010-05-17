@@ -5,7 +5,7 @@
 add_subdirectory(examples)
 add_subdirectory(libraries)
 add_subdirectory(tools)
-
+add_subdirectory(core)
 
 #add_subdirectory(testGyro)
 #add_subdirectory(testArm)

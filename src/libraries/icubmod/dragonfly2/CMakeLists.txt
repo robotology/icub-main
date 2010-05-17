@@ -1,9 +1,6 @@
-IF (COMPILE_DEVICE_LIBRARY)
-  PREPARE_DEVICE(dragonfly2 TYPE DragonflyDeviceDriver2 INCLUDE DragonflyDeviceDriver2.h WRAPPER grabber)
-ENDIF (COMPILE_DEVICE_LIBRARY)
+PREPARE_DEVICE(dragonfly2 TYPE DragonflyDeviceDriver2 INCLUDE DragonflyDeviceDriver2.h WRAPPER grabber)
 
 IF(NOT SKIP_dragonfly2)
-  FIND_PACKAGE(YARP REQUIRED)
   FIND_PACKAGE(DRAGONFLYAPI)
   
   SET (EXTRA_SOURCES)
@@ -12,7 +9,6 @@ IF(NOT SKIP_dragonfly2)
   ELSE(NOT DRAGONFLYAPI_FOUND)
 
   IF (WIN32)
-	LINK_LIBRARIES(${DRAGONFLYAPI_LIB})
 	INCLUDE_DIRECTORIES(${DRAGONFLYAPI_INC_DIRS})
 	INCLUDE_DIRECTORIES(${CMAKE_CURRENT_SOURCE_DIR})
 	INCLUDE_DIRECTORIES(${CMAKE_CURRENT_SOURCE_DIR}/common)
@@ -20,15 +16,18 @@ IF(NOT SKIP_dragonfly2)
 
     SET(EXTRA_SOURCES winnt/FirewireCameraDC1394-DR2_2.h winnt/FirewireCameraDC1394-DR2_2.cpp)
 	ADD_LIBRARY(dragonfly2 common/DragonflyDeviceDriver2.h common/DragonflyDeviceDriver2.cpp ${EXTRA_SOURCES})
-
+    target_link_libraries(dragonfly2 ${YARP_LIBRARIES} ${DRAGONFLY_LIB})
   ELSE (WIN32)
-    LINK_LIBRARIES(${DRAGONFLYAPI_LIB})
+
 	INCLUDE_DIRECTORIES(${CMAKE_CURRENT_SOURCE_DIR})
 	INCLUDE_DIRECTORIES(${CMAKE_CURRENT_SOURCE_DIR}/common)
 	INCLUDE_DIRECTORIES(${CMAKE_CURRENT_SOURCE_DIR}/linux)
 
 	SET(EXTRA_SOURCES linux/FirewireCameraDC1394-DR2_2.h linux/FirewireCameraDC1394-DR2_2.cpp)
 	ADD_LIBRARY(dragonfly2 common/DragonflyDeviceDriver2.h common/DragonflyDeviceDriver2.cpp ${EXTRA_SOURCES})  
+  
+    target_link_libraries(dragonfly2 ${YARP_LIBRARIES} ${DRAGONFLY_LIB})
+     
   ENDIF (WIN32)
 
   ENDIF(NOT DRAGONFLYAPI_FOUND)
