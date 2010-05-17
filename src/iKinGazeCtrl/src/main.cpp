@@ -457,16 +457,16 @@ public:
             drvTorso=drvHead=NULL;
 
         // create and start threads
+        ctrl=new Controller(drvTorso,drvHead,&commData,robotName,
+                            localHeadName,neckTime,eyesTime,10);        
+
         loc=new Localizer(&commData,localHeadName,configFile,10);
 
         eyesRefGen=new EyePinvRefGen(drvTorso,drvHead,&commData,robotName,
                                      localHeadName,inertialName,configFile,20);        
 
-        slv=new Solver(drvTorso,drvHead,&commData,eyesRefGen,loc,
+        slv=new Solver(drvTorso,drvHead,&commData,eyesRefGen,loc,ctrl,
                        localHeadName,configFile,20);
-
-        ctrl=new Controller(drvTorso,drvHead,&commData,robotName,
-                            localHeadName,neckTime,eyesTime,10);        
 
         // this switch-on order does matter !!
         eyesRefGen->start();

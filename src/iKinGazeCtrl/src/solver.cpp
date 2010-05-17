@@ -295,12 +295,12 @@ void EyePinvRefGen::resume()
 
 /************************************************************************/
 Solver::Solver(PolyDriver *_drvTorso, PolyDriver *_drvHead, exchangeData *_commData,
-               EyePinvRefGen *_eyesRefGen, Localizer *_loc, const string &_localName,
-               const string &_configFile, unsigned int _period) :
-               RateThread(_period),     drvTorso(_drvTorso),     drvHead(_drvHead),
-               commData(_commData),     eyesRefGen(_eyesRefGen), loc(_loc),
-               localName(_localName),   configFile(_configFile), period(_period),
-               Ts(_period/1000.0)
+               EyePinvRefGen *_eyesRefGen, Localizer *_loc, Controller *_ctrl,
+               const string &_localName, const string &_configFile, unsigned int _period) :
+               RateThread(_period), drvTorso(_drvTorso),     drvHead(_drvHead),
+               commData(_commData), eyesRefGen(_eyesRefGen), loc(_loc),
+               ctrl(_ctrl),         localName(_localName),   configFile(_configFile),
+               period(_period),     Ts(_period/1000.0)
 {
     Robotable=drvTorso&&drvHead;
 
@@ -550,6 +550,7 @@ bool Solver::threadInit()
 
     loc->set_xdport(port_xd);
     eyesRefGen->set_xdport(port_xd);
+    ctrl->set_xdport(port_xd);
 
     // use eyes pseudoinverse reference generator
     eyesRefGen->enable();

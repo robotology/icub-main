@@ -15,7 +15,7 @@
 
 #include <iCub/utils.hpp>
 
-#define GAZECTRL_MOTIONDONE_THRES   1e-3    // [m]
+#define GAZECTRL_MOTIONDONE_THRES       0.05     // [deg]
 
 using namespace std;
 using namespace yarp;
@@ -39,6 +39,7 @@ protected:
     IEncoders             *encTorso,  *encHead;
     IVelocityControl      *velHead;
     exchangeData          *commData;
+    xdPort                *port_xd;
 
     BufferedPort<Vector>  *port_qd;
     BufferedPort<Vector>  *port_x;
@@ -74,6 +75,7 @@ public:
                double _eyesTime, unsigned int _period);
 
     void stopLimbsVel();
+    void set_xdport(xdPort *_port_xd) { port_xd=_port_xd; }
     void printIter(Vector &xd, Vector &fp, Vector &qd, Vector &q,
                    Vector &v, double printTime);
 

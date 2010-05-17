@@ -73,7 +73,7 @@ Controller::Controller(PolyDriver *_drvTorso, PolyDriver *_drvHead, exchangeData
         // vergence
         lim(nJointsHead-1,0)=0.0;
         lim(nJointsHead-1,1)=lim(nJointsHead-2,1);
-    }
+    }    
 
     fbNeck.resize(3); fbEyes.resize(3);
     qdNeck.resize(3); qdEyes.resize(3);
@@ -86,14 +86,17 @@ Controller::Controller(PolyDriver *_drvTorso, PolyDriver *_drvHead, exchangeData
     mjCtrlNeck=new minJerkVelCtrl(Ts,fbNeck.length());
     mjCtrlEyes=new minJerkVelCtrl(Ts,fbEyes.length());
     Int=new Integrator(Ts,fbHead,lim);
-
+    
     v.resize(nJointsHead,0.0);
     vdegOld=v;
 
     xd.resize(3,0.0);
+    qd=fbHead;
 
     isCtrlActive=false;
     canCtrlBeDisabled=true;
+
+    port_xd=NULL;
 }
 
 
@@ -170,19 +173,26 @@ void Controller::afterStart(bool s)
 /************************************************************************/
 void Controller::run()
 {
+    bool swOffCond=(norm(commData->get_qd()-fbHead)<CTRL_DEG2RAD*GAZECTRL_MOTIONDONE_THRES);
+
     // verify control's switching conditions
     if (isCtrlActive)
     {
         // switch-off condition
-        if (canCtrlBeDisabled && norm(xd-fp)<GAZECTRL_MOTIONDONE_THRES)
+        if (swOffCond)
         {
             stopLimbsVel();
             isCtrlActive=false;
         }
+    }    
+    else if (!swOffCond)
+    {
+        // switch-on condition
+        if (canCtrlBeDisabled)
+            isCtrlActive=!(commData->get_xd()==xd);
+        else
+            isCtrlActive=true;
     }
-    // switch-on condition
-    else if (!(commData->get_xd()==xd))
-        isCtrlActive=true;
 
     // get data
     xd=commData->get_xd();
@@ -400,6 +410,9 @@ bool Controller::isMotionDone() const
 void Controller::setTrackingMode(const bool f)
 {
     canCtrlBeDisabled=!f;
+
+    if (port_xd)
+        port_xd->set_xd(fp);
 }
 
 

@@ -18,6 +18,7 @@
 #include <iCub/gazeNlp.hpp>
 #include <iCub/utils.hpp>
 #include <iCub/localizer.hpp>
+#include <iCub/controller.hpp>
 
 #define EYEPINVREFGEN_GAIN              10.0
 #define NECKSOLVER_ACTIVATIONANGLE_TRA  15.0
@@ -109,6 +110,7 @@ protected:
     eyesCallback     *eyesCallbackObj;
     EyePinvRefGen    *eyesRefGen;
     Localizer        *loc;
+    Controller       *ctrl;
     xdPort           *port_xd;
 
     iKinLink *alignLnkLeft1,  *alignLnkLeft2;
@@ -139,8 +141,8 @@ protected:
 
 public:
     Solver(PolyDriver *_drvTorso, PolyDriver *_drvHead, exchangeData *_commData,
-           EyePinvRefGen *_eyesRefGen, Localizer *_loc, const string &_localName,
-           const string &_configFile, unsigned int _period);
+           EyePinvRefGen *_eyesRefGen, Localizer *_loc, Controller *_ctrl,
+           const string &_localName, const string &_configFile, unsigned int _period);
 
     // Returns a measure of neck angle required to reach the target
     void   updateAngles();
