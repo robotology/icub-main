@@ -1445,49 +1445,9 @@ AnalogSensor *CanBusMotionControl::instantiateAnalog(yarp::os::Searchable& confi
 
         }
 
-		//get the full scale values
-		if (analogChannels==6 && analogFormat==16 && analogCalibration==1)
-		{
-            
-    		for (int ch=0; ch<6; ch++)
-			{
-				unsigned int i=0;
-				res.startPacket();
-				res._writeBuffer[0].setId(destId);
-				res._writeBuffer[0].getData()[0]=0x18;
-				res._writeBuffer[0].getData()[1]=ch;
-				res._writeBuffer[0].setLen(2);
-				res._writeMessages++;
-				res.writePacket();
-				
-				long int timeout=0;
-				bool full_scale_read=false;
-				do 
-				{
-					res.read();
-					for (i=0; i<res._readMessages; i++)
-					{
-						CanMessage& m = res._readBuffer[i];
-						if (m.getId()==0x2D0 ||
-							m.getId()==0x2E0)
-							if (m.getLen()==4 &&
-								m.getData()[0]==0x18 &&
-								m.getData()[1]==ch)
-								{
-									analogSensor->getScaleFactor()[ch]=m.getData()[2]<<8 | m.getData()[3];
-									full_scale_read=true;
-									break;
-								}
-					}
-					yarp::os::Time::delay(0.001);
-					timeout++;
-				}
-				while(timeout<32 && full_scale_read==false);
-
-				if (full_scale_read==false) fprintf(stderr, "Trying to get fullscale data from sensor: no answer recieved or message lost (ch:%d)\n", ch);
-
-			}
-
+        //init message for mais board
+        if (analogChannels==6 && analogFormat==8)
+        {
                 res.startPacket();
                 res._writeBuffer[0].setId(destId);
                 res._writeBuffer[0].getData()[0]=0x07;
@@ -1495,31 +1455,85 @@ AnalogSensor *CanBusMotionControl::instantiateAnalog(yarp::os::Searchable& confi
                 res._writeBuffer[0].setLen(2);
                 res._writeMessages++;
                 res.writePacket();
-
-		}
-        else
-        {
-                res.startPacket();
-                res._writeBuffer[0].setId(destId);
-                res._writeBuffer[0].getData()[0]=0x07;
-                res._writeBuffer[0].getData()[1]=0x03;
-                res._writeBuffer[0].setLen(2);
-                res._writeMessages++;
-                res.writePacket();
         }
+        //init message for strain board
+        else if (analogChannels==6 && analogFormat==16)
+        {
+                //calibrated astrain board
+                if (analogCalibration==1)
+                {
+                    //get the full scale values from the strain board
+            		for (int ch=0; ch<6; ch++)
+			        {
+				        unsigned int i=0;
+				        res.startPacket();
+				        res._writeBuffer[0].setId(destId);
+				        res._writeBuffer[0].getData()[0]=0x18;
+				        res._writeBuffer[0].getData()[1]=ch;
+				        res._writeBuffer[0].setLen(2);
+				        res._writeMessages++;
+				        res.writePacket();
+				
+				        long int timeout=0;
+				        bool full_scale_read=false;
+				        do 
+				        {
+					        res.read();
+					        for (i=0; i<res._readMessages; i++)
+					        {
+						        CanMessage& m = res._readBuffer[i];
+						        if (m.getId()==0x2D0 ||
+							        m.getId()==0x2E0)
+							        if (m.getLen()==4 &&
+								        m.getData()[0]==0x18 &&
+								        m.getData()[1]==ch)
+								        {
+									        analogSensor->getScaleFactor()[ch]=m.getData()[2]<<8 | m.getData()[3];
+									        full_scale_read=true;
+									        break;
+								        }
+					        }
+					        yarp::os::Time::delay(0.001);
+					        timeout++;
+				        }
+				        while(timeout<32 && full_scale_read==false);
 
-		#if 1
-			 fprintf(stderr, "Sensor Fullscale: ");
-			 fprintf(stderr, " %f ", analogSensor->getScaleFactor()[0]);
-			 fprintf(stderr, " %f ", analogSensor->getScaleFactor()[1]);
-			 fprintf(stderr, " %f ", analogSensor->getScaleFactor()[2]);
-			 fprintf(stderr, " %f ", analogSensor->getScaleFactor()[3]);
-			 fprintf(stderr, " %f ", analogSensor->getScaleFactor()[4]);
-			 fprintf(stderr, " %f ", analogSensor->getScaleFactor()[5]);
-			 fprintf(stderr, " \n ");
-		#endif
+				        if (full_scale_read==false) fprintf(stderr, "Trying to get fullscale data from sensor: no answer recieved or message lost (ch:%d)\n", ch);
+			        }
 
+                    // debug messages
+		            #if 1
+			             fprintf(stderr, "Sensor Fullscale: ");
+			             fprintf(stderr, " %f ", analogSensor->getScaleFactor()[0]);
+			             fprintf(stderr, " %f ", analogSensor->getScaleFactor()[1]);
+			             fprintf(stderr, " %f ", analogSensor->getScaleFactor()[2]);
+			             fprintf(stderr, " %f ", analogSensor->getScaleFactor()[3]);
+			             fprintf(stderr, " %f ", analogSensor->getScaleFactor()[4]);
+			             fprintf(stderr, " %f ", analogSensor->getScaleFactor()[5]);
+			             fprintf(stderr, " \n ");
+		            #endif
 
+                    // start the board
+                    res.startPacket();
+                    res._writeBuffer[0].setId(destId);
+                    res._writeBuffer[0].getData()[0]=0x07;
+                    res._writeBuffer[0].getData()[1]=0x00;
+                    res._writeBuffer[0].setLen(2);
+                    res._writeMessages++;
+                    res.writePacket();
+                }
+                //not calibrated strain board
+                else
+                {
+                    res.startPacket();
+                    res._writeBuffer[0].setId(destId);
+                    res._writeBuffer[0].getData()[0]=0x07;
+                    res._writeBuffer[0].getData()[1]=0x03;
+                    res._writeBuffer[0].setLen(2);
+                    res._writeMessages++;
+                    res.writePacket();
+                }
+        }
     }
     return analogSensor;
 }
