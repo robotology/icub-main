@@ -1491,22 +1491,22 @@ AnalogSensor *CanBusMotionControl::instantiateAnalog(yarp::os::Searchable& confi
                 res.startPacket();
                 res._writeBuffer[0].setId(destId);
                 res._writeBuffer[0].getData()[0]=0x07;
-                res._writeBuffer[0].getData()[1]=0x03;
+                res._writeBuffer[0].getData()[1]=0x00;
                 res._writeBuffer[0].setLen(2);
                 res._writeMessages++;
                 res.writePacket();
 
 		}
         else
-            {
+        {
                 res.startPacket();
                 res._writeBuffer[0].setId(destId);
                 res._writeBuffer[0].getData()[0]=0x07;
-                res._writeBuffer[0].getData()[1]=0x00;
+                res._writeBuffer[0].getData()[1]=0x03;
                 res._writeBuffer[0].setLen(2);
                 res._writeMessages++;
                 res.writePacket();
-            }
+        }
 
 		#if 1
 			 fprintf(stderr, "Sensor Fullscale: ");
