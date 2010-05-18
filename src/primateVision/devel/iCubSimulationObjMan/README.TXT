@@ -31,7 +31,7 @@ TABLE OF CONTENTS:
 BEFORE COMPILING
 --------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------
 
-iCub Simulator prerequisites: Cmake, Ace, YARP, GTK, iCUB repository, ODE, SDL Please make sure you have everything installed correctly by following this link 	http://eris.liralab.it/wiki/ODE
+iCub Simulator prerequisites: Cmake, ACE, YARP, GTK, iCUB repository, ODE, SDL Please make sure you have everything installed correctly by following this link 	http://eris.liralab.it/wiki/ODE
 
 Once the libraries are installed, set your environment variables to:
 

@@ -4,7 +4,7 @@ PROJECT(${PROJECTNAME})
 
 FIND_PACKAGE(YARP)
 FIND_PACKAGE(ICUB)
-FIND_PACKAGE(Ace)
+FIND_PACKAGE(ACE)
 FIND_PACKAGE(CTRLLIB REQUIRED)
 
 FIND_PACKAGE(IPOPT)
@@ -24,7 +24,7 @@ SET(folder_source src/iKinFwd.cpp src/iKinInv.cpp src/iKinHlp.cpp)
 SET(folder_header include/iCub/iKinFwd.h include/iCub/iKinInv.h
                   include/iCub/iKinVocabs.h include/iCub/iKinHlp.h)
 				  
-INCLUDE_DIRECTORIES(${PROJECT_SOURCE_DIR}/include ${ACE_INCLUDE_DIR} ${CTRLLIB_INCLUDE_DIRS})
+INCLUDE_DIRECTORIES(${PROJECT_SOURCE_DIR}/include ${ACE_INCLUDE_DIRS} ${CTRLLIB_INCLUDE_DIRS})
 
 IF(IPOPT_FOUND AND ADD_IPOPT)
    SET(folder_source ${folder_source} src/iKinIpOpt.cpp src/iKinSlv.cpp)
@@ -37,7 +37,7 @@ SOURCE_GROUP("Header Files" FILES ${folder_header})
 
 ADD_LIBRARY(${PROJECTNAME} ${folder_source} ${folder_header})
 
-TARGET_LINK_LIBRARIES(${PROJECT_NAME} ${ACE_LIBRARY} ${CTRLLIB_LIBRARIES})
+TARGET_LINK_LIBRARIES(${PROJECT_NAME} ${ACE_LIBRARIES} ${CTRLLIB_LIBRARIES})
 
 IF(MSVC)
    SET_TARGET_PROPERTIES(${PROJECTNAME} PROPERTIES COMPILE_FLAGS /wd4996)
