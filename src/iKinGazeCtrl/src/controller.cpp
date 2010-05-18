@@ -184,10 +184,10 @@ void Controller::run()
             stopLimbsVel();
             isCtrlActive=false;
         }
-    }   
-    // switch-on condition 
+    }       
     else if (!swOffCond)
     {
+        // switch-on condition
         isCtrlActive=canCtrlBeDisabled ?
                      !(commData->get_xd()==xd) :
                      norm(port_xd->get_xd()-fp)>GAZECTRL_MOTIONSTART_XTHRES;
