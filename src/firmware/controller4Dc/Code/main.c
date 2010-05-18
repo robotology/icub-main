@@ -29,7 +29,7 @@
 byte	_board_ID = 15;	
 
 char    _additional_info [32];
-word    _build_number = 32;
+word    _build_number = 33;
 UInt8    mainLoopOVF[2]={0,0};
 int     _countBoardStatus[2] ={0,0};
 UInt8   highcurrent[4]={false,false,false,false};
@@ -638,9 +638,19 @@ void main(void)
 	
 		for (i=0; i<JN; i++) 
 		{
-			check_current(i, (_pid[i] > 0));		
+			check_current(i, (_pid[i] > 0));
+			
+			/*  TEMPORARY removed the I2T current filter
+			 *  which was a little bit too strong for the
+			 *  pronosupination joint. 
+			 */
+#if VERSION != 0x0119
 			compute_i2t(i);
 			if (_filt_current[i] > MAX_I2T_CURRENT)
+#else
+			compute_filtcurr(i);
+			if ((_filt_current[i] > (_max_allowed_current[i]*1000)))
+#endif			
 			{
 				_control_mode[i] = MODE_IDLE;	
 				_pad_enabled[i] = false;
