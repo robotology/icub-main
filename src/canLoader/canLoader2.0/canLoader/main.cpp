@@ -1396,7 +1396,7 @@ void fatal_error(int err)
 		break;
 		case INVALID_PARAM_CANTYPE:
 			printf("ERROR: invalid --canDeviceType parameter \n");
-			printf("must be 'ecan' or 'pcan' or 'cfw2'\n");
+			printf("must be 'ecan' or 'pcan' or 'cfw2can'\n");
 			exit(err);
 		break;
 		case INVALID_PARAM_CANNUM:
