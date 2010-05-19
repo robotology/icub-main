@@ -686,7 +686,8 @@ public:
         if (thr)
         {
             thr->stop();
-            delete thr;
+            //spotted some problems
+            //delete thr;
         }
 
         rpcPort.interrupt();
