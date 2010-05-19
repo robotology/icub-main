@@ -111,12 +111,12 @@ Shifts 8 8 8 8 8 8 8 8 8 8
 -- eye_tilt_min \e min
 - The parameter \e min specifies the minimum eye tilt angle 
   [deg] in order to prevent the eye from being covered by the
-  eyelid while moving.
+  eyelid (when they're wide open) while moving.
  
 -- eye_tilt_max \e max
 - The parameter \e max specifies the maximum eye tilt angle 
   [deg] in order to prevent the eye from being covered by the
-  eyelid while moving.
+  eyelid (when they're wide open) while moving.
  
 \section portsa_sec Ports Accessed
  
