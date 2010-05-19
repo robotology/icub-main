@@ -138,7 +138,7 @@ void colourProcessorModule::setOptions(yarp::os::Property opt){
     ConstString name=opt.find("name").asString();
     if(name!=""){
         printf("|||  Module named as :%s \n", name.c_str());
-        //this->setName(name.c_str());
+        this->setName(name.c_str());
     }
     ConstString yuvoption=opt.find("yuvprocessor").asString();
     if(yuvoption!=""){
