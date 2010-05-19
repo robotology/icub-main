@@ -442,15 +442,15 @@ public:
             // centroids location
             for (int i=0; i<(int)blobSortedList.size(); i++)
             {
-                Blob &b=blobSortedList[i];
+                Blob &blob=blobSortedList[i];
                 int blueLev=255-((50*i)%255);
 
-                CvPoint centroid=cvPoint(b.centroid.x,b.centroid.y);
+                CvPoint centroid=cvPoint(blob.centroid.x,blob.centroid.y);
 
                 Bottle &bottleBottle=blobsBottle.addList();
                 bottleBottle.addInt(centroid.x);
                 bottleBottle.addInt(centroid.y);
-                bottleBottle.addInt(b.size);
+                bottleBottle.addInt(blob.size);
 
                 cvCircle(imgBgrOut.getIplImage(),centroid,4,cvScalar(blueLev,0,0),3);
             }
@@ -506,79 +506,58 @@ public:
         // iterate until the set is empty
         while (activeNodesIndexSet.size())
         {
-            Blob b;
+            Blob blob;
 
-            // the nodes connected to the current one (idx=0)
+            // the nodes connected to the current one
             // will be removed from the list            
-            floodFill(*(activeNodesIndexSet.begin()),b);
+            floodFill(*(activeNodesIndexSet.begin()),&blob);
+
+            // update centroid
+            blob.centroid.x/=blob.size;
+            blob.centroid.y/=blob.size;
 
             // insert iff the blob is big enough
-            if (b.size>blobMinSizeThres)
-                insertBlob(b);
+            if (blob.size>blobMinSizeThres)
+                insertBlob(blob);
         }
     }
 
-    void floodFill(const int i, Blob &b)
+    void floodFill(const int i, Blob *pBlob)
     {
         set<int>::iterator el=activeNodesIndexSet.find(i);
         if (el!=activeNodesIndexSet.end())
         {
             // update blob
-            double nx=b.centroid.x*b.size;
-            double ny=b.centroid.y*b.size;
-            double x =nodesPrev[i].x;
-            double y =nodesPrev[i].y;
-
-            b.size++;
-            b.centroid.x=(int)((nx+x)/b.size);
-            b.centroid.y=(int)((ny+y)/b.size);
+            pBlob->centroid.x+=(int)nodesPrev[i].x;
+            pBlob->centroid.y+=(int)nodesPrev[i].y;
+            pBlob->size++;
 
             // remove element from the set            
             activeNodesIndexSet.erase(el);
 
             // perform recursive exploration
-
-            // towards north-west
-            floodFill(i-nodesX-1,b);
-
-            // towards north
-            floodFill(i-nodesX,b);
-
-            // towards north-east
-            floodFill(i-nodesX+1,b);
-
-            // towards west
-            floodFill(i-1,b);
-
-            // towards east
-            floodFill(i+1,b);
-
-            // towards south-west
-            floodFill(i+nodesX-1,b);
-
-            // towards south
-            floodFill(i+nodesX,b);
-
-            // towards south-east
-            floodFill(i+nodesX+1,b);
+            for (int j=i-nodesX; j<=i+nodesX; j+=nodesX)
+                for (int k=j-1; k<=j+1; k++)
+                    if (k!=i)
+                        floodFill(k,pBlob);
         }
     }
 
-    void insertBlob(const Blob &b)
+    void insertBlob(const Blob &blob)
     {
         // insert the blob keeping the decreasing order of the list wrt the size attribute
         for (deque<Blob>::iterator el=blobSortedList.begin(); el<blobSortedList.end(); el++)
         {
-            if (el->size<b.size)
+            if (el->size<blob.size)
             {
-                blobSortedList.insert(el,b);
+                blobSortedList.insert(el,blob);
                 return;
             }
         }
 
         // reaching this point means that 
         // we have to append the blob
-        blobSortedList.push_back(b);
+        blobSortedList.push_back(blob);
     }
 
     bool execReq(const Bottle &req, Bottle &reply)
