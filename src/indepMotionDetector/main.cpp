@@ -343,17 +343,13 @@ public:
             imgMonoOpt.resize(imgBgrOut);
             imgMonoOpt.zero();
 
-            // get the nodes bottle
-            Bottle &nodesBottle=nodesPort.prepare();
-            nodesBottle.clear();
+            // declares output bottles
+            Bottle nodesBottle;
+            Bottle blobsBottle;
 
             Bottle &nodesStepBottle=nodesBottle.addList();
             nodesStepBottle.addString("nodesStep");
             nodesStepBottle.addInt(nodesStep);
-
-            // get the blobs bottle
-            Bottle &blobsBottle=blobsPort.prepare();
-            blobsBottle.clear();
 
             // purge the content of variables
             activeNodesIndexSet.clear();
@@ -461,11 +457,21 @@ public:
             outPort.write();
             optPort.write();
 
+            // here we perform copy instead of operating directly
+            // on the object returned by port.prepare() because of a
+            // Yarp problem when we skip sending but we've already
+            // asked for the object
             if (nodesBottle.size())
+            {
+                nodesPort.prepare()=nodesBottle;
                 nodesPort.write();
+            }
 
             if (blobsBottle.size())
+            {
+                blobsPort.prepare()=blobsBottle;
                 blobsPort.write();
+            }
 
             // save data for next cycle
             imgMonoPrev=imgMonoIn;
@@ -686,8 +692,7 @@ public:
         if (thr)
         {
             thr->stop();
-            //spotted some problems
-            //delete thr;
+            delete thr;
         }
 
         rpcPort.interrupt();
