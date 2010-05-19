@@ -65,6 +65,8 @@ protected:
     bool genOn;
     int nJointsTorso;
     int nJointsHead;
+    double eyeTiltMin;
+    double eyeTiltMax;
     double Ts;
     
     Vector fbTorso;
@@ -77,7 +79,8 @@ public:
     EyePinvRefGen(PolyDriver *_drvTorso, PolyDriver *_drvHead,
                   exchangeData *_commData, const string &_robotName,
                   const string &_localName, const string &_inertialName,
-                  const string &_configFile, unsigned int _period);
+                  const string &_configFile, const double _eyeTiltMin,
+                  const double _eyeTiltMax, unsigned int _period);
 
     void set_xdport(xdPort *_port_xd) { port_xd=_port_xd; }
     void enable()                     { genOn=true;       }
@@ -122,6 +125,8 @@ protected:
     bool Robotable;
     int nJointsTorso;
     int nJointsHead;
+    double eyeTiltMin;
+    double eyeTiltMax;
     double Ts;
 
     Vector xdOld;
@@ -142,7 +147,8 @@ protected:
 public:
     Solver(PolyDriver *_drvTorso, PolyDriver *_drvHead, exchangeData *_commData,
            EyePinvRefGen *_eyesRefGen, Localizer *_loc, Controller *_ctrl,
-           const string &_localName, const string &_configFile, unsigned int _period);
+           const string &_localName, const string &_configFile, const double _eyeTiltMin,
+           const double _eyeTiltMax, unsigned int _period);
 
     // Returns a measure of neck angle required to reach the target
     void   updateAngles();

@@ -115,7 +115,8 @@ bool getAlignLinks(const string &configFile, const string &type,
 
 // Aligns head joints bounds with current onboard bounds.
 // Returns a matrix containing the actual limits
-Matrix alignJointsBounds(iKinChain *chain, IControlLimits *limTorso, IControlLimits *limHead);
+Matrix alignJointsBounds(iKinChain *chain, IControlLimits *limTorso, IControlLimits *limHead,
+                         const double eyeTiltMin, const double eyeTiltMax);
 
 
 // Copies joints bounds from first chain to second chain

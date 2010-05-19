@@ -123,7 +123,8 @@ bool getAlignLinks(const string &configFile, const string &type,
 
 
 /************************************************************************/
-Matrix alignJointsBounds(iKinChain *chain, IControlLimits *limTorso, IControlLimits *limHead)
+Matrix alignJointsBounds(iKinChain *chain, IControlLimits *limTorso, IControlLimits *limHead,
+                         const double eyeTiltMin, const double eyeTiltMax)
 {
     double min, max;
 
@@ -144,11 +145,11 @@ Matrix alignJointsBounds(iKinChain *chain, IControlLimits *limTorso, IControlLim
         // limit eye's tilt due to eyelids
         if (i==3)
         {
-            if (min<-28.0)
-                min=-28.0;
+            if (min<eyeTiltMin)
+                min=eyeTiltMin;
 
-            if (max>12.0)
-                max=12.0;
+            if (max>eyeTiltMax)
+                max=eyeTiltMax;
         }
 
         lim(i,0)=CTRL_DEG2RAD*min;

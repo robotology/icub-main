@@ -60,6 +60,8 @@ protected:
     double printAccTime;
     double neckTime;
     double eyesTime;
+    double eyeTiltMin;
+    double eyeTiltMax;
     double Ts;
 
     bool isCtrlActive;
@@ -73,7 +75,8 @@ protected:
 public:
     Controller(PolyDriver *_drvTorso, PolyDriver *_drvHead, exchangeData *_commData,
                const string &_robotName, const string &_localName, double _neckTime,
-               double _eyesTime, unsigned int _period);
+               double _eyesTime, const double _eyeTiltMin, const double _eyeTiltMax,
+               unsigned int _period);
 
     void stopLimbsVel();
     void set_xdport(xdPort *_port_xd) { port_xd=_port_xd; }

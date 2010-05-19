@@ -108,6 +108,16 @@ Shifts 8 8 8 8 8 8 8 8 8 8
 - The parameter \e tmo is the timeout (in seconds) to allow to
   start-up the robot before connecting to it.
  
+-- eye_tilt_min \e min
+- The parameter \e min specifies the minimum eye tilt angle 
+  [deg] in order to prevent the eye from being covered by the
+  eyelid while moving.
+ 
+-- eye_tilt_max \e max
+- The parameter \e max specifies the maximum eye tilt angle 
+  [deg] in order to prevent the eye from being covered by the
+  eyelid while moving.
+ 
 \section portsa_sec Ports Accessed
  
 The ports the module is connected to: e.g. 
@@ -362,6 +372,8 @@ public:
         string configFile;
         double neckTime;
         double eyesTime;
+        double eyeTiltMin;
+        double eyeTiltMax;
         bool   Robotable;
         double ping_robot_tmo;
 
@@ -401,6 +413,16 @@ public:
             eyesTime=rf.find("Teyes").asDouble();
         else
             eyesTime=0.20;
+
+        if (rf.check("eyeTiltMin"))
+            eyeTiltMin=rf.find("eyeTiltMin").asDouble();
+        else
+            eyeTiltMin=-25.0;
+
+        if (rf.check("eyeTiltMax"))
+            eyeTiltMax=rf.find("eyeTiltMax").asDouble();
+        else
+            eyeTiltMax=15.0;
 
         if (rf.check("simulation"))
             Robotable=false;
@@ -458,15 +480,16 @@ public:
 
         // create and start threads
         ctrl=new Controller(drvTorso,drvHead,&commData,robotName,
-                            localHeadName,neckTime,eyesTime,10);        
+                            localHeadName,neckTime,eyesTime,eyeTiltMin,eyeTiltMax,10);        
 
         loc=new Localizer(&commData,localHeadName,configFile,10);
 
         eyesRefGen=new EyePinvRefGen(drvTorso,drvHead,&commData,robotName,
-                                     localHeadName,inertialName,configFile,20);        
+                                     localHeadName,inertialName,configFile,
+                                     eyeTiltMin,eyeTiltMax,20);        
 
         slv=new Solver(drvTorso,drvHead,&commData,eyesRefGen,loc,ctrl,
-                       localHeadName,configFile,20);
+                       localHeadName,configFile,eyeTiltMin,eyeTiltMax,20);
 
         // this switch-on order does matter !!
         eyesRefGen->start();
@@ -656,6 +679,8 @@ int main(int argc, char *argv[])
         cout << "\t--context        dir: resource finder searching dir for config file"              << endl;
         cout << "\t--simulation        : simulate the presence of the robot"                         << endl;
         cout << "\t--ping_robot_tmo tmo: connection timeout (s) to start-up the robot"               << endl;
+        cout << "\t--eye_tilt_min   min: minimum eye tilt angle [deg]"                               << endl;
+        cout << "\t--eye_tilt_max   max: maximum eye tilt angle [deg]"                               << endl;
 
         return 0;
     }

@@ -5,11 +5,13 @@
 /************************************************************************/
 Controller::Controller(PolyDriver *_drvTorso, PolyDriver *_drvHead, exchangeData *_commData,
                        const string &_robotName, const string &_localName, double _neckTime,
-                       double _eyesTime, unsigned int _period) :
-                       RateThread(_period), drvTorso(_drvTorso),   drvHead(_drvHead),
-                       commData(_commData), robotName(_robotName), localName(_localName),
-                       neckTime(_neckTime), eyesTime(_eyesTime),   period(_period),
-                       Ts(_period/1000.0),  printAccTime(0.0)
+                       double _eyesTime, const double _eyeTiltMin, const double _eyeTiltMax,
+                       unsigned int _period) :
+                       RateThread(_period),     drvTorso(_drvTorso),   drvHead(_drvHead),
+                       commData(_commData),     robotName(_robotName), localName(_localName),
+                       neckTime(_neckTime),     eyesTime(_eyesTime),   eyeTiltMin(_eyeTiltMin),
+                       eyeTiltMax(_eyeTiltMax), period(_period),       Ts(_period/1000.0),
+                       printAccTime(0.0)
 {
     Robotable=drvTorso&&drvHead;
 
@@ -39,7 +41,8 @@ Controller::Controller(PolyDriver *_drvTorso, PolyDriver *_drvHead, exchangeData
         encHead->getAxes(&nJointsHead);
 
         // joints bounds alignment
-        lim=alignJointsBounds(chainEyeLim,limTorso,limHead);
+        lim=alignJointsBounds(chainEyeLim,limTorso,limHead,
+                              eyeTiltMin,eyeTiltMax);
 
         // reinforce vergence min bound
         lim(nJointsHead-1,0)=0.0;

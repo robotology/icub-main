@@ -7,11 +7,12 @@
 EyePinvRefGen::EyePinvRefGen(PolyDriver *_drvTorso, PolyDriver *_drvHead,
                              exchangeData *_commData, const string &_robotName,
                              const string &_localName, const string &_inertialName,
-                             const string &_configFile, unsigned int _period) :
-                             RateThread(_period),         drvTorso(_drvTorso),   drvHead(_drvHead),
-                             commData(_commData),         robotName(_robotName), localName(_localName),
-                             inertialName(_inertialName), configFile(_configFile),
-                             period(_period),             Ts(_period/1000.0)
+                             const string &_configFile, const double _eyeTiltMin,
+                             const double _eyeTiltMax, unsigned int _period) :
+                             RateThread(_period),         drvTorso(_drvTorso),     drvHead(_drvHead),
+                             commData(_commData),         robotName(_robotName),   localName(_localName),
+                             inertialName(_inertialName), configFile(_configFile), period(_period),
+                             eyeTiltMin(_eyeTiltMin),     eyeTiltMax(_eyeTiltMax), Ts(_period/1000.0)
 {
     Robotable=drvTorso&&drvHead;
 
@@ -68,7 +69,8 @@ EyePinvRefGen::EyePinvRefGen(PolyDriver *_drvTorso, PolyDriver *_drvHead,
         encHead->getAxes(&nJointsHead);
 
         // joints bounds alignment
-        lim=alignJointsBounds(chainNeck,limTorso,limHead);
+        lim=alignJointsBounds(chainNeck,limTorso,limHead,
+                              eyeTiltMin,eyeTiltMax);
         copyJointsBounds(chainNeck,chainEyeL);
         copyJointsBounds(chainEyeL,chainEyeR);
 
@@ -296,11 +298,13 @@ void EyePinvRefGen::resume()
 /************************************************************************/
 Solver::Solver(PolyDriver *_drvTorso, PolyDriver *_drvHead, exchangeData *_commData,
                EyePinvRefGen *_eyesRefGen, Localizer *_loc, Controller *_ctrl,
-               const string &_localName, const string &_configFile, unsigned int _period) :
-               RateThread(_period), drvTorso(_drvTorso),     drvHead(_drvHead),
-               commData(_commData), eyesRefGen(_eyesRefGen), loc(_loc),
-               ctrl(_ctrl),         localName(_localName),   configFile(_configFile),
-               period(_period),     Ts(_period/1000.0)
+               const string &_localName, const string &_configFile, const double _eyeTiltMin,
+               const double _eyeTiltMax, unsigned int _period) :
+               RateThread(_period),     drvTorso(_drvTorso),     drvHead(_drvHead),
+               commData(_commData),     eyesRefGen(_eyesRefGen), loc(_loc),
+               ctrl(_ctrl),             localName(_localName),   configFile(_configFile),
+               eyeTiltMin(_eyeTiltMin), eyeTiltMax(_eyeTiltMax), period(_period),
+               Ts(_period/1000.0)
 {
     Robotable=drvTorso&&drvHead;
 
@@ -356,7 +360,8 @@ Solver::Solver(PolyDriver *_drvTorso, PolyDriver *_drvHead, exchangeData *_commD
         encHead->getAxes(&nJointsHead);
 
         // joints bounds alignment
-        alignJointsBounds(chainNeck,limTorso,limHead);
+        alignJointsBounds(chainNeck,limTorso,limHead,
+                          eyeTiltMin,eyeTiltMax);
         copyJointsBounds(chainNeck,chainEyeL);
         copyJointsBounds(chainEyeL,chainEyeR);
 
