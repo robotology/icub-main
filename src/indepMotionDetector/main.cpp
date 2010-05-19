@@ -57,6 +57,10 @@ YARP libraries and OpenCV
   motion) in the neighbourhood of any single node to keep it
   active.
  
+--blobMinSizeThres \e min 
+- This parameter allows to filter out blobs whose nodes number 
+  is lower than <min>.
+ 
 --framesPersistence \e frames
 - This parameter allows to increase the node persistence over 
   consecutive frames implementing a sort of low-pass filter. The
@@ -78,6 +82,12 @@ None.
 - <i> /<stemName>/nodes:o </i> outputs the x-y location of the 
   currently active nodes in this format: (nodesStep <val>)
   (<n0.x> <n0.y>) (<n1.x> <n1.y>) ...
+ 
+- <i> /<stemName>/blobs:o </i> outputs the x-y location of blobs
+  centroids along with their size in this format: (<b0.cx>
+  <b0.cy> <b0.size>) (<b1.cx> <b1.cy> <b1.size>) ... The output
+  blobs list is sorted according to their size (decreasing
+  order).
  
 - <i> /<stemName>/opt:o </i> outputs monochrome images 
   containing just the grid nodes signalling independent
@@ -110,7 +120,7 @@ Linux and Windows.
 #include <yarp/os/Network.h>
 #include <yarp/os/RFModule.h>
 #include <yarp/os/BufferedPort.h>
-#include <yarp/os/Thread.h>
+#include <yarp/os/RateThread.h>
 #include <yarp/os/Time.h>
 #include <yarp/sig/Image.h>
 
@@ -121,6 +131,8 @@ Linux and Windows.
 #include <iostream>
 #include <iomanip>
 #include <string>
+#include <set>
+#include <deque>
 
 // in BGR format
 #define NODE_OFF    cvScalar(0,0,255)
@@ -132,7 +144,22 @@ using namespace yarp::os;
 using namespace yarp::sig;
 
 
-class ProcessThread : public Thread
+class Blob
+{
+public:
+    CvPoint centroid;
+    int     size;
+
+    Blob()
+    {
+        centroid.x=0;
+        centroid.y=0;
+        size=0;
+    }
+};
+
+
+class ProcessThread : public RateThread
 {
 protected:
     ResourceFinder &rf;
@@ -144,25 +171,33 @@ protected:
     int winSize;
     int recogThres;
     int adjNodesThres;
+    int blobMinSizeThres;
     int framesPersistence;
     bool verbosity;
     bool inhibition;
+    int nodesNum;
+    int nodesX;
+    int nodesY;
 
     ImageOf<PixelMono>  imgMonoIn;
     ImageOf<PixelMono>  imgMonoPrev;
     ImageOf<PixelFloat> imgPyrPrev;
-    ImageOf<PixelFloat> imgPyrCurr;        
+    ImageOf<PixelFloat> imgPyrCurr;
 
     CvPoint2D32f        *nodesPrev;
     CvPoint2D32f        *nodesCurr;
     int                 *nodesPersistence;
     char                *featuresFound;
-    float               *featureErrors;   
+    float               *featureErrors;
+
+    set<int>             activeNodesIndexSet;
+    deque<Blob>          blobSortedList;
 
     BufferedPort<ImageOf<PixelBgr> >  inPort;
     BufferedPort<ImageOf<PixelBgr> >  outPort;
     BufferedPort<ImageOf<PixelMono> > optPort;
     BufferedPort<Bottle>              nodesPort;
+    BufferedPort<Bottle>              blobsPort;
 
     void disposeMem()
     {
@@ -183,7 +218,7 @@ protected:
     }
 
 public:
-    ProcessThread(ResourceFinder &_rf) : rf(_rf) { }
+    ProcessThread(ResourceFinder &_rf) : rf(_rf), RateThread(5) { }
 
     virtual bool threadInit()
     {
@@ -194,6 +229,7 @@ public:
         winSize=rf.check("winSize",Value(15)).asInt();
         recogThres=rf.check("recogThres",Value(300)).asInt();
         adjNodesThres=rf.check("adjNodesThres",Value(4)).asInt();
+        blobMinSizeThres=rf.check("blobMinSizeThres",Value(10)).asInt();
         framesPersistence=rf.check("framesPersistence",Value(3)).asInt();
         verbosity=rf.check("verbosity");
         inhibition=false;
@@ -208,6 +244,7 @@ public:
         outPort.open(("/"+name+"/img:o").c_str());
         optPort.open(("/"+name+"/opt:o").c_str());
         nodesPort.open(("/"+name+"/nodes:o").c_str());
+        blobsPort.open(("/"+name+"/blobs:o").c_str());
 
         return true;
     }
@@ -226,6 +263,7 @@ public:
             fprintf(stdout,"winSize           = %d\n",winSize);
             fprintf(stdout,"recogThres        = %d\n",recogThres);
             fprintf(stdout,"adjNodesThres     = %d\n",adjNodesThres);
+            fprintf(stdout,"blobMinSizeThres  = %d\n",blobMinSizeThres);
             fprintf(stdout,"framesPersistence = %d\n",framesPersistence);
             fprintf(stdout,"verbosity         = %s\n",verbosity?"on":"off");
             fprintf(stdout,"\n");
@@ -236,166 +274,207 @@ public:
 
     virtual void run()
     {
-        while (!isStopping())
-        {
-            int nodesNum;
-            int nodesX;
-            int nodesY;
+        // acquire new image
+        if (ImageOf<PixelBgr> *pImgBgrIn=inPort.read(false))
+        {     
+            double latch_t, dt0, dt1, dt2;
+            double t0=Time::now();
+             
+            // consistency check
+            if (pImgBgrIn->width()!=imgMonoIn.width() ||
+                pImgBgrIn->height()!=imgMonoIn.height())
+            {    
+                imgMonoIn.resize(*pImgBgrIn);
+                imgMonoPrev.resize(*pImgBgrIn);
 
-            // acquire new image
-            if (ImageOf<PixelBgr> *pImgBgrIn=inPort.read(false))
-            {         
-                double latch_t, dt0, dt1;
-                double t0=Time::now();
-                 
-                // consistency check
-                if (pImgBgrIn->width()!=imgMonoIn.width() ||
-                    pImgBgrIn->height()!=imgMonoIn.height())
-                {    
-                    imgMonoIn.resize(*pImgBgrIn);
-                    imgMonoPrev.resize(*pImgBgrIn);
+                imgPyrPrev.resize(pImgBgrIn->width()+8,pImgBgrIn->height()/3);
+                imgPyrCurr.resize(pImgBgrIn->width()+8,pImgBgrIn->height()/3);
 
-                    imgPyrPrev.resize(pImgBgrIn->width()+8,pImgBgrIn->height()/3);
-                    imgPyrCurr.resize(pImgBgrIn->width()+8,pImgBgrIn->height()/3);
+                // dispose previously allocated memory
+                disposeMem();
 
-                    // dispose previously allocated memory
-                    disposeMem();
+                // init internal variables
+                nodesNum=(int)((coverXratio*imgMonoIn.width())*(coverYratio*imgMonoIn.height())/(nodesStep*nodesStep));
 
-                    // init internal variables
-                    nodesNum=(int)((coverXratio*imgMonoIn.width())*(coverYratio*imgMonoIn.height())/(nodesStep*nodesStep));
+                nodesPrev=new CvPoint2D32f[nodesNum];
+                nodesCurr=new CvPoint2D32f[nodesNum];
+                nodesPersistence=new int[nodesNum];
 
-                    nodesPrev=new CvPoint2D32f[nodesNum];
-                    nodesCurr=new CvPoint2D32f[nodesNum];
-                    nodesPersistence=new int[nodesNum];
+                featuresFound=new char[nodesNum];
+                featureErrors=new float[nodesNum];
 
-                    featuresFound=new char[nodesNum];
-                    featureErrors=new float[nodesNum];
+                memset(nodesPersistence,0,nodesNum*sizeof(int));
 
-                    memset(nodesPersistence,0,nodesNum*sizeof(int));
+                // populate grid
+                int min_x=(int)(((1.0-coverXratio)/2.0)*imgMonoIn.width());
+                int min_y=(int)(((1.0-coverYratio)/2.0)*imgMonoIn.height());
+                int cnt=0;
+                
+                for (int y=min_y; y<imgMonoIn.height()-min_y; y+=nodesStep)
+                    for (int x=min_x; x<imgMonoIn.width()-min_x; x+=nodesStep)
+                        nodesPrev[cnt++]=cvPoint2D32f(x,y);
 
-                    // populate grid
-                    int min_x=(int)(((1.0-coverXratio)/2.0)*imgMonoIn.width());
-                    int min_y=(int)(((1.0-coverYratio)/2.0)*imgMonoIn.height());
-                    int cnt=0;
-                    
-                    for (int y=min_y; y<imgMonoIn.height()-min_y; y+=nodesStep)
-                        for (int x=min_x; x<imgMonoIn.width()-min_x; x+=nodesStep)
-                            nodesPrev[cnt++]=cvPoint2D32f(x,y);
+                nodesX=(imgMonoIn.width()-2*min_x)/nodesStep;
+                nodesY=(imgMonoIn.height()-2*min_y)/nodesStep;
 
-                    nodesX=(imgMonoIn.width()-2*min_x)/nodesStep;
-                    nodesY=(imgMonoIn.height()-2*min_y)/nodesStep;
+                // convert to gray-scale
+                cvCvtColor(pImgBgrIn->getIplImage(),imgMonoPrev.getIplImage(),CV_BGR2GRAY);
 
-                    // convert to gray-scale
-                    cvCvtColor(pImgBgrIn->getIplImage(),imgMonoPrev.getIplImage(),CV_BGR2GRAY);
-
-                    if (verbosity)
-                    {
-                        // log message
-                        fprintf(stdout,"Detected image of size %dx%d;\nusing %dx%d=%d nodes;\npopulated %d nodes\n",
-                                imgMonoIn.width(),imgMonoIn.height(),nodesX,nodesY,nodesNum,cnt);
-                    }
-
-                    // skip to the next cycle
-                    continue;
+                if (verbosity)
+                {
+                    // log message
+                    fprintf(stdout,"Detected image of size %dx%d;\nusing %dx%d=%d nodes;\npopulated %d nodes\n",
+                            imgMonoIn.width(),imgMonoIn.height(),nodesX,nodesY,nodesNum,cnt);
                 }
 
-                // convert the input image to gray-scale
-                cvCvtColor(pImgBgrIn->getIplImage(),imgMonoIn.getIplImage(),CV_BGR2GRAY);
+                // skip to the next cycle
+                return;
+            }
 
-                // copy input image into output image
-                ImageOf<PixelBgr> &imgMonoOut=outPort.prepare();
-                imgMonoOut=*pImgBgrIn;
+            // convert the input image to gray-scale
+            cvCvtColor(pImgBgrIn->getIplImage(),imgMonoIn.getIplImage(),CV_BGR2GRAY);
 
-                // get optFlow image
-                ImageOf<PixelMono> &imgMonoOpt=optPort.prepare();
-                imgMonoOpt.resize(imgMonoOut);
-                imgMonoOpt.zero();
+            // copy input image into output image
+            ImageOf<PixelBgr> &imgBgrOut=outPort.prepare();
+            imgBgrOut=*pImgBgrIn;
 
-                // get the nodes vector
-                Bottle &nodesBottle=nodesPort.prepare();
-                nodesBottle.clear();
+            // get optFlow image
+            ImageOf<PixelMono> &imgMonoOpt=optPort.prepare();
+            imgMonoOpt.resize(imgBgrOut);
+            imgMonoOpt.zero();
 
-                Bottle &nodesStepBottle=nodesBottle.addList();
-                nodesStepBottle.addString("nodesStep");
-                nodesStepBottle.addInt(nodesStep);
+            // get the nodes bottle
+            Bottle &nodesBottle=nodesPort.prepare();
+            nodesBottle.clear();
 
-                // compute optical flow
-                latch_t=Time::now();
-                cvCalcOpticalFlowPyrLK(imgMonoPrev.getIplImage(),imgMonoIn.getIplImage(),
-                                       imgPyrPrev.getIplImage(),imgPyrCurr.getIplImage(),
-                                       nodesPrev,nodesCurr,nodesNum,
-                                       cvSize(winSize,winSize),5,featuresFound,featureErrors,
-                                       cvTermCriteria(CV_TERMCRIT_ITER|CV_TERMCRIT_EPS,20,0.3),0);
-                dt0=Time::now()-latch_t;
+            Bottle &nodesStepBottle=nodesBottle.addList();
+            nodesStepBottle.addString("nodesStep");
+            nodesStepBottle.addInt(nodesStep);
 
-                // assign status to the grid nodes
-                latch_t=Time::now();
-                for (int i=0; i<nodesNum; i++)
+            // get the blobs bottle
+            Bottle &blobsBottle=blobsPort.prepare();
+            blobsBottle.clear();
+
+            // purge the content of variables
+            activeNodesIndexSet.clear();
+            blobSortedList.clear();
+
+            // compute optical flow
+            latch_t=Time::now();
+            cvCalcOpticalFlowPyrLK(imgMonoPrev.getIplImage(),imgMonoIn.getIplImage(),
+                                   imgPyrPrev.getIplImage(),imgPyrCurr.getIplImage(),
+                                   nodesPrev,nodesCurr,nodesNum,
+                                   cvSize(winSize,winSize),5,featuresFound,featureErrors,
+                                   cvTermCriteria(CV_TERMCRIT_ITER|CV_TERMCRIT_EPS,20,0.3),0);
+            dt0=Time::now()-latch_t;
+
+            // assign status to the grid nodes
+            latch_t=Time::now();
+            for (int i=0; i<nodesNum; i++)
+            {
+                bool persistentNode=false;
+
+                CvPoint node=cvPoint((int)nodesPrev[i].x,(int)nodesPrev[i].y);
+                
+                // handle the node persistence
+                if (!inhibition && nodesPersistence[i])
                 {
-                    CvPoint node=cvPoint((int)nodesPrev[i].x,(int)nodesPrev[i].y);
-                    
-                    // handle the node persistence
-                    if (!inhibition && nodesPersistence[i])
+                    cvCircle(imgBgrOut.getIplImage(),node,1,NODE_ON,2);
+                    cvCircle(imgMonoOpt.getIplImage(),node,1,cvScalar(255),2);
+
+                    Bottle &nodeBottle=nodesBottle.addList();
+                    nodeBottle.addInt((int)nodesPrev[i].x);
+                    nodeBottle.addInt((int)nodesPrev[i].y);
+
+                    // update the active nodes set
+                    activeNodesIndexSet.insert(i);
+
+                    nodesPersistence[i]--;
+
+                    persistentNode=true;
+                }
+                else
+                    cvCircle(imgBgrOut.getIplImage(),node,1,NODE_OFF,1);
+
+                // do not consider the border nodes and skip if inhibition is on
+                int row=i%nodesX;
+                bool skip=inhibition || (i<nodesX) || (i>=nodesNum-nodesX) || (row==0) || (row==nodesX-1);
+
+                if (!skip && featuresFound[i] && featureErrors[i]>recogThres)
+                {
+                    // count the neighbour nodes that are ON
+                    // start from -1 to avoid counting the current node
+                    int cntAdjNodesOn=-1;
+
+                    // scroll per lines
+                    for (int j=i-nodesX; j<=i+nodesX; j+=nodesX)
+                        for (int k=j-1; k<=j+1; k++)
+                            cntAdjNodesOn+=(int)(featuresFound[k]&&(featureErrors[k]>recogThres));
+
+                    // highlight independent moving node if over threhold
+                    if (cntAdjNodesOn>=adjNodesThres)
                     {
-                        cvCircle(imgMonoOut.getIplImage(),node,1,NODE_ON,2);
-                        cvCircle(imgMonoOpt.getIplImage(),node,1,cvScalar(255),2);
+                        // init the node persistence timeout
+                        nodesPersistence[i]=framesPersistence;
 
-                        Bottle &nodeBottle=nodesBottle.addList();
-                        nodeBottle.addInt((int)nodesPrev[i].x);
-                        nodeBottle.addInt((int)nodesPrev[i].y);
-
-                        nodesPersistence[i]--;
-                    }
-                    else
-                        cvCircle(imgMonoOut.getIplImage(),node,1,NODE_OFF,1);
-
-                    // do not consider the border nodes and skip if inhibition is on
-                    int row=i%nodesX;
-                    bool skip=inhibition || (i<nodesX) || (i>=nodesNum-nodesX) || (row==0) || (row==nodesX-1);
-
-                    if (!skip && featuresFound[i] && featureErrors[i]>recogThres)
-                    {
-                        // count the neighbour nodes that are ON
-                        // start from -1 to avoid counting the current node
-                        int cntAdjNodesOn=-1;
-
-                        // scroll per lines
-                        for (int j=i-nodesX; j<=i+nodesX; j+=nodesX)
-                            for (int k=j-1; k<=j+1; k++)
-                                cntAdjNodesOn+=(int)(featuresFound[k]&&(featureErrors[k]>recogThres));
-
-                        // highlight independent moving node if over threhold
-                        if (cntAdjNodesOn>=adjNodesThres)
+                        // update only if the node was not persistent
+                        if (!persistentNode)
                         {
-                            cvCircle(imgMonoOut.getIplImage(),node,1,NODE_ON,2);
+                            cvCircle(imgBgrOut.getIplImage(),node,1,NODE_ON,2);
                             cvCircle(imgMonoOpt.getIplImage(),node,1,cvScalar(255),2);
 
                             Bottle &nodeBottle=nodesBottle.addList();
                             nodeBottle.addInt((int)nodesPrev[i].x);
                             nodeBottle.addInt((int)nodesPrev[i].y);
 
-                            // init the node persistence timeout
-                            nodesPersistence[i]=framesPersistence;
+                            // update the active nodes set
+                            activeNodesIndexSet.insert(i);
                         }
                     }
                 }
-                dt1=Time::now()-latch_t;
+            }
+            dt1=Time::now()-latch_t;
 
-                // send images over YARP
-                outPort.write();
-                optPort.write();
+            latch_t=Time::now();
+            findBlobs();
+
+            // prepare the blobs output list and draw their
+            // centroids location
+            for (int i=0; i<(int)blobSortedList.size(); i++)
+            {
+                Blob &b=blobSortedList[i];
+                int blueLev=255-((50*i)%255);
+
+                CvPoint centroid=cvPoint(b.centroid.x,b.centroid.y);                    
+
+                Bottle &bottleBottle=blobsBottle.addList();
+                bottleBottle.addInt(centroid.x);
+                bottleBottle.addInt(centroid.y);
+                bottleBottle.addInt(b.size);                    
+                
+                cvCircle(imgBgrOut.getIplImage(),centroid,4,cvScalar(blueLev,0,0),3);
+            }
+            dt2=Time::now()-latch_t;
+
+            // send images over YARP
+            outPort.write();
+            optPort.write();
+
+            if (nodesBottle.size())
                 nodesPort.write();
 
-                // save data for next cycle
-                imgMonoPrev=imgMonoIn;
-                
-                double t1=Time::now();
-                if (verbosity)
-                {
-                    // dump statistics
-                    fprintf(stdout,"cycle timing [ms]: optflow(%g), colorgrid(%g), overall(%g)\n",
-                            1000.0*dt0,1000.0*dt1,1000.0*(t1-t0));
-                }
+            if (blobsBottle.size())
+                blobsPort.write();
+
+            // save data for next cycle
+            imgMonoPrev=imgMonoIn;
+            
+            double t1=Time::now();
+            if (verbosity)
+            {
+                // dump statistics
+                fprintf(stdout,"cycle timing [ms]: optflow(%g), colorgrid(%g), blobdetection(%g), overall(%g)\n",
+                        1000.0*dt0,1000.0*dt1,1000.0*dt2,1000.0*(t1-t0));
             }
         }
     }
@@ -408,16 +487,98 @@ public:
         outPort.interrupt();
         optPort.interrupt();
         nodesPort.interrupt();
+        blobsPort.interrupt();
 
         inPort.close();
         outPort.close();
         optPort.close();
         nodesPort.close();
+        blobsPort.close();
     }
 
     string getName()
     {
         return name;
+    }
+
+    void findBlobs()
+    {
+        // iterate until the set is empty
+        while (activeNodesIndexSet.size())
+        {
+            Blob b;
+
+            // the nodes connected to the current one (idx=0)
+            // will be removed from the list            
+            floodFill(*(activeNodesIndexSet.begin()),b);
+
+            // insert iff the blob is big enough
+            if (b.size>blobMinSizeThres)
+                insertBlob(b);
+        }
+    }
+
+    void floodFill(const int i, Blob &b)
+    {
+        set<int>::iterator el=activeNodesIndexSet.find(i);
+        if (el!=activeNodesIndexSet.end())
+        {
+            // update blob
+            double nx=b.centroid.x*b.size;
+            double ny=b.centroid.y*b.size;
+            double x =nodesPrev[i].x;
+            double y =nodesPrev[i].y;
+
+            b.size++;
+            b.centroid.x=(int)((nx+x)/b.size);
+            b.centroid.y=(int)((ny+y)/b.size);
+
+            // remove element from the set            
+            activeNodesIndexSet.erase(el);
+
+            // perform recursive exploration
+
+            // towards north-west
+            floodFill(i-nodesX-1,b);
+
+            // towards north
+            floodFill(i-nodesX,b);
+
+            // towards north-east
+            floodFill(i-nodesX+1,b);
+
+            // towards west
+            floodFill(i-1,b);
+
+            // towards east
+            floodFill(i+1,b);
+
+            // towards south-west
+            floodFill(i+nodesX-1,b);
+
+            // towards south
+            floodFill(i+nodesX,b);
+
+            // towards south-east
+            floodFill(i+nodesX+1,b);
+        }
+    }
+
+    void insertBlob(const Blob &b)
+    {
+        // insert the blob keeping the decreasing order of the list wrt the size attribute
+        for (deque<Blob>::iterator el=blobSortedList.begin(); el<blobSortedList.end(); el++)
+        {
+            if (el->size<b.size)
+            {
+                blobSortedList.insert(el,b);
+                return;
+            }
+        }
+
+        // reaching this point means that 
+        // we have to append the blob
+        blobSortedList.push_back(b);
     }
 
     bool execReq(const Bottle &req, Bottle &reply)
@@ -446,6 +607,11 @@ public:
                 else if (subcmd=="adjNodesThres")
                 {
                     adjNodesThres=req.get(2).asInt();
+                    reply.addString("ack");
+                }
+                else if (subcmd=="blobMinSizeThres")
+                {
+                    blobMinSizeThres=req.get(2).asInt();
                     reply.addString("ack");
                 }
                 else if (subcmd=="framesPersistence")
@@ -479,6 +645,8 @@ public:
                     reply.addInt(recogThres);
                 else if (subcmd=="adjNodesThres")
                     reply.addInt(adjNodesThres);
+                else if (subcmd=="blobMinSizeThres")
+                    reply.addInt(blobMinSizeThres);
                 else if (subcmd=="framesPersistence")
                     reply.addInt(framesPersistence);
                 else if (subcmd=="verbosity")
@@ -568,6 +736,7 @@ int main(int argc, char *argv[])
         fprintf(stdout,"\t--winSize           <int>\n");
         fprintf(stdout,"\t--recogThres        <int>\n");
         fprintf(stdout,"\t--adjNodesThres     <int>\n");
+        fprintf(stdout,"\t--blobMinSizeThres  <int>\n");
         fprintf(stdout,"\t--framesPersistence <int>\n");
         fprintf(stdout,"\t--verbosity          - \n");
         
