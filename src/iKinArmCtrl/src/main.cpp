@@ -157,7 +157,7 @@ None.
 None. 
  
 \section tested_os_sec Tested OS
-Windows, Linux
+Windows, Linux, Mac
 
 Note that \ref iKinArmView "iKinArmView" module can show
 interactively the iCub arm configuration launching MATLAB in 
