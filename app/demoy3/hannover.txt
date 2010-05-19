@@ -2,6 +2,6 @@ time 1.5
 [include RIGHTARM "armRightHannover"]
 [include LEFTARM "armLeftHannover"]
 [include RIGHTLEG "legRightHannover"]
-[include LEFTLEG "armLeftHannover"]
+[include LEFTLEG "legLeftHannover"]
 [include TORSO "torsoHannover"]
 [include HEAD "headHannover"]
