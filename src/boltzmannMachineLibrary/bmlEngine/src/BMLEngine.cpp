@@ -346,7 +346,7 @@ bool BMLEngine::updateModule() {
         }
         else if(!strcmp(command.c_str(),"Learn")){
             printf("Learn \n");
-            mb->learn();
+            mb->training();
         }
         else if(!strcmp(command.c_str(),"setProbabilityFreely")){
             printf("setProbabilityFreely \n");
@@ -365,6 +365,55 @@ bool BMLEngine::updateModule() {
             this->probFreely_flag=false;
             this->probClamped_flag=false;
             
+        }
+        else if(!strcmp(command.c_str(),"addSample")){
+            printf("addSample \n");
+            Vector sample(100);
+            
+            int width=ptr_inputImage->width();
+            int height=ptr_inputImage->height();
+            //IppiSize srcsize={width,height};
+            //1.extracts 3 planes
+            IplImage* im_tmp_ipl = cvCreateImage( cvSize(width,height), 8, 1 );
+            
+            if(inputImage_flag){
+               
+                cvCvtColor(ptr_inputImage->getIplImage(),im_tmp_ipl,CV_RGB2GRAY);
+                
+                //2.Extract the necessary information
+                int dim=100;
+                int totRows=10;
+                int totUnits=10;
+
+                printf("state vector dimension %d \n",dim);
+                printf("layer number cols %d \n",totUnits);
+                printf("layer number rows %d \n",totRows);
+
+
+                //3.maps the intensity on to the layer
+                int rectDimX=width/totUnits;
+                int rectDimY=height/totRows;
+                int sum=0;
+                uchar* data=(uchar*)(im_tmp_ipl->imageData);
+                int step       = im_tmp_ipl->widthStep/sizeof(uchar);
+                //printf("step of the gray image as input %d",step);
+
+                for(int r=0;r<totRows;r++){
+                    for(int c=0;c<totUnits;c++){
+                        sum=0;
+                        for(int y=0;y<rectDimY;y++){
+                            for(int x=0;x<rectDimX;x++){
+                                sum+=data[r*rectDimY*width+c*rectDimX+width*y+x];
+                                //sum+=im_tmp_ipl[boltzmannMachineRow*rectDimY*320+boltzmannMachineCol*rectDimX+320*y+x];
+                            }
+                        }
+                        double mean=sum/(rectDimX*rectDimY);
+                        //printf("mean of the unit %f ----> ",mean);
+                        sample[r*totUnits+c]=mean/255;
+                    }
+                }
+                mb->addSample(sample);
+            }
         }
         else if(!strcmp(command.c_str(),"ClampLayer")){
             printf("ClampLayer \n");
@@ -1164,7 +1213,7 @@ void BMLEngine::clampLayer(Layer layer){
     int sum=0;
     uchar* data=(uchar*)(im_tmp_ipl->imageData);
     int step       = im_tmp_ipl->widthStep/sizeof(uchar);
-    printf("step of the gray image as input %d",step);
+    //printf("step of the gray image as input %d",step);
 
     for(int boltzmannMachineRow=0;boltzmannMachineRow<totRows;boltzmannMachineRow++)
         for(int boltzmannMachineCol=0;boltzmannMachineCol<totUnits;boltzmannMachineCol++){

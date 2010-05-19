@@ -1,8 +1,9 @@
 // -*- mode:C++; tab-width:4; c-basic-offset:4; indent-tabs-mode:nil -*-
 #include <iCub/Layer.h>
 
-
 #define MEAN_WEIGHT 50
+
+using namespace yarp::sig;
 
 //default constructor
 Layer::Layer(){}
@@ -58,6 +59,10 @@ double* Layer::getData(){
 */
 int Layer::getCol(){
 	return col;
+}
+
+int Layer::getNumUnits(){
+    return getCol()*getRow();
 }
 
 /**

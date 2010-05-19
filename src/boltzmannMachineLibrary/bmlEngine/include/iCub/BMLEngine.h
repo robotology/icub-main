@@ -31,7 +31,7 @@ using namespace yarp::sig::draw;
 // general command vocab's
 #define COMMAND_VOCAB_HELP VOCAB4('h','e','l','p')
 #define COMMAND_VOCAB_SHUT VOCAB4('s','h','u','t')
-#define COMMAND_VOCAB_SHUT VOCAB4('d','o','w','n')
+#define COMMAND_VOCAB_DOWN VOCAB4('d','o','w','n')
 #define COMMAND_VOCAB_SET VOCAB3('s','e','t')
 #define COMMAND_VOCAB_GET VOCAB3('g','e','t')
 #define COMMAND_VOCAB_RUN VOCAB3('r','u','n')
@@ -48,13 +48,13 @@ using namespace yarp::sig::draw;
 #define COMMAND_VOCAB_NUM_BLUR_PASSES VOCAB2('s','2')
 
 // directional saliency filter vocab's
-#define COMMAND_VOCAB_SHUT VOCAB4('e','v','o','l')
-#define COMMAND_VOCAB_SHUT VOCAB4('c','l','a','m')
-#define COMMAND_VOCAB_SHUT VOCAB4('e','v','o','l')
-#define COMMAND_VOCAB_SHUT VOCAB4('f','r','e','e')
-#define COMMAND_VOCAB_SHUT VOCAB4('p','e','r','f')
-#define COMMAND_VOCAB_SHUT VOCAB4('c','o','n','n')
-#define COMMAND_VOCAB_SHUT VOCAB4('c','l','a','m')
+#define COMMAND_VOCAB_EVOL VOCAB4('e','v','o','l')
+#define COMMAND_VOCAB_CLAM VOCAB4('c','l','a','m')
+//#define COMMAND_VOCAB_EVOL VOCAB4('e','v','o','l')
+#define COMMAND_VOCAB_FREE VOCAB4('f','r','e','e')
+#define COMMAND_VOCAB_PERF VOCAB4('p','e','r','f')
+#define COMMAND_VOCAB_CONN VOCAB4('c','o','n','n')
+#define COMMAND_VOCAB_CLAM VOCAB4('c','l','a','m')
 
 
 /**

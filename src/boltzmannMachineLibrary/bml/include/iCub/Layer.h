@@ -20,9 +20,7 @@
 #include <map>
 #include <string>
 
-using namespace yarp::sig;
-using namespace yarp::math;
-using namespace std;
+
 
 /**
 * Class that represent a layer of units.
@@ -64,11 +62,11 @@ public:
 	/**
 	* matrix storing the state of every single unit in the layer
 	*/
-	Matrix* vishid;
+    yarp::sig::Matrix* vishid;
 	/**
 	* vector storing the state of every single unit in the layer
 	*/
-	Vector* stateVector;
+	yarp::sig::Vector* stateVector;
 	//_____________ METHODS ___________________
 	/**
 	*default constructor
@@ -80,8 +78,15 @@ public:
 	~Layer();//
 	/**
 	* default constructor of a layer composed of nRows of nUnits
+    * @param name name of the layer e.g.: L1
+    * @param nRows number of rows present in this layer
+    * @param nUnits number of units present in each row
 	*/
 	Layer(std::string name,int nRows,int nUnits);//
+    /**
+    * default constructor of the layer, with no information about the size
+    * @param name name of the layer
+    */ 
 	Layer(std::string name);
 	/**
 	* returns the value of the internal energy

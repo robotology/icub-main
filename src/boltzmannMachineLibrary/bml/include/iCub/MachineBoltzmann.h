@@ -22,9 +22,6 @@
 #include <yarp/math/Math.h>
 #include <iCub/matUtil.h>
 
-using namespace yarp::sig;
-using namespace yarp::math;
-using namespace std;
 
 static int standard_layer_dim_rows=10;
 static int standard_layer_dim_units=10;
@@ -104,6 +101,10 @@ private:
 	* number of epoches for every rbm execution
 	*/
 	int maxepoch;
+    /**
+    * count the number of sample already saved in the time interval
+    */
+    int countSample;
 	/**
 	* cost of a connection
 	*/
@@ -128,6 +129,10 @@ private:
 	* lerning rate for the visible biases
 	*/
 	double epsilonvb;
+    /**
+    * matrix containing the actual state of the sensorial acquisition in time
+    */
+    yarp::sig::Matrix* dataMat;
 public:
 	//-------- methods
 	/**
@@ -156,7 +161,7 @@ public:
 	* return a Layer to the Boltzmann Machine
 	* @param name name of the layer to be returned
 	*/
-	int getLayer(int name); 
+	Layer getLayer(int name); 
 	/**
 	* returns the temperature of the Boltzmann Machine
 	*/
@@ -233,7 +238,25 @@ public:
 	/**
 	* average probability of two units both being in on-state when the netowork is running freely
 	*/
-	void setProbabilityFreely(); //
+	void setProbabilityFreely(); 
+    /**
+    * Function that perform training in the boltzmann machine 
+    */
+    void training();
+    /**
+    * function that adds inputs as sample in time to the collection of data
+    * @param sample sample in the dataset 
+    */
+    void addSample(Vector sample);
+    /**
+    * function that reinitialise the data set to a novel matrix with dimension equal to the visible layer size
+    * @param size dimension of the single sample of the input
+    */
+    void reinitData(int size);
+    /**
+    * function which creates the collection of batches given the input and the time interval
+    */
+    void makeBatches();
 	/**
 	* ALL the states of the units in the Boltzmann Machine are updated based on the choosen rules
 	* @param rule constant integer indicating the decision rule (,probabil)
@@ -262,14 +285,13 @@ public:
 	* @param layer_reference  ref to the hidden layer
 	*/
 	void rbm(double* data,int layer_reference){};
-
 	/**
 	* restricted boltzmann machine evolution
 	* @param data vector of data that has to have the same dimension of the layer where it is clamped in
 	* @param layer pointer to the layer where the data is clamped in
 	* @param numhid dimension of the linked layer( hidden layer)
 	*/
-	void rbm(Matrix data,Layer *layer,int numhid);
+    void rbm(yarp::sig::Matrix data,Layer *layer,int numhid);
 
     //------- attributes
 	map<std::string,Unit> unitList;
@@ -293,9 +315,14 @@ public:
 	* list of all the connections present in the Boltzmann Machine
 	*/
 	list<Connection> _connectionList;
-
+    /**
+    * probabilities of the freely evolution
+    */
 	list<double> _probFreely;
-	list<double> _probClamped;
+	/**
+    * probabilities of the clamped evolution
+    */
+    list<double> _probClamped;
 };
 #endif //_MACHINEBOLTZMANN_H_
 

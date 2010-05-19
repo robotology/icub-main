@@ -650,6 +650,11 @@ static void callback( GtkWidget *widget,gpointer   data ){
         string _command("setProbabilityClamped");
         wModule->command->assign(_command);
     }
+    else if(!strcmp((char *)data,"addSample")){
+        printf("addSample \n");
+        string _command("addSample");
+        wModule->command->assign(_command);
+    }
     else if(!strcmp((char *)data,"drawFoveaBlob3")){
         printf("drawFoveaBlob3");
         
@@ -2047,6 +2052,21 @@ GtkWidget* graphicThread::createMainWindow(void)
     gtk_widget_show (button);
     gtk_box_pack_start (GTK_BOX (box5), button, TRUE, TRUE, 0);
     gtk_widget_show (button);
+
+    //-------run button
+    button = gtk_button_new ();
+    /* Connect the "clicked" signal of the button to our callback */
+    g_signal_connect (G_OBJECT (button), "clicked",G_CALLBACK (callback), (gpointer) "addSample");
+    /* This calls our box creating func tion */
+    boxButton = xpm_label_box (NULL, "addSample");
+    /* Pack and show all our widgets */
+    gtk_widget_show (boxButton);
+    gtk_container_add (GTK_CONTAINER (button), boxButton);
+    gtk_widget_show (button);
+    gtk_box_pack_start (GTK_BOX (box5), button, TRUE, TRUE, 0);
+    gtk_widget_show (button);
+
+
     //-------run button
     button = gtk_button_new ();
     /* Connect the "clicked" signal of the button to our callback */
