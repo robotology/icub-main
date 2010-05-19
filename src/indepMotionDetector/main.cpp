@@ -76,8 +76,8 @@ None.
   grid layer on top.
  
 - <i> /<stemName>/nodes:o </i> outputs the x-y location of the 
-  currently active nodes in this format: nodesStep n0.x n0.y
-  n1.x n1.y n2.x ...
+  currently active nodes in this format: (nodesStep <val>)
+  (<n0.x> <n0.y>) (<n1.x> <n1.y>) ...
  
 - <i> /<stemName>/opt:o </i> outputs monochrome images 
   containing just the grid nodes signalling independent
@@ -113,7 +113,6 @@ Linux and Windows.
 #include <yarp/os/Thread.h>
 #include <yarp/os/Time.h>
 #include <yarp/sig/Image.h>
-#include <yarp/sig/Vector.h>
 
 #include <cv.h>
 #include <highgui.h>
@@ -163,7 +162,7 @@ protected:
     BufferedPort<ImageOf<PixelBgr> >  inPort;
     BufferedPort<ImageOf<PixelBgr> >  outPort;
     BufferedPort<ImageOf<PixelMono> > optPort;
-    BufferedPort<Vector>              nodesPort;
+    BufferedPort<Bottle>              nodesPort;
 
     void disposeMem()
     {
@@ -313,9 +312,12 @@ public:
                 imgMonoOpt.zero();
 
                 // get the nodes vector
-                Vector &nodesVect=nodesPort.prepare();
-                nodesVect.clear();
-                nodesVect.push_back(nodesStep);
+                Bottle &nodesBottle=nodesPort.prepare();
+                nodesBottle.clear();
+
+                Bottle &nodesStepBottle=nodesBottle.addList();
+                nodesStepBottle.addString("nodesStep");
+                nodesStepBottle.addInt(nodesStep);
 
                 // compute optical flow
                 latch_t=Time::now();
@@ -338,8 +340,9 @@ public:
                         cvCircle(imgMonoOut.getIplImage(),node,1,NODE_ON,2);
                         cvCircle(imgMonoOpt.getIplImage(),node,1,cvScalar(255),2);
 
-                        nodesVect.push_back(nodesPrev[i].x);
-                        nodesVect.push_back(nodesPrev[i].y);
+                        Bottle &nodeBottle=nodesBottle.addList();
+                        nodeBottle.addInt((int)nodesPrev[i].x);
+                        nodeBottle.addInt((int)nodesPrev[i].y);
 
                         nodesPersistence[i]--;
                     }
@@ -367,8 +370,9 @@ public:
                             cvCircle(imgMonoOut.getIplImage(),node,1,NODE_ON,2);
                             cvCircle(imgMonoOpt.getIplImage(),node,1,cvScalar(255),2);
 
-                            nodesVect.push_back(nodesPrev[i].x);
-                            nodesVect.push_back(nodesPrev[i].y);
+                            Bottle &nodeBottle=nodesBottle.addList();
+                            nodeBottle.addInt((int)nodesPrev[i].x);
+                            nodeBottle.addInt((int)nodesPrev[i].y);
 
                             // init the node persistence timeout
                             nodesPersistence[i]=framesPersistence;
