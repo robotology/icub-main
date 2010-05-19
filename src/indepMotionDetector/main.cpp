@@ -444,6 +444,7 @@ public:
             {
                 Blob &blob=blobSortedList[i];
                 int blueLev=255-((50*i)%255);
+                int redLev=(50*i)%255;
 
                 CvPoint centroid=cvPoint(blob.centroid.x,blob.centroid.y);
 
@@ -452,7 +453,7 @@ public:
                 bottleBottle.addInt(centroid.y);
                 bottleBottle.addInt(blob.size);
 
-                cvCircle(imgBgrOut.getIplImage(),centroid,4,cvScalar(blueLev,0,0),3);
+                cvCircle(imgBgrOut.getIplImage(),centroid,4,cvScalar(blueLev,0,redLev),3);
             }
             dt2=Time::now()-latch_t;
 
