@@ -4,19 +4,21 @@
 #define _RGBPROCESSORTHREAD_H_
 
 //YARP include
-#include <yarp/os/all.h>
-#include <yarp/sig/all.h>
+#include <yarp/os/Network.h>
+#include <yarp/os/Port.h>
+#include <yarp/os/Thread.h>
+#include <yarp/os/RateThread.h>
+#include <yarp/os/Bottle.h>
+#include <yarp/os/Time.h>
+#include <yarp/os/Vocab.h>
+#include <yarp/sig/Image.h>
 
 //IPP include
 #include <ipp.h>
 
-
 const double TIMEOUT=0.1;
 const double STOP_TIME=3;
 const int THREAD_RATE=30;
-
-using namespace yarp::os;
-using namespace yarp::sig;
 
 class rgbProcessorThread: public yarp::os::RateThread
 {

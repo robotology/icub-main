@@ -1,10 +1,12 @@
 #include <iCub/rgbProcessorThread.h>
 #include <iCub/convert_bitdepth.h>
 #include <ipps.h>
+#include <iostream>
 
 
 using namespace yarp::sig;
 using namespace yarp::os;
+using namespace std;
 
 rgbProcessorThread::rgbProcessorThread():RateThread(THREAD_RATE)
 {
@@ -60,8 +62,7 @@ void rgbProcessorThread::reinitialise(){
 }
 
 bool rgbProcessorThread::threadInit(){
-    printf("Thread initialisation.. \n");
-    
+    printf("Thread initialisation.. \n");    
     return true;
 }
 

@@ -7,6 +7,7 @@
 using namespace std;
 using namespace yarp::sig;
 using namespace yarp::os;
+using namespace yarp;
 
 colourProcessorModule::colourProcessorModule(){
     reinit_flag=false;
