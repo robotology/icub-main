@@ -4,7 +4,7 @@
 \defgroup indepMotionDetector indepMotionDetector
  
 Detects independent moving points of a grid used to sample the 
-input images. 
+input images. The algorithm works also with moving cameras.
 
 Copyright (C) 2010 RobotCub Consortium
  
@@ -17,7 +17,8 @@ CopyPolicy: Released under the terms of the GNU GPL v2.0.
 \section intro_sec Description
 The module exploits the pyramidal Lucas-Kanade algorithm to
 detect independent moving points over a selectable grid of 
-nodes. 
+nodes. The algorithm is designed in such a way that it works 
+also with moving cameras. 
  
 \section lib_sec Libraries 
 YARP libraries and OpenCV
