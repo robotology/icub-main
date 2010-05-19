@@ -443,8 +443,8 @@ public:
             for (int i=0; i<(int)blobSortedList.size(); i++)
             {
                 Blob &blob=blobSortedList[i];
-                int blueLev=255-((50*i)%255);
-                int redLev=(50*i)%255;
+                int blueLev=255-((100*i)%255);
+                int redLev=(100*i)%255;
 
                 CvPoint centroid=cvPoint(blob.centroid.x,blob.centroid.y);
 
