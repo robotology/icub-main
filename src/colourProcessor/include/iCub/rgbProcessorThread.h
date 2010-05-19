@@ -15,6 +15,9 @@ const double TIMEOUT=0.1;
 const double STOP_TIME=3;
 const int THREAD_RATE=30;
 
+using namespace yarp::os;
+using namespace yarp::sig;
+
 class rgbProcessorThread: public yarp::os::RateThread
 {
 private:
