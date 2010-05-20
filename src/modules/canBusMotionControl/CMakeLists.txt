@@ -12,10 +12,13 @@ IF (NOT SKIP_canmotioncontrol)
   INCLUDE_DIRECTORIES(${CMAKE_CURRENT_SOURCE_DIR}/../motionControlLib/
                       ${ACE_INCLUDE_DIRS} ${ICUBDEV_INCLUDE_DIRS})
 
+  SET(server_source CanBusMotionControl.cpp ThreadTable2.cpp ThreadPool2.cpp)
+  SET(server_header CanBusMotionControl.h ThreadTable2.h ThreadPool2.h)
+
   # LINK_LIBRARIES(${CMAKE_CURRENT_SOURCE_DIR}/../motionControlLib/libmotionControl.a)
   #  SET(MOTIONCONTROL_LIBRARIES motionControl)
   #  LINK_LIBRARIES(${MOTIONCONTROL_LIBRARIES})
 
-  ADD_LIBRARY(canmotioncontrol CanBusMotionControl.cpp CanBusMotionControl.h ThreadTable2.cpp ThreadPool2.cpp)
+  ADD_LIBRARY(canmotioncontrol ${server_source} ${server_header})
   TARGET_LINK_LIBRARIES(canmotioncontrol ${ACE_LIBRARIES} ${ICUBDEV_LIBRARIES})
 ENDIF (NOT SKIP_canmotioncontrol)
