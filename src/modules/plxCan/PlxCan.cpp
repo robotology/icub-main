@@ -144,10 +144,12 @@ bool PlxCan::canGetErrors(CanErrors &err)
         return false;
 
     err.busoff=error.busoff;
-    err.overflow=error.canOvr;
-    err.inBuffOvr=error.inputBuffOvr;
-    err.outBuffOvr=error.outputBuffOvr;
-    err.errors=error.errors;
+    err.txCanErrors=error.errors;
+    err.rxCanErrors=error.canOvr;
+    err.rxCanFifoOvr=error.canOvr;
+    err.txCanFifoOvr=error.inputBuffOvr;
+    err.rxBufferOvr=error.inputBuffOvr;
+    err.txBufferOvr=error.outputBuffOvr;
 
     return true;
 }
