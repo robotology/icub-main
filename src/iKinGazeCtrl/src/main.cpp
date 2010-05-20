@@ -508,6 +508,9 @@ public:
     {
         cout << "Receiving command from rpc port" << endl;
 
+        int ack=Vocab::encode("ack");
+        int nack=Vocab::encode("nack");
+
         if (command.size())
         {
             switch (command.get(0).asVocab())
@@ -517,6 +520,7 @@ public:
                     ctrl->suspend();
                     eyesRefGen->suspend();
                     slv->suspend();
+                    reply.addVocab(ack);
                     return true;
                 }
 
@@ -525,6 +529,7 @@ public:
                     slv->resume();
                     eyesRefGen->resume();
                     ctrl->resume();
+                    reply.addVocab(ack);
                     return true;
                 }
 
@@ -540,11 +545,18 @@ public:
                         else if (joint==VOCAB3('y','a','w'))
                             slv->blockNeckYaw(val);
                         else
+                        {
+                            reply.addVocab(nack);
                             return false;
+                        }
                     }
                     else
+                    {
+                        reply.addVocab(nack);
                         return false;
+                    }
 
+                    reply.addVocab(ack);
                     return true;
                 }
 
@@ -559,11 +571,18 @@ public:
                         else if (joint==VOCAB3('y','a','w'))
                             slv->clearNeckYaw();
                         else
+                        {
+                            reply.addVocab(nack);
                             return false;
+                        }
                     }
                     else
+                    {
+                        reply.addVocab(nack);
                         return false;
+                    }
 
+                    reply.addVocab(ack);
                     return true;
                 }
 
@@ -582,10 +601,16 @@ public:
                         else if (type==VOCAB4('t','r','a','c'))
                             reply.addInt((int)ctrl->getTrackingMode());
                         else
+                        {
+                            reply.addVocab(nack);
                             return false;
+                        }
                     }
                     else
+                    {
+                        reply.addVocab(nack);
                         return false;
+                    }
     
                     return true;
                 }
@@ -612,11 +637,18 @@ public:
                             ctrl->setTrackingMode(mode);
                         }
                         else
+                        {
+                            reply.addVocab(nack);
                             return false;
+                        }
                     }
                     else
+                    {
+                        reply.addVocab(nack);
                         return false;
+                    }
     
+                    reply.addVocab(ack);
                     return true;
                 }
 
@@ -625,7 +657,10 @@ public:
             }
         }
         else
+        {
+            reply.addVocab(nack);
             return false;
+        }
     }
 
     virtual bool close()
