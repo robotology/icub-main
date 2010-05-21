@@ -109,14 +109,14 @@ bool SkinPartEntry::open(yarp::os::Property &deviceP, yarp::os::Property &partP)
     if (!correct)
         return false;
 
-    int threadrate=20;
-    if (partP.check("threadrate"))
+    int period=20;
+    if (partP.check("period"))
     {
-        threadrate=partP.find("threadrate").asInt();
+        period=partP.find("period").asInt();
     }
     else
     {
-        std::cout<<"Warning: part "<<id<<" using default rate ("<<threadrate<<")\n";
+        std::cout<<"Warning: part "<<id<<" using default period ("<<period<<")\n";
     }
 
     std::string devicename=partP.find("device").asString().c_str();
@@ -146,7 +146,7 @@ bool SkinPartEntry::open(yarp::os::Property &deviceP, yarp::os::Property &partP)
     name+=id.c_str();
 
     analogServer=new AnalogServer(name.c_str());
-    analogServer->setRate(threadrate);
+    analogServer->setRate(period);
     analogServer->attach(analog);
     analogServer->start();
 
