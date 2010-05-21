@@ -4,6 +4,7 @@
 
 #include <yarp/os/Time.h>
 #include <iostream>
+#include <string.h>
 
 const int CAN_DRIVER_BUFFER_SIZE=2047;
 
@@ -76,6 +77,11 @@ bool SkinPrototype::open(yarp::os::Searchable& config)
     driver.view(pCanBufferFactory);
     pCanBus->canSetBaudRate(0); //default 1MB/s
 
+    for (int id=0; id<16; ++id)
+    {
+        pCanBus->canIdAdd(cardId+id);
+    }
+
     outBuffer=pCanBufferFactory->createBuffer(CAN_DRIVER_BUFFER_SIZE);
     inBuffer=pCanBufferFactory->createBuffer(CAN_DRIVER_BUFFER_SIZE);
 
@@ -128,14 +134,25 @@ bool SkinPrototype::threadInit()
 {
 #if DEBUG
 	printf("SkinPrototype:: thread initialising...\n");
-    CanMessage &msg=outBuffer[0];
-
-    msg.setId(0x00);
-    msg.getData()[0]=0;
-    msg.getData()[1]=0;
-    
     printf("... done!\n");
 #endif 
+
+    CanMessage &msg=outBuffer[0];
+
+    unsigned int id=(0x020f);//|cardId;
+    msg.setId(id);
+    msg.getData()[0]=0x4C; // message type
+    msg.getData()[1]=0x11; 
+    msg.getData()[2]=0x10; 
+    msg.getData()[3]=0x22;
+    msg.getData()[4]=0;
+    msg.getData()[5]=0;
+    msg.getData()[6]=0;
+    msg.getData()[7]=0;
+    msg.setLen(8);
+    unsigned int canMessages=0;
+    pCanBus->canWrite(outBuffer, 1, &canMessages);
+
     return true;
 }
 
@@ -155,27 +172,35 @@ void SkinPrototype::run()
     {
         CanMessage &msg=inBuffer[i];
 
-        if ((msg.getId() & 0xFFFFFFF0) == cardId)
-        {
-            int sensorId=msg.getId() & 0x0F;
+        unsigned int msgid=msg.getId();
+        unsigned int id;
+        unsigned int sensorId;
+        id=(msgid & 0x00f0)>>4;
+        sensorId=msgid&0x000f;
 
-             if (msg.getData()[0] & 0x80)
-             {
-                 // last 5 bytes
-                 for(int k=0;k<5;k++)
-                 {
-                    data(sensorId+k+5)=msg.getData()[k];
-                 }
-             }
-             else
-             {
-                // first 7 bytes
-                 for(int k=0;k<7;k++)
-                 {
-                     data(sensorId+k)=msg.getData()[k];
-                 }
-             }
-        }
+        unsigned int type=msg.getData()[0]&0x80;
+        int len=msg.getLen();
+
+        if (id==cardId)
+            {
+                int index=sensorId*12;
+                
+                if (type)
+                    {
+                        for(int k=0;k<5;k++)
+                            data[index+k+5]=msg.getData()[k+1];
+                    }
+                else 
+                    {
+                        for(int k=0;k<7;k++)
+                            data[index+k]=msg.getData()[k+1];
+                    }
+                //                else
+                //                    {
+                //                        std::cerr<<"Error: skin received malformed message\n";
+                //                    }
+            }
+
     }
 
     mutex.post();
