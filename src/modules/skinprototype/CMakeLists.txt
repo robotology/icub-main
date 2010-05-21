@@ -8,5 +8,5 @@ ENDIF (COMPILE_DEVICE_LIBRARY)
 IF (NOT SKIP_static_grabber)
 FIND_PACKAGE(YARP REQUIRED)
 
-ADD_LIBRARY(skinprototype SkinPrototype.h SkinPrototype.cpp)
+ADD_LIBRARY(skinprototype skinprototype.h skinprototype.cpp)
 ENDIF (NOT SKIP_static_grabber)
