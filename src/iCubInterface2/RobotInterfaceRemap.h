@@ -75,6 +75,7 @@ public:
 
     void run()
     {
+
         if (is!=0)
         {
             yarp::sig::Vector v;
@@ -376,6 +377,9 @@ public:
 
     bool open(yarp::os::Property &deviceP, yarp::os::Property &partP);
     void close();
+
+    void setId(const std::string &i)
+    { id=i; }
 
     std::string id;
 };

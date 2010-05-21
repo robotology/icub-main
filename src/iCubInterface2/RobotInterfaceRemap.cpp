@@ -98,29 +98,33 @@ SkinPartEntry::~SkinPartEntry()
 
 }
 
-bool SkinPartEntry::open(yarp::os::Property &deviceP, yarp::os::Property &partP)
-{
+bool SkinPartEntry::open(yarp::os::Property &deviceP, yarp::os::Property &partP){
     bool correct=true;
     correct=correct&&partP.check("device");
     correct=correct&&partP.check("robot");
+    correct=correct&&partP.check("canbusdevice");
 
     std::string robotName=partP.find("robot").asString().c_str();
     
     if (!correct)
         return false;
 
-    int period=20;
-    if (partP.check("period"))
+    int threadrate=20;
+    if (partP.check("threadrate"))
     {
-        period=partP.find("period").asInt();
+        threadrate=partP.find("threadrate").asInt();
     }
     else
     {
-        std::cout<<"Warning: part "<<id<<" using default period ("<<period<<")\n";
+        std::cout<<"Warning: part "<<id<<" using default rate ("<<threadrate<<")\n";
     }
-    
+
     std::string devicename=partP.find("device").asString().c_str();
     deviceP.put("device", devicename.c_str());
+
+    std::string canbusdevice=partP.find("canbusdevice").asString().c_str();
+    deviceP.put("canbusdevice", canbusdevice.c_str());
+
     driver.open(deviceP);
     if (!driver.isValid())
         return false;
@@ -142,7 +146,7 @@ bool SkinPartEntry::open(yarp::os::Property &deviceP, yarp::os::Property &partP)
     name+=id.c_str();
 
     analogServer=new AnalogServer(name.c_str());
-    analogServer->setRate(period);
+    analogServer->setRate(threadrate);
     analogServer->attach(analog);
     analogServer->start();
 
@@ -783,15 +787,19 @@ bool RobotInterfaceRemap::initialize20(const std::string &inifile)
     if (skinParts)
     {       
         int nskin=skinParts->size();
+        cout<< "I have found " << nskin << " parts\n";
         int n=0;
         for (n=0;n<nskin;n++)
         {
             std::string partId=skinParts->get(n).asString().c_str();
+            std::cout<<"Opening " << partId << "\n";
+
             Property partOptions;
             partOptions.fromString(robotOptions.findGroup(partId.c_str()).toString());
             partOptions.put("robot", robotName.c_str());
 
             SkinPartEntry *tmp=new SkinPartEntry;
+            tmp->setId(partId);
 
             if (partOptions.check("file"))
             {
