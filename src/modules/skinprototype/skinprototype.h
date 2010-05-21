@@ -19,20 +19,12 @@ using namespace yarp::dev;
 
 class SkinPrototype : public RateThread, public yarp::dev::IAnalogSensor, public DeviceDriver 
 {
-    enum SensorStatus
-    {
-        ANALOG_IDLE=0,
-        ANALOG_OK=1,
-		ANALOG_NOT_RESPONDING=-1,
-		ANALOG_SATURATION=-2,
-		ANALOG_ERROR=-3,
-    };
-
 protected:
 	PolyDriver driver;
     ICanBus *pCanBus;
     ICanBufferFactory *pCanBufferFactory;
-    CanBuffer canBuffer;
+    CanBuffer inBuffer;
+    CanBuffer outBuffer;
    
     yarp::os::Semaphore mutex;
 

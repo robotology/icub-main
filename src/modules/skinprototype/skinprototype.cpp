@@ -14,17 +14,25 @@ using namespace std;
 bool SkinPrototype::open(yarp::os::Searchable& config)
 {
     bool correct=true;
+#if DEBUG
+    fprintf(stderr, "%s\n", config.toString().c_str());
+#endif
+
     correct &= config.check("canbusdevice");
     correct &= config.check("CanDeviceNum");
-    correct &= config.check("skinCanIds");
+    correct &= config.check("SkinCanIds");
+    correct &= config.check("ThreadRate");
 
     if (!correct)
     {
-        std::cerr<<"Error: insufficient parameters to SkinPrototype\n"; 
+        std::cerr<<"Error: insufficient parameters to SkinPrototypce\n"; 
         return false;
     }
 
-    Bottle ids=config.findGroup("skinCanIds").tail();
+    int rate=config.find("ThreadRate").asInt();
+    setRate(rate);
+
+    Bottle ids=config.findGroup("SkinCanIds").tail();
 
     if (ids.size()>1)
     {
@@ -68,13 +76,14 @@ bool SkinPrototype::open(yarp::os::Searchable& config)
     driver.view(pCanBufferFactory);
     pCanBus->canSetBaudRate(0); //default 1MB/s
 
-    canBuffer=pCanBufferFactory->createBuffer(4*sensorsNum);
+    outBuffer=pCanBufferFactory->createBuffer(CAN_DRIVER_BUFFER_SIZE);
+    inBuffer=pCanBufferFactory->createBuffer(CAN_DRIVER_BUFFER_SIZE);
 
     //elements are:
     sensorsNum=16*12;
     data.resize(sensorsNum);
 
-    RateThread::run();
+    RateThread::start();
     return true;
 }
 
@@ -83,7 +92,8 @@ bool SkinPrototype::close()
     RateThread::stop();
     if (pCanBufferFactory) 
     {
-        pCanBufferFactory->destroyBuffer(canBuffer);
+        pCanBufferFactory->destroyBuffer(inBuffer);
+        pCanBufferFactory->destroyBuffer(outBuffer);
     }
     driver.close();
     return true;
@@ -95,12 +105,12 @@ int SkinPrototype::read(yarp::sig::Vector &out)
     out=data;
     mutex.post();
 
-    return ANALOG_OK;
+    return yarp::dev::IAnalogSensor::AS_OK;
 }
 
 int SkinPrototype::getState(int ch)
 {
-    return ANALOG_OK;
+    return yarp::dev::IAnalogSensor::AS_OK;;
 }
 
 int SkinPrototype::getChannels()
@@ -117,7 +127,13 @@ bool SkinPrototype::calibrate(int ch, double v)
 bool SkinPrototype::threadInit()
 {
 #if DEBUG
-	printf("Image Thread initialising...\n");
+	printf("SkinPrototype:: thread initialising...\n");
+    CanMessage &msg=outBuffer[0];
+
+    msg.setId(0x00);
+    msg.getData()[0]=0;
+    msg.getData()[1]=0;
+    
     printf("... done!\n");
 #endif 
     return true;
@@ -129,7 +145,7 @@ void SkinPrototype::run()
 
     unsigned int canMessages=0;
 
-    bool res=pCanBus->canRead(canBuffer,CAN_DRIVER_BUFFER_SIZE,&canMessages);
+    bool res=pCanBus->canRead(inBuffer,CAN_DRIVER_BUFFER_SIZE,&canMessages);
     if (!res)
     {
         std::cerr<<"canRead failed\n";
@@ -137,7 +153,7 @@ void SkinPrototype::run()
 
     for (unsigned int i=0; i<canMessages; i++)
     {
-        CanMessage &msg=canBuffer[i];
+        CanMessage &msg=inBuffer[i];
 
         if ((msg.getId() & 0xFFFFFFF0) == cardId)
         {
@@ -148,7 +164,7 @@ void SkinPrototype::run()
                  // last 5 bytes
                  for(int k=0;k<5;k++)
                  {
-                    data(sensorId+k)=msg.getData()[k];
+                    data(sensorId+k+5)=msg.getData()[k];
                  }
              }
              else
@@ -168,7 +184,7 @@ void SkinPrototype::run()
 void SkinPrototype::threadRelease()
 {
 #if DEBUG
-	printf("Skin Mesh Thread releasing...\n");	
+	printf("SkinPrototype Thread releasing...\n");	
     printf("... done.\n");
 #endif
 }
