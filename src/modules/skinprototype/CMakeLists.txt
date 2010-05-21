@@ -1,7 +1,7 @@
 
 
 IF (COMPILE_DEVICE_LIBRARY)
-  PREPARE_DEVICE(skinprototype TYPE SkinPrototype INCLUDE SkinPrototype.h
+  PREPARE_DEVICE(skinprototype TYPE SkinPrototype INCLUDE skinprototype.h
 				WRAPPER grabber)
 ENDIF (COMPILE_DEVICE_LIBRARY)
 
