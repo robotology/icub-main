@@ -849,7 +849,7 @@ bool RobotInterfaceRemap::instantiateNetwork(std::string &path, Property &robotO
     {
         string netid=deviceParameters.findGroup("CAN").find("NetworkId").asString().c_str();
 
-        //        std::cerr<<"Netid:"<<netid<<endl;
+        //std::cerr<<"Netid:"<<netid<<endl;
         //overwriting net id
         networkN=(*ids)[netid];
         if (networkN!=-1)

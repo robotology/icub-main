@@ -1336,7 +1336,7 @@ bool CommandsHelper2::respond(const yarp::os::Bottle& cmd,
 
                             case VOCAB_AMP_STATUS: 
                                 {
-                                    double *p = new int[controlledJoints];
+                                    int *p = new int[controlledJoints];
                                     ok = amp->getAmpStatus(p);
                                     Bottle& b = response.addList();
                                     int i;
