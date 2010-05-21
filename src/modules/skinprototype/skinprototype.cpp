@@ -8,21 +8,21 @@
 
 const int CAN_DRIVER_BUFFER_SIZE=2047;
 
-#define DEBUG 1
+//#define DEBUG 1
 
 using namespace std;
 
 bool SkinPrototype::open(yarp::os::Searchable& config)
 {
     bool correct=true;
-#if DEBUG
+#if SKIN_DEBUG
     fprintf(stderr, "%s\n", config.toString().c_str());
 #endif
 
     correct &= config.check("canbusdevice");
     correct &= config.check("CanDeviceNum");
     correct &= config.check("SkinCanIds");
-    correct &= config.check("ThreadRate");
+    correct &= config.check("Period");
 
     if (!correct)
     {
@@ -30,8 +30,8 @@ bool SkinPrototype::open(yarp::os::Searchable& config)
         return false;
     }
 
-    int rate=config.find("ThreadRate").asInt();
-    setRate(rate);
+    int period=config.find("Period").asInt();
+    setRate(period);
 
     Bottle ids=config.findGroup("SkinCanIds").tail();
 
@@ -42,7 +42,7 @@ bool SkinPrototype::open(yarp::os::Searchable& config)
     }
     cardId=ids.get(0).asInt();
 
-#if DEBUG
+#if SKIN_DEBUG
     fprintf(stderr, "Id reading from %d\n", cardId);
 #endif 
 
@@ -132,7 +132,7 @@ bool SkinPrototype::calibrate(int ch, double v)
 
 bool SkinPrototype::threadInit()
 {
-#if DEBUG
+#if SKIN_DEBUG
 	printf("SkinPrototype:: thread initialising...\n");
     printf("... done!\n");
 #endif 
@@ -208,7 +208,7 @@ void SkinPrototype::run()
 
 void SkinPrototype::threadRelease()
 {
-#if DEBUG
+#if SKIN_DEBUG
 	printf("SkinPrototype Thread releasing...\n");	
     printf("... done.\n");
 #endif
