@@ -116,8 +116,9 @@ protected:
 
     yarp::os::BufferedPort<yarp::os::Bottle> graspDetectionPort;
 
-    yarp::os::Semaphore *mutex;
-    void                *motionDoneEvent;
+    yarp::os::RateThread *armWaver;
+    yarp::os::Semaphore  *mutex;
+    void                 *motionDoneEvent;
 
     bool armMoveDone;
     bool handMoveDone;
@@ -167,6 +168,7 @@ protected:
         yarp::sig::Vector x;
         yarp::sig::Vector o;
         double execTime;
+        bool oEnabled;
         // hand action
         bool execHand;
         HandWayPoint handWP;
@@ -185,10 +187,13 @@ protected:
     virtual bool handleTorsoDOF(yarp::os::Property &opt, const std::string &key,
                                 const int j);
     virtual bool configHandSeq(yarp::os::Property &opt);
-    virtual bool pushAction(const bool execArm, const yarp::sig::Vector &x,
-                            const yarp::sig::Vector &o, const double execTime,
-                            const bool execHand, const HandWayPoint &handWP,
-                            const bool handSeqTerminator, affActionPrimitivesCallback *clb);
+    virtual bool _pushAction(const bool execArm, const yarp::sig::Vector &x,
+                             const yarp::sig::Vector &o, const double execTime,
+                             const bool oEnabled, const bool execHand, const HandWayPoint &handWP,
+                             const bool handSeqTerminator, affActionPrimitivesCallback *clb);
+   virtual bool  _pushAction(const yarp::sig::Vector &x, const yarp::sig::Vector &o,
+                             const std::string &handSeqKey, const double execTime,
+                             affActionPrimitivesCallback *clb, const bool oEnabled);
     virtual bool stopJntTraj(const int jnt);
     virtual void enableTorsoDof();
     virtual void disableTorsoDof();
@@ -333,11 +338,34 @@ public:
     * @note Some examples: 
     *  
     * the call \b pushAction(x,o,"close_hand") pushes the combined 
-    * action of reach(x,o) and hand "close_hand" sequence into the 
-    * queue; the action will be executed as soon as all the previous 
-    * items in the queue will have been served. 
+    * action of reachPose(x,o) and hand "close_hand" sequence into 
+    * the queue; the action will be executed as soon as all the 
+    * previous items in the queue will have been served. 
     */
     virtual bool pushAction(const yarp::sig::Vector &x, const yarp::sig::Vector &o, 
+                            const std::string &handSeqKey,
+                            const double execTime=ACTIONPRIM_DISABLE_EXECTIME,
+                            affActionPrimitivesCallback *clb=NULL);
+
+    /**
+    * Insert a combination of arm and hand primitive actions in the 
+    * actions queue. 
+    * @param x the 3-d target position [m]. 
+    * @param handSeqKey the hand sequence key. 
+    * @param execTime the arm action execution time [s] (to be 
+    *          specified iff different from default value).
+    * @param clb action callback that is executed when the action 
+    *            ends; none by default.
+    * @return true/false on success/fail. 
+    *  
+    * @note Some examples: 
+    *  
+    * the call \b pushAction(x,"close_hand") pushes the combined 
+    * action of reachPosition(x) and hand "close_hand" sequence into
+    * the queue; the action will be executed as soon as all the 
+    * previous items in the queue will have been served. 
+    */
+    virtual bool pushAction(const yarp::sig::Vector &x, 
                             const std::string &handSeqKey,
                             const double execTime=ACTIONPRIM_DISABLE_EXECTIME,
                             affActionPrimitivesCallback *clb=NULL);
@@ -355,6 +383,20 @@ public:
     * @return true/false on success/fail. 
     */
     virtual bool pushAction(const yarp::sig::Vector &x, const yarp::sig::Vector &o,
+                            const double execTime=ACTIONPRIM_DISABLE_EXECTIME,
+                            affActionPrimitivesCallback *clb=NULL);
+
+    /**
+    * Insert the arm-primitive action reach for target in the 
+    * actions queue. 
+    * @param x the 3-d target position [m]. 
+    * @param execTime the arm action execution time [s] (to be 
+    *          specified iff different from default value).
+    * @param clb action callback that is executed when the action 
+    *            ends; none by default.
+    * @return true/false on success/fail. 
+    */
+    virtual bool pushAction(const yarp::sig::Vector &x,
                             const double execTime=ACTIONPRIM_DISABLE_EXECTIME,
                             affActionPrimitivesCallback *clb=NULL);
 
@@ -391,8 +433,22 @@ public:
     *  
     * @note The intended use is for tracking moving targets. 
     */
-    virtual bool reach(const yarp::sig::Vector &x, const yarp::sig::Vector &o,
-                       const double execTime=ACTIONPRIM_DISABLE_EXECTIME);
+    virtual bool reachPose(const yarp::sig::Vector &x, const yarp::sig::Vector &o,
+                           const double execTime=ACTIONPRIM_DISABLE_EXECTIME);
+
+    /**
+    * Immediately update the current reaching target (without 
+    * affecting the actions queue) or initiate a new reach (if the 
+    * actions queue is empty).
+    * @param x the 3-d target position [m]. 
+    * @param execTime the arm action execution time [s] (to be 
+    *          specified iff different from default value).
+    * @return true/false on success/fail. 
+    *  
+    * @note The intended use is for tracking moving targets. 
+    */
+    virtual bool reachPosition(const yarp::sig::Vector &x,
+                               const double execTime=ACTIONPRIM_DISABLE_EXECTIME);
 
     /**
     * Empty the actions queue. 
@@ -494,6 +550,23 @@ public:
     virtual bool getTrackingMode();
 
     /**
+    * Enable the waving mode that keeps on moving the arm around a 
+    * predefined position. 
+    * @param restPos: the 3-d position around which to wave. 
+    * @note useful to give a kind of more human perception when the 
+    *       arm is homed. This mode is automatically disabled each
+    *       time a new action is commanded.
+    * @return true/false on success/failure.
+    */
+    virtual bool enableArmWaving(const yarp::sig::Vector &restPos);
+
+    /**
+    * Disable the waving mode.
+    * @return true/false on success/failure.
+    */
+    virtual bool disableArmWaving();
+
+    /**
     * Check whether the action is accomplished or still ongoing.
     * @param f the result of the check. 
     * @param sync if true wait until the action is accomplished 
@@ -521,7 +594,7 @@ public:
     * switch on. 
     * @return true/false on success/fail. 
     */
-    virtual bool syncCheckReinstate();
+    virtual bool syncCheckReinstate();    
 };
 
 

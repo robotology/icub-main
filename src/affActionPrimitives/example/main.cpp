@@ -175,14 +175,12 @@ protected:
     Vector dOffsL,      dOffsR;
     Vector dLiftL,      dLiftR;
     Vector home_xL,     home_xR;
-    Vector home_oL,     home_oR;
 
     Vector *graspOrien;
     Vector *graspDisp;
     Vector *dOffs;
     Vector *dLift;
     Vector *home_x;
-    Vector *home_o;
 
     bool openPorts;
     bool firstRun;
@@ -195,7 +193,6 @@ public:
         dOffsL.resize(3);         dOffsR.resize(3);
         dLiftL.resize(3);         dLiftR.resize(3);
         home_xL.resize(3);        home_xR.resize(3);
-        home_oL.resize(4);        home_oR.resize(4);
 
         // default values for arm-dependent quantities
         graspOrienL[0]=-0.171542; graspOrienR[0]=-0.0191;
@@ -203,8 +200,8 @@ public:
         graspOrienL[2]=-0.977292; graspOrienR[2]= 0.181269;
         graspOrienL[3]= 3.058211; graspOrienR[3]= 3.093746;
 
-        graspDispL[0]= 0.0;       graspDispR[0]= 0.0; 
-        graspDispL[1]= 0.0;       graspDispR[1]= 0.0; 
+        graspDispL[0]= 0.0;       graspDispR[0]= 0.0;
+        graspDispL[1]= 0.0;       graspDispR[1]= 0.0;
         graspDispL[2]= 0.05;      graspDispR[2]= 0.05;
 
         dOffsL[0]=-0.03;          dOffsR[0]=-0.03;
@@ -218,10 +215,6 @@ public:
         home_xL[0]=-0.29;         home_xR[0]=-0.29;
         home_xL[1]=-0.21;         home_xR[1]= 0.24;
         home_xL[2]= 0.11;         home_xR[2]= 0.07;
-        home_oL[0]=-0.029976;     home_oR[0]=-0.193426;
-        home_oL[1]= 0.763076;     home_oR[1]=-0.63989;
-        home_oL[2]=-0.645613;     home_oR[2]= 0.743725;
-        home_oL[3]= 2.884471;     home_oR[3]= 2.995693;
 
         action=actionL=actionR=NULL;
         graspOrien=NULL;
@@ -229,15 +222,13 @@ public:
         dOffs=NULL;
         dLift=NULL;
         home_x=NULL;
-        home_o=NULL;
 
         openPorts=false;
         firstRun=true;
 	}
 
     void getArmDependentOptions(Bottle &b, Vector &_gOrien, Vector &_gDisp,
-                                Vector &_dOffs, Vector &_dLift, Vector &_home_x,
-                                Vector &_home_o)
+                                Vector &_dOffs, Vector &_dLift, Vector &_home_x)
     {
         if (Bottle *pB=b.find("grasp_orientation").asList())
         {
@@ -287,16 +278,6 @@ public:
 
             for (int i=0; i<l; i++)
                 _home_x[i]=pB->get(i).asDouble();
-        }
-
-        if (Bottle *pB=b.find("home_orientation").asList())
-        {
-            int sz=pB->size();
-            int len=_home_o.length();
-            int l=len<sz?len:sz;
-
-            for (int i=0; i<l; i++)
-                _home_o[i]=pB->get(i).asDouble();
         }
     }
 
@@ -349,7 +330,7 @@ public:
         }
         else 
             getArmDependentOptions(bLeft,graspOrienL,graspDispL,
-                                   dOffsL,dLiftL,home_xL,home_oL);
+                                   dOffsL,dLiftL,home_xL);
 
         // parsing right_arm config options
         Bottle &bRight=config.findGroup("right_arm");
@@ -360,7 +341,7 @@ public:
         }
         else
             getArmDependentOptions(bRight,graspOrienR,graspDispR,
-                                   dOffsR,dLiftR,home_xR,home_oR);
+                                   dOffsR,dLiftR,home_xR);
 
         if (partUsed=="both_arms" || partUsed=="left_arm")
         {    
@@ -443,7 +424,6 @@ public:
             dOffs=&dOffsL;
             dLift=&dLiftL;
             home_x=&home_xL;
-            home_o=&home_oL;
         }
         else if (arm==USE_RIGHT)
         {
@@ -454,7 +434,6 @@ public:
             dOffs=&dOffsR;
             dLift=&dLiftR;
             home_x=&home_xR;
-            home_o=&home_oR;
         }
     }
 
@@ -465,15 +444,17 @@ public:
         if (partUsed=="both_arms" || partUsed=="right_arm")
         {
             useArm(USE_RIGHT);
-            action->pushAction(*home_x,*home_o,"open_hand");
+            action->pushAction(*home_x,"open_hand");
             action->checkActionsDone(f,true);
+            action->enableArmWaving(*home_x);
         }
 
         if (partUsed=="both_arms" || partUsed=="left_arm")
         {
             useArm(USE_LEFT);
-            action->pushAction(*home_x,*home_o,"open_hand");
+            action->pushAction(*home_x,"open_hand");
             action->checkActionsDone(f,true);
+            action->enableArmWaving(*home_x);
         }
     }
 
@@ -541,8 +522,13 @@ public:
 
             // go home :) (wait until it's done, since
             // we may use two arms that share the torso)
-            action->pushAction(*home_x,*home_o);
+            action->pushAction(*home_x);
             action->checkActionsDone(f,true);
+
+            // let the hand wave a bit around home position
+            // the waving will be disabled before commencing
+            // a new action
+            action->enableArmWaving(*home_x);
 		}		
 
 		return true;

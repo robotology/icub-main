@@ -1,7 +1,8 @@
 
 #include <ace/Auto_Event.h>
-#include <yarp/math/Math.h>
 #include <yarp/os/Time.h>
+#include <yarp/math/Math.h>
+#include <yarp/math/Rand.h>
 
 #include <gsl/gsl_math.h>
 
@@ -12,6 +13,7 @@
 #include <string>
 
 #define RES_EVENT(x)                                (static_cast<ACE_Auto_Event*>(x))
+#define RES_WAVER(x)                                (dynamic_cast<ArmWavingMonitor*>(x))
                                                     
 #define ACTIONPRIM_DEFAULT_PER                      50      // [ms]
 #define ACTIONPRIM_DEFAULT_EXECTIME                 3.0     // [s]
@@ -25,6 +27,10 @@
 #define ACTIONPRIM_DEFAULT_TRACKINGMODE             "off"
 #define ACTIONPRIM_DEFAULT_VERBOSITY                "off"
 
+// defines for balancing the arm when in home position
+#define ACTIONPRIM_BALANCEARM_PERIOD                1.0     // [s]
+#define ACTIONPRIM_BALANCEARM_LENGTH                0.03    // [m]
+
 using namespace std;
 using namespace yarp;
 using namespace yarp::os;
@@ -33,6 +39,77 @@ using namespace yarp::sig;
 using namespace yarp::math;
 using namespace ctrl;
 using namespace actions;
+
+
+// This class handles the automatic arm-waving
+class ArmWavingMonitor : public RateThread
+{
+    ICartesianControl *cartCtrl;
+    Vector restPos;
+    double L;
+
+public:
+    /************************************************************************/
+    ArmWavingMonitor(ICartesianControl *_cartCtrl) :
+                     RateThread((int)(1000*ACTIONPRIM_BALANCEARM_PERIOD))
+    {
+        cartCtrl=_cartCtrl;
+        L=ACTIONPRIM_BALANCEARM_LENGTH;
+
+        restPos.resize(1,0.0);
+
+        Rand::init();
+    }
+
+    /************************************************************************/
+    void setRestPosition(const Vector &_restPos)
+    {
+        restPos=_restPos;
+    }
+
+    /************************************************************************/
+    virtual void afterStart(bool s)
+    {
+        // start in suspended mode
+        disable();
+    }
+
+    /************************************************************************/
+    virtual void enable()
+    {
+        if (isSuspended())
+            resume();
+    }
+
+    /************************************************************************/
+    virtual void disable()
+    {
+        if (isRunning())
+            suspend();
+    }
+
+    /************************************************************************/
+    virtual void run()
+    {
+        int len=restPos.length();
+
+        if ((cartCtrl!=NULL) && (len>=3))
+        {
+            Vector halves(len); halves=0.5;
+            Vector randOffs=L*(Rand::vector(len)-halves);
+    
+            cartCtrl->goToPosition(restPos+randOffs);
+        }
+    }
+
+    /************************************************************************/
+    virtual ~ArmWavingMonitor()
+    {
+        // safety check: make sure to stop
+        // the interface when closing
+        cartCtrl->stopControl();
+    }
+};
 
 
 /************************************************************************/
@@ -56,6 +133,8 @@ affActionPrimitives::affActionPrimitives(Property &opt) :
 void affActionPrimitives::init()
 {
     polyHand=polyCart=NULL;
+
+    armWaver=NULL;
 
     mutex=NULL;
     motionDoneEvent=NULL;
@@ -392,6 +471,10 @@ bool affActionPrimitives::open(Property &opt)
     setRate(period);
     start();
 
+    // start the balancer thread
+    armWaver=new ArmWavingMonitor(cartCtrl);
+    armWaver->start();
+
     return configured=true;
 }
 
@@ -402,17 +485,26 @@ void affActionPrimitives::close()
     if (closed)
         return;
 
-    if (polyHand->isValid() && polyCart->isValid())
-    {    
-        stopControl();
-        setTrackingMode(false);
+    if (armWaver!=NULL)
+    {
+        printMessage("stopping balancer thread ...\n");
+        stop();
+
+        delete armWaver;
     }
 
     if (isRunning())
     {
-        printMessage("stopping thread ...\n");        
+        printMessage("stopping main thread ...\n");        
         stop();
     }
+
+    if (polyHand!=NULL && polyCart!=NULL)
+        if (polyHand->isValid() && polyCart->isValid())
+        {    
+            stopControl();
+            setTrackingMode(false);
+        }
 
     if (polyHand!=NULL)
     {
@@ -521,10 +613,10 @@ bool affActionPrimitives::clearActionsQueue()
 
 
 /************************************************************************/
-bool affActionPrimitives::pushAction(const bool execArm, const Vector &x, const Vector &o,
-                                     const double execTime, const bool execHand,
-                                     const HandWayPoint &handWP, const bool handSeqTerminator,
-                                     affActionPrimitivesCallback *clb)
+bool affActionPrimitives::_pushAction(const bool execArm, const Vector &x, const Vector &o,
+                                      const double execTime, const bool oEnabled, const bool execHand,
+                                      const HandWayPoint &handWP, const bool handSeqTerminator,
+                                      affActionPrimitivesCallback *clb)
 {
     if (configured)
     {
@@ -536,6 +628,7 @@ bool affActionPrimitives::pushAction(const bool execArm, const Vector &x, const 
         action.x=x;
         action.o=o;
         action.execTime=execTime;
+        action.oEnabled=oEnabled;
         action.execHand=execHand;
         action.handWP=handWP;
         action.handSeqTerminator=handSeqTerminator;
@@ -552,9 +645,9 @@ bool affActionPrimitives::pushAction(const bool execArm, const Vector &x, const 
 
 
 /************************************************************************/
-bool affActionPrimitives::pushAction(const Vector &x, const Vector &o,
-                                     const string &handSeqKey, const double execTime,
-                                     affActionPrimitivesCallback *clb)
+bool affActionPrimitives::_pushAction(const Vector &x, const Vector &o,
+                                      const string &handSeqKey, const double execTime,
+                                      affActionPrimitivesCallback *clb, const bool oEnabled)
 {
     if (configured)
     {
@@ -565,21 +658,22 @@ bool affActionPrimitives::pushAction(const Vector &x, const Vector &o,
 
             if (q.size())
             {   
+                Vector vectDummy(1);
+
                 // combined action
-                pushAction(true,x,o,execTime,true,q[0],q.size()==1,q.size()==1?clb:NULL);
+                _pushAction(true,x,o,execTime,oEnabled,true,q[0],q.size()==1,q.size()==1?clb:NULL);
 
                 if (q.size()>1)
                 {
-                    unsigned int i;
-                    Vector dummy(1);
+                    unsigned int i;                    
 
                     // decompose hand action in sum of fingers sequences
                     for (i=1; i<q.size()-1; i++)
-                        pushAction(false,dummy,dummy,ACTIONPRIM_DISABLE_EXECTIME,true,q[i],false,NULL);
+                        _pushAction(false,vectDummy,vectDummy,ACTIONPRIM_DISABLE_EXECTIME,false,true,q[i],false,NULL);
     
                     // reserve the callback whenever the last hand WP is achieved
                     if (i<q.size())
-                        pushAction(false,dummy,dummy,ACTIONPRIM_DISABLE_EXECTIME,true,q[i],true,clb);
+                        _pushAction(false,vectDummy,vectDummy,ACTIONPRIM_DISABLE_EXECTIME,false,true,q[i],true,clb);
                 }
             }
 
@@ -600,13 +694,51 @@ bool affActionPrimitives::pushAction(const Vector &x, const Vector &o,
 
 /************************************************************************/
 bool affActionPrimitives::pushAction(const Vector &x, const Vector &o,
+                                     const string &handSeqKey, const double execTime,
+                                     affActionPrimitivesCallback *clb)
+{
+    return _pushAction(x,o,handSeqKey,execTime,clb,true);
+}
+
+
+/************************************************************************/
+bool affActionPrimitives::pushAction(const Vector &x, const string &handSeqKey,
+                                     const double execTime, affActionPrimitivesCallback *clb)
+{
+    Vector vectDummy(1);
+
+    return _pushAction(x,vectDummy,handSeqKey,execTime,clb,false);
+}
+
+
+/************************************************************************/
+bool affActionPrimitives::pushAction(const Vector &x, const Vector &o,
                                      const double execTime,
                                      affActionPrimitivesCallback *clb)
 {
     if (configured)
     {
-        HandWayPoint dummy;
-        pushAction(true,x,o,execTime,false,dummy,false,clb);
+        HandWayPoint handDummy;
+
+        _pushAction(true,x,o,execTime,true,false,handDummy,false,clb);
+
+        return true;
+    }
+    else
+        return false;
+}
+
+
+/************************************************************************/
+bool affActionPrimitives::pushAction(const Vector &x, const double execTime,
+                                     affActionPrimitivesCallback *clb)
+{
+    if (configured)
+    {
+        HandWayPoint handDummy;
+        Vector vectDummy(1);
+
+        _pushAction(true,x,vectDummy,execTime,false,false,handDummy,false,clb);
 
         return true;
     }
@@ -625,16 +757,16 @@ bool affActionPrimitives::pushAction(const string &handSeqKey,
         if (itr!=handSeqMap.end())
         {
             deque<HandWayPoint> &q=itr->second;
+            Vector vectDummy(1);
             unsigned int i;
-            Vector dummy(1);
 
             // decompose hand action in sum of fingers sequences
             for (i=0; i<q.size()-1; i++)
-                pushAction(false,dummy,dummy,ACTIONPRIM_DISABLE_EXECTIME,true,q[i],false,NULL);
+                _pushAction(false,vectDummy,vectDummy,ACTIONPRIM_DISABLE_EXECTIME,false,true,q[i],false,NULL);
 
             // reserve the callback whenever the last hand WP is achieved
             if (i<q.size())
-                pushAction(false,dummy,dummy,ACTIONPRIM_DISABLE_EXECTIME,true,q[i],true,clb);
+                _pushAction(false,vectDummy,vectDummy,ACTIONPRIM_DISABLE_EXECTIME,false,true,q[i],true,clb);
 
             return true;
         }
@@ -658,7 +790,6 @@ bool affActionPrimitives::pushWaitState(const double tmo, affActionPrimitivesCal
     {
         mutex->wait();
         Action action;
-        Vector dummy(1);
 
         action.waitState=true;
         action.tmo=tmo;
@@ -678,11 +809,13 @@ bool affActionPrimitives::pushWaitState(const double tmo, affActionPrimitivesCal
 
 
 /************************************************************************/
-bool affActionPrimitives::reach(const Vector &x, const Vector &o,
-                                const double execTime)
+bool affActionPrimitives::reachPose(const Vector &x, const Vector &o,
+                                    const double execTime)
 {
     if (configured)
     {
+        disableArmWaving();
+
         const double t=execTime>0.0?execTime:default_exec_time;
 
         enableTorsoDof();
@@ -694,6 +827,33 @@ bool affActionPrimitives::reach(const Vector &x, const Vector &o,
         printMessage("reach at %g [s] for [%s], [%s]\n",t,
                      toCompactString(x).c_str(),
                      toCompactString(o).c_str());
+
+        t0=Time::now();
+
+        return true;
+    }
+    else
+        return false;
+}
+
+
+/************************************************************************/
+bool affActionPrimitives::reachPosition(const Vector &x, const double execTime)
+{
+    if (configured)
+    {
+        disableArmWaving();
+
+        const double t=execTime>0.0?execTime:default_exec_time;
+
+        enableTorsoDof();
+
+        cartCtrl->goToPosition(x,t);
+
+        latchArmMoveDone=armMoveDone=false;
+
+        printMessage("reach at %g [s] for [%s]\n",t,
+                     toCompactString(x).c_str());
 
         t0=Time::now();
 
@@ -895,23 +1055,40 @@ bool affActionPrimitives::cmdArm(const Action &action)
 {
     if (configured)
     {
+        disableArmWaving();
+
         const Vector &x=action.x;
         const Vector &o=action.o;
-        const double t=action.execTime>0.0?action.execTime:default_exec_time;
+        const bool    oEnabled=action.oEnabled;
+        const double  t=action.execTime>0.0?action.execTime:default_exec_time;
 
         enableTorsoDof();
 
-        if (!cartCtrl->goToPoseSync(x,o,t))
+        if (oEnabled)
         {
-            printMessage("reach error\n");
-            return false;
+            if (!cartCtrl->goToPoseSync(x,o,t))
+            {
+                printMessage("reach error\n");
+                return false;
+            }
+            
+            printMessage("reach at %g [s] for [%s], [%s]\n",
+                         t,toCompactString(x).c_str(),
+                         toCompactString(o).c_str());
+        }
+        else
+        {
+            if (!cartCtrl->goToPositionSync(x,t))
+            {
+                printMessage("reach error\n");
+                return false;
+            }
+
+            printMessage("reach at %g [s] for [%s]\n",
+                         t,toCompactString(x).c_str());
         }
 
         latchArmMoveDone=armMoveDone=false;
-        printMessage("reach at %g [s] for [%s], [%s]\n",
-                     t,toCompactString(x).c_str(),
-                     toCompactString(o).c_str());
-
         t0=Time::now();
 
         return true;
@@ -926,6 +1103,8 @@ bool affActionPrimitives::cmdHand(const Action &action)
 {
     if (configured)
     {
+        disableArmWaving();
+
         const string &tag=action.handWP.tag;
         const Vector &poss=action.handWP.poss;
         const Vector &vels=action.handWP.vels;
@@ -1076,9 +1255,48 @@ bool affActionPrimitives::stopControl()
 /************************************************************************/
 bool affActionPrimitives::setTrackingMode(const bool f)
 {
-    if (cartCtrl->setTrackingMode(f))
+    if (configured)
     {
-        tracking_mode=f;
+        if (cartCtrl->setTrackingMode(f))
+        {
+            tracking_mode=f;
+            return true;
+        }
+        else
+            return false;
+    }
+    else
+        return false;
+}
+
+
+/************************************************************************/
+bool affActionPrimitives::enableArmWaving(const yarp::sig::Vector &restPos)
+{
+    if (configured)
+    {
+        RES_WAVER(armWaver)->setRestPosition(restPos);
+        printMessage("setting waving position to %s\n",
+                     toCompactString(restPos).c_str());
+
+        RES_WAVER(armWaver)->enable();
+        printMessage("arm waving enabled\n");
+
+        return true;
+    }
+    else
+        return false;
+}
+
+
+/************************************************************************/
+bool affActionPrimitives::disableArmWaving()
+{
+    if (configured)
+    {
+        RES_WAVER(armWaver)->disable();
+        printMessage("arm waving disabled\n");
+
         return true;
     }
     else
