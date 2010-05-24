@@ -277,7 +277,7 @@ void CommandsHelper2::handleControlModeMsg(const yarp::os::Bottle& cmd,
                         response.addVocab(VOCAB_CM_CONTROL_MODE);       
                         response.addVocab(p);
 			
-                        fprintf(stderr, "Returning %d\n", p);
+                        //fprintf(stderr, "Returning %d\n", p);
                         *rec=true;
                     }
             }
@@ -671,7 +671,7 @@ bool CommandsHelper2::respond(const yarp::os::Bottle& cmd,
         }
     else if ((cmd.size()>1) && (cmd.get(0).asVocab()==VOCAB_ICONTROLMODE))
         {
-            //            handleControlModeMsg(cmd, response, &rec, &ok);
+                          handleControlModeMsg(cmd, response, &rec, &ok);
         }
     else
         {
