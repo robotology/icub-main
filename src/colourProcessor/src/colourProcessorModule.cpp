@@ -30,6 +30,8 @@ bool colourProcessorModule::configure(ResourceFinder &rf)
     
     interThread.setName("/colourPU/");
     interThread.start();
+
+    printf("waiting for connection of the input port, 20sec to proceed \n");
     
     while((interThread.inputImg==0)&&(dif<20)){
         time (&end);

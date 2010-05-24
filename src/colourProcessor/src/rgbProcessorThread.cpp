@@ -321,10 +321,10 @@ void rgbProcessorThread::colourOpponency(){
     */
 
     //4.1 subtract the red from the green to obtain R+G-
-	ippiSub_32f_C1R(redPlane_ippi32,psb2,greenPlane_ippi32_f,psb2,redGreen_ippi32,psb2,srcsize);
+    ippiSub_32f_C1R(greenPlane_ippi32_f,psb2,redPlane_ippi32,psb2,redGreen_ippi32,psb2,srcsize);
 	//ippiSub_8u_C1RSfs(redGreen_ippi,psb,greenPlane_ippi_f,psb,redGreen_ippi,psb,srcsize,-1);
 	//4.2 subtract the green from the red to obtain G+R-
-	ippiSub_32f_C1R(greenPlane_ippi32,psb2,redPlane_ippi32_f,psb2,greenRed_ippi32,psb2,srcsize);
+	ippiSub_32f_C1R(redPlane_ippi32_f,psb2,greenPlane_ippi32,psb2,greenRed_ippi32,psb2,srcsize);
 	//ippiSub_8u_C1RSfs(greenRed_ippi,psb,redPlane_ippi_f,psb,greenRed_ippi,psb,srcsize,-1);
 	//4.3 risht shift;
 	//ippiRShiftC_32s_C1IR(1,greenPlane_ippi32_f,psb2,srcsize);
@@ -354,11 +354,12 @@ void rgbProcessorThread::colourOpponency(){
     conv_32f_to_8u(blueYellow_ippi32,psb2,blueYellow_yarp->getRawImage(),blueYellow_yarp->getRowSize(),srcsize);
     conv_32f_to_8u(redGreen_ippi32,psb2,redGreen_yarp->getRawImage(),redGreen_yarp->getRowSize(),srcsize);
     conv_32f_to_8u(greenRed_ippi32,psb2,greenRed_yarp->getRawImage(),greenRed_yarp->getRowSize(),srcsize);
+
     
 
-    /*printf("RG:%d ", redGreen_ippi[100]);
-    printf("GR:%d ", greenRed_ippi[100]);
-    printf("BY:%d ", blueYellow_ippi[100]);*/
+    //printf("RG:%d ", redGreen_yarp->getRawImage()[100]);
+    //printf("GR:%d ", greenRed_yarp->getRawImage()[100]);
+    //printf("BY:%d ", blueYellow_ippi[100]);
 
 	/*int thresholdHigh=140;
 	int thresholdLow=1;
