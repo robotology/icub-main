@@ -12,7 +12,7 @@ reach for the object and eventually grasp it.
 
 \section dep_sec Dependencies
 Assumes that \ref icub_iCubInterface (with ICartesianControl 
-interface implemented) is running.
+interface implemented) and \ref iKinGazeCtrl are running.
 
 \section int_sec Instantiated Modules
 - \ref pf3dTracker "pf3dTracker"
@@ -20,10 +20,6 @@ interface implemented) is running.
 - \ref eye2RootFrameTransformer "eye2RootFrameTransformer"
 
 - \ref demoGraspManager_IIT_ISR "demoGraspManager_IIT_ISR"
-
-- \ref iKinGazeCtrl "iKinGazeCtrl"
-
-- \ref graspDetector "graspDetector"
 
 \section config_sec Configuration Files
 The file ./conf/config.ini contains the initialization parameters for the 

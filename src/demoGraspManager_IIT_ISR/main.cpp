@@ -18,8 +18,8 @@ particle filter and sends data to the head and arm controllers
 in order to gaze at the target, reach for it and eventually 
 grasp it. 
 It relies on the YARP ICartesianControl interface to control 
-both arms and on \ref graspDetector "graspDetector" to detect 
-any contact between the target and the fingers. 
+both arms and on the YARP IGazeControl interface to control the 
+gaze. 
  
 \section lib_sec Libraries 
 - YARP libraries. 
@@ -29,23 +29,12 @@ None.
  
 \section portsa_sec Ports Accessed
 Assumes that \ref icub_iCubInterface (with ICartesianControl 
-interface implemented) is running. 
+interface implemented) and \ref iKinGazeCtrl are running. 
  
 \section portsc_sec Ports Created 
  
 - \e /demoGraspManager_IIT_ISR/trackTarget:i receives the 3-d 
   position to track.
- 
-- \e /demoGraspManager_IIT_ISR/leftDetectGrasp:i receives the 
-  the bottle containing the contact status of the left hand
-  fingers.
- 
-- \e /demoGraspManager_IIT_ISR/rightDetectGrasp:i receives the 
-  the bottle containing the contact status of the right hand
-  fingers.
- 
-- \e /demoGraspManager_IIT_ISR/cmdHead:o sends out commands to 
-  the \ref iKinGazeCtrl module in order to control the gaze.
  
 - \e /demoGraspManager_IIT_ISR/cmdFace:o sends out commands to 
   the face expression high level interface in order to give an
@@ -119,8 +108,6 @@ sphere_radius   0.05
 sphere_tmo      3.0 
 // timeout [s] to open hand after closure 
 release_tmo     3.0 
-// threshold [deg] on the fingers status to detect contact  
-grasp_thres     0.5 
 // open hand positions [deg] 
 open_hand       0.0 0.0 0.0   0.0   0.0 0.0 0.0   0.0   0.0 
 // close hand positions [deg] 
@@ -146,6 +133,7 @@ Windows, Linux
 #include <yarp/dev/PolyDriver.h>
 #include <yarp/dev/ControlBoardInterfaces.h>
 #include <yarp/dev/CartesianControl.h>
+#include <yarp/dev/GazeControl.h>
 
 #include <gsl/gsl_math.h>
 #include <iCub/ctrlMath.h>
@@ -155,8 +143,6 @@ Windows, Linux
 #endif
 
 #include <string>
-#include <set>
-#include <map>
 
 #define DEFAULT_THR_PER     20
 
@@ -178,8 +164,7 @@ Windows, Linux
 
 #define STATE_IDLE          0
 #define STATE_REACH         1
-#define STATE_GRASP         2
-#define STATE_RELEASE       3
+#define STATE_RELEASE       2
 #define STATE_WAIT          4
                                                              
 using namespace std;
@@ -205,17 +190,16 @@ protected:
 
     PolyDriver *drvTorso, *drvLeftArm, *drvRightArm;
     PolyDriver *drvCartLeftArm, *drvCartRightArm;
+    PolyDriver *drvGazeCtrl;
 
     IEncoders         *encTorso;
     IPositionControl  *posTorso;
     IEncoders         *encArm;
     IPositionControl  *posArm;
     ICartesianControl *cartArm;
+    IGazeControl      *gazeCtrl;
 
     BufferedPort<Vector> *inportTrackTarget;
-    BufferedPort<Bottle> *inportDetectGraspLeft;
-    BufferedPort<Bottle> *inportDetectGraspRight;
-    BufferedPort<Vector> *outportCmdHead;
     Port *outportCmdFace;
 
     Vector leftArmReachOffs;
@@ -232,7 +216,6 @@ protected:
     Vector *armGraspOffs;
     Vector *armGraspSigma;
     Vector *armHandOrien;
-    Vector *detectGrasp;
 
     Vector homePoss, homeVels;
 
@@ -241,7 +224,6 @@ protected:
     double hystThres;
     double sphereRadius, sphereTmo;
     double releaseTmo;
-    double graspModelDistThres;
 
     double latchTimer;
     Vector sphereCenter;
@@ -249,13 +231,7 @@ protected:
     Vector openHandPoss, closeHandPoss;
     Vector handVels;
 
-    set<int> fingersSet;
-    set<int> fingersMovingSet;
-    multimap<int,int> fingers2JntsMap;
-
     Vector targetPos;
-    Vector leftDetectGrasp;
-    Vector rightDetectGrasp;
     Vector torso;
 
     Matrix R,Rx,Ry,Rz;
@@ -446,16 +422,6 @@ protected:
         fprintf(stdout,")\n");
     }
 
-    bool stopJntTraj(const int jnt)
-    {
-        double v;
-
-        if (encArm->getEncoder(jnt,&v))
-            return posArm->positionMove(jnt,v);
-        else
-            return false;
-    }
-
     void getSensorData()
     {
         if (encTorso->getEncoders(torso.data()))
@@ -486,22 +452,6 @@ protected:
 
             state=STATE_IDLE;
         }
-
-        if (Bottle *detectGraspNew=inportDetectGraspLeft->read(false))
-        {
-            int sz=detectGraspNew->size();
-            int len=sz>leftDetectGrasp.length()?leftDetectGrasp.length():sz;
-            for (int j=0; j<len; j++)
-                leftDetectGrasp[j]=detectGraspNew->get(j).asDouble();
-        }
-
-        if (Bottle *detectGraspNew=inportDetectGraspRight->read(false))
-        {
-            int sz=detectGraspNew->size();
-            int len=sz>rightDetectGrasp.length()?rightDetectGrasp.length():sz;
-            for (int j=0; j<len; j++)
-                rightDetectGrasp[j]=detectGraspNew->get(j).asDouble();
-        }
     }
 
     void doIdle()
@@ -511,10 +461,7 @@ protected:
     void commandHead()
     {
         if (state!=STATE_IDLE)
-        {
-            outportCmdHead->prepare()=targetPos;
-            outportCmdHead->write();
-        }        
+            gazeCtrl->lookAtFixationPoint(targetPos);
     }
 
     void steerHeadToHome()
@@ -527,8 +474,7 @@ protected:
 
         fprintf(stdout,"*** Homing head\n");
 
-        outportCmdHead->prepare()=homeHead;
-        outportCmdHead->write();
+        gazeCtrl->lookAtFixationPoint(homeHead);
     }
 
     void steerTorsoToHome()
@@ -628,8 +574,6 @@ protected:
             ipos->setRefSpeed(k,handVels[j]);
             ipos->positionMove(k,(*poss)[j]);
         }
-
-        fingersMovingSet=fingersSet;
     }
 
     void openHand(const int sel=USEDARM)
@@ -665,7 +609,6 @@ protected:
                     armGraspOffs=&leftArmGraspOffs;
                     armGraspSigma=&leftArmGraspSigma;
                     armHandOrien=&leftArmHandOrien;
-                    detectGrasp=&leftDetectGrasp;
                 }
                 else
                 {
@@ -678,7 +621,6 @@ protected:
                     armGraspOffs=&rightArmGraspOffs;
                     armGraspSigma=&rightArmGraspSigma;
                     armHandOrien=&rightArmHandOrien;
-                    detectGrasp=&rightDetectGrasp;
                 }
 
                 fprintf(stdout,"*** Using %s\n",armSel==LEFTARM?"left_arm":"right_arm");
@@ -723,17 +665,7 @@ protected:
                     cartArm->goToPoseSync(x,*armHandOrien);
                     closeHand();
 
-                    state=STATE_GRASP;
-                }
-            }
-            else if (state==STATE_GRASP)
-            {
-                // check for hand closure
-                if (isHandSeqEnded())
-                {                    
-                    fprintf(stdout,"--- Grasp done OR Hand closure complete => WAITING\n");
-
-                    latchTimer=Time::now();    
+                    latchTimer=Time::now();
                     state=STATE_RELEASE;
                 }
             }
@@ -785,7 +717,7 @@ protected:
             else
                 setFace(FACE_ANGRY);
         }
-        else if (state==STATE_GRASP)
+        else if (state==STATE_WAIT)
             setFace(FACE_HAPPY);
     }
 
@@ -810,52 +742,6 @@ protected:
             return false;
         }
         else if (Time::now()-latchTimer<sphereTmo)
-            return false;
-        else
-            return true;
-    }
-
-    bool isHandSeqEnded()
-    {
-        // latch the current moving fingers set
-        set<int> tmpSet=fingersMovingSet;
-
-        for (set<int>::iterator i=fingersMovingSet.begin(); i!=fingersMovingSet.end(); ++i)
-        {
-            bool flag;
-            posArm->checkMotionDone(*i,&flag);
-
-            if (flag)
-                tmpSet.erase(*i);
-        }
-
-        // span over fingers
-        for (int fng=0; fng<5; fng++)
-        {
-            // detect contact on the finger
-            if ((*detectGrasp)[fng]>graspModelDistThres)
-            {
-                // take joints belonging to the finger
-                pair<multimap<int,int>::iterator,multimap<int,int>::iterator> i=fingers2JntsMap.equal_range(fng);
-
-                for (multimap<int,int>::iterator j=i.first; j!=i.second; ++j)
-                {
-                    int jnt=j->second;
-
-                    // stop and remove if not done yet
-                    if (tmpSet.find(jnt)!=tmpSet.end())
-                    {
-                        stopJntTraj(jnt);
-                        tmpSet.erase(jnt);
-                    }
-                }
-            }
-        }
-
-        // update the moving fingers set
-        fingersMovingSet=tmpSet;
-
-        if (fingersMovingSet.size())
             return false;
         else
             return true;
@@ -977,32 +863,14 @@ protected:
         if (drvCartRightArm)
             delete drvCartRightArm;
 
+        if (drvGazeCtrl)
+            delete drvGazeCtrl;
+
         if (inportTrackTarget)
         {
             inportTrackTarget->interrupt();
             inportTrackTarget->close();
             delete inportTrackTarget;
-        }
-
-        if (inportDetectGraspLeft)
-        {
-            inportDetectGraspLeft->interrupt();
-            inportDetectGraspLeft->close();
-            delete inportDetectGraspLeft;
-        }
-
-        if (inportDetectGraspRight)
-        {
-            inportDetectGraspRight->interrupt();
-            inportDetectGraspRight->close();
-            delete inportDetectGraspRight;
-        }
-
-        if (outportCmdHead)
-        {
-            outportCmdHead->interrupt();
-            outportCmdHead->close();
-            delete outportCmdHead;
         }
 
         if (outportCmdFace)
@@ -1019,11 +887,9 @@ public:
     {        
         drvTorso=drvLeftArm=drvRightArm=NULL;
         drvCartLeftArm=drvCartRightArm=NULL;
+        drvGazeCtrl=NULL;
 
         inportTrackTarget=NULL;
-        inportDetectGraspLeft=NULL;
-        inportDetectGraspRight=NULL;
-        outportCmdHead=NULL;
         outportCmdFace=NULL;
     }
 
@@ -1087,7 +953,6 @@ public:
         sphereRadius=bGrasp.check("sphere_radius",Value(0.0),"Getting sphere radius").asDouble();
         sphereTmo=bGrasp.check("sphere_tmo",Value(0.0),"Getting sphere timeout").asDouble();
         releaseTmo=bGrasp.check("release_tmo",Value(0.0),"Getting release timeout").asDouble();
-        graspModelDistThres=bGrasp.check("grasp_thres",Value(0.0),"Getting grasp threshold").asDouble();
 
         openHandPoss.resize(9,0.0); closeHandPoss.resize(9,0.0);
         handVels.resize(9,0.0);
@@ -1137,15 +1002,19 @@ public:
             }
         }
 
-        // open cartesiancontrollerclient drivers
+        // open cartesiancontrollerclient and gazecontrollerclient drivers
         Property optCartLeftArm("(device cartesiancontrollerclient)");
         Property optCartRightArm("(device cartesiancontrollerclient)");
+        Property optGazeCtrl("(device gazecontrollerclient)");
 
         optCartLeftArm.put("remote",(fwslash+robot+"/cartesianController/left_arm").c_str());
         optCartLeftArm.put("local",(name+"/left_arm/cartesian").c_str());
     
         optCartRightArm.put("remote",(fwslash+robot+"/cartesianController/right_arm").c_str());
         optCartRightArm.put("local",(name+"/right_arm/cartesian").c_str());
+
+        optGazeCtrl.put("remote","/iKinGazeCtrl");
+        optGazeCtrl.put("local",(name+"/gaze").c_str());
 
         if (useLeftArm)
         {
@@ -1167,9 +1036,17 @@ public:
             }
         }
 
+        drvGazeCtrl=new PolyDriver;
+        if (!drvGazeCtrl->open(optGazeCtrl))
+        {
+            close();
+            return false;
+        }
+
         // open views
         drvTorso->view(encTorso);
         drvTorso->view(posTorso);
+        drvGazeCtrl->view(gazeCtrl);
 
         if (useLeftArm)
         {
@@ -1180,7 +1057,6 @@ public:
             armGraspOffs=&leftArmGraspOffs;
             armGraspSigma=&leftArmGraspSigma;
             armHandOrien=&leftArmHandOrien;
-            detectGrasp=&leftDetectGrasp;
             armSel=LEFTARM;
         }
         else if (useRightArm)
@@ -1192,7 +1068,6 @@ public:
             armGraspOffs=&rightArmGraspOffs;
             armGraspSigma=&rightArmGraspSigma;
             armHandOrien=&rightArmHandOrien;
-            detectGrasp=&rightDetectGrasp;
             armSel=RIGHTARM;
         }
         else
@@ -1204,21 +1079,14 @@ public:
             armGraspOffs=NULL;
             armGraspSigma=NULL;
             armHandOrien=NULL;
-            detectGrasp=NULL;    
             armSel=NOARM;
         }
 
         // open ports
-        inportTrackTarget     =new BufferedPort<Vector>;
-        inportDetectGraspLeft =new BufferedPort<Bottle>;
-        inportDetectGraspRight=new BufferedPort<Bottle>;
-        outportCmdHead        =new BufferedPort<Vector>;
-        outportCmdFace        =new Port;
+        inportTrackTarget=new BufferedPort<Vector>;
+        outportCmdFace   =new Port;
 
         inportTrackTarget->open((name+"/trackTarget:i").c_str());
-        inportDetectGraspLeft->open((name+"/leftDetectGrasp:i").c_str());
-        inportDetectGraspRight->open((name+"/rightDetectGrasp:i").c_str());
-        outportCmdHead->open((name+"/cmdHead:o").c_str());
         outportCmdFace->open((name+"/cmdFace:rpc").c_str());
 
         // init
@@ -1226,24 +1094,7 @@ public:
         encTorso->getAxes(&torsoAxes);
         torso.resize(torsoAxes,0.0);
 
-        // hand joints set
-        for (int i=7; i<16; i++)
-            fingersSet.insert(i);
-
-        // map from hand joints to fingers
-        fingers2JntsMap.insert(pair<int,int>(0,8));
-        fingers2JntsMap.insert(pair<int,int>(0,9));
-        fingers2JntsMap.insert(pair<int,int>(0,10));
-        fingers2JntsMap.insert(pair<int,int>(1,11));
-        fingers2JntsMap.insert(pair<int,int>(1,12));
-        fingers2JntsMap.insert(pair<int,int>(2,13));
-        fingers2JntsMap.insert(pair<int,int>(2,14));
-        fingers2JntsMap.insert(pair<int,int>(3,15));
-        fingers2JntsMap.insert(pair<int,int>(4,15));
-
         targetPos.resize(3,0.0);
-        leftDetectGrasp.resize(5,0.0);
-        rightDetectGrasp.resize(5,0.0);
         R=Rx=Ry=Rz=eye(3,3);
 
         initCartesianCtrl(torsoSwitch,torsoLimits,LEFTARM);

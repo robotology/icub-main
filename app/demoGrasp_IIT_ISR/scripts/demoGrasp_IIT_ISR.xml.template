@@ -3,11 +3,9 @@
 
         <dependencies>
                 <port>/icub/camcalib/left/out</port>
-                <port>/icub/head/state:o</port>
+                <port>/iKinGazeCtrl/head/rpc</port>
                 <port>/icub/cartesianController/right_arm/state:o</port>
                 <port>/icub/cartesianController/left_arm/state:o</port>
-                <port>/icub/left_hand/analog:o</port>
-                <port>/icub/right_hand/analog:o</port>
         </dependencies>
       
         <module>
@@ -25,31 +23,11 @@
         </module>
 
         <module>
-                <name>iKinGazeCtrl</name>
-                <node>pwrNode2</node>
-                <tag>gazeControl</tag>
-        </module>
-
-        <module>
                 <name>demoGraspManager_IIT_ISR</name>
                 <node>pwrNode2</node>
                 <tag>manager</tag>
         </module>
   
-        <module>
-                <name>graspDetector</name>
-                <parameters>--from left_armGraspDetector.ini</parameters>
-                <node>pwrNode4</node>
-                <tag>graspDetectorLeft</tag>
-        </module>
-
-        <module>
-                <name>graspDetector</name>
-                <parameters>--from right_armGraspDetector.ini</parameters>
-                <node>pwrNode4</node>
-                <tag>graspDetectorRight</tag>
-        </module>
-
         <module>
                 <name>yarpview</name>
                 <parameters>--name /PF3DTracker_viewer --x 320 --y 0</parameters>
@@ -85,21 +63,6 @@
         <connection>
                 <from>/l2rBall/targetPos:o</from>
                 <to>/demoGraspManager_IIT_ISR/trackTarget:i</to>
-                <protocol>udp</protocol>
-        </connection>
-        <connection>
-                <from>/icub/left_hand/analog:o/fingerDetector/status:o</from>
-                <to>/demoGraspManager_IIT_ISR/leftDetectGrasp:i</to>
-                <protocol>udp</protocol>
-        </connection>
-        <connection>
-                <from>/icub/right_hand/analog:o/fingerDetector/status:o</from>
-                <to>/demoGraspManager_IIT_ISR/rightDetectGrasp:i</to>
-                <protocol>udp</protocol>
-        </connection>
-        <connection>
-                <from>/demoGraspManager_IIT_ISR/cmdHead:o</from>
-                <to>/iKinGazeCtrl/head/xd:i</to>
                 <protocol>udp</protocol>
         </connection>
         <connection>
