@@ -145,6 +145,7 @@ protected:
     yarp::sig::Vector      enableTorsoSw;
     yarp::sig::Vector      disableTorsoSw;
 
+    yarp::sig::Vector      curHandFinalPoss;
     yarp::sig::Vector      curGraspDetectionThres;
     std::set<int>          fingersJntsSet;
     std::set<int>          fingersMovingJntsSet;
@@ -195,6 +196,7 @@ protected:
                              const std::string &handSeqKey, const double execTime,
                              affActionPrimitivesCallback *clb, const bool oEnabled);
     virtual bool stopJntTraj(const int jnt);
+    virtual bool handCheckMotionDone(const int jnt, bool *flag);
     virtual void enableTorsoDof();
     virtual void disableTorsoDof();
     virtual bool wait(const Action &action);

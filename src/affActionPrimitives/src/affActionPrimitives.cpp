@@ -19,6 +19,7 @@
 #define ACTIONPRIM_DEFAULT_EXECTIME                 3.0     // [s]
 #define ACTIONPRIM_DEFAULT_REACHTOL                 0.005   // [m]
 #define ACTIONPRIM_DUMP_PERIOD                      1.0     // [s]
+#define ACTIONPRIM_DEFAULT_JNTMOTDONE_TOL           1.0     // [deg]
 #define ACTIONPRIM_DEFAULT_WRIST_JOINT              5
 #define ACTIONPRIM_DEFAULT_WRIST_THRES              1e9
 #define ACTIONPRIM_DEFAULT_WRIST_DOUT_ESTPOLY_N     40
@@ -545,7 +546,7 @@ bool affActionPrimitives::isHandSeqEnded()
     for (set<int>::iterator i=fingersMovingJntsSet.begin(); i!=fingersMovingJntsSet.end(); ++i)
     {
         bool flag;
-        posCtrl->checkMotionDone(*i,&flag);
+        handCheckMotionDone(*i,&flag);
 
         if (flag)
             tmpSet.erase(*i);
@@ -1005,6 +1006,26 @@ bool affActionPrimitives::stopJntTraj(const int jnt)
 
 
 /************************************************************************/
+bool affActionPrimitives::handCheckMotionDone(const int jnt, bool *flag)
+{
+    if (flag==NULL)
+        return false;
+
+    double v;
+
+    if (encCtrl->getEncoder(jnt,&v))
+    {
+        if (fabs(curHandFinalPoss[jnt-jHandMin]-v)<ACTIONPRIM_DEFAULT_JNTMOTDONE_TOL)
+            return true;
+        else
+            return false;
+    }
+    else
+        return false;
+}
+
+
+/************************************************************************/
 void affActionPrimitives::enableTorsoDof()
 {
     // enable torso joints, if any
@@ -1111,7 +1132,9 @@ bool affActionPrimitives::cmdHand(const Action &action)
         const Vector &thres=action.handWP.thres;
         
         fingersMovingJntsSet=fingersJntsSet;
+        curHandFinalPoss=poss;
         curGraspDetectionThres=thres;
+
         for (set<int>::iterator itr=fingersJntsSet.begin(); itr!=fingersJntsSet.end(); ++itr)
         {
             int j=*itr-jHandMin;
