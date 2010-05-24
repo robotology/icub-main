@@ -1451,13 +1451,13 @@ void CartesianSolver::afterStart(bool s)
 /************************************************************************/
 void CartesianSolver::run()
 {
+    lock();
+
     // init conditions
     bool doSolve=false;
 
-    // handle changeDOF() safely
-    lock();
-    changeDOF(inPort->get_dof());
-    unlock();
+    // handle changeDOF()
+    changeDOF(inPort->get_dof());    
 
     // wake up sleeping threads
     postDOFHandling();
@@ -1529,7 +1529,9 @@ void CartesianSolver::run()
         // dump on screen
         if (verbosity)
             printInfo(xd,x,q,t1-t0);
-    }    
+    }
+
+    unlock();
 }
 
 
