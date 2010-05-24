@@ -2,6 +2,7 @@
 #include <yarp/os/Network.h>
 
 #include <string.h>
+#include <time.h>
 #include <iostream>
 
 using namespace std;
@@ -20,7 +21,9 @@ bool colourProcessorModule::configure(ResourceFinder &rf)
 {
     //initialization
     ct=0;
-    
+    double dif=0;
+    time_t start,end;
+    time (&start);
 
     Time::turboBoost();
     printf("resource finder configuration after time turbo boosting \n");
@@ -28,12 +31,18 @@ bool colourProcessorModule::configure(ResourceFinder &rf)
     interThread.setName("/colourPU/");
     interThread.start();
     
-    while(interThread.inputImg==0){
-    
+    while((interThread.inputImg==0)&&(dif<20)){
+        time (&end);
+        dif = difftime (end,start);
     }
-    while(interThread.inputImg->width()==0){
-    
+    if(dif>=20)
+        return false;
+
+    while((interThread.inputImg->width()==0)&&(dif<20)){
+        time (&end);
+        dif = difftime (end,start);
     }
+    
 
     //ConstString portName2 = options.check("name",Value("/worker2")).asString();
     //starting rgb thread and linking all the images
