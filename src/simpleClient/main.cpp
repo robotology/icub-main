@@ -879,7 +879,7 @@ void handleControlModeMsg(IControlMode *iMode, const yarp::os::Bottle& cmd,
                         response.addVocab(VOCAB_CM_CONTROL_MODE);       
                         response.addVocab(p);
 			
-                        fprintf(stderr, "Returning %d\n", p);
+                        //fprintf(stderr, "Returning %d\n", p);
                         *rec=true;
                     }
             }
