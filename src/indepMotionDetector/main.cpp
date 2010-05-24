@@ -197,8 +197,8 @@ protected:
     BufferedPort<ImageOf<PixelBgr> >  inPort;
     BufferedPort<ImageOf<PixelBgr> >  outPort;
     BufferedPort<ImageOf<PixelMono> > optPort;
-    BufferedPort<Bottle>              nodesPort;
-    BufferedPort<Bottle>              blobsPort;
+    Port nodesPort;
+    Port blobsPort;
 
     void disposeMem()
     {
@@ -458,20 +458,12 @@ public:
             outPort.write();
             optPort.write();
 
-            cout<<nodesBottle.size()<<endl;
-
             // send out data bottles
             if (nodesBottle.size()>1)
-            {
-                nodesPort.prepare()=nodesBottle;
-                nodesPort.write();
-            }
+                nodesPort.write(nodesBottle);
 
             if (blobsBottle.size())
-            {
-                blobsPort.prepare()=blobsBottle;
-                blobsPort.write();
-            }
+                blobsPort.write(blobsBottle);
 
             // save data for next cycle
             imgMonoPrev=imgMonoIn;
