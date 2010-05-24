@@ -197,7 +197,7 @@ protected:
                              const std::string &handSeqKey, const double execTime,
                              affActionPrimitivesCallback *clb, const bool oEnabled);
     virtual bool stopJntTraj(const int jnt);
-    virtual bool handCheckMotionDone(const int jnt, bool *flag);
+    virtual bool handCheckMotionDone(const int jnt);
     virtual void enableTorsoDof();
     virtual void disableTorsoDof();
     virtual bool wait(const Action &action);

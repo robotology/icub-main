@@ -546,10 +546,7 @@ bool affActionPrimitives::isHandSeqEnded()
 
     for (set<int>::iterator i=fingersMovingJntsSet.begin(); i!=fingersMovingJntsSet.end(); ++i)
     {
-        bool flag;
-        handCheckMotionDone(*i,&flag);
-
-        if (flag)
+        if (handCheckMotionDone(*i))
             tmpSet.erase(*i);
     }
 
@@ -1007,11 +1004,8 @@ bool affActionPrimitives::stopJntTraj(const int jnt)
 
 
 /************************************************************************/
-bool affActionPrimitives::handCheckMotionDone(const int jnt, bool *flag)
+bool affActionPrimitives::handCheckMotionDone(const int jnt)
 {
-    if (flag==NULL)
-        return false;
-
     double v;
 
     if (encCtrl->getEncoder(jnt,&v))
