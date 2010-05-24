@@ -25,12 +25,12 @@ rgbProcessorThread::rgbProcessorThread():RateThread(THREAD_RATE)
 
 rgbProcessorThread::~rgbProcessorThread()
 {
-    delete redPlane;
+    /*delete redPlane;
     delete greenPlane;
     delete bluePlane;    
     delete greenRed_yarp;
     delete redGreen_yarp;
-    delete blueYellow_yarp;
+    delete blueYellow_yarp;*/
 }
 
 /*processorThread::processorThread(Property &op):processorThread(){

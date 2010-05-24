@@ -38,9 +38,8 @@ bool colourProcessorModule::configure(ResourceFinder &rf)
     if(dif>=20)
         return false;
 
-    while((interThread.inputImg->width()==0)&&(dif<20)){
-        time (&end);
-        dif = difftime (end,start);
+    while(interThread.inputImg->width()==0){
+        
     }
     
 
@@ -94,7 +93,6 @@ bool colourProcessorModule::open(Searchable& config) {
 */
 bool colourProcessorModule::interruptModule() {
     interThread.interrupt();
-
     cmdPort.interrupt();
     
     return true;

@@ -21,13 +21,13 @@ yuvProcessorThread::yuvProcessorThread():RateThread(THREAD_RATE_YUV)
 
 yuvProcessorThread::~yuvProcessorThread()
 {
-    delete redPlane;
+    /*delete redPlane;
     delete greenPlane;
     delete bluePlane;    
     delete yPlane;
     delete uPlane;
     delete vPlane;
-    delete uvPlane;
+    delete uvPlane;*/
 }
 
 
@@ -66,13 +66,13 @@ void yuvProcessorThread::run(){
 
 void yuvProcessorThread::threadRelease(){
     printf("Thread releasing.. \n");
-    delete redPlane;
+    /*delete redPlane;
     delete greenPlane;
     delete bluePlane;    
     delete yPlane;
     delete uPlane;
     delete vPlane;
-    delete uvPlane;
+    delete uvPlane;*/
 }
 
 
