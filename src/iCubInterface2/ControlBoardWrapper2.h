@@ -1652,23 +1652,32 @@ public:
     * @return true in good luck, false otherwise.
     */
     virtual bool getAmpStatus(int *st) {
-        fprintf(stderr, "Not yet implemented\n");
-        bool ret=false;
-        //bool ret=true;
+        bool ret=true;
 
-        //for(int l=0;l<controlledJoints;l++)
-        //{
-        //   int off=device.lut[l].offset;
-        //   int subIndex=device.lut[l].deviceEntry;
+        /*for(int l=0;l<controlledJoints;l++)
+        {
+           int off=device.lut[l].offset;
+           int subIndex=device.lut[l].deviceEntry;
 
-        //  SubDevice *p=device.getSubdevice(subIndex);
-        //  if (p->amp)
-        //  {
-        //      ret=ret&&p->amp->getAmpStatus(off+base, st+l);
-        //  }
-        //  else
-        //      ret=false;
-        // }
+          SubDevice *p=device.getSubdevice(subIndex);
+          if (p->amp)
+          {
+              ret=ret&&p->amp->getAmpStatus(off+base, st+l);
+          }
+          else
+              ret=false;
+        }*/
+
+		int subIndex=device.lut[0].deviceEntry;
+		SubDevice *p=device.getSubdevice(subIndex);
+		{
+          if (p->amp)
+          {
+              ret=ret&&p->amp->getAmpStatus(st);
+          }
+          else
+              ret=false;
+        }
         return ret;
     }
 
