@@ -344,7 +344,7 @@ public:
             imgMonoOpt.resize(imgBgrOut);
             imgMonoOpt.zero();
 
-            // declares output bottles
+            // declare output bottles
             Bottle nodesBottle;
             Bottle blobsBottle;
 
@@ -445,24 +445,23 @@ public:
 
                 CvPoint centroid=cvPoint(blob.centroid.x,blob.centroid.y);
 
-                Bottle &bottleBottle=blobsBottle.addList();
-                bottleBottle.addInt(centroid.x);
-                bottleBottle.addInt(centroid.y);
-                bottleBottle.addInt(blob.size);
+                Bottle &blobBottle=blobsBottle.addList();
+                blobBottle.addInt(centroid.x);
+                blobBottle.addInt(centroid.y);
+                blobBottle.addInt(blob.size);
 
                 cvCircle(imgBgrOut.getIplImage(),centroid,4,cvScalar(blueLev,0,redLev),3);
             }
             dt2=Time::now()-latch_t;
 
-            // send images over YARP
+            // send out images
             outPort.write();
             optPort.write();
 
-            // here we perform copy instead of operating directly
-            // on the object returned by port.prepare() because of a
-            // Yarp problem when we skip sending but we've already
-            // asked for the object
-            if (nodesBottle.size())
+            cout<<nodesBottle.size()<<endl;
+
+            // send out data bottles
+            if (nodesBottle.size()>1)
             {
                 nodesPort.prepare()=nodesBottle;
                 nodesPort.write();
