@@ -1648,6 +1648,8 @@ GtkWidget* WatershedModule::createMainWindow(void)
     //gtk_container_add (GTK_CONTAINER (boxButtons), button);
     //gtk_container_add (GTK_CONTAINER (boxButtons), button2);
 
+
+    /*
     label = gtk_label_new ("CheckList:");
     gtk_box_pack_start (GTK_BOX (boxButtons), label, FALSE, FALSE, 0);
     gtk_widget_show (label);
@@ -1716,6 +1718,7 @@ GtkWidget* WatershedModule::createMainWindow(void)
     gtk_widget_show (buttonCheck);
     
     gtk_container_add (GTK_CONTAINER (box2), boxButtons);
+    */
     
     //---- vSeparator
     separator = gtk_hseparator_new ();
@@ -1788,7 +1791,7 @@ GtkWidget* WatershedModule::createMainWindow(void)
     box4 = gtk_vbox_new (FALSE, 0);
     gtk_container_set_border_width (GTK_CONTAINER (box4), 0);
 
-    label = gtk_label_new ("saliency linear combination Kcoeff. BU:");
+    label = gtk_label_new ("BOTTOM-UP:saliency linear combination Kcoeff.: isolated blobs are salient");
     gtk_box_pack_start (GTK_BOX (box4), label, FALSE, FALSE, 0);
     gtk_widget_show (label);
 
@@ -1806,7 +1809,7 @@ GtkWidget* WatershedModule::createMainWindow(void)
                       G_CALLBACK (cb_digits_scale), NULL);
 
 
-    label = gtk_label_new ("saliency linear combination Kcoeff. TD:");
+    label = gtk_label_new ("TOP-DOWN:saliency linear combination Kcoeff.: match-colour blob are salient");
     gtk_box_pack_start (GTK_BOX (box4), label, FALSE, FALSE, 0);
     gtk_widget_show (label);
 
@@ -1819,7 +1822,7 @@ GtkWidget* WatershedModule::createMainWindow(void)
     g_signal_connect (G_OBJECT (adj2), "value_changed",
                       G_CALLBACK (cb_digits_scale2), NULL);
     
-    label = gtk_label_new ("MAXBLOB dimension:");
+    label = gtk_label_new ("MAXBLOB dimension: cut off bigger blobs");
     gtk_box_pack_start (GTK_BOX (box4), label, FALSE, FALSE, 0);
     gtk_widget_show (label);
     adj3 = gtk_adjustment_new (4096, 10,6000,100, 1, 1);
@@ -1832,7 +1835,7 @@ GtkWidget* WatershedModule::createMainWindow(void)
                       G_CALLBACK (cb_digits_scale3), NULL);
 
     
-    label = gtk_label_new ("MINBLOB dimension:");
+    label = gtk_label_new ("MINBLOB dimension: cut off smaller blobs");
     gtk_box_pack_start (GTK_BOX (box4), label, FALSE, FALSE, 0);
     gtk_widget_show (label);
     adj4 = gtk_adjustment_new (100,1,3000,1,1,1);
@@ -1910,43 +1913,47 @@ GtkWidget* WatershedModule::createMainWindow(void)
 
     //-----box4
     box4=  gtk_vbox_new (FALSE, 0);
+
     // A checkbutton to control whether the value is displayed or not
+    /*
     buttonCheck = gtk_check_button_new_with_label("Option1-->");
     gtk_toggle_button_set_active (GTK_TOGGLE_BUTTON (buttonCheck), FALSE);
     g_signal_connect (G_OBJECT (buttonCheck), "toggled",G_CALLBACK (cb_draw_value), (gpointer)"ColourOpponency11");
     gtk_box_pack_start (GTK_BOX (box4), buttonCheck, TRUE, TRUE, 0);
     gtk_widget_show (buttonCheck);
+    */
 
     // A checkbutton to control whether the value is displayed or not
-    buttonCheck = gtk_check_button_new_with_label("Option2-->");
+    
+    /* buttonCheck = gtk_check_button_new_with_label("Option2-->");
     gtk_toggle_button_set_active (GTK_TOGGLE_BUTTON (buttonCheck), FALSE);
     g_signal_connect (G_OBJECT (buttonCheck), "toggled",G_CALLBACK (cb_draw_value),(gpointer) "FindEdges1");
     gtk_box_pack_start (GTK_BOX (box4), buttonCheck, TRUE, TRUE, 0);
-    gtk_widget_show (buttonCheck);
+    gtk_widget_show (buttonCheck);*/
 
     // A checkbutton to control whether the value is displayed or not
-    buttonCheck = gtk_check_button_new_with_label("Option3-->");
+    /*buttonCheck = gtk_check_button_new_with_label("Option3-->");
     gtk_toggle_button_set_active (GTK_TOGGLE_BUTTON (buttonCheck), FALSE);
     g_signal_connect (G_OBJECT (buttonCheck), "toggled",G_CALLBACK (cb_draw_value),(gpointer) "Normalize1");
     gtk_box_pack_start (GTK_BOX (box4), buttonCheck, TRUE, TRUE, 0);
-    gtk_widget_show (buttonCheck);
+    gtk_widget_show (buttonCheck);*/
 
     gtk_box_pack_start (GTK_BOX (box3), box4, TRUE, TRUE, 0);
     gtk_widget_show (box4);
     //---box 4
 
+
+    /*
     //-------run button
     button = gtk_button_new ();
-    /* Connect the "clicked" signal of the button to our callback */
     g_signal_connect (G_OBJECT (button), "clicked",G_CALLBACK (callback), (gpointer) "Rain1");
-    /* This calls our box creating func tion */
     boxButton = xpm_label_box (NULL, (gchar*)"Rain1");
-    /* Pack and show all our widgets */
     gtk_widget_show (boxButton);
     gtk_container_add (GTK_CONTAINER (button), boxButton);
     gtk_widget_show (button);
     gtk_box_pack_start (GTK_BOX (box3), button, TRUE, TRUE, 0);
     gtk_widget_show (button);
+    */
 
     gtk_container_set_border_width (GTK_CONTAINER (box3), 0);
     gtk_box_pack_start (GTK_BOX (boxA), box3, TRUE, TRUE, 0);
@@ -1965,7 +1972,7 @@ GtkWidget* WatershedModule::createMainWindow(void)
     gtk_box_pack_start (GTK_BOX (box3), hscale, TRUE, TRUE, 0);
     gtk_widget_show (hscale);*/
 
-    label = gtk_label_new ("PlotsSelectors:");
+    label = gtk_label_new ("choose output:");
     gtk_box_pack_start (GTK_BOX (box3), label, FALSE, FALSE, 0);
     gtk_widget_show (label);
 
@@ -2008,11 +2015,11 @@ GtkWidget* WatershedModule::createMainWindow(void)
     gtk_widget_show (buttonCheck);
 
     // A checkbutton to control whether the value is displayed or not
-    buttonCheck = gtk_check_button_new_with_label("ContrastLP-->");
+    /*buttonCheck = gtk_check_button_new_with_label("ContrastLP-->");
     gtk_toggle_button_set_active (GTK_TOGGLE_BUTTON (buttonCheck), FALSE);
     g_signal_connect (G_OBJECT (buttonCheck), "toggled",G_CALLBACK (cb_draw_value),(gpointer) "ContrastLP");
     gtk_box_pack_start (GTK_BOX (box4), buttonCheck, TRUE, TRUE, 0);
-    gtk_widget_show (buttonCheck);
+    gtk_widget_show (buttonCheck);*/
 
     // A checkbutton to control whether the value is displayed or not
     buttonCheck = gtk_check_button_new_with_label("MeanColoursLP-->");
@@ -2056,54 +2063,49 @@ GtkWidget* WatershedModule::createMainWindow(void)
 
     //-------run button
     
-
+    /*
     button = gtk_button_new ();
-    /* Connect the "clicked" signal of the button to our callback */
     g_signal_connect (G_OBJECT (button), "clicked",G_CALLBACK (callback), (gpointer) "DrawAllBlobs1");
-    /* This calls our box creating func tion */
     boxButton = xpm_label_box (NULL, (gchar*)"DrawAllBlobs1");
-    /* Pack and show all our widgets */
     gtk_widget_show (boxButton);
     gtk_container_add (GTK_CONTAINER (button), boxButton);
     gtk_widget_show (button);
     gtk_box_pack_start (GTK_BOX (box3), button, TRUE, TRUE, 0);
     gtk_widget_show (button);
+    */
 
+    /*
     button = gtk_button_new ();
-    /* Connect the "clicked" signal of the button to our callback */
     g_signal_connect (G_OBJECT (button), "clicked",G_CALLBACK (callback), (gpointer) "drawFoveaBlob1");
-    /* This calls our box creating func tion */
     boxButton = xpm_label_box (NULL, (gchar*)"drawFoveaBlob1");
-    /* Pack and show all our widgets */
     gtk_widget_show (boxButton);
     gtk_container_add (GTK_CONTAINER (button), boxButton);
     gtk_widget_show (button);
     gtk_box_pack_start (GTK_BOX (box3), button, TRUE, TRUE, 0);
     gtk_widget_show (button);
+    */
 
+    /*
     button = gtk_button_new ();
-    /* Connect the "clicked" signal of the button to our callback */
     g_signal_connect (G_OBJECT (button), "clicked",G_CALLBACK (callback), (gpointer) "drawVQColor1");
-    /* This calls our box creating func tion */
     boxButton = xpm_label_box (NULL, (gchar*)"drawVQColor1");
-    /* Pack and show all our widgets */
     gtk_widget_show (boxButton);
     gtk_container_add (GTK_CONTAINER (button), boxButton);
     gtk_widget_show (button);
     gtk_box_pack_start (GTK_BOX (box3), button, TRUE, TRUE, 0);
     gtk_widget_show (button);
+    */
 
+    /*
     button = gtk_button_new ();
-    /* Connect the "clicked" signal of the button to our callback */
     g_signal_connect (G_OBJECT (button), "clicked",G_CALLBACK (callback), (gpointer) "maxSalienceBlob1");
-    /* This calls our box creating func tion */
     boxButton = xpm_label_box (NULL,(gchar*) "maxSalienceBlob1");
-    /* Pack and show all our widgets */
     gtk_widget_show (boxButton);
     gtk_container_add (GTK_CONTAINER (button), boxButton);
     gtk_widget_show (button);
     gtk_box_pack_start (GTK_BOX (box3), button, TRUE, TRUE, 0);
     gtk_widget_show (button);
+    */
 
     //------ HSEPARATOR ---------------
     separator = gtk_hseparator_new ();
