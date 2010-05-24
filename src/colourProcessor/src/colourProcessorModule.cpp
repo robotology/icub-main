@@ -18,79 +18,73 @@ colourProcessorModule::colourProcessorModule(){
 
 bool colourProcessorModule::configure(ResourceFinder &rf)
 {
-        Time::turboBoost();
-        printf("resource finder configuration after time turbo boosting \n");
+    //initialization
+    ct=0;
+    
 
+    Time::turboBoost();
+    printf("resource finder configuration after time turbo boosting \n");
+    
+    interThread.setName("/colourPU/");
+    interThread.start();
+    
+    while(interThread.inputImg==0){
+    
+    }
+    while(interThread.inputImg->width()==0){
+    
+    }
 
-        ct = 0;
-        //ConstString portName2 = options.check("name",Value("/worker2")).asString();
-        inputPort.open(getName("image:i"));
-        
-        redPort.open(getName("red:o"));
-        greenPort.open(getName("green:o"));
-        bluePort.open(getName("blue:o"));
+    //ConstString portName2 = options.check("name",Value("/worker2")).asString();
+    //starting rgb thread and linking all the images
+    startRgbProcessor();
+    interThread.redPlane=rgbProcessor.redPlane;
+    interThread.greenPlane=rgbProcessor.greenPlane;
+    interThread.bluePlane=rgbProcessor.bluePlane;
+    interThread.redGreen_yarp=rgbProcessor.redGreen_yarp;
+    interThread.greenRed_yarp=rgbProcessor.greenRed_yarp;
+    interThread.blueYellow_yarp=rgbProcessor.blueYellow_yarp;
 
-        rgPort.open(getName("rg:o"));
-        grPort.open(getName("gr:o"));
-        byPort.open(getName("by:o"));
+    //starting yuv thread and linking all the images
+    if(startyuv_flag){
+            startYuvProcessor();
+    }
+    interThread.uvPlane=yuvProcessor.uvPlane;
+    interThread.yPlane=yuvProcessor.yPlane;
+   
+    cmdPort.open(getName("cmd:i"));
+    attach(cmdPort);
+    attachTerminal();
 
-        yPort.open(getName("ychannel:o"));
-        uPort.open(getName("uchannel:o"));
-        vPort.open(getName("vchannel:o"));
-        uvPort.open(getName("uvchannel:o"));
-
-        cmdPort.open(getName("cmd:i"));
-        attach(cmdPort);
-        attachTerminal();
-
-        return true;
+    return true;
 }
 
 /**
+* ****** DEPRECATED ********
 *function that opens the module
 */
 bool colourProcessorModule::open(Searchable& config) {
+    interThread.start();
     ct = 0;
     //ConstString portName2 = options.check("name",Value("/worker2")).asString();
-    inputPort.open(getName("image:i"));
-    
-    redPort.open(getName("red:o"));
-    greenPort.open(getName("green:o"));
-    bluePort.open(getName("blue:o"));
-
-    rgPort.open(getName("rg:o"));
-    grPort.open(getName("gr:o"));
-    byPort.open(getName("by:o"));
-
-    yPort.open(getName("ychannel:o"));
-    uPort.open(getName("uchannel:o"));
-    vPort.open(getName("vchannel:o"));
-    uvPort.open(getName("uvchannel:o"));
+    startRgbProcessor();
+    if(startyuv_flag){
+            startYuvProcessor();
+    }
 
     cmdPort.open(getName("cmd:i"));
     attach(cmdPort);
     
     return true;
 }
+// ***** DEPRECATED *****
+
 
 /** 
 * tries to interrupt any communications or resource usage
 */
 bool colourProcessorModule::interruptModule() {
-    inputPort.interrupt();
-    
-    redPort.interrupt();
-    greenPort.interrupt();
-    bluePort.interrupt();
-
-    rgPort.interrupt();
-    grPort.interrupt();
-    byPort.interrupt();
-    
-    yPort.interrupt();
-    uPort.interrupt();
-    vPort.interrupt();
-    uvPort.interrupt();
+    interThread.interrupt();
 
     cmdPort.interrupt();
     
@@ -99,34 +93,11 @@ bool colourProcessorModule::interruptModule() {
 
 
 bool colourProcessorModule::close(){
-    printf("input port closing .... \n");
-    inputPort.close();
-    
-    printf("red channel port closing .... \n");
-    redPort.close();
-    printf("green channel port closing .... \n");
-    greenPort.close();
-    printf("blue channel port closing .... \n");
-    bluePort.close();
-
-    printf("R+G- colourOpponency port closing .... \n");
-    rgPort.close();
-    printf("G+R- colourOpponency port closing .... \n");
-    grPort.close();
-    printf("B+Y- colourOpponency port closing .... \n");
-    byPort.close();
-
-    printf("intensity channel port closing .... \n");
-    yPort.close();
-    printf("chrominance channel port closing .... \n");
-    uPort.close();
-    vPort.close();
-    uvPort.close();
-
     cmdPort.close();
 
     rgbProcessor.threadRelease();
     yuvProcessor.threadRelease();
+    interThread.threadRelease();
    
     return true;
 }
@@ -158,7 +129,6 @@ void colourProcessorModule::setOptions(yarp::os::Property opt){
 }
 
 bool colourProcessorModule::updateModule() {
-    
    
     /*Bottle *bot=portTarget.read(false);
     if(bot!=NULL){
@@ -177,80 +147,15 @@ bool colourProcessorModule::updateModule() {
     }*/
     
     
-    img = this->inputPort.read(false);
-    if(0==img)
-        return true;
-
-    if(!reinit_flag){
-        
-	    srcsize.height=img->height();
-	    srcsize.width=img->width();
-        reinitialise(img->width(), img->height());
-        reinit_flag=true;
-        startRgbProcessor();
-        if(startyuv_flag){
-            startYuvProcessor();
-        }
-
-    }
-
-    //copy the inputImg into a buffer
-    ippiCopy_8u_C3R(img->getRawImage(), img->getRowSize(),inputImg->getRawImage(), inputImg->getRowSize(),srcsize);
-   
-  
-    outPorts();
+    
     return true;
 }
 
-void colourProcessorModule::outPorts(){
 
-
-    //port2.prepare() = *img;	
-    if((this->rgbProcessor.redPlane!=0)&&(redPort.getOutputCount())){
-        redPort.prepare() = *(this->rgbProcessor.redPlane);		
-        redPort.write();
-    }
-    if((this->rgbProcessor.bluePlane!=0)&&(bluePort.getOutputCount())){
-        bluePort.prepare() = *(this->rgbProcessor.bluePlane);		
-        bluePort.write();
-    }
-    if((this->rgbProcessor.greenPlane!=0)&&(greenPort.getOutputCount())){
-        greenPort.prepare() = *(this->rgbProcessor.greenPlane);		
-        greenPort.write();
-    }
-    if((this->yuvProcessor.yPlane!=0)&&(yPort.getOutputCount())){
-        yPort.prepare() = *(this->yuvProcessor.yPlane);		
-        yPort.write();
-    }
-    if((this->yuvProcessor.uPlane!=0)&&(uPort.getOutputCount())){
-        uPort.prepare() = *(this->yuvProcessor.uPlane);		
-        uPort.write();
-    }
-    if((this->yuvProcessor.vPlane!=0)&&(vPort.getOutputCount())){
-        vPort.prepare() = *(this->yuvProcessor.vPlane);		
-        vPort.write();
-    }
-    if((this->yuvProcessor.uvPlane!=0)&&(uvPort.getOutputCount())){
-        uvPort.prepare() = *(this->yuvProcessor.uvPlane);		
-        uvPort.write();
-    }
-    if((this->rgbProcessor.redGreen_yarp!=0)&&(rgPort.getOutputCount())){
-        rgPort.prepare()=*(this->rgbProcessor.redGreen_yarp);
-        rgPort.write();
-    }
-    if((this->rgbProcessor.greenRed_yarp!=0)&&(grPort.getOutputCount())){
-        grPort.prepare()=*(this->rgbProcessor.greenRed_yarp);
-        grPort.write();
-    }
-    if((this->rgbProcessor.blueYellow_yarp!=0)&&(byPort.getOutputCount())){
-        byPort.prepare()=*(this->rgbProcessor.blueYellow_yarp);
-        byPort.write();
-    }
-}
 
 void colourProcessorModule::startRgbProcessor(){
     //rgbProcessorThread rgbProcessor();
-    rgbProcessor.setInputImage(inputImg);
+    rgbProcessor.setInputImage(interThread.inputImg);
     //rgbProcessor.resize(width,height);
     rgbProcessor.start();
 }
@@ -263,8 +168,7 @@ void colourProcessorModule::startYuvProcessor(){
     yuvProcessor.start();
 }
 void colourProcessorModule::reinitialise(int weight, int height){
-    inputImg=new ImageOf<PixelRgb>;
-    inputImg->resize(weight,height);
+    
 }
 
 

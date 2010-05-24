@@ -68,6 +68,7 @@ bool rgbProcessorThread::threadInit(){
 
 
 void rgbProcessorThread::run(){
+    
     if(img==0){
         return;	
     }
@@ -354,6 +355,10 @@ void rgbProcessorThread::colourOpponency(){
     conv_32f_to_8u(redGreen_ippi32,psb2,redGreen_yarp->getRawImage(),redGreen_yarp->getRowSize(),srcsize);
     conv_32f_to_8u(greenRed_ippi32,psb2,greenRed_yarp->getRawImage(),greenRed_yarp->getRowSize(),srcsize);
     
+
+    /*printf("RG:%d ", redGreen_ippi[100]);
+    printf("GR:%d ", greenRed_ippi[100]);
+    printf("BY:%d ", blueYellow_ippi[100]);*/
 
 	/*int thresholdHigh=140;
 	int thresholdLow=1;

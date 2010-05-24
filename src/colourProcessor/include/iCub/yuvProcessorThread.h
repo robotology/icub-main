@@ -124,7 +124,7 @@ public:
     *yarp mono image of the blue channel
     */
     yarp::sig::ImageOf<yarp::sig::PixelMono>* bluePlane; 
-     /**
+    /**
     *yarp mono image of the y channel (intensity information)
     */
     yarp::sig::ImageOf<yarp::sig::PixelMono>* yPlane; 

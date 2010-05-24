@@ -5,6 +5,7 @@
 //within project includes
 #include <iCub/rgbProcessorThread.h>
 #include <iCub/yuvProcessorThread.h>
+#include <iCub/imageReaderThread.h>
 
 //IPP include
 #include <ippi.h>
@@ -140,54 +141,7 @@ CopyPolicy: Released under the terms of the GNU GPL v2.0.
 
 class colourProcessorModule : public yarp::os::RFModule{
 private:
-    /**
-    * port where the input image is read from
-    */
-    yarp::os::BufferedPort<yarp::sig::ImageOf<yarp::sig::PixelRgb> > inputPort;
-    /**
-    * port where the red plane of the image is streamed
-    */
-    yarp::os::BufferedPort<yarp::sig::ImageOf<yarp::sig::PixelMono> > redPort;
-    /**
-    * port where the green plane of the image is streamed
-    */
-    yarp::os::BufferedPort<yarp::sig::ImageOf<yarp::sig::PixelMono> > greenPort;
-    /**
-    * port where the blue plane of the image is streamed
-    */
-    yarp::os::BufferedPort<yarp::sig::ImageOf<yarp::sig::PixelMono> > bluePort;
-    /**
-    * port where the difference of gaussian R+G- is streamed
-    */
-    yarp::os::BufferedPort<yarp::sig::ImageOf<yarp::sig::PixelMono> > rgPort;
-    /**
-    * port where the difference of gaussian G+R- is streamed
-    */
-    yarp::os::BufferedPort<yarp::sig::ImageOf<yarp::sig::PixelMono> > grPort;
-    /**
-    * port where the difference of gaussian B+Y- of the image is streamed
-    */
-    yarp::os::BufferedPort<yarp::sig::ImageOf<yarp::sig::PixelMono> > byPort;
-    /**
-    * port where the yellow plane of the image is streamed
-    */
-    yarp::os::BufferedPort<yarp::sig::ImageOf<yarp::sig::PixelMono> > yellowPort;
-    /**
-    * port where the ychannel of the image is streamed
-    */
-    yarp::os::BufferedPort<yarp::sig::ImageOf<yarp::sig::PixelMono> > yPort;
-    /**
-    * port where the uchannel of the image is streamed
-    */
-    yarp::os::BufferedPort<yarp::sig::ImageOf<yarp::sig::PixelMono> > uPort;
-    /**
-    * port where the vchannel plane of the image is streamed
-    */
-    yarp::os::BufferedPort<yarp::sig::ImageOf<yarp::sig::PixelMono> > vPort;
-     /**
-    * port where the uvchannel of the input image is streamed
-    */
-    yarp::os::BufferedPort<yarp::sig::ImageOf<yarp::sig::PixelMono> > uvPort;
+    
     /**
     * flag that indicates the yuv processor should be start
     */
@@ -224,10 +178,7 @@ private:
     * execution step counter
     */
     int ct;
-    /**
-    * input image
-    */
-    yarp::sig::ImageOf<yarp::sig::PixelRgb> *inputImg;
+    
     /**
     * input image
     */
@@ -285,17 +236,20 @@ public:
     * updates the module
     */
     bool updateModule();
-    /**
-    * function that streams the images out on the ports
-    */
-    void outPorts();
-    
-
 
     //_________ public attributes _______________
+    /**
+    * thread in charge of processing the yuv channels
+    */
     yuvProcessorThread yuvProcessor;
+    /**
+    * thread in charge of processing the rgb channels
+    */
     rgbProcessorThread rgbProcessor;
-   
+    /**
+    * thread in charge of managing all the interaction with other modules through ports
+    */
+    imageReaderThread interThread;
 };
 
 #endif //_RGBPROCESSORMODULE_H_

@@ -55,7 +55,6 @@ private:
     * input image
     */
     yarp::sig::ImageOf<yarp::sig::PixelRgb> *img; 
-    
     /**
     * temp variable for the plane extraction
     */
