@@ -1020,7 +1020,7 @@ bool affActionPrimitives::handCheckMotionDone(const int jnt)
 
     if (encCtrl->getEncoder(jnt,&fb))
     {
-        if (fabs(curHandFinalPoss[jnt-jHandMin]-fb)<curHandTols[jnt])
+        if (fabs(curHandFinalPoss[jnt-jHandMin]-fb)<curHandTols[jnt-jHandMin])
             return true;
         else
             return false;
