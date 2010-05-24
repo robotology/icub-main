@@ -19,7 +19,6 @@
 #define ACTIONPRIM_DEFAULT_EXECTIME                 3.0     // [s]
 #define ACTIONPRIM_DEFAULT_REACHTOL                 0.005   // [m]
 #define ACTIONPRIM_DUMP_PERIOD                      1.0     // [s]
-#define ACTIONPRIM_DEFAULT_JNTMOTDONE_TOL           1.0     // [deg]
 #define ACTIONPRIM_DEFAULT_WRIST_JOINT              5
 #define ACTIONPRIM_DEFAULT_WRIST_THRES              1e9
 #define ACTIONPRIM_DEFAULT_WRIST_DOUT_ESTPOLY_N     40
@@ -326,6 +325,12 @@ bool affActionPrimitives::configHandSeq(Property &opt)
                     return false;
                 }
 
+                if (!bWP.check("tols"))
+                {
+                    printMessage("WARNING: \"tols\" option is missing\n");
+                    return false;
+                }
+
                 if (!bWP.check("thres"))
                 {
                     printMessage("WARNING: \"thres\" option is missing\n");
@@ -344,13 +349,19 @@ bool affActionPrimitives::configHandSeq(Property &opt)
                 for (int k=0; k<vels.length(); k++)
                     vels[k]=bVels->get(k).asDouble();
 
+                Bottle *bTols=bWP.find("tols").asList();
+                Vector tols(bTols->size());
+
+                for (int k=0; k<tols.length(); k++)
+                    tols[k]=bTols->get(k).asDouble();
+
                 Bottle *bThres=bWP.find("thres").asList();
                 Vector thres(bThres->size());
 
                 for (int k=0; k<thres.length(); k++)
                     thres[k]=bThres->get(k).asDouble();
 
-                if (!addHandSeqWP(key,poss,vels,thres))
+                if (!addHandSeqWP(key,poss,vels,tols,thres))
                     printMessage("WARNING: \"%s\" entry is invalid, not added to \"%s\"\n",
                                  wp,key.c_str());
             }
@@ -387,7 +398,6 @@ bool affActionPrimitives::open(Property &opt)
     string robot=opt.check("robot",Value("icub")).asString().c_str();    
     int period=opt.check("thread_period",Value(ACTIONPRIM_DEFAULT_PER)).asInt();    
     double reach_tol=opt.check("reach_tol",Value(ACTIONPRIM_DEFAULT_REACHTOL)).asDouble();
-    jntmotiondone_tol=opt.check("jntmotiondone_tol",Value(ACTIONPRIM_DEFAULT_JNTMOTDONE_TOL)).asDouble();
     string fwslash="/";
 
     // get hand sequence motions (if any)
@@ -994,10 +1004,10 @@ affActionPrimitives::~affActionPrimitives()
 /************************************************************************/
 bool affActionPrimitives::stopJntTraj(const int jnt)
 {
-    double v;
+    double fb;
 
-    if (encCtrl->getEncoder(jnt,&v))
-        return posCtrl->positionMove(jnt,v);
+    if (encCtrl->getEncoder(jnt,&fb))
+        return posCtrl->positionMove(jnt,fb);
     else
         return false;
 }
@@ -1006,11 +1016,11 @@ bool affActionPrimitives::stopJntTraj(const int jnt)
 /************************************************************************/
 bool affActionPrimitives::handCheckMotionDone(const int jnt)
 {
-    double v;
+    double fb;
 
-    if (encCtrl->getEncoder(jnt,&v))
+    if (encCtrl->getEncoder(jnt,&fb))
     {
-        if (fabs(curHandFinalPoss[jnt-jHandMin]-v)<jntmotiondone_tol)
+        if (fabs(curHandFinalPoss[jnt-jHandMin]-fb)<curHandTols[jnt])
             return true;
         else
             return false;
@@ -1124,10 +1134,12 @@ bool affActionPrimitives::cmdHand(const Action &action)
         const string &tag=action.handWP.tag;
         const Vector &poss=action.handWP.poss;
         const Vector &vels=action.handWP.vels;
+        const Vector &tols=action.handWP.tols;
         const Vector &thres=action.handWP.thres;
         
         fingersMovingJntsSet=fingersJntsSet;
         curHandFinalPoss=poss;
+        curHandTols=tols;
         curGraspDetectionThres=thres;
 
         for (set<int>::iterator itr=fingersJntsSet.begin(); itr!=fingersJntsSet.end(); ++itr)
@@ -1157,15 +1169,16 @@ bool affActionPrimitives::cmdHand(const Action &action)
 
 /************************************************************************/
 bool affActionPrimitives::addHandSeqWP(const string &handSeqKey, const Vector &poss,
-                                       const Vector &vels, const Vector &thres)
+                                       const Vector &vels, const Vector &tols, const Vector &thres)
 {
-    if (poss.length()==9 && vels.length()==9 && thres.length()==5)
+    if ((poss.length()==9) && (vels.length()==9) && (tols.length()==9) && (thres.length()==5))
     {
         HandWayPoint handWP;
 
         handWP.tag=handSeqKey;
         handWP.poss=poss;
         handWP.vels=vels;
+        handWP.tols=tols;
         handWP.thres=thres;
     
         handSeqMap[handSeqKey].push_back(handWP);

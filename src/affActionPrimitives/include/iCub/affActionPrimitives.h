@@ -135,7 +135,6 @@ protected:
     bool verbose;
 
     double default_exec_time;
-    double jntmotiondone_tol;
     double waitTmo;
     double latchTimer;
     double t0;
@@ -147,6 +146,7 @@ protected:
     yarp::sig::Vector      disableTorsoSw;
 
     yarp::sig::Vector      curHandFinalPoss;
+    yarp::sig::Vector      curHandTols;
     yarp::sig::Vector      curGraspDetectionThres;
     std::set<int>          fingersJntsSet;
     std::set<int>          fingersMovingJntsSet;
@@ -157,6 +157,7 @@ protected:
         std::string       tag;
         yarp::sig::Vector poss;
         yarp::sig::Vector vels;
+        yarp::sig::Vector tols;
         yarp::sig::Vector thres;
     };
 
@@ -299,16 +300,17 @@ public:
     *  [SEQ_0]
     *  key ***
     *  numWayPoints ***
-    *  wp_0  (poss (10 ...)) (vels (20 ...)) (thres (1 2 3 4 5))
-    *  wp_1  ***
-    *  ...
+    *  wp_0  (poss (10 ...)) (vels (20 ...)) (tols (30 ...)) (thres
+    *  (1 2 3 4 5)) wp_1  *** ...
     *  
     *  [SEQ_1]
     *  ...
     *  
-    *  // the "poss" and "vels" keys specify 9 joints positions and
-    *  // velocities whereas the "thres" key specifies 5 fingers
-    *  // thresholds used for model-based contact detection
+    *  // the "poss", "vels" and "tols" keys specify 9 joints
+    *  // positions, velocities and tolerances whereas the "thres"
+	*  // key specifies 5 fingers thresholds used for model-based
+	*  // contact detection. The "tols" key serves to detect the end
+	*  // motion condition
     *  @endcode
     *  
     * @note A port called <i> /<local>/<part>/detectGrasp:i </i> is 
@@ -469,6 +471,9 @@ public:
     * @param poss the 9 fingers joints WP positions to be attained 
     *             [deg].
     * @param vels the 9 fingers joints velocities [deg/s]. 
+    * @param tols the 9 fingers joints tolerances [deg] used to 
+    *             detect end motion condition (motion is considered
+    *             finished if |des(i)-fb(i)|<tols(i)).
     * @param thres the 5 fingers thresholds used for grasp 
     *              detection.
     * @return true/false on success/fail. 
@@ -479,7 +484,8 @@ public:
     *       the first WP of the new sequence.
     */
     virtual bool addHandSeqWP(const std::string &handSeqKey, const yarp::sig::Vector &poss,
-                              const yarp::sig::Vector &vels, const yarp::sig::Vector &thres);
+                              const yarp::sig::Vector &vels, const yarp::sig::Vector &tols,
+                              const yarp::sig::Vector &thres);
 
     /**
     * Check whether a sequence key is defined.
