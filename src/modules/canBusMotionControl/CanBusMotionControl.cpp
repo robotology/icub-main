@@ -2225,8 +2225,6 @@ bool CanBusMotionControl::getControlModeRaw(int j, int *v)
         *v=VOCAB_CM_UNKNOWN;
         break;
     }
-
-    fprintf(stderr, "Returning %d %d\n", *v, s);
 	return true;
 }
 
