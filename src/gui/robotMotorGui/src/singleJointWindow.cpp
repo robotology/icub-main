@@ -183,13 +183,18 @@ bool partMover::entry_update(partMover *currentPart)
   GdkColor color_yellow;
   GdkColor color_green;
   GdkColor color_red;
+  GdkColor color_pink;
   GdkColor color_indaco;
   GdkColor color_white;
   GdkColor color_blue;
   
-  color_red.red=219*255;
-  color_red.green=166*255;
-  color_red.blue=171*255;
+  color_pink.red=219*255;
+  color_pink.green=166*255;
+  color_pink.blue=171*255;
+
+  color_red.red=255*255;
+  color_red.green=100*255;
+  color_red.blue=100*255;
 
   color_grey.red=220*255;
   color_grey.green=220*255;
@@ -267,7 +272,6 @@ bool partMover::entry_update(partMover *currentPart)
   slowSwitcher++;
   ipos->checkMotionDone(k, &done);
 
-
   if (!done)
       gtk_entry_set_text((GtkEntry*) inEntry[k],  " "); 
   else
@@ -293,7 +297,7 @@ bool partMover::entry_update(partMover *currentPart)
 		  gtk_widget_modify_bg (colorback[k], GTK_STATE_NORMAL, pColor);
 	  break;
 	  case VOCAB_CM_TORQUE:
-		  pColor=&color_red;
+		  pColor=&color_pink;
 
 		  gtk_frame_set_label   (GTK_FRAME(currentPart->frame_slider1[k]),"Torque:");
           gtk_frame_set_label   (GTK_FRAME(currentPart->frame_slider2[k]),"Torque2:");
@@ -312,6 +316,20 @@ bool partMover::entry_update(partMover *currentPart)
 		  pColor=&color_grey;
 		  gtk_widget_modify_bg (colorback[k], GTK_STATE_NORMAL, pColor);
 	  break;
+  }
+
+  IAmplifierControl *iamp =  currentPart->amp;
+  
+  int curr_amp_status=0;
+  int amp_status[100]; //fix this!!!
+  iamp->getAmpStatus(amp_status); //fix this!!!
+  curr_amp_status=amp_status[k]; //fix this!!!
+ // fprintf(stderr, "FAULT : %x %x\n", amp_status[k], amp_status[k] & 0xFF);
+  if ((amp_status[k] & 0xFF)!=0)
+  {
+//	  fprintf(stderr, "FAULT DETECTED: %x\n", curr_amp_status);
+	 pColor=&color_red;
+	 gtk_widget_modify_bg (colorback[k], GTK_STATE_NORMAL, pColor);
   }
 
   return true;
