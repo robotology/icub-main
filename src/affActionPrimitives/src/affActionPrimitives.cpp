@@ -386,7 +386,8 @@ bool affActionPrimitives::open(Property &opt)
 
     string robot=opt.check("robot",Value("icub")).asString().c_str();    
     int period=opt.check("thread_period",Value(ACTIONPRIM_DEFAULT_PER)).asInt();    
-    double reach_tol=opt.check("reach_tol",Value(ACTIONPRIM_DEFAULT_REACHTOL)).asDouble();    
+    double reach_tol=opt.check("reach_tol",Value(ACTIONPRIM_DEFAULT_REACHTOL)).asDouble();
+    jntmotiondone_tol=opt.check("jntmotiondone_tol",Value(ACTIONPRIM_DEFAULT_JNTMOTDONE_TOL)).asDouble();
     string fwslash="/";
 
     // get hand sequence motions (if any)
@@ -1015,7 +1016,7 @@ bool affActionPrimitives::handCheckMotionDone(const int jnt, bool *flag)
 
     if (encCtrl->getEncoder(jnt,&v))
     {
-        if (fabs(curHandFinalPoss[jnt-jHandMin]-v)<ACTIONPRIM_DEFAULT_JNTMOTDONE_TOL)
+        if (fabs(curHandFinalPoss[jnt-jHandMin]-v)<jntmotiondone_tol)
             return true;
         else
             return false;

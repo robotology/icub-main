@@ -135,6 +135,7 @@ protected:
     bool verbose;
 
     double default_exec_time;
+    double jntmotiondone_tol;
     double waitTmo;
     double latchTimer;
     double t0;
@@ -252,6 +253,9 @@ public:
     *    [s].
     *  
     * \b reach_tol <double>: the reaching tolerance [m]. 
+    *  
+    * \b jntmotiondone_tol <double>: the tolerance [deg] for 
+    *    detecting the end of fingers motion in joint space.
     *  
     * \b tracking_mode <string>: enable/disable the tracking mode; 
     *    possible values: "on"/"off".
