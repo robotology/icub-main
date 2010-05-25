@@ -67,7 +67,7 @@
         </connection>
         <connection>
                 <from>/demoGraspManager_IIT_ISR/cmdFace:rpc</from>
-                <to>/icub/face/emotions</to>
+                <to>/icub/face/emotions/in</to>
                 <protocol>tcp</protocol>
         </connection>
 
