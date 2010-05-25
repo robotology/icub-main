@@ -331,6 +331,10 @@ public:
     * flag that allows find edges function to use a sequence of convolutions
     */
     bool CONVSEQ;
+    /**
+    * flag that allows find edges function to use cross convulution function
+    */
+    bool IPPICROSS;
 };
 
 #endif //_IMAGEPROCESSMODULE_H_

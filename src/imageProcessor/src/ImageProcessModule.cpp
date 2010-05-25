@@ -265,6 +265,7 @@ bool ImageProcessModule::updateModule() {
         //passes the temporary variable for the mode
         currentProcessor->OPENCVSOBEL=OPENCVSOBEL;
         currentProcessor->IPPISOBEL=IPPISOBEL;
+        currentProcessor->IPPICROSS=IPPICROSS;
         currentProcessor->resizeImages(tmp->width(),tmp->height());
         startImageProcessor();
     }
