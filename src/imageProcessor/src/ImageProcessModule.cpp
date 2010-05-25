@@ -107,6 +107,10 @@ void ImageProcessModule::setOptions(yarp::os::Property opt){
         this->IPPISOBEL=true;
        else
         this->IPPISOBEL=false;
+       if(value=="IPPICROSS")
+        this->IPPICROSS=true;
+       else
+        this->IPPICROSS=false;
 
     }
 }
