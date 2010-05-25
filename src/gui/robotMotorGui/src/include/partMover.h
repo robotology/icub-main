@@ -53,6 +53,7 @@ class partMover{
   GtkWidget **frameColorBack;
   GtkWidget **frame_slider1;
   GtkWidget **frame_slider2;
+  GtkWidget **framesArray;
 
   guint   *timeout_seqeunce_id;
   guint32 *timeout_seqeunce_rate;
