@@ -470,7 +470,7 @@ protected:
 
         homeHead[0]=-1.0;
         homeHead[1]=0.0;
-        homeHead[2]=0.0;
+        homeHead[2]=0.3;
 
         fprintf(stdout,"*** Homing head\n");
 
