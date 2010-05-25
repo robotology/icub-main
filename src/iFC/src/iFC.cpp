@@ -188,7 +188,7 @@ Matrix iSFrame::getH()
 	return H;
 }
 
-void iSFrame::attach(iKin::iKinLimb *_Limb)
+void iSFrame::attach(iKin::iKinChain *_Limb)
 {
 	Limb=_Limb;
 }
@@ -207,19 +207,19 @@ iFB::iFB()
 {
 	Sensore=new iSFrame();
 	EndEffector=new iFTransform();
-	Limb= new iKin::iKinLimb();
+	Limb= new iKin::iKinChain();
 	initiFB();
 }
 iFB::iFB(int _l)
 {
 	l=_l;
 	Sensore = new iSFrame(l);
-	Limb= new iKin::iKinLimb();
+	Limb= new iKin::iKinChain();
 	EndEffector=new iFTransform();
 	initiFB();
 	//Sensore->setLink(l);
 }
-void iFB::attach(iKin::iKinLimb *_Limb)
+void iFB::attach(iKin::iKinChain *_Limb)
 {
 	Limb=_Limb;
 	Sensore->attach(_Limb);

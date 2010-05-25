@@ -204,7 +204,7 @@ private:
 
 	iFTransform *Sensore;
 	iFTransform *Link;
-	iKin::iKinLimb *Limb;
+	iKin::iKinChain *Limb;
 	/*
 	* initializes the iSFrame members to zero. Used in the constructors.
 	*/
@@ -269,7 +269,7 @@ public:
 	// get FT variables with respect to a fixed reference frame
 	yarp::sig::Vector getFT();
 
-	void attach(iKin::iKinLimb *_Limb);
+	void attach(iKin::iKinChain *_Limb);
 	void attach(iFTransform *_Sensore);
 };
 
@@ -286,7 +286,7 @@ private:
 
 	iSFrame* Sensore;
 	iFTransform* EndEffector;
-	iKin::iKinLimb *Limb;
+	iKin::iKinChain *Limb;
 
 	yarp::sig::Vector d;
 	yarp::sig::Matrix S;
@@ -315,7 +315,7 @@ public:
 			EndEffector = 0;
 		}
 	}
-	void attach(iKin::iKinLimb *_Limb);
+	void attach(iKin::iKinChain *_Limb);
 	void attach(iFTransform *_sensore);
 
 	void setLink(int _l);
