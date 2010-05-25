@@ -123,14 +123,17 @@ void TrackerThread::run()
 
 	//printf("before");
 
-    /*if ((vr!=0)||((*cmd)[0]!=0))
+    if (cmd!=0)
         {
-            printf("vr not nill");
-		targetR=*vr;
+            //printf("vr not nill");
+	    	//targetR=*vr;
             timeStampRprev=timeStampR;
             timeStampR=Time::now();
+            timeStampLprev=timeStampL;
+            timeStampL=Time::now();
         }
 
+    /*
     if ((vl!=0)||((*cmd)[0]!=0))
         {
 		printf("vl not nill");            
@@ -140,13 +143,12 @@ void TrackerThread::run()
         }
     */
 
-    timeStampRprev=timeStampR;
+    /*timeStampRprev=timeStampR;
     timeStampR=Time::now();
 
 	timeStampLprev=timeStampL;
-    timeStampL=Time::now();
+    timeStampL=Time::now();*/
 
-    //printf("after");
 
     delayR=timeNow-timeStampR;
     delayL=timeNow-timeStampL;
@@ -189,7 +191,7 @@ void TrackerThread::run()
                 command[2]=Kn_pan*(encoders[4]); //encoders[4] head pan
             }
             timeStampTO=timeNow;
-            enableVOR=true;
+            enableVOR=false;
         }
     else if (delayL<TIMEOUT)
         {
@@ -202,7 +204,7 @@ void TrackerThread::run()
                 command[2]=Kn_pan*(encoders[4]);
             }
             timeStampTO=timeNow;
-            enableVOR=true;
+            enableVOR=false;
         }
     else
         {
@@ -214,6 +216,7 @@ void TrackerThread::run()
                     command[3]=0;
                     command[0]=0;
                     command[2]=0;
+                    
                 }
             else
                 {
