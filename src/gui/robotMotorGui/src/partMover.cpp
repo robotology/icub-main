@@ -92,6 +92,8 @@ partMover::partMover(GtkWidget *vbox_d, PolyDriver *partDd_d, char *partName, Re
 	  frameColorBack = new GtkWidget* [MAX_NUMBER_OF_JOINTS];
 	  frame_slider1 = new GtkWidget* [MAX_NUMBER_OF_JOINTS];
 	  frame_slider2 = new GtkWidget* [MAX_NUMBER_OF_JOINTS];
+	  framesArray = new GtkWidget* [MAX_NUMBER_OF_JOINTS];
+
 
       for (j = 0; j < NUMBER_OF_STORED; j++)
 	{
@@ -112,7 +114,6 @@ partMover::partMover(GtkWidget *vbox_d, PolyDriver *partDd_d, char *partName, Re
       GtkWidget *enableArray[MAX_NUMBER_OF_JOINTS];
       GtkWidget *pidArray[MAX_NUMBER_OF_JOINTS];
 	  GtkWidget *pidTorqArray[MAX_NUMBER_OF_JOINTS];
-      GtkWidget *framesArray[MAX_NUMBER_OF_JOINTS];
 
 
       GtkWidget *sw				 = NULL;
