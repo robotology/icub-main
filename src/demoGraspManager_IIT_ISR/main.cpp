@@ -154,18 +154,18 @@ Windows, Linux
 #define OPENHAND            0
 #define CLOSEHAND           1
 
-#define FACE_HAPPY          0
-#define FACE_SAD            1
-#define FACE_ANGRY          2
-#define FACE_SHY            3
-#define FACE_EVIL           4
-#define FACE_CUNNING        5
-#define FACE_SURPRISED      6
+#define FACE_HAPPY          ("hap")
+#define FACE_SAD            ("sad")
+#define FACE_ANGRY          ("ang")
+#define FACE_SHY            ("shy")
+#define FACE_EVIL           ("evi")
+#define FACE_CUNNING        ("cun")
+#define FACE_SURPRISED      ("sur")
 
 #define STATE_IDLE          0
 #define STATE_REACH         1
 #define STATE_RELEASE       2
-#define STATE_WAIT          4
+#define STATE_WAIT          3
                                                              
 using namespace std;
 using namespace yarp;
@@ -759,46 +759,24 @@ protected:
             cartArm->stopControl();
     }
 
-    void setFace(const int type)
+    void setFace(const string &type)
     {
         Bottle in, out;
 
-        out.addString("set all ");
+        out.addString("set mou ");
+        out.addString(type.c_str());
+        outportCmdFace->write(out,in);
 
-        switch (type)
-        {
-        case FACE_HAPPY:
-            out.addString("hap");
-            break;
+        out.clear();
 
-        case FACE_SAD:
-            out.addString("sad");
-            break;
+        out.addString("set leb ");
+        out.addString(type.c_str());
+        outportCmdFace->write(out,in);
 
-        case FACE_ANGRY:
-            out.addString("ang");
-            break;
+        out.clear();
 
-        case FACE_SHY:
-            out.addString("shy");
-            break;
-
-        case FACE_EVIL:
-            out.addString("evi");
-            break;
-
-        case FACE_CUNNING:
-            out.addString("cun");
-            break;
-
-        case FACE_SURPRISED:
-            out.addString("sur");
-            break;
-
-        default:
-            return;
-        }
-
+        out.addString("set reb ");
+        out.addString(type.c_str());
         outportCmdFace->write(out,in);
     }
 
