@@ -333,7 +333,8 @@ void rgbProcessorThread::colourOpponency(){
 	ippiAdd_32f_C1R(redPlane_ippi32_f,psb2,greenPlane_ippi32_f,psb2,yellowPlane_ippi32_f,psb2,srcsize);
 	//ippiAdd_8u_C1RSfs(redPlane_ippi_f,psb,greenPlane_ippi_f,psb,yellowPlane_ippi_f,psb,srcsize,-1);
 	//4.5. subtract the yellow from the blue in order to get B+Y-
-	ippiSub_32f_C1R(bluePlane_ippi32,psb2,yellowPlane_ippi32_f,psb2,blueYellow_ippi32,psb2,srcsize);
+	ippiSub_32f_C1R(yellowPlane_ippi32_f,psb2,bluePlane_ippi32,psb2,blueYellow_ippi32,psb2,srcsize);
+
 	//ippiSub_8u_C1RSfs(yellowPlane_ippi_f,psb,blueYellow_ippi,psb,blueYellow_ippi,psb,srcsize,-1);
 
 
