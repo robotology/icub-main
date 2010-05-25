@@ -354,7 +354,7 @@ bool ImageProcessor::threadInit(){
 * active loop of the thread
 */
 void ImageProcessor::run(){
-    
+    printf("p");
 }
 /**
 *	releases the thread

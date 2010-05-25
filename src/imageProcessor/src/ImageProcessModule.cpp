@@ -1,6 +1,7 @@
 // -*- mode:C++; tab-width:4; c-basic-offset:4; indent-tabs-mode:nil -*-
 #include <iCub/ImageProcessModule.h>
 #include <iostream>
+#include <time.h>
 
 using namespace std;
 using namespace yarp::os;
@@ -25,54 +26,89 @@ static ImageProcessModule *imageProcessModule;
 
 bool ImageProcessModule::configure(ResourceFinder &rf)
 {
-    Time::turboBoost();
-    printf("resource finder configuration after time turbo boosting \n");
-
-     ct = 0;
+    ct = 0;
     inputImage_flag=false;
     reinit_flag=false;
-
     currentProcessor=0;
-    inputImg=0;
+    double dif=0;
+    time_t start,end;
+    time (&start);
+    interThread=new interactionThread();
+    
+    Time::turboBoost();
+    printf("resource finder configuration after time turbo boosting \n");
+    
+    
+    interThread->setName("/imagePU/");
+    interThread->start();
+
+
+    //inputImg=0;
+    while((interThread->tmp==0)&&(dif<20)){
+        time (&end);
+        dif = difftime (end,start);
+    }
+    if(dif>=20)
+        return false;
+
+    while(interThread->tmp->width()==0){
+        
+    }
 
     this->openPorts();   
     //ConstString portName2 = options.check("name",Value("/worker2")).asString();
+
+    currentProcessor=new ImageProcessor();
+    currentProcessor->start();
     
     return true;       
 }
 
+/**
 
 bool ImageProcessModule::open(Searchable& config) {
     ct = 0;
+    double dif=0;
+    time_t start,end;
+    time (&start);
 	inputImage_flag=false;
     reinit_flag=false;
 
+    Time::turboBoost();
+    printf("resource finder configuration after time turbo boosting \n");
+    
+    interThread->setName("/imagePU/");
+    interThread->start();
+
 	currentProcessor=0;
-    inputImg=0;
+    //inputImg=0;
+    
+    
+    while((interThread->tmp==0)&&(dif<20)){
+        time (&end);
+        dif = difftime (end,start);
+    }
+    if(dif>=20)
+        return false;
+
+    while(interThread->inputImg->width()==0){
+        
+    }
 
     this->openPorts();   
+    attach(cmdPort);
+    attachTerminal();
+
     //ConstString portName2 = options.check("name",Value("/worker2")).asString();
     
     return true;
 }
+*/
 
 // try to interrupt any communications or resource usage
 bool ImageProcessModule::interruptModule() {
     printf("interrupting the module.. \n");
-	redPlanePort.interrupt();
-    bluePlanePort.interrupt();
-    greenPlanePort.interrupt();
-    
-    rgPort.interrupt();
-    grPort.interrupt();
-    byPort.interrupt();
-    rgEdgesPort.interrupt();
-    grEdgesPort.interrupt();
-    byEdgesPort.interrupt();
-
-    edgesPort.interrupt();
-
-    inImagePort.interrupt();
+	
     cmdPort.interrupt();
 	return true;
 }
@@ -84,7 +120,7 @@ bool ImageProcessModule::close() {
         printf("Thread running! Closing the thread ... \n");
         this->currentProcessor->stop();
     }
-	this->closePorts();
+	
     printf("The module has been successfully closed ... \n");
 	return true;
 }
@@ -149,166 +185,17 @@ void ImageProcessModule::setUp()
 	printf("Module setting up automatically ..../n");
 }
 
-bool ImageProcessModule::openPorts(){
-	bool ret = false;
-    bool ok=true;
-    //input ports
-    inImagePort.open(getName("image:i"));
-	redPlanePort.open(getName("red:i"));
-    bluePlanePort.open(getName("blue:i"));
-    greenPlanePort.open(getName("green:i"));
-
-    rgPort.open(getName("rg:i"));
-    grPort.open(getName("gr:i"));
-    byPort.open(getName("by:i"));
-
-    rgEdgesPort.open(getName("rgEdges:o"));
-    grEdgesPort.open(getName("grEdges:o"));
-    byEdgesPort.open(getName("byEdges:o"));
-
-    edgesPort.open(getName("edges:o"));
-
-    cmdPort.open(getName("cmd")); // optional command port
-    attach(cmdPort); // cmdPort will work just like terminal
-    attachTerminal();
-
-	return true;
-}
-
-bool ImageProcessModule::outPorts(){
-	bool ret = false;
-    if((0!=currentProcessor->redGreenEdges_yarp)&&(rgEdgesPort.getOutputCount())){
-        rgEdgesPort.prepare() = *(currentProcessor->redGreenEdges_yarp);		
-        rgEdgesPort.write();
-        ret=true;
-    }
-    if((0!=currentProcessor->greenRed_yarp)&&(grEdgesPort.getOutputCount())){
-        grEdgesPort.prepare() = *(currentProcessor->greenRed_yarp);		
-        grEdgesPort.write();
-        ret=true;
-    }
-    if((0!=currentProcessor->blueYellow_yarp)&&(byEdgesPort.getOutputCount())){
-        byEdgesPort.prepare() = *(currentProcessor->blueYellow_yarp);		
-        byEdgesPort.write();
-        ret=true;
-    } 
-    if((0!=currentProcessor->edges_yarp)&&(edgesPort.getOutputCount())){
-        edgesPort.prepare() = *(currentProcessor->edges_yarp);		
-        edgesPort.write();
-        ret=true;
-    } 
-	return ret;
-}
-
-bool ImageProcessModule::closePorts(){
-    printf("Closing all the ports ... \n");
-	bool ret = false;
-	//int res = 0;
-	// Closing Port(s)
-    //reduce verbosity --paulfitz
-
-    //closing input ports
-    inImagePort.close();
-    redPlanePort.close();
-    bluePlanePort.close();
-    greenPlanePort.close();
-    
-    rgPort.close();
-    grPort.close();
-    byPort.close();
-    rgEdgesPort.close();
-    grEdgesPort.close();
-    byEdgesPort.close();
-
-
-    edgesPort.close();
-
-    cmdPort.close();
-    
-    printf("All the ports successfully closed ... \n");
-
-    if(inputImg!=0)
-        delete inputImg;
-    if(currentProcessor!=0)
-        delete currentProcessor;
-
-	return ret;
-}
 
 
 
 void ImageProcessModule::reinitialise(int weight, int height){
-    inputImg=new ImageOf<PixelRgb>;
-    inputImg->resize(weight,height);
+    
     
 }
 
 
 bool ImageProcessModule::updateModule() {
-    
-
-    /*this->inputImg = this->inImagePort.read(false);
-    if(0==inputImg)
-        return true;*/
-
-    tmp=rgPort.read(false);
-    if(tmp==0){
-        return true;
-    }
-    
-    if(!reinit_flag){
-        //srcsize.height=img->height();
-        //srcsize.width=img->width();
-        reinitialise(tmp->width(), tmp->height());
-        reinit_flag=true;
-        currentProcessor=new ImageProcessor();
-        //passes the temporary variable for the mode
-        currentProcessor->OPENCVSOBEL=OPENCVSOBEL;
-        currentProcessor->IPPISOBEL=IPPISOBEL;
-        currentProcessor->IPPICROSS=IPPICROSS;
-        currentProcessor->resizeImages(tmp->width(),tmp->height());
-        startImageProcessor();
-    }
-
-    currentProcessor->redGreen_yarp=tmp;
-    currentProcessor->redPlane=redPlanePort.read(false);
-    if(0!=currentProcessor->redGreen_yarp){
-        currentProcessor->redGreen_flag=true;
-        currentProcessor->redGreenEdges_yarp=currentProcessor->findEdgesRedOpponency();
-    }
-    
-    currentProcessor->bluePlane=bluePlanePort.read(false);
-    currentProcessor->blueYellow_yarp=byPort.read(false);
-    if(0!=currentProcessor->blueYellow_yarp){
-        currentProcessor->blueYellow_flag=true;
-        currentProcessor->blueYellowEdges_yarp=currentProcessor->findEdgesBlueOpponency();
-    }
-    
-    currentProcessor->greenPlane=greenPlanePort.read(false);
-    currentProcessor->greenRed_yarp=grPort.read(false);
-    if(0!=currentProcessor->greenRed_yarp){
-        currentProcessor->greenRed_flag=true;
-        currentProcessor->greenRedEdges_yarp=currentProcessor->findEdgesGreenOpponency();
-    }
-
-    //check for any possible command
-    
-/*    Bottle* command=(Bottle)cmdPort.read(reader,false);
-    if(command!=0){
-        //Bottle* tmpBottle=cmdPort.read(false);
-        ConstString str= command->toString();
-        printf("command received: %s \n", str.c_str());
-        Bottle* reply=new Bottle();
-        this->respond(*command,*reply);
-        command->clear();
-    }*/
-
-    if((currentProcessor->redGreen_flag)&&(currentProcessor->greenRed_flag)&&(currentProcessor->blueYellow_flag)){
-        currentProcessor->edges_yarp=currentProcessor->combineMax();
-        //lineMax();
-        outPorts();
-    }
-
+    printf("m");
     return true;
 }
 
@@ -325,6 +212,45 @@ void ImageProcessModule::resetFlags(){
     currentProcessor->IPPISOBEL=false;
     currentProcessor->OPENCVSOBEL=false;
     currentProcessor->IPPICROSS=false;
+}
+
+bool ImageProcessModule::openPorts(){
+	
+    cmdPort.open(getName("cmd").c_str()); // optional command port
+    attach(cmdPort); // cmdPort will work just like terminal
+    attachTerminal();
+
+	return true;
+}
+
+
+
+bool ImageProcessModule::closePorts(){
+    printf("Closing all the ports ... \n");
+	
+    cmdPort.close();
+    
+    printf("All the ports successfully closed ... \n");
+
+    /*if(inputImg!=0)
+        delete inputImg;
+    if(currentProcessor!=0)
+        delete currentProcessor;
+    */
+
+	return true;
+}
+
+void ImageProcessModule::setName(std::string str){
+    this->name=str; 
+}
+
+
+std::string ImageProcessModule::getName(const char* p){
+    string str(name);
+    str.append(p);
+    printf("name: %s", name.c_str());
+    return str;
 }
 
 bool ImageProcessModule::respond(const Bottle &command,Bottle &reply){

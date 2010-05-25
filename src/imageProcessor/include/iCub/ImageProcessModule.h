@@ -13,9 +13,11 @@
 #include <cvaux.h>
 #include <highgui.h>
 
+#include <string>
 
 //within Project Include
 #include <iCub/ImageProcessor.h>
+#include <iCub/interactionThread.h>
 //#include <iCub/YARPImgRecv.h>
 //#include <iCub/YarpImage2Pixbuf.h>
 
@@ -147,50 +149,7 @@ CopyPolicy: Released under the terms of the GNU GPL v2.0.
 
 class ImageProcessModule : public yarp::os::RFModule{
 private:
-    /**
-    * a port for the inputImage
-    */
-    yarp::os::BufferedPort<yarp::sig::ImageOf<yarp::sig::PixelRgb> > inImagePort; // 
-    /**
-    * a port for the redPlane
-    */
-    yarp::os::BufferedPort<yarp::sig::ImageOf<yarp::sig::PixelMono> > redPlanePort; //
-    /**
-    * a port for the greenPlane
-    */
-    yarp::os::BufferedPort<yarp::sig::ImageOf<yarp::sig::PixelMono> > greenPlanePort; //
-    /**
-    * a port for the bluePlane
-    */
-    yarp::os::BufferedPort<yarp::sig::ImageOf<yarp::sig::PixelMono> > bluePlanePort; //	 
-    /**
-    * input port for the R+G- colour Opponency Map
-    */
-    yarp::os::BufferedPort<yarp::sig::ImageOf<yarp::sig::PixelMono> > rgPort; 
-    /**
-    * input port for the G+R- colour Opponency Map
-    */
-    yarp::os::BufferedPort<yarp::sig::ImageOf<yarp::sig::PixelMono> > grPort; 
-    /**
-    * input port for the B+Y- colour Opponency Map
-    */
-    yarp::os::BufferedPort<yarp::sig::ImageOf<yarp::sig::PixelMono> > byPort; 	
-    /**
-    *  output port for edges in R+G- colour Opponency Map
-    */
-    yarp::os::BufferedPort<yarp::sig::ImageOf<yarp::sig::PixelMono> > rgEdgesPort; 
-    /**
-    * output port for edges in G+R- colour Opponency Map
-    */
-    yarp::os::BufferedPort<yarp::sig::ImageOf<yarp::sig::PixelMono> > grEdgesPort; 
-    /**
-    * output port for edges in B+Y- colour Opponency Map
-    */
-    yarp::os::BufferedPort<yarp::sig::ImageOf<yarp::sig::PixelMono> > byEdgesPort;
-    /**
-    * overall edges port combination of maximum values of all the colorOpponency edges
-    */
-    yarp::os::BufferedPort<yarp::sig::ImageOf<yarp::sig::PixelMono> > edgesPort;
+    
     /**
     * command port of the module
     */
@@ -219,19 +178,15 @@ private:
      * semaphore for the respond function
      */
     yarp::os::Semaphore mutex;
-     /**
-    * input image reference
-    */
-    yarp::sig::ImageOf<yarp::sig::PixelRgb> *inputImg;
     /**
-    * input image reference
+    * name of the module and rootname of the connection
     */
-    yarp::sig::ImageOf<yarp::sig::PixelMono> *tmp;
-
+    std::string name;
     /**
     * function that resets all the mode flags
     */
     void resetFlags();
+    
 public:
     /**
     *open the ports of the module
@@ -276,20 +231,27 @@ public:
     * sets the adjustments in the window
     */
     void setAdjs();
-    //gint timeout_CB (gpointer data);
-    //bool getImage();
+    /**
+    * function that gives reference to the name of the module
+    * @param name of the module
+    */
+    void setName(std::string name);
+    /**
+    * function that returns the name of the module
+    * @param str string to be added
+    * @return name of the module
+    */
+    std::string getName(const char* str);
     /**
     * opens all the ports necessary for the module
+    * @return return whether the operation was successful
     */
     bool openPorts();
     /**
     * closes all the ports opened when the module started
+    * @return return whether the operation was successful
     */
     bool closePorts();
-    /**
-    * streams out data on ports
-    */
-    bool outPorts();
     /**
     * sets the module up
     */
@@ -307,6 +269,10 @@ public:
     * processor that controls the processing of the input image
     */
     ImageProcessor *currentProcessor;
+    /**
+    * processor that controls the interaction with other modules
+    */
+    interactionThread *interThread;
     /**
     * flag that controls if the inputImage has been ever read
     */
