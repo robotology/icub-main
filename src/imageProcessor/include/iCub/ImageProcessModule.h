@@ -240,7 +240,7 @@ public:
     /**
     * function that configures the module using the ResourceFinder
     */
-    bool ImageProcessModule::configure(yarp::os::ResourceFinder &rf);
+    bool configure(yarp::os::ResourceFinder &rf);
     /**
     * tryes to interrupt any communications or resource usage
     */
