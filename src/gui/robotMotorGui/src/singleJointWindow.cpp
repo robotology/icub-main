@@ -331,8 +331,8 @@ bool partMover::entry_update(partMover *currentPart)
 	  break;
   }
 
-  		  pColor=&color_blue;
-		  gtk_widget_modify_bg (colorback[k], GTK_STATE_NORMAL, pColor);
+// 		  pColor=&color_blue;
+//		  gtk_widget_modify_bg (colorback[k], GTK_STATE_NORMAL, pColor);
 
   IAmplifierControl *iamp =  currentPart->amp;
   
