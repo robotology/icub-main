@@ -528,7 +528,7 @@ class ImageProcessor:public yarp::os::RateThread
         
 };
 
-#endif // _IMAGEPROCESSMODULE_H_
+#endif // _IMAGEPROCESS_H_
 
 //----- end-of-file --- ( next line intentionally left blank ) ------------------
 
