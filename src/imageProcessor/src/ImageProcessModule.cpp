@@ -51,16 +51,40 @@ bool ImageProcessModule::configure(ResourceFinder &rf)
     if(dif>=20)
         return false;
 
-    while(interThread->tmp->width()==0){
+    while(interThread->redGreen_yarp->width()==0){
         
     }
+    interThread->width=interThread->redGreen_yarp->width();
+    interThread->height=interThread->redGreen_yarp->height();
 
     this->openPorts();   
     //ConstString portName2 = options.check("name",Value("/worker2")).asString();
 
     currentProcessor=new ImageProcessor();
-    currentProcessor->start();
+    //passes the temporary variable for the mode
+    currentProcessor->OPENCVSOBEL=OPENCVSOBEL;
+    currentProcessor->IPPISOBEL=IPPISOBEL;
+    currentProcessor->IPPICROSS=IPPICROSS;
+    currentProcessor->resizeImages(interThread->width,interThread->height);
     
+
+    //linking of the shared images
+    interThread->redPlane=currentProcessor->redPlane;
+    interThread->bluePlane=currentProcessor->bluePlane;
+    interThread->greenPlane=currentProcessor->greenPlane;
+
+    currentProcessor->redGreen_yarp=interThread->redGreen_yarp;
+    currentProcessor->greenRed_yarp=interThread->greenRed_yarp;
+    currentProcessor->blueYellow_yarp=interThread->blueYellow_yarp;
+
+    currentProcessor->redGreen_flag=interThread->redGreen_flag;
+    currentProcessor->greenRed_flag=interThread->redGreen_flag;
+    currentProcessor->blueYellow_flag=interThread->blueYellow_flag;
+
+    interThread->edges_yarp=currentProcessor->edges_yarp;
+
+    currentProcessor->start();
+
     return true;       
 }
 
@@ -190,12 +214,11 @@ void ImageProcessModule::setUp()
 
 void ImageProcessModule::reinitialise(int weight, int height){
     
-    
+       
 }
 
 
 bool ImageProcessModule::updateModule() {
-    printf("m");
     return true;
 }
 

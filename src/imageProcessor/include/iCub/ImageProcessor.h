@@ -230,24 +230,29 @@ class ImageProcessor:public yarp::os::RateThread
         /**
         * combines the 3 edge images saving the maximum value for every pixel 
         */
-        yarp::sig::ImageOf<yarp::sig::PixelMono>* combineMax(); //
+        void combineMax(yarp::sig::ImageOf<yarp::sig::PixelMono>* edgesOutput); //
         /**
         * the output image is the edged image of the input image along the axes x and y
         */
         yarp::sig::ImageOf<yarp::sig::PixelMono>* findEdges (); //
         /**
         * finds the edges in the red plane
+        * @param outImage output image passed as reference
         */
-        yarp::sig::ImageOf<yarp::sig::PixelMono>* findEdgesRedOpponency (); //
+        void findEdgesRedOpponency (yarp::sig::ImageOf<yarp::sig::PixelMono>* outImage); //
         /**
         * finds the edges in the green plane
+        * @param outImage output image passed as reference
         */
-        yarp::sig::ImageOf<yarp::sig::PixelMono>* findEdgesGreenOpponency (); //
+        void findEdgesGreenOpponency (yarp::sig::ImageOf<yarp::sig::PixelMono>* outImage); //
         /**
         * finds the edges in the blue plane
+        * @param outImage output image passed as reference
         */
-        yarp::sig::ImageOf<yarp::sig::PixelMono>* findEdgesBlueOpponency (); //
+        void findEdgesBlueOpponency (yarp::sig::ImageOf<yarp::sig::PixelMono>* outImage); //
+
         //yarp::sig::ImageOf<yarp::sig::PixelMono>* findEdgesRed (); //finds the edges in the red plane
+
         /**
         * finds the edges in the green plane
         * @return the edge image of the green plane
@@ -464,15 +469,15 @@ class ImageProcessor:public yarp::os::RateThread
         /**
         * flag that indicates the colour opponency map is ready B+Y-
         */
-        int blueYellow_flag;
+        int* blueYellow_flag;
         /**
         * flag that indicates the colour opponency map is ready R+G-
         */
-        int redGreen_flag;
+        int* redGreen_flag;
         /**
         * flag that indicates the colour opponency map is ready G+R-
         */
-        int greenRed_flag;
+        int* greenRed_flag;
         /**
         * flag for maximum convolution
         */

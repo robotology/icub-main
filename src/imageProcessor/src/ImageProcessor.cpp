@@ -96,9 +96,7 @@ ImageProcessor::ImageProcessor():RateThread(THREAD_RATE){
     edgesGreen=new ImageOf<PixelMono>;
     //edgesGreen->resize(width,height);
     
-    redGreen_yarp=new ImageOf<PixelMono>;
-    greenRed_yarp=new ImageOf<PixelMono>;
-    blueYellow_yarp=new ImageOf<PixelMono>;
+    
 
     tmp=new ImageOf<PixelMono>;
     
@@ -262,9 +260,9 @@ void ImageProcessor::resizeImages(int width,int height){
     IppiSize srcsize={width,height};
     tmp->resize(width,height);
     portImage->resize(width,height);
-    redGreen_yarp->resize(width,height);
+    /*redGreen_yarp->resize(width,height);
     greenRed_yarp->resize(width,height);
-    blueYellow_yarp->resize(width,height);
+    blueYellow_yarp->resize(width,height);*/
 
     edgesOutput->resize(width,height);
     edges_yarp->resize(width,height);
@@ -289,9 +287,7 @@ void ImageProcessor::resizeImages(int width,int height){
     greenRedEdges->resize(width,height);
     blueYellowEdges->resize(width,height);
 
-    redGreen_yarp->resize(width,height);
-    greenRed_yarp->resize(width,height);
-    blueYellow_yarp->resize(width,height);
+    
 
 
     if(redGreen_ippi==0){
@@ -354,7 +350,19 @@ bool ImageProcessor::threadInit(){
 * active loop of the thread
 */
 void ImageProcessor::run(){
-    printf("p");
+
+    if(*redGreen_flag)
+        findEdgesRedOpponency(redGreenEdges_yarp);
+    if(*greenRed_flag)
+        findEdgesGreenOpponency(greenRedEdges_yarp);
+    if(*blueYellow_flag)
+        findEdgesBlueOpponency(blueYellowEdges_yarp);
+
+    if((*redGreen_flag)&&(*greenRed_flag)&&(*blueYellow_flag)){
+        combineMax(edges_yarp);
+        //lineMax();
+    }
+    
 }
 /**
 *	releases the thread
@@ -423,7 +431,7 @@ ImageOf<PixelMono>* ImageProcessor::findEdges(){
 
 
 
-ImageOf<PixelMono>* ImageProcessor::findEdgesBlueOpponency(){
+void ImageProcessor::findEdgesBlueOpponency(ImageOf<PixelMono>*  blueYellowEdges){
    
     //1.gets the redGreen, greenRed and blueYellow from the this class
     int width=this->blueYellow_yarp->width();
@@ -700,7 +708,7 @@ ImageOf<PixelMono>* ImageProcessor::findEdgesBlueOpponency(){
     
 
 
-    return blueYellowEdges;
+   // return blueYellowEdges;
 }
 
 
@@ -750,7 +758,7 @@ ImageOf<PixelMono>* ImageProcessor::findEdgesBlue(){
 
 
 
-ImageOf<PixelMono>* ImageProcessor::findEdgesGreenOpponency(){
+void ImageProcessor::findEdgesGreenOpponency(ImageOf<PixelMono>* greenRedEdges){
     
     //1.gets the redGreen, greenRed and blueYellow from the this class
     int width=this->greenRed_yarp->width();
@@ -1001,7 +1009,7 @@ ImageOf<PixelMono>* ImageProcessor::findEdgesGreenOpponency(){
     
     //ippiFree(inputGreenRed32);
 
-    return greenRedEdges;
+    //return greenRedEdges;
 }
 
 ImageOf<PixelMono>* ImageProcessor::findEdgesGreen(){
@@ -1043,7 +1051,7 @@ ImageOf<PixelMono>* ImageProcessor::findEdgesGreen(){
     return outputImage;
 }
 
-ImageOf<PixelMono>* ImageProcessor::findEdgesRedOpponency(){
+ void ImageProcessor::findEdgesRedOpponency(ImageOf<PixelMono>* redGreenEdges){
     
     //1.gets the redGreen, greenRed and blueYellow from the this class
     int width=this->redGreen_yarp->width();
@@ -1306,7 +1314,7 @@ ImageOf<PixelMono>* ImageProcessor::findEdgesRedOpponency(){
     //ippiThreshold_8u_C1IR(outputRedGreen,psb,srcsize,100,ippCmpGreater);
     //blankBorder(outputRedGreen);
     ippiCopy_8u_C1R(outputRedGreen,psb,redGreenEdges->getRawImage(),redGreenEdges->getRowSize(),srcsize);
-    
+    //ippiCopy_8u_C1R(redGreen_yarp->getRawImage(),psb,redGreenEdges->getRawImage(),redGreenEdges->getRowSize(),srcsize);
     //ippiAdd_8u_C1IRSfs(redGreenEdges->getPixelAddress(0,0),width,redGreenEdges->getPixelAddress(0,0),width,srcsize,0.5);
 
     
@@ -1316,7 +1324,7 @@ ImageOf<PixelMono>* ImageProcessor::findEdgesRedOpponency(){
     //ippiFree(outputRedGreen3);
     
 
-    return redGreenEdges;
+    //return redGreenEdges;
 }
 
 /**
@@ -1513,10 +1521,10 @@ ImageOf<PixelRgb>* ImageProcessor::process (ImageOf<PixelRgb> *src){
                 if(this->findEdges_flag){
                     printf("runs findsEdges");
                     if(this->combineMax_flag){
-                        image_tmp=this->combineMax();
+                        //image_tmp=this->combineMax();
                     }
                     else{
-                        image_tmp=this->findEdgesRedOpponency();
+                       // image_tmp=this->findEdgesRedOpponency();
                     }
                 }
                 else
@@ -1525,7 +1533,7 @@ ImageOf<PixelRgb>* ImageProcessor::process (ImageOf<PixelRgb> *src){
             else{
                 //this->colourOpponency(src);
                 if(this->findEdges_flag){
-                    image_tmp=this->findEdgesRedOpponency();
+                    //image_tmp=this->findEdgesRedOpponency();
                 }
                 else{
                     //image_tmp=this->getRedPlane(src);
@@ -1540,10 +1548,10 @@ ImageOf<PixelRgb>* ImageProcessor::process (ImageOf<PixelRgb> *src){
                 
                 if(this->findEdges_flag){
                     if(this->combineMax_flag){
-                        image_tmp=this->combineMax();
+                        //image_tmp=this->combineMax();
                     }
                     else{
-                        image_tmp=this->findEdgesBlueOpponency();
+                        //image_tmp=this->findEdgesBlueOpponency();
                     }
                 }
                 else
@@ -1552,7 +1560,7 @@ ImageOf<PixelRgb>* ImageProcessor::process (ImageOf<PixelRgb> *src){
             else{
                 //this->colourOpponency(src);
                 if(this->findEdges_flag){
-                    image_tmp=this->findEdgesBlueOpponency();
+                    //image_tmp=this->findEdgesBlueOpponency();
                 }
                 else{
                     //image_tmp=this->getBluePlane(src);
@@ -1564,10 +1572,10 @@ ImageOf<PixelRgb>* ImageProcessor::process (ImageOf<PixelRgb> *src){
                 //this->colourOpponency(src);
                 if(this->findEdges_flag){
                     if(this->combineMax_flag){
-                        image_tmp=this->combineMax();
+                        //image_tmp=this->combineMax();
                     }
                     else{
-                        image_tmp=this->findEdgesGreenOpponency();
+                        //image_tmp=this->findEdgesGreenOpponency();
                     }
                 }
                 else
@@ -1577,7 +1585,7 @@ ImageOf<PixelRgb>* ImageProcessor::process (ImageOf<PixelRgb> *src){
             else{
                 //this->colourOpponency(src);
                 if(this->findEdges_flag){
-                    image_tmp=this->findEdgesGreenOpponency();
+                    //image_tmp=this->findEdgesGreenOpponency();
                 }
                 else{
                     //image_tmp=this->getGreenPlane(src);
@@ -1801,7 +1809,7 @@ ImageOf<PixelMono>*  ImageProcessor::LShiftC ( ImageOf<PixelMono> *src1){
 }
 
 
-ImageOf<PixelMono>* ImageProcessor::combineMax(){
+ void ImageProcessor::combineMax(ImageOf<PixelMono>* edgesOutput){
 
     int psb;
     Ipp8u* edgesOutput_ippi=ippiMalloc_8u_C1(width,height,&psb);
@@ -1812,10 +1820,10 @@ ImageOf<PixelMono>* ImageProcessor::combineMax(){
     Ipp8u* edgesGreen_ippi=ippiMalloc_8u_C1(width,height,&psb);
     Ipp8u* edgesRed_ippi=ippiMalloc_8u_C1(width,height,&psb);
     
-    /*
-    Ipp8u* edgesOutput2_ippi=ippiMalloc_8u_C1(width,height,&psb);
+    
+    //Ipp8u* edgesOutput2_ippi=ippiMalloc_8u_C1(width,height,&psb);
     Ipp8u* edgesMask_ippi=ippiMalloc_8u_C1(width,height,&psb);
-    */
+    
 
  
     //edgesBlue=this->findEdgesBlueOpponency();
@@ -1880,11 +1888,12 @@ ImageOf<PixelMono>* ImageProcessor::combineMax(){
                 greenRed_ippi[i]=255;*/
     }
 
-    /*ippiThreshold_8u_C1R(edgesOutput_ippi,psb,edgesMask_ippi,psb,srcsize,100,ippCmpLess);
-    for (int i=0;i<320*240;i++){
-        if(edgesMask_ippi[i]!=255)
-            edgesOutput_ippi[i]=0;
-    }*/
+    ippiThreshold_8u_C1R(edgesOutput_ippi,psb,edgesMask_ippi,psb,srcsize,10,IppCmpOp::ippCmpLess);
+    for (int i=0;i<redGreenEdges_yarp->getRowSize()*height;i++){
+        if(edgesMask_ippi[i]==10)
+            edgesMask_ippi[i]=0;
+        edgesOutput_ippi[i]=edgesMask_ippi[i];
+    }
 
     /*ippiAdd_8u_C1IRSfs(edgesGreen_ippi,psb,edgesOutput->getPixelAddress(0,0),width,srcsize,1);
     ippiAdd_8u_C1IRSfs(edgesRed_ippi,psb,edgesOutput->getPixelAddress(0,0),width,srcsize,1);
@@ -1893,6 +1902,7 @@ ImageOf<PixelMono>* ImageProcessor::combineMax(){
     ippiCopy_8u_C1R(edgesOutput_ippi,psb,edgesOutput->getRawImage(),edgesOutput->getRowSize(),srcsize);
     //edgesOutput->setExternal((unsigned char*)pointerRed,height,width);
 
+    //free the memory
     ippiFree(edgesBlue_ippi);
     ippiFree(edgesRed_ippi);
     ippiFree(edgesGreen_ippi);
@@ -1901,7 +1911,8 @@ ImageOf<PixelMono>* ImageProcessor::combineMax(){
 
     /*ippiFree(edgesOutput2_ippi);
     ippiFree(edgesMask_ippi);*/
-    return edgesOutput;
+    //return edgesOutput;
+    //return redGreenEdges_yarp;
 }
 
 ImageOf<PixelMono> ImageProcessor::lineMax(ImageOf<PixelMono> &src)
