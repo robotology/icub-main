@@ -142,11 +142,11 @@ bool SkinPrototype::threadInit()
     unsigned int id=(0x020f);//|cardId;
     msg.setId(id);
     msg.getData()[0]=0x4C; // message type
-    msg.getData()[1]=0x11; 
-    msg.getData()[2]=0x10; 
-    msg.getData()[3]=0x22;
+    msg.getData()[1]=0x01; 
+    msg.getData()[2]=0x01; 
+    msg.getData()[3]=0x01;
     msg.getData()[4]=0;
-    msg.getData()[5]=0;
+    msg.getData()[5]=0x22;
     msg.getData()[6]=0;
     msg.getData()[7]=0;
     msg.setLen(8);
@@ -188,7 +188,7 @@ void SkinPrototype::run()
                 if (type)
                     {
                         for(int k=0;k<5;k++)
-                            data[index+k+5]=msg.getData()[k+1];
+                            data[index+k+7]=msg.getData()[k+1];
                     }
                 else 
                     {
