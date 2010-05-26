@@ -61,8 +61,8 @@ using namespace yarp::dev;
 //using namespace ctrl;
 using namespace std;
 
-using namespace iFC;
 using namespace iKin;
+using namespace iDyn;
 
 /**
 *
@@ -157,7 +157,7 @@ private:
 	Vector FTj;
 	int count;
 	//iCubArm *arm;
-	iKinLimb *iCubLimb;
+	iKinChain *iCubLimb;
 	//iCubArm4DOF *arm;
 	iKinChain *chain;
 	
