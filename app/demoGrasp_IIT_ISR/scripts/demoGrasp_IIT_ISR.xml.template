@@ -30,7 +30,7 @@
   
         <module>
                 <name>yarpview</name>
-                <parameters>--name /PF3DTracker_viewer --x 320 --y 0</parameters>
+                <parameters>--name /PF3DTracker_viewer --x 320 --y 0 --synch</parameters>
                 <node>console</node>
                 <tag>PF3DTracker_viewer</tag>
         </module>
