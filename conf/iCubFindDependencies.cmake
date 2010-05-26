@@ -12,6 +12,7 @@ macro(checkandset_dependency package)
     	  set(ICUB_HAS_${package} FALSE CACHE BOOL "" FORCE)
           set(ICUB_USE_${package} FALSE CACHE BOOL "Use package ${package}")
     endif (${package}_FOUND)
+    mark_as_advanced(ICUB_HAS_${package})
 endmacro (checkandset_dependency)
 
 
