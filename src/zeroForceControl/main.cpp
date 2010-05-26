@@ -157,7 +157,7 @@ private:
 	Vector FTj;
 	int count;
 	//iCubArm *arm;
-	iKinChain *iCubLimb;
+	iKinLimb *iCubLimb;
 	//iCubArm4DOF *arm;
 	iKinChain *chain;
 	
@@ -441,7 +441,7 @@ public:
 		  iCubLimb->setAllConstraints(false);
 
 		  FTB = new iFB(sensorLink);
-		  FTB->attach(iCubLimb);
+		  FTB->attach(chain);
 		  FTB->attach(sensor);
 
 		  first = true;
