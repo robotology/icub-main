@@ -117,10 +117,38 @@ protected:
 	*/
 	virtual void setTorque(const double _Tau);
 
+	/**
+	* Set the OneLink angular velocity (w), ie the corresponding iDynLink angular 
+	* velocity (w) (in the child classes derived from OneLink, it depends)
+	* @param _w angular velocity
+	*/
 	virtual bool setAngVel(const yarp::sig::Vector &_w);
+	
+	/**
+	* Set the OneLink angular acceleration (dw), ie the corresponding iDynLink angular 
+	* acceleration (dw) (in the child classes derived from OneLink, it depends)
+	* @param _dw angular acceleration
+	*/
 	virtual bool setAngAcc(const yarp::sig::Vector &_dw);
+	/**
+	* Set the OneLink linear acceleration (ddp), ie the corresponding iDynLink linear 
+	* acceleration (ddp) (in the child classes derived from OneLink, it depends)
+	* @param _ddp linear acceleration
+	*/
 	virtual bool setLinAcc(const yarp::sig::Vector &_ddp);
+	/**
+	* Set the OneLink linear acceleration of the COM (ddpC), ie the corresponding 
+	* iDynLink linear acceleration of the COM (ddpC) (nothing in the child classes 
+	* derived from OneLink, except for SensorLink)
+	* @param _ddpC linear acceleration of the COM
+	*/
 	virtual bool setLinAccC(const yarp::sig::Vector &_ddpC);
+	/**
+	* Set the OneLink angular acceleration of the motor (dwM), ie the corresponding 
+	* iDynLink angular acceleration of the COM (dwM) (nothing in the child classes
+	* derived from OneLink)
+	* @param _dwM angular acceleration of the motor
+	*/
 	virtual bool setAngAccM(const yarp::sig::Vector &_dwM);
 
 	 //~~~~~~~~~~~~~~~~~~~~~~
@@ -581,7 +609,8 @@ public:
 * Newton-Euler's method in the Inverse formulation, but also to have estimation of the FT measures by the sensor; 
 * the sensor frame is defined with respect to the i-th link, where the sensor is attached.
 * Note that this is a virtual link, since there's no iDynLink attached: it is just necessary to make 
-* the recursive Inverse Newton-Euler computations; however, inertia, mass and COM are defined, for the portion of link defined between sensor and i-th frame
+* the recursive Inverse Newton-Euler computations; however, inertia, mass and COM are defined, for the portion of 
+* link defined between sensor and i-th frame.
 */
 class SensorLinkNewtonEuler : public OneLinkNewtonEuler
 {
@@ -732,7 +761,7 @@ class OneChainNewtonEuler
 
 protected:
 
-	/// the real kinematic chain of the robot
+	/// the real kinematic/dynamic chain of the robot
 	iDyn::iDynChain *chain;	
 	/// the chain of links/frames for Newton-Euler computations
 	OneLinkNewtonEuler ** neChain;	
@@ -844,12 +873,6 @@ public:
  *  
  * Classes for force/torque computation in a dynamic chain, where a single FT sensor is placed.
  * Computations from  using Newton-Euler recursive formulation
- * 
- * \section intro_sec Description
- * 
- * OneLinkNewtonEuler is a class that provides Newton-Euler recursive formulation, for the computation of forces, moments and
- * joint torques in a kinematic chain; both classical and "inverse" formulation are included; the classe is the basis for the computation of torques
- * given force/torque sensor measurements, given any sensor anywhere in the dynamic/kinematic chain
  * 
  * \section tested_os_sec Tested OS
  * 

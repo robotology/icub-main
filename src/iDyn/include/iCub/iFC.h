@@ -1,5 +1,5 @@
 /**
- * \defgroup iDyn iDyn
+ * \defgroup iFC iFC
  *  
  * @ingroup iDyn
  *  
@@ -13,16 +13,12 @@
  *  
  * \author Matteo Fumagalli
  *  
- * \defgroup iFC iFC 
- *  
- * @ingroup iFC  
+ * \section intro_sec Description
  *
  * Classes for insertion of a FT sensor on a Link of a Chain and its prijection 
  * on the base frame.
  *
  * Date: first release 16/10/2009
- *
- * \author Matteo Fumagalli
  *
  *
  */
@@ -104,7 +100,7 @@ namespace iDyn{
 
 
 /**
-* \ingroup iDyn
+* \ingroup iFC
 *
 * A Base class for defining the Transformation of a Wrench from a frame to another.
 */
@@ -204,7 +200,7 @@ public:
 };
 
 /**
-* \ingroup iDyn
+* \ingroup iFC
 *
 * A Base class for defining the FT sensor over a generic link of a kinematic chain inherited by iKinLimb.
 */
@@ -287,6 +283,11 @@ public:
 	void attach(iFTransform *_Sensore);
 };
 
+
+/**
+* \ingroup iFC
+*
+*/
 class iFB
 {
 private:
