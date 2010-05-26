@@ -70,7 +70,7 @@ namespace ctrl
                               {   7.0,                   0.0 } };
 
     /************************************************************************/
-    double _integrand(double x, void *params)
+    double integrand(double x, void *params)
     {
         waveletEncoder *pWavEnc=(waveletEncoder*)params;
 
@@ -88,7 +88,7 @@ waveletEncoder::waveletEncoder()
 {
     w=gsl_integration_workspace_alloc(1000);
     
-    F.function=&_integrand;
+    F.function=&integrand;
     F.params=(void*)this;
 }
 

@@ -38,7 +38,7 @@ protected:
     double interpWavelet(const double x);
     double interpFunction(const yarp::sig::Vector &Val, const double x);
 
-    friend double _integrand(double x, void *params);
+    friend double integrand(double x, void *params);
 
 public:
     /**
