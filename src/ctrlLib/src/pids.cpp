@@ -43,7 +43,7 @@ Integrator::Integrator(const double _Ts, const Vector &y0)
 
 
 /************************************************************************/
-void Integrator::_allocate(const Integrator &I)
+void Integrator::allocate(const Integrator &I)
 {
     y       =I.y;
     x_old   =I.x_old;

@@ -31,7 +31,7 @@ namespace iKin
 class iKin::iCubWrist : public iKin::iKinLimb
 {
 protected:
-    virtual void _allocate_limb(const std::string &_type);
+    virtual void allocate(const std::string &_type);
 
 public:
     /**
@@ -56,7 +56,7 @@ public:
 class iKin::iCubThirdEye : public iKin::iKinLimb
 {
 protected:
-    virtual void _allocate_limb(const std::string &_type);
+    virtual void allocate(const std::string &_type);
 
 public:
     /**

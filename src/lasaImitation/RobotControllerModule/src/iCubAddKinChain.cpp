@@ -25,28 +25,28 @@ using namespace iKin;
 /************************************************************************/
 iCubWrist::iCubWrist()
 {
-    _allocate_limb("right");
+    allocate("right");
 }
 
 
 /************************************************************************/
 iCubWrist::iCubWrist(const string &_type)
 {
-    _allocate_limb(_type);
+    allocate(_type);
 }
 
 
 /************************************************************************/
 iCubWrist::iCubWrist(const iCubWrist &wrist)
 {
-    _copy_limb(wrist);
+    clone(wrist);
 }
 
 
 /************************************************************************/
-void iCubWrist::_allocate_limb(const string &_type)
+void iCubWrist::allocate(const string &_type)
 {
-    iKinLimb::_allocate_limb(_type);
+    iKinLimb::allocate(_type);
 
     H0.zero();
     H0(0,1)=-1;
@@ -91,28 +91,28 @@ void iCubWrist::_allocate_limb(const string &_type)
 /************************************************************************/
 iCubThirdEye::iCubThirdEye()
 {
-    _allocate_limb("");
+    allocate("");
 }
 
 
 /************************************************************************/
 iCubThirdEye::iCubThirdEye(const string &_type)
 {
-    _allocate_limb(_type);
+    allocate(_type);
 }
 
 
 /************************************************************************/
 iCubThirdEye::iCubThirdEye(const iCubThirdEye &eye)
 {
-    _copy_limb(eye);
+    clone(eye);
 }
 
 
 /************************************************************************/
-void iCubThirdEye::_allocate_limb(const string &_type)
+void iCubThirdEye::allocate(const string &_type)
 {
-    iKinLimb::_allocate_limb(_type);
+    iKinLimb::allocate(_type);
 
     H0.zero();
     H0(0,1)=-1;
