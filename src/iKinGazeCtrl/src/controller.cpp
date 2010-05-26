@@ -93,7 +93,6 @@ Controller::Controller(PolyDriver *_drvTorso, PolyDriver *_drvHead, exchangeData
     v.resize(nJointsHead,0.0);
     vdegOld=v;
 
-    xd.resize(3,0.0);
     qd=fbHead;
 
     isCtrlActive=false;
@@ -141,6 +140,10 @@ void Controller::printIter(Vector &xd, Vector &fp, Vector &qd, Vector &q,
 /************************************************************************/
 bool Controller::threadInit()
 {
+    // here the commData structure must be
+    // initialized correctly
+    xd=commData->get_xd();
+
     port_x=new BufferedPort<Vector>;
     string n1=localName+"/x:o";
     port_x->open(n1.c_str());
