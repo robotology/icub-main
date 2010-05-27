@@ -6,18 +6,19 @@
 #include <iostream>
 
 using namespace std;
+using namespace yarp::os;
 
 
 int main(int argc, char *argv[]) {
         
     //initialise Yarp Network
-    yarp::os::Network yarp;
-    yarp::os::Time::turboBoost();
+    Network yarp;
+    Time::turboBoost();
     // Create and run our module
     selectiveAttentionModule module;
 
 
-   /* std::string fname;
+    std::string fname;
  
     //property from command line
     Property options;
@@ -70,7 +71,7 @@ int main(int argc, char *argv[]) {
 	prop.fromConfigFile(location.c_str());
     module.setOptions(prop);
 
-    */
+    
     return module.runModule(argc,argv);
 
 }
