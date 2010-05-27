@@ -1,5 +1,4 @@
 
-#include <ace/Auto_Event.h>
 #include <yarp/os/Time.h>
 #include <yarp/math/Math.h>
 #include <yarp/math/Rand.h>
@@ -10,9 +9,9 @@
 #include <iCub/affActionPrimitives.h>
 
 #include <stdio.h>
+#include <stdarg.h>
 #include <string>
 
-#define RES_EVENT(x)                                (static_cast<ACE_Auto_Event*>(x))
 #define RES_WAVER(x)                                (dynamic_cast<ArmWavingMonitor*>(x))
                                                     
 #define ACTIONPRIM_DEFAULT_PER                      50      // [ms]
@@ -135,10 +134,7 @@ void affActionPrimitives::init()
     polyHand=polyCart=NULL;
 
     armWaver=NULL;
-
     mutex=NULL;
-    motionDoneEvent=NULL;
-
     actionClb=NULL;
 
     armMoveDone =latchArmMoveDone =true;
@@ -476,7 +472,6 @@ bool affActionPrimitives::open(Property &opt)
     fingers2JntsMap.insert(pair<int,int>(4,15));
 
     mutex=new Semaphore(1);
-    motionDoneEvent=new ACE_Auto_Event;
 
     // start the thread with the specified period
     Time::turboBoost();
@@ -538,9 +533,6 @@ void affActionPrimitives::close()
 
     if (mutex!=NULL)
         delete mutex;
-
-    if (motionDoneEvent!=NULL)
-        delete RES_EVENT(motionDoneEvent);
 
     closed=true;
 
@@ -989,7 +981,7 @@ void affActionPrimitives::run()
         }
 
         if (!execQueuedAction())
-            RES_EVENT(motionDoneEvent)->signal();
+            motionDoneEvent.signal();
     }
 }
 
@@ -1349,8 +1341,8 @@ bool affActionPrimitives::checkActionsDone(bool &f, const bool sync)
     {
         if (sync && checkEnabled)
         {
-            RES_EVENT(motionDoneEvent)->reset();
-            RES_EVENT(motionDoneEvent)->wait();
+            motionDoneEvent.reset();
+            motionDoneEvent.wait();
         }
 
         f=latchArmMoveDone && latchHandMoveDone;
@@ -1367,7 +1359,7 @@ bool affActionPrimitives::syncCheckInterrupt(const bool disable)
 {
     if (configured)
     {
-        RES_EVENT(motionDoneEvent)->signal();
+        motionDoneEvent.signal();
 
         if (disable)
             checkEnabled=false;

@@ -57,6 +57,7 @@
 #include <yarp/os/BufferedPort.h>
 #include <yarp/os/Bottle.h>
 #include <yarp/os/Semaphore.h>
+#include <yarp/os/Event.h>
 #include <yarp/dev/PolyDriver.h>
 #include <yarp/dev/CartesianControl.h>
 #include <yarp/dev/ControlBoardInterfaces.h>
@@ -118,7 +119,7 @@ protected:
 
     yarp::os::RateThread *armWaver;
     yarp::os::Semaphore  *mutex;
-    void                 *motionDoneEvent;
+    yarp::os::Event       motionDoneEvent;
 
     bool armMoveDone;
     bool handMoveDone;

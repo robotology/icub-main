@@ -1,5 +1,4 @@
 
-#include <ace/Auto_Event.h>
 #include <yarp/os/Time.h>
 #include <yarp/os/impl/NameClient.h>
 #include <yarp/os/impl/Carriers.h>
@@ -9,8 +8,6 @@
 #include <iCub/iKinVocabs.h>
 #include <iCub/iKinSlv.h>
 
-#define RES_EVENT(x)                (static_cast<ACE_Auto_Event*>(x))
-                                    
 #define SHOULDER_MAXABDUCTION       (100.0*CTRL_DEG2RAD)
 #define CARTSLV_DEFAULT_PER         20      // [ms]
 #define CARTSLV_DEFAULT_TMO         1000    // [ms]
@@ -364,9 +361,6 @@ CartesianSolver::CartesianSolver(const string &_slvName) : RateThread(CARTSLV_DE
     inPort=NULL;
     outPort=NULL;
 
-    // dof event
-    dofEvent=new ACE_Auto_Event;
-
     // open rpc port
     rpcPort=new Port;
     cmdProcessor=new RpcProcessor(this);
@@ -597,15 +591,15 @@ double CartesianSolver::getNorm(const Vector &v, const string &typ)
 /************************************************************************/
 void CartesianSolver::waitDOFHandling()
 {
-    RES_EVENT(dofEvent)->reset();
-    RES_EVENT(dofEvent)->wait();
+    dofEvent.reset();
+    dofEvent.wait();
 }
 
 
 /************************************************************************/
 void CartesianSolver::postDOFHandling()
 {
-    RES_EVENT(dofEvent)->signal();
+    dofEvent.signal();
 }
 
 
@@ -1377,8 +1371,6 @@ void CartesianSolver::close()
 
     if (isRunning())
         stop();
-
-    delete RES_EVENT(dofEvent);
 
     if (inPort)
     {
