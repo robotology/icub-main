@@ -218,6 +218,27 @@
 }
 
 //-------------------------------------------------------------------
+#define CAN_SET_CONTROL_MODE_HANDLER(x) \
+{ \
+	byte value = 0; \
+	if (CAN_LEN == 2) \
+	{ \
+		can_printf("CONTROL MODE SETTED"); \
+		value = (CAN_DATA[1]); \
+		if (value>=0 && value <=0x50) _control_mode[axis] = value; \
+		_general_board_error = ERROR_NONE; \
+		_desired_torque[axis]=0; \
+		_desired[axis] = _position[axis]; \
+		_integral[axis] = 0; \
+		_set_point[axis] = _position[axis]; \
+		init_trajectory (axis, _position[axis], _position[axis], 1); \
+	} \
+	else \
+		_general_board_error = ERROR_FMT; \
+}
+
+
+//-------------------------------------------------------------------
 #define CAN_MOTION_DONE_HANDLER(x) \
 { \
 	PREPARE_HEADER; \
