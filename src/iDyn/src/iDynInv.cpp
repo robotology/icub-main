@@ -22,6 +22,7 @@
 #include <iCub/iDynInv.h>
 #include <iCub/ctrlMath.h>
 #include <iCub/iKinFwd.h>
+#include <stdio.h>
 #include <deque>
 #include <string>
 
