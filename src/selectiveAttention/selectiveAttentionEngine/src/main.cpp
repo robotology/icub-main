@@ -11,13 +11,13 @@ using namespace std;
 int main(int argc, char *argv[]) {
         
     //initialise Yarp Network
-    Network yarp;
-    Time::turboBoost();
+    yarp::os::Network yarp;
+    yarp::os::Time::turboBoost();
     // Create and run our module
     selectiveAttentionModule module;
 
 
-    std::string fname;
+   /* std::string fname;
  
     //property from command line
     Property options;
@@ -70,7 +70,7 @@ int main(int argc, char *argv[]) {
 	prop.fromConfigFile(location.c_str());
     module.setOptions(prop);
 
-    
+    */
     return module.runModule(argc,argv);
 
 }

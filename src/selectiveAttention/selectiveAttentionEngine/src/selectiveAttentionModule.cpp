@@ -1,8 +1,13 @@
 // -*- mode:C++; tab-width:4; c-basic-offset:4; indent-tabs-mode:nil -*-
 #include <iCub/selectiveAttentionModule.h>
+
+
 #include <iostream>
 
 using namespace std;
+using namespace yarp::os;
+using namespace yarp::sig;
+using namespace yarp::sig::draw;
 
 
 #define COMMAND_VOCAB_SET VOCAB3('s','e','t')
@@ -43,8 +48,11 @@ bool selectiveAttentionModule::open(Searchable& config) {
     targetRED=0;
     targetGREEN=0;
     targetBLUE=0;
-    salienceTD=0.5;
-    salienceBU=0.5;
+    salienceTD=0.0;
+    salienceBU=1.0;
+    
+    time (&start);
+
 
     openPorts();   
     //ConstString portName2 = options.check("name",Value("/worker2")).asString();
@@ -182,44 +190,79 @@ bool selectiveAttentionModule::outPorts(){
         //Bottle& commandBottle=feedbackPort.prepare();
         Bottle in,commandBottle;
         commandBottle.clear();
-        if(salienceTD<0.8){
+        
+            
+        
+        
+
+        
+        
+        time (&end);
+        double dif = difftime (end,start);
+        if(dif>30+2){
+                //restart the time interval
+                 time(&start);
+        }
+        else if((dif>2)&&(dif<30+2)){
+            //setting coefficients
+            commandBottle.clear();
+            commandBottle.addVocab(VOCAB3('s','e','t'));
+            commandBottle.addVocab(VOCAB3('k','t','d'));
+            salienceTD=salienceTD+0.1;
+        
+            //if(salienceTD>0.99)
+                salienceTD=1.0;
+            printf("salienceTD \n");
+            commandBottle.addDouble((double)salienceTD);
+            feedbackPort.write(commandBottle,in);
+            commandBottle.clear();
+            commandBottle.addVocab(VOCAB3('s','e','t'));
+            commandBottle.addVocab(VOCAB3('k','b','u'));
+            salienceBU=salienceBU-0.1;
+            
+            //if(salienceBU<=0)
+                salienceBU=0;
+            commandBottle.addDouble((double)salienceBU);
+            feedbackPort.write(commandBottle,in);    
+            printf("read: %f,%f,%f \n",(double)targetRED,(double)targetGREEN,(double)targetBLUE);
+            
+        }
+        else{
+            printf("salienceBU \n");
+            commandBottle.addVocab(VOCAB3('s','e','t'));
+            commandBottle.addVocab(VOCAB3('k','t','d'));
+            salienceTD=0.0;
+            commandBottle.addDouble((double)salienceTD);
+            feedbackPort.write(commandBottle,in);
+            commandBottle.clear();
+            commandBottle.addVocab(VOCAB3('s','e','t'));
+            commandBottle.addVocab(VOCAB3('k','b','u'));
+            salienceBU=1.0;
+            commandBottle.addDouble((double)salienceBU);
+            feedbackPort.write(commandBottle,in);
+            commandBottle.clear();
             commandBottle.addVocab(VOCAB3('s','e','t'));
             commandBottle.addVocab(VOCAB3('r','i','n'));
             commandBottle.addDouble((double)currentProcessor->targetRed);
+            //commandBottle.addDouble(255.0);
             feedbackPort.write(commandBottle,in);
             commandBottle.clear();
             commandBottle.addVocab(VOCAB3('s','e','t'));
             commandBottle.addVocab(VOCAB3('g','i','n'));
             commandBottle.addDouble((double)currentProcessor->targetGreen);
+            //commandBottle.addDouble(0.0);
             feedbackPort.write(commandBottle,in);
             commandBottle.clear();
             commandBottle.addVocab(VOCAB3('s','e','t'));
             commandBottle.addVocab(VOCAB3('b','i','n'));
             commandBottle.addDouble((double)currentProcessor->targetBlue);
             feedbackPort.write(commandBottle,in);
-        }
-        else{
+            commandBottle.clear();
+            //commandBottle.addDouble(0.0);
             printf("%f,%f,%f \n",(double)currentProcessor->targetRed,(double)currentProcessor->targetGreen,(double)currentProcessor->targetBlue);
         }
-        //setting coefficients
-        commandBottle.clear();
-        commandBottle.addVocab(VOCAB3('s','e','t'));
-        commandBottle.addVocab(VOCAB3('k','t','d'));
-        salienceTD=salienceTD+0.1;
+
         
-        if(salienceTD>0.99)
-            salienceTD=0.99;
-        printf("salienceTD: %f \n", salienceTD);
-        commandBottle.addDouble((double)salienceTD);
-        feedbackPort.write(commandBottle,in);
-        commandBottle.clear();
-        commandBottle.addVocab(VOCAB3('s','e','t'));
-        commandBottle.addVocab(VOCAB3('k','b','u'));
-        salienceBU=salienceBU-0.1;
-        if(salienceBU<=0)
-            salienceBU=0;
-        commandBottle.addDouble((double)salienceBU);
-        feedbackPort.write(commandBottle,in);
     }
 
     
@@ -326,6 +369,8 @@ bool selectiveAttentionModule::updateModule() {
         out.clear();
         in.clear();
     }
+
+    //
 
     //-------------read input maps
     //if(map1Port.getInputCount()){

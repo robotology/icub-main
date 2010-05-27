@@ -12,6 +12,9 @@
 #include <cstdio>
 
 
+using namespace yarp::os;
+using namespace yarp::sig;
+using namespace yarp::sig::draw;
 
 
 // available methods for edges detection
@@ -257,20 +260,20 @@ void selectiveAttentionProcessor::extractContour(ImageOf<PixelMono>* inputImage,
         unsigned char tmpRed=0, tmpGreen=0, tmpBlue=0;
         getPixelColour(inImage, x,y,targetRed,targetGreen,targetBlue);
         getPixelColour(inImage, x+1,y,tmpRed,tmpGreen, tmpBlue);
-        //targetRed=(targetRed+tmpRed)/2;targetGreen=(targetGreen+tmpGreen)/2;targetBlue=(targetBlue+tmpBlue)/2;
-        targetRed = (targetRed > tmpRed) ? targetRed : tmpRed;targetGreen = (targetGreen > tmpGreen) ? targetGreen : tmpGreen;targetBlue = (targetBlue > tmpBlue) ? targetBlue : tmpBlue;
+        targetRed=(targetRed+tmpRed)/2;targetGreen=(targetGreen+tmpGreen)/2;targetBlue=(targetBlue+tmpBlue)/2;
+        //targetRed = (targetRed > tmpRed) ? targetRed : tmpRed;targetGreen = (targetGreen > tmpGreen) ? targetGreen : tmpGreen;targetBlue = (targetBlue > tmpBlue) ? targetBlue : tmpBlue;
         getPixelColour(inImage, x-1,y,tmpRed,tmpGreen, tmpBlue);
-        //targetRed=(targetRed+tmpRed)/2;targetGreen=(targetGreen+tmpGreen)/2;targetBlue=(targetBlue+tmpBlue)/2;
-        targetRed = (targetRed > tmpRed) ? targetRed : tmpRed;targetGreen = (targetGreen > tmpGreen) ? targetGreen : tmpGreen;targetBlue = (targetBlue > tmpBlue) ? targetBlue : tmpBlue;
+        targetRed=(targetRed+tmpRed)/2;targetGreen=(targetGreen+tmpGreen)/2;targetBlue=(targetBlue+tmpBlue)/2;
+        //targetRed = (targetRed > tmpRed) ? targetRed : tmpRed;targetGreen = (targetGreen > tmpGreen) ? targetGreen : tmpGreen;targetBlue = (targetBlue > tmpBlue) ? targetBlue : tmpBlue;
         getPixelColour(inImage, x,y+1,tmpRed,tmpGreen, tmpBlue);
-        //targetRed=(targetRed+tmpRed)/2;targetGreen=(targetGreen+tmpGreen)/2;targetBlue=(targetBlue+tmpBlue)/2;
-        targetRed = (targetRed > tmpRed) ? targetRed : tmpRed;targetGreen = (targetGreen > tmpGreen) ? targetGreen : tmpGreen;targetBlue = (targetBlue > tmpBlue) ? targetBlue : tmpBlue;
+        targetRed=(targetRed+tmpRed)/2;targetGreen=(targetGreen+tmpGreen)/2;targetBlue=(targetBlue+tmpBlue)/2;
+        //targetRed = (targetRed > tmpRed) ? targetRed : tmpRed;targetGreen = (targetGreen > tmpGreen) ? targetGreen : tmpGreen;targetBlue = (targetBlue > tmpBlue) ? targetBlue : tmpBlue;
         getPixelColour(inImage, x,y-1,tmpRed,tmpGreen, tmpBlue);
-        //targetRed=(targetRed+tmpRed)/2;targetGreen=(targetGreen+tmpGreen)/2;targetBlue=(targetBlue+tmpBlue)/2;
-        targetRed = (targetRed > tmpRed) ? targetRed : tmpRed;targetGreen = (targetGreen > tmpGreen) ? targetGreen : tmpGreen;targetBlue = (targetBlue > tmpBlue) ? targetBlue : tmpBlue;
+        targetRed=(targetRed+tmpRed)/2;targetGreen=(targetGreen+tmpGreen)/2;targetBlue=(targetBlue+tmpBlue)/2;
+        //targetRed = (targetRed > tmpRed) ? targetRed : tmpRed;targetGreen = (targetGreen > tmpGreen) ? targetGreen : tmpGreen;targetBlue = (targetBlue > tmpBlue) ? targetBlue : tmpBlue;
         
            
-        cvDrawContours(dst,cont,CV_RGB(targetBlue,targetGreen,targetRed),CV_RGB(targetBlue,targetGreen,targetRed),0,1,8);
+        cvDrawContours(dst,cont,CV_RGB(targetBlue,targetGreen,targetRed),CV_RGB(0,0,0),0,1,8);
         cvCircle (dst, center, 1, CV_RGB(targetBlue,targetGreen,targetRed));
            
         cvFitLine(cont, CV_DIST_L2, 1, 0.01, 0.01, line);
@@ -280,15 +283,22 @@ void selectiveAttentionProcessor::extractContour(ImageOf<PixelMono>* inputImage,
         pt2.x = cvRound(line[2] + line[0] *t );
         pt2.y = cvRound(line[3] + line[1] *t );
 
-        cvCircle(dst, pt1, 1, CV_RGB(targetBlue,targetGreen,targetRed));
-        cvCircle(dst, pt2, 1, CV_RGB(targetBlue,targetGreen,targetRed));
+        //cvCircle(dst, pt1, 1, CV_RGB(targetRed,targetGreen,targetBlue));
+        //cvCircle(dst, pt2, 1, CV_RGB(targetBlue,targetGreen,targetRed));
        
-        cvLine(dst, pt1, pt2, CV_RGB(targetBlue,targetGreen,targetRed), 1, CV_AA, 0);
+        //cvLine(dst, pt1, pt2, CV_RGB(targetRed,targetGreen,targetBlue), 3, CV_AA, 0);
         double theta = 0;
         // double theta = 180 / M_PI * atan2( (pt2.y - pt1.y) , (pt2.x - pt1.x) );
+        CvFont font;
+        double hScale=0.3;
+        double vScale=0.3;
+        int    lineWidth=1;
 
-        //sprintf(Angles, "%d%d",x,y);
-        //cvPutText ( dst , Angles, cvPoint( 10, 10), &font, cvScalar(255,0,0) );
+        cvInitFont(&font,CV_FONT_HERSHEY_SIMPLEX|CV_FONT_ITALIC, hScale,vScale,0,lineWidth);
+        char* Angles=new char;
+
+        sprintf(Angles, "%d,%d,%d",(int)targetRed,(int)targetGreen,(int)targetBlue);
+        cvPutText ( dst , Angles, cvPoint( 10, 10), &font, cvScalar(255,0,0) );
 
     }
     cvCopy(dst,outputImage->getIplImage());
@@ -311,7 +321,7 @@ void selectiveAttentionProcessor::getPixelColour(ImageOf<PixelRgb>* inputColourI
         //pColour++;
         pColour=inImage->getRawImage()[(x*3)+2+y*inImage->getRowSize()];
         targetBlue=pColour;
-        //printf("colour found: %d %d %d", targetBlue,targetGreen,targetRed);
+        //printf("colour found: %d %d %d \n",(int) targetBlue,(int)targetGreen,(int)targetRed);
 }
 
 /**

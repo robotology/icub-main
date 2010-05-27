@@ -3,6 +3,7 @@
 #define _selectiveAttentionModule_H_
 
 #include <ace/config.h>
+#include <time.h>
 
 //YARP include
 #include <yarp/os/all.h>
@@ -19,9 +20,7 @@
 //#include <iCub/YARPImgRecv.h>
 //#include <iCub/YarpImage2Pixbuf.h>
 
-using namespace yarp::os;
-using namespace yarp::sig;
-using namespace yarp::sig::draw;
+
 
 
 // general command vocab's
@@ -146,56 +145,56 @@ CopyPolicy: Released under the terms of the GNU GPL v2.0.
 
 **/
 
-class selectiveAttentionModule : public Module {
+class selectiveAttentionModule : public yarp::os::Module{
 private:
     /**
     * a port for the inputImage (colour)
     */
-    BufferedPort<ImageOf<PixelRgb> > inImagePort; //
+    yarp::os::BufferedPort<yarp::sig::ImageOf<yarp::sig::PixelRgb> > inImagePort; //
     /**
     * input port for the 1st saliency map
     */
-    BufferedPort<ImageOf<PixelMono> > map1Port; //
+    yarp::os::BufferedPort<yarp::sig::ImageOf<yarp::sig::PixelMono> > map1Port; //
     /**
     * input port for the 2nd saliency map
     */
-    BufferedPort<ImageOf<PixelMono> > map2Port; //
+    yarp::os::BufferedPort<yarp::sig::ImageOf<yarp::sig::PixelMono> > map2Port; //
     /**
     * input port for the 3rd saliency map
     */
-    BufferedPort<ImageOf<PixelMono> > map3Port; //	 
+    yarp::os::BufferedPort<yarp::sig::ImageOf<yarp::sig::PixelMono> > map3Port; //	 
     /**
     * input port for the 4th saliency map
     */
-    BufferedPort<ImageOf<PixelMono> > map4Port; 
+    yarp::os::BufferedPort<yarp::sig::ImageOf<yarp::sig::PixelMono> > map4Port; 
     /**
     * input port for the 5th saliency map
     */
-    BufferedPort<ImageOf<PixelMono> > map5Port; 
+    yarp::os::BufferedPort<yarp::sig::ImageOf<yarp::sig::PixelMono> > map5Port; 
     /**
     * input port for the 6th saliency map
     */
-    BufferedPort<ImageOf<PixelMono> > map6Port; 	
+    yarp::os::BufferedPort<yarp::sig::ImageOf<yarp::sig::PixelMono> > map6Port; 	
     /**
     *  output port that represent the linear combination of different maps
     */
-    BufferedPort<ImageOf<PixelMono> > linearCombinationPort; 
+    yarp::os::BufferedPort<yarp::sig::ImageOf<yarp::sig::PixelMono> > linearCombinationPort; 
     /**
     *  output port that represent the selected attention output
     */
-    BufferedPort<ImageOf<PixelRgb> > selectedAttentionPort; 
+    yarp::os::BufferedPort<yarp::sig::ImageOf<yarp::sig::PixelRgb> > selectedAttentionPort; 
     /**
     *  output port where the centroid coordinate is sent
     */
-    BufferedPort<Bottle > centroidPort; 
+    yarp::os::BufferedPort<yarp::os::Bottle > centroidPort; 
     /**
     *  port necessary to send back command to the preattentive processors
     */
-    Port feedbackPort; 
+    yarp::os::Port feedbackPort; 
     /**
     * command port of the module
     */
-    BufferedPort<Bottle > cmdPort;
+    yarp::os::BufferedPort<yarp::os::Bottle > cmdPort;
     /**
     * counter of the module
     */
@@ -203,7 +202,7 @@ private:
     /**
     * options of the connection
     */
-    Property options;	//
+    yarp::os::Property options;	//
     /**
     * width of the input image
     */
@@ -219,43 +218,43 @@ private:
     /**
     * semaphore for the respond function
     */
-    Semaphore mutex;
+    yarp::os::Semaphore mutex;
      /**
     * input image reference
     */
-    ImageOf<PixelRgb> *inputImg;
+    yarp::sig::ImageOf<yarp::sig::PixelRgb> *inputImg;
      /**
     * temporary mono image
     */
-    ImageOf<PixelMono> *tmp;
+    yarp::sig::ImageOf<yarp::sig::PixelMono> *tmp;
      /**
     * temporary rgb image
     */
-    ImageOf<PixelRgb> *tmp2;
+    yarp::sig::ImageOf<yarp::sig::PixelRgb> *tmp2;
     /**
     * input image of the 1st map
     */
-    ImageOf<PixelMono> *map1Img;
+    yarp::sig::ImageOf<yarp::sig::PixelMono> *map1Img;
     /**
     * input image of the 2nd map
     */
-    ImageOf<PixelMono> *map2Img;
+    yarp::sig::ImageOf<yarp::sig::PixelMono> *map2Img;
     /**
     * input image of the 3rd map
     */
-    ImageOf<PixelMono> *map3Img;
+    yarp::sig::ImageOf<yarp::sig::PixelMono> *map3Img;
     /**
     * input image of the 4th map
     */
-    ImageOf<PixelMono> *map4Img;
+    yarp::sig::ImageOf<yarp::sig::PixelMono> *map4Img;
     /**
     * input image of the 5th map
     */
-    ImageOf<PixelMono> *map5Img;
+    yarp::sig::ImageOf<yarp::sig::PixelMono> *map5Img;
     /**
     * input image of the 6th map
     */
-    ImageOf<PixelMono> *map6Img;
+    yarp::sig::ImageOf<yarp::sig::PixelMono> *map6Img;
     /**
     * value read from the blobFinder component (red intensity of the target)
     */
@@ -281,11 +280,20 @@ private:
     * function that resets all the mode flags
     */
     void resetFlags();
+
+     /**
+    * time variable
+    */
+    time_t start;
+    /**
+    * time variable
+    */
+    time_t end;
 public:
     /**
     *open the ports of the module
     */
-    bool open(Searchable& config); //
+    bool open(yarp::os::Searchable& config); //
     /**
     * tryes to interrupt any communications or resource usage
     */
@@ -304,7 +312,7 @@ public:
     /**
     * set the attribute options of class Property
     */
-    void setOptions(Property options); //
+    void setOptions(yarp::os::Property options); //
     /**
     * function to reainitialise the attributes of the class
     */
@@ -312,7 +320,7 @@ public:
     /**
     * respond to command coming from the command port
     */
-    bool respond(const Bottle &command,Bottle &reply);
+    bool respond(const yarp::os::Bottle &command,yarp::os::Bottle &reply);
     /**
     * creates some objects necessary for the window
     */

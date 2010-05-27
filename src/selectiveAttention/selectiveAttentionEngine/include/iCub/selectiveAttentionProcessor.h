@@ -16,9 +16,7 @@
 #include <yarp/os/all.h>
 #include <yarp/sig/all.h>
 
-using namespace yarp::os;
-using namespace yarp::sig;
-using namespace yarp::sig::draw;
+
 
 const int THREAD_RATE=30;
 
@@ -27,7 +25,7 @@ const int THREAD_RATE=30;
  */
 
 
-class selectiveAttentionProcessor:public RateThread
+class selectiveAttentionProcessor:public yarp::os::RateThread
 {
     private:
         /**
@@ -68,21 +66,21 @@ class selectiveAttentionProcessor:public RateThread
         */
         Ipp8u* map6_ippi; //
       
-        //ImageOf<PixelMono>* outputImagePlane; //temp variable for plane extraction;
+        //yarp::sig::ImageOf<yarp::sig::PixelMono>* outputImagePlane; //temp variable for plane extraction;
         
         
         /**
         * temp variable for plane extraction;
         */
-        ImageOf<PixelMono> *tmp;//
+        yarp::sig::ImageOf<yarp::sig::PixelMono> *tmp;//
         /**
         * temp variable for plane extraction;
         */
-        ImageOf<PixelRgb> *image_out;
+        yarp::sig::ImageOf<yarp::sig::PixelRgb> *image_out;
         /**
         * temp variable for plane extraction;
         */
-        ImageOf<PixelMono> *image_tmp;
+        yarp::sig::ImageOf<yarp::sig::PixelMono> *image_tmp;
         
         /**
         * width of the input image
@@ -99,7 +97,7 @@ class selectiveAttentionProcessor:public RateThread
         /**
         * semaphore for the respond function
         */
-        Semaphore mutex;
+        yarp::os::Semaphore mutex;
         
     public:
         /**
@@ -113,7 +111,7 @@ class selectiveAttentionProcessor:public RateThread
         /**
         * constructor
         */
-        selectiveAttentionProcessor(ImageOf<PixelRgb>* inputImage );//
+        selectiveAttentionProcessor(yarp::sig::ImageOf<yarp::sig::PixelRgb>* inputImage );//
         /**
         *	initialization of the thread 
         */
@@ -144,7 +142,7 @@ class selectiveAttentionProcessor:public RateThread
         * @param x x position of the center of mass of the contours
         * @param y y position of the center of mass of the contours
         */
-        void extractContour(ImageOf<PixelMono>* inputImage,ImageOf<PixelRgb>* outputImage,ImageOf<PixelRgb>* inputColourImage ,int& x,int& y);
+        void extractContour(yarp::sig::ImageOf<yarp::sig::PixelMono>* inputImage,yarp::sig::ImageOf<yarp::sig::PixelRgb>* outputImage,yarp::sig::ImageOf<yarp::sig::PixelRgb>* inputColourImage ,int& x,int& y);
         /**
         * function that extracts the colour of a region around a pixel given the input image
         * @param inputColourImage input image where the region colour is read.
@@ -154,7 +152,7 @@ class selectiveAttentionProcessor:public RateThread
         * @param greenIntensity intensity of the red plane of the region colour
         * @param blueIntensity intensity of the red plane of the region colour
         */
-        void getPixelColour(ImageOf<PixelRgb>* inputColourImage,int x ,int y, unsigned char &redIntensity, unsigned char &greenIntensity, unsigned char &blueIntensity);
+        void getPixelColour(yarp::sig::ImageOf<yarp::sig::PixelRgb>* inputColourImage,int x ,int y, unsigned char &redIntensity, unsigned char &greenIntensity, unsigned char &blueIntensity);
 
         //------------- PUBLIC ATTRIBUTES ------------
 
@@ -169,39 +167,39 @@ class selectiveAttentionProcessor:public RateThread
         /**
         * input image  of the processing
         */
-        ImageOf<PixelRgb> *inImage; // 
+        yarp::sig::ImageOf<yarp::sig::PixelRgb> *inImage; // 
         /**
         * input image  of the processing
         */
-        ImageOf<PixelRgb> *inColourImage; // 
+        yarp::sig::ImageOf<yarp::sig::PixelRgb> *inColourImage; // 
         /**
         * saliency map coming from the 1st source
         */
-        ImageOf<PixelMono>* map1_yarp;
+        yarp::sig::ImageOf<yarp::sig::PixelMono>* map1_yarp;
         /**
         * saliency map coming from the 2nd source
         */
-        ImageOf<PixelMono>* map2_yarp;
+        yarp::sig::ImageOf<yarp::sig::PixelMono>* map2_yarp;
         /**
         * saliency map coming from the 3rd source
         */
-        ImageOf<PixelMono>* map3_yarp;
+        yarp::sig::ImageOf<yarp::sig::PixelMono>* map3_yarp;
         /**
         * saliency map coming from the 4th source
         */
-        ImageOf<PixelMono>* map4_yarp;
+        yarp::sig::ImageOf<yarp::sig::PixelMono>* map4_yarp;
         /**
         * saliency map coming from the 5th source
         */
-        ImageOf<PixelMono>* map5_yarp;
+        yarp::sig::ImageOf<yarp::sig::PixelMono>* map5_yarp;
         /**
         * saliency map coming from the 6th source
         */
-        ImageOf<PixelMono>* map6_yarp;
+        yarp::sig::ImageOf<yarp::sig::PixelMono>* map6_yarp;
         /**
         * yarp image of the composition of all the edges
         */
-        ImageOf<PixelMono>* edges_yarp;
+        yarp::sig::ImageOf<yarp::sig::PixelMono>* edges_yarp;
         /**
         * colour information passed back for the reinforcement
         */
@@ -269,15 +267,15 @@ class selectiveAttentionProcessor:public RateThread
         /**
         * result of the selection
         */
-        ImageOf<PixelMono>* outputImage; //
+        yarp::sig::ImageOf<yarp::sig::PixelMono>* outputImage; //
         /**
         * result of the selection
         */
-        ImageOf<PixelRgb>* outputColourImage;
+        yarp::sig::ImageOf<yarp::sig::PixelRgb>* outputColourImage;
         /**
         * result of the combination
         */
-        ImageOf<PixelMono>* linearCombinationImage;
+        yarp::sig::ImageOf<yarp::sig::PixelMono>* linearCombinationImage;
         /**
         * center of gravity of the selective attention (x position)
         */
