@@ -1,12 +1,11 @@
-<!-- @author Francesco Rea -->
-<!-- please take few seconds to figure out how to substitute powerNode1 and console1 with your specific nodes-->
+
 
 <application>
-	<name>AttentionMechanism (heading control)</name>
+	<name>AttentionMechanism </name>
  	<dependencies>
-		<!--port>/icub/head/rpc:i</port-->
+		
 		<port>/icub/cam/left/logpolar</port> 
-		<!--port>/icub/cam/right/logpolar</port-->
+		
 	</dependencies>
 	<module>
 		<name>colourProcessor</name>
@@ -54,7 +53,13 @@
 	</module>
 	<module>
 		<name>selectiveAttentionInterface</name>
-		<parameters>--name selectiveAttentionInterface/icub/left_cam</parameters>
+		<parameters>--name /selectiveAttentionInterface/icub/left_cam</parameters>
+		<tag>selectiveAttentionEngine</tag>
+		<node>/console1</node>
+	</module>
+	<module>
+		<name>blobTracker</name>
+		<parameters>--name /blobTracker/icub/left_cam</parameters>
 		<tag>selectiveAttentionEngine</tag>
 		<node>/console1</node>
 	</module>
@@ -80,6 +85,12 @@
 		<name>yarpview</name>
 		<parameters>--name /logpolarView --x 200 --y 200 --synch</parameters>
 		<tag>logView</tag>
+		<node>/powerNode1</node>
+	</module>
+	<module>
+		<name>yarpview</name>
+		<parameters>--name /blobTrackerOutput --x 500 --y 600 --synch</parameters>
+		<tag>blobTrackerOut</tag>
 		<node>/powerNode1</node>
 	</module>
 	
@@ -207,7 +218,7 @@
 	</connection>
 	<connection>
       <from>/selectiveAttentionInterface/icub/left_cam/command:o</from>
-		<to>/selectiveAttentionEngine/icub/left_cam/cmd</to>
+		<to>/selectiveAttentionEngine/cmd</to>
 		<protocol>tcp</protocol>
 	</connection>
 	<connection>
@@ -215,4 +226,15 @@
 		<to>/blobFinder/icub/left_cam/cmd</to>
 		<protocol>tcp</protocol>
 	</connection>
+	<connection>
+      		<from>/selectiveAttentionEngine/combination:o</from>
+		<to>/blobTracker/icub/left_cam/img:i</to>
+		<protocol>tcp</protocol>
+	</connection>
+	<connection>
+      		<from>/blobTracker/icub/left_cam/img:o</from>
+		<to>/blobTrackerOutput</to>
+		<protocol>tcp</protocol>
+	</connection>
+
 </application>
