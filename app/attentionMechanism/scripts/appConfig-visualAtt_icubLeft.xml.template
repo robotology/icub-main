@@ -1,3 +1,6 @@
+<!-- @author Francesco Rea -->
+<!-- please take few seconds to figure out how to substitute powerNode1 and console1 with your specific nodes-->
+
 <application>
 	<name>AttentionMechanism (heading control)</name>
  	<dependencies>
@@ -9,75 +12,75 @@
 		<name>colourProcessor</name>
 		<parameters>--file colourProcessorLeft.ini --context attentionMechanism/conf</parameters>
 		<tag>colourLeft</tag>
-		<node>/surfer</node>
-		<stdio>lightHouse</stdio>
+		<node>/console1</node>
+		<stdio>powerNode1</stdio>
 	</module>
 	<module>
 		<name>YUVProcessor</name>
 		<parameters></parameters>
 		<tag>yuvProcessor</tag>
-		<node>/surfer</node>
-		<stdio>lightHouse</stdio>
+		<node>/console1</node>
+		<stdio>powerNode1</stdio>
 	</module>
 	<module>
 		<name>imageProcessor</name>
 		<parameters>--file imageProcessorLeft.ini --context attentionMechanism/conf</parameters>
 		<tag>imageLeft</tag>
-		<node>/lightHouse</node>
+		<node>/powerNode1</node>
 	</module>
 	<module>
 		<name>imageProcessorInterface</name>
 		<parameters>--name /imageProcessorInterface/icub/left_cam</parameters>
 		<tag>imageInterfaceLeft</tag>
-		<node>/surfer</node>
+		<node>/console1</node>
 	</module>
 	<module>
 		<name>saliencyBlobFinder</name>
 		<parameters>--file saliencyBlobFinderLeft.ini --context attentionMechanism/conf</parameters>
 		<tag>saliencyBlobFinderLeft</tag>
-		<node>/surfer</node>
+		<node>/console1</node>
 	</module>
 	<module>
 		<name>saliencyBlobFinderInterface</name>
 		<parameters>--name /blobFinderInterface/icub/left_cam </parameters>
 		<tag>saliencyBlobFinderInterfaceLeft</tag>
-		<node>/surfer</node>
+		<node>/console1</node>
 	</module>
 	<module>
 		<name>selectiveAttentionEngine</name>
 		<parameters>--file selectiveAttentionEngine.ini --context attentionMechanism/conf</parameters>
 		<tag>selectiveAttentionEngine</tag>
-		<node>/surfer</node>
+		<node>/console1</node>
 	</module>
 	<module>
 		<name>selectiveAttentionInterface</name>
 		<parameters>--name selectiveAttentionInterface/icub/left_cam</parameters>
 		<tag>selectiveAttentionEngine</tag>
-		<node>/surfer</node>
+		<node>/console1</node>
 	</module>
 	<module>
 		<name>yarpview</name>
 		<parameters>--name /blobFinder/icub/left_cam/outputView --x 200 --y 600 --synch</parameters>
 		<tag>blobFinderOutLeft</tag>
-		<node>/lightHouse</node>
+		<node>/powerNode1</node>
 	</module>
 	<module>
 		<name>yarpview</name>
 		<parameters>--name /combinationView --x 500 --y 600 --synch</parameters>
 		<tag>combinationView</tag>
-		<node>/lightHouse</node>
+		<node>/powerNode1</node>
 	</module>
 	<module>
 		<name>yarpview</name>
 		<parameters>--name /selectionView --x 500 --y 200 --synch</parameters>
 		<tag>selectionView</tag>
-		<node>/lightHouse</node>
+		<node>/powerNode1</node>
 	</module>
 	<module>
 		<name>yarpview</name>
 		<parameters>--name /logpolarView --x 200 --y 200 --synch</parameters>
 		<tag>logView</tag>
-		<node>/lightHouse</node>
+		<node>/powerNode1</node>
 	</module>
 	
 	<connection>
