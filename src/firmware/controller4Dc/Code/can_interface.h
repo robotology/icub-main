@@ -39,6 +39,7 @@ void can_receive_additional_info();
 #define CAN_DISABLE_PWM_PAD			6
 #define CAN_GET_CONTROL_MODE		7
 #define CAN_MOTION_DONE				8
+#define CAN_SET_CONTROL_MODE		9
 
 #define CAN_WRITE_FLASH_MEM			10
 #define CAN_READ_FLASH_MEM			11
