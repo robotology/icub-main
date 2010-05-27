@@ -176,20 +176,20 @@ bool interactionThread::openPorts(){
     bool ret = false;
     bool ok=true;
     //input ports
-    inImagePort.open(getName("image:i").c_str());
-	redPlanePort.open(getName("red:i").c_str());
-    bluePlanePort.open(getName("blue:i").c_str());
-    greenPlanePort.open(getName("green:i").c_str());
+    inImagePort.open(getName("/image:i").c_str());
+	redPlanePort.open(getName("/red:i").c_str());
+    bluePlanePort.open(getName("/blue:i").c_str());
+    greenPlanePort.open(getName("/green:i").c_str());
 
-    rgPort.open(getName("rg:i").c_str());
-    grPort.open(getName("gr:i").c_str());
-    byPort.open(getName("by:i").c_str());
+    rgPort.open(getName("/rg:i").c_str());
+    grPort.open(getName("/gr:i").c_str());
+    byPort.open(getName("/by:i").c_str());
 
-    rgEdgesPort.open(getName("rgEdges:o").c_str());
-    grEdgesPort.open(getName("grEdges:o").c_str());
-    byEdgesPort.open(getName("byEdges:o").c_str());
+    rgEdgesPort.open(getName("/rgEdges:o").c_str());
+    grEdgesPort.open(getName("/grEdges:o").c_str());
+    byEdgesPort.open(getName("/byEdges:o").c_str());
 
-    edgesPort.open(getName("edges:o").c_str());
+    edgesPort.open(getName("/edges:o").c_str());
     
 
 	return true;

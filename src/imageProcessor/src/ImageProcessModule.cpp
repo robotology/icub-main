@@ -39,7 +39,7 @@ bool ImageProcessModule::configure(ResourceFinder &rf)
     printf("resource finder configuration after time turbo boosting \n");
     
     
-    interThread->setName("/imagePU/");
+    interThread->setName(getName().c_str());
     interThread->start();
 
 
@@ -264,17 +264,17 @@ bool ImageProcessModule::closePorts(){
 	return true;
 }
 
-void ImageProcessModule::setName(std::string str){
+/*void ImageProcessModule::setName(std::string str){
     this->name=str; 
-}
+}*/
 
 
-std::string ImageProcessModule::getName(const char* p){
+/*std::string ImageProcessModule::getName(const char* p){
     string str(name);
     str.append(p);
     printf("name: %s", name.c_str());
     return str;
-}
+}*/
 
 bool ImageProcessModule::respond(const Bottle &command,Bottle &reply){
         

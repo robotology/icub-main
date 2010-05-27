@@ -235,13 +235,13 @@ public:
     * function that gives reference to the name of the module
     * @param name of the module
     */
-    void setName(std::string name);
+    //void setName(std::string name);
     /**
     * function that returns the name of the module
     * @param str string to be added
     * @return name of the module
     */
-    std::string getName(const char* str);
+    //std::string getName(const char* str);
     /**
     * opens all the ports necessary for the module
     * @return return whether the operation was successful
