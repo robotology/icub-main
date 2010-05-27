@@ -82,10 +82,7 @@ None.
 None. 
  
 \section conf_file_sec Configuration Files
-- \e left_arm.ini
-- \e right_arm.ini
-- \e left_leg.ini
-- \e right_leg.ini 
+None
  
 \section tested_os_sec Tested OS
 Linux and Windows.
@@ -94,7 +91,7 @@ Linux and Windows.
 By launching the following command: 
  
 \code 
-wrenchObserver --context wrenchObserver/conf --from right_arm.ini --name ftObs --robot icub --part right_arm --rate 50  
+wrenchObserver --name ftObs --robot icub --part right_arm --rate 50  
 \endcode 
  
 the module will create the listening port /wrenchObserver/right_arm/FT:i for 
@@ -727,7 +724,7 @@ int main(int argc, char * argv[])
 		cout << "\t--context   context: where to find the called resource (referred to $ICUB_ROOT\app: default objectDetector \\conf)"                << endl;
         cout << "\t--from      from: The name of the file.ini to be used for calibration"          << endl;
         cout << "\t--rate      rate: The period used by the module. default 100ms (not less than 15ms)"          << endl;
-        cout << "\t--offset    offset: The offsets that affect the FT sensor (6 elements, default 0.0 0.0 0.0 0.0 0.0 0.0), not yet defined"          << endl;
+        //out << "\t--offset    offset: The offsets that affect the FT sensor (6 elements, default 0.0 0.0 0.0 0.0 0.0 0.0), not yet defined"          << endl;
         return 0;
     }
 	
