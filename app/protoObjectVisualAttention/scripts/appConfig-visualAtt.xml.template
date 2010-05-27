@@ -120,7 +120,7 @@
 			<protocol>tcp</protocol>
 	</connection>
 	<connection>
-      	<from>/imageProcessorInterface/command:o</from>
+      	<from>/imageProcessorInterface/cmd</from>
 			<to>/imagePU/cmd</to>
 			<protocol>tcp</protocol>
 	</connection>
