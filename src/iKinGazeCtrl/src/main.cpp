@@ -417,12 +417,12 @@ public:
         if (rf.check("eyeTiltMin"))
             eyeTiltMin=rf.find("eyeTiltMin").asDouble();
         else
-            eyeTiltMin=-25.0;
+            eyeTiltMin=-1e9;
 
         if (rf.check("eyeTiltMax"))
             eyeTiltMax=rf.find("eyeTiltMax").asDouble();
         else
-            eyeTiltMax=15.0;
+            eyeTiltMax=1e9;
 
         if (rf.check("simulation"))
             Robotable=false;
