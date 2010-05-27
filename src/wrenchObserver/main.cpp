@@ -741,7 +741,7 @@ int main(int argc, char * argv[])
 	if (rf.check("help"))
     {
         cout << "Options:" << endl << endl;
-		cout << "\t--context   context: where to find the called resource (referred to $ICUB_ROOT\app: default objectDetector\conf)"                << endl;
+		cout << "\t--context   context: where to find the called resource (referred to $ICUB_ROOT\app: default objectDetector \\conf)"                << endl;
         cout << "\t--from      from: The name of the file.ini to be used for calibration"          << endl;
         cout << "\t--rate      rate: The period used by the module. default 100ms (not less than 15ms)"          << endl;
         cout << "\t--offset    offset: The offsets that affect the FT sensor (6 elements, default 0.0 0.0 0.0 0.0 0.0 0.0), not yet defined"          << endl;
