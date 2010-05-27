@@ -63,7 +63,7 @@ bool colourProcessorModule::configure(ResourceFinder &rf)
     interThread.uvPlane=yuvProcessor.uvPlane;
     interThread.yPlane=yuvProcessor.yPlane;
    
-    cmdPort.open(getName("cmd:i"));
+    cmdPort.open(getName("/cmd:i"));
     attach(cmdPort);
     attachTerminal();
 

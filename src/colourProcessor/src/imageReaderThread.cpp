@@ -76,20 +76,20 @@ std::string imageReaderThread::getName(const char* p){
 
 bool imageReaderThread::threadInit(){
     printf("Thread initialisation.. \n");    
-    inputPort.open(getName("image:i").c_str());
+    inputPort.open(getName("/image:i").c_str());
         
-    redPort.open(getName("red:o").c_str());
-    greenPort.open(getName("green:o").c_str());
-    bluePort.open(getName("blue:o").c_str());
+    redPort.open(getName("/red:o").c_str());
+    greenPort.open(getName("/green:o").c_str());
+    bluePort.open(getName("/blue:o").c_str());
 
-    rgPort.open(getName("rg:o").c_str());
-    grPort.open(getName("gr:o").c_str());
-    byPort.open(getName("by:o").c_str());
+    rgPort.open(getName("/rg:o").c_str());
+    grPort.open(getName("/gr:o").c_str());
+    byPort.open(getName("/by:o").c_str());
 
-    yPort.open(getName("ychannel:o").c_str());
-    uPort.open(getName("uchannel:o").c_str());
-    vPort.open(getName("vchannel:o").c_str());
-    uvPort.open(getName("uvchannel:o").c_str());
+    yPort.open(getName("/ychannel:o").c_str());
+    uPort.open(getName("/uchannel:o").c_str());
+    vPort.open(getName("/vchannel:o").c_str());
+    uvPort.open(getName("/uvchannel:o").c_str());
 
    
 
