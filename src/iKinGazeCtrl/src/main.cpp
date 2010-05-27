@@ -108,12 +108,12 @@ Shifts 8 8 8 8 8 8 8 8 8 8
 - The parameter \e tmo is the timeout (in seconds) to allow to
   start-up the robot before connecting to it.
  
--- eye_tilt_min \e min
+-- eyeTiltMin \e min
 - The parameter \e min specifies the minimum eye tilt angle 
   [deg] in order to prevent the eye from being covered by the
   eyelid (when they're wide open) while moving.
  
--- eye_tilt_max \e max
+-- eyeTiltMax \e max
 - The parameter \e max specifies the maximum eye tilt angle 
   [deg] in order to prevent the eye from being covered by the
   eyelid (when they're wide open) while moving.
@@ -714,8 +714,8 @@ int main(int argc, char *argv[])
         cout << "\t--context        dir: resource finder searching dir for config file"              << endl;
         cout << "\t--simulation        : simulate the presence of the robot"                         << endl;
         cout << "\t--ping_robot_tmo tmo: connection timeout (s) to start-up the robot"               << endl;
-        cout << "\t--eye_tilt_min   min: minimum eye tilt angle [deg]"                               << endl;
-        cout << "\t--eye_tilt_max   max: maximum eye tilt angle [deg]"                               << endl;
+        cout << "\t--eyeTiltMin     min: minimum eye tilt angle [deg]"                               << endl;
+        cout << "\t--eyeTiltMax     max: maximum eye tilt angle [deg]"                               << endl;
 
         return 0;
     }
