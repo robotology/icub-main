@@ -1639,7 +1639,6 @@ void iDynInvSensor::setSensorInfo(std::string _info)
 }
 //~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 
-
 	//~~~~~~~~~~~~~~
 	// get methods
 	//~~~~~~~~~~~~~~
@@ -1650,4 +1649,120 @@ string iDynInvSensor::getInfo()			const	{return info;}
 string iDynInvSensor::getSensorInfo()	const	{return sens->getInfo();}
 //~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 Vector iDynInvSensor::getSensorForceMoment()	const	{return sens->getForceMoment(); }
+//~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+
+
+//======================================
+//
+//		 iDYN INV SENSOR ARM
+//
+//======================================
+
+//~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+iDynInvSensorArm::iDynInvSensorArm(iDynChain *_c, const string _type, const NewEulMode _mode, unsigned int verb)
+:iDynInvSensor(_c,_type,_mode,verb)
+{
+	// the arm type determines the sensor properties
+	type = _type;
+	// FT sensor is in position 5 in the kinematic chain in both arms
+	lSens = 5;
+	//now setting inertia, mass and COM specifically for each link
+	Matrix HS(4,4); HS.eye();
+	Matrix HSC(4,4); HSC.eye();
+	Matrix IS(3,3); IS.zero();
+	double ms = 0.0;
+	if(type=="left")
+	{
+		HS.zero(); HS(0,0) = 1.0; HS(2,1) = 1.0; HS(1,2) = -1.0; HS(1,3) = 0.08428; HS(3,3) = 1.0;
+		HSC.eye(); HSC(0,3) = -1.56e-04; HSC(1,3) = -9.87e-05;  HSC(2,3) = 2.98e-2; 
+		IS.zero(); IS(0,0) = 4.08e-04; IS(0,1) = IS(1,0) = -1.08e-6; IS(0,2) = IS(2,0) = -2.29e-6;
+		IS(1,1) = 3.80e-04; IS(1,2) = IS(2,1) =  3.57e-6; IS(2,2) = 2.60e-4;
+		ms = 7.2784301e-01; 
+	}
+	else
+	{ 
+		if(!(type =="right") && (verbose>0))
+		{
+			cerr<<"iDynInvSensorArm error: type is not left/right. iCub only has a left and a right arm, it is not an octopus :)"<<endl
+				<<"iDynInvSensorArm: assuming right arm."<<endl;
+			type = "right";
+		}
+
+		HS.zero(); HS(0,0) = -1.0; HS(2,1) = 1.0; HS(1,2) = 1.0; HS(1,3) = -0.08428; HS(3,3) = 1.0;
+		HSC.eye(); HSC(0,3) = -1.5906019e-04; HSC(1,3) =   8.2873258e-05; HSC(2,3) =  2.9882773e-02;
+		IS.zero(); IS(0,0) = 4.08e-04; IS(0,1) = IS(1,0) = -1.08e-6; IS(0,2) = IS(2,0) = -2.29e-6;
+		IS(1,1) = 3.80e-04; IS(1,2) = IS(2,1) =  3.57e-6; IS(2,2) = 2.60e-4;
+		ms = 7.29e-01; 
+	
+	}
+	//finally set the sensor parameters
+	sens = new SensorLinkNewtonEuler(HS,HSC,ms,IS,mode,verbose);
+	//then the sensor information
+	info.clear(); info = "FT sensor " + type + " arm";
+	sens->setInfo(info);
+
+}
+//~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+string iDynInvSensorArm::getType()
+{ 
+	return type;
+}
+//~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+
+
+//======================================
+//
+//		 iDYN INV SENSOR LEG
+//
+//======================================
+
+//~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+iDynInvSensorLeg::iDynInvSensorLeg(iDynChain *_c, const string _type, const NewEulMode _mode, unsigned int verb)
+:iDynInvSensor(_c,_type,_mode,verb)
+{
+	// the arm type determines the sensor properties
+	type = _type;
+	// FT sensor is in position 2 in the kinematic chain in both legs
+	lSens = 2;
+	//now setting inertia, mass and COM specifically for each link
+	Matrix HS(4,4); HS.eye();
+	Matrix HSC(4,4); HSC.eye();
+	Matrix IS(3,3); IS.zero();
+	double ms = 0.0;
+	if(type=="left")
+	{
+		HS.zero(); HS(0,0) = 1.0; HS(2,1) = 1.0; HS(1,2) = -1.0; HS(1,3) = 0.08428; HS(3,3) = 1.0;
+		HSC.eye(); HSC(0,3) = -1.56e-04; HSC(1,3) = -9.87e-05;  HSC(2,3) = 2.98e-2;  
+		IS.zero(); IS(0,0) = 4.08e-04; IS(0,1) = IS(1,0) = -1.08e-6; IS(0,2) = IS(2,0) = -2.29e-6;
+		IS(1,1) = 3.80e-04; IS(1,2) = IS(2,1) =  3.57e-6; IS(2,2) = 2.60e-4;
+		ms = 7.2784301e-01;
+	}
+	else
+	{ 
+		if(!(type =="right") && (verbose>0))
+		{
+			cerr<<"iDynInvSensorLeg error: type is not left/right. iCub only has a left and a right leg, it is not a centaur :)"<<endl
+				<<"iDynInvSensorLeg: assuming right leg."<<endl;
+			type = "right";
+		}
+
+		HS.zero(); HS(0,0) = 1.0; HS(2,1) = 1.0; HS(1,2) = -1.0; HS(1,3) = 0.08428; HS(3,3) = 1.0;
+		HSC.eye(); HSC(0,3) = -1.56e-04; HSC(1,3) = -9.87e-05;  HSC(2,3) = 2.98e-2;  
+		IS.zero(); IS(0,0) = 4.08e-04; IS(0,1) = IS(1,0) = -1.08e-6; IS(0,2) = IS(2,0) = -2.29e-6;
+		IS(1,1) = 3.80e-04; IS(1,2) = IS(2,1) =  3.57e-6; IS(2,2) = 2.60e-4;
+		ms = 7.2784301e-01;
+	
+	}
+	//finally set the sensor parameters
+	sens = new SensorLinkNewtonEuler(HS,HSC,ms,IS,mode,verbose);
+	//then the sensor information
+	info.clear(); info = "FT sensor " + type + " leg";
+	sens->setInfo(info);
+
+}
+//~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+string iDynInvSensorLeg::getType()
+{ 
+	return type;
+}
 //~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~

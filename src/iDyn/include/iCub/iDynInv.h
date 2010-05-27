@@ -1003,6 +1003,76 @@ public:
 };
 
 
+
+/**
+* \ingroup iDynInv
+*
+* A class for computing force/moment of the FT sensor placed
+* in the middle of the iCub's left or right arm. The sensor
+* parameters are automatically set by chosing left or right.
+* 
+*/
+class iDynInvSensorArm : public iDynInvSensor
+{
+
+protected:
+	/// the arm type: left/right
+	std::string type;
+
+public:
+
+	/**
+    * Constructor: the sensor is automatically set with "right" or "left" choice
+	* @param _c a pointer to the iDynChain where the sensor is placed on
+	* @param _type a string "left/right" 
+	* @param _mode the analysis mode (static/dynamic)
+	* @param verb flag for verbosity
+    */
+	iDynInvSensorArm(iDyn::iDynChain *_c, const std::string _type, const NewEulMode _mode = NE_static, unsigned int verb = 0);
+
+	/**
+	* @return type the arm type: left/arm
+	*/
+	std::string getType();
+
+
+};
+
+/**
+* \ingroup iDynInv
+*
+* A class for computing force/moment of the FT sensor placed
+* in the middle of the iCub's left or right leg. The sensor
+* parameters are automatically set by chosing left or right.
+* 
+*/
+class iDynInvSensorLeg : public iDynInvSensor
+{
+
+protected:
+	/// the arm type: left/right
+	std::string type;
+
+public:
+
+	/**
+    * Constructor: the sensor is automatically set with "right" or "left" choice
+	* @param _c a pointer to the iDynChain where the sensor is placed on
+	* @param _type a string "left/right" 
+	* @param _mode the analysis mode (static/dynamic)
+	* @param verb flag for verbosity
+    */
+	iDynInvSensorLeg(iDyn::iDynChain *_c, const std::string _type, const NewEulMode _mode = NE_static, unsigned int verb = 0);
+
+	/**
+	* @return type the arm type: left/arm
+	*/
+	std::string getType();
+
+
+};
+
+
 }//end namespace
 
 #endif
