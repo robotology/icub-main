@@ -1888,7 +1888,7 @@ ImageOf<PixelMono>*  ImageProcessor::LShiftC ( ImageOf<PixelMono> *src1){
                 greenRed_ippi[i]=255;*/
     }
 
-    ippiThreshold_8u_C1R(edgesOutput_ippi,psb,edgesMask_ippi,psb,srcsize,10,IppCmpOp::ippCmpLess);
+    ippiThreshold_8u_C1R(edgesOutput_ippi,psb,edgesMask_ippi,psb,srcsize,10,ippCmpLess);
     for (int i=0;i<redGreenEdges_yarp->getRowSize()*height;i++){
         if(edgesMask_ippi[i]==10)
             edgesMask_ippi[i]=0;
