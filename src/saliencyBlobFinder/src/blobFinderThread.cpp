@@ -15,6 +15,7 @@ using namespace std;
 
 #define _tagged (*(ptr_tagged))
 
+#define SPIKE_COUNTS 10
 
 const int THREAD_RATE=30;
 
@@ -274,14 +275,15 @@ void blobFinderThread::run(){
         this->drawAllBlobs(false);
         if(filterSpikes_flag){
             count++;
-            if(count>10){
+            if(count>SPIKE_COUNTS){
+                //drawing the blob with max number of spikes
                 count=0;
                 this->salience->DrawStrongestSaliencyBlob(*salience->maxSalienceBlob_img,max_tag,*tagged);
-                
                 ippiCopy_8u_C1R(salience->maxSalienceBlob_img->getRawImage(),salience->maxSalienceBlob_img->getRowSize(),_outputImage->getRawImage(),_outputImage->getRowSize(),srcsize);
                 conversion=true;
             }
             else{
+                //counting the first 10 spikes
                 YARPBox box;
                 this->salience->countSpikes(*tagged,max_tag,box);
                 ippiCopy_8u_C1R(salience->maxSalienceBlob_img->getRawImage(),salience->maxSalienceBlob_img->getRowSize(),_outputImage->getRawImage(),_outputImage->getRowSize(),srcsize);
@@ -515,16 +517,18 @@ void blobFinderThread::drawAllBlobs(bool stable)
     IppiSize srcsize={this->width,this->height};
     PixelMono searchTD=0;
     PixelMono pixelRG=0,pixelGR=0,pixelBY=0;
-    searchRG=((targetRED-targetGREEN+255)/510)*255;
-    pixelRG=255-searchRG;
-    //pixelRG=targetRED;
-    searchGR=((targetGREEN-targetRED+255)/510)*255;
-    pixelGR=255-searchGR;
-    //pixelGR=targetGREEN;
+    //searchRG=((targetRED-targetGREEN+255)/510)*255;
+    //pixelRG=255-searchRG;
+    pixelRG=targetRED;
+    //searchGR=((targetGREEN-targetRED+255)/510)*255;
+    //pixelGR=255-searchGR;
+    pixelGR=targetGREEN;
     PixelMono addRG=((targetRED+targetGREEN)/510)*255;
-    searchBY=((targetBLUE-addRG+255)/510)*255;
-    pixelBY=255-searchBY;
-    //pixelBY=targetBLUE;
+    //searchBY=((targetBLUE-addRG+255)/510)*255; 
+    //pixelBY=255-searchBY;
+    pixelBY=targetBLUE;
+    //printf("%d,%d,%d \n",pixelRG, pixelGR,pixelBY);
+
     int psb32s;
     //int psb8u;
     Ipp32s* _inputImgRGS32=ippiMalloc_32s_C1(this->width,this->height,&psb32s);

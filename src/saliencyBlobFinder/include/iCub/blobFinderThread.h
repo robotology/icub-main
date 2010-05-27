@@ -51,7 +51,6 @@ private:
     * port where the yellow plane of the image is streamed
     */
     BufferedPort<ImageOf<PixelMono> > yellowPort;
-    
     /**
     * image result of the function outContrastLP
     */
@@ -141,6 +140,7 @@ private:
     * flag that indicates if the images have been resized
     */
     bool resized_flag;
+    
 
     //_________ private methods ____________
     /**
@@ -335,7 +335,11 @@ public:
     /**
     * number of blobs
     */
-    int max_tag;    
+    int max_tag;
+    /**
+    * number of spikes which are count to get the strongest
+    */
+    int countSpikes;
 };
 
 #endif //__BLOBFINDERTHREAD_H_

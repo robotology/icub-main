@@ -5,6 +5,8 @@
 #include <string>
 #include <sstream>
 
+#define TH_AREA 10
+
 #define INT_MIN     (-2147483647 - 1) /* minimum (signed) int value */
 #define INT_MAX       2147483647    /* maximum (signed) int value */
 
@@ -245,8 +247,9 @@ void SalienceOperator::DrawMaxSaliencyBlob(ImageOf<PixelMono>& id,int max_tag,Im
 {
     id.zero();
     PixelMono pixelColour=255;
-    YARPBox box;
+    
     maxSalienceBlob(tagged,max_tag,box);
+  
     //printf("id: %d \n",box.id);
     for (int r=0; r<height; r++)
         for (int c=0; c<width; c++){
@@ -310,10 +313,13 @@ void SalienceOperator::DrawStrongestSaliencyBlob(ImageOf<PixelMono>& id,int max_
     }
     
     //plotting the image with the only strongest blob in it
+
+    if(m_boxes[strongestBlob].areaCart>TH_AREA){
      for (int r=0; r<height; r++)
         for (int c=0; c<width; c++)
             if (tagged(c, r)==strongestBlob)
                 id(c ,r)=pixelColour;
+    }
     //printf("erasing the map \n");
     spikeMap.clear();
 }
@@ -382,6 +388,12 @@ void SalienceOperator::countSpikes(ImageOf<PixelInt>& tagged, int max_tag, YARPB
     maxKeyStr.append("|");
     maxKeyStr.append(maxStr);
    
+    //print out of the map
+    /*printf(" spikeMap: \n");
+    std::map<std::string,int>::iterator iterMap;
+    for(iterMap=spikeMap.begin();iterMap!=spikeMap.end();iterMap++){
+        printf(" %s: %d \n", iterMap->first.c_str(),iterMap->second);    
+    }*/
 
     int previousValue=spikeMap[maxKeyStr];
     spikeMap[maxKeyStr]=previousValue+1;
@@ -892,6 +904,7 @@ void SalienceOperator::maxSalienceBlob(ImageOf<PixelInt>& tagged, int max_tag, Y
     int max=1;
     int xcart=0;
     int ycart=0;
+
     
     for (int m = 1; m < max_tag; m++){
         //printf("blob number %d:",m);
@@ -914,13 +927,20 @@ void SalienceOperator::maxSalienceBlob(ImageOf<PixelInt>& tagged, int max_tag, Y
         centroid_y=height/2;
     }
     else{
-        centerOfMassAndMass(tagged, box.id, &xcart, &ycart, &box.areaCart);
-        box.centroid_x=xcart;
-        box.centroid_y=ycart;
-        this->centroid_x=xcart;
-        this->centroid_y=ycart;
-        this->maxc=(box.cmax+box.cmin)/2;
-        this->maxr=(box.rmax+box.rmin)/2;
+        if(box.areaCart>TH_AREA){
+            //renew the blob
+            centerOfMassAndMass(tagged, box.id, &xcart, &ycart, &box.areaCart);
+            box.centroid_x=xcart;
+            box.centroid_y=ycart;
+            this->centroid_x=xcart;
+            this->centroid_y=ycart;
+            this->maxc=(box.cmax+box.cmin)/2;
+            this->maxr=(box.rmax+box.rmin)/2;
+        }
+        else{
+            //the blob remains the same
+            //print("The max salience blob is the previous blob \n");
+        }
     }
     //printf("rho:%f,theta:%f \n",maxc,maxr);
     //printf("centroidx:%f,centroid_y:%f \n",centroid_x,centroid_y);

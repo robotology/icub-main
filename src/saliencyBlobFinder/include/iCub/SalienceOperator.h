@@ -161,7 +161,10 @@ private:
     * feature of the input image
     */
     Image_Data _img;
-
+    /**
+    * box which conteins the last max salience box
+    */
+    YARPBox box;
     /**
     * checks if the position passed as parameter is insied a precise blob
     * @param r row position in the logPolar space

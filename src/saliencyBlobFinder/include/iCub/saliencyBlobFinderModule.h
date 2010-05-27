@@ -340,7 +340,14 @@ private:
     * map of the occurences of control positions
     */
     std::map<const char*,int> occurencesMap;
-
+    /**
+    * max dimension of the area in order to consider the blob interesting
+    */ 
+    int thresholdArea;
+    /**
+    *   number spikes that have to be counted before the maxSaliency blob can be choosen
+    */
+    int countSpikes;
     /**
     * position of the centroid X in the previous time instant
     */

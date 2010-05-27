@@ -180,13 +180,23 @@ void saliencyBlobFinderModule::setOptions(yarp::os::Property opt){
     }
     int numValue=opt.find("xdisp").asInt();
     if(numValue!=0){
-        printf("|||  Module x disp :%d \n", value);
+        printf("|||  Module x disp :%d \n", numValue);
         this->xdisp=numValue;
     }
     numValue=opt.find("ydisp").asInt();
     if(numValue!=0){
-        printf("|||  Module y disp :%d \n", value);
+        printf("|||  Module y disp :%d \n", numValue);
         this->ydisp=numValue;
+    }
+    numValue=opt.find("countSpikes").asInt();
+    if(numValue!=0){
+        printf("|||  Module countSpikes :%d \n", numValue);
+        this->countSpikes=numValue;
+    }
+    numValue=opt.find("thresholddArea").asInt();
+    if(numValue!=0){
+        printf("|||  Module threshold area :%d \n", numValue);
+        this->thresholdArea=numValue;
     }
 }
 
@@ -235,6 +245,7 @@ bool saliencyBlobFinderModule::updateModule() {
         blobFinder->reinitialise(img->width(), img->height());
         blobFinder->start();
         blobFinder->ptr_inputImg=img;
+        blobFinder->countSpikes=this->countSpikes;
         //passes the value of flags
         copyFlags();
     }
@@ -306,7 +317,7 @@ void saliencyBlobFinderModule::outPorts(){
         Bottle in,bot;
         //Bottle &bot = triangulationPort.prepare(); 
         bot.clear();
-        /*bot.addVocab( Vocab::encode("get") ); 
+        /*bot.addVocab( Vocab::encode("get") );x 
         bot.addVocab( Vocab::encode("3dpoint") );
         bot.addVocab( Vocab::encode("right") );*/
         bot.addString("get");
@@ -775,10 +786,13 @@ bool saliencyBlobFinderModule::respond(const Bottle &command,Bottle &reply){
                 reply.addString(s.c_str());
                 ok = true;
             }
+             break;                               
             case COMMAND_VOCAB_KBU:{
-                double nb = blobFinder->salienceBU;
-                reply.addDouble(nb);
-                ok = true;
+                if(blobFinder!=0){
+                    double nb = blobFinder->salienceBU;
+                    reply.addDouble(nb);
+                    ok = true;
+                }
             }
                 break;
             case COMMAND_VOCAB_KTD:{

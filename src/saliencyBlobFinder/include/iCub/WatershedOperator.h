@@ -128,6 +128,9 @@ public:
     * applies the rain watershed from the edge picture, and returns the tagged image of integer (OLD)
     */
     int applyOnOld(const ImageOf<PixelMono> &src, ImageOf<PixelInt> &result);
+    /*
+    *converts the tag image into mono watershed image
+    */
     void tags2Watershed(const ImageOf<PixelInt>& src, ImageOf<PixelMono>& dest);
     /**
     * find neighbours to the position x,y
