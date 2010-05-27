@@ -192,6 +192,7 @@ private:
     * function that starts the YUV Processor
     */
     void startYuvProcessor();
+
 public:
     /**
     * default constructor

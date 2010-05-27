@@ -61,7 +61,7 @@ void imageReaderThread::reinitialise(int width, int height){
     inputImg->resize(width,height);
 }
 
-void imageReaderThread::setName(std::string str){
+void imageReaderThread::setName(const char* str){
     this->name=str; 
 }
 

@@ -28,7 +28,8 @@ bool colourProcessorModule::configure(ResourceFinder &rf)
     Time::turboBoost();
     printf("resource finder configuration after time turbo boosting \n");
     
-    interThread.setName("/colourPU/");
+    interThread.setName(this->getName().c_str());
+    printf("name:%s \n",this->getName().c_str());
     interThread.start();
 
     printf("waiting for connection of the input port, 20sec to proceed \n");
