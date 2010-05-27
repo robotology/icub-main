@@ -63,7 +63,7 @@ inline void PRINT_CAN_MESSAGE(const char *str, CanMessage &m)
 
 inline bool NOT_YET_IMPLEMENTED(const char *txt)
 {
-    ACE_OS::fprintf(stderr, "%s not yet implemented for CanBusMotionControl\n", txt);
+    fprintf(stderr, "%s not yet implemented for CanBusMotionControl\n", txt);
 
     return false;
 }
@@ -211,13 +211,13 @@ public:
 		switch (controlmode)
 		{
 		case 	MODE_IDLE:
-			ACE_OS::printf ("[%d] board  %d MODE_IDLE \r\n", net, addr);
+			printf ("[%d] board  %d MODE_IDLE \r\n", net, addr);
 			break;
 		case 	MODE_CONTROLLED:
-			ACE_OS::printf ("[%d] board %d MODE_CONTROLLED \r\n", net, addr);
+			printf ("[%d] board %d MODE_CONTROLLED \r\n", net, addr);
 			break;
 		case 	MODE_CALIB:
-			ACE_OS::printf ("[%d] board  %d MODE_CALIB \r\n", net, addr);
+			printf ("[%d] board  %d MODE_CALIB \r\n", net, addr);
 			break;
 		default:
 			break;
@@ -1193,7 +1193,7 @@ bool CanBusResources::printMessage (const CanMessage& m)
     len=m.getLen();
 
 
-    int ret = ACE_OS::sprintf (_printBuffer, "class: %2d s: %2x d: %2x c: %1d msg: %3d (%x) ",
+    int ret = sprintf (_printBuffer, "class: %2d s: %2x d: %2x c: %1d msg: %3d (%x) ",
         (id & 0x700) >> 8,
         (id & 0xf0) >> 4, 
         (id & 0x0f), 
@@ -1203,13 +1203,13 @@ bool CanBusResources::printMessage (const CanMessage& m)
 
     if (len > 1)
     {
-        ret += ACE_OS::sprintf (_printBuffer+ret, "x: "); 
+        ret += sprintf (_printBuffer+ret, "x: "); 
     }
 
     unsigned int j;
     for (j = 1; j < len; j++)
     {
-        ret += ACE_OS::sprintf (_printBuffer+ret, "%x ", data[j]);
+        ret += sprintf (_printBuffer+ret, "%x ", data[j]);
     }
 
     printf("%s", _printBuffer);
@@ -1687,7 +1687,7 @@ void CanBusMotionControl::handleBroadcasts()
                 {
                 case CAN_BCAST_OVERFLOW:
 
-                    ACE_OS::printf ("ERROR: CAN PACKET LOSS, board %d buffer full\r\n", (((id & 0x0f0) >> 4)-1));
+                    printf ("ERROR: CAN PACKET LOSS, board %d buffer full\r\n", (((id & 0x0f0) >> 4)-1));
 
                     break;
 
@@ -1773,25 +1773,25 @@ void CanBusMotionControl::handleBroadcasts()
                         }
 #endif
 
-                    if (r._bcastRecvBuffer[j].isOverCurrent()) ACE_OS::printf ("%s [%d] board %d OVERCURRENT AXIS 0\n", canDevName.c_str(), _networkN, addr);
+                    if (r._bcastRecvBuffer[j].isOverCurrent()) printf ("%s [%d] board %d OVERCURRENT AXIS 0\n", canDevName.c_str(), _networkN, addr);
                     //r._bcastRecvBuffer[j].ControlStatus(r._networkN, r._bcastRecvBuffer[j]._controlmodeStatus,addr); 
                     //if (r._bcastRecvBuffer[j].isFaultOk()) ACE_OS::printf ("Board %d OK\n", addr);
-                    if (r._bcastRecvBuffer[j].isFaultUndervoltage()) ACE_OS::printf ("%s [%d] board %d FAULT UNDERVOLTAGE AXIS 0\n", canDevName.c_str(), _networkN, addr);
-                    if (r._bcastRecvBuffer[j].isFaultExternal()) ACE_OS::printf ("%s [%d] board %d FAULT EXT AXIS 0\n", canDevName.c_str(), _networkN, addr);
-                    if (r._bcastRecvBuffer[j].isFaultOverload()) ACE_OS::printf ("%s [%d] board %d FAULT OVERLOAD AXIS 0\n", canDevName.c_str(), _networkN, addr);
-					if (r._bcastRecvBuffer[j].isHallSensorError()) ACE_OS::printf ("%s [%d] board %d HALL SENSOR ERROR AXIS 0\n", canDevName.c_str(), _networkN, addr);
-					if (r._bcastRecvBuffer[j].isAbsEncoderError()) ACE_OS::printf ("%s [%d] board %d ABS ENCODER ERROR AXIS 0\n", canDevName.c_str(), _networkN, addr);		
-					if (r._bcastRecvBuffer[j].isCanTxOverflow()) ACE_OS::printf ("%s [%d] board %d CAN TX OVERFLOW \n", canDevName.c_str(), _networkN, addr);
-					if (r._bcastRecvBuffer[j].isCanBusOff()) ACE_OS::printf ("%s [%d] board %d CAN BUS_OFF \n", canDevName.c_str(), _networkN, addr);
-					if (r._bcastRecvBuffer[j].isCanTxError()) ACE_OS::printf ("%s [%d] board %d CAN TX ERROR \n", canDevName.c_str(), _networkN, addr);
-					if (r._bcastRecvBuffer[j].isCanRxError()) ACE_OS::printf ("%s [%d] board %d CAN RX ERROR \n", canDevName.c_str(), _networkN, addr);
-					if (r._bcastRecvBuffer[j].isCanRxWarning()) ACE_OS::printf ("%s [%d] board %d CAN RX WARNING \n", canDevName.c_str(), _networkN, addr);
-					if (r._bcastRecvBuffer[j].isCanRxOverrun()) ACE_OS::printf ("%s [%d] board %d CAN RX OVERRUN \n", canDevName.c_str(), _networkN, addr);
-					if (r._bcastRecvBuffer[j].isMainLoopOverflow()) ACE_OS::printf ("%s [%d] board %d MAIN LOOP TIME EXCEDEED \n", canDevName.c_str(), _networkN, addr);
-					if (r._bcastRecvBuffer[j].isOverTempCh1()) ACE_OS::printf ("%s [%d] board %d OVER TEMPERATURE CH 1 \n", canDevName.c_str(), _networkN, addr);
-					if (r._bcastRecvBuffer[j].isOverTempCh2()) ACE_OS::printf ("%s [%d] board %d OVER TEMPERATURE CH 2 \n", canDevName.c_str(), _networkN, addr);
-					if (r._bcastRecvBuffer[j].isTempErrorCh1()) ACE_OS::printf ("%s [%d] board %d ERROR TEMPERATURE CH 1\n", canDevName.c_str(), _networkN, addr);
-					if (r._bcastRecvBuffer[j].isTempErrorCh2()) ACE_OS::printf ("%s [%d] board %d ERROR TEMPERATURE CH 2\n", canDevName.c_str(), _networkN, addr);
+                    if (r._bcastRecvBuffer[j].isFaultUndervoltage()) printf ("%s [%d] board %d FAULT UNDERVOLTAGE AXIS 0\n", canDevName.c_str(), _networkN, addr);
+                    if (r._bcastRecvBuffer[j].isFaultExternal()) printf ("%s [%d] board %d FAULT EXT AXIS 0\n", canDevName.c_str(), _networkN, addr);
+                    if (r._bcastRecvBuffer[j].isFaultOverload()) printf ("%s [%d] board %d FAULT OVERLOAD AXIS 0\n", canDevName.c_str(), _networkN, addr);
+					if (r._bcastRecvBuffer[j].isHallSensorError()) printf ("%s [%d] board %d HALL SENSOR ERROR AXIS 0\n", canDevName.c_str(), _networkN, addr);
+					if (r._bcastRecvBuffer[j].isAbsEncoderError()) printf ("%s [%d] board %d ABS ENCODER ERROR AXIS 0\n", canDevName.c_str(), _networkN, addr);		
+					if (r._bcastRecvBuffer[j].isCanTxOverflow()) printf ("%s [%d] board %d CAN TX OVERFLOW \n", canDevName.c_str(), _networkN, addr);
+					if (r._bcastRecvBuffer[j].isCanBusOff()) printf ("%s [%d] board %d CAN BUS_OFF \n", canDevName.c_str(), _networkN, addr);
+					if (r._bcastRecvBuffer[j].isCanTxError()) printf ("%s [%d] board %d CAN TX ERROR \n", canDevName.c_str(), _networkN, addr);
+					if (r._bcastRecvBuffer[j].isCanRxError()) printf ("%s [%d] board %d CAN RX ERROR \n", canDevName.c_str(), _networkN, addr);
+					if (r._bcastRecvBuffer[j].isCanRxWarning()) printf ("%s [%d] board %d CAN RX WARNING \n", canDevName.c_str(), _networkN, addr);
+					if (r._bcastRecvBuffer[j].isCanRxOverrun()) printf ("%s [%d] board %d CAN RX OVERRUN \n", canDevName.c_str(), _networkN, addr);
+					if (r._bcastRecvBuffer[j].isMainLoopOverflow()) printf ("%s [%d] board %d MAIN LOOP TIME EXCEDEED \n", canDevName.c_str(), _networkN, addr);
+					if (r._bcastRecvBuffer[j].isOverTempCh1()) printf ("%s [%d] board %d OVER TEMPERATURE CH 1 \n", canDevName.c_str(), _networkN, addr);
+					if (r._bcastRecvBuffer[j].isOverTempCh2()) printf ("%s [%d] board %d OVER TEMPERATURE CH 2 \n", canDevName.c_str(), _networkN, addr);
+					if (r._bcastRecvBuffer[j].isTempErrorCh1()) printf ("%s [%d] board %d ERROR TEMPERATURE CH 1\n", canDevName.c_str(), _networkN, addr);
+					if (r._bcastRecvBuffer[j].isTempErrorCh2()) printf ("%s [%d] board %d ERROR TEMPERATURE CH 2\n", canDevName.c_str(), _networkN, addr);
                    
                     j++;
 
@@ -1802,12 +1802,12 @@ void CanBusMotionControl::handleBroadcasts()
                         r._bcastRecvBuffer[j]._update_e = before;	
 						r._bcastRecvBuffer[j]._controlmodeStatus=*((short *)(data+3));
                         // r._bcastRecvBuffer[j].ControlStatus(r._networkN, r._bcastRecvBuffer[j]._controlmodeStatus,addr); 
-					    if (r._bcastRecvBuffer[j].isOverCurrent()) ACE_OS::printf ("%s [%d] board %d OVERCURRENT AXIS 1\n", canDevName.c_str(), _networkN, addr);
-                        if (r._bcastRecvBuffer[j].isFaultUndervoltage()) ACE_OS::printf ("%s [%d] board %d FAULT UNDERVOLTAGE AXIS 1\n", canDevName.c_str(), _networkN, addr);
-                        if (r._bcastRecvBuffer[j].isFaultExternal()) ACE_OS::printf ("%s [%d] board %d FAULT EXT AXIS 1\n", canDevName.c_str(), _networkN, addr);
-						if (r._bcastRecvBuffer[j].isFaultOverload()) ACE_OS::printf ("%s [%d] board %d FAULT OVERLOAD AXIS 1\n", canDevName.c_str(), _networkN, addr);
-					    if (r._bcastRecvBuffer[j].isHallSensorError()) ACE_OS::printf ("%s [%d] board %d HALL SENSOR ERROR AXIS 1\n", canDevName.c_str(), _networkN, addr);
-						if (r._bcastRecvBuffer[j].isAbsEncoderError()) ACE_OS::printf ("%s [%d] board %d ABS ENCODER ERROR AXIS 1\n", canDevName.c_str(), _networkN, addr);
+					    if (r._bcastRecvBuffer[j].isOverCurrent()) printf ("%s [%d] board %d OVERCURRENT AXIS 1\n", canDevName.c_str(), _networkN, addr);
+                        if (r._bcastRecvBuffer[j].isFaultUndervoltage()) printf ("%s [%d] board %d FAULT UNDERVOLTAGE AXIS 1\n", canDevName.c_str(), _networkN, addr);
+                        if (r._bcastRecvBuffer[j].isFaultExternal()) printf ("%s [%d] board %d FAULT EXT AXIS 1\n", canDevName.c_str(), _networkN, addr);
+						if (r._bcastRecvBuffer[j].isFaultOverload()) printf ("%s [%d] board %d FAULT OVERLOAD AXIS 1\n", canDevName.c_str(), _networkN, addr);
+					    if (r._bcastRecvBuffer[j].isHallSensorError()) printf ("%s [%d] board %d HALL SENSOR ERROR AXIS 1\n", canDevName.c_str(), _networkN, addr);
+						if (r._bcastRecvBuffer[j].isAbsEncoderError()) printf ("%s [%d] board %d ABS ENCODER ERROR AXIS 1\n", canDevName.c_str(), _networkN, addr);
                     }	
 
                     break;
