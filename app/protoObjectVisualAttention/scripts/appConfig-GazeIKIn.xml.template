@@ -8,12 +8,7 @@
 		<port>/icub/cam/right</port>
 	</dependencies>
 
-	<module>
-		<name>controlGaze2</name>
-		<parameters>--configCamera icubEyes.ini --name /icub/controlGaze --context protoObjectVisualAttention/conf/ --from icubControlGaze2.ini --motorboard /icub/head    </parameters>
-		<tag>gazecontroller</tag>
-		<node>/powerNode1</node>
-	</module>
+	
 
 	<module>
 		<name>iKinGazeCtrl</name>
@@ -44,11 +39,7 @@
 		<node>/powerNode1</node>
 	</module>
 	
-	<connection>
-      	<output>/blobFinder/centroid:o</output>
-		<input>/controlGaze/conf</input>
-		<protocol>tcp</protocol>
-	</connection>
+	
 	<connection>
       <output>/blobFinder/triangulation:o</output>
 		<input>/eyeTriangulation/rpc</input>
