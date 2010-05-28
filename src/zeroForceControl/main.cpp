@@ -785,7 +785,7 @@ public:
 		  {
 			  speeds(i) = (angs(i) - angs_old(i))/tdiff;
 		  }
-		  tauSafe = checkLimits(encoders, tauC, speeds);
+		  tauSafe = checkLimits(encoders, gain * tauC, speeds);
 		  //--------------------------------------------
 
 
