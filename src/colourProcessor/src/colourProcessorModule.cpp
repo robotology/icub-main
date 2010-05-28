@@ -61,6 +61,8 @@ bool colourProcessorModule::configure(ResourceFinder &rf)
             startYuvProcessor();
     }
     interThread.uvPlane=yuvProcessor.uvPlane;
+    interThread.uPlane=yuvProcessor.uPlane;
+    interThread.vPlane=yuvProcessor.vPlane;
     interThread.yPlane=yuvProcessor.yPlane;
    
     cmdPort.open(getName("/cmd:i"));
