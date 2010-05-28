@@ -327,6 +327,8 @@ bool partMover::entry_update(partMover *currentPart)
 	  default:
 	  case VOCAB_CM_UNKNOWN:
 		  pColor=&color_grey;
+		  strcat(frame_title," (UNKNOWN)");
+		  gtk_frame_set_label   (GTK_FRAME(currentPart->framesArray[k]),frame_title);
 		  gtk_widget_modify_bg (colorback[k], GTK_STATE_NORMAL, pColor);
 	  break;
   }
@@ -345,6 +347,8 @@ bool partMover::entry_update(partMover *currentPart)
   {
 //	  fprintf(stderr, "FAULT DETECTED: %x\n", curr_amp_status);
 	 pColor=&color_red;
+	 strcat(frame_title," (FAULT)");
+	 gtk_frame_set_label   (GTK_FRAME(currentPart->framesArray[k]),frame_title);
 	 gtk_widget_modify_bg (colorback[k], GTK_STATE_NORMAL, pColor);
   }
 
