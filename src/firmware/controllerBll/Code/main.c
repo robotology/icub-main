@@ -452,8 +452,6 @@ void main(void)
 //		decouple PWM	
 		decouple_dutycycle(PWMoutput);
 
-
-#ifdef TORQUE_CNTRL	
 		/* PWM filtering */
 		for (i=0; i<JN; i++) 
 		{
@@ -461,7 +459,6 @@ void main(void)
 			 	_control_mode[i] == MODE_IMPEDANCE)
 				PWMoutput[i] = lpf_ord1_3hz (PWMoutput[i], i);	
 		}
-#endif
 
 //******************************************* SATURATES CONTROLS ***************************/                
 		/* saturates controls if necessary */
@@ -684,7 +681,7 @@ void check_range(byte i, Int16 band, Int32 *PWM)
 					}
 	 			} 
  			}
- 			if (_control_mode[i] == MODE_OPENLOOP)
+ 			else if (_control_mode[i] == MODE_OPENLOOP)
  			{
 	 			if  (_position[i] > (_max_position[i]-band) ||  (_position[i] < (_min_position[i]+band)))   
 	 			{			
@@ -739,9 +736,7 @@ void check_range(byte i, Int16 band, Int32 *PWM)
  			}
  			
  			//************************** TO BE CHANGED!!!! 	*******************************/		
-            #ifdef TORQUE_CNTRL
- 
- 			if (_control_mode[i] == MODE_TORQUE ||
+ 			else if (_control_mode[i] == MODE_TORQUE ||
 			 	_control_mode[i] == MODE_IMPEDANCE)
  			{
 	 			if  (_position[i] > _max_position[i] ||
@@ -758,7 +753,6 @@ void check_range(byte i, Int16 band, Int32 *PWM)
 					}
 	 			} 				
  			}
-			#endif		
 }
 	
 /***************************************************************************/
