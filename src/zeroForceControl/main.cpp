@@ -714,7 +714,7 @@ public:
 			  {
 				  FTs_init = FTs;
 				  setDesiredPositions();	
-				  control_mode==IMPEDANCE;
+				  control_mode=IMPEDANCE;
 			  }
 			  FT = FTB->getFB(FTs-FTs_init);			  	
 			  first = false;
