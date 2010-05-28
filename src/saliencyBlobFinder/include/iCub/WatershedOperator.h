@@ -4,7 +4,6 @@
 
 
 
-//#include <ace/config.h>
 
 //openCV include
 #include <cv.h>
