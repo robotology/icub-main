@@ -191,6 +191,7 @@ private:
 	Matrix Kspring;
     Vector kp;
 	Vector kspr;
+	double gain;
 
 	Vector *datas;
 
@@ -568,6 +569,24 @@ public:
 			  }
 			  
 		  }
+		  //-------------------------------------------
+
+
+		  //------------------------------------------
+		  //             GAIN
+		  //------------------------------------------ 
+		  tmp = 0;
+		  if(_rf.check("gain"))
+		  {
+			  tmp = _rf.findGroup("gain");
+			  gain = tmp.get(1).asDouble();
+			  if(gain>1.0) 
+			  {
+				  fprintf(stderr,"cannot use gains greater than 1.0. Setting gain = 0.7\n");
+				  gain = 0.7;
+			  }
+		  }
+		  else  gain = 0.5;
 		  //-------------------------------------------
 	  }
 
