@@ -1,14 +1,16 @@
 IF (COMPILE_DEVICE_LIBRARY)
   PREPARE_DEVICE(icubarmcalibrator TYPE iCubArmCalibrator INCLUDE iCubArmCalibrator.h)
   PREPARE_DEVICE(icubarmcalibratorj8 TYPE iCubArmCalibratorJ8 INCLUDE iCubArmCalibratorJ8.h)
+  PREPARE_DEVICE(icubarmcalibratorj4 TYPE iCubArmCalibratorJ4 INCLUDE iCubArmCalibratorJ4.h)
 ENDIF (COMPILE_DEVICE_LIBRARY)
 
-IF (NOT SKIP_icubarmcalibratorj8 OR NOT SKIP_icubarmcalibrator)
+IF (NOT SKIP_icubarmcalibratorj8 OR NOT SKIP_icubarmcalibratorj4 OR NOT SKIP_icubarmcalibrator)
 FIND_PACKAGE(YARP REQUIRED)
 
 INCLUDE_DIRECTORIES(${CMAKE_CURRENT_SOURCE_DIR})
 
 ADD_LIBRARY(armcalibrator iCubArmCalibrator.cpp iCubArmCalibrator.h)
 ADD_LIBRARY(armcalibratorj8 iCubArmCalibratorJ8.cpp iCubArmCalibratorJ8.h)
+ADD_LIBRARY(armcalibratorj4 iCubArmCalibratorJ4.cpp iCubArmCalibratorJ4.h)
 
-ENDIF(NOT SKIP_icubarmcalibratorj8 OR NOT SKIP_icubarmcalibrator)
+ENDIF(NOT SKIP_icubarmcalibratorj8 OR NOT SKIP_icubarmcalibratorj4 OR NOT SKIP_icubarmcalibrator)
