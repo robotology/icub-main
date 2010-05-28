@@ -377,8 +377,8 @@ Step 2.
 Start the transform module with Scaler, for an input dimension of 4 and set 
 the ports to which it will connect.
 (transform)---------------------------------------------------------------------
-./transform --transformer Scaler --trainport /train/train:i 
---predictport /train/predict:io --dom 4
+./transform --transformer Scaler --trainport /lm/train/train:i 
+--predictport /lm/train/predict:io --dom 4
 --------------------------------------------------------------------------------
 
 Step 3.
@@ -405,7 +405,7 @@ Start the test module, specifying the dataset and input and output columns. Make
 sure to specify the ports of the transformer!
 (test)--------------------------------------------------------------------------
 ./test --datafile dataset/dynamics_example_2000.dat 
---trainport /transform/train:i --predictport /transform/predict:io 
+--trainport /lm/transform/train:i --predictport /lm/transform/predict:io 
 --inputs "(1 2 3 4)" --outputs "(13 14 15 16 17 18)"
 --------------------------------------------------------------------------------
 
