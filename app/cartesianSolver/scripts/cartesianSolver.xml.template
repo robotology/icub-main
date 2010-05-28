@@ -42,7 +42,7 @@
         <module>
                 <name>iKinGazeCtrl</name>
                 <parameters>--context cameraCalibration/conf --config icubEyes.ini
-                            --eyeTiltMin -15.0 --eyeTiltMax 15.0 --ping_robot_tmo 20.0</parameters>
+                            --eyeTiltMin -10.0 --eyeTiltMax 15.0 --ping_robot_tmo 20.0</parameters>
                 <node>pwrNode5</node>
                 <tag>gazeController</tag>
         </module>
