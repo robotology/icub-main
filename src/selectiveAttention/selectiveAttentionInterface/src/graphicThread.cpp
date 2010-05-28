@@ -1,6 +1,7 @@
 #include <iCub/graphicThread.h>
 #include <iCub/selectiveAttentionModule.h>
 #include <cstring>
+#include <cstdlib>
 
 
 #define THREADRATE 30
