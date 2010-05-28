@@ -82,7 +82,7 @@ void graphicThread::run(){
     module->close();
     gtk_widget_destroy(mainWindow);
     close();
-    ACE_OS::exit(0);
+    //ACE_OS::exit(0);
 }
 /**
 *	releases the thread
@@ -172,8 +172,9 @@ void graphicThread::setUp()
     else
         _imgRecv.SetFovea(true);
     
-    if (openPorts() == false)
-        ACE_OS::exit(1);
+    if (openPorts() == false){
+        //ACE_OS::exit(1);
+    }
     
     //_inputImg.resize(320,240);
 }

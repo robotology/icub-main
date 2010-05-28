@@ -160,7 +160,7 @@ bool YARPImgRecv::GetLastImage(yarp::sig::Image *data)
                 _img.copy(*last);
             }
             //_logpolarConversion(_fovea, data);
-            exit(1);
+            //exit(1);
         }
 	else
         {
