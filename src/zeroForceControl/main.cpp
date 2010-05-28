@@ -710,7 +710,12 @@ public:
 		  if(datas!=0)  
 		  { 
 			  FTs = *datas;
-			  if(first) FTs_init = FTs;
+			  if(first) 
+			  {
+				  FTs_init = FTs;
+				  setDesiredPositions();	
+				  control_mode==IMPEDANCE;
+			  }
 			  FT = FTB->getFB(FTs-FTs_init);			  	
 			  first = false;
 		  }
