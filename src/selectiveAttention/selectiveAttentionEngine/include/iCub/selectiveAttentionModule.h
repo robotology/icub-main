@@ -2,7 +2,7 @@
 #ifndef _selectiveAttentionModule_H_
 #define _selectiveAttentionModule_H_
 
-#include <ace/config.h>
+
 #include <time.h>
 
 //YARP include
@@ -351,11 +351,7 @@ public:
     * function that starts the selectiveAttentionProcessor
     */
     bool startselectiveAttentionProcessor();
-
-
     //_____________ ATTRIBUTES __________________
-    
-
     /**
     * processor that controls the processing of the input image
     */
