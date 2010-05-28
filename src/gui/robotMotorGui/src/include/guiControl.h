@@ -18,6 +18,8 @@ namespace guiControl
 
 	static int * joint = NULL;
 	static IControlMode *icntrl = NULL;
+    static IAmplifierControl *iamp = NULL;
+    static IPidControl *ipid = NULL;
 
 	void guiControl(void *button, void* data);
 	void destroy_main (GtkWindow *window,	gpointer   user_data);
