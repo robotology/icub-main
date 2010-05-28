@@ -58,12 +58,16 @@ static void guiControl::radio_click_idl(GtkWidget* radio , gtkClassData* current
 {
 	if (gtk_toggle_button_get_active (GTK_TOGGLE_BUTTON(radio))==true)
 	{
+		fprintf(stderr, "joint: %d in IDLE mode!\n", *joint);
+		fprintf(stderr, "(DEBUG: not using iCntrl interface\n", *joint);
+		ipid->disablePid(*joint);
+		iamp->disableAmp(*joint);
 	}
 	else
 	{
 	}
 }
-static void guiControl::radio_click_pos(GtkWidget* radio , gtkClassData* currentClassData)
+static void guiControl::radio_click_open(GtkWidget* radio , gtkClassData* currentClassData)
 {
 	if (gtk_toggle_button_get_active (GTK_TOGGLE_BUTTON(radio))==true)
 	{
@@ -74,7 +78,7 @@ static void guiControl::radio_click_pos(GtkWidget* radio , gtkClassData* current
 	{
 	}
 }
-static void guiControl::radio_click_open(GtkWidget* radio , gtkClassData* currentClassData)
+static void guiControl::radio_click_pos(GtkWidget* radio , gtkClassData* currentClassData)
 {
 	if (gtk_toggle_button_get_active (GTK_TOGGLE_BUTTON(radio))==true)
 	{
@@ -89,6 +93,7 @@ static void guiControl::radio_click_vel(GtkWidget* radio , gtkClassData* current
 {
 	if (gtk_toggle_button_get_active (GTK_TOGGLE_BUTTON(radio))==true)
 	{
+		fprintf(stderr, "(DEBUG: velocity conttol not yet implemented\n", *joint);
 	}
 	else
 	{
@@ -109,6 +114,7 @@ static void guiControl::radio_click_imp(GtkWidget* radio , gtkClassData* current
 {
 	if (gtk_toggle_button_get_active (GTK_TOGGLE_BUTTON(radio))==true)
 	{
+		fprintf(stderr, "(DEBUG: impedance conttol not yet implemented\n", *joint);
 	}
 	else
 	{
@@ -156,6 +162,8 @@ void guiControl::guiControl(void *button, void* data)
   partMover *currentPart = currentClassData->partPointer;
   joint  = currentClassData->indexPointer;
   icntrl = currentPart->get_IControlMode();
+  ipid = currentPart->get_IPidControl();
+  iamp = currentPart->get_IAmplifierControl();
 
   //GtkWidget *winPid = NULL;
   GtkWidget *inv    = NULL;
