@@ -906,6 +906,8 @@ GtkWidget* graphicThread::createMainWindow(void)
 
     //-----Check Buttons
     box4=  gtk_vbox_new (FALSE, 0);
+    
+    /*
     // A checkbutton to control whether the value is displayed or not 
     buttonCheck = gtk_check_button_new_with_label("InputImage1-->");
     gtk_toggle_button_set_active (GTK_TOGGLE_BUTTON (buttonCheck), FALSE);
@@ -945,12 +947,14 @@ GtkWidget* graphicThread::createMainWindow(void)
     g_signal_connect (G_OBJECT (buttonCheck), "toggled",G_CALLBACK (cb_draw_value), datay1);
     gtk_box_pack_start (GTK_BOX (box4), buttonCheck, TRUE, TRUE, 0);
     gtk_widget_show (buttonCheck);
+    */
 
     gtk_box_pack_start (GTK_BOX (box3), box4, TRUE, TRUE, 0);
     gtk_widget_show (box4);
 
     //-----box4
     box4=  gtk_vbox_new (FALSE, 0);
+    /*
     // A checkbutton to control whether the value is displayed or not 
     buttonCheck = gtk_check_button_new_with_label("ColourOpponency1-->");
     gtk_toggle_button_set_active (GTK_TOGGLE_BUTTON (buttonCheck), TRUE);
@@ -982,11 +986,13 @@ GtkWidget* graphicThread::createMainWindow(void)
     g_signal_connect (G_OBJECT (buttonCheck), "toggled",G_CALLBACK (cb_draw_value), datacm1);
     gtk_box_pack_start (GTK_BOX (box4), buttonCheck, TRUE, TRUE, 0);
     gtk_widget_show (buttonCheck);
+    */
 
     gtk_box_pack_start (GTK_BOX (box3), box4, TRUE, TRUE, 0);
     gtk_widget_show (box4);
     //---box 4
 
+    /*
     //-------run button
     button = gtk_button_new ();
     // Connect the "clicked" signal of the button to our callback 
@@ -999,6 +1005,7 @@ GtkWidget* graphicThread::createMainWindow(void)
     gtk_widget_show (button);
     gtk_box_pack_start (GTK_BOX (box3), button, TRUE, TRUE, 0);
     gtk_widget_show (button);
+    */
 
     separator = gtk_hseparator_new ();
     gtk_box_pack_start (GTK_BOX (box2), separator, FALSE, TRUE, 0);
@@ -1298,6 +1305,7 @@ GtkWidget* graphicThread::createMainWindow(void)
     gtk_widget_show (box4);
     //---box 4*/
     
+    /*
     //-------run button
     button = gtk_button_new ();
     // Connect the "clicked" signal of the button to our callback 
@@ -1349,6 +1357,7 @@ GtkWidget* graphicThread::createMainWindow(void)
     gtk_widget_show (button);
     gtk_box_pack_start (GTK_BOX (box3), button, TRUE, TRUE, 0);
     gtk_widget_show (button);
+    */
 
     //------ SEPARATOR
     separator = gtk_hseparator_new ();
