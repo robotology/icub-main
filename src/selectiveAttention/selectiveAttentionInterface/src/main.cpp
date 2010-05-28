@@ -3,6 +3,7 @@
 
 #include <yarp/os/all.h>
 #include <iCub/selectiveAttentionModule.h>
+#include <cstring>
 
 using namespace yarp::os;
 using namespace std;
@@ -30,7 +31,7 @@ int main(int argc, char *argv[]) {
 	else{
 		//estracts the command from command line
         for (int i=1;i<argc;i++) {
-		    if ((strcmp(argv[i],"--name")==0)||(strcmp(argv[i],"-n")==0)) {
+            if ((strcmp(argv[i],"--name")==0)||(strcmp(argv[i],"-n")==0)) {
 			    fname = argv[++i];
 			    printf("file name:%s \n",fname.c_str());
 		    }
