@@ -595,6 +595,7 @@ protected:
                 (armSel==RIGHTARM) && (targetPos[1]<-hystThres))
             {
                 stopControl();
+                Time::delay(0.5);
                 steerArmToHome();
             
                 // swap interfaces
