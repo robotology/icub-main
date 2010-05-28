@@ -2,14 +2,9 @@
 #ifndef _WATERSHEDOPERATOR_H_
 #define _WATERSHEDOPERATOR_H_
 
-#include <yarp/sig/Image.h>//#include <yarp/YARPImage.h>
-#include <yarp/math/Math.h>//#include <yarp/YARPMath.h>
 
-#include <ace/config.h>
 
-//YARP include
-#include <yarp/os/all.h>
-#include <yarp/sig/all.h>
+//#include <ace/config.h>
 
 //openCV include
 #include <cv.h>
@@ -18,16 +13,24 @@
 //IPP include
 #include <ipp.h>
 
+//YARP include
+#include <yarp/os/all.h>
+#include <yarp/sig/all.h>
+#include <yarp/sig/Image.h>//#include <yarp/YARPImage.h>
+#include <yarp/math/Math.h>//#include <yarp/YARPMath.h>
+
+
 //within Project Include
 //#include <iCub/ImageProcessor.h>
 
-using namespace yarp::os;
-using namespace yarp::sig;
-using namespace yarp::sig::draw;
 
 #include <iCub/ColorVQ.h>
 #include <iCub/YARPBox.h>
 
+
+using namespace yarp::os;
+using namespace yarp::sig;
+using namespace yarp::sig::draw;
 
 /**
 * Operator that manages the watershed operations (rain falling) and extracts blobs
@@ -54,7 +57,7 @@ class WatershedOperator {
     /**
     * intensity value considered as a threshold
     */
-    PixelMono threshold;
+    yarp::sig::PixelMono threshold;
     /** 
     * flag that indicates if the neighborhood has dimension 8
     */
