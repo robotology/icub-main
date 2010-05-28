@@ -893,10 +893,11 @@ GtkWidget* graphicThread::createMainWindow(void)
     gtk_box_pack_start (GTK_BOX (box3), box5, FALSE, FALSE, 0);
     gtk_widget_show (box5);
 
-
+    /*
     label = gtk_label_new ("Processing Options:");
     gtk_box_pack_start (GTK_BOX (box3), label, FALSE, FALSE, 0);
     gtk_widget_show (label);
+    */
 
 
     scrollbar = gtk_hscrollbar_new (GTK_ADJUSTMENT (adj1));
