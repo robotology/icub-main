@@ -26,7 +26,7 @@
  *
  * See iDynChain examples.
  *
- * \author Serena Ivaldi
+ * \author Serena Ivaldi, Matteo Fumagalli
  * 
  * Copyright (C) 2010 RobotCub Consortium
  * CopyPolicy: Released under the terms of the GNU GPL v2.0.

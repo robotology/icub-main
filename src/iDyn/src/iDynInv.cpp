@@ -1,7 +1,7 @@
 /* 
 * Copyright (C) 2010 RobotCub Consortium, European Commission FP6 Project IST-004370
-* Author: Serena Ivaldi
-* email:   serena.ivaldi@iit.it
+* Author: Serena Ivaldi, Matteo Fumagalli
+* email:   serena.ivaldi@iit.it, matteo.fumagalli@iit.it
 * website: www.robotcub.org
 * Permission is granted to copy, distribute, and/or modify this program
 * under the terms of the GNU General Public License, version 2 or any
@@ -454,7 +454,7 @@ void OneLinkNewtonEuler::computeForceBackward( OneLinkNewtonEuler *next)
 //~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 void OneLinkNewtonEuler::computeForceForward( OneLinkNewtonEuler *prev)
 {
-	setForce( getR().transposed() * prev->getForce() - getMass() * getLinAcc() );
+	setForce( getR().transposed() * prev->getForce() - getMass() * getLinAccC() );
 }
 //~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 void OneLinkNewtonEuler::computeMomentBackward( OneLinkNewtonEuler *next)
@@ -1522,7 +1522,7 @@ bool OneChainNewtonEuler::InverseToBase(unsigned int lSens)
 		// indexed lSens = lSens + baseLink - the previous one
 		// that's because link lSens = neChain[lSens+1] is already set before
 		// with a specific sensor method
-		for(unsigned int i=lSens; i>=0; i--)
+		for(int i=lSens; i>=0; i--)
 			neChain[i]->BackwardNewtonEuler(neChain[i+1]);
 		return true;
 	}
@@ -1551,7 +1551,7 @@ iDynInvSensor::iDynInvSensor(iDynChain *_c, string _info, const NewEulMode _mode
 	mode = _mode;
 	verbose = verb;
 	//unknown sensor
-	lSens = -1;
+	lSens = 0;
 	sens = NULL;
 }
 //~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
