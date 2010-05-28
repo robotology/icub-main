@@ -428,6 +428,15 @@ public:
 		  //------------------------------------------
 
 
+
+		  //------------------------------------------
+		  //           FT SENSOR DEFAULT
+		  //------------------------------------------
+		  Rs.resize(3,3);     Rs=0.0;
+		  ps.resize(3);		  ps=0.0;
+          kp=0.0;
+		  kspr=0.0;
+		  //------------------------------------------
 		  
 		  
 
@@ -518,11 +527,6 @@ public:
 		  //------------------------------------------
 		  //           FT SENSOR
 		  //------------------------------------------
-		  Rs.resize(3,3);     Rs=0.0;
-		  ps.resize(3);		  ps=0.0;
-          kp=0.0;
-		  kspr=0.0;
-
 		  sensor = new iFTransform(Rs,ps);
 
 		  FTB = new iFB(sensorLink);
@@ -1263,7 +1267,7 @@ int main(int argc, char * argv[])
     ResourceFinder rf;
     rf.setVerbose();
 	rf.setDefaultContext("zeroForceControl/conf");
-	rf.setDefaultConfigFile("defautFT.ini");
+	rf.setDefaultConfigFile("leftArmFT.ini");
 
     rf.configure("ICUB_ROOT", argc, argv);
 
