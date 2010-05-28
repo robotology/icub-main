@@ -89,9 +89,6 @@ protected:
      */
 	void ForwardFromBase();
 
-	
-	
-
 public:
 
 	/**
@@ -138,9 +135,27 @@ public:
 	//   main computation methods
 	//~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 
-
+	/**
+	 * The main computation method: given the FT sensor measurements, compute forces moments 
+	 * and torques in the iDynChain. A forward pass of the classical Newton-Euler method is 
+	 * run, to retrieve angular and linear accelerations. Then, from sensor to end-effector
+	 * the inverse Newton-Euler formula is applied to retrieve joint forces and torques, while
+	 * from sensor to base the classical backward pass is run.
+     * @param F the sensor force (3x1)
+	 * @param Mu the sensor moment (3x1)
+	 * @return true if the operation is successful, false otherwise (ie wrong vector size)
+	 */
 	bool computeFromSensorNewtonEuler(const yarp::sig::Vector &F, const yarp::sig::Vector &Mu);
 
+	/**
+	 * The main computation method: given the FT sensor measurements, compute forces moments 
+	 * and torques in the iDynChain. A forward pass of the classical Newton-Euler method is 
+	 * run, to retrieve angular and linear accelerations. Then, from sensor to end-effector
+	 * the inverse Newton-Euler formula is applied to retrieve joint forces and torques, while
+	 * from sensor to base the classical backward pass is run.
+	 * This method only perform the computations: the force and moment measured on the sensor
+	 * must be set before calling this method using setSensorMeasures()
+	 */
 	void computeFromSensorNewtonEuler();
 
 	//~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~

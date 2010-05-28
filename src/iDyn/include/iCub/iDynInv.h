@@ -632,7 +632,7 @@ protected:
 	yarp::sig::Matrix H;
 	/// the roto-translational matrix of the COM of the semi-link (bewteen sensor and ith link frame)
 	yarp::sig::Matrix COM;
-	/// the semi-link 
+	/// the semi-link inertia
 	yarp::sig::Matrix I;	
 	/// the semi-link mass (the portion of link defined by the sensor)
 	double m;				
@@ -641,7 +641,13 @@ public:
 
 	/**
     * Default constructor 
-	* @param _sensor the sensor frame class
+	* @param _mode the analysis mode (static/dynamic)
+	* @param verb flag for verbosity
+    */
+	SensorLinkNewtonEuler(const NewEulMode _mode, unsigned int verb=0);
+
+	/**
+    * Constructor 
 	* @param _mode the analysis mode (static/dynamic)
 	* @param verb flag for verbosity
     */
@@ -747,8 +753,6 @@ public:
 	 void computeMomentToLink( iDynLink *link);
 
 };
-
-
 
 /**
 * \ingroup RecursiveNewtonEuler
@@ -1002,6 +1006,64 @@ public:
 
 };
 
+/**
+* \ingroup iDynInv
+*
+* A class for setting a virtual sensor link on the iCub arm.
+*/
+class iCubArmSensorLink : public SensorLinkNewtonEuler
+{
+protected:
+	
+	/// the arm type: left/right
+	std::string type;
+
+public:
+
+	/**
+    * Constructor: the sensor is automatically set with "right" or "left" choice
+	* @param _type a string "left/right" 
+	* @param _mode the analysis mode (static/dynamic)
+	* @param verb flag for verbosity
+    */
+	iCubArmSensorLink(const std::string _type, const NewEulMode _mode = NE_static, unsigned int verb = 0);
+
+	/**
+	* @return type the arm type: left/arm
+	*/
+	std::string getType();
+
+};
+
+/**
+* \ingroup iDynInv
+*
+* A class for setting a virtual sensor link on the iCub leg.
+*/
+class iCubLegSensorLink : public SensorLinkNewtonEuler
+{
+protected:
+	
+	/// the arm type: left/right
+	std::string type;
+
+	public:
+
+	/**
+    * Constructor: the sensor is automatically set with "right" or "left" choice
+	* @param _c a pointer to the iDynChain where the sensor is placed on
+	* @param _type a string "left/right" 
+	* @param _mode the analysis mode (static/dynamic)
+	* @param verb flag for verbosity
+    */
+	iCubLegSensorLink(iDyn::iDynChain *_c, const std::string _type, const NewEulMode _mode = NE_static, unsigned int verb = 0);
+
+	/**
+	* @return type the leg type: left/arm
+	*/
+	std::string getType();
+
+};
 
 
 /**

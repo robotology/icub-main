@@ -725,6 +725,12 @@ public:
 	*/
 	 bool initNewtonEuler(const yarp::sig::Vector &w0, const yarp::sig::Vector &dw0, const yarp::sig::Vector &ddp0, const yarp::sig::Vector &Fend, const yarp::sig::Vector &Muend);
 	
+	/**
+	* Initialize the Newton-Euler method by setting the base (virtual link) velocity and accelerations ( w0, dw0 and ddp0 )
+	* and the final (virtual link) forces and moments Fend and Muend all to zero
+	*/
+	 bool initNewtonEuler();
+
 	 /**
 	* Set the computation mode for Newton-Euler (static/dynamic/etc)
 	*/

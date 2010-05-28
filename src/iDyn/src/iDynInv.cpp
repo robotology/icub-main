@@ -943,6 +943,22 @@ bool FinalLinkNewtonEuler::setAngAccM(const Vector &_dwM)
 //================================
 
 //~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+SensorLinkNewtonEuler::SensorLinkNewtonEuler(const NewEulMode _mode, unsigned int verb)
+: OneLinkNewtonEuler(_mode,verb,NULL)
+{
+	info = "sensor";
+	F.resize(3);	F.zero();
+	Mu.resize(3);	Mu.zero();
+	w.resize(3);	w.zero();
+	dw.resize(3);	dw.zero();
+	ddp.resize(3);	ddp.zero();
+	ddpC.resize(3);	ddpC.zero();
+	H.resize(4,4); H.eye();
+	COM.resize(4,4); COM.eye();
+	I.resize(3,3); I.zero();
+	m=0.0;
+}
+//~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 SensorLinkNewtonEuler::SensorLinkNewtonEuler(const Matrix &_H, const Matrix &_COM, const double _m, const Matrix &_I, const NewEulMode _mode, unsigned int verb)
 : OneLinkNewtonEuler(_mode,verb,NULL)
 {
@@ -957,7 +973,6 @@ SensorLinkNewtonEuler::SensorLinkNewtonEuler(const Matrix &_H, const Matrix &_CO
 	COM.resize(4,4); COM.eye();
 	I.resize(3,3); I.zero();
 	setSensor(_H,_COM,_m,_I);
-
 }
 //~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 bool SensorLinkNewtonEuler::setMeasuredFMu(const Vector &_F, const Vector &_Mu)
@@ -1654,6 +1669,52 @@ Vector iDynInvSensor::getSensorForceMoment()	const	{return sens->getForceMoment(
 
 //======================================
 //
+//		 iCUB ARM SENSOR LINK
+//
+//======================================
+
+//~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+iCubArmSensorLink::iCubArmSensorLink(const string _type, const NewEulMode _mode, unsigned int verb)
+:SensorLinkNewtonEuler(_mode,verb)
+{
+	// the arm type determines the sensor properties
+	type = _type;
+	//now setting inertia, mass and COM specifically for each link
+	if(type=="left")
+	{
+		H.zero(); H(0,0) = 1.0; H(2,1) = 1.0; H(1,2) = -1.0; H(1,3) = 0.08428; H(3,3) = 1.0;
+		COM.eye(); COM(0,3) = -1.56e-04; COM(1,3) = -9.87e-05;  COM(2,3) = 2.98e-2; 
+		I.zero(); I(0,0) = 4.08e-04; I(0,1) = I(1,0) = -1.08e-6; I(0,2) = I(2,0) = -2.29e-6;
+		I(1,1) = 3.80e-04; I(1,2) = I(2,1) =  3.57e-6; I(2,2) = 2.60e-4;
+		m = 7.2784301e-01; 
+	}
+	else
+	{ 
+		if(!(type =="right") && (verbose>0))
+		{
+			cerr<<"iCubArmSensorLink error: type is not left/right: assuming right."<<endl;
+			type = "right";
+		}
+
+		H.zero(); H(0,0) = -1.0; H(2,1) = 1.0; H(1,2) = 1.0; H(1,3) = -0.08428; H(3,3) = 1.0;
+		COM.eye(); COM(0,3) = -1.5906019e-04; COM(1,3) =   8.2873258e-05; COM(2,3) =  2.9882773e-02;
+		I.zero(); I(0,0) = 4.08e-04; I(0,1) = I(1,0) = -1.08e-6; I(0,2) = I(2,0) = -2.29e-6;
+		I(1,1) = 3.80e-04; I(1,2) = I(2,1) =  3.57e-6; I(2,2) = 2.60e-4;
+		m = 7.29e-01; 
+	
+	}
+	//then the sensor information
+	info.clear(); info = "FT sensor " + type + " arm";
+}
+//~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+string iCubArmSensorLink::getType()
+{ 
+	return type;
+}
+//~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+
+//======================================
+//
 //		 iDYN INV SENSOR ARM
 //
 //======================================
@@ -1662,41 +1723,18 @@ Vector iDynInvSensor::getSensorForceMoment()	const	{return sens->getForceMoment(
 iDynInvSensorArm::iDynInvSensorArm(iDynChain *_c, const string _type, const NewEulMode _mode, unsigned int verb)
 :iDynInvSensor(_c,_type,_mode,verb)
 {
-	// the arm type determines the sensor properties
 	type = _type;
+	// the arm type determines the sensor properties
+	if( (verbose>0) && !((type=="left")||(type=="right"))  )
+	{
+		cerr<<"iDynInvSensorArm error: type is not left/right. iCub only has a left and a right arm, it is not an octopus :)"<<endl
+			<<"iDynInvSensorArm: assuming right arm."<<endl;
+		type = "right";
+	}
 	// FT sensor is in position 5 in the kinematic chain in both arms
 	lSens = 5;
-	//now setting inertia, mass and COM specifically for each link
-	Matrix HS(4,4); HS.eye();
-	Matrix HSC(4,4); HSC.eye();
-	Matrix IS(3,3); IS.zero();
-	double ms = 0.0;
-	if(type=="left")
-	{
-		HS.zero(); HS(0,0) = 1.0; HS(2,1) = 1.0; HS(1,2) = -1.0; HS(1,3) = 0.08428; HS(3,3) = 1.0;
-		HSC.eye(); HSC(0,3) = -1.56e-04; HSC(1,3) = -9.87e-05;  HSC(2,3) = 2.98e-2; 
-		IS.zero(); IS(0,0) = 4.08e-04; IS(0,1) = IS(1,0) = -1.08e-6; IS(0,2) = IS(2,0) = -2.29e-6;
-		IS(1,1) = 3.80e-04; IS(1,2) = IS(2,1) =  3.57e-6; IS(2,2) = 2.60e-4;
-		ms = 7.2784301e-01; 
-	}
-	else
-	{ 
-		if(!(type =="right") && (verbose>0))
-		{
-			cerr<<"iDynInvSensorArm error: type is not left/right. iCub only has a left and a right arm, it is not an octopus :)"<<endl
-				<<"iDynInvSensorArm: assuming right arm."<<endl;
-			type = "right";
-		}
-
-		HS.zero(); HS(0,0) = -1.0; HS(2,1) = 1.0; HS(1,2) = 1.0; HS(1,3) = -0.08428; HS(3,3) = 1.0;
-		HSC.eye(); HSC(0,3) = -1.5906019e-04; HSC(1,3) =   8.2873258e-05; HSC(2,3) =  2.9882773e-02;
-		IS.zero(); IS(0,0) = 4.08e-04; IS(0,1) = IS(1,0) = -1.08e-6; IS(0,2) = IS(2,0) = -2.29e-6;
-		IS(1,1) = 3.80e-04; IS(1,2) = IS(2,1) =  3.57e-6; IS(2,2) = 2.60e-4;
-		ms = 7.29e-01; 
-	
-	}
-	//finally set the sensor parameters
-	sens = new SensorLinkNewtonEuler(HS,HSC,ms,IS,mode,verbose);
+	// set the sensor properly
+	sens = new iCubArmSensorLink(type,mode,verbose);
 	//then the sensor information
 	info.clear(); info = "FT sensor " + type + " arm";
 	sens->setInfo(info);

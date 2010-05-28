@@ -731,7 +731,13 @@ void iDynChain::prepareNewtonEuler(const NewEulMode ne_mode)
 	int j = sprintf(buffer,"DOF=%d N=%d",DOF,N);
 	info.append(buffer);
 
-	NE = new OneChainNewtonEuler(const_cast<iDynChain *>(this),info,ne_mode,verbose);
+	if( NE == NULL)
+		NE = new OneChainNewtonEuler(const_cast<iDynChain *>(this),info,ne_mode,verbose);
+	else
+	{
+		delete NE;
+		NE = new OneChainNewtonEuler(const_cast<iDynChain *>(this),info,ne_mode,verbose);
+	}
 }
 //~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 bool iDynChain::computeNewtonEuler(const Vector &w0, const Vector &dw0, const Vector &ddp0, const Vector &Fend, const Vector &Muend )
@@ -760,6 +766,15 @@ void iDynChain::computeNewtonEuler()
 { 
 	NE->ForwardFromBase();
 	NE->BackwardFromEnd();
+}//~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+bool iDynChain::initNewtonEuler()
+{
+	Vector w0(3); w0.zero();
+	Vector dw0(3); dw0.zero();
+	Vector ddp0(3); ddp0.zero();
+	Vector Fend(3); Fend.zero();
+	Vector Muend(3); Muend.zero();
+	return NE->initNewtonEuler(w0,dw0,ddp0,Fend,Muend);
 }
 //~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 bool iDynChain::initNewtonEuler(const yarp::sig::Vector &w0, const yarp::sig::Vector &dw0, const yarp::sig::Vector &ddp0, const yarp::sig::Vector &Fend, const yarp::sig::Vector &Muend)

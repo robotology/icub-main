@@ -74,6 +74,11 @@ bool iDynSensor::setSensorMeasures(const Vector &FM)
 //~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 void iDynSensor::ForwardFromBase()
 {
+	if(chain->NE == NULL)		
+	{
+		chain->prepareNewtonEuler(mode);
+		chain->initNewtonEuler();
+	}
 	//the iDynChain independently solve the forward phase of the limb
 	//setting w,dw,ddp,ddpC
 	chain->NE->ForwardFromBase();
