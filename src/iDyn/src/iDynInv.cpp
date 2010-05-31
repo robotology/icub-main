@@ -43,8 +43,8 @@ using namespace iDyn;
 //~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 OneLinkNewtonEuler::OneLinkNewtonEuler(iDynLink *dlink)
 {
-	mode = NE_static;
-	verbose = 0;
+	mode = NE_STATIC;
+	verbose = NO_VERBOSE;
 	info = "link";
 	link = dlink;
 	z0.resize(3); z0.zero(); z0(2)=1;	
@@ -292,7 +292,7 @@ string OneLinkNewtonEuler::toString() const
 		r = link->getrC();
 		j+=sprintf(buffer+j," [rC]: %.3f,%.3f,%.3f",r(0),r(1),r(2));
 
-		if(mode!=NE_static)
+		if(mode!=NE_STATIC)
 		{
 			Matrix I = link->getInertia();
 			j+=sprintf(buffer+j," [Inertia]: %.3f, %.3f, %.3f; %.3f, %.3f, %.3f; %.3f, %.3f, %.3f",I(0,0),I(0,1),I(0,2),I(1,0),I(1,1),I(1,2),I(2,0),I(2,1),I(2,2));
@@ -366,12 +366,12 @@ void OneLinkNewtonEuler::computeAngVel( OneLinkNewtonEuler *prev)
 {
 	switch(mode)
 	{
-	case NE_dynamicCoriolisGravity:
-	case NE_dynamic:
-	case NE_dynamicWrotor:
+	case NE_DYNAMIC_CORIOLIS_GRAVITY:
+	case NE_DYNAMIC:
+	case NE_DYNAMIC_W_ROTOR:
 		setAngVel( (getR()).transposed() * ( prev->getAngVel() + getDq() * z0 ));
 		break;
-	case NE_static:
+	case NE_STATIC:
 		Vector av(3); av.zero();
 		setAngVel(av);
 		break;
@@ -382,14 +382,14 @@ void OneLinkNewtonEuler::computeAngAcc( OneLinkNewtonEuler *prev)
 {
 	switch(mode)
 	{
-	case NE_dynamic:
-	case NE_dynamicWrotor:
+	case NE_DYNAMIC:
+	case NE_DYNAMIC_W_ROTOR:
 		setAngAcc( (getR()).transposed() * ( prev->getAngAcc() + getD2q() * z0 + getDq() * cross(prev->getAngVel(),z0) ));
 		break;
-	case NE_dynamicCoriolisGravity:
+	case NE_DYNAMIC_CORIOLIS_GRAVITY:
 		setAngAcc( (getR()).transposed() * ( prev->getAngAcc() + getDq() * cross(prev->getAngVel(),z0) ));
 		break;
-	case NE_static:
+	case NE_STATIC:
 		Vector aa(3); aa.zero();
 		setAngAcc(aa);
 		break;
@@ -400,14 +400,14 @@ void OneLinkNewtonEuler::computeLinAcc( OneLinkNewtonEuler *prev)
 {
 	switch(mode)
 	{
-	case NE_dynamic:
-	case NE_dynamicCoriolisGravity:
-	case NE_dynamicWrotor:
+	case NE_DYNAMIC:
+	case NE_DYNAMIC_CORIOLIS_GRAVITY:
+	case NE_DYNAMIC_W_ROTOR:
 		setLinAcc( (getR()).transposed() * prev->getLinAcc() 
 			+ cross(getAngAcc(),getr(true))
 			+ cross(getAngVel(),cross(getAngVel(),getr(true))) );
 		break;
-	case NE_static:
+	case NE_STATIC:
 		setLinAcc( (getR()).transposed() * prev->getLinAcc() );
 		break;
 	}
@@ -417,12 +417,12 @@ void OneLinkNewtonEuler::computeLinAccC()
 {
 	switch(mode)
 	{
-	case NE_dynamic:
-	case NE_dynamicCoriolisGravity:
-	case NE_dynamicWrotor:
+	case NE_DYNAMIC:
+	case NE_DYNAMIC_CORIOLIS_GRAVITY:
+	case NE_DYNAMIC_W_ROTOR:
 		setLinAccC( getLinAcc() + cross(getAngVel(),getrC()) + cross(getAngVel(),cross(getAngVel(),getrC())));
 		break;
-	case NE_static:
+	case NE_STATIC:
 		setLinAccC( getLinAcc());
 		break;
 	}
@@ -432,15 +432,15 @@ void OneLinkNewtonEuler::computeAngAccM( OneLinkNewtonEuler *prev)
 {
 	switch(mode)
 	{
-	case NE_dynamicCoriolisGravity:
-	case NE_dynamic:
+	case NE_DYNAMIC_CORIOLIS_GRAVITY:
+	case NE_DYNAMIC:
 		setAngAccM( prev->getAngAcc());
 		break;
-	case NE_dynamicWrotor:
+	case NE_DYNAMIC_W_ROTOR:
 		setAngAccM( prev->getAngAcc() + (getKr() * getD2q()) * zm
 			+ (getKr() * getDq()) * cross(prev->getAngVel(),zm) );
 		break;
-	case NE_static:
+	case NE_STATIC:
 		Vector aaM(3); aaM.zero();
 		setAngAccM( aaM );
 		break;
@@ -461,8 +461,8 @@ void OneLinkNewtonEuler::computeMomentBackward( OneLinkNewtonEuler *next)
 {
 	switch(mode)
 	{
-	case NE_dynamicCoriolisGravity:
-	case NE_dynamic:		
+	case NE_DYNAMIC_CORIOLIS_GRAVITY:
+	case NE_DYNAMIC:		
 	setMoment( cross(next->getr() , next->getR() * next->getForce()) 
 			+ cross(next->getr() + next->getR() * next->getrC() , next->getR() * (next->getMass() * next->getLinAccC())) 
 			+ next->getR() * next->getMoment()
@@ -470,7 +470,7 @@ void OneLinkNewtonEuler::computeMomentBackward( OneLinkNewtonEuler *next)
 			+ next->getR() * cross( next->getAngVel() , next->getInertia() * next->getAngVel())
 			);
 		break;
-	case NE_dynamicWrotor:
+	case NE_DYNAMIC_W_ROTOR:
 	setMoment( cross(next->getr() , next->getR() * next->getForce()) 
 			+ cross(next->getr() + next->getR() * next->getrC() , next->getR() * (next->getMass() * next->getLinAccC())) 
 			+ next->getR() * next->getMoment()
@@ -479,7 +479,7 @@ void OneLinkNewtonEuler::computeMomentBackward( OneLinkNewtonEuler *next)
 			+ next->getKr() * next->getD2q() * next->getIm() * next->getZM()
 			+ next->getKr() * next->getDq() * next->getIm() * cross(next->getAngVel(),next->getZM()) );
 		break;
-	case NE_static:
+	case NE_STATIC:
 	setMoment( cross(next->getr(),next->getR()*next->getForce()) 
 			+ cross(next->getr()+next->getR()*next->getrC(),next->getR()*(next->getMass() * next->getLinAccC())) 
 			+ next->getR() * next->getMoment());
@@ -491,14 +491,14 @@ void OneLinkNewtonEuler::computeMomentForward( OneLinkNewtonEuler *prev)
 {
 	switch(mode)
 	{
-	case NE_dynamicCoriolisGravity:
-	case NE_dynamic:
+	case NE_DYNAMIC_CORIOLIS_GRAVITY:
+	case NE_DYNAMIC:
 		setMoment( getR().transposed() * ( prev->getMoment() - cross(getr(),getR()*getForce())
 			- cross(getr()+getR()*getrC(),getR()*(getMass() * getLinAccC()))
 			- getR() * getInertia() * getAngAcc()
 			- getR() * cross( getAngVel() , getInertia() * getAngVel())	) );
 		break;
-	case NE_dynamicWrotor:
+	case NE_DYNAMIC_W_ROTOR:
 		setMoment( getR().transposed() * ( prev->getMoment() - cross(getr(),getR()*getForce())
 			- cross(getr()+getR()*getrC(),getR()*(getMass() * getLinAccC()))
 			- getR() * getInertia() * getAngAcc()
@@ -507,7 +507,7 @@ void OneLinkNewtonEuler::computeMomentForward( OneLinkNewtonEuler *prev)
 			- getKr() * getDq() * getIm() * cross(getAngVel(),getZM())	
 			));
 		break;
-	case NE_static:
+	case NE_STATIC:
 		setMoment( getR().transposed() * ( prev->getMoment() - cross(getr(),getR()*getForce())
 			- cross(getr()+getR()*getrC(),getR()*(getMass() * getLinAccC()))
 			) );
@@ -519,12 +519,12 @@ void OneLinkNewtonEuler::computeTorque(OneLinkNewtonEuler *prev)
 {
 	switch(mode)
 	{
-	case NE_dynamicCoriolisGravity:
-	case NE_dynamic:
-	case NE_static:
+	case NE_DYNAMIC_CORIOLIS_GRAVITY:
+	case NE_DYNAMIC:
+	case NE_STATIC:
 		setTorque( dot(prev->getMoment(),z0) );
 		break;
-	case NE_dynamicWrotor:
+	case NE_DYNAMIC_W_ROTOR:
 		setTorque( dot(prev->getMoment(),z0) + getKr() * getIm() * dot(getAngAccM(),zm) 
 			+ getFv() * getDq() + getFs() * sign(getDq()) );
 		break;		
@@ -1235,14 +1235,14 @@ void SensorLinkNewtonEuler::computeLinAcc( iDynLink *link)
 {
 	switch(mode)
 	{
-	case NE_dynamic:
-	case NE_dynamicCoriolisGravity:
-	case NE_dynamicWrotor:
+	case NE_DYNAMIC:
+	case NE_DYNAMIC_CORIOLIS_GRAVITY:
+	case NE_DYNAMIC_W_ROTOR:
 		ddp = getR().transposed() * link->getLinAcc() 
 			+ cross(w,getr(true))
 			+ cross(dw,cross(w,getr(true)));
 		break;
-	case NE_static:
+	case NE_STATIC:
 		ddp = getR().transposed() * link->getLinAcc();
 		break;
 	}
@@ -1252,12 +1252,12 @@ void SensorLinkNewtonEuler::computeLinAccC()
 {
 	switch(mode)
 	{
-	case NE_dynamic:
-	case NE_dynamicCoriolisGravity:
-	case NE_dynamicWrotor:
+	case NE_DYNAMIC:
+	case NE_DYNAMIC_CORIOLIS_GRAVITY:
+	case NE_DYNAMIC_W_ROTOR:
 		ddpC = getLinAcc() + cross(getAngVel(),getrC()) + cross(getAngVel(),cross(getAngVel(),getrC()));
 		break;
-	case NE_static:
+	case NE_STATIC:
 		ddpC = ddp;
 		break;
 	}
@@ -1277,15 +1277,15 @@ void SensorLinkNewtonEuler::computeMomentToLink( iDynLink *link)
 {
 	switch(mode)
 	{
-	case NE_dynamicCoriolisGravity:
-	case NE_dynamic:	
+	case NE_DYNAMIC_CORIOLIS_GRAVITY:
+	case NE_DYNAMIC:	
 		link->setMoment( getR()*( Mu - cross(getr(true),getR().transposed()*link->getForce())
 			- cross(getrC(),(m * getLinAccC()))
 			- getInertia() * getR().transposed() * getAngAcc() 
 			- cross( getR().transposed() * getAngVel() , getInertia() * getR().transposed() * getAngVel())
 			));
 		break;
-	case NE_dynamicWrotor:
+	case NE_DYNAMIC_W_ROTOR:
 		link->setMoment( getR()*( Mu - cross(getr(true),getR().transposed()*link->getForce())
 			- cross(getrC(),(m * getLinAccC()))
 			- getInertia() * getR().transposed() * getAngAcc() 
@@ -1294,7 +1294,7 @@ void SensorLinkNewtonEuler::computeMomentToLink( iDynLink *link)
 			- link->getKr() * link->getDAng() * link->getIm() * cross(getAngVel(),getZM())
 			));
 		break;
-	case NE_static:
+	case NE_STATIC:
 		link->setMoment( getR() * ( Mu - cross(getr(true),getR().transposed()*link->getForce()) )			
 			- cross(getrC(), m*getLinAccC()) );
 	break;
@@ -1305,15 +1305,15 @@ void SensorLinkNewtonEuler::computeMoment(iDynLink *link)
 {
 	switch(mode)
 	{
-	case NE_dynamicCoriolisGravity:
-	case NE_dynamic:		
+	case NE_DYNAMIC_CORIOLIS_GRAVITY:
+	case NE_DYNAMIC:		
 	Mu = cross(getr(true),getR().transposed()*link->getForce()) 
 			+ cross(getrC(),(m * getLinAccC()))  
 			+ getR().transposed() * link->getMoment()
 			+ getInertia() * getR().transposed() * getAngAcc() 
 			+ cross( getR().transposed() * getAngVel() , getInertia() * getR().transposed() * getAngVel());
 		break;
-	case NE_dynamicWrotor:
+	case NE_DYNAMIC_W_ROTOR:
 	Mu = cross(getr(true),getR().transposed()*link->getForce()) 
 			+ cross(getrC(),(m * getLinAccC()))  
 			+ getR().transposed() * link->getMoment()
@@ -1323,7 +1323,7 @@ void SensorLinkNewtonEuler::computeMoment(iDynLink *link)
 			+ link->getKr() * link->getDAng() * link->getIm() * cross(getAngVel(),getZM()) ;
 
 		break;
-	case NE_static:
+	case NE_STATIC:
 		Mu = cross(getr(true),getR().transposed()*link->getForce()) 
 			+ cross(getrC(), m*getLinAccC()) 
 			+ getR().transposed() * link->getMoment();
@@ -1337,6 +1337,11 @@ Vector SensorLinkNewtonEuler::getForceMoment() const
 	ret[0]=F[0]; ret[1]=F[1]; ret[2]=F[2];
 	ret[3]=Mu[0]; ret[4]=Mu[1]; ret[5]=Mu[2];
 	return ret;
+}
+//~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+string SensorLinkNewtonEuler::getType() const 
+{
+	return "no type for the basic sensor - only iCub sensors have type";
 }
 //~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 
@@ -1678,8 +1683,9 @@ iCubArmSensorLink::iCubArmSensorLink(const string _type, const NewEulMode _mode,
 :SensorLinkNewtonEuler(_mode,verb)
 {
 	// the arm type determines the sensor properties
-	type = _type;
+	type = _type;	
 	//now setting inertia, mass and COM specifically for each link
+	H.resize(4,4); COM.resize(4,4); I.resize(3,3);
 	if(type=="left")
 	{
 		H.zero(); H(0,0) = 1.0; H(2,1) = 1.0; H(1,2) = -1.0; H(1,3) = 0.08428; H(3,3) = 1.0;
@@ -1690,9 +1696,10 @@ iCubArmSensorLink::iCubArmSensorLink(const string _type, const NewEulMode _mode,
 	}
 	else
 	{ 
-		if(!(type =="right") && (verbose>0))
+		if(!(type =="right"))
 		{
-			cerr<<"iCubArmSensorLink error: type is not left/right: assuming right."<<endl;
+			if(verbose)
+				cerr<<"iCubArmSensorLink error: type is not left/right: assuming right."<<endl;
 			type = "right";
 		}
 
@@ -1707,7 +1714,7 @@ iCubArmSensorLink::iCubArmSensorLink(const string _type, const NewEulMode _mode,
 	info.clear(); info = "FT sensor " + type + " arm";
 }
 //~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
-string iCubArmSensorLink::getType()
+string iCubArmSensorLink::getType() const
 { 
 	return type;
 }
@@ -1720,28 +1727,78 @@ string iCubArmSensorLink::getType()
 //======================================
 
 //~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
-iDynInvSensorArm::iDynInvSensorArm(iDynChain *_c, const string _type, const NewEulMode _mode, unsigned int verb)
-:iDynInvSensor(_c,_type,_mode,verb)
+iDynInvSensorArm::iDynInvSensorArm(iCubArmDyn *_c, const NewEulMode _mode, unsigned int verb)
+:iDynInvSensor(_c->asChain(),_c->getType(),_mode,verb)
 {
-	type = _type;
-	// the arm type determines the sensor properties
-	if( (verbose>0) && !((type=="left")||(type=="right"))  )
-	{
-		cerr<<"iDynInvSensorArm error: type is not left/right. iCub only has a left and a right arm, it is not an octopus :)"<<endl
-			<<"iDynInvSensorArm: assuming right arm."<<endl;
-		type = "right";
-	}
 	// FT sensor is in position 5 in the kinematic chain in both arms
 	lSens = 5;
-	// set the sensor properly
-	sens = new iCubArmSensorLink(type,mode,verbose);
-	//then the sensor information
-	info.clear(); info = "FT sensor " + type + " arm";
-	sens->setInfo(info);
-
+	// the arm type determines the sensor properties
+	if( !((_c->getType()=="left")||(_c->getType()=="right"))  )
+	{
+		if(verbose)
+		cerr<<"iDynInvSensorArm error: type is not left/right. iCub only has a left and a right arm, it is not an octopus :)"<<endl
+			<<"iDynInvSensorArm: assuming right arm."<<endl;
+		// set the sensor with the default value
+		sens = new iCubArmSensorLink("right",mode,verbose);
+	}
+	else
+	{
+		// set the sensor properly
+		sens = new iCubArmSensorLink(_c->getType(),mode,verbose);
+	}
 }
 //~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
-string iDynInvSensorArm::getType()
+string iDynInvSensorArm::getType() const
+{ 
+	return sens->getType();
+}
+//~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+
+
+
+//======================================
+//
+//		 iCUB LEG SENSOR LINK
+//
+//======================================
+
+//~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+iCubLegSensorLink::iCubLegSensorLink(const string _type, const NewEulMode _mode, unsigned int verb)
+:SensorLinkNewtonEuler(_mode,verb)
+{
+	// the arm type determines the sensor properties
+	type = _type;
+	//now setting inertia, mass and COM specifically for the link
+	H.resize(4,4); COM.resize(4,4); I.resize(3,3);
+	if(type=="left")
+	{
+		H.zero(); H(0,0) = 1.0; H(2,1) = 1.0; H(1,2) = -1.0; H(1,3) = 0.08428; H(3,3) = 1.0;
+		COM.eye(); COM(0,3) = -1.56e-04; COM(1,3) = -9.87e-05;  COM(2,3) = 2.98e-2;  
+		I.zero(); I(0,0) = 4.08e-04; I(0,1) = I(1,0) = -1.08e-6; I(0,2) = I(2,0) = -2.29e-6;
+		I(1,1) = 3.80e-04; I(1,2) = I(2,1) =  3.57e-6; I(2,2) = 2.60e-4;
+		m = 7.2784301e-01;
+	}
+	else
+	{ 
+		if(!(type =="right"))
+		{
+			if(verbose)
+				cerr<<"iCubLegSensorLink error: type is not left/right: assuming right."<<endl;
+			type = "right";
+		}
+
+		H.zero(); H(0,0) = 1.0; H(2,1) = 1.0; H(1,2) = -1.0; H(1,3) = 0.08428; H(3,3) = 1.0;
+		COM.eye(); COM(0,3) = -1.56e-04; COM(1,3) = -9.87e-05;  COM(2,3) = 2.98e-2;  
+		I.zero(); I(0,0) = 4.08e-04; I(0,1) = I(1,0) = -1.08e-6; I(0,2) = I(2,0) = -2.29e-6;
+		I(1,1) = 3.80e-04; I(1,2) = I(2,1) =  3.57e-6; I(2,2) = 2.60e-4;
+		m = 7.2784301e-01;
+	
+	}
+	//then the sensor information
+	info.clear(); info = "FT sensor " + type + " leg";
+}
+//~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+string iCubLegSensorLink::getType() const
 { 
 	return type;
 }
@@ -1755,52 +1812,29 @@ string iDynInvSensorArm::getType()
 //======================================
 
 //~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
-iDynInvSensorLeg::iDynInvSensorLeg(iDynChain *_c, const string _type, const NewEulMode _mode, unsigned int verb)
-:iDynInvSensor(_c,_type,_mode,verb)
+iDynInvSensorLeg::iDynInvSensorLeg(iCubLegDyn *_c, const NewEulMode _mode, unsigned int verb)
+:iDynInvSensor(_c->asChain(),_c->getType(),_mode,verb)
 {
-	// the arm type determines the sensor properties
-	type = _type;
 	// FT sensor is in position 2 in the kinematic chain in both legs
 	lSens = 2;
-	//now setting inertia, mass and COM specifically for each link
-	Matrix HS(4,4); HS.eye();
-	Matrix HSC(4,4); HSC.eye();
-	Matrix IS(3,3); IS.zero();
-	double ms = 0.0;
-	if(type=="left")
+	// the leg type determines the sensor properties
+	if( !((_c->getType()=="left")||(_c->getType()=="right"))  )
 	{
-		HS.zero(); HS(0,0) = 1.0; HS(2,1) = 1.0; HS(1,2) = -1.0; HS(1,3) = 0.08428; HS(3,3) = 1.0;
-		HSC.eye(); HSC(0,3) = -1.56e-04; HSC(1,3) = -9.87e-05;  HSC(2,3) = 2.98e-2;  
-		IS.zero(); IS(0,0) = 4.08e-04; IS(0,1) = IS(1,0) = -1.08e-6; IS(0,2) = IS(2,0) = -2.29e-6;
-		IS(1,1) = 3.80e-04; IS(1,2) = IS(2,1) =  3.57e-6; IS(2,2) = 2.60e-4;
-		ms = 7.2784301e-01;
+		if(verbose)
+			cerr<<"iDynInvSensorLeg error: type is not left/right. iCub only has a left and a right leg, it is not a millipede :)"<<endl
+				<<"iDynInvSensorLeg: assuming right leg."<<endl;
+		// set the sensor with the default value
+		sens = new iCubLegSensorLink("right",mode,verbose);
 	}
 	else
-	{ 
-		if(!(type =="right") && (verbose>0))
-		{
-			cerr<<"iDynInvSensorLeg error: type is not left/right. iCub only has a left and a right leg, it is not a centaur :)"<<endl
-				<<"iDynInvSensorLeg: assuming right leg."<<endl;
-			type = "right";
-		}
-
-		HS.zero(); HS(0,0) = 1.0; HS(2,1) = 1.0; HS(1,2) = -1.0; HS(1,3) = 0.08428; HS(3,3) = 1.0;
-		HSC.eye(); HSC(0,3) = -1.56e-04; HSC(1,3) = -9.87e-05;  HSC(2,3) = 2.98e-2;  
-		IS.zero(); IS(0,0) = 4.08e-04; IS(0,1) = IS(1,0) = -1.08e-6; IS(0,2) = IS(2,0) = -2.29e-6;
-		IS(1,1) = 3.80e-04; IS(1,2) = IS(2,1) =  3.57e-6; IS(2,2) = 2.60e-4;
-		ms = 7.2784301e-01;
-	
+	{
+		// set the sensor properly
+		sens = new iCubLegSensorLink(_c->getType(),mode,verbose);
 	}
-	//finally set the sensor parameters
-	sens = new SensorLinkNewtonEuler(HS,HSC,ms,IS,mode,verbose);
-	//then the sensor information
-	info.clear(); info = "FT sensor " + type + " leg";
-	sens->setInfo(info);
-
 }
 //~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
-string iDynInvSensorLeg::getType()
+string iDynInvSensorLeg::getType() const
 { 
-	return type;
+	return sens->getType();
 }
 //~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~

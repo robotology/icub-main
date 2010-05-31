@@ -42,11 +42,11 @@ using namespace iDyn;
 //================================
 
 //~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
-iDynSensor::iDynSensor(iDynChain *_c, string _info, const NewEulMode _mode, bool verb)
+iDynSensor::iDynSensor(iDynChain *_c, string _info, const NewEulMode _mode, unsigned int verb)
 :iDynInvSensor(_c, _info, _mode, verb)
 {}
 //~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
-iDynSensor::iDynSensor(iDynChain *_c, unsigned int i, const Matrix &_H, const Matrix &_HC, const double _m, const Matrix &_I, string _info, const NewEulMode _mode, bool verb)
+iDynSensor::iDynSensor(iDynChain *_c, unsigned int i, const Matrix &_H, const Matrix &_HC, const double _m, const Matrix &_I, string _info, const NewEulMode _mode, unsigned int verb)
 :iDynInvSensor(_c, i, _H, _HC, _m, _I, _info, _mode, verb)
 {}
 //~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
@@ -117,6 +117,18 @@ bool iDynSensor::computeFromSensorNewtonEuler(const Vector &F, const Vector &Mu)
 		return false;
 }
 //~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+bool iDynSensor::computeFromSensorNewtonEuler(const Vector &FMu)
+{
+	//set measured F/Mu on the sensor
+	if(setSensorMeasures(FMu))
+	{
+		computeFromSensorNewtonEuler();
+		return true;
+	}
+	else
+		return false;
+}
+//~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 
 	//~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 	//  get methods, overloaded from iDyn
@@ -141,3 +153,76 @@ Matrix iDynSensor::getMomentsNewtonEuler() const				{return chain->getMomentsNew
 //~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 Vector iDynSensor::getTorquesNewtonEuler() const				{return chain->getTorquesNewtonEuler();}
 //~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+
+
+//======================================
+//
+//		 iDYN SENSOR ARM
+//
+//======================================
+
+//~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+iDynSensorArm::iDynSensorArm(iCubArmDyn *_c, const NewEulMode _mode, unsigned int verb)
+:iDynSensor(_c->asChain(),_c->getType(),_mode,verb)
+{
+	// FT sensor is in position 5 in the kinematic chain in both arms
+	lSens = 5;
+	// the arm type determines the sensor properties
+	if( !((_c->getType()=="left")||(_c->getType()=="right"))  )
+	{
+		if(verbose)
+		cerr<<"iDynSensorArm error: type is not left/right. iCub only has a left and a right arm, it is not an octopus :)"<<endl
+			<<"iDynSensorArm: assuming right arm."<<endl;
+		// set the sensor with the default value
+		sens = new iCubArmSensorLink("right",mode,verbose);
+	}
+	else
+	{
+		// set the sensor properly
+		sens = new iCubArmSensorLink(_c->getType(),mode,verbose);
+	}
+}
+//~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+string iDynSensorArm::getType() const
+{ 
+	return sens->getType();
+}
+//~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+
+
+
+//======================================
+//
+//		 iDYN INV SENSOR LEG
+//
+//======================================
+
+//~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+iDynSensorLeg::iDynSensorLeg(iCubLegDyn *_c, const NewEulMode _mode, unsigned int verb)
+:iDynSensor(_c->asChain(),_c->getType(),_mode,verb)
+{
+	// FT sensor is in position 2 in the kinematic chain in both legs
+	lSens = 2;
+	// the leg type determines the sensor properties
+	if( !((_c->getType()=="left")||(_c->getType()=="right"))  )
+	{
+		if(verbose)
+			cerr<<"iDynSensorLeg error: type is not left/right. iCub only has a left and a right leg, it is not a millipede :)"<<endl
+				<<"iDynSensorLeg: assuming right leg."<<endl;
+		// set the sensor with the default value
+		sens = new iCubLegSensorLink("right",mode,verbose);
+	}
+	else
+	{
+		// set the sensor properly
+		sens = new iCubLegSensorLink(_c->getType(),mode,verbose);
+	}
+}
+//~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+string iDynSensorLeg::getType() const
+{ 
+	return sens->getType();
+}
+//~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+
+

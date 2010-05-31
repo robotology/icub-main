@@ -65,6 +65,7 @@
 #include <string>
 
 
+
 namespace iDyn
 {
 
@@ -702,7 +703,7 @@ public:
 	 /**
 	 * Prepare for the Newton-Euler recursive computation of forces and torques
 	 */
-	 void prepareNewtonEuler(const NewEulMode ne_mode=NE_static);
+	 void prepareNewtonEuler(const NewEulMode ne_mode=NE_STATIC);
 
 	 /**
 	 * Compute forces and torques with the Newton-Euler recursive algorithm: forward
@@ -734,23 +735,23 @@ public:
 	 /**
 	* Set the computation mode for Newton-Euler (static/dynamic/etc)
 	*/
-	 void setModeNewtonEuler(const NewEulMode ne_mode=NE_static);
+	 void setModeNewtonEuler(const NewEulMode ne_mode=NE_STATIC);
 
 	/**
     * Returns the links forces as a matrix, where the i-th col is the i-th force
-    * @return a 3xN matrix with forces, in the form: i-th col = F_i
+    * @return a 3x(N+2) matrix with forces, in the form: i-th col = F_i
     */
 	yarp::sig::Matrix getForcesNewtonEuler() const;
 
 	/**
     * Returns the links moments as a matrix, where the i-th col is the i-th moment
-    * @return a 3xN matrix with moments, in the form: i-th col = Mu_i
+    * @return a 3x(N+2) matrix with moments, in the form: i-th col = Mu_i
     */
 	yarp::sig::Matrix getMomentsNewtonEuler() const;
 
 	/**
     * Returns the links torque as a vector
-    * @return a vector with the torques
+    * @return a Nx1 vector with the torques
     */
 	yarp::sig::Vector getTorquesNewtonEuler() const;
 
@@ -964,7 +965,7 @@ public:
 
 	// methods for Newton-Euler computation
 
-	void prepareNewtonEuler(const NewEulMode ne_mode=NE_static)
+	void prepareNewtonEuler(const NewEulMode ne_mode=NE_STATIC)
 	{ iDynChain::prepareNewtonEuler(ne_mode); }
 
 	 bool computeNewtonEuler(const yarp::sig::Vector &w0, const yarp::sig::Vector &dw0, const yarp::sig::Vector &ddp0, const yarp::sig::Vector &Fend, const yarp::sig::Vector &Muend)
@@ -973,7 +974,7 @@ public:
 	 bool initNewtonEuler(const yarp::sig::Vector &w0, const yarp::sig::Vector &dw0, const yarp::sig::Vector &ddp0, const yarp::sig::Vector &Fend, const yarp::sig::Vector &Muend)
 	 { return iDynChain::initNewtonEuler(w0,dw0,ddp0,Fend,Muend); }
 	
-	 void setModeNewtonEuler(const NewEulMode ne_mode=NE_static)
+	 void setModeNewtonEuler(const NewEulMode ne_mode=NE_STATIC)
 	 { iDynChain::setModeNewtonEuler(ne_mode); }
 
 	 yarp::sig::Matrix getForcesNewtonEuler() const	{return iDynChain::getForcesNewtonEuler();}

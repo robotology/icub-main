@@ -24,9 +24,6 @@
  * 
  * Windows
  *
- * \section example_sec Example
- *
- * See iDynChain examples.
  *
  * \author Serena Ivaldi, Matteo Fumagalli
  * 
@@ -47,8 +44,14 @@
 #include <deque>
 #include <string>
 
-enum NewEulMode {NE_static,NE_dynamic,NE_dynamicWrotor,NE_dynamicCoriolisGravity};
+// Newton-Euler types
+// useful for iDyn, iDynInv, iDynFwd
+enum NewEulMode {NE_STATIC,NE_DYNAMIC,NE_DYNAMIC_W_ROTOR,NE_DYNAMIC_CORIOLIS_GRAVITY};
 const std::string NE_Mode[4] = {"static","dynamic","dynamic with motor/rotor","dynamic with only Coriolis and gravitational terms"};
+
+// verbosity levels
+// useful for all classes
+enum VerbosityLevel{ NO_VERBOSE, VERBOSE, MORE_VERBOSE};
 
 namespace iDyn{
 
@@ -77,7 +80,7 @@ class OneLinkNewtonEuler
 {
 protected:
 
-	///NE_static/NE_dynamic/NE_dynamicWrotor/NE_dynamicCoriolisGravity
+	/// NE_STATIC/NE_DYNAMIC/NE_DYNAMIC_W_ROTOR/NE_DYNAMIC_CORIOLIS_GRAVITY
 	NewEulMode mode;	
 	///info or useful notes
 	std::string	info;
@@ -221,7 +224,7 @@ public:
 	/**
      * Constructor, with initialization of some data
      */
-	OneLinkNewtonEuler(const NewEulMode _mode, unsigned int verb=0, iDyn::iDynLink *dlink=NULL);
+	OneLinkNewtonEuler(const NewEulMode _mode, unsigned int verb = NO_VERBOSE, iDyn::iDynLink *dlink=NULL);
 	 	 
 	/**
      * Set everything to zero; R is set to an identity matrix
@@ -270,7 +273,7 @@ public:
 	* Set the verbosity level of comments during operations
 	* @param verb, a boolean flag
 	*/
-	 void setVerbose(unsigned int verb=1);
+	 void setVerbose(unsigned int verb = VERBOSE);
  	/**
 	* Set the operation mode (static,dynamic etc)
 	* @param _mode the NewEulMode defining the type of operations
@@ -451,7 +454,7 @@ public:
 	* @param _mode the analysis mode (static/dynamic)
 	* @param verb flag for verbosity
     */
-	BaseLinkNewtonEuler(const yarp::sig::Matrix &_H0, const NewEulMode _mode, unsigned int verb=0);
+	BaseLinkNewtonEuler(const yarp::sig::Matrix &_H0, const NewEulMode _mode, unsigned int verb=NO_VERBOSE);
 
 	/**
     * Constructor, initializing the base data
@@ -462,7 +465,7 @@ public:
 	* @param _mode the analysis mode (static/dynamic)
 	* @param verb flag for verbosity
     */
-	BaseLinkNewtonEuler(const yarp::sig::Matrix &_H0, const yarp::sig::Vector &_w, const yarp::sig::Vector &_dw, const yarp::sig::Vector &_ddp, const NewEulMode _mode, unsigned int verb=0);
+	BaseLinkNewtonEuler(const yarp::sig::Matrix &_H0, const yarp::sig::Vector &_w, const yarp::sig::Vector &_dw, const yarp::sig::Vector &_ddp, const NewEulMode _mode, unsigned int verb=NO_VERBOSE);
 
 	/**
      * Sets the base data
@@ -544,7 +547,7 @@ public:
 	* @param _mode the analysis mode (static/dynamic)
 	* @param verb flag for verbosity
     */
-	FinalLinkNewtonEuler(const NewEulMode _mode, unsigned int verb=0);
+	FinalLinkNewtonEuler(const NewEulMode _mode, unsigned int verb=NO_VERBOSE);
 
 	/**
     * Constructor, initializing the final frame data
@@ -553,7 +556,7 @@ public:
 	* @param _mode the analysis mode (static/dynamic)
 	* @param verb flag for verbosity
     */
-	FinalLinkNewtonEuler(const yarp::sig::Vector &_F, const yarp::sig::Vector &_Mu, const NewEulMode _mode, unsigned int verb=0);
+	FinalLinkNewtonEuler(const yarp::sig::Vector &_F, const yarp::sig::Vector &_Mu, const NewEulMode _mode, unsigned int verb=NO_VERBOSE);
 
 	/**
      * Set the final frame data
@@ -644,14 +647,14 @@ public:
 	* @param _mode the analysis mode (static/dynamic)
 	* @param verb flag for verbosity
     */
-	SensorLinkNewtonEuler(const NewEulMode _mode, unsigned int verb=0);
+	SensorLinkNewtonEuler(const NewEulMode _mode, unsigned int verb=NO_VERBOSE);
 
 	/**
     * Constructor 
 	* @param _mode the analysis mode (static/dynamic)
 	* @param verb flag for verbosity
     */
-	SensorLinkNewtonEuler(const yarp::sig::Matrix &_H, const yarp::sig::Matrix &_COM, const double _m, const yarp::sig::Matrix &_I, const NewEulMode _mode, unsigned int verb=0);
+	SensorLinkNewtonEuler(const yarp::sig::Matrix &_H, const yarp::sig::Matrix &_COM, const double _m, const yarp::sig::Matrix &_I, const NewEulMode _mode, unsigned int verb=NO_VERBOSE);
 	
 
 	/**
@@ -752,7 +755,12 @@ public:
 	 void computeForceToLink ( iDynLink *link);
 	 void computeMomentToLink( iDynLink *link);
 
+	 // virtual function to be called by specific sensorLinks
+	 virtual std::string getType() const;
+
 };
+
+
 
 /**
 * \ingroup RecursiveNewtonEuler
@@ -788,7 +796,7 @@ public:
   /**
     * Constructor without FT sensor
     */
-	OneChainNewtonEuler(iDyn::iDynChain *_c, std::string _info, const NewEulMode _mode = NE_static, unsigned int verb = 0);
+	OneChainNewtonEuler(iDyn::iDynChain *_c, std::string _info, const NewEulMode _mode = NE_STATIC, unsigned int verb = NO_VERBOSE);
 
 	/**
 	* Standard destructor
@@ -810,7 +818,7 @@ public:
 	//   set methods
 	//~~~~~~~~~~~~~~~~~~~~~~
 
-	void setVerbose(unsigned int verb=1);
+	void setVerbose(unsigned int verb=VERBOSE);
 	void setMode(const NewEulMode _mode);
  	void setInfo(const std::string _info);
 	bool initNewtonEuler(const yarp::sig::Vector &w0, const yarp::sig::Vector &dw0, const yarp::sig::Vector &ddp0, const yarp::sig::Vector &Fend, const yarp::sig::Vector &Muend);
@@ -875,8 +883,17 @@ public:
  *    
  * @ingroup iDyn
  *  
- * Classes for force/torque computation in a dynamic chain, where a single FT sensor is placed.
- * Computations from  using Newton-Euler recursive formulation
+ * Classes for force/torque computation in a dynamic 
+ * chain, where a single FT sensor is placed. 
+ * Using Newton-Euler formula it is possible to 
+ * compute an estimate of the FT sensor measurements. 
+ * iDynInvSensor is the generic class which takes a 
+ * iDynChain, sets a generic sensor attached to the 
+ * chain, and manages the proper computations. 
+ * iDynInvSensorArm and iDynInvSensorLeg
+ * are specific classes performing computations for iCub
+ * arms and legs: by choosing left/right part, they
+ * automatically set the proper FT sensor parameters.
  * 
  * \section tested_os_sec Tested OS
  * 
@@ -884,7 +901,27 @@ public:
  *
  * \section example_sec Example
  *
- * Exe
+ * Set a iDynInvSensor for iCub's left arm, with 
+ * force/moment computation in the static case (NE_STATIC), and
+ * verbose (VERBOSE==1) output:
+ *
+ * <tt> iCubArmDyn *arm = new iCubArmDyn("left"); </tt> \n
+ * <tt> iDynInvSensorArm armWSensorSolver = new iDynInvSensorArm(arm,NE_STATIC,VERBOSE); </tt> \n
+ *
+ * Note that by setting the arm as "left", the sensor is automatically set
+ * as the left sensor of the arm.
+ * Then retrieve the sensor force/moment: the chain must be updated with 
+ * the current angle configuration before the compute method can be called.
+ *
+ * <tt> arm->setAng(q); </tt> \n
+ * <tt> armWSensorSolver->computeSensorForceMoment(); </tt> \n
+ *
+ * The sensor force/moment can be retrieved separately (3x1 vectors) or 
+ * together (6x1 vector).
+ *
+ * <tt> Vector F = armWSensorSolver->getSensorForce(); </tt> \n
+ * <tt> Vector Mu = armWSensorSolver->getSensorMoment(); </tt> \n
+ * <tt> Vector FMu = armWSensorSolver->getSensorForceMoment(); </tt> \n
  *
  * \author Serena Ivaldi
  * 
@@ -929,7 +966,7 @@ public:
 	* @param _mode the analysis mode (static/dynamic)
 	* @param verb flag for verbosity
     */
-	iDynInvSensor(iDyn::iDynChain *_c, std::string _info, const NewEulMode _mode = NE_static, unsigned int verb = 0);
+	iDynInvSensor(iDyn::iDynChain *_c, std::string _info, const NewEulMode _mode = NE_STATIC, unsigned int verb = NO_VERBOSE);
 
 	/**
     * Constructor with FT sensor
@@ -943,7 +980,7 @@ public:
 	* @param _mode the analysis mode (static/dynamic)
 	* @param verb flag for verbosity
     */
-	iDynInvSensor(iDyn::iDynChain *_c, unsigned int i, const yarp::sig::Matrix &_H, const yarp::sig::Matrix &_HC, const double _m, const yarp::sig::Matrix &_I, std::string _info, const NewEulMode _mode = NE_static, unsigned int verb = 0);
+	iDynInvSensor(iDyn::iDynChain *_c, unsigned int i, const yarp::sig::Matrix &_H, const yarp::sig::Matrix &_HC, const double _m, const yarp::sig::Matrix &_I, std::string _info, const NewEulMode _mode = NE_STATIC, unsigned int verb = 0);
 
 	/**
      * Set a new sensor or new sensor properties
@@ -990,8 +1027,8 @@ public:
 	// set methods
 	//~~~~~~~~~~~~~~
 
-	void setMode(const NewEulMode _mode = NE_static);
-	void setVerbose(unsigned int verb=1);
+	void setMode(const NewEulMode _mode = NE_STATIC);
+	void setVerbose(unsigned int verb=VERBOSE);
 	void setInfo(std::string _info);
 	void setSensorInfo(std::string _info);
 
@@ -1009,7 +1046,10 @@ public:
 /**
 * \ingroup iDynInv
 *
-* A class for setting a virtual sensor link on the iCub arm.
+* A class for setting a virtual sensor link on the iCub 
+* arm, for the arm FT sensor. The parameters are
+* automatically set after choosing "left" or "right"
+* part. By default, the CAD parameters are set.
 */
 class iCubArmSensorLink : public SensorLinkNewtonEuler
 {
@@ -1021,47 +1061,49 @@ protected:
 public:
 
 	/**
-    * Constructor: the sensor is automatically set with "right" or "left" choice
-	* @param _type a string "left/right" 
-	* @param _mode the analysis mode (static/dynamic)
+    * Constructor: the sensor parameters are automatically set with "right" or "left" choice
+	* @param _type a string "left"/"right" 
+	* @param _mode the analysis mode (static/dynamic/etc)
 	* @param verb flag for verbosity
     */
-	iCubArmSensorLink(const std::string _type, const NewEulMode _mode = NE_static, unsigned int verb = 0);
+	iCubArmSensorLink(const std::string _type, const NewEulMode _mode = NE_STATIC, unsigned int verb = NO_VERBOSE);
 
 	/**
-	* @return type the arm type: left/arm
+	* @return type the arm type: left/right
 	*/
-	std::string getType();
+	std::string getType() const;
 
 };
 
 /**
 * \ingroup iDynInv
 *
-* A class for setting a virtual sensor link on the iCub leg.
+* A class for setting a virtual sensor link on the iCub
+* leg, for the leg FT sensor. The parameters are
+* automatically set after choosing "left" or "right"
+* part. By default, the CAD parameters are set.
 */
 class iCubLegSensorLink : public SensorLinkNewtonEuler
 {
 protected:
 	
-	/// the arm type: left/right
+	/// the leg type: left/right
 	std::string type;
 
 	public:
 
 	/**
-    * Constructor: the sensor is automatically set with "right" or "left" choice
-	* @param _c a pointer to the iDynChain where the sensor is placed on
-	* @param _type a string "left/right" 
-	* @param _mode the analysis mode (static/dynamic)
+    * Constructor: the sensor parameters are automatically set with "right" or "left" choice
+	* @param _type a string "left"/"right" 
+	* @param _mode the analysis mode (static/dynamic/etc)
 	* @param verb flag for verbosity
     */
-	iCubLegSensorLink(iDyn::iDynChain *_c, const std::string _type, const NewEulMode _mode = NE_static, unsigned int verb = 0);
+	iCubLegSensorLink(const std::string _type, const NewEulMode _mode = NE_STATIC, unsigned int verb = NO_VERBOSE);
 
 	/**
-	* @return type the leg type: left/arm
+	* @return type the leg type: left/right
 	*/
-	std::string getType();
+	std::string getType() const;
 
 };
 
@@ -1071,31 +1113,27 @@ protected:
 *
 * A class for computing force/moment of the FT sensor placed
 * in the middle of the iCub's left or right arm. The sensor
-* parameters are automatically set by chosing left or right.
+* parameters are automatically set by chosing left or right
+* during initialization of the iCubArmDyn.
 * 
 */
 class iDynInvSensorArm : public iDynInvSensor
 {
 
-protected:
-	/// the arm type: left/right
-	std::string type;
-
 public:
 
 	/**
     * Constructor: the sensor is automatically set with "right" or "left" choice
-	* @param _c a pointer to the iDynChain where the sensor is placed on
-	* @param _type a string "left/right" 
+	* @param _c a pointer to the iCubArmDyn where the sensor is placed on
 	* @param _mode the analysis mode (static/dynamic)
 	* @param verb flag for verbosity
     */
-	iDynInvSensorArm(iDyn::iDynChain *_c, const std::string _type, const NewEulMode _mode = NE_static, unsigned int verb = 0);
+	iDynInvSensorArm(iDyn::iCubArmDyn *_c, const NewEulMode _mode = NE_STATIC, unsigned int verb = NO_VERBOSE);
 
 	/**
 	* @return type the arm type: left/arm
 	*/
-	std::string getType();
+	std::string getType() const;
 
 
 };
@@ -1105,31 +1143,27 @@ public:
 *
 * A class for computing force/moment of the FT sensor placed
 * in the middle of the iCub's left or right leg. The sensor
-* parameters are automatically set by chosing left or right.
+* parameters are automatically set by chosing left or right
+* during initialization of iCubLegDyn.
 * 
 */
 class iDynInvSensorLeg : public iDynInvSensor
 {
 
-protected:
-	/// the arm type: left/right
-	std::string type;
-
 public:
 
 	/**
     * Constructor: the sensor is automatically set with "right" or "left" choice
-	* @param _c a pointer to the iDynChain where the sensor is placed on
-	* @param _type a string "left/right" 
+	* @param _c a pointer to the iCubLegDyn where the sensor is placed on
 	* @param _mode the analysis mode (static/dynamic)
 	* @param verb flag for verbosity
     */
-	iDynInvSensorLeg(iDyn::iDynChain *_c, const std::string _type, const NewEulMode _mode = NE_static, unsigned int verb = 0);
+	iDynInvSensorLeg(iDyn::iCubLegDyn *_c, const NewEulMode _mode = NE_STATIC, unsigned int verb = NO_VERBOSE);
 
 	/**
-	* @return type the arm type: left/arm
+	* @return type the leg type: left/arm
 	*/
-	std::string getType();
+	std::string getType() const;
 
 
 };

@@ -742,6 +742,14 @@ void iDynChain::prepareNewtonEuler(const NewEulMode ne_mode)
 //~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 bool iDynChain::computeNewtonEuler(const Vector &w0, const Vector &dw0, const Vector &ddp0, const Vector &Fend, const Vector &Muend )
 { 
+	if( NE == NULL)
+	{
+		if(verbose)
+			cerr<<"iDynChain error: trying to call computeNewtonEuler() without having prepared Newton-Euler method in the class. "<<endl
+			<<"iDynChain: prepareNewtonEuler() called autonomously in the default mode. "<<endl;
+		prepareNewtonEuler();
+	}
+
 	if((w0.length()==3)&&(dw0.length()==3)&&(ddp0.length()==3)&&(Fend.length()==3)&&(Muend.length()==3))
 	{
 		NE->ForwardFromBase(w0,dw0,ddp0);
@@ -764,11 +772,29 @@ bool iDynChain::computeNewtonEuler(const Vector &w0, const Vector &dw0, const Ve
 //~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 void iDynChain::computeNewtonEuler()
 { 
+	if( NE == NULL)
+	{
+		if(verbose)
+			cerr<<"iDynChain error: trying to call computeNewtonEuler() without having prepared Newton-Euler method in the class. "<<endl
+				<<"iDynChain: prepareNewtonEuler() called autonomously in the default mode. "<<endl
+				<<"iDynChain: initNewtonEuler() called autonomously with default values. "<<endl;
+		prepareNewtonEuler();
+		initNewtonEuler();
+	}
+
 	NE->ForwardFromBase();
 	NE->BackwardFromEnd();
 }//~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 bool iDynChain::initNewtonEuler()
 {
+	if( NE == NULL)
+	{
+		if(verbose)
+			cerr<<"iDynChain error: trying to call initNewtonEuler() without having prepared Newton-Euler method in the class. "<<endl
+				<<"iDynChain: prepareNewtonEuler() called autonomously in the default mode. "<<endl;
+		prepareNewtonEuler();
+	}
+
 	Vector w0(3); w0.zero();
 	Vector dw0(3); dw0.zero();
 	Vector ddp0(3); ddp0.zero();
@@ -779,6 +805,14 @@ bool iDynChain::initNewtonEuler()
 //~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 bool iDynChain::initNewtonEuler(const yarp::sig::Vector &w0, const yarp::sig::Vector &dw0, const yarp::sig::Vector &ddp0, const yarp::sig::Vector &Fend, const yarp::sig::Vector &Muend)
 {
+	if( NE == NULL)
+	{
+		if(verbose)
+			cerr<<"iDynChain error: trying to call initNewtonEuler() without having prepared Newton-Euler method in the class. "<<endl
+				<<"iDynChain: prepareNewtonEuler() called autonomously in the default mode. "<<endl;
+		prepareNewtonEuler();
+	}
+
 	if((w0.length()==3)&&(dw0.length()==3)&&(ddp0.length()==3)&&(Fend.length()==3)&&(Muend.length()==3))
 	{
 		return NE->initNewtonEuler(w0,dw0,ddp0,Fend,Muend);
@@ -799,39 +833,71 @@ bool iDynChain::initNewtonEuler(const yarp::sig::Vector &w0, const yarp::sig::Ve
 //~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 void iDynChain::setModeNewtonEuler(const NewEulMode ne_mode)
 {
+	if( NE == NULL)
+	{
+		if(verbose)
+			cerr<<"iDynChain error: trying to call setModeNewtonEuler() without having prepared Newton-Euler method in the class. "<<endl
+				<<"iDynChain: prepareNewtonEuler() called autonomously in the default mode. "<<endl;
+		prepareNewtonEuler();
+	}
+
 	NE->setMode(ne_mode);
 	if(verbose)
-		cerr<<"iDynChain: Newton-Euler mode set to "
-			<<NE_Mode[ne_mode]<<endl;
+		cerr<<"iDynChain: Newton-Euler mode set to "<<NE_Mode[ne_mode]<<endl;
 }
 //~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 
 			//~~~~~~~~~~~~~~
-			//	basic get
+			//	plus get
 			//~~~~~~~~~~~~~~
 
 //~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 Matrix iDynChain::getForcesNewtonEuler() const
 {
-	Matrix ret(3,N+2);
-	for(unsigned int i=0;i<N+2;i++)
-		ret.setCol(i,NE->neChain[i]->getForce());
+	Matrix ret(3,N+2); ret.zero();
+	if( NE != NULL)
+	{
+		for(unsigned int i=0;i<N+2;i++)
+			ret.setCol(i,NE->neChain[i]->getForce());
+	}
+	else
+	{
+		if(verbose)
+			cerr<<"iDynChain error: trying to call getForcesNewtonEuler() without having prepared Newton-Euler."<<endl;
+	}
+
 	return ret;
 }
 //~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 Matrix iDynChain::getMomentsNewtonEuler() const
 {
-	Matrix ret(3,N+2);
-	for(unsigned int i=0;i<N+2;i++)
-		ret.setCol(i,NE->neChain[i]->getMoment());
+	Matrix ret(3,N+2); ret.zero();
+	if( NE != NULL)
+	{
+		for(unsigned int i=0;i<N+2;i++)
+			ret.setCol(i,NE->neChain[i]->getMoment());
+	}
+	else
+	{
+		if(verbose)
+			cerr<<"iDynChain error: trying to call getMomentsNewtonEuler() without having prepared Newton-Euler."<<endl;
+	}
 	return ret;
 }
 //~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 Vector iDynChain::getTorquesNewtonEuler() const
 {
-	Vector ret(N);
-	for(unsigned int i=0;i<N;i++)
-		ret[i] = NE->neChain[i+1]->getTorque();
+	Vector ret(N); ret.zero();
+	if( NE != NULL)
+	{
+		for(unsigned int i=0;i<N;i++)
+			ret[i] = NE->neChain[i+1]->getTorque();
+	}
+	else
+	{
+		if(verbose)
+			cerr<<"iDynChain error: trying to call getTorquesNewtonEuler() without having prepared Newton-Euler."<<endl;
+	}
 	return ret;
 }
 //~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
