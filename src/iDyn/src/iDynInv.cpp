@@ -1748,6 +1748,27 @@ iDynInvSensorArm::iDynInvSensorArm(iCubArmDyn *_c, const NewEulMode _mode, unsig
 	}
 }
 //~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+iDynInvSensorArm::iDynInvSensorArm(iDynChain *_c, const string _type, const NewEulMode _mode, unsigned int verb)
+:iDynInvSensor(_c,_type,_mode,verb)
+{
+	// FT sensor is in position 5 in the kinematic chain in both arms
+	lSens = 5;
+	// the arm type determines the sensor properties
+	if( !((_type=="left")||(_type=="right"))  )
+	{
+		if(verbose)
+		cerr<<"iDynInvSensorArm error: type is not left/right. iCub only has a left and a right arm, it is not an octopus :)"<<endl
+			<<"iDynInvSensorArm: assuming right arm."<<endl;
+		// set the sensor with the default value
+		sens = new iCubArmSensorLink("right",mode,verbose);
+	}
+	else
+	{
+		// set the sensor properly
+		sens = new iCubArmSensorLink(_type,mode,verbose);
+	}
+}
+//~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 string iDynInvSensorArm::getType() const
 { 
 	return sens->getType();
@@ -1830,6 +1851,27 @@ iDynInvSensorLeg::iDynInvSensorLeg(iCubLegDyn *_c, const NewEulMode _mode, unsig
 	{
 		// set the sensor properly
 		sens = new iCubLegSensorLink(_c->getType(),mode,verbose);
+	}
+}
+//~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+iDynInvSensorLeg::iDynInvSensorLeg(iDynChain *_c, const string _type, const NewEulMode _mode, unsigned int verb)
+:iDynInvSensor(_c,_type,_mode,verb)
+{
+	// FT sensor is in position 2 in the kinematic chain in both legs
+	lSens = 2;
+	// the leg type determines the sensor properties
+	if( !((_type=="left")||(_type=="right"))  )
+	{
+		if(verbose)
+			cerr<<"iDynInvSensorLeg error: type is not left/right. iCub only has a left and a right leg, it is not a millipede :)"<<endl
+				<<"iDynInvSensorLeg: assuming right leg."<<endl;
+		// set the sensor with the default value
+		sens = new iCubLegSensorLink("right",mode,verbose);
+	}
+	else
+	{
+		// set the sensor properly
+		sens = new iCubLegSensorLink(_type,mode,verbose);
 	}
 }
 //~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
