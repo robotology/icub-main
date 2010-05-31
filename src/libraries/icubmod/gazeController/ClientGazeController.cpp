@@ -5,7 +5,7 @@
 #include <yarp/os/Time.h>
 #include <yarp/math/Math.h>
 
-#include <iCub/ctrlMath.h>
+#include <iCub/ctrl/ctrlMath.h>
 
 #include <stdio.h>
 

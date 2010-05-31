@@ -29,9 +29,8 @@ INCLUDE_DIRECTORIES(${PROJECT_SOURCE_DIR}/include
 
 ADD_LIBRARY(${PROJECTNAME} ${folder_source} ${folder_header})
 
-TARGET_LINK_LIBRARIES(${PROJECTNAME}
-                      ${GSL_LIBRARIES}
-                      ${YARP_LIBRARIES})
+TARGET_LINK_LIBRARIES(${PROJECTNAME} ${GSL_LIBRARIES}
+                                     ${YARP_LIBRARIES})
 
 icub_export_library(${PROJECTNAME} 
 					"${PROJECT_SOURCE_DIR}/include;${GSL_INCLUDE_DIRS}" 
