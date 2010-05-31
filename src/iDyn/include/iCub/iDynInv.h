@@ -1131,6 +1131,16 @@ public:
 	iDynInvSensorArm(iDyn::iCubArmDyn *_c, const NewEulMode _mode = NE_STATIC, unsigned int verb = NO_VERBOSE);
 
 	/**
+    * Constructor: the sensor is automatically set with "right" or "left" choice; note that in this case 
+	* there is not a specification of the iCubArmDyn, but the part must be specified
+	* @param _c a pointer to the iDynChain where the sensor is placed on
+	* @param _type a string setting the arm type
+	* @param _mode the analysis mode (static/dynamic)
+	* @param verb flag for verbosity
+    */
+	iDynInvSensorArm(iDyn::iDynChain *_c, const std::string _type, const NewEulMode _mode = NE_STATIC, unsigned int verb = NO_VERBOSE);
+
+	/**
 	* @return type the arm type: left/arm
 	*/
 	std::string getType() const;
@@ -1159,6 +1169,15 @@ public:
 	* @param verb flag for verbosity
     */
 	iDynInvSensorLeg(iDyn::iCubLegDyn *_c, const NewEulMode _mode = NE_STATIC, unsigned int verb = NO_VERBOSE);
+
+	/**
+    * Constructor: the sensor is automatically set with "right" or "left" choice
+	* @param _c a pointer to the iDynChain where the sensor is placed on
+	* @param _type a string setting the leg type
+	* @param _mode the analysis mode (static/dynamic)
+	* @param verb flag for verbosity
+    */
+	iDynInvSensorLeg(iDyn::iDynChain *_c, const std::string _type, const NewEulMode _mode = NE_STATIC, unsigned int verb = NO_VERBOSE);
 
 	/**
 	* @return type the leg type: left/arm
