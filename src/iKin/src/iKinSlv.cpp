@@ -1,7 +1,6 @@
 
+#include <yarp/os/Network.h>
 #include <yarp/os/Time.h>
-#include <yarp/os/impl/NameClient.h>
-#include <yarp/os/impl/Carriers.h>
 
 #include <stdio.h>
 
@@ -17,7 +16,6 @@
 using namespace std;
 using namespace yarp;
 using namespace yarp::os;
-using namespace yarp::os::impl;
 using namespace yarp::sig;
 using namespace yarp::dev;
 using namespace yarp::math;
@@ -389,28 +387,11 @@ void CartesianSolver::waitPart(const Property &partOpt)
         fprintf(stdout,"%s: Checking if %s port is active ... ",
                 slvName.c_str(),portName.c_str());
     
-        NameClient &nic=NameClient::getNameClient();
-        Address address=nic.queryName(portName.c_str());
-        bool ret;
-    
-        if (address.isValid())
-        {    
-            if (OutputProtocol *out=Carriers::connect(address))
-            {
-                out->close();
-                delete out;
-    
-                ret=true;
-            }
-            else
-                ret=false;
-        }
-        else
-            ret=false;
-    
-        fprintf(stdout,"%s\n",ret?"ok":"not yet");
+        bool ok=Network::exists(portName.c_str(),true);    
 
-        if (ret)
+        fprintf(stdout,"%s\n",ok?"ok":"not yet");
+
+        if (ok)
             return;
         else
         {

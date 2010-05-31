@@ -281,8 +281,6 @@ background. Just connect the ports with the viewer and play.
 */ 
 
 #include <yarp/os/Network.h>
-#include <yarp/os/impl/NameClient.h>
-#include <yarp/os/impl/Carriers.h>
 #include <yarp/os/RFModule.h>
 #include <yarp/os/BufferedPort.h>
 #include <yarp/sig/Vector.h>
@@ -301,7 +299,6 @@ background. Just connect the ports with the viewer and play.
 using namespace std;
 using namespace yarp;
 using namespace yarp::os;
-using namespace yarp::os::impl;
 using namespace yarp::dev;
 using namespace yarp::sig;
 
@@ -330,29 +327,12 @@ public:
         while (Time::now()-t0<ping_robot_tmo)
         {   
             cout << "Checking if " << portName << " port is active ... ";
-        
-            NameClient &nic=NameClient::getNameClient();
-            Address address=nic.queryName(portName.c_str());
-            bool ret;
-        
-            if (address.isValid())
-            {    
-                if (OutputProtocol *out=Carriers::connect(address))
-                {
-                    out->close();
-                    delete out;
-        
-                    ret=true;
-                }
-                else
-                    ret=false;
-            }
-            else
-                ret=false;
-        
-            cout << (ret?"ok":"not yet") << endl;
+
+            bool ok=Network::exists(portName.c_str(),true);
+
+            cout << (ok?"ok":"not yet") << endl;
     
-            if (ret)
+            if (ok)
                 return;
             else
             {
