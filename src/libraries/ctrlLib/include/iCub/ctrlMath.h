@@ -7,7 +7,7 @@
  * estimation, PIDs and more topics are expected to be covered 
  * :) 
  *  
- * \author Ugo Pattacini, Serena Ivaldi
+ * \author Ugo Pattacini, Serena Ivaldi, Francesco Nori
  *  
  * \defgroup Maths Maths 
  *  
@@ -15,7 +15,7 @@
  *
  * Collection of mathematical functions
  *
- * \author Ugo Pattacini
+ * \author Ugo Pattacini, Serena Ivaldi, Francesco Nori
  *
  */ 
 

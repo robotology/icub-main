@@ -44,7 +44,7 @@ protected:
     double Ts;
     bool   applySat;
 
-    void   _allocate(const Integrator &I);
+    void allocate(const Integrator &I);
     yarp::sig::Vector saturate(const yarp::sig::Vector &v);
 
 public:
@@ -72,14 +72,14 @@ public:
     * Creates a new Integrator from an already existing object.
     * @param I is the Integrator to be copied.
     */
-    Integrator(const Integrator &I) { _allocate(I); }
+    Integrator(const Integrator &I) { allocate(I); }
 
     /**
     * Copies a Integrator object into the current one.
     * @param I is a reference to an object of type Integrator.
     * @return a reference to the current object.
     */
-    Integrator &operator=(const Integrator &I) { _allocate(I); return *this; }
+    Integrator &operator=(const Integrator &I) { allocate(I); return *this; }
 
     /**
     * Executes one-step integration of input vector. 
