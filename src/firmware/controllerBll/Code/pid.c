@@ -142,12 +142,12 @@ Int32  _pd_current[JN] = INIT_ARRAY (0);        // pd portion of the current pid
 
 #if VERSION == 0x0153 || VERSION==0x0157 || VERSION == 0x0173
 Int32  _cpl_pos_received[JN] = INIT_ARRAY (0);	// the position of the synchronized card 
-Int32  _cpl_pos_prediction[JN] = INIT_ARRAY (0);		// the actual adjustment (compensation) 
-Int32  _cpl_pos_delta[JN] = INIT_ARRAY (0);			// velocity over the adjustment 
+Int32  _cpl_pos_prediction[JN] = INIT_ARRAY (0);// the actual adjustment (compensation) 
+Int32  _cpl_pos_delta[JN] = INIT_ARRAY (0);		// velocity over the adjustment 
 Int16  _cpl_pos_counter = 0;					// counter to check when last _cpl_pos_ was received  
-Int16  _cpl_err[JN] = INIT_ARRAY (0);    	// the error of the syncronized card
-Int16  _cpl_pid_received[JN] = INIT_ARRAY (0);    	// the duty of the syncronized card
-Int16  _cpl_pid_prediction[JN] = INIT_ARRAY (0);			// the predicted adjustment
+Int16  _cpl_err[JN] = INIT_ARRAY (0);    		// the error of the syncronized card
+Int16  _cpl_pid_received[JN] = INIT_ARRAY (0);  // the duty of the syncronized card
+Int16  _cpl_pid_prediction[JN] = INIT_ARRAY (0);// the predicted adjustment
 Int16  _cpl_pid_delta[JN] = INIT_ARRAY (0);		// the adjustment step
 Int16   _cpl_pid_counter = 0;					// counter to check when last _cpl_pid_ was received  
 #endif
@@ -196,45 +196,21 @@ Int32 compute_pwm(byte j)
 	Int32 PWMOUT=0;
 	Int32 IOUT=0;
 	Int16 strain_val = 0;
-	
-	#if VERSION == 0x0173
-		if 		(j==0) 	strain_val=_strain[1][5]; //other board
-		else if (j==1)  strain_val=_strain[0][2];
-	#elif VERSION == 0x0174
-		if 		(j==0) 	strain_val=_strain[0][0];
-		else if (j==1)  strain_val=_strain[0][1];
-	#endif
+
+// input selection depending on firmware version
+#if VERSION == 0x0173
+	if 		(j==0) 	strain_val=_strain[1][5]; //other board
+	else if (j==1)  strain_val=_strain[0][2];
+#elif VERSION == 0x0174
+	if 		(j==0) 	strain_val=_strain[0][0];
+	else if (j==1)  strain_val=_strain[0][1];
+#else
+	strain_val=0; 	
+#endif
 	
 	switch (_control_mode[j]) 
 	{ 
-#if VERSION == 0x0173 || VERSION == 0x0174 
-	case MODE_POSITION:
-	case MODE_VELOCITY:
-	case MODE_CALIB_ABS_POS_SENS:
-		compute_desired(j);
-		PWMOUT = compute_pid2(j);
-		PWMOUT = PWMOUT + _ko[j];
-		_pd[j] = _pd[j] + _ko[j];    
-		break;
-	case MODE_TORQUE: 
-		PWMOUT = compute_pid_torque(j, strain_val);
-		PWMOUT = PWMOUT + _ko_torque[j];
-		_pd_torque[j] = _pd_torque[j] + _ko_torque[j];
-		break;
-	case MODE_IMPEDANCE: 
-		compute_desired(j);
-	//	_desired_torque[j] = -_kp[j] * (_position[j] - _desired[j]);// -_kd[j] * _speed[j];
-	#if VERSION == 0x0173
-		_desired_torque[j] = -20 * (_position[j] - _desired[j]);// -_kd[j] * _speed[j];
-	#elif VERSION == 0x0174
-		_desired_torque[j] = 20 * (_position[j] - _desired[j]);// -_kd[j] * _speed[j];
-	#endif
-		PWMOUT = compute_pid_torque(j, strain_val);
-		PWMOUT = PWMOUT + _ko_torque[j];
-		_pd_torque[j] = _pd_torque[j] + _ko_torque[j];
-		break;	
-	
-#elif VERSION == 0x0170 || VERSION == 0x0171 || VERSION == 0x0172
+#if VERSION == 0x0170 || VERSION == 0x0171 || VERSION == 0x0172
 	case MODE_POSITION: 
 	case MODE_VELOCITY: 
 	case MODE_CALIB_ABS_POS_SENS:
@@ -286,7 +262,7 @@ Int32 compute_pwm(byte j)
 		PWMOUT = compute_current_pid(j); 		
 		break;
 	
-#else
+#else //all other firmware versions
 	case MODE_POSITION:
 	case MODE_VELOCITY:
 	case MODE_CALIB_ABS_POS_SENS:
@@ -298,8 +274,24 @@ Int32 compute_pwm(byte j)
 	case MODE_OPENLOOP:
 		PWMOUT = _ko[j];
 	break;
-	
+	case MODE_TORQUE: 
+		PWMOUT = compute_pid_torque(j, strain_val);
+		PWMOUT = PWMOUT + _ko_torque[j];
+		_pd_torque[j] = _pd_torque[j] + _ko_torque[j];
+	break;
+	case MODE_IMPEDANCE: 
+		compute_desired(j);
+	//	_desired_torque[j] = -_kp[j] * (_position[j] - _desired[j]);// -_kd[j] * _speed[j];
+	#if VERSION == 0x0173
+		_desired_torque[j] = -20 * (_position[j] - _desired[j]);// -_kd[j] * _speed[j];
+	#elif VERSION == 0x0174
+		_desired_torque[j] = 20 * (_position[j] - _desired[j]);// -_kd[j] * _speed[j];
 	#endif
+		PWMOUT = compute_pid_torque(j, strain_val);
+		PWMOUT = PWMOUT + _ko_torque[j];
+		_pd_torque[j] = _pd_torque[j] + _ko_torque[j];
+	break;
+#endif
 	
 	case MODE_CALIB_HARD_STOPS:
 		PWMOUT = _pwm_calibration[j];
@@ -340,9 +332,8 @@ Int32 compute_pid_torque(byte j, Int16 strain_val)
 	Int32 IntegralError;
 	Int32 PIDoutput;
 	Int32 InputError;
-#if VERSION == 0x0173 || VERSION == 0x0174
-	float temp_err[JN];
-#endif
+	float temp_err[JN] = INIT_ARRAY (0.0);
+
 	byte i=0;
 	byte k=0;
 	static Int32 DerPort[2][10]={{0,0,0,0,0,0,0,0,0,0},{0,0,0,0,0,0,0,0,0,0}};	
