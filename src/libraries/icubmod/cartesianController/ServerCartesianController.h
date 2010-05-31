@@ -30,8 +30,8 @@
 #include <yarp/dev/Wrapper.h>
 #include <yarp/dev/CartesianControl.h>
 
-#include <iCub/iKinFwd.h>
-#include <iCub/iKinInv.h>
+#include <iCub/iKin/iKinFwd.h>
+#include <iCub/iKin/iKinInv.h>
 
 
 class ServerCartesianController;

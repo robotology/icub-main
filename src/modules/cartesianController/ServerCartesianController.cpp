@@ -5,8 +5,6 @@
 #include <ace/Vector_T.h>
 #include <yarp/os/Time.h>
 #include <yarp/os/Network.h>
-#include <yarp/os/impl/NameClient.h>
-#include <yarp/os/impl/Carriers.h>
 
 #include <stdio.h>
 
@@ -31,7 +29,6 @@
 
 using namespace yarp;
 using namespace yarp::os;
-using namespace yarp::os::impl;
 using namespace yarp::dev;
 using namespace yarp::sig;
 using namespace yarp::math;
@@ -1323,28 +1320,11 @@ bool ServerCartesianController::pingSolver()
 
     fprintf(stdout,"%s: Checking if cartesian solver %s is alive... ",ctrlName.c_str(),slvName.c_str());
 
-    NameClient &nic=NameClient::getNameClient();
-    Address address=nic.queryName(portSlvName.c_str());
-    bool ret;
+    bool ok=Network::exists(portSlvName.c_str(),true);
 
-    if (address.isValid())
-    {    
-        if (OutputProtocol *out=Carriers::connect(address))
-        {
-            out->close();
-            delete out;
-        
-            ret=true;
-        }
-        else
-            ret=false;
-    }
-    else
-        ret=false;
+    fprintf(stdout,"%s\n",ok?"ok":"failed");
 
-    fprintf(stdout,"%s\n",ret?"ok":"failed");
-
-    return ret;
+    return ok;
 }
 
 
