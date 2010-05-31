@@ -178,6 +178,10 @@ private:
     * execution step counter
     */
     int ct;
+    /**
+    * time delay for second port connection
+    */
+    double dif;
     
     /**
     * input image

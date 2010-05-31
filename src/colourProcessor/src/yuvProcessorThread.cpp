@@ -186,7 +186,8 @@ void yuvProcessorThread::addUVPlanes(){
     for (int y=0;y<height;y++){
         for(int x=0;x<width;x++){
             double value=(double)((*pu)+(*pv));
-            (*puv)=(((*pu)+(*pv))/510)*255;
+            (*puv)=(unsigned char)((value/510)*255);
+            //(*puv)= (*pv);
             assert((*pv)>=0);
             assert((*pv)<=255);
             puv++;

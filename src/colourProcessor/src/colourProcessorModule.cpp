@@ -21,7 +21,7 @@ bool colourProcessorModule::configure(ResourceFinder &rf)
 {
     //initialization
     ct=0;
-    double dif=0;
+    dif=0;
     time_t start,end;
     time (&start);
 
@@ -32,19 +32,25 @@ bool colourProcessorModule::configure(ResourceFinder &rf)
     printf("name:%s \n",this->getName().c_str());
     interThread.start();
 
-    printf("waiting for connection of the input port, 20sec to proceed \n");
+    printf("\n waiting for connection of the input port, 200 sec to proceed \n");
+
     
-    while((interThread.inputImg==0)&&(dif<20)){
+    
+    while((interThread.inputImg==0)&&(dif<200)){
         time (&end);
         dif = difftime (end,start);
     }
-    if(dif>=20)
+    if(dif>=200)
         return false;
 
     while(interThread.inputImg->width()==0){
         
     }
     
+    cmdPort.open(getName("/cmd:i"));
+    attach(cmdPort);
+    attachTerminal();
+
 
     //ConstString portName2 = options.check("name",Value("/worker2")).asString();
     //starting rgb thread and linking all the images
@@ -65,10 +71,7 @@ bool colourProcessorModule::configure(ResourceFinder &rf)
     interThread.vPlane=yuvProcessor.vPlane;
     interThread.yPlane=yuvProcessor.yPlane;
    
-    cmdPort.open(getName("/cmd:i"));
-    attach(cmdPort);
-    attachTerminal();
-
+    
     return true;
 }
 
