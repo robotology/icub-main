@@ -1,19 +1,102 @@
 /**
-* @ingroup icub_module
-*
-* \defgroup zeroForceControl zeroForceControl
-*
-*
-* Perform zero force control on the iCub arms.
-*
-* \author Matteo Fumagalli
-*
-* Copyright (C) 2010 RobotCub Consortium
-*
-* CopyPolicy: Released under the terms of the GNU GPL v2.0.
-*
-* This file can be edited at src/myModule/main.cpp.
-**/
+@ingroup icub_module
+
+\defgroup zeroForceControl zeroForceControl
+ 
+Perform zero force control on the iCub limbs. 
+Copyright (C) 2008 RobotCub Consortium
+ 
+Author: Matteo Fumagalli
+ 
+Date: first release 27/05/2010 
+
+Copyright (C) 2010 RobotCub Consortium
+
+CopyPolicy: Released under the terms of the GNU GPL v2.0.
+
+\section intro_sec Description
+
+This module performs zero force control and joint impedance control 
+of the iCub limbs. No model based compensation of the 6-axis force/torque 
+(FT) sensor's measurements is done. FT are acquired through an input YARP 
+port.
+The intrinsic offsets of the sensors are defined by the first FT data. 
+Internal dynamic has not yet been compensated through model based 
+compensation of the force/torque measurements. 
+
+\section lib_sec Libraries 
+- YARP libraries. 
+- ctrlLib library. 
+- iKin library.
+- iDyn library.  
+
+\section parameters_sec Parameters
+
+--name \e name 
+- The parameter \e name identifies the module's name; all the 
+  open ports will be tagged with the prefix <name>/. If not
+  specified \e /zeroForceControl is assumed.
+ 
+--context
+- The parameter \e context identifies the location of the configuration files,
+  referred to the path $ICUB_ROOT/app
+
+--from
+- The parameter \e from identifies the configuration files, located in the context
+  directory, specific for the part to use.
+  
+--robot
+- The parameter \e robot identifies the robot that is used. This parameter defines the
+  prefix of the ports of the device. As default \e icub is used.
+
+--part  
+- The parameter \e part identifies the part of the robot which is used. All the opened 
+  ports will deal with the part which is defined. the default value is \e left_arm
+
+\section portsa_sec Ports Accessed
+The port the service is listening to.
+
+\section portsc_sec Ports Created
+ 
+- \e <name>/<part>/FT:i (e.g. /zfc/right_arm/FT:i) receives the input data 
+  vector.
+ 
+\section in_files_sec Input Data Files
+None.
+
+\section out_data_sec Output Data Files
+None. 
+ 
+\section conf_file_sec Configuration Files
+-leftArmFT.ini
+-rightArmFT.ini
+-leftLegFT.ini
+-rightLegFT.ini
+ 
+\section tested_os_sec Tested OS
+Linux and Windows.
+
+\section example_sec Example
+By launching the following command: 
+ 
+\code 
+zeroForceControl --name zfc --context zeroForceControl/conf --from rightArmFT.ini  
+\endcode 
+ 
+the module will create the listening port /zfc/right_arm/FT:i for 
+the acquisition of data vector coming for istance from the right arm analog port. 
+ 
+Try now the following: 
+ 
+\code 
+yarp connect /icub/right_arm/analog:o /zfc/right_arm/FT:i
+\endcode 
+ 
+\author Matteo Fumagalli
+
+This file can be edited at src/zeroForceControl/main.cpp.
+*/ 
+
 
 #include <yarp/os/BufferedPort.h>
 #include <yarp/os/RFModule.h>
@@ -1130,26 +1213,26 @@ public:
 		string part;
 		string robot;
 		string fwdSlash = "/";
-		PortName = fwdSlash;
+		PortName = "/zfc/";
 		port_FT= 0;
 
 		ConstString robotName=rf.find("robot").asString();
 		if (rf.check("robot"))
 		{
-			PortName=fwdSlash+rf.find("robot").asString().c_str();
+			//PortName=PortName+rf.find("robot").asString().c_str();
 			robot = rf.find("robot").asString().c_str();
 		}
         else
 		{
 			fprintf(stderr,"Device not found\n");
-            PortName=fwdSlash+"icub";
+            //PortName=PortName+"icub";
 			robot = "icub";
 		}
 		
 		ConstString partName=rf.find("part").asString();
 		if (rf.check("part"))
 		{
-			PortName=PortName+fwdSlash+rf.find("part").asString().c_str();
+			PortName=PortName+rf.find("part").asString().c_str();
 			part = rf.find("part").asString().c_str();
 		}
         else
@@ -1158,7 +1241,8 @@ public:
 		  Time::delay(3.1);
             return false;
 		}
-
+		port_FT=new BufferedPort<Vector>;
+		port_FT->open((PortName+"/FT:i").c_str());
 		Bottle tmp;
 		tmp=0;
 		Vector initPos;
@@ -1247,7 +1331,7 @@ public:
 		fprintf(stderr,"setting limits\n");
 		ft_control->setLimits(maxLim,minLim);
 		fprintf(stderr,"initial position and limits set...\n");
-        //Time::delay(5.0);
+
         fprintf(stderr,"starting thread\n");
 		ft_control->start();
 		fprintf(stderr,"thread started\n");
