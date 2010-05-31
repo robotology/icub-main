@@ -239,7 +239,7 @@ public:
 		  ms = 0.0;
 		  if(strcmp(part.c_str(),"left_leg")==0)
 		  {
-			    sens = new iDynInvSensorLeg(iFakeBot->asChain(),"left",NE_dynamic);
+			    sens = new iDynInvSensorLeg(iFakeBot->asChain(),"left",NE_DYNAMIC);
 				/*HS.zero(); HS(0,0) = 1.0; HS(2,1) = 1.0; HS(1,2) = -1.0; HS(1,3) = 0.08428; HS(3,3) = 1.0;
 				HSC.eye(); HSC(0,3) = -1.56e-04; HSC(1,3) = -9.87e-05;  HSC(2,3) = 2.98e-2;  
 				IS.zero(); 
@@ -248,7 +248,7 @@ public:
 				ms = 7.2784301e-01;*/
 		  } else if(strcmp(part.c_str(),"right_leg")==0)
 		  {
-			    sens = new iDynInvSensorLeg(iFakeBot->asChain(),"right",NE_dynamic);
+			    sens = new iDynInvSensorLeg(iFakeBot->asChain(),"right",NE_DYNAMIC);
 				/*HS.zero(); HS(0,0) = 1.0; HS(2,1) = 1.0; HS(1,2) = -1.0; HS(1,3) = 0.08428; HS(3,3) = 1.0;
 				HSC.eye(); HSC(0,3) = -1.56e-04; HSC(1,3) = -9.87e-05;  HSC(2,3) = 2.98e-2;  
 				IS.zero(); 
@@ -281,7 +281,7 @@ public:
 		  iFakeBot->setAng(q);
 		  iFakeBot->setDAng(dq);
 		  iFakeBot->setD2Ang(d2q);
-		  iFakeBot->prepareNewtonEuler(NE_dynamic);
+		  iFakeBot->prepareNewtonEuler(NE_DYNAMIC);
 
 		  w0.resize(3);dw0.resize(3);d2p0.resize(3);Fend.resize(3);Mend.resize(3);
 		  w0=dw0=d2p0=Fend=Mend=0.0;
@@ -357,7 +357,7 @@ public:
 		  sensorLink = 5;
 		  if(strcmp(part.c_str(),"left_arm")==0)
 		  {
-			  sens = new iDynInvSensorArm(iFakeBot->asChain(),"left",NE_dynamic);
+			  sens = new iDynInvSensorArm(iFakeBot->asChain(),"left",NE_DYNAMIC);
 			  /*HS.zero(); HS(0,0) = 1.0; HS(2,1) = 1.0; HS(1,2) = -1.0; HS(1,3) = 0.08428; HS(3,3) = 1.0;
 			  HSC.eye(); HSC(0,3) = -1.56e-04; HSC(1,3) = -9.87e-05;  HSC(2,3) = 2.98e-2; 
 			  IS.zero(); 
@@ -367,7 +367,7 @@ public:
 		  } else if(strcmp(part.c_str(),"right_arm")==0)
 		  {
 			  
-			  sens = new iDynInvSensorArm(iFakeBot->asChain(),"right",NE_dynamic);
+			  sens = new iDynInvSensorArm(iFakeBot->asChain(),"right",NE_DYNAMIC);
 			  /*HS.resize(4,4);
 			  HSC.resize(4,4);
 			  IS.resize(3,3);
@@ -403,7 +403,7 @@ public:
 		  iFakeBot->setAng(q);
 		  iFakeBot->setDAng(dq);
 		  iFakeBot->setD2Ang(d2q);
-		  iFakeBot->prepareNewtonEuler(NE_dynamic);
+		  iFakeBot->prepareNewtonEuler(NE_DYNAMIC);
 
 		  w0.resize(3);dw0.resize(3);d2p0.resize(3);Fend.resize(3);Mend.resize(3);
 		  w0=dw0=d2p0=Fend=Mend=0.0;
