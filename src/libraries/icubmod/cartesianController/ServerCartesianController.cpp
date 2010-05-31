@@ -16,12 +16,12 @@
 #include "CommonCartesianController.h"
 #include "ServerCartesianController.h"
 
-#define RES_DSC(p)              ((ACE_Vector<DriverDescriptor>*)p)
-#define RES_LIM(p)              ((ACE_Vector<IControlLimits*>*)p)
-#define RES_ENC(p)              ((ACE_Vector<IEncoders*>*)p)
-#define RES_VEL(p)              ((ACE_Vector<IVelocityControl*>*)p)
-#define RES_JNT(p)              ((ACE_Vector<int>*)p)
-#define RES_RMP(p)              ((ACE_Vector<int*>*)p)
+#define RES_DSC(p)                  ((ACE_Vector<DriverDescriptor>*)p)
+#define RES_LIM(p)                  ((ACE_Vector<IControlLimits*>*)p)
+#define RES_ENC(p)                  ((ACE_Vector<IEncoders*>*)p)
+#define RES_VEL(p)                  ((ACE_Vector<IVelocityControl*>*)p)
+#define RES_JNT(p)                  ((ACE_Vector<int>*)p)
+#define RES_RMP(p)                  ((ACE_Vector<int*>*)p)
 
 #define CARTCTRL_DEFAULT_PER        10
 #define CARTCTRL_DEFAULT_TOL        5e-3
