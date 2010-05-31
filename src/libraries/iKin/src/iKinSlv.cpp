@@ -1,16 +1,12 @@
 
-#include <ace/Auto_Event.h>
+#include <yarp/os/Network.h>
 #include <yarp/os/Time.h>
-#include <yarp/os/impl/NameClient.h>
-#include <yarp/os/impl/Carriers.h>
 
 #include <stdio.h>
 
 #include <iCub/iKinVocabs.h>
 #include <iCub/iKinSlv.h>
 
-#define RES_EVENT(x)                (static_cast<ACE_Auto_Event*>(x))
-                                    
 #define SHOULDER_MAXABDUCTION       (100.0*CTRL_DEG2RAD)
 #define CARTSLV_DEFAULT_PER         20      // [ms]
 #define CARTSLV_DEFAULT_TMO         1000    // [ms]
@@ -20,7 +16,6 @@
 using namespace std;
 using namespace yarp;
 using namespace yarp::os;
-using namespace yarp::os::impl;
 using namespace yarp::sig;
 using namespace yarp::dev;
 using namespace yarp::math;
@@ -364,9 +359,6 @@ CartesianSolver::CartesianSolver(const string &_slvName) : RateThread(CARTSLV_DE
     inPort=NULL;
     outPort=NULL;
 
-    // dof event
-    dofEvent=new ACE_Auto_Event;
-
     // open rpc port
     rpcPort=new Port;
     cmdProcessor=new RpcProcessor(this);
@@ -395,28 +387,11 @@ void CartesianSolver::waitPart(const Property &partOpt)
         fprintf(stdout,"%s: Checking if %s port is active ... ",
                 slvName.c_str(),portName.c_str());
     
-        NameClient &nic=NameClient::getNameClient();
-        Address address=nic.queryName(portName.c_str());
-        bool ret;
-    
-        if (address.isValid())
-        {    
-            if (OutputProtocol *out=Carriers::connect(address))
-            {
-                out->close();
-                delete out;
-    
-                ret=true;
-            }
-            else
-                ret=false;
-        }
-        else
-            ret=false;
-    
-        fprintf(stdout,"%s\n",ret?"ok":"not yet");
+        bool ok=Network::exists(portName.c_str(),true);    
 
-        if (ret)
+        fprintf(stdout,"%s\n",ok?"ok":"not yet");
+
+        if (ok)
             return;
         else
         {
@@ -597,15 +572,15 @@ double CartesianSolver::getNorm(const Vector &v, const string &typ)
 /************************************************************************/
 void CartesianSolver::waitDOFHandling()
 {
-    RES_EVENT(dofEvent)->reset();
-    RES_EVENT(dofEvent)->wait();
+    dofEvent.reset();
+    dofEvent.wait();
 }
 
 
 /************************************************************************/
 void CartesianSolver::postDOFHandling()
 {
-    RES_EVENT(dofEvent)->signal();
+    dofEvent.signal();
 }
 
 
@@ -1378,8 +1353,6 @@ void CartesianSolver::close()
     if (isRunning())
         stop();
 
-    delete RES_EVENT(dofEvent);
-
     if (inPort)
     {
         inPort->interrupt();
@@ -1451,13 +1424,13 @@ void CartesianSolver::afterStart(bool s)
 /************************************************************************/
 void CartesianSolver::run()
 {
+    lock();
+
     // init conditions
     bool doSolve=false;
 
-    // handle changeDOF() safely
-    lock();
-    changeDOF(inPort->get_dof());
-    unlock();
+    // handle changeDOF()
+    changeDOF(inPort->get_dof());    
 
     // wake up sleeping threads
     postDOFHandling();
@@ -1529,7 +1502,9 @@ void CartesianSolver::run()
         // dump on screen
         if (verbosity)
             printInfo(xd,x,q,t1-t0);
-    }    
+    }
+
+    unlock();
 }
 
 

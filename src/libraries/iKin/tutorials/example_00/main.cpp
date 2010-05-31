@@ -26,16 +26,16 @@ class genericRightArm : public iKinLimb
 public:
     genericRightArm() 
     {
-         _allocate_limb("don't care");
+         allocate("don't care");
     }
 
 protected:
-    void _allocate_limb(const string &_type)
+    virtual void allocate(const string &_type)
     {
         // the type is used to discriminate between left and right limb
 
         // remind to call the father's method
-        iKinLimb::_allocate_limb(_type);
+        iKinLimb::allocate(_type);
 
         // you have to specify the rototranslational matrix H0 from the origin
         // to the root reference so as from iCub specs.
@@ -81,7 +81,7 @@ int main()
     Vector dummy(1);    
 
     // declare the limb
-    genericRightArm genArm;    
+    genericRightArm genArm;
 
     // you can get the same result by creating an iCubArm object;
     // iKin already provides internally coded limbs for iCub, such as

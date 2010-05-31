@@ -178,6 +178,7 @@
 #include <yarp/os/BufferedPort.h>
 #include <yarp/os/RateThread.h>
 #include <yarp/os/Semaphore.h>
+#include <yarp/os/Event.h>
 #include <yarp/sig/Vector.h>
 
 #include <yarp/dev/ControlBoardInterfaces.h>
@@ -320,7 +321,7 @@ protected:
 
     yarp::os::Bottle solutionBottle;
 
-    void *dofEvent;
+    yarp::os::Event dofEvent;
 
     virtual PartDescriptor *getPartDesc(yarp::os::Searchable &options)=0;
     virtual yarp::sig::Vector solve(yarp::sig::Vector &xd);
