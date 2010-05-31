@@ -43,26 +43,18 @@ end-effector of the limb has the same orientation of the fixed base frame.
 - The parameter \e name identifies the module's name; all the 
   open ports will be tagged with the prefix <name>/. If not
   specified \e /ftObs is assumed.
- 
---context
-- The parameter \e context identifies the location of the configuration files,
-  referred to the path $ICUB_ROOT/app
 
---from
-- The parameter \e from identifies the configuration files, located in the context
-  directory, specific for the part to use.
-  
---robot
+  --robot
 - The parameter \e robot identifies the robot that is used. This parameter defines the
-  prefix of the ports of the device. As default \e icub is used.
+  prefix of the ports of the device. As default \e icub is used. 
+
+--part  
+- The parameter \e part identifies the part of the robot which is used. All the opened 
+  ports will deal with the part which is defined. the default value is \e left_arm 
 
 --rate \e r 
 - The parameter \e r identifies the rate the thread will work. If not
   specified \e 100ms is assumed. The minimum suggested rate is \e 20ms.
-
---part  
-- The parameter \e part identifies the part of the robot which is used. All the opened 
-  ports will deal with the part which is defined. the default value is \e left_arm
 
 \section portsa_sec Ports Accessed
 The port the service is listening to.
@@ -445,7 +437,6 @@ public:
 	  {	  
 		iencs->getEncoders(encoders.data());
 		
-		//q = 0.0;
 		if(part == "left_arm" || part == "right_arm")
 		{
 			tencs->getEncoders(encodersT.data());
