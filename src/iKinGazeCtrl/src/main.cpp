@@ -437,21 +437,27 @@ public:
         optTorso.put("remote",remoteTorsoName.c_str());
         optTorso.put("local",localTorsoName.c_str());
 
-        waitPart(optHead,ping_robot_tmo);
-        waitPart(optTorso,ping_robot_tmo);
-
         if (Robotable)
         {
+            waitPart(optTorso,ping_robot_tmo);
             drvTorso=new PolyDriver(optTorso);
-            drvHead =new PolyDriver(optHead);
 
-            if (!drvTorso->isValid() || !drvHead->isValid())
+            if (!drvTorso->isValid())
             {
-                cout << "Device drivers not available!" << endl;
+                cout << "Torso device driver not available!" << endl;
 
                 delete drvTorso;
-                delete drvHead;
+                return false;
+            }
 
+            waitPart(optHead,ping_robot_tmo);
+            drvHead =new PolyDriver(optHead);
+
+            if (!drvHead->isValid())
+            {
+                cout << "Head device driver not available!" << endl;
+
+                delete drvHead;
                 return false;
             }
         }
