@@ -42,7 +42,7 @@ end-effector of the limb has the same orientation of the fixed base frame.
 --name \e name 
 - The parameter \e name identifies the module's name; all the 
   open ports will be tagged with the prefix <name>/. If not
-  specified \e /wrenchObserver is assumed.
+  specified \e /ftObs is assumed.
  
 --context
 - The parameter \e context identifies the location of the configuration files,
@@ -69,10 +69,10 @@ The port the service is listening to.
 
 \section portsc_sec Ports Created
  
-- \e <name>/<part>/FT:i (e.g. /wrenchObsObs/right_arm/FT:i) receives the input data 
+- \e <name>/<part>/FT:i (e.g. /ftObs/right_arm/FT:i) receives the input data 
   vector.
  
-- \e <name>/<part>/contact:o (e.g. /wrenchObsObs/right_arm/contact:o) provides the estimated 
+- \e <name>/<part>/contact:o (e.g. /ftObs/right_arm/contact:o) provides the estimated 
   end-effector wrench.
 
 \section in_files_sec Input Data Files
@@ -94,16 +94,16 @@ By launching the following command:
 wrenchObserver --name ftObs --robot icub --part right_arm --rate 50  
 \endcode 
  
-the module will create the listening port /wrenchObserver/right_arm/FT:i for 
+the module will create the listening port /ftObs/right_arm/FT:i for 
 the acquisition of data vector coming for istance from the right arm analog port.
 At the same time it will provide the estimated 
-external wrench at the end-effector to /wrenchObserver/right_arm/contact:o port. (use --help option to 
+external wrench at the end-effector to /ftObs/right_arm/contact:o port. (use --help option to 
 see). 
  
 Try now the following: 
  
 \code 
-yarp connect /icub/right_arm/analog:o /wrenchObserver/right_arm/FT:i
+yarp connect /icub/right_arm/analog:o /ftObs/right_arm/FT:i
 \endcode 
  
 \author Matteo Fumagalli
@@ -141,6 +141,7 @@ using namespace std;
 using namespace ctrl;
 using namespace iDyn;
 
+FILE* datas = fopen("datas.dat","w+");
 // class dataCollector: class for reading from Vrow and providing for FT on an output port
 class inverseDynamics: public RateThread
 {
@@ -164,6 +165,7 @@ private:
 	int ctrlJnt;
 	iDynLimb *iFakeBot;
 	iDynChain *chain;
+	//iDynInvSensor* sens;
 	iDynInvSensor* sens;
 
 	iFB *FTB;
@@ -201,11 +203,11 @@ private:
 	}
 	    
 public:
-	inverseDynamics(int _rate, PolyDriver *_dd, BufferedPort<Vector> *_port_FT, string _part):	  
+	inverseDynamics(int _rate, PolyDriver *_dd, BufferedPort<Vector> *_port_FT, string _part, string _name):	  
 	  RateThread(_rate), dd(_dd)
 	  {
 		  //------------------------------
-		  //            PORTE
+		  //      PORTS AND DEVICES
 		  //------------------------------
 
 		  part = _part.c_str();
@@ -214,7 +216,9 @@ public:
 		  // Checking device:
 		  dd->view(iencs);
 		  port_Contact=new BufferedPort<Vector>;
-		  string port = "/matt/";
+		  string fwdSlash = "/";
+		  string port = fwdSlash+_name;
+		  port += (fwdSlash+part.c_str());
 		  port += part.c_str();
 		  port += "/contact:o";
 		  port_Contact->open(port.c_str());
@@ -234,7 +238,7 @@ public:
 		  chain = iFakeBot->asChain();
 
 		  //--------------------------------
-		  //            SENSORE
+		  //            SENSOR
 		  //--------------------------------
 
 		  HS.resize(4,4); HS.eye();
@@ -243,24 +247,26 @@ public:
 		  ms = 0.0;
 		  if(strcmp(part.c_str(),"left_leg")==0)
 		  {
-				HS.zero(); HS(0,0) = 1.0; HS(2,1) = 1.0; HS(1,2) = -1.0; HS(1,3) = 0.08428; HS(3,3) = 1.0;
+			    sens = new iDynInvSensorLeg(iFakeBot->asChain(),"left",NE_dynamic);
+				/*HS.zero(); HS(0,0) = 1.0; HS(2,1) = 1.0; HS(1,2) = -1.0; HS(1,3) = 0.08428; HS(3,3) = 1.0;
 				HSC.eye(); HSC(0,3) = -1.56e-04; HSC(1,3) = -9.87e-05;  HSC(2,3) = 2.98e-2;  
 				IS.zero(); 
 				IS(0,0) = 4.08e-04; IS(0,1) = IS(1,0) = -1.08e-6; IS(0,2) = IS(2,0) = -2.29e-6;
 				IS(1,1) = 3.80e-04; IS(1,2) = IS(2,1) =  3.57e-6; IS(2,2) = 2.60e-4;
-				ms = 7.2784301e-01;
+				ms = 7.2784301e-01;*/
 		  } else if(strcmp(part.c_str(),"right_leg")==0)
 		  {
-				HS.zero(); HS(0,0) = 1.0; HS(2,1) = 1.0; HS(1,2) = -1.0; HS(1,3) = 0.08428; HS(3,3) = 1.0;
+			    sens = new iDynInvSensorLeg(iFakeBot->asChain(),"right",NE_dynamic);
+				/*HS.zero(); HS(0,0) = 1.0; HS(2,1) = 1.0; HS(1,2) = -1.0; HS(1,3) = 0.08428; HS(3,3) = 1.0;
 				HSC.eye(); HSC(0,3) = -1.56e-04; HSC(1,3) = -9.87e-05;  HSC(2,3) = 2.98e-2;  
 				IS.zero(); 
 				IS(0,0) = 4.08e-04; IS(0,1) = IS(1,0) = -1.08e-6; IS(0,2) = IS(2,0) = -2.29e-6;
 				IS(1,1) = 3.80e-04; IS(1,2) = IS(2,1) =  3.57e-6; IS(2,2) = 2.60e-4;
-				ms = 7.2784301e-01;
+				ms = 7.2784301e-01;*/
 		  } else fprintf(stderr,"error while sensor definition\n");
 
 		  sensorLink = 2;
-		  sens = new iDynInvSensor(iFakeBot->asChain(),sensorLink,HS,HSC,ms,IS,"",NE_dynamic,true);
+		  
 		  sensor = new iFTransform(HS.submatrix(0,2,0,2),HS.submatrix(0,2,0,3).getCol(3));
 
 		  FTB = new iFB(sensorLink);
@@ -310,22 +316,23 @@ public:
 	  }
 
 
-	inverseDynamics(int _rate, PolyDriver *_dd, PolyDriver *_tt, BufferedPort<Vector> *_port_FT, string _part):	  
+	inverseDynamics(int _rate, PolyDriver *_dd, PolyDriver *_tt, BufferedPort<Vector> *_port_FT, string _part, string _name):	  
 	  RateThread(_rate), dd(_dd), tt(_tt)
 	  {
 
 		  fprintf(stderr,"\nCOSTRUISCO......\n");
 		  part = _part.c_str();
 		  //------------------------------
-		  //            PORTE
+		  //            PORTS
 		  //------------------------------
 
 		  first = true;
 		  port_FT = _port_FT;
 
 		  port_Contact=new BufferedPort<Vector>;
-		  string port = "/matt/";
-		  port += part.c_str();
+		  string fwdSlash = "/";
+		  string port = fwdSlash+_name;
+		  port += (fwdSlash+part.c_str());
 		  port += "/contact:o";
 		  port_Contact->open(port.c_str());
 
@@ -349,7 +356,7 @@ public:
 		  chain = iFakeBot->asChain();
 
 		  //--------------------------------
-		  //            SENSORE
+		  //            SENSOR
 		  //--------------------------------
 		  HS.resize(4,4); HS.eye();
 		  HSC.resize(4,4); HSC.eye();
@@ -358,15 +365,18 @@ public:
 		  sensorLink = 5;
 		  if(strcmp(part.c_str(),"left_arm")==0)
 		  {
-			  HS.zero(); HS(0,0) = 1.0; HS(2,1) = 1.0; HS(1,2) = -1.0; HS(1,3) = 0.08428; HS(3,3) = 1.0;
+			  sens = new iDynInvSensorArm(iFakeBot->asChain(),"left",NE_dynamic);
+			  /*HS.zero(); HS(0,0) = 1.0; HS(2,1) = 1.0; HS(1,2) = -1.0; HS(1,3) = 0.08428; HS(3,3) = 1.0;
 			  HSC.eye(); HSC(0,3) = -1.56e-04; HSC(1,3) = -9.87e-05;  HSC(2,3) = 2.98e-2; 
 			  IS.zero(); 
 			  IS(0,0) = 4.08e-04; IS(0,1) = IS(1,0) = -1.08e-6; IS(0,2) = IS(2,0) = -2.29e-6;
 			  IS(1,1) = 3.80e-04; IS(1,2) = IS(2,1) =  3.57e-6; IS(2,2) = 2.60e-4;
-			  ms = 7.2784301e-01; 
+			  ms = 7.2784301e-01; */
 		  } else if(strcmp(part.c_str(),"right_arm")==0)
 		  {
-			  HS.resize(4,4);
+			  
+			  sens = new iDynInvSensorArm(iFakeBot->asChain(),"right",NE_dynamic);
+			  /*HS.resize(4,4);
 			  HSC.resize(4,4);
 			  IS.resize(3,3);
 			  HS.zero(); HS(0,0) = -1.0; HS(2,1) = 1.0; HS(1,2) = 1.0; HS(1,3) = -0.08428; HS(3,3) = 1.0;
@@ -374,10 +384,10 @@ public:
 			  IS.zero(); 
 			  IS(0,0) = 4.08e-04; IS(0,1) = IS(1,0) = -1.08e-6; IS(0,2) = IS(2,0) = -2.29e-6;
 			  IS(1,1) = 3.80e-04; IS(1,2) = IS(2,1) =  3.57e-6; IS(2,2) = 2.60e-4;
-			  ms = 7.29e-01; 
+			  ms = 7.29e-01; */
 		  } else fprintf(stderr,"error while sensor definition\n");
 
-		  sens = new iDynInvSensor(iFakeBot->asChain(),sensorLink,HS,HSC,ms,IS,"",NE_dynamic,true);
+		  //sens = new iDynInvSensor(iFakeBot->asChain(),sensorLink,HS,HSC,ms,IS,"",NE_dynamic,true);
 		  sensor = new iFTransform(HS.submatrix(0,2,0,2),HS.submatrix(0,2,0,3).getCol(3));
 
 		  FTB = new iFB(sensorLink);
@@ -435,7 +445,7 @@ public:
 	  {	  
 		iencs->getEncoders(encoders.data());
 		
-		q = 0.0;
+		//q = 0.0;
 		if(part == "left_arm" || part == "right_arm")
 		{
 			tencs->getEncoders(encodersT.data());
@@ -446,7 +456,7 @@ public:
 		} else
 		{
 			for(int i=1;i<q.length();i++)
-				q(i) = encoders(i-3);
+				q(i) = encoders(i);
 		}
 		Vector dq = evalVel(q);
 		Vector d2q = evalAcc(q);
@@ -470,6 +480,16 @@ public:
 				first = false;
 			}
 			FT = FTB->getFB(F_measured - F_offset - F_iDyn);
+			Vector FF = F_measured;
+			for(int i=0;i<FF.length();i++)
+				fprintf(datas,"%.3lf\t",FF(i));
+			FF = F_iDyn;
+			for(int i=0;i<FF.length();i++)
+				fprintf(datas,"%.3lf\t",FF(i));
+			for(int i=0;i<FT.length();i++)
+				fprintf(datas,"%.3lf\t",FT(i));
+			fprintf(datas,"\n");
+
 
 		} else
 		{
@@ -499,6 +519,7 @@ public:
 		  port_Contact->interrupt();
 		  port_Contact->close();
 		  if (port_Contact) {delete port_Contact; port_Contact=0;}
+		  if (datas) {fclose(datas);}
 	  }	  
 
 	  
@@ -552,7 +573,7 @@ public:
 	bool configure(ResourceFinder &rf)
 	{
 		
-		string PortName;
+		string PortName = "";
 		string local = "/objectDetector/";
 		string part;
 		string robot;
@@ -560,18 +581,24 @@ public:
 		Bottle tmp;
 		int rate = 100;
 		tmp=0;
+
+		string name;
+		if(rf.check("name"))
+			name = rf.find("name").asString();
+		else name = "ftObs";
+		PortName = (PortName+fwdSlash+name);
 		
 		//---------------------ROBOT-----------------------------//
 		ConstString robotName=rf.find("robot").asString();
 		if (rf.check("robot"))
 		{
-			PortName=fwdSlash+rf.find("robot").asString().c_str();
+			//PortName=fwdSlash+rf.find("robot").asString().c_str();
 			robot = rf.find("robot").asString().c_str();
 		}
         else
 		{
 			fprintf(stderr,"Device not found\n");
-            PortName=fwdSlash+"icub";
+            //PortName=fwdSlash+"icub";
 			robot = "icub";
 		}
 
@@ -605,25 +632,25 @@ public:
 
 		
 		//---------------------OFFSETS--------------------------//
-		Vector offset;
-		if(rf.check("offset"))
-		{
-		  tmp = rf.findGroup("offset");
-		  offset.resize(tmp.size()-1);
-		  for(int i = 0;i<offset.length();i++)
-		  {
-			  offset(i) = tmp.get(i+1).asDouble();
-		  }
-		  fprintf(stderr,"offset setting has not yet been implemented...\n");
-		}
-		else 
-		{
-		  fprintf(stderr,"error: offsets not defined in configuration file!!!\n returning;");
-		  fprintf(stderr,"offset setting has not yet been implemented...\n");
-		  offset = 0.0;
-		  Time::delay(3.0);
-		  return false;
-		}
+		//Vector offset;
+		//if(rf.check("offset"))
+		//{
+		//  tmp = rf.findGroup("offset");
+		//  offset.resize(tmp.size()-1);
+		//  for(int i = 0;i<offset.length();i++)
+		//  {
+		//	  offset(i) = tmp.get(i+1).asDouble();
+		//  }
+		//  fprintf(stderr,"offset setting has not yet been implemented...\n");
+		//}
+		//else 
+		//{
+		//  fprintf(stderr,"error: offsets not defined in configuration file!!!\n returning;");
+		//  fprintf(stderr,"offset setting has not yet been implemented...\n");
+		//  offset = 0.0;
+		//  Time::delay(3.0);
+		//  return false;
+		//}
 
 		//---------------------PORT--------------------------//
 		
@@ -632,10 +659,7 @@ public:
 
 		
 		//---------------------DEVICES--------------------------//
-		string name;
-		if(rf.check("name"))
-			name = rf.find("name").asString();
-		else name = "wrenchDetector";
+		
 		if(strcmp(part.c_str(),"left_arm")==0 || strcmp(part.c_str(),"right_arm")==0 )
 		{
 			OptionsTorso.put("robot",robot.c_str());
@@ -670,13 +694,13 @@ public:
 		//--------------------------THREAD--------------------------
 		if(strcmp(part.c_str(),"left_arm")==0 || strcmp(part.c_str(),"right_arm")==0 )
 		{
-			inv_dyn = new inverseDynamics(rate,  dd, tt, port_FT, part.c_str());
+			inv_dyn = new inverseDynamics(rate,  dd, tt, port_FT, part.c_str(), name.c_str());
 			fprintf(stderr,"ft thread istantiated...\n");
 			inv_dyn->start();
 			fprintf(stderr,"thread started\n");
 		} else if(strcmp(part.c_str(),"left_leg")==0 || strcmp(part.c_str(),"right_leg")==0 )
 		{
-			inv_dyn = new inverseDynamics(rate,  dd, port_FT, part.c_str());
+			inv_dyn = new inverseDynamics(rate,  dd, port_FT, part.c_str(), name.c_str());
 			fprintf(stderr,"ft thread istantiated...\n");
 			inv_dyn->start();
 			fprintf(stderr,"thread started\n");
