@@ -1,16 +1,18 @@
-PREPARE_DEVICE(gazecontrollerclient TYPE ClientGazeController 
-                                      INCLUDE ClientGazeController.h WRAPPER gazecontrollerclient)
-
+PREPARE_DEVICE(gazecontrollerclient TYPE    ClientGazeController 
+                                    INCLUDE ClientGazeController.h
+                                    WRAPPER gazecontrollerclient)
 
 IF (NOT SKIP_gazecontrollerclient)
-  FIND_PACKAGE(CTRLLIB)
+   FIND_PACKAGE(CTRLLIB)
 
-  SET(client_source ClientGazeController.cpp)
-  SET(client_header ClientGazeController.h)
+   SET(client_source ClientGazeController.cpp)
+   SET(client_header ClientGazeController.h)
   
-  INCLUDE_DIRECTORIES(${CTRLLIB_INCLUDE_DIRS} ${YARP_INCLUDE_DIRS})
-  ADD_LIBRARY(gazecontrollerclient ${client_source} ${client_header})
-  TARGET_LINK_LIBRARIES(gazecontrollerclient ${CTRLLIB_LIBRARIES} ${YARP_LIBRARIES})
+   INCLUDE_DIRECTORIES(${CTRLLIB_INCLUDE_DIRS} ${YARP_INCLUDE_DIRS})
+   ADD_LIBRARY(gazecontrollerclient ${client_source} ${client_header})
+   TARGET_LINK_LIBRARIES(gazecontrollerclient ${CTRLLIB_LIBRARIES}
+                                              ${YARP_LIBRARIES})
 
+   icub_export_library(gazecontrollerclient "" include/iCub "")
 ENDIF (NOT SKIP_gazecontrollerclient)
 
