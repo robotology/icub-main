@@ -40,22 +40,22 @@
 
         <connection>
                 <from>/icub/leftarm/analog:o</from>
-                <to>/icub/left_arm/FT:i</to>
+                <to>/zfc/left_arm/FT:i</to>
                 <protocol>udp</protocol>
         </connection>
         <connection>
                 <from>/icub/rightarm/analog:o</from>
-                <to>/icub/right_arm/FT:i</to>
+                <to>/zfc/right_arm/FT:i</to>
                 <protocol>udp</protocol>
         </connection>
         <connection>
                 <from>/icub/leftleg/analog:o</from>
-                <to>/icub/left_leg/FT:i</to>
+                <to>/zfc/left_leg/FT:i</to>
                 <protocol>udp</protocol>
         </connection>
         <connection>
                 <from>/icub/rightleg/analog:o</from>
-                <to>/icub/right_leg/FT:i</to>
+                <to>/zfc/right_leg/FT:i</to>
                 <protocol>udp</protocol>
         </connection>
 <!-- <connection>             <from>/icub/left_arm/FT:o</from>                <to>/icub/left_arm/FT:i</to>                 <protocol>udp</protocol>        </connection> -->
