@@ -1,6 +1,6 @@
 
 #include <yarp/math/Math.h>
-#include <iCub/minJerkCtrl.h>
+#include <iCub/ctrl/minJerkCtrl.h>
 
 using namespace yarp;
 using namespace yarp::os;

@@ -184,8 +184,8 @@
 #include <yarp/dev/ControlBoardInterfaces.h>
 #include <yarp/dev/PolyDriver.h>
 
-#include <iCub/iKinHlp.h>
-#include <iCub/iKinIpOpt.h>
+#include <iCub/iKin/iKinHlp.h>
+#include <iCub/iKin/iKinIpOpt.h>
 
 #include <string>
 #include <deque>

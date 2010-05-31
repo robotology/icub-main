@@ -1,7 +1,7 @@
 
 #include <yarp/math/Math.h>
 #include <yarp/math/SVD.h>
-#include <iCub/kalman.h>
+#include <iCub/ctrl/kalman.h>
 
 using namespace yarp;
 using namespace yarp::sig;

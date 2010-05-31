@@ -16,7 +16,7 @@
 #define __ADAPTWINPOLYESTIMATOR_H__
 
 #include <yarp/sig/Vector.h>
-#include <iCub/ctrlMath.h>
+#include <iCub/ctrl/ctrlMath.h>
 #include <deque>
 
 

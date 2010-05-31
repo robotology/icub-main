@@ -1,7 +1,7 @@
 
 #include <yarp/os/Time.h>
 #include <yarp/math/SVD.h>
-#include <iCub/iKinInv.h>
+#include <iCub/iKin/iKinInv.h>
 
 #include <iostream>
 #include <iomanip>

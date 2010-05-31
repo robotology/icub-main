@@ -1,7 +1,7 @@
 
 #include <yarp/math/Math.h>
 #include <iCub/pids.h>
-#include <iCub/ctrlMath.h>
+#include <iCub/ctrl/ctrlMath.h>
 
 #include <iostream>
 #include <iomanip>

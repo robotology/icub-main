@@ -20,7 +20,7 @@
 #include <iostream>
 #include <yarp/math/Math.h>
 #include <yarp/math/SVD.h>
-#include <iCub/optimalControl.h>
+#include <iCub/ctrl/optimalControl.h>
 
 using namespace std;
 using namespace yarp;

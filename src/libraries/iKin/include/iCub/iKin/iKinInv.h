@@ -17,9 +17,9 @@
 
 #include <gsl/gsl_multimin.h>
 
-#include <iCub/iKinFwd.h>
-#include <iCub/minJerkCtrl.h>
-#include <iCub/pids.h>
+#include <iCub/ctrl/minJerkCtrl.h>
+#include <iCub/ctrl/pids.h>
+#include <iCub/iKin/iKinFwd.h>
 
 #define IKINCTRL_STATE_RUNNING      0
 #define IKINCTRL_STATE_INTARGET     1

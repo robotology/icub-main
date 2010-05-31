@@ -4,8 +4,8 @@
 
 #include <stdio.h>
 
-#include <iCub/iKinVocabs.h>
-#include <iCub/iKinSlv.h>
+#include <iCub/iKin/iKinVocabs.h>
+#include <iCub/iKin/iKinSlv.h>
 
 #define SHOULDER_MAXABDUCTION       (100.0*CTRL_DEG2RAD)
 #define CARTSLV_DEFAULT_PER         20      // [ms]

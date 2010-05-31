@@ -1,5 +1,5 @@
 
-#include <iCub/iKinFwd.h>
+#include <iCub/iKin/iKinFwd.h>
 
 #include <stdio.h>
 #include <iostream>

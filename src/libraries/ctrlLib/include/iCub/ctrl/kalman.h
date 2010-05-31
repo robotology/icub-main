@@ -14,7 +14,7 @@
 
 #include <yarp/sig/Vector.h>
 #include <yarp/sig/Matrix.h>
-#include <iCub/ctrlMath.h>
+#include <iCub/ctrl/ctrlMath.h>
 
 
 namespace ctrl

@@ -1,6 +1,6 @@
 
 #include <yarp/math/Math.h>
-#include <iCub/functionEncoder.h>
+#include <iCub/ctrl/functionEncoder.h>
 
 #define W_SZ    57
 

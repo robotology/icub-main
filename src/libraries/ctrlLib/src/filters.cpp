@@ -1,6 +1,6 @@
 
 #include <yarp/math/Math.h>
-#include <iCub/filters.h>
+#include <iCub/ctrl/filters.h>
 
 using namespace std;
 using namespace yarp;

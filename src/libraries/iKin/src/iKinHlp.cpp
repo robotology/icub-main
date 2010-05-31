@@ -1,7 +1,7 @@
 
-#include <iCub/iKinVocabs.h>
-#include <iCub/iKinInv.h>
-#include <iCub/iKinHlp.h>
+#include <iCub/iKin/iKinVocabs.h>
+#include <iCub/iKin/iKinInv.h>
+#include <iCub/iKin/iKinHlp.h>
 
 using namespace yarp;
 using namespace yarp::os;

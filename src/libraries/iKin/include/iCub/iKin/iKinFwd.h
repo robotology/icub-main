@@ -40,7 +40,7 @@
 #include <yarp/sig/Matrix.h>
 #include <yarp/math/Math.h>
 
-#include <iCub/ctrlMath.h>
+#include <iCub/ctrl/ctrlMath.h>
 
 #include <string>
 #include <deque>

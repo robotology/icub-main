@@ -1,7 +1,7 @@
 
 #include <yarp/math/Math.h>
 #include <yarp/math/SVD.h>
-#include <iCub/adaptWinPolyEstimator.h>
+#include <iCub/ctrl/adaptWinPolyEstimator.h>
 
 using namespace std;
 using namespace yarp;

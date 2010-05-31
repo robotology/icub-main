@@ -16,7 +16,7 @@
 #ifndef __IKINIPOPT_H__
 #define __IKINIPOPT_H__
 
-#include <iCub/iKinInv.h>
+#include <iCub/iKin/iKinInv.h>
 #include <IpTNLP.hpp>
 #include <IpIpoptApplication.hpp>
 

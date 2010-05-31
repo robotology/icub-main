@@ -14,8 +14,7 @@
 
 #include <yarp/sig/Vector.h>
 #include <yarp/sig/Matrix.h>
-
-#include <iCub/filters.h>
+#include <iCub/ctrl/filters.h>
 
 
 namespace ctrl

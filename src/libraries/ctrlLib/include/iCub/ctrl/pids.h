@@ -17,8 +17,8 @@
 
 #include <deque>
 
-#include <iCub/ctrlMath.h>
-#include <iCub/filters.h>
+#include <iCub/ctrl/ctrlMath.h>
+#include <iCub/ctrl/filters.h>
 
 
 namespace ctrl

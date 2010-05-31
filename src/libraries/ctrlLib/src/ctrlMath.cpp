@@ -1,6 +1,6 @@
 
-#include <iCub/ctrlMath.h>
 #include <yarp/math/SVD.h>
+#include <iCub/ctrl/ctrlMath.h>
 
 #include <iostream>
 #include <iomanip>
