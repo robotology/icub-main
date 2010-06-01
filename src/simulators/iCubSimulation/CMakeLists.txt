@@ -1,27 +1,8 @@
 SET(PROJECTNAME iCub_SIM)
+
 PROJECT(${PROJECTNAME})
 
 SET(USE_ODE_DOUBLE TRUE CACHE BOOL "Select false if compiled ODE in single precision")
-
-FIND_PACKAGE(ICUB)
-FIND_PACKAGE(YARP)
-FIND_PACKAGE(OpenGL REQUIRED)
-FIND_PACKAGE(ODE REQUIRED)
-FIND_PACKAGE(SDL REQUIRED)
-FIND_PACKAGE(LOGPOLAR REQUIRED)
-
-INCLUDE_DIRECTORIES(${CMAKE_SOURCE_DIR}
-				    ${ODE_INCLUDE_DIRS}
-					${SDL_INCLUDE_DIR}
-					${YARP_INCLUDE_DIRS}
-					${LOGPOLAR_INCLUDE_DIRS}
-				   )
-
-LINK_LIBRARIES( ${SDL_LIBRARY}
-			    ${ODE_LIBRARIES}
-				${YARP_LIBRARIES}
-				${LOGPOLAR_LIBRARIES}
-			  )
 
 FILE(GLOB folder_source *.cpp)
 FILE(GLOB folder_header *.h)
@@ -42,8 +23,19 @@ ADD_DEFINITIONS(-DUSE_GLUT)
 # Using the new configuration method right from the start
 ADD_DEFINITIONS(-DEXPERIMENTAL_CONFIG_METHOD)
 
+INCLUDE_DIRECTORIES(${CMAKE_SOURCE_DIR}
+                    ${logPolar_INCLUDE_DIRS}
+				    ${ODE_INCLUDE_DIRS}
+					${SDL_INCLUDE_DIR}
+                    ${YARP_INCLUDE_DIRS})
+
 ADD_EXECUTABLE(${PROJECTNAME} ${folder_source} ${folder_header})
 
-INSTALL(TARGETS ${PROJECTNAME} RUNTIME DESTINATION bin)
+TARGET_LINK_LIBRARIES(logPolar
+                      ${SDL_LIBRARIES}
+			          ${ODE_LIBRARIES}
+                      ${YARP_LIBRARIES})
+
+INSTALL(TARGETS ${PROJECTNAME} DESTINATION bin)
 
 # added files, touching CMakeLists.txt so GLOB is rerun

@@ -32,7 +32,7 @@ ADD_LIBRARY(${PROJECTNAME} ${folder_source} ${folder_header})
 TARGET_LINK_LIBRARIES(${PROJECTNAME} ${GSL_LIBRARIES}
                                      ${YARP_LIBRARIES})
 
-icub_export_library(${PROJECTNAME} 
+ICUB_EXPORT_LIBRARY(${PROJECTNAME} 
 					"${PROJECT_SOURCE_DIR}/include;${GSL_INCLUDE_DIRS}" 
 					include/iCub/ctrl
 					${folder_header})

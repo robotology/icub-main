@@ -1,11 +1,9 @@
-add_subdirectory(controlBoardDumper)
-add_subdirectory(dataDumper)
-add_subdirectory(testStereoMatch)
-add_subdirectory(velocityObserver)
+add_subdirectory(simCartesianControl)
 
-if (ICUB_USE_GtkPlus)
-	add_subdirectory(canLoader)
-else (ICUB_USE_GtkPlus)
-	message(status "GtkPlus not selected, skipping canLoader")
-endif(ICUB_USE_GtkPlus)
+if(ICUB_USE_ODE AND ICUB_USE_SDL AND ICUB_USE_OpenGL)
+	add_subdirectory(iCubSimulation)
+else(ICUB_USE_ODE AND ICUB_USE_SDL AND ICUB_USE_OpenGL)
+	message(status "skipping iCubSimulation")
+endif(ICUB_USE_ODE AND ICUB_USE_SDL AND ICUB_USE_OpenGL)
+
 

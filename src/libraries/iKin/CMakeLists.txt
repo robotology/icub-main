@@ -42,7 +42,7 @@ IF(ICUB_USE_IPOPT)
    TARGET_LINK_LIBRARIES(${PROJECTNAME} ${IPOPT_LIBRARIES})
 ENDIF(ICUB_USE_IPOPT)
 
-icub_export_library(${PROJECTNAME}
+ICUB_EXPORT_LIBRARY(${PROJECTNAME}
                    "${PROJECT_SOURCE_DIR}/include;${ctrlLib_INCLUDE_DIRS}"
                    include/iCub/iKin ${folder_header})
 
