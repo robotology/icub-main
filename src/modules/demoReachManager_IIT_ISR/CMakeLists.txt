@@ -7,7 +7,7 @@ SET(folder_source main.cpp)
 SOURCE_GROUP("Source Files" FILES ${folder_source})
 
 INCLUDE_DIRECTORIES(${GSL_INCLUDE_DIRS}
-                    ${YARP_ICNLUDE_DIRS})
+                    ${YARP_INCLUDE_DIRS})
 
 ADD_EXECUTABLE(${PROJECTNAME} ${folder_source})
 
