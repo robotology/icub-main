@@ -16,7 +16,7 @@ project(iCub)
 
 if(MSVC)
     MESSAGE(STATUS "Warning: running on windows")
-    set(CMAKE_EXE_LINKER_FLAGS "${CMAKE_EXE_LINKER_FLAGS} /NODEFAULTLIB:libcmt.lib;libcmtd.lib;msvcrt.lib")
+    #set(CMAKE_EXE_LINKER_FLAGS "${CMAKE_EXE_LINKER_FLAGS} /NODEFAULTLIB:libcmt.lib;libcmtd.lib;msvcrt.lib")
     
     # ACE uses a bunch of functions MSVC warns about.
     # The warnings make sense in general, but not in this case.
