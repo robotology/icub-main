@@ -4,6 +4,7 @@ add_subdirectory(simpleClient)
 add_subdirectory(testStereoMatch)
 add_subdirectory(velocityControl)
 add_subdirectory(velocityObserver)
+add_subdirectory(wrenchObserver)
 
 if(ICUB_USE_GtkPlus)
 	add_subdirectory(canLoader)
