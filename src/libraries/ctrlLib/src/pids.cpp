@@ -1,6 +1,6 @@
 
 #include <yarp/math/Math.h>
-#include <iCub/pids.h>
+#include <iCub/ctrl/pids.h>
 #include <iCub/ctrl/ctrlMath.h>
 
 #include <iostream>
