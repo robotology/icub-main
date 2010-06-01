@@ -31,7 +31,7 @@ INCLUDE_DIRECTORIES(${CMAKE_SOURCE_DIR}
 
 ADD_EXECUTABLE(${PROJECTNAME} ${folder_source} ${folder_header})
 
-TARGET_LINK_LIBRARIES(logPolar
+TARGET_LINK_LIBRARIES(${PROJECTNAME}
                       ${SDL_LIBRARIES}
 			          ${ODE_LIBRARIES}
                       ${YARP_LIBRARIES})
