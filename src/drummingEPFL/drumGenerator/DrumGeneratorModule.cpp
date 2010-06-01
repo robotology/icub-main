@@ -1,7 +1,7 @@
 // -*- mode:C++; tab-width:4; c-basic-offset:4; indent-tabs-mode:nil -*-
 
 #include "DrumGeneratorModule.h"
-
+#include <stdlib.h>
 #define DEBUG 0
 
 //#include <ppEventDebugger.h>
@@ -468,7 +468,7 @@ bool generatorThread::init(Searchable &s)
 			printf("GeneratorThread::init>> ERROR getting the environment variable ICUB_DIR, exiting\n");
 			return false;
 		}
-		yarp::String cubPathStr(cubPath);
+		string cubPathStr(cubPath);
 		options.fromConfigFile((cubPathStr + "/app/drummingEpfl/conf/" + partName + "Config.ini").c_str());
 	}
   
