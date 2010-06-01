@@ -7,8 +7,8 @@
 #include <iostream>
 #include <iomanip>
 
-#include <iCub/iKinFwd.h>
-#include <iCub/iKinIpOpt.h>
+#include <iCub/iKin/iKinFwd.h>
+#include <iCub/iKin/iKinIpOpt.h>
 
 using namespace std;
 using namespace yarp;
