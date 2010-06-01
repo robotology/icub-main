@@ -160,8 +160,14 @@ bool iCubArmCalibratorJ8::calibrate(DeviceDriver *dd)
     if (!ret)
         return false;
 
-
     int k;
+	int shoulderSetOfJoints[] = {0, 1 , 2};
+    for (k =0; k < 3; k++)
+    {
+        //fprintf(stderr, "ARMCALIB::Sending offset for joint %d\n", k);
+        calibrateJoint(shoulderSetOfJoints[k]);
+    }
+
     for (k = 0; k < nj; k++) 
     {
         fprintf(stderr, "ARMCALIB::Calling enable amp for joint %d\n", k);
@@ -170,39 +176,44 @@ bool iCubArmCalibratorJ8::calibrate(DeviceDriver *dd)
         iPids->enablePid(k);
     }
 
+	for (k = 0; k < 3; k++)
+    {
+        //fprintf(stderr, "ARMCALIB::Moving joint %d to zero\n", k);
+		goToZero(shoulderSetOfJoints[k]);
+    }
+	for (k = 0; k < 3; k++)
+    {
+        //fprintf(stderr, "ARMCALIB::Waiting for joint %d movement\n", k);
+		checkGoneToZero(shoulderSetOfJoints[k]);
+    }
+
     ret = true;
     bool x;
 
-	////////////////////////////////////////////
-    iPids->disablePid(2);
-    iAmps->disableAmp(2);
-
-	int firstSetOfJoints[] = {0, 1 , 3, 4, 6, 7};
-    for (k =0; k < 6; k++)
+	int firstSetOfJoints[] = {3, 4, 6, 7};
+    for (k =0; k < 4; k++)
 		calibrateJoint(firstSetOfJoints[k]);
-	for (k =0; k < 6; k++)
+	for (k =0; k < 4; k++)
 	{
 		x = checkCalibrateJointEnded(firstSetOfJoints[k]);
 		ret = ret && x;
 	}
-	for (k = 0; k < 6; k++)
+	for (k = 0; k < 4; k++)
 		goToZero(firstSetOfJoints[k]);
-	for (k = 0; k < 6; k++)
+	for (k = 0; k < 4; k++)
 		checkGoneToZero(firstSetOfJoints[k]);
 	//////////////////////////////////////////
-    iAmps->enableAmp(2);
-    iPids->enablePid(2);
-	int secondSetOfJoints[] = {2, 5};
-	for (k =0; k < 2; k++)
+	int secondSetOfJoints[] = {5};
+	for (k =0; k < 1; k++)
 		calibrateJoint(secondSetOfJoints[k]);
-	for (k =0; k < 2; k++)
+	for (k =0; k < 1; k++)
 	{
 		x = checkCalibrateJointEnded(secondSetOfJoints[k]);
 		ret = ret && x;
 	}
-	for (k = 0; k < 2; k++)
+	for (k = 0; k < 1; k++)
 		goToZero(secondSetOfJoints[k]);
-	for (k = 0; k < 2; k++)
+	for (k = 0; k < 1; k++)
 		checkGoneToZero(secondSetOfJoints[k]);
     
     fprintf(stderr, "ARMCALIB::calibration done!\n");
