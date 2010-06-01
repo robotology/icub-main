@@ -1,42 +1,11 @@
-PROJECT(iCubModules)
+add_subdirectory(controlBoardDumper)
+add_subdirectory(dataDumper)
+add_subdirectory(testStereoMatch)
+add_subdirectory(velocityObserver)
 
-FIND_PACKAGE(YARP REQUIRED)
-FIND_PACKAGE(LOGPOLAR REQUIRED)
+if (ICUB_USE_GtkPlus)
+	add_subdirectory(canLoader)
+else (ICUB_USE_GtkPlus)
+	message(status "GtkPlus not selected, skipping canLoader")
+endif(ICUB_USE_GtkPlus)
 
-# Prepare a device library called "icubmod".
-# A test executable called "icubmoddev" will also be produced.
-
-BEGIN_DEVICE_LIBRARY(icubmod)
-  ADD_SUBDIRECTORY(staticgrabber)
-  ADD_SUBDIRECTORY(dragonfly2)
-  ADD_SUBDIRECTORY(xsensmtx)
-  ADD_SUBDIRECTORY(armcalibrator)
-  ADD_SUBDIRECTORY(handcalibrator)
-  ADD_SUBDIRECTORY(headcalibrator)
-  ADD_SUBDIRECTORY(legscalibrator)
-  ADD_SUBDIRECTORY(torsoonlycalibrator)
-  ADD_SUBDIRECTORY(fakeCan)
-  ADD_SUBDIRECTORY(cartesianController)
-  ADD_SUBDIRECTORY(gazeController)
-  ADD_SUBDIRECTORY(logpolarGrabber)
-  ADD_SUBDIRECTORY(logpolarClient)
-
-  ADD_SUBDIRECTORY(canBusMotionControl)
-  ADD_SUBDIRECTORY(plxCan)
-  ADD_SUBDIRECTORY(esdCan)
-  ADD_SUBDIRECTORY(cfw2Can)
-  ADD_SUBDIRECTORY(esdSniffer)
-  ADD_SUBDIRECTORY(skinprototype)
-  
-END_DEVICE_LIBRARY(icubmod)
-
-IF(MSVC)
-    SET_TARGET_PROPERTIES(icubmoddev PROPERTIES COMPILE_FLAGS /wd4996)
-    SET_TARGET_PROPERTIES(icubmod PROPERTIES COMPILE_FLAGS /wd4996)
-ENDIF(MSVC)
-
-#ADD_SUBDIRECTORY(motionControlLib)
-IF (USE_ICUB_MOD)
-  INSTALL(TARGETS icubmoddev DESTINATION bin)
-  INSTALL(TARGETS icubmod DESTINATION lib)
-ENDIF (USE_ICUB_MOD)
