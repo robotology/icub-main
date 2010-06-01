@@ -50,10 +50,25 @@ For every module config.sh contains:
 - none
 
 
+\section appl_scripts application script
+\code
+Customize and run appConfig-visualAtt_icubLeft.xml.template
+\endcode
+
+
 \section howto How to run the Application
+In order to run this application you must customize the specific template (see \ref appl_scripts). Substitute the name of the node with the name of the node 
+in your network. In the template the console node referes to a node with a terminal whereas the powernode refers to a node with enought computational power
+(not necessarily with a terminal).
+
+Remember that most of the module need IPP Library so be sure that the selected nodes have this installed.
+
+
 The application is based on one main module \ref icub_saliencyBlobFinder "saliencyBlobFinder" which extracts regions which are likely to be bounded into
 object afterward. This module builds as well the saliency map composed by all the blobs represent with an intensity proportional to saliency of the blob.
-This image is named colorLP and is provided to the system throught the port image:o
+This image is named colorLP and is provided to the system throught the port image:o. However, the ouput can be choosen to address other purposes and with the
+related interface different output can be selected. Read the documentation of the module \ref icub_saliencyBlobFinder "saliencyBlobFinder" for more details about
+the alternatives.
 
 The module \ref icub_saliencyBlobFinderInterface "saliencyBlobFinderInterface", once connected to the saliencyBlobFinder module allow the user to tune some
 parameters of the algorithm and therefore to adapt the visual attention. In addition, via saliencyBlobFinderInterface, it can be forced to provide a different output:
@@ -73,14 +88,24 @@ However the saliencyBlobFinder module needs some intensity and colour informatio
 <li> \ref icub_colourProcessor "colourProcessor" </li>
 </ul>
 
-Finally the saliencyBlobFinder module can provide different references relative to the position of the most salient blob in the image plane.
-These are interfaces towards controllers able to perform saccades and control the gaze.
-For more information: \ref icub_saliencyBlobFinder "saliencyBlobFinder".
+The output of this module can be merged with other saliency maps produced by the following modules:
+- \ref icub_yuvProcessor "yuvProcessor"
+
+The different saliency maps produced can reinforce one each other and through the WTA(WINNER TAKE ALL ALGORITHM) the final output can be selected.
+This algorithm is implemented in the the module \ref icub_selectiveAttentionEngine "selectiveAttentionEngine" once the different maps are redirected to the 
+different map inputs of the module.
+This module is provided with an interface \ref icub_selectiveAttentionInterface "selectiveAttentionInterface" which allows the user to set the coefficients
+of the linear combination of maps.This helps to tune which map is more relavant and it can eventually be used as feedback.
+Infact the selectiveAttentionModule is development in order to receive commands from the higher level and send feedbacks to the lower level of attention.
 
 
-\code
-Customize and run ./scripts/appConfig-visual.xml.template
-\endcode
+
+Remember: if you use this application with the iCubSimulation you need to change a couple of parameters:
+<ul>
+<li> remove all the tcp connection which do not work on the local network</li>
+<li> change all the name in the apoplcia </li>
+</ul> 
+
 
 \author Stephen Hart & Francesco Rea 
 
