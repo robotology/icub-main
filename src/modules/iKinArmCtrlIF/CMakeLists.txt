@@ -4,11 +4,9 @@ PROJECT(${PROJECTNAME})
 
 SET(folder_source main.cpp)
 
-SOURCE_GROUP("Header Files" FILES ${folder_header})
 SOURCE_GROUP("Source Files" FILES ${folder_source})
 
-INCLUDE_DIRECTORIES(icubmod
-                    ${GSL_INCLUDE_DIR}
+INCLUDE_DIRECTORIES(${GSL_INCLUDE_DIR}
                     ${YARP_INCLUDE_DIRS})
 
 ADD_EXECUTABLE(${PROJECTNAME} ${folder_header} ${folder_source})
