@@ -57,12 +57,34 @@ set(CMAKE_MODULE_PATH ${ICUB_MODULE_PATH} ${CMAKE_MODULE_PATH})
 # Set up some large-scale compile options - do you want devices? guis?
 # INCLUDE(${PROJECT_SOURCE_DIR}/ICUBOptions.cmake)
 
-#add functionalities like icub_add_library/icub_add_executable
+# add functionalities like icub_add_library/icub_add_executable
 include(${PROJECT_SOURCE_DIR}/conf/iCubHelpers.cmake)
 
 # find dependencies and set variables
 include(${PROJECT_SOURCE_DIR}/conf/iCubFindDependencies.cmake)
 
+# find matlab libraries
+set(BUILD_MATLAB_BASED_TOOLS FALSE CACHE BOOL "Dou you want to build MATLAB-based tools?")
+if(BUILD_MATLAB_BASED_TOOLS)
+    find_path(MATLAB_INCLUDE_DIRS engine.h NO_DEFAULT_PATH)
+    if(WIN32)
+       find_path(MATLAB_LIBRARIES_DIRS libeng.lib NO_DEFAULT_PATH)
+    else(WIN32)
+       find_path(MATLAB_LIBRARIES_DIRS eng NO_DEFAULT_PATH)
+    endif(WIN32)
+    
+    if(WIN32)
+       set(MATLAB_LIBRARIES ${MATLAB_LIBRARIES_DIRS}/libeng.lib
+                            ${MATLAB_LIBRARIES_DIRS}/libmx.lib
+                            ${MATLAB_LIBRARIES_DIRS}/libmex.lib
+                            ${MATLAB_LIBRARIES_DIRS}/libmat.lib)
+    else(WIN32)
+       set(MATLAB_LIBRARIES ${MATLAB_LIBRARIES_DIRS}/libeng.so
+                            ${MATLAB_LIBRARIES_DIRS}/libmx.so
+                            ${MATLAB_LIBRARIES_DIRS}/libmex.so
+                            ${MATLAB_LIBRARIES_DIRS}/libmat.so)
+    endif(WIN32)
+endif(BUILD_MATLAB_BASED_TOOLS)
 
 ### this makes everything go in $ICUB_DIR/lib and $ICUB_DIR/bin
 set(LIBRARY_OUTPUT_PATH ${CMAKE_BINARY_DIR}/lib)
