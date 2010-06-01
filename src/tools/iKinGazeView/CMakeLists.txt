@@ -14,7 +14,7 @@ ADD_EXECUTABLE(${PROJECTNAME} ${folder_source})
 
 TARGET_LINK_LIBRARIES(${PROJECTNAME} ctrlLib
                                      ${MATLAB_LIBRARIES}
-                                     ${YARP_LIBRARIES)
+                                     ${YARP_LIBRARIES})
 
 INSTALL(TARGETS ${PROJECTNAME} DESTINATION bin)
 
