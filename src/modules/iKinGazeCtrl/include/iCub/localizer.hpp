@@ -5,7 +5,7 @@
 #include <yarp/os/BufferedPort.h>
 #include <yarp/os/RateThread.h>
 
-#include <iCub/pids.h>
+#include <iCub/ctrl/pids.h>
 
 #include <iCub/gazeNlp.hpp>
 #include <iCub/utils.hpp>

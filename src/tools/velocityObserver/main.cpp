@@ -147,7 +147,7 @@ This file can be edited at \in src/velocityObserver/main.cpp.
 #include <yarp/os/Time.h>
 #include <yarp/sig/Vector.h>
 
-#include <iCub/adaptWinPolyEstimator.h>
+#include <iCub/ctrl/adaptWinPolyEstimator.h>
 
 #include <iostream>
 #include <iomanip>

@@ -12,9 +12,9 @@
 
 #include <string>
 
-#include <iCub/iKinFwd.h>
-#include <iCub/filters.h>
-#include <iCub/kalman.h>
+#include <iCub/iKin/iKinFwd.h>
+#include <iCub/ctrl/filters.h>
+#include <iCub/ctrl/kalman.h>
 
 using namespace std;
 using namespace yarp;

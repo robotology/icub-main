@@ -4,8 +4,8 @@
 
 #include <yarp/sig/Vector.h>
 
-#include <iCub/iKinInv.h>
-#include <iCub/iKinIpOpt.h>
+#include <iCub/iKin/iKinInv.h>
+#include <iCub/iKin/iKinIpOpt.h>
 
 using namespace std;
 using namespace yarp;

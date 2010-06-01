@@ -105,15 +105,12 @@ Windows, Linux
 #include <yarp/sig/Vector.h>
 #include <yarp/math/Math.h>
 
+#include <yarp/dev/Drivers.h>
 #include <yarp/dev/ControlBoardInterfaces.h>
 #include <yarp/dev/CartesianControl.h>
 #include <yarp/dev/PolyDriver.h>
 
 #include <gsl/gsl_math.h>
-
-#ifdef USE_ICUB_MOD
-    #include "drivers.h"
-#endif
 
 #include <iostream>
 #include <iomanip>
@@ -122,6 +119,8 @@ Windows, Linux
 #define MAX_TORSO_PITCH     30.0    // [deg]
 #define EXECTIME_THRESDIST  0.3     // [m]
 #define PRINT_STATUS_PER    1.0     // [s]
+
+YARP_DECLARE_DEVICES(icubmod)
 
 using namespace std;
 using namespace yarp;
@@ -402,6 +401,8 @@ public:
 
 int main(int argc, char *argv[])
 {
+    YARP_REGISTER_DEVICES(icubmod)
+
     ResourceFinder rf;
     rf.setVerbose(true);
     rf.configure("ICUB_ROOT",argc,argv);
@@ -425,10 +426,6 @@ int main(int argc, char *argv[])
 
     if (!yarp.checkNetwork())
         return -1;
-
-#ifdef USE_ICUB_MOD
-    DriverCollection dev;
-#endif
 
     CtrlModule mod;
 

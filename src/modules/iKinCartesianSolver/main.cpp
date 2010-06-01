@@ -136,7 +136,7 @@ Windows, Linux
 #include <yarp/os/Network.h>
 #include <yarp/os/RFModule.h>
 
-#include <iCub/iKinSlv.h>
+#include <iCub/iKin/iKinSlv.h>
 
 #include <iostream>
 #include <iomanip>

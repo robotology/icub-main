@@ -129,7 +129,7 @@ This file can be edited at
 #include <yarp/os/Property.h>
 #include <yarp/sig/Vector.h>
 
-#include <iCub/ctrlMath.h>
+#include <iCub/ctrl/ctrlMath.h>
 
 #include <iostream>
 #include <fstream>

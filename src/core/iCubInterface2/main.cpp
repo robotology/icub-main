@@ -302,10 +302,6 @@ int main(int argc, char *argv[])
 		return -1;
 	}
 
-#ifdef USE_ICUB_MOD
-	yarp::dev::DriverCollection dev;
-#endif
-
 	//add local driver to factory
 	yarp::dev::Drivers::factory().add(new DriverCreatorOf<ControlBoardWrapper2>
 		("controlboardwrapper2",

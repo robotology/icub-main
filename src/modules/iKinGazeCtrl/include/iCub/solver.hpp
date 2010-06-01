@@ -11,7 +11,7 @@
 #include <yarp/dev/ControlBoardInterfaces.h>
 #include <yarp/dev/PolyDriver.h>
 
-#include <iCub/pids.h>
+#include <iCub/ctrl/pids.h>
 
 #include <deque>
 

@@ -130,17 +130,14 @@ Windows, Linux
 #include <yarp/os/BufferedPort.h>
 #include <yarp/sig/Vector.h>
 #include <yarp/math/Math.h>
+#include <yarp/dev/Drivers.h>
 #include <yarp/dev/PolyDriver.h>
 #include <yarp/dev/ControlBoardInterfaces.h>
 #include <yarp/dev/CartesianControl.h>
 #include <yarp/dev/GazeControl.h>
 
 #include <gsl/gsl_math.h>
-#include <iCub/ctrlMath.h>
-
-#ifdef USE_ICUB_MOD
-    #include "drivers.h"
-#endif
+#include <iCub/ctrl/ctrlMath.h>
 
 #include <string>
 
@@ -166,6 +163,8 @@ Windows, Linux
 #define STATE_REACH         1
 #define STATE_RELEASE       2
 #define STATE_WAIT          3
+
+YARP_DECLARE_DEVICES(icubmod)
                                                              
 using namespace std;
 using namespace yarp;
@@ -1246,6 +1245,8 @@ public:
 
 int main(int argc, char *argv[])
 {
+    YARP_REGISTER_DEVICES(icubmod)
+
     Network yarp;
 
     if (!yarp.checkNetwork())
@@ -1258,11 +1259,7 @@ int main(int argc, char *argv[])
     rf.setMonitor(&rep);
     rf.setDefaultContext("demoGrasp_IIT_ISR/conf");
     rf.setDefaultConfigFile("config.ini");
-    rf.configure("ICUB_ROOT",argc,argv);
-
-#ifdef USE_ICUB_MOD
-    DriverCollection dev;
-#endif
+    rf.configure("ICUB_ROOT",argc,argv);    
 
     managerModule mod;
     mod.setName("/demoGraspManager_IIT_ISR");

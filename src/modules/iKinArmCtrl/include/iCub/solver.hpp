@@ -13,8 +13,8 @@
 #include <iomanip>
 #include <string>
 
-#include <iCub/iKinInv.h>
-#include <iCub/iKinIpOpt.h>
+#include <iCub/iKin/iKinInv.h>
+#include <iCub/iKin/iKinIpOpt.h>
 
 #include <iCub/utils.hpp>
 
