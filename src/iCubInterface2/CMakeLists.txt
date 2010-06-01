@@ -1,5 +1,12 @@
 PROJECT(iCubInterface)
 
+SET(DONOTCOMPILE TRUE CACHE BOOL "Temporary error flag")
+IF (DONOTCOMPILE)
+  MESSAGE(FATAL_ERROR "Please do not compile WHILE we fix a SERIOUS problem")
+ELSE(DONOTCOMPILE)
+  MESSAGE("You have decided to compile the repository, run the robot at your OWN RISK")
+ENDIF(DONOTCOMPILE)
+
 FIND_PACKAGE(YARP)
 FIND_PACKAGE(ICUB)
 FIND_PACKAGE(CANLOADERLIB)
