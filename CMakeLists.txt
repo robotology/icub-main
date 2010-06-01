@@ -15,7 +15,9 @@ endif(COMMAND cmake_policy)
 project(iCub)
 
 if(MSVC)
-    MESSAGE(STATUS "Warning: running on windows")
+    MESSAGE(STATUS "Running on windows")
+    
+    # These used to be convenient in the old build, now caused a lot of troubles. Are they still needed?
     #set(CMAKE_EXE_LINKER_FLAGS "${CMAKE_EXE_LINKER_FLAGS} /NODEFAULTLIB:libcmt.lib;libcmtd.lib;msvcrt.lib")
     
     # ACE uses a bunch of functions MSVC warns about.
