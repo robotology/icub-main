@@ -7,11 +7,18 @@ PROJECT(${PROJECTNAME})
 FIND_PACKAGE(YARP)
 FIND_PACKAGE(ICUB)
 
+SET(CMAKE_MODULE_PATH ${YARP_DIR}/conf $ENV{ICUB_ROOT}/main/conf ${CMAKE_MODULE_PATH})
+
+FIND_PACKAGE(GSL)
+FIND_PACKAGE(IPOPT)
+
 SET(folder_source main.cpp)
 
 SOURCE_GROUP("Source Files" FILES ${folder_source})
 
 INCLUDE_DIRECTORIES(${ICUB_INCLUDE_DIRS}
+                    ${GSL_INCLUDE_DIRS}
+                    ${IPOPT_INCLUDE_DIRS}
                     ${YARP_INCLUDE_DIRS})
 
 ADD_EXECUTABLE(${PROJECTNAME} ${folder_source})
