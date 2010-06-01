@@ -580,7 +580,7 @@ assert(o1);
 		glViewport(0,0,320,240);
 		glMatrixMode (GL_PROJECTION);
 		glLoadIdentity();
-		gluPerspective( 75, 320/240, 0.04, 100.0 );
+		gluPerspective( 50, 320/240, 0.04, 100.0 );
 	
 		if (left){
 			pos = dGeomGetPosition(odeinit._iCub->Leye1_geom);
