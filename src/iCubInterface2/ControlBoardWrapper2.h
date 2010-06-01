@@ -1654,30 +1654,22 @@ public:
     virtual bool getAmpStatus(int *st) {
         bool ret=true;
 
-        /*for(int l=0;l<controlledJoints;l++)
+        for(int l=0;l<controlledJoints;l++)
         {
-           int off=device.lut[l].offset;
-           int subIndex=device.lut[l].deviceEntry;
+            int off=device.lut[l].offset;
+            int subIndex=device.lut[l].deviceEntry;
 
-          SubDevice *p=device.getSubdevice(subIndex);
-          if (p->amp)
-          {
-              ret=ret&&p->amp->getAmpStatus(off+base, st+l);
-          }
-          else
-              ret=false;
-        }*/
-
-		int subIndex=device.lut[0].deviceEntry;
-		SubDevice *p=device.getSubdevice(subIndex);
-		{
-          if (p->amp)
-          {
-              ret=ret&&p->amp->getAmpStatus(st);
-          }
-          else
-              ret=false;
+            SubDevice *p=device.getSubdevice(subIndex);
+            if (p->amp)
+                {
+                    st[l]=0;
+                    // getAmpStatus for single joint does not exist!!
+                    // ret=ret&&p->amp->getAmpStatus(off+base, st+l);
+                }
+            else
+                ret=false;
         }
+
         return ret;
     }
 
