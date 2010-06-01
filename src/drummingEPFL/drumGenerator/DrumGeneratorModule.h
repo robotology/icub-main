@@ -20,6 +20,8 @@ using namespace yarp::dev;
 #define LIMIT_TOL 2.0 //conservative limit tolerance in degrees
 #define MAX_FREQUENCY 1.5 //in Hz
 
+#define VELOCITY_INDEX_OFFSET 1000
+
 
 class generatorThread : public yarp::os::RateThread
 {
@@ -43,6 +45,7 @@ class generatorThread : public yarp::os::RateThread
     int *jointMapping;
     double *y_cpgs;
     double *states;
+    double *dstates;
     double *previous_states;
     double *encoders;
     double *joint_limit_up;

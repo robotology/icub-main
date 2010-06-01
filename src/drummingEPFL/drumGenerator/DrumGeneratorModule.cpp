@@ -2,8 +2,6 @@
 
 #include "DrumGeneratorModule.h"
 
-#include <stdlib.h>
-
 #define DEBUG 0
 
 //#include <ppEventDebugger.h>
@@ -54,20 +52,24 @@ bool generatorThread::getEncoders()
 
 bool generatorThread::sendFastJointCommand()   
 {
-    checkJointLimits();
-    Bottle& cmd = vcFastCommand_port.prepare();
+	checkJointLimits();
 
-    cmd.clear();
 
-    for(int i=0;i<nbDOFs;i++)
-        {
-            cmd.addInt(jointMapping[i]);
-            cmd.addDouble(states[i]);
-        }
+	Bottle& cmd = vcFastCommand_port.prepare();
 
-    vcFastCommand_port.write(true);
+	cmd.clear();
 
-    return true;
+	for(int i=0;i<nbDOFs;i++)
+	{
+		cmd.addInt(jointMapping[i]);
+		cmd.addDouble(states[i]);
+		cmd.addInt(jointMapping[i] + VELOCITY_INDEX_OFFSET);
+		cmd.addDouble(dstates[i]);
+	}
+
+	vcFastCommand_port.write(true);
+
+	return true;
 }
 
 //read the parameters coming from the manager and update the cpg myManager
@@ -274,8 +276,10 @@ void generatorThread::run()
 
     for(int i=0; i<nbDOFs; i++)
         {
-            previous_states[i]=states[i];
-            fprintf(target_file,"%f \t", states[i]);
+        	dstates[i] = (states[i] - previous_states[i]) / (period+time_residue);
+			previous_states[i]=states[i];
+			fprintf(target_file,"%f \t", states[i]);
+
         }
 
     ///save time stamp
@@ -409,6 +413,7 @@ void generatorThread::threadRelease()
 
     delete[] y_cpgs;
     delete[] states;
+    delete[] dstates;
     delete[] previous_states;
     delete[] encoders;
 
@@ -429,7 +434,8 @@ void generatorThread::threadRelease()
 
 bool generatorThread::init(Searchable &s)
 {
-    Property options(s.toString());
+    Property arguments(s.toString());
+    Property options;
     Time::turboBoost();
 
     ///init period
@@ -439,9 +445,9 @@ bool generatorThread::init(Searchable &s)
 
     //////getting part to interface with
 
-    if(options.check("part"))
+    if(arguments.check("part"))
         {
-            partName = options.find("part").asString().c_str();
+            partName = arguments.find("part").asString().c_str();
             printf("module taking care of part %s\n",partName.c_str());
         }
     else
@@ -450,6 +456,21 @@ bool generatorThread::init(Searchable &s)
             return false;
         }
 
+	if(arguments.check("file"))
+	{
+		options.fromConfigFile(arguments.find("file").asString().c_str());
+	}
+	else
+	{
+        const char *cubPath;
+		cubPath = getenv("ICUB_DIR");
+		if(cubPath == NULL) {
+			printf("GeneratorThread::init>> ERROR getting the environment variable ICUB_DIR, exiting\n");
+			return false;
+		}
+		yarp::String cubPathStr(cubPath);
+		options.fromConfigFile((cubPathStr + "/app/drummingEpfl/conf/" + partName + "Config.ini").c_str());
+	}
   
     char tmp1[255],tmp2[255];
     char targetPart[255], paramPart[255], encoderPart[255], feedPart[255];
@@ -986,6 +1007,7 @@ bool generatorThread::init(Searchable &s)
 
     y_cpgs = new double[2*(nbDOFs*4+3)];
     states = new double[nbDOFs];
+    dstates = new double[nbDOFs];
     previous_states = new double[nbDOFs];
     encoders = new double[nbDOFs];
 
