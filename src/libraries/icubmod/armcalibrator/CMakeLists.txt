@@ -1,4 +1,4 @@
-PREPARE_DEVICE(icubarmcalibrator TYPE iCubArmCalibrator INCLUDE iCubArmCalibrator.h)
+PREPARE_DEVICE(icubarmcalibrator   TYPE iCubArmCalibrator   INCLUDE iCubArmCalibrator.h)
 PREPARE_DEVICE(icubarmcalibratorj8 TYPE iCubArmCalibratorJ8 INCLUDE iCubArmCalibratorJ8.h)
 
 if (NOT SKIP_armcalibrator)
