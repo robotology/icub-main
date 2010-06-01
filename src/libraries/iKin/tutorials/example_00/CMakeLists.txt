@@ -1,8 +1,12 @@
+CMAKE_MINIMUM_REQUIRED(VERSION 2.6)
+
 SET(PROJECTNAME example_00)
 
 PROJECT(${PROJECTNAME})
 
 FIND_PACKAGE(YARP)
+SET(CMAKE_MODULE_PATH ${YARP_DIR}/conf ${CMAKE_MODULE_PATH})
+FIND_PACKAGE(GSL)
 FIND_PACKAGE(ICUB)
 
 SET(folder_source main.cpp)
@@ -10,6 +14,7 @@ SET(folder_source main.cpp)
 SOURCE_GROUP("Source Files" FILES ${folder_source})
 
 INCLUDE_DIRECTORIES(${ICUB_INCLUDE_DIRS}
+                    ${GSL_INCLUDE_DIRS}
                     ${YARP_INCLUDE_DIRS})
 
 ADD_EXECUTABLE(${PROJECTNAME} ${folder_source})
