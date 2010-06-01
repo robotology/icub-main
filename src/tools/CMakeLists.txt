@@ -2,6 +2,7 @@ add_subdirectory(controlBoardDumper)
 add_subdirectory(dataDumper)
 add_subdirectory(simpleClient)
 add_subdirectory(testStereoMatch)
+add_subdirectory(velocityControl)
 add_subdirectory(velocityObserver)
 
 if(ICUB_USE_GtkPlus)
