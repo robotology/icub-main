@@ -58,7 +58,7 @@
 /**
 *
 @ingroup icub_module
-\defgroup icub_selectiveAttentionProcessor selectiveAttentionProcessor
+\defgroup icub_selectiveAttentionEngine selectiveAttentionEngine
 
 Module that combines the saliency map using winner-takes-all algorithm and selects the attentive region of interest.
 
