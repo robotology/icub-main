@@ -1,0 +1,19 @@
+SET(PROJECTNAME demoReachManager_IIT_ISR)
+
+PROJECT(${PROJECTNAME})
+
+SET(folder_source main.cpp)
+
+SOURCE_GROUP("Source Files" FILES ${folder_source})
+
+INCLUDE_DIRECTORIES(${GSL_INCLUDE_DIR}
+                    ${YARP_ICNLUDE_DIRS})
+
+ADD_EXECUTABLE(${PROJECTNAME} ${folder_source})
+
+TARGET_LINK_LIBRARIES(${PROJECTNAME} ${GSL_LIBRARIES}
+                                     ${YARP_LIBRARIES})
+
+INSTALL(TARGETS ${PROJECTNAME} DESTINATION bin)
+
+

@@ -3,6 +3,7 @@ add_subdirectory(scriptSequencer)
 add_subdirectory(graspDetectorConf)
 add_subdirectory(graspDetector)
 add_subdirectory(demoGraspManager_IIT_ISR)
+add_subdirectory(demoReachManager_IIT_ISR)
 add_subdirectory(iKinArmCtrlIF)
 add_subdirectory(iKinHead)
 
