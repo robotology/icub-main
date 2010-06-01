@@ -110,13 +110,14 @@ This file can be edited at src/zeroForceControl/main.cpp.
 #include <yarp/dev/PolyDriver.h>
 #include <yarp/dev/ControlBoardInterfaces.h>
 
+#include <iCub/iKin/iKinFwd.h>
+#include <iCub/iDyn/iFC.h>
+
 #include <iostream>
 #include <iomanip>
 #include <string.h>
 
 #include "filter.h"
-#include "iCub/iFC.h"
-#include "iCub/iKinFwd.h"
 
 const int SAMPLER_RATE = 10;
 const int FT_VALUES = 6;
