@@ -211,7 +211,7 @@ public:
 		switch (controlmode)
 		{
 		case 	MODE_IDLE:
-		    printf ("[%d] board  %d MODE_IDLE \r\n", net, addr);
+			printf ("[%d] board  %d MODE_IDLE \r\n", net, addr);
 			break;
 		case 	MODE_CONTROLLED:
 			printf ("[%d] board %d MODE_CONTROLLED \r\n", net, addr);
@@ -1954,12 +1954,14 @@ void CanBusMotionControl:: run()
                 {
                     CanErrors errors;
                     r.iCanErrors->canGetErrors(errors);
-                    fprintf(stderr, "    Errors: %u Can ovr:%u In ovr: %u Out ovr: %u, Bus off:%d\n", 
-                            errors.errors, 
-                            errors.overflow, 
-                            errors.inBuffOvr,
-                            errors.outBuffOvr,
-                            errors.busoff);
+                    fprintf(stderr, " Can Errors --  Device Tx:%u Rx:%u TxOvf: %u RxOvf BusOff: %d -- Driver Fifo Tx:%u Rx:%u\n", 
+                            errors.rxCanErrors,
+                            errors.txCanErrors,
+                            errors.rxCanFifoOvr,
+                            errors.txCanFifoOvr,
+                            errors.busoff,
+                            errors.rxBufferOvr,
+                            errors.txBufferOvr);
                 }
             else
                 {
@@ -2223,8 +2225,6 @@ bool CanBusMotionControl::getControlModeRaw(int j, int *v)
         *v=VOCAB_CM_UNKNOWN;
         break;
     }
-
-    fprintf(stderr, "Returning %d %d\n", *v, s);
 	return true;
 }
 
