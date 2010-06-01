@@ -11,10 +11,10 @@ bool SkinMeshThread::threadInit()
 	printf("Image Thread initialising...\n");
 
 	Property prop;
-    prop.put("device", "ecan");
+    prop.put("device", "cfw2can");
     prop.put("CanTxTimeout", 500);
     prop.put("CanRxTimeout", 500);
-    prop.put("CanDeviceNum", 0);
+    prop.put("CanDeviceNum", 7); //7 is the left_hand, 8 is the right_hand
     prop.put("CanMyAddress", 0);
     prop.put("CanTxQueueSize", CAN_DRIVER_BUFFER_SIZE);
     prop.put("CanRxQueueSize", CAN_DRIVER_BUFFER_SIZE);
