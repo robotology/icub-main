@@ -31,10 +31,10 @@ INCLUDE_DIRECTORIES(${CMAKE_SOURCE_DIR}
 
 ADD_EXECUTABLE(${PROJECTNAME} ${folder_source} ${folder_header})
 
-TARGET_LINK_LIBRARIES(${PROJECTNAME}
-                      ${SDL_LIBRARY}
-			          ${ODE_LIBRARIES}
-                      ${YARP_LIBRARIES})
+TARGET_LINK_LIBRARIES(${PROJECTNAME} logPolar
+                                     ${SDL_LIBRARY}
+			                         ${ODE_LIBRARIES}
+                                     ${YARP_LIBRARIES})
 
 INSTALL(TARGETS ${PROJECTNAME} DESTINATION bin)
 
