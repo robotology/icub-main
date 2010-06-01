@@ -118,6 +118,17 @@ include(${PROJECT_SOURCE_DIR}/conf/iCubExportForInstall.cmake)
 # export the build tree
 include(${PROJECT_SOURCE_DIR}/conf/iCubExportBuildTree.cmake)
 
+## install cmake scripts
+set(ICUB_CMAKE_SCRIPTS FindPLXCANAPI.cmake FindCFW2CANAPI.cmake FindESDCANAPI.cmake FindGtkMM.cmake FindGtkMMUnix.cmake FindGtkMMWin32.cmake FindIPOPT.cmake FindODE.cmake)
+foreach(conf ${ICUB_CMAKE_SCRIPTS})
+  configure_file(${CMAKE_SOURCE_DIR}/conf/${conf}
+                 ${CMAKE_BINARY_DIR}/conf/${conf} COPYONLY IMMEDIATE)
+  install(FILES ${CMAKE_BINARY_DIR}/conf/${conf} COMPONENT scripts 
+	  DESTINATION conf)
+endforeach(conf)
+
+
+
 
 
 
