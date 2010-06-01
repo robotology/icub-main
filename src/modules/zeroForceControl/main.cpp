@@ -1,39 +1,122 @@
 /**
-* @ingroup icub_module
-*
-* \defgroup zeroForceControl zeroForceControl
-*
-*
-* Perform zero force control on the iCub arms.
-*
-* \author Matteo Fumagalli
-*
-* Copyright (C) 2010 RobotCub Consortium
-*
-* CopyPolicy: Released under the terms of the GNU GPL v2.0.
-*
-* This file can be edited at src/myModule/main.cpp.
-**/
+@ingroup icub_module
+
+\defgroup zeroForceControl zeroForceControl
+ 
+Perform zero force control on the iCub limbs. 
+Copyright (C) 2008 RobotCub Consortium
+ 
+Author: Matteo Fumagalli
+ 
+Date: first release 27/05/2010 
+
+Copyright (C) 2010 RobotCub Consortium
+
+CopyPolicy: Released under the terms of the GNU GPL v2.0.
+
+\section intro_sec Description
+
+This module performs zero force control and joint impedance control 
+of the iCub limbs. No model based compensation of the 6-axis force/torque 
+(FT) sensor's measurements is done. FT are acquired through an input YARP 
+port.
+The intrinsic offsets of the sensors are defined by the first FT data. 
+Internal dynamic has not yet been compensated through model based 
+compensation of the force/torque measurements. 
+
+\section lib_sec Libraries 
+- YARP libraries. 
+- ctrlLib library. 
+- iKin library.
+- iDyn library.  
+
+\section parameters_sec Parameters
+
+--name \e name 
+- The parameter \e name identifies the module's name; all the 
+  open ports will be tagged with the prefix <name>/. If not
+  specified \e /zeroForceControl is assumed.
+ 
+--context
+- The parameter \e context identifies the location of the configuration files,
+  referred to the path $ICUB_ROOT/app
+
+--from
+- The parameter \e from identifies the configuration files, located in the context
+  directory, specific for the part to use.
+  
+--robot
+- The parameter \e robot identifies the robot that is used. This parameter defines the
+  prefix of the ports of the device. As default \e icub is used.
+
+--part  
+- The parameter \e part identifies the part of the robot which is used. All the opened 
+  ports will deal with the part which is defined. the default value is \e left_arm
+
+\section portsa_sec Ports Accessed
+The port the service is listening to.
+
+\section portsc_sec Ports Created
+ 
+- \e <name>/<part>/FT:i (e.g. /zfc/right_arm/FT:i) receives the input data 
+  vector.
+ 
+\section in_files_sec Input Data Files
+None.
+
+\section out_data_sec Output Data Files
+None. 
+ 
+\section conf_file_sec Configuration Files
+-leftArmFT.ini
+-rightArmFT.ini
+-leftLegFT.ini
+-rightLegFT.ini
+ 
+\section tested_os_sec Tested OS
+Linux and Windows.
+
+\section example_sec Example
+By launching the following command: 
+ 
+\code 
+zeroForceControl --name zfc --context zeroForceControl/conf --from rightArmFT.ini  
+\endcode 
+ 
+the module will create the listening port /zfc/right_arm/FT:i for 
+the acquisition of data vector coming for istance from the right arm analog port. 
+ 
+Try now the following: 
+ 
+\code 
+yarp connect /icub/right_arm/analog:o /zfc/right_arm/FT:i
+\endcode 
+ 
+\author Matteo Fumagalli
+
+This file can be edited at src/zeroForceControl/main.cpp.
+*/ 
+
 
 #include <yarp/os/BufferedPort.h>
 #include <yarp/os/RFModule.h>
 #include <yarp/os/Time.h>
 #include <yarp/os/Network.h>
 #include <yarp/os/RateThread.h>
-#include <yarp/os/Stamp.h>
 #include <yarp/sig/Vector.h>
 #include <yarp/sig/Matrix.h>
 #include <yarp/math/Math.h>
+#include <yarp/os/Stamp.h>
 #include <yarp/dev/PolyDriver.h>
 #include <yarp/dev/ControlBoardInterfaces.h>
-#include <iCub/iKin/iKinFwd.h>
-#include <iCub/iDyn/iFC.h>
 
 #include <iostream>
 #include <iomanip>
 #include <string.h>
 
 #include "filter.h"
+#include "iCub/iFC.h"
+#include "iCub/iKinFwd.h"
 
 const int SAMPLER_RATE = 10;
 const int FT_VALUES = 6;
@@ -155,10 +238,9 @@ private:
 	Vector FTs_init;
 	Vector FT;
 	Vector FTj;
+	Vector Fe;
 	int count;
-	//iCubArm *arm;
 	iKinLimb *iCubLimb;
-	//iCubArm4DOF *arm;
 	iKinChain *chain;
 	
 	int limbJnt;
@@ -186,10 +268,15 @@ private:
 	Stamp info;
 	double time, time0;
 	int countTime, countTime0;
-
-	Vector *datas;
+	
+	Vector sat;
+	Matrix K;
+	Matrix Kspring;
     Vector kp;
 	Vector kspr;
+	double gain;
+
+	Vector *datas;
 
 
 
@@ -212,7 +299,7 @@ private:
 		  T(2,0) = 0; 
 		  T(2,1) = -R1/K1*a;
 		  T(2,2) = R2/K2*a;
-		  T = 0.056*T;//pinv(T)*T.transposed();
+		  T = 0.056*T;;
 
 		  for(int i=0;i<3;i++)
 			  for(int j=0;j<3;j++)
@@ -221,7 +308,7 @@ private:
 		  {
 		  for(int i=3;i<limbJnt;i++)
 			  for(int j=3;j<limbJnt;j++)
-				  T_all(i,j) = 1.0; //added elbow
+				  T_all(i,j) = 1.0;
 		  }
 	}
 
@@ -229,6 +316,9 @@ private:
 	{
 		if (strcmp(limb.c_str(), "left_arm")==0)
 		  {			  
+		      //---------------------------------------------
+			  //           SETTING UP PART TO CONTROL
+		      //---------------------------------------------
 			  limbJnt = 4;
 			  sensorLink = 2;
 			  shoulderCouplingInit();
@@ -237,6 +327,9 @@ private:
 			  iCubLimb = new iCubArm4DOF("left");
               Rs(0,0) = Rs(2,1) = 1.0;  Rs(1,2) = -1.0;
               ps(1) = 0.10;
+		      //---------------------------------------------
+			  //           SETTING GAINS
+		      //---------------------------------------------
 			  kp.resize(limbJnt);
 			  kspr.resize(limbJnt);
 			  kspr(0) = 0.3;	kspr(1) = 0.3;	kspr(2) = 0.3;	kspr(3) = 0.15;
@@ -245,31 +338,27 @@ private:
 				  switch(filter_order)
 				  {
 				  case FILT1HZ:
-					  kp(0) = -62.0;	kp(1) = -50.0;	kp(2) = -55.0;	kp(3) = -100; //kp(2) was 62
-					  //fprintf(stderr,"using lowpass filter with bandwidth of: 1 Hz");
+					  kp(0) = -62.0;	kp(1) = -50.0;	kp(2) = -55.0;	kp(3) = -100; 
 					  break;
 				  case FILT2HZ:
-					  kp(0) = -62.0;	kp(1) = -50.0;	kp(2) = -55.0;	kp(3) = -100; //kp(2) was 62
-					  //fprintf(stderr,"using lowpass filter with bandwidth of: 2 Hz");
+					  kp(0) = -62.0;	kp(1) = -50.0;	kp(2) = -55.0;	kp(3) = -100; 
 					  break;
 				  case FILT3HZ:
-					  kp(0) = -62.0;	kp(1) = -50.0;	kp(2) = -55.0;	kp(3) = -100; //kp(2) was 62
-					  //fprintf(stderr,"using lowpass filter with bandwidth of: 3 Hz");
+					  kp(0) = -62.0;	kp(1) = -50.0;	kp(2) = -55.0;	kp(3) = -100; 
 					  break;
 				  default:
 					  kp(0) = -25.0;	kp(1) = -25.0;	kp(2) = -25.0;	kp(3) = -30.0;
-					  //fprintf(stderr,"using lowpass filter with bandwidth of: boh Hz");
 					  break;
 				  }
 			  }
-			  else
-			  {
-				kp(0) = -25.0;	kp(1) = -25.0;	kp(2) = -25.0;	kp(3) = -30.0;
-			  }
+			  else{ kp(0) = -25.0;	kp(1) = -25.0;	kp(2) = -25.0;	kp(3) = -30.0;}
               fprintf(stderr, "Opening left arm ... \n");
 		  }
 		  else if (strcmp(limb.c_str(), "right_arm")==0)
 		  {  
+		      //---------------------------------------------
+			  //           SETTING UP PART TO CONTROL
+		      //---------------------------------------------
 			  limbJnt = 4;
 			  sensorLink = 2;
 			  shoulderCouplingInit();
@@ -278,6 +367,9 @@ private:
 			  iCubLimb = new iCubArm4DOF("right");
               Rs(0,0) = -1.0; Rs(2,1) = 1.0;  Rs(1,2) = 1.0;
               ps(1) = -0.10;
+		      //---------------------------------------------
+			  //           SETTING GAINS
+		      //---------------------------------------------
 			  kp.resize(limbJnt);
 			  kspr.resize(limbJnt);
 			  kspr(0) = 0.3;	kspr(1) = 0.3;	kspr(2) = 0.30;	kspr(3) = 0.15;
@@ -288,30 +380,27 @@ private:
 				  {
 				  case FILT1HZ:
 					  kp(0) =  62.0;	kp(1) =  50.0;	kp(2) =  55.0;	kp(3) =  100;
-					  //fprintf(stderr,"using lowpass filter with bandwidth of: 1 Hz");
 					  break;
 				  case FILT2HZ:
 					  kp(0) =  62.0;	kp(1) =  50.0;	kp(2) =  55.0;	kp(3) =  100;
-					  //fprintf(stderr,"using lowpass filter with bandwidth of: 2 Hz");
 					  break;
 				  case FILT3HZ:
 					  kp(0) =  62.0;	kp(1) =  50.0;	kp(2) =  55.0;	kp(3) =  100;
-					  //fprintf(stderr,"using lowpass filter with bandwidth of: 3 Hz");
 					  break;
 				  default:
 					  kp(0) =  25.0;	kp(1) =  25.0;	kp(2) =  25.0;	kp(3) =  30.0;
-					  //fprintf(stderr,"using lowpass filter with bandwidth of: boh Hz");
 					  break;
 				  }
 			  }
-			  else
-			  {
-				kp(0) =  25.0;	kp(1) =  25.0;	kp(2) =  25.0;	kp(3) =  30.0;
-			  }
+			  else{ kp(0) =  25.0;	kp(1) =  25.0;	kp(2) =  25.0;	kp(3) =  30.0; }
               fprintf(stderr, "Opening right arm ... \n");
 		  } 
 		  else if (strcmp(limb.c_str(), "left_leg")==0)
 		  {
+			  
+		      //---------------------------------------------
+			  //           SETTING UP PART TO CONTROL
+		      //---------------------------------------------
 			  limbJnt = 4;
 			  sensorLink = 1;
 			  iCubPid = new Pid[limbJnt];
@@ -321,7 +410,10 @@ private:
               ps(2) = -0.10;
 			  kp.resize(limbJnt);
 			  kspr.resize(limbJnt);
-			  //GAINS gains
+			  
+		      //---------------------------------------------
+			  //           SETTING GAINS
+		      //---------------------------------------------
 			  kspr(0) = 0.3;	kspr(1) = 0.3;	kspr(2) = 0.3;	kspr(3) = 0.3;
 			  if (filter_enabled)
 			  {
@@ -330,32 +422,29 @@ private:
 				  {
 				  case FILT1HZ:
 					  kp(0) =  20.0;	kp(1) =  -14.0;	kp(2) =  94.0;	kp(3) =  -94.0;
-					  //fprintf(stderr,"using lowpass filter with bandwidth of: 1 Hz");
 					  break;
 				  case FILT2HZ:
 					  kp(0) =  20.0;	kp(1) =  -14.0;	kp(2) =  94.0;	kp(3) =  -94.0;
-					  //fprintf(stderr,"using lowpass filter with bandwidth of: 2 Hz");
 					  break;
 				  case FILT3HZ:
 					  kp(0) =  20.0;	kp(1) =  -14.0;	kp(2) =  94.0;	kp(3) =  -94.0;
-					  //fprintf(stderr,"using lowpass filter with bandwidth of: 3 Hz");
 					  break;
 				  default:
 					  kp(0) =  10;	kp(1) =  -5;	kp(2) =  40;	kp(3) =  -50; 
-					  //fprintf(stderr,"using lowpass filter with bandwidth of: boh Hz");
 					  break;
 				  }
 
 			  }
-			  else
-			  {
-				 kp(0) =  10;	kp(1) =  -5;	kp(2) =  40;	kp(3) =  -50; 
-			  }
+			  else{ kp(0) =  10;	kp(1) =  -5;	kp(2) =  40;	kp(3) =  -50;}
 			  T_all=eye(limbJnt,limbJnt);
 			  fprintf(stderr, "Opening left leg ... \n");
 		  }
 		  else if (strcmp(limb.c_str(), "right_leg")==0)
 		  {
+			  
+		      //---------------------------------------------
+			  //           SETTING UP PART TO CONTROL
+		      //---------------------------------------------
 			  limbJnt = 4;
 			  sensorLink = 1;
 			  iCubPid = new Pid[limbJnt];
@@ -365,7 +454,13 @@ private:
               ps(2) = 0.10;
 			  kp.resize(limbJnt);
 			  kspr.resize(limbJnt);
-			  //GAINS gains
+		      //---------------------------------------------
+
+
+			  
+		      //---------------------------------------------
+			  //           SETTING GAINS
+		      //---------------------------------------------
 			  kspr(0) = 0.3;	kspr(1) = 0.3;	kspr(2) = 0.3;	kspr(3) = 0.3;
 			  if (filter_enabled)
 			  {
@@ -374,33 +469,24 @@ private:
 				  {
 				  case FILT1HZ:
 					  kp(0) = -20.0;	kp(1) =  14.0;	kp(2) =  -94.0;	kp(3) =  94.0; 
-					  //fprintf(stderr,"using lowpass filter with bandwidth of: 1 Hz");
 					  break;
 				  case FILT2HZ:
 					  kp(0) = -20.0;	kp(1) =  14.0;	kp(2) =  -94.0;	kp(3) =  94.0; 
-					  //fprintf(stderr,"using lowpass filter with bandwidth of: 2 Hz");
 					  break;
 				  case FILT3HZ:
 					  kp(0) = -20.0;	kp(1) =  14.0;	kp(2) =  -94.0;	kp(3) =  94.0; 
-					  //fprintf(stderr,"using lowpass filter with bandwidth of: 3 Hz");
 					  break;
 				  default:
 					  kp(0) =  -10;	kp(1) =   5;	kp(2) =  -40;	kp(3) =  50; 
-					  //fprintf(stderr,"using lowpass filter with bandwidth of: boh Hz");
 					  break;
 				  }
 			  }
-			  else
-			  {
-				 kp(0) =  -10;	kp(1) =   5;	kp(2) =  -40;	kp(3) =  50; 
-			  }
+			  else{ kp(0) =  -10;	kp(1) =   5;	kp(2) =  -40;	kp(3) =  50;}
 			  T_all=eye(limbJnt,limbJnt);
 			  fprintf(stderr, "Opening right leg ... \n");
 		  }
-		  else
-          {
-              fprintf(stderr, "nothing will be opened ... \n");
-          }
+		  else fprintf(stderr, "nothing will be opened ... \n");
+		      //---------------------------------------------
 	}
 
     
@@ -414,6 +500,34 @@ public:
 	ftControl(int _rate, PolyDriver *_dd, BufferedPort<Vector> *_port_FT, ResourceFinder &_rf, string tmplimb):	  
 	  RateThread(_rate), dd(_dd) 
 	  {
+		  
+		  //------------------------------------------
+		  //             STAT VARIABLES
+		  //------------------------------------------
+		  watchDog = 0;
+		  time = time0 = 0.0;
+		  countTime = countTime0 = 0;
+          if(prntData) fid=fopen("impedanceData.dat","a+");
+		  first = true;
+		  //------------------------------------------
+
+
+
+		  //------------------------------------------
+		  //           FT SENSOR DEFAULT
+		  //------------------------------------------
+		  Rs.resize(3,3);     Rs=0.0;
+		  ps.resize(3);		  ps=0.0;
+          kp=0.0;
+		  kspr=0.0;
+		  //------------------------------------------
+		  
+		  
+
+
+		  //------------------------------------------
+		  //           DEVICES
+		  //------------------------------------------
 		  iCubPid = 0;
 		  FTPid = 0;
 		  port_FT = _port_FT;
@@ -422,40 +536,23 @@ public:
 		  dd->view(iencs);
 		  dd->view(ipids);
 		  dd->view(iamps);
-
 		  int nJnt;
 		  iencs->getAxes(&nJnt);
 		  encoders.resize(nJnt);
 		  iencs->getEncoders(encoders.data());
-
-		  // Elbow to FT sensor variables
-		  Rs.resize(3,3);     Rs=0.0;
-		  ps.resize(3);		  ps=0.0;
-          kp=0.0;
-		  kspr=0.0;
-
 		  limb = tmplimb;
 		  initLimb(limb);
-		  sensor = new iFTransform(Rs,ps);
 		  chain = iCubLimb->asChain();
 		  iCubLimb->setAllConstraints(false);
+		  //------------------------------------------
 
-		  FTB = new iFB(sensorLink);
-		  FTB->attach(chain);
-		  FTB->attach(sensor);
 
-		  first = true;
-		  FTs.resize(FT_VALUES);
-		  FTs_init.resize(FT_VALUES);
-		  FT.resize(FT_VALUES);
-		  FTj.resize(limbJnt);
 
-		  angs.resize(limbJnt);
-		  angs_old.resize(limbJnt);
-		  speeds.resize(limbJnt);
-		  angs=0.0;
-		  angs_old=0.0;
-		  speeds=0.0;
+
+		  
+		  //------------------------------------------
+		  //             ICUB PID
+		  //------------------------------------------
 		  for(int i=0;i<limbJnt;i++)
 		  {
 			  // Get a copy of iCub Pid values...
@@ -468,6 +565,33 @@ public:
 			  FTPid[i].setOffset(0.0);	
 			  // Setting the FTPid, iCub is controllable using setOffset
 		  }
+		  //------------------------------------------
+
+
+
+
+
+
+		  //------------------------------------------
+		  //         VARIABLES FOR CONTROL
+		  //------------------------------------------
+		  FT.resize(FT_VALUES);
+		  FTs.resize(FT_VALUES);
+		  FTs_init.resize(FT_VALUES);
+		  FTj.resize(limbJnt);
+		  Fe.resize(FT_VALUES);
+		  FT.zero();
+		  FTs.zero();
+		  FTj.zero();
+
+		  angs.resize(limbJnt);
+		  angs_old.resize(limbJnt);
+		  speeds.resize(limbJnt);
+		  angs=0.0;
+		  angs_old=0.0;
+		  speeds=0.0;
+		  K=eye(limbJnt,limbJnt);
+		  Kspring=eye(limbJnt,limbJnt);
 		  tau.resize(limbJnt);
 		  tauDes.resize(limbJnt);
 		  tauSafe.resize(limbJnt);
@@ -477,29 +601,93 @@ public:
 		  tauSafe=0.0;
 		  tauFilt=0.0;
           desPosition.resize(limbJnt);
+		  //------------------------------------------
 
-		  watchDog = 0;
-		  time = time0 = 0.0;
-		  countTime = countTime0 = 0;
-                  if(prntData) fid=fopen("impedanceData.dat","a+");
+
+
+
+
+		  
+		  //------------------------------------------
+		  //           FT SENSOR
+		  //------------------------------------------
+		  sensor = new iFTransform(Rs,ps);
+
+		  FTB = new iFB(sensorLink);
+		  FTB->attach(chain);
+		  FTB->attach(sensor);
+		  //------------------------------------------
+
+
+
+
+
+
+		  //------------------------------------------
+		  //             SATURATION
+		  //------------------------------------------ 
+		  Bottle tmp;
+		  tmp = 0;
+		  sat.resize(4);
+		  if(_rf.check("saturation"))
+		  {
+			  tmp = _rf.findGroup("saturation");
+			  Vector sat_tmp(tmp.size()-1);
+			  if(sat_tmp.length()<(tmp.size()-1))
+			  {
+				  fprintf(stderr,"warning: check saturation length in config file.");
+				  for(int i = 0;i<(tmp.size()-1);i++)
+				  {
+					  sat(i) = tmp.get(i+1).asDouble();
+				  }
+				  for(int i = (tmp.size()-1);i<sat.length();i++)
+					  sat(i) = 0.0;
+			  }
+			  else
+			  {
+				  for(int i = 0;i<sat.length();i++)
+				  {
+					  sat(i) = tmp.get(i+1).asDouble();
+				  }
+			  }
+			  
+		  }
+		  //-------------------------------------------
+
+
+		  //------------------------------------------
+		  //             GAIN
+		  //------------------------------------------ 
+		  tmp = 0;
+		  if(_rf.check("gain"))
+		  {
+			  tmp = _rf.findGroup("gain");
+			  gain = tmp.get(1).asDouble();
+			  if(gain>1.0) 
+			  {
+				  fprintf(stderr,"cannot use gains greater than 1.0. Setting gain = 0.7\n");
+				  gain = 0.7;
+			  }
+		  }
+		  else  gain = 0.5;
+		  //-------------------------------------------
 	  }
+
+
 	  bool threadInit()
 	  {
-		  FT.zero();
-		  FTs.zero();
-		  FTj.zero();
+		  
 		  count = 0;
 
+		  //------------------------------------------
+		  //       START POSITION CHECK
+		  //------------------------------------------
 #ifdef CONTROL_ON		  
-		  // Put the robot in the starting position
 		  for(int i=0;i<limbJnt;i++)
-		  {
 			  ipos->positionMove(i,initPosition[i]);
-		  }
 #endif			  
-
+		  
 		  bool check = false;
-		  //int count;
 		  for(int i=0;i<limbJnt;i++)
 		  {
 			  check=false;
@@ -511,70 +699,74 @@ public:
 				  Time::delay(0.1);
 			  }
 		  }
+		  //------------------------------------------
 		  
-		  //Time::delay(1.0);
+
+
+
+		  
+		  //------------------------------------------
+		  //         SETTING PID FOR CONTROL
+		  //------------------------------------------
 #ifdef CONTROL_ON
 		  // Set the Pids to zero in order to control using setOffset		  
 		  for(int i=0;i<limbJnt;i++)
-		  {
 			  	  ipids->setPid(i,FTPid[i]);  
-		  }
-//		  ipids->setPid(3,FTPid[3]); // use this on a single joint
-//		  ipids->setPid(2,FTPid[2]); // use this on a single joint
-//		  ipids->setPid(1,FTPid[1]); // use this on a single joint
-//		  ipids->setPid(0,FTPid[0]); // use this on a single joint
 #endif		  
+		  //------------------------------------------
 		  count =0;
 		  return true;
 	  }
+
+
 	  void run()
 	  {
+		  //------------------------------------------
+		  //          STATISTIC VARIABLES
+		  //------------------------------------------
 		  static double told=0;
 		  static double t=0;
 		  told=t;
 		  t=Time::now();
           double tdiff=t-told;
+		  //------------------------------------------
 
-		  datas=port_FT->read(false);
 
-		  //if(iencs->getEncoders(encoders.data()))
+
+		  //------------------------------------------
+		  //          ROBOT POSTURE
+		  //------------------------------------------
 		  iencs->getEncoders(encoders.data());
-		  //fprintf(stderr,"encoders length = %d\n", encoders.length());
 		  for(int i=0; i<limbJnt;i++)
-			{
-				angs_old(i) = angs(i);
-				angs(i) = encoders(i)*M_PI/180;
-			}
+		  {
+			  angs_old(i) = angs(i);
+			  angs(i) = encoders(i)*M_PI/180;
+		  }
 
 		  iCubLimb->setAng(angs);
-		  //else if(verbose) fprintf(stderr,"ERROR: no read from encoders\n");
+		  //------------------------------------------
 
+
+
+		  
+		  //------------------------------------------
+		  //     FT PORT CHECK AND DATA RETRIEVING
+		  //------------------------------------------
+		  datas=port_FT->read(false);
 		  port_FT->getEnvelope(info);
-		  //time = info.getTime();
 		  countTime = info.getCount();
 
 		  int connected = CONNECTION_OK;
 
-		  if(countTime0>=32000 && countTime<16000)
-		  {
-			  countTime0=0;
-		  }
+		  if(countTime0>=32000 && countTime<16000)  countTime0=0;
 		  if(countTime - countTime0 > 0) 
 		  {
 			  connected = CONNECTION_OK;
 			  countTime0 = countTime;
 			  watchDog = 0;
 		  }
-		  else   
-		  {
-			  watchDog+=1;
-		  }
-
-		  if(watchDog>=20) 
-		  {
-			  connected = CONNECTION_ERROR;
-		  }
-
+		  else watchDog+=1;
+		  if(watchDog>=20)connected = CONNECTION_ERROR;
 		  if(count>=CPRNT)
 		  {
 			  fprintf(stderr,"Cycle duration=%f s, watchdog:%d ",tdiff, watchDog);
@@ -591,52 +783,41 @@ public:
 			  else fprintf(stderr,"(Zero Force Control off)\n");
 #endif
 		  }
-		  //switch(connected)
-		  //{ 
-			//  case CONNECTION_ERROR:
-			//	  FT=0.0;
-			//	  fprintf(stderr,"ERROR: connection lost\n\n");
-			//	  break;
-			//  case CONNECTION_OK:
-				  if(datas!=0)  
-				  { 
-					  if(CALIBRATION_OK)  FTs = *datas;
-					  else  FTs = readFT();
+		  //------------------------------------------
 
-					  if(first) FTs_init = FTs;
-					  FT = FTB->getFB(FTs-FTs_init);
 
-					  	
-					  first = false;
-				  }
-				  else
-				  {
-					  if(!first)
-					  {
-						  FT = FTB->getFB();
-					  }
-					  else 
-					  {
-						  FT=0.0;
-						  FTs=0.0;
-						  FTj=0.0;
-						  FTs_init=0.0;
-					  }
-				  }
-				 // break;
-			  
-		  //}
-		  Vector Fe=FTB->getFe();
+		  
+		  //------------------------------------------
+		  //   FORCE ACQUISITION AND TRANSFORMATION
+		  //------------------------------------------
+		  if(datas!=0)  
+		  { 
+			  FTs = *datas;
+			  if(first) 
+			  {
+				  FTs_init = FTs;
+				  setDesiredPositions();	
+				  control_mode=IMPEDANCE;
+			  }
+			  FT = FTB->getFB(FTs-FTs_init);			  	
+			  first = false;
+		  }
+		  else
+		  {
+			  if(!first)  FT = FTB->getFB();
+			  else {FT=0.0; FTs=0.0; FTj=0.0; FTs_init=0.0;}
+		  }
+		  Fe=FTB->getFe();
+		  //------------------------------------------
 
-		  //gains: to be tuned
-		  Matrix K;
-		  Matrix Kspring;
-		  K=eye(limbJnt,limbJnt);
-		  Kspring=eye(limbJnt,limbJnt);
+
+
+
+		  //------------------------------------------
+		  //          DEFINING CONTROL OUTPUT
+		  //------------------------------------------
 		  for(int i=0;i<limbJnt;i++) {K(i,i) = kp(i); Kspring(i,i) = kspr(i);}
-		  //control: to be checked
 		  Matrix J = iCubLimb->GeoJacobian();
-         // const double Kspringc=0.3;
 		  Vector tau(limbJnt);
 		  tau=0.0;
 		  tauDes=Kspring*((180.0/M_PI)*angs-desPosition);
@@ -646,8 +827,14 @@ public:
 		  else 
 			{tau = K*(FTj);}        //USE THIS FOR ZERO FORCE CONTROL
 		  Vector tauC= T_all*tau;
+		  //------------------------------------------
 
-		  //filtering
+
+
+
+		  //------------------------------------------
+		  //              FILTERING
+		  //------------------------------------------
 		  for(int i=0;i<limbJnt;i++)
 			  {
 				  tauFilt(i) = 0.0;//lpf_ord1_3hz(tauC(i), i);
@@ -655,19 +842,15 @@ public:
 				  {
 				  case FILT1HZ:
 					  tauFilt(i) = lpf_ord1_1hz(tauC(i), i);
-					  //fprintf(stderr,"using lowpass filter with bandwidth of: 1 Hz");
 					  break;
 				  case FILT2HZ:
 					  tauFilt(i) = lpf_ord1_2hz(tauC(i), i);
-					  //fprintf(stderr,"using lowpass filter with bandwidth of: 2 Hz");
 					  break;
 				  case FILT3HZ:
 					  tauFilt(i) = lpf_ord1_3hz(tauC(i), i);
-					  //fprintf(stderr,"using lowpass filter with bandwidth of: 3 Hz");
 					  break;
 				  default:
 					  tauFilt(i) = lpf_ord1_3hz(tauC(i), i);
-					  //fprintf(stderr,"using lowpass filter with bandwidth of: boh Hz");
 					  break;
 				  }
 			  }
@@ -678,48 +861,69 @@ public:
 				  tauC(i) = tauFilt(i);
 			  }
 		  }
+		  //--------------------------------------------
 
-		  //Limits check
+
+
+		  //-------------------------------------------
+		  //             LIMIT CHECK
+		  //-------------------------------------------
+
 		  for (int i=0; i<limbJnt; i++)
 		  {
 			  speeds(i) = (angs(i) - angs_old(i))/tdiff;
 		  }
-		  tauSafe = checkLimits(encoders, tauC, speeds);
+		  tauSafe = checkLimits(encoders, gain * tauC, speeds);
+		  //--------------------------------------------
 
-		  //saturation
-		  Vector sat(4);
-		  sat(0) = 300; sat(1) = 300; sat(2) = 300; sat(3) = 300;
+
+
+		  //--------------------------------------------
+		  //                SATURATION
+		  //--------------------------------------------
+
 		  for(int i=0;i<limbJnt;i++)
 		  {
 			  tauSafe(i)=(tauSafe(i)>sat(i))?sat(i):tauSafe(i);
 			  tauSafe(i)=(tauSafe(i)<-sat(i))?-sat(i):tauSafe(i);
 		  }
+		  //--------------------------------------------
 
+
+
+		  //--------------------------------------------
+		  //            COMMANDING TORQUES
+		  //--------------------------------------------
 #ifdef CONTROL_ON
 		  //Set the control offsets to the motors
 		  for(int i=0;i<limbJnt;i++)
 		  {
 			  ipids->setOffset(i,tauSafe(i));
 		  }	
-	//	  ipids->setOffset(3,tauSafe(3));  // use this on single joint
-	//	  ipids->setOffset(2,tauSafe(2));  // use this on single joint
-	//	  ipids->setOffset(1,tauSafe(1));  // use this on single joint
-	//	  ipids->setOffset(0,tauSafe(0));  // use this on single joint
 #endif		  
-                  if(prntData){
+		  //--------------------------------------------
+
+
+
+
+		  //----------------------------------------------
+		  //               PRINT
+		  //----------------------------------------------
+          if(prntData)
+		  {
 			  for(int i=0;i<limbJnt;i++)
-		               fprintf(fid,"%.4lf\t",encoders(i));
+					   fprintf(fid,"%.4lf\t",encoders(i));
 			  for(int i=0;i<limbJnt;i++)
-		               fprintf(fid,"%.4lf\t",tauDes(i));
+					   fprintf(fid,"%.4lf\t",tauDes(i));
 			  for(int i=0;i<limbJnt;i++)
-		               fprintf(fid,"%.4lf\t",FTj(i));
+					   fprintf(fid,"%.4lf\t",FTj(i));
 			  for(int i=0;i<limbJnt;i++)
-		               fprintf(fid,"%.4lf\t",tauSafe(i));
+					   fprintf(fid,"%.4lf\t",tauSafe(i));
 			  for(int i=0;i<6;i++)
-		               fprintf(fid,"%.4lf\t",FTs(i)-FTs_init(i));
-              fprintf(fid,"\n");
-                  }
-		 
+					   fprintf(fid,"%.4lf\t",FTs(i)-FTs_init(i));
+			  fprintf(fid,"\n");
+          }
+	 
 
 		  if(count>=CPRNT)
 		  {
@@ -793,12 +997,16 @@ public:
 			 
 			  count = 0;
 		  }
+		  //---------------------------------------------
 		  count++;
 	  }
 
 	  void threadRelease()
 	  {
 
+		  //---------------------------------------------
+		  //            DISABLING
+		  //---------------------------------------------
 		  fprintf(stderr,"disabling amps...\n");
 		  for(int i=0;i<limbJnt;i++)
           	  iamps->disableAmp(i);
@@ -806,39 +1014,47 @@ public:
 		  for(int i=0;i<limbJnt;i++)
           	  ipids->disablePid(i);
 		  fprintf(stderr,"setting old PIDS...\n");
+		  //---------------------------------------------
 
+
+		  
+		  //---------------------------------------------
+		  //         SETTING BACK ICUB PID
+		  //---------------------------------------------
 #ifdef CONTROL_ON
-		  //set again the original saved PIDS to the ICub
 		  for(int i=0;i<limbJnt;i++)
 		  {
 			  ipids->setPid(i,iCubPid[i]);
 			  fprintf(stderr,"setting back iCub PID(%d)\n",i);
 		  }
-	//	  ipids->setPid(3,iCubPid[3]); //use this on single joint
-	//	  ipids->setPid(2,iCubPid[2]); //use this on single joint
-	//	  ipids->setPid(1,iCubPid[1]); //use this on single joint
-	//	  ipids->setPid(0,iCubPid[0]); //use this on single joint
 #endif
+		  //---------------------------------------------
+
+
+		  
+		  //---------------------------------------------
+		  //       ENABLING THE ROBOT
+		  //---------------------------------------------
 		  fprintf(stderr,"enabling amps...\n");
 		  for(int i=0;i<limbJnt;i++)
           	  iamps->enableAmp(i);
 		  fprintf(stderr,"enabling pids...\n");
 		  for(int i=0;i<limbJnt;i++)
           	  ipids->enablePid(i);
-		 
-	//	  if(datas) delete datas;
+		  //---------------------------------------------
 
-                  if(prntData) fclose(fid);
+
+		  
+		  //---------------------------------------------
+		  //       DESTROING VARIABLES
+		  //---------------------------------------------
+          if(prntData) fclose(fid);
 		  if(FTB) delete FTB;
 		  if(iCubPid) delete[] iCubPid;
 		  if(FTPid) delete[] FTPid;
+		  //---------------------------------------------
 	  }
 
-	  /*bool checkSinglePosition(double qd, double q)
-	  {
-		  if(abs(qd-q)<=1.0) return true;
-		  else return false;
-	  }*/
 	  Vector checkLimits(Vector q, Vector TAO, Vector dir)
 	  {
 		  Vector t = TAO;
@@ -846,36 +1062,22 @@ public:
 		  {
 			  if(q(i)<=minJntLimits[i])
 			  {
-				  //if(verbose) 
+                  if(count>=CPRNT)  fprintf(stderr,"J%d over limits %.2lf (%.2lf ; %.2lf) ", i, q(i), minJntLimits[i], maxJntLimits[i]);
+				  if (dir(i)>0){ if(count>=CPRNT) fprintf(stderr,"Dir %.3lf > 0.0,safe\n",dir(i));}
+				  else
 				  {
-                      if(count>=CPRNT)  fprintf(stderr,"J%d over limits %.2lf (%.2lf ; %.2lf) ", i, q(i), minJntLimits[i], maxJntLimits[i]);
-					  if (dir(i)>0)
-					  {
-						  //t(i) = t(i)/2; //for safety
-                          if(count>=CPRNT) fprintf(stderr,"Dir %.3lf > 0.0,safe\n",dir(i));
-					  }
-					  else
-					  {
-						  t(i) = 0.0;
-						  if(count>=CPRNT) fprintf(stderr,"Dir %.3lf < 0.0,STOPPING\n",dir(i));
-					  }
-				  }
+					  t(i) = 0.0;
+					  if(count>=CPRNT) fprintf(stderr,"Dir %.3lf < 0.0,STOPPING\n",dir(i));
+				  }			  
 			  }
 			  if(q(i)>=maxJntLimits[i])
 			  {
-				  //if(verbose) 
+                  if(count>=CPRNT) fprintf(stderr,"J%d over limits %.2lf (%.2lf ; %.2lf) ", i, q(i), minJntLimits[i], maxJntLimits[i]);
+				  if (dir(i)<0){ if(count>=CPRNT) fprintf(stderr,"Dir %.3lf > 0.0, safe\n",dir(i));}
+				  else
 				  {
-                      if(count>=CPRNT) fprintf(stderr,"J%d over limits %.2lf (%.2lf ; %.2lf) ", i, q(i), minJntLimits[i], maxJntLimits[i]);
-					  if (dir(i)<0)
-					  {
-						  //t(i) = t(i)/2; //for safety
-                          if(count>=CPRNT) fprintf(stderr,"Dir %.3lf > 0.0, safe\n",dir(i));
-					  }
-					  else
-					  {
-						  t(i) = 0.0;
-                          if(count>=CPRNT) fprintf(stderr,"Dir %.3lf < 0.0, STOPPING\n",dir(i));
-					  }
+					  t(i) = 0.0;
+                      if(count>=CPRNT) fprintf(stderr,"Dir %.3lf < 0.0, STOPPING\n",dir(i));
 				  }
 			  }
 		  }
@@ -886,19 +1088,16 @@ public:
 	  {
 		  if(initPos.length()<limbJnt)
 			  return false;
-
 		  initPosition.resize(initPos.length());
 		  for(int i = 0;i<limbJnt;i++)
 			  initPosition(i) =	initPos(i);
-		  
 		  fprintf(stderr,"initial position set to: %.2lf, %.2lf, %.2lf, %.2lf\n", initPosition(0), initPosition(1), initPosition(2), initPosition(3));
-		  
 		  return true;
 	  }
+
 	  bool setLimits(Vector maxLimit, Vector minLimit)
 	  {
-		  if(maxLimit.length()<limbJnt || minLimit.length()<limbJnt)
-			  return false;
+		  if(maxLimit.length()<limbJnt || minLimit.length()<limbJnt) return false;
 
 		  maxJntLimits.resize(maxLimit.length());
 		  minJntLimits.resize(minLimit.length());
@@ -909,22 +1108,8 @@ public:
 		  }
 		  fprintf(stderr,"max limits set to: %.2lf, %.2lf, %.2lf, %.2lf\n", maxJntLimits(0), maxJntLimits(1), maxJntLimits(2), maxJntLimits(3));
 		  fprintf(stderr,"max limits set to: %.2lf, %.2lf, %.2lf, %.2lf\n", minJntLimits(0), minJntLimits(1), minJntLimits(2), minJntLimits(3));
-		  
 		  return true;
-	  }
-
-	 
-
-
-	  Vector readFT()
-	  {
-		  Vector FTtmp = *datas;
-		  FTtmp(1) = -FTtmp(1);
-		  FTtmp(4) = -FTtmp(4);
-		  FTtmp(5) = -FTtmp(5);
-		  return FTtmp;
-	  }
-		  
+	  }		  
 };
 
 
@@ -1028,26 +1213,26 @@ public:
 		string part;
 		string robot;
 		string fwdSlash = "/";
-		PortName = fwdSlash;
+		PortName = "/zfc/";
 		port_FT= 0;
 
 		ConstString robotName=rf.find("robot").asString();
 		if (rf.check("robot"))
 		{
-			PortName=fwdSlash+rf.find("robot").asString().c_str();
+			//PortName=PortName+rf.find("robot").asString().c_str();
 			robot = rf.find("robot").asString().c_str();
 		}
         else
 		{
 			fprintf(stderr,"Device not found\n");
-            PortName=fwdSlash+"icub";
+            //PortName=PortName+"icub";
 			robot = "icub";
 		}
 		
 		ConstString partName=rf.find("part").asString();
 		if (rf.check("part"))
 		{
-			PortName=PortName+fwdSlash+rf.find("part").asString().c_str();
+			PortName=PortName+rf.find("part").asString().c_str();
 			part = rf.find("part").asString().c_str();
 		}
         else
@@ -1056,7 +1241,8 @@ public:
 		  Time::delay(3.1);
             return false;
 		}
-
+		port_FT=new BufferedPort<Vector>;
+		port_FT->open((PortName+"/FT:i").c_str());
 		Bottle tmp;
 		tmp=0;
 		Vector initPos;
@@ -1145,7 +1331,7 @@ public:
 		fprintf(stderr,"setting limits\n");
 		ft_control->setLimits(maxLim,minLim);
 		fprintf(stderr,"initial position and limits set...\n");
-        //Time::delay(5.0);
+
         fprintf(stderr,"starting thread\n");
 		ft_control->start();
 		fprintf(stderr,"thread started\n");
@@ -1189,7 +1375,7 @@ int main(int argc, char * argv[])
     ResourceFinder rf;
     rf.setVerbose();
 	rf.setDefaultContext("zeroForceControl/conf");
-	rf.setDefaultConfigFile("defautFT.ini");
+	rf.setDefaultConfigFile("leftArmFT.ini");
 
     rf.configure("ICUB_ROOT", argc, argv);
 
