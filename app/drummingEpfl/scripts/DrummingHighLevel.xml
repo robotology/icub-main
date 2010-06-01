@@ -1,0 +1,113 @@
+<application>
+<name>DrummingHighLevel (EPFL)</name>  
+        <module>
+                <name>MultiMarkerTracker</name>
+                <parameters>--from C:\Progra~1\iCub\app\drummingEPFL\conf\tracker\config.ini</parameters>
+                <node>seb</node>
+                <tag>tracker</tag>
+        </module> 
+
+		
+		<module>
+                <name>yarpview</name>
+                <parameters>--name /trackerViewer</parameters>
+                <node>seb</node>
+                <tag>trackerViewer</tag>
+        </module>
+		
+		<module>
+                <name>yarp read</name>
+                <parameters>/trackerOutputRoot</parameters>
+                <node>seb</node>
+				<stdio>seb</stdio>
+                <tag>trackerOutputRoot</tag>
+        </module>
+		
+		<module>
+                <name>yarp read</name>
+                <parameters>/trackerOutputEye</parameters>
+                <node>seb</node>
+				<stdio>seb</stdio>
+                <tag>trackerOutputEye</tag>
+        </module>
+		
+		<connection>
+                <from>/icub/cam/left</from>
+                <to>/MultiMarkerTracker/image</to>
+                <protocol>tcp</protocol>
+        </connection>
+		
+		<connection>
+                <from>/MultiMarkerTracker/view</from>
+                <to>/trackerViewer</to>
+                <protocol>tcp</protocol>
+        </connection>
+		
+		<connection>
+                <from>/MultiMarkerTracker/RootPos</from>
+                <to>/trackerOutputRoot</to>
+                <protocol>tcp</protocol>
+        </connection>
+		
+		<connection>
+                <from>/MultiMarkerTracker/EyePos</from>
+                <to>/trackerOutputEye</to>
+                <protocol>tcp</protocol>
+        </connection>
+		
+		<module>
+                <name>DrumIKinCartesianSolver</name>
+                <parameters>--part left_arm --verbose --from C:\\Progra~1\\iCub\\app\\drummingEpfl\\conf\\DrumIKinCartesianSolver\\config.ini</parameters>
+                <node>seb</node>
+                <tag>DrumIKinCartLeft</tag>
+        </module>
+		
+		<module>
+                <name>DrumIKinCartesianSolver</name>
+                <parameters>--part right_arm --verbose --from C:\\Progra~1\\iCub\\app\\drummingEpfl\\conf\\DrumIKinCartesianSolver\\config.ini</parameters>
+                <node>seb</node>
+                <tag>DrumIKinCartRight</tag>
+        </module>
+		
+		<module>
+                <name>DrumIKin</name>
+                <parameters>--file C:\\Progra~1\\iCub\\app\\drummingEpfl\\conf\\DrumIKin\\config.ini</parameters>
+                <node>seb</node>
+				<stdio>seb</stdio>
+                <tag>drumIKin</tag>
+        </module> 
+		
+		<module>
+                <name>DrumHeadControl</name>
+                <parameters>--file C:\\Progra~1\\iCub\\app\\drummingEpfl\\conf\\DrumHeadControl\\config.ini</parameters>
+                <node>seb</node>
+                <tag>headControl</tag>
+        </module> 
+		
+		<connection>
+                <from>/MultiMarkerTracker/RootPos</from>
+                <to>/DrumIKin/in</to>
+                <protocol>tcp</protocol>
+        </connection>
+		
+		<connection>
+                <from>/MultiMarkerTracker/EyePos</from>
+                <to>/DrumHeadControl/in</to>
+                <protocol>tcp</protocol>
+        </connection>
+		
+		<connection>
+                <from>/DrumIKin/out</from>
+                <to>/manager/in</to>
+                <protocol>tcp</protocol>
+        </connection>
+		
+		<connection>
+                <from>/DrumHeadControl/out</from>
+                <to>/manager/in</to>
+                <protocol>tcp</protocol>
+        </connection>
+		
+
+</application>
+
