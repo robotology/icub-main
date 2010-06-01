@@ -103,7 +103,6 @@ This file can be edited at
 \in src/signalScope/main.cpp. 
 */ 
 
-#include <ace/OS.h>
 #include <yarp/os/Network.h>
 #include <yarp/os/RFModule.h>
 #include <yarp/os/RateThread.h>
