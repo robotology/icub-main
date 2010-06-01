@@ -262,7 +262,7 @@ public:
 		  } else fprintf(stderr,"error while sensor definition\n");
 
 		  sensorLink = 2;
-		  sens = new iDynInvSensor(iFakeBot->asChain(),sensorLink,HS,HSC,ms,IS,"",NE_dynamic,true);
+		  sens = new iDynInvSensor(iFakeBot->asChain(),sensorLink,HS,HSC,ms,IS,"",NE_DYNAMIC,true);
 		  sensor = new iFTransform(HS.submatrix(0,2,0,2),HS.submatrix(0,2,0,3).getCol(3));
 
 		  FTB = new iFB(sensorLink);
@@ -285,7 +285,7 @@ public:
 		  iFakeBot->setAng(q);
 		  iFakeBot->setDAng(dq);
 		  iFakeBot->setD2Ang(d2q);
-		  iFakeBot->prepareNewtonEuler(NE_dynamic);
+		  iFakeBot->prepareNewtonEuler(NE_DYNAMIC);
 
 		  w0.resize(3);dw0.resize(3);d2p0.resize(3);Fend.resize(3);Mend.resize(3);
 		  w0=dw0=d2p0=Fend=Mend=0.0;
@@ -379,7 +379,7 @@ public:
 			  ms = 7.29e-01; 
 		  } else fprintf(stderr,"error while sensor definition\n");
 
-		  sens = new iDynInvSensor(iFakeBot->asChain(),sensorLink,HS,HSC,ms,IS,"",NE_dynamic,true);
+		  sens = new iDynInvSensor(iFakeBot->asChain(),sensorLink,HS,HSC,ms,IS,"",NE_DYNAMIC,true);
 		  sensor = new iFTransform(HS.submatrix(0,2,0,2),HS.submatrix(0,2,0,3).getCol(3));
 
 		  FTB = new iFB(sensorLink);
@@ -403,7 +403,7 @@ public:
 		  iFakeBot->setAng(q);
 		  iFakeBot->setDAng(dq);
 		  iFakeBot->setD2Ang(d2q);
-		  iFakeBot->prepareNewtonEuler(NE_dynamic);
+		  iFakeBot->prepareNewtonEuler(NE_DYNAMIC);
 
 		  w0.resize(3);dw0.resize(3);d2p0.resize(3);Fend.resize(3);Mend.resize(3);
 		  w0=dw0=d2p0=Fend=Mend=0.0;
