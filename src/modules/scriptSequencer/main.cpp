@@ -274,7 +274,7 @@ public:
             x[i]=item[2+i];
 
         absTime.push_back(item[0]);
-        interpFlag.push_back((bool)item[1]);
+        interpFlag.push_back(item[1]!=0.0);
         data.push_back(x);
 
         size++;
