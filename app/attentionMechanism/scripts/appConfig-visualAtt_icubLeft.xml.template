@@ -59,8 +59,8 @@
 	</module>
 	<module>
 		<name>blobTracker</name>
-		<parameters>--name /blobTracker/icub/left_cam</parameters>
-		<tag>selectiveAttentionEngine</tag>
+		<parameters>--name blobTracker/icub/left_cam</parameters>
+		<tag>selectiveAttentionInterface</tag>
 		<node>/console1</node>
 	</module>
 	<module>
@@ -206,6 +206,7 @@
 		<to>/selectiveAttentionEngine/map3:i</to>
 		<protocol>tcp</protocol>
 	</connection>
+	
 	<connection>
       <from>/selectiveAttentionEngine/combination:o</from>
 		<to>/combinationView</to>
