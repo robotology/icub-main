@@ -63,7 +63,7 @@
 #include <yarp/dev/ControlBoardInterfaces.h>
 #include <yarp/sig/Vector.h>
 
-#include <iCub/adaptWinPolyEstimator.h>
+#include <iCub/ctrl/adaptWinPolyEstimator.h>
 
 #include <string>
 #include <deque>

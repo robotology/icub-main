@@ -5,8 +5,8 @@
 
 #include <gsl/gsl_math.h>
 
-#include <iCub/ctrlMath.h>
-#include <iCub/affActionPrimitives.h>
+#include <iCub/ctrl/ctrlMath.h>
+#include <iCub/actions/affActionPrimitives.h>
 
 #include <stdio.h>
 #include <stdarg.h>
