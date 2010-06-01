@@ -8,7 +8,7 @@ include(${YARP_DIR}/conf/YarpPlugin.cmake)
 project(icubmod)
 
 BEGIN_PLUGIN_LIBRARY(icubmod)
-  add_subdirectory(armCalibrator)
+  add_subdirectory(armcalibrator)
   add_subdirectory(canBusMotionControl)
   add_subdirectory(cartesianController)
   add_subdirectory(cfw2Can)
