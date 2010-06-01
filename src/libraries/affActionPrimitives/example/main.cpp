@@ -134,11 +134,8 @@ Windows, Linux
 #include <yarp/os/BufferedPort.h>
 #include <yarp/sig/Vector.h>
 #include <yarp/math/Math.h>
-#include <iCub/affActionPrimitives.h>
-
-#ifdef USE_ICUB_MOD
-    #include "drivers.h"
-#endif
+#include <yarp/dev/Drivers.h>
+#include <iCub/actions/affActionPrimitives.h>
 
 #include <iostream>
 #include <iomanip>
@@ -149,6 +146,8 @@ Windows, Linux
 #define USE_RIGHT   1
 
 #define AFFACTIONPRIMITIVESLAYER    affActionPrimitivesLayer1
+
+YARP_DECLARE_DEVICES(icubmod)
 
 using namespace std;
 using namespace yarp;
@@ -551,14 +550,12 @@ public:
 
 int main(int argc, char *argv[])
 {
+    YARP_REGISTER_DEVICES(icubmod)
+
     Network yarp;	
 
     if (!yarp.checkNetwork())
         return -1;
-
-#ifdef USE_ICUB_MOD
-    DriverCollection dev;
-#endif
 
     ResourceFinder rf;
     rf.setVerbose(true);
