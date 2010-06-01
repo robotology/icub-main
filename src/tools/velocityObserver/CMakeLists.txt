@@ -1,4 +1,5 @@
 SET(PROJECTNAME velocityObserver)
+
 PROJECT(${PROJECTNAME})
 
 SET(folder_source main.cpp)
