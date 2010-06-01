@@ -11,6 +11,10 @@
 
 #include "iCubArmCalibratorJ8.h"
 
+#include <ace/config.h>
+#include <ace/OS.h>
+#include <ace/Log_Msg.h>
+
 using namespace yarp::os;
 using namespace yarp::dev;
 
@@ -68,43 +72,47 @@ bool iCubArmCalibratorJ8::open (yarp::os::Searchable& config)
     homeVel = new double[nj];
 
     Bottle& xtmp = p.findGroup("CALIBRATION").findGroup("Calibration1");
-
+    ACE_ASSERT (xtmp.size() == nj+1);
     int i;
     for (i = 1; i < xtmp.size(); i++)
-        param1[i-1] = xtmp.get(i).asDouble();
+          param1[i-1] = xtmp.get(i).asDouble();
     xtmp = p.findGroup("CALIBRATION").findGroup("Calibration2");
-
+    ACE_ASSERT (xtmp.size() == nj+1);
     for (i = 1; i < xtmp.size(); i++)
         param2[i-1] = xtmp.get(i).asDouble();
     xtmp = p.findGroup("CALIBRATION").findGroup("Calibration3");
-
-    for (i = 1; i < xtmp.size(); i++)
-        param3[i-1] = xtmp.get(i).asDouble();
-    xtmp = p.findGroup("CALIBRATION").findGroup("CalibrationType");
-
-    for (i = 1; i < xtmp.size(); i++)
+    ACE_ASSERT (xtmp.size() == nj+1);
+   for (i = 1; i < xtmp.size(); i++)
+       param3[i-1] = xtmp.get(i).asDouble();
+   xtmp = p.findGroup("CALIBRATION").findGroup("CalibrationType");
+   ACE_ASSERT (xtmp.size() == nj+1);
+   
+   for (i = 1; i < xtmp.size(); i++)
         type[i-1] = (unsigned char) xtmp.get(i).asDouble();
-
-
-    xtmp = p.findGroup("CALIBRATION").findGroup("PositionZero");
-
-    for (i = 1; i < xtmp.size(); i++)
+   
+  
+   xtmp = p.findGroup("CALIBRATION").findGroup("PositionZero");
+   ACE_ASSERT (xtmp.size() == nj+1);
+   for (i = 1; i < xtmp.size(); i++)
         pos[i-1] = xtmp.get(i).asDouble();
-
-    xtmp = p.findGroup("CALIBRATION").findGroup("VelocityZero");
-
-    for (i = 1; i < xtmp.size(); i++)
+   
+   xtmp = p.findGroup("CALIBRATION").findGroup("VelocityZero");
+   ACE_ASSERT (xtmp.size() == nj+1);
+  
+   for (i = 1; i < xtmp.size(); i++)
         vel[i-1] = xtmp.get(i).asDouble();
-
-    xtmp = p.findGroup("HOME").findGroup("PositionHome");
-
-    for (i = 1; i < xtmp.size(); i++)
+   
+   xtmp = p.findGroup("HOME").findGroup("PositionHome");
+   ACE_ASSERT (xtmp.size() == nj+1);
+   
+   for (i = 1; i < xtmp.size(); i++)
         homePos[i-1] = xtmp.get(i).asDouble();
-
-    xtmp = p.findGroup("HOME").findGroup("VelocityHome");
-
-    for (i = 1; i < xtmp.size(); i++)
-        homeVel[i-1] = xtmp.get(i).asDouble();
+   
+   xtmp = p.findGroup("HOME").findGroup("VelocityHome");
+   ACE_ASSERT (xtmp.size() == nj+1);
+  
+   for (i = 1; i < xtmp.size(); i++)
+       homeVel[i-1] = xtmp.get(i).asDouble();
 
     return true;
 }
@@ -161,12 +169,13 @@ bool iCubArmCalibratorJ8::calibrate(DeviceDriver *dd)
         return false;
 
     int k;
-	int shoulderSetOfJoints[] = {0, 1 , 2};
-    for (k =0; k < 3; k++)
+	int shoulderSetOfJoints[] = {0, 1 , 2, 3};
+    for (k =0; k < 4; k++)
     {
         //fprintf(stderr, "ARMCALIB::Sending offset for joint %d\n", k);
         calibrateJoint(shoulderSetOfJoints[k]);
     }
+    Time::delay(1.0);
 
     for (k = 0; k < nj; k++) 
     {
@@ -176,12 +185,12 @@ bool iCubArmCalibratorJ8::calibrate(DeviceDriver *dd)
         iPids->enablePid(k);
     }
 
-	for (k = 0; k < 3; k++)
+	for (k = 0; k < 4; k++)
     {
         //fprintf(stderr, "ARMCALIB::Moving joint %d to zero\n", k);
 		goToZero(shoulderSetOfJoints[k]);
     }
-	for (k = 0; k < 3; k++)
+	for (k = 0; k < 4; k++)
     {
         //fprintf(stderr, "ARMCALIB::Waiting for joint %d movement\n", k);
 		checkGoneToZero(shoulderSetOfJoints[k]);
@@ -190,17 +199,17 @@ bool iCubArmCalibratorJ8::calibrate(DeviceDriver *dd)
     ret = true;
     bool x;
 
-	int firstSetOfJoints[] = {3, 4, 6, 7};
-    for (k =0; k < 4; k++)
+	int firstSetOfJoints[] = {4, 6, 7};
+    for (k =0; k < 3; k++)
 		calibrateJoint(firstSetOfJoints[k]);
-	for (k =0; k < 4; k++)
+	for (k =0; k < 3; k++)
 	{
 		x = checkCalibrateJointEnded(firstSetOfJoints[k]);
 		ret = ret && x;
 	}
-	for (k = 0; k < 4; k++)
+	for (k = 0; k < 3; k++)
 		goToZero(firstSetOfJoints[k]);
-	for (k = 0; k < 4; k++)
+	for (k = 0; k < 3; k++)
 		checkGoneToZero(firstSetOfJoints[k]);
 	//////////////////////////////////////////
 	int secondSetOfJoints[] = {5};
