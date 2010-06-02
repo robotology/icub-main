@@ -492,8 +492,6 @@ public:
 
     virtual bool respond(const Bottle &command, Bottle &reply)
     {
-        cout << "Receiving command from rpc port" << endl;
-
         int ack=Vocab::encode("ack");
         int nack=Vocab::encode("nack");
 
