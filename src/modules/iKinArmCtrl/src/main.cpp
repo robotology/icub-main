@@ -311,8 +311,6 @@ public:
 
     virtual bool respond(const Bottle &command, Bottle &reply)
     {
-        cout << "Receiving command from rpc port" << endl;
-
         if (command.size())
         {
             switch (command.get(0).asVocab())
