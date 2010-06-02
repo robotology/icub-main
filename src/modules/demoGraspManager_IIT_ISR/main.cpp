@@ -439,7 +439,7 @@ protected:
                 state=STATE_REACH;
             }
         }
-        else if (state!=STATE_IDLE && Time::now()-idleTimer>idleTmo)
+        else if (state==STATE_REACH && Time::now()-idleTimer>idleTmo)
         {    
             fprintf(stdout,"--- Target timeout => IDLE\n");
 
@@ -697,7 +697,7 @@ protected:
         {
             if (state==STATE_WAIT)
             {
-                if (Time::now()-latchTimer>releaseTmo)
+                if (Time::now()-latchTimer>idleTmo)
                 {
                     fprintf(stdout,"--- Timeout elapsed => IDLING\n");
                     state=STATE_IDLE;
@@ -735,13 +735,15 @@ protected:
 
     bool checkTargetForGrasp()
     {
+        const double t=Time::now();
+
         // false if target is considered to be still moving
         if (norm(targetPos-sphereCenter)>sphereRadius)
         {
             resetTargetBall();
             return false;
         }
-        else if (Time::now()-latchTimer<sphereTmo)
+        else if (t-latchTimer<sphereTmo || t-idleTimer>1.0)
             return false;
         else
             return true;
