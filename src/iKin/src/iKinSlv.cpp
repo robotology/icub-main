@@ -493,7 +493,9 @@ void CartesianSolver::getFeedback(const bool wait)
 
         if (wait)
         {
-            while (!enc[i]->getEncoders(fbTmp.data()));
+            while (!enc[i]->getEncoders(fbTmp.data()))
+                Time::delay(0.00025*getRate());     // wait for 1/4 of thread period
+
             ok=true;
         }
         else
@@ -528,9 +530,11 @@ void CartesianSolver::getFeedback(const bool wait)
 /************************************************************************/
 void CartesianSolver::initPos()
 {
+    lock();
     getFeedback(true);  // wait until all joints are acquired
-    latchUncontrolledJoints(unctrlJointsOld);
+    unlock();
 
+    latchUncontrolledJoints(unctrlJointsOld);
     inPort->reset_xd(prt->chn->EndEffPose());
 }
 
