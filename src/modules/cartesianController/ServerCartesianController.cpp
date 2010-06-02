@@ -120,9 +120,6 @@ void ServerCartesianController::init()
     lJnt=NULL;
     lRmp=NULL;
 
-    mutex =NULL;
-    txInfo=NULL;
-
     portSlvIn   =NULL;
     portSlvOut  =NULL;
     portSlvRpc  =NULL;
@@ -239,12 +236,12 @@ bool ServerCartesianController::respond(const Bottle &command, Bottle &reply)
             case IKINCARTCTRL_VOCAB_CMD_STOP:
             {   
                 // begin of critical code
-                mutex->wait();
+                mutex.wait();
 
                 stopControl();
 
                 // end of critical code
-                mutex->post();
+                mutex.post();
 
                 break;
             }
@@ -904,7 +901,7 @@ void ServerCartesianController::run()
     if (connected)
     {
         // begin of critical code
-        mutex->wait();
+        mutex.wait();
 
         // read the feedback
         getFeedback(fb);
@@ -943,13 +940,13 @@ void ServerCartesianController::run()
         }
     
         // streams out the end-effector pose
-        txInfo->update();
+        txInfo.update();
         portState->prepare()=chain->EndEffPose();
-        portState->setEnvelope(*txInfo);
+        portState->setEnvelope(txInfo);
         portState->write();        
     
         // end of critical code
-        mutex->post();
+        mutex.post();
     }
     else if ((++connectCnt)*getRate()>CARTCTRL_CONNECT_TMO)
     {
@@ -1136,9 +1133,6 @@ bool ServerCartesianController::open(Searchable &config)
 
     chain=limb->asChain();
 
-    mutex =new Semaphore(1); 
-    txInfo=new Stamp;
-
     openPorts();
 
     return true;
@@ -1180,13 +1174,7 @@ bool ServerCartesianController::close()
         delete limb;
 
     if (ctrl)
-        delete ctrl;    
-
-    if (mutex)
-        delete mutex;
-
-    if (txInfo)
-        delete txInfo;
+        delete ctrl;
 
     closePorts();
 
@@ -1575,7 +1563,7 @@ bool ServerCartesianController::setDOF(const Vector &newDof, Vector &curDof)
         Bottle command, reply;
     
         // begin of critical code
-        mutex->wait();    
+        mutex.wait();    
     
         // prepare command
         command.addVocab(IKINSLV_VOCAB_CMD_SET);
@@ -1590,7 +1578,7 @@ bool ServerCartesianController::setDOF(const Vector &newDof, Vector &curDof)
             fprintf(stdout,"%s error: unable to get reply from solver!\n",slvName.c_str());
 
             // end of critical code
-            mutex->post();
+            mutex.post();
             return false;
         }
 
@@ -1608,7 +1596,7 @@ bool ServerCartesianController::setDOF(const Vector &newDof, Vector &curDof)
         newController();
 
         // end of critical code
-        mutex->post();
+        mutex.post();
         
         return true;
     }

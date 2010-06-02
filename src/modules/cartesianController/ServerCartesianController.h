@@ -110,8 +110,8 @@ protected:
     double       txTokenLatched;
     bool         skipSlvRes;
 
-    yarp::os::Semaphore *mutex;
-    yarp::os::Stamp     *txInfo;
+    yarp::os::Semaphore mutex;
+    yarp::os::Stamp     txInfo;
 
     yarp::sig::Vector xdes;
     yarp::sig::Vector qdes;
