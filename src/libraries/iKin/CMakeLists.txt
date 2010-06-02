@@ -24,17 +24,13 @@ ENDIF(ICUB_USE_IPOPT)
 SOURCE_GROUP("Source Files" FILES ${folder_source})
 SOURCE_GROUP("Header Files" FILES ${folder_header})
 
-IF(ICUB_USE_IPOPT)
-   SET(_IPOPT_INCLUDE_DIRS ${IPOPT_INCLUDE_DIRS})
-ELSE(ICUB_USE_IPOPT)
-   SET(_IPOPT_INCLUDE_DIRS)
-ENDIF(ICUB_USE_IPOPT)
-
-
 INCLUDE_DIRECTORIES(${PROJECT_SOURCE_DIR}/include
                     ${ctrlLib_INCLUDE_DIRS}
-                    ${_IPOPT_INCLUDE_DIRS}
                     ${YARP_INCLUDE_DIRS})
+
+IF(ICUB_USE_IPOPT)
+   INCLUDE_DIRECTORIES(${IPOPT_INCLUDE_DIRS})
+ENDIF(ICUB_USE_IPOPT)
 
 ADD_LIBRARY(${PROJECTNAME} ${folder_source} ${folder_header})
 
@@ -45,8 +41,14 @@ IF(ICUB_USE_IPOPT)
    TARGET_LINK_LIBRARIES(${PROJECTNAME} ${IPOPT_LIBRARIES})
 ENDIF(ICUB_USE_IPOPT)
 
-ICUB_EXPORT_LIBRARY(${PROJECTNAME}
-                   "${PROJECT_SOURCE_DIR}/include;${ctrlLib_INCLUDE_DIRS};${_IPOPT_INCLUDE_DIRS}"
-                   include/iCub/iKin ${folder_header})
+IF(ICUB_USE_IPOPT)
+   ICUB_EXPORT_LIBRARY(${PROJECTNAME}
+                      "${PROJECT_SOURCE_DIR}/include;${ctrlLib_INCLUDE_DIRS};${IPOPT_INCLUDE_DIRS}"
+                      include/iCub/iKin ${folder_header})
+ELSE(ICUB_USE_IPOPT)
+   ICUB_EXPORT_LIBRARY(${PROJECTNAME}
+                      "${PROJECT_SOURCE_DIR}/include;${ctrlLib_INCLUDE_DIRS}"
+                      include/iCub/iKin ${folder_header})
+ENDIF(ICUB_USE_IPOPT)
 
 
