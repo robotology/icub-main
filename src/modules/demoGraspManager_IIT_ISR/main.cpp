@@ -594,6 +594,7 @@ protected:
                 (armSel==RIGHTARM) && (targetPos[1]<-hystThres))
             {
                 stopControl();
+                Time::delay(0.5);
                 steerArmToHome();
             
                 // swap interfaces
@@ -1259,7 +1260,7 @@ int main(int argc, char *argv[])
     rf.setMonitor(&rep);
     rf.setDefaultContext("demoGrasp_IIT_ISR/conf");
     rf.setDefaultConfigFile("config.ini");
-    rf.configure("ICUB_ROOT",argc,argv);    
+    rf.configure("ICUB_ROOT",argc,argv);
 
     managerModule mod;
     mod.setName("/demoGraspManager_IIT_ISR");
