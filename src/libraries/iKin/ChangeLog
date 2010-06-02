@@ -1,4 +1,7 @@
 
+2010-06-01 Ugo Pattacini <ugo.pattacini@iit.it>
+	   * Ported to iCub/main
+
 2010-04-28 Ugo Pattacini <ugo.pattacini@iit.it>
 	   * name convention of some protected methods changed
        * bug fix on iKinLink copy constructor
