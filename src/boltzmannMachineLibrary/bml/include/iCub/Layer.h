@@ -104,6 +104,14 @@ public:
 	* returns the number of Columns
 	*/
 	int getCol();
+    /**
+	* returns the number of Rows in the weight matrix
+	*/
+	int getRowWeights();
+	/**
+	* returns the number of Columns in the weight matrix
+	*/
+	int getColWeights();
 	/**
 	* returns the name of this row
 	*/
@@ -184,6 +192,14 @@ public:
 	* map of all the row of units present in the layer
 	*/
 	map<std::string,Row> rowList;
+    	/**
+	* number of rows in the weight matrix
+	*/
+	int rowWeights;
+	/**
+	* number of columns in the weight matrix
+	*/
+	int colWeights;
 };
 
 #endif //_LAYER_H_

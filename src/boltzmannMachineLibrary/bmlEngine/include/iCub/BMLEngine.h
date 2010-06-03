@@ -146,6 +146,18 @@ private:
     */
     BufferedPort<ImageOf<PixelRgb> > port3; //port for writing the image out
     /** 
+    * port for the representation of weights between layer0 and layer1
+    */
+    BufferedPort<ImageOf<PixelRgb> > weight01; //port for writing the image out
+    /** 
+    * port for the representation of weights between layer1 and layer2
+    */
+    BufferedPort<ImageOf<PixelRgb> > weight12; //port for writing the image out
+    /** 
+    * port for the representation of weights between layer2 and layer3
+    */
+    BufferedPort<ImageOf<PixelRgb> > weight23; //port for writing the image out
+    /** 
     * port where the commands are vehiculated from controller to engine
     */
     BufferedPort<yarp::os::Bottle> portCmd;
@@ -165,6 +177,18 @@ private:
     * thread that produces the image of the 3 layer
     */
     imageThread* layer3Image;
+    /**
+    * thread that outputs the image of the weights01 
+    */
+    imageThread* weights01Image;
+    /**
+    * thread that produces the image of the weights12
+    */
+    imageThread* weights12Image;
+    /**
+    * thread that produces the image of the weights23
+    */
+    imageThread* weights23Image;
     /**
     * plane for the port
     */

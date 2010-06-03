@@ -208,8 +208,14 @@ public:
     
     ImageOf<PixelRgb> img; //=new ImageOf<PixelRgb>;
     ImageOf<PixelRgb> *img0; //=new ImageOf<PixelRgb>;
-    
+    /** 
+    * image where the state of the layer will be represented
+    */
     ImageOf<PixelRgb> *image2; 
+    /** 
+    * image where the weights of the connection between this layer and the upper layer will be represented
+    */
+    ImageOf<PixelRgb> *imageWeights;
     /**
     * openCv image where all the objects are drawn sequentially
     */

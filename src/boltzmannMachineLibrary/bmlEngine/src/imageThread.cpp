@@ -14,20 +14,23 @@ bool imageThread::threadInit(){
     cvImage= cvCreateImage(cvSize(sizeX,sizeY), IPL_DEPTH_8U, 3 );
     image2=new ImageOf<PixelRgb>;
     image2->resize(sizeX,sizeY);
+    imageWeights=new ImageOf<PixelRgb>;
+    imageWeights->resize(sizeX,sizeY);
     for (int x=0; x<sizeX; x++){
                 for(int y=0;y<sizeY;y++){
                     PixelRgb &pix=image2->pixel(x,y);
+                    PixelRgb &pixW=imageWeights->pixel(x,y);
                     pix.r=0;
                     pix.b=0;
                     pix.g=0;
+                    pixW.r=0;
+                    pixW.b=0;
+                    pixW.g=0;
                 }
             }
     printf("Image Thread initialising..... \n");
     //printf("opening image port..... \n");
-    //string str=getName();
-    string str("/bmlEngine/");
-    str.append(this->name);
-    //port.open(str.c_str()); 
+    
     return true;
 }
 
@@ -46,13 +49,14 @@ void imageThread::afterStart(bool s){
 * running code of the thread
 */
 void imageThread::run(){
-    //1. produces the image
+    //1. produces the image of the state
     //printf("|||||||||||||||||||||||||||| \n");
+    Vector v=*(plottedLayer->stateVector);
     for(int i=0;i<plottedLayer->getCol();i++){
         for(int j=0;j<plottedLayer->getRow();j++)
         {
             int pos=j*plottedLayer->getCol()+i;
-            Vector v=*(plottedLayer->stateVector);
+            
             //printf("%d %f \n",pos,v(pos));
             for (int scaleX=0; scaleX<scaleFactorX; scaleX++){
                 for(int scaleY=0;scaleY<scaleFactorY;scaleY++){
@@ -64,13 +68,30 @@ void imageThread::run(){
             }
         }
     }
-    //2. force the image out on the port
-   // port.prepare()=*(image2);
-    //port.write();
+    //2. preduces the image of the weights to the upper level
+    Matrix matVisHid=*(plottedLayer->vishid);
+    double* w= matVisHid.data();
+    for(int i=0;i<plottedLayer->getColWeights();i++){
+        for(int j=0;j<plottedLayer->getRowWeights();j++)
+        {
+            int pos=j*plottedLayer->getColWeights()+i;
+            
+            //printf("%d %f \n",pos,v(pos));
+            for (int scaleX=0; scaleX<scaleFactorX; scaleX++){
+                for(int scaleY=0;scaleY<scaleFactorY;scaleY++){
+                    PixelRgb &pix=imageWeights->pixel(i*scaleFactorX+scaleX,j*scaleFactorY+scaleY);
+                    pix.r=w[pos]*255;
+                    pix.b=w[pos]*255;
+                    pix.g=w[pos]*255;
+                }
+            }
+        }
+     }
 }
 void imageThread::setLayer(Layer* layer){
     this->plottedLayer=layer;
 }
+
 /**
 * code executed when the thread is released
 */

@@ -45,18 +45,25 @@ void Layer::addUnit(Unit unit){
 	unitList.insert(pair<std::string,Unit>(unit.getName(),unit));
 }
 
-int Layer::getRow(){
-	return row;
-}
+
 
 double* Layer::getData(){
 	//return this->stateMatrix.data;
 	return 0;
 }
 
-/**
-* returns the number of Columns
-*/
+int Layer::getRowWeights(){
+	return rowWeights;
+}
+
+int Layer::getColWeights(){
+	return colWeights;
+}
+
+int Layer::getRow(){
+	return row;
+}
+
 int Layer::getCol(){
 	return col;
 }

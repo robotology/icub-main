@@ -134,7 +134,9 @@ void MachineBoltzmann::migrateLayer(Layer layer){
 */
 void MachineBoltzmann::interconnectLayers(Layer* layerA, Layer* layerB){
     int numdims=layerA->getCol()*layerA->getRow();
+    layerA->rowWeights=numdims;
     int numhid=layerB->getCol()*layerB->getRow();
+    layerA->colWeights=numhid;
 
     //1. just using matrix
     layerA->vishid=new Matrix(numdims,numhid);

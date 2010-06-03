@@ -141,10 +141,14 @@ bool BMLEngine::open(Searchable& config) {
         openCommandPort();
         this->outCommand=new string("");
 
-        port.open(getName("image:i")); 
+        //port.open(getName("image:i")); 
         port0.open(getName("layer0:o"));
         port1.open(getName("layer1:o"));
         port2.open(getName("layer2:o")); 
+        weight01.open(getName("weight01:o"));
+        weight12.open(getName("weight12:o"));
+        weight23.open(getName("weight23:o")); 
+
         portCmd.open(getName("cmd"));
         portCmd.setStrict();
         
@@ -338,6 +342,11 @@ bool BMLEngine::updateModule() {
             }
             printf("Calling the interconnectLayers function \n");
             mb->interconnectLayers(&iterE1->second,&iterE2->second);
+
+            
+
+    
+
         }
         else if(!strcmp(command.c_str(),"Stop")){
             printf("ExecuteStop \n");
@@ -900,24 +909,37 @@ void BMLEngine::outLayers(){
             port0.prepare()=*(layer0Image->image2);
             port0.write();
         }
-    }   
-    
+        if((layer0Image->imageWeights!=0)&&(weight01.getOutputCount()!=0)){
+            weight01.prepare()=*(layer0Image->imageWeights);
+            weight01.write();
+        }
+    }
+      
     if(this->layer1Image!=0){
         if((layer1Image->image2!=0)&&(port1.getOutputCount()!=0)){
             port1.prepare()=*(layer1Image->image2);
             port1.write();
         }
-            
+        if((layer1Image->imageWeights!=0)&&(weight12.getOutputCount()!=0)){
+            weight12.prepare()=*(layer1Image->imageWeights);
+            weight12.write();
+        }    
     }
-    
+
     if(this->layer2Image!=0){
         if((layer2Image->image2!=0)&&(port2.getOutputCount()!=0)){
             port2.prepare()=*(layer2Image->image2);
             port2.write();
         }
+        if((layer2Image->imageWeights!=0)&&(weight23.getOutputCount()!=0)){
+            weight23.prepare()=*(layer2Image->imageWeights);
+            weight23.write();
+        }
     }
     
 }
+
+
 
 void BMLEngine::setName(const char *name) {
         this->name = (char *) name;
