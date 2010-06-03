@@ -139,8 +139,7 @@ void can_receive_additional_info();
 
 
 #define CAN_ID_COUPLED_BOARD        1
-#define CAN_ID_6AX_STRAIN			13
-#define CAN_ID_JNT_STRAIN			12
+
 
 
 
