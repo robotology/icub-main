@@ -12,6 +12,7 @@
 #ifndef VERSION
 #	error "No valid version specified"
 #endif
+extern byte	_board_ID;	
 
 #if VERSION == 0x0158
 /* analog feedback */
@@ -100,6 +101,7 @@ Int16  _kr[JN] = INIT_ARRAY (3);				// scale factor (negative power of two)
 
 
 // TORQUE PID
+Int16  _strain_val[JN] = INIT_ARRAY (0);
 Int16  _error_torque[JN] ;						// actual feedback error 
 Int16  _error_old_torque[JN] ;					// error at t-1 
 Int16  _pid_torque[JN] ;						// pid result 
@@ -108,9 +110,9 @@ Int32  _pd_torque[JN] ;           			  	// pd portion of the pid
 Int32  _integral_torque[JN] ;					// store the sum of the integral component 
 Int16  _integral_limit_torque[JN] ;
 
-#if VERSION == 0x0173
+#if  (VERSION == 0x0157)
 Int16  _kp_torque[JN] = {32,200};				// PID gains: proportional... 
-#elif VERSION == 0x0174
+#elif VERSION == 0x0150
 Int16  _kp_torque[JN] = {16,8};					// PID gains: proportional... 
 #elif VERSION == 0x0170
 Int16  _kp_torque[JN] = INIT_ARRAY (200);		// PID gains: proportional... 
@@ -140,7 +142,7 @@ Int32  _pd_current[JN] = INIT_ARRAY (0);        // pd portion of the current pid
 #endif
 
 
-#if VERSION == 0x0153 || VERSION==0x0157 || VERSION == 0x0173
+#if VERSION == 0x0153 || VERSION==0x0157
 Int32  _cpl_pos_received[JN] = INIT_ARRAY (0);	// the position of the synchronized card 
 Int32  _cpl_pos_prediction[JN] = INIT_ARRAY (0);// the actual adjustment (compensation) 
 Int32  _cpl_pos_delta[JN] = INIT_ARRAY (0);		// velocity over the adjustment 
@@ -181,10 +183,6 @@ Int16 _version = 0x0170;
 Int16 _version = 0x0171;
 #elif VERSION == 0x0172
 Int16 _version = 0x0172;
-#elif VERSION == 0x0173
-Int16 _version = 0x0173;
-#elif VERSION == 0x0174
-Int16 _version = 0x0174;
 #endif
 
 
@@ -194,19 +192,98 @@ Int16 _version = 0x0174;
 Int32 compute_pwm(byte j)
 {
 	Int32 PWMOUT=0;
-	Int32 IOUT=0;
-	Int16 strain_val = 0;
+	Int32 IOUT=0;		
+	byte  i=0;
 
 // input selection depending on firmware version
-#if VERSION == 0x0173
-	if 		(j==0) 	strain_val=_strain[1][5]; //other board
+/*#if VERSION == 0x0173
+	if 		(j==0) 	strain_val=_strain[1][5]; //directly from 6ax strain
 	else if (j==1)  strain_val=_strain[0][2];
 #elif VERSION == 0x0174
 	if 		(j==0) 	strain_val=_strain[0][0];
 	else if (j==1)  strain_val=_strain[0][1];
 #else
 	strain_val=0; 	
-#endif
+#endif*/
+
+		/*watchdog check for strain messages in torque control mode + input selection*/
+		//the function turns off pwm of joint <jnt> if <strain_num> watchdog is triggered
+		//the first number is joint, the second number is the watchdog identifier
+#if   VERSION == 0x150
+	  	//arm
+	  	read_force_data (0, WDT_JNT_STRAIN_12,0);
+	  	read_force_data (1, WDT_JNT_STRAIN_12,1);
+#elif VERSION == 0x151 
+	  	//legs
+	  	if (_board_ID==5) 
+	  	{
+			read_force_data (0, WDT_JNT_STRAIN_12, 0); //@@@fixme
+	  		read_force_data (1, WDT_JNT_STRAIN_12, 1); //@@@fixme	  		
+	  	}
+	  	else if (_board_ID==6)
+	  	{
+			read_force_data (0, WDT_6AX_STRAIN_13, 5);
+	  		read_force_data (1, WDT_JNT_STRAIN_12, 0); //@@@fixme  		
+	  	}
+	  	else if (_board_ID==7)
+	  	{
+			read_force_data (0, WDT_JNT_STRAIN_12, 0); //@@@fixme
+	  		read_force_data (1, WDT_JNT_STRAIN_12, 0); //@@@fixme	  		
+	  	}
+	  	else if (_board_ID==8)
+	  	{
+			read_force_data (0, WDT_JNT_STRAIN_11, 0); //@@@fixme
+	 	 	read_force_data (1, WDT_JNT_STRAIN_11, 0); //@@@fixme	  		
+	  	}
+	  	else if (_board_ID==9)
+	  	{
+			read_force_data (0, WDT_6AX_STRAIN_14, 5);
+		  	read_force_data (1, WDT_JNT_STRAIN_11, 0); //@@@fixme  		
+	  	}  
+	  	else if (_board_ID==10)
+	  	{
+			read_force_data (0, WDT_JNT_STRAIN_11, 0); //@@@fixme
+		  	read_force_data (1, WDT_JNT_STRAIN_11, 0); //@@@fixme	  		
+	  	}  	  	
+	  	else
+	  	{
+		//you should never execute this code
+		if (_control_mode[j] == MODE_TORQUE ||
+			_control_mode[j] == MODE_IMPEDANCE)
+			{	
+				_control_mode[j] = MODE_IDLE;	
+				_pad_enabled[j] = false;
+				PWM_outputPadDisable(j);			
+				can_printf("ERR:unknown fc2");
+				_strain_val[j]=0;
+			}
+	  	}
+#elif VERSION == 0x152 || VERSION == 0x154
+	  	//head torso
+	  	read_force_data (0, WDT_JNT_STRAIN_12,0); //@@@fixme
+	  	read_force_data (1, WDT_JNT_STRAIN_12,1); //@@@fixme
+	  	  
+#elif VERSION == 0x157 
+      	//coupled joint of the arm
+	 	read_force_data (0, WDT_6AX_STRAIN_13,5); 
+	  	read_force_data (1, WDT_JNT_STRAIN_12,2); 
+#else
+	  	//other firmwares
+		//you should never execute this code
+		if (_control_mode[j] == MODE_TORQUE ||
+			_control_mode[j] == MODE_IMPEDANCE)
+			{	
+				_control_mode[j] = MODE_IDLE;	
+				_pad_enabled[j] = false;
+				PWM_outputPadDisable(j);			
+				can_printf("ERR:unknown fc2");
+				_strain_val[j]=0;
+			}
+#endif	  
+		//watchdog update
+		for (i=0; i<STRAIN_MAX; i++)
+			if (_strain_wtd[i]>0) _strain_wtd[i]--;
+			
 	
 	switch (_control_mode[j]) 
 	{ 
@@ -275,19 +352,19 @@ Int32 compute_pwm(byte j)
 		PWMOUT = _ko[j];
 	break;
 	case MODE_TORQUE: 
-		PWMOUT = compute_pid_torque(j, strain_val);
+		PWMOUT = compute_pid_torque(j, _strain_val[j]);
 		PWMOUT = PWMOUT + _ko_torque[j];
 		_pd_torque[j] = _pd_torque[j] + _ko_torque[j];
 	break;
 	case MODE_IMPEDANCE: 
 		compute_desired(j);
 	//	_desired_torque[j] = -_kp[j] * (_position[j] - _desired[j]);// -_kd[j] * _speed[j];
-	#if VERSION == 0x0173
+	#if VERSION == 0x0157
 		_desired_torque[j] = -20 * (_position[j] - _desired[j]);// -_kd[j] * _speed[j];
-	#elif VERSION == 0x0174
+	#elif VERSION == 0x0150
 		_desired_torque[j] = 20 * (_position[j] - _desired[j]);// -_kd[j] * _speed[j];
 	#endif
-		PWMOUT = compute_pid_torque(j, strain_val);
+		PWMOUT = compute_pid_torque(j, _strain_val[j]);
 		PWMOUT = PWMOUT + _ko_torque[j];
 		_pd_torque[j] = _pd_torque[j] + _ko_torque[j];
 	break;
@@ -355,11 +432,14 @@ Int32 compute_pid_torque(byte j, Int16 strain_val)
 	{
 		_error_torque[j] = extract_l(InputError);
 	}
-		
+
+/*		
 	//BEWARE: @@@ THIS ovverrides the position error with the torque error
 	_error[j]=_error_torque[j];
+*/
 
 	//Error decoupling for shoulder torque control
+/*
 	#if VERSION == 0x0174 
 		temp_err[0] = (float)_error_torque[0];
 		temp_err[1] = (float)_error_torque[1];
@@ -367,6 +447,7 @@ Int32 compute_pid_torque(byte j, Int16 strain_val)
 		_error_torque[0] = -temp_err[0];
 		_error_torque[1] = -temp_err[1];
 	#endif
+*/
 			
 	//dead band	
 	#ifndef IDENTIF
@@ -378,7 +459,8 @@ Int32 compute_pid_torque(byte j, Int16 strain_val)
 		temp2*=temp;
 		_error[j]=temp2;
 		//_error[j]=0;
-	}*/
+	}
+*/
 	#endif
 			
 	/* Proportional */
@@ -879,4 +961,39 @@ bool check_in_position(byte jnt)
 	}
 	else
 		return false;				
+}
+
+/***************************************************************************/
+/**
+ * this function turns off pwm of joint <jnt> if <strain_num> watchdog is
+ * triggered (returns false). Returns true otherwise (all ok).
+ * the force value contained in the <strain_channel> is assigned to strain_val
+ ***************************************************************************/
+bool read_force_data (byte jnt, byte strain_num, byte strain_chan)
+{
+	if (_control_mode[jnt] == MODE_TORQUE ||
+		_control_mode[jnt] == MODE_IMPEDANCE)
+		{
+			if (_strain_wtd[strain_num]==0)
+			{
+				_control_mode[jnt] = MODE_IDLE;	
+				_pad_enabled[jnt] = false;
+					
+				can_printf("WDT:strain%d",jnt);	//@@@ DEBUG: REMOVE ME LATER
+				#ifdef DEBUG_CAN_MSG
+					can_printf("WARN:strain watchdog! disabling pwm");				
+				#endif	
+				
+				PWM_outputPadDisable(jnt);	
+				_strain_val[jnt]=0;
+				return false;
+			}
+			else
+			{
+				_strain_val[jnt]=_strain[strain_num][strain_chan];
+				return true;	
+			}	
+		}
+	_strain_val[jnt]=_strain[strain_num][strain_chan];
+	return true;		
 }
