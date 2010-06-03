@@ -59,11 +59,13 @@ void init_strain (void)
 		{
 			_strain_wtd[k]= STRAIN_SAFE;	
 		}
-				
+	
+	/*
+	// No more used. Now icubinterface starts the boards.			
 	#if VERSION == 0x0170 || VERSION == 0x0172
 		//start the can transmission. CAN must be already intialized.
 		start_strain(0x205);
-	#elif VERSION ==0x0173 || VERSION ==0x0174
+	#elif VERSION ==0x0157 || VERSION ==0x0150
 		//start the can transmission. CAN must be already intialized.
 		start_strain(0x20D);
 		start_strain(0x20C);	
@@ -72,6 +74,7 @@ void init_strain (void)
 		AD_enableIntTriggerA ();
 		AD_enableIntTriggerB ();		
 	#endif
+	*/
 }
 
 /*************************************************************************** 
