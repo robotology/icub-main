@@ -21,7 +21,7 @@ int main(int argc, char *argv[]) {
 	mb->addLayer(*layerA);
 	Layer *layerB=new Layer("LB",2,6);
 	mb->addLayer(*layerB);
-	mb->interconnectLayers(*layerA,*layerB);
+	mb->interconnectLayers(layerA,layerB);
 
 	int numhid=4*12;
 	Matrix data(1,12);
@@ -38,7 +38,7 @@ int main(int argc, char *argv[]) {
 	data(0,10)=50;
 	data(0,11)=51;
 
-	mb->rbm((Matrix)data,layerA,numhid);
+	//mb->rbm((Matrix)data,layerA,numhid);
 	//mb->migrateLayer(*layer);
 	//mb->interconnectLayer(2);
 	//mb->evolveClamped(2,1);

@@ -161,7 +161,7 @@ public:
 	* return a Layer to the Boltzmann Machine
 	* @param name name of the layer to be returned
 	*/
-	Layer getLayer(int name); 
+	Layer* getLayer(int name); 
 	/**
 	* returns the temperature of the Boltzmann Machine
 	*/
@@ -181,11 +181,11 @@ public:
 	*/
 	void interconnectLayers(); //
 	/**
-	* creates the Connections between 2 precise layers and save them into the connectionList of Boltzmann Machine
+	* creates the Connections between 2 precise layers and saves them into the connectionList of the Boltzmann Machine
 	* @param layerA sideA of the connection between layers
 	* @parame layerB sideB of the connection between layers
 	*/
-	void interconnectLayers(Layer layerA, Layer layerB); //
+	void interconnectLayers(Layer* layerA, Layer* layerB); //
 	/**
 	*creates the Connections between the layers passed as parameter with the already present layers
 	* @param layerNumber the reference to the allocated layer that has to be interconnected
@@ -255,6 +255,7 @@ public:
     void reinitData(int size);
     /**
     * function which creates the collection of batches given the input and the time interval
+    * it creates a vector of matrices that have dimension equal to input dimensionality
     */
     void makeBatches();
 	/**
@@ -290,8 +291,9 @@ public:
 	* @param data vector of data that has to have the same dimension of the layer where it is clamped in
 	* @param layer pointer to the layer where the data is clamped in
 	* @param numhid dimension of the linked layer( hidden layer)
+    * @param output vector which represent the value of the state of higher layer
 	*/
-    void rbm(yarp::sig::Matrix data,Layer *layer,int numhid);
+    void rbm(yarp::sig::Matrix* data,Layer *layer,int numhid,yarp::sig::Matrix* output);
 
     //------- attributes
 	map<std::string,Unit> unitList;

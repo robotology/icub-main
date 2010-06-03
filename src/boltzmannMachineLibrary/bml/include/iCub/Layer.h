@@ -60,7 +60,7 @@ private:
 	
 public:
 	/**
-	* matrix storing the state of every single unit in the layer
+	* matrix storing the state of every connection to the higher layer
 	*/
     yarp::sig::Matrix* vishid;
 	/**

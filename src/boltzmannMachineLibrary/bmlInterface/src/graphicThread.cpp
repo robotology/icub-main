@@ -588,22 +588,24 @@ static void callback( GtkWidget *widget,gpointer   data ){
         string _command("ConnectLayer");
         string Aname("");
         string Bname("");
-        /*if(wModule->inLayer0_flag){
+
+        if(wModule->gui->inLayer0_flag){
             printf("LayerA: layer0 \n");
             Aname.append("layer0");
         }
-        else if(wModule->inLayer1_flag){
+        else if(wModule->gui->inLayer1_flag){
             printf("LayerA: layer1 \n");
             Aname.append("layer1");
         }
-        if(wModule->SelectLayer0_flag){
+
+        if(wModule->gui->SelectLayer0_flag){
             printf("LayerB: layer0 \n");
             Bname.append("layer0");
         }
-        else if(wModule->SelectLayer1_flag){
+        else if(wModule->gui->SelectLayer1_flag){
             printf("LayerB: layer1 \n");
             Bname.append("layer1");
-        }*/
+        }
         Bottle tmp;
         tmp.addString("LayerA");
         tmp.addString(Aname.c_str());
@@ -705,7 +707,7 @@ static gint expose_CB (GtkWidget *widget, GdkEventExpose *event, gpointer data)
                 //=new yarp::sig::ImageOf<yarp::sig::PixelRgb>;
                 //_outputImage3->resize(320,240);
                 
-                IppiSize srcsize;
+                IppiSize srcsize={0,0};
 
                 bool conversion=true;
                 if(wModule->gui->inputImage_flag){
@@ -717,49 +719,50 @@ static gint expose_CB (GtkWidget *widget, GdkEventExpose *event, gpointer data)
                 }
                 else if(wModule->gui->inLayer0_flag){ 
                     wModule->gui->temp3->resize(wModule->gui->ptr_inputLayer0->width(),wModule->gui->ptr_inputLayer0->height());
-                    IppiSize srcsize={wModule->gui->ptr_inputLayer0->width(),wModule->gui->ptr_inputLayer0->height()};    
+                    srcsize.width=wModule->gui->ptr_inputLayer0->width();srcsize.height=wModule->gui->ptr_inputLayer0->height();    
                     ippiCopy_8u_C3R(wModule->gui->ptr_inputLayer0->getRawImage(),wModule->gui->ptr_inputLayer0->getRowSize(),wModule->gui->temp3->getRawImage(),wModule->gui->temp3->getRowSize(),srcsize);
                     //cvCopyImage(wModule->gui->ptr_inputLayer0->getIplImage(),wModule->gui->_outputImage3->getIplImage());
                     conversion=false;
                 }
+                
                 else if(wModule->gui->inLayer1_flag){
                     wModule->gui->temp3->resize(wModule->gui->ptr_inputLayer1->width(),wModule->gui->ptr_inputLayer1->height());
-                    IppiSize srcsize={wModule->gui->ptr_inputLayer1->width(),wModule->gui->ptr_inputLayer1->height()};    
+                    srcsize.width=wModule->gui->ptr_inputLayer1->width();srcsize.height=wModule->gui->ptr_inputLayer1->height();
                     ippiCopy_8u_C3R(wModule->gui->ptr_inputLayer1->getRawImage(),wModule->gui->ptr_inputLayer1->getRowSize(),wModule->gui->temp3->getRawImage(),wModule->gui->temp3->getRowSize(),srcsize);
                     //cvCopyImage(wModule->gui->ptr_inputLayer1->getIplImage(),wModule->gui->_outputImage3->getIplImage());
                     conversion=false;
                 }
                 else if(wModule->gui->inLayer2_flag){
                     wModule->gui->temp3->resize(wModule->gui->ptr_inputLayer2->width(),wModule->gui->ptr_inputLayer2->height());
-                    IppiSize srcsize={wModule->gui->ptr_inputLayer2->width(),wModule->gui->ptr_inputLayer2->height()};    
+                    srcsize.width=wModule->gui->ptr_inputLayer2->width();srcsize.height=wModule->gui->ptr_inputLayer2->height();
                     ippiCopy_8u_C3R(wModule->gui->ptr_inputLayer2->getRawImage(),wModule->gui->ptr_inputLayer2->getRowSize(),wModule->gui->temp3->getRawImage(),wModule->gui->temp3->getRowSize(),srcsize);
                     //cvCopyImage(wModule->gui->ptr_inputLayer2->getIplImage(),wModule->gui->_outputImage3->getIplImage());
                     conversion=false;
                 }
                 else if(wModule->gui->inLayer3_flag){
                     wModule->gui->temp3->resize(wModule->gui->ptr_inputLayer3->width(),wModule->gui->ptr_inputLayer3->height());
-                    IppiSize srcsize={wModule->gui->ptr_inputLayer3->width(),wModule->gui->ptr_inputLayer3->height()};    
+                    srcsize.width=wModule->gui->ptr_inputLayer3->width();srcsize.height=wModule->gui->ptr_inputLayer3->height();
                     ippiCopy_8u_C3R(wModule->gui->ptr_inputLayer3->getRawImage(),wModule->gui->ptr_inputLayer3->getRowSize(),wModule->gui->temp3->getRawImage(),wModule->gui->temp3->getRowSize(),srcsize);
                     //cvCopyImage(wModule->gui->ptr_inputLayer3->getIplImage(),wModule->gui->_outputImage3->getIplImage());
                     conversion=false;
                 }
                 else if(wModule->gui->inLayer4_flag){
                     wModule->gui->temp3->resize(wModule->gui->ptr_inputLayer4->width(),wModule->gui->ptr_inputLayer4->height());
-                    IppiSize srcsize={wModule->gui->ptr_inputLayer4->width(),wModule->gui->ptr_inputLayer4->height()};    
+                    srcsize.width=wModule->gui->ptr_inputLayer4->width();srcsize.height=wModule->gui->ptr_inputLayer4->height();
                     ippiCopy_8u_C3R(wModule->gui->ptr_inputLayer4->getRawImage(),wModule->gui->ptr_inputLayer4->getRowSize(),wModule->gui->temp3->getRawImage(),wModule->gui->temp3->getRowSize(),srcsize);
                     //cvCopyImage(wModule->gui->ptr_inputLayer4->getIplImage(),wModule->gui->_outputImage3->getIplImage());
                     conversion=false;
                 }
                 else if(wModule->gui->inLayer5_flag){
                     wModule->gui->temp3->resize(wModule->gui->ptr_inputLayer5->width(),wModule->gui->ptr_inputLayer5->height());
-                    IppiSize srcsize={wModule->gui->ptr_inputLayer5->width(),wModule->gui->ptr_inputLayer5->height()};    
+                    srcsize.width=wModule->gui->ptr_inputLayer5->width();srcsize.height=wModule->gui->ptr_inputLayer5->height();
                     ippiCopy_8u_C3R(wModule->gui->ptr_inputLayer5->getRawImage(),wModule->gui->ptr_inputLayer5->getRowSize(),wModule->gui->temp3->getRawImage(),wModule->gui->temp3->getRowSize(),srcsize);
                     //cvCopyImage(wModule->gui->ptr_inputLayer5->getIplImage(),wModule->gui->_outputImage3->getIplImage());
                     conversion=false;
                 }
                 else if(wModule->gui->inLayer6_flag){
                     wModule->gui->temp3->resize(wModule->gui->ptr_inputLayer6->width(),wModule->gui->ptr_inputLayer6->height());
-                    IppiSize srcsize={wModule->gui->ptr_inputLayer6->width(),wModule->gui->ptr_inputLayer6->height()};    
+                    srcsize.width=wModule->gui->ptr_inputLayer6->width();srcsize.height=wModule->gui->ptr_inputLayer6->height();
                     ippiCopy_8u_C3R(wModule->gui->ptr_inputLayer6->getRawImage(),wModule->gui->ptr_inputLayer6->getRowSize(),wModule->gui->temp3->getRawImage(),wModule->gui->temp3->getRowSize(),srcsize);
 
                     //cvCopyImage(wModule->gui->ptr_inputLayer6->getIplImage(),wModule->gui->_outputImage3->getIplImage());
@@ -767,18 +770,18 @@ static gint expose_CB (GtkWidget *widget, GdkEventExpose *event, gpointer data)
                 }
                 else if(wModule->gui->inLayer7_flag){
                     wModule->gui->temp3->resize(wModule->gui->ptr_inputLayer7->width(),wModule->gui->ptr_inputLayer7->height());
-                    IppiSize srcsize={wModule->gui->ptr_inputLayer7->width(),wModule->gui->ptr_inputLayer7->height()};    
+                    srcsize.width=wModule->gui->ptr_inputLayer7->width();srcsize.height=wModule->gui->ptr_inputLayer7->height();
                     ippiCopy_8u_C3R(wModule->gui->ptr_inputLayer7->getRawImage(),wModule->gui->ptr_inputLayer7->getRowSize(),wModule->gui->temp3->getRawImage(),wModule->gui->temp3->getRowSize(),srcsize);
                     //cvCopyImage(wModule->gui->ptr_inputLayer7->getIplImage(),wModule->gui->_outputImage3->getIplImage());
                     conversion=false;
                 }
-                /*else if(wModule->gui->inLayer8_flag){
+                else if(wModule->gui->inLayer8_flag){
                     wModule->gui->temp3->resize(wModule->gui->ptr_inputLayer8->width(),wModule->gui->ptr_inputLayer8->height());
-                    IppiSize srcsize={wModule->gui->->ptr_inLayer8->width(),wModule->gui->inLayer8->height()};    
+                    srcsize.width=wModule->gui->ptr_inputLayer8->width();srcsize.height=wModule->gui->ptr_inputLayer8->height();
                     ippiCopy_8u_C3R(wModule->gui->ptr_inputLayer8->getRawImage(),wModule->gui->ptr_inputLayer8->getRowSize(),wModule->gui->temp3->getRawImage(),wModule->gui->temp3->getRowSize(),srcsize);
                     //cvCopyImage(wModule->gui->ptr_inputLayer8->getIplImage(),wModule->gui->_outputImage3->getIplImage());
                     conversion=false;
-                }*/
+                }
                 else{
                     wModule->gui->temp3->zero();
                 }

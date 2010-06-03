@@ -337,7 +337,7 @@ bool BMLEngine::updateModule() {
                 j++;
             }
             printf("Calling the interconnectLayers function \n");
-            mb->interconnectLayers(iterE1->second,iterE2->second);
+            mb->interconnectLayers(&iterE1->second,&iterE2->second);
         }
         else if(!strcmp(command.c_str(),"Stop")){
             printf("ExecuteStop \n");
@@ -408,7 +408,7 @@ bool BMLEngine::updateModule() {
                             }
                         }
                         double mean=sum/(rectDimX*rectDimY);
-                        //printf("mean of the unit %f ----> ",mean);
+                        printf("mean of the unit %f ----> ",mean);
                         sample[r*totUnits+c]=mean/255;
                     }
                 }
@@ -1001,6 +1001,13 @@ void BMLEngine::addLayer(int number,int colDimension, int rowDimension){
         layer1Image=new imageThread(50,name.c_str());
         layer1Image->setLayer(layer);
         layer1Image->start();
+    }
+    else if(number==2){
+        string name(this->name);
+        name.append("layer2:o");
+        layer2Image=new imageThread(50,name.c_str());
+        layer2Image->setLayer(layer);
+        layer2Image->start();
     }
 }
 

@@ -1,5 +1,6 @@
 // -*- mode:C++; tab-width:4; c-basic-offset:4; indent-tabs-mode:nil -*-
 #include <iCub/MachineBoltzmann.h>
+#include <vector>
 
 using namespace yarp::sig;
 using namespace yarp::math;
@@ -23,8 +24,17 @@ MachineBoltzmann::MachineBoltzmann(){
     T=T_PARAM;
     epsilon=1;
     maxepoch=10;
-    epsilonvb=0.1;
-    epsilonhb=0.1;
+    
+
+    epsilonw      = 0.05;   // Learning rate for weights 
+    epsilonvb     = 0.05;   // Learning rate for biases of visible units 
+    epsilonhb     = 0.05;   // Learning rate for biases of hidden units 
+
+
+    weightcost  = 0.001;   
+    initialmomentum  = 0.5;
+    finalmomentum    = 0.9;
+
 
     
 }
@@ -88,12 +98,12 @@ void MachineBoltzmann::addLayer(Layer layer){
     countElements++;
 }
 
-Layer MachineBoltzmann::getLayer(int name){ 
+Layer* MachineBoltzmann::getLayer(int name){ 
     string namestr("");
     sprintf((char*)namestr.c_str(),"L%d",name);
-    printf("name: %s",namestr.c_str());
-    map<std::string,Layer>::iterator iter=elementList.find("L1");
-    return iter->second;
+    printf("name: %s ",namestr.c_str());
+    map<std::string,Layer>::iterator iter=elementList.find(namestr.c_str());
+    return &iter->second;
 }
 
 void MachineBoltzmann::migrateLayer(Layer layer){
@@ -122,32 +132,19 @@ void MachineBoltzmann::migrateLayer(Layer layer){
 /**
 *creates the Connections between two different layers and save'em into the connectionList of Boltzmann Machine
 */
-void MachineBoltzmann::interconnectLayers(Layer layerA, Layer layerB){
-    int numdims=layerA.getCol()*layerA.getRow();
-    int numhid=layerB.getCol()*layerB.getRow();
+void MachineBoltzmann::interconnectLayers(Layer* layerA, Layer* layerB){
+    int numdims=layerA->getCol()*layerA->getRow();
+    int numhid=layerB->getCol()*layerB->getRow();
 
     //1. just using matrix
-    layerA.vishid=new Matrix(numdims,numhid);
+    layerA->vishid=new Matrix(numdims,numhid);
     //layerA.vishid->resize(10,10);
-    Matrix ma=(*layerA.vishid);
+    //Matrix ma(layerA.vishid);
     for (int i=0;i<numdims;i++)
         for (int j=0;j<numhid;j++)
-            ma(i,j)=0.001;
-    double res=sum(ma);
-    Matrix mb(numdims,numhid);
-    for (int i=0;i<numdims;i++)
-        for (int j=0;j<numhid;j++)
-            mb(i,j)=0.1;
-    Matrix mc=mb-ma;
-    printf("mc: (%s)\n",mc.toString().c_str());
-    mc=ma*mb;
-    printf("mc: (%s)\n",mc.toString().c_str());
-    ma.eye();
-    printf("mc: (%s)\n",ma.toString().c_str());
-    mc=ma.transposed();
+            (*layerA->vishid)(i,j)=0.001;
     
-    randomMatrix md(12,12);
-    printf("md: (%s)\n",md.toString().c_str());
+    printf("layerA->vishid: (%s)\n",(* layerA->vishid).toString().c_str());
 
     //2. using the connection and unit list
     /*int k=0;
@@ -946,7 +943,7 @@ void MachineBoltzmann::saveConfiguration(){
 }*/
 
 
-void MachineBoltzmann::rbm(Matrix batchdataSingle,Layer *layer,int numhid){
+void MachineBoltzmann::rbm(Matrix* batchdataSingle,Layer *layer,int numhid, Matrix* output){
     
     //initialisation
     double err=0,errsum=0;
@@ -955,15 +952,16 @@ void MachineBoltzmann::rbm(Matrix batchdataSingle,Layer *layer,int numhid){
     
     int batch;
     int numbatches=10,numcases=10;
-    int numdims=batchdataSingle.cols();
+    int numdims=batchdataSingle->cols();
 
     double poshidact,posvisact;
 
     
     //Initializing symmetric weights and biases. 
     Matrix vishid(numdims,numhid);
-    Matrix tmp=vishid+0.001;  //vishid= 0.001*randn(numdims, numhid);
-    vishid=tmp;
+    //Matrix tmp=vishid+0.001;  //vishid= 0.001*randn(numdims, numhid);
+    //vishid=tmp;
+    vishid=*layer->vishid;
     printf("[%s] \n",vishid.toString().c_str());
 
     yarp::sig::Vector hidbiases(numhid); hidbiases.zero();
@@ -980,10 +978,12 @@ void MachineBoltzmann::rbm(Matrix batchdataSingle,Layer *layer,int numhid){
 
     
     yarp::sig::Matrix hidbias,visbias;
-    yarp::sig::Matrix negdata,data,negdataprobs;
+    Matrix data(*batchdataSingle);
+    yarp::sig::Matrix negdata,negdataprobs;
     yarp::sig::Matrix poshidstates;
     //yarp::sig::Matrix data=new Matrix(l->getRow,l->getCol);
     Vector posvisprobs=*layer->stateVector;
+    printf("[%s] \n",posvisprobs.toString().c_str());
 
     //executions
     for(epoch=1;epoch<maxepoch;epoch++){
@@ -992,20 +992,23 @@ void MachineBoltzmann::rbm(Matrix batchdataSingle,Layer *layer,int numhid){
         for(batch=1;batch<numbatches;batch++){
             printf("epoch %d batch %d \n",epoch,batch); 
             visbias = repmat(visbiases,numcases,1);
-            hidbias = repmat(hidbiases,1,1); 
+            hidbias = repmat(hidbiases,10,1); 
             //%%%%%%%%% START POSITIVE PHASE %%%%%%%%%%%%%
             //data = batchdata(:,:,batch);
-            data=batchdataSingle;
+            //data=*batchdataSingle;
             printf("[%s] \n",data.toString().c_str());
             //data = data > rand(numcases,numdims);  
             //poshidprobs = 1./(1 + exp(-data*(2*vishid) - hidbias));    
-            Matrix tmp2= exp(data*(-2)*vishid-hidbias);
-            printf("\n");
-            printf("[%s] \n",tmp2.toString().c_str());
-            printf("\n");
-            Matrix ss=exp(data*(-1)*vishid - hidbias);
-            Matrix tt=ss+1.0;
-            poshidprobs = 1.0/tt; //1./(1 + exp((data*(-1))*(2*vishid) - hidbias));    
+            Matrix tmp2= exp(data*(-1)*(-2)*vishid-hidbias);
+            //Matrix tmp2= data*(-2)*vishid;
+            //Matrix tmp23= tmp2 - hidbias;
+            //Matrix ss= exp(tmp2);
+            //printf("\n");
+            //printf("[%s] \n",tmp2.toString().c_str());
+            //printf("\n");
+            //Matrix ss=exp(data*(-1)*vishid - hidbias);
+            //Matrix tt=tmp2+1.0;
+            poshidprobs = 1.0/(tmp2+1.0); //1./(1 + exp((data*(-1))*(2*vishid) - hidbias));    
             printf("[%s] \n",poshidprobs.toString().c_str());
             //batchposhidprobs(:,:,batch)=poshidprobs;
             posprods    = data.transposed() * poshidprobs;
@@ -1016,10 +1019,10 @@ void MachineBoltzmann::rbm(Matrix batchdataSingle,Layer *layer,int numhid){
             //%%%%%%%%% END OF POSITIVE PHASE  %%%%%%%%%%%%%
 
             //%%%%% START NEGATIVE PHASE  %%%%%%%%%%%%%%%%%
-            ss=(Matrix)randomMatrix(numcases,numhid);
+            Matrix ss=(Matrix)randomMatrix(numcases,numhid);
             poshidstates = poshidprobs > ss;
             //negdata = 1./(1 + exp(-poshidstates*vishid.transposed - visbias));
-            tt=exp(poshidstates*(-1)*vishid.transposed() - visbias)+1;
+            Matrix tt=exp(poshidstates*(-1)*vishid.transposed() - visbias)+1;
             negdata = 1.0/tt;
             negdataprobs=negdata;
             
@@ -1059,17 +1062,20 @@ void MachineBoltzmann::rbm(Matrix batchdataSingle,Layer *layer,int numhid){
                 momentum=initialmomentum;
             
             //%%%%%%%% UPDATE WEIGHTS AND BIASES %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%% 
-            ss=posprods-negprods;
-            Matrix s=ss/(double)numcases;
-            Matrix t=weightcost*vishid;
-            Matrix z=s-t;
+            //ss=posprods-negprods;
+            Matrix s=((posprods-negprods)/(double)numcases)-weightcost*vishid;
+            //Matrix t=weightcost*vishid;
+            //Matrix z=s-t;
             //Matrix v=epsilon*z;
-            vishidinc = momentum*vishidinc + epsilon*z;        
+            vishidinc = momentum*vishidinc + epsilon*s;      
+            printf("\n");
+            printf("[%s] \n",vishidinc.toString().c_str());
+            printf("\n");
             visbiasinc = momentum*visbiasinc + (epsilonvb/numcases)*(posvisact-negvisact);
-            double tmp3=(epsilonhb/numcases)*(poshidact-neghidact);
-            hidbiasinc = momentum*hidbiasinc + tmp3;
+            //double tmp3=(epsilonhb/numcases)*(poshidact-neghidact);
+            hidbiasinc = momentum*hidbiasinc + (epsilonhb/numcases)*(poshidact-neghidact);
 
-            (Matrix)vishid = (Matrix)vishid + vishidinc;
+            vishid = vishid + vishidinc;
             visbiases = visbiases + visbiasinc;
             hidbiases = hidbiases + hidbiasinc;
 
@@ -1086,9 +1092,12 @@ void MachineBoltzmann::rbm(Matrix batchdataSingle,Layer *layer,int numhid){
             //hist(poshidprobs(:));
             //drawnow
 
+            
+
         }//for batch
     } //for epoch
-    printf("epoch %d error %f  \n", epoch, errsum);   
+    printf("epoch %d error %f  \n", epoch, errsum);  
+    *output=poshidstates;
 }
 
 void MachineBoltzmann::reinitData(int size){
@@ -1104,6 +1113,7 @@ void MachineBoltzmann::reinitData(int size){
 
 void MachineBoltzmann::addSample(Vector sample){
     //Vector sampleVector(sample.cols()*sample.rows());
+    //dataMat: matrxi containg all the sample acquired till now
     double* pointer=dataMat->data();
     int count=0;
     for(int j=0;j<countSample;j++){
@@ -1112,7 +1122,7 @@ void MachineBoltzmann::addSample(Vector sample){
             count++;
         }
     }
-    printf("count: %d \n", count);
+    printf("count:%d sampleLength: %d \n", count,sample.length());
     for(int i=0;i<sample.length();i++){
         *pointer=sample[i];
         pointer++;
@@ -1129,7 +1139,7 @@ void MachineBoltzmann::addSample(Vector sample){
 
     pointer=dataMat->data();
     for(int r=0;r<10;r++){
-        for(int c=0;c<100;c++){
+        for(int c=0;c<sample.length();c++){
             pointer++;//data[countSample][r+c*sample.cols()];
             printf("%f ", *pointer);
         }
@@ -1139,13 +1149,18 @@ void MachineBoltzmann::addSample(Vector sample){
 }
 
 void MachineBoltzmann::makeBatches(){
-
-
+    //decompose the dataMat into a vector of matrices batchdata.
+    //every matrix has the dimension of the input and the number of cases (NUMCASES); batchdataSingle
+    Matrix single(10,100);
+    for(int r=0;r<128*128;r++){
+        for(int c=0;c<10;c++){}}
+    vector<Matrix> batchdata();
 }
 
 void MachineBoltzmann::training(){
     /*fprintf(1,'Pretraining a Deep Boltzmann Machine. \n');
 
+    %%%%% MATLAB references %%%%%
     batchdataSingle=batchdata2(a,:,b); 
     batchdata=batchdataSingle ; 
     [numcases numdims numbatches]=size(batchdata2);
@@ -1172,13 +1187,16 @@ void MachineBoltzmann::training(){
     fprintf(1,'\nPretraining Layer 3 with RBM: %d-%d \n',numhid,numpen);
     rbm_l33_nolab;*/
     
-    
+    Matrix* poshidstates=new Matrix();
+    Matrix* batchdataSingle=new Matrix(*dataMat);
     //batchdataSingle=batchdataSingleVisible;
     printf("number of elements %d \n",this->getCountElements());
-    for (int i=0;i<getCountElements();i++){
-        printf(" dimension %d \n",getLayer(i).getNumUnits());
-        //rbm(batchdataSingle,this->getLayer("L"+i),getLayer("L"+(i+1)))
-        //batchdataSingle=poshistates;
+    for (int i=0;i<getCountElements()-1;i++){
+        printf("-----Layer %d --------------------------------- dimension %d \n",i,getLayer(i)->getNumUnits());
+        Layer* pvis=getLayer(i);
+        Layer* phid=getLayer(i+1);
+        rbm(batchdataSingle,pvis,phid->getNumUnits(),poshidstates);
+        batchdataSingle=poshidstates;
     }
 
     
