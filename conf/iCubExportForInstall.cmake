@@ -12,7 +12,7 @@
 # INSTALL_CONFIG_TAMPLATEE: INSTALL_CONFIG_FILE template
 
 #### prepare config file for installation
-get_property(ICUB_TARGETS GLOBAL PROPERTY ICUB_TARGETS)
+get_property_fix(ICUB_TARGETS GLOBAL PROPERTY ICUB_TARGETS)
 
 set(EXPORT_CONFIG_FILE icub-export-install.cmake)
 set(INSTALL_CONFIG_FILE icub-config-for-install.cmake)

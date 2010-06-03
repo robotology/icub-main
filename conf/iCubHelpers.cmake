@@ -24,7 +24,7 @@ macro(icub_export_library name private_inc_dirs dest_dir)
 set(ICUB_EXPORTBUILD_FILE icub-export-build.cmake)
 
 
-set_property(TARGET ${name} PROPERTY INCLUDE_DIRS  "${private_inc_dirs}")
+set_property_fix(TARGET ${name} PROPERTY INCLUDE_DIRS  "${private_inc_dirs}")
 set(${name}_INCLUDE_DIRS "${private_inc_dirs}" CACHE STRING "include directories")
 #set(${name}_LIBRARIES ${name} CACHE STRING "library")
 set_property(GLOBAL APPEND PROPERTY ICUB_TARGETS ${name})
@@ -38,9 +38,24 @@ export(TARGETS ${name} APPEND FILE ${CMAKE_BINARY_DIR}/${ICUB_EXPORTBUILD_FILE})
 
 endmacro(icub_export_library)
 
+### From yarp.
+# Helper macro to work around a bug in set_property in cmake 2.6.0
+MACRO(get_property_fix localname _global _property varname)
+  set(_exists_chk)
+  get_property(_exists_chk GLOBAL PROPERTY ${varname})
+  if (_exists_chk)
+    set(${localname} ${_exists_chk})
+  else (_exists_chk)
+    set(${localname})
+  endif (_exists_chk)
+ENDMACRO(get_property_fix)
 
-
-
-
-
-
+# Helper macro to work around a bug in set_property in cmake 2.6.0
+MACRO(set_property_fix _global _property _append varname)
+  get_property(_append_chk GLOBAL PROPERTY ${varname})
+  if (_append_chk)
+    set_property(GLOBAL APPEND PROPERTY ${varname} ${ARGN})
+  else (_append_chk)
+    set_property(GLOBAL PROPERTY ${varname} ${ARGN})
+  endif (_append_chk)
+ENDMACRO(set_property_fix)
