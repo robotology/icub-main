@@ -296,6 +296,13 @@ void EyePinvRefGen::resume()
 
 
 /************************************************************************/
+void EyePinvRefGen::stopControl()
+{
+    port_xd->set_xd(fp);
+}
+
+
+/************************************************************************/
 Solver::Solver(PolyDriver *_drvTorso, PolyDriver *_drvHead, exchangeData *_commData,
                EyePinvRefGen *_eyesRefGen, Localizer *_loc, Controller *_ctrl,
                const string &_localName, const string &_configFile, const double _eyeTiltMin,

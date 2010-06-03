@@ -200,6 +200,7 @@ following ports:
     - [quit]: quit the module.
     - [susp]: suspend the module.
     - [run]: resume the module.
+    - [stop]: stop the motion immediately.
     - [block] [pitch] <val>: block the neck pitch at <val>
      degrees.
     - [block] [yaw] <val>: block the neck yaw at <val> degrees.
@@ -513,6 +514,13 @@ public:
                     slv->resume();
                     eyesRefGen->resume();
                     ctrl->resume();
+                    reply.addVocab(ack);
+                    return true;
+                }
+
+                case VOCAB4('s','t','o','p'):
+                {
+                    eyesRefGen->stopControl();
                     reply.addVocab(ack);
                     return true;
                 }

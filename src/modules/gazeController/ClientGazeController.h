@@ -79,7 +79,6 @@ public:
     virtual bool clearNeckYaw();
     virtual bool checkMotionDone(bool *f);
     virtual bool stopControl();
-    virtual bool resumeControl();
 
     virtual ~ClientGazeController();
 };

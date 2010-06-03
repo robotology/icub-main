@@ -119,6 +119,8 @@ bool ClientCartesianController::close()
     if (closed)
         return true;
 
+    stopControl();
+
     if (portCmd)
     {
         portCmd->interrupt();

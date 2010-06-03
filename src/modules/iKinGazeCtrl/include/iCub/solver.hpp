@@ -92,6 +92,7 @@ public:
     virtual void threadRelease();
     virtual void suspend();
     virtual void resume();
+    virtual void stopControl();
 };
 
 

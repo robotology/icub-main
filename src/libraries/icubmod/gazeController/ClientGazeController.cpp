@@ -122,6 +122,8 @@ bool ClientGazeController::close()
     if (closed)
         return true;
 
+    stopControl();
+
     if (portCmdFp)
     {
         portCmdFp->interrupt();
@@ -617,7 +619,7 @@ bool ClientGazeController::stopControl()
 
     Bottle command, reply;
 
-    command.addString("susp");
+    command.addString("stop");
 
     if (!portRpc->write(command,reply))
     {
@@ -628,24 +630,5 @@ bool ClientGazeController::stopControl()
     return true;
 }
 
-
-/************************************************************************/
-bool ClientGazeController::resumeControl()
-{
-    if (!connected)
-        return false;
-
-    Bottle command, reply;
-
-    command.addString("run");
-
-    if (!portRpc->write(command,reply))
-    {
-        fprintf(stdout,"Error: unable to get reply from server!\n");
-        return false;
-    }
-    
-    return true;
-}
 
 
