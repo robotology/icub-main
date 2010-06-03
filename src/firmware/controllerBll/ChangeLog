@@ -112,3 +112,11 @@
 2010-11-May  Francesco Nori <iron@liralab.it>
 	* _vel_timeout is now passed via CAN on a separate message
 	* Current build 38.	
+	
+2010-3-June  Marci Randazzo <marco.randazzo@iit.it>
+	* Merging firmware version 1.73/1.74 in standard firmware in order to provide MODE_TORQUE control mode to all firmware versions.
+	* CAN masks changed. Now all firmware versions can read force data.
+	* compute_pwm function changed. All firmware versions can now enter MODE_TORQUE control mode.
+	* four force watchdogs are now used to check if force data from board 11/12/13/14 are recevied.
+	  boards 11/12 can be virtual (forces calculated by iDyn and transmitted on CAN bus by PC104)  
+	* Current build 39.	
