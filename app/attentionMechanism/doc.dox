@@ -16,6 +16,8 @@ Assumes \ref icub_yarp::dev::ServerLogpolarFrameGrabber  is running, and that th
 
 - \ref icub_colourProcessor "colourProcessor"
 
+- \ref icub_yuvProcessor "yuvProcessor"
+
 - \ref icub_imageProcessor "imageProcessor"
 
 - \ref icub_imageProcessorInterface "imageProcessorInterface"
@@ -23,6 +25,10 @@ Assumes \ref icub_yarp::dev::ServerLogpolarFrameGrabber  is running, and that th
 - \ref icub_saliencyBlobFinder "saliencyBlobFinder"
 
 - \ref icub_saliencyBlobFinderInterface "saliencyBlobFinderInterface"
+
+- \ref icub_selectiveAttentionEngine "SelectiveAttentionEngine"
+
+- \ref icub_selectiveAttentionInterface "SelectiveAttentionInterface"
 
 \section parameters_sec Parameters
 none
@@ -50,7 +56,7 @@ For every module config.sh contains:
 - none
 
 
-\section appl_scripts application script
+\section appl_scripts Application Script
 \code
 Customize and run appConfig-visualAtt_icubLeft.xml.template
 \endcode
@@ -62,7 +68,6 @@ in your network. In the template the console node referes to a node with a termi
 (not necessarily with a terminal).
 
 Remember that most of the module need IPP Library so be sure that the selected nodes have this installed.
-
 
 The application is based on one main module \ref icub_saliencyBlobFinder "saliencyBlobFinder" which extracts regions which are likely to be bounded into
 object afterward. This module builds as well the saliency map composed by all the blobs represent with an intensity proportional to saliency of the blob.
