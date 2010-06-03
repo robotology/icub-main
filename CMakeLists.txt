@@ -87,9 +87,9 @@ if(BUILD_MATLAB_BASED_TOOLS)
                             ${MATLAB_LIBRARIES_DIRS}/libmat.so)
     endif(WIN32)
 else(BUILD_MATLAB_BASED_TOOLS)
-    unset(MATLAB_INCLUDE_DIRS)
-    unset(MATLAB_LIBRARIES_DIRS)
-    unset(MATLAB_LIBRARIES)
+    set(MATLAB_INCLUDE_DIRS "")
+    set(MATLAB_LIBRARIES_DIRS "")
+    set(MATLAB_LIBRARIES "")
 endif(BUILD_MATLAB_BASED_TOOLS)
 
 ### this makes everything go in $ICUB_DIR/lib and $ICUB_DIR/bin
