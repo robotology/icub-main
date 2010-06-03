@@ -37,7 +37,7 @@
 byte	_board_ID = 16;	
 char    _additional_info [32];
 UInt8    mainLoopOVF=0;
-word    _build_number = 38;
+word    _build_number = 39;
 int     _countBoardStatus =0;
 Int16   _flash_version=0; 
 UInt8   BUS_OFF=false;
@@ -212,7 +212,7 @@ void main(void)
 #endif 	
 
     init_position_abs_ssi ();
-#if VERSION == 0x0153 || VERSION ==0x0157 || VERSION == 0x0173 || VERSION == 0x0172 
+#if VERSION == 0x0153 || VERSION ==0x0157 || VERSION == 0x0172 
     init_relative_position_abs_ssi();
 #endif 
  
@@ -324,7 +324,7 @@ void main(void)
 	    // max_real_position is the limit of the joint starting from 
 	    // 4095 and going to decrease this number without zero-cross
 	    // untill the joint limit is reached
-#if   VERSION == 0x0153 || VERSION == 0x0157 || VERSION == 0x0173 
+#if   VERSION == 0x0153 || VERSION == 0x0157 
 		_position_old[0]=_position[0]; 
 		if(get_error_abs_ssi(0)==ERR_OK)
 			_position[0]=Filter_Bit (get_relative_position_abs_ssi(0));
@@ -554,37 +554,6 @@ void main(void)
 			}
 		}	
 #endif
-
-#if VERSION == 0x0170 || VERSION == 0x0173 || VERSION == 0x0174
-		for (i=0; i<JN; i++) 
-		{
-#if VERSION == 0x0173 || VERSION == 0x0174
-			for (k=0; k<2; k++)
-#elif VERSION == 0x0170		
-			for (k=0; k<1; k++)
-#endif
-			{
-				if (_control_mode[i] == MODE_TORQUE ||
-					_control_mode[i] == MODE_IMPEDANCE)
-					if (_strain_wtd[k]==0)
-					{
-						_control_mode[i] = MODE_IDLE;	
-						_pad_enabled[i] = false;
-							
-						can_printf("WDT:strain%d",i);	//@@@ DEBUG: REMOVE ME LATER
-						#ifdef DEBUG_CAN_MSG
-							can_printf("WARN:strain watchdog! disabling pwm");				
-						#endif	
-						
-						PWM_outputPadDisable(i);	
-					}
-					else
-					{
-						_strain_wtd[k]--;	
-					}				
-			}
-		}
-#endif		
 				
 		/* generate PWM */		
 		for (i=0; i<JN; i++)
@@ -754,7 +723,8 @@ void check_range(byte i, Int16 band, Int32 *PWM)
 	 			} 				
  			}
 }
-	
+
+			
 /***************************************************************************/
 /**
  * this function decouple encoder readings.
@@ -806,40 +776,9 @@ void decouple_positions(void)
 		count++;				
 		#endif			
 	}
-#elif   VERSION == 0x0157
+#elif   VERSION == 0x0157 
 	_cpl_pos_counter++;
 	if (_cpl_pos_counter < timeout_cpl_pos  && (get_error_abs_ssi(0)==ERR_OK))
-	{
-		/* beware of the first cycle when _old has no meaning */		
-		_position[0] = (((float) _position[0])*0.6153F);  
-		_position[0] = _position[0]+ _cpl_pos_prediction[0];
-		_position[0] = _position[0]- _cpl_pos_prediction[1];
-		/*
-		|M1| |  1     0    0   |  |T1|     pulley diameter
-		|T2|=|  0     1    0   |* |T2|     with a=40/65 i.e. a=0.6153
-		|M3| |  1    -1    a   |  |T3|
-		*/
-		_cpl_pos_prediction[0] = L_add(_cpl_pos_prediction[0], _cpl_pos_delta[0]);
-		_cpl_pos_prediction[1] = L_add(_cpl_pos_prediction[1], _cpl_pos_delta[1]);
-	}
-	else
-	{
-		_control_mode[0] = MODE_IDLE;	
-		_pad_enabled[0] = false;
-		PWM_outputPadDisable(0);
-
-		#ifdef DEBUG_CAN_MSG
-		if(count==255)
-		{
-			can_printf("No cpl pos info");
-			count=0;
-		}			
-		count++;				
-		#endif			
-	}
-#elif VERSION == 0x0173
-	_cpl_pos_counter++;
-	if (_cpl_pos_counter < timeout_cpl_pos && (get_error_abs_ssi(0)==ERR_OK))
 	{
 		/* beware of the first cycle when _old has no meaning */		
 		_position[0] = (((float) _position[0])*0.6153F);  
