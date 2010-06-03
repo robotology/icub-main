@@ -189,7 +189,7 @@ byte can_interface (void)
 			// special message, not too neat
 			// ID 0x0100 (001 0000 0000b) message class = periodic message  
 			
-#if VERSION == 0x0153 || VERSION==0x0157 || VERSION == 0x0173 
+#if VERSION == 0x0153 || VERSION==0x0157  
 
 			if (_canmsg.CAN_ID_class == CLASS_PERIODIC_DSP)
 			{
@@ -227,21 +227,17 @@ byte can_interface (void)
 			else
 #endif
 
-
-#if VERSION == 0x0170 || VERSION == 0x0172 || VERSION == 0x0173 || VERSION == 0x0174
 			if (_canmsg.CAN_ID_class == CLASS_PERIODIC_SENS)
 			{
-				#if VERSION == 0x0173 || VERSION == 0x0174
-					if 		(_canmsg.CAN_ID_src==CAN_ID_JNT_STRAIN)  strain_num=0;
-					else if (_canmsg.CAN_ID_src==CAN_ID_6AX_STRAIN)  strain_num=1;
-					else    										 
-					{
-						can_printf("ERR: UNKNOWN STRAIN!");
-						strain_num=0;
-					}
-				#else
+				if 		(_canmsg.CAN_ID_src==CAN_ID_JNT_STRAIN_11)  strain_num=WDT_JNT_STRAIN_11;
+				else if (_canmsg.CAN_ID_src==CAN_ID_JNT_STRAIN_12)  strain_num=WDT_JNT_STRAIN_12;
+				else if (_canmsg.CAN_ID_src==CAN_ID_6AX_STRAIN_13)  strain_num=WDT_6AX_STRAIN_13;
+				else if (_canmsg.CAN_ID_src==CAN_ID_6AX_STRAIN_14)  strain_num=WDT_6AX_STRAIN_14;			
+				else    										 
+				{
+					can_printf("ERR: UNKNOWN STRAIN!");
 					strain_num=0;
-				#endif
+				}
 
 				switch(_canmsg.CAN_ID_dst)
 				{
@@ -262,7 +258,7 @@ byte can_interface (void)
 				_strain_wtd[strain_num] = STRAIN_SAFE;
 			}
 			else
-#endif
+
 
 			// special message for the can loader 
 			// ID 0x0700 (111 0000 0000b) message class = broadcast message 
@@ -821,31 +817,16 @@ void set_can_masks()
 	UInt32 mask1=0;
 	UInt32 mask2=0;
 	
-	if (VERSION == 0x0170 || VERSION == 0x0172)
-	{
-		create_F_M(&filter1, &mask1,CLASS_POLLING_DSP,0xFF, _board_ID, CLASS_PERIODIC_SENS, 0xFF, 0xFF);   
-		create_F_M(&filter2, &mask2,CLASS_CANLOADER,  0x00, 0xFF, 	   CLASS_CANLOADER,  	0x00, 0xFF);  		 	
-	}
-	else if (VERSION == 0x0173)
-	{
+	if (VERSION == 0x0153 || VERSION==0x0157)
+	{	
 		create_F_M(&filter1, &mask1,CLASS_POLLING_DSP,0xFF, _board_ID, CLASS_PERIODIC_SENS, 0xFF, 0xFF);   
 		create_F_M(&filter2, &mask2,CLASS_CANLOADER,  0x00, 0xFF, 	   CLASS_PERIODIC_DSP, 	CAN_ID_COUPLED_BOARD, 0xFF);  		
 	}
-	else if (VERSION == 0x0174)
+	else
 	{
 		create_F_M(&filter1, &mask1,CLASS_POLLING_DSP,0xFF, _board_ID, CLASS_PERIODIC_SENS, 0xFF, 0xFF);   
 		create_F_M(&filter2, &mask2,CLASS_CANLOADER,  0x00, 0xFF, 	   CLASS_CANLOADER,  	0x00, 0xFF);  
-	}
-	else if (VERSION == 0x0153 || VERSION==0x0157)
-	{	
-		create_F_M(&filter1, &mask1,CLASS_POLLING_DSP,0xFF, _board_ID, CLASS_PERIODIC_DSP, CAN_ID_COUPLED_BOARD, CAN_BCAST_POSITION);
-		create_F_M(&filter2, &mask2,CLASS_CANLOADER,  0x00, 0xFF,      CLASS_PERIODIC_DSP, CAN_ID_COUPLED_BOARD, CAN_BCAST_PID_VAL);
-	}
-	else
-	{
-		create_F_M(&filter1, &mask1,CLASS_POLLING_DSP,0xFF, _board_ID, CLASS_POLLING_DSP,   0x00, _board_ID);
-		create_F_M(&filter2, &mask2,CLASS_CANLOADER,  0x00,  0xFF,	   CLASS_CANLOADER,     0x00, 0xFF); 
-	}
+	}	
 		
 	setmask(filter1,filter2, mask1, mask2);
 }
