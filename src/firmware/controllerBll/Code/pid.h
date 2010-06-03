@@ -27,6 +27,7 @@ Int32 step_velocity (byte jj);
 void compute_desired(byte i);
 bool check_in_position(byte jnt);
 void check_desired_within_limits(byte i, Int32 previous_desired);
+bool read_force_data (byte,byte,byte);
 
 /******************************************************/
 // stable global data 
@@ -140,6 +141,7 @@ extern Int16  _kr[JN] ;					// scale factor (negative power of two)
 
 
 // TORQUE PID
+extern Int16  _strain_val[JN];
 extern Int16  _error_torque[JN] ;			// actual feedback error 
 extern Int16  _error_old_torque[JN] ;		// error at t-1 
 extern Int16  _pid_torque[JN] ;				// pid result 
@@ -171,7 +173,7 @@ extern Int32  _pd_current[JN] ;         // pd portion of the current pid
 #endif
 
 
-#if VERSION == 0x0153 || VERSION==0x0157 || VERSION == 0x0173
+#if VERSION == 0x0153 || VERSION==0x0157 
 extern Int32  _cpl_pos_received[JN] ;		// the position of the synchronized card 
 extern Int32  _cpl_pos_prediction[JN] ;			// the actual adjustment (compensation) 
 extern Int32  _cpl_pos_delta[JN] ;			// velocity over the adjustment 
