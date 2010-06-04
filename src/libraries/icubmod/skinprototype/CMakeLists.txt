@@ -1,6 +1,6 @@
 PREPARE_DEVICE(skinprototype TYPE SkinPrototype INCLUDE skinprototype.h WRAPPER grabber)
 
-if (NOT SKIP_static_grabber)
+if (NOT SKIP_skinprototype)
 
 include_directories(${CMAKE_CURRENT_SOURCE_DIR}
                        ${YARP_INCLUDE_DIRS})
@@ -10,4 +10,4 @@ target_link_libraries(skinprototype ${YARP_LIBRARIES})
 
 icub_export_library(skinprototype "" include/iCub "")
 
-endif (NOT SKIP_static_grabber)
+endif (NOT SKIP_skinprototype)
