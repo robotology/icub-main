@@ -470,17 +470,6 @@ public:
 				first = false;
 			}
 			FT = FTB->getFB(F_measured - F_offset - F_iDyn);
-			Vector FF = F_measured;
-			for(int i=0;i<FF.length();i++)
-				fprintf(datas,"%.3lf\t",FF(i));
-			FF = F_iDyn;
-			for(int i=0;i<FF.length();i++)
-				fprintf(datas,"%.3lf\t",FF(i));
-			for(int i=0;i<FT.length();i++)
-				fprintf(datas,"%.3lf\t",FT(i));
-			fprintf(datas,"\n");
-
-
 		} else
 		{
 			if(!first) FT = FTB->getFB();
@@ -509,7 +498,6 @@ public:
 		  port_Contact->interrupt();
 		  port_Contact->close();
 		  if (port_Contact) {delete port_Contact; port_Contact=0;}
-		  if (datas) {fclose(datas);}
 	  }	  
 
 	  
