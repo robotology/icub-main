@@ -2,6 +2,6 @@
 # Authors: Lorenzo Natale
 # CopyPolicy: Released under the terms of the GNU GPL v2.0.
 
-add_subdirectory(iCubInterface2)
+add_subdirectory(iCubInterface)
 
 
