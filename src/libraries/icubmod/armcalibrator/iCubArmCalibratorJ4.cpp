@@ -9,11 +9,7 @@
 
 #include <yarp/os/Time.h>
 
-#include "iCubArmCalibratorJ8.h"
-
-#include <ace/config.h>
-#include <ace/OS.h>
-#include <ace/Log_Msg.h>
+#include "iCubArmCalibratorJ4.h"
 
 using namespace yarp::os;
 using namespace yarp::dev;
@@ -24,9 +20,9 @@ const int PARK_TIMEOUT=30;
 const int GO_TO_ZERO_TIMEOUT=20;
 const int CALIBRATE_JOINT_TIMEOUT=20;
 
-const int numberOfJoints=8;
+const int numberOfJoints=4;
 
-iCubArmCalibratorJ8::iCubArmCalibratorJ8()
+iCubArmCalibratorJ4::iCubArmCalibratorJ4()
 {
     type   = NULL;
     param1 = NULL;
@@ -38,12 +34,12 @@ iCubArmCalibratorJ8::iCubArmCalibratorJ8()
     homePos=0;
 }
 
-iCubArmCalibratorJ8::~iCubArmCalibratorJ8()
+iCubArmCalibratorJ4::~iCubArmCalibratorJ4()
 {
     //empty now
 }
 
-bool iCubArmCalibratorJ8::open (yarp::os::Searchable& config)
+bool iCubArmCalibratorJ4::open (yarp::os::Searchable& config)
 {
     Property p;
     p.fromString(config.toString());
@@ -72,52 +68,48 @@ bool iCubArmCalibratorJ8::open (yarp::os::Searchable& config)
     homeVel = new double[nj];
 
     Bottle& xtmp = p.findGroup("CALIBRATION").findGroup("Calibration1");
-    ACE_ASSERT (xtmp.size() == nj+1);
+
     int i;
     for (i = 1; i < xtmp.size(); i++)
-          param1[i-1] = xtmp.get(i).asDouble();
+        param1[i-1] = xtmp.get(i).asDouble();
     xtmp = p.findGroup("CALIBRATION").findGroup("Calibration2");
-    ACE_ASSERT (xtmp.size() == nj+1);
+
     for (i = 1; i < xtmp.size(); i++)
         param2[i-1] = xtmp.get(i).asDouble();
     xtmp = p.findGroup("CALIBRATION").findGroup("Calibration3");
-    ACE_ASSERT (xtmp.size() == nj+1);
-   for (i = 1; i < xtmp.size(); i++)
-       param3[i-1] = xtmp.get(i).asDouble();
-   xtmp = p.findGroup("CALIBRATION").findGroup("CalibrationType");
-   ACE_ASSERT (xtmp.size() == nj+1);
-   
-   for (i = 1; i < xtmp.size(); i++)
+
+    for (i = 1; i < xtmp.size(); i++)
+        param3[i-1] = xtmp.get(i).asDouble();
+    xtmp = p.findGroup("CALIBRATION").findGroup("CalibrationType");
+
+    for (i = 1; i < xtmp.size(); i++)
         type[i-1] = (unsigned char) xtmp.get(i).asDouble();
-   
-  
-   xtmp = p.findGroup("CALIBRATION").findGroup("PositionZero");
-   ACE_ASSERT (xtmp.size() == nj+1);
-   for (i = 1; i < xtmp.size(); i++)
+
+
+    xtmp = p.findGroup("CALIBRATION").findGroup("PositionZero");
+
+    for (i = 1; i < xtmp.size(); i++)
         pos[i-1] = xtmp.get(i).asDouble();
-   
-   xtmp = p.findGroup("CALIBRATION").findGroup("VelocityZero");
-   ACE_ASSERT (xtmp.size() == nj+1);
-  
-   for (i = 1; i < xtmp.size(); i++)
+
+    xtmp = p.findGroup("CALIBRATION").findGroup("VelocityZero");
+
+    for (i = 1; i < xtmp.size(); i++)
         vel[i-1] = xtmp.get(i).asDouble();
-   
-   xtmp = p.findGroup("HOME").findGroup("PositionHome");
-   ACE_ASSERT (xtmp.size() == nj+1);
-   
-   for (i = 1; i < xtmp.size(); i++)
+
+    xtmp = p.findGroup("HOME").findGroup("PositionHome");
+
+    for (i = 1; i < xtmp.size(); i++)
         homePos[i-1] = xtmp.get(i).asDouble();
-   
-   xtmp = p.findGroup("HOME").findGroup("VelocityHome");
-   ACE_ASSERT (xtmp.size() == nj+1);
-  
-   for (i = 1; i < xtmp.size(); i++)
-       homeVel[i-1] = xtmp.get(i).asDouble();
+
+    xtmp = p.findGroup("HOME").findGroup("VelocityHome");
+
+    for (i = 1; i < xtmp.size(); i++)
+        homeVel[i-1] = xtmp.get(i).asDouble();
 
     return true;
 }
 
-bool iCubArmCalibratorJ8::close ()
+bool iCubArmCalibratorJ4::close ()
 {
     if (type != NULL) delete[] type;
     type = NULL;
@@ -141,9 +133,9 @@ bool iCubArmCalibratorJ8::close ()
     return true;
 }
 
-bool iCubArmCalibratorJ8::calibrate(DeviceDriver *dd)
+bool iCubArmCalibratorJ4::calibrate(DeviceDriver *dd)
 {
-    fprintf(stderr, "Calling iCubArmCalibratorJ8::calibrate: \n");
+    fprintf(stderr, "Calling iCubArmCalibratorJ4::calibrate: \n");
     abortCalib=false;
 
     iCalibrate = dynamic_cast<IControlCalibration2 *>(dd);
@@ -168,14 +160,12 @@ bool iCubArmCalibratorJ8::calibrate(DeviceDriver *dd)
     if (!ret)
         return false;
 
+	fprintf(stderr, "ARMCALIB::start! new calibrator for torque controlled shoulder by randaz \n");
+
     int k;
-	int shoulderSetOfJoints[] = {0, 1 , 2, 3};
-    for (k =0; k < 4; k++)
-    {
-        //fprintf(stderr, "ARMCALIB::Sending offset for joint %d\n", k);
-        calibrateJoint(shoulderSetOfJoints[k]);
-    }
-    Time::delay(1.0);
+	for (k =0; k < nj; k++)
+		calibrateJoint(k);
+	Time::delay(1.0);
 
     for (k = 0; k < nj; k++) 
     {
@@ -184,57 +174,22 @@ bool iCubArmCalibratorJ8::calibrate(DeviceDriver *dd)
         fprintf(stderr, "ARMCALIB::Calling enable pid for joint %d\n", k);
         iPids->enablePid(k);
     }
-
-	for (k = 0; k < 4; k++)
-    {
-        //fprintf(stderr, "ARMCALIB::Moving joint %d to zero\n", k);
-		goToZero(shoulderSetOfJoints[k]);
-    }
-	for (k = 0; k < 4; k++)
-    {
-        //fprintf(stderr, "ARMCALIB::Waiting for joint %d movement\n", k);
-		checkGoneToZero(shoulderSetOfJoints[k]);
-    }
-
-    ret = true;
-    bool x;
-
-	int firstSetOfJoints[] = {4, 6, 7};
-    for (k =0; k < 3; k++)
-		calibrateJoint(firstSetOfJoints[k]);
-	for (k =0; k < 3; k++)
-	{
-		x = checkCalibrateJointEnded(firstSetOfJoints[k]);
-		ret = ret && x;
-	}
-	for (k = 0; k < 3; k++)
-		goToZero(firstSetOfJoints[k]);
-	for (k = 0; k < 3; k++)
-		checkGoneToZero(firstSetOfJoints[k]);
+	////////////////////////////////////////////
+	for (k = 0; k < nj; k++)
+		goToZero(k);
+	for (k = 0; k < nj; k++)
+		checkGoneToZero(k);
 	//////////////////////////////////////////
-	int secondSetOfJoints[] = {5};
-	for (k =0; k < 1; k++)
-		calibrateJoint(secondSetOfJoints[k]);
-	for (k =0; k < 1; k++)
-	{
-		x = checkCalibrateJointEnded(secondSetOfJoints[k]);
-		ret = ret && x;
-	}
-	for (k = 0; k < 1; k++)
-		goToZero(secondSetOfJoints[k]);
-	for (k = 0; k < 1; k++)
-		checkGoneToZero(secondSetOfJoints[k]);
-    
     fprintf(stderr, "ARMCALIB::calibration done!\n");
     return ret;
 }
 
-void iCubArmCalibratorJ8::calibrateJoint(int joint)
+void iCubArmCalibratorJ4::calibrateJoint(int joint)
 {
     iCalibrate->calibrate2(joint, type[joint], param1[joint], param2[joint], param3[joint]);
 }
 
-bool iCubArmCalibratorJ8::checkCalibrateJointEnded(int joint)
+bool iCubArmCalibratorJ4::checkCalibrateJointEnded(int joint)
 {
     const int timeout = CALIBRATE_JOINT_TIMEOUT;
     int i;
@@ -260,7 +215,7 @@ bool iCubArmCalibratorJ8::checkCalibrateJointEnded(int joint)
 }
 
 
-void iCubArmCalibratorJ8::goToZero(int j)
+void iCubArmCalibratorJ4::goToZero(int j)
 {
     if (abortCalib)
         return;
@@ -268,7 +223,7 @@ void iCubArmCalibratorJ8::goToZero(int j)
     iPosition->positionMove(j, pos[j]);
 }
 
-void iCubArmCalibratorJ8::checkGoneToZero(int j)
+void iCubArmCalibratorJ4::checkGoneToZero(int j)
 {
     // wait.
     bool finished = false;
@@ -289,7 +244,7 @@ void iCubArmCalibratorJ8::checkGoneToZero(int j)
         fprintf(stderr, "ARMCALIB::abort wait for joint %d going to zero!\n", j);
 }
 
-bool iCubArmCalibratorJ8::park(DeviceDriver *dd, bool wait)
+bool iCubArmCalibratorJ4::park(DeviceDriver *dd, bool wait)
 {
 	int nj=0;
     bool ret=false;
@@ -309,7 +264,7 @@ bool iCubArmCalibratorJ8::park(DeviceDriver *dd, bool wait)
         }
 
 	int timeout = 0;
-    fprintf(stderr, "ARMCALIB::Calling iCubArmCalibratorJ8::park()");
+    fprintf(stderr, "ARMCALIB::Calling iCubArmCalibratorJ4::park()");
     iPosition->setRefSpeeds(homeVel);
     iPosition->positionMove(homePos);
 
@@ -332,10 +287,10 @@ bool iCubArmCalibratorJ8::park(DeviceDriver *dd, bool wait)
 				if (iPosition->checkMotionDone(j, &done))
 				{
 					if (!done)
-						fprintf(stderr, "iCubArmCalibratorJ8::park(): joint %d not in position ", j);
+						fprintf(stderr, "iCubArmCalibratorJ4::park(): joint %d not in position ", j);
 				}
 				else
-					fprintf(stderr, "iCubArmCalibratorJ8::park(): joint %d did not answer ", j);
+					fprintf(stderr, "iCubArmCalibratorJ4::park(): joint %d did not answer ", j);
 			}
 		}
     }
@@ -348,14 +303,14 @@ bool iCubArmCalibratorJ8::park(DeviceDriver *dd, bool wait)
     return true;
 }
 
-bool iCubArmCalibratorJ8::quitCalibrate()
+bool iCubArmCalibratorJ4::quitCalibrate()
 {
     fprintf(stderr, "ARMCALIB::quitting calibrate\n");
     abortCalib=true;
     return true;
 }
 
-bool iCubArmCalibratorJ8::quitPark()
+bool iCubArmCalibratorJ4::quitPark()
 {
     fprintf(stderr, "ARMCALIB::quitting parking\n");
     abortParking=true;
