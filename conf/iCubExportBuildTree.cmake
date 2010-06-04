@@ -36,7 +36,7 @@ file(APPEND ${CMAKE_BINARY_DIR}/${EXPORT_INCLUDE_FILE} "###################\n")
 file(APPEND ${CMAKE_BINARY_DIR}/${EXPORT_INCLUDE_FILE} "# List of include directories for exported targets\n\n")
 set(include_dirs "")
 foreach (t ${ICUB_TARGETS})
-  get_property_fix(target_INCLUDE_DIRS TARGET ${t} PROPERTY INCLUDE_DIRS)
+  get_property(target_INCLUDE_DIRS TARGET ${t} PROPERTY INCLUDE_DIRS)
   file(APPEND ${CMAKE_BINARY_DIR}/${EXPORT_INCLUDE_FILE} "set(${t}_INCLUDE_DIRS ${target_INCLUDE_DIRS} CACHE STRING \"include dir for target ${t}\")\n")
 
   set(include_dirs ${include_dirs} ${target_INCLUDE_DIRS})
