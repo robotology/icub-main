@@ -1,7 +1,7 @@
 // -*- mode:C++; tab-width:4; c-basic-offset:4; indent-tabs-mode:nil -*-
 /**
 *
-@ingroup icub_tools
+@ingroup icub_modules
 \defgroup icub_velocityControl velocityControl
 
 Perform position control using a velocity control loop.
