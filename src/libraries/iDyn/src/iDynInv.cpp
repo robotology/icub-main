@@ -1544,11 +1544,16 @@ bool OneChainNewtonEuler::InverseToBase(unsigned int lSens)
 		// with a specific sensor method
 		for(int i=lSens; i>=0; i--)
 			neChain[i]->BackwardNewtonEuler(neChain[i+1]);
+		// now we can compute all torques
+		// we also compute the one of the sensor link, since we needed the 
+		// previous link done
+		for(int i=lSens+1; i>0; i--)
+			neChain[i]->computeTorque(neChain[i-1]);
 		return true;
 	}
 	else
 	{
-		cerr<<"OneChainNewtonEuler error, could not perform InverseToEnd because of out of range index: "
+		cerr<<"OneChainNewtonEuler error, could not perform InverseToBase because of out of range index: "
 			<<lSens<<">="<<nLinks;
 		return false;
 	}

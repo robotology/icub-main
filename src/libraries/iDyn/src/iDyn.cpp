@@ -901,7 +901,16 @@ Vector iDynChain::getTorquesNewtonEuler() const
 	return ret;
 }
 //~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
-
+Vector iDynChain::getForceMomentEndEff() const
+{
+	Vector ret(6); ret.zero();
+	Vector f = allList[N-1]->getForce();
+	Vector m = allList[N-1]->getMoment();
+	ret[0]=f[0]; ret[1]=f[1]; ret[2]=f[2];
+	ret[3]=m[0]; ret[4]=m[1]; ret[5]=m[2];
+	return ret;
+}
+//~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 
 
 

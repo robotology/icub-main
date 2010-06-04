@@ -88,6 +88,8 @@ namespace iDyn{
 	class iFakeDyn;
 	class iFakeDyn2GdL;
 	class iDynSensor;
+	class iDynSensorLeg;
+	class iDynSensorArm;
 	class iDynInvSensor;
 	class OneLinkNewtonEuler;
 	class BaseLinkNewtonEuler;

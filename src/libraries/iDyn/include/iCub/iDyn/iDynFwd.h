@@ -253,6 +253,12 @@ public:
     */
 	yarp::sig::Vector getTorquesNewtonEuler() const;
 
+	/**
+    * Returns the end-effector force-moment as a single (6x1) vector
+    * @return a 6x1 vector with the the end-effector force-moment
+    */
+	yarp::sig::Vector getForceMomentEndEff() const;
+
 
 };
 

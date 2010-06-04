@@ -78,6 +78,8 @@ namespace iDyn
 	class iFTransform;
     class iSFrame;
 	class iFB;
+	class iDynSensorLeg;
+	class iDynSensorArm;
 
 
 
@@ -753,6 +755,14 @@ public:
     * @return a Nx1 vector with the torques
     */
 	yarp::sig::Vector getTorquesNewtonEuler() const;
+
+
+	/**
+	* Returns the end effector force-moment as a single (6x1) vector
+	* @return a (6x1) vector, in the form 0:2=F 3:5=Mu 
+	*/
+	yarp::sig::Vector getForceMomentEndEff() const;
+
 
 };
 

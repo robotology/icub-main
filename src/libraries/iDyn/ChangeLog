@@ -8,4 +8,8 @@
 2010-05-27 Serena Ivaldi <serena.ivaldi@iit.it>
 	   * added iDynInvSensor-Arm/Leg to iDynInv
 
+2010-06-04 Serena Ivaldi <serena.ivaldi@iit.it>
+	* added getForceMomentEndEffector to iDynChain and iDynSensor
+	* this version works perfectly with TorqueObserver and WrenchObserver
+
 
