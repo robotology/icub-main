@@ -1,8 +1,4 @@
 /** 
-\defgroup affActionPrimitivesExample affActionPrimitivesExample
- 
-@ingroup icub_module  
- 
 Example of grasping module based upon \ref affActionPrimitives 
 library. 
 
