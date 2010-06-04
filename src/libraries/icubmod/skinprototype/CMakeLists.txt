@@ -9,4 +9,5 @@ IF (NOT SKIP_static_grabber)
 FIND_PACKAGE(YARP REQUIRED)
 
 ADD_LIBRARY(skinprototype skinprototype.h skinprototype.cpp)
+icub_export_library(skinprototype "" include/iCub "")
 ENDIF (NOT SKIP_static_grabber)

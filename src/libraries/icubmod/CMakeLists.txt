@@ -27,6 +27,7 @@ BEGIN_PLUGIN_LIBRARY(icubmod)
   add_subdirectory(staticgrabber)
   add_subdirectory(torsoonlycalibrator)
   add_subdirectory(xsensmtx)
+  add_subdirectory(skinprototype)
 END_PLUGIN_LIBRARY(icubmod)
 
 icub_export_library(icubmod "" include/iCub "")
