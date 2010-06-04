@@ -65,6 +65,15 @@ include(${PROJECT_SOURCE_DIR}/conf/iCubHelpers.cmake)
 # find dependencies and set variables
 include(${PROJECT_SOURCE_DIR}/conf/iCubFindDependencies.cmake)
 
+if (NOT ICUB_HAS_GSL)
+  message(FATAL "Cannot find GSL")
+else (NOT ICUB_HAS_GSL)
+  if (NOT ICUB_USE_GSL)
+    message(STATUS "GSL is strictly required: GSL enabled")
+    set(ICUB_USE_GSL TRUE CACHE BOOL "Use package GSL" FORCE)
+  endif (NOT ICUB_USE_GSL)
+endif (NOT ICUB_HAS_GSL)
+
 # find matlab libraries
 set(BUILD_MATLAB_BASED_TOOLS FALSE CACHE BOOL "Dou you want to build MATLAB-based tools?")
 if(BUILD_MATLAB_BASED_TOOLS)
