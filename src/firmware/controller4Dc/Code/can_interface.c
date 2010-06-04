@@ -947,14 +947,7 @@ void set_can_masks()
 	UInt32 mask1=0;
 	UInt32 mask2=0;
 	
-	if (VERSION == 0x0125)
-		{
-
-			create_F_M(&filter1, &mask1,CLASS_POLLING_DSP,0xFF, _board_ID  , CLASS_PERIODIC_SENS, 0xFF, 0xFF);   
-			create_F_M(&filter2, &mask2,CLASS_POLLING_DSP,0xFF, _board_ID+1, CLASS_CANLOADER,     0x00, 0xFF);  
-			 	
-		}
-	if (VERSION == 0x0121 || VERSION == 0x0128 || VERSION == 0x0130)
+	if (VERSION == 0x0119 || VERSION == 0x0121 || VERSION == 0x0128 || VERSION == 0x0130)
 		{
 
 			create_F_M(&filter1, &mask1,CLASS_POLLING_DSP,0xFF, _board_ID  , CLASS_PERIODIC_SENS, 0xFF, 0xFF);   
@@ -967,9 +960,6 @@ void set_can_masks()
 			create_F_M(&filter2, &mask2,CLASS_POLLING_DSP,0xFF, _board_ID+1, CLASS_CANLOADER,     0x00, 0xFF); 
 		}
 		
-//	}
-	
-	
 	setmask(filter1,filter2, mask1, mask2);
 }
 
