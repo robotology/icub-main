@@ -215,15 +215,15 @@ Int32 compute_pwm(byte j)
 	  	read_force_data (1, WDT_JNT_STRAIN_12,1);
 #elif VERSION == 0x151 
 	  	//legs
-	  	if (_board_ID==5) 
-	  	{
-			read_force_data (0, WDT_JNT_STRAIN_12, 0); //@@@fixme
-	  		read_force_data (1, WDT_JNT_STRAIN_12, 1); //@@@fixme	  		
-	  	}
-	  	else if (_board_ID==6)
+	  	if (_board_ID==5)
 	  	{
 			read_force_data (0, WDT_6AX_STRAIN_13, 5);
 	  		read_force_data (1, WDT_JNT_STRAIN_12, 0); //@@@fixme  		
+	  	}
+	  	else if (_board_ID==6) 
+	  	{
+			read_force_data (0, WDT_JNT_STRAIN_12, 0); //@@@fixme
+	  		read_force_data (1, WDT_JNT_STRAIN_12, 1); //@@@fixme	  		
 	  	}
 	  	else if (_board_ID==7)
 	  	{
@@ -232,14 +232,14 @@ Int32 compute_pwm(byte j)
 	  	}
 	  	else if (_board_ID==8)
 	  	{
-			read_force_data (0, WDT_JNT_STRAIN_11, 0); //@@@fixme
-	 	 	read_force_data (1, WDT_JNT_STRAIN_11, 0); //@@@fixme	  		
-	  	}
-	  	else if (_board_ID==9)
-	  	{
 			read_force_data (0, WDT_6AX_STRAIN_14, 5);
 		  	read_force_data (1, WDT_JNT_STRAIN_11, 0); //@@@fixme  		
 	  	}  
+	  	else if (_board_ID==9)
+	  	{
+			read_force_data (0, WDT_JNT_STRAIN_11, 0); //@@@fixme
+	 	 	read_force_data (1, WDT_JNT_STRAIN_11, 0); //@@@fixme	  		
+	  	}
 	  	else if (_board_ID==10)
 	  	{
 			read_force_data (0, WDT_JNT_STRAIN_11, 0); //@@@fixme
