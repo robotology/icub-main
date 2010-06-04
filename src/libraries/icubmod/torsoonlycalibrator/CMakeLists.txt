@@ -3,15 +3,7 @@ PREPARE_DEVICE(icubtorsoonlycalibrator TYPE iCubTorsoOnlyCalibrator INCLUDE iCub
 if (NOT SKIP_icubtorsoonlycalibrator)
 
 INCLUDE_DIRECTORIES(${CMAKE_CURRENT_SOURCE_DIR}
-                    ${YARP_INCLUDE_DIRS})
-
-
-IF (NOT SKIP_icubtorsoonlycalibrator)
-
-FIND_PACKAGE(YARP REQUIRED)
-
-INCLUDE_DIRECTORIES(${CMAKE_CURRENT_SOURCE_DIR})
-
+                       ${YARP_INCLUDE_DIRS})
 
 ADD_LIBRARY(torsoonlycalibrator iCubTorsoOnlyCalibrator.cpp iCubTorsoOnlyCalibrator.h)
 target_link_libraries(torsoonlycalibrator ${YARP_LIBRARIES})

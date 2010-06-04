@@ -1,13 +1,13 @@
+PREPARE_DEVICE(skinprototype TYPE SkinPrototype INCLUDE skinprototype.h WRAPPER grabber)
 
+if (NOT SKIP_static_grabber)
 
-IF (COMPILE_DEVICE_LIBRARY)
-  PREPARE_DEVICE(skinprototype TYPE SkinPrototype INCLUDE skinprototype.h
-				WRAPPER grabber)
-ENDIF (COMPILE_DEVICE_LIBRARY)
+include_directories(${CMAKE_CURRENT_SOURCE_DIR}
+                       ${YARP_INCLUDE_DIRS})
 
-IF (NOT SKIP_static_grabber)
-FIND_PACKAGE(YARP REQUIRED)
+add_library(skinprototype skinprototype.h skinprototype.cpp)
+target_link_libraries(skinprototype ${YARP_LIBRARIES})
 
-ADD_LIBRARY(skinprototype skinprototype.h skinprototype.cpp)
 icub_export_library(skinprototype "" include/iCub "")
-ENDIF (NOT SKIP_static_grabber)
+
+endif (NOT SKIP_static_grabber)
