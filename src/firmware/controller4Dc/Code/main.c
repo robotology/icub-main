@@ -558,13 +558,14 @@ void main(void)
 //******************************************************************************************/ 				
 
 #if VERSION==0x0125		
-
+/*
 		if(_strain_init[5]!=0 && _strain_init[4]!=0)
 		{
 			_Feq = 5*1333*(_strain[5]-_strain[4]); 
 		}
 
 		for (i=0; i<JN; i++) ENFORCE_LIMITS(i,1*_Feq);
+*/
 #else
 		for (i=0; i<JN; i++) ENFORCE_LIMITS(i,PWMoutput[i]);
 #endif
