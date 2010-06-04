@@ -87,6 +87,110 @@ RobotPartEntry *RobotParts::find(const string &pName)
     return 0;
 }
 
+SkinPartEntry::SkinPartEntry()
+{
+    analogServer=0;
+    analog=0;
+}
+
+SkinPartEntry::~SkinPartEntry()
+{
+
+}
+
+bool SkinPartEntry::open(yarp::os::Property &deviceP, yarp::os::Property &partP){
+    bool correct=true;
+    correct=correct&&partP.check("device");
+    correct=correct&&partP.check("robot");
+    correct=correct&&partP.check("canbusdevice");
+
+    std::string robotName=partP.find("robot").asString().c_str();
+    
+    if (!correct)
+        return false;
+
+    int period=20;
+    if (partP.check("period"))
+    {
+        period=partP.find("period").asInt();
+    }
+    else
+    {
+        std::cout<<"Warning: part "<<id<<" using default period ("<<period<<")\n";
+    }
+
+    std::string devicename=partP.find("device").asString().c_str();
+    deviceP.put("device", devicename.c_str());
+
+    std::string canbusdevice=partP.find("canbusdevice").asString().c_str();
+    deviceP.put("canbusdevice", canbusdevice.c_str());
+
+    driver.open(deviceP);
+    if (!driver.isValid())
+        return false;
+
+    driver.view(analog);
+
+    if (!analog)
+    {
+        std::cerr<<"Error: part "<<id<<" device " << devicename << " does not implement analog interface"<<endl;
+        driver.close();
+        return false;
+    }
+
+    std::string robotname=partP.find("robot").asString().c_str();
+    std::string name;
+    name+="/";
+    name+=robotName;
+    name+="/skin/";
+    name+=id.c_str();
+
+    analogServer=new AnalogServer(name.c_str());
+    analogServer->setRate(period);
+    analogServer->attach(analog);
+    analogServer->start();
+
+    return true;
+}
+
+void SkinPartEntry::close()
+{
+    std::cout<<"Closing skin part "<< id << endl;
+    if (analogServer)
+    {
+        analogServer->stop();
+        delete analogServer;
+    }
+    if (analog)
+        analog=0;
+
+    driver.close();
+}
+
+SkinPartEntry *SkinParts::find(const string &pName)
+{
+    SkinPartsIt it=begin();
+    for(;it!=end(); it++)
+    {
+        if ((*it)->id==pName)
+            {
+                return (*it);
+            }
+    }
+
+    return 0;
+}
+
+void SkinParts::close()
+{
+    SkinPartsIt it=begin();
+    while(it!=end())
+    {
+       (*it)->close();
+       it++;
+    }
+}
+
 
 // implementation of the RobotInterfaceRemap class
 
@@ -677,6 +781,47 @@ bool RobotInterfaceRemap::initialize20(const std::string &inifile)
         std::cout<<"No analog wrappers requested\n";
     }
 
+
+    Bottle *skinParts=robotOptions.findGroup("GENERAL").find("skinParts").asList();
+    std::cout<<"--> Checking if I need to create skin parts"<<std::endl;
+    if (skinParts)
+    {       
+        int nskin=skinParts->size();
+        cout<< "I have found " << nskin << " parts\n";
+        int n=0;
+        for (n=0;n<nskin;n++)
+        {
+            std::string partId=skinParts->get(n).asString().c_str();
+            std::cout<<"Opening " << partId << "\n";
+
+            Property partOptions;
+            partOptions.fromString(robotOptions.findGroup(partId.c_str()).toString());
+            partOptions.put("robot", robotName.c_str());
+
+            SkinPartEntry *tmp=new SkinPartEntry;
+            tmp->setId(partId);
+
+            if (partOptions.check("file"))
+            {
+                std::string filename=PATH+partOptions.find("file").asString().c_str();
+
+                Property deviceParams;
+                deviceParams.fromConfigFile(filename.c_str());
+
+                if (tmp->open(deviceParams, partOptions))
+                {
+                    skinparts.push_back(tmp);
+                }
+                else
+                {
+                    std::cerr<<"Error instantiating skin part " << partId << "check parameters"<<endl;
+                    delete tmp;
+                }
+            }
+        }
+    }
+
+
     std::cout<<"--> Starting robot calibration!"<<endl;
     calibrate();
     std::cout<<"Finished robot calibration!"<<endl;
@@ -712,7 +857,7 @@ bool RobotInterfaceRemap::instantiateNetwork(std::string &path, Property &robotO
     {
         string netid=deviceParameters.findGroup("CAN").find("NetworkId").asString().c_str();
 
-        //        std::cerr<<"Netid:"<<netid<<endl;
+        //std::cerr<<"Netid:"<<netid<<endl;
         //overwriting net id
         networkN=(*ids)[netid];
         if (networkN!=-1)
@@ -876,6 +1021,8 @@ bool RobotInterfaceRemap::finalize()
         delete tmpNet;
         networks.pop_back();
     }
+
+    skinparts.close();
 
     if (!gyro.isValid()) 
         gyro.close();

@@ -75,6 +75,7 @@ public:
 
     void run()
     {
+
         if (is!=0)
         {
             yarp::sig::Vector v;
@@ -362,12 +363,44 @@ public:
 typedef std::list<CartesianController *>::iterator CartesianControllersIt;
 typedef std::list<CartesianController *> CartesianControllers;
 
+class SkinPartEntry
+{
+private:
+    yarp::dev::PolyDriver driver;
+    AnalogServer *analogServer;
+    yarp::dev::IAnalogSensor *analog;
+
+
+public:
+    SkinPartEntry();
+    ~SkinPartEntry();
+
+    bool open(yarp::os::Property &deviceP, yarp::os::Property &partP);
+    void close();
+
+    void setId(const std::string &i)
+    { id=i; }
+
+    std::string id;
+};
+
+class SkinParts: public std::list<SkinPartEntry *>
+{
+public:
+    SkinPartEntry *find(const std::string &pName);
+    void close();
+};
+
+typedef SkinParts::iterator SkinPartsIt;
+
 class RobotInterfaceRemap: public IRobotInterface
 {
 protected:
     RobotNetwork  networks;
     RobotParts    parts;
     CartesianControllers cartesianControllers;
+
+    SkinParts     skinparts;
 
     bool initialized;
     bool isParking;
