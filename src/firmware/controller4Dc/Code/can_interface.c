@@ -9,15 +9,12 @@
 #include "encoders_interface.h"
 #include "currents_interface.h"
 #include "messages.h"
+#include "strain_board.h"
 #include "asc.h"
 #include "can1.h"
  
 #ifndef VERSION
 #	error "No valid version specified"
-#endif
-
-#if VERSION == 0x0125
-	#include "strain_board.h"
 #endif
 
 //************************************
@@ -104,6 +101,7 @@ byte can_interface (void)
 	word ikk;
 	dword IdTx;
 	byte  write_buffer = 0;
+	byte strain_num = 0;
 	
 
 	CAN_DI;
@@ -197,7 +195,7 @@ byte can_interface (void)
 			
 #elif VERSION == 0x0125
 			
-			if (_canmsg.CAN_ID_class == CLASS_PERIODIC_SENS)
+/*			if (_canmsg.CAN_ID_class == CLASS_PERIODIC_SENS)
 			{
 				switch(_canmsg.CAN_ID_dst)
 				{
@@ -220,6 +218,39 @@ byte can_interface (void)
 					for(T_init=0;i<6;i++)
 					_strain_init[i]=_strain[i];
 				}
+			}
+*/
+
+#elif VERSION == 0x0119
+			if (_canmsg.CAN_ID_class == CLASS_PERIODIC_SENS)
+			{
+				if 		(_canmsg.CAN_ID_src==CAN_ID_JNT_STRAIN_11)  strain_num=WDT_JNT_STRAIN_11;
+				else if (_canmsg.CAN_ID_src==CAN_ID_JNT_STRAIN_12)  strain_num=WDT_JNT_STRAIN_12;
+				else if (_canmsg.CAN_ID_src==CAN_ID_6AX_STRAIN_13)  strain_num=WDT_6AX_STRAIN_13;
+				else if (_canmsg.CAN_ID_src==CAN_ID_6AX_STRAIN_14)  strain_num=WDT_6AX_STRAIN_14;			
+				else    										 
+				{
+					can_printf("ERR: UNKNOWN STRAIN!");
+					strain_num=0;
+				}
+
+				switch(_canmsg.CAN_ID_dst)
+				{
+				
+					case 0xa:
+					_strain[strain_num][0] = (BYTE_W(_canmsg.CAN_data[0],_canmsg.CAN_data[1])-0x7FFF);
+					_strain[strain_num][1] = (BYTE_W(_canmsg.CAN_data[2],_canmsg.CAN_data[3])-0x7FFF);
+					_strain[strain_num][2] = (BYTE_W(_canmsg.CAN_data[4],_canmsg.CAN_data[5])-0x7FFF);
+					break;
+					
+					case 0xb:
+					_strain[strain_num][3] = (BYTE_W(_canmsg.CAN_data[0],_canmsg.CAN_data[1])-0x7FFF);
+					_strain[strain_num][4] = (BYTE_W(_canmsg.CAN_data[2],_canmsg.CAN_data[3])-0x7FFF);
+					_strain[strain_num][5] = (BYTE_W(_canmsg.CAN_data[4],_canmsg.CAN_data[5])-0x7FFF);
+					break;
+				}
+				
+				_strain_wtd[strain_num] = STRAIN_SAFE;
 			}
 	
 #elif (VERSION == 0x0121 || VERSION == 0x0128 || VERSION == 0x0130)
@@ -544,16 +575,6 @@ void can_send_broadcast(void)
 		_canmsg.CAN_data[1] = BYTE_L(_pid[0]);
 		_canmsg.CAN_data[2] = BYTE_H(_pid[1]);
 		_canmsg.CAN_data[3] = BYTE_L(_pid[1]);	
-
-/// @@@@@@@@@@@@@ MEMO TEST
-#if VERSION == 0x0125
-		_canmsg.CAN_data[0] = BYTE_H(_strain[5]);
-		_canmsg.CAN_data[1] = BYTE_L(_strain[5]);
-		_canmsg.CAN_data[2] = BYTE_H(_strain[4]);
-		_canmsg.CAN_data[3] = BYTE_L(_strain[4]);	
-#endif
-/// @@@@@@@@@@@@@ MEMO TEST
-
 
 		_canmsg.CAN_length = 4;
 		_canmsg.CAN_frameType = DATA_FRAME;
