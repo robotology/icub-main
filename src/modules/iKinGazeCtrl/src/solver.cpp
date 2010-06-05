@@ -528,20 +528,7 @@ bool Solver::threadInit()
     // Initialization
     Vector fp(3);
     Matrix J(3,3);
-    if (computeFixationPointData(*chainEyeL,*chainEyeR,fp,J) || fbHead[5]<1.0*CTRL_DEG2RAD)
-    {
-        // standard value for initial vergence~0.0
-        fbHead[5]=10.0*CTRL_DEG2RAD;
-        updateAngles();
-
-        Vector eyePos=chainEyeL->getAng();
-        eyePos[1]=fbHead[4]+fbHead[5]/2.0;
-        chainEyeL->setAng(eyePos);
-        eyePos[1]=fbHead[4]-fbHead[5]/2.0;
-        chainEyeR->setAng(eyePos);
-
-        computeFixationPointData(*chainEyeL,*chainEyeR,fp,J);
-    }
+    computeFixationPointData(*chainEyeL,*chainEyeR,fp,J);
 
     // init commData structure
     commData->get_xd()=fp;
