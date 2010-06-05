@@ -208,7 +208,7 @@ void EyePinvRefGen::run()
 
             computeFixationPointData(*chainEyeL,*chainEyeR,fp,eyesJ);
 
-            // implement VCR
+            // implement OCR
             Matrix h0=chainNeck->getH(2,true);
             Matrix h2=chainNeck->getH(4,true);
 

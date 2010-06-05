@@ -15,7 +15,7 @@ CopyPolicy: Released under the terms of the GNU GPL v2.0.
 
 This module provides a controller for the iCub gaze capable of 
 steering the neck and the eyes independently performing 
-saccades, pursuit, vergence and VCR (vestibulo-collic reflex).
+saccades, pursuit, vergence and OCR (oculo-collic reflex).
 VOR (vestibulo-ocular reflex relying on inertial data) is not 
 provided at time being but can be easily implemented. 
  
