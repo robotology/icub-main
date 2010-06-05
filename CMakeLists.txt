@@ -65,6 +65,7 @@ include(${PROJECT_SOURCE_DIR}/conf/iCubHelpers.cmake)
 # find dependencies and set variables
 include(${PROJECT_SOURCE_DIR}/conf/iCubFindDependencies.cmake)
 
+# check for libraries that are strictly required
 if (NOT ICUB_HAS_GSL)
   message(FATAL "Cannot find GSL")
 else (NOT ICUB_HAS_GSL)
