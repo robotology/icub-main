@@ -570,7 +570,10 @@ public:
             fprintf(stderr,"thread started\n");
         }
         else
+        {    
             fprintf(stderr,"unable to istantiate thread!!!");
+            return false;
+        }
 
         return true;
     }
