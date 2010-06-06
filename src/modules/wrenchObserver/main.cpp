@@ -103,8 +103,6 @@ yarp connect /icub/right_arm/analog:o /ftObs/right_arm/FT:i
 This file can be edited at \in src/wrenchObserver/main.cpp.
 */ 
 
-
-
 #include <yarp/os/BufferedPort.h>
 #include <yarp/os/RFModule.h>
 #include <yarp/os/Time.h>
@@ -116,6 +114,7 @@ This file can be edited at \in src/wrenchObserver/main.cpp.
 #include <yarp/math/Math.h>
 #include <yarp/dev/PolyDriver.h>
 #include <yarp/dev/ControlBoardInterfaces.h>
+#include <iCub/ctrl/ctrlMath.h>
 #include <iCub/ctrl/adaptWinPolyEstimator.h>
 #include <iCub/iDyn/iDyn.h>
 #include <iCub/iDyn/iFC.h>
@@ -129,1234 +128,511 @@ using namespace yarp::os;
 using namespace yarp::sig;
 using namespace yarp::math;
 using namespace yarp::dev;
-using namespace std;
 using namespace ctrl;
 using namespace iDyn;
+using namespace std;
 
-// class dataCollector: class for reading from Vrow and providing for FT on an output port
+
+// class inverseDynamics: class for reading from Vrow and providing for FT on an output port
 class inverseDynamics: public RateThread
 {
 private:
-	PolyDriver *dd;
-	PolyDriver *tt;
-	IEncoders *iencs;
-	IEncoders *tencs;
+    PolyDriver *dd;
+    PolyDriver *tt;
+    IEncoders  *iencs;
+    IEncoders  *tencs;
 
-	string part;
+    string part;
 
-	Vector *ft;
-	BufferedPort<Vector> *port_FT;
-	BufferedPort<Vector> *port_Contact;
-	bool first;
-	Stamp info;
+    Vector *ft;
+    BufferedPort<Vector> *port_FT;
+    BufferedPort<Vector> *port_Contact;
+    bool first;
+    Stamp info;
 
-    AWLinEstimator       *linEst;
-    AWQuadEstimator      *quadEst;
+    AWLinEstimator  *linEst;
+    AWQuadEstimator *quadEst;
 
-	int ctrlJnt;
-	iDynLimb *iFakeBot;
-	iDynChain *chain;
-	//iDynInvSensor* sens;
-	iDynInvSensor* sens;
+    int ctrlJnt;
+    iDynLimb      *limb;
+    iDynChain     *chain;
+    iDynInvSensor *sens;
 
-	iFB *FTB;
-	iFTransform *sensor;
-	int sensorLink;
-	
-	Matrix HS, HSC, IS;
-	double ms;
+    iFB         *FTB;
+    iFTransform *sensor;
+    int sensorLink;
 
-	Vector encoders;
-	Vector encodersT;
+    Matrix HS, HSC, IS;
+    double ms;
 
-	Vector q;
-	Vector dq;
-	Vector d2q;
-	
-	Vector w0,dw0,d2p0,Fend,Mend;
-	Vector F_measured, F_iDyn, F_offset, FT;
-	double time;
+    Vector encoders;
+    Vector encodersT;
 
-	Vector evalVel(const Vector &x)
-	{
-		AWPolyElement el;
+    Vector q;
+    Vector dq;
+    Vector d2q;
+
+    Vector w0,dw0,d2p0,Fend,Mend;
+    Vector F_measured, F_iDyn, F_offset, FT;
+    double time;
+
+    Vector evalVel(const Vector &x)
+    {
+        AWPolyElement el;
         el.data=x;
-		el.time=Time::now();
+        el.time=Time::now();
+
         return linEst->estimate(el);
-	}
+    }
 
-	Vector evalAcc(Vector x)
-	{
-		AWPolyElement el;
+    Vector evalAcc(const Vector &x)
+    {
+        AWPolyElement el;
         el.data=x;
-		el.time=Time::now();
+        el.time=Time::now();
+
         return quadEst->estimate(el);
-	}
-	    
+    }
+
 public:
-	inverseDynamics(int _rate, PolyDriver *_dd, BufferedPort<Vector> *_port_FT, string _part, string _name):	  
-	  RateThread(_rate), dd(_dd)
-	  {
-		  //------------------------------
-		  //      PORTS AND DEVICES
-		  //------------------------------
+    inverseDynamics(int _rate, PolyDriver *_dd, PolyDriver *_tt, BufferedPort<Vector> *_port_FT,
+                    const string &_part, const string &_name) : RateThread(_rate), dd(_dd), tt(_tt)
+    {        
+        part = _part.c_str();
+        first = true;
+        port_FT = _port_FT;
+        port_Contact=new BufferedPort<Vector>;
+        string fwdSlash = "/";
+        string port = fwdSlash+_name;
+        port += (fwdSlash+part.c_str());
+        port += "/contact:o";
+        port_Contact->open(port.c_str());
 
-		  part = _part.c_str();
-		  first = true;
-		  port_FT = _port_FT;
-		  // Checking device:
-		  dd->view(iencs);
-		  port_Contact=new BufferedPort<Vector>;
-		  string fwdSlash = "/";
-		  string port = fwdSlash+_name;
-		  port += (fwdSlash+part.c_str());
-		  port += part.c_str();
-		  port += "/contact:o";
-		  port_Contact->open(port.c_str());
-		  
+        dd->view(iencs);
+        if (tt)
+            tt->view(tencs);
 
-		  
-		  linEst =new AWLinEstimator(16,1.0);
-          quadEst=new AWQuadEstimator(25,1.0);
+        if (tt)
+        {
+            if (part=="left_arm")
+                limb = new iCubArmDyn("left");
+            else
+                limb = new iCubArmDyn("right");
+        }
+        else
+        {
+            if (part=="left_leg")
+                limb = new iCubLegDyn("left");
+            else
+                limb = new iCubLegDyn("right");
+        }
 
-		  Time::delay(0.1);
+        chain = limb->asChain();
 
-		  if(strcmp(part.c_str(),"left_leg")==0)
-			  iFakeBot = new iCubLegDyn("left");
-		  else if(strcmp(part.c_str(),"right_leg")==0)
-			  iFakeBot = new iCubLegDyn("right");
-		  else fprintf(stderr,"ERROR!!!!!!!!!");
-		  chain = iFakeBot->asChain();
+        HS.resize(4,4);  HS.eye();
+        HSC.resize(4,4); HSC.eye();
+        IS.resize(3,3);  IS.zero();
+        ms = 0.0;
 
-		  //--------------------------------
-		  //            SENSOR
-		  //--------------------------------
+        if (tt)
+        {
+            sensorLink = 5;
 
-		  HS.resize(4,4); HS.eye();
-		  HSC.resize(4,4); HSC.eye();
-		  IS.resize(3,3); IS.zero();
-		  ms = 0.0;
-		  if(strcmp(part.c_str(),"left_leg")==0)
-		  {
-			    sens = new iDynInvSensorLeg(iFakeBot->asChain(),"left",NE_DYNAMIC);
-				/*HS.zero(); HS(0,0) = 1.0; HS(2,1) = 1.0; HS(1,2) = -1.0; HS(1,3) = 0.08428; HS(3,3) = 1.0;
-				HSC.eye(); HSC(0,3) = -1.56e-04; HSC(1,3) = -9.87e-05;  HSC(2,3) = 2.98e-2;  
-				IS.zero(); 
-				IS(0,0) = 4.08e-04; IS(0,1) = IS(1,0) = -1.08e-6; IS(0,2) = IS(2,0) = -2.29e-6;
-				IS(1,1) = 3.80e-04; IS(1,2) = IS(2,1) =  3.57e-6; IS(2,2) = 2.60e-4;
-				ms = 7.2784301e-01;*/
-		  } else if(strcmp(part.c_str(),"right_leg")==0)
-		  {
-			    sens = new iDynInvSensorLeg(iFakeBot->asChain(),"right",NE_DYNAMIC);
-				/*HS.zero(); HS(0,0) = 1.0; HS(2,1) = 1.0; HS(1,2) = -1.0; HS(1,3) = 0.08428; HS(3,3) = 1.0;
-				HSC.eye(); HSC(0,3) = -1.56e-04; HSC(1,3) = -9.87e-05;  HSC(2,3) = 2.98e-2;  
-				IS.zero(); 
-				IS(0,0) = 4.08e-04; IS(0,1) = IS(1,0) = -1.08e-6; IS(0,2) = IS(2,0) = -2.29e-6;
-				IS(1,1) = 3.80e-04; IS(1,2) = IS(2,1) =  3.57e-6; IS(2,2) = 2.60e-4;
-				ms = 7.2784301e-01;*/
-		  } else fprintf(stderr,"error while sensor definition\n");
+            if (part=="left_arm")
+                sens = new iDynInvSensorArm(limb->asChain(),"left",NE_DYNAMIC);
+            else
+                sens = new iDynInvSensorArm(limb->asChain(),"right",NE_DYNAMIC);
+        }
+        else
+        {
+            sensorLink = 2;
 
-		  sensorLink = 2;
-		  
-		  sensor = new iFTransform(HS.submatrix(0,2,0,2),HS.submatrix(0,2,0,3).getCol(3));
+            if (part=="left_leg")
+                sens = new iDynInvSensorLeg(limb->asChain(),"left",NE_DYNAMIC);
+            else
+                sens = new iDynInvSensorLeg(limb->asChain(),"right",NE_DYNAMIC);
+        }
 
-		  FTB = new iFB(sensorLink);
-		  FTB->attach(chain);
-		  FTB->attach(sensor);
-		  
+        sensor = new iFTransform(HS.submatrix(0,2,0,2),HS.submatrix(0,2,0,3).getCol(3));
 
-		  //-------------------------------
-		  //      INIT VARIABLES
-		  //-------------------------------
+        FTB = new iFB(sensorLink);
+        FTB->attach(chain);
+        FTB->attach(sensor);
 
-		  int jnt;
-		  iencs->getAxes(&jnt);
-		  encoders.resize(jnt);
+        linEst =new AWLinEstimator(16,1.0);
+        quadEst=new AWQuadEstimator(25,1.0);
 
-		  q.resize(7); q=0.0;
-		  dq.resize(7); dq=0.0;
-		  d2q.resize(7); d2q=0.0;
-		  
-		  iFakeBot->setAng(q);
-		  iFakeBot->setDAng(dq);
-		  iFakeBot->setD2Ang(d2q);
-		  iFakeBot->prepareNewtonEuler(NE_DYNAMIC);
+        int jnt1=0;
+        int jnt2=0;
 
-		  w0.resize(3);dw0.resize(3);d2p0.resize(3);Fend.resize(3);Mend.resize(3);
-		  w0=dw0=d2p0=Fend=Mend=0.0;
-		  d2p0(0)=9.81;
+        iencs->getAxes(&jnt1);
+        encoders.resize(jnt1);
 
-		  F_measured.resize(6);
-		  F_iDyn.resize(6);
-		  F_offset.resize(6);
-		  FT.resize(6);
+        if (tt)
+        {
+            tencs->getAxes(&jnt2);
+            encodersT.resize(jnt2);
+        }
 
-		  F_measured.zero();
-		  F_iDyn.zero();
-		  F_offset.zero();
-		  FT.zero();
+        int jnt=jnt1*jnt2;
 
-		  iFakeBot->initNewtonEuler(w0,dw0,d2p0,Fend,Mend);
+        q.resize(jnt);
+        dq.resize(jnt);
+        d2q.resize(jnt);
 
-		  //--------------------------------
-		  //        STAT VARIABLES
-		  //--------------------------------
+        q=dq=d2q=0.0;
 
-		  time = Time::now();
+        limb->setAng(q);
+        limb->setDAng(dq);
+        limb->setD2Ang(d2q);
+        limb->prepareNewtonEuler(NE_DYNAMIC);
 
-	  }
+        w0.resize(3);
+        dw0.resize(3);
+        d2p0.resize(3);
+        Fend.resize(3);
+        Mend.resize(3);
+        w0=dw0=d2p0=Fend=Mend=0.0;
+        d2p0(0)=9.81;
 
+        F_measured.resize(6);
+        F_iDyn.resize(6);
+        F_offset.resize(6);
+        FT.resize(6);
 
-	inverseDynamics(int _rate, PolyDriver *_dd, PolyDriver *_tt, BufferedPort<Vector> *_port_FT, string _part, string _name):	  
-	  RateThread(_rate), dd(_dd), tt(_tt)
-	  {
+        F_measured.zero();
+        F_iDyn.zero();
+        F_offset.zero();
+        FT.zero();
 
-		  fprintf(stderr,"\nCOSTRUISCO......\n");
-		  part = _part.c_str();
-		  //------------------------------
-		  //            PORTS
-		  //------------------------------
+        limb->initNewtonEuler(w0,dw0,d2p0,Fend,Mend);
 
-		  first = true;
-		  port_FT = _port_FT;
+        time = Time::now();
+    }
 
-		  port_Contact=new BufferedPort<Vector>;
-		  string fwdSlash = "/";
-		  string port = fwdSlash+_name;
-		  port += (fwdSlash+part.c_str());
-		  port += "/contact:o";
-		  port_Contact->open(port.c_str());
+    bool threadInit()
+    {       
+        return true;
+    }
 
+    void run()
+    {   
+        iencs->getEncoders(encoders.data());
 
-		  // Checking device:
-		  dd->view(iencs);
-		  tt->view(tencs);
-		  
-		  linEst =new AWLinEstimator(16,1.0);
-          quadEst=new AWQuadEstimator(25,1.0);
+        if (part == "left_arm" || part == "right_arm")
+        {
+            tencs->getEncoders(encodersT.data());
+            for (int i=0;i<3;i++)
+                q(i) = encodersT(2-i);
+            for (int i=3;i<q.length();i++)
+                q(i) = encoders(i-3);
+        }
+        else
+        {
+            for (int i=1;i<q.length();i++)
+                q(i) = encoders(i);
+        }
 
-		  Time::delay(0.1);
+        Vector dq = evalVel(q);
+        Vector d2q = evalAcc(q);
 
+        limb->setAng(CTRL_DEG2RAD * q);
+        limb->setDAng(CTRL_DEG2RAD * dq);
+        limb->setD2Ang(CTRL_DEG2RAD * d2q);
 
-		  
-		  if(strcmp(part.c_str(),"left_arm")==0)
-			  iFakeBot = new iCubArmDyn("left");
-		  else if(strcmp(part.c_str(),"right_arm")==0)
-			  iFakeBot = new iCubArmDyn("right");
-		  else fprintf(stderr,"ERROR!!!!!!!!!");
-		  chain = iFakeBot->asChain();
+        limb->computeNewtonEuler(w0,dw0,d2p0,Fend,Mend);
+        sens->computeSensorForceMoment();
+        F_iDyn = -1.0 * sens->getSensorForceMoment();
 
-		  //--------------------------------
-		  //            SENSOR
-		  //--------------------------------
-		  HS.resize(4,4); HS.eye();
-		  HSC.resize(4,4); HSC.eye();
-		  IS.resize(3,3); IS.zero();
-		  ms = 0.0;
-		  sensorLink = 5;
-		  if(strcmp(part.c_str(),"left_arm")==0)
-		  {
-			  sens = new iDynInvSensorArm(iFakeBot->asChain(),"left",NE_DYNAMIC);
-			  /*HS.zero(); HS(0,0) = 1.0; HS(2,1) = 1.0; HS(1,2) = -1.0; HS(1,3) = 0.08428; HS(3,3) = 1.0;
-			  HSC.eye(); HSC(0,3) = -1.56e-04; HSC(1,3) = -9.87e-05;  HSC(2,3) = 2.98e-2; 
-			  IS.zero(); 
-			  IS(0,0) = 4.08e-04; IS(0,1) = IS(1,0) = -1.08e-6; IS(0,2) = IS(2,0) = -2.29e-6;
-			  IS(1,1) = 3.80e-04; IS(1,2) = IS(2,1) =  3.57e-6; IS(2,2) = 2.60e-4;
-			  ms = 7.2784301e-01; */
-		  } else if(strcmp(part.c_str(),"right_arm")==0)
-		  {
-			  
-			  sens = new iDynInvSensorArm(iFakeBot->asChain(),"right",NE_DYNAMIC);
-			  /*HS.resize(4,4);
-			  HSC.resize(4,4);
-			  IS.resize(3,3);
-			  HS.zero(); HS(0,0) = -1.0; HS(2,1) = 1.0; HS(1,2) = 1.0; HS(1,3) = -0.08428; HS(3,3) = 1.0;
-			  HSC.eye(); HSC(0,3) = -1.5906019e-04; HSC(1,3) =   8.2873258e-05; HSC(2,3) =  2.9882773e-02;
-			  IS.zero(); 
-			  IS(0,0) = 4.08e-04; IS(0,1) = IS(1,0) = -1.08e-6; IS(0,2) = IS(2,0) = -2.29e-6;
-			  IS(1,1) = 3.80e-04; IS(1,2) = IS(2,1) =  3.57e-6; IS(2,2) = 2.60e-4;
-			  ms = 7.29e-01; */
-		  } else fprintf(stderr,"error while sensor definition\n");
+        ft = port_FT->read(false);
 
-		  //sens = new iDynInvSensor(iFakeBot->asChain(),sensorLink,HS,HSC,ms,IS,"",NE_dynamic,true);
-		  sensor = new iFTransform(HS.submatrix(0,2,0,2),HS.submatrix(0,2,0,3).getCol(3));
+        if (ft!=0)
+        {
+            F_measured = *ft;
 
-		  FTB = new iFB(sensorLink);
-		  FTB->attach(chain);
-		  FTB->attach(sensor);
+            if (first)
+            {
+                F_offset = F_measured-F_iDyn;
+                first = false;
+            }
 
-		  //-------------------------------
-		  //      INIT VARIABLES
-		  //-------------------------------
+            FT = FTB->getFB(F_measured - F_offset - F_iDyn);
+        }
+        else
+        {
+            if (!first)
+                FT = FTB->getFB();
+            else
+            {
+                FT=0.0;
+                F_measured=0.0;
+                F_offset=0.0;
+            }
+        }
 
-		  int jnt;
-		  iencs->getAxes(&jnt);
-		  encoders.resize(jnt);
-		  tencs->getAxes(&jnt);
-		  encodersT.resize(jnt);
+        port_Contact->prepare() = FT;
+        port_Contact->setEnvelope(info);
+        port_Contact->write();
+        time = Time::now();
+    }
 
-		  q.resize(10); q=0.0;
-		  dq.resize(10); dq=0.0;
-		  d2q.resize(10); d2q=0.0;
-		  
-		  iFakeBot->setAng(q);
-		  iFakeBot->setDAng(dq);
-		  iFakeBot->setD2Ang(d2q);
-		  iFakeBot->prepareNewtonEuler(NE_DYNAMIC);
+    void threadRelease()
+    {
+        if (sens)
+        {
+            delete sens;
+            sens = 0;
+        }
 
-		  w0.resize(3);dw0.resize(3);d2p0.resize(3);Fend.resize(3);Mend.resize(3);
-		  w0=dw0=d2p0=Fend=Mend=0.0;
-		  d2p0(0)=9.81;
+        if (limb)
+        {
+            delete limb;
+            limb = 0;
+        }
 
-		  F_measured.resize(6);
-		  F_iDyn.resize(6);
-		  F_offset.resize(6);
-		  FT.resize(6);
+        if (linEst)
+        {
+            delete linEst;
+            linEst = 0;
+        }
 
-		  F_measured.zero();
-		  F_iDyn.zero();
-		  F_offset.zero();
-		  FT.zero();
+        if (quadEst)
+        {
+            delete quadEst;
+            quadEst = 0;
+        }
 
-		  iFakeBot->initNewtonEuler(w0,dw0,d2p0,Fend,Mend);
+        if (ft)
+        {
+            delete ft;
+            ft = 0;
+        }
 
-		  //--------------------------------
-		  //        STAT VARIABLES
-		  //--------------------------------
+        if (port_Contact)
+        {
+            port_Contact->interrupt();
+            port_Contact->close();
 
-		  time = Time::now();
-		  
-	  }
-
-	  bool threadInit()
-	  {		  
-		  return true;
-	  }
-	  void run()
-	  {	  
-		iencs->getEncoders(encoders.data());
-		
-		if(part == "left_arm" || part == "right_arm")
-		{
-			tencs->getEncoders(encodersT.data());
-			for(int i=0;i<3;i++)
-				q(i) = encodersT(2-i);
-			for(int i=3;i<q.length();i++)
-				q(i) = encoders(i-3);
-		} else
-		{
-			for(int i=1;i<q.length();i++)
-				q(i) = encoders(i);
-		}
-		Vector dq = evalVel(q);
-		Vector d2q = evalAcc(q);
-
-		iFakeBot->setAng(M_PI/180.0 * q);
-		iFakeBot->setDAng(M_PI/180.0 * dq);
-		iFakeBot->setD2Ang(M_PI/180.0 * d2q);
-		  
-		iFakeBot->computeNewtonEuler(w0,dw0,d2p0,Fend,Mend);
-		sens->computeSensorForceMoment();
-		F_iDyn = -1.0 * sens->getSensorForceMoment();
-
-		ft = port_FT->read(false);
-			  
-		if(ft!=0)
-		{
-        	F_measured = *ft;
-			if(first)
-			{
-				F_offset = F_measured-F_iDyn;
-				first = false;
-			}
-			FT = FTB->getFB(F_measured - F_offset - F_iDyn);
-		} else
-		{
-			if(!first) FT = FTB->getFB();
-		    else 
-		    {
-			    FT=0.0;
-			    F_measured=0.0;
-			    F_offset=0.0;
-		    }
-		}
-
-		
-		port_Contact->prepare() = FT;
-		port_Contact->setEnvelope(info);
-		port_Contact->write();
-		time = Time::now();
-	  }
-
-	  void threadRelease()
-	  {
-		  if(sens) {delete sens; sens = 0;}
-		  if(iFakeBot) {delete iFakeBot; iFakeBot = 0;}
-		  if(linEst) {delete linEst; linEst = 0;}
-		  if(quadEst) {delete quadEst; quadEst = 0;}
-		  if(ft) {delete ft; ft = 0;}
-		  port_Contact->interrupt();
-		  port_Contact->close();
-		  if (port_Contact) {delete port_Contact; port_Contact=0;}
-	  }	  
-
-	  
+            delete port_Contact;
+            port_Contact = 0;
+        }
+    }   
 };
 
 
 class wrenchObserver: public RFModule
 {
 private:
-	Property OptionsLimb;
-	Property OptionsTorso;
-	inverseDynamics *inv_dyn;
-	string handlerPortName;
+    Property OptionsLimb;
+    Property OptionsTorso;
+    inverseDynamics *inv_dyn;
+    string handlerPortName;
     Port handlerPort;      //a port to handle messages 
 
-	PolyDriver *dd;
-	PolyDriver *tt;
-	BufferedPort<Vector>* port_FT;
-	
+    PolyDriver *dd;
+    PolyDriver *tt;
+    BufferedPort<Vector>* port_FT;
+
 public:
-	wrenchObserver()
-	{
-		inv_dyn = 0;
-		dd=0;
-		tt=0;
-	}
+    wrenchObserver()
+    {
+        inv_dyn = 0;
+        dd=0;
+        tt=0;
+    }
 
-	virtual bool createDriver(PolyDriver *_dd)
-	{
+    virtual bool createDriver(PolyDriver *_dd)
+    {
+        // Creating Driver for Limb...
+        if (!_dd || !(_dd->isValid()))
+        {
+            fprintf(stderr,"It is not possible to instantiate the device driver\nreturning...");
+            return 0;
+        }
 
-		// Creating Driver for Limb...
-	    if(!_dd || !(_dd->isValid()))
-		{
-			fprintf(stderr,"It is not possible to instantiate the device driver\nreturning...");
-			return 0;
-		}
+        IEncoders *encs;
 
-		IEncoders *encs;
+        bool ok = true;
+        ok = ok & _dd->view(encs);
+        if (!ok)
+        {
+            fprintf(stderr,"ERROR: one or more devices has not been viewed\nreturning...");
+            return false;
+        }
 
-		bool ok = true;
-		ok = ok & _dd->view(encs);
-		if(!ok)
-		{
-			fprintf(stderr,"ERROR: one or more devices has not been viewed\nreturning...");
-			return false;
-		}
+        return true;
+    }
 
-		return true;
-	}
+    bool configure(ResourceFinder &rf)
+    {
+        string PortName;
+        string local;
+        string part;
+        string robot;
+        string fwdSlash = "/";
+        Bottle tmp;
+        int rate = 100;
+        tmp=0;
 
-	bool configure(ResourceFinder &rf)
-	{
-		
-		string PortName = "";
-		string local = "/objectDetector/";
-		string part;
-		string robot;
-		string fwdSlash = "/";
-		Bottle tmp;
-		int rate = 100;
-		tmp=0;
+        string name;
+        if (rf.check("name"))
+            name = rf.find("name").asString();
+        else name = "ftObs";
+        PortName = (PortName+fwdSlash+name);
 
-		string name;
-		if(rf.check("name"))
-			name = rf.find("name").asString();
-		else name = "ftObs";
-		PortName = (PortName+fwdSlash+name);
-		
-		//---------------------ROBOT-----------------------------//
-		ConstString robotName=rf.find("robot").asString();
-		if (rf.check("robot"))
-		{
-			//PortName=fwdSlash+rf.find("robot").asString().c_str();
-			robot = rf.find("robot").asString().c_str();
-		}
+        //---------------------ROBOT-----------------------------//
+        ConstString robotName=rf.find("robot").asString();
+        if (rf.check("robot"))
+        {
+            //PortName=fwdSlash+rf.find("robot").asString().c_str();
+            robot = rf.find("robot").asString().c_str();
+        }
         else
-		{
-			fprintf(stderr,"Device not found\n");
+        {
+            fprintf(stderr,"Device not found\n");
             //PortName=fwdSlash+"icub";
-			robot = "icub";
-		}
+            robot = "icub";
+        }
 
-		
-		//---------------------PART-----------------------------//
-		ConstString partName=rf.find("part").asString();
-		if (rf.check("part"))
-		{
-			PortName=PortName+fwdSlash+rf.find("part").asString().c_str();
-			part = rf.find("part").asString().c_str();
-		}
+        //---------------------PART-----------------------------//
+        ConstString partName=rf.find("part").asString();
+        if (rf.check("part"))
+        {
+            PortName=PortName+fwdSlash+rf.find("part").asString().c_str();
+            part = rf.find("part").asString().c_str();
+        }
         else
-		{
-			fprintf(stderr,"Could not find part in the config file\n");
-		  Time::delay(3.0);
+        {
+            fprintf(stderr,"Could not find part in the config file\n");
             return false;
-		}
-		//---------------------RATE-----------------------------//
-		if (rf.check("rate"))
-		{
-			rate = rf.find("rate").asInt();
-			fprintf(stderr,"rateThread working at %d ms\n", rate);
-		}
+        }
+        //---------------------RATE-----------------------------//
+        if (rf.check("rate"))
+        {
+            rate = rf.find("rate").asInt();
+            fprintf(stderr,"rateThread working at %d ms\n", rate);
+        }
         else
-		{
-			fprintf(stderr,"Could not find rate in the config file\nusing 100ms as default");
-			rate = 100;
-			Time::delay(3.0);
+        {
+            fprintf(stderr,"Could not find rate in the config file\nusing 100ms as default");
+            rate = 100;
             return false;
-		}
+        }
 
-		
-		//---------------------OFFSETS--------------------------//
-		//Vector offset;
-		//if(rf.check("offset"))
-		//{
-		//  tmp = rf.findGroup("offset");
-		//  offset.resize(tmp.size()-1);
-		//  for(int i = 0;i<offset.length();i++)
-		//  {
-		//	  offset(i) = tmp.get(i+1).asDouble();
-		//  }
-		//  fprintf(stderr,"offset setting has not yet been implemented...\n");
-		//}
-		//else 
-		//{
-		//  fprintf(stderr,"error: offsets not defined in configuration file!!!\n returning;");
-		//  fprintf(stderr,"offset setting has not yet been implemented...\n");
-		//  offset = 0.0;
-		//  Time::delay(3.0);
-		//  return false;
-		//}
+        //---------------------PORT--------------------------//
+        port_FT=new BufferedPort<Vector>;
+        port_FT->open((PortName+"/FT:i").c_str());
 
-		//---------------------PORT--------------------------//
-		
-		port_FT=new BufferedPort<Vector>;
-		port_FT->open((PortName+"/FT:i").c_str());
+        //---------------------DEVICES--------------------------//
+        if (part=="left_arm" || part=="right_arm")
+        {
+            OptionsTorso.put("robot",robot.c_str());
+            OptionsTorso.put("part","torso");
+            OptionsTorso.put("device","remote_controlboard");
+            OptionsTorso.put("local",(fwdSlash+name+"/torso/client").c_str());
+            OptionsTorso.put("remote","/icub/torso");
 
-		
-		//---------------------DEVICES--------------------------//
-		
-		if(strcmp(part.c_str(),"left_arm")==0 || strcmp(part.c_str(),"right_arm")==0 )
-		{
-			OptionsTorso.put("robot",robot.c_str());
-			OptionsTorso.put("part","torso");
-			OptionsTorso.put("device","remote_controlboard");
-			OptionsTorso.put("local",(fwdSlash+name+"/torso/client").c_str());
-			OptionsTorso.put("remote","/icub/torso");
+            tt = new PolyDriver(OptionsTorso);
+            if (!createDriver(tt))
+            {
+                fprintf(stderr,"ERROR: unable to create limb device driver...quitting\n");
+                return false;
+            }
+            else
+                fprintf(stderr,"device driver created\n");
+        }
 
-			tt = new PolyDriver(OptionsTorso);
-			if(!createDriver(tt)) 
-			{
-				fprintf(stderr,"ERROR: unable to create limb device driver...quitting\n");
-				return false;
-			}
-			else
-				fprintf(stderr,"device driver created\n");
-		}
-		
-		
-		OptionsLimb.put("robot",robot.c_str());
-		OptionsLimb.put("part",part.c_str());
-		OptionsLimb.put("device","remote_controlboard");
-		OptionsLimb.put("local",(fwdSlash+name+fwdSlash+part+"/client").c_str());
-		OptionsLimb.put("remote",(fwdSlash+robot+fwdSlash+part).c_str());
-		dd = new PolyDriver(OptionsLimb);
-		if(!createDriver(dd)) 
-		{
-			fprintf(stderr,"ERROR: unable to create limb device driver...quitting\n");
-			return false;
-		}
+        OptionsLimb.put("robot",robot.c_str());
+        OptionsLimb.put("part",part.c_str());
+        OptionsLimb.put("device","remote_controlboard");
+        OptionsLimb.put("local",(fwdSlash+name+fwdSlash+part+"/client").c_str());
+        OptionsLimb.put("remote",(fwdSlash+robot+fwdSlash+part).c_str());
+        dd = new PolyDriver(OptionsLimb);
+        if (!createDriver(dd))
+        {
+            fprintf(stderr,"ERROR: unable to create limb device driver...quitting\n");
+            return false;
+        }
 
-		//--------------------------THREAD--------------------------
-		if(strcmp(part.c_str(),"left_arm")==0 || strcmp(part.c_str(),"right_arm")==0 )
-		{
-			inv_dyn = new inverseDynamics(rate,  dd, tt, port_FT, part.c_str(), name.c_str());
-			fprintf(stderr,"ft thread istantiated...\n");
-			inv_dyn->start();
-			fprintf(stderr,"thread started\n");
-		} else if(strcmp(part.c_str(),"left_leg")==0 || strcmp(part.c_str(),"right_leg")==0 )
-		{
-			inv_dyn = new inverseDynamics(rate,  dd, port_FT, part.c_str(), name.c_str());
-			fprintf(stderr,"ft thread istantiated...\n");
-			inv_dyn->start();
-			fprintf(stderr,"thread started\n");
-		} else fprintf(stderr,"unable to istantiate thread!!!");
-		
-		return true;
-	}
+        //--------------------------THREAD--------------------------
+        if (part=="left_arm" || part=="right_arm")
+        {
+            inv_dyn = new inverseDynamics(rate,  dd, tt, port_FT, part.c_str(), name.c_str());
+            fprintf(stderr,"ft thread istantiated...\n");
+            inv_dyn->start();
+            fprintf(stderr,"thread started\n");
+        }
+        else if (part=="left_leg" || part=="right_leg")
+        {
+            inv_dyn = new inverseDynamics(rate,  dd, NULL, port_FT, part.c_str(), name.c_str());
+            fprintf(stderr,"ft thread istantiated...\n");
+            inv_dyn->start();
+            fprintf(stderr,"thread started\n");
+        }
+        else
+            fprintf(stderr,"unable to istantiate thread!!!");
 
-	
-	double getPeriod()	{ return 1; }
-	bool updateModule() 
-	{ 
-		return true; 
-	}
-	bool close()
-	{
-		fprintf(stderr,"closing...don't know why :S \n");
-		if (inv_dyn) inv_dyn->stop();
-		if (inv_dyn) {delete inv_dyn; inv_dyn=0;}
-		port_FT->interrupt();
-		port_FT->close();
-		if (port_FT) {delete port_FT; port_FT=0;}
-		if (dd) {delete dd; dd=0;}
-		return true;
-	}
+        return true;
+    }
+
+    bool close()
+    {
+        fprintf(stderr,"closing... \n");
+
+        if (inv_dyn)
+            inv_dyn->stop();
+
+        if (inv_dyn)
+        {
+            delete inv_dyn;
+            inv_dyn=0;
+        }
+
+        if (port_FT)
+        {
+            port_FT->interrupt();
+            port_FT->close();
+
+            delete port_FT;
+            port_FT=0;
+        }
+
+        if (dd)
+        {
+            delete dd;
+            dd=0;
+        }
+
+        return true;
+    }
+
+    double getPeriod()  { return 1.0;  }
+    bool updateModule() { return true; }
 };
+
 
 int main(int argc, char * argv[])
 {
-    //initialize yarp network
-    Network yarp;
-	
-    //create your module
-    wrenchObserver* wrenchObs = new wrenchObserver;
-
-    // prepare and configure the resource finder
     ResourceFinder rf;
-    rf.setVerbose();
+    rf.setVerbose(true);
+    rf.configure("ICUB_ROOT",argc,argv);
 
-    rf.configure("ICUB_ROOT", argc, argv);
-
-	if (rf.check("help"))
+    if (rf.check("help"))
     {
         cout << "Options:" << endl << endl;
-		cout << "\t--context   context: where to find the called resource (referred to $ICUB_ROOT\app: default objectDetector \\conf)"                << endl;
-        cout << "\t--from      from: The name of the file.ini to be used for calibration"          << endl;
-        cout << "\t--rate      rate: The period used by the module. default 100ms (not less than 15ms)"          << endl;
-        //out << "\t--offset    offset: The offsets that affect the FT sensor (6 elements, default 0.0 0.0 0.0 0.0 0.0 0.0), not yet defined"          << endl;
+        cout << "\t--context context: where to find the called resource (referred to $ICUB_ROOT/app: default wrechObserver/conf)" << endl;
+        cout << "\t--from       from: the name of the file.ini to be used for calibration"                                        << endl;
+        cout << "\t--rate       rate: the period used by the module. default 100ms (not less than 15ms)"                          << endl;
         return 0;
     }
-	
-    cout<<"Configure module..."<<endl;
-    bool ret = wrenchObs->configure(rf);
-    
-	if (ret)
-	{
-		cout<<"Start module..."<<endl;
-		wrenchObs->runModule();
-	}
 
-    cout<<"Main returning..."<<endl;
-	if (wrenchObs) wrenchObs->close();
-	delete wrenchObs;
-	wrenchObs=0;
+    Network yarp;
 
-    return 0;
+    if (!yarp.checkNetwork())
+        return -1;
+
+    wrenchObserver obs;
+
+    return obs.runModule(rf);
 }
 
-
-
-
-
-
-//OLD VERSION
-//class inverseDynamics: public RateThread
-//{
-//private:
-//	PolyDriver *dd;
-//	PolyDriver *tt;
-//	IEncoders *iencs;
-//	IEncoders *tencs;
-//
-//	string part;
-//
-//	Vector *ft;
-//	BufferedPort<Vector> *port_FT;
-//	BufferedPort<Vector> *port_Contact;
-//	bool first;
-//	Stamp info;
-//
-//    AWLinEstimator       *linEst;
-//    AWQuadEstimator      *quadEst;
-//
-//	int ctrlJnt;
-//	iDynLimb *iFakeBot;
-//	iDynChain *chain;
-//	iDynInvSensor* sens;
-//
-//	iFB *FTB;
-//	iFTransform *sensor;
-//	int sensorLink;
-//	
-//	Matrix HS, HSC, IS;
-//	double ms;
-//
-//	Vector encoders;
-//	Vector encodersT;
-//
-//	Vector q;
-//	Vector dq;
-//	Vector d2q;
-//	
-//	Vector w0,dw0,d2p0,Fend,Mend;
-//	Vector F_measured, F_iDyn, F_offset, FT;
-//	double time;
-//
-//	Vector evalVel(const Vector &x)
-//	{
-//		AWPolyElement el;
-//        el.data=x;
-//		el.time=Time::now();
-//        return linEst->estimate(el);
-//	}
-//
-//	Vector evalAcc(Vector x)
-//	{
-//		AWPolyElement el;
-//        el.data=x;
-//		el.time=Time::now();
-//        return quadEst->estimate(el);
-//	}
-//	    
-//public:
-//	inverseDynamics(int _rate, PolyDriver *_dd, BufferedPort<Vector> *_port_FT, string _part):	  
-//	  RateThread(_rate), dd(_dd)
-//	  {
-//		  //------------------------------
-//		  //            PORTE
-//		  //------------------------------
-//
-//		  part = _part.c_str();
-//		  first = true;
-//		  port_FT = _port_FT;
-//		  // Checking device:
-//		  dd->view(iencs);
-//		  port_Contact=new BufferedPort<Vector>;
-//		  string port = "/matt/";
-//		  port += part.c_str();
-//		  port += "/contact:o";
-//		  port_Contact->open(port.c_str());
-//		  
-//
-//		  
-//		  linEst =new AWLinEstimator(16,1.0);
-//          quadEst=new AWQuadEstimator(25,1.0);
-//
-//		  Time::delay(0.1);
-//
-//		  if(strcmp(part.c_str(),"left_leg")==0)
-//			  iFakeBot = new iCubLegDyn("left");
-//		  else if(strcmp(part.c_str(),"right_leg")==0)
-//			  iFakeBot = new iCubLegDyn("right");
-//		  else fprintf(stderr,"ERROR!!!!!!!!!");
-//		  chain = iFakeBot->asChain();
-//
-//		  //--------------------------------
-//		  //            SENSORE
-//		  //--------------------------------
-//
-//		  HS.resize(4,4); HS.eye();
-//		  HSC.resize(4,4); HSC.eye();
-//		  IS.resize(3,3); IS.zero();
-//		  ms = 0.0;
-//		  if(strcmp(part.c_str(),"left_leg")==0)
-//		  {
-//				HS.zero(); HS(0,0) = 1.0; HS(2,1) = 1.0; HS(1,2) = -1.0; HS(1,3) = 0.08428; HS(3,3) = 1.0;
-//				HSC.eye(); HSC(0,3) = -1.56e-04; HSC(1,3) = -9.87e-05;  HSC(2,3) = 2.98e-2;  
-//				IS.zero(); 
-//				IS(0,0) = 4.08e-04; IS(0,1) = IS(1,0) = -1.08e-6; IS(0,2) = IS(2,0) = -2.29e-6;
-//				IS(1,1) = 3.80e-04; IS(1,2) = IS(2,1) =  3.57e-6; IS(2,2) = 2.60e-4;
-//				ms = 7.2784301e-01;
-//		  } else if(strcmp(part.c_str(),"right_leg")==0)
-//		  {
-//				HS.zero(); HS(0,0) = 1.0; HS(2,1) = 1.0; HS(1,2) = -1.0; HS(1,3) = 0.08428; HS(3,3) = 1.0;
-//				HSC.eye(); HSC(0,3) = -1.56e-04; HSC(1,3) = -9.87e-05;  HSC(2,3) = 2.98e-2;  
-//				IS.zero(); 
-//				IS(0,0) = 4.08e-04; IS(0,1) = IS(1,0) = -1.08e-6; IS(0,2) = IS(2,0) = -2.29e-6;
-//				IS(1,1) = 3.80e-04; IS(1,2) = IS(2,1) =  3.57e-6; IS(2,2) = 2.60e-4;
-//				ms = 7.2784301e-01;
-//		  } else fprintf(stderr,"error while sensor definition\n");
-//
-//		  sensorLink = 2;
-//		  sens = new iDynInvSensor(iFakeBot->asChain(),sensorLink,HS,HSC,ms,IS,"",NE_DYNAMIC,true);
-//		  sensor = new iFTransform(HS.submatrix(0,2,0,2),HS.submatrix(0,2,0,3).getCol(3));
-//
-//		  FTB = new iFB(sensorLink);
-//		  FTB->attach(chain);
-//		  FTB->attach(sensor);
-//		  
-//
-//		  //-------------------------------
-//		  //      INIT VARIABLES
-//		  //-------------------------------
-//
-//		  int jnt;
-//		  iencs->getAxes(&jnt);
-//		  encoders.resize(jnt);
-//
-//		  q.resize(7); q=0.0;
-//		  dq.resize(7); dq=0.0;
-//		  d2q.resize(7); d2q=0.0;
-//		  
-//		  iFakeBot->setAng(q);
-//		  iFakeBot->setDAng(dq);
-//		  iFakeBot->setD2Ang(d2q);
-//		  iFakeBot->prepareNewtonEuler(NE_DYNAMIC);
-//
-//		  w0.resize(3);dw0.resize(3);d2p0.resize(3);Fend.resize(3);Mend.resize(3);
-//		  w0=dw0=d2p0=Fend=Mend=0.0;
-//		  d2p0(0)=9.81;
-//
-//		  F_measured.resize(6);
-//		  F_iDyn.resize(6);
-//		  F_offset.resize(6);
-//		  FT.resize(6);
-//
-//		  F_measured.zero();
-//		  F_iDyn.zero();
-//		  F_offset.zero();
-//		  FT.zero();
-//
-//		  iFakeBot->initNewtonEuler(w0,dw0,d2p0,Fend,Mend);
-//
-//		  //--------------------------------
-//		  //        STAT VARIABLES
-//		  //--------------------------------
-//
-//		  time = Time::now();
-//
-//	  }
-//
-//
-//	inverseDynamics(int _rate, PolyDriver *_dd, PolyDriver *_tt, BufferedPort<Vector> *_port_FT, string _part):	  
-//	  RateThread(_rate), dd(_dd), tt(_tt)
-//	  {
-//
-//		  fprintf(stderr,"\nCOSTRUISCO......\n");
-//		  part = _part.c_str();
-//		  //------------------------------
-//		  //            PORTE
-//		  //------------------------------
-//
-//		  first = true;
-//		  port_FT = _port_FT;
-//
-//		  port_Contact=new BufferedPort<Vector>;
-//		  string port = "/matt/";
-//		  port += part.c_str();
-//		  port += "/contact:o";
-//		  port_Contact->open(port.c_str());
-//
-//
-//		  // Checking device:
-//		  dd->view(iencs);
-//		  tt->view(tencs);
-//		  
-//		  linEst =new AWLinEstimator(16,1.0);
-//          quadEst=new AWQuadEstimator(25,1.0);
-//
-//		  Time::delay(0.1);
-//
-//
-//		  
-//		  if(strcmp(part.c_str(),"left_arm")==0)
-//			  iFakeBot = new iCubArmDyn("left");
-//		  else if(strcmp(part.c_str(),"right_arm")==0)
-//			  iFakeBot = new iCubArmDyn("right");
-//		  else fprintf(stderr,"ERROR!!!!!!!!!");
-//		  chain = iFakeBot->asChain();
-//
-//		  //--------------------------------
-//		  //            SENSORE
-//		  //--------------------------------
-//		  HS.resize(4,4); HS.eye();
-//		  HSC.resize(4,4); HSC.eye();
-//		  IS.resize(3,3); IS.zero();
-//		  ms = 0.0;
-//		  sensorLink = 5;
-//		  if(strcmp(part.c_str(),"left_arm")==0)
-//		  {
-//			  HS.zero(); HS(0,0) = 1.0; HS(2,1) = 1.0; HS(1,2) = -1.0; HS(1,3) = 0.08428; HS(3,3) = 1.0;
-//			  HSC.eye(); HSC(0,3) = -1.56e-04; HSC(1,3) = -9.87e-05;  HSC(2,3) = 2.98e-2; 
-//			  IS.zero(); 
-//			  IS(0,0) = 4.08e-04; IS(0,1) = IS(1,0) = -1.08e-6; IS(0,2) = IS(2,0) = -2.29e-6;
-//			  IS(1,1) = 3.80e-04; IS(1,2) = IS(2,1) =  3.57e-6; IS(2,2) = 2.60e-4;
-//			  ms = 7.2784301e-01; 
-//		  } else if(strcmp(part.c_str(),"right_arm")==0)
-//		  {
-//			  HS.resize(4,4);
-//			  HSC.resize(4,4);
-//			  IS.resize(3,3);
-//			  HS.zero(); HS(0,0) = -1.0; HS(2,1) = 1.0; HS(1,2) = 1.0; HS(1,3) = -0.08428; HS(3,3) = 1.0;
-//			  HSC.eye(); HSC(0,3) = -1.5906019e-04; HSC(1,3) =   8.2873258e-05; HSC(2,3) =  2.9882773e-02;
-//			  IS.zero(); 
-//			  IS(0,0) = 4.08e-04; IS(0,1) = IS(1,0) = -1.08e-6; IS(0,2) = IS(2,0) = -2.29e-6;
-//			  IS(1,1) = 3.80e-04; IS(1,2) = IS(2,1) =  3.57e-6; IS(2,2) = 2.60e-4;
-//			  ms = 7.29e-01; 
-//		  } else fprintf(stderr,"error while sensor definition\n");
-//
-//		  sens = new iDynInvSensor(iFakeBot->asChain(),sensorLink,HS,HSC,ms,IS,"",NE_DYNAMIC,true);
-//		  sensor = new iFTransform(HS.submatrix(0,2,0,2),HS.submatrix(0,2,0,3).getCol(3));
-//
-//		  FTB = new iFB(sensorLink);
-//		  FTB->attach(chain);
-//		  FTB->attach(sensor);
-//
-//		  //-------------------------------
-//		  //      INIT VARIABLES
-//		  //-------------------------------
-//
-//		  int jnt;
-//		  iencs->getAxes(&jnt);
-//		  encoders.resize(jnt);
-//		  tencs->getAxes(&jnt);
-//		  encodersT.resize(jnt);
-//
-//		  q.resize(10); q=0.0;
-//		  dq.resize(10); dq=0.0;
-//		  d2q.resize(10); d2q=0.0;
-//		  
-//		  iFakeBot->setAng(q);
-//		  iFakeBot->setDAng(dq);
-//		  iFakeBot->setD2Ang(d2q);
-//		  iFakeBot->prepareNewtonEuler(NE_DYNAMIC);
-//
-//		  w0.resize(3);dw0.resize(3);d2p0.resize(3);Fend.resize(3);Mend.resize(3);
-//		  w0=dw0=d2p0=Fend=Mend=0.0;
-//		  d2p0(0)=9.81;
-//
-//		  F_measured.resize(6);
-//		  F_iDyn.resize(6);
-//		  F_offset.resize(6);
-//		  FT.resize(6);
-//
-//		  F_measured.zero();
-//		  F_iDyn.zero();
-//		  F_offset.zero();
-//		  FT.zero();
-//
-//		  iFakeBot->initNewtonEuler(w0,dw0,d2p0,Fend,Mend);
-//
-//		  //--------------------------------
-//		  //        STAT VARIABLES
-//		  //--------------------------------
-//
-//		  time = Time::now();
-//		  
-//	  }
-//
-//	  bool threadInit()
-//	  {		  
-//		  return true;
-//	  }
-//	  void run()
-//	  {	  
-//		iencs->getEncoders(encoders.data());
-//		
-//		q = 0.0;
-//		if(part == "left_arm" || part == "right_arm")
-//		{
-//			tencs->getEncoders(encodersT.data());
-//			for(int i=0;i<3;i++)
-//				q(i) = encodersT(2-i);
-//			for(int i=3;i<q.length();i++)
-//				q(i) = encoders(i-3);
-//		} else
-//		{
-//			for(int i=1;i<q.length();i++)
-//				q(i) = encoders(i-3);
-//		}
-//		Vector dq = evalVel(q);
-//		Vector d2q = evalAcc(q);
-//
-//		iFakeBot->setAng(M_PI/180.0 * q);
-//		iFakeBot->setDAng(M_PI/180.0 * dq);
-//		iFakeBot->setD2Ang(M_PI/180.0 * d2q);
-//		  
-//		iFakeBot->computeNewtonEuler(w0,dw0,d2p0,Fend,Mend);
-//		sens->computeSensorForceMoment();
-//		F_iDyn = -1.0 * sens->getSensorForceMoment();
-//
-//		ft = port_FT->read(false);
-//			  
-//		if(ft!=0)
-//		{
-//        	F_measured = *ft;
-//			if(first)
-//			{
-//				F_offset = F_measured-F_iDyn;
-//				first = false;
-//			}
-//			FT = FTB->getFB(F_measured - F_offset - F_iDyn);
-//
-//		} else
-//		{
-//			if(!first) FT = FTB->getFB();
-//		    else 
-//		    {
-//			    FT=0.0;
-//			    F_measured=0.0;
-//			    F_offset=0.0;
-//		    }
-//		}
-//
-//		
-//		port_Contact->prepare() = FT;
-//		port_Contact->setEnvelope(info);
-//		port_Contact->write();
-//		time = Time::now();
-//	  }
-//
-//	  void threadRelease()
-//	  {
-//		  if(sens) {delete sens; sens = 0;}
-//		  if(iFakeBot) {delete iFakeBot; iFakeBot = 0;}
-//		  if(linEst) {delete linEst; linEst = 0;}
-//		  if(quadEst) {delete quadEst; quadEst = 0;}
-//		  if(ft) {delete ft; ft = 0;}
-//		  port_Contact->interrupt();
-//		  port_Contact->close();
-//		  if (port_Contact) {delete port_Contact; port_Contact=0;}
-//	  }	  
-//
-//	  
-//};
-//
-//
-//class wrenchObserver: public RFModule
-//{
-//private:
-//	Property OptionsLimb;
-//	Property OptionsTorso;
-//	inverseDynamics *inv_dyn;
-//	string handlerPortName;
-//    Port handlerPort;      //a port to handle messages 
-//
-//	PolyDriver *dd;
-//	PolyDriver *tt;
-//	BufferedPort<Vector>* port_FT;
-//	
-//public:
-//	wrenchObserver()
-//	{
-//		inv_dyn = 0;
-//		dd=0;
-//		tt=0;
-//	}
-//
-//	virtual bool createDriver(PolyDriver *_dd)
-//	{
-//
-//		// Creating Driver for Limb...
-//	    if(!_dd || !(_dd->isValid()))
-//		{
-//			fprintf(stderr,"It is not possible to instantiate the device driver\nreturning...");
-//			return 0;
-//		}
-//
-//		IEncoders *encs;
-//
-//		bool ok = true;
-//		ok = ok & _dd->view(encs);
-//		if(!ok)
-//		{
-//			fprintf(stderr,"ERROR: one or more devices has not been viewed\nreturning...");
-//			return false;
-//		}
-//
-//		return true;
-//	}
-//
-//	bool configure(ResourceFinder &rf)
-//	{
-//		
-//		string PortName;
-//		string local = "/objectDetector/";
-//		string part;
-//		string robot;
-//		string fwdSlash = "/";
-//		Bottle tmp;
-//		int rate = 100;
-//		tmp=0;
-//		
-//		//---------------------ROBOT-----------------------------//
-//		ConstString robotName=rf.find("robot").asString();
-//		if (rf.check("robot"))
-//		{
-//			PortName=fwdSlash+rf.find("robot").asString().c_str();
-//			robot = rf.find("robot").asString().c_str();
-//		}
-//        else
-//		{
-//			fprintf(stderr,"Device not found\n");
-//            PortName=fwdSlash+"icub";
-//			robot = "icub";
-//		}
-//
-//		
-//		//---------------------PART-----------------------------//
-//		ConstString partName=rf.find("part").asString();
-//		if (rf.check("part"))
-//		{
-//			PortName=PortName+fwdSlash+rf.find("part").asString().c_str();
-//			part = rf.find("part").asString().c_str();
-//		}
-//        else
-//		{
-//			fprintf(stderr,"Could not find part in the config file\n");
-//		  Time::delay(3.0);
-//            return false;
-//		}
-//		//---------------------RATE-----------------------------//
-//		if (rf.check("rate"))
-//		{
-//			rate = rf.find("rate").asInt();
-//			fprintf(stderr,"rateThread working at %d ms\n", rate);
-//		}
-//        else
-//		{
-//			fprintf(stderr,"Could not find rate in the config file\nusing 100ms as default");
-//			rate = 100;
-//			Time::delay(3.0);
-//            return false;
-//		}
-//
-//		
-//		//---------------------OFFSETS--------------------------//
-//		Vector offset;
-//		if(rf.check("offset"))
-//		{
-//		  tmp = rf.findGroup("offset");
-//		  offset.resize(tmp.size()-1);
-//		  for(int i = 0;i<offset.length();i++)
-//		  {
-//			  offset(i) = tmp.get(i+1).asDouble();
-//		  }
-//		  fprintf(stderr,"offset setting has not yet been implemented...\n");
-//		}
-//		else 
-//		{
-//		  fprintf(stderr,"error: offsets not defined in configuration file!!!\n returning;");
-//		  fprintf(stderr,"offset setting has not yet been implemented...\n");
-//		  offset = 0.0;
-//		  Time::delay(3.0);
-//		  return false;
-//		}
-//
-//		//---------------------PORT--------------------------//
-//		
-//		port_FT=new BufferedPort<Vector>;
-//		port_FT->open((PortName+"/FT:i").c_str());
-//
-//		
-//		//---------------------DEVICES--------------------------//
-//		string name;
-//		if(rf.check("name"))
-//			name = rf.find("name").asString();
-//		else name = "wrenchDetector";
-//		if(strcmp(part.c_str(),"left_arm")==0 || strcmp(part.c_str(),"right_arm")==0 )
-//		{
-//			OptionsTorso.put("robot",robot.c_str());
-//			OptionsTorso.put("part","torso");
-//			OptionsTorso.put("device","remote_controlboard");
-//			OptionsTorso.put("local",(fwdSlash+name+"/torso/client").c_str());
-//			OptionsTorso.put("remote","/icub/torso");
-//
-//			tt = new PolyDriver(OptionsTorso);
-//			if(!createDriver(tt)) 
-//			{
-//				fprintf(stderr,"ERROR: unable to create limb device driver...quitting\n");
-//				return false;
-//			}
-//			else
-//				fprintf(stderr,"device driver created\n");
-//		}
-//		
-//		
-//		OptionsLimb.put("robot",robot.c_str());
-//		OptionsLimb.put("part",part.c_str());
-//		OptionsLimb.put("device","remote_controlboard");
-//		OptionsLimb.put("local",(fwdSlash+name+fwdSlash+part+"/client").c_str());
-//		OptionsLimb.put("remote",(fwdSlash+robot+fwdSlash+part).c_str());
-//		dd = new PolyDriver(OptionsLimb);
-//		if(!createDriver(dd)) 
-//		{
-//			fprintf(stderr,"ERROR: unable to create limb device driver...quitting\n");
-//			return false;
-//		}
-//
-//		//--------------------------THREAD--------------------------
-//		if(strcmp(part.c_str(),"left_arm")==0 || strcmp(part.c_str(),"right_arm")==0 )
-//		{
-//			inv_dyn = new inverseDynamics(rate,  dd, tt, port_FT, part.c_str());
-//			fprintf(stderr,"ft thread istantiated...\n");
-//			inv_dyn->start();
-//			fprintf(stderr,"thread started\n");
-//		} else if(strcmp(part.c_str(),"left_leg")==0 || strcmp(part.c_str(),"right_leg")==0 )
-//		{
-//			inv_dyn = new inverseDynamics(rate,  dd, port_FT, part.c_str());
-//			fprintf(stderr,"ft thread istantiated...\n");
-//			inv_dyn->start();
-//			fprintf(stderr,"thread started\n");
-//		} else fprintf(stderr,"unable to istantiate thread!!!");
-//		
-//		return true;
-//	}
-//
-//	
-//	double getPeriod()	{ return 1; }
-//	bool updateModule() 
-//	{ 
-//		return true; 
-//	}
-//	bool close()
-//	{
-//		fprintf(stderr,"closing...don't know why :S \n");
-//		if (inv_dyn) inv_dyn->stop();
-//		if (inv_dyn) {delete inv_dyn; inv_dyn=0;}
-//		port_FT->interrupt();
-//		port_FT->close();
-//		if (port_FT) {delete port_FT; port_FT=0;}
-//		if (dd) {delete dd; dd=0;}
-//		return true;
-//	}
-//};
-//
-//int main(int argc, char * argv[])
-//{
-//    //initialize yarp network
-//    Network yarp;
-//	
-//    //create your module
-//    wrenchObserver* wrenchObs = new wrenchObserver;
-//
-//    // prepare and configure the resource finder
-//    ResourceFinder rf;
-//    rf.setVerbose();
-//
-//    rf.configure("ICUB_ROOT", argc, argv);
-//
-//	if (rf.check("help"))
-//    {
-//        cout << "Options:" << endl << endl;
-//		cout << "\t--context   context: where to find the called resource (referred to $ICUB_ROOT\app: default objectDetector \\conf)"                << endl;
-//        cout << "\t--from      from: The name of the file.ini to be used for calibration"          << endl;
-//        cout << "\t--rate      rate: The period used by the module. default 100ms (not less than 15ms)"          << endl;
-//        cout << "\t--offset    offset: The offsets that affect the FT sensor (6 elements, default 0.0 0.0 0.0 0.0 0.0 0.0), not yet defined"          << endl;
-//        return 0;
-//    }
-//	
-//    cout<<"Configure module..."<<endl;
-//    bool ret = wrenchObs->configure(rf);
-//    
-//	if (ret)
-//	{
-//		cout<<"Start module..."<<endl;
-//		wrenchObs->runModule();
-//	}
-//
-//    cout<<"Main returning..."<<endl;
-//	if (wrenchObs) wrenchObs->close();
-//	delete wrenchObs;
-//	wrenchObs=0;
-//
-//    return 0;
-//}
-
-	
-	
-
-		
