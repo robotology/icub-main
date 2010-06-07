@@ -21,7 +21,8 @@ bool DrumIKin::open(Searchable& config)
 {
 	cout << "config : " << config.toString() << endl;
 	parameters["input_port"] = new Value(GetValueFromConfig(config, "input_port"));
-	parameters["output_port"] = new Value(GetValueFromConfig(config, "output_port"));
+	parameters["output_port_left"] = new Value(GetValueFromConfig(config, "output_port_left"));
+	parameters["output_port_right"] = new Value(GetValueFromConfig(config, "output_port_right"));
 	parameters["robot"] = new Value(GetValueFromConfig(config, "robot"));
 	parameters["num_dof"] = new Value(GetValueFromConfig(config, "num_dof"));
 	parameters["max_error"] = new Value(GetValueFromConfig(config, "max_error"));
@@ -37,7 +38,8 @@ bool DrumIKin::open(Searchable& config)
 	armMarkerMapping[mappings.get(4).asInt()] = "right_arm";
 
 	inPort.open(parameters["input_port"]->asString().c_str());
-	outPort.open(parameters["output_port"]->asString().c_str());
+	outPortLeft.open(parameters["output_port_left"]->asString().c_str());
+	outPortRight.open(parameters["output_port_right"]->asString().c_str());
 
 	OpenIKSolver("right_arm");
 	OpenIKSolver("left_arm");
@@ -57,7 +59,8 @@ bool DrumIKin::close()
 	CloseIKSolver("left_arm");
 	CloseIKSolver("right_arm");
 	inPort.close();
-    outPort.close();
+    outPortLeft.close();
+    outPortRight.close();
 	delete iKinPorts["left_arm"];
 	delete iKinPorts["right_arm"];
 	if(parameters["pos_vel_cont"]->asInt())
@@ -77,9 +80,6 @@ bool DrumIKin::close()
 bool DrumIKin::updateModule(void)
 {
 	Bottle *visionBottle = inPort.read();
-
-	Bottle &outBottle = outPort.prepare();
-	outBottle.clear();
 
 	for(int i=0; i<visionBottle->size(); ++i)
 	{
@@ -105,6 +105,7 @@ bool DrumIKin::updateModule(void)
 		xp[2] = patchBottle->get(2).asDouble();
 
 		markerID = patchBottle->get(3).asInt();
+		
 #endif
 		//get the target vector;
 		Vector xd = GetTargetVector(xp, armMarkerMapping[markerID]);
@@ -151,12 +152,27 @@ bool DrumIKin::updateModule(void)
 				jointsAnglesBottle.addDouble(resultQ[i]);
 			}
 
-
-			outBottle.addList() = jointsAnglesBottle;
-			cout << " ============== sending : " << outBottle.toString() << " ===================" << endl;
+			if(armMarkerMapping[markerID]=="left_arm") 
+			{ 
+				Bottle &outBottleLeft = outPortLeft.prepare();
+				outBottleLeft.clear();
+				outBottleLeft.addList() = jointsAnglesBottle;
+				cout << " ============== sending : " << outBottleLeft.toString() << " ===================" << endl;
+				outPortLeft.write();
+			}
+			if(armMarkerMapping[markerID]=="right_arm") 
+			{ 	
+				Bottle &outBottleRight = outPortRight.prepare();
+				outBottleRight.clear();
+				outBottleRight.addList() = jointsAnglesBottle;
+				cout << " ============== sending : " << outBottleRight.toString() << " ===================" << endl;
+				outPortRight.write();
+			}
+			
 		}
 		//Time::delay(0.5);
-		outPort.write();
+		
+		
 		visionBottle->clear();
 	}
 
@@ -260,7 +276,7 @@ double DrumIKin::getPeriod(void)
 void DrumIKin::OpenIKSolver(string arm)
 {
 	cout << "=====================================" << endl;
-	cout << "Opening IKin Catesian Solver for " << arm  << endl;
+	cout << "Opening IKin Cartesian Solver for " << arm  << endl;
 	cout << "=====================================" << endl;
 	// declare the on-line arm solver
 	string solverName = ((string)parameters["solver_name"]->asString()) + "/" + arm ;
@@ -455,12 +471,12 @@ Vector DrumIKin::Solve(const Vector &xd, string partName, double &precision)
 	Bottle *xBottle = CartesianSolver::getEndEffectorPoseOption(reply);
 	Bottle *qBottle = CartesianSolver::getJointsOption(reply);
 
+
 	Vector delta(3);
 	delta[0] = xBottle->get(0).asDouble() - xdBottle->get(0).asDouble();
 	delta[1] = xBottle->get(1).asDouble() - xdBottle->get(1).asDouble();
 	delta[2] = xBottle->get(2).asDouble() - xdBottle->get(2).asDouble();
 
-	
 	double deltaNorm2 = delta[0]*delta[0] + delta[1]*delta[1] + delta[2]*delta[2];
 	precision = sqrt(deltaNorm2);
 	if(precision < parameters["max_error"]->asDouble())

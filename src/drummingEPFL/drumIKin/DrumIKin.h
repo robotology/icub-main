@@ -46,7 +46,7 @@ public:
 
 protected:
     BufferedPort<Bottle> inPort;
-    BufferedPort<Bottle> outPort;
+    BufferedPort<Bottle> outPortLeft, outPortRight;
 	map<string, IKinPort *> iKinPorts;
 	map<string, iCubArmCartesianSolver *> iKSolvers;
 	map<string, Value *> parameters;
@@ -68,3 +68,4 @@ private:
 
 
 };
+
