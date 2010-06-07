@@ -205,7 +205,7 @@ void selectiveAttentionProcessor::run(){
             for(int x=0;x<width;x++){
                 if(maxValue==0)
                     outputImage->getRawImage()[x+y*rowSize]=0;
-                if(linearCombinationImage->getRawImage()[x+y*rowSize]==maxValue){
+                if((linearCombinationImage->getRawImage()[x+y*rowSize]>=maxValue-10)&&((linearCombinationImage->getRawImage()[x+y*rowSize]<=maxValue+10))){
                     outputImage->getRawImage()[x+y*rowSize]=255;
                 }
                 else{    
