@@ -765,20 +765,23 @@ protected:
     {
         Bottle in, out;
 
-        out.addString("set mou ");
-        out.addString(type.c_str());
+        out.addVocab(Vocab::encode("set"));
+        out.addVocab(Vocab::encode("mou"));
+        out.addVocab(Vocab::encode(type.c_str()));
         outportCmdFace->write(out,in);
 
         out.clear();
 
-        out.addString("set leb ");
-        out.addString(type.c_str());
+        out.addVocab(Vocab::encode("set"));
+        out.addVocab(Vocab::encode("leb"));
+        out.addVocab(Vocab::encode(type.c_str()));
         outportCmdFace->write(out,in);
 
         out.clear();
 
-        out.addString("set reb ");
-        out.addString(type.c_str());
+        out.addVocab(Vocab::encode("set"));
+        out.addVocab(Vocab::encode("reb"));
+        out.addVocab(Vocab::encode(type.c_str()));
         outportCmdFace->write(out,in);
     }
 
