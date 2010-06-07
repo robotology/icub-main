@@ -274,7 +274,7 @@ public:
             encodersT.resize(jnt2);
         }
 
-        int jnt=jnt1*jnt2;
+        int jnt=jnt1+jnt2;
 
         q.resize(jnt);
         dq.resize(jnt);
