@@ -132,7 +132,7 @@ using namespace iDyn;
 using namespace std;
 
 
-// class inverseDynamics: class for reading from Vrow and providing for FT on an output port
+// class inverseDynamics: class for reading from Vrow and providing FT on an output port
 class inverseDynamics: public RateThread
 {
 private:
